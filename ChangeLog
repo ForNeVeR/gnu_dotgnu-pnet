@@ -1,4 +1,9 @@
 
+2002-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Private/NumberFormatter.cs: disable decimal digit
+	display so that integers aren't formatted as "N.00".
+
 2002-01-19 Charlie Carnow <carnow@gmx.net>
 
 	* runtime/System/IO/Path.cs: fixed some more errors reported

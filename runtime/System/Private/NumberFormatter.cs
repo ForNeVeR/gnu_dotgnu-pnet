@@ -227,6 +227,10 @@ internal sealed class NumberFormatter
 			groupSeparator = nfi.NumberGroupSeparator;
 		}
 
+		// FIXME: turn off the decimal digits because it is
+		// giving the wrong results for integers.
+		decimalDigits = 0;
+
 		// Format the basic part of the number.
 		String basic;
 		if(value == 0)

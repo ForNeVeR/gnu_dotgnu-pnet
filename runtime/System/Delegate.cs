@@ -129,6 +129,17 @@ public abstract class Delegate : ICloneable
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static Delegate CreateBlankDelegate
 				(Type type, ClrMethod method);
+	
+	private static Type[] GetDelegateParams(Type type)
+	{
+		ParameterInfo [] args=type.GetMethod("Invoke").GetParameters();
+		Type [] argTypes=new Type[args.Length];
+		for(int i=args.Length-1;i>=0;i--)
+		{
+			argTypes[i] = args[i].ParameterType;
+		}
+		return argTypes;
+	}
 
 	// Create a delegate for an instance method.
 	public static Delegate CreateDelegate
@@ -158,7 +169,9 @@ public abstract class Delegate : ICloneable
 				methodInfo = (target.GetType()).GetMethod
 								(method, BindingFlags.Public |
 										 BindingFlags.NonPublic |
-										 BindingFlags.Instance);
+										 BindingFlags.Instance,
+										 null, CallingConventions.Any,
+								     	 GetDelegateParams(type),null);
 				if(methodInfo == null)
 				{
 					throw new ArgumentException(_("Arg_DelegateMethod"));
@@ -206,7 +219,9 @@ public abstract class Delegate : ICloneable
 				methodInfo = target.GetMethod
 								(method, BindingFlags.Public |
 										 BindingFlags.NonPublic |
-										 BindingFlags.Static);
+										 BindingFlags.Static,
+										 null, CallingConventions.Any,
+								     	 GetDelegateParams(type),null);
 				if(methodInfo == null || !(methodInfo is ClrMethod))
 				{
 					throw new ArgumentException(_("Arg_DelegateMethod"));

@@ -10,6 +10,9 @@
 	* runtime/System/Reflection/Assembly.cs: Stub about GetName() function
 	to support some external libraries.
 
+	* runtime/System/Delegate.cs: Fix bug #2084 by checking for the 
+	delegate params as well.
+
 2002-12-29  Ian Fung  <if26@cornell.edu>
 	
 	* System/ComponentModel/DesignOnlyAttribute.cs,

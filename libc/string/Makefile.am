@@ -16,6 +16,7 @@ libCString_a_SOURCES = ffs.c \
 					   strcpy.c \
 					   strcspn.c \
 					   strdup.c \
+					   strerror.c \
 					   strlen.c \
 					   strncasecmp.c \
 					   strncat.c \
@@ -23,6 +24,7 @@ libCString_a_SOURCES = ffs.c \
 					   strncpy.c \
 					   strpbrk.c \
 					   strrchr.c \
+					   strsignal.c \
 					   strspn.c \
 					   strstr.c \
 					   strtok.c \

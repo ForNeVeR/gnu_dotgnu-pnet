@@ -2,7 +2,7 @@
  * string.h - String manipulation functions.
  *
  * This file is part of the Portable.NET C library.
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,6 +53,7 @@ extern char *strncpy(char * __restrict __dest, const char * __restrict __src,
                      size_t __n);
 extern char *strpbrk(const char *__s, const char *__accept);
 extern char *strrchr(const char * __restrict __s, int __c);
+extern char *strsignal(int __sig);
 extern size_t strspn(const char *__s, const char *__accept);
 extern char *strstr(const char *__haystack, const char *__needle);
 extern char *strtok(char * __restrict __s, const char * __restrict __delim);

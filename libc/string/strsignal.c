@@ -1,5 +1,5 @@
 /*
- * perror.c - Print an error message for an errno code.
+ * strsignal.c - Get messages for signal numbers.
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
@@ -19,18 +19,49 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdio.h>
 #include <string.h>
-#include <errno.h>
+#include <signal.h>
 
-void
-perror (const char *s)
+const char *const _sys_siglist[NSIG] = {
+	"Unknown signal 0",
+	"Hangup",
+	"Interrupt",
+	"Quit",
+	"Illegal instruction",
+	"Trace/breakpoint trap",
+	"Aborted",
+	"Bus error",
+	"Floating point exception",
+	"Killed",
+	"User defined signal 1",
+	"Segmentation fault",
+	"User defined signal 2",
+	"Broken pipe",
+	"Alarm clock",
+	"Terminated",
+	"Stack fault",
+	"Child exited",
+	"Continued",
+	"Stopped (signal)",
+	"Stopped",
+	"Stopped (tty input)",
+	"Stopped (tty output)",
+	"Urgent I/O condition",
+	"CPU time limit exceeded",
+	"File size limit exceeded",
+	"Virtual timer expired",
+	"Profiling timer expired",
+	"Window changed",
+	"I/O possible",
+	"Power failure",
+	"Bad system call"
+};
+
+char *
+strsignal (int sig)
 {
-  if (s && *s != '\0')
-    {
-      fputs (s, stderr);
-      fputs (": ", stderr);
-    }
-  fputs (strerror (errno), stderr);
-  putc ('\n', stderr);
+  if (sig >= 0 && sig < NSIG)
+    return (char *)(sys_siglist[sig]);
+  else
+    return "Unknown signal";
 }

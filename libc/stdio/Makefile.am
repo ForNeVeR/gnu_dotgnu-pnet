@@ -47,7 +47,9 @@ libCStdio_a_SOURCES = \
 	linewrap.c \
 	memstream.c \
 	newstream.c \
+	perror.c \
 	printf.c \
+	psignal.c \
 	putc.c \
 	putchar.c \
 	puts.c \
@@ -82,11 +84,9 @@ libCStdio_a_SOURCES = \
 ##		itoa-udigits.c
 ##		_itowa.c
 ##		itowa-digits.c
-##		perror.c
 ##		printf_fp.c
 ##		printf-prs.c
 ##		printf_size.c
-##		psignal.c
 ##		scanf.c
 ##		sscanf.c
 ##		tempnam.c

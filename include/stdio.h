@@ -752,6 +752,8 @@ extern int ferror_unlocked (FILE *__stream) __THROW;
 /* Print a message describing the meaning of the value of errno.  */
 extern void perror (__const char *__s) __THROW;
 
+extern int sys_nerr;
+extern __const char *__const sys_errlist[];
 
 #ifdef	__USE_POSIX
 /* Return the system file descriptor for STREAM.  */

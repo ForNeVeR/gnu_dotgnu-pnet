@@ -18,6 +18,12 @@
 	"__thread_specific__" declaration in errno.c takes care of
 	making the variable thread-specific.
 
+	* include/signal.h, include/stdio.h, include/string.h,
+	libc/stdio/Makefile.am, libc/stdio/perror.c, libc/stdio/psignal.c,
+	libc/string/Makefile.am, libc/string/strerror.c,
+	libc/string/strsignal.c: implement strerror, strsignal,
+	perror, and psignal.
+
 2004-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, include/pthread-support.h,

@@ -142,11 +142,18 @@ typedef union sigval sigval_t;
 #define	SIG_SETMASK   2
 
 /*
+ * List of signal messages.
+ */
+extern __const char *__const _sys_siglist[_NSIG];
+#define	sys_siglist _sys_siglist
+
+/*
  * Function prototypes.
  */
 extern sighandler_t bsd_signal (int __sig, sighandler_t __handler);
 extern int kill (pid_t __pid, int __sig);
 extern int killpg (pid_t __pgrp, int __sig);
+extern void psignal (int __sig, __const char *__s);
 extern int pthread_kill (long long __thread, int __sig);
 extern int raise (int __sig);
 extern int sigaddset (sigset_t *__set, int __signo);

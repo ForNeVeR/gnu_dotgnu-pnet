@@ -4868,6 +4868,13 @@ protected virtual void Dispose(bool disposing)
 				CloseRequest();
 			}
 
+	// Event that is emitted when the help button on a window
+	// is selected by the user.
+	void IToolkitEventSink.ToolkitHelp()
+			{
+				OnHelpRequested(new HelpEventArgs(new Point(0, 0)));
+			}
+
 	// Close request received - processed by the "Form" class.
 	internal virtual void CloseRequest() {}
 

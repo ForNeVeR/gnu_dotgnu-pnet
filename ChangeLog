@@ -27,6 +27,12 @@
 	* samples/FormsTest.cs: make the message boxes modal with respect
 	to the main FormsTest widget.
 
+	* System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Windows.Forms/Control.cs, Xsharp/Display.cs,
+	Xsharp/TopLevelWindow.cs: implement the "Help" button on caption
+	bars under X using the "_NET_WM_CONTEXT_HELP" window manager hint.
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

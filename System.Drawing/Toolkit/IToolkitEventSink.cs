@@ -97,6 +97,10 @@ public interface IToolkitEventSink
 	// is selected by the user.
 	void ToolkitClose();
 
+	// Event that is emitted when the help button on a window
+	// is selected by the user.
+	void ToolkitHelp();
+
 }; // interface IToolkitEventSink
 
 }; // namespace System.Drawing.Toolkit

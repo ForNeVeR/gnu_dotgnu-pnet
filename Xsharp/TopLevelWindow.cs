@@ -49,6 +49,7 @@ public class TopLevelWindow : InputOutputWidget
 	private int expectedWidth, expectedHeight;
 	private int minWidth, minHeight;
 	private int maxWidth, maxHeight;
+	private bool hasHelpButton;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.TopLevelWindow"/>
@@ -132,6 +133,7 @@ public class TopLevelWindow : InputOutputWidget
 				this.resizeTimer = null;
 				this.expectedWidth = -1;
 				this.expectedHeight = -1;
+				this.hasHelpButton = false;
 
 				// Set the initial WM properties.
 				try
@@ -145,10 +147,7 @@ public class TopLevelWindow : InputOutputWidget
 					Xlib.XSetIconName(display, handle, name);
 
 					// Ask for "WM_DELETE_WINDOW" and "WM_TAKE_FOCUS".
-					Xlib.Atom[] protocols = new Xlib.Atom [2];
-					protocols[0] = dpy.wmDeleteWindow;
-					protocols[1] = dpy.wmTakeFocus;
-					Xlib.XSetWMProtocols(display, handle, protocols, 2);
+					SetProtocols(display, handle);
 
 					// Top-level widgets receive all key and focus events.
 					SelectInput(EventMask.KeyPressMask |
@@ -186,6 +185,26 @@ public class TopLevelWindow : InputOutputWidget
 				else
 				{
 					return screen.RootWindow;
+				}
+			}
+
+	// Set the WM protocols for this window.
+	private void SetProtocols(IntPtr display, Xlib.Window handle)
+			{
+				if(hasHelpButton)
+				{
+					Xlib.Atom[] protocols = new Xlib.Atom [3];
+					protocols[0] = dpy.wmDeleteWindow;
+					protocols[1] = dpy.wmTakeFocus;
+					protocols[2] = dpy.wmContextHelp;
+					Xlib.XSetWMProtocols(display, handle, protocols, 3);
+				}
+				else
+				{
+					Xlib.Atom[] protocols = new Xlib.Atom [2];
+					protocols[0] = dpy.wmDeleteWindow;
+					protocols[1] = dpy.wmTakeFocus;
+					Xlib.XSetWMProtocols(display, handle, protocols, 2);
 				}
 			}
 
@@ -662,6 +681,41 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
+	/// <para>Get or set the state of the "help" button in
+	/// the window's caption bar.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The value of this property is the help button state.  The window
+	/// manager might ignore this information if it does not support the
+	/// <c>_NET_WM_CONTEXT_HELP</c> protocol.</para>
+	/// </value>
+	public bool HasHelpButton
+			{
+				get
+				{
+					return hasHelpButton;
+				}
+				set
+				{
+					if(hasHelpButton != value)
+					{
+						hasHelpButton = value;
+						try
+						{
+							IntPtr display = dpy.Lock();
+							Xlib.Window handle = GetWidgetHandle();
+							SetProtocols(display, handle);
+						}
+						finally
+						{
+							dpy.Unlock();
+						}
+					}
+				}
+			}
+
+	/// <summary>
 	/// <para>Get or set the transient parent window.</para>
 	/// </summary>
 	///
@@ -901,6 +955,15 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
+	/// <para>Method that is called when the window's "help" box is
+	/// clicked by the user.</para>
+	/// </summary>
+	protected virtual void OnHelp()
+			{
+				// Nothing to do here.
+			}
+
+	/// <summary>
 	/// <para>Method that is called when the window gains the primary focus,
 	/// just before the actual focus is passed to children.</para>
 	/// </summary>
@@ -1048,6 +1111,11 @@ public class TopLevelWindow : InputOutputWidget
 							{
 								// We were given the primary input focus.
 								PrimaryFocusIn();
+							}
+							if(xevent.xclient.l(0) == (int)(dpy.wmContextHelp))
+							{
+								// The user pressed the "help" button.
+								OnHelp();
 							}
 						}
 					}

@@ -329,6 +329,7 @@ internal sealed class DrawingTopLevelWindow
 				Decorations = decorations;
 				Functions = functions;
 				InputType = inputType;
+				HasHelpButton = ((flags & ToolkitWindowFlags.Help) != 0);
 			}
 
 	// Override the button press event from Xsharp.
@@ -532,6 +533,15 @@ internal sealed class DrawingTopLevelWindow
 					sink.ToolkitClose();
 				}
 				return false;
+			}
+
+	// Override the "OnHelp" event from Xsharp.
+	protected override void OnHelp()
+			{
+				if(sink != null)
+				{
+					sink.ToolkitHelp();
+				}
 			}
 
 }; // class DrawingTopLevelWindow

@@ -120,6 +120,9 @@
 	System/ComponentModel/Design/Serialization/RootDesignerSerializerAttribute.cs:
 	missing classes and more signature-compatibility.
 
+	* compat/Accessibility.cs, compat/Makefile.am, compat/compat.build:
+	implement the minor "Accessibility" assembly, for compatibility.
+
 2003-05-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Platform/RegexpMethods.cs, System/Private/Regex.cs

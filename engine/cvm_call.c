@@ -240,6 +240,10 @@ case COP_CALL_INTERFACE:
 		methodToCall = _ILLookupInterfaceMethod(GetObjectClass(tempptr),
 												(ILClass *)ReadPointer(pc + 3),
 												(ILUInt32)(pc[2]));
+		if(!methodToCall)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
 
 		/* Copy the state back into the thread object */
 		COPY_STATE_TO_THREAD();
@@ -456,6 +460,10 @@ case COP_CALL_INTERFACE:
 		methodToCall = _ILLookupInterfaceMethod(GetObjectClass(tempptr),
 												(ILClass *)ReadPointer(pc + 10),
 												IL_READ_UINT32(pc + 6));
+		if(!methodToCall)
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
 
 		/* Copy the state back into the thread object */
 		COPY_STATE_TO_THREAD();

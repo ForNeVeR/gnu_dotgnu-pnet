@@ -6,6 +6,9 @@
 * engine/call.c: resolve interface references during interface lookup;
 recognise 0xFFFF as an abstract interface slot.
 
+* engine/cvm_call.c: throw a "MissingMethodException" if interface
+method lookup fails.
+
 2001-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_values.h, support/test_float.c, support/convert.c,

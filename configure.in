@@ -72,7 +72,7 @@ dnl will compile successfully, but won't run.  This fools configure
 dnl into believing that cscc is a cross-compiler, which it is.
 CC="$CSCC"
 CPPFLAGS="-nostdinc"
-LDFLAGS="-fcross-compile-check -nostdlib -lmscorlib"
+LDFLAGS="-fcross-compile-check -nostdlib"
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -83,7 +83,7 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 dnl Remove the "-fcross-compile-check" flag from "LDFLAGS".
-LDFLAGS="-nostdlib -lmscorlib"
+LDFLAGS="-nostdlib"
 
 dnl Check for file extensions.
 AC_EXEEXT

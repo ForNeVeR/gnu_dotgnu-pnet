@@ -34,8 +34,6 @@
 #define	_weak_alias(name,aliasname)	\
     extern __typeof__ (name) aliasname __attribute__ ((weak, alias (#name)));
 #define	weak_alias(name,aliasname)	_weak_alias(name, aliasname)
-#else
-#define	strong_alias(name,aliasname)
 #endif
 
 #define internal_function

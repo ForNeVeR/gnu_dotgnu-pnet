@@ -1,4 +1,13 @@
 
+0.6.2 (3 January 2004)
+
+	* Use "ilgac" to install assemblies correctly into the cache.
+	* Fix the "missing" script.
+	* Mono.Cairo, System.Data.SqlXml, System.Data.ObjectSpaces.
+	* Mono.Security, Mono.Security.Win32, Novell.Directory.Ldap.
+	* System.Security, System.DirectoryServices, Mono.Data.SqliteClient.
+	* Mono.Data.SybaseClient, Mono.Data.TdsClient.
+
 0.6.0 (15 October 2003)
 
 	* Remove "System.EnterpriseServices" and "ICSharpCode.SharpZipLib"

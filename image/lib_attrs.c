@@ -26,6 +26,48 @@ extern	"C" {
 #endif
 
 /*
+ * Process a "Serializable" attribute.
+ */
+static int SerializableAttribute(ILProgramItem *item, ILSerializeReader *reader)
+{
+	ILClass *classInfo;
+
+	/* We must use this on a class */
+	classInfo = ILProgramItemToClass(item);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Mark the class as serialized */
+	ILClassSetAttrs(classInfo, IL_META_TYPEDEF_SERIALIZABLE,
+							   IL_META_TYPEDEF_SERIALIZABLE);
+	return 1;
+}
+
+/*
+ * Process a "NonSerialized" attribute.
+ */
+static int NonSerializedAttribute(ILProgramItem *item,
+								  ILSerializeReader *reader)
+{
+	ILField *fieldInfo;
+
+	/* We must use this on a field */
+	fieldInfo = ILProgramItemToField(item);
+	if(!fieldInfo)
+	{
+		return 0;
+	}
+
+	/* Mark the field as non-serialized */
+	ILMemberSetAttrs((ILMember *)fieldInfo,
+					 IL_META_FIELDDEF_NOT_SERIALIZED,
+				     IL_META_FIELDDEF_NOT_SERIALIZED);
+	return 1;
+}
+
+/*
  * Match an attribute parameter name and type.
  */
 #define	IsParam(name,ptype)		\
@@ -690,6 +732,11 @@ typedef struct
 	int (*func)(ILProgramItem *item, ILSerializeReader *reader);
 
 } AttrConvertInfo;
+static AttrConvertInfo const systemAttrs[] = {
+	{"SerializableAttribute", SerializableAttribute},
+	{"NonSerializedAttribute", NonSerializedAttribute},
+	{0, 0}
+};
 static AttrConvertInfo const interopAttrs[] = {
 	{"DllImportAttribute",	DllImportAttribute},
 	{"FieldOffsetAttribute", FieldOffsetAttribute},
@@ -741,6 +788,10 @@ static int ConvertAttribute(ILProgramItem *item, ILAttribute *attr)
 	else if(!strcmp(namespace, "System.Runtime.CompilerServices"))
 	{
 		info = compilerAttrs;
+	}
+	else if(!strcmp(namespace, "System"))
+	{
+		info = systemAttrs;
 	}
 	else
 	{

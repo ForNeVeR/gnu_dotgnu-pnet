@@ -31,6 +31,9 @@
 	* csdoc/doc_valil.c: handle references to attributes in foreign
 	assemblies.
 
+	* image/lib_attrs.c: recognise the "Serializable" and "NonSerialized"
+	attributes as builtin library attributes.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

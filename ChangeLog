@@ -1,4 +1,9 @@
 
+2003-06-12  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_grammar.y: Wrap all 'using' blocks in a new local
+	scope.
+
 2003-06-08  Gopal.V  <gopalv82@symonds.net>
 	
 	* csdoc/doc_stub.c: Do not generate [TODO] while stubbing out

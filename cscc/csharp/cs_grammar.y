@@ -2401,6 +2401,7 @@ LockStatement
 UsingStatement
 	: USING ResourceAcquisition EmbeddedStatement	{
 				MakeBinary(Using, $2, $3);
+				$$ = ILNode_NewScope_create($$);
 			}
 	;
 

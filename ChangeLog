@@ -1,4 +1,8 @@
 
+2002-05-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* NEWS, configure.in: update version for the "0.2.0" release.
+
 2002-05-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: declare "ArgIterator.End" as an

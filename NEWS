@@ -1,4 +1,15 @@
 
+0.2.0 (11 May 2002)
+
+	* Bug fixes to System.Uri, System.IO.StringWriter (Stephen Compall).
+	* System.IO.StringReader, System.IO.MemoryStream (Stephen Compall).
+	* Test cases for System.String (Gopal V).
+	* Reversed "shift" value in ISCII code pages (Rhys Weatherley).
+	* System.IO.Directory (Abhaya Agarwal).
+	* System.Reflection.Emit, System.ArgIterator (Rhys Weatherley).
+	* System.Xml.XmlWriter (Peter Minten).
+	* Lots of small semantic analysis fixes (Rhys Weatherley).
+
 0.1.8 (20 April 2002)
 
 	* Bug fixes to System.Net (Peter Minten, Gopal V.).

@@ -1594,8 +1594,7 @@ JavaGenCast(ILMachineType_Int16, ILMachineType_Decimal)
 						  "(S)LSystem/Decimal;");
 	}
 }
-JavaGenCast(ILMachineType_UInt16, ILMachineType_Decimal),
-JavaGenCast(ILMachineType_Char, ILMachineType_Decimal)
+JavaGenCast(ILMachineType_UInt16, ILMachineType_Decimal)
 {
 	if(info->useJavaLib)
 	{
@@ -1614,6 +1613,21 @@ JavaGenCast(ILMachineType_Char, ILMachineType_Decimal)
 	{
 		JavaGenCallByName(info, "System/Decimal", "op_Implicit__SV",
 						  "(I)LSystem/Decimal;");
+	}
+}
+JavaGenCast(ILMachineType_Char, ILMachineType_Decimal)
+{
+	if(info->useJavaLib)
+	{
+		JavaGenSimple(info, JAVA_OP_I2L);
+		JavaGenCallByName(info, "java/math/BigDecimal", "valueOf",
+						  "(J)Ljava/math/BigDecimal;");
+		JavaGenExtend(info, 1);
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__V",
+						  "(C)LSystem/Decimal;");
 	}
 }
 JavaGenCast(ILMachineType_Int32, ILMachineType_Decimal),
@@ -1984,16 +1998,7 @@ JavaGenCast(ILMachineType_String, ILMachineType_String)
 }
 JavaGenCast(ILMachineType_ObjectRef, ILMachineType_String)
 {
-	if(info->useJavaLib)
-	{
-		JavaGenCallVirtual(info, "java/lang/Object", "toString",
-						   "()Ljava/lang/String;");
-	}
-	else
-	{
-		JavaGenCallVirtual(info, "System/Object", "ToString",
-						   "()LSystem/String;");
-	}
+	/* Nothing to do here */
 }
 JavaGenCast(ILMachineType_UnmanagedPtr, ILMachineType_String),
 JavaGenCast(ILMachineType_ManagedPtr, ILMachineType_String),

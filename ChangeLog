@@ -6,6 +6,10 @@
 the "ConvertIndex" table; set the value type for the builtin "decimal"
 properly.
 
+* codegen/cg_cast.tc, codegen/jv_cast.tc: change the "object" to "string"
+conversion, which was wrong; split implicit "char" to "decimal" conversions
+into a separate case from "ushort" to "decimal".
+
 2001-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_stmt.tc: semantic analysis for return statements.

@@ -1325,8 +1325,7 @@ ILGenCast(ILMachineType_Int16, ILMachineType_Decimal)
 	ILGenCallByName(info, "value class System.Decimal "
 								"System.Decimal::op_Implicit(int16)");
 }
-ILGenCast(ILMachineType_UInt16, ILMachineType_Decimal),
-ILGenCast(ILMachineType_Char, ILMachineType_Decimal)
+ILGenCast(ILMachineType_UInt16, ILMachineType_Decimal)
 {
 	if(info->clsCompliant)
 	{
@@ -1339,6 +1338,11 @@ ILGenCast(ILMachineType_Char, ILMachineType_Decimal)
 		ILGenCallByName(info, "value class System.Decimal "
 								"System.Decimal::op_Implicit(unsigned int16)");
 	}
+}
+ILGenCast(ILMachineType_Char, ILMachineType_Decimal)
+{
+	ILGenCallByName(info, "value class System.Decimal "
+							"System.Decimal::op_Implicit(char)");
 }
 ILGenCast(ILMachineType_Int32, ILMachineType_Decimal)
 {
@@ -1593,8 +1597,7 @@ ILGenCast(ILMachineType_String, ILMachineType_String)
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_String)
 {
-	/* Call the "ToString" virtual method on the object */
-	ILGenCallVirtual(info, "class System.String System.Object::ToString()");
+	/* Nothing to do here */
 }
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_String),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_String),

@@ -1,7 +1,7 @@
 bin_PROGRAMS    = ilalink
 lib_LIBRARIES   = libILLink.a
-#man_MANS        = ilalink.1
-#EXTRA_DIST      = $(man_MANS)
+man_MANS        = ilalink.1
+EXTRA_DIST      = $(man_MANS)
 
 ilalink_SOURCES = ilalink.c
 ilalink_LDADD   = libILLink.a ../dumpasm/libILDumpAsm.a \

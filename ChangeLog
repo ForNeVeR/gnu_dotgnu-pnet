@@ -1,4 +1,8 @@
 
+2003-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/Makefile.am: add ilalink.1 to the build process.
+
 2003-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/pnettools.texi, ildd/ildd.1, ildd/ildd.c: dump module

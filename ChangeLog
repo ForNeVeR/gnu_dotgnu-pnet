@@ -6,6 +6,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.6.0 release.
 
+	* configure.in: update working version to "0.6.1".
+
 2003-10-14  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs

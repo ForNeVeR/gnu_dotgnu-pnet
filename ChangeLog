@@ -23,6 +23,10 @@
 	* cscc/c/c_types.c (CTypeGetElemType): preserve function pointer
 	modifiers when dereferencing an array of function pointers.
 
+	* codegen/cg_decls.tc, codegen/cg_nodes.tc, cscc/csharp/cs_decls.tc,
+	cscc/csharp/cs_grammar.y, doc/c_users_guide.html: introduce some
+	new syntax to make it easier to call C code from C#.
+
 2003-06-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/java/.cvsignore, cscc/bf/.cvsignore : add generated

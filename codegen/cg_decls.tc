@@ -731,6 +731,14 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	ILOverride *over;
 	ILMethod *decl;
 
+	/* Ignore the method if "suppressCodeGen" is set.  This can happen
+	   for "extern" methods within the "<Module>" class, which are
+	   actually imported from C into C# */
+	if(node && node->suppressCodeGen)
+	{
+		return;
+	}
+
 	/* Does the method have PInvoke information associated with it? */
 	if(ILMethod_HasPInvokeImpl(method))
 	{

@@ -874,6 +874,7 @@ struct _tagILSwitchValue
 	%nocreate ILMethod *methodInfo  = {0};
 	%nocreate ILType   *localVarSig = {0};
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
+	%nocreate int suppressCodeGen = {0};
 }
 
 /*

@@ -1094,6 +1094,20 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		}
 	}
 
+	/* If the "extern" flag is set, and this method is contained
+	   within the "<Module>" class, then suppress code generation.
+	   Such methods are imported from a foreign C module, and
+	   should not be generated from the C# application */
+	if((node->modifiers & CS_SPECIALATTR_EXTERN) != 0)
+	{
+		if(info->currentClass &&
+		   !strcmp(((ILNode_ClassDefn *)(info->currentClass))->name,
+		   		   "<Module>"))
+		{
+			node->suppressCodeGen = 1;
+		}
+	}
+
 	/* Leave the unsafe context for the method */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{

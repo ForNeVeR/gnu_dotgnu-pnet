@@ -1462,6 +1462,7 @@ PrimaryExpression
 	| MAKEREF '(' Expression ')'			{ MakeUnary(MakeRefAny, $3); }
 	| REFTYPE '(' Expression ')'			{ MakeUnary(RefType, $3); }
 	| REFVALUE '(' Expression ',' Type ')'	{ MakeBinary(RefValue, $3, $5); }
+	| MODULE			{ $$ = ILQualIdentSimple("<Module>"); }
 	;
 
 LiteralExpression

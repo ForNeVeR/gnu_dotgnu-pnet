@@ -122,6 +122,16 @@ int ILCast(ILGenInfo *info, ILNode *node, ILNode **parent,
 		   ILType *fromType, ILType *toType);
 
 /*
+ * Determine which of T1 and T2 results in a better conversion
+ * from a type S.
+ */
+int ILBetterConversion(ILGenInfo *info, ILType *sType,
+					   ILType *t1Type, ILType *t2Type);
+#define	IL_BETTER_NEITHER		0
+#define	IL_BETTER_T1			1
+#define	IL_BETTER_T2			2
+
+/*
  * Builtin operator tables.
  */
 extern ILOperator const ILOp_Add[];

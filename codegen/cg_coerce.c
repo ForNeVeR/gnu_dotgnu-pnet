@@ -196,8 +196,14 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 	/* Call a method to perform the conversion */
 	if(rules->method)
 	{
+		ILMethod *method = (ILMethod *)ILMemberImport
+								(info->image, (ILMember *)(rules->method));
+		if(!method)
+		{
+			ILGenOutOfMemory(info);
+		}
 		*parent = ILNode_UserConversion_create
-						(node, ILTypeToValueType(toType), rules->method);
+						(node, ILTypeToValueType(toType), method);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 	}
@@ -338,6 +344,87 @@ int ILCast(ILGenInfo *info, ILNode *node, ILNode **parent,
 	else
 	{
 		return 0;
+	}
+}
+
+int ILBetterConversion(ILGenInfo *info, ILType *sType,
+					   ILType *t1Type, ILType *t2Type)
+{
+	if(ILTypeIdentical(t1Type, t2Type))
+	{
+		return IL_BETTER_NEITHER;
+	}
+	else if(ILTypeIdentical(sType, t1Type))
+	{
+		return IL_BETTER_T1;
+	}
+	else if(ILTypeIdentical(sType, t2Type))
+	{
+		return IL_BETTER_T2;
+	}
+	else if(ILCanCoerce(info->context, t1Type, t2Type) &&
+	        !ILCanCoerce(info->context, t2Type, t1Type))
+	{
+		return IL_BETTER_T1;
+	}
+	else if(ILCanCoerce(info->context, t2Type, t1Type) &&
+	        !ILCanCoerce(info->context, t1Type, t2Type))
+	{
+		return IL_BETTER_T2;
+	}
+	else if(t1Type == ILType_Int8 &&
+	        (t2Type == ILType_UInt8 ||
+			 t2Type == ILType_UInt16 ||
+			 t2Type == ILType_UInt32 ||
+			 t2Type == ILType_UInt64))
+	{
+		return IL_BETTER_T1;
+	}
+	else if(t2Type == ILType_Int8 &&
+	        (t1Type == ILType_UInt8 ||
+			 t1Type == ILType_UInt16 ||
+			 t1Type == ILType_UInt32 ||
+			 t1Type == ILType_UInt64))
+	{
+		return IL_BETTER_T2;
+	}
+	else if(t1Type == ILType_Int16 &&
+			(t2Type == ILType_UInt16 ||
+			 t2Type == ILType_UInt32 ||
+			 t2Type == ILType_UInt64))
+	{
+		return IL_BETTER_T1;
+	}
+	else if(t2Type == ILType_Int16 &&
+			(t1Type == ILType_UInt16 ||
+			 t1Type == ILType_UInt32 ||
+			 t1Type == ILType_UInt64))
+	{
+		return IL_BETTER_T2;
+	}
+	else if(t1Type == ILType_Int32 &&
+			(t2Type == ILType_UInt32 ||
+			 t2Type == ILType_UInt16))
+	{
+		return IL_BETTER_T1;
+	}
+	else if(t2Type == ILType_Int32 &&
+			(t1Type == ILType_UInt32 ||
+			 t1Type == ILType_UInt16))
+	{
+		return IL_BETTER_T2;
+	}
+	else if(t1Type == ILType_Int64 && t2Type == ILType_UInt64)
+	{
+		return IL_BETTER_T1;
+	}
+	else if(t2Type == ILType_Int64 && t1Type == ILType_UInt64)
+	{
+		return IL_BETTER_T2;
+	}
+	else
+	{
+		return IL_BETTER_NEITHER;
 	}
 }
 

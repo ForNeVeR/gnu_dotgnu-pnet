@@ -4,6 +4,9 @@
 * codegen/cg_gen.h, codegen/cg_gen.c: new functions "ILGenItemHasAttribute",
 "ILGenItemAddAttribute", and "ILGenGetParamInfo".
 
+* codegen/cg_coerce.h, codegen/cg_coerce.c: new function "ILBetterConversion";
+import methods when applying the coercion rules.
+
 2001-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, Makefile.am, ildiff/AUTHORS, ildiff/README, ildiff/TODO,

@@ -245,6 +245,12 @@ extern	"C" {
 #define	IL_META_METHODIMPL_INTERNAL_CALL		0x1000
 
 /*
+ * Private method implementation flags.
+ */
+#define	IL_META_METHODIMPL_JAVA_FP_STRICT		0x2000
+#define	IL_META_METHODIMPL_JAVA					0x4000
+
+/*
  * Security flags.
  */
 #define	IL_META_SECURITY_ACTION_MASK			0x000F

@@ -60,6 +60,7 @@ extern	"C" {
 #define	IL_IMAGETYPE_EXE		1	/* PE/COFF executable */
 #define	IL_IMAGETYPE_OBJ		2	/* PE/COFF object file */
 #define	IL_IMAGETYPE_BUILDING	3	/* Building an in-memory image */
+#define	IL_IMAGETYPE_JAVA		4	/* Java .class or .jar file */
 
 /*
  * Section identifiers for "ILImageGetSection".

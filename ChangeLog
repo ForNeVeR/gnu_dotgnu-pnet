@@ -5,6 +5,8 @@
 
 * include/il_jopcodes.h: copy "codegen/jv_opcodes.h" to "include" directory.
 
+* include/il_meta.h, include/il_image.h: new constants relevant to Java.
+
 2001-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

@@ -1,6 +1,6 @@
 /*
- * RegisteredWaitHandle.cs - Implementation of the
- *		"System.Threading.RegisteredWaitHandle" class.
+ * ApartmentState.cs - Implementation of the
+ *		"System.Threading.ApartmentState" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,19 +24,13 @@ namespace System.Threading
 
 #if !ECMA_COMPAT
 
-public sealed class RegisteredWaitHandle : MarshalByRefObject
+public enum ApartmentState
 {
+	STA     = 0,
+	MTA     = 1,
+	Unknown = 2
 
-	// Constructor.
-	internal RegisteredWaitHandle() {}
-
-	// Unregister using a specific wait object.
-	public bool Unregister(WaitHandle waitObject)
-			{
-				return true;
-			}
-
-}; // class RegisteredWaitHandle
+}; // enum ApartmentState
 
 #endif // !ECMA_COMPAT
 

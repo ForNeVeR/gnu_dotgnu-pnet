@@ -1,6 +1,6 @@
 /*
- * RegisteredWaitHandle.cs - Implementation of the
- *		"System.Threading.RegisteredWaitHandle" class.
+ * LockCookie.cs - Implementation of the
+ *		"System.Threading.LockCookie" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,19 +24,35 @@ namespace System.Threading
 
 #if !ECMA_COMPAT
 
-public sealed class RegisteredWaitHandle : MarshalByRefObject
+[Serializable]
+public struct LockCookie
 {
+	// Types of lock cookies.
+	internal enum CookieType
+	{
+		None,
+		Upgrade,
+		Saved
+
+	}; // enum CookieType
+
+	// Internal state.
+	internal CookieType type;
+	internal Thread thread;
+	internal int readCount;
+	internal int writeCount;
 
 	// Constructor.
-	internal RegisteredWaitHandle() {}
-
-	// Unregister using a specific wait object.
-	public bool Unregister(WaitHandle waitObject)
+	internal LockCookie(CookieType type, Thread thread,
+						int readCount, int writeCount)
 			{
-				return true;
+				this.type = type;
+				this.thread = thread;
+				this.readCount = readCount;
+				this.writeCount = writeCount;
 			}
 
-}; // class RegisteredWaitHandle
+}; // struct LockCookie
 
 #endif // !ECMA_COMPAT
 

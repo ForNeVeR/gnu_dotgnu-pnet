@@ -32,6 +32,17 @@
 	interface to mark wait handles that implement signalling;
 	use "ISignal" to perform dispose notifies in "Timer".
 
+	* resources/en_US/runtime/Invalid.txt,
+	runtime/System/Threading/ApartmentState.cs,
+	runtime/System/Threading/CompressedStack.cs,
+	runtime/System/Threading/IOCompletionCallback.cs,
+	runtime/System/Threading/LockCookie.cs,
+	runtime/System/Threading/NativeOverlapped.cs,
+	runtime/System/Threading/Overlapped.cs,
+	runtime/System/Threading/ReaderWriterLock.cs,
+	runtime/System/Threading/RegisteredWaitHandle.cs: implement
+	missing classes in the "System.Threading" namespace.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

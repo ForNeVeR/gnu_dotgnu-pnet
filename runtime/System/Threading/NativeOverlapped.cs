@@ -1,6 +1,6 @@
 /*
- * RegisteredWaitHandle.cs - Implementation of the
- *		"System.Threading.RegisteredWaitHandle" class.
+ * NativeOverlapped.cs - Implementation of the
+ *		"System.Threading.NativeOverlapped" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,19 +24,20 @@ namespace System.Threading
 
 #if !ECMA_COMPAT
 
-public sealed class RegisteredWaitHandle : MarshalByRefObject
+using System.Runtime.InteropServices;
+
+// For compatibility only - don't use this.
+
+[StructLayout(LayoutKind.Sequential)]
+public struct NativeOverlapped
 {
+	public int InternalLow;
+	public int InternalHigh;
+	public int OffsetLow;
+	public int OffsetHigh;
+	public int EventHandle;
 
-	// Constructor.
-	internal RegisteredWaitHandle() {}
-
-	// Unregister using a specific wait object.
-	public bool Unregister(WaitHandle waitObject)
-			{
-				return true;
-			}
-
-}; // class RegisteredWaitHandle
+}; // struct NativeOverlapped
 
 #endif // !ECMA_COMPAT
 

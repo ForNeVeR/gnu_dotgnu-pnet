@@ -1,6 +1,6 @@
 /*
- * RegisteredWaitHandle.cs - Implementation of the
- *		"System.Threading.RegisteredWaitHandle" class.
+ * CompressedStack.cs - Implementation of the
+ *		"System.Threading.CompressedStack" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,19 +24,24 @@ namespace System.Threading
 
 #if !ECMA_COMPAT
 
-public sealed class RegisteredWaitHandle : MarshalByRefObject
+// For compatibility only - don't use this.
+
+public class CompressedStack
 {
+	// Constructor and destructor.
+	private CompressedStack() {}
+	~CompressedStack() {}
 
-	// Constructor.
-	internal RegisteredWaitHandle() {}
-
-	// Unregister using a specific wait object.
-	public bool Unregister(WaitHandle waitObject)
+	// Get the compressed stack for the current context.
+	public static CompressedStack GetCompressedStack()
 			{
-				return true;
+				return new CompressedStack();
 			}
 
-}; // class RegisteredWaitHandle
+	// Get the unmanaged compressed stack handle.
+	public IntPtr UnmanagedCompressedStack { get { return IntPtr.Zero; } }
+
+}; // class CompressedStack
 
 #endif // !ECMA_COMPAT
 

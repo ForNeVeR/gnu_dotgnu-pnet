@@ -1,8 +1,8 @@
 /*
- * RegisteredWaitHandle.cs - Implementation of the
- *		"System.Threading.RegisteredWaitHandle" class.
+ * IOCompletionCallback.cs - Implementation of the
+ *              "System.Threading.IOCompletionCallback" delegate.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,19 +24,12 @@ namespace System.Threading
 
 #if !ECMA_COMPAT
 
-public sealed class RegisteredWaitHandle : MarshalByRefObject
-{
+// For compatibility only - don't use this.
 
-	// Constructor.
-	internal RegisteredWaitHandle() {}
-
-	// Unregister using a specific wait object.
-	public bool Unregister(WaitHandle waitObject)
-			{
-				return true;
-			}
-
-}; // class RegisteredWaitHandle
+[CLSCompliant(false)]
+[Serializable]
+public delegate void IOCompletionCallback
+	(uint errorCode, uint numBytes, NativeOverlapped *pOVERLAP);
 
 #endif // !ECMA_COMPAT
 

@@ -1972,6 +1972,13 @@ public class Control : IWin32Window, IDisposable
 				Control child;
 				AnchorStyles anchor;
 
+				// If our height is less than the height of an empty control, then we have probably been minimized and we must not layout.
+				Size offset = ClientToBounds(Size.Empty);
+				if (height < offset.Height)
+				{
+					return;
+				}
+
 				// Start with the display rectangle.
 				rect = DisplayRectangle;
 				left = rect.Left;
@@ -4705,8 +4712,10 @@ public class Control : IWin32Window, IDisposable
 				bool doubleBuffer = GetStyle(ControlStyles.DoubleBuffer) && GetStyle(ControlStyles.AllPaintingInWmPaint);
 				if (!GetStyle(ControlStyles.Opaque) & !doubleBuffer)
 				{
-					using (Brush brush = new SolidBrush(BackColor))
+					using (Brush brush = CreateBackgroundBrush())
+					{
 						graphics.FillRectangle(brush, 0, 0, width, height);
+					}
 				}
 
 				// Draw border if needed
@@ -4957,7 +4966,10 @@ public class Control : IWin32Window, IDisposable
 	// Create a brush that can be used to fill with the background color/image.
 	internal Brush CreateBackgroundBrush()
 			{
-				// TODO: background images
+				if(backgroundImage != null)
+				{
+					return new TextureBrush(backgroundImage);
+				}
 				return new SolidBrush(BackColor);
 			}
 

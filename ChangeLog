@@ -1,4 +1,11 @@
 
+2004-02-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_grammar.y,
+	cscc/c/c_scanner.l: add the "__thread_specific__" storage class
+	to the C compiler so that global variables like "errno" in pnetC
+	can be made thread-specific.
+
 2004-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_emit.c: use "wb" mode to save emitted images;

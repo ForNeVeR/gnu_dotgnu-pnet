@@ -170,6 +170,8 @@ WHITE			[ \t\v\r\f]
 "__long_long__"			{ return K_LONG_LONG; }
 "__unsigned_int__"		{ return K_UINT; }
 
+"__thread_specific__"	{ return K_THREAD_SPECIFIC; }
+
 \"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(STRING_LITERAL); }
 

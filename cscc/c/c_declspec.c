@@ -41,6 +41,12 @@ static StorageClassInfo const storageClasses[] = {
 	{C_SPEC_EXTERN,
 		C_KIND_GLOBAL_NAME | C_KIND_LOCAL_NAME | C_KIND_FUNCTION,
 		"extern"},
+	{C_SPEC_THREAD_SPECIFIC | C_SPEC_STATIC,
+		C_KIND_GLOBAL_NAME | C_KIND_LOCAL_NAME,
+		"static __thread_specific__"},
+	{C_SPEC_THREAD_SPECIFIC,
+		C_KIND_GLOBAL_NAME,
+		"__thread_specific__"},
 	{C_SPEC_STATIC | C_SPEC_INLINE,
 		C_KIND_FUNCTION,
 		"static inline"},
@@ -667,6 +673,8 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_UNSIGNED, "unsigned");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SHORT, "short");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_NATIVE, "__native__");
+	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_THREAD_SPECIFIC,
+					"__thread_specific__");
 
 	/* Copy the common type qualifiers to "result.specifiers" */
 	result.specifiers |= (spec.specifiers & C_SPEC_TYPE_COMMON);

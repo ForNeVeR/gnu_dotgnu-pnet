@@ -747,6 +747,12 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 			ILDumpIdentifier(CCCodeGen.asmOutput, decl.name, 0,
 							 IL_DUMP_QUOTE_NAMES);
 			putc('\n', CCCodeGen.asmOutput);
+			if((spec.specifiers & C_SPEC_THREAD_SPECIFIC) != 0)
+			{
+				/* Mark the global variable as thread-specific */
+				fputs(".custom instance void System.ThreadStaticAttribute"
+					  "::.ctor() = (01 00 00 00)\n", CCCodeGen.asmOutput);
+			}
 		}
 
 		/* Add the global variable to the current scope */
@@ -1070,6 +1076,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_FUNC			"`__func__'"
 %token K_LONG_LONG		"`__long_long__'"
 %token K_UINT			"`__unsigned_int__'"
+%token K_THREAD_SPECIFIC "`__thread_specific__'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -1735,6 +1742,7 @@ StorageClassSpecifier
 	| K_AUTO			{ CDeclSpecSet($$, C_SPEC_AUTO); }
 	| K_REGISTER		{ CDeclSpecSet($$, C_SPEC_REGISTER); }
 	| K_INLINE			{ CDeclSpecSet($$, C_SPEC_INLINE); }
+	| K_THREAD_SPECIFIC	{ CDeclSpecSet($$, C_SPEC_THREAD_SPECIFIC); }
 	;
 
 TypeSpecifier

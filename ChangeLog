@@ -1,4 +1,10 @@
 
+2003-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_task.c: use a slightly longer timeout gap within
+	"Process.WaitForExit" to prevent the kernel from being overloaded
+	by lots of small timeouts.
+
 2003-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_task.c: pass environment variables from the "Process"

@@ -868,8 +868,8 @@ ILBool _IL_Process_WaitForExit(ILExecThread *_thread,
 					return 0;
 				}
 			}
-			ILThreadSleep(1);
-			--milliseconds;
+			ILThreadSleep(100);
+			milliseconds -= 100;
 		}
 		while(milliseconds > 0);
 		if(milliseconds <= 0)

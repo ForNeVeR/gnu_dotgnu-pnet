@@ -119,15 +119,18 @@ void ILDAsmDumpDataSections(FILE *outstream, ILImage *image)
 	}
 
 	/* Sort the RVA list into ascending order */
-	for(posn = 0; posn < (numFieldRVAs - 1); ++posn)
+	if(numFieldRVAs > 1)
 	{
-		for(posn2 = posn + 1; posn2 < numFieldRVAs; ++posn2)
+		for(posn = 0; posn < (numFieldRVAs - 1); ++posn)
 		{
-			if(fieldRVAs[posn] > fieldRVAs[posn2])
+			for(posn2 = posn + 1; posn2 < numFieldRVAs; ++posn2)
 			{
-				temp = fieldRVAs[posn];
-				fieldRVAs[posn] = fieldRVAs[posn2];
-				fieldRVAs[posn2] = temp;
+				if(fieldRVAs[posn] > fieldRVAs[posn2])
+				{
+					temp = fieldRVAs[posn];
+					fieldRVAs[posn] = fieldRVAs[posn2];
+					fieldRVAs[posn2] = temp;
+				}
 			}
 		}
 	}

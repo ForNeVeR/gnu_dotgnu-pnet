@@ -187,6 +187,8 @@ static ILEngineType TypeToEngineType(ILType *type)
 			case IL_META_ELEMTYPE_R4:
 			case IL_META_ELEMTYPE_R8:
 			case IL_META_ELEMTYPE_R:		return ILEngineType_F;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF: return ILEngineType_TypedRef;
 		}
 		return ILEngineType_I4;
 	}
@@ -409,6 +411,11 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 	{
 		/* Can only assign managed values to an exact type destination */
 		return ILTypeIdentical(item->typeInfo, type);
+	}
+	else if(item->engineType == ILEngineType_TypedRef)
+	{
+		/* The type must be "typedref" */
+		return (type == ILType_TypedRef);
 	}
 	else
 	{

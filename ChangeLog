@@ -21,6 +21,9 @@
 	engine/verify_call.c, engine/verify_obj.c, include/il_coder.h:
 	verification of vararg method calls.
 
+	* engine/verify.c: recognise "typedref" values in "TypeToEngineType"
+	and "AssignCompatible".
+
 2002-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_except.c, engine/engine.h:

@@ -582,6 +582,17 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 						   of using the enum type.  Work around it */
 						type = thisType;
 					}
+					if(ILTypeIsEnum(thisType) && 
+					   ILProgramItemToNode(info, 
+						   ILToProgramItem(ILField_Owner(field))) 
+						   == info->currentClass)
+					{
+						/* inside an enum declaration the enum fields
+						   are treated as values of the underlying 
+						   type - this is behavior observed in CSC and
+						   NOT according to spec */
+						   type = ILTypeGetEnumType(type);
+					}
 					CSSemSetConstant(value, type, evalValue);
 				}
 				else

@@ -25,3 +25,7 @@ Security_NotCodeGroupChild=The object is not a child of the specified code group
 Security_RemotingCheckType=The type {0} cannot be remoted at the `Low' security level
 Security_SelectorCycle=Chaining the specified selectors will create a cycle
 Security_Exclusive=Mutually exclusive policies encountered
+Security_PermissionSetNotFound=Could not find the specified permission set
+Security_FullTrustPresent=Full trust information is already present
+Security_FullTrustNotPresent=Full trust information is not present
+Security_RootGroupDescription=Root code group that grants access to everything

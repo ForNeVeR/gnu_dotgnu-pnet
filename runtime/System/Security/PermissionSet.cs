@@ -649,6 +649,24 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 
 #endif // !ECMA_COMPAT
 
+	// Copy the contents of another permission set into this one.
+	internal virtual void CopyFrom(PermissionSet pSet)
+			{
+				if(pSet.IsUnrestricted())
+				{
+					state = PermissionState.Unrestricted;
+				}
+				else
+				{
+					state = PermissionState.None;
+				}
+				permissions.Clear();
+				foreach(IPermission perm in pSet)
+				{
+					SetPermission(perm.Copy());
+				}
+			}
+
 }; // class PermissionSet
 
 #endif // CONFIG_PERMISSIONS

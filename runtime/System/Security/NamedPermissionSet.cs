@@ -143,6 +143,16 @@ public sealed class NamedPermissionSet : PermissionSet
 				}
 			}
 
+	// Copy the contents of another permission set into this one.
+	internal override void CopyFrom(PermissionSet pSet)
+			{
+				base.CopyFrom(pSet);
+				if(pSet is NamedPermissionSet)
+				{
+					description = ((NamedPermissionSet)pSet).Description;
+				}
+			}
+
 }; // class NamedPermissionSet
 
 #endif // CONFIG_PERMISSIONS && !ECMA_COMPAT

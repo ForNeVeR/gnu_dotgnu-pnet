@@ -1,6 +1,11 @@
 
 2003-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
+	* runtime/System/Runtime/Serialization/FormatterServices.cs:
+	convert "GetSerializableMembers" into an internalcall so that
+	it is more efficient and can more easily get same-named fields
+	in parent classes.
+
 	* runtime/System/TypeLoadException.cs,
 	tests/runtime/System/ExceptionTester.cs,
 	tests/runtime/System/SuiteSystem.cs,
@@ -10,6 +15,11 @@
 
 	* System/Net/Cookie.cs, System/Net/CredentialCache.cs,
 	runtime/System/Resources/ResourceReader.cs: ECMA compat fixes.
+
+	* resources/en_US/runtime/Security.txt,
+	runtime/System/Security/NamedPermissionSet.cs,
+	runtime/System/Security/PermissionSet.cs,
+	runtime/System/Security/Policy/PolicyLevel.cs: TODO's in "PolicyLevel".
 
 2003-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
@@ -25,11 +35,6 @@
 	* runtime/System/Security/MiniXml.cs,
 	runtime/System/Security/SecurityElement.cs: add some utility
 	routines to "SecurityElement" and "MiniXml".
-
-	* runtime/System/Runtime/Serialization/FormatterServices.cs:
-	convert "GetSerializableMembers" into an internalcall so that
-	it is more efficient and can more easily get same-named fields
-	in parent classes.
 
 2003-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 

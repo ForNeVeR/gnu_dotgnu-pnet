@@ -42,6 +42,7 @@ public sealed class PolicyLevel
 				this.label = label;
 				fullTrustAssemblies = new ArrayList();
 				namedPermissionSets = new ArrayList();
+				rootCodeGroup = DefaultRootCodeGroup();
 			}
 
 	// Properties.
@@ -49,7 +50,7 @@ public sealed class PolicyLevel
 			{
 				get
 				{
-					return fullTrustAssemblies;
+					return new ArrayList(fullTrustAssemblies);
 				}
 			}
 	public String Label
@@ -63,7 +64,12 @@ public sealed class PolicyLevel
 			{
 				get
 				{
-					return namedPermissionSets;
+					ArrayList list = new ArrayList();
+					foreach(NamedPermissionSet pSet in namedPermissionSets)
+					{
+						list.Add(pSet.Copy());
+					}
+					return list;
 				}
 			}
 	public CodeGroup RootCodeGroup
@@ -74,7 +80,11 @@ public sealed class PolicyLevel
 				}
 				set
 				{
-					rootCodeGroup = value;
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					rootCodeGroup = value.Copy();
 				}
 			}
 	public String StoreLocation
@@ -96,10 +106,18 @@ public sealed class PolicyLevel
 					(new StrongNameMembershipCondition
 						(sn.PublicKey, sn.Name, sn.Version));
 			}
-	[TODO]
 	public void AddFullTrustAssembly(StrongNameMembershipCondition snMC)
 			{
-				// TODO
+				if(snMC == null)
+				{
+					throw new ArgumentNullException("snMC");
+				}
+				if(fullTrustAssemblies.Contains(snMC))
+				{
+					throw new ArgumentException
+						(_("Security_FullTrustPresent"));
+				}
+				fullTrustAssemblies.Add(snMC);
 			}
 
 #if CONFIG_PERMISSIONS
@@ -115,10 +133,10 @@ public sealed class PolicyLevel
 			}
 
 	// Change a named permission set.
-	[TODO]
 	public NamedPermissionSet ChangeNamedPermissionSet
 				(String name, PermissionSet pSet)
 			{
+				// Validate the parameters.
 				if(name == null)
 				{
 					throw new ArgumentNullException("name");
@@ -127,8 +145,24 @@ public sealed class PolicyLevel
 				{
 					throw new ArgumentNullException("pSet");
 				}
-				// TODO
-				return null;
+
+				// Find the existing permission set with this name.
+				NamedPermissionSet current = GetNamedPermissionSet(name);
+				if(current == null)
+				{
+					throw new ArgumentException
+						(_("Security_PermissionSetNotFound"));
+				}
+
+				// Make a copy of the previous permission set.
+				NamedPermissionSet prev =
+					(NamedPermissionSet)(current.Copy());
+
+				// Clear the permission set and recreate it from "pSet".
+				current.CopyFrom(pSet);
+
+				// Return the previsou permission set.
+				return prev;
 			}
 
 	// Get a specific named permission set.
@@ -149,7 +183,6 @@ public sealed class PolicyLevel
 			}
 
 	// Remove a named permission set.
-	[TODO]
 	public NamedPermissionSet RemoveNamedPermissionSet
 					(NamedPermissionSet permSet)
 			{
@@ -157,18 +190,29 @@ public sealed class PolicyLevel
 				{
 					throw new ArgumentNullException("permSet");
 				}
-				// TODO
-				return permSet;
+				return RemoveNamedPermissionSet(permSet.Name);
 			}
-	[TODO]
 	public NamedPermissionSet RemoveNamedPermissionSet(String name)
 			{
+				// Validate the parameter.
 				if(name == null)
 				{
 					throw new ArgumentNullException("name");
 				}
-				// TODO
-				return null;
+
+				// Find the existing permission set with this name.
+				NamedPermissionSet current = GetNamedPermissionSet(name);
+				if(current == null)
+				{
+					throw new ArgumentException
+						(_("Security_PermissionSetNotFound"));
+				}
+
+				// Remove the permission set from the list.
+				namedPermissionSets.Remove(current);
+
+				// Return the permission set that was removed.
+				return current;
 			}
 
 #endif // CONFIG_PERMISSIONS
@@ -193,22 +237,49 @@ public sealed class PolicyLevel
 			}
 
 	// Remove an entry from the "full trust assembly" list.
-	[TODO]
 	public void RemoveFullTrustAssembly(StrongName sn)
 			{
-				// TODO
+				if(sn == null)
+				{
+					throw new ArgumentNullException("sn");
+				}
+				RemoveFullTrustAssembly
+					(new StrongNameMembershipCondition
+						(sn.PublicKey, sn.Name, sn.Version));
 			}
-	[TODO]
 	public void RemoveFullTrustAssembly(StrongNameMembershipCondition snMC)
 			{
-				// TODO
+				if(snMC == null)
+				{
+					throw new ArgumentNullException("snMC");
+				}
+				if(fullTrustAssemblies.Contains(snMC))
+				{
+					fullTrustAssemblies.Remove(snMC);
+				}
+				else
+				{
+					throw new ArgumentException
+						(_("Security_FullTrustNotPresent"));
+				}
+			}
+
+	// Create the default root code group.
+	private CodeGroup DefaultRootCodeGroup()
+			{
+				UnionCodeGroup group = new UnionCodeGroup
+					(new AllMembershipCondition(), null);
+				group.Name = "All_Code";
+				group.Description = _("Security_RootGroupDescription");
+				return group;
 			}
 
 	// Reset to the default state.
-	[TODO]
 	public void Reset()
 			{
-				// TODO
+				fullTrustAssemblies.Clear();
+				namedPermissionSets.Clear();
+				rootCodeGroup = DefaultRootCodeGroup();
 			}
 
 	// Resolve policy information based on supplied evidence.

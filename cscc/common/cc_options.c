@@ -246,7 +246,6 @@ static void gtkOption(char *arg)
 {
 	lOption("gtk-sharp");
 	lOption("gdk-sharp");
-	lOption("gdk-imaging-sharp");
 	lOption("atk-sharp");
 	lOption("pango-sharp");
 	lOption("glib-sharp");

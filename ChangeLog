@@ -1,4 +1,9 @@
 
+2002-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/common/cc_options.c: remove "gtk-imaging-sharp" from the
+	link line, because it is no longer part of Gtk#.
+
 2002-07-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: latest version with cryptography classes.

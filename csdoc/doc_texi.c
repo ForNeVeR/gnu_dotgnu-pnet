@@ -123,9 +123,11 @@ int ILDocValidateOutput(char *outputPath, const char *progname)
 
 /*
  * Print a literal string to a texinfo stream.
+ * Returns non-zero if the last character is '\n'.
  */
-static void PrintString(FILE *stream, const char *str)
+static int PrintString(FILE *stream, const char *str)
 {
+	int lastWasNL = 0;
 	if(str)
 	{
 		while(*str != '\0')
@@ -134,10 +136,18 @@ static void PrintString(FILE *stream, const char *str)
 			{
 				putc('@', stream);
 			}
-			putc(*str, stream);
+			if(*str != '\r')
+			{
+				putc(*str, stream);
+			}
+			else
+			{
+				lastWasNL = (*str == '\n');
+			}
 			++str;
 		}
 	}
+	return lastWasNL;
 }
 
 /*
@@ -161,7 +171,10 @@ static void PrintMenuString(FILE *stream, const char *str)
 				   we can find a better solution */
 				putc(';', stream);
 			}
-			putc(*str, stream);
+			if(*str != '\r')
+			{
+				putc(*str, stream);
+			}
 			++str;
 		}
 	}
@@ -328,10 +341,471 @@ static void PrintSignature(FILE *stream, char *signature)
 }
 
 /*
- * Print a specific child of a documentation node.
+ * Print a cross-reference.
  */
-static void PrintDocChild(FILE *stream, ILDocText *doc, const char *name)
+static void PrintCRef(FILE *stream, const char *cref)
 {
+	if(cref)
+	{
+		if(cref[0] != '\0' && cref[1] == ':')
+		{
+			PrintString(stream, cref + 2);
+		}
+		else
+		{
+			PrintString(stream, cref);
+		}
+	}
+}
+
+/*
+ * Forward declaration.
+ */
+static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL);
+
+#define	LIST_TYPE_BULLET		0
+#define	LIST_TYPE_NUMBER		1
+#define	LIST_TYPE_TABLE			2
+
+/*
+ * Print the contents of a list tag.
+ */
+static void PrintDocList(FILE *stream, ILDocText *contents,
+						 const char *type, int lastWasNL)
+{
+	int listType;
+	ILDocText *child;
+	ILDocText *term;
+	ILDocText *description;
+
+	/* Determine the type of list to print */
+	if(type && !strcmp(type, "bullet"))
+	{
+		listType = LIST_TYPE_BULLET;
+	}
+	else if(type && !strcmp(type, "number"))
+	{
+		listType = LIST_TYPE_NUMBER;
+	}
+	else if(type && !strcmp(type, "table"))
+	{
+		listType = LIST_TYPE_TABLE;
+	}
+	else
+	{
+		listType = LIST_TYPE_BULLET;
+	}
+
+	/* Print the list header */
+	if(!lastWasNL)
+	{
+		putc('\n', stream);
+	}
+	if(listType == LIST_TYPE_BULLET)
+	{
+		fputs("@itemize @bullet\n", stream);
+	}
+	else if(listType == LIST_TYPE_NUMBER)
+	{
+		fputs("@enumerate\n", stream);
+	}
+	else
+	{
+		fputs("@multitable @columnfractions .5 .5\n", stream);
+	}
+	lastWasNL = 1;
+
+	/* Print the list elements */
+	child = ILDocTextFirstChild(contents, "TBODY");
+	if(child)
+	{
+		/* Some older lists use this around table bodies */
+		child = contents->children;
+	}
+	else
+	{
+		child = contents;
+	}
+	while(child != 0)
+	{
+		if(child->isTag &&
+		   (!strcmp(child->text, "item") ||
+		    !strcmp(child->text, "listheader")))
+		{
+			term = ILDocTextGetChild(child, "term");
+			description = ILDocTextGetChild(child, "description");
+			if(!lastWasNL)
+			{
+				putc('\n', stream);
+			}
+			if(listType != LIST_TYPE_TABLE)
+			{
+				fputs("@item\n", stream);
+				if(term)
+				{
+					lastWasNL = PrintDocContents(stream, term, 1);
+				}
+				else
+				{
+					lastWasNL = PrintDocContents(stream, description, 1);
+				}
+			}
+			else
+			{
+				fputs("@item ", stream);
+				PrintDocContents(stream, description, 0);
+				fputs(" @tab ", stream);
+				lastWasNL = PrintDocContents(stream, term, 0);
+			}
+		}
+		child = child->next;
+	}
+
+	/* Print the list footer */
+	if(!lastWasNL)
+	{
+		putc('\n', stream);
+	}
+	if(listType == LIST_TYPE_BULLET)
+	{
+		fputs("@end itemize\n", stream);
+	}
+	else if(listType == LIST_TYPE_NUMBER)
+	{
+		fputs("@end enumerate\n", stream);
+	}
+	else
+	{
+		fputs("@end multitable\n", stream);
+	}
+}
+
+/*
+ * Print the contents of a documentation node.
+ */
+static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL)
+{
+	const char *value;
+	while(contents != 0)
+	{
+		if(contents->isTag)
+		{
+			/* Tag node */
+			if(!strcmp(contents->text, "para"))
+			{
+				lastWasNL = PrintDocContents(stream, contents->children,
+											 lastWasNL);
+				if(lastWasNL)
+				{
+					putc('\n', stream);
+				}
+				else
+				{
+					fputs("\n\n", stream);
+				}
+				lastWasNL = 1;
+			}
+			else if(!strcmp(contents->text, "b"))
+			{
+				fputs("@strong{", stream);
+				PrintDocContents(stream, contents->children, 0);
+				fputs("}", stream);
+				lastWasNL = 0;
+			}
+			else if(!strcmp(contents->text, "c"))
+			{
+				fputs("@t{", stream);
+				PrintDocContents(stream, contents->children, 0);
+				fputs("}", stream);
+				lastWasNL = 0;
+			}
+			else if(!strcmp(contents->text, "i"))
+			{
+				fputs("@emph{", stream);
+				PrintDocContents(stream, contents->children, 0);
+				fputs("}", stream);
+				lastWasNL = 0;
+			}
+			else if(!strcmp(contents->text, "code") ||
+			        !strcmp(contents->text, "pre"))
+			{
+				fputs("@example\n", stream);
+				PrintDocContents(stream, contents->children, 1);
+				fputs("@end example\n", stream);
+				lastWasNL = 1;
+			}
+			else if(!strcmp(contents->text, "see"))
+			{
+				PrintCRef(stream, ILDocTextGetParam(contents, "cref"));
+				lastWasNL = 0;
+			}
+			else if(!strcmp(contents->text, "paramref"))
+			{
+				fputs("@i{", stream);
+				PrintString(stream, ILDocTextGetParam(contents, "name"));
+				fputs("}", stream);
+				lastWasNL = 0;
+			}
+			else if(!strcmp(contents->text, "block") ||
+					!strcmp(contents->text, "note"))
+			{
+				fputs("[", stream);
+				value = ILDocTextGetParam(contents, "type");
+				fputs("@i{", stream);
+				if(!value || *value == '\0')
+				{
+					fputs("Note", stream);
+				}
+				else
+				{
+					if(*value >= 'a' && *value <= 'z')
+					{
+						putc(*value - 'a' + 'A', stream);
+						PrintString(stream, value + 1);
+					}
+					else
+					{
+						PrintString(stream, value);
+					}
+				}
+				putc('}', stream);
+				value = ILDocTextGetParam(contents, "subset");
+				if(value && strcmp(value, "none") != 0)
+				{
+					fputs(" (", stream);
+					PrintString(stream, value);
+					fputs("): ", stream);
+				}
+				else
+				{
+					fputs(": ", stream);
+				}
+				PrintDocContents(stream, contents->children, 0);
+				fputs("]\n\n", stream);
+			}
+			else if(!strcmp(contents->text, "list"))
+			{
+				PrintDocList(stream, contents->children,
+							 ILDocTextGetParam(contents, "type"),
+							 lastWasNL);
+				lastWasNL = 1;
+			}
+			else
+			{
+				lastWasNL = PrintDocContents(stream, contents->children,
+											 lastWasNL);
+			}
+		}
+		else if(!ILDocTextAllSpaces(contents))
+		{
+			/* Ordinary text node */
+			lastWasNL = PrintString(stream, contents->text);
+		}
+		contents = contents->next;
+	}
+	return lastWasNL;
+}
+
+/*
+ * Print the contents of a documentation node, indented an extra level.
+ */
+static void PrintDocContentsIndent(FILE *stream, ILDocText *contents)
+{
+	fputs("@quotation\n", stream);
+	if(!PrintDocContents(stream, contents, 1))
+	{
+		putc('\n', stream);
+	}
+	fputs("@end quotation\n\n", stream);
+}
+
+/*
+ * Print the documentation for a node.
+ */
+static void PrintDocs(FILE *stream, ILDocText *doc,
+					  ILDocType *type, ILDocMember *member)
+{
+	ILDocText *child;
+	int example;
+	int lastWasNL;
+	int needComma;
+	const char *cref;
+
+	/* Print the summary */
+	child = ILDocTextFirstChild(doc, "summary");
+	if(child)
+	{
+		fputs("@noindent @b{Summary}\n\n", stream);
+		PrintDocContentsIndent(stream, child->children);
+	}
+
+	/* Print the parameter, return, and value information */
+	child = ILDocTextFirstChild(doc, "param");
+	if(child)
+	{
+		fputs("@noindent @b{Parameters}\n\n", stream);
+		fputs("@quotation\n", stream);
+		fputs("@table @asis\n", stream);
+		lastWasNL = 1;
+		while(child != 0)
+		{
+			/* Print the name of the parameter */
+			if(!lastWasNL)
+			{
+				putc('\n', stream);
+			}
+			fputs("@item ", stream);
+			PrintString(stream, ILDocTextGetParam(child, "name"));
+			fputs("\n", stream);
+
+			/* Print the description of the parameter */
+			lastWasNL = PrintDocContents(stream, child->children, 1);
+
+			/* Move on to the next parameter */
+			child = ILDocTextNextChild(child, "param");
+		}
+		if(!lastWasNL)
+		{
+			putc('\n', stream);
+		}
+		fputs("@end table\n", stream);
+		fputs("@end quotation\n\n", stream);
+	}
+	child = ILDocTextFirstChild(doc, "returns");
+	if(child)
+	{
+		fputs("@noindent @b{Return Value}\n\n", stream);
+		PrintDocContentsIndent(stream, child->children);
+	}
+	child = ILDocTextFirstChild(doc, "value");
+	if(child)
+	{
+		fputs("@noindent @b{Property Value}\n\n", stream);
+		PrintDocContentsIndent(stream, child->children);
+	}
+
+	/* Print the exceptions */
+	child = ILDocTextFirstChild(doc, "exception");
+	if(child)
+	{
+		fputs("@noindent @b{Exceptions}\n\n", stream);
+		fputs("@quotation\n", stream);
+		fputs("@multitable @columnfractions .5 .5\n", stream);
+		fputs("@item Exception Type @tab Condition\n", stream);
+		lastWasNL = 1;
+		while(child != 0)
+		{
+			if(!lastWasNL)
+			{
+				putc('\n', stream);
+			}
+			fputs("@item ", stream);
+			PrintCRef(stream, ILDocTextGetParam(child, "cref"));
+			fputs("@tab ", stream);
+			lastWasNL = PrintDocContents(stream, child->children, 0);
+			child = ILDocTextNextChild(child, "exception");
+		}
+		if(!lastWasNL)
+		{
+			putc('\n', stream);
+		}
+		fputs("@end multitable\n", stream);
+		fputs("@end quotation\n\n", stream);
+	}
+
+	/* Print the description */
+	child = ILDocTextFirstChild(doc, "remarks");
+	if(child)
+	{
+		fputs("@noindent @b{Description}\n\n", stream);
+		PrintDocContentsIndent(stream, child->children);
+	}
+
+	/* Print any additional information */
+	child = ILDocTextFirstChild(doc, "devdoc");
+	if(child)
+	{
+		fputs("@noindent @b{Additional Information}\n\n", stream);
+		PrintDocContentsIndent(stream, child->children);
+	}
+
+	/* Print the examples */
+	child = ILDocTextFirstChild(doc, "example");
+	if(child)
+	{
+		if(ILDocTextNextChild(child, "example") != 0)
+		{
+			/* There are multiple examples */
+			fputs("@noindent @b{Examples}\n\n", stream);
+			fputs("@quotation\n", stream);
+			example = 1;
+			lastWasNL = 1;
+			while(child != 0)
+			{
+				if(!lastWasNL)
+				{
+					putc('\n', stream);
+				}
+				fprintf(stream, "Example %d\n\n", example);
+				++example;
+				lastWasNL = PrintDocContents(stream, child->children, 1);
+				child = ILDocTextNextChild(child, "example");
+			}
+			if(!lastWasNL)
+			{
+				putc('\n', stream);
+			}
+			fputs("@end quotation\n\n", stream);
+		}
+		else
+		{
+			/* There is only one example */
+			fputs("@noindent @b{Example}\n\n", stream);
+			PrintDocContentsIndent(stream, child->children);
+		}
+	}
+
+	/* Print the "See Also" section */
+	fputs("@noindent @b{See Also}\n\n", stream);
+	fputs("@quotation\n", stream);
+	needComma = 0;
+	child = ILDocTextFirstChild(doc, "seealso");
+	while(child != 0)
+	{
+		cref = ILDocTextGetParam(child, "cref");
+		if(cref)
+		{
+			if(needComma)
+			{
+				fputs(", ", stream);
+			}
+			PrintCRef(stream, cref);
+			needComma = 1;
+		}
+		child = ILDocTextNextChild(child, "seealso");
+	}
+	if(member)
+	{
+		if(needComma)
+		{
+			fputs(", ", stream);
+		}
+		fputs("@ref{", stream);
+		PrintTypeName(stream, member->type);
+		putc('}', stream);
+		needComma = 1;
+	}
+	if(type && type->namespace)
+	{
+		if(needComma)
+		{
+			fputs(", ", stream);
+		}
+		fputs("@ref{", stream);
+		PrintString(stream, type->namespace->name);
+		fputs(" Namespace}", stream);
+	}
+	fputs("\n@end quotation\n\n", stream);
 }
 
 /*
@@ -374,14 +848,11 @@ static void ConvertType(FILE *stream, ILDocType *type,
 	}
 	fputs("\n", stream);
 
-	/* Print the node summary */
-	PrintDocChild(stream, type->doc, "summary");
-
 	/* Print the C# definition for the type */
 	PrintSignature(stream, type->csSignature);
 
-	/* Print the node remarks */
-	PrintDocChild(stream, type->doc, "remarks");
+	/* Print the documentation for the type */
+	PrintDocs(stream, type->doc, type, 0);
 
 	/* Output a menu for all of the type members */
 	member = type->members;
@@ -503,35 +974,10 @@ static void ConvertType(FILE *stream, ILDocType *type,
 		/* Print the signature for the member */
 		PrintSignature(stream, member->csSignature);
 
-		switch(member->memberType)
-		{
-			case ILDocMemberType_Field:
-			{
-			}
-			break;
+		/* Print the documentation for the member */
+		PrintDocs(stream, member->doc, type, member);
 
-			case ILDocMemberType_Method:
-			{
-			}
-			break;
-
-			case ILDocMemberType_Constructor:
-			{
-			}
-			break;
-
-			case ILDocMemberType_Property:
-			{
-			}
-			break;
-
-			case ILDocMemberType_Event:
-			{
-			}
-			break;
-
-			case ILDocMemberType_Unknown: break;
-		}
+		/* Advance to the next member */
 		member = member->next;
 	}
 }

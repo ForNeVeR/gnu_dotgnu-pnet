@@ -1,4 +1,8 @@
 
+0.1.3
+
+	* pnet.spec: applied patch submitted by mdaniel to create RPM spec file.
+
 0.1.2 (13 August 2001)
 
 	* Began building the linker library, for use by "ilalink" and "cscc".

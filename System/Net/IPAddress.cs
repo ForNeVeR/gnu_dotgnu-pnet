@@ -2,7 +2,9 @@
  * IPAddress.cs - Implementation of the "System.Net.IPAddress" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ *
+ * Contributed by Gerard Toonstra <toonstra@ntlworld.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -32,7 +34,8 @@ public class IPAddress
 				if ((newAddress < 0) || (newAddress > 0x00000000FFFFFFFF))
 					throw new ArgumentOutOfRangeException("newAddress",_("Arg_OutOfRange")); 
 				value__ = newAddress;
-				
+
+				// Any, Broadcast, Loopback, and None are static
 				Any = new IPAddress(0x0000000000000000);
 				Broadcast = new IPAddress(0x00000000FFFFFFFF);
 				Loopback = new IPAddress(0x000000000100007F);
@@ -48,13 +51,13 @@ public class IPAddress
 				else
 				{
 					return false;
-				}				
+				}
 			}
 
-	[TODO]
 	public override int GetHashCode() 
 			{
-			
+				return unchecked(((int)(value__ ^ (value__ >> 32)))
+										& 0xFFFFFFFF);
 			}
 	
 	[TODO]
@@ -72,10 +75,17 @@ public class IPAddress
 			{
 				return 0;
 			}
-	[TODO]
 	public static bool IsLoopback(IPAddress address)
 			{
-				
+				if ((address.value__ >= 0x000000000000007F) && (address.value__ <=
+ 0x00000000FFFFFF7F))
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 	
 	[TODO]
@@ -93,22 +103,71 @@ public class IPAddress
 			{
 				return 0;
 			}
-	[TODO]
 	public static IPAddress Parse(string ipString)
 			{
+				IPAddress parsed;
+				string[]  tokenizedString;
+				ulong quadA;
+				ulong quadB;
+				ulong quadC;
+				ulong quadD;
+				bool  numbersign;
+
+				if (ipString == null)
+				{
+					throw new ArgumentNullException("ipString",_("Arg_NotNull"));
+				}
+
+				tokenizedString = String.Split(".", 4);
 				
+				if (tokenizedString.Length < 4)
+				{
+					throw new FormatException("ipString", _("Format_IP"));
+				}
+
+				if ((!NumberParser.StringToNumber(tokenizedString[0], 10, quadA,
+ numbersign)) ||
+					(!NumberParser.StringToNumber(tokenizedString[1], 10, quadB, numbersign))
+ ||
+					(!NumberParser.StringToNumber(tokenizedString[2], 10, quadC, numbersign))
+ ||
+					(!NumberParser.StringToNumber(tokenizedString[3], 10, quadD, numbersign)))
+				{
+					throw new FormatException("ipString", _("Format_IP"));				
+				}
+
+				parsed = (quadA + (quadB << 2) + (quadC << 4) + (quadD << 6));
+
+				return parsed;
 			}	
-	[TODO]		
 	public override string ToString()
 			{
-				return "";
+				string ip;
+
+				ip = NumberFormatter.FormatFixedPoint((ulong)value__ & 0x00000000000000FF,
+ 0, 0, false, null, 
+										 NumberFormatInfo.GetInstance(provider)) +
+					"." + 
+					NumberFormatter.FormatFixedPoint((ulong)value__ & 0x000000000000FF, 0, 0,
+ false, null, 
+										 NumberFormatInfo.GetInstance(provider)) +
+					"." + 
+					NumberFormatter.FormatFixedPoint((ulong)value__ & 0x0000000000FF, 0, 0,
+ false, null, 
+										 NumberFormatInfo.GetInstance(provider)) +
+					"." + 
+					NumberFormatter.FormatFixedPoint((ulong)value__ & 0x00000000FF, 0, 0,
+ false, null, 
+										 NumberFormatInfo.GetInstance(provider));
+
+				return ip;
 			}
-	
-	public static readonly IPAddress Any;
-	public static readonly IPAddress Broadcast;
-	public static readonly IPAddress Loopback;
-	public static readonly IPAddress None;
-	
+
+	public static readonly IPAddress Any = new IPAddress(0x0000000000000000);
+	public static readonly IPAddress Broadcast = new IPAddress(0x00000000FFFFFFFF);
+	public static readonly IPAddress Loopback = new IPAddress(0x000000000100007F);
+	public static readonly IPAddress None = Broadcast;
+
 	public long Address
 			{
 				get

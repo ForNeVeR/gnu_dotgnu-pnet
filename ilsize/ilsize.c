@@ -311,35 +311,64 @@ static void print(const char *name, int radix, unsigned long value)
 {
 	if(radix == 10)
 	{
-		printf("%-16s %7lu\n", name, value);
+		printf("%-20s %7lu\n", name, value);
 	}
 	else if(radix == 16)
 	{
-		printf("%-16s %#10lx\n", name, value);
+		printf("%-20s %#10lx\n", name, value);
 	}
 	else
 	{
-		printf("%-16s %#10lo\n", name, value);
+		printf("%-20s %#10lo\n", name, value);
 	}
 }
 
 /*
- * Count the number of nested types in an image.
+ * Token tables and their names.
  */
-static unsigned long numNestedTypes(ILImage *image)
+static struct
 {
-	ILClass *info = 0;
-	unsigned long num = 0;
-	while((info = (ILClass *)ILImageNextToken
-				(image, IL_META_TOKEN_TYPE_DEF, info)) != 0)
-	{
-		if(ILClassGetNestedParent(info) != 0)
-		{
-			++num;
-		}
-	}
-	return num;
-}
+	const char *name;
+	ILToken type;
+
+} tokenTables[] = {
+	{"modules",				IL_META_TOKEN_MODULE},
+	{"type refs",			IL_META_TOKEN_TYPE_REF},
+	{"type defs",			IL_META_TOKEN_TYPE_DEF},
+	{"fields",				IL_META_TOKEN_FIELD_DEF},
+	{"methods",				IL_META_TOKEN_METHOD_DEF},
+	{"parameters",			IL_META_TOKEN_PARAM_DEF},
+	{"interface decls",		IL_META_TOKEN_INTERFACE_IMPL},
+	{"member refs",			IL_META_TOKEN_MEMBER_REF},
+	{"constants",			IL_META_TOKEN_CONSTANT},
+	{"attributes",			IL_META_TOKEN_CUSTOM_ATTRIBUTE},
+	{"marshal decls",		IL_META_TOKEN_FIELD_MARSHAL},
+	{"security decls",		IL_META_TOKEN_DECL_SECURITY},
+	{"class layout decls",	IL_META_TOKEN_CLASS_LAYOUT},
+	{"field layout decls",	IL_META_TOKEN_FIELD_LAYOUT},
+	{"stand along sigs",	IL_META_TOKEN_STAND_ALONE_SIG},
+	{"event mappings",		IL_META_TOKEN_EVENT_MAP},
+	{"events",				IL_META_TOKEN_EVENT},
+	{"property mappings",	IL_META_TOKEN_PROPERTY_MAP},
+	{"properties",			IL_META_TOKEN_PROPERTY},
+	{"semantic decls",		IL_META_TOKEN_METHOD_SEMANTICS},
+	{"overrides",			IL_META_TOKEN_METHOD_IMPL},
+	{"module refs",			IL_META_TOKEN_MODULE_REF},
+	{"type specs",			IL_META_TOKEN_TYPE_SPEC},
+	{"pinvoke decls",		IL_META_TOKEN_IMPL_MAP},
+	{"field rva decls",		IL_META_TOKEN_FIELD_RVA},
+	{"assemblies",			IL_META_TOKEN_ASSEMBLY},
+	{"processor defs",		IL_META_TOKEN_PROCESSOR_DEF},
+	{"os defs",				IL_META_TOKEN_OS_DEF},
+	{"assembly refs",		IL_META_TOKEN_ASSEMBLY_REF},
+	{"processor refs",		IL_META_TOKEN_PROCESSOR_REF},
+	{"os refs",				IL_META_TOKEN_OS_REF},
+	{"files",				IL_META_TOKEN_FILE},
+	{"exported types",		IL_META_TOKEN_EXPORTED_TYPE},
+	{"manifest resources",	IL_META_TOKEN_MANIFEST_RESOURCE},
+	{"nested classes",		IL_META_TOKEN_NESTED_CLASS},
+	{0,						0}
+};
 
 /*
  * Load an IL image from an input stream and print detailed information.
@@ -352,6 +381,8 @@ static int printDetailed(const char *filename, ILContext *context, int radix)
 	unsigned long meta;
 	unsigned long res;
 	unsigned long other;
+	int index;
+	unsigned long num;
 
 	/* Attempt to load the image into memory */
 	image = loadImage(filename, context,
@@ -371,27 +402,16 @@ static int printDetailed(const char *filename, ILContext *context, int radix)
 	print("total", radix, total);
 
 	/* Print count information for the various token types */
-	print("types", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_TYPE_DEF));
-	print("fields", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_FIELD_DEF));
-	print("methods", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_METHOD_DEF));
-	print("events", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_EVENT));
-	print("properties", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_PROPERTY));
-	print("parameters", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_PARAM_DEF));
-	print("attributes", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_CUSTOM_ATTRIBUTE));
-	print("pinvoke", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_IMPL_MAP));
-	print("module refs", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_MODULE_REF));
-	print("assembly refs", radix,
-		  ILImageNumTokens(image, IL_META_TOKEN_ASSEMBLY_REF));
-	print("nested types", radix, numNestedTypes(image));
+	index = 0;
+	while(tokenTables[index].name != 0)
+	{
+		num = ILImageNumTokens(image, tokenTables[index].type);
+		if(num > 0)
+		{
+			print(tokenTables[index].name, radix, num);
+		}
+		++index;
+	}
 
 	/* Add some space between multiple files */
 	printf("\n\n");

@@ -11,6 +11,9 @@
 	the linker which can be used to strip the ParamDef table down
 	to just those parameter blocks that are strictly necessary.
 
+	* ilsize/ilsize.c: report all of the token table sizes in
+	the "-D" (detailed) mode.
+
 2003-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, coremul/.cvsignore, coremul/Makefile.am,

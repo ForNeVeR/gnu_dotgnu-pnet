@@ -10,6 +10,9 @@ engine/verify_call.c, include/il_coder.h, include/il_engine.h: detect
 commonly-used methods in "System.String" and "System.Threading.Monitor"
 and inline them with CVM replacement opcodes.
 
+* tests/empty1.cs, tests/empty2.cs, tests/runcscc.sh, tests/type_access.cs:
+remove some obsolete files.
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,

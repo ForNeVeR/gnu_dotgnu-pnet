@@ -1,3 +1,9 @@
+
+2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_stmt.tc (ILNode_Foreach): stack clobbering bug
+	in the definition of "args": the array size should be 1, not 0.
+
 2002-07-27  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
 
 	* debian/*: Update Deabin packaging scripte to reflect that the pnet

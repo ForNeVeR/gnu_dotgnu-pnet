@@ -255,7 +255,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	ILMethod *getEnumerator=NULL;
 	ILMethod *getCurrent=NULL;
 	ILMethod *moveNext=NULL;
-	ILType * const args[0]={ILType_Void};
+	ILType * const args[1]={ILType_Void};
 	ILType *retType;
 	ILType *enumerator;
 	ILNode *castNode;

@@ -97,6 +97,7 @@ public class SSLFetch
 				// Close the secure stream.
 				Console.Error.WriteLine("Closing the secure session ...");
 				stream.Close();
+				session.Dispose();
 
 				// Close the socket.
 				Console.Error.WriteLine("Closing the underlying socket ...");

@@ -66,15 +66,34 @@ extern	"C" {
 struct _tagILContext
 {
 	/* Hash table that maps class names to class information blocks */
-	ILClass		   *classHash[IL_CONTEXT_HASH_SIZE];
+	ILHashTable    *classHash;
 
 	/* List of images associated with the context */
 	ILImage		   *firstImage;
+
+	/* Special images within the context */
+	ILImage		   *systemImage;
+	ILImage		   *syntheticImage;
 
 	/* Memory pool that holds ILType records */
 	ILMemPool		typePool;
 
 };
+
+/*
+ * Key information to use when looking up an entry in the class hash.
+ */
+typedef struct
+{
+	const char	   *name;
+	int				nameLen;
+	const char	   *namespace;
+	int				namespaceLen;
+	ILProgramItem  *scope;
+	ILImage		   *image;
+	int				wantGlobal;
+
+} ILClassKeyInfo;
 
 /*
  * Structure of a section map entry.  This is used to map

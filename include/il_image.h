@@ -118,6 +118,30 @@ ILImage *ILContextGetAssembly(ILContext *context, const char *name);
 ILImage *ILContextNextImage(ILContext *context, ILImage *image);
 
 /*
+ * Get the image to use for creating synthetic types.  If such
+ * an image does not yet exist, then create it.  Returns NULL
+ * if out of memory.
+ */
+ILImage *ILContextGetSynthetic(ILContext *context);
+
+/*
+ * Set the image to use as the system library, for resolving
+ * standard types.  Once this image has been set, all system
+ * type resolutions will use this image.  If it is not set,
+ * then system types will be resolved in any image.  Runtime
+ * engines must set this image to prevent applications from
+ * substituting their own system types and thereby circumventing
+ * the system's security.
+ */
+void ILContextSetSystem(ILContext *context, ILImage *image);
+
+/*
+ * Get the image that is being used as the system library.
+ * Returns NULL if no image has been set yet.
+ */
+ILImage *ILContextGetSystem(ILContext *context);
+
+/*
  * Create an IL image.  This is typically used by compilers
  * when building an image in-memory in preparation for writing
  * it to an object file or executable.  Loaders should use

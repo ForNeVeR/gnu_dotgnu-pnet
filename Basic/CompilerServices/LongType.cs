@@ -179,22 +179,75 @@ public sealed class LongType
 				}
 				str = Utils.FixDigits(str);
 				ch = str[posn];
-			#if !ECMA_COMPAT
-				// TODO: handle hex and octal in non-ECMA modes
 				if(ch == 'h' || ch == 'H')
 				{
 					// Recognize a hexadecimal value.
-					value = Convert.ToInt64(str.Substring(posn + 1), 16);
+					++posn;
+					value = 0;
+					while(posn < len)
+					{
+						ch = str[posn];
+						if(ch >= '0' && ch <= '9')
+						{
+							value = value * 16 + (int)(ch - '0');
+						}
+						else if(ch >= 'A' && ch <= 'F')
+						{
+							value = value * 16 + (int)(ch - 'A' + 10);
+						}
+						else if(ch >= 'a' && ch <= 'f')
+						{
+							value = value * 16 + (int)(ch - 'a' + 10);
+						}
+						else
+						{
+							break;
+						}
+						++posn;
+					}
+					while(posn < len)
+					{
+						ch = str[posn];
+						if(ch != ' ' && ch != '\u3000')
+						{
+							throw new FormatException
+								(S._("VB_InvalidHexOrOct"));
+						}
+						++posn;
+					}
 					return true;
 				}
 				else if(ch == 'o' || ch == 'O')
 				{
 					// Recognize an octal value.
-					value = Convert.ToInt64(str.Substring(posn + 1), 8);
+					++posn;
+					value = 0;
+					while(posn < len)
+					{
+						ch = str[posn];
+						if(ch >= '0' && ch <= '7')
+						{
+							value = value * 8 + (int)(ch - '0');
+						}
+						else
+						{
+							break;
+						}
+						++posn;
+					}
+					while(posn < len)
+					{
+						ch = str[posn];
+						if(ch != ' ' && ch != '\u3000')
+						{
+							throw new FormatException
+								(S._("VB_InvalidHexOrOct"));
+						}
+						++posn;
+					}
 					return true;
 				}
 				else
-			#endif
 				{
 					// Not a legitimate number format.
 					throw new FormatException(S._("VB_InvalidHexOrOct"));

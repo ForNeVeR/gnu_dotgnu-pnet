@@ -4,6 +4,10 @@
 	* Basic/DateAndTime.cs, resources/en_US/Basic/Basic.txt:
 	implement the TODO functionality in the "DateAndTime" class.
 
+	* Basic/CompilerServices/LongType.cs, Basic/CompilerServices/Utils.cs:
+	implement an ECMA-compliant version of hex and octal parsing;
+	recognise full-width hex digits.
+
 2004-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/Form.cs: added missing stub for AllowTransparency.

@@ -323,10 +323,12 @@ public sealed class Utils
 				error.Number = number;
 			}
 
-	// Full width digit characters.
+	// Full width digit characters (0-9, A-F, a-f).
 	private static char[] fullWidthDigits =
 			{'\uFF10', '\uFF11', '\uFF12', '\uFF13', '\uFF14',
-			 '\uFF15', '\uFF16', '\uFF17', '\uFF18', '\uFF19'};
+			 '\uFF15', '\uFF16', '\uFF17', '\uFF18', '\uFF19',
+			 '\uFF21', '\uFF22', '\uFF23', '\uFF24', '\uFF25', '\uFF26',
+			 '\uFF41', '\uFF42', '\uFF43', '\uFF44', '\uFF45', '\uFF46'};
 
 	// Convert full-width digit characters into half-width digits.
 	// This is useful in CJK locales where it is common for users to
@@ -348,6 +350,14 @@ public sealed class Utils
 					if(ch >= '\uFF10' && ch <= '\uFF19')
 					{
 						builder.Append((char)(ch - (0xFF10 + 0x0030)));
+					}
+					else if(ch >= '\uFF21' && ch <= '\uFF26')
+					{
+						builder.Append((char)(ch - (0xFF21 + 0x0041)));
+					}
+					else if(ch >= '\uFF41' && ch <= '\uFF46')
+					{
+						builder.Append((char)(ch - (0xFF41 + 0x0061)));
 					}
 					else
 					{

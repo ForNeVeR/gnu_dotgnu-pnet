@@ -1,4 +1,10 @@
 
+2004-09-23  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* JScript/Builtins/NumberObject.cs, JScript/Builtins/NumberPrototype.cs,
+	JScript/Builtins/NumberConstructor.cs, JScript/Builtins/GlobalObject.cs,
+	Execute/EngineInstance.cs: Added the the JScript Number object.
+
 2004-09-23  Miroslaw Dobrzanski-Neumann  <mne@mosaic-ag.com>
 
 	* configure.in, samples/dcop/dcop.build: fix out of tree builds for

@@ -85,9 +85,7 @@ public class GlobalObject
 #endif
 				AddProperty("Function", Function);
 				AddProperty("Math", Math);
-#if false
 				AddProperty("Number", Number);
-#endif
 				AddProperty("Object", Object);
 #if false
 				AddProperty("RangeError", RangeError);
@@ -187,15 +185,13 @@ public class GlobalObject
 					return new MathObject(EngineInstance.Default.GetObjectPrototype());
 				}
 			}
-#if false
 	public static NumberConstructor Number
 			{
 				get
 				{
-					return NumberConstructor.constructor;
+					return EngineInstance.Default.GetNumberConstructor();
 				}
 			}
-#endif
 	public static ObjectConstructor Object
 			{
 				get
@@ -1266,7 +1262,6 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
-#if false
 	private object number;
 	public new object Number
 			{
@@ -1290,7 +1285,6 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
-#endif
 	private object objectConstructor;
 	public new object Object
 			{

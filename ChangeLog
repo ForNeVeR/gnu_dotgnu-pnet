@@ -1,3 +1,11 @@
+
+2004-02-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/NotSupp.txt,
+	runtime/System/Threading/WaitHandle.cs: modify the "InternalWaitAll"
+	and "InternalWaitAny" internalcalls to take "IntPtr[]" parameters
+	rather than "WaitHandle[]" parameters (fixes bug #7455).
+
 2004-02-08  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlTextReader.cs: fix a bug in empty attribute value

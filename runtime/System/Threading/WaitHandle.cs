@@ -80,18 +80,27 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 				Dispose(true);
 			}
 
-	// Validate the contents of a "waitHandles" array.
-	private static void ValidateHandles(WaitHandle[] waitHandles)
+	// Validate the contents of a "waitHandles" array and
+	// return a new array of low-level handles.
+	private static IntPtr[] ValidateHandles(WaitHandle[] waitHandles)
 			{
 				int posn, posn2;
 				WaitHandle handle;
+				IntPtr[] lowLevel;
 				if(waitHandles == null)
 				{
 					throw new ArgumentNullException("waitHandles");
 				}
+				if(waitHandles.Length > 64)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_MaxWaitHandles"));
+				}
+				lowLevel = new IntPtr [waitHandles.Length];
 				for(posn = waitHandles.Length - 1; posn >= 0; --posn)
 				{
-					if((handle = waitHandles[posn]) == null)
+					if((handle = waitHandles[posn]) == null ||
+					   handle.privateData == IntPtr.Zero)
 					{
 						throw new ArgumentNullException
 							("waitHandles[" + posn + "]");
@@ -103,34 +112,36 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 							throw new DuplicateWaitObjectException();
 						}
 					}
+					lowLevel[posn] = handle.privateData;
 				}
+				return lowLevel;
 			}
 
 	// Wait for all elements in an array to receive a signal.
 	public static bool WaitAll(WaitHandle[] waitHandles)
 			{
-				ValidateHandles(waitHandles);
-				return InternalWaitAll(waitHandles, -1, true);
+				IntPtr[] lowLevel = ValidateHandles(waitHandles);
+				return InternalWaitAll(lowLevel, -1, true);
 			}
 	public static bool WaitAll(WaitHandle[] waitHandles,
 							   int millisecondsTimeout,
 							   bool exitContext)
 			{
-				ValidateHandles(waitHandles);
+				IntPtr[] lowLevel = ValidateHandles(waitHandles);
 				if(millisecondsTimeout < -1)
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
 						 _("ArgRange_NonNegOrNegOne"));
 				}
-				return InternalWaitAll(waitHandles, millisecondsTimeout,
+				return InternalWaitAll(lowLevel, millisecondsTimeout,
 								       exitContext);
 			}
 	public static bool WaitAll(WaitHandle[] waitHandles,
 							   TimeSpan timeout, bool exitContext)
 			{
-				ValidateHandles(waitHandles);
-				return InternalWaitAll(waitHandles,
+				IntPtr[] lowLevel = ValidateHandles(waitHandles);
+				return InternalWaitAll(lowLevel,
 									   Monitor.TimeSpanToMS(timeout),
 								       exitContext);
 			}
@@ -139,33 +150,33 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 	// and zero indicates "test and return immediately".
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static bool InternalWaitAll
-				(WaitHandle[] waitHandles, int timeout, bool exitContext);
+				(IntPtr[] waitHandles, int timeout, bool exitContext);
 
 	// Wait for any element in an array to receive a signal.
 	public static int WaitAny(WaitHandle[] waitHandles)
 			{
-				ValidateHandles(waitHandles);
-				return InternalWaitAny(waitHandles, -1, true);
+				IntPtr[] lowLevel = ValidateHandles(waitHandles);
+				return InternalWaitAny(lowLevel, -1, true);
 			}
 	public static int WaitAny(WaitHandle[] waitHandles,
 							  int millisecondsTimeout,
 							  bool exitContext)
 			{
-				ValidateHandles(waitHandles);
+				IntPtr[] lowLevel = ValidateHandles(waitHandles);
 				if(millisecondsTimeout < -1)
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
 						 _("ArgRange_NonNegOrNegOne"));
 				}
-				return InternalWaitAny(waitHandles, millisecondsTimeout,
+				return InternalWaitAny(lowLevel, millisecondsTimeout,
 								       exitContext);
 			}
 	public static int WaitAny(WaitHandle[] waitHandles,
 							  TimeSpan timeout, bool exitContext)
 			{
-				ValidateHandles(waitHandles);
-				return InternalWaitAny(waitHandles,
+				IntPtr[] lowLevel = ValidateHandles(waitHandles);
+				return InternalWaitAny(lowLevel,
 									   Monitor.TimeSpanToMS(timeout),
 								       exitContext);
 			}
@@ -174,7 +185,7 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 	// infinite, and zero indicates "test and return immediately".
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int InternalWaitAny
-				(WaitHandle[] waitHandles, int timeout, bool exitContext);
+				(IntPtr[] waitHandles, int timeout, bool exitContext);
 
 	// Wait until this handle receives a signal.
 	public virtual bool WaitOne()

@@ -220,7 +220,7 @@ typedef unsigned int *ppc_inst_ptr;
 #define ppc_alu_reg_imm(inst, opc, dreg, sreg, imm) \
 		do {\
 			int __value = (int)(imm);\
-			if(__value >= -0x8000 && __value <= 0xFFFF) \
+			if(__value >= -0x8000 && __value <= 0x7FFF) \
 			{\
 				*(inst)++ = ((((unsigned int)(opc))<<	26) \
 								| (((unsigned int)(dreg)) << 21) \
@@ -433,11 +433,12 @@ typedef unsigned int *ppc_inst_ptr;
  */
 #define	ppc_jump(inst, target)	\
 			do { \
-				int __ld_offset = (ppc_inst_ptr)(target) - ((inst) + 1);\
-				if(__ld_offset >= -0x8000 && __ld_offset <= 0xFFFF)\
+				int __ld_offset = (target == 0) ? 0 : \
+									(ppc_inst_ptr)(target) - ((inst) + 1);\
+				if(__ld_offset >= -0x8000 && __ld_offset <= 0x7FFF)\
 				{\
 					*(inst)++ = ((18 << 26) | \
-									(((unsigned int)__ld_offset) << 2));\
+								((((unsigned int)__ld_offset) & 0xFFFF) << 2));\
 				}\
 				else\
 				{\
@@ -465,7 +466,18 @@ typedef unsigned int *ppc_inst_ptr;
  */
 #define	ppc_branch(inst,cond,target)	\
 			do { \
-				TODO_trap(inst);\
+				int __ld_offset = (target == 0 ) ? 0 : \
+								(ppc_inst_ptr)(target) - ((inst) + 1);\
+				if(__ld_offset >= -0x8000 && __ld_offset <= 0x7FFF)\
+				{\
+					*(inst)++ = ((16 << 26) \
+								| (((unsigned int)(cond)) << 16) \
+								| ((((unsigned int)__ld_offset) & 0xFFFF) << 2));\
+				}\
+				else\
+				{\
+					TODO_trap(inst);\
+				}\
 			} while (0)
 
 /*
@@ -473,7 +485,24 @@ typedef unsigned int *ppc_inst_ptr;
  */
 #define ppc_patch(patch, inst) \
 			do {\
-				TODO_trap(inst);\
+				 ppc_inst_ptr __patch = (ppc_inst_ptr)(patch);\
+				 int __ld_offset = (inst) - (__patch);\
+				 if(__ld_offset < -0x8000 && __ld_offset > 0x7FFF)\
+				 {\
+				 	TODO_trap(inst);\
+				 }\
+				 if(((*__patch) & (63 << 26)) == (16 << 26)) \
+				 {\
+				 	(*__patch) = (*__patch) & ((~0xFFFF) | 3);\
+				 	(*__patch) = ((*__patch) | \
+								((((unsigned int)__ld_offset) & 0xFFFF) << 2));\
+				 }\
+				 else if(((*__patch) & (63 << 26)) == (18 << 26))\
+				 {\
+				 	(*__patch) = (*__patch) & ((~0x3FFFFFF) | 3);\
+				 	(*__patch) = ((*__patch) | \
+								((((unsigned int)__ld_offset) & 0xFFFFFF) << 2));\
+				 }\
 			} while(0);
 
 /*
@@ -564,7 +593,7 @@ typedef unsigned int *ppc_inst_ptr;
 #define ppc_alu_addc_imm(inst, dreg, sreg, imm) \
 		do {\
 			int __value = (int)(imm);\
-			if(__value >= -0x8000 && __value <= 0xFFFF) \
+			if(__value >= -0x8000 && __value <= 0x7FFF) \
 			{\
 				*(inst)++ = ((21 <<	26) \
 								| (((unsigned int)(dreg)) << 21) \

@@ -9,6 +9,9 @@
 	header file on systems that have it; needed on Solaris 8 to define
 	the "finite" function.
 
+	* engine/lib_misc.c: remove the "IsLittleEndian" function, because
+	it isn't actually used anywhere.
+
 2001-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_string.c, engine/lib_type.c, ilasm/ilasm_grammar.y,

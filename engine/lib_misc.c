@@ -42,17 +42,6 @@ IL_METHOD_BEGIN(_ILSystemGuidMethods)
 IL_METHOD_END
 
 /*
- * Determine the endian-ness of the platform we are executing on.
- */
-#if defined(__i386) || defined(__i386__)
-#define	IsLittleEndian()	1
-#else
-static ILBool IsLittleEndian(void)
-{
-}
-#endif
-
-/*
  * private static bool GetLittleEndian();
  */
 static ILBool BitConverter_GetLittleEndian(ILExecThread *thread)

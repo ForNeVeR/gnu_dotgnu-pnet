@@ -134,6 +134,7 @@ Arg_PointerType=The supplied argument was not a pointer type
 Arg_PointerValue=The supplied argument was not a pointer value
 Arg_InvalidSoapValue=The supplied string is not a valid SOAP value
 Arg_SecurityZone=The supplied security zone value was invalid
+Arg_CannotMarshalStruct=The supplied structure type could not be marshaled
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

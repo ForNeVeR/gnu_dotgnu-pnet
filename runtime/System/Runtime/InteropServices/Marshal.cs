@@ -62,36 +62,162 @@ public sealed class Marshal
 	public static void Copy(byte[] source, int startIndex,
 					        IntPtr destination, int length)
 			{
+				if(source == null)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > source.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (source.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyMU(source, startIndex, destination, length);
 			}
 	public static void Copy(char[] source, int startIndex,
 					        IntPtr destination, int length)
 			{
+				if(source == null)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > source.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (source.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyMU(source, startIndex * 2, destination, length * 2);
 			}
 	public static void Copy(double[] source, int startIndex,
 					        IntPtr destination, int length)
 			{
+				if(source == null)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > source.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (source.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyMU(source, startIndex * 8, destination, length * 8);
 			}
 	public static void Copy(float[] source, int startIndex,
 					        IntPtr destination, int length)
 			{
+				if(source == null)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > source.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (source.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyMU(source, startIndex * 4, destination, length * 4);
 			}
 	public static void Copy(int[] source, int startIndex,
 					        IntPtr destination, int length)
 			{
+				if(source == null)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > source.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (source.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyMU(source, startIndex * 4, destination, length * 4);
 			}
 	public static void Copy(long[] source, int startIndex,
 					        IntPtr destination, int length)
 			{
+				if(source == null)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > source.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (source.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyMU(source, startIndex * 8, destination, length * 8);
 			}
 	public static void Copy(short[] source, int startIndex,
 					        IntPtr destination, int length)
 			{
+				if(source == null)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > source.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (source.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyMU(source, startIndex * 2, destination, length * 2);
 			}
 
@@ -104,36 +230,162 @@ public sealed class Marshal
 	public static void Copy(IntPtr source, byte[] destination,
 							int startIndex, int length)
 			{
+				if(source == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > destination.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (destination.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyUM(source, destination, startIndex, length);
 			}
 	public static void Copy(IntPtr source, char[] destination,
 							int startIndex, int length)
 			{
+				if(source == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > destination.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (destination.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyUM(source, destination, startIndex * 2, length * 2);
 			}
 	public static void Copy(IntPtr source, double[] destination,
 							int startIndex, int length)
 			{
+				if(source == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > destination.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (destination.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyUM(source, destination, startIndex * 8, length * 8);
 			}
 	public static void Copy(IntPtr source, float[] destination,
 							int startIndex, int length)
 			{
+				if(source == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > destination.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (destination.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyUM(source, destination, startIndex * 4, length * 4);
 			}
 	public static void Copy(IntPtr source, int[] destination,
 							int startIndex, int length)
 			{
+				if(source == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > destination.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (destination.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyUM(source, destination, startIndex * 4, length * 4);
 			}
 	public static void Copy(IntPtr source, long[] destination,
 							int startIndex, int length)
 			{
+				if(source == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > destination.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (destination.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyUM(source, destination, startIndex * 8, length * 8);
 			}
 	public static void Copy(IntPtr source, short[] destination,
 							int startIndex, int length)
 			{
+				if(source == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("source");
+				}
+				if(destination == null)
+				{
+					throw new ArgumentNullException("destination");
+				}
+				if(startIndex < 0 || startIndex > destination.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("startIndex", _("ArgRange_Array"));
+				}
+				if(length < 0 || (destination.Length - startIndex) < length)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_Array"));
+				}
 				CopyUM(source, destination, startIndex * 2, length * 2);
 			}
 
@@ -143,25 +395,219 @@ public sealed class Marshal
 
 	// Get the offset of a field within a class.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static IntPtr OffsetOf(Type t, String fieldName);
+	extern private static IntPtr OffsetOfInternal(Type t, String fieldName);
+	public static IntPtr OffsetOf(Type t, String fieldName)
+			{
+				if(t == null)
+				{
+					throw new ArgumentNullException("t");
+				}
+				else if(!(t is ClrType))
+				{
+					throw new ArgumentException(_("Arg_MustBeType"), "t");
+				}
+				if(fieldName == null)
+				{
+					throw new ArgumentNullException("fieldName");
+				}
+				IntPtr offset = OffsetOfInternal(t, fieldName);
+				if(offset == (IntPtr)(-1))
+				{
+					throw new ArgumentException
+						(_("Reflection_UnknownField"), "fieldName");
+				}
+				return offset;
+			}
 
 	// Convert a pointer to an ANSI string into a string object.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static String PtrToStringAnsi(IntPtr ptr);
-
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static String PtrToStringAnsi(IntPtr ptr, int len);
+	extern private static String PtrToStringAnsiInternal(IntPtr ptr, int len);
+	public static String PtrToStringAnsi(IntPtr ptr)
+			{
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else
+				{
+					return PtrToStringAnsiInternal(ptr, -1);
+				}
+			}
+	public static String PtrToStringAnsi(IntPtr ptr, int len)
+			{
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else if(len < 0)
+				{
+					throw new ArgumentException(_("ArgRange_NonNegative"));
+				}
+				else
+				{
+					return PtrToStringAnsiInternal(ptr, len);
+				}
+			}
 
 	// Convert a pointer to an Auto string into a string object.
+	// In this implementation, "Auto" is UTF-8.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String PtrToStringAutoInternal(IntPtr ptr, int len);
 	public static String PtrToStringAuto(IntPtr ptr)
 			{
-				// Auto and ANSI are identical in this implementation.
-				return PtrToStringAnsi(ptr);
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else
+				{
+					return PtrToStringAutoInternal(ptr, -1);
+				}
 			}
 	public static String PtrToStringAuto(IntPtr ptr, int len)
 			{
-				// Auto and ANSI are identical in this implementation.
-				return PtrToStringAnsi(ptr, len);
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else if(len < 0)
+				{
+					throw new ArgumentException(_("ArgRange_NonNegative"));
+				}
+				else
+				{
+					return PtrToStringAutoInternal(ptr, len);
+				}
+			}
+
+	// Convert a pointer to a Unicode string into a string object.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String PtrToStringUniInternal(IntPtr ptr, int len);
+	public static String PtrToStringUni(IntPtr ptr)
+			{
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else
+				{
+					return PtrToStringUniInternal(ptr, -1);
+				}
+			}
+	public static String PtrToStringUni(IntPtr ptr, int len)
+			{
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else if(len < 0)
+				{
+					throw new ArgumentException(_("ArgRange_NonNegative"));
+				}
+				else
+				{
+					return PtrToStringUniInternal(ptr, len);
+				}
+			}
+
+
+	// Convert the data at an unmanaged pointer location into
+	// an object by marshalling its fields one by one.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool PtrToStructureInternal
+				(IntPtr ptr, Object structure, bool allowValueTypes);
+	public static void PtrToStructure(IntPtr ptr, Object structure)
+			{
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else if(structure == null)
+				{
+					throw new ArgumentNullException("structure");
+				}
+				if(!PtrToStructureInternal(ptr, structure, false))
+				{
+					throw new ArgumentException
+						(_("Arg_CannotMarshalStruct"));
+				}
+			}
+#if CONFIG_REFLECTION
+	public static Object PtrToStructure(IntPtr ptr, Type structureType)
+			{
+				if(ptr == IntPtr.Zero)
+				{
+					return null;
+				}
+				else if(structureType == null)
+				{
+					throw new ArgumentNullException("structureType");
+				}
+				else if(!(structureType is ClrType))
+				{
+					throw new ArgumentException
+						(_("Arg_MustBeType"), "structureType");
+				}
+				Object obj = Activator.CreateInstance(structureType);
+				if(!PtrToStructureInternal(ptr, obj, true))
+				{
+					throw new ArgumentException
+						(_("Arg_CannotMarshalStruct"));
+				}
+				return obj;
+			}
+#endif
+
+	// Destroy the contents of an unmanaged structure.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool DestroyStructureInternal
+				(IntPtr ptr, Type structureType);
+	public static void DestroyStructure(IntPtr ptr, Type structureType)
+			{
+				if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				else if(structureType == null)
+				{
+					throw new ArgumentNullException("structureType");
+				}
+				else if(!(structureType is ClrType))
+				{
+					throw new ArgumentException
+						(_("Arg_MustBeType"), "structureType");
+				}
+				if(!DestroyStructureInternal(ptr, structureType))
+				{
+					throw new ArgumentException
+						(_("Arg_CannotMarshalStruct"));
+				}
+			}
+
+	// Convert an object into an unmanaged structure.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool StructureToPtrInternal
+				(Object structure, IntPtr ptr);
+	public static void StructureToPtr(Object structure, IntPtr ptr,
+									  bool fDeleteOld)
+			{
+				if(structure == null)
+				{
+					throw new ArgumentNullException("structure");
+				}
+				else if(ptr == IntPtr.Zero)
+				{
+					throw new ArgumentNullException("ptr");
+				}
+				if(!StructureToPtrInternal(structure, ptr))
+				{
+					throw new ArgumentException
+						(_("Arg_CannotMarshalStruct"));
+				}
+				if(fDeleteOld)
+				{
+					DestroyStructure(ptr, structure.GetType());
+				}
 			}
 
 	// Convert an object into a pointer to its first byte.
@@ -234,11 +680,30 @@ public sealed class Marshal
 
 	// Get the size of a type.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int SizeOf(Type t);
+	extern private static int SizeOfInternal(Type t);
+	public static int SizeOf(Type t)
+			{
+				if(t == null)
+				{
+					throw new ArgumentNullException("t");
+				}
+				else if(!(t is ClrType))
+				{
+					throw new ArgumentException(_("Arg_MustBeType"), "t");
+				}
+				else
+				{
+					return SizeOfInternal(t);
+				}
+			}
 
 	// Get the size of an object.
 	public static int SizeOf(Object o)
 			{
+				if(o == null)
+				{
+					throw new ArgumentNullException("o");
+				}
 				return SizeOf(o.GetType());
 			}
 
@@ -247,11 +712,13 @@ public sealed class Marshal
 	extern public static IntPtr StringToHGlobalAnsi(String s);
 
 	// Convert a string into an Auto character buffer.
-	public static IntPtr StringToHGlobalAuto(String s)
-			{
-				// Auto and ANSI are identical in this implementation.
-				return StringToHGlobalAnsi(s);
-			}
+	// In this implementation, "Auto" is UTF-8.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static IntPtr StringToHGlobalAuto(String s);
+
+	// Convert a string into a Unicode character buffer.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static IntPtr StringToHGlobalUni(String s);
 
 	// Get the address of a pinned array element.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -506,10 +973,6 @@ public sealed class Marshal
 #endif // CONFIG_COM_INTEROP
 
 	// Other methods that aren't relevant to this implementation.
-	public static void DestroyStructure(IntPtr ptr, Type structureType)
-			{
-				throw new NotImplementedException();
-			}
 	public static void FreeBSTR(IntPtr str)
 			{
 				throw new NotImplementedException();
@@ -581,46 +1044,7 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
-	public static String PtrToStringUni(IntPtr ptr)
-			{
-				throw new NotImplementedException();
-			}
-	public static String PtrToStringUni(IntPtr ptr, int len)
-			{
-				throw new NotImplementedException();
-			}
-
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void PtrToStructureInternal
-				(IntPtr ptr, Object structure);
-	public static void PtrToStructure(IntPtr ptr, Object structure)
-	{
-		if(structure.GetType().IsValueType)
-		{
-			throw new ArgumentException("Object must be of type class.");
-		}
-		PtrToStructureInternal(ptr,structure);
-	}
-
-#if CONFIG_REFLECTION
-	public static Object PtrToStructure(IntPtr ptr, Type structureType)
-	{
-		Object obj=Activator.CreateInstance(structureType);
-		PtrToStructureInternal(ptr,obj);
-		return obj;
-	}
-#endif
-
 	public static IntPtr StringToBSTR(String s)
-			{
-				throw new NotImplementedException();
-			}
-	public static IntPtr StringToHGlobalUni(String s)
-			{
-				throw new NotImplementedException();
-			}
-	public static void StructureToPtr(Object structure, IntPtr ptr,
-									  bool fDeleteOld)
 			{
 				throw new NotImplementedException();
 			}

@@ -29,6 +29,7 @@ public class SuiteInteropServices
 				TestSuite suite = new TestSuite("InteropServices Tests");
 				suite.AddTests(typeof(TestInteropServices));
 				suite.AddTests(typeof(TestGCHandle));
+				suite.AddTests(typeof(TestMarshal));
 				return suite;
 			}
 

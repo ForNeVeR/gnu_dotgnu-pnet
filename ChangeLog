@@ -1,4 +1,13 @@
 
+2003-06-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt,
+	resources/en_US/runtime/Reflection.txt,
+	runtime/System/Runtime/InteropServices/Marshal.cs,
+	tests/runtime/System/Runtime/InteropServices/SuiteInteropServices.cs,
+	tests/runtime/System/Runtime/InteropServices/TestMarshal.cs:
+	test cases and bug fixes for System.Runtime.InteropServices.Marshal.
+
 2003-06-03  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/BufferedStream.cs: Fix a number of potential

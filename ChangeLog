@@ -1,4 +1,9 @@
 
+2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_invoke.tc (VarArgElemSem): handle empty
+	"__arglist" parameter lists.
+
 2003-04-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/int_proto.h, engine/int_table.c,

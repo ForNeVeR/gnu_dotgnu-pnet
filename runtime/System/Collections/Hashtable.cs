@@ -915,6 +915,10 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					return comparer__;
 				}
+				set
+				{
+					comparer__ = value;	
+				}
 			}
 
 #endif // !ECMA_COMPAT
@@ -1139,10 +1143,19 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					get
 					{
-						// We don't lock this because it does not modify
-						// the underlying hash table, or access fields
-						// that may be modified by other threads.
-						return table.comparer;
+						// we do lock this because the comparer might
+						// be set by another thread 
+						lock(SyncRoot)
+						{
+							return table.comparer;
+						}
+					}
+					set
+					{
+						lock(SyncRoot)
+						{
+							table.comparer = value;
+						}
 					}
 				}
 

@@ -1,4 +1,9 @@
 
+2003-03-02  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/Collections/Hashtable.cs: add the set method for the
+	Hashtable.comparer protected field.
+
 2003-03-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs,

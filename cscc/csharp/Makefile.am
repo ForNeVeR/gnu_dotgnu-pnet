@@ -27,7 +27,7 @@ libILCSharp_a_SOURCES  = $(TREECC_SRCOUT) \
 						 cs_semvalue.c \
 				         cs_valdoc.c
 
-YFLAGS = -d
+AM_YFLAGS = -d
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 

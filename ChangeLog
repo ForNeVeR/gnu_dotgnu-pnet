@@ -1,4 +1,11 @@
 
+2002-12-04  Dawkins, David  <david.dawkins@brooks-pri.com>
+
+	* acconfig.h, configure.in, cscc/c/Makefile.am,
+	cscc/csharp/Makefile.am, ilasm/Makefile.am: remove the need for
+	acconfig.h so that newer autoconf's don't complain about it
+	(patch modified by Rhys for interoperability with older autoconf's).
+
 2002-12-03  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lvalue.tc: Add missing line numbers to local var.

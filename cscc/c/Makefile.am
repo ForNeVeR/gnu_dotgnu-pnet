@@ -29,7 +29,7 @@ libILCLang_a_SOURCES = $(TREECC_SRCOUT) \
 					   c_types.c \
 					   c_typesize.c
 
-YFLAGS = -d
+AM_YFLAGS = -d
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 

@@ -3,6 +3,10 @@
 
 * csdoc/doc_valil.c: validate custom attributes.
 
+* engine/lib_type.c: "ClrType.IsSubclassOf" should return false when
+the types are identical; "ClrType.GetMembersImpl" has a new parameter
+for the name.
+
 2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/Makefile.am, csdoc/doc_load.c, csdoc/doc_tree.h, csdoc/doc_valil.c:

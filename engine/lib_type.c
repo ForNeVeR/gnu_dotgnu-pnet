@@ -718,7 +718,7 @@ static ILBool ClrType_IsSubclassOf(ILExecThread *thread,
 	if(otherType)
 	{
 		otherClassInfo = _ILGetClrClass(thread, otherType);
-		if(classInfo && otherClassInfo)
+		if(classInfo && otherClassInfo && classInfo != otherClassInfo)
 		{
 			return ILClassInheritsFrom(classInfo, otherClassInfo);
 		}
@@ -1737,13 +1737,14 @@ static ILObject *ClrType_GetMemberImpl(ILExecThread *thread,
 /*
  * private Object GetMembersImpl(MemberTypes memberTypes,
  *								 BindingFlags bindingAttr,
- *								 Type arrayType);
+ *								 Type arrayType, String name);
  */
 static ILObject *ClrType_GetMembersImpl(ILExecThread *thread,
 									    ILObject *_this,
 										ILInt32 memberTypes,
 										ILInt32 bindingAttr,
-										ILObject *arrayType)
+										ILObject *arrayType,
+										ILString *name)
 {
 	/* TODO */
 	return 0;
@@ -1808,7 +1809,7 @@ IL_METHOD_BEGIN(_ILReflectionClrTypeMethods)
 	IL_METHOD("GetMembersImpl",
 					"(TvSystem.Reflection.MemberTypes;"
 						"vSystem.Reflection.BindingFlags;"
-						"oSystem.Type;)oSystem.Object;",
+						"oSystem.Type;oSystem.String;)oSystem.Object;",
 					ClrType_GetMembersImpl)
 IL_METHOD_END
 

@@ -1127,8 +1127,8 @@ static int TypeAssignCompatible(ILImage *image, ILType *src,
 			return 0;
 		}
 	boxCheck:
-		classInfo = ILClassFromType(image, 0, dest, 0);
-		classInfo2 = ILClassFromType(image, 0, src, 0);
+		classInfo = ILClassResolve(ILClassFromType(image, 0, dest, 0));
+		classInfo2 = ILClassResolve(ILClassFromType(image, 0, src, 0));
 		if(classInfo && classInfo2)
 		{
 			/* Is the type a regular class or an interface? */

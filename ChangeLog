@@ -1,4 +1,9 @@
 
+2004-07-10  Gopal V  <gopalv82@yahoo.com>
+
+	* image/meta_types.c: Resolve classes in TypeAssignCompatible to 
+	ensure the inheritance hierarchy is created before comparison.
+
 2004-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/lib_attrs.c: recognise "OptionalAttribute" and turn it

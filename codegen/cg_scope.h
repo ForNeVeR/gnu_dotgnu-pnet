@@ -41,6 +41,7 @@ typedef struct _tagILScopeData ILScopeData;
 #define	IL_SCOPE_FIELD			6	/* Item is a field */
 #define	IL_SCOPE_PROPERTY		7	/* Item is a property */
 #define	IL_SCOPE_EVENT			8	/* Item is an event */
+#define	IL_SCOPE_LOCAL			9	/* Item is a local variable */
 
 /*
  * Error codes for scope definitions.
@@ -117,12 +118,24 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
  * Returns a scope error code if already declared.
  */
 int ILScopeDeclareMember(ILScope *scope, const char *name,
-						 int memberKind, ILMember *member);
+						 int memberKind, ILMember *member, ILNode *node);
+
+/*
+ * Declare a local variable within a particular scope.
+ * Returns a scope error code if already declared.
+ */
+int ILScopeDeclareLocal(ILScope *scope, const char *name,
+						unsigned long index, ILNode *node);
 
 /*
  * Get the kind value associated with a scope item.
  */
 int ILScopeDataGetKind(ILScopeData *data);
+
+/*
+ * Get the node associated with a scope item.
+ */
+ILNode *ILScopeDataGetNode(ILScopeData *data);
 
 /*
  * Get the class structure associated with a scope item.
@@ -138,6 +151,11 @@ ILScope *ILScopeDataGetSubScope(ILScopeData *data);
  * Get the member structure associated with a scope item.
  */
 ILMember *ILScopeDataGetMember(ILScopeData *data);
+
+/*
+ * Get the index of a local variable scope item.
+ */
+unsigned long ILScopeDataGetIndex(ILScopeData *data);
 
 #ifdef	__cplusplus
 };

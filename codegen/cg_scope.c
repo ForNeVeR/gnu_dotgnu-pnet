@@ -33,6 +33,7 @@ struct _tagILScopeData
 {
 	ILRBTreeNode		rbnode;		/* Red-black node information */
 	const char	       *name;		/* Name associated with the item */
+	ILNode			   *node;		/* Node associated with the item */
 	void			   *data;		/* Data associated with the item */
 
 };
@@ -57,7 +58,7 @@ struct _tagILScope
 	ILScope		   *parent;		/* Parent scope */
 	ILRBTree		nameTree;	/* Tree containing all names in the scope */
 	ILScopeUsingInfo *using;	/* Using declarations for the scope */
-	void		   *data;		/* Data attached to the scope for searching */
+	ILClass		   *classInfo;	/* Data attached to the scope for searching */
 
 	/* Function for looking up an item within the scope */
 	ILScopeData *(*lookup)(ILScope *scope, const char *name);
@@ -138,7 +139,7 @@ ILScope *ILScopeCreate(ILGenInfo *info, ILScope *parent)
 	scope->parent = parent;
 	ILRBTreeInit(&(scope->nameTree), NameCompare, 0);
 	scope->using = 0;
-	scope->data = 0;
+	scope->classInfo = 0;
 	scope->lookup = NormalScope_Lookup;
 	return scope;
 }
@@ -147,7 +148,7 @@ ILScope *ILScopeCreate(ILGenInfo *info, ILScope *parent)
  * Add an item to a particular scope.
  */
 static void AddToScope(ILScope *scope, const char *name,
-					   int kind, void *data)
+					   int kind, ILNode *node, void *data)
 {
 	ILScopeData *sdata;
 	sdata = ILMemPoolAlloc(&(scope->info->scopeDataPool), ILScopeData);
@@ -157,6 +158,7 @@ static void AddToScope(ILScope *scope, const char *name,
 	}
 	sdata->rbnode.kind = kind;
 	sdata->name = name;
+	sdata->node = node;
 	sdata->data = data;
 	ILRBTreeInsert(&(scope->nameTree), &(sdata->rbnode), (void *)name);
 }
@@ -209,7 +211,7 @@ static ILScope *FindNamespaceScope(ILScope *scope, const char *name)
 		else
 		{
 			newScope = ILScopeCreate(scope->info, scope);
-			AddToScope(scope, newName, IL_SCOPE_SUBSCOPE, newScope);
+			AddToScope(scope, newName, IL_SCOPE_SUBSCOPE, 0, newScope);
 			scope = newScope;
 		}
 		name += len;
@@ -238,10 +240,10 @@ static void ImportType(ILScope *scope, ILClass *info, const char *name)
 	/* Create a new scope for the type */
 	newScope = ILScopeCreate(scope->info, scope);
 	newScope->lookup = TypeScope_Lookup;
-	newScope->data = (void *)info;
+	newScope->classInfo = info;
 
 	/* Add the new scope to the original scope, attached to the type name */
-	AddToScope(scope, name, IL_SCOPE_IMPORTED_TYPE, newScope);
+	AddToScope(scope, name, IL_SCOPE_IMPORTED_TYPE, 0, newScope);
 
 	/* Add the nested children to sub-scopes */
 	nested = 0;
@@ -324,7 +326,7 @@ int ILScopeUsing(ILScope *scope, const char *identifier, const char *alias)
 	if(alias)
 	{
 		/* Create a sub-scope that links across to the "using" namespace */
-		AddToScope(scope, alias, IL_SCOPE_SUBSCOPE, namespaceScope);
+		AddToScope(scope, alias, IL_SCOPE_SUBSCOPE, 0, namespaceScope);
 	}
 	else
 	{
@@ -413,7 +415,7 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 		if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
 		{
 			/* Declaration conflicts with a type the user already declared */
-			*origDefn = (ILNode *)(((ILScope *)(data->data))->data);
+			*origDefn = data->node;
 			return IL_SCOPE_ERROR_REDECLARED;
 		}
 		else if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)
@@ -442,10 +444,9 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 
 	/* Create a scope to hold the type itself */
 	typeScope = ILScopeCreate(scope->info, usingScope);
-	typeScope->data = (void *)node;
 
 	/* Add the type to the namespace scope */
-	AddToScope(namespaceScope, name, IL_SCOPE_DECLARED_TYPE, typeScope);
+	AddToScope(namespaceScope, name, IL_SCOPE_DECLARED_TYPE, node, typeScope);
 
 	/* Done */
 	*resultScope = typeScope;
@@ -528,12 +529,12 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 				if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
 				{
 					*classInfo = 0;
-					*nodeInfo = (ILNode *)(((ILScope *)(data->data))->data);
+					*nodeInfo = data->node;
 					return 1;
 				}
 				else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
 				{
-					*classInfo = (ILClass *)(((ILScope *)(data->data))->data);
+					*classInfo = ((ILScope *)(data->data))->classInfo;
 					*nodeInfo = 0;
 					return 1;
 				}
@@ -552,12 +553,12 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 		if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
 		{
 			*classInfo = 0;
-			*nodeInfo = (ILNode *)(((ILScope *)(data->data))->data);
+			*nodeInfo = data->node;
 			return 1;
 		}
 		else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
 		{
-			*classInfo = (ILClass *)(((ILScope *)(data->data))->data);
+			*classInfo = ((ILScope *)(data->data))->classInfo;
 			*nodeInfo = 0;
 			return 1;
 		}
@@ -602,7 +603,7 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 }
 
 int ILScopeDeclareMember(ILScope *scope, const char *name,
-						 int memberKind, ILMember *member)
+						 int memberKind, ILMember *member, ILNode *node)
 {
 	ILScopeData *data;
 
@@ -628,7 +629,45 @@ int ILScopeDeclareMember(ILScope *scope, const char *name,
 	}
 
 	/* Add the member to the scope */
-	AddToScope(scope, name, memberKind, member);
+	AddToScope(scope, name, memberKind, node, member);
+
+	/* Done */
+	return IL_SCOPE_ERROR_OK;
+}
+
+int ILScopeDeclareLocal(ILScope *scope, const char *name,
+						unsigned long index, ILNode *node)
+{
+	ILScopeData *data;
+
+	/* Determine if there is a declaration for the name already */
+	data = ILScopeLookup(scope, name, 0);
+	if(data != 0)
+	{
+		if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
+		{
+			/* Declaration conflicts with a type the user already declared */
+			return IL_SCOPE_ERROR_REDECLARED;
+		}
+		else if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)
+		{
+			/* There is already a namespace with that name in existence */
+			return IL_SCOPE_ERROR_NAME_IS_NAMESPACE;
+		}
+		else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
+		{
+			/* Conflict with an imported type */
+			return IL_SCOPE_ERROR_IMPORT_CONFLICT;
+		}
+		else
+		{
+			/* Something else is declared here */
+			return IL_SCOPE_ERROR_OTHER;
+		}
+	}
+
+	/* Add the local to the scope */
+	AddToScope(scope, name, IL_SCOPE_LOCAL, node, (void *)index);
 
 	/* Done */
 	return IL_SCOPE_ERROR_OK;
@@ -639,16 +678,21 @@ int ILScopeDataGetKind(ILScopeData *data)
 	return data->rbnode.kind;
 }
 
+ILNode *ILScopeDataGetNode(ILScopeData *data)
+{
+	return data->node;
+}
+
 ILClass *ILScopeDataGetClass(ILScopeData *data)
 {
 	if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
 	{
-		ILNode *node = (ILNode *)(((ILScope *)(data->data))->data);
+		ILNode *node = data->node;
 		return ((ILNode_ClassDefn *)node)->classInfo;
 	}
 	else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
 	{
-		return (ILClass *)(((ILScope *)(data->data))->data);
+		return ((ILScope *)(data->data))->classInfo;
 	}
 	else
 	{
@@ -664,6 +708,11 @@ ILScope *ILScopeDataGetSubScope(ILScopeData *data)
 ILMember *ILScopeDataGetMember(ILScopeData *data)
 {
 	return (ILMember *)(data->data);
+}
+
+unsigned long ILScopeDataGetIndex(ILScopeData *data)
+{
+	return (unsigned long)(data->data);
 }
 
 #ifdef	__cplusplus

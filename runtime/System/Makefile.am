@@ -158,6 +158,8 @@ CSSRC = Activator.cs \
 		IO/StdWriter.cs \
 		IO/SeekOrigin.cs \
 		IO/Stream.cs \
+		IO/StreamReader.cs \
+		IO/StreamWriter.cs \
 		IO/TextReader.cs \
 		IO/TextWriter.cs \
 		Private/NumberFormatter.cs \

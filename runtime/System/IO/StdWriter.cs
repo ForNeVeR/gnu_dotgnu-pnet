@@ -49,7 +49,7 @@ internal sealed class StdWriter : TextWriter
 			}
 
 	// Dispose this text writer.
-	public override void Dispose(bool disposing)
+	protected override void Dispose(bool disposing)
 			{
 				if(fd != -1)
 				{

@@ -48,7 +48,7 @@ internal sealed class StdReader : TextReader
 			}
 
 	// Dispose this text reader.
-	public override void Dispose(bool disposing)
+	protected override void Dispose(bool disposing)
 			{
 				if(fd != -1)
 				{

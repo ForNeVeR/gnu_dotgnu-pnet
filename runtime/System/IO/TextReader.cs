@@ -41,7 +41,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 			}
 
 	// Dispose this text reader.  Normally overridden by subclasses.
-	public virtual void Dispose(bool disposing)
+	protected virtual void Dispose(bool disposing)
 			{
 				// Nothing to do in the base class.
 			}
@@ -266,7 +266,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 				}
 	
 		// Dispose this text reader.
-		public override void Dispose(bool disposing)
+		protected override void Dispose(bool disposing)
 				{
 					lock(this)
 					{

@@ -1,5 +1,5 @@
 /*
- * WaitHandle.cs - Implementation of the "System.Threading.WaitHandle" class.
+ * AutoResetEvent.cs - Implementation of the "System.Threading.AutoResetEvent" class.
  *
  * Copyright (C) 2002 Free Software Foundation
  *
@@ -24,12 +24,15 @@ namespace System.Threading
 {
 	using System.Runtime.CompilerServices;
 
-#if !ECMA_COMPAT
-
 	/// <summary>
 	/// See ECMA specs.
 	/// </summary>
-	public sealed class AutoResetEvent : WaitHandle, ISignal
+#if !ECMA_COMPAT
+	public
+#else
+	internal
+#endif
+	sealed class AutoResetEvent : WaitHandle, ISignal
 	{
 		/// <summary>
 		/// See ECMA specs.
@@ -65,7 +68,4 @@ namespace System.Threading
 			Set();
 		}
 	}
-
-#endif // !ECMA_COMPAT
-
 }

@@ -31,6 +31,7 @@ namespace System.Net
 {
 #if !ECMA_COMPAT
 	[ComVisible(true)]
+#endif
 	public sealed class WebClient
 #if CONFIG_COMPONENT_MODEL
 		: Component
@@ -277,5 +278,4 @@ namespace System.Net
 			}
 		}
 	}
-#endif
 }//namespace

@@ -366,6 +366,7 @@ public class HttpWebRequest : WebRequest
 		}
 	}
 	
+#if CONFIG_X509_CERTIFICATES
 	[TODO]
 	public X509CertificateCollection ClientCertificates 
 	{
@@ -374,7 +375,9 @@ public class HttpWebRequest : WebRequest
 			throw new NotImplementedException("ClientCertificates");
 		}
 	}
+#endif // CONFIG_X509_CERTIFICATES
 	
+#if !ECMA_COMPAT
 	[TODO]
 	public System.Net.CookieContainer CookieContainer 
 	{
@@ -388,6 +391,7 @@ public class HttpWebRequest : WebRequest
 			throw new NotImplementedException("CookieContainer");
 		}
  	}
+#endif // !ECMA_COMPAT
 
 	public string Expect 
 	{

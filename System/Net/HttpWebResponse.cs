@@ -190,6 +190,7 @@ public class HttpWebResponse : WebResponse
 		}
 	}
 	
+#if !ECMA_COMPAT
 	[TODO]
 	public CookieCollection Cookies 
 	{
@@ -202,6 +203,7 @@ public class HttpWebResponse : WebResponse
 				throw new NotImplementedException("Cookies");
 		}
 	}
+#endif // !ECMA_COMPAT
 
 	public DateTime LastModified 
 	{ 

@@ -3,7 +3,10 @@
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs,
 	runtime/System/Reflection/Assembly.cs,
+	runtime/System/Threading/AutoResetEvent.cs,
 	System/Text/RegularExpressions/regex.cs,
+	System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs,
+	System/Net/WebClient.cs,
 	System.Xml/Serialization/XmlSerializationWriter.cs,
 	System.Xml/Serialization/XmlSerializationWriterInterpreter.cs,
 	System.Xml/Serialization/XmlSerializer.cs,
@@ -19,7 +22,7 @@
 	System.Xml/Serialization/SoapSchemaImporter.cs,
 	System.Xml/Serialization/SoapSchemaExporter.cs,
 	JScript/Vsa/VsaCodeItem.cs: Start fixing dependency problems when building
-	with profile mscompact.
+	with profile mscompact, compact, ....
 
 2004-10-03  Klaus Treichel  <ktreichel@web.de>
 

@@ -18,6 +18,8 @@ the system library.
 
 * codegen/cg_output.h, codegen/cg_output.c (ILGenTypeToken): new function.
 
+* cscc/cs_defs.tc, cscc/cs_misc.tc: semantic analysis for TypeOf and SizeOf.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

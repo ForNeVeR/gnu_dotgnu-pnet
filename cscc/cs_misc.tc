@@ -29,98 +29,59 @@ ILNode_SemAnalysis(ILNode_TypeOf)
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 
 	/* Check that the argument is of the correct kind */
-	if(!CSIsSemValue(value.kind))
+	if(value.kind == CS_SEMKIND_TYPE)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "invalid argument to `typeof' operator");
-		value.kind = CS_SEMKIND_TYPE;
-		value.type = ILType_Int32;
+		if(ILType_IsPrimitive(value.type))
+		{
+			node->type = ILType_FromClass(ILTypeToClass(info, value.type));
+		}
+		else
+		{
+			node->type = value.type;
+		}
 	}
 	else
 	{
-		value.kind = CS_SEMKIND_TYPE;
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid argument to `typeof' operator");
+		node->type = ILFindSystemType(info, "Int32");
 	}
 
-	/* Return the type information to the caller */
+	/* The type of the expression is "System.Type" */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILFindSystemType(info, "Type");
 	return value;
 }
 
-%output "cs_semantics.c"
-
-%{
-
 /*
- * Get the size of a type, returning -1 if it is not possible
- * to get the size.  Returns zero if the size of the type must
- * be determined dynamically.
+ * Get the type of the "typeof" operator.
  */
-static int SizeOfType(ILType *type)
+ILNode_GetType(ILNode_TypeOf)
 {
-	if(ILType_IsPrimitive(type))
-	{
-		/* Get the size of a primitive type */
-		switch(ILType_ToElement(type))
-		{
-			case IL_META_ELEMTYPE_BOOLEAN:
-			case IL_META_ELEMTYPE_I1:
-			case IL_META_ELEMTYPE_U1:		return 1;
-
-			case IL_META_ELEMTYPE_CHAR:
-			case IL_META_ELEMTYPE_I2:
-			case IL_META_ELEMTYPE_U2:		return 2;
-
-			case IL_META_ELEMTYPE_I4:
-			case IL_META_ELEMTYPE_U4:
-			case IL_META_ELEMTYPE_R4:		return 4;
-
-			case IL_META_ELEMTYPE_I8:
-			case IL_META_ELEMTYPE_U8:
-			case IL_META_ELEMTYPE_R8:		return 8;
-
-			default:						break;
-		}
-	}
-	else if(ILType_IsValueType(type))
-	{
-		/* Check for the value type versions of primitive types */
-		ILClass *classInfo = ILType_ToValueType(type);
-		const char *name = ILClass_Name(classInfo);
-		const char *namespace = ILClass_Name(classInfo);
-		if(namespace && !strcmp(namespace, "System"))
-		{
-			if(!strcmp(name, "Boolean") ||
-			   !strcmp(name, "SByte") ||
-			   !strcmp(name, "Byte"))
-			{
-				return 1;
-			}
-			if(!strcmp(name, "Char") ||
-			   !strcmp(name, "Int16") ||
-			   !strcmp(name, "UInt16"))
-			{
-				return 2;
-			}
-			if(!strcmp(name, "Int32") ||
-			   !strcmp(name, "UInt32") ||
-			   !strcmp(name, "Single"))
-			{
-				return 4;
-			}
-			if(!strcmp(name, "Int64") ||
-			   !strcmp(name, "UInt64") ||
-			   !strcmp(name, "Double"))
-			{
-				return 8;
-			}
-		}
-
-		/* Determine the size at runtime */
-		return 0;
-	}
-	return -1;
+	return ILMachineType_ObjectRef;
 }
 
-%}
+/*
+ * Generate value code for the "typeof" operator.
+ */
+ILNode_GenValue(ILNode_TypeOf)
+{
+	ILGenTypeToken(info, IL_OP_LDTOKEN, node->type);
+	ILGenAdjust(info, 1);
+	ILGenCallByName(info,
+			"class System.Type System.Type::GetTypeFromHandle"
+				"(valuetype System.RuntimeTypeHandle)");
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate Java value code for the "typeof" operator.
+ */
+JavaGenValue(ILNode_TypeOf)
+{
+	/* TODO */
+	return ILMachineType_ObjectRef;
+}
 
 /*
  * Get the machine type for the "sizeof" operator.
@@ -142,10 +103,28 @@ ILNode_GenValue(ILNode_SizeOf)
 	}
 	else
 	{
-		ILGenSimple(info, IL_OP_LDC_I4_1);
+		ILGenInt32(info, node->size);
 	}
 	ILGenAdjust(info, 1);
 	return ILMachineType_Int32;
+}
+
+/*
+ * Evaluate the constant value for the "sizeof" operator.
+ */
+ILNode_EvalConst(ILNode_SizeOf)
+{
+	if(ILType_IsPrimitive(node->type))
+	{
+		value->valueType = ILMachineType_Int32;
+		value->un.i4Value = node->size;
+		return 1;
+	}
+	else
+	{
+		/* Non-primitive types must be evaluated at runtime */
+		return 0;
+	}
 }
 
 /*
@@ -153,8 +132,9 @@ ILNode_GenValue(ILNode_SizeOf)
  */
 JavaGenValue(ILNode_SizeOf)
 {
-	/* Will never be called, because semantic analysis doesn't
-	   allow sizeof for non-primitive types in Java */
+	/* Only called for primitive types */
+	JavaGenInt32(info, node->size);
+	JavaGenAdjust(info, 1);
 	return ILMachineType_Int32;
 }
 
@@ -164,35 +144,80 @@ JavaGenValue(ILNode_SizeOf)
 ILNode_SemAnalysis(ILNode_SizeOf)
 {
 	CSSemValue value;
-	int size;
+
+	/* Print an error or warning for this construct if necessary */
+	CSUnsafeMessage(info, (ILNode *)node, "unsafe `sizeof' operator");
 
 	/* Get the semantic value for the sub-expression */
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 
-	/* Get the size of the type for later code generation */
-	size = (value.type ? SizeOfType(value.type) : -1);
+	/* Convert native types into their value type forms */
+	if(value.kind == CS_SEMKIND_TYPE)
+	{
+		if(value.type == ILType_Int)
+		{
+			value.type = ILFindSystemType(info, "IntPtr");
+		}
+		else if(value.type == ILType_UInt)
+		{
+			value.type = ILFindSystemType(info, "UIntPtr");
+		}
+	}
 
-	/* Check that the argument is of the correct kind */
-	if(value.kind != CS_SEMKIND_TYPE || size == -1)
+	/* Check the semantic value */
+	if(value.kind != CS_SEMKIND_TYPE)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid argument to `sizeof' operator");
-		node->type = 0;
+		node->type = ILType_Int32;
+	}
+	else if(!ILType_IsPrimitive(value.type) &&
+			!ILType_IsValueType(value.type))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "cannot take the size of a managed type");
+		node->type = ILType_Int32;
+	}
+	else if(!ILType_IsPrimitive(value.type) && info->outputIsJava)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`sizeof' disallowed when compiling to Java bytecode");
+		node->type = ILType_Int32;
+	}
+	else if(value.type == ILType_Void)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`void' type is not allowed in this context");
+		node->type = ILType_Int32;
 	}
 	else
 	{
 		node->type = value.type;
 	}
 
-	/* Replace this node with a constant node if the size is known */
-	if(size > 0)
+	/* Pre-compute the size if this is a primitive type */
+	if(ILType_IsPrimitive(node->type))
 	{
-		*parent = ILNode_Int32_create((ILUInt64)size, 0, 1);
-	}
-	else if(info->outputIsJava)
-	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "`sizeof' disallowed when compiling to Java bytecode");
+		switch(ILType_ToElement(node->type))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:		node->size = 1; break;
+
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:		node->size = 2; break;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+			case IL_META_ELEMTYPE_R4:		node->size = 4; break;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+			case IL_META_ELEMTYPE_R8:		node->size = 8; break;
+
+			default:						node->size = 1; break;
+		}
 	}
 
 	/* Return the type information to the caller */

@@ -111,10 +111,14 @@ extern CSSemValue CSSemValueDefault;
 /*
  * Misc nodes.
  */
-%node ILNode_TypeOf ILNode_DummyUnaryExpr
+%node ILNode_TypeOf ILNode_UnaryExpression =
+{
+	%nocreate ILType *type = {0};
+}
 %node ILNode_SizeOf ILNode_UnaryExpression =
 {
 	%nocreate ILType *type = {0};
+	%nocreate ILInt32 size = {0};
 }
 %node ILNode_StackAlloc ILNode_BinaryExpression
 %node ILNode_UserCast ILNode_DummyBinaryExpr

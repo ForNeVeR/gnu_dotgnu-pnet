@@ -379,6 +379,23 @@ extern ILInt32 _IL_StackFrame_InternalGetNativeOffset(ILExecThread * _thread, IL
 extern ILString * _IL_StackFrame_InternalGetDebugInfo(ILExecThread * _thread, void * method, ILInt32 offset, ILInt32 * line, ILInt32 * column);
 extern ILInt32 _IL_StackFrame_InternalGetTotalFrames(ILExecThread * _thread);
 
+extern ILBool _IL_FileMethods_ValidatePathname(ILExecThread * _thread, ILString * path);
+extern ILInt32 _IL_FileMethods_Copy(ILExecThread * _thread, ILString * src, ILString * dest);
+extern ILBool _IL_FileMethods_Exists(ILExecThread * _thread, ILString * path);
+extern ILString * _IL_FileMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 error);
+extern ILBool _IL_FileMethods_Open(ILExecThread * _thread, ILString * path, ILInt32 mode, ILInt32 access, ILInt32 share, ILNativeInt * handle);
+extern ILInt32 _IL_FileMethods_GetErrno(ILExecThread * _thread);
+extern ILBool _IL_FileMethods_HasAsync(ILExecThread * _thread);
+extern ILBool _IL_FileMethods_CanSeek(ILExecThread * _thread, ILNativeInt handle);
+extern ILBool _IL_FileMethods_CheckHandleAccess(ILExecThread * _thread, ILNativeInt handle, ILInt32 access);
+extern ILInt64 _IL_FileMethods_Seek(ILExecThread * _thread, ILNativeInt handle, ILInt64 offset, ILInt32 origin);
+extern ILBool _IL_FileMethods_Write(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
+extern ILBool _IL_FileMethods_Close(ILExecThread * _thread, ILNativeInt handle);
+extern ILBool _IL_FileMethods_FlushWrite(ILExecThread * _thread, ILNativeInt handle);
+extern ILInt32 _IL_FileMethods_Read(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
+extern ILBool _IL_FileMethods_SetLength(ILExecThread * _thread, ILNativeInt handle, ILInt64 value);
+extern ILNativeInt _IL_FileMethods_GetInvalidHandle(ILExecThread * _thread);
+
 extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
 extern void _IL_CryptoMethods_Encrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
 extern ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread * _thread, ILInt32 algorithm, System_Array * key);
@@ -408,31 +425,15 @@ extern void _IL_CryptoMethods_StoreKey(ILExecThread * _thread, ILInt32 algorithm
 extern ILString * _IL_DirMethods_GetSystemDirectory(ILExecThread * _thread);
 extern System_Array * _IL_DirMethods_GetLogicalDrives(ILExecThread * _thread);
 extern void _IL_DirMethods_GetPathInfo(ILExecThread * _thread, void * _result);
+extern ILInt32 _IL_DirMethods_Rename(ILExecThread * _thread, ILString * old_name, ILString * new_name);
+extern ILInt32 _IL_DirMethods_Delete(ILExecThread * _thread, ILString * path);
+extern ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread * _thread, ILString * path, ILInt64 * create_time);
+extern ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread * _thread, ILString * path, ILInt64 * lastac);
+extern ILInt32 _IL_DirMethods_GetLastModification(ILExecThread * _thread, ILString * path, ILInt64 * last_mod);
 extern ILString * _IL_DirMethods_GetCurrentDirectory(ILExecThread * _thread);
 extern ILInt32 _IL_DirMethods_ChangeDirectory(ILExecThread * _thread, ILString * name);
-extern ILInt32 _IL_DirMethods_Delete(ILExecThread * _thread, ILString * path);
-extern ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread * _thread, ILString * path, ILInt64 * lastac);
 extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread, ILString * path, System_Array * * files);
-extern ILInt32 _IL_DirMethods_Rename(ILExecThread * _thread, ILString * old_name, ILString * new_name);
-extern ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread * _thread, ILString * path, ILInt64 * create_time);
-extern ILInt32 _IL_DirMethods_GetLastModification(ILExecThread * _thread, ILString * path, ILInt64 * last_mod);
 extern ILInt32 _IL_DirMethods_Copy(ILExecThread * _thread, ILString * src, ILString * dest);
-
-extern ILString * _IL_FileMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 error);
-extern ILBool _IL_FileMethods_ValidatePathname(ILExecThread * _thread, ILString * path);
-extern ILBool _IL_FileMethods_Open(ILExecThread * _thread, ILString * path, ILInt32 mode, ILInt32 access, ILInt32 share, ILNativeInt * handle);
-extern ILInt32 _IL_FileMethods_GetErrno(ILExecThread * _thread);
-extern ILBool _IL_FileMethods_HasAsync(ILExecThread * _thread);
-extern ILBool _IL_FileMethods_CanSeek(ILExecThread * _thread, ILNativeInt handle);
-extern ILBool _IL_FileMethods_CheckHandleAccess(ILExecThread * _thread, ILNativeInt handle, ILInt32 access);
-extern ILInt64 _IL_FileMethods_Seek(ILExecThread * _thread, ILNativeInt handle, ILInt64 offset, ILInt32 origin);
-extern ILBool _IL_FileMethods_Write(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
-extern ILBool _IL_FileMethods_Close(ILExecThread * _thread, ILNativeInt handle);
-extern ILBool _IL_FileMethods_FlushWrite(ILExecThread * _thread, ILNativeInt handle);
-extern ILInt32 _IL_FileMethods_Read(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
-extern ILBool _IL_FileMethods_SetLength(ILExecThread * _thread, ILNativeInt handle, ILInt64 value);
-extern ILNativeInt _IL_FileMethods_GetInvalidHandle(ILExecThread * _thread);
-extern ILBool _IL_FileMethods_Exists(ILExecThread * _thread, ILString * path);
 
 extern ILString * _IL_InfoMethods_GetRuntimeVersion(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetNetBIOSMachineName(ILExecThread * _thread);

@@ -338,6 +338,41 @@ int ILSysIOFlushWrite(ILSysIOHandle handle)
 	return 1;
 }
 
+ILInt32 ILCopyFile(const char *src, const char *dest)
+{
+	ILSysIOHandle src_result;
+	ILSysIOHandle dest_result;
+	char buf[4000];
+	int bytes_read;
+
+	/* Reset errno because we're not sure what it'll be */
+	errno = 0;
+	if (src == NULL || dest == NULL)
+	{
+	    return IL_ERRNO_ENOENT;
+	}
+
+	/* Open the source and dest files */
+	src_result = ILSysIOOpenFile(src, ILFileMode_Open, ILFileAccess_Read, ILFileShare_Read);
+	dest_result = ILSysIOOpenFile(dest, ILFileMode_CreateNew, ILFileAccess_Write, ILFileShare_None);
+
+	/* if we had an error, send the errno back */
+	if(src_result == ILSysIOHandle_Invalid || dest_result == ILSysIOHandle_Invalid)
+	{
+		return ILSysIOConvertErrno(errno);
+	}
+
+	while ( ( bytes_read = ILSysIORead(src_result, buf, 4000) ) != 0 && errno == 0)
+	{
+		ILSysIOWrite(dest_result, buf, bytes_read);
+	}
+
+	ILSysIOClose(src_result);
+	ILSysIOClose(dest_result);
+	
+	return ILSysIOConvertErrno(errno);
+}
+
 int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)
 {
 #ifdef HAVE_FTRUNCATE

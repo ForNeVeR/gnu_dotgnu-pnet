@@ -1,4 +1,10 @@
 
+2002-12-25  Aditya P. Bansod <abansod@fullenergy.com>
+
+	* support/dir.c, include/il_sysio.h, engine/lib_file.c, 
+	engine/int_proto.h, engine/int_table.c : Internal calls and
+	support code for File.Copy() method.
+
 2002-12-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_coerce.c, cscc/c/c_defs.tc, cscc/c/c_invoke.tc,

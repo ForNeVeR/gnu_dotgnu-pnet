@@ -193,3 +193,18 @@ ILString *_IL_FileMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
 		return 0;
 	}
 }
+
+/*
+ * public static Errno Copy(String src, String dest);
+ */
+ILInt32 _IL_FileMethods_Copy(ILExecThread *_thread,
+							ILString *src, ILString *dest)
+{
+	char * src_ansi  = ILStringToAnsi(_thread, src );
+	char * dest_ansi = ILStringToAnsi(_thread, dest);
+	if(src_ansi == NULL || dest_ansi == NULL)
+	{
+		return IL_ERRNO_ENOMEM;
+	}
+	return ILCopyFile(src_ansi, dest_ansi);
+}

@@ -152,6 +152,11 @@ int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn);
 int ILSysIOHasAsync(void);
 
 /*
+ * Copies a file from src to dest
+ */
+ILInt32 ILCopyFile(const char * src, const char * dest);
+
+/*
  * IPv4 Address placeholder for socket related functions.
  */
 typedef struct _ILSysIOSockAddr

@@ -1,4 +1,10 @@
 
+2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's
+	by doubling their capacity each time they overflow, instead of
+	just adding 32 characters each time.
+
 2003-02-22  Jonathan Springer  <jonathan.springer@verizon.net>
 
 	* tests/System/Net/TestIPAddress.cs:  Fix up endian issues in IPAddress

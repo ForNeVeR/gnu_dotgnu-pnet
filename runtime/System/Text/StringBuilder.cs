@@ -171,7 +171,19 @@ public sealed class StringBuilder
 				int newLength;
 
 				// Determine the new length.
-				newLength = buildLen + length;
+				if(buildString.capacity < 2048)
+				{
+					int temp = buildLen + length;
+					newLength = buildString.capacity * 2;
+					if(temp > newLength)
+					{
+						newLength = temp;
+					}
+				}
+				else
+				{
+					newLength = buildLen + length;
+				}
 				if(newLength > maxCapacity)
 				{
 					newLength = maxCapacity;

@@ -1085,6 +1085,33 @@ ILType *CTypeGetPtrRef(ILType *type)
 	}
 }
 
+ILType *CTypeDecay(ILGenInfo *info, ILType *type)
+{
+	ILType *ptrType;
+
+	/* Bail out if not an array type */
+	if(!CTypeIsArray(type))
+	{
+		return type;
+	}
+
+	/* Build a pointer type from the array element type */
+	ptrType = CTypeCreatePointer(info, CTypeGetElemType(type), 0);
+
+	/* Add back any "const" or "volatile" prefixes */
+	if(CTypeIsConst(type))
+	{
+		ptrType = CTypeAddConst(info, ptrType);
+	}
+	if(CTypeIsVolatile(type))
+	{
+		ptrType = CTypeAddVolatile(info, ptrType);
+	}
+
+	/* Return the decayed type to the caller */
+	return ptrType;
+}
+
 /*
  * Size and alignment values for the primitive types.
  */

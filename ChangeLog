@@ -8,6 +8,9 @@
 	csupport/README: check in the "OpenSystem.C" support library
 	and modify the C compiler slightly to match the support library.
 
+	* cscc/c/c_declspec.c, cscc/c/c_types.c, cscc/c/c_types.h:
+	decay array parameter types into their pointer counterparts.
+
 2002-08-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_defs.tc,

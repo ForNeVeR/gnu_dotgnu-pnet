@@ -691,11 +691,12 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem)
 	{
 		result.type = elem.type;
 		*(elem.typeHole) = type;
+		result.typeHole = elem.typeHole;
 	}
 	else
 	{
 		result.type = type;
-		elem.typeHole = &(ILType_Ref(type));
+		result.typeHole = &(ILType_Ref(type));
 	}
 	result.isKR = 0;
 	result.params = elem.params;
@@ -726,11 +727,12 @@ CDeclarator CDeclCreateSizedArray(ILGenInfo *info, CDeclarator elem,
 	{
 		result.type = elem.type;
 		*(elem.typeHole) = type;
+		result.typeHole = elem.typeHole;
 	}
 	else
 	{
 		result.type = type;
-		elem.typeHole = &(ILType_ElemType(type));
+		result.typeHole = &(ILType_ElemType(type));
 	}
 	result.isKR = 0;
 	result.params = elem.params;
@@ -941,6 +943,9 @@ static ILType *ParamsToSignature(ILGenInfo *info, ILNode *params,
 						(0, ILParamMod_out,
 						 ILNode_MarkType_create(0, type), name));
 			}
+
+			/* Decay array types to their pointer forms */
+			type = CTypeDecay(info, type);
 
 			/* Add the new parameter to the function signature */
 			if(!ILTypeAddParam(info->context, signature, type))

@@ -209,6 +209,11 @@ ILType *CTypeGetElemType(ILType *type);
 ILType *CTypeGetPtrRef(ILType *type);
 
 /*
+ * Decay array types into their corresponding pointer types.
+ */
+ILType *CTypeDecay(ILGenInfo *info, ILType *type);
+
+/*
  * Special value that is used to indicate that the size of
  * a type must be computed at runtime.
  */

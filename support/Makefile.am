@@ -32,6 +32,7 @@ libILSupport_a_SOURCES = aes.c \
 						 mul_long.c \
 						 mutex.c \
 						 no_defs.c \
+						 path.c \
 						 pt_defs.c \
 						 queue.c \
 						 rc2.c \
@@ -63,7 +64,9 @@ mkcategory_SOURCES = mkcategory.c
 
 mknumber_SOURCES = mknumber.c
 
-AM_CFLAGS = -I$(top_srcdir)/libgc/include -I$(top_srcdir)/include
+AM_CFLAGS = -I$(top_srcdir)/libgc/include -I$(top_srcdir)/include \
+			-DCSCC_LIB_PREFIX=\"$(libdir)\" \
+		    -DCSCC_BIN_PREFIX=\"$(bindir)\"
 
 CLEANFILES = $(srcdir)/errno_map.c
 

@@ -178,6 +178,24 @@ char *ILExpandFilename(const char *filename, char *searchPath);
    if the CPU does not have cache flush functionality */
 void ILCacheFlush(void *buf, long length);
 
+/*
+ * Get the location of a standard library directory. e.g. "${prefix}/lib/tail".
+ * Returns NULL if not found.  Use "ILFree" to free the return value.
+ */
+char *ILGetStandardLibraryPath(const char *tail);
+
+/*
+ * Get the location of a standard program directory. e.g. "${prefix}/bin".
+ * Returns NULL if not found.  Use "ILFree" to free the return value.
+ */
+char *ILGetStandardProgramPath(void);
+
+/*
+ * Search a path variable for a particular file.  Returns NULL if not
+ * found.  Use "ILFree" to free the return value.
+ */
+char *ILSearchPath(const char *path, const char *name, int isExe);
+
 #ifdef	__cplusplus
 };
 #endif

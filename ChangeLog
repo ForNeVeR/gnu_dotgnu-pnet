@@ -1,4 +1,10 @@
 
+2002-12-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_system.h, support/Makefile.am, support/path.c:
+	centralize the path-searching code to make it easier to vary
+	the install location on systems such as Win32.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

@@ -120,6 +120,12 @@ fi
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save ibm-1275.ucm >CP10000.cs
 
+./ucm2cp --page 10079 --wpage 1252 --name 'Icelandic (Mac)' \
+	--webname x-mac-icelandic --bodyname x-mac-icelandic \
+	--headername x-mac-icelandic --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save mac-is.ucm >CP10079.cs
+
 ./ucm2cp --page 20866 --wpage 1251 --name 'Cyrillic (KOI8-R)' \
 	--webname koi8-r --bodyname koi8-r \
 	--headername koi8-r ibm-878.ucm >CP20866.cs
@@ -150,7 +156,6 @@ exit 0
 #  936   Chinese Simplified (GB2312)
 #  947   Korean
 #  950   Chinese Traditional (Big5)
-#  10079 Icelandic (Mac)
 #  20261 T.61
 #  50220 Japanese (JIS)
 #  50221 Japanese (JIS-Allow 1 byte Kana)

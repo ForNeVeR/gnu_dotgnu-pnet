@@ -30,6 +30,10 @@
 	a large number of single-byte Windows code pages, based on the
 	conversion data from IBM's ICU package.
 
+	* runtime/System/Text/CP10079.cs, runtime/System/Text/cvt.sh,
+	runtime/System/Text/mac-is.ucm: add code page support for the
+	"Icelandic (Mac)" code page, 10079.
+
 2002-04-14  Stephen Compall  <rushing@sigecom.net>
 
 	* tests/System/TestUri.cs, tests/System/TestSystem.cs: added a

@@ -21,6 +21,8 @@
 #ifndef	_W32_DEFS_H
 #define	_W32_DEFS_H
 
+#include <windows.h>
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif

@@ -7,7 +7,19 @@
 	to ILSysIOOpenFile if system is windows.  Windows defaults
 	to text mode (unbelievable!) causing files to randomly not 
 	open properly.
+
+	* support/w32_defs.h: Include <windows.h> cause libgc
+	no longer does this for us.
 	
+	* libgc/***: Checked libgc 6.3alpha6.
+	
+	* libgc/win32_threads.c: Added CreateThread wrapper around
+	pthread_create for CYGWIN environments so that we can
+	safely use CreateThread when building under CYGWIN.
+	Removed GC allocater calls when threads are created and
+	used malloc/free instead.  Using the GC allocator while
+	creating a thread when using CYGWIN causes deadlocks.
+		
 2004-05-26  Thong Nguyen <tum@veridicus.com>
 
 	* Most changes are for supporting Thread.Abort.

@@ -1,7 +1,8 @@
 
 2002-05-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-	* libffi/*: remove all libffi source files, prior to upgrade.
+	* libffi/*: remove all libffi source files, prior to upgrade,
+	and then add the new sources.
 
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 

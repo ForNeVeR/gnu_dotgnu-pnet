@@ -1,3 +1,7 @@
+2003-11-25  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/ControlPaint.cs: fix ControlPaint to not use
+	arrays of floats so it works in the compact profile.
 
 2003-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

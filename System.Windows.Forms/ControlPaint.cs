@@ -61,30 +61,36 @@ public sealed class ControlPaint
 				if (brightness<=0.5)
 					temp2 = brightness * (1.0f + saturation);
 				else
-					temp2 = brightness + saturation - brightness*saturation;
+					temp2 = brightness + saturation - brightness * saturation;
 
 				float temp1 = 2.0f * brightness - temp2;
-				float[] t=new float[]{hue + 120.0f, hue, hue - 120.0f};
-				float[] color=new float[]{0, 0, 0};
-				for(int i=0;i<3;i++)
-				{
-					if(t[i] < 0.0f)
-						t[i] += 360.0f;
-					if(t[i] > 360.0f)
-						t[i] -= 360.0f;
-  
-					if(t[i] < 60.0f)
-						color[i] = temp1 + (temp2 - temp1) * t[i] / 60.0f;
-					else if(t[i] < 180.0f)
-						color[i] = temp2;
-					else if(t[i] < 240.0f)
-						color[i] = temp1 + (temp2 - temp1) * (240.0f - t[i]) / 60.0f;
-					else
-						color[i] = temp1;
-				}
-				r=color[0];
-				g=color[1];
-				b=color[2];
+				float t1 = hue + 120.0f;
+				if (t1 > 360.0)
+					t1 -= 360.0f;
+				float t2 = hue;
+				float t3 = hue - 120.0f;
+				if (t3 < 0)
+					t3 += 360.0f;
+				r = g = b = temp1;
+
+				if(t1 < 180.0f)
+					r = temp2;
+				else if(t1 < 240.0f)
+					r += (temp2 - temp1) * (240.0f - t1) / 60.0f;
+
+				if(t2 < 60.0f)
+					g += (temp2 - temp1) * t2 / 60.0f;
+				else if(t2 < 180.0f)
+					g = temp2;
+				else if(t2 < 240.0f)
+					g = temp1 + (temp2 - temp1) * (240.0f - t2) / 60.0f;
+
+				if(t3 < 60.0f)
+					b += (temp2 - temp1) * t3 / 60.0f;
+				else if(t3 < 180.0f)
+					b = temp2;
+				else
+					b += (temp2 - temp1) * (240.0f - t3) / 60.0f;
 			}
 		}
 		return Color.FromArgb((int)(255*r),(int)(255*g),(int)(255*b)); 

@@ -1,3 +1,8 @@
+
+2003-09-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csdoc/cssrc2html.1: fill in the missing parts of the manpage.
+
 2003-09-06  Andrew Mitchell  <ajmitch@gnu.org>
 
 	* csdoc/Makefile.am, csdoc/cssrc2html.1: added manpage for cssrc2html

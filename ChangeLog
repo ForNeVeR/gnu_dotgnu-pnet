@@ -21,6 +21,9 @@
 	function to be called when a C library is used from a C#
 	application which doesn't use the crt0 process.
 
+	* doc/c_language_abi.html: update the ABI specification for the
+	C compiler to match the latest changes.
+
 2003-06-27  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fix recursive entry/leave bug in

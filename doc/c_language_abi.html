@@ -6,9 +6,9 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2002/08/23 00:06:39 $<p>
+Last Modified: $Date: 2003/06/27 04:42:23 $<p>
 
-Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
+Copyright &copy; 2002, 2003 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
 GNU Free Documentation License is hereby granted.<p>
 
@@ -515,10 +515,28 @@ structure types:<p>
     .field [0] public int32 w
 }</pre></blockquote>
 
-As can be seen, anonymous structures are assigned a unique numeric code,
-and are encoded as nested types.  The code is unique to the surrounding
+As can be seen, nested anonymous structures are assigned a unique numeric
+code, and are encoded as nested types.  The code is unique to the surrounding
 structure, so that the same code will be generated each time the program
 is compiled.<p>
+
+Anonymous structures at the outer-most declaration level are assigned a
+unique value based on hashing the fields within the structure using
+the MD5 hash algorithm:<p>
+
+<blockquote><pre>.class public explicit sealed serializable ansi
+          'struct (9XdODzujHI7gA0jgpJ72wA)' extends System.ValueType
+{
+    .size 4
+    .pack 4
+    .field [0] public int32 x
+}</pre></blockquote>
+
+Hashing ensures that two definitions of the structure in different
+modules will always evaluate to the same name.  See the function
+"<code>CreateNewAnonName</code>" in "<code>c_types.c</code>"
+within the Portable.NET source code for precise details of the hash
+algorithm to use.<p>
 
 <blockquote><font size="-1">Note: It would be desirable to allow the
 runtime engine to perform structure layout dynamically, rather than
@@ -561,7 +579,8 @@ union A
     .field [0] public float64 y
 }</pre></blockquote>
 
-Unions may only contain fields with "fixed" layout.<p>
+Unions may only contain fields with "fixed" layout.  Anonymous unions
+are named in a similar manner to anonymous structures.<p>
 
 <h3>4.6. Representation of bit fields</h3>
 
@@ -590,7 +609,39 @@ in the memory model (see section 2 for further details).<p>
     .field [8] public int32 w
 }</pre></blockquote>
 
-<h3>4.7. Array types</h3>
+<h3>4.7. Enumerated types</h3>
+
+Enumerated types are encoded using the same CLI mechanisms as C#.
+That is, enumerated types inherit from "<code>System.Enum</code>"
+and contain literal static fields for each constant value.
+The C type called "<code>enum A</code>" is named "<code>enum A</code>"
+within the final CLI output.<p>
+
+Anonymous enumerations are not encoded as CLI types.  Instead, every
+instance of the anonymous enumeration is replaced with the underlying
+type (usually <code>int32</code>).  This is necessary because there
+is no way to reliably give an anonymous enumeration the same name
+in every module that uses it.<p>
+
+<blockquote><pre>enum Color { Red, Green, Blue } x;
+enum { R, G, B } y;
+
+.field public static valuetype 'enum Color' 'x'
+.field public static int32 'y'
+
+.class public auto sealed serializable ansi
+              'enum Color' extends System.Enum
+{
+    .field public specialname rtspecialname int32 'value__'
+    .field public static literal valuetype
+              'enum Color' 'Red' = int32(0x00000000)
+    .field public static literal valuetype
+              'enum Color' 'Green' = int32(0x00000001)
+    .field public static literal valuetype
+              'enum Color' 'Blue' = int32(0x00000002)
+}</pre></blockquote>
+
+<h3>4.8. Array types</h3>
 
 Array types of the form "<code>A[]</code>" are mapped to a value
 type called "<code>array A[]</code>".  For example, "<code>int[]</code>"
@@ -668,7 +719,7 @@ The following is an example of encoding the two-dimensional array type
     .field [0] public specialname int32 elem__
 }</pre></blockquote>
 
-<h3>4.8. Native types</h3>
+<h3>4.9. Native types</h3>
 
 Sometimes it is necessary to access the native type representation of
 the underlying runtime engine, particularly when importing external
@@ -754,7 +805,7 @@ an appropriate memory model modifier set.  The compiler's bit order may not
 match the native platform's bit order, leading to problems with PInvoke'd
 functions.<p>
 
-<h3>4.9. Function pointer types</h3>
+<h3>4.10. Function pointer types</h3>
 
 CLI metadata uses the same representation for method signatures and
 pointers to methods.  C requires that signatures and pointers be
@@ -766,7 +817,7 @@ the "<code>OpenSystem.C.IsFunctionPointer</code>" modifier:
 .field public static method void * (int32) modopt(IsFunctionPointer) func
 </pre></blockquote>
 
-<h3>4.10. Argument types</h3>
+<h3>4.11. Argument types</h3>
 
 When arguments are passed to a function, it is sometimes necessary
 to alter the type to conform with C conventions or to work around
@@ -1246,11 +1297,11 @@ to be recompiled.<p>
     .try
     {
         // Increase the reference count, and check for the first call.
-        ldsfld '.init-count'::count
+        ldsfld int32 '.init-count'::count
         dup
         ldc.i4.1
         add
-        stsfld '.init-count'::count
+        stsfld int32 '.init-count'::count
         brtrue L1 
         leave runinit
     L1:
@@ -1293,11 +1344,11 @@ exit:
     .try
     {
         // Decrease the reference count, and check for the last call.
-        ldsfld '.init-count'::count
+        ldsfld int32 '.init-count'::count
         ldc.i4.1
         sub
         dup
-        stsfld '.init-count'::count
+        stsfld int32 '.init-count'::count
         brtrue L1 
         leave runfini
     L1:

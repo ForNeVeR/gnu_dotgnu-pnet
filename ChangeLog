@@ -5,6 +5,8 @@
 	it now depends upon "System.Design" and "System.Web" which are
 	not supported yet.
 
+	* tools/.cvsignore, tools/SqlSharp/.cvsignore: add cvsignore files.
+
 2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, class/Makefile.am, class/ByteFX.Data/ByteFX.Data.build,

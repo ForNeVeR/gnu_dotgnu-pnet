@@ -1,4 +1,9 @@
 
+2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_gather.c: fix a bug where "final virtual" was
+	being added to methods that weren't interface implementations.
+
 2003-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_reflect.c: fix a compile warning in previous checkin.

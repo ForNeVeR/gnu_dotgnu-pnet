@@ -2021,6 +2021,49 @@ static void CheckAbstractOverrides(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Fix up methods with the "public final virtual" attributes that
+ * we thought were interface member overrides that turned out not to
+ * be because there is an explicit override with the same signature.
+ */
+static void FixNonInterfaceMethods(ILClass *classInfo)
+{
+	ILMethod *method = 0;
+	ILOverride *override;
+	ILMethod *overMethod;
+	while((method = (ILMethod *)ILClassNextMemberByKind
+			(classInfo, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		/* Skip methods that aren't marked as "public final virtual" */
+		if(!ILMethod_IsPublic(method) || !ILMethod_IsFinal(method) ||
+		   !ILMethod_IsVirtual(method))
+		{
+			continue;
+		}
+
+		/* Look for an "Override" block with the same signature */
+		override = 0;
+		while((override = (ILOverride *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)override,
+					 IL_META_MEMBERKIND_OVERRIDE)) != 0)
+		{
+			overMethod = ILOverrideGetDecl(override);
+			if(!strcmp(ILMethod_Name(overMethod), ILMethod_Name(method)) &&
+			   ILTypeIdentical(ILMethod_Signature(overMethod),
+			   				   ILMethod_Signature(method)))
+			{
+				/* We've found a match, so assume that the
+				   "final virtual" flags are incorrect */
+				ILMemberSetAttrs((ILMember *)method,
+								 IL_META_METHODDEF_VIRTUAL |
+								 IL_META_METHODDEF_NEW_SLOT |
+								 IL_META_METHODDEF_FINAL, 0);
+				break;
+			}
+		}
+	}
+}
+
+/*
  * Create the members of a class node.
  */
 static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
@@ -2132,6 +2175,10 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	{
 		CheckAbstractOverrides(info, classInfo, classNode);
 	}
+
+	/* Fix up "public final virtual" methods that we thought we
+	   interface implementations but which turn out not to be */
+	FixNonInterfaceMethods(classInfo);
 
 	/* Return to the original scope */
 	info->currentScope = savedScope;

@@ -1733,6 +1733,7 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 	ILNode *child;
 	ILNode_ClassDefn *defn;
 	ILScope *scope;
+	ILScope *aliasScope;
 	ILNode *origDefn;
 	const char *name;
 	const char *namespace;
@@ -1751,9 +1752,16 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 			{
 				namespace = 0;
 			}
-			error = ILScopeDeclareType(parentScope, child,
+			
+			/* NOTE: this is sure to be a subscope of globalscope 
+			 *       and yet can contain the type correctly.*/
+			aliasScope=((ILNode_Namespace*)(defn->namespaceNode))->localScope;
+			if(!aliasScope)aliasScope=parentScope; /* making sure */
+			
+			error = ILScopeDeclareType(aliasScope, child,
 								   	   name, namespace, &scope,
 								   	   &origDefn);
+
 			if(error != IL_SCOPE_ERROR_OK)
 			{
 				/* Could not declare the type in the global scope */

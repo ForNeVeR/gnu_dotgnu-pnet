@@ -115,7 +115,7 @@ int ILIsBuiltinNumeric(ILType *type);
  * Determine if it is possible to coerce implicitly
  * from one type to another.
  */
-int ILCanCoerce(ILGenInfo *info, ILType *fromType, ILType *toType);
+int ILCanCoerce(ILGenInfo *info, ILType *fromType, ILType *toType,int indirect);
 
 /*
  * Determine if it is possible to coerce implicitly

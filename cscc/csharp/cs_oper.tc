@@ -85,7 +85,7 @@ static void ApplyUserBinaryOperator(ILGenInfo *info, ILMethod *method,
 	argType1=ILTypeGetParam(sig,1); 
 	argType2=ILTypeGetParam(sig,2);
 	
-	if(ILCanCoerce(info,CSSemGetType(*value1),argType1))
+	if(ILCanCoerce(info,CSSemGetType(*value1),argType1,1))
 	{
 		ILCoerce(info,node->expr1,
 					&(node->expr1),
@@ -93,7 +93,7 @@ static void ApplyUserBinaryOperator(ILGenInfo *info, ILMethod *method,
 					argType1);
 		/* CSSemSetRValue(*value1, argType1); *//* not needed */
 	}
-	if(ILCanCoerce(info,CSSemGetType(*value2),argType2))
+	if(ILCanCoerce(info,CSSemGetType(*value2),argType2,1))
 	{
 		ILCoerce(info,node->expr2,
 					&(node->expr2),
@@ -852,7 +852,6 @@ ILNode_SemAnalysis(ILNode_Assign)
 		CSSemSetRValue(value1, CSSemGetType(value1));
 		return value1;
 	}
-
 	/* Insert coercion nodes to convert the rvalue appropriately */
 	ILCoerce(info, node->expr2, &(node->expr2),
 			 CSSemGetType(value2), CSSemGetType(value1));
@@ -960,6 +959,7 @@ static CSSemValue AssignSem(ILGenInfo *info,
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, name, CSSemGetType(value1),
 									CSSemGetType(value2));
+
 	if(method)
 	{
 		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,

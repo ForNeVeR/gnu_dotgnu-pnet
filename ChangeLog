@@ -3,6 +3,10 @@
 
 	* cscc/csharp/cs_oper.tc: Correct a minor fix in coercion of the 
 	argument parameters.
+
+	* codegen/cg_coerce.c, codegen/cg_coerce.h, codegen/cg_resolve.c, 
+	cscc/csharp/cs_gather.tc, cscc/csharp/cs_oper.tc, cscc/csharp/cs_stmt.tc:
+	Allow for multiple step coercions with user defined operators.
 	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>
 

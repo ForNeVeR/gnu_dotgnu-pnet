@@ -37,20 +37,6 @@ extern	"C" {
 #define	IL_LINK_HASH_SIZE		512
 
 /*
- * The default system library link path.
- */
-#ifdef CSCC_LIB_PREFIX
-#define	LIB_PATH	\
-			CSCC_LIB_PREFIX "/lib:" \
-			"/usr/local/lib/cscc/lib:" \
-			"/usr/lib/cscc/lib"
-#else
-#define	LIB_PATH	\
-			"/usr/local/lib/cscc/lib:" \
-			"/usr/lib/cscc/lib"
-#endif
-
-/*
  * Determine if a directory exists.
  */
 static int DirExists(const char *pathname)
@@ -67,128 +53,64 @@ static int DirExists(const char *pathname)
 #endif
 }
 
-/*
- * Add a library directory to a linker context.
- */
-static void AddLibraryDir(ILLinker *linker, ILLibraryDir *libraryDir)
+int ILLinkerAddLibraryDir(ILLinker *linker, const char *pathname)
 {
-	ILLibraryDir *temp, *last;
+	int index;
+	char *dupStr;
+	char **newDirs;
 
 	/* Bail out if the directory doesn't exist, because there is
 	   no point adding it to the list if it won't contain anything */
-	if(!DirExists(libraryDir->name))
+	if(!DirExists(pathname))
 	{
-		ILFree(libraryDir);
-		return;
+		return 1;
 	}
 
 	/* Determine if the directory is already present.  There is
 	   no point searching the same directory twice */
-	last = 0;
-	temp = linker->libraryDirs;
-	while(temp != 0)
+	for(index = 0; index < linker->numLibraryDirs; ++index)
 	{
-		if(!strcmp(libraryDir->name, temp->name))
+		if(!strcmp(linker->libraryDirs[index], pathname))
 		{
-			ILFree(libraryDir);
-			return;
+			return 1;
 		}
-		last = temp;
-		temp = temp->next;
 	}
 
 	/* Add the directory to the list */
-	libraryDir->next = 0;
-	if(last)
-	{
-		last->next = libraryDir;
-	}
-	else
-	{
-		linker->libraryDirs = libraryDir;
-	}
-}
-
-int ILLinkerAddLibraryDir(ILLinker *linker, const char *pathname)
-{
-	ILLibraryDir *libraryDir;
-	libraryDir = (ILLibraryDir *)ILMalloc(sizeof(ILLibraryDir) +
-										  strlen(pathname));
-	if(!libraryDir)
+	dupStr = ILDupString(pathname);
+	if(!dupStr)
 	{
 		_ILLinkerOutOfMemory(linker);
 		return 0;
 	}
-	libraryDir->len = strlen(pathname);
-	strcpy(libraryDir->name, pathname);
-	AddLibraryDir(linker, libraryDir);
+	newDirs = (char **)ILRealloc(linker->libraryDirs,
+								 sizeof(char *) * (linker->numLibraryDirs + 1));
+	if(!newDirs)
+	{
+		ILFree(dupStr);
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	linker->libraryDirs = newDirs;
+	newDirs[(linker->numLibraryDirs)++] = dupStr;
 	return 1;
 }
 
-int ILLinkerAddSystemDirs(ILLinker *linker)
+void ILLinkerAddSystemDirs(ILLinker *linker)
 {
-	char *path;
-	int len;
-	ILLibraryDir *libraryDir;
-
-	/* Find the environment path to use for the system library directories */
-	path = getenv("CSCC_LIB_PATH");
-	if(!path || *path == '\0')
-	{
-		path = LIB_PATH;
-	}
-
-	/* Add all path elements to the list */
-	while(*path != '\0')
-	{
-		if(*path == ' ' || *path == ':')
-		{
-			++path;
-			continue;
-		}
-		len = 1;
-		while(path[len] != '\0' && path[len] != ':')
-		{
-			++len;
-		}
-		while(len > 0 && path[len - 1] == ' ')
-		{
-			--len;
-		}
-		libraryDir = (ILLibraryDir *)ILMalloc(sizeof(ILLibraryDir) + len);
-		if(!libraryDir)
-		{
-			_ILLinkerOutOfMemory(linker);
-			return 0;
-		}
-		ILMemCpy(libraryDir->name, path, len);
-		libraryDir->len = len;
-		libraryDir->name[len] = '\0';
-		AddLibraryDir(linker, libraryDir);
-		path += len;
-	}
-
-	/* Done */
-	return 1;
+	linker->useStdDirs = 1;
 }
 
 char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 {
 	int len;
-	int hasExt;
 	char *newName;
-	ILLibraryDir *libraryDir;
 
 	/* Does the filename contain a path specification? */
 	len = strlen(name);
-	hasExt = 0;
 	while(len > 0 && name[len - 1] != '/' && name[len - 1] != '\\')
 	{
 		--len;
-		if(name[len] == '.' && !hasExt)
-		{
-			hasExt = !ILStrICmp(name + len + 1, "dll");
-		}
 	}
 	if(len > 0)
 	{
@@ -207,47 +129,10 @@ char *ILLinkerResolveLibrary(ILLinker *linker, const char *name)
 	}
 
 	/* Search the library directories for the name */
-	libraryDir = linker->libraryDirs;
-	len = strlen(name);
-	while(libraryDir != 0)
-	{
-		if(hasExt)
-		{
-			/* The name already has the ".dll" extension */
-			newName = (char *)ILMalloc(libraryDir->len + len + 2);
-			if(!newName)
-			{
-				_ILLinkerOutOfMemory(linker);
-				return 0;
-			}
-			strcpy(newName, libraryDir->name);
-			newName[libraryDir->len] = '/';
-			strcpy(newName + libraryDir->len + 1, name);
-		}
-		else
-		{
-			/* Add the ".dll" extension when searching for the name */
-			newName = (char *)ILMalloc(libraryDir->len + len + 6);
-			if(!newName)
-			{
-				_ILLinkerOutOfMemory(linker);
-				return 0;
-			}
-			strcpy(newName, libraryDir->name);
-			newName[libraryDir->len] = '/';
-			strcpy(newName + libraryDir->len + 1, name);
-			strcpy(newName + libraryDir->len + 1 + len, ".dll");
-		}
-		if(ILFileExists(newName, (char **)0))
-		{
-			return newName;
-		}
-		ILFree(newName);
-		libraryDir = libraryDir->next;
-	}
-
-	/* We could not resolve the name */
-	return 0;
+	return ILImageSearchPath
+		(name, 0, 0,
+		 (const char **)(linker->libraryDirs), linker->numLibraryDirs,
+		 0, 0, !(linker->useStdDirs), 0);
 }
 
 /*

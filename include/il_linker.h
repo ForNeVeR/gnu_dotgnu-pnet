@@ -63,9 +63,8 @@ int ILLinkerAddLibraryDir(ILLinker *linker, const char *pathname);
 
 /*
  * Add all system library directories to a linker context.
- * Returns zero on error.
  */
-int ILLinkerAddSystemDirs(ILLinker *linker);
+void ILLinkerAddSystemDirs(ILLinker *linker);
 
 /*
  * Resolve a library name into a full pathname.  Returns an

@@ -561,10 +561,7 @@ int main(int argc, char *argv[])
 	}
 	if(useStdlib)
 	{
-		if(!ILLinkerAddSystemDirs(linker))
-		{
-			errors = 1;
-		}
+		ILLinkerAddSystemDirs(linker);
 	}
 
 	/* Add the libraries to the linker context */

@@ -1,4 +1,10 @@
 
+2002-07-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/Makefile.am, ilalink/ilalink.c, ilalink/link_create.c,
+	ilalink/link_library.c, ilalink/linker.h, include/il_linker.h:
+	normalize the linker's search path with the rest of the system.
+
 2002-07-02  Gopal.V  <gopalv82@symonds.net>
 
 	* doc/Doxyfile: Add Doxygen configuration file (contributed

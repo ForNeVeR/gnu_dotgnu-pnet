@@ -63,6 +63,8 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->libraries = 0;
 	linker->lastLibrary = 0;
 	linker->libraryDirs = 0;
+	linker->numLibraryDirs = 0;
+	linker->useStdDirs = 0;
 	linker->outOfMemory = 0;
 	linker->error = 0;
 	linker->resourceRVA = 0;
@@ -216,9 +218,7 @@ static void ReportUnresolved(ILLinker *linker)
 
 int ILLinkerDestroy(ILLinker *linker)
 {
-	int result;
-	ILLibraryDir *libraryDir;
-	ILLibraryDir *nextLibraryDir;
+	int result, index;
 
 	/* Report any remaining unresolved references */
 	ReportUnresolved(linker);
@@ -233,12 +233,13 @@ int ILLinkerDestroy(ILLinker *linker)
 	_ILLinkerDestroyLibraries(linker);
 
 	/* Destroy the library directory list */
-	libraryDir = linker->libraryDirs;
-	while(libraryDir != 0)
+	for(index = 0; index < linker->numLibraryDirs; ++index)
 	{
-		nextLibraryDir = libraryDir->next;
-		ILFree(libraryDir);
-		libraryDir = nextLibraryDir;
+		ILFree(linker->libraryDirs[index]);
+	}
+	if(linker->libraryDirs)
+	{
+		ILFree(linker->libraryDirs);
 	}
 
 	/* Destroy the image writer and determine the result value */

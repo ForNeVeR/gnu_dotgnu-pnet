@@ -98,7 +98,7 @@ int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info)
 	image = ILProgramItem_Image(method);
 	if(!ILImageIsSecure(image))
 	{
-		goto arraysOnly;
+		goto runtimeOnly;
 	}
 
 	/* Find the method's owner and bail out if no namespace */
@@ -167,13 +167,33 @@ int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info)
 		}
 	}
 
-	/* Perhaps this is a "runtime" method for an array? */
-arraysOnly:
+	/* Perhaps this is a "runtime" method for an array or delegate? */
+runtimeOnly:
 	if(_ILGetInternalArray(method, &isCtor, info))
 	{
 		if(isCtor)
 		{
 			/* Arrays only have allocation constructors */
+			if(ctorAlloc)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			/* This is a regular method */
+			return 1;
+		}
+	}
+	else if(_ILGetInternalDelegate(method, &isCtor, info))
+	{
+		if(isCtor)
+		{
+			/* Delegates only have allocation constructors */
 			if(ctorAlloc)
 			{
 				return 1;

@@ -364,6 +364,12 @@ int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info);
 int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info);
 
 /*
+ * Find internalcall information for a delegate method.
+ */
+int _ILGetInternalDelegate(ILMethod *method, int *isCtor,
+						   ILInternalInfo *info);
+
+/*
  * Look up an interface method.  Returns NULL if not found.
  */
 ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,

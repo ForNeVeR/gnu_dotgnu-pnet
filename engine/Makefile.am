@@ -9,13 +9,13 @@ libILEngine_a_SOURCES = cvm.c \
 						cvm_dasm.c \
 						cvm_lengths.c \
 						cvmc.c \
-						delegate.c \
 						heap.c \
 						internal.c \
 						layout.c \
 						lib_array.c \
 						lib_charinfo.c \
 						lib_decimal.c \
+						lib_delegate.c \
 						lib_diag.c \
 						lib_dir.c \
 						lib_emit.c \

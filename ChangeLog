@@ -5,6 +5,11 @@
 	engine/lib_defs.h, engine/lib_misc.c, engine/pinvoke.c,
 	samples/mscorlib.dll: begin implementing delegate support.
 
+	* engine/Makefile.am, engine/delegate.c, engine/engine.h,
+	engine/internal.c, engine/lib_delegate.c: implement the
+	internalcall support code for delegates; rename "delegate.c"
+	as "lib_delegate.c" for consistency with other library classes.
+
 2002-06-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/engine.h, engine/heap.c, engine/int_proto.h,

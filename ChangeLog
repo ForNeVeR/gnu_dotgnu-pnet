@@ -8,6 +8,8 @@
 
 	* configure.in: update working version to "0.6.3".
 
+	* System.Windows.Forms/Shortcut.cs: missing "CtrlN" and "CtrlShiftN".
+
 2004-01-02  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: minor fixes, pre-authenticate POST

@@ -24,6 +24,8 @@ using CSUnit;
 using System;
 using System.Threading;
 
+#if !ECMA_COMPAT
+
 public class TestAutoResetEvent
 	: TestCase
 {
@@ -65,3 +67,5 @@ public class TestAutoResetEvent
 		AssertEquals("WaitOne(set)", x, false);
 	}
 }
+
+#endif

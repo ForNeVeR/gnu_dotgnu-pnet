@@ -24,6 +24,8 @@ using CSUnit;
 using System;
 using System.Threading;
 
+#if !ECMA_COMPAT
+
 public class TestWaitHandle
 	: TestCase
 {
@@ -106,3 +108,5 @@ public class TestWaitHandle
 		AssertEquals("WaitAll(set, set)", x, true);
 	}
 }
+
+#endif

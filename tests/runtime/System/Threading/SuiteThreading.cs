@@ -29,9 +29,11 @@ public class SuiteThreading
 	{
 		TestSuite suite = new TestSuite("Threading Tests");
 		
+	#if !ECMA_COMPAT
 		suite.AddTests(typeof(TestWaitHandle));
 		suite.AddTests(typeof(TestManualResetEvent));
 		suite.AddTests(typeof(TestAutoResetEvent));
+	#endif
 		
 		return suite;
 	}

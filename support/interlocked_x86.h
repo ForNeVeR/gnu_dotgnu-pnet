@@ -155,9 +155,21 @@ static IL_INLINE void *ILInterlockedExchangePointers(void **destination, void *v
  */
 static IL_INLINE void ILInterlockedMemoryBarrier()
 {
-	ILInt32 x = 0;
-
-	ILInterlockedIncrement(&x);
+#if defined(CONFIG_X86_SSE2)
+	__asm__ __volatile__
+	(
+		"mfence"
+		:::
+		"memory"
+	);
+#else
+	__asm__ __volatile__
+	(
+		"lock; addl $0,0(%%esp)"
+		:::
+		"memory"
+	);
+#endif
 }
 
 #endif

@@ -225,7 +225,7 @@ ILNode *CSBuiltinConstant(char *name)
 	}
 	else
 	{
-		CSError("unknown builtin constant `%s'", name);
+		CCError("unknown builtin constant `%s'", name);
 		return ILNode_Null_create();
 	}
 }

@@ -96,7 +96,7 @@ static void PushTag(CSTag **stack, const char *name)
 	CSTag *tag = (CSTag *)ILMalloc(sizeof(CSTag) + strlen(name));
 	if(!tag)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	tag->next = *stack;
 	*stack = tag;
@@ -132,7 +132,7 @@ void CSValidateDocs(ILNode *docList)
 	reader = ILXMLCreate((ILXMLReadFunc)DocRead, &val, 0);
 	if(!reader)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 
 	/* Validate the XML text */
@@ -150,13 +150,13 @@ void CSValidateDocs(ILNode *docList)
 			{
 				if(stack)
 				{
-					CSErrorOnLine(val.filename, val.linenum,
+					CCErrorOnLine(val.filename, val.linenum,
 								  "unbalanced `<%s>' in documentation comment",
 								  stack->name);
 				}
 				else
 				{
-					CSErrorOnLine(val.filename, val.linenum,
+					CCErrorOnLine(val.filename, val.linenum,
 								  "unbalanced `</%s>' in documentation comment",
 								  ILXMLTagName(reader));
 				}
@@ -169,7 +169,7 @@ void CSValidateDocs(ILNode *docList)
 	/* Report an error if the tag stack is not empty */
 	if(stack != 0)
 	{
-		CSErrorOnLine(val.filename, val.linenum,
+		CCErrorOnLine(val.filename, val.linenum,
 					  "unbalanced `<%s>' in documentation comment",
 					  stack->name);
 	}

@@ -30,7 +30,7 @@ static void CheckForInstanceAccess(ILGenInfo *info, ILNode *node)
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
 	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot access instance members in static methods");
 	}
 }
@@ -51,7 +51,7 @@ ILNode_SemAnalysis(ILNode_This)
 	/* If the method is static, then we cannot use "this" */
 	if((method->modifiers & IL_META_METHODDEF_STATIC) != 0)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot use `this' in static methods");
 	}
 
@@ -293,7 +293,7 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 						newStr = (char *)ILMalloc(len + 1);
 						if(!newStr)
 						{
-							CSOutOfMemory();
+							CCOutOfMemory();
 						}
 						posn = 0;
 						len = 0;
@@ -329,7 +329,7 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 
 			/* If we get here, then the constant is not compatible
 			   with the type of the field */
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "literal field has an incorrect constant value");
 			return 0;
 		}
@@ -343,7 +343,7 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 		else
 		{
 			/* This is a literal without an actual constant value */
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "literal field does not have a constant value");
 			return 0;
 		}
@@ -430,7 +430,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 				   where only literals and types are allowed */
 				if(!ILField_IsStatic(field) || !ILField_IsLiteral(field))
 				{
-					CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`%s' is not declared as a type in the current scope",
 					  name);
 					value.kind = CS_SEMKIND_TYPE;
@@ -477,7 +477,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			{
 				/* We are performing semantic analysis of declarations,
 				   which does not permit methods to be used as types */
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`%s' is not declared as a type in the current scope",
 					  name);
 				value.kind = CS_SEMKIND_TYPE;
@@ -517,7 +517,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			{
 				/* We are performing semantic analysis of declarations,
 				   which does not permit properties to be used as types */
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`%s' is not declared as a type in the current scope",
 					  name);
 				value.kind = CS_SEMKIND_TYPE;
@@ -553,7 +553,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			else
 			{
 				/* Neither "get" nor "set" is supported */
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "property has neither `get' nor `set' methods");
 				value.kind = CS_SEMKIND_LVALUE;
 			}
@@ -724,7 +724,7 @@ ILNode_SemAnalysis(ILNode_DerefField)
 {
 	/* TODO */
 	CSSemValue value;
-	CSUnsafeMessage(info, (ILNode *)node, "unsafe field dereference");
+	CCUnsafeMessage(info, (ILNode *)node, "unsafe field dereference");
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;
@@ -777,7 +777,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 	/* Perform semantic analysis on the array expression */
 	if(!CSSemExpectValue(node->array, info, &(node->array), &value))
 	{
-		CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
+		CCErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
 					  "array or indexed value expected");
 		value.kind = CS_SEMKIND_LVALUE;
 		value.type = ILType_Int32;
@@ -828,7 +828,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 			}
 			else
 			{
-				CSErrorOnLine(yygetfilename(args[argNum].node),
+				CCErrorOnLine(yygetfilename(args[argNum].node),
 							  yygetlinenum(args[argNum].node),
 							  "no conversion from `%s' to `int'",
 							  CSTypeToName(args[argNum].type));
@@ -838,7 +838,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		/* Check the array's rank */
 		if(numArgs != ILTypeGetRank(value.type))
 		{
-			CSErrorOnLine(yygetfilename(node->indices),
+			CCErrorOnLine(yygetfilename(node->indices),
 						  yygetlinenum(node->indices),
 						  "incorrect number of indices for `%s'",
 						  CSTypeToName(value.type));
@@ -927,7 +927,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 			}
 			else
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "indexer does not have `get' or `set' accessors");
 				value.kind = CS_SEMKIND_LVALUE;
 			}
@@ -957,7 +957,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		else
 		{
 			/* No indexers are defined for this type */
-			CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
+			CCErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
 						  "array or indexed value expected");
 			value.kind = CS_SEMKIND_LVALUE;
 			value.type = ILType_Int32;
@@ -966,7 +966,7 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 	else
 	{
 		/* Not an appropriate value for array or indexer access */
-		CSErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
+		CCErrorOnLine(yygetfilename(node->array), yygetlinenum(node->array),
 					  "array or indexed value expected");
 		value.kind = CS_SEMKIND_LVALUE;
 		value.type = ILType_Int32;

@@ -50,79 +50,50 @@ extern void cs_restart(FILE *infile);
 /*
  * Forward declarations.
  */
-static int InitCodeGen(void);
-static void CloseCodeGen(void);
-static void ParseFile(FILE *file, const char *filename, int is_stdin);
 static void GenerateDocs(ILNode *tree, FILE *stream);
 
-int main(int argc, char *argv[])
+/*
+ * Configuration variables that are used by "cc_main.c".
+ */
+char const CCPluginName[] = "csdoc";
+int const CCPluginOptionParseMode = CMDLINE_PARSE_CSCC;
+int const CCPluginUsesPreproc = 1;
+int const CCPluginJVMSupported = 0;
+int const CCPluginSkipCodeGen = 1;
+
+int CCPluginInit(void)
 {
-	FILE *infile;
+	/* Nothing to do here */
+	return 1;
+}
+
+void CCPluginShutdown(int status)
+{
+	/* Nothing to do here */
+}
+
+int CCPluginParse(void)
+{
+	/*cs_debug = 1;*/
+	return cs_parse();
+}
+
+void CCPluginRestart(FILE *infile)
+{
+	cs_restart(infile);
+}
+
+void CCPluginSemAnalysis(void)
+{
+	/* Perform type gathering only */
+	CCCodeGen.typeGather = 1;
+	CCParseTree = CSTypeGather(&CCCodeGen, CCGlobalScope, CCParseTree);
+	CCCodeGen.typeGather = 0;
+}
+
+void CCPluginPostCodeGen(void)
+{
 	FILE *outfile;
-	int saw_stdin;
-	int posn;
-	int status;
-
-	/* Parse the command-line options as if we were "cscc" itself.
-	   This allows the user to modify the behaviour of the parse
-	   process in the same way as the C# compiler itself */
-	CSParseCommandLine(argc, argv, CMDLINE_PARSE_CSCC, "csdoc");
-
-	/* Initialize the code generator.  We don't actually generate
-	   code, but we need some support from the C# compiler core
-	   to build the declarations that we want */
-	status = InitCodeGen();
-	if(status != 0)
-	{
-		return status;
-	}
-
-	/* Parse all of the input files */
-	saw_stdin = 0;
-	for(posn = 0; posn < num_input_files; ++posn)
-	{
-		if(!strcmp(input_files[posn], "-"))
-		{
-			if(!saw_stdin)
-			{
-				ParseFile(stdin, "stdin", 1);
-				saw_stdin = 1;
-			}
-		}
-		else
-		{
-			if((infile = fopen(input_files[posn], "r")) == NULL)
-			{
-				perror(input_files[posn]);
-				CSHaveErrors |= 1;
-			}
-			else
-			{
-				ParseFile(infile, input_files[posn], 0);
-			}
-		}
-	}
-
-	/* Bail out if nothing was parsed, and we have errors */
-	if(!CSParseTree && CSHaveErrors != 0)
-	{
-		CloseCodeGen();
-		return 1;
-	}
-
-	/* Inform the code generator that we are doing semantic analysis */
-	CSCodeGen.semAnalysis = 1;
-	CSCodeGen.typeGather = 1;
-
-	/* Perform type gathering to get the IL form of all definitions */
-	CSParseTree = CSTypeGather(&CSCodeGen, CSGlobalScope, CSParseTree);
-
-	/* Bail out if we have errors */
-	if(CSHaveErrors != 0)
-	{
-		CloseCodeGen();
-		return 1;
-	}
 
 	/* Generate the XML-ized documentation */
 	if(output_filename && strcmp(output_filename, "-") != 0)
@@ -131,92 +102,21 @@ int main(int argc, char *argv[])
 		if(outfile == NULL)
 		{
 			perror(output_filename);
-			CloseCodeGen();
-			return 1;
+			CCHaveErrors = 1;
+			return;
 		}
-		GenerateDocs(CSParseTree, outfile);
+		GenerateDocs(CCParseTree, outfile);
 		fclose(outfile);
 	}
 	else
 	{
-		GenerateDocs(CSParseTree, stdout);
+		GenerateDocs(CCParseTree, stdout);
 	}
-
-	/* Close the code generator */
-	CloseCodeGen();
-
-	/* Done */
-	return 0;
 }
 
-/*
- * Initialize the code generator for tree building only.
- */
-static int InitCodeGen(void)
+int main(int argc, char *argv[])
 {
-	/* Initialize the code generator, with no assembly output */
-	ILGenInfoInit(&CSCodeGen, progname, NULL, 1);
-
-	/* TODO: load the system libraries */
-
-	/* Ready to go now */
-	return 0;
-}
-
-/*
- * Close and destroy the code generator.
- */
-static void CloseCodeGen(void)
-{
-	if(CSCodeGen.asmOutput != stdout && CSCodeGen.asmOutput != NULL)
-	{
-		fclose(CSCodeGen.asmOutput);
-	}
-	ILGenInfoDestroy(&CSCodeGen);
-}
-
-/*
- * Parse a single input file.
- */
-static void ParseFile(FILE *file, const char *filename, int is_stdin)
-{
-	int posn;
-
-	/* Set up the pre-processor */
-	CSPreProcInit(&CSPreProcessorStream, file, filename, !is_stdin);
-	if(CSStringListContains(extension_flags, num_extension_flags,
-							"latin1-charset"))
-	{
-		/* Disable UTF-8 pre-processing if the input charset is Latin-1 */
-		CSPreProcessorStream.utf8 = 0;
-	}
-	for(posn = 0; posn < num_pre_defined_symbols; ++posn)
-	{
-		CSPreProcDefine(&CSPreProcessorStream, pre_defined_symbols[posn]);
-	}
-	for(posn = 0; posn < num_user_defined_symbols; ++posn)
-	{
-		CSPreProcDefine(&CSPreProcessorStream, user_defined_symbols[posn]);
-	}
-
-	/* Define the "__DOC__" symbol in case the programmer wants
-	   to make the output depedent upon generating documentation */
-	CSPreProcDefine(&CSPreProcessorStream, "__DOC__");
-
-	/* We want documentation comments */
-	CSPreProcessorStream.docComments = 1;
-
-	/* Initialize the lexical analyser */
-	CSGetSetKeywords = 0;
-	cs_restart(NULL);
-
-	/* Parse the input file */
-	/*cs_debug = 1;*/
-	CSHaveErrors |= cs_parse();
-
-	/* Destroy the pre-processor stream */
-	CSHaveErrors |= CSPreProcessorStream.error;
-	CSPreProcDestroy(&CSPreProcessorStream);
+	return CCMain(argc, argv);
 }
 
 /*
@@ -457,7 +357,7 @@ static void GenerateDocsForField(FILE *stream, ILNode_FieldDeclaration *decl,
 	/* Bail out if the field is private, and "-fprivate" is not supplied */
 	if(IsMemberPrivate(decl->modifiers))
 	{
-		if(!CSStringListContains(extension_flags, num_extension_flags,
+		if(!CCStringListContains(extension_flags, num_extension_flags,
 								 "private"))
 		{
 			return;
@@ -761,7 +661,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	/* Bail out if the method is private, and "-fprivate" is not supplied */
 	if(IsMemberPrivate(decl->modifiers))
 	{
-		if(!CSStringListContains(extension_flags, num_extension_flags,
+		if(!CCStringListContains(extension_flags, num_extension_flags,
 								 "private"))
 		{
 			return;
@@ -918,7 +818,7 @@ static void GenerateDocsForProperty(FILE *stream,
 	/* Bail out if the property is private, and "-fprivate" is not supplied */
 	if(IsMemberPrivate(decl->modifiers))
 	{
-		if(!CSStringListContains(extension_flags, num_extension_flags,
+		if(!CCStringListContains(extension_flags, num_extension_flags,
 								 "private"))
 		{
 			return;
@@ -1129,7 +1029,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	   ILClass_IsNestedAssembly(classInfo) ||
 	   ILClass_IsNestedFamAndAssem(classInfo))
 	{
-		if(!CSStringListContains(extension_flags, num_extension_flags,
+		if(!CCStringListContains(extension_flags, num_extension_flags,
 								 "private"))
 		{
 			return;
@@ -1358,7 +1258,7 @@ static void GenerateDocs(ILNode *tree, FILE *stream)
 	char *libName;
 
 	/* Determine the library name from the command-line options */
-	libName = CSStringListGetValue(extension_flags, num_extension_flags,
+	libName = CCStringListGetValue(extension_flags, num_extension_flags,
 								   "library-name");
 
 	/* Output the library header information */

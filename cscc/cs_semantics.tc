@@ -96,7 +96,7 @@ ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent)
 	ILType *resultType = CSSemTypeVoid(type, info, parent);
 	if(resultType == ILType_Void)
 	{
-		CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+		CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
 					  "`void' type is not allowed in this context");
 		resultType = ILType_Int32;
 	}
@@ -111,7 +111,7 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
 		value = ILNode_SemAnalysis(type, info, parent);
 		if(value.kind != CS_SEMKIND_TYPE)
 		{
-			CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+			CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
 						  "invalid type specification");
 			return ILType_Int32;
 		}

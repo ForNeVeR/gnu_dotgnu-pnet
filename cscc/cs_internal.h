@@ -22,6 +22,7 @@
 #define	_CSCC_CS_INTERNAL_H
 
 #include "cs_defs.h"
+#include "cc_main.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -74,98 +75,10 @@ extern	"C" {
 #define	CS_NUMTYPE_FLOAT64			5
 
 /*
- * Pre-processor object that is being used by the lexer.
- */
-extern CSPreProc CSPreProcessorStream;
-
-/*
  * A flag that is set to 1 when "get" and "set" keywords
  * should be recognized by the lexical analyser.
  */
 extern int CSGetSetKeywords;
-
-/*
- * Error and warning indicators.
- */
-extern int CSHaveErrors;
-extern int CSHaveWarnings;
-
-/*
- * Code generator control object.
- */
-extern ILGenInfo CSCodeGen;
-
-/*
- * Final parse tree for a compilation unit.
- */
-extern ILNode *CSParseTree;
-
-/*
- * Global scope.
- */
-extern ILScope *CSGlobalScope;
-
-/*
- * Get the current line and filename being processed by the lexer.
- */
-unsigned long CSCurrentLine(void);
-char *CSCurrentFilename(void);
-
-/*
- * Report an error on the current line.
- */
-void CSError(const char *format, ...);
-
-/*
- * Report an error on a specific line.
- */
-void CSErrorOnLine(char *filename, unsigned long linenum,
-				   const char *format, ...);
-
-/*
- * Report a warning on the current line.
- */
-void CSWarning(const char *format, ...);
-
-/*
- * Report a typed warning on the current line.  The warning
- * will only be reported if the "type" is enabled.
- */
-void CSTypedWarning(const char *type, const char *format, ...);
-
-/*
- * Report a warning on a specific line.
- */
-void CSWarningOnLine(char *filename, unsigned long linenum,
-				     const char *format, ...);
-
-/*
- * Report a typed warning on a specific line.  The warning
- * will only be reported if the "type" is enabled.
- */
-void CSTypedWarningOnLine(char *filename, unsigned long linenum,
-				     	  const char *type, const char *format, ...);
-
-/*
- * Report either a warning or an error about unsafe constructs.
- */
-void CSUnsafeMessage(ILGenInfo *info, ILNode *node, const char *format, ...);
-
-/*
- * Report either a warning or an error about unsafe types.
- */
-void CSUnsafeTypeMessage(ILGenInfo *info, ILNode *node);
-
-/*
- * Enter an unsafe context, reporting a warning or error
- * about the context as necessary.
- */
-void CSUnsafeEnter(ILGenInfo *info, ILNode *node, const char *format, ...);
-
-/*
- * Leave an unsafe context.
- */
-void CSUnsafeLeave(ILGenInfo *info);
 
 /*
  * Determine if a type or parameter node contains unsafe types.

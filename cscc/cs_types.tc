@@ -92,7 +92,7 @@ ILNode_SemAnalysis(ILNode_ArrayType)
 	arrayType = ILTypeCreateArray(info->context, node->numDimensions, type);
 	if(!arrayType)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	elemType = node->type;
 	while(yykind(elemType) == yykindof(ILNode_ArrayType))
@@ -102,7 +102,7 @@ ILNode_SemAnalysis(ILNode_ArrayType)
 			 arrayType);
 		if(!arrayType)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		elemType = ((ILNode_ArrayType *)elemType)->type;
 	}
@@ -124,7 +124,7 @@ ILNode_SemAnalysis(ILNode_PtrType)
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
 	if(value.kind != CS_SEMKIND_TYPE)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid pointer element type");
 		value.kind = CS_SEMKIND_TYPE;
 		value.type = ILType_Int32;
@@ -136,7 +136,7 @@ ILNode_SemAnalysis(ILNode_PtrType)
 								 value.type);
 	if(!(value.type))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	return value;
 }
@@ -162,7 +162,7 @@ ILNode_SemAnalysis(ILNode_ObjectType)
 	value.type = ILFindSystemType(info, "Object");
 	if(!(value.type))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	return value;
 }
@@ -177,7 +177,7 @@ ILNode_SemAnalysis(ILNode_StringType)
 	value.type = ILFindSystemType(info, "String");
 	if(!(value.type))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	return value;
 }
@@ -192,7 +192,7 @@ ILNode_SemAnalysis(ILNode_DecimalType)
 	value.type = ILFindSystemType(info, "Decimal");
 	if(!(value.type))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	return value;
 }
@@ -262,7 +262,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 	{
 		if(!len || SuffixListValue(node->suffixes, 0) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`void' not permitted as a local variable type");
 			value.kind = CS_SEMKIND_TYPE;
 			value.type = ILType_Int32;
@@ -281,7 +281,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 			type = ILTypeCreateArray(info->context, count, type);
 			if(!type)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			++posn;
 		}
@@ -302,7 +302,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 				type = ILTypeCreateArray(info->context, count, type);
 				if(!type)
 				{
-					CSOutOfMemory();
+					CCOutOfMemory();
 				}
 			}
 			posn += numRanks;
@@ -313,7 +313,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 			type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR, type);
 			if(!type)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			++posn;
 		}

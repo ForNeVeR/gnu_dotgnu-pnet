@@ -42,7 +42,7 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	/* Validate the value */
 	if(!CSIsSemValue(value.kind))
 	{
-		CSErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
+		CCErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
 					  "invalid value supplied to cast");
 		if(type.kind == CS_SEMKIND_TYPE)
 		{
@@ -57,7 +57,7 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	/* Validate the type */
 	if(type.kind != CS_SEMKIND_TYPE)
 	{
-		CSErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+		CCErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
 					  "invalid type supplied to cast");
 		type.type = value.type;
 	}
@@ -65,7 +65,7 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	/* Determine if we can cast between the types */
 	if(!ILCast(info, node->expr2, &(node->expr2), value.type, type.type))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot cast from `%s' to `%s'",
 					  CSTypeToName(value.type), CSTypeToName(type.type));
 	}

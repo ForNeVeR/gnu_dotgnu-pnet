@@ -8,6 +8,16 @@
 	plugin entry point code into a separate "compiler common" library;
 	modify "cscc" to use the new library.
 
+	* cscc/Makefile.am, cscc/cc_errors.c, cscc/cc_main.c, cscc/cc_main.h,
+	cscc/cs_cast.tc, cscc/cs_const.tc, cscc/cs_decls.tc, cscc/cs_defs.tc,
+	cscc/cs_gather.c, cscc/cs_grammar.y, cscc/cs_internal.h,
+	cscc/cs_invoke.tc, cscc/cs_lookup.c, cscc/cs_lvalue.tc, cscc/cs_main.c,
+	cscc/cs_misc.tc, cscc/cs_modifiers.c, cscc/cs_oper.tc,
+	cscc/cs_scanner.l, cscc/cs_semantics.tc, cscc/cs_stmt.tc,
+	cscc/cs_types.tc, cscc/cs_valdoc.c, cscc/csdoc.c: modify the
+	"cscc-cs" plugin and the "csdoc" program to use the
+	"compiler common" library.
+
 2002-03-07 Gopal.V <gopalv82@yahoo.com>
 
 	* ildiff/ildiff.c fixed ILtype bug by replacing ILTypeIdentical

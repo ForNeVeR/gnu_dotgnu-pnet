@@ -32,59 +32,59 @@ static void ModifierError(char *filename, long linenum,
 {
 	if((modifiers & CS_MODIFIER_PUBLIC) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "public");
+		CCErrorOnLine(filename, linenum, msg, "public");
 	}
 	if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "private");
+		CCErrorOnLine(filename, linenum, msg, "private");
 	}
 	if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "protected");
+		CCErrorOnLine(filename, linenum, msg, "protected");
 	}
 	if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "internal");
+		CCErrorOnLine(filename, linenum, msg, "internal");
 	}
 	if((modifiers & CS_MODIFIER_NEW) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "new");
+		CCErrorOnLine(filename, linenum, msg, "new");
 	}
 	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "abstract");
+		CCErrorOnLine(filename, linenum, msg, "abstract");
 	}
 	if((modifiers & CS_MODIFIER_SEALED) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "sealed");
+		CCErrorOnLine(filename, linenum, msg, "sealed");
 	}
 	if((modifiers & CS_MODIFIER_STATIC) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "static");
+		CCErrorOnLine(filename, linenum, msg, "static");
 	}
 	if((modifiers & CS_MODIFIER_READONLY) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "readonly");
+		CCErrorOnLine(filename, linenum, msg, "readonly");
 	}
 	if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "virtual");
+		CCErrorOnLine(filename, linenum, msg, "virtual");
 	}
 	if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "override");
+		CCErrorOnLine(filename, linenum, msg, "override");
 	}
 	if((modifiers & CS_MODIFIER_EXTERN) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "extern");
+		CCErrorOnLine(filename, linenum, msg, "extern");
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "unsafe");
+		CCErrorOnLine(filename, linenum, msg, "unsafe");
 	}
 	if((modifiers & CS_MODIFIER_VOLATILE) != 0)
 	{
-		CSErrorOnLine(filename, linenum, msg, "volatile");
+		CCErrorOnLine(filename, linenum, msg, "volatile");
 	}
 }
 
@@ -116,17 +116,17 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `protected'");
 			}
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `internal'");
 			}
 		}
@@ -135,12 +135,12 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `internal' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `internal' and `protected'");
 			}
 		}
@@ -149,13 +149,13 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "`private' modifier is not permitted "
 						"on non-nested types");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "`protected' modifier is not permitted "
 							  "on non-nested types");
 			}
@@ -164,7 +164,7 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 		/* The "new" modifier is not allowed on top-level classes */
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`new' modifier is not permitted on non-nested types");
 		}
 	}
@@ -176,17 +176,17 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NESTED_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `protected'");
 			}
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `internal'");
 			}
 		}
@@ -195,12 +195,12 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NESTED_PRIVATE;
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `private' and `internal'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `private' and `protected'");
 			}
 		}
@@ -269,17 +269,17 @@ ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 			attrs = IL_META_TYPEDEF_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `protected'");
 			}
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `internal'");
 			}
 		}
@@ -288,12 +288,12 @@ ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `internal' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `internal' and `protected'");
 			}
 		}
@@ -302,13 +302,13 @@ ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "`private' modifier is not permitted "
 							  "on non-nested delegates");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "`protected' modifier is not permitted "
 							  "on non-nested delegates");
 			}
@@ -317,7 +317,7 @@ ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 		/* The "new" modifier is not allowed on top-level delegates */
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "`new' modifier is not permitted on non-nested delegates");
 		}
 	}
@@ -329,17 +329,17 @@ ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 			attrs = IL_META_TYPEDEF_NESTED_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `protected'");
 			}
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `public' and `internal'");
 			}
 		}
@@ -348,12 +348,12 @@ ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 			attrs = IL_META_TYPEDEF_NESTED_PRIVATE;
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `private' and `internal'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "cannot use both `private' and `protected'");
 			}
 		}
@@ -413,17 +413,17 @@ static ILUInt32 ValidateAccess(ILNode *node, ILUInt32 modifiers)
 	{
 		if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `public' and `private'");
 		}
 		if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `public' and `protected'");
 		}
 		if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `public' and `internal'");
 		}
 		return IL_META_FIELDDEF_PUBLIC;
@@ -432,12 +432,12 @@ static ILUInt32 ValidateAccess(ILNode *node, ILUInt32 modifiers)
 	{
 		if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `private' and `internal'");
 		}
 		if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `private' and `protected'");
 		}
 		return IL_META_FIELDDEF_PRIVATE;
@@ -543,22 +543,22 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 		attrs |= IL_META_METHODDEF_STATIC;
 		if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `static' and `virtual'");
 		}
 		if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `static' and `abstract'");
 		}
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `static' and `override'");
 		}
 		if((modifiers & CS_MODIFIER_SEALED) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `static' and `sealed'");
 		}
 	}
@@ -571,17 +571,17 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 		}
 		else if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `override' and `new'");
 		}
 		if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `abstract' and `virtual'");
 		}
 		if((modifiers & CS_MODIFIER_SEALED) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `abstract' and `sealed'");
 		}
 	}
@@ -590,12 +590,12 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT;
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `virtual' and `override'");
 		}
 		if((modifiers & CS_MODIFIER_SEALED) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `virtual' and `sealed'");
 		}
 	}
@@ -604,7 +604,7 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 		attrs |= IL_META_METHODDEF_VIRTUAL | CS_SPECIALATTR_OVERRIDE;
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `override' and `new'");
 		}
 		if((modifiers & CS_MODIFIER_SEALED) != 0)
@@ -616,7 +616,7 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 	{
 		if((modifiers & CS_MODIFIER_SEALED) != 0)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use `sealed' without `override'");
 		}
 	}
@@ -724,12 +724,12 @@ ILUInt32 CSModifiersToOperatorAttrs(ILNode *node, ILUInt32 modifiers)
 	ILUInt32 attrs = 0;
 	if((modifiers & CS_MODIFIER_PUBLIC) == 0)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "operators must have `public' access");
 	}
 	if((modifiers & CS_MODIFIER_STATIC) == 0)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "operators must have `static' access");
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)

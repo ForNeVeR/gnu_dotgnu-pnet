@@ -121,7 +121,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
 		if(!method)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
 		*parent = ILNode_UserBinaryOp_create
@@ -136,7 +136,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Could not find a suitable operator */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `%s'", errorName);
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Int32;
@@ -219,7 +219,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
 		if(!method)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		returnType = ILTypeGetReturn(ILMethod_Signature(method));
 		*parent = ILNode_UserUnaryOp_create
@@ -233,7 +233,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 
 	/* Could not find a suitable operator */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to unary `%s'", errorName);
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -321,7 +321,7 @@ ILNode_SemAnalysis(ILNode_Add)
 
 	/* Could not find a suitable operator */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `+'");
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Int32;
@@ -460,7 +460,7 @@ ILNode_SemAnalysis(ILNode_Assign)
 	if(value1.kind != CS_SEMKIND_LVALUE &&
 	   value1.kind != CS_SEMKIND_SVALUE)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in assignment");
 		if(value1.kind != CS_SEMKIND_RVALUE)
 		{
@@ -474,7 +474,7 @@ ILNode_SemAnalysis(ILNode_Assign)
 	if(!CSSemExpectValue(node->expr2, info, &(node->expr2), &value2) ||
 	   !ILCanCoerceNode(info, node->expr2, value2.type, value1.type))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  "incompatible types in assignment: no conversion from `%s' to `%s'",
 		  CSTypeToName(value2.type), CSTypeToName(value1.type));
 		value1.kind = CS_SEMKIND_RVALUE;
@@ -511,7 +511,7 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	/* The first argument must be an lvalue */
 	if(value1.kind != CS_SEMKIND_LVALUE)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in assignment");
 		if(value1.kind != CS_SEMKIND_RVALUE)
 		{
@@ -561,7 +561,7 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Could not find a suitable operator */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `%s'", errorName);
 	if(value1.kind == CS_SEMKIND_LVALUE)
 	{
@@ -697,7 +697,7 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	if(value.kind != CS_SEMKIND_LVALUE)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid lvalue in increment");
 		if(value.kind != CS_SEMKIND_RVALUE)
 		{
@@ -740,7 +740,7 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 	method = FindUserUnaryOperator(info, opName, value.type);
 	if(!method)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to unary `%s'", errorName);
 	}
 	else
@@ -803,7 +803,7 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	/* Perform semantic analysis on the value */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid boolean expression");
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Boolean;
@@ -819,7 +819,7 @@ ILNode_SemAnalysis(ILNode_ToBool)
 	/* We need a class or a value type if not boolean */
 	if(!ILType_IsValueType(value.type) && !ILType_IsClass(value.type))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no conversion from `%s' to `bool'",
 					  CSTypeToName(value.type));
 		value.kind = CS_SEMKIND_RVALUE;
@@ -839,7 +839,7 @@ ILNode_SemAnalysis(ILNode_ToBool)
 					(info, classInfo, "op_False", value.type, ILType_Boolean);
 	if(!trueMethod && !falseMethod)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no conversion from `%s' to `bool'",
 					  CSTypeToName(value.type));
 		value.kind = CS_SEMKIND_RVALUE;
@@ -854,7 +854,7 @@ ILNode_SemAnalysis(ILNode_ToBool)
 							(info->image, (ILMember *)trueMethod);
 		if(!trueMethod)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 	}
 	if(falseMethod)
@@ -863,7 +863,7 @@ ILNode_SemAnalysis(ILNode_ToBool)
 							(info->image, (ILMember *)falseMethod);
 		if(!falseMethod)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 	}
 
@@ -892,7 +892,7 @@ ILNode_SemAnalysis(ILNode_ToConst)
 	if(!CSIsSemValue(value.kind) ||
 	   !ILNode_EvalConst(node->expr, info, &evalue))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "constant value required");
 		if(!CSIsSemValue(value.kind))
 		{
@@ -918,7 +918,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
 	{
 	error:
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operand to unary `!'");
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Boolean;
@@ -988,7 +988,7 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 						(info->image, (ILMember *)method1);
 			if(!method1)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			if(method2)
 			{
@@ -996,7 +996,7 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 							(info->image, (ILMember *)method2);
 				if(!method2)
 				{
-					CSOutOfMemory();
+					CCOutOfMemory();
 				}
 			}
 			if(method3)
@@ -1005,7 +1005,7 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 							(info->image, (ILMember *)method3);
 				if(!method3)
 				{
-					CSOutOfMemory();
+					CCOutOfMemory();
 				}
 			}
 			*parent = ILNode_UserLogicalAnd_create
@@ -1036,7 +1036,7 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 
 	/* Report an argument error */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `&&'");
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Boolean;
@@ -1079,7 +1079,7 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 						(info->image, (ILMember *)method1);
 			if(!method1)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			if(method2)
 			{
@@ -1087,7 +1087,7 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 							(info->image, (ILMember *)method2);
 				if(!method2)
 				{
-					CSOutOfMemory();
+					CCOutOfMemory();
 				}
 			}
 			if(method3)
@@ -1096,7 +1096,7 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 							(info->image, (ILMember *)method3);
 				if(!method3)
 				{
-					CSOutOfMemory();
+					CCOutOfMemory();
 				}
 			}
 			*parent = ILNode_UserLogicalOr_create
@@ -1127,7 +1127,7 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 
 	/* Report an argument error */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `||'");
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Boolean;
@@ -1271,7 +1271,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Could not find a suitable operator */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to binary `%s'", errorName);
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Int32;
@@ -1340,7 +1340,7 @@ ILNode_SemAnalysis(ILNode_Ge)
 ILNode_SemAnalysis(ILNode_Deref)
 {
 	CSSemValue value;
-	CSUnsafeMessage(info, (ILNode *)node, "unsafe pointer dereference");
+	CCUnsafeMessage(info, (ILNode *)node, "unsafe pointer dereference");
 	/* TODO */
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
@@ -1354,7 +1354,7 @@ ILNode_SemAnalysis(ILNode_AddressOf)
 {
 	/* TODO */
 	CSSemValue value;
-	CSUnsafeMessage(info, (ILNode *)node, "unsafe address operator");
+	CCUnsafeMessage(info, (ILNode *)node, "unsafe address operator");
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;
@@ -1407,7 +1407,7 @@ ILNode_SemAnalysis(ILNode_Conditional)
 
 	/* Report an error with the arguments to "?:" */
 error:
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "invalid operands to ternary `?:'");
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Int32;
@@ -1451,7 +1451,7 @@ ILNode_SemAnalysis(ILNode_Comma)
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to binary `,'");
 	}
 	return value2;
@@ -1470,7 +1470,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	/* Perform semantic analysis on the two arguments */
 	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to binary `as'");
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILFindSystemType(info, "Object");
@@ -1480,7 +1480,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	/* The type must be an object reference type */
 	if(!ILTypeIsReference(type))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "reference type required");
 		type = ILFindSystemType(info, "Object");
 	}
@@ -1507,7 +1507,7 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	}
 
 	/* Report an error for the conversion */
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  		  "no conversion from `%s' to `%s'",
 		  		  CSTypeToName(value.type), CSTypeToName(type));
 	return result;
@@ -1526,7 +1526,7 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 	/* Perform semantic analysis on the two arguments */
 	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to binary `is'");
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILFindSystemType(info, "Object");
@@ -1544,7 +1544,7 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 		if(ILTypeIsReference(value.type))
 		{
 			/* Reference types: test the expression against null */
-			CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
 				    "`is' expression is equivalent to a test against `null'");
 			*parent = ILNode_Ne_create(node->expr1, ILNode_Null_create());
 		}
@@ -1552,7 +1552,7 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 		{
 			/* Value types: the result is always true, but we should
 			   still evaluate the expression for its side-effects */
-			CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
 						    "`is' expression is always true");
 			*parent = ILNode_Comma_create(node->expr1, ILNode_True_create());
 		}
@@ -1570,7 +1570,7 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 
 	/* The result will always be "false", but we should still
 	   evaluate the expression for its side-effects */
-	CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+	CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
 		  		    "`is' expression is always false");
 	*parent = ILNode_Comma_create(node->expr1, ILNode_False_create());
 	return result;

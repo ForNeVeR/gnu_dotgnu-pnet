@@ -38,7 +38,7 @@ static void StmtSem(ILNode *node, ILGenInfo *info, ILNode **parent)
 		   value.kind != CS_SEMKIND_LVALUE &&
 		   value.kind != CS_SEMKIND_RVALUE)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid statement");
 		}
 	}
@@ -240,7 +240,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	CSSemValue value;
 	if(CSHasUnsafeType(node->type))
 	{
-		CSUnsafeTypeMessage(info, (ILNode *)node);
+		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
@@ -295,10 +295,10 @@ static unsigned long CountLabelsAndFindDefault(ILNode *sections,
 				/* This is the switch's default label */
 				if(prevDefLabel)
 				{
-					CSErrorOnLine(yygetfilename(caseNode),
+					CCErrorOnLine(yygetfilename(caseNode),
 						  yygetlinenum(caseNode),
 						  "multiple `default' labels in `switch' statement");
-					CSErrorOnLine(yygetfilename(prevDefLabel),
+					CCErrorOnLine(yygetfilename(prevDefLabel),
 						  yygetlinenum(prevDefLabel),
 						  "previous `default' label here");
 				}
@@ -481,7 +481,7 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 				if(!CSSemExpectValue(caseLabel->expr, info,
 									 &(caseLabel->expr), &value))
 				{
-					CSErrorOnLine(yygetfilename(caseLabel->expr),
+					CCErrorOnLine(yygetfilename(caseLabel->expr),
 								  yygetlinenum(caseLabel->expr),
 								  "invalid case label expression");
 					continue;
@@ -491,7 +491,7 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 				if(!ILCoerce(info, caseLabel->expr, &(caseLabel->expr),
 							 value.type, switchType))
 				{
-					CSErrorOnLine(yygetfilename(caseLabel->expr),
+					CCErrorOnLine(yygetfilename(caseLabel->expr),
 								  yygetlinenum(caseLabel->expr),
 								  "no conversion from `%s' to `%s'",
 								  CSTypeToName(value.type),
@@ -504,7 +504,7 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 				   !ILGenCastConst(info, &evalValue, evalValue.valueType,
 				   				   switchMachineType))
 				{
-					CSErrorOnLine(yygetfilename(caseLabel->expr),
+					CCErrorOnLine(yygetfilename(caseLabel->expr),
 								  yygetlinenum(caseLabel->expr),
 								  "case expression is not constant");
 					continue;
@@ -525,7 +525,7 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 		/* The body must end in some kind of return or jump statement */
 		if(!ILNodeEndsInReturn(((ILNode_SwitchSection *)section)->stmt))
 		{
-			CSErrorOnLine(yygetfilename(section), yygetlinenum(section),
+			CCErrorOnLine(yygetfilename(section), yygetlinenum(section),
 						  "`switch' section falls through");
 		}
 	}
@@ -561,10 +561,10 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 		{
 			if(CompareCaseLabels(&(values[posn]), &(values[posn + 1])) == 0)
 			{
-				CSErrorOnLine(yygetfilename(values[posn + 1].caseLabel),
+				CCErrorOnLine(yygetfilename(values[posn + 1].caseLabel),
 				              yygetlinenum(values[posn + 1].caseLabel),
 							  "duplicate case expression");
-				CSErrorOnLine(yygetfilename(values[posn].caseLabel),
+				CCErrorOnLine(yygetfilename(values[posn].caseLabel),
 				              yygetlinenum(values[posn].caseLabel),
 							  "previous definition here");
 			}
@@ -662,7 +662,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 	/* Perform semantic analysis on the expression */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
 	{
-		CSErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
 					  "invalid expression for `switch' statement");
 		actualType = ILType_Int32;
 	}
@@ -698,7 +698,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 			}
 			else
 			{
-				CSErrorOnLine(yygetfilename(node->expr),
+				CCErrorOnLine(yygetfilename(node->expr),
 					  yygetlinenum(node->expr),
 					  "`%s' is invalid as the governing type for a `switch'",
 					  CSTypeToName(actualType));
@@ -731,7 +731,7 @@ ILNode_SemAnalysis(ILNode_Switch)
 	}
 	if(!(node->switchValues))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 
 	/* Perform semantic analysis on the switch body and compute the values */
@@ -824,12 +824,12 @@ ILNode_SemAnalysis(ILNode_Break)
 	{
 		if(StmtContextOK(info, CS_STMT_FINALLY, 0))
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`break' used inside `finally' clause");
 		}
 		else
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`break' used outside loop or switch");
 		}
 	}
@@ -848,12 +848,12 @@ ILNode_SemAnalysis(ILNode_Continue)
 	{
 		if(StmtContextOK(info, CS_STMT_FINALLY, 0))
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`continue' used inside `finally' clause");
 		}
 		else
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`continue' used outside loop");
 		}
 	}
@@ -872,12 +872,12 @@ ILNode_SemAnalysis(ILNode_Return)
 		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo));
 	if(returnType != ILType_Void)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "`return' with no value, in method returning non-void");
 	}
 	if(!StmtContextOK(info, 0, CS_STMT_FINALLY))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  		  "`return' used inside `finally' clause");
 	}
 	return CSSemValueDefault;
@@ -894,7 +894,7 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 	/* Perform semantic analysis on the expression */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid return value");
 		return CSSemValueDefault;
 	}
@@ -904,7 +904,7 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo));
 	if(returnType == ILType_Void)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`return' with a value, in method returning void");
 	}
 	else
@@ -912,7 +912,7 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 		/* Coerce to the return type */
 		if(!ILCoerce(info, node->expr, &(node->expr), value.type, returnType))
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  		  "incompatible types in return: "
 						  		"no conversion from `%s' to `%s'",
 						  CSTypeToName(value.type), CSTypeToName(returnType));
@@ -922,7 +922,7 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 	/* Check that the return was not used inside a "finally" clause */
 	if(!StmtContextOK(info, 0, CS_STMT_FINALLY))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  		  "`return' used inside `finally' clause");
 	}
 
@@ -938,7 +938,7 @@ ILNode_SemAnalysis(ILNode_Throw)
 	CSSemValue value;
 	if(!StmtContextOK(info, CS_STMT_CATCH, CS_STMT_FINALLY | CS_STMT_TRY))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 	  		  "`throw' with no value must be used inside a `catch' clause");
 	}
 	value.kind = CS_SEMKIND_VOID;
@@ -957,7 +957,7 @@ ILNode_SemAnalysis(ILNode_ThrowExpr)
 	/* Perform semantic analysis on the value */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 	  		  		  "invalid throw expression");
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Null;
@@ -967,7 +967,7 @@ ILNode_SemAnalysis(ILNode_ThrowExpr)
 	exceptionClass = ILFindSystemType(info, "Exception");
 	if(!ILCoerce(info, node->expr, &(node->expr), value.type, exceptionClass))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 	  		  		  "no conversion from `%s' to `%s'",
 					  CSTypeToName(value.type), CSTypeToName(exceptionClass));
 	}
@@ -1032,7 +1032,7 @@ ILNode_SemAnalysis(ILNode_CatchClause)
 		thrownType = CSSemType(node->type, info, &(node->type));
 		if(!ILCanCoerce(info, thrownType, exceptionType))
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  		  		  "`%s' does not inherit from `%s'",
 						  CSTypeToName(thrownType),
 						  CSTypeToName(exceptionType));
@@ -1054,12 +1054,12 @@ ILNode_SemAnalysis(ILNode_CatchClause)
 			method->localVarSig = ILTypeCreateLocalList(info->context);
 			if(!(method->localVarSig))
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 		}
 		if(!ILTypeAddLocal(info->context, method->localVarSig, thrownType))
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 
 		/* Create a local variable entry in the current scope */
@@ -1116,7 +1116,7 @@ ILNode_SemAnalysis(ILNode_Lock)
 	/* Perform semantic analysis on the lock expression */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
 	{
-		CSErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
 					  "invalid lock expression");
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = objectType;
@@ -1125,7 +1125,7 @@ ILNode_SemAnalysis(ILNode_Lock)
 	/* Coerce the lock expression to "System.Object" */
 	if(!ILCoerce(info, node->expr, &(node->expr), value.type, objectType))
 	{
-		CSErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
 					  "no conversion from `%s' to `%s'",
 					  CSTypeToName(value.type), CSTypeToName(objectType));
 	}
@@ -1179,9 +1179,9 @@ JavaGenDiscard(ILNode_Using)
 ILNode_SemAnalysis(ILNode_Unsafe)
 {
 	CSSemValue value;
-	CSUnsafeEnter(info, (ILNode *)node, "unsafe statement");
+	CCUnsafeEnter(info, (ILNode *)node, "unsafe statement");
 	StmtSem(node->stmt, info, &(node->stmt));
-	CSUnsafeLeave(info);
+	CCUnsafeLeave(info);
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -1210,10 +1210,10 @@ ILNode_SemAnalysis(ILNode_Fixed)
 {
 	/* TODO */
 	CSSemValue value;
-	CSUnsafeMessage(info, (ILNode *)node, "unsafe `fixed' statement");
+	CCUnsafeMessage(info, (ILNode *)node, "unsafe `fixed' statement");
 	if(info->outputIsJava)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`fixed' disallowed when compiling to Java bytecode");
 	}
 	value.kind = CS_SEMKIND_VOID;
@@ -1301,12 +1301,12 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 		if(data)
 		{
 			/* The name is already declared in this scope */
-			CSErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
+			CCErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
 						  "`%s' is already declared in this scope", name);
 			errorNode = ILScopeDataGetNode(data);
 			if(errorNode)
 			{
-				CSErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+				CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
 							  "previous declaration here");
 			}
 		}
@@ -1318,12 +1318,12 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 				method->localVarSig = ILTypeCreateLocalList(info->context);
 				if(!(method->localVarSig))
 				{
-					CSOutOfMemory();
+					CCOutOfMemory();
 				}
 			}
 			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 
 			/* Create a local variable entry in the current scope */

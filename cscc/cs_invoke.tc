@@ -94,7 +94,7 @@ ILNode_SemAnalysis(ILNode_ArgList)
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid operands to binary `,'");
 	}
 	return value2;
@@ -110,7 +110,7 @@ ILNode_SemAnalysis(ILNode_Argument)
 		if(value.kind != CS_SEMKIND_LVALUE ||
 		   yyisa(node->expression, ILNode_LValueNoRef))
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid lvalue in `%s' argument",
 						  (node->modifier == ILParamMod_out
 						  		? "out" : "ref"));
@@ -127,7 +127,7 @@ ILNode_SemAnalysis(ILNode_Argument)
 		}
 		if(info->outputIsJava)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "`%s' arguments not permitted when compiling to Java bytecode",
 			  (node->modifier == ILParamMod_out ? "out" : "ref"));
 		}
@@ -170,20 +170,20 @@ void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
 							((char *)CSTypeToName(args[argNum].type), -1));
 		}
 		str = ILInternAppendedString(str, ILInternString(")", 1));
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no matching method for call to `%s'",
 					  str.string);
 	}
 	else if(isCtor)
 	{
 		/* Don't know what the method name is */
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no matching constructor");
 	}
 	else
 	{
 		/* Don't know what the method name is */
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no matching method for call");
 	}
 
@@ -193,12 +193,12 @@ void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
 	{
 		if(!num)
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "candidates are: %s", CSItemToName(item));
 		}
 		else
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "                %s", CSItemToName(item));
 		}
 		++num;
@@ -251,7 +251,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	}
 	else if(method.kind != CS_SEMKIND_METHOD_GROUP)
 	{
-		CSErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+		CCErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
 					  "called object is not a method or delegate");
 		return CSSemValueDefault;
 	}
@@ -263,7 +263,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 		if(node->expr2)
 		{
 			/* Cannot use arguments on "System.Object"'s base initializer */
-			CSErrorOnLine(yygetfilename(node->expr2),
+			CCErrorOnLine(yygetfilename(node->expr2),
 						  yygetlinenum(node->expr2),
 						  "too many arguments to base type constructor");
 		}
@@ -339,7 +339,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 			{
 				/* Attempt to call an instance method using "this"
 				   from within a static method */
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot access instance members in static methods");
 			}
 		}
@@ -393,14 +393,14 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 		objectClass = ILClassResolve(ILType_ToClass(objectType));
 		if(ILClass_IsInterface(objectClass))
 		{
-			CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
 			  "cannot instantiate interface `%s' with the `new' operator",
 			  CSTypeToName(objectType));
 			return value;
 		}
 		else if(ILClass_IsAbstract(objectClass))
 		{
-			CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
 			  "cannot instantiate abstract class `%s' with the `new' operator",
 			  CSTypeToName(objectType));
 			return value;
@@ -420,7 +420,7 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 	}
 	else
 	{
-		CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
 			  		  "`%s' is not a class or value type",
 					  CSTypeToName(objectType));
 		return value;
@@ -430,7 +430,7 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 	method = CSResolveConstructor(info, node->type, objectType);
 	if(method.kind != CS_SEMKIND_METHOD_GROUP)
 	{
-		CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
 					  "`%s' does not have an accessible constructor",
 					  CSTypeToName(objectType));
 		return value;
@@ -549,7 +549,7 @@ ILNode_SemAnalysis(ILNode_BaseInit)
 	/* Report an error if we could not find any accessible constructors */
 	if(value.kind != CS_SEMKIND_METHOD_GROUP)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no accessible base class constructors");
 	}
 
@@ -648,7 +648,7 @@ int CSEvalArguments(ILGenInfo *info, ILNode *argList,
 	argArray = (CSEvalArg *)ILMalloc(sizeof(CSEvalArg) * argCount);
 	if(!argArray)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 
 	/* Perform semantic analysis on the arguments and fill the array */
@@ -683,7 +683,7 @@ int CSEvalArguments(ILGenInfo *info, ILNode *argList,
 		else
 		{
 			argArray[argNum].type = ILType_Void;
-			CSErrorOnLine(yygetfilename(tempList),
+			CCErrorOnLine(yygetfilename(tempList),
 						  yygetlinenum(tempList),
 						  "invalid value for argument %u", argNum + 1);
 			haveErrors = 1;

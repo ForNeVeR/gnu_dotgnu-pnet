@@ -28,7 +28,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	ILNode *savedNamespace;
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
+		CCUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
 	}
 	if(node->body)
 	{
@@ -48,7 +48,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	}
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeLeave(info);
+		CCUnsafeLeave(info);
 	}
 	return value;
 }
@@ -229,12 +229,12 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 					if((attr = ILAttributeCreate
 							(ILProgramItem_Image(field), 0)) == 0)
 					{
-						CSOutOfMemory();
+						CCOutOfMemory();
 					}
 					ILAttributeSetType(attr, ILToProgramItem(ctor));
 					if(!ILAttributeSetValue(attr, constBuf, 18))
 					{
-						CSOutOfMemory();
+						CCOutOfMemory();
 					}
 					ILProgramItemAddAttribute(ILToProgramItem(field), attr);
 				}
@@ -271,7 +271,7 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 			newStr = (unsigned char *)ILMalloc(wlen * 2 + 1);
 			if(!newStr)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 
 			/* Convert the string from UTF-8 into UTF-16 */
@@ -290,11 +290,11 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 										IL_META_ELEMTYPE_STRING);
 			if(!constant)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			if(!ILConstantSetValue(constant, newStr, wlen * 2))
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			ILFree(newStr);
 			return;
@@ -325,11 +325,11 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 								constElemType);
 	if(!constant)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	if(!ILConstantSetValue(constant, constBuf, constBufLen))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 }
 
@@ -350,18 +350,18 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 	{
 		if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
 		{
-			CSUnsafeEnter(info, (ILNode *)node, "unsafe constant declaration");
+			CCUnsafeEnter(info, (ILNode *)node, "unsafe constant declaration");
 		}
 		else
 		{
-			CSUnsafeEnter(info, (ILNode *)node, "unsafe field declaration");
+			CCUnsafeEnter(info, (ILNode *)node, "unsafe field declaration");
 		}
 	}
 
 	/* Warn if declaring the field with an unsafe type */
 	if(CSHasUnsafeType(node->type))
 	{
-		CSUnsafeTypeMessage(info, (ILNode *)node);
+		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
 	/* Verify the initializers */
@@ -380,7 +380,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 								   &(decl->initializer));
 		if(!CSIsSemValue(value.kind))
 		{
-			CSErrorOnLine(yygetfilename(decl->initializer),
+			CCErrorOnLine(yygetfilename(decl->initializer),
 						  yygetlinenum(decl->initializer),
 						  "initializer is not a value");
 			continue;
@@ -390,7 +390,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		if(!ILCoerce(info, decl->initializer, &(decl->initializer),
 					 value.type, ILField_Type(decl->fieldInfo)))
 		{
-			CSErrorOnLine(yygetfilename(decl->initializer),
+			CCErrorOnLine(yygetfilename(decl->initializer),
 						  yygetlinenum(decl->initializer),
 			  			  "incompatible types in initialization: "
 			  					"no conversion from `%s' to `%s'",
@@ -402,7 +402,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		/* The field must be static to have an initial value */
 		if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
 		{
-			CSErrorOnLine(yygetfilename(decl->initializer),
+			CCErrorOnLine(yygetfilename(decl->initializer),
 						  yygetlinenum(decl->initializer),
 						  "initializer used on non-static field");
 			continue;
@@ -416,7 +416,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
 	                   ILTypeToMachineType(ILField_Type(decl->fieldInfo))))
 			{
-				CSErrorOnLine(yygetfilename(decl->initializer),
+				CCErrorOnLine(yygetfilename(decl->initializer),
 							  yygetlinenum(decl->initializer),
 							  "initializer is not constant");
 				continue;
@@ -453,7 +453,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 	/* Leave the unsafe context for the field */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeLeave(info);
+		CCUnsafeLeave(info);
 	}
 
 	/* Fields don't really have a semantic value, so return the default */
@@ -475,13 +475,13 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 	/* Enter an unsafe context for the event field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeEnter(info, (ILNode *)node, "unsafe event declaration");
+		CCUnsafeEnter(info, (ILNode *)node, "unsafe event declaration");
 	}
 
 	/* Warn if declaring the event field with an unsafe type */
 	if(CSHasUnsafeType(node->type))
 	{
-		CSUnsafeTypeMessage(info, (ILNode *)node);
+		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
 	/* TODO */
@@ -504,7 +504,7 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 	/* Leave the unsafe context for the event field */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeLeave(info);
+		CCUnsafeLeave(info);
 	}
 
 	return value;
@@ -537,13 +537,13 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	/* Enter an unsafe context for the method if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeEnter(info, (ILNode *)node, "unsafe method declaration");
+		CCUnsafeEnter(info, (ILNode *)node, "unsafe method declaration");
 	}
 
 	/* Warn if declaring the method with unsafe return or parameter types */
 	if(CSHasUnsafeType(node->type) || CSHasUnsafeType(node->params))
 	{
-		CSUnsafeTypeMessage(info, (ILNode *)node);
+		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
 	/* Get the method's local variable scope */
@@ -579,13 +579,13 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		data = ILScopeLookup(scope, name, 0);
 		if(data)
 		{
-			CSErrorOnLine(yygetfilename(param->name),
+			CCErrorOnLine(yygetfilename(param->name),
 						  yygetlinenum(param->name),
 						  "`%s' is already declared in this scope", name);
 			errorNode = ILScopeDataGetNode(data);
 			if(errorNode)
 			{
-				CSErrorOnLine(yygetfilename(errorNode),
+				CCErrorOnLine(yygetfilename(errorNode),
 							  yygetlinenum(errorNode),
 							  "previous declaration here");
 			}
@@ -617,7 +617,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		{
 			if(!ILNodeEndsInReturn(node->body))
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "control reaches end of non-void method");
 			}
 		}
@@ -626,7 +626,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	/* Leave the unsafe context for the method */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeLeave(info);
+		CCUnsafeLeave(info);
 	}
 
 	/* Return to the previous method level */
@@ -641,13 +641,13 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 	/* Enter an unsafe context for the property if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeEnter(info, (ILNode *)node, "unsafe property declaration");
+		CCUnsafeEnter(info, (ILNode *)node, "unsafe property declaration");
 	}
 
 	/* Warn if declaring the property with an unsafe type */
 	if(CSHasUnsafeType(node->type))
 	{
-		CSUnsafeTypeMessage(info, (ILNode *)node);
+		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
 	/* Perform semantic analysis on the accessor bodies */
@@ -663,7 +663,7 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 	/* Leave the unsafe context for the property */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeLeave(info);
+		CCUnsafeLeave(info);
 	}
 
 	return CSSemValueDefault;
@@ -688,7 +688,7 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 		value = ILNode_SemAnalysis(node->value, info, &(node->value));
 		if(!CSIsSemValue(value.kind))
 		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid enumerated value");
 			return CSSemValueDefault;
 		}
@@ -699,7 +699,7 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
 	                   		   machineType))
 			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "enumerated value is not constant");
 				return CSSemValueDefault;
 			}
@@ -780,7 +780,7 @@ ILNode_SemAnalysis(ILNode_DelegateMemberDeclaration)
 {
 	if(info->outputIsJava)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "delegate definitions are not permitted with Java output");
 	}
 	return CSSemValueDefault;

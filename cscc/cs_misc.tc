@@ -42,7 +42,7 @@ ILNode_SemAnalysis(ILNode_TypeOf)
 	}
 	else
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid argument to `typeof' operator");
 		node->type = ILFindSystemType(info, "Int32");
 	}
@@ -159,7 +159,7 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 	CSSemValue value;
 
 	/* Print an error or warning for this construct if necessary */
-	CSUnsafeMessage(info, (ILNode *)node, "unsafe `sizeof' operator");
+	CCUnsafeMessage(info, (ILNode *)node, "unsafe `sizeof' operator");
 
 	/* Get the semantic value for the sub-expression */
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
@@ -180,26 +180,26 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 	/* Check the semantic value */
 	if(value.kind != CS_SEMKIND_TYPE)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "invalid argument to `sizeof' operator");
 		node->type = ILType_Int32;
 	}
 	else if(!ILType_IsPrimitive(value.type) &&
 			!ILType_IsValueType(value.type))
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot take the size of a managed type");
 		node->type = ILType_Int32;
 	}
 	else if(!ILType_IsPrimitive(value.type) && info->outputIsJava)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`sizeof' disallowed when compiling to Java bytecode");
 		node->type = ILType_Int32;
 	}
 	else if(value.type == ILType_Void)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`void' type is not allowed in this context");
 		node->type = ILType_Int32;
 	}
@@ -281,7 +281,7 @@ ILNode_SemAnalysis(ILNode_StackAlloc)
 	CSSemValue value2;
 
 	/* Print an error or warning for this construct if necessary */
-	CSUnsafeMessage(info, (ILNode *)node, "unsafe `stackalloc' operator");
+	CCUnsafeMessage(info, (ILNode *)node, "unsafe `stackalloc' operator");
 
 	/* Perform semantic analysis on the sub-expressions */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -290,6 +290,7 @@ ILNode_SemAnalysis(ILNode_StackAlloc)
 	/* The first must be a value type */
 	if(value1.kind != CS_SEMKIND_TYPE)
 	{
+		/* TODO */
 	}
 
 	/* The second must be an "int" */

@@ -31,7 +31,6 @@ extern YYSTYPE yylval;
 extern YYLTYPE yylloc;
 #endif
 
-CSPreProc CSPreProcessorStream;
 int       CSGetSetKeywords = 0;
 
 /*
@@ -39,7 +38,7 @@ int       CSGetSetKeywords = 0;
  */
 #define	YY_INPUT(buf,result,maxSize)	\
 	{ \
-		result = CSPreProcGetBuffer(&CSPreProcessorStream, buf, maxSize); \
+		result = CCPluginInput((buf), (maxSize)); \
 	}
 
 /*
@@ -48,22 +47,12 @@ int       CSGetSetKeywords = 0;
 #ifdef YYLTYPE
 #define	RETURNTOK(x)		\
 			do { \
-				yylloc.first_line = CSPreProcessorStream.lexerLineNumber; \
+				yylloc.first_line = yycurrlinenum(); \
 				return (x); \
 			} while (0)
 #else
 #define	RETURNTOK(x)		return (x)
 #endif
-
-unsigned long CSCurrentLine(void)
-{
-	return CSPreProcessorStream.lexerLineNumber;
-}
-
-char *CSCurrentFilename(void)
-{
-	return CSPreProcessorStream.lexerFileName;
-}
 
 /*
  * Parse a floating point quantity into yylval.
@@ -102,7 +91,7 @@ static int ParseFloat(char *text)
 		   type, so we use a different conversion routine */
 		if(!ILDecimalParse(&(yylval.decimal), text, IL_DECIMAL_ROUND_HALF_EVEN))
 		{
-			CSError("decimal constant is out of range");
+			CCError("decimal constant is out of range");
 			ILDecimalFromInt32(&(yylval.decimal), 0);
 		}
 		return DECIMAL_CONSTANT;
@@ -158,7 +147,7 @@ static void ParseInt(char *text)
 	{
 		/* The C# standard does not support octal integer constants,
 		   but we have provided an option to turn them back on */
-		if(CSStringListContains(extension_flags, num_extension_flags,
+		if(CCStringListContains(extension_flags, num_extension_flags,
 								"octal-constants"))
 		{
 			/* Octal integer constant: only active with "-foctal-constants" */
@@ -189,14 +178,14 @@ static void ParseInt(char *text)
 		else
 		{
 			/* Parse as a decimal constant, but warn the user first */
-			if(!CSStringListContains(extension_flags, num_extension_flags,
+			if(!CCStringListContains(extension_flags, num_extension_flags,
 									 "decimal-constants"))
 			{
-				CSTypedWarning("-octal-constants",
+				CCTypedWarning("-octal-constants",
 							   "parsing decimal constant, but it may be octal");
-				CSTypedWarning("-octal-constants",
+				CCTypedWarning("-octal-constants",
 							   "(use -foctal-constants to parse as octal, or");
-				CSTypedWarning("-octal-constants",
+				CCTypedWarning("-octal-constants",
 					   "-fdecimal-constants to force the use of decimal)");
 			}
 			goto decimal;
@@ -243,11 +232,11 @@ static void ParseInt(char *text)
 	{
 		if((errorType & 1) != 0)
 		{
-			CSError("integer constant is too large");
+			CCError("integer constant is too large");
 		}
 		if((errorType & 2) != 0)
 		{
-			CSError("invalid octal constant");
+			CCError("invalid octal constant");
 		}
 		value = 0;
 	}
@@ -405,7 +394,7 @@ static int ParseEscape(const char *temp, ILUInt32 *value)
 		*value = (ILUInt32)(escapechars[*temp - 'a']);
 		if(*value == (ILUInt32)(*temp))
 		{
-			CSTypedWarning("-unknown-escapes",
+			CCTypedWarning("-unknown-escapes",
 						   "unknown escape sequence `\\%c'", *temp);
 		}
 		++temp;
@@ -424,7 +413,7 @@ static int ParseEscape(const char *temp, ILUInt32 *value)
 		{
 			/* The programmer can supply "-fno-octal-chars" to disable
 			   the use of octal character constants */
-			if(CSStringListContainsInv(extension_flags, num_extension_flags,
+			if(CCStringListContainsInv(extension_flags, num_extension_flags,
 									   "octal-chars"))
 			{
 				if(*temp == '0')
@@ -441,11 +430,11 @@ static int ParseEscape(const char *temp, ILUInt32 *value)
 			{
 				if(*temp != '0' || (temp[1] >= '0' && temp[1] <= '7'))
 				{
-					CSTypedWarning("-octal-chars",
+					CCTypedWarning("-octal-chars",
 					               "non-standard octal character escape used");
-					CSTypedWarning("-octal-chars",
+					CCTypedWarning("-octal-chars",
 							   	   "(use -fno-octal-chars to disable the use");
-					CSTypedWarning("-octal-chars",
+					CCTypedWarning("-octal-chars",
 							   	   "(of non-standard octal character escapes)");
 				}
 				*value = 0;
@@ -463,7 +452,7 @@ static int ParseEscape(const char *temp, ILUInt32 *value)
 	unknown:
 		if(*temp != '\'' && *temp != '"' && *temp != '\\')
 		{
-			CSTypedWarning("-unknown-escapes",
+			CCTypedWarning("-unknown-escapes",
 						   "unknown escape sequence `\\%c'", *temp);
 		}
 		*value = (((ILUInt32)(*temp)) & (ILUInt32)0xFF);
@@ -474,7 +463,7 @@ invalidHex:
 	{
 		char save = *temp;
 		*((char *)temp) = '\0';
-		CSError("invalid hexadecimal escape sequence `%s'", begin - 1);
+		CCError("invalid hexadecimal escape sequence `%s'", begin - 1);
 		*((char *)temp) = save;
 		return (int)(temp - begin);
 	}
@@ -488,7 +477,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 {
 	const char *begin = text;
 
-	if(CSStringListContains(extension_flags, num_extension_flags,
+	if(CCStringListContains(extension_flags, num_extension_flags,
 							"latin1-charset"))
 	{
 		/* Latin-1 character */
@@ -552,7 +541,7 @@ static int ParseEncodedChar(const char *text, ILUInt32 *value)
 	else
 	{
 		/* Invalid sequence: treat it as an 8-bit character and skip it */
-		CSTypedWarning("-invalid-utf8", "invalid UTF-8 sequence");
+		CCTypedWarning("-invalid-utf8", "invalid UTF-8 sequence");
 		*value = (((ILUInt32)(*text)) & (ILUInt32)0xFF);
 		++text;
 	}
@@ -606,7 +595,7 @@ static ILUInt32 ParseCharConstant(const char *text)
 	/* Warn if the character is greater than 16-bits */
 	if(value >= (ILUInt32)0x00010000)
 	{
-		CSTypedWarning("-large-unicode-chars",
+		CCTypedWarning("-large-unicode-chars",
 					   "32-bit Unicode character `\\U%08lX' used: truncating "
 				  	   "to 16 bits", (unsigned long)value);
 	}
@@ -614,7 +603,7 @@ static ILUInt32 ParseCharConstant(const char *text)
 	/* Make sure that the constant is terminated correctly */
 	if(*text != '\'')
 	{
-		CSTypedWarning("-multi-char-constant", "multi-character constant");
+		CCTypedWarning("-multi-char-constant", "multi-character constant");
 	}
 
 	/* Return the value to the caller */
@@ -867,7 +856,7 @@ static ILIntString ParseIdentifier(char *text)
 	/* Report an error if there was an invalid character in the identifier */
 	if(invalid)
 	{
-		CSError("invalid character in identifier");
+		CCError("invalid character in identifier");
 	}
 
 	/* Return the final string to the caller */

@@ -114,7 +114,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	{
 		if(defn->classInfo == (ILClass *)2)
 		{
-			CSErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+			CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
 						  "`%s%s%s' is defined recursively",
 						  (namespace ? namespace : ""),
 						  (namespace ? "." : ""), name);
@@ -136,7 +136,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		baseList = (ILClass **)ILCalloc(numBases, sizeof(ILClass *));
 		if(!baseList)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 	}
 	else
@@ -175,7 +175,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		else
 		{
 			/* This is not a valid base class specification */
-			CSErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
+			CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
 						  "invalid base type");
 		}
 	}
@@ -191,7 +191,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 			{
 				if(!errorReported)
 				{
-					CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+					CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
 					  "class inherits from two or more non-interface classes");
 					errorReported = 1;
 				}
@@ -216,7 +216,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	{
 		if(parent)
 		{
-			CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+			CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
 						  "interface inherits from non-interface class");
 			parent = 0;
 		}
@@ -260,7 +260,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	/* Output an error if attempting to inherit from a sealed class */
 	if(parent && ILClass_IsSealed(parent))
 	{
-		CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+		CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
 					  "inheriting from a sealed parent class");
 	}
 
@@ -269,7 +269,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 							  name, namespace, parent);
 	if(!classInfo)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	ILClassSetAttrs(classInfo, ~0, defn->modifiers);
 	defn->classInfo = classInfo;
@@ -281,7 +281,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		{
 			if(!ILClassAddImplements(classInfo, baseList[base], 0))
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 		}
 	}
@@ -306,7 +306,7 @@ static void AddMemberToScope(ILScope *scope, int memberKind,
 	int error = ILScopeDeclareMember(scope, name, memberKind, member, node);
 	if(error != IL_SCOPE_ERROR_OK)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "member conflicts with a type name in the same scope");
 	}
 }
@@ -346,13 +346,13 @@ static void ReportDuplicates(ILNode *node, ILMember *newMember,
 	if(ILMember_Owner(existingMember) == classInfo)
 	{
 		/* The duplicate is in the same class */
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  			  "declaration conflicts with an existing member");
 	}
 	else if((modifiers & CS_SPECIALATTR_NEW) == 0)
 	{
 		/* The duplicate is in a parent class, and "new" wasn't specified */
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  "declaration hides an inherited member, and `new' was not present");
 	}
 }
@@ -362,7 +362,7 @@ static void ReportDuplicates(ILNode *node, ILMember *newMember,
  */
 static void ReportUnnecessaryNew(ILNode *node)
 {
-	CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+	CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
 			        "declaration includes unnecessary `new' keyword");
 }
 
@@ -395,7 +395,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 											ILType_ToClass(modifier));
 			if(!modifier)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			tempType = ILTypeAddModifiers(info->context, modifier, tempType);
 		}
@@ -417,7 +417,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 								  (field->modifiers & 0xFFFF));
 		if(!fieldInfo)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		decl->fieldInfo = fieldInfo;
 		ILMemberSetSignature((ILMember *)fieldInfo, tempType);
@@ -472,7 +472,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 								(method->modifiers & 0xFFFF));
 	if(!methodInfo)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	method->methodInfo = methodInfo;
 
@@ -483,7 +483,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	signature = ILTypeCreateMethod(info->context, tempType);
 	if(!signature)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
 	{
@@ -508,11 +508,11 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 									   IL_TYPE_COMPLEX_BYREF, tempType);
 			if(!tempType)
 			{
-				CSOutOfMemory();
+				CCOutOfMemory();
 			}
 			if(info->outputIsJava)
 			{
-				CSErrorOnLine(yygetfilename(method), yygetlinenum(method),
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
 				  	"`%s' parameters not permitted when compiling "
 						"to Java bytecode",
 				    (fparam->pmod == ILParamMod_out ? "out" : "ref"));
@@ -522,7 +522,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		/* Add the parameter type to the method signature */
 		if(!ILTypeAddParam(info->context, signature, tempType))
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 
 		/* Create a parameter definition in the metadata to record the name */
@@ -532,7 +532,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 				 paramNum);
 		if(!parameter)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 
 		/* Add "System.ParamArrayAttribute" if the parameter is "params" */
@@ -574,7 +574,7 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 	/* Check for the reserved field name "value__" */
 	if(!strcmp(name, "value__"))
 	{
-		CSErrorOnLine(yygetfilename(enumMember), yygetlinenum(enumMember),
+		CCErrorOnLine(yygetfilename(enumMember), yygetlinenum(enumMember),
 			  "the identifier `value__' is reserved in enumerated types");
 		return;
 	}
@@ -589,7 +589,7 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 							  IL_META_FIELDDEF_LITERAL);
 	if(!fieldInfo)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	enumMember->fieldInfo = fieldInfo;
 	ILMemberSetSignature((ILMember *)fieldInfo, tempType);
@@ -654,7 +654,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	signature = ILTypeCreateProperty(info->context, propType);
 	if(!signature)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	if((property->modifiers & IL_META_METHODDEF_STATIC) == 0)
 	{
@@ -673,7 +673,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		/* Add the parameter type to the property signature */
 		if(!ILTypeAddParam(info->context, signature, tempType))
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 
 		/* Move on to the next parameter */
@@ -684,7 +684,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	propertyInfo = ILPropertyCreate(classInfo, 0, name, 0, signature);
 	if(!propertyInfo)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	property->propertyInfo = propertyInfo;
 
@@ -696,7 +696,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 					  ((ILNode_MethodDeclaration *)(property->getAccessor))
 					  		->methodInfo))
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 	}
 	if(property->setAccessor)
@@ -706,7 +706,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 					  ((ILNode_MethodDeclaration *)(property->setAccessor))
 					  		->methodInfo))
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 	}
 
@@ -753,22 +753,22 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 						    IL_META_METHODDEF_RT_SPECIAL_NAME);
 	if(!method)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	member->ctorMethod = method;
 	signature = ILTypeCreateMethod(info->context, ILType_Void);
 	if(!signature)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	if(!ILTypeAddParam(info->context, signature,
 					   ILFindSystemType(info, "Object")))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	if(!ILTypeAddParam(info->context, signature, ILType_UInt))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 	ILMethodSetCallConv(method, IL_META_CALLCONV_HASTHIS);
@@ -777,11 +777,11 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 						 IL_META_METHODIMPL_RUNTIME);
 	if(!ILParameterCreate(method, 0, "object", 0, 1))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	if(!ILParameterCreate(method, 0, "method", 0, 2))
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 
 	/* Create the "Invoke" method */
@@ -883,7 +883,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 		else if(yykind(member) != yykindof(ILNode_ClassDefn))
 		{
 			/* TODO: nested classes */
-			CSErrorOnLine(yygetfilename(member), yygetlinenum(member),
+			CCErrorOnLine(yygetfilename(member), yygetlinenum(member),
 				  "internal error - do not know how to declare this member");
 		}
 	}
@@ -933,7 +933,7 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 				{
 					case IL_SCOPE_ERROR_IMPORT_CONFLICT:
 					{
-						CSErrorOnLine(yygetfilename(child), yygetlinenum(child),
+						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 								"`%s%s%s' conflicts with imported type",
 								(namespace ? namespace : ""),
 								(namespace ? "." : ""), name);
@@ -942,11 +942,11 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 
 					case IL_SCOPE_ERROR_REDECLARED:
 					{
-						CSErrorOnLine(yygetfilename(child), yygetlinenum(child),
+						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 								"`%s%s%s' already declared",
 								(namespace ? namespace : ""),
 								(namespace ? "." : ""), name);
-						CSErrorOnLine(yygetfilename(origDefn),
+						CCErrorOnLine(yygetfilename(origDefn),
 									  yygetlinenum(origDefn),
 									  "previous declaration here");
 					}
@@ -954,7 +954,7 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 
 					case IL_SCOPE_ERROR_CANT_CREATE_NAMESPACE:
 					{
-						CSErrorOnLine(yygetfilename(child), yygetlinenum(child),
+						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 									  "`%s' is not a valid namespace",
 									  namespace);
 					}
@@ -962,22 +962,22 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 
 					case IL_SCOPE_ERROR_NAME_IS_NAMESPACE:
 					{
-						CSErrorOnLine(yygetfilename(child), yygetlinenum(child),
+						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 								"`%s%s%s' cannot be declared as a type",
 								(namespace ? namespace : ""),
 								(namespace ? "." : ""), name);
-						CSErrorOnLine(yygetfilename(child), yygetlinenum(child),
+						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 								"because it is already declared as namespace");
 					}
 					break;
 
 					default:
 					{
-						CSErrorOnLine(yygetfilename(child), yygetlinenum(child),
+						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 								"`%s%s%s' cannot be declared as a type",
 								(namespace ? namespace : ""),
 								(namespace ? "." : ""), name);
-						CSErrorOnLine(yygetfilename(child), yygetlinenum(child),
+						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 								"because it is already declared elsewhere");
 					}
 					break;

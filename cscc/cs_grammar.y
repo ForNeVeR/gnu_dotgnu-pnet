@@ -51,22 +51,6 @@ extern char cs_text[];
 #endif
 
 /*
- * Global code generator object.
- */
-ILGenInfo CSCodeGen;
-
-/*
- * Global parse tree return variable.
- */
-ILNode *CSParseTree = 0;
-static ILNode *ParseTreeEnd = 0;
-
-/*
- * Global scope object.
- */
-ILScope *CSGlobalScope = 0;
-
-/*
  * Global state used by the parser.
  */
 static unsigned long NestingLevel = 0;
@@ -94,16 +78,16 @@ static void InitGlobalNamespace(void)
  */
 static ILScope *GlobalScope(void)
 {
-	if(CSGlobalScope)
+	if(CCGlobalScope)
 	{
-		return CSGlobalScope;
+		return CCGlobalScope;
 	}
 	else
 	{
-		CSGlobalScope = ILScopeCreate(&CSCodeGen, 0);
-		ILScopeDeclareNamespace(CSGlobalScope, "System");
-		ILScopeUsing(CSGlobalScope, "System", 0);
-		return CSGlobalScope;
+		CCGlobalScope = ILScopeCreate(&CCCodeGen, 0);
+		ILScopeDeclareNamespace(CCGlobalScope, "System");
+		ILScopeUsing(CCGlobalScope, "System", 0);
+		return CCGlobalScope;
 	}
 }
 
@@ -137,100 +121,9 @@ static int HaveUsingNamespace(char *name)
 	return 0;
 }
 
-static void
-yyerror(char *msg)
+static void yyerror(char *msg)
 {
-	if(!strcmp(msg, "parse error") || !strcmp(msg, "syntax error"))
-	{
-		/* This error is pretty much useless at telling the user
-		   what is happening.  Try to print a better message
-		   based on the current input token */
-		CSError("parse error at or near `%s'", cs_text);
-	}
-	else if(!strncmp(msg, "parse error, expecting `", 24))
-	{
-		/* We have to quote the token names in the "%token" declarations
-		   below so that byacc doesn't mess up the output.  But the quoting
-		   causes Bison to output quote characters in error messages which
-		   look awful.  This code attempts to fix things up */
-		char *newmsg = ILDupString(msg);
-		int posn, outposn;
-		if(newmsg)
-		{
-			posn = 0;
-			outposn = 0;
-			while(newmsg[posn] != '\0')
-			{
-				if(newmsg[posn] == '`')
-				{
-					if(newmsg[posn + 1] == '"' && newmsg[posn + 2] == '`')
-					{
-						/* Convert <`"`> into <`> */
-						posn += 2;
-						newmsg[outposn++] = '`';
-					}
-					else if(newmsg[posn + 1] == '"')
-					{
-						/* Convert <`"> into <> */
-						++posn;
-					}
-					else if(newmsg[posn + 1] == '`' ||
-					        newmsg[posn + 1] == '\'')
-					{
-						/* Convert <``> or <`'> into <`> */
-						++posn;
-						newmsg[outposn++] = '`';
-					}
-					else
-					{
-						/* Ordinary <`> on its own */
-						newmsg[outposn++] = '`';
-					}
-				}
-				else if(newmsg[posn] == '\\')
-				{
-					/* Ignore backslashes in the input */
-				}
-				else if(newmsg[posn] == '"' && newmsg[posn + 1] == '\'')
-				{
-					/* Convert <"'> into <> */
-					++posn;
-				}
-				else if(newmsg[posn] == '\'' && newmsg[posn + 1] == '"' &&
-				        newmsg[posn + 2] == '\'')
-				{
-					/* Convert <'"'> into <'> */
-					posn += 2;
-					newmsg[outposn++] = '\'';
-				}
-				else if(newmsg[posn] == '\'' && newmsg[posn + 1] == '\'')
-				{
-					/* Convert <''> into <'> */
-					++posn;
-					newmsg[outposn++] = '\'';
-				}
-				else
-				{
-					/* Ordinary character */
-					newmsg[outposn++] = newmsg[posn];
-				}
-				++posn;
-			}
-			newmsg[outposn] = '\0';
-			CSError("%s", newmsg);
-			ILFree(newmsg);
-		}
-		else
-		{
-			CSError("%s", msg);
-		}
-	}
-	else
-	{
-		/* The parser has probably included information as to what
-		   is expected in this context, so report that */
-		CSError("%s", msg);
-	}
+	CCPluginParseError(msg, cs_text);
 }
 
 /*
@@ -238,26 +131,6 @@ yyerror(char *msg)
  */
 #define	HaveExtension(name)	\
 	(CSStringListContains(extension_flags, num_extension_flags, (name)))
-
-/*
- * Get the filename and line number information for node creation.
- */
-char *yycurrfilename(void)
-{
-	return CSPreProcessorStream.lexerFileName;
-}
-long yycurrlinenum(void)
-{
-	return CSPreProcessorStream.lexerLineNumber;
-}
-
-/*
- * Abort the compiler if we run out of memory in the node creation routines.
- */
-void yynodefailed(void)
-{
-	CSOutOfMemory();
-}
 
 /*
  * Make a simple node and put it into $$.
@@ -306,31 +179,6 @@ void yynodefailed(void)
  */
 #define	MakeSystemType(name)	\
 			(ILNode_GlobalNamespace_create(ILQualIdentTwo("System", #name)))
-
-/*
- * Add a node to the top-level parse tree.
- */
-static void AddTopLevel(ILNode *node)
-{
-	if(!node)
-	{
-		return;
-	}
-	if(!CSParseTree)
-	{
-		CSParseTree = ILNode_List_create();
-		ParseTreeEnd = 0;
-	}
-	if(!ParseTreeEnd)
-	{
-		ParseTreeEnd = CSParseTree;
-	}
-	ILNode_List_Add(ParseTreeEnd, node);
-	if(((ILNode_List *)ParseTreeEnd)->rest)
-	{
-		ParseTreeEnd = (ILNode *)(((ILNode_List *)ParseTreeEnd)->rest);
-	}
-}
 
 /*
  * Negate an integer node.
@@ -383,13 +231,13 @@ static void ClassNamePush(ILNode *name)
 			(classNameStack, sizeof(ILNode *) * (classNameStackMax + 4));
 		if(!classNameStack)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		classNameCtorDefined = (int *)ILRealloc
 			(classNameCtorDefined, sizeof(int) * (classNameStackMax + 4));
 		if(!classNameCtorDefined)
 		{
-			CSOutOfMemory();
+			CCOutOfMemory();
 		}
 		classNameStackMax += 4;
 	}
@@ -936,7 +784,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 CompilationUnit
 	: /* empty */	{
 				/* The input file is empty */
-				CSTypedWarning("-empty-input",
+				CCTypedWarning("-empty-input",
 							   "file contains no declarations");
 				ResetState();
 			}
@@ -944,7 +792,7 @@ CompilationUnit
 				/* Check for empty input and finalize the parse */
 				if(!HaveDecls)
 				{
-					CSTypedWarning("-empty-input",
+					CCTypedWarning("-empty-input",
 								   "file contains no declarations");
 				}
 				ResetState();
@@ -1139,11 +987,11 @@ UsingDirective
 				ILNode_UsingAlias *alias;
 				if(ILScopeLookup(globalScope, $2, 1))
 				{
-					CSError("`%s' is already declared", $2);
+					CCError("`%s' is already declared", $2);
 				}
 				else if(!ILScopeUsing(globalScope, $4.string, $2))
 				{
-					CSError("`%s' is not a namespace", $4.string);
+					CCError("`%s' is not a namespace", $4.string);
 				}
 				alias = (ILNode_UsingAlias *)
 					ILNode_UsingAlias_create($2, $4.string);
@@ -1156,7 +1004,7 @@ UsingDirective
 				ILNode_UsingNamespace *using;
 				if(!ILScopeUsing(globalScope, $2.string, 0))
 				{
-					CSError("`%s' is not a namespace", $2.string);
+					CCError("`%s' is not a namespace", $2.string);
 				}
 				InitGlobalNamespace();
 				if(!HaveUsingNamespace($2.string))
@@ -1176,7 +1024,7 @@ OptNamespaceMemberDeclarations
 
 NamespaceMemberDeclaration
 	: NamespaceDeclaration
-	| TypeDeclaration			{ AddTopLevel($1); }
+	| TypeDeclaration			{ CCPluginAddTopLevel($1); }
 	;
 
 TypeDeclaration
@@ -2903,7 +2751,7 @@ NormalOperatorDeclaration
 				/* Validate the name of the unary operator */
 				if($5.unary == 0)
 				{
-					CSError("overloadable unary operator expected");
+					CCError("overloadable unary operator expected");
 					$5.unary = $5.binary;
 				}
 
@@ -2929,7 +2777,7 @@ NormalOperatorDeclaration
 				/* Validate the name of the binary operator */
 				if($5.binary == 0)
 				{
-					CSError("overloadable binary operator expected");
+					CCError("overloadable binary operator expected");
 					$5.binary = $5.unary;
 				}
 
@@ -3047,7 +2895,7 @@ ConstructorDeclaration
 				}
 				if(!ClassNameSame($3))
 				{
-					CSErrorOnLine(yygetfilename($3), yygetlinenum($3),
+					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 						"constructor name does not match class name");
 				}
 				if($8 && yykind($8) == yykindof(ILNode_NewScope))
@@ -3090,7 +2938,7 @@ DestructorDeclaration
 				/* Validate the destructor name */
 				if(!ClassNameSame($3))
 				{
-					CSErrorOnLine(yygetfilename($3), yygetlinenum($3),
+					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 						"destructor name does not match class name");
 				}
 

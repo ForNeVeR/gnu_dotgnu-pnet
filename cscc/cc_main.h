@@ -38,6 +38,11 @@ extern	"C" {
 extern char const CCPluginName[];
 
 /*
+ * Command-line option parse mode.
+ */
+extern int const CCPluginOptionParseMode;
+
+/*
  * Set to non-zero if we should use the C# pre-processor.
  */
 extern int const CCPluginUsesPreproc;
@@ -46,6 +51,11 @@ extern int const CCPluginUsesPreproc;
  * Set to zero if compiling to the JVM is not supported.
  */
 extern int const CCPluginJVMSupported;
+
+/*
+ * Set to non-zero to skip code generation (used by "csdoc").
+ */
+extern int const CCPluginSkipCodeGen;
 
 /*
  * Initialize the plugin after the command-line options have
@@ -76,6 +86,11 @@ void CCPluginRestart(FILE *infile);
 void CCPluginSemAnalysis(void);
 
 /*
+ * Perform post code generation tasks.
+ */
+void CCPluginPostCodeGen(void);
+
+/*
  * Definitions that are provided to the plugin.
  */
 
@@ -88,6 +103,7 @@ extern ILGenInfo CCCodeGen;
  * Top-level parse tree.
  */
 extern ILNode *CCParseTree;
+extern ILNode *CCParseTreeEnd;
 
 /*
  * Global definition scope.
@@ -112,6 +128,11 @@ int CCPluginInput(char *buf, int maxSize);
  * which token is near the site of the error.
  */
 void CCPluginParseError(char *msg, char *text);
+
+/*
+ * Add a node to the top-level parse tree.
+ */
+void CCPluginAddTopLevel(ILNode *node);
 
 #ifdef	__cplusplus
 };

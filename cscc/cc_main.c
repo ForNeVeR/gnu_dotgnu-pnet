@@ -30,6 +30,7 @@ extern	"C" {
  */
 ILGenInfo CCCodeGen;
 ILNode *CCParseTree;
+ILNode *CCParseTreeEnd;
 ILScope *CCGlobalScope;
 
 /*
@@ -56,7 +57,8 @@ int CCMain(int argc, char *argv[])
 	int status;
 
 	/* Parse the command-line options */
-	CCParseCommandLine(argc, argv, CMDLINE_PARSE_PLUGIN, (char *)CCPluginName);
+	CCParseCommandLine(argc, argv, CCPluginOptionParseMode,
+					   (char *)CCPluginName);
 
 	/* Initialize the plugin */
 	if(!CCPluginInit())
@@ -149,7 +151,7 @@ int CCMain(int argc, char *argv[])
 	}
 
 	/* Generate the code if no errors occurred in the previous phases */
-	if(CCHaveErrors == 0)
+	if(CCHaveErrors == 0 && !CCPluginSkipCodeGen)
 	{
 		ILGenModulesAndAssemblies(&CCCodeGen);
 		if(CCCodeGen.outputIsJava)
@@ -161,6 +163,9 @@ int CCMain(int argc, char *argv[])
 			ILNode_GenDiscard(CCParseTree, &CCCodeGen);
 		}
 	}
+
+	/* Perform post code generation tasks */
+	CCPluginPostCodeGen();
 
 	/* Close the code generator */
 	CloseCodeGen();
@@ -439,7 +444,8 @@ static int InitCodeGen(void)
 	if(!CCStringListContains(extension_flags, num_extension_flags,
 							 "syntax-check") &&
 	   !CCStringListContains(extension_flags, num_extension_flags,
-							 "semantic-check"))
+							 "semantic-check") &&
+	   !CCPluginSkipCodeGen)
 	{
 		if(!output_filename || !strcmp(output_filename, "-"))
 		{
@@ -771,6 +777,28 @@ void CCPluginParseError(char *msg, char *text)
 		{
 			CCError("%s", msg);
 		}
+	}
+}
+
+void CCPluginAddTopLevel(ILNode *node)
+{
+	if(!node)
+	{
+		return;
+	}
+	if(!CCParseTree)
+	{
+		CCParseTree = ILNode_List_create();
+		CCParseTreeEnd = 0;
+	}
+	if(!CCParseTreeEnd)
+	{
+		CCParseTreeEnd = CCParseTree;
+	}
+	ILNode_List_Add(CCParseTreeEnd, node);
+	if(((ILNode_List *)CCParseTreeEnd)->rest)
+	{
+		CCParseTreeEnd = (ILNode *)(((ILNode_List *)CCParseTreeEnd)->rest);
 	}
 }
 

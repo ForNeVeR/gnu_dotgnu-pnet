@@ -84,7 +84,7 @@ static void AddMember(CSMemberLookupInfo *results,
 	CSMemberInfo *info = (CSMemberInfo *)ILMalloc(sizeof(CSMemberInfo));
 	if(!info)
 	{
-		CSOutOfMemory();
+		CCOutOfMemory();
 	}
 	info->member = member;
 	info->owner = owner;
@@ -630,7 +630,7 @@ static void AmbiguousError(ILNode *node, const char *name,
 	const char *typeName2;
 
 	/* Print the first line of the error message */
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "`%s' is ambiguous; possibilities are:", name);
 
 	/* Print the names and signatures of all members */
@@ -643,7 +643,7 @@ static void AmbiguousError(ILNode *node, const char *name,
 			{
 				typeName = CSTypeToName
 						(ILClassToType((ILClass *)(member->member)));
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				              "  type %s", typeName);
 			}
 			break;
@@ -664,7 +664,7 @@ static void AmbiguousError(ILNode *node, const char *name,
 						(ILField_Type((ILField *)(member->member)));
 				typeName2 = CSTypeToName(ILClassToType
 						(ILField_Owner((ILField *)(member->member))));
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				              "  field %s %s.%s", typeName, typeName2, name);
 			}
 			break;
@@ -765,7 +765,7 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	}
 
 	/* Look in the global scope for a declared type */
-	data = ILScopeLookupInNamespace(CSGlobalScope, namespace, name);
+	data = ILScopeLookupInNamespace(CCGlobalScope, namespace, name);
 	if(data)
 	{
 		scopeKind = ILScopeDataGetKind(data);
@@ -941,7 +941,7 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	FreeMembers(&results);
 
 	/* Could not resolve the name */
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "`%s' is not declared in the current scope", name);
 	return CSSemValueDefault;
 }
@@ -1137,7 +1137,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			}
 
 			/* Could not find the member within the namespace */
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the namespace `%s'",
 						  name, fullName);
 		}
@@ -1157,7 +1157,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			{
 				return LookupToSem(node, name, &results, result);
 			}
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the type `%s'",
 						  name, CSTypeToName(value.type));
 		}
@@ -1178,7 +1178,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			{
 				return LookupToSem(node, name, &results, result);
 			}
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not an instance member of the type `%s'",
 						  name, CSTypeToName(value.type));
 		}
@@ -1187,7 +1187,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		default:
 		{
 			/* This kind of semantic value does not have members */
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "invalid left operand to `.'");
 		}
 		break;

@@ -214,23 +214,28 @@ void CCUnsafeMessage(ILGenInfo *info, ILNode *node, const char *construct)
 		if(info->unsafeLevel == 0)
 		{
 			/* Unsafe construct used outside an unsafe context */
-			CCError(_("%s used outside an unsafe context"), construct);
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("%s used outside an unsafe context"), construct);
 		}
 		else
 		{
 			/* Unsafe construct used inside an unsafe context */
-			CCTypedWarning("unsafe", "%s", construct);
+			CCTypedWarningOnLine(yygetfilename(node), yygetlinenum(node),
+								 "unsafe", "%s", construct);
 		}
 	}
 	else if(info->outputIsJava)
 	{
 		/* Unsafe constructs are never permitted in Java */
-		CCError(_("%s not permitted with Java output"), construct);
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("%s not permitted with Java output"), construct);
 	}
 	else
 	{
 		/* Unsafe constructs are not permitted */
-		CCError(_("%s not permitted unless -funsafe specified"), construct);
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("%s not permitted unless -funsafe specified"),
+					  construct);
 	}
 }
 
@@ -245,17 +250,21 @@ void CCUnsafeEnter(ILGenInfo *info, ILNode *node, const char *construct)
 	   CCStringListContains(extension_flags, num_extension_flags, "unsafe"))
 	{
 		/* Unsafe constructs are permitted, so just print a warning */
-		CCTypedWarning("unsafe", "%s", construct);
+		CCTypedWarningOnLine(yygetfilename(node), yygetlinenum(node),
+							 "unsafe", "%s", construct);
 	}
 	else if(info->outputIsJava)
 	{
 		/* Unsafe constructs are never permitted in Java */
-		CCError(_("%s not permitted with Java output"), construct);
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("%s not permitted with Java output"), construct);
 	}
 	else
 	{
 		/* Unsafe constructs are not permitted */
-		CCError(_("%s not permitted unless -funsafe specified"), construct);
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("%s not permitted unless -funsafe specified"),
+					  construct);
 	}
 	++(info->unsafeLevel);
 }

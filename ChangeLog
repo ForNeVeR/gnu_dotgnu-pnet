@@ -4,6 +4,10 @@
 	* codegen/cg_arith.tc: prevent ILNativeFloat from generating
 	add.ovf,mul.ovf or sub.ovf instructions in checked mode.
 
+	* codegen/cg_optable.c, codegen/cg_coerce.c, codegen/cg_coerce.h: 
+	add an unsafe mode to conversions and implement conversions from
+	`void*' to int and long types.
+
 2002-10-31  Sylvain Pasche <sylvain_pasche@yahoo.fr>
 	
 	* codegen/jv_output.c,ilasm/ilasm_grammar.y, ilasm/ilasm_output.c, 

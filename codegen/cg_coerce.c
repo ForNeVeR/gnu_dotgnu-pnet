@@ -330,6 +330,7 @@ static int GetBoxingConvertRules(ILGenInfo *info, ILType *fromType,
 static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 		ILType *toType, int explicit, int kinds, ConvertRules *rules)
 {
+	const ILConversion *conv;
 	/* TODO : Handle the rest of the cases */
 	/*  Numeric/pointer casts  */
 	if (explicit)
@@ -339,7 +340,12 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 		{
 			if (ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR)
 			{
-				return 1;
+				conv = ILFindConversion(fromType, toType, explicit,1);
+				if(conv)
+				{
+					rules->builtin = conv;
+					return 1;
+				}
 			}
 		}
 
@@ -415,7 +421,7 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 	/* Look for a builtin numeric conversion */
 	if((kinds & IL_CONVERT_NUMERIC) != 0)
 	{
-		conv = ILFindConversion(fromType, toType, explicit);
+		conv = ILFindConversion(fromType, toType, explicit,0);
 		if(conv)
 		{
 			rules->builtin = conv;

@@ -49,6 +49,7 @@ typedef struct
 {
 	const ILBuiltinType  *outtype;
 	int				      explicit;
+	int				      unsafe;
 
 } ILConversion;
 
@@ -56,7 +57,7 @@ typedef struct
  * Find a standard conversion between two types.
  */
 const ILConversion *ILFindConversion(ILType *fromType, ILType *toType,
-								     int explicit);
+								     int explicit,int unsafe);
 
 /*
  * Apply a standard conversion to a node.

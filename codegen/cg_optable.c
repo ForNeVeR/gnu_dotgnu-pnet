@@ -131,11 +131,13 @@ static ILBuiltinType const ILUnmanagedPtr =
 #define	IL_BEGIN_CONVERT_TABLE(type)	\
 	static ILConversion const ILConvert_##type[] = {
 #define	IL_IMPLICIT_OPERATOR(type)	\
-	{&ILSystem##type, 0},
+	{&ILSystem##type, 0, 0},
 #define	IL_EXPLICIT_OPERATOR(type)	\
-	{&ILSystem##type, 1},
+	{&ILSystem##type, 1, 0},
+#define	IL_UNSAFE_OPERATOR(type)	\
+	{&ILSystem##type, 1, 1},
 #define	IL_END_CONVERT_TABLE	\
-	{0, 0}};
+	{0, 0, 0}};
 
 /*
 
@@ -1155,6 +1157,20 @@ IL_BEGIN_CONVERT_TABLE(Decimal)
 IL_END_CONVERT_TABLE
 
 /*
+explicit operator int(void* x);
+explicit operator uint(void* x);
+explicit operator long(void* x);
+explicit operator ulong(void* x);
+*/
+
+IL_BEGIN_CONVERT_TABLE(UnmanagedPtr)
+	IL_UNSAFE_OPERATOR(Int32)
+	IL_UNSAFE_OPERATOR(UInt32)
+	IL_UNSAFE_OPERATOR(Int64)
+	IL_UNSAFE_OPERATOR(UInt64)
+IL_END_CONVERT_TABLE
+
+/*
  * Index that maps builtin types to the corresponding conversion table.
  */
 static struct
@@ -1176,6 +1192,7 @@ static struct
 		{&ILSystemDouble,     ILConvert_Double},
 		{&ILSystemLongDouble, ILConvert_LongDouble},
 		{&ILSystemDecimal,    ILConvert_Decimal},
+		{&ILUnmanagedPtr,     ILConvert_UnmanagedPtr},
 		{0, 0}
 };
 
@@ -1308,7 +1325,7 @@ static const ILBuiltinType *GetBuiltinType(ILType *type, ILType *otherType)
 }
 
 const ILConversion *ILFindConversion(ILType *fromType, ILType *toType,
-								     int explicit)
+								     int explicit,int unsafe)
 {
 	const ILBuiltinType *type1 = GetBuiltinType(fromType, 0);
 	const ILBuiltinType *type2 = GetBuiltinType(toType, 0);
@@ -1330,7 +1347,7 @@ const ILConversion *ILFindConversion(ILType *fromType, ILType *toType,
 						{
 							return conv;
 						}
-						else if(explicit)
+						else if(explicit && conv->unsafe==unsafe)
 						{
 							return conv;
 						}

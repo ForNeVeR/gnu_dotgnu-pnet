@@ -343,6 +343,12 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 										   C_SPEC_UNSIGNED;
 						}
 						break;
+
+						default:
+						{
+							okSpecifiers = C_SPEC_UNSIGNED;
+						}
+						break;
 					}
 				}
 				break;

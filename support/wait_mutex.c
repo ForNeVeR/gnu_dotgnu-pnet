@@ -382,6 +382,195 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 	return result;
 }
 
+/*
+ * Close a monitor.
+ */
+static int MonitorClose(ILMonitor *monitor)
+{
+	/* Lock down the monitor and determine if it is currently owned */
+	_ILMutexLock(&(monitor->parent.parent.lock));
+	if(monitor->parent.owner != 0 ||
+	   !_ILWakeupQueueIsEmpty(&(monitor->parent.queue)))
+	{
+		_ILMutexUnlock(&(monitor->parent.parent.lock));
+		return IL_WAITCLOSE_OWNED;
+	}
+
+	/* Clean up the monitor */
+	_ILMutexUnlock(&(monitor->parent.parent.lock));
+	_ILWakeupQueueDestroy(&(monitor->parent.queue));
+	_ILWakeupQueueDestroy(&(monitor->signalQueue));
+	_ILMutexDestroy(&(monitor->parent.parent.lock));
+	return IL_WAITCLOSE_FREE;
+}
+
+ILWaitHandle *ILWaitMonitorCreate(void)
+{
+	ILMonitor *monitor;
+
+	/* Allocate memory for the monitor */
+	if((monitor = (ILMonitor *)ILMalloc(sizeof(ILMonitor))) == 0)
+	{
+		return 0;
+	}
+
+	/* Initialize the monitor fields */
+	_ILMutexCreate(&(monitor->parent.parent.lock));
+	monitor->parent.parent.kind = IL_WAIT_MONITOR;
+	monitor->parent.parent.closeFunc = (ILWaitCloseFunc)MonitorClose;
+	monitor->parent.parent.registerFunc = (ILWaitRegisterFunc)MutexRegister;
+	monitor->parent.parent.unregisterFunc =
+			(ILWaitUnregisterFunc)MutexUnregister;
+	monitor->parent.owner = 0;
+	monitor->parent.count = 0;
+	_ILWakeupQueueCreate(&(monitor->parent.queue));
+	_ILWakeupQueueCreate(&(monitor->signalQueue));
+
+	/* Ready to go */
+	return &(monitor->parent.parent);
+}
+
+int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
+{
+	ILMonitor *monitor = (ILMonitor *)handle;
+	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
+	int result, result2;
+	unsigned long saveCount;
+
+	/* Lock down the monitor */
+	_ILMutexLock(&(monitor->parent.parent.lock));
+
+	/* Determine what to do based on the monitor's state */
+	if(monitor->parent.parent.kind != IL_WAIT_MONITOR)
+	{
+		/* This isn't actually a monitor */
+		result = 0;
+	}
+	else if(monitor->parent.owner != wakeup)
+	{
+		/* This thread doesn't currently own the monitor */
+		result = 0;
+	}
+	else
+	{
+		/* Save the count and reset the monitor to unowned */
+		saveCount = monitor->parent.count;
+		monitor->parent.owner = 0;
+		monitor->parent.count = 0;
+
+		/* Add ourselves to the signal wakeup queue */
+		_ILWakeupQueueAdd(&(monitor->signalQueue), wakeup, monitor);
+
+		/* Unlock the monitor */
+		_ILMutexUnlock(&(monitor->parent.parent.lock));
+
+		/* Wait until we are signalled */
+		if(_ILWakeupSetLimit(wakeup, 1))
+		{
+			result = _ILWakeupWait(wakeup, timeout, 0);
+			if(result < 0)
+			{
+				result = IL_WAIT_INTERRUPTED;
+			}
+			else if(result == 0)
+			{
+				result = IL_WAIT_TIMEOUT;
+			}
+		}
+		else
+		{
+			result = IL_WAIT_INTERRUPTED;
+		}
+
+		/* Wait to re-acquire the monitor */
+		result2 = ILWaitOne(handle, IL_WAIT_INFINITE);
+		if(result > 0 && result2 < 0)
+		{
+			result = result2;
+		}
+
+		/* Lock down the monitor and set the count back to the right value */
+		_ILMutexLock(&(monitor->parent.parent.lock));
+		if(monitor->parent.owner == 0)
+		{
+			monitor->parent.owner = wakeup;
+			monitor->parent.count = saveCount;
+		}
+		else if(monitor->parent.owner == wakeup)
+		{
+			monitor->parent.count = saveCount;
+		}
+	}
+
+	/* Unlock the monitor and return */
+	_ILMutexUnlock(&(monitor->parent.parent.lock));
+	return result;
+}
+
+int ILWaitMonitorPulse(ILWaitHandle *handle)
+{
+	ILMonitor *monitor = (ILMonitor *)handle;
+	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
+	int result;
+
+	/* Lock down the monitor */
+	_ILMutexLock(&(monitor->parent.parent.lock));
+
+	/* Determine what to do based on the monitor's state */
+	if(monitor->parent.parent.kind != IL_WAIT_MONITOR)
+	{
+		/* This isn't actually a monitor */
+		result = 0;
+	}
+	else if(monitor->parent.owner != wakeup)
+	{
+		/* This thread doesn't currently own the monitor */
+		result = 0;
+	}
+	else
+	{
+		/* Wake up something on the signal queue */
+		_ILWakeupQueueWake(&(monitor->signalQueue));
+		result = 1;
+	}
+
+	/* Unlock the monitor and return */
+	_ILMutexUnlock(&(monitor->parent.parent.lock));
+	return result;
+}
+
+int ILWaitMonitorPulseAll(ILWaitHandle *handle)
+{
+	ILMonitor *monitor = (ILMonitor *)handle;
+	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
+	int result;
+
+	/* Lock down the monitor */
+	_ILMutexLock(&(monitor->parent.parent.lock));
+
+	/* Determine what to do based on the monitor's state */
+	if(monitor->parent.parent.kind != IL_WAIT_MONITOR)
+	{
+		/* This isn't actually a monitor */
+		result = 0;
+	}
+	else if(monitor->parent.owner != wakeup)
+	{
+		/* This thread doesn't currently own the monitor */
+		result = 0;
+	}
+	else
+	{
+		/* Wake up everything on the signal queue */
+		_ILWakeupQueueWakeAll(&(monitor->signalQueue));
+		result = 1;
+	}
+
+	/* Unlock the monitor and return */
+	_ILMutexUnlock(&(monitor->parent.parent.lock));
+	return result;
+}
+
 #ifdef	__cplusplus
 };
 #endif

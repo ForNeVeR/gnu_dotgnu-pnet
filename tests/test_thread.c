@@ -1167,6 +1167,134 @@ static void mutex_create(void *arg)
 }
 
 /*
+ * Test monitor creation.
+ */
+static void monitor_create(void *arg)
+{
+	ILWaitHandle *handle;
+	handle = ILWaitMonitorCreate();
+	if(!handle)
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+	ILWaitHandleClose(handle);
+}
+
+/*
+ * Test monitor acquire/release.
+ */
+static void monitor_acquire(void *arg)
+{
+	ILWaitHandle *handle;
+
+	/* Create the monitor */
+	handle = ILWaitMonitorCreate();
+	if(!handle)
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	/* Acquire it: zero timeout but we should get it immediately */
+	if(ILWaitMonitorTryEnter(handle, 0) != 0)
+	{
+		ILUnitFailed("could not acquire (1)");
+	}
+
+	/* Acquire it again */
+	if(ILWaitMonitorEnter(handle) != 0)
+	{
+		ILUnitFailed("could not acquire (2)");
+	}
+
+	/* Release twice */
+	if(!ILWaitMonitorLeave(handle))
+	{
+		ILUnitFailed("could not release (1)");
+	}
+	if(!ILWaitMonitorLeave(handle))
+	{
+		ILUnitFailed("could not release (2)");
+	}
+
+	/* Try to release again, which should fail */
+	if(ILWaitMonitorLeave(handle) != 0)
+	{
+		ILUnitFailed("released a monitor that we don't own");
+	}
+
+	/* Clean up */
+	ILWaitHandleClose(handle);
+}
+
+/*
+ * Thread start function that holds a monitor for a period of time.
+ */
+static void monitorHold(void *arg)
+{
+	ILWaitHandle *monitor = ILWaitMonitorCreate();
+	ILWaitMonitorEnter(monitor);
+	sleepFor(2);
+	globalFlag = 1;
+	ILWaitMonitorLeave(monitor);
+	ILWaitHandleClose(monitor);
+	sleepFor(2);
+}
+
+/*
+ * Test that a thread can be suspended while it holds a monitor.
+ */
+static void monitor_suspend(void *arg)
+{
+	ILThread *thread;
+	int savedFlag;
+
+	/* Create the thread */
+	thread = ILThreadCreate(monitorHold, 0);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the global flag */
+	globalFlag = 0;
+
+	/* Start the thread, which should immediately suspend */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* Suspend the thread */
+	ILThreadSuspend(thread);
+
+	/* Wait for 4 time steps (enough for the thread to exit
+	   if it wasn't suspended) */
+	sleepFor(4);
+
+	/* Save the global flag at this point */
+	savedFlag = globalFlag;
+
+	/* Resume the thread */
+	ILThreadResume(thread);
+
+	/* Wait 4 more time steps for the thread to exit */
+	sleepFor(4);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors: the flag must not have been set */
+	if(savedFlag)
+	{
+		ILUnitFailed("thread holding the monitor did not suspend");
+	}
+	if(!globalFlag)
+	{
+		ILUnitFailed("thread holding the monitor did not finish");
+	}
+}
+
+/*
  * Simple test registration macro.
  */
 #define	RegisterSimple(name)	(ILUnitRegister(#name, name, 0))
@@ -1243,6 +1371,14 @@ void ILUnitRegisterTests(void)
 	 */
 	ILUnitRegisterSuite("Wait Mutex Tests");
 	RegisterSimple(mutex_create);
+
+	/*
+	 * Test monitor behaviours.
+	 */
+	ILUnitRegisterSuite("Monitor Tests");
+	RegisterSimple(monitor_create);
+	RegisterSimple(monitor_acquire);
+	RegisterSimple(monitor_suspend);
 }
 
 #ifdef	__cplusplus

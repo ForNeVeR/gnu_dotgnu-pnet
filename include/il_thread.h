@@ -333,6 +333,38 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 int ILWaitMutexRelease(ILWaitHandle *handle);
 
 /*
+ * Create a wait handle that corresponds to a monitor.
+ */
+ILWaitHandle *ILWaitMonitorCreate(void);
+
+/*
+ * Wait on a monitor for a "pulse" operation.  Returns zero if we
+ * don't own the monitor, 1 if waiting, or an "IL_WAIT_*" error
+ * code otherwise.
+ */
+int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout);
+
+/*
+ * Pulse a single waiting thread on a monitor.
+ */
+int ILWaitMonitorPulse(ILWaitHandle *handle);
+
+/*
+ * Pulse all waiting threads on a monitor.
+ */
+int ILWaitMonitorPulseAll(ILWaitHandle *handle);
+
+/*
+ * Syntactic sugar.
+ */
+#define	ILWaitMonitorEnter(monitor)		\
+			(ILWaitOne((monitor), IL_WAIT_INFINITE))
+#define	ILWaitMonitorTryEnter(monitor,timeout)		\
+			(ILWaitOne((monitor), (timeout)))
+#define	ILWaitMonitorLeave(monitor)		\
+			(ILWaitMutexRelease((monitor)))
+
+/*
  * Wait Event definitions
  *
  * 12-DEC-2002  Thong Nguyen (tum@veridicus.com)

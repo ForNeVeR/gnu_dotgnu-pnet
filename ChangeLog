@@ -31,6 +31,9 @@
 	if trying to apply an attribute to itself, because it will cause
 	a circurlarity.
 
+	* include/il_thread.h, support/wait_mutex.c, tests/test_thread.c:
+	implement the primitives for monitor operations.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

@@ -36,6 +36,7 @@ extern ILMethodTableEntry const _ILSystemTypeMethods;
 extern ILMethodTableEntry const _ILSystemRuntimeTypeMethods;
 extern ILMethodTableEntry const _ILSystemSingleMethods;
 extern ILMethodTableEntry const _ILSystemDoubleMethods;
+extern ILMethodTableEntry const _ILSystemThreadingMonitorMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
 extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
 extern ILMethodTableEntry const _ILPlatformPtrSizesMethods;
@@ -57,6 +58,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Decimal",		"System",		&_ILSystemDecimalMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
 	{"Math",		"System",		&_ILSystemMathMethods},
+	{"Monitor",		"System.Threading", &_ILSystemThreadingMonitorMethods},
 	{"Object",		"System",		&_ILSystemObjectMethods},
 	{"PtrSizes",	"Platform",		&_ILPlatformPtrSizesMethods},
 	{"RuntimeType",	"System",		&_ILSystemRuntimeTypeMethods},

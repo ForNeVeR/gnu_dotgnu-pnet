@@ -4,6 +4,9 @@
 * engine/engine.h, engine/cvm_ptr.c: implement the CVM instructions
 "get_static", "new", and "new_value".
 
+* engine/lib_thread.c, engine/internal.c, engine/Makefile.am: implement
+the "internalcall" methods for "System.Threading.Monitor".
+
 2001-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.h, engine/cvm_dasm.c, engine/cvmc_obj.c, engine/cvm_ptr.c,

@@ -264,7 +264,12 @@ static void ProcessBitField(CDeclSpec spec, CDeclarator decl, ILUInt32 size)
 	}
 
 	/* Define the bit field within the current "struct" or "union" */
-	CTypeDefineBitField(&CCCodeGen, currentStruct, decl.name, type, size);
+	if(!CTypeDefineBitField(&CCCodeGen, currentStruct, decl.name,
+							type, size, maxSize))
+	{
+		CCErrorOnLine(yygetfilename(decl.node), yygetlinenum(decl.node),
+					  _("storage size of `%s' is not known"), decl.name);
+	}
 }
 
 #if 0

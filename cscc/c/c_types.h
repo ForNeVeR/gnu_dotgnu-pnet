@@ -141,9 +141,9 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 /*
  * Define a new bit field within a "struct" or "union".
  */
-ILField *CTypeDefineBitField(ILGenInfo *info, ILType *structType,
-					 	     const char *fieldName, ILType *fieldType,
-							 ILUInt32 numBits);
+int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
+				 	    const char *fieldName, ILType *fieldType,
+						ILUInt32 numBits, ILUInt32 maxBits);
 
 /*
  * End the definition of a "struct" or "union".  This will update

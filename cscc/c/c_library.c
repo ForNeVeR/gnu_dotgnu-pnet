@@ -93,6 +93,49 @@ static int AddConstructor(ILClass *classInfo, ILType *arg1, ILType *arg2)
 	return 1;
 }
 
+/*
+ * Add a constructor to a class with four specific argument types.
+ */
+static int AddConstructor4(ILClass *classInfo, ILType *arg1, ILType *arg2,
+						   ILType *arg3, ILType *arg4)
+{
+	ILMethod *method;
+	ILType *signature;
+	method = ILMethodCreate(classInfo, 0, ".ctor",
+					  	    IL_META_METHODDEF_PUBLIC |
+					  	    IL_META_METHODDEF_HIDE_BY_SIG |
+							IL_META_METHODDEF_SPECIAL_NAME |
+							IL_META_METHODDEF_RT_SPECIAL_NAME);
+	if(!method)
+	{
+		return 0;
+	}
+	signature = ILTypeCreateMethod(ILClassToContext(classInfo), ILType_Void);
+	if(!signature)
+	{
+		return 0;
+	}
+	ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+	if(!ILTypeAddParam(ILClassToContext(classInfo), signature, arg1))
+	{
+		return 0;
+	}
+	if(!ILTypeAddParam(ILClassToContext(classInfo), signature, arg2))
+	{
+		return 0;
+	}
+	if(!ILTypeAddParam(ILClassToContext(classInfo), signature, arg3))
+	{
+		return 0;
+	}
+	if(!ILTypeAddParam(ILClassToContext(classInfo), signature, arg4))
+	{
+		return 0;
+	}
+	ILMemberSetSignature((ILMember *)method, signature);
+	return 1;
+}
+
 void CGenRegisterLibrary(ILGenInfo *info)
 {
 	ILImage *image;
@@ -101,6 +144,7 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	ILClass *attributeClass;
 	ILClass *exceptionClass;
 	ILClass *valueTypeClass;
+	ILType *stringType;
 	ILClass *classInfo;
 
 	/* Create the "OpenSystem.C" simulated assembly */
@@ -112,6 +156,7 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	attributeClass = ILTypeToClass(info, ILFindSystemType(info, "Atribute"));
 	exceptionClass = ILTypeToClass(info, ILFindSystemType(info, "Exception"));
 	valueTypeClass = ILTypeToClass(info, ILFindSystemType(info, "ValueType"));
+	stringType = ILFindSystemType(info, "String");
 
 	/* Create "OpenSystem.C.Crt0" */
 	classInfo = CreateClass(info, scope, "Crt0", objectClass);
@@ -131,7 +176,8 @@ void CGenRegisterLibrary(ILGenInfo *info)
 
 	/* Create "OpenSystem.C.BitFieldAttribute" */
 	classInfo = CreateClass(info, scope, "BitFieldAttribute", attributeClass);
-	AddConstructor(classInfo, ILType_Int32, ILType_Int32);
+	AddConstructor4(classInfo, stringType, stringType,
+					ILType_Int32, ILType_Int32);
 
 	/* Create "OpenSystem.C.WeakAliasForAttribute" */
 	classInfo = CreateClass(info, scope, "WeakAliasForAttribute",

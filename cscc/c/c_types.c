@@ -19,6 +19,7 @@
  */
 
 #include <cscc/c/c_internal.h>
+#include "il_serialize.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -806,12 +807,282 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	return field;
 }
 
-ILField *CTypeDefineBitField(ILGenInfo *info, ILType *structType,
-					 	     const char *fieldName, ILType *fieldType,
-							 ILUInt32 numBits)
+/*
+ * Get the constructor for the "BitFieldAttribute" class.
+ */
+static ILMethod *BitFieldCtor(ILGenInfo *info)
 {
-	/* TODO */
-	return 0;
+	ILClass *classInfo;
+	ILType *args[4];
+
+	/* Find the "BitFieldAttribute" class */
+	classInfo = ILType_ToClass(ILFindNonSystemType
+			(info, "BitFieldAttribute", "OpenSystem.C"));
+
+	/* Build the argument array to look for */
+	args[0] = ILFindSystemType(info, "String");
+	args[1] = args[0];
+	args[2] = ILType_Int32;
+	args[3] = ILType_Int32;
+
+	/* Resolve the constructor */
+	return ILResolveConstructor(info, classInfo,
+								ILClassLookup(ILClassGlobalScope(info->image),
+											  "<Module>", 0),
+								args, 4);
+}
+
+/*
+ * Get the left-over space in a bit field storage area.
+ */
+static ILUInt32 BitFieldLeftOver(ILGenInfo *info, ILClass *classInfo,
+								 const char *name, ILUInt32 *start,
+								 ILUInt32 maxBits)
+{
+	ILMethod *ctor = BitFieldCtor(info);
+	ILAttribute *attr;
+	const void *blob;
+	unsigned long blobLen;
+	ILSerializeReader *reader;
+	const char *str;
+	int slen;
+	ILUInt32 fieldStart;
+	ILUInt32 fieldSize;
+
+	/* Initialize the "start" value */
+	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+	{
+		*start = maxBits;
+	}
+	else
+	{
+		*start = 0;
+	}
+
+	/* Search all "BitFieldAttribute" values for "name" */
+	attr = 0;
+	while((attr = ILProgramItemNextAttribute
+				(ILToProgramItem(classInfo), attr)) != 0)
+	{
+		/* Skip this attribute if it is not "BitFieldAttribute" */
+		if(ILAttributeTypeAsItem(attr) != ILToProgramItem(ctor))
+		{
+			continue;
+		}
+
+		/* Does this attribute value belong to the specified storage area? */
+		blob = ILAttributeGetValue(attr, &blobLen);
+		if(!blob)
+		{
+			continue;
+		}
+		reader = ILSerializeReaderInit(ctor, blob, blobLen);
+		if(!reader)
+		{
+			continue;
+		}
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_STRING)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if(ILSerializeReaderGetString(reader, &str) < 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_STRING)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if((slen = ILSerializeReaderGetString(reader, &str)) < 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if(slen != strlen(name) || strncmp(name, str, slen) != 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+
+		/* Extract the start and size values for the bit field */
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_I4)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		fieldStart = (ILUInt32)(ILSerializeReaderGetInt32
+			(reader, IL_META_SERIALTYPE_I4));
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_I4)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		fieldSize = (ILUInt32)(ILSerializeReaderGetInt32
+			(reader, IL_META_SERIALTYPE_I4));
+		ILSerializeReaderDestroy(reader);
+
+		/* Adjust "start" for the field position */
+		if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+		{
+			if(*start > fieldStart)
+			{
+				*start = fieldStart;
+			}
+		}
+		else
+		{
+			if(*start < (fieldStart + fieldSize))
+			{
+				*start = fieldStart + fieldSize;
+			}
+		}
+	}
+
+	/* Return the size of the left-over area to the caller */
+	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+	{
+		return *start;
+	}
+	else
+	{
+		return maxBits - *start;
+	}
+}
+
+/*
+ * Add an attribute that defines a bit field name.
+ */
+static void BitFieldAdd(ILGenInfo *info, ILClass *classInfo,
+						const char *fieldName, const char *storageName,
+						ILUInt32 posn, ILUInt32 numBits)
+{
+	unsigned char fieldHeader[IL_META_COMPRESS_MAX_SIZE];
+	unsigned char storageHeader[IL_META_COMPRESS_MAX_SIZE];
+	unsigned long fieldLen, storageLen;
+	int fieldHeaderLen, storageHeaderLen;
+	unsigned long totalLen;
+	unsigned char *buf;
+	ILAttribute *attr;
+
+	/* Determine the total length of the attribute value */
+	fieldLen = strlen(fieldName);
+	fieldHeaderLen = ILMetaCompressData(fieldHeader, fieldLen);
+	storageLen = strlen(storageName);
+	storageHeaderLen = ILMetaCompressData(storageHeader, storageLen);
+	totalLen = 12 + fieldHeaderLen + fieldLen + storageHeaderLen + storageLen;
+
+	/* Allocate a block of memory to use to format the value */
+	buf = (unsigned char *)ILMalloc(totalLen);
+	if(!buf)
+	{
+		ILGenOutOfMemory(info);
+	}
+
+	/* Format the attribute value */
+	buf[0] = 0x01;
+	buf[1] = 0x00;
+	ILMemCpy(buf + 2, fieldHeader, fieldHeaderLen);
+	totalLen = 2 + fieldHeaderLen;
+	ILMemCpy(buf + totalLen, fieldName, fieldLen);
+	totalLen += fieldLen;
+	ILMemCpy(buf + totalLen, storageHeader, storageHeaderLen);
+	totalLen += storageHeaderLen;
+	ILMemCpy(buf + totalLen, storageName, storageLen);
+	totalLen += storageLen;
+	IL_WRITE_UINT32(buf + totalLen, posn);
+	totalLen += 4;
+	IL_WRITE_UINT32(buf + totalLen, numBits);
+	totalLen += 4;
+	buf[totalLen++] = 0x00;
+	buf[totalLen++] = 0x00;
+
+	/* Create an attribute block and add it to the class */
+	attr = ILAttributeCreate(info->image, 0);
+	if(!attr || !ILAttributeSetValue(attr, buf, totalLen))
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILAttributeSetType(attr, ILToProgramItem(BitFieldCtor(info)));
+	ILProgramItemAddAttribute(ILToProgramItem(classInfo), attr);
+	ILFree(buf);
+}
+
+int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
+				 	    const char *fieldName, ILType *fieldType,
+						ILUInt32 numBits, ILUInt32 maxBits)
+{
+	ILClass *classInfo = ILType_ToValueType(structType);
+	ILField *field;
+	int num;
+	char name[64];
+	ILUInt32 posn;
+	ILUInt32 leftOverBits;
+	ILUInt32 leftOverStart;
+
+	/* Initialize variables for the bit field number and default position */
+	num = 1;
+	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+	{
+		posn = maxBits;
+	}
+	else
+	{
+		posn = 0;
+	}
+
+	/* Determine if the last field in the structure is a bit
+	   field of the right type, with sufficient space available */
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!ILField_IsStatic(field) &&
+		   !strncmp(ILField_Name(field), ".bitfield-", 10))
+		{
+			if(ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD) == 0)
+			{
+				/* This is the last bit field: check the type and space */
+				if(CTypeIsIdentical(fieldType, ILField_Type(field)))
+				{
+					leftOverBits = BitFieldLeftOver
+						(info, classInfo, ILField_Name(field),
+						 &leftOverStart, maxBits);
+					if(leftOverBits >= numBits)
+					{
+						posn = leftOverStart;
+						break;
+					}
+				}
+			}
+			++num;
+		}
+	}
+
+	/* Create a new bit field storage structure if necessary */
+	if(!field)
+	{
+		sprintf(name, ".bitfield-%d", num);
+		field = CTypeDefineField(info, structType, name, fieldType);
+		if(!field)
+		{
+			return 0;
+		}
+	}
+
+	/* Add a new "BitFieldAttribute" instance to the class */
+	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+	{
+		posn -= numBits;
+	}
+	BitFieldAdd(info, classInfo, fieldName,
+				ILField_Name(field), posn, numBits);
+
+	/* Done */
+	return 1;
 }
 
 void CTypeEndStruct(ILGenInfo *info, ILType *structType)

@@ -18,6 +18,13 @@
 	option and "PNET_WINFORMS_TOOLKIT" environment variable to override
 	the default drawing toolkit selection.
 
+	* System.Windows.Forms/Forms.build,
+	resources/en_US/System.Windows.Forms/asterisk.ico,
+	resources/en_US/System.Windows.Forms/exclamation.ico,
+	resources/en_US/System.Windows.Forms/hand.ico,
+	resources/en_US/System.Windows.Forms/question.ico: add the four
+	standard message box icons (extracted from the Wine distribution).
+
 2003-10-08  Neil Cawse  <neilcawse@geotab.com>
 
 	* : many small fixes to compile with csc

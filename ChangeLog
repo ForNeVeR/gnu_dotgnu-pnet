@@ -13,6 +13,9 @@
 	* cscc/common/cc_main.c: integrate the full system search path
 	into the compiler and csdoc.
 
+	* samples/System.dll: updated version with more System.ComponentModel
+	classes.
+
 2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with delegate comparison fix.

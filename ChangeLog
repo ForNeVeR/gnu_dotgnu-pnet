@@ -6,6 +6,11 @@
 	pnet coding guidelines; make the -S option kbytes to be consistent
 	with -H; document -S in the manpage.
 
+	* engine/lib_diag.c (_IL_StackFrame_GetExceptionStackTrace):
+	perform manual allocation of the stack frame array to stop the
+	engine being recursively re-entered on StackOverflowException;
+	limit the number of reported frames to 256.
+
 2002-05-04  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h:

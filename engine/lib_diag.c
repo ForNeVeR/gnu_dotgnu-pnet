@@ -237,6 +237,7 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 	PackedStackFrame *data;
 	ILMethod *method;
 	unsigned char *start;
+	ILClass *classInfo;
 
 	/* Get the number of frames on the stack, and also determine
 	   where the exception constructors stop and real code starts */
@@ -277,18 +278,37 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 		frame = _ILGetNextCallFrame(thread, frame);
 	}
 
-	/* Allocate an array for the packed stack data */
-	array = ILExecThreadNew(thread, "[vSystem.Diagnostics.PackedStackFrame;",
-						    "(Ti)V", (ILVaInt)num);
+	/* Put an upper limit on the number of frames so that we
+	   don't arbitrarily blow up the exception handling system */
+	if(num > 256)
+	{
+		num = 256;
+	}
+
+	/* Allocate an array for the packed stack data.  We cannot
+	   use "ILExecThreadNew" because it will re-enter the engine.
+	   If we are throwing "StackOverflowException", then we will
+	   get an infinite recursive loop */
+	classInfo = ILExecThreadLookupClass
+			(thread, "[vSystem.Diagnostics.PackedStackFrame;");
+	if(!classInfo)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	array = _ILEngineAlloc(thread, classInfo,
+						   sizeof(System_Array) +
+						   		num * sizeof(PackedStackFrame));
 	if(!array)
 	{
 		return 0;
 	}
+	((System_Array *)array)->length = num;
 
 	/* Fill the array with the packed stack data */
 	data = (PackedStackFrame *)ArrayToBuffer(array);
 	frame = _ILGetCallFrame(thread, skipFrames);
-	while(frame != 0)
+	while(frame != 0 && num > 0)
 	{
 		data->method = frame->method;
 		if(frame->method && frame->pc != IL_INVALID_PC)
@@ -318,6 +338,7 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 		}
 		++data;
 		frame = _ILGetNextCallFrame(thread, frame);
+		--num;
 	}
 
 	/* Done */

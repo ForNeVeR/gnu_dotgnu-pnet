@@ -1132,13 +1132,11 @@ static void cvm_out_ptr2(ILCoder *coder, int opcode, void *value1, void *value2)
 {
 	_CVM_OUT_PTR2(opcode, value1, value2);
 }
-#ifdef IL_CONFIG_VARARGS
 static void cvmp_out_word2_ptr(ILCoder *coder, int opcode,
 							   ILInt32 value1, ILInt32 value2, void *value3)
 {
 	_CVMP_OUT_WORD2_PTR(opcode, value1, value2, value3);
 }
-#endif
 static void cvmp_out_word2_ptr2(ILCoder *coder, int opcode,
 							    ILInt32 value1, ILInt32 value2,
 								void *value3, void *value4)

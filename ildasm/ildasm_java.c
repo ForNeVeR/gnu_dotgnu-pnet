@@ -25,6 +25,8 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_JAVA
+
 /* "image/jopcodes.c" */
 extern ILOpcodeInfo const ILJavaOpcodeTable[256];
 
@@ -856,6 +858,8 @@ void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
 	/* Free the exception list and exit */
 	ILMethodFreeExceptions(clauses);
 }
+
+#endif /* IL_CONFIG_JAVA */
 
 #ifdef	__cplusplus
 };

@@ -147,11 +147,13 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	}
 
 	/* Write the headers to the output stream */
+#ifdef IL_CONFIG_JAVA
 	if(flags & IL_WRITEFLAG_JVM_MODE)
 	{
 		_ILWriteJavaHeaders(writer);
 	}
 	else
+#endif
 	{
 		_ILWriteHeaders(writer);
 	}
@@ -335,6 +337,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 	unsigned blobOffset;
 	unsigned guidOffset;
 
+#ifdef IL_CONFIG_JAVA
 	if (writer->flags & IL_WRITEFLAG_JVM_MODE)
 	{
 		unsigned long numTokens;
@@ -380,6 +383,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 		}
 	}
 	else
+#endif
 	{
 
 	/* Sort the FieldDef, MethodDef, and ParamDef tables to put all

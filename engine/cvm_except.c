@@ -96,7 +96,17 @@ void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object)
 	}
 }
 
-#endif /* IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES */
+#else  /* !(IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES) */
+
+/*
+ * Set the stack trace for an exception to the current call context.
+ */
+void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object)
+{
+	/* Nothing to do here */
+}
+
+#endif /* !(IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES) */
 
 void *_ILSystemException(ILExecThread *thread, const char *className)
 {

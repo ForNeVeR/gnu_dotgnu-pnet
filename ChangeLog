@@ -4,6 +4,10 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_delegate.c:
 	stub out the "SetOutParams" internalcall.
 
+	* engine/cvm_except.c, engine/cvmc_gen.h, ilasm/ilasm_output.c,
+	ildasm/ildasm_class.c, ildasm/ildasm_java.c, image/writer.c,
+	support/test_float.c: fix the "compact" profile.
+
 2003-09-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_output.c (OutputDebugInfo): make sure that the

@@ -1820,6 +1820,7 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 	unsigned long startRVA;
 	LabelInfo *label;
 
+#ifdef IL_CONFIG_JAVA
 	/* check if parsing java method */
 	if(ILAsmParseJava) 
 	{
@@ -1908,6 +1909,7 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 		ILJavaAppendCode(ILAsmWriter, ILMethod_Owner(method), method, header, 2);
 	} 
 	else
+#endif
 	{
 
 	/* Finish the label processing for the method */
@@ -2253,7 +2255,9 @@ void ILAsmOutPopVarScope(char *name)
 
 void ILJavaAsmInitPool()
 {
+#ifdef IL_CONFIG_JAVA
 	ILJavaInitPool(ILAsmWriter, ILAsmClass);
+#endif
 }
 
 void ILJavaAsmOutSimple(ILInt32 opcode)
@@ -2293,6 +2297,8 @@ void ILJavaAsmOutInt(ILInt32 opcode, ILInt64 value)
 	}
 }
 
+#ifdef IL_CONFIG_JAVA
+
 static void OutConst32(int index)
 {
 	if(index < 256)
@@ -2315,45 +2321,58 @@ static void OutConst64(int index)
 	OUT_BYTE(index);
 }
 
+#endif
+
 void ILJavaAsmOutConstInt32(ILInt32 opcode, ILInt64 value)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetInteger(ILAsmWriter, ILAsmClass, (ILInt32)value);
 
 	OutConst32(index);
+#endif
 }
 
 void ILJavaAsmOutConstInt64(ILInt32 opcode, ILInt64 value)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetLong(ILAsmWriter, ILAsmClass, value);
 
 	OutConst64(index);
+#endif
 }
 
 void ILJavaAsmOutConstFloat32(ILInt32 opcode, ILUInt8 *value)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetFloat(ILAsmWriter, ILAsmClass, IL_READ_FLOAT(value));
 	
 	OutConst32(index);
+#endif
 }
 
 void ILJavaAsmOutConstFloat64(ILInt32 opcode, ILUInt8 *value)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetDouble(ILAsmWriter, ILAsmClass, IL_READ_DOUBLE(value));
 
 	OutConst64(index);
+#endif
 }
 
 void ILJavaAsmOutString(ILIntString interned) 
 {
+#ifdef IL_CONFIG_JAVA
 	int strIndex = ILJavaSetUTF8String(ILAsmWriter, ILAsmClass, interned.string, 
 									   interned.len);
 	int index = ILJavaSetString(ILAsmWriter, ILAsmClass, strIndex);
 
 	OutConst32(index);
+#endif
 }
 
 void ILJavaAsmOutToken(ILInt32 opcode, ILUInt32 token)
 {
+#ifdef IL_CONFIG_JAVA
 	ILMember *member;
 	ILClass *class;
 	ILUInt32 index = 0;
@@ -2397,11 +2416,13 @@ void ILJavaAsmOutToken(ILInt32 opcode, ILUInt32 token)
 	OUT_BYTE(opcode);
 	OUT_BYTE(index >> 8);
 	OUT_BYTE(index);
+#endif
 }
 
 void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, char *className, 
 					 char *refName, char *sigName)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = 
 		ILJavaSetrefFromName(ILAsmWriter, ILAsmClass, 
 							 isMethod ? JAVA_CONST_METHODREF : JAVA_CONST_FIELDREF,
@@ -2410,15 +2431,18 @@ void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, char *className,
 	OUT_BYTE(opcode);
 	OUT_BYTE(index >> 8);
 	OUT_BYTE(index);
+#endif
 }
 
 void ILJavaAsmOutType(ILInt32 opcode, char *className)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetClassFromName(ILAsmWriter, ILAsmClass, className);
 
 	OUT_BYTE(opcode);
 	OUT_BYTE(index >> 8);
 	OUT_BYTE(index);
+#endif
 }
 
 void ILJavaAsmOutNewarray(ILInt32 opcode, ILInt64 type)
@@ -2429,22 +2453,26 @@ void ILJavaAsmOutNewarray(ILInt32 opcode, ILInt64 type)
 
 void ILJavaAsmOutMultinewarray(ILInt32 opcode, ILType *type, ILInt64 dim)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetClassFromType(ILAsmWriter, ILAsmClass, type);
 
 	OUT_BYTE(opcode);
 	OUT_BYTE(index >> 8);
 	OUT_BYTE(index);
 	OUT_BYTE(dim);
+#endif
 }
 
 void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, char *typeName, ILInt64 dim)
 {
+#ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetClassFromName(ILAsmWriter, ILAsmClass, typeName);
 
 	OUT_BYTE(opcode);
 	OUT_BYTE(index >> 8);
 	OUT_BYTE(index);
 	OUT_BYTE(dim);
+#endif
 }
 
 /*

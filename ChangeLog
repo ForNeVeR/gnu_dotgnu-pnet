@@ -1,3 +1,8 @@
+
+2005-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, NEWS: update version and news for the 0.6.12 release.
+
 2005-01-15  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* configure.in: modify enable-xft option to default to true.

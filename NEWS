@@ -1,4 +1,91 @@
 
+0.6.12 (16 January 2005)
+
+	System.Windows.Forms & System.Drawing:
+
+	* Raise ListBox.SelectedValueChanged before SelectedIndexChanged
+	  (Stefan Lang).
+	* Fix default background color for StatusBar (Simon Guindon).
+	* Fix minor bug in ListViewItem.SizeSubItemArray (Marc Haisenko).
+	* Move controls down in stacking order correctly (Klaus Treichel).
+	* Transparent background colors in PictureBox (Klaus Treichel).
+	* Check for Win32 errors in SetWindowLong properly (Thong Nguyen).
+	* Ensure that Form.OnLoad is only generated once (Gopal V).
+	* Implement TrackBar (Deryk Robosson).
+	* Matrix.Clone implementation (Erik Pfeifle).
+	* Work around one-off bug in DrawString (Erich Kitzmuller).
+	* Missing ToString methods in Forms classes (Deryk Robosson).
+	* Missing functions in ListBox (Shylaja Kokoori).
+	* Fix two form size issues (Marc Haisenko).
+	* TextBox bounds checking (Erich Kitzmuller).
+	* Allow TextBox.Text to be set to null without an exception
+	  (Carl-Adam Brengesjo).
+	* Basic implementation of MenuItem.CloneMenu (Carl-Adam Brengesjo).
+	* Stub out RichTextBox (Klaus Treichel).
+	* Stub out PrintDialog (Klaus Treichel).
+	* Stub out NotifyIcon (Deryk Robosson).
+	* Implement System.Drawing.SystemIcons (Deryk Robosson).
+	* Rendering fixes in StatusBar (Simon Guindon).
+	* Fixes to NumericUpDown's labelling of buttons (Deryk Robosson).
+	* Fix Control.ResetText to set the right value (Deryk Robosson).
+	* Fix matrix transformations (Heiko Weiss).
+	* Bezier problems when less than two points (Heiko Weiss).
+	* Signature-compatibility fixes in Control (Gopal V).
+	* Initial selected tab in TabControl is the first one (leppie).
+	* Word-wrapping for hyphenated words (Deryk Robosson).
+	* Fill MainMenu screen real estate properly (Deryk Robosson).
+	* Add missing constructors for Matrix (Marco Bosatta).
+	* Implement the Disposing property for controls (Richard Baumann).
+	* Use Dispose instead of DestroyHandle from Form.Close (Richard Baumann).
+	* Z-order and control parenting issues (Richard Baumann).
+	* Do not attempt to dropdown empty ComboBox'es (Deryk Robosson).
+	* Use Items property instead of field in ComboBox (Deryk Robosson).
+	* Do not allow whitespace clicks for non-existent ComboBox items
+	  (Jacob Alberty).
+	* Fix determinant and inversion operations for Matrix (Marco Bosatta).
+
+	Xsharp:
+
+	* Disable font size rounding if Xft is in use (Marc Haisenko).
+	* Unicode support using Xft (Marc Haisenko).
+	* Support larger font sizes (Marc Haisenko).
+	* Use a dpi of 96 for point size conversions (Marc Haisenko).
+	* Fix PopupWindow.Raise (Gopal V).
+	* Add toolkit support for MoveToAbove and MoveToBelow (Richard Baumann).
+	* Enable XFT by default (Richard Baumann).
+
+	System.Xml:
+
+	* Fix HTTP support for XmlReader (Erich Kitzmuller).
+	* Correct URL resolution for XmlReader (Gopal V).
+	* Basic function handling for XPath (Gopal V).
+	* Implement TODO functions in XmlDocumentNavigator (Gopal V).
+	* Resolve relative filenames properly (Carl-Adam Brengesjo).
+	* Signature-compatibility in resolver classes (Richard Baumann).
+	* Fix a duplicate prefix bug in XmlTextWriter (Richard Baumann).
+
+	Serialization and Remoting:
+
+	* Fix serialization of ISerialable types (Andre Seidelt).
+
+	Networking:
+
+	* Check support for HTTP requests (Erich Kitzmuller).
+	* "file://" URL handling (Gopal V).
+	* Fixes to file URI handling (Stephen Compall).
+
+	Other:
+
+	* Bugs in number parsing (Stephen Compall).
+	* Bugs in StringBuilder (Klaus Treichel).
+	* String index range checks (Klaus Treichel).
+	* Changes to compile with Visual Studio overlay (Neil Cawse).
+	* Case sensitive string comparisons (Klaus Treichel).
+	* Prevent duplicate members in reflection lookups (lxs@dev-fr.com).
+	* Default visibility and binding values in ClrType (Gopal V).
+	* Handle '\0' in number parsing the same as MS (Deryk Robosson).
+	* Compatibility fix in StreamWriter.Close (Deryk Robosson).
+
 0.6.10 (30 October 2004)
 
 	System.Windows.Forms & System.Drawing:

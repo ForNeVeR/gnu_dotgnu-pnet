@@ -941,11 +941,19 @@ void CFunctionStrongAlias(ILGenInfo *info, const char *name, ILNode *node,
 	PrintAttributeString(stream, aliasFor);
 	fputs("00 00)\n", stream);
 
-	/* Bail out here if the alias involves varargs because there
-	   is no way to call through to the underlying function */
+	/* If the alias involves varargs, then there is no way to call
+	   through to the underlying function using IL instructions.
+	   But we still need to output a method body, to keep Microsoft's
+	   CLR happy: it won't load an assembly that contains a method
+	   with an empty body but no PInvoke declaration.  Even if that
+	   method is never called.  So we throw an exception instead */
 	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
 			IL_META_CALLCONV_VARARG)
 	{
+		fputs("\tnewobj\tinstance void [.library]System.NotSupportedException"
+					"::.ctor()\n", stream);
+		fputs("\tthrow\n", stream);
+		fputs("\t.maxstack 1\n", stream);
 		fputs("}\n", stream);
 		return;
 	}

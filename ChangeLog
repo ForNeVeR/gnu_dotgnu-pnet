@@ -18,6 +18,9 @@
 	* ilalink/link_create.c, ilalink/link_library.c, ilalink/linker.h:
 	expand library references such as "-lm" to "-llibm64".
 
+	* cscc/c/c_function.c: output a dummy method body in strong aliases
+	for vararg functions, for better interoperability with other CLR's.
+
 2002-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_function.h, doc/c_language_abi.html:

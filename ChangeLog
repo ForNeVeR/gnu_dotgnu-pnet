@@ -1,3 +1,11 @@
+
+2003-05-01  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/ComponentModel/EventDescriptorCollection.cs,
+	System/ComponentModel/EventDescriptor.cs,
+	System/ComponentModel/MarshalByValueComponent.cs: Stubs of non-ECMA
+	classes to support external libraries.
+
 2003-04-27  Adam Ballai  <minddog@cannibutter.com>
 	
 	* System.Xml/ElementList.cs: Implement GetEnumerator and Item(int). 

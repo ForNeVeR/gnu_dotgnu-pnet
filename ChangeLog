@@ -15,6 +15,9 @@
 	dump unresolved externals using C type names rather than IL type
 	names, so that the error messages make more sense to ordinary users.
 
+	* ilalink/link_create.c, ilalink/link_library.c, ilalink/linker.h:
+	handle unresolved references to functions that involve varargs.
+
 2004-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/time.c: use the "tm_gmtoff" field within

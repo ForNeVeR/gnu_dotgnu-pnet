@@ -227,6 +227,11 @@ void _ILLinkerUpdateSymbol(ILLinker *linker, const char *name,
 						   ILMember *member);
 
 /*
+ * Determine if we have a definition for a specific symbol.
+ */
+int _ILLinkerHasSymbol(ILLinker *linker, const char *name);
+
+/*
  * Create the global symbol hash for the image being linked.
  */
 int _ILLinkerCreateSymbolHash(ILLinker *linker);

@@ -1222,6 +1222,13 @@ void _ILLinkerUpdateSymbol(ILLinker *linker, const char *name,
 	}
 }
 
+int _ILLinkerHasSymbol(ILLinker *linker, const char *name)
+{
+	ILLibrarySymbol *libSymbol;
+	libSymbol = ILHashFindType(linker->symbolHash, name, ILLibrarySymbol);
+	return (libSymbol != 0);
+}
+
 int _ILLinkerCreateSymbolHash(ILLinker *linker)
 {
 	linker->symbolHash =

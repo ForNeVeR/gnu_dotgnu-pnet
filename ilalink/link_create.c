@@ -220,7 +220,10 @@ static void ReportUnresolved(ILLinker *linker)
 		   ILType_Kind(signature) == (IL_TYPE_COMPLEX_METHOD |
 		   							  IL_TYPE_COMPLEX_METHOD_SENTINEL))
 		{
-			continue;
+			if(_ILLinkerHasSymbol(linker, ILMember_Name(member)))
+			{
+				continue;
+			}
 		}
 
 		/* Perform the normal checks */

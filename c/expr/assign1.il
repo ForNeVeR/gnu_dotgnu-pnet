@@ -140,7 +140,7 @@
 	ldloc.1
 	ldloc.s	16
 	sub
-	conv.i1
+	conv.u1
 	stloc.1
 	ldloc.1
 	conv.i8
@@ -152,7 +152,7 @@
 	conv.u8
 	ldloc.s	18
 	sub
-	conv.i1
+	conv.u1
 	stloc.1
 	ldloc.1
 	ldloc.s	19

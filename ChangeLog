@@ -1,4 +1,9 @@
 
+2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/expr/assign1.3il, c/expr/assign1.il: modify some C output
+	files to reflect changes in the compiler.
+
 2003-07-07  Gopal.V  <gopalv82@symonds.net>
 
 	* csharp/class/enum6.il,	csharp/class/enum6.jl,

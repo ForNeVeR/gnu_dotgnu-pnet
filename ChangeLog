@@ -19,6 +19,8 @@ array ranks properly.
 
 * cscc/cs_cast.tc (CSTypeToName): print multi-dimensional array names properly.
 
+* image/synthetic.c: build synthetic array types properly for multiple ranks.
+
 2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat

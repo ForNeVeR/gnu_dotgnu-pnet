@@ -113,7 +113,13 @@ static int AddArrayMethods(ILClass *info, ILType *type)
 	temp = type;
 	numDims = 0;
 	while(temp != 0 && ILType_IsComplex(temp) &&
-		  temp->kind == IL_TYPE_COMPLEX_ARRAY)
+		  temp->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+	{
+		++numDims;
+		temp = temp->un.array.elemType;
+	}
+	if(temp != 0 && ILType_IsComplex(temp) &&
+	   temp->kind == IL_TYPE_COMPLEX_ARRAY)
 	{
 		++numDims;
 		temp = temp->un.array.elemType;
@@ -376,6 +382,7 @@ ILClass *_ILTypeToSyntheticClass(ILImage *image, ILType *type)
 		break;
 
 		case IL_TYPE_COMPLEX_ARRAY:
+		case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 		{
 			if(!AddArrayMethods(info, type))
 			{

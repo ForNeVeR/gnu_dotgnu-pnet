@@ -134,10 +134,12 @@ Makefile
 tools/Makefile
 runtime/Makefile
 System/Makefile
+System.Xml/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile
 resources/en_US/System/Makefile
+resources/en_US/System.Xml/Makefile
 tools/run_test.sh
 tools/csccwrap.sh])
 

@@ -39,6 +39,8 @@ and ILScopeLookupInNamespace.
 * cscc/cs_gather.c: modify type gathering to use CSSemBaseType instead
 of ILScopeResolveType.
 
+* cscc/cs_grammar.y: declare namespaces in the global scope as they are parsed.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

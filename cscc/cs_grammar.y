@@ -97,6 +97,7 @@ static ILScope *GlobalScope(void)
 	else
 	{
 		CSGlobalScope = ILScopeCreate(&CSCodeGen, 0);
+		ILScopeDeclareNamespace(CSGlobalScope, "System");
 		return CSGlobalScope;
 	}
 }
@@ -895,6 +896,9 @@ NamespaceDeclaration
 				CurrNamespaceNode = (ILNode_Namespace *)
 					ILNode_Namespace_create(CurrNamespace.string,
 											CurrNamespaceNode);
+
+				/* Declare the namespace within the global scope */
+				ILScopeDeclareNamespace(GlobalScope(), CurrNamespace.string);
 			}
 			NamespaceBody OptSemiColon	{
 				/* Pop the identifier from the end of the namespace */

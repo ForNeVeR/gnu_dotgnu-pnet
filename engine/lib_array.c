@@ -1221,9 +1221,10 @@ static ILType *GetArrayElemType(System_Array *array)
 /*
  * public static void Clear(Array array, int index, int length);
  */
-static void System_Array_Clear(ILExecThread *thread, System_Array *array,
-							   ILInt32 index, ILInt32 length)
+void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
+				     ILInt32 index, ILInt32 length)
 {
+	System_Array *array = (System_Array *)_array;
 	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
@@ -1295,8 +1296,9 @@ static void System_Array_Clear(ILExecThread *thread, System_Array *array,
 /*
  * public static void Initialize();
  */
-static void System_Array_Initialize(ILExecThread *thread, System_Array *_this)
+void _IL_Array_Initialize(ILExecThread *thread, ILObject *thisObj)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
@@ -1369,12 +1371,12 @@ static void System_Array_Initialize(ILExecThread *thread, System_Array *_this)
  *                         Array destArray, int destIndex,
  *                         int length);
  */
-static void System_Array_Copy(ILExecThread *thread,
-							  System_Array *sourceArray,
-							  ILInt32 sourceIndex,
-							  System_Array *destArray,
-							  ILInt32 destIndex,
-							  ILInt32 length)
+void _IL_Array_Copy(ILExecThread *thread,
+				    ILObject *sourceArray,
+				    ILInt32 sourceIndex,
+				    ILObject *destArray,
+				    ILInt32 destIndex,
+				    ILInt32 length)
 {
 	/* TODO */
 }
@@ -1384,10 +1386,10 @@ static void System_Array_Copy(ILExecThread *thread,
  *                                  int rank, int length1,
  *                                  int length2, int length3);
  */
-static ILObject *System_Array_CreateArray(ILExecThread *thread,
-										  ILNativeInt elementType,
-										  ILInt32 rank, ILInt32 length1,
-										  ILInt32 length2, ILInt32 length3)
+ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
+							          ILNativeInt elementType,
+							          ILInt32 rank, ILInt32 length1,
+							          ILInt32 length2, ILInt32 length3)
 {
 	ILClass *classInfo;
 	ILType *type;
@@ -1580,10 +1582,10 @@ static ILObject *System_Array_CreateArray(ILExecThread *thread,
  * private static Array CreateArray(IntPtr elementType,
  *                                  int[] lengths, int[] lowerBounds);
  */
-static ILObject *System_Array_CreateArray_2(ILExecThread *thread,
-										    ILNativeInt elementType,
-										    System_Array *lengths,
-										    System_Array *lowerBounds)
+ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
+									  ILNativeInt elementType,
+									  System_Array *lengths,
+									  System_Array *lowerBounds)
 {
 	ILClass *classInfo;
 	ILInt32 rank;
@@ -1599,7 +1601,7 @@ static ILObject *System_Array_CreateArray_2(ILExecThread *thread,
 	if(lengths->length == 1 &&
 	   (!lowerBounds || ((ILInt32 *)ArrayToBuffer(lowerBounds))[0] == 0))
 	{
-		return System_Array_CreateArray(thread, elementType, 1,
+		return _IL_Array_CreateArray_jiiii(thread, elementType, 1,
 						((ILInt32 *)ArrayToBuffer(lengths))[0], 0, 0);
 	}
 
@@ -1690,9 +1692,9 @@ static ILObject *System_Array_CreateArray_2(ILExecThread *thread,
 /*
  * private int GetLength();
  */
-static ILInt32 System_Array_GetLength(ILExecThread *thread,
-									  System_Array *_this)
+ILInt32 _IL_Array_GetLength_(ILExecThread *thread, ILObject *thisObj)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	if(_ILIsSArray(_this))
 	{
 		return _this->length;
@@ -1716,10 +1718,11 @@ static ILInt32 System_Array_GetLength(ILExecThread *thread,
 /*
  * private int GetLength(int dimension);
  */
-static ILInt32 System_Array_GetLength_2(ILExecThread *thread,
-									    System_Array *_this,
-									    ILInt32 dimension)
+ILInt32 _IL_Array_GetLength_i(ILExecThread *thread,
+							  ILObject *thisObj,
+							  ILInt32 dimension)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	if(_ILIsSArray(_this))
 	{
 		if(dimension == 0)
@@ -1742,10 +1745,11 @@ static ILInt32 System_Array_GetLength_2(ILExecThread *thread,
 /*
  * public int GetLowerBound(int dimension);
  */
-static ILInt32 System_Array_GetLowerBound(ILExecThread *thread,
-										  System_Array *_this,
-										  ILInt32 dimension)
+ILInt32 _IL_Array_GetLowerBound(ILExecThread *thread,
+							    ILObject *thisObj,
+							    ILInt32 dimension)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	if(_ILIsSArray(_this))
 	{
 		if(dimension == 0)
@@ -1772,10 +1776,11 @@ static ILInt32 System_Array_GetLowerBound(ILExecThread *thread,
 /*
  * public int GetUpperBound(int dimension);
  */
-static ILInt32 System_Array_GetUpperBound(ILExecThread *thread,
-										  System_Array *_this,
-										  ILInt32 dimension)
+ILInt32 _IL_Array_GetUpperBound(ILExecThread *thread,
+							    ILObject *thisObj,
+							    ILInt32 dimension)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	if(_ILIsSArray(_this))
 	{
 		if(dimension == 0)
@@ -1803,8 +1808,9 @@ static ILInt32 System_Array_GetUpperBound(ILExecThread *thread,
 /*
  * private int GetRank();
  */
-static ILInt32 System_Array_GetRank(ILExecThread *thread, System_Array *_this)
+ILInt32 _IL_Array_GetRank(ILExecThread *thread, ILObject *thisObj)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	if(_ILIsMArray(_this))
 	{
 		return ((System_MArray *)_this)->rank;
@@ -1822,10 +1828,11 @@ static ILInt32 System_Array_GetRank(ILExecThread *thread, System_Array *_this)
 /*
  * private Object Get(int index1, int index2, int index3);
  */
-static ILObject *System_Array_Get(ILExecThread *thread, System_Array *_this,
-								  ILInt32 index1, ILInt32 index2,
-								  ILInt32 index3)
+ILObject *_IL_Array_Get_iii(ILExecThread *thread, ILObject *thisObj,
+					        ILInt32 index1, ILInt32 index2,
+					        ILInt32 index3)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	ILType *elemType = GetArrayElemType(_this);
 	ILUInt32 elemSize = ILSizeOfType(elemType);
 	if(_ILIsSArray(_this))
@@ -1940,9 +1947,10 @@ static ILObject *System_Array_Get(ILExecThread *thread, System_Array *_this,
 /*
  * private Object Get(int[] indices);
  */
-static ILObject *System_Array_Get_2(ILExecThread *thread, System_Array *_this,
-								    System_Array *indices)
+ILObject *_IL_Array_Get_ai(ILExecThread *thread, ILObject *thisObj,
+						   System_Array *indices)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
@@ -1955,7 +1963,7 @@ static ILObject *System_Array_Get_2(ILExecThread *thread, System_Array *_this,
 	/* Handle the single-dimensional case specially */
 	if(indices->length == 1)
 	{
-		return System_Array_Get(thread, _this, ind[0], 0, 0);
+		return _IL_Array_Get_iii(thread, thisObj, ind[0], 0, 0);
 	}
 
 	/* Get the element type and its size */
@@ -1993,10 +2001,11 @@ static ILObject *System_Array_Get_2(ILExecThread *thread, System_Array *_this,
 /*
  * private void Set(Object value, int index1, int index2, int index3);
  */
-static void System_Array_Set(ILExecThread *thread, System_Array *_this,
+void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 						     ILObject *value, ILInt32 index1,
 							 ILInt32 index2, ILInt32 index3)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	ILType *elemType = GetArrayElemType(_this);
 	ILUInt32 elemSize = ILSizeOfType(elemType);
 	void *ptr;
@@ -2122,9 +2131,10 @@ static void System_Array_Set(ILExecThread *thread, System_Array *_this,
 /*
  * private void Set(Object value, int[] indices);
  */
-static void System_Array_Set_2(ILExecThread *thread, System_Array *_this,
-						       ILObject *value, System_Array *indices)
+void _IL_Array_Set_Objectai(ILExecThread *thread, ILObject *thisObj,
+						    ILObject *value, System_Array *indices)
 {
+	System_Array *_this = (System_Array *)thisObj;
 	System_MArray *marray;
 	ILType *elemType;
 	ILUInt32 elemSize;
@@ -2137,7 +2147,7 @@ static void System_Array_Set_2(ILExecThread *thread, System_Array *_this,
 	/* Handle the single-dimensional case specially */
 	if(indices->length == 1)
 	{
-		System_Array_Set(thread, _this, value, ind[0], 0, 0);
+		_IL_Array_Set_Objectiii(thread, thisObj, value, ind[0], 0, 0);
 		return;
 	}
 
@@ -2188,52 +2198,17 @@ static void System_Array_Set_2(ILExecThread *thread, System_Array *_this,
 }
 
 /*
- * Method table for the "System.Array" class.
- */
-IL_METHOD_BEGIN(_ILSystemArrayMethods)
-	IL_METHOD("Clear",		 "(oSystem.Array;ii)V",
-					System_Array_Clear)
-	IL_METHOD("Initialize",	 "(T)V",  System_Array_Initialize)
-	IL_METHOD("Copy",
-					"(oSystem.Array;ioSystem.Array;ii)V",
-					System_Array_Copy)
-	IL_METHOD("CreateArray", "(jiiii)oSystem.Array;",
-					System_Array_CreateArray)
-	IL_METHOD("CreateArray", "(ji[i[i)oSystem.Array;",
-					System_Array_CreateArray_2)
-	IL_METHOD("GetLength",	 "(T)i",  System_Array_GetLength)
-	IL_METHOD("GetLength",	 "(Ti)i", System_Array_GetLength_2)
-	IL_METHOD("GetLowerBound",
-					"(Ti)i",
-					System_Array_GetLowerBound)
-	IL_METHOD("GetUpperBound",
-					"(Ti)i",
-					System_Array_GetUpperBound)
-	IL_METHOD("GetRank", 	 "(T)i",  System_Array_GetRank)
-	IL_METHOD("Get",
-					"(Tiii)oSystem.Object;",
-					System_Array_Get)
-	IL_METHOD("Get",
-					"(T[i)oSystem.Object;",
-					System_Array_Get_2)
-	IL_METHOD("Set",
-					"(ToSystem.Object;iii)V",
-					System_Array_Set)
-	IL_METHOD("Set",
-					"(ToSystem.Object;[i)V",
-					System_Array_Set_2)
-IL_METHOD_END
-
-/*
  * private static void Buffer.Copy(Array src, int srcOffset,
  *								   Array dst, int dstOffset,
  *								   int count);
  */
-static void System_Buffer_Copy(ILExecThread *thread,
-							   System_Array *src, ILInt32 srcOffset,
-							   System_Array *dst, ILInt32 dstOffset,
-							   int count)
+void _IL_Buffer_Copy(ILExecThread *thread,
+					 ILObject *_src, ILInt32 srcOffset,
+					 ILObject *_dst, ILInt32 dstOffset,
+					 int count)
 {
+	System_Array *src = (System_Array *)_src;
+	System_Array *dst = (System_Array *)_dst;
 	unsigned char *srcBuffer;
 	unsigned char *dstBuffer;
 	if(_ILIsSArray(src))
@@ -2273,9 +2248,9 @@ static void System_Buffer_Copy(ILExecThread *thread,
 /*
  * private static int Buffer.GetLength(Array array);
  */
-static ILInt32 System_Buffer_GetLength(ILExecThread *thread,
-									   System_Array *array)
+ILInt32 _IL_Buffer_GetLength(ILExecThread *thread, ILObject *_array)
 {
+	System_Array *array = (System_Array *)_array;
 	if(_ILIsSArray(array))
 	{
 		ILType *synType = ILClassGetSynType(GetObjectClass(array));
@@ -2283,7 +2258,7 @@ static ILInt32 System_Buffer_GetLength(ILExecThread *thread,
 	}
 	else if(_ILIsMArray(array))
 	{
-		return System_Array_GetLength(thread, array) *
+		return _IL_Array_GetLength_(thread, _array) *
 			   ((System_MArray *)array)->elemSize;
 	}
 	else
@@ -2295,10 +2270,10 @@ static ILInt32 System_Buffer_GetLength(ILExecThread *thread,
 /*
  * private static byte Buffer.GetElement(Array array, int index);
  */
-static ILUInt8 System_Buffer_GetElement(ILExecThread *thread,
-									    System_Array *array,
-										ILInt32 index)
+ILUInt8 _IL_Buffer_GetElement(ILExecThread *thread,
+						      ILObject *_array, ILInt32 index)
 {
+	System_Array *array = (System_Array *)_array;
 	if(_ILIsSArray(array))
 	{
 		return ((unsigned char *)(ArrayToBuffer(array)))[index];
@@ -2316,11 +2291,11 @@ static ILUInt8 System_Buffer_GetElement(ILExecThread *thread,
 /*
  * private static void Buffer.SetElement(Array array, int index, byte value);
  */
-static void System_Buffer_SetElement(ILExecThread *thread,
-									 System_Array *array,
-									 ILInt32 index,
-									 ILUInt8 value)
+void _IL_Buffer_SetElement(ILExecThread *thread,
+						   ILObject *_array,
+						   ILInt32 index, ILUInt8 value)
 {
+	System_Array *array = (System_Array *)_array;
 	if(_ILIsSArray(array))
 	{
 		((unsigned char *)(ArrayToBuffer(array)))[index] = value;
@@ -2330,20 +2305,6 @@ static void System_Buffer_SetElement(ILExecThread *thread,
 		((unsigned char *)(((System_MArray *)array)->data))[index] = value;
 	}
 }
-
-/*
- * Method table for the "System.Buffer" class.
- */
-IL_METHOD_BEGIN(_ILSystemBufferMethods)
-	IL_METHOD("Copy",	 	"(oSystem.Array;ioSystem.Array;ii)V",
-					System_Buffer_Copy)
-	IL_METHOD("GetLength",	 	"(oSystem.Array;)i",
-					System_Buffer_GetLength)
-	IL_METHOD("GetElement",	 	"(oSystem.Array;i)B",
-					System_Buffer_GetElement)
-	IL_METHOD("SetElement",	 	"(oSystem.Array;iB)V",
-					System_Buffer_SetElement)
-IL_METHOD_END
 
 int ILExecThreadGetElem(ILExecThread *thread, void *value,
 						ILObject *_array, ILInt32 index)

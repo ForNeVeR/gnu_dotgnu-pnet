@@ -19,6 +19,7 @@
  */
 
 #include "engine.h"
+#include "lib_defs.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -27,87 +28,7 @@ extern	"C" {
 /*
  * Import the method tables of all internal classes.
  */
-extern ILMethodTableEntry const _ILSystemObjectMethods;
-extern ILMethodTableEntry const _ILSystemStringMethods;
-extern ILMethodTableEntry const _ILSystemArrayMethods;
-extern ILMethodTableEntry const _ILSystemBitConverterMethods;
-extern ILMethodTableEntry const _ILSystemBufferMethods;
-extern ILMethodTableEntry const _ILSystemDecimalMethods;
-extern ILMethodTableEntry const _ILSystemGuidMethods;
-extern ILMethodTableEntry const _ILSystemMathMethods;
-extern ILMethodTableEntry const _ILSystemTypeMethods;
-extern ILMethodTableEntry const _ILSystemSingleMethods;
-extern ILMethodTableEntry const _ILSystemDoubleMethods;
-extern ILMethodTableEntry const _ILSystemThreadingMonitorMethods;
-extern ILMethodTableEntry const _ILSystemThreadingInterlockedMethods;
-extern ILMethodTableEntry const _ILSystemThreadingThreadMethods;
-extern ILMethodTableEntry const _ILReflectionClrTypeMethods;
-extern ILMethodTableEntry const _ILReflectionClrHelpersMethods;
-extern ILMethodTableEntry const _ILReflectionClrParameterMethods;
-extern ILMethodTableEntry const _ILReflectionClrPropertyMethods;
-extern ILMethodTableEntry const _ILReflectionClrConstructorMethods;
-extern ILMethodTableEntry const _ILReflectionClrMethodMethods;
-extern ILMethodTableEntry const _ILReflectionAssemblyMethods;
-extern ILMethodTableEntry const _ILReflectionFieldInfoMethods;
-extern ILMethodTableEntry const _ILReflectionMethodBaseMethods;
-extern ILMethodTableEntry const _ILPlatformStdioMethods;
-extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
-extern ILMethodTableEntry const _ILPlatformTimeMethods;
-extern ILMethodTableEntry const _ILPlatformTaskMethods;
-extern ILMethodTableEntry const _ILPlatformDirMethods;
-extern ILMethodTableEntry const _ILRuntimeHelpersMethods;
-extern ILMethodTableEntry const _ILDiagnosticsDebuggerMethods;
-extern ILMethodTableEntry const _ILDiagnosticsStackFrameMethods;
-extern ILMethodTableEntry const _ILPlatformFileMethods;
-
-/*
- * Table that contains all classes that have "internalcall" methods.
- * This table must be sorted on "name".
- */
-typedef struct
-{
-	const char *name;
-	const char *namespace;
-	const ILMethodTableEntry *entry;
-
-} InternalClassInfo;
-static InternalClassInfo const internalClassTable[] = {
-	{"Array",		"System",		&_ILSystemArrayMethods},
-	{"Assembly",	"System.Reflection", &_ILReflectionAssemblyMethods},
-	{"BitConverter", "System",		&_ILSystemBitConverterMethods},
-	{"Buffer",		"System",		&_ILSystemBufferMethods},
-	{"ClrConstructor","System.Reflection", &_ILReflectionClrConstructorMethods},
-	{"ClrHelpers",	"System.Reflection", &_ILReflectionClrHelpersMethods},
-	{"ClrMethod",   "System.Reflection", &_ILReflectionClrMethodMethods},
-	{"ClrParameter","System.Reflection", &_ILReflectionClrParameterMethods},
-	{"ClrProperty", "System.Reflection", &_ILReflectionClrPropertyMethods},
-	{"ClrType",		"System.Reflection", &_ILReflectionClrTypeMethods},
-	{"Debugger",	"System.Diagnostics", &_ILDiagnosticsDebuggerMethods},
-	{"Decimal",		"System",		&_ILSystemDecimalMethods},
-	{"DirMethods",	"Platform",		&_ILPlatformDirMethods},
-	{"Double",		"System",		&_ILSystemDoubleMethods},
-	{"FieldInfo",	"System.Reflection", &_ILReflectionFieldInfoMethods},
-	{"FileMethods",	"Platform",		&_ILPlatformFileMethods},
-	{"Guid",		"System",		&_ILSystemGuidMethods},
-	{"Interlocked",	"System.Threading", &_ILSystemThreadingInterlockedMethods},
-	{"Math",		"System",		&_ILSystemMathMethods},
-	{"MethodBase",	"System.Reflection", &_ILReflectionMethodBaseMethods},
-	{"Monitor",		"System.Threading", &_ILSystemThreadingMonitorMethods},
-	{"Object",		"System",		&_ILSystemObjectMethods},
-	{"RuntimeHelpers", "System.Runtime.CompilerServices",
-			&_ILRuntimeHelpersMethods},
-	{"Single",		"System",		&_ILSystemSingleMethods},
-	{"StackFrame",	"System.Diagnostics", &_ILDiagnosticsStackFrameMethods},
-	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},
-	{"String",		"System",		&_ILSystemStringMethods},
-	{"SysCharInfo",	"Platform",		&_ILPlatformSysCharInfoMethods},
-	{"TaskMethods",	"Platform",		&_ILPlatformTaskMethods},
-	{"Thread",		"System.Threading", &_ILSystemThreadingThreadMethods},
-	{"TimeMethods",	"Platform",		&_ILPlatformTimeMethods},
-	{"Type",		"System",		&_ILSystemTypeMethods},
-};
-#define	numInternalClasses	(sizeof(internalClassTable) / \
-							 sizeof(InternalClassInfo))
+#include "int_table.c"
 
 /* Import from "lib_array.c" */
 void *_ILGetInternalArray(ILMethod *method, int *isCtor);

@@ -64,6 +64,7 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;
 	thread->thrownException = 0;
+	thread->securityManager = 0;
 
 	/* Attach the thread to the process */
 	thread->process = process;

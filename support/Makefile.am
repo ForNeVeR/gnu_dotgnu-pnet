@@ -7,8 +7,10 @@ libILSupport_a_SOURCES = alloc.c \
 						 decimal.c \
 						 dynlib.c \
 						 errno_map.c \
+						 expand.c \
 						 file.c \
 						 filemap.c \
+						 getcwd.c \
 						 guid.c \
 						 hash.c \
 						 hashtab.c \

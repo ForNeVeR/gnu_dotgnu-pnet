@@ -159,6 +159,9 @@ struct _tagILExecThread
 	/* Last exception that was thrown */
 	ILObject       *thrownException;
 
+	/* Security manager in use by this thread */
+	ILObject	   *securityManager;
+
 	/* Stack of call frames in use */
 	ILCallFrame	   *frameStack;
 	ILUInt32		numFrames;
@@ -212,7 +215,7 @@ typedef struct
  * Helper macros for defining "internalcall" method tables.
  */
 #define	IL_METHOD_BEGIN(name)	\
-			ILMethodTableEntry const name[] = {
+			static ILMethodTableEntry const name[] = {
 #define	IL_METHOD(name,sig,func)	\
 			{(name), (sig), (void *)(func)},
 #define	IL_CONSTRUCTOR(name,sig,func,allocFunc)	\

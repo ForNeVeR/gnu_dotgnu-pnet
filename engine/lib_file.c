@@ -29,7 +29,7 @@
 /*
  * public static IntPtr GetInvalidHandle();
  */
-static ILNativeInt Platform_FileMethods_GetInvalidHandle(ILExecThread *thread)
+ILNativeInt _IL_FileMethods_GetInvalidHandle(ILExecThread *thread)
 {
 	return (ILNativeInt)ILSysIOHandle_Invalid;
 }
@@ -37,8 +37,7 @@ static ILNativeInt Platform_FileMethods_GetInvalidHandle(ILExecThread *thread)
 /*
  * public static bool ValidatePathname(String path);
  */
-static ILBool Platform_FileMethods_ValidatePathname
-							(ILExecThread *thread, ILString *path)
+ILBool _IL_FileMethods_ValidatePathname(ILExecThread *thread, ILString *path)
 {
 	char *cpath = ILStringToAnsi(thread, path);
 	if(cpath)
@@ -56,11 +55,9 @@ static ILBool Platform_FileMethods_ValidatePathname
  *						   FileAccess access, FileShare share,
  *						   out IntPtr handle);
  */
-static ILBool Platform_FileMethods_Open(ILExecThread *thread, 
-										ILString *path, 
-										ILUInt32 mode,
-										ILUInt32 access, ILUInt32 share,
-										ILNativeInt *handle)
+ILBool _IL_FileMethods_Open(ILExecThread *thread, ILString *path, 
+						    ILInt32 mode, ILInt32 access, ILInt32 share,
+							ILNativeInt *handle)
 {
 	char *cpath = ILStringToAnsi(thread, path);
 	if(!cpath)
@@ -76,11 +73,9 @@ static ILBool Platform_FileMethods_Open(ILExecThread *thread,
  * public static bool Write(IntPtr handle, byte[] buffer,
  *                          int offset, int count);
  */
-static ILBool Platform_FileMethods_Write(ILExecThread *thread,
-										 ILNativeInt handle,
-										 System_Array *array,
-										 ILInt32 offset,
-										 ILInt32 count)
+ILBool _IL_FileMethods_Write(ILExecThread *thread, ILNativeInt handle,
+						     System_Array *array, ILInt32 offset,
+							 ILInt32 count)
 {
 	ILUInt8 *buf = (ILUInt8 *)(ArrayToBuffer(array));
 	return (ILSysIOWrite((ILSysIOHandle)handle, buf + offset, count) == count);
@@ -90,11 +85,9 @@ static ILBool Platform_FileMethods_Write(ILExecThread *thread,
  * public static int Read(IntPtr handle, byte[] buffer,
  *                        int offset, int count);
  */
-static ILInt32 Platform_FileMethods_Read(ILExecThread *thread,
-										 ILNativeInt handle,
-										 System_Array *array,
-										 ILInt32 offset,
-										 ILInt32 count)
+ILInt32 _IL_FileMethods_Read(ILExecThread *thread, ILNativeInt handle,
+							 System_Array *array, ILInt32 offset,
+							 ILInt32 count)
 {
 	ILUInt8 *buf = (ILUInt8 *)(ArrayToBuffer(array));
 	return ILSysIORead((ILSysIOHandle)handle, buf + offset, count);
@@ -103,7 +96,7 @@ static ILInt32 Platform_FileMethods_Read(ILExecThread *thread,
 /*
  * public static bool HasAsync();
  */
-static ILBool Platform_FileMethods_HasAsync(ILExecThread *thread)
+ILBool _IL_FileMethods_HasAsync(ILExecThread *thread)
 {
 	return ILSysIOHasAsync();
 }
@@ -111,8 +104,7 @@ static ILBool Platform_FileMethods_HasAsync(ILExecThread *thread)
 /*
  * public static bool CanSeek(IntPtr handle);
  */
-static ILBool Platform_FileMethods_CanSeek(ILExecThread *thread,
-										   ILNativeInt handle)
+ILBool _IL_FileMethods_CanSeek(ILExecThread *thread, ILNativeInt handle)
 {
 	/* Try seeking to the current position, which will fail
 	   on non-seekable streams like pipes and sockets */
@@ -122,9 +114,8 @@ static ILBool Platform_FileMethods_CanSeek(ILExecThread *thread,
 /*
  * public static bool CheckHandleAccess(IntPtr handle, FileAccess access);
  */
-static ILBool Platform_FileMethods_CheckHandleAccess(ILExecThread *thread,
-													 ILNativeInt handle,
-													 ILUInt32 access)
+ILBool _IL_FileMethods_CheckHandleAccess(ILExecThread *thread,
+										 ILNativeInt handle, ILInt32 access)
 {
 	return (ILBool)(ILSysIOCheckHandleAccess((ILSysIOHandle)handle, access));
 }
@@ -132,10 +123,8 @@ static ILBool Platform_FileMethods_CheckHandleAccess(ILExecThread *thread,
 /*
  * public static long Seek(IntPtr handle, long offset, SeekOrigin origin);
  */
-static ILInt64 Platform_FileMethods_Seek(ILExecThread *thread, 
-										 ILNativeInt handle,
-										 ILInt64 offset,
-										 ILUInt32 origin)
+ILInt64 _IL_FileMethods_Seek(ILExecThread *thread, ILNativeInt handle,
+						     ILInt64 offset, ILInt32 origin)
 {
 	return ILSysIOSeek((ILSysIOHandle)handle, offset, origin);
 }
@@ -143,8 +132,7 @@ static ILInt64 Platform_FileMethods_Seek(ILExecThread *thread,
 /*
  * public static bool Close(IntPtr handle);
  */
-static ILBool Platform_FileMethods_Close(ILExecThread *thread, 
-										 ILNativeInt handle)
+ILBool _IL_FileMethods_Close(ILExecThread *thread, ILNativeInt handle)
 {
 	return (ILBool)(ILSysIOClose((ILSysIOHandle)handle));
 }
@@ -152,8 +140,7 @@ static ILBool Platform_FileMethods_Close(ILExecThread *thread,
 /*
  * public static bool FlushWrite(IntPtr handle);
  */
-static ILBool Platform_FileMethods_FlushWrite(ILExecThread *thread,
-											  ILNativeInt handle)
+ILBool _IL_FileMethods_FlushWrite(ILExecThread *thread, ILNativeInt handle)
 {
 	return (ILBool)(ILSysIOFlushWrite((ILSysIOHandle)handle));
 }
@@ -161,9 +148,8 @@ static ILBool Platform_FileMethods_FlushWrite(ILExecThread *thread,
 /*
  * public static bool SetLength(IntPtr handle, long value);
  */
-static ILBool Platform_FileMethods_SetLength(ILExecThread *thread,
-											 ILNativeInt handle,
-											 ILInt64 value)
+ILBool _IL_FileMethods_SetLength(ILExecThread *thread, ILNativeInt handle,
+							     ILInt64 value)
 {
 	return (ILBool)(ILSysIOTruncate((ILSysIOHandle)handle, value));
 }
@@ -171,7 +157,7 @@ static ILBool Platform_FileMethods_SetLength(ILExecThread *thread,
 /*
  * public static Errno GetErrno();
  */
-static ILInt32 Platform_FileMethods_GetErrno(ILExecThread *thread)
+ILInt32 _IL_FileMethods_GetErrno(ILExecThread *thread)
 {
 	return ILSysIOGetErrno();
 }
@@ -179,8 +165,7 @@ static ILInt32 Platform_FileMethods_GetErrno(ILExecThread *thread)
 /*
  * public static String GetErrnoMessage(Errno error);
  */
-static ILString *Platform_FileMethods_GetErrnoMessage(ILExecThread *thread,
-													  ILInt32 error)
+ILString *_IL_FileMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
 {
 	const char *msg = ILSysIOGetErrnoMessage(error);
 	if(msg)
@@ -192,38 +177,3 @@ static ILString *Platform_FileMethods_GetErrnoMessage(ILExecThread *thread,
 		return 0;
 	}
 }
-
-/*
- * Method table for the "Platform.FileMethods" class.
- */
-IL_METHOD_BEGIN(_ILPlatformFileMethods)
-     IL_METHOD("GetInvalidHandle", "()j",
-					 Platform_FileMethods_GetInvalidHandle)
-     IL_METHOD("ValidatePathname", "(oSystem.String;)Z",
-					 Platform_FileMethods_ValidatePathname)
-	 IL_METHOD("Open", "(oSystem_String;vSystem.IO.FileMode;"
-	 				   "vSystem.IO.FileAccess;vSystem.IO.FileShare;&j)Z",
-					 Platform_FileMethods_Open)
-     IL_METHOD("HasAsync", "()Z",
-					 Platform_FileMethods_HasAsync)
-	 IL_METHOD("CanSeek", "(j)Z",
-					 Platform_FileMethods_CanSeek)
-     IL_METHOD("CheckHandleAccess", "(jvSystem.IO.FileAccess;)Z",
-	 				 Platform_FileMethods_CheckHandleAccess)
-	 IL_METHOD("Seek", "(jlvSystem.IO.SeekOrigin;)l",
-					 Platform_FileMethods_Seek)
-	 IL_METHOD("Write", "(j[Bii)Z",
-					 Platform_FileMethods_Write)
-	 IL_METHOD("Read", "(j[Bii)Z",
-					 Platform_FileMethods_Read)
-     IL_METHOD("Close", "(j)Z",
-               		 Platform_FileMethods_Close)
-	 IL_METHOD("FlushWrite", "(j)Z",
-					 Platform_FileMethods_FlushWrite)
-	 IL_METHOD("SetLength", "(jl)Z",
-					 Platform_FileMethods_SetLength)
-	 IL_METHOD("GetErrno", "()vPlatform.Errno;",
-					 Platform_FileMethods_GetErrno)
-	 IL_METHOD("GetErrnoMessage","(vPlatform.Errno;)oSystem.String;",
-					 Platform_FileMethods_GetErrnoMessage)
-IL_METHOD_END

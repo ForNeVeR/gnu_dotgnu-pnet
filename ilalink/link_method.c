@@ -392,6 +392,7 @@ static int ConvertCode(ILLinker *linker, ILMethod *method,
 	{
 		/* Align the text section on a 4-byte boundary */
 		ILWriterTextAlign(writer);
+		bufRVA = ILWriterGetTextRVA(writer);
 
 		/* Should we use the tiny or fat format for the exception blocks? */
 		fatExceptions = 0;

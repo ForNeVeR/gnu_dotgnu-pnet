@@ -1,7 +1,7 @@
 /*
  * lib_reflect.c - Internalcall methods for the reflection classes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ static ILObject *DeserializeAttribute(ILExecThread *thread,
  *											  IntPtr clrTypePrivate,
  *											  bool inherit);
  */
-static System_Array *ClrHelpers_GetCustomAttributes
+System_Array *_IL_ClrHelpers_GetCustomAttributes
 						(ILExecThread *thread, ILNativeInt itemPrivate,
 						 ILNativeInt clrTypePrivate, ILBool inherit)
 {
@@ -166,7 +166,7 @@ static System_Array *ClrHelpers_GetCustomAttributes
  * public static bool IsDefined(IntPtr itemPrivate, IntPtr clrTypePrivate,
  *							    bool inherit);
  */
-static ILBool ClrHelpers_IsDefined
+ILBool _IL_ClrHelpers_IsDefined
 						(ILExecThread *thread, ILNativeInt itemPrivate,
 						 ILNativeInt clrTypePrivate, ILBool inherit)
 {
@@ -187,8 +187,8 @@ static ILBool ClrHelpers_IsDefined
 /*
  * public static IntPtr GetDeclaringType(IntPtr itemPrivate);
  */
-static ILNativeInt ClrHelpers_GetDeclaringType(ILExecThread *thread,
-											   ILNativeInt itemPrivate)
+ILNativeInt _IL_ClrHelpers_GetDeclaringType(ILExecThread *thread,
+											ILNativeInt itemPrivate)
 {
 	ILMember *member = ILProgramItemToMember((ILProgramItem *)itemPrivate);
 	if(member)
@@ -204,8 +204,8 @@ static ILNativeInt ClrHelpers_GetDeclaringType(ILExecThread *thread,
 /*
  * public static String GetName(IntPtr itemPrivate)
  */
-static ILString *ClrHelpers_GetName(ILExecThread *thread,
-									ILNativeInt itemPrivate)
+ILString *_IL_ClrHelpers_GetName(ILExecThread *thread,
+								 ILNativeInt itemPrivate)
 {
 	ILProgramItem *item = (ILProgramItem *)itemPrivate;
 	ILMember *member;
@@ -264,9 +264,9 @@ static ILString *ClrHelpers_GetName(ILExecThread *thread,
 /*
  * public static IntPtr GetParameter(IntPtr itemPrivate, int num);
  */
-static ILNativeInt ClrHelpers_GetParameter(ILExecThread *thread,
-										   ILNativeInt itemPrivate,
-										   ILInt32 num)
+ILNativeInt _IL_ClrHelpers_GetParameter(ILExecThread *thread,
+										ILNativeInt itemPrivate,
+										ILInt32 num)
 {
 	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
 	if(method)
@@ -286,9 +286,9 @@ static ILNativeInt ClrHelpers_GetParameter(ILExecThread *thread,
 /*
  * public static Type GetParameterType(IntPtr itemPrivate, int num);
  */
-static ILObject *ClrHelpers_GetParameterType(ILExecThread *thread,
-										     ILNativeInt itemPrivate,
-										     ILInt32 num)
+ILObject *_IL_ClrHelpers_GetParameterType(ILExecThread *thread,
+										  ILNativeInt itemPrivate,
+										  ILInt32 num)
 {
 	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
 	if(method)
@@ -306,8 +306,8 @@ static ILObject *ClrHelpers_GetParameterType(ILExecThread *thread,
 /*
  * public static int GetNumParameters(IntPtr itemPrivate);
  */
-static ILInt32 ClrHelpers_GetNumParameters(ILExecThread *thread,
-										   ILNativeInt itemPrivate)
+ILInt32 _IL_ClrHelpers_GetNumParameters(ILExecThread *thread,
+										ILNativeInt itemPrivate)
 {
 	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
 	if(method)
@@ -320,8 +320,8 @@ static ILInt32 ClrHelpers_GetNumParameters(ILExecThread *thread,
 /*
  * public static int GetMemberAttrs(IntPtr itemPrivate);
  */
-static ILInt32 ClrHelpers_GetMemberAttrs(ILExecThread *thread,
-										 ILNativeInt itemPrivate)
+ILInt32 _IL_ClrHelpers_GetMemberAttrs(ILExecThread *thread,
+									  ILNativeInt itemPrivate)
 {
 	ILMember *member = ILProgramItemToMember((ILProgramItem *)itemPrivate);
 	if(member)
@@ -334,8 +334,8 @@ static ILInt32 ClrHelpers_GetMemberAttrs(ILExecThread *thread,
 /*
  * public static CallingConventions GetCallConv(IntPtr itemPrivate);
  */
-static ILInt32 ClrHelpers_GetCallConv(ILExecThread *thread,
-								      ILNativeInt itemPrivate)
+ILInt32 _IL_ClrHelpers_GetCallConv(ILExecThread *thread,
+								   ILNativeInt itemPrivate)
 {
 	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
 	if(method)
@@ -348,8 +348,8 @@ static ILInt32 ClrHelpers_GetCallConv(ILExecThread *thread,
 /*
  * public static MethodImplAttributes GetImplAttrs(IntPtr itemPrivate);
  */
-static ILInt32 ClrHelpers_GetImplAttrs(ILExecThread *thread,
-								       ILNativeInt itemPrivate)
+ILInt32 _IL_ClrHelpers_GetImplAttrs(ILExecThread *thread,
+								    ILNativeInt itemPrivate)
 {
 	ILMethod *method = ILProgramItemToMethod((ILProgramItem *)itemPrivate);
 	if(method)
@@ -364,9 +364,9 @@ static ILInt32 ClrHelpers_GetImplAttrs(ILExecThread *thread,
  *										 MethodSemanticsAttributes type,
  *										 bool nonPublic);
  */
-static ILObject *ClrHelpers_GetSemantics(ILExecThread *thread,
-								         ILNativeInt itemPrivate,
-										 ILInt32 type, ILBool nonPublic)
+ILObject *_IL_ClrHelpers_GetSemantics(ILExecThread *thread,
+								      ILNativeInt itemPrivate,
+									  ILInt32 type, ILBool nonPublic)
 {
 	ILMember *member = ILProgramItemToMember((ILProgramItem *)itemPrivate);
 	ILMethod *method;
@@ -391,9 +391,9 @@ static ILObject *ClrHelpers_GetSemantics(ILExecThread *thread,
  *								   MethodSemanticsAttributes type,
  *								   bool nonPublic);
  */
-static ILBool ClrHelpers_HasSemantics(ILExecThread *thread,
-								      ILNativeInt itemPrivate,
-									  ILInt32 type, ILBool nonPublic)
+ILBool _IL_ClrHelpers_HasSemantics(ILExecThread *thread,
+								   ILNativeInt itemPrivate,
+								   ILInt32 type, ILBool nonPublic)
 {
 	ILMember *member = ILProgramItemToMember((ILProgramItem *)itemPrivate);
 	ILMethod *method;
@@ -415,8 +415,8 @@ static ILBool ClrHelpers_HasSemantics(ILExecThread *thread,
 /*
  * public static bool CanAccess(IntPtr itemPrivate)
  */
-static ILBool ClrHelpers_CanAccess(ILExecThread *thread,
-								   ILNativeInt itemPrivate)
+ILBool _IL_ClrHelpers_CanAccess(ILExecThread *thread,
+							    ILNativeInt itemPrivate)
 {
 	ILProgramItem *item = (ILProgramItem *)itemPrivate;
 	ILClass *classInfo = ILProgramItemToClass(item);
@@ -434,43 +434,6 @@ static ILBool ClrHelpers_CanAccess(ILExecThread *thread,
 		return 0;
 	}
 }
-
-/*
- * Method table for the "System.Reflection.ClrHelpers" class.
- */
-IL_METHOD_BEGIN(_ILReflectionClrHelpersMethods)
-	IL_METHOD("GetCustomAttributes",	"(jjZ)[oSystem.Object;",
-					ClrHelpers_GetCustomAttributes)
-	IL_METHOD("IsDefined",				"(jjZ)Z",
-					ClrHelpers_IsDefined)
-	IL_METHOD("GetDeclaringType",		"(j)j",
-					ClrHelpers_GetDeclaringType)
-	IL_METHOD("GetName",				"(j)oSystem.String;",
-					ClrHelpers_GetName)
-	IL_METHOD("GetParameter",			"(ji)j",
-					ClrHelpers_GetParameter)
-	IL_METHOD("GetParameterType",		"(ji)oSystem.Type;",
-					ClrHelpers_GetParameterType)
-	IL_METHOD("GetNumParameters",		"(j)i",
-					ClrHelpers_GetNumParameters)
-	IL_METHOD("GetMemberAttrs",			"(j)i",
-					ClrHelpers_GetMemberAttrs)
-	IL_METHOD("GetCallConv",
-					"(j)vSystem.Reflection.CallingConventions;",
-					ClrHelpers_GetCallConv)
-	IL_METHOD("GetImplAttrs",
-					"(j)vSystem.Reflection.MemberImplAttributes;",
-					ClrHelpers_GetImplAttrs)
-	IL_METHOD("GetSemantics",
-					"(jvSystem.Reflection.MemberSemanticsAttributes;Z)"
-							"oSystem.Reflection.MethodInfo;",
-					ClrHelpers_GetSemantics)
-	IL_METHOD("HasSemantics",
-					"(jvSystem.Reflection.MemberSemanticsAttributes;Z)Z",
-					ClrHelpers_HasSemantics)
-	IL_METHOD("CanAccess",				"(j)Z",
-					ClrHelpers_CanAccess)
-IL_METHOD_END
 
 /*
  * Convert an image into an assembly object.
@@ -491,7 +454,7 @@ static ILObject *ImageToAssembly(ILExecThread *thread, ILImage *image)
 /*
  * public static Assembly GetCallingAssembly();
  */
-static ILObject *Assembly_GetCallingAssembly(ILExecThread *thread)
+ILObject *_IL_Assembly_GetCallingAssembly(ILExecThread *thread)
 {
 	ILCallFrame *frame = _ILGetCallFrame(thread, 1);
 	if(frame && frame->method)
@@ -507,7 +470,7 @@ static ILObject *Assembly_GetCallingAssembly(ILExecThread *thread)
 /*
  * public static Assembly GetEntryAssembly();
  */
-static ILObject *Assembly_GetEntryAssembly(ILExecThread *thread)
+ILObject *_IL_Assembly_GetEntryAssembly(ILExecThread *thread)
 {
 	ILImage *image = thread->process->entryImage;
 	if(image)
@@ -523,7 +486,7 @@ static ILObject *Assembly_GetEntryAssembly(ILExecThread *thread)
 /*
  * public static Assembly GetExecutingAssembly();
  */
-static ILObject *Assembly_GetExecutingAssembly(ILExecThread *thread)
+ILObject *_IL_Assembly_GetExecutingAssembly(ILExecThread *thread)
 {
 	ILCallFrame *frame = _ILGetCallFrame(thread, 0);
 	if(frame && frame->method)
@@ -534,6 +497,35 @@ static ILObject *Assembly_GetExecutingAssembly(ILExecThread *thread)
 	{
 		return 0;
 	}
+}
+
+/*
+ * public virtual Type[] GetExportedTypes();
+ */
+System_Array *_IL_Assembly_GetExportedTypes(ILExecThread *_thread,
+											ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public virtual FileStream GetFile(String name);
+ */
+ILObject *_IL_Assembly_GetFile(ILExecThread *_thread, ILObject *_this,
+							   ILString *name)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public virtual Type[] GetTypes();
+ */
+System_Array *_IL_Assembly_GetTypes(ILExecThread *_thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
 }
 
 /*
@@ -548,9 +540,9 @@ static ILObject *Assembly_GetExecutingAssembly(ILExecThread *thread)
 /*
  * private static Assembly LoadFromName(String name, out int error);
  */
-static ILObject *Assembly_LoadFromName(ILExecThread *thread,
-									   ILString *name,
-									   ILInt32 *error)
+ILObject *_IL_Assembly_LoadFromName(ILExecThread *thread,
+									ILString *name,
+									ILInt32 *error)
 {
 	/* TODO */
 	*error = LoadError_FileNotFound;
@@ -560,9 +552,9 @@ static ILObject *Assembly_LoadFromName(ILExecThread *thread,
 /*
  * private static Assembly LoadFromFile(String name, out int error);
  */
-static ILObject *Assembly_LoadFromFile(ILExecThread *thread,
-									   ILString *name,
-									   ILInt32 *error)
+ILObject *_IL_Assembly_LoadFromFile(ILExecThread *thread,
+									ILString *name,
+									ILInt32 *error)
 {
 	char *filename;
 	ILImage *image;
@@ -615,9 +607,9 @@ static ILObject *Assembly_LoadFromFile(ILExecThread *thread,
  * private static Type GetType(String typeName, bool throwOnError,
  *							   bool ignoreCase)
  */
-static ILObject *Assembly_GetType(ILExecThread *thread, ILObject *_this,
-								  ILString *name, ILBool throwOnError,
-								  ILBool ignoreCase)
+ILObject *_IL_Assembly_GetType(ILExecThread *thread, ILObject *_this,
+							   ILString *name, ILBool throwOnError,
+							   ILBool ignoreCase)
 {
 	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
 	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
@@ -634,30 +626,10 @@ static ILObject *Assembly_GetType(ILExecThread *thread, ILObject *_this,
 }
 
 /*
- * Method table for the "System.Reflection.Assembly" class.
- */
-IL_METHOD_BEGIN(_ILReflectionAssemblyMethods)
-	IL_METHOD("GetCallingAssembly",		"()oSystem.Reflection.Assembly;",
-					Assembly_GetCallingAssembly)
-	IL_METHOD("GetEntryAssembly",		"()oSystem.Reflection.Assembly;",
-					Assembly_GetEntryAssembly)
-	IL_METHOD("GetExecutingAssembly",	"()oSystem.Reflection.Assembly;",
-					Assembly_GetExecutingAssembly)
-	IL_METHOD("LoadFromName",
-					"(oSystem.String;&i)oSystem.Reflection.Assembly;",
-					Assembly_LoadFromName)
-	IL_METHOD("LoadFromFile",
-					"(oSystem.String;&i)oSystem.Reflection.Assembly;",
-					Assembly_LoadFromFile)
-	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;",
-					Assembly_GetType)
-IL_METHOD_END
-
-/*
  * private static ParameterAttributes GetParamAttrs(IntPtr itemPrivate);
  */
-static ILInt32 ClrParameter_GetParamAttrs(ILExecThread *thread,
-									      ILNativeInt itemPrivate)
+ILInt32 _IL_ClrParameter_GetParamAttrs(ILExecThread *thread,
+									   ILNativeInt itemPrivate)
 {
 	ILParameter *param;
 	param = ILProgramItemToParameter((ILProgramItem *)itemPrivate);
@@ -674,8 +646,8 @@ static ILInt32 ClrParameter_GetParamAttrs(ILExecThread *thread,
 /*
  * private static String GetParamName(IntPtr itemPrivate);
  */
-static ILString *ClrParameter_GetParamName(ILExecThread *thread,
-									       ILNativeInt itemPrivate)
+ILString *_IL_ClrParameter_GetParamName(ILExecThread *thread,
+								        ILNativeInt itemPrivate)
 {
 	ILParameter *param;
 	param = ILProgramItemToParameter((ILProgramItem *)itemPrivate);
@@ -692,8 +664,8 @@ static ILString *ClrParameter_GetParamName(ILExecThread *thread,
 /*
  * private static Object GetDefault(IntPtr itemPrivate);
  */
-static ILObject *ClrParameter_GetDefault(ILExecThread *thread,
-									     ILNativeInt itemPrivate)
+ILObject *_IL_ClrParameter_GetDefault(ILExecThread *thread,
+									  ILNativeInt itemPrivate)
 {
 	ILParameter *param;
 	param = ILProgramItemToParameter((ILProgramItem *)itemPrivate);
@@ -709,23 +681,10 @@ static ILObject *ClrParameter_GetDefault(ILExecThread *thread,
 }
 
 /*
- * Method table for the "System.Reflection.ClrParameter" class.
- */
-IL_METHOD_BEGIN(_ILReflectionClrParameterMethods)
-	IL_METHOD("GetParamAttrs",
-					"(j)vSystem.Reflection.ParameterAttributes;",
-					ClrParameter_GetParamAttrs)
-	IL_METHOD("GetParamName",		"(j)oSystem.String;",
-					ClrParameter_GetParamName)
-	IL_METHOD("GetDefault",			"(j)oSystem.Object;",
-					ClrParameter_GetDefault)
-IL_METHOD_END
-
-/*
  * private static Type GetPropertyType(IntPtr itemPrivate);
  */
-static ILObject *ClrProperty_GetPropertyType(ILExecThread *thread,
-									         ILNativeInt itemPrivate)
+ILObject *_IL_ClrProperty_GetPropertyType(ILExecThread *thread,
+									      ILNativeInt itemPrivate)
 {
 	ILProperty *property;
 	property = ILProgramItemToProperty((ILProgramItem *)itemPrivate);
@@ -741,18 +700,10 @@ static ILObject *ClrProperty_GetPropertyType(ILExecThread *thread,
 }
 
 /*
- * Method table for the "System.Reflection.ClrProperty" class.
- */
-IL_METHOD_BEGIN(_ILReflectionClrPropertyMethods)
-	IL_METHOD("GetPropertyType",	"(j)oSystem.Type;",
-					ClrProperty_GetPropertyType)
-IL_METHOD_END
-
-/*
  * public static FieldInfo GetFieldFromHandle(RuntimeFieldHandle handle);
  */
-static ILObject *FieldInfo_GetFieldFromHandle(ILExecThread *thread,
-									          void *handle)
+ILObject *_IL_FieldInfo_GetFieldFromHandle(ILExecThread *thread,
+									       void *handle)
 {
 	ILField *field;
 	field = ILProgramItemToField((ILProgramItem *)(*((void **)handle)));
@@ -767,19 +718,67 @@ static ILObject *FieldInfo_GetFieldFromHandle(ILExecThread *thread,
 }
 
 /*
- * Method table for the "System.Reflection.FieldInfo" class.
+ * public override Object GetValue(Object obj);
  */
-IL_METHOD_BEGIN(_ILReflectionFieldInfoMethods)
-	IL_METHOD("GetFieldFromHandle",
-				"(vSystem.RuntimeFieldHandle;)oSystem.Reflection.FieldInfo;",
-				FieldInfo_GetFieldFromHandle)
-IL_METHOD_END
+ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
+								ILObject *obj)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public override void SetValue(Object obj, Object value,
+ *                               BindingFlags invokeAttr,
+ *                               Binder binder, CultureInfo culture);
+ */
+void _IL_ClrField_SetValue(ILExecThread *thread, ILObject *_this,
+						   ILObject *obj, ILObject *value,
+						   ILInt32 invokeAttr, ILObject *binder,
+						   ILObject *culture)
+{
+	/* TODO */
+}
+
+/*
+ * private static Type GetFieldType(IntPtr item);
+ */
+ILObject *_IL_ClrField_GetFieldType(ILExecThread *thread, ILNativeInt item)
+{
+	if(item)
+	{
+		return _ILGetClrTypeForILType(thread, ILField_Type((ILField *)item));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public override Object GetValueDirect(TypedReference obj);
+ */
+ILObject *_IL_ClrField_GetValueDirect(ILExecThread *thread,
+									  ILObject *_this, ILTypedRef obj)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public override void SetValueDirect(TypedReference obj, Object value);
+ */
+void _IL_ClrField_SetValueDirect(ILExecThread *thread, ILObject *_this,
+								 ILTypedRef obj, ILObject *value)
+{
+	/* TODO */
+}
 
 /*
  * public static MethodBase GetMethodFromHandle(RuntimeMethodHandle handle);
  */
-static ILObject *MethodBase_GetMethodFromHandle(ILExecThread *thread,
-									            void *handle)
+ILObject *_IL_MethodBase_GetMethodFromHandle(ILExecThread *thread,
+									         void *handle)
 {
 	ILMethod *method;
 	method = ILProgramItemToMethod((ILProgramItem *)(*((void **)handle)));
@@ -804,9 +803,9 @@ static ILObject *MethodBase_GetMethodFromHandle(ILExecThread *thread,
 }
 
 /*
- * public static MethodBase CurrentMethod();
+ * public static MethodBase GetCurrentMethod();
  */
-static ILObject *MethodBase_CurrentMethod(ILExecThread *thread)
+ILObject *_IL_MethodBase_GetCurrentMethod(ILExecThread *thread)
 {
 	ILCallFrame *frame = _ILGetCallFrame(thread, 0);
 	ILMethod *method = (frame ? frame->method : 0);
@@ -831,16 +830,14 @@ static ILObject *MethodBase_CurrentMethod(ILExecThread *thread)
 }
 
 /*
- * Method table for the "System.Reflection.MethodBase" class.
+ * public IntPtr GetFunctionPointer();
  */
-IL_METHOD_BEGIN(_ILReflectionMethodBaseMethods)
-	IL_METHOD("GetMethodFromHandle",
-				"(vSystem.RuntimeMethodHandle;)oSystem.Reflection.MethodBase;",
-				MethodBase_GetMethodFromHandle)
-	IL_METHOD("CurrentMethod",
-				"()oSystem.Reflection.MethodBase;",
-				MethodBase_CurrentMethod)
-IL_METHOD_END
+ILNativeInt _IL_RuntimeMethodHandle_GetFunctionPointer
+				(ILExecThread *thread, void *_this)
+{
+	/* Function pointers don't make any sense for us, so always return NULL */
+	return 0;
+}
 
 /*
  * Invoke a method via reflection.
@@ -1046,12 +1043,12 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
  * public override Object Invoke(BindingFlags invokeAttr, Binder binder,
  *								 Object[] parameters, CultureInfo culture);
  */
-static ILObject *ClrConstructor_Invoke(ILExecThread *thread,
-									   ILObject *_this,
-									   ILInt32 invokeAttr,
-									   ILObject *binder,
-									   System_Array *parameters,
-									   ILObject *culture)
+ILObject *_IL_ClrConstructor_Invoke(ILExecThread *thread,
+									ILObject *_this,
+									ILInt32 invokeAttr,
+									ILObject *binder,
+									System_Array *parameters,
+									ILObject *culture)
 {
 	ILMethod *method;
 	ILType *signature;
@@ -1088,17 +1085,6 @@ static ILObject *ClrConstructor_Invoke(ILExecThread *thread,
 }
 
 /*
- * Method table for the "System.Reflection.ClrConstructor" class.
- */
-IL_METHOD_BEGIN(_ILReflectionClrConstructorMethods)
-	IL_METHOD("Invoke",
-				"(TvSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;"
-					"[oSystem.Object;oSystem.Globalization.CultureInfo;)"
-						"oSystem.Object;",
-				ClrConstructor_Invoke)
-IL_METHOD_END
-
-/*
  * Throw a target exception.
  */
 static void ThrowTargetException(ILExecThread *thread)
@@ -1111,13 +1097,13 @@ static void ThrowTargetException(ILExecThread *thread)
  *								 Binder binder, Object[] parameters,
  *								 CultureInfo culture);
  */
-static ILObject *ClrMethod_Invoke(ILExecThread *thread,
-							      ILObject *_this,
-								  ILObject *obj,
-							      ILInt32 invokeAttr,
-							      ILObject *binder,
-							      System_Array *parameters,
-							      ILObject *culture)
+ILObject *_IL_ClrMethod_Invoke(ILExecThread *thread,
+							   ILObject *_this,
+							   ILObject *obj,
+							   ILInt32 invokeAttr,
+							   ILObject *binder,
+							   System_Array *parameters,
+							   ILObject *culture)
 {
 	ILMethod *method;
 	ILType *signature;
@@ -1229,15 +1215,71 @@ static ILObject *ClrMethod_Invoke(ILExecThread *thread,
 }
 
 /*
- * Method table for the "System.Reflection.ClrMethod" class.
+ * public override MethodInfo GetBaseDefinition();
  */
-IL_METHOD_BEGIN(_ILReflectionClrMethodMethods)
-	IL_METHOD("Invoke",
-				"(ToSystem.Object;vSystem.Reflection.BindingFlags;"
-					"oSystem.Reflection.Binder;[oSystem.Object;"
-					"oSystem.Globalization.CultureInfo;)oSystem.Object;",
-				ClrMethod_Invoke)
-IL_METHOD_END
+ILObject *_IL_ClrMethod_GetBaseDefinition(ILExecThread *thread,
+										  ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public virtual Type GetType(String name, bool throwOnError,
+ *							   bool ignoreCase);
+ */
+ILObject *_IL_Module_GetType(ILExecThread *_thread, ILObject *_this,
+							 ILString *name, ILBool throwOnError,
+							 ILBool ignoreCase)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public virtual Type[] GetTypes();
+ */
+System_Array *_IL_Module_GetTypes(ILExecThread *_thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public bool IsResource();
+ */
+ILBool _IL_Module_IsResource(ILExecThread *_thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * internal virtual Type GetModuleType();
+ */
+ILObject *_IL_Module_GetModuleType(ILExecThread *_thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private Assembly GetAssembly();
+ */
+ILObject *_IL_Module_GetAssembly(ILExecThread *_thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private String GetFullName();
+ */
+ILString *_IL_Module_GetFullName(ILExecThread *_thread, ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
 
 #ifdef	__cplusplus
 };

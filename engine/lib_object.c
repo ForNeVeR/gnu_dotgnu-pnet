@@ -31,7 +31,7 @@ extern	"C" {
 #define	IL_CLASS_PRIVATE(classInfo)	\
 				((ILClassPrivate *)((classInfo)->userData))
 
-static ILObject *System_Object_GetType(ILExecThread *thread, ILObject *_this)
+ILObject *_IL_Object_GetType(ILExecThread *thread, ILObject *_this)
 {
 	ILObject *obj;
 
@@ -52,21 +52,17 @@ static ILObject *System_Object_GetType(ILExecThread *thread, ILObject *_this)
 	return obj;
 }
 
-static ILInt32 System_Object_GetHashCode(ILExecThread *thread,
-										 ILObject *_this)
+ILInt32 _IL_Object_GetHashCode(ILExecThread *thread, ILObject *_this)
 {
 	return (ILInt32)_this;
 }
 
-static ILBool System_Object_Equals(ILExecThread *thread,
-								   ILObject *_this,
-								   ILObject *obj)
+ILBool _IL_Object_Equals(ILExecThread *thread, ILObject *_this, ILObject *obj)
 {
 	return (_this == obj);
 }
 
-static ILObject *System_Object_MemberwiseClone(ILExecThread *thread,
-											   ILObject *_this)
+ILObject *_IL_Object_MemberwiseClone(ILExecThread *thread, ILObject *_this)
 {
 	ILObject *obj;
 
@@ -96,17 +92,6 @@ static ILObject *System_Object_MemberwiseClone(ILExecThread *thread,
 	/* Return the cloned object to the caller */
 	return obj;
 }
-
-/*
- * Method table for the "System.Object" class.
- */
-IL_METHOD_BEGIN(_ILSystemObjectMethods)
-	IL_METHOD("GetType",		 "(T)oSystem.Type;", System_Object_GetType)
-	IL_METHOD("GetHashCode",	 "(T)i",			 System_Object_GetHashCode)
-	IL_METHOD("Equals",			 "(ToSystem/Object;)Z", System_Object_Equals)
-	IL_METHOD("MemberwiseClone", "(T)oSystem/Object;",
-			  System_Object_MemberwiseClone)
-IL_METHOD_END
 
 #ifdef	__cplusplus
 };

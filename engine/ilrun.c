@@ -22,6 +22,9 @@
 #include "il_system.h"
 #include "il_image.h"
 #include "il_utils.h"
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -47,7 +50,7 @@ static ILCmdLineOption const options[] = {
 		"Specify a directory to search for libraries."},
 #if defined(linux) || defined(__linux) || defined(__linux__)
 	{"--register", 'r', 0,
-		"--register",
+		"--register [fullpath]",
 		"Register ilrun with the operating system."},
 	{"--unregister", 'u', 0,
 		"--unregister",
@@ -185,6 +188,24 @@ int main(int argc, char *argv[])
 	{
 		perror(argv[1]);
 		return 1;
+	}
+	else if(error == IL_LOADERR_NOT_IL)
+	{
+		/* This is a regular Windows executable */
+	#ifndef _WIN32
+		/* Hand the program off to Wine for execution */
+		argv[0] = getenv("WINE");
+		if(!(argv[0]))
+		{
+			argv[0] = "wine";
+		}
+		execvp(argv[0], argv);
+		perror(argv[0]);
+		return 1;
+	#else
+		/* We are running under Windows, so execute the program directly */
+		return ILSpawnProcess(argv + 1);
+	#endif
 	}
 	else if(error > 0)
 	{

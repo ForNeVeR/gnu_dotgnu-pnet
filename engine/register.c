@@ -53,6 +53,10 @@ the other will need to be launched by hand.
 */
 
 #include "engine.h"
+#include "il_utils.h"
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -79,50 +83,21 @@ extern	"C" {
 int _ILRegisterWithKernel(const char *progname)
 {
 	FILE *file;
-	char *env;
-	int len;
 	char *path;
+	static char *modprobe_cmdline[] = {"/sbin/modprobe", "binfmt_misc", 0};
+
+	/* Execute "modprobe" to make sure that "binfmt_misc" is loaded */
+	if(geteuid() == 0 || getegid() == 0)
+	{
+		ILSpawnProcess(modprobe_cmdline);
+	}
 
 	/* Expand the program name to include the entire path */
-	path = 0;
-	if(strchr(progname, '/') == 0)
+	path = ILExpandFilename(progname, getenv("PATH"));
+	if(!path)
 	{
-		env = getenv("PATH");
-		if(env)
-		{
-			while(*env != '\0')
-			{
-				if(*env == ':')
-				{
-					++env;
-				}
-				else
-				{
-					len = 1;
-					while(env[len] != '\0' && env[len] != ':')
-					{
-						++len;
-					}
-					path = (char *)ILMalloc(len + strlen(progname) + 2);
-					if(path)
-					{
-						strncpy(path, env, len);
-						path[len++] = '/';
-						strcpy(path + len, progname);
-						if(ILFileExists(path, (char **)0))
-						{
-							break;
-						}
-						ILFree(path);
-					}
-					env += len;
-				}
-			}
-		}
-	}
-	if(path)
-	{
-		progname = path;
+		fputs("virtual memory exhausted\n", stderr);
+		return 1;
 	}
 
 	/* Open the registration file */
@@ -141,22 +116,16 @@ int _ILRegisterWithKernel(const char *progname)
 			/* Probably access denied */
 			perror(BINFMT_REGISTER);
 		}
-		if(path)
-		{
-			ILFree(path);
-		}
+		ILFree(path);
 		return 1;
 	}
 
 	/* Write the registration details */
-	fprintf(file, ":DOSWin:M::MZ::%s:\n", progname);
+	fprintf(file, ":DOSWin:M::MZ::%s:\n", path);
 	fclose(file);
 
 	/* Done */
-	if(path)
-	{
-		ILFree(path);
-	}
+	ILFree(path);
 	return 0;
 }
 

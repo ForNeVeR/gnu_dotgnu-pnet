@@ -15,13 +15,17 @@ COMMON_ENGINE_SOURCES = box.c \
 						lib_array.c \
 						lib_decimal.c \
 						lib_diag.c \
+						lib_encoding.c \
+						lib_enum.c \
 						lib_file.c \
+						lib_gc.c \
 						lib_helpers.c \
 						lib_math.c \
 						lib_misc.c \
 						lib_object.c \
 						lib_platform.c \
 						lib_reflect.c \
+						lib_security.c \
 						lib_stdio.c \
 						lib_string.c \
 						lib_thread.c \

@@ -1,7 +1,7 @@
 /*
  * lib_thread.c - Internalcall methods for "System.Threading.*".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,8 +39,7 @@ extern	"C" {
 /*
  * public static void Enter(Object obj);
  */
-static void System_Threading_Monitor_Enter(ILExecThread *thread,
-										   ILObject *obj)
+void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)
 {
 	if(obj)
 	{
@@ -56,9 +55,8 @@ static void System_Threading_Monitor_Enter(ILExecThread *thread,
 /*
  * public static bool InternalTryEnter(Object obj, int timeout);
  */
-static ILBool System_Threading_Monitor_InternalTryEnter(ILExecThread *thread,
-										   	    		ILObject *obj,
-														ILInt32 timeout)
+ILBool _IL_Monitor_InternalTryEnter(ILExecThread *thread,
+					   	    		ILObject *obj, ILInt32 timeout)
 {
 	/* The current implementation is single-threaded,
 	   so we assume that we can always enter the monitor */
@@ -68,8 +66,7 @@ static ILBool System_Threading_Monitor_InternalTryEnter(ILExecThread *thread,
 /*
  * public static void Exit(Object obj);
  */
-static void System_Threading_Monitor_Exit(ILExecThread *thread,
-										  ILObject *obj)
+void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
 {
 	if(obj)
 	{
@@ -85,9 +82,8 @@ static void System_Threading_Monitor_Exit(ILExecThread *thread,
 /*
  * public static bool InternalWait(Object obj, int timeout);
  */
-static ILBool System_Threading_Monitor_InternalWait(ILExecThread *thread,
-										   	    	ILObject *obj,
-													ILInt32 timeout)
+ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
+							    ILObject *obj, ILInt32 timeout)
 {
 	/* The current implementation is single-threaded,
 	   so we can never wait on a monitor, as there are
@@ -98,8 +94,7 @@ static ILBool System_Threading_Monitor_InternalWait(ILExecThread *thread,
 /*
  * public static void Pulse(Object obj);
  */
-static void System_Threading_Monitor_Pulse(ILExecThread *thread,
-										   ILObject *obj)
+void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
 {
 	if(obj)
 	{
@@ -115,8 +110,7 @@ static void System_Threading_Monitor_Pulse(ILExecThread *thread,
 /*
  * public static void PulseAll(Object obj);
  */
-static void System_Threading_Monitor_PulseAll(ILExecThread *thread,
-										      ILObject *obj)
+void _IL_Monitor_PulseAll(ILExecThread *thread, ILObject *obj)
 {
 	if(obj)
 	{
@@ -133,7 +127,7 @@ static void System_Threading_Monitor_PulseAll(ILExecThread *thread,
  * public static int CompareExchange(ref int location1, int value,
  *									 int comparand);
  */
-static ILInt32 System_Threading_Interlocked_CompareExchange_1
+ILInt32 _IL_Interlocked_CompareExchange_Riii
 						(ILExecThread *thread,
 						 ILInt32 *location1,
 						 ILInt32 value,
@@ -153,7 +147,7 @@ static ILInt32 System_Threading_Interlocked_CompareExchange_1
  * public static float CompareExchange(ref float location1, float value,
  *									   float comparand);
  */
-static ILFloat System_Threading_Interlocked_CompareExchange_2
+ILFloat _IL_Interlocked_CompareExchange_Rfff
 						(ILExecThread *thread,
 						 ILFloat *location1,
 						 ILFloat value,
@@ -173,7 +167,7 @@ static ILFloat System_Threading_Interlocked_CompareExchange_2
  * public static Object CompareExchange(ref Object location1, Object value,
  *									    Object comparand);
  */
-static ILObject *System_Threading_Interlocked_CompareExchange_3
+ILObject *_IL_Interlocked_CompareExchange_RObjectObjectObject
 						(ILExecThread *thread,
 						 ILObject **location1,
 						 ILObject *value,
@@ -192,8 +186,7 @@ static ILObject *System_Threading_Interlocked_CompareExchange_3
 /*
  * public static int Decrement(ref int location);
  */
-static ILInt32 System_Threading_Interlocked_Decrement_1(ILExecThread *thread,
-														ILInt32 *location)
+ILInt32 _IL_Interlocked_Decrement_Ri(ILExecThread *thread, ILInt32 *location)
 {
 	ILInt32 value;
 	ILThreadAtomicStart();
@@ -205,8 +198,7 @@ static ILInt32 System_Threading_Interlocked_Decrement_1(ILExecThread *thread,
 /*
  * public static long Decrement(ref long location);
  */
-static ILInt64 System_Threading_Interlocked_Decrement_2(ILExecThread *thread,
-														ILInt64 *location)
+ILInt64 _IL_Interlocked_Decrement_Rl(ILExecThread *thread, ILInt64 *location)
 {
 	ILInt64 value;
 	ILThreadAtomicStart();
@@ -220,9 +212,8 @@ static ILInt64 System_Threading_Interlocked_Decrement_2(ILExecThread *thread,
 /*
  * public static int Exchange(ref int location, int value);
  */
-static ILInt32 System_Threading_Interlocked_Exchange_1(ILExecThread *thread,
-													   ILInt32 *location,
-													   ILInt32 value)
+ILInt32 _IL_Interlocked_Exchange_Rii(ILExecThread *thread,
+								     ILInt32 *location, ILInt32 value)
 {
 	ILInt32 orig;
 	ILThreadAtomicStart();
@@ -235,9 +226,8 @@ static ILInt32 System_Threading_Interlocked_Exchange_1(ILExecThread *thread,
 /*
  * public static float Exchange(ref float location, float value);
  */
-static ILFloat System_Threading_Interlocked_Exchange_2(ILExecThread *thread,
-													   ILFloat *location,
-													   ILFloat value)
+ILFloat _IL_Interlocked_Exchange_Rff(ILExecThread *thread,
+								     ILFloat *location, ILFloat value)
 {
 	ILFloat orig;
 	ILThreadAtomicStart();
@@ -250,9 +240,8 @@ static ILFloat System_Threading_Interlocked_Exchange_2(ILExecThread *thread,
 /*
  * public static Object Exchange(ref Object location, Object value);
  */
-static ILObject *System_Threading_Interlocked_Exchange_3(ILExecThread *thread,
-													     ILObject **location,
-													     ILObject *value)
+ILObject *_IL_Interlocked_Exchange_RObjectObject
+				(ILExecThread *thread, ILObject **location, ILObject *value)
 {
 	ILObject *orig;
 	ILThreadAtomicStart();
@@ -265,8 +254,7 @@ static ILObject *System_Threading_Interlocked_Exchange_3(ILExecThread *thread,
 /*
  * public static int Increment(ref int location);
  */
-static ILInt32 System_Threading_Interlocked_Increment_1(ILExecThread *thread,
-														ILInt32 *location)
+ILInt32 _IL_Interlocked_Increment_Ri(ILExecThread *thread, ILInt32 *location)
 {
 	ILInt32 value;
 	ILThreadAtomicStart();
@@ -278,8 +266,7 @@ static ILInt32 System_Threading_Interlocked_Increment_1(ILExecThread *thread,
 /*
  * public static long Increment(ref long location);
  */
-static ILInt64 System_Threading_Interlocked_Increment_2(ILExecThread *thread,
-														ILInt64 *location)
+ILInt64 _IL_Interlocked_Increment_Rl(ILExecThread *thread, ILInt64 *location)
 {
 	ILInt64 value;
 	ILThreadAtomicStart();
@@ -293,8 +280,7 @@ static ILInt64 System_Threading_Interlocked_Increment_2(ILExecThread *thread,
 /*
  * private void FinalizeThread();
  */
-static void System_Threading_Thread_FinalizeThread(ILExecThread *thread,
-												   System_Thread *_this)
+void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
 {
 	/* TODO */
 }
@@ -302,8 +288,7 @@ static void System_Threading_Thread_FinalizeThread(ILExecThread *thread,
 /*
  * public void Abort();
  */
-static void System_Threading_Thread_Abort(ILExecThread *thread,
-										  System_Thread *_this)
+void _IL_Thread_Abort(ILExecThread *thread, ILObject *_this)
 {
 	/* TODO */
 }
@@ -311,9 +296,8 @@ static void System_Threading_Thread_Abort(ILExecThread *thread,
 /*
  * private bool InternalJoin(int timeout);
  */
-static ILBool System_Threading_Thread_InternalJoin(ILExecThread *thread,
-										 		   System_Thread *_this,
-												   ILInt32 timeout)
+ILBool _IL_Thread_InternalJoin(ILExecThread *thread, ILObject *_this,
+							   ILInt32 timeout)
 {
 	/* TODO */
 	return 0;
@@ -322,7 +306,7 @@ static ILBool System_Threading_Thread_InternalJoin(ILExecThread *thread,
 /*
  * public static void MemoryBarrier();
  */
-static void System_Threading_Thread_MemoryBarrier(ILExecThread *thread)
+void _IL_Thread_MemoryBarrier(ILExecThread *thread)
 {
 	ILThreadMemoryBarrier();
 }
@@ -330,7 +314,7 @@ static void System_Threading_Thread_MemoryBarrier(ILExecThread *thread)
 /*
  * public static void ResetAbort();
  */
-static void System_Threading_Thread_ResetAbort(ILExecThread *thread)
+void _IL_Thread_ResetAbort(ILExecThread *thread)
 {
 	/* TODO */
 }
@@ -338,8 +322,7 @@ static void System_Threading_Thread_ResetAbort(ILExecThread *thread)
 /*
  * public static void InternalSleep(int timeout);
  */
-static void System_Threading_Thread_InternalSleep(ILExecThread *thread,
-												  ILInt32 timeout)
+void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
 {
 	/* TODO */
 }
@@ -347,8 +330,7 @@ static void System_Threading_Thread_InternalSleep(ILExecThread *thread,
 /*
  * public void Start();
  */
-static void System_Threading_Thread_Start(ILExecThread *thread,
-										  System_Thread *_this)
+void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 {
 	/* TODO */
 }
@@ -356,8 +338,7 @@ static void System_Threading_Thread_Start(ILExecThread *thread,
 /*
  * public static Thread InternalCurrentThread();
  */
-static ILObject *System_Threading_Thread_InternalCurrentThread
-				(ILExecThread *thread)
+ILObject *_IL_Thread_InternalCurrentThread(ILExecThread *thread)
 {
 	/* TODO */
 	return 0;
@@ -366,8 +347,8 @@ static ILObject *System_Threading_Thread_InternalCurrentThread
 /*
  * public void InternalSetBackground(bool value);
  */
-static void System_Threading_Thread_InternalSetBackground
-				(ILExecThread *thread, System_Thread *_this, ILBool value)
+void _IL_Thread_InternalSetBackground(ILExecThread *thread,
+									  ILObject *_this, ILBool value)
 {
 	/* TODO */
 }
@@ -375,8 +356,7 @@ static void System_Threading_Thread_InternalSetBackground
 /*
  * public ThreadPriority InternalGetPriority();
  */
-static ILInt32 System_Threading_Thread_InternalGetPriority
-				(ILExecThread *thread, System_Thread *_this)
+ILInt32 _IL_Thread_InternalGetPriority(ILExecThread *thread, ILObject *_this)
 {
 	/* TODO */
 	return 2;	/* Normal */
@@ -385,8 +365,8 @@ static ILInt32 System_Threading_Thread_InternalGetPriority
 /*
  * public void InternalSetPriority(ThreadPriority priority);
  */
-static void System_Threading_Thread_InternalSetPriority
-				(ILExecThread *thread, System_Thread *_this, ILInt32 priority)
+void _IL_Thread_InternalSetPriority(ILExecThread *thread, ILObject *_this,
+									ILInt32 priority)
 {
 	/* TODO */
 }
@@ -394,8 +374,7 @@ static void System_Threading_Thread_InternalSetPriority
 /*
  * public ThreadState InternalGetState();
  */
-static ILInt32 System_Threading_Thread_InternalGetState
-				(ILExecThread *thread, System_Thread *_this)
+ILInt32 _IL_Thread_InternalGetState(ILExecThread *thread, ILObject *_this)
 {
 	/* TODO */
 	return 0;
@@ -404,8 +383,7 @@ static ILInt32 System_Threading_Thread_InternalGetState
 /*
  * public static sbyte VolatileRead(ref sbyte address);
  */
-static ILInt8 System_Threading_Thread_VolatileRead_sbyte(ILExecThread *thread,
-														 ILInt8 *address)
+ILInt8 _IL_Thread_VolatileRead_Rb(ILExecThread *thread, ILInt8 *address)
 {
 	ILInt8 value;
 	ILThreadAtomicStart();
@@ -417,8 +395,7 @@ static ILInt8 System_Threading_Thread_VolatileRead_sbyte(ILExecThread *thread,
 /*
  * public static byte VolatileRead(ref byte address);
  */
-static ILUInt8 System_Threading_Thread_VolatileRead_byte(ILExecThread *thread,
-														 ILUInt8 *address)
+ILUInt8 _IL_Thread_VolatileRead_RB(ILExecThread *thread, ILUInt8 *address)
 {
 	ILUInt8 value;
 	ILThreadAtomicStart();
@@ -430,8 +407,7 @@ static ILUInt8 System_Threading_Thread_VolatileRead_byte(ILExecThread *thread,
 /*
  * public static short VolatileRead(ref short address);
  */
-static ILInt16 System_Threading_Thread_VolatileRead_short(ILExecThread *thread,
-														  ILInt16 *address)
+ILInt16 _IL_Thread_VolatileRead_Rs(ILExecThread *thread, ILInt16 *address)
 {
 	ILInt16 value;
 	ILThreadAtomicStart();
@@ -443,8 +419,7 @@ static ILInt16 System_Threading_Thread_VolatileRead_short(ILExecThread *thread,
 /*
  * public static ushort VolatileRead(ref ushort address);
  */
-static ILUInt16 System_Threading_Thread_VolatileRead_ushort
-					(ILExecThread *thread, ILUInt16 *address)
+ILUInt16 _IL_Thread_VolatileRead_RS(ILExecThread *thread, ILUInt16 *address)
 {
 	ILUInt16 value;
 	ILThreadAtomicStart();
@@ -456,8 +431,7 @@ static ILUInt16 System_Threading_Thread_VolatileRead_ushort
 /*
  * public static int VolatileRead(ref int address);
  */
-static ILInt32 System_Threading_Thread_VolatileRead_int(ILExecThread *thread,
-														ILInt32 *address)
+ILInt32 _IL_Thread_VolatileRead_Ri(ILExecThread *thread, ILInt32 *address)
 {
 	ILInt32 value;
 	ILThreadAtomicStart();
@@ -469,8 +443,7 @@ static ILInt32 System_Threading_Thread_VolatileRead_int(ILExecThread *thread,
 /*
  * public static uint VolatileRead(ref uint address);
  */
-static ILUInt32 System_Threading_Thread_VolatileRead_uint(ILExecThread *thread,
-														  ILUInt32 *address)
+ILUInt32 _IL_Thread_VolatileRead_RI(ILExecThread *thread, ILUInt32 *address)
 {
 	ILUInt32 value;
 	ILThreadAtomicStart();
@@ -482,8 +455,7 @@ static ILUInt32 System_Threading_Thread_VolatileRead_uint(ILExecThread *thread,
 /*
  * public static long VolatileRead(ref long address);
  */
-static ILInt64 System_Threading_Thread_VolatileRead_long(ILExecThread *thread,
-														 ILInt64 *address)
+ILInt64 _IL_Thread_VolatileRead_Rl(ILExecThread *thread, ILInt64 *address)
 {
 	ILInt64 value;
 	ILThreadAtomicStart();
@@ -495,8 +467,7 @@ static ILInt64 System_Threading_Thread_VolatileRead_long(ILExecThread *thread,
 /*
  * public static ulong VolatileRead(ref ulong address);
  */
-static ILUInt64 System_Threading_Thread_VolatileRead_ulong(ILExecThread *thread,
-														   ILUInt64 *address)
+ILUInt64 _IL_Thread_VolatileRead_RL(ILExecThread *thread, ILUInt64 *address)
 {
 	ILUInt64 value;
 	ILThreadAtomicStart();
@@ -508,8 +479,8 @@ static ILUInt64 System_Threading_Thread_VolatileRead_ulong(ILExecThread *thread,
 /*
  * public static IntPtr VolatileRead(ref IntPtr address);
  */
-static ILNativeInt System_Threading_Thread_VolatileRead_nint
-			(ILExecThread *thread, ILNativeInt *address)
+ILNativeInt _IL_Thread_VolatileRead_Rj(ILExecThread *thread,
+									   ILNativeInt *address)
 {
 	ILNativeInt value;
 	ILThreadAtomicStart();
@@ -521,8 +492,8 @@ static ILNativeInt System_Threading_Thread_VolatileRead_nint
 /*
  * public static UIntPtr VolatileRead(ref UIntPtr address);
  */
-static ILNativeUInt System_Threading_Thread_VolatileRead_nuint
-			(ILExecThread *thread, ILNativeUInt *address)
+ILNativeUInt _IL_Thread_VolatileRead_RJ(ILExecThread *thread,
+										ILNativeUInt *address)
 {
 	ILNativeUInt value;
 	ILThreadAtomicStart();
@@ -534,8 +505,7 @@ static ILNativeUInt System_Threading_Thread_VolatileRead_nuint
 /*
  * public static float VolatileRead(ref float address);
  */
-static ILFloat System_Threading_Thread_VolatileRead_float
-			(ILExecThread *thread, ILFloat *address)
+ILFloat _IL_Thread_VolatileRead_Rf(ILExecThread *thread, ILFloat *address)
 {
 	ILFloat value;
 	ILThreadAtomicStart();
@@ -547,8 +517,7 @@ static ILFloat System_Threading_Thread_VolatileRead_float
 /*
  * public static double VolatileRead(ref double address);
  */
-static ILDouble System_Threading_Thread_VolatileRead_double
-			(ILExecThread *thread, ILDouble *address)
+ILDouble _IL_Thread_VolatileRead_Rd(ILExecThread *thread, ILDouble *address)
 {
 	ILDouble value;
 	ILThreadAtomicStart();
@@ -560,8 +529,8 @@ static ILDouble System_Threading_Thread_VolatileRead_double
 /*
  * public static Object VolatileRead(ref Object address);
  */
-static ILObject *System_Threading_Thread_VolatileRead_Object
-			(ILExecThread *thread, ILObject **address)
+ILObject *_IL_Thread_VolatileRead_RObject(ILExecThread *thread,
+										  ILObject **address)
 {
 	ILObject *value;
 	ILThreadAtomicStart();
@@ -573,8 +542,8 @@ static ILObject *System_Threading_Thread_VolatileRead_Object
 /*
  * public static void VolatileWrite(ref sbyte address, sbyte value);
  */
-static void System_Threading_Thread_VolatileWrite_sbyte
-				(ILExecThread *thread, ILInt8 *address, ILInt8 value)
+void _IL_Thread_VolatileWrite_Rbb(ILExecThread *thread,
+								  ILInt8 *address, ILInt8 value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -584,8 +553,8 @@ static void System_Threading_Thread_VolatileWrite_sbyte
 /*
  * public static void VolatileWrite(ref byte address, byte value);
  */
-static void System_Threading_Thread_VolatileWrite_byte
-				(ILExecThread *thread, ILUInt8 *address, ILUInt8 value)
+void _IL_Thread_VolatileWrite_RBB(ILExecThread *thread,
+								  ILUInt8 *address, ILUInt8 value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -595,8 +564,8 @@ static void System_Threading_Thread_VolatileWrite_byte
 /*
  * public static void VolatileWrite(ref short address, short value);
  */
-static void System_Threading_Thread_VolatileWrite_short
-				(ILExecThread *thread, ILInt16 *address, ILInt16 value)
+void _IL_Thread_VolatileWrite_Rss(ILExecThread *thread,
+								  ILInt16 *address, ILInt16 value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -606,8 +575,8 @@ static void System_Threading_Thread_VolatileWrite_short
 /*
  * public static void VolatileWrite(ref ushort address, ushort value);
  */
-static void System_Threading_Thread_VolatileWrite_ushort
-				(ILExecThread *thread, ILUInt16 *address, ILUInt16 value)
+void _IL_Thread_VolatileWrite_RSS(ILExecThread *thread,
+								  ILUInt16 *address, ILUInt16 value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -617,8 +586,8 @@ static void System_Threading_Thread_VolatileWrite_ushort
 /*
  * public static void VolatileWrite(ref int address, int value);
  */
-static void System_Threading_Thread_VolatileWrite_int
-				(ILExecThread *thread, ILInt32 *address, ILInt32 value)
+void _IL_Thread_VolatileWrite_Rii(ILExecThread *thread,
+								  ILInt32 *address, ILInt32 value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -628,8 +597,8 @@ static void System_Threading_Thread_VolatileWrite_int
 /*
  * public static void VolatileWrite(ref uint address, uint value);
  */
-static void System_Threading_Thread_VolatileWrite_uint
-				(ILExecThread *thread, ILUInt32 *address, ILUInt32 value)
+void _IL_Thread_VolatileWrite_RII(ILExecThread *thread,
+								  ILUInt32 *address, ILUInt32 value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -639,8 +608,8 @@ static void System_Threading_Thread_VolatileWrite_uint
 /*
  * public static void VolatileWrite(ref long address, long value);
  */
-static void System_Threading_Thread_VolatileWrite_long
-				(ILExecThread *thread, ILInt64 *address, ILInt64 value)
+void _IL_Thread_VolatileWrite_Rll(ILExecThread *thread,
+								  ILInt64 *address, ILInt64 value)
 {
 	ILThreadAtomicStart();
 	ILMemCpy(address, &value, sizeof(ILInt64));
@@ -650,8 +619,8 @@ static void System_Threading_Thread_VolatileWrite_long
 /*
  * public static void VolatileWrite(ref ulong address, ulong value);
  */
-static void System_Threading_Thread_VolatileWrite_ulong
-				(ILExecThread *thread, ILUInt64 *address, ILUInt64 value)
+void _IL_Thread_VolatileWrite_RLL(ILExecThread *thread,
+								  ILUInt64 *address, ILUInt64 value)
 {
 	ILThreadAtomicStart();
 	ILMemCpy(address, &value, sizeof(ILUInt64));
@@ -661,8 +630,8 @@ static void System_Threading_Thread_VolatileWrite_ulong
 /*
  * public static void VolatileWrite(ref IntPtr address, IntPtr value);
  */
-static void System_Threading_Thread_VolatileWrite_nint
-				(ILExecThread *thread, ILNativeInt *address, ILNativeInt value)
+void _IL_Thread_VolatileWrite_Rjj(ILExecThread *thread,
+								  ILNativeInt *address, ILNativeInt value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -672,9 +641,8 @@ static void System_Threading_Thread_VolatileWrite_nint
 /*
  * public static void VolatileWrite(ref UIntPtr address, UIntPtr value);
  */
-static void System_Threading_Thread_VolatileWrite_nuint
-				(ILExecThread *thread, ILNativeUInt *address,
-				 ILNativeUInt value)
+void _IL_Thread_VolatileWrite_RJJ(ILExecThread *thread,
+								  ILNativeUInt *address, ILNativeUInt value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -684,8 +652,8 @@ static void System_Threading_Thread_VolatileWrite_nuint
 /*
  * public static void VolatileWrite(ref float address, float value);
  */
-static void System_Threading_Thread_VolatileWrite_float
-				(ILExecThread *thread, ILFloat *address, ILFloat value)
+void _IL_Thread_VolatileWrite_Rff(ILExecThread *thread,
+								  ILFloat *address, ILFloat value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -695,8 +663,8 @@ static void System_Threading_Thread_VolatileWrite_float
 /*
  * public static void VolatileWrite(ref double address, double value);
  */
-static void System_Threading_Thread_VolatileWrite_double
-				(ILExecThread *thread, ILDouble *address, ILDouble value)
+void _IL_Thread_VolatileWrite_Rdd(ILExecThread *thread,
+								  ILDouble *address, ILDouble value)
 {
 	ILThreadAtomicStart();
 	ILMemCpy(address, &value, sizeof(ILDouble));
@@ -706,8 +674,8 @@ static void System_Threading_Thread_VolatileWrite_double
 /*
  * public static void VolatileWrite(ref Object address, Object value);
  */
-static void System_Threading_Thread_VolatileWrite_Object
-				(ILExecThread *thread, ILObject **address, ILObject *value)
+void _IL_Thread_VolatileWrite_RObjectObject(ILExecThread *thread,
+											ILObject **address, ILObject *value)
 {
 	ILThreadAtomicStart();
 	*address = value;
@@ -715,138 +683,71 @@ static void System_Threading_Thread_VolatileWrite_Object
 }
 
 /*
- * Method table for the "System.Threading.Monitor" class.
+ * private static void InternalClose(IntPtr privateData);
  */
-IL_METHOD_BEGIN(_ILSystemThreadingMonitorMethods)
-	IL_METHOD("Enter",
-			  "(oSystem.Object;)V",
-			  System_Threading_Monitor_Enter)
-	IL_METHOD("InternalTryEnter",
-			  "(oSystem.Object;i)Z",
-			  System_Threading_Monitor_InternalTryEnter)
-	IL_METHOD("Exit",
-			  "(oSystem.Object;)V",
-			  System_Threading_Monitor_Exit)
-	IL_METHOD("InternalWait",
-			  "(oSystem.Object;i)Z",
-			  System_Threading_Monitor_InternalWait)
-	IL_METHOD("Pulse",
-			  "(oSystem.Object;)V",
-			  System_Threading_Monitor_Pulse)
-	IL_METHOD("PulseAll",
-			  "(oSystem.Object;)V",
-			  System_Threading_Monitor_PulseAll)
-IL_METHOD_END
+void _IL_WaitHandle_InternalClose(ILExecThread *_thread,
+								  ILNativeInt privateData)
+{
+	/* TODO */
+}
 
 /*
- * Method table for the "System.Threading.Interlocked" class.
+ * private static bool InternalWaitAll(WaitHandle[] waitHandles,
+ *									   int timeout, bool exitContext);
  */
-IL_METHOD_BEGIN(_ILSystemThreadingInterlockedMethods)
-	IL_METHOD("CompareExchange", "(&iii)i",
-			  System_Threading_Interlocked_CompareExchange_1)
-	IL_METHOD("CompareExchange", "(&fff)f",
-			  System_Threading_Interlocked_CompareExchange_2)
-	IL_METHOD("CompareExchange",
-			  "(&oSystem.Object;oSystem.Object;oSystem.Object;)oSystem.Object;",
-			  System_Threading_Interlocked_CompareExchange_3)
-	IL_METHOD("Decrement", "(&i)i",
-			  System_Threading_Interlocked_Decrement_1)
-	IL_METHOD("Decrement", "(&l)l",
-			  System_Threading_Interlocked_Decrement_2)
-	IL_METHOD("Exchange", "(&ii)i",
-			  System_Threading_Interlocked_Exchange_1)
-	IL_METHOD("Exchange", "(&ff)f",
-			  System_Threading_Interlocked_Exchange_2)
-	IL_METHOD("Exchange",
-			  "(&oSystem.Object;oSystem.Object;)oSystem.Object;",
-			  System_Threading_Interlocked_Exchange_3)
-	IL_METHOD("Increment", "(&i)i",
-			  System_Threading_Interlocked_Increment_1)
-	IL_METHOD("Increment", "(&l)l",
-			  System_Threading_Interlocked_Increment_2)
-IL_METHOD_END
+ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
+									  System_Array *waitHandles,
+									  ILInt32 timeout,
+									  ILBool exitContext)
+{
+	/* TODO */
+	return 1;
+}
 
 /*
- * Method table for the "System.Threading.Thread" class.
+ * private static int InternalWaitAny(WaitHandle[] waitHandles,
+ *									  int timeout, bool exitContext);
  */
-IL_METHOD_BEGIN(_ILSystemThreadingThreadMethods)
-	IL_METHOD("FinalizeThread", "(T)V",
-			  System_Threading_Thread_FinalizeThread)
-	IL_METHOD("Abort", "(T)V",
-			  System_Threading_Thread_Abort)
-	IL_METHOD("InternalJoin", "(Ti)Z",
-			  System_Threading_Thread_InternalJoin)
-	IL_METHOD("MemoryBarrier", "()V",
-			  System_Threading_Thread_MemoryBarrier)
-	IL_METHOD("ResetAbort", "()V",
-			  System_Threading_Thread_ResetAbort)
-	IL_METHOD("InternalSleep", "(i)V",
-			  System_Threading_Thread_InternalSleep)
-	IL_METHOD("Start", "(T)V",
-			  System_Threading_Thread_Start)
-	IL_METHOD("InternalCurrentThread", "()oSystem.Threading.Thread;",
-			  System_Threading_Thread_InternalCurrentThread)
-	IL_METHOD("InternalSetBackground", "(TZ)V",
-			  System_Threading_Thread_InternalSetBackground)
-	IL_METHOD("InternalGetPriority", "(T)vSystem.Threading.ThreadPriority;",
-			  System_Threading_Thread_InternalGetPriority)
-	IL_METHOD("InternalSetPriority", "(TvSystem.Threading.ThreadPriority;)V",
-			  System_Threading_Thread_InternalSetPriority)
-	IL_METHOD("InternalGetState", "(T)vSystem.Threading.ThreadState;",
-			  System_Threading_Thread_InternalGetState)
-	IL_METHOD("VolatileRead", "(&b)b",
-			  System_Threading_Thread_VolatileRead_sbyte)
-	IL_METHOD("VolatileRead", "(&B)B",
-			  System_Threading_Thread_VolatileRead_byte)
-	IL_METHOD("VolatileRead", "(&s)s",
-			  System_Threading_Thread_VolatileRead_short)
-	IL_METHOD("VolatileRead", "(&S)S",
-			  System_Threading_Thread_VolatileRead_ushort)
-	IL_METHOD("VolatileRead", "(&i)i",
-			  System_Threading_Thread_VolatileRead_int)
-	IL_METHOD("VolatileRead", "(&I)I",
-			  System_Threading_Thread_VolatileRead_uint)
-	IL_METHOD("VolatileRead", "(&l)l",
-			  System_Threading_Thread_VolatileRead_long)
-	IL_METHOD("VolatileRead", "(&L)L",
-			  System_Threading_Thread_VolatileRead_ulong)
-	IL_METHOD("VolatileRead", "(&j)j",
-			  System_Threading_Thread_VolatileRead_nint)
-	IL_METHOD("VolatileRead", "(&J)J",
-			  System_Threading_Thread_VolatileRead_nuint)
-	IL_METHOD("VolatileRead", "(&f)f",
-			  System_Threading_Thread_VolatileRead_float)
-	IL_METHOD("VolatileRead", "(&d)d",
-			  System_Threading_Thread_VolatileRead_double)
-	IL_METHOD("VolatileRead", "(&oSystem.Object;)oSystem.Object;",
-			  System_Threading_Thread_VolatileRead_Object)
-	IL_METHOD("VolatileWrite", "(&bb)V",
-			  System_Threading_Thread_VolatileWrite_sbyte)
-	IL_METHOD("VolatileWrite", "(&BB)V",
-			  System_Threading_Thread_VolatileWrite_byte)
-	IL_METHOD("VolatileWrite", "(&ss)V",
-			  System_Threading_Thread_VolatileWrite_short)
-	IL_METHOD("VolatileWrite", "(&SS)V",
-			  System_Threading_Thread_VolatileWrite_ushort)
-	IL_METHOD("VolatileWrite", "(&ii)V",
-			  System_Threading_Thread_VolatileWrite_int)
-	IL_METHOD("VolatileWrite", "(&II)V",
-			  System_Threading_Thread_VolatileWrite_uint)
-	IL_METHOD("VolatileWrite", "(&ll)V",
-			  System_Threading_Thread_VolatileWrite_long)
-	IL_METHOD("VolatileWrite", "(&LL)V",
-			  System_Threading_Thread_VolatileWrite_ulong)
-	IL_METHOD("VolatileWrite", "(&jj)V",
-			  System_Threading_Thread_VolatileWrite_nint)
-	IL_METHOD("VolatileWrite", "(&JJ)V",
-			  System_Threading_Thread_VolatileWrite_nuint)
-	IL_METHOD("VolatileWrite", "(&ff)V",
-			  System_Threading_Thread_VolatileWrite_float)
-	IL_METHOD("VolatileWrite", "(&dd)V",
-			  System_Threading_Thread_VolatileWrite_double)
-	IL_METHOD("VolatileWrite", "(&oSystem.Object;oSystem.Object;)V",
-			  System_Threading_Thread_VolatileWrite_Object)
-IL_METHOD_END
+ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
+									   System_Array *waitHandles,
+									   ILInt32 timeout, ILBool exitContext)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static bool InternalWaitOne(IntPtr privateData, int timeout);
+ */
+ILBool _IL_WaitHandle_InternalWaitOne(ILExecThread *_thread,
+									  ILNativeInt privateData,
+									  ILInt32 timeout)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static IntPtr InternalCreateMutex(bool initiallyOwned,
+ *											 String name,
+ *                                           out bool gotOwnership);
+ */
+ILNativeInt _IL_Mutex_InternalCreateMutex(ILExecThread *_thread,
+										  ILBool initiallyOwned,
+										  ILString *name,
+										  ILBool *gotOwnership)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static void InternalReleaseMutex(IntPtr mutex);
+ */
+void _IL_Mutex_InternalReleaseMutex(ILExecThread *_thread, ILNativeInt mutex)
+{
+	/* TODO */
+}
 
 #ifdef	__cplusplus
 };

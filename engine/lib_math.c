@@ -290,7 +290,7 @@ static double Math_Round(double x)
 /*
  * public static double Acos(double d);
  */
-static ILDouble System_Math_Acos(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Acos(ILExecThread *thread, ILDouble d)
 {
 #ifdef HAVE_ACOS
 	return (ILDouble)(acos((double)d));
@@ -302,7 +302,7 @@ static ILDouble System_Math_Acos(ILExecThread *thread, ILDouble d)
 /*
  * public static double Asin(double d);
  */
-static ILDouble System_Math_Asin(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Asin(ILExecThread *thread, ILDouble d)
 {
 #ifdef HAVE_ASIN
 	return (ILDouble)(asin((double)d));
@@ -314,7 +314,7 @@ static ILDouble System_Math_Asin(ILExecThread *thread, ILDouble d)
 /*
  * public static double Atan(double d);
  */
-static ILDouble System_Math_Atan(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Atan(ILExecThread *thread, ILDouble d)
 {
 #ifdef HAVE_ATAN
 	return (ILDouble)(atan((double)d));
@@ -326,7 +326,7 @@ static ILDouble System_Math_Atan(ILExecThread *thread, ILDouble d)
 /*
  * public static double Atan2(double y, double x);
  */
-static ILDouble System_Math_Atan2(ILExecThread *thread, ILDouble y, ILDouble x)
+ILDouble _IL_Math_Atan2(ILExecThread *thread, ILDouble y, ILDouble x)
 {
 #ifdef HAVE_ATAN2
 	return (ILDouble)(atan2((double)y, (double)x));
@@ -338,7 +338,7 @@ static ILDouble System_Math_Atan2(ILExecThread *thread, ILDouble y, ILDouble x)
 /*
  * public static double Ceiling(double a);
  */
-static ILDouble System_Math_Ceiling(ILExecThread *thread, ILDouble a)
+ILDouble _IL_Math_Ceiling(ILExecThread *thread, ILDouble a)
 {
 	return (ILDouble)(Math_Ceil((double)a));
 }
@@ -346,7 +346,7 @@ static ILDouble System_Math_Ceiling(ILExecThread *thread, ILDouble a)
 /*
  * public static double Cos(double d);
  */
-static ILDouble System_Math_Cos(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Cos(ILExecThread *thread, ILDouble d)
 {
 #ifdef HAVE_COS
 	return (ILDouble)(cos((double)d));
@@ -358,7 +358,7 @@ static ILDouble System_Math_Cos(ILExecThread *thread, ILDouble d)
 /*
  * public static double Cosh(double value);
  */
-static ILDouble System_Math_Cosh(ILExecThread *thread, ILDouble value)
+ILDouble _IL_Math_Cosh(ILExecThread *thread, ILDouble value)
 {
 #ifdef HAVE_COSH
 	return (ILDouble)(cosh((double)value));
@@ -370,7 +370,7 @@ static ILDouble System_Math_Cosh(ILExecThread *thread, ILDouble value)
 /*
  * public static double Exp(double d);
  */
-static ILDouble System_Math_Exp(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Exp(ILExecThread *thread, ILDouble d)
 {
 #ifdef HAVE_EXP
 	return (ILDouble)(exp((double)d));
@@ -382,7 +382,7 @@ static ILDouble System_Math_Exp(ILExecThread *thread, ILDouble d)
 /*
  * public static double Floor(double d);
  */
-static ILDouble System_Math_Floor(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Floor(ILExecThread *thread, ILDouble d)
 {
 	return (ILDouble)(Math_Floor((double)d));
 }
@@ -390,8 +390,7 @@ static ILDouble System_Math_Floor(ILExecThread *thread, ILDouble d)
 /*
  * public static double IEEERemainder(double x, double y);
  */
-static ILDouble System_Math_IEEERemainder(ILExecThread *thread,
-										  ILDouble x, ILDouble y)
+ILDouble _IL_Math_IEEERemainder(ILExecThread *thread, ILDouble x, ILDouble y)
 {
 	return (ILDouble)(Math_Remainder((double)x, (double)y));
 }
@@ -399,7 +398,7 @@ static ILDouble System_Math_IEEERemainder(ILExecThread *thread,
 /*
  * public static double Log(double d);
  */
-static ILDouble System_Math_Log(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Log(ILExecThread *thread, ILDouble d)
 {
 #ifdef HAVE_LOG
 	return (ILDouble)(log((double)d));
@@ -411,7 +410,7 @@ static ILDouble System_Math_Log(ILExecThread *thread, ILDouble d)
 /*
  * public static double Log10(double d);
  */
-static ILDouble System_Math_Log10(ILExecThread *thread, ILDouble d)
+ILDouble _IL_Math_Log10(ILExecThread *thread, ILDouble d)
 {
 #ifdef HAVE_LOG10
 	return (ILDouble)(log10((double)d));
@@ -423,7 +422,7 @@ static ILDouble System_Math_Log10(ILExecThread *thread, ILDouble d)
 /*
  * public static double Pow(double x, double y);
  */
-static ILDouble System_Math_Pow(ILExecThread *thread, ILDouble x, ILDouble y)
+ILDouble _IL_Math_Pow(ILExecThread *thread, ILDouble x, ILDouble y)
 {
 #ifdef HAVE_POW
 	return (ILDouble)(pow((double)x, (double)y));
@@ -435,7 +434,7 @@ static ILDouble System_Math_Pow(ILExecThread *thread, ILDouble x, ILDouble y)
 /*
  * public static double Round(double a);
  */
-static ILDouble System_Math_Round(ILExecThread *thread, ILDouble a)
+ILDouble _IL_Math_Round(ILExecThread *thread, ILDouble a)
 {
 	return (ILDouble)Math_Round((double)a);
 }
@@ -443,8 +442,8 @@ static ILDouble System_Math_Round(ILExecThread *thread, ILDouble a)
 /*
  * private static double RoundDouble(double value, int digits);
  */
-static ILDouble System_Math_RoundDouble(ILExecThread *thread,
-										ILDouble value, ILInt32 digits)
+ILDouble _IL_Math_RoundDouble(ILExecThread *thread, ILDouble value,
+							  ILInt32 digits)
 {
 	double rounded;
 	double power;
@@ -473,7 +472,7 @@ static ILDouble System_Math_RoundDouble(ILExecThread *thread,
 /*
  * public static double Sin(double a);
  */
-static ILDouble System_Math_Sin(ILExecThread *thread, ILDouble a)
+ILDouble _IL_Math_Sin(ILExecThread *thread, ILDouble a)
 {
 #ifdef HAVE_SIN
 	return (ILDouble)(sin((double)a));
@@ -485,7 +484,7 @@ static ILDouble System_Math_Sin(ILExecThread *thread, ILDouble a)
 /*
  * public static double Sinh(double a);
  */
-static ILDouble System_Math_Sinh(ILExecThread *thread, ILDouble a)
+ILDouble _IL_Math_Sinh(ILExecThread *thread, ILDouble a)
 {
 #ifdef HAVE_SINH
 	return (ILDouble)(sinh((double)a));
@@ -497,7 +496,7 @@ static ILDouble System_Math_Sinh(ILExecThread *thread, ILDouble a)
 /*
  * public static double Sqrt(double a);
  */
-static ILDouble System_Math_Sqrt(ILExecThread *thread, ILDouble a)
+ILDouble _IL_Math_Sqrt(ILExecThread *thread, ILDouble a)
 {
 #ifdef HAVE_SQRT
 	return (ILDouble)(sqrt((double)a));
@@ -509,7 +508,7 @@ static ILDouble System_Math_Sqrt(ILExecThread *thread, ILDouble a)
 /*
  * public static double Tan(double a);
  */
-static ILDouble System_Math_Tan(ILExecThread *thread, ILDouble a)
+ILDouble _IL_Math_Tan(ILExecThread *thread, ILDouble a)
 {
 #ifdef HAVE_TAN
 	return (ILDouble)(tan((double)a));
@@ -521,7 +520,7 @@ static ILDouble System_Math_Tan(ILExecThread *thread, ILDouble a)
 /*
  * public static double Tanh(double value);
  */
-static ILDouble System_Math_Tanh(ILExecThread *thread, ILDouble value)
+ILDouble _IL_Math_Tanh(ILExecThread *thread, ILDouble value)
 {
 #ifdef HAVE_TANH
 	return (ILDouble)(tanh((double)value));
@@ -533,7 +532,7 @@ static ILDouble System_Math_Tanh(ILExecThread *thread, ILDouble value)
 /*
  * public static bool IsNaN(float f);
  */
-static ILBool System_Single_IsNaN(ILExecThread *thread, ILFloat f)
+ILBool _IL_Single_IsNaN(ILExecThread *thread, ILFloat f)
 {
 	return Math_IsNaN(f);
 }
@@ -541,7 +540,7 @@ static ILBool System_Single_IsNaN(ILExecThread *thread, ILFloat f)
 /*
  * private static int TestInfinity(float f);
  */
-static ILInt32 System_Single_TestInfinity(ILExecThread *thread, ILFloat f)
+ILInt32 _IL_Single_TestInfinity(ILExecThread *thread, ILFloat f)
 {
 	return Math_IsInf(f);
 }
@@ -549,7 +548,7 @@ static ILInt32 System_Single_TestInfinity(ILExecThread *thread, ILFloat f)
 /*
  * public static bool IsNaN(double d);
  */
-static ILBool System_Double_IsNaN(ILExecThread *thread, ILDouble d)
+ILBool _IL_Double_IsNaN(ILExecThread *thread, ILDouble d)
 {
 	return Math_IsNaN(d);
 }
@@ -557,52 +556,10 @@ static ILBool System_Double_IsNaN(ILExecThread *thread, ILDouble d)
 /*
  * private static int TestInfinity(double d);
  */
-static ILInt32 System_Double_TestInfinity(ILExecThread *thread, ILDouble d)
+ILInt32 _IL_Double_TestInfinity(ILExecThread *thread, ILDouble d)
 {
 	return Math_IsInf(d);
 }
-
-/*
- * Method table for the "System.Math" class.
- */
-IL_METHOD_BEGIN(_ILSystemMathMethods)
-	IL_METHOD("Acos",			 "(d)d",		System_Math_Acos)
-	IL_METHOD("Asin",			 "(d)d",		System_Math_Asin)
-	IL_METHOD("Atan",			 "(d)d",		System_Math_Atan)
-	IL_METHOD("Atan2",			 "(dd)d",		System_Math_Atan2)
-	IL_METHOD("Ceiling",		 "(d)d",		System_Math_Ceiling)
-	IL_METHOD("Cos",			 "(d)d",		System_Math_Cos)
-	IL_METHOD("Cosh",			 "(d)d",		System_Math_Cosh)
-	IL_METHOD("Exp",			 "(d)d",		System_Math_Exp)
-	IL_METHOD("Floor",			 "(d)d",		System_Math_Floor)
-	IL_METHOD("IEEERemainder",	 "(dd)d",		System_Math_IEEERemainder)
-	IL_METHOD("Log",			 "(d)d",		System_Math_Log)
-	IL_METHOD("Log10",			 "(d)d",		System_Math_Log10)
-	IL_METHOD("Pow",			 "(d)d",		System_Math_Pow)
-	IL_METHOD("Round",			 "(d)d",		System_Math_Round)
-	IL_METHOD("RoundDouble",	 "(di)d",		System_Math_RoundDouble)
-	IL_METHOD("Sin",			 "(d)d",		System_Math_Sin)
-	IL_METHOD("Sinh",			 "(d)d",		System_Math_Sinh)
-	IL_METHOD("Sqrt",			 "(d)d",		System_Math_Sqrt)
-	IL_METHOD("Tan",			 "(d)d",		System_Math_Tan)
-	IL_METHOD("Tanh",			 "(d)d",		System_Math_Tanh)
-IL_METHOD_END
-
-/*
- * Method table for the "System.Single" class.
- */
-IL_METHOD_BEGIN(_ILSystemSingleMethods)
-	IL_METHOD("IsNaN",			 "(f)Z",		System_Single_IsNaN)
-	IL_METHOD("TestInfinity",	 "(f)i",		System_Single_TestInfinity)
-IL_METHOD_END
-
-/*
- * Method table for the "System.Double" class.
- */
-IL_METHOD_BEGIN(_ILSystemDoubleMethods)
-	IL_METHOD("IsNaN",			 "(d)Z",		System_Double_IsNaN)
-	IL_METHOD("TestInfinity",	 "(d)i",		System_Double_TestInfinity)
-IL_METHOD_END
 
 #ifdef	__cplusplus
 };

@@ -153,6 +153,12 @@ void *ILDynLibraryOpen(const char *name);
 void  ILDynLibraryClose(void *handle);
 void *ILDynLibraryGetSymbol(void *handle, const char *symbol);
 
+/* Get the current working directory.  Free the return value with "ILFree" */
+char *ILGetCwd(void);
+
+/* Expand a filename to a full absolute pathname.  Free return with "ILFree" */
+char *ILExpandFilename(const char *filename, char *searchPath);
+
 #ifdef	__cplusplus
 };
 #endif

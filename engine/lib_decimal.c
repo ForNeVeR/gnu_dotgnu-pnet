@@ -51,9 +51,7 @@ static void ThrowDecimalDivZero(ILExecThread *thread)
 /*
  * public Decimal(float value);
  */
-static void System_Decimal_ctor_1(ILExecThread *thread,
-								  ILDecimal *_this,
-								  ILFloat value)
+void _IL_Decimal_ctor_f(ILExecThread *thread, ILDecimal *_this, ILFloat value)
 {
 	if(!ILDecimalFromFloat(_this, value))
 	{
@@ -64,9 +62,7 @@ static void System_Decimal_ctor_1(ILExecThread *thread,
 /*
  * public Decimal(double value);
  */
-static void System_Decimal_ctor_2(ILExecThread *thread,
-								  ILDecimal *_this,
-								  ILDouble value)
+void _IL_Decimal_ctor_d(ILExecThread *thread, ILDecimal *_this, ILDouble value)
 {
 	if(!ILDecimalFromDouble(_this, value))
 	{
@@ -77,8 +73,7 @@ static void System_Decimal_ctor_2(ILExecThread *thread,
 /*
  * public static float ToSingle(decimal value);
  */
-static ILFloat System_Decimal_ToSingle(ILExecThread *thread,
-									   ILDecimal *value)
+ILFloat _IL_Decimal_ToSingle(ILExecThread *thread, ILDecimal *value)
 {
 	return ILDecimalToFloat(value);
 }
@@ -86,8 +81,7 @@ static ILFloat System_Decimal_ToSingle(ILExecThread *thread,
 /*
  * public static double ToDouble(decimal value);
  */
-static ILDouble System_Decimal_ToDouble(ILExecThread *thread,
-									    ILDecimal *value)
+ILDouble _IL_Decimal_ToDouble(ILExecThread *thread, ILDecimal *value)
 {
 	return ILDecimalToDouble(value);
 }
@@ -95,10 +89,8 @@ static ILDouble System_Decimal_ToDouble(ILExecThread *thread,
 /*
  * public static decimal Add(decimal x, decimal y);
  */
-static void System_Decimal_Add(ILExecThread *thread,
-							   ILDecimal *result,
-							   ILDecimal *valuea,
-							   ILDecimal *valueb)
+void _IL_Decimal_Add(ILExecThread *thread, ILDecimal *result,
+				     ILDecimal *valuea, ILDecimal *valueb)
 {
 	if(!ILDecimalAdd(result, valuea, valueb, DECIMAL_ROUND_MODE))
 	{
@@ -109,9 +101,8 @@ static void System_Decimal_Add(ILExecThread *thread,
 /*
  * public static int Compare(decimal x, decimal y);
  */
-static ILInt32 System_Decimal_Compare(ILExecThread *thread,
-							          ILDecimal *valuea,
-							          ILDecimal *valueb)
+ILInt32 _IL_Decimal_Compare(ILExecThread *thread, ILDecimal *valuea,
+				            ILDecimal *valueb)
 {
 	return ILDecimalCmp(valuea, valueb);
 }
@@ -119,10 +110,8 @@ static ILInt32 System_Decimal_Compare(ILExecThread *thread,
 /*
  * public static decimal Divide(decimal x, decimal y);
  */
-static void System_Decimal_Divide(ILExecThread *thread,
-							      ILDecimal *result,
-							      ILDecimal *valuea,
-							      ILDecimal *valueb)
+void _IL_Decimal_Divide(ILExecThread *thread, ILDecimal *result,
+				        ILDecimal *valuea, ILDecimal *valueb)
 {
 	int divResult;
 	divResult = ILDecimalDiv(result, valuea, valueb, DECIMAL_ROUND_MODE);
@@ -139,9 +128,8 @@ static void System_Decimal_Divide(ILExecThread *thread,
 /*
  * public static decimal Floor(decimal x);
  */
-static void System_Decimal_Floor(ILExecThread *thread,
-								 ILDecimal *result,
-								 ILDecimal *value)
+void _IL_Decimal_Floor(ILExecThread *thread, ILDecimal *result,
+					   ILDecimal *value)
 {
 	ILDecimalFloor(result, value);
 }
@@ -149,10 +137,8 @@ static void System_Decimal_Floor(ILExecThread *thread,
 /*
  * public static decimal Remainder(decimal x, decimal y);
  */
-static void System_Decimal_Remainder(ILExecThread *thread,
-							         ILDecimal *result,
-							         ILDecimal *valuea,
-							         ILDecimal *valueb)
+void _IL_Decimal_Remainder(ILExecThread *thread, ILDecimal *result,
+				           ILDecimal *valuea, ILDecimal *valueb)
 {
 	int divResult;
 	divResult = ILDecimalRem(result, valuea, valueb, DECIMAL_ROUND_MODE);
@@ -169,10 +155,8 @@ static void System_Decimal_Remainder(ILExecThread *thread,
 /*
  * public static decimal Multiply(decimal x, decimal y);
  */
-static void System_Decimal_Multiply(ILExecThread *thread,
-							        ILDecimal *result,
-							        ILDecimal *valuea,
-							        ILDecimal *valueb)
+void _IL_Decimal_Multiply(ILExecThread *thread, ILDecimal *result,
+				          ILDecimal *valuea, ILDecimal *valueb)
 {
 	if(!ILDecimalMul(result, valuea, valueb, DECIMAL_ROUND_MODE))
 	{
@@ -183,9 +167,8 @@ static void System_Decimal_Multiply(ILExecThread *thread,
 /*
  * public static decimal Negate(decimal x);
  */
-static void System_Decimal_Negate(ILExecThread *thread,
-								  ILDecimal *result,
-								  ILDecimal *value)
+void _IL_Decimal_Negate(ILExecThread *thread, ILDecimal *result,
+					    ILDecimal *value)
 {
 	ILDecimalNeg(result, value);
 }
@@ -193,10 +176,8 @@ static void System_Decimal_Negate(ILExecThread *thread,
 /*
  * public static decimal Round(decimal x, int decimals);
  */
-static void System_Decimal_Round(ILExecThread *thread,
-								 ILDecimal *result,
-								 ILDecimal *value,
-								 ILInt32 decimals)
+void _IL_Decimal_Round(ILExecThread *thread, ILDecimal *result,
+					   ILDecimal *value, ILInt32 decimals)
 {
 	if(decimals < 0 || decimals > 28)
 	{
@@ -212,10 +193,8 @@ static void System_Decimal_Round(ILExecThread *thread,
 /*
  * public static decimal Subtract(decimal x, decimal y);
  */
-static void System_Decimal_Subtract(ILExecThread *thread,
-							        ILDecimal *result,
-							        ILDecimal *valuea,
-							        ILDecimal *valueb)
+void _IL_Decimal_Subtract(ILExecThread *thread, ILDecimal *result,
+				          ILDecimal *valuea, ILDecimal *valueb)
 {
 	if(!ILDecimalSub(result, valuea, valueb, DECIMAL_ROUND_MODE))
 	{
@@ -226,44 +205,11 @@ static void System_Decimal_Subtract(ILExecThread *thread,
 /*
  * public static decimal Truncate(decimal x);
  */
-static void System_Decimal_Truncate(ILExecThread *thread,
-								    ILDecimal *result,
-								    ILDecimal *value)
+void _IL_Decimal_Truncate(ILExecThread *thread, ILDecimal *result,
+					      ILDecimal *value)
 {
 	ILDecimalTruncate(result, value);
 }
-
-/*
- * Method table for the "System.Decimal" class.
- */
-IL_METHOD_BEGIN(_ILSystemDecimalMethods)
-	IL_CONSTRUCTOR(".ctor",	"(Tf)V",		System_Decimal_ctor_1, 0)
-	IL_CONSTRUCTOR(".ctor",	"(Td)V",		System_Decimal_ctor_2, 0)
-	IL_METHOD("ToSingle", "(vSystem.Decimal;)f",
-					System_Decimal_ToSingle)
-	IL_METHOD("ToDouble", "(vSystem.Decimal;)d",
-					System_Decimal_ToDouble)
-	IL_METHOD("Add", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Add)
-	IL_METHOD("Compare", "(vSystem.Decimal;vSystem.Decimal;)i",
-					System_Decimal_Compare)
-	IL_METHOD("Divide", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Divide)
-	IL_METHOD("Floor", "(vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Floor)
-	IL_METHOD("Remainder", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Remainder)
-	IL_METHOD("Multiply", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Multiply)
-	IL_METHOD("Negate", "(vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Negate)
-	IL_METHOD("Round", "(vSystem.Decimal;i)vSystem.Decimal;",
-					System_Decimal_Round)
-	IL_METHOD("Subtract", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Subtract)
-	IL_METHOD("Truncate", "(vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Truncate)
-IL_METHOD_END
 
 #ifdef	__cplusplus
 };

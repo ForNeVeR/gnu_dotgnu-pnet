@@ -108,7 +108,7 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS(string.h strings.h memory.h stdlib.h math.h fcntl.h)
 AC_CHECK_HEADERS(stdarg.h varargs.h sys/mman.h unistd.h sys/stat.h)
 AC_CHECK_HEADERS(sys/time.h sys/types.h regex.h dlfcn.h ieeefp.h)
-AC_CHECK_HEADERS(readline/readline.h readline/history.h)
+AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -132,6 +132,7 @@ AC_CHECK_FUNCS(getpid qsort regcomp re_comp unlink remove getcwd getwd)
 AC_CHECK_FUNCS(get_current_dir_name dlopen strerror fcntl ftruncate)
 AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
 AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
+AC_CHECK_FUNCS(wctomb wcrtomb mbtowc mbrtowc)
 AC_FUNC_ALLOCA
 
 dnl Configure libffi and libgc

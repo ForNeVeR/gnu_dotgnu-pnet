@@ -21,6 +21,8 @@
 #ifndef	_ENGINE_LIB_DEFS_H
 #define	_ENGINE_LIB_DEFS_H
 
+#include "il_decimal.h"
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -168,6 +170,11 @@ typedef struct
 	ILString   *name;
 
 } System_Thread;
+
+/*
+ * Prototype all of the "internalcall" methods in the engine.
+ */
+#include "int_proto.h"
 
 #ifdef	__cplusplus
 };

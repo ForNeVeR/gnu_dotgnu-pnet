@@ -21,6 +21,7 @@
 #include "engine.h"
 #include "lib_defs.h"
 #include "il_utils.h"
+#include "il_errno.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -29,8 +30,7 @@ extern	"C" {
 /*
  * public static UnicodeCategory GetUnicodeCategory(char ch);
  */
-static ILInt32 Platform_SysCharInfo_GetUnicodeCategory(ILExecThread *thread,
-													   ILUInt16 ch)
+ILInt32 _IL_SysCharInfo_GetUnicodeCategory(ILExecThread *thread, ILUInt16 ch)
 {
 	return (ILInt32)(ILGetUnicodeCategory((unsigned)ch));
 }
@@ -38,8 +38,7 @@ static ILInt32 Platform_SysCharInfo_GetUnicodeCategory(ILExecThread *thread,
 /*
  * public static double GetNumericValue(char ch);
  */
-static ILDouble Platform_SysCharInfo_GetNumericValue(ILExecThread *thread,
-													 ILUInt16 ch)
+ILDouble _IL_SysCharInfo_GetNumericValue(ILExecThread *thread, ILUInt16 ch)
 {
 	return (ILDouble)(ILGetUnicodeValue((unsigned)ch));
 }
@@ -47,7 +46,7 @@ static ILDouble Platform_SysCharInfo_GetNumericValue(ILExecThread *thread,
 /*
  * public static String GetNewLine();
  */
-static ILString *Platform_SysCharInfo_GetNewLine(ILExecThread *thread)
+ILString *_IL_SysCharInfo_GetNewLine(ILExecThread *thread)
 {
 #ifdef IL_NATIVE_WIN32
 	return ILStringCreate(thread, "\r\n");
@@ -57,23 +56,11 @@ static ILString *Platform_SysCharInfo_GetNewLine(ILExecThread *thread)
 }
 
 /*
- * Method table for the "Platform.SysCharInfo" class.
- */
-IL_METHOD_BEGIN(_ILPlatformSysCharInfoMethods)
-	IL_METHOD("GetUnicodeCategory", "(c)vSystem.Globalization.UnicodeCategory;",
-					Platform_SysCharInfo_GetUnicodeCategory)
-	IL_METHOD("GetNumericValue", "(c)d",
-					Platform_SysCharInfo_GetNumericValue)
-	IL_METHOD("GetNewLine", "()oSystem.String;",
-					Platform_SysCharInfo_GetNewLine)
-IL_METHOD_END
-
-/*
  * public static long GetCurrentTime();
  *
  * This returns the time since 12:00 Jan 1, 0001 in tenths of a microsecond.
  */
-static ILInt64 Platform_TimeMethods_GetCurrentTime(ILExecThread *thread)
+ILInt64 _IL_TimeMethods_GetCurrentTime(ILExecThread *thread)
 {
 	ILCurrTime timeValue;
 	ILGetCurrTime(&timeValue);
@@ -87,7 +74,7 @@ static ILInt64 Platform_TimeMethods_GetCurrentTime(ILExecThread *thread)
  *
  * This returns UTC time since 12:00 Jan 1, 0001 in tenths of a microsecond.
  */
-static ILInt64 Platform_TimeMethods_GetCurrentUtcTime(ILExecThread *thread)
+ILInt64 _IL_TimeMethods_GetCurrentUtcTime(ILExecThread *thread)
 {
 	ILCurrTime timeValue;
 	ILGetCurrTime(&timeValue);
@@ -100,7 +87,7 @@ static ILInt64 Platform_TimeMethods_GetCurrentUtcTime(ILExecThread *thread)
  *
  * This returns the number of seconds West of GMT for the local timezone.
  */
-static ILInt32 Platform_TimeMethods_GetTimeZoneAdjust(ILExecThread *thread)
+ILInt32 _IL_TimeMethods_GetTimeZoneAdjust(ILExecThread *thread)
 {
 	return ILGetTimeZoneAdjust();
 }
@@ -113,7 +100,7 @@ static ILInt32 Platform_TimeMethods_GetTimeZoneAdjust(ILExecThread *thread)
  * available on Unix-style systems, so we may have to use the
  * number of milliseconds since the engine was started instead.
  */
-static ILInt32 Platform_TimeMethods_GetUpTime(ILExecThread *thread)
+ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread *thread)
 {
 	ILCurrTime timeValue;
 	if(!ILGetSinceRebootTime(&timeValue))
@@ -140,21 +127,9 @@ static ILInt32 Platform_TimeMethods_GetUpTime(ILExecThread *thread)
 }
 
 /*
- * Method table for the "Platform.TimeMethods" class.
- */
-IL_METHOD_BEGIN(_ILPlatformTimeMethods)
-	IL_METHOD("GetCurrentTime", "()l", Platform_TimeMethods_GetCurrentTime)
-	IL_METHOD("GetCurrentUtcTime", "()l",
-			  Platform_TimeMethods_GetCurrentUtcTime)
-	IL_METHOD("GetTimeZoneAdjust", "()i",
-			  Platform_TimeMethods_GetTimeZoneAdjust)
-	IL_METHOD("GetUpTime", "()i", Platform_TimeMethods_GetUpTime)
-IL_METHOD_END
-
-/*
  * public static void Exit(int exitCode);
  */
-static void Platform_TaskMethods_Exit(ILExecThread *thread, ILInt32 exitCode)
+void _IL_TaskMethods_Exit(ILExecThread *thread, ILInt32 exitCode)
 {
 	exit((int)(exitCode & 0xFF));
 }
@@ -162,8 +137,7 @@ static void Platform_TaskMethods_Exit(ILExecThread *thread, ILInt32 exitCode)
 /*
  * public static void SetExitCode(int exitCode);
  */
-static void Platform_TaskMethods_SetExitCode(ILExecThread *thread,
-											 ILInt32 exitCode)
+void _IL_TaskMethods_SetExitCode(ILExecThread *thread, ILInt32 exitCode)
 {
 	thread->process->exitStatus = exitCode;
 }
@@ -171,7 +145,7 @@ static void Platform_TaskMethods_SetExitCode(ILExecThread *thread,
 /*
  * public static String[] GetCommandLineArgs();
  */
-static ILObject *Platform_TaskMethods_GetCommandLineArgs(ILExecThread *thread)
+System_Array *_IL_TaskMethods_GetCommandLineArgs(ILExecThread *thread)
 {
 	/* TODO */
 	return 0;
@@ -180,8 +154,8 @@ static ILObject *Platform_TaskMethods_GetCommandLineArgs(ILExecThread *thread)
 /*
  * public static String GetEnvironmentVariable(String name);
  */
-static ILString *Platform_TaskMethods_GetEnvironmentVariable
-			(ILExecThread *thread, ILString *name)
+ILString *_IL_TaskMethods_GetEnvironmentVariable
+				(ILExecThread *thread, ILString *name)
 {
 	char *nameAnsi = ILStringToAnsi(thread, name);
 	char *env;
@@ -204,7 +178,7 @@ extern char **environ;
 /*
  * public static int GetEnvironmentCount();
  */
-static ILInt32 Platform_TaskMethods_GetEnvironmentCount(ILExecThread *thread)
+ILInt32 _IL_TaskMethods_GetEnvironmentCount(ILExecThread *thread)
 {
 	ILInt32 count = 0;
 	char **env = environ;
@@ -219,10 +193,9 @@ static ILInt32 Platform_TaskMethods_GetEnvironmentCount(ILExecThread *thread)
 /*
  * public static String GetEnvironmentKey(int posn);
  */
-static ILString *Platform_TaskMethods_GetEnvironmentKey
-			(ILExecThread *thread, ILInt32 posn)
+ILString *_IL_TaskMethods_GetEnvironmentKey(ILExecThread *thread, ILInt32 posn)
 {
-	ILInt32 count = Platform_TaskMethods_GetEnvironmentCount(thread);
+	ILInt32 count = _IL_TaskMethods_GetEnvironmentCount(thread);
 	char *env;
 	int len;
 	if(posn >= 0 && posn < count)
@@ -244,10 +217,10 @@ static ILString *Platform_TaskMethods_GetEnvironmentKey
 /*
  * public static String GetEnvironmentValue(int posn);
  */
-static ILString *Platform_TaskMethods_GetEnvironmentValue
-			(ILExecThread *thread, ILInt32 posn)
+ILString *_IL_TaskMethods_GetEnvironmentValue(ILExecThread *thread,
+											  ILInt32 posn)
 {
-	ILInt32 count = Platform_TaskMethods_GetEnvironmentCount(thread);
+	ILInt32 count = _IL_TaskMethods_GetEnvironmentCount(thread);
 	char *env;
 	int len;
 	if(posn >= 0 && posn < count)
@@ -271,24 +244,6 @@ static ILString *Platform_TaskMethods_GetEnvironmentValue
 }
 
 /*
- * Method table for the "Platform.TaskMethods" class.
- */
-IL_METHOD_BEGIN(_ILPlatformTaskMethods)
-	IL_METHOD("Exit", "(i)V", Platform_TaskMethods_Exit)
-	IL_METHOD("SetExitCode", "(i)V", Platform_TaskMethods_SetExitCode)
-	IL_METHOD("GetCommandLineArgs", "()[oSystem.String;",
-			  Platform_TaskMethods_GetCommandLineArgs)
-	IL_METHOD("GetEnvironmentVariable", "(oSystem.String;)oSystem.String;",
-			  Platform_TaskMethods_GetEnvironmentVariable)
-	IL_METHOD("GetEnvironmentCount", "()i",
-			  Platform_TaskMethods_GetEnvironmentCount)
-	IL_METHOD("GetEnvironmentKey", "(i)oSystem.String;",
-			  Platform_TaskMethods_GetEnvironmentKey)
-	IL_METHOD("GetEnvironmentValue", "(i)oSystem.String;",
-			  Platform_TaskMethods_GetEnvironmentValue)
-IL_METHOD_END
-
-/*
  * Structure of the "Platform.PathInfo" class.
  */
 typedef struct
@@ -304,8 +259,7 @@ typedef struct
 /*
  * public static PathInfo GetPathInfo();
  */
-static void Platform_DirMethods_GetPathInfo(ILExecThread *thread,
-											void *result)
+void _IL_DirMethods_GetPathInfo(ILExecThread *thread, void *result)
 {
 	Platform_PathInfo *info = (Platform_PathInfo *)result;
 #if defined(_WIN32) || defined(WIN32)
@@ -326,21 +280,71 @@ static void Platform_DirMethods_GetPathInfo(ILExecThread *thread,
 /*
  * public static String GetSystemDirectory();
  */
-static ILString *Platform_DirMethods_GetSystemDirectory(ILExecThread *thread)
+ILString *_IL_DirMethods_GetSystemDirectory(ILExecThread *thread)
 {
 	/* We don't support system directories on this platform */
 	return 0;
 }
 
 /*
- * Method table for the "Platform.DirMethods" class.
+ * public static Errno GetLastAccess(String path, out long lastac);
  */
-IL_METHOD_BEGIN(_ILPlatformDirMethods)
-	IL_METHOD("GetPathInfo", "()vPlatform.PathInfo;",
-			  Platform_DirMethods_GetPathInfo)
-	IL_METHOD("GetSystemDirectory", "()oSystem.String;",
-			  Platform_DirMethods_GetSystemDirectory)
-IL_METHOD_END
+ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread *_thread,
+									 ILString *path, ILInt64 *lastac)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno GetLastModification(String path, out long last_mod);
+ */
+ILInt32 _IL_DirMethods_GetLastModification(ILExecThread *_thread,
+										   ILString *path, ILInt64 *last_mod)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno GetCreationTime(String path, out long create_time);
+ */
+ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread *_thread,
+									   ILString *path, ILInt64 *create_time)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno Copy(String src, String dest);
+ */
+ILInt32 _IL_DirMethods_Copy(ILExecThread *_thread,
+							ILString *src, ILString *dest)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno Delete(String path);
+ */
+ILInt32 _IL_DirMethods_Delete(ILExecThread *_thread, ILString *path)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
+/*
+ * public static Errno Rename(String old_name, String new_name);
+ */
+ILInt32 _IL_DirMethods_Rename(ILExecThread *_thread,
+							  ILString *old_name,
+							  ILString *new_name)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
 
 #ifdef	__cplusplus
 };

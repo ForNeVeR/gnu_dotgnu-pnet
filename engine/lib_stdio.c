@@ -1,7 +1,7 @@
 /*
- * lib_stdin.c - Internalcall methods for "Platform.Stdio".
+ * lib_stdio.c - Internalcall methods for "Platform.Stdio".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,8 +41,7 @@ extern	"C" {
 /*
  * public static void StdClose(int fd);
  */
-static void Platform_Stdio_StdClose(ILExecThread *thread,
-									ILInt32 fd)
+void _IL_Stdio_StdClose(ILExecThread *thread, ILInt32 fd)
 {
 	/* We don't currently do anything as allowing programs
 	   to close stdin/stdout/stderr is fraught with danger */
@@ -51,8 +50,7 @@ static void Platform_Stdio_StdClose(ILExecThread *thread,
 /*
  * public static void StdFlush(int fd);
  */
-static void Platform_Stdio_StdFlush(ILExecThread *thread,
-									ILInt32 fd)
+void _IL_Stdio_StdFlush(ILExecThread *thread, ILInt32 fd)
 {
 	switch(fd)
 	{
@@ -65,8 +63,7 @@ static void Platform_Stdio_StdFlush(ILExecThread *thread,
 /*
  * public static void StdWrite(int fd, char value);
  */
-static void Platform_Stdio_StdWrite_1(ILExecThread *thread,
-									  ILInt32 fd, ILUInt16 value)
+void _IL_Stdio_StdWrite_ic(ILExecThread *thread, ILInt32 fd, ILUInt16 value)
 {
 	switch(fd)
 	{
@@ -103,21 +100,35 @@ static void StdWrite(ILInt32 fd, ILUInt16 *buf, ILInt32 length)
 /*
  * public static void StdWrite(int fd, char[] value, int index, int count);
  */
-static void Platform_Stdio_StdWrite_2(ILExecThread *thread,
-									  ILInt32 fd,
-									  System_Array *value,
-									  ILInt32 index,
-									  ILInt32 count)
+void _IL_Stdio_StdWrite_iacii(ILExecThread *thread, ILInt32 fd,
+							  System_Array *value, ILInt32 index,
+							  ILInt32 count)
 {
 	StdWrite(fd, ((ILUInt16 *)ArrayToBuffer(value)) + index, count);
 }
 
 /*
+ * public static void StdWrite(int fd, byte[] value, int index, int count);
+ */
+void _IL_Stdio_StdWrite_iaBii(ILExecThread *thread, ILInt32 fd,
+							  System_Array *value, ILInt32 index,
+							  ILInt32 count)
+{
+	if(fd == 1)
+	{
+		fwrite(((ILUInt8 *)ArrayToBuffer(value)) + index, 1, count, stdout);
+	}
+	else if(fd == 2)
+	{
+		fwrite(((ILUInt8 *)ArrayToBuffer(value)) + index, 1, count, stderr);
+	}
+}
+
+/*
  * public static void StdWrite(int fd, String value)
  */
-static void Platform_Stdio_StdWrite_3(ILExecThread *thread,
-									  ILInt32 fd,
-									  ILString *value)
+void _IL_Stdio_StdWrite_iString(ILExecThread *thread, ILInt32 fd,
+								ILString *value)
 {
 	if(value != 0)
 	{
@@ -130,8 +141,7 @@ static void Platform_Stdio_StdWrite_3(ILExecThread *thread,
 /*
  * public static int StdRead(int fd);
  */
-static ILInt32 Platform_Stdio_StdRead_1(ILExecThread *thread,
-									    ILInt32 fd)
+ILInt32 _IL_Stdio_StdRead_i(ILExecThread *thread, ILInt32 fd)
 {
 	if(fd == 0)
 	{
@@ -146,20 +156,29 @@ static ILInt32 Platform_Stdio_StdRead_1(ILExecThread *thread,
 /*
  * public static int StdRead(int fd, char[] value, int index, int count);
  */
-static ILInt32 Platform_Stdio_StdRead_2(ILExecThread *thread,
-									    ILInt32 fd,
-										System_Array *value,
-										ILInt32 index,
-										ILInt32 count)
+ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread *thread, ILInt32 fd,
+								System_Array *value, ILInt32 index,
+								ILInt32 count)
 {
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static int StdRead(int fd, byte[] value, int index, int count);
+ */
+ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread *thread, ILInt32 fd,
+								System_Array *value, ILInt32 index,
+								ILInt32 count)
+{
+	/* TODO */
 	return 0;
 }
 
 /*
  * public static int StdPeek(int fd);
  */
-static ILInt32 Platform_Stdio_StdPeek(ILExecThread *thread,
-									  ILInt32 fd)
+ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
 {
 	if(fd == 0)
 	{
@@ -175,20 +194,6 @@ static ILInt32 Platform_Stdio_StdPeek(ILExecThread *thread,
 		return -1;
 	}
 }
-
-/*
- * Method table for the "Platform.Stdio" class.
- */
-IL_METHOD_BEGIN(_ILPlatformStdioMethods)
-	IL_METHOD("StdClose",	 "(i)V",		Platform_Stdio_StdClose)
-	IL_METHOD("StdFlush",	 "(i)V",		Platform_Stdio_StdFlush)
-	IL_METHOD("StdWrite",	 "(ic)V",		Platform_Stdio_StdWrite_1)
-	IL_METHOD("StdWrite",	 "(i[cii)V",	Platform_Stdio_StdWrite_2)
-	IL_METHOD("StdWrite",	 "(ioSystem.String;)V",	Platform_Stdio_StdWrite_3)
-	IL_METHOD("StdRead",	 "(i)i",		Platform_Stdio_StdRead_1)
-	IL_METHOD("StdRead",	 "(i[cii)i",	Platform_Stdio_StdRead_2)
-	IL_METHOD("StdPeek",	 "(i)i",		Platform_Stdio_StdPeek)
-IL_METHOD_END
 
 #ifdef	__cplusplus
 };

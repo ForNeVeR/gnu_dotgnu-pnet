@@ -32,7 +32,7 @@ extern	"C" {
 /*
  * private static bool InternalIsAttached();
  */
-static ILBool Debugger_InternalIsAttached(ILExecThread *thread)
+ILBool _IL_Debugger_InternalIsAttached(ILExecThread *thread)
 {
 	/* Debugging is not yet supported */
 	return 0;
@@ -41,7 +41,7 @@ static ILBool Debugger_InternalIsAttached(ILExecThread *thread)
 /*
  * public static void Break();
  */
-static void Debugger_Break(ILExecThread *thread)
+void _IL_Debugger_Break(ILExecThread *thread)
 {
 	/* Debugging is not yet supported */
 }
@@ -49,7 +49,7 @@ static void Debugger_Break(ILExecThread *thread)
 /*
  * public static bool IsLogging();
  */
-static ILBool Debugger_IsLogging(ILExecThread *thread)
+ILBool _IL_Debugger_IsLogging(ILExecThread *thread)
 {
 	/* Debugging is not yet supported */
 	return 0;
@@ -58,7 +58,7 @@ static ILBool Debugger_IsLogging(ILExecThread *thread)
 /*
  * private static bool InternalLaunch();
  */
-static ILBool Debugger_InternalLaunch(ILExecThread *thread)
+ILBool _IL_Debugger_InternalLaunch(ILExecThread *thread)
 {
 	/* Debugging is not yet supported */
 	return 0;
@@ -67,22 +67,11 @@ static ILBool Debugger_InternalLaunch(ILExecThread *thread)
 /*
  * public static void Log(int level, String category, String message);
  */
-static void Debugger_Log(ILExecThread *thread, ILInt32 level,
-						 ILString *category, ILString *message)
+void _IL_Debugger_Log(ILExecThread *thread, ILInt32 level,
+					  ILString *category, ILString *message)
 {
 	/* Debugging is not yet supported */
 }
-
-/*
- * Method table for the "System.Diagnostics.Debugger" class.
- */
-IL_METHOD_BEGIN(_ILDiagnosticsDebuggerMethods)
-	IL_METHOD("InternalIsAttached", "()Z", Debugger_InternalIsAttached)
-	IL_METHOD("Break", "()V", Debugger_Break)
-	IL_METHOD("IsLogging", "()Z", Debugger_IsLogging)
-	IL_METHOD("InternalLaunch", "()Z", Debugger_InternalLaunch)
-	IL_METHOD("Log", "(ioSystem.String;oSystem.String;)V", Debugger_Log)
-IL_METHOD_END
 
 /*
  * System.Diagnostics.StackFrame class.
@@ -91,7 +80,7 @@ IL_METHOD_END
 /*
  * private static int InternalGetTotalFrames();
  */
-static ILInt32 StackFrame_InternalGetTotalFrames(ILExecThread *thread)
+ILInt32 _IL_StackFrame_InternalGetTotalFrames(ILExecThread *thread)
 {
 	ILInt32 num = 0;
 	ILCallFrame *frame = _ILGetCallFrame(thread, 0);
@@ -106,8 +95,8 @@ static ILInt32 StackFrame_InternalGetTotalFrames(ILExecThread *thread)
 /*
  * private static RuntimeMethodHandle InternalGetMethod(int skipFrames);
  */
-static void StackFrame_InternalGetMethod(ILExecThread *thread,
-										 void *result, ILInt32 skipFrames)
+void _IL_StackFrame_InternalGetMethod(ILExecThread *thread,
+									  void *result, ILInt32 skipFrames)
 {
 	ILCallFrame *frame = _ILGetCallFrame(thread, skipFrames);
 	if(frame)
@@ -123,8 +112,8 @@ static void StackFrame_InternalGetMethod(ILExecThread *thread,
 /*
  * private static int InternalGetILOffset(ILInt32 skipFrames);
  */
-static ILInt32 StackFrame_InternalGetILOffset(ILExecThread *thread,
-											  ILInt32 skipFrames)
+ILInt32 _IL_StackFrame_InternalGetILOffset(ILExecThread *thread,
+										   ILInt32 skipFrames)
 {
 	/* Debug symbol information is not yet supported */
 	return -1;
@@ -133,8 +122,8 @@ static ILInt32 StackFrame_InternalGetILOffset(ILExecThread *thread,
 /*
  * private static int InternalGetNativeOffset(ILInt32 skipFrames);
  */
-static ILInt32 StackFrame_InternalGetNativeOffset(ILExecThread *thread,
-											      ILInt32 skipFrames)
+ILInt32 _IL_StackFrame_InternalGetNativeOffset(ILExecThread *thread,
+											   ILInt32 skipFrames)
 {
 	ILCallFrame *frame = _ILGetCallFrame(thread, skipFrames);
 	if(frame)
@@ -152,11 +141,9 @@ static ILInt32 StackFrame_InternalGetNativeOffset(ILExecThread *thread,
  *											  int offset,
  *											  out int line, out int col);
  */
-static ILString *StackFrame_InternalGetDebugInfo(ILExecThread *thread,
-											     void *method,
-												 ILInt32 offset,
-												 ILInt32 *line,
-												 ILInt32 *col)
+ILString *_IL_StackFrame_InternalGetDebugInfo
+				(ILExecThread *thread, void *method, ILInt32 offset,
+				 ILInt32 *line, ILInt32 *col)
 {
 	/* Debug symbol information is not yet supported */
 	*line = 0;
@@ -178,7 +165,7 @@ typedef struct
 /*
  * internal static PackedStackFrame[] GetExceptionStackTrace();
  */
-static ILObject *StackFrame_GetExceptionStackTrace(ILExecThread *thread)
+System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 {
 	ILInt32 num;
 	ILInt32 skipFrames;
@@ -248,28 +235,8 @@ static ILObject *StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 	}
 
 	/* Done */
-	return array;
+	return (System_Array *)array;
 }
-
-/*
- * Method table for the "System.Diagnostics.StackFrame" class.
- */
-IL_METHOD_BEGIN(_ILDiagnosticsStackFrameMethods)
-	IL_METHOD("InternalGetTotalFrames", "()i",
-			  StackFrame_InternalGetTotalFrames)
-	IL_METHOD("InternalGetMethod", "(i)vSystem.RuntimeMethodHandle;",
-			  StackFrame_InternalGetMethod)
-	IL_METHOD("InternalGetILOffset", "(i)i",
-			  StackFrame_InternalGetILOffset)
-	IL_METHOD("InternalGetNativeOffset", "(i)i",
-			  StackFrame_InternalGetNativeOffset)
-	IL_METHOD("InternalGetDebugInfo",
-			  "(vSystem.RuntimeMethodHandle;i&i&i)oSystem.String;",
-			  StackFrame_InternalGetDebugInfo)
-	IL_METHOD("GetExceptionStackTrace",
-			  "()[vSystem.Diagnostics.PackedStackFrame;",
-			  StackFrame_GetExceptionStackTrace)
-IL_METHOD_END
 
 #ifdef	__cplusplus
 };

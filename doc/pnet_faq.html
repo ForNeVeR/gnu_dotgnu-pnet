@@ -6,9 +6,9 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/11/26 02:22:46 $<p>
+Last Modified: $Date: 2002/04/01 05:23:22 $<p>
 
-Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Copyright &copy; 2001, 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
 
 <h2>Index</h2>
@@ -18,28 +18,58 @@ Permission to distribute unmodified copies of this work is hereby granted.<p>
 &nbsp;&nbsp;&nbsp;&nbsp;1.2. <a href="#q1_2">What is pnetlib?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;1.3. <a href="#q1_3">What is treecc?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;1.4. <a href="#q1_4">What is PNetMark?</a><br>
-2. <a href="#q2">C# compiler questions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.1. <a href="#q2_1">Why not write the compiler tools in C#?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.2. <a href="#q2_2">If the compiler was written in C#, wouldn't reuse be easier?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.3. <a href="#q2_3">I've heard that you can compile C# to the JVM.  Is that correct?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;2.4. <a href="#q2_4">Why don't you use gcc as the basis for your C# compiler?</a><br>
-3. <a href="#q4">Copyright issues</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;3.1. <a href="#q4_1">Why isn't the C# library LGPL?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;3.2. <a href="#q4_2">Who owns the Copyright on patches?</a><br>
-4. <a href="#q4">How can I help?</a><br>
-5. <a href="#q5">CVS, versions, patches, etc</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;5.1. <a href="#q5_1">How do I access the source via CVS?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;5.2. <a href="#q5_2">What is with the version numbers?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;5.3. <a href="#q5_3">I have a patch.  What should I do now?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;5.4. <a href="#q5_4">Coding conventions</a><br>
-6. <a href="#q6">Standards</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;6.1. <a href="#q6_1">Where are the ECMA standards?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;6.2. <a href="#q6_2">Why do you have more classes than ECMA specifies?</a><br>
-7. <a href="#q7">Other .NET Efforts</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;7.1. <a href="#q7_1">Mono</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;7.2. <a href="#q7_2">Why not co-operate with Mono?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;7.3. <a href="#q7_1">OCL</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;7.4. <a href="#q7_3">What other free software and open source .NET efforts are there?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.5. <a href="#q1_5">What is pnetcurses?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.6. <a href="#q1_6">What is cscctest?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;1.7. <a href="#q1_7">What do all these acronyms mean?  IL, CLI, CLR?</a><br>
+2. <a href="#q2">Using the runtime engine</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.1. <a href="#q2_1">How do I run IL programs?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.2. <a href="#q2_2">Can I avoid typing "ilrun"?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.3. <a href="#q2_3">I've registered "ilrun", but it is running the wrong version.  Why?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;2.4. <a href="#q2_4">Can I use "ilrun" and Wine together?</a><br>
+3. <a href="#q3">C# compiler questions</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.1. <a href="#q3_1">How do I use the C# compiler?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.2. <a href="#q3_2">The compiled pnetlib does not work.  What is wrong?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.3. <a href="#q3_3">Why not write the compiler tools in C#?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.4. <a href="#q3_4">If the compiler was written in C#, wouldn't reuse be easier?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.5. <a href="#q3_5">How do I write a compiler plug-in?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.6. <a href="#q3_6">I've heard that you can compile C# to the JVM.  Is that correct?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;3.7. <a href="#q3_7">Why don't you use gcc as the basis for your C# compiler?</a><br>
+4. <a href="#q4">Other tools</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.1. <a href="#q4_1">How do I assemble .il files?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.2. <a href="#q4_2">How do I disassemble IL binaries?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.3. <a href="#q4_3">Does your disassembler and assembler support round-tripping?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.4. <a href="#q4_4">How do I convert resources?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.5. <a href="#q4_5">How do I extract documentation from C# sources?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.6. <a href="#q4_6">Can I build applications without "make"?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.7. <a href="#q4_7">What other tools do you have?</a><br>
+5. <a href="#q5">Copyright issues</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;5.1. <a href="#q5_1">Why isn't the C# library LGPL?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;5.2. <a href="#q5_2">Who owns the Copyright on patches?</a><br>
+6. <a href="#q6">How can I help?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;6.1. <a href="#q6_1">What areas need the most work?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;6.2. <a href="#q6_2">What is the latest status of pnetlib?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;6.3. <a href="#q6_3">What else is there?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;6.4. <a href="#q6_4">Do you have a mailing list for developers?</a><br>
+7. <a href="#q7">CVS, versions, patches, etc</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.1. <a href="#q7_1">How do I access the source via CVS?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.2. <a href="#q7_2">What is with the version numbers?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.3. <a href="#q7_3">I have a patch.  What should I do now?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;7.4. <a href="#q7_4">What coding conventions should I follow?</a><br>
+8. <a href="#q8">Standards</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;8.1. <a href="#q8_1">Where are the ECMA standards?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;8.2. <a href="#q8_2">Why do you have more classes than ECMA specifies?</a><br>
+9. <a href="#q9">Other .NET efforts</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;9.1. <a href="#q9_1">What is Mono?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;9.2. <a href="#q9_2">What is the relationship with Mono?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;9.3. <a href="#q9_3">What is OCL?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;9.4. <a href="#q9_4">What is Rotor?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;9.5. <a href="#q9_5">Can I look at the Rotor code?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;9.6. <a href="#q9_6">What other free software and open source .NET efforts are there?</a><br>
+10. <a href="#q10">Other random questions</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;10.1. <a href="#q10_1">Can I use ASP.NET with DotGNU Portable.NET?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;10.2. <a href="#q10_2">Why doesn't my C++ application work that I built with Visual Studio.NET?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;10.3. <a href="#q10_3">Why don't you just use Java?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;10.4. <a href="#q10_4">Isn't C# just a cheap knock-off of Java?</a><br>
 
 <a name="q1"><h2>1. What is DotGNU Portable.NET?</h2>
 
@@ -70,17 +100,18 @@ The C# system library was split off from the main source distribution
 during the early phases of development.  The main reason for this was
 to enable other free software .NET efforts to reuse the code.<p>
 
-Note: It isn't possible to compiler pnetlib with DotGNU Portable.NET's
-C# compiler yet.  The compiler can perform a syntax check, but not
+Note: It isn't possible to compile pnetlib with DotGNU Portable.NET's
+C# compiler just yet.  The compiler can perform a syntax check, but not
 a full compile.  A pre-compiled version of the library is distributed
 with "pnet" as "<code>samples/mscorlib.dll</code>".  If you wish to
-modify the library, you will need to use Microsoft's C# compiler.<p>
+modify the library, you will need to use Microsoft's C# compiler.
+This situation should be rectified soon.<p>
 
 <a name="q1_3"><h3>1.3. What is treecc?</h3>
 
-Treecc is a tool that we wrote to assist in the development of cscc.
-It complements flex and bison by providing support for abstract syntax
-tree creation and manipulation.<p>
+Treecc is a aspect-oriented programming tool that we wrote to assist in
+the development of cscc.  It complements flex and bison by providing
+support for abstract syntax tree creation and manipulation.<p>
 
 Treecc performs most of the housekeeping within the core of the compiler,
 allowing the programmer to concentrate on the specifics of language
@@ -124,9 +155,188 @@ Thus, you can run the benchmark if you like, but you must keep the
 results to yourself.  If you don't like this, then you will have to
 take it up with Microsoft's lawyers.<p>
 
-<a name="q2"><h2>2. C# compiler questions</h2>
+<a name="q1_5"><h3>1.5. What is pnetcurses?</h3>
 
-<a name="q2_1"><h3>2.1. Why not write the compiler tools in C#?</h3>
+Pnetcurses is an example package, demonstrating how to wrap up an
+existing system library (ncurses in this case) using the PInvoke
+mechanism.<p>
+
+The package also includes the infamous "Curse of Frogger" video
+game, written in C# and utilising ncurses to provide display output.<p>
+
+<a name="q1_6"><h3>1.6. What is cscctest?</h3>
+
+The regression test suite for the C# compiler is distributed via
+CVS as the module "<code>cscctest</code>".<p>
+
+<a name="q1_7"><h3>1.7. What do all these acronyms mean?  IL, CLI, CLR?</h3>
+
+<dl>
+<dt>IL</dt>
+	<dd>Intermedate Language.  This is the bytecode format that is used
+		to represent compiled programs.  It has sufficient instructions
+		to support many programming languages, including C#.</dd>
+<dt>CIL</dt>
+	<dd>Common Intermedate Language.  This term is used in the ECMA
+		standards.  Prior to ECMA standardisation, it was known as IL.
+		We use the two acronyms interchangeably.</dd>
+<dt>MSIL</dt>
+	<dd>Microsoft Intermediate Language.  This is exactly the same as
+		CIL, but some media reports have called it "MSIL" for
+		some reason.</dd>
+<dt>CTS</dt>
+	<dd>Common Type System.  The standard type system that is used
+		to represent programming language constructs such as objects
+		and types.  A language doesn't have to use the CTS, but doing
+		so improves interoperability.</dd>
+<dt>CLS</dt>
+	<dd>Common Language Specification.  A set of conventions for types
+		and libraries that promote interoperability between programming
+		languages.</dd>
+<dt>CLR</dt>
+	<dd>Common Language Runtime.  The engine that executes CIL programs.
+		In DotGNU Portable.NET's case, this is the "<code>ilrun</code>"
+		program.</dd>
+<dt>CLI</dt>
+	<dd>Common Language Infrastructure.  The complete system, comprising
+		CIL, CTS, CLS, and CLR.</dd>
+<dt>C#</dt>
+	<dd>Pronounced "C-Sharp".  The primary programming language that is
+		used with the CLI, but by no means the only such language.</dd>
+<dt>PE/COFF</dt>
+	<dd>Portable Executable / Common Object File Format.  This is the
+		binary format used by 32-bit Windows to represent compiled
+		applications.  The CLI extends PE/COFF with new sections
+		containing CIL definitions.</dd>
+<dt>ECMA</dt>
+	<dd>European Computer Manufacturer's Association.  The standards
+		body that Microsoft has chosen to standardise CLI.</dd>
+</dl>
+
+<a name="q2"><h2>2. Using the runtime engine</h2>
+
+<a name="q2_1"><h3>2.1. How do I run IL programs?</h3>
+
+IL programs are executed using the "<code>ilrun</code> program, as
+follows:
+
+<blockquote><code>ilrun hello.exe</code></blockquote>
+
+The "<code>.exe</code>" extension is not required: you can rename the
+program to "<code>hello</code>" if you wish.<p>
+
+If the IL program has command-line options, they can be supplied after
+the name of the IL executable:<p>
+
+<blockquote><code>ilrun getenv.exe PATH</code></blockquote>
+
+Most IL programs will rely upon the "<code>mscorlib.dll</code>" file
+to provide library facilities.  A pre-compiled version of this file
+can be found in the "<code>samples</code>" directory on the
+"<code>pnet</code>" distribution.<p>
+
+The "<code>mscorlib.dll</code>" file should either be placed in the
+same directory as the program you are running, or in the system-wide
+location "<code>PREFIX/lib/cscc/lib</code>", where "<code>PREFIX</code>"
+is the directory where you installed DotGNU Portable.NET
+(e.g. "<code>/usr/local</code>").
+
+<a name="q2_2"><h3>2.2. Can I avoid typing "ilrun"?</h3>
+
+If your operating system uses the Linux kernel, and you have root access,
+then you can avoid typing "<code>ilrun</code>" to execute programs
+from the command-line.<p>
+
+You must first register "<code>ilrun</code>" with the Linux
+kernel, by executing the following command as root:
+
+<blockquote><code>ilrun --register</code></blockquote>
+
+Then you can run programs as follows:
+
+<blockquote><code>chmod +x hello.exe<br>
+./hello.exe</code></blockquote>
+
+This will also work if you rename "<code>hello.exe</code>" to
+"<code>hello</code>", and then place it somewhere on your
+<code>PATH</code>.<p>
+
+To unregister "<code>ilrun</code>", execute the following command
+as root:
+
+<blockquote><code>ilrun --unregister</code></blockquote>
+
+Note: registration will only work with the Linux kernel (versions 2.2
+and later), and when you are logged in as root.<p>
+
+<a name="q2_3"><h3>2.3. I've registered "ilrun", but it is running the wrong version.  Why?</h3>
+
+When you register "<code>ilrun</code>", it attempts to construct the
+full path of the engine to pass to the kernel.  Normally it does this
+by searching the <code>PATH</code>.  You can specify an explicit
+pathname as follows:
+
+<blockquote><code>ilrun --register /usr/local/bin/ilrun</code></blockquote>
+
+<a name="q2_4"><h3>2.4. Can I use "ilrun" and Wine together?</h3>
+
+Because IL programs have a similar format to regular PE/COFF Windows
+executables, it is not always clear whether a program should be executed
+with "<code>ilrun</code>" or with "<code>wine</code>".<p>
+
+If you pass a regular Windows executable to "<code>ilrun</code>", it will hand
+off control to "<code>wine</code>" to run the program.  It uses the first
+executable called "<code>wine</code>" on the <code>PATH</code>.<p>
+
+If your Wine installation is not on the <code>PATH</code>, you can set the
+<code>WINE</code> environment variable to specify its location.<p>
+
+Wine also has facilities for registering itself with the Linux kernel to
+run PE/COFF executables.  Only one PE/COFF handler can be registered
+at a time.  It is important that "<code>ilrun</code>" be registered as the 
+primary PE/COFF handler, because Wine does not currently know how 
+to hand off IL programs to "<code>ilrun</code>".<p>
+
+<a name="q3"><h2>3. C# compiler questions</h2>
+
+<a name="q3_1"><h3>3.1. How do I use the C# compiler?</h3>
+
+The C# compiler is called "<code>cscc</code>".  It's command-line
+syntax is very similar to that of gcc.  For example, to compile
+a simple program, you might use:
+
+<blockquote><code>cscc -o hello.exe hello.cs</code></blockquote>
+
+Most applications need the "<code>mscorlib.dll</code>" file to
+provide common library classes.  See question <a href="#q2_1">2.1</a>
+for a description of where to get this file and how to install it.<p>
+
+The following are the most common command-line options for the
+compiler:
+
+<blockquote>
+<dl>
+<dt><code>-o file</code></dt>
+	<dd>Write the compiler's output to "<code>file</code>".</dd>
+<dt><code>-Dname</code></dt>
+	<dd>Define the pre-processor symbol "<code>name</code>" to
+		"<code>true</code>".</dd>
+<dt><code>-Ldir</code></dt>
+	<dd>Add "<code>dir</code>" to the path to be searched for libraries.</dd>
+<dt><code>-lname</code></dt>
+	<dd>Add "<code>name.dll</code>" to the list of libraries to add to
+		the link line.</dd>
+<dt><code>-vv</code></dt>
+	<dd>Print the names of other commands that the compiler executes
+		(plug-ins, assembler, and linker).</dd>
+</dl>
+</blockquote>
+
+Note: the compiler is still a work in progress, so some language
+features may not work as expected.  Contact the authors if you
+find any such problems.<p>
+
+<a name="q3_2"><h3>3.2. Why not write the compiler tools in C#?</h3>
 
 The main reason is the "chicken and egg" problem.  We wouldn't be
 able to run the compiler until the runtime engine and the
@@ -152,31 +362,44 @@ you must trust that the bootstrapped binary version of the compiler
 does not have any back doors.  Inspecting the source code is not
 sufficient to perform a full security audit.<p>
 
-<a name="q2_2"><h3>2.2. If the compiler was written in C#, wouldn't reuse be easier?</h3>
+<a name="q3_3"><h3>3.3. The compiled pnetlib does not work.  What is wrong?</h3>
 
-Theoretically, yes.  Reuse is the stated reason for why the
-<a href="http://www.go-mono.com/">Mono</a> project is writing all of
-their tools in C#.<p>
+The C# compiler is a work in progress, and it isn't yet capable of
+compiling pnetlib to completion.  Use the file "<code>mscorlib.dll</code>"
+in the "<code>pnet/samples</code>" for the time being.<p>
 
-Should the Mono project succeed at this goal, then their components
-should be directly reusable by anyone running DotGNU Portable.NET.<p>
+<a name="q3_4"><h3>3.4. If the compiler was written in C#, wouldn't reuse be easier?</h3>
 
-However, nothing in DotGNU Portable.NET's cscc compiler would prevent
-its reuse in other compilers.  As long as those compilers are themselves
-written in C.<p>
+Reuse is the stated reason for why the <a href="http://www.go-mono.com/">Mono</a> project is writing all of their tools in C#.  Should the Mono project
+succeed at this goal, then their components should be directly reusable
+by anyone running DotGNU Portable.NET.<p>
+
+However, nothing in DotGNU Portable.NET's cscc compiler prevents its reuse
+in other compilers.  As long as those compilers are themselves written
+in C, and covered under the GNU General Public License.<p>
 
 Cscc is architected so that new languages can be easily added as
 plug-ins.  The plug-in converts source code into IL assembly code,
 which cscc processes to produce the final executable.  Plug-ins
-can either do this conversion their own way, or reuse the "codegen"
-facilities to do most of the hard work for them.<p>
+can either do this conversion their own way, or reuse the existing
+code to do most of the hard work for them.<p>
 
-<a name="q2_3"><h3>2.3. I've heard that you can compile C# to the JVM.  Is that correct?</h3>
+<a name="q3_5"><h3>3.5. How do I write a compiler plug-in?</h3>
+
+The "<code>pnet/cscc/HACKING</code>" file describes the structure of
+the C# compiler, and how to write a plug-in for a new language if
+you want to reuse the existing code.<p>
+
+The "<code>pnet/doc/pnettools.texi</code>" file describes the
+command-line syntax that you must support if you want to write your
+own plug-in from scratch, without using any of the existing code.<p>
+
+<a name="q3_6"><h3>3.6. I've heard that you can compile C# to the JVM.  Is that correct?</h3>
 
 Yes.  The cscc compiler is architected so that it can compile to either
-IL or JVM bytecode.  Adding other bytecode formats would be quite easy.<p>
+IL or JVM bytecode.  Adding other output formats would be quite easy.<p>
 
-<a name="q2_4"><h3>2.4. Why don't you use gcc as the basis for your C# compiler?</h3>
+<a name="q3_7"><h3>3.7. Why don't you use gcc as the basis for your C# compiler?</h3>
 
 A common question that arises is why we aren't using gcc to compile
 C# code to IL.  Strategically, we would like to be able to reuse all
@@ -313,9 +536,122 @@ Fine.  Prove us wrong.  Download the gcc sources and have at it.
 The Transputer port may be a good place to start to get ideas,
 or it may not.<p>
 
-<a name="q3"><h2>3. Copyright issues</h2>
+<a name="q4"><h2>4. Other tools</h2>
 
-<a name="q3_1"><h3>3.1. Why isn't the C# library LGPL?</h3>
+<a name="q4_1"><h3>4.1. How do I assemble .il files?</h3>
+
+If you have an IL assembly source file, you can convert it into an IL
+binary using the "<code>ilasm</code>" program.  For example:
+
+<blockquote><code>ilasm -o hello.exe hello.il</code></blockquote>
+
+The assembler supports the format described in the ECMA specifications.
+
+<a name="q4_2"><h3>4.2. How do I disassemble IL binaries?</h3>
+
+If you have an IL binary, such as a "<code>.exe</code>" or a
+"<code>.dll</code>" assembly, you can convert it back into IL
+assembly source as follows:
+
+<blockquote><code>ildasm hello.exe >hello.il</code></blockquote>
+
+<a name="q4_3"><h3>4.3. Does your disassembler and assembler support round-tripping?</h3>
+
+"Round-tripping" is a feature of Microsoft's disassembler and assembler
+that allows a program to be disassembled, modified in some fashion,
+and then re-assembled, without having access to the original source.<p>
+
+Our disassembler and assembler don't support round-tripping, although
+they use similar formats.  If someone wants to submit round-tripping
+patches, then that would be great.  But it isn't a high priority for us.<p>
+
+It is debatable whether round-tripping is useful in a Free Software
+environment.  Presumably you already have the original source for
+the application, and can make the modifications there and recompile.<p>
+
+<a name="q4_4"><h3>4.4. How do I convert resources?</h3>
+
+The "<code>resgen</code>" program can be used to convert string resources
+between a variety of formats: text resources, IL binary resources,
+XML resources, and GNU gettext resources ("<code>.po</code>").
+For example:
+
+<blockquote><code>resgen hello.txt hello.resources</code></blockquote>
+
+This converts the text resources in "<code>hello.txt</code>" into
+IL binary resources in the file "<code>hello.resources</code>".<p>
+
+<a name="q4_5"><h3>4.5. How do I extract documentation from C# sources?</h3>
+
+The "<code>csdoc</code>" program is very similar to the C# compiler,
+"<code>cscc</code>", except that it outputs XML documentation files
+instead of IL binaries.  For example:<p>
+
+<blockquote><code>csdoc -o hello.xml hello.cs</code></blockquote>
+
+The tools must partially compile the input source to collect up the
+information that it requires.  Therefore, it is usually best to ensure
+that your program compiles with "<code>cscc</code>" before attempting
+to use "<code>csdoc</code>".<p>
+
+The output XML file uses the same format as the ECMA's "<code>All.xml</code>"
+file.  You can use the programs "<code>csdoc2html</code>" and
+"<code>csdoc2texi</code>" to convert the XML file into HTML and Texinfo,
+respectively.<p>
+
+<a name="q4_6"><h3>4.6. Can I build applications without "make"?</h3>
+
+Some people don't like "<code>make</code>" for some reason.  They prefer
+simpler build tools.  The "<code>csant</code>" program takes an XML
+file as input, which describes what to build, and then runs the C#
+compiler to build the requested targets.<p>
+
+The "<code>csant</code>" program is similar to, but not quite as powerful as
+NAnt (<a href="http://nant.sourceforge.net/">http://nant.sourceforce.net/</a>).
+But because "<code>csant</code>" is written in C, it can be very useful
+for bootstrapping C# applications without the aid of a CLR.<p>
+
+<a name="q4_7"><h3>4.7. What other tools do you have?</h3>
+
+We are always adding new utilities as we need them.  The following
+is a sampling:
+
+<dl>
+<dt><code>csdoc2html</code></dt>
+	<dd>Convert XML documentation into HTML.</dd>
+<dt><code>csdoc2texi</code></dt>
+	<dd>Convert XML documentation into Texinfo.</dd>
+<dt><code>csdoc2stub</code></dt>
+	<dd>Generate stub C# code from XML documentation.</dd>
+<dt><code>csdocvalil</code></dt>
+	<dd>Validate an IL binary against an XML documentation file that
+		describes what it should be implementing.</dd>
+<dt><code>ilalink</code></dt>
+	<dd>Link IL object files and libraries together to form an
+		output assembly.  This is normally called automatically
+		by the compiler.</dd>
+<dt><code>ilcheck</code></dt>
+	<dd>Compare the runtime engine, <code>ilrun</code>, against an
+		IL binary to determine if all internalcall methods in the
+		binary have been properly implemented by the engine.</dd>
+<dt><code>ildiff</code></dt>
+	<dd>Compare two IL binaries and show their differences.</dd>
+<dt><code>ilfind</code></dt>
+	<dd>Find named symbols within an IL binary.</dd>
+<dt><code>ilnative</code></dt>
+	<dd>Print information for all native methods that are declared
+		in an IL binary.  Native methods include internalcall's
+		and PInvoke's.</dd>
+<dt><code>ilsize</code></dt>
+	<dd>Print the size of the code, metadata, resource, and other
+		sections in an IL binary.</dd>
+<dt><code>ilverify</code></dt>
+	<dd>Run the bytecode verifier over an IL binary.</dd>
+</dl>
+
+<a name="q5"><h2>5. Copyright issues</h2>
+
+<a name="q5_1"><h3>5.1. Why isn't the C# library LGPL?</h3>
 
 The license on the C# library, "<code>pnetlib</code>", is distributed
 under a modified GPL license:
@@ -364,7 +700,7 @@ described above.<p>
 something other than IL bytecode.  This includes PInvoke functions and
 "internalcall" methods, among others.]<p>
 
-<a name="q3_2"><h3>3.2. Who owns the Copyright on patches?</h3>
+<a name="q5_2"><h3>5.2. Who owns the Copyright on patches?</h3>
 
 The <a href="http://www.dotgnu.org/">DotGNU Project</a> is working
 on guidelines for explicit Copyright assignment.  When they have
@@ -375,11 +711,11 @@ maintainer for the files or directories being patched.  If you don't
 want this to happen, then don't submit the patch.<p>
 
 For larger patches, you should explicitly assign the Copyright
-to the primary maintainer, or to FreeDevelopers.  We prefer that
-you assign the Copyright to the maintainer of the files you are
-patching, to prevent dilution of the Copyright on those files.
-Should problems arise in the future, it is easier to replace
-an entire file than edit the contents of a single file.<p>
+to the primary maintainer, or FreeDevelopers, or the Free Software
+Foundation.  We prefer that you assign the Copyright to the maintainer
+of the files you are patching, to prevent dilution of the Copyright
+on those files.  Should problems arise in the future, it is easier
+to replace an entire file than edit the contents of a single file.<p>
 
 To assign the Copyright, include a notice in the patch comments as to
 how you want the Copyright assigned.  If you don't include such a
@@ -392,7 +728,9 @@ a predictable Copyright on each GNU package, should legal action
 ever need to be taken to defend the GPL.  If you don't agree
 to these guidelines, then don't submit the patch.<p>
 
-<a name="q4"><h2>4. How can I help?</h2>
+<a name="q6"><h2>6. How can I help?</h2>
+
+<a name="q6_1"><h3>6.1. What areas need the most help?</h3>
 
 The biggest area that needs to be tackled is the C# library,
 <a href="http://www.southern-storm.com.au/portable_net_lib.html">pnetlib</a>.
@@ -405,14 +743,42 @@ within the current code base.  Mostly this involves converting
 the contents of the ".h" files in the "include" directory into
 Texinfo-compatible documentation and examples.<p>
 
-Other than that, if you find an interesting problem to work on
-in the DotGNU Portable.NET codebase, then work on it for a bit, and
-send us the patches.  If it is the kind of code we're looking for,
-we'll discuss further collaboration.<p>
+The runtime engine and the C# compiler are also works in progress.
+The code is well-commented with "<code>TODO</code>" in all of the
+places where there is still stuff to be done.<p>
 
-<a name="q5"><h2>5. CVS, versions, patches, etc</h2>
+<a name="q6_2"><h3>6.2. What is the latest status of pnetlib?</h3>
 
-<a name="q5_1"><h3>5.1. How do I access the source via CVS?</h3>
+The latest status of pnetlib can be viewed at the following Web page:
+
+<blockquote><a href="http://www.dotgnu.org/pnetlib-status/">http://www.dotgnu.org/pnetlib-status/</a></blockquote>
+
+This page is updated periodically based on the compiled pnetlib binaries.<p>
+
+<a name="q6_3"><h3>6.3. What else is there?</h3>
+
+If you find an interesting problem to work on in the DotGNU Portable.NET
+codebase, then work on it for a bit, and send us the patches.  If it is
+the kind of code we're looking for, we'll discuss further collaboration.<p>
+
+Even if it isn't on the core CLI parts of DotGNU Portable.NET, it may still
+be interesting.  There are number of people working on Java and JVM related
+extensions, for example.<p>
+
+Also look at the "<code>HACKING</code>" files in the "<code>pnet</code>
+and "<code>pnetlib</code>" distributions.  These provide the most
+up to date information on how to help out.<p>
+
+<a name="q6_4"><h3>6.4. Do you have a mailing list for developers?</h3>
+
+All discussion of DotGNU Portable.NET happens on the
+"<code>developers@dotgnu.org</code>" mailing list.  See
+<a href="http://www.dotgnu.org/">http://www.dotgnu.org/</a>
+for subscription details.<p>
+
+<a name="q7"><h2>7. CVS, versions, patches, etc</h2>
+
+<a name="q7_1"><h3>7.1. How do I access the source via CVS?</h3>
 
 All of the DotGNU Portable.NET code is available via CVS from
 Savannah, <a href="http://savannah.gnu.org/">http://savannah.gnu.org/</a>.
@@ -421,10 +787,10 @@ The main project Web page is at
 <a href="http://savannah.gnu.org/cvs/?group_id=353">http://savannah.gnu.org/cvs/?group_id=353</a>.<p>
 
 The repository name for DotGNU Portable.NET is "<code>dotgnu-pnet</code>",
-and it contains three modules: "<code>pnet</code>", "<code>pnetlib</code>",
-and "<code>treecc</code>".<p>
+and it contains four modules: "<code>pnet</code>", "<code>pnetlib</code>",
+"<code>treecc</code>", and "<code>cscctest</code>".<p>
 
-<a name="q5_2"><h3>5.2. What is with the version numbers?</h3>
+<a name="q7_2"><h3>7.2. What is with the version numbers?</h3>
 
 Versions 0.1.2 and prior used a version numbering scheme that Rhys
 Weatherley concocted out of thin air.  After the move to the Savannah
@@ -435,11 +801,10 @@ released version will always end in an even number.  For example,
 "0.1.3" is the working version that will lead up to the "0.1.4"
 release version.<p>
 
-When a major component is judged to be complete, the version numbers
-will advance at the next-higher level.  For example, the numbers
-jumped from "0.0.6" to "0.1.0" when the disassembler was completed.
-The primary maintainer, Rhys Weatherley, decides when a major
-version jump is to occur.<p>
+Version numbers typically jump to the next-higher level when
+the last component reaches 9.  e.g. "0.2.9" is the working version
+for the "0.3.0" release version.  Major version jumps may also
+occur when major components have been completed.<p>
 
 This convention will be adopted across all DotGNU Portable.NET components:
 "<code>pnet</code>", "<code>pnetlib</code>", and "<code>treecc</code>".<p>
@@ -448,7 +813,7 @@ Starting from version "0.1.4" of DotGNU Portable.NET, tags will be added
 to the CVS tree whenever a release version is cut.  The tag for version
 "0.1.4" will be "r_0_1_4".  Working versions will never have a tag.<p>
 
-<a name="q5_3"><h3>5.3. I have a patch.  What should I do now?</h3>
+<a name="q7_3"><h3>7.3. I have a patch.  What should I do now?</h3>
 
 The best way to submit the patch is through the patch manager on
 Savannah.  That will allow us to track it.<p>
@@ -460,7 +825,10 @@ related to Copyright assignment (see "Who owns the Copyright on patches?").<p>
 The maintainers will decide on a case by case basis whether to
 accept a patch.  Submitting it does not guarantee inclusion.<p>
 
-<a name="q5_4"><h3>5.4. Coding conventions</h3>
+The "<code>HACKING</code>" files describe how to make a patch file
+that is easy for the maintainers to apply.<p>
+
+<a name="q7_4"><h3>7.4. What coding conventions should I follow?</h3>
 
 The DotGNU Portable.NET code currently using the following
 coding conventions:
@@ -482,29 +850,34 @@ same conventions as currently exist in that file.  If you are
 writing a completely new source file, then you may use your own
 coding conventions, but we would prefer consistency with the above.<p>
 
-<a name="q6"><h2>6. Standards</h2>
+The "<code>HACKING</code>" files describe other coding conventions
+that may apply.<p>
 
-<a name="q6_1"><h3>6.1. Where are the ECMA standards?</h3>
+<a name="q8"><h2>8. Standards</h2>
+
+<a name="q8_1"><h3>8.1. Where are the ECMA standards?</h3>
 
 The latest versions of the ECMA standards for the Common Language
-Infrastructure (CLI) and the C# languages can be found at Microsoft's
-MSDN Web site:<p>
+Infrastructure (CLI) and the C# languages can be found at ECMA's
+Web site:<p>
 
 <blockquote>
-<a href="http://msdn.microsoft.com/net/ecma/">http://msdn.microsoft.com/net/ecma/</a>
+<a href="http://www.ecma.ch/ecma1/STAND/ECMA-334.htm">http://www.ecma.ch/ecma1/STAND/ECMA-334.htm</a> (C#)<br>
+<a href="http://www.ecma.ch/ecma1/STAND/ECMA-335.htm">http://www.ecma.ch/ecma1/STAND/ECMA-335.htm</a> (CLI)<br>
 </blockquote>
 
 If you wish to contribute to the C# library, you will need the
 following file:<p>
 
 <blockquote>
-<a href="http://msdn.microsoft.com/net/ecma/All.xml">http://msdn.microsoft.com/net/ecma/All.xml</a>
+<a href="ftp://ftp.ecma.ch/ecma-st/Ecma-335-xml.zip">ftp://ftp.ecma.ch/ecma-st/Ecma-335-xml.zip</a>
 </blockquote>
 
-Use the "<code>csdoc2html</code>" program to convert this XML file into HTML,
-so that you can view its contents more easily.<p>
+Unpack this zip file and then use the "<code>csdoc2html</code>" program
+to convert the XML file into HTML, so that you can view its contents
+more easily.<p>
 
-<a name="q6_2"><h3>6.2. Why do you have more classes than ECMA specifies?</h3>
+<a name="q8_2"><h3>8.2. Why do you have more classes than ECMA specifies?</h3>
 
 ECMA specifies the bare minimum necessary to get a Common Language
 Runtime (CLR) to work.  However, this bare minimum is not very useful
@@ -519,58 +892,152 @@ We generally follow the ECMA specifications to the letter, and only
 deviate from them where they are missing information, or the information
 conflicts with Microsoft's actual implementation.<p>
 
-<a name="q7"><h2>7. Other .NET Efforts</h2>
+<a name="q9"><h2>9. Other .NET efforts</h2>
 
-<a name="q7_1"><h3>7.1. Mono</h3>
+<a name="q9_1"><h3>9.1. What is Mono?</h3>
 
 The <a href="http://www.go-mono.com">Mono</a> project that is
 run by <a href="http://www.ximian.com">Ximian</a> has many of
 the same goals as DotGNU Portable.NET.  See their Web site
 for further details.<p>
 
-<a name="q7_2"><h3>7.2. Why not co-operate with Mono?</h3>
+<a name="q9_2"><h3>9.2. What is the relationship with Mono?</h3>
 
-We have suggested dividing up the work to prevent duplication,
-but Mono seems determined to do things their own way.<p>
-
-More recently, we have been discussing common standards and design
-methodologies with Mono to ensure that our two systems successfully
-interoperate.  This is more at the design level than at the code
-level, but it is still useful.<p>
-
-We may be able to use some of Mono's upper-level C# libraries,
-and hence co-operate more on that basis.  For various technical
-reasons, Mono's lower-level C# library "corlib" will not work
+We will probably be using some of Mono's upper-level C# libraries,
+and may co-operate with Mono to improve those libraries.  For various
+technical reasons, Mono's lower-level C# library "corlib" will not work
 with DotGNU Portable.NET's runtime engine, and so we still need
 "pnetlib".<p>
 
-But generally, we will treat Mono like any other GPL-using project:
-if they have something useful that we can use, we will use it.
-Otherwise we will continue developing DotGNU Portable.NET
-as we see fit.<p>
-
-<a name="q7_3"><h3>7.3. OCL</h3>
+<a name="q9_3"><h3>9.3. What is OCL?</h3>
 
 Intel have written a C# class library, which they call the Open CLI
 Library (OCL).  A unique feature of this library is that its interfaces
 have been automatically generated from the ECMA specifications, whereas
-DotGNU Portable.NET and Mono have copied the interfaces by hand.
+DotGNU Portable.NET and Mono have mostly copied the interfaces by hand.
 The library can be obtained at the following site:<p>
 
 <blockquote>
 <a href="http://ocl.sourceforge.net/">http://ocl.sourceforge.net/</a>
 </blockquote>
 
-<a name="q7_4"><h3>7.4. What other free software and open source .NET efforts are there?</h3>
+<a name="q9_4"><h3>9.4. What is Rotor?</h3>
+
+Microsoft have released their own "Shared Source" CLI, called Rotor.
+More information on this can be found at MSDN:
+
+<blockquote>
+<a href="http://msdn.microsoft.com/">http://msdn.microsoft.com/</a>
+</blockquote>
+
+Technically, the license on Rotor is neither Free Software nor Open Source.
+The license is definitely not compatible with the GNU General Public
+License, and so none of the Rotor code can be used in the DotGNU Portable.NET
+project.<p>
+
+<a name="q9_5"><h3>9.5. Can I look at the Rotor code?</h3>
+
+If you don't have a good reason, we suggest that contributors to
+DotGNU Portable.NET don't make a habit of looking at the Rotor code.
+It should only be used if all other options have been exhausted for
+determining how some feature should operate.<p>
+
+The following is what Eben Moglen, the legal counsel for the
+Free Software Foundation, has said about the Rotor license:
+
+<blockquote>
+The key provision in the license is:
+
+<blockquote>
+You may use any information in intangible form that you remember after
+accessing the Software. However, this right does not grant you a
+license to any of Microsoft's copyrights or patents for anything you
+might create using such information.
+</blockquote>
+
+This is pretty clear (they're becoming rather good at drafting "shared
+source" licenses; I'm beginning to feel stylistically challenged).  It
+means that they don't claim any right to control knowledge you may
+gain from reading their code, but you can't copy their code or
+practice any of their patent claims.  The patent issue is unaffected
+by the reading of their code, from our point of view.  On the
+copyright side, our responsibility is the same as it would be under
+any other circumstances: we must write all our code from scratch,
+copying nothing contained in their Rotor code.  If there is no copying
+there is no infringement under their license.<p>
+
+My advice is to tell people to code where possible from the ECMA
+standard.  Where (which is likely to be everywhere), ECMA is
+insufficiently descriptive to create interoperable code, it is
+acceptable to read the source of the Rotor implementation.  Notes
+taken in the course of reading that source should be made in
+pseudocode, so that programmers do not copy snippets of the Rotor
+source as aides to their memory.  We want every line of code in our
+projects to have come out of the original invention of one of our
+coders, having been expressed in his or her own way.  Ideas abstracted
+from the Rotor implementation should always have been put in our
+programmer's own "words," because copyright protects expressions, not
+ideas.<p>
+
+-- Eben Moglen, 28 March 2002
+</blockquote>
+
+<a name="q9_6"><h3>9.6. What other free software and open source .NET efforts are there?</h3>
 
 We are not aware of any other projects that are tackling the
 entire .NET platform at present, but there are some that are tackling
 tools such as decompilers, IDE's, etc.  Mono's FAQ contains an up
 to date list.<p>
 
+<a name="q10"><h2>10. Other random questions</h2>
+
+<a name="q10_1"><h3>10.1. Can I use ASP.NET with DotGNU Portable.NET?</h3>
+
+At the moment, no.  ASP.NET is a huge collection of libraries and
+Web server hooks.  It will take time to build all of the necessary
+infrastructure to do this.  If you want to volunteer to help out
+on this, then that would be great.<p>
+
+<a name="q10_2"><h3>10.2. Why doesn't my C++ application work that I built with Visual Studio.NET?</h3>
+
+Usually, the C++ applications that are output by Visual Studio.NET are
+not pure IL binaries.  They contain x86 native code, and depend on all
+kinds of Microsoft-specific libraries.  Such applications will never
+work with a pure-IL engine such as "<code>ilrun</code>".<p>
+
+Apparently there are switches that can be supplied to Visual Studio.NET
+that force it to output pure-IL binaries.  But even then, there will still
+be dependencies on other Microsoft libraries.  Your mileage may vary.<p>
+
+Some people have suggested interfacing "<code>ilrun</code>" to
+Wine so as to pick up many of the Windows dependencies.  This may work,
+but we need someone to volunteer to do it first.<p>
+
+<a name="q10_3"><h3>10.3. Why don't you just use Java?</h3>
+
+This question is usually asked by Java-philes who are suspicious of
+Microsoft's goals with C# and the CLI.<p>
+
+We think that the C# language and the CLI could be very useful to the
+Free Software community, if we were to co-opt them for our own purposes.
+There's nothing that says we have to use these technologies in precisely
+the same way that Microsoft does.<p>
+
+By building the basics, DotGNU Portable.NET can serve as a platform for
+the Free Software community to experiment with these technologies in
+completely unexpected ways.<p>
+
+<a name="q10_4"><h3>10.4. Isn't C# just a cheap knock-off of Java?</h3>
+
+Not really.  It includes language features that Java lacks: properties,
+delegates, events, operators, indexers, enumerations, and value types.<p>
+
+Every language has its adherents and its detractors - the programming
+community would be very boring if everyone did everything the same way.<p>
+
 <hr>
 
-Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Copyright &copy; 2001, 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.
 
 </body>

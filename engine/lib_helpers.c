@@ -28,10 +28,10 @@ extern	"C" {
 /*
  * public static void InitializeArray(Array array, RuntimeFieldHandle field);
  */
-static void RuntimeHelpers_InitializeArray(ILExecThread *thread,
-										   System_Array *array,
-										   void *handle)
+void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
+										ILObject *_array, void *handle)
 {
+	System_Array *array = (System_Array *)_array;
 	ILField *field;
 	ILFieldRVA *fieldRVA;
 	ILUInt32 rva;
@@ -252,14 +252,22 @@ static void RuntimeHelpers_InitializeArray(ILExecThread *thread,
 	}
 }
 
-/*
- * Method table for the "System.Runtime.CompilerServices.RuntimeHelpers" class.
- */
-IL_METHOD_BEGIN(_ILRuntimeHelpersMethods)
-	IL_METHOD("InitializeArray",
-			  "(oSystem.Array;vSystem.RuntimeFieldHandle;)V",
-			  RuntimeHelpers_InitializeArray)
-IL_METHOD_END
+void _IL_RuntimeHelpers_RunClassConstructor(ILExecThread *thread, void *type)
+{
+	/* TODO */
+}
+
+ILInt32 _IL_RuntimeHelpers_InternalOffsetToStringData(ILExecThread *thread)
+{
+	return (ILInt32)(StringToBuffer(0));
+}
+
+ILObject *_IL_RuntimeHelpers_GetObjectValue(ILExecThread *_thread,
+										    ILObject *obj)
+{
+	/* TODO */
+	return 0;
+}
 
 #ifdef	__cplusplus
 };

@@ -1,7 +1,7 @@
 /*
  * lib_misc.c - Internalcall methods for misc "System" classes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,22 +29,15 @@ extern	"C" {
 /*
  * public static Guid NewGuid();
  */
-static void Guid_NewGuid(ILExecThread *thread, void *result)
+void _IL_Guid_NewGuid(ILExecThread *thread, void *result)
 {
 	ILGUIDGenerate((unsigned char *)result);
 }
 
 /*
- * Method table for the "System.Guid" class.
- */
-IL_METHOD_BEGIN(_ILSystemGuidMethods)
-	IL_METHOD("NewGuid", "()vSystem.Guid;", Guid_NewGuid)
-IL_METHOD_END
-
-/*
  * private static bool GetLittleEndian();
  */
-static ILBool BitConverter_GetLittleEndian(ILExecThread *thread)
+ILBool _IL_BitConverter_GetLittleEndian(ILExecThread *thread)
 {
 #if defined(__i386) || defined(__i386__)
 	return 1;
@@ -63,8 +56,8 @@ static ILBool BitConverter_GetLittleEndian(ILExecThread *thread)
 /*
  * public static long DoubleToInt64Bits(double value);
  */
-static ILInt64 BitConverter_DoubleToInt64Bits(ILExecThread *thread,
-											  ILDouble value)
+ILInt64 _IL_BitConverter_DoubleToInt64Bits(ILExecThread *thread,
+										   ILDouble value)
 {
 	union
 	{
@@ -79,8 +72,8 @@ static ILInt64 BitConverter_DoubleToInt64Bits(ILExecThread *thread,
 /*
  * public static double Int64BitsToDouble(long value);
  */
-static ILDouble BitConverter_Int64BitsToDouble(ILExecThread *thread,
-											   ILInt64 value)
+ILDouble _IL_BitConverter_Int64BitsToDouble(ILExecThread *thread,
+											ILInt64 value)
 {
 	union
 	{
@@ -95,8 +88,8 @@ static ILDouble BitConverter_Int64BitsToDouble(ILExecThread *thread,
 /*
  * public static int FloatToInt32Bits(float value);
  */
-static ILInt32 BitConverter_FloatToInt32Bits(ILExecThread *thread,
-											 ILFloat value)
+ILInt32 _IL_BitConverter_FloatToInt32Bits(ILExecThread *thread,
+										  ILFloat value)
 {
 	union
 	{
@@ -111,8 +104,8 @@ static ILInt32 BitConverter_FloatToInt32Bits(ILExecThread *thread,
 /*
  * public static float Int32BitsToFloat(int value);
  */
-static ILDouble BitConverter_Int32BitsToFloat(ILExecThread *thread,
-											  ILInt32 value)
+ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
+										  ILInt32 value)
 {
 	union
 	{
@@ -125,15 +118,114 @@ static ILDouble BitConverter_Int32BitsToFloat(ILExecThread *thread,
 }
 
 /*
- * Method table for the "System.BitConverter" class.
+ * public ArgIterator(RuntimeArgumentHandle argList);
  */
-IL_METHOD_BEGIN(_ILSystemBitConverterMethods)
-	IL_METHOD("GetLittleEndian",   "()Z",  BitConverter_GetLittleEndian)
-	IL_METHOD("DoubleToInt64Bits", "(d)l", BitConverter_DoubleToInt64Bits)
-	IL_METHOD("Int64BitsToDouble", "(l)d", BitConverter_Int64BitsToDouble)
-	IL_METHOD("FloatToInt32Bits",  "(f)l", BitConverter_FloatToInt32Bits)
-	IL_METHOD("Int32BitsToFloat",  "(l)f", BitConverter_Int32BitsToFloat)
-IL_METHOD_END
+void _IL_ArgIterator_ctor_RuntimeArgumentHandle(ILExecThread *_thread,
+												void *_this, void *argList)
+{
+	/* TODO */
+}
+
+/*
+ * public ArgIterator(RuntimeArgumentHandle argList, void *ptr);
+ */
+void _IL_ArgIterator_ctor_RuntimeArgumentHandlepV(ILExecThread *_thread,
+												  void *_this, void *argList,
+												  void *ptr)
+{
+	/* TODO */
+}
+
+/*
+ * public TypedReference GetNextArg();
+ */
+ILTypedRef _IL_ArgIterator_GetNextArg_(ILExecThread *_thread, void *_this)
+{
+	/* TODO */
+	ILTypedRef ref;
+	ref.type = 0;
+	ref.value = 0;
+	return ref;
+}
+
+/*
+ * public TypedReference GetNextArg(RuntimeTypeHandle type);
+ */
+ILTypedRef _IL_ArgIterator_GetNextArg_RuntimeTypeHandle(ILExecThread *_thread,
+														void *_this,
+														void *type)
+{
+	/* TODO */
+	ILTypedRef ref;
+	ref.type = 0;
+	ref.value = 0;
+	return ref;
+}
+
+/*
+ * public RuntimeTypeHandle GetNextArgType();
+ */
+void _IL_ArgIterator_GetNextArgType(ILExecThread *_thread,
+									void *_result, void *_this)
+{
+	/* TODO */
+}
+
+/*
+ * public int GetNextArgType();
+ */
+ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread *_thread,
+										  void *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static Delegate CreateBlankDelegate(Type type, ClrMethod method);
+ */
+ILObject *_IL_Delegate_CreateBlankDelegate(ILExecThread *_thread,
+										   ILObject *type,
+										   ILObject *method)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static TypedReference ClrMakeTypedReference(Object target,
+ *													   FieldInfo[] flds);
+ */
+ILTypedRef _IL_TypedReference_ClrMakeTypedReference(ILExecThread *_thread,
+													ILObject *target,
+													System_Array *flds)
+{
+	/* TODO */
+	ILTypedRef ref;
+	ref.type = 0;
+	ref.value = 0;
+	return ref;
+}
+
+/*
+ * public static void SetTypedReference(TypedReference target,
+ *										Object value);
+ */
+void _IL_TypedReference_SetTypedReference(ILExecThread *_thread,
+										  ILTypedRef target,
+										  ILObject *value)
+{
+	/* TODO */
+}
+
+/*
+ * public static Object ToObject();
+ */
+ILObject *_IL_TypedReference_ToObject(ILExecThread *_thread, ILTypedRef value)
+{
+	/* TODO */
+	return 0;
+}
 
 #ifdef	__cplusplus
 };

@@ -52,10 +52,10 @@ static System_String *AllocString(ILExecThread *thread, ILInt32 length)
 /*
  * public String(char[] value, int startIndex, int length);
  */
-static System_String *System_String_ctor_1(ILExecThread *thread,
-								           System_Array *value,
-								           ILInt32 startIndex,
-								           ILInt32 length)
+System_String *_IL_String_ctor_acii(ILExecThread *thread,
+								    System_Array *value,
+								    ILInt32 startIndex,
+								    ILInt32 length)
 {
 	System_String *_this;
 
@@ -99,8 +99,7 @@ static System_String *System_String_ctor_1(ILExecThread *thread,
 /*
  * public String(char[] value);
  */
-static System_String *System_String_ctor_2(ILExecThread *thread,
-								           System_Array *value)
+System_String *_IL_String_ctor_ac(ILExecThread *thread, System_Array *value)
 {
 	System_String *_this;
 	ILInt32 length;
@@ -137,8 +136,8 @@ static System_String *System_String_ctor_2(ILExecThread *thread,
 /*
  * public String(char c, int count);
  */
-static System_String *System_String_ctor_3(ILExecThread *thread,
-								           ILUInt16 c, ILInt32 count)
+System_String *_IL_String_ctor_ci(ILExecThread *thread,
+								  ILUInt16 c, ILInt32 count)
 {
 	System_String *_this;
 	ILUInt16 *buffer;
@@ -173,10 +172,10 @@ static System_String *System_String_ctor_3(ILExecThread *thread,
 /*
  * unsafe public String(char *value, int startIndex, int length);
  */
-static System_String *System_String_ctor_4(ILExecThread *thread,
-								           ILUInt16 *value,
-								           ILInt32 startIndex,
-								           ILInt32 length)
+System_String *_IL_String_ctor_pcii(ILExecThread *thread,
+								    ILUInt16 *value,
+								    ILInt32 startIndex,
+								    ILInt32 length)
 {
 	System_String *_this;
 
@@ -215,8 +214,7 @@ static System_String *System_String_ctor_4(ILExecThread *thread,
 /*
  * unsafe public String(char *value);
  */
-static System_String *System_String_ctor_5(ILExecThread *thread,
-								           ILUInt16 *value)
+System_String *_IL_String_ctor_pc(ILExecThread *thread, ILUInt16 *value)
 {
 	System_String *_this;
 	ILInt32 length;
@@ -253,11 +251,11 @@ static System_String *System_String_ctor_5(ILExecThread *thread,
  * unsafe public String(sbyte *value, int startIndex, int length,
  *                      Encoding enc);
  */
-static System_String *System_String_ctor_6(ILExecThread *thread,
-								           ILInt8 *value,
-								           ILInt32 startIndex,
-								           ILInt32 length,
-										   void *encoding)
+System_String *_IL_String_ctor_pbiiEncoding(ILExecThread *thread,
+								            ILInt8 *value,
+								            ILInt32 startIndex,
+								            ILInt32 length,
+										    ILObject *encoding)
 {
 	System_String *_this;
 	System_Array *array;
@@ -280,8 +278,7 @@ static System_String *System_String_ctor_6(ILExecThread *thread,
 	/* Find the default encoding object to use */
 	if(!encoding)
 	{
-		/* Encodings are temporarily disabled because the default
-		   encoding doesn't work yet */
+		/* Default encoding temporarily disabled */
 	#if 0
 		if(ILExecThreadCallNamed(thread, "System.Text.Encoding",
 								 "get_Default", "()oSystem.Text.Encoding;",
@@ -336,20 +333,19 @@ static System_String *System_String_ctor_6(ILExecThread *thread,
 /*
  * unsafe public String(sbyte *value, int startIndex, int length)
  */
-static System_String *System_String_ctor_7(ILExecThread *thread,
-								           ILInt8 *value,
-								           ILInt32 startIndex,
-								           ILInt32 length)
+System_String *_IL_String_ctor_pbii(ILExecThread *thread,
+								    ILInt8 *value,
+								    ILInt32 startIndex,
+								    ILInt32 length)
 {
 	/* Construct the string using the default encoding */
-	return System_String_ctor_6(thread, value, startIndex, length, 0);
+	return _IL_String_ctor_pbiiEncoding(thread, value, startIndex, length, 0);
 }
 
 /*
  * unsafe public String(sbyte *value)
  */
-static System_String *System_String_ctor_8(ILExecThread *thread,
-								           ILInt8 *value)
+System_String *_IL_String_ctor_pb(ILExecThread *thread, ILInt8 *value)
 {
 	/* Determine the length of the input buffer */
 	ILInt32 length = 0;
@@ -362,7 +358,7 @@ static System_String *System_String_ctor_8(ILExecThread *thread,
 	}
 
 	/* Construct the string using the default encoding */
-	return System_String_ctor_6(thread, value, 0, length, 0);
+	return _IL_String_ctor_pbiiEncoding(thread, value, 0, length, 0);
 }
 
 /*
@@ -452,9 +448,9 @@ static int ILStrICmpUnicode(const ILUInt16 *str1, ILInt32 length1,
 /*
  * public static int Compare(String strA, String strB);
  */
-static ILInt32 System_String_Compare(ILExecThread *thread,
-									 System_String *strA,
-									 System_String *strB)
+ILInt32 _IL_String_Compare(ILExecThread *thread,
+						   System_String *strA,
+						   System_String *strB)
 {
 	/* Handle the easy cases first */
 	if(!strA)
@@ -487,13 +483,13 @@ static ILInt32 System_String_Compare(ILExecThread *thread,
  *									 String strB, int indexB, int lengthB,
  *							 		 bool ignoreCase, CultureInfo culture);
  */
-static ILInt32 System_String_InternalCompare(ILExecThread *thread,
-									   		 System_String *strA,
-											 ILInt32 indexA, ILInt32 lengthA,
-									   		 System_String *strB,
-											 ILInt32 indexB, ILInt32 lengthB,
-									   		 ILBool ignoreCase,
-									   		 ILObject *culture)
+ILInt32 _IL_String_InternalCompare(ILExecThread *thread,
+						   		   System_String *strA,
+								   ILInt32 indexA, ILInt32 lengthA,
+						   		   System_String *strB,
+								   ILInt32 indexB, ILInt32 lengthB,
+						   		   ILBool ignoreCase,
+						   		   ILObject *culture)
 {
 	/* Handle the easy cases first */
 	if(!strA)
@@ -531,11 +527,11 @@ static ILInt32 System_String_InternalCompare(ILExecThread *thread,
  * public static int InternalOrdinal(String strA, int indexA, int lengthA,
  *									 String strB, int indexB, int lengthB);
  */
-static ILInt32 System_String_InternalOrdinal(ILExecThread *thread,
-									   		 System_String *strA,
-											 ILInt32 indexA, ILInt32 lengthA,
-									   		 System_String *strB,
-											 ILInt32 indexB, ILInt32 lengthB)
+ILInt32 _IL_String_InternalOrdinal(ILExecThread *thread,
+						   		   System_String *strA,
+								   ILInt32 indexA, ILInt32 lengthA,
+						   		   System_String *strB,
+								   ILInt32 indexB, ILInt32 lengthB)
 {
 	ILUInt16 *bufA;
 	ILUInt16 *bufB;
@@ -594,9 +590,9 @@ static ILInt32 System_String_InternalOrdinal(ILExecThread *thread,
 /*
  * public static bool Equals(String strA, String strB);
  */
-static ILBool System_String_Equals(ILExecThread *thread,
-								   System_String *strA,
-								   System_String *strB)
+ILBool _IL_String_Equals(ILExecThread *thread,
+					     System_String *strA,
+					     System_String *strB)
 {
 	if(!strA)
 	{
@@ -635,8 +631,7 @@ static ILBool System_String_Equals(ILExecThread *thread,
 /*
  * internal static String NewString(int length);
  */
-static System_String *System_String_NewString
-							(ILExecThread *thread, ILInt32 length)
+System_String *_IL_String_NewString(ILExecThread *thread, ILInt32 length)
 {
 	return AllocString(thread, length);
 }
@@ -644,10 +639,9 @@ static System_String *System_String_NewString
 /*
  * internal static String NewBuilder(String value, int length);
  */
-static System_String *System_String_NewBuilder
-							(ILExecThread *thread,
-							 System_String *value,
-							 ILInt32 length)
+System_String *_IL_String_NewBuilder(ILExecThread *thread,
+							         System_String *value,
+							         ILInt32 length)
 {
 	System_String *str;
 	ILInt32 roundLen;
@@ -695,12 +689,36 @@ static System_String *System_String_NewBuilder
 }
 
 /*
+ * public static String Concat(String str1, String str2);
+ */
+System_String *_IL_String_Concat_StringString(ILExecThread *thread,
+					                          System_String *str1,
+					                          System_String *str2)
+{
+	return (System_String *)ILStringConcat(thread,
+										   (ILString *)str1,
+										   (ILString *)str2);
+}
+
+/*
+ * public static String Concat(String str1, String str2, String str3);
+ */
+System_String *_IL_String_Concat_StringStringString(ILExecThread *thread,
+					                                System_String *str1,
+					                                System_String *str2,
+					                                System_String *str3)
+{
+	return (System_String *)ILStringConcat3(thread,
+										    (ILString *)str1,
+										    (ILString *)str2,
+										    (ILString *)str3);
+}
+
+/*
  * internal static void Copy(String dest, int destPos, String src);
  */
-static void System_String_Copy(ILExecThread *thread,
-							   System_String *dest,
-							   ILInt32 destPos,
-							   System_String *src)
+void _IL_String_Copy_StringiString(ILExecThread *thread, System_String *dest,
+				     			   ILInt32 destPos, System_String *src)
 {
 	ILMemCpy(StringToBuffer(dest) + destPos,
 			 StringToBuffer(src), src->length * sizeof(ILUInt16));
@@ -710,12 +728,12 @@ static void System_String_Copy(ILExecThread *thread,
  * internal static void Copy(String dest, int destPos,
  *						     String src, int srcPos, int length);
  */
-static void System_String_Copy_2(ILExecThread *thread,
-								 System_String *dest,
-							 	 ILInt32 destPos,
-							 	 System_String *src,
-							 	 ILInt32 srcPos,
-							 	 ILInt32 length)
+void _IL_String_Copy_StringiStringii(ILExecThread *thread,
+						             System_String *dest,
+					 	             ILInt32 destPos,
+					 	             System_String *src,
+					 	             ILInt32 srcPos,
+					 	             ILInt32 length)
 {
 	ILMemCpy(StringToBuffer(dest) + destPos,
 			 StringToBuffer(src) + srcPos, length * sizeof(ILUInt16));
@@ -724,9 +742,9 @@ static void System_String_Copy_2(ILExecThread *thread,
 /*
  * internal void InsertSpace(String dest, int srcPos, int destPos)
  */
-static void System_String_InsertSpace(ILExecThread *thread,
-									  System_String *dest,
-									  ILInt32 srcPos, ILInt32 destPos)
+void _IL_String_InsertSpace(ILExecThread *thread,
+						    System_String *dest,
+						    ILInt32 srcPos, ILInt32 destPos)
 {
 	ILMemMove(StringToBuffer(dest) + destPos,
 			  StringToBuffer(dest) + srcPos, dest->length - srcPos);
@@ -736,9 +754,9 @@ static void System_String_InsertSpace(ILExecThread *thread,
 /*
  * internal void RemoveSpace(String dest, int index, int length)
  */
-static void System_String_RemoveSpace(ILExecThread *thread,
-									  System_String *dest,
-									  ILInt32 index, ILInt32 length)
+void _IL_String_RemoveSpace(ILExecThread *thread,
+						    System_String *dest,
+						    ILInt32 index, ILInt32 length)
 {
 	ILMemMove(StringToBuffer(dest) + index,
 			  StringToBuffer(dest) + index + length,
@@ -750,12 +768,12 @@ static void System_String_RemoveSpace(ILExecThread *thread,
  * private void CopyToChecked(int sourceIndex, char[] destination,
  *							   int destinationIndex, int count);
  */
-static void System_String_CopyToChecked(ILExecThread *thread,
-									 	System_String *_this,
-									 	ILInt32 sourceIndex,
-									 	System_Array *destination,
-									 	ILInt32 destinationIndex,
-									 	ILInt32 count)
+void _IL_String_CopyToChecked(ILExecThread *thread,
+						 	  System_String *_this,
+						 	  ILInt32 sourceIndex,
+						 	  System_Array *destination,
+						 	  ILInt32 destinationIndex,
+						 	  ILInt32 count)
 {
 	ILMemCpy(((ILUInt16 *)(ArrayToBuffer(destination))) + destinationIndex,
 			 StringToBuffer(_this) + sourceIndex, count * sizeof(ILUInt16));
@@ -764,8 +782,7 @@ static void System_String_CopyToChecked(ILExecThread *thread,
 /*
  * public override int GetHashCode();
  */
-static ILInt32 System_String_GetHashCode(ILExecThread *thread,
-									     System_String *_this)
+ILInt32 _IL_String_GetHashCode(ILExecThread *thread, System_String *_this)
 {
 	ILInt32 hash = 0;
 	ILUInt16 *buf = StringToBuffer(_this);
@@ -781,11 +798,11 @@ static ILInt32 System_String_GetHashCode(ILExecThread *thread,
 /*
  * public int IndexOf(char value, int startIndex, int count);
  */
-static int System_String_IndexOf(ILExecThread *thread,
-							 	 System_String *_this,
-								 ILUInt16 value,
-								 ILInt32 startIndex,
-								 ILInt32 count)
+int _IL_String_IndexOf(ILExecThread *thread,
+			 	       System_String *_this,
+					   ILUInt16 value,
+					   ILInt32 startIndex,
+					   ILInt32 count)
 {
 	ILUInt16 *buf;
 
@@ -820,11 +837,11 @@ static int System_String_IndexOf(ILExecThread *thread,
 /*
  * public int IndexOfAny(char[] anyOf, int startIndex, int count);
  */
-static int System_String_IndexOfAny(ILExecThread *thread,
-							 	    System_String *_this,
-								    System_Array *anyOf,
-								    ILInt32 startIndex,
-								    ILInt32 count)
+int _IL_String_IndexOfAny(ILExecThread *thread,
+				 	      System_String *_this,
+					      System_Array *anyOf,
+					      ILInt32 startIndex,
+					      ILInt32 count)
 {
 	ILUInt16 *buf;
 	ILUInt16 *anyBuf;
@@ -880,11 +897,11 @@ static int System_String_IndexOfAny(ILExecThread *thread,
 /*
  * public int LastIndexOf(char value, int startIndex, int count);
  */
-static int System_String_LastIndexOf(ILExecThread *thread,
-							 	 	 System_String *_this,
-								 	 ILUInt16 value,
-								 	 ILInt32 startIndex,
-								 	 ILInt32 count)
+int _IL_String_LastIndexOf(ILExecThread *thread,
+				 	 	   System_String *_this,
+					 	   ILUInt16 value,
+					 	   ILInt32 startIndex,
+					 	   ILInt32 count)
 {
 	ILUInt16 *buf;
 
@@ -919,11 +936,11 @@ static int System_String_LastIndexOf(ILExecThread *thread,
 /*
  * public int LastIndexOfAny(char[] anyOf, int startIndex, int count);
  */
-static int System_String_LastIndexOfAny(ILExecThread *thread,
-							 	    	 System_String *_this,
-								    	 System_Array *anyOf,
-								    	 ILInt32 startIndex,
-								    	 ILInt32 count)
+int _IL_String_LastIndexOfAny(ILExecThread *thread,
+							  System_String *_this,
+							  System_Array *anyOf,
+							  ILInt32 startIndex,
+							  ILInt32 count)
 {
 	ILUInt16 *buf;
 	ILUInt16 *anyBuf;
@@ -980,12 +997,12 @@ static int System_String_LastIndexOfAny(ILExecThread *thread,
  * private bool EqualRange(int srcIndex, int count,
  *						   String dest, int destIndex);
  */
-static ILBool System_String_EqualRange(ILExecThread *thread,
-									   System_String *_this,
-									   ILInt32 srcIndex,
-									   ILInt32 count,
-									   System_String *dest,
-									   ILInt32 destIndex)
+ILBool _IL_String_EqualRange(ILExecThread *thread,
+						     System_String *_this,
+						     ILInt32 srcIndex,
+						     ILInt32 count,
+						     System_String *dest,
+						     ILInt32 destIndex)
 {
 	ILUInt16 *buf1 = StringToBuffer(_this) + srcIndex;
 	ILUInt16 *buf2 = StringToBuffer(dest) + destIndex;
@@ -1036,7 +1053,7 @@ static System_String *InternString(ILExecThread *thread,
 	}
 
 	/* Compute the hash of the string */
-	hash = ((ILUInt32)(System_String_GetHashCode(thread, str)))
+	hash = ((ILUInt32)(_IL_String_GetHashCode(thread, str)))
 				% IL_INTERN_HASH_SIZE;
 
 	/* Look for an existing string with the same value */
@@ -1088,8 +1105,7 @@ static System_String *InternString(ILExecThread *thread,
 /*
  * public static String Intern(String str);
  */
-static System_String *System_String_Intern(ILExecThread *thread,
-							 	    	   System_String *str)
+System_String *_IL_String_Intern(ILExecThread *thread, System_String *str)
 {
 	if(str)
 	{
@@ -1104,8 +1120,7 @@ static System_String *System_String_Intern(ILExecThread *thread,
 /*
  * public static String IsInterned(String str);
  */
-static System_String *System_String_IsInterned(ILExecThread *thread,
-							 	    	       System_String *str)
+System_String *_IL_String_IsInterned(ILExecThread *thread, System_String *str)
 {
 	if(str)
 	{
@@ -1120,11 +1135,8 @@ static System_String *System_String_IsInterned(ILExecThread *thread,
 /*
  * internal static void CharFill(String str, int start, int count, char ch);
  */
-static void System_String_CharFill(ILExecThread *thread,
-							 	   System_String *str,
-								   ILInt32 start,
-								   ILInt32 count,
-								   ILUInt16 ch)
+void _IL_String_CharFill_Stringiic(ILExecThread *thread, System_String *str,
+					     		   ILInt32 start, ILInt32 count, ILUInt16 ch)
 {
 	while(count > 0)
 	{
@@ -1137,9 +1149,9 @@ static void System_String_CharFill(ILExecThread *thread,
 /*
  * internal static void CharFill(String str, int start,
  *								 char[] chars, int index,
- 								 int count);
+ *								 int count);
  */
-static void System_String_CharFill_2(ILExecThread *thread,
+void _IL_String_CharFill_Stringiacii(ILExecThread *thread,
 							 	   	 System_String *str,
 								   	 ILInt32 start,
 							 	   	 System_Array *chars,
@@ -1158,10 +1170,10 @@ static void System_String_CharFill_2(ILExecThread *thread,
 /*
  * public String Replace(char oldChar, char newChar)
  */
-static System_String *System_String_Replace_1(ILExecThread *thread,
-							 	    		  System_String *_this,
-								    		  ILUInt16 oldChar,
-								    		  ILUInt16 newChar)
+System_String *_IL_String_Replace_cc(ILExecThread *thread,
+							 	     System_String *_this,
+								     ILUInt16 oldChar,
+								     ILUInt16 newChar)
 {
 	System_String *str;
 	ILUInt16 *buf1;
@@ -1204,10 +1216,10 @@ static System_String *System_String_Replace_1(ILExecThread *thread,
 /*
  * public String Replace(String oldValue, String newValue)
  */
-static System_String *System_String_Replace_2(ILExecThread *thread,
-							 	    		  System_String *_this,
-								    		  System_String *oldValue,
-								    		  System_String *newValue)
+System_String *_IL_String_Replace_StringString(ILExecThread *thread,
+						 	    		       System_String *_this,
+							    		       System_String *oldValue,
+							    		       System_String *newValue)
 {
 	ILInt32 oldLen;
 	ILInt32 newLen;
@@ -1239,8 +1251,7 @@ static System_String *System_String_Replace_2(ILExecThread *thread,
 	posn = 0;
 	while((posn + oldLen) <= _this->length)
 	{
-		if(System_String_EqualRange(thread, _this, posn, oldLen,
-									oldValue, 0))
+		if(_IL_String_EqualRange(thread, _this, posn, oldLen, oldValue, 0))
 		{
 			finalLen += newLen;
 			posn += oldLen;
@@ -1271,8 +1282,7 @@ static System_String *System_String_Replace_2(ILExecThread *thread,
 	posn = 0;
 	while((posn + oldLen) <= _this->length)
 	{
-		if(System_String_EqualRange(thread, _this, posn, oldLen,
-									oldValue, 0))
+		if(_IL_String_EqualRange(thread, _this, posn, oldLen, oldValue, 0))
 		{
 			if(newLen > 0)
 			{
@@ -1319,10 +1329,10 @@ static IL_INLINE int IsCharMatch(System_Array *trimChars, ILUInt16 ch)
 /*
  * private String Trim(char[] trimChars, int trimFlags);
  */
-static System_String *System_String_Trim(ILExecThread *thread,
-							 	    	 System_String *_this,
-								    	 System_Array *trimChars,
-								    	 ILInt32 trimFlags)
+System_String *_IL_String_Trim(ILExecThread *thread,
+							   System_String *_this,
+							   System_Array *trimChars,
+							   ILInt32 trimFlags)
 {
 	ILInt32 start, end;
 	ILUInt16 *buf = StringToBuffer(_this);
@@ -1362,9 +1372,8 @@ static System_String *System_String_Trim(ILExecThread *thread,
 /*
  * internal char GetChar(int posn);
  */
-static ILUInt16 System_String_GetChar(ILExecThread *thread,
-							  	      System_String *_this,
-							  	 	  ILInt32 posn)
+ILUInt16 _IL_String_GetChar(ILExecThread *thread,
+				  	        System_String *_this, ILInt32 posn)
 {
 	if(posn >= 0 && posn < _this->length)
 	{
@@ -1381,9 +1390,9 @@ static ILUInt16 System_String_GetChar(ILExecThread *thread,
 /*
  * internal void SetChar(int posn, char value);
  */
-static void System_String_SetChar(ILExecThread *thread,
-						  	      System_String *_this,
-						  	 	  ILInt32 posn, ILUInt16 value)
+void _IL_String_SetChar(ILExecThread *thread,
+			  	        System_String *_this,
+			  	 	    ILInt32 posn, ILUInt16 value)
 {
 	if(posn >= 0 && posn < _this->length)
 	{
@@ -1395,63 +1404,6 @@ static void System_String_SetChar(ILExecThread *thread,
 								"ArgRange_StringIndex");
 	}
 }
-
-/*
- * Method table for the "System.String" class.
- */
-IL_METHOD_BEGIN(_ILSystemStringMethods)
-	IL_CONSTRUCTOR(".ctor",	"(T[cii)V",		0, System_String_ctor_1)
-	IL_CONSTRUCTOR(".ctor",	"(T[c)V",		0, System_String_ctor_2)
-	IL_CONSTRUCTOR(".ctor",	"(Tci)V",		0, System_String_ctor_3)
-	IL_CONSTRUCTOR(".ctor",	"(T*cii)V",		0, System_String_ctor_4)
-	IL_CONSTRUCTOR(".ctor",	"(T*c)V",		0, System_String_ctor_5)
-	IL_CONSTRUCTOR(".ctor",	"(T*biioSystem.Text.Encoding;)V",
-					0, System_String_ctor_6)
-	IL_CONSTRUCTOR(".ctor",	"(T*bii)V",		0, System_String_ctor_7)
-	IL_CONSTRUCTOR(".ctor",	"(T*b)V",		0, System_String_ctor_8)
-	IL_METHOD("Compare", "(oSystem.String;oSystem.String;)i",
-					System_String_Compare)
-	IL_METHOD("InternalCompare",
-					"(oSystem.String;iioSystem.String;iiZ"
-						"oSystem.Globalization.CultureInfo;)i",
-					System_String_InternalCompare)
-	IL_METHOD("InternalOrdinal",
-					"(oSystem.String;iioSystem.String;ii)i",
-					System_String_InternalOrdinal)
-	IL_METHOD("Equals", "(oSystem.String;oSystem.String;)Z",
-					System_String_Equals)
-	IL_METHOD("NewString", "(i)oSystem.String;",
-					System_String_NewString)
-	IL_METHOD("NewBuilder", "(oSystem.String;i)oSystem.String;",
-					System_String_NewBuilder)
-	IL_METHOD("Copy",	"(oSystem.String;ioSystem.String;)V",
-					System_String_Copy)
-	IL_METHOD("Copy", "(oSystem.String;ioSystem.String;ii)V",
-				   	System_String_Copy_2)
-	IL_METHOD("InsertSpace", "(oSystem.String;ii)V",
-					System_String_InsertSpace)
-	IL_METHOD("RemoveSpace", "(oSystem.String;ii)V",
-					System_String_RemoveSpace)
-	IL_METHOD("CopyToChecked", "(Ti[cii)V",
-					System_String_CopyToChecked)
-	IL_METHOD("GetHashCode", "(T)i",	System_String_GetHashCode)
-	IL_METHOD("IndexOf",	 "(Tcii)i",	System_String_IndexOf)
-	IL_METHOD("IndexOfAny",	 "(T[cii)i", System_String_IndexOfAny)
-	IL_METHOD("EqualRange",	 "(TiioSystem.String;i)Z",
-					System_String_EqualRange)
-	IL_METHOD("Intern",		 "(T)oSystem.String;", System_String_Intern)
-	IL_METHOD("IsInterned",	 "(T)oSystem.String;", System_String_IsInterned)
-	IL_METHOD("LastIndexOf", "(Tcii)i", System_String_LastIndexOf)
-	IL_METHOD("LastIndexOfAny", "(T[cii)i", System_String_LastIndexOfAny)
-	IL_METHOD("CharFill",	 "(oSystem.String;iic)V", System_String_CharFill)
-	IL_METHOD("CharFill", "(oSystem.String;i[cii)V", System_String_CharFill_2)
-	IL_METHOD("Replace",	 "(Tcc)oSystem.String;", System_String_Replace_1)
-	IL_METHOD("Replace",	 "(ToSystem.String;oSystem.String;)oSystem.String;",
-					System_String_Replace_2)
-	IL_METHOD("Trim",	 "(T[ci)oSystem.String;", System_String_Trim)
-	IL_METHOD("GetChar", "(Ti)c", System_String_GetChar)
-	IL_METHOD("SetChar", "(Tic)V", System_String_SetChar)
-IL_METHOD_END
 
 ILString *ILStringCreate(ILExecThread *thread, const char *str)
 {
@@ -1470,7 +1422,7 @@ ILString *ILStringCreateLen(ILExecThread *thread, const char *str, int len)
 	if(str && len >= 0)
 	{
 		/* Call the "String(sbyte *, int, int, Encoding)" constructor */
-		return (ILString *)System_String_ctor_6
+		return (ILString *)_IL_String_ctor_pbiiEncoding
 					(thread, (ILInt8 *)str, 0, (ILInt32)len, (void *)0);
 	}
 	else
@@ -1502,7 +1454,7 @@ ILString *ILStringWCreateLen(ILExecThread *thread,
 	if(str && len >= 0)
 	{
 		/* Call the "String(char *, int, int)" constructor */
-		return (ILString *)System_String_ctor_4
+		return (ILString *)_IL_String_ctor_pcii
 				(thread, (ILUInt16 *)str, 0, (ILInt32)len);
 	}
 	else
@@ -1513,15 +1465,15 @@ ILString *ILStringWCreateLen(ILExecThread *thread,
 
 int ILStringCompare(ILExecThread *thread, ILString *strA, ILString *strB)
 {
-	return (int)(System_String_Compare(thread,
-									   (System_String *)strA,
-									   (System_String *)strB));
+	return (int)(_IL_String_Compare(thread,
+								    (System_String *)strA,
+								    (System_String *)strB));
 }
 
 int ILStringCompareIgnoreCase(ILExecThread *thread, ILString *strA,
 							  ILString *strB)
 {
-	return (int)(System_String_InternalCompare
+	return (int)(_IL_String_InternalCompare
 						(thread,
 						 (System_String *)strA, 0,
 						 ((strA != 0) ? ((System_String *)strA)->length : 0),
@@ -1533,7 +1485,7 @@ int ILStringCompareIgnoreCase(ILExecThread *thread, ILString *strA,
 int ILStringCompareOrdinal(ILExecThread *thread, ILString *strA,
 						   ILString *strB)
 {
-	return (int)(System_String_InternalOrdinal
+	return (int)(_IL_String_InternalOrdinal
 						(thread,
 						 (System_String *)strA, 0,
 						 ((strA != 0) ? ((System_String *)strA)->length : 0),
@@ -1543,9 +1495,9 @@ int ILStringCompareOrdinal(ILExecThread *thread, ILString *strA,
 
 int ILStringEquals(ILExecThread *thread, ILString *strA, ILString *strB)
 {
-	return (int)(System_String_Equals(thread,
-									  (System_String *)strA,
-									  (System_String *)strB));
+	return (int)(_IL_String_Equals(thread,
+								   (System_String *)strA,
+								   (System_String *)strB));
 }
 
 ILString *ILStringConcat(ILExecThread *thread, ILString *strA, ILString *strB)

@@ -208,6 +208,12 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 							   CSSemValue value, const char *name);
 
+/*
+ * Get the n'th member from a method group.
+ * Returns NULL at the end of the group.
+ */
+ILMethod *CSGetGroupMember(void *group, unsigned long n);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -946,6 +946,21 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 	return CSSemValueDefault;
 }
 
+ILMethod *CSGetGroupMember(void *group, unsigned long n)
+{
+	CSMemberInfo *member = (CSMemberInfo *)group;
+	while(member != 0)
+	{
+		if(n <= 0)
+		{
+			return (ILMethod *)(member->member);
+		}
+		--n;
+		member = member->next;
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

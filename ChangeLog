@@ -27,6 +27,8 @@ codegen/jv_output.h: code output functions for various kinds of method calls.
 * cscc/cs_oper.tc: remove semantic analysis for ArgList which is now
 located in cs_invoke.tc.
 
+* cscc/cs_internal.h, cscc/cs_lookup.c (CSGetGroupMember): new function.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

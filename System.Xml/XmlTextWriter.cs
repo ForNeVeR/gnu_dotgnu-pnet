@@ -62,7 +62,7 @@ public class XmlTextWriter : XmlWriter
 	public XmlTextWriter(String filename, Encoding encoding)
 			{
 				writer = new StreamWriter
-					(new FileStream(filename, FileMode.Open),
+					(new FileStream(filename, FileMode.Open, FileAccess.Read),
 					 ((encoding != null) ? encoding : Encoding.UTF8));
 				Initialize();
 			}
@@ -136,6 +136,7 @@ public class XmlTextWriter : XmlWriter
 					while(indent > 0)
 					{
 						writer.Write(indentChar);
+						--indent;
 					}
 				}
 			}
@@ -152,6 +153,92 @@ public class XmlTextWriter : XmlWriter
 				while(namespaceManager.HasNamespace(prefix));
 				namespaceManager.AddNamespace(prefix, ns);
 				return prefix;
+			}
+
+	// State flags for "Sync".
+	[Flags]
+	private enum WriteStateFlag
+	{
+		StartFlag     = (1<<0),
+		PrologFlag    = (1<<1),
+		ElementFlag   = (1<<2),
+		AttributeFlag = (1<<3),
+		ContentFlag   = (1<<4),
+		ClosedFlag    = (1<<5)
+
+	}; // enum WriteStateFlag
+
+	// Synchronize the output with a particular document area.
+	private void Sync(WriteStateFlag flags)
+			{
+				// Determine if the current write state is compatible
+				// with the synchronisation flags, and shift to the
+				// requested state if necessary.
+				switch(writeState)
+				{
+					case WriteState.Element:
+					{
+						if((flags & WriteStateFlag.ContentFlag) != 0)
+						{
+							writer.Write(">");
+							writeState = System.Xml.WriteState.Content;
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(S._("Xml_InvalidWriteState"));
+						}
+					}
+					break;
+
+					case WriteState.Attribute:
+					{
+						if((flags & WriteStateFlag.AttributeFlag) != 0)
+						{
+							// We can write directly to the attribute.
+						}
+						else if((flags & WriteStateFlag.ContentFlag) != 0)
+						{
+							// Terminate the attribute and switch to contents.
+							writer.Write(quoteChar);
+							writer.Write(">");
+							writeState = System.Xml.WriteState.Content;
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(S._("Xml_InvalidWriteState"));
+						}
+					}
+					break;
+
+					case WriteState.Content:
+					{
+						if((flags & WriteStateFlag.ContentFlag) == 0)
+						{
+							throw new InvalidOperationException
+								(S._("Xml_InvalidWriteState"));
+						}
+					}
+					break;
+
+					case WriteState.Start:
+					case WriteState.Prolog:
+					case WriteState.Closed:
+					{
+						if(((1 << (int)writeState) & (int)flags) == 0)
+						{
+							throw new InvalidOperationException
+								(S._("Xml_InvalidWriteState"));
+						}
+					}
+					break;
+				}
+				if(writeState == System.Xml.WriteState.Content)
+				{
+					// Record that we wrote some text to a content field.
+					prevWasText = true;
+				}
 			}
 
 	// Close this writer and free all resources.
@@ -228,13 +315,24 @@ public class XmlTextWriter : XmlWriter
 	// Write out a CDATA block.
 	public override void WriteCData(String text)
 			{
-				// TODO
+				if(text != null && text.IndexOf("]]>") != -1)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidXmlWritten"), "text");
+				}
+				Sync(WriteStateFlag.ContentFlag);
+				if(text != null)
+				{
+					writer.Write(text);
+				}
 			}
 
 	// Write a character entity.
 	public override void WriteCharEntity(char ch)
 			{
-				// TODO
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
+				writer.Write("&#x{0:X2};", (int)ch);
 			}
 
 	// Write a text buffer.
@@ -256,25 +354,9 @@ public class XmlTextWriter : XmlWriter
 						("count", S._("ArgRange_Array"));
 				}
 
-				// We must not be in the closed state.
-				if(writeState == System.Xml.WriteState.Closed)
-				{
-					throw new InvalidOperationException
-						(S._("Xml_InvalidWriteState"));
-				}
-
-				// If we are in the element state, then shift to content.
-				if(writeState == System.Xml.WriteState.Element)
-				{
-					writer.Write('>');
-					writeState = System.Xml.WriteState.Content;
-				}
-
-				// Record that we wrote some text to a content field.
-				if(writeState == System.Xml.WriteState.Content)
-				{
-					prevWasText = true;
-				}
+				// Synchronize to the content or attribute area.
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
 
 				// The buffer must not end in a low surrogate.
 				if(count > 0 &&
@@ -394,14 +476,6 @@ public class XmlTextWriter : XmlWriter
 	// Write a comment.
 	public override void WriteComment(String text)
 			{
-				// We must not be closed or in attribute.
-				if(writeState == System.Xml.WriteState.Closed ||
-				   writeState == System.Xml.WriteState.Attribute)
-				{
-					throw new InvalidOperationException
-						(S._("Xml_InvalidWriteState"));
-				}
-
 				// Bail out if the comment text contains "-->".
 				if(text != null && text.IndexOf("-->") != -1)
 				{
@@ -409,18 +483,9 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidXmlWritten"), "text");
 				}
 
-				// If we are in the element state, then shift to content.
-				if(writeState == System.Xml.WriteState.Element)
-				{
-					writer.Write('>');
-					writeState = System.Xml.WriteState.Content;
-				}
-
-				// Record that we wrote some text to a content field.
-				if(writeState == System.Xml.WriteState.Content)
-				{
-					prevWasText = true;
-				}
+				// Synchronize to an area that allows comments.
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.PrologFlag);
 
 				// Write out the comment.
 				writer.Write("<!--");
@@ -493,7 +558,44 @@ public class XmlTextWriter : XmlWriter
 	// Write the document end information and reset to the start state.
 	public override void WriteEndDocument()
 			{
-				// TODO
+				if(writeState == System.Xml.WriteState.Start ||
+				   writeState == System.Xml.WriteState.Prolog ||
+				   writeState == System.Xml.WriteState.Closed)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidWriteState"), "WriteState");
+				}
+				if(writeState == System.Xml.WriteState.Attribute)
+				{
+					// Terminate the attribute and the element start.
+					writer.Write(quoteChar);
+					writer.Write(" />");
+					PopScope();
+					if(xmlSpace != System.Xml.XmlSpace.Preserve)
+					{
+						writer.WriteLine();
+					}
+				}
+				else if(writeState == System.Xml.WriteState.Element)
+				{
+					// Terminate the element start.
+					writer.Write(" />");
+					PopScope();
+				}
+				while(scope != null)
+				{
+					DoIndent();
+					writer.Write("</");
+					writer.Write(scope.localName);
+					writer.Write('>');
+					PopScope();
+					if(xmlSpace != System.Xml.XmlSpace.Preserve)
+					{
+						writer.WriteLine();
+					}
+				}
+				writeState = System.Xml.WriteState.Start;
+				prevWasText = false;
 			}
 
 	// Write the end of an element and pop the namespace scope.
@@ -540,7 +642,14 @@ public class XmlTextWriter : XmlWriter
 	// Write an entity reference.
 	public override void WriteEntityRef(String name)
 			{
-				// TODO
+				if(!XmlReader.IsNameToken(name))
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidEntityRef"), "name");
+				}
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
+				writer.Write("&{0};", name);
 			}
 
 	// Write a full end element tag, even if there is no content.
@@ -588,13 +697,27 @@ public class XmlTextWriter : XmlWriter
 	// Write a name, as long as it is XML-compliant.
 	public override void WriteName(String name)
 			{
-				// TODO
+				if(!XmlReader.IsName(name))
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidName"), "name");
+				}
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
+				writer.Write(name);
 			}
 
 	// Write a name token, as long as it is XML-compliant.
 	public override void WriteNmToken(String name)
 			{
-				// TODO
+				if(!XmlReader.IsNameToken(name))
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidName"), "name");
+				}
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
+				writer.Write(name);
 			}
 
 	// Write a processing instruction.
@@ -735,13 +858,40 @@ public class XmlTextWriter : XmlWriter
 	// Write the start of an XML document.
 	public override void WriteStartDocument(bool standalone)
 			{
-				// TODO
+				if(writeState != System.Xml.WriteState.Start)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidWriteState"));
+				}
+			#if !ECMA_COMPAT
+				writer.WriteLine
+					("<?xml version=\"1.0\" encoding=\"{0}\" " +
+					 "standalone=\"{1}\"?>",
+					 writer.Encoding.WebName,
+					 (standalone ? "yes" : "no"));
+			#else
+				writer.WriteLine
+					("<?xml version=\"1.0\" "standalone=\"{0}\"?>",
+					 (standalone ? "yes" : "no"));
+			#endif
+				writeState = System.Xml.WriteState.Prolog;
 			}
 
 	// Write the start of an XML document with no standalone attribute.
 	public override void WriteStartDocument()
 			{
-				// TODO
+				if(writeState != System.Xml.WriteState.Start)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidWriteState"));
+				}
+			#if !ECMA_COMPAT
+				writer.WriteLine("<?xml version=\"1.0\" encoding=\"{0}\"?>",
+					 			 writer.Encoding.WebName);
+			#else
+				writer.WriteLine("<?xml version=\"1.0\"?>");
+			#endif
+				writeState = System.Xml.WriteState.Prolog;
 			}
 
 	// Write the start of an element with a full name.
@@ -921,17 +1071,8 @@ public class XmlTextWriter : XmlWriter
 				}
 
 				// If we are in the element state, then shift to content.
-				if(writeState == System.Xml.WriteState.Element)
-				{
-					writer.Write('>');
-					writeState = System.Xml.WriteState.Content;
-				}
-
-				// Record that we wrote some text to a content field.
-				if(writeState == System.Xml.WriteState.Content)
-				{
-					prevWasText = true;
-				}
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
 
 				// Bail out if the text is empty.
 				if(((Object)text) == null || text.Length == 0)
@@ -1044,13 +1185,43 @@ public class XmlTextWriter : XmlWriter
 	// Write a surrogate character entity.
 	public override void WriteSurrogateCharEntity(char lowChar, char highChar)
 			{
-				// TODO
+				if(lowChar < 0xDC00 || lowChar > 0xDFFF)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidSurrogate"), "lowChar");
+				}
+				if(highChar < 0xD800 || highChar > 0xDBFF)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidSurrogate"), "highChar");
+				}
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag);
+				int ch = 0x10000 + ((highChar - 0xD800) << 10) +
+							(lowChar - 0xDC00);
+				writer.Write("&#x{0:X5};", ch);
 			}
 
 	// Write a sequence of white space.
 	public override void WriteWhitespace(String ws)
 			{
-				// TODO
+				if(ws == null || ws == String.Empty)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidWhitespace"), "ws");
+				}
+				foreach(char ch in ws)
+				{
+					if(!Char.IsWhiteSpace(ch))
+					{
+						throw new ArgumentException
+							(S._("Xml_InvalidWhitespace"), "ws");
+					}
+				}
+				Sync(WriteStateFlag.ContentFlag |
+					 WriteStateFlag.AttributeFlag |
+					 WriteStateFlag.PrologFlag);
+				writer.Write(ws);
 			}
 
 	// Get the base stream underlying the text writer.

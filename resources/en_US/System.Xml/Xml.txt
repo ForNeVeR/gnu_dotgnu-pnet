@@ -32,3 +32,5 @@ Xml_InvalidQuoteChar=Invalid quote character
 Xml_NamespacesNotSupported=Namespaces are not supported by this writer
 Xml_InvalidSurrogate=Invalid surrogate character pair
 Xml_InvalidXmlWritten=Invalid XML data sequence written
+Xml_InvalidWhitespace=Invalid whitespace string
+Xml_InvalidEntityRef=Invalid entity reference name

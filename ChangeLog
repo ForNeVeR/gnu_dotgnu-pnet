@@ -1,5 +1,8 @@
 2004-06-28  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* System.Xml/XmlElement.cs: fix yet another mistake of mine in
+	InnerXml.
+
 	* System.Xml/XmlDocument.cs, System.Xml/XmlElement.cs: change
 	XmlDocument.ReadNodeInternal to internal access and use that
 	for XmlElement.InnerXml instead of ReadNode.

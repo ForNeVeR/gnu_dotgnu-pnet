@@ -135,6 +135,9 @@ class XmlElement : XmlLinkedNode
 					XmlTextReader r = new XmlTextReader
 						(value, XmlNodeType.Element, context);
 
+					// move to the first node
+					r.Read();
+
 					// add the child nodes
 					do
 					{
@@ -142,10 +145,15 @@ class XmlElement : XmlLinkedNode
 						XmlNode child = doc.ReadNodeInternal(r);
 
 						// return if there are no more children
-						if(child == null) { return; }
-
-						// append the new child node
-						AppendChild(child);
+						if(child == null)
+						{
+							if(!r.Read()) { return; }
+						}
+						else
+						{
+							// append the new child node
+							AppendChild(child);
+						}
 					}
 					while(true);
 				}

@@ -1,8 +1,8 @@
 /*
- * CSharpCodeProvider.cs - Implementation of the
- *		Microsoft.CSharp.CSharpCodeProvider class.
+ * VBCodeProvider.cs - Implementation of the
+ *		Microsoft.VisualBasic.VBCodeProvider class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@
  */
 
 // This class should probably be in "System.CodeDom.Compiler",
-// but Microsoft put it in "Microsoft.CSharp".  We put it there
+// but Microsoft put it in "Microsoft.VisualBasic".  We put it there
 // also for compatibility sake.
 
-namespace Microsoft.CSharp
+namespace Microsoft.VisualBasic
 {
 
 #if !ECMA_COMPAT
@@ -34,15 +34,15 @@ using System.CodeDom.Compiler;
 using System.IO;
 using System.ComponentModel;
 
-public class CSharpCodeProvider : CodeDomProvider
+public class VBCodeProvider : CodeDomProvider
 {
 	// Internal state.
-	private CSharpCodeCompiler csharpCodeCompiler;
+	private VBCodeCompiler vbCodeCompiler;
 
 	// Constructor.
-	public CSharpCodeProvider()
+	public VBCodeProvider()
 			{
-				csharpCodeCompiler = new CSharpCodeCompiler();
+				vbCodeCompiler = new VBCodeCompiler();
 			}
 
 	// Get the file extension that is used by this provider.
@@ -50,20 +50,29 @@ public class CSharpCodeProvider : CodeDomProvider
 			{
 				get
 				{
-					return "cs";
+					return "vb";
+				}
+			}
+
+	// Get the language options that are supported by this provider.
+	public override LanguageOptions LanguageOptions
+			{
+				get
+				{
+					return LanguageOptions.CaseInsensitive;
 				}
 			}
 
 	// Create a code compiler for this language.
 	public override ICodeCompiler CreateCompiler()
 			{
-				return csharpCodeCompiler;
+				return vbCodeCompiler;
 			}
 
 	// Create a code generator for this language.
 	public override ICodeGenerator CreateGenerator()
 			{
-				return csharpCodeCompiler;
+				return vbCodeCompiler;
 			}
 
 	// Get a type converter.
@@ -72,8 +81,8 @@ public class CSharpCodeProvider : CodeDomProvider
 				return base.GetConverter(type);
 			}
 
-}; // class CSharpCodeProvider
+}; // class VBCodeProvider
 
 #endif // !ECMA_COMPAT
 
-}; // namespace Microsoft.CSharp
+}; // namespace Microsoft.VisualBasic

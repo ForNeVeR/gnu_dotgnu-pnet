@@ -2,7 +2,7 @@
  * CSharpCodeCompiler.cs - Implementation of the
  *		System.CodeDom.Compiler.CSharpCodeCompiler class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,12 +125,14 @@ internal class CSharpCodeCompiler : CodeCompiler
 				}
 			}
 
-	// Convert compiler parameters into compiler arguments.
-	protected override String CmdArgsFromParameters
-				(CompilerParameters options)
+	// Convert compiler parameters into compiler arguments (common code).
+	internal static String CmdArgsFromParameters
+				(CompilerParameters options, String language)
 			{
 				String[] args = new String [0];
 				int posn, posn2;
+				AddArgument(ref args, "-x");
+				AddArgument(ref args, language);
 				if(options.OutputAssembly != null)
 				{
 					AddArgument(ref args, "-o");
@@ -243,6 +245,13 @@ internal class CSharpCodeCompiler : CodeCompiler
 				return JoinStringArray(args, " ");
 			}
 
+	// Convert compiler parameters into compiler arguments.
+	protected override String CmdArgsFromParameters
+				(CompilerParameters options)
+			{
+				return CmdArgsFromParameters(options, "csharp");
+			}
+
 	// Process an output line from the compiler.
 	protected override void ProcessCompilerOutputLine
 				(CompilerResults results, String line)
@@ -291,6 +300,8 @@ internal class CSharpCodeCompiler : CodeCompiler
 				switch(type)
 				{
 					case "System.Void":		type = "void"; break;
+					case "System.Boolean":	type = "bool"; break;
+					case "System.Char":		type = "char"; break;
 					case "System.Byte":		type = "byte"; break;
 					case "System.SByte":	type = "sbyte"; break;
 					case "System.Int16":	type = "short"; break;

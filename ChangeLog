@@ -26,6 +26,12 @@
 	System/CodeDom/Compiler/TempFileCollection.cs: improve
 	signature-compatibility of the System.CodeDom namespace.
 
+	* System/CodeDom/Compiler/CSharpCodeCompiler.cs,
+	System/CodeDom/Compiler/CSharpCodeProvider.cs,
+	System/CodeDom/Compiler/VBCodeCompiler.cs,
+	System/CodeDom/Compiler/VBCodeProvider.cs: stub out the CodeDom
+	code generator for the VB language.
+
 2003-05-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Basic/ErrObject.cs, Basic/Information.cs,

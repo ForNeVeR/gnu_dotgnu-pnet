@@ -143,21 +143,21 @@ void ILCmdLineHelp(const ILCmdLineOption *options)
 	{
 		if(options->helpString1)
 		{
-			fprintf(stderr, "    %s\n        ", options->helpString1);
+			fprintf(stdout, "    %s\n        ", options->helpString1);
 			str = options->helpString2;
 			while(*str != '\0')
 			{
 				if(*str == '\n')
 				{
-					fputs("\n        ", stderr);
+					fputs("\n        ", stdout);
 				}
 				else
 				{
-					putc(*str, stderr);
+					putc(*str, stdout);
 				}
 				++str;
 			}
-			putc('\n', stderr);
+			putc('\n', stdout);
 		}
 		++options;
 	}

@@ -240,11 +240,11 @@ int main(int argc, char *argv[])
 
 static void usage(const char *progname)
 {
-	fprintf(stderr, "ILDASM " VERSION " - Intermediate Language Disassembler\n");
-	fprintf(stderr, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Usage: %s [options] input ...\n", progname);
-	fprintf(stderr, "\n");
+	fprintf(stdout, "ILDASM " VERSION " - Intermediate Language Disassembler\n");
+	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "\n");
+	fprintf(stdout, "Usage: %s [options] input ...\n", progname);
+	fprintf(stdout, "\n");
 	ILCmdLineHelp(options);
 }
 

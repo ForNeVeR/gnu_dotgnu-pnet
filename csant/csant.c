@@ -259,11 +259,11 @@ int main(int argc, char *argv[])
 
 static void usage(const char *progname)
 {
-	fprintf(stderr, "CSANT " VERSION " - C# compilation build tool\n");
-	fprintf(stderr, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Usage: %s [options] [target ...]\n", progname);
-	fprintf(stderr, "\n");
+	fprintf(stdout, "CSANT " VERSION " - C# compilation build tool\n");
+	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "\n");
+	fprintf(stdout, "Usage: %s [options] [target ...]\n", progname);
+	fprintf(stdout, "\n");
 	ILCmdLineHelp(options);
 }
 

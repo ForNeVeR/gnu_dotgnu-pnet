@@ -1,4 +1,12 @@
 
+2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/csant.c, csdoc/doc_main.c, engine/ilrun.c, engine/ilverify.c,
+	ilalink/ilalink.c, ilasm/ilasm_main.c, ildasm/ildasm_main.c,
+	ilfind/ilfind.c, ilnative/ilnative.c, ilsize/ilsize.c, resgen/resgen.c,
+	support/cmdline.c, tests/ilunit.c: write "--help" messages for the
+	tools to standard output, to be consistent with GNU coding standards.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, include/il_types.h, image/types.c:

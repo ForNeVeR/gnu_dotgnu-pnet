@@ -225,11 +225,11 @@ int main(int argc, char *argv[])
 
 static void usage(const char *progname)
 {
-	fprintf(stderr, "ILRUN " VERSION " - IL Program Runtime\n");
-	fprintf(stderr, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Usage: %s [options] program [args]\n", progname);
-	fprintf(stderr, "\n");
+	fprintf(stdout, "ILRUN " VERSION " - IL Program Runtime\n");
+	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "\n");
+	fprintf(stdout, "Usage: %s [options] program [args]\n", progname);
+	fprintf(stdout, "\n");
 	ILCmdLineHelp(options);
 }
 

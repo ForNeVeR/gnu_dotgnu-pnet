@@ -27,21 +27,28 @@ using System.Net;
 
 public class Socket : IDisposable
 {
+	//TODO: The security system should check for caller permissions
+	//TODO: Give the socket errors nice messages
+	
+	//A note on blocking: methods can block, but they don't set blocking,
+	//blocking is set by the user using property Blocking to specify if
+	//blocking methods are allowed	
+
 	//Internal variables
 	private int disposed = 1;	//If this instance gets disposed this is set to 0
 	private AddressFamily myaddressfamily;
 	private ProtocolType myprotocoltype; 
 	private SocketType mysockettype;
-	private EndPoint mylocalendpoint;
-	private EndPoint myremotendpoint;
+	private EndPoint mylocalendpoint = 0;
+	private EndPoint myremoteendpoint = 0;
 	private bool connected = false;
-	private bool blocking = false; 
-	
+	private bool blocking = true; //This class standard blocks
+	//The handle of this socket
+	private int myhandle;
+		
 	//This represents the number of pending asyncronous calls
 	private int pending;
 	
-	
-	[TODO]
 	public Socket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
 			{
 				//A couple of convenience variables for the enums
@@ -63,8 +70,9 @@ public class Socket : IDisposable
 				myprotocoltype = protocolType;
 				mysockettype = socketType;	
 				
-				//Now create the socket
-				//TODO: call the intercall
+				if (!(SocketMethods.Create(addressFamily, protocolType, socketType, myhandle)))
+					throw new SocketException();
+
 			}
 			
 	[TODO]	
@@ -76,33 +84,26 @@ public class Socket : IDisposable
 					return null;
 				if (pending != 0) //This function blocks
 					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));
-				
-				blocking = true;
-				
+						
 				try
 				{
 					//Now create the socket
-					Socket newsock = 0; //TODO: exchange the 0 for the intercall
+					Socket newsock = new Socket(myaddressfamily, mysockettype, myprotocoltype);
 				}
 				catch(Exception e)
 				{
-					throw new ArgumentException(_("Arg_SocketCreating"));
+					throw new ArgumentException(_("IO_SocketCreating"));
 				}
 	
-				try
-				{
-					newsock.myaddressfamily = this.myaddressaamily;
-					newsock.blocking = this.blocking;
-					newsock.mylocalendpoint = this.mylocalendpoint;
-					newsock.myprotocoltype = this.myprotocoltype;
-					newsock.mysockettype = this.mysockettype;
-					newsock.connected = true;
-					//TODO: Set the remote endpoint of the new socket	
-				}
-				catch(Exception e)
-				{
+				newsock.blocking = this.blocking;
+				newsock.mylocalendpoint = this.mylocalendpoint;
+				newsock.connected = true;
+
+				//TODO: Set the remote endpoint of the new socket	
+
+				if (!(SocketMethods.Accept(newsock.myhandle)))
 					throw new SocketException();
-				}
+				
 			}
 			
 	[TODO]
@@ -141,7 +142,6 @@ public class Socket : IDisposable
 			
 			}
 	
-	[TODO]
 	public void Bind(EndPoint localEP)
 			{
 				if (disposed == 0)
@@ -149,41 +149,44 @@ public class Socket : IDisposable
 				
 				if (localEP == 0)
 					throw new ArgumentNullException("localEP", _("Arg_NotNull"));					
-				
-				//TODO: check for security problems and eventually throw
-				//SecurityException
+			
+				if (!Security.CanUseFilemyhandle(myhandle))
+					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));			
+			
+				if (!(SocketMethods.Bind(myhandle, localEP)))
+					throw new SocketException();
 
-				//TODO: Bind the socket and eventually throw SocketException
-								
+				mylocalendpoint = localEP;				
 			}
 	
 	[TODO]
 	public void Close()
 			{
-				
+				SocketMethods.Close(myhandle);
 				Dispose(true);
 			}	
 			
-	[TODO]
 	public void Connect(EndPoint remoteEP)
-			{
+			{		
 				if (disposed == 0)
 					throw new ObjectDisposedException(_("Exception_Disposed"));
 				
 				if (localEP == 0)
 					throw new ArgumentNullException("remoteEP", _("Arg_NotNull"));					
 				
-				//Connect is blocking I believe
 				if (pending != 0) //This function blocks
 					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));				
+						
+				if (!Security.CanUseFilemyhandle(myhandle))
+					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));			
 				
-				blocking = true;
-				
-				//TODO: Call the intercall and check for security and socket errors				
-							
+				if (!(SocketMethods.Connect(myhandle, remoteEP)))
+					throw new SocketException();		
+														
+					myremoteendpoint = remoteEP;				
 			}
 	
-	[TODO]
+	[TODO] 
 	protected virtual void Dispose(bool disposing)
 			{
 			
@@ -264,16 +267,44 @@ public class Socket : IDisposable
 	[TODO]
 	public void Listen(int backlog)
 			{
-			
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));				
+				
+				if (connected)
+					throw new SocketException();
+				
+				try
+				{
+					//TODO: Put socket in listen mode
+				}
+				catch(Exception e)
+				{
+					throw new SocketException();
+				}			
+											
 			}
 	
 	[TODO]
 	public bool Poll(int microSeconds, SelectMode mode)
 			{
-			
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));		
+
+				if (mode != SelectRead && mode != SelectWrite && mode != SelectError)				
+					throw new NotSupportedException("mode", _("Arg_InvalidEnumValue"));
+				
+				try
+				{
+					//Call poll intercall		
+				}
+				catch(Exception e)
+				{
+					throw new SocketException();
+				}
+				
 			}
+	
 			
-	[TODO]
 	public int Receive(byte[] buffer, int size, SocketFlags socketFlags)
 			{
 				Receive(buffer, 0, buffer.Length, socketFlags);
@@ -284,16 +315,95 @@ public class Socket : IDisposable
 				Receive(buffer, 0, buffer.Length, System.Net.Sockets.SocketFlags.None);
 			}
 	
-	[TODO]
 	public int Receive(byte[] buffer, int offset, int size, SocketFlags socketFlags)
 			{
-			
+				int sizevalue;
+
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));				
+
+				if (buffer == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));							
+					
+				if ((offset < 0) || (offset > buffer.Length))			
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if ((size < 0) || (size > (buffer.Length - offset)))
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if (pending != 0) //This function blocks
+					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));
+							
+				if ((socketFlags > 0x3) || (socketFlags < 0x0))
+					throw new SocketException();
+					
+				if (!(socketFlags && SocketFlags.OutOfBound) && (mysockettype != SocketType.Stream))
+					throw new SocketException();
+				
+				if (socketFlags && SocketFlags.Partial) 
+					throw new SocketException();
+				
+				if (socketFlags && SocketFlags.DontRoute)
+					throw new SocketException(); 
+
+				if (mylocalendpoint == 0)
+					throw new SocketException();
+				
+				if (!Security.CanUseFilemyhandle(myhandle))
+					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));					
+
+				if ((sizevalue = SocketMethods.Receive(myhandle, buffer, offset, size, flags)) == -1)
+					throw new SocketException("Receive", _("IO_SocketRead"));
+				
+				return sizevalue;	
+
 			}
 			
 	[TODO]
 	public int ReceiveFrom(byte[] buffer, int offset, int size, SocketFlags socketFlags, ref EndPoint remoteEP)
 			{
+				int sizevalue;
+
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));				
+
+				if (buffer == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));
 				
+				if (remoteEP == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));									
+					
+				if ((offset < 0) || (offset > buffer.Length))			
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if ((size < 0) || (size > (buffer.Length - offset)))
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if (pending != 0) //This function blocks
+					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));
+							
+				if ((socketFlags > 0x3) || (socketFlags < 0x0))
+					throw new SocketException();
+					
+				if (!(socketFlags && SocketFlags.OutOfBound) && (mysockettype != SocketType.Stream))
+					throw new SocketException();
+				
+				if (socketFlags && SocketFlags.Partial) 
+					throw new SocketException();
+				
+				if (socketFlags && SocketFlags.DontRoute)
+					throw new SocketException(); 
+
+				if (mylocalendpoint == 0)
+					throw new SocketException();
+					
+				if (!Security.CanUseFilemyhandle(myhandle))
+					throw new SecurityException("myhandle", _("Exception_SecurityNotGranted"));					
+
+				if ((sizevalue = SocketMethods.ReceiveFrom(myhandle, buffer, offset, size, flags, remoteEP)) == -1)
+					throw new SocketException("ReceiveFrom", _("IO_SocketRead"));
+				
+				return sizevalue;																						
 			}
 			
 	public int ReceiveFrom(byte[] buffer, int size, SocketFlags socketFlags, ref EndPoint remoteEP)
@@ -314,12 +424,25 @@ public class Socket : IDisposable
 	[TODO]
 	public static void Select(IList checkRead, IList checkWrite, IList checkError, int microSeconds)
 			{
-		
+				if (checkRead == 0 && checkWrite == 0 && checkError == 0)
+					throw new ArgumentNullException("checkRead, checkWrite and checkError", _("Arg_NotNull"));
+				
+				if (checkRead.Count == 0 && checkWrite.Count == 0 && checkError.Count == 0)
+					throw new ArgumentNullException("checkRead, checkWrite and checkError", _("Arg_NotNull"));	
+					
+				try
+				{
+					//Call select intercall
+				}	
+				catch(Exception e)
+				{
+					throw new SocketException();
+				}
 			}
-	[TODO]
+
 	public int Send(byte[] buffer, int size, SocketFlags socketFlags)		
 			{
-			
+				Send(buffer, 0, size, socketFlags);									
 			}
 	
 	public int Send(byte[] buffer, SocketFlags socketFlags)
@@ -332,16 +455,69 @@ public class Socket : IDisposable
 				Send(buffer, 0, buffer.Length, System.Net.Sockets.SocketFlags.None);
 			}
 	
-	[TODO]
 	public int Send(byte[] buffer, int offset, int size, SocketFlags socketFlags)
 			{
-			
+				int sizevalue;
+
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));									
+
+				if (buffer == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));
+				
+				if ((offset < 0) || (offset > buffer.Length))			
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if ((size < 0) || (size > (buffer.Length - offset)))
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));											
+
+				if (pending != 0) //This function blocks
+					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));
+					
+				if ( !(socketFlags || SocketFlags.Peek) || !(socketFlags || SocketFlags.Partial))
+					throw new SocketException();				
+
+				if ( !(SocketMethods.Send(buffer, offset, size, socketFlags)))
+					throw new SocketException();
+
+				if ((sizevalue = SocketMethods.Send(mthandle, buffer, offset, size, flags)) == -1)
+					throw new SocketException("Receive", _("IO_SocketWrite"));
+				
+				return sizevalue;							
+				
 			}
 			
-	[TODO]
 	public int SendTo(byte[] buffer, int offset, int size, SocketFlags socketFlags, EndPoint remoteEP)
 			{
-			
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));									
+
+				if (buffer == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));
+
+				if (remoteEP == 0)
+					throw new ArgumentNullException("remoteEP", _("Arg_NotNull"));					
+
+				if ((offset < 0) || (offset > buffer.Length))			
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if ((size < 0) || (size > (buffer.Length - offset)))
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));											
+
+				if (pending != 0) //This function blocks
+					throw new InvalidOperationException(_("Invalid_AsyncAndBlocking"));
+					
+				if ( !(socketFlags || SocketFlags.Peek) || !(socketFlags || SocketFlags.Partial))
+					throw new SocketException();				
+
+				if ( !(SocketMethods.SendTo(buffer, offset, size, socketFlags, remoteEP)))
+					throw new SocketException();
+
+				if ((sizevalue = SocketMethods.SendTo(myhandle, buffer, offset, size, flags, remoteEP)) == -1)
+					throw new SocketException("SendTo", _("IO_SocketWrite"));
+				
+				return sizevalue;		
+
 			}
 	
 	
@@ -381,7 +557,12 @@ public class Socket : IDisposable
 	[TODO]
 	public void Shutdown(SocketShutdown how)
 			{
-			
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));	
+
+				if ( !(SocketMethods.Shutdown(myhandle, how)))
+					throw new SocketException();
+
 			}
 	[TODO]
 	void IDisposable.Dispose()
@@ -398,12 +579,40 @@ public class Socket : IDisposable
 			}
 	
 	[TODO]
-	public int Available { get; }
+	public int Available 
+			{
+				get //TODO: check errors
+				{
+					if (disposed == 0)			
+						throw new ObjectDisposedException(_("Exception_Disposed"));									
+					try
+					{
+						return ReceiveFrom(new byte[](), 0, int.MaxValue, SocketFlags.Peek, new EndPoint());
+					}
+					catch(Exception e)
+					{
+						throw new SocketException("Available", _("IO_SocketRead")); 
+					}
+			
+				}
+			}
 
-	[TODO]
-	public bool Blocking { get; set; }
+	public bool Blocking 
+			{ 
+				get
+				{
+					if (disposed == 0)			
+						throw new ObjectDisposedException(_("Exception_Disposed"));				
+					return blocking;
+				}
+				set
+				{
+					if (disposed == 0)			
+						throw new ObjectDisposedException(_("Exception_Disposed"));					
+					blocking = value;
+				}
+			}
 
-	[TODO]
 	public bool Connected 
 			{ 
 				get
@@ -412,11 +621,30 @@ public class Socket : IDisposable
 				}
 			}
 	
-	[TODO]
-	public IntPtr Handle { get; }
+	public IntPtr Handle 
+			{ 
+				get
+				{
+					return myhandle; 
+				}
+			}
 	
-	[TODO]
-	public EndPoint LocalEndPoint { get; }	
+	public EndPoint LocalEndPoint 
+			{ 
+				get
+				{	
+					if (disposed == 0)			
+						throw new ObjectDisposedException(_("Exception_Disposed"));									
+					try //ECMA specs say I have to check for an SocketException,
+					{	//but it isn't really needed here, since we don't need to access the socket for that
+						return mylocalendpoint;
+					}
+					catch(Exception e)
+					{
+						throw new SocketException();
+					}				
+				}
+			}	
 	
 	public ProtocolType ProtocolType
 			{
@@ -426,9 +654,22 @@ public class Socket : IDisposable
 				}
 			}
 	
-	[TODO]
-	public EndPoint RemoteEndPoint { get; }
-
+	public EndPoint RemoteEndPoint
+			{
+				get
+				{	
+					if (disposed == 0)			
+						throw new ObjectDisposedException(_("Exception_Disposed"));									
+					try //ECMA specs say I have to check for an SocketException,
+					{	//but it isn't really needed here, since we don't need to access the socket for that  
+						return mylocalendpoint; 
+					}
+					catch(Exception e)
+					{
+						throw new SocketException();
+					}				
+				}
+			}
 	public SocketType SocketType	
 			{
 				get
@@ -436,8 +677,10 @@ public class Socket : IDisposable
 					return mysockettype;
 				}
 			}
+
 }; // class Socket
 
 }; // namespace System.Net.Sockets
+
 
 

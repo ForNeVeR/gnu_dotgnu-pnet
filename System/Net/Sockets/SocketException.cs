@@ -22,19 +22,94 @@ namespace System.Net.Sockets
 {
 
 using System;
+using Platform;
 
 public class SocketException : SystemException
 {
-	SocketException() : base (_("Exception_Socket")) {}
-	
-	// Get the default message to use for this exception type.
+	// Internal state.
+	private Errno errno;
+
+	// Constructors.
+	public SocketException()
+		: base(_("IO_Socket"))
+		{
+			errno = Errno.EREMOTEIO;
+		}
+	internal SocketException(String msg)
+		: base(msg)
+		{
+			errno = Errno.EREMOTEIO;
+		}
+	internal SocketException(String msg, Exception inner)
+		: base(msg, inner)
+		{
+			errno = Errno.EREMOTEIO;
+		}
+
+	// Internal constructors that are used to set correct error codes.
+	internal SocketException(Errno errno)
+		: base(null)
+		{
+			this.errno = errno;
+		}
+	internal SocketException(Errno errno, String msg)
+		: base(msg)
+		{
+			this.errno = errno;
+		}
+	internal SocketException(Errno errno, String msg, Exception inner)
+		: base(msg, inner)
+		{
+			this.errno = errno;
+		}
+
+	// Get the platform error code associated with this exception.
+	internal Errno Errno
+			{
+				get
+				{
+					return errno;
+				}
+			}
+
+	// Get the message that corresponds to a platform error number.
+	internal static String GetErrnoMessage(Errno errno)
+			{
+				// See if the resource file has provided an override.
+				String resource = "errno_" + errno.ToString();
+				String str = _(resource);
+				if(str != null)
+				{
+					return str;
+				}
+
+				// Try getting a message from the underlying platform.
+				str = FileMethods.GetErrnoMessage(errno);
+				if(str != null)
+				{
+					return str;
+				}
+
+				// Use the default Socket exception string.
+				return _("IO_Socket");
+			}
+
+	// Get the default message to use for Socket exceptions.
 	protected internal override String MessageDefault
 			{
 				get
 				{
-					return _("Exception_Socket");
+					if(errno == Errno.EREMOTEIO)
+					{
+						return _("IO_Socket");
+					}
+					else
+					{
+						return GetErrnoMessage(errno);
+					}
 				}
 			}
+
 				
 			
 }; // class SocketException

@@ -31,18 +31,21 @@ public class NetworkStream : Stream
 	private bool ownsocket;
 	
 	public NetworkStream(Socket socket)
+			: this(socket, System.IO.FileAccess.ReadWrite, false)
 			{
-				NetworkStream(socket, System.IO.FileAccess.ReadWrite, false);
+				//Nothing to do
 			}
 	
 	public NetworkStream(Socket socket, bool ownsSocket)
+			: this(socket, System.IO.FileAccess.ReadWrite, ownsSocket)					
 			{
-				NetworkStream(socket, System.IO.FileAccess.ReadWrite, ownsSocket);
+				//Nothing to do
 			}
 	
 	public NetworkStream(Socket socket, FileAccess access)
+			: this(socket, access, false)
 			{
-				NetworkStream(socket, access, false);	
+				//Nothing to do	
 			}
 			
 	public NetworkStream(Socket socket, FileAccess access, bool ownsSocket)
@@ -50,11 +53,11 @@ public class NetworkStream : Stream
 				if (socket == 0) 
 					throw new NullException("socket", _("Arg_NotNull"));
 				if (socket.Blocking == false)
-					throw new IOException("socket", _("IO_InvalidSocket"));
+					throw new IOException("socket", _("IO_Socket"));
 				if (socket.Connected == false)
-					throw new IOException("socket", _("IO_InvalidSocket"));				
+					throw new IOException("socket", _("IO_Socket"));				
 				if (socket.SocketType != SocketType.Stream)
-					throw new IOException("socket", _("IO_InvalidSocket"));
+					throw new IOException("socket", _("IO_Socket"));
 			
 				mysocket = socket;
 				ownsocket = ownsSocket;					
@@ -124,10 +127,29 @@ public class NetworkStream : Stream
 				//This feature is reserved for future use
 			}
 			
-	[TODO]		
 	public override int Read(byte[] buffer, int offset, int size)
 			{
-			
+				if (mysocket == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));				
+
+				if (buffer == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));							
+					
+				if ((offset < 0) || (offset > buffer.Length))			
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if ((size < 0) || (size > (buffer.Length - offset)))
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+
+				try
+				{
+					return mysocket.Receive(buffer, size, offset, SocketFlags.None);
+				}					
+				catch(Exception e)
+				{
+					throw new IO_Exception("mysocket", _("IO_SocketRead"));		
+				}
+							
 			}		
 	
 	public override long Seek(long offset, SeekOrigin origin)
@@ -140,10 +162,31 @@ public class NetworkStream : Stream
 				throw new UnsupportedException("NetworkStream",_("NotSupp_DerivedStream"));		
 			}
 			
-	[TODO]		
 	public override void Write(byte[] buffer, int offset, int size)
 			{
-			
+				if (disposed == 0)			
+					throw new ObjectDisposedException(_("Exception_Disposed"));									
+
+				if (buffer == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));
+
+				if (buffer == 0)
+					throw new ArgumentNullException("buffer", _("Arg_NotNull"));					
+
+				if ((offset < 0) || (offset > buffer.Length))			
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));
+				
+				if ((size < 0) || (size > (buffer.Length - offset)))
+					throw new ArgumentException("offset", _("Arg_OutOfRange"));					
+
+				try
+				{
+					Socket.Send(buffer, offset, size, SocketFlags.None);
+				}
+				catch(Exception e)
+				{					
+					throw new IO_Exception("Write", _("IO_SocketWrite"));
+				}
 			}		
 	
 	public override bool CanRead 
@@ -170,12 +213,17 @@ public class NetworkStream : Stream
 				}
 			}
 	
-	[TODO]
 	public virtual bool DataAvailable
 			{
 				get
 				{
-									
+					if (mysocket == 0)			
+						throw new ObjectDisposedException(_("Exception_Disposed"));				
+					
+					if (mysocket.Available != 0)
+						return true;
+					else
+						return false;		
 				}
 			}
 			

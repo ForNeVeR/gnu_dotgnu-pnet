@@ -1,3 +1,16 @@
+2002-03-23  Peter Minten  <silvernerd@users.sf.net>
+	* System/Net/Sockets/Socket.cs: Added methods.
+
+	* System/Net/Sockets/SocketException.cs: Changed to
+	use Errno's and custom messages.
+
+	* System/Net/Sockets/NetworkStream.cs: Implemented Read(), Write()
+	and DataAvaliable().
+
+	* resources/en_US/System/IO.txt: Added socket exception strings to new file.
+
+	* runtime/Platform/SocketMethods.cs: Placed file (made by Sidney Richards)
+	in cvs.
 
 2002-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

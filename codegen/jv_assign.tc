@@ -106,28 +106,6 @@ static void ConcatString(ILGenInfo *info, ILMachineType type1,
 }
 
 /*
- * Determine the common type for an assignment expression.
- */
-static ILMachineType AssignCommonType(ILGenInfo *info,
-									  ILMachineType type1,
-									  ILMachineType type2)
-{
-	if(type1 == ILMachineType_String || type2 == ILMachineType_String)
-	{
-		return ILMachineType_String;
-	}
-	else if(type1 == ILMachineType_ObjectRef ||
-			type2 == ILMachineType_ObjectRef)
-	{
-		return ILMachineType_ObjectRef;
-	}
-	else
-	{
-		return ILCommonType(info, type1, type2, 0);
-	}
-}
-
-/*
  * Common generation code for ILNode_AssignExpression
  */
 static ILMachineType JavaAssignCommon(ILNode_AssignExpression *node, 

@@ -31,6 +31,16 @@
 	System.Xml/XmlNode.cs, System.Xml/XmlTextReader.cs,
 	resources/en_US/System.Xml/Xml.txt: continue implementing System.Xml.
 
+	* System.Xml/NameCache.cs, System.Xml/Xml.build,
+	System.Xml/XmlAttribute.cs, System.Xml/XmlDocument.cs,
+	System.Xml/XmlDocumentFragment.cs, System.Xml/XmlDocumentType.cs,
+	System.Xml/XmlImplementation.cs, System.Xml/XmlNode.cs,
+	System.Xml/XmlNodeChangedAction.cs,
+	System.Xml/XmlNodeChangedEventArgs.cs,
+	System.Xml/XmlNodeChangedEventHandler.cs,
+	resources/en_US/System.Xml/Xml.txt, tests/System.Xml/TestXml.cs,
+	tests/System.Xml/TestXmlDocument.cs: continue implementing System.Xml.
+
 2002-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlConvert.cs, tests/System.Xml/TestNameTable.cs,

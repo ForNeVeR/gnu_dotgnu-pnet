@@ -31,42 +31,96 @@ public
 class XmlDocument : XmlNode
 {
 	// Internal state.
-	private String prefix;
-	private String localName;
-	private String ns;
-	private String name;
+	private XmlImplementation implementation;
+	private String baseURI;
+	private XmlElement root;
+	private XmlDocumentType docType;
+	private bool preserveWhitespace;
+	private XmlResolver xmlResolver;
+	private NameCache nameCache;
+	internal XmlDocumentFragment placeholder;
+	internal static readonly String xmlns = "http://www.w3.org/2000/xmlns/";
 
-	// Constructor.
-	internal XmlDocument(XmlNode owner, String prefix,
-					    String localName, String ns)
-			: base(owner)
+	// Constructors.
+	public XmlDocument() : base(null)
 			{
-				this.prefix = prefix;
-				this.localName =
-					((localName != null) ? localName : String.Empty);
-				this.ns = ((ns != null) ? ns : String.Empty);
-				if(prefix != null)
+				implementation = new XmlImplementation();
+				Initialize();
+			}
+	protected internal XmlDocument(XmlImplementation imp) : base(null)
+			{
+				if(imp != null)
 				{
-					name = prefix + ":" + localName;
+					implementation = imp;
 				}
 				else
 				{
-					name = localName;
-					prefix = String.Empty;
+					implementation = new XmlImplementation();
 				}
+				Initialize();
+			}
+	public XmlDocument(XmlNameTable nt) : base(null)
+			{
+				if(nt != null)
+				{
+					implementation = new XmlImplementation(nt);
+				}
+				else
+				{
+					implementation = new XmlImplementation();
+				}
+				Initialize();
 			}
 
-	// Get the base URI for this document.
+	// Initialize the document.
+	private void Initialize()
+			{
+				baseURI = String.Empty;
+				root = null;
+				docType = null;
+				preserveWhitespace = false;
+				placeholder = new XmlDocumentFragment(this);
+				nameCache = new NameCache(implementation.nameTable);
+			}
+
+	// Get the base URI for the document.
 	public override String BaseURI
 			{
 				get
 				{
-					return parent.BaseURI;
+					return baseURI;
 				}
 			}
 
-	// Get the inner text version of this node.
-	public override String InnerText
+	// Get the root element for the document.
+	public XmlElement DocumentElement
+			{
+				get
+				{
+					return root;
+				}
+			}
+
+	// Get the document type declaration.
+	public virtual XmlDocumentType DocumentType
+			{
+				get
+				{
+					return docType;
+				}
+			}
+
+	// Get the implementation associated with this document.
+	public XmlImplementation Implementation
+			{
+				get
+				{
+					return implementation;
+				}
+			}
+
+	// Get the markup that represents the children of this node.
+	public override String InnerXml
 			{
 				get
 				{
@@ -79,39 +133,48 @@ class XmlDocument : XmlNode
 				}
 			}
 
-	// Get the local name associated with this node.
+	// Determine if this document is read-only.
+	public override bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Get the local name of this node.
 	public override String LocalName
 			{
 				get
 				{
-					return localName;
+					return "#document";
 				}
 			}
 
-	// Get the name associated with this node.
+	// Get the name of this node.
 	public override String Name
 			{
 				get
 				{
-					return name;
+					return "#document";
 				}
 			}
 
-	// Get the namespace URI associated with this node.
-	public override String NamespaceURI
+	// Get the name table associated with this document.
+	public XmlNameTable NameTable
 			{
 				get
 				{
-					return ns;
+					return implementation.nameTable;
 				}
 			}
 
-	// Get the type that is associated with this node.
+	// Get the type of this node.
 	public override XmlNodeType NodeType
 			{
 				get
 				{
-					return XmlNodeType.Attribute;
+					return XmlNodeType.Document;
 				}
 			}
 
@@ -120,86 +183,125 @@ class XmlDocument : XmlNode
 			{
 				get
 				{
-					XmlElement owner = OwnerElement;
-					if(owner != null)
-					{
-						return owner.OwnerDocument;
-					}
-					else
-					{
-						return null;
-					}
-				}
-			}
-
-	// Get the element that owns this attribute.
-	public virtual XmlElement OwnerElement
-			{
-				get
-				{
-					return (XmlElement)parent;
-				}
-			}
-
-	// Get the parent of this node.
-	public override XmlNode ParentNode
-			{
-				get
-				{
-					return OwnerElement;
-				}
-			}
-
-	// Get the prefix associated with this node.
-	public override String Prefix
-			{
-				get
-				{
-					return prefix;
-				}
-			}
-
-	// Determine if the attribute value was explictly specified.
-	public virtual bool Specified
-			{
-				get
-				{
-					// TODO
-					return true;
-				}
-			}
-
-	// Get or set the value associated with this node.
-	public override String Value
-			{
-				get
-				{
 					return null;
+				}
+			}
+
+	// Get or set the whitespace preservation flag.
+	public bool PreserveWhitespace
+			{
+				get
+				{
+					return preserveWhitespace;
 				}
 				set
 				{
-					// TODO
+					preserveWhitespace = value;
 				}
 			}
 
-	// Clone this node in either shallow or deep mode.
+	// Set the resolver to use for external resources.
+	public XmlResolver XmlResolver
+			{
+				set
+				{
+					xmlResolver = value;
+				}
+			}
+
+	// Clone this document node.
+	[TODO]
 	public override XmlNode CloneNode(bool deep)
 			{
 				// TODO
 				return null;
 			}
 
-	// Writes the contents of this node to a specified XmlWriter.
-	public override void WriteContentTo(XmlWriter w)
+	// Create an attribute and associate it with this document.
+	public XmlAttribute CreateAttribute(String name)
+			{
+				int colon = name.LastIndexOf(':');
+				if(colon == -1)
+				{
+					return CreateAttribute(name, String.Empty, String.Empty);
+				}
+				else
+				{
+					String prefix = name.Substring(0, colon);
+					String localName = name.Substring(colon + 1);
+					if(prefix == "xmlns")
+					{
+						return CreateAttribute(localName, prefix, xmlns);
+					}
+					else
+					{
+						return CreateAttribute(localName, prefix, String.Empty);
+					}
+				}
+			}
+	public XmlAttribute CreateAttribute(String qualifiedName,
+										String namespaceURI)
+			{
+				int colon = qualifiedName.LastIndexOf(':');
+				if(colon == -1)
+				{
+					return CreateAttribute
+						(qualifiedName, String.Empty, namespaceURI);
+				}
+				else
+				{
+					String prefix = qualifiedName.Substring(0, colon);
+					String localName = qualifiedName.Substring(colon + 1);
+					return CreateAttribute(localName, prefix, namespaceURI);
+				}
+			}
+	public virtual XmlAttribute CreateAttribute
+				(String localName, String prefix, String namespaceURI)
+			{
+				if(prefix == "xmlns" && namespaceURI != xmlns)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidNamespaceURI"), "namespaceURI");
+				}
+				NameCache.NameInfo info =
+					nameCache.Add(localName, prefix, namespaceURI);
+				return new XmlAttribute(placeholder, info);
+			}
+
+	// Create a document fragment that is attached to this node.
+	public virtual XmlDocumentFragment CreateDocumentFragment()
+			{
+				return new XmlDocumentFragment(this);
+			}
+
+	// Create a text node.
+	public virtual XmlNode/*TODO:XmlText*/ CreateTextNode(String text)
+			{
+				// TODO
+				return null;
+			}
+
+	// Write the contents of this document to an XML writer.
+	[TODO]
+	public override void WriteContentTo(XmlWriter xw)
 			{
 				// TODO
 			}
 
-	// Write this node and all of its contents to a specified XmlWriter.
+	// Write this document to an XML writer.
+	[TODO]
 	public override void WriteTo(XmlWriter w)
 			{
 				// TODO
 			}
+
+	// Events.
+	public event XmlNodeChangedEventHandler NodeChanged;
+	public event XmlNodeChangedEventHandler NodeChanging;
+	public event XmlNodeChangedEventHandler NodeInserted;
+	public event XmlNodeChangedEventHandler NodeInserting;
+	public event XmlNodeChangedEventHandler NodeRemoved;
+	public event XmlNodeChangedEventHandler NodeRemoving;
 
 }; // class XmlDocument
 

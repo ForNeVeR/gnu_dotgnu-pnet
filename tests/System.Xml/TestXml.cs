@@ -26,14 +26,28 @@ public class TestXml
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("System.Xml Tests");
+				TestSuite fullSuite, suite;
+				fullSuite = new TestSuite("System.Xml Tests");
+
+				suite = new TestSuite("General Tests");
 				suite.AddTests(typeof(TestNameTable));
 				suite.AddTests(typeof(TestXmlConvert));
 				suite.AddTests(typeof(TestXmlException));
 				suite.AddTests(typeof(TestXmlNamespaceManager));
 				suite.AddTests(typeof(TestXmlParserContext));
+				fullSuite.AddTest(suite);
+
+				suite = new TestSuite("Writer Tests");
 				suite.AddTests(typeof(TestXmlTextWriter));
-				return suite;
+				fullSuite.AddTest(suite);
+
+			#if !ECMA_COMPAT
+				suite = new TestSuite("Node Tests");
+				suite.AddTests(typeof(TestXmlDocument));
+				fullSuite.AddTest(suite);
+			#endif
+
+				return fullSuite;
 			}
 
 }; // class TestSystem

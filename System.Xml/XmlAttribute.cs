@@ -32,32 +32,17 @@ public
 class XmlAttribute : XmlNode
 {
 	// Internal state.
-	private String prefix;
-	private String localName;
-	private String ns;
-	private String name;
+	private NameCache.NameInfo name;
 	internal char quoteChar;
 	internal XmlAttribute next;
 
 	// Constructor.
-	internal XmlAttribute(XmlNode owner, String prefix,
-						  String localName, String ns)
-			: base(owner)
+	internal XmlAttribute(XmlNode parent, NameCache.NameInfo name)
+			: base(parent)
 			{
-				this.prefix = prefix;
-				this.localName =
-					((localName != null) ? localName : String.Empty);
-				this.ns = ((ns != null) ? ns : String.Empty);
-				if(prefix != null)
-				{
-					name = prefix + ":" + localName;
-				}
-				else
-				{
-					name = localName;
-					prefix = String.Empty;
-				}
-				quoteChar = '"';
+				this.name = name;
+				this.quoteChar = '"';
+				this.next = null;
 			}
 
 	// Get the attribute collection from the parent node.
@@ -79,12 +64,26 @@ class XmlAttribute : XmlNode
 			}
 
 	// Get the inner text version of this node.
+	[TODO]
 	public override String InnerText
 			{
 				get
 				{
+					return base.InnerText;
+				}
+				set
+				{
 					// TODO
-					return null;
+				}
+			}
+
+	// Get the inner XML version of this node.
+	[TODO]
+	public override String InnerXml
+			{
+				get
+				{
+					return base.InnerXml;
 				}
 				set
 				{
@@ -97,7 +96,7 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					return localName;
+					return name.localName;
 				}
 			}
 
@@ -106,7 +105,7 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					return name;
+					return name.name;
 				}
 			}
 
@@ -115,7 +114,7 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					return ns;
+					return name.ns;
 				}
 			}
 
@@ -168,7 +167,7 @@ class XmlAttribute : XmlNode
 			{
 				get
 				{
-					return prefix;
+					return name.prefix;
 				}
 			}
 

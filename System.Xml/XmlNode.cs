@@ -23,6 +23,7 @@ namespace System.Xml
 
 using System;
 using System.Collections;
+using System.Text;
 using System.Xml.XPath;
 
 #if ECMA_COMPAT
@@ -87,6 +88,15 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				}
 			}
 
+	// Determine if this node type can contain child nodes.
+	internal virtual bool CanHaveChildren
+			{
+				get
+				{
+					return false;
+				}
+			}
+
 	// Get the children of this node.
 	public virtual XmlNodeList ChildNodes
 			{
@@ -114,17 +124,92 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				}
 			}
 
+	// Collect the inner text versions of a node and all of its children.
+	private void CollectInner(StringBuilder builder)
+			{
+				XmlNode current = NodeList.GetFirstChild(this);
+				while(current != null)
+				{
+					if(NodeList.GetFirstChild(current) == null)
+					{
+						switch(current.NodeType)
+						{
+							case XmlNodeType.Text:
+							case XmlNodeType.CDATA:
+							case XmlNodeType.SignificantWhitespace:
+							case XmlNodeType.Whitespace:
+							{
+								builder.Append(current.InnerText);
+							}
+							break;
+
+							default: break;
+						}
+					}
+					else
+					{
+						current.CollectInner(builder);
+					}
+					current = NodeList.GetNextSibling(this);
+				}
+			}
+
 	// Get the inner text version of this node.
 	public virtual String InnerText
 			{
 				get
 				{
-					// TODO
-					return null;
+					XmlNode child = NodeList.GetFirstChild(this);
+					XmlNode next;
+					if(child == null)
+					{
+						return String.Empty;
+					}
+					next = NodeList.GetNextSibling(child);
+					if(next == null)
+					{
+						// Special-case the case of a single text child.
+						switch(child.NodeType)
+						{
+							case XmlNodeType.Text:
+							case XmlNodeType.CDATA:
+							case XmlNodeType.SignificantWhitespace:
+							case XmlNodeType.Whitespace:
+							{
+								return child.Value;
+							}
+							// Not reached
+
+							default: break;
+						}
+					}
+					StringBuilder builder = new StringBuilder();
+					CollectInner(builder);
+					return builder.ToString();
 				}
 				set
 				{
-					// TODO
+					XmlNode child = NodeList.GetFirstChild(this);
+					if(child != null && NodeList.GetNextSibling(child) == null)
+					{
+						// Special-case the case of a single text child.
+						switch(child.NodeType)
+						{
+							case XmlNodeType.Text:
+							case XmlNodeType.CDATA:
+							case XmlNodeType.SignificantWhitespace:
+							case XmlNodeType.Whitespace:
+							{
+								child.Value = value;
+								return;
+							}
+							// Not reached
+
+							default: break;
+						}
+					}
+					RemoveAll();
+					AppendChild(OwnerDocument.CreateTextNode(value));
 				}
 			}
 
@@ -138,7 +223,8 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				}
 				set
 				{
-					// TODO
+					throw new InvalidOperationException
+						(S._("Xml_CannotSetInnerXml"));
 				}
 			}
 
@@ -147,8 +233,14 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			{
 				get
 				{
-					// TODO
-					return false;
+					if(parent != null)
+					{
+						return parent.IsReadOnly;
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 
@@ -250,8 +342,21 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(parent != null)
+					{
+						if(parent is XmlDocument)
+						{
+							return (XmlDocument)parent;
+						}
+						else
+						{
+							return parent.OwnerDocument;
+						}
+					}
+					else
+					{
+						return null;
+					}
 				}
 			}
 
@@ -260,7 +365,14 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			{
 				get
 				{
-					return parent;
+					if(parent != null && !parent.IsPlaceholder)
+					{
+						return parent;
+					}
+					else
+					{
+						return null;
+					}
 				}
 			}
 
@@ -291,14 +403,56 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				}
 				set
 				{
-					// TODO
+					throw new InvalidOperationException
+						(S._("Xml_CannotSetValue"));
 				}
+			}
+
+	// Determine if one node is an ancestor of another.
+	private static bool IsAncestorOf(XmlNode node1, XmlNode node2)
+			{
+				while(node2 != null)
+				{
+					if(node2 == node1)
+					{
+						return true;
+					}
+					node2 = node2.parent;
+				}
+				return false;
 			}
 
 	// Append a new child to this node.
 	public virtual XmlNode AppendChild(XmlNode newChild)
 			{
-				// TODO
+				XmlDocument doc;
+				if(!CanHaveChildren)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_CannotHaveChildren"));
+				}
+				if(IsAncestorOf(newChild, this))
+				{
+					throw new InvalidOperationException(S._("Xml_IsAncestor"));
+				}
+				if(this is XmlDocument)
+				{
+					doc = (XmlDocument)this;
+				}
+				else
+				{
+					doc = OwnerDocument;
+				}
+				if(newChild.OwnerDocument != doc)
+				{
+					throw new ArgumentException
+						(S._("Xml_NotSameDocument"), "newChild");
+				}
+				if(IsReadOnly)
+				{
+					throw new ArgumentException(S._("Xml_ReadOnly"));
+				}
+				// TODO: remove from original position and add to the new.
 				return newChild;
 			}
 
@@ -438,6 +592,22 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 
 	// Write this node and all of its contents to a specified XmlWriter.
 	public abstract void WriteTo(XmlWriter w);
+
+	// Clone the children from another node into this node.
+	internal void CloneChildrenFrom(XmlNode other, bool deep)
+			{
+				// TODO
+			}
+
+	// Determine if this node is a placeholder fragment for nodes that have
+	// not yet been added to the main document.
+	internal virtual bool IsPlaceholder
+			{
+				get
+				{
+					return false;
+				}
+			}
 
 }; // class XmlNode
 

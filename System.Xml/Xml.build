@@ -29,6 +29,7 @@
 			<arg compiler="csc" value="/nowarn:168"/>
 			<arg compiler="csc" value="/nowarn:67"/>
 			<arg compiler="csc" value="/nowarn:169"/>
+			<arg compiler="csc" value="/nowarn:679"/>
 		</compile>
 
 	</target>

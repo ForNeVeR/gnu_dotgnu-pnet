@@ -41,6 +41,7 @@ typedef char						ILInt8;
 typedef unsigned char				ILUInt8;
 typedef short						ILInt16;
 typedef unsigned short				ILUInt16;
+typedef ILInt8 						ILBool;
 
 /*
  * Determine which types should be used for 32-bit numeric values.

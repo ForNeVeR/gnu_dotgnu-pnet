@@ -15,7 +15,9 @@ function "_ILLookupTypeMatch"; bug fix for field lookups: use MatchTypeName
 instead of MatchSignatureName; check for '\0' in MatchSignatureName;
 use "ILType_HasThis" where appropriate.
 
-* engine/heap.c: Implement "_ILEngineAlloc" and "_ILEngineAllocObject".
+* engine/heap.c: implement "_ILEngineAlloc" and "_ILEngineAllocObject".
+
+* include/il_values.h: declare "ILBool" as a builtin type.
 
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 

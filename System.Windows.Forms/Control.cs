@@ -66,6 +66,7 @@ public class Control : IWin32Window
 	private Object tag;
 	private ControlStyles styles;
 	private CreateParams createParams;
+	private ContextMenu contextMenu;
 	private static Font defaultFont;
 #if !CONFIG_COMPACT_FORMS
 	private AccessibleObject accessibilityObject;
@@ -439,17 +440,34 @@ public class Control : IWin32Window
 					return false;
 				}
 			}
-	[TODO]
 	public ContextMenu ContextMenu
 			{
 				get
 				{
-					// TODO
-					return null;
+					return contextMenu;
 				}
 				set
 				{
-					// TODO
+					if(contextMenu != null)
+					{
+						if(contextMenu != null)
+						{
+							contextMenu.RemoveFromControl();
+						}
+						if(value != null)
+						{
+							Control control = value.SourceControl;
+							if(control != null)
+							{
+								control.ContextMenu = null;
+							}
+						}
+						contextMenu = value;
+						if(contextMenu != null)
+						{
+							contextMenu.AddToControl(this);
+						}
+					}
 				}
 			}
 	public ControlCollection Controls

@@ -390,7 +390,26 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					menu = value;
+					if(menu != value)
+					{
+						if(menu != null)
+						{
+							menu.RemoveFromForm();
+						}
+						if(value != null)
+						{
+							Form other = value.GetForm();
+							if(other != null)
+							{
+								other.Menu = null;
+							}
+						}
+						menu = value;
+						if(menu != null)
+						{
+							menu.AddToForm(this);
+						}
+					}
 				}
 			}
 	public MainMenu MergedMenu

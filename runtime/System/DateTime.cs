@@ -928,29 +928,43 @@ public struct DateTime : IComparable, IFormattable
 #if !ECMA_COMPAT
 
 	// Get this DateTime value in a variety of formats.
-	[TODO]
+	private String[] GetDateTimeFormats(DateTimeFormatInfo info,
+										String[] patterns)
+			{
+				String[] results = new String [patterns.Length];
+				int index;
+				for(index = 0; index < patterns.Length; ++index)
+				{
+					results[index] = DateTimeFormatter.Format
+						(this, patterns[index], info);
+				}
+				return results;
+			}
 	public String[] GetDateTimeFormats()
 			{
-				// TODO
-				return null;
+				DateTimeFormatInfo info =
+					DateTimeFormatInfo.GetInstance(null);
+				return GetDateTimeFormats(info, info.GetAllDateTimePatterns());
 			}
-	[TODO]
 	public String[] GetDateTimeFormats(char format)
 			{
-				// TODO
-				return null;
+				DateTimeFormatInfo info =
+					DateTimeFormatInfo.GetInstance(null);
+				return GetDateTimeFormats
+					(info, info.GetAllDateTimePatterns(format));
 			}
-	[TODO]
 	public String[] GetDateTimeFormats(IFormatProvider provider)
 			{
-				// TODO
-				return null;
+				DateTimeFormatInfo info =
+					DateTimeFormatInfo.GetInstance(provider);
+				return GetDateTimeFormats(info, info.GetAllDateTimePatterns());
 			}
-	[TODO]
 	public String[] GetDateTimeFormats(char format, IFormatProvider provider)
 			{
-				// TODO
-				return null;
+				DateTimeFormatInfo info =
+					DateTimeFormatInfo.GetInstance(provider);
+				return GetDateTimeFormats
+					(info, info.GetAllDateTimePatterns(format));
 			}
 
 #endif // !ECMA_COMPAT

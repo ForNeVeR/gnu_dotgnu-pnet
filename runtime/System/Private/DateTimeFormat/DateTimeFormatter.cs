@@ -27,81 +27,10 @@ using System.Text;
 
 internal sealed class DateTimeFormatter
 {
-	// Format a date value as a string.
+	// Format a date value as a string using a particular pattern format.
 	public static String Format(DateTime date, String format,
-							    IFormatProvider provider)
+								DateTimeFormatInfo info)
 			{
-				DateTimeFormatInfo info;
-
-				// Get the date/time formatting information to use.
-				info = DateTimeFormatInfo.GetInstance(provider);
-
-				// Validate the format string.
-				if(format == null || format == String.Empty)
-				{
-					format = "G";
-				}
-				if(format.Length == 1)
-				{
-					// Resolve the format code to a custom format string.
-					switch(format)
-					{
-						case "d":	format = info.ShortDatePattern; break;
-						case "D":	format = info.LongDatePattern; break;
-						case "f":
-							format = info.LongDatePattern + " " +
-									 info.ShortTimePattern;
-							break;
-						case "F":	format = info.FullDateTimePattern; break;
-						case "g":
-							format = info.ShortDatePattern + " " +
-									 info.ShortTimePattern;
-							break;
-						case "G":
-							format = info.ShortDatePattern + " " +
-									 info.LongTimePattern;
-							break;
-						case "m": case "M":
-							format = info.MonthDayPattern; break;
-						#if !ECMA_COMPAT
-						case "r": case "R":
-							format = info.RFC1123Pattern; break;
-						case "s":
-							format = info.SortableDateTimePattern; break;
-						case "u":
-							format = info.UniversalSortableDateTimePattern;
-							break;
-						#else
-						case "r": case "R":
-							format = "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'";
-							break;
-						case "s":
-							format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
-							break;
-						case "u":
-							format = "yyyy'-'MM'-'dd HH':'mm':'ss'Z'";
-							break;
-						#endif
-						case "t":
-							format = info.ShortTimePattern; break;
-						case "T":
-							format = info.LongTimePattern; break;
-						case "U":
-							date = date.ToUniversalTime();
-							format = info.FullDateTimePattern;
-							break;
-						case "y": case "Y":
-							format = info.YearMonthPattern; break;
-
-						default:
-						{
-							throw new FormatException
-								(_("Format_FormatString"));
-						}
-						// Not reached.
-					}
-				}
-
 				// Format the date/time value.
 				StringBuilder builder = new StringBuilder();
 				int posn = 0;
@@ -511,6 +440,83 @@ internal sealed class DateTimeFormatter
 
 				// Return the formatted string to the caller.
 				return builder.ToString();
+			}
+
+	// Format a date value as a string.
+	public static String Format(DateTime date, String format,
+							    IFormatProvider provider)
+			{
+				DateTimeFormatInfo info;
+
+				// Get the date/time formatting information to use.
+				info = DateTimeFormatInfo.GetInstance(provider);
+
+				// Validate the format string.
+				if(format == null || format == String.Empty)
+				{
+					format = "G";
+				}
+				if(format.Length == 1)
+				{
+					// Resolve the format code to a custom format string.
+					switch(format)
+					{
+						case "d":	format = info.ShortDatePattern; break;
+						case "D":	format = info.LongDatePattern; break;
+						case "f":
+							format = info.LongDatePattern + " " +
+									 info.ShortTimePattern;
+							break;
+						case "F":	format = info.FullDateTimePattern; break;
+						case "g":
+							format = info.ShortDatePattern + " " +
+									 info.ShortTimePattern;
+							break;
+						case "G":
+							format = info.ShortDatePattern + " " +
+									 info.LongTimePattern;
+							break;
+						case "m": case "M":
+							format = info.MonthDayPattern; break;
+						#if !ECMA_COMPAT
+						case "r": case "R":
+							format = info.RFC1123Pattern; break;
+						case "s":
+							format = info.SortableDateTimePattern; break;
+						case "u":
+							format = info.UniversalSortableDateTimePattern;
+							break;
+						#else
+						case "r": case "R":
+							format = "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'";
+							break;
+						case "s":
+							format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
+							break;
+						case "u":
+							format = "yyyy'-'MM'-'dd HH':'mm':'ss'Z'";
+							break;
+						#endif
+						case "t":
+							format = info.ShortTimePattern; break;
+						case "T":
+							format = info.LongTimePattern; break;
+						case "U":
+							date = date.ToUniversalTime();
+							format = info.FullDateTimePattern;
+							break;
+						case "y": case "Y":
+							format = info.YearMonthPattern; break;
+
+						default:
+						{
+							throw new FormatException
+								(_("Format_FormatString"));
+						}
+						// Not reached.
+					}
+				}
+				return Format(date, format, info);
 			}
 
 }; // class DateTimeFormatter

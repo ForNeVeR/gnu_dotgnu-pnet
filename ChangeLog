@@ -15,6 +15,10 @@
 	registry provider for non-Win32 systems; the data is stored under
 	the "$HOME/.cli/registry" directory.
 
+	* runtime/System/DateTime.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs:
+	implement the remaining TODO methods in "System.DateTime".
+
 2003-07-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Reflection/Emit/ILGenerator.cs: Fix minor array size

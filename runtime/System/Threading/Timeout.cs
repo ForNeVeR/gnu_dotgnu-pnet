@@ -23,6 +23,8 @@ namespace System.Threading
 
 public sealed class Timeout
 {
+	// This class cannot be instantiated.
+	private Timeout() {}
 
 	// A constant that represents infinite timeouts.
 	public const int Infinite = -1;

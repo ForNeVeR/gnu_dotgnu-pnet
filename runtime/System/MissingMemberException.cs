@@ -29,10 +29,12 @@ public class MissingMemberException : MemberAccessException
 	, ISerializable
 #endif
 {
+#if !ECMA_COMPAT
 	// Internal state.
 	protected String ClassName;
 	protected String MemberName;
 	protected byte[] Signature;
+#endif
 
 	// Constructors.
 	public MissingMemberException()

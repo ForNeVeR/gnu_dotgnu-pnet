@@ -68,6 +68,7 @@ public sealed class StringBuilder
 				maxCapacity = Int32.MaxValue;
 				needsCopy = false;
 			}
+#if !ECMA_COMPAT
 	public StringBuilder(int capacity, int maxCapacity)
 			{
 				if(maxCapacity < 1)
@@ -162,6 +163,7 @@ public sealed class StringBuilder
 				maxCapacity = Int32.MaxValue;
 				needsCopy = false;
 			}
+#endif // !ECMA_COMPAT
 
 	// Append space to a string builder.  Returns the actual
 	// number of characters that can be appended.
@@ -864,6 +866,7 @@ public sealed class StringBuilder
 				}
 			}
 
+#if !ECMA_COMPAT
 	// Get the maximum capacity for this string builder.
 	public int MaxCapacity
 			{
@@ -872,6 +875,7 @@ public sealed class StringBuilder
 					return maxCapacity;
 				}
 			}
+#endif // !ECMA_COMPAT
 
 }; // class StringBuilder
 

@@ -54,8 +54,12 @@ class XmlImplementation
 	// Determine if this implementation has a specific feature.
 	public bool HasFeature(String strFeature, String strVersion)
 			{
+			#if !ECMA_COMPAT
 				if(String.Compare(strFeature, "XML",
 								  true, CultureInfo.InvariantCulture) == 0 &&
+			#else
+				if(String.Compare(strFeature, "XML", true) == 0 &&
+			#endif
 				   (strVersion == "1.0" || strVersion == "2.0"))
 				{
 					return true;

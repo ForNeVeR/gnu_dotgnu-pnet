@@ -74,11 +74,21 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	[CLSCompliant(false)]
-	extern unsafe public String(sbyte *value, int startIndex, int length);
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	extern unsafe String(sbyte *value, int startIndex, int length);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	[CLSCompliant(false)]
-	extern unsafe public String(sbyte *value);
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	extern unsafe String(sbyte *value);
 
 	// Implement the ICloneable interface.
 	public Object Clone()
@@ -106,6 +116,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					     ignoreCase, null);
 			}
 
+#if !ECMA_COMPAT
 	// Compare two strings using a particular culture's comparison rules.
 	public static int Compare(String strA, String strB,
 							  bool ignoreCase, CultureInfo culture)
@@ -119,11 +130,12 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						 strB, 0, ((strB != null) ? strB.Length : 0),
 						 ignoreCase, culture);
 			}
+#endif
 
 	// Validate sub-string ranges for "Compare".
-	public static void ValidateCompare(String strA, int indexA,
-									   String strB, int indexB,
-									   int length)
+	private static void ValidateCompare(String strA, int indexA,
+									    String strB, int indexB,
+									    int length)
 			{
 				if(indexA < 0)
 				{
@@ -216,6 +228,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 									   ignoreCase, null);
 			}
 
+#if !ECMA_COMPAT
 	// Compare two sub-strings with a particular culture's comparison rules.
 	public static int Compare(String strA, int indexA,
 					  		  String strB, int indexB,
@@ -231,6 +244,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 									   strB, indexB, length,
 									   ignoreCase, culture);
 			}
+#endif
 
 	// Internal version of "CompareOrdinal", with all parameters.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -273,6 +287,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 			}
 
+#if !ECMA_COMPAT
 	// Compare this string against another.
 	public int CompareTo(String value)
 			{
@@ -285,6 +300,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					return 1;
 				}
 			}
+#endif
 
 	// Methods that are supplied by the runtime to assist with string building.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -343,6 +359,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				return result;
 			}
 
+#if !ECMA_COMPAT
 	// Concatenate strings in various ways.
 	public static String Concat(Object obj1)
 			{
@@ -355,6 +372,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					return Empty;
 				}
 			}
+#endif
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String Concat(String str1, String str2);
@@ -362,6 +380,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String Concat(String str1, String str2, String str3);
 
+#if !ECMA_COMPAT
 	public static String Concat(String str1, String str2,
 								String str3, String str4)
 			{
@@ -389,6 +408,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				return result;
 			}
+#endif
 	public static String Concat(params String[] values)
 			{
 				if(values != null)
@@ -438,6 +458,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  (obj2 != null ? obj2.ToString() : null),
 							  (obj3 != null ? obj3.ToString() : null));
 			}
+#if !ECMA_COMPAT
 	public static String Concat(Object obj1, Object obj2,
 								Object obj3, Object obj4)
 			{
@@ -446,6 +467,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  (obj3 != null ? obj3.ToString() : null),
 							  (obj4 != null ? obj4.ToString() : null));
 			}
+#endif
 	public static String Concat(params Object[] args)
 			{
 				if(args != null)
@@ -605,7 +627,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 
 	// Extract an integer value from a format string.
-	public static int GetFormatInteger(String format, int len, ref int posn)
+	private static int GetFormatInteger(String format, int len, ref int posn)
 			{
 				int temp = posn;
 				uint value = 0;

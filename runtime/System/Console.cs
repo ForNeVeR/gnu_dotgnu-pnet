@@ -34,6 +34,9 @@ public sealed class Console
 	private static TextWriter stdout = null;
 	private static TextWriter stderr = null;
 
+	// This class cannot be instantiated.
+	private Console() {}
+
 	// Open the standard input stream.
 	public static Stream OpenStandardInput()
 			{

@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 public enum LogLevel
 {
 	Trace			= 0x00,
@@ -30,5 +32,7 @@ public enum LogLevel
 	Panic			= 0x64
 
 }; // enum LogLevel
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

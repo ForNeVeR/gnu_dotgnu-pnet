@@ -26,6 +26,26 @@
 	"System.Resources" as non-ECMA and introduce a cut-down resource
 	API for use in ECMA_COMPAT mode in the other assemblies.
 
+	* System/Collections/Specialized/StringCollection.cs,
+	System/Collections/Specialized/StringDictionary.cs,
+	System/Collections/Specialized/StringEnumerator.cs,
+	System.Xml/XmlImplementation.cs, runtime/System/AppDomain.cs,
+	runtime/System/Array.cs, runtime/System/AttributeTargets.cs,
+	runtime/System/Console.cs, runtime/System/Convert.cs,
+	runtime/System/Decimal.cs, runtime/System/Environment.cs,
+	runtime/System/Exception.cs, runtime/System/GC.cs,
+	runtime/System/LoaderOptimization.cs, runtime/System/LogLevel.cs,
+	runtime/System/Math.cs, runtime/System/MissingMemberException.cs,
+	runtime/System/PlatformID.cs, runtime/System/Random.cs,
+	runtime/System/String.cs, runtime/System/Version.cs,
+	runtime/System/Collections/ArrayList.cs, runtime/System/IO/Path.cs,
+	runtime/System/IO/TextWriter.cs,
+	runtime/System/Runtime/CompilerServices/RuntimeHelpers.cs,
+	runtime/System/Text/StringBuilder.cs,
+	runtime/System/Threading/Interlocked.cs,
+	runtime/System/Threading/Monitor.cs,
+	runtime/System/Threading/Timeout.cs: various ECMA-compatibility fixes.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: make "ArgIterator.GetHashCode"

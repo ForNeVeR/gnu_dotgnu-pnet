@@ -658,7 +658,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			}
 
 	// Inner version of "Sort".
-	public void InnerSort(int lower, int upper, IComparer comparer)
+	private void InnerSort(int lower, int upper, IComparer comparer)
 			{
 				int i, j;
 				Object pivot, temp;

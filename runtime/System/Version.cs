@@ -287,7 +287,8 @@ public sealed class Version : ICloneable, IComparable
 				       ((build & 0xFF) << 8) ^ (revision & 0xFFFF);
 			}
 
-	// Convert this object into a string.
+	// Convert this object into a string.  Not ECMA-compatible,
+	// strictly speaking, but necessary for API completeness.
 	public override String ToString()
 			{
 				if(build == -1)
@@ -306,6 +307,7 @@ public sealed class Version : ICloneable, IComparable
 				}
 			}
 
+#if !ECMA_COMPAT
 	// Convert this object into a string with a specified number of components.
 	public String ToString(int fieldCount)
 			{
@@ -330,6 +332,7 @@ public sealed class Version : ICloneable, IComparable
 				}
 				return String.Empty;
 			}
+#endif
 
 	// Relational operators.
 	public static bool operator==(Version v1, Version v2)

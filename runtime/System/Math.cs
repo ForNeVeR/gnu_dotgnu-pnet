@@ -1,7 +1,7 @@
 /*
  * Math.cs - Implementation of the "System.Math" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,9 @@ public sealed class Math
 	// Constants.
 	public const double E  = 2.7182818284590452354;
 	public const double PI = 3.14159265358979323846;
+
+	// This class cannot be instantiated.
+	private Math() {}
 
 	// Get the absolute value of a number.
 	[CLSCompliant(false)]
@@ -260,10 +263,12 @@ public sealed class Math
 			{
 				return Decimal.Round(value, 0);
 			}
+#if !ECMA_COMPAT
 	public static Decimal Round(Decimal value, int decimals)
 			{
 				return Decimal.Round(value, decimals);
 			}
+#endif
 
 	// Get the sign of a value.
 	[CLSCompliant(false)]

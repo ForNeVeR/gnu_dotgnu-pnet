@@ -1,7 +1,7 @@
 /*
  * Environment.cs - Implementation of the "System.Environment" class.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,12 +34,8 @@ public sealed class Environment
 	private static String newLine;
 	private static int exitCode = 0;
 
-	// Separators for directories, paths, etc.
-	public static readonly char   DirectorySeparatorChar;
-	public static readonly char   AltDirectorySeparatorChar;
-	public static readonly char   VolumeSeparatorChar;
-	public static readonly char   PathSeparatorChar;
-	public static readonly char[] InvalidPathChars;
+	// This class cannot be instantiated.
+	private Environment() {}
 
 	// Initialize the environment state.
 	static Environment()
@@ -53,26 +49,6 @@ public sealed class Environment
 				{
 					// The runtime engine does not have "SysCharInfo".
 					newLine = "\n";
-				}
-
-				// Get the path character information.
-				try
-				{
-					PathInfo pathInfo = DirMethods.GetPathInfo();
-					DirectorySeparatorChar = pathInfo.dirSeparator;
-					AltDirectorySeparatorChar = pathInfo.altDirSeparator;
-					VolumeSeparatorChar = pathInfo.volumeSeparator;
-					PathSeparatorChar = pathInfo.pathSeparator;
-					InvalidPathChars = pathInfo.invalidPathChars;
-				}
-				catch(NotImplementedException)
-				{
-					// The runtime engine does not have directory support.
-					DirectorySeparatorChar = '/';
-					AltDirectorySeparatorChar = '\0';
-					VolumeSeparatorChar = '\0';
-					PathSeparatorChar = ':';
-					InvalidPathChars = null;
 				}
 			}
 
@@ -108,16 +84,6 @@ public sealed class Environment
 				}
 			}
 
-	// Determine if we are running on Windows 95.
-	public static bool IsWin95
-			{
-				get
-				{
-					// As far as the caller is concerned, Win95 doesn't exist.
-					return false;
-				}
-			}
-
 	// Determine if application shutdown has started.
 	public static bool HasShutdownStarted
 			{
@@ -133,24 +99,6 @@ public sealed class Environment
 				get
 				{
 					return (new StackTrace(1)).ToString();
-				}
-			}
-
-	// Get the "System" directory.
-	public static String SystemDirectory
-			{
-				get
-				{
-					String dir = DirMethods.GetSystemDirectory();
-					if(dir != null)
-					{
-						return dir;
-					}
-					else
-					{
-						throw new NotSupportedException
-							(_("Exception_NoSystemDir"));
-					}
 				}
 			}
 
@@ -215,6 +163,24 @@ public sealed class Environment
 			}
 
 #if !ECMA_COMPAT
+
+	// Get the "System" directory.
+	public static String SystemDirectory
+			{
+				get
+				{
+					String dir = DirMethods.GetSystemDirectory();
+					if(dir != null)
+					{
+						return dir;
+					}
+					else
+					{
+						throw new NotSupportedException
+							(_("Exception_NoSystemDir"));
+					}
+				}
+			}
 
 	// Get or set the current working directory.
 	public static String CurrentDirectory

@@ -32,18 +32,22 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 	public static readonly TextWriter Null = new NullTextWriter();
 
 	// Local state.
-	protected char[] newLine;
+#if !ECMA_COMPAT
+	protected char[] CoreNewLine;
+#else
+	private char[] CoreNewLine;
+#endif
 	private IFormatProvider provider; 
 
 	// Constructors.
 	protected TextWriter()
 			{
-				newLine = Environment.NewLine.ToCharArray();
+				CoreNewLine = Environment.NewLine.ToCharArray();
 				provider = null;
 			}
 	protected TextWriter(IFormatProvider provider)
 			{
-				newLine = Environment.NewLine.ToCharArray();
+				CoreNewLine = Environment.NewLine.ToCharArray();
 				this.provider = provider;
 			}
 
@@ -190,7 +194,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 	// Write a newline to this text writer.
 	public virtual void WriteLine()
 			{
-				Write(newLine);
+				Write(CoreNewLine);
 			}
 
 	// Write a formatted string to this text writer followed by a newline.
@@ -289,17 +293,17 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			{
 				get
 				{
-					return new String(newLine);
+					return new String(CoreNewLine);
 				}
 				set
 				{
 					if(value != null)
 					{
-						newLine = value.ToCharArray();
+						CoreNewLine = value.ToCharArray();
 					}
 					else
 					{
-						newLine = "\r\n".ToCharArray();
+						CoreNewLine = "\r\n".ToCharArray();
 					}
 				}
 			}

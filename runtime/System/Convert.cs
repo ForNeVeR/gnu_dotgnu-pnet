@@ -37,6 +37,9 @@ public sealed class Convert
 	public static readonly Object DBNull = System.DBNull.Value;
 #endif // !ECMA_COMPAT
 
+	// This class cannot be instantiated.
+	private Convert() {}
+
 	// Convert various types into Boolean.
 	public static bool ToBoolean(bool value) { return value; }
 	public static bool ToBoolean(byte value) { return (value != 0); }

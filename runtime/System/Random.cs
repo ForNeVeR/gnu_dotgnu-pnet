@@ -36,7 +36,11 @@ public class Random
 
 	// Compute the next random number sample value.  This algorithm
 	// is based on "rand()" from the FreeBSD sources.
+#if !ECMA_COMPAT
 	protected virtual double Sample()
+#else
+	private double Sample()
+#endif
 			{
 				seed = unchecked((int)((((uint)seed) * 1103515245 + 12345) &
 									   (uint)0x7FFFFFFF));

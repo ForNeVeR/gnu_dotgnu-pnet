@@ -717,7 +717,12 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 
 	// Get the length of an array rank.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public int GetLength(int dimension);
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	extern int GetLength(int dimension);
 
 	// Get the lower bound of an array rank.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -782,8 +787,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	}
 
 	// Inner version of "IndexOf".
-	public static int InnerIndexOf(Array array, Object value,
-								   int start, int length)
+	private static int InnerIndexOf(Array array, Object value,
+								    int start, int length)
 	{
 		Object elem;
 		while(length > 0)
@@ -807,8 +812,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	}
 
 	// Inner version of "LastIndexOf".
-	public static int InnerLastIndexOf(Array array, Object value,
-								       int start, int length)
+	private static int InnerLastIndexOf(Array array, Object value,
+								        int start, int length)
 	{
 		Object elem;
 		start += length - 1;
@@ -953,7 +958,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	}
 
 	// Inner version of "Reverse".
-	public static void InnerReverse(Array array, int lower, int upper)
+	private static void InnerReverse(Array array, int lower, int upper)
 	{
 		Object temp;
 		while(lower < upper)

@@ -209,6 +209,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 				}
 			}
 
+#if !ECMA_COMPAT
 	// Create a CultureInfo object for a specific culture.
 	public static CultureInfo CreateSpecificCulture(String name)
 			{
@@ -254,6 +255,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 					return culture;
 				}
 			}
+#endif
 
 	// Get the default calendar that is used by the culture.
 	public virtual Calendar Calendar

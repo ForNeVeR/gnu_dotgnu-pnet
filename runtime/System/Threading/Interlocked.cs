@@ -25,6 +25,8 @@ using System.Runtime.CompilerServices;
 
 public sealed class Interlocked
 {
+	// This class cannot be instantiated.
+	private Interlocked() {}
 
 	// Compare two values and exchange if equal.
 	[MethodImpl(MethodImplOptions.InternalCall)]

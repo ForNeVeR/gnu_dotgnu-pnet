@@ -22,6 +22,8 @@
 namespace System.Collections.Specialized
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Collections;
 
@@ -58,5 +60,7 @@ public class StringEnumerator
 			}
 
 }; // class StringEnumerator
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Collections.Specialized

@@ -38,8 +38,7 @@ public enum AttributeTargets
 	Parameter		= 0x0800,
 	Delegate		= 0x1000,
 	ReturnValue		= 0x2000,
-	All				= 0x3FFF,
-	ClassMembers	= 0x17FC
+	All				= 0x3FFF
 
 }; // enum AttributeTargets
 

@@ -60,10 +60,10 @@ public class Exception
 	// Private members.
 	private String message;
 	private Exception innerException;
-	private String helpLink;
-	private String source;
 	private PackedStackFrame[] stackTrace;
 #if !ECMA_COMPAT
+	private String source;
+	private String helpLink;
 	private int hresult;
 	private bool hresultSet;
 	private String stackTraceString;
@@ -144,12 +144,14 @@ public class Exception
 			return result;
 		}
 
+#if !ECMA_COMPAT
 	// Set the help link for this exception.
 	public virtual Exception SetHelpLink(String help)
 		{
 			helpLink = help;
 			return this;
 		}
+#endif
 
 	// Convert the exception into a string.
 	public override String ToString()
@@ -224,7 +226,6 @@ public class Exception
 				hresultSet = true;
 			}
 		}
-#endif
 	public virtual String HelpLink
 		{
 			get
@@ -232,6 +233,40 @@ public class Exception
 				return helpLink;
 			}
 		}
+	public virtual String Source
+		{
+			get
+			{
+				if(source == null && stackTrace != null &&
+				   stackTrace.Length > 0)
+				{
+					MethodBase method = MethodBase.GetMethodFromHandle
+								(stackTrace[0].method);
+					source = method.DeclaringType.Module.Assembly.FullName;
+				}
+				return source;
+			}
+			set
+			{
+				source = value;
+			}
+		}
+	public virtual MethodBase TargetSite
+		{
+			get
+			{
+				if(stackTrace != null && stackTrace.Length > 0)
+				{
+					return MethodBase.GetMethodFromHandle
+								(stackTrace[0].method);
+				}
+				else
+				{
+					return null;
+				}
+			}
+		}
+#endif
 	public Exception InnerException
 		{
 			get
@@ -266,24 +301,6 @@ public class Exception
 				}
 			}
 		}
-	public virtual String Source
-		{
-			get
-			{
-				if(source == null && stackTrace != null &&
-				   stackTrace.Length > 0)
-				{
-					MethodBase method = MethodBase.GetMethodFromHandle
-								(stackTrace[0].method);
-					source = method.DeclaringType.Module.Assembly.FullName;
-				}
-				return source;
-			}
-			set
-			{
-				source = value;
-			}
-		}
 	public virtual String StackTrace
 		{
 			get
@@ -301,21 +318,6 @@ public class Exception
 				else
 				{
 					return String.Empty;
-				}
-			}
-		}
-	public virtual MethodBase TargetSite
-		{
-			get
-			{
-				if(stackTrace != null && stackTrace.Length > 0)
-				{
-					return MethodBase.GetMethodFromHandle
-								(stackTrace[0].method);
-				}
-				else
-				{
-					return null;
 				}
 			}
 		}

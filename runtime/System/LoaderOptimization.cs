@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 public enum LoaderOptimization
 {
 	NotSpecified	= 0,
@@ -29,5 +31,7 @@ public enum LoaderOptimization
 	MultiDomainHost = 3
 
 }; // enum LoaderOptimization
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

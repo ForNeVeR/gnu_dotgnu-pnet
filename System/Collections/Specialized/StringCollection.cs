@@ -22,6 +22,8 @@
 namespace System.Collections.Specialized
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Collections;
 
@@ -203,5 +205,7 @@ public class StringCollection : IList, ICollection, IEnumerable
 			}
 
 }; // class StringCollection
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Collections.Specialized

@@ -95,11 +95,6 @@ public struct Decimal : IComparable, IFormattable
 				else
 					return y;
 			}
-	[Obsolete("Use Decimal.Remainder instead")]
-	public static decimal Mod(decimal x, decimal y)
-			{
-				return Remainder(x, y);
-			}
 
 	// Declared operators.
 	public static decimal operator++(decimal x)

@@ -24,6 +24,9 @@ namespace System.Runtime.CompilerServices
 
 public sealed class RuntimeHelpers
 {
+	// This class cannot be instantiated.
+	private RuntimeHelpers() {}
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void InitializeArray
 				(Array array, RuntimeFieldHandle field);

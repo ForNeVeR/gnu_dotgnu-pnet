@@ -1,7 +1,7 @@
 /*
  * Path.cs - Implementation of the "System.IO.Path" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * Contributions from Charlie Carnow <carnow@gmx.net>
  * Contributions from Gopal V <gopalv82@symonds.net>
@@ -35,13 +35,15 @@ namespace System.IO
 		private static PathInfo p = DirMethods.GetPathInfo();
 		public static readonly char DirectorySeparatorChar = p.dirSeparator;
 		public static readonly char AltDirectorySeparatorChar = p.altDirSeparator;
-		public static readonly char VolumeSeparatorChar = p.volumeSeparator;
 		public static readonly char PathSeparator = p.pathSeparator;
+		public static readonly char VolumeSeparatorChar = p.volumeSeparator;
 		public static readonly char[] InvalidPathChars = p.invalidPathChars;
-		private static readonly char[] PathSeparatorChars = { DirectorySeparatorChar, AltDirectorySeparatorChar, VolumeSeparatorChar};
-			
+
 		// entropy for GetTempFilename()
 		static Random r=new Random();
+
+		// This class cannot be instantiated.
+		private Path() {}
 
 		public static String ChangeExtension(String path, String extension)
 		{

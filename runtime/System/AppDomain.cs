@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Security;
+using System.IO;
 using System.Collections;
 using System.Reflection;
 using System.Globalization;
@@ -222,7 +223,7 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				else
 				{
 					setup.PrivateBinPath =
-						previous + Environment.PathSeparatorChar + path;
+						previous + Path.PathSeparator + path;
 				}
 			}
 

@@ -26,6 +26,9 @@ using System.Runtime.CompilerServices;
 public sealed class GC
 {
 
+	// This class cannot be instantiated.
+	private GC() {}
+
 	// Keep an object reference alive.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void KeepAlive(Object obj);

@@ -25,6 +25,9 @@ using System.Runtime.CompilerServices;
 
 public sealed class Monitor
 {
+	// This class cannot be instantiated.
+	private Monitor() {}
+
 	// Enter a monitor on an object.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void Enter(Object obj);

@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 public enum PlatformID
 {
 	Win32S       = 0,
@@ -29,5 +31,7 @@ public enum PlatformID
 	Unix         = 128
 
 }; // enum PlatformID
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

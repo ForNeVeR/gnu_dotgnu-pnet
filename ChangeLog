@@ -28,6 +28,9 @@
 	* csant/csant_cscc.c: add properties to specify the locations of
 	"cscc-cs" and "cscc-c-s" for the cscc compiler.
 
+	* support/cmdline.c, support/spawn.c: improve response file
+	handling for mingw32 systems.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

@@ -352,8 +352,6 @@ void ILCmdLineHelp(const ILCmdLineOption *options)
 	}
 }
 
-#ifndef IL_WIN32_NATIVE
-
 /*
  * Abort due to insufficient memory.
  */
@@ -394,11 +392,12 @@ void ILCmdLineExpand(int *argc, char ***argv)
 	FILE *file;
 	char buffer[BUFSIZ];
 	char *temp;
+	char *respfile;
 
 	/* See if we have any response file references first */
 	for(arg = 1; arg < *argc; ++arg)
 	{
-		if((*argv)[arg][0] == '@' && (*argv)[arg][1] == '"')
+		if((*argv)[arg][0] == '@')
 		{
 			break;
 		}
@@ -416,18 +415,30 @@ void ILCmdLineExpand(int *argc, char ***argv)
 	AddNewArg(&newArgc, &newArgv, &maxArgc, (*argv)[0]);
 	for(arg = 1; arg < *argc; ++arg)
 	{
-		if((*argv)[arg][0] == '@' && (*argv)[arg][1] == '"')
+		if((*argv)[arg][0] == '@')
 		{
 			/* Response file reference */
-			len = strlen((*argv)[arg]);
-			if(len >= 3 && (*argv)[arg][len - 1] == '"')
+			respfile = (*argv)[arg] + 1;
+			if(*respfile == '"')
 			{
-				filename = ILDupString((*argv)[arg] + 2);
+				++respfile;
+				len = strlen(respfile);
+				if(len > 0 && respfile[len - 1] == '"')
+				{
+					--len;
+				}
+			}
+			else
+			{
+				len = strlen(respfile);
+			}
+			if(len > 0)
+			{
+				filename = ILDupNString(respfile, len);
 				if(!filename)
 				{
 					OutOfMemory();
 				}
-				filename[len - 3] = '\0';
 				if((file = fopen(filename, "r")) == NULL)
 				{
 					perror(filename);
@@ -481,30 +492,6 @@ void ILCmdLineExpand(int *argc, char ***argv)
 	*argc = newArgc - 1;
 	*argv = newArgv;
 }
-
-#else /* IL_WIN32_NATIVE */
-
-void ILCmdLineExpand(int *argc, char ***argv)
-{
-	/* Visual Studio's command-line parser already expands response files */
-}
-
-/*
- * This function stub forces Visual Studio to use a
- * command-line argument parser that supports wildcards.
- */
-
-#if !defined(__MINGW32__)
-
-void __cdecl _setargv(void)
-{
-	extern void __cdecl __setargv(void);
-	__setargv();
-}
-
-#endif	/* !__MINGW32__ */
-
-#endif	/* IL_WIN32_NATIVE */
 
 void ILCmdLineSuppressSlash(void)
 {

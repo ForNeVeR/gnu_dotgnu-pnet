@@ -56,7 +56,7 @@
 extern	"C" {
 #endif
 
-#ifdef	_WIN32
+#ifdef IL_WIN32_NATIVE
 
 /*
  * Use Windows-specific functions to spawn child processes.
@@ -67,6 +67,8 @@ int ILSpawnProcess(char *argv[])
 	int len;
 	char **newargv = 0;
 	char *tempfile = 0;
+	char *quotedprog = 0;
+	char *program = argv[0];
 	int status;
 	char temppath[MAX_PATH];
 	char tempname[MAX_PATH + 3];
@@ -77,7 +79,7 @@ int ILSpawnProcess(char *argv[])
 	/* Scan the command-line to see if it may be too big to
 	   fit in the system's command-line buffer.  If so, we
 	   must write the options to a temporary file instead */
-	arg = 1;
+	arg = 0;
 	len = 0;
 	useResponseFile = 0;
 	while(argv[arg] != 0)
@@ -107,6 +109,10 @@ int ILSpawnProcess(char *argv[])
 			}
 		}
 		++len;
+		++arg;
+	}
+	if(!arg && useResponseFile)
+	{
 		++arg;
 	}
 
@@ -157,7 +163,18 @@ int ILSpawnProcess(char *argv[])
 			DeleteFile(tempfile);
 			return -1;
 		}
-		for(arg = 0; arg < responsePosn; ++arg)
+		quotedprog = (char *)ILMalloc(strlen(argv[0]) + 3);
+		if(!quotedprog)
+		{
+			ILFree(newargv);
+			DeleteFile(tempfile);
+			return -1;
+		}
+		quotedprog[0] = '"';
+		strcpy(quotedprog + 1, argv[0]);
+		strcat(quotedprog, "\"");
+		newargv[0] = quotedprog;
+		for(arg = 1; arg < responsePosn; ++arg)
 		{
 			newargv[arg] = argv[arg];
 		}
@@ -167,7 +184,7 @@ int ILSpawnProcess(char *argv[])
 	}
 
 	/* Spawn the child process and wait for it to exit */
-	status = spawnvp(_P_WAIT, argv[0], (char * const *)argv);
+	status = spawnvp(_P_WAIT, program, (char * const *)argv);
 
 	/* Delete the temporary option file */
 	if(tempfile)
@@ -179,6 +196,10 @@ int ILSpawnProcess(char *argv[])
 	if(newargv)
 	{
 		ILFree(newargv);
+	}
+	if(quotedprog)
+	{
+		ILFree(quotedprog);
 	}
 
 	/* Done */

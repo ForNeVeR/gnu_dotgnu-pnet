@@ -197,7 +197,7 @@ ILFlagInfo const ILMethodSemanticsFlags[] = {
  */
 ILFlagInfo const ILMethodImplementationFlags[] = {
 	{"cil", IL_META_METHODIMPL_IL,
-				IL_META_METHODIMPL_CODE_TYPE_MASK},
+				IL_META_METHODIMPL_CODE_TYPE_MASK | IL_META_METHODIMPL_JAVA},
 	{"native", IL_META_METHODIMPL_NATIVE,
 				IL_META_METHODIMPL_CODE_TYPE_MASK},
 	{"optil", IL_META_METHODIMPL_OPTIL,
@@ -214,7 +214,9 @@ ILFlagInfo const ILMethodImplementationFlags[] = {
 	{"preserve_sig", IL_META_METHODIMPL_OLE, 0},
 	/*{"ole", IL_META_METHODIMPL_OLE, 0},*/
 	{"internalcall", IL_META_METHODIMPL_INTERNAL_CALL, 0},
-	{0, 0, 0xFFFFEF40},
+	{"java_fp_strict", IL_META_METHODIMPL_JAVA_FP_STRICT, 0},
+	{"java", IL_META_METHODIMPL_JAVA, 0},
+	{0, 0, 0xFFFF8F40},
 };
 
 /*

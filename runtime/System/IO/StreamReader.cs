@@ -51,6 +51,7 @@ public class StreamReader : TextReader
 	private int    		outBufferLen;
 	private bool   		sawEOF;
 	private bool		streamOwner;
+	private bool		encodingDetected;
 
 	// Constructors that are based on a stream.
 	public StreamReader(Stream stream)
@@ -103,12 +104,7 @@ public class StreamReader : TextReader
 				this.outBufferLen = 0;
 				this.sawEOF = false;
 				this.streamOwner = false;
-
-				// Should we change encodings based on a byte order mark?
-				if(detectEncodingFromByteOrderMarks)
-				{
-					DetectByteOrder();
-				}
+				this.encodingDetected = !detectEncodingFromByteOrderMarks;
 
 				// Get a decoder for the encoding.
 				decoder = encoding.GetDecoder();
@@ -167,12 +163,7 @@ public class StreamReader : TextReader
 				this.outBufferLen = 0;
 				this.sawEOF = false;
 				this.streamOwner = true;
-
-				// Should we change encodings based on a byte order mark?
-				if(detectEncodingFromByteOrderMarks)
-				{
-					DetectByteOrder();
-				}
+				this.encodingDetected = !detectEncodingFromByteOrderMarks;
 
 				// Get a decoder for the encoding.
 				decoder = encoding.GetDecoder();
@@ -181,39 +172,75 @@ public class StreamReader : TextReader
 	// Detect the byte order by inspecting the first few bytes.
 	private void DetectByteOrder()
 			{
-				// Pre-read the first full buffer of input data.
-				inBufferLen = stream.Read(inBuffer, 0, bufferSize);
-				if(inBufferLen <= 0)
+				if(inBufferLen < 1)
 				{
-					sawEOF = true;
-					inBufferLen = 0;
+					return;
 				}
 
 				// Check for recognized byte order marks.
 				if(inBufferLen >= 2 &&
-				   inBuffer[0] == 0xFF &&
-				   inBuffer[1] == 0xFE)
+					inBuffer[0] == 0xFF &&
+					inBuffer[1] == 0xFE)
 				{
 					// Little-endian UTF-16.
 					encoding = Encoding.Unicode;
 					inBufferPosn = 2;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
 				}
 				else if(inBufferLen >= 2 &&
-				        inBuffer[0] == 0xFE &&
-				        inBuffer[1] == 0xFF)
+					inBuffer[0] == 0xFE &&
+					inBuffer[1] == 0xFF)
 				{
 					// Big-endian UTF-16.
 					encoding = Encoding.BigEndianUnicode;
 					inBufferPosn = 2;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
 				}
 				else if(inBufferLen >= 3 &&
-						inBuffer[0] == 0xEF &&
-						inBuffer[1] == 0xBB &&
-						inBuffer[2] == 0xBF)
+					inBuffer[0] == 0xEF &&
+					inBuffer[1] == 0xBB &&
+					inBuffer[2] == 0xBF)
 				{
 					// UTF-8.
 					encoding = Encoding.UTF8;
-					inBufferPosn = 3;
+					inBufferPosn = 3;					
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
+				else
+				{
+					// Here we cancel the encoding detection if the marker bytes aren't recognised
+
+					if(inBufferLen >= 1)
+					{
+						if(!(inBuffer[0] == 0xFF || inBuffer[0] == 0xFE
+							|| inBuffer[0] == 0xEF))
+						{
+							/* Cancel encoding detection.  Go with default. */
+
+							encodingDetected = true;
+						}
+						else if(inBufferLen >= 2)
+						{
+							if(!(inBuffer[1] == 0xFE || inBuffer[1] == 0xFF || inBuffer[1] == 0xBB))
+							{
+								/* Cancel encoding detection.  Go with default. */
+
+								encodingDetected = true;
+							} 
+							else if(inBufferLen >= 3)
+							{
+								if(!(inBuffer[3] == 0xBF))
+								{
+									/* Cancel encoding detection.  Go with default. */
+
+									encodingDetected = true;
+								}
+							}
+						}
+					}
 				}
 			}
 
@@ -272,36 +299,71 @@ public class StreamReader : TextReader
 
 				while(outBufferPosn >= outBufferLen && !sawEOF)
 				{
-					// Move the previous left-over buffer contents down.
-					if((inBufferLen - inBufferPosn) < bufferSize)
-					{
-						if(inBufferPosn < inBufferLen)
-						{
-							Array.Copy
-								(inBuffer, inBufferPosn,
-							     inBuffer, 0, inBufferLen - inBufferPosn);
-							inBufferLen -= inBufferPosn;
-						}
-						else
-						{
-							inBufferLen = 0;
-						}
-						inBufferPosn = 0;
+					// This loop exits when there is an EOF or some bytes have been read and
+					// the encoding has been detected.
 
-						// Read new bytes into the buffer.
-						if(stream == null)
+					while(true)
+					{
+						// Move the previous left-over buffer contents down.
+						if((inBufferLen - inBufferPosn) < bufferSize)
 						{
-							throw new IOException(_("IO_StreamClosed"));
-						}
-						len = stream.Read(inBuffer, inBufferLen,
-										  bufferSize - inBufferLen);
-						if(len <= 0)
+							if(inBufferPosn < inBufferLen)
+							{
+								Array.Copy
+									(inBuffer, inBufferPosn,
+									inBuffer, 0, inBufferLen - inBufferPosn);
+								inBufferLen -= inBufferPosn;
+							}
+							else
+							{
+								inBufferLen = 0;
+							}
+
+							inBufferPosn = 0;
+
+							// Read new bytes into the buffer.
+							if(stream == null)
+							{
+								throw new IOException(_("IO_StreamClosed"));
+							}
+									
+							len = stream.Read(inBuffer, inBufferLen,
+								bufferSize - inBufferLen);
+
+							if(len <= 0)
+							{
+								if(!encodingDetected)
+								{
+									inBufferLen = 0;
+									inBufferPosn = 0;
+								}
+
+								sawEOF = true;
+
+								break;
+							}
+							else
+							{
+								inBufferLen += len;
+							}
+						}								
+
+						if(inBufferLen > 0)
 						{
-							sawEOF = true;
-						}
-						else
-						{
-							inBufferLen += len;
+							if(!encodingDetected)
+							{
+								// Try to detect the encoding
+
+								DetectByteOrder();
+							}
+
+							if(encodingDetected && (inBufferLen - inBufferPosn > 0))
+							{
+								// Only exit if the encoding has been detected and some bytes
+								// have been read.
+
+								break;
+							}
 						}
 					}
 
@@ -314,8 +376,7 @@ public class StreamReader : TextReader
 					}
 
 					// Convert the bytes into characters.
-					outLen = decoder.GetChars(inBuffer, inBufferPosn, len,
-											  outBuffer, 0);
+					outLen = decoder.GetChars(inBuffer, inBufferPosn, len, outBuffer, 0);
 					outBufferPosn = 0;
 					outBufferLen = outLen;
 					inBufferPosn += len;

@@ -22,7 +22,8 @@
 	and END_NATIVE_CALL macros.  The *NATIVE_CALL functions
 	configurestate to allow the runtime to figure out if it is
 	running managed or unamnaged code.  CHECK_ABORT is used to
-	check for aborts after a function call.
+	check for aborts after a function call so aborts can be
+	initiated at most points in a thread's life.
 	
 	* engine/cvm_except.c: Added cases for COP_PREFIX_START_CATCH,
 	COP_PREFIX_START_FINALLY and COP_PREFIX_PROPAGATE_ABORT.
@@ -55,8 +56,12 @@
 	Reimplemented Thread.Abort internal call -- made thread safe
 	to aborts to be safely called on dead/dying threads.
 	
-	* engine/null_coder: Added null definitions for Coder_Finally
+	* engine/null_coder.c: Added null definitions for Coder_Finally
 	and Coder_EndCatchFinally.
+	
+	* engine/verify_except.c: Changed coder JSR calls to Finally
+	calls.  Added EndCatchFinally call on IL_OP_LEAVE and
+	IL_OP_ENDFINALLY.
 	
 2004-05-24  Norbert Bollow  <nb@SoftwareEconomics.biz>
 

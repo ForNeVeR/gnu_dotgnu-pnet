@@ -36,7 +36,7 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 	ILUInt32 end;
 	ILException *exception;
 	ILClass *classInfo;
-
+	
 	/* Process all regions in the method */
 	offset = 0;
 	for(;;)
@@ -84,7 +84,7 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 										IL_META_EXCEPTION_FAULT)) != 0)
 				{
 					/* Call a "finally" or "fault" clause */
-					ILCoderJsr(coder, exception->handlerOffset);
+					ILCoderFinally(coder, exception, exception->handlerOffset);					
 				}
 				else if((exception->flags & IL_META_EXCEPTION_FILTER) == 0)
 				{
@@ -92,6 +92,7 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 					classInfo = ILProgramItemToClass
 						((ILProgramItem *)ILImageTokenInfo
 							(ILProgramItem_Image(method), exception->extraArg));
+
 					ILCoderCatch(coder, exception, classInfo, hasRethrow);
 				}
 				else
@@ -255,9 +256,31 @@ break;
 
 case IL_OP_ENDFINALLY:
 {
+	ILException *currentException = 0;
+
 	/* End the current "finally" or "fault" clause */
 	if(stackSize == 0)
 	{
+		exception = exceptions;
+
+		while(exception != 0)
+		{
+			if (offset >= exception->handlerOffset 
+				&& offset <= (exception->handlerOffset + exception->handlerLength))
+			{
+				if (exception->flags == IL_META_EXCEPTION_FINALLY)
+				{
+					/* This is a current exception clause that's leaving. */
+					currentException = exception;
+
+					break;
+				}
+			}
+
+			exception = exception->next;
+		}
+
+		ILCoderEndCatchFinally(coder, currentException);
 		ILCoderRetFromJsr(coder);
 		lastWasJump = 1;
 	}
@@ -278,9 +301,14 @@ break;
 
 case IL_OP_LEAVE_S:
 {
+	ILException *currentException;
+	
 	/* Unconditional short branch out of an exception block */
 	dest = GET_SHORT_DEST();
 processLeave:
+	
+	currentException = 0;
+	
 	/* The stack must be empty when we leave the block */
 	while(stackSize)
 	{
@@ -290,20 +318,43 @@ processLeave:
 		stackSize--;
 	}
 
-	/* Call any applicable "finally" handlers, but not "fault" handlers */
+	/* Find the handler for this "leave" instruction*/
 	exception = exceptions;
 	while(exception != 0)
 	{
+		if (offset >= exception->handlerOffset 
+			&& offset < (exception->handlerOffset + exception->handlerLength))
+		{
+			if (exception->flags == IL_META_EXCEPTION_FINALLY 
+				|| exceptions->flags == IL_META_EXCEPTION_CATCH)
+			{
+				currentException = exception;				
+			}			
+		}
+		
+		exception = exception->next;
+	}
+	
+	/* Call any applicable "finally" handlers, but not "fault" handlers */
+	exception = exceptions;
+	while(exception != 0)
+	{		
 		if((exception->flags & IL_META_EXCEPTION_FINALLY) != 0 &&
 		   InsideExceptionBlock(exception, offset) &&
 		   !InsideExceptionBlock(exception, dest))
 		{
 			/* Call the "finally" clause for exiting this level */
-			ILCoderJsr(coder, exception->handlerOffset);
+			ILCoderFinally(coder, exception, exception->handlerOffset);
 		}
+
 		exception = exception->next;
 	}
 
+	if (currentException)
+	{
+		ILCoderEndCatchFinally(coder, currentException);
+	}
+	
 	/* Output the branch instruction */
 	ILCoderBranch(coder, opcode, dest, ILEngineType_I4, ILEngineType_I4);
 	VALIDATE_BRANCH_STACK(dest);

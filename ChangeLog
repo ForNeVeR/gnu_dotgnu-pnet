@@ -1,4 +1,9 @@
 
+2001-03-17  Gopal.V  <gopalv82@yahoo.com>
+	* ilnative/Makefile.am ilnative/ilcheck.c: A status check
+	for the InternalCalls implemented in mscorlib.dll but missing
+	in engine.
+
 2001-03-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (FieldToConstant): bug in the

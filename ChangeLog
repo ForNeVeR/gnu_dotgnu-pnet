@@ -1,4 +1,8 @@
 
+2003-11-07  Joe Boese  <joseph_boese@hotmail.com>
+
+	* System/Uri.cs: flesh out the Uri.IsPrefix method.
+
 2003-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Collections/Generic/Comparer.cs,

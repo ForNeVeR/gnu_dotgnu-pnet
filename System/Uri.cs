@@ -1029,12 +1029,48 @@ public class Uri : MarshalByRefObject
 	}	
 
 	// Determine if this URI is a prefix of a specified URI.
-	[TODO]
 	internal bool IsPrefix(Uri uri)
 	{
-		// TODO
-		return false;
+		String strhost = this.Host;
+		String specifiedstrhost = uri.Host;
+		String strpath = this.LocalPath;
+		String specifiedstrpath=uri.LocalPath;
+		String strscheme = this.Scheme;
+		String specifiedstrscheme = uri.Scheme;
+		
+		if(String.Compare(strscheme, specifiedstrscheme, true) == 0 && String.Compare(strhost, specifiedstrhost, true) == 0)
+		{
+			if(String.CompareOrdinal(strpath, specifiedstrpath) == 0)
+			{
+				//if paths exactly the same, return true
+				return true;
+					
+			} else if(String.CompareOrdinal(strpath, strpath.Length, "/", 0, 1) == 0 )
+			{
+				//path string has / at the end of it, so direct comparison can be made.
+				if (String.CompareOrdinal(strpath, 0, specifiedstrpath, 0, strpath.Length) == 0)
+				{
+					return true;
+				} else {
+					return false;
+				}
+													
+			} else {
+
+				// a / must be appended to this.LocalPath to do comparison
+				strpath = strpath + "/";
+				if (String.CompareOrdinal(strpath, 0, specifiedstrpath, 0, strpath.Length) == 0)
+				{
+					return true;
+				} else {
+					return false;
+				} 
+			}
+		} else {
+			return false;
+		}
 	}
+
 
 	// Determine if this is an UNC path.
 	public bool IsUnc

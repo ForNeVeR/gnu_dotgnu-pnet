@@ -83,6 +83,11 @@ static ILCmdLineOption const options[] = {
 	{"-M", 'M', 0, 0, 0},
 	{"--method-profile", 'M', 0, 0, 0},
 
+	{"-S", 'S', 1, 0, 0},
+	{"--stack-size", 'S', 1, 
+	        "--stack-size value or -S value",
+	        "Set the operation stack size to 'value'."},
+
 	{0, 0, 0, 0, 0}
 };
 
@@ -93,6 +98,7 @@ int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	unsigned long heapSize = 0;
+	unsigned long stackSize = 0;
 	char **libraryDirs;
 	int numLibraryDirs;
 	int state, opt;
@@ -124,6 +130,17 @@ int main(int argc, char *argv[])
 	{
 		switch(opt)
 		{
+			case 'S':
+			{
+			        stackSize = 0;
+				while(*param >= '0' && *param <= '9')
+			        {
+				        stackSize = stackSize * 10 + (unsigned long)(*param - '0');
+					++param;
+			        }
+			}
+			break;
+
 			case 'H':
 			{
 				heapSize = 0;
@@ -207,7 +224,7 @@ int main(int argc, char *argv[])
 	ILExecInit(heapSize);
 
 	/* Create a process to load the program into */
-	process = ILExecProcessCreate();
+	process = ILExecProcessCreate(stackSize);
 	if(!process)
 	{
 		fprintf(stderr, "%s: could not create process\n", progname);

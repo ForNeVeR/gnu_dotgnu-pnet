@@ -30,7 +30,7 @@ void ILExecInit(unsigned long maxSize)
 	ILGCInit(maxSize);
 }
 
-ILExecProcess *ILExecProcessCreate(void)
+ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 {
 	ILExecProcess *process;
 
@@ -44,7 +44,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	/* Initialize the fields */
 	process->firstThread = 0;
 	process->mainThread = 0;
-	process->stackSize = IL_ENGINE_STACK_SIZE;
+	process->stackSize = stackSize < IL_ENGINE_STACK_SIZE ? IL_ENGINE_STACK_SIZE : stackSize;
 	process->frameStackSize = IL_ENGINE_FRAME_STACK_SIZE;
 	process->context = 0;
 	process->exitStatus = 0;

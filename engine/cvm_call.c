@@ -23,11 +23,26 @@
 /*
  * Allocate a new call frame.
  */
-static ILCallFrame *AllocCallFrame(ILExecThread *thread)
+ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 {
-	/* TODO: resize the call frame stack */
-	return 0;
+   ILUInt32 newsize;
+   ILCallFrame *newframe;
+
+   /*  Calculate target frame size */
+   newsize = thread->maxFrames * 2;
+
+   if (!(newframe = (ILCallFrame *)ILGCAllocPersistent(sizeof(ILCallFrame) * newsize)))
+      return 0;
+
+   ILMemCpy(newframe, thread->frameStack, sizeof(ILCallFrame) * thread->maxFrames);
+   ILGCFreePersistent(thread->frameStack);
+   
+   thread->frameStack = newframe;
+   thread->maxFrames = newsize;
+
+   return &thread->frameStack[thread->numFrames++];
 }
+
 #ifdef IL_DUMP_CVM
 #define	DUMP_STACK()	\
 			do { \
@@ -64,7 +79,7 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 				} \
 				else \
 				{ \
-					callFrame = AllocCallFrame(thread); \
+					callFrame = _ILAllocCallFrame(thread); \
 					if(!callFrame) \
 					{ \
 						STACK_OVERFLOW_EXCEPTION(); \

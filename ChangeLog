@@ -1,4 +1,17 @@
 
+2002-05-04  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* engine/call.c, engine/cvm_call.c, engine/engine.h:
+	implement dynamic reallocations of frame stack (and add some stack
+	overflow exceptions where they were TODOs).
+
+	* engine/call.c:  Use _ILSystemException to provide
+	StackOverflowException information from CallMethod and CallMethodV.
+
+	* enigine/ilrun.c, engine/process.c, include/il_engine.h:
+	Add '--stack-size' and '-S' command-line arguments to allow override
+	of default stack size (8K).
+
 2002-05-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csdoc/doc_valil.c (AttributeToName): length-determination error

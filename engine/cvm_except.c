@@ -48,7 +48,7 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
 			{
 				callFrame = &(thread->frameStack[(thread->numFrames)++]);
 			}
-			else if((callFrame = AllocCallFrame(thread)) == 0)
+			else if((callFrame = _ILAllocCallFrame(thread)) == 0)
 			{
 				/* We ran out of memory trying to push the frame */
 				object = thread->thrownException;

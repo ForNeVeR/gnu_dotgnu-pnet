@@ -345,6 +345,14 @@ ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n);
 ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame);
 
 /*
+ * Reallocate the call frames for a given thread in order to provide more space.
+ *
+ * This simply allocates twice what was already there.  
+ * It could be more clever, but why?
+ */
+ILCallFrame *_ILAllocCallFrame(ILExecThread *thread);
+
+/*
  * Create a system exception object of a particular class.
  * We do this very carefully, to avoid re-entering the engine.
  * We cannot call the exception's constructor, so we do the

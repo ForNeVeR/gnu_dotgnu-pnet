@@ -1,7 +1,7 @@
 /*
  * TypeCode.cs - Implementation of the "System.TypeCode" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace Microsoft.JScript
 {
 
-#if !ECMA_COMPAT
+#if ECMA_COMPAT
 
-public enum TypeCode
+// Used to work around the missing System.TypeCode type in ECMA_COMPAT mode.
+
+internal enum TypeCode
 {
 	Empty		= 0x00,
 	Object		= 0x01,
@@ -46,6 +48,6 @@ public enum TypeCode
 
 }; // enum TypeCode
 
-#endif // !ECMA_COMPAT
+#endif // ECMA_COMPAT
 
-}; // namespace System
+}; // namespace Microsoft.JScript

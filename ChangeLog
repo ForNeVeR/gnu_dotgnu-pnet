@@ -6,6 +6,10 @@
 	for "Array.Copy"; implement primitive type conversions in
 	ECMA_COMPAT mode.
 
+	* JScript/Execute/TypeCode.cs, runtime/System/TypeCode.cs:
+	mark "System.TypeCode" as non-ECMA and add a shadow copy of
+	"TypeCode" to "JScript" so that it still works in ECMA mode.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: make "ArgIterator.GetHashCode"

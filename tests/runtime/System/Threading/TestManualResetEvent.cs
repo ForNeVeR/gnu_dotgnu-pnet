@@ -44,7 +44,7 @@ public class TestManualResetEvent
 	{
 	}
 
-	public void TestWaitOne()
+	public void TestWaitOneSingleThreaded()
 	{
 		bool x;
 
@@ -57,6 +57,42 @@ public class TestManualResetEvent
 		e1.Set();
 
 		x = e1.WaitOne(10,false);
+
+		AssertEquals("WaitOne(set)", x, true);
+
+		// It should still be set.
+
+		x = e1.WaitOne(10,false);
+
+		AssertEquals("WaitOne(set)", x, true);
+	}
+
+	private void SetE1()
+	{
+		e1.Set();
+	}
+	
+	public void TestWaitOneMultiThreaded()
+	{
+		bool x;
+		Thread thread1;
+
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+		
+		e1 = new ManualResetEvent(false);
+
+		x = e1.WaitOne(10,false);
+
+		AssertEquals("WaitOne(unset)", x, false);
+
+		thread1 = new Thread(new ThreadStart(SetE1));
+		
+		thread1.Start();
+
+		x = e1.WaitOne(4000,false);
 
 		AssertEquals("WaitOne(set)", x, true);
 

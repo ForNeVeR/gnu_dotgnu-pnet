@@ -1,11 +1,16 @@
 
+2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/Makefile.am, csant/csant.1: add the "csant.1" man page
+	to the Makefile; minor edits to the man page.
+
 2003-07-27  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_type.c: Avoid boxing conversions when dealing with
 	parameter checks.
 
 	* csant/csant.1: Add a minimal man page for csant .
-	
+
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.5.10" release.

@@ -1,6 +1,6 @@
 bin_PROGRAMS   = csant
-#man_MANS       = csant.1
-#EXTRA_DIST     = $(man_MANS)
+man_MANS       = csant.1
+EXTRA_DIST     = $(man_MANS)
 csant_SOURCES  = csant.c \
 				 csant_build.c \
 				 csant_cscc.c \

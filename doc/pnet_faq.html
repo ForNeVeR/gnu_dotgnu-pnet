@@ -6,7 +6,7 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2002/04/01 05:23:22 $<p>
+Last Modified: $Date: 2002/04/16 22:40:45 $<p>
 
 Copyright &copy; 2001, 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -277,6 +277,13 @@ by searching the <code>PATH</code>.  You can specify an explicit
 pathname as follows:
 
 <blockquote><code>ilrun --register /usr/local/bin/ilrun</code></blockquote>
+
+If you prefer to start and stop services with "<code>init.d</code>",
+you can use the script "<code>doc/init.d-pnet</code>".  Copy it to
+"<code>/etc/init.d/pnet</code>".  The script uses
+"<code>/usr/local/bin/ilrun</code>" to register the engine, and it is
+designed for the Redhat distribution.  Minor modifications may be required
+for other install locations and distributions.<p>
 
 <a name="q2_4"><h3>2.4. Can I use "ilrun" and Wine together?</h3>
 

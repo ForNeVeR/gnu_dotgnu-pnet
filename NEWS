@@ -7,7 +7,6 @@
 	  speed up common field access operations.
 	* Method profiling.
 	* Recognise invalid program entry points.
-	* Semantic analysis and code generation for the array "new" operator.
 	* Stub "Reflection.Emit" internalcalls.
 	* Make sure that "ilverify" loads the assembly dependencies.
 	* Insert stack traces into exception objects that are created
@@ -19,6 +18,7 @@
 	C# Compiler:
 
 	* Compile against the correct system library (builtin vs pnetlib).
+	* Semantic analysis and code generation for the array "new" operator.
 	* Correct handling of "beforefieldinit" on classes.
 	* Output the correct security attributes to mark assemblies as "unsafe".
 	* Do not insert coercions into the result type of an operator.

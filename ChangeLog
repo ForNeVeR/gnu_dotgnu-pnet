@@ -1,4 +1,9 @@
 
+2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon
+	box in the file dialog (navigation is not possible yet).
+
 2003-12-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Remoting.txt,

@@ -360,6 +360,17 @@ public abstract class FileDialog : CommonDialog
 	private const short IconCode_Drive     = 1;
 	private const short IconCode_File      = 2;
 	private const short IconCode_Link      = 3;
+	private const short IconCode_App       = 4;
+	private const short IconCode_Dll       = 5;
+	private const short IconCode_Text      = 6;
+	private const short IconCode_Num       = 7;
+
+	// Icon sizes and item spacing.
+	private const int IconWidth				= 16;
+	private const int IconHeight			= 16;
+	private const int IconSpacing			= 4;
+	private const int ColumnSpacing			= 32;
+	private const int TextSelectOverlap		= 2;
 
 	// Information that is stored for a filesystem entry.
 	private sealed class FilesystemEntry : IComparable
@@ -437,6 +448,56 @@ public abstract class FileDialog : CommonDialog
 					}
 					while(--count > 0);
 				#endif
+				}
+
+		// Set the icon code based on the file's extension.
+		public void SetIconCode()
+				{
+					if(iconCode != IconCode_File)
+					{
+						return;
+					}
+					switch(Path.GetExtension(name).ToLower())
+					{
+						case ".txt": case ".text": case ".c": case ".cs":
+						case ".h": case ".cc": case ".cpp": case ".hpp":
+						case ".doc": case ".rtf": case ".xml": case ".texi":
+						case ".tex": case ".html":
+						{
+							iconCode = IconCode_Text;
+						}
+						break;
+
+						case ".exe":
+						{
+							iconCode = IconCode_App;
+						}
+						break;
+
+						case ".dll":
+						{
+							iconCode = IconCode_Dll;
+						}
+						break;
+
+						case ".out":
+						{
+							if(String.Compare(name, "a.out", true) == 0)
+							{
+								iconCode = IconCode_App;
+							}
+						}
+						break;
+
+						case "":
+						{
+							if(String.Compare(name, "README", true) == 0)
+							{
+								iconCode = IconCode_Text;
+							}
+						}
+						break;
+					}
 				}
 
 	}; // class FilesystemEntry
@@ -552,6 +613,7 @@ public abstract class FileDialog : CommonDialog
 					entry.isSymlink = false;
 				#endif
 					entries[posn++] = entry;
+					entry.SetIconCode();
 				}
 				if(links != null)
 				{
@@ -578,6 +640,7 @@ public abstract class FileDialog : CommonDialog
 						if(entry.isSymlink)
 						{
 							entry.ResolveSymlinks();
+							entry.SetIconCode();
 						}
 					}
 				}
@@ -592,6 +655,15 @@ public abstract class FileDialog : CommonDialog
 	{
 		// Internal state.
 		private HScrollBar scrollBar;
+		private FilesystemEntry[] entries;
+		private int columns;
+		private int rows;
+		private int leftMostColumn;
+		private int columnWidth;
+		private int textHeight;
+		private int rowHeight;
+		private int selected;
+		private Icon[] icons;
 
 		// Constructor.
 		public FileIconListBox()
@@ -600,6 +672,7 @@ public abstract class FileDialog : CommonDialog
 					ForeColor = SystemColors.WindowText;
 					BackColor = SystemColors.Window;
 					BorderStyleInternal = BorderStyle.Fixed3D;
+					ResizeRedraw = true;
 
 					// Create the horizontal scroll bar and position it.
 					scrollBar = new HScrollBar();
@@ -608,12 +681,136 @@ public abstract class FileDialog : CommonDialog
 					scrollBar.Visible = false;
 					scrollBar.Dock = DockStyle.Bottom;
 					Controls.Add(scrollBar);
+
+					// Load the icons.  We need icons for drives and links.
+					icons = new Icon [IconCode_Num];
+					icons[0] = new Icon(typeof(FileDialog), "small_folder.ico");
+					icons[1] = new Icon(typeof(FileDialog), "small_folder.ico");
+					icons[2] = new Icon
+						(typeof(FileDialog), "small_document.ico");
+					icons[3] = new Icon
+						(typeof(FileDialog), "small_document.ico");
+					icons[4] = new Icon
+						(typeof(FileDialog), "small_application.ico");
+					icons[5] = new Icon
+						(typeof(FileDialog), "small_dll.ico");
+					icons[6] = new Icon
+						(typeof(FileDialog), "small_text.ico");
+				}
+
+		// Destroy the handle associated with the control.
+		protected override void DestroyHandle()
+				{
+					base.DestroyHandle();
+					if(icons != null)
+					{
+						foreach(Icon icon in icons)
+						{
+							icon.Dispose();
+						}
+						icons = null;
+					}
+				}
+
+		// Get or set the entries in this icon box.
+		public FilesystemEntry[] Entries
+				{
+					get
+					{
+						return entries;
+					}
+					set
+					{
+						entries = value;
+						LayoutControl();
+						Invalidate();
+					}
 				}
 
 		// Lay out the control after a change in contents.
-		public void LayoutControl()
+		private void LayoutControl()
 				{
-					// TODO
+					// Bail out early if there are no entries to display.
+					if(entries == null || entries.Length == 0)
+					{
+						rows = 1;
+						columns = 1;
+						columnWidth = 1;
+						textHeight = 1;
+						rowHeight = 1;
+						leftMostColumn = 0;
+						selected = -1;
+						scrollBar.Visible = false;
+						return;
+					}
+
+					// Measure all of the entries and get the maximum
+					// column width and row height values.
+					SizeF size;
+					Font font = Font;
+					int width;
+					using(Graphics graphics = CreateGraphics())
+					{
+						textHeight = (int)(font.GetHeight(graphics));
+						rowHeight = textHeight;
+						if(rowHeight < (IconHeight + 1))
+						{
+							rowHeight = IconHeight + 1;
+						}
+						columnWidth = IconWidth + IconSpacing + ColumnSpacing;
+						foreach(FilesystemEntry entry in entries)
+						{
+							size = graphics.MeasureString(entry.name, font);
+							width = (IconWidth + IconSpacing + ColumnSpacing) +
+									(int)(size.Width);
+							if(width > columnWidth)
+							{
+								columnWidth = width;
+							}
+						}
+					}
+
+					// Determine if the entire list will fit in the
+					// client area or if we need to add a scroll bar.
+					Rectangle client = ClientRectangle;
+					if(columnWidth > client.Width)
+					{
+						columnWidth = client.Width;
+					}
+					if(columnWidth < 1)
+					{
+						columnWidth = 1;
+					}
+					rows = client.Height / rowHeight;
+					if(rows < 1)
+					{
+						rows = 1;
+					}
+					columns = (entries.Length + rows - 1) / rows;
+					int visibleColumns =
+						(client.Width + columnWidth - 1) / columnWidth;
+					leftMostColumn = 0;
+					selected = -1;
+					if(columns <= visibleColumns)
+					{
+						// We won't need a scroll bar to display the contents.
+						scrollBar.Visible = false;
+					}
+					else
+					{
+						// We need a scroll bar to display the contents.
+						rows = (client.Height - scrollBar.Height) / rowHeight;
+						if(rows < 1)
+						{
+							rows = 1;
+						}
+						columns = (entries.Length + rows - 1) / rows;
+						scrollBar.Value = 0;
+						scrollBar.Maximum = columns - 1;
+						scrollBar.SmallChange = 1;
+						scrollBar.LargeChange = 1;
+						scrollBar.Visible = true;
+					}
 				}
 
 		// Handle a layout request from the parent class.
@@ -621,6 +818,114 @@ public abstract class FileDialog : CommonDialog
 				{
 					base.OnLayout(e);
 					LayoutControl();
+				}
+
+		// Draw a particular entry at a specified location.
+		private void DrawEntry(Graphics graphics, int entry,
+							   int x, int y, Font font,
+							   bool clearBackground)
+				{
+					// Bail out if the entry index is out of range.
+					if(entries == null || entry < 0 || entry >= entries.Length)
+					{
+						return;
+					}
+
+					// Compute the bounding box of the entry's text area.
+					String name = entries[entry].name;
+					SizeF size = graphics.MeasureString(name, font);
+					int width = ((int)(size.Width)) + TextSelectOverlap * 2;
+					Rectangle textBounds = new Rectangle
+						(x + (IconWidth + IconSpacing - TextSelectOverlap),
+						 y + (rowHeight - textHeight) / 2, width, textHeight);
+
+					// Draw the icon to the left of the text.
+					graphics.DrawIcon
+						(icons[entries[entry].iconCode],
+						 x, y + (rowHeight - IconHeight) / 2);
+
+					// Fill the background behind the text and get
+					// the foreground color to draw the text with.
+					Brush foreground;
+					if(selected == entry)
+					{
+						if(Focused)
+						{
+							graphics.FillRectangle
+								(SystemBrushes.Highlight, textBounds);
+							foreground = SystemBrushes.HighlightText;
+						}
+						else
+						{
+							graphics.FillRectangle
+								(SystemBrushes.Control, textBounds);
+							foreground = SystemBrushes.ControlText;
+						}
+					}
+					else if(clearBackground)
+					{
+						graphics.FillRectangle
+							(SystemBrushes.Window, textBounds);
+						foreground = SystemBrushes.WindowText;
+					}
+					else
+					{
+						foreground = SystemBrushes.WindowText;
+					}
+
+					// Draw the text within the specified text bounds.
+					graphics.DrawString
+							(name, font, foreground,
+							 (float)(textBounds.X + TextSelectOverlap),
+							 (float)(textBounds.Y));
+				}
+
+		// Draw a particular entry at its proper location.
+		private void DrawEntry(int entry)
+				{
+					// Bail out if the entry index is out of range.
+					if(entries == null || entry < 0 || entry >= entries.Length)
+					{
+						return;
+					}
+
+					// Compute the location of the entry.
+					int row, column;
+					int x, y;
+					column = (entry / rows);
+					row = entry - column * rows;
+					x = (column - leftMostColumn) * columnWidth;
+					y = row * rowHeight;
+
+					// Draw the entry.
+					using(Graphics graphics = CreateGraphics())
+					{
+						DrawEntry(graphics, entry, x, y, Font, true);
+					}
+				}
+
+		// Handle a paint request from the parent class.
+		protected override void OnPaint(PaintEventArgs e)
+				{
+					Graphics graphics = e.Graphics;
+					int row, column;
+					int visibleColumns =
+						(columnWidth != 0 ?
+							((ClientSize.Width + columnWidth - 1)
+								/ columnWidth) : 0);
+					Font font = Font;
+					for(row = 0; row < rows; ++row)
+					{
+						for(column = leftMostColumn;
+							column < columns &&
+							column < (leftMostColumn + visibleColumns);
+							++column)
+						{
+							DrawEntry(graphics, column * rows + row,
+									  (column - leftMostColumn) * columnWidth,
+									  row * rowHeight, font, false);
+						}
+					}
 				}
 
 	}; // class FileIconListBox
@@ -713,12 +1018,29 @@ public abstract class FileDialog : CommonDialog
 					}
 					ClientSize = size;
 					MinimumSize = size;
+
+					// Scan the initial directory.
+					String dir = fileDialogParent.InitialDirectory;
+					if(dir == null || dir.Length == 0)
+					{
+						dir = Directory.GetCurrentDirectory();
+					}
+					ChangeDirectory(dir);
 				}
 
 		// Dispose of this dialog.
 		public void DisposeDialog()
 				{
 					Dispose(true);
+				}
+
+		// Change to a new directory.
+		public void ChangeDirectory(String dir)
+				{
+					FilesystemEntry[] entries;
+					entries = ScanDirectory
+						(dir, "*.*", fileDialogParent.DereferenceLinks);
+					listBox.Entries = entries;
 				}
 
 	}; // class FileDialogForm

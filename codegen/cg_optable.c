@@ -113,6 +113,10 @@ static ILBuiltinType const ILEnumUInt64 =
 	{ILType_UInt64,
 	 ILMachineType_UInt64, 1};
 
+static ILBuiltinType const ILUnmanagedPtr =
+    {ILType_Invalid,  /*  This is a reference, really  */
+	 ILMachineType_UnmanagedPtr, 1};
+
 #define	IL_BEGIN_OPERATOR_TABLE(op)	\
 	ILOperator const ILOp_##op[] = {
 #define	IL_UNARY_OPERATOR(outtype,intype)	\
@@ -438,6 +442,7 @@ IL_BEGIN_OPERATOR_TABLE(Eq)
 	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
 	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
 	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
+	{&ILSystemBoolean, &ILUnmanagedPtr, &ILUnmanagedPtr},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -475,6 +480,7 @@ IL_BEGIN_OPERATOR_TABLE(Ne)
 	{&ILSystemBoolean, &ILEnumUInt32, &ILEnumUInt32},
 	{&ILSystemBoolean, &ILEnumInt64, &ILEnumInt64},
 	{&ILSystemBoolean, &ILEnumUInt64, &ILEnumUInt64},
+	{&ILSystemBoolean, &ILUnmanagedPtr, &ILUnmanagedPtr},
 IL_END_OPERATOR_TABLE
 
 /*
@@ -1264,6 +1270,14 @@ static const ILBuiltinType *GetBuiltinType(ILType *type, ILType *otherType)
 			{
 				return &ILEnumUInt64;
 			}
+		}
+		return 0;
+	}
+	else if (ILType_IsComplex(type))
+	{
+		if (ILType_Kind(type) == IL_TYPE_COMPLEX_PTR)
+		{
+			return &ILUnmanagedPtr;
 		}
 		return 0;
 	}

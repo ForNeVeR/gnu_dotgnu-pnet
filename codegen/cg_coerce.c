@@ -335,17 +335,29 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 	if (explicit)
 	{
 		/*  Numeric -> pointer conversion  */
-		if ( 
-				(ILIsBuiltinNumeric(fromType) 
-				 && ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR) 
-				|| (ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR 
-					&& ILIsBuiltinNumeric(toType))
-				|| (ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR 
-					&& ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR)
-				)
+		if ( ILIsBuiltinNumeric(toType) && ILType_IsComplex(fromType) )
 		{
-			/*  Let the external operator handle the real work  */
-			return 1;
+			if (ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR)
+			{
+				return 1;
+			}
+		}
+
+		if ( ILType_IsComplex(toType) && ILIsBuiltinNumeric(fromType) )
+		{
+			if (ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR)
+			{
+				return 1;
+			}
+		}
+
+		if ( ILType_IsComplex(toType) && ILType_IsComplex(fromType) )
+		{
+			if (ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR
+					&& ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR)
+			{
+				return 1;
+			}
 		}
 	}
 

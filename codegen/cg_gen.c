@@ -508,6 +508,7 @@ void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
 	ILClass *scopeInfo;
 	ILMethod *ctor;
 	ILAttribute *attr;
+	ILType *signature;
 	static unsigned char const blob[4] = {1, 0, 0, 0};
 
 	/* Find the attribute class */
@@ -530,7 +531,25 @@ void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
 	ctor = ILResolveConstructor(info, classInfo, scopeInfo, 0, 0);
 	if(!ctor)
 	{
-		return;
+		/* We are probably compiling "mscorlib.dll", and so we need to
+		   create a method reference until we compile the class later */
+		ctor = ILMethodCreate(classInfo, IL_MAX_UINT32, ".ctor",
+							  IL_META_METHODDEF_PUBLIC |
+							  IL_META_METHODDEF_HIDE_BY_SIG |
+							  IL_META_METHODDEF_SPECIAL_NAME |
+							  IL_META_METHODDEF_RT_SPECIAL_NAME);
+		if(!ctor)
+		{
+			ILGenOutOfMemory(info);
+		}
+		signature = ILTypeCreateMethod(info->context, ILType_Void);
+		if(!signature)
+		{
+			ILGenOutOfMemory(info);
+		}
+		ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
+		ILMethodSetCallConv(ctor, IL_META_CALLCONV_HASTHIS);
+		ILMemberSetSignature((ILMember *)ctor, signature);
 	}
 	ctor = (ILMethod *)ILMemberImport(info->image, (ILMember *)ctor);
 	if(!ctor)

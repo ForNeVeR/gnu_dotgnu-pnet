@@ -824,12 +824,45 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		}
 	}
 
+	/* Special-case the constructor for "ParamArrayAttribute", because
+	   we may have already created it as a reference.  Needed to resolve
+	   order of compilation issues in "mscorlib.dll". */
+	if(!strcmp(name, ".ctor") &&
+	   !strcmp(ILClass_Name(classInfo), "ParamArrayAttribute") &&
+	   ILClass_Namespace(classInfo) != 0 &&
+	   !strcmp(ILClass_Namespace(classInfo), "System"))
+	{
+		methodInfo = 0;
+		while((methodInfo = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)methodInfo,
+					 IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(!strcmp(ILMethod_Name(methodInfo), ".ctor") &&
+			   (ILMethod_Token(methodInfo) & IL_META_TOKEN_MASK) ==
+			   		IL_META_TOKEN_MEMBER_REF)
+			{
+				if(!ILMethodNewToken(methodInfo))
+				{
+					CCOutOfMemory();
+				}
+				break;
+			}
+		}
+	}
+	else
+	{
+		methodInfo = 0;
+	}
+
 	/* Create the method information block */
-	methodInfo = ILMethodCreate(classInfo, 0, name,
-								(method->modifiers & 0xFFFF));
 	if(!methodInfo)
 	{
-		CCOutOfMemory();
+		methodInfo = ILMethodCreate(classInfo, 0, name,
+									(method->modifiers & 0xFFFF));
+		if(!methodInfo)
+		{
+			CCOutOfMemory();
+		}
 	}
 	method->methodInfo = methodInfo;
 	ILSetProgramItemMapping(info, (ILNode *)method);

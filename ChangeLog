@@ -1,4 +1,9 @@
 
+2002-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_gen.c, cscc/csharp/cs_gather.c: fix an order of
+	compilation problem in "mscorlib.dll" with "params" parameters.
+
 2002-11-03  Richard Baumann <biochem333@nyc.rr.com>
 	
 	* support/numformat.c, support/Makefile.am, include/il_utils.h: Add an

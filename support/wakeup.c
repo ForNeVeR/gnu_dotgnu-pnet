@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
+ * Contributions fom Thong Nguyen (tum@veridicus.com)
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -96,39 +98,79 @@ int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms, void **object)
 	{
 		/* Give up the lock and wait for someone to signal us */
 
-		/* But first make sure someone hasn't already signalled us
-		   between the time we registered the wakeup and the time
-		   we called ILWakeupWait (if a signal was sent we would
-		   have missed it). */
-		   
-		if(wakeup->count >= wakeup->limit
-			|| _ILCondVarTimedWait(&(wakeup->condition), &(wakeup->lock), ms))
+		/*
+		 *	Two subtle races to consider:
+		 *
+		 * 1: Signal arrives between adding a wakeup to the queue and waiting on the wakeup.
+		 *     The signal will get missed and the thread will halt indefinitely.
+		 *     The while loop predicate allows the thread to exit successfully if we missed 
+		 *     the signal.
+		 *
+		 * 2: We get here, notice the wakeup->count < wakeup->limit, don't bother waiting
+		 *     on the signal.  No context switch is made, we reset and register our wakeup again
+		 *     and get the signal that was intended for the last time we registered the wakeup.
+		 *     The thread will wakeup when it shouldn't.
+		 *     The "continue" in the while loop makes us keep waiting
+		 */
+
+		while (wakeup->count < wakeup->limit)
 		{
-			if(wakeup->interrupted)
+			if (_ILCondVarTimedWait(&(wakeup->condition), &(wakeup->lock), ms))
 			{
-				/* The wakeup object was interrupted */
-				wakeup->interrupted = 0;
-				result = -1;
+				if (wakeup->interrupted)
+				{
+					wakeup->interrupted = 0;
+
+					result = -1;
+
+					break;
+				}
+				else
+				{
+					if (wakeup->count < wakeup->limit)
+					{
+						/*
+						 * This signal was from a previous wakeup registration.
+						 *
+						 * No need to adjust "ms" because the time difference will be very
+						 * small.
+						 */
+						   
+						continue;
+					}
+
+					/* All signals that we were expecting have arrived */
+					if(object)
+					{
+						/* Return the last object that was signalled */
+						*object = wakeup->object;
+					}
+					result = 1;
+
+					break;
+				}
 			}
 			else
 			{
-				/* All signals that we were expecting have arrived */
-				if(object)
+				/* The wakeup object timed out.  We still check for interrupt
+				because we may have been interrupted just after timeout,
+				but before this thread was re-awoken */
+
+				if (wakeup->interrupted)
 				{
-					/* Return the last object that was signalled */
-					*object = wakeup->object;
+					result = -1;
+					wakeup->interrupted = 0;
 				}
-				result = 1;
+				else
+				{
+					/* Timed out */
+					result = 0;
+				}
+				
+				break;
 			}
 		}
-		else
-		{
-			/* The wakeup object timed out.  We still check for interrupt
-			   because we may have been interrupted just after timeout,
-			   but before this thread was re-awoken */
-			result = (wakeup->interrupted ? -1 : 0);
-			wakeup->interrupted = 0;
-		}
+
 		wakeup->count = 0;
 		wakeup->limit = 0;
 	}

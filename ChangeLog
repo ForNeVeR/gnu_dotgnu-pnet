@@ -12,6 +12,26 @@
 	runtime/System/Runtime/InteropServices/_Type.cs:
 	Add COM-related reflection interfaces.
 
+	* runtime/System/Exception.cs, runtime/System/Type.cs,
+	runtime/System/Reflection/ConstructorInfo.cs,
+	runtime/System/Reflection/EventInfo.cs,
+	runtime/System/Reflection/FieldInfo.cs,
+	runtime/System/Reflection/MemberInfo.cs,
+	runtime/System/Reflection/MethodBase.cs,
+	runtime/System/Reflection/MethodInfo.cs,
+	runtime/System/Reflection/PropertyInfo.cs,
+	runtime/System/Runtime/InteropServices/_ConstructorInfo.cs,
+	runtime/System/Runtime/InteropServices/_EventInfo.cs,
+	runtime/System/Runtime/InteropServices/_Exception.cs,
+	runtime/System/Runtime/InteropServices/_FieldInfo.cs,
+	runtime/System/Runtime/InteropServices/_MemberInfo.cs,
+	runtime/System/Runtime/InteropServices/_MethodBase.cs,
+	runtime/System/Runtime/InteropServices/_MethodInfo.cs,
+	runtime/System/Runtime/InteropServices/_PropertyInfo.cs,
+	runtime/System/Runtime/InteropServices/_Type.cs:
+	add the COM-related interfaces to the corresponding reflection
+	classes; fix version numbers (1.2, not 2.0).
+
 2004-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt, runtime/Platform/Stdio.cs,

@@ -54,10 +54,18 @@ applications that didn't expect them to be present.
 
 #if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
+#if CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
+[ComDefaultInterface(typeof(_Exception))]
+#endif
 #endif
 public class Exception
 #if CONFIG_SERIALIZATION
 	: ISerializable
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
+	, _Exception
+#endif
+#elif CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
+	: _Exception
 #endif
 {
 

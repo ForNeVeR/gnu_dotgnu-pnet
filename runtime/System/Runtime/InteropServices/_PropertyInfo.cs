@@ -25,14 +25,13 @@ namespace System.Runtime.InteropServices
 using System.Reflection;
 using System.Globalization;
 
-#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_2_0 && CONFIG_REFLECTION
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
 
 [CLSCompliant(false)]
 [InterfaceType(ComInterfaceType.InterfaceIsDual)]
 [Guid("F59ED4E4-E68F-3218-BD77-061AA82824BF")]
 public interface _PropertyInfo
 {
-	void AddEventHandler(Object target, Delegate handler);
 	bool Equals(Object obj);
 	MethodInfo[] GetAccessors();
 	MethodInfo[] GetAccessors(bool nonPublic);
@@ -65,6 +64,6 @@ public interface _PropertyInfo
 
 }; // interface _PropertyInfo
 
-#endif // CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_2_0 && CONFIG_REFLECTION
+#endif // CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
 
 }; // namespace System.Runtime.InteropServices

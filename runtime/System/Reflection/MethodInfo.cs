@@ -27,8 +27,14 @@ using System.Runtime.InteropServices;
 
 #if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
+#if CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
+[ComDefaultInterface(typeof(_MethodInfo))]
+#endif
 #endif
 public abstract class MethodInfo : MethodBase
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2
+	, _MethodInfo
+#endif
 {
 
 	// Constructor.

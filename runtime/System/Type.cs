@@ -31,10 +31,16 @@ using System.Diagnostics;
 
 #if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
+#if CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
+[ComDefaultInterface(typeof(_Type))]
+#endif
 #endif
 public abstract class Type
 #if CONFIG_REFLECTION
 	: MemberInfo, IReflect
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2
+	, _Type
+#endif
 #endif
 {
 

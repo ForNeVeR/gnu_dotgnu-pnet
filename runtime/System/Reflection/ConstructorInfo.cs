@@ -31,8 +31,14 @@ using System.Diagnostics;
 
 #if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
+#if CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
+[ComDefaultInterface(typeof(_ConstructorInfo))]
+#endif
 #endif
 public abstract class ConstructorInfo : MethodBase
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2
+	, _ConstructorInfo
+#endif
 {
 
 	// Name of constructor methods.

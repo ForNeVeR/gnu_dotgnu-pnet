@@ -25,7 +25,7 @@ namespace System.Runtime.InteropServices
 using System.Reflection;
 using System.Globalization;
 
-#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_2_0 && CONFIG_REFLECTION
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
 
 [CLSCompliant(false)]
 [InterfaceType(ComInterfaceType.InterfaceIsDual)]
@@ -70,6 +70,6 @@ public interface _MethodInfo
 
 }; // interface _MethodInfo
 
-#endif // CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_2_0 && CONFIG_REFLECTION
+#endif // CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
 
 }; // namespace System.Runtime.InteropServices

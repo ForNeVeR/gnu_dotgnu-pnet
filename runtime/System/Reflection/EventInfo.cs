@@ -29,8 +29,14 @@ using System.Diagnostics;
 
 #if CONFIG_COM_INTEROP
 [ClassInterface(ClassInterfaceType.AutoDual)]
+#if CONFIG_FRAMEWORK_1_2 && CONFIG_REFLECTION
+[ComDefaultInterface(typeof(_EventInfo))]
+#endif
 #endif
 public abstract class EventInfo : MemberInfo
+#if CONFIG_COM_INTEROP && CONFIG_FRAMEWORK_1_2
+	, _EventInfo
+#endif
 {
 
 	// Constructor.

@@ -61,7 +61,6 @@ static ILMethod *GetMethodToken(ILMethod *method, unsigned char *pc)
 static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc)
 {
 	ILMethod *methodInfo = GetMethodToken(method, pc);
-	ILType *signature;
 
 	/* Bail out if no method found */
 	if(!methodInfo)
@@ -81,18 +80,8 @@ static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc)
 		return 0;
 	}
 
-	/* Bail out if the attributes or name are incorrect for a constructor */
-	if(!ILMethod_HasRTSpecialName(methodInfo) ||
-	   strcmp(ILMethod_Name(methodInfo), ".ctor") != 0)
-	{
-		return 0;
-	}
-
-	/* Bail out if the signature is incorrect */
-	signature = ILMethod_Signature(methodInfo);
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) == 0 ||
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) != 0 ||
-	   signature->un.method.retType != ILType_Void)
+	/* Bail out if the method is not a constructor */
+	if(!ILMethod_IsConstructor(methodInfo))
 	{
 		return 0;
 	}
@@ -121,8 +110,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	int isValueThis;
 
 	/* Determine if the signature needs an extra "this" parameter */
-	hasThis = ((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	           (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0);
+	hasThis = ILType_HasThis(signature);
 	if(hasThis)
 	{
 		++numParams;

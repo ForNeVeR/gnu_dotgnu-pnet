@@ -742,8 +742,7 @@ restart:
 	/* Get the method signature, plus the number of arguments and locals */
 	signature = ILMethod_Signature(method);
 	numArgs = signature->num;
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature))
 	{
 		/* Account for the "this" argument */
 		++numArgs;

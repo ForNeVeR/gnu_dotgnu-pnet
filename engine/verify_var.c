@@ -26,8 +26,7 @@
 static ILType *GetParamType(ILType *signature, ILMethod *method, ILUInt32 num)
 {
 	ILClass *owner;
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	if(ILType_HasThis(signature))
 	{
 		/* This method has a "this" parameter */
 		if(!num)

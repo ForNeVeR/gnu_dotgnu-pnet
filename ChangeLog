@@ -38,6 +38,9 @@ and implement "ILMethodIsConstructor" and "ILMethod_IsConstructor".
 
 * include/il_types.h: declare "ILType_HasThis".
 
+* engine/verify_var.c, engine/verify_call.c, engine/verify.c: use
+"ILType_HasThis" and "ILType_IsConstructor" where appropriate.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

@@ -6,6 +6,8 @@
 
 	* csant/csant_task.c: add <copy todir=...> to csant (patch #2829).
 
+	* doc/pnettools.texi: update csant documentation.
+
 2004-03-27  Gopal V <gopalv82@symonds.net>
 
 	* cscc/common/cc_compat.c: Add a quick fix to support the 

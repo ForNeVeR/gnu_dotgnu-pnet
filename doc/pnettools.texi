@@ -2862,8 +2862,9 @@ current directory.
 @item <target name="NAME" depends="DEPENDS">
 This tag appears as a child of the @code{<project>} tag.  It specifies
 a single build target called @code{NAME}.  Optionally, a dependent
-target may be specified using the @code{depends} attribute.  The
-dependent target will be built before this target.
+target may be specified using the @code{depends} attribute.  This
+is a comma separated list of target names which must be build before
+this target.
 
 @cindex compile (csant tag)
 @item <compile output="OUTPUT" ...>
@@ -2946,9 +2947,12 @@ Make the specified DIRECTORY.  Does nothing if the directory already exists.
 The DIRECTORY is interpreted relative to the build directory.
 
 @cindex copy (csant tag)
-@item <copy file="FROM" tofile="TO"/>
-Copy the file at FROM to the pathname TO.  Both pathnames are
-interpreted relative to the build directory.
+@item <copy file="FROM" [tofile="TO"] [todir="DIR"]/>
+Copy a file.  The destination can be a filename specified by
+@code{tofile}, or alternatively a directory specified by
+@code{todir}.  If the directory @code{todir} does not exist
+it will be created.  All pathnames are interpreted relative to
+the build directory.
 
 @cindex csant (csant tag)
 @item <csant buildfile="FILE" [target="TARGET"] [basedir="DIR"]/>

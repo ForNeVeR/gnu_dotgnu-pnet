@@ -1,4 +1,19 @@
 
+0.5.2 (8 February 2003)
+
+	* Unit tests for wait events and reset events (Thong Nguyen).
+	* Continue System.Xml implementation (Adam Ballai, Gopal V).
+	* Debug assert routines.
+	* JScript implementation - parsing and evaluation for ECMAScript 3.
+	* Floating-point number formatting/parsing (Jonathan Springer).
+	* Missing bits and pieces in for third party libraries (Gopal V, Rhys).
+	* StreamWriter: default UTF-8 encoding should not have byte order marks.
+	* Two-phase build for System.dll, to support recursive dependency
+	  upon System.Xml.dll.
+	* Change the reallocation policy for System.Collections.ArrayList.
+	* DateTime formatting (Michael Moore).
+	* Handle empty string comparison correctly (Marcus Urban).
+
 0.5.0 (11 January 2003)
 
 	* Move "csunit", "csupport", and "samples" out of pnet into pnetlib.

@@ -1,4 +1,8 @@
 
+2003-02-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, NEWS: update version and news for the 0.5.2 release.
+
 2003-02-07  Marcus Urban  <mathpup@mylinuxisp.com>
 
 	* runtime/System/Globalization/CompareInfo.cs: Handle empty string 

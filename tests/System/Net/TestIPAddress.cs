@@ -85,10 +85,9 @@ public class TestIPAddress : TestCase
 		AssertEquals ("IPAddress.Broadcast.Address == 0xFFFFFFFF", 
 			IPAddress.Broadcast.Address, 
 			(long) 0xFFFFFFFF);
-		long loopback = IPAddress.HostToNetworkOrder (
-			IsLittleEndian ? 0x7f000001 : 0x0100007f);
 		AssertEquals ("IPAddress.Loopback.Address == loopback", 
-			IPAddress.Loopback.Address, loopback);
+			IPAddress.Loopback.Address, 
+			IPAddress.HostToNetworkOrder(0x7f000001));
 	}
 
 	public void TestIPAddressEquals()
@@ -272,8 +271,11 @@ public class TestIPAddress : TestCase
 
 	public void TestIPAddressAddress()
 	{
-		IPAddress ip = IPAddress.Loopback;
-		AssertEquals("Loopback.Address == 0x0100007f",0x0100007f,ip.Address);
+		IPAddress ip = new IPAddress(0);
+
+		// ip = IPAddress.Loopback;
+		// AssertEquals("Loopback.Address == 0x0100007f",0x0100007f,ip.Address);
+
 		try
 		{
 			ip.Address=-1;

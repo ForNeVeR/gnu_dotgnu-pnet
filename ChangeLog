@@ -1,4 +1,9 @@
 
+2003-02-22  Jonathan Springer  <jonathan.springer@verizon.net>
+
+	* tests/System/Net/TestIPAddress.cs:  Fix up endian issues in IPAddress
+	test cases.
+
 2003-02-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Generics/Algorithm.cs, Generics/ArrayList.cs,

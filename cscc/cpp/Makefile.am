@@ -50,6 +50,8 @@ cscc_cpp_SOURCES = \
 	xstrdup.c \
 	xstrerror.c
 
+cscc_cpp_LDADD = ../../support/libILSupport.a
+
 AM_CFLAGS = -I. -I$(srcdir) -I$(top_srcdir)/include \
 			-I$(top_builddir)/include -DANSI_PROTOTYPES -DCHAR_BIT=8 \
 			-DWCHAR_UNSIGNED=1 -DSUPPORTS_ONE_ONLY=0 -DCROSS_COMPILE=1 \

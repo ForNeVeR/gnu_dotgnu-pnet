@@ -26,6 +26,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "intl.h"
 
+#include <il_utils.h>
+
 /* Encapsulates state used to convert the stream of tokens coming from
    cpp_get_token back into a text file.  */
 struct printer
@@ -77,6 +79,8 @@ main (argc, argv)
      char **argv;
 {
   general_init (argv[0]);
+
+  ILCmdLineExpand(&argc, &argv);
 
   /* Construct a reader with default language GNU C89.  */
   pfile = cpp_create_reader (CLK_GNUC89);

@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if CONFIG_REFLECTION
+
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -132,5 +134,7 @@ struct TypedReference
 	extern public static Object ToObject(TypedReference value);
 
 }; // struct TypedReference
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System

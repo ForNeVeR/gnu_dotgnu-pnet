@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 // This attribute is used to mark methods on the stack that
 // have full access to the private internals of classes
 // when reflection is used.
@@ -33,5 +35,7 @@ internal sealed class ClrReflectionAttribute : Attribute
 	public ClrReflectionAttribute() : base() {}
 
 }; // class ClrReflectionAttribute
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

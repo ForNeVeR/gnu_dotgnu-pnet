@@ -238,6 +238,7 @@ public abstract class Encoding
 	// Returns NULL if the method failed.
 	internal static Object InvokeI18N(String name, params Object[] args)
 			{
+			#if CONFIG_REFLECTION
 				lock(typeof(Encoding))
 				{
 					// Bail out if we previously detected that there
@@ -358,6 +359,9 @@ public abstract class Encoding
 						return null;
 					}
 				}
+			#else
+				return null;
+			#endif
 			}
 
 	// Get an encoder for a specific code page.

@@ -23,7 +23,12 @@ namespace System.Reflection
 {
 
 [Flags]
-public enum TypeAttributes
+#if CONFIG_REFLECTION
+public
+#else
+internal
+#endif
+enum TypeAttributes
 {
 	VisibilityMask			= 0x00000007,
 	NotPublic				= 0x00000000,

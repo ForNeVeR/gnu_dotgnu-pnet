@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Security;
 
@@ -229,5 +231,7 @@ public sealed class ReflectionPermission
 #endif // !ECMA_COMPAT
 
 }; // class ReflectionPermission
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Security.Permissions

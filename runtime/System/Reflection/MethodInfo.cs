@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public abstract class MethodInfo : MethodBase
 {
 
@@ -51,5 +53,7 @@ public abstract class MethodInfo : MethodBase
 #endif // !ECMA_COMPAT
 
 }; // class MethodInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

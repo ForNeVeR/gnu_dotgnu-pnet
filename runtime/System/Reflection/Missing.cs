@@ -21,7 +21,12 @@
 namespace System.Reflection
 {
 
-public sealed class Missing
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class Missing
 {
 
 	// The only instance of Missing in the system.

@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public struct ParameterModifier
 {
 	// Internal state.
@@ -51,5 +53,7 @@ public struct ParameterModifier
 			}
 
 }; // class ParameterModifier
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

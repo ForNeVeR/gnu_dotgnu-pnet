@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Globalization;
 using System.Text;
@@ -198,5 +200,7 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 			}
 
 }; // class ClrMethod
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

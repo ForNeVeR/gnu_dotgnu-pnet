@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Runtime.Serialization;
 
@@ -59,5 +61,7 @@ public class TargetException : ApplicationException
 			}
 
 }; // class TargetException
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -28,6 +28,8 @@ public abstract class ValueType
 	// Constructor.
 	protected ValueType() : base() {}
 
+#if CONFIG_REFLECTION
+
 	// Determine if this value type instance is identical to another.
 	[ClrReflection]
 	public override bool Equals(Object obj)
@@ -107,6 +109,8 @@ public abstract class ValueType
 				// There are no non-null fields, so hash the type instead.
 				return GetType().GetHashCode();
 			}
+
+#endif // CONFIG_REFLECTION
 
 	// Get a string that corresponds to this instance.
 	public override String ToString()

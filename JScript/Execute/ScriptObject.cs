@@ -27,7 +27,10 @@ using System.Reflection;
 using System.Globalization;
 using Microsoft.JScript.Vsa;
 
-public abstract class ScriptObject : IReflect
+public abstract class ScriptObject
+#if !ECMA_COMPAT
+	: IReflect
+#endif
 {
 	// Accessible internal state.
 	protected ScriptObject parent;

@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 
 #if ECMA_COMPAT
@@ -75,5 +77,7 @@ class ManifestResourceInfo
 			}
 
 }; // class ManifestResourceInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

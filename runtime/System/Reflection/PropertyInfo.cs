@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Globalization;
 
@@ -110,5 +112,7 @@ public abstract class PropertyInfo : MemberInfo
 #endif // !ECMA_COMPAT
 
 }; // class PropertyInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

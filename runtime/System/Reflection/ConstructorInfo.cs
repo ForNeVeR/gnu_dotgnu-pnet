@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Globalization;
 
@@ -54,5 +56,7 @@ public abstract class ConstructorInfo : MethodBase
 								  CultureInfo culture);
 
 }; // class ConstructorInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

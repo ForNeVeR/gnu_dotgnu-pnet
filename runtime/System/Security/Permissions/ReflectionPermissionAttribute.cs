@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Security;
 
@@ -134,5 +136,7 @@ public sealed class ReflectionPermissionAttribute : CodeAccessSecurityAttribute
 			}
 
 }; // class ReflectionPermissionAttribute
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Security.Permissions

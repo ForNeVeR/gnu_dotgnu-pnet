@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public enum MethodAttributes
 {
 	MemberAccessMask		= 0x0007,
@@ -49,5 +51,7 @@ public enum MethodAttributes
 	RequireSecObject		= 0x8000
 
 }; // enum MethodAttributes
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -87,6 +87,7 @@ public class CompareInfo : IDeserializationCallback
 				}
 				return GetCompareInfo(CultureInfo.MapNameToID(culture, true));
 			}
+#if CONFIG_REFLECTION
 	public static CompareInfo GetCompareInfo(int culture, Assembly assembly)
 			{
 				if(assembly == null)
@@ -113,6 +114,7 @@ public class CompareInfo : IDeserializationCallback
 				}
 				return GetCompareInfo(culture);
 			}
+#endif // CONFIG_REFLECTION
 
 	// Get the identifier for this comparison object's culture.
 	public int LCID

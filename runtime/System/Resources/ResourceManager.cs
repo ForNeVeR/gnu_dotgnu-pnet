@@ -504,6 +504,7 @@ class ResourceManager
 					// create the resource set via "CreateInstance".
 					return new BuiltinResourceSet(stream);
 				}
+			#if CONFIG_REFLECTION
 				else
 				{
 					try
@@ -519,6 +520,9 @@ class ResourceManager
 						return null;
 					}
 				}
+			#else
+				return null;
+			#endif
 			}
 
 	// Attempt to load a resource set for a particular culture.

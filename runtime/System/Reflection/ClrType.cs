@@ -65,8 +65,126 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	extern private int GetClrArrayRank();
 
 	// Get the attribute flags for this type.
+#if CONFIG_REFLECTION
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern protected override TypeAttributes GetAttributeFlagsImpl();
+#else
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal override TypeAttributes GetAttributeFlagsImpl();
+#endif
+
+	// Get the category of this type.  Array, pointer, byref, primitive, etc.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private ClrTypeCategory GetClrTypeCategory();
+
+	// Get the element type for this type.
+#if CONFIG_REFLECTION
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Type GetElementType();
+#else
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal override Type GetElementType();
+#endif
+
+	// Get all interfaces that this type implements.
+#if CONFIG_REFLECTION
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override Type[] GetInterfaces();
+#else
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal override Type[] GetInterfaces();
+#endif
+
+	// Implementation of the "IsArray" property.
+	protected override bool IsArrayImpl()
+			{
+				return (GetClrTypeCategory() == ClrTypeCategory.Array);
+			}
+
+	// Implementation of the "IsPointer" property.
+	protected override bool IsPointerImpl()
+			{
+				return (GetClrTypeCategory() == ClrTypeCategory.Pointer);
+			}
+
+	// Implementation of the "IsPrimitive" property.
+#if CONFIG_REFLECTION
+	protected override bool IsPrimitiveImpl()
+#else
+	internal override bool IsPrimitiveImpl()
+#endif
+			{
+				return (GetClrTypeCategory() == ClrTypeCategory.Primitive);
+			}
+
+	// Determine if the current type is a subclass of another type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public override bool IsSubclassOf(Type c);
+
+	// Convert this type into a string.
+	public override String ToString()
+			{
+				return GetClrFullName();
+			}
+
+	// Internal methods for supporting the properties.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private System.Reflection.Assembly GetClrAssembly();
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Type GetClrBaseType();
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private String GetClrFullName();
+
+	// Properties that are accessible even if no reflection.
+	public override String AssemblyQualifiedName
+			{
+				get
+				{
+#if CONFIG_RUNTIME_INFRA
+					return FullName + ", " + Assembly.ToString();
+#else
+					return FullName;
+#endif
+				}
+			}
+	public override Type BaseType
+			{
+				get
+				{
+					return GetClrBaseType();
+				}
+			}
+	public override String FullName
+			{
+				get
+				{
+					return GetClrFullName();
+				}
+			}
+
+#if CONFIG_RUNTIME_INFRA
+
+	// Runtime infrastructure properties.
+	public override RuntimeTypeHandle TypeHandle
+			{
+				get
+				{
+					return new RuntimeTypeHandle(privateData);
+				}
+			}
+	public override System.Reflection.Assembly Assembly
+			{
+				get
+				{
+					return GetClrAssembly();
+				}
+			}
+
+#endif // CONFIG_RUNTIME_INFRA
+
+#if CONFIG_REFLECTION
 
 	// Get the custom attributes for this type.
 	public override Object[] GetCustomAttributes(bool inherit)
@@ -84,10 +202,6 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}
 
-	// Get the element type for this type.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public override Type GetElementType();
-
 	// Get the hash code for this type.
 	public override int GetHashCode()
 			{
@@ -99,10 +213,6 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	// Get an interface that this type implements.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public override Type GetInterface(String name, bool ignoreCase);
-
-	// Get all interfaces that this type implements.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public override Type[] GetInterfaces();
 
 	// Get a member from this type.  The member could be a field,
 	// method, constructor, event, property, or nested type.
@@ -618,16 +728,6 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				}
 			}
 
-	// Get the category of this type.  Array, pointer, byref, primitive, etc.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private ClrTypeCategory GetClrTypeCategory();
-
-	// Implementation of the "IsArray" property.
-	protected override bool IsArrayImpl()
-			{
-				return (GetClrTypeCategory() == ClrTypeCategory.Array);
-			}
-
 	// Implementation of the "IsByRef" property.
 	protected override bool IsByRefImpl()
 			{
@@ -652,41 +752,9 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				return IsSubclassOf(typeof(System.MarshalByRefObject));
 			}
 
-	// Implementation of the "IsPointer" property.
-	protected override bool IsPointerImpl()
-			{
-				return (GetClrTypeCategory() == ClrTypeCategory.Pointer);
-			}
-
-	// Implementation of the "IsPrimitive" property.
-	protected override bool IsPrimitiveImpl()
-			{
-				return (GetClrTypeCategory() == ClrTypeCategory.Primitive);
-			}
-
-	// Determine if the current type is a subclass of another type.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public override bool IsSubclassOf(Type c);
-
 	// Determine if this is a nested type.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private bool IsClrNestedType();
-
-	// Convert this type into a string.
-	public override String ToString()
-			{
-				return GetClrFullName();
-			}
-
-	// Internal methods for supporting the properties.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private System.Reflection.Assembly GetClrAssembly();
-
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private Type GetClrBaseType();
-
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private String GetClrFullName();
 
 #if !ECMA_COMPAT
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -705,37 +773,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private String GetClrNamespace();
 
-#if CONFIG_RUNTIME_INFRA
 	// Implement overridden properties.
-	public override System.Reflection.Assembly Assembly
-			{
-				get
-				{
-					return GetClrAssembly();
-				}
-			}
-#endif
-	public override String AssemblyQualifiedName
-			{
-				get
-				{
-					return FullName + ", " + Assembly.ToString();
-				}
-			}
-	public override Type BaseType
-			{
-				get
-				{
-					return GetClrBaseType();
-				}
-			}
-	public override String FullName
-			{
-				get
-				{
-					return GetClrFullName();
-				}
-			}
 #if !ECMA_COMPAT
 	public override Guid GUID
 			{
@@ -815,15 +853,6 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					}
 				}
 			}
-#if CONFIG_RUNTIME_INFRA
-	public override RuntimeTypeHandle TypeHandle
-			{
-				get
-				{
-					return new RuntimeTypeHandle(privateData);
-				}
-			}
-#endif
 
 	// Internal methods that support generic types.
 
@@ -841,6 +870,8 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public override Type GetGenericType();
+
+#endif // CONFIG_REFLECTION
 
 }; // class ClrType
 

@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Text;
 using System.Globalization;
@@ -293,5 +295,7 @@ internal sealed class ClrProperty : PropertyInfo, IClrProgramItem
 			}
 
 }; // class RuntimePropertyInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

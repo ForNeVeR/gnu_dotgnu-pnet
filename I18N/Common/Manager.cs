@@ -264,6 +264,7 @@ public class Manager
 	// possible to instantiate the class.
 	internal Object Instantiate(String name)
 			{
+			#if CONFIG_REFLECTION
 				Object handler;
 				String region;
 				Assembly assembly;
@@ -341,6 +342,9 @@ public class Manager
 					// Return the handler to the caller.
 					return handler;
 				}
+			#else // !CONFIG_REFLECTION
+				return null;
+			#endif // !CONFIG_REFLECTION
 			}
 
 	// Load the list of classes that are present in all region assemblies.

@@ -37,12 +37,14 @@ public abstract class BinaryOp : AST
 				this.operatorTok = (JSToken)operatorTok;
 			}
 
+#if !ECMA_COMPAT
 	// Find the operator method to use on two types.
 	protected MethodInfo GetOperator(IReflect ir1, IReflect ir2)
 			{
 				// Never used.
 				return null;
 			}
+#endif
 
 }; // class BinaryOp
 

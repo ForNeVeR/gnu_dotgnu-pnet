@@ -124,8 +124,12 @@ internal sealed class Support
 
 					case TypeCode.Object:
 					{
-						if(value is Microsoft.JScript.Missing ||
-						   value is System.Reflection.Missing)
+						if(value is Microsoft.JScript.Missing
+					#if ECMA_COMPAT
+						  )
+					#else
+						   || value is System.Reflection.Missing)
+					#endif
 						{
 							return "undefined";
 						}

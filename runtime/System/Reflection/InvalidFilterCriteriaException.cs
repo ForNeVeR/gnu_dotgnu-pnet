@@ -22,7 +22,7 @@
 namespace System.Reflection
 {
 
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_REFLECTION
 
 using System;
 using System.Runtime.Serialization;

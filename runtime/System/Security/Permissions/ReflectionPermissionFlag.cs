@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if CONFIG_REFLECTION
+
 [Flags]
 public enum ReflectionPermissionFlag
 {
@@ -35,5 +37,7 @@ public enum ReflectionPermissionFlag
 #endif
 
 }; // enum ReflectionPermissionFlag
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Security.Permissions

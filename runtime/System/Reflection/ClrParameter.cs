@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Runtime.CompilerServices;
 
@@ -137,5 +139,7 @@ internal class ClrParameter : ParameterInfo, IClrProgramItem
 #endif // !ECMA_COMPAT
 
 }; // class ClrParameter
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

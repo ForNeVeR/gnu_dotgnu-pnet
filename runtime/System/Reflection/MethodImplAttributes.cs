@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public enum MethodImplAttributes
 {
 	CodeTypeMask		= 0x0003,
@@ -40,5 +42,7 @@ public enum MethodImplAttributes
 	MaxMethodImplVal	= 0xFFFF
 
 }; // enum MethodImplAttributes
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -37,6 +37,7 @@ public abstract class Delegate : ICloneable
 	internal RuntimeMethodHandle	method;
 	internal IntPtr					closure;
 
+#if CONFIG_REFLECTION
 	// Constructors.
 	protected Delegate(Object target, String method)
 			{
@@ -84,6 +85,9 @@ public abstract class Delegate : ICloneable
 				}
 				this.method = methodInfo.MethodHandle;
 			}
+#else // !CONFIG_REFLECTION
+	protected Delegate() {}
+#endif // !CONFIG_REFLECTION
 
 	// Implement the ICloneable interface.
 	public virtual Object Clone()
@@ -128,6 +132,8 @@ public abstract class Delegate : ICloneable
 				}
 				return result;
 			}
+
+#if CONFIG_REFLECTION
 
 	// Create a blank instance of a delegate type, and validate its signature.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -288,6 +294,8 @@ public abstract class Delegate : ICloneable
 				return DynamicInvokeImpl(args);
 			}
 
+#endif // CONFIG_REFLECTION
+
 	// Determine if two delegates are equal.
 	public override bool Equals(Object obj)
 			{
@@ -377,6 +385,8 @@ public abstract class Delegate : ICloneable
 				}
 			}
 
+#if CONFIG_REFLECTION
+
 	// Get the method within this delegate.
 	public MethodInfo Method
 			{
@@ -397,6 +407,8 @@ public abstract class Delegate : ICloneable
 				}
 			}
 
+#endif // CONFIG_REFLECTION
+
 	// Get the target of this delegate.
 	public Object Target
 			{
@@ -413,12 +425,14 @@ public abstract class Delegate : ICloneable
 				throw new NotSupportedException(_("NotSupp_Multicast"));
 			}
 
+#if CONFIG_REFLECTION
 	// Implementation of dynamic invocation.  This handles
 	// the unicast case.  MulticastDelegate handles multicast.
 	protected virtual Object DynamicInvokeImpl(Object[] args)
 			{
 				return Method.Invoke(target, args);
 			}
+#endif
 
 	// Implementation of delegate removal.  The real work
 	// is done in the MulticastDelegate class.  This handles
@@ -443,11 +457,13 @@ public abstract class Delegate : ICloneable
 				return RemoveImpl(d);
 			}
 
+#if CONFIG_REFLECTION
 	// Get the method implementation for this delegate.
 	protected virtual MethodInfo GetMethodImpl()
 			{
 				return Method;
 			}
+#endif
 
 #if !ECMA_COMPAT
 	// Get the serialization data for this object.

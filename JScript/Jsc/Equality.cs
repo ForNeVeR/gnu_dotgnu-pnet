@@ -67,14 +67,27 @@ public sealed class Equality : BinaryOp
 				}
 
 				// Is one of the values null?
-				if(v1 == null || DBNull.IsDBNull(v1) || v1 is Missing ||
-				   v1 is System.Reflection.Missing)
+				if(v1 == null || DBNull.IsDBNull(v1) || v1 is Missing
+			#if ECMA_COMPAT
+				  )
+			#else
+				   || v1 is System.Reflection.Missing)
+			#endif
 				{
 					return (v2 == null || DBNull.IsDBNull(v2) ||
-							v2 is Missing || v2 is System.Reflection.Missing);
+							v2 is Missing
+				#if ECMA_COMPAT
+						   );
+				#else
+							|| v2 is System.Reflection.Missing);
+				#endif
 				}
-				else if(v2 == null || DBNull.IsDBNull(v2) || v2 is Missing ||
-				   		v2 is System.Reflection.Missing)
+				else if(v2 == null || DBNull.IsDBNull(v2) || v2 is Missing
+			#if ECMA_COMPAT
+					   )
+			#else
+						|| v2 is System.Reflection.Missing)
+			#endif
 				{
 					return false;
 				}

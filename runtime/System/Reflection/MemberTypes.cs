@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public enum MemberTypes
 {
 
@@ -36,5 +38,7 @@ public enum MemberTypes
 	All					= 0x00BF
 
 }; // enum MemberTypes
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

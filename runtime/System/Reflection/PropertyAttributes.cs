@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 
 [Flags]
@@ -37,5 +39,7 @@ public enum PropertyAttributes
 	Reserved4				= 0x8000
 
 }; // enum PropertyAttributes
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -23,7 +23,12 @@ namespace System.Reflection
 {
 
 [Flags]
-public enum ResourceLocation
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+enum ResourceLocation
 {
 	Embedded					= 0x0001,
 	ContainedInAnotherAssembly	= 0x0002,

@@ -22,6 +22,8 @@
 namespace System.Runtime.Remoting.Messaging
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Threading;
 
@@ -193,5 +195,7 @@ public class AsyncResult : IAsyncResult
 			}
 
 }; // class AsyncResult
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Runtime.Remoting.Messaging

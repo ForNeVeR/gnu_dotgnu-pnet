@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Runtime.CompilerServices;
 
@@ -115,5 +117,7 @@ internal sealed class ClrEvent : EventInfo, IClrProgramItem
 			}
 
 }; // class ClrEvent
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

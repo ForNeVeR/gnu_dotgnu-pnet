@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Text;
 using System.Globalization;
@@ -186,5 +188,7 @@ internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 			}
 
 }; // class ClrConstructor
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -107,11 +107,13 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				// Determine what to do based on the format.
 				if(format == "G" || format == "g")
 				{
+				#if CONFIG_REFLECTION
 					if(Attribute.IsDefined(enumType, typeof(FlagsAttribute)))
 					{
 						return FormatEnumWithFlags(enumType, value);
 					}
 					else
+				#endif
 					{
 						result = GetEnumName(enumType, value);
 						if(result != null)
@@ -172,6 +174,8 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				return GetEnumName(enumType, value);
 			}
 
+#if CONFIG_REFLECTION
+
 	// Get the names of all enumerated constants in a type.
 	public static String[] GetNames(Type enumType)
 			{
@@ -219,6 +223,8 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				return names;
 			}
 
+#endif // CONFIG_REFLECTION
+
 	// Get the underlying type for an enumerated type.
 	public static Type GetUnderlyingType(Type enumType)
 			{
@@ -232,6 +238,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 					throw new ArgumentException(_("Arg_MustBeEnum"));
 				}
 
+#if CONFIG_REFLECTION
 				// Search for a public instance field that has the
 				// "RTSpecialName" attribute associated with it.
 				FieldInfo[] fields = enumType.GetFields(BindingFlags.Public |
@@ -249,7 +256,13 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				// We have no idea what the type is.  Perhaps
 				// the enumerated type is malformed in some way.
 				throw new ArgumentException(_("Arg_MustBeEnum"));
+#else
+				// TODO: use an internalcall to get this information
+				throw new ArgumentException(_("Arg_MustBeEnum"));
+#endif
 			}
+
+#if CONFIG_REFLECTION
 
 	// Get the values of all enumerated constants for an enumerated type.
 	public static Array GetValues(Type enumType)
@@ -299,6 +312,8 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				}
 				return values;
 			}
+
+#endif // CONFIG_REFLECTION
 
 	// Determine if a specified constant is defined in an enumerated type.
 	public static bool IsDefined(Type enumType, Object value)

@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 
 #if ECMA_COMPAT
@@ -37,5 +39,7 @@ interface ICustomAttributeProvider
 	bool IsDefined(Type type, bool inherit);
 
 }; // interface ICustomAttributeProvider
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

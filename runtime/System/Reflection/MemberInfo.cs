@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public abstract class MemberInfo : ICustomAttributeProvider
 {
 
@@ -56,5 +58,7 @@ public abstract class MemberInfo : ICustomAttributeProvider
 	public abstract bool IsDefined(Type type, bool inherit);
 
 }; // class MemberInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

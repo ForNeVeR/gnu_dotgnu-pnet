@@ -73,6 +73,8 @@ internal sealed class ClrHelpers
 				return GetName(item.ClrHandle);
 			}
 
+#if CONFIG_REFLECTION
+
 	// Get a ParameterInfo block for a specific method parameter.
 	// Zero indicates the return type.
 	public static ParameterInfo GetParameterInfo(MemberInfo member,
@@ -86,6 +88,8 @@ internal sealed class ClrHelpers
 				return new ClrParameter(member, param, num, type);
 			}
 
+#endif // CONFIG_REFLECTION
+
 	// Convert a type into a CLR handle value, after validating
 	// that it is indeed a CLR type.
 	public static IntPtr TypeToClrHandle(Type type, String name)
@@ -98,7 +102,11 @@ internal sealed class ClrHelpers
 				{
 					throw new ArgumentNullException(name);
 				}
+			#if CONFIG_REFLECTION
 				if((clrType = (type.UnderlyingSystemType as ClrType)) == null)
+			#else
+				if((clrType = (type as ClrType)) == null)
+			#endif
 				{
 					throw new ArgumentException(_("Arg_MustBeType"), name);
 				}
@@ -161,6 +169,8 @@ internal sealed class ClrHelpers
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static CallingConventions GetCallConv(IntPtr item);
 
+#if CONFIG_REFLECTION
+
 	// Get the implementation attributes for a method program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static MethodImplAttributes GetImplAttrs(IntPtr item);
@@ -174,6 +184,8 @@ internal sealed class ClrHelpers
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool HasSemantics
 			(IntPtr item, MethodSemanticsAttributes type, bool nonPublic);
+
+#endif // CONFIG_REFLECTION
 
 	// Determine if the caller has permission to access a specific member.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -22,6 +22,8 @@
 namespace System.Private
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Reflection;
 using System.Globalization;
@@ -98,5 +100,7 @@ internal class DefaultBinder : Binder
 			}
 
 }; // class DefaultBinder
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Private

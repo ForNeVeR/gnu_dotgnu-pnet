@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 [Flags]
 public enum BindingFlags
 {
@@ -47,5 +49,7 @@ public enum BindingFlags
 	IgnoreReturn         = 0x01000000
 
 }; // enum BindingFlags
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -30,7 +30,10 @@ using System.Security;
 using System.Security.Policy;
 using System.Runtime.CompilerServices;
 
-public class Assembly : IClrProgramItem, ICustomAttributeProvider
+public class Assembly : IClrProgramItem
+#if CONFIG_REFLECTION
+	, ICustomAttributeProvider
+#endif
 {
 
 	// Built-in handle for the assembly.  This must be the first field.
@@ -47,6 +50,8 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 					return privateData;
 				}
 			}
+
+#if CONFIG_REFLECTION
 
 	// Create an instance of a specific type within this assembly.
 	public Object CreateInstance(String typeName)
@@ -83,6 +88,8 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 												activationAttributes);
 			}
 
+#endif // CONFIG_REFLECTION
+
 #if !ECMA_COMPAT
 
 	// Create a qualified type name.
@@ -112,7 +119,7 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}
 
-#else  // ECMA_COMPAT
+#elif CONFIG_REFLECTION
 
 	// Get the custom attributes associated with this assembly.
 	Object[] ICustomAttributeProvider.GetCustomAttributes(bool inherit)
@@ -131,7 +138,7 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}
 
-#endif // ECMA_COMPAT
+#endif // CONFIG_REFLECTION
 
 
 	// The following three methods are not strictly speaking

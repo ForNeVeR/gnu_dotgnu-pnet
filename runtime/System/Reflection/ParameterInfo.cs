@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 
 public class ParameterInfo : ICustomAttributeProvider
@@ -208,5 +210,7 @@ public class ParameterInfo : ICustomAttributeProvider
 #endif
 
 }; // class ParameterInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

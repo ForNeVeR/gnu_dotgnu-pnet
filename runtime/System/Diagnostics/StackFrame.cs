@@ -37,7 +37,9 @@ class StackFrame
 	private int    		line, column;
 	private int    		offset;
 	private int    		nativeOffset;
+#if CONFIG_REFLECTION
 	private MethodBase	method;
+#endif
 
 	// Value that is returned for unknown offsets.
 	public const int OFFSET_UNKNOWN = -1;
@@ -77,15 +79,17 @@ class StackFrame
 	// Construct a stack frame from packed exception or thread frame data.
 	internal StackFrame(PackedStackFrame frame, bool needFileInfo)
 			{
-				method = MethodBase.GetMethodFromHandle(frame.method);
 				offset = frame.offset;
 				nativeOffset = frame.nativeOffset;
+			#if CONFIG_REFLECTION
+				method = MethodBase.GetMethodFromHandle(frame.method);
 				if(needFileInfo && method != null &&
 				   offset != OFFSET_UNKNOWN)
 				{
 					filename = InternalGetDebugInfo
 						(frame.method, offset, out line, out column);
 				}
+			#endif
 			}
 
 	// Initialize this object with the stack frame information.
@@ -98,8 +102,10 @@ class StackFrame
 					skipFrames += 2;
 
 					// Get the method and offset information.
+				#if CONFIG_REFLECTION
 					method = MethodBase.GetMethodFromHandle
 								(InternalGetMethod(skipFrames));
+				#endif
 					offset = InternalGetILOffset(skipFrames);
 					nativeOffset = InternalGetNativeOffset(skipFrames);
 				}
@@ -108,12 +114,14 @@ class StackFrame
 					offset = OFFSET_UNKNOWN;
 					nativeOffset = OFFSET_UNKNOWN;
 				}
+			#if CONFIG_REFLECTION
 				if(needFileInfo && method != null &&
 				   offset != OFFSET_UNKNOWN)
 				{
 					filename = InternalGetDebugInfo
 						(method.MethodHandle, offset, out line, out column);
 				}
+			#endif
 			}
 
 	// Get the total number of stack frames in use, excluding
@@ -175,16 +183,21 @@ class StackFrame
 				return nativeOffset;
 			}
 
+#if CONFIG_REFLECTION
+
 	// Get the method that was executing where the stack frame was created.
 	public virtual MethodBase GetMethod()
 			{
 				return method;
 			}
 
+#endif // CONFIG_REFLECTION
+
 	// Convert this stack frame into a string.
 	public override String ToString()
 			{
 				String result;
+			#if CONFIG_REFLECTION
 				if(method != null)
 				{
 					result = method.Name;
@@ -193,7 +206,9 @@ class StackFrame
 						result = result + " at offset " + offset;
 					}
 				}
-				else if(offset != OFFSET_UNKNOWN)
+				else
+			#endif
+				if(offset != OFFSET_UNKNOWN)
 				{
 					result = "at offset " + offset;
 				}

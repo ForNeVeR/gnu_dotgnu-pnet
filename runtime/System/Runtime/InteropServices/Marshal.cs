@@ -359,10 +359,12 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
+#if CONFIG_REFLECTION
 	public static int GetComSlotForMethodInfo(MethodInfo m)
 			{
 				throw new NotImplementedException();
 			}
+#endif
 	public static int GetEndComSlot(Type t)
 			{
 				throw new NotImplementedException();
@@ -379,7 +381,7 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
-#if !ECMA_COMPAT
+#if !ECMA_COMPAT && CONFIG_REFLECTION
 	public static MemberInfo GetMethodInfoForComSlot
 				(Type t, int slot, ref ComMemberType memberType)
 			{
@@ -496,10 +498,12 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
+#if CONFIG_REFLECTION
 	public static IntPtr GetHINSTANCE(Module m)
 			{
 				throw new NotImplementedException();
 			}
+#endif
 	public static int GetHRForException(Exception e)
 			{
 				throw new NotImplementedException();
@@ -535,6 +539,7 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
+#if CONFIG_REFLECTION
 	public static int NumParamBytes(MethodInfo m)
 			{
 				throw new NotImplementedException();
@@ -543,6 +548,7 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
+#endif
 	public static void PrelinkAll(Type c)
 			{
 				throw new NotImplementedException();
@@ -572,12 +578,14 @@ public sealed class Marshal
 		PtrToStructureInternal(ptr,structure);
 	}
 
+#if CONFIG_REFLECTION
 	public static Object PtrToStructure(IntPtr ptr, Type structureType)
 	{
 		Object obj=Activator.CreateInstance(structureType);
 		PtrToStructureInternal(ptr,obj);
 		return obj;
 	}
+#endif
 
 	public static IntPtr StringToBSTR(String s)
 			{

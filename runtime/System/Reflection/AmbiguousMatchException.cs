@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Runtime.Serialization;
 
@@ -60,5 +62,7 @@ public sealed class AmbiguousMatchException : SystemException
 			}
 
 }; // class AmbiguousMatchException
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -156,6 +156,7 @@ class StackTrace
 	// Convert the stack trace into a string.
 	public override String ToString()
 			{
+			#if CONFIG_REFLECTION
 				String result = String.Empty;
 				int posn;
 				MethodBase method;
@@ -225,6 +226,9 @@ class StackTrace
 				}
 
 				return result;
+			#else
+				return String.Empty;
+			#endif
 			}
 
 	// Unpack a stack trace which was encoded into an exception or thread.

@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public enum EventAttributes
 {
 
@@ -31,5 +33,7 @@ public enum EventAttributes
 	ReservedMask	= 0x0400
 
 }; // enum EventAttributes
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

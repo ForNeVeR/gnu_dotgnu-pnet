@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 
 public abstract class EventInfo : MemberInfo
@@ -150,5 +152,7 @@ public abstract class EventInfo : MemberInfo
 #endif // !ECMA_COMPAT
 
 }; // class EventInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if CONFIG_REFLECTION
+
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Globalization;
@@ -195,5 +197,7 @@ sealed class Activator
 	}
 
 }; // class Activator
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System

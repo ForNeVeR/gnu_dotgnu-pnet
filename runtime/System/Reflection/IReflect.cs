@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Globalization;
 
@@ -48,5 +50,7 @@ public interface IReflect
 	Type UnderlyingSystemType { get; }
 
 }; // interface IReflect
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Reflection

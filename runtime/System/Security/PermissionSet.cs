@@ -184,6 +184,7 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 				}
 				permissions.Clear();
 
+#if CONFIG_REFLECTION
 				// Process the children.
 				ArrayList children = et.Children;
 				String className;
@@ -229,6 +230,7 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 						}
 					}
 				}
+#endif // CONFIG_REFLECTION
 			}
 
 	// Determine if this permission set is a subset of another.

@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Globalization;
@@ -178,5 +180,7 @@ public abstract class FieldInfo : MemberInfo
 #endif // !ECMA_COMPAT
 
 }; // class FieldInfo
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

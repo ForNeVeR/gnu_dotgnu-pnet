@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public enum MethodSemanticsAttributes
 {
 	Setter			= 0x0001,
@@ -32,5 +34,7 @@ public enum MethodSemanticsAttributes
 	Fire			= 0x0020
 
 }; // enum MethodSemanticsAttributes
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Globalization;
 
@@ -67,5 +69,7 @@ public abstract class Binder
 												ParameterModifier[] modifiers);
 
 }; // class Binder
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -196,5 +198,7 @@ public abstract class MethodBase : MemberInfo
 #endif // !ECMA_COMPAT
 
 }; // class MethodBase
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

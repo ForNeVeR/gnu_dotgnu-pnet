@@ -32,6 +32,7 @@ public abstract class MulticastDelegate : Delegate
 	// Previous delegate on the same invocation list.
 	private MulticastDelegate prev;
 
+#if CONFIG_REFLECTION
 	// Constructors.
 	protected MulticastDelegate(Object target, String method)
 			: base(target, method)
@@ -43,6 +44,9 @@ public abstract class MulticastDelegate : Delegate
 			{
 				prev = null;
 			}
+#else // !CONFIG_REFLECTION
+	protected MulticastDelegate() {}
+#endif // !CONFIG_REFLECTION
 
 	// Determine if two multicast delegates are equal.
 	public override bool Equals(Object obj)
@@ -127,6 +131,7 @@ public abstract class MulticastDelegate : Delegate
 				return list;
 			}
 
+#if CONFIG_REFLECTION
 	// Implementation of dynamic invocation.
 	protected override Object DynamicInvokeImpl(Object[] args)
 			{
@@ -136,6 +141,7 @@ public abstract class MulticastDelegate : Delegate
 				}
 				return base.DynamicInvokeImpl(args);
 			}
+#endif
 
 	// Determine if we have an invocation list match, where the
 	// invocation members of d appear in the list starting at

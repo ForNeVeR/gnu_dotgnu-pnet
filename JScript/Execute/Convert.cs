@@ -218,8 +218,12 @@ public sealed class Convert
 
 					case TypeCode.Object:
 					{
-						if(value is Missing ||
-						   value is System.Reflection.Missing)
+						if(value is Missing
+					#if ECMA_COMPAT
+						  )
+					#else
+						   || value is System.Reflection.Missing)
+					#endif
 						{
 							return false;
 						}

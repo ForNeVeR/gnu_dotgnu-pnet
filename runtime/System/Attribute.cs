@@ -33,6 +33,8 @@ public abstract class Attribute
 				// Nothing to do here.
 			}
 
+#if CONFIG_REFLECTION
+
 	// Determine if two attributes are equal.
 	[ClrReflection]
 	public override bool Equals(Object value)
@@ -408,6 +410,8 @@ public abstract class Attribute
 			}
 
 #endif // !ECMA_COMPAT
+
+#endif // CONFIG_REFLECTION
 
 #if !ECMA_COMPAT
 

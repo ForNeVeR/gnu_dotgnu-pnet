@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -227,5 +229,7 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 	extern private String GetFullName();
 
 }; // class Module
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -27,7 +27,10 @@ using System.Globalization;
 using System.Collections;
 using System.Runtime.CompilerServices;
 
-public abstract class Type : MemberInfo
+public abstract class Type
+#if CONFIG_REFLECTION
+	: MemberInfo
+#endif
 {
 
 	// The only instance of "Missing" in the system.
@@ -57,6 +60,198 @@ public abstract class Type : MemberInfo
 	// Constructor.
 	protected Type() : base() {}
 
+	// Get the rank of this type, if it is an array.
+	public virtual int GetArrayRank()
+			{
+				throw new NotSupportedException(_("NotSupp_NotArrayType"));
+			}
+
+	// Get the attribute flags for this type.
+#if CONFIG_REFLECTION
+	protected abstract TypeAttributes GetAttributeFlagsImpl();
+#else
+	internal abstract TypeAttributes GetAttributeFlagsImpl();
+#endif
+
+	// Get the element type for this type.
+#if CONFIG_REFLECTION
+	public abstract Type GetElementType();
+#else
+	internal abstract Type GetElementType();
+#endif
+
+	// Get all interfaces that this type implements.
+#if CONFIG_REFLECTION
+	public abstract Type[] GetInterfaces();
+#else
+	internal abstract Type[] GetInterfaces();
+#endif
+
+	// Implementation of the "IsArray" property.
+	protected abstract bool IsArrayImpl();
+
+	// Determine if "this" implements the interface "c".
+	private bool IsImplementationOf(Type c)
+			{
+				Type[] interfaces = GetInterfaces();
+				int posn;
+				for(posn = 0; posn < interfaces.Length; ++posn)
+				{
+					if(c == interfaces[posn])
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
+	// Determine if this type is assignable from another type.
+	public virtual bool IsAssignableFrom(Type c)
+			{
+				if(c == null)
+				{
+					return false;
+				}
+				else if(c == this)
+				{
+					return true;
+				}
+				else if(c.IsSubclassOf(this))
+				{
+					return true;
+				}
+				else if(IsInterface)
+				{
+					return c.IsImplementationOf(this);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Determine if an object is an instance of this type.
+	public virtual bool IsInstanceOfType(Object obj)
+			{
+				if(obj == null)
+				{
+					return false;
+				}
+				else
+				{
+					return IsAssignableFrom(obj.GetType());
+				}
+			}
+
+	// Implementation of the "IsPointer" property.
+	protected abstract bool IsPointerImpl();
+
+	// Implementation of the "IsPrimitive" property.
+#if CONFIG_REFLECTION
+	protected abstract bool IsPrimitiveImpl();
+#else
+	internal abstract bool IsPrimitiveImpl();
+#endif
+
+	// Determine if the current type is a subclass of another type.
+	public virtual bool IsSubclassOf(Type c)
+			{
+				Type current = this;
+				if(c == current)
+				{
+					return false;
+				}
+				while(current != null)
+				{
+					if(current == c)
+					{
+						return true;
+					}
+					current = current.BaseType;
+				}
+				return false;
+			}
+
+	// Implementation of the "IsValueType" property.
+	protected virtual bool IsValueTypeImpl()
+			{
+				if(this == valueType || this == enumType)
+				{
+					return false;
+				}
+				else
+				{
+					return IsSubclassOf(valueType);
+				}
+			}
+
+	// Convert this type into a string.
+	public override String ToString()
+			{
+			#if CONFIG_REFLECTION
+				return "Type: " + Name;
+			#else
+				return "Type: " + FullName;
+			#endif
+			}
+
+	// Properties that are always accessible, even if no reflection support.
+	public abstract String AssemblyQualifiedName { get; }
+	public abstract Type BaseType { get; }
+	public abstract String FullName { get; }
+	public bool IsArray { get { return IsArrayImpl(); } }
+	public bool IsClass
+			{
+				get
+				{
+					return ((GetAttributeFlagsImpl() &
+							 TypeAttributes.ClassSemanticsMask) ==
+							 	TypeAttributes.Class) &&
+						   !IsSubclassOf(valueType);
+				}
+			}
+	public bool IsEnum
+			{
+				get
+				{
+					return IsSubclassOf(enumType);
+				}
+			}
+	public bool IsInterface
+			{
+				get
+				{
+					return ((GetAttributeFlagsImpl() &
+							 TypeAttributes.ClassSemanticsMask) ==
+							 	TypeAttributes.Interface);
+				}
+			}
+	public bool IsPointer { get { return IsPointerImpl(); } }
+	public bool IsValueType { get { return IsValueTypeImpl(); } }
+#if CONFIG_REFLECTION
+	public bool IsPrimitive { get { return IsPrimitiveImpl(); } }
+#else
+	internal bool IsPrimitive { get { return IsPrimitiveImpl(); } }
+#endif
+
+#if CONFIG_RUNTIME_INFRA
+
+	// Get the runtime type handle associated with an object.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static RuntimeTypeHandle GetTypeHandle(Object obj);
+
+	// Get a type from a runtime type handle.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
+
+	// Infrastructure properties.
+	public abstract System.Reflection.Assembly Assembly { get; }
+	public abstract RuntimeTypeHandle TypeHandle { get; }
+
+#endif // CONFIG_RUNTIME_INFRA
+
+#if CONFIG_REFLECTION
+
 	// Type equality testing.
 	public override bool Equals(Object obj)
 			{
@@ -75,15 +270,6 @@ public abstract class Type : MemberInfo
 				}
 				return (UnderlyingSystemType == obj.UnderlyingSystemType);
 			}
-
-	// Get the rank of this type, if it is an array.
-	public virtual int GetArrayRank()
-			{
-				throw new NotSupportedException(_("NotSupp_NotArrayType"));
-			}
-
-	// Get the attribute flags for this type.
-	protected abstract TypeAttributes GetAttributeFlagsImpl();
 
 	// Validate the "types" argument to a "GetConstructor" or "GetMethod" call.
 	private static void ValidateTypes(Type[] types)
@@ -412,9 +598,6 @@ public abstract class Type : MemberInfo
 
 #endif // !ECMA_COMPAT
 
-	// Get the element type for this type.
-	public abstract Type GetElementType();
-
 	// Get an event from this type.
 	public abstract EventInfo GetEvent(String name, BindingFlags bindingAttr);
 	public EventInfo GetEvent(String name)
@@ -471,9 +654,6 @@ public abstract class Type : MemberInfo
 			{
 				return GetInterface(name, false);
 			}
-
-	// Get all interfaces that this type implements.
-	public abstract Type[] GetInterfaces();
 
 #if !ECMA_COMPAT
 
@@ -834,16 +1014,6 @@ public abstract class Type : MemberInfo
 				return GetTypeFromProgID(progID, server, false);
 			}
 
-#if CONFIG_RUNTIME_INFRA
-	// Get the runtime type handle associated with an object.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static RuntimeTypeHandle GetTypeHandle(Object obj);
-
-	// Get a type from a runtime type handle.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
-#endif
-
 	// Implementation of the "HasElementType" property.
 	protected abstract bool HasElementTypeImpl();
 
@@ -867,49 +1037,6 @@ public abstract class Type : MemberInfo
 									null, culture, null);
 			}
 
-	// Implementation of the "IsArray" property.
-	protected abstract bool IsArrayImpl();
-
-	// Determine if "this" implements the interface "c".
-	private bool IsImplementationOf(Type c)
-			{
-				Type[] interfaces = GetInterfaces();
-				int posn;
-				for(posn = 0; posn < interfaces.Length; ++posn)
-				{
-					if(c == interfaces[posn])
-					{
-						return true;
-					}
-				}
-				return false;
-			}
-
-	// Determine if this type is assignable from another type.
-	public virtual bool IsAssignableFrom(Type c)
-			{
-				if(c == null)
-				{
-					return false;
-				}
-				else if(c == this)
-				{
-					return true;
-				}
-				else if(c.IsSubclassOf(this))
-				{
-					return true;
-				}
-				else if(IsInterface)
-				{
-					return c.IsImplementationOf(this);
-				}
-				else
-				{
-					return false;
-				}
-			}
-
 	// Implementation of the "IsByRef" property.
 	protected abstract bool IsByRefImpl();
 
@@ -922,97 +1049,27 @@ public abstract class Type : MemberInfo
 				return (typeof(ContextBoundObject)).IsAssignableFrom(this);
 			}
 
-	// Determine if an object is an instance of this type.
-	public virtual bool IsInstanceOfType(Object obj)
-			{
-				if(obj == null)
-				{
-					return false;
-				}
-				else
-				{
-					return IsAssignableFrom(obj.GetType());
-				}
-			}
-
 	// Implementation of the "IsMarshalByRef" property.
 	protected virtual bool IsMarshalByRefImpl()
 			{
 				return (typeof(MarshalByRefObject)).IsAssignableFrom(this);
 			}
 
-	// Implementation of the "IsPointer" property.
-	protected abstract bool IsPointerImpl();
-
-	// Implementation of the "IsPrimitive" property.
-	protected abstract bool IsPrimitiveImpl();
-
-	// Determine if the current type is a subclass of another type.
-	public virtual bool IsSubclassOf(Type c)
-			{
-				Type current = this;
-				if(c == current)
-				{
-					return false;
-				}
-				while(current != null)
-				{
-					if(current == c)
-					{
-						return true;
-					}
-					current = current.BaseType;
-				}
-				return false;
-			}
-
-	// Implementation of the "IsValueType" property.
-	protected virtual bool IsValueTypeImpl()
-			{
-				if(this == valueType || this == enumType)
-				{
-					return false;
-				}
-				else
-				{
-					return IsSubclassOf(valueType);
-				}
-			}
-
-	// Convert this type into a string.
-	public override String ToString()
-			{
-				return "Type: " + Name;
-			}
-
 	// Abstract properties.
-#if CONFIG_RUNTIME_INFRA
-	public abstract System.Reflection.Assembly Assembly { get; }
-#endif
-	public abstract String AssemblyQualifiedName { get; }
-	public abstract Type BaseType { get; }
-	public abstract String FullName { get; }
 #if !ECMA_COMPAT
 	public abstract Guid GUID { get; }
 #endif
 	public abstract System.Reflection.Module Module { get; }
 	public abstract String Namespace { get; }
 	public abstract Type UnderlyingSystemType { get; }
-#if CONFIG_RUNTIME_INFRA
-	public abstract RuntimeTypeHandle TypeHandle { get; }
-#endif
 
 	// Implemented properties.
 	public override Type DeclaringType { get { return this; } }
 	public bool HasElementType { get { return HasElementTypeImpl(); } }
-	public bool IsArray { get { return IsArrayImpl(); } }
 	public bool IsByRef { get { return IsByRefImpl(); } }
 	public bool IsCOMObject { get { return IsCOMObjectImpl(); } }
 	public bool IsContextful { get { return IsContextfulImpl(); } }
 	public bool IsMarshalByRef { get { return IsMarshalByRefImpl(); } }
-	public bool IsPointer { get { return IsPointerImpl(); } }
-	public bool IsPrimitive { get { return IsPrimitiveImpl(); } }
-	public bool IsValueType { get { return IsValueTypeImpl(); } }
 	public override Type ReflectedType { get { return this; } }
 	public TypeAttributes Attributes
 				{ get { return GetAttributeFlagsImpl(); } }
@@ -1053,23 +1110,6 @@ public abstract class Type : MemberInfo
 							 	TypeAttributes.AutoLayout);
 				}
 			}
-	public bool IsClass
-			{
-				get
-				{
-					return ((GetAttributeFlagsImpl() &
-							 TypeAttributes.ClassSemanticsMask) ==
-							 	TypeAttributes.Class) &&
-						   !IsSubclassOf(valueType);
-				}
-			}
-	public bool IsEnum
-			{
-				get
-				{
-					return IsSubclassOf(enumType);
-				}
-			}
 	public bool IsExplicitLayout
 			{
 				get
@@ -1085,15 +1125,6 @@ public abstract class Type : MemberInfo
 				{
 					return ((GetAttributeFlagsImpl() &
 							 TypeAttributes.Import) != 0);
-				}
-			}
-	public bool IsInterface
-			{
-				get
-				{
-					return ((GetAttributeFlagsImpl() &
-							 TypeAttributes.ClassSemanticsMask) ==
-							 	TypeAttributes.Interface);
 				}
 			}
 	public bool IsLayoutSequential
@@ -1318,6 +1349,8 @@ public abstract class Type : MemberInfo
 					return IsInstantiatedTypeImpl();
 				}
 			}
+
+#endif // CONFIG_REFLECTION
 
 }; // class Type
 

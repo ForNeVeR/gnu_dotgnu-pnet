@@ -22,6 +22,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_REFLECTION
+
 public enum FieldAttributes
 {
 	FieldAccessMask			= 0x0007,
@@ -45,5 +47,7 @@ public enum FieldAttributes
 	HasFieldRVA				= 0x0100
 
 }; // enum FieldAttributes
+
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

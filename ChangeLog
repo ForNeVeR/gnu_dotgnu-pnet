@@ -1,4 +1,10 @@
 
+2002-11-16  Jonathan Springer  <jonathan.springer@verizon.net>
+
+	* codegen/cg_nodes.tc, cscc/csharp/cs_decls.tc: Break out static
+	constructor processing to ensure processing in textual order is
+	maintained.  (Cause of bug #1665 -- Closed.)
+
 2002-11-17  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/engine.h, engine/internal.c, engine/process.c, include/il_engine.h

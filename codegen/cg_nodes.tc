@@ -822,6 +822,7 @@ struct _tagILSwitchValue
 	%nocreate ILField *fieldInfo = {0};
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 	%nocreate ILNode_FieldDeclaration *owner = {0};
+	%nocreate ILNode *staticCtor = {0};
 }
 %node ILNode_EventDeclaration ILNode_Declaration =
 {

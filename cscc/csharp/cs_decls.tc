@@ -32,7 +32,29 @@ static void InterfaceErrorFunc(ILNode *node, ILClass *classInfo,
 				  CSItemToName((ILProgramItem *)missingMember));
 }
 
+/*  Since we can't (shouldn't?) inherit list from multiple types, this
+ *  operation will iterate over a list of declarations adding to the 
+ *  compound constructor */
+static void CSListGatherStaticCtor(ILNode_List *node, ILNode_List *ctor)
+{
+	ILNode_ListIter iter;
+	ILNode_Declaration *curr;
+
+	if (yyisa(node, ILNode_List) || node == 0)
+	{
+		/* Iterate through the body gathering up the necessary constructors */
+		ILNode_ListIter_Init(&iter, node);
+		while ((curr = (ILNode_Declaration *)ILNode_ListIter_Next(&iter)))
+		{
+			ILNode_Declaration_GatherStaticCtor(curr, ctor);
+		}
+	}
+}
+
 %}
+
+%operation void ILNode_Declaration_GatherStaticCtor
+		([ILNode_Declaration *node], ILNode_List *ctor) = {0};
 
 /*
  * Perform semantic analysis for class definitions.
@@ -116,7 +138,23 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 			ILNode_SemAnalysis(node->initCtorsMethod, info,
 							   &(node->initCtorsMethod));
 		}
-		if(node->staticCtors)
+
+		/*  Create static constructor method if necessary  */
+		if (!node->staticCtors)
+		{
+			node->staticCtors = ILNode_List_create();
+		}
+
+		ILNode_Declaration_GatherStaticCtor
+								(   (ILNode_Declaration *)node->body, 
+									(ILNode_List *)node->staticCtors);
+
+		if (ILNode_List_Length(node->staticCtors) == 0)
+		{
+			/*  There were no static constructors after all  */
+			node->staticCtors = 0;
+		}
+		else
 		{
 			/* Create a method for the static constructors and
 			   then perform semantic analysis on its contents */
@@ -189,6 +227,15 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	/* We have finished processing this node */
 	node->visited = ILVisitMode_Done;
 	return CSSemValueDefault;
+}
+
+ILNode_Declaration_GatherStaticCtor(ILNode_ClassDefn),
+ILNode_Declaration_GatherStaticCtor(ILNode_ScopeChange)
+{
+	if (node->body) 
+	{
+		CSListGatherStaticCtor((ILNode_List *)node->body, ctor);
+	}
 }
 
 /*
@@ -470,17 +517,6 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 	}
 }
 
-void CSAddStaticCtor(ILGenInfo *info, ILNode *stmt)
-{
-	ILNode_ClassDefn *defn = (ILNode_ClassDefn *)(info->currentClass);
-	if(defn && stmt)
-	{
-		stmt = ILNode_NewScope_create(stmt);
-		defn->staticCtors =
-			ILNode_Compound_CreateFrom(defn->staticCtors, stmt);
-	}
-}
-
 void CSAddInitCtor(ILGenInfo *info, ILNode *stmt)
 {
 	ILNode_ClassDefn *defn = (ILNode_ClassDefn *)(info->currentClass);
@@ -579,6 +615,15 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 
 	/* Fields don't really have a semantic value, so return the default */
 	return CSSemValueDefault;
+}
+
+ILNode_Declaration_GatherStaticCtor(ILNode_FieldDeclaration)
+{
+	if (node->fieldDeclarators) 
+	{
+		return CSListGatherStaticCtor
+							((ILNode_List *)node->fieldDeclarators, ctor);
+	}
 }
 
 ILNode_SemAnalysis(ILNode_FieldDeclarator)
@@ -687,12 +732,20 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	}
 
 	/* Add a statement to the static constructor to initialize the field */
-	CSAddStaticCtor(info, ILNode_Assign_create(node->name, node->initializer));
+	/*	CSAddStaticCtor(info,  
+	                 ILNode_Assign_create(node->name, node->initializer)); */
+	node->staticCtor = ILNode_NewScope_create
+						(ILNode_Assign_create(node->name, node->initializer));
 
 done:
 	/* Mark the node as done and return */
 	node->visited = ILVisitMode_Done;
 	return CSSemValueDefault;
+}
+
+ILNode_Declaration_GatherStaticCtor(ILNode_FieldDeclarator)
+{
+	ILNode_List_Add(ctor, node->staticCtor);
 }
 
 ILNode_SemAnalysis(ILNode_EventDeclaration)
@@ -1169,5 +1222,21 @@ ILNode_SemAnalysis(ILNode_DocComment)
 {
 	/* Nothing to do here */
 	return CSSemValueDefault;
+}
+
+ILNode_Declaration_GatherStaticCtor(ILNode_EventDeclaration),
+ILNode_Declaration_GatherStaticCtor(ILNode_EventDeclarator),
+ILNode_Declaration_GatherStaticCtor(ILNode_MethodDeclaration),
+ILNode_Declaration_GatherStaticCtor(ILNode_PropertyDeclaration),
+ILNode_Declaration_GatherStaticCtor(ILNode_EnumMemberDeclaration),
+ILNode_Declaration_GatherStaticCtor(ILNode_DelegateMemberDeclaration),
+ILNode_Declaration_GatherStaticCtor(ILNode_FormalParameter),
+ILNode_Declaration_GatherStaticCtor(ILNode_AttributeTree),
+ILNode_Declaration_GatherStaticCtor(ILNode_AttributeSection),
+ILNode_Declaration_GatherStaticCtor(ILNode_Attribute),
+ILNode_Declaration_GatherStaticCtor(ILNode_AttrArgs),
+ILNode_Declaration_GatherStaticCtor(ILNode_NamedArg)
+{
+	return;
 }
 

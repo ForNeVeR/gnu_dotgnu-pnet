@@ -1,4 +1,9 @@
 
+2003-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_type.c: don't include static fields in the list
+	of serializable members for a type.
+
 2003-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/internal.c,

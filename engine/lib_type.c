@@ -2535,7 +2535,7 @@ System_Array *_IL_FormatterServices_InternalGetSerializableMembers
 		while((field = (ILField *)ILClassNextMemberByKind
 					(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
 		{
-			if(!ILField_IsNotSerialized(field))
+			if(!ILField_IsStatic(field) && !ILField_IsNotSerialized(field))
 			{
 				++size;
 			}
@@ -2562,7 +2562,7 @@ System_Array *_IL_FormatterServices_InternalGetSerializableMembers
 		while((field = (ILField *)ILClassNextMemberByKind
 					(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
 		{
-			if(!ILField_IsNotSerialized(field))
+			if(!ILField_IsStatic(field) && !ILField_IsNotSerialized(field))
 			{
 				buf[++size] = ItemToClrObject
 					(_thread, &(field->member.programItem));

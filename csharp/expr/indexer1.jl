@@ -9,6 +9,7 @@
 .module '<Module>'
 .class public auto ansi 'Dictionary' extends ['.library']'System'.'Object'
 {
+.custom instance void ['.library']'System.Reflection'.'DefaultMemberAttribute'::'.ctor'(class ['.library']'System'.'String') = (01 00 04 49 74 65 6D 00 00)
 .method public hidebysig specialname instance class ['.library']'System'.'Object' 'get_Item'(class ['.library']'System'.'Object' 'key') cil managed java 
 {
 	aconst_null
@@ -38,6 +39,7 @@
 } // class Dictionary
 .class public auto ansi 'Counters' extends ['.library']'System'.'Object'
 {
+.custom instance void ['.library']'System.Reflection'.'DefaultMemberAttribute'::'.ctor'(class ['.library']'System'.'String') = (01 00 04 49 74 65 6D 00 00)
 .field private int32[] 'counters'
 .method public hidebysig specialname instance int32 'get_Item'(int32 'index') cil managed java 
 {

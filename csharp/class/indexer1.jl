@@ -9,6 +9,7 @@
 .module '<Module>'
 .class public auto ansi 'TestIndexer' extends ['.library']'System'.'Object'
 {
+.custom instance void ['.library']'System.Reflection'.'DefaultMemberAttribute'::'.ctor'(class ['.library']'System'.'String') = (01 00 04 49 74 65 6D 00 00)
 .method public hidebysig specialname instance int32 'get_Item'(int32 'x', class ['.library']'System'.'Object'[] 'args') cil managed java 
 {
 .param[2]

@@ -140,6 +140,7 @@
 } // class ICollection
 .class public auto interface abstract ansi 'IDictionary' implements 'ICollection', 'IEnumerable'
 {
+.custom instance void ['.library']'System.Reflection'.'DefaultMemberAttribute'::'.ctor'(class ['.library']'System'.'String') = (01 00 04 49 74 65 6D 00 00)
 .method public virtual hidebysig newslot abstract instance void 'Add'(class ['.library']'System'.'Object' 'key', class ['.library']'System'.'Object' 'value') cil managed java 
 {
 } // method Add

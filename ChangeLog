@@ -1,4 +1,12 @@
 
+2004-10-01  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Private/XmlDocumentNavigator.cs, System.Xml/XmlNode.cs:
+	Add a navigator implementation stub for XmlDocument.
+
+	* System.Xml/Private/XmlDocumentNavigator.cs: Implement most of the
+	XPathNavigator override methods for XmlDocumentNavigator.
+
 2004-09-28  Gopal V  <gopalv82@yahoo.com>
 
 	* System/Net/Sockets/NetworkStream.cs: Use different lock objects

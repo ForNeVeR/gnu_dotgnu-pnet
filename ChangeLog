@@ -1,5 +1,10 @@
 
-2004-08-01  Gopal V  <gopalv82@yahoo.com>
+2004-08-14  Marcus Urban <mathpup@mylinuxisp.com>
+
+	* runtime/System/Reflection/Emit/UnmanagedMarshal.cs: Implement
+	DefineCustom non-standard method. (patch via mail, Gopal).
+
+2004-08-10  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/MenuItem.cs: Fix modifiers for OnDrawItem and
 	OnMeasureItem to be protected internal.

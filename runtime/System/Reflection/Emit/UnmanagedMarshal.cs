@@ -28,6 +28,7 @@ namespace System.Reflection.Emit
 #if CONFIG_REFLECTION_EMIT
 
 using System;
+using System.Text;
 using System.Runtime.InteropServices;
 
 public sealed class UnmanagedMarshal
@@ -36,6 +37,9 @@ public sealed class UnmanagedMarshal
 	private UnmanagedType type;
 	private UnmanagedType baseType;
 	private int elemCount;
+	private string marshalCookie;
+	private string marshalType;
+
 
 	// Constructor.
 	private UnmanagedMarshal(UnmanagedType type)
@@ -95,6 +99,26 @@ public sealed class UnmanagedMarshal
 				}
 				return new UnmanagedMarshal(unmanagedType);
 			}
+
+	// Define a custom-marshaler. This is an extension to MS.NET
+	public static UnmanagedMarshal DefineCustom
+			(Type typeRef, string cookie, string type, Guid guid)
+		{
+			UnmanagedMarshal custom =
+				new UnmanagedMarshal(UnmanagedType.CustomMarshaler);
+
+			if (type == null || type.Length == 0)
+				custom.marshalType = typeRef.AssemblyQualifiedName;
+			else
+				custom.marshalType = type;
+			// Should throw an exception if neither typeRef or type given
+
+			custom.marshalCookie = cookie;
+
+			// guid is ignored
+
+			return custom;
+		}
 
 	// Get the base type for marshalling behaviour.
 	public UnmanagedType BaseType 
@@ -202,6 +226,26 @@ public sealed class UnmanagedMarshal
 						bytes[1] = (byte)baseType;
 					}
 					break;
+
+					case UnmanagedType.CustomMarshaler:
+					{
+						// At a minimum, need space for type and 4 length-bytes
+						int size = 5;
+						int marshalTypeSize = Encoding.UTF8.GetByteCount(marshalType);
+						size += marshalTypeSize;
+						if (marshalCookie != null && marshalCookie.Length > 0)
+							size += Encoding.UTF8.GetByteCount(marshalCookie);
+
+						bytes = new byte[size];
+						bytes[0] = (byte)type;
+						bytes[1] = 0; // Empty guid string
+						bytes[2] = 0; // Empty native string
+						bytes[3] = (byte) Encoding.UTF8.GetBytes(marshalType,
+							0, marshalType.Length, bytes, 4);
+						bytes[marshalTypeSize+4] = (byte) Encoding.UTF8.GetBytes(marshalCookie,
+							0, marshalCookie.Length, bytes, marshalTypeSize + 5);
+						break;
+					}
 
 					default:
 					{

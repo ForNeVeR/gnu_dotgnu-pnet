@@ -61,6 +61,20 @@
 		#define	USE_TTY_SERIAL	1
 	#endif
 #endif
+
+/* HPUX needs sys/modem.h */
+#ifdef HAVE_SYS_MODEM_H
+	#include <sys/modem.h>
+#endif
+
+#ifndef CRTSCTS
+	#ifdef CNEW_RTSCTS
+		#define CRTSCTS CNEW_RTSCTS
+	# else
+		#define CRTSCTS 0
+	# endif /* CNEW_RTSCTS */
+#endif /* !CRTSCTS */
+
 #endif
 
 #ifdef	__cplusplus

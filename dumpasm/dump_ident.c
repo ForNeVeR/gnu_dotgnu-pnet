@@ -71,6 +71,7 @@ void ILDumpClassName(FILE *stream, ILImage *image, ILClass *info, int flags)
 	ILAssembly *assem;
 	ILModule *module;
 	ILClass *importInfo;
+	const char *assemName;
 
 	/* If the class is synthesized, then dump the underlying type instead */
 	synType = ILClass_SynType(info);
@@ -110,11 +111,28 @@ void ILDumpClassName(FILE *stream, ILImage *image, ILClass *info, int flags)
 	else if((module = ILProgramItemToModule(scope)) != 0)
 	{
 		/* Imported from a module */
-		if(ILModuleIsRef(module) || ILProgramItem_Image(module) != image)
+		if(ILModuleIsRef(module))
 		{
 			fputs("[.module ", stream);
 			ILDumpIdentifier(stream, ILModule_Name(module), 0, flags);
 			putc(']', stream);
+		}
+		else if(ILProgramItem_Image(module) != image)
+		{
+			/* Use the module's assembly name if possible */
+			assemName = ILImageGetAssemblyName(ILProgramItem_Image(module));
+			if(assemName)
+			{
+				fputs("[", stream);
+				ILDumpIdentifier(stream, assemName, 0, flags);
+				putc(']', stream);
+			}
+			else
+			{
+				fputs("[.module ", stream);
+				ILDumpIdentifier(stream, ILModule_Name(module), 0, flags);
+				putc(']', stream);
+			}
 		}
 		ILDumpIdentifier(stream, ILClassGetName(info),
 						 ILClassGetNamespace(info), flags);

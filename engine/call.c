@@ -102,7 +102,7 @@ extern	"C" {
 int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 					    int isCtor, void *_this, void *userData)
 {
-	VA_LIST va = *((VA_LIST *)userData);
+	VA_LIST va;
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
 	ILUInt32 param, numParams;
@@ -111,6 +111,9 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 	ILUInt32 size, sizeInWords;
 	ILInt64 int64Value;
 	ILNativeFloat fValue;
+
+	/* Copy the incoming "va_list" value */
+	ILMemCpy(&va, userData, sizeof(VA_LIST));
 
 	/* Get the top and extent of the stack */
 	stacktop = thread->stackTop;

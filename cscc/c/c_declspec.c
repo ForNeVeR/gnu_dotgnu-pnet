@@ -175,6 +175,10 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						result.baseType = ILType_Int16;
 						okSpecifiers = C_SPEC_SIGNED | C_SPEC_SHORT;
 					}
+					else
+					{
+						okSpecifiers = C_SPEC_SHORT;
+					}
 				}
 				break;
 

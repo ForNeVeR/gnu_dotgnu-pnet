@@ -15,6 +15,9 @@
 	if a "two or more types" error might be a redeclaration of a
 	typedef'ed name (bug #4701).
 
+	* cscc/c/c_declspec.c (CDeclSpecCombine): handle typedef's
+	that contain "short int" (bug #4702).
+
 2003-08-10  CH Gowri Kumar  <gkumar@csa.iisc.ernet.in>
 
 	* engine/Makefile.am, engine/cvm.c, engine/cvm_config.h,

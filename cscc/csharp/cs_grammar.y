@@ -2269,7 +2269,7 @@ IterationStatement
 	: WHILE ParenBooleanExpression EmbeddedStatement	{
 				MakeBinary(While, ILNode_ToBool_create($2), $3);
 			}
-	| DO EmbeddedStatement WHILE ParenBooleanExpression	{
+	| DO EmbeddedStatement WHILE ParenBooleanExpression ';'	{
 				MakeBinary(Do, $2, ILNode_ToBool_create($4));
 			}
 	| FOR '(' ForInitializer ForCondition ForIterator EmbeddedStatement	{

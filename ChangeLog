@@ -1,3 +1,9 @@
+
+2004-07-17  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_grammar.y: Fix bug #9674 , do while statements have to
+	have a terminating ';'.
+
 2004-07-16  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* ilgac/ilgac.1: fix a typo.

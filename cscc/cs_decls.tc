@@ -258,6 +258,17 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		}
 
 		/* Make sure that the value is compatible with the field's type */
+		if(!ILCoerce(info, decl->initializer, &(decl->initializer),
+					 value.type, ILField_Type(decl->fieldInfo)))
+		{
+			CSErrorOnLine(yygetfilename(decl->initializer),
+						  yygetlinenum(decl->initializer),
+			  			  "incompatible types in initialization: "
+			  					"no conversion from `%s' to `%s'",
+			  			  CSTypeToName(value.type),
+						  CSTypeToName(ILField_Type(decl->fieldInfo)));
+			continue;
+		}
 
 		/* The field must be static to have an initial value */
 		if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)

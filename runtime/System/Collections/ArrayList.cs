@@ -977,6 +977,12 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					}
 				}
 
+		// Implement the ICloneable interface.
+		public override Object Clone()
+				{
+					return new IListWrapper(list);
+				}
+
 		// Range-related methods.
 		public override void AddRange(ICollection c)
 				{

@@ -25,3 +25,5 @@ Invalid_GCHandleNotPinned=The specified GC handle has not been pinned
 Invalid_GCHandleNotInit=The specified GC handle has not been initialized
 Invalid_GCHandleInvalid=The specified GC handle is not valid
 Invalid_ReadOnly=The requested operation is invalid on read-only objects
+Invalid_EmptyQueue=The requested operation is invalid on an empty queue
+Invalid_EmptyStack=The requested operation is invalid on an empty stack

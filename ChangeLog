@@ -4,6 +4,11 @@
 * runtime/System/Makefile.am, runtime/System/Collections/ArrayList.cs:
 complete the implementation of "System.Collections.ArrayList".
 
+* resources/en_US/runtime/Arg.txt, resources/en_US/runtime/Invalid.txt,
+runtime/System/Makefile.am, runtime/System/Collections/ArrayList.cs,
+runtime/System/Collections/Queue.cs, runtime/System/Collections/Stack.cs:
+implement "Queue" and "Stack"; fix some minor bugs in "ArrayList".
+
 2001-12-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Arg.txt,

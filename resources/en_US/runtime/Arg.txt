@@ -101,3 +101,4 @@ ArgRange_Year=Year value is out of range
 ArgRange_Month=Month value is out of range
 ArgRange_Day=Day value is out of range
 ArgRange_HashLoadFactor=Invalid hash table load factor
+ArgRange_QueueGrowFactor=Invalid growth factor for queues

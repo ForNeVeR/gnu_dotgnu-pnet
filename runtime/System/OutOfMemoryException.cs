@@ -2,7 +2,7 @@
  * OutOfMemoryException.cs - Implementation of the
  *		"System.OutOfMemoryException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class OutOfMemoryException : SystemException
 {
 
@@ -32,6 +34,11 @@ public class OutOfMemoryException : SystemException
 		: base(msg) {}
 	public OutOfMemoryException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected OutOfMemoryException(SerializationInfo info,
+								   StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Internal constructor used by the runtime engine
 	// to make the primary "OutOfMemoryException" object,

@@ -25,6 +25,7 @@ namespace System.Security.Cryptography
 #if !ECMA_COMPAT
 
 using System;
+using System.Runtime.Serialization;
 
 public class CryptographicException : SystemException
 {
@@ -40,6 +41,9 @@ public class CryptographicException : SystemException
 		: base(String.Format(format, insert)) {}
 	public CryptographicException(int hr)
 		: base(_("Crypto_Exception")) {}
+	protected CryptographicException(SerializationInfo info,
+									 StreamingContext context)
+		: base(info, context) {}
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

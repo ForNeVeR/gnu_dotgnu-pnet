@@ -1,7 +1,7 @@
 /*
  * Delegate.cs - Implementation of the "System.Delegate" class.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,12 @@ namespace System
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 public abstract class Delegate : ICloneable
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 	// Internal state.  These three fields must be present here
 	// and in this order so that the runtime engine can create
@@ -444,6 +448,15 @@ public abstract class Delegate : ICloneable
 			{
 				return Method;
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public virtual void GetObjectData(SerializationInfo info,
+									  StreamingContext context)
+			{
+				// TODO
+			}
+#endif
 
 }; // class Delegate
 

@@ -1,7 +1,7 @@
 /*
  * RuntimeTypeHandle.cs - Implementation of "System.RuntimeTypeHandle".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,12 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public struct RuntimeTypeHandle
+#if !ECMA_COMPAT
+	: ISerializable
+#endif
 {
 	// Internal state.
 	private IntPtr value_;
@@ -40,6 +45,27 @@ public struct RuntimeTypeHandle
 					return value_;
 				}
 			}
+
+#if !ECMA_COMPAT
+
+	// De-serialize this object.
+	[TODO]
+	internal RuntimeTypeHandle(SerializationInfo info,
+							   StreamingContext context)
+			{
+				// TODO
+				value_ = IntPtr.Zero;
+			}
+
+	// Get the serialization data for this object.
+	[TODO]
+	public void GetObjectData(SerializationInfo info,
+							  StreamingContext context)
+			{
+				// TODO
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class RuntimeTypeHandle
 

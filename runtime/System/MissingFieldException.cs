@@ -2,7 +2,7 @@
  * MissingFieldException.cs - Implementation of the
  *		"System.MissingFieldException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,28 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class MissingFieldException : MissingMemberException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 
 	// Constructors.
 	public MissingFieldException()
-		: base(_("Exception_FieldMissing")) {}
+			: base(_("Exception_FieldMissing")) {}
 	public MissingFieldException(String msg)
-		: base(msg) {}
+			: base(msg) {}
 	public MissingFieldException(String msg, Exception inner)
-		: base(msg, inner) {}
+			: base(msg, inner) {}
+#if !ECMA_COMPAT
+	public MissingFieldException(String className, String fieldName)
+			: base(className, fieldName) {}
+	protected MissingFieldException(SerializationInfo info,
+									StreamingContext context)
+			: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

@@ -2,7 +2,7 @@
  * PathTooLongException.cs - Implementation of the
  *		"System.IO.PathTooLongException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ namespace System.IO
 
 using System;
 using Platform;
+using System.Runtime.Serialization;
 
 public class PathTooLongException : IOException
 {
@@ -34,6 +35,11 @@ public class PathTooLongException : IOException
 			: base(Errno.ENAMETOOLONG, msg) {}
 	public PathTooLongException(String msg, Exception inner)
 			: base(Errno.ENAMETOOLONG, msg, inner) {}
+#if !ECMA_COMPAT
+	protected PathTooLongException(SerializationInfo info,
+								   StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

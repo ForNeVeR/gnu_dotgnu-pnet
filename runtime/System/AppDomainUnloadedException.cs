@@ -2,7 +2,7 @@
  * AppDomainUnloadedException.cs - Implementation of the
  *			"System.AppDomainUnloadedException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ namespace System
 
 #if !ECMA_COMPAT
 
+using System.Runtime.Serialization;
+
 public class AppDomainUnloadedException : SystemException
 {
 
@@ -34,6 +36,9 @@ public class AppDomainUnloadedException : SystemException
 		: base(msg) {}
 	public AppDomainUnloadedException(String msg, Exception inner)
 		: base(msg, inner) {}
+	protected AppDomainUnloadedException(SerializationInfo info,
+										 StreamingContext context)
+		: base(info, context) {}
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

@@ -2,7 +2,7 @@
  * TargetInvocationException.cs - Implementation of the
  *			"System.Reflection.TargetInvocationException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ namespace System.Reflection
 {
 
 using System;
+using System.Runtime.Serialization;
 
 public sealed class TargetInvocationException : ApplicationException
 {
@@ -35,8 +36,12 @@ public sealed class TargetInvocationException : ApplicationException
 	public TargetInvocationException(String msg, Exception inner)
 		: base(msg, inner) {}
 	public TargetInvocationException(Exception inner)
-		: base(_("Exception_TargetInvoke"), inner)
-		{}
+		: base(_("Exception_TargetInvoke"), inner) {}
+#if !ECMA_COMPAT
+	internal TargetInvocationException(SerializationInfo info,
+									   StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

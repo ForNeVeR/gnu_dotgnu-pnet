@@ -2,7 +2,7 @@
  * VerificationException.cs - Implementation of the
  *		"System.Security.VerificationException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ namespace System.Security
 {
 
 using System;
+using System.Runtime.Serialization;
 
 public class VerificationException : SystemException
 {
@@ -33,6 +34,11 @@ public class VerificationException : SystemException
 			: base(msg) {}
 	public VerificationException(String msg, Exception inner)
 			: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected VerificationException(SerializationInfo info,
+									StreamingContext context)
+			: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

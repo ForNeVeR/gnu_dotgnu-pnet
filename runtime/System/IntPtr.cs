@@ -1,7 +1,7 @@
 /*
  * IntPtr.cs - Implementation of the "System.IntPtr" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,12 @@ namespace System
 
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 public struct IntPtr
+#if !ECMA_COMPAT
+	: ISerializable
+#endif
 {
 	// Public constants.
 	public static readonly IntPtr Zero = new IntPtr(0);
@@ -160,6 +164,36 @@ public struct IntPtr
 	unsafe public static explicit operator void *(IntPtr x)
 			{
 				return x.ToPointer();
+			}
+
+	// De-serialize an "IntPtr" value.
+	internal unsafe IntPtr(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				long value = info.GetInt64("value");
+				if(Size == 4)
+				{
+					if(value < (long)(Int32.MinValue) ||
+					   value > (long)(Int32.MaxValue))
+					{
+						throw new ArgumentException(_("Overflow_Pointer"));
+					}
+				}
+				value_ = (void *)value;
+			}
+
+	// Get the serialization data for an "IntPtr" value.
+	unsafe void ISerializable.GetObjectData(SerializationInfo info,
+											StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("value", ToInt64());
 			}
 
 #endif // !ECMA_COMPAT

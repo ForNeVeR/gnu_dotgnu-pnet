@@ -2,7 +2,7 @@
  * FileLoadException.cs - Implementation of the
  *		"System.IO.FileLoadException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,15 @@ namespace System.IO
 
 using System;
 using Platform;
+using System.Runtime.Serialization;
 
 public class FileLoadException : IOException
 {
 	// Internal state.
 	private String fileName;
+#if !ECMA_COMPAT
+	private String fusionLog;
+#endif
 
 	// Constructors.
 	public FileLoadException()
@@ -56,6 +60,15 @@ public class FileLoadException : IOException
 			{
 				this.fileName = fileName;
 			}
+#if !ECMA_COMPAT
+	protected FileLoadException(SerializationInfo info,
+								StreamingContext context)
+			: base(info, context)
+			{
+				fileName = info.GetString("FileLoad_FileName");
+				fusionLog = info.GetString("FileLoad_FusionLog");
+			}
+#endif
 
 	// Get the message for this exception.  Because of "MessageDefault",
 	// we don't actually need this.  However, we include it because
@@ -118,12 +131,14 @@ public class FileLoadException : IOException
 					}
 				}
 			}
+
 #if !ECMA_COMPAT
+	// Get the fusion log associated with this exception.
 	public String FusionLog
 			{
 				get
 				{
-					throw new NotImplementedException("FusionLog");
+					return fusionLog;
 				}
 			}
 #endif
@@ -136,6 +151,17 @@ public class FileLoadException : IOException
 					return 0x131621;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("FileLoad_FileName", fileName);
+				info.AddValue("FileLoad_FusionLog", fusionLog);
+			}
+#endif
 
 }; // class FileLoadException
 

@@ -2,7 +2,7 @@
  * MissingMemberException.cs - Implementation of the
  *		"System.MissingMemberException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,42 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class MissingMemberException : MemberAccessException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
+	// Internal state.
+	protected String ClassName;
+	protected String MemberName;
+	protected byte[] Signature;
 
 	// Constructors.
 	public MissingMemberException()
-		: base(_("Exception_MemberMissing")) {}
+			: base(_("Exception_MemberMissing")) {}
 	public MissingMemberException(String msg)
-		: base(msg) {}
+			: base(msg) {}
 	public MissingMemberException(String msg, Exception inner)
-		: base(msg, inner) {}
+			: base(msg, inner) {}
+#if !ECMA_COMPAT
+	public MissingMemberException(String className, String memberName)
+			: this()
+			{
+				ClassName = className;
+				MemberName = memberName;
+			}
+	protected MissingMemberException(SerializationInfo info,
+									 StreamingContext context)
+			: base(info, context)
+			{
+				ClassName = info.GetString("MMClassName");
+				MemberName = info.GetString("MMMemberName");
+				Signature = (byte[])(info.GetValue
+					("MMSignature", typeof(byte[])));
+			}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault
@@ -50,6 +76,18 @@ public class MissingMemberException : MemberAccessException
 					return 0x80131512;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("MMClassName", ClassName);
+				info.AddValue("MMMemberName", MemberName);
+				info.AddValue("MMSignature", Signature, typeof(byte[]));
+			}
+#endif
 
 }; // class MissingMemberException
 

@@ -2,7 +2,7 @@
  * MissingMethodException.cs - Implementation of the
  *		"System.MissingMethodException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,12 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class MissingMethodException : MissingMemberException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 
 	// Constructors.
@@ -32,6 +37,13 @@ public class MissingMethodException : MissingMemberException
 		: base(msg) {}
 	public MissingMethodException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if !ECMA_COMPAT
+	public MissingMethodException(String className, String methodName)
+			: base(className, methodName) {}
+	protected MissingMethodException(SerializationInfo info,
+									 StreamingContext context)
+			: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

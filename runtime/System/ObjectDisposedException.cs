@@ -2,7 +2,7 @@
  * ObjectDisposedException.cs - Implementation of the
  *			"System.ObjectDisposedException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class ObjectDisposedException : InvalidOperationException
 {
 	// Internal state.
@@ -33,6 +35,14 @@ public class ObjectDisposedException : InvalidOperationException
 		{ this.objectName = objectName; }
 	public ObjectDisposedException(String objectName, String msg)
 		: base(msg) { this.objectName = objectName; }
+#if !ECMA_COMPAT
+	protected ObjectDisposedException(SerializationInfo info,
+									  StreamingContext context)
+		: base(info, context)
+		{
+			objectName = info.GetString("ObjectName");
+		}
+#endif
 
 	// Properties.
 	public String ObjectName
@@ -74,6 +84,16 @@ public class ObjectDisposedException : InvalidOperationException
 					return 0x80131509;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("ObjectName", objectName);
+			}
+#endif
 
 }; // class ObjectDisposedException
 

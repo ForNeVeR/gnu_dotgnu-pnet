@@ -2,7 +2,7 @@
  * MemberAccessException.cs - Implementation of the
  *		"System.MemberAccessException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,23 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class MemberAccessException : SystemException
 {
 
 	// Constructors.
 	public MemberAccessException()
-		: base(_("Exception_MemberAccess")) {}
+			: base(_("Exception_MemberAccess")) {}
 	public MemberAccessException(String msg)
-		: base(msg) {}
+			: base(msg) {}
 	public MemberAccessException(String msg, Exception inner)
-		: base(msg, inner) {}
+			: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected MemberAccessException(SerializationInfo info,
+									StreamingContext context)
+			: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

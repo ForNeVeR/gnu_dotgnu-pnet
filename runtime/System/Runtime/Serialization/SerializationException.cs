@@ -2,7 +2,7 @@
  * SerializationException.cs - Implementation of the
  *			"System.Runtime.Serialization.SerializationException" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,10 @@
 namespace System.Runtime.Serialization
 {
 
+#if !ECMA_COMPAT
+
+using System.Runtime.Serialization;
+
 public class SerializationException : SystemException
 {
 	// Constructors.
@@ -31,7 +35,9 @@ public class SerializationException : SystemException
 		: base(msg) {}
 	public SerializationException(String msg, Exception inner)
 		: base(msg, inner) {}
-
+	protected SerializationException(SerializationInfo info,
+									 StreamingContext context)
+		: base(info, context) {}
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault
@@ -52,5 +58,7 @@ public class SerializationException : SystemException
 			}
 
 }; // class SerializationException
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.Serialization

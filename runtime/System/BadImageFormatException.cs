@@ -2,7 +2,7 @@
  * BadImageFormatException.cs - Implementation of the
  *		"System.BadImageFormatException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,16 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class BadImageFormatException : SystemException
 {
 
 	// Internal state.
 	private String fileName;
+#if !ECMA_COMPAT
+	private String fusionLog;
+#endif
 
 	// Constructors.
 	public BadImageFormatException()
@@ -39,6 +44,15 @@ public class BadImageFormatException : SystemException
 		: base(msg, inner) { this.fileName = fileName; }
 	public BadImageFormatException(String msg, String fileName)
 		: base(msg) { this.fileName = fileName; }
+#if !ECMA_COMPAT
+	protected BadImageFormatException(SerializationInfo info,
+									  StreamingContext context)
+		: base(info, context)
+		{
+			fileName = info.GetString("BadImageFormat_FileName");
+			fusionLog = info.GetString("BadImageFormat_FusionLog");
+		}
+#endif
 
 	// Get the message for this exception.  Because of "MessageDefault",
 	// we don't actually need this.  However, we include it because
@@ -67,6 +81,15 @@ public class BadImageFormatException : SystemException
 					return fileName;
 				}
 			}
+#if !ECMA_COMPAT
+	public String FusionLog
+			{
+				get
+				{
+					return fusionLog;
+				}
+			}
+#endif
 
 	// Get the extra data to insert into "Exception::ToString()"'s result.
 	internal override String MessageExtra
@@ -93,15 +116,6 @@ public class BadImageFormatException : SystemException
 					return _("Exception_BadImage");
 				}
 			}
-#if !ECMA_COMPAT
-	public String FusionLog
-			{
-				get
-				{
-					throw new NotImplementedException("FusionLog");
-				}
-			}
-#endif
 
 	// Get the default HResult value for this type of exception.
 	internal override uint HResultDefault
@@ -111,6 +125,17 @@ public class BadImageFormatException : SystemException
 					return 0x8007000b;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("BadImageFormat_FileName", fileName);
+				info.AddValue("BadImageFormat_FusionLog", fusionLog);
+			}
+#endif
 
 }; // class BadImageFormatException
 

@@ -25,7 +25,7 @@ namespace System
 
 using System.Runtime.Serialization;
 
-public sealed class DBNull : IConvertible
+public sealed class DBNull : IConvertible, ISerializable
 {
 
 	// The only DBNull object in the system.
@@ -102,6 +102,13 @@ public sealed class DBNull : IConvertible
 	public String ToString(IFormatProvider provider)
 			{
 				return String.Empty;
+			}
+
+	// Get the serialization data for this object.
+	[TODO]
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				// TODO
 			}
 
 }; // class DBNull

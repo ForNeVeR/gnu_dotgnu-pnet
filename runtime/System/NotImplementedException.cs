@@ -2,7 +2,7 @@
  * NotImplementedException.cs - Implementation of the
  *			"System.NotImplementedException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ namespace System
 // by the ECMA library specification.  However, other parts of
 // the ECMA specification rely upon its presence.
 
+using System.Runtime.Serialization;
+
 public class NotImplementedException : SystemException
 {
 
@@ -36,6 +38,11 @@ public class NotImplementedException : SystemException
 		: base(msg) {}
 	public NotImplementedException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected NotImplementedException(SerializationInfo info,
+									  StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

@@ -2,7 +2,7 @@
  * EndOfStreamException.cs - Implementation of the
  *		"System.IO.EndOfStreamException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ namespace System.IO
 {
 
 using System;
+using System.Runtime.Serialization;
 
 public class EndOfStreamException : IOException
 {
@@ -33,6 +34,11 @@ public class EndOfStreamException : IOException
 			: base(msg) {}
 	public EndOfStreamException(String msg, Exception inner)
 			: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected EndOfStreamException(SerializationInfo info,
+								   StreamingContext context)
+			: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

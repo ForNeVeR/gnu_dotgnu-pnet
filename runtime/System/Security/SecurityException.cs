@@ -2,7 +2,7 @@
  * SecurityException.cs - Implementation of the
  *		"System.Security.SecurityException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,16 @@ namespace System.Security
 {
 
 using System;
+using System.Runtime.Serialization;
 
 public class SecurityException : SystemException
 {
+#if !ECMA_COMPAT
+	// Internal state.
+	private String permissionState;
+	private Type permissionType;
+#endif
+
 	// Constructors.
 	public SecurityException()
 			: base(_("Exception_Security")) {}
@@ -33,6 +40,14 @@ public class SecurityException : SystemException
 			: base(msg) {}
 	public SecurityException(String msg, Exception inner)
 			: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected SecurityException(SerializationInfo info,
+								StreamingContext context)
+			: base(info, context)
+			{
+				permissionState = info.GetString("PermissionState");
+			}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault
@@ -51,6 +66,36 @@ public class SecurityException : SystemException
 					return 0x8013150a;
 				}
 			}
+
+#if !ECMA_COMPAT
+
+	// Get the permission type.
+	public Type PermissionType
+			{
+				get
+				{
+					return permissionType;
+				}
+			}
+
+	// Get the permission state.
+	public String PermissionState
+			{
+				get
+				{
+					return permissionState;
+				}
+			}
+
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("PermissionState", permissionState);
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class SecurityException
 

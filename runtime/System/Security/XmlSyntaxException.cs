@@ -25,6 +25,7 @@ namespace System.Security
 #if !ECMA_COMPAT
 
 using System;
+using System.Runtime.Serialization;
 
 public sealed class XmlSyntaxException : SystemException
 {
@@ -40,6 +41,9 @@ public sealed class XmlSyntaxException : SystemException
 	public XmlSyntaxException(int lineNumber, String message)
 			: base(String.Format(_("Exception_XmlSyntaxLineMsg"),
 								 lineNumber, message)) {}
+	internal XmlSyntaxException(SerializationInfo info,
+								StreamingContext context)
+			: base(info, context) {}
 
 	// Get the default HResult value for this type of exception.
 	internal override uint HResultDefault

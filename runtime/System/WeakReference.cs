@@ -1,7 +1,7 @@
 /*
  * WeakReference.cs - Implementation of the "System.WeakReference" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,9 @@ namespace System
 #if !ECMA_COMPAT
 
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
-public class WeakReference
+public class WeakReference : ISerializable
 {
 
 	// Internal state.
@@ -40,6 +41,28 @@ public class WeakReference
 					throw new ArgumentNullException("obj");
 				}
 				if(trackResurrection)
+				{
+					this.handle = GCHandle.Alloc
+						(obj, GCHandleType.WeakTrackResurrection);
+				}
+				else
+				{
+					this.handle = GCHandle.Alloc(obj, GCHandleType.Weak);
+				}
+			}
+	protected WeakReference(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				Object obj = info.GetValue("TrackedObject", typeof(Object));
+				bool track = info.GetBoolean("TrackResurrection");
+				if(obj == null)
+				{
+					throw new ArgumentNullException("obj");
+				}
+				if(track)
 				{
 					this.handle = GCHandle.Alloc
 						(obj, GCHandleType.WeakTrackResurrection);
@@ -86,6 +109,18 @@ public class WeakReference
 					return (handle.GetHandleType() ==
 								GCHandleType.WeakTrackResurrection);
 				}
+			}
+
+	// Get the serialization data for this object.
+	public virtual void GetObjectData(SerializationInfo info,
+									  StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("TrackedObject", Target, typeof(Object));
+				info.AddValue("TrackResurrection", TrackResurrection);
 			}
 
 }; // class WeakReference

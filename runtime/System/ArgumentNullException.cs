@@ -2,7 +2,7 @@
  * ArgumentNullException.cs - Implementation of the
  *		"System.ArgumentNullException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class ArgumentNullException : ArgumentException
 {
 	// Standard error message for null exceptions.
@@ -34,6 +36,11 @@ public class ArgumentNullException : ArgumentException
 		: base(preloadedMessage, paramName) {}
 	public ArgumentNullException(String paramName, String msg)
 		: base(msg, paramName) {}
+#if !ECMA_COMPAT
+	protected ArgumentNullException(SerializationInfo info,
+									StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

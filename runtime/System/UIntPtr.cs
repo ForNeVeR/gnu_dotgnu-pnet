@@ -23,6 +23,7 @@ namespace System
 
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 [CLSCompliant(false)]
 public struct UIntPtr
@@ -159,6 +160,35 @@ public struct UIntPtr
 	unsafe public static explicit operator void *(UIntPtr x)
 			{
 				return x.ToPointer();
+			}
+
+	// De-serialize an "UIntPtr" value.
+	internal unsafe UIntPtr(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				ulong value = info.GetUInt64("value");
+				if(Size == 4)
+				{
+					if(value > (ulong)(UInt32.MaxValue))
+					{
+						throw new ArgumentException(_("Overflow_Pointer"));
+					}
+				}
+				value_ = (void *)value;
+			}
+
+	// Get the serialization data for an "UIntPtr" value.
+	unsafe void ISerializable.GetObjectData(SerializationInfo info,
+											StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("value", ToUInt64());
 			}
 
 #endif // !ECMA_COMPAT

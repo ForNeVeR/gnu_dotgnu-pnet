@@ -1,7 +1,7 @@
 /*
  * IOException.cs - Implementation of the "System.IO.IOException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ namespace System.IO
 
 using System;
 using Platform;
+using System.Runtime.Serialization;
 
 public class IOException : SystemException
 {
@@ -45,6 +46,10 @@ public class IOException : SystemException
 		{
 			errno = Errno.EIO;
 		}
+#if !ECMA_COMPAT
+	protected IOException(SerializationInfo info, StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Internal constructors that are used to set correct error codes.
 	internal IOException(Errno errno)

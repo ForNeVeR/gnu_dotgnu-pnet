@@ -2,7 +2,7 @@
  * TypeInitializationException.cs - Implementation of the
  *			"System.TypeInitializationException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public sealed class TypeInitializationException : SystemException
 {
 	private String typeName;
@@ -34,6 +36,14 @@ public sealed class TypeInitializationException : SystemException
 	private TypeInitializationException(String typeName, Exception inner)
 		: base(null, inner)
 		{ this.typeName = typeName; }
+#if !ECMA_COMPAT
+	protected TypeInitializationException(SerializationInfo info,
+										  StreamingContext context)
+		: base(info, context)
+		{
+			typeName = info.GetString("TypeName");
+		}
+#endif
 
 	// Properties.
 	public String TypeName
@@ -76,6 +86,16 @@ public sealed class TypeInitializationException : SystemException
 					return 0x80131534;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("TypeName", typeName);
+			}
+#endif
 
 }; // class TypeInitializationException
 

@@ -2,7 +2,7 @@
  * NotFiniteNumberException.cs - Implementation of the
  *			"System.NotFiniteNumberException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 
 namespace System
 {
+
+using System.Runtime.Serialization;
 
 public class NotFiniteNumberException : ArithmeticException
 {
@@ -41,6 +43,14 @@ public class NotFiniteNumberException : ArithmeticException
 	public NotFiniteNumberException(String msg, double offendingNumber,
 									Exception inner)
 		: base(msg, inner) { number = offendingNumber; }
+#if !ECMA_COMPAT
+	protected NotFiniteNumberException(SerializationInfo info,
+									   StreamingContext context)
+		: base(info, context)
+		{
+			number = info.GetDouble("OffendingNumber");
+		}
+#endif
 
 	// Get the offending number that caused this exception.
 	public double OffendingNumber
@@ -68,6 +78,16 @@ public class NotFiniteNumberException : ArithmeticException
 					return 0x80131528;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("OffendingNumber", number);
+			}
+#endif
 
 }; // class NotFiniteNumberException
 

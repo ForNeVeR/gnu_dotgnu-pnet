@@ -2,7 +2,7 @@
  * TargetParameterCountException.cs - Implementation of the
  *			"System.Reflection.TargetParameterCountException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ namespace System.Reflection
 {
 
 using System;
+using System.Runtime.Serialization;
 
 public sealed class TargetParameterCountException : ApplicationException
 {
@@ -34,6 +35,11 @@ public sealed class TargetParameterCountException : ApplicationException
 		: base(msg) {}
 	public TargetParameterCountException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if !ECMA_COMPAT
+	internal TargetParameterCountException(SerializationInfo info,
+										   StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

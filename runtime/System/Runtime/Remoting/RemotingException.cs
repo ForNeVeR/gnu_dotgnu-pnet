@@ -2,7 +2,7 @@
  * RemotingException.cs - Implementation of the
  *		"System.Runtime.Remoting.RemotingException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ namespace System.Runtime.Remoting
 #if !ECMA_COMPAT
 
 using System;
+using System.Runtime.Serialization;
 
 public class RemotingException : SystemException
 {
@@ -36,6 +37,9 @@ public class RemotingException : SystemException
 		: base(msg) {}
 	public RemotingException(String msg, Exception inner)
 		: base(msg, inner) {}
+	protected RemotingException(SerializationInfo info,
+								StreamingContext context)
+		: base(info, context) {}
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

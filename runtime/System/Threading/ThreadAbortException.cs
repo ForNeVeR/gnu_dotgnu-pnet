@@ -2,7 +2,7 @@
  * ThreadAbortException.cs - Implementation of the
  *			"System.Threading.ThreadAbortException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 namespace System.Threading
 {
 
+using System.Runtime.Serialization;
+
 public sealed class ThreadAbortException : SystemException
 {
 	// Private state.
@@ -33,6 +35,11 @@ public sealed class ThreadAbortException : SystemException
 			{
 				this.stateInfo = stateInfo;
 			}
+#if !ECMA_COMPAT
+	internal ThreadAbortException(SerializationInfo info,
+								  StreamingContext context)
+			: base(info, context) {}
+#endif
 
 	// Get the exception state.
 	public Object ExceptionState

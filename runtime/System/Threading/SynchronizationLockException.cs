@@ -2,7 +2,7 @@
  * SynchronizationLockException.cs - Implementation of the
  *			"System.Threading.SynchronizationLockException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 namespace System.Threading
 {
 
+using System.Runtime.Serialization;
+
 public class SynchronizationLockException : SystemException
 {
 
@@ -32,6 +34,11 @@ public class SynchronizationLockException : SystemException
 		: base(msg) {}
 	public SynchronizationLockException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected SynchronizationLockException(SerializationInfo info,
+										   StreamingContext context)
+		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

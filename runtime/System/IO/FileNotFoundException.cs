@@ -2,7 +2,7 @@
  * FileNotFoundException.cs - Implementation of the
  *		"System.IO.FileNotFoundException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,15 @@ namespace System.IO
 
 using System;
 using Platform;
+using System.Runtime.Serialization;
 
 public class FileNotFoundException : IOException
 {
 	// Internal state.
 	private String fileName;
+#if !ECMA_COMPAT
+	private String fusionLog;
+#endif
 
 	// Constructors.
 	public FileNotFoundException()
@@ -56,6 +60,15 @@ public class FileNotFoundException : IOException
 			{
 				this.fileName = fileName;
 			}
+#if !ECMA_COMPAT
+	protected FileNotFoundException(SerializationInfo info,
+									StreamingContext context)
+			: base(info, context)
+			{
+				fileName = info.GetString("FileNotFound_FileName");
+				fusionLog = info.GetString("FileNotFound_FusionLog");
+			}
+#endif
 
 	// Get the message for this exception.  Because of "MessageDefault",
 	// we don't actually need this.  However, we include it because
@@ -118,14 +131,16 @@ public class FileNotFoundException : IOException
 					}
 				}
 			}
+
 #if !ECMA_COMPAT
+	// Get the fusion log for this exception.
 	public String FusionLog
-	{
-		get
-		{
-			throw new NotImplementedException("FusionLog");
-		}
-	}
+			{
+				get
+				{
+					return fusionLog;
+				}
+			}
 #endif
 
 	// Get the default HResult value for this type of exception.
@@ -136,6 +151,17 @@ public class FileNotFoundException : IOException
 					return 0x80070002;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get ther serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("FileNotFound_FileName", fileName);
+				info.AddValue("FileNotFound_FusionLog", fusionLog);
+			}
+#endif
 
 }; // class FileNotFoundException
 

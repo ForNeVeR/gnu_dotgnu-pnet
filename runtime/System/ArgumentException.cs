@@ -2,7 +2,7 @@
  * ArgumentException.cs - Implementation of the
  *		"System.ArgumentException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,12 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class ArgumentException : SystemException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 
 	// Internal state.
@@ -30,15 +35,23 @@ public class ArgumentException : SystemException
 
 	// Constructors.
 	public ArgumentException()
-		: base(_("Exception_Argument")) {}
+			: base(_("Exception_Argument")) {}
 	public ArgumentException(String msg)
-		: base(msg) {}
+			: base(msg) {}
 	public ArgumentException(String msg, Exception inner)
-		: base(msg, inner) {}
+			: base(msg, inner) {}
 	public ArgumentException(String msg, String param, Exception inner)
-		: base(msg, inner) { paramName = param; }
+			: base(msg, inner) { paramName = param; }
 	public ArgumentException(String msg, String param)
-		: base(msg) { paramName = param; }
+			: base(msg) { paramName = param; }
+#if !ECMA_COMPAT
+	protected ArgumentException(SerializationInfo info,
+								StreamingContext context)
+			: base(info, context)
+			{
+				paramName = info.GetString("ParamName");
+			}
+#endif
 
 	// Properties.
 	public virtual String ParamName
@@ -83,6 +96,16 @@ public class ArgumentException : SystemException
 					return 0x80070057;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("ParamName", paramName, typeof(String));
+			}
+#endif
 
 }; // class ArgumentException
 

@@ -2,7 +2,7 @@
  * ArgumentOutOfRangeException.cs - Implementation of the
  *		"System.ArgumentOutOfRangeException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,12 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class ArgumentOutOfRangeException : ArgumentException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 	// Standard error message for out of range exceptions.
 	private static String preloadedMessage = _("Arg_OutOfRange");
@@ -32,14 +37,22 @@ public class ArgumentOutOfRangeException : ArgumentException
 
 	// Constructors.
 	public ArgumentOutOfRangeException()
-		: base(preloadedMessage) {}
+			: base(preloadedMessage) {}
 	public ArgumentOutOfRangeException(String paramName)
-		: base(preloadedMessage, paramName) {}
+			: base(preloadedMessage, paramName) {}
 	public ArgumentOutOfRangeException(String paramName, String msg)
-		: base(msg, paramName) {}
+			: base(msg, paramName) {}
 	public ArgumentOutOfRangeException(String paramName,
 									   Object _actualValue, String msg)
-		: base(msg, paramName) { actualValue = _actualValue; }
+			: base(msg, paramName) { actualValue = _actualValue; }
+#if !ECMA_COMPAT
+	protected ArgumentOutOfRangeException(SerializationInfo info,
+										  StreamingContext context)
+			: base(info, context)
+			{
+				actualValue = info.GetValue("ActualValue", typeof(Object));
+			}
+#endif
 
 	// Properties.
 	public virtual Object ActualValue
@@ -85,6 +98,16 @@ public class ArgumentOutOfRangeException : ArgumentException
 					return 0x80131502;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("ActualValue", actualValue, typeof(Object));
+			}
+#endif
 
 }; // class ArgumentOutOfRangeException
 

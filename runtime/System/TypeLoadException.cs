@@ -2,7 +2,7 @@
  * TypeLoadException.cs - Implementation of the
  *			"System.TypeLoadException" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,12 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class TypeLoadException : SystemException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 	// Internal state.
 	private String typeName;
@@ -35,6 +40,15 @@ public class TypeLoadException : SystemException
 		: base(msg) {}
 	public TypeLoadException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if !ECMA_COMPAT
+	protected TypeLoadException(SerializationInfo info,
+								StreamingContext context)
+		: base(info, context)
+		{
+			typeName = info.GetString("ClassName");
+			assemblyName = info.GetString("AssemblyName");
+		}
+#endif
 
 	// Internal constructor that is used by the runtime engine.
 	private TypeLoadException(String typeName, String assembly)
@@ -86,6 +100,17 @@ public class TypeLoadException : SystemException
 					return 0x80131522;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("ClassName", typeName);
+				info.AddValue("AssemblyName", assemblyName);
+			}
+#endif
 
 }; // class TypeLoadException
 

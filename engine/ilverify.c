@@ -212,6 +212,9 @@ static void Coder_Shift(ILCoder *coder, int opcode, ILEngineType type1,
 				  		ILEngineType type2)
 {
 }
+static void Coder_Unary(ILCoder *coder, int opcode, ILEngineType type)
+{
+}
 static void Coder_LoadArg(ILCoder *coder, ILUInt32 num, ILType *type)
 {
 }
@@ -249,6 +252,13 @@ static void Coder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				   		 ILEngineType type1, ILEngineType type2)
 {
 }
+static void Coder_BranchPtr(ILCoder *coder, int opcode, ILUInt32 dest,
+				   		    ILEngineType type1, ILEngineType type2)
+{
+}
+static void Coder_Conv(ILCoder *coder, int opcode, ILEngineType type)
+{
+}
 
 /*
  * Default coder class and instance.
@@ -265,6 +275,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_Binary,
 	Coder_BinaryPtr,
 	Coder_Shift,
+	Coder_Unary,
 	Coder_LoadArg,
 	Coder_StoreArg,
 	Coder_AddrOfArg,
@@ -276,6 +287,8 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_ArrayAccess,
 	Coder_PtrAccess,
 	Coder_Branch,
+	Coder_BranchPtr,
+	Coder_Conv,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

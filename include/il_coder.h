@@ -140,6 +140,11 @@ struct _tagILCoderClass
 				  ILEngineType type2);
 
 	/*
+	 * Handle a unary operator.
+	 */
+	void (*unary)(ILCoder *coder, int opcode, ILEngineType type);
+
+	/*
 	 * Load an argument onto the stack.
 	 */
 	void (*loadArg)(ILCoder *coder, ILUInt32 num, ILType *type);
@@ -198,6 +203,17 @@ struct _tagILCoderClass
 	void (*branch)(ILCoder *coder, int opcode, ILUInt32 dest,
 				   ILEngineType type1, ILEngineType type2);
 
+	/*
+	 * Output a branch instruction that involves binary pointer comparisons.
+	 */
+	void (*branchPtr)(ILCoder *coder, int opcode, ILUInt32 dest,
+				      ILEngineType type1, ILEngineType type2);
+
+	/*
+	 * Output a conversion instruction.
+	 */
+	void (*conv)(ILCoder *coder, int opcode, ILEngineType type);
+
 };
 
 /*
@@ -228,6 +244,8 @@ struct _tagILCoderClass
 #define	ILCoderShift(coder,opcode,type1,type2) \
 			((*((coder)->classInfo->shift))((coder), (opcode), \
 											(type1), (type2)))
+#define	ILCoderUnary(coder,opcode,type) \
+			((*((coder)->classInfo->unary))((coder), (opcode), (type)))
 #define	ILCoderLoadArg(coder,num,type)	\
 			((*((coder)->classInfo->loadArg))((coder), (num), (type)))
 #define	ILCoderStoreArg(coder,num,etype,type)	\
@@ -254,6 +272,11 @@ struct _tagILCoderClass
 #define	ILCoderBranch(coder,opcode,dest,type1,type2)	\
 			((*((coder)->classInfo->branch))((coder), (opcode), (dest), \
 											 (type1), (type2)))
+#define	ILCoderBranchPtr(coder,opcode,dest,type1,type2)	\
+			((*((coder)->classInfo->branchPtr))((coder), (opcode), (dest), \
+											    (type1), (type2)))
+#define	ILCoderConv(coder,opcode,type) \
+			((*((coder)->classInfo->conv))((coder), (opcode), (type)))
 
 #ifdef	__cplusplus
 };

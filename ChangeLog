@@ -3,3 +3,5 @@
 
 	* ChangeLog, doc/ChangeLog-2: move the contents of "ChangeLog" to
 	"doc/ChangeLog-2", because it was starting to get too big to manage.
+
+	* engine/cvm.c, engine/cvm_dasm.c: profile "wide" instructions.

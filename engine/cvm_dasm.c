@@ -949,7 +949,8 @@ int _ILDumpInsnProfile(FILE *stream)
 	int sawCounts = 0;
 	int indices[512];
 
-	/* Zero the count for "prefix", because it isn't important */
+	/* Zero "wide" and "prefix", because they aren't important */
+	_ILCVMInsnCount[COP_WIDE] = 0;
 	_ILCVMInsnCount[COP_PREFIX] = 0;
 
 	/* Sort the instruction count table into decreasing order */

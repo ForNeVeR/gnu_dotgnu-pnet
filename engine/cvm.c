@@ -460,6 +460,9 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 */
 			case COP_WIDE:
 			{
+			#ifdef IL_PROFILE_CVM_INSNS
+				++(_ILCVMInsnCount[((int)(pc[1]))]);
+			#endif
 				switch(pc[1])
 				{
 					/* Include the instruction categories for the wide switch */

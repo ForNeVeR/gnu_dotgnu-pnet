@@ -20,8 +20,13 @@
 
 #include <stdio.h>
 #include "il_system.h"
-#ifdef IL_WIN32_NATIVE
+#ifdef IL_WIN32_PLATFORM
 	#include <windows.h>
+	#ifndef IL_WIN32_NATIVE
+		#ifdef HAVE_SYS_CYGWIN_H
+			#include <sys/cygwin.h>
+		#endif
+	#endif
 #else
 #ifdef HAVE_DLFCN_H
 	#include <dlfcn.h>
@@ -155,6 +160,67 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 	return 0;
 }
 
+#elif defined(IL_WIN32_PLATFORM)	/* Native Win32 or Cygwin */
+
+void *ILDynLibraryOpen(const char *name)
+{
+	void *libHandle;
+	char *newName = 0;
+
+#if defined(IL_WIN32_CYGWIN) && defined(HAVE_SYS_CYGWIN_H) && \
+    defined(HAVE_CYGWIN_CONV_TO_WIN32_PATH)
+
+	/* Use Cygwin to expand the path */
+	{
+		char buf[4096];
+		if(cygwin_conv_to_win32_path(name, buf) == 0)
+		{
+			newName = ILDupString(buf);
+			if(!newName)
+			{
+				return 0;
+			}
+		}
+	}
+
+#endif
+
+	/* Attempt to load the library */
+	libHandle = (void *)LoadLibrary((newName ? newName : name));
+	if(libHandle == 0)
+	{
+		fprintf(stderr, "%s: could not load dynamic library\n",
+				(newName ? newName : name));
+		if(newName)
+		{
+			ILFree(newName);
+		}
+		return 0;
+	}
+	if(newName)
+	{
+		ILFree(newName);
+	}
+	return libHandle;
+}
+
+void ILDynLibraryClose(void *handle)
+{
+	FreeLibrary((HINSTANCE)handle);
+}
+
+void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
+{
+	void *procAddr;
+	procAddr = (void *)GetProcAddress((HINSTANCE)handle, symbol);
+	if(procAddr == 0)
+	{
+		fprintf(stderr, "%s: could not resolve symbol", symbol);
+		return 0;
+	}
+	return procAddr;
+}
+
 #elif defined(HAVE_DLFCN_H) && defined(HAVE_DLOPEN)
 
 void *ILDynLibraryOpen(const char *name)
@@ -238,36 +304,6 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 	}
 	fprintf(stderr, "%s: %s\n", symbol, error);
 	return 0;
-}
-
-#elif defined(IL_WIN32_NATIVE)	/* Native Win32 */
-
-void *ILDynLibraryOpen(const char *name)
-{
-	void *libHandle = (void *)LoadLibrary(name);
-	if(libHandle == 0)
-	{
-		fprintf(stderr, "%s: could not load dynamic library\n", name);
-		return 0;
-	}
-	return libHandle;
-}
-
-void ILDynLibraryClose(void *handle)
-{
-	FreeLibrary((HINSTANCE)handle);
-}
-
-void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
-{
-	void *procAddr;
-	procAddr = (void *)GetProcAddress((HINSTANCE)handle, symbol);
-	if(procAddr == 0)
-	{
-		fprintf(stderr, "%s: could not resolve symbol", symbol);
-		return 0;
-	}
-	return procAddr;
 }
 
 #else	/* No dynamic library support */

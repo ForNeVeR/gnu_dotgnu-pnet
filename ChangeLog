@@ -1,4 +1,9 @@
 
+2003-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/dynlib.c: use the "LoadLibrary" function under both
+	cygwin and non-cygwin win32 installations.
+
 2003-06-24  Jeff Post  <j_post@pacbell.net>
 
 	* csdoc/Makefile.am, csdoc/cssrc2html.c, csdoc/cssrc2html.h,

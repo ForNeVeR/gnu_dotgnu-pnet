@@ -17,6 +17,9 @@
 	resources/en_US/System.Windows.Forms/Makefile.am:
 	Implement SystemIcons.
 
+2004-12-16  Deryk Robosson  <deryk@0x0a.com>
+	* System.Windows.Forms/NotifyIcon.cs: Add stub.
+
 2004-12-16  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* System.Xml/XmlUrlResolver.cs: Relative filenames on the filesystem

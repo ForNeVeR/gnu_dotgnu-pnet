@@ -10,9 +10,9 @@ The other profiles can be summarised as:
 
     kernel
 
-        The smallest possible configuration.  No support for floating-point,
-        reflection, networking, PInvoke, multi-dimensional arrays, etc.
-        The default text encoding is hard-wired to Latin1.
+        The smallest possible ECMA-compatible configuration.  No support
+        for floating-point, reflection, networking, PInvoke, multi-dimensional
+        arrays, etc.  The default text encoding is hard-wired to Latin1.
 
     kernel-fp
 
@@ -25,6 +25,11 @@ The other profiles can be summarised as:
     compact-fp
 
         The "compact" profile, with the addition of floating-point.
+
+    tiny
+
+        The "kernel" profile, without runtime infrastructure or filesystem
+        support.
 
 It is possible to reduce the feature set further with other "configure"
 options, such as "--without-libffi", "--enable-threads=none", etc.

@@ -136,49 +136,6 @@ static void ThrowTypeLoad(ILExecThread *thread, ILString *name)
 							(const char *)0);
 }
 
-ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
-{
-	ILObject *obj;
-
-	/* Make sure that the class has been laid out */
-	IL_METADATA_WRLOCK(thread);
-	if(!_ILLayoutClass(classInfo))
-	{
-		IL_METADATA_UNLOCK(thread);
-		ThrowTypeLoad(thread, 0);
-		return 0;
-	}
-	IL_METADATA_UNLOCK(thread);
-
-	/* Does the class already have a "ClrType" instance? */
-	if(((ILClassPrivate *)(classInfo->userData))->clrType)
-	{
-		return ((ILClassPrivate *)(classInfo->userData))->clrType;
-	}
-
-	/* Create a new "ClrType" instance */
-	if(!(thread->process->clrTypeClass))
-	{
-		ThrowTypeLoad(thread, 0);
-		return 0;
-	}
-	obj = _ILEngineAllocObject(thread, thread->process->clrTypeClass);
-	if(!obj)
-	{
-		return 0;
-	}
-
-	/* Fill in the object with the class information */
-	((System_Reflection *)obj)->privateData = classInfo;
-
-	/* Attach the object to the class so that it will be returned
-	   for future calls to this function */
-	((ILClassPrivate *)(classInfo->userData))->clrType = obj;
-
-	/* Return the object to the caller */
-	return obj;
-}
-
 ILObject *_ILGetClrTypeForILType(ILExecThread *thread, ILType *type)
 {
 	ILClass *classInfo;
@@ -194,27 +151,6 @@ ILObject *_ILGetClrTypeForILType(ILExecThread *thread, ILType *type)
 	if(classInfo)
 	{
 		return _ILGetClrType(thread, classInfo);
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type)
-{
-	if(type)
-	{
-		/* Make sure that "type" is an instance of "ClrType" */
-		if(ILClassInheritsFrom(GetObjectClass(type),
-							   thread->process->clrTypeClass))
-		{
-			return (ILClass *)(((System_Reflection *)type)->privateData);
-		}
-		else
-		{
-			return 0;
-		}
 	}
 	else
 	{

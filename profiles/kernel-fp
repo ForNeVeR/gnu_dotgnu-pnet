@@ -53,6 +53,10 @@ IL_CONFIG_PINVOKE=n
 # Use full reflection library (y/n).
 IL_CONFIG_REFLECTION=n
 
+# Use the runtime infrastructure library (y/n).  This will
+# always be enabled if reflection is enabled.
+IL_CONFIG_RUNTIME_INFRA=y
+
 # Use networking support (y/n).
 IL_CONFIG_NETWORKING=n
 
@@ -85,4 +89,4 @@ IL_CONFIG_FILTERED_EXCEPTIONS=n
 IL_CONFIG_DEBUG_LINES=n
 
 # Use file and directory internalcalls (y/n).
-IL_CONFIG_FILESYSTEM=n
+IL_CONFIG_FILESYSTEM=y

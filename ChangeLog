@@ -9,6 +9,12 @@
 	* csdoc/doc_html.c, csdoc/doc_load.c, csdoc/doc_tree.h:
 	report the library that a type or member resides in.
 
+	* engine/internal.c, engine/lib_object.c, engine/lib_type.c,
+	profiles/README, profiles/compact, profiles/compact-fp,
+	profiles/full, profiles/kernel, profiles/kernel-fp,
+	profiles/tiny: profile support for disabling the "runtime
+	infrastructure" parts of the system library.
+
 2002-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_conv.c, engine/lib_string.c, include/il_engine.h:

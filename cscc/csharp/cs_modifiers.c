@@ -573,6 +573,11 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers)
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `override' and `new'");
+			attrs |= CS_SPECIALATTR_OVERRIDE;
+		}
+		else
+		{
+			attrs |= CS_SPECIALATTR_OVERRIDE;
 		}
 		if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 		{

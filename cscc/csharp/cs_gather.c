@@ -99,6 +99,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	int errorReported;
 	ILNode_ClassDefn *defn;
 	ILNode *savedNamespace;
+	ILNode *savedClass;
 	ILProgramItem *nestedScope;
 	ILNode *node;
 	ILNode_ListIter iter;
@@ -145,9 +146,11 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		nestedScope = ILClassGlobalScope(info->image);
 	}
 
-	/* Set the namespace to use for resolving type names */
+	/* Set the namespace and class to use for resolving type names */
 	savedNamespace = info->currentNamespace;
 	info->currentNamespace = defn->namespaceNode;
+	savedClass = info->currentClass;
+	info->currentClass = (ILNode *)(defn->nestedParent);
 
 	/* Create all of the base classes */
 	numBases = CountBaseClasses(defn->baseClass);
@@ -274,8 +277,9 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		}
 	}
 
-	/* Restore the namespace */
+	/* Restore the namespace and class */
 	info->currentNamespace = savedNamespace;
+	info->currentClass = savedClass;
 
 	/* Output an error if attempting to inherit from a sealed class */
 	if(parent && ILClass_IsSealed(parent))

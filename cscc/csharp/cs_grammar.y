@@ -181,6 +181,15 @@ static void yyerror(char *msg)
 			(ILNode_GlobalNamespace_create(ILQualIdentTwo("System", #name)))
 
 /*
+ * Clone the filename/linenum information from one node to another.
+ */
+static void CloneLine(ILNode *dest, ILNode *src)
+{
+	yysetfilename(dest, yygetfilename(src));
+	yysetlinenum(dest, yygetlinenum(src));
+}
+
+/*
  * Make a list from an existing list (may be NULL), and a new node
  * (which may also be NULL).
  */
@@ -311,8 +320,7 @@ static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
 					(ILInternAppendedString
 						(ILInternString(prefix, strlen(prefix)),
 						 ILInternString(ILQualIdentName(name, 0), -1)).string);
-		yysetfilename(node, yygetfilename(name));
-		yysetlinenum(node, yygetlinenum(name));
+		CloneLine(node, name);
 		return node;
 	}
 	else if(yykind(name) == yykindof(ILNode_QualIdent))
@@ -320,8 +328,7 @@ static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
 		/* Qualified name: add the prefix to the second component */
 		node = ILNode_QualIdent_create(((ILNode_QualIdent *)name)->left,
 			AdjustPropertyName(((ILNode_QualIdent *)name)->right, prefix));
-		yysetfilename(node, yygetfilename(name));
-		yysetlinenum(node, yygetlinenum(name));
+		CloneLine(node, name);
 		return node;
 	}
 	else
@@ -2347,6 +2354,7 @@ ClassDeclaration
 							 $5,					/* ClassBase */
 							 classBody,
 							 ($7).staticCtors);
+				CloneLine($$, $4);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3050,6 +3058,7 @@ StructDeclaration
 							 baseList,				/* ClassBase */
 							 ($7).body,				/* StructBody */
 							 ($7).staticCtors);		/* StaticCtors */
+				CloneLine($$, $4);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3111,6 +3120,7 @@ InterfaceDeclaration
 							 $5,					/* ClassBase */
 							 $7,					/* InterfaceBody */
 							 0);					/* StaticCtors */
+				CloneLine($$, $4);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3317,6 +3327,7 @@ EnumDeclaration
 							 baseList,				/* ClassBase */
 							 bodyList,				/* EnumBody */
 							 0);					/* StaticCtors */
+				CloneLine($$, $4);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3417,6 +3428,7 @@ DelegateDeclaration
 							 baseList,				/* ClassBase */
 							 bodyList,				/* Body */
 							 0);					/* StaticCtors */
+				CloneLine($$, $5);
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;

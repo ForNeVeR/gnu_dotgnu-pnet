@@ -1,4 +1,10 @@
 
+2001-03-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_gather.c, cscc/csharp/cs_grammar.y,
+	cscc/csharp/cs_lookup.c, cscc/csharp/cs_modifiers.c:
+	complete type gathering support for nested types.
+
 2001-03-17  Gopal.V  <gopalv82@yahoo.com>
 	* ilnative/Makefile.am ilnative/ilcheck.c: A status check
 	for the InternalCalls implemented in mscorlib.dll but missing

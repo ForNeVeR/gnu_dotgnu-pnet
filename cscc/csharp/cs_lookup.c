@@ -226,6 +226,69 @@ static ILMethod *GetUnderlyingMethod(ILMember *member)
 }
 
 /*
+ * Find a nested class by name within an attached scope.
+ * This is needed during type gathering, prior to the
+ * creation of the "ILClass" records.
+ */
+static ILNode *FindNestedClass(ILClass *info, ILNode_ClassDefn *defn,
+							   const char *name)
+{
+	ILNode *body;
+	ILScope *scope;
+	ILScopeData *data;
+
+	/* Get the tree node that is attached to the class */
+	if(!defn)
+	{
+		defn = (ILNode_ClassDefn *)ILClassGetUserData(info);
+		if(!defn)
+		{
+			return 0;
+		}
+	}
+
+	/* Get the scope information from the class body */
+	body = defn->body;
+	if(!body || !yyisa(body, ILNode_ScopeChange))
+	{
+		return 0;
+	}
+	scope = ((ILNode_ScopeChange *)body)->scope;
+
+	/* Look for the name within the scope */
+	data = ILScopeLookup(scope, name, 0);
+	if(!data)
+	{
+		return 0;
+	}
+
+	/* The item must be a declared type */
+	if(ILScopeDataGetKind(data) != IL_SCOPE_DECLARED_TYPE)
+	{
+		return 0;
+	}
+	body = ILScopeDataGetNode(data);
+	if(!body || !yyisa(body, ILNode_ClassDefn))
+	{
+		return 0;
+	}
+
+	/* If the "classInfo" field is already set, then we should
+	   fall back to the normal nested class processing as we
+	   are no longer within type gathering, or we've already
+	   gathered this type previously */
+	defn = (ILNode_ClassDefn *)body;
+	if(defn->classInfo && defn->classInfo != (ILClass *)1 &&
+	   defn->classInfo != (ILClass *)2)
+	{
+		return 0;
+	}
+
+	/* Return the nested class node to the caller */
+	return body;
+}
+
+/*
  * Process a class and add all members called "name" to a set
  * of member lookup results.
  */
@@ -240,6 +303,7 @@ static void FindMembers(ILClass *info, const char *name,
 	ILClass *nestedChild;
 	int kind;
 	ILMethod *underlying;
+	ILNode *node;
 
 	/* Scan up the parent hierarchy until we run out of parents */
 	while(info != 0)
@@ -282,15 +346,24 @@ static void FindMembers(ILClass *info, const char *name,
 		}
 
 		/* Look for all accessible nested classes with the given name */
-		nested = 0;
-		while((nested = ILClassNextNested(info, nested)) != 0)
+		node = FindNestedClass(info, 0, name);
+		if(node)
 		{
-			nestedChild = ILNestedInfoGetChild(nested);
-			if(!strcmp(ILClass_Name(nestedChild), name) &&
-			   ILClassAccessible(nestedChild, accessedFrom))
+			AddMember(results, (ILProgramItem *)node,
+					  info, CS_MEMBERKIND_TYPE_NODE);
+		}
+		else
+		{
+			nested = 0;
+			while((nested = ILClassNextNested(info, nested)) != 0)
 			{
-				AddMember(results, (ILProgramItem *)nestedChild,
-						  info, CS_MEMBERKIND_TYPE);
+				nestedChild = ILNestedInfoGetChild(nested);
+				if(!strcmp(ILClass_Name(nestedChild), name) &&
+				   ILClassAccessible(nestedChild, accessedFrom))
+				{
+					AddMember(results, (ILProgramItem *)nestedChild,
+							  info, CS_MEMBERKIND_TYPE);
+				}
 			}
 		}
 
@@ -814,7 +887,8 @@ ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule)
 		return ILMethod_Owner
 		  (((ILNode_MethodDeclaration *)(genInfo->currentMethod))->methodInfo);
 	}
-	else if(genInfo->currentClass)
+	else if(genInfo->currentClass &&
+	        ((ILNode_ClassDefn *)(genInfo->currentClass))->classInfo)
 	{
 		return ((ILNode_ClassDefn *)(genInfo->currentClass))->classInfo;
 	}
@@ -840,6 +914,27 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	ILNode_UsingNamespace *using;
 	CSSemValue value;
 	int result;
+	ILNode_ClassDefn *nestedParent;
+	ILNode *child;
+
+	/* If we are within type gathering, then search the nesting
+	   parents for a nested type that matches our requirements */
+	if(genInfo->typeGather)
+	{
+		nestedParent = (ILNode_ClassDefn *)(genInfo->currentClass);
+		while(nestedParent != 0)
+		{
+			child = FindNestedClass(0, nestedParent, name);
+			if(child)
+			{
+				CSSemValue value;
+				value.kind = CS_SEMKIND_TYPE_NODE;
+				value.type = (ILType *)child;
+				return value;
+			}
+			nestedParent = nestedParent->nestedParent;
+		}
+	}
 
 	/* Find the type to start looking at and the scope to use for accesses */
 	startType = CSGetAccessScope(genInfo, 0);

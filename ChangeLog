@@ -54,6 +54,9 @@
 	System/Threading/ThreadExceptionEventHandler.cs: add two
 	"System.Threading" classes that live in the "System" assembly.
 
+	* System/IO/Stream.cs: queue asynchronous I/O requests to the
+	completion queue in the "ThreadPool" class.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

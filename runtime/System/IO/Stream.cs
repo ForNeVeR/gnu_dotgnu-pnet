@@ -79,7 +79,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 				}
 
 		// Run the operation thread.
-		private void Run()
+		private void Run(Object state)
 				{
 					try
 					{
@@ -110,14 +110,13 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 				{
 					if(Thread.CanStartThreads())
 					{
-						Thread thread = new Thread(new ThreadStart(Run));
-						thread.IsBackground = true;
-						thread.Start();
+						ThreadPool.QueueCompletionItem
+							(new WaitCallback(Run), null);
 					}
 					else
 					{
 						completedSynchronously = true;
-						Run();
+						Run(null);
 					}
 				}
 

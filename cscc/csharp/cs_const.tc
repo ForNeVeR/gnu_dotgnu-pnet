@@ -1,7 +1,7 @@
 /*
  * cs_const.tc - Semantic analysis for C# constant node types.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,10 @@
 ILNode_SemAnalysis(ILNode_Null)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Null);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_ObjectRef;
+	evalValue.un.oValue = 0;
+	CSSemSetConstant(value, ILType_Null, evalValue);
 	return value;
 }
 
@@ -35,18 +38,36 @@ ILNode_SemAnalysis(ILNode_NullPtr)
 {
 	/* Will never be encountered in C# code, so do the same as "null" */
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Null);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_ObjectRef;
+	evalValue.un.oValue = 0;
+	CSSemSetConstant(value, ILType_Null, evalValue);
 	return value;
 }
 
 /*
- * Perform semantic analysis for the "true" and "false" constants.
+ * Perform semantic analysis for the "true" constant.
  */
-ILNode_SemAnalysis(ILNode_True),
+ILNode_SemAnalysis(ILNode_True)
+{
+	CSSemValue value;
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Boolean;
+	evalValue.un.i4Value = 1;
+	CSSemSetConstant(value, ILType_Boolean, evalValue);
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "false" constant.
+ */
 ILNode_SemAnalysis(ILNode_False)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Boolean);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Boolean;
+	evalValue.un.i4Value = 0;
+	CSSemSetConstant(value, ILType_Boolean, evalValue);
 	return value;
 }
 
@@ -56,81 +77,140 @@ ILNode_SemAnalysis(ILNode_False)
 ILNode_SemAnalysis(ILNode_Int8)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Int8);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int8;
+	if(node->isneg)
+	{
+		evalValue.un.i4Value = -((ILInt32)(node->value));
+	}
+	else
+	{
+		evalValue.un.i4Value = (ILInt32)(node->value);
+	}
+	CSSemSetConstant(value, ILType_Int8, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt8)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_UInt8);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt8;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSSemSetConstant(value, ILType_UInt8, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int16)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Int16);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int16;
+	if(node->isneg)
+	{
+		evalValue.un.i4Value = -((ILInt32)(node->value));
+	}
+	else
+	{
+		evalValue.un.i4Value = (ILInt32)(node->value);
+	}
+	CSSemSetConstant(value, ILType_Int16, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt16)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_UInt16);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt16;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSSemSetConstant(value, ILType_UInt16, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Char)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Char);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Char;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSSemSetConstant(value, ILType_Char, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int32)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Int32);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int32;
+	if(node->isneg)
+	{
+		evalValue.un.i4Value = -((ILInt32)(node->value));
+	}
+	else
+	{
+		evalValue.un.i4Value = (ILInt32)(node->value);
+	}
+	CSSemSetConstant(value, ILType_Int32, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt32)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_UInt32);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt32;
+	evalValue.un.i4Value = (ILInt32)(node->value);
+	CSSemSetConstant(value, ILType_UInt32, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int)
 {
 	CSSemValue value;
-	if(ILNode_GetType(node, info) == ILMachineType_Int64)
+	ILEvalValue evalValue;
+	ILNode_EvalConst(node, info, &evalValue);
+	if(evalValue.valueType == ILMachineType_Int64)
 	{
-		CSSemSetRValue(value, ILType_Int64);
+		CSSemSetConstant(value, ILType_Int64, evalValue);
 	}
 	else
 	{
-		CSSemSetRValue(value, ILType_Int);
+		CSSemSetConstant(value, ILType_Int, evalValue);
 	}
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt)
 {
 	CSSemValue value;
-	if(ILNode_GetType(node, info) == ILMachineType_UInt64)
+	ILEvalValue evalValue;
+	ILNode_EvalConst(node, info, &evalValue);
+	if(evalValue.valueType == ILMachineType_UInt64)
 	{
-		CSSemSetRValue(value, ILType_UInt64);
+		CSSemSetConstant(value, ILType_UInt64, evalValue);
 	}
 	else
 	{
-		CSSemSetRValue(value, ILType_UInt);
+		CSSemSetConstant(value, ILType_UInt, evalValue);
 	}
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Int64)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Int64);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Int64;
+	if(node->isneg)
+	{
+		evalValue.un.i8Value = -((ILInt64)(node->value));
+	}
+	else
+	{
+		evalValue.un.i8Value = (ILInt64)(node->value);
+	}
+	CSSemSetConstant(value, ILType_Int64, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_UInt64)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_UInt64);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_UInt64;
+	evalValue.un.i8Value = (ILInt64)(node->value);
+	CSSemSetConstant(value, ILType_UInt64, evalValue);
 	return value;
 }
 
@@ -140,19 +220,28 @@ ILNode_SemAnalysis(ILNode_UInt64)
 ILNode_SemAnalysis(ILNode_Float32)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Float32);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Float32;
+	evalValue.un.r4Value = (ILFloat)(node->value);
+	CSSemSetConstant(value, ILType_Float32, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Float64)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Float64);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_Float64;
+	evalValue.un.r8Value = node->value;
+	CSSemSetConstant(value, ILType_Float64, evalValue);
 	return value;
 }
 ILNode_SemAnalysis(ILNode_Float)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILType_Float);
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_NativeFloat;
+	evalValue.un.r8Value = node->value;
+	CSSemSetConstant(value, ILType_Float, evalValue);
 	return value;
 }
 
@@ -162,7 +251,10 @@ ILNode_SemAnalysis(ILNode_Float)
 ILNode_SemAnalysis(ILNode_Decimal)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILFindSystemType(info, "Decimal"));
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_ManagedValue;
+	evalValue.un.decValue = node->value;
+	CSSemSetConstant(value, ILFindSystemType(info, "Decimal"), evalValue);
 	return value;
 }
 
@@ -172,7 +264,11 @@ ILNode_SemAnalysis(ILNode_Decimal)
 ILNode_SemAnalysis(ILNode_String)
 {
 	CSSemValue value;
-	CSSemSetRValue(value, ILFindSystemType(info, "String"));
+	ILEvalValue evalValue;
+	evalValue.valueType = ILMachineType_String;
+	evalValue.un.strValue.str = node->str;
+	evalValue.un.strValue.len = node->len;
+	CSSemSetConstant(value, ILFindSystemType(info, "String"), evalValue);
 	return value;
 }
 

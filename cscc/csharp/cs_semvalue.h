@@ -286,7 +286,7 @@ extern CSSemValue CSSemValueError;
  * Get the constant value slot within a value.
  */
 #define	CSSemGetConstant(value)	\
-			(CSemHasKind((value), CS_SEMKIND_CONSTANT) ? \
+			(CSSemHasKind((value), CS_SEMKIND_CONSTANT) ? \
 				(ILEvalValue *)((value).extra__) : (ILEvalValue *)0)
 
 /*

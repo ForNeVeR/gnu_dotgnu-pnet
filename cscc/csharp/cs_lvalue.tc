@@ -535,8 +535,10 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 				if(allowConst &&
 				   (constNode = FieldToConstant(info, node, field)) != 0)
 				{
+					ILEvalValue evalValue;
 					*parent = constNode;
-					CSSemSetRValue(value, ILField_Type(field));
+					ILNode_EvalConst(constNode, info, &evalValue);
+					CSSemSetConstant(value, ILField_Type(field), evalValue);
 				}
 				else
 				{

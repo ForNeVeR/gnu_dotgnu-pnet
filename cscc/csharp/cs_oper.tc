@@ -59,6 +59,20 @@ static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
 }
 
 /*
+ * Perform constant evaluation on an operator node.
+ */
+static void EvalOperator(ILGenInfo *info, ILNode *node,
+					     ILNode **parent, CSSemValue *result)
+{
+	ILEvalValue evalValue;
+	if(ILNode_EvalConst(node, info, &evalValue))
+	{
+		CSSemSetConstant(*result, CSSemGetType(*result), evalValue);
+		CSSemReplaceWithConstant(parent, *result);
+	}
+}
+
+/*
  * Common semantic analysis function for binary arithmetic operators.
  */
 static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
@@ -96,6 +110,7 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		{
 			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
+		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
 
@@ -184,6 +199,7 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 		{
 			CSSemSetRValue(value, ILFindSystemType(info, "Decimal"));
 		}
+		EvalOperator(info, *parent, parent, &value);
 		return value;
 	}
 
@@ -252,6 +268,7 @@ ILNode_SemAnalysis(ILNode_Add)
 		{
 			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
+		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
 
@@ -291,6 +308,7 @@ ILNode_SemAnalysis(ILNode_Add)
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		CSSemSetRValue(value1, ILFindSystemType(info, "String"));
+		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
 
@@ -352,6 +370,7 @@ ILNode_SemAnalysis(ILNode_Sub)
 		{
 			CSSemSetRValue(value1, ILFindSystemType(info, "Decimal"));
 		}
+		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
 
@@ -1082,26 +1101,26 @@ ILNode_SemAnalysis(ILNode_ToBool)
 ILNode_SemAnalysis(ILNode_ToConst)
 {
 	CSSemValue value;
-	ILEvalValue evalue;
 
 	/* Perform semantic analysis on the sub-expression */
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 
 	/* Determine if the sub-expression evaluates to a constant */
-	if(!CSSemIsValue(value) ||
-	   !ILNode_EvalConst(node->expr, info, &evalue))
+	if(!CSSemIsConstant(value) || CSSemIsDynConstant(value))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "constant value required");
 		if(!CSSemIsValue(value))
 		{
-			CSSemSetRValue(value, ILType_Int32);
-			return value;
+			CSSemSetDynConstant(value, ILType_Int32);
+		}
+		else
+		{
+			CSSemSetDynConstant(value, CSSemGetType(value));
 		}
 	}
 
 	/* Return the semantic information to the caller */
-	CSSemSetRValue(value, CSSemGetType(value));
 	return value;
 }
 
@@ -1147,6 +1166,7 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
 
 	/* Builtin "!" operator: the result is always boolean */
 	CSSemSetRValue(value, ILType_Boolean);
+	EvalOperator(info, *parent, parent, &value);
 	return value;
 }
 
@@ -1234,6 +1254,7 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
 
 	/* The result is boolean */
 	CSSemSetRValue(value1, ILType_Boolean);
+	EvalOperator(info, *parent, parent, &value1);
 	return value1;
 
 	/* Report an argument error */
@@ -1328,6 +1349,7 @@ ILNode_SemAnalysis(ILNode_LogicalOr)
 
 	/* The result is boolean */
 	CSSemSetRValue(value1, ILType_Boolean);
+	EvalOperator(info, *parent, parent, &value1);
 	return value1;
 
 	/* Report an argument error */
@@ -1371,6 +1393,7 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	{
 		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
 		CSSemSetRValue(value1, ILType_Boolean);
+		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
 
@@ -1595,6 +1618,7 @@ ILNode_SemAnalysis(ILNode_Conditional)
 	if(ILTypeIdentical(CSSemGetType(value1), CSSemGetType(value2)))
 	{
 		CSSemSetRValue(value1, CSSemGetType(value1));
+		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
 
@@ -1607,6 +1631,7 @@ ILNode_SemAnalysis(ILNode_Conditional)
 		ILCoerce(info, node->expr2, &(node->expr2), CSSemGetType(value1),
 				 CSSemGetType(value2));
 		CSSemSetRValue(value2, CSSemGetType(value2));
+		EvalOperator(info, *parent, parent, &value1);
 		return value2;
 	}
 	else if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value2),
@@ -1617,6 +1642,7 @@ ILNode_SemAnalysis(ILNode_Conditional)
 		ILCoerce(info, node->expr3, &(node->expr3), CSSemGetType(value2),
 				 CSSemGetType(value1));
 		CSSemSetRValue(value1, CSSemGetType(value1));
+		EvalOperator(info, *parent, parent, &value1);
 		return value1;
 	}
 

@@ -1,4 +1,10 @@
 
+2002-09-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_const.tc, cscc/csharp/cs_lvalue.tc,
+	cscc/csharp/cs_oper.tc, cscc/csharp/cs_semvalue.h: improve
+	constant evaluation for operators.
+
 2002-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, ilheader/.cvsignore, ilheader/Makefile.am,

@@ -37,6 +37,9 @@
 	at link time, and add extra support libraries to the link line
 	if detected.
 
+	* cscc/c/c_library.c, csupport/Markers.cs: add the attributes
+	"InitializerOrderAttribute" and "FinalizerOrderAttribute".
+
 2002-08-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_defs.tc,

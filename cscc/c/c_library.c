@@ -141,9 +141,19 @@ void CGenRegisterLibrary(ILGenInfo *info)
 						    attributeClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
+	/* Create "OpenSystem.C.InitializerOrderAttribute" */
+	classInfo = CreateClass(info, scope, "InitializerOrderAttribute",
+						    attributeClass);
+	AddConstructor(classInfo, ILType_Int32, ILType_Invalid);
+
 	/* Create "OpenSystem.C.FinalizerAttribute" */
 	classInfo = CreateClass(info, scope, "FinalizerAttribute", attributeClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
+
+	/* Create "OpenSystem.C.FinalizerOrderAttribute" */
+	classInfo = CreateClass(info, scope, "FinalizerOrderAttribute",
+							attributeClass);
+	AddConstructor(classInfo, ILType_Int32, ILType_Invalid);
 
 	/* Create "OpenSystem.C.MemoryModelAttribute" */
 	classInfo = CreateClass(info, scope, "MemoryModelAttribute",

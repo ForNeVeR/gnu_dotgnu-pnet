@@ -51,11 +51,25 @@ public sealed class InitializerAttribute : Attribute
 	public InitializerAttribute() {}
 }
 
+// An attribute class that is used to specify initialization order.
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class InitializerOrderAttribute : Attribute
+{
+	public InitializerOrderAttribute(int order) {}
+}
+
 // An attribute class that is used to mark finalizers.
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class FinalizerAttribute : Attribute
 {
 	public FinalizerAttribute() {}
+}
+
+// An attribute class that is used to specify finalization order.
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class FinalizerOrderAttribute : Attribute
+{
+	public FinalizerOrderAttribute(int order) {}
 }
 
 // An attribute class that is used to mark the memory model.

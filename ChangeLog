@@ -1,4 +1,8 @@
 
+2002-03-20 Gopal.V <gopalv82@yahoo.com>
+	* System/net/HttpWebRequest.cs: added a partial implementation
+	of HttWebRequest with most of the methods [TODO]
+
 2002-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: document the location of the daily CVS snapshots.

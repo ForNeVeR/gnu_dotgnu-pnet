@@ -571,27 +571,27 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
  * jump offset will be filled in by a later "md_patch" call.
  */
 #define	md_branch_eq(inst)	\
-			ppc_branch_imm((inst), PPC_CC_EQ, 0)
+			ppc_branch((inst), PPC_CC_EQ, 0)
 #define	md_branch_ne(inst)	\
-			ppc_branch_imm((inst), PPC_CC_NE, 0)
+			ppc_branch((inst), PPC_CC_NE, 0)
 #define	md_branch_lt(inst)	\
-			ppc_branch_imm((inst), PPC_CC_LT, 0)
+			ppc_branch((inst), PPC_CC_LT, 0)
 #define	md_branch_le(inst)	\
-			ppc_branch_imm((inst), PPC_CC_LE, 0)
+			ppc_branch((inst), PPC_CC_LE, 0)
 #define	md_branch_gt(inst)	\
-			ppc_branch_imm((inst), PPC_CC_GT, 0)
+			ppc_branch((inst), PPC_CC_GT, 0)
 #define	md_branch_ge(inst)	\
-			ppc_branch_imm((inst), PPC_CC_GE, 0)
+			ppc_branch((inst), PPC_CC_GE, 0)
 #define	md_branch_lt_un(inst)	\
-			ppc_branch_imm((inst), PPC_CC_LT, 0)
+			ppc_branch((inst), PPC_CC_LT, 0)
 #define	md_branch_le_un(inst)	\
-			ppc_branch_imm((inst), PPC_CC_LE, 0)
+			ppc_branch((inst), PPC_CC_LE, 0)
 #define	md_branch_gt_un(inst)	\
-			ppc_branch_imm((inst), PPC_CC_GT, 0)
+			ppc_branch((inst), PPC_CC_GT, 0)
 #define	md_branch_ge_un(inst)	\
-			ppc_branch_imm((inst), PPC_CC_GE, 0)
+			ppc_branch((inst), PPC_CC_GE, 0)
 #define	md_branch_cc(inst,cond)	\
-			ppc_branch_imm((inst), (cond) & ~16, 0)
+			ppc_branch((inst), (cond) & ~16, 0)
 
 /*
  * Specific condition codes for "md_branch_cc".

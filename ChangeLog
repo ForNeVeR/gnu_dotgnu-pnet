@@ -5,6 +5,8 @@
 	implement compare operations using a conditional three way
 	branch.
 
+	* engine/md_ppc.h: Finish conditional branch macros.
+
 2004-12-19  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/md_ppc.c, engine/md_ppc.h, engine/ppc_codegen.h: 

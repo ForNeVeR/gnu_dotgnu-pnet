@@ -3,6 +3,7 @@ libILinclude_HEADERS = il_align.h \
 					   il_bignum.h \
 					   il_coder.h \
 					   il_config.h \
+					   il_console.h \
 					   il_crypt.h \
 					   il_debug.h \
 					   il_decimal.h \

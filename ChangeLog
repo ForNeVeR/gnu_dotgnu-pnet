@@ -1,4 +1,8 @@
 
+2003-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/Makefile.am: add "il_console.h" to "include/Makefile.am".
+
 2003-11-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/int_proto.h, engine/int_table.c,

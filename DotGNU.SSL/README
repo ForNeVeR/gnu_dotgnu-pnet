@@ -62,4 +62,4 @@ Note: "secureStream.Close()" just closes the security portions of the
 session.  It doesn't close the underlying "stream" object.  You will
 need to do that yourself separately.
 
-See the "SSLSample.cs" file for a more complete example of using DotGNU.SSL.
+See the "sslfetch.cs" file for a more complete example of using DotGNU.SSL.

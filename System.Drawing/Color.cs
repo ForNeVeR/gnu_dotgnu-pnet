@@ -280,14 +280,15 @@ public struct Color
 				return (int)value;
 			}
 
-	// Get the HSV values from this color.  Algorithm based on:
-	// http://www.cs.rit.edu/~ncs/color/t_convert.html
+	// Get the HSV values from this color.
 	public float GetHue()
 			{
 				// Calculate the minimum and maximum components.
 				int red = R;
 				int green = G;
 				int blue = B;
+				if (red == green && green == blue)
+					return 0.0f;
 				int min, max;
 				min = red;
 				if(min > green)
@@ -307,40 +308,29 @@ public struct Color
 				{
 					max = blue;
 				}
-				if(max != 0)
+				
+				float hue;
+				if(red == max)
 				{
-					// Determine the maximum component and calculate the hue.
-					float hue;
-					if(red == max)
-					{
-						hue = ((float)(green - blue)) / ((float)(max - min));
-					}
-					else if(green == max)
-					{
-						hue = ((float)(blue - red)) / ((float)(max - min));
-						hue += 2.0f;
-					}
-					else
-					{
-						hue = ((float)(red - green)) / ((float)(max - min));
-						hue += 4.0f;
-					}
-					hue *= 60.0f;
-					if(hue < 0.0f)
-					{
-						hue += 360.0f;
-					}
-					return hue;
+					hue = (float)(green - blue) / (float)(max - min);
+				}
+				else if(green == max)
+				{
+					hue = 2.0f + (float)(blue - red) / (float)(max - min);
 				}
 				else
 				{
-					// Undefined hue (for black), so return zero.
-					return 0.0f;
+					hue = 4.0f + (float)(red - green) / (float)(max - min);
 				}
+				hue *= 60.0f;
+				if(hue < 0.0f)
+				{
+					hue += 360.0f;
+				}
+				return hue;
 			}
 	public float GetSaturation()
 			{
-				// The saturation is "(max - min) / max".
 				int red = R;
 				int green = G;
 				int blue = B;
@@ -363,19 +353,24 @@ public struct Color
 				{
 					max = blue;
 				}
-				if(max != 0)
+				if(max == min)
 				{
-					return (((float)(max - min)) / (float)max);
+					return 0.0f;
 				}
 				else
 				{
-					return 0.0f;
+					if (max + min < 256)
+						return (float)(max - min)/(float)(max + min);
+					else
+						return (float)(max - min) / (float)( 510 - max - min);
 				}
 			}
 	public float GetBrightness()
 			{
-				// The brightness is the maximum of the components.
+				// The brightness is the average of the maximum and minimum of the
+				// components.
 				int red = R;
+				int min  = R;
 				int green = G;
 				int blue = B;
 				if(red < green)
@@ -386,7 +381,15 @@ public struct Color
 				{
 					red = blue;
 				}
-				return (((float)red) / 255.0f);
+				if (min > green)
+				{
+					min = green;
+				}
+				if (min > blue)
+				{
+					min = blue;
+				}
+				return (float)(red + min) / 510.0f;
 			}
 
 	// Get the ARGB value for a color.

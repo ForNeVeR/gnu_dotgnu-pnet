@@ -61,7 +61,7 @@ public sealed class Bitmap : System.Drawing.Image
 				SetDGImage(dgImage);
 			}
 	public Bitmap(int width, int height)
-			: this(width, height, Imaging.PixelFormat.Format32bppArgb) {}
+			: this(width, height, Imaging.PixelFormat.Format24bppRgb) {}
 	public Bitmap(int width, int height,
 				  System.Drawing.Imaging.PixelFormat format)
 			{
@@ -76,7 +76,7 @@ public sealed class Bitmap : System.Drawing.Image
 					throw new ArgumentNullException("g");
 				}
 				SetDGImage(new DotGNU.Images.Image
-					(width, height, DotGNU.Images.PixelFormat.Format32bppArgb));
+					(width, height, DotGNU.Images.PixelFormat.Format24bppRgb));
 				dgImage.AddFrame();
 			}
 	public Bitmap(Type type, String resource)
@@ -198,10 +198,14 @@ public sealed class Bitmap : System.Drawing.Image
 			{
 				MakeTransparent(Color.LightGray);
 			}
-	[TODO]
 	public void MakeTransparent(Color transparentColor)
 			{
-				// TODO
+				// Make all the frames transparent.
+				for (int f = 0; f < dgImage.NumFrames; f++)
+				{
+					Frame frame = dgImage.GetFrame(f);
+					frame.MakeTransparent(transparentColor.ToArgb());
+				}
 			}
 
 	// Set a pixel within this bitmap.

@@ -487,6 +487,11 @@ public abstract class Image
 					(dgImage.PixelFormat);
 			}
 
+	public Image Reformat(System.Drawing.Imaging.PixelFormat newFormat)
+			{
+				return new Bitmap(dgImage.Reformat((DotGNU.Images.PixelFormat)newFormat));
+			}
+
 }; // class Image
 
 }; // namespace System.Drawing

@@ -1,4 +1,9 @@
 
+2002-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvmc_setup.c (CVMCoder_SetupExternCtor): wrong return
+	value if we don't have an allocating constructor.
+
 2002-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c: "-fsave-asm" saves the assembly output even if

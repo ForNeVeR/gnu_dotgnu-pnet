@@ -737,7 +737,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	/* If we don't have an allocating constructor, then we are done */
 	if(!ctorfn)
 	{
-		return 0;
+		return 1;
 	}
 
 	/* If the coder buffer is full, then don't go any further.

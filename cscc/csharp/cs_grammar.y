@@ -1349,6 +1349,7 @@ BuiltinType
 PrimaryExpression
 	: LiteralExpression				{ $$ = $1; }
 	| Identifier					{ $$ = $1; }
+	| WHERE							{ $$ = ILQualIdentSimple("where"); }
 	| '(' Expression ')'			{ $$ = $2; }
 	| PrimaryExpression '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
 	| BuiltinType '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }

@@ -1,4 +1,10 @@
 
+2003-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y: recognise the "where" keyword as
+	an identifier in an expression context, to compile code that
+	erroneously uses "where".
+
 2003-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_arith.c: reversed tests for long overflow.

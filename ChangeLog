@@ -1,4 +1,9 @@
 
+2003-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_reflect.c: implement the internalcall for
+	MethodInfo.GetBaseDefinition (bug #4577).
+
 2003-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/md_ppc.h, engine/ppc_codegen.h: check in the early

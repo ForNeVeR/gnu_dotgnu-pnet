@@ -2233,8 +2233,46 @@ ILObject *_IL_ClrMethod_Invoke(ILExecThread *thread,
 ILObject *_IL_ClrMethod_GetBaseDefinition(ILExecThread *thread,
 										  ILObject *_this)
 {
-	/* TODO */
-	return 0;
+	ILMethod *method;
+
+	/* Extract the method item from the "this" object */
+	method = ILProgramItemToMethod(_ILClrFromObject(thread, _this));
+	if(!method)
+	{
+		/* Something is wrong with the object */
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		return 0;
+	}
+
+	/* If the method is part of an interface, return it as-is */
+	if(ILClass_IsInterface(ILMethod_Owner(method)))
+	{
+		return _this;
+	}
+
+	/* If the method is "new", static, or a constructor, return it as-is */
+	if(ILMethod_IsNewSlot(method))
+	{
+		return _this;
+	}
+	if(ILMethod_IsStatic(method))
+	{
+		return _this;
+	}
+	if(ILMethod_IsConstructor(method))
+	{
+		return _this;
+	}
+
+	/* Find the base method */
+	method = (ILMethod *)ILMemberGetBase((ILMember *)method);
+	if(method)
+	{
+		return _ILClrToObject(thread, method, "System.Reflection.ClrMethod");
+	}
+
+	/* We were unable to find a base definition, so return the method itself */
+	return _this;
 }
 
 /*

@@ -1,4 +1,10 @@
 
+2002-11-14  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/stmt/Makefile.am, csharp/stmt/foreach5.cs,
+	csharp/stmt/foreach5.il, csharp/stmt/foreach5.jl: tests
+	of foreach on structs.
+
 2002-11-12  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/class/Makefile.am, csharp/class/indexer1.cs,

@@ -539,7 +539,9 @@ ILNode_Prepare(ILNode_ArrayAccess)
 ILNode_Prepare(ILNode_IndexerAccess)
 {
 	node->saveStack = info->stackHeight;
-	ILNode_GenValue(node->object, info);
+	ILGenPrepareForThisAccess(info, node->object, 
+					ILType_ToClass(node->objectType), 
+					1);
 	ILNode_GenValue(node->indices, info);
 	return node->machineType;
 }

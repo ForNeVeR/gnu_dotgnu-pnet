@@ -1,4 +1,9 @@
 
+2004-07-26  Gopal V  <gopalv82@yahoo.com>
+
+	* codegen/cg_lvalue.tc: fix indexer stores into structs to use
+	addresses rather than value (bug #9741).
+
 2004-07-23  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lookup.c: Ambigous lookups should not be reported

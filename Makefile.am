@@ -1,7 +1,7 @@
 if HAS_REFLECTION
 SUBDIRS = tools resources runtime I18N DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA csunit csupport compat JScript Basic \
-		  Xsharp System.Drawing System.Drawing.Xsharp \
+		  DotGNU.Images Xsharp System.Drawing System.Drawing.Xsharp \
 		  System.Drawing.Win32 System.Windows.Forms tests samples
 else
 SUBDIRS = tools resources runtime DotGNU.SSL System System.Xml . \

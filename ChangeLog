@@ -1,3 +1,13 @@
+
+2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, DotGNU.Images/.cvsignore,
+	DotGNU.Images/BmpReader.cs, DotGNU.Images/BmpWriter.cs,
+	DotGNU.Images/DotGNU.Images.build, DotGNU.Images/Frame.cs,
+	DotGNU.Images/Image.cs, DotGNU.Images/Makefile.am,
+	DotGNU.Images/PixelFormat.cs, DotGNU.Images/RotateFlipType.cs,
+	DotGNU.Images/Utils.cs: add the DotGNU.Images support library.
+
 2003-07-06  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListControl.cs: Stub some missing methods.

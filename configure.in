@@ -324,6 +324,7 @@ csupport/Makefile
 compat/Makefile
 JScript/Makefile
 Basic/Makefile
+DotGNU.Images/Makefile
 Xsharp/Makefile
 Xsharp/Xlib.cs
 System.Drawing/Makefile

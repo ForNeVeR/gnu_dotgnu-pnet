@@ -116,50 +116,55 @@ internal sealed class Utils
 	// Convert a pixel format into a stride value.
 	public static int FormatToStride(PixelFormat pixelFormat, int width)
 			{
-				int stride;
+				return ((BytesPerLine(pixelFormat, width) + 3) & ~3);
+			}
+
+	public static int BytesPerLine(PixelFormat pixelFormat, int width)
+			{
+				int lineBytes;
 				switch(pixelFormat)
 				{
 					case PixelFormat.Format1bppIndexed:
-						stride = (width + 7) / 8;
+						lineBytes = (width + 7) / 8;
 						break;
 
 					case PixelFormat.Format4bppIndexed:
-						stride = (width + 1) / 2;
+						lineBytes = (width + 1) / 2;
 						break;
 
 					case PixelFormat.Format8bppIndexed:
-						stride = width;
+						lineBytes = width;
 						break;
 
 					case PixelFormat.Format16bppRgb555:
 					case PixelFormat.Format16bppRgb565:
 					case PixelFormat.Format16bppArgb1555:
 					case PixelFormat.Format16bppGrayScale:
-						stride = width * 2;
+						lineBytes = width * 2;
 						break;
 
 					case PixelFormat.Format24bppRgb:
-						stride = width * 3;
+						lineBytes = width * 3;
 						break;
 
 					case PixelFormat.Format32bppRgb:
 					case PixelFormat.Format32bppPArgb:
 					case PixelFormat.Format32bppArgb:
 					default:
-						stride = width * 4;
+						lineBytes = width * 4;
 						break;
 
 					case PixelFormat.Format48bppRgb:
-						stride = width * 6;
+						lineBytes = width * 6;
 						break;
 
 					case PixelFormat.Format64bppPArgb:
 					case PixelFormat.Format64bppArgb:
-						stride = width * 8;
+						lineBytes = width * 8;
 						break;
 				}
-				return ((stride + 3) & ~3);
-			}
+			return lineBytes;	
+		}
 
 	// Convert a pixel format into a bit count value.
 	public static int FormatToBitCount(PixelFormat pixelFormat)

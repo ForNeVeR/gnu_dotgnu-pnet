@@ -590,6 +590,22 @@ public class Frame : MarshalByRefObject, IDisposable
 				}
 			}
 
+	public int BitsPerPixel
+			{
+				get
+				{
+					return Utils.FormatToBitCount(pixelFormat);
+				}
+			}
+
+	public int BytesPerLine
+			{
+				get
+				{
+					return Utils.BytesPerLine(pixelFormat, width);
+				}
+			}
+
 }; // class Frame
 
 }; // namespace DotGNU.Images

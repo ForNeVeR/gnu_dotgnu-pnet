@@ -865,9 +865,21 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 	CSSemValue value;
 	CSSemValue value2;
 	char *name;
+	ILEvalValue evalue;
 
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+
+	/* Set the rvalue if it is a constant expression */
+	if(yyisa(node->expr1,ILNode_Constant))
+	{
+		if(ILNode_EvalConst(node->expr1,info,&evalue))
+		{
+			/* Set the RValue to the type .. to handle Boxing later on*/
+			CSSemSetRValue(value,ILValueTypeToType(info,
+											evalue.valueType));
+		}
+	}
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->expr2, 0);

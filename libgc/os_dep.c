@@ -1203,7 +1203,7 @@ int * etext_addr;
 
 void GC_register_data_segments()
 {
-#   if !defined(PCR) && !defined(SRC_M3) && !defined(MACOS)
+#   if !defined(PCR) && !defined(SRC_M3) && !defined(MACOS) && !defined(MACOSX)
 #     if defined(REDIRECT_MALLOC) && defined(GC_SOLARIS_THREADS)
 	/* As of Solaris 2.3, the Solaris threads implementation	*/
 	/* allocates the data structure for the initial thread with	*/

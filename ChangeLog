@@ -16,6 +16,8 @@
 	libffi/src/powerpc/sysv.S: updates to the powerpc version of
 	libffi from the gcc CVS tree.
 
+	* libgc/os_dep.c: #define fix for the MACOSX version of libgc.
+
 2003-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/pecoff_writer.c: fall back to the original back-patch

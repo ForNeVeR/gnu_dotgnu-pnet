@@ -21,6 +21,18 @@
 	* cscc/cs_errors.c, cscc/cs_options.c, cscc/cs_options.h,
 	cscc/cs_preproc.c, cscc/cs_preproc.h: remove obsolete files.
 
+	* configure.in, cscc/Makefile.am, cscc/cc_errors.c, cscc/cc_errors.h,
+	cscc/cc_intl.h, cscc/cc_main.c, cscc/cc_main.h, cscc/cc_options.c,
+	cscc/cc_options.h, cscc/cc_preproc.c, cscc/cc_preproc.h,
+	cscc/cs_defs.tc, cscc/cs_internal.h, cscc/cscc.c,
+	cscc/common/.cvsignore, cscc/common/Makefile.am,
+	cscc/common/cc_errors.c, cscc/common/cc_errors.h,
+	cscc/common/cc_intl.h, cscc/common/cc_main.c,
+	cscc/common/cc_main.h, cscc/common/cc_options.c,
+	cscc/common/cc_options.h, cscc/common/cc_preproc.c,
+	cscc/common/cc_preproc.h: move the "compiler common" library
+	into the "cscc/common" subdirectory.
+
 2002-03-07 Gopal.V <gopalv82@yahoo.com>
 
 	* ildiff/ildiff.c fixed ILtype bug by replacing ILTypeIdentical

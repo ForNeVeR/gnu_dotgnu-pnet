@@ -37,8 +37,8 @@
 #include "../codegen/cg_coerce.h"
 #include "../codegen/cg_resolve.h"
 #include "../codegen/cg_scope.h"
-#include "cc_preproc.h"
-#include "cc_options.h"
+#include "common/cc_preproc.h"
+#include "common/cc_options.h"
 
 /*
  * Define the semantic analysis return type.

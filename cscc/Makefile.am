@@ -1,16 +1,13 @@
+
+SUBDIRS = common
+
 noinst_PROGRAMS = cscc-cs cscc csdoc
 man_MANS        = cscc.1 csdoc.1
 EXTRA_DIST      = $(man_MANS)
 
-noinst_LIBRARIES = libILCCommon.a
-
-libILCCommon_a_SOURCES = cc_errors.c \
-						 cc_main.c \
-						 cc_options.c \
-						 cc_preproc.c
-
 cscc_SOURCES = cscc.c
-cscc_LDADD   = libILCCommon.a ../image/libILImage.a ../support/libILSupport.a
+cscc_LDADD   = common/libILCCommon.a ../image/libILImage.a \
+			   ../support/libILSupport.a
 
 TREECC_INPUTS = cs_cast.tc \
 				cs_const.tc \
@@ -36,19 +33,15 @@ cscc_cs_COMMON  = $(TREECC_SRCOUT) \
 				  cs_scanner.l \
 				  cs_valdoc.c
 
-##				  cs_errors.c
-##			      cs_options.c
-##				  cs_preproc.c
-
 cscc_cs_SOURCES = $(cscc_cs_COMMON) \
 				  cs_main.c
-cscc_cs_LDADD   = libILCCommon.a ../codegen/libILCodeGen.a \
+cscc_cs_LDADD   = common/libILCCommon.a ../codegen/libILCodeGen.a \
 				  ../dumpasm/libILDumpAsm.a \
 				  ../image/libILImage.a ../support/libILSupport.a
 
 csdoc_SOURCES = $(cscc_cs_COMMON) \
 				csdoc.c
-csdoc_LDADD   = libILCCommon.a ../codegen/libILCodeGen.a \
+csdoc_LDADD   = common/libILCCommon.a ../codegen/libILCodeGen.a \
 				../dumpasm/libILDumpAsm.a \
 				../image/libILImage.a ../support/libILSupport.a
 

@@ -1,0 +1,11 @@
+
+noinst_LIBRARIES = libILCCommon.a
+
+libILCCommon_a_SOURCES = cc_errors.c \
+						 cc_main.c \
+						 cc_options.c \
+						 cc_preproc.c
+
+if USINGGCC
+INCLUDES = -Wall
+endif

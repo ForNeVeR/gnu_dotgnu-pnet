@@ -34,8 +34,8 @@ Environment variables:
 #include <stdio.h>
 #include "il_system.h"
 #include "il_utils.h"
-#include "cc_options.h"
-#include "cc_intl.h"
+#include "common/cc_options.h"
+#include "common/cc_intl.h"
 
 #ifdef	__cplusplus
 extern	"C" {

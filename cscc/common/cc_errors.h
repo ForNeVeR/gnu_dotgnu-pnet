@@ -21,7 +21,7 @@
 #ifndef	_CSCC_CC_ERRORS_H
 #define	_CSCC_CC_ERRORS_H
 
-#include "../codegen/cg_nodes.h"
+#include "../../codegen/cg_nodes.h"
 #include "cc_intl.h"
 
 #ifdef	__cplusplus

@@ -156,6 +156,7 @@ ilfind/Makefile
 ildiff/Makefile
 codegen/Makefile
 cscc/Makefile
+cscc/common/Makefile
 resgen/Makefile
 ildb/Makefile
 csdoc/Makefile

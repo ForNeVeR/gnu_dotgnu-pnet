@@ -44,6 +44,7 @@ TESTS = ainit1.cs \
 		property3.cs \
 		property4.cs \
 		property5.cs \
+		property6.cs \
 		type1.cs
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tools/run_test.sh

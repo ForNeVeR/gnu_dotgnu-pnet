@@ -1,4 +1,10 @@
 
+2002-12-11  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/class/property6.cs, csharp/class/property6.il, 
+	csharp/class/property6.jl, csharp/class/Makefile.am : Use of the 'extern' 
+	qualifier for properties.
+
 2002-12-10  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/stmt/using3.cs, csharp/stmt/using3.il, csharp/stmt/using3.jl,

@@ -414,7 +414,6 @@ ilsize/Makefile
 ilnative/Makefile
 ilheader/Makefile
 ilfind/Makefile
-ildiff/Makefile
 ildd/Makefile
 codegen/Makefile
 cscc/Makefile

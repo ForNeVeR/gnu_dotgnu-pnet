@@ -98,6 +98,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 					}
 					buffer[index++] = (char)ch;
 					--count;
+					++readLen;
 				}
 				return readLen;
 			}
@@ -110,7 +111,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 				int tempLen;
 				do
 				{
-					tempLen = Read(buffer, index, count - readLen);
+					tempLen = Read(buffer, index + readLen, count - readLen);
 					if(tempLen != 0)
 					{
 						readLen += tempLen;

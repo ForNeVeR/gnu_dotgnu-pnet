@@ -1,4 +1,14 @@
 
+2003-06-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Format.txt, runtime/System/DateTime.cs,
+	runtime/System/String.cs, runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Globalization/DateTimeFormatInfo.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeFormatTemplate.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeParser.cs,
+	runtime/System/Private/DateTimeFormat/ParsedDateTime.cs:
+	rewrite DateTimeParser to be culture-sensitive and more efficient.
+
 2003-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlConvert.cs: implement "ToGuid" and "ToString(Guid)"

@@ -45,3 +45,5 @@ Format_HexNotSupported=Hexadecimal notation not supported for decimal or floatin
 Format_ExponentRequiresSign=Exponent notation must include a sign on the exponent
 Format_FileIOPermSetName=Same directory FileIO - {0}
 Format_NetCodeGroupName=Same Web site
+Format_DateTime=Invalid format for date/time value
+Format_Empty=Empty format string

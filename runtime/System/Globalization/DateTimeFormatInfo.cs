@@ -51,8 +51,8 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 #if !ECMA_COMPAT
 	private CalendarWeekRule calendarWeekRule;
 	private DayOfWeek firstDayOfWeek;
-	private String[] dateTimePatterns;
 #endif // !ECMA_COMPAT
+	private String[] dateTimePatterns;
 
 	// Invariant abbreviated day names.
 	private static readonly String[] invAbbrevDayNames =
@@ -130,10 +130,10 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				shortTimePattern = "HH:mm";
 				yearMonthPattern = "yyyy MMMM";
 				calendar = new GregorianCalendar();
+				dateTimePatterns = invDateTimePatterns;
 			#if !ECMA_COMPAT
 				calendarWeekRule = CalendarWeekRule.FirstDay;
 				firstDayOfWeek = DayOfWeek.Sunday;
-				dateTimePatterns = invDateTimePatterns;
 			#endif // !ECMA_COMPAT
 			}
 
@@ -364,6 +364,8 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				}
 			}
 
+#endif // !ECMA_COMPAT
+
 	// Get all date time patterns.
 	public String[] GetAllDateTimePatterns()
 			{
@@ -402,8 +404,6 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				}
 				return patterns;
 			}
-
-#endif // !ECMA_COMPAT
 
 	// Properties.
 	public String AMDesignator
@@ -897,8 +897,6 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				abbrevEraNames = abbrevNames;
 			}
 
-#if !ECMA_COMPAT
-
 	// Set the date/time pattern list - this should not be used by
 	// applications.  It exists to support I18N plugins.
 	public void I18NSetDateTimePatterns(String[] patterns)
@@ -910,8 +908,6 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				CheckForNulls(patterns);
 				dateTimePatterns = patterns;
 			}
-
-#endif // !ECMA_COMPAT
 
 }; // class DateTimeFormatInfo
 

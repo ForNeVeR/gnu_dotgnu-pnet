@@ -360,39 +360,47 @@ public struct DateTime : IComparable, IFormattable
 	// Parsing methods.
 	public static DateTime Parse(String s)
 			{
-				return Parse(s,null);
+				return DateTimeParser.Parse
+					(s, null, DateTimeStyles.AllowWhiteSpaces);
 			}
 	public static DateTime Parse(String s, IFormatProvider provider)
 			{
-				return Parse(s, provider, DateTimeStyles.AllowWhiteSpaces);
+				return DateTimeParser.Parse
+					(s, provider, DateTimeStyles.AllowWhiteSpaces);
 			}
 	public static DateTime Parse(String s, IFormatProvider provider,
 								 DateTimeStyles style)
 			{
-				return DateTimeParser.Parse(s,
-					DateTimeFormatInfo.GetInstance(provider),style);
+				return DateTimeParser.Parse(s, provider, style);
 			}
 	public static DateTime ParseExact(String s, String format,
 									  IFormatProvider provider)
 			{
-				return DateTimeParser.ParseExact(s,format,
-							DateTimeFormatInfo.GetInstance(provider),
-									DateTimeStyles.AllowWhiteSpaces);
+				if(format == null)
+				{
+					throw new ArgumentNullException("format");
+				}
+				return DateTimeParser.ParseExact
+					(s, new String[] {format}, provider,
+					 DateTimeStyles.AllowWhiteSpaces);
 			}
 	public static DateTime ParseExact(String s, String format,
 									  IFormatProvider provider,
 									  DateTimeStyles style)
 			{
-				return DateTimeParser.ParseExact(s,format,
-							DateTimeFormatInfo.GetInstance(provider),
-									style);
+				if(format == null)
+				{
+					throw new ArgumentNullException("format");
+				}
+				return DateTimeParser.ParseExact
+					(s, new String[] {format}, provider, style);
 			}
 	public static DateTime ParseExact(String s, String[] formats,
 									  IFormatProvider provider,
 									  DateTimeStyles style)
 			{
-				return DateTimeParser.ParseExact(s,formats,
-							DateTimeFormatInfo.GetInstance(provider),style);
+				return DateTimeParser.ParseExact
+					(s, formats, provider, style);
 			}
 
 	public static int Compare(DateTime t1, DateTime t2)

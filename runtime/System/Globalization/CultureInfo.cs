@@ -682,9 +682,15 @@ public class CultureInfo : ICloneable, IFormatProvider
 	// Implementation of the IFormatProvider interface.
 	public virtual Object GetFormat(Type formatType)
 			{
-				if(formatType == typeof(System.Globalization.CultureInfo))
+				if(formatType ==
+						typeof(System.Globalization.DateTimeFormatInfo))
 				{
-					return this;
+					return DateTimeFormat;
+				}
+				else if(formatType ==
+							typeof(System.Globalization.NumberFormatInfo))
+				{
+					return NumberFormat;
 				}
 				else
 				{

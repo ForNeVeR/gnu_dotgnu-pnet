@@ -1,10 +1,8 @@
 /*
- * DateTimeParser.cs - Implementation of the 
- *				"System.Private.DateTimeFormat.DateTimeParser" class.
+ * DateTimeParser.cs - Implementation of the
+ *		"System.Private.DateTimeFormat.DateTimeParser" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- *
- * Contributions from Michael Moore <mtmoore@uga.edu>
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,361 +17,584 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */	
+ */
 
 namespace System.Private.DateTimeFormat
 {
-	using System;
-	using System.Collections;
-	using System.Globalization;
-	
-	internal class DateTimeParser
-	{ 
-		public static DateTime Parse(String s, DateTimeFormatInfo info,
-					DateTimeStyles style)
-		{
-			if(info==null) info=DateTimeFormatInfo.InvariantInfo;
-			String[] formatSpecifiers =  new String[] {"d", "D", "f", "F", "g", 
-				"G", "m", "M", "t", "T", "U", "y", "Y"};
-			String[] infoPatterns = new String[] {info.FullDateTimePattern, 
-				info.LongDatePattern, info.LongTimePattern, info.MonthDayPattern, 
-				info.ShortDatePattern, info.ShortTimePattern, 
-				info.YearMonthPattern};
 
-			int fsl = formatSpecifiers.Length;
-			int ipl = infoPatterns.Length;
-			String[] patterns = new String [fsl + ipl];	
+using System.Globalization;
+using System.Text;
 
-			for( int i = 0; i < fsl; i++ )
-				patterns[i] = 
-					StandardFormatSpecifier(formatSpecifiers[i]);
+internal sealed class DateTimeParser
+{
+	// Skip white space in a string.
+	private static void SkipWhite(String s, ref int posn)
+			{
+				while(posn < s.Length && Char.IsWhiteSpace(s[posn]))
+				{
+					++posn;
+				}
+			}
 
-			for( int i = fsl; i < fsl+ipl; i++ )
-				patterns[i] = infoPatterns[i-fsl];
+	// Parse a decimal number from a string.
+	private static int ParseNumber(String s, ref int posn)
+			{
+				int value;
 
-			DateTime result = new DateTime(0);
+				// The first character must be a decimal digit.
+				if(s[posn] < '0' || s[posn] > '9')
+				{
+					throw new FormatException();
+				}
+				value = (int)(s[posn++] - '0');
 
-			bool success=false;
-			
-			for( int i = 0; (!success) && i < patterns.Length; i++ )
-			{	
+				// Recognize additional digits.
+				while(posn < s.Length && s[posn] >= '0' && s[posn] <= '9')
+				{
+					value = (value * 10) + (int)(s[posn++] - '0');
+				}
+
+				// Return the value to the caller.
+				return value;
+			}
+
+	// Parse a particular string.
+	private static void ParseString(String s, ref int posn, String value)
+			{
+				if((s.Length - posn) < value.Length)
+				{
+					throw new FormatException();
+				}
+				if(String.Compare(s, posn, value, 0, value.Length,
+								  false, CultureInfo.CurrentCulture) != 0)
+				{
+					throw new FormatException();
+				}
+				posn += value.Length;
+			}
+
+	// Parse one of the strings in an array.
+	private static int ParseOneOf(String s, ref int posn, String[] values)
+			{
+				int maxlen = 0;
+				int found = 0;
+				int index;
+				CultureInfo culture = CultureInfo.CurrentCulture;
+				for(index = 0; index < values.Length; ++index)
+				{
+					if((s.Length - posn) < values[index].Length)
+					{
+						continue;
+					}
+					else if(values[index].Length == 0)
+					{
+						continue;
+					}
+					if(String.Compare(s, posn, values[index], 0,
+									  values[index].Length, false,
+									  culture) == 0)
+					{
+						if(found == 0 || values[index].Length > maxlen)
+						{
+							found = index + 1;
+							maxlen = values[index].Length;
+						}
+					}
+				}
+				if(found == 0)
+				{
+					throw new FormatException();
+				}
+				posn += maxlen;
+				return found;
+			}
+
+	// Parse an era name.
+	private static int ParseEra(String s, ref int posn,
+								Calendar calendar, DateTimeFormatInfo info)
+			{
+				// Get the list of eras from the calendar.
+				int[] eras = calendar.Eras;
+
+				// Convert the eras into era names.
+				String[] eraNames = new String [eras.Length];
+				int index;
+				for(index = 0; index < eras.Length; ++index)
+				{
+					eraNames[index] = info.GetEraName(eras[index]);
+				}
+
+				// Parse the era value using the strings we just got.
+				return ParseOneOf(s, ref posn, eraNames);
+			}
+
+	// Parse a timezone designator.
+	private static int ParseTimeZone(String s, ref int posn)
+			{
+				int sign = 1;
+				int hour, minute;
+
+				// Process the sign of the timezone;
+				if(posn < s.Length)
+				{
+					if(s[posn] == '-')
+					{
+						sign = -1;
+						++posn;
+					}
+					else if(s[posn] == '+')
+					{
+						++posn;
+					}
+				}
+
+				// Parse the hour portion of the timezone.
+				hour = ParseNumber(s, ref posn);
+
+				// Parse the minute portion if there is a ':' separator.
+				if(posn < s.Length && s[posn] == ':')
+				{
+					++posn;
+					minute = ParseNumber(s, ref posn);
+				}
+				else
+				{
+					minute = 0;
+				}
+
+				// Return the final timezone value.
+				return sign * (hour * 60 + minute);
+			}
+
+	// Try parsing a DateTime value with a specific format.
+	// Throws "FormatException" if the parse failed.
+	private static DateTime TryParse(String s, String format,
+						      		 DateTimeFormatInfo info,
+						      		 DateTimeStyles style)
+			{
+				int posn, sposn;
+				char ch;
+				int count;
+				Calendar calendar = CultureInfo.CurrentCulture.Calendar;
+
+				// Clear the parse information.
+				int year = 0;
+				int month = 0;
+				int day = 0;
+				int hour = 0;
+				int minute = 0;
+				int second = 0;
+				int fractions = 0;
+				int era = Calendar.CurrentEra;
+				int ampm = -1;
+				int timezone = 0;
+
+				// Parse the contents of the string.
+				posn = 0;
+				sposn = 0;
+				while(posn < format.Length && sposn < s.Length)
+				{
+					// Extract the next format character plus its count.
+					ch = format[posn++];
+					if(ch == ' ')
+					{
+						// White space is required in this position.
+						if(!Char.IsWhiteSpace(s[sposn]))
+						{
+							throw new FormatException();
+						}
+						++sposn;
+						SkipWhite(s, ref sposn);
+						if(sposn >= s.Length)
+						{
+							break;
+						}
+						continue;
+					}
+					else if((style & DateTimeStyles.AllowInnerWhite) != 0)
+					{
+						// White space is allowed between all components.
+						SkipWhite(s, ref sposn);
+						if(sposn >= s.Length)
+						{
+							break;
+						}
+					}
+					count = 1;
+					switch(ch)
+					{
+						case 'd': case 'm': case 'M': case 'y':
+						case 'g': case 'h': case 'H': case 's':
+						case 'f': case 't': case 'z':
+						{
+							while(posn < format.Length &&
+								  format[posn] == ch)
+							{
+								++posn;
+								++count;
+							}
+						}
+						break;
+
+						case ':':
+						{
+							// Looking for the time separator.
+							ParseString(s, ref sposn, info.TimeSeparator);
+							continue;
+						}
+						// Not reached.
+
+						case '/':
+						{
+							// Looking for the date separator.
+							ParseString(s, ref sposn, info.DateSeparator);
+							continue;
+						}
+						// Not reached.
+
+						case '%':
+						{
+							// Used to escape custom patterns that would
+							// otherwise look like single-letter formats.
+							continue;
+						}
+						// Not reached.
+
+						case '\\':
+						{
+							// Escape the next character.
+							if(posn < format.Length)
+							{
+								ch = format[posn++];
+								if(s[sposn++] != ch)
+								{
+									throw new FormatException();
+								}
+							}
+							else
+							{
+								throw new FormatException();
+							}
+							continue;
+						}
+						// Not reached.
+
+						case '\'':
+						{
+							// Quoted text.
+							while(posn < format.Length)
+							{
+								ch = format[posn++];
+								if(ch == '\'')
+								{
+									break;
+								}
+								if(s[sposn++] != ch)
+								{
+									throw new FormatException();
+								}
+							}
+							continue;
+						}
+						// Not reached.
+
+						default:
+						{
+							// Literal character.
+							if(s[sposn++] != ch)
+							{
+								throw new FormatException();
+							}
+							continue;
+						}
+						// Not reached.
+					}
+
+					// Process the format character.
+					switch(ch)
+					{
+						case 'd':
+						{
+							// Parse the day or weekday.  We discard weekdays
+							// because they don't add anything to the value.
+							if(count == 1 || count == 2)
+							{
+								day = ParseNumber(s, ref sposn);
+							}
+							else if(count == 3)
+							{
+								ParseOneOf(s, ref sposn,
+										   info.AbbreviatedDayNames);
+							}
+							else
+							{
+								ParseOneOf(s, ref sposn, info.DayNames);
+							}
+						}
+						break;
+
+						case 'M':
+						{
+							// Parse the month.
+							if(count == 1 || count == 2)
+							{
+								month = ParseNumber(s, ref sposn);
+							}
+							else if(count == 3)
+							{
+								month = ParseOneOf(s, ref sposn,
+										   info.AbbreviatedMonthNames);
+							}
+							else
+							{
+								month = ParseOneOf(s, ref sposn,
+										   		   info.MonthNames);
+							}
+						}
+						break;
+
+						case 'y':
+						{
+							// Parse the year.
+							if(count == 1 || count == 2)
+							{
+								year = calendar.ToFourDigitYear
+									(ParseNumber(s, ref sposn));
+							}
+							else
+							{
+								year = ParseNumber(s, ref sposn);
+							}
+						}
+						break;
+
+						case 'g':
+						{
+							// Parse an era name.
+							era = ParseEra(s, ref sposn, calendar, info);
+						}
+						break;
+
+						case 'h':
+						{
+							// Parse the hour in 12-hour format.
+							hour = ParseNumber(s, ref sposn);
+						}
+						break;
+
+						case 'H':
+						{
+							// Parse the hour in 24-hour format.
+							hour = ParseNumber(s, ref sposn);
+						}
+						break;
+
+						case 'm':
+						{
+							// Parse the minute.
+							minute = ParseNumber(s, ref sposn);
+						}
+						break;
+
+						case 's':
+						{
+							// Parse the second.
+							second = ParseNumber(s, ref sposn);
+						}
+						break;
+
+						case 'f':
+						{
+							// Parse fractions of a second.
+							fractions = ParseNumber(s, ref sposn);
+							while(count < 7)
+							{
+								fractions *= 10;
+								++count;
+							}
+						}
+						break;
+
+						case 't':
+						{
+							// Parse an AM/PM designator.
+							if(count == 1)
+							{
+								ampm = ParseOneOf
+									(s, ref sposn, new String[]
+										{info.AMDesignator[0].ToString(),
+										 info.PMDesignator[0].ToString()});
+							}
+							else
+							{
+								ampm = ParseOneOf
+									(s, ref sposn, new String[]
+										{info.AMDesignator,
+										 info.PMDesignator});
+							}
+						}
+						break;
+
+						case 'z':
+						{
+							// Parse the timezone indicator.
+							timezone = ParseTimeZone(s, ref sposn);
+						}
+						break;
+					}
+				}
+
+				// At this point, we need to be at the end of both
+				// the format string and the parse string.  If we
+				// aren't then the parse failed.
+				if(posn < format.Length || sposn < s.Length)
+				{
+					throw new FormatException();
+				}
+
+				// Build the final DateTime value and return it.
+				if(ampm == 1)
+				{
+					if(hour == 12)
+					{
+						hour = 0;
+					}
+				}
+				else if(ampm == 2)
+				{
+					if(hour < 12)
+					{
+						hour += 12;
+					}
+				}
+				if(year == 0 && month == 0 && day == 0)
+				{
+					if((style & DateTimeStyles.NoCurrentDateDefault) == 0)
+					{
+						DateTime now = DateTime.Now;
+						year = calendar.GetYear(now);
+						month = calendar.GetMonth(now);
+						day = calendar.GetDayOfMonth(now);
+					}
+					else
+					{
+						// Use Gregorian 01/01/0001 as the date portion.
+						return new DateTime
+							(1, 1, 1, hour, minute, second, fractions / 10000);
+					}
+				}
+				else if(day == 0)
+				{
+					// Probably a "year month" format.
+					day = 1;
+				}
+				DateTime value;
 				try
 				{
-					result=ParseExact(s, patterns[i], info, style);
-					success=true; // it worked !
+					value = calendar.ToDateTime
+						(year, month, day, hour, minute, second,
+						 fractions / 10000, era);
 				}
-				// catch day and month names which are > than string indexes
-				catch(ArgumentOutOfRangeException){}	
-				// catch failing to parse with any given pattern
-				catch(FormatException){}
-			}		
+				catch(Exception)
+				{
+					// The calendar didn't like the date/time value,
+					// so assume that it could not be parsed correctly.
+					throw new FormatException();
+				}
+				if((style & DateTimeStyles.AdjustToUniversal) != 0)
+				{
+					value = value.ToUniversalTime();
+				}
+				return value;
+			}
 
-			if(!success)
+	// Parse a DateTime value, using exact format information.
+	public static DateTime ParseExact(String s, String[] formats,
+									  IFormatProvider provider,
+									  DateTimeStyles style)
 			{
-				// throw FormatException if no default pattern matched s
-				throw new FormatException("No DateTime pattern parsed correctly");
+				DateTimeFormatInfo info;
+				int posn;
+
+				// Validate the parameters.
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				if(formats == null)
+				{
+					throw new ArgumentNullException("formats");
+				}
+				for(posn = 0; posn < formats.Length; ++posn)
+				{
+					if(formats[posn] == null)
+					{
+						throw new ArgumentNullException
+							("formats[" + posn.ToString() + "]");
+					}
+					else if(formats[posn] == String.Empty)
+					{
+						throw new FormatException(_("Format_Empty"));
+					}
+				}
+
+				// Get the date time format information from the provider.
+				info = DateTimeFormatInfo.GetInstance(provider);
+
+				// Strip white space from the incoming string.
+				if((style & DateTimeStyles.AllowLeadingWhite) != 0)
+				{
+					s = s.TrimStart(null);
+				}
+				if((style & DateTimeStyles.AllowTrailingWhite) != 0)
+				{
+					s = s.TrimEnd(null);
+				}
+				if(s == String.Empty)
+				{
+					throw new FormatException
+						(_("ArgRange_StringNonEmpty"));
+				}
+
+				// Process each of the formats in turn.  We may need
+				// to recursively re-enter ParseExact if single-letter
+				// format characters are used within the list.
+				for(posn = 0; posn < formats.Length; ++posn)
+				{
+					try
+					{
+						if(formats[posn].Length == 1)
+						{
+							return ParseExact
+								(s, info.GetAllDateTimePatterns
+										(formats[posn][0]), info, style);
+						}
+						else
+						{
+							return TryParse
+								(s, formats[posn], info, style);
+						}
+					}
+					catch(FormatException)
+					{
+						// Didn't match this format.  Try the next one.
+					}
+				}
+
+				// If we get here, then we were unable to parse the string.
+				throw new FormatException(_("Format_DateTime"));
 			}
-			else
-				return result;
-		}		
 
-		public static DateTime ParseExact(String s, String[] patterns,
-					DateTimeFormatInfo info, DateTimeStyles style)
-		{
-			if(info==null) 
-				info=DateTimeFormatInfo.InvariantInfo;	
-
-			DateTime result = new DateTime(0);	
-			bool success=false;
-
-			for( int i=0; (!success) && i < patterns.Length; i++ )
+	// Parse a DateTime value, using any format type.
+	public static DateTime Parse(String s, IFormatProvider provider,
+								 DateTimeStyles style)
 			{
-				try
-				{
-					result=ParseExact(s, patterns[i], info, 
-										DateTimeStyles.NoCurrentDateDefault);
-					success=true;
-				}
-				// catch matching name, months that are out of range
-				catch ( ArgumentOutOfRangeException ){}
-				// catch parses that do not succed
-				catch ( FormatException ){}
+				DateTimeFormatInfo info;
+				info = DateTimeFormatInfo.GetInstance(provider);
+				return ParseExact
+					(s, info.GetAllDateTimePatterns(), info, style);
 			}
-			if(!success)
-			{
-				throw new FormatException("No DateTime pattern parsed correctly"); 
-			}
-			else
-				return result;
-		}
 
-		public static DateTime ParseExact(String s, String format,
-				 	DateTimeFormatInfo info, DateTimeStyles style)
-		{
-			if( (format.Length) == 1 )
-				format=StandardFormatSpecifier(format);
-	
-			Queue q=new Queue();
-			if(info==null) 
-				info=DateTimeFormatInfo.InvariantInfo;
-	
-			FormatTemplate current=null;
-			current=new ExplicitString(); //mark the start
-			bool literal=false;
-	
-			foreach(char c in format)
-			{
-				if(literal) {
-				
-					if(!(current is ExplicitString))
-					{
-						q.Enqueue(current);
-						current=new ExplicitString();
-					}
-					(current as ExplicitString).Text+=c;
-					literal=false;
-					continue;
-				}
-		
-				switch(c)
-				{
-					case 'd':
-					{
-						if(!(current is DayFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new DayFormatter();
-						}
-						(current as DayFormatter).Count++;
-						break;
-					}
-					case 'f':
-					{
-						if(!(current is FractionalSecondFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new FractionalSecondFormatter();
-						}
-						(current as FractionalSecondFormatter).Count++;
-						break;
-					}
-					case 'g':
-					{
-						if(!(current is EraFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new EraFormatter();
-						}
-						(current as EraFormatter).Count++;
-						break;
-					}
-					case 'h':
-					{
-						if(!(current is TwelveHourFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TwelveHourFormatter();
-						}
-						(current as TwelveHourFormatter).Count++;
-						break;
-					}
-					case 'H':
-						{
-						if(!(current is TwentyFourHourFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TwentyFourHourFormatter();
-						}
-						(current as TwentyFourHourFormatter).Count++;
-						break;
-					}
-					case 'm':
-					{
-						if(!(current is MinuteFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new MinuteFormatter();
-						}
-						(current as MinuteFormatter).Count++;
-						break;
-					}
-					case 'M':
-					{
-						if(!(current is MonthFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new MonthFormatter();
-						}
-						(current as MonthFormatter).Count++;
-						break;
-					}
-					case 's':
-					{
-						if(!(current is SecondFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new SecondFormatter();
-						}
-						(current as SecondFormatter).Count++;
-						break;
-					}
-					case 't':
-					{
-						if(!(current is AMPMFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new AMPMFormatter();
-						}
-						(current as AMPMFormatter).Count++;
-						break;
-					}
-					case 'y':
-					{
-						if(!(current is YearFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new YearFormatter();
-						}
-						(current as YearFormatter).Count++;
-						break;
-					}
-					case 'z':
-					{
-						if(!(current is UTCFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new UTCFormatter();
-						}
-						(current as UTCFormatter).Count++;
-						break;
-					}
-					case '/':
-					{
-						if(!(current is DateSeparatorFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new DateSeparatorFormatter();
-						}
-						(current as DateSeparatorFormatter).Count++;
-						break;
-					}
-					case ':':
-					{
-						if(!(current is TimeSeparatorFormatter))
-						{
-							q.Enqueue(current); //save the last node
-							current=new TimeSeparatorFormatter();
-						}
-						(current as TimeSeparatorFormatter).Count++;
-						break;
-					}
-					case '%':
-					{
-						//% is just a place holder so a single char
-						// can be a custom formatter
-						break;
-					}
-					case '\\':
-					{
-						literal=true;
-						break;
-					}
-					default:
-					{
-						if(!(current is ExplicitString))
-						{
-							q.Enqueue(current);
-							current=new ExplicitString();
-						}
-						(current as ExplicitString).Text+=c;
-						break;
-					}
-				}
-			}
-	
-			q.Enqueue(current);
-			ParsedDateTime d= new ParsedDateTime();
-			int start = 0;
-	
-			foreach(FormatTemplate temp in q)
-			{	
-				start = temp.Parse(s, start, info); // parse or throw error
-			}
-	
-			if(start!=s.Length)
-			{ 
-				throw new FormatException("Input string not fully consumed");
-			}
-	
-			foreach(FormatTemplate temp in q)
-			{
-				d=temp.StoreTo(d); 
-			}
-	
-			DateTime stored = d.storeInDateTime(style);
-			return stored;
-		}
+}; // class DateTimeParser
 
-		internal static String StandardFormatSpecifier(String format)
-		{
-			switch(format)
-			{		
-				case "d":
-				{
-					return "MM/dd/yyyy";
-				}
-				case "D":
-				{
-					return "dddd, MMMM dd, yyyy";
-				}
-				case "f":
-				{
-					return "dddd, MMMM dd, yyyy HH:mm";
-				}
-				case "F":
-				{
-					return "dddd, MMMM dd, yyyy HH:mm:ss";
-				}
-				case "g":
-				{
-					return "MM/dd/yyyy HH:mm";
-				}
-				case "G":
-				{
-					return "MM/dd/yyyy HH:mm:ss";
-				}
-				case "m":
-				{
-					return "MMMM dd";
-				}
-				case "M":
-				{
-					return "MMMM dd";
-				}
-				case "t":
-				{
-					return "HH:mm";
-				}
-				case "T":
-				{
-					return "HH:mm:ss";
-				}
-				case "U":
-				{
-					return "dddd, MMMM dd, yyyy HH:mm:ss";
-				}
-				case "y":
-				{
-					return "yyyy MMMM";
-				}
-				case "Y":
-				{
-					return "yyyy MMMM";
-				}
-			}
-			return null;
-		}
-	}
-}
-
-
+}; // namespace System.Private.DateTimeFormat

@@ -233,12 +233,16 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 									   ignoreCase, null);
 			}
 
-#if !ECMA_COMPAT
 	// Compare two sub-strings with a particular culture's comparison rules.
-	public static int Compare(String strA, int indexA,
-					  		  String strB, int indexB,
-					  		  int length, bool ignoreCase,
-					  		  CultureInfo culture)
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	static int Compare(String strA, int indexA,
+			  		   String strB, int indexB,
+			  		   int length, bool ignoreCase,
+			  		   CultureInfo culture)
 			{
 				if(culture == null)
 				{
@@ -249,7 +253,6 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 									   strB, indexB, length,
 									   ignoreCase, culture);
 			}
-#endif
 
 	// Internal version of "CompareOrdinal", with all parameters.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -3,7 +3,7 @@
 
 	* image/lib_attrs.c (MarshalAsAttribute): fix the "LPArray"
 	marshalling type in the case of an unspecified element type:
-	use "MAX" instead of "END" to indicate unspecified.
+	use "MAX" instead of "END" to indicate unspecified (Bug #1951).
 
 2002-12-11  Dawkins, David  <david.dawkins@brooks-pri.com>
 

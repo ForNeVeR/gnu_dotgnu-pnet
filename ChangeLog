@@ -1,4 +1,10 @@
 
+2004-02-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Text/RegularExpressions/interpreter.cs: comment out
+	the "Debug.Assert" call that was incorrect as modifying it
+	only fixed some backtrack bugs but not all.
+
 2004-01-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Collections/Queue.cs: fix a minor bug in

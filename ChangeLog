@@ -14,6 +14,8 @@ hard-wired constant.
 rename "cvm_interpreter" to "_ILCVMInterpreter"; implement the macro
 "COPY_STATE_TO_THREAD"; implement "ReadPointer".
 
+* engine/cvm_call.c: begin implementing the "call" and "return" instructions.
+
 2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c: mark the stack as empty on entry to a try region.

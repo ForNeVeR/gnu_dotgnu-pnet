@@ -20,34 +20,66 @@
 
 #if defined(IL_CVM_GLOBALS)
 
-/* No globals required */
+/*
+ * Allocate a new call frame.
+ */
+static ILCallFrame *AllocCallFrame(ILExecThread *thread)
+{
+	/* TODO: resize the call frame stack */
+	return 0;
+}
+#define	ALLOC_CALL_FRAME()	\
+			do { \
+				if(thread->numFrames < thread->maxFrames) \
+				{ \
+					callFrame = &(thread->frameStack[(thread->numFrames)++]); \
+				} \
+				else \
+				{ \
+					callFrame = AllocCallFrame(thread); \
+					if(!callFrame) \
+					{ \
+						STACK_OVERFLOW_EXCEPTION(); \
+					} \
+				} \
+			} while (0)
 
 #elif defined(IL_CVM_LOCALS)
 
-/* No locals required */
+ILMethod *methodToCall;
+ILCallFrame *callFrame;
 
 #elif defined(IL_CVM_MAIN)
 
 case COP_CALL:
 {
-	/* Call a method that has been converted into CVM code */
-#if 0
+	/* Call a method that has already been converted into CVM code */
+	methodToCall = (ILMethod *)(ReadPointer(pc + 5));
+
+	/* Allocate a new call frame */
 	ALLOC_CALL_FRAME();
+
+	/* Fill in the call frame details */
 	callFrame->method = method;
-	callFrame->pc = (ILUInt32)(pc - pcstart + 9);
+	callFrame->pc = (ILUInt32)(pc - pcstart + sizeof(void *) + 5);
 	callFrame->frame = (ILUInt32)(frame - stackbottom);
-	method = ILMethod_FromToken(ILProgramItem_Image(method),
-								IL_READ_UINT32(pc + 5));
+	callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
+
+	/* Pass control to the new method */
 	pc += IL_READ_INT32(pc + 1);
 	pcstart = pc;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
+	method = methodToCall;
 }
 break;
 
 case COP_CALL_EXTERN:
 {
 	/* Call a method that we don't know if it has been converted */
+	methodToCall = (ILMethod *)(ReadPointer(pc + 5));
+
+	/* Copy the state back into the thread object */
+	COPY_STATE_TO_THREAD();
+
 #if 0
 	ALLOC_CALL_FRAME();
 	callFrame->method = method;
@@ -111,61 +143,69 @@ break;
 case COP_RETURN:
 {
 	/* Return from a method with no return value */
-#if 0
 	stacktop = frame;
 popFrame:
-	--callFrame;
-	method = callFrame->method;
-	if(!(method->callInfo->pcstart))
+	callFrame = &(thread->frameStack[--(thread->numFrames)]);
+	methodToCall = callFrame->method;
+	if(callFrame->pc != IL_MAX_UINT32)
 	{
-		/* The method was flushed since we were last
-		   here, so we need to convert it again */
+		/* We are returning to a CVM method that called us */
+		if(((ILCallInfo *)(method->userData))->generation !=
+		   ((ILCallInfo *)(methodToCall->userData))->generation)
+		{
+			/* We need to re-convert the method because it has been flushed */
+			/* TODO */
+		}
+
+		/* The CVM code is now valid, so return to the previous level */
+		pcstart = ((ILCallInfo *)(methodToCall->userData))->pcstart;
+		pc = pcstart + callFrame->pc;
+		frame = stackbottom + callFrame->frame;
+		method = methodToCall;
 	}
-	frame = stackbottom + callFrame->frame;
-	pcstart = method->callInfo->pcstart;
-	pc = pcstart + callFrame->pc;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
+	else
+	{
+		/* We are returning to an external method that called us.
+		   Copy the current state back to the thread object and
+		   then return from the interpreter loop */
+		thread->pcstart = 0;
+		thread->pc = 0;
+		thread->frame = callFrame->frame;
+		thread->stackTop = stacktop;
+		thread->method = methodToCall;
+		return 0;
+	}
 }
 break;
 
 case COP_RETURN_1:
 {
 	/* Return from a method with a single-word return value */
-#if 0
 	frame[0] = stacktop[-1];
 	stacktop = frame + 1;
 	goto popFrame;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+/* Not reached */
 
 case COP_RETURN_2:
 {
 	/* Return from a method with a double-word return value */
-#if 0
 	frame[0] = stacktop[-2];
 	frame[1] = stacktop[-1];
 	stacktop = frame + 2;
 	goto popFrame;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+/* Not reached */
 
 case COP_RETURN_N:
 {
 	/* Return from a method with an N-word return value */
-#if 0
-	temp = IL_READ_UINT32(pc + 1);
-	IL_MEMMOVE(frame, stacktop, sizeof(CVMWord) * temp);
-	stacktop = frame + temp;
+	tempNum = IL_READ_UINT32(pc + 1);
+	IL_MEMMOVE(frame, stacktop, sizeof(CVMWord) * tempNum);
+	stacktop = frame + tempNum;
 	goto popFrame;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+/* Not reached */
 
 #elif defined(IL_CVM_PREFIX)
 

@@ -1,4 +1,9 @@
 
+2003-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y (GetIndexerName): fix potential
+	segv conditions.
+
 2003-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_main.c: enable the "-fgenerics" option by default because

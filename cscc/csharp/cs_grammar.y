@@ -411,9 +411,9 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 
 					args=(ILNode_List*)((ILNode_AttrArgs*)
 						(((ILNode_Attribute*)attr)->args))->positionalArgs;	
-					if(yyisa(args->item1, ILNode_ToConst))
+					if(yyisa(args->item1, ILNode_ToConst) &&
+					   ILNode_EvalConst(args->item1,info,&evalValue))
 					{
-						ILNode_EvalConst(args->item1,info,&evalValue);
 						if(evalValue.valueType==ILMachineType_String)
 						{
 							if(!prefix)
@@ -3193,7 +3193,7 @@ RemoveAccessorDeclaration
 IndexerDeclaration
 	: OptAttributes OptModifiers IndexerDeclarator
 			StartAccessorBlock AccessorBlock		{
-				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1,
+				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1,
 							$3.ident);
 				ILUInt32 attrs = CSModifiersToPropertyAttrs($3.type, $2);
 				$$ = ILNode_PropertyDeclaration_create($1,
@@ -3797,7 +3797,7 @@ InterfaceIndexerDeclaration
 								 IL_META_METHODDEF_HIDE_BY_SIG |
 								 IL_META_METHODDEF_SPECIAL_NAME |
 								 IL_META_METHODDEF_NEW_SLOT;
-				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1,
+				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1,
 								ILQualIdentSimple(NULL));
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, name, $5, 0, 0, $7);

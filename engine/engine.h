@@ -25,6 +25,7 @@
 #include "il_system.h"
 #include "il_program.h"
 #include "il_coder.h"
+#include "il_align.h"
 #include "heap.h"
 #include "cvm.h"
 

@@ -438,6 +438,16 @@ typedef union
 	ILUInt32	uintValue;
 	void       *ptrValue;
 
+	/* Pad this structure to the best alignment on the underlying platform.
+	   This is usually needed on 64-bit platforms to ensure that stack
+	   words are always aligned on the best boundary.  On 32-bit platforms,
+	   the size of this array will normally evaluate to zero.  We only do
+	   this for gcc because other compilers may not support zero-size arrays */
+#if defined(__GNUC__)
+	char		padding[IL_BEST_ALIGNMENT -
+					    _IL_ALIGN_MAX(sizeof(ILInt32), sizeof(void *))];
+#endif
+
 } CVMWord;
 
 /*

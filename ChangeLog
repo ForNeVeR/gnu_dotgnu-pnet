@@ -7,6 +7,9 @@
 	* codegen/cg_misc.tc (ILNode_VarArgExpand): handle empty
 	"__arglist" parameter lists in code generation.
 
+	* dumpasm/dump_flags.c: dump the "instance" and "explicit"
+	flags before "vararg".
+
 2003-04-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/int_proto.h, engine/int_table.c,

@@ -244,6 +244,8 @@ ILFlagInfo const ILMethodImplementationFlags[] = {
  * Method calling convention flag table.
  */
 ILFlagInfo const ILMethodCallConvFlags[] = {
+	{"instance", IL_META_CALLCONV_HASTHIS, 0},
+	{"explicit", IL_META_CALLCONV_EXPLICITTHIS, 0},
 	{"/default", IL_META_CALLCONV_DEFAULT, IL_META_CALLCONV_MASK},
 	{"unmanaged cdecl", IL_META_CALLCONV_C, IL_META_CALLCONV_MASK},
 	{"unmanaged stdcall", IL_META_CALLCONV_STDCALL, IL_META_CALLCONV_MASK},
@@ -261,8 +263,6 @@ ILFlagInfo const ILMethodCallConvFlags[] = {
 	{"*callconvE", 0x0E, IL_META_CALLCONV_MASK},
 	{"*callconvF", 0x0F, IL_META_CALLCONV_MASK},
 	{"/generic", IL_META_CALLCONV_GENERIC, 0},
-	{"instance", IL_META_CALLCONV_HASTHIS, 0},
-	{"explicit", IL_META_CALLCONV_EXPLICITTHIS, 0},
 	{0, 0, 0xFFFFFF80},
 };
 

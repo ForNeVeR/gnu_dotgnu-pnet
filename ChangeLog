@@ -1,4 +1,12 @@
 
+2003-03-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* JScript/Builtins/GlobalObject.cs,
+	JScript/Builtins/StringConstructor.cs,
+	JScript/Builtins/StringObject.cs, JScript/Builtins/StringPrototype.cs,
+	JScript/Execute/EngineInstance.cs: begin implementing the JScript
+	"String" class.
+
 2003-03-11  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/String.cs: Fix minor bug in LastIndexOf(char).

@@ -39,6 +39,8 @@ internal sealed class EngineInstance
 	private FunctionConstructor functionConstructor;
 	private ArrayPrototype arrayPrototype;
 	private ArrayConstructor arrayConstructor;
+	private StringPrototype stringPrototype;
+	private StringConstructor stringConstructor;
 	private TextWriter outStream;
 	private TextWriter errorStream;
 
@@ -121,6 +123,30 @@ internal sealed class EngineInstance
 								(GetFunctionPrototype());
 					}
 					return arrayConstructor;
+				}
+			}
+	public StringPrototype GetStringPrototype()
+			{
+				lock(this)
+				{
+					if(stringPrototype == null)
+					{
+						stringPrototype = new LenientStringPrototype
+								(GetObjectPrototype());
+					}
+					return stringPrototype;
+				}
+			}
+	public StringConstructor GetStringConstructor()
+			{
+				lock(this)
+				{
+					if(stringConstructor == null)
+					{
+						stringConstructor = new StringConstructor
+								(GetFunctionPrototype());
+					}
+					return stringConstructor;
 				}
 			}
 

@@ -92,7 +92,9 @@ public class GlobalObject
 				AddProperty("RangeError", RangeError);
 				AddProperty("ReferenceError", ReferenceError);
 				AddProperty("RegExp", RegExp);
+#endif
 				AddProperty("String", String);
+#if false
 				AddProperty("SyntaxError", SyntaxError);
 				AddProperty("TypeError", TypeError);
 				AddProperty("URIError", URIError);
@@ -223,13 +225,15 @@ public class GlobalObject
 					return RegExpConstructor.constructor;
 				}
 			}
+#endif
 	public static StringConstructor String
 			{
 				get
 				{
-					return StringConstructor.constructor;
+					return EngineInstance.Default.GetStringConstructor();
 				}
 			}
+#if false
 	public static ErrorConstructor SyntaxError
 			{
 				get
@@ -382,7 +386,7 @@ public class GlobalObject
 			}
 
 	// Parse the rest of a UTF-8 sequence within an encoded URI.
-	private static int ParseRestOfUTF8(int utf8, String uri, ref int _index)
+	private static int ParseRestOfUTF8(int utf8, string uri, ref int _index)
 			{
 				int index = _index;
 				int size;
@@ -518,7 +522,7 @@ public class GlobalObject
 			}
 
 	// Hexadecimal characters for URI encoding.
-	private const String hex = "0123456789ABCDEF";
+	private const string hex = "0123456789ABCDEF";
 
 	// Append a hex sequence to a string builder.
 	private static void AppendHex(StringBuilder builder, int value)
@@ -615,7 +619,7 @@ public class GlobalObject
 	[NotRecommended("escape")]
 	public static string escape(object str)
 			{
-				String s = Convert.ToString(str);
+				string s = Convert.ToString(str);
 				StringBuilder builder = new StringBuilder(s.Length);
 				foreach(char ch in s)
 				{
@@ -674,7 +678,7 @@ public class GlobalObject
 	[JSFunction(0, JSBuiltin.Global_parseFloat)]
 	public static double parseFloat(object str)
 			{
-				String s = Convert.ToString(str);
+				string s = Convert.ToString(str);
 				int index = 0;
 				int start;
 				char ch;
@@ -687,17 +691,17 @@ public class GlobalObject
 
 				// Check for infinities.
 				if((s.Length - index) >= 8 &&
-				   String.Compare(s, index, "Infinity", 0, 8) == 0)
+				   string.Compare(s, index, "Infinity", 0, 8) == 0)
 				{
 					return Double.PositiveInfinity;
 				}
 				if((s.Length - index) >= 9 &&
-				   String.Compare(s, index, "-Infinity", 0, 9) == 0)
+				   string.Compare(s, index, "-Infinity", 0, 9) == 0)
 				{
 					return Double.NegativeInfinity;
 				}
 				if((s.Length - index) >= 9 &&
-				   String.Compare(s, index, "+Infinity", 0, 9) == 0)
+				   string.Compare(s, index, "+Infinity", 0, 9) == 0)
 				{
 					return Double.PositiveInfinity;
 				}
@@ -780,7 +784,7 @@ public class GlobalObject
 	[JSFunction(0, JSBuiltin.Global_parseInt)]
 	public static double parseInt(object str, object radix)
 			{
-				String s = Convert.ToString(str);
+				string s = Convert.ToString(str);
 				int r = Convert.ToInt32(radix);
 				int index = 0;
 				double value = 0.0;
@@ -909,7 +913,7 @@ public class GlobalObject
 	[NotRecommended("unescape")]
 	public static string unescape(object str)
 			{
-				String s = Convert.ToString(str);
+				string s = Convert.ToString(str);
 				StringBuilder builder = new StringBuilder(s.Length);
 				int index = 0;
 				char ch;
@@ -1061,6 +1065,7 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
+#endif
 	private object array;
 	public new object Array
 			{
@@ -1071,7 +1076,8 @@ public sealed class LenientGlobalObject : GlobalObject
 						if(array == null ||
 						   array is Missing)
 						{
-							array = GlobalObject.Array;
+							array = EngineInstance.GetEngineInstance
+								(engine).GetArrayConstructor();
 						}
 						return array;
 					}
@@ -1084,6 +1090,7 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
+#if false
 	private object booleanConstructor;
 	public new object Boolean
 			{
@@ -1367,6 +1374,7 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
+#endif
 	private object stringConstructor;
 	public new object String
 			{
@@ -1377,7 +1385,9 @@ public sealed class LenientGlobalObject : GlobalObject
 						if(stringConstructor == null ||
 						   stringConstructor is Missing)
 						{
-							stringConstructor = GlobalObject.String;
+							stringConstructor =
+								EngineInstance.GetEngineInstance
+									(engine).GetStringConstructor();
 						}
 						return stringConstructor;
 					}
@@ -1390,6 +1400,7 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
+#if false
 	private object syntaxError;
 	public new object SyntaxError
 			{

@@ -1284,12 +1284,196 @@ cleanup:
 	return error;
 }
 
+/*
+ * Locate the central directory within a .jar file.
+ * Returns a load error code.
+ */
+static int LocateJarDirectory(ILImage *image, unsigned char **start,
+							  unsigned long *length)
+{
+	unsigned char *data = image->data;
+	unsigned long posn;
+	unsigned long count;
+	unsigned long found;
+
+	/* If the file is less than 22 bytes in size, then
+	   it is too small to contain a valid .jar file */
+	if(image->len < 22)
+	{
+		META_ERROR("not a valid .jar file");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Scan backwards from the end of the file for the
+	   "end of central directory" record.  We search up
+	   to 64k to allow for very long zipfile comments */
+	posn = image->len - 22;
+	count = 0;
+	found = 0;
+	while(posn > 0 && count < (unsigned long)65536)
+	{
+		if(data[posn]     == (unsigned char)'P' &&
+		   data[posn + 1] == (unsigned char)'K' &&
+		   data[posn + 2] == (unsigned char)0x05 &&
+		   data[posn + 3] == (unsigned char)0x06)
+		{
+			found = posn;
+			break;
+		}
+		--posn;
+		++count;
+	}
+	if(!found)
+	{
+		META_ERROR("could not locate the .jar central directory");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Make sure that this is a single-part .jar file */
+	if(IL_READ_UINT16(data + posn + 4) != 0 ||	/* Part number */
+	   IL_READ_UINT16(data + posn + 6) != 0 ||	/* Part with central dir */
+	   IL_READ_UINT16(data + posn + 8) !=		/* Total dir entries */
+	   IL_READ_UINT16(data + posn + 10))		/* Dir entries in this part */
+	{
+		META_ERROR("multi-part .jar files are not supported");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Find the start and length of the central directory */
+	*length = IL_READ_UINT32(data + posn + 12);
+	posn = IL_READ_UINT32(data + posn + 16);
+	if(posn >= image->len || *length < 4 ||
+	   *length > image->len ||
+	   (posn + *length) > image->len ||
+	   data[posn]     != (unsigned char)'P' ||
+	   data[posn + 1] != (unsigned char)'K' ||
+	   data[posn + 2] != (unsigned char)0x01 ||
+	   data[posn + 3] != (unsigned char)0x02)
+	{
+		META_ERROR("invalid .jar central directory");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Compute the starting address and return */
+	*start = data + posn;
+	return 0;
+}
+
+/*
+ * Load all .class files from a .jar file.
+ * Returns a load error.
+ */
+static int LoadJarClasses(ILImage *image, int flags,
+						  unsigned char *dir, unsigned long dirLen)
+{
+	int error;
+	unsigned long entryLen;
+	unsigned long nameLen;
+	unsigned long filePosn;
+	unsigned long fileLen;
+	unsigned char *data;
+	JavaReader reader;
+
+	while(dirLen >= 46)
+	{
+		/* Validate the directory entry */
+		nameLen = ((unsigned long)IL_READ_UINT16(dir + 28));
+		entryLen = 46 + nameLen +
+			       ((unsigned long)IL_READ_UINT16(dir + 30)) +
+			       ((unsigned long)IL_READ_UINT16(dir + 32));
+		if(entryLen > dirLen)
+		{
+			META_ERROR("truncated directory entry");
+			return IL_LOADERR_BAD_META;
+		}
+		if(dir[0] != (unsigned char)'P' ||
+		   dir[1] != (unsigned char)'K' ||
+		   dir[2] != (unsigned char)0x01 ||
+		   dir[3] != (unsigned char)0x02)
+		{
+			META_ERROR("invalid directory entry");
+			return IL_LOADERR_BAD_META;
+		}
+
+		/* Does this look like a .class file that we can load? */
+		if(nameLen > 6 && !ILMemCmp(dir + 46 + nameLen - 6, ".class", 6))
+		{
+			/* Find the start and end of the file's data */
+			filePosn = IL_READ_UINT32(dir + 42);
+			fileLen = IL_READ_UINT32(dir + 20);
+			if(filePosn >= image->len || fileLen > image->len)
+			{
+				META_ERROR("invalid file location in directory entry");
+				return IL_LOADERR_BAD_META;
+			}
+
+			/* Validate the compression method, which must be "stored" */
+			if(IL_READ_UINT16(dir + 10) != 0)
+			{
+				META_ERROR("compressed .jar files are not yet supported");
+				return IL_LOADERR_BAD_META;
+			}
+
+			/* Validate the local file header */
+			data = image->data + filePosn;
+			if((filePosn + 30) > image->len ||
+			   data[0] != (unsigned char)'P' ||
+			   data[1] != (unsigned char)'K' ||
+			   data[2] != (unsigned char)0x03 ||
+			   data[3] != (unsigned char)0x04)
+			{
+				META_ERROR("invalid local file header");
+				return IL_LOADERR_BAD_META;
+			}
+			nameLen = ((unsigned long)IL_READ_UINT16(data + 26)) +
+					  ((unsigned long)IL_READ_UINT16(data + 28));
+			if((filePosn + 30 + nameLen + fileLen) > image->len)
+			{
+				META_ERROR("truncated local file header");
+				return IL_LOADERR_BAD_META;
+			}
+			data += 30 + nameLen;
+
+			/* Check the Java class file signature */
+			if(fileLen < 8 ||
+			   IL_BREAD_UINT32(data) != (ILUInt32)0xCAFEBABE ||
+			   (IL_BREAD_UINT16(data + 6) != 45 &&
+			    IL_BREAD_UINT16(data + 6) != 46))
+			{
+				META_ERROR("invalid class within .jar file");
+				return IL_LOADERR_BAD_META;
+			}
+
+			/* Load the class */
+			reader.data = data;
+			reader.len = fileLen;
+			error = LoadJavaClass(image, &reader, flags);
+			if(error != 0)
+			{
+				return error;
+			}
+		}
+
+		/* Advance to the next directory entry */
+		dir += entryLen;
+		dirLen -= entryLen;
+	}
+	if(dirLen > 0)
+	{
+		META_ERROR("truncated directory entry");
+		return IL_LOADERR_BAD_META;
+	}
+	return 0;
+}
+
 int _ILImageJavaLoad(FILE *file, const char *filename, ILContext *context,
 					 ILImage **image, int flags, char *buffer)
 {
 	ILUInt16 major;
 	int error;
 	JavaReader reader;
+	unsigned char *jarStart;
+	unsigned long jarLength;
 
 	/* Read the file header and determine if this is
 	   a .class file or a .jar file.  We assume that
@@ -1350,8 +1534,46 @@ int _ILImageJavaLoad(FILE *file, const char *filename, ILContext *context,
 	}
 	else if(buffer[0] == 'P' && buffer[1] == 'K')
 	{
-		/* This is a .jar file: TODO */
-		return IL_LOADERR_NOT_IL;
+		/* Create the image structure and initialize it */
+		(*image) = ILImageCreate(context);
+		if(!(*image))
+		{
+			return IL_LOADERR_MEMORY;
+		}
+
+		/* Map the contents of the file into memory */
+		error = MapEntireFile((*image), file, 4);
+		if(error != 0)
+		{
+			ILImageDestroy(*image);
+			return error;
+		}
+
+		/* Create the module, assembly, and other information */
+		if(!CreateModuleInfo(*image, filename))
+		{
+			ILImageDestroy(*image);
+			return IL_LOADERR_MEMORY;
+		}
+
+		/* Locate the central directory */
+		error = LocateJarDirectory(*image, &jarStart, &jarLength);
+		if(error != 0)
+		{
+			ILImageDestroy(*image);
+			return error;
+		}
+
+		/* Load all .class files within the .jar file */
+		error = LoadJarClasses(*image, flags, jarStart, jarLength);
+		if(error != 0)
+		{
+			ILImageDestroy(*image);
+			return error;
+		}
+
+		/* Done */
+		return 0;
 	}
 	else
 	{

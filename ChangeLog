@@ -1,4 +1,8 @@
 
+2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* image/java_loader.c: add support for .jar files to the loader.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

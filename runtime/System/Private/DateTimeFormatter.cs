@@ -58,7 +58,6 @@ internal class DateTimeFormatter
 					return info.GetDayName((DayOfWeek)(d.DayOfWeek));
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	private class MonthFormatter: FormatTemplate  //nested class
@@ -89,7 +88,6 @@ internal class DateTimeFormatter
 					return info.GetMonthName(d.Month);
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	private class YearFormatter: FormatTemplate  //nested class
@@ -205,7 +203,6 @@ internal class DateTimeFormatter
 					return d.Second.ToString();
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	private class MinuteFormatter: FormatTemplate  //nested class
@@ -228,7 +225,6 @@ internal class DateTimeFormatter
 					return d.Minute.ToString();
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	private class TwelveHourFormatter: FormatTemplate  //nested class
@@ -251,7 +247,6 @@ internal class DateTimeFormatter
 					return hr.ToString("d02");
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	private class TwentyFourHourFormatter: FormatTemplate  //nested class
@@ -275,7 +270,6 @@ internal class DateTimeFormatter
 					return d.Hour.ToString();
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}	
 	private class AMPMFormatter: FormatTemplate  //nested class
@@ -300,7 +294,6 @@ internal class DateTimeFormatter
 					return info.PMDesignator;
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	private class UTCFormatter: FormatTemplate  //nested class
@@ -334,7 +327,6 @@ internal class DateTimeFormatter
 					return retval+hours.ToString("d02")+":"+minutes.ToString("d02");
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	
@@ -354,7 +346,6 @@ internal class DateTimeFormatter
 					return info.GetEraName(d.Year);
 				}
 			}
-			throw new FormatException("Invalid format string");
 		}
 	}
 	private class DateSeparatorFormatter: FormatTemplate  //nested class
@@ -458,7 +449,6 @@ internal class DateTimeFormatter
 				return format;
 			}
 		}
-		return format;
 	}
 	public static String Format(DateTime date,
 							String format, DateTimeFormatInfo info)

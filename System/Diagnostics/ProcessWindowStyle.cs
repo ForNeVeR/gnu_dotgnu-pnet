@@ -25,7 +25,7 @@ using System;
 
 namespace System.Diagnostics
 {
-	public sealed enum ProcessWindowStyle
+	public enum ProcessWindowStyle
 	{
 		Normal=0x00,
 		Hidden=0x01,

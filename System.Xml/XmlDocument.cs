@@ -649,7 +649,6 @@ class XmlDocument : XmlNode
 				if (xml == null || xml == String.Empty)
 				{
 					throw(new XmlException("no Xml to parse", null));
-					return;
 				}
 				
 				XmlTextReader reader = new XmlTextReader(xml, XmlNodeType.Element, null);
@@ -660,7 +659,7 @@ class XmlDocument : XmlNode
 	private bool BuildStructure(XmlTextReader reader)
 			{
 				XmlNode parent = this;
-				XmlNode current;
+				XmlNode current = null;
 
 				while (reader.Read())
 				{

@@ -1,4 +1,15 @@
 
+2003-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/ComponentModel/Component.cs,
+	System/ComponentModel/Container.cs,
+	System/ComponentModel/Design/DesignerTransaction.cs,
+	System/ComponentModel/Design/IServiceContainer.cs,
+	System/Diagnostics/Process.cs,
+	System/Diagnostics/ProcessWindowStyle.cs, System.Xml/XmlDocument.cs,
+	System.Xml/XmlTextReader.cs, System.Xml/XmlTextWriter.cs,
+	compat/Vsa.cs: fix errors and warnings discovered by csc.
+
 2003-01-10  Jeff Post  <j_post@pacbell.net>
 
 	* System/ComponentModel/EnumConverter.cs: clean-up of ConvertFrom

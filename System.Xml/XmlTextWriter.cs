@@ -893,7 +893,6 @@ public class XmlTextWriter : XmlWriter
 				{
 						throw new InvalidOperationException
 							(S._("Xml_InvalidOperation"));
-						break;
 				}
 
 				if ((writeState == System.Xml.WriteState.Element) || (writeState == System.Xml.WriteState.Attribute))

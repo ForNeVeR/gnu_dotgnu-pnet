@@ -25,7 +25,7 @@ using System;
 namespace System.ComponentModel.Design
 {
 #if !ECMA_COMPAT
-	public abstract interface IServiceContainer: IServiceProvider
+	public interface IServiceContainer: IServiceProvider
 	{
 		void AddService(Type serviceType,Object serviceInstance);
 		

@@ -47,7 +47,7 @@ namespace System.Diagnostics
 		}
 
 		[TODO]
-		protected override void Dispose(bool disposing)
+		protected virtual void Dispose(bool disposing)
 		{
 			throw new NotImplementedException("Dispose");
 		}

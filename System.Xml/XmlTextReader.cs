@@ -846,7 +846,6 @@ public class XmlTextReader : XmlReader
 						// know it is the first quote
 						AnalyzeChar(ch,true);
 						return true;
-						break;
 					default:
 						// Handling, set flag to true if first char is <
 						if ((char)ch == '<')
@@ -858,10 +857,7 @@ public class XmlTextReader : XmlReader
 							AnalyzeChar(ch, false);
 						}
 						return true;
-						break;
 				}
-				
-				return false;
 			}
 
 	// Read the next attribute value in the input stream.

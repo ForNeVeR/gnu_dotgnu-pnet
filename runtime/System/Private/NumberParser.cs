@@ -724,7 +724,7 @@ internal sealed class NumberParser
 	private static void RawHandleSign(StringBuilder sb,
 							NumberStyles style, NumberFormatInfo nfi)
 	{
-		bool leadingsign, trailingsign;
+		bool leadingsign = false, trailingsign = false;
 
 		if (sb.ToString().StartsWith(nfi.PositiveSign) ||
 				sb.ToString().StartsWith(nfi.NegativeSign))
@@ -1126,7 +1126,7 @@ internal sealed class NumberParser
 		if (sb.Length > 0 && (sb[0] == 'e' || sb[0] == 'E') ) 
 		{
 			uint exponent;
-			bool negExponent;
+			bool negExponent = false;
 			sb.Remove(0, 1);
 			if (sb.ToString().StartsWith(nfi.PositiveSign)) 
 			{
@@ -1134,6 +1134,7 @@ internal sealed class NumberParser
 			} 
 			else if (sb.ToString().StartsWith(nfi.NegativeSign)) 
 			{
+				negExponent = true;
 				sb.Remove(0, nfi.NegativeSign.Length);
 			} 
 			else 

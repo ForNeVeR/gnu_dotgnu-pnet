@@ -63,9 +63,9 @@ namespace System.ComponentModel
 		}
 
 		[TODO]
-		protected override void Finalize()
+		~Container()
 		{
-			throw new NotImplementedException("Finalize");
+			// TODO
 		}
 
 		[TODO]

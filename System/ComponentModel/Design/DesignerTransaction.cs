@@ -28,13 +28,13 @@ namespace System.ComponentModel.Design
 	public abstract class DesignerTransaction: IDisposable
 	{
 		[TODO]
-		public void DesignerTransaction()
+		public DesignerTransaction()
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void DesignerTransaction(System.String description)
+		public DesignerTransaction(System.String description)
 		{
 			throw new NotImplementedException(".ctor");
 		}

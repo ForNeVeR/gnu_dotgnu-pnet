@@ -279,6 +279,7 @@ typedef struct
 	int				checked;
 	int				unsafe;
 	int				noStdLib;
+	int				addConfig;
 	int				optimize;
 	int				warnAsError;
 	int				saneWarnings;
@@ -329,6 +330,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	args->checked = COMP_FLAG_NOT_SET;
 	args->unsafe = COMP_FLAG_NOT_SET;
 	args->noStdLib = COMP_FLAG_NOT_SET;
+	args->addConfig = COMP_FLAG_NOT_SET;
 	args->optimize = COMP_FLAG_NOT_SET;
 	args->warnAsError = COMP_FLAG_NOT_SET;
 	args->saneWarnings = COMP_FLAG_NOT_SET;
@@ -491,6 +493,43 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 			node = node->next;
 		}
 	}
+	else
+	{
+		/* We are simulating csc, so we need to parse out some
+		   of the csc-style options in the "arg" elements */
+		args->addConfig = COMP_FLAG_TRUE;
+		node = task->taskChildren;
+		while(node != 0)
+		{
+			if(!strcmp(node->name, "arg"))
+			{
+				/* Does this argument only apply to a specific compiler? */
+				value = CSAntTaskParam(node, "value");
+				if(value)
+				{
+					if(!ILStrICmp(value, "/unsafe"))
+					{
+						args->unsafe = COMP_FLAG_TRUE;
+					}
+					else if(!ILStrICmp(value, "/nostdlib"))
+					{
+						args->noStdLib = COMP_FLAG_TRUE;
+					}
+					else if(!ILStrICmp(value, "/noconfig"))
+					{
+						args->addConfig = COMP_FLAG_FALSE;
+					}
+					else if(!strncmp(value, "/r:", 3) ||
+					        !strncmp(value, "/R:", 3))
+					{
+						args->references = CSAntFileSetAdd
+							(args->references, value + 3);
+					}
+				}
+			}
+			node = node->next;
+		}
+	}
 
 	/* Done */
 	return 1;
@@ -584,6 +623,12 @@ static char **BuildCsccCommandLine(CSAntCompileArgs *args)
 		AddValueArg(&argv, &argc, "-D", args->defines[posn]);
 	}
 
+	/* We need to force Latin-1 if we are simulating csc */
+	if(CSAntRedirectCsc)
+	{
+		AddArg(&argv, &argc, "-flatin1-charset");
+	}
+
 	/* Add any extra arguments that were supplied */
 	for(posn = 0; posn < args->numArgs; ++posn)
 	{
@@ -643,6 +688,13 @@ static char **BuildCsccCommandLine(CSAntCompileArgs *args)
 		{
 			AddValueArg(&argv, &argc, "-l", temp + len);
 		}
+	}
+
+	/* Add "-lSystem.Xml" and "-lSystem" if necessary to simulate csc */
+	if(args->addConfig == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "-lSystem.Xml");
+		AddArg(&argv, &argc, "-lSystem");
 	}
 
 	/* Terminate the command-line */

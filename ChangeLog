@@ -21,6 +21,10 @@
 	csant/csant_defs.h, csant/csant_task.c: add the "-c" option to csant,
 	which forces <csc> tags to be interpreted as <compile> tags.
 
+	* csant/csant_cscc.c, csant/csant_fileset.c, csant/csant_fileset.h:
+	recognise special csc options when converting between <csc>
+	and <compile>.
+
 2003-01-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* dumpasm/dump_flags.c, ilasm/ilasm_grammar.y, ildasm/ildasm_global.c:

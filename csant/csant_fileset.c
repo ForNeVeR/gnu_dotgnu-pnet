@@ -587,6 +587,35 @@ int CSAntFileSetNewer(CSAntFileSet *fileset, const char *filename)
 #endif
 }
 
+CSAntFileSet *CSAntFileSetAdd(CSAntFileSet *fileset, const char *filename)
+{
+	char *pathname;
+
+	/* Construct a new file set if necessary */
+	if(!fileset)
+	{
+		fileset = (CSAntFileSet *)ILMalloc(sizeof(CSAntFileSet));
+		if(!fileset)
+		{
+			CSAntOutOfMemory();
+		}
+		fileset->numFiles = 0;
+		fileset->maxFiles = 0;
+		fileset->files = 0;
+	}
+
+	/* Duplicate the filename string */
+	pathname = ILDupString(filename);
+	if(!pathname)
+	{
+		CSAntOutOfMemory();
+	}
+
+	/* Add the filename to the file set */
+	AddToFileSet(fileset, pathname);
+	return fileset;
+}
+
 #ifdef	__cplusplus
 };
 #endif

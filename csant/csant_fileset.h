@@ -58,6 +58,11 @@ char *CSAntFileSetFile(CSAntFileSet *fileset, unsigned long num);
  */
 int CSAntFileSetNewer(CSAntFileSet *fileset, const char *filename);
 
+/*
+ * Add a filanem to a file set.
+ */
+CSAntFileSet *CSAntFileSetAdd(CSAntFileSet *fileset, const char *filename);
+
 #ifdef	__cplusplus
 };
 #endif

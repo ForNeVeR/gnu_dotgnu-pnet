@@ -225,6 +225,18 @@ int ILSysIOSocketClose(ILSysIOHandle sockfd);
  */
 int ILSysIOSocketShutdown(ILSysIOHandle sockfd, ILInt32 how);
 
+/*
+ * Perform a select operation on a collection of sockets.
+ * Returns -1 on error, 0 on timeout, or the number of
+ * file descriptors that fired.  The input arrays will be
+ * modified so that any descriptors that did not fire are
+ * replaced with ILSysIOHandle_Invalid.
+ */
+ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
+						    ILSysIOHandle **writefds, ILInt32 numWrite,
+						    ILSysIOHandle **exceptfds, ILInt32 numExcept,
+						    ILInt64 timeout);
+
 #ifdef	__cplusplus 
 };
 #endif

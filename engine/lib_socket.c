@@ -189,9 +189,13 @@ ILInt32 _IL_SocketMethods_Select(ILExecThread *_thread,
 								 System_Array *errorarray,
 								 ILInt64 timeout)
 {
-  return ILSysIOSocketSelect((ILInt32 *) ArrayToBuffer(readarray), 
-			     (ILInt32 *) ArrayToBuffer(writearray),
-			     (ILInt32 *) ArrayToBuffer(errorarray), timeout);
+	return ILSysIOSocketSelect
+		((readarray ? (ILSysIOHandle **)(ArrayToBuffer(readarray)) : 0),
+		 (readarray ? readarray->length : 0),
+		 (writearray ? (ILSysIOHandle **)(ArrayToBuffer(writearray)) : 0),
+		 (writearray ? writearray->length : 0),
+		 (errorarray ? (ILSysIOHandle **)(ArrayToBuffer(errorarray)) : 0),
+		 (errorarray ? errorarray->length : 0), timeout);
 }
 
 /*
@@ -217,12 +221,3 @@ ILString *_IL_SocketMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
 		return 0;
 	}
 }
-
-
-
-
-
-
-
-
-

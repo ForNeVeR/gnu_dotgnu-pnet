@@ -9,6 +9,11 @@
 	* image/pecoff_writer.c (ILWriterTextWrite): bug fix for blocks
 	that are greater than 2k in size.
 
+	* configure.in, engine/lib_socket.c, include/il_config.h.in,
+	include/il_sysio.h, support/socket.c: fix bugs in the "select"
+	implementation; make it bullet-proof against signals; pass
+	back more information about which descriptors fired.
+
 2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

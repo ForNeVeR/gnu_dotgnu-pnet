@@ -19,6 +19,16 @@
  */
 
 #include "il_sysio.h"
+#if TIME_WITH_SYS_TIME
+	#include <sys/time.h>
+    #include <time.h>
+#else
+    #if HAVE_SYS_TIME_H
+		#include <sys/time.h>
+    #else
+        #include <time.h>
+    #endif
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -33,6 +43,11 @@
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#include <errno.h>
+
+#ifdef	__cplusplus
+extern	"C" {
 #endif
 
 ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
@@ -140,68 +155,209 @@ int ILSysIOSocketClose(ILSysIOHandle sockfd)
 	return (close((int)sockfd) == 0);
 }
 
-ILInt32 ILSysIOSocketSelect(ILInt32 *readfds, ILInt32 *writefds, 
-			ILInt32 *exceptfds, ILInt64 timeout)
-{
-  fd_set *read, *write, *except;
-  int highest = 0;
-  int fd = 0; /* Current File Descriptor */
-  struct timeval time;  
-  time.tv_usec = timeout;
-  while(readfds != NULL) 
-    {
-      fd = (int) *readfds;
-      if (FD_ISSET(fd, read) || fd == NULL) /* Can't Happen */
-	{
-	  continue;
-	}
-      FD_SET(fd, read);
-      if (fd > highest) 
-	{
-	  highest = fd;
-	}
-      readfds++;
-    }
-  fd = 0; /* Set back */
-  while(writefds != NULL) 
-    {
-      fd = (int) *writefds;
-      if (FD_ISSET(fd, write) || fd == NULL) /* Can't Happen */
-	{
-	  continue;
-	}
-      FD_SET(fd, write);
-      if (fd > highest) 
-	{
-	  highest = fd;
-	}
-      writefds++;
-    }
-  fd = 0;
-  while(exceptfds != NULL) 
-    {
-      fd = (int) *exceptfds;
-      if (FD_ISSET(fd, except) || fd == NULL) /* Can't Happen */
-	{
-	  continue;
-	}
-      FD_SET(fd, except);
-      if (fd > highest) 
-	{
-	  highest = fd;
-	}
-      exceptfds++;
-    }
-  return (ILInt32)select(highest+1, read, write, except, &time); 
-}
-
 int ILSysIOSocketShutdown(ILSysIOHandle sockfd, ILInt32 how)
 {
 	return (shutdown((int)sockfd, how) == 0);
 }
 
+ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
+						    ILSysIOHandle **writefds, ILInt32 numWrite,
+						    ILSysIOHandle **exceptfds, ILInt32 numExcept,
+						    ILInt64 timeout)
+{
+	fd_set readSet, writeSet, exceptSet;
+	fd_set *readPtr, *writePtr, *exceptPtr;
+	int highest = -1;
+	int fd, result;
+	struct timeval currtime;
+	struct timeval endtime;
+	struct timeval difftime;
+	ILInt32 index;
 
+	/* Convert the read array into an "fd_set" */
+	FD_ZERO(&readSet);
+	if(readfds)
+	{
+		readPtr = &readSet;
+		for(index = 0; index < numRead; ++index)
+		{
+			fd = (int)(readfds[index]);
+			if(fd != -1)
+			{
+				FD_SET(fd, &readSet);
+				if(fd > highest)
+				{
+					highest = fd;
+				}
+			}
+		}
+	}
+	else
+	{
+		readPtr = 0;
+	}
 
+	/* Convert the write array into an "fd_set" */
+	FD_ZERO(&writeSet);
+	if(writefds)
+	{
+		writePtr = &writeSet;
+		for(index = 0; index < numWrite; ++index)
+		{
+			fd = (int)(writefds[index]);
+			if(fd != -1)
+			{
+				FD_SET(fd, &writeSet);
+				if(fd > highest)
+				{
+					highest = fd;
+				}
+			}
+		}
+	}
+	else
+	{
+		writePtr = 0;
+	}
 
+	/* Convert the except array into an "fd_set" */
+	FD_ZERO(&exceptSet);
+	if(exceptfds)
+	{
+		exceptPtr = &exceptSet;
+		for(index = 0; index < numExcept; ++index)
+		{
+			fd = (int)(exceptfds[index]);
+			if(fd != -1)
+			{
+				FD_SET(fd, &exceptSet);
+				if(fd > highest)
+				{
+					highest = fd;
+				}
+			}
+		}
+	}
+	else
+	{
+		exceptPtr = 0;
+	}
 
+	/* Is this a timed select or an infinite select? */
+	if(timeout >= 0)
+	{
+		/* Get the current time of day and determine the end time */
+		gettimeofday(&currtime, 0);
+		endtime.tv_sec = currtime.tv_sec + (long)(timeout / (ILInt64)1000000);
+		endtime.tv_usec = currtime.tv_usec + (long)(timeout % (ILInt64)1000000);
+		if(endtime.tv_usec >= 1000000L)
+		{
+			++(endtime.tv_sec);
+			endtime.tv_usec -= 1000000L;
+		}
 
+		/* Loop while we are interrupted by signals */
+		for(;;)
+		{
+			/* How long until the timeout? */
+			difftime.tv_sec = endtime.tv_sec - currtime.tv_sec;
+			if(endtime.tv_usec >= currtime.tv_usec)
+			{
+				difftime.tv_usec = endtime.tv_usec - currtime.tv_usec;
+			}
+			else
+			{
+				difftime.tv_usec = endtime.tv_usec + 1000000L -
+								   currtime.tv_usec;
+				difftime.tv_sec -= 1;
+			}
+
+			/* Perform a trial select, which may be interrupted */
+			result = select(highest + 1, readPtr, writePtr,
+							exceptPtr, &difftime);
+			if(result >= 0 || errno != EINTR)
+			{
+				break;
+			}
+
+			/* We were interrupted, so get the current time again.
+			   We have to this because many systems do not update
+			   the 5th paramter of "select" to reflect how much time
+			   is left to go */
+			gettimeofday(&currtime, 0);
+
+			/* Are we past the end time? */
+			if(currtime.tv_sec > endtime.tv_sec ||
+			   (currtime.tv_sec == endtime.tv_sec &&
+			    currtime.tv_usec >= endtime.tv_usec))
+			{
+				/* We are, so simulate timeout */
+				result = 0;
+				break;
+			}
+		}
+	}
+	else
+	{
+		/* Infinite select */
+		while((result = select(highest + 1, readPtr, writePtr, exceptPtr,
+							   (struct timeval *)0)) < 0)
+		{
+			/* Keep looping while we are being interrupted by signals */
+			if(result != EINTR)
+			{
+				break;
+			}
+		}
+	}
+
+	/* Update the descriptor sets if something fired */
+	if(result > 0)
+	{
+		/* Update the read descriptors */
+		if(readPtr)
+		{
+			for(index = 0; index < numRead; ++index)
+			{
+				fd = (int)(readfds[index]);
+				if(fd != -1 && !FD_ISSET(fd, &readSet))
+				{
+					readfds[index] = ILSysIOHandle_Invalid;
+				}
+			}
+		}
+
+		/* Update the write descriptors */
+		if(writePtr)
+		{
+			for(index = 0; index < numWrite; ++index)
+			{
+				fd = (int)(writefds[index]);
+				if(fd != -1 && !FD_ISSET(fd, &writeSet))
+				{
+					writefds[index] = ILSysIOHandle_Invalid;
+				}
+			}
+		}
+
+		/* Update the except descriptors */
+		if(exceptPtr)
+		{
+			for(index = 0; index < numExcept; ++index)
+			{
+				fd = (int)(exceptfds[index]);
+				if(fd != -1 && !FD_ISSET(fd, &exceptSet))
+				{
+					exceptfds[index] = ILSysIOHandle_Invalid;
+				}
+			}
+		}
+	}
+
+	/* Return the result to the caller */
+	return (ILInt32)result;
+}
+
+#ifdef	__cplusplus
+};
+#endif

@@ -151,6 +151,7 @@ AC_CHECK_HEADERS(stdarg.h varargs.h sys/mman.h unistd.h sys/stat.h)
 AC_CHECK_HEADERS(sys/time.h sys/types.h regex.h dlfcn.h ieeefp.h)
 AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
 AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h)
+AC_CHECK_HEADERS(sys/select.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

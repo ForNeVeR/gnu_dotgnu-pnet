@@ -357,14 +357,55 @@ dnl Configure libffi and libgc.  We do these manually to avoid
 dnl some issues with different versions of autotools, and so that
 dnl we can pass specific options to the packages.
 if test "x$no_recursion" != "xyes"; then
-	if test x$withffi = xyes ; then
-		cd "${srcdir}/libffi"
-		./configure --disable-multilib --disable-shared
-		cd ../libgc
+
+	dnl Figure out how to find the source directory for directories
+	dnl under $srcdir from a subdirectory of the build tree.  This is
+	dnl	different depending on whether $srcdir is absolute or relative.
+	if echo $srcdir | grep '^[~/]'; then
+		ffisrcdir=$srcdir/libffi
+		gcsrcdir=$srcdir/libgc
 	else
-		cd "${srcdir}/libgc"
+		ffisrcdir=../$srcdir/libffi
+		gcsrcdir=../$srcdir/libgc
 	fi
+	if test x$withffi = xyes ; then
+		if test ! -d libffi ; then
+			mkdir libffi
+		fi
+		cd "libffi"
+		${ffisrcdir}/configure --disable-multilib --disable-shared \
+			--host="${host}" --build="${build}" --target="${target}" \
+			--disable-fast-install --prefix="${prefix}" \
+			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \
+			--sbindir="${sbindir}" --libexecdir="${libexecdir}" \
+			--datadir="${datadir}" --sysconfdir="${sysconfdir}" \
+			--sharedstatedir="${sharedstatedir}" \
+			--localstatedir="${localstatedir}" --libdir="${libdir}" \
+			--includedir="${includedir}" \
+			--oldincludedir="${oldincludedir}" --infodir="${infodir}" \
+			--mandir="${mandir}" --srcdir="${ffisrcdir}" || exit 1
+		cd ..
+	fi
+
 	if test x$withgc = xyes ; then
-		./configure --enable-threads=$THREADS
+		if test ! -d libgc ; then
+			mkdir libgc
+		fi
+		cd libgc
+		${gcsrcdir}/configure --enable-threads=$THREADS --host="${host}" \
+			--build="${build}" --target="${target}" --disable-fast-install \
+			--prefix="${prefix}" \
+			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \
+			--sbindir="${sbindir}" --libexecdir="${libexecdir}" \
+			--datadir="${datadir}" --sysconfdir="${sysconfdir}" \
+			--sharedstatedir="${sharedstatedir}" \
+			--localstatedir="${localstatedir}" --libdir="${libdir}" \
+			--includedir="${includedir}" --oldincludedir="${oldincludedir}" \
+			--infodir="${infodir}" --mandir="${mandir}" \
+			--srcdir="${gcsrcdir}" || exit 1
 	fi
 fi
+
+dnl Local variables:
+dnl tab-width: 4
+dnl end:

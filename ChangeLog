@@ -7,6 +7,8 @@
 	to use -O2 instead of -O3, to allow the main interpreter loop to
 	compile.
 
+	* configure.in: support out of tree builds for libffi and libgc.
+
 2002-12-01  David Dawkins <david.dawkins@brooks-pri.com>
 
 	* resgen/resgen.c: Support cygwin/text-mode file systems. Open 

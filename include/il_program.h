@@ -518,6 +518,12 @@ int ILClassIsRef(ILClass *info);
 ILClass *ILClassGetParent(ILClass *info);
 
 /*
+ * Set the parent of a class, if the class hasn't been
+ * marked completed.
+ */
+void ILClassSetParent(ILClass *info, ILClass *parent);
+
+/*
  * Get the parent of a particular class, but don't cross
  * image boundaries.  A reference will be returned if
  * the image boundary may be crossed.

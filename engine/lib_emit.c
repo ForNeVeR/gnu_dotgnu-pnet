@@ -498,7 +498,30 @@ void _IL_TypeBuilder_ClrTypeAddInterface(ILExecThread *_thread,
 										 ILNativeInt classInfo,
 										 void *iface)
 {
-	/* TODO */
+	ILClass *class;
+	ILToken token;
+	ILImage *image;
+	ILClass *interface;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	class = (ILClass *)classInfo;
+	token = *((ILToken *)iface);
+	image = ILClassToImage(class);
+	if (!(interface = ILClass_FromToken(image, token)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(ILClassAddImplements(class, interface, token)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
@@ -550,7 +573,25 @@ void _IL_TypeBuilder_ClrTypeSetParent(ILExecThread *_thread,
 									  ILNativeInt classInfo,
 									  void *parent)
 {
-	/* TODO */
+	ILClass *class;
+	ILToken token;
+	ILImage *image;
+	ILClass *parentClass;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	class = (ILClass *)classInfo;
+	token = *((ILToken *)parent);
+	image = ILClassToImage(class);
+	if (!(parentClass = ILClass_FromToken(image, token)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	ILClassSetParent(class, parentClass);
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*
@@ -560,8 +601,22 @@ ILInt32 _IL_TypeBuilder_ClrTypeImport(ILExecThread *_thread,
 									  ILNativeInt module,
 									  ILNativeInt classInfo)
 {
-	/* TODO */
-	return 0;
+	ILImage *image;
+	ILClass *import;
+	ILToken token;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	image = ((ILProgramItem *)module)->image;
+	import = ILClassImport(image, (ILClass *)classInfo);
+	token = 0;
+	if (import)
+	{
+		token = ILClass_Token(import);
+	}
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILInt32)token;
 }
 
 /*
@@ -571,8 +626,24 @@ ILInt32 _IL_TypeBuilder_ClrTypeImportMember(ILExecThread *_thread,
 											ILNativeInt module,
 											ILNativeInt memberInfo)
 {
-	/* TODO */
-	return 0;
+	ILImage *image;
+	ILMember *import;
+	ILToken token;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	image = ((ILProgramItem *)module)->image;
+	import = ILMemberImport(image, (ILMember *)memberInfo);
+	if (!import)
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	token = ILMember_Token(import);
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILInt32)token;
 }
 
 /*
@@ -584,7 +655,35 @@ void _IL_TypeBuilder_ClrTypeAddOverride(ILExecThread *_thread,
 										ILInt32 bodyToken,
 										ILInt32 declToken)
 {
-	/* TODO */
+	ILImage *image;
+	ILMethod *body;
+	ILMethod *decl;
+	ILClass *class;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	image = ((ILProgramItem *)module)->image;
+	if (!(body = ILMethod_FromToken(image, (ILToken)bodyToken)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	if (!(decl = ILMethod_FromToken(image, (ILToken)declToken)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+	class = ILMethod_Owner(decl);
+	if (!(ILOverrideCreate(class, 0, decl, body)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return;
+	}
+
+	IL_METADATA_UNLOCK(_thread);
 }
 
 /*

@@ -528,6 +528,20 @@ ILClass *ILClassGetParent(ILClass *info)
 	}
 }
 
+void ILClassSetParent(ILClass *info, ILClass *parent)
+{
+	ILImage *image;
+
+	if(!info || !parent || ILClassIsComplete(info))
+	{
+		return;
+	}
+
+	image = ILClassToImage(parent);
+	parent = ILClassImport(image, parent);
+	info->parent = parent;
+}
+
 ILClass *ILClassGetParentRef(ILClass *info)
 {
 	if(info->parent)

@@ -1,3 +1,13 @@
+2003-07-12  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeAddInterface,
+	_IL_TypeBuilder_ClrTypeSetParent, _IL_TypeBuilder_ClrTypeImport,
+	_IL_TypeBuilder_ClrTypeImportMember, and
+	_IL_TypeBuilder_ClrTypeAddOverride internal calls.
+
+	* image/call.c, include/il_program.h: add and implement the
+	ILClassSetParent function.
+
 2003-07-12  Thong Nguyen  <tum@veridicus.com>
 
 	* support/wakeup.c:  Fix delayed signal race condition in

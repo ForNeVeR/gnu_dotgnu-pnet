@@ -1,3 +1,8 @@
+2005-01-24  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Text/StringBuilder.cs: Fix allocation bug in AppendSpace
+	and change allocation scheme for strings > 2047 chars.
+
 2005-01-23  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* Updated build-depian-packages.sh for new release.

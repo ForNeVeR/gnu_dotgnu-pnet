@@ -38,6 +38,9 @@ public sealed class StringBuilder
 	// Must be a power of 2 minus 1.
 	private const int ResizeRound = 31;
 
+	// Value to round up long strings (longer than 2047)
+	private const int ResizeRoundBig = 1023;
+
 	// Constructors.
 	public StringBuilder() : this(MinCapacity) {}
 	public StringBuilder(int capacity)
@@ -204,18 +207,25 @@ public sealed class StringBuilder
 				int newLength, temp;
 
 				// Determine the new length.
-				if(buildString.capacity < 2048)
+				temp = buildLen + length;
+				if (temp > buildString.capacity)
 				{
-					temp = buildLen + length;
-					newLength = buildString.capacity * 2;
-					if(temp > newLength)
+					if(buildString.capacity < 2048)
 					{
-						newLength = temp;
+						newLength = buildString.capacity * 2;
+						if(temp > newLength)
+						{
+							newLength = temp;
+						}
+					}
+					else
+					{
+						newLength = (buildLen + length + ResizeRoundBig) & ~ResizeRoundBig;
 					}
 				}
 				else
 				{
-					newLength = buildLen + length;
+					newLength = buildString.capacity;
 				}
 				if(newLength > maxCapacity)
 				{
@@ -473,7 +483,15 @@ public sealed class StringBuilder
 				{
 					return buildString.capacity;
 				}
-				capacity = (capacity + ResizeRound) & ~ResizeRound;
+				// use same allocation scheme as in AddSpace
+				if(capacity < 2048)
+				{
+					capacity = (capacity + ResizeRound) & ~ ResizeRound;
+				}
+				else
+				{
+					capacity = (capacity + ResizeRoundBig) & ~ ResizeRoundBig;
+				}
 				if(capacity > maxCapacity)
 				{
 					capacity = maxCapacity;
@@ -512,36 +530,32 @@ public sealed class StringBuilder
 
 				// Determine the new length.
 				newLength = buildLen + length;
-				if(newLength > maxCapacity)
+				if(newLength > buildString.capacity)
 				{
-					newLength = maxCapacity;
-					length = newLength - buildLen;
-				}
-
-				// Reallocate the string as necessary.
-				if(needsCopy)
-				{
-					int capacity = buildString.capacity;
-					if(capacity < newLength)
+					// Reallocate the string as necessary.
+					if(newLength > 2048)
 					{
-						capacity = (newLength + ResizeRound)
-										& ~ResizeRound;
+						newLength = (newLength + ResizeRoundBig) & ~ResizeRoundBig;
 					}
-					if(capacity > maxCapacity)
+					else
 					{
-						capacity = maxCapacity;
+						newLength = (newLength + ResizeRound) & ~ResizeRound;
 					}
-					buildString = NewBuilder(buildString, capacity);
-					needsCopy = false;
-				}
-				else if(newLength > buildString.capacity)
-				{
-					newLength = (newLength + ResizeRound) & ~ResizeRound;
 					if(newLength > maxCapacity)
 					{
 						newLength = maxCapacity;
+						length = newLength - buildLen;
 					}
 					buildString = NewBuilder(buildString, newLength);
+					needsCopy = false;
+				}
+				else
+				{
+					if(needsCopy)
+					{
+						buildString = NewBuilder(buildString, buildString.capacity);
+						needsCopy = false;
+					}
 				}
 
 				// Move the characters after the index up.

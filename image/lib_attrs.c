@@ -182,6 +182,13 @@ static int DllImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
 		return -1;
 	}
 	result = (ILPInvokeCreate(method, 0, attrs, module, aliasName) != 0);
+	if(result)
+	{
+		/* Mark the method with the "pinvokeimpl" flag */
+		ILMemberSetAttrs((ILMember *)method,
+						 IL_META_METHODDEF_PINVOKE_IMPL,
+						 IL_META_METHODDEF_PINVOKE_IMPL);
+	}
 	ILFree(dllName);
 	if(aliasName)
 	{

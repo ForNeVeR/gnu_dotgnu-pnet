@@ -8,7 +8,10 @@
 
 	* configure.in: update working version to "0.4.3".
 
-2002-07-27  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
+	* image/lib_attrs.c (DllImportAttribute): set the "pinvokeimpl"
+	flag when a "DllImport" attribute is processed.
+
+2002-07-25  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
 
 	* debian/*: Update Deabin packaging scripte to reflect that the pnet
 	package was split.

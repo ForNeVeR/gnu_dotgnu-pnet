@@ -1,4 +1,9 @@
 
+2004-07-31  Deryk Robosson  <deryk@0x0a.com>
+
+	* Xsharp/TopLevelWindow.cs: set proper mask argument to	
+	XReconfigureWMWindow to fix bug #8983. (patch #3234, Gopal).
+
 2004-07-31  David Logan  <djlogan2@comcast.net>
 
 	* runtime/System/Reflection/Assembly.cs: Remove the version and

@@ -555,7 +555,7 @@ public class TopLevelWindow : InputOutputWidget
 					Xlib.XReconfigureWMWindow
 							(display, handle,
 							 Screen.ScreenNumber,
-						     (uint)(ConfigureWindowMask.CWStackMode),
+						     (uint)mask,
 							 ref changes);
 				}
 			}

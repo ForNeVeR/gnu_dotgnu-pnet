@@ -498,8 +498,7 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->exceptHeight = thread->exceptHeight;
 
 		/* Pass control to the new method */
-		pc = ((unsigned char *)(methodToCall->userData)) -
-			 ILCoderCtorOffset(thread->process->coder);
+		pc = ((unsigned char *)(methodToCall->userData)) - CVM_CTOR_OFFSET;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
 	}
@@ -526,8 +525,7 @@ VMCASE(COP_CALL_CTOR):
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
-		pc = ((unsigned char *)tempptr) -
-			 ILCoderCtorOffset(thread->process->coder);
+		pc = ((unsigned char *)tempptr) - CVM_CTOR_OFFSET;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
 	}

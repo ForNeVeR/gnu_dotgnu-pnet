@@ -9,6 +9,11 @@
 	setup implementation so that we can use either "ffi_call" or
 	"ffi_raw_call" to invoke native methods.
 
+	* engine/cvm_call.h, engine/cvm_config.h, engine/cvmc_gen.h:
+	move CVM_CTOR_OFFSET into "cvm_config.h" so that the interpreter
+	can use the value directly, rather than needing to call the
+	coder to get it during constructor calls.
+
 2002-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_array.c: add special cases for 2-dimensional arrays.

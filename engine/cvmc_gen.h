@@ -501,11 +501,6 @@ extern	"C" {
 				} \
 			} while (0)
 
-/*
- * The constructor offset value.
- */
-#define	CVM_CTOR_OFFSET		6
-
 #else /* IL_CVM_DIRECT */
 
 /*
@@ -948,11 +943,6 @@ extern	"C" {
 						((pc) + (ILNativeInt)(ILInt32)(relative)); \
 				} \
 			} while (0)
-
-/*
- * The constructor offset value.
- */
-#define	CVM_CTOR_OFFSET		(3 * sizeof(void *))
 
 #endif /* IL_CVM_DIRECT */
 

@@ -163,6 +163,15 @@ extern int _ILCVMInsnCount[];
 
 #endif /* !IL_CVM_DIRECT */
 
+/*
+ * The constructor offset value.
+ */
+#ifdef IL_CVM_DIRECT
+	#define	CVM_CTOR_OFFSET		(3 * sizeof(void *))
+#else
+	#define	CVM_CTOR_OFFSET		6
+#endif
+
 #ifdef	__cplusplus
 };
 #endif

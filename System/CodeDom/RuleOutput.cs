@@ -1419,7 +1419,7 @@ public class CodeLinePragma : CodeObject
 [Serializable]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
-public class CodeMemberProperty : CodeObject
+public class CodeMemberProperty : CodeTypeMember
 {
 
 	// Internal state.

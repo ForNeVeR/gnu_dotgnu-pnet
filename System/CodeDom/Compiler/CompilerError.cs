@@ -126,8 +126,35 @@ public class CompilerError
 	// Convert this error into a string.
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				// Normalize the error number to deal with the fact
+				// that cscc does not use error numbers at all.
+				String errorNumber = this.errorNumber;
+				if(errorNumber == null || errorNumber == String.Empty)
+				{
+					if(isWarning)
+					{
+						errorNumber = "CS0000";
+					}
+					else
+					{
+						errorNumber = "CS0001";
+					}
+				}
+
+				// Format the error text and return it.
+				if(fileName == null || fileName == String.Empty)
+				{
+					return String.Format("{0} {1}: {2}",
+										 (isWarning ? "warning" : "error"),
+										 errorNumber, errorText);
+				}
+				else
+				{
+					return String.Format("{0} ({1},{2}) : {3} {4}: {5}",
+										 fileName, line, column,
+										 (isWarning ? "warning" : "error"),
+										 errorNumber, errorText);
+				}
 			}
 
 }; // class CompilerError

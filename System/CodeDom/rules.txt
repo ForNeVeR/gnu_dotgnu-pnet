@@ -77,7 +77,7 @@ CodeIterationStatement:
 CodeLabeledStatement: String<Label> ?CodeStatement<Statement>
 CodeLinePragma: String<FileName> int<LineNumber>
 
-CodeMemberProperty:
+CodeMemberProperty-CodeTypeMember:
 	$CodeStatementCollection<GetStatements> \
 	bool<HasGet> bool<HasSet> \
 	CodeTypeReferenceCollection<ImplementationTypes> \

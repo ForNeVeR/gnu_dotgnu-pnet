@@ -44,7 +44,33 @@ public abstract class CodeGenerator : ICodeGenerator
 	// Determine if an identifier is valid for language-independent use.
 	public static bool IsValidLanguageIndependentIdentifier(String value)
 			{
-				// TODO
+				if(value == null || value.Length == 0)
+				{
+					return false;
+				}
+				int posn = 0;
+				if(Char.GetUnicodeCategory(value[0]) ==
+						UnicodeCategory.DecimalDigitNumber)
+				{
+					return false;
+				}
+				for(posn = 0; posn < value.Length; ++posn)
+				{
+					switch(Char.GetUnicodeCategory(value[posn]))
+					{
+						case UnicodeCategory.UppercaseLetter:
+						case UnicodeCategory.LowercaseLetter:
+						case UnicodeCategory.TitlecaseLetter:
+						case UnicodeCategory.ModifierLetter:
+						case UnicodeCategory.OtherLetter:
+						case UnicodeCategory.NonSpacingMark:
+						case UnicodeCategory.SpacingCombiningMark:
+						case UnicodeCategory.DecimalDigitNumber:
+						case UnicodeCategory.ConnectorPunctuation: break;
+
+						default: return false;
+					}
+				}
 				return true;
 			}
 
@@ -204,8 +230,6 @@ public abstract class CodeGenerator : ICodeGenerator
 				(CodeDelegateCreateExpression e);
 	protected abstract void GenerateDelegateInvokeExpression
 				(CodeDelegateInvokeExpression e);
-	protected abstract void GenerateDirectionExpression
-				(CodeDirectionExpression e);
 	protected abstract void GenerateEventReferenceExpression
 				(CodeEventReferenceExpression e);
 	protected abstract void GenerateFieldReferenceExpression
@@ -293,7 +317,13 @@ public abstract class CodeGenerator : ICodeGenerator
 	protected virtual void GenerateBinaryOperatorExpression
 				(CodeBinaryOperatorExpression e)
 			{
-				// TODO
+				Output.Write("(");
+				GenerateExpression(e.Left);
+				Output.Write(" ");
+				OutputOperator(e.Operator);
+				Output.Write(" ");
+				GenerateExpression(e.Right);
+				Output.Write(")");
 			}
 
 	// Generate code for comment statements.
@@ -344,50 +374,389 @@ public abstract class CodeGenerator : ICodeGenerator
 	// Generate code for an expression.
 	protected void GenerateExpression(CodeExpression e)
 			{
-				// TODO
+				if(e is CodeArrayCreateExpression)
+				{
+					GenerateArrayCreateExpression
+						((CodeArrayCreateExpression)e);
+				}
+				else if(e is CodeCastExpression)
+				{
+					GenerateCastExpression((CodeCastExpression)e);
+				}
+				else if(e is CodeMethodInvokeExpression)
+				{
+					GenerateMethodInvokeExpression
+						((CodeMethodInvokeExpression)e);
+				}
+				else if(e is CodeObjectCreateExpression)
+				{
+					GenerateObjectCreateExpression
+						((CodeObjectCreateExpression)e);
+				}
+				else if(e is CodeParameterDeclarationExpression)
+				{
+					GenerateParameterDeclarationExpression
+						((CodeParameterDeclarationExpression)e);
+				}
+				else if(e is CodeTypeOfExpression)
+				{
+					GenerateTypeOfExpression
+						((CodeTypeOfExpression)e);
+				}
+				else if(e is CodeTypeReferenceExpression)
+				{
+					GenerateTypeReferenceExpression
+						((CodeTypeReferenceExpression)e);
+				}
+				else if(e is CodeArgumentReferenceExpression)
+				{
+					GenerateArgumentReferenceExpression
+						((CodeArgumentReferenceExpression)e);
+				}
+				else if(e is CodeArrayIndexerExpression)
+				{
+					GenerateArrayIndexerExpression
+						((CodeArrayIndexerExpression)e);
+				}
+				else if(e is CodeBaseReferenceExpression)
+				{
+					GenerateBaseReferenceExpression
+						((CodeBaseReferenceExpression)e);
+				}
+				else if(e is CodeBinaryOperatorExpression)
+				{
+					GenerateBinaryOperatorExpression
+						((CodeBinaryOperatorExpression)e);
+				}
+				else if(e is CodeDelegateCreateExpression)
+				{
+					GenerateDelegateCreateExpression
+						((CodeDelegateCreateExpression)e);
+				}
+				else if(e is CodeDelegateInvokeExpression)
+				{
+					GenerateDelegateInvokeExpression
+						((CodeDelegateInvokeExpression)e);
+				}
+				else if(e is CodeDirectionExpression)
+				{
+					GenerateDirectionExpression
+						((CodeDirectionExpression)e);
+				}
+				else if(e is CodeEventReferenceExpression)
+				{
+					GenerateEventReferenceExpression
+						((CodeEventReferenceExpression)e);
+				}
+				else if(e is CodeFieldReferenceExpression)
+				{
+					GenerateFieldReferenceExpression
+						((CodeFieldReferenceExpression)e);
+				}
+				else if(e is CodeIndexerExpression)
+				{
+					GenerateIndexerExpression
+						((CodeIndexerExpression)e);
+				}
+				else if(e is CodeMethodReferenceExpression)
+				{
+					GenerateMethodReferenceExpression
+						((CodeMethodReferenceExpression)e);
+				}
+				else if(e is CodePrimitiveExpression)
+				{
+					GeneratePrimitiveExpression
+						((CodePrimitiveExpression)e);
+				}
+				else if(e is CodePropertyReferenceExpression)
+				{
+					GeneratePropertyReferenceExpression
+						((CodePropertyReferenceExpression)e);
+				}
+				else if(e is CodePropertySetValueReferenceExpression)
+				{
+					GeneratePropertySetValueReferenceExpression
+						((CodePropertySetValueReferenceExpression)e);
+				}
+				else if(e is CodeSnippetExpression)
+				{
+					GenerateSnippetExpression
+						((CodeSnippetExpression)e);
+				}
+				else if(e is CodeThisReferenceExpression)
+				{
+					GenerateThisReferenceExpression
+						((CodeThisReferenceExpression)e);
+				}
+				else if(e is CodeVariableReferenceExpression)
+				{
+					GenerateVariableReferenceExpression
+						((CodeVariableReferenceExpression)e);
+				}
+				else
+				{
+					throw new ArgumentException
+						(S._("Arg_InvalidCodeDom"), "e");
+				}
+			}
+
+	// Helper methods for line pragmas.
+	private void LinePragmaStart(CodeLinePragma pragma)
+			{
+				if(pragma != null)
+				{
+					GenerateLinePragmaStart(pragma);
+				}
+			}
+	private void LinePragmaEnd(CodeLinePragma pragma)
+			{
+				if(pragma != null)
+				{
+					GenerateLinePragmaEnd(pragma);
+				}
 			}
 
 	// Generate code for namespace information.
 	protected virtual void GenerateNamespace(CodeNamespace e)
 			{
+				GenerateCommentStatements(e.Comments);
 				GenerateNamespaceStart(e);
 				GenerateNamespaceImports(e);
-				// TODO
+				Output.WriteLine();
+				GenerateTypes(e);
 				GenerateNamespaceEnd(e);
 			}
 	protected void GenerateNamespaceImports(CodeNamespace e)
 			{
-				// TODO
+				foreach(CodeNamespaceImport ns in e.Imports)
+				{
+					LinePragmaStart(ns.LinePragma);
+					GenerateNamespaceImport(ns);
+					LinePragmaEnd(ns.LinePragma);
+				}
 			}
 	protected void GenerateNamespaces(CodeCompileUnit e)
 			{
-				// TODO
+				foreach(CodeNamespace ns in e.Namespaces)
+				{
+					((ICodeGenerator)this).GenerateCodeFromNamespace
+							(ns, writer.InnerWriter, Options);
+				}
 			}
+
+	// Hex characters for encoding "char" constants.
+	private static readonly String hexchars = "0123456789abcdef";
 
 	// Generate code for a primitive expression.
 	protected virtual void GeneratePrimitiveExpression
 				(CodePrimitiveExpression e)
 			{
-				// TODO
+				Object value = e.Value;
+				if(value == null)
+				{
+					Output.Write(NullToken);
+				}
+				else if(value is String)
+				{
+					Output.Write(QuoteSnippetString((String)value));
+				}
+				else if(value is Char)
+				{
+					char ch = (char)value;
+					String chvalue;
+					switch(ch)
+					{
+						case '\'':	chvalue = "'\\''"; break;
+						case '\\':	chvalue = "'\\\\'"; break;
+						case '\n':	chvalue = "'\\n'"; break;
+						case '\r':	chvalue = "'\\r'"; break;
+						case '\t':	chvalue = "'\\t'"; break;
+						case '\f':	chvalue = "'\\f'"; break;
+						case '\v':	chvalue = "'\\v'"; break;
+						case '\a':	chvalue = "'\\a'"; break;
+						case '\b':	chvalue = "'\\b'"; break;
+						default:
+						{
+							if(ch >= ' ' && ch <= 0x7E)
+							{
+								chvalue = "\"" + ch.ToString() + "\"";
+							}
+							else if(ch < 0x0100)
+							{
+								chvalue = "\"\\x" +
+									hexchars[(ch >> 4) & 0x0F] +
+									hexchars[ch & 0x0F] + "\"";
+							}
+							else
+							{
+								chvalue = "\"\\u" +
+									hexchars[(ch >> 12) & 0x0F] +
+									hexchars[(ch >> 8) & 0x0F] +
+									hexchars[(ch >> 4) & 0x0F] +
+									hexchars[ch & 0x0F] + "\"";
+							}
+						}
+						break;
+					}
+					Output.Write(chvalue);
+				}
+				else if(value is SByte)
+				{
+					Output.Write((int)(sbyte)value);
+				}
+				else if(value is Byte)
+				{
+					Output.Write((int)(byte)value);
+				}
+				else if(value is Int16)
+				{
+					Output.Write((int)(short)value);
+				}
+				else if(value is UInt16)
+				{
+					Output.Write((int)(ushort)value);
+				}
+				else if(value is Int32)
+				{
+					Output.Write((int)value);
+				}
+				else if(value is UInt32)
+				{
+					Output.Write((uint)value);
+				}
+				else if(value is Int64)
+				{
+					Output.Write((long)value);
+				}
+				else if(value is UInt64)
+				{
+					Output.Write((ulong)value);
+				}
+				else if(value is Single)
+				{
+					GenerateSingleFloatValue((float)value);
+				}
+				else if(value is Double)
+				{
+					GenerateDoubleValue((double)value);
+				}
+				else if(value is Decimal)
+				{
+					GenerateDecimalValue((Decimal)value);
+				}
+				else if(value is Boolean)
+				{
+					if((bool)value)
+					{
+						Output.Write("true");
+					}
+					else
+					{
+						Output.Write("false");
+					}
+				}
+				else
+				{
+					throw new ArgumentException
+						(S._("Arg_InvalidCodeDom"), "e");
+				}
 			}
 
 	// Generate a compile unit snippet.
 	protected virtual void GenerateSnippetCompileUnit
 				(CodeSnippetCompileUnit e)
 			{
-				// TODO
+				LinePragmaStart(e.LinePragma);
+				Output.WriteLine(e.Value);
+				LinePragmaEnd(e.LinePragma);
 			}
 
 	// Generate a code statement snippet.
 	protected virtual void GenerateSnippetStatement(CodeSnippetStatement e)
 			{
-				// TODO
+				Output.WriteLine(e.Value);
 			}
 
 	// Generate code for a statement.
 	protected void GenerateStatement(CodeStatement e)
 			{
-				// TODO
+				LinePragmaStart(e.LinePragma);
+				if(e is CodeAttachEventStatement)
+				{
+					GenerateAttachEventStatement
+						((CodeAttachEventStatement)e);
+				}
+				else if(e is CodeCommentStatement)
+				{
+					GenerateCommentStatement
+						((CodeCommentStatement)e);
+				}
+				else if(e is CodeConditionStatement)
+				{
+					GenerateConditionStatement
+						((CodeConditionStatement)e);
+				}
+				else if(e is CodeRemoveEventStatement)
+				{
+					GenerateRemoveEventStatement
+						((CodeRemoveEventStatement)e);
+				}
+				else if(e is CodeVariableDeclarationStatement)
+				{
+					GenerateVariableDeclarationStatement
+						((CodeVariableDeclarationStatement)e);
+				}
+				else if(e is CodeAssignStatement)
+				{
+					GenerateAssignStatement
+						((CodeAssignStatement)e);
+				}
+				else if(e is CodeExpressionStatement)
+				{
+					GenerateExpressionStatement
+						((CodeExpressionStatement)e);
+				}
+				else if(e is CodeGotoStatement)
+				{
+					GenerateGotoStatement
+						((CodeGotoStatement)e);
+				}
+				else if(e is CodeIterationStatement)
+				{
+					GenerateIterationStatement
+						((CodeIterationStatement)e);
+				}
+				else if(e is CodeLabeledStatement)
+				{
+					GenerateLabeledStatement
+						((CodeLabeledStatement)e);
+				}
+				else if(e is CodeMethodReturnStatement)
+				{
+					GenerateMethodReturnStatement
+						((CodeMethodReturnStatement)e);
+				}
+				else if(e is CodeSnippetStatement)
+				{
+					GenerateSnippetStatement
+						((CodeSnippetStatement)e);
+				}
+				else if(e is CodeThrowExceptionStatement)
+				{
+					GenerateThrowExceptionStatement
+						((CodeThrowExceptionStatement)e);
+				}
+				else if(e is CodeTryCatchFinallyStatement)
+				{
+					GenerateTryCatchFinallyStatement
+						((CodeTryCatchFinallyStatement)e);
+				}
+				else
+				{
+					throw new ArgumentException
+						(S._("Arg_InvalidCodeDom"), "e");
+				}
+				LinePragmaEnd(e.LinePragma);
 			}
 
 	// Generate code for a statement collection.
@@ -395,7 +764,8 @@ public abstract class CodeGenerator : ICodeGenerator
 			{
 				foreach(CodeStatement stmt in e)
 				{
-					GenerateStatement(stmt);
+					((ICodeGenerator)this).GenerateCodeFromStatement
+							(stmt, writer.InnerWriter, Options);
 				}
 			}
 
@@ -403,20 +773,168 @@ public abstract class CodeGenerator : ICodeGenerator
 	protected virtual void GenerateTypeOfExpression
 				(CodeTypeOfExpression e)
 			{
-				// TODO
+				Output.Write("typeof(");
+				OutputType(e.Type);
+				Output.Write(")");
 			}
 
 	// Generate a type reference expression.
 	protected virtual void GenerateTypeReferenceExpression
 				(CodeTypeReferenceExpression e)
 			{
-				// TODO
+				OutputType(e.Type);
+			}
+
+	// Generate various categories of type member.
+	private void TypeMemberStart(CodeTypeMember member)
+			{
+				currentMember = member;
+				if(options.BlankLinesBetweenMembers)
+				{
+					Output.WriteLine();
+				}
+				GenerateCommentStatements(member.Comments);
+				LinePragmaStart(member.LinePragma);
+			}
+	private void TypeMemberEnd(CodeTypeMember member)
+			{
+				LinePragmaEnd(member.LinePragma);
+				currentMember = null;
+			}
+	private void TypeFields(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeMemberField)
+					{
+						TypeMemberStart(member);
+						GenerateField((CodeMemberField)member);
+						TypeMemberEnd(member);
+					}
+				}
+			}
+	private void TypeSnippets(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeSnippetTypeMember)
+					{
+						TypeMemberStart(member);
+						GenerateSnippetMember((CodeSnippetTypeMember)member);
+						TypeMemberEnd(member);
+					}
+				}
+			}
+	private void TypeStaticConstructors(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeTypeConstructor)
+					{
+						TypeMemberStart(member);
+						GenerateTypeConstructor((CodeTypeConstructor)member);
+						TypeMemberEnd(member);
+					}
+				}
+			}
+	private void TypeConstructors(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeConstructor)
+					{
+						TypeMemberStart(member);
+						GenerateConstructor((CodeConstructor)member, e);
+						TypeMemberEnd(member);
+					}
+				}
+			}
+	private void TypeProperties(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeMemberProperty)
+					{
+						TypeMemberStart(member);
+						GenerateProperty((CodeMemberProperty)member, e);
+						TypeMemberEnd(member);
+					}
+				}
+			}
+	private void TypeEvents(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeMemberEvent)
+					{
+						TypeMemberStart(member);
+						GenerateEvent((CodeMemberEvent)member, e);
+						TypeMemberEnd(member);
+					}
+				}
+			}
+	private void TypeMethods(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeMemberMethod &&
+					   !(member is CodeConstructor) &&
+					   !(member is CodeTypeConstructor))
+					{
+						TypeMemberStart(member);
+						GenerateMethod((CodeMemberMethod)member, e);
+						TypeMemberEnd(member);
+					}
+				}
+			}
+	private void TypeNestedTypes(CodeTypeDeclaration e)
+			{
+				foreach(CodeTypeMember member in e.Members)
+				{
+					if(member is CodeTypeDeclaration)
+					{
+						if(options.BlankLinesBetweenMembers)
+						{
+							Output.WriteLine();
+						}
+						((ICodeGenerator)this).GenerateCodeFromType
+								((CodeTypeDeclaration)member,
+								 writer.InnerWriter, Options);
+					}
+				}
+				currentType = e;
+			}
+
+	// Generate a particular type declaration.
+	protected void GenerateType(CodeTypeDeclaration e)
+			{
+				currentType = e;
+				GenerateCommentStatements(e.Comments);
+				GenerateTypeStart(e);
+				TypeFields(e);
+				TypeSnippets(e);
+				TypeStaticConstructors(e);
+				TypeConstructors(e);
+				TypeProperties(e);
+				TypeEvents(e);
+				TypeMethods(e);
+				TypeNestedTypes(e);
+				GenerateTypeEnd(e);
+				currentType = null;
 			}
 
 	// Generate the types in a namespace.
 	protected void GenerateTypes(CodeNamespace e)
 			{
-				// TODO
+				foreach(CodeTypeDeclaration type in e.Types)
+				{
+					if(options.BlankLinesBetweenMembers)
+					{
+						Output.WriteLine();
+					}
+					((ICodeGenerator)this).GenerateCodeFromType
+							(type, writer.InnerWriter, Options);
+				}
 			}
 
 	// Determine if "value" is a valid identifier.
@@ -426,25 +944,80 @@ public abstract class CodeGenerator : ICodeGenerator
 	protected virtual void OutputAttributeArgument
 				(CodeAttributeArgument arg)
 			{
-				// TODO
+				if(arg.Name != null)
+				{
+					OutputIdentifier(arg.Name);
+					Output.Write("=");
+				}
+				((ICodeGenerator)this).GenerateCodeFromExpression
+						(arg.Value, writer.InnerWriter, Options);
 			}
 
 	// Output attribute declarations.
 	protected virtual void OutputAttributeDeclarations
 				(CodeAttributeDeclarationCollection attributes)
 			{
+				if(attributes.Count == 0)
+				{
+					return;
+				}
+				bool first = true;
+				bool first2;
+				CodeAttributeArgumentCollection args;
 				GenerateAttributeDeclarationsStart(attributes);
 				foreach(CodeAttributeDeclaration attr in attributes)
 				{
-					// TODO
+					if(!first)
+					{
+						ContinueOnNewLine(", ");
+					}
+					else
+					{
+						first = false;
+					}
+					Output.Write(attr.Name);
+					args = attr.Arguments;
+					if(args.Count != 0)
+					{
+						Output.Write("(");
+						first2 = true;
+						foreach(CodeAttributeArgument arg in args)
+						{
+							if(!first2)
+							{
+								Output.Write(", ");
+							}
+							else
+							{
+								first2 = false;
+							}
+							OutputAttributeArgument(arg);
+						}
+						Output.Write(")");
+					}
 				}
 				GenerateAttributeDeclarationsEnd(attributes);
+			}
+
+	// Generate a direction expression.
+	protected virtual void GenerateDirectionExpression
+				(CodeDirectionExpression e)
+			{
+				OutputDirection(e.Direction);
+				GenerateExpression(e.Expression);
 			}
 
 	// Output a field direction value.
 	protected virtual void OutputDirection(FieldDirection dir)
 			{
-				// TODO
+				if(dir == FieldDirection.Out)
+				{
+					Output.Write("out ");
+				}
+				else if(dir == FieldDirection.Ref)
+				{
+					Output.Write("ref ");
+				}
 			}
 
 	// Output an expression list.
@@ -457,47 +1030,191 @@ public abstract class CodeGenerator : ICodeGenerator
 				(CodeExpressionCollection expressions,
 				 bool newlineBetweenItems)
 			{
-				// TODO
+				writer.Indent += 1;
+				bool first = true;
+				foreach(CodeExpression expr in expressions)
+				{
+					if(!first)
+					{
+						if(newlineBetweenItems)
+						{
+							ContinueOnNewLine(",");
+						}
+						else
+						{
+							Output.Write(", ");
+						}
+					}
+					else
+					{
+						first = false;
+					}
+					((ICodeGenerator)this).GenerateCodeFromExpression
+						(expr, writer.InnerWriter, Options);
+				}
+				writer.Indent -= 1;
 			}
 
 	// Output a field scope modifier.
 	protected virtual void OutputFieldScopeModifier
 				(MemberAttributes attributes)
 			{
-				// TODO
+				if((attributes & MemberAttributes.VTableMask) ==
+						MemberAttributes.New)
+				{
+					Output.Write("new ");
+				}
+				if((attributes & MemberAttributes.ScopeMask) ==
+						MemberAttributes.Static)
+				{
+					Output.Write("static ");
+				}
+				else if((attributes & MemberAttributes.ScopeMask) ==
+							MemberAttributes.Const)
+				{
+					Output.Write("const ");
+				}
 			}
 
 	// Output an identifier.
 	protected virtual void OutputIdentifier(String ident)
 			{
-				// TODO
+				Output.Write(ident);
 			}
 
 	// Output a member access modifier.
 	protected virtual void OutputMemberAccessModifier
 				(MemberAttributes attributes)
 			{
-				// TODO
+				String access;
+				switch(attributes & MemberAttributes.AccessMask)
+				{
+					case MemberAttributes.Assembly:
+						access = "internal "; break;
+					case MemberAttributes.FamilyAndAssembly:
+						access = "/*FamANDAssem*/ internal "; break;
+					case MemberAttributes.Family:
+						access = "protected "; break;
+					case MemberAttributes.FamilyOrAssembly:
+						access = "protected internal "; break;
+					case MemberAttributes.Private:
+						access = "private "; break;
+					case MemberAttributes.Public:
+						access = "public "; break;
+					default: return;
+				}
+				Output.Write(access);
 			}
 
 	// Output a member scope modifier.
 	protected virtual void OutputMemberScopeModifier
 				(MemberAttributes attributes)
 			{
-				// TODO
+				if((attributes & MemberAttributes.VTableMask) ==
+						MemberAttributes.New)
+				{
+					Output.Write("new ");
+				}
+				switch(attributes & MemberAttributes.ScopeMask)
+				{
+					case MemberAttributes.Abstract:
+						Output.Write("abstract "); break;;
+					case MemberAttributes.Final:
+						break;;
+					case MemberAttributes.Static:
+						Output.Write("static "); break;;
+					case MemberAttributes.Override:
+						Output.Write("override "); break;;
+
+					default:
+					{
+						if((attributes & MemberAttributes.AccessMask) ==
+								MemberAttributes.Public ||
+						   (attributes & MemberAttributes.AccessMask) ==
+								MemberAttributes.Family)
+						{
+							Output.Write("virtual ");
+						}
+					}
+					break;
+				}
 			}
 
 	// Output a binary operator.
 	protected virtual void OutputOperator(CodeBinaryOperatorType op)
 			{
-				// TODO
+				String oper;
+				switch(op)
+				{
+					case CodeBinaryOperatorType.Add:
+						oper = "+"; break;
+					case CodeBinaryOperatorType.Subtract:
+						oper = "-"; break;
+					case CodeBinaryOperatorType.Multiply:
+						oper = "*"; break;
+					case CodeBinaryOperatorType.Divide:
+						oper = "/"; break;
+					case CodeBinaryOperatorType.Modulus:
+						oper = "%"; break;
+					case CodeBinaryOperatorType.Assign:
+						oper = "="; break;
+					case CodeBinaryOperatorType.IdentityInequality:
+						oper = "!="; break;
+					case CodeBinaryOperatorType.IdentityEquality:
+						oper = "=="; break;
+					case CodeBinaryOperatorType.ValueEquality:
+						oper = "=="; break;
+					case CodeBinaryOperatorType.BitwiseOr:
+						oper = "|"; break;
+					case CodeBinaryOperatorType.BitwiseAnd:
+						oper = "&"; break;
+					case CodeBinaryOperatorType.BooleanOr:
+						oper = "&&"; break;
+					case CodeBinaryOperatorType.BooleanAnd:
+						oper = "||"; break;
+					case CodeBinaryOperatorType.LessThan:
+						oper = "<"; break;
+					case CodeBinaryOperatorType.LessThanOrEqual:
+						oper = "<="; break;
+					case CodeBinaryOperatorType.GreaterThan:
+						oper = ">"; break;
+					case CodeBinaryOperatorType.GreaterThanOrEqual:
+						oper = ">="; break;
+					default: return;
+				}
+				Output.Write(oper);
 			}
 
 	// Output a list of parameters.
 	protected virtual void OutputParameters
 				(CodeParameterDeclarationExpressionCollection parameters)
 			{
-				// TODO
+				bool splitLines = (parameters.Count >= 16);
+				bool first = true;
+				if(splitLines)
+				{
+					writer.Indent += 1;
+				}
+				foreach(CodeParameterDeclarationExpression expr in parameters)
+				{
+					if(!first)
+					{
+						Output.Write(", ");
+						if(splitLines)
+						{
+							ContinueOnNewLine("");
+						}
+					}
+					else
+					{
+						first = false;
+					}
+					GenerateParameterDeclarationExpression(expr);
+				}
+				if(splitLines)
+				{
+					writer.Indent -= 1;
+				}
 			}
 
 	// Output a type.
@@ -507,14 +1224,51 @@ public abstract class CodeGenerator : ICodeGenerator
 	protected virtual void OutputTypeAttributes
 				(TypeAttributes attributes, bool isStruct, bool isEnum)
 			{
-				// TODO
+				switch(attributes & TypeAttributes.VisibilityMask)
+				{
+					case TypeAttributes.NestedPrivate:
+						Output.Write("private "); break;
+					case TypeAttributes.Public:
+					case TypeAttributes.NestedPublic:
+						Output.Write("public "); break;
+				}
+				if(isStruct)
+				{
+					Output.Write("struct ");
+				}
+				else if(isEnum)
+				{
+					Output.Write("enum ");
+				}
+				else
+				{
+					if((attributes & TypeAttributes.ClassSemanticsMask) ==
+							TypeAttributes.Interface)
+					{
+						Output.Write("interface ");
+					}
+					else
+					{
+						if((attributes & TypeAttributes.Sealed) != 0)
+						{
+							Output.Write("sealed ");
+						}
+						if((attributes & TypeAttributes.Abstract) != 0)
+						{
+							Output.Write("abstract ");
+						}
+						Output.Write("class ");
+					}
+				}
 			}
 
 	// Output a type name pair.
 	protected virtual void OutputTypeNamePair
 				(CodeTypeReference typeRef, String name)
 			{
-				// TODO
+				OutputType(typeRef);
+				Output.Write(" ");
+				OutputIdentifier(name);
 			}
 
 	// Quote a snippet string.
@@ -545,12 +1299,64 @@ public abstract class CodeGenerator : ICodeGenerator
 				return CreateValidIdentifier(value);
 			}
 
+	// Set up this object for code generation.
+	private bool SetupForCodeGeneration(TextWriter w, CodeGeneratorOptions o)
+			{
+				if(writer != null)
+				{
+					if(writer.InnerWriter != w)
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_CGWriterExists"));
+					}
+					return false;
+				}
+				else
+				{
+					if(o != null)
+					{
+						options = o;
+					}
+					else
+					{
+						options = new CodeGeneratorOptions();
+					}
+					writer = new IndentedTextWriter(w, options.IndentString);
+					return true;
+				}
+			}
+
+	// Finalize code generation.
+	private void FinalizeCodeGeneration(bool initialized)
+			{
+				if(initialized)
+				{
+					writer = null;
+					options = null;
+				}
+			}
+
 	// Generate code from a CodeDom compile unit.
 	void ICodeGenerator.GenerateCodeFromCompileUnit(CodeCompileUnit e,
 									                TextWriter w,
 									                CodeGeneratorOptions o)
 			{
-				// TODO
+				bool initialized = SetupForCodeGeneration(w, o);
+				try
+				{
+					if(e is CodeSnippetCompileUnit)
+					{
+						GenerateSnippetCompileUnit((CodeSnippetCompileUnit)e);
+					}
+					else
+					{
+						GenerateCompileUnit(e);
+					}
+				}
+				finally
+				{
+					FinalizeCodeGeneration(initialized);
+				}
 			}
 
 	// Generate code from a CodeDom expression.
@@ -558,7 +1364,15 @@ public abstract class CodeGenerator : ICodeGenerator
 												   TextWriter w,
 												   CodeGeneratorOptions o)
 			{
-				// TODO
+				bool initialized = SetupForCodeGeneration(w, o);
+				try
+				{
+					GenerateExpression(e);
+				}
+				finally
+				{
+					FinalizeCodeGeneration(initialized);
+				}
 			}
 
 	// Generate code from a CodeDom namespace.
@@ -566,7 +1380,15 @@ public abstract class CodeGenerator : ICodeGenerator
 								   				  TextWriter w,
 								   				  CodeGeneratorOptions o)
 			{
-				// TODO
+				bool initialized = SetupForCodeGeneration(w, o);
+				try
+				{
+					GenerateNamespace(e);
+				}
+				finally
+				{
+					FinalizeCodeGeneration(initialized);
+				}
 			}
 
 	// Generate code from a CodeDom statement.
@@ -574,7 +1396,15 @@ public abstract class CodeGenerator : ICodeGenerator
 								   				  TextWriter w,
 								   				  CodeGeneratorOptions o)
 			{
-				// TODO
+				bool initialized = SetupForCodeGeneration(w, o);
+				try
+				{
+					GenerateStatement(e);
+				}
+				finally
+				{
+					FinalizeCodeGeneration(initialized);
+				}
 			}
 
 	// Generate code from a CodeDom type declaration.
@@ -582,7 +1412,15 @@ public abstract class CodeGenerator : ICodeGenerator
 							  				 TextWriter w,
 							  				 CodeGeneratorOptions o)
 			{
-				// TODO
+				bool initialized = SetupForCodeGeneration(w, o);
+				try
+				{
+					GenerateType(e);
+				}
+				finally
+				{
+					FinalizeCodeGeneration(initialized);
+				}
 			}
 
 	// Get the type indicated by a CodeDom type reference.

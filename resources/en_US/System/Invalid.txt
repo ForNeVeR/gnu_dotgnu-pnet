@@ -18,3 +18,4 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 Invalid_AsyncAndBlocking=An asyncronous call is pending and a blocking method has been called.
+Invalid_CGWriterExists=This code generator already has a different text writer

@@ -27,6 +27,7 @@ namespace System.CodeDom.Compiler
 using System.IO;
 using System.Reflection;
 using System.Globalization;
+using System.Text;
 
 public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 {
@@ -37,8 +38,23 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 	// Join an array of strings with a separator.
 	protected static String JoinStringArray(String[] sa, String separator)
 			{
-				// TODO
-				return null;
+				if(sa == null || sa.Length == 0)
+				{
+					return String.Empty;
+				}
+				StringBuilder sb = new StringBuilder();
+				int posn;
+				for(posn = 0; posn < sa.Length; ++posn)
+				{
+					if(posn > 0)
+					{
+						sb.Append(separator);
+					}
+					sb.Append('"');
+					sb.Append(sa[posn]);
+					sb.Append('"');
+				}
+				return sb.ToString();
 			}
 
 	// Get the name of the compiler.
@@ -55,24 +71,57 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 	protected virtual CompilerResults FromDom
 				(CompilerParameters options, CodeCompileUnit e)
 			{
-				// TODO
-				return null;
+				CodeCompileUnit[] list = new CodeCompileUnit [1];
+				list[0] = e;
+				return FromDomBatch(options, list);
 			}
 
 	// Compile an array of CodeDom compile units.
 	protected virtual CompilerResults FromDomBatch
 				(CompilerParameters options, CodeCompileUnit[] ea)
 			{
-				// TODO
-				return null;
+				// Write all of the CodeDom units to temporary files.
+				String[] tempFiles = new String [ea.Length];
+				int src;
+				Stream stream;
+				StreamWriter writer;
+				for(src = 0; src < ea.Length; ++src)
+				{
+					tempFiles[src] = options.TempFiles.AddExtension
+							(src + FileExtension);
+					stream = new FileStream(tempFiles[src], FileMode.Create,
+											FileAccess.Write, FileShare.Read);
+					try
+					{
+						writer = new StreamWriter(stream, Encoding.UTF8);
+						((ICodeGenerator)this).GenerateCodeFromCompileUnit
+								(ea[src], writer, Options);
+						writer.Flush();
+						writer.Close();
+					}
+					finally
+					{
+						stream.Close();
+					}
+				}
+				
+				// Compile the temporary files.
+				return FromFileBatch(options, tempFiles);
 			}
 
 	// Compile a file.
 	protected virtual CompilerResults FromFile
 				(CompilerParameters options, String fileName)
 			{
-				// TODO
-				return null;
+				// Verify that the file can be read, throwing an
+				// exception to the caller if it cannot.
+				(new FileStream(fileName, FileMode.Open, FileAccess.Read))
+						.Close();
+
+				// Pass the filename to "FromFileBatch".
+				String[] list = new String [1];
+				list[0] = fileName;
+				return FromFileBatch(options, list);
 			}
 
 	// Compile an array of files.
@@ -87,24 +136,69 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 	protected virtual CompilerResults FromSource
 				(CompilerParameters options, String source)
 			{
-				// TODO
-				return null;
+				String[] list = new String [1];
+				list[0] = source;
+				return FromSourceBatch(options, list);
 			}
 
 	// Compile an array of source strings.
 	protected virtual CompilerResults FromSourceBatch
 				(CompilerParameters options, String[] sources)
 			{
-				// TODO
-				return null;
+				// Write all of the sources to temporary files.
+				String[] tempFiles = new String [sources.Length];
+				int src;
+				Stream stream;
+				StreamWriter writer;
+				for(src = 0; src < sources.Length; ++src)
+				{
+					tempFiles[src] = options.TempFiles.AddExtension
+							(src + FileExtension);
+					stream = new FileStream(tempFiles[src], FileMode.Create,
+											FileAccess.Write, FileShare.Read);
+					try
+					{
+						writer = new StreamWriter(stream, Encoding.UTF8);
+						writer.Write(sources[src]);
+						writer.Flush();
+						writer.Close();
+					}
+					finally
+					{
+						stream.Close();
+					}
+				}
+				
+				// Compile the temporary files.
+				return FromFileBatch(options, tempFiles);
 			}
 
 	// Get the response file command arguments.
 	protected virtual String GetResponseFileCmdArgs
 				(CompilerParameters options, String cmdArgs)
 			{
-				// TODO
-				return null;
+				// Get a temporary file to use for the response file.
+				String responseFile = options.TempFiles.AddExtension("cmdline");
+
+				// Write the arguments to the response file.
+				Stream stream = new FileStream(responseFile, FileMode.Create,
+											   FileAccess.Write,
+											   FileShare.Read);
+				try
+				{
+					StreamWriter writer = new StreamWriter
+							(stream, Encoding.UTF8);
+					writer.Write(cmdArgs);
+					writer.Flush();
+					writer.Close();
+				}
+				finally
+				{
+					stream.Close();
+				}
+
+				// Build the new command-line containing the response file.
+				return "@\"" + responseFile + "\"";
 			}
 
 	// Process an output line from the compiler.
@@ -115,48 +209,84 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 	CompilerResults ICodeCompiler.CompileAssemblyFromDom
 			(CompilerParameters options, CodeCompileUnit compilationUnit)
 			{
-				// TODO
-				return null;
+				try
+				{
+					return FromDom(options, compilationUnit);
+				}
+				finally
+				{
+					options.TempFiles.Delete();
+				}
 			}
 
 	// Compile an assembly from an array of CodeDom compile units.
 	CompilerResults ICodeCompiler.CompileAssemblyFromDomBatch
 			(CompilerParameters options, CodeCompileUnit[] compilationUnits)
 			{
-				// TODO
-				return null;
+				try
+				{
+					return FromDomBatch(options, compilationUnits);
+				}
+				finally
+				{
+					options.TempFiles.Delete();
+				}
 			}
 
 	// Compile an assembly from the contents of a source file.
 	CompilerResults ICodeCompiler.CompileAssemblyFromFile
 			(CompilerParameters options, String fileName)
 			{
-				// TODO
-				return null;
+				try
+				{
+					return FromFile(options, fileName);
+				}
+				finally
+				{
+					options.TempFiles.Delete();
+				}
 			}
 
 	// Compile an assembly from the contents of an array of source files.
 	CompilerResults ICodeCompiler.CompileAssemblyFromFileBatch
 			(CompilerParameters options, String[] fileNames)
 			{
-				// TODO
-				return null;
+				try
+				{
+					return FromFileBatch(options, fileNames);
+				}
+				finally
+				{
+					options.TempFiles.Delete();
+				}
 			}
 
 	// Compile an assembly from the contents of a source string.
 	CompilerResults ICodeCompiler.CompileAssemblyFromSource
 			(CompilerParameters options, String source)
 			{
-				// TODO
-				return null;
+				try
+				{
+					return FromSource(options, source);
+				}
+				finally
+				{
+					options.TempFiles.Delete();
+				}
 			}
 
 	// Compile an assembly from the contents of an array of source strings.
 	CompilerResults ICodeCompiler.CompileAssemblyFromSourceBatch
 			(CompilerParameters options, String[] sources)
 			{
-				// TODO
-				return null;
+				try
+				{
+					return FromSourceBatch(options, sources);
+				}
+				finally
+				{
+					options.TempFiles.Delete();
+				}
 			}
 
 }; // class CodeCompiler

@@ -1,4 +1,18 @@
 
+2002-11-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/CodeDom/RuleOutput.cs,
+	System/CodeDom/rules.txt,
+	System/CodeDom/Compiler/CSharpCodeCompiler.cs,
+	System/CodeDom/Compiler/CSharpCodeProvider.cs,
+	System/CodeDom/Compiler/CodeCompiler.cs,
+	System/CodeDom/Compiler/CodeDomProvider.cs,
+	System/CodeDom/Compiler/CodeGenerator.cs,
+	System/CodeDom/Compiler/CompilerError.cs,
+	resources/en_US/System/Arg.txt,
+	resources/en_US/System/Invalid.txt: implement more of the C# code
+	generation routines in "System.CodeDom.Compiler".
+
 2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/CodeDom/CodeArrayCreateExpression.cs,

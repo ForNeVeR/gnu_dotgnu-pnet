@@ -274,7 +274,7 @@ public class Frame : MarshalByRefObject, IDisposable
 							return palette[data[ptr] & 0x0F];
 					case (PixelFormat.Format1bppIndexed):
 						ptr += x/8;
-						if ((data[ptr] &(1<<7 - (x & 0x03)))== 0)
+						if ((data[ptr] &(1<<7 - (x & 0x07)))== 0)
 							return palette[0];
 						else
 							return palette[1];
@@ -286,8 +286,8 @@ public class Frame : MarshalByRefObject, IDisposable
 	// Get the mask value at a specific location.
 	public int GetMask(int x, int y)
 			{
-				int ptr = y * stride + x/8;
-				if ((data[ptr] &(1<<7 - (x & 0x03)))== 0)
+				int ptr = y * maskStride + x/8;
+				if ((mask[ptr] &(1<<7 - (x & 0x07)))== 0)
 					return 0;
 				else
 					return 1;
@@ -377,9 +377,9 @@ public class Frame : MarshalByRefObject, IDisposable
 					case (PixelFormat.Format1bppIndexed):
 						ptr += x/8;
 						if (Utils.BestPaletteColor(palette, color) == 0)
-							data[ptr] &= (byte)(~(1<<7 - (x & 0x03)));
+							data[ptr] &= (byte)(~(1<<7 - (x & 0x07)));
 						else
-							data[ptr] |= (byte)(1<<7 - (x & 0x03));
+							data[ptr] |= (byte)(1<<7 - (x & 0x07));
 						break;
 				}
 			}
@@ -387,11 +387,11 @@ public class Frame : MarshalByRefObject, IDisposable
 	// Set the mask value at a specific location.
 	public void SetMask(int x, int y, int value)
 			{
-				int ptr = y * stride + x/8;
+				int ptr = y * maskStride + x/8;
 				if (value == 0)
-					data[ptr] &= (byte)(~(1<<7 - (x & 0x03)));
+					mask[ptr] &= (byte)(~(1<<7 - (x & 0x07)));
 				else
-					data[ptr] |= (byte)(1<<7 - (x & 0x03));
+					mask[ptr] |= (byte)(1<<7 - (x & 0x07));
 			}
 
 	// Set the contents of a scan line (the buffer must be
@@ -515,23 +515,33 @@ public class Frame : MarshalByRefObject, IDisposable
 				// if there is space and optionally optimize the palette.
 				// For now we just overwrite the old palette.
 
-				//TODO:
-				// The mask is not taken into account when copying. We need to
-				// look at adding alpha support.
-
 				if (frame.palette != null)
 					palette = (int[])frame.palette.Clone();
 				
 				int bits = Utils.FormatToBitCount(pixelFormat);
-				byte[] destData = Data;
-				byte[] sourceData = frame.Data;
 				int right = x + frame.width;
 				if (width < right)
 					right = width;
 				int bottom = y + frame.height;
 				if (height < bottom)
 					bottom = height;
+				Copy(bits, x, y, right, bottom, frame.Data, frame.Stride, Data, Stride);
 
+				//TODO:
+				// The mask is not taken into account when copying. We need to
+				// look at adding alpha support.
+				// For now, just copy over the mask.
+				if (frame.Mask != null)
+				{
+					AddMask();
+					Copy(1, x, y, right, bottom, frame.Mask, frame.MaskStride, Mask, MaskStride);
+				}
+
+				
+			}
+
+			private void Copy(int bits, int x, int y, int right, int bottom, byte[] sourceData, int sourceStride, byte[] destData, int destStride)
+			{
 				int pSourceRow = 0;
 				int pDestinationRow = y * stride;
 				for (; y < bottom ; y++)
@@ -546,7 +556,7 @@ public class Frame : MarshalByRefObject, IDisposable
 					// Are there any bits left over?
 					if (bits < 8)
 					{
-						int bitsOver = right * (bits & 0x03);
+						int bitsOver = (right*bits) & 0x7;
 						if (bitsOver > 0)
 						{
 							int mask = (1 << (8 - bitsOver)) - 1;
@@ -555,8 +565,8 @@ public class Frame : MarshalByRefObject, IDisposable
 						}
 					}
 					
-					pSourceRow += frame.stride;
-					pDestinationRow += stride;
+					pSourceRow += sourceStride;
+					pDestinationRow += destStride;
 				}
 			}
 

@@ -576,7 +576,7 @@ using System;
 			// Store the last node quantized.
 			private OctreeNode previousNode = null;
 			// Cache the previous color quantized.
-			private int previousColor = 0;
+			private int previousColor = -1;
 			// Mask used when getting the appropriate pixels for a given node.
 			private static int[] mask = new int[8] { 0x80 , 0x40 , 0x20 , 0x10 , 0x08 , 0x04 , 0x02 , 0x01 };
 			public Octree (int maxColorBits)

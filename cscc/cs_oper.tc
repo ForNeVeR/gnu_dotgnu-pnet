@@ -1245,8 +1245,7 @@ ILNode_SemAnalysis(ILNode_GlobalNamespace)
 /*
  * Perform semantic analysis for the comma operator.
  */
-ILNode_SemAnalysis(ILNode_Comma),
-ILNode_SemAnalysis(ILNode_ArgList)
+ILNode_SemAnalysis(ILNode_Comma)
 {
 	CSSemValue value1;
 	CSSemValue value2;

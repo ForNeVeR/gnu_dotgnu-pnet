@@ -29,6 +29,8 @@ char *CSAntProjectName   = 0;
 char *CSAntDefaultTarget = 0;
 
 CSAntTarget *CSAntTargetList = 0;
+char **CSAntProfileDefines = 0;
+int CSAntNumProfileDefines = 0;
 
 /*
  * Find the descriptor for a particular target, or create
@@ -374,6 +376,60 @@ const char *CSAntTaskParam(CSAntTask *task, const char *name)
 
 	/* Perform property substitution on the value */
 	return value;
+}
+
+int CSAntParseProfileFile(ILXMLReader *reader, const char *filename)
+{
+	ILXMLItem item;
+	const char *name;
+	const char *value;
+	char **newDefines;
+
+	/* Read the first item, which should be the top-level "profile" tag */
+	item = ILXMLReadNext(reader);
+	if(!ILXMLIsTag(reader, "profile"))
+	{
+		fprintf(stderr, "%s: could not locate the <profile> element\n",
+				filename);
+		return 0;
+	}
+
+	/* Look for "define" tags within the "profile" tag */
+	if(item == ILXMLItem_StartTag)
+	{
+		item = ILXMLReadNext(reader);
+		while(item != ILXMLItem_EOF && item != ILXMLItem_EndTag)
+		{
+			if(ILXMLIsTag(reader, "define"))
+			{
+				/* Process a "define" tag */
+				name = ILXMLGetParam(reader, "name");
+				value = ILXMLGetParam(reader, "value");
+				if(name && value && !ILStrICmp(value, "true"))
+				{
+					newDefines = (char **)ILRealloc
+						(CSAntProfileDefines,
+						 (CSAntNumProfileDefines + 1) * sizeof(char *));
+					if(!newDefines)
+					{
+						CSAntOutOfMemory();
+					}
+					if((newDefines[CSAntNumProfileDefines] =
+							ILDupString(name)) == 0)
+					{
+						CSAntOutOfMemory();
+					}
+					CSAntProfileDefines = newDefines;
+					++CSAntNumProfileDefines;
+				}
+			}
+			ILXMLSkip(reader);
+			item = ILXMLReadNext(reader);
+		}
+	}
+
+	/* Done */
+	return 1;
 }
 
 #ifdef	__cplusplus

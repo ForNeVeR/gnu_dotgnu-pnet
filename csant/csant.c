@@ -62,6 +62,10 @@ static ILCmdLineOption const options[] = {
 	{"--define", 'D', 1,
 		"-Dname=value     or --define name=value",
 		"Define the property `name' and set it to `value'."},
+	{"-p", 'p', 1, 0, 0},
+	{"--profile", 'p', 1,
+		"--profile name   or -p name",
+		"Specify the definition profile to use."},
 	{"-n", 'n', 0, 0, 0},
 	{"--just-print", 'n', 0,
 		"--just-print     or -n",
@@ -100,6 +104,7 @@ int main(int argc, char *argv[])
 {
 	int state, opt;
 	char *buildFilename = NULL;
+	char *profileFilename = NULL;
 	char *param;
 	char *temp;
 	FILE *infile;
@@ -138,6 +143,12 @@ int main(int argc, char *argv[])
 				{
 					CSAntDefineProperty(param, strlen(param), "", 1);
 				}
+			}
+			break;
+
+			case 'p':
+			{
+				profileFilename = param;
 			}
 			break;
 
@@ -238,7 +249,31 @@ int main(int argc, char *argv[])
 		{
 			errors = 1;
 		}
+		ILXMLDestroy(reader);
 		fclose(infile);
+	}
+
+	/* Process the profile file to get additional build rules */
+	if(errors == 0 && profileFilename != 0)
+	{
+		if((infile = fopen(profileFilename, "r")) == NULL)
+		{
+			perror(argv[1]);
+			errors = 1;
+		}
+		else
+		{
+			if((reader = ILXMLCreate(xmlRead, infile, 0)) == 0)
+			{
+				CSAntOutOfMemory();
+			}
+			if(!CSAntParseProfileFile(reader, profileFilename))
+			{
+				errors = 1;
+			}
+			ILXMLDestroy(reader);
+			fclose(infile);
+		}
 	}
 
 	/* Bail out if there were errors parsing the build file */

@@ -78,6 +78,12 @@ struct _tagCSAntTarget
 extern CSAntTarget *CSAntTargetList;
 
 /*
+ * List of all profile definitions.
+ */
+extern char **CSAntProfileDefines;
+extern int CSAntNumProfileDefines;
+
+/*
  * Task dispatch function.
  */
 typedef int (*CSAntTaskFunc)(CSAntTask *task);
@@ -125,6 +131,12 @@ void CSAntAddBuildTarget(const char *target);
  * Returns zero if a parse error was detected.
  */
 int CSAntParseFile(ILXMLReader *reader, const char *filename);
+
+/*
+ * Parse the contents of a profile definition file.
+ * Returns zero if a parse error was detected.
+ */
+int CSAntParseProfileFile(ILXMLReader *reader, const char *filename);
 
 /*
  * Find the descriptor for a particular target.  Returns

@@ -15,6 +15,10 @@
 	profiles/tiny: profile support for disabling the "runtime
 	infrastructure" parts of the system library.
 
+	* csant/csant.c, csant/csant_cscc.c, csant/csant_defs.h,
+	csant/csant_parse.c: add the "-p" command-line option to csant,
+	to support definition profiles.
+
 2002-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_conv.c, engine/lib_string.c, include/il_engine.h:
@@ -25,7 +29,8 @@
 
 	* csdoc/Makefile.am, csdoc/csdoc2hier.1, doc/pnettools.texi,
 	csdoc/csdoc2hier.c: add the "csdoc2hier" program to the system,
-	which dumps a tree hierarchy of the classes in an XML documentation file.
+	which dumps a tree hierarchy of the classes in an XML
+	documentation file.
 
 	* support/ansi.c: bug fixes to Latin1 ANSI routines.
 

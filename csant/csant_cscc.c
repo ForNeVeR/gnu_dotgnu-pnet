@@ -294,6 +294,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	const char *value2;
 	char *copyValue;
 	CSAntTask *node;
+	int index;
 
 	/* Initialize the arguments */
 	args->output = (char *)CSAntTaskParam(task, "output");
@@ -414,6 +415,14 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 			}
 		}
 		node = node->next;
+	}
+
+	/* Add definitions from the profile */
+	for(index = 0; index < CSAntNumProfileDefines; ++index)
+	{
+		AddUnique(&(args->defines), &(args->numDefines),
+				  CSAntProfileDefines[index],
+				  strlen(CSAntProfileDefines[index]));
 	}
 
 	/* Define "DEBUG" and "TRACE" if debugging is enabled */

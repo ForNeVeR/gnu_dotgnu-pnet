@@ -359,8 +359,9 @@ public class TextBox : TextBoxBase
 		set
 		{
 			// Change all text endings of CR or LF into CRLF
-			System.Text.StringBuilder sb = new System.Text.StringBuilder(value.Length);
-			if (value.Length > 0)
+			System.Text.StringBuilder sb = new System.Text.StringBuilder
+				(value != null ? value.Length : 0);
+			if (value != null && value.Length > 0)
 			{
 				char cPrevious = (char)0;
 				for (int i = 0; i < value.Length; i++)

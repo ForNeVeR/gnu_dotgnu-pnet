@@ -7,6 +7,9 @@
 	* engine/cvmc_var.c, engine/layout.c: handle "typedref"
 	values correctly.
 
+	* engine/verify_call.c (MatchSignature): pass the correct
+	index to "ILCoderPackVarArgs" for the first vararg parameter.
+
 2002-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c: "-fsave-asm" saves the assembly output even if

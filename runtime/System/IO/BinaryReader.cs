@@ -473,11 +473,13 @@ public class BinaryReader : IDisposable
 			{
 				int value = 0;
 				int byteval;
+				int shift = 0;
 				while(((byteval = ReadByte()) & 0x80) != 0)
 				{
-					value = ((value << 7) | (byteval & 0x7F));
+					value |= ((byteval & 0x7F) << shift);
+					shift += 7;
 				}
-				return ((value << 7) | byteval);
+				return (value | (byteval << shift));
 			}
 
 }; // class BinaryReader

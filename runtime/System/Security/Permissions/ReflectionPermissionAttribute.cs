@@ -122,7 +122,15 @@ public sealed class ReflectionPermissionAttribute : CodeAccessSecurityAttribute
 	// Create a permission object that corresponds to this attribute.
 	public override IPermission CreatePermission()
 			{
-				return new ReflectionPermission(flags);
+				if(Unrestricted)
+				{
+					return new ReflectionPermission
+						(PermissionState.Unrestricted);
+				}
+				else
+				{
+					return new ReflectionPermission(flags);
+				}
 			}
 
 }; // class ReflectionPermissionAttribute

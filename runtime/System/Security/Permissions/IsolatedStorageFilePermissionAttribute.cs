@@ -1,6 +1,6 @@
 /*
- * EnvironmentPermissionAttribute.cs - Implementation of the
- *			"System.Security.Permissions.EnvironmentPermissionAttribute" class.
+ * IsolatedStorageFilePermissionAttribute.cs - Implementation of the
+ *  "System.Security.Permissions.IsolatedStorageFilePermissionAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Security;
 
@@ -31,54 +33,14 @@ using System.Security;
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-public sealed class EnvironmentPermissionAttribute
-		: CodeAccessSecurityAttribute
+public sealed class IsolatedStorageFilePermissionAttribute
+	: IsolatedStoragePermissionAttribute
 {
-	// Internal state.
-	private String read;
-	private String write;
-
 	// Constructors.
-	public EnvironmentPermissionAttribute(SecurityAction action)
+	public IsolatedStorageFilePermissionAttribute(SecurityAction action)
 			: base(action)
 			{
 				// Nothing to do here.
-			}
-
-	// Get or set the read permission value.
-	public String Read
-			{
-				get
-				{
-					return read;
-				}
-				set
-				{
-					read = value;
-				}
-			}
-
-	// Get or set the write permission value.
-	public String Write
-			{
-				get
-				{
-					return write;
-				}
-				set
-				{
-					write = value;
-				}
-			}
-
-	// Set both the read and write permission values.
-	public String All
-			{
-				set
-				{
-					read = value;
-					write = value;
-				}
 			}
 
 	// Create a permission object that corresponds to this attribute.
@@ -86,18 +48,17 @@ public sealed class EnvironmentPermissionAttribute
 			{
 				if(Unrestricted)
 				{
-					return new EnvironmentPermission
+					return new IsolatedStorageFilePermission
 						(PermissionState.Unrestricted);
 				}
 				else
 				{
-					return new EnvironmentPermission
-						(PermissionState.None,
-						 EnvironmentPermission.SplitPath(read),
-						 EnvironmentPermission.SplitPath(write));
+					return new IsolatedStorageFilePermission(this);
 				}
 			}
 
-}; // class EnvironmentPermissionAttribute
+}; // class IsolatedStorageFilePermissionAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

@@ -1,6 +1,6 @@
 /*
- * EnvironmentPermissionAttribute.cs - Implementation of the
- *			"System.Security.Permissions.EnvironmentPermissionAttribute" class.
+ * IsolatedStoragePermissionAttribute.cs - Implementation of the
+ *		"System.Security.Permissions.IsolatedStoragePermissionAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Security;
 
@@ -31,73 +33,48 @@ using System.Security;
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-public sealed class EnvironmentPermissionAttribute
-		: CodeAccessSecurityAttribute
+public abstract class IsolatedStoragePermissionAttribute
+	: CodeAccessSecurityAttribute
 {
 	// Internal state.
-	private String read;
-	private String write;
+	internal long userQuota;
+	internal IsolatedStorageContainment usageAllowed;
 
 	// Constructors.
-	public EnvironmentPermissionAttribute(SecurityAction action)
+	public IsolatedStoragePermissionAttribute(SecurityAction action)
 			: base(action)
 			{
 				// Nothing to do here.
 			}
 
-	// Get or set the read permission value.
-	public String Read
+	// Get or set the user quota value.
+	public long UserQuota
 			{
 				get
 				{
-					return read;
+					return userQuota;
 				}
 				set
 				{
-					read = value;
+					userQuota = value;
 				}
 			}
 
-	// Get or set the write permission value.
-	public String Write
+	// Get or set the allowed containment usage value.
+	public IsolatedStorageContainment UsageAllowed
 			{
 				get
 				{
-					return write;
+					return usageAllowed;
 				}
 				set
 				{
-					write = value;
+					usageAllowed = value;
 				}
 			}
 
-	// Set both the read and write permission values.
-	public String All
-			{
-				set
-				{
-					read = value;
-					write = value;
-				}
-			}
+}; // class IsolatedStoragePermissionAttribute
 
-	// Create a permission object that corresponds to this attribute.
-	public override IPermission CreatePermission()
-			{
-				if(Unrestricted)
-				{
-					return new EnvironmentPermission
-						(PermissionState.Unrestricted);
-				}
-				else
-				{
-					return new EnvironmentPermission
-						(PermissionState.None,
-						 EnvironmentPermission.SplitPath(read),
-						 EnvironmentPermission.SplitPath(write));
-				}
-			}
-
-}; // class EnvironmentPermissionAttribute
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

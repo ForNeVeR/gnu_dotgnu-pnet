@@ -1,6 +1,6 @@
 /*
- * FileIOPermissionAttribute.cs - Implementation of the
- *			"System.Security.Permissions.FileIOPermissionAttribute" class.
+ * FileDialogPermissionAttribute.cs - Implementation of the
+ *			"System.Security.Permissions.FileDialogPermissionAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Security;
 
@@ -31,82 +33,55 @@ using System.Security;
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-public sealed class FileIOPermissionAttribute : CodeAccessSecurityAttribute
+public sealed class FileDialogPermissionAttribute : CodeAccessSecurityAttribute
 {
 	// Internal state.
-	private String read;
-	private String write;
-	private String append;
-	private String pathDiscovery;
+	private FileDialogPermissionAccess flags;
 
 	// Constructors.
-	public FileIOPermissionAttribute(SecurityAction action)
+	public FileDialogPermissionAttribute(SecurityAction action)
 			: base(action)
 			{
 				// Nothing to do here.
 			}
 
-	// Get or set the read permission value.
-	public String Read
+	// Get or set specific flags.
+	public bool Open
 			{
 				get
 				{
-					return read;
+					return ((flags & FileDialogPermissionAccess.Open)
+								!= 0);
 				}
 				set
 				{
-					read = value;
+					if(value)
+					{
+						flags |= FileDialogPermissionAccess.Open;
+					}
+					else
+					{
+						flags &= ~FileDialogPermissionAccess.Open;
+					}
 				}
 			}
-
-	// Get or set the write permission value.
-	public String Write
+	public bool Save
 			{
 				get
 				{
-					return write;
+					return ((flags & FileDialogPermissionAccess.Save)
+								!= 0);
 				}
 				set
 				{
-					write = value;
-				}
-			}
-
-	// Get or set the append permission value.
-	public String Append
-			{
-				get
-				{
-					return append;
-				}
-				set
-				{
-					append = value;
-				}
-			}
-
-	// Get or set the path discovery permission value.
-	public String PathDiscovery
-			{
-				get
-				{
-					return pathDiscovery;
-				}
-				set
-				{
-					pathDiscovery = value;
-				}
-			}
-
-	// Set both the read and write permission values.
-	public String All
-			{
-				set
-				{
-					read = value;
-					write = value;
-					append = value;
-					pathDiscovery = value;
+					if(value)
+					{
+						flags |= FileDialogPermissionAccess.Save;
+					}
+					else
+					{
+						flags &= ~FileDialogPermissionAccess.Save;
+					}
 				}
 			}
 
@@ -115,22 +90,17 @@ public sealed class FileIOPermissionAttribute : CodeAccessSecurityAttribute
 			{
 				if(Unrestricted)
 				{
-					return new FileIOPermission
+					return new FileDialogPermission
 						(PermissionState.Unrestricted);
 				}
 				else
 				{
-					return new FileIOPermission
-						(PermissionState.None,
-					 	EnvironmentPermission.SplitPath(read),
-					 	EnvironmentPermission.SplitPath(write),
-					 	EnvironmentPermission.SplitPath(append),
-					 	EnvironmentPermission.SplitPath(pathDiscovery),
-					 	FileIOPermissionAccess.NoAccess,
-					 	FileIOPermissionAccess.NoAccess);
+					return new FileDialogPermission(flags);
 				}
 			}
 
-}; // class FileIOPermissionAttribute
+}; // class FileDialogPermissionAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

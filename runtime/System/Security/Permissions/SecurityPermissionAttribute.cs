@@ -51,7 +51,15 @@ public sealed class SecurityPermissionAttribute : Attribute
 	// Create a permission object that corresponds to this attribute.
 	public override IPermission CreatePermission()
 			{
-				return new SecurityPermission(flags);
+				if(Unrestricted)
+				{
+					return new SecurityPermission
+						(PermissionState.Unrestricted);
+				}
+				else
+				{
+					return new SecurityPermission(flags);
+				}
 			}
 #endif
 

@@ -1,6 +1,6 @@
 /*
- * EnvironmentPermissionAttribute.cs - Implementation of the
- *			"System.Security.Permissions.EnvironmentPermissionAttribute" class.
+ * PermissionSetAttribute.cs - Implementation of the
+ *			"System.Security.Permissions.PermissionSetAttribute" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,6 +22,8 @@
 namespace System.Security.Permissions
 {
 
+#if !ECMA_COMPAT
+
 using System;
 using System.Security;
 
@@ -31,73 +33,90 @@ using System.Security;
 			 	AttributeTargets.Constructor |
 			 	AttributeTargets.Method,
 			 	AllowMultiple=true, Inherited=false)]
-public sealed class EnvironmentPermissionAttribute
-		: CodeAccessSecurityAttribute
+public sealed class PermissionSetAttribute : CodeAccessSecurityAttribute
 {
 	// Internal state.
-	private String read;
-	private String write;
+	private String file;
+	private String name;
+	private bool unicodeEncoded;
+	private String xml;
 
 	// Constructors.
-	public EnvironmentPermissionAttribute(SecurityAction action)
+	public PermissionSetAttribute(SecurityAction action)
 			: base(action)
 			{
 				// Nothing to do here.
 			}
 
-	// Get or set the read permission value.
-	public String Read
+	// Get or set the file for this permission set.
+	public String File
 			{
 				get
 				{
-					return read;
+					return file;
 				}
 				set
 				{
-					read = value;
+					file = value;
 				}
 			}
 
-	// Get or set the write permission value.
-	public String Write
+	// Get or set the name of this permission set.
+	public String Name
 			{
 				get
 				{
-					return write;
+					return name;
 				}
 				set
 				{
-					write = value;
+					name = value;
 				}
 			}
 
-	// Set both the read and write permission values.
-	public String All
+	// Get or set the "unicode encoded" flag for this permission set.
+	public bool UnicodeEncoded
 			{
+				get
+				{
+					return unicodeEncoded;
+				}
 				set
 				{
-					read = value;
-					write = value;
+					unicodeEncoded = value;
+				}
+			}
+
+	// Get or set the XML data for this permission set.
+	public String XML
+			{
+				get
+				{
+					return xml;
+				}
+				set
+				{
+					xml = value;
 				}
 			}
 
 	// Create a permission object that corresponds to this attribute.
 	public override IPermission CreatePermission()
 			{
-				if(Unrestricted)
-				{
-					return new EnvironmentPermission
-						(PermissionState.Unrestricted);
-				}
-				else
-				{
-					return new EnvironmentPermission
-						(PermissionState.None,
-						 EnvironmentPermission.SplitPath(read),
-						 EnvironmentPermission.SplitPath(write));
-				}
+				// Use "CreatePermissionSet" instead.
+				return null;
 			}
 
-}; // class EnvironmentPermissionAttribute
+	// Create a permission set object.
+	[TODO]
+	public PermissionSet CreatePermissionSet()
+			{
+				// TODO
+				return null;
+			}
+
+}; // class PermissionSetAttribute
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System.Security.Permissions

@@ -41,8 +41,9 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item)
 	blob = (const unsigned char *)ILConstantGetValue(constant, &blobLen);
 	if(!blob)
 	{
-		fputs(" = UNKNOWN", stream);
-		return;
+		/* Treat non-existent blobs as empty: sometimes empty
+		   strings are encoded as a constant with no blob */
+		blobLen = 0;
 	}
 
 	/* Determine how to dump the constant based on its element type */
@@ -168,6 +169,25 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item)
 		case IL_META_ELEMTYPE_STRING:
 		{
 			ILDumpUnicodeString(stream, blob, blobLen / 2);
+		}
+		break;
+
+		case IL_META_ELEMTYPE_CLASS:
+		{
+			if(blobLen == 4 && IL_READ_UINT32(blob) == 0)
+			{
+				/* 32-bit null constant */
+				fputs("nullref", stream);
+			}
+			else if(blobLen == 8 && IL_READ_UINT64(blob) == 0)
+			{
+				/* 64-bit null constant */
+				fputs("nullref", stream);
+			}
+			else
+			{
+				fputs("BAD CLASS", stream);
+			}
 		}
 		break;
 

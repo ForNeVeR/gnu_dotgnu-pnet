@@ -3135,6 +3135,14 @@ ILGenCastConst(ILMachineType_String, ILMachineType_String)
 	/* Nothing to do here */
 	return 1;
 }
+ILGenCastConst(ILMachineType_ObjectRef, ILMachineType_String)
+{
+	/* Casting "null" to a string */
+	value->valueType = ILMachineType_String;
+	value->un.strValue.str = 0;
+	value->un.strValue.len = 0;
+	return 1;
+}
 ILGenCastConst(ILMachineType, ILMachineType_String)
 {
 	return 0;

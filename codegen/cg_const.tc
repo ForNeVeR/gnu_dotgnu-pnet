@@ -620,6 +620,8 @@ ILNode_GenValue(ILNode_String)
 }
 ILNode_EvalConst(ILNode_String)
 {
-	/* String constants cannot be evaluated at compile time */
-	return 0;
+	value->valueType = ILMachineType_String;
+	value->un.strValue.str = node->str;
+	value->un.strValue.len = node->len;
+	return 1;
 }

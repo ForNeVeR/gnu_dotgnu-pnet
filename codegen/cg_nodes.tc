@@ -108,6 +108,11 @@ struct _tagILEvalValue
 		ILDouble		r8Value;
 		ILDecimal		decValue;
 		void		   *oValue;
+		struct
+		{
+			char	   *str;
+			int			len;
+		}				strValue;
 	} un;
 
 };

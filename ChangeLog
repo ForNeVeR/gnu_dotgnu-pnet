@@ -5,6 +5,10 @@
 	image/create.c, resgen/resgen_binary.c: modify all uses of UTF-8
 	and UTF-16 to use the new API's.
 
+	* codegen/cg_cast.tc, codegen/cg_const.tc, codegen/cg_nodes.tc,
+	cscc/cs_decls.tc, dumpasm/dump_const.c: implement string and
+	object constants in the compiler.
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

@@ -89,6 +89,9 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 	ILType *type;
 	ILMethod *ctor;
 	ILAttribute *attr;
+	int posn, wlen;
+	unsigned char *newStr;
+	unsigned char *tempStr;
 
 	switch(evalValue->valueType)
 	{
@@ -232,6 +235,76 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 		}
 		break;
 
+		case ILMachineType_String:
+		{
+			/* Detect "null" string constants specially */
+			if(!(evalValue->un.strValue.str))
+			{
+				constBuf[0] = 0;
+				constBuf[1] = 0;
+				constBuf[2] = 0;
+				constBuf[3] = 0;
+				constBufLen = 4;
+				constElemType = IL_META_ELEMTYPE_CLASS;
+				break;
+			}
+
+			/* Determine the length of string in UTF-16 characters */
+			posn = 0;
+			wlen = 0;
+			while(posn < evalValue->un.strValue.len)
+			{
+				wlen += ILUTF16WriteChar
+					(0, ILUTF8ReadChar(evalValue->un.strValue.str,
+									   evalValue->un.strValue.len, &posn));
+			}
+
+			/* Allocate temporary storage for the UTF-16 version */
+			newStr = (unsigned char *)ILMalloc(wlen * 2 + 1);
+			if(!newStr)
+			{
+				CSOutOfMemory();
+			}
+
+			/* Convert the string from UTF-8 into UTF-16 */
+			posn = 0;
+			tempStr = newStr;
+			while(posn < evalValue->un.strValue.len)
+			{
+				tempStr += ILUTF16WriteCharAsBytes
+					(tempStr, ILUTF8ReadChar
+						(evalValue->un.strValue.str,
+					     evalValue->un.strValue.len, &posn));
+			}
+
+			/* Attach the constant to the field */
+			constant = ILConstantCreate(info->image, 0, (ILProgramItem *)field,
+										IL_META_ELEMTYPE_STRING);
+			if(!constant)
+			{
+				CSOutOfMemory();
+			}
+			if(!ILConstantSetValue(constant, newStr, wlen * 2))
+			{
+				CSOutOfMemory();
+			}
+			ILFree(newStr);
+			return;
+		}
+		break;
+
+		case ILMachineType_ObjectRef:
+		{
+			/* This is the "null" constant */
+			constBuf[0] = 0;
+			constBuf[1] = 0;
+			constBuf[2] = 0;
+			constBuf[3] = 0;
+			constBufLen = 4;
+			constElemType = IL_META_ELEMTYPE_CLASS;
+		}
+		break;
+
 		default:
 		{
 			constBuf[0] = 0;
@@ -330,6 +403,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		/* If this is a constant, then evaluate the value */
 		if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
 		{
+			/* Check that the literal value is actually constant */
 			if(!ILNode_EvalConst(decl->initializer, info, &evalValue) ||
 			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
 	                   ILTypeToMachineType(ILField_Type(decl->fieldInfo))))
@@ -339,35 +413,25 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 							  "initializer is not constant");
 				continue;
 			}
+
+			/* Decimal constants are stored in readonly fields
+			   which are computed at runtime.  We also add a
+			   "DecimalConstantAttribute" to tag the field so
+			   that the compiler can reload the value later */
 			if(evalValue.valueType == ILMachineType_Decimal)
 			{
-				/* Decimal constants are stored in readonly fields
-				   which are computed at runtime */
 				node->modifiers &= ~IL_META_FIELDDEF_LITERAL;
 				node->modifiers |= IL_META_FIELDDEF_INIT_ONLY;
 				ILMemberSetAttrs((ILMember *)(decl->fieldInfo),
 								 IL_META_FIELDDEF_LITERAL |
 								 		IL_META_FIELDDEF_INIT_ONLY,
 						 		 IL_META_FIELDDEF_INIT_ONLY);
-
-				/* And they are also tagged with "DecimalConstantAttribute"
-				   so the compiler can read back the value later */
 				AddConstantValue(info, decl->fieldInfo, &evalValue);
-			}
-			else if(evalValue.valueType == ILMachineType_String)
-			{
-				/* String constants must be stored in readonly
-				   fields which are computed at runtime */
-				node->modifiers &= ~IL_META_FIELDDEF_LITERAL;
-				node->modifiers |= IL_META_FIELDDEF_INIT_ONLY;
-				ILMemberSetAttrs((ILMember *)(decl->fieldInfo),
-								 IL_META_FIELDDEF_LITERAL |
-								 		IL_META_FIELDDEF_INIT_ONLY,
-						 		 IL_META_FIELDDEF_INIT_ONLY);
 			}
 			else
 			{
-				/* Other constants can be evaluated at compile time */
+				/* Record the constant value so the compiler can pick
+				   it up when the binary form of the code is reloaded */
 				AddConstantValue(info, decl->fieldInfo, &evalValue);
 				continue;
 			}

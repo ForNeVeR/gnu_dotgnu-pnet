@@ -79,6 +79,37 @@ ILUnicodeCategory ILGetUnicodeCategory(unsigned ch)
 #endif
 }
 
+/*
+ * Include the Unicode numeric value table from "uninum.c".
+ * The table is automatically generated from "UnicodeData.txt"
+ * using the "mknumber" program.
+ */
+#include "uninum.c"
+
+double ILGetUnicodeValue(unsigned ch)
+{
+	int left, right, middle;
+	left = 0;
+	right = (sizeof(charValues) / sizeof(struct ILUniNumInfo)) - 1;
+	while(left <= right)
+	{
+		middle = (left + right) / 2;
+		if(charValues[middle].ch == ch)
+		{
+			return charValues[middle].value;
+		}
+		else if(charValues[middle].ch < ch)
+		{
+			left = middle + 1;
+		}
+		else
+		{
+			right = middle - 1;
+		}
+	}
+	return -1.0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

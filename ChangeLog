@@ -5,6 +5,9 @@
 	prevent double-evaluation of l-values in operator assignment,
 	and update Java assignment.
 
+	* cscc/c/c_oper.tc: update assignment operator semantic analysis
+	for the C front-end.
+
 2002-10-20  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* codegen/cg_assign.tc, codegen/jv_assign.tc, cscc/csharp/cs_oper.tc:  

@@ -819,13 +819,15 @@ invalid:
 /*
  * Perform semantic analysis for binary operator assignment.
  */
-static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
+static CSemValue AssignSem(ILGenInfo *info, ILNode *anode,
+						   ILNode_BinaryExpression *node,
 						   ILNode **parent, const char *name, int opkind)
 {
 	CSemValue value1;
 	CSemValue value2;
 	ILMachineType type1;
 	ILMachineType type2;
+	ILMachineType common1;
 	ILMachineType common2;
 	ILNode *temp;
 	ILType *elemType;
@@ -866,6 +868,7 @@ static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		/* Shift operator that can only support integer operands */
 		if(IsIntegerMachineType(type1) && IsIntegerMachineType(type2))
 		{
+			common1 = CommonBinaryType(info, type1, type1);
 			common2 = ILMachineType_Int32;
 		}
 		else
@@ -878,7 +881,7 @@ static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		/* Operator that can only support integer operands */
 		if(IsIntegerMachineType(type1) && IsIntegerMachineType(type2))
 		{
-			common2 = type1;
+			common1 = common2 = CommonBinaryType(info, type1, type2);
 		}
 		else
 		{
@@ -890,7 +893,7 @@ static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		/* The operator can support all numeric operands */
 		if(IsNumericMachineType(type1) && IsNumericMachineType(type2))
 		{
-			common2 = type1;
+			common1 = common2 = CommonBinaryType(info, type1, type2);
 		}
 		else if(opkind == C_BINARY_ADD)
 		{
@@ -908,6 +911,7 @@ static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 				{
 					common2 = ILMachineType_NativeUInt;
 				}
+				common1 = type1;
 			}
 			else
 			{
@@ -930,6 +934,7 @@ static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 				{
 					common2 = ILMachineType_NativeUInt;
 				}
+				common1 = type1;
 			}
 			else
 			{
@@ -942,7 +947,19 @@ static CSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		}
 	}
 
+	/* Re-arrange the node a little for the code generator */
+	((ILNode_AssignExpression *)anode)->lvalue = node->expr1;
+	temp = ILNode_EmptyExpr_create(type1);
+	CGenCloneLine(temp, node->expr1);
+	node->expr1 = temp;
+
 	/* Cast the arguments to their final types and return */
+	if(common1 != type1)
+	{
+		temp = ILNode_CastSimple_create(node->expr1, common1);
+		CGenCloneLine(temp, node->expr1);
+		node->expr1 = temp;
+	}
 	if(common2 != type2)
 	{
 		temp = ILNode_CastSimple_create(node->expr2, common2);
@@ -1680,7 +1697,8 @@ ILNode_CSemAnalysis(ILNode_Assign)
  */
 ILNode_CSemAnalysis(ILNode_AssignAdd)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "+", C_BINARY_ADD);
 }
 
@@ -1689,7 +1707,8 @@ ILNode_CSemAnalysis(ILNode_AssignAdd)
  */
 ILNode_CSemAnalysis(ILNode_AssignSub)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "-", C_BINARY_SUB);
 }
 
@@ -1698,7 +1717,8 @@ ILNode_CSemAnalysis(ILNode_AssignSub)
  */
 ILNode_CSemAnalysis(ILNode_AssignMul)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "*", C_BINARY_NUMERIC);
 }
 
@@ -1707,7 +1727,8 @@ ILNode_CSemAnalysis(ILNode_AssignMul)
  */
 ILNode_CSemAnalysis(ILNode_AssignDiv)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "/", C_BINARY_NUMERIC);
 }
 
@@ -1716,7 +1737,8 @@ ILNode_CSemAnalysis(ILNode_AssignDiv)
  */
 ILNode_CSemAnalysis(ILNode_AssignRem)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "%", C_BINARY_REM);
 }
 
@@ -1725,7 +1747,8 @@ ILNode_CSemAnalysis(ILNode_AssignRem)
  */
 ILNode_CSemAnalysis(ILNode_AssignAnd)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "&", C_BINARY_BITWISE);
 }
 
@@ -1734,7 +1757,8 @@ ILNode_CSemAnalysis(ILNode_AssignAnd)
  */
 ILNode_CSemAnalysis(ILNode_AssignOr)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "|", C_BINARY_BITWISE);
 }
 
@@ -1743,7 +1767,8 @@ ILNode_CSemAnalysis(ILNode_AssignOr)
  */
 ILNode_CSemAnalysis(ILNode_AssignXor)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "^", C_BINARY_BITWISE);
 }
 
@@ -1752,7 +1777,8 @@ ILNode_CSemAnalysis(ILNode_AssignXor)
  */
 ILNode_CSemAnalysis(ILNode_AssignShl)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), "<<", C_BINARY_SHIFT);
 }
 
@@ -1762,7 +1788,8 @@ ILNode_CSemAnalysis(ILNode_AssignShl)
 ILNode_CSemAnalysis(ILNode_AssignShr),
 ILNode_CSemAnalysis(ILNode_AssignUShr)
 {
-	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+	return AssignSem(info, (ILNode *)node,
+					 (ILNode_BinaryExpression *)(node->assign),
 					 &(node->assign), ">>", C_BINARY_SHIFT);
 }
 

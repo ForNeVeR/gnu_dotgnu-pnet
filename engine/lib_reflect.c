@@ -1,7 +1,7 @@
 /*
  * lib_reflect.c - Internalcall methods for the reflection classes.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 #include "il_serialize.h"
+#include "il_crypt.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -1454,6 +1455,350 @@ void _IL_Assembly_GetEntryPoint(ILExecThread *thread,
 	{
 		*((void **)result) = 0;
 	}
+}
+
+/*
+ * Builtin public key values, to shortcut hashing for common assemblies.
+ */
+static unsigned char const NeutralKey[] =
+	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static unsigned char const NeutralKeyToken[] =
+	{0xb7, 0x7a, 0x5c, 0x56, 0x19, 0x34, 0xe0, 0x89};
+static char const MicrosoftKey[] =
+	{0x00, 0x24, 0x00, 0x00, 0x04, 0x80, 0x00, 0x00,
+	 0x94, 0x00, 0x00, 0x00, 0x06, 0x02, 0x00, 0x00,
+	 0x00, 0x24, 0x00, 0x00, 0x52, 0x53, 0x41, 0x31,
+	 0x00, 0x04, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
+	 0x07, 0xd1, 0xfa, 0x57, 0xc4, 0xae, 0xd9, 0xf0,
+	 0xa3, 0x2e, 0x84, 0xaa, 0x0f, 0xae, 0xfd, 0x0d,
+	 0xe9, 0xe8, 0xfd, 0x6a, 0xec, 0x8f, 0x87, 0xfb,
+	 0x03, 0x76, 0x6c, 0x83, 0x4c, 0x99, 0x92, 0x1e,
+	 0xb2, 0x3b, 0xe7, 0x9a, 0xd9, 0xd5, 0xdc, 0xc1,
+	 0xdd, 0x9a, 0xd2, 0x36, 0x13, 0x21, 0x02, 0x90,
+	 0x0b, 0x72, 0x3c, 0xf9, 0x80, 0x95, 0x7f, 0xc4,
+	 0xe1, 0x77, 0x10, 0x8f, 0xc6, 0x07, 0x77, 0x4f,
+	 0x29, 0xe8, 0x32, 0x0e, 0x92, 0xea, 0x05, 0xec,
+	 0xe4, 0xe8, 0x21, 0xc0, 0xa5, 0xef, 0xe8, 0xf1,
+	 0x64, 0x5c, 0x4c, 0x0c, 0x93, 0xc1, 0xab, 0x99,
+	 0x28, 0x5d, 0x62, 0x2c, 0xaa, 0x65, 0x2c, 0x1d,
+	 0xfa, 0xd6, 0x3d, 0x74, 0x5d, 0x6f, 0x2d, 0xe5,
+	 0xf1, 0x7e, 0x5e, 0xaf, 0x0f, 0xc4, 0x96, 0x3d,
+	 0x26, 0x1c, 0x8a, 0x12, 0x43, 0x65, 0x18, 0x20,
+	 0x6d, 0xc0, 0x93, 0x34, 0x4d, 0x5a, 0xd2, 0x93};
+static unsigned char const MicrosoftKeyToken[] =
+	{0xb0, 0x3f, 0x5f, 0x7f, 0x11, 0xd5, 0x0a, 0x3a};
+
+/*
+ * private String GetFullName();
+ */
+ILString *_IL_Assembly_GetFullName(ILExecThread *thread, ILObject *_this)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	if(image)
+	{
+		ILAssembly *assem;
+		const char *name;
+		const ILUInt16 *version;
+		const char *locale;
+		const void *publicKey;
+		unsigned long publicKeyLen;
+		unsigned long publicKeyLenInChars;
+		char versbuf[64];
+		char *buf;
+		int posn;
+		ILString *str;
+		ILSHAContext sha;
+		unsigned char hash[IL_SHA_HASH_SIZE];
+
+		/* Collect up the assembly name components */
+		name = ILImageGetAssemblyName(image);
+		if(!name)
+		{
+			return 0;
+		}
+		assem = (ILAssembly *)ILImageTokenInfo
+					(image, IL_META_TOKEN_ASSEMBLY | 1);
+		version = ILAssemblyGetVersion(assem);
+		sprintf(versbuf, "%u.%u.%u.%u",
+				(unsigned)(version[0]), (unsigned)(version[1]),
+				(unsigned)(version[2]), (unsigned)(version[3]));
+		locale = ILAssembly_Locale(assem);
+		if(!locale)
+		{
+			locale = "neutral";
+		}
+		publicKeyLen = 0;
+		publicKey = ILAssemblyGetOriginator(assem, &publicKeyLen);
+		if(publicKey != 0 && publicKeyLen != 0)
+		{
+			publicKeyLenInChars = 16;
+		}
+		else
+		{
+			publicKeyLenInChars = 4;	/* "null" */
+		}
+
+		/* Allocate a buffer big enough to hold the entire name */
+		buf = (char *)ILMalloc(strlen(name) + 10    /* ", Version=" */ +
+							   strlen(versbuf) + 10 /* ", Culture=" */ +
+							   strlen(locale) + 17	/* ", PublicKeyToken=" */ +
+							   publicKeyLenInChars + 1);
+		if(!buf)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+
+		/* Format the name */
+		sprintf(buf, "%s, Version=%s, Culture=%s, PublicKeyToken=",
+				name, versbuf, locale);
+		posn = strlen(buf);
+		if(publicKey != 0 && publicKeyLen != 0)
+		{
+			if(publicKeyLen == sizeof(NeutralKey) &&
+			   !ILMemCmp(publicKey, NeutralKey, publicKeyLen))
+			{
+				sprintf(buf + posn, "%02x%02x%02x%02x%02x%02x%02x%02x",
+						NeutralKeyToken[0], NeutralKeyToken[1],
+						NeutralKeyToken[2], NeutralKeyToken[3],
+						NeutralKeyToken[4], NeutralKeyToken[5],
+						NeutralKeyToken[6], NeutralKeyToken[7]);
+			}
+			else if(publicKeyLen == sizeof(MicrosoftKey) &&
+			        !ILMemCmp(publicKey, MicrosoftKey, publicKeyLen))
+			{
+				sprintf(buf + posn, "%02x%02x%02x%02x%02x%02x%02x%02x",
+						MicrosoftKeyToken[0], MicrosoftKeyToken[1],
+						MicrosoftKeyToken[2], MicrosoftKeyToken[3],
+						MicrosoftKeyToken[4], MicrosoftKeyToken[5],
+						MicrosoftKeyToken[6], MicrosoftKeyToken[7]);
+			}
+			else
+			{
+				ILSHAInit(&sha);
+				ILSHAData(&sha, publicKey, publicKeyLen);
+				ILSHAFinalize(&sha, hash);
+				sprintf(buf + posn, "%02x%02x%02x%02x%02x%02x%02x%02x",
+						hash[19], hash[18], hash[17], hash[16],
+						hash[15], hash[14], hash[13], hash[12]);
+			}
+		}
+		else
+		{
+			strcpy(buf + posn, "null");
+		}
+
+		/* Convert the buffer into a string object and return it */
+		str = ILStringCreateUTF8(thread, buf);
+		ILFree(buf);
+		return str;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Call a method on the "AssemblyName" class.
+ */
+static int CallAssemblyNameMethod(ILExecThread *thread, ILObject *nameInfo,
+								  const char *methodName,
+								  const char *signature, ILObject *param)
+{
+	ILExecValue value;
+	value.objValue = param;
+	return ILExecThreadCallNamedVirtualV
+				(thread, "System.Reflection.AssemblyName",
+				 methodName, signature, &value, nameInfo, &value);
+}
+static int CallAssemblyNameMethodI4(ILExecThread *thread, ILObject *nameInfo,
+								    const char *methodName,
+								    const char *signature, ILInt32 param)
+{
+	ILExecValue value;
+	value.int32Value = param;
+	return ILExecThreadCallNamedVirtualV
+				(thread, "System.Reflection.AssemblyName",
+				 methodName, signature, &value, nameInfo, &value);
+}
+static int CallAssemblyNameMethodV(ILExecThread *thread, ILObject *nameInfo,
+								   const ILUInt16 *param)
+{
+	ILExecValue value[4];
+	value[0].int32Value = param[0];
+	value[1].int32Value = param[1];
+	value[2].int32Value = param[2];
+	value[3].int32Value = param[3];
+	return ILExecThreadCallNamedVirtualV
+				(thread, "System.Reflection.AssemblyName",
+				 "SetVersion", "(Tiiii)V", value, nameInfo, value);
+}
+
+/*
+ * Fill in an "AssemblyName" object with an image's name information.
+ */
+static void FillAssemblyNameFromImage(ILExecThread *thread,
+									  ILObject *nameInfo, ILImage *image)
+{
+	ILString *name;
+	ILAssembly *assem;
+	const void *publicKey;
+	unsigned long publicKeyLen;
+	System_Array *array;
+
+	/* Set the assembly name */
+	name = ILStringCreateUTF8(thread, ILImageGetAssemblyName(image));
+	if(!name)
+	{
+		return;
+	}
+	if(CallAssemblyNameMethod(thread, nameInfo, "set_Name",
+							  "(ToSystem.String;)V", (ILObject *)name))
+	{
+		return;
+	}
+
+	/* Get the first assembly structure for the image */
+	assem = (ILAssembly *)ILImageTokenInfo(image, IL_META_TOKEN_ASSEMBLY | 1);
+
+	/* Set the locale name */
+	if(ILAssembly_Locale(assem))
+	{
+		name = ILStringCreateUTF8(thread, ILAssembly_Locale(assem));
+		if(!name)
+		{
+			return;
+		}
+		if(CallAssemblyNameMethod(thread, nameInfo, "SetCultureByName",
+								  "(ToSystem.String;)V", (ILObject *)name))
+		{
+			return;
+		}
+	}
+
+	/* Set the assembly name flags */
+	if(ILAssembly_HasPublicKey(assem))
+	{
+		if(CallAssemblyNameMethodI4(thread, nameInfo, "set_Flags",
+									"(TvSystem.Reflection.AssemblyNameFlags;)V",
+									(ILInt32)0x0001))
+		{
+			return;
+		}
+	}
+
+	/* Set the version information */
+	if(CallAssemblyNameMethodV(thread, nameInfo, ILAssemblyGetVersion(assem)))
+	{
+		return;
+	}
+
+	/* Set the assembly's hash algorithm */
+	if(CallAssemblyNameMethodI4(thread, nameInfo, "set_HashAlgorithm",
+			"(TvSystem.Configuration.Assemblies.AssemblyHashAlgorithm;)V",
+			(ILInt32)(ILAssembly_HashAlg(assem))))
+	{
+		return;
+	}
+
+	/* Set the assembly's public key */
+	publicKeyLen = 0;
+	publicKey = ILAssemblyGetOriginator(assem, &publicKeyLen);
+	if(publicKey != 0 && publicKeyLen != 0)
+	{
+		array = (System_Array *)ILExecThreadNew(thread, "[B", "(Ti)V",
+												(ILVaInt)publicKeyLen);
+		if(!array)
+		{
+			return;
+		}
+		ILMemCpy(ArrayToBuffer(array), publicKey, publicKeyLen);
+		if(CallAssemblyNameMethod(thread, nameInfo, "SetPublicKey",
+								  "(T[B)V", (ILObject *)array))
+		{
+			return;
+		}
+	}
+}
+
+/*
+ * private void FillAssemblyName(AssemblyName nameInfo);
+ */
+void _IL_Assembly_FillAssemblyName(ILExecThread *thread, ILObject *_this,
+								   ILObject *nameInfo)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	if(image)
+	{
+		FillAssemblyNameFromImage(thread, nameInfo, image);
+	}
+}
+
+/*
+ * private static int FillAssemblyNameFromFile
+ *		(AssemblyName nameInfo, String assemblyFile, Assembly caller);
+ */
+ILInt32 _IL_AssemblyName_FillAssemblyNameFromFile(ILExecThread *thread,
+												  ILObject *nameInfo,
+												  ILString *assemblyFile,
+												  ILObject *caller)
+{
+	ILContext *context;
+	ILImage *image;
+	int loadError;
+	char *filename;
+
+	/* Convert the filename into an ANSI string */
+	filename = ILStringToAnsi(thread, assemblyFile);
+	if(!filename)
+	{
+		return 0;
+	}
+
+	/* TODO: check security permissions */
+
+	/* We need to temporarily load the image to get its name information,
+	   and then immediately discard it.  Use a new context for that */
+	context = ILContextCreate();
+	if(!context)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* Attempt to load the file */
+	loadError = ILImageLoadFromFile(filename, context, &image,
+									IL_LOADFLAG_FORCE_32BIT |
+									IL_LOADFLAG_NO_RESOLVE, 0);
+	if(loadError != 0)
+	{
+		/* Convert the error code into something the C# library knows about */
+		ILContextDestroy(context);
+		if(loadError == -1)
+		{
+			return LoadError_FileNotFound;
+		}
+		else if(loadError == IL_LOADERR_MEMORY)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		else
+		{
+			return LoadError_BadImage;
+		}
+	}
+
+	/* Fill the "AssemblyName" object with the image's name details */
+	FillAssemblyNameFromImage(thread, nameInfo, image);
+
+	/* Clean up the temporary context and exit */
+	ILContextDestroy(context);
+	return 0;
 }
 
 ILString *_IL_Assembly_GetSatellitePath(ILExecThread *thread,

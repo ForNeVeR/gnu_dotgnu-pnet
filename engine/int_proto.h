@@ -8,10 +8,10 @@ extern ILObject * _IL_Object_MemberwiseClone(ILExecThread * _thread, ILObject * 
 extern ILObject * _IL_Enum_GetEnumValue(ILExecThread * _thread, ILObject * _this);
 extern ILString * _IL_Enum_FormatEnumWithFlags(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
 extern ILString * _IL_Enum_GetEnumName(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
+extern ILObject * _IL_Enum_EnumIntToObject(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
 extern ILObject * _IL_Enum_GetEnumValueFromName(ILExecThread * _thread, ILObject * _p1, ILString * _p2, ILBool _p3);
 extern ILBool _IL_Enum_IsEnumValue(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
 extern ILObject * _IL_Enum_EnumValueOr(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
-extern ILObject * _IL_Enum_EnumIntToObject(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
 extern ILObject * _IL_Enum_EnumLongToObject(ILExecThread * _thread, ILObject * _p1, ILInt64 _p2);
 
 extern System_Array * _IL_AppDomain_GetAssemblies(ILExecThread * _thread, ILObject * _this);
@@ -252,12 +252,12 @@ extern ILBool _IL_GCHandle_GCValidate(ILExecThread * _thread, ILInt32 _p1);
 
 extern void _IL_Marshal_FreeHGlobal(ILExecThread * _thread, ILNativeInt _p1);
 extern ILNativeInt _IL_Marshal_AllocHGlobal(ILExecThread * _thread, ILNativeInt _p1);
-extern ILString * _IL_Marshal_PtrToStringUniInternal(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern ILString * _IL_Marshal_PtrToStringAnsiInternal(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern void _IL_Marshal_CopyMU(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2, ILNativeInt _p3, ILInt32 _p4);
 extern void _IL_Marshal_CopyUM(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2, ILInt32 _p3, ILInt32 _p4);
 extern ILNativeInt _IL_Marshal_OffsetOfInternal(ILExecThread * _thread, ILObject * _p1, ILString * _p2);
 extern ILString * _IL_Marshal_PtrToStringAutoInternal(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILString * _IL_Marshal_PtrToStringUniInternal(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern ILBool _IL_Marshal_PtrToStructureInternal(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2, ILBool _p3);
 extern ILBool _IL_Marshal_DestroyStructureInternal(ILExecThread * _thread, ILNativeInt _p1, ILObject * _p2);
 extern ILBool _IL_Marshal_StructureToPtrInternal(ILExecThread * _thread, ILObject * _p1, ILNativeInt _p2);
@@ -293,6 +293,7 @@ extern ILObject * _IL_Assembly_LoadFromBytes(ILExecThread * _thread, System_Arra
 extern ILObject * _IL_Assembly_GetManifestResourceStream(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern ILString * _IL_Assembly_GetSatellitePath(ILExecThread * _thread, ILObject * _this, ILString * _p1);
 extern ILObject * _IL_Assembly_LoadFromFile(ILExecThread * _thread, ILString * _p1, ILInt32 * error, ILObject * _p3);
+extern ILString * _IL_Assembly_GetFullName(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Assembly_GetEntryAssembly(ILExecThread * _thread);
 extern System_Array * _IL_Assembly_GetExportedTypes(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Assembly_GetFile(ILExecThread * _thread, ILObject * _this, ILString * _p1);
@@ -301,9 +302,10 @@ extern ILObject * _IL_Assembly_GetManifestResourceInfo(ILExecThread * _thread, I
 extern System_Array * _IL_Assembly_GetManifestResourceNames(ILExecThread * _thread, ILObject * _this);
 extern System_Array * _IL_Assembly_GetTypes(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Assembly_LoadFromName(ILExecThread * _thread, ILString * _p1, ILInt32 * error, ILObject * _p3);
+extern ILString * _IL_Assembly_GetLocation(ILExecThread * _thread, ILObject * _this);
+extern void _IL_Assembly_FillAssemblyName(ILExecThread * _thread, ILObject * _this, ILObject * _p1);
 extern void _IL_Assembly_GetEntryPoint(ILExecThread * _thread, void * _result, ILObject * _this);
 extern ILString * _IL_Assembly_GetImageRuntimeVersion(ILExecThread * _thread, ILObject * _this);
-extern ILString * _IL_Assembly_GetLocation(ILExecThread * _thread, ILObject * _this);
 
 extern ILObject * _IL_MethodBase_GetMethodFromHandle(ILExecThread * _thread, void * _p1);
 extern ILObject * _IL_MethodBase_GetCurrentMethod(ILExecThread * _thread);
@@ -340,6 +342,8 @@ extern ILBool _IL_ClrType_HasGenericParametersImpl(ILExecThread * _thread, ILObj
 extern System_Array * _IL_ClrType_GetGenericArguments(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_ClrType_BindGenericParameters(ILExecThread * _thread, ILObject * _this, System_Array * _p1);
 extern ILObject * _IL_ClrType_GetGenericTypeDefinition(ILExecThread * _thread, ILObject * _this);
+
+extern ILInt32 _IL_AssemblyName_FillAssemblyNameFromFile(ILExecThread * _thread, ILObject * _p1, ILString * _p2, ILObject * _p3);
 
 extern ILObject * _IL_ClrConstructor_Invoke(ILExecThread * _thread, ILObject * _this, ILInt32 _p1, ILObject * _p2, System_Array * _p3, ILObject * _p4);
 

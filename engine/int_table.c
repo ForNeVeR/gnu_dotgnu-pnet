@@ -49,18 +49,18 @@ static void marshal_pppp(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_ppppb(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_pppi(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_pppi(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_ppppb(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((void * *)rvalue) = (*(void * (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt8 *)(avalue[3])));
 }
 
 #endif
@@ -80,10 +80,10 @@ IL_METHOD_BEGIN(Enum_Methods)
 	IL_METHOD("GetEnumValue", "(T)oSystem.Object;", _IL_Enum_GetEnumValue, marshal_ppp)
 	IL_METHOD("FormatEnumWithFlags", "(oSystem.Type;oSystem.Object;)oSystem.String;", _IL_Enum_FormatEnumWithFlags, marshal_pppp)
 	IL_METHOD("GetEnumName", "(oSystem.Type;oSystem.Object;)oSystem.String;", _IL_Enum_GetEnumName, marshal_pppp)
+	IL_METHOD("EnumIntToObject", "(oSystem.Type;i)oSystem.Object;", _IL_Enum_EnumIntToObject, marshal_pppi)
 	IL_METHOD("GetEnumValueFromName", "(oSystem.Type;oSystem.String;Z)oSystem.Object;", _IL_Enum_GetEnumValueFromName, marshal_ppppb)
 	IL_METHOD("IsEnumValue", "(oSystem.Type;oSystem.Object;)Z", _IL_Enum_IsEnumValue, marshal_bppp)
 	IL_METHOD("EnumValueOr", "(oSystem.Object;oSystem.Object;)oSystem.Object;", _IL_Enum_EnumValueOr, marshal_pppp)
-	IL_METHOD("EnumIntToObject", "(oSystem.Type;i)oSystem.Object;", _IL_Enum_EnumIntToObject, marshal_pppi)
 	IL_METHOD("EnumLongToObject", "(oSystem.Type;l)oSystem.Object;", _IL_Enum_EnumLongToObject, marshal_pppl)
 IL_METHOD_END
 
@@ -1494,12 +1494,12 @@ static void marshal_vpjij(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(Marshal_Methods)
 	IL_METHOD("FreeHGlobal", "(j)V", _IL_Marshal_FreeHGlobal, marshal_vpj)
 	IL_METHOD("AllocHGlobal", "(j)j", _IL_Marshal_AllocHGlobal, marshal_jpj)
-	IL_METHOD("PtrToStringUniInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringUniInternal, marshal_ppji)
 	IL_METHOD("PtrToStringAnsiInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringAnsiInternal, marshal_ppji)
 	IL_METHOD("CopyMU", "(oSystem.Array;iji)V", _IL_Marshal_CopyMU, marshal_vppiji)
 	IL_METHOD("CopyUM", "(joSystem.Array;ii)V", _IL_Marshal_CopyUM, marshal_vpjpii)
 	IL_METHOD("OffsetOfInternal", "(oSystem.Type;oSystem.String;)j", _IL_Marshal_OffsetOfInternal, marshal_jppp)
 	IL_METHOD("PtrToStringAutoInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringAutoInternal, marshal_ppji)
+	IL_METHOD("PtrToStringUniInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringUniInternal, marshal_ppji)
 	IL_METHOD("PtrToStructureInternal", "(joSystem.Object;Z)Z", _IL_Marshal_PtrToStructureInternal, marshal_bpjpb)
 	IL_METHOD("DestroyStructureInternal", "(joSystem.Type;)Z", _IL_Marshal_DestroyStructureInternal, marshal_bpjp)
 	IL_METHOD("StructureToPtrInternal", "(oSystem.Object;j)Z", _IL_Marshal_StructureToPtrInternal, marshal_bppj)
@@ -1565,6 +1565,7 @@ IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("GetManifestResourceStream", "(ToSystem.String;)oSystem.IO.Stream;", _IL_Assembly_GetManifestResourceStream, marshal_pppp)
 	IL_METHOD("GetSatellitePath", "(ToSystem.String;)oSystem.String;", _IL_Assembly_GetSatellitePath, marshal_pppp)
 	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile, marshal_ppppp)
+	IL_METHOD("GetFullName", "(T)oSystem.String;", _IL_Assembly_GetFullName, marshal_ppp)
 	IL_METHOD("GetEntryAssembly", "()oSystem.Reflection.Assembly;", _IL_Assembly_GetEntryAssembly, marshal_pp)
 	IL_METHOD("GetExportedTypes", "(T)[oSystem.Type;", _IL_Assembly_GetExportedTypes, marshal_ppp)
 	IL_METHOD("GetFile", "(ToSystem.String;)oSystem.IO.FileStream;", _IL_Assembly_GetFile, marshal_pppp)
@@ -1573,9 +1574,10 @@ IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("GetManifestResourceNames", "(T)[oSystem.String;", _IL_Assembly_GetManifestResourceNames, marshal_ppp)
 	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Assembly_GetTypes, marshal_ppp)
 	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName, marshal_ppppp)
+	IL_METHOD("GetLocation", "(T)oSystem.String;", _IL_Assembly_GetLocation, marshal_ppp)
+	IL_METHOD("FillAssemblyName", "(ToSystem.Reflection.AssemblyName;)V", _IL_Assembly_FillAssemblyName, marshal_vppp)
 	IL_METHOD("GetEntryPoint", "(T)vSystem.RuntimeMethodHandle;", _IL_Assembly_GetEntryPoint, marshal_vppp)
 	IL_METHOD("GetImageRuntimeVersion", "(T)oSystem.String;", _IL_Assembly_GetImageRuntimeVersion, marshal_ppp)
-	IL_METHOD("GetLocation", "(T)oSystem.String;", _IL_Assembly_GetLocation, marshal_ppp)
 IL_METHOD_END
 
 #endif
@@ -1654,6 +1656,23 @@ IL_METHOD_BEGIN(ClrType_Methods)
 	IL_METHOD("GetGenericArguments", "(T)[oSystem.Type;", _IL_ClrType_GetGenericArguments, marshal_ppp)
 	IL_METHOD("BindGenericParameters", "(T[oSystem.Type;)oSystem.Type;", _IL_ClrType_BindGenericParameters, marshal_pppp)
 	IL_METHOD("GetGenericTypeDefinition", "(T)oSystem.Type;", _IL_ClrType_GetGenericTypeDefinition, marshal_ppp)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ipppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])));
+}
+
+#endif
+
+#ifndef _IL_AssemblyName_suppressed
+
+IL_METHOD_BEGIN(AssemblyName_Methods)
+	IL_METHOD("FillAssemblyNameFromFile", "(oSystem.Reflection.AssemblyName;oSystem.String;oSystem.Reflection.Assembly;)i", _IL_AssemblyName_FillAssemblyNameFromFile, marshal_ipppp)
 IL_METHOD_END
 
 #endif
@@ -2830,6 +2849,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_AssemblyBuilder_suppressed
 	{"AssemblyBuilder", "System.Reflection.Emit", AssemblyBuilder_Methods},
+#endif
+#ifndef _IL_AssemblyName_suppressed
+	{"AssemblyName", "System.Reflection", AssemblyName_Methods},
 #endif
 #ifndef _IL_BitConverter_suppressed
 	{"BitConverter", "System", BitConverter_Methods},

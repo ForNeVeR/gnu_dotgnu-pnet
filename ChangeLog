@@ -23,6 +23,9 @@
 	"ILCoerceKind" with "ILCanCoerceKind" to prevent the insertion
 	of unnecessary cast operators into trivial "is" expressions.
 
+	* cscc/cs_cast.tc (CSTypeToName): implement conversions for
+	custom modifiers and method types.
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, include/il_types.h, image/types.c:

@@ -191,11 +191,68 @@ const char *CSTypeToName(ILType *type)
 		else if(kind == IL_TYPE_COMPLEX_CMOD_REQD ||
 				kind == IL_TYPE_COMPLEX_CMOD_OPT)
 		{
-			return CSTypeToName(type->un.modifier__.type__);
+			ILIntString str;
+			ILIntString temp;
+			if(kind == IL_TYPE_COMPLEX_CMOD_REQD)
+			{
+				str = ILInternString("/* reqd ", -1);
+			}
+			else
+			{
+				str = ILInternString("/* opt ", -1);
+			}
+			temp = ILInternString
+			  ((char *)(CSTypeToName(ILType_FromClass
+			  				(type->un.modifier__.info__))), -1);
+			str = ILInternAppendedString(str, temp);
+			temp = ILInternString(" */ ", -1);
+			str = ILInternAppendedString(str, temp);
+			temp = ILInternString
+				((char *)(CSTypeToName(type->un.modifier__.type__)), -1);
+			str = ILInternAppendedString(str, temp);
+			return str.string;
 		}
 		else if((kind & IL_TYPE_COMPLEX_METHOD) != 0)
 		{
-			/* TODO */
+			ILIntString str;
+			ILIntString temp;
+			unsigned long num;
+			unsigned long param;
+			ILType *paramType;
+
+			/* Convert the return type */
+			str = ILInternString
+				((char *)(CSTypeToName(ILTypeGetReturnWithPrefixes(type))), -1);
+
+			/* Add the start of the parameter list */
+			temp = ILInternString(" * (", -1);
+			str = ILInternAppendedString(str, temp);
+
+			/* Indicate if the type has a "this" parameter */
+			if(ILType_HasThis(type))
+			{
+				temp = ILInternString("/*this,*/ ", -1);
+				str = ILInternAppendedString(str, temp);
+			}
+
+			/* Add the parameters to the list */
+			num = ILTypeNumParams(type);
+			for(param = 1; param <= num; ++param)
+			{
+				paramType = ILTypeGetParamWithPrefixes(type, param);
+				temp = ILInternString((char *)(CSTypeToName(paramType)), -1);
+				str = ILInternAppendedString(str, temp);
+				if(param < num)
+				{
+					temp = ILInternString(", ", 2);
+					str = ILInternAppendedString(str, temp);
+				}
+			}
+
+			/* Terminate the parameter list and return */
+			temp = ILInternString(")", 1);
+			str = ILInternAppendedString(str, temp);
+			return str.string;
 		}
 	}
 	return "invalid type";

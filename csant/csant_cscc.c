@@ -745,6 +745,7 @@ static char **BuildCscCommandLine(CSAntCompileArgs *args)
 		AddArg(&argv, &argc, "/nowarn:168");
 		AddArg(&argv, &argc, "/nowarn:67");
 		AddArg(&argv, &argc, "/nowarn:169");
+		AddArg(&argv, &argc, "/nowarn:679");
 	}
 
 	/* Define pre-processor symbols */
@@ -847,8 +848,8 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 	int posn;
 	unsigned long numFiles;
 	unsigned long file;
-	char *temp;
-	int len;
+	char *temp, *temp2;
+	int len, len2;
 
 	/* Add the program name */
 	AddArg(&argv, &argc, FindProgramPath("mcs", "csant.env.MCS"));
@@ -905,11 +906,57 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 		AddArg(&argv, &argc, args->args[posn]);
 	}
 
+	/* Add the resources to the command-line */
+	numFiles = CSAntFileSetSize(args->resources);
+	for(file = 0; file < numFiles; ++file)
+	{
+		temp = CSAntFileSetFile(args->resources, file);
+		len = len2 = strlen(temp);
+		while(len > 0 && temp[len - 1] != '/' && temp[len - 1] != '\\')
+		{
+			--len;
+		}
+		if(len > 0)
+		{
+			temp2 = (char *)ILMalloc(len2 + (len2 - len) + 2);
+			if(!temp2)
+			{
+				CSAntOutOfMemory();
+			}
+			strcpy(temp2, temp);
+			strcat(temp2, ",");
+			strcat(temp2, temp + len);
+			AddValueArg(&argv, &argc, "-resource:", temp2);
+			ILFree(temp2);
+		}
+		else
+		{
+			AddValueArg(&argv, &argc, "-resource:", temp);
+		}
+	}
+
 	/* Add the source files to the command-line */
 	numFiles = CSAntFileSetSize(args->sources);
 	for(file = 0; file < numFiles; ++file)
 	{
 		AddArg(&argv, &argc, CSAntFileSetFile(args->sources, file));
+	}
+
+	/* Turn on sane warning modes */
+	if(args->saneWarnings == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "-nowarn:626,649,168,67,169,679");
+	}
+
+	/* Define pre-processor symbols */
+	temp = 0;
+	for(posn = 0; posn < args->numDefines; ++posn)
+	{
+		temp = SemiColonList(temp, args->defines[posn]);
+	}
+	if(temp != 0)
+	{
+		AddValueArg(&argv, &argc, "-define:", temp);
 	}
 
 	/* Add the library references to the command-line */

@@ -472,6 +472,7 @@ static int InitCodeGen(void)
 				  CCStringListGetValue(extension_flags, num_extension_flags,
 				  					   "target-assembly-name"),
 				  outfile, nostdlib_flag);
+	CCCodeGen.debugFlag = debug_flag;
 
 	/* Set the default "checked" state */
 	if(CCStringListContains(extension_flags, num_extension_flags, "checked"))

@@ -14,6 +14,10 @@
 	image/debug_reader.c, include/il_debug.h: link debug information
 	from object files into the final assembly.
 
+	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,
+	cscc/common/cc_main.c: output line number debug information
+	for class, field, and property declarations.
+
 2002-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, include/il_config.h.in: detect some new library

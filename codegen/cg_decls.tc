@@ -141,6 +141,13 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 		/* Done with the header */
 		fputs("\n{\n", info->asmOutput);
 
+		/* Output the line number information for the class */
+		if(info->debugFlag)
+		{
+			fprintf(info->asmOutput, ".line %ld \"%s\"\n",
+					yygetlinenum(node), yygetfilename(node));
+		}
+
 		/* Output the attributes that are attached to the class */
 		OutputAttributes(info, info->asmOutput, (ILProgramItem *)classInfo);
 	}
@@ -198,7 +205,7 @@ ILNode_GenDiscard(ILNode_ScopeChange)
 /*
  * Dump information about a field to the output stream.
  */
-static void DumpField(ILGenInfo *info, ILField *field)
+static void DumpField(ILGenInfo *info, ILField *field, ILNode *node)
 {
 	/* Dump the field signature and name */
 	fputs(".field ", info->asmOutput);
@@ -215,6 +222,13 @@ static void DumpField(ILGenInfo *info, ILField *field)
 
 	/* Terminate the field definition */
 	putc('\n', info->asmOutput);
+
+	/* Output the line number information for the field */
+	if(info->debugFlag)
+	{
+		fprintf(info->asmOutput, ".line %ld \"%s\"\n",
+				yygetlinenum(node), yygetfilename(node));
+	}
 
 	/* Output the attributes that are attached to the field */
 	OutputAttributes(info, info->asmOutput, (ILProgramItem *)field);
@@ -240,7 +254,7 @@ ILNode_GenDiscard(ILNode_FieldDeclaration)
 			field = decl->fieldInfo;
 			if(field)
 			{
-				DumpField(info, field);
+				DumpField(info, field, decl->name);
 			}
 		}
 	}
@@ -667,6 +681,11 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 					     IL_DUMP_QUOTE_NAMES, 0,
 						 ILProperty_Name(node->propertyInfo), 0);
 		fputs("\n{\n", outstream);
+		if(info->debugFlag && info->asmOutput)
+		{
+			fprintf(info->asmOutput, ".line %ld \"%s\"\n",
+					yygetlinenum(node->name), yygetfilename(node->name));
+		}
 		OutputAttributes(info, outstream,
 						 (ILProgramItem *)(node->propertyInfo));
 		if(node->getAccessor)
@@ -704,7 +723,7 @@ ILNode_GenDiscard(ILNode_EnumMemberDeclaration)
 	field = node->fieldInfo;
 	if(info->asmOutput && field)
 	{
-		DumpField(info, field);
+		DumpField(info, field, node->name);
 	}
 }
 

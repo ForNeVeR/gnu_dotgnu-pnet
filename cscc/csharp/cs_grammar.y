@@ -1599,17 +1599,17 @@ ParenBooleanExpression
  */
 
 OptArrayInitializer
-	: /* empty */			{ $$ = 0;}
-	| ArrayInitializer		{ $$ = $1;}
+	: /* empty */			{ $$ = 0; }
+	| ArrayInitializer		{ $$ = $1; }
 	;
 
 ArrayInitializer
-	: '{' OptVariableInitializerList OptComma '}' {$$ = $2;}
+	: '{' OptVariableInitializerList OptComma '}' { $$ = $2; }
 	;
 
 OptVariableInitializerList
-	: /* empty */				{ $$ = 0;}
-	| VariableInitializerList	{ $$ = $1;}
+	: /* empty */				{ $$ = 0; }
+	| VariableInitializerList	{ $$ = $1; }
 	;
 
 VariableInitializerList
@@ -1624,8 +1624,8 @@ VariableInitializerList
 	;
 
 VariableInitializer
-	: Expression				{ $$ = $1;}
-	| ArrayInitializer			{ $$ = $1;}
+	: Expression				{ $$ = $1; }
+	| ArrayInitializer			{ MakeUnary(ArrayInit, $1); }
 	;
 
 OptComma

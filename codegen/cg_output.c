@@ -408,6 +408,73 @@ void ILGenTypeToken(ILGenInfo *info, int opcode, ILType *type)
 	}
 }
 
+void ILGenArrayCtor(ILGenInfo *info, ILType *type)
+{
+	if(info->asmOutput)
+	{
+		int dim;
+		fputs("\tnewobj\tinstance void ", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, type, IL_DUMP_QUOTE_NAMES);
+		fputs("::.ctor(", info->asmOutput);
+		dim = ILTypeGetRank(type);
+		while(dim > 0)
+		{
+			fputs("int32", info->asmOutput);
+			--dim;
+			if(dim > 0)
+			{
+				fputs(", ", info->asmOutput);
+			}
+		}
+		fputs(")\n", info->asmOutput);
+	}
+}
+
+void ILGenArrayGet(ILGenInfo *info, ILType *type)
+{
+	if(info->asmOutput)
+	{
+		int dim;
+		fputs("\tcall\tinstance ", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, ILTypeGetElemType(type),
+				   IL_DUMP_QUOTE_NAMES);
+		putc(' ', info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, type, IL_DUMP_QUOTE_NAMES);
+		fputs("::Get(", info->asmOutput);
+		dim = ILTypeGetRank(type);
+		while(dim > 0)
+		{
+			fputs("int32", info->asmOutput);
+			--dim;
+			if(dim > 0)
+			{
+				fputs(", ", info->asmOutput);
+			}
+		}
+		fputs(")\n", info->asmOutput);
+	}
+}
+
+void ILGenArraySet(ILGenInfo *info, ILType *type)
+{
+	if(info->asmOutput)
+	{
+		int dim;
+		fputs("\tcall\tinstance void ", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, type, IL_DUMP_QUOTE_NAMES);
+		fputs("::Set(", info->asmOutput);
+		dim = ILTypeGetRank(type);
+		while(dim > 0)
+		{
+			fputs("int32, ", info->asmOutput);
+			--dim;
+		}
+		ILDumpType(info->asmOutput, info->image, ILTypeGetElemType(type),
+				   IL_DUMP_QUOTE_NAMES);
+		fputs(")\n", info->asmOutput);
+	}
+}
+
 void ILGenFieldRef(ILGenInfo *info, int opcode, ILField *field)
 {
 	if(info->asmOutput)

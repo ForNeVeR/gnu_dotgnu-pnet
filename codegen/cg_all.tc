@@ -31,6 +31,7 @@
 %include "cg_lvalue.tc"
 %include "cg_misc.tc"
 %include "cg_relop.tc"
+%include "cg_ainit.tc"
 %include "cg_stmt.tc"
 
 /* Include the Java version of the code generator */
@@ -44,4 +45,5 @@
 %include "jv_lvalue.tc"
 %include "jv_misc.tc"
 %include "jv_relop.tc"
+%include "jv_ainit.tc"
 %include "jv_stmt.tc"

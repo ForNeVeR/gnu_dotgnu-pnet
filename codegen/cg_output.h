@@ -146,6 +146,21 @@ void ILGenClassName(ILGenInfo *info, int opcode, const char *className);
 void ILGenTypeToken(ILGenInfo *info, int opcode, ILType *type);
 
 /*
+ * Output a constructor call for a multi-dimensional array type.
+ */
+void ILGenArrayCtor(ILGenInfo *info, ILType *type);
+
+/*
+ * Output a method call to get an item from a multi-dimensional array.
+ */
+void ILGenArrayGet(ILGenInfo *info, ILType *type);
+
+/*
+ * Output a method call to set an item within a multi-dimensional array.
+ */
+void ILGenArraySet(ILGenInfo *info, ILType *type);
+
+/*
  * Output an instruction that refers to a field.
  */
 void ILGenFieldRef(ILGenInfo *info, int opcode, ILField *field);

@@ -1,0 +1,308 @@
+%output "cg_ainit.c"
+
+%{
+/*
+ * cg_ainit.tc - Array initialization nodes.
+ *
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "cg_nodes.h"
+%}
+
+%decls %end %{
+
+/*
+ * Get the length of an array initialization expression list
+ * at a particular dimension level.
+ */
+ILUInt32 ILGetArrayInitLength(ILNode *list, int dimension);
+
+/*
+ * Determine if an array initialization expression has the
+ * correct shape for an array type.  If it does, then embed
+ * the array type into it.
+ */
+int ILArrayInitShapeOK(ILGenInfo *info, ILNode *node, ILType *type);
+
+%}
+
+%{
+
+ILUInt32 ILGetArrayInitLength(ILNode *list, int dimension)
+{
+	ILNode_ListIter iter;
+	ILInt32 length = 0;
+	ILNode_ListIter_Init(&iter, list);
+	while(dimension > 0)
+	{
+		list = ILNode_ListIter_Next(&iter);
+		if(!list || !yyisa(list, ILNode_ArrayInit))
+		{
+			return 0;
+		}
+		ILNode_ListIter_Init(&iter, ((ILNode_ArrayInit *)list)->expr);
+		--dimension;
+	}
+	while(ILNode_ListIter_Next(&iter) != 0)
+	{
+		++length;
+	}
+	return length;
+}
+
+/*
+ * Validate the shape of an array initializer.
+ */
+static int ValidateInitShape(ILNode_ArrayInit *init, ILUInt32 *sizes, int rank)
+{
+	ILNode_ListIter iter;
+	ILNode *node;
+	ILUInt32 length;
+
+	if(rank <= 1)
+	{
+		/* The innermost array dimension must not have nested arrays,
+		   and must have the correct size value */
+		ILNode_ListIter_Init(&iter, init->expr);
+		length = 0;
+		while((node = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			if(yyisa(node, ILNode_ArrayInit))
+			{
+				return 0;
+			}
+			++length;
+		}
+		return (length == *sizes);
+	}
+	else
+	{
+		/* Recurse into the inner dimensions, and check this one's size */
+		ILNode_ListIter_Init(&iter, init->expr);
+		length = 0;
+		while((node = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			if(!yyisa(node, ILNode_ArrayInit))
+			{
+				return 0;
+			}
+			if(!ValidateInitShape(((ILNode_ArrayInit *)node),
+								  sizes + 1, rank - 1))
+			{
+				return 0;
+			}
+			++length;
+		}
+		return (length == *sizes);
+	}
+}
+
+int ILArrayInitShapeOK(ILGenInfo *info, ILNode *node, ILType *type)
+{
+	int rank = ILTypeGetRank(type);
+	int dimension;
+	ILNode *temp;
+	ILUInt32 *sizes;
+	ILNode_ListIter iter;
+
+	/* Collect up the array dimension sizes */
+	if((sizes = (ILUInt32 *)ILMalloc(sizeof(ILUInt32) * rank)) == 0)
+	{
+		ILGenOutOfMemory(info);
+	}
+	temp = node;
+	dimension = 0;
+	while(dimension < rank && yyisa(temp, ILNode_ArrayInit))
+	{
+		sizes[dimension] = ILGetArrayInitLength
+				(((ILNode_ArrayInit *)temp)->expr, 0);
+		++dimension;
+		if(dimension < rank)
+		{
+			ILNode_ListIter_Init(&iter, ((ILNode_ArrayInit *)temp)->expr);
+			temp = ILNode_ListIter_Next(&iter);
+			if(!temp)
+			{
+				ILFree(sizes);
+				return 0;
+			}
+		}
+	}
+	if(dimension < rank)
+	{
+		ILFree(sizes);
+		return 0;
+	}
+
+	/* Validate the initializer shape using the dimension sizes */
+	if(!ValidateInitShape((ILNode_ArrayInit *)node, sizes, rank))
+	{
+		ILFree(sizes);
+		return 0;
+	}
+
+	/* Set the array type and return */
+	((ILNode_ArrayInit *)node)->arrayType = type;
+	ILFree(sizes);
+	return 1;
+}
+
+/*
+ * Populate a particular level of an array.
+ */
+static void PopulateArrayLevel(ILGenInfo *info, ILNode *expr,
+							   ILMachineType elemMachineType,
+							   ILType *elemType, ILType *arrayType,
+							   ILUInt32 *posn, int dim, int rank)
+{
+	int temp;
+	ILNode_ListIter iter;
+	ILNode *node;
+	ILUInt32 index;
+
+	/* Have we reached the innermost level? */
+	if(dim >= rank)
+	{
+		/* Duplicate the array object on the stack */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+
+		/* Output the numbers for the element's dimensions */
+		for(temp = 0; temp < rank; ++temp)
+		{
+			ILGenUInt32(info, posn[temp]);
+			ILGenAdjust(info, 1);
+		}
+
+		/* Store the value into the array */
+		if(rank == 1)
+		{
+			if(elemMachineType == ILMachineType_ManagedValue ||
+			   elemMachineType == ILMachineType_Decimal)
+			{
+				ILGenSimple(info, IL_OP_LDELEMA);
+				ILGenAdjust(info, -1);
+			}
+			ILGenCast(info, ILNode_GenValue(expr, info), elemMachineType);
+			ILGenStoreArray(info, elemMachineType, elemType);
+			if(elemMachineType == ILMachineType_ManagedValue ||
+			   elemMachineType == ILMachineType_Decimal)
+			{
+				ILGenAdjust(info, -2);
+			}
+			else
+			{
+				ILGenAdjust(info, -3);
+			}
+		}
+		else
+		{
+			ILGenCast(info, ILNode_GenValue(expr, info), elemMachineType);
+			ILGenArraySet(info, arrayType);
+			ILGenAdjust(info, -(rank + 1));
+		}
+	}
+	else
+	{
+		/* Scan the current array dimension and call ourselves recursively */
+		ILNode_ListIter_Init(&iter, ((ILNode_ArrayInit *)expr)->expr);
+		index = 0;
+		while((node = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			posn[dim] = index;
+			PopulateArrayLevel(info, node, elemMachineType, elemType,
+							   arrayType, posn, dim + 1, rank);
+			++index;
+		}
+	}
+}
+
+%}
+
+/*
+ * Get the type for an array initialization expression.
+ */
+ILNode_GetType(ILNode_ArrayInit)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for an array initialization expression.
+ */
+ILNode_GenValue(ILNode_ArrayInit)
+{
+	ILType *type = node->arrayType;
+	ILType *elemType;
+	ILClass *classType;
+	int rank, dimension;
+	ILUInt32 *posn;
+
+	/* Bail out if semantic analysis was not performed correctly */
+	if(!type)
+	{
+		ILGenSimple(info, IL_OP_LDNULL);
+		ILGenAdjust(info, 1);
+		return ILMachineType_ObjectRef;
+	}
+
+	/* Create the array */
+	elemType = ILTypeGetElemType(type);
+	rank = ILTypeGetRank(type);
+	if(rank == 1)
+	{
+		/* Create a single-dimensional array */
+		ILGenUInt32(info, ILGetArrayInitLength(node->expr, 0));
+		ILGenAdjust(info, 1);
+		classType = ILTypeToClass(info, elemType);
+		if(classType)
+		{
+			ILGenTypeToken(info, IL_OP_NEWARR, ILType_FromClass(classType));
+		}
+		else
+		{
+			ILGenTypeToken(info, IL_OP_NEWARR, elemType);
+		}
+	}
+	else
+	{
+		/* Create a multi-dimensional array */
+		for(dimension = 0; dimension < rank; ++dimension)
+		{
+			ILGenUInt32(info, ILGetArrayInitLength(node->expr, dimension));
+			ILGenAdjust(info, 1);
+		}
+		ILGenArrayCtor(info, type);
+		ILGenAdjust(info, -(rank - 1));
+	}
+
+	/* TODO: use "InitializeArray" to populate simple numeric arrays */
+
+	/* Populate the array */
+	posn = (ILUInt32 *)ILMalloc(sizeof(ILUInt32) * rank);
+	if(!posn)
+	{
+		ILGenOutOfMemory(info);
+	}
+	PopulateArrayLevel(info, (ILNode *)node, ILTypeToMachineType(elemType),
+					   elemType, type, posn, 0, rank);
+	ILFree(posn);
+
+	/* Return the array's machine type to the caller */
+	return ILMachineType_ObjectRef;
+}

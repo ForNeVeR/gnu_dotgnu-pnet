@@ -4,6 +4,13 @@
 	* engine/HACKING: add Gopal V.'s description of internal methods
 	in the engine.
 
+	* codegen/Makefile.am, codegen/.cvsignore, codegen/cg_ainit.tc,
+	codegen/cg_all.tc, codegen/cg_nodes.tc, codegen/cg_output.c,
+	codegen/cg_output.h, codegen/jv_ainit.tc, codegen/jv_output.c,
+	codegen/jv_output.h, cscc/csharp/cs_decls.tc, cscc/csharp/cs_grammar.y,
+	cscc/csharp/cs_misc.tc, cscc/csharp/cs_oper.tc: implement array
+	initializers for fields and local variable declarations.
+
 2001-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_defs.tc,

@@ -510,6 +510,16 @@ struct _tagILSwitchValue
 	%nocreate long saveStack = {0};
 }
 
+%output "cg_ainit.c"
+
+/*
+ * Array initialization.
+ */
+%node ILNode_ArrayInit ILNode_UnaryExpression =
+{
+	%nocreate ILType *arrayType = {0};
+}
+
 %output "cg_stmt.c"
 
 /*

@@ -245,6 +245,11 @@ void JavaGenClassName(ILGenInfo *info, int opcode, const char *className);
 void JavaGenNewArray(ILGenInfo *info, ILType *elemType);
 
 /*
+ * Output an instruction to generate a new multi-dimensional array.
+ */
+void JavaGenNewMultiArray(ILGenInfo *info, ILType *type, int rank);
+
+/*
  * Output an instruction that refers to a field.
  */
 void JavaGenFieldRef(ILGenInfo *info, int opcode, ILField *field);

@@ -966,6 +966,17 @@ void JavaGenNewArray(ILGenInfo *info, ILType *elemType)
 	}
 }
 
+void JavaGenNewMultiArray(ILGenInfo *info, ILType *type, int rank)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tmultianewarray\t", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, type,
+				   IL_DUMP_QUOTE_NAMES);
+		fprintf(info->asmOutput, " %d\n", rank);
+	}
+}
+
 void JavaGenReturnInsn(ILGenInfo *info, ILMachineType type)
 {
 	switch(type)

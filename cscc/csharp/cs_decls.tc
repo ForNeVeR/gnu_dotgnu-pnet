@@ -423,6 +423,32 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 			continue;
 		}
 
+		/* If the initializer is an array, we need to do something different */
+		if(yyisa(decl->initializer, ILNode_ArrayInit))
+		{
+			/* Must be static and non-const */
+			if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
+			{
+				CCErrorOnLine(yygetfilename(decl->initializer),
+							  yygetlinenum(decl->initializer),
+							  "initializer used on non-static field");
+				continue;
+			}
+			if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
+			{
+				CCErrorOnLine(yygetfilename(decl->initializer),
+							  yygetlinenum(decl->initializer),
+							  "initializer is not constant");
+				continue;
+			}
+
+			/* Add the value to the static constructor, and let the
+			   semantic analysis on it take care of everything */
+			CSAddStaticCtor(info, ILNode_Assign_create
+				(decl->name, decl->initializer));
+			continue;
+		}
+
 		/* Perform semantic analysis on the initializer value */
 		value = ILNode_SemAnalysis(decl->initializer, info,
 								   &(decl->initializer));

@@ -447,6 +447,51 @@ ILNode_SemAnalysis(ILNode_UShr)
 					 parent, ILOp_Shr, "op_RightShift", ">>");
 }
 
+%{
+
+/*
+ * Coerce the elements of an array initializer to a common type.
+ */
+static void CoerceArrayInit(ILGenInfo *info, ILNode *expr,
+							ILNode **parent, ILType *type)
+{
+	ILNode_ListIter iter;
+	ILNode *node;
+	CSSemValue value;
+
+	if(yyisa(expr, ILNode_ArrayInit))
+	{
+		/* Recursively visit all array elements */
+		ILNode_ListIter_Init(&iter, ((ILNode_ArrayInit *)expr)->expr);
+		while((node = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			CoerceArrayInit(info, node, iter.last, type);
+		}
+	}
+	else
+	{
+		/* This is a normal array element */
+		if(!CSSemExpectValue(expr, info, parent, &value))
+		{
+			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+						  _("invalid array initializer element"));
+		}
+		else if(!ILCanCoerceNode(info, expr, value.type, type))
+		{
+			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+			  _("incompatible types in initializer: no conversion "
+			  		"from `%s' to `%s'"),
+			  CSTypeToName(value.type), CSTypeToName(type));
+		}
+		else
+		{
+			ILCoerce(info, expr, parent, value.type, type);
+		}
+	}
+}
+
+%}
+
 /*
  * Perform semantic analysis for the assignment operator.
  */
@@ -467,6 +512,34 @@ ILNode_SemAnalysis(ILNode_Assign)
 			value1.kind = CS_SEMKIND_RVALUE;
 			value1.type = ILType_Int32;
 		}
+		return value1;
+	}
+
+	/* Check for array initializers in the assigned expression */
+	if(yyisa(node->expr2, ILNode_ArrayInit))
+	{
+		/* Make sure that the destination type is an array */
+		if(!ILType_IsArray(value1.type))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "array initializer assigned to non-array destination");
+			value1.kind = CS_SEMKIND_RVALUE;
+			return value1;
+		}
+
+		/* Check the shape of the array initializer */
+		if(!ILArrayInitShapeOK(info, node->expr2, value1.type))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "incorrect pattern of elements in array initializer");
+			value1.kind = CS_SEMKIND_RVALUE;
+			return value1;
+		}
+
+		/* Coerce all initializer members to the element type */
+		CoerceArrayInit(info, node->expr2, &(node->expr2),
+					    ILTypeGetElemType(value1.type));
+		value1.kind = CS_SEMKIND_RVALUE;
 		return value1;
 	}
 

@@ -319,3 +319,28 @@ ILNode_SemAnalysis(ILNode_SemGuard)
 {
 	return node->value;
 }
+
+/*
+ * Perform semantic analysis for an array initialization expression.
+ */
+ILNode_SemAnalysis(ILNode_ArrayInit)
+{
+	if(node->arrayType)
+	{
+		/* We've already visited this node, so return its type */
+		CSSemValue value;
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = node->arrayType;
+		return value;
+	}
+	else
+	{
+		/* We haven't visited this node, so it has been used in
+		   an incorrect context.  Initializers can be used on
+		   fields and variables using regular assignment, or in
+		   array creation expressions */
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("internal error in array initializer"));
+		return CSSemValueDefault;
+	}
+}

@@ -2,6 +2,7 @@ Makefile
 Makefile.in
 .deps
 stamp-treecc
+cg_ainit.c
 cg_arith.c
 cg_assign.c
 cg_cast.c

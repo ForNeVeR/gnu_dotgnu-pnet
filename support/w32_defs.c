@@ -22,8 +22,9 @@
 
 #ifdef IL_USE_WIN32_THREADS
 
-#include <windows.h>
-
+/* Don't include windows.h here otherwise it will override
+   CreateThread macros from gc.h.  It should be included by thr_choose.h */
+   
 #ifdef	__cplusplus
 extern	"C" {
 #endif

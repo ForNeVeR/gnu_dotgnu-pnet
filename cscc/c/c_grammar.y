@@ -2614,6 +2614,7 @@ FunctionDefinition
 	  		}
 	| DeclarationSpecifiers Declarator OptParamDeclarationList '{'	{
 				ILMethod *method;
+				CDeclSpec spec;
 
 				/* Flush the code for any pending initializers */
 				if(initializers != 0)
@@ -2622,9 +2623,13 @@ FunctionDefinition
 					initializers = 0;
 				}
 
+				/* Finalize the declaration specifier */
+				spec = CDeclSpecFinalize
+						($1, $2.node, $2.name, C_KIND_GLOBAL_NAME);
+
 				/* Create the method block from the function header */
 				method = CFunctionCreate
-					(&CCCodeGen, $2.name, $2.node, $1, $2, $3);
+					(&CCCodeGen, $2.name, $2.node, spec, $2, $3);
 
 				/* Create a new scope to hold the function body */
 				CCurrentScope = ILScopeCreate(&CCCodeGen, CCurrentScope);

@@ -4,6 +4,10 @@
 	* cscc/c/c_oper.tc: compare the element types in "==", not the
 	whole types, to determine if we are comparing distinct types.
 
+	* cscc/c/c_grammar.y: finalize the declaration specifier in a
+	function definition prior to calling "CFunctionCreate", to prevent
+	the return type defaulting to "int".
+
 2002-09-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/file.c (ILSysIOOpen): bug in the conversion of

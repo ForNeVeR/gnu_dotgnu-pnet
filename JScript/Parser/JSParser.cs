@@ -590,11 +590,13 @@ public class JSParser
 				JNode expr = LeftHandSideExpression();
 				if(token == JSToken.Increment && !scanner.GotEndOfLine())
 				{
+					NextToken();
 					expr = new JPostInc(Context.BuildRange
 										(expr.context, tokenInfo), expr);
 				}
 				else if(token == JSToken.Decrement && !scanner.GotEndOfLine())
 				{
+					NextToken();
 					expr = new JPostDec(Context.BuildRange
 										(expr.context, tokenInfo), expr);
 				}

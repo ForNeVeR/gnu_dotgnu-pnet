@@ -1,4 +1,9 @@
 
+2004-05-07  Gopal V  <gopalv82@yahoo.com>
+
+	* JScript/Parser/JSParser.cs: Eatup the increment or decrement tokens
+	before exiting from the PostfixExpression.
+	
 2004-05-07  Jonas Printzen  <jonas@printzen.net>
 
 	* tests/runtime/Testruntime.cs, 

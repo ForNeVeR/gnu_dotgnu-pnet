@@ -1,10 +1,4 @@
 
-2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
-
-	* engine/mkint.sh: look in the pnetlib sources for the assemblies
-	to convert, instead of in pnet/samples, since the pre-compiled
-	assemblies in pnet/samples will be going away soon.
-
 2002-12-08  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h,cscc/common/cc_main.c: add noStdlibFlag and 
@@ -14,6 +8,11 @@
 	* cscc/csharp/cs_defs.tc, cscc/csharp/cs_grammar.y, 
 	cscc/csharp/cs_types.tc, cscc/csharp/cs_lvalue.tc,cscc/csharp/cs_gather.c
 	: Fix for Bug 1900 in savannah. To resolve System classes correctly.
+
+	* cscc/csharp/cs_types.tc: add code to allow for -fbuiltin-library
+	and -nostdlib to be used together.
+
+	* codegen/cg_gen.h,cscc/common/cc_main.c: remove the two flags.
 
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 

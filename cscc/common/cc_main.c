@@ -158,14 +158,6 @@ int CCMain(int argc, char *argv[])
 		return 1;
 	}
 
-	/* If we are using a builtin library, set the flag */
-	if(CCStringListContains(extension_flags, num_extension_flags,
-							"builtin-library"))
-	{
-		CCCodeGen.builtinLibFlag=1;
-	}
-	/* Perform semantic analysis */
-	CCCodeGen.noStdlibFlag = nostdlib_flag; 
 	CCCodeGen.semAnalysis = 1;
 	CCCodeGen.optimizeFlag= (0x03) & optimize_flag;
 	CCPluginSemAnalysis();

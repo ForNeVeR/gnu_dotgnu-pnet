@@ -105,8 +105,6 @@ struct _tagILGenInfo
 	int				inSemType : 1;		/* Semantic analysis on a type */
 	int				useJavaLib : 1;		/* Use Java and not C# library */
 	int				outputIsJava : 1;	/* Output Java bytecode */
-	int				noStdlibFlag : 1;	/* Non-zero if -nostdlib enabled */
-	int				builtinLibFlag : 1;	/* Non-zero if -fbuiltin-library  */
 	int				debugFlag : 1;		/* Non-zero if debug is enabled */
 	int				hasUnsafe : 1;		/* Non-zero if unsafe code in source */
 	int				needSwitchPop : 1;	/* Non-zero to pop a switch value */

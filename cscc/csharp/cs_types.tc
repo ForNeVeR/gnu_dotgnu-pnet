@@ -154,14 +154,11 @@ ILNode_SemAnalysis(ILNode_PrimitiveType)
 ILNode_SemAnalysis(ILNode_SystemType)
 {
 	CSSemValue value;
-	if(info->noStdlibFlag || info->builtinLibFlag)
+	CSSemSetType(value, ILFindSystemType(info, node->className));
+	if(!(CSSemGetType(value)))
 	{
 		value=ILNode_SemAnalysis(
 				ILQualIdentTwo("System",node->className),info,parent);
-	}
-	else
-	{
-		CSSemSetType(value, ILFindSystemType(info, node->className));
 	}
 	if(!(CSSemGetType(value)))
 	{

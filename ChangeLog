@@ -5,6 +5,9 @@
 	centralize the path-searching code to make it easier to vary
 	the install location on systems such as Win32.
 
+	* engine/lib_dir.c, support/dir.c: shift the system-specific
+	parts of "DirMethods.GetPathInfo" into the "support" directory.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

@@ -53,19 +53,18 @@ typedef struct
  */
 void _IL_DirMethods_GetPathInfo(ILExecThread *thread, void *result)
 {
+	ILPathInfo sysInfo;
 	Platform_PathInfo *info = (Platform_PathInfo *)result;
 	System_Array *charArray;
 	ILUInt16 *invalidPathCharsBuf;
+	int posn;
+
+	/* Get the path information from the system layer */
+	ILGetPathInfo(&sysInfo);
 
 	/* Allocate the "invalidPathChars" array */
-#if defined(_WIN32) || defined(WIN32)
-	charArray = (System_Array *)ILExecThreadNew(thread, "[c", "(Ti)V", 
-													(ILVaInt)6);
-#else
-	charArray = (System_Array *)ILExecThreadNew(thread, "[c", "(Ti)V", 
-													(ILVaInt)2);
-#endif
-
+	charArray = (System_Array *)ILExecThreadNew
+	  (thread, "[c", "(Ti)V", (ILVaInt)(strlen(sysInfo.invalidPathChars) + 1));
 	if(!charArray)
 	{
 		/* Bail out if out of memory */
@@ -76,28 +75,19 @@ void _IL_DirMethods_GetPathInfo(ILExecThread *thread, void *result)
 
 	/* Fill the "invalidPathChars" array with the invalid characters */
 	invalidPathCharsBuf = (ILUInt16 *)(ArrayToBuffer(charArray));
+	posn = 0;
+	while(sysInfo.invalidPathChars[posn] != '\0')
+	{
+		invalidPathCharsBuf[posn] = (ILUInt16)(sysInfo.invalidPathChars[posn]);
+		++posn;
+	}
+	invalidPathCharsBuf[posn] = (ILUInt16)0;
 
-#if defined(_WIN32) || defined(WIN32)
-	/* ... write the 16-bit characters to buf ... */
-	*(invalidPathCharsBuf++) = '\"';
-	*(invalidPathCharsBuf++) = '<';
-	*(invalidPathCharsBuf++) = '>';
-	*(invalidPathCharsBuf++) = '|';
-#endif
-	*(invalidPathCharsBuf++) = '\0';
-	*(invalidPathCharsBuf++) = '\n';
-
-#if defined(_WIN32) || defined(WIN32)
-	info->dirSeparator = '\\';
-	info->altDirSeparator = '/';
-	info->volumeSeparator = ':';
-	info->pathSeparator = ';';
-#else
-	info->dirSeparator = '/';
-	info->altDirSeparator = 0;
-	info->volumeSeparator = 0;
-	info->pathSeparator = ':';
-#endif
+	/* Copy across the rest of the information */
+	info->dirSeparator = sysInfo.dirSep;
+	info->altDirSeparator = sysInfo.altDirSep;
+	info->volumeSeparator = sysInfo.volumeSep;
+	info->pathSeparator = sysInfo.pathSep;
 }
 
 /*

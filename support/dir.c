@@ -385,6 +385,29 @@ int ILDirEntType(ILDirEnt *entry)
 
 #endif /* USE_WIN32_FIND */
 
+void ILGetPathInfo(ILPathInfo *info)
+{
+#if defined(IL_WIN32_NATIVE)
+	info->dirSep = '\\';
+	info->altDirSep = '/';
+	info->volumeSep = ':';
+	info->pathSep = ';';
+	info->invalidPathChars = "\"<>|\r\n";
+#elif defined(IL_WIN32_CYGWIN)
+	info->dirSep = '/';
+	info->altDirSep = '\\';
+	info->volumeSep = 0;
+	info->pathSep = ':';
+	info->invalidPathChars = "\"<>|\r\n";
+#else
+	info->dirSep = '/';
+	info->altDirSep = 0;
+	info->volumeSep = 0;
+	info->pathSep = ':';
+	info->invalidPathChars = "\r\n";
+#endif
+}
+
 #ifdef	__cplusplus
 };
 #endif

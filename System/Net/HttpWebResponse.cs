@@ -189,6 +189,19 @@ public class HttpWebResponse : WebResponse
 			return headers;
 		}
 	}
+	
+	[TODO]
+	public CookieCollection Cookies 
+	{
+ 		get
+		{
+			throw new NotImplementedException("Cookies");
+		}
+		set
+		{
+				throw new NotImplementedException("Cookies");
+		}
+	}
 
 	public DateTime LastModified 
 	{ 

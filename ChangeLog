@@ -1,4 +1,9 @@
 
+2004-05-20  Gopal V  <gopalv82@yahoo.com>
+
+	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs: Stub
+	out Cookie and Cerificate handling for http handlers.
+
 2004-05-19  Gopal V  <gopalv82@yahoo.com>
 
 	* System/Configuration/NameValueSectionHandler.cs,

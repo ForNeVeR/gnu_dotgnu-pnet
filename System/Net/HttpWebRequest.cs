@@ -34,6 +34,7 @@ using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using DotGNU.SSL;
+using System.Security.Cryptography.X509Certificates;
 
 public class HttpWebRequest : WebRequest
 {
@@ -364,6 +365,29 @@ public class HttpWebRequest : WebRequest
 			this.credentials=value;
 		}
 	}
+	
+	[TODO]
+	public X509CertificateCollection ClientCertificates 
+	{
+ 		get
+		{
+			throw new NotImplementedException("ClientCertificates");
+		}
+	}
+	
+	[TODO]
+	public System.Net.CookieContainer CookieContainer 
+	{
+ 		get
+		{
+			throw new NotImplementedException("CookieContainer");
+		}
+
+ 		set
+		{
+			throw new NotImplementedException("CookieContainer");
+		}
+ 	}
 
 	public string Expect 
 	{

@@ -142,8 +142,8 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 			maxSize *= (ILUInt32)(marray->bounds[dim].size);
 		}
 	}
-	else
 #endif
+	else
 	{
 		return;
 	}

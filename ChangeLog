@@ -1,4 +1,11 @@
 
+2001-12-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_values.h: modify "_IL_READ_BYTE" and "_IL_READ_BYTE_SHIFT"
+	to explicitly cast the pointer to "ILUInt8 *" first, because some
+	parts of the code use "void *" instead of "unsigned char *", which
+	causes problems with some versions of gcc.
+
 2001-12-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_cast.tc, codegen/jv_cast.tc: insert the "%split"

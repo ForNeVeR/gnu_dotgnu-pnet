@@ -178,9 +178,9 @@ typedef ILInt8 						ILBool;
  * Read little-endian values of various sizes from memory buffers.
  */
 #define	_IL_READ_BYTE(buf,offset)	\
-			((ILUInt32)(ILUInt8)((buf)[(offset)]))
+			((ILUInt32)(ILUInt8)(((ILUInt8 *)(buf))[(offset)]))
 #define	_IL_READ_BYTE_SHIFT(buf,offset,shift)	\
-			(((ILUInt32)(ILUInt8)((buf)[(offset)])) << (shift))
+			(((ILUInt32)(ILUInt8)(((ILUInt8 *)(buf))[(offset)])) << (shift))
 #if defined(__i386) || defined(__i386__)
 /* The i386 family of CPU's can read little-endian values on any
    byte boundary, so we can implement the macros more simply */

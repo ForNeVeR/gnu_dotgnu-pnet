@@ -251,7 +251,7 @@ public class Cursor : IDisposable
 	// Convert this cursor into a string.
 	public override String ToString()
 			{
-				if(type != ToolkitCursorType.UserDefined && icon != null)
+				if(type == ToolkitCursorType.UserDefined && icon != null)
 				{
 					return "[Cursor: " + icon.Width + ", " + icon.Height + "]";
 				}

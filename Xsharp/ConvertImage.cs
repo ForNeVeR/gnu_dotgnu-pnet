@@ -76,6 +76,20 @@ internal sealed class ConvertImage
 					 mask, 1, null);
 			}
 
+	// Convert an image frame into an XImage bitmap.
+	public static IntPtr FrameToXImageBitmap(Screen screen, Frame frame)
+			{
+				byte[] data = frame.Data;
+				if(data == null)
+				{
+					return IntPtr.Zero;
+				}
+				return Xlib.XSharpCreateImageFromDIB
+					(screen.screen, frame.Width, frame.Height,
+					 frame.Stride, (int)(PixelFormat.Format1bppIndexed),
+					 data, 1, null);
+			}
+
 	// Convert an XImage into a Pixmap object.
 	public static Pixmap XImageToPixmap(Screen screen, IntPtr ximage)
 			{

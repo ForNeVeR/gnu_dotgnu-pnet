@@ -194,16 +194,16 @@ public sealed class RootWindow : Widget
 	///
 	/// <value>
 	/// <para>The cursor shape to set for the widget.  If the value is
-	/// <c>CursorType.XC_inherit_parent</c>, then the widget inherits the
+	/// <see langword="null"/>, then the widget inherits the
 	/// cursor that is set on the parent widget.</para>
 	/// </value>
-	public override CursorType Cursor
+	public override Cursor Cursor
 			{
 				get
 				{
 					// We don't know what the root window has set
 					// cursor to, so we always return the default.
-					return CursorType.XC_inherit_parent;
+					return null;
 				}
 				set
 				{

@@ -925,7 +925,7 @@ internal class CaptionWidget : InputOutputWidget
 			{
 				if(clickMode == HitTest.Outside)
 				{
-					Cursor = CursorType.XC_inherit_parent;
+					Cursor = null;
 				}
 			}
 
@@ -1150,7 +1150,7 @@ internal class CaptionWidget : InputOutputWidget
 						cursor = CursorType.XC_inherit_parent;
 						break;
 				}
-				Cursor = cursor;
+				Cursor = new Cursor(cursor);
 				return test;
 			}
 

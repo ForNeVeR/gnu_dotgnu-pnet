@@ -44,7 +44,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	internal bool autoMapChildren;
 	private bool sensitive;
 	private bool ancestorSensitive;
-	private CursorType cursor;
+	private Cursor cursor;
 	private Widget parent;
 	private Widget topChild;
 	private Widget nextAbove;
@@ -57,7 +57,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			: base(dpy, screen, kind)
 			{
 				// Set the initial widget properties.
-				cursor = CursorType.XC_inherit_parent;
+				cursor = null;
 				autoMapChildren = true;
 				sensitive = true;
 
@@ -281,10 +281,10 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	///
 	/// <value>
 	/// <para>The cursor shape to set for the widget.  If the value is
-	/// <c>CursorType.XC_inherit_parent</c>, then the widget inherits the
+	/// <see langword="null"/>, then the widget inherits the
 	/// cursor that is set on the parent widget.</para>
 	/// </value>
-	public virtual CursorType Cursor
+	public virtual Cursor Cursor
 			{
 				get
 				{
@@ -298,7 +298,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 						if(cursor != value)
 						{
 							cursor = value;
-							if(value == CursorType.XC_inherit_parent)
+							if(value == null)
 							{
 								// Revert to inheriting our parent's cursor.
 								Xlib.XUndefineCursor
@@ -306,10 +306,8 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 							}
 							else
 							{
-								// Change our cursor to a pre-defined shape.
-								Xlib.XDefineCursor
-									(display, GetWidgetHandle(),
-									 dpy.GetCursor(value));
+								// Change our cursor to the defined shape.
+								value.SetCursor(this);
 							}
 						}
 					}

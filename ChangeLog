@@ -17,6 +17,12 @@
 	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
 	add some supporting code for writing the serialized form of arrays.
 
+	* System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/Cursor.cs, Xsharp/CaptionWidget.cs,
+	Xsharp/ConvertImage.cs, Xsharp/Cursor.cs, Xsharp/RootWindow.cs,
+	Xsharp/Widget.cs, Xsharp/Xlib.cs.in: finish off the implementation
+	of cursors for Xsharp.
+
 2003-12-28  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* Xsharp/XsharpPCF.c: fix build on systems without X.

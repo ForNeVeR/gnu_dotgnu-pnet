@@ -194,6 +194,12 @@ internal sealed unsafe class Xlib
 	extern public static @X_int@ XUndefineCursor(IntPtr display, Window w);
 
 	[DllImport("X11")]
+	extern public static Cursor XCreatePixmapCursor
+			(IntPtr display, Pixmap source, Pixmap mask,
+			 ref XColor foreground, ref XColor background,
+			 @X_uint@ x, @X_uint@ y);
+
+	[DllImport("X11")]
 	extern public static @X_int@ XSetWindowBackground
 			(IntPtr display, Window w, Pixel background_pixel);
 

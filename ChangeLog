@@ -4,6 +4,10 @@
 	* cscc/csharp/cs_invoke.tc: Report correct error messages for 
 	missing implementations of events and fix a segfault.
 
+	* cscc/csharp/cs_lookup.c (FindIndexers): ignore private interface
+	implementations on the first scan through a class, to allow a
+	non-interface indexer to override the interface one.
+
 2003-05-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_system.h, support/clflush.c: implement the "ILCacheFlush"

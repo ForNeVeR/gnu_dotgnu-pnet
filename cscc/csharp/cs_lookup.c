@@ -712,20 +712,32 @@ static void FindIndexers(ILClass *info, ILClass *accessedFrom,
 					/* This is a virtual override, so skip it */
 					continue;
 				}
+				if(ILOverrideFromMethod(method) != 0)
+				{
+					/* Ignore private interface overrides for now, so that
+					   we can pick up a non-interface indexer instead if
+					   one exists.  If one doesn't exist, then we will
+					   re-find the interface indexer when we scan the
+					   base interfaces below.  This situation occurs with
+					   code like this:
+
+					        X this[int i] { ... }
+							X I.this[int i] { ... }
+					*/
+					continue;
+				}
 				AddMember(results, (ILProgramItem *)member, info,
 						  IL_META_MEMBERKIND_PROPERTY);
 			}
 		}
 
-		/* If this is an interface, then scan its base interfaces */
-		if(ILClass_IsInterface(info))
+		/* Scan the base interfaces.  Duplicate entries will be cleaned
+		   up by the TrimMemberList call in "IndexerLookup" */
+		impl = 0;
+		while((impl = ILClassNextImplements(info, impl)) != 0)
 		{
-			impl = 0;
-			while((impl = ILClassNextImplements(info, impl)) != 0)
-			{
-				FindIndexers(ILImplementsGetInterface(impl),
-						     accessedFrom, results);
-			}
+			FindIndexers(ILImplementsGetInterface(impl),
+					     accessedFrom, results);
 		}
 
 		/* Move up to the parent */

@@ -194,6 +194,7 @@ void ILDebugIterInit(ILDebugIter *iter, ILDebugContext *dbg, ILToken token)
 		{
 			break;
 		}
+		--left;
 	}
 	right = middle;
 	while(right < (dbg->indexSize - 1))
@@ -203,6 +204,7 @@ void ILDebugIterInit(ILDebugIter *iter, ILDebugContext *dbg, ILToken token)
 		{
 			break;
 		}
+		++right;
 	}
 
 	/* Set up the iterator and return */

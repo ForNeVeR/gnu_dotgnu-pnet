@@ -24,6 +24,9 @@
 	attribute to the "file" tag to override the source or build
 	directory that is used by default.
 
+	* image/debug_reader.c (ILDebugIterInit): update "left" and "right"
+	when searching for the extents of a debug information range.
+
 2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:

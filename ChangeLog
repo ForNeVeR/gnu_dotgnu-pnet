@@ -11,6 +11,9 @@
 	* runtime/System/AppDomain.cs: Add the stubs and redirects for all
 	the DefineDynamicAssembly overriden methods.
 	
+	* runtime/System/AppDomain.cs: Fix compiler error for missing 
+	Using statements.
+	
 2003-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* JScript/Builtins/GlobalObject.cs, JScript/Execute/Convert.cs,

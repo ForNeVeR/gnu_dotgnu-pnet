@@ -21,8 +21,10 @@
 namespace System
 {
 
+using System.Security;
 using System.Reflection;
 using System.Globalization;
+using System.Reflection.Emit;
 using System.Security.Policy;
 
 public sealed class AppDomain : MarshalByRefObject, _AppDomain

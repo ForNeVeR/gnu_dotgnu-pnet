@@ -13,6 +13,11 @@
 	cscc/common/cc_errors.c: add security attributes to the output
 	image if unsafe constructs are used in the source program.
 
+	* image/meta_build.c (Load_MemberRef): scan up the class
+	hierarchy to resolve a member because C# compilers output
+	the direct parent class in "base.X" expressions, even if
+	"X" lives in an indirect ancestor.
+
 2002-04-21  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_test.c : Test stubber for ECMA classes , added

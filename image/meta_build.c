@@ -1623,6 +1623,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 	const char *name;
 	ILType *type;
 	ILClass *classInfo;
+	ILClass *currentInfo;
 	ILClass *resolvedClass;
 	ILTypeSpec *spec;
 	ILMember *member;
@@ -1680,25 +1681,37 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 				break;
 			}
 		localType:
-			while((member = ILClassNextMember(classInfo, member)) != 0)
+			currentInfo = classInfo;
+			while(currentInfo != 0)
 			{
-				if(!strcmp(ILMember_Name(member), name))
+				member = 0;
+				while((member = ILClassNextMember(currentInfo, member)) != 0)
 				{
-					if(isMethod && ILMember_IsMethod(member))
+					if(!strcmp(ILMember_Name(member), name))
 					{
-						if(ILTypeIdentical(ILMember_Signature(member), type))
+						if(isMethod && ILMember_IsMethod(member))
 						{
-							break;
+							if(ILTypeIdentical
+									(ILMember_Signature(member), type))
+							{
+								break;
+							}
 						}
-					}
-					else if(!isMethod && ILMember_IsField(member))
-					{
-						if(ILTypeIdentical(ILMember_Signature(member), type))
+						else if(!isMethod && ILMember_IsField(member))
 						{
-							break;
+							if(ILTypeIdentical
+									(ILMember_Signature(member), type))
+							{
+								break;
+							}
 						}
 					}
 				}
+				if(member != 0)
+				{
+					break;
+				}
+				currentInfo = ILClass_Parent(currentInfo);
 			}
 		}
 		break;
@@ -1752,28 +1765,38 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 					break;
 				}
 				resolvedMember = 0;
-				while((resolvedMember = ILClassNextMember(resolvedClass,
-														  resolvedMember)) != 0)
+				while(resolvedClass != 0)
 				{
-					if(!strcmp(ILMember_Name(resolvedMember), name))
+					resolvedMember = 0;
+					while((resolvedMember = ILClassNextMember
+								(resolvedClass, resolvedMember)) != 0)
 					{
-						if(isMethod && ILMember_IsMethod(resolvedMember))
+						if(!strcmp(ILMember_Name(resolvedMember), name))
 						{
-							if(ILTypeIdentical
-									(ILMember_Signature(resolvedMember), type))
+							if(isMethod && ILMember_IsMethod(resolvedMember))
 							{
-								break;
+								if(ILTypeIdentical
+									(ILMember_Signature(resolvedMember), type))
+								{
+									break;
+								}
 							}
-						}
-						else if(!isMethod && ILMember_IsField(resolvedMember))
-						{
-							if(ILTypeIdentical
-									(ILMember_Signature(resolvedMember), type))
+							else if(!isMethod &&
+									ILMember_IsField(resolvedMember))
 							{
-								break;
+								if(ILTypeIdentical
+									(ILMember_Signature(resolvedMember), type))
+								{
+									break;
+								}
 							}
 						}
 					}
+					if(resolvedMember != 0)
+					{
+						break;
+					}
+					resolvedClass = ILClass_Parent(resolvedClass);
 				}
 				if(!resolvedMember)
 				{

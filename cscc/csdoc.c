@@ -155,7 +155,9 @@ int main(int argc, char *argv[])
 static int InitCodeGen(void)
 {
 	/* Initialize the code generator, with no assembly output */
-	ILGenInfoInit(&CSCodeGen, progname, NULL);
+	ILGenInfoInit(&CSCodeGen, progname, NULL, 1);
+
+	/* TODO: load the system libraries */
 
 	/* Ready to go now */
 	return 0;

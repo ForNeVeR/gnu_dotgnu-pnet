@@ -7,6 +7,9 @@ determine the "best" candidate method from amongst a group of candidates.
 * codegen/cg_gen.c: make "ILFindNonSystemType" look in the global scope
 before falling back to the library image.
 
+* codegen/cg_gen.h, codegen/cg_gen.c, cscc/cs_main.c, cscc/csdoc.c:
+don't create the builtin library image if "mscorlib" is being loaded.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

@@ -474,7 +474,7 @@ static int InitCodeGen(void)
 	}
 
 	/* Initialize the code generator */
-	ILGenInfoInit(&CSCodeGen, progname, outfile);
+	ILGenInfoInit(&CSCodeGen, progname, outfile, nostdlib_flag);
 
 	/* Set the default "checked" state */
 	if(CSStringListContains(extension_flags, num_extension_flags, "checked"))

@@ -65,7 +65,8 @@ static ILImage *CreateBasicImage(ILContext *context, const char *assemName)
 	return image;
 }
 
-void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
+void ILGenInfoInit(ILGenInfo *info, char *progname,
+				   FILE *asmOutput, int nostdlib)
 {
 	info->progname = progname;
 	info->asmOutput = asmOutput;
@@ -77,9 +78,16 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	{
 		ILGenOutOfMemory(info);
 	}
-	if((info->libImage = CreateBasicImage(info->context, ".library")) == 0)
+	if(nostdlib)
 	{
-		ILGenOutOfMemory(info);
+		if((info->libImage = CreateBasicImage(info->context, ".library")) == 0)
+		{
+			ILGenOutOfMemory(info);
+		}
+	}
+	else
+	{
+		info->libImage = 0;
 	}
 	ILMemPoolInitType(&(info->nodePool), ILNode, 0);
 	ILScopeInit(info);
@@ -116,7 +124,10 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	info->currentClass = 0;
 	info->currentMethod = 0;
 	info->currentNamespace = 0;
-	ILGenMakeLibrary(info);
+	if(nostdlib)
+	{
+		ILGenMakeLibrary(info);
+	}
 }
 
 void ILGenInfoToJava(ILGenInfo *info)
@@ -215,6 +226,10 @@ ILType *ILFindNonSystemType(ILGenInfo *info, const char *name,
 	}
 
 	/* Look in the library image */
+	if(!(info->libImage))
+	{
+		return 0;
+	}
 	scope = ILClassGlobalScope(info->libImage);
 	if(scope)
 	{

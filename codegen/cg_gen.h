@@ -145,7 +145,8 @@ struct _tagILGenInfo
 /*
  * Initialize an ILGenInfo structure.
  */
-void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput);
+void ILGenInfoInit(ILGenInfo *info, char *progname,
+				   FILE *asmOutput, int nostdlib);
 
 /*
  * Switch an ILGenInfo structure to Java bytecode generation.

@@ -33,6 +33,9 @@
 	* Generics/ArrayStack.cs, Generics/IStack.cs, Generics/Stack.cs:
 	rename Stack<T> to ArrayStack<T> and add the IStack<T> interface.
 
+	* runtime/System/Collections/Stack.cs: bug in Stack.Push() - the
+	new item was not pushed when the stack was reallocated.
+
 2003-02-21  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/Version.cs: == and != operator overloading for 

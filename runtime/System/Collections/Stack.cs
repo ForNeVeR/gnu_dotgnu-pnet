@@ -200,6 +200,7 @@ public class Stack : ICollection, IEnumerable, ICloneable
 						Array.Copy(items, newItems, size);
 					}
 					items = newItems;
+					items[size++] = obj;
 				}
 				++generation;
 			}

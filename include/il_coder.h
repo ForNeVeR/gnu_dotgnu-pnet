@@ -508,6 +508,12 @@ struct _tagILCoderClass
 					   ILMethod *methodInfo);
 
 	/*
+	 * Call a method using an indirect pointer.
+	 */
+	void (*callIndirect)(ILCoder *coder, ILEngineStackItem *args,
+					     ILUInt32 numArgs, ILEngineStackItem *returnItem);
+
+	/*
 	 * Call a constructor method directly.
 	 */
 	void (*callCtor)(ILCoder *coder, ILEngineStackItem *args,
@@ -827,6 +833,9 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->callMethod))((coder), (args), \
 												 (numArgs), (returnItem), \
 												 (methodInfo)))
+#define	ILCoderCallIndirect(coder,args,numArgs,returnItem) \
+			((*((coder)->classInfo->callIndirect))((coder), (args), \
+												   (numArgs), (returnItem)))
 #define	ILCoderCallCtor(coder,args,numArgs,methodInfo) \
 			((*((coder)->classInfo->callCtor))((coder), (args), \
 											   (numArgs), (methodInfo)))

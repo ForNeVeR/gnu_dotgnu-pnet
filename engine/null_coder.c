@@ -267,6 +267,10 @@ static void Coder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 							 ILMethod *methodInfo)
 {
 }
+static void Coder_CallIndirect(ILCoder *coder, ILEngineStackItem *args,
+					   		   ILUInt32 numArgs, ILEngineStackItem *returnItem)
+{
+}
 static void Coder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
 					   	   ILUInt32 numArgs, ILMethod *methodInfo)
 {
@@ -419,6 +423,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_PackVarArgs,
 	Coder_ValueCtorArgs,
 	Coder_CallMethod,
+	Coder_CallIndirect,
 	Coder_CallCtor,
 	Coder_CallVirtual,
 	Coder_CallInterface,

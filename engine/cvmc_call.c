@@ -131,6 +131,16 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 	((ILCVMCoder *)coder)->tailCallFlag = 0;
 }
 
+static void CVMCoder_CallIndirect(ILCoder *coder, ILEngineStackItem *args,
+					   		      ILUInt32 numArgs,
+								  ILEngineStackItem *returnItem)
+{
+	CVM_OUT_NONE(COP_CALLI);
+	CVM_ADJUST(-1);	/* The function pointer was popped */
+	AdjustForCall(coder, args, numArgs, returnItem, 0);
+	((ILCVMCoder *)coder)->tailCallFlag = 0;
+}
+
 static void CVMCoder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
 					   		  ILUInt32 numArgs, ILMethod *methodInfo)
 {

@@ -111,6 +111,60 @@ static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc,
 }
 
 /*
+ * Get a call site signature.  Returns NULL if invalid.
+ */
+static ILType *GetCallSiteSig(ILMethod *method, unsigned char *pc)
+{
+	ILUInt32 token;
+	ILStandAloneSig *sig;
+	ILType *type;
+	ILUInt32 callConv;
+
+	/* Fetch the token from the instruction's arguments */
+	if(pc[0] != IL_OP_PREFIX)
+	{
+		token = IL_READ_UINT32(pc + 1);
+	}
+	else
+	{
+		token = IL_READ_UINT32(pc + 2);
+	}
+
+	/* Resolve the token to a stand-alone signature */
+	sig = ILProgramItemToStandAloneSig((ILProgramItem *)
+						ILImageTokenInfo(ILProgramItem_Image(method), token));
+	if(!sig)
+	{
+		return 0;
+	}
+
+	/* Extract the type component of the signature and verify
+	   that it is indeed a method signature */
+	type = ILStandAloneSig_Type(sig);
+	if(!ILType_IsMethod(type))
+	{
+		return 0;
+	}
+
+	/* If the type specifies "this", then it must be "explicit this" */
+	callConv = ILType_CallConv(type);
+	if((callConv & IL_META_CALLCONV_HASTHIS) != 0)
+	{
+		if((callConv & IL_META_CALLCONV_EXPLICITTHIS) == 0)
+		{
+			return 0;
+		}
+	}
+	else if((callConv & IL_META_CALLCONV_EXPLICITTHIS) != 0)
+	{
+		return 0;
+	}
+
+	/* We have a valid signature */
+	return type;
+}
+
+/*
  * Match a method signature against the contents of the stack.
  * Returns -1 if a type error has been detected, or the number
  * of parameters to be popped otherwise.
@@ -118,7 +172,7 @@ static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc,
 static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						      ILUInt32 stackSize, ILType *signature,
 						      ILMethod *method, int unsafeAllowed,
-							  int suppressThis)
+							  int suppressThis, int indirectCall)
 {
 	ILClass *owner = (method ? ILMethod_Owner(method) : 0);
 	ILUInt32 numParams;
@@ -131,10 +185,41 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	int isVarArg;
 	ILType *thisType;
 
+	/* TODO: match explicit this information for indirect calls */
+
 	/* Check the vararg vs non-vararg conventions, and get the
 	   number of non-vararg parameters */
-	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
-			IL_META_CALLCONV_VARARG)
+	if(indirectCall)
+	{
+		/* We don't have a method to compare against for indirect calls */
+		if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+				IL_META_CALLCONV_VARARG)
+		{
+			numParams = ILTypeNumParams(signature);
+			totalParams = numParams;
+			isVarArg = 1;
+			if((ILType_Kind(signature) & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
+			{
+				while(numParams > 0 &&
+					  !ILType_IsSentinel(ILTypeGetParam(signature, numParams)))
+				{
+					--numParams;
+				}
+				if(numParams > 0)
+				{
+					--numParams;
+				}
+			}
+		}
+		else
+		{
+			numParams = ILTypeNumParams(signature);
+			totalParams = numParams;
+			isVarArg = 0;
+		}
+	}
+	else if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+				IL_META_CALLCONV_VARARG)
 	{
 		if((ILMethodGetCallConv(method) & IL_META_CALLCONV_MASK) !=
 				IL_META_CALLCONV_VARARG)
@@ -520,6 +605,89 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 }
 
 /*
+ * Determine if two method signatures are identical for the
+ * purposes of indirect method calls.
+ */
+static int SameSignature(ILType *ptrSig, ILType *callSiteSig)
+{
+	unsigned long ptrParams;
+	unsigned long callSiteParams;
+	unsigned long param;
+
+	/* The pointer signature must be a method
+	   (callSiteSig was already checked) */
+	if(ILType_IsMethod(ptrSig))
+	{
+		return 0;
+	}
+
+	/* Check the return types */
+	if(ILTypeIdentical(ILTypeGetReturn(ptrSig), ILTypeGetReturn(callSiteSig)))
+	{
+		return 0;
+	}
+
+	/* Check the calling conventions */
+	ptrParams = ILTypeNumParams(ptrSig);
+	callSiteParams = ILTypeNumParams(callSiteSig);
+	if(ILType_HasThis(ptrSig))
+	{
+		if((ILType_CallConv(callSiteSig) & IL_META_CALLCONV_EXPLICITTHIS) == 0)
+		{
+			return 0;
+		}
+	}
+	else if((ILType_CallConv(callSiteSig) & IL_META_CALLCONV_EXPLICITTHIS) != 0)
+	{
+		return 0;
+	}
+	if((ILType_CallConv(ptrSig) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		if((ILType_CallConv(callSiteSig) & IL_META_CALLCONV_MASK) !=
+				IL_META_CALLCONV_VARARG)
+		{
+			return 0;
+		}
+		if((ILType_Kind(callSiteSig) & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
+		{
+			/* The call site has a sentinel, so reduce the number
+			   of parameters that we need to check for identity */
+			callSiteParams = 0;
+			while(!ILType_IsSentinel(ILTypeGetParam
+						(callSiteSig, callSiteParams + 1)))
+			{
+				++callSiteSig;
+			}
+		}
+	}
+	else if((ILType_CallConv(callSiteSig) & IL_META_CALLCONV_MASK) ==
+				IL_META_CALLCONV_VARARG)
+	{
+		return 0;
+	}
+
+	/* TODO: match explicit this information */
+
+	/* Check the number of parameters */
+	if(ptrParams != callSiteParams)
+	{
+		return 0;
+	}
+
+	/* Check that the non-vararg parameters are identical */
+	for(param = 1; param <= ptrParams; ++param)
+	{
+		if(!ILTypeIdentical(ILTypeGetParam(ptrSig, param),
+						    ILTypeGetParam(callSiteSig, param)))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/*
  * Insert two copies of a constructed object into the
  * stack below the constructor arguments.
  */
@@ -736,7 +904,7 @@ case IL_OP_CALL:
 		{
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed, 0);
+									   unsafeAllowed, 0, 0);
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -791,7 +959,81 @@ break;
 
 case IL_OP_CALLI:
 {
-	/* TODO */
+	/* Call a method using an indirect method pointer */
+	if(stackSize < 1)
+	{
+		/* We don't have sufficient arguments on the stack */
+		VERIFY_STACK_ERROR();
+	}
+	else if(stack[stackSize - 1].engineType != ILEngineType_I)
+	{
+		/* The method pointer must be of type "I" */
+		VERIFY_TYPE_ERROR();
+	}
+	else
+	{
+		/* Get the call site signature and validate it */
+		methodSignature = GetCallSiteSig(method, pc);
+		if(!methodSignature)
+		{
+			VERIFY_TYPE_ERROR();
+		}
+
+		/* Check for identity between the function pointer
+		   and the specified call site signature */
+		if(stack[stackSize - 1].typeInfo != 0)
+		{
+			if(!SameSignature(stack[stackSize - 1].typeInfo, methodSignature))
+			{
+				VERIFY_TYPE_ERROR();
+			}
+		}
+		else if(!unsafeAllowed)
+		{
+			VERIFY_TYPE_ERROR();
+		}
+
+		/* Pop the function pointer argument */
+		--stackSize;
+
+		/* Match the signature against the current stack contents */
+		numParams = MatchSignature(coder, stack, stackSize,
+								   methodSignature, 0,
+								   unsafeAllowed, 0, 1);
+		if(numParams >= 0)
+		{
+			returnType = ILTypeGetReturn(methodSignature);
+			if(returnType != ILType_Void)
+			{
+				stack[stackSize].engineType = TypeToEngineType(returnType);
+				stack[stackSize].typeInfo = returnType;
+			}
+			else
+			{
+				stack[stackSize].engineType = ILEngineType_Invalid;
+			}
+			ILCoderCallIndirect(coder, stack + stackSize - numParams,
+							    (ILUInt32)numParams, &(stack[stackSize]));
+			stackSize -= (ILUInt32)numParams;
+			if(returnType != ILType_Void)
+			{
+				if(stackSize < code->maxStack)
+				{
+					stack[stackSize] =
+						stack[stackSize + (ILUInt32)numParams];
+					++stackSize;
+				}
+				else
+				{
+					VERIFY_STACK_ERROR();
+				}
+			}
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
 }
 break;
 
@@ -840,7 +1082,7 @@ case IL_OP_CALLVIRT:
 		{
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed, 0);
+									   unsafeAllowed, 0, 0);
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -924,7 +1166,7 @@ case IL_OP_NEWOBJ:
 			/* Match the signature for the allocation constructor */
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed, 1);
+									   unsafeAllowed, 1, 0);
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
@@ -964,7 +1206,7 @@ case IL_OP_NEWOBJ:
 			/* Match the constructor signature */
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed, 0);
+									   unsafeAllowed, 0, 0);
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
@@ -1104,7 +1346,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_TAIL:
 			methodInfo = GetMethodToken(method, &pc[2], &methodSignature);
 			numParams = MatchSignature(coder, stack, stackSize,
 								   methodSignature, methodInfo,
-								   unsafeAllowed, 0);
+								   unsafeAllowed, 0, 0);
 
 		case IL_OP_CALLI:
 		case IL_OP_CALLVIRT:

@@ -1046,7 +1046,58 @@ COP_WADDR_NATIVE(7, 7);
 VMCASE(COP_CALLI):
 {
 	/* Call a method by pointer */
-	/* TODO */
+	methodToCall = (ILMethod *)(stacktop[-1].ptrValue);
+	--stacktop;
+	if(methodToCall && methodToCall->userData)
+	{
+		/* It is converted: allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = CVM_ARG_CALLIND_RETURN(pc);
+		callFrame->frame = frame;
+		callFrame->exceptHeight = thread->exceptHeight;
+
+		/* Pass control to the new method */
+		pc = (unsigned char *)(methodToCall->userData);
+		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
+	}
+	else if(methodToCall)
+	{
+		/* Copy the state back into the thread object */
+		COPY_STATE_TO_THREAD();
+
+		/* Convert the method */
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if(!tempptr)
+		{
+			VERIFY_FAILED_EXCEPTION();
+		}
+
+		/* Allocate a new call frame */
+		ALLOC_CALL_FRAME();
+
+		/* Fill in the call frame details */
+		callFrame->method = method;
+		callFrame->pc = CVM_ARG_CALLIND_RETURN(thread->pc);
+		callFrame->frame = thread->frame;
+		callFrame->exceptHeight = thread->exceptHeight;
+
+		/* Restore the state information and jump to the new method */
+		RESTORE_STATE_FROM_THREAD();
+		pc = (unsigned char *)tempptr;
+		method = methodToCall;
+		CVM_OPTIMIZE_BLOCK();
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+#ifdef IL_PROFILE_CVM_METHODS
+	++(method->count);
+#endif
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_CALLI);

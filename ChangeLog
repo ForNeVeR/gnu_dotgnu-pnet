@@ -18,6 +18,11 @@
 	"tail_call" instruction which combines "tail" and "call";
 	implement tail calls for the direct threaded interpreter.
 
+	* engine/cvm_call.c, engine/cvm_format.h, engine/cvmc.c,
+	engine/cvmc_call.c, engine/null_coder.c, engine/verify_call.c,
+	include/il_coder.h: begin implementing support for indirect
+	method calls.
+
 2002-05-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/locale.c: #ifdef for CODESET because it isn't defined

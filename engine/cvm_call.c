@@ -56,7 +56,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				fprintf(IL_DUMP_CVM_STREAM, "Stack:"); \
 				for(posn = 1; posn <= 16; ++posn) \
 				{ \
-					if(posn <= (int)(stacktop - stackbottom)) \
+					if(posn <= (int)(stacktop - thread->stackBase)) \
 					{ \
 						fprintf(IL_DUMP_CVM_STREAM, " 0x%lX", \
 							    (unsigned long)(stacktop[-posn].uintValue)); \
@@ -70,7 +70,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				fprintf(IL_DUMP_CVM_STREAM, "Entering %s::%s (%ld)\n", \
 					    methodToCall->member.owner->name, \
 					    methodToCall->member.name, \
-					    (long)(stacktop - stackbottom)); \
+					    (long)(stacktop - thread->stackBase)); \
 				DUMP_STACK(); \
 			} while (0)
 #else
@@ -99,8 +99,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 #define	RESTORE_STATE_FROM_THREAD()	\
 			do { \
 				stacktop = thread->stackTop; \
-				frame = thread->stackBase + thread->frame; \
-				stackbottom = thread->stackBase; \
+				frame = thread->frame; \
 				stackmax = thread->stackLimit; \
 				if(thread->thrownException != 0) \
 				{ \
@@ -155,7 +154,7 @@ case COP_CALL:
 	/* Fill in the call frame details */
 	callFrame->method = method;
 	callFrame->pc = pc + sizeof(void *) + 1;
-	callFrame->frame = (ILUInt32)(frame - stackbottom);
+	callFrame->frame = frame;
 	callFrame->exceptHeight = thread->exceptHeight;
 
 	/* Pass control to the new method */
@@ -222,7 +221,7 @@ case COP_CALL_EXTERN:
 		/* Fill in the call frame details */
 		callFrame->method = method;
 		callFrame->pc = pc + sizeof(void *) + 1;
-		callFrame->frame = (ILUInt32)(frame - stackbottom);
+		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 
 		/* Pass control to the new method */
@@ -616,7 +615,7 @@ popFrame:
 	methodToCall = callFrame->method;
 	pc = callFrame->pc;
 	thread->exceptHeight = callFrame->exceptHeight;
-	frame = stackbottom + callFrame->frame;
+	frame = callFrame->frame;
 	method = methodToCall;
 
 	/* Should we return to an external method? */
@@ -630,7 +629,7 @@ popFrame:
 	/* Dump the name of the method we are returning to */
 	fprintf(IL_DUMP_CVM_STREAM, "Returning to %s::%s (%ld)\n",
 			method->member.owner->name,
-		    method->member.name, (long)(stacktop - stackbottom));
+		    method->member.name, (long)(stacktop - thread->stackBase));
 	DUMP_STACK();
 #endif
 }

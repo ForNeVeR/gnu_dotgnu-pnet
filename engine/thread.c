@@ -58,7 +58,7 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 
 	/* Initialize the thread state */
 	thread->pc = 0;
-	thread->frame = 0;
+	thread->frame = thread->stackBase;
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;
 	thread->thrownException = 0;

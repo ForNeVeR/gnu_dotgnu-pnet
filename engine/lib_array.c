@@ -64,11 +64,11 @@ typedef struct
 } ArgWalker;
 #define	ArgWalkerInit(args)	\
 			do { \
-				(args)->posn = thread->stackBase + thread->frame; \
+				(args)->posn = thread->frame; \
 			} while (0)
 #define	ArgWalkerInitThis(args)	\
 			do { \
-				(args)->posn = thread->stackBase + thread->frame + 1; \
+				(args)->posn = thread->frame + 1; \
 			} while (0)
 #define	ArgWalkerGetShortInt(args,type) \
 			(*((type *)(((args)->posn)++)))

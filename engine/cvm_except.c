@@ -279,7 +279,7 @@ throwCaller:
 		methodToCall = callFrame->method;
 		pc = callFrame->pc;
 		thread->exceptHeight = callFrame->exceptHeight;
-		frame = stackbottom + callFrame->frame;
+		frame = callFrame->frame;
 		method = methodToCall;
 
 #ifdef IL_DUMP_CVM

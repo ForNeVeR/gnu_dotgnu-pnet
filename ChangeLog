@@ -24,6 +24,11 @@
 	* engine/cvm_call.c: short-cut the common case of "COP_CALL_EXTERN"
 	being used to call a method that has been converted already.
 
+	* engine/cvm.c, engine/cvm_call.c, engine/cvm_except.c,
+	engine/engine.h, engine/lib_array.c, engine/thread.c:
+	convert the "frame" variable in the thread object and call frames
+	into a pointer because it is more efficient than a relative offset.
+
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c: don't report "unresolved type reference"

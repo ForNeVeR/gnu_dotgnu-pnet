@@ -31,6 +31,7 @@ COMMON_ENGINE_SOURCES = box.c \
 						lib_thread.c \
 						lib_type.c \
 						lookup.c \
+						method_cache.c \
 						null_coder.c \
 						pinvoke.c \
 						process.c \

@@ -41,6 +41,18 @@ public abstract class WebRequest : MarshalByRefObject
 	private Int32				timeout;
 	private static Hashtable	prefixes=new Hashtable();
 
+	static WebRequest()
+	{
+		prefixes.Clear();
+
+		// Register the prefix types here
+		RegisterPrefix(Uri.UriSchemeFtp,   new WebRequestCreator());
+		RegisterPrefix(Uri.UriSchemeHttp,  new WebRequestCreator());
+		RegisterPrefix(Uri.UriSchemeHttps, new WebRequestCreator());
+
+		// TODO: More prefixes, such as those contained in Uri should come later
+	}
+	
 	protected WebRequest()
 	{
 		connectionGroupName = "";
@@ -51,16 +63,7 @@ public abstract class WebRequest : MarshalByRefObject
 		preAuthenticate = false;
 		proxy = null;
 		requestUri = null;
-		timeout = 0;
-		prefixes.Clear();
-
-		// Register the prefix types here
-		RegisterPrefix(Uri.UriSchemeFtp,   new WebRequestCreator());
-		RegisterPrefix(Uri.UriSchemeHttp,  new WebRequestCreator());
-		RegisterPrefix(Uri.UriSchemeHttps, new WebRequestCreator());
-
-		// TODO: More prefixes, such as those contained in Uri should come later
-		
+		timeout = 0;	
 	}
 
 	public virtual void Abort()

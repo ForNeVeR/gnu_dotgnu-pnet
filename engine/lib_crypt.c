@@ -438,8 +438,8 @@ void _IL_CryptoMethods_GenerateRandom(ILExecThread *thread,
 			   /dev/random under Linux, but /dev/random may block for
 			   very long periods of time if the kernel judges that the
 			   entropy pool has expired, but the system doesn't have much
-			   activity to generate new entropy quickly.  We a happy with
-			   the kernel's previous entropy values. */
+			   activity to generate new entropy quickly.  We are happy
+			   with the kernel's previous entropy values. */
 			ILMemZero(thread->process->randomPool, IL_SHA_HASH_SIZE);
 		#ifdef HAVE_OPEN
 			fd = open("/dev/urandom", O_RDONLY, 0);

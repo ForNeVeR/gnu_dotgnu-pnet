@@ -435,7 +435,7 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 		implements = objectClass->implements;
 		while(implements != 0)
 		{
-			if(implements->interface == interfaceClass)
+			if(ILClassResolve(implements->interface) == interfaceClass)
 			{
 				/* We've found the interface, so look in the interface
 				   table to find the vtable slot, which is then used to
@@ -444,8 +444,18 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 				{
 					return 0;
 				}
-				return ((ILClassPrivate *)(objectClass->userData))->vtable
-						[((ILUInt16 *)(implements->userData))[index]];
+				index = (ILUInt32)(((ILUInt16 *)(implements->userData))[index]);
+				if(index != (ILUInt32)(ILUInt16)0xFFFF)
+				{
+					return ((ILClassPrivate *)(objectClass->userData))
+									->vtable[index];
+				}
+				else
+				{
+					/* The interface slot is abstract.  This shouldn't
+					   happen in practice, but let's be paranoid anyway */
+					return 0;
+				}
 			}
 			implements = implements->nextInterface;
 		}

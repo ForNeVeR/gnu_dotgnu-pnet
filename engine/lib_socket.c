@@ -34,7 +34,7 @@
 #ifdef HAVE_NETDB_H
 	#include <netdb.h>
 #endif
-#ifdef IL_WIN32_PLATFORM
+#ifdef IL_WIN32_NATIVE
 	#include <winsock.h>
 #endif
 

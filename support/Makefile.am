@@ -25,6 +25,9 @@ libILSupport_a_SOURCES = aes.c \
 						 hashtab.c \
 						 hb_gc.c \
 						 intern.c \
+						 interrupt.c \
+						 interrupt_posix.c \
+						 interrupt_win32.c \
 						 list.c \
 						 locale.c \
 						 md5.c \

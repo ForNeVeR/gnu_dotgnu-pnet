@@ -536,6 +536,8 @@ namespace System.Windows.Forms
 			for (int pos = startPos; pos < posEnd; pos++ )
 			{
 				int thisWidth = pixelsLeft/(posEnd - pos);
+				if (tabs[pos].bounds.Width > thisWidth)
+					thisWidth = tabs[pos].bounds.Width;
 				tabs[pos].bounds = new Rectangle(posTotal,0,thisWidth,0);
 				tabs[pos].row = newRow;
 				pixelsLeft -= thisWidth;

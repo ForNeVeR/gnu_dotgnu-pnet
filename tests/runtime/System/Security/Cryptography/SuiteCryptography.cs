@@ -1,7 +1,8 @@
 /*
- * TestSystemXml.cs - Tests for the "System" namespace.
+ * SuiteCryptography.cs - Tests for the
+ *		"System.Security.Cryptography" namespace.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +20,27 @@
  */
 
 using CSUnit;
-using System.Xml;
+using System;
 
-public class TestXml
+public class SuiteCryptography
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("System.Xml Tests");
-				suite.AddTests(typeof(TestXmlException));
-				suite.AddTests(typeof(TestXmlConvert));
+				TestSuite suite = new TestSuite("Cryptography Tests");
+			#if !ECMA_COMPAT
+				suite.AddTests(typeof(TestAES));
+				suite.AddTests(typeof(TestDES));
+				suite.AddTests(typeof(TestRC2));
+				suite.AddTests(typeof(TestTripleDES));
+				suite.AddTests(typeof(TestMD5));
+				suite.AddTests(typeof(TestSHA1));
+				suite.AddTests(typeof(TestSHA256));
+				suite.AddTests(typeof(TestSHA384));
+				suite.AddTests(typeof(TestSHA512));
+				suite.AddTests(typeof(TestRNG));
+			#endif
 				return suite;
 			}
 
-}; // class TestSystem
+}; // class SuiteCryptography

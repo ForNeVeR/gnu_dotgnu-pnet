@@ -1,5 +1,5 @@
 /*
- * TestCryptography.cs - Tests for the "System.Security.Cryptography" namespace.
+ * SuiteCollections.cs - Tests for the "System.Collections" namespace.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -21,25 +21,14 @@
 using CSUnit;
 using System;
 
-public class TestCryptography
+public class SuiteCollections
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("Cryptography Tests");
-			#if !ECMA_COMPAT
-				suite.AddTests(typeof(TestAES));
-				suite.AddTests(typeof(TestDES));
-				suite.AddTests(typeof(TestRC2));
-				suite.AddTests(typeof(TestTripleDES));
-				suite.AddTests(typeof(TestMD5));
-				suite.AddTests(typeof(TestSHA1));
-				suite.AddTests(typeof(TestSHA256));
-				suite.AddTests(typeof(TestSHA384));
-				suite.AddTests(typeof(TestSHA512));
-				suite.AddTests(typeof(TestRNG));
-			#endif
+				TestSuite suite = new TestSuite("Collection Tests");
+				suite.AddTests(typeof(TestArrayList));
 				return suite;
 			}
 
-}; // class TestCryptography
+}; // class SuiteCollections

@@ -26,19 +26,15 @@ public class Testruntime
 
 	public static TestSuite Suite()
 			{
-				TestSuite fullSuite = new TestSuite("Runtime Tests");
-				TestSuite suite = new TestSuite("Core Class Tests");
-				suite.AddTests(typeof(TestBoolean));
-				suite.AddTests(typeof(TestSByte));
-				suite.AddTests(typeof(TestString));
-				suite.AddTests(typeof(TestStringBuilder));
-				suite.AddTests(typeof(TestArrayList));
-			#if !ECMA_COMPAT
-				suite.AddTests(typeof(TestGuid));
-			#endif
-				fullSuite.AddTest(suite);
-				fullSuite.AddTest(TestCryptography.Suite());
-				return fullSuite;
+				// Each namespace has a "SuiteXXX" class that defines
+				// the tests in that namespace.  See the subdirectories
+				// for these classes when adding new tests.
+				TestSuite suite = new TestSuite("Runtime Tests");
+				suite.AddTest(SuiteSystem.Suite());
+				suite.AddTest(SuiteCollections.Suite());
+				suite.AddTest(SuiteText.Suite());
+				suite.AddTest(SuiteCryptography.Suite());
+				return suite;
 			}
 
 }; // class Testruntime

@@ -1,7 +1,7 @@
 /*
- * TestSystemXml.cs - Tests for the "System" namespace.
+ * SuiteSystem.cs - Tests for the "System" namespace.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,21 @@
  */
 
 using CSUnit;
-using System.Xml;
+using System;
 
-public class TestXml
+public class SuiteSystem
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("System.Xml Tests");
-				suite.AddTests(typeof(TestXmlException));
-				suite.AddTests(typeof(TestXmlConvert));
+				TestSuite suite = new TestSuite("Core Class Tests");
+				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestSByte));
+				suite.AddTests(typeof(TestString));
+			#if !ECMA_COMPAT
+				suite.AddTests(typeof(TestGuid));
+			#endif
 				return suite;
 			}
 
-}; // class TestSystem
+}; // class SuiteSystem

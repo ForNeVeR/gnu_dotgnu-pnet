@@ -1,7 +1,7 @@
 /*
- * TestSystemXml.cs - Tests for the "System" namespace.
+ * SuiteText.cs - Tests for the "System.Text" namespace.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,16 @@
  */
 
 using CSUnit;
-using System.Xml;
+using System;
 
-public class TestXml
+public class SuiteText
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("System.Xml Tests");
-				suite.AddTests(typeof(TestXmlException));
-				suite.AddTests(typeof(TestXmlConvert));
+				TestSuite suite = new TestSuite("Text Tests");
+				suite.AddTests(typeof(TestStringBuilder));
 				return suite;
 			}
 
-}; // class TestSystem
+}; // class SuiteText

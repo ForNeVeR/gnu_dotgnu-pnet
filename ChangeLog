@@ -45,6 +45,14 @@
 	tests/runtime/System/Security/Cryptography/TestTripleDES.cs:
 	modifications to support the ECMA-compatible compilation mode.
 
+	* tests/Makefile.am, tests/System/TestSystem.cs,
+	tests/System.Xml/TestXml.cs, tests/runtime/Testruntime.cs,
+	tests/runtime/System/SuiteSystem.cs,
+	tests/runtime/System/Collections/SuiteCollections.cs,
+	tests/runtime/System/Security/Cryptography/SuiteCryptography.cs,
+	tests/runtime/System/Security/Cryptography/TestCryptography.cs:
+	rearrange the tests so that each major namespace is in its own suite.
+
 2002-11-28  Michael Moore  <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormatter.cs: implement

@@ -26,10 +26,18 @@ public class TestSystem
 
 	public static TestSuite Suite()
 			{
-				TestSuite suite = new TestSuite("System Tests");
+				TestSuite fullSuite, suite;
+				fullSuite = new TestSuite("System Assembly Tests");
+
+				suite = new TestSuite("Uri Tests");
 				suite.AddTests(typeof(TestUri));
+				fullSuite.AddTest(suite);
+
+				suite = new TestSuite("Network Tests");
 				suite.AddTests(typeof(TestIPAddress));
-				return suite;
+				fullSuite.AddTest(suite);
+
+				return fullSuite;
 			}
 
 }; // class TestSystem

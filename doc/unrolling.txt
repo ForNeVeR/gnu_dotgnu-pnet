@@ -461,7 +461,6 @@ md_cmp_cc_reg_reg_word_native(inst, cond, reg1, reg2)
     Compare two registers and set the condition codes based on the result.
 	The "cond" argument hints to the code generator as to what kind of
 	condition will be tested for in a subsequent branch instruction.
-
 	This is needed on some CPU's (e.g. PPC and ia64) to modify the manner
 	in which the condition codes are set.
 
@@ -470,9 +469,13 @@ md_reg_is_zero(inst, reg)
 
     Set the condition codes based on comparing "reg" against NULL or zero.
 
-md_cmp_reg_imm_word_32(inst, reg, imm)
+md_cmp_reg_imm_word_32(inst, cond, reg, imm)
 
     Set the condition codes based on comparing "reg" against "imm".
+	The "cond" argument hints to the code generator as to what kind of
+	condition will be tested for in a subsequent branch instruction.
+	This is needed on some CPU's (e.g. PPC and ia64) to modify the manner
+	in which the condition codes are set.
 
 md_branch_eq(inst)
 md_branch_ne(inst)

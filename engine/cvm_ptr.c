@@ -73,6 +73,23 @@ ILUInt32 tempSize;
 
 #elif defined(IL_CVM_MAIN)
 
+/**
+ * <opcode name="bread">
+ *   <operation>Read <code>int8</code> from pointer</operation>
+ *
+ *   <format>bread</format>
+ *
+ *   <form name="bread" code="COP_BREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the 8 bit value at <i>pointer</i> in
+ *   memory, sign-extend it to <code>int32</code> and push it onto
+ *   the stack.</description>
+ * </opcode>
+ */
 case COP_BREAD:
 {
 	/* Read a signed byte quantity from a pointer */
@@ -81,6 +98,23 @@ case COP_BREAD:
 }
 break;
 
+/**
+ * <opcode name="ubread">
+ *   <operation>Read <code>uint8</code> from pointer</operation>
+ *
+ *   <format>ubread</format>
+ *
+ *   <form name="ubread" code="COP_UBREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the 8 bit value at <i>pointer</i> in
+ *   memory, zero-extend it to <code>int32</code> and push it onto
+ *   the stack.</description>
+ * </opcode>
+ */
 case COP_UBREAD:
 {
 	/* Read an unsigned byte quantity from a pointer */
@@ -89,6 +123,23 @@ case COP_UBREAD:
 }
 break;
 
+/**
+ * <opcode name="sread">
+ *   <operation>Read <code>int16</code> from pointer</operation>
+ *
+ *   <format>sread</format>
+ *
+ *   <form name="sread" code="COP_SREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the 16 bit value at <i>pointer</i> in
+ *   memory, sign-extend it to <code>int32</code> and push it onto
+ *   the stack.</description>
+ * </opcode>
+ */
 case COP_SREAD:
 {
 	/* Read a signed short quantity from a pointer */
@@ -97,6 +148,23 @@ case COP_SREAD:
 }
 break;
 
+/**
+ * <opcode name="usread">
+ *   <operation>Read <code>uint16</code> from pointer</operation>
+ *
+ *   <format>usread</format>
+ *
+ *   <form name="usread" code="COP_USREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the 16 bit value at <i>pointer</i> in
+ *   memory, zero-extend it to <code>int32</code> and push it onto
+ *   the stack.</description>
+ * </opcode>
+ */
 case COP_USREAD:
 {
 	/* Read an unsigned short quantity from a pointer */
@@ -105,6 +173,25 @@ case COP_USREAD:
 }
 break;
 
+/**
+ * <opcode name="iread">
+ *   <operation>Read <code>int32</code> from pointer</operation>
+ *
+ *   <format>iread</format>
+ *
+ *   <form name="iread" code="COP_IREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the 32 bit <code>int32</code> value
+ *   at <i>pointer</i> in memory, and push it onto the stack.</description>
+ *
+ *   <notes>This instruction can also be used to read <code>uint32</code>
+ *   values from memory.</notes>
+ * </opcode>
+ */
 case COP_IREAD:
 {
 	/* Read an integer quantity from a pointer */
@@ -113,6 +200,23 @@ case COP_IREAD:
 }
 break;
 
+/**
+ * <opcode name="fread">
+ *   <operation>Read <code>float32</code> from pointer</operation>
+ *
+ *   <format>fread</format>
+ *
+ *   <form name="fread" code="COP_FREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the 32 bit <code>float32</code> value
+ *   at <i>pointer</i> in memory, extend it to <code>native float</code>,
+ *   and push it onto the stack.</description>
+ * </opcode>
+ */
 case COP_FREAD:
 {
 	/* Read a float quantity from a pointer and push
@@ -123,6 +227,23 @@ case COP_FREAD:
 }
 break;
 
+/**
+ * <opcode name="dread">
+ *   <operation>Read <code>float64</code> from pointer</operation>
+ *
+ *   <format>dread</format>
+ *
+ *   <form name="dread" code="COP_DREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the 64 bit <code>float64</code> value
+ *   at <i>pointer</i> in memory, extend it to <code>native float</code>,
+ *   and push it onto the stack.</description>
+ * </opcode>
+ */
 case COP_DREAD:
 {
 	/* Read a double quantity from a pointer and push
@@ -133,6 +254,27 @@ case COP_DREAD:
 }
 break;
 
+/**
+ * <opcode name="pread">
+ *   <operation>Read <code>ptr</code> from pointer</operation>
+ *
+ *   <format>pread</format>
+ *
+ *   <form name="pread" code="COP_PREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read the <code>ptr</code> value
+ *   at <i>pointer</i> in memory, and push it onto the stack.</description>
+ *
+ *   <notes>This instruction must not be confused with <i>iread</i>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of memory space on all
+ *   platforms.</notes>
+ * </opcode>
+ */
 case COP_PREAD:
 {
 	/* Read a pointer quantity from a pointer */
@@ -141,6 +283,27 @@ case COP_PREAD:
 }
 break;
 
+/**
+ * <opcode name="mread">
+ *   <operation>Read multiple bytes from pointer</operation>
+ *
+ *   <format>mread<fsep/>N[1]</format>
+ *   <format>wide<fsep/>mread<fsep/>N[4]</format>
+ *
+ *   <form name="mread" code="COP_MREAD"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Read <i>N</i> bytes from <i>pointer</i>
+ *   in memory, and push them onto the stack, aligned on a word
+ *   boundary.</description>
+ *
+ *   <notes>The exact number of stack words that is pushed depends
+ *   upon the underlying platform.</notes>
+ * </opcode>
+ */
 case COP_MREAD:
 {
 	/* Read a multi-byte value from a pointer */
@@ -151,6 +314,26 @@ case COP_MREAD:
 }
 break;
 
+/**
+ * <opcode name="bwrite">
+ *   <operation>Write <code>int8</code> to pointer</operation>
+ *
+ *   <format>bwrite</format>
+ *
+ *   <form name="bwrite" code="COP_BWRITE"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Truncate <i>value</i> to 8 bits and write it to <i>pointer</i> in
+ *   memory.</description>
+ *
+ *   <notes>This instruction can also be used to write values of
+ *   type <code>uint8</code> to memory.</notes>
+ * </opcode>
+ */
 case COP_BWRITE:
 {
 	/* Write a byte quantity to a pointer */
@@ -159,6 +342,26 @@ case COP_BWRITE:
 }
 break;
 
+/**
+ * <opcode name="swrite">
+ *   <operation>Write <code>int16</code> to pointer</operation>
+ *
+ *   <format>swrite</format>
+ *
+ *   <form name="swrite" code="COP_SWRITE"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Truncate <i>value</i> to 16 bits and write it to <i>pointer</i> in
+ *   memory.</description>
+ *
+ *   <notes>This instruction can also be used to write values of
+ *   type <code>uint16</code> to memory.</notes>
+ * </opcode>
+ */
 case COP_SWRITE:
 {
 	/* Write a short quantity to a pointer */
@@ -167,6 +370,25 @@ case COP_SWRITE:
 }
 break;
 
+/**
+ * <opcode name="iwrite">
+ *   <operation>Write <code>int32</code> to pointer</operation>
+ *
+ *   <format>iwrite</format>
+ *
+ *   <form name="iwrite" code="COP_IWRITE"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Write <i>value</i> to <i>pointer</i> in memory.</description>
+ *
+ *   <notes>This instruction can also be used to write values of
+ *   type <code>uint32</code> to memory.</notes>
+ * </opcode>
+ */
 case COP_IWRITE:
 {
 	/* Write an integer quantity to a pointer */
@@ -175,6 +397,23 @@ case COP_IWRITE:
 }
 break;
 
+/**
+ * <opcode name="fwrite">
+ *   <operation>Write <code>float32</code> to pointer</operation>
+ *
+ *   <format>fwrite</format>
+ *
+ *   <form name="fwrite" code="COP_FWRITE"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>native float</code> respectively.
+ *   Truncate <i>value</i> to <code>float32</code> and write it
+ *   to <i>pointer</i> in memory.</description>
+ * </opcode>
+ */
 case COP_FWRITE:
 {
 	/* Write a "native float" value to a pointer as a "float" */
@@ -184,6 +423,23 @@ case COP_FWRITE:
 }
 break;
 
+/**
+ * <opcode name="dwrite">
+ *   <operation>Write <code>float64</code> to pointer</operation>
+ *
+ *   <format>dwrite</format>
+ *
+ *   <form name="dwrite" code="COP_DWRITE"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>native float</code> respectively.
+ *   Truncate <i>value</i> to <code>float64</code> and write it
+ *   to <i>pointer</i> in memory.</description>
+ * </opcode>
+ */
 case COP_DWRITE:
 {
 	/* Write a "native float" value to a pointer as a "double" */
@@ -195,6 +451,27 @@ case COP_DWRITE:
 }
 break;
 
+/**
+ * <opcode name="pwrite">
+ *   <operation>Write <code>ptr</code> to pointer</operation>
+ *
+ *   <format>pwrite</format>
+ *
+ *   <form name="pwrite" code="COP_PWRITE"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack as
+ *   type <code>ptr</code>.  Write <i>value</i> to <i>pointer</i>
+ *   in memory.</description>
+ *
+ *   <notes>This instruction must not be confused with <i>iwrite</i>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of memory space on all
+ *   platforms.</notes>
+ * </opcode>
+ */
 case COP_PWRITE:
 {
 	/* Write a pointer quantity to a pointer */
@@ -203,6 +480,24 @@ case COP_PWRITE:
 }
 break;
 
+/**
+ * <opcode name="mwrite">
+ *   <operation>Write multiple bytes to pointer</operation>
+ *
+ *   <format>mwrite<fsep/>N[1]</format>
+ *   <format>wide<fsep/>mwrite<fsep/>N[4]</format>
+ *
+ *   <form name="mwrite" code="COP_MWRITE"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>uint8[N]</code> (i.e. <i>N</i>
+ *   bytes of data, aligned on a stack word) respectively.  Write
+ *   <i>value</i> to <i>pointer</i> in memory.</description>
+ * </opcode>
+ */
 case COP_MWRITE:
 {
 	/* Write a multi-byte value to a pointer */
@@ -213,6 +508,27 @@ case COP_MWRITE:
 }
 break;
 
+/**
+ * <opcode name="bwrite_r">
+ *   <operation>Write <code>int8</code> to pointer with reversed
+ *				arguments</operation>
+ *
+ *   <format>bwrite_r</format>
+ *
+ *   <form name="bwrite_r" code="COP_BWRITE_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack as
+ *   the types <code>int32</code> and <code>ptr</code> respectively.
+ *   Truncate <i>value</i> to 8 bits and write it to <i>pointer</i> in
+ *   memory.</description>
+ *
+ *   <notes>This instruction can also be used to write values of
+ *   type <code>uint8</code> to memory.</notes>
+ * </opcode>
+ */
 case COP_BWRITE_R:
 {
 	/* Write a byte quantity to a pointer with reversed args */
@@ -221,6 +537,27 @@ case COP_BWRITE_R:
 }
 break;
 
+/**
+ * <opcode name="swrite_r">
+ *   <operation>Write <code>int16</code> to pointer with reversed
+ *				arguments</operation>
+ *
+ *   <format>swrite_r</format>
+ *
+ *   <form name="swrite_r" code="COP_SWRITE_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack as
+ *   the types <code>int32</code> and <code>ptr</code> respectively.
+ *   Truncate <i>value</i> to 16 bits and write it to <i>pointer</i> in
+ *   memory.</description>
+ *
+ *   <notes>This instruction can also be used to write values of
+ *   type <code>uint16</code> to memory.</notes>
+ * </opcode>
+ */
 case COP_SWRITE_R:
 {
 	/* Write a short quantity to a pointer with reversed args */
@@ -229,6 +566,26 @@ case COP_SWRITE_R:
 }
 break;
 
+/**
+ * <opcode name="iwrite_r">
+ *   <operation>Write <code>int32</code> to pointer with reversed
+ *				arguments</operation>
+ *
+ *   <format>iwrite_r</format>
+ *
+ *   <form name="iwrite_r" code="COP_IWRITE_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack as
+ *   the types <code>int32</code> and <code>ptr</code> respectively.
+ *   Write <i>value</i> to <i>pointer</i> in memory.</description>
+ *
+ *   <notes>This instruction can also be used to write values of
+ *   type <code>uint32</code> to memory.</notes>
+ * </opcode>
+ */
 case COP_IWRITE_R:
 {
 	/* Write an integer quantity to a pointer with reversed args */
@@ -237,6 +594,24 @@ case COP_IWRITE_R:
 }
 break;
 
+/**
+ * <opcode name="fwrite_r">
+ *   <operation>Write <code>float32</code> to pointer with reversed
+ *				arguments</operation>
+ *
+ *   <format>fwrite_r</format>
+ *
+ *   <form name="fwrite_r" code="COP_FWRITE_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack as
+ *   the types <code>native float</code> and <code>ptr</code> respectively.
+ *   Truncate <i>value</i> to <code>float32</code> and write it
+ *   to <i>pointer</i> in memory.</description>
+ * </opcode>
+ */
 case COP_FWRITE_R:
 {
 	/* Write a "native float" value to a pointer as a "float",
@@ -247,6 +622,24 @@ case COP_FWRITE_R:
 }
 break;
 
+/**
+ * <opcode name="dwrite_r">
+ *   <operation>Write <code>float64</code> to pointer with reversed
+ *				arguments</operation>
+ *
+ *   <format>dwrite_r</format>
+ *
+ *   <form name="dwrite_r" code="COP_DWRITE_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack as
+ *   the types <code>native float</code> and <code>ptr</code> respectively.
+ *   Truncate <i>value</i> to <code>float64</code> and write it
+ *   to <i>pointer</i> in memory.</description>
+ * </opcode>
+ */
 case COP_DWRITE_R:
 {
 	/* Write a "native float" value to a pointer as a "double",
@@ -258,6 +651,28 @@ case COP_DWRITE_R:
 }
 break;
 
+/**
+ * <opcode name="pwrite_r">
+ *   <operation>Write <code>ptr</code> to pointer with reversed
+ *				arguments</operation>
+ *
+ *   <format>pwrite_r</format>
+ *
+ *   <form name="pwrite_r" code="COP_PWRITE_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack as
+ *   type <code>ptr</code>.  Write <i>value</i> to <i>pointer</i>
+ *   in memory.</description>
+ *
+ *   <notes>This instruction must not be confused with <i>iwrite_r</i>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of memory space on all
+ *   platforms.</notes>
+ * </opcode>
+ */
 case COP_PWRITE_R:
 {
 	/* Write a pointer quantity to a pointer with reversed args */
@@ -266,6 +681,25 @@ case COP_PWRITE_R:
 }
 break;
 
+/**
+ * <opcode name="mwrite_r">
+ *   <operation>Write multiple bytes to pointer with reversed
+ *				arguments</operation>
+ *
+ *   <format>mwrite_r<fsep/>N[1]</format>
+ *   <format>wide<fsep/>mwrite_r<fsep/>N[4]</format>
+ *
+ *   <form name="mwrite_r" code="COP_MWRITE_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack as
+ *   the types <code>uint8[N]</code> (i.e. <i>N</i> bytes of data,
+ *   aligned on a stack word) and <code>ptr</code> respectively.
+ *   Write <i>value</i> to <i>pointer</i> in memory.</description>
+ * </opcode>
+ */
 case COP_MWRITE_R:
 {
 	/* Write a multi-byte value to a pointer with reversed args */
@@ -277,6 +711,22 @@ case COP_MWRITE_R:
 }
 break;
 
+/**
+ * <opcode name="padd_offset">
+ *   <operation>Add a literal byte offset to a pointer</operation>
+ *
+ *   <format>padd_offset<fsep/>N[1]</format>
+ *
+ *   <form name="padd_offset" code="COP_PADD_OFFSET"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., newpointer</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type <code>ptr</code>.
+ *   Compute <i>newpointer = pointer + N</code> and push <i>newpointer</i>
+ *   onto the stack.</description>
+ * </opcode>
+ */
 case COP_PADD_OFFSET:
 {
 	/* Add an explicit byte offset to a pointer.  This is used
@@ -288,6 +738,29 @@ case COP_PADD_OFFSET:
 }
 break;
 
+/**
+ * <opcode name="padd_offset_n">
+ *   <operation>Add a literal byte offset to a pointer that is
+ *              several words down the stack</operation>
+ *
+ *   <format>padd_offset_n<fsep/>N[1]<fsep/>M[1]</format>
+ *   <format>wide<fsep/>padd_offset_n<fsep/>N[4]<fsep/>M[4]</format>
+ *
+ *   <form name="padd_offset_n" code="COP_PADD_OFFSET_N"/>
+ *
+ *   <before>..., pointer, val1, ..., valN</before>
+ *   <after>..., newpointer, val1, ..., valN</after>
+ *
+ *   <description>Read <i>pointer</i> from the <i>N</i> positions
+ *   down the stack as type <code>ptr</code>.  Compute
+ *   <i>newpointer = pointer + M</code> and replace <i>pointer</i>
+ *   with <i>newpointer</i>.  A value of <i>N == 0</i> indicates the
+ *   top-most stack word.</description>
+ *
+ *   <notes>The <i>padd_offset</i> instruction is more efficient if
+ *   <i>N == 0</i> and <i>M &lt; 256</i>.</notes>
+ * </opcode>
+ */
 case COP_PADD_OFFSET_N:
 {
 	/* Add an explicit byte offset to a pointer that is N
@@ -299,6 +772,26 @@ case COP_PADD_OFFSET_N:
 }
 break;
 
+/**
+ * <opcode name="padd_i4">
+ *   <operation>Add <code>int32</code> value to pointer</operation>
+ *
+ *   <format>padd_i4</format>
+ *
+ *   <form name="padd_i4" code="COP_PADD_I4"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>..., newpointer</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
+ *   as the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Compute <i>newpointer = pointer + value</code> and push
+ *   <i>newpointer</i> onto the stack.</description>
+ *
+ *   <notes>The <i>padd_offset</i> instruction is more efficient if
+ *   <i>value</i> is constant and less than 256.</notes>
+ * </opcode>
+ */
 case COP_PADD_I4:
 {
 	/* Add a 32-bit integer to a pointer */
@@ -309,6 +802,24 @@ case COP_PADD_I4:
 }
 break;
 
+/**
+ * <opcode name="padd_i4_r">
+ *   <operation>Add <code>int32</code> value to pointer with
+ *				reversed arguments</operation>
+ *
+ *   <format>padd_i4_r</format>
+ *
+ *   <form name="padd_i4_r" code="COP_PADD_I4_R"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>..., newpointer</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack
+ *   as the types <code>int32</code> and <code>ptr</code> respectively.
+ *   Compute <i>newpointer = pointer + value</code> and push
+ *   <i>newpointer</i> onto the stack.</description>
+ * </opcode>
+ */
 case COP_PADD_I4_R:
 {
 	/* Add a 32-bit integer to a pointer with reversed args */
@@ -319,6 +830,26 @@ case COP_PADD_I4_R:
 }
 break;
 
+/**
+ * <opcode name="padd_i8">
+ *   <operation>Add <code>int64</code> value to pointer</operation>
+ *
+ *   <format>padd_i8</format>
+ *
+ *   <form name="padd_i8" code="COP_PADD_I8"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>..., newpointer</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
+ *   as the types <code>ptr</code> and <code>int64</code> respectively.
+ *   Compute <i>newpointer = pointer + value</code> and push
+ *   <i>newpointer</i> onto the stack.</description>
+ *
+ *   <notes>The <i>value</i> will be truncated to 32 bits on platforms
+ *   with 32 bit pointers.</notes>
+ * </opcode>
+ */
 case COP_PADD_I8:
 {
 	/* Add a 64-bit integer to a pointer */
@@ -339,6 +870,27 @@ case COP_PADD_I8:
 }
 break;
 
+/**
+ * <opcode name="padd_i8_r">
+ *   <operation>Add <code>int64</code> value to pointer with
+ *				reversed arguments</operation>
+ *
+ *   <format>padd_i8</format>
+ *
+ *   <form name="padd_i8" code="COP_PADD_I8"/>
+ *
+ *   <before>..., value, pointer</before>
+ *   <after>..., newpointer</after>
+ *
+ *   <description>Pop <i>value</i> and <i>pointer</i> from the stack
+ *   as the types <code>int64</code> and <code>ptr</code> respectively.
+ *   Compute <i>newpointer = pointer + value</code> and push
+ *   <i>newpointer</i> onto the stack.</description>
+ *
+ *   <notes>The <i>value</i> will be truncated to 32 bits on platforms
+ *   with 32 bit pointers.</notes>
+ * </opcode>
+ */
 case COP_PADD_I8_R:
 {
 	/* Add a 64-bit integer to a pointer with reversed args */
@@ -357,6 +909,24 @@ case COP_PADD_I8_R:
 }
 break;
 
+/**
+ * <opcode name="psub">
+ *   <operation>Subtract pointer values</operation>
+ *
+ *   <format>psub</format>
+ *
+ *   <form name="psub" code="COP_PSUB"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Pop <i>value1</i> and <i>value2</i> from the stack
+ *   as type <code>ptr</code>.  Compute <i>result = value1 - value2</code>
+ *   and push <i>result</i> onto the stack.  The type of <i>result</i>
+ *   will be either <code>int32</code> or <code>int64</code>, depending
+ *   upon the platform.</description>
+ * </opcode>
+ */
 case COP_PSUB:
 {
 	/* Subtract two pointers with a "native int" result */
@@ -373,6 +943,23 @@ case COP_PSUB:
 }
 break;
 
+/**
+ * <opcode name="psub_i4">
+ *   <operation>Subtract <code>int32</code> from pointer</operation>
+ *
+ *   <format>psub_i4</format>
+ *
+ *   <form name="psub_i4" code="COP_PSUB_I4"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>..., newpointer</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
+ *   as the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Compute <i>newpointer = pointer - value</code> and push
+ *   <i>newpointer</i> onto the stack.</description>
+ * </opcode>
+ */
 case COP_PSUB_I4:
 {
 	/* Subtract a 32-bit integer from a pointer */
@@ -383,6 +970,26 @@ case COP_PSUB_I4:
 }
 break;
 
+/**
+ * <opcode name="psub_i8">
+ *   <operation>Subtract <code>int64</code> from pointer</operation>
+ *
+ *   <format>psub_i8</format>
+ *
+ *   <form name="psub_i8" code="COP_PSUB_I8"/>
+ *
+ *   <before>..., pointer, value</before>
+ *   <after>..., newpointer</after>
+ *
+ *   <description>Pop <i>pointer</i> and <i>value</i> from the stack
+ *   as the types <code>ptr</code> and <code>int64</code> respectively.
+ *   Compute <i>newpointer = pointer - value</code> and push
+ *   <i>newpointer</i> onto the stack.</description>
+ *
+ *   <notes>The <i>value</i> will be truncated to 32 bits on platforms
+ *   with 32 bit pointers.</notes>
+ * </opcode>
+ */
 case COP_PSUB_I8:
 {
 	/* Subtract a 64-bit integer from a pointer */
@@ -403,6 +1010,22 @@ case COP_PSUB_I8:
 }
 break;
 
+/**
+ * <opcode name="cknull">
+ *   <operation>Check pointer for <code>null</code></operation>
+ *
+ *   <format>cknull</format>
+ *
+ *   <form name="cknull" code="COP_CKNULL"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., pointer</after>
+ *
+ *   <description>Throw <code>System.NullReferenceException</code> if
+ *   the <code>ptr</code> value on the top of the stack is <code>null</code>.
+ *   Otherwise do nothing.</description>
+ * </opcode>
+ */
 case COP_CKNULL:
 {
 	/* Check the stack top for "null" */
@@ -417,6 +1040,27 @@ case COP_CKNULL:
 }
 break;
 
+/**
+ * <opcode name="cknull_n">
+ *   <operation>Check pointer down the stack for <code>null</code></operation>
+ *
+ *   <format>cknull_n<fsep/>N[1]</format>
+ *   <format>wide<fsep/>cknull_n<fsep/>N[4]</format>
+ *
+ *   <form name="cknull_n" code="COP_CKNULL_N"/>
+ *
+ *   <before>..., pointer, val1, ..., valN</before>
+ *   <after>..., pointer, val1, ..., valN</after>
+ *
+ *   <description>Throw <code>System.NullReferenceException</code> if
+ *   the <code>ptr</code> value <i>N</i> words down the stack is
+ *   <code>null</code>.  Otherwise do nothing.  <i>N == 0</i> indicates
+ *   the top of the stack.</description>
+ *
+ *   <notes>The <i>cknull</i> instruction is more efficient if
+ *   <i>N == 0</i>.</notes>
+ * </opcode>
+ */
 case COP_CKNULL_N:
 {
 	/* Check a value some way down the stack for "null" */
@@ -466,12 +1110,172 @@ case name: \
 } \
 break
 
+/**
+ * <opcode name="bread_elem">
+ *   <operation>Read <code>int8</code> value from array</operation>
+ *
+ *   <format>bread_elem</format>
+ *
+ *   <form name="bread_elem" code="COP_BREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the 8 bit value from position <i>index</i>
+ *   in <i>array</i>, sign-extend it to <code>int32</code>,
+ *   and push it onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_READ_ELEM(COP_BREAD_ELEM,  ILInt8);
+
+/**
+ * <opcode name="ubread_elem">
+ *   <operation>Read <code>uint8</code> value from array</operation>
+ *
+ *   <format>ubread_elem</format>
+ *
+ *   <form name="ubread_elem" code="COP_UBREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the 8 bit value from position <i>index</i>
+ *   in <i>array</i>, zero-extend it to <code>int32</code>,
+ *   and push it onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_READ_ELEM(COP_UBREAD_ELEM, ILUInt8);
+
+/**
+ * <opcode name="sread_elem">
+ *   <operation>Read <code>int16</code> value from array</operation>
+ *
+ *   <format>sread_elem</format>
+ *
+ *   <form name="sread_elem" code="COP_SREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the 16 bit value from position <i>index</i>
+ *   in <i>array</i>, sign-extend it to <code>int32</code>,
+ *   and push it onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_READ_ELEM(COP_SREAD_ELEM,  ILInt16);
+
+/**
+ * <opcode name="usread_elem">
+ *   <operation>Read <code>uint16</code> value from array</operation>
+ *
+ *   <format>usread_elem</format>
+ *
+ *   <form name="usread_elem" code="COP_USREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the 16 bit value from position <i>index</i>
+ *   in <i>array</i>, zero-extend it to <code>int32</code>,
+ *   and push it onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_READ_ELEM(COP_USREAD_ELEM, ILUInt16);
+
+/**
+ * <opcode name="iread_elem">
+ *   <operation>Read <code>int32</code> value from array</operation>
+ *
+ *   <format>iread_elem</format>
+ *
+ *   <form name="iread_elem" code="COP_IREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the <code>int32</code> value from position
+ *   <i>index</i> and push it onto the stack.</description>
+ *
+ *   <notes>This instruction can also be used to read values of
+ *   type <code>uint32</code> from an array.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_READ_ELEM(COP_IREAD_ELEM,  ILInt32);
 
+/**
+ * <opcode name="pread_elem">
+ *   <operation>Read <code>ptr</code> value from array</operation>
+ *
+ *   <format>pread_elem</format>
+ *
+ *   <form name="pread_elem" code="COP_PREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the <code>ptr</code> value from position
+ *   <i>index</i> and push it onto the stack.</description>
+ *
+ *   <notes>This instruction must not be confused with <i>iread_elem</i>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of memory space on all
+ *   platforms.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_PREAD_ELEM:
 {
 	/* Read a pointer value from an array element */
@@ -521,10 +1325,117 @@ case name: \
 } \
 break
 
+/**
+ * <opcode name="bwrite_elem">
+ *   <operation>Write <code>int8</code> value to array</operation>
+ *
+ *   <format>bwrite_elem</format>
+ *
+ *   <form name="bwrite_elem" code="COP_BWRITE_ELEM"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and
+ *   <i>value</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>int32</code> respectively.
+ *   The <i>value</i> is truncated to 8 bits and written at
+ *   position <i>index</i> in <i>array</i>.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_WRITE_ELEM(COP_BWRITE_ELEM, ILInt8);
+
+/**
+ * <opcode name="swrite_elem">
+ *   <operation>Write <code>int16</code> value to array</operation>
+ *
+ *   <format>swrite_elem</format>
+ *
+ *   <form name="swrite_elem" code="COP_SWRITE_ELEM"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and
+ *   <i>value</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>int32</code> respectively.
+ *   The <i>value</i> is truncated to 16 bits and written at
+ *   position <i>index</i> in <i>array</i>.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_WRITE_ELEM(COP_SWRITE_ELEM, ILInt16);
+
+/**
+ * <opcode name="iwrite_elem">
+ *   <operation>Write <code>int32</code> value to array</operation>
+ *
+ *   <format>iwrite_elem</format>
+ *
+ *   <form name="iwrite_elem" code="COP_IWRITE_ELEM"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and
+ *   <i>value</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>int32</code> respectively.
+ *   The <i>value</i> is written at position <i>index</i>
+ *   in <i>array</i>.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 SIMPLE_WRITE_ELEM(COP_IWRITE_ELEM, ILInt32);
 
+/**
+ * <opcode name="pwrite_elem">
+ *   <operation>Write <code>ptr</code> value to array</operation>
+ *
+ *   <format>pwrite_elem</format>
+ *
+ *   <form name="pwrite_elem" code="COP_PWRITE_ELEM"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and
+ *   <i>value</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>ptr</code> respectively.
+ *   The <i>value</i> is written at position <i>index</i>
+ *   in <i>array</i>.</description>
+ *
+ *   <notes>This instruction must not be confused with <i>iwrite_elem</i>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of memory space on all
+ *   platforms.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_PWRITE_ELEM:
 {
 	/* Write a pointer value to an array element */
@@ -549,6 +1460,41 @@ case COP_PWRITE_ELEM:
 }
 break;
 
+/**
+ * <opcode name="ckarray_load_i4">
+ *   <operation>Check an array load with an <code>int32</code>
+ *				index</operation>
+ *
+ *   <format>ckarray_load_i4</format>
+ *
+ *   <form name="ckarray_load_i4" code="COP_CKARRAY_LOAD_I4"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., pointer, index</after>
+ *
+ *   <description>Retrieve <i>array</i> and <i>index</i>
+ *   from the stack (without popping them) as the types <code>ptr</code>
+ *   and <code>int32</code> respectively.  Throw a
+ *   <code>System.IndexOutOfRangeException</code> if <i>index</i> is
+ *   out of range.  Otherwise set <i>pointer</i> to the address of
+ *   the first element in the array.</description>
+ *
+ *   <notes>This instruction is used to assist in obtaining the address
+ *   of an array element.  The program will normally follow this
+ *   instruction with an <i>imul</i> operation to adjust the index
+ *   for the size of the elements, followed by <i>padd_i4</i> to compute
+ *   the final element address.  This instruction sequence can also be
+ *   used in combination with <i>mread</i> to fetch odd-sized array
+ *   elements by pointer.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CKARRAY_LOAD_I4:
 {
 	/* Check an array load that uses an I4 index */
@@ -574,6 +1520,41 @@ case COP_CKARRAY_LOAD_I4:
 }
 break;
 
+/**
+ * <opcode name="ckarray_load_i8">
+ *   <operation>Check an array load with an <code>int64</code>
+ *				index</operation>
+ *
+ *   <format>ckarray_load_i8</format>
+ *
+ *   <form name="ckarray_load_i8" code="COP_CKARRAY_LOAD_I8"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., pointer, index</after>
+ *
+ *   <description>Retrieve <i>array</i> and <i>index</i>
+ *   from the stack (without popping them) as the types <code>ptr</code>
+ *   and <code>int64</code> respectively.  Throw a
+ *   <code>System.IndexOutOfRangeException</code> if <i>index</i> is
+ *   out of range.  Otherwise set <i>pointer</i> to the address of
+ *   the first element in the array.</description>
+ *
+ *   <notes>This instruction is used to assist in obtaining the address
+ *   of an array element.  The program will normally follow this
+ *   instruction with an <i>lmul</i> operation to adjust the index
+ *   for the size of the elements, followed by <i>padd_i8</i> to compute
+ *   the final element address.  This instruction sequence can also be
+ *   used in combination with <i>mread</i> to fetch odd-sized array
+ *   elements by pointer.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CKARRAY_LOAD_I8:
 {
 	/* Check an array load that uses an I8 index */
@@ -599,6 +1580,41 @@ case COP_CKARRAY_LOAD_I8:
 }
 break;
 
+/**
+ * <opcode name="ckarray_store_i8">
+ *   <operation>Check an array store that uses an <code>int64</code>
+ *				index</operation>
+ *
+ *   <format>ckarray_store_i8<fsep/>N[1]<fsep/>M[1]</format>
+ *
+ *   <form name="ckarray_store_i8" code="COP_CKARRAY_STORE_I8"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>..., pointer, value</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and <i>value</i>
+ *   from the stack as the types <code>ptr</code>, <code>int64</code>,
+ *   and <code>word[N]</code> respectively (where <code>word</code>
+ *   is the type of a stack word).  Throw a
+ *   <code>System.IndexOutOfRangeException</code> if <i>index</i> is
+ *   out of range.  Otherwise set <i>pointer</i> to the address of
+ *   the <i>index</i>'th element in the array.  The size of each
+ *   array element is <i>M</i> bytes.  The <i>pointer</i> and
+ *   <i>value</i> are pushed onto the stack.</description>
+ *
+ *   <notes>This instruction is used to assist in storing an element
+ *   to an array when the CIL index had the type I on a 64-bit platform.
+ *   This instruction sequence is typically followed by a <i>*write</i>
+ *   instruction to store <i>value</i> at <i>pointer</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CKARRAY_STORE_I8:
 {
 	/* Check an array store that uses an I8 index */
@@ -622,6 +1638,27 @@ case COP_CKARRAY_STORE_I8:
 }
 break;
 
+/**
+ * <opcode name="array_len">
+ *   <operation>Get the length of an array</operation>
+ *
+ *   <format>array_len</format>
+ *
+ *   <form name="array_len" code="COP_ARRAY_LEN"/>
+ *
+ *   <before>..., array</before>
+ *   <after>..., length</after>
+ *
+ *   <description>Pop <i>array</i> from the stack as type <code>ptr</code>.
+ *   Fetch the <i>length</i> of this array and push it onto the stack
+ *   as type <code>native int</code>.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_ARRAY_LEN:
 {
 	/* Get the length of an array */
@@ -650,6 +1687,30 @@ break;
 (*((type *)(((unsigned char *)(stacktop[-2].ptrValue)) + \
 				(ILUInt32)(pc[1]))))
 
+/**
+ * <opcode name="bread_field">
+ *   <operation>Read <code>int8</code> field</operation>
+ *
+ *   <format>bread_field<fsep/>N[1]</format>
+ *
+ *   <form name="bread_field" code="COP_BREAD_FIELD"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   Fetch the 8 bit value at <i>object + N</i>, sign-extend it to
+ *   <code>int32</code>, and push it onto the stack.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull, ldc_i4 N, padd_i4, bread</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_BREAD_FIELD:
 {
 	/* Read a byte value from an object field */
@@ -665,6 +1726,30 @@ case COP_BREAD_FIELD:
 }
 break;
 
+/**
+ * <opcode name="ubread_field">
+ *   <operation>Read <code>uint8</code> field</operation>
+ *
+ *   <format>ubread_field<fsep/>N[1]</format>
+ *
+ *   <form name="ubread_field" code="COP_UBREAD_FIELD"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   Fetch the 8 bit value at <i>object + N</i>, zero-extend it to
+ *   <code>int32</code>, and push it onto the stack.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull, ldc_i4 N, padd_i4, ubread</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_UBREAD_FIELD:
 {
 	/* Read an unsigned byte value from an object field */
@@ -680,6 +1765,30 @@ case COP_UBREAD_FIELD:
 }
 break;
 
+/**
+ * <opcode name="sread_field">
+ *   <operation>Read <code>int16</code> field</operation>
+ *
+ *   <format>sread_field<fsep/>N[1]</format>
+ *
+ *   <form name="sread_field" code="COP_SREAD_FIELD"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   Fetch the 16 bit value at <i>object + N</i>, sign-extend it to
+ *   <code>int32</code>, and push it onto the stack.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull, ldc_i4 N, padd_i4, sread</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_SREAD_FIELD:
 {
 	/* Read a short value from an object field */
@@ -695,6 +1804,30 @@ case COP_SREAD_FIELD:
 }
 break;
 
+/**
+ * <opcode name="usread_field">
+ *   <operation>Read <code>uint16</code> field</operation>
+ *
+ *   <format>usread_field<fsep/>N[1]</format>
+ *
+ *   <form name="usread_field" code="COP_USREAD_FIELD"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   Fetch the 16 bit value at <i>object + N</i>, zero-extend it to
+ *   <code>int32</code>, and push it onto the stack.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull, ldc_i4 N, padd_i4, usread</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_USREAD_FIELD:
 {
 	/* Read an unsigned short value from an object field */
@@ -710,6 +1843,30 @@ case COP_USREAD_FIELD:
 }
 break;
 
+/**
+ * <opcode name="iread_field">
+ *   <operation>Read <code>int32</code> field</operation>
+ *
+ *   <format>iread_field<fsep/>N[1]</format>
+ *
+ *   <form name="iread_field" code="COP_IREAD_FIELD"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   Fetch the <code>int32</code> value at <i>object + N</i>, and
+ *   push it onto the stack.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull, ldc_i4 N, padd_i4, iread</i>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IREAD_FIELD:
 {
 	/* Read an integer value from an object field */
@@ -725,6 +1882,35 @@ case COP_IREAD_FIELD:
 }
 break;
 
+/**
+ * <opcode name="pread_field">
+ *   <operation>Read <code>ptr</code> field</operation>
+ *
+ *   <format>pread_field<fsep/>N[1]</format>
+ *
+ *   <form name="pread_field" code="COP_PREAD_FIELD"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   Fetch the <code>ptr</code> value at <i>object + N</i>, and
+ *   push it onto the stack.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull, ldc_i4 N, padd_i4, pread</i>.<p/>
+ *
+ *   This instruction must not be confused with <i>iread_field</i>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of memory space on all
+ *   platforms.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_PREAD_FIELD:
 {
 	/* Read a pointer value from an object field */
@@ -740,6 +1926,34 @@ case COP_PREAD_FIELD:
 }
 break;
 
+/**
+ * <opcode name="bwrite_field">
+ *   <operation>Write <code>int8</code> field</operation>
+ *
+ *   <format>bwrite_field<fsep/>N[1]</format>
+ *
+ *   <form name="bwrite_field" code="COP_BWRITE_FIELD"/>
+ *
+ *   <before>..., object, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>object</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Truncate <i>value</i> to 8 bits and store it at <i>object + N</i>.
+ *   </description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull_n 1, padd_offset_n 1 N, bwrite</i>.<p/>
+ *
+ *   This instruction can also be used to write values of type
+ *   <code>uint8</code>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_BWRITE_FIELD:
 {
 	/* Write a byte value to an object field */
@@ -755,6 +1969,34 @@ case COP_BWRITE_FIELD:
 }
 break;
 
+/**
+ * <opcode name="swrite_field">
+ *   <operation>Write <code>int16</code> field</operation>
+ *
+ *   <format>pwrite_field<fsep/>N[1]</format>
+ *
+ *   <form name="swrite_field" code="COP_SWRITE_FIELD"/>
+ *
+ *   <before>..., object, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>object</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Truncate <i>value</i> to 16 bits and store it at <i>object + N</i>.
+ *   </description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull_n 1, padd_offset_n 1 N, swrite</i>.<p/>
+ *
+ *   This instruction can also be used to write values of type
+ *   <code>uint16</code>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_SWRITE_FIELD:
 {
 	/* Write a short value to an object field */
@@ -770,6 +2012,33 @@ case COP_SWRITE_FIELD:
 }
 break;
 
+/**
+ * <opcode name="iwrite_field">
+ *   <operation>Write <code>int32</code> field</operation>
+ *
+ *   <format>iwrite_field<fsep/>N[1]</format>
+ *
+ *   <form name="iwrite_field" code="COP_IWRITE_FIELD"/>
+ *
+ *   <before>..., object, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>object</i> and <i>value</i> from the stack as
+ *   the types <code>ptr</code> and <code>int32</code> respectively.
+ *   Store <i>value</i> at <i>object + N</i>.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull_n 1, padd_offset_n 1 N, iwrite</i>.<p/>
+ *
+ *   This instruction can also be used to write values of type
+ *   <code>uint32</code>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_IWRITE_FIELD:
 {
 	/* Write an integer value to an object field */
@@ -785,6 +2054,35 @@ case COP_IWRITE_FIELD:
 }
 break;
 
+/**
+ * <opcode name="pwrite_field">
+ *   <operation>Write <code>int32</code> field</operation>
+ *
+ *   <format>pwrite_field<fsep/>N[1]</format>
+ *
+ *   <form name="pwrite_field" code="COP_PWRITE_FIELD"/>
+ *
+ *   <before>..., object, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>object</i> and <i>value</i> from the stack
+ *   as type <code>ptr</code>.  Store <i>value</i> at
+ *   <i>object + N</i>.</description>
+ *
+ *   <notes>If the offset <i>N</i> is greater than 255, then use
+ *   the sequence <i>cknull_n 1, padd_offset_n 1 N, pwrite</i>.<p/>
+ *
+ *   This instruction must not be confused with <i>iwrite_field</i>.
+ *   Values of type <code>int32</code> and <code>ptr</code> do not
+ *   necessarily occupy the same amount of memory space on all
+ *   platforms.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>object</i> is <code>null</code>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_PWRITE_FIELD:
 {
 	/* Write a pointer value to an object field */
@@ -800,6 +2098,35 @@ case COP_PWRITE_FIELD:
 }
 break;
 
+/**
+ * <opcode name="castclass">
+ *   <operation>Cast an object to a new class</operation>
+ *
+ *   <format>castclass<fsep/>class</format>
+ *
+ *   <form name="castclass" code="COP_CASTCLASS"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., object</after>
+ *
+ *   <description>Inspect the <i>object</i> on the top of the stack.
+ *   If <i>object</i> is <code>null</code> or its class inherits
+ *   from <i>class</i>, execution continues with the next instruction.
+ *   Otherwise, <code>System.InvalidCastException</code>
+ *   is thrown.</description>
+ *
+ *   <notes>The <i>class</i> value is a native pointer to the class
+ *   descriptor, which may 32 or 64 bits in size.<p/>
+ *
+ *   This instruction can only be used to test for normal inheritance.
+ *   Use <i>castinterface</i> to cast objects to interfaces.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.InvalidCastException"/>Raised if
+ *     <i>object</i>'s class does not inherit from <i>class</i>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CASTCLASS:
 {
 	/* Cast the object on the stack top to a new class */
@@ -816,6 +2143,30 @@ case COP_CASTCLASS:
 }
 break;
 
+/**
+ * <opcode name="isinst">
+ *   <operation>Determine if an object is an instance of a class</operation>
+ *
+ *   <format>isinst<fsep/>class</format>
+ *
+ *   <form name="isinst" code="COP_ISINST"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., newobject</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   If <i>object</i> is <code>null</code> or its class inherits
+ *   from <i>class</i>, then set <i>newobject</i> to <i>object</i>.
+ *   Otherwise, set <i>newobject</i> to <code>null</code>.  Push
+ *   <i>newobject</i> onto the stack.</description>
+ *
+ *   <notes>The <i>class</i> value is a native pointer to the class
+ *   descriptor, which may 32 or 64 bits in size.<p/>
+ *
+ *   This instruction can only be used to test for normal inheritance.
+ *   Use <i>isinterface</i> to test for interface membership.</notes>
+ * </opcode>
+ */
 case COP_ISINST:
 {
 	/* Determine if the object on the stack top is an
@@ -830,6 +2181,35 @@ case COP_ISINST:
 }
 break;
 
+/**
+ * <opcode name="castinterface">
+ *   <operation>Cast an object to a new interface</operation>
+ *
+ *   <format>castinterface<fsep/>interface</format>
+ *
+ *   <form name="castinterface" code="COP_CASTINTERFACE"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., object</after>
+ *
+ *   <description>Inspect the <i>object</i> on the top of the stack.
+ *   If <i>object</i> is <code>null</code> or its class implements
+ *   <i>interface</i>, execution continues with the next instruction.
+ *   Otherwise, <code>System.InvalidCastException</code>
+ *   is thrown.</description>
+ *
+ *   <notes>The <i>interface</i> value is a native pointer to the class
+ *   descriptor, which may 32 or 64 bits in size.<p/>
+ *
+ *   This instruction can only be used to test for interface inheritance.
+ *   Use <i>castclass</i> to cast objects to parent classes.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.InvalidCastException"/>Raised if
+ *     <i>object</i>'s class does not implement <i>interface</i>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_CASTINTERFACE:
 {
 	/* Cast the object on the stack top to a new interface */
@@ -846,6 +2226,31 @@ case COP_CASTINTERFACE:
 }
 break;
 
+/**
+ * <opcode name="isinterface">
+ *   <operation>Determine if an object is an instance of
+ *              an interface</operation>
+ *
+ *   <format>isinterface<fsep/>interface</format>
+ *
+ *   <form name="isinterface" code="COP_ISINTERFACE"/>
+ *
+ *   <before>..., object</before>
+ *   <after>..., newobject</after>
+ *
+ *   <description>Pop <i>object</i> from the stack as type <code>ptr</code>.
+ *   If <i>object</i> is <code>null</code> or its class implements
+ *   <i>interface</i>, then set <i>newobject</i> to <i>object</i>.
+ *   Otherwise, set <i>newobject</i> to <code>null</code>.  Push
+ *   <i>newobject</i> onto the stack.</description>
+ *
+ *   <notes>The <i>interface</i> value is a native pointer to the class
+ *   descriptor, which may 32 or 64 bits in size.<p/>
+ *
+ *   This instruction can only be used to test for interface inheritance.
+ *   Use <i>isinst</i> to test for normal inheritance.</notes>
+ * </opcode>
+ */
 case COP_ISINTERFACE:
 {
 	/* Determine if the object on the stack top is an
@@ -860,6 +2265,36 @@ case COP_ISINTERFACE:
 }
 break;
 
+/**
+ * <opcode name="get_static">
+ *   <operation>Get a pointer to the static data area of a class</operation>
+ *
+ *   <format>get_static<fsep/>class</format>
+ *
+ *   <form name="get_static" code="COP_GET_STATIC"/>
+ *
+ *   <before>...</before>
+ *   <after>..., pointer</after>
+ *
+ *   <description>If <i>class</i> currently has a static data area,
+ *   then push the data area's <i>pointer</i> onto the stack.
+ *   Otherwise, allocate a new static data area for <i>class</i>
+ *   and push it onto the stack.</description>
+ *
+ *   <notes>The <i>class</i> value is a native pointer to the class
+ *   descriptor, which may 32 or 64 bits in size.<p/>
+ *
+ *   This instruction is used in combination with the
+ *   <i>*read</i> and <i>*write</i> instructions to access static
+ *   fields within a class.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     there is insufficient memory to allocate the static data
+ *     area.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_GET_STATIC:
 {
 	/* Get the static data area for a particular class */
@@ -882,6 +2317,31 @@ case COP_GET_STATIC:
 }
 break;
 
+/**
+ * <opcode name="new">
+ *   <operation>Allocate an instance of the current class</operation>
+ *
+ *   <format>new</format>
+ *
+ *   <form name="new" code="COP_NEW"/>
+ *
+ *   <before>...</before>
+ *   <after>..., pointer</after>
+ *
+ *   <description>Allocates an instance of the class associated with
+ *   the currently executing method, and pushes a <i>pointer</i> to
+ *   this instance onto the stack.</description>
+ *
+ *   <notes>This instruction is used inside constructors to allocate
+ *   memory for a new object.  The fields of the new object are
+ *   initialized to zero.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     there is insufficient memory to allocate the object.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_NEW:
 {
 	/* Create a new object of the current method's class */
@@ -904,6 +2364,29 @@ case COP_NEW:
 }
 break;
 
+/**
+ * <opcode name="new_value">
+ *   <operation>Allocate a new value type instance and push it down</operation>
+ *
+ *   <format>new_value<fsep/>N[1]<fsep/>M[1]</format>
+ *   <format>wide<fsep/>new_value<fsep/>N[4]<fsep/>M[4]</format>
+ *
+ *   <form name="new_value" code="COP_NEW_VALUE"/>
+ *
+ *   <before>..., val1, ..., valN</before>
+ *   <after>..., value, pointer, val1, ..., valN</after>
+ *
+ *   <description>Creates a new value type instance of <i>M</i>
+ *   stack words in size and places it, and a <i>pointer</i> to it,
+ *   <i>N</i> positions down the stack.  The fields of the new
+ *   instance are initialized to zero.  <i>N == 0</i> to place
+ *   the new instance at the top of the stack.</description>
+ *
+ *   <notes>This instruction is used inside value type constructors to
+ *   insert the return value and the <code>this</code> pointer into the
+ *   stack prior to running the main constructor code.</notes>
+ * </opcode>
+ */
 case COP_NEW_VALUE:
 {
 	/* Create a new value type and insert it below the constructors */
@@ -917,6 +2400,27 @@ case COP_NEW_VALUE:
 }
 break;
 
+/**
+ * <opcode name="ldstr">
+ *   <operation>Load a string constant onto the stack</operation>
+ *
+ *   <format>ldstr<fsep/>token[4]</format>
+ *
+ *   <form name="ldstr" code="COP_LDSTR"/>
+ *
+ *   <before>...</before>
+ *   <after>..., string</after>
+ *
+ *   <description>Loads the string <i>token</i> from the current
+ *   method's image and pushes the corresponding <i>string</i>
+ *   object onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     there is insufficient memory to allocate the string.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_LDSTR:
 {
 	/* Load a string constant onto the stack */
@@ -929,6 +2433,27 @@ case COP_LDSTR:
 }
 break;
 
+/**
+ * <opcode name="ldtoken">
+ *   <operation>Load a token pointer onto the stack</operation>
+ *
+ *   <format>ldstr<fsep/>pointer</format>
+ *
+ *   <form name="ldtoken" code="COP_LDTOKEN"/>
+ *
+ *   <before>...</before>
+ *   <after>..., pointer</after>
+ *
+ *   <description>Push <i>pointer</i> onto the stack as a
+ *   <code>ptr</code> value.</description>
+ *
+ *   <notes>The <i>pointer</i> value is a native pointer to the token
+ *   descriptor, which may 32 or 64 bits in size.<p/>
+ *
+ *   This instruction is used to load type, field, and method
+ *   descriptors onto the stack as handle instances.</notes>
+ * </opcode>
+ */
 case COP_LDTOKEN:
 {
 	/* Load a token handle onto the stack */
@@ -937,6 +2462,36 @@ case COP_LDTOKEN:
 }
 break;
 
+/**
+ * <opcode name="box">
+ *   <operation>Box a value type instance</operation>
+ *
+ *   <format>box<fsep/>N[1]<fsep/>class</format>
+ *   <format>wide<fsep/>box<fsep/>N[4]<fsep/>class</format>
+ *
+ *   <form name="box" code="COP_BOX"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., object</after>
+ *
+ *   <description>Pop the managed <i>value</i> from the stack.  The size
+ *   of <i>value</i> is <i>N</i> stack words.  Allocate a new <i>object</i>
+ *   instance of <i>class</i>, copy <i>value</i> into it, and then push
+ *   <i>object</i> onto the stack.</description>
+ *
+ *   <notes>The <i>class</i> value is a native pointer to the class
+ *   descriptor, which may 32 or 64 bits in size.<p/>
+ *
+ *   There is no <i>unbox</i> instruction.  The object layout is defined
+ *   so that an object reference can also be used as a managed pointer
+ *   to the contents of the object.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     there is insufficient memory to allocate the new object.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_BOX:
 {
 	/* Box a managed value */
@@ -951,6 +2506,32 @@ case COP_BOX:
 }
 break;
 
+/**
+ * <opcode name="box_ptr">
+ *   <operation>Box a value type instance at a pointer</operation>
+ *
+ *   <format>box_ptr<fsep/>N[1]<fsep/>class</format>
+ *   <format>wide<fsep/>box_ptr<fsep/>N[4]<fsep/>class</format>
+ *
+ *   <form name="box_ptr" code="COP_BOX_PTR"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., object</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type <code>ptr</code>.
+ *   Allocate a new <i>object</i> of <i>N</i> bytes in size as an instance
+ *   of <i>class</i>.  Copy the <i>N</i> bytes of memory from <i>pointer</i>
+ *   to the object.  Push <i>object</i> onto the stack.</description>
+ *
+ *   <notes>The <i>class</i> value is a native pointer to the class
+ *   descriptor, which may 32 or 64 bits in size.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.OutOfMemoryException"/>Raised if
+ *     there is insufficient memory to allocate the new object.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_BOX_PTR:
 {
 	/* Box a managed pointer */
@@ -964,6 +2545,32 @@ case COP_BOX_PTR:
 }
 break;
 
+/**
+ * <opcode name="memcpy">
+ *   <operation>Copy a fixed-size block of non-overlapping memory</operation>
+ *
+ *   <format>memcpy<fsep/>N[1]</format>
+ *   <format>wide<fsep/>memcpy<fsep/>N[4]</format>
+ *
+ *   <form name="memcpy" code="COP_MEMCPY"/>
+ *
+ *   <before>..., dest, src</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>dest</i> and <i>src</i> from the stack as type
+ *   <code>ptr</code>.  Copy <i>N</i> bytes of memory from <i>src</i>
+ *   to <i>dest</i>.</description>
+ *
+ *   <notes>It is assumed that the source and destination regions do
+ *   not overlap.<p/>
+ *
+ *   This instruction is typically used to copy value type instances
+ *   from one location to another.<p/>
+ *
+ *   Use <i>memmove</i> for overlapping memory regions, and for regions
+ *   that do not have a fixed size.</notes>
+ * </opcode>
+ */
 case COP_MEMCPY:
 {
 	/* Copy a fixed-size memory block */
@@ -972,6 +2579,26 @@ case COP_MEMCPY:
 }
 break;
 
+/**
+ * <opcode name="memmove">
+ *   <operation>Move a block of memory</operation>
+ *
+ *   <format>memmove</format>
+ *
+ *   <form name="memmove" code="COP_MEMMOVE"/>
+ *
+ *   <before>..., dest, src, length</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>dest</i>, <i>src</i>, and <i>length</i>
+ *   from the stack as the types <code>ptr</code>, <code>ptr</code>,
+ *   and </code>uint32</code> respectively.  Move <i>length</i> bytes
+ *   of memory from <i>src</i> to <i>dest</i>.</description>
+ *
+ *   <notes>If the source and destination regions overlap, this instruction
+ *   will guarantee to produce the correct result.</notes>
+ * </opcode>
+ */
 case COP_MEMMOVE:
 {
 	/* Move a variable-size memory block */
@@ -981,6 +2608,29 @@ case COP_MEMMOVE:
 }
 break;
 
+/**
+ * <opcode name="memzero">
+ *   <operation>Fill a fixed-size block of memory with zeroes</operation>
+ *
+ *   <format>memzero<fsep/>N[1]</format>
+ *   <format>wide<fsep/>memzero<fsep/>N[4]</format>
+ *
+ *   <form name="memzero" code="COP_MEMZERO"/>
+ *
+ *   <before>..., dest</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>dest</i> from the stack as type
+ *   <code>ptr</code>.  Fill <i>N</i> bytes of memory at <i>dest</i>
+ *   with zero bytes.</description>
+ *
+ *   <notes>This instruction is typically used to initialize value type
+ *   instances.<p/>
+ *
+ *   Use <i>memset</i> if the region does not have a fixed size, or the
+ *   fill value is something other than zero.</notes>
+ * </opcode>
+ */
 case COP_MEMZERO:
 {
 	/* Fill a fixed-size memory block with zeroes */
@@ -989,6 +2639,23 @@ case COP_MEMZERO:
 }
 break;
 
+/**
+ * <opcode name="memset">
+ *   <operation>Fill a block of memory with a byte value</operation>
+ *
+ *   <format>memset</format>
+ *
+ *   <form name="memset" code="COP_MEMSET"/>
+ *
+ *   <before>..., dest, value, length</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>dest</i>, <i>value</i>, and <i>length</i>
+ *   from the stack as the types <code>ptr</code>, <code>int32</code>,
+ *   and <code>uint32</code>.  Fill <i>length</i> bytes of memory at
+ *   <i>dest</i> with <i>value</i>.</description>
+ * </opcode>
+ */
 case COP_MEMSET:
 {
 	/* Set the contents of a memory block to the same byte value */
@@ -1143,10 +2810,89 @@ case name: \
 } \
 break
 
+/**
+ * <opcode name="lread_elem">
+ *   <operation>Read <code>int64</code> value from array</operation>
+ *
+ *   <format>prefix<fsep/>lread_elem</format>
+ *
+ *   <form name="lread_elem" code="COP_PREFIX_LREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the <code>int64</code> value from position
+ *   <i>index</i> in <i>array</i>, and push it onto the stack.</description>
+ *
+ *   <notes>This instruction can also be used to read values of
+ *   type <cod>uint64</code>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 LARGE_READ_ELEM(COP_PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				ReadLong, WriteLong);
+
+/**
+ * <opcode name="fread_elem">
+ *   <operation>Read <code>float32</code> value from array</operation>
+ *
+ *   <format>prefix<fsep/>fread_elem</format>
+ *
+ *   <form name="fread_elem" code="COP_PREFIX_FREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the <code>float32</code> value from position
+ *   <i>index</i> in <i>array</i>, extend it to <code>native float</code>,
+ *   and push it onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 LARGE_READ_ELEM(COP_PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
 				(ILNativeFloat)*(ILFloat *), WriteFloat);
+
+/**
+ * <opcode name="dread_elem">
+ *   <operation>Read <code>float64</code> value from array</operation>
+ *
+ *   <format>prefix<fsep/>dread_elem</format>
+ *
+ *   <form name="dread_elem" code="COP_PREFIX_DREAD_ELEM"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., value</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from
+ *   the stack as the types <code>ptr</code> and <code>int32</code>
+ *   respectively.  Load the <code>float64</code> value from position
+ *   <i>index</i> in <i>array</i>, extend it to <code>native float</code>,
+ *   and push it onto the stack.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 LARGE_READ_ELEM(COP_PREFIX_DREAD_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 				ReadDouble, WriteFloat);
 
@@ -1176,13 +2922,113 @@ case name: \
 } \
 break
 
+/**
+ * <opcode name="lwrite_elem">
+ *   <operation>Write <code>int64</code> value to array</operation>
+ *
+ *   <format>prefix<fsep/>lwrite_elem</format>
+ *
+ *   <form name="lwrite_elem" code="COP_PREFIX_LWRITE_ELEM"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and
+ *   <i>value</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>int64</code> respectively.
+ *   The <i>value</i> is written at position <i>index</i>
+ *   in <i>array</i>.</description>
+ *
+ *   <notes>This instruction can also be used to write values of
+ *   type <code>uint64</code>.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 LARGE_WRITE_ELEM(COP_PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				 ReadLong, WriteHardLong);
+
+/**
+ * <opcode name="fwrite_elem">
+ *   <operation>Write <code>float32</code> value to array</operation>
+ *
+ *   <format>prefix<fsep/>fwrite_elem</format>
+ *
+ *   <form name="fwrite_elem" code="COP_PREFIX_FWRITE_ELEM"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and
+ *   <i>value</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>native float</code> respectively.
+ *   The <i>value</i> is truncated to <code>float32</code> and written
+ *   at position <i>index</i> in <i>array</i>.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 LARGE_WRITE_ELEM(COP_PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
 				 ReadFloat, WriteFloat32);
+
+/**
+ * <opcode name="dwrite_elem">
+ *   <operation>Write <code>float64</code> value to array</operation>
+ *
+ *   <format>prefix<fsep/>dwrite_elem</format>
+ *
+ *   <form name="dwrite_elem" code="COP_PREFIX_DWRITE_ELEM"/>
+ *
+ *   <before>..., array, index, value</before>
+ *   <after>...</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index</i>, and
+ *   <i>value</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>native float</code> respectively.
+ *   The <i>value</i> is truncated to <code>float64</code> and written
+ *   at position <i>index</i> in <i>array</i>.</description>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException"/>Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException"/>Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 LARGE_WRITE_ELEM(COP_PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 				 ReadFloat, WriteDouble);
 
+/**
+ * <opcode name="mkrefany">
+ *   <operation>Make a <code>typedref</code></operation>
+ *
+ *   <format>prefix<fsep/>mkrefany<fsep/>class</format>
+ *
+ *   <form name="mkrefany" code="COP_PREFIX_MKREFANY"/>
+ *
+ *   <before>..., pointer</before>
+ *   <after>..., reference</after>
+ *
+ *   <description>Pop <i>pointer</i> from the stack as type
+ *   <code>ptr</code>.  Make a <code>typedref</code> <i>reference</i> from
+ *   <i>pointer</i> and <i>class</i>.  Push <i>reference</i> onto
+ *   the stack.</description>
+ *
+ *   <notes>The <i>class</i> is a native pointer, which may be either
+ *   32 or 64 bits in size, depending upon the platform.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_MKREFANY:
 {
 	/* Make a typedref from an address and class information block */
@@ -1192,6 +3038,33 @@ case COP_PREFIX_MKREFANY:
 }
 break;
 
+/**
+ * <opcode name="refanyval">
+ *   <operation>Extract the value from a <code>typedref</code></operation>
+ *
+ *   <format>prefix<fsep/>refanyval<fsep/>class</format>
+ *
+ *   <form name="refanyval" code="COP_PREFIX_REFANYVAL"/>
+ *
+ *   <before>..., reference</before>
+ *   <after>..., pointer</after>
+ *
+ *   <description>Pop <i>reference</i> from the stack as type
+ *   <code>typedref</code>.  If <i>reference</i> refers to an instance
+ *   of <i>class</i>, then extract the <i>pointer</i> from the
+ *   <i>reference</i> and push it onto the stack.  Otherwise, throw
+ *   <code>System.InvalidCastException</code>.</description>
+ *
+ *   <notes>The <i>class</i> is a native pointer, which may be either
+ *   32 or 64 bits in size, depending upon the platform.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.InvalidCastException">Raised if
+ *     <i>reference</i> does not refer to an instance of <i>class</i>.
+ *     </exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_PREFIX_REFANYVAL:
 {
 	/* Extract the value part of a typedref */
@@ -1210,12 +3083,28 @@ case COP_PREFIX_REFANYVAL:
 }
 break;
 
+/**
+ * <opcode name="refanytype">
+ *   <operation>Extract the type from a <code>typedref</code></operation>
+ *
+ *   <format>prefix<fsep/>refanytype</format>
+ *
+ *   <form name="refanytype" code="COP_PREFIX_REFANYTYPE"/>
+ *
+ *   <before>..., reference</before>
+ *   <after>..., type</after>
+ *
+ *   <description>Pop <i>reference</i> from the stack as type
+ *   <code>typedref</code>.  Extract the <i>type</i> from
+ *   <i>reference</i> and push it onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_REFANYTYPE:
 {
 	/* Extract the type part of a typedref */
 	stacktop[-CVM_WORDS_PER_TYPED_REF].ptrValue =
 		((ILTypedRef *)(stacktop - CVM_WORDS_PER_TYPED_REF))->type;
-	MODIFY_PC_AND_STACK(2 + sizeof(void *), -(CVM_WORDS_PER_TYPED_REF - 1));
+	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_TYPED_REF - 1));
 }
 break;
 

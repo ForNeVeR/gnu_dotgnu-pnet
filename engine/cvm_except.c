@@ -57,6 +57,27 @@ static void *SystemException(ILExecThread *thread, const char *className)
 
 #elif defined(IL_CVM_MAIN)
 
+/**
+ * <opcode name="jsr">
+ *   <operation>Jump to local subroutine</operation>
+ *
+ *   <format>jsr<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <format>br_long<fsep/>jsr
+ *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *
+ *   <form name="jsr" code="COP_JSR"/>
+ *
+ *   <before>...</before>
+ *   <after>..., address</after>
+ *
+ *   <description>The program counter for the next instruction (<i>pc + 6</i>)
+ *   is pushed on the stack as type <code>ptr</code>.  Then the program
+ *   branches to <i>pc + offset</i>.</description>
+ *
+ *   <notes>This instruction is used to implement <code>finally</code>
+ *   blocks.</notes>
+ * </opcode>
+ */
 case COP_JSR:
 {
 	/* Jump to a subroutine within this method */
@@ -66,6 +87,24 @@ case COP_JSR:
 }
 break;
 
+/**
+ * <opcode name="ret_jsr">
+ *   <operation>Return from local subroutine</operation>
+ *
+ *   <format>ret_jsr</format>
+ *
+ *   <form name="ret_jsr" code="COP_RET_JSR"/>
+ *
+ *   <before>..., address</before>
+ *   <after>...</after>
+ *
+ *   <description>The <i>address</i> is popped from the stack as the
+ *   type <code>ptr</code> and transferred into <i>pc</i>.</description>
+ *
+ *   <notes>This instruction is used to implement <code>finally</code>
+ *   blocks.</notes>
+ * </opcode>
+ */
 case COP_RET_JSR:
 {
 	/* Return from a subroutine within this method */
@@ -76,6 +115,24 @@ break;
 
 #elif defined(IL_CVM_PREFIX)
 
+/**
+ * <opcode name="enter_try">
+ *   <operation>Enter <code>try</code> context for the
+ *				current method</operation>
+ *
+ *   <format>prefix<fsep/>enter_try</format>
+ *
+ *   <form name="enter_try" code="COP_PREFIX_ENTER_TRY"/>
+ *
+ *   <description>The exception frame height for the current method
+ *   is set to the current height of the stack.</description>
+ *
+ *   <notes>This must be in the prolog of any method that includes
+ *   <code>try</code> blocks.  It makes the "base height" of the stack
+ *   so that <i>throw</i> instructions know where to unwind the stack
+ *   to when an exception is thrown.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_ENTER_TRY:
 {
 	/* Enter a try context for this method */
@@ -94,6 +151,32 @@ throwException:
 }
 /* Fall through */
 
+/**
+ * <opcode name="throw">
+ *   <operation>Throw an exception</operation>
+ *
+ *   <format>prefix<fsep/>throw</format>
+ *
+ *   <form name="throw" code="COP_PREFIX_THROW"/>
+ *
+ *   <before>..., working1, ..., workingN, object</before>
+ *   <after>..., object</after>
+ *
+ *   <description>The <i>object</i> is popped from the stack as
+ *   type <code>ptr</code>.  The stack is then reset to the same
+ *   as the current method's exception frame height.  Then,
+ *   <i>object</i> is re-pushed onto the stack and control is
+ *   passed to the current method's exception matching code.</description>
+ *
+ *   <notes>This is used to throw exceptions within methods that
+ *   have an <i>enter_try</i> instruction.  Use <i>throw_caller</i>
+ *   if the method does not include <code>try</code> blocks.<p/>
+ *
+ *   Setting the stack height to the exception frame height ensures
+ *   that all working values are removed from the stack prior to entering
+ *   the exception matching code.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_THROW:
 {
 	/* Move the exception object down the stack to just above the locals */
@@ -112,6 +195,29 @@ searchForHandler:
 }
 break;
 
+/**
+ * <opcode name="throw_caller">
+ *   <operation>Throw an exception to the caller of this method</operation>
+ *
+ *   <format>prefix<fsep/>throw_caller</format>
+ *
+ *   <form name="throw_caller" code="COP_PREFIX_THROW_CALLER"/>
+ *
+ *   <before>..., working1, ..., workingN, object</before>
+ *   <after>..., object</after>
+ *
+ *   <description>The <i>object</i> is popped from the stack as
+ *   type <code>ptr</code>.  The call frame stack is then unwound
+ *   until a call frame with a non-zero exception frame height is found.
+ *   The stack is then reset to the specified exception frame height.
+ *   Then, <i>object</i> is re-pushed onto the stack and control is
+ *   passed to the call frame method's exception matching code.</description>
+ *
+ *   <notes>This is used to throw exceptions from within methods that
+ *   do not have an <i>enter_try</i> instruction.  Use <i>throw</i>
+ *   if the method does include <code>try</code> blocks.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_THROW_CALLER:
 {
 	/* Throw an exception to the caller of this method */

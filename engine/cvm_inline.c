@@ -56,6 +56,27 @@ static IL_INLINE int StringEquals(System_String *str1,
 
 #elif defined(IL_CVM_PREFIX)
 
+/**
+ * <opcode name="string_concat_2">
+ *   <operation>Concatenate two strings</operation>
+ *
+ *   <format>prefix<fsep/>string_concat_2</format>
+ *
+ *   <form name="string_concat_2" code="COP_PREFIX_STRING_CONCAT_2"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <code>string</code>.  The <i>result</i>
+ *   is the <code>string</code> that results from concatenating
+ *   <i>value1</i> and <i>value2</i>.  The <i>result</i> is pushed
+ *   onto the stack.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>String.Concat(String, String)</code> method.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_STRING_CONCAT_2:
 {
 	/* Concatenate two strings */
@@ -69,6 +90,27 @@ case COP_PREFIX_STRING_CONCAT_2:
 }
 break;
 
+/**
+ * <opcode name="string_concat_3">
+ *   <operation>Concatenate three strings</operation>
+ *
+ *   <format>prefix<fsep/>string_concat_3</format>
+ *
+ *   <form name="string_concat_3" code="COP_PREFIX_STRING_CONCAT_3"/>
+ *
+ *   <before>..., value1, value2, value3</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The values <i>value1</i>, <i>value2</i>, and <i>value3</i>
+ *   are popped from the stack as type <code>string</code>.  The <i>result</i>
+ *   is the <code>string</code> that results from concatenating
+ *   <i>value1</i>, <i>value2</i>, and <i>value3</i>.  The <i>result</i>
+ *   is pushed onto the stack.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>String.Concat(String, String, String)</code> method.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_STRING_CONCAT_3:
 {
 	/* Concatenate three strings */
@@ -83,6 +125,27 @@ case COP_PREFIX_STRING_CONCAT_3:
 }
 break;
 
+/**
+ * <opcode name="string_concat_4">
+ *   <operation>Concatenate four strings</operation>
+ *
+ *   <format>prefix<fsep/>string_concat_4</format>
+ *
+ *   <form name="string_concat_4" code="COP_PREFIX_STRING_CONCAT_4"/>
+ *
+ *   <before>..., value1, value2, value3, value4</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The values <i>value1</i>, <i>value2</i>, <i>value3</i>,
+ *   and <i>value4</i> are popped from the stack as type <code>string</code>.
+ *   The <i>result</i> is the <code>string</code> that results from
+ *   concatenating <i>value1</i>, <i>value2</i>, <i>value3</i>, and
+ *   <i>value4</i>.  The <i>result</i> is pushed onto the stack.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>String.Concat(String, String, String, String)</code> method.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_STRING_CONCAT_4:
 {
 	/* Concatenate four strings */
@@ -98,6 +161,28 @@ case COP_PREFIX_STRING_CONCAT_4:
 }
 break;
 
+/**
+ * <opcode name="string_eq">
+ *   <operation>Test two strings for equality</operation>
+ *
+ *   <format>prefix<fsep/>string_eq</format>
+ *
+ *   <form name="string_eq" code="COP_PREFIX_STRING_EQ"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <code>string</code>.  The <i>result</i>
+ *   is the <code>int32</code> that results from comparing
+ *   <i>value1</i> and <i>value2</i>: 1 if they are equal, and 0
+ *   if they are not equal.  The <i>result</i> is pushed
+ *   onto the stack.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>String.op_Equality(String, String)</code> method.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_STRING_EQ:
 {
 	/* Test two strings for equality */
@@ -108,6 +193,28 @@ case COP_PREFIX_STRING_EQ:
 }
 break;
 
+/**
+ * <opcode name="string_ne">
+ *   <operation>Test two strings for inequality</operation>
+ *
+ *   <format>prefix<fsep/>string_ne</format>
+ *
+ *   <form name="string_ne" code="COP_PREFIX_STRING_NE"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as type <code>string</code>.  The <i>result</i>
+ *   is the <code>int32</code> that results from comparing
+ *   <i>value1</i> and <i>value2</i>: 1 if they are not equal, and 0
+ *   if they are equal.  The <i>result</i> is pushed
+ *   onto the stack.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>String.op_Inequality(String, String)</code> method.</notes>
+ * </opcode>
+ */
 case COP_PREFIX_STRING_NE:
 {
 	/* Test two strings for inequality */
@@ -118,6 +225,37 @@ case COP_PREFIX_STRING_NE:
 }
 break;
 
+/**
+ * <opcode name="string_get_char">
+ *   <operation>Get a particular character from a string</operation>
+ *
+ *   <format>prefix<fsep/>string_get_char</format>
+ *
+ *   <form name="string_get_char" code="COP_PREFIX_STRING_GET_CHAR"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i> are popped
+ *   from the stack as the types <code>string</code> and <code>int32</code>
+ *   respectively.  The <i>result</i> is the <code>int32</code> that
+ *   results from fetching the character at position <i>value2</i>
+ *   within the string <i>value1</i>.
+ *   <code>System.IndexOutOfRangeException</code> will be thrown if
+ *   <i>value2</i> is an invalid index.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>String.get_Chars(int)</code> method.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     <i>value1</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException">Raised if
+ *     <i>value2</i> is not a valid character index for the string
+ *     <i>value1</i>.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
 case COP_PREFIX_STRING_GET_CHAR:
 {
 	/* Get a character from a string */

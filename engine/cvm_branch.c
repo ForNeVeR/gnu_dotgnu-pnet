@@ -82,7 +82,7 @@ break;
  *   <after>...</after>
  *
  *   <description>Both <i>value1</i> and <i>value2</i> are popped
- *   from the stack as type <i>int32</i>.  If the values are equal,
+ *   from the stack as type <code>int32</code>.  If the values are equal,
  *   then the program branches to <i>pc + offset</i>.  Otherwise,
  *   the program continues with the next instruction.</description>
  *
@@ -122,7 +122,7 @@ break;
  *   <after>...</after>
  *
  *   <description>Both <i>value1</i> and <i>value2</i> are popped
- *   from the stack as type <i>int32</i>.  If the values are not equal,
+ *   from the stack as type <code>int32</code>.  If the values are not equal,
  *   then the program branches to <i>pc + offset</i>.  Otherwise,
  *   the program continues with the next instruction.</description>
  *
@@ -162,7 +162,7 @@ break;
  *   <after>...</after>
  *
  *   <description>Both <i>value1</i> and <i>value2</i> are popped
- *   from the stack as type <i>int32</i>.  If <i>value1</i> is less
+ *   from the stack as type <code>int32</code>.  If <i>value1</i> is less
  *   than <i>value2</i>, then the program branches to <i>pc + offset</i>.
  *   Otherwise, the program continues with the next instruction.</description>
  * </opcode>
@@ -232,7 +232,7 @@ break;
  *   <after>...</after>
  *
  *   <description>Both <i>value1</i> and <i>value2</i> are popped
- *   from the stack as type <i>int32</i>.  If <i>value1</i> is less
+ *   from the stack as type <code>int32</code>.  If <i>value1</i> is less
  *   than or equal to <i>value2</i>, then the program branches to
  *   <i>pc + offset</i>.  Otherwise, the program continues with the
  *   next instruction.</description>
@@ -305,7 +305,7 @@ break;
  *   <after>...</after>
  *
  *   <description>Both <i>value1</i> and <i>value2</i> are popped
- *   from the stack as type <i>int32</i>.  If <i>value1</i> is greater
+ *   from the stack as type <code>int32</code>.  If <i>value1</i> is greater
  *   than <i>value2</i>, then the program branches to <i>pc + offset</i>.
  *   Otherwise, the program continues with the next instruction.</description>
  * </opcode>
@@ -375,7 +375,7 @@ break;
  *   <after>...</after>
  *
  *   <description>Both <i>value1</i> and <i>value2</i> are popped
- *   from the stack as type <i>int32</i>.  If <i>value1</i> is greater
+ *   from the stack as type <code>int32</code>.  If <i>value1</i> is greater
  *   than or equal to <i>value2</i>, then the program branches to
  *   <i>pc + offset</i>.  Otherwise, the program continues with the
  *   next instruction.</description>
@@ -448,9 +448,9 @@ break;
  *   <after>...</after>
  *
  *   <description>The <i>value</i> is popped from the stack as type
- *   <i>int32</i>.  If <i>value</i> is non-zero, then the program branches
- *   to <i>pc + offset</i>.  Otherwise, the program continues with the
- *   next instruction.</description>
+ *   <code>int32</code>.  If <i>value</i> is non-zero, then the program
+ *   branches to <i>pc + offset</i>.  Otherwise, the program continues
+ *   with the next instruction.</description>
  *
  *   <notes>This instruction must not be confused with <code>brnonnull</code>.
  *   Values of type <code>int32</code> and <code>ptr</code> do not
@@ -488,7 +488,7 @@ break;
  *   <after>...</after>
  *
  *   <description>The <i>value</i> is popped from the stack as type
- *   <i>int32</i>.  If <i>value</i> is zero, then the program branches
+ *   <code>int32</code>.  If <i>value</i> is zero, then the program branches
  *   to <i>pc + offset</i>.  Otherwise, the program continues with the
  *   next instruction.</description>
  *

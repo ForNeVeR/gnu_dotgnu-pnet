@@ -1486,11 +1486,11 @@ public class Control : IWin32Window
 			}
 
 	// Set the input focus to this control.
-	[TODO]
 	public bool Focus()
 			{
-				// TODO
-				return false;
+				if (toolkitWindow != null)
+					toolkitWindow.Focus();
+				return Focused;
 			}
 
 	// Convert a child HWND into the corresponding Control object.
@@ -1609,15 +1609,22 @@ public class Control : IWin32Window
 				Invalidate(rc);
 				// TODO
 			}
-	[TODO]
+	
 	public void Invalidate(Region region)
 			{
 				// TODO
+				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
+				for (int i = 0; i < rs.Length; i++)
+				{
+					Rectangle b = Rectangle.Truncate(rs[i]);
+					Invalidate(Rectangle.Truncate(rs[i]));
+				}
 			}
-	[TODO]
+	
 	public void Invalidate(Region region, bool invalidateChildren)
 			{
 				// TODO
+				Invalidate(region);
 			}
 
 	// Invoke a delegate on the thread that owns the low-level control.
@@ -2371,10 +2378,9 @@ public class Control : IWin32Window
 			}
 
 	// Update the invalidated regions in this control.
-	[TODO]
 	public void Update()
 			{
-				// TODO
+				toolkitWindow.Update();
 			}
 
 	// Update the bounds of the control.
@@ -4373,9 +4379,8 @@ public class Control : IWin32Window
 	// Toolkit event that is emitted for an expose on this window.
 	void IToolkitEventSink.ToolkitExpose(Graphics graphics)
 			{
-				// TODO: clip rectangles
 				PaintEventArgs e = new PaintEventArgs
-					(graphics, new Rectangle(0, 0, width, height));
+					(graphics, Rectangle.Truncate(graphics.ClipBounds));
 				OnPaint(e);
 			}
 
@@ -4467,8 +4472,11 @@ public class Control : IWin32Window
 				 int clicks, int x, int y, int delta)
 		 	{
 				currentModifiers = (Keys)modifiers;
-				OnMouseDown(new MouseEventArgs
-					((MouseButtons)buttons, clicks, x, y, delta));
+				if (GetStyle(ControlStyles.Selectable))
+					Focus();
+				if (Enabled)
+					OnMouseDown(new MouseEventArgs
+						((MouseButtons)buttons, clicks, x, y, delta));
 			}
 
 	// Toolkit event that is emitted for a mouse up event.

@@ -6,6 +6,9 @@
 	* System.Windows.Forms/Application.cs, System.Windows.Forms/Form.cs:
 	add some infrastructure for "Form.ShowDialog".
 
+	* runtime/System/Reflection/ClrField.cs: make sure that the class
+	constructor is run before a static field is accessed.
+
 2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

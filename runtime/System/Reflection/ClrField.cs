@@ -104,13 +104,42 @@ internal sealed class ClrField : FieldInfo, IClrProgramItem
 
 	// Get the value associated with this field on an object.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public override Object GetValue(Object obj);
+	extern internal Object GetValueInternal(Object obj);
+
+	// Get the value associated with this field on an object.
+	public override Object GetValue(Object obj)
+			{
+				if(obj == null)
+				{
+					// Make sure that the class constructor has been
+					// executed before we access a static field.
+					RuntimeHelpers.RunClassConstructor
+						(DeclaringType.TypeHandle);
+				}
+				return GetValueInternal(obj);
+			}
 
 	// Set the value associated with this field on an object.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public override void SetValue(Object obj, Object value,
-								  		 BindingFlags invokeAttr,
-								  		 Binder binder, CultureInfo culture);
+	extern internal void SetValueInternal
+				(Object obj, Object value,
+				 BindingFlags invokeAttr, Binder binder,
+				 CultureInfo culture);
+
+	// Set the value associated with this field on an object.
+	public override void SetValue(Object obj, Object value,
+						  		  BindingFlags invokeAttr,
+						  		  Binder binder, CultureInfo culture)
+			{
+				if(obj == null)
+				{
+					// Make sure that the class constructor has been
+					// executed before we access a static field.
+					RuntimeHelpers.RunClassConstructor
+						(DeclaringType.TypeHandle);
+				}
+				SetValueInternal(obj, value, invokeAttr, binder, culture);
+			}
 
 	// Get the type of this field item.
 	[MethodImpl(MethodImplOptions.InternalCall)]

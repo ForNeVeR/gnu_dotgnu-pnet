@@ -4,6 +4,7 @@ RESOURCENAME = runtime.resources
 
 RESOURCEFILES = Arg.txt \
 				Cast.txt \
+				Crypto.txt \
 				DivZero.txt \
 				Exception.txt \
 				Format.txt \

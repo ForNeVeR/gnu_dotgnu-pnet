@@ -2374,7 +2374,7 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	int error;
 	int needPhase2;
 
-	/* Load information about modules and assemblies */
+	/* Load information about modules, assemblies, and files */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MODULE,
 							 Load_Module, 0));
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MODULE_REF,
@@ -2391,6 +2391,8 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 							 Load_OSRef, 0));
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_PROCESSOR_REF,
 							 Load_ProcessorRef, 0));
+	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FILE,
+							 Load_File, 0));
 
 	/* Load the assemblies that this image depends upon */
 	if((loadFlags & IL_LOADFLAG_NO_RESOLVE) == 0)
@@ -2490,19 +2492,15 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 		/* Load class layout declarations */
 		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CLASS_LAYOUT,
 								 Load_ClassLayout, 0));
+
+		/* Load manifest resource declarations */
+		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MANIFEST_RESOURCE,
+								 Load_ManifestRes, 0));
 	}
 
 	/* Load security declarations */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_DECL_SECURITY,
 							 Load_DeclSecurity, 0));
-
-	/* Load file declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FILE,
-							 Load_File, 0));
-
-	/* Load manifest resource declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MANIFEST_RESOURCE,
-							 Load_ManifestRes, 0));
 
 	/* Load exported type declarations */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_EXPORTED_TYPE,
@@ -2557,7 +2555,7 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	0,
 	0,
 	0,
-	0, 							/* 28 */
+	Load_ManifestRes,			/* 28 */
 	0,
 	0,
 	0,

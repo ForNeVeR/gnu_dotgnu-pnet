@@ -37,6 +37,9 @@
 	include/il_dumpasm.h: convert ".export" into ".class extern" to
 	match the latest IL syntactic conventions.
 
+	* image/meta_build.c: load manifest resource tokens on demand;
+	load the file table earlier.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

@@ -84,7 +84,10 @@ int CSemIsZero(CSemValue value)
 void CGenBeginCode(ILGenInfo *info)
 {
 	/* Register the builtin library */
-	CGenRegisterLibrary(info);
+	if(ILContextGetAssembly(info->context, "OpenSystem.C") == 0)
+	{
+		CGenRegisterLibrary(info);
+	}
 
 	/* Tag the module with the memory model, which tells the linker
 	   that this is a C module requiring special treatment */

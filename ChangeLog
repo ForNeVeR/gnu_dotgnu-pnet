@@ -6,6 +6,9 @@
 	"__module" keyword to the C# compiler, which exports the contents
 	of a class into the global C scope.
 
+	* cscc/c/c_internal.c: don't register the internal "OpenSystem.C"
+	library if the external one was specified on the link line.
+
 2002-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_method.c, ilasm/ilasm_build.c, image/meta_build.c:

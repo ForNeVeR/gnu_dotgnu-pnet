@@ -926,7 +926,7 @@ CompilationUnit
 							   "file contains no declarations");
 				ResetState();
 			}
-	| OuterDeclarations		{
+	| OuterDeclarationsRecoverable		{
 				/* Check for empty input and finalize the parse */
 				if(!HaveDecls)
 				{
@@ -935,7 +935,7 @@ CompilationUnit
 				}
 				ResetState();
 			}
-	| OuterDeclarations AttributeSections	{
+	| OuterDeclarationsRecoverable AttributeSections	{
 				/* A file that contains declarations and assembly attributes */
 				ResetState();
 			}
@@ -1004,6 +1004,30 @@ OuterDeclaration
 					yyerrok;
 				}
 				NestingLevel = 0;
+			}
+	;
+
+OuterDeclarationsRecoverable
+	: OuterDeclarationRecoverable
+	| OuterDeclarationsRecoverable OuterDeclarationRecoverable
+	;
+
+OuterDeclarationRecoverable
+	: OuterDeclaration
+	| '}'				{
+				/* Recover from our educated guess that we were at the
+				   end of a namespace scope in the error processing code
+				   for '}' above.  If the programmer wrote "namespace XXX }"
+				   instead of "namespace { XXX }", this code will stop the
+				   error processing logic from looping indefinitely */
+				if(CurrNamespace.len == 0)
+				{
+					CCError(_("parse error at or near `}'"));
+				}
+				else
+				{
+					CurrNamespace = ILInternString("", 0);
+				}
 			}
 	;
 

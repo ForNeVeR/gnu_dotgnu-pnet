@@ -8,6 +8,10 @@
 	* support/spawn.c (ILSpawnProcess): use "execvp" instead of "execv"
 	to ensure that PATH is searched when launching programs from csant.
 
+	* cscc/csharp/cs_grammar.y: prevent an infinite error recovery
+	loop if the programmer writes "namespace XXX }" instead of
+	"namespace { XXX }".
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

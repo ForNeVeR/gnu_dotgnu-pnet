@@ -810,6 +810,14 @@ ILNode_GenDiscard(ILNode_ForeachString)
 }
 
 /*
+ * Ignore ILNode_EmptyExpr
+ */
+ILNode_GenDiscard(ILNode_EmptyExpr)
+{
+	/* well it's empty ! */
+}
+
+/*
  * Generate discard code for "foreach" statements that use collections.
  */
 ILNode_GenDiscard(ILNode_ForeachCollection)
@@ -831,6 +839,7 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 	/* Evaluate the collection expression and get the enumerator */
 	ILGenCast(info, ILNode_GenValue(node->expr, info),
 			  ILMachineType_ObjectRef);
+
 	if(ILMethod_IsVirtual(node->getEnumerator))
 	{
 		ILGenCallVirtByMethod(info, node->getEnumerator);
@@ -854,7 +863,8 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 	ILGenJump(info, IL_OP_BR, &label2);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label3, node->name);
+	PushLoop(info, &label1, &label2, node->name);
+	ILGenLabel(info, &label1);
 
 	/* Fetch the next collection element and put it into the variable */
 	ILGenLoadLocal(info, enumVar);
@@ -893,7 +903,7 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 
 	/* Mark the end of the loop */
 	ILGenLabel(info, &label3);
-	ILGenJump(info, IL_OP_LEAVE, &label4);
+	ILGenJump(info, IL_OP_LEAVE, &label5);
 
 	/* Pop the loop label information */
 	PopLoop(info);
@@ -908,19 +918,19 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 	ILGenClassName(info, IL_OP_ISINST, "[.library]System.IDisposable");
 	ILGenStoreLocal(info, disposeVar);
 	ILGenLoadLocal(info, disposeVar);
-	ILGenJump(info, IL_OP_BRFALSE, &label5);
+	ILGenJump(info, IL_OP_BRFALSE, &label4);
 	ILGenAdjust(info, -1);
 	ILGenLoadLocal(info, disposeVar);
 	ILGenAdjust(info, 1);
 	ILGenCallVirtual(info, "void [.library]System.IDisposable::Dispose()");
 	ILGenAdjust(info, -1);
-	ILGenLabel(info, &label5);
+	ILGenLabel(info, &label4);
 	ILGenSimple(info, IL_OP_ENDFINALLY);
 	if(info->asmOutput)
 	{
 		fputs("\t}\n", info->asmOutput);
 	}
-	ILGenLabel(info, &label4);
+	ILGenLabel(info, &label5);
 	PopLoop(info);
 
 	/* Release the temporary variables */

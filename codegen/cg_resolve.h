@@ -65,6 +65,12 @@ ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
 									  const char *name, ILType *fromType,
 									  ILType *toType);
 
+/*
+ * Resolve a property 
+ */
+
+ILProperty *ILResolveProperty(ILGenInfo *info,ILClass *classInfi,
+							  ILClass *callScope,const char *name);
 #ifdef	__cplusplus
 };
 #endif

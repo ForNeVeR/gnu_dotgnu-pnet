@@ -461,6 +461,14 @@ JavaGenDiscard(ILNode_ForeachString)
 }
 
 /*
+ * Ignore ILNode_EmptyExpr
+ */
+JavaGenDiscard(ILNode_EmptyExpr)
+{
+	/* it's empty !*/
+}
+
+/*
  * Generate discard code for "foreach" statements that use collections.
  */
 JavaGenDiscard(ILNode_ForeachCollection)

@@ -26,6 +26,16 @@
 #define	IsEmpty(node) ((node) == 0 || yykind((node)) == yykindof(ILNode_Empty))
 
 /*
+ * determine if a type1 implements type2
+ */
+#define ILTypeImplements(type1,type2) (ILClassImplements(ILType_ToClass(type1),\
+					ILType_ToClass(type2)))
+/*
+ * Obtain the default scope of the class
+ */
+ #define GetDefaultScope(info)	(((ILNode_ClassDefn*)(info->currentClass))->classInfo)
+
+/*
  * Perform semantic analysis on a sub-statement.
  */
 static void StmtSem(ILNode *node, ILGenInfo *info, ILNode **parent)
@@ -240,6 +250,14 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	ILScope *scope;
 	ILNode_MethodDeclaration *method;
 	ILType *type;
+//ForeachCollection
+	ILMethod *getEnumerator=NULL;
+	ILMethod *getCurrent=NULL;
+	ILMethod *moveNext=NULL;
+	ILType * const args[0]={ILType_Void};
+	ILType *retType;
+	ILType *enumerator;
+	ILNode *castNode;
 
 	/* Locate the scope and method for the iteration variable */
 	scope = info->currentScope;
@@ -311,11 +329,91 @@ ILNode_SemAnalysis(ILNode_Foreach)
 											  node->varIndex,
 											  node->varType);
 	}
+	else if(ILTypeImplements(node->arrayType,
+	ILFindNonSystemType(info,"IEnumerable","System.Collections")))
+	{
+		getEnumerator=ILResolveInstanceMethod(info,
+		ILType_ToClass(node->arrayType),
+		GetDefaultScope(info),
+		"GetEnumerator",
+		(ILType**)args,
+		0);
+		if(!getEnumerator)
+		{
+			//should I check IEnumerable.GetEnumerator ?
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "'%s' does not have a 'GetEnumerator' available",
+			  CSTypeToName(node->arrayType));
+		}
+		else
+		{
+			enumerator=ILTypeGetReturn(ILMethod_Signature(getEnumerator));
+			getCurrent=ILProperty_Getter(
+						ILResolveProperty(info,
+							ILType_ToClass(enumerator),
+							GetDefaultScope(info),
+							"Current")
+						);
+			moveNext=ILResolveInstanceMethod(info,
+						ILType_ToClass(enumerator),
+						GetDefaultScope(info),
+						"MoveNext",
+						(ILType**)args,
+					 0);
+			if(!getCurrent) 
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "Cannot locate Current property in '%s'",
+					  CSTypeToName(enumerator));
+			}
+			if(!moveNext) 
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "Cannot locate MoveNext() in '%s'",
+					  CSTypeToName(enumerator));
+			}
+			
+			retType=ILTypeGetReturn(ILMethod_Signature(getCurrent));
+
+			if(ILTypeIdentical(type,retType))	
+			{	
+				*parent=ILNode_ForeachCollection_create(
+						NULL,
+						node->expr,
+						node->stmt,
+						node->varIndex,
+						ILTypeToMachineType(type),
+						enumerator,
+						getEnumerator,
+						moveNext,
+						getCurrent);
+			}
+			else
+			{	
+				castNode=ILNode_EmptyExpr_create(node->varType);
+				if(!ILCast(info,castNode,&(castNode),retType,type))
+				{
+					CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						"Cannot cast '%s' to '%s'",CSTypeToName(retType),
+						CSTypeToName(type));
+				}
+				*parent=ILNode_ForeachCollection_create(
+						castNode,
+						node->expr,
+						node->stmt,
+						node->varIndex,
+						ILTypeToMachineType(type),
+						enumerator,
+						getEnumerator,
+						moveNext,
+						getCurrent);
+			}
+		}
+	}
 	else
 	{
-		/* TODO: collection-based array scanning */
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-			  "internal error: collection-based `foreach' not yet supported");
+		  "'%s' does not implement IEnumerable",CSTypeToName(node->arrayType));
 	}
 
 	/* Done */
@@ -326,6 +424,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
  * Perform semantic analysis for the "foreach string" and
  * "foreach collection" statements.
  */
+ILNode_SemAnalysis(ILNode_EmptyExpr),
 ILNode_SemAnalysis(ILNode_ForeachString),
 ILNode_SemAnalysis(ILNode_ForeachCollection)
 {

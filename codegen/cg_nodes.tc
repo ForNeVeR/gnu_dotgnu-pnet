@@ -607,17 +607,21 @@ struct _tagILSwitchValue
 	unsigned long varIndex;
 	ILMachineType varType;
 }
+%node ILNode_EmptyExpr ILNode_Expression=
+{
+	ILMachineType type;
+}
 %node ILNode_ForeachCollection ILNode_LabelledStatement =
 {
 	ILNode *doCast;
 	ILNode *expr;
 	ILNode *stmt;
-	%nocreate unsigned long varIndex = {0};
-	%nocreate ILMachineType varType = {ILMachineType_Void};
-	%nocreate ILType *enumeratorType = {0};
-	%nocreate ILMethod *getEnumerator = {0};
-	%nocreate ILMethod *moveNext = {0};
-	%nocreate ILMethod *getCurrent = {0};
+	unsigned long varIndex ;
+	ILMachineType varType ;
+	ILType *enumeratorType;
+	ILMethod *getEnumerator;
+	ILMethod *moveNext;
+	ILMethod *getCurrent;
 }
 %node ILNode_Break ILNode_Statement
 %node ILNode_LabelledBreak ILNode_Statement =
@@ -1153,6 +1157,19 @@ ILNode_GenElse(ILNode_Expression)
 ILNode_EvalConst(ILNode_Expression)
 {
 	return 0;
+}
+
+/*
+ * EmptyExpr's for casting in stack vars
+ */
+ILNode_GenValue(ILNode_EmptyExpr)
+{
+	return node->type;
+}
+
+ILNode_GetType(ILNode_EmptyExpr)
+{
+	return node->type;
 }
 
 /*

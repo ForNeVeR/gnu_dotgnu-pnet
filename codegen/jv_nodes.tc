@@ -330,6 +330,14 @@ JavaGenElse(ILNode_Dummy)
 }
 
 /*
+ * EmptyExpr's for casting in stack vars
+ */
+JavaGenValue(ILNode_EmptyExpr)
+{
+	return node->type;
+}
+
+/*
  * Code generation functions for "DummyUnary" and "DummyBinary".
  */
 JavaGenValue(ILNode_DummyUnaryExpr),

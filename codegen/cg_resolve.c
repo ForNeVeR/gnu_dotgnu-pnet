@@ -209,6 +209,65 @@ ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }
 
+#define  PROPERTY_TYPE_ATTRS (IL_META_PROPDEF_SPECIAL_NAME \
+				| IL_META_PROPDEF_RT_SPECIAL_NAME)
+/*
+ * Internal worker function for locating Properties.
+ */
+static ILProperty *ResolveProperty(ILGenInfo *info, ILClass *classInfo,
+							   ILClass *callScope, const char *name,
+							   ILType *type, ILUInt32 attrs,
+							   int dontInherit)
+{
+	ILMember *member;
+	ILProperty *property;
+
+	while(classInfo != 0)
+	{
+		classInfo = ILClassResolve(classInfo);
+		member = 0;
+		while((member = ILClassNextMemberByKind
+					(classInfo, member, IL_META_MEMBERKIND_PROPERTY)) != 0)
+		{
+			/* Filter out members that aren't interesting */
+			if(strcmp(ILMember_Name(member), name) != 0 ||
+			   (ILMember_Attrs(member) & PROPERTY_TYPE_ATTRS) != attrs)
+			{
+				continue;
+			}
+			property = (ILProperty *)member;
+			
+			if(type)
+			{
+				if(!ILTypeIdentical(type,ILProperty_Signature(property)))
+				{
+					continue;
+				}
+			}
+
+			/* Check the method's access level against the call scope */
+			if(!ILMemberAccessible(member, callScope))
+			{
+				continue;
+			}
+
+			/* We've found a candidate property*/
+			return property;
+		}
+		/* Move up to the parent class */
+		classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
+	}
+
+	/* Error !, not found*/
+	return NULL;
+}
+
+ILProperty *ILResolveProperty(ILGenInfo *info,ILClass *classInfo,
+							  ILClass *callScope,const char *name)
+{
+	return ResolveProperty(info,classInfo,callScope,name,0,0,0);
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -1,4 +1,13 @@
 
+2002-06-13	Gopal.V	<gopalv82@symonds.net>
+	
+	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"
+	which gets a property by name from a class.
+
+	* cscc/csharp/cs_stmt.tc , codegen/cg_stmt.tc , codegen/cg_nodes.tc,
+	codegen/jv_stmt.tc, codegen/jv_nodes.tc: implement semantic analysis
+	and code-generation	for "foreach" Collection expressions.
+
 2002-06-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/gen_errno.sh: copy the "#include <errno.h>" line into

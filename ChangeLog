@@ -10,6 +10,8 @@
 	to be coerced if they have the same basic "shape", even if some
 	of the parameters differ in const or pointer types.
 
+	* cscc/c/c_oper.tc (CreateBoolValue): the boolean type in C is "int".
+
 2003-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_oper.tc: improve the handling of boolean constant

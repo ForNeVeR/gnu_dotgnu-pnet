@@ -45,7 +45,7 @@ static CSemValue CreateBoolValue(ILInt32 value)
 {
 	ILEvalValue eval;
 	CSemValue result;
-	eval.valueType = ILMachineType_Boolean;
+	eval.valueType = ILMachineType_Int32;
 	eval.un.i4Value = value;
 	CSemSetConstant(result, ILType_Boolean, eval);
 	return result;

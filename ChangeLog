@@ -1,3 +1,7 @@
+2005-03-22  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Xml/XmlReader.cs: Fix bug in Skip(). (Bug #12385)
+
 2005-03-22  Marc Haisenko <marc@darkdust.net>
 	
 	* Xsharp/Display.cs: catch scroll wheel button release events and

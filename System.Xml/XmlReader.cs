@@ -420,29 +420,30 @@ public abstract class XmlReader
 			{
 				if(!IsEmptyElement)
 				{
-					uint level = 1;
-					XmlNodeType type;
+					int level = Depth;
+					XmlNodeType type = NodeType;
+					if(type != XmlNodeType.Element &&
+						type != XmlNodeType.EndElement)
+					{
+						level--;
+					}
 					do
 					{
 						Read();
 						type = NodeType;
 						if(type == XmlNodeType.Element)
 						{
-							if(!IsEmptyElement)
+							if(level == Depth)
 							{
-								++level;
+								return;
 							}
-						}
-						else if(type == XmlNodeType.EndElement)
-						{
-							--level;
 						}
 						else if(type == XmlNodeType.None)
 						{
 							throw new XmlException(S._("Xml_UnexpectedEOF"));
 						}
 					}
-					while(level > 0);
+					while(level <= Depth);
 				}
 				else
 				{

@@ -35,6 +35,9 @@
 
 	* samples/mscorlib.dll: updated version.
 
+	* engine/int_proto.h, engine/int_table.c: updated internalcall
+	definition files, based on the new "mscorlib.dll".
+
 2002-03-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_optable.c: implement simple binary coercions

@@ -362,9 +362,11 @@ extern void _IL_Stdio_StdClose(ILExecThread * _thread, ILInt32 fd);
 extern void _IL_Stdio_StdFlush(ILExecThread * _thread, ILInt32 fd);
 extern void _IL_Stdio_StdWrite_ic(ILExecThread * _thread, ILInt32 fd, ILUInt16 value);
 extern void _IL_Stdio_StdWrite_iacii(ILExecThread * _thread, ILInt32 fd, System_Array * value, ILInt32 index, ILInt32 count);
+extern void _IL_Stdio_StdWrite_iaBii(ILExecThread * _thread, ILInt32 fd, System_Array * value, ILInt32 index, ILInt32 count);
 extern void _IL_Stdio_StdWrite_iString(ILExecThread * _thread, ILInt32 fd, ILString * value);
 extern ILInt32 _IL_Stdio_StdRead_i(ILExecThread * _thread, ILInt32 fd);
 extern ILInt32 _IL_Stdio_StdRead_iacii(ILExecThread * _thread, ILInt32 fd, System_Array * value, ILInt32 index, ILInt32 count);
+extern ILInt32 _IL_Stdio_StdRead_iaBii(ILExecThread * _thread, ILInt32 fd, System_Array * value, ILInt32 index, ILInt32 count);
 extern ILInt32 _IL_Stdio_StdPeek(ILExecThread * _thread, ILInt32 fd);
 
 extern ILInt32 _IL_SysCharInfo_GetUnicodeCategory(ILExecThread * _thread, ILUInt16 ch);

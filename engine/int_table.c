@@ -451,9 +451,11 @@ IL_METHOD_BEGIN(Stdio_Methods)
 	IL_METHOD("StdFlush", "(i)V", _IL_Stdio_StdFlush)
 	IL_METHOD("StdWrite", "(ic)V", _IL_Stdio_StdWrite_ic)
 	IL_METHOD("StdWrite", "(i[cii)V", _IL_Stdio_StdWrite_iacii)
+	IL_METHOD("StdWrite", "(i[Bii)V", _IL_Stdio_StdWrite_iaBii)
 	IL_METHOD("StdWrite", "(ioSystem.String;)V", _IL_Stdio_StdWrite_iString)
 	IL_METHOD("StdRead", "(i)i", _IL_Stdio_StdRead_i)
 	IL_METHOD("StdRead", "(i[cii)i", _IL_Stdio_StdRead_iacii)
+	IL_METHOD("StdRead", "(i[Bii)i", _IL_Stdio_StdRead_iaBii)
 	IL_METHOD("StdPeek", "(i)i", _IL_Stdio_StdPeek)
 IL_METHOD_END
 

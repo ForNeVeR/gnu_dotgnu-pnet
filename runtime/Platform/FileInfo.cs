@@ -1,6 +1,8 @@
 namespace Platform
 {
 
+using System;
+
 internal struct FileInfo
 {
 	public String fileName;

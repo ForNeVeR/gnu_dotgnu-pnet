@@ -22,6 +22,7 @@
  */
 
 using CSUnit;
+using System;
 using System.Text;
 
 public class TestStringBuilder : TestCase

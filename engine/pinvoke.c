@@ -19,6 +19,7 @@
  */
 
 #include "engine.h"
+#include "lib_defs.h"
 
 #if defined(HAVE_LIBFFI)
 
@@ -422,6 +423,420 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 
 	/* Ready to go */
 	return (void *)cif;
+}
+
+#if FFI_CLOSURES
+
+/*
+ * Check that we have enough space to push an argument.
+ */
+#define	CHECK_SPACE(nwords)	\
+			do { \
+				if((stacktop + (nwords)) > stacklimit) \
+				{ \
+					thread->thrownException = _ILSystemException \
+						(thread, "System.StackOverflowException"); \
+					return; \
+				} \
+			} while (0)
+
+/*
+ * Invoke a delegate from a closure.
+ */
+static void DelegateInvoke(ffi_cif *cif, void *result,
+						   void **args, void *delegate)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+	ILMethod *method;
+	ILType *signature;
+	CVMWord *stacktop, *stacklimit;
+	ILUInt32 param, numParams;
+	ILType *paramType;
+	void *ptr;
+	ILUInt32 size, sizeInWords;
+	ILCallFrame *frame;
+	unsigned char *savePC;
+	int threwException;
+	unsigned char *pcstart;
+	ILNativeFloat tempFloat;
+
+	/* Extract the method from the delegate */
+	method = ((System_Reflection *)(((System_Delegate *)delegate)->methodInfo))
+				->privateData;
+	signature = ILMethod_Signature(method);
+
+	/* Get the top and extent of the stack */
+	stacktop = thread->stackTop;
+	stacklimit = thread->stackLimit;
+
+	/* Push the arguments onto the evaluation stack */
+	if(ILType_HasThis(signature))
+	{
+		/* Push the "this" argument */
+		CHECK_SPACE(1);
+		stacktop->ptrValue = ((System_Delegate *)delegate)->target;
+		++stacktop;
+	}
+	numParams = ILTypeNumParams(signature);
+	for(param = 1; param <= numParams; ++param)
+	{
+		/* TODO: marshal native parameters */
+
+		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
+
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				case IL_META_ELEMTYPE_I4:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					CHECK_SPACE(1);
+					stacktop->intValue = *((ILInt32 *)(*args));
+					++args;
+					++stacktop;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					CHECK_SPACE(CVM_WORDS_PER_LONG);
+					ILMemCpy(stacktop, *args, sizeof(ILInt64));
+					++args;
+					stacktop += CVM_WORDS_PER_LONG;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				{
+					CHECK_SPACE(CVM_WORDS_PER_NATIVE_FLOAT);
+					tempFloat = (ILNativeFloat)(*((ILFloat *)(*args)));
+					ILMemCpy(stacktop, &tempFloat, sizeof(ILNativeFloat));
+					++args;
+					stacktop += CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R8:
+				{
+					CHECK_SPACE(CVM_WORDS_PER_NATIVE_FLOAT);
+					tempFloat = (ILNativeFloat)(*((ILDouble *)(*args)));
+					ILMemCpy(stacktop, &tempFloat, sizeof(ILNativeFloat));
+					++args;
+					stacktop += CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R:
+				{
+					CHECK_SPACE(CVM_WORDS_PER_NATIVE_FLOAT);
+					ILMemCpy(stacktop, *args, sizeof(ILNativeFloat));
+					++args;
+					stacktop += CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					CHECK_SPACE(CVM_WORDS_PER_TYPED_REF);
+					ILMemCpy(stacktop, *args, sizeof(ILTypedRef));
+					++args;
+					stacktop += CVM_WORDS_PER_TYPED_REF;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			CHECK_SPACE(1);
+			stacktop->ptrValue = *args;
+			++args;
+			++stacktop;
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type which was passed by value */
+			ptr = *args;
+			++args;
+			size = ILSizeOfType(thread, paramType);
+			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+			CHECK_SPACE(sizeInWords);
+			ILMemCpy(stacktop, ptr, size);
+			stacktop += sizeInWords;
+		}
+		else if(paramType != 0 && ILType_IsComplex(paramType) &&
+				ILType_Kind(paramType) == IL_TYPE_COMPLEX_BYREF)
+		{
+			/* Process a value that is being passed by reference */
+			CHECK_SPACE(1);
+			stacktop->ptrValue = *args;
+			++args;
+			++stacktop;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			CHECK_SPACE(1);
+			stacktop->ptrValue = *args;
+			++args;
+			++stacktop;
+		}
+	}
+
+	/* Record the number of arguments for popping later */
+	sizeInWords = thread->stackTop - thread->stackBase;
+	thread->stackTop = stacktop;
+
+	/* Clear the pending exception on entry to the method */
+	thread->thrownException = 0;
+
+	/* Convert the method into CVM bytecode */
+	pcstart = _ILConvertMethod(thread, method);
+	if(!pcstart)
+	{
+		/* "_ILConvertMethod" threw an exception */
+		savePC = thread->pc;
+		goto exception;
+	}
+
+	/* Create a call frame for the method */
+	if(thread->numFrames >= thread->maxFrames)
+	{
+	    if((frame = _ILAllocCallFrame(thread)) == 0)
+		{
+			thread->thrownException = _ILSystemException
+				(thread, "System.StackOverflowException");
+			savePC = thread->pc;
+			goto exception;
+	    }
+	}
+	else
+	{
+		frame = &(thread->frameStack[(thread->numFrames)++]);
+	}
+	savePC = thread->pc;
+	frame->method = thread->method;
+	frame->pc = IL_INVALID_PC;
+	frame->frame = thread->frame;
+	frame->exceptHeight = thread->exceptHeight;
+
+	/* Call the method */
+	thread->pc = pcstart;
+	thread->exceptHeight = 0;
+	thread->method = method;
+	threwException = _ILCVMInterpreter(thread);
+	if(threwException)
+	{
+		/* An exception occurred, which is already stored in the thread */
+	exception:
+		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+		if(paramType != ILType_Void)
+		{
+			/* Clear the native return value, because we cannot assume
+			   that the native caller knows how to handle exceptions */
+			size = ILSizeOfType(thread, paramType);
+			ILMemZero(result, size);
+		}
+	}
+	else
+	{
+		/* TODO: marshal native return values */
+
+		/* Copy the return value into place */
+		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
+
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				case IL_META_ELEMTYPE_I4:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*((ILInt32 *)result) = thread->stackTop[-1].intValue;
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					ILMemCpy(result,
+							 thread->stackTop - CVM_WORDS_PER_LONG,
+							 sizeof(ILInt64));
+					thread->stackTop -= CVM_WORDS_PER_LONG;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				{
+					ILMemCpy(&tempFloat,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					*((ILFloat *)result) = (ILFloat)tempFloat;
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R8:
+				{
+					ILMemCpy(&tempFloat,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					*((ILDouble *)result) = (ILDouble)tempFloat;
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R:
+				{
+					ILMemCpy(result,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					ILMemCpy(result,
+							 thread->stackTop - CVM_WORDS_PER_TYPED_REF,
+							 sizeof(ILTypedRef));
+					thread->stackTop -= CVM_WORDS_PER_TYPED_REF;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			*((void **)result) = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type */
+			size = ILSizeOfType(thread, paramType);
+			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+			ILMemCpy(result, thread->stackTop - sizeInWords, size);
+			thread->stackTop -= sizeInWords;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			*((void **)result) = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
+	}
+
+	/* Restore the original PC: everything else was restored
+	   by the "return" instruction within the interpreter */
+	thread->pc = savePC;
+}
+
+#endif /* FFI_CLOSURES */
+
+void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method)
+{
+#if FFI_CLOSURES
+	ILType *signature = ILMethod_Signature(method);
+	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+	ILUInt32 numArgs;
+	ffi_cif *cif;
+	ffi_type **args;
+	ffi_type *rtype;
+	ILUInt32 arg;
+	ILUInt32 param;
+	ffi_closure *closure;
+
+	/* Determine the number of argument blocks that we need */
+	numArgs = ILTypeNumParams(signature);
+
+	/* Allocate space for the cif */
+	cif = (ffi_cif *)ILMalloc(sizeof(ffi_cif) +
+							  sizeof(ffi_type *) * numArgs);
+	if(!cif)
+	{
+		return 0;
+	}
+	args = ((ffi_type **)(cif + 1));
+
+	/* Convert the return type */
+	rtype = TypeToFFI(returnType, 0);
+
+	/* Convert the argument types */
+	arg = 0;
+	for(param = 1; param <= numArgs; ++param)
+	{
+		args[arg++] = TypeToFFI(ILTypeGetEnumType
+									(ILTypeGetParam(signature, param)), 0);
+	}
+
+	/* Prepare the "ffi_cif" structure for the call */
+	if(ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args) != FFI_OK)
+	{
+		fprintf(stderr, "Cannot marshal a type in the definition of %s::%s\n",
+				ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method));
+		return 0;
+	}
+
+	/* Allocate space for the closure.  We use persistent GC memory
+	   because it will contain a pointer to the delegate object, and we
+	   don't want the delegate to be collected while the closure exists */
+	closure = (ffi_closure *)ILGCAllocPersistent(sizeof(ffi_closure));
+	if(!closure)
+	{
+		return 0;
+	}
+
+	/* Prepare the closure using the call parameters */
+	if(ffi_prep_closure(closure, cif, DelegateInvoke, (void *)delegate)
+			!= FFI_OK)
+	{
+		fprintf(stderr, "Cannot create a closure for %s::%s\n",
+				ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method));
+		return 0;
+	}
+
+	/* The closure is ready to go */
+	return (void *)closure;
+#else	/* !FFI_CLOSURES */
+	/* libffi does not support closures */
+	return 0;
+#endif	/* !FFI_CLOSURES */
 }
 
 #ifdef	__cplusplus

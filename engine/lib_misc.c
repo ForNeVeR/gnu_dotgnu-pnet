@@ -452,17 +452,6 @@ ILObject *_IL_TypedReference_ToObject(ILExecThread *_thread, ILTypedRef value)
 
 #endif /* IL_CONFIG_VARARGS */
 
-/*
- * private static Delegate CreateBlankDelegate(Type type, ClrMethod method);
- */
-ILObject *_IL_Delegate_CreateBlankDelegate(ILExecThread *_thread,
-										   ILObject *type,
-										   ILObject *method)
-{
-	/* TODO */
-	return 0;
-}
-
 #ifdef	__cplusplus
 };
 #endif

@@ -9,6 +9,7 @@ libILEngine_a_SOURCES = cvm.c \
 						cvm_dasm.c \
 						cvm_lengths.c \
 						cvmc.c \
+						delegate.c \
 						heap.c \
 						internal.c \
 						layout.c \

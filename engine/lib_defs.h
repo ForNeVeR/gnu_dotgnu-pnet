@@ -186,6 +186,18 @@ typedef struct
 } System_Thread;
 
 /*
+ * Internal structure of a delegate.  Must match the "System.Delegate"
+ * definition in the C# class library.
+ */
+typedef struct
+{
+	ILObject   *target;
+	ILObject   *methodInfo;
+	void       *closure;
+
+} System_Delegate;
+
+/*
  * Prototype all of the "internalcall" methods in the engine.
  */
 #include "int_proto.h"

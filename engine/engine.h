@@ -305,6 +305,12 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal);
 void *_ILMakeCifForConstructor(ILMethod *method, int isInternal);
 
 /*
+ * Make a native closure for a particular delegate.  "method"
+ * is the method within the delegate object.
+ */
+void *_ILMakeClosureForDelegate(ILObject *delegate, ILMethod *method);
+
+/*
  * Convert a method into executable code.  Returns a pointer
  * to the method entry point or NULL if something is wrong.
  */
@@ -436,6 +442,18 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method);
  * that the caller has obtained the metadata write lock.
  */
 ILUInt32 _ILSizeOfTypeLocked(ILType *type);
+
+/*
+ * Match the signature of a method against a delegate's "Invoke" method.
+ * Returns non-zero if the method matches.
+ */
+int _ILDelegateSignatureMatch(ILClass *delegateClass, ILMethod *method);
+
+/*
+ * Get the native closure associated with a delegate.  Returns NULL
+ * if the closure could not be created for some reason.
+ */
+void *_ILDelegateGetClosure(ILObject *delegate);
 
 /*
  * Lock metadata for reading or writing from the current thread.

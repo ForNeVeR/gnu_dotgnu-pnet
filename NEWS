@@ -1,4 +1,8 @@
 
+0.6.0 (15 October 2003)
+
+	* No change - re-released to match version numbers with pnet/pnetlib.
+
 0.5.12 (4 September 2003)
 
 	* Stub out mmap-related system calls (Mario D.Santana).

@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 [AttributeUsage(AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
 public sealed class DllImportAttribute : Attribute
 {
@@ -52,5 +54,7 @@ public sealed class DllImportAttribute : Attribute
 			}
 
 }; // class DllImportAttribute
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

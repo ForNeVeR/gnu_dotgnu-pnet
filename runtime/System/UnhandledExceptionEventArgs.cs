@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public class UnhandledExceptionEventArgs : EventArgs
 {
 
@@ -55,5 +57,7 @@ public class UnhandledExceptionEventArgs : EventArgs
 			}
 
 }; // class UnhandledExceptionEventArgs
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

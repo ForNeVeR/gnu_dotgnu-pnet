@@ -31,10 +31,12 @@ public abstract class MethodBase : MemberInfo
 	// Constructor.
 	protected MethodBase() : base() {}
 
+#if CONFIG_RUNTIME_INFRA
 	// Get a method from the runtime engine given its handle.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static MethodBase GetMethodFromHandle
 				(RuntimeMethodHandle handle);
+#endif
 
 	// Get the parameters for this method.
 	public abstract ParameterInfo[] GetParameters();

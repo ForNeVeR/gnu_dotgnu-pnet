@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 [AttributeUsage(AttributeTargets.Parameter,
 				AllowMultiple=false, Inherited=false)]
 public sealed class OutAttribute : Attribute
@@ -31,5 +33,7 @@ public sealed class OutAttribute : Attribute
 	public OutAttribute() : base() {}
 
 }; // class OutAttribute
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

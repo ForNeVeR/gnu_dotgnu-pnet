@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 [AttributeUsage(AttributeTargets.Field |
 				AttributeTargets.Parameter |
 				AttributeTargets.ReturnValue,
@@ -59,5 +61,7 @@ public sealed class MarshalAsAttribute : Attribute
 			}
 
 }; // class MarshalAsAttribute
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

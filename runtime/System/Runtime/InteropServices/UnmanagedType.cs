@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public enum UnmanagedType
 {
 	Bool				= 0x02,
@@ -61,5 +63,7 @@ public enum UnmanagedType
 	Error				= 0x2D
 	
 }; // enum UnmanagedType
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public interface ICustomFactory
 {
 
@@ -29,5 +31,7 @@ public interface ICustomFactory
 	MarshalByRefObject CreateInstance(Type serverType);
 
 }; // interface ICustomFactory
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

@@ -168,9 +168,11 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void Clear(Array array, int index, int length);
 
+#if CONFIG_RUNTIME_INFRA
 	// Initialize the contents of an array of value types.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public void Initialize();
+#endif
 
 	// Clone this array.
 	public virtual Object Clone()
@@ -724,6 +726,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 #endif
 	extern int GetLength(int dimension);
 
+#if CONFIG_RUNTIME_INFRA
+
 	// Get the lower bound of an array rank.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public int GetLowerBound(int dimension);
@@ -731,6 +735,18 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	// Get the upper bound of an array rank.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public int GetUpperBound(int dimension);
+
+#else // !CONFIG_RUNTIME_INFRA
+
+	// Get the lower bound of an array rank.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal int GetLowerBound(int dimension);
+
+	// Get the upper bound of an array rank.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal int GetUpperBound(int dimension);
+
+#endif // !CONFIG_RUNTIME_INFRA
 
 	// Internal versions of "GetValue".
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,7 +1,7 @@
 /*
  * String.cs - Implementation of the "System.String" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,8 +69,13 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	[CLSCompliant(false)]
-	extern unsafe public String(sbyte *value, int startIndex,
-					            int length, Encoding enc);
+#if CONFIG_RUNTIME_INFRA
+	public
+#else
+	internal
+#endif
+	extern unsafe String(sbyte *value, int startIndex,
+						 int length, Encoding enc);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	[CLSCompliant(false)]

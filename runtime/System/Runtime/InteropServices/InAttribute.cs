@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 [AttributeUsage(AttributeTargets.Parameter,
 				AllowMultiple=false, Inherited=false)]
 public sealed class InAttribute : Attribute
@@ -31,5 +33,7 @@ public sealed class InAttribute : Attribute
 	public InAttribute() : base() {}
 
 }; // class InAttribute
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

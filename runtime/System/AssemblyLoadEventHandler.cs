@@ -22,7 +22,11 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public delegate void AssemblyLoadEventHandler(object sender,
 											  AssemblyLoadEventArgs args);
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

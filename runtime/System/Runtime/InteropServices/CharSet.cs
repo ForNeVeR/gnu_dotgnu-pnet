@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public enum CharSet
 {
 	None    = 1,
@@ -30,5 +32,7 @@ public enum CharSet
 	Auto    = 4
 
 }; // enum CharSet
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

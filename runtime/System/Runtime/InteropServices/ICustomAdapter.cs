@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public interface ICustomAdapter
 {
 
@@ -29,5 +31,7 @@ public interface ICustomAdapter
 	Object GetUnderlyingObject();
 
 }; // interface ICustomAdapter
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

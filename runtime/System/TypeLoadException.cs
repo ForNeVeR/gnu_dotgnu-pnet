@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.Serialization;
 
 public class TypeLoadException : SystemException
@@ -113,5 +115,7 @@ public class TypeLoadException : SystemException
 #endif
 
 }; // class TypeLoadException
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

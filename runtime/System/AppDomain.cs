@@ -31,6 +31,8 @@ using System.Runtime.Remoting;
 using System.Security.Policy;
 using System.Security.Principal;
 
+#if CONFIG_RUNTIME_INFRA
+
 public sealed class AppDomain : MarshalByRefObject, _AppDomain
 {
 	// Internal state.
@@ -592,5 +594,7 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 #endif // !ECMA_COMPAT
 
 }; // class AppDomain
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Reflection;
@@ -592,5 +594,7 @@ public sealed class Marshal
 			}
 
 }; // class Marshal
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

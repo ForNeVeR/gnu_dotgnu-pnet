@@ -25,7 +25,9 @@ namespace System
 public enum AttributeTargets
 {
 	Assembly		= 0x0001,
+#if CONFIG_RUNTIME_INFRA
 	Module			= 0x0002,
+#endif
 	Class			= 0x0004,
 	Struct			= 0x0008,
 	Enum			= 0x0010,

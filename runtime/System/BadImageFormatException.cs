@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.Serialization;
 
 public class BadImageFormatException : SystemException
@@ -138,5 +140,7 @@ public class BadImageFormatException : SystemException
 #endif
 
 }; // class BadImageFormatException
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

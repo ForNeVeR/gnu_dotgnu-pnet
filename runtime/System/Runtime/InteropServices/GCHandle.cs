@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.CompilerServices;
 
 public struct GCHandle
@@ -176,5 +178,7 @@ public struct GCHandle
 			}
 
 }; // struct GCHandle
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

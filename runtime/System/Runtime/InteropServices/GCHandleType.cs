@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public enum GCHandleType
 {
 	Weak                  = 0,
@@ -30,5 +32,7 @@ public enum GCHandleType
 	Pinned                = 3
 
 }; // enum GCHandleType
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public interface ICustomMarshaler
 {
 
@@ -47,5 +49,7 @@ public interface ICustomMarshaler
 	// static ICustomMarshaler GetInstance(String cookie);
 
 }; // interface ICustomMarshaler
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

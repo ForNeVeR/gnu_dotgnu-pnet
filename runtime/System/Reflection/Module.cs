@@ -116,6 +116,7 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 				return Name;
 			}
 
+#if CONFIG_RUNTIME_INFRA
 	// Get the assembly that contains this module.
 	public System.Reflection.Assembly Assembly
 			{
@@ -124,6 +125,7 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 					return GetAssembly();
 				}
 			}
+#endif
 
 	// Get the fully-qualified name for this module.
 	public virtual String FullyQualifiedName

@@ -21,6 +21,8 @@
 namespace System.Reflection
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System;
 using System.IO;
 using System.Globalization;
@@ -470,5 +472,7 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	extern internal String GetSatellitePath(String filename);
 
 }; // class Assembly
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Reflection

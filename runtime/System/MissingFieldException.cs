@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.Serialization;
 
 public class MissingFieldException : MissingMemberException
@@ -64,5 +66,7 @@ public class MissingFieldException : MissingMemberException
 			}
 
 }; // class MissingFieldException
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

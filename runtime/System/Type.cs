@@ -834,6 +834,7 @@ public abstract class Type : MemberInfo
 				return GetTypeFromProgID(progID, server, false);
 			}
 
+#if CONFIG_RUNTIME_INFRA
 	// Get the runtime type handle associated with an object.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static RuntimeTypeHandle GetTypeHandle(Object obj);
@@ -841,6 +842,7 @@ public abstract class Type : MemberInfo
 	// Get a type from a runtime type handle.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
+#endif
 
 	// Implementation of the "HasElementType" property.
 	protected abstract bool HasElementTypeImpl();
@@ -984,7 +986,9 @@ public abstract class Type : MemberInfo
 			}
 
 	// Abstract properties.
+#if CONFIG_RUNTIME_INFRA
 	public abstract System.Reflection.Assembly Assembly { get; }
+#endif
 	public abstract String AssemblyQualifiedName { get; }
 	public abstract Type BaseType { get; }
 	public abstract String FullName { get; }
@@ -994,7 +998,9 @@ public abstract class Type : MemberInfo
 	public abstract System.Reflection.Module Module { get; }
 	public abstract String Namespace { get; }
 	public abstract Type UnderlyingSystemType { get; }
+#if CONFIG_RUNTIME_INFRA
 	public abstract RuntimeTypeHandle TypeHandle { get; }
+#endif
 
 	// Implemented properties.
 	public override Type DeclaringType { get { return this; } }

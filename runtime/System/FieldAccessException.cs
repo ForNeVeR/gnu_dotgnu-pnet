@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.Serialization;
 
 public class FieldAccessException : MemberAccessException
@@ -59,5 +61,7 @@ public class FieldAccessException : MemberAccessException
 			}
 
 }; // class FieldAccessException
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

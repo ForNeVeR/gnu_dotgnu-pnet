@@ -22,7 +22,11 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public delegate void UnhandledExceptionEventHandler
 			(object sender, UnhandledExceptionEventArgs e);
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
 				AllowMultiple=false, Inherited=false)]
 public sealed class StructLayoutAttribute : Attribute
@@ -55,5 +57,7 @@ public sealed class StructLayoutAttribute : Attribute
 			}
 
 }; // class StructLayoutAttribute
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

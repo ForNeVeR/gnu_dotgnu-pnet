@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
@@ -76,5 +78,7 @@ public struct RuntimeMethodHandle
 #endif // !ECMA_COMPAT
 
 }; // class RuntimeMethodHandle
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public enum CallingConvention
 {
 	Winapi   = 1,
@@ -31,5 +33,7 @@ public enum CallingConvention
 	FastCall = 5
 
 }; // enum CallingConvention
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.Serialization;
 
 public class CannotUnloadAppDomainException : SystemException
@@ -59,5 +61,7 @@ public class CannotUnloadAppDomainException : SystemException
 			}
 
 }; // class CannotUnloadAppDomainException
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

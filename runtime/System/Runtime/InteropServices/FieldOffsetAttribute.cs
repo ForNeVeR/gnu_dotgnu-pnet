@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 [AttributeUsage(AttributeTargets.Field, AllowMultiple=false, Inherited=false)]
 public sealed class FieldOffsetAttribute : Attribute
 {
@@ -44,5 +46,7 @@ public sealed class FieldOffsetAttribute : Attribute
 			}
 
 }; // class FieldOffsetAttribute
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

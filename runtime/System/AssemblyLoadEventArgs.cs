@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Reflection;
 
 public class AssemblyLoadEventArgs : EventArgs
@@ -46,5 +48,7 @@ public class AssemblyLoadEventArgs : EventArgs
 			}
 
 }; // class AssemblyLoadEventArgs
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

@@ -705,6 +705,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private String GetClrNamespace();
 
+#if CONFIG_RUNTIME_INFRA
 	// Implement overridden properties.
 	public override System.Reflection.Assembly Assembly
 			{
@@ -713,6 +714,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					return GetClrAssembly();
 				}
 			}
+#endif
 	public override String AssemblyQualifiedName
 			{
 				get
@@ -813,6 +815,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					}
 				}
 			}
+#if CONFIG_RUNTIME_INFRA
 	public override RuntimeTypeHandle TypeHandle
 			{
 				get
@@ -820,6 +823,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					return new RuntimeTypeHandle(privateData);
 				}
 			}
+#endif
 
 	// Internal methods that support generic types.
 

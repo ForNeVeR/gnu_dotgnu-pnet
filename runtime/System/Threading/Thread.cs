@@ -76,11 +76,13 @@ public sealed class Thread
 				Abort();
 			}
 
+#if CONFIG_RUNTIME_INFRA
 	// Get the application domain of the currently executing thread.
 	public static AppDomain GetDomain()
 			{
 				return AppDomain.CurrentDomain;
 			}
+#endif
 
 	// Join with this thread.
 	public void Join()

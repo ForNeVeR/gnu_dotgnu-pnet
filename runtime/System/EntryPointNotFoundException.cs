@@ -22,6 +22,8 @@
 namespace System
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 using System.Runtime.Serialization;
 
 public class EntryPointNotFoundException : TypeLoadException
@@ -59,5 +61,7 @@ public class EntryPointNotFoundException : TypeLoadException
 			}
 
 }; // class EntryPointNotFoundException
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

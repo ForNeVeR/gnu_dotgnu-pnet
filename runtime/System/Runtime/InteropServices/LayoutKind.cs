@@ -22,6 +22,8 @@
 namespace System.Runtime.InteropServices
 {
 
+#if CONFIG_RUNTIME_INFRA
+
 public enum LayoutKind
 {
 	Sequential = 0,
@@ -29,5 +31,7 @@ public enum LayoutKind
 	Auto       = 3
 
 }; // enum LayoutKind
+
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System.Runtime.InteropServices

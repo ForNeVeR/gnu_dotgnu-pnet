@@ -1,3 +1,34 @@
+2002-04-06  Peter Minten  <silvernerd@users.sf.net>
+
+	* resources/en_US/System/Makefile.am: Added all resource text files to the resource file (some weren't in it yet).
+
+	* configure.in, Makefile.am: Modified to account for the new System.Xml assembly.
+
+	* System.Xml/Makefile.am, System.Xml/Xml.Build: Created for the new System.Xml assembly.
+
+	* resources/en_US/Makefile.am: Changed to account for the new System.Xml resource file.
+
+	* resource/en_US/System.Xml/Makefile.am: Created for the new Xml resource directory
+
+	* System.Xml/Xml.build, System.Xml/Makefile.am: Created for the new Xml assembly
+
+	* System.Xml/Formatting.cs, System.Xml/ReadState.cs,
+	System.Xml/WhitespaceHandling.cs, System.Xml/WriteState.cs,
+	System.Xml/XmlNodeType.cs, System.Xml/XmlSpace.cs,
+	System.Xml/XmlNameTable.cs, System.Xml/NameTable.cs,
+	System.Xml/XmlParserContext.cs: Created and completed
+
+	* System.Xml/XmlException.cs, XmlNamespaceManager.cs,
+	System.Xml/XmlReader.cs: Created but not completed.
+
+	* System.Xml/XmlNode.cs: Created internal class.
+
+	* System/Net/Sockets/Socket.cs: Changed SocketMethod calls and SocketException calls.
+	* System/Net/Sockets/SocketException.cs: Uncommented
+
+	* runtime/Platform/SocketMethods.cs: Moved into Platform and made public and changed declarations a bit
+	* runtime/Platform/Errno.cs: Made public
+
 2002-04-04  Stephen Compall  <rushing@sigecom.net>
 
 	* System/UriBuilder: little patching of constructors.
@@ -23,6 +54,7 @@
 	* runtime/System/IO/File.cs: remove unnecessary break following throw.
 
 2002-03-30  Peter Minten  <silvernerd@users.sf.net>
+
 	* System/Net/Sockets/Socket.cs, System/Net/Sockets/NetworkStream.cs,
 	System/Net/Sockets/SocketException.cs: Fixed bugs
 
@@ -60,6 +92,7 @@
 	pnetlib.
 
 2002-03-23  Peter Minten  <silvernerd@users.sf.net>
+
 	* System/Net/Sockets/Socket.cs: Added methods.
 
 	* System/Net/Sockets/SocketException.cs: Changed to
@@ -139,6 +172,7 @@
 	* HACKING: document the location of the daily CVS snapshots.
 
 2002-03-16  Peter Minten  <silvernerd@users.sf.net>
+
 	* resources/en_US/System/Exception.txt: Added Exception_Disposed string.
 
 	* resources/en_US/System/Invalid.txt: Added file and
@@ -154,7 +188,7 @@
 
 	* System/UriBuilder.cs: Fixed namespace problem, changed Path to
 	match Uri.AbsolutePath changes.
-	
+
 2002-03-12  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Made the code less kludgy with Strings, added a
@@ -177,6 +211,7 @@
 	efficient, barely began offsetting the work to Uri.cs.
 
 2002-03-10  Peter Minten  <silvernerd@users.sf.net>
+
 	* System/Net/Sockets/NetworkStream.cs,
 	System/Net/Sockets/Socket.cs: Started with some simple methods.
 

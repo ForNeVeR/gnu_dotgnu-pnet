@@ -80,6 +80,16 @@ ILNode_GetType(ILNode_MemberField)
 }
 
 /*
+ * Get the type of a static or member property reference.
+ */
+ILNode_GetType(ILNode_StaticProperty),
+ILNode_GetType(ILNode_MemberProperty)
+{
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
  * Generate discard code for a local or argument variable.
  */
 ILNode_GenDiscard(ILNode_LocalVar),
@@ -115,20 +125,12 @@ ILNode_GenDiscard(ILNode_DerefField)
 }
 
 /*
- * Generate discard code for a static field reference.
+ * Generate discard code for a static field or property reference.
  */
-ILNode_GenDiscard(ILNode_StaticField)
+ILNode_GenDiscard(ILNode_StaticField),
+ILNode_GenDiscard(ILNode_StaticProperty)
 {
 	/* Nothing to do here */
-}
-
-/*
- * Generate discard code for a member field reference.
- */
-ILNode_GenDiscard(ILNode_MemberField)
-{
-	/* Evaluate the object expression for its side-effects only */
-	ILNode_GenDiscard(node->expr, info);
 }
 
 /*
@@ -209,6 +211,31 @@ ILNode_GenValue(ILNode_MemberField)
 }
 
 /*
+ * Generate value code for a static property reference.
+ */
+ILNode_GenValue(ILNode_StaticProperty)
+{
+	ILMethod *getter = ILProperty_Getter(node->property);
+	ILType *signature = ILProperty_Signature(node->property);
+	ILGenCallByMethod(info, getter);
+	ILGenAdjust(info, 1);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
+ * Generate value code for a member property reference.
+ */
+ILNode_GenValue(ILNode_MemberProperty)
+{
+	ILMethod *getter = ILProperty_Getter(node->property);
+	ILType *signature = ILProperty_Signature(node->property);
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenCallByMethod(info, getter);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
  * Prepare to store into a local or argument variable.
  */
 ILNode_Prepare(ILNode_LocalVar),
@@ -272,6 +299,27 @@ ILNode_Prepare(ILNode_MemberField)
 	ILGenCast(info, ILNode_GenValue(node->expr, info),
 			  ILMachineType_ObjectRef);
 	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Prepare to store into a static property reference.
+ */
+ILNode_Prepare(ILNode_StaticProperty)
+{
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
+ * Prepare to store into a member property reference.
+ */
+ILNode_Prepare(ILNode_MemberProperty)
+{
+	ILType *signature = ILProperty_Signature(node->property);
+	node->tempVar = IL_MAX_UINT32;
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	return ILTypeToMachineType(signature->un.method.retType);
 }
 
 /*
@@ -397,6 +445,67 @@ ILNode_GetAndPrepare(ILNode_MemberField)
 }
 
 /*
+ * Get and prepare to store into a static property reference.
+ */
+ILNode_GetAndPrepare(ILNode_StaticProperty)
+{
+	ILMethod *getter = ILProperty_Getter(node->property);
+	ILType *signature = ILProperty_Signature(node->property);
+	ILGenCallByMethod(info, getter);
+	ILGenAdjust(info, 1);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
+ * Get and prepare to store into a member property reference.
+ */
+ILNode_GetAndPrepare(ILNode_MemberProperty)
+{
+	ILMethod *getter = ILProperty_Getter(node->property);
+	ILType *signature = ILProperty_Signature(node->property);
+	ILType *propType = signature->un.method.retType;
+	if(leave)
+	{
+		/* Generate the object reference */
+		ILGenCast(info, ILNode_GenValue(node->expr, info),
+				  ILMachineType_ObjectRef);
+
+		/* Duplicate it and get the current value */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenCallByMethod(info, getter);
+
+		/* Store the current value into a temporary local */
+		node->tempVar = ILGenTempTypedVar(info, propType);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, node->tempVar);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		/* Generate the object reference */
+		ILGenCast(info, ILNode_GenValue(node->expr, info),
+				  ILMachineType_ObjectRef);
+
+		/* Duplicate it for the later store */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+
+		/* Load the current value from the property */
+		ILGenCallByMethod(info, getter);
+
+		/* We don't need to reload a previous value in "Store" */
+		node->tempVar = IL_MAX_UINT32;
+	}
+	return ILTypeToMachineType(propType);
+}
+
+/*
  * Store into a local variable.
  */
 ILNode_Store(ILNode_LocalVar)
@@ -504,6 +613,70 @@ ILNode_Store(ILNode_MemberField)
 	{
 		/* Store the value into the field */
 		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+
+		/* Do we need to restore a previous value to the stack top? */
+		if(node->tempVar != IL_MAX_UINT32)
+		{
+			ILGenLoadLocal(info, node->tempVar);
+			ILGenAdjust(info, 1);
+			ILGenReleaseTempVar(info, node->tempVar);
+		}
+	}
+}
+
+/*
+ * Store into a static property reference.
+ */
+ILNode_Store(ILNode_StaticProperty)
+{
+	ILMethod *setter = ILProperty_Setter(node->property);
+	if(leave)
+	{
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+	}
+	ILGenCallByMethod(info, setter);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Store into a member property reference.
+ */
+ILNode_Store(ILNode_MemberProperty)
+{
+	ILMethod *setter = ILProperty_Setter(node->property);
+	ILType *signature = ILProperty_Signature(node->property);
+	ILType *propType = signature->un.method.retType;
+	if(leave)
+	{
+		/* Copy the result into a temporary local */
+		unsigned temp = ILGenTempTypedVar(info, propType);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, temp);
+		ILGenExtend(info, 1);
+
+		/* Store the value into the property */
+		ILGenCallByMethod(info, setter);
+		ILGenAdjust(info, -2);
+
+		/* Do we need to restore a previous value to the stack top? */
+		if(node->tempVar != IL_MAX_UINT32)
+		{
+			ILGenLoadLocal(info, node->tempVar);
+			ILGenAdjust(info, 1);
+			ILGenReleaseTempVar(info, node->tempVar);
+		}
+
+		/* Reload the contents of the temporary local */
+		ILGenLoadLocal(info, temp);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, temp);
+	}
+	else
+	{
+		/* Store the value into the property */
+		ILGenCallByMethod(info, setter);
 		ILGenAdjust(info, -2);
 
 		/* Do we need to restore a previous value to the stack top? */

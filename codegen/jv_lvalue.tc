@@ -163,6 +163,26 @@ JavaGenValue(ILNode_MemberField)
 }
 
 /*
+ * Generate value code for a static property reference.
+ */
+JavaGenValue(ILNode_StaticProperty)
+{
+	/* TODO */
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
+ * Generate value code for a member property reference.
+ */
+JavaGenValue(ILNode_MemberProperty)
+{
+	/* TODO */
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
  * Prepare to store into a local variable.
  */
 JavaPrepare(ILNode_LocalVar),
@@ -224,6 +244,26 @@ JavaPrepare(ILNode_MemberField)
 {
 	/* TODO */
 	return ILTypeToMachineType(ILField_Type(node->field));
+}
+
+/*
+ * Prepare to store into a static property reference.
+ */
+JavaPrepare(ILNode_StaticProperty)
+{
+	/* Nothing needs to be done here */
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
+ * Prepare to store into a member property reference.
+ */
+JavaPrepare(ILNode_MemberProperty)
+{
+	/* TODO */
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
 }
 
 /*
@@ -327,6 +367,26 @@ JavaGetAndPrepare(ILNode_MemberField)
 }
 
 /*
+ * Get and prepare to store into a static property reference.
+ */
+JavaGetAndPrepare(ILNode_StaticProperty)
+{
+	/* Nothing needs to be done here */
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
+ * Get and prepare to store into a member property reference.
+ */
+JavaGetAndPrepare(ILNode_MemberProperty)
+{
+	/* TODO */
+	ILType *signature = ILProperty_Signature(node->property);
+	return ILTypeToMachineType(signature->un.method.retType);
+}
+
+/*
  * Store into a local variable.
  */
 JavaStore(ILNode_LocalVar)
@@ -414,6 +474,22 @@ JavaStore(ILNode_StaticField)
  * Store into a member field reference.
  */
 JavaStore(ILNode_MemberField)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a static property reference.
+ */
+JavaStore(ILNode_StaticProperty)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a member property reference.
+ */
+JavaStore(ILNode_MemberProperty)
 {
 	/* TODO */
 }

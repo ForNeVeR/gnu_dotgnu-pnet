@@ -401,6 +401,16 @@ struct _tagILEvalValue
 	ILField *field;
 	%nocreate ILUInt32 tempVar = {0};
 }
+%node ILNode_StaticProperty ILNode_LValue =
+{
+	ILProperty *property;
+}
+%node ILNode_MemberProperty ILNode_LValue =
+{
+	ILNode  *expr;
+	ILProperty *property;
+	%nocreate ILUInt32 tempVar = {0};
+}
 
 %output "cg_stmt.c"
 

@@ -1,3 +1,5 @@
+## Build the example programs.
+
 noinst_DATA = evenodd.exe hello.exe fib.exe getenv.exe except.exe \
 			  codepage.exe
 
@@ -28,3 +30,15 @@ codepage.exe: codepage.cs
 		-o codepage.exe codepage.cs
 
 CLEANFILES = $(noinst_DATA)
+
+## Install the system assemblies in the correct directory.
+
+pnetassembliesdir = $(libdir)/cscc/lib
+pnetassemblies_DATA = mscorlib.dll \
+					  I18N.CJK.dll \
+					  I18N.dll \
+					  I18N.MidEast.dll \
+					  I18N.Other.dll \
+					  I18N.Rare.dll \
+					  I18N.West.dll \
+					  I18N-handlers.def

@@ -26,6 +26,13 @@
 
 	* ilfind/ilfind.c: bug in previous commit - option codes were wrong.
 
+	* samples/I18N-handlers.def, samples/I18N.CJK.dll,
+	samples/I18N.MidEast.dll, samples/I18N.Other.dll,
+	samples/I18N.Rare.dll, samples/I18N.West.dll,
+	samples/I18N.dll, samples/Makefile.am, samples/mscorlib.dll:
+	check in the new "mscorlib" with its "I18N" dependencies;
+	hook the assemblies into the install process.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

@@ -4,6 +4,9 @@
 	* image/pecoff_writer.c: fall back to the original back-patch
 	logic if the stream was not opened in a read-write mode.
 
+	* include/il_utils.h, support/spawn.c: add "ILSpawnProcessWithPipe"
+	to allow the standard output of a command to be captured.
+
 2003-02-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.5.2" release.

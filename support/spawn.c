@@ -1,7 +1,7 @@
 /*
  * spawn.c - Spawn child processes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001-2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -206,6 +206,18 @@ int ILSpawnProcess(char *argv[])
 	return status;
 }
 
+int ILSpawnProcessWithPipe(char *argv[], void **stream)
+{
+	/* Not supported */
+	return 0;
+}
+
+int ILSpawnProcessWaitForExit(int pid, char *argv[])
+{
+	/* Not supported */
+	return 1;
+}
+
 #else
 #if defined(HAVE_FORK) && defined(HAVE_EXECV) && (defined(HAVE_WAITPID) || defined(HAVE_WAIT))
 
@@ -260,35 +272,89 @@ int ILSpawnProcess(char *argv[])
 	else
 	{
 		/* We are in the parent process */
-		int status = 1;
-	#ifdef HAVE_WAITPID
-		waitpid(pid, &status, 0);
-	#else
-		int result;
-		while((result = wait(&status)) != pid && result != -1)
+		return ILSpawnProcessWaitForExit(pid, argv);
+	}
+}
+
+int ILSpawnProcessWithPipe(char *argv[], void **stream)
+{
+	int pipefds[2];
+	int pid;
+
+	/* Initialize the return stream */
+	*stream = 0;
+
+	/* Create a pipe to capture the child's stdout */
+	if(pipe(pipefds) < 0)
+	{
+		perror("pipe");
+		return -1;
+	}
+
+	/* Launch the child process */
+	pid = fork();
+	if(pid < 0)
+	{
+		/* Could not fork the child process */
+		perror("fork");
+		return -1;
+	}
+	else if(pid == 0)
+	{
+		/* We are in the child process */
+		dup2(pipefds[1], 1);
+		close(pipefds[0]);
+		close(pipefds[1]);
+		execvp(argv[0], argv);
+		perror(argv[0]);
+		exit(1);
+		return -1;		/* Keep the compiler happy */
+	}
+	else
+	{
+		/* We are in the parent process */
+		close(pipefds[1]);
+		*stream = fdopen(pipefds[0], "r");
+		if(!(*stream))
 		{
-			/* Some other child fell: not the one we are interested in */
-		}
-	#endif
-		if(WIFEXITED(status))
-		{
-			/* Return the child's exit status as the final status */
-			return WEXITSTATUS(status);
-		}
-		else if(WIFSIGNALLED(status) &&
-		        (ImportantSignal(WTERMSIG(status)) || WCOREDUMP(status)))
-		{
-			/* Some kind of signal occurred */
-			fprintf(stderr, "%s: exited with signal %d%s\n",
-					argv[0], (int)(WTERMSIG(status)),
-					(WCOREDUMP(status) ? " (core dumped)" : ""));
+			perror("fdopen");
+			close(pipefds[0]);
 			return -1;
 		}
-		else
-		{
-			/* Some other kind of signal or error */
-			return -1;
-		}
+		return pid;
+	}
+}
+
+int ILSpawnProcessWaitForExit(int pid, char *argv[])
+{
+	int status = 1;
+#ifdef HAVE_WAITPID
+	waitpid(pid, &status, 0);
+#else
+	int result;
+	while((result = wait(&status)) != pid && result != -1)
+	{
+		/* Some other child fell: not the one we are interested in */
+	}
+#endif
+	if(WIFEXITED(status))
+	{
+		/* Return the child's exit status as the final status */
+		return WEXITSTATUS(status);
+	}
+	else if(WIFSIGNALLED(status) &&
+	        (ImportantSignal(WTERMSIG(status)) || WCOREDUMP(status)))
+	{
+		/* Some kind of signal occurred */
+		fprintf(stderr, "%s: exited with signal %d%s\n",
+				argv[0], (int)(WTERMSIG(status)),
+				(WCOREDUMP(status) ? " (core dumped)" : ""));
+		return -1;
+	}
+	else
+	{
+		/* Some other kind of signal or error */
+		return -1;
 	}
 }
 
@@ -301,6 +367,18 @@ int ILSpawnProcess(char *argv[])
 int ILSpawnProcess(char *argv[])
 {
 	fputs("Don't know how to spawn child processes on this system\n", stderr);
+	return -1;
+}
+
+int ILSpawnProcessWithPipe(char *argv[], void **stream)
+{
+	/* Not supported */
+	return 0;
+}
+
+int ILSpawnProcessWaitForExit(int pid, char *argv[])
+{
+	/* Not supported */
 	return -1;
 }
 

@@ -345,6 +345,18 @@ void ILCmdLineSuppressSlash(void);
 int ILSpawnProcess(char *argv[]);
 
 /*
+ * Spawn a child process and capture its stdout using a pipe.
+ * Returns zero if pipes are not supported, -1 on error, or the pid.
+ */
+int ILSpawnProcessWithPipe(char *argv[], void **stream);
+
+/*
+ * Wait for a child process that was spawned by "ILSpawnProcessWithPipe"
+ * to exit.  Returns the exit status, or -1 on error.
+ */
+int ILSpawnProcessWaitForExit(int pid, char *argv[]);
+
+/*
  * Opaque definition of the hash table type.
  */
 typedef struct _tagILHashTable ILHashTable;

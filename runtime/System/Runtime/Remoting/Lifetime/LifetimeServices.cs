@@ -88,6 +88,22 @@ public sealed class LifetimeServices
 				}
 			}
 
+	// Get the default lifetime service object for a marshal-by-ref object.
+	[TODO]
+	internal static Object GetLifetimeService(MarshalByRefObject obj)
+			{
+				// TODO
+				return null;
+			}
+
+	// Initialize a lifetime service object for a marshal-by-ref object.
+	[TODO]
+	internal static Object InitializeLifetimeService(MarshalByRefObject obj)
+			{
+				// TODO
+				return null;
+			}
+
 }; // class LifetimeServices
 
 #endif // CONFIG_REMOTING

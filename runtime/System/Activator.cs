@@ -238,21 +238,13 @@ sealed class Activator
 	{
 		return GetObject(type, url, null);
 	}
-	[TODO]
 	public static Object GetObject(Type type, String url, Object state)
 	{
-		// Validate the parameters.
 		if(type == null)
 		{
 			throw new ArgumentNullException("type");
 		}
-		if(url == null)
-		{
-			throw new ArgumentNullException("url");
-		}
-
-		// We don't support remoting operations yet.
-		throw new RemotingException();
+		return RemotingServices.Connect(type, url, state);
 	}
 
 #endif // CONFIG_REMOTING

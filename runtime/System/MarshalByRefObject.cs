@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Runtime.Remoting;
+using System.Runtime.Remoting.Lifetime;
 
 public abstract class MarshalByRefObject
 {
@@ -39,19 +40,15 @@ public abstract class MarshalByRefObject
 			}
 
 	// Get a lifetime service object for this object.
-	[TODO]
 	public Object GetLifetimeService()
 			{
-				// TODO
-				return null;
+				return LifetimeServices.GetLifetimeService(this);
 			}
 
 	// Initialize the lifetime service for this object.
-	[TODO]
 	public virtual Object InitializeLifetimeService()
 			{
-				// TODO
-				return null;
+				return LifetimeServices.InitializeLifetimeService(this);
 			}
 
 #endif // CONFIG_REMOTING

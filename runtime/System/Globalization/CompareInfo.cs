@@ -259,10 +259,10 @@ public class CompareInfo : IDeserializationCallback
 			#endif
 				{
 					// Use the invariant comparison method in the engine.
-					return String.InternalCompare
+					return String.CompareInternal
 						(string1, offset1, length1,
 						 string2, offset2, length2,
-						 ((options & CompareOptions.IgnoreCase) != 0), null);
+						 ((options & CompareOptions.IgnoreCase) != 0));
 				}
 			}
 

@@ -21,6 +21,11 @@
 	Xsharp/Events/XVisibilityEvent.cs: add "ToString()" methods to
 	the Xsharp event classes, to help with debugging.
 
+	* runtime/System/String.cs,
+	runtime/System/Globalization/CompareInfo.cs: pass all string
+	comparisons through the culture routines; remove the "InternalCompare"
+	internalcall and replace with a new one for the invariant culture.
+
 2003-08-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,

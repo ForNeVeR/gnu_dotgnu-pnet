@@ -107,18 +107,18 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Internal version of "Compare", with all parameters.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static int InternalCompare
+	extern internal static int CompareInternal
 				(String strA, int indexA, int lengthA,
 				 String strB, int indexB, int lengthB,
-				 bool ignoreCase, CultureInfo culture);
+				 bool ignoreCase);
 
 	// Compare two strings while optionally ignoring case.
 	public static int Compare(String strA, String strB, bool ignoreCase)
 			{
-				return InternalCompare
-						(strA, 0, ((strA != null) ? strA.Length : 0),
-					     strB, 0, ((strB != null) ? strB.Length : 0),
-					     ignoreCase, null);
+				return CultureInfo.CurrentCulture.CompareInfo
+							.Compare(strA, strB,
+									 (ignoreCase ? CompareOptions.IgnoreCase
+									 			 : CompareOptions.None));
 			}
 
 #if !ECMA_COMPAT
@@ -130,10 +130,10 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					throw new ArgumentNullException("culture");
 				}
-				return InternalCompare
-						(strA, 0, ((strA != null) ? strA.Length : 0),
-						 strB, 0, ((strB != null) ? strB.Length : 0),
-						 ignoreCase, culture);
+				return culture.CompareInfo
+							.Compare(strA, strB,
+									 (ignoreCase ? CompareOptions.IgnoreCase
+									 			 : CompareOptions.None));
 			}
 #endif
 
@@ -216,10 +216,10 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  String strB, int indexB,
 							  int length)
 			{
-				ValidateCompare(strA, indexA, strB, indexB, length);
-				return InternalCompare(strA, indexA, length,
-									   strB, indexB, length,
-									   false, null);
+				return CultureInfo.CurrentCulture.CompareInfo
+							.Compare(strA, indexA, length,
+									 strB, indexB, length,
+									 CompareOptions.None);
 			}
 
 	// Compare two sub-strings while optionally ignoring case.
@@ -227,10 +227,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  String strB, int indexB,
 							  int length, bool ignoreCase)
 			{
-				ValidateCompare(strA, indexA, strB, indexB, length);
-				return InternalCompare(strA, indexA, length,
-									   strB, indexB, length,
-									   ignoreCase, null);
+				return CultureInfo.CurrentCulture.CompareInfo
+							.Compare(strA, indexA, length,
+									 strB, indexB, length,
+									 (ignoreCase ? CompareOptions.IgnoreCase
+									 			 : CompareOptions.None));
 			}
 
 	// Compare two sub-strings with a particular culture's comparison rules.
@@ -248,10 +249,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					throw new ArgumentNullException("culture");
 				}
-				ValidateCompare(strA, indexA, strB, indexB, length);
-				return InternalCompare(strA, indexA, length,
-									   strB, indexB, length,
-									   ignoreCase, culture);
+				return culture.CompareInfo
+							.Compare(strA, indexA, length,
+									 strB, indexB, length,
+									 (ignoreCase ? CompareOptions.IgnoreCase
+									 			 : CompareOptions.None));
 			}
 
 	// Internal version of "CompareOrdinal", with all parameters.

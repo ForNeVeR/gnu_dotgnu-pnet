@@ -52,7 +52,7 @@ static ILCmdLineOption const options[] = {
 		"Use a more detailed form of output."},
 	{"--version", 'v', 0,
 		"--version or -v or -V",
-		"Print the version of the program"},
+		"Print the version of the program."},
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
@@ -61,10 +61,8 @@ static ILCmdLineOption const options[] = {
 
 static void usage(const char *progname);
 static void version(void);
-static int printSizes(const char *filename, FILE *stream, int closeStream,
-					  ILContext *context, int radix);
-static int printDetailed(const char *filename, FILE *stream, int closeStream,
-					     ILContext *context, int radix);
+static int printSizes(const char *filename, ILContext *context, int radix);
+static int printDetailed(const char *filename, ILContext *context, int radix);
 
 int main(int argc, char *argv[])
 {
@@ -74,7 +72,6 @@ int main(int argc, char *argv[])
 	int sawStdin;
 	int state, opt;
 	char *param;
-	FILE *infile;
 	int errors;
 	ILContext *context;
 
@@ -172,11 +169,11 @@ int main(int argc, char *argv[])
 			{
 				if(detailed)
 				{
-					errors |= printDetailed("stdin", stdin, 0, context, radix);
+					errors |= printDetailed("-", context, radix);
 				}
 				else
 				{
-					errors |= printSizes("stdin", stdin, 0, context, radix);
+					errors |= printSizes("-", context, radix);
 				}
 				sawStdin = 1;
 			}
@@ -184,25 +181,13 @@ int main(int argc, char *argv[])
 		else
 		{
 			/* Dump the contents of a regular file */
-			if((infile = fopen(argv[1], "rb")) == NULL)
-			{
-				/* Try again in case libc did not understand the 'b' */
-				if((infile = fopen(argv[1], "r")) == NULL)
-				{
-					perror(argv[1]);
-					errors = 1;
-					++argv;
-					--argc;
-					continue;
-				}
-			}
 			if(detailed)
 			{
-				errors |= printDetailed(argv[1], infile, 1, context, radix);
+				errors |= printDetailed(argv[1], context, radix);
 			}
 			else
 			{
-				errors |= printSizes(argv[1], infile, 1, context, radix);
+				errors |= printSizes(argv[1], context, radix);
 			}
 		}
 		++argv;
@@ -242,24 +227,17 @@ static void version(void)
 /*
  * Load an IL image and get general size information.
  */
-static ILImage *loadImage(const char *filename, FILE *stream, int closeStream,
-						  ILContext *context, int flags, unsigned long *total,
-						  unsigned long *code, unsigned long *meta,
-						  unsigned long *res, unsigned long *other)
+static ILImage *loadImage(const char *filename, ILContext *context, int flags,
+						  unsigned long *total, unsigned long *code,
+						  unsigned long *meta, unsigned long *res,
+						  unsigned long *other)
 {
-	int loadError;
 	ILImage *image;
 	void *addr;
 
 	/* Attempt to load the image into memory */
-	loadError = ILImageLoad(stream, filename, context, &image, flags);
-	if(closeStream)
+	if(ILImageLoadFromFile(filename, context, &image, flags, 1) != 0)
 	{
-		fclose(stream);
-	}
-	if(loadError != 0)
-	{
-		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
 		return 0;
 	}
 
@@ -286,8 +264,7 @@ static ILImage *loadImage(const char *filename, FILE *stream, int closeStream,
 /*
  * Load an IL image from an input stream and print its size information.
  */
-static int printSizes(const char *filename, FILE *stream, int closeStream,
-					  ILContext *context, int radix)
+static int printSizes(const char *filename, ILContext *context, int radix)
 {
 	ILImage *image;
 	unsigned long total;
@@ -297,7 +274,7 @@ static int printSizes(const char *filename, FILE *stream, int closeStream,
 	unsigned long other;
 
 	/* Attempt to load the image into memory */
-	image = loadImage(filename, stream, closeStream, context,
+	image = loadImage(filename, context,
 					  IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_METADATA,
 					  &total, &code, &meta, &res, &other);
 	if(!image)
@@ -367,8 +344,7 @@ static unsigned long numNestedTypes(ILImage *image)
 /*
  * Load an IL image from an input stream and print detailed information.
  */
-static int printDetailed(const char *filename, FILE *stream, int closeStream,
-					     ILContext *context, int radix)
+static int printDetailed(const char *filename, ILContext *context, int radix)
 {
 	ILImage *image;
 	unsigned long total;
@@ -378,7 +354,7 @@ static int printDetailed(const char *filename, FILE *stream, int closeStream,
 	unsigned long other;
 
 	/* Attempt to load the image into memory */
-	image = loadImage(filename, stream, closeStream, context,
+	image = loadImage(filename, context,
 					  IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE,
 					  &total, &code, &meta, &res, &other);
 	if(!image)

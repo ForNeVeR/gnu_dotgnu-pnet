@@ -63,7 +63,7 @@ static ILCmdLineOption const options[] = {
 	{"-i", 'i', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version      or -v",
-		"Print the version of the program"},
+		"Print the version of the program."},
 	{"-v", 'v', 0, 0, 0},
 	{"--help", 'h', 0,
 		"--help",
@@ -73,8 +73,8 @@ static ILCmdLineOption const options[] = {
 
 static void usage(const char *progname);
 static void version(void);
-static int searchFile(const char *filename, FILE *stream, int closeStream,
-					  ILContext *context, int reportFilenames);
+static int searchFile(const char *filename, ILContext *context,
+					  int reportFilenames);
 static void CompileRegex(char *searchString, int wholeString,
 						 int regexMatching, int ignoreCase,
 						 int fileRegex);
@@ -92,7 +92,6 @@ int main(int argc, char *argv[])
 	int sawStdin;
 	int state, opt;
 	char *param;
-	FILE *infile;
 	int errors;
 	ILContext *context;
 
@@ -191,27 +190,14 @@ int main(int argc, char *argv[])
 			/* Dump the contents of stdin, but only once */
 			if(!sawStdin)
 			{
-				errors |= searchFile("stdin", stdin, 0,
-									 context, reportFilenames);
+				errors |= searchFile("-", context, reportFilenames);
 				sawStdin = 1;
 			}
 		}
 		else
 		{
 			/* Dump the contents of a regular file */
-			if((infile = fopen(argv[1], "rb")) == NULL)
-			{
-				/* Try again in case libc did not understand the 'b' */
-				if((infile = fopen(argv[1], "r")) == NULL)
-				{
-					perror(argv[1]);
-					errors = 1;
-					++argv;
-					--argc;
-					continue;
-				}
-			}
-			errors |= searchFile(argv[1], infile, 1, context, reportFilenames);
+			errors |= searchFile(argv[1], context, reportFilenames);
 		}
 		++argv;
 		--argc;
@@ -300,11 +286,10 @@ struct _tagNamespaceEntry
 /*
  * Load an IL image from an input stream and search it.
  */
-static int searchFile(const char *filename, FILE *stream, int closeStream,
-					  ILContext *context, int reportFilenames)
+static int searchFile(const char *filename, ILContext *context,
+					  int reportFilenames)
 {
 	ILImage *image;
-	int loadError;
 	unsigned long numTokens;
 	unsigned long token;
 	ILAssembly *assembly;
@@ -315,16 +300,17 @@ static int searchFile(const char *filename, FILE *stream, int closeStream,
 	char *temp;
 
 	/* Attempt to load the image into memory */
-	loadError = ILImageLoad(stream, filename, context, &image,
-							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
-	if(closeStream)
+	if(ILImageLoadFromFile(filename, context, &image,
+						   IL_LOADFLAG_FORCE_32BIT |
+						   IL_LOADFLAG_NO_RESOLVE, 1) != 0)
 	{
-		fclose(stream);
-	}
-	if(loadError != 0)
-	{
-		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
 		return 1;
+	}
+
+	/* Use a more descriptive name for stdin from now on */
+	if(!strcmp(filename, "-"))
+	{
+		filename = "stdin";
 	}
 
 	/* Search the Assembly table for assembly names */

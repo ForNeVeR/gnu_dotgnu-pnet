@@ -39,7 +39,7 @@ static ILCmdLineOption const options[] = {
 		"Print the names, but not the types, of the methods."},
 	{"--version", 'v', 0,
 		"--version    or -v",
-		"Print the version of the program"},
+		"Print the version of the program."},
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
@@ -48,8 +48,7 @@ static ILCmdLineOption const options[] = {
 
 static void usage(const char *progname);
 static void version(void);
-static int printNatives(const char *filename, FILE *stream,
-						int closeStream, ILContext *context,
+static int printNatives(const char *filename, ILContext *context,
 						int namesOnly);
 
 int main(int argc, char *argv[])
@@ -59,7 +58,6 @@ int main(int argc, char *argv[])
 	int sawStdin;
 	int state, opt;
 	char *param;
-	FILE *infile;
 	int errors;
 	ILContext *context;
 
@@ -117,26 +115,14 @@ int main(int argc, char *argv[])
 			/* Dump the contents of stdin, but only once */
 			if(!sawStdin)
 			{
-				errors |= printNatives("stdin", stdin, 0, context, namesOnly);
+				errors |= printNatives("-", context, namesOnly);
 				sawStdin = 1;
 			}
 		}
 		else
 		{
 			/* Dump the contents of a regular file */
-			if((infile = fopen(argv[1], "rb")) == NULL)
-			{
-				/* Try again in case libc did not understand the 'b' */
-				if((infile = fopen(argv[1], "r")) == NULL)
-				{
-					perror(argv[1]);
-					errors = 1;
-					++argv;
-					--argc;
-					continue;
-				}
-			}
-			errors |= printNatives(argv[1], infile, 1, context, namesOnly);
+			errors |= printNatives(argv[1], context, namesOnly);
 		}
 		++argv;
 		--argc;
@@ -170,31 +156,6 @@ static void version(void)
 	printf("GNU General Public License.  See the file COPYING for further details.\n");
 	printf("\n");
 	printf("Use the `--help' option to get help on the command-line options.\n");
-}
-
-/*
- * Load an IL image.
- */
-static ILImage *loadImage(const char *filename, FILE *stream, int closeStream,
-						  ILContext *context, int flags)
-{
-	int loadError;
-	ILImage *image;
-
-	/* Attempt to load the image into memory */
-	loadError = ILImageLoad(stream, filename, context, &image, flags);
-	if(closeStream)
-	{
-		fclose(stream);
-	}
-	if(loadError != 0)
-	{
-		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
-		return 0;
-	}
-
-	/* Loaded and ready to go */
-	return image;
 }
 
 /*
@@ -241,8 +202,7 @@ static void DumpMethodInfo(ILImage *image, ILMethod *method,
 /*
  * Load an IL image an display the native methods.
  */
-static int printNatives(const char *filename, FILE *stream,
-					    int closeStream, ILContext *context,
+static int printNatives(const char *filename, ILContext *context,
 						int namesOnly)
 {
 	ILImage *image;
@@ -251,10 +211,9 @@ static int printNatives(const char *filename, FILE *stream,
 	ILMethod *method;
 
 	/* Attempt to load the image into memory */
-	image = loadImage(filename, stream, closeStream, context,
-					  IL_LOADFLAG_FORCE_32BIT |
-					  IL_LOADFLAG_NO_RESOLVE);
-	if(!image)
+	if(ILImageLoadFromFile(filename, context, &image,
+					  	   IL_LOADFLAG_FORCE_32BIT |
+					  	   IL_LOADFLAG_NO_RESOLVE, 1) != 0)
 	{
 		return 1;
 	}

@@ -344,7 +344,6 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 	ILAssembly *assem;
 	char *pathname;
 	int error;
-	FILE *file;
 	ILImage *newImage;
 
 	/* Scan the AssemblyRef table for the assemblies that we require */
@@ -374,27 +373,20 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 		}
 
 		/* Load the image */
-		file = fopen(pathname, "rb");
-		if(!file)
-		{
-			/* Retry with "r" in case this libc does not support "rb" */
-			file = fopen(pathname, "r");
-		}
-		if(!file)
-		{
-			ILFree(pathname);
-			return IL_LOADERR_UNRESOLVED;
-		}
-		error = ILImageLoad(file, pathname, image->context, &newImage, flags);
-		fclose(file);
+		error = ILImageLoadFromFile(pathname, image->context,
+							        &newImage, flags, 0);
+		ILFree(pathname);
 		if(error != 0)
 		{
-			ILFree(pathname);
-			return error;
+			if(error == -1)
+			{
+				return IL_LOADERR_UNRESOLVED;
+			}
+			else
+			{
+				return error;
+			}
 		}
-
-		/* Free the pathname that we no longer require */
-		ILFree(pathname);
 	}
 
 	/* Done */

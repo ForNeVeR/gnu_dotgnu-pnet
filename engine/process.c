@@ -206,20 +206,10 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
 
 int ILExecProcessLoadFile(ILExecProcess *process, const char *filename)
 {
-	FILE *file;
 	int error;
 	ILImage *image;
-	if((file = fopen(filename, "rb")) == NULL)
-	{
-		/* Try again using "r" in case libc doesn't support "rb" */
-		if((file = fopen(filename, "r")) == NULL)
-		{
-			return -1;
-		}
-	}
-	error = ILImageLoad(file, filename, process->context, &image,
-						IL_LOADFLAG_FORCE_32BIT);
-	fclose(file);
+	error = ILImageLoadFromFile(filename, process->context, &image,
+								IL_LOADFLAG_FORCE_32BIT, 0);
 	if(error == 0)
 	{
 		LoadStandard(process, image);

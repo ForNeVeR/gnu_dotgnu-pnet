@@ -309,47 +309,20 @@ static char *CheckPath(const char *directory, const char *name, int len)
  */
 static int LoadLibraryFromPath(const char *path, int freePath)
 {
-	FILE *file;
 	ILImage *image;
 	int loadError;
 
-	/* Attempt to open the library file */
-	if((file = fopen(path, "rb")) == NULL)
-	{
-		/* Try again with "r", in case libc does not understand "rb" */
-		if((file = fopen(path, "r")) == NULL)
-		{
-			perror(path);
-			if(freePath)
-			{
-				ILFree((char *)path);
-			}
-			return 0;
-		}
-	}
-
 	/* Attempt to load the image */
-	loadError = ILImageLoad(file, path, CSCodeGen.context, &image,
-							IL_LOADFLAG_FORCE_32BIT |
-							IL_LOADFLAG_PRE_VALIDATE);
-	if(loadError != 0)
-	{
-		fclose(file);
-		fprintf(stderr, "%s: %s\n", path, ILImageLoadError(loadError));
-		if(freePath)
-		{
-			ILFree((char *)path);
-		}
-		return 0;
-	}
-	fclose(file);
+	loadError = ILImageLoadFromFile(path, CSCodeGen.context, &image,
+									IL_LOADFLAG_FORCE_32BIT |
+									IL_LOADFLAG_PRE_VALIDATE, 1);
 
 	/* Clean up and exit */
 	if(freePath)
 	{
 		ILFree((char *)path);
 	}
-	return 1;
+	return (loadError == 1);
 }
 
 /*

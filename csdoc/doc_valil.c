@@ -542,8 +542,6 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	const char *imageFilename;
 	ILContext *context;
 	ILImage *image;
-	int loadError;
-	FILE *file;
 	ILDocNamespace *namespace;
 	ILDocType *type;
 	FILE *stream;
@@ -565,24 +563,12 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	{
 		ILDocOutOfMemory(progname);
 	}
-	if((file = fopen(imageFilename, "rb")) == NULL)
+	if(ILImageLoadFromFile(imageFilename, context, &image,
+						   IL_LOADFLAG_FORCE_32BIT |
+						   IL_LOADFLAG_NO_RESOLVE, 1) != 0)
 	{
-		if((file = fopen(imageFilename, "r")) == NULL)
-		{
-			perror(imageFilename);
-			return 0;
-		}
-	}
-	loadError = ILImageLoad(file, imageFilename, context, &image,
-							IL_LOADFLAG_FORCE_32BIT |
-							IL_LOADFLAG_NO_RESOLVE);
-	if(loadError != 0)
-	{
-		fclose(file);
-		fprintf(stderr, "%s: %s\n", imageFilename, ILImageLoadError(loadError));
 		return 0;
 	}
-	fclose(file);
 
 	/* Open the output stream */
 	if(!strcmp(outputPath, "-"))

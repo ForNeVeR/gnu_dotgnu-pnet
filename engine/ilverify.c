@@ -46,8 +46,7 @@ static ILCmdLineOption const options[] = {
 
 static void usage(const char *progname);
 static void version(void);
-static int verify(const char *filename, FILE *stream, int closeStream,
-				  ILContext *context, int allowUnsafe);
+static int verify(const char *filename, ILContext *context, int allowUnsafe);
 
 int main(int argc, char *argv[])
 {
@@ -56,7 +55,6 @@ int main(int argc, char *argv[])
 	int sawStdin;
 	int state, opt;
 	char *param;
-	FILE *infile;
 	int errors;
 	ILContext *context;
 
@@ -117,26 +115,14 @@ int main(int argc, char *argv[])
 			/* Verify the contents of stdin, but only once */
 			if(!sawStdin)
 			{
-				errors |= verify("stdin", stdin, 0, context, allowUnsafe);
+				errors |= verify("-", context, allowUnsafe);
 				sawStdin = 1;
 			}
 		}
 		else
 		{
 			/* Verify the contents of a regular file */
-			if((infile = fopen(argv[1], "rb")) == NULL)
-			{
-				/* Try again in case libc did not understand the 'b' */
-				if((infile = fopen(argv[1], "r")) == NULL)
-				{
-					perror(argv[1]);
-					errors = 1;
-					++argv;
-					--argc;
-					continue;
-				}
-			}
-			errors |= verify(argv[1], infile, 1, context, allowUnsafe);
+			errors |= verify(argv[1], context, allowUnsafe);
 		}
 		++argv;
 		--argc;
@@ -200,10 +186,8 @@ static void printError(ILMethod *method, const char *msg)
 /*
  * Load an IL image from an input stream and verify all of its methods.
  */
-static int verify(const char *filename, FILE *stream, int closeStream,
-				  ILContext *context, int allowUnsafe)
+static int verify(const char *filename, ILContext *context, int allowUnsafe)
 {
-	int loadError;
 	ILImage *image;
 	ILMethod *method;
 	ILMethodCode code;
@@ -211,15 +195,10 @@ static int verify(const char *filename, FILE *stream, int closeStream,
 	unsigned char *start;
 
 	/* Attempt to load the image into memory */
-	loadError = ILImageLoad(stream, filename, context, &image,
-							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
-	if(closeStream)
+	if(ILImageLoadFromFile(filename, context, &image,
+						   IL_LOADFLAG_FORCE_32BIT |
+						   IL_LOADFLAG_NO_RESOLVE, 1) != 0)
 	{
-		fclose(stream);
-	}
-	if(loadError != 0)
-	{
-		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
 		return 0;
 	}
 

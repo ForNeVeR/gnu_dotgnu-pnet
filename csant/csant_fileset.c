@@ -461,7 +461,6 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 			ILFree(currentDir);
 		}
 	}
-	ILFree(baseDir);
 
 	/* Free the regular expression state */
 #ifdef HAVE_REGCOMP
@@ -485,6 +484,9 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 		}
 	}
 	fileset->numFiles = outposn;
+
+	/* We don't need the base directory any more */
+	ILFree(baseDir);
 
 	/* Add simple files that are named using the <file> tag */
 	node = node->taskChildren;

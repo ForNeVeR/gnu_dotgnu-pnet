@@ -38,6 +38,9 @@
 	* samples/Makefile.am, samples/.cvsignore, samples/except.cs:
 	add a new example to demonstrate exception stack traces.
 
+	* csant/csant_fileset.c (CSAntFileSetLoad): move the free for
+	"baseDir" down to after its last use.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

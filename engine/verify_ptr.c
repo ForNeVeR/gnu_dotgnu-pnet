@@ -182,95 +182,11 @@ static ILClass *GetValueTypeToken(ILMethod *method, unsigned char *pc)
 	{
 		return 0;
 	}
-	if(!ILClass_IsValueType(classInfo) &&
-	   !ILClass_IsUnmanagedValueType(classInfo))
+	if(!ILClassIsValueType(classInfo))
 	{
 		return 0;
 	}
 	return classInfo;
-}
-
-/*
- * Convert a class information block into a type, if possible.
- */
-static ILType *ClassTokenToType(ILClass *classInfo)
-{
-	const char *name;
-	if(ILClass_IsValueType(classInfo))
-	{
-		/* Check for builtin value types */
-		name = ILClass_Namespace(classInfo);
-		if(name && !strcmp(name, "System") &&
-		   !ILClass_NestedParent(classInfo))
-		{
-			name = ILClass_Name(classInfo);
-			if(!strcmp(name, "Boolean"))
-			{
-				return ILType_Boolean;
-			}
-			else if(!strcmp(name, "SByte"))
-			{
-				return ILType_Int8;
-			}
-			else if(!strcmp(name, "Byte"))
-			{
-				return ILType_UInt8;
-			}
-			else if(!strcmp(name, "Int16"))
-			{
-				return ILType_Int16;
-			}
-			else if(!strcmp(name, "UInt16"))
-			{
-				return ILType_UInt16;
-			}
-			else if(!strcmp(name, "Int32"))
-			{
-				return ILType_Int32;
-			}
-			else if(!strcmp(name, "UInt32"))
-			{
-				return ILType_UInt32;
-			}
-			else if(!strcmp(name, "Int64"))
-			{
-				return ILType_Int64;
-			}
-			else if(!strcmp(name, "UInt64"))
-			{
-				return ILType_UInt64;
-			}
-			else if(!strcmp(name, "IntPtr"))
-			{
-				return ILType_Int;
-			}
-			else if(!strcmp(name, "UIntPtr"))
-			{
-				return ILType_UInt;
-			}
-			else if(!strcmp(name, "Single"))
-			{
-				return ILType_Float32;
-			}
-			else if(!strcmp(name, "Double"))
-			{
-				return ILType_Float64;
-			}
-			else if(!strcmp(name, "TypedReference"))
-			{
-				return ILType_TypedRef;
-			}
-		}
-		return ILType_FromValueType(classInfo);
-	}
-	else if(ILClass_IsUnmanagedValueType(classInfo))
-	{
-		return ILType_FromValueType(classInfo);
-	}
-	else
-	{
-		return ILType_FromClass(classInfo);
-	}
 }
 
 /*
@@ -281,7 +197,7 @@ static ILType *GetTypeToken(ILMethod *method, unsigned char *pc)
 	ILClass *classInfo = GetClassToken(method, pc);
 	if(classInfo)
 	{
-		return ClassTokenToType(classInfo);
+		return ILClassToType(classInfo);
 	}
 	else
 	{
@@ -686,7 +602,6 @@ case IL_OP_LDLEN:
 	{
 		ILCoderArrayLength(coder);
 		STK_UNARY = ILEngineType_I;
-		--stackSize;
 	}
 	else
 	{
@@ -724,7 +639,8 @@ case IL_OP_LDELEM_REF:
 		if(elemType == ILType_Void || IsObjectRef(elemType))
 		{
 			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType);
-			STK_BINARY_1 = ILEngineType_O;
+			stack[stackSize - 2].engineType = ILEngineType_O;
+			stack[stackSize - 2].typeInfo = elemType;
 			--stackSize;
 		}
 		else

@@ -1048,6 +1048,8 @@ public class Control : IWin32Window, IDisposable
 					{
 						dockStyle = (byte)value;
 						OnDockChanged(EventArgs.Empty);
+						// Rethink our layout
+						PerformLayout();
 					}
 				}
 			}

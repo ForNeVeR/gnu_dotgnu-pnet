@@ -25,7 +25,7 @@ ILNode_SemAnalysis(ILNode_Null)
 {
 	CSSemValue value;
 	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILFindSystemType(info, "Object");
+	value.type = ILType_Null;
 	return value;
 }
 

@@ -20,6 +20,8 @@ implement the "UserLogicalAnd" and "UserLogicalOr" node types.
 
 * cscc/cs_lvalue.tc: change the semantic value for "NewScope" to "void".
 
+* cscc/cs_const.tc: semantic analysis for "null".
+
 2001-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_scope.h, codegen/cg_scope.c: add node information to all

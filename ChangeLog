@@ -1,4 +1,9 @@
 
+2004-09-20  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: Fake external
+	file module creations.
+
 2004-09-20  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Security/Cryptography/X509Certificates/X509ContentType.cs,

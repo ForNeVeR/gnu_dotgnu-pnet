@@ -207,6 +207,7 @@ public sealed class AssemblyBuilder : Assembly
 											 bool emitSymbolInfo)
 			{
 				// We don't support modules in external files.
+				return DefineDynamicModule(name, emitSymbolInfo);
 		 		throw new NotSupportedException(_("Emit_ExternalModule"));
 			}
 

@@ -98,7 +98,7 @@ public class Context
 
 	// Get a property from this context.
 	[TODO]
-	public IContextProperty GetProperty(String name)
+	public virtual IContextProperty GetProperty(String name)
 			{
 				// TODO
 				return null;
@@ -122,7 +122,7 @@ public class Context
 
 	// Set a property on this context.
 	[TODO]
-	public void SetProperty(IContextProperty prop)
+	public virtual void SetProperty(IContextProperty prop)
 			{
 				// TODO
 			}

@@ -22,7 +22,10 @@ namespace System.Threading
 {
 
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Contexts;
+using System.Security.Principal;
 using System.Diagnostics;
+using System.Globalization;
 
 public sealed class Thread
 {
@@ -40,6 +43,11 @@ public sealed class Thread
 
 	// Name of this thread.
 	private String name;
+
+#if !ECMA_COMPAT
+	// Flag that is set for threads in the thread pool.
+	internal bool inThreadPool;
+#endif
 
 	// Constructor.
 	public Thread(ThreadStart start)
@@ -336,6 +344,178 @@ public sealed class Thread
 	// Get the identifier for the current thread.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static int InternalGetThreadId();
+
+#if !ECMA_COMPAT
+
+	// Allocate a local data store slot.
+	[TODO]
+	public static LocalDataStoreSlot AllocateDataSlot()
+			{
+				// TODO
+				return null;
+			}
+
+	// Allocate a named data store slot.
+	[TODO]
+	public static LocalDataStoreSlot AllocateNamedDataSlot(String name)
+			{
+				// TODO
+				return null;
+			}
+
+	// Free a named data store slot.
+	[TODO]
+	public static void FreeNamedDataSlot(String name)
+			{
+				// TODO
+			}
+
+	// Get the compressed stack for a thread.
+	public CompressedStack GetCompressedStack()
+			{
+				return CompressedStack.GetCompressedStack();
+			}
+
+	// Get the data in a particular data store slot.
+	[TODO]
+	public static Object GetData(LocalDataStoreSlot slot)
+			{
+				// TODO
+				return null;
+			}
+
+	// Get the current domain identifier.
+	[TODO]
+	public static int GetDomainID()
+			{
+				// TODO
+				return 0;
+			}
+
+	// Get a previously allocated named data store slot.
+	[TODO]
+	public static LocalDataStoreSlot GetNamedDataSlot(String name)
+			{
+				// TODO
+				return null;
+			}
+
+	// Interrupt this thread.
+	[TODO]
+	public void Interrupt()
+			{
+				// TODO
+			}
+
+	// Resume execution of this thread.
+	[TODO]
+	public void Resume()
+			{
+				// TODO
+			}
+
+	// Set the compressed stack for a thread.
+	public void SetCompressedStack(CompressedStack stack)
+			{
+				// Ignored - not used in this implementation.
+			}
+
+	// Set the data in a particular local data store slot.
+	[TODO]
+	public static void SetData(LocalDataStoreSlot slot, Object data)
+			{
+				// TODO
+			}
+
+	// Perform a spin wait for a given number of iterations.
+	[TODO]
+	public static void SpinWait(int iterations)
+			{
+				// TODO
+			}
+
+	// Suspend execution of this thread.
+	[TODO]
+	public void Suspend()
+			{
+				// TODO
+			}
+
+	// Get or set this thread's apartment state.
+	public ApartmentState ApartmentState
+			{
+				get
+				{
+					return ApartmentState.Unknown;
+				}
+				set
+				{
+					// Ignored - we don't use apartment states.
+				}
+			}
+
+	// Get the remoting context for the current thread.
+	[TODO]
+	public static Context CurrentContext
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
+	// Get or set the current culture for the thread.
+	public CultureInfo CurrentCulture
+			{
+				get
+				{
+					return CultureInfo.CurrentCulture;
+				}
+				set
+				{
+					// Ignored - not used at present.
+				}
+			}
+
+	// Get or set the principal representing the thread's security context.
+	[TODO]
+	public static IPrincipal CurrentPrincipal
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+				set
+				{
+					// TODO
+				}
+			}
+
+	// Get or set the current UI culture for the thread.
+	public CultureInfo CurrentUICulture
+			{
+				get
+				{
+					return CultureInfo.CurrentUICulture;
+				}
+				set
+				{
+					// Ignored - not used at present.
+				}
+			}
+
+	// Determine if this is a thread pool thread.
+	public bool IsThreadPoolThread
+			{
+				get
+				{
+					return inThreadPool;
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class Thread
 

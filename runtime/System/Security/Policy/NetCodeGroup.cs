@@ -78,26 +78,6 @@ public sealed class NetCodeGroup : CodeGroup
 				return group;
 			}
 
-	// Compare two code groups for equality.
-	public override bool Equals(Object obj)
-			{
-				NetCodeGroup cg = (obj as NetCodeGroup);
-				if(cg != null)
-				{
-					return base.Equals(cg);
-				}
-				else
-				{
-					return false;
-				}
-			}
-
-	// Get the hash code for this instance.
-	public override int GetHashCode()
-			{
-				return base.GetHashCode();
-			}
-
 	// Resolve the policy for this code group.
 	[TODO]
 	public override PolicyStatement Resolve(Evidence evidence)

@@ -31,7 +31,7 @@ using System.Runtime.Serialization;
 [Serializable]
 [CLSCompliant(false)]
 public class MethodCall : IMethodCallMessage, ISerializable,
-						  IMethodMessage, IMessage
+						  IMethodMessage, IMessage, ISerializationRootObject
 {
 	// Internal state.
 	protected IDictionary ExternalProperties;

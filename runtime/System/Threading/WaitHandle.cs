@@ -1,7 +1,7 @@
 /*
  * WaitHandle.cs - Implementation of the "System.Threading.WaitHandle" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -203,10 +203,13 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 	extern private static bool InternalWaitOne(IntPtr privateData,
 											   int timeout);
 
+	// Value of an invalid handle.
+	protected static readonly IntPtr InvalidHandle = IntPtr.Zero;
+
 	// Get the private handle associated with this object.
 	// Note: Microsoft's implementation allows the handle
 	// to be set here, but that's too dangerous to allow.
-	public IntPtr Handle
+	public virtual IntPtr Handle
 			{
 				get
 				{

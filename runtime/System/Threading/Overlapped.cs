@@ -90,6 +90,18 @@ public class Overlapped
 				}
 			}
 
+	// Pack a native overlapped structure.
+	[CLSCompliant(false)]
+	public unsafe NativeOverlapped *Pack(IOCompletionCallback cb)
+			{
+				throw new NotImplementedException();
+			}
+	[CLSCompliant(false)]
+	public unsafe NativeOverlapped *UnsafePack(IOCompletionCallback cb)
+			{
+				throw new NotImplementedException();
+			}
+
 	// Unpack a native overlapped structure.
 	[CLSCompliant(false)]
 	public static unsafe Overlapped Unpack

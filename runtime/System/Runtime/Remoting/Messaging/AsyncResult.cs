@@ -225,7 +225,7 @@ public class AsyncResult : IAsyncResult
 
 	// Get the reply message.
 	[TODO]
-	public IMessage GetReplyMessage()
+	public virtual IMessage GetReplyMessage()
 			{
 				// TODO
 				return null;

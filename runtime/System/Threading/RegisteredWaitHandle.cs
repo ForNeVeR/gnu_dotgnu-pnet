@@ -38,6 +38,12 @@ sealed class RegisteredWaitHandle : MarshalByRefObject
 				this.workItem = workItem;
 			}
 
+	// Destructor.
+	~RegisteredWaitHandle()
+			{
+				// Nothing to do here in this implementation.
+			}
+
 	// Unregister using a specific wait object.
 	public bool Unregister(WaitHandle waitObject)
 			{

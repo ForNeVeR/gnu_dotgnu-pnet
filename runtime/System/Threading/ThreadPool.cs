@@ -35,6 +35,10 @@ sealed class ThreadPool
 	private const int MaxWorkerThreads = 16;
 	private const int MaxCompletionThreads = 16;
 
+	// Minimum number of threads in the pool.
+	private const int MinWorkerThreads = 0;
+	private const int MinCompletionThreads = 0;
+
 	// Internal state.
 	private static int usedWorkerThreads;
 	private static int usedCompletionThreads;
@@ -74,6 +78,22 @@ sealed class ThreadPool
 			{
 				workerThreads = MaxWorkerThreads;
 				completionPortThreads = MaxCompletionThreads;
+			}
+
+	// Get the minimum number of threads that should exist in the thread pool.
+	public static void GetMinThreads(out int workerThreads,
+									 out int completionPortThreads)
+			{
+				workerThreads = MinWorkerThreads;
+				completionPortThreads = MinCompletionThreads;
+			}
+
+	// Set the minimum number of threads that should exist in the thread pool.
+	public static bool SetMinThreads(int workerThreads,
+									 int completionPortThreads)
+			{
+				// Ignored - we let the pool decide how big it should be.
+				return false;
 			}
 
 	// Queue a new work item within the thread pool.
@@ -369,6 +389,9 @@ sealed class ThreadPool
 								workerThreads = new Thread [MaxWorkerThreads];
 							}
 							Thread thread = new Thread(new ThreadStart(Work));
+						#if !ECMA_COMPAT
+							thread.inThreadPool = true;
+						#endif
 							workerThreads[numWorkerThreads++] = thread;
 							thread.IsBackground = true;
 							thread.Start();
@@ -419,6 +442,9 @@ sealed class ThreadPool
 							}
 							Thread thread =
 								new Thread(new ThreadStart(Complete));
+						#if !ECMA_COMPAT
+							thread.inThreadPool = true;
+						#endif
 							completionThreads[numCompletionThreads++] = thread;
 							thread.IsBackground = true;
 							thread.Start();

@@ -1,7 +1,7 @@
 /*
  * Monitor.cs - Implementation of the "System.Threading.Monitor" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,6 +108,31 @@ public sealed class Monitor
 				}
 				return InternalWait(obj, TimeSpanToMS(timeout));
 			}
+#if !ECMA_COMPAT
+	public static bool Wait(Object obj, int millisecondsTimeout,
+							bool exitContext)
+			{
+				if(obj == null)
+				{
+					throw new ArgumentNullException("obj");
+				}
+				if(millisecondsTimeout < -1)
+				{
+					throw new ArgumentOutOfRangeException
+						("millisecondsTimeout",
+						 _("ArgRange_NonNegOrNegOne"));
+				}
+				return InternalWait(obj, millisecondsTimeout);
+			}
+	public static bool Wait(Object obj, TimeSpan timeout, bool exitContext)
+			{
+				if(obj == null)
+				{
+					throw new ArgumentNullException("obj");
+				}
+				return InternalWait(obj, TimeSpanToMS(timeout));
+			}
+#endif
 
 	// Internal version of "Wait".  A timeout of -1 indicates
 	// infinite, and zero indicates "test and return immediately".

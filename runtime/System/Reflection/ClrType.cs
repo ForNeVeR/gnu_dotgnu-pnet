@@ -129,17 +129,29 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 								       Type[] types,
 								       ParameterModifier[] modifiers)
 			{
+				if(bindingAttr == 0)
+				{
+					bindingAttr = BindingFlags.Public |
+								  BindingFlags.Instance;
+				}
 				return (ConstructorInfo)GetMemberImpl
 							(".ctor", MemberTypes.Constructor,
-							 bindingAttr, binder, callingConventions,
+							 bindingAttr | BindingFlags.DeclaredOnly,
+							 binder, callingConventions,
 							 types, modifiers);
 			}
 
 	// Get all constructors for this type.
 	public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
 			{
+				if(bindingAttr == 0)
+				{
+					bindingAttr = BindingFlags.Public |
+								  BindingFlags.Instance;
+				}
 				return (ConstructorInfo[])GetMembersImpl
-							(MemberTypes.Constructor, bindingAttr,
+							(MemberTypes.Constructor,
+							 bindingAttr | BindingFlags.DeclaredOnly,
 							 typeof(ConstructorInfo[]), null);
 			}
 

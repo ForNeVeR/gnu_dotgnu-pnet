@@ -111,7 +111,6 @@ int CCMain(int argc, char *argv[])
 	/* Generate modules and assemblies now if instructed to do so early */
 	if(CCPluginGenModulesEarly)
 	{
-		CCCodeGen.hasUnsafe = 1;
 		ILGenModulesAndAssemblies(&CCCodeGen);
 	}
 

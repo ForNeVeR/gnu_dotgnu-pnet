@@ -545,8 +545,8 @@ ILNode_GenValue(ILNode_Decimal)
 		{
 			ILGenInt32(info, (ILInt32)intValue);
 			ILGenAdjust(info, 1);
-			ILGenCallByName(info, "value class System.Decimal "
-										"System.Decimal::op_Implicit"
+			ILGenCallByName(info, "valuetype [.library]System.Decimal "
+									"[.library]System.Decimal::op_Implicit"
 											"(int32)");
 		}
 		else if(!(info->clsCompliant) && intValue >= 0 &&
@@ -555,16 +555,16 @@ ILNode_GenValue(ILNode_Decimal)
 			/* Cannot use this if CLS compliance is enabled */
 			ILGenUInt32(info, (ILUInt32)intValue);
 			ILGenAdjust(info, 1);
-			ILGenCallByName(info, "value class System.Decimal "
-										"System.Decimal::op_Implicit"
+			ILGenCallByName(info, "valuetype [.library]System.Decimal "
+										"[.library]System.Decimal::op_Implicit"
 											"(unsigned int32)");
 		}
 		else
 		{
 			ILGenInt64(info, intValue);
 			ILGenAdjust(info, 1);
-			ILGenCallByName(info, "value class System.Decimal "
-										"System.Decimal::op_Implicit"
+			ILGenCallByName(info, "valuetype [.library]System.Decimal "
+										"[.library]System.Decimal::op_Implicit"
 											"(int64)");
 		}
 	}
@@ -578,7 +578,7 @@ ILNode_GenValue(ILNode_Decimal)
 				((node->value.flags & (ILUInt32)0x80000000) != 0 ? 1 : 0));
 		ILGenUInt32(info, ((node->value.flags >> 16) & 0xFF));
 		ILGenAdjust(info, 5);
-		ILGenNewObj(info, "System.Decimal",
+		ILGenNewObj(info, "[.library]System.Decimal",
 		            "(int32, int32, int32, bool, unsigned int8)");
 		ILGenAdjust(info, -4);
 	}

@@ -7,6 +7,17 @@ for the builtin unary and binary operators, to match the C# standard.
 * codegen/cg_arith.tc, codegen/jv_arith.tc: handle "decimal" properly
 in "ILCommonType"; implement unsigned right shifts properly for "ILNode_Shr".
 
+* ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l: introduce ".library" as
+a synonym for the standard library assembly, which is normally "mscorlib".
+
+* ilasm/ilasm_main.c, ilasm/ilasm.1, doc/pnettools.texi: add the
+"--stdlib-name" option, and remove the obsolete "-r" option.
+
+* codegen/cg_arith.tc, codegen/cg_assign.tc, codegen/cg_cast.tc,
+codegen/cg_relop.tc, codegen/cg_nodes.tc, codegen/cg_const.tc:
+convert "value class" into "valuetype" and prefix all standard library
+classes with "[.library]".
+
 2001-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_types.h: mark array ranks explicitly with "ARRAY_CONTINUE",

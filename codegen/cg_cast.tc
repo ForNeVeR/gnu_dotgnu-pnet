@@ -178,16 +178,18 @@ ILGenCast(ILMachineType_NativeFloat, ILMachineType_Boolean)
 ILGenCast(ILMachineType_Decimal, ILMachineType_Boolean)
 {
     ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int32)");
-	ILGenCallByName(info, "bool System.Decimal::op_Equality"
-			"(value class System.Decimal, value class System.Decimal)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int32)");
+	ILGenCallByName(info, "bool [.library]System.Decimal::op_Equality"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenExtend(info, 1);
 }
 ILGenCast(ILMachineType_String, ILMachineType_Boolean)
 {
 	ILGenCallByName(info,
-			"bool System.Boolean::FromString(class System.String)");
+			"bool [.library]System.Boolean::FromString"
+				"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_Boolean)
 {
@@ -247,14 +249,14 @@ ILGenCast(ILMachineType_Decimal, ILMachineType_Int8)
 	{
 		/* CLS does not have a conversion from Decimal to int8, so
 		   down-convert from int32 instead */
-		ILGenCallByName(info, "int32 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info, "int32 [.library]System.Decimal::op_Explicit"
+									"(valuetype [.library]System.Decimal)");
 		ILGenSimple(info, IL_OP_CONV_OVF_I1);
 	}
 	else
 	{
-		ILGenCallByName(info, "int8 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info, "int8 [.library]System.Decimal::op_Explicit"
+									"(valuetype [.library]System.Decimal)");
 	}
 }
 ILGenCast(ILMachineType_String, ILMachineType_Int8)
@@ -263,13 +265,14 @@ ILGenCast(ILMachineType_String, ILMachineType_Int8)
 	{
 		/* CLS does not have the SByte class, so down-convert from Int32 */
 		ILGenCallByName(info,
-				"int32 System.Int32::FromString(class System.String)");
+				"int32 [.library]System.Int32::FromString"
+						"(class [.library]System.String)");
 		ILGenSimple(info, IL_OP_CONV_OVF_I1);
 	}
 	else
 	{
-		ILGenCallByName(info,
-				"int8 System.SByte::FromString(class System.String)");
+		ILGenCallByName(info, "int8 [.library]System.SByte::FromString"
+									"(class [.library]System.String)");
 	}
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int8),
@@ -330,13 +333,13 @@ ILGenCast(ILMachineType_Char, ILMachineType_UInt8)
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_UInt8)
 {
-	ILGenCallByName(info, "unsigned int8 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "unsigned int8 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_UInt8)
 {
-	ILGenCallByName(info,
-			"unsigned int8 System.Byte::FromString(class System.String)");
+	ILGenCallByName(info, "unsigned int8 [.library]System.Byte::FromString"
+								"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_UInt8),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt8),
@@ -398,13 +401,13 @@ ILGenCast(ILMachineType_Char, ILMachineType_Int16)
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Int16)
 {
-	ILGenCallByName(info, "int16 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "int16 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_Int16)
 {
-	ILGenCallByName(info,
-			"int16 System.Int16::FromString(class System.String)");
+	ILGenCallByName(info, "int16 [.library]System.Int16::FromString"
+								"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int16),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int16),
@@ -486,20 +489,21 @@ ILGenCast(ILMachineType_Decimal, ILMachineType_UInt16)
 	{
 		/* CLS does not have a conversion from Decimal to uint16, so
 		   down-convert from int32 instead */
-		ILGenCallByName(info, "int32 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info, "int32 [.library]System.Decimal::op_Explicit"
+									"(valuetype [.library]System.Decimal)");
 		ILGenSimple(info, IL_OP_CONV_OVF_U2);
 	}
 	else
 	{
-		ILGenCallByName(info, "unsigned int16 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info,
+				"unsigned int16 [.library]System.Decimal::op_Explicit"
+						"(valuetype [.library]System.Decimal)");
 	}
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Char)
 {
-	ILGenCallByName(info, "char System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "char [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_UInt16)
 {
@@ -507,19 +511,22 @@ ILGenCast(ILMachineType_String, ILMachineType_UInt16)
 	{
 		/* CLS does not have the UInt16 class, so down-convert from Int32 */
 		ILGenCallByName(info,
-				"int32 System.Int32::FromString(class System.String)");
+				"int32 [.library]System.Int32::FromString"
+						"(class [.library]System.String)");
 		ILGenSimple(info, IL_OP_CONV_OVF_U2);
 	}
 	else
 	{
 		ILGenCallByName(info,
-			"unsigned int16 System.UInt16::FromString(class System.String)");
+				"unsigned int16 [.library]System.UInt16::FromString"
+						"(class [.library]System.String)");
 	}
 }
 ILGenCast(ILMachineType_String, ILMachineType_Char)
 {
 	ILGenCallByName(info,
-			"char System.Char::FromString(class System.String)");
+			"char [.library]System.Char::FromString"
+					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_UInt16),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UInt16),
@@ -593,13 +600,13 @@ ILGenCast(ILMachineType_NativeUInt, ILMachineType_Int32)
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Int32)
 {
-	ILGenCallByName(info, "int32 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "int32 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_Int32)
 {
-	ILGenCallByName(info,
-			"int32 System.Int32::FromString(class System.String)");
+	ILGenCallByName(info, "int32 [.library]System.Int32::FromString"
+								"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int32),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int32),
@@ -672,14 +679,15 @@ ILGenCast(ILMachineType_Decimal, ILMachineType_UInt32)
 	{
 		/* CLS does not have a conversion from Decimal to uint32, so
 		   down-convert from int64 instead */
-		ILGenCallByName(info, "int64 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info, "int64 [.library]System.Decimal::op_Explicit"
+									"(valuetype [.library]System.Decimal)");
 		ILGenSimple(info, IL_OP_CONV_OVF_U4);
 	}
 	else
 	{
-		ILGenCallByName(info, "unsigned int32 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info,
+				"unsigned int32 [.library]System.Decimal::op_Explicit"
+						"(valuetype [.library]System.Decimal)");
 	}
 }
 ILGenCast(ILMachineType_String, ILMachineType_UInt32)
@@ -688,13 +696,15 @@ ILGenCast(ILMachineType_String, ILMachineType_UInt32)
 	{
 		/* CLS does not have the UInt32 class, so down-convert from Int64 */
 		ILGenCallByName(info,
-				"int64 System.Int64::FromString(class System.String)");
+				"int64 [.library]System.Int64::FromString"
+						"(class [.library]System.String)");
 		ILGenSimple(info, IL_OP_CONV_OVF_U4);
 	}
 	else
 	{
 		ILGenCallByName(info,
-			"unsigned int32 System.UInt32::FromString(class System.String)");
+			"unsigned int32 [.library]System.UInt32::FromString"
+						"(class [.library]System.String)");
 	}
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_UInt32),
@@ -762,13 +772,14 @@ ILGenCast(ILMachineType_UInt64, ILMachineType_Int64)
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Int64)
 {
-	ILGenCallByName(info, "int64 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "int64 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_Int64)
 {
 	ILGenCallByName(info,
-			"int64 System.Int64::FromString(class System.String)");
+			"int64 [.library]System.Int64::FromString"
+					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Int64),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Int64),
@@ -844,24 +855,25 @@ ILGenCast(ILMachineType_Decimal, ILMachineType_UInt64)
 		ILGenInt32(info, 0);					/* isNegative */
 		ILGenInt32(info, 0);					/* scale */
 		ILGenAdjust(info, 5);
-		ILGenNewObj(info, "System.Decimal",
+		ILGenNewObj(info, "[.library]System.Decimal",
 		            "(int32, int32, int32, bool, unsigned int8)");
 		ILGenAdjust(info, -4);
-		ILGenCallByName(info, "value class System.Decimal "
-				"System.Decimal::op_Subtraction"
-						"(value class System.Decimal,"
-						 "value class System.Decimal)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+				"[.library]System.Decimal::op_Subtraction"
+						"(valuetype [.library]System.Decimal,"
+						 "valuetype [.library]System.Decimal)");
 		ILGenAdjust(info, -1);
-		ILGenCallByName(info, "int64 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info, "int64 [.library]System.Decimal::op_Explicit"
+									"(valuetype [.library]System.Decimal)");
 		ILGenUInt64(info, (ILUInt64)IL_MIN_INT64);
 		ILGenSimple(info, IL_OP_ADD);
 		ILGenAdjust(info, -1);
 	}
 	else
 	{
-		ILGenCallByName(info, "unsigned int64 System.Decimal::op_Explicit"
-									"(value class System.Decimal)");
+		ILGenCallByName(info,
+				"unsigned int64 [.library]System.Decimal::op_Explicit"
+					"(valuetype [.library]System.Decimal)");
 	}
 }
 ILGenCast(ILMachineType_String, ILMachineType_UInt64)
@@ -870,14 +882,16 @@ ILGenCast(ILMachineType_String, ILMachineType_UInt64)
 	{
 		/* CLS does not have the UInt64 class, so down-convert from Decimal */
 		ILGenCallByName(info,
-				"value class System.Decimal "
-						"System.Decimal::FromString(class System.String)");
+				"valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::FromString"
+								"(class [.library]System.String)");
 		ILGenCast(info, ILMachineType_Decimal, ILMachineType_UInt64);
 	}
 	else
 	{
 		ILGenCallByName(info,
-			"unsigned int64 System.UInt64::FromString(class System.String)");
+			"unsigned int64 [.library]System.UInt64::FromString"
+					"(class [.library]System.String)");
 	}
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_UInt64),
@@ -960,14 +974,15 @@ ILGenCast(ILMachineType_Decimal, ILMachineType_NativeInt)
 	/* We don't know how big the native integer type is at
 	   this point, so we convert to "int64", and then perform
 	   a run-time down conversion to "native int" */
-	ILGenCallByName(info, "int64 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "int64 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 	ILGenSimple(info, IL_OP_CONV_OVF_I);
 }
 ILGenCast(ILMachineType_String, ILMachineType_NativeInt)
 {
 	ILGenCallByName(info,
-			"int64 System.Int64::FromString(class System.String)");
+			"int64 [.library]System.Int64::FromString"
+					"(class [.library]System.String)");
 	ILGenSimple(info, IL_OP_CONV_OVF_I);
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_NativeInt),
@@ -1111,13 +1126,14 @@ ILGenCast(ILMachineType_NativeUInt, ILMachineType_Float32)
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Float32)
 {
-	ILGenCallByName(info, "float32 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "float32 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_Float32)
 {
 	ILGenCallByName(info,
-			"float32 System.Single::FromString(class System.String)");
+			"float32 [.library]System.Single::FromString"
+					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Float32),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Float32),
@@ -1171,13 +1187,14 @@ ILGenCast(ILMachineType_NativeUInt, ILMachineType_Float64)
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Float64)
 {
-	ILGenCallByName(info, "float64 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "float64 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_Float64)
 {
 	ILGenCallByName(info,
-			"float64 System.Double::FromString(class System.String)");
+			"float64 [.library]System.Double::FromString"
+					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Float64),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Float64),
@@ -1272,13 +1289,14 @@ ILGenCast(ILMachineType_Int64, ILMachineType_NativeFloat)
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_NativeFloat)
 {
-	ILGenCallByName(info, "float64 System.Decimal::op_Explicit"
-								"(value class System.Decimal)");
+	ILGenCallByName(info, "float64 [.library]System.Decimal::op_Explicit"
+								"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_NativeFloat)
 {
 	ILGenCallByName(info,
-			"float64 System.Double::FromString(class System.String)");
+			"float64 [.library]System.Double::FromString"
+					"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_NativeFloat),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_NativeFloat),
@@ -1296,8 +1314,8 @@ ILGenCast(ILMachineType_ManagedValue, ILMachineType_NativeFloat)
 ILGenCast(ILMachineType_Void, ILMachineType_Decimal)
 {
 	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int32)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int32)");
 	ILGenAdjust(info, 1);
 }
 ILGenCast(ILMachineType_Boolean, ILMachineType_Decimal),
@@ -1306,48 +1324,48 @@ ILGenCast(ILMachineType_Int8, ILMachineType_Decimal)
 	if(info->clsCompliant)
 	{
 		/* CLS cannot convert from int8 to decimal, so use int32 instead */
-		ILGenCallByName(info, "value class System.Decimal "
-									"System.Decimal::op_Implicit(int32)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int32)");
 	}
 	else
 	{
-		ILGenCallByName(info, "value class System.Decimal "
-									"System.Decimal::op_Implicit(int8)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int8)");
 	}
 }
 ILGenCast(ILMachineType_UInt8, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(unsigned int8)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Implicit(unsigned int8)");
 }
 ILGenCast(ILMachineType_Int16, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int16)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Implicit(int16)");
 }
 ILGenCast(ILMachineType_UInt16, ILMachineType_Decimal)
 {
 	if(info->clsCompliant)
 	{
 		/* CLS cannot convert from uint16 to decimal, so use int32 instead */
-		ILGenCallByName(info, "value class System.Decimal "
-									"System.Decimal::op_Implicit(int32)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int32)");
 	}
 	else
 	{
-		ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(unsigned int16)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Implicit(unsigned int16)");
 	}
 }
 ILGenCast(ILMachineType_Char, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-							"System.Decimal::op_Implicit(char)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(char)");
 }
 ILGenCast(ILMachineType_Int32, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int32)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Implicit(int32)");
 }
 ILGenCast(ILMachineType_UInt32, ILMachineType_Decimal)
 {
@@ -1355,19 +1373,19 @@ ILGenCast(ILMachineType_UInt32, ILMachineType_Decimal)
 	{
 		/* CLS cannot convert from uint32 to decimal, so use int64 instead */
 		ILGenSimple(info, IL_OP_CONV_I8);
-		ILGenCallByName(info, "value class System.Decimal "
-									"System.Decimal::op_Implicit(int64)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Implicit(int64)");
 	}
 	else
 	{
-		ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(unsigned int32)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+					"[.library]System.Decimal::op_Implicit(unsigned int32)");
 	}
 }
 ILGenCast(ILMachineType_Int64, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int64)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int64)");
 }
 ILGenCast(ILMachineType_UInt64, ILMachineType_Decimal)
 {
@@ -1380,27 +1398,27 @@ ILGenCast(ILMachineType_UInt64, ILMachineType_Decimal)
 		ILGenUInt64(info, (ILUInt64)IL_MIN_INT64);
 		ILGenSimple(info, IL_OP_SUB);
 		ILGenAdjust(info, -1);
-		ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int64)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int64)");
 		ILGenInt32(info, 0);					/* low */
 		ILGenInt32(info, (ILInt32)0x80000000);	/* mid */
 		ILGenInt32(info, 0);					/* high */
 		ILGenInt32(info, 0);					/* isNegative */
 		ILGenInt32(info, 0);					/* scale */
 		ILGenAdjust(info, 5);
-		ILGenNewObj(info, "System.Decimal",
+		ILGenNewObj(info, "[.library]System.Decimal",
 		            "(int32, int32, int32, bool, unsigned int8)");
 		ILGenAdjust(info, -4);
-		ILGenCallByName(info, "value class System.Decimal "
-				"System.Decimal::op_Addition"
-						"(value class System.Decimal,"
-						 "value class System.Decimal)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+				"[.library]System.Decimal::op_Addition"
+						"(valuetype [.library]System.Decimal,"
+						 "valuetype [.library]System.Decimal)");
 		ILGenAdjust(info, -1);
 	}
 	else
 	{
-		ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(unsigned int64)");
+		ILGenCallByName(info, "valuetype [.library]System.Decimal "
+					"[.library]System.Decimal::op_Implicit(unsigned int64)");
 	}
 }
 ILGenCast(ILMachineType_NativeInt, ILMachineType_Decimal)
@@ -1408,8 +1426,8 @@ ILGenCast(ILMachineType_NativeInt, ILMachineType_Decimal)
 	/* Since we don't know how big native integers are,
 	   use the "int64" conversion operator */
 	ILGenSimple(info, IL_OP_CONV_I8);
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int64)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int64)");
 }
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_Decimal)
 {
@@ -1420,21 +1438,21 @@ ILGenCast(ILMachineType_NativeUInt, ILMachineType_Decimal)
 }
 ILGenCast(ILMachineType_Float32, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Explicit(float32)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Explicit(float32)");
 }
 ILGenCast(ILMachineType_Float64, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Explicit(float64)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Explicit(float64)");
 }
 ILGenCast(ILMachineType_NativeFloat, ILMachineType_Decimal)
 {
 	/* Since we don't know how big native floats are,
 	   down-convert to "float64", and convert that */
 	ILGenSimple(info, IL_OP_CONV_R8);
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Explicit(float64)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+						"[.library]System.Decimal::op_Explicit(float64)");
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Decimal)
 {
@@ -1442,8 +1460,9 @@ ILGenCast(ILMachineType_Decimal, ILMachineType_Decimal)
 }
 ILGenCast(ILMachineType_String, ILMachineType_Decimal)
 {
-	ILGenCallByName(info, "value class System.Decimal "
-			"System.Decimal::FromString(class System.String)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::FromString"
+			"(class [.library]System.String)");
 }
 ILGenCast(ILMachineType_ObjectRef, ILMachineType_Decimal),
 ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_Decimal),
@@ -1453,8 +1472,8 @@ ILGenCast(ILMachineType_ManagedValue, ILMachineType_Decimal)
 {
 	ILGenSimple(info, IL_OP_POP);
 	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int32)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+							"[.library]System.Decimal::op_Implicit(int32)");
 }
 
 /*
@@ -1467,56 +1486,56 @@ ILGenCast(ILMachineType_Void, ILMachineType_String)
 }
 ILGenCast(ILMachineType_Boolean, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Boolean::ToString(bool)");
+	ILGenCallByName(info, "class [.library]System.String "
+					"[.library]System.Boolean::ToString(bool)");
 }
 ILGenCast(ILMachineType_Int8, ILMachineType_String)
 {
 	if(info->clsCompliant)
 	{
 		/* CLS does not have the SByte class, so use Int32 instead */
-		ILGenCallByName(info,
-				"class System.String System.Int32::ToString(int32)");
+		ILGenCallByName(info, "class [.library]System.String "
+									"[.library]System.Int32::ToString(int32)");
 	}
 	else
 	{
-		ILGenCallByName(info,
-				"class System.String System.SByte::ToString(int8)");
+		ILGenCallByName(info, "class [.library]System.String "
+								"[.library]System.SByte::ToString(int8)");
 	}
 }
 ILGenCast(ILMachineType_UInt8, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Byte::ToString(unsigned int8)");
+	ILGenCallByName(info, "class [.library]System.String "
+							"[.library]System.Byte::ToString(unsigned int8)");
 }
 ILGenCast(ILMachineType_Int16, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Int16::ToString(int16)");
+	ILGenCallByName(info, "class [.library]System.String "
+							"[.library]System.Int16::ToString(int16)");
 }
 ILGenCast(ILMachineType_UInt16, ILMachineType_String)
 {
 	if(info->clsCompliant)
 	{
 		/* CLS does not have the UInt16 class, so use Int32 instead */
-		ILGenCallByName(info,
-				"class System.String System.Int32::ToString(int32)");
+		ILGenCallByName(info, "class [.library]System.String "
+								"[.library]System.Int32::ToString(int32)");
 	}
 	else
 	{
-		ILGenCallByName(info,
-				"class System.String System.UInt16::ToString(unsigned int16)");
+		ILGenCallByName(info, "class [.library]System.String "
+						"[.library]System.UInt16::ToString(unsigned int16)");
 	}
 }
 ILGenCast(ILMachineType_Char, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Char::ToString(char)");
+	ILGenCallByName(info, "class [.library]System.String "
+							"[.library]System.Char::ToString(char)");
 }
 ILGenCast(ILMachineType_Int32, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Int32::ToString(int32)");
+	ILGenCallByName(info, "class [.library]System.String "
+							"[.library]System.Int32::ToString(int32)");
 }
 ILGenCast(ILMachineType_UInt32, ILMachineType_String)
 {
@@ -1524,19 +1543,19 @@ ILGenCast(ILMachineType_UInt32, ILMachineType_String)
 	{
 		/* CLS does not have the UInt32 class, so use Int64 instead */
 		ILGenSimple(info, IL_OP_CONV_U8);
-		ILGenCallByName(info,
-				"class System.String System.Int64::ToString(int64)");
+		ILGenCallByName(info, "class [.library]System.String "
+								"[.library]System.Int64::ToString(int64)");
 	}
 	else
 	{
-		ILGenCallByName(info,
-				"class System.String System.UInt32::ToString(unsigned int32)");
+		ILGenCallByName(info, "class [.library]System.String "
+						"[.library]System.UInt32::ToString(unsigned int32)");
 	}
 }
 ILGenCast(ILMachineType_Int64, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Int64::ToString(int64)");
+	ILGenCallByName(info, "class [.library]System.String "
+							"[.library]System.Int64::ToString(int64)");
 }
 ILGenCast(ILMachineType_UInt64, ILMachineType_String)
 {
@@ -1544,14 +1563,14 @@ ILGenCast(ILMachineType_UInt64, ILMachineType_String)
 	{
 		/* CLS does not have the UInt64 class, so convert via Decimal */
 		ILGenCast(info, ILMachineType_UInt64, ILMachineType_Decimal);
-		ILGenCallByName(info,
-				"class System.String System.Decimal::ToString"
-						"(value class System.Decimal)");
+		ILGenCallByName(info, "class [.library]System.String "
+						"[.library]System.Decimal::ToString"
+						"(valuetype [.library]System.Decimal)");
 	}
 	else
 	{
-		ILGenCallByName(info,
-				"class System.String System.UInt64::ToString(unsigned int64)");
+		ILGenCallByName(info, "class [.library]System.String "
+						"[.library]System.UInt64::ToString(unsigned int64)");
 	}
 }
 ILGenCast(ILMachineType_NativeInt, ILMachineType_String)
@@ -1559,8 +1578,8 @@ ILGenCast(ILMachineType_NativeInt, ILMachineType_String)
 	/* We don't know how big the native integer is, so
 	   convert to "int64" and convert that */
 	ILGenSimple(info, IL_OP_CONV_I8);
-	ILGenCallByName(info,
-			"class System.String System.Int64::ToString(int64)");
+	ILGenCallByName(info, "class [.library]System.String "
+					"[.library]System.Int64::ToString(int64)");
 }
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_String)
 {
@@ -1571,25 +1590,25 @@ ILGenCast(ILMachineType_NativeUInt, ILMachineType_String)
 }
 ILGenCast(ILMachineType_Float32, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Single::ToString(float32)");
+	ILGenCallByName(info, "class [.library]System.String "
+					"[.library]System.Single::ToString(float32)");
 }
 ILGenCast(ILMachineType_Float64, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Double::ToString(float64)");
+	ILGenCallByName(info, "class [.library]System.String "
+					"[.library]System.Double::ToString(float64)");
 }
 ILGenCast(ILMachineType_NativeFloat, ILMachineType_String)
 {
 	ILGenSimple(info, IL_OP_CONV_R8);
-	ILGenCallByName(info,
-			"class System.String System.Double::ToString(float64)");
+	ILGenCallByName(info, "class [.library]System.String "
+					"[.library]System.Double::ToString(float64)");
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"class System.String System.Decimal::ToString"
-					"(value class System.Decimal)");
+	ILGenCallByName(info, "class [.library]System.String "
+					"[.library]System.Decimal::ToString"
+					"(valuetype [.library]System.Decimal)");
 }
 ILGenCast(ILMachineType_String, ILMachineType_String)
 {

@@ -522,8 +522,9 @@ ILIncrement_ApplyOp(ILMachineType_NativeFloat)
 ILIncrement_ApplyOp(ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_Increment"
-			"(value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_Increment"
+			"(valuetype [.library]System.Decimal)");
 }
 ILIncrement_ApplyOp(ILMachineType_Void),
 ILIncrement_ApplyOp(ILMachineType_Boolean),
@@ -669,8 +670,9 @@ ILDecrement_ApplyOp(ILMachineType_NativeFloat)
 ILDecrement_ApplyOp(ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_Decrement"
-			"(value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_Decrement"
+			"(valuetype System.Decimal)");
 }
 ILDecrement_ApplyOp(ILMachineType_Void),
 ILDecrement_ApplyOp(ILMachineType_Boolean),

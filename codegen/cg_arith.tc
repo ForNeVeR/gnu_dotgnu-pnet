@@ -452,14 +452,14 @@ ILNode_GenValue(ILNode_Concat)
 	if(type1 == ILMachineType_String && type2 == ILMachineType_String)
 	{
 		ILGenCallByName(info,
-				"class System.String System.String::Concat"
-					"(class System.String, class System.String)");
+		  "class [.library]System.String [.library]System.String::Concat"
+			"(class [.library]System.String, class [.library]System.String)");
 	}
 	else
 	{
 		ILGenCallByName(info,
-				"class System.String System.String::Concat"
-					"(class System.Object, class System.Object)");
+		  "class [.library]System.String [.library]System.String::Concat"
+			"(class [.library]System.Object, class [.library]System.Object)");
 	}
 	ILGenAdjust(info, -1);
 	return ILMachineType_String;
@@ -747,14 +747,16 @@ ILBinary_ApplyOp(ILNode_Add, ILMachineType_Float64)
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_Addition"
-			"(value class System.Decimal, value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_Addition"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_String)
 {
 	ILGenCallByName(info,
-		"class System.String System.Decimal::Concat"
-			"(class System.String, class System.String)");
+		"class [.library]System.String [.library]System.String::Concat"
+			"(class [.library]System.String, class [.library]System.String)");
 }
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Void),
 ILBinary_ApplyOp(ILNode_Add, ILMachineType_Boolean),
@@ -872,8 +874,10 @@ ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Float64)
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_Subtraction"
-			"(value class System.Decimal, value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_Subtraction"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Void),
 ILBinary_ApplyOp(ILNode_Sub, ILMachineType_Boolean),
@@ -992,8 +996,10 @@ ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Float64)
 ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_Multiply"
-			"(value class System.Decimal, value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_Multiply"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Void),
 ILBinary_ApplyOp(ILNode_Mul, ILMachineType_Boolean),
@@ -1098,8 +1104,10 @@ ILBinary_ApplyOp(ILNode_Div, ILMachineType_Float64)
 ILBinary_ApplyOp(ILNode_Div, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_Division"
-			"(value class System.Decimal, value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_Division"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 ILBinary_ApplyOp(ILNode_Div, ILMachineType_Void),
 ILBinary_ApplyOp(ILNode_Div, ILMachineType_Boolean),
@@ -1204,8 +1212,10 @@ ILBinary_ApplyOp(ILNode_Rem, ILMachineType_Float64)
 ILBinary_ApplyOp(ILNode_Rem, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_Modulus"
-			"(value class System.Decimal, value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_Modulus"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 ILBinary_ApplyOp(ILNode_Rem, ILMachineType_Void),
 ILBinary_ApplyOp(ILNode_Rem, ILMachineType_Boolean),
@@ -1635,8 +1645,9 @@ ILNegate_ApplyOp(ILMachineType_Decimal)
 {
 	ILGenCast(info, ILNode_GenValue(node->expr, info), commonType);
 	ILGenCallByName(info,
-		"value class System.Decimal System.Decimal::op_UnaryNegation"
-			"(value class System.Decimal)");
+		"valuetype [.library]System.Decimal "
+			"[.library]System.Decimal::op_UnaryNegation"
+			"(valuetype [.library]System.Decimal)");
 }
 ILNegate_ApplyOp(ILMachineType_Void),
 ILNegate_ApplyOp(ILMachineType_Boolean),

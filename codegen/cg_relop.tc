@@ -251,14 +251,15 @@ ILRelational_ApplyOp(ILNode_Eq, ILMachineType_NativeFloat)
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_Equality"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_Equality"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_String)
 {
 	ILGenCallByName(info,
-		"bool System.String::op_Equality"
-			"(class System.String, class System.String)");
+		"bool [.library]System.String::op_Equality"
+			"(class [.library]System.String, class [.library]System.String)");
 }
 
 /*
@@ -308,14 +309,15 @@ ILRelational_ApplyOp(ILNode_Ne, ILMachineType_NativeFloat)
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_Inequality"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_Inequality"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_String)
 {
 	ILGenCallByName(info,
-		"bool System.String::op_Inequality"
-			"(class System.String, class System.String)");
+		"bool [.library]System.String::op_Inequality"
+			"(class [.library]System.String, class [.library]System.String)");
 }
 
 /*
@@ -367,8 +369,9 @@ ILRelational_ApplyOp(ILNode_Lt, ILMachineType_NativeFloat)
 ILRelational_ApplyOp(ILNode_Lt, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_LessThan"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_LessThan"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 
 /*
@@ -424,8 +427,9 @@ ILRelational_ApplyOp(ILNode_Le, ILMachineType_NativeFloat)
 ILRelational_ApplyOp(ILNode_Le, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_LessThanOrEqual"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_LessThanOrEqual"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 
 /*
@@ -477,8 +481,9 @@ ILRelational_ApplyOp(ILNode_Gt, ILMachineType_NativeFloat)
 ILRelational_ApplyOp(ILNode_Gt, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_GreaterThan"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_GreaterThan"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 
 /*
@@ -534,8 +539,9 @@ ILRelational_ApplyOp(ILNode_Ge, ILMachineType_NativeFloat)
 ILRelational_ApplyOp(ILNode_Ge, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_GreaterThanOrEqual"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_GreaterThanOrEqual"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 }
 
 /*
@@ -571,15 +577,16 @@ ILRelational_ThenOp(ILNode_Eq, ILMachineType_NativeFloat)
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_Equality"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_Equality"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 ILRelational_ThenOp(ILNode_Eq, ILMachineType_String)
 {
 	ILGenCallByName(info,
-		"bool System.String::op_Equality"
-			"(class System.String, class System.String)");
+		"bool [.library]System.String::op_Equality"
+			"(class [.library]System.String, class [.library]System.String)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -616,15 +623,16 @@ ILRelational_ThenOp(ILNode_Ne, ILMachineType_NativeFloat)
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_Inequality"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_Inequality"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 ILRelational_ThenOp(ILNode_Ne, ILMachineType_String)
 {
 	ILGenCallByName(info,
-		"bool System.String::op_Inequality"
-			"(class System.String, class System.String)");
+		"bool [.library]System.String::op_Inequality"
+			"(class [.library]System.String, class [.library]System.String)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -665,8 +673,9 @@ ILRelational_ThenOp(ILNode_Lt, ILMachineType_NativeUInt)
 ILRelational_ThenOp(ILNode_Lt, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_LessThan"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_LessThan"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -707,8 +716,9 @@ ILRelational_ThenOp(ILNode_Le, ILMachineType_NativeUInt)
 ILRelational_ThenOp(ILNode_Le, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_LessThanOrEqual"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_LessThanOrEqual"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -749,8 +759,9 @@ ILRelational_ThenOp(ILNode_Gt, ILMachineType_NativeUInt)
 ILRelational_ThenOp(ILNode_Gt, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_GreaterThan"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_GreaterThan"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -791,8 +802,9 @@ ILRelational_ThenOp(ILNode_Ge, ILMachineType_NativeUInt)
 ILRelational_ThenOp(ILNode_Ge, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_GreaterThanOrEqual"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_GreaterThanOrEqual"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRTRUE, label);
 }
 
@@ -829,15 +841,16 @@ ILRelational_ElseOp(ILNode_Eq, ILMachineType_NativeFloat)
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_Equality"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_Equality"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 ILRelational_ElseOp(ILNode_Eq, ILMachineType_String)
 {
 	ILGenCallByName(info,
-		"bool System.String::op_Equality"
-			"(class System.String, class System.String)");
+		"bool [.library]System.String::op_Equality"
+			"(class [.library]System.String, class [.library]System.String)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 
@@ -874,15 +887,16 @@ ILRelational_ElseOp(ILNode_Ne, ILMachineType_NativeFloat)
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_Inequality"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_Inequality"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 ILRelational_ElseOp(ILNode_Ne, ILMachineType_String)
 {
 	ILGenCallByName(info,
-		"bool System.String::op_Inequality"
-			"(class System.String, class System.String)");
+		"bool [.library]System.String::op_Inequality"
+			"(class [.library]System.String, class [.library]System.String)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 
@@ -923,8 +937,9 @@ ILRelational_ElseOp(ILNode_Lt, ILMachineType_NativeUInt)
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_LessThan"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_LessThan"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 
@@ -965,8 +980,9 @@ ILRelational_ElseOp(ILNode_Le, ILMachineType_NativeUInt)
 ILRelational_ElseOp(ILNode_Le, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_LessThanOrEqual"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_LessThanOrEqual"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 
@@ -1007,8 +1023,9 @@ ILRelational_ElseOp(ILNode_Gt, ILMachineType_NativeUInt)
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_GreaterThan"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_GreaterThan"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 
@@ -1049,8 +1066,9 @@ ILRelational_ElseOp(ILNode_Ge, ILMachineType_NativeUInt)
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_Decimal)
 {
 	ILGenCallByName(info,
-		"bool System.Decimal::op_GreaterThanOrEqual"
-			"(value class System.Decimal, value class System.Decimal)");
+		"bool [.library]System.Decimal::op_GreaterThanOrEqual"
+			"(valuetype [.library]System.Decimal, "
+			"valuetype [.library]System.Decimal)");
 	ILGenJump(info, IL_OP_BRFALSE, label);
 }
 

@@ -850,18 +850,19 @@ ILNodeStackThen(ILMachineType_NativeFloat)
 ILNodeStackThen(ILMachineType_Decimal)
 {
     ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int32)");
-	ILGenCallByName(info, "bool System.Decimal::op_Equality"
-			"(value class System.Decimal, value class System.Decimal)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+								"[.library]System.Decimal::op_Implicit(int32)");
+	ILGenCallByName(info, "bool [.library]System.Decimal::op_Equality"
+					"(valuetype [.library]System.Decimal, "
+					"valuetype [.library]System.Decimal)");
     ILGenJump(info, IL_OP_BNE_UN, label);
 	ILGenExtend(info, 1);
 	ILGenAdjust(info, -1);
 }
 ILNodeStackThen(ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"bool System.Boolean::FromString(class System.String)");
+	ILGenCallByName(info, "bool [.library]System.Boolean::FromString"
+								"(class [.library]System.String)");
     ILGenJump(info, IL_OP_BNE_UN, label);
 	ILGenAdjust(info, -1);
 }
@@ -920,18 +921,19 @@ ILNodeStackElse(ILMachineType_NativeFloat)
 ILNodeStackElse(ILMachineType_Decimal)
 {
     ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenCallByName(info, "value class System.Decimal "
-								"System.Decimal::op_Implicit(int32)");
-	ILGenCallByName(info, "bool System.Decimal::op_Equality"
-			"(value class System.Decimal, value class System.Decimal)");
+	ILGenCallByName(info, "valuetype [.library]System.Decimal "
+								"[.library]System.Decimal::op_Implicit(int32)");
+	ILGenCallByName(info, "bool [.library]System.Decimal::op_Equality"
+					"(valuetype [.library]System.Decimal, "
+					"valuetype [.library]System.Decimal)");
     ILGenJump(info, IL_OP_BEQ, label);
 	ILGenExtend(info, 1);
 	ILGenAdjust(info, -1);
 }
 ILNodeStackElse(ILMachineType_String)
 {
-	ILGenCallByName(info,
-			"bool System.Boolean::FromString(class System.String)");
+	ILGenCallByName(info, "bool [.library]System.Boolean::FromString"
+								"(class [.library]System.String)");
     ILGenJump(info, IL_OP_BEQ, label);
 	ILGenAdjust(info, -1);
 }

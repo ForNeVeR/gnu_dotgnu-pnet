@@ -2120,7 +2120,7 @@ JavaScopeDeclarations
 
 JavaExceptionBlock
 	: JavaTryBlock JavaExceptionClauses	{
-				/*ILAsmOutAddTryBlock($1.start, $1.end, $2);*/
+				ILAsmOutAddTryBlock($1.start, $1.end, $2);
 			}
 	;
 
@@ -2144,16 +2144,12 @@ JavaTryBlock
 
 JavaExceptionClause
 	: CatchClause JavaHandlerBlock		{
-			/*
 				$$ = ILAsmOutMakeException(IL_META_EXCEPTION_CATCH, $1, 0,
 										   $2.start, $2.end);
-			*/
 			}
 	| FinallyClause JavaHandlerBlock	{
-			/*
 				$$ = ILAsmOutMakeException(IL_META_EXCEPTION_FINALLY, 0, 0,
 										   $2.start, $2.end);
-			*/
 			}
 	;
 
@@ -3716,7 +3712,7 @@ JavaInstruction
 	| I_BRANCH Identifier		{ ILAsmOutBranch($1, $2.string); }
 	| I_METHOD MethodReference		{ ILJavaAsmOutToken($1, $2); }
 	| I_METHOD ComposedString ComposedString ComposedString	{
-			ILJavaAsmOutMethod($1, $2.string, $3.string, $4.string);
+			ILJavaAsmOutRef($1, 1, $2.string, $3.string, $4.string);
 		}
 	| I_FIELD Type TypeSpecification COLON_COLON Identifier	{
 			/* Refer to a field in some other class */
@@ -3725,8 +3721,7 @@ JavaInstruction
 			ILJavaAsmOutToken($1, token);
 		}
 	| I_FIELD ComposedString ComposedString ComposedString	{
-			// XXX factorisation method ...
-			ILJavaAsmOutField($1, $2.string, $3.string, $4.string);
+			ILJavaAsmOutRef($1, 0, $2.string, $3.string, $4.string);
 		}
 	| I_TYPE TypeSpecification	{
 			if($2.item != 0)
@@ -3741,13 +3736,21 @@ JavaInstruction
 			}
 		}
 	| I_TYPE ComposedString	{ ILJavaAsmOutType($1, $2.string); }
-	| I_IMETHOD MethodReference Integer32		{ /* ?? */}
-	| I_IMETHOD ComposedString ComposedString ComposedString Integer32	{ /* ?? */}
+	| I_IMETHOD MethodReference Integer32		{ 
+			/* FIXME: what is the meaning of the Integer32 node here ?? */
+			ILJavaAsmOutToken($1, $2);
+		}
+	| I_IMETHOD ComposedString ComposedString ComposedString Integer32	{
+			/* FIXME: what is the meaning of the Integer32 node here ?? */
+			ILJavaAsmOutRef($1, 1, $2.string, $3.string, $4.string);
+		}
 	| I_NEWARRAY JavaArrayType	{ ILJavaAsmOutNewarray($1, $2); }
 	| I_MULTINEWARRAY TypeSpecification Integer32	{
 			ILJavaAsmOutMultinewarray($1, $2.type, $3);
 		}
-	| I_MULTINEWARRAY ComposedString Integer32	{ /* TODO */}
+	| I_MULTINEWARRAY ComposedString Integer32	{ 
+			ILJavaAsmOutMultinewarrayFromName($1, $2.string, $3);
+		}
 	| I_SWITCH TableSwitchDefaultLabel '(' Integer32 ':' {
 			ILJavaAsmOutTableSwitchStart($4);
 		} 
@@ -3784,8 +3787,8 @@ TableSwitchLabelList
 	;
 
 TableSwitchDefaultLabel
-	: Identifier	{ /* TODO */ }
-	| Integer32		{ /* TODO */ }
+	: Identifier	{ ILJavaAsmOutTableSwitchDefaultRef($1.string); }
+	| Integer32		{ ILJavaAsmOutTableSwitchDefaultRefInt($1); }
 	;
 
 TableSwitchLabel
@@ -3804,8 +3807,8 @@ LookupSwitchLabelList
 	;
 
 LookupSwitchDefaultLabel
-	: Identifier	{ /* TODO */ }
-	| Integer32		{ /* TODO */ }
+	: Identifier	{ ILJavaAsmOutLookupSwitchDefaultRef($1.string); }
+	| Integer32		{ ILJavaAsmOutLookupSwitchDefaultRefInt($1); }
 	;
 
 LookupSwitchLabel

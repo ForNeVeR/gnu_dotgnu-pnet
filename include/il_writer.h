@@ -170,27 +170,72 @@ void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
 void ILJavaInitPool(ILWriter *writer, ILClass *info);
 
 /*
- * Appends code to the code buffer of the given class and method.
+ * Append code to the code buffer of the given class and method.
  * The code buffer of a method is in a linked list inside the first
  * constant pool entry of the class.
  */
 void ILJavaAppendCode(ILWriter *writer, ILClass *info, ILMethod *method, const void *buffer,
 					  unsigned long size);
 
-
 /*
- * Sets a float value in a Java constant pool entry.
+ * Set a float value in a Java constant pool entry.
+ * Return the allocated pool index, or 0 on failure.
  */
 ILUInt32 ILJavaSetUTF8String(ILWriter *writer, ILClass *info, 
 							 const char *value, ILUInt32 len);
 
+/*
+ * Set a signature value in a Java constant pool entry.
+ * Return the allocated pool index, or 0 on failure.
+ */
 ILUInt32 ILJavaSetSignature(ILWriter *writer, ILClass *info, ILType *sig);
+
+/*
+ * Set a class value in a Java constant pool entry.
+ * The class is an ILClass type.
+ * Return the allocated pool index, or 0 on failure.
+ */
 ILUInt32 ILJavaSetClass(ILWriter *writer, ILClass *info, ILClass *class);
+
+/*
+ * Set a class value in a Java constant pool entry.
+ * The class is an ILType type.
+ * Return the allocated pool index, or 0 on failure.
+ */
 ILUInt32 ILJavaSetClassFromType(ILWriter *writer, ILClass *info, ILType *type);
-ILUInt32 ILJavaSetNameAndType(ILWriter *writer, ILClass *info, char *name, ILType *sig);
+
+/*
+ * Set a class value in a Java constant pool entry.
+ * The class is a string in the java form (i.e. "java/lang/Object").
+ */
+ILUInt32 ILJavaSetClassFromName(ILWriter *writer, ILClass *info, char *name);
+
+/*
+ * Set a name and type value in a Java constant pool entry.
+ * Return the allocated pool index, or 0 on failure.
+ */
+ILUInt32 ILJavaSetNameAndType(ILWriter *writer, ILClass *info, ILUInt32 nameIndex, 
+							  ILUInt32 sigIndex);
+	
+/*
+ * Set a methodref of fieldref value in a Java constant pool entry.
+ * Return the allocated pool index, or 0 on failure.
+ */
 ILUInt32 ILJavaSetref(ILWriter *writer, ILClass *info, int type, ILClass *owner, char *name,
 					  ILType *sig);
+/*
+ * Set a methodref of fieldref value in a Java constant pool entry.
+ * Class, method/field name and signature are string in java form (i.e. "(I)V").
+ * Return the allocated pool index, or 0 on failure.
+ */
+ILUInt32 ILJavaSetrefFromName(ILWriter *writer, ILClass *info, int type, 
+							  char *className, char *refName, char *sigName);
 
+/*
+ * ILJavaSetXXX: set the corresponding value type in a constant pool entry.
+ * For example ILJavaSetInteger sets an integer in the constant pool entry.
+ * Return the allocated pool index, or 0 on failure.
+ */
 #define	ILJAVA_SET_PROTO(name, typeName, fieldName, constName)                  \
 int ILJavaSet##name(ILWriter *writer, ILClass *info, typeName value);
 
@@ -198,6 +243,7 @@ ILJAVA_SET_PROTO(Integer, ILInt32,  intValue,    INTEGER)
 ILJAVA_SET_PROTO(Long,    ILInt64,  longValue,   LONG)
 ILJAVA_SET_PROTO(Float,   ILFloat,  floatValue,  FLOAT)
 ILJAVA_SET_PROTO(Double,  ILDouble, doubleValue, DOUBLE)
+ILJAVA_SET_PROTO(String,  ILInt32,  strValue,    STRING)
 
 #ifdef	__cplusplus
 };

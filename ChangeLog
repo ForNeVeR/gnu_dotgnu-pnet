@@ -1,4 +1,11 @@
 
+2002-10-31  Sylvain Pasche <sylvain_pasche@yahoo.fr>
+	
+	* codegen/jv_output.c,ilasm/ilasm_grammar.y, ilasm/ilasm_output.c, 
+	ilasm/ilasm_output.h, ilasm/ilasm_scanner.l, image/java_writer.c,
+	include/il_writer.h: Support for Exceptions , some todos, typos
+	and documentation for the JVM assembler. (commited by Gopal) 
+	
 2002-10-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_scanner.l (ParseEncodedChar): advance the "text"

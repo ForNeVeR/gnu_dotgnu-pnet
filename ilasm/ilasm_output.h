@@ -278,14 +278,11 @@ void ILJavaAsmOutString(ILIntString interned);
 void ILJavaAsmOutToken(ILInt32 opcode, ILUInt32 token);
 
 /*
- * Output a java instruction that takes a constant pool method argument.
+ * Output a java instruction that takes a constant pool method or field 
+ * argument.
  */
-void ILJavaAsmOutMethod(ILInt32 opcode, char *className, char *mehodName, char *sigName);
-
-/*
- * Output a java instruction that takes a constant pool field argument.
- */
-void ILJavaAsmOutField(ILInt32 opcode, char *className, char *mehodName, char *sigName);
+void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, char *className, 
+					 char *refName, char *sigName);
 
 /*
  * Output a java instruction that takes a constant pool type argument.
@@ -301,6 +298,22 @@ void ILJavaAsmOutNewarray(ILInt32 opcode, ILInt64 type);
  * Output a multinewarray java instruction.
  */
 void ILJavaAsmOutMultinewarray(ILInt32 opcode, ILType *type, ILInt64 dim);
+
+/*
+ * Output a multinewarray java instruction.
+ * The type (typeName) is a string in java form (i.e. "java/lang/Object").
+ */
+void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, char *typeName, ILInt64 dim);
+
+/* 
+ * Set the table switch default label.
+ */
+void ILJavaAsmOutTableSwitchDefaultRefInt(ILInt64 addr);
+
+/*
+ * Set the table switch default label.
+ */
+void ILJavaAsmOutTableSwitchDefaultRef(char *label);
 
 /*
  * Start output of a java table switch statement.
@@ -321,6 +334,16 @@ void ILJavaAsmOutTableSwitchRef(char *label);
  * End output of a java table switch statement.
  */
 void ILJavaAsmOutTableSwitchEnd(ILUInt64 low);
+
+/*
+ * Set the lookup switch default label.
+ */
+void ILJavaAsmOutLookupSwitchDefaultRefInt(ILInt64 addr);
+
+/*
+ * Set the lookup switch default label.
+ */
+void ILJavaAsmOutLookupSwitchDefaultRef(char *label);
 
 /*
  * Start output of a java lookup switch statement.

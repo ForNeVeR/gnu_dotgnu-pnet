@@ -995,7 +995,7 @@ SIGN			[+-]
 <JAVAMODE>"checkcast"	{ JOPCODE_TYPE(CHECKCAST); }
 <JAVAMODE>"instanceof"	{ JOPCODE_TYPE(INSTANCEOF); }
 
-<JAVAMODE>"newarray"	{ yylval.opcode = JAVA_OP_ANEWARRAY;	/* Arrays */
+<JAVAMODE>"newarray"	{ yylval.opcode = JAVA_OP_NEWARRAY;	/* Arrays */
 						  return I_NEWARRAY; }
 <JAVAMODE>"multianewarray"	{ yylval.opcode = JAVA_OP_MULTIANEWARRAY;
 						      return I_MULTINEWARRAY; }

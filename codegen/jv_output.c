@@ -468,7 +468,7 @@ void JavaGenIncLocal(ILGenInfo *info, unsigned varNum, ILInt32 amount)
 {
 	if(info->asmOutput)
 	{
-		fprintf(info->asmOutput, "\tiinc\t%u, %ld\n",
+		fprintf(info->asmOutput, "\tiinc\t%u %ld\n",
 				info->javaInfo->localMap[varNum + info->javaInfo->numArgs],
 				(long)amount);
 	}

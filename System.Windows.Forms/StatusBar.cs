@@ -105,7 +105,7 @@ namespace System.Windows.Forms
 						ControlPaint.DrawBorder3D(e.Graphics, left, 4, panels[i].Width, Height -4, style, Border3DSide.All);
 						if (panels[i].Style == StatusBarPanelStyle.Text)
 						{
-							StringAlignment align;
+							StringAlignment align = 0;
 							switch (panels[i].Alignment)
 							{
 								case HorizontalAlignment.Center:

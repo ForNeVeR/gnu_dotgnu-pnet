@@ -1,4 +1,10 @@
 
+2003-07-24  Gopal.V  <gopalv82@symonds.net>
+	
+	* doc/pnet_faq.html: Update the FAQ to include information about 
+	Windows.Forms , ADO.NET support and mention DGEE in connection with
+	ASP.NET.
+
 2003-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/lib_attrs.c: begin adding support for converting security

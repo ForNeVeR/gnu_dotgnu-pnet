@@ -6,7 +6,7 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2003/07/21 14:05:15 $<p>
+Last Modified: $Date: 2003/07/24 13:14:05 $<p>
 
 Copyright &copy; 2001, 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -72,10 +72,11 @@ Permission to distribute unmodified copies of this work is hereby granted.<p>
 &nbsp;&nbsp;&nbsp;&nbsp;10.5. <a href="#q10_5">Can I look at the Rotor code?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;10.6. <a href="#q10_6">What other free software and open source .NET efforts are there?</a><br>
 11. <a href="#q10">Other random questions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;11.1. <a href="#q11_1">Can I use ASP.NET with DotGNU Portable.NET?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;11.2. <a href="#q11_2">Why doesn't my C++ application work that I built with Visual Studio.NET?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;11.3. <a href="#q11_3">Why don't you just use Java?</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;11.4. <a href="#q11_4">Isn't C# just a cheap knock-off of Java?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;11.1. <a href="#q11_1">Can I use Windows.Forms, ADO.NET etc with DotGNU Portable.NET?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;11.2. <a href="#q11_2">Can I use ASP.NET with DotGNU Portable.NET?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;11.3. <a href="#q11_3">Why doesn't my C++ application work that I built with Visual Studio.NET?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;11.4. <a href="#q11_4">Why don't you just use Java?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;11.5. <a href="#q11_5">Isn't C# just a cheap knock-off of Java?</a><br>
 
 <a name="q1"><h2>1. What is DotGNU Portable.NET?</h2>
 
@@ -790,17 +791,20 @@ is a sampling:
 <a name="q5_8"><h3>5.8. Are there graphical toolkits for use with
 DotGNU Portable.NET?</h3>
 
+DotGNU Portable.net includes a portable subset of the Windows.Forms. 
+This is a work in progress and will form the primary portable 
+toolkit when it is completed. <p>
+
 The <a href="http://gtk-sharp.sourceforge.net">Gtk#</a> and
 <a href="http://qtcsharp.sourceforge.net">Qt#</a> widget toolkits
 are known to work with DotGNU Portable.NET.<p>
 
-There is also an experimental library for using raw X11 called
-Xsharp, which is available from the "<code>dotgnu-libs</code>"
-<a href="http://savannah.gnu.org/projects/dotgnu-libs/">CVS server</a>.<p>
+There is also a raw X11 library called Xsharp, which forms one of the 
+drawing backends for the Windows.Forms library.<p>
 
 The Mono project is currently working on a version of
 <a href="http://www.go-mono.com/winforms.html">Windows.Forms</a>
-based on <a href="http://www.winehq.com/">WineLib</a>.<p>
+based on <a href="http://www.winehq.com/">Wine</a>.<p>
 
 <a name="q6"><h2>6. Copyright issues</h2>
 
@@ -1146,15 +1150,34 @@ you started.<p>
 
 <a name="q11"><h2>11. Other random questions</h2>
 
-<a name="q11_1"><h3>11.1. Can I use ASP.NET, ADO.NET, Windows.Forms, etc with DotGNU Portable.NET?</h3>
+<a name="q11_1"><h3>11.1. Can I use Windows.Forms, ADO.NET, etc with DotGNU Portable.NET?</h3>
+
+Yes, the latest versions include support for a portable subset of 
+Windows.Forms. The toolkit is independent of native toolkits
+and written as a lightweight toolkit, making it extremely portable
+and configurable. Have a look at 
+<a href="http://dotgnu.org/screenshots.html">DotGNU Screenshots</a>
+for screenshots from various platforms and handhelds supported. 
+
+<p>
+
+The ADO.NET is based on the Mono project's implementation and also includes 
+some useful sql providers like NPgsql. This is included in the ml-pnet 
+module of DotGNU Portable.NET .<p>
+
+<a name="q11_2"><h3>11.2. Can I use ASP.NET etc with DotGNU Portable.NET?</h3>
 
 At the moment, no.  There are a huge collection of libraries and
 Web server hooks that need to be built, and it will take time to do so.
-If you want to volunteer to help out on this, then that would be great.
-The Mono project is already working on some of the necessary libraries,
-which we hope to reuse when they mature.<p>
+The <a href="http://dotgnu.org/dgee.html">DGEE project</a> , though
+it is currently focussed at running webservices, has potential to host 
+ASP.NET. If you want to volunteer to help out on this, then that would 
+be great.<p>
 
-<a name="q11_2"><h3>11.2. Why doesn't my C/C++ application work that I built with Visual Studio.NET?</h3>
+The Mono project is already working on some of the necessary libraries,
+which we hope to support when they mature.<p>
+
+<a name="q11_3"><h3>11.3. Why doesn't my C/C++ application work that I built with Visual Studio.NET?</h3>
 
 Usually, the C/C++ applications that are output by Visual Studio.NET are
 not pure IL binaries.  They contain x86 native code, and depend on all
@@ -1174,7 +1197,7 @@ features, then you can recompile it using the C language front-end for
 "<code>cscc</code>".  The resulting binary is likely to be more portable
 than that produced by Visual Studio.NET.<p>
 
-<a name="q11_3"><h3>11.3. Why don't you just use Java?</h3>
+<a name="q11_4"><h3>11.4. Why don't you just use Java?</h3>
 
 This question is usually asked by Java-philes who are suspicious of
 Microsoft's goals with C# and the CLI.<p>
@@ -1188,7 +1211,7 @@ By building the basics, DotGNU Portable.NET can serve as a platform for
 the Free Software community to experiment with these technologies in
 completely unexpected ways.<p>
 
-<a name="q11_4"><h3>11.4. Isn't C# just a cheap knock-off of Java?</h3>
+<a name="q11_5"><h3>11.5. Isn't C# just a cheap knock-off of Java?</h3>
 
 Not really.  It includes language features that Java lacks: properties,
 delegates, events, operators, indexers, enumerations, and value types.<p>

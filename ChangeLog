@@ -13,6 +13,10 @@
 	objects returned by "CreateGraphics" are properly disposed of,
 	because letting the finalizer do it causes dead-locks under Xsharp.
 
+	* Xsharp/Display.cs: release the display lock while waiting for
+	an event in "XNextEvent", so that other threads can issue X
+	requests in the interim.
+
 2003-07-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XmlTextWriter.cs: Fix indentation problem with textwriter

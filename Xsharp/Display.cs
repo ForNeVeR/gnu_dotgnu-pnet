@@ -44,6 +44,7 @@ public sealed class Display : IDisposable
 	private Application app;
 	private bool quit;
 	private bool pendingExposes;
+	private bool inMainLoop;
 	private InputOutputWidget exposeList;
 	private Xlib.Cursor[] cursors;
 	internal Xlib.Time knownEventTime;
@@ -477,11 +478,20 @@ public sealed class Display : IDisposable
 	// Handle the next event and return what kind of event it was.
 	private AppEvent HandleNextEvent(bool wait)
 			{
+				bool isMainLoop = false;
 				try
 				{
 					IntPtr dpy = Lock();
 					XEvent xevent;
 					int timeout;
+
+					// Check for re-entry from multiple threads.
+					if(inMainLoop)
+					{
+						return AppEvent.NoEvent;
+					}
+					isMainLoop = true;
+					inMainLoop = true;
 
 					// Flush any requests that are in the outgoing queue.
 					Xlib.XFlush(dpy);
@@ -553,10 +563,14 @@ public sealed class Display : IDisposable
 						}
 						if(timeout < 0)
 						{
-							Xlib.XNextEvent(dpy, out xevent);
+							// Make sure that we release the display lock
+							// before calling "XNextEvent", so that other
+							// threads can issue X requests while we are
+							// waiting for the next event to occur.
 							Unlock();
 							try
 							{
+								Xlib.XNextEvent(dpy, out xevent);
 								DispatchEvent(ref xevent);
 							}
 							finally
@@ -567,25 +581,29 @@ public sealed class Display : IDisposable
 						}
 						else
 						{
-							if(Xlib.XNextEventWithTimeout
-								(dpy, out xevent, timeout) > 0)
+							Unlock();
+							try
 							{
-								Unlock();
-								try
+								if(Xlib.XNextEventWithTimeout
+									(dpy, out xevent, timeout) > 0)
 								{
 									DispatchEvent(ref xevent);
+									return AppEvent.Regular;
 								}
-								finally
-								{
-									dpy = Lock();
-								}
-								return AppEvent.Regular;
+							}
+							finally
+							{
+								dpy = Lock();
 							}
 						}
 					}
 				}
 				finally
 				{
+					if(isMainLoop)
+					{
+						inMainLoop = false;
+					}
 					Unlock();
 				}
 

@@ -75,6 +75,10 @@ public class FDStream : Stream, IFDOperations
 			}
 
 	// Implement pass throughs for "Stream" methods.
+	public override void Close()
+			{
+				stream.Close();
+			}
 	public override void Flush()
 			{
 				stream.Flush();

@@ -10,6 +10,8 @@
 	move the fd wrapping into the OpenSystem.C assembly and remove
 	"__syscall_wrap_stdfds".
 
+	* csupport/FDStream.cs: missing "Close" method.
+
 2004-03-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/TabControl.cs: reimplement the

@@ -1,4 +1,9 @@
 
+2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/DateTime.cs: bug in the "UtcNow" property - use the
+correct platform method to get the time.
+
 2001-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/DateTime.cs, runtime/Platform/TimeMethods.cs, doc/native.html:

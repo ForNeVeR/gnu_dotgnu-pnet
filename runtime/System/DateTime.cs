@@ -465,7 +465,7 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 			{
 				get
 				{
-					return new DateTime(TimeMethods.GetCurrentTime());
+					return new DateTime(TimeMethods.GetCurrentUtcTime());
 				}
 			}
 	public static DateTime Today

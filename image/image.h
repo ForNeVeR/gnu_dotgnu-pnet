@@ -32,33 +32,6 @@ extern	"C" {
 #endif
 
 /*
- * Write words of various sizes.
- */
-#define	IL_WRITE_UINT16(buf, value)	\
-			do { \
-				(buf)[0] = (unsigned char)(value); \
-				(buf)[1] = (unsigned char)((value) >> 8); \
-			} while (0)
-#define	IL_WRITE_UINT32(buf, value)	\
-			do { \
-				(buf)[0] = (unsigned char)(value); \
-				(buf)[1] = (unsigned char)((value) >> 8); \
-				(buf)[2] = (unsigned char)((value) >> 16); \
-				(buf)[3] = (unsigned char)((value) >> 24); \
-			} while (0)
-#define	IL_WRITE_UINT64(buf, value)	\
-			do { \
-				(buf)[0] = (unsigned char)(value); \
-				(buf)[1] = (unsigned char)((value) >> 8); \
-				(buf)[2] = (unsigned char)((value) >> 16); \
-				(buf)[3] = (unsigned char)((value) >> 24); \
-				(buf)[4] = (unsigned char)((value) >> 32); \
-				(buf)[5] = (unsigned char)((value) >> 40); \
-				(buf)[6] = (unsigned char)((value) >> 48); \
-				(buf)[7] = (unsigned char)((value) >> 56); \
-			} while (0)
-
-/*
  * Structure of a context, which holds multiple loaded images,
  * and the information about the classes, methods, etc, in them.
  */

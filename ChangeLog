@@ -1,4 +1,9 @@
 
+2004-04-21  Russell Stuart  <russell@stuart.id.au>
+
+	* runtime/System/Collections/Hashtable.cs: Use a local object instead
+	of null for removed entries in Hashtable (patch #2882)
+
 2004-04-19  Gopal V <gopalv82@yahoo.com>
 
 	* System.Drawing.Xsharp/DrawingTextureBrush.cs: Remove image.Dispose()

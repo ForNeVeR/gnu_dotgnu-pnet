@@ -80,6 +80,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	int first;
 	ILNode *prevClass;
 	int isModule = (!strcmp(node->name, "<Module>"));
+	ILClassLayout *layout;
 
 	/* Get the class information structure */
 	classInfo = node->classInfo;
@@ -87,6 +88,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	{
 		return;
 	}
+	layout = ILClassLayoutGetFromOwner(classInfo);
 
 	/* Set the current class within the ILGenInfo object */
 	prevClass = info->currentClass;
@@ -151,6 +153,21 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 
 		/* Output the attributes that are attached to the class */
 		OutputAttributes(info, info->asmOutput, (ILProgramItem *)classInfo);
+
+		/* Output the class layout information */
+		if(layout)
+		{
+			if(ILClassLayout_ClassSize(layout) != 0)
+			{
+				fprintf(info->asmOutput, ".size %lu\n",
+						(unsigned long)(ILClassLayout_ClassSize(layout)));
+			}
+			if(ILClassLayout_PackingSize(layout) != 0)
+			{
+				fprintf(info->asmOutput, ".pack %lu\n",
+						(unsigned long)(ILClassLayout_PackingSize(layout)));
+			}
+		}
 	}
 
 	/* Output the class members */
@@ -208,8 +225,16 @@ ILNode_GenDiscard(ILNode_ScopeChange)
  */
 static void DumpField(ILGenInfo *info, ILField *field, ILNode *node)
 {
+	ILFieldLayout *layout;
+
 	/* Dump the field signature and name */
 	fputs(".field ", info->asmOutput);
+	layout = ILFieldLayoutGetFromOwner(field);
+	if(layout)
+	{
+		fprintf(info->asmOutput, "[%lu] ",
+				(unsigned long)(ILFieldLayout_Offset(layout)));
+	}
 	ILDumpFlags(info->asmOutput, ILField_Attrs(field),
 			    ILFieldDefinitionFlags, 0);
 	ILDumpType(info->asmOutput, info->image, ILFieldGetTypeWithPrefixes(field),

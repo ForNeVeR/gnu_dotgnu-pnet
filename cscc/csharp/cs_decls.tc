@@ -586,7 +586,16 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	}
 	node->visited = ILVisitMode_Processing;
 
-	/* TODO: field attributes */
+	/* Process the field attributes */
+	if(node->owner && node->fieldInfo)
+	{
+		CSProcessAttrs(info, ILToProgramItem(node->fieldInfo),
+					   node->owner->attributes, CS_ATTR_FIELD);
+
+		/* Reset the attributes, in case there are multiple fields */
+		/* TODO: handle attrs for multiple fields in the same declaration */
+		node->owner->attributes = 0;
+	}
 
 	/* Skip the field if no initializer or ILField block */
 	if(!(node->initializer) || !(node->fieldInfo))
@@ -689,8 +698,6 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
-	/* TODO: event attributes */
-
 	/* Perform semantic analysis on each of the event declarators */
 	ILNode_SemAnalysis(node->eventDeclarators, info,
 					   &(node->eventDeclarators));
@@ -706,6 +713,17 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 
 ILNode_SemAnalysis(ILNode_EventDeclarator)
 {
+	/* Process the event attributes */
+	if(node->backLink)
+	{
+		CSProcessAttrs(info, ILToProgramItem(node->eventInfo),
+					   node->backLink->attributes, CS_ATTR_EVENT);
+
+		/* Reset the attributes, in case there are multiple events */
+		/* TODO: handle attrs for multiple events in the same declaration */
+		node->backLink->attributes = 0;
+	}
+
 	/* Perform semantic analysis on the "add" and "remove" methods */
 	if(node->addAccessor)
 	{

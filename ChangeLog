@@ -7,6 +7,8 @@ cscc/cs_decls.tc, cscc/cs_grammar.y, cscc/cs_misc.tc: apply a
 patch from Norman Stevens <norman@arcady.u-net.com> that adds
 most of the node creation functionality to the C# grammar.
 
+* cscc/cs_decls.c, cscc/cs_ident.c: removed obsolete files.
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

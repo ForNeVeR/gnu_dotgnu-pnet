@@ -32,7 +32,8 @@ using d = System.Diagnostics.Debug;
 
 public class DrawingToolkit : IToolkit
 {
-	DrawingRootTopLevelWindow drawingRootTopLevelWindow;
+	private DrawingRootTopLevelWindow drawingRootTopLevelWindow;
+	private ArrayList timers;
 
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
@@ -368,28 +369,57 @@ public class DrawingToolkit : IToolkit
 	public Object RegisterTimer
 				(Object owner, int interval, EventHandler expire)
 	{
-		// TODO
-		return null;
+		timers.Add(new Timer(owner, interval, expire));
+		Win32.Api.SetTimer( drawingRootTopLevelWindow.hwnd, (uint)timers.Count - 1, (uint)interval, IntPtr.Zero );
+		return (uint)timers.Count - 1;
 	}
 
 	// Unregister a timer.
 	public void UnregisterTimer(Object cookie)
 	{
-		// TODO
+		Win32.Api.KillTimer( drawingRootTopLevelWindow.hwnd, (uint)cookie );
+		timers.RemoveAt( (int)cookie );
 	}
 
 	// Convert a client point for a window into a screen point.
 	public Point ClientToScreen(IToolkitWindow window, Point point)
 	{
-		// TODO
-		return point;
+		Win32.Api.POINT p;
+		p.x = point.X;
+		p.y = point.Y;
+		Win32.Api.ClientToScreen( (window as DrawingWindow).hwnd, ref p );
+		return new Point( p.x, p.y );
 	}
 
 	// Convert a screen point for a window into a client point.
 	public Point ScreenToClient(IToolkitWindow window, Point point)
 	{
-		// TODO
-		return point;
+		Win32.Api.POINT p;
+		p.x = point.X;
+		p.y = point.Y;
+		Win32.Api.ScreenToClient( (window as DrawingWindow).hwnd, ref p );
+		return new Point( p.x, p.y );
+	}
+
+	//Occurs when main window receives WM_TIMER message
+	internal void InvokeTimer(int wParam)
+	{
+		Timer timer = (Timer)timers[wParam];
+		timer.expire( timer.owner, EventArgs.Empty );
+	}
+
+	//An instance is created for each timer registered
+	private class Timer
+	{
+		internal Object owner;
+		internal int interval;
+		internal EventHandler expire;
+		public Timer( Object owner, int interval, EventHandler expire )
+		{
+			this.owner = owner;
+			this.interval = interval;
+			this.expire = expire;
+		}
 	}
 
 }; // class DrawingToolkit

@@ -808,6 +808,17 @@ internal class Api
 	[DllImport("gdi32")]
 	public static extern IntPtr CreateFontIndirectA(ref LOGFONT lf);
 
+	[DllImport("user32")]
+	public static extern IntPtr SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, IntPtr lpTimerFunc);
+
+	[DllImport("user32")]
+	public static extern bool KillTimer(IntPtr hwnd, uint uIDEvent);
+
+	[DllImport("user32")]
+	public static extern bool ScreenToClient( IntPtr hWnd, ref POINT lpPoint );
+
+	[DllImport("user32")]
+	public static extern bool ClientToScreen( IntPtr hWnd, ref POINT lpPoint );
 
 }//Api
 

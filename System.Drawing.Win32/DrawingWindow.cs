@@ -507,6 +507,9 @@ internal abstract class DrawingWindow : IToolkitWindow
 				KeyUp( wParam, lParam );
 				break;
 
+			case Win32.Api.WindowsMessages.WM_TIMER:
+				(toolkit as DrawingToolkit).InvokeTimer( wParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_SETTINGCHANGE:
 				SettingsChange( wParam );
 				break;

@@ -1,4 +1,12 @@
 
+2003-07-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cs_main.c, cscc/csharp/cs_grammar.y, cscc/csharp/cs_scanner.l:
+	introduce a flex scanner hack to distinguish between '<' used as
+	an operator and '<' used as a generic type parameter designator;
+	make "-fno-generics" the default, requiring "-fgenerics" to compile
+	C# code that uses generics.
+
 2003-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/unrolling.txt, engine/md_arm.h, engine/md_x86.h,

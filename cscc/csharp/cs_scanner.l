@@ -961,6 +961,17 @@ FTYPE			(f|F|d|D|m|M)
 ITYPE			(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)
 WHITE			[ \t\r\f\v\032]
 
+/* The following mess tries to determine if the characters that follow a
+   "<" look like they may be part of a generic type reference.  This is
+   to disambiguate "<" used as an operator or as a generic parameter start.
+   Do not change this unless you know what you are doing */
+GIDENT			{IDALPHA}({IDALPHA}|{DIGIT})*
+GQUALIDENT		{GIDENT}({WHITE}*"."{WHITE}*{GIDENT})*
+GTYPESUFFIX		({WHITE}*"["(",")*"]"|{WHITE}*"*")
+GTYPE			{GQUALIDENT}{GTYPESUFFIX}*
+GTYPELIST		{GTYPE}(","{WHITE}*{GTYPE})*
+GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
+
 %%
 
 "++"					{ RETURNTOK(INC_OP); }
@@ -1137,6 +1148,21 @@ WHITE			[ \t\r\f\v\032]
 
 "///"[^\n]*\n		{ yylval.string = ILInternString(yytext + 3, -1);
 					  RETURNTOK(DOC_COMMENT); }
+
+"<"/{GENERICPREFIX}	{
+			/* This looks like it may be a generic type reference
+			   rather than a less than sign within an expression.
+			   We return a different token code so that the parser
+			   can properly distinguish generic types in expressions */
+			if(CSNoGenerics)
+			{
+				return '<';
+			}
+			else
+			{
+				return GENERIC_LT;
+			}
+		}
 
 .					{ RETURNTOK(((int)(yytext[0])) & 0xFF); }
 

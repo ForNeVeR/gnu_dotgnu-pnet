@@ -863,6 +863,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token XOR_ASSIGN_OP		"`^='"
 %token OR_ASSIGN_OP			"`|='"
 %token PTR_OP				"`->'"
+%token GENERIC_LT			"`<'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -897,7 +898,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		ParenBooleanExpression LiteralExpression
 %type <node>		InvocationExpression ExpressionList
 %type <node>		ObjectCreationExpression OptArgumentList ArgumentList
-%type <node>		Argument PrefixedUnaryExpression /*GenericReference*/
+%type <node>		Argument PrefixedUnaryExpression GenericReference
 
 %type <node>		Statement EmbeddedStatement Block OptStatementList
 %type <node>		StatementList ExpressionStatement SelectionStatement
@@ -963,8 +964,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-/*%expect 25*/
-%expect 21
+%expect 26
 
 %start CompilationUnit
 %%
@@ -1108,6 +1108,9 @@ QualifiedIdentifier
 QualifiedIdentifierPart
 	: Identifier							{ $$ = $1; }
 	| Identifier '<' TypeActuals '>'		{
+				MakeBinary(GenericReference, $1, $3);
+			}
+	| Identifier GENERIC_LT TypeActuals '>'		{
 				MakeBinary(GenericReference, $1, $3);
 			}
 	;
@@ -1295,6 +1298,9 @@ Type
 	| Type '<' TypeActuals '>'	{
 				MakeBinary(GenericReference, $1, $3);
 			}
+	| Type GENERIC_LT TypeActuals '>'	{
+				MakeBinary(GenericReference, $1, $3);
+			}
 	;
 
 NonExpressionType
@@ -1309,6 +1315,9 @@ NonExpressionType
 				MakeUnary(PtrType, $1);
 			}
 	| NonExpressionType '<' TypeActuals '>'	{
+				MakeBinary(GenericReference, $1, $3);
+			}
+	| NonExpressionType GENERIC_LT TypeActuals '>'	{
 				MakeBinary(GenericReference, $1, $3);
 			}
 	;
@@ -1328,6 +1337,10 @@ LocalVariableType
 				MakeBinary(LocalVariableType, $1, $2);
 			}
 	| PrimaryExpression '<' TypeActuals '>' TypeSuffixes	{
+				ILNode *type = ILNode_GenericReference_create($1, $3);
+				MakeBinary(LocalVariableType, type, $5);
+			}
+	| PrimaryExpression GENERIC_LT TypeActuals '>' TypeSuffixes	{
 				ILNode *type = ILNode_GenericReference_create($1, $3);
 				MakeBinary(LocalVariableType, type, $5);
 			}
@@ -1729,46 +1742,43 @@ RelationalExpression
 	| RelationalExpression AS Type					{
 				MakeBinary(AsUntyped, $1, $3);
 			}
-/*
 	| GenericReference								{
 				$$ = $1;
 			}
 	| GenericReference '(' OptArgumentList ')'		{
 				$$ = CSInsertMethodInvocation($1, $3);
 			}
-*/
 	;
 
-/*
 GenericReference
-	: RelationalExpression '<' ShiftExpression '>'		{
+	: RelationalExpression GENERIC_LT ShiftExpression '>'		{
 				$$ = CSInsertGenericReference($1, $3);
 			}
-	| RelationalExpression '<' ShiftExpression TypeSuffixList '>'	{
+	| RelationalExpression GENERIC_LT ShiftExpression TypeSuffixList '>'	{
 				$$ = CSInsertGenericReference
 					($1, ILNode_LocalVariableType_create($3, $4));
 			}
-	| RelationalExpression '<' ShiftExpression ',' TypeActuals '>'	{
+	| RelationalExpression GENERIC_LT ShiftExpression ',' TypeActuals '>'	{
 				$$ = CSInsertGenericReference
 					($1, ILNode_TypeActuals_create($3, $5));
 			}
-	| RelationalExpression '<' ShiftExpression TypeSuffixList ',' 
+	| RelationalExpression GENERIC_LT ShiftExpression TypeSuffixList ',' 
 			TypeActuals '>'		{
 				$$ = CSInsertGenericReference
 					($1, CSInsertTypeActuals
 						(ILNode_LocalVariableType_create($3, $4), $6));
 			}
-	| RelationalExpression '<' BuiltinType TypeSuffixes '>'	{
+	| RelationalExpression GENERIC_LT BuiltinType TypeSuffixes '>'	{
 				$$ = CSInsertGenericReference
 					($1, ILNode_LocalVariableType_create($3, $4));
 			}
-	| RelationalExpression '<' BuiltinType TypeSuffixes ',' TypeActuals '>'	{
+	| RelationalExpression GENERIC_LT BuiltinType TypeSuffixes ','
+			TypeActuals '>'	{
 				$$ = CSInsertGenericReference
 					($1, CSInsertTypeActuals
 						(ILNode_LocalVariableType_create($3, $4), $6));
 			}
 	;
-*/
 
 EqualityExpression
 	: RelationalExpression			{ $$ = $1; }
@@ -2697,8 +2707,9 @@ ClassDeclaration
 	;
 
 TypeFormals
-	: /* empty */					{ $$ = 0; }
-	| '<' TypeFormalList '>'		{ $$ = $2; }
+	: /* empty */						{ $$ = 0; }
+	| '<' TypeFormalList '>'			{ $$ = $2; }
+	| GENERIC_LT TypeFormalList '>'		{ $$ = $2; }
 	;
 
 TypeFormalList

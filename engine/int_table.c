@@ -2520,6 +2520,52 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_bppppiippjppppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, void *, ILInt32, ILInt32, void *, void *, ILNativeUInt, void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])), *((void * *)(avalue[6])), *((void * *)(avalue[7])), *((ILNativeUInt *)(avalue[8])), *((void * *)(avalue[9])), *((void * *)(avalue[10])), *((void * *)(avalue[11])), *((void * *)(avalue[12])), *((void * *)(avalue[13])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjiip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])));
+}
+
+#endif
+
+#ifndef _IL_Process_suppressed
+
+IL_METHOD_BEGIN(Process_Methods)
+	IL_METHOD("GetHandleCount", "(j)i", _IL_Process_GetHandleCount, marshal_ipj)
+	IL_METHOD("GetMainWindowHandle", "(j)j", _IL_Process_GetMainWindowHandle, marshal_jpj)
+	IL_METHOD("GetMainWindowTitle", "(j)oSystem.String;", _IL_Process_GetMainWindowTitle, marshal_ppj)
+	IL_METHOD("GetProcessorAffinity", "(j)i", _IL_Process_GetProcessorAffinity, marshal_ipj)
+	IL_METHOD("MainWindowIsResponding", "(j)Z", _IL_Process_MainWindowIsResponding, marshal_bpj)
+	IL_METHOD("CloseProcess", "(ji)V", _IL_Process_CloseProcess, marshal_vpji)
+	IL_METHOD("CloseMainWindow", "(j)Z", _IL_Process_CloseMainWindow, marshal_bpj)
+	IL_METHOD("GetCurrentProcessInfo", "(&i&j)V", _IL_Process_GetCurrentProcessInfo, marshal_vppp)
+	IL_METHOD("KillProcess", "(ji)V", _IL_Process_KillProcess, marshal_vpji)
+	IL_METHOD("StartProcess", "(oSystem.String;oSystem.String;[oSystem.String;ii[oSystem.String;oSystem.String;j&j&i&j&j&j)Z", _IL_Process_StartProcess, marshal_bppppiippjppppp)
+	IL_METHOD("WaitForExit", "(jii&i)Z", _IL_Process_WaitForExit, marshal_bpjiip)
+	IL_METHOD("WaitForInputIdle", "(jii)Z", _IL_Process_WaitForInputIdle, marshal_bpjii)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_bpiiip(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILInt32, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
@@ -2604,15 +2650,6 @@ static void marshal_bpjpp(void (*fn)(), void *rvalue, void **avalue)
 static void marshal_bpjiii(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpjiip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
 }
 
 #endif
@@ -2882,6 +2919,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_ParameterBuilder_suppressed
 	{"ParameterBuilder", "System.Reflection.Emit", ParameterBuilder_Methods},
+#endif
+#ifndef _IL_Process_suppressed
+	{"Process", "System.Diagnostics", Process_Methods},
 #endif
 #ifndef _IL_PropertyBuilder_suppressed
 	{"PropertyBuilder", "System.Reflection.Emit", PropertyBuilder_Methods},

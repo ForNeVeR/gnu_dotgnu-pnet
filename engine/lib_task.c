@@ -142,6 +142,153 @@ ILString *_IL_TaskMethods_GetEnvironmentValue(ILExecThread *thread,
 	}
 }
 
+/*
+ * private static int GetHandleCount(IntPtr processHandle);
+ */
+ILInt32 _IL_Process_GetHandleCount(ILExecThread *_thread,
+								   ILNativeInt processHandle)
+{
+	/* TODO */
+	return -1;
+}
+
+/*
+ * private static IntPtr GetMainWindowHandle(IntPtr processHandle);
+ */
+ILNativeInt _IL_Process_GetMainWindowHandle(ILExecThread *_thread,
+											ILNativeInt processHandle)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static String GetMainWindowTitle(IntPtr windowHandle);
+ */
+ILString *_IL_Process_GetMainWindowTitle(ILExecThread * _thread,
+										 ILNativeInt windowHandle)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static int GetProcessorAffinity(IntPtr processHandle);
+ */
+ILInt32 _IL_Process_GetProcessorAffinity(ILExecThread *_thread,
+										 ILNativeInt processHandle)
+{
+	/* TODO */
+	return 1;
+}
+
+/*
+ * private static bool MainWindowIsResponding(IntPtr windowHandle);
+ */
+ILBool _IL_Process_MainWindowIsResponding(ILExecThread *_thread,
+										  ILNativeInt windowHandle)
+{
+	/* TODO */
+	return 1;
+}
+
+/*
+ * private static void CloseProcess(IntPtr processHandle, int processID);
+ */
+void _IL_Process_CloseProcess(ILExecThread *_thread,
+							  ILNativeInt processHandle,
+							  ILInt32 processID)
+{
+	/* TODO */
+}
+
+/*
+ * private static bool CloseMainWindow(IntPtr windowHandle);
+ */
+ILBool _IL_Process_CloseMainWindow(ILExecThread * _thread,
+								   ILNativeInt windowHandle)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static void GetCurrentProcessInfo(out int processID,
+ *											 out IntPtr handle);
+ */
+void _IL_Process_GetCurrentProcessInfo(ILExecThread *_thread,
+									   ILInt32 *processID,
+									   ILNativeInt *handle)
+{
+	*processID = 0;
+	*handle = 0;
+}
+
+/*
+ * private static void KillProcess(IntPtr processHandle, int processID);
+ */
+void _IL_Process_KillProcess(ILExecThread *_thread,
+							 ILNativeInt processHandle, ILInt32 processID)
+{
+	/* TODO */
+}
+
+/*
+ * private static bool StartProcess(String filename, String arguments,
+ *									String[] argv, int flags,
+ *									int windowStyle, String[] envVars,
+ *									String verb, IntPtr errorDialogParent,
+ *									out IntPtr processHandle,
+ *									out int processID,
+ *									out IntPtr stdinHandle,
+ *									out IntPtr stdoutHandle,
+ *									out IntPtr stderrHandle);
+ */
+ILBool _IL_Process_StartProcess(ILExecThread *_thread,
+								ILString *filename,
+								ILString *arguments,
+								System_Array *argv,
+								ILInt32 flags,
+								ILInt32 windowStyle,
+								System_Array *envVars,
+								ILString *verb,
+								ILNativeInt errorDialogParent,
+								ILNativeInt *processHandle,
+								ILInt32 *processID,
+								ILNativeInt *stdinHandle,
+								ILNativeInt *stdoutHandle,
+								ILNativeInt *stderrHandle)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static bool WaitForExit(IntPtr processHandle, int processID,
+ *								   int milliseconds, out int exitCode);
+ */
+ILBool _IL_Process_WaitForExit(ILExecThread *_thread,
+							   ILNativeInt processHandle,
+							   ILInt32 processID, ILInt32 milliseconds,
+							   ILInt32 *exitCode)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private static bool WaitForInputIdle(IntPtr processHandle,
+ *										int processID, int milliseconds);
+ */
+ILBool _IL_Process_WaitForInputIdle(ILExecThread *_thread,
+									ILNativeInt processHandle,
+									ILInt32 processID,
+									ILInt32 milliseconds)
+{
+	/* TODO */
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -550,6 +550,19 @@ extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt _p1, S
 extern void _IL_CryptoMethods_Encrypt(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, System_Array * _p4, ILInt32 _p5);
 extern void _IL_CryptoMethods_StoreKey(ILExecThread * _thread, ILInt32 _p1, ILString * _p2, System_Array * _p3);
 
+extern ILInt32 _IL_Process_GetHandleCount(ILExecThread * _thread, ILNativeInt _p1);
+extern ILNativeInt _IL_Process_GetMainWindowHandle(ILExecThread * _thread, ILNativeInt _p1);
+extern ILString * _IL_Process_GetMainWindowTitle(ILExecThread * _thread, ILNativeInt _p1);
+extern ILInt32 _IL_Process_GetProcessorAffinity(ILExecThread * _thread, ILNativeInt _p1);
+extern ILBool _IL_Process_MainWindowIsResponding(ILExecThread * _thread, ILNativeInt _p1);
+extern void _IL_Process_CloseProcess(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILBool _IL_Process_CloseMainWindow(ILExecThread * _thread, ILNativeInt _p1);
+extern void _IL_Process_GetCurrentProcessInfo(ILExecThread * _thread, ILInt32 * processID, ILNativeInt * handle);
+extern void _IL_Process_KillProcess(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
+extern ILBool _IL_Process_StartProcess(ILExecThread * _thread, ILString * _p1, ILString * _p2, System_Array * _p3, ILInt32 _p4, ILInt32 _p5, System_Array * _p6, ILString * _p7, ILNativeInt _p8, ILNativeInt * processHandle, ILInt32 * processID, ILNativeInt * stdinHandle, ILNativeInt * stdoutHandle, ILNativeInt * stderrHandle);
+extern ILBool _IL_Process_WaitForExit(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 * exitCode);
+extern ILBool _IL_Process_WaitForInputIdle(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3);
+
 extern ILNativeInt _IL_SocketMethods_GetInvalidHandle(ILExecThread * _thread);
 extern ILBool _IL_SocketMethods_Create(ILExecThread * _thread, ILInt32 _p1, ILInt32 _p2, ILInt32 _p3, ILNativeInt * handle);
 extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 _p3, ILInt32 _p4);

@@ -13,6 +13,9 @@
 	"libXsharpSupport.so" to provide C support routines to Xsharp
 	which cannot be easily implemented in C#.
 
+	* Xsharp/Makefile.in: remove a file from the CVS server which
+	should not be there.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

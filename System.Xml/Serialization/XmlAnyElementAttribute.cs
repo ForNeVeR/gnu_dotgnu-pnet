@@ -27,65 +27,52 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class XmlAnyElementAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private String name;
+	private String nspace;
+
+	// Constructors.
 	public XmlAnyElementAttribute()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.name = "";
+				this.nspace = null;
 			}
-
-	[TODO]
 	public XmlAnyElementAttribute(String name)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (name == null) { name = ""; }
+				this.name = name;
+				this.nspace = null;
 			}
-
-	[TODO]
-	public XmlAnyElementAttribute(String name, String ns)
+	public XmlAnyElementAttribute(String name, String nspace)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (name == null) { name = ""; }
+				this.name = name;
+				this.nspace = nspace;
 			}
 
-	[TODO]
+	// Properties.
 	public String Name
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Name");
-				}
+				get { return name; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("Name");
+					if (value == null) { value = ""; }
+					name = value;
 				}
 			}
-
-	[TODO]
 	public String Namespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
+				get { return nspace; }
+				set { nspace = value; }
 			}
 
 }; // class XmlAnyElementAttribute

@@ -27,20 +27,13 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class XmlAnyAttributeAttribute : Attribute
 {
-	[TODO]
-	public XmlAnyAttributeAttribute()
-			: base()
-			{
-				// TODO
-				throw new NotImplementedException(".ctor");
-			}
+	public XmlAnyAttributeAttribute() : base() {}
 
 }; // class XmlAnyAttributeAttribute
 

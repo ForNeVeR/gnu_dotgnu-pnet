@@ -27,20 +27,13 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class XmlIgnoreAttribute : Attribute
 {
-	[TODO]
-	public XmlIgnoreAttribute()
-			: base()
-			{
-				// TODO
-				throw new NotImplementedException(".ctor");
-			}
+	public XmlIgnoreAttribute() : base() {}
 
 }; // class XmlIgnoreAttribute
 

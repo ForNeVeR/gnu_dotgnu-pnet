@@ -26,7 +26,7 @@ namespace System.Xml.Schema
 {
 	public enum XmlSchemaForm
 	{
-		None		=0x0001,
+		None		=0x0000,
 
 		Qualified	=0x0001,
 

@@ -560,15 +560,18 @@ public class Assembly : IClrProgramItem
 	extern private String GetImageRuntimeVersion();
 
 	// Get the location where this assembly was loaded from.
-	[TODO]
 	public virtual String Location
 			{
 				get
 				{
-					// TODO
-					return null;
+					String retval;
+					retval = GetLocation();
+					return (retval == null) ? "" : retval;
 				}
 			}
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private String GetLocation();
 
 	// Get the assembly that a particular type resides in.
 	public static Assembly GetAssembly(Type type)

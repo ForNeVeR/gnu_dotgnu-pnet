@@ -27,72 +27,57 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class SoapAttributeAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private String attributeName;
+	private String dataType;
+	private String nspace;
+
+	// Constructors.
 	public SoapAttributeAttribute()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.attributeName = "";
+				this.dataType = "";
+				this.nspace = null;
 			}
-
-	[TODO]
-	public SoapAttributeAttribute(String attrName)
+	public SoapAttributeAttribute(String attributeName)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (attributeName == null) { attributeName = ""; }
+				this.attributeName = attributeName;
+				this.dataType = "";
+				this.nspace = null;
 			}
 
-	[TODO]
+	// Properties.
 	public String AttributeName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("AttributeName");
-				}
+				get { return attributeName; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("AttributeName");
+					if (value == null) { value = ""; }
+					attributeName = value;
 				}
 			}
-
-	[TODO]
 	public String DataType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("DataType");
-				}
+				get { return dataType; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("DataType");
+					if (value == null) { value = ""; }
+					dataType = value;
 				}
 			}
-
-	[TODO]
 	public String Namespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
+				get { return nspace; }
+				set { nspace = value; }
 			}
 
 }; // class SoapAttributeAttribute

@@ -27,33 +27,26 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Class |
                 AttributeTargets.Struct |
                 AttributeTargets.Method)]
 public class SoapIncludeAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private Type type;
+
+	// Constructor.
 	public SoapIncludeAttribute(Type type)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.type = type;
 			}
 
-	[TODO]
+	// Property.
 	public Type Type
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Type");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Type");
-				}
+				get { return type; }
+				set { type = value; }
 			}
 
 }; // class SoapIncludeAttribute

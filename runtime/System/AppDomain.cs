@@ -28,6 +28,7 @@ using System.Reflection;
 using System.Globalization;
 using System.Reflection.Emit;
 using System.Runtime.Remoting;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Security.Principal;
@@ -533,12 +534,8 @@ public sealed class AppDomain
 			}
 
 	// Get a list of all assemblies in this application domain.
-	[TODO]
-	public Assembly[] GetAssemblies()
-			{
-				// TODO
-				return new Assembly [0];
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public Assembly[] GetAssemblies();
 
 	// Get the current thread identifier.
 	public static int GetCurrentThreadId()

@@ -27,57 +27,44 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class XmlTextAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private String dataType;
+	private Type type;
+
+	// Constructors.
 	public XmlTextAttribute()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.dataType = "";
+				this.type = null;
 			}
-
-	[TODO]
 	public XmlTextAttribute(Type type)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.dataType = "";
+				this.type = type;
 			}
 
-	[TODO]
+	// Properties.
 	public String DataType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("DataType");
-				}
+				get { return dataType; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("DataType");
+					if (value == null) { value = ""; }
+					dataType = value;
 				}
 			}
-
-	[TODO]
 	public Type Type
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Type");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Type");
-				}
+				get { return type; }
+				set { type = value; }
 			}
 
 }; // class XmlTextAttribute

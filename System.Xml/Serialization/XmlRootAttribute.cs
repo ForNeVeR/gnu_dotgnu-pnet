@@ -27,7 +27,6 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Class |
                 AttributeTargets.Struct |
                 AttributeTargets.Enum |
@@ -35,90 +34,65 @@ using System.Xml;
                 AttributeTargets.ReturnValue)]
 public class XmlRootAttribute : Attribute
 {
-	[TODO]
-	public XmlRootAttribute()
-			: base()
-			{
-				// TODO
-				throw new NotImplementedException(".ctor");
-			}
+	// Internal state.
+	private String dataType;
+	private String elementName;
+	private bool isNullable;
+	private bool isNullableSpecified;
+	private String nspace;
 
-	[TODO]
+	// Constructors.
+	public XmlRootAttribute()
+			: this(null)
+			{
+			}
 	public XmlRootAttribute(String elementName)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (elementName == null) { elementName = ""; }
+				this.dataType = "";
+				this.elementName = elementName;
+				this.isNullable = true;
+				this.isNullableSpecified = false;
+				this.nspace = null;
 			}
 
-	[TODO]
+	// Properties.
 	public String DataType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("DataType");
-				}
+				get { return dataType; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("DataType");
+					if (value == null) { value = ""; }
+					dataType = value;
 				}
 			}
-
-	[TODO]
 	public String ElementName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("ElementName");
-				}
+				get { return elementName; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("ElementName");
+					if (value == null) { value = ""; }
+					elementName = value;
 				}
 			}
-
-	[TODO]
 	public bool IsNullable
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("IsNullable");
-				}
+				get { return isNullable; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("IsNullable");
+					isNullableSpecified = true;
+					isNullable = value;
 				}
 			}
-
-	[TODO]
 	public bool IsNullableSpecified
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("IsNullableSpecified");
-				}
+				get { return isNullableSpecified; }
 			}
-
-	[TODO]
 	public String Namespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
+				get { return nspace; }
+				set { nspace = value; }
 			}
 
 }; // class XmlRootAttribute

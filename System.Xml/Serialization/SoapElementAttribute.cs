@@ -27,72 +27,57 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class SoapElementAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private String dataType;
+	private String elementName;
+	private bool isNullable;
+
+	// Constructors.
 	public SoapElementAttribute()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.dataType = "";
+				this.elementName = "";
+				this.isNullable = false;
 			}
-
-	[TODO]
 	public SoapElementAttribute(String elementName)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (elementName == null) { elementName = ""; }
+				this.dataType = "";
+				this.elementName = elementName;
+				this.isNullable = false;
 			}
 
-	[TODO]
+	// Properties.
 	public String DataType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("DataType");
-				}
+				get { return dataType; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("DataType");
+					if (value == null) { value = ""; }
+					dataType = value;
 				}
 			}
-
-	[TODO]
 	public String ElementName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("ElementName");
-				}
+				get { return elementName; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("ElementName");
+					if (value == null) { value = ""; }
+					elementName = value;
 				}
 			}
-
-	[TODO]
 	public bool IsNullable
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("IsNullable");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("IsNullable");
-				}
+				get { return isNullable; }
+				set { isNullable = value; }
 			}
 
 }; // class SoapElementAttribute

@@ -28,133 +28,83 @@ using System;
 using System.Xml;
 using System.Xml.Schema;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class XmlElementAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private String dataType;
+	private String elementName;
+	private XmlSchemaForm form;
+	private bool isNullable;
+	private String nspace;
+	private Type type;
+
+	// Constructors.
 	public XmlElementAttribute()
-			: base()
+			: this(null, null)
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
 			}
-
-	[TODO]
 	public XmlElementAttribute(String elementName)
-			: base()
+			: this(elementName, null)
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
 			}
-
-	[TODO]
 	public XmlElementAttribute(Type type)
-			: base()
+			: this(null, type)
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
 			}
-
-	[TODO]
 	public XmlElementAttribute(String elementName, Type type)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (elementName == null) { elementName = ""; }
+				this.dataType = "";
+				this.elementName = elementName;
+				this.form = XmlSchemaForm.None;
+				this.isNullable = false;
+				this.nspace = null;
+				this.type = type;
 			}
 
-	[TODO]
+	// Properties.
 	public String DataType
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("DataType");
-				}
+				get { return dataType; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("DataType");
+					if (value == null) { value = ""; }
+					dataType = value;
 				}
 			}
-
-	[TODO]
 	public String ElementName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("ElementName");
-				}
+				get { return elementName; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("ElementName");
+					if (value == null) { value = ""; }
+					elementName = value;
 				}
 			}
-
-	[TODO]
 	public XmlSchemaForm Form
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Form");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Form");
-				}
+				get { return form; }
+				set { form = value; }
 			}
-
-	[TODO]
 	public bool IsNullable
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("IsNullable");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("IsNullable");
-				}
+				get { return isNullable; }
+				set { isNullable = value; }
 			}
-
-	[TODO]
 	public String Namespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
+				get { return nspace; }
+				set { nspace = value;}
 			}
-
-	[TODO]
 	public Type Type
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Type");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Type");
-				}
+				get { return type; }
+				set { type = value; }
 			}
 
 }; // class XmlElementAttribute

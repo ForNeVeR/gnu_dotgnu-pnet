@@ -27,79 +27,60 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Class |
                 AttributeTargets.Struct |
                 AttributeTargets.Enum |
                 AttributeTargets.Interface)]
 public class SoapTypeAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private bool includeInSchema;
+	private String nspace;
+	private String typeName;
+
+	// Constructors.
 	public SoapTypeAttribute()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.includeInSchema = true;
+				this.nspace = null;
+				this.typeName = "";
 			}
-
-	[TODO]
 	public SoapTypeAttribute(String typeName)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (typeName == null) { typeName = ""; }
+				this.includeInSchema = true;
+				this.nspace = null;
+				this.typeName = typeName;
 			}
-
-	[TODO]
 	public SoapTypeAttribute(String typeName, String ns)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (typeName == null) { typeName = ""; }
+				this.includeInSchema = true;
+				this.nspace = ns;
+				this.typeName = typeName;
 			}
 
-	[TODO]
+	// Properties.
 	public bool IncludeInSchema
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("IncludeInSchema");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("IncludeInSchema");
-				}
+				get { return includeInSchema; }
+				set { includeInSchema = value; }
 			}
-
-	[TODO]
 	public String Namespace
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
-				set
-				{
-					// TODO
-					throw new NotImplementedException("Namespace");
-				}
+				get { return nspace; }
+				set { nspace = value; }
 			}
-
-	[TODO]
 	public String TypeName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("TypeName");
-				}
+				get { return typeName; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("TypeName");
+					if (value == null) { value = ""; }
+					typeName = value;
 				}
 			}
 

@@ -27,41 +27,36 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Property |
                 AttributeTargets.Field |
                 AttributeTargets.Parameter |
                 AttributeTargets.ReturnValue)]
 public class XmlChoiceIdentifierAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private String memberName;
+
+	// Constructors.
 	public XmlChoiceIdentifierAttribute()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.memberName = "";
 			}
-
-	[TODO]
-	public XmlChoiceIdentifierAttribute(String name)
+	public XmlChoiceIdentifierAttribute(String memberName)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (memberName == null) { memberName = ""; }
+				this.memberName = memberName;
 			}
 
-	[TODO]
+	// Property.
 	public String MemberName
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("MemberName");
-				}
+				get { return memberName; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("MemberName");
+					if (value == null) { value = ""; }
+					memberName = value;
 				}
 			}
 

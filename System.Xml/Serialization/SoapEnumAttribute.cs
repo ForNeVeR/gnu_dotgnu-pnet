@@ -27,38 +27,33 @@ namespace System.Xml.Serialization
 using System;
 using System.Xml;
 
-[TODO]
 [AttributeUsage(AttributeTargets.Field)]
 public class SoapEnumAttribute : Attribute
 {
-	[TODO]
+	// Internal state.
+	private String name;
+
+	// Constructors.
 	public SoapEnumAttribute()
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				this.name = "";
 			}
-
-	[TODO]
 	public SoapEnumAttribute(String name)
 			: base()
 			{
-				// TODO
-				throw new NotImplementedException(".ctor");
+				if (name == null) { name = ""; }
+				this.name = name;
 			}
 
-	[TODO]
+	// Property.
 	public String Name
 			{
-				get
-				{
-					// TODO
-					throw new NotImplementedException("Name");
-				}
+				get { return name; }
 				set
 				{
-					// TODO
-					throw new NotImplementedException("Name");
+					if (value == null) { value = ""; }
+					name = value;
 				}
 			}
 

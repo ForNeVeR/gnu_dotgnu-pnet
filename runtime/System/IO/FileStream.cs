@@ -469,6 +469,7 @@ public class FileStream : Stream
 							   buffer, offset, tempLen);
 
 					// Advance to the next buffer positions.
+					readLen += tempLen;
 					offset += tempLen;
 					count -= tempLen;
 					bufferPosn += tempLen;

@@ -269,32 +269,36 @@ public class StreamReader : TextReader
 				while(outBufferPosn >= outBufferLen && !sawEOF)
 				{
 					// Move the previous left-over buffer contents down.
-					if(inBufferPosn < inBufferLen)
+					if((inBufferLen - inBufferPosn) < bufferSize)
 					{
-						Array.Copy(inBuffer, inBufferPosn,
-								   inBuffer, 0, inBufferLen - inBufferPosn);
-						inBufferLen -= inBufferPosn;
-					}
-					else
-					{
-						inBufferLen = 0;
-					}
-					inBufferPosn = 0;
+						if(inBufferPosn < inBufferLen)
+						{
+							Array.Copy
+								(inBuffer, inBufferPosn,
+							     inBuffer, 0, inBufferLen - inBufferPosn);
+							inBufferLen -= inBufferPosn;
+						}
+						else
+						{
+							inBufferLen = 0;
+						}
+						inBufferPosn = 0;
 
-					// Read new bytes into the buffer.
-					if(stream == null)
-					{
-						throw new IOException(_("IO_StreamClosed"));
-					}
-					len = stream.Read(inBuffer, inBufferPosn,
-									  bufferSize - inBufferPosn);
-					if(len <= 0)
-					{
-						sawEOF = true;
-					}
-					else
-					{
-						inBufferLen += len;
+						// Read new bytes into the buffer.
+						if(stream == null)
+						{
+							throw new IOException(_("IO_StreamClosed"));
+						}
+						len = stream.Read(inBuffer, inBufferPosn,
+										  bufferSize - inBufferPosn);
+						if(len <= 0)
+						{
+							sawEOF = true;
+						}
+						else
+						{
+							inBufferLen += len;
+						}
 					}
 
 					// Determine the maximum number of bytes that
@@ -306,7 +310,7 @@ public class StreamReader : TextReader
 					}
 
 					// Convert the bytes into characters.
-					outLen = decoder.GetChars(inBuffer, 0, len,
+					outLen = decoder.GetChars(inBuffer, inBufferPosn, len,
 											  outBuffer, 0);
 					outBufferPosn = 0;
 					outBufferLen = outLen;

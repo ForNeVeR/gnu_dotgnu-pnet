@@ -24,6 +24,9 @@
 	the types of the arguments to method and property invocations to
 	assist in locating the correct override.
 
+	* runtime/System/IO/FileStream.cs, runtime/System/IO/StreamReader.cs:
+	bugs in stream buffer processing.
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

@@ -9,3 +9,4 @@ config.log
 *.lo
 .libs
 .deps
+ffitest

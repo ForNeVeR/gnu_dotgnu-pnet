@@ -3789,7 +3789,7 @@ ManifestResHeading
 				/* Create the manifest resource */
 				ILManifestRes *res;
 				res = ILManifestResCreate(ILAsmImage, 0,
-										  $3.string, (ILUInt32)($2));
+										  $3.string, (ILUInt32)($2), 0);
 				if(!res)
 				{
 					ILAsmOutOfMemory();

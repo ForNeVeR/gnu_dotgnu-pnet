@@ -2162,7 +2162,7 @@ ILImage *ILFileDeclToImage(ILFileDecl *decl);
  * Create a manifest resource record and attach it to an image.
  */
 ILManifestRes *ILManifestResCreate(ILImage *image, ILToken token,
-								   const char *name, ILUInt32 attrs);
+								   const char *name, ILUInt32 attrs, int offset);
 
 /*
  * Get the name of a manifest resource.

@@ -2217,7 +2217,7 @@ void ILAsmOutAddResource(const char *name, FILE *stream)
 						 ILWriterGetTextRVA(ILAsmWriter) - rva);
 
 	/* Add a manifest resource record to the metadata */
-	res = ILManifestResCreate(ILAsmImage, 0, name, IL_META_MANIFEST_PUBLIC);
+	res = ILManifestResCreate(ILAsmImage, 0, name, IL_META_MANIFEST_PUBLIC, 0);
 	if(!res)
 	{
 		ILAsmOutOfMemory();

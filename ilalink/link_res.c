@@ -76,7 +76,8 @@ int ILLinkerAddResource(ILLinker *linker, const char *name,
 	/* Add a manifest resource record to the metadata */
 	res = ILManifestResCreate(linker->image, 0, name,
 							  (isPrivate ? IL_META_MANIFEST_PRIVATE
-							  			 : IL_META_MANIFEST_PUBLIC));
+							  			 : IL_META_MANIFEST_PUBLIC),
+							  			 rva - linker->resourceRVA);
 	if(!res)
 	{
 		_ILLinkerOutOfMemory(linker);

@@ -3142,7 +3142,8 @@ static int Load_ManifestRes(ILImage *image, ILUInt32 *values,
 	res = ILManifestResCreate(image, token,
 							  ILImageGetString
 								(image, values[IL_OFFSET_MANIFESTRES_NAME]),
-							  values[IL_OFFSET_MANIFESTRES_ATTRS]);
+							  values[IL_OFFSET_MANIFESTRES_ATTRS],
+							  0);
 	if(!res)
 	{
 		return IL_LOADERR_MEMORY;

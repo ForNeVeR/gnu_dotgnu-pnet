@@ -838,7 +838,7 @@ ILImage *ILFileDeclToImage(ILFileDecl *decl)
 }
 
 ILManifestRes *ILManifestResCreate(ILImage *image, ILToken token,
-								   const char *name, ILUInt32 attrs)
+								   const char *name, ILUInt32 attrs, int offset)
 {
 	ILManifestRes *res;
 
@@ -854,7 +854,7 @@ ILManifestRes *ILManifestResCreate(ILImage *image, ILToken token,
 	res->name = _ILContextPersistString(image, name);
 	res->attributes = attrs;
 	res->owner = 0;
-	res->offset = 0;
+	res->offset = offset;
 
 	/* Assign a token code to the manifest resource */
 	if(!_ILImageSetToken(image, &(res->programItem), token,

@@ -1,4 +1,10 @@
 
+2004-06-12  Llewellyn Pritchard  <leppie@ataris.co.za>
+
+	* ilalink/link_res.c, image/misc_token.c, image/meta_build.c,
+	include/il_program.h, ilasm/ilasm_grammar.y, ilasm/ilasm_output.c:
+	Fix resource linker bug #9272 (patch #3125, Gopal).
+
 2004-06-11  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_oper.tc: Handle AssignAdd operations between Objects and

@@ -24,7 +24,8 @@ test_crypt_LDADD    = ../image/libILImage.a ../support/libILSupport.a
 
 AM_CFLAGS = -I$(top_srcdir)/include
 
-TESTS = test_verify test_thread test_crypt
+## TESTS = test_verify test_thread test_crypt
+TESTS = test_thread test_crypt
 
 # Newer versions of autoconf will complain about the following line.
 # Ignore them.  We have to turn off optimization or gcc will crash

@@ -4,6 +4,9 @@
 	* engine/verify_ptr.c: allow M and T references to be used as
 	pointers in unsafe mode.
 
+	* tests/Makefile.am: disable "test_verify", because it won't
+	work now that mscorlib.dll has been moved to pnetlib.
+
 2002-12-28  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

@@ -45,11 +45,11 @@
 			</sources>
 
 			<resources>
-				<file name="CJK/jis.table"/>
-				<file name="CJK/ksc.table"/>
-				<file name="CJK/johab.table"/>
-				<file name="CJK/big5.table"/>
-				<file name="CJK/gb.table"/>
+				<file basedir="${csant.src.dir}" name="CJK/jis.table"/>
+				<file basedir="${csant.src.dir}" name="CJK/ksc.table"/>
+				<file basedir="${csant.src.dir}" name="CJK/johab.table"/>
+				<file basedir="${csant.src.dir}" name="CJK/big5.table"/>
+				<file basedir="${csant.src.dir}" name="CJK/gb.table"/>
 			</resources>
 
 			<references>

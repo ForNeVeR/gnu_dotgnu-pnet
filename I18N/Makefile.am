@@ -10,12 +10,14 @@ all-local: build-assemblies
 
 build-assemblies:
 	test -d first || mkdir first
-	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/I18N.build" all
 	@$(MAKE) $(AM_MAKEFLAGS) $(HANDLER_FILE)
-	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build phase-two
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/I18N.build" phase-two
 
 $(HANDLER_FILE): first/I18N.dll $(REGION_ASSEMBLIES)
-	$(SHELL) mklist.sh "$(ILFIND)" $(HANDLER_FILE) \
+	$(SHELL) "$(srcdir)/mklist.sh" "$(ILFIND)" $(HANDLER_FILE) \
 			first/I18N.dll $(REGION_ASSEMBLIES)
 
 CLEANFILES = $(REGION_ASSEMBLIES) $(HANDLER_FILE) I18N.dll first/I18N.dll
@@ -23,10 +25,10 @@ CLEANFILES = $(REGION_ASSEMBLIES) $(HANDLER_FILE) I18N.dll first/I18N.dll
 install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
-	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -i all phase-two
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . -f "$(srcdir)/I18N.build" \
+			-i all phase-two
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	"$(CSANT)" $(CSANT_FLAGS) -f I18N.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -u all phase-two
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . -f "$(srcdir)/I18N.build" \
+			-u all phase-two

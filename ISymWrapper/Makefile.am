@@ -4,17 +4,18 @@
 all-local: ISymWrapper.dll
 
 ISymWrapper.dll:
-	"$(CSANT)" $(CSANT_FLAGS) -f ISymWrapper.build all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/ISymWrapper.build" all
 
 CLEANFILES = ISymWrapper.dll
 
 install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
-	"$(CSANT)" $(CSANT_FLAGS) -f ISymWrapper.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -i all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/ISymWrapper.build" -i all
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	"$(CSANT)" $(CSANT_FLAGS) -f ISymWrapper.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -u all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/ISymWrapper.build" -u all

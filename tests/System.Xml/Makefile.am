@@ -1,6 +1,7 @@
 
 all-local:
-	"$(CSANT)" $(CSANT_FLAGS) -f TestXml.build all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/TestXml.build" all
 
 CLEANFILES = TestXml.dll
 

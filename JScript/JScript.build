@@ -20,6 +20,10 @@
 				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Nodes/*.cs"/>
 				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Parser/*.cs"/>
 				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Vsa/*.cs"/>
+				<excludes if="${CONFIG_EXTENDED_NUMERICS}" name="Nodes/JNode.cs"/>
+				<file if="${CONFIG_EXTENDED_NUMERICS}"
+				      basedir="${csant.build.dir}"
+				      name="Nodes/JNode.cs"/>
 				<file name="jsstub.cs"/>
 			</sources>
 
@@ -60,6 +64,10 @@
 				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Nodes/*.cs"/>
 				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Parser/*.cs"/>
 				<includes if="${CONFIG_EXTENDED_NUMERICS}" name="Vsa/*.cs"/>
+				<excludes if="${CONFIG_EXTENDED_NUMERICS}" name="Nodes/JNode.cs"/>
+				<file if="${CONFIG_EXTENDED_NUMERICS}"
+				      basedir="${csant.build.dir}"
+				      name="Nodes/JNode.cs"/>
 				<file name="jsstub.cs"/>
 			</sources>
 

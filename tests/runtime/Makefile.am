@@ -1,6 +1,7 @@
 
 all-local:
-	"$(CSANT)" $(CSANT_FLAGS) -f Testruntime.build all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/Testruntime.build" all
 
 CLEANFILES = Testruntime.dll
 

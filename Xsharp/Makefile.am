@@ -14,7 +14,8 @@ AM_CFLAGS = $(X_CFLAGS)
 all-local: Xsharp.dll
 
 Xsharp.dll:
-	"$(CSANT)" $(CSANT_FLAGS) -f Xsharp.build all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/Xsharp.build" all
 
 CLEANFILES = Xsharp.dll
 DISTCLEANFILES = Xlib.cs
@@ -22,10 +23,10 @@ DISTCLEANFILES = Xlib.cs
 install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
-	"$(CSANT)" $(CSANT_FLAGS) -f Xsharp.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -i all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/Xsharp.build" -i all
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	"$(CSANT)" $(CSANT_FLAGS) -f Xsharp.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -u all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/Xsharp.build" -u all

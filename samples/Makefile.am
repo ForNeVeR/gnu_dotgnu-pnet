@@ -4,6 +4,7 @@
 all-local: samples
 
 samples:
-	"$(CSANT)" $(CSANT_FLAGS) -f samples.build all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/samples.build" all
 
 CLEANFILES = *.exe

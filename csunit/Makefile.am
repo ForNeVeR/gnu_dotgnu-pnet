@@ -4,7 +4,8 @@
 all-local: csunit
 
 csunit: TestVersion.cs
-	"$(CSANT)" $(CSANT_FLAGS) -f csunit.build all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/csunit.build" all
 
 CLEANFILES = cstest.dll csunit.exe
 DISTCLEANFILES = TestVersion.cs
@@ -12,8 +13,8 @@ DISTCLEANFILES = TestVersion.cs
 install-exec-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
-	"$(CSANT)" $(CSANT_FLAGS) -f csunit.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -i all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/csunit.build" -i all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/csunit.exe
 	rm -f $(DESTDIR)$(bindir)/csunit
@@ -22,7 +23,7 @@ install-exec-local:
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	"$(CSANT)" $(CSANT_FLAGS) -f csunit.build \
-			-a $(DESTDIR)$(libdir)/cscc/lib -u all
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-f "$(srcdir)/csunit.build" -u all
 	rm -f $(DESTDIR)$(bindir)/csunit.exe
 	rm -f $(DESTDIR)$(bindir)/csunit

@@ -12,6 +12,8 @@
 
 	* tools/wrapper.sh.in: bug fixes to the Win32 version of "wrapper.sh".
 
+	* */*.build, */*.am, configure.in: fix out of tree builds.
+
 2003-11-26  Adam Ballai <adam@thefrontnetworks.net>
 
 	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs:

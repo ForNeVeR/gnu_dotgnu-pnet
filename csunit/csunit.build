@@ -15,6 +15,8 @@
 			<sources>
 				<includes name="**/*.cs"/>
 				<excludes name="TestMain.cs"/>
+				<excludes name="TestVersion.cs"/>
+				<file basedir="${csant.build.dir}" name="TestVersion.cs"/>
 			</sources>
 
 			<references>

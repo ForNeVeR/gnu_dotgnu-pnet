@@ -1,3 +1,7 @@
+2004-12-17  Deryk Robosson  <deryk@0x0a.com>
+	* System.Windows.Forms/NumericUpdown.cs: Reverse operation of up
+	and down buttons to conform to other implmentations.  Correct
+	comment text.  Fixes bug #3485.
 
 2004-12-16  Simon Guindon  <simon@nureality.ca>
 

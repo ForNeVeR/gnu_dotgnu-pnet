@@ -1,6 +1,6 @@
 /*
- * DomainUpDown.cs - Implementation of the
- *			"System.Windows.Forms.DomainUpDown" class.
+ * NumericUpDown.cs - Implementation of the
+ *			"System.Windows.Forms.NumericUpDown" class.
  *
  * Copyright (C) 2003 Free Software Foundation
  *
@@ -194,7 +194,7 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 		return value;
 	}
 
-	public override void DownButton()
+	public override void UpButton()
 	{
 		if (currentValue < maximum)
 		{
@@ -207,7 +207,7 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 		}
 	}
 
-	public override void UpButton()
+	public override void DownButton()
 	{
 		if (currentValue > minimum)
 		{

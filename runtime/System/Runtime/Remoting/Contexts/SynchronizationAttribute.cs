@@ -37,6 +37,7 @@ public class SynchronizationAttribute
 	private int flag;
 	private bool reEntrant;
 	private bool locked;
+	private Object savedProp;
 
 	// Public flag values.
 	public const int NOT_SUPPORTED	= 0x0001;
@@ -85,37 +86,110 @@ public class SynchronizationAttribute
 			}
 
 	// Create a client context sink and prepend it to a given chain.
-	[TODO]
 	public virtual IMessageSink GetClientContextSink(IMessageSink nextSink)
 			{
-				// TODO
-				return null;
+				return new PassThroughSink(this, nextSink);
 			}
 
 	// Get the properties for a new construction context.
-	[TODO]
 	public override void GetPropertiesForNewContext
 				(IConstructionCallMessage ctorMsg)
 			{
-				// TODO
+				if(ctorMsg != null)
+				{
+					if(flag == REQUIRED)
+					{
+						if(savedProp != null)
+						{
+							ctorMsg.ContextProperties.Add(savedProp);
+						}
+						else
+						{
+							ctorMsg.ContextProperties.Add(this);
+						}
+					}
+					else if(flag == REQUIRES_NEW)
+					{
+						ctorMsg.ContextProperties.Add(this);
+					}
+				}
 			}
 
 	// Get the server context sink.
-	[TODO]
 	public virtual IMessageSink GetServerContextSink(IMessageSink nextSink)
 			{
-				// TODO
-				return null;
+				return new PassThroughSink(this, nextSink);
 			}
 
 	// Determine if a context is OK with respect to this attribute.
-	[TODO]
 	public override bool IsContextOK
 				(Context ctx, IConstructionCallMessage msg)
 			{
-				// TODO
+				if(ctx == null)
+				{
+					throw new ArgumentNullException("ctx");
+				}
+				if(msg == null)
+				{
+					throw new ArgumentNullException("msg");
+				}
+				if(flag == NOT_SUPPORTED)
+				{
+					if(ctx.GetProperty("Synchronization") != null)
+					{
+						return false;
+					}
+				}
+				else if(flag == REQUIRED)
+				{
+					Object prop = ctx.GetProperty("Synchronization");
+					if(prop == null)
+					{
+						return false;
+					}
+					savedProp = prop;
+				}
+				else if(flag != REQUIRES_NEW)
+				{
+					return true;
+				}
 				return false;
 			}
+
+	// Pass-through sink.
+	private class PassThroughSink : IMessageSink
+	{
+		// Internal state.
+		private SynchronizationAttribute attr;
+		private IMessageSink nextSink;
+
+		// Constructor.
+		public PassThroughSink
+					(SynchronizationAttribute attr, IMessageSink nextSink)
+				{
+					this.attr = attr;
+					this.nextSink = nextSink;
+				}
+
+		// Implement the IMessageSink interface.
+		public IMessageSink NextSink
+				{
+					get
+					{
+						return nextSink;
+					}
+				}
+		public IMessageCtrl AsyncProcessMessage
+						(IMessage msg, IMessageSink replySink)
+				{
+					return nextSink.AsyncProcessMessage(msg, replySink);
+				}
+		public IMessage SyncProcessMessage(IMessage msg)
+				{
+					return nextSink.SyncProcessMessage(msg);
+				}
+
+	}; // class PassThroughSink
 
 }; // class SynchronizationAttribute
 

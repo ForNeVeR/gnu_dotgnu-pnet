@@ -36,3 +36,4 @@ Invalid_IsolatedCurrentSize=The current size of this isolated storage object is 
 Invalid_IsolatedQuota=Isolated storage quota is not specified
 Invalid_ContextFrozen=The context is already frozen
 Invalid_PropertyClash=There is already a context property with the specified name
+Invalid_ModifyLease=Modifying a lease that is not in the initial state

@@ -25,16 +25,19 @@ namespace System.Runtime.Remoting.Lifetime
 #if CONFIG_REMOTING
 
 using System.Security.Permissions;
+using System.Collections;
+using System.Threading;
 
 [SecurityPermission(SecurityAction.LinkDemand,
 					Flags=SecurityPermissionFlag.Infrastructure)]
+[TODO]
 public sealed class LifetimeServices
 {
 	// Internal state.
-	private static TimeSpan leaseManagerPollTime;
-	private static TimeSpan leaseTime;
-	private static TimeSpan renewOnCallTime;
-	private static TimeSpan sponsorshipTimeout;
+	private static TimeSpan leaseManagerPollTime = new TimeSpan(0, 10, 0);
+	private static TimeSpan leaseTime = new TimeSpan(0, 5, 0);
+	private static TimeSpan renewOnCallTime = new TimeSpan(0, 2, 0);
+	private static TimeSpan sponsorshipTimeout = new TimeSpan(0, 2, 0);
 
 	// Get or set the global lease manager poll time setting.
 	public static TimeSpan LeaseManagerPollTime
@@ -45,7 +48,15 @@ public sealed class LifetimeServices
 				}
 				set
 				{
-					leaseManagerPollTime = value;
+					lock(typeof(LifetimeServices))
+					{
+						leaseManagerPollTime = value;
+						AppDomain current = AppDomain.CurrentDomain;
+						if(current.lifetimeManager != null)
+						{
+							current.lifetimeManager.PollTime = value;
+						}
+					}
 				}
 			}
 
@@ -88,21 +99,208 @@ public sealed class LifetimeServices
 				}
 			}
 
+	// Get the lifetime manager for the current application domain.
+	private static Manager GetLifetimeManager()
+			{
+				lock(typeof(LifetimeServices))
+				{
+					AppDomain current = AppDomain.CurrentDomain;
+					if(current.lifetimeManager == null)
+					{
+						current.lifetimeManager = new Manager
+							(leaseManagerPollTime);
+					}
+					return current.lifetimeManager;
+				}
+			}
+
 	// Get the default lifetime service object for a marshal-by-ref object.
-	[TODO]
 	internal static Object GetLifetimeService(MarshalByRefObject obj)
 			{
-				// TODO
-				return null;
+				return GetLifetimeManager().GetLeaseForObject(obj);
 			}
 
 	// Initialize a lifetime service object for a marshal-by-ref object.
-	[TODO]
 	internal static Object InitializeLifetimeService(MarshalByRefObject obj)
 			{
-				// TODO
-				return null;
+				Manager manager = GetLifetimeManager();
+				ILease lease = manager.GetLeaseForObject(obj);
+				if(lease != null)
+				{
+					return lease;
+				}
+				return new Lease(obj, LeaseTime, RenewOnCallTime,
+								 SponsorshipTimeout);
 			}
+
+	// Lifetime lease manager for an application domain.
+	internal class Manager
+	{
+		// Internal state.
+		private TimeSpan pollTime;
+		private Hashtable leases;
+		private Timer timer;
+
+		// Constructor.
+		public Manager(TimeSpan pollTime)
+				{
+					this.pollTime = pollTime;
+					this.leases = new Hashtable();
+					this.timer = new Timer
+						(new TimerCallback(Callback), null,
+						 pollTime, pollTime);
+				}
+
+		// Get or set the poll time.
+		public TimeSpan PollTime
+				{
+					get
+					{
+						lock(this)
+						{
+							return pollTime;
+						}
+					}
+					set
+					{
+						lock(this)
+						{
+							pollTime = value;
+							timer.Change(pollTime, pollTime);
+						}
+					}
+				}
+
+		// Get an active lease for an object.
+		public ILease GetLeaseForObject(MarshalByRefObject obj)
+				{
+					// TODO
+					return null;
+				}
+
+		// Callback for processing lease timeouts.
+		private void Callback(Object state)
+				{
+					// TODO
+				}
+
+	}; // class Manager
+
+	// Lease control object.
+	private class Lease : MarshalByRefObject, ILease
+	{
+		// Internal state.
+		private MarshalByRefObject obj;
+		private DateTime leaseTimeout;
+		private TimeSpan initialLeaseTime;
+		private TimeSpan renewOnCallTime;
+		private TimeSpan sponsorshipTimeout;
+		private LeaseState state;
+
+		// Constructor.
+		public Lease(MarshalByRefObject obj, TimeSpan leaseTime,
+					 TimeSpan renewOnCallTime, TimeSpan sponsorshipTimeout)
+				{
+					this.obj = obj;
+					this.initialLeaseTime = leaseTime;
+					this.renewOnCallTime = renewOnCallTime;
+					this.sponsorshipTimeout = sponsorshipTimeout;
+					this.state = LeaseState.Initial;
+				}
+
+		// Cannot have a lease for a lease!
+		public override Object InitializeLifetimeService()
+				{
+					return null;
+				}
+
+		// Implement the ILease interface.
+		public TimeSpan CurrentLeaseTime
+				{
+					get
+					{
+						return leaseTimeout - DateTime.UtcNow;
+					}
+				}
+		public LeaseState CurrentState
+				{
+					get
+					{
+						return state;
+					}
+				}
+		public TimeSpan InitialLeaseTime
+				{
+					get
+					{
+						return initialLeaseTime;
+					}
+					set
+					{
+						if(state != LeaseState.Initial)
+						{
+							throw new RemotingException
+								(_("Invalid_ModifyLease"));
+						}
+						initialLeaseTime = value;
+						if(value <= TimeSpan.Zero)
+						{
+							// Disable the lease.
+							state = LeaseState.Null;
+						}
+					}
+				}
+		public TimeSpan RenewOnCallTime
+				{
+					get
+					{
+						return renewOnCallTime;
+					}
+					set
+					{
+						if(state != LeaseState.Initial)
+						{
+							throw new RemotingException
+								(_("Invalid_ModifyLease"));
+						}
+						renewOnCallTime = value;
+					}
+				}
+		public TimeSpan SponsorshipTimeout
+				{
+					get
+					{
+						return renewOnCallTime;
+					}
+					set
+					{
+						if(state != LeaseState.Initial)
+						{
+							throw new RemotingException
+								(_("Invalid_ModifyLease"));
+						}
+						renewOnCallTime = value;
+					}
+				}
+		public void Register(ISponsor obj)
+				{
+					Register(obj, new TimeSpan(0));
+				}
+		public void Register(ISponsor obj, TimeSpan renewalTime)
+				{
+					// TODO
+				}
+		public TimeSpan Renew(TimeSpan renewalTime)
+				{
+					// TODO
+					return renewalTime;
+				}
+		public void Unregister(ISponsor obj)
+				{
+					// TODO
+				}
+
+	}; // class Lease
 
 }; // class LifetimeServices
 

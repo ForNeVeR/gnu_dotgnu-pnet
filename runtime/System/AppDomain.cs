@@ -29,6 +29,7 @@ using System.Globalization;
 using System.Reflection.Emit;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Contexts;
+using System.Runtime.Remoting.Lifetime;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
@@ -59,6 +60,7 @@ public sealed class AppDomain
 	private static AppDomain currentDomain;
 #if CONFIG_REMOTING
 	internal Context defaultContext;
+	internal LifetimeServices.Manager lifetimeManager;
 #endif
 
 	// Construct a new AppDomain instance.

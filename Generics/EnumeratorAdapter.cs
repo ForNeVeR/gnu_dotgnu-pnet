@@ -31,10 +31,10 @@ public sealed class EnumeratorAdapter<T> : System.Collections.IEnumerator
 {
 
 	// Internal state.
-	private IEnumerator<T> e;
+	private IIterator<T> e;
 
 	// Constructor.
-	public EnumeratorAdapter(IEnumerator<T> e)
+	public EnumeratorAdapter(IIterator<T> e)
 			{
 				if(e == null)
 				{

@@ -1,5 +1,5 @@
 /*
- * IEnumerator.cs - Generic collection enumerators.
+ * IDictionaryIterator.cs - Generic dictionary iterators.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,13 +27,13 @@ namespace Generics
 
 using System;
 
-public interface IEnumerator<T>
+public interface IDictionaryIterator<KeyT, ValueT> : IIterator<ValueT>
 {
 
-	bool MoveNext();
-	void Reset();
-	T Current { get; }
+	DictionaryEntry<KeyT, ValueT> Entry { get; }
+	KeyT Key { get; }
+	ValueT Value { get; set; }
 
-}; // interface IEnumerator<T>
+}; // interface IDictionaryIterator<KeyT, ValueT>
 
 }; // namespace Generics

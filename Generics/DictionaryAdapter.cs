@@ -100,7 +100,7 @@ public sealed class DictionaryAdapter<KeyT, ValueT>
 			}
 	public IDictionaryEnumerator GetEnumerator()
 			{
-				return new DictionaryEnumeratorAdapter(dict.GetEnumerator());
+				return new DictionaryEnumeratorAdapter(dict.GetIterator());
 			}
 	public void Remove(Object key)
 			{
@@ -185,10 +185,10 @@ public sealed class DictionaryAdapter<KeyT, ValueT>
 	// Implement the non-generic ICollection interface.
 	public void CopyTo(Array array, int index)
 			{
-				IDictionaryEnumerator<KeyT, ValueT> e = dict.GetEnumerator();
-				while(e.MoveNext())
+				IDictionaryIterator<KeyT, ValueT> iterator = dict.GetIterator();
+				while(iterator.MoveNext())
 				{
-					array.SetValue(e.Value, index++);
+					array.SetValue(iterator.Value, index++);
 				}
 			}
 	public int Count
@@ -218,7 +218,7 @@ public sealed class DictionaryAdapter<KeyT, ValueT>
 				System.Collections.IEnumerable.GetEnumerator()
 			{
 				return new EnumeratorAdapter<ValueT>
-					(((ICollection<ValueT>)dict).GetEnumerator());
+					(((ICollection<ValueT>)dict).GetIterator());
 			}
 
 }; // class DictionaryAdapter<KeyT, ValueT>

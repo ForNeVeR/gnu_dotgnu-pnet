@@ -1,5 +1,5 @@
 /*
- * SynchronizedEnumerator.cs - Wrap an enumerator to synchronize it.
+ * ReadOnlyListIterator.cs - Wrap a list iterator to make it read-only.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -23,45 +23,63 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedEnumerator<T> : IEnumerator<T>
+internal sealed class ReadOnlyListIterator<T> : IListIterator<T>
 {
 	// Internal state.
-	protected Object         syncRoot;
-	protected IEnumerator<T> enumerator;
+	protected IListIterator<T> iterator;
 
 	// Constructor.
-	public SynchronizedEnumerator(Object syncRoot, IEnumerator<T> enumerator)
+	public ReadOnlyListIterator(IListIterator<T> iterator)
 			{
-				this.syncRoot = syncRoot;
-				this.enumerator = enumerator;
+				this.iterator = iterator;
 			}
 
-	// Implement the IEnumerator<T> interface.
+	// Implement the IIterator<T> interface.
 	public bool MoveNext()
 			{
-				lock(syncRoot)
-				{
-					return enumerator.MoveNext();
-				}
+				return iterator.MoveNext();
 			}
 	public void Reset()
 			{
-				lock(syncRoot)
+				iterator.Reset();
+			}
+	public void Remove()
+			{
+				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
+			}
+	T IIterator<T>.Current
+			{
+				get
 				{
-					enumerator.Reset();
+					return ((IIterator<T>)iterator).Current;
+				}
+			}
+
+	// Implement the IListIterator<T> interface.
+	public bool MovePrev()
+			{
+				return iterator.MovePrev();
+			}
+	public int Position
+			{
+				get
+				{
+					return iterator.Position;
 				}
 			}
 	public T Current
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return enumerator.Current;
-					}
+					return iterator.Current;
+				}
+				set
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
 				}
 			}
 
-}; // class SynchronizedEnumerator<T>
+}; // class ReadOnlyListIterator<T>
 
 }; // namespace Generics

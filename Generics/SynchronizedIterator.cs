@@ -23,7 +23,7 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedIterator<T> : IEnumerator<T>, IIterator<T>
+internal sealed class SynchronizedIterator<T> : IIterator<T>
 {
 	// Internal state.
 	protected Object       syncRoot;
@@ -36,7 +36,7 @@ internal sealed class SynchronizedIterator<T> : IEnumerator<T>, IIterator<T>
 				this.iterator = iterator;
 			}
 
-	// Implement the IEnumerator<T> interface.
+	// Implement the IIterator<T> interface.
 	public bool MoveNext()
 			{
 				lock(syncRoot)
@@ -51,23 +51,11 @@ internal sealed class SynchronizedIterator<T> : IEnumerator<T>, IIterator<T>
 					iterator.Reset();
 				}
 			}
-	T IEnumerator<T>.Current
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return ((IEnumerator<T>)iterator).Current;
-					}
-				}
-			}
-
-	// Implement the IIterator<T> interface.
-	public bool MovePrev()
+	public void Remove()
 			{
 				lock(syncRoot)
 				{
-					return iterator.MovePrev();
+					iterator.Remove();
 				}
 			}
 	public T Current
@@ -77,13 +65,6 @@ internal sealed class SynchronizedIterator<T> : IEnumerator<T>, IIterator<T>
 					lock(syncRoot)
 					{
 						return iterator.Current;
-					}
-				}
-				set
-				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
 					}
 				}
 			}

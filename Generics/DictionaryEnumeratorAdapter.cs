@@ -33,10 +33,10 @@ public sealed class DictionaryEnumeratorAdapter<KeyT, ValueT>
 {
 
 	// Internal state.
-	private IDictionaryEnumerator<KeyT, ValueT> e;
+	private IDictionaryIterator<KeyT, ValueT> e;
 
 	// Constructor.
-	public DictionaryEnumeratorAdapter(IDictionaryEnumerator<KeyT, ValueT> e)
+	public DictionaryEnumeratorAdapter(IDictionaryIterator<KeyT, ValueT> e)
 			{
 				if(e == null)
 				{

@@ -10,6 +10,27 @@
 	change the representation of the I18N handler table to reduce
 	the startup code associated with the hash table version.
 
+	* Generics/Algorithm.cs, Generics/ArrayList.cs,
+	Generics/ArrayQueue.cs, Generics/ArrayStack.cs,
+	Generics/CollectionAdapter.cs, Generics/CollectionWrapper.cs,
+	Generics/DictionaryAdapter.cs, Generics/DictionaryEnumeratorAdapter.cs,
+	Generics/DictionaryEnumeratorWrapper.cs, Generics/DictionaryWrapper.cs,
+	Generics/EnumerableAdapter.cs, Generics/EnumerableWrapper.cs,
+	Generics/EnumeratorAdapter.cs, Generics/EnumeratorWrapper.cs,
+	Generics/Generics.txt, Generics/Hashtable.cs,
+	Generics/ICollection.cs, Generics/IDictionary.cs,
+	Generics/IDictionaryEnumerator.cs, Generics/IDictionaryIterator.cs,
+	Generics/IEnumerable.cs, Generics/IEnumerator.cs,
+	Generics/IIterator.cs, Generics/IList.cs, Generics/IListIterator.cs,
+	Generics/IQueue.cs, Generics/IStack.cs, Generics/LinkedList.cs,
+	Generics/ListAdapter.cs, Generics/ListWrapper.cs,
+	Generics/ReadOnlyIterator.cs, Generics/ReadOnlyListIterator.cs,
+	Generics/ReverseIterator.cs, Generics/SynchronizedDictEnumerator.cs,
+	Generics/SynchronizedDictIterator.cs,
+	Generics/SynchronizedEnumerator.cs, Generics/SynchronizedIterator.cs,
+	Generics/SynchronizedListIterator.cs: remove the dichotomy between
+	enumerators and iterators and replace it with just iterators.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

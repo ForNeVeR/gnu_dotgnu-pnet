@@ -27,8 +27,7 @@ namespace Generics
 
 using System;
 
-public sealed class ListWrapper<T>
-	: IList<T>, ICollection<T>, IEnumerable<T>, IIterable<T>
+public sealed class ListWrapper<T> : IList<T>, ICollection<T>
 {
 
 	// Internal state.
@@ -56,6 +55,10 @@ public sealed class ListWrapper<T>
 	public bool Contains(T value)
 			{
 				return list.Contains(value);
+			}
+	public IListIterator<T> GetIterator()
+			{
+				return new ListIterator<T>(list);
 			}
 	public int IndexOf(T value)
 			{
@@ -126,24 +129,19 @@ public sealed class ListWrapper<T>
 				}
 			}
 
-	// Implement the IEnumerable<T> interface.
-	public IEnumerator<T> GetEnumerator()
-			{
-				return new EnumeratorWrapper<T>(list.GetEnumerator());
-			}
-
 	// Implement the IIterable<T> interface.
-	public IIterator<T> GetIterator()
+	IIterator<T> IIterable<T>.GetIterator()
 			{
 				return new ListIterator<T>(list);
 			}
 
 	// Private list iterator implementation.
-	private sealed class ListIterator<T> : IEnumerator<T>, IIterator<T>
+	private sealed class ListIterator<T> : IListIterator<T>
 	{
 		// Internal state.
 		private IList list;
 		private int posn;
+		private int removed;
 		private bool reset;
 
 		// Constructor.
@@ -151,31 +149,55 @@ public sealed class ListWrapper<T>
 				{
 					this.list = list;
 					posn = -1;
+					removed = -1;
 					reset = true;
 				}
 
-		// Implement the IEnumerator<T> interface.
+		// Implement the IIterator<T> interface.
 		public bool MoveNext()
 				{
 					if(reset)
 					{
 						// Start at the beginning of the list.
-						posn = -1;
+						posn = 0;
 						reset = false;
 					}
-					++posn;
+					else if(removed != -1)
+					{
+						// An item was removed, so re-visit this position.
+						position = removed;
+						removed = -1;
+					}
+					else
+					{
+						++posn;
+					}
 					return (posn < list.Count);
 				}
 		public void Reset()
 				{
 					posn = -1;
+					removed = -1;
 					reset = true;
 				}
-		T IEnumertor<T>.Current
+		public void Remove()
+				{
+					if(posn >= 0 && posn < list.Count)
+					{
+						list.RemoveAt(posn);
+						removed = posn;
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_BadIteratorPosition"));
+					}
+				}
+		T IIterator<T>.Current
 				{
 					get
 					{
-						if(posn >= 0 && posn < list.Count)
+						if(posn >= 0 && posn < list.Count && removed == -1)
 						{
 							return (T)(list[posn]);
 						}
@@ -187,23 +209,47 @@ public sealed class ListWrapper<T>
 					}
 				}
 
-		// Implement the IIterator<T> interface.
+		// Implement the IListIterator<T> interface.
 		public bool MovePrev()
 				{
 					if(reset)
 					{
 						// Start at the end of the list.
-						posn = list.Count;
+						posn = list.Count - 1;
 						reset = false;
 					}
-					--posn;
+					else if(removed != -1)
+					{
+						// An item was removed, so move to just before it.
+						position = removed - 1;
+						removed = -1;
+					}
+					else
+					{
+						--posn;
+					}
 					return (posn >= 0);
+				}
+		public int Position
+				{
+					get
+					{
+						if(posn >= 0 && posn < list.Count && removed == -1)
+						{
+							return posn;
+						}
+						else
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+					}
 				}
 		public T Current
 				{
 					get
 					{
-						if(posn >= 0 && posn < list.Count)
+						if(posn >= 0 && posn < list.Count && removed == -1)
 						{
 							return (T)(list[posn]);
 						}
@@ -215,7 +261,7 @@ public sealed class ListWrapper<T>
 					}
 					set
 					{
-						if(posn >= 0 && posn < list.Count)
+						if(posn >= 0 && posn < list.Count && removed == -1)
 						{
 							list[posn] = value;
 						}

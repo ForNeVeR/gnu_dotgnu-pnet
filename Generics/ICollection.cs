@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public interface ICollection<T> : IEnumerable<T>
+public interface ICollection<T> : IIterable<T>
 {
 
 	void CopyTo(T[] array, int index);

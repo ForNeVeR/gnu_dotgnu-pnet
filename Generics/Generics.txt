@@ -37,6 +37,6 @@ Invalid_EmptyList=The requested operation is invalid on an empty list
 Invalid_KeyType=Invalid type for dictionary key
 Invalid_UnderlyingModified=The underlying collection has been modified
 Invalid_ValueType=Invalid type for collection value
-Invalid_Enumerator=Enumerator does not belong to the specified collection
 NotSupp_FixedSizeCollection=Operation not supported on fixed sized objects
 NotSupp_ReadOnly=Operation not supported on read-only objects
+NotSupp_Remove=Cannot remove from the specified collection

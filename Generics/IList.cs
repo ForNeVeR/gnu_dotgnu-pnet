@@ -27,12 +27,13 @@ namespace Generics
 
 using System;
 
-public interface IList<T> : ICollection<T>, IEnumerable<T>, IIterable<T>
+public interface IList<T> : ICollection<T>
 {
 
 	int  Add(T value);
 	void Clear();
 	bool Contains(T value);
+	new IListIterator<T> GetIterator();
 	int  IndexOf(T value);
 	void Insert(int index, T value);
 	void Remove(T value);

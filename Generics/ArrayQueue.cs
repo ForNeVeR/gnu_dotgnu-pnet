@@ -27,13 +27,12 @@ namespace Generics
 
 using System;
 
-public class ArrayQueue<T> : IQueue<T>
+public class ArrayQueue<T> : IQueue<T>, ICloneable
 {
 	// Internal state.
 	private T[]   items;
 	private int   add, remove, size;
 	private float growFactor;
-	private int   generation;
 
 	// The default capacity for queues.
 	private const int DefaultCapacity = 32;
@@ -46,7 +45,6 @@ public class ArrayQueue<T> : IQueue<T>
 				remove = 0;
 				size = 0;
 				growFactor = 2.0f;
-				generation = 0;
 			}
 	public ArrayQueue(int capacity)
 			{
@@ -60,7 +58,6 @@ public class ArrayQueue<T> : IQueue<T>
 				remove = 0;
 				size = 0;
 				growFactor = 2.0f;
-				generation = 0;
 			}
 	public ArrayQueue(int capacity, float growFactor)
 			{
@@ -79,7 +76,6 @@ public class ArrayQueue<T> : IQueue<T>
 				remove = 0;
 				size = 0;
 				this.growFactor = growFactor;
-				generation = 0;
 			}
 	public ArrayQueue(ICollection<T> col)
 			{
@@ -93,7 +89,6 @@ public class ArrayQueue<T> : IQueue<T>
 				remove = 0;
 				size = items.Length;
 				growFactor = 2.0f;
-				generation = 0;
 			}
 
 	// Implement the ICollection<T> interface.
@@ -157,12 +152,6 @@ public class ArrayQueue<T> : IQueue<T>
 				return queue;
 			}
 
-	// Implement the IEnumerable<T> interface.
-	public virtual IEnumerator<T> GetEnumerator()
-			{
-				return new QueueEnumerator<T>(this);
-			}
-
 	// Implement the IIterable<T> interface.
 	public virtual IIterable<T> GetIterator()
 			{
@@ -184,7 +173,6 @@ public class ArrayQueue<T> : IQueue<T>
 				add = 0;
 				remove = 0;
 				size = 0;
-				++generation;
 			}
 
 	// Determine if this queue contains a specific object.
@@ -261,7 +249,6 @@ public class ArrayQueue<T> : IQueue<T>
 					add = (add + 1) % items.Length;
 					++size;
 				}
-				++generation;
 			}
 	public virtual T Dequeue()
 			{
@@ -270,7 +257,6 @@ public class ArrayQueue<T> : IQueue<T>
 					T value = items[remove];
 					remove = (remove + 1) % items.Length;
 					--size;
-					++generation;
 					return value;
 				}
 				else
@@ -380,13 +366,13 @@ public class ArrayQueue<T> : IQueue<T>
 						((ArrayQueue<T>)(queue.Clone()));
 				}
 
-		// Implement the IEnumerable<T> interface.
-		public override IEnumerator<T> GetEnumerator()
+		// Implement the IIterable<T> interface.
+		public override IIterator<T> GetIterator()
 				{
 					lock(SyncRoot)
 					{
-						return new SynchronizedEnumerator<T>
-							(SyncRoot, queue.GetEnumerator());
+						return new SynchronizedIterator<T>
+							(SyncRoot, queue.GetIterator());
 					}
 				}
 
@@ -447,29 +433,22 @@ public class ArrayQueue<T> : IQueue<T>
 	}; // class SynchronizedQueue
 
 	// Private class for implementing queue enumeration.
-	private class QueueEnumerator<T> : IEnumerator<T>
+	private class QueueIterator<T> : IIterator<T>
 	{
 		// Internal state.
 		private ArrayQueue<T> queue;
-		private int generation;
 		private int position;
 
 		// Constructor.
-		public QueueEnumerator(ArrayQueue<T> queue)
+		public QueueIterator(ArrayQueue<T> queue)
 				{
 					this.queue = queue;
-					generation = queue.generation;
 					position   = -1;
 				}
 
-		// Implement the IEnumerator<T> interface.
+		// Implement the IIterator<T> interface.
 		public bool MoveNext()
 				{
-					if(generation != queue.generation)
-					{
-						throw new InvalidOperationException
-							(S._("Invalid_CollectionModified"));
-					}
 					++position;
 					if(position < queue.size)
 					{
@@ -480,70 +459,13 @@ public class ArrayQueue<T> : IQueue<T>
 				}
 		public void Reset()
 				{
-					if(generation != queue.generation)
-					{
-						throw new InvalidOperationException
-							(S._("Invalid_CollectionModified"));
-					}
 					position = -1;
+				}
+		public void Remove()
+				{
+					throw new InvalidOperationException(S._("NotSupp_Remove"));
 				}
 		public T Current
-				{
-					get
-					{
-						if(generation != queue.generation)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_CollectionModified"));
-						}
-						if(position < 0 || position >= queue.size)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
-						}
-						return queue.items
-							[(queue.remove + position) % queue.size];
-					}
-				}
-
-	}; // class QueueEnumerator<T>
-
-	// Private class for implementing queue iteration.
-	private class QueueIterator<T> : IIterator<T>
-	{
-		// Internal state.
-		private ArrayQueue<T> queue;
-		private int position;
-		private bool reset;
-
-		// Constructor.
-		public QueueIterator(ArrayQueue<T> queue)
-				{
-					this.queue = queue;
-					position = -1;
-					reset = true;
-				}
-
-		// Implement the IEnumerator<T> interface.
-		public bool MoveNext()
-				{
-					if(reset)
-					{
-						position = 0;
-						reset = false;
-					}
-					else
-					{
-						++position;
-					}
-					return (position < queue.size);
-				}
-		public void Reset()
-				{
-					position = -1;
-					reset = true;
-				}
-		T IEnumerator<T>.Current
 				{
 					get
 					{
@@ -554,44 +476,6 @@ public class ArrayQueue<T> : IQueue<T>
 						}
 						return queue.items
 							[(queue.remove + position) % queue.size];
-					}
-				}
-
-		// Implement the IIterator<T> interface.
-		public bool MovePrev()
-				{
-					if(reset)
-					{
-						position = queue.size - 1;
-						reset = false;
-					}
-					else
-					{
-						--position;
-					}
-					return (position >= 0);
-				}
-		public T Current
-				{
-					get
-					{
-						if(position < 0 || position >= queue.size)
-						{
-							throw new InvalidIteratorPosition
-								(S._("Invalid_BadEnumeratorPosition"));
-						}
-						return queue.items
-							[(queue.remove + position) % queue.size];
-					}
-					set
-					{
-						if(position < 0 || position >= queue.size)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadIteratorPosition"));
-						}
-						queue.items[(queue.remove + position) % queue.size]
-							= value;
 					}
 				}
 

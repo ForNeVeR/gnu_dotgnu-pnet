@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public interface IStack<T> : ICollection<T>, IEnumerable<T>, IIterable<T>
+public interface IStack<T> : ICollection<T>
 {
 	void Push(T value);
 	T Pop();

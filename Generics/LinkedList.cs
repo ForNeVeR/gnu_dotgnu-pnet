@@ -27,8 +27,7 @@ namespace Generics
 
 using System;
 
-public class LinkedList<T>
-	: ICollection<T>, IList<T>, IEnumerable<T>, IIterable<T>, ICloneable
+public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 {
 	// Structure of a list node.
 	private class Node<T>
@@ -132,10 +131,10 @@ public class LinkedList<T>
 	// Implement the ICollection<T> interface.
 	public virtual void CopyTo(T[] array, int index)
 			{
-				IEnumerator<T> e = GetEnumerator();
-				while(e.MoveNext())
+				IIterator<T> iterator = GetIterator();
+				while(iterator.MoveNext())
 				{
-					array[index++] = e.Current;
+					array[index++] = iterator.Current;
 				}
 			}
 	public virtual int Count
@@ -212,6 +211,10 @@ public class LinkedList<T>
 						return false;
 					}
 				}
+			}
+	public virtual IListIterator<T> GetIterator()
+			{
+				return new ListIterator<T>(this);
 			}
 	public virtual int IndexOf(T value)
 			{
@@ -339,23 +342,17 @@ public class LinkedList<T>
 				}
 			}
 
-	// Implement the IEnumerable<T> interface.
-	public virtual IEnumerator<T> GetEnumerator()
-			{
-				return new ListEnumerator<T>(this);
-			}
-
 	// Implement the IIterable<T> interface.
-	public virtual IIterator<T> GetIterator()
+	IIterator<T> IIterator<T>.GetIterator()
 			{
-				return new ListEnumerator<T>(this);
+				return GetIterator();
 			}
 
 	// Implement the ICloneable interface.
 	public virtual Object Clone()
 			{
 				LinkedList<T> clone = new LinkedList<T>();
-				IEnumerator<T> e = GetEnumerator();
+				IIterator<T> e = GetIterator();
 				while(e.MoveNext())
 				{
 					clone.AddLast(e.Current);
@@ -453,83 +450,6 @@ public class LinkedList<T>
 				return RemoveFirst();
 			}
 
-	// Validate that an enumerator belongs to this list and is not reset.
-	private ListEnumerator<T> ValidateEnumerator
-					(IEnumerator<T> e, bool resetOk)
-			{
-				if(e == null)
-				{
-					throw new ArgumentNullException("e");
-				}
-				ListEnumerator<T> le = (e as ListEnumerator<T>);
-				if(le == null || le.list != this ||
-				   (!resetOk && (le.reset || le.posn == null)))
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_Enumerator"));
-				}
-				return le;
-			}
-
-	// Insert a data item just before the current position
-	// that is expressed by an enumerator.  If the enumerator
-	// position is invalid, then this will insert at the
-	// front of the list.
-	public virtual void InsertBefore(IEnumerator<T> e, T data)
-			{
-				ListEnumerator<T> le = ValidateEnumerator(e, true);
-				if(le != null)
-				{
-					InsertBefore(le.posn, data);
-				}
-				else
-				{
-					AddFirst(data);
-				}
-			}
-
-	// Insert a data item just after the current position
-	// that is expressed by an enumerator.  If the enumerator
-	// position is invalid, then this will insert at the
-	// end of the list.
-	public virtual void InsertAfter(IEnumerator<T> e, T data)
-			{
-				ListEnumerator<T> le = ValidateEnumerator(e, true);
-				if(le != null && le.posn.next != null)
-				{
-					InsertBefore(le.posn.next, data);
-				}
-				else
-				{
-					AddLast(data);
-				}
-			}
-
-	// Remove the item at the current position that is expressed
-	// by an enumerator.  The enumerator's position will be updated
-	// to point at the next item in the list.  Returns false if
-	// there is no next item.
-	public virtual bool Remove(IEnumerator<T> e)
-			{
-				ListEnumerator<T> le = ValidateEnumerator(e, false);
-				Node<T> node = le.posn;
-				le.posn = node.next;
-				Remove(node);
-				return (le.posn != null);
-			}
-
-	// Remove the item at the current position and move the
-	// enumerator to the previous item instead of the next.
-	// Returns false if there is no previous item.
-	public virtual bool RemoveAndMoveToPrev(IEnumerator<T> e)
-			{
-				ListEnumerator<T> le = ValidateEnumerator(e, false);
-				Node<T> node = le.posn;
-				le.posn = node.prev;
-				Remove(node);
-				return (le.posn != null);
-			}
-
 	// Wrap a list to make it synchronized.
 	public static LinkedList<T> Synchronized<T>(LinkedList<T> list)
 			{
@@ -550,73 +470,109 @@ public class LinkedList<T>
 				return new ReadOnlyList<T>(list);
 			}
 
-	// Enumerator and iterator class for lists.
-	private class ListEnumerator<T> : IEnumerator<T>, IIterator<T>
+	// Iterator class for lists.
+	private class ListIterator<T> : IListIterator<T>
 	{
 		// Internal state, accessible to "LinkedList<T>".
 		public LinkedList<T> list;
 		public Node<T> posn;
+		public int     index;
 		public bool    reset;
+		public bool    removed;
 
 		// Constructor.
-		public ListEnumerator(LinkedList<T> list)
+		public ListIterator(LinkedList<T> list)
 				{
 					this.list = list;
 					this.posn = null;
+					this.index = -1;
 					this.reset = true;
+					this.removed = false;
 				}
 
-		// Implement the IEnumerator<T> interface.
+		// Implement the IIterator<T> interface.
 		public bool MoveNext()
 				{
 					if(reset)
 					{
 						posn = list.first;
+						index = 0;
 						reset = false;
 					}
 					else if(posn != null)
 					{
 						posn = posn.next;
+						if(!removed)
+						{
+							++index;
+						}
 					}
+					removed = false;
 					return (posn != null);
 				}
 		public void Reset()
 				{
 					posn = null;
+					index = -1;
 					reset = true;
+					removed = false;
 				}
-		T IEnumerator<T>.Current
+		public void Remove()
+				{
+					if(posn == null || removed)
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_BadIteratorPosition"));
+					}
+					list.Remove(posn);
+					removed = true;
+				}
+		T IIterator<T>.Current
 				{
 					get
 					{
-						if(posn == null)
+						if(posn == null || removed)
 						{
 							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
+								(S._("Invalid_BadIteratorPosition"));
 						}
 						return posn.data;
 					}
 				}
 
-		// Implement the IIterator<T> interface.
+		// Implement the IListIterator<T> interface.
 		public bool MovePrev()
 				{
 					if(reset)
 					{
 						posn = list.last;
+						index = list.count - 1;
 						reset = false;
 					}
 					else if(posn != null)
 					{
 						posn = posn.prev;
+						--index;
 					}
 					return (posn != null);
+				}
+		public int Position
+				{
+					get
+					{
+						if(posn == null || removed)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						return index;
+					}
 				}
 		public T Current
 				{
 					get
 					{
-						if(posn == null)
+						if(posn == null || removed)
 						{
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
@@ -625,7 +581,7 @@ public class LinkedList<T>
 					}
 					set
 					{
-						if(posn == null)
+						if(posn == null || removed)
 						{
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
@@ -634,7 +590,7 @@ public class LinkedList<T>
 					}
 				}
 
-	}; // class ListEnumerator<T>
+	}; // class ListIterator<T>
 
 	// Wrapper class for synchronized lists.
 	private sealed class SynchronizedList<T> : IList<T>
@@ -699,6 +655,14 @@ public class LinkedList<T>
 					lock(SyncRoot)
 					{
 						return list.Contains(value);
+					}
+				}
+		public override IListIterator<T> GetIterator()
+				{
+					lock(SyncRoot)
+					{
+						return new SynchronizedListIterator
+							(list.GetIterator());
 					}
 				}
 		public override int IndexOf(T value)
@@ -766,22 +730,6 @@ public class LinkedList<T>
 						}
 					}
 				}
-		public override IEnumerator<T> GetEnumerator()
-				{
-					lock(SyncRoot)
-					{
-						return new SynchronizedEnumerator<T>
-							(list.GetEnumerator());
-					}
-				}
-		public override IIterator<T> GetIterator()
-				{
-					lock(SyncRoot)
-					{
-						return new SynchronizedIterator<T>
-							(list.GetIterator());
-					}
-				}
 		public override Object Clone()
 				{
 					lock(SyncRoot)
@@ -816,34 +764,6 @@ public class LinkedList<T>
 					lock(SyncRoot)
 					{
 						return list.RemoveFirst();
-					}
-				}
-		public override void InsertBefore(IEnumerator<T> e, T data)
-				{
-					lock(SyncRoot)
-					{
-						list.InsertBefore(e, data);
-					}
-				}
-		public override void InsertAfter(IEnumerator<T> e, T data)
-				{
-					lock(SyncRoot)
-					{
-						list.InsertAfter(e, data);
-					}
-				}
-		public override bool Remove(IEnumerator<T> e)
-				{
-					lock(SyncRoot)
-					{
-						return list.Remove(e);
-					}
-				}
-		public override bool RemoveAndMoveToPrev(IEnumerator<T> e)
-				{
-					lock(SyncRoot)
-					{
-						return list.RemoveAndMoveToPrev(e);
 					}
 				}
 
@@ -901,6 +821,10 @@ public class LinkedList<T>
 				{
 					return list.Contains(value);
 				}
+		public override IListIterator<T> GetIterator()
+				{
+					return new ReadOnlyListIterator(list.GetIterator());
+				}
 		public override int IndexOf(T value)
 				{
 					return list.IndexOf(value);
@@ -946,14 +870,6 @@ public class LinkedList<T>
 							(S._("NotSupp_ReadOnly"));
 					}
 				}
-		public override IEnumerator<T> GetEnumerator()
-				{
-					return list.GetEnumerator();
-				}
-		public override IIterator<T> GetIterator()
-				{
-					return new ReadOnlyIterator<T>(list.GetIterator());
-				}
 		public override Object Clone()
 				{
 					lock(SyncRoot)
@@ -978,26 +894,6 @@ public class LinkedList<T>
 						(S._("NotSupp_ReadOnly"));
 				}
 		public override T RemoveFirst()
-				{
-					throw new InvalidOperationException
-						(S._("NotSupp_ReadOnly"));
-				}
-		public override void InsertBefore(IEnumerator<T> e, T data)
-				{
-					throw new InvalidOperationException
-						(S._("NotSupp_ReadOnly"));
-				}
-		public override void InsertAfter(IEnumerator<T> e, T data)
-				{
-					throw new InvalidOperationException
-						(S._("NotSupp_ReadOnly"));
-				}
-		public override bool Remove(IEnumerator<T> e)
-				{
-					throw new InvalidOperationException
-						(S._("NotSupp_ReadOnly"));
-				}
-		public override bool RemoveAndMoveToPrev(IEnumerator<T> e)
 				{
 					throw new InvalidOperationException
 						(S._("NotSupp_ReadOnly"));

@@ -28,7 +28,7 @@ namespace Generics
 
 using System;
 
-public sealed class EnumerableWrapper<T> : IEnumerable<T>
+public sealed class EnumerableWrapper<T> : IIterable<T>
 {
 
 	// Internal state.
@@ -44,8 +44,8 @@ public sealed class EnumerableWrapper<T> : IEnumerable<T>
 				this.e = e;
 			}
 
-	// Implement the IEnumerable<T> interface.
-	public IEnumerator<T> GetEnumerator()
+	// Implement the IIterable<T> interface.
+	public IIterator<T> GetIterator()
 			{
 				return new EnumeratorWrapper<T>(e.GetEnumerator());
 			}

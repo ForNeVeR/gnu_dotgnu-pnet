@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public interface IQueue<T> : ICollection<T>, IEnumerable<T>, IIterable<T>
+public interface IQueue<T> : ICollection<T>
 {
 	void Enqueue(T value);
 	T Dequeue();

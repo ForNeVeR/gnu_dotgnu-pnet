@@ -32,7 +32,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 	// Internal state.
 	private T[] items;
 	private int size;
-	private int generation;
 
 	// The default capacity for stacks.
 	private const int DefaultCapacity = 10;
@@ -45,7 +44,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 			{
 				items = new T [DefaultCapacity];
 				size = 0;
-				generation = 0;
 			}
 	public ArrayStack(int initialCapacity)
 			{
@@ -56,7 +54,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				}
 				items = new T [initialCapacity];
 				size = 0;
-				generation = 0;
 			}
 	public ArrayStack(ICollection<T> col)
 			{
@@ -67,7 +64,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				items = new T [col.Count];
 				col.CopyTo(items, 0);
 				size = items.Length;
-				generation = 0;
 			}
 
 	// Implement the ICollection<T> interface.
@@ -121,12 +117,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				return stack;
 			}
 
-	// Implement the IEnumerable<T> interface.
-	public virtual IEnumerator<T> GetEnumerator()
-			{
-				return new StackEnumerator<T>(this);
-			}
-
 	// Implement the IIterable<T> interface.
 	public virtual IIterator<T> GetIterator()
 			{
@@ -146,7 +136,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 	public virtual void Clear()
 			{
 				size = 0;
-				++generation;
 			}
 
 	// Determine if this stack contains a specific object.
@@ -203,13 +192,11 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 					items = newItems;
 					items[size++] = value;
 				}
-				++generation;
 			}
 	public virtual T Pop()
 			{
 				if(size > 0)
 				{
-					++generation;
 					return items[--size];
 				}
 				else
@@ -310,16 +297,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 						((ArrayStack<T>)(stack.Clone()));
 				}
 
-		// Implement the IEnumerable<T> interface.
-		public override IEnumerator<T> GetEnumerator()
-				{
-					lock(SyncRoot)
-					{
-						return new SynchronizedEnumerator<T>
-							(SyncRoot, stack.GetEnumerator());
-					}
-				}
-
 		// Implement the IIterable<T> interface.
 		public override IIterator<T> GetIterator()
 				{
@@ -386,30 +363,23 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 
 	}; // class SynchronizedStack<T>
 
-	// Private class for implementing stack enumeration.
-	private class StackEnumerator<T> : IEnumerator<T>
+	// Private class for implementing stack iteration.
+	private class StackIterator<T> : IIterator<T>
 	{
 		// Internal state.
 		private ArrayStack<T> stack;
-		private int generation;
 		private int position;
 
 		// Constructor.
-		public StackEnumerator(ArrayStack<T> stack)
+		public StackIterator(ArrayStack<T> stack)
 				{
 					this.stack = stack;
-					generation = stack.generation;
 					position   = -1;
 				}
 
-		// Implement the IEnumerator<T> interface.
+		// Implement the IIterator<T> interface.
 		public bool MoveNext()
 				{
-					if(generation != stack.generation)
-					{
-						throw new InvalidOperationException
-							(S._("Invalid_CollectionModified"));
-					}
 					++position;
 					if(position < stack.size)
 					{
@@ -420,94 +390,11 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				}
 		public void Reset()
 				{
-					if(generation != stack.generation)
-					{
-						throw new InvalidOperationException
-							(S._("Invalid_CollectionModified"));
-					}
 					position = -1;
 				}
-		public T Current
+		public void Remove()
 				{
-					get
-					{
-						if(generation != stack.generation)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_CollectionModified"));
-						}
-						if(position < 0 || position >= stack.size)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
-						}
-						return stack.items[stack.size - position - 1];
-					}
-				}
-
-	}; // class StackEnumerator<T>
-
-	// Private class for implementing stack iteration.
-	private class StackIterator<T> : IIterator<T>
-	{
-		// Internal state.
-		private ArrayStack<T> stack;
-		private int position;
-		private bool reset;
-
-		// Constructor.
-		public StackIterator(ArrayStack<T> stack)
-				{
-					this.stack = stack;
-					position = -1;
-					reset = true;
-				}
-
-		// Implement the IEnumerator<T> interface.
-		public bool MoveNext()
-				{
-					if(reset)
-					{
-						position = 0;
-						reset = false;
-					}
-					else
-					{
-						++position;
-					}
-					return (position < stack.size);
-				}
-		public void Reset()
-				{
-					position = -1;
-					reset = true;
-				}
-		T IEnumerator<T>.Current
-				{
-					get
-					{
-						if(position < 0 || position >= stack.size)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
-						}
-						return stack.items[stack.size - position - 1];
-					}
-				}
-
-		// Implement the IIterator<T> interface.
-		public bool MovePrev()
-				{
-					if(reset)
-					{
-						position = stack.size - 1;
-						reset = false;
-					}
-					else
-					{
-						--position;
-					}
-					return (position >= 0);
+					throw new InvalidOperationException(S._("NotSupp_Remove"));
 				}
 		public T Current
 				{
@@ -519,15 +406,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 								(S._("Invalid_BadIteratorPosition"));
 						}
 						return stack.items[stack.size - position - 1];
-					}
-					set
-					{
-						if(position < 0 || position >= stack.size)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadIteratorPosition"));
-						}
-						stack.items[stack.size - position - 1] = value;
 					}
 				}
 

@@ -27,14 +27,21 @@ namespace Generics
 
 using System;
 
-// Iterators are similar to enumerators, except that they are writable,
-// and it is possible to move both forwards and backwards.
-
-public interface IIterator<T> : IEnumerator<T>
+public interface IIterator<T>
 {
 
-	bool MovePrev();
-	new T Current { get; set; }
+	// Move to the next element in the current iteration.
+	bool MoveNext();
+
+	// Reset the iterator back to its starting position.
+	void Reset();
+
+	// Remove the current element (InvalidOperationException if not supported).
+	// The iterator is invalid until the next call to "MoveNext".
+	void Remove();
+
+	// Get the value of the current element.
+	T Current { get; }
 
 }; // interface IIterator<T>
 

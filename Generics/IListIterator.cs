@@ -1,5 +1,5 @@
 /*
- * IDictionaryEnumerator.cs - Generic dictionary enumerators.
+ * IListIterator.cs - Generic collection iterators for lists.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,13 +27,18 @@ namespace Generics
 
 using System;
 
-public interface IDictionaryEnumerator<KeyT, ValueT> : IEnumerator<ValueT>
+public interface IListIterator : IIterator<T>
 {
 
-	DictionaryEntry<KeyT, ValueT> Entry { get; }
-	KeyT Key { get; }
-	ValueT Value { get; }
+	// Move to the previous element in the current iteration.
+	bool MovePrev();
 
-}; // interface IDictionaryEnumerator<KeyT, ValueT>
+	// Get the current list position.
+	int Position { get; }
+
+	// Get or set the value of the current element.
+	new T Current { get; set; }
+
+}; // interface IListIterator<T>
 
 }; // namespace Generics

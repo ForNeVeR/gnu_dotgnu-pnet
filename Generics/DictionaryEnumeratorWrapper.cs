@@ -29,7 +29,7 @@ namespace Generics
 using System;
 
 public sealed class DictionaryEnumeratorWrapper<KeyT, ValueT>
-	: IDictionaryEnumerator<KeyT, ValueT>
+	: IDictionaryIterator<KeyT, ValueT>
 {
 
 	// Internal state.
@@ -46,7 +46,7 @@ public sealed class DictionaryEnumeratorWrapper<KeyT, ValueT>
 				this.e = e;
 			}
 
-	// Implement the IEnumerator<ValueT> interface.
+	// Implement the IIterator<ValueT> interface.
 	public bool MoveNext()
 			{
 				return e.MoveNext();
@@ -54,6 +54,10 @@ public sealed class DictionaryEnumeratorWrapper<KeyT, ValueT>
 	public void Reset()
 			{
 				e.Reset();
+			}
+	public void Remove()
+			{
+				throw new InvalidOperationException(S._("NotSupp_Remove"));
 			}
 	public ValueT Current
 			{
@@ -65,7 +69,7 @@ public sealed class DictionaryEnumeratorWrapper<KeyT, ValueT>
 				}
 			}
 
-	// Implement the IDictionaryEnumerator<T> interface.
+	// Implement the IDictionaryIterator<KeyT, ValueT> interface.
 	public DictionaryEntry<KeyT, ValueT> Entry
 			{
 				get

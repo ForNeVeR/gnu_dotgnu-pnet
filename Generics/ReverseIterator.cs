@@ -23,66 +23,59 @@ namespace Generics
 
 using System;
 
-public sealed class ReverseIterator<T> : IEnumerator<T>, IIterator<T>
+public sealed class ReverseIterator<T> : IListIterator<T>
 {
 	// Internal state.
-	protected IIterator<T> iterator;
+	protected IListIterator<T> iterator;
 
 	// Constructor.
-	public ReverseIterator(IIterator<T> iterator)
+	public ReverseIterator(IListIterator<T> iterator)
 			{
 				this.iterator = iterator;
 			}
 
-	// Implement the IEnumerator<T> interface.
+	// Implement the IIterator<T> interface.
 	public bool MoveNext()
 			{
-				lock(syncRoot)
-				{
-					return iterator.MovePrev();
-				}
+				return iterator.MovePrev();
 			}
 	public void Reset()
 			{
-				lock(syncRoot)
-				{
-					iterator.Reset();
-				}
+				iterator.Reset();
 			}
-	T IEnumerator<T>.Current
+	public void Remove()
+			{
+				iterator.Remove();
+			}
+	T IIterator<T>.Current
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return ((IEnumerator<T>)iterator).Current;
-					}
+					return ((IIterator<T>)iterator).Current;
 				}
 			}
 
-	// Implement the IIterator<T> interface.
+	// Implement the IListIterator<T> interface.
 	public bool MovePrev()
 			{
-				lock(syncRoot)
+				return iterator.MoveNext();
+			}
+	public int Position
+			{
+				get
 				{
-					return iterator.MoveNext();
+					return iterator.Position;
 				}
 			}
 	public T Current
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Current;
-					}
+					return iterator.Current;
 				}
 				set
 				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
-					}
+					iterator.Current = value;
 				}
 			}
 

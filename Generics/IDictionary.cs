@@ -27,14 +27,13 @@ namespace Generics
 
 using System;
 
-public interface IDictionary<KeyT, ValueT>
-	: IEnumerable<ValueT>, ICollection<ValueT>
+public interface IDictionary<KeyT, ValueT> : ICollection<ValueT>
 {
 
 	void Add(KeyT key, ValueT value);
 	void Clear();
 	bool Contains(KeyT key);
-	new IDictionaryEnumerator<KeyT, ValueT> GetEnumerator();
+	new IDictionaryIterator<KeyT, ValueT> GetIterator();
 	void Remove(KeyT key);
 	bool IsFixedSize { get; }
 	bool IsReadOnly { get; }

@@ -28,8 +28,7 @@ namespace Generics
 using System;
 
 public class Hashtable<KeyT, ValueT>
-	: IDictionary<KeyT, ValueT>, ICollection<ValueT>,
-	  IEnumerable<ValueT>, ICloneable
+	: IDictionary<KeyT, ValueT>, ICollection<ValueT>, ICloneable
 {
 	// Contents of a hash bucket.
 	private struct HashBucket<KeyT, ValueT>
@@ -48,7 +47,6 @@ public class Hashtable<KeyT, ValueT>
 	private int num;
 	private float loadFactor;
 	private HashBucket<KeyT, ValueT>[] table;
-	private int generation;
 
 	// Table of the first 400 prime numbers.
 	private static readonly int[] primes = {
@@ -109,7 +107,6 @@ public class Hashtable<KeyT, ValueT>
 					// but we still need hash tables when no FP.
 				}
 				table = null;
-				generation = 0;
 			}
 	public Hashtable(int capacity)
 			{
@@ -140,7 +137,6 @@ public class Hashtable<KeyT, ValueT>
 				{
 					table = null;
 				}
-				generation = 0;
 			}
 	public Hashtable(IHashCodeProvider<KeyT> hcp, IComparer<KeyT> comparer)
 			{
@@ -159,7 +155,6 @@ public class Hashtable<KeyT, ValueT>
 					// but we still need hash tables when no FP.
 				}
 				table = null;
-				generation = 0;
 			}
 	public Hashtable(int capacity, IHashCodeProvider<KeyT> hcp,
 					 IComparer<KeyT> comparer)
@@ -191,7 +186,6 @@ public class Hashtable<KeyT, ValueT>
 				{
 					table = null;
 				}
-				generation = 0;
 			}
 	public Hashtable(IDictionary<KeyT, ValueT> d)
 			{
@@ -221,7 +215,6 @@ public class Hashtable<KeyT, ValueT>
 				{
 					table = null;
 				}
-				generation = 0;
 				AddDictionaryContents(d);
 			}
 	public Hashtable(IDictionary<KeyT, ValueT> d, IHashCodeProvider<KeyT> hcp,
@@ -253,7 +246,6 @@ public class Hashtable<KeyT, ValueT>
 				{
 					table = null;
 				}
-				generation = 0;
 				AddDictionaryContents(d);
 			}
 	public Hashtable(int capacity, float loadFactor)
@@ -279,7 +271,6 @@ public class Hashtable<KeyT, ValueT>
 					{
 						table = null;
 					}
-					generation = 0;
 				}
 				else
 				{
@@ -311,7 +302,6 @@ public class Hashtable<KeyT, ValueT>
 					{
 						table = null;
 					}
-					generation = 0;
 				}
 				else
 				{
@@ -341,7 +331,6 @@ public class Hashtable<KeyT, ValueT>
 					{
 						table = null;
 					}
-					generation = 0;
 					AddDictionaryContents(d);
 				}
 				else
@@ -373,7 +362,6 @@ public class Hashtable<KeyT, ValueT>
 					{
 						table = null;
 					}
-					generation = 0;
 					AddDictionaryContents(d);
 				}
 				else
@@ -386,11 +374,10 @@ public class Hashtable<KeyT, ValueT>
 	// Add the contents of a dictionary to this hash table.
 	private void AddDictionaryContents(IDictionary<KeyT, ValueT> d)
 			{
-				IDictionaryEnumerator<KeyT, ValueT> enumerator =
-						d.GetEnumerator();
-				while(enumerator.MoveNext())
+				IDictionaryIterator<KeyT, ValueT> iterator = d.GetIterator();
+				while(iterator.MoveNext())
 				{
-					Add(enumerator.Key, enumerator.Value);
+					Add(iterator.Key, iterator.Value);
 				}
 			}
 
@@ -494,9 +481,6 @@ public class Hashtable<KeyT, ValueT>
 
 				// Add the new entry to the hash table.
 				AddDirect(key, value);
-
-				// Update the generation count.
-				++generation;
 			}
 
 	// Implement the ICloneable interface.
@@ -591,7 +575,6 @@ public class Hashtable<KeyT, ValueT>
 							table[hash].key = key;
 							table[hash].value = value;
 							++num;
-							++generation;
 						}
 						return;
 					}
@@ -618,9 +601,9 @@ public class Hashtable<KeyT, ValueT>
 			{
 				return ContainsKey(key);
 			}
-	public virtual IDictionaryEnumerator<KeyT, ValueT> GetEnumerator()
+	public virtual IDictionaryIterator<KeyT, ValueT> GetIterator()
 			{
-				return new HashtableEnum<KeyT, ValueT>(this);
+				return new HashtableIterator<KeyT, ValueT>(this);
 			}
 	public virtual void Remove(KeyT key)
 			{
@@ -639,10 +622,8 @@ public class Hashtable<KeyT, ValueT>
 					}
 					else if(KeyEquals(table[hash].key, key))
 					{
-						table[hash].key = null;
-						table[hash].value = null;
+						table[hash].hasEntry = false;
 						--num;
-						++generation;
 						break;
 					}
 					hash = (hash + 1) % capacity;
@@ -719,7 +700,6 @@ public class Hashtable<KeyT, ValueT>
 								table[hash].key = key;
 								table[hash].value = value;
 								++num;
-								++generation;
 							}
 							return;
 						}
@@ -728,7 +708,6 @@ public class Hashtable<KeyT, ValueT>
 							// There is already an entry with the key,
 							// so replace its value.
 							table[hash].value = value;
-							++generation;
 							return;
 						}
 						hash = (hash + 1) % capacity;
@@ -773,10 +752,10 @@ public class Hashtable<KeyT, ValueT>
 				}
 			}
 
-	// Implement the IEnumerable<ValueT> interface.
-	IEnumerator IEnumerable<ValueT>.GetEnumerator()
+	// Implement the IIterable<ValueT> interface.
+	IIterator IIterable<ValueT>.GetIterator()
 			{
-				return new HashtableEnum<KeyT, ValueT>(this);
+				return new HashtableIterator<KeyT, ValueT>(this);
 			}
 
 	// Determine if this hash table contains a specific key.
@@ -898,11 +877,11 @@ public class Hashtable<KeyT, ValueT>
 	// Synchronized hash table implementation.
 	//
 	// Note: We lock every operation on the underlying hash table,
-	// even if it is a read or enumerator operation.  This is because
+	// even if it is a read or iterator operation.  This is because
 	// we cannot guarantee correct behaviour in symmetric multi-processing
 	// environments if we only lock write operations.
 	private sealed class SynchronizedHashtable<KeyT, ValueT>
-			: Hashtable<KeyT, ValueT>, IEnumerable<ValueT>
+			: Hashtable<KeyT, ValueT>
 	{
 		// Internal state.
 		private new Hashtable<KeyT, ValueT> table;
@@ -978,12 +957,12 @@ public class Hashtable<KeyT, ValueT>
 						return table.Contains(key);
 					}
 				}
-		public override IDictionaryEnumerator<KeyT, ValueT> GetEnumerator()
+		public override IDictionaryIterator<KeyT, ValueT> GetIterator()
 				{
 					lock(SyncRoot)
 					{
-						return new SynchronizedDictEnumerator<KeyT, ValueT>
-							(SyncRoot, table.GetEnumerator());
+						return new SynchronizedDictIterator<KeyT, ValueT>
+							(SyncRoot, table.GetIterator());
 					}
 				}
 		public override void Remove(KeyT key)
@@ -1051,14 +1030,14 @@ public class Hashtable<KeyT, ValueT>
 					}
 				}
 	
-		// Implement the IEnumerable<ValueT> interface.
-		IEnumerator IEnumerable<ValueT>.GetEnumerator()
+		// Implement the IIterable<ValueT> interface.
+		IIterator IIterable<ValueT>.GetIterator()
 				{
 					lock(SyncRoot)
 					{
-						return new SynchronizedEnumerator<ValueT>
-							(SyncRoot, ((IEnumerable<ValueT>)table)
-											.GetEnumerator());
+						return new SynchronizedIterator<ValueT>
+							(SyncRoot, ((IIterable<ValueT>)table)
+											.GetIterator());
 					}
 				}
 
@@ -1124,31 +1103,24 @@ public class Hashtable<KeyT, ValueT>
 
 	}; // SynchronizedHashtable<KeyT, ValueT>
 
-	// Hashtable collection and dictionary enumerator.
-	private class HashtableEnum<KeyT, ValueT>
-		: IDictionaryEnumerator<KeyT, ValueT>
+	// Hashtable collection and dictionary iterator.
+	private class HashtableIterator<KeyT, ValueT>
+		: IDictionaryIterator<KeyT, ValueT>
 	{
 		// Internal state.
 		protected Hashtable<KeyT, ValueT> table;
-		protected int       generation;
 		protected int		posn;
 
 		// Constructor.
-		public HashtableEnum(Hashtable<KeyT, ValueT> table)
+		public HashtableIterator(Hashtable<KeyT, ValueT> table)
 				{
 					this.table = table;
-					generation = table.generation;
 					posn = -1;
 				}
 
-		// Implement the IEnumerator<ValueT> interface.
+		// Implement the IIterator<ValueT> interface.
 		public bool MoveNext()
 				{
-					if(table.generation != generation)
-					{
-						throw new InvalidOperationException
-							(S._("Invalid_CollectionModified"));
-					}
 					while(++posn < table.capacity)
 					{
 						if(table.table[posn].hasEntry)
@@ -1161,12 +1133,18 @@ public class Hashtable<KeyT, ValueT>
 				}
 		public void Reset()
 				{
-					if(table.generation != generation)
+					posn = -1;
+				}
+		public void Remove()
+				{
+					if(posn < 0 || posn >= table.capacity ||
+					   !(table.table[posn].hasEntry))
 					{
 						throw new InvalidOperationException
-							(S._("Invalid_CollectionModified"));
+							(S._("Invalid_BadIteratorPosition"));
 					}
-					posn = -1;
+					table.table[posn].hasEntry = false;
+					--(table.num);
 				}
 		public ValueT Current
 				{
@@ -1176,20 +1154,16 @@ public class Hashtable<KeyT, ValueT>
 					}
 				}
 
-		// Implement the IDictionaryEnumerator<KeyT, ValueT> interface.
+		// Implement the IDictionaryIterator<KeyT, ValueT> interface.
 		public DictionaryEntry<KeyT, ValueT> Entry
 				{
 					get
 					{
-						if(table.generation != generation)
+						if(posn < 0 || posn >= table.capacity ||
+					       !(table.table[posn].hasEntry))
 						{
 							throw new InvalidOperationException
-								(S._("Invalid_CollectionModified"));
-						}
-						if(posn < 0 || posn >= table.capacity)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
+								(S._("Invalid_BadIteratorPosition"));
 						}
 						return new DictionaryEntry<KeyT, ValueT>
 								(table.table[posn].key,
@@ -1200,15 +1174,11 @@ public class Hashtable<KeyT, ValueT>
 				{
 					get
 					{
-						if(table.generation != generation)
+						if(posn < 0 || posn >= table.capacity ||
+					       !(table.table[posn].hasEntry))
 						{
 							throw new InvalidOperationException
-								(S._("Invalid_CollectionModified"));
-						}
-						if(posn < 0 || posn >= table.capacity)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
+								(S._("Invalid_BadIteratorPosition"));
 						}
 						return table.table[posn].key;
 					}
@@ -1217,21 +1187,27 @@ public class Hashtable<KeyT, ValueT>
 				{
 					get
 					{
-						if(table.generation != generation)
+						if(posn < 0 || posn >= table.capacity ||
+					       !(table.table[posn].hasEntry))
 						{
 							throw new InvalidOperationException
-								(S._("Invalid_CollectionModified"));
-						}
-						if(posn < 0 || posn >= table.capacity)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
+								(S._("Invalid_BadIteratorPosition"));
 						}
 						return table.table[posn].value;
 					}
+					set
+					{
+						if(posn < 0 || posn >= table.capacity ||
+					       !(table.table[posn].hasEntry))
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						table.table[posn].value = value;
+					}
 				}
 
-	}; // HashtableEnum<KeyT, ValueT>
+	}; // HashtableIterator<KeyT, ValueT>
 
 }; // class Hashtable<KeyT, ValueT>
 

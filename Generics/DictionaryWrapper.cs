@@ -55,7 +55,7 @@ public sealed class DictionaryWrapper<KeyT, ValueT> : IDictionary<KeyT, ValueT>
 			{
 				return dict.Contains(key);
 			}
-	public IDictionaryEnumerator<KeyT, ValueT> GetEnumerator()
+	public IDictionaryIterator<KeyT, ValueT> GetIterator()
 			{
 				return new DictionaryEnumeratorWrapper<KeyT, ValueT>
 						(dict.GetEnumerator());
@@ -131,11 +131,11 @@ public sealed class DictionaryWrapper<KeyT, ValueT> : IDictionary<KeyT, ValueT>
 				}
 			}
 
-	// Implement the IEnumerable<ValueT> interface.
-	public IEnumerator<ValueT> IEnumerable<ValueT>.GetEnumerator()
+	// Implement the IIterable<ValueT> interface.
+	public IIterator<ValueT> IIterable<ValueT>.GetEnumerator()
 			{
 				return new EnumeratorWrapper
-					(((IEnumerable<ValueT>)dict).GetEnumerator());
+					(((IIterable<ValueT>)dict).GetIterator());
 			}
 
 }; // class DictionaryWrapper<KeyT, ValueT>

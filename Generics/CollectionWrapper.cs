@@ -69,8 +69,8 @@ public sealed class CollectionWrapper<T> : ICollection<T>
 				}
 			}
 
-	// Implement the IEnumerable<T> interface.
-	public IEnumerator<T> GetEnumerator()
+	// Implement the IIterable<T> interface.
+	public IIterator<T> GetIterator()
 			{
 				return new EnumeratorWrapper(coll.GetEnumerator());
 			}

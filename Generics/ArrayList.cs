@@ -27,20 +27,17 @@ namespace Generics
 
 using System;
 
-public class ArrayList<T>
-	: ICollection<T>, IEnumerable<T>, IList<T>, ICloneable, IIterable<T>
+public class ArrayList<T> : ICollection<T>, IList<T>, ICloneable
 {
 	// Internal state.
 	private int count;
 	private T[] store;
-	private int generation;
 
 	// Simple constructors.
 	public ArrayList()
 			{
 				count = 0;
 				store = new T [16];
-				generation = 0;
 			}
 	public ArrayList(int capacity)
 			{
@@ -51,13 +48,12 @@ public class ArrayList<T>
 				}
 				count = 0;
 				store = new T [capacity];
-				generation = 0;
 			}
 
 	// Construct an array list from the contents of a collection.
 	public ArrayList(ICollection<T> c)
 			{
-				IEnumerator<T> enumerator;
+				IIterator<T> iterator;
 				int index;
 				if(c == null)
 				{
@@ -65,12 +61,11 @@ public class ArrayList<T>
 				}
 				count = c.Count;
 				store = new T [count];
-				enumerator = c.GetEnumerator();
-				for(index = 0; enumerator.MoveNext(); ++index)
+				iterator = c.GetIterator();
+				for(index = 0; iterator.MoveNext(); ++index)
 				{
-					store[index] = enumerator.Current;
+					store[index] = iterator.Current;
 				}
-				generation = 0;
 			}
 
 	// Reallocate the array to accomodate "n" new entries at "index".
@@ -131,14 +126,12 @@ public class ArrayList<T>
 					Realloc(1, count);
 				}
 				store[count] = value;
-				++generation;
 				return count++;
 			}
 	public virtual void Clear()
 			{
 				Array.Clear(store, 0, count);
 				count = 0;
-				++generation;
 			}
 	public virtual bool Contains(T item)
 			{
@@ -194,7 +187,6 @@ public class ArrayList<T>
 				Realloc(1, index);
 				store[index] = value;
 				++count;
-				++generation;
 			}
 	public virtual void Remove(T value)
 			{
@@ -202,7 +194,6 @@ public class ArrayList<T>
 				if(index != -1)
 				{
 					Delete(1, index);
-					++generation;
 				}
 			}
 	public virtual void RemoveAt(int index)
@@ -213,7 +204,6 @@ public class ArrayList<T>
 						("index", S._("ArgRange_Array"));
 				}
 				Delete(1, index);
-				++generation;
 			}
 	public virtual bool IsFixedSize
 			{
@@ -248,7 +238,6 @@ public class ArrayList<T>
 							("index", S._("ArgRange_Array"));
 					}
 					store[index] = value;
-					++generation;
 				}
 			}
 
@@ -256,7 +245,7 @@ public class ArrayList<T>
 	public virtual void AddRange(ICollection<T> c)
 			{
 				int cCount;
-				IEnumerator<T> enumerator;
+				IIterator<T> iterator;
 				if(c == null)
 				{
 					throw new ArgumentNullException("c");
@@ -266,19 +255,18 @@ public class ArrayList<T>
 				{
 					Realloc(cCount, count);
 				}
-				enumerator = c.GetEnumerator();
-				while(enumerator.MoveNext())
+				iterator = c.GetIterator();
+				while(iterator.MoveNext())
 				{
-					store[count++] = enumerator.Current;
+					store[count++] = iterator.Current;
 				}
-				++generation;
 			}
 
 	// Insert the contents of a collection as a range.
 	public virtual void InsertRange(int index, ICollection<T> c)
 			{
 				int cCount;
-				IEnumerator<T> enumerator;
+				IIterator<T> iterator;
 				if(c == null)
 				{
 					throw new ArgumentNullException("c");
@@ -290,13 +278,12 @@ public class ArrayList<T>
 				}
 				cCount = c.Count;
 				Realloc(cCount, index);
-				enumerator = c.GetEnumerator();
+				iterator = c.GetIterator();
 				while(enumerator.MoveNext())
 				{
-					store[index++] = enumerator.Current;
+					store[index++] = iterator.Current;
 				}
 				count += cCount;
-				++generation;
 			}
 
 	// Remove a range of elements from an array list.
@@ -317,7 +304,6 @@ public class ArrayList<T>
 					throw new ArgumentException(S._("Arg_InvalidArrayRange"));
 				}
 				Delete(count, index);
-				++generation;
 			}
 
 	// Perform a binary search on an array list.
@@ -411,7 +397,6 @@ public class ArrayList<T>
 			{
 				ArrayList<T> clone = new ArrayList<T>(count);
 				clone.count = count;
-				clone.generation = generation;
 				Array.Copy(store, 0, clone.store, 0, count);
 				return clone;
 			}
@@ -626,7 +611,6 @@ public class ArrayList<T>
 	public virtual void Reverse()
 			{
 				Array.Reverse(store, 0, count);
-				++generation;
 			}
 	public virtual void Reverse(int index, int count)
 			{
@@ -645,14 +629,13 @@ public class ArrayList<T>
 					throw new ArgumentException(S._("Arg_InvalidArrayRange"));
 				}
 				Array.Reverse(store, index, count);
-				++generation;
 			}
 
 	// Set a range of array list elements to the members of a collection.
 	public virtual void SetRange(int index, ICollection<T> c)
 			{
 				int count;
-				IEnumerator<T> enumerator;
+				IIterator<T> iterator;
 				if(c == null)
 				{
 					throw new ArgumentNullException("c");
@@ -667,12 +650,11 @@ public class ArrayList<T>
 				{
 					throw new ArgumentException(S._("Arg_InvalidArrayRange"));
 				}
-				enumerator = c.GetEnumerator();
-				while(enumerator.MoveNext())
+				iterator = c.GetIterator();
+				while(iterator.MoveNext())
 				{
-					store[index++] = enumerator.Current;
+					store[index++] = iterator.Current;
 				}
-				++generation;
 			}
 
 	// Inner version of "Sort".
@@ -778,7 +760,6 @@ public class ArrayList<T>
 				{
 					store = new T[16];
 				}
-				++generation;
 			}
 
 	// Get or set the current capacity of the array list.
@@ -809,40 +790,19 @@ public class ArrayList<T>
 						}
 						store = newStore;
 					}
-					++generation;
 				}
-			}
-
-	// Get an enumerator for this array list.
-	public virtual IEnumerator<T> GetEnumerator()
-			{
-				return new ArrayListEnumerator<T>(this, 0, Count);
-			}
-	public virtual IEnumerator<T> GetEnumerator(int index, int count)
-			{
-				if(index < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("index", S._("ArgRange_Array"));
-				}
-				if(count < 0)
-				{
-					throw new ArgumentOutOfRangeException
-						("count", S._("ArgRange_Array"));
-				}
-				if((Count - index) < count)
-				{
-					throw new ArgumentException(S._("Arg_InvalidArrayRange"));
-				}
-				return new ArrayListEnumerator<T>(this, index, index + count);
 			}
 
 	// Get an iterator for this array list.
-	public virtual IIterator<T> GetIterator()
+	public virtual IListIterator<T> GetIterator()
 			{
 				return new ArrayListIterator<T>(this, 0, Count);
 			}
-	public virtual IIterator<T> GetIterator(int index, int count)
+	IIterator<T> IIterable<T>.GetIterator()
+			{
+				return GetIterator();
+			}
+	public virtual IListIterator<T> GetIterator(int index, int count)
 			{
 				if(index < 0)
 				{
@@ -861,69 +821,15 @@ public class ArrayList<T>
 				return new ArrayListIterator<T>(this, index, index + count);
 			}
 
-	// Array list enumerator class.
-	private class ArrayListEnumerator<T> : IEnumerator<T>
-	{
-		// Internal state.
-		private ArrayList<T> list;
-		private int start;
-		private int finish;
-		private int position;
-		private int generation;
-
-		// Constructor.
-		public ArrayListEnumerator(ArrayList<T> list, int start, int finish)
-				{
-					this.list = list;
-					this.start = start;
-					this.finish = finish;
-					position = start - 1;
-					generation = list.generation;
-				}
-
-		// Implement the IEnumerator<T> interface.
-		public bool MoveNext()
-				{
-					if(generation != list.generation)
-					{
-						throw new InvalidOperationException
-							(S._("Invalid_CollectionModified"));
-					}
-					++position;
-					return (position < finish);
-				}
-		public void Reset()
-				{
-					position = start - 1;
-				}
-		public T Current
-				{
-					get
-					{
-						if(generation != list.generation)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_CollectionModified"));
-						}
-						else if(position < start || position >= finish)
-						{
-							throw new InvalidOperationException
-								(S._("Invalid_BadEnumeratorPosition"));
-						}
-						return list[position];
-					}
-				}
-
-	}; // class ArrayListEnumerator<T>
-
 	// Array list iterator class.
-	private class ArrayListIterator<T> : IEnumerator<T>, IIterator<T>
+	private class ArrayListIterator<T> : IListIterator<T>
 	{
 		// Internal state.
 		private ArrayList<T> list;
 		private int start;
 		private int finish;
 		private int position;
+		private int removed;
 		private bool reset;
 
 		// Constructor.
@@ -933,31 +839,54 @@ public class ArrayList<T>
 					this.start = start;
 					this.finish = finish;
 					position = start - 1;
+					removed = -1;
 					reset = true;
 				}
 
-		// Implement the IEnumerator<T> interface.
+		// Implement the IIterator<T> interface.
 		public bool MoveNext()
 				{
 					if(reset)
 					{
 						// Start at the beginning of the range.
-						position = start - 1;
+						position = start;
 						reset = false;
 					}
-					++position;
+					else if(removed != -1)
+					{
+						// An item was removed, so re-visit this position.
+						position = removed;
+						removed = -1;
+					}
+					else
+					{
+						++position;
+					}
 					return (position < finish);
 				}
 		public void Reset()
 				{
 					reset = true;
 					position = start - 1;
+					removed = -1;
 				}
-		T IEnumerator<T>.Current
+		public void Remove()
+				{
+					if(position < start || position >= finish || removed != -1)
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_BadIteratorPosition"));
+					}
+					list.RemoveAt(position);
+					--finish;
+					removed = position;
+				}
+		T IIterator<T>.Current
 				{
 					get
 					{
-						if(position < start || position >= finish)
+						if(position < start || position >= finish ||
+						   removed != -1)
 						{
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
@@ -966,23 +895,46 @@ public class ArrayList<T>
 					}
 				}
 
-		// Implement the IIterator<T> interface.
+		// Implement the IListIterator<T> interface.
 		public bool MovePrev()
 				{
 					if(reset)
 					{
 						// Start at the end of the range.
-						position = finish;
+						position = finish - 1;
 						reset = false;
 					}
-					--position;
+					else if(removed != -1)
+					{
+						// An item was removed, so move to just before it.
+						position = removed - 1;
+						removed = -1;
+					}
+					else
+					{
+						--position;
+					}
 					return (position >= start);
+				}
+		public int Position
+				{
+					get
+					{
+						if(position < start || position >= finish ||
+						   removed != -1)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						return position;
+					}
 				}
 		public T Current
 				{
 					get
 					{
-						if(position < start || position >= finish)
+						if(position < start || position >= finish ||
+						   removed != -1)
 						{
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
@@ -991,7 +943,8 @@ public class ArrayList<T>
 					}
 					set
 					{
-						if(position < start || position >= finish)
+						if(position < start || position >= finish ||
+						   removed != -1)
 						{
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
@@ -1100,10 +1053,10 @@ public class ArrayList<T>
 					{
 						throw new ArgumentNullException("c");
 					}
-					IEnumerator<T> enumerator = c.GetEnumerator();
-					while(enumerator.MoveNext())
+					IIterator<T> iterator = c.GetIterator();
+					while(iterator.MoveNext())
 					{
-						list.Add(enumerator.Current);
+						list.Add(iterator.Current);
 					}
 				}
 		public override void InsertRange(int index, ICollection<T> c)
@@ -1112,10 +1065,10 @@ public class ArrayList<T>
 					{
 						throw new ArgumentNullException("c");
 					}
-					IEnumerator<T> enumerator = c.GetEnumerator();
-					while(enumerator.MoveNext())
+					IIterator<T> enumerator = c.GetIterator();
+					while(iterator.MoveNext())
 					{
-						list.Insert(index++, enumerator.Current);
+						list.Insert(index++, iterator.Current);
 					}
 				}
 		public override void RemoveRange(int index, int count)
@@ -1142,10 +1095,10 @@ public class ArrayList<T>
 					{
 						throw new ArgumentNullException("c");
 					}
-					IEnumerator<T> enumerator = c.GetEnumerator();
-					while(enumerator.MoveNext())
+					IIterator<T> enumerator = c.GetIterator();
+					while(iterator.MoveNext())
 					{
-						list[index++] = enumerator.Current;
+						list[index++] = iterator.Current;
 					}
 				}
 
@@ -1456,22 +1409,12 @@ public class ArrayList<T>
 					}
 				}
 
-		// Get an enumerator for this array list.
-		public override IEnumerator<T> GetEnumerator()
-				{
-					return list.GetEnumerator();
-				}
-		public override IEnumerator<T> GetEnumerator(int index, int count)
-				{
-					return list.GetEnumerator(index, count);
-				}
-
 		// Get an iterator for this array list.
-		public override IIterator<T> GetIterator()
+		public override IListIterator<T> GetIterator()
 				{
 					return list.GetIterator();
 				}
-		public override IIterator<T> GetIterator(int index, int count)
+		public override IListIterator<T> GetIterator(int index, int count)
 				{
 					return list.GetIterator(index, count);
 				}
@@ -1501,6 +1444,7 @@ public class ArrayList<T>
 		public FixedSizeWrapper(ArrayList<T> list)
 				: base(list)
 				{
+					// Nothing to do here.
 				}
 
 		// Implement the IList interface.
@@ -1621,69 +1565,46 @@ public class ArrayList<T>
 					this.list  = list;
 					this.index = index;
 					this.count = count;
-					generation = list.generation;
-				}
-
-		// Determine if the underlying array list has been changed.
-		private void UnderlyingCheck()
-				{
-					if(generation != list.generation)
-					{
-						throw new InvalidOperationException
-							(S._("Invalid_UnderlyingModified"));
-					}
 				}
 
 		// Implement the IList interface.
 		public override int Add(T value)
 				{
-					UnderlyingCheck();
 					list.Insert(index + count, value);
-					generation = list.generation;
 					return index + count;
 				}
 		public override void Clear()
 				{
-					UnderlyingCheck();
 					list.Clear();
-					generation = list.generation;
 				}
 		public override bool Contains(T item)
 				{
-					UnderlyingCheck();
 					return (list.IndexOf(item) != -1);
 				}
 		public override int IndexOf(T value)
 				{
-					UnderlyingCheck();
 					return list.IndexOf(value, index, count);
 				}
 		public override void Insert(int index, T value)
 				{
-					UnderlyingCheck();
 					if(index < 0 || index >= count)
 					{
 						throw new ArgumentOutOfRangeException
 							("index", S._("ArgRange_Array"));
 					}
 					list.Insert(index + this.index, value);
-					generation = list.generation;
 				}
 		public override void Remove(T value)
 				{
-					UnderlyingCheck();
 					int ind = list.IndexOf(value, index, count);
 					if(ind != -1)
 					{
 						list.RemoveAt(ind);
 					}
-					generation = list.generation;
 				}
 		public override void RemoveAt(int index)
 				{
-					UnderlyingCheck();
 					list.RemoveAt(index + this.index);
-					generation = list.generation;
 				}
 		public override bool IsFixedSize
 				{
@@ -1703,7 +1624,6 @@ public class ArrayList<T>
 				{
 					get
 					{
-						UnderlyingCheck();
 						if(index < 0 || index >= count)
 						{
 							throw new ArgumentOutOfRangeException
@@ -1713,41 +1633,31 @@ public class ArrayList<T>
 					}
 					set
 					{
-						UnderlyingCheck();
 						if(index < 0 || index >= count)
 						{
 							throw new ArgumentOutOfRangeException
 								("index", S._("ArgRange_Array"));
 						}
 						list[index + this.index] = value;
-						generation = list.generation;
 					}
 				}
 
 		// Range-related methods.
 		public override void AddRange(ICollection<T> c)
 				{
-					UnderlyingCheck();
 					list.InsertRange(index + count, c);
-					generation = list.generation;
 				}
 		public override void InsertRange(int index, ICollection<T> c)
 				{
-					UnderlyingCheck();
 					list.InsertRange(index + this.index, c);
-					generation = list.generation;
 				}
 		public override void RemoveRange(int index, int count)
 				{
-					UnderlyingCheck();
 					list.RemoveRange(index + this.index, count);
-					generation = list.generation;
 				}
 		public override void SetRange(int index, ICollection<T> c)
 				{
-					UnderlyingCheck();
 					list.SetRange(index + this.index, c);
-					generation = list.generation;
 				}
 
 		// Implement the ICloneable interface.
@@ -1760,45 +1670,37 @@ public class ArrayList<T>
 		// Searching methods.
 		public override int BinarySearch(T value)
 				{
-					UnderlyingCheck();
 					return list.BinarySearch
 						(index, count, value, (IComparer<T>)null);
 				}
 		public override int BinarySearch(T value, IComparer<T> comparer)
 				{
-					UnderlyingCheck();
 					return list.BinarySearch(index, count, value, comparer);
 				}
 		public override int BinarySearch(int index, int count,
 									     T value, IComparer<T> comparer)
 				{
-					UnderlyingCheck();
 					return list.BinarySearch(index + this.index, count,
 											 value, comparer);
 				}
 		public override int IndexOf(T value, int startIndex)
 				{
-					UnderlyingCheck();
 					return list.IndexOf(value, startIndex);
 				}
 		public override int IndexOf(T value, int startIndex, int count)
 				{
-					UnderlyingCheck();
 					return list.IndexOf(value, startIndex, count);
 				}
 		public override int LastIndexOf(T value)
 				{
-					UnderlyingCheck();
 					return list.LastIndexOf(value);
 				}
 		public override int LastIndexOf(T value, int startIndex)
 				{
-					UnderlyingCheck();
 					return list.LastIndexOf(value, startIndex);
 				}
 		public override int LastIndexOf(T value, int startIndex, int count)
 				{
-					UnderlyingCheck();
 					return list.LastIndexOf(value, startIndex, count);
 				}
 
@@ -1811,7 +1713,6 @@ public class ArrayList<T>
 				{
 					get
 					{
-						UnderlyingCheck();
 						return count;
 					}
 				}
@@ -1894,16 +1795,6 @@ public class ArrayList<T>
 					}
 				}
 
-		// Get an enumerator for this array list.
-		public override IEnumerator<T> GetEnumerator()
-				{
-					return list.GetEnumerator();
-				}
-		public override IEnumerator<T> GetEnumerator(int index, int count)
-				{
-					return list.GetEnumerator(index, count);
-				}
-
 		// Get an iterator for this array list.
 		public override IIterator<T> GetIterator()
 				{
@@ -1939,6 +1830,7 @@ public class ArrayList<T>
 		public ReadOnlyWrapper(ArrayList<T> list)
 				: base(list)
 				{
+					// Nothing to do here.
 				}
 
 		// Implement the IList interface.
@@ -2051,13 +1943,13 @@ public class ArrayList<T>
 				}
 
 		// Get an iterator for this array list.
-		public override IIterator<T> GetIterator()
+		public override IListIterator<T> GetIterator()
 				{
-					return new ReadOnlyIterator<T>(list.GetIterator());
+					return new ReadOnlyListIterator<T>(list.GetIterator());
 				}
-		public override IIterator<T> GetIterator(int index, int count)
+		public override IListIterator<T> GetIterator(int index, int count)
 				{
-					return new ReadOnlyIterator<T>
+					return new ReadOnlyListIterator<T>
 						(list.GetIterator(index, count));
 				}
 
@@ -2402,26 +2294,8 @@ public class ArrayList<T>
 					}
 				}
 
-		// Get an enumerator for this array list.
-		public override IEnumerator<T> GetEnumerator()
-				{
-					lock(SyncRoot)
-					{
-						return new SynchronizedEnumerator<T>
-							(SyncRoot, list.GetEnumerator());
-					}
-				}
-		public override IEnumerator<T> GetEnumerator(int index, int count)
-				{
-					lock(SyncRoot)
-					{
-						return new SynchronizedEnumerator<T>
-							(SyncRoot, list.GetEnumerator(index, count));
-					}
-				}
-
 		// Get an iterator for this array list.
-		public override IIterator<T> GetIterator()
+		public override IListIterator<T> GetIterator()
 				{
 					lock(SyncRoot)
 					{
@@ -2429,7 +2303,7 @@ public class ArrayList<T>
 							(SyncRoot, list.GetIterator());
 					}
 				}
-		public override IIterator<T> GetIterator(int index, int count)
+		public override IListIterator<T> GetIterator(int index, int count)
 				{
 					lock(SyncRoot)
 					{

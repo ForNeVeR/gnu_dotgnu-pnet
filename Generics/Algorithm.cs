@@ -156,8 +156,8 @@ public class Algorithm
 				}
 			}
 
-	// Determine if the content of two enumerations are equal.
-	public static bool Equals<T>(IEnumerator<T> e1, IEnumerator<T> e2)
+	// Determine if the content of two iterations are equal.
+	public static bool Equals<T>(IIterator<T> e1, IIterator<T> e2)
 			{
 				for(;;)
 				{
@@ -175,7 +175,7 @@ public class Algorithm
 					}
 				}
 			}
-	public static bool Equals<T>(IEnumerator<T> e1, IEnumerator<T> e2,
+	public static bool Equals<T>(IIterator<T> e1, IIterator<T> e2,
 								 IComparer<T> cmp)
 			{
 				for(;;)
@@ -195,8 +195,8 @@ public class Algorithm
 				}
 			}
 
-	// Determine if the content of two enumerations are not equal.
-	public static bool NotEquals<T>(IEnumerator<T> e1, IEnumerator<T> e2)
+	// Determine if the content of two iterations are not equal.
+	public static bool NotEquals<T>(IIterator<T> e1, IIterator<T> e2)
 			{
 				for(;;)
 				{
@@ -214,7 +214,7 @@ public class Algorithm
 					}
 				}
 			}
-	public static bool NotEquals<T>(IEnumerator<T> e1, IEnumerator<T> e2,
+	public static bool NotEquals<T>(IIterator<T> e1, IIterator<T> e2,
 								    IComparer<T> cmp)
 			{
 				for(;;)
@@ -237,30 +237,30 @@ public class Algorithm
 	// Determine if two collections are equal.
 	public static bool Equals<T>(ICollection<T> c1, ICollection<T> c2)
 			{
-				return Equals<T>(c1.GetEnumerator(), c2.GetEnumerator());
+				return Equals<T>(c1.GetIterator(), c2.GetIterator());
 			}
 	public static bool Equals<T>(ICollection<T> c1, ICollection<T> c2,
 								 IComparer<T> cmp)
 			{
-				return Equals<T>(c1.GetEnumerator(), c2.GetEnumerator(), cmp);
+				return Equals<T>(c1.GetIterator(), c2.GetIterator(), cmp);
 			}
 
 	// Determine if two collections are not equal.
 	public static bool NotEquals<T>(ICollection<T> c1, ICollection<T> c2)
 			{
-				return NotEquals<T>(c1.GetEnumerator(), c2.GetEnumerator());
+				return NotEquals<T>(c1.GetIterator(), c2.GetIterator());
 			}
 	public static bool NotEquals<T>(ICollection<T> c1, ICollection<T> c2,
 								    IComparer<T> cmp)
 			{
-				return NotEquals<T>(c1.GetEnumerator(),
-									c2.GetEnumerator(), cmp);
+				return NotEquals<T>(c1.GetIterator(),
+									c2.GetIterator(), cmp);
 			}
 
-	// Find a particular value in an enumeration, beginning with
-	// the next item.  The enumerator will be positioned on the
-	// found value, or the end of the enumeration.
-	public static bool Find<T>(IEnumerator<T> e, T value)
+	// Find a particular value in an iteration, beginning with
+	// the next item.  The iterator will be positioned on the
+	// found value, or the end of the iteration.
+	public static bool Find<T>(IIterator<T> e, T value)
 			{
 				while(e.MoveNext())
 				{
@@ -271,7 +271,7 @@ public class Algorithm
 				}
 				return false;
 			}
-	public static bool Find<T>(IEnumerator<T> e, T value, IComparer<T> cmp)
+	public static bool Find<T>(IIterator<T> e, T value, IComparer<T> cmp)
 			{
 				while(e.MoveNext())
 				{
@@ -283,9 +283,9 @@ public class Algorithm
 				return false;
 			}
 
-	// Find the position within an enumeration that satisfies a
+	// Find the position within an iteration that satisfies a
 	// particular predicate condition.
-	public static bool Find<T>(IEnumerator<T> e, Predicate<T> pred)
+	public static bool Find<T>(IIterator<T> e, Predicate<T> pred)
 			{
 				while(e.MoveNext())
 				{

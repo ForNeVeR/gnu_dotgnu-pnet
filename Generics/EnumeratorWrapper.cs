@@ -28,7 +28,7 @@ namespace Generics
 
 using System;
 
-public sealed class EnumeratorWrapper<T> : IEnumerator<T>
+public sealed class EnumeratorWrapper<T> : IIterator<T>
 {
 
 	// Internal state.
@@ -44,7 +44,7 @@ public sealed class EnumeratorWrapper<T> : IEnumerator<T>
 				this.e = e;
 			}
 
-	// Implement the IEnumerator<T> interface.
+	// Implement the IIterator<T> interface.
 	public bool MoveNext()
 			{
 				return e.MoveNext();
@@ -52,6 +52,10 @@ public sealed class EnumeratorWrapper<T> : IEnumerator<T>
 	public void Reset()
 			{
 				e.Reset();
+			}
+	public void Remove()
+			{
+				throw new InvalidOperationException(S._("NotSupp_Remove"));
 			}
 	public T Current
 			{

@@ -31,10 +31,10 @@ public sealed class EnumerableAdapter<T> : System.Collections.IEnumerable
 {
 
 	// Internal state.
-	private IEnumerable<T> e;
+	private IIterable<T> e;
 
 	// Constructor.
-	public EnumerableAdapter(IEnumerable<T> e)
+	public EnumerableAdapter(IIterable<T> e)
 			{
 				if(e == null)
 				{
@@ -46,7 +46,7 @@ public sealed class EnumerableAdapter<T> : System.Collections.IEnumerable
 	// Implement the non-generic IEnumerable interface.
 	public IEnumerator GetEnumerator()
 			{
-				return new EnumeratorAdapter<T>(e.GetEnumerator());
+				return new EnumeratorAdapter<T>(e.GetIterator());
 			}
 
 }; // class EnumerableAdapter<T>

@@ -1,5 +1,5 @@
 /*
- * SynchronizedDictEnumerator.cs - Wrap an enumerator to synchronize it.
+ * SynchronizedDictIterator.cs - Wrap an iterator to synchronize it.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -23,56 +23,62 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedDictEnumerator<KeyT, ValueT>
-		: IDictionaryEnumerator<KeyT, ValueT>
+internal sealed class SynchronizedDictIterator<KeyT, ValueT>
+		: IDictionaryIterator<KeyT, ValueT>
 {
 	// Internal state.
 	protected Object syncRoot;
-	protected IDictionaryEnumerator<KeyT, ValueT> enumerator;
+	protected IDictionaryIterator<KeyT, ValueT> iterator;
 
 	// Constructor.
-	public SynchronizedDictEnumerator
-				(Object syncRoot,
-				 IDictionaryEnumerator<KeyT, ValueT> enumerator)
+	public SynchronizedDictIterator
+				(Object syncRoot, IDictionaryIterator<KeyT, ValueT> iterator)
 			{
 				this.syncRoot = syncRoot;
-				this.enumerator = enumerator;
+				this.iterator = iterator;
 			}
 
-	// Implement the IEnumerator<ValueT> interface.
+	// Implement the IIterator<ValueT> interface.
 	public bool MoveNext()
 			{
 				lock(syncRoot)
 				{
-					return enumerator.MoveNext();
+					return iterator.MoveNext();
 				}
 			}
 	public void Reset()
 			{
 				lock(syncRoot)
 				{
-					enumerator.Reset();
+					iterator.Reset();
 				}
 			}
-	public ValueT Current
+	public void Remove()
+			{
+				lock(syncRoot)
+				{
+					iterator.Remove();
+				}
+			}
+	ValueT IIterator<ValueT>.Current
 			{
 				get
 				{
 					lock(syncRoot)
 					{
-						return enumerator.Value;
+						return ((IIterator<ValueT>)iterator).Current;
 					}
 				}
 			}
 
-	// Implement the IDictionaryEnumerator<KeyT, ValueT> interface.
+	// Implement the IDictionaryIterator<KeyT, ValueT> interface.
 	public DictionaryEntry<KeyT, ValueT> Entry
 			{
 				get
 				{
 					lock(syncRoot)
 					{
-						return enumerator.Entry;
+						return iterator.Entry;
 					}
 				}
 			}
@@ -82,7 +88,7 @@ internal sealed class SynchronizedDictEnumerator<KeyT, ValueT>
 				{
 					lock(syncRoot)
 					{
-						return enumerator.Key;
+						return iterator.Key;
 					}
 				}
 			}
@@ -92,11 +98,18 @@ internal sealed class SynchronizedDictEnumerator<KeyT, ValueT>
 				{
 					lock(syncRoot)
 					{
-						return enumerator.Value;
+						return iterator.Value;
+					}
+				}
+				set
+				{
+					lock(syncRoot)
+					{
+						iterator.Value = value;
 					}
 				}
 			}
 
-}; // class SynchronizedDictEnumerator<KeyT, ValueT>
+}; // class SynchronizedDictIterator<KeyT, ValueT>
 
 }; // namespace Generics

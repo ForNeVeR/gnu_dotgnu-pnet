@@ -47,10 +47,10 @@ public sealed class CollectionAdapter<T>
 	// Implement the non-generic ICollection interface.
 	public void CopyTo(Array array, int index)
 			{
-				IEnumerator<T> e = coll.GetEnumerator();
-				while(e.MoveNext())
+				IIterator<T> iterator = coll.GetIterator();
+				while(iterator.MoveNext())
 				{
-					array.SetValue(e.Current, index++);
+					array.SetValue(iterator.Current, index++);
 				}
 			}
 	public int Count
@@ -78,7 +78,7 @@ public sealed class CollectionAdapter<T>
 	// Implement the non-generic IEnumerable interface.
 	public System.Collections.IEnumerator GetEnumerator()
 			{
-				return new EnumeratorAdapter<T>(coll.GetEnumerator());
+				return new EnumeratorAdapter<T>(coll.GetIterator());
 			}
 
 }; // class CollectionAdapter<T>

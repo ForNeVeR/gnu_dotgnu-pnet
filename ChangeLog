@@ -13,6 +13,11 @@ interfaces from the XML input.
 
 * csdoc/csdoc2texi.1: slight formatting bug in "csdoc2texi" man page.
 
+* resgen/resgen.c, resgen/resgen_binary.c, resgen/resgen_po.c,
+resgen/resgen_text.c, resgen/resgen_xml.c, resgen/resgen.h,
+resgen/Makefile.am: add .po support and split the conversion functionality
+out into separate files.
+
 2001-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/Makefile.am: implement the "csdoc2html" program.

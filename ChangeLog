@@ -12,6 +12,8 @@ inclusion of the readline and history libraries.
 * engine/verify.c, engine/Makefile.am, include/il_coder.h,
 include/Makefile.am: start implementation of the bytecoder verifier.
 
+* engine/ilverify.c: stand-alone bytecode verifier front-end.
+
 2001-09-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resgen/resgen.c: update to understand Beta 2 resource formats, and

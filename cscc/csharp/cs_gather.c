@@ -1858,6 +1858,59 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Check abstract method overrides.
+ */
+static void CheckAbstractOverrides(ILGenInfo *info, ILClass *classInfo,
+								   ILNode *node)
+{
+	ILClass *parent;
+	ILMethod *method;
+	ILClass *tempClass;
+	ILMethod *method2;
+
+	/* Scan up through the parents and look for all "abstract" methods */
+	parent = ILClass_Parent(classInfo);
+	while(parent != 0)
+	{
+		method = 0;
+		while((method = (ILMethod *)ILClassNextMemberByKind
+				(parent, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			/* Skip non-abstract methods */
+			if(!ILMethod_IsAbstract(method))
+			{
+				continue;
+			}
+
+			/* Scan from "classInfo" to look for an override for this method */
+			tempClass = classInfo;
+			method2 = 0;
+			while(tempClass != 0 && tempClass != parent)
+			{
+				method2 = (ILMethod *)ILClassNextMemberMatch
+					(tempClass, 0, IL_META_MEMBERKIND_METHOD,
+					 ILMethod_Name(method), ILMethod_Signature(method));
+				if(method2 && !ILMethod_IsNewSlot(method2))
+				{
+					break;
+				}
+				tempClass = ILClass_Parent(tempClass);
+				method2 = 0;
+			}
+
+			/* If we didn't find a match, then report an error */
+			if(!method2)
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "no override for abstract member `%s'",
+							  CSItemToName(ILToProgramItem(method)));
+			}
+		}
+		parent = ILClass_Parent(parent);
+	}
+}
+
+/*
  * Create the members of a class node.
  */
 static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
@@ -1951,6 +2004,13 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	if(defaultMemberName)
 	{
 		((ILNode_ClassDefn *)classNode)->defaultMemberName = defaultMemberName;
+	}
+
+	/* If the class is not abstract then make sure that all abstract
+	   methods in ancestor classes have been implemented here */
+	if(!ILClass_IsAbstract(classInfo))
+	{
+		CheckAbstractOverrides(info, classInfo, classNode);
 	}
 
 	/* Return to the original scope */

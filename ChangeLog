@@ -5,6 +5,9 @@
 	references" instead of "invalid metadata" when a MemberRef cannot
 	be resolved.
 
+	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_gather.c: enforce
+	the conditions on abstract method overrides.
+
 2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

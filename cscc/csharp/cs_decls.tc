@@ -967,6 +967,18 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		++argIndex;
 	}
 
+	/* If the method is abstract, then the class must be too */
+	if((node->modifiers & IL_META_METHODDEF_ABSTRACT) != 0)
+	{
+		if(info->currentClass &&
+		   (((ILNode_ClassDefn *)(info->currentClass))->modifiers &
+		   			IL_META_TYPEDEF_ABSTRACT) == 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "`abstract' used on a member in a non-abstract class");
+		}
+	}
+
 	/* Perform semantic analysis on the method body */
 	if(node->body)
 	{

@@ -1455,10 +1455,8 @@ case IL_OP_PREFIX + IL_PREFIX_OP_TAIL:
 	 */
 
 	/* Confirm that the .tail precedes a call */
-	if (( pc[2] == IL_OP_CALL || 
-		pc[2] == IL_OP_CALLI || 
-		pc[2] == IL_OP_CALLVIRT
-		) && pc[3 + sizeof(void *)] == IL_OP_RET)
+	if ((pc[2] == IL_OP_CALL || pc[2] == IL_OP_CALLI || 
+		 pc[2] == IL_OP_CALLVIRT) && pc[7] == IL_OP_RET)
 	{
 		/*  Initialization */
 		methodInfo = 0;

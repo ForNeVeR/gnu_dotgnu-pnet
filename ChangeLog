@@ -1,9 +1,14 @@
 
+2002-11-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/verify_call.c: fix the verification of tail calls to
+	use the correct length of the "call" instruction.
+
 2002-11-22  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/lib_regexp.c, support/regexp.c, support/Makefile.am,
-	engine/Makefile.am, configure.in, engine/int_proto.h, engine/int_table.c: 
-	Added basic regexp support to the engine.
+	engine/Makefile.am, configure.in, engine/int_proto.h,
+	engine/int_table.c: Added basic regexp support to the engine.
 
 	* engine/lib_dir.c, engine/int_table.c: Rename Platform.FileInfo to 
 	Platform.InternalFileInfo.

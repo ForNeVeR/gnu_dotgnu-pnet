@@ -12,6 +12,7 @@ TESTS = abstract1.cs \
 		enum3.cs \
 		enum4.cs \
 		enum5.cs \
+		enum6.cs \
 		event1.cs \
 		field1.cs \
 		field2.cs \

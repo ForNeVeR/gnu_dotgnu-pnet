@@ -141,7 +141,8 @@ public abstract class Calendar
 			}
 	public virtual double GetMilliseconds(DateTime time)
 			{
-				return (double)(time.Millisecond);
+				return ((double)(time.Ticks % TimeSpan.TicksPerSecond))
+							/ (double)(TimeSpan.TicksPerMillisecond);
 			}
 	public virtual int GetMinute(DateTime time)
 			{

@@ -1,7 +1,7 @@
 /*
- * Testruntime.cs - Tests for the "System" namespace.
+ * TestGregorianCalendar.cs - Tests for the "GregorianCalendar" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,24 +20,28 @@
 
 using CSUnit;
 using System;
+using System.Globalization;
 
-public class Testruntime
+public class TestGregorianCalendar : TestCalendar
 {
-
-	public static TestSuite Suite()
+	// Constructor.
+	public TestGregorianCalendar(String name)
+			: base(name)
 			{
-				// Each namespace has a "SuiteXXX" class that defines
-				// the tests in that namespace.  See the subdirectories
-				// for these classes when adding new tests.
-				TestSuite suite = new TestSuite("Runtime Tests");
-				suite.AddTest(SuiteSystem.Suite());
-				suite.AddTest(SuiteCollections.Suite());
-				suite.AddTest(SuiteText.Suite());
-				suite.AddTest(SuiteCryptography.Suite());
-				suite.AddTest(SuiteThreading.Suite());
-				suite.AddTest(SuiteGlobalization.Suite());
-				return suite;
+				// Nothing to do here.
 			}
 
-}; // class Testruntime
+	// Set up for the tests.
+	protected override void Setup()
+			{
+				calendar = new GregorianCalendar();
+				twoDigitYearMax = 2029;
+			}
 
+	// Clean up after the tests.
+	protected override void Cleanup()
+			{
+				// Nothing to do here.
+			}
+
+}; // class TestGregorianCalendar

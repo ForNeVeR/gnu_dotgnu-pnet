@@ -1,7 +1,7 @@
 /*
- * Testruntime.cs - Tests for the "System" namespace.
+ * SuiteGlobalization.cs - Tests for the "System.Globalization" namespace.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,23 +21,16 @@
 using CSUnit;
 using System;
 
-public class Testruntime
+public class SuiteGlobalization
 {
 
 	public static TestSuite Suite()
 			{
-				// Each namespace has a "SuiteXXX" class that defines
-				// the tests in that namespace.  See the subdirectories
-				// for these classes when adding new tests.
-				TestSuite suite = new TestSuite("Runtime Tests");
-				suite.AddTest(SuiteSystem.Suite());
-				suite.AddTest(SuiteCollections.Suite());
-				suite.AddTest(SuiteText.Suite());
-				suite.AddTest(SuiteCryptography.Suite());
-				suite.AddTest(SuiteThreading.Suite());
-				suite.AddTest(SuiteGlobalization.Suite());
+				TestSuite suite = new TestSuite("Globalization Tests");
+				suite.AddTests(typeof(TestGregorianCalendar));
+				suite.AddTests(typeof(TestHebrewCalendar));
+				//suite.AddTests(typeof(TestJulianCalendar)); -- TODO
 				return suite;
 			}
 
-}; // class Testruntime
-
+}; // class SuiteGlobalization

@@ -193,9 +193,6 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	public override void DrawString
 				(String s, int x, int y, StringFormat format)
 			{
-				//FontExtents extents = graphics.GetFontExtents(font);
-				//graphics.DrawString(x, y + extents.Ascent - 1, s, font);
-
 				//GDI does support writing text with a brush so we get the brush color - if available
 				/*Could do but is it slow?:
 				 * 1) Select hatch brush
@@ -203,19 +200,15 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				3) TextOut
 				4) EndPath
 				5) StrokeAndFillPath*/
-
-				Win32.Api.SelectObject(hdc, selectedFont.hFont);
 				Win32.Api.SetTextColor(hdc, ColorToWin32(selectedBrush.color));
-				Win32.Api.SetBkMode(hdc,Win32.Api.BackGroundModeType.TRANSPARENT);
-				Win32.Api.TextOutA(hdc, x, y , s, s.Length);
-
+				Win32.Api.ExtTextOutA(hdc, x, y, 0, IntPtr.Zero, s, (uint)s.Length, IntPtr.Zero);
 			}
 
 	// Measure a string using the current font and a given layout rectangle.
 	public override Size MeasureString( String s, System.Drawing.Point[] layoutRectangle, StringFormat format, out int charactersFitted, out int linesFilled, bool ascentOnly )
 			{
 				// TODO: line wrapping, etc
-				Win32.Api.SelectObject(hdc, selectedFont.hFont);
+				//Win32.Api.SelectObject(hdc, selectedFont.hFont);
 				Win32.Api.SIZE size;
 				size.cx = 0;
 				size.cy = 0;

@@ -725,6 +725,9 @@ internal class Api
 	[DllImport("gdi32")] //ANSI
 	public static extern bool TextOutA(IntPtr hdc, int x, int y, string textstring, int charCount);
 
+	[DllImport("gdi32")] //ANSI
+	public static extern bool ExtTextOutA( IntPtr hdc, int X, int Y, uint fuOptions, IntPtr lprc, String lpString, uint cbCount,IntPtr lpDx);
+
 	[DllImport("user32")]
 	public static extern IntPtr BeginPaint(IntPtr hwnd, ref PAINTSTRUCT ps);
 

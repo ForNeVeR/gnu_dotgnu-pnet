@@ -1,3 +1,43 @@
+2003-01-26  Adam Ballai  <minddog@cannibutter.com>
+
+	* System.Xml/Schema, System.Xml/Schema/ValidationEventArgs.cs,
+	System.Xml/Schema/ValidationEventHandler.cs, System.Xml/Schema/XmlSchema.cs, 
+	System.Xml/Schema/XmlSchemaAll.cs, System.Xml/Schema/XmlSchemaAnnotated.cs, 
+	System.Xml/Schema/XmlSchemaAnnotation.cs, System.Xml/Schema/XmlSchemaAny.cs,
+	System.Xml/Schema/XmlSchemaAnyAttribute.cs, System.Xml/Schema/XmlSchemaAppInfo.cs, 
+	System.Xml/Schema/XmlSchemaAttribute.cs, System.Xml/Schema/XmlSchemaAttributeGroup.cs, 
+	System.Xml/Schema/XmlSchemaAttributeGroupRef.cs, System.Xml/Schema/XmlSchemaChoice.cs,
+	System.Xml/Schema/XmlSchemaCollection.cs, System.Xml/Schema/XmlSchemaCollectionEnumerator.cs, 
+	System.Xml/Schema/XmlSchemaComplexContent.cs, System.Xml/Schema/XmlSchemaComplexContentExtension.cs, 
+	System.Xml/Schema/XmlSchemaComplexContentRestriction.cs, System.Xml/Schema/XmlSchemaComplexType.cs,
+	System.Xml/Schema/XmlSchemaContent.cs, System.Xml/Schema/XmlSchemaContentModel.cs, 
+	System.Xml/Schema/XmlSchemaContentProcessing.cs, System.Xml/Schema/XmlSchemaContentType.cs, 
+	System.Xml/Schema/XmlSchemaDatatype.cs, System.Xml/Schema/XmlSchemaDerivationMethod.cs,	
+	System.Xml/Schema/XmlSchemaDocumentation.cs,System.Xml/Schema/XmlSchemaElement.cs, 
+	System.Xml/Schema/XmlSchemaEnumerationFacet.cs,	System.Xml/Schema/XmlSchemaException.cs, 
+	System.Xml/Schema/XmlSchemaExternal.cs,	System.Xml/Schema/XmlSchemaFacet.cs, 
+ 	System.Xml/Schema/XmlSchemaForm.cs, System.Xml/Schema/XmlSchemaFractionDigitsFacet.cs,
+ 	System.Xml/Schema/XmlSchemaGroup.cs, System.Xml/Schema/XmlSchemaGroupBase.cs, 
+ 	System.Xml/Schema/XmlSchemaGroupRef.cs,	System.Xml/Schema/XmlSchemaIdentityConstraint.cs, 
+ 	System.Xml/Schema/XmlSchemaImport.cs, System.Xml/Schema/XmlSchemaInclude.cs, 
+ 	System.Xml/Schema/XmlSchemaKey.cs, System.Xml/Schema/XmlSchemaKeyref.cs, 
+ 	System.Xml/Schema/XmlSchemaLengthFacet.cs, System.Xml/Schema/XmlSchemaMaxExclusiveFacet.cs, 
+ 	System.Xml/Schema/XmlSchemaMaxInclusiveFacet.cs, System.Xml/Schema/XmlSchemaMaxLengthFacet.cs, 
+ 	System.Xml/Schema/XmlSchemaMinExclusiveFacet.cs, System.Xml/Schema/XmlSchemaMinInclusiveFacet.cs, 
+ 	System.Xml/Schema/XmlSchemaMinLengthFacet.cs, System.Xml/Schema/XmlSchemaNotation.cs, 
+ 	System.Xml/Schema/XmlSchemaNumericFacet.cs, System.Xml/Schema/XmlSchemaObject.cs, 
+ 	System.Xml/Schema/XmlSchemaObjectCollection.cs, System.Xml/Schema/XmlSchemaObjectEnumerator.cs, 
+ 	System.Xml/Schema/XmlSchemaObjectTable.cs, System.Xml/Schema/XmlSchemaParticle.cs, 
+ 	System.Xml/Schema/XmlSchemaPatternFacet.cs, System.Xml/Schema/XmlSchemaReader.cs, 
+ 	System.Xml/Schema/XmlSchemaRedefine.cs, System.Xml/Schema/XmlSchemaSequence.cs, 
+ 	System.Xml/Schema/XmlSchemaSimpleContent.cs, System.Xml/Schema/XmlSchemaSimpleContentExtension.cs, 
+ 	System.Xml/Schema/XmlSchemaSimpleContentRestriction.cs, System.Xml/Schema/XmlSchemaSimpleType.cs, 
+ 	System.Xml/Schema/XmlSchemaSimpleTypeContent.cs, System.Xml/Schema/XmlSchemaSimpleTypeList.cs, 
+ 	System.Xml/Schema/XmlSchemaSimpleTypeRestriction.cs, System.Xml/Schema/XmlSchemaSimpleTypeUnion.cs, 
+ 	System.Xml/Schema/XmlSchemaTotalDigitsFacet.cs, System.Xml/Schema/XmlSchemaType.cs, 
+	System.Xml/Schema/XmlSchemaUnique.cs, System.Xml/Schema/XmlSchemaUse.cs, 
+ 	System.Xml/Schema/XmlSchemaWhiteSpaceFacet.cs, System.Xml/Schema/XmlSchemaXPath.cs 
+ 	System.Xml/Schema/XmlSeverityType.cs : Added stubs for System.Xml.Schema namespace
 
 2003-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

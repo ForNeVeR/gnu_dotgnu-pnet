@@ -1,3 +1,9 @@
+2004-01-22  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ListViewItemConverter.cs,
+	System.Windows.Forms/ListViewSubItemConverter.cs: fix some cscc	compile
+	issues.
+
 2004-01-22  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingToolkit.cs,

@@ -75,66 +75,30 @@ ILNode_SemAnalysis(ILNode_ScopeChange)
 }
 
 /*
- * Perform semantic analysis for constant declaration.
- */
-ILNode_SemAnalysis(ILNode_ConstDeclaration)
-{
-	CSSemValue value, valueChild;
-	ILNode_ListIter iter;
-	ILNode *child;
-
-	/* Enter an unsafe context for the constant if necessary */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
-	{
-		CSUnsafeEnter(info, (ILNode *)node, "unsafe constant declaration");
-	}
-
-	/* Warn if declaring the constant with an unsafe type */
-	if(CSHasUnsafeType(node->type))
-	{
-		CSUnsafeTypeMessage(info, (ILNode *)node);
-	}
-
-	/* FIXME: optional attributes ? */
-	/* modifier already done in parser */
-	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	ILNode_ListIter_Init(&iter, node->constDeclarators);
-	while ((child = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		valueChild = ILNode_SemAnalysis(child, info, &(child));
-		/*
-		 * FIXME: need to verify that the constant expression type is
-		 * consistent with the type declaration of the constant
-		 */
-	}
-
-	/* Leave the unsafe context for the constant */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
-	{
-		CSUnsafeLeave(info);
-	}
-
-	return value;
-}
-
-ILNode_SemAnalysis(ILNode_ConstDeclarator)
-{
-	/* name is guaranteed to be an identifier by the parser */
-	/* TODO: check that the constant hasn't been declared previously */
-
-	/* expr should be a constant expression */
-	return ILNode_SemAnalysis(node->expr, info, &(node->expr));
-}
-
-/*
  * Perform semantic analysis for field declaration.
  */
 ILNode_SemAnalysis(ILNode_FieldDeclaration)
 {
+	ILNode_ListIter iterator;
+	ILNode_FieldDeclarator *decl;
+	CSSemValue value;
+	ILEvalValue evalValue;
+	unsigned char constBuf[8];
+	int constBufLen;
+	int constElemType;
+	ILConstant *constant;
+
 	/* Enter an unsafe context for the field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeEnter(info, (ILNode *)node, "unsafe field declaration");
+		if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
+		{
+			CSUnsafeEnter(info, (ILNode *)node, "unsafe constant declaration");
+		}
+		else
+		{
+			CSUnsafeEnter(info, (ILNode *)node, "unsafe field declaration");
+		}
 	}
 
 	/* Warn if declaring the field with an unsafe type */
@@ -143,7 +107,190 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		CSUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
-	/* TODO: verify the initializers and check that there are no duplicates */
+	/* Verify the initializers */
+	ILNode_ListIter_Init(&iterator, node->fieldDeclarators);
+	while((decl = (ILNode_FieldDeclarator *)
+						ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		/* Skip the field if no initializer or ILField block */
+		if(!(decl->initializer) || !(decl->fieldInfo))
+		{
+			continue;
+		}
+
+		/* Perform semantic analysis on the initializer value */
+		value = ILNode_SemAnalysis(decl->initializer, info,
+								   &(decl->initializer));
+		if(!CSIsSemValue(value.kind))
+		{
+			CSErrorOnLine(yygetfilename(decl->initializer),
+						  yygetlinenum(decl->initializer),
+						  "initializer is not a value");
+			continue;
+		}
+
+		/* Make sure that the value is compatible with the field's type */
+
+		/* The field must be static to have an initial value */
+		if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
+		{
+			CSErrorOnLine(yygetfilename(decl->initializer),
+						  yygetlinenum(decl->initializer),
+						  "initializer used on non-static field");
+			continue;
+		}
+
+		/* If this is a constant, then evaluate the value */
+		if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
+		{
+			if(!ILNode_EvalConst(decl->initializer, info, &evalValue) ||
+			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+	                   ILTypeToMachineType(ILField_Type(decl->fieldInfo))))
+			{
+				CSErrorOnLine(yygetfilename(decl->initializer),
+							  yygetlinenum(decl->initializer),
+							  "initializer is not constant");
+				continue;
+			}
+			if(evalValue.valueType == ILMachineType_Decimal ||
+			   evalValue.valueType == ILMachineType_String)
+			{
+				/* Decimal and string constants must be stored in readonly
+				   fields which are computed at runtime */
+				node->modifiers &= ~IL_META_FIELDDEF_LITERAL;
+				node->modifiers |= IL_META_FIELDDEF_INIT_ONLY;
+				ILMemberSetAttrs((ILMember *)(decl->fieldInfo),
+								 IL_META_FIELDDEF_LITERAL |
+								 		IL_META_FIELDDEF_INIT_ONLY,
+						 		 IL_META_FIELDDEF_INIT_ONLY);
+			}
+			else
+			{
+				/* Other constants can be evaluated at compile time */
+				switch(evalValue.valueType)
+				{
+					case ILMachineType_Boolean:
+					{
+						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
+						constBufLen = 1;
+						constElemType = IL_META_ELEMTYPE_VOID;
+					}
+					break;
+
+					case ILMachineType_Int8:
+					case ILMachineType_UInt8:
+					{
+						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
+						constBufLen = 1;
+						constElemType = IL_META_ELEMTYPE_I1;
+					}
+					break;
+
+					case ILMachineType_Int16:
+					case ILMachineType_UInt16:
+					{
+						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
+						constBuf[1] =
+							(unsigned char)(evalValue.un.i4Value >> 8);
+						constBufLen = 2;
+						constElemType = IL_META_ELEMTYPE_I2;
+					}
+					break;
+
+					case ILMachineType_Char:
+					{
+						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
+						constBuf[1] =
+							(unsigned char)(evalValue.un.i4Value >> 8);
+						constBufLen = 2;
+						constElemType = IL_META_ELEMTYPE_CHAR;
+					}
+					break;
+
+					case ILMachineType_Int32:
+					case ILMachineType_UInt32:
+					case ILMachineType_NativeInt:
+					case ILMachineType_NativeUInt:
+					{
+						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
+						constBuf[1] =
+							(unsigned char)(evalValue.un.i4Value >> 8);
+						constBuf[2] =
+							(unsigned char)(evalValue.un.i4Value >> 16);
+						constBuf[3] =
+							(unsigned char)(evalValue.un.i4Value >> 24);
+						constBufLen = 4;
+						constElemType = IL_META_ELEMTYPE_I4;
+					}
+					break;
+
+					case ILMachineType_Int64:
+					case ILMachineType_UInt64:
+					{
+						constBuf[0] = (unsigned char)(evalValue.un.i4Value);
+						constBuf[1] =
+							(unsigned char)(evalValue.un.i8Value >> 8);
+						constBuf[2] =
+							(unsigned char)(evalValue.un.i8Value >> 16);
+						constBuf[3] =
+							(unsigned char)(evalValue.un.i8Value >> 24);
+						constBuf[4] =
+							(unsigned char)(evalValue.un.i8Value >> 32);
+						constBuf[5] =
+							(unsigned char)(evalValue.un.i8Value >> 40);
+						constBuf[6] =
+							(unsigned char)(evalValue.un.i8Value >> 48);
+						constBuf[7] =
+							(unsigned char)(evalValue.un.i8Value >> 56);
+						constBufLen = 8;
+						constElemType = IL_META_ELEMTYPE_I8;
+					}
+					break;
+
+					case ILMachineType_Float32:
+					{
+						IL_WRITE_FLOAT(constBuf, evalValue.un.r4Value);
+						constBufLen = 4;
+						constElemType = IL_META_ELEMTYPE_R4;
+					}
+					break;
+
+					case ILMachineType_Float64:
+					case ILMachineType_NativeFloat:
+					{
+						IL_WRITE_DOUBLE(constBuf, evalValue.un.r8Value);
+						constBufLen = 8;
+						constElemType = IL_META_ELEMTYPE_R8;
+					}
+					break;
+
+					default:
+					{
+						constBuf[0] = 0;
+						constBufLen = 1;
+						constElemType = IL_META_ELEMTYPE_I1;
+					}
+					break;
+				}
+				constant = ILConstantCreate(info->image, 0,
+											(ILProgramItem *)(decl->fieldInfo),
+											constElemType);
+				if(!constant)
+				{
+					CSOutOfMemory();
+				}
+				if(!ILConstantSetValue(constant, constBuf, constBufLen))
+				{
+					CSOutOfMemory();
+				}
+				continue;
+			}
+		}
+
+		/* Add a statement to the static constructor to initialize the field */
+	}
+
+	/* TODO: check that there are no duplicate definitions */
 
 	/* Leave the unsafe context for the field */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)

@@ -22,11 +22,72 @@ namespace System
 {
 
 using System.Reflection;
+using System.Globalization;
 
 internal class DefaultBinder : Binder
 {
 
-// TODO
+	// Constructor.
+	public DefaultBinder() : base() {}
+
+	// Bind a value to a field.
+	public override FieldInfo BindToField(BindingFlags bindingAttr,
+										  FieldInfo[] match,
+										  Object value,
+										  CultureInfo culture)
+			{
+				// TODO
+				return null;
+			}
+
+	// Bind a set of arguments to a method.
+	public override MethodBase BindToMethod(BindingFlags bindingAttr,
+											MethodBase[] match,
+											ref Object[] args,
+											ParameterModifier[] modifiers,
+											CultureInfo culture,
+											String[] names,
+											ref Object state)
+			{
+				// TODO
+				return null;
+			}
+
+	// Convert an object from one type into another.
+	public override Object ChangeType(Object value, Type type,
+									  CultureInfo culture)
+			{
+				// TODO
+				return null;
+			}
+
+	// Re-order the argument array for a method call.
+	public override void ReorderArgumentArray(ref Object[] args,
+											  Object state)
+			{
+				// TODO
+			}
+
+	// Select a method based on argument types.
+	public override MethodBase SelectMethod(BindingFlags bindingAttr,
+											MethodBase[] match,
+											Type[] types,
+											ParameterModifier[] modifiers)
+			{
+				// TODO
+				return null;
+			}
+
+	// Select a property based on specified type criteria.
+	public override PropertyInfo SelectProperty(BindingFlags bindingAttr,
+												PropertyInfo[] match,
+												Type returnType,
+												Type[] indexes,
+												ParameterModifier[] modifiers)
+			{
+				// TODO
+				return null;
+			}
 
 }; // class DefaultBinder
 

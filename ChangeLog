@@ -6,6 +6,9 @@
 * runtime/System/AssemblyLoadEventHandler.cs,
 runtime/System/UnhandledExceptionEventHandler.cs: new "System" classes.
 
+* runtime/System/DefaultBinder.cs: stub out abstract methods that
+are inherited from "Binder".
+
 2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs: Use "InternalGetFullName" for the "ToString"

@@ -42,6 +42,7 @@ int const CCPluginSkipCodeGen = 0;
 
 int CCPluginInit(void)
 {
+
 	/* Read the state of the "-m32bit-only" flag, which affects the
 	   layout and definition of various types */
 	if(CCStringListContains(machine_flags, num_machine_flags,
@@ -49,6 +50,38 @@ int CCPluginInit(void)
 	{
 		gen_32bit_only = 1;
 	}
+
+	/* Initialize the C pre-processor with the standard macro definitions */
+	if(gen_32bit_only)
+	{
+		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+						"__WORDSIZE=32");
+		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+						"__PTRDIFF_TYPE__=int");
+	}
+	else
+	{
+		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+						"__WORDSIZE=64");
+		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+						"__PTRDIFF_TYPE__=long long");
+	}
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__SIZE_TYPE__=unsigned int");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__WCHAR_TYPE__=__wchar__");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__WINT_TYPE__=unsigned int");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__VERSION__=\"" VERSION " (cscc)\"");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__STDC__=1");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__cli");
+	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
+					"__cli__");
+
+	/* The plugin has been initialized */
 	return 1;
 }
 

@@ -15,6 +15,12 @@
 	cscc/common/cc_main.h: add a new mode to "cc_main.c" that can use
 	the C pre-processor instead of the C# pre-processor.
 
+	* cscc/c_main.c, cscc/cscc.c, cscc/common/.cvsignore,
+	cscc/common/Makefile.am, cscc/common/cc_main.c,
+	cscc/common/cc_options.c, cscc/common/cc_options.h,
+	cscc/common/cpp_defs.sh: fix bugs in the C pre-processor interface,
+	and make sure that all host-specific cpp macros are turned off.
+
 2002-07-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/writer.c (SortClasses): process types in order, even

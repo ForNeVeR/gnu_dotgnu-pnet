@@ -567,23 +567,45 @@ static char *FindCpp(void)
 	char *newPath = 0;
 	if(ILFileExists("/usr/bin/cpp", &newPath))
 	{
-		return newPath;
+		if(newPath)
+			return newPath;
+		else
+			return "/usr/bin/cpp";
 	}
 	else if(ILFileExists("/bin/cpp", &newPath))
 	{
-		return newPath;
+		if(newPath)
+			return newPath;
+		else
+			return "/bin/cpp";
 	}
 	else if(ILFileExists("/usr/local/bin/cpp", &newPath))
 	{
-		return newPath;
+		if(newPath)
+			return newPath;
+		else
+			return "/usr/local/bin/cpp";
 	}
 	else if(ILFileExists("/usr/lib/cpp", &newPath))
 	{
-		return newPath;
+		if(newPath)
+			return newPath;
+		else
+			return "/usr/lib/cpp";
 	}
 	else if(ILFileExists("/lib/cpp", &newPath))
 	{
-		return newPath;
+		if(newPath)
+			return newPath;
+		else
+			return "/lib/cpp";
+	}
+	else if(ILFileExists("/usr/local/lib/cpp", &newPath))
+	{
+		if(newPath)
+			return newPath;
+		else
+			return "/usr/local/lib/cpp";
 	}
 	else
 	{
@@ -599,6 +621,21 @@ static FILE *SpawnOnPipe(char **argv, int *pid)
 #if defined(HAVE_FORK) && defined(HAVE_EXECV) && (defined(HAVE_WAITPID) || defined(HAVE_WAIT))
 	int pipefds[2];
 	FILE *file;
+
+	/* Report the command line if verbose mode is enabled */
+	if(verbose_mode == VERBOSE_CMDLINES)
+	{
+		int posn;
+		for(posn = 0; argv[posn] != 0; ++posn)
+		{
+			if(posn != 0)
+			{
+				putc(' ', stderr);
+			}
+			fputs(argv[posn], stderr);
+		}
+		putc('\n', stderr);
+	}
 
 	/* Create a pipe to use to communicate with the child */
 	if(pipe(pipefds) < 0)
@@ -676,6 +713,13 @@ static int ClosePipe(FILE *file, int pid)
 }
 
 /*
+ * Import the list of macros to undefine from the system "cpp"
+ * to return it to a pristine state ready to add our defines.
+ */
+extern char *ILCppUndefines[];
+extern int ILCppNumUndefines;
+
+/*
  * Parse a single input file.
  */
 static void ParseFile(const char *filename, int is_stdin)
@@ -747,6 +791,11 @@ static void ParseFile(const char *filename, int is_stdin)
 			CCStringListAdd(&argv, &argc, "-I");
 			CCStringListAdd(&argv, &argc, sys_include_dirs[posn]);
 		}
+		for(posn = 0; posn < ILCppNumUndefines; ++posn)
+		{
+			CCStringListAdd(&argv, &argc, "-U");
+			CCStringListAdd(&argv, &argc, ILCppUndefines[posn]);
+		}
 		for(posn = 0; posn < num_pre_defined_symbols; ++posn)
 		{
 			CCStringListAdd(&argv, &argc, "-D");
@@ -770,7 +819,6 @@ static void ParseFile(const char *filename, int is_stdin)
 		{
 			CCStringListAdd(&argv, &argc, (char *)filename);
 		}
-		CCStringListAdd(&argv, &argc, "-");
 		CCStringListAdd(&argv, &argc, 0);
 
 		/* Open a pipe to the command and run it */

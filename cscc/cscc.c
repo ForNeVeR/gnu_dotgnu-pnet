@@ -565,6 +565,10 @@ static void ParseCommandLine(int argc, char *argv[])
 		{
 			prog_language_name = "jl";
 		}
+		else if(prog_language == PROG_LANG_C)
+		{
+			prog_language_name = "c";
+		}
 		else
 		{
 			prog_language_name = "cs";
@@ -1204,6 +1208,10 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	if(verbose_mode == VERBOSE_FILENAMES)
 	{
 		AddArgument(&cmdline, &cmdline_size, "-v");
+	}
+	else if(verbose_mode == VERBOSE_CMDLINES)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-vv");
 	}
 
 	/* Add the output filename to the command-line */

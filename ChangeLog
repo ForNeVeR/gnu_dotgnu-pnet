@@ -1,3 +1,36 @@
+2004-01-25  Neil Cawse  <neilcawse@geotab.com>
+
+	* DotGNU.Images/BmpResizer.cs, DotGNU.Images/Frame.cs,
+	DotGNU.Images/JpegLib.cs.in : BmpResizer wasnt respecting sourceY != 0.
+	Fix to generatedMask. AdjustImage optimized - if it can it will call
+	copy. Copy images optimized and improved - help from Rhys. Csc wont
+	compile JpegLib.cs.in so condition the code out.
+	
+	* System.Drawing/Graphics.cs: DrawIcon needs to take into account
+	offset. One of the DrawString overloads was fixed. LayoutByWords had a
+	bug. BaseOffsetPoints wasnt updating the points - thanks to Rhys.
+
+	* System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingWindow.cs, System.Drawing.Win32/Win32.cs:
+	Invalidate mustn't clear the background.
+	
+	* System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: when updating don't clear the
+	background.
+
+	* System.Windows.Forms/Control.cs,
+	System.Windows.Forms/ScrollableControl.cs,
+	System.Windows.Forms/TextBox.cs: implement
+	ScrollableControl.DockPaddingEdges. TextBox not invalidating when using
+	the delete key. Bug when deleting empty textbox causing crash is fixed.
+	
+	* Xsharp/InputOutputWidget.cs: Update now supports not clearing. Region
+	not always getting Disposed on Update. Region not getting disposed in
+	Invalidate. This should stop the occasional "hang" noticed before.
+	FlushInvalidate now updates without clearing. This stops flickering.
 
 2004-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 

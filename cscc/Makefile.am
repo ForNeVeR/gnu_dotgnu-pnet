@@ -1,6 +1,6 @@
 noinst_PROGRAMS = cscc-cs cscc csdoc
-man_MANS = cscc.1
-EXTRA_DIST = $(man_MANS)
+man_MANS        = cscc.1 csdoc.1
+EXTRA_DIST      = $(man_MANS)
 
 cscc_SOURCES = cscc.c \
 			   cs_options.c

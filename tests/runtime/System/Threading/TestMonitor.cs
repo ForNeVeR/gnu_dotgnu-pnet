@@ -185,11 +185,31 @@ public class TestMonitor
 		{
 			lock (typeof(TestMonitor))
 			{
-				if (state == 0 || state == 1)
+				bool ok = false;
+			
+				// state can be either 0 or 1 but it can't
+				// be 1 on the first check and then 0 on 
+				// the second check.
+				
+				if (state == 0)
 				{
-					// OK!				
+					// OK!
+					
+					ok = true;
 				}
 				else
+				{
+					// Allow other threads to preempt.
+					
+					Thread.Sleep(5);
+					
+					if (state == 1)
+					{
+						ok = true;
+					}
+				}
+				
+				if (!ok)
 				{
 					failed = true;
 					stop = true;
@@ -214,7 +234,10 @@ public class TestMonitor
 				{
 					state = 1;
 				}
-			}			
+			}
+			
+			// Allow other threads to preempt
+			Thread.Sleep(15);
 		}
 	}
 	
@@ -234,15 +257,12 @@ public class TestMonitor
 		failed = false;
 		stop = false;
 
-		Console.Write("Thrashing will take 4 seconds ... ");
+		Console.Write("Thrashing will take 1 second ... ");
 				
 		thread1.Start();
 		thread2.Start();
 		
-		/* Testing shows 4 seconds is *usually* enough to cause
-			a failure if monitors aren't working */
-					
-		Thread.Sleep(4000);
+		Thread.Sleep(1000);
 		
 		stop = true;
 
@@ -267,7 +287,7 @@ public class TestMonitor
 
 		threads = new Thread[10];
 
-		Console.Write("Thrashing will take 4 seconds ... ");
+		Console.Write("Thrashing will take 1 second ... ");
 				
 		for (int i = 0; i < 10; i++)
 		{
@@ -283,11 +303,7 @@ public class TestMonitor
 			threads[i].Start();
 		}
 
-
-		/* Testing shows 4 seconds is *usually* enough to cause
-			a failure if monitors aren't working */
-					
-		Thread.Sleep(4000);
+		Thread.Sleep(1000);
 		
 		stop = true;
 

@@ -1,3 +1,9 @@
+2003-05-28  Thong Nguyen  <tum@veridicus.com>
+
+	* tests/runtime/System/Threading/TestMonitor.cs: Added sleep
+	at opportune moments to increase chances of failure.  Reduced
+	thrashing run times to 1 second from 4 seconds.
+
 2004-05-27  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/ListBindingConverter.cs, 
@@ -17,6 +23,15 @@
 	* samples/developers/MainForm.cs: fix a upper/lower case issue
 	in the name of png file.
 
+2004-05-26  Thong Nguyen  <tum@veridicus.com>
+
+	* configure.in: Added samples/developers/Makefile.
+	
+	* samples/Makefile: Added developers dir.
+	
+	* samples/developers/*: First import of "coding developers" sample
+	app.
+	
 2004-05-26  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Reflection/Assembly.cs: Fix LoadFrom to accept 

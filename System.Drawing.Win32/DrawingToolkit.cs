@@ -33,7 +33,7 @@ using d = System.Diagnostics.Debug;
 public class DrawingToolkit : IToolkit
 {
 	private DrawingRootTopLevelWindow drawingRootTopLevelWindow;
-	private ArrayList timers;
+	private ArrayList timers = new ArrayList();
 
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
@@ -378,7 +378,18 @@ public class DrawingToolkit : IToolkit
 	public void UnregisterTimer(Object cookie)
 	{
 		Win32.Api.KillTimer( drawingRootTopLevelWindow.hwnd, (uint)cookie );
-		timers.RemoveAt( (int)cookie );
+		timers[(int)(uint)cookie] = null;
+		bool empty = true;
+		for( int i = 0; i < timers.Count;  i++ )
+		{
+			if ( timers[i] == null )
+			{
+				empty = false;
+				break;
+			}
+		}
+		if (empty)
+			timers = new ArrayList();
 	}
 
 	// Convert a client point for a window into a screen point.

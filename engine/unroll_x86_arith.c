@@ -260,7 +260,7 @@ case COP_ISHR_UN:
 		x86_shift_reg(unroll.out, opc, reg2);
 		FreeTopRegister(&unroll, -1);
 		FreeTopRegister(&unroll, -1);
-		PushRegister(&unroll, X86_ECX);
+		PushRegister(&unroll, reg2);
 	}
 	else if((unroll.regsUsed & REG_ECX_MASK) == 0)
 	{

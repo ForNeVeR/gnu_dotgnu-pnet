@@ -26,7 +26,7 @@
  */
 static int GetBasicRegister(X86Unroll *unroll)
 {
-	int reg = GetWordRegister(unroll);
+	int reg = GetTopWordRegister(unroll);
 	if(reg == X86_EAX || reg == X86_ECX || reg == X86_EDX)
 	{
 		/* This register can be used as a basic register */
@@ -36,7 +36,7 @@ static int GetBasicRegister(X86Unroll *unroll)
 	{
 		/* Flush the register stack and reload the value into EAX */
 		FlushRegisterStack(unroll);
-		return GetWordRegister(unroll);
+		return GetTopWordRegister(unroll);
 	}
 }
 
@@ -66,7 +66,7 @@ case COP_I2S:
 {
 	/* Convert an integer into a short */
 	UNROLL_START();
-	reg = GetWordRegister(&unroll);
+	reg = GetTopWordRegister(&unroll);
 	x86_widen_reg(unroll.out, reg, reg, 1, 1);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
@@ -76,7 +76,7 @@ case COP_I2US:
 {
 	/* Convert an integer into an unsigned short */
 	UNROLL_START();
-	reg = GetWordRegister(&unroll);
+	reg = GetTopWordRegister(&unroll);
 	x86_widen_reg(unroll.out, reg, reg, 0, 1);
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }

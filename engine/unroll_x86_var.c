@@ -184,7 +184,14 @@ case COP_WADDR:
 	unsigned temp = CVM_ARG_WIDE_SMALL;
 	UNROLL_START();
 	reg = GetWordRegister(&unroll);
-	x86_lea_membase(unroll.out, reg, REG_FRAME, temp * 4);
+	if(temp == 0)
+	{
+		x86_mov_reg_reg(unroll.out, reg, REG_FRAME, 4);
+	}
+	else
+	{
+		x86_lea_membase(unroll.out, reg, REG_FRAME, temp * 4);
+	}
 	MODIFY_UNROLL_PC(CVM_LEN_WIDE_SMALL);
 }
 break;
@@ -225,6 +232,8 @@ case COP_MK_LOCAL_3:
 }
 break;
 
+#if 0	/* TODO: doesn't work - not sure why just yet */
+
 case COP_DUP:
 {
 	/* Duplicate the top word on the stack */
@@ -259,6 +268,8 @@ case COP_DUP:
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
+
+#endif
 
 case COP_POP:
 {

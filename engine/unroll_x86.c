@@ -30,7 +30,7 @@
 extern	"C" {
 #endif
 
-#if defined(xxxIL_CVM_DIRECT) && defined(CVM_X86) && \
+#if defined(IL_CVM_DIRECT) && defined(CVM_X86) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM)
 
 /*

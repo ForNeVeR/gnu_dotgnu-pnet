@@ -112,6 +112,14 @@ case COP_LDC_I4_8:
 break;
 
 case COP_LDC_I4_S:
+{
+	UNROLL_START();
+	reg = GetWordRegister(&unroll);
+	x86_mov_reg_imm(unroll.out, reg, (int)CVM_ARG_SBYTE);
+	MODIFY_UNROLL_PC(CVM_LEN_BYTE);
+}
+break;
+
 case COP_LDC_I4:
 {
 	UNROLL_START();

@@ -8,7 +8,10 @@
 	inside the ".method" block on internalcall methods (bug #2163).
 
 	* ildasm/ildasm_method.c (DumpToken): don't put the class prefix
-	on the name of class in a field reference.
+	on the name of class in a field reference (bug #2167).
+
+	* ildasm/ildasm_method.c (DumpToken): don't add marshalling
+	information to method call parameters and return values (bug #2166).
 
 2003-01-09  Aditya P. Bansod <abansod@fullenergy.com>
 

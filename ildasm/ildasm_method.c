@@ -176,7 +176,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 								 ILMethod_Signature(method), flags,
 								 ILMethod_Owner(method),
 								 ILMethod_Name(method),
-								 method);
+								 0/*method*/);
 			}
 			else
 			{
@@ -207,7 +207,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 									 ILMember_Signature(origMember), flags,
 									 ILMethod_Owner(method),
 									 ILMethod_Name(method),
-									 method);
+									 0/*method*/);
 				}
 				else if(ILMember_IsField(member))
 				{

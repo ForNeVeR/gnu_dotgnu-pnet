@@ -41,7 +41,9 @@ public abstract class ScrollBar : Control
 	private bool decDown = false;
 	private bool trackDown = false;
 	private int barDown = -1;
+	private bool keyDown = false;
 	private Timer timer;
+	private Timer keyTimer;
 	internal bool vertical;
 
 
@@ -50,8 +52,10 @@ public abstract class ScrollBar : Control
 	public ScrollBar() : base()
 	{
 		base.TabStop = false;
-		Timer timer = new Timer();
-		timer.Interval = 500; // half a second sounds about right ;)
+		timer = new Timer();
+		timer.Interval = 100;
+		keyTimer = new Timer(); // keep key and mouse events from...
+		timer.Interval = 100; // ...stepping on each other's toes
 	}
 
 
@@ -64,7 +68,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == base.BackColor) { return; }
 			base.BackColor = value;
-			Redraw();
+			Redraw(false);
 		}
 	}
 
@@ -75,7 +79,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == base.BackgroundImage) { return; }
 			base.BackgroundImage = value;
-			Redraw();
+			Redraw(false);
 		}
 	}
 
@@ -122,7 +126,7 @@ public abstract class ScrollBar : Control
 		{
 			if (value == base.ForeColor) { return; }
 			base.ForeColor = value;
-			Redraw();
+			Redraw(false);
 		}
 	}
 
@@ -246,7 +250,19 @@ public abstract class ScrollBar : Control
 		Value = tmp;
 		OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallDecrement,value));
 		SetPositionByValue();
-		Redraw();
+		Redraw(false);
+	}
+
+	private void DecrementBig(Object sender, EventArgs e)
+	{
+		int tmp = (value-largeChange);
+		tmp = tmp > minimum ?
+		      tmp : minimum;
+		if (value == tmp) { return; }
+		Value = tmp;
+		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeDecrement,value));
+		SetPositionByValue();
+		Redraw(false);
 	}
 
 	private void Draw(Graphics g, bool layout)
@@ -300,7 +316,64 @@ public abstract class ScrollBar : Control
 		Value = tmp;
 		OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallIncrement,value));
 		SetPositionByValue();
-		Redraw();
+		Redraw(false);
+	}
+
+	private void IncrementBig(Object sender, EventArgs e)
+	{
+		int tmp = (value+largeChange);
+		int tmp2 = (maximum-largeChange+1);
+		tmp = tmp < tmp2 ?
+		      tmp : tmp2;
+		if (value == tmp) { return; }
+		Value = tmp;
+		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeIncrement,value));
+		SetPositionByValue();
+		Redraw(false);
+	}
+
+	private void ScrollKeyPressed(bool pressed, int amount)
+	{
+		if (pressed == keyDown) { return; }
+		keyDown = pressed;
+		if (pressed)
+		{
+			switch (amount)
+			{
+				case 2:
+				{
+					timer.Tick += new EventHandler(IncrementBig);
+				}
+				break;
+
+				case -2:
+				{
+					timer.Tick += new EventHandler(DecrementBig);
+				}
+				break;
+
+				case 1:
+				{
+					timer.Tick += new EventHandler(Increment);
+				}
+				break;
+
+				case -1:
+				{
+					timer.Tick += new EventHandler(Decrement);
+				}
+				break;
+			}
+			timer.Start();
+		}
+		else
+		{
+			timer.Stop();
+			timer.Tick -= new EventHandler(IncrementBig);
+			timer.Tick -= new EventHandler(DecrementBig);
+			timer.Tick -= new EventHandler(Increment);
+			timer.Tick -= new EventHandler(Decrement);
+		}
 	}
 
 	// Sets up the layout rectangles for a HScrollBar's elements
@@ -365,6 +438,75 @@ public abstract class ScrollBar : Control
 		base.OnHandleCreated(e);
 	}
 
+	protected override void OnKeyDown(KeyEventArgs e)
+	{
+		Console.WriteLine("OnKeyDown("+e.KeyCode+")");
+		if (keyDown) { return; }
+
+		switch (e.KeyCode)
+		{
+			case Keys.PageUp:
+			{
+				IncrementBig(null,null);
+				ScrollKeyPressed(true,2);
+			}
+			break;
+
+			case Keys.PageDown:
+			{
+				DecrementBig(null,null);
+				ScrollKeyPressed(true,-2);
+			}
+			break;
+
+			case Keys.Up:
+			{
+				Increment(null,null);
+				ScrollKeyPressed(true,1);
+			}
+			break;
+
+			case Keys.Down:
+			{
+				Decrement(null,null);
+				ScrollKeyPressed(true,-1);
+			}
+			break;
+		}
+	}
+
+	protected override void OnKeyUp(KeyEventArgs e)
+	{
+		if (!keyDown) { return; }
+
+		switch (e.KeyCode)
+		{
+			case Keys.PageUp:
+			{
+				ScrollKeyPressed(false,2);
+			}
+			break;
+
+			case Keys.PageDown:
+			{
+				ScrollKeyPressed(false,-2);
+			}
+			break;
+
+			case Keys.Up:
+			{
+				ScrollKeyPressed(false,1);
+			}
+			break;
+
+			case Keys.Down:
+			{
+				ScrollKeyPressed(false,-1);
+			}
+			break;
+		}
+	}
+
 	protected override void OnMouseDown(MouseEventArgs e)
 	{
 		int x = e.X;
@@ -389,12 +531,12 @@ public abstract class ScrollBar : Control
 			{
 				if (y >= bar.Bottom)
 				{
-					TrackAdd(null,null);
+					IncrementBig(null,null);
 					TrackPressed(true,true);
 				}
 				else // y <= bar.Top
 				{
-					TrackSub(null,null);
+					DecrementBig(null,null);
 					TrackPressed(true,false);
 				}
 			}
@@ -404,12 +546,12 @@ public abstract class ScrollBar : Control
 				plus ^= (RightToLeft == RightToLeft.Yes);
 				if (plus)
 				{
-					TrackAdd(null,null);
+					IncrementBig(null,null);
 					TrackPressed(true,true);
 				}
 				else
 				{
-					TrackSub(null,null);
+					DecrementBig(null,null);
 					TrackPressed(true,false);
 				}
 			}
@@ -655,19 +797,6 @@ public abstract class ScrollBar : Control
 		return base.ToString() + ", Value: " + value;
 	}
 
-	private void TrackAdd(Object sender, EventArgs e)
-	{
-		int tmp = (value+largeChange);
-		int tmp2 = (maximum-largeChange+1);
-		tmp = tmp < tmp2 ?
-		      tmp : tmp2;
-		if (value == tmp) { return; }
-		Value = tmp;
-		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeIncrement,value));
-		SetPositionByValue();
-		Redraw();
-	}
-
 	private void TrackPressed(bool pressed, bool plus)
 	{
 		if (pressed == trackDown) { return; }
@@ -676,33 +805,22 @@ public abstract class ScrollBar : Control
 		{
 			if (plus)
 			{
-				timer.Tick += new EventHandler(TrackAdd);
+				timer.Tick += new EventHandler(IncrementBig);
 			}
 			else
 			{
-				timer.Tick += new EventHandler(TrackSub);
+				timer.Tick += new EventHandler(DecrementBig);
 			}
 			timer.Start();
 		}
 		else
 		{
 			timer.Stop();
-			timer.Tick -= new EventHandler(TrackAdd);
-			timer.Tick -= new EventHandler(TrackSub);
+			timer.Tick -= new EventHandler(IncrementBig);
+			timer.Tick -= new EventHandler(DecrementBig);
 		}
 	}
 
-	private void TrackSub(Object sender, EventArgs e)
-	{
-		int tmp = (value-largeChange);
-		tmp = tmp > minimum ?
-		      tmp : minimum;
-		if (value == tmp) { return; }
-		Value = tmp;
-		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeDecrement,value));
-		SetPositionByValue();
-		Redraw();
-	}
 #if !CONFIG_COMPACT_FORMS
 	protected override void WndProc(ref Message m)
 	{

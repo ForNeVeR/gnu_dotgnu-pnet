@@ -121,7 +121,7 @@ finally fixed float float32 float64 forwardref fromunmanaged
 fullorigin handler hidebysig hresult idispatch il implements
 implicitcom implicitres import in inf inheritcheck init initonly
 instance int int16 int32 int64 int8 interface internalcall
-iunknown lasterr lateinit lcid linkcheck literal lpstr lpstruct
+iunknown java lasterr lateinit lcid linkcheck literal lpstr lpstruct
 lptstr lpvoid lpwstr managed marshal method modopt modreq nan
 native nested newslot noappdomain noinlining nomachine nomangle
 nometadata noncasdemand noncasinheritance noncaslinkdemand
@@ -200,6 +200,7 @@ useful program constructs on their own.
 @cindex Float64
 @cindex ComposedString
 @cindex QualifiedName
+@cindex Bytes
 @example
 Identifier     => IDENT | SQSTRING
 Integer32      => INT      /* 32-bit integer */
@@ -214,6 +215,7 @@ ComposedString => DQSTRING
                 | ComposedString '+' DQSTRING
 QualifiedName  => Identifier
                 | QualifiedName '.' Identifier
+Bytes          => '(' @{ HEXBYTE @} ')'
 @end example
 
 The second and third forms of the Float64 non-terminal can be used to
@@ -252,20 +254,20 @@ resources, etc:
 @example
 Declaration => NamespaceDeclaration
              | ClassDeclaration
+             | FieldDeclaration
              | MethodDeclaration
+             | DebugInformation
+             | CustomAttributeDeclaration
+             | AssemblyDeclaration
+             | AssemblyRefDeclaration
+             | ModuleDeclaration
+             | SecurityDeclaration
+             | ComTypeDeclaration
+             | FileDeclaration
+             | ManifestResDeclaration
              | DataDeclaration
              | VtableDeclaration
              | VtfixupDeclaration
-             | ExternalSourceSpecification
-             | FileDeclaration
-             | ExeLocationDeclaration
-             | AssemblyDeclaration
-             | AssemblyRefDeclaration
-             | ComTypeDeclaration
-             | ManifestResDeclaration
-             | ModuleDeclaration
-             | SecurityDeclaration
-             | CustomAttributeDeclaration
 @end example
 
 The assembler does support some additional kinds of declarations
@@ -273,8 +275,8 @@ beyond those described in this document.  They are supported for
 compatibility with older versions of the assembly syntax, and for
 compatibility with tools from other vendors.
 
-The syntax described here is the official syntax, and deviating
-from it is not recommended.  Support for other syntax may be
+The syntax described here is the official Portable.NET syntax, and
+deviating from it is not recommended.  Support for other syntax may be
 removed in a future version of the assembler.
 
 @c -----------------------------------------------------------------------
@@ -315,7 +317,7 @@ the global namespace.
 
 @c -----------------------------------------------------------------------
 
-@node Class Declarations, Class References, Namespace Declarations, Assembler
+@node Class Declarations, Class Attributes, Namespace Declarations, Assembler
 @section Class Declarations
 @cindex Class Declarations
 @cindex Type Declarations
@@ -326,13 +328,31 @@ a @strong{.class} declaration.
 
 @cindex .class directive
 @cindex ClassDeclaration
-@cindex ClassAttribute
-@cindex Class attributes
 @example
 ClassDeclaration => @strong{.class} @{ ClassAttribute @} Identifier
           [ @strong{extends} ClassName ]
           [ @strong{implements} ClassName @{ ',' ClassName @} ]
           '@{' @{ ClassMember @} '@}'
+@end example
+
+If the type has custom attributes, they should appear in the assembly
+stream just after the class heading and before any other class members.
+
+@menu
+* Class Attributes::          Attributes that may be used on types.
+* Class Members::             Specifying the members of a type.
+* Class Layout::              Explicit layout for types.
+* Class References::          Referring to local and imported types.
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Class Attributes, Class Members, Class Declarations, Class Declarations
+@subsection Class Attributes
+@cindex Class Attributes
+
+@cindex ClassAttribute
+@example
 ClassAttribute => @strong{public}
                 | @strong{private}
                 | @strong{value}
@@ -506,28 +526,42 @@ Specify that the type may have special significance to the runtime engine.
 This is rarely needed on types.
 @end table
 
-The type may contain any of the following members:
+@c -----------------------------------------------------------------------
+
+@node Class Members, Class Layout, Class Attributes, Class Declarations
+@subsection Class Members
+@cindex Class Members
+
+Types may contain any of the following members:
 
 @cindex ClassMember
 @example
-ClassMember => MethodDeclaration
-             | ClassDeclaration
-             | EventDeclaration
-             | PropertyDeclaration
+ClassMember => ClassDeclaration
+             | ClassLayoutDeclaration
              | FieldDeclaration
+             | MethodDeclaration
+             | PropertyDeclaration
+             | EventDeclaration
+             | DebugInformation
+             | CustomAttributeDeclaration
              | DataDeclaration
              | SecurityDeclaration
-             | ExternalSourceSpecification
-             | CustomAttributeDeclaration
-             | @strong{.size} Integer32
-             | @strong{.pack} Integer32
              | ComTypeDeclaration
              | ExportDeclaration
              | OverrideDeclaration
 @end example
 
-Most of these will be described in later sections.  The exceptions are
-@strong{.size} and @strong{.pack}:
+@c -----------------------------------------------------------------------
+
+@node Class Layout, Class References, Class Members, Class Declarations
+@subsection Class Layout
+@cindex Class Layout
+
+@cindex ClassLayoutDeclaration
+@example
+ClassLayoutDeclaration => @strong{.size} Integer32
+                        | @strong{.pack} Integer32
+@end example
 
 @table @strong
 @cindex .size directive
@@ -548,8 +582,8 @@ system should be used.
 
 @c -----------------------------------------------------------------------
 
-@node Class References, Type Specifications, Class Declarations, Assembler
-@section Class References
+@node Class References, Type Specifications, Class Layout, Class Declarations
+@subsection Class References
 @cindex Class References
 
 In many places within the assembly source stream, it is necessary to
@@ -568,7 +602,7 @@ and composed types cannot be referred to using class names.
 
 @cindex ClassName
 @cindex ImportScope
-@cindex Class names
+@cindex .library directive
 @example
 ClassName   => [ '[' ImportScope ']' ]
                   QualifiedName @{ '/' QualifiedName @}
@@ -614,7 +648,7 @@ to the type @code{HashEntry} which is nested within the standard
 
 @c -----------------------------------------------------------------------
 
-@node Type Specifications, Method Declarations, Class References, Assembler
+@node Type Specifications, Field Declarations, Class References, Assembler
 @section Type Specifications
 @cindex Type Specifications
 
@@ -640,7 +674,7 @@ Type => @strong{class} ClassName
       | Type @strong{pinned}
       | Type @strong{modreq} '(' ClassName ')'
       | Type @strong{modopt} '(' ClassName ')'
-      | @strong{method} [ CallingConventions ] Type '*'
+      | @strong{method} CallingConventions Type '*'
                           '(' [ SignatureArguments ] ')'
       | PrimitiveType
 @end example
@@ -763,13 +797,200 @@ only make sense on Windows systems.
 
 @c -----------------------------------------------------------------------
 
-@node Method Declarations, Other Declarations, Type Specifications, Assembler
+@node Field Declarations, Field Attributes, Type Specifications, Assembler
+@section Field Declarations
+@cindex Field Declarations
+
+Fields may be defined at the global level of the assembly stream, or
+within the body of a class.  If the field is global, it must appear
+before all class declarations in the assembly stream.
+
+@cindex .field directive
+@cindex FieldDeclaration
+@example
+FieldDeclaration => @strong{.field} [ '[' Integer32 ']' ]
+                    @{ FieldAttribute @} Type Identifier
+			        [ @strong{at} (Integer32 | Identifier) ]
+					[ '=' FieldInitialization ]
+@end example
+
+If the field has custom attributes, they should appear in the assembly
+stream just after the field declaration.
+
+@menu
+* Field Attributes::          Attributes that may be used on fields.
+* Field Initialization::      Specifying a constant value for a field.
+* Field Layout::              Explicit layout for fields.
+* Field References::          Referring to local and imported fields.
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Field Attributes, Field Initialization, Field Declarations, Field Declarations
+@subsection Field Attributes
+@cindex Field Attributes
+
+@cindex FieldAttribute
+@example
+FieldAttribute => @strong{public}
+				| @strong{private}
+				| @strong{family}
+				| @strong{assembly}
+				| @strong{famandassem}
+				| @strong{famorassem}
+				| @strong{compilercontrolled}
+                | @strong{static}
+				| @strong{literal}
+				| @strong{initonly}
+				| @strong{notserialized}
+				| @strong{rtspecialname}
+				| @strong{specialname}
+				| @strong{marshal} '(' NativeType ')'
+@end example
+
+@table @strong
+@item public
+Specify that the field is accessible from any other class.
+This corresponds to the C# @code{public} access level.
+
+@item private
+Specify that the field is only accessible to the class in which
+it is declared.  This corresponds to the C# @code{private} access level.
+
+@item family
+Specify that the field is accessible to the class in which
+it is declared, and any subclass of the field's class.  This corresponds
+to the C# @code{protected} access level.
+
+@item assembly
+Specify that the field is only accessible to classes in the same
+assembly as the field.  This corresponds to the C# @code{internal}
+access level.
+
+@item famandassem
+Specify that the field is only accessible to classes in the same
+assembly as the field, and which inherit from the field's class.
+There is no C# equivalent of this access level.
+
+@item famorassem
+Specify that the field is only accessible to classes in the same
+assembly as the field or to classes which inherit from the field's
+class.  This corresponds to the C# @code{protected internal} access level.
+
+@item compilercontrolled
+Specify that the field is accessible in a manner controlled by
+the compiler.  The runtime engine treats this the same as @strong{assembly}.
+There is no C# equivalent of this access level.
+
+@item static
+Specify that the field is staticly declared within its class.  If this
+attribute is not present, the field will be part of the instances of
+its class.
+
+@item literal
+Specify that the field is associated with a literal constant value.
+Such a field will not occupy space at runtime, and compilers will
+expand the literal value into the code stream at compile time.
+This corresponds to the C# @code{const} keyword.
+
+@item initonly
+Specify that the field can only be written during the initialization
+process for the field's class.  Afterwards, it is read-only.  This
+corresponds to the C# @code{readonly} keyword.
+
+@item notserialized
+Specify that the field will not be output during serialization if
+its class has the @strong{serialized} attribute.
+
+@item specialname
+Specify that the field has special significance to tools other than
+the runtime engine.  This should be used on fields that correspond
+to enumerated value storage (normally @strong{value__}).
+
+@item rtspecialname
+Specify that the field has special significance to the runtime engine.
+This should be used on fields that correspond to enumerated value
+storage (normally @strong{value__}).
+
+@item marshal
+Specify that the field's type should be replaced with an underlying
+native type by the runtime.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Field Initialization, Field Layout, Field Attributes, Field Declarations
+@subsection Field Initialization
+@cindex Field Initialization
+
+@cindex FieldInitialization
+@example
+FieldInitialization => @strong{float32} '(' FLOAT ')'
+                     | @strong{float64} '(' FLOAT ')'
+                     | @strong{float32} '(' Integer64 ')'
+                     | @strong{float64} '(' Integer64 ')'
+                     | @strong{float32} '(' @strong{nan} ')'
+                     | @strong{float64} '(' @strong{nan} ')'
+                     | @strong{float32} '(' @strong{inf} ')'
+                     | @strong{float64} '(' @strong{inf} ')'
+                     | @strong{float32} '(' '-' @strong{inf} ')'
+                     | @strong{float64} '(' '-' @strong{inf} ')'
+                     | @strong{int64} '(' Integer64 ')'
+                     | @strong{int32} '(' Integer64 ')'
+                     | @strong{int16} '(' Integer64 ')'
+                     | @strong{int8} '(' Integer64 ')'
+                     | @strong{char} '(' Integer64 ')'
+                     | @strong{bool} '(' @strong{true} ')'
+                     | @strong{bool} '(' @strong{false} ')'
+                     | ComposedString
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Field Layout, Field References, Field Initialization, Field Declarations
+@subsection Field Layout
+@cindex Field Layout
+
+If the field is a member of an @strong{explicit} class declaration,
+then a specific offset value may be specified just after the
+@strong{.field} keyword.  Use of this feature is discouraged
+in portable programs.
+
+If the field is static, it can be placed at an explicit runtime
+address using the @strong{at} clause.  Use of this feature is
+discouraged in portable programs.
+
+@c -----------------------------------------------------------------------
+
+@node Field References, Method Declarations, Field Layout, Field Declarations
+@subsection Field References
+@cindex Field References
+
+At various points within an assembly stream, it is necessary to refer
+to fields defined in the same stream, or imported from other streams.
+The following syntax is used for referring to fields:
+
+@cindex FieldReference
+@example
+FieldReference => Type [ TypeSpecification @strong{::} ] Identifier
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Method Declarations, Method Attributes, Field References, Assembler
 @section Method Declarations
 @cindex Method Declarations
 
+Methods may be defined at the global level of the assembly stream, or
+within the body of a class.  If the method is global, it must appear
+before all class declarations in the assembly stream.
+
+@cindex .method directive
+@cindex MethodDeclaration
+@cindex MethodName
 @example
 MethodDeclaration => @strong{.method} @{ MethodAttribute @}
-                     [ CallingConventions ]
+                     CallingConventions
                      @{ ParameterAttribute @}
                      MarshalledType MethodName
                      '(' [ SignatureArguments ] ')'
@@ -778,26 +999,320 @@ MethodDeclaration => @strong{.method} @{ MethodAttribute @}
 MethodName => @strong{.ctor}
             | @strong{.cctor}
             | QualifiedName
-MethodAttribute => @strong{static}
+@end example
+
+The method name @strong{.ctor} indicates an instance constructor, and
+the method name @strong{.cctor} indicates a static constructor.
+
+If the method has custom attributes, they should appear in the body of
+the method, or just after the method declaration.
+
+@menu
+* Method Attributes::         Attributes that may be used on methods.
+* Calling Conventions::       Specifying a method's calling conventsions.
+* Implementation Attributes:: Specifying a method's implementation style.
+* Method Signatures::         Method argument signatures.
+* PInvoke Methods::           Invoking foreign library methods.
+* Method References::         Referring to local and imported methods.
+* Method Members::            Members of a method declaration (IL).
+* Java Method Members::       Members of a method declaration (Java).
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Method Attributes, Calling Conventions, Method Declarations, Method Declarations
+@subsection Method Attributes
+@cindex Method Attributes
+
+@cindex MethodAttribute
+@example
+MethodAttribute =>
                  | @strong{public}
                  | @strong{private}
                  | @strong{family}
-                 | @strong{final}
-                 | @strong{specialname}
-                 | @strong{virtual}
-                 | @strong{abstract}
                  | @strong{assembly}
                  | @strong{famandassem}
                  | @strong{famorassem}
-                 | @strong{privatescope}
+                 | @strong{compilercontrolled}
+                 | @strong{static}
+                 | @strong{virtual}
+                 | @strong{final}
+                 | @strong{abstract}
                  | @strong{hidebysig}
                  | @strong{newslot}
+                 | @strong{specialname}
                  | @strong{rtspecialname}
-                 | @strong{unmanagedexp}
-                 | @strong{pinvokeimpl}
-                   '(' [ ComposedString
+                 | @strong{pinvokeimpl} PInvokeParameters
+@end example
+
+@table @strong
+@item public
+Specify that the method is accessible from any other class.
+This corresponds to the C# @code{public} access level.
+
+@item private
+Specify that the method is only accessible to the class in which
+it is declared.  This corresponds to the C# @code{private} access level.
+
+@item family
+Specify that the method is accessible to the class in which
+it is declared, and any subclass of the method's class.  This corresponds
+to the C# @code{protected} access level.
+
+@item assembly
+Specify that the method is only accessible to classes in the same
+assembly as the method.  This corresponds to the C# @code{internal}
+access level.
+
+@item famandassem
+Specify that the method is only accessible to classes in the same
+assembly as the method, and which inherit from the method's class.
+There is no C# equivalent of this access level.
+
+@item famorassem
+Specify that the method is only accessible to classes in the same
+assembly as the method or to classes which inherit from the method's
+class.  This corresponds to the C# @code{protected internal} access level.
+
+@item compilercontrolled
+Specify that the method is accessible in a manner controlled by
+the compiler.  The runtime engine treats this the same as @strong{assembly}.
+There is no C# equivalent of this access level.
+
+@item static
+Specify that the method is staticly declared within its class.
+The method will not have a @code{this} parameter.
+
+@item virtual
+Specify that the method is virtual.
+
+@item final
+Specify that the virtual method is the last definition of the method, and
+that it cannot be overridden in subclasses.
+
+@item abstract
+Specify that the virtual method is abstract.  The class that
+contains the method must also have the @strong{abstract} attribute.
+
+@item hidebysig
+Specify that the method hides any other definition in a parent class
+only if the method name and signature are identical.  If this attribute
+is not present, then the method hides any definition in a parent class
+if the method name is identical.
+
+@item newslot
+Specify that the virtual method occupies a different vtable slot from
+the same method in parent classes.
+
+@item specialname
+Specify that the method has special significance to tools other than
+the runtime engine.  This should be used on methods that correspond
+to constructors, operators, property accessors, and event accessors.
+
+@item rtspecialname
+Specify that the method has special significance to the runtime engine.
+This should be used on methods that correspond to constructors.
+
+@item pinvokeimpl
+Specify that the method is imported from a foreign library.  The
+parameters to this attribute specify how to perform the import.
+@xref{PInvoke Methods}, for more information.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Calling Conventions, Implementation Attributes, Method Attributes, Method Declarations
+@subsection Calling Conventions
+@cindex Calling Conventions
+
+@cindex CallingConventions
+@example
+CallingConventions => /* empty */
+                    | @strong{instance} CallingConventions
+                    | @strong{explicit} CallingConventions
+                    | @strong{default}
+                    | @strong{vararg}
+                    | @strong{unmanaged cdecl}
+                    | @strong{unmanaged stdcall}
+                    | @strong{unmanaged thiscall}
+                    | @strong{unmanaged fastcall}
+@end example
+
+@table @strong
+@item instance
+Specify that the method takes an additional argument that corresponds
+to the @code{this} instance.
+
+@item explicit
+Specify that the @code{this} instance is explicitly provided in the
+method signature.
+
+@item default
+Specify that the default calling conventions should be used.  This
+convention is implied if no calling convention is supplied for the method.
+
+@item vararg
+Specify that the method is capable of supporting a variable number
+of arguments.
+
+@item unmanaged cdecl
+Specify that the method is in a foreign library and that it uses the
+standard C calling conventions for the underlying operating system.
+
+@item unmanaged stdcall
+Specify that the method is in a foreign library and that it uses
+the "standard call" calling convention.  This is Windows-specific.
+
+@item unmanaged thiscall
+Specify that the method is in a foreign library and that it uses
+the "this call" calling convention.  This is Windows-specific.
+
+@item unmanaged fastcall
+Specify that the method is in a foreign library and that it uses
+the "fast call" calling convention.  This is Windows-specific.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Implementation Attributes, Method Signatures, Calling Conventions, Method Declarations
+@subsection Implementation Attributes
+@cindex Implementation Attributes
+
+@cindex ImplementationAttributes
+@example
+ImplementationAttributes => @strong{cil}
+                          | @strong{optil}
+                          | @strong{native}
+                          | @strong{runtime}
+                          | @strong{managed}
+                          | @strong{unmanaged}
+                          | @strong{forwardref}
+                          | @strong{internalcall}
+                          | @strong{synchronized}
+                          | @strong{noinlining}
+                          | @strong{java}
+@end example
+
+@table @strong
+@item cil
+Specify that the method is implemented in IL bytecode.  This is also
+used on @strong{internalcall} methods, even though they are typically
+implemented with native code.
+
+@item optil
+Specify that the method is implemented in OptIL bytecode, which is a
+variant of IL that provides extra information for JIT optimizers.
+There will normally be no reason to use this attribute.  The runtime
+engine treats OptIL identically to IL.
+
+@item native
+Specify that the method is implemented using native machine code.
+This will rarely be required in binaries that are intended to be portable.
+
+@item runtime
+Specify that the method has special meaning to the runtime engine.
+This is used when implementing delegates.
+
+@item managed
+Specify that the method uses managed objects.  This is the default.
+
+@item unmanaged
+Specify that the method uses unmanaged objects.
+
+@item forwardref
+Specify that the method is not defined here.  This is provided for
+linker support only.  The runtime engine will reject methods that
+have this attribute.
+
+@item internalcall
+Specify that the method is implemented internally within the runtime
+engine.
+
+@item synchronized
+Specifies that the runtime engine should acquire a lock on the object
+prior to calling the method, and should release the lock after
+returning from the method.  If the method is static, then a lock on
+the method's type will be obtained.
+
+@item noinlining
+Specifies that the JIT should not inline this method.
+
+@item java
+Specifies that the method is implemented using Java bytecode instead of
+IL bytecode.  This must be last attribute in the list.  i.e.
+@code{java managed} is incorrect; it must be specifies as @code{managed java}.
+This ordering allows @code{ilasm} to properly switch parsing modes to
+recognise the Java instruction set rather than the IL instruction set.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Method Signatures, PInvoke Methods, Implementation Attributes, Method Declarations
+@subsection Method Signatures
+@cindex Method Signatures
+
+@cindex SignatureArguments
+@cindex SignatureArgument
+@example
+SignatureArguments => SignatureArgument
+                      @{ ',' SignatureArgument @}
+SignatureArgument  => @strong{...}
+                    | @{ ParameterAttribute @}
+                      MarshalledType [ Identifier ]
+@end example
+
+@cindex ParameterAttribute
+@example
+ParameterAttribute => '[' @strong{in} ']'
+                    | '[' @strong{out} ']'
+                    | '[' @strong{opt} ']'
+@end example
+
+@table @strong
+@item in
+Specify that the parameter is an input to the method.  The type must
+be a managed or unmanaged pointer type.
+
+@item out
+Specify that the parameter is an output from the method.  The type must
+be a managed or unmanaged pointer type.
+
+@item opt
+Specify that the parameter is optional.  The method will normally
+contain a @strong{.param} declaration that specifies the default
+value for the parameter.
+@end table
+
+Parameter attributes are ignored by the runtime engine.  They provide
+information for compilers and other tools.
+
+@c -----------------------------------------------------------------------
+
+@node PInvoke Methods, Method References, Method Signatures, Method Declarations
+@subsection PInvoke Methods
+@cindex PInvoke Methods
+
+Methods in foreign libraries are referenced using the PInvoke
+mechanism.
+
+@cindex PInvokeParameters
+@example
+PInvokeParameters => '(' [ ComposedString
                             [ @strong{as} ComposedString ] ]
                        @{ PInvokeAttribute @} ')'
+@end example
+
+The first string indicates the name of the library from which the
+foreign method is being imported.  The second string indicates the
+name of the method in the foreign library.  If the second string is
+not present, then the name of the method declaration will be used.
+
+The @code{ilasm} syntax allows the library name to be omitted, for
+compatibility with older assemblers.  In practice, a PInvoke declaration
+that does not have a library name cannot be resolved at runtime.
+
+@cindex PInvokeAttribute
+@example
 PInvokeAttribute => @strong{nomangle}
                   | @strong{ansi}
                   | @strong{unicode}
@@ -809,36 +1324,84 @@ PInvokeAttribute => @strong{nomangle}
                   | @strong{stdcall}
                   | @strong{thiscall}
                   | @strong{fastcall}
-CallingConventions => @strong{instance} CallingConventions
-                    | @strong{explicit} CallingConventions
-                    | @strong{default}
-                    | @strong{vararg}
-                    | @strong{unmanaged cdecl}
-                    | @strong{unmanaged stdcall}
-                    | @strong{unmanaged thiscall}
-                    | @strong{unmanaged fastcall}
-ImplementationAttributes => @strong{native}
-                          | @strong{il}
-                          | @strong{optil}
-                          | @strong{managed}
-                          | @strong{unmanaged}
-                          | @strong{forwardref}
-                          | @strong{ole}
-                          | @strong{runtime}
-                          | @strong{internalcall}
-                          | @strong{synchronized}
-                          | @strong{noinlining}
-SignatureArguments => SignatureArgument
-                      @{ ',' SignatureArgument @}
-SignatureArgument  => @strong{...}
-                    | @{ ParameterAttribute @}
-                      MarshalledType [ Identifier ]
-ParameterAttribute => '[' @strong{in} ']'
-                    | '[' @strong{out} ']'
-                    | '[' @strong{opt} ']'
-                    | '[' @strong{lcid} ']'
-                    | '[' @strong{retval} ']'
-                    | '[' Integer32 ']'
+@end example
+
+@table @strong
+@item nomangle
+Specify that the foreign method name is exact.  Windows systems will
+search for 'A' and 'W' variants of the method name if this attribute
+is not specified.
+
+@item ansi
+Specify that any strings that are passed to, or return from, the foreign
+method will be in the operating system's prevailing character set.
+
+@item unicode
+Specify that any strings that are passed to, or return from, the foreign
+method will be in the Unicode character set.
+
+@item autochar
+Specify that the runtime engine should determine the character set
+automatically.
+
+@item ole
+Specify that the method signature has been managled to return a
+@code{HRESULT} value.  This is Windows-specific.
+
+@item lasterr
+Specify that the method returns additional error information in a
+separate variable.  On Windows systems, this variable can be queried
+using @code{GetLastError}.  On other systems, the variable is usually
+called @code{errno}.
+
+@item winapi
+Specify that the foreign method uses the "winapi" calling conventions.
+This is Windows-specific.
+
+@item cdecl
+Specify that the foreign method uses the standard C calling conventions.
+
+@item stdcall
+Specify that the foreign method uses the "standard call" calling conventions.
+This is Windows-specific.
+
+@item thiscall
+Specify that the foreign method uses the "this call" calling conventions.
+This is Windows-specific.
+
+@item fastcall
+Specify that the foreign method uses the "fast call" calling conventions.
+This is Windows-specific.
+
+If none of the above calling convention attributes are supplied, then
+the default is chosen by the runtime engine.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Method References, Method Members, PInvoke Methods, Method Declarations
+@subsection Method References
+@cindex Method References
+
+At various points within an assembly stream, it is necessary to refer
+to methods defined in the same stream, or imported from other streams.
+The following syntax is used for referring to methods:
+
+@cindex MethodReference
+@example
+MethodReference => CallingConventions Type
+                   [ TypeSpecification @strong{::} ] MethodName
+                   '(' [ SignatureArguments ] ')'
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Method Members, Java Method Members, Method References, Method Declarations
+@subsection Method Members
+@cindex Method Members
+
+@cindex MethodMember
+@example
 MethodMember => @strong{.emitbyte} Integer32
               | ExceptionBlock
               | @strong{.maxstack} Integer32
@@ -851,7 +1414,7 @@ MethodMember => @strong{.emitbyte} Integer32
               | Instruction
               | Identifier ':'
               | SecurityDeclaration
-              | ExternalSourceSpecification
+              | DebugInformation
               | CustomAttributeSpecification
               | @strong{.vtentry} Integer32 ':' Integer32
               | @strong{.override} TypeSpecification
@@ -863,7 +1426,413 @@ MethodMember => @strong{.emitbyte} Integer32
 
 @c -----------------------------------------------------------------------
 
-@node Other Declarations, Disassembler, Method Declarations, Assembler
+@node Java Method Members, Property Declarations, Method Members, Method Declarations
+@subsection Java Method Members
+@cindex Java Method Members
+
+TODO
+
+@c -----------------------------------------------------------------------
+
+@node Property Declarations, Property Attributes, Java Method Members, Assembler
+@section Property Declarations
+@cindex Property Declarations
+
+@cindex .property directive
+@cindex PropertyDeclaration
+@example
+PropertyDeclaration => @strong{.property} @{ PropertyAttribute @}
+                       CallingConventions Type Identifier
+                       '(' [ SignatureArguments ] ')'
+                       '@{' @{ PropertyMember @} '@}'
+@end example
+
+If the property has custom attributes, they should appear in the body of
+the property, or just after the property declaration.
+
+@menu
+* Property Attributes::       Attributes that may be used on properties.
+* Property Members::          Specifying the members of a property.
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Property Attributes, Property Members, Property Declarations, Property Declarations
+@subsection Property Attributes
+@cindex Property Attributes
+
+@cindex PropertyAttribute
+@example
+PropertyAttribute => @strong{specialname}
+                   | @strong{rtspecialname}
+@end example
+
+@table @strong
+@item specialname
+Specify that the property has special significance to tools other than
+the runtime engine.
+
+@item rtspecialname
+Specify that the property has special significance to the runtime engine.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Property Members, Event Declarations, Property Attributes, Property Declarations
+@subsection Property Members
+@cindex Property Members
+
+@cindex PropertyMember
+@cindex .get directive
+@cindex .set directive
+@cindex .other directive for properties
+@example
+PropertyMember => @strong{.get} MethodReference
+                | @strong{.set} MethodReference
+                | @strong{.other} MethodReference
+                | CustomAttributeDeclaration
+                | DebugInformation
+@end example
+
+@table @strong
+@item .get
+Specify the method to be used to implement the property's "get" accessor.
+
+@item .set
+Specify the method to be used to implement the property's "set" accessor.
+
+@item .other
+Specify the method to be used to implement the property's "other" accessor.
+This is not currently used by C#.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Event Declarations, Event Attributes, Property Members, Assembler
+@section Event Declarations
+@cindex Event Declarations
+
+@cindex .event directive
+@cindex EventDeclaration
+@example
+EventDeclaration => @strong{.event} @{ EventAttribute @}
+                    [ TypeSpecification ] Identifier
+                    '@{' @{ EventMember @} '@}'
+@end example
+
+If the event has custom attributes, they should appear in the body of
+the event, or just after the event declaration.
+
+@menu
+* Event Attributes::          Attributes that may be used on events.
+* Event Members::             Specifying the members of an event.
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Event Attributes, Event Members, Event Declarations, Event Declarations
+@subsection Event Attributes
+@cindex Event Attributes
+
+@cindex EventAttribute
+@example
+EventAttribute => @strong{specialname}
+                | @strong{rtspecialname}
+@end example
+
+@table @strong
+@item specialname
+Specify that the event has special significance to tools other than
+the runtime engine.
+
+@item rtspecialname
+Specify that the event has special significance to the runtime engine.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Event Members, Debug Information, Event Attributes, Event Declarations
+@subsection Event Members
+@cindex Event Members
+
+@cindex EventMember
+@cindex .addon directive
+@cindex .removeon directive
+@cindex .fire directive
+@cindex .other directive for events
+@example
+EventMember => @strong{.addon} MethodReference
+             | @strong{.removeon} MethodReference
+             | @strong{.fire} MethodReference
+             | @strong{.other} MethodReference
+             | CustomAttributeDeclaration
+             | DebugInformation
+@end example
+
+@table @strong
+@item .addon
+Specify the method to be used to implement the event's "add" accessor.
+
+@item .removeon
+Specify the method to be used to implement the event's "remove" accessor.
+
+@item .fire
+Specify the method to be used to implement the event's "fire" accessor.
+
+@item .other
+Specify the method to be used to implement the event's "other" accessor.
+This is not currently used by C#.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Debug Information, Custom Attributes, Event Members, Assembler
+@section Debug Information
+@cindex Debug Information
+
+When a program is compiled in debug mode, extra information is inserted
+into the assembly stream to assist debuggers.
+
+Debug information in the assembly stream is only processed if the
+@code{-g} option is supplied to @code{ilasm}.
+
+@cindex .line directive
+@cindex DebugInformation
+@example
+DebugInformation => @strong{.line} INT SQSTRING
+                  | @strong{.line} INT DQSTRING
+                  | @strong{.line}
+@end example
+
+The first two forms above specify a line number and a filename.  The
+third form specifies a line number within the same file as the 
+previous @strong{.line} directive.
+
+The keyword @strong{#line} can be used instead of @strong{.line}, but
+this usage is deprecated.
+
+Debug information lines are treated differently in method bodies versus
+elsewhere.  Inside a method body, debug information should appear at
+the code position where the corresponding source line begins.
+
+Outside a method body, debug information indicates the point in the source
+where the corresponding declaration was encountered.  For example:
+
+@example
+.class C
+@{
+    .line 28 "testing.cs"
+
+    .field int32 f
+    .line 31
+@}
+@end example
+
+This indicates that the class @code{C} was declared on line 28 of
+the source file @code{testing.cs}, and that the field @code{f} was
+declared on line 31 of the same file.  Debug information for classes
+must precede any of the class members.
+
+@xref{Debug Symbols}, for more information on how debug information
+is stored in IL binaries.
+
+@c -----------------------------------------------------------------------
+
+@node Custom Attributes, Assembly Declarations, Debug Information, Assembler
+@section Custom Attributes
+@cindex Custom Attributes
+
+@cindex .custom directive
+@cindex CustomAttributeDeclaration
+@example
+CustomAttributeDeclaration => @strong{.custom} MethodReference '=' Bytes
+@end example
+
+The method reference indicates the constructor to use to build the
+attribute at runtime.  The hexadecimal bytes provide a serialized form of
+the constructor arguments.
+
+@c -----------------------------------------------------------------------
+
+@node Assembly Declarations, Assembly Attributes, Custom Attributes, Assembler
+@section Assembly Declarations
+@cindex Assembly Declarations
+
+@cindex .assembly directive
+@cindex AssemblyDeclaration
+@cindex AssemblyName
+@example
+AssemblyDeclaration => @strong{.assembly} @{ AssemblyAttribute @}
+                       AssemblyName '@{' @{ AssemblyMember @} '@}'
+AssemblyName        => QualifiedName | @strong{.library}
+@end example
+
+If the assembly declaration has custom attributes, they should appear in
+the body of the declaration, or just after the declaration.
+
+@menu
+* Assembly Attributes::        Attributes that may be used on assemblies.
+* Assembly Members::           Specifying the members of an assembly.
+* Assembly References::        Referring to imported assemblies.
+* Assembly Reference Members:: Specifying the members of an assembly reference.
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Assembly Attributes, Assembly Members, Assembly Declarations, Assembly Declarations
+@subsection Assembly Attributes
+@cindex Assembly Attributes
+
+@cindex AssemblyAttribute
+@example
+AssemblyAttribute => @strong{noappdomain}
+                   | @strong{nomachine}
+                   | @strong{noprocess}
+@end example
+
+@table @strong
+@item noappdomain
+Specifies that the assembly cannot be loaded more than once in the same
+application domain.
+
+@item nomachine
+Specifies that the assembly cannot be loaded more than once on the same
+physical machine.
+
+@item noprocess
+Specifies that the assembly cannot be loaded more than once in the same
+process.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Assembly Members, Assembly References, Assembly Attributes, Assembly Declarations
+@subsection Assembly Members
+@cindex Assembly Members
+
+@cindex AssemblyMember
+@example
+AssemblyMember => @strong{.hash} @strong{algorithm} Integer32
+                | @strong{.publickey} '=' Bytes
+                | @strong{.ver} Integer32 ':' Integer32 ':'
+                         Integer32 ':' Integer32
+                | @strong{.locale} ComposedString
+                | @strong{.processor} Integer32
+                | @strong{.os} Integer32 ':' Integer32 ':' Integer32
+                | CustomAttributeDeclaration
+                | SecurityDeclaration
+@end example
+
+@table @strong
+@item .hash
+Specify the hash algorithm to use for hashing other files that make
+up the same assembly manifest.  These files are typically referred
+to using @strong{.file} declarations.  The value 0x8004 is recommended,
+and refers to the SHA1 hash algorithm.
+
+@item .publickey
+Specify the bytes of the public key that was used to sign this assembly.
+Compilers that write assembly streams normally won't need to use this
+directive because separate tools are used to sign assemblies.
+
+@item .ver
+Specify the version number of this assembly.  e.g. @code{1:0:2411:0}.
+
+@item .locale
+Specify the culture string for this assembly.  This is called
+@strong{.locale} instead of @strong{.culture} for historical
+reasons.  An example of a valid culture value is @code{en-AU} which
+indicates "English, Australia".
+
+@item .processor
+@itemx .os
+Specify operating systems and processors for which this assembly
+has been built and tested.  Use of these directives is discouraged
+in portable programs.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Assembly References, Assembly Reference Members, Assembly Members, Assembly Declarations
+@subsection Assembly References
+@cindex Assembly References
+
+@cindex .assembly extern directive
+@cindex AssemblyRefDeclaration
+@example
+AssemblyRefDeclaration => @strong{.assembly} @strong{extern} QualifiedName
+                          '@{' @{ AssemblyRefMember @} '@}'
+@end example
+
+@c -----------------------------------------------------------------------
+
+@node Assembly Reference Members, Module Declarations, Assembly References, Assembly Declarations
+@subsection Assembly Reference Members
+@cindex Assembly Reference Members
+
+@cindex AssemblyRefMember
+@example
+AssemblyRefMember => @strong{.hash} '=' Bytes
+                   | @strong{.publickey} '=' Bytes
+                   | @strong{.publickeytoken} '=' Bytes
+                   | @strong{.ver} Integer32 ':' Integer32 ':'
+                            Integer32 ':' Integer32
+                   | @strong{.locale} ComposedString
+                   | @strong{.processor} Integer32
+                   | @strong{.os} Integer32 ':' Integer32 ':' Integer32
+                   | CustomAttributeDeclaration
+@end example
+
+@table @strong
+@item .hash
+Specify the hash value for the referenced assembly.
+
+@item .publickey
+Specify the bytes of the public key that was used to sign the
+referenced assembly.
+
+@item .publickeytoken
+Specify the low 8 bytes of the SHA1 hash of the public key that was
+used to sign the referenced assembly.
+
+Only one of @strong{.publickey} or @strong{.publickeytoken} can be
+specified.  Tokens are much shorter than full public keys and the
+full key can be obtained from the referenced assembly when it is
+loaded.
+
+@item .ver
+Specify the version number of the referenced assembly.
+e.g. @code{1:0:2411:0}.
+
+@item .locale
+Specify the culture string for the referenced assembly.
+
+@item .processor
+@itemx .os
+Specify operating systems and processors for which the referenced assembly
+has been built and tested.  Use of these directives is discouraged
+in portable programs.
+@end table
+
+@c -----------------------------------------------------------------------
+
+@node Module Declarations, Other Declarations, Assembly Reference Members, Assembler
+@section Module Declarations
+@cindex Module Declarations
+
+@cindex .module directive
+@cindex ModuleDeclaration
+@example
+ModuleDeclaration => @strong{.module} QualifiedName
+                   | @strong{.module} @strong{extern} QualifiedName
+@end example
+
+If the module declaration has custom attributes, they should appear
+just after the declaration.
+
+@c -----------------------------------------------------------------------
+
+@node Other Declarations, Disassembler, Module Declarations, Assembler
 @section Other Declarations
 @cindex Other Declarations
 

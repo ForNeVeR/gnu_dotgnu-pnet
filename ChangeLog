@@ -18,6 +18,9 @@ flags to make it easier to pass them down from the cscc compiler.
 * ilasm/ilasm.1, cscc/cscc.1, doc/pnettools.texi: documentation updates
 to reflect the new command-line syntax for ilasm and cscc.
 
+* doc/pnettools.texi, doc/pnetasm.texi: continue documentation
+of the assembler syntax.
+
 2001-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/jopcodes.c, image/Makefile.am: new file, containing a list of

@@ -12,6 +12,9 @@
 	make fixups more efficient in "ObjectManager"; add some test cases
 	for "System.Runtime.Serialization".
 
+	* runtime/System/Char.cs: fix "Char.GetNumericValue" so that it
+	returns the correct value for decimal digits.
+
 2003-06-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

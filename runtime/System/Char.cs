@@ -188,7 +188,7 @@ public struct Char : IComparable
 			{
 				if(c >= '0' && c <= '9')
 				{
-					return (double)(int)c;
+					return (double)(int)(c - '0');
 				}
 				else
 				{

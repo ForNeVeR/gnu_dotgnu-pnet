@@ -156,8 +156,7 @@ public sealed class ToolkitManager
 				ConstructorInfo ctor = type.GetConstructor(new Type [0]);
 				return (IToolkit)(ctor.Invoke(new Object [0]));
 			#else
-				// TODO: return a null toolkit
-				return null;
+				return new NullToolkit();
 			#endif
 			}
 

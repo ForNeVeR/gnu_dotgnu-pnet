@@ -12,6 +12,17 @@
 	* System.Drawing/Toolkit/UnixPrinter.cs: load the Postscript
 	driver to handle Unix print requests.
 
+	* Makefile.am, configure.in, System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing.Postscript/.cvsignore,
+	System.Drawing.Postscript/Makefile.am,
+	System.Drawing.Postscript/PostscriptDriver.cs,
+	System.Drawing.Postscript/PostscriptGraphics.cs,
+	System.Drawing.Postscript/PostscriptPrintSession.cs,
+	System.Drawing.Postscript/PostscriptToolkit.cs,
+	System.Drawing.Postscript/System.Drawing.Postscript.build:
+	add the skeleton of the postscript printer driver to the tree.
+
 2003-07-17  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/String.cs: Fix minor bug in format parsing 

@@ -92,17 +92,18 @@ namespace System.Private.DateTimeFormat
 				}
 				case 3:
 				{
-					for( int i = 0; i < 8; i++ )
+					for( DayOfWeek i = DayOfWeek.Sunday ; 
+									i <= DayOfWeek.Saturday ; i++ )
 					{
 						try 
 						{
 							if( String.Compare(s, start, 
-								info.GetAbbreviatedDayName((DayOfWeek)i), 0, 
-								info.GetAbbreviatedDayName((DayOfWeek)i).Length, true) 
+								info.GetAbbreviatedDayName(i), 0, 
+								info.GetAbbreviatedDayName(i).Length, true) 
 								== 0)
 							{
 								return (start+
-									info.GetAbbreviatedDayName((DayOfWeek)i).Length);
+									info.GetAbbreviatedDayName(i).Length);
 							}
 						}
 						catch ( ArgumentOutOfRangeException ){}
@@ -111,13 +112,15 @@ namespace System.Private.DateTimeFormat
 				}
 				default:
 				{
-					for( int i = 0; i < 8; i++ )
+					for( DayOfWeek i = DayOfWeek.Sunday ; 
+									i <= DayOfWeek.Saturday ; i++ )
 					{
-						try {
-							if( String.Compare(s, start, info.GetDayName((DayOfWeek)i),
-								0, info.GetDayName((DayOfWeek)i).Length, true) == 0)
+						try 
+						{
+							if( String.Compare(s, start, info.GetDayName(i),
+								0, info.GetDayName(i).Length, true) == 0)
 							{
-								return (start+info.GetDayName((DayOfWeek)i).Length);	
+								return (start+info.GetDayName(i).Length);	
 							}
 						}
 						catch ( ArgumentOutOfRangeException ){}
@@ -1003,7 +1006,7 @@ namespace System.Private.DateTimeFormat
 		}
 		internal override int Parse(String s, int start, DateTimeFormatInfo info)
 		{
-			return start+1;
+			return start+Text.Length;
 		}
 		internal override ParsedDateTime StoreTo(ParsedDateTime d)
 		{

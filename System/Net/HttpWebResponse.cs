@@ -192,8 +192,12 @@ public class HttpWebResponse : WebResponse
 	{ 
 		get 
 		{
-			String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//convert to GMT
-			return DateTime.ParseExact(headers["Last-Modified"],format,null,
+			String []formats=new String[] { 	
+						"ddd, dd MMM yyyy HH:mm:ss \\G\\M\\T", // RFC 1123
+						"dddd, dd-MMM-yy HH:mm:ss \\G\\M\\T" , // RFC 850
+						"ddd MMM dd HH:mm:ss yyyy"			   // asctime()
+						};
+			return DateTime.ParseExact(headers["Last-Modified"],formats,null,
 						DateTimeStyles.None);
 		}
 	}

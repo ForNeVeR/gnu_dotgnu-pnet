@@ -280,8 +280,12 @@ namespace System.Private.DateTimeFormat
 					}
 					default:
 					{
-						q.Enqueue(current);
-						current=new ExplicitString();
+						if(!(current is ExplicitString))
+						{
+							q.Enqueue(current);
+							current=new ExplicitString();
+						}
+						(current as ExplicitString).Text+=c;
 						break;
 					}
 				}
@@ -289,7 +293,7 @@ namespace System.Private.DateTimeFormat
 	
 			q.Enqueue(current);
 			ParsedDateTime d= new ParsedDateTime();
-			int start = -1;
+			int start = 0;
 	
 			foreach(FormatTemplate temp in q)
 			{	

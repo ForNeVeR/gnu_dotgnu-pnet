@@ -4,6 +4,13 @@
 	* System/Net/WebRequest.cs : Move the static initialization code
 	into a static constructor.
 
+	* System/Net/HttpWebResponse: Correct the format identifiers for
+	LastModified header parsing.
+
+	* runtime/System/Private/DateTimeFormat/DateTimeParser.cs,
+	runtime/System/Private/DateTimeFormat/DateTimeFormatTemplate.cs: Fix
+	some bugs in datetime parsing routines.
+
 2003-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: replace the reference to the "Tech Support Manager" with

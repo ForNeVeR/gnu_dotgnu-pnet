@@ -1,3 +1,9 @@
+
+2003-07-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* doc/c_users_guide.html: update the user's guide for the C
+	compiler to describe the latest conventions.
+
 2003-07-01  Thong Nguyen  <tum@veridicus.com>
 	
 	* engine/heap.c:  Make ILExecAllocAtomic registers finalizers.

@@ -6,7 +6,7 @@
 <h1>Using Portable.NET's C Compiler</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2003/06/25 13:03:34 $<p>
+Last Modified: $Date: 2003/06/30 22:15:31 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -115,7 +115,7 @@ The following primitive types are provided by the C compiler:<p>
 <tr><td><code>void</code></td>
 	<td>1 <sup>1</sup></td>
 	<td>Void type</td></tr>
-<tr><td><code>__bool__</code></td>
+<tr><td><code>_Bool</code></td>
 	<td>1</td>
 	<td>8-bit boolean value (C# "<code>bool</code>")</td></tr>
 <tr><td><code>char</code></td>
@@ -183,7 +183,7 @@ the corresponding types in the runtime engine.</font>
 By default, the compiler lays out "<code>struct</code>" and
 "<code>union</code>" types to simulate the behaviour of a 64-bit
 operating system.  The "<code>-m32bit-only</code>" option can be
-used to specific 32-bit layout instead.<p>
+used to specify 32-bit layout instead.<p>
 
 However, sometimes you need to access features of the native operating
 system, even if writing a portable 64-bit application.  When you do,
@@ -273,12 +273,84 @@ so this restriction is not expected to affect much existing code.<p>
 
 <h3>3.4. Importing PInvoke functions</h3>
 
-TODO
+Native functions may be imported via PInvoke using function attributes.
+For example:<p>
+
+<blockquote><pre>extern int getpid(void) __attribute__((pinvoke("libc.so.6"), cdecl));</pre></blockquote><p>
+
+The following attributes may be present:<p>
+
+<dl>
+<dt><code>pinvoke(<i>lib</i>)</code></dt>
+<dd>Specify that the function is imported via PInvoke from the specified
+	native library.</dd>
+
+<dt><code>name(<i>str</i>)</code></dt>
+<dd>Specify the raw name of the function in the DLL, if it is different
+	from the name of the function.</dd>
+
+<dt><code>ansi</code>, <code>unicode</code>, <code>auto</code></dt>
+<dd>Specify the string marshalling conventions.</dd>
+
+<dt><code>winapi</code>, <code>cdecl</code>, <code>stdcall</code>,
+    <code>thiscall</code>, <code>fastcall</code></dt>
+<dd>Specify the calling conventions.</dd>
+
+<dt><code>nomangle</code>, <code>preservesig</code>, <code>lasterr</code></dt>
+<dd>Other flags, corresponding to <code>ExactSpelling</code>,
+    <code>PreserveSig</code>, and <code>SetLastError</code> in
+	<code>DllImportAttribute</code>.</dd>
+</dl>
+
+All of these attributes can also be specified with leading and trailing
+underscores; e.g. "<code>__pinvoke__</code>".<p>
 
 <h3>3.5. Calling C# code</h3>
 
-The easist way to call C# code from C is to create a "<code>__module</code>"
-declaration within the C# application:
+Any C# type can be imported into C using the syntax
+"<code>__csharp__ (<i>type</i>)</code>", where "<code><i>type</i></code>"
+is any legal C# type name, include object types, value types, managed
+arrays, etc.  The "<code>__csharp__</code>" wrapper is necessary to
+avoid ambiguities in the compiler's parser.<p>
+
+The "<code>__csharp__</code>" keyword can be combined with the
+"<code>::</code>" operator to call methods in the C# code:<p>
+
+<blockquote><pre>typedef __csharp__(System.Console) Console;
+
+int main()
+{
+    (void)Console::WriteLine("Hello World");
+    return 0;
+}</pre></blockquote><p>
+
+The "<code>(void)</code>" is necessary to avoid ambiguities between
+types used in local variable declarations and types used in method
+invocation expressions.  If the method is used as a sub-expression,
+the cast is not necessary.  For example:
+
+<blockquote><pre>typedef __csharp__(System.Environment) Environment;
+
+int ticks = Environment::get_TickCount();</pre></blockquote><p>
+
+This example also demonstrates how C# properties are accessed from C:
+you must call the underlying "<code>get</code>" or "<code>set</code>"
+method.<p>
+
+If the method is an instance or virtual method, then the object
+is supplied as the first parameter:<p>
+
+<blockquote><pre>typedef __csharp__(System.Object) Object;
+
+Object o = ...;
+int hash = Object::GetHashCode(o);</pre></blockquote><p>
+
+When the C compiler resolves methods, it will first check for an
+instance method.  If none is found, it will check for a static
+method.<p>
+
+Another way to call C# code from C is to create a "<code>__module</code>"
+declaration within the C# application:<p>
 
 <blockquote><pre>__module
 {
@@ -291,8 +363,6 @@ declaration within the C# application:
 
 The "<code>cs_func</code>" method will be visible to the C code as a
 regular function.<p>
-
-TODO: using "<code>__invoke__</code>".<p>
 
 TODO: deprecate "<code>__module</code>" and replace with
 "<code>System.Runtime.CompilerServices.CompilerGlobalScopeAttribute</code>",

@@ -1,3 +1,21 @@
+2003-07-30  Neil Cawse   <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs: DrawString alignment calc 1 out.
+	MeasureCharacterRanges, dont continue if nowrap
+	* System.Drawing.Win32/DrawingGraphics.cs: MeasureString out by 1 on y
+	* System.Windows.Forms/TextBox.cs, System.Windows.Forms/TextBoxBase.cs:
+	implemented text bigger than the textbox, scrolling and
+	implemented more properties
+	* System.Windows.Forms/Control.cs: ClientSize not calling ClientToBounds
+	correctly. Implemented PointToClient. Update fix.
+	* System.Windows.Forms/Label.cs: fix default alignment on label.
+	* System.Windows.Forms/TabControl.cs: decrease text y offset.
+	* samples/samples.build: removed TextBoxTest.cs, TabTest.cs, RegionTest.cs
+	and added FormsTest.cs
+	* samples/TextBoxTest.cs, samples/TabTest.cs, samples/RegionTest.cs : 
+	removed
+	* samples/FormsTest.cs: new test cases for Labels, RadioButtons, TextBoxes,
+	TabControls and Regions.
 
 2003-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
@@ -8,7 +26,7 @@
 
 2003-07-28  Neil Cawse   <neilcawse@geotab.com>
 
-	* System.Drawing/Graphics.cs: Fixes and lineAlignment to
+	* System.Drawing/Graphics.cs: fixes and lineAlignment to
 	MeasureCharacterRanges
 	* System.Drawing.Win32/Win32.cs, System.Drawing.Win32/DrawingWindow:
 	Fix Focused() and clipping for onpaint

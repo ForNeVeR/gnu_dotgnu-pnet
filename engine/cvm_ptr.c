@@ -866,6 +866,23 @@ case COP_NEW_VALUE:
 }
 break;
 
+case COP_MEMCPY:
+{
+	/* Wide version of "memcpy" */
+	IL_MEMCPY(stacktop[-2].ptrValue, stacktop[-1].ptrValue,
+			  IL_READ_UINT32(pc + 2));
+	MODIFY_PC_AND_STACK(6, -2);
+}
+break;
+
+case COP_MEMZERO:
+{
+	/* Wide version of "memzero" */
+	IL_MEMZERO(stacktop[-1].ptrValue, IL_READ_UINT32(pc + 2));
+	MODIFY_PC_AND_STACK(6, -1);
+}
+break;
+
 #elif defined(IL_CVM_PREFIX)
 
 case COP_PREFIX_LREAD_ELEM:

@@ -1,6 +1,10 @@
+2002-05-02  Charlie Carnow   <carnow@gmx.net>
+
+	* runtime/System/IO/Directory.cs: new class contributed by Abhaya Agarwal <abhayag@iitk.ac.in>
+		
 2002-05-02  Stephen Compall  <rushing@sigecom.net>
 
-	* System/Uri.cs: Completed IPv6 support, LocalPath property, GetLeftPart
+       	* System/Uri.cs: Completed IPv6 support, LocalPath property, GetLeftPart
 	method. Not sure on status of MakeRelative.
 
 	* resources/en_US/System/Arg.txt: new "Arg_UriPartial".

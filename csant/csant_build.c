@@ -71,7 +71,8 @@ static void StdProps(const char *buildFilename)
 	{
 		CSAntDefineProperty("csant.project.name", -1, CSAntProjectName, 0);
 	}
-	CSAntDefineProperty("csant.base.dir", -1, CSAntBaseDir, 0);
+	CSAntDefineProperty("csant.src.dir", -1, CSAntBaseSrcDir, 0);
+	CSAntDefineProperty("csant.build.dir", -1, CSAntBaseBuildDir, 0);
 	if(CSAntDefaultTarget)
 	{
 		CSAntDefineProperty("csant.default.name", -1,

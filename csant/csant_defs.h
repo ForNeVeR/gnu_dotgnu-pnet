@@ -39,7 +39,8 @@ extern int   CSAntKeepGoing;
 extern int   CSAntSilent;
 extern int   CSAntDummyDoc;
 extern char *CSAntCompiler;
-extern char *CSAntBaseDir;
+extern char *CSAntBaseSrcDir;
+extern char *CSAntBaseBuildDir;
 extern char *CSAntProjectName;
 extern char *CSAntDefaultTarget;
 

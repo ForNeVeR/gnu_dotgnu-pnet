@@ -329,7 +329,8 @@ static int IsDirectory(const char *pathname)
 #endif
 }
 
-CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
+CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
+							   const char *configBaseDir)
 {
 	CSAntFileSet *fileset;
 	CSAntTask *node;
@@ -362,11 +363,11 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 	arg = CSAntTaskParam(node, "basedir");
 	if(arg)
 	{
-		baseDir = CSAntDirCombine(CSAntBaseDir, arg);
+		baseDir = CSAntDirCombine(configBaseDir, arg);
 	}
 	else
 	{
-		baseDir = CSAntDirCombine(CSAntBaseDir, 0);
+		baseDir = CSAntDirCombine(configBaseDir, 0);
 	}
 	stack = (CSAntDirStack *)ILMalloc(sizeof(CSAntDirStack));
 	if(!stack)
@@ -485,9 +486,6 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 	}
 	fileset->numFiles = outposn;
 
-	/* We don't need the base directory any more */
-	ILFree(baseDir);
-
 	/* Add simple files that are named using the <file> tag */
 	node = node->taskChildren;
 	while(node != 0)
@@ -497,16 +495,15 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name)
 			arg = CSAntTaskParam(node, "name");
 			if(arg)
 			{
-				pathname = ILDupString(arg);
-				if(!pathname)
-				{
-					CSAntOutOfMemory();
-				}
+				pathname = CSAntDirCombine(baseDir, arg);
 				AddToFileSet(fileset, pathname);
 			}
 		}
 		node = node->next;
 	}
+
+	/* We don't need the base directory any more */
+	ILFree(baseDir);
 
 	/* Free the regular expression state */
 #ifdef HAVE_REGCOMP

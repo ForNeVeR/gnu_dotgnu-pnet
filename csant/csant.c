@@ -52,44 +52,48 @@ extern	"C" {
 static ILCmdLineOption const options[] = {
 	{"-f", 'f', 1, 0, 0},
 	{"--file", 'f', 1,
-		"--file name      or -f name",
+		"--file name            or -f name",
 		"Specify the name of the build file to use."},
 	{"-b", 'b', 1, 0, 0},
-	{"--base-dir", 'b', 1,
-		"--base-dir name  or -b name",
-		"Specify the base directory for the build tree."},
+	{"--base-src-dir", 'b', 1,
+		"--base-src-dir name    or -b name",
+		"Specify the base source directory for the build tree."},
+	{"-B", 'B', 1, 0, 0},
+	{"--base-build-dir", 'B', 1,
+		"--base-build-dir name  or -B name",
+		"Specify the base build directory for the build tree."},
 	{"-D", 'D', 1, 0, 0},
 	{"--define", 'D', 1,
-		"-Dname=value     or --define name=value",
+		"-Dname=value           or --define name=value",
 		"Define the property `name' and set it to `value'."},
 	{"-p", 'p', 1, 0, 0},
 	{"--profile", 'p', 1,
-		"--profile name   or -p name",
+		"--profile name         or -p name",
 		"Specify the definition profile to use."},
 	{"-n", 'n', 0, 0, 0},
 	{"--just-print", 'n', 0,
-		"--just-print     or -n",
+		"--just-print           or -n",
 		"Print the names of the commands, but do not execute them."},
 	{"-d", 'd', 0, 0, 0},
 	{"--dummy-doc", 'd', 0,
-		"--dummy-doc      or -d",
+		"--dummy-doc            or -d",
 		"Output dummy documentation files."},
 	{"-k", 'k', 0, 0, 0},
 	{"--keep-going", 'k', 0,
-		"--keep-going     or -k",
+		"--keep-going           or -k",
 		"Keep processing even after an error."},
 	{"-s", 's', 0, 0, 0},
 	{"--silent", 's', 0,
-		"--silent         or -s",
+		"--silent               or -s",
 		"Do not print the names of commands as they are executed."},
 	{"--quiet", 's', 0, 0, 0},
 	{"-C", 'C', 1, 0, 0},
 	{"--compiler", 'C', 1,
-		"--compiler name  or -C name",
+		"--compiler name        or -C name",
 		"Specify which compiler to use [`cscc' (default), `csc', or `msc']."},
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
-		"--version        or -v",
+		"--version              or -v",
 		"Print the version of the program."},
 	{"--help", 'h', 0,
 		"--help",
@@ -125,7 +129,13 @@ int main(int argc, char *argv[])
 		{
 			case 'b':
 			{
-				CSAntBaseDir = param;
+				CSAntBaseSrcDir = param;
+			}
+			break;
+
+			case 'B':
+			{
+				CSAntBaseBuildDir = param;
 			}
 			break;
 
@@ -223,7 +233,7 @@ int main(int argc, char *argv[])
 	/* Get the default build file if none was specified */
 	if(!buildFilename)
 	{
-		buildFilename = defaultBuildFile(CSAntBaseDir);
+		buildFilename = defaultBuildFile(CSAntBaseSrcDir);
 		if(!buildFilename)
 		{
 			fprintf(stderr, "%s: could not locate a default build file\n",

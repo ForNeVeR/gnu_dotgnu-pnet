@@ -330,10 +330,10 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	args->noStdLib = COMP_FLAG_NOT_SET;
 	args->optimize = COMP_FLAG_NOT_SET;
 	args->warnAsError = COMP_FLAG_NOT_SET;
-	args->sources = CSAntFileSetLoad(task, "sources");
-	args->references = CSAntFileSetLoad(task, "references");
-	args->resources = CSAntFileSetLoad(task, "resources");
-	args->modules = CSAntFileSetLoad(task, "modules");
+	args->sources = CSAntFileSetLoad(task, "sources", CSAntBaseSrcDir);
+	args->references = CSAntFileSetLoad(task, "references", CSAntBaseBuildDir);
+	args->resources = CSAntFileSetLoad(task, "resources", CSAntBaseBuildDir);
+	args->modules = CSAntFileSetLoad(task, "modules", CSAntBaseBuildDir);
 	args->defines = 0;
 	args->numDefines = 0;
 	args->args = 0;
@@ -346,7 +346,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 		FreeCompileArgs(args);
 		return 0;
 	}
-	args->output = CSAntDirCombine(CSAntBaseDir, args->output);
+	args->output = CSAntDirCombine(CSAntBaseBuildDir, args->output);
 	if(!(args->target))
 	{
 		if(isCsc)
@@ -1024,8 +1024,8 @@ int CSAntTask_Csdoc(CSAntTask *task)
 	/* Parse the parameters to the task */
 	output = (char *)CSAntTaskParam(task, "output");
 	library = (char *)CSAntTaskParam(task, "library");
-	sources = CSAntFileSetLoad(task, "sources");
-	references = CSAntFileSetLoad(task, "references");
+	sources = CSAntFileSetLoad(task, "sources", CSAntBaseSrcDir);
+	references = CSAntFileSetLoad(task, "references", CSAntBaseBuildDir);
 	value = CSAntTaskParam(task, "private");
 	if(value)
 	{

@@ -34,7 +34,8 @@ typedef struct _tagCSAntFileSet CSAntFileSet;
  * Load a file set into memory, based on a task sub-node.
  * Returns NULL if there is no such sub-node.
  */
-CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name);
+CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
+							   const char *configBaseDir);
 
 /*
  * Destroy a file set that we no longer require.

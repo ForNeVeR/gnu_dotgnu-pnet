@@ -8,6 +8,12 @@
 	csant/csant_defs.h, csant/csant_task.c: add the "csdoc" task
 	type for csant, to process program documentation.
 
+	* csant/csant.c, csant/csant_build.c, csant/csant_cscc.c,
+	csant/csant_defs.h, csant/csant_fileset.c, csant/csant_fileset.h,
+	csant/csant_parse.c, csant/csant_task.c: use separate base
+	directories for source and build locations, to support "out of tree"
+	builds when csant is combined with automake/autoconf.
+
 2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:

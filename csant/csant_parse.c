@@ -24,7 +24,8 @@
 extern	"C" {
 #endif
 
-char *CSAntBaseDir       = 0;
+char *CSAntBaseSrcDir    = 0;
+char *CSAntBaseBuildDir  = 0;
 char *CSAntProjectName   = 0;
 char *CSAntDefaultTarget = 0;
 
@@ -246,21 +247,45 @@ int CSAntParseFile(ILXMLReader *reader, const char *filename)
 		}
 	}
 
-	/* Set the default base directory, if the command-line hasn't yet */
-	if(!CSAntBaseDir)
+	/* Set the default base directories, if the command-line hasn't yet */
+	if(!CSAntBaseSrcDir)
 	{
-		arg = ILXMLGetParam(reader, "basedir");
+		arg = ILXMLGetParam(reader, "srcdir");
+		if(!arg)
+		{
+			arg = ILXMLGetParam(reader, "basedir");
+		}
 		if(arg)
 		{
-			CSAntBaseDir = ILDupString(arg);
-			if(!CSAntBaseDir)
+			CSAntBaseSrcDir = ILDupString(arg);
+			if(!CSAntBaseSrcDir)
 			{
 				CSAntOutOfMemory();
 			}
 		}
 		else
 		{
-			CSAntBaseDir = ".";
+			CSAntBaseSrcDir = ".";
+		}
+	}
+	if(!CSAntBaseBuildDir)
+	{
+		arg = ILXMLGetParam(reader, "builddir");
+		if(!arg)
+		{
+			arg = ILXMLGetParam(reader, "basedir");
+		}
+		if(arg)
+		{
+			CSAntBaseBuildDir = ILDupString(arg);
+			if(!CSAntBaseBuildDir)
+			{
+				CSAntOutOfMemory();
+			}
+		}
+		else
+		{
+			CSAntBaseBuildDir = ".";
 		}
 	}
 

@@ -79,7 +79,8 @@ static int Task_Fail(CSAntTask *task)
  */
 static int Task_CSAnt(CSAntTask *task)
 {
-	char *baseDir;
+	char *baseSrcDir;
+	char *baseBuildDir;
 	const char *buildFile;
 	const char *target;
 	const char *compiler;
@@ -87,8 +88,11 @@ static int Task_CSAnt(CSAntTask *task)
 	int argc, posn;
 	int result;
 
-	/* Adjust the base directory if necessary */
-	baseDir = CSAntDirCombine(CSAntBaseDir, CSAntTaskParam(task, "basedir"));
+	/* Adjust the base directories if necessary */
+	baseSrcDir = CSAntDirCombine
+		(CSAntBaseSrcDir, CSAntTaskParam(task, "basedir"));
+	baseBuildDir = CSAntDirCombine
+		(CSAntBaseBuildDir, CSAntTaskParam(task, "basedir"));
 
 	/* Locate the new build file and target */
 	buildFile = CSAntTaskParam(task, "buildfile");
@@ -100,10 +104,15 @@ static int Task_CSAnt(CSAntTask *task)
 	/* Construct the command-line to be spawned */
 	argv[0] = CSAntGetProgramName();
 	argc = 1;
-	if(baseDir)
+	if(baseSrcDir)
 	{
 		argv[argc++] = "-b";
-		argv[argc++] = baseDir;
+		argv[argc++] = baseSrcDir;
+	}
+	if(baseBuildDir)
+	{
+		argv[argc++] = "-B";
+		argv[argc++] = baseBuildDir;
 	}
 	if(buildFile)
 	{
@@ -148,7 +157,8 @@ static int Task_CSAnt(CSAntTask *task)
 	result = (ILSpawnProcess(argv) == 0);
 
 	/* Clean up and exit */
-	ILFree(baseDir);
+	ILFree(baseSrcDir);
+	ILFree(baseBuildDir);
 	return result;
 }
 

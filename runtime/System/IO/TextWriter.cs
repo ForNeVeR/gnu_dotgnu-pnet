@@ -114,7 +114,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			}
 	public virtual void Write(char value)
 			{
-				// Normally overridden by subclasses.
+				Write(new String(value, 1));
 			}
 	public virtual void Write(char[] value)
 			{
@@ -149,48 +149,47 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			}
 	public virtual void Write(double value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToString(null, FormatProvider));
 			}
 	public virtual void Write(Decimal value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToString(null, FormatProvider));
 			}
 	public virtual void Write(float value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToString(null, FormatProvider));
 			}
 	public virtual void Write(int value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToString(null, FormatProvider));
 			}
 	public virtual void Write(uint value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToString(null, FormatProvider));
 			}
 	public virtual void Write(long value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToString(null, FormatProvider));
 			}
 	public virtual void Write(ulong value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToString(null, FormatProvider));
 			}
 	public virtual void Write(Object value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				IFormattable f = (value as IFormattable);
+				if(f != null)
+				{
+					Write(f.ToString(null, FormatProvider));
+				}
+				else
+				{
+					Write(value.ToString());
+				}
 			}
 	public virtual void Write(String value)
 			{
-				//TODO
-				//Write(value.ToString(FormatProvider));
+				Write(value.ToCharArray());
 			}
 
 	// Write a newline to this text writer.

@@ -97,7 +97,7 @@ struct _tagILGenInfo
 	ILLoopStack    *loopStack;			/* Contents of the loop stack */
 	long			loopStackSize;		/* Size of the loop stack */
 	long			loopStackMax;		/* Maximum size of the loop stack */
-	ILMachineType	returnType;			/* Return type for current method */
+	ILType		   *returnType;			/* Return type for current method */
 	long			returnVar;			/* Temp local for return value */
 	ILLabel			returnLabel;		/* End of method return code label */
 	long			throwVariable;		/* Variable containing thrown value */
@@ -109,9 +109,10 @@ struct _tagILGenInfo
 	unsigned        tempLocalBase;		/* Base for temporary local variables */
 	ILScope		   *currentScope;		/* Current scope for declarations */
 	ILJavaGenInfo  *javaInfo;			/* Java-specific information */
-	long			numLoops;			/* Number of loops in force */
-	long			numSwitches;		/* Number of switches in force */
 	long			unsafeLevel;		/* Number of unsafe contexts */
+	int			   *contextStack;		/* Statement context stack */
+	long			contextStackSize;	/* Size of statement context stack */
+	long			contextStackMax;	/* Max size of context stack */
 	ILNode         *currentClass;		/* Current class being processed */
 	ILNode		   *currentMethod;		/* Current method being processed */
 	ILNode         *currentNamespace;	/* Current namespace being processed */

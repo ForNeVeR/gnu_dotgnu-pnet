@@ -15,6 +15,10 @@
 * codegen/cg_stmt.tc, codegen/jv_stmt.tc: code generation for "try"
 and "lock" statements; alter return type processing for "return".
 
+* codegen/cg_gen.h, codegen/cg_gen.c: alter "returnType" to be a real
+type instead of a machine type; add the "context stack"; remove obsolete
+"numLoops" and "numSwitches".
+
 2001-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc: bug fix in "CSEvalArguments"; make sure "ref" and "out"

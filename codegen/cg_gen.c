@@ -97,7 +97,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	info->loopStack = 0;
 	info->loopStackSize = 0;
 	info->loopStackMax = 0;
-	info->returnType = IL_TYPE_VOID;
+	info->returnType = ILType_Void;
 	info->returnVar = -1;
 	info->returnLabel = ILLabel_Undefined;
 	info->throwVariable = -1;
@@ -109,9 +109,10 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	info->tempLocalBase = 0;
 	info->currentScope = 0;
 	info->javaInfo = 0;
-	info->numLoops = 0;
-	info->numSwitches = 0;
 	info->unsafeLevel = 0;
+	info->contextStack = 0;
+	info->contextStackSize = 0;
+	info->contextStackMax = 0;
 	info->currentClass = 0;
 	info->currentMethod = 0;
 	info->currentNamespace = 0;
@@ -139,6 +140,12 @@ void ILGenInfoDestroy(ILGenInfo *info)
 		ILFree(info->loopStack);
 	}
 
+	/* Destroy the context stack */
+	if(info->contextStack)
+	{
+		ILFree(info->contextStack);
+	}
+
 	/* Destroy the goto list */
 	gotoEntry = info->gotoList;
 	while(gotoEntry != 0)
@@ -148,7 +155,7 @@ void ILGenInfoDestroy(ILGenInfo *info)
 		gotoEntry = nextGoto;
 	}
 
-	/* Free the tempoary variable array */
+	/* Free the temporary variable array */
 	if(info->tempVars)
 	{
 		ILFree(info->tempVars);

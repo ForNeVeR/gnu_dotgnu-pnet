@@ -1949,8 +1949,9 @@ IterationStatement
 				$$ = ILNode_NewScope_create($$);
 			}
 	| FOREACH '(' Type Identifier IN ForeachExpression EmbeddedStatement	{
-				MakeQuaternary(Foreach, $3, ILQualIdentName($4, 0), $6, $7);
-				$$ = ILNode_NewScope_create($$);
+				$$ = ILNode_NewScope_create
+					(ILNode_Foreach_create($3, ILQualIdentName($4, 0),
+										   $4, $6, $7));
 			}
 	;
 

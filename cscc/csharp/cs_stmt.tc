@@ -236,15 +236,81 @@ ILNode_SemAnalysis(ILNode_For)
  */
 ILNode_SemAnalysis(ILNode_Foreach)
 {
-	/* TODO */
 	CSSemValue value;
+	ILScope *scope;
+	ILNode_MethodDeclaration *method;
+	ILType *type;
+
+	/* Locate the scope and method for the iteration variable */
+	scope = info->currentScope;
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* Perform semantic analysis on the local variable type */
 	if(CSHasUnsafeType(node->type))
 	{
 		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
-	value.kind = CS_SEMKIND_VOID;
-	value.type = 0;
-	return value;
+	type = CSSemType(node->type, info, &(node->type));
+
+	/* Add the type to the local variable signature for this method */
+	if(!(method->localVarSig))
+	{
+		method->localVarSig = ILTypeCreateLocalList(info->context);
+		if(!(method->localVarSig))
+		{
+			CCOutOfMemory();
+		}
+	}
+	if(!ILTypeAddLocal(info->context, method->localVarSig, type))
+	{
+		CCOutOfMemory();
+	}
+
+	/* Create a local variable entry in the current scope */
+	/* TODO: the variable should be marked read-only */
+	ILScopeDeclareLocal(info->currentScope, node->varName,
+						ILTypeNumLocals(method->localVarSig) - 1,
+						node->varNameNode);
+	node->varIndex = ILTypeNumLocals(method->localVarSig) - 1;
+	node->varType = ILTypeToMachineType(type);
+
+	/* Perform semantic analysis on the collection expression */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
+	{
+		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+					  "invalid collection expression in `foreach' statement");
+		node->arrayType = ILTypeCreateArray(info->context, 1, type);
+		if(!(node->arrayType))
+		{
+			CCOutOfMemory();
+		}
+	}
+	else
+	{
+		node->arrayType = value.type;
+	}
+
+	/* Is this a simple array-based or collection-based "foreach" statement? */
+	node->elemType = ILTypeGetElemType(node->arrayType);
+	if(ILType_IsSimpleArray(node->arrayType) &&
+	   ILTypeIdentical(node->elemType, type))
+	{
+		/* The collection is a simple array and the iteration variable
+		   has the same type as the array elements.  We can optimise
+		   this case in the code generator to scan the array efficiently */
+	}
+	else
+	{
+		/* TODO: collection-based array scanning */
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "internal error: collection-based `foreach' not yet supported");
+	}
+
+	/* Perform semantic analysis on the body of the "foreach" statement */
+	StmtSem(node->stmt, info, &(node->stmt));
+
+	/* Done */
+	return CSSemValueDefault;
 }
 
 /*

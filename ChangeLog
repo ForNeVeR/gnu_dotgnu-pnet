@@ -18,6 +18,10 @@
 	if all arguments were coercable; continue resolving if member is
 	inaccessible.
 
+	* codegen/cg_nodes.tc, cscc/csharp/cs_grammar.y,
+	cscc/csharp/cs_stmt.tc: implement semantic analysis for the simple
+	array case of the "foreach" statement.
+
 2002-05-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_library.c, codegen/cg_misc.tc, codegen/cg_nodes.tc,

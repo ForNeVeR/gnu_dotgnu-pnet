@@ -588,6 +588,7 @@ struct _tagILSwitchValue
 {
 	ILNode *type;
 	char   *varName;
+	ILNode *varNameNode;
 	ILNode *expr;
 	ILNode *stmt;
 	%nocreate unsigned long varIndex = {0};

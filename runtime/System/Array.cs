@@ -1053,13 +1053,20 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			do
 			{
 				// Find two values to be swapped.
-				while(comparer.Compare(keys.GetValue(i), pivot) < 0)
+				try
 				{
-					++i;
+					while(comparer.Compare(keys.GetValue(i), pivot) < 0)
+					{
+						++i;
+					}
+					while(comparer.Compare(keys.GetValue(j), pivot) > 0)
+					{
+						--j;
+					}
 				}
-				while(comparer.Compare(keys.GetValue(j), pivot) > 0)
+				catch(ArgumentException e)
 				{
-					--j;
+					throw new InvalidOperationException(e.Message);
 				}
 				if(i > j)
 				{

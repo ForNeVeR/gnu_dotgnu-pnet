@@ -3,7 +3,8 @@ bin_PROGRAMS       = csdoc2texi
 #EXTRA_DIST         = $(man_MANS)
 CSDOC_COMMON       = doc_destroy.c \
 					 doc_load.c \
-					 doc_main.c
+					 doc_main.c \
+					 doc_sort.c
 csdoc2texi_SOURCES = doc_texi.c $(CSDOC_COMMON)
 csdoc2texi_LDADD   = ../support/libILSupport.a
 

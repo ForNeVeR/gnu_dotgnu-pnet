@@ -17,6 +17,8 @@ signatures of types and members (doc comments are not done yet).
 * csdoc/doc_sort.c: implement ILDocTreeSort, which sorts document
 trees on namespace, type, and member.
 
+* csdoc/Makefile.am: add "doc_sort.c" to the "csdoc2texi" build.
+
 2001-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_defs.tc, cscc/cs_oper.tc: ILNode_GlobalNamespace, new semantic

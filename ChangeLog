@@ -8,7 +8,8 @@
 
 	* System.Drawing.Win32/DrawingFont.cs
 	System.Drawing.Win32/DrawingGraphics.cs
-	System.Drawing.Win32/Win32.cs : some speed optimization.
+	System.Drawing.Win32/Win32.cs : some speed optimization. Fix in capture
+	mouse position on child windows.
 
 	* System.Windows.Forms/Control.cs : reparent origins not correct.
 

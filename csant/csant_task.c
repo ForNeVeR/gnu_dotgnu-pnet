@@ -19,6 +19,16 @@
  */
 
 #include "csant_defs.h"
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#include <errno.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -84,15 +94,130 @@ static int Task_Delete(CSAntTask *task)
 	int retval;
 	if(!file)
 	{
-		fprintf(stderr,"no file to delete in <delete>\n");
+		fprintf(stderr, "no file to delete in <delete>\n");
 		return 0;
 	}
-	retval=ILDeleteFile(file);
-	if(retval && fail && !strcmp(fail,"true"))
+	if(!CSAntSilent)
 	{
-		fprintf(stderr,"could not delete '%s'\n",file);
+		if(!fail || ILStrICmp(fail, "true") != 0)
+		{
+			printf("rm -f %s\n", file);
+		}
+		else
+		{
+			printf("rm %s\n", file);
+		}
+	}
+	retval = ILDeleteFile(file);
+	if(retval && fail && !ILStrICmp(fail, "true"))
+	{
+		perror(file);
 		return 0;
 	}
+	return 1;
+}
+
+/*
+ * Make a directory.
+ */
+static int Task_Mkdir(CSAntTask *task)
+{
+	const char *dir = CSAntTaskParam(task, "dir");
+	int retval;
+	if(!dir)
+	{
+		fprintf(stderr, "no directory to make in <mkdir>\n");
+		return 0;
+	}
+	if(!CSAntSilent)
+	{
+		printf("mkdir %s\n", dir);
+	}
+#ifdef IL_WIN32_NATIVE
+	retval = mkdir(dir);
+#else
+	retval = mkdir(dir, 0777);
+#endif
+	if(retval && errno != EEXIST)
+	{
+		perror(dir);
+		return 0;
+	}
+	return 1;
+}
+
+/*
+ * Copy a file.
+ */
+static int Task_Copy(CSAntTask *task)
+{
+	const char *fromfile = CSAntTaskParam(task, "file");
+	const char *tofile = CSAntTaskParam(task, "tofile");
+	FILE *instream;
+	FILE *outstream;
+	char buffer[BUFSIZ];
+	int len;
+
+	/* Validate the parameters */
+	if(!fromfile)
+	{
+		fprintf(stderr, "no source file in <copy>\n");
+		return 0;
+	}
+	if(!tofile)
+	{
+		fprintf(stderr, "no destination file in <copy>\n");
+		return 0;
+	}
+
+	/* Report the command that we will be executing */
+	if(!CSAntSilent)
+	{
+		printf("cp %s %s\n", fromfile, tofile);
+	}
+
+	/* Attempt to open the source file */
+	if((instream = fopen(fromfile, "rb")) == NULL)
+	{
+		if((instream = fopen(fromfile, "r")) == NULL)
+		{
+			perror(fromfile);
+			return 0;
+		}
+	}
+
+	/* Attempt to open the destination file */
+	if((outstream = fopen(tofile, "wb")) == NULL)
+	{
+		if((outstream = fopen(tofile, "w")) == NULL)
+		{
+			perror(tofile);
+			fclose(instream);
+			return 0;
+		}
+	}
+
+	/* Copy the file's contents */
+	while((len = (int)fread(buffer, 1, BUFSIZ, instream)) >= BUFSIZ)
+	{
+		fwrite(buffer, 1, len, outstream);
+	}
+	if(len > 0)
+	{
+		fwrite(buffer, 1, len, outstream);
+	}
+	if(ferror(outstream))
+	{
+		perror(tofile);
+		fclose(instream);
+		fclose(outstream);
+		ILDeleteFile(tofile);
+		return 0;
+	}
+
+	/* Done */
+	fclose(instream);
+	fclose(outstream);
 	return 1;
 }
 
@@ -193,8 +318,11 @@ CSAntTaskInfo const CSAntTasks[] = {
 	{"property",		Task_Property},
 	{"echo",			Task_Echo},
 	{"fail",			Task_Fail},
-	{"csant",			Task_CSAnt},
 	{"delete",			Task_Delete},
+	{"mkdir",			Task_Mkdir},
+	{"copy",			Task_Copy},
+	{"csant",			Task_CSAnt},
+	{"nant",			Task_CSAnt},
 };
 int const CSAntNumTasks = (sizeof(CSAntTasks) / sizeof(CSAntTaskInfo));
 

@@ -2,7 +2,23 @@ bin_PROGRAMS = ilrun ilverify
 lib_LIBRARIES = libILEngine.a
 man_MANS = ilrun.1
 
-libILEngine_a_SOURCES = cvm.c \
+TREECC_INPUTS = jit_nodes.tc \
+				jit_branch.tc
+
+TREECC_SRCOUT = jit_nodes.c \
+				jit_nodes.h
+
+STAMP = stamp-treecc
+
+BUILT_SOURCES = $(STAMP)
+
+libILEngine_a_DEPENDENCIES = $(STAMP)
+
+$(STAMP): $(TREECC_INPUTS)
+	$(TREECC) $(srcdir)/jit_nodes.tc && touch $@
+
+libILEngine_a_SOURCES = $(TREECC_SRCOUT) \
+						cvm.c \
 						box.c \
 						call.c \
 						convert.c \
@@ -75,4 +91,5 @@ cvm.o: cvm_labels.h
 cvm_labels.h: $(srcdir)/cvm.h $(srcdir)/mklabel.sh
 	$(SHELL) $(srcdir)/mklabel.sh "$(AWK)" $(srcdir)/cvm.h >cvm_labels.h
 
-CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix ilrun_opt cvm_labels.h
+CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix ilrun_opt cvm_labels.h \
+			 $(TREECC_SRCOUT) $(STAMP)

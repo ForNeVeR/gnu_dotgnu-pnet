@@ -22,6 +22,7 @@
 #include "il_system.h"
 #include "il_image.h"
 #include "il_utils.h"
+#include "il_xml.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -51,7 +52,7 @@ static ILCmdLineOption const options[] = {
 		"Input files contain IL images."},
 	{"--xml-input", 'x', 0,
 		"--xml-input   or -x",
-		"Input files contain XML resources (not yet implemented)."},
+		"Input files contain XML resources."},
 	{"--text-output", 'T', 0,
 		"--text-output or -T",
 		"Write text resources to the output file."},
@@ -60,7 +61,7 @@ static ILCmdLineOption const options[] = {
 		"Write binary resources to the output file."},
 	{"--xml-output", 'X', 0,
 		"--xml-output  or -X",
-		"Write XML resources to the output file (not yet implemented)."},
+		"Write XML resources to the output file."},
 	{"--sort-names", 's', 0,
 		"--sort-names  or -s",
 		"Sort the resources by name before writing text output."},
@@ -90,6 +91,7 @@ static int loadResources(const char *filename, FILE *stream,
 static void writeTextResources(FILE *stream);
 static void writeSortedTextResources(FILE *stream);
 static void writeBinaryResources(FILE *stream);
+static void writeXMLResources(FILE *stream);
 
 int main(int argc, char *argv[])
 {
@@ -317,11 +319,24 @@ int main(int argc, char *argv[])
 
 		case FORMAT_XML:
 		{
-			fprintf(stderr, "%s: XML output format is not supported yet\n",
-					outputFile);
-			return 1;
+			if(!strcmp(outputFile, "-"))
+			{
+				/* Write XML resources to stdout */
+				writeXMLResources(stdout);
+			}
+			else
+			{
+				/* Write XML resources to a specified file */
+				if((file = fopen(outputFile, "w")) == NULL)
+				{
+					perror(outputFile);
+					return 1;
+				}
+				writeXMLResources(file);
+				fclose(file);
+			}
 		}
-		/* Not reached */
+		break;
 
 		default:
 		{
@@ -420,6 +435,7 @@ struct _tagHashEntry
 	const char  *filename;
 	long		 linenum;
 	long		 offset;
+	long		 position;
 	char		 data[1];
 
 };
@@ -503,6 +519,7 @@ static int AddResource(const char *filename, long linenum,
 	entry->filename = filename;
 	entry->linenum = linenum;
 	entry->offset = 0;
+	entry->position = 0;
 	if(nameLen)
 	{
 		ILMemCpy(entry->data, name, nameLen);
@@ -857,108 +874,252 @@ invalid:
 }
 
 /*
+ * Read a Unicode string from binary resource data.
+ * Returns zero if the data is badly formatted.
+ */
+static int readUnicodeString(const char *filename,
+					         unsigned char **data, unsigned long *size,
+					         char **str, int *len)
+{
+	unsigned char *d = *data;
+	unsigned long s = *size;
+	unsigned char ch;
+	unsigned unich;
+	int length;
+	int shift;
+	if(s != 0)
+	{
+		/* Parse the length, in bytes, of the Unicode string */
+		ch = *d++;
+		--s;
+		length = (int)(ch & 0x7F);
+		shift = 7;
+		while((ch & (unsigned char)0x80) != 0)
+		{
+			if(s == 0)
+			{
+				goto invalid;
+			}
+			ch = *d++;
+			--s;
+			length |= (((int)(ch & 0x7F)) << shift);
+			shift += 7;
+		}
+		if(length >= 0x10000000 || ((unsigned long)length) > s)
+		{
+			goto invalid;
+		}
+
+		/* Allocate space for the converted string */
+		if((*str = (char *)ILMalloc(length * 2 + 1)) == 0)
+		{
+			outOfMemory();
+			return 0;
+		}
+
+		/* Convert the string from Unicode into UTF-8 */
+		*len = 0;
+		while(length >= 2)
+		{
+			unich = IL_READ_UINT16(d);
+			d += 2;
+			s -= 2;
+			if(unich < 0x80)
+			{
+				(*str)[*len] = (char)unich;
+				++(*len);
+			}
+			else if(unich < (1 << 11))
+			{
+				(*str)[*len] = (char)(0xC0 | (unich >> 6));
+				++(*len);
+				(*str)[*len] = (char)(0x80 | (unich & 0x3F));
+				++(*len);
+			}
+			else
+			{
+				(*str)[*len] = (char)(0xE0 | (unich >> 12));
+				++(*len);
+				(*str)[*len] = (char)(0x80 | ((unich >> 6) & 0x3F));
+				++(*len);
+				(*str)[*len] = (char)(0x80 | (unich & 0x3F));
+				++(*len);
+			}
+			length -= 2;
+		}
+		(*str)[*len] = '\0';
+		*data = d;
+		*size = s;
+		return 1;
+	}
+invalid:
+	fprintf(stderr, "%s: invalid binary resource string\n", filename);
+	return 0;
+}
+
+/*
+ * Magic strings used by the binary resource format.
+ */
+static char const className1[] =
+			"System.Resources.ResourceReader, mscorlib";
+static char const className2[] =
+			"System.String, mscorlib";
+static char const className3[] =
+			"System.Resources.RuntimeResourceSet, mscorlib";
+
+/*
  * Parse binary resource data from a buffer.
  */
 static int parseBinaryResources(const char *filename, unsigned char *data,
 								unsigned long size)
 {
 	unsigned long numStrings;
-	unsigned long stringNum;
 	char *str, *str2;
 	int len, len2;
-	unsigned char *tempData;
-	unsigned long tempSize;
+	unsigned char *fullData = data - 4;
+	unsigned long fullSize = size + 4;
 	unsigned long tempNum;
 	unsigned char *valueData;
 	unsigned long valueSize;
-	int error;
-	static char const className1[] = "System.Resources.ResourceReader";
+	unsigned long dataSection;
+	unsigned long offset;
+	int error = 0;
 
-	/* Parse the name of the resource class */
+	/* Check the version information at the start of the stream */
+	if(size < 8)
+	{
+		fprintf(stderr,"%s: truncated resource data\n", filename);
+		return 1;
+	}
+	if(IL_READ_UINT32(data) != 1)
+	{
+		fprintf(stderr, "%s: invalid resource version\n", filename);
+		return 1;
+	}
+	data += 8;
+	size -= 8;
 	if(!readString(filename, &data, &size, &str, &len))
 	{
 		return 1;
 	}
-	if(len != ((int)(strlen(className1))) ||
-	   ILMemCmp(str, className1, len) != 0)
+	len2 = strlen(className1);
+	if(len < len2 || ILMemCmp(str, className1, len2) != 0)
 	{
 		/* This isn't a set of string resources, so skip it */
 		return 0;
 	}
 
-	/* Parse the header */
-	if(size < 8)
+	/* Skip the next string */
+	if(!readString(filename, &data, &size, &str, &len))
 	{
-		fprintf(stderr, "%s: truncated resource data\n", filename);
 		return 1;
 	}
-	else if(IL_READ_UINT32(data) != 4)
+
+	/* Parse the secondary resource header */
+	if(size < 12)
+	{
+		fprintf(stderr,"%s: truncated resource data\n", filename);
+		return 1;
+	}
+	else if(IL_READ_UINT32(data) != 1)
 	{
 		fprintf(stderr, "%s: invalid resource version\n", filename);
 		return 1;
 	}
 	numStrings = IL_READ_UINT32(data + 4);
-	data += 8;
-	size -= 8;
-
-	/* Find the end of the string name table */
-	tempData = data;
-	tempSize = size;
-	for(stringNum = 0; stringNum < numStrings; ++stringNum)
-	{
-		if(!readString(filename, &tempData, &tempSize, &str, &len))
-		{
-			return 1;
-		}
-		if(tempSize < 4)
-		{
-			fprintf(stderr,"%s: truncated resource data\n", filename);
-			return 1;
-		}
-		tempData += 4;
-		tempSize -= 4;
-	}
+	tempNum = IL_READ_UINT32(data + 8);
+	data += 12;
+	size -= 12;
 
 	/* Skip the representation table */
-	if(tempSize < 4)
+	while(tempNum > 0)
+	{
+		if(!readString(filename, &data, &size, &str, &len))
+		{
+			return 1;
+		}
+		len2 = strlen(className2);
+		if(len < len2 || ILMemCmp(str, className2, len2) != 0)
+		{
+			/* This isn't a set of string resources, so skip it */
+			return 0;
+		}
+		--tempNum;
+	}
+
+	/* Skip the name hash and name position tables */
+	if(numStrings > (size / 8))
 	{
 		fprintf(stderr,"%s: truncated resource data\n", filename);
 		return 1;
 	}
-	tempNum = IL_READ_UINT32(tempData);
-	tempData += 4;
-	tempSize -= 4;
+	data += numStrings * 8;
+	size -= numStrings * 8;
+
+	/* Get the data section offset */
+	if(size < 4)
+	{
+		fprintf(stderr,"%s: truncated resource data\n", filename);
+		return 1;
+	}
+	dataSection = IL_READ_UINT32(data);
+	data += 4;
+	size -= 4;
+
+	/* Process the name table */
+	tempNum = numStrings;
 	while(tempNum > 0)
 	{
-		if(!readString(filename, &tempData, &tempSize, &str, &len))
+		/* Read the name string, and convert from its Unicode form */
+		if(!readUnicodeString(filename, &data, &size, &str, &len))
 		{
 			return 1;
 		}
-		--tempNum;
-	}
-	valueData = tempData;
-	valueSize = tempSize;
 
-	/* Parse the name table again to extract the strings */
-	error = 0;
-	for(stringNum = 0; stringNum < numStrings; ++stringNum)
-	{
-		readString(filename, &data, &size, &str, &len);
-		tempNum = IL_READ_UINT32(data) + 4;
-		if(tempNum >= size)
+		/* Read and validate the offset of the value */
+		if(size < 4)
 		{
-			fprintf(stderr, "%s: invalid string offset\n", filename);
+			ILFree(str);
+			fprintf(stderr,"%s: truncated resource data\n", filename);
 			return 1;
 		}
-		tempData = valueData + tempNum;
-		tempSize = valueSize - tempNum;
-		if(!readString(filename, &tempData, &tempSize, &str2, &len2))
-		{
-			return 1;
-		}
-		error |= AddResource(filename, 0, str, len, str2, len2);
+		offset = IL_READ_UINT32(data) + dataSection;
 		data += 4;
 		size -= 4;
+		if(offset >= fullSize)
+		{
+			ILFree(str);
+			fprintf(stderr,"%s: invalid offset to resource value\n", filename);
+			return 1;
+		}
+		valueData = fullData + offset;
+		valueSize = fullSize - offset;
+
+		/* Skip the type table index (which will always be "System.String") */
+		while(valueSize > 0 && (*valueData & 0x80) != 0)
+		{
+			++valueData;
+			--valueSize;
+		}
+		if(valueSize > 0)
+		{
+			++valueData;
+			--valueSize;
+		}
+
+		/* Read the string value */
+		if(!readString(filename, &valueData, &valueSize, &str2, &len2))
+		{
+			ILFree(str);
+			return 1;
+		}
+
+		/* Add the string to the resource table */
+		error |= AddResource(filename, -1, str, len, str2, len2);
+
+		/* Free the temporary string and advance */
+		ILFree(str);
+		--tempNum;
 	}
 
 	/* Done */
@@ -1060,6 +1221,134 @@ static int loadResourceSection(const char *filename, unsigned char *address,
 }
 
 /*
+ * XML reader function.
+ */
+static int xmlRead(void *data, void *buffer, int len)
+{
+	if(!feof((FILE *)data))
+	{
+		return fread(buffer, 1, len, (FILE *)data);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Load XML resources from an input file.
+ */
+static int loadXMLResources(const char *filename, FILE *stream)
+{
+	ILXMLReader *reader;
+	ILXMLItem item;
+	int sawRoot;
+	const char *name;
+	char *nameCopy;
+	char *value;
+	int error;
+
+	/* Initialize the XML reader */
+	reader = ILXMLCreate(xmlRead, stream, 0);
+	if(!reader)
+	{
+		outOfMemory();
+	}
+
+	/* Look for a top-level "root" element */
+	sawRoot = 0;
+	error = 0;
+	while((item = ILXMLReadNext(reader)) != ILXMLItem_EOF)
+	{
+		if(ILXMLIsStartTag(reader, "root"))
+		{
+			/* Look for "data" elements */
+			sawRoot = 1;
+			while((item = ILXMLReadNext(reader)) != ILXMLItem_EOF &&
+			      item != ILXMLItem_EndTag)
+			{
+				if(ILXMLIsTag(reader, "data"))
+				{
+					name = ILXMLGetParam(reader, "name");
+					if(name)
+					{
+						/* Make a copy of the name for later */
+						nameCopy = ILDupString(name);
+						if(!nameCopy)
+						{
+							outOfMemory();
+						}
+
+						/* Look for the first "value" element */
+						value = 0;
+						if(item == ILXMLItem_StartTag)
+						{
+							while((item = ILXMLReadNext(reader))
+										!= ILXMLItem_EOF &&
+								  item != ILXMLItem_EndTag)
+							{
+								if(ILXMLIsStartTag(reader, "value") && !value)
+								{
+									value = ILXMLGetContents(reader, 1);
+									if(!value)
+									{
+										outOfMemory();
+									}
+								}
+								else
+								{
+									ILXMLSkip(reader);
+								}
+							}
+						}
+
+						/* Add the string to the hash table */
+						if(value)
+						{
+							error |= AddResource(filename, -1,
+												 nameCopy, strlen(nameCopy),
+												 value, strlen(value));
+							ILFree(value);
+						}
+						else
+						{
+							error |= AddResource(filename, -1,
+												 nameCopy, strlen(nameCopy),
+												 "", 0);
+						}
+						ILFree(nameCopy);
+					}
+					else
+					{
+						ILXMLSkip(reader);
+					}
+				}
+				else
+				{
+					ILXMLSkip(reader);
+				}
+			}
+		}
+		else
+		{
+			ILXMLSkip(reader);
+		}
+	}
+
+	/* Done */
+	ILXMLDestroy(reader);
+	if(!sawRoot)
+	{
+		fprintf(stderr, "%s: not an XML resource file\n", filename);
+		return 1;
+	}
+	else
+	{
+		return error;
+	}
+}
+
+/*
  * Load the resources from a file that is in a specific format.
  */
 static int loadResources(const char *filename, FILE *stream,
@@ -1116,9 +1405,7 @@ static int loadResources(const char *filename, FILE *stream,
 
 		case FORMAT_XML:
 		{
-			fprintf(stderr, "%s: XML input resources are not supported yet\n",
-					filename);
-			return 1;
+			return loadXMLResources(filename, stream);
 		}
 		/* Not reached */
 	}
@@ -1313,7 +1600,7 @@ static void writeSortedTextResources(FILE *stream)
 /*
  * Determine the number of bytes that are necessary to represent a length.
  */
-static int LengthSize(int len)
+static int lengthSize(int len)
 {
 	int size = 1;
 	while(len >= 0x80)
@@ -1322,6 +1609,29 @@ static int LengthSize(int len)
 		len >>= 7;
 	}
 	return size;
+}
+
+/*
+ * Get the number of bytes necessary to represent a Unicode string.
+ */
+static int unicodeLength(const char *str, int len)
+{
+	unsigned long ch;
+	int posn = 0;
+	int nbytes = 0;
+	while(posn < len)
+	{
+		ch = ILUTF8ReadChar(str, len, &posn);
+		if(ch < (unsigned long)0x10000)
+		{
+			nbytes += 2;
+		}
+		else if(ch < (((unsigned long)1) << 20))
+		{
+			nbytes += 4;
+		}
+	}
+	return nbytes;
 }
 
 /*
@@ -1336,20 +1646,25 @@ static void writeWord(FILE *stream, unsigned long word)
 }
 
 /*
+ * Write a length value to a binary output stream.
+ */
+static void writeLength(FILE *stream, int len)
+{
+	while(len >= 0x80)
+	{
+		putc(((len & 0x7F) | 0x80), stream);
+		len >>= 7;
+	}
+	putc(len, stream);
+}
+
+/*
  * Write a length-specified string to a binary output stream.
  */
 static void writeString(FILE *stream, const char *str, int len)
 {
-	int templen;
-
 	/* Write out the length */
-	templen = len;
-	while(templen >= 0x80)
-	{
-		putc(((templen & 0x7F) | 0x80), stream);
-		templen >>= 7;
-	}
-	putc(templen, stream);
+	writeLength(stream, len);
 
 	/* Write out the string data */
 	if(len)
@@ -1358,18 +1673,86 @@ static void writeString(FILE *stream, const char *str, int len)
 	}
 }
 
+/*
+ * Write a length-specified unicode string to a binary output stream.
+ */
+static void writeUnicodeString(FILE *stream, const char *str, int len)
+{
+	int posn = 0;
+	unsigned long ch;
+	unsigned long tempch;
+
+	/* Write out the length */
+	writeLength(stream, unicodeLength(str, len));
+
+	/* Write out the contents of the string */
+	while(posn < len)
+	{
+		ch = ILUTF8ReadChar(str, len, &posn);
+		if(ch < (unsigned long)0x10000)
+		{
+			putc((char)(ch & 0xFF), stream);
+			putc((char)((ch >> 8) & 0xFF), stream);
+		}
+		else if(ch < (((unsigned long)1) << 20))
+		{
+			tempch = ((ch >> 10) + 0xD800);
+			putc((char)(tempch & 0xFF), stream);
+			putc((char)((tempch >> 8) & 0xFF), stream);
+			tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);
+			putc((char)(tempch & 0xFF), stream);
+			putc((char)((tempch >> 8) & 0xFF), stream);
+		}
+	}
+}
+
+/*
+ * Hash a unicode string.
+ */
+static ILInt32 hashUnicodeString(const char *str, int len)
+{
+	int posn = 0;
+	unsigned long ch;
+	unsigned long tempch;
+	ILUInt32 hash = 0x1505;
+	while(posn < len)
+	{
+		ch = ILUTF8ReadChar(str, len, &posn);
+		if(ch < (unsigned long)0x10000)
+		{
+			hash = ((hash << 5) + hash) ^ (ILUInt32)ch;
+		}
+		else if(ch < (((unsigned long)1) << 20))
+		{
+			tempch = ((ch >> 10) + 0xD800);
+			hash = ((hash << 5) + hash) ^ (ILUInt32)tempch;
+			tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);
+			hash = ((hash << 5) + hash) ^ (ILUInt32)tempch;
+		}
+	}
+	return (ILInt32)hash;
+}
+
 static void writeBinaryResources(FILE *stream)
 {
 	int hash;
 	long offset;
+	long position;
 	long numStrings;
+	long dataSection;
+	int unicodeLen;
 	HashEntry *entry;
-	static char const className1[] = "System.Resources.ResourceReader";
-	static char const className2[] = "System.String";
+	ILInt32 *hashes;
+	ILInt32 *positions;
+	long index, index2;
+	ILInt32 temp;
 
-	/* Calculate the offsets of all strings, and the size
-	   of the index table */
+	/* Calculate the offsets of all strings from the start
+	   of the data section, the position of all names from
+	   the start of the name section, and the total number
+	   of strings */
 	offset = 0;
+	position = 0;
 	numStrings = 0;
 	for(hash = 0; hash < HASH_TABLE_SIZE; ++hash)
 	{
@@ -1377,17 +1760,103 @@ static void writeBinaryResources(FILE *stream)
 		while(entry != 0)
 		{
 			entry->offset = offset;
-			offset += 4 + LengthSize(entry->valueLen) + entry->valueLen;
+			entry->position = position;
+			offset += lengthSize(0) + lengthSize(entry->valueLen) +
+					  entry->valueLen;
+			unicodeLen = unicodeLength(entry->data, entry->nameLen);
+			position += lengthSize(unicodeLen) + unicodeLen + 4;
 			++numStrings;
 			entry = entry->next;
 		}
 	}
 
+	/* Create the name hash and position tables */
+	if(numStrings > 0)
+	{
+		/* Allocate the tables */
+		if((hashes = (ILInt32 *)ILCalloc(numStrings, sizeof(ILInt32))) == 0)
+		{
+			outOfMemory();
+		}
+		if((positions = (ILInt32 *)ILCalloc(numStrings, sizeof(ILInt32))) == 0)
+		{
+			outOfMemory();
+		}
+
+		/* Compute the hash values and positions */
+		index = 0;
+		for(hash = 0; hash < HASH_TABLE_SIZE; ++hash)
+		{
+			entry = hashTable[hash];
+			while(entry != 0)
+			{
+				hashes[index] = hashUnicodeString(entry->data, entry->nameLen);
+				positions[index] = (ILInt32)(entry->position);
+				++index;
+				entry = entry->next;
+			}
+		}
+
+		/* Sort the tables into ascending order of hash */
+		for(index = 0; index < (numStrings - 1); ++index)
+		{
+			for(index2 = (index + 1); index2 < numStrings; ++index2)
+			{
+				if(hashes[index] > hashes[index2])
+				{
+					temp = hashes[index];
+					hashes[index] = hashes[index2];
+					hashes[index2] = temp;
+					temp = positions[index];
+					positions[index] = positions[index2];
+					positions[index2] = temp;
+				}
+			}
+		}
+	}
+	else
+	{
+		hashes = 0;
+		positions = 0;
+	}
+
 	/* Write out the header */
-	writeWord(stream, (unsigned long)0xBEEFCACE);
+	writeWord(stream, (unsigned long)0xBEEFCACE);	/* Magic number */
+	writeWord(stream, (unsigned long)1);			/* Version */
+	writeWord(stream, (unsigned long)(lengthSize(strlen(className1)) +
+									  strlen(className1) +
+									  lengthSize(strlen(className3)) +
+									  strlen(className3)));
 	writeString(stream, className1, strlen(className1));
-	writeWord(stream, (unsigned long)4);
+	writeString(stream, className3, strlen(className3));
+	writeWord(stream, (unsigned long)1);			/* Secondary version */
 	writeWord(stream, (unsigned long)numStrings);
+	writeWord(stream, (unsigned long)1);			/* Number of types */
+	writeString(stream, className2, strlen(className2));
+
+	/* Write out the name hash table */
+	for(index = 0; index < numStrings; ++index)
+	{
+		writeWord(stream, (unsigned long)(hashes[index]));
+	}
+	if(hashes)
+	{
+		ILFree(hashes);
+	}
+
+	/* Write out the name position table */
+	for(index = 0; index < numStrings; ++index)
+	{
+		writeWord(stream, (unsigned long)(positions[index]));
+	}
+	if(positions)
+	{
+		ILFree(positions);
+	}
+
+	/* Write the offset of the data section */
+	dataSection = position + ftell(stream) + 4;
+	writeWord(stream, (unsigned long)dataSection);
 
 	/* Write out the resource names */
 	for(hash = 0; hash < HASH_TABLE_SIZE; ++hash)
@@ -1395,15 +1864,11 @@ static void writeBinaryResources(FILE *stream)
 		entry = hashTable[hash];
 		while(entry != 0)
 		{
-			writeString(stream, entry->data, entry->nameLen);
+			writeUnicodeString(stream, entry->data, entry->nameLen);
 			writeWord(stream, (unsigned long)(entry->offset));
 			entry = entry->next;
 		}
 	}
-
-	/* Write the list of representation class names */
-	writeWord(stream, (unsigned long)1);
-	writeString(stream, className2, strlen(className2));
 
 	/* Write out the resource values */
 	for(hash = 0; hash < HASH_TABLE_SIZE; ++hash)
@@ -1411,11 +1876,126 @@ static void writeBinaryResources(FILE *stream)
 		entry = hashTable[hash];
 		while(entry != 0)
 		{
-			writeWord(stream, (unsigned long)0);
+			writeLength(stream, (unsigned long)0);
 			writeString(stream, entry->data + entry->nameLen, entry->valueLen);
 			entry = entry->next;
 		}
 	}
+}
+
+/*
+ * Header and footer material for string resources in the XML
+ * format.  We output this information to keep other tools happy.
+ * We don't use it ourselves.
+ */
+static char const xmlHeader[] =
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+"<root>\n"
+"  <xsd:schema id=\"root\" targetNamespace=\"\" xmlns=\"\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:msdata=\"urn:schemas-microsoft-com:xml-msdata\">\n"
+"    <xsd:element name=\"root\" msdata:IsDataSet=\"true\">\n"
+"      <xsd:complexType>\n"
+"        <xsd:choice maxOccurs=\"unbounded\">\n"
+"          <xsd:element name=\"data\">\n"
+"            <xsd:complexType>\n"
+"              <xsd:sequence>\n"
+"                <xsd:element name=\"value\" type=\"xsd:string\" minOccurs=\"0\" msdata:Ordinal=\"1\"/>\n"
+"                <xsd:element name=\"comment\" type=\"xsd:string\" minOccurs=\"0\" msdata:Ordinal=\"2\"/>\n"
+"              </xsd:sequence>\n"
+"              <xsd:attribute name=\"name\" type=\"xsd:string\"/>\n"
+"              <xsd:attribute name=\"type\" type=\"xsd:string\"/>\n"
+"              <xsd:attribute name=\"mimetype\" type=\"xsd:string\"/>\n"
+"            </xsd:complexType>\n"
+"          </xsd:element>\n"
+"          <xsd:element name=\"resheader\">\n"
+"            <xsd:complexType>\n"
+"              <xsd:sequence>\n"
+"                <xsd:element name=\"value\" type=\"xsd:string\" minOccurs=\"0\" msdata:Ordinal=\"1\"/>\n"
+"              </xsd:sequence>\n"
+"              <xsd:attribute name=\"name\" type=\"xsd:string\" use=\"required\"/>\n"
+"            </xsd:complexType>\n"
+"          </xsd:element>\n"
+"        </xsd:choice>\n"
+"      </xsd:complexType>\n"
+"    </xsd:element>\n"
+"  </xsd:schema>\n";
+
+static char const xmlFooter[] =
+"  <resheader name=\"ResMimeType\">\n"
+"    <value>text/microsoft-resx</value>\n"
+"  </resheader>\n"
+"  <resheader name=\"Version\">\n"
+"    <value>1.0.0.0</value>\n"
+"  </resheader>\n"
+"  <resheader name=\"Reader\">\n"
+"    <value>System.Resources.ResXResourceReader</value>\n"
+"  </resheader>\n"
+"  <resheader name=\"Writer\">\n"
+"    <value>System.Resources.ResXResourceWriter</value>\n"
+"  </resheader>\n"
+"</root>\n";
+
+/*
+ * Write an XML-encoded string to an output stream.
+ */
+static void writeXMLString(FILE *stream, const char *str, int len)
+{
+	while(len > 0)
+	{
+		if(*str == '<')
+		{
+			fputs("&lt;", stream);
+		}
+		else if(*str == '>')
+		{
+			fputs("&gt;", stream);
+		}
+		else if(*str == '&')
+		{
+			fputs("&amp;", stream);
+		}
+		else if(*str == '"')
+		{
+			fputs("&quot;", stream);
+		}
+		else if(*str == '\'')
+		{
+			fputs("&apos;", stream);
+		}
+		else
+		{
+			putc(*str, stream);
+		}
+		++str;
+		--len;
+	}
+}
+
+static void writeXMLResources(FILE *stream)
+{
+	int hash;
+	HashEntry *entry;
+
+	/* Write out the XML header and schema definition */
+	fputs(xmlHeader, stream);
+
+	/* Output the strings */
+	for(hash = 0; hash < HASH_TABLE_SIZE; ++hash)
+	{
+		entry = hashTable[hash];
+		while(entry != 0)
+		{
+			fputs("  <data name=\"", stream);
+			writeXMLString(stream, entry->data, entry->nameLen);
+			fputs("\">\n    <value>", stream);
+			writeXMLString(stream, entry->data + entry->nameLen,
+						   entry->valueLen);
+			fputs("</value>\n  </data>\n", stream);
+			entry = entry->next;
+		}
+	}
+
+	/* Write out the XML footer */
+	fputs(xmlFooter, stream);
 }
 
 #ifdef	__cplusplus

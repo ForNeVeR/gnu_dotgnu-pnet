@@ -1,7 +1,7 @@
 /*
  * pecoff_loader.c - Deal with the ugly parts of loading PE/COFF images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,12 @@
  */
 
 #include "image.h"
+#if defined(IL_CONFIG_GZIP) && defined(HAVE_ZLIB_H) && defined(HAVE_LIBZ)
+	#define	IL_USE_GZIP	1
+#endif
+#ifdef IL_USE_GZIP
+	#include <zlib.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -36,6 +42,11 @@ struct _tagILInputContext
 	const char	   *buffer;
 	unsigned long	bufLen;
 	int (*readFunc)(ILInputContext *ctx, void *buf, unsigned len);
+#ifdef IL_USE_GZIP
+	int				sawEOF;
+	z_streamp		gzStream;
+	ILInputContext *linked;
+#endif
 };
 
 #ifndef REDUCED_STDIO
@@ -71,6 +82,231 @@ static int MemoryRead(ILInputContext *ctx, void *buf, unsigned len)
 	}
 	return (int)len;
 }
+
+#ifdef IL_USE_GZIP
+
+/*
+ * Gzip flag bits in the header.
+ */
+#define GZ_ASCII_FLAG   0x01
+#define GZ_HEAD_CRC     0x02
+#define GZ_EXTRA_FIELD  0x04
+#define GZ_ORIG_NAME    0x08
+#define GZ_COMMENT      0x10
+#define GZ_RESERVED     0xE0
+
+/*
+ * Fill the gzip read buffer if necessary.
+ */
+static void GzipFillRead(ILInputContext *ctx)
+{
+	if(ctx->gzStream->avail_in == 0 && !(ctx->sawEOF))
+	{
+		int temp = (*(ctx->linked->readFunc))
+			(ctx->linked, (void *)(ctx->buffer), BUFSIZ);
+		if(temp <= 0)
+		{
+			ctx->gzStream->avail_in = 0;
+			ctx->sawEOF = 1;
+		}
+		else
+		{
+			ctx->gzStream->avail_in = (unsigned)temp;
+		}
+		ctx->gzStream->next_in = (Bytef *)(ctx->buffer);
+	}
+}
+
+/*
+ * Read a single byte from the read buffer.
+ */
+static int GzipReadByte(ILInputContext *ctx)
+{
+	GzipFillRead(ctx);
+	if(ctx->gzStream->avail_in > 0)
+	{
+		--(ctx->gzStream->avail_in);
+		return *(ctx->gzStream->next_in)++;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+/*
+ * Read a short value from the read buffer.
+ */
+static int GzipReadShort(ILInputContext *ctx)
+{
+	int b1 = GzipReadByte(ctx);
+	int b2 = GzipReadByte(ctx);
+	return (b1 | (b2 << 8));
+}
+
+/*
+ * Skip a number of bytes in the read buffer.
+ */
+static void GzipSkip(ILInputContext *ctx, int len)
+{
+	while(len > 0 && GzipReadByte(ctx) != -1)
+	{
+		--len;
+	}
+}
+
+/*
+ * Skip a NUL-terminated string in the read buffer.
+ */
+static void GzipSkipString(ILInputContext *ctx)
+{
+	int b;
+	while((b = GzipReadByte(ctx)) != -1 && b != 0)
+	{
+		/* Nothing to do here */
+	}
+}
+
+/*
+ * Gzip-based read operation.  This version doesn't check CRC's
+ * or handle concatenated gzip files.  Fix later if required.
+ */
+static int GzipRead(ILInputContext *ctx, void *buf, unsigned len)
+{
+	int error;
+
+	/* Initialize the zlib output buffer */
+	ctx->gzStream->next_out = (Bytef *)buf;
+	ctx->gzStream->avail_out = len;
+
+	/* Read data and write it to the output buffer */
+	while(ctx->gzStream->avail_out != 0 && !(ctx->sawEOF))
+	{
+		/* Read more data from the input stream if necessary */
+		GzipFillRead(ctx);
+
+		/* Inflate the input data */
+		error = inflate(ctx->gzStream, Z_NO_FLUSH);
+		if(error == Z_STREAM_END)
+		{
+			/* We've reached the end of the gzip data: skip the CRC value */
+			GzipSkip(ctx, 4);
+			ctx->sawEOF = 1;
+		}
+		else if(error != Z_OK)
+		{
+			/* Some kind of error occurred in the input data */
+			ctx->sawEOF = 1;
+		}
+	}
+
+	/* Read the length of the uncompressed data to the caller */
+	return (int)(len - ctx->gzStream->avail_out);
+}
+
+
+/*
+ * Finalize gzip control structures in an input context.
+ */
+static void GzipFinalize(ILInputContext *ctx)
+{
+	ILInputContext *linked;
+	if(ctx->gzStream)
+	{
+		inflateEnd(ctx->gzStream);
+		ILFree(ctx->gzStream);
+		ILFree((char *)(ctx->buffer));
+		linked = ctx->linked;
+		*ctx = *linked;
+		ILFree(linked);
+	}
+}
+
+/*
+ * Gzip initialize operation.  It is assumed that the first two
+ * bytes of the gzip stream (containing the magic number) have
+ * already been read.
+ */
+static int GzipInitialize(ILInputContext *ctx)
+{
+	ILInputContext *linked;
+	char *buffer;
+	z_streamp gzStream;
+	int method, flags, len;
+
+	/* Make a copy of the context for performing linked reads */
+	linked = (ILInputContext *)ILMalloc(sizeof(ILInputContext));
+	if(!linked)
+	{
+		return 0;
+	}
+	*linked = *ctx;
+
+	/* Allocate a buffer for holding the gzip input data */
+	buffer = (char *)ILMalloc(BUFSIZ);
+	if(!buffer)
+	{
+		ILFree(linked);
+		return 0;
+	}
+
+	/* Initialize the gzip stream details */
+	gzStream = (z_streamp)ILCalloc(1, sizeof(z_stream));
+	if(!gzStream)
+	{
+		ILFree(buffer);
+		ILFree(linked);
+		return 0;
+	}
+	if(inflateInit2(gzStream, -MAX_WBITS) != Z_OK)
+	{
+		ILFree(gzStream);
+		ILFree(buffer);
+		ILFree(linked);
+		return 0;
+	}
+
+	/* Set up the input context for gzip-based reads */
+	ctx->stream = 0;
+	ctx->buffer = (const char *)buffer;
+	ctx->bufLen = 0;
+	ctx->readFunc = GzipRead;
+	ctx->gzStream = gzStream;
+	ctx->linked = linked;
+	ctx->sawEOF = 0;
+
+	/* Skip past the gzip header */
+	method = GzipReadByte(ctx);
+	flags = GzipReadByte(ctx);
+	if(method != Z_DEFLATED || (flags & GZ_RESERVED) != 0)
+	{
+		GzipFinalize(ctx);
+		return 0;
+	}
+	GzipSkip(ctx, 6);		/* Time, extra flags, and OS code */
+	if((flags & GZ_EXTRA_FIELD) != 0)
+	{
+		len = GzipReadShort(ctx);
+		GzipSkip(ctx, len);
+	}
+	if((flags & GZ_ORIG_NAME) != 0)
+	{
+		GzipSkipString(ctx);
+	}
+	if((flags & GZ_COMMENT) != 0)
+	{
+		GzipSkipString(ctx);
+	}
+	if((flags & GZ_HEAD_CRC) != 0)
+	{
+		GzipSkip(ctx, 2);
+	}
+
+	/* The stream is ready to go */
+	return 1;
+}
+
+#endif /* IL_USE_GZIP */
 
 /*
  * Seek to a particular offset within a stream by reading
@@ -209,6 +445,26 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	{
 		return IL_LOADERR_TRUNCATED;
 	}
+#ifdef IL_USE_GZIP
+	if(buffer[0] == (char)0x1F && buffer[1] == (char)0x8B)
+	{
+		/* The image has been compressed with gzip, so layer a decompression
+		   object on top of the underlying input context */
+		if(!GzipInitialize(ctx))
+		{
+			return IL_LOADERR_NOT_PE;
+		}
+
+		/* Suppress the use of mmap to load the stream's contents */
+		flags |= IL_LOADFLAG_NO_MAP;
+
+		/* Re-read the magic number bytes from the uncompressed data */
+		if((*(ctx->readFunc))(ctx, buffer, 2) != 2)
+		{
+			return IL_LOADERR_TRUNCATED;
+		}
+	}
+#endif
 	if(buffer[0] == 'M' && buffer[1] == 'Z')
 	{
 		/* Read the MS-DOS stub and find the start of the PE header */
@@ -660,11 +916,21 @@ int ILImageLoad(FILE *file, const char *filename,
 				ILContext *context, ILImage **image, int flags)
 {
 	ILInputContext ctx;
+	int error;
 	ctx.stream = file;
 	ctx.buffer = 0;
 	ctx.bufLen = 0;
 	ctx.readFunc = StdioRead;
-	return ImageLoad(&ctx, filename, context, image, flags);
+#ifdef IL_USE_GZIP
+	ctx.sawEOF = 0;
+	ctx.gzStream = 0;
+	ctx.linked = 0;
+#endif
+	error = ImageLoad(&ctx, filename, context, image, flags);
+#ifdef IL_USE_GZIP
+	GzipFinalize(&ctx);
+#endif
+	return error;
 }
 
 int ILImageLoadFromFile(const char *filename, ILContext *context,
@@ -723,14 +989,24 @@ int ILImageLoadFromMemory(const void *buffer, unsigned long bufLen,
 						  int flags, const char *filename)
 {
 	ILInputContext ctx;
+	int error;
 #ifndef REDUCED_STDIO
 	ctx.stream = 0;
 #endif
 	ctx.buffer = (const char *)buffer;
 	ctx.bufLen = bufLen;
 	ctx.readFunc = MemoryRead;
-	return ImageLoad(&ctx, filename, context,
-					 image, flags | IL_LOADFLAG_NO_MAP);
+#ifdef IL_USE_GZIP
+	ctx.sawEOF = 0;
+	ctx.gzStream = 0;
+	ctx.linked = 0;
+#endif
+	error = ImageLoad(&ctx, filename, context,
+					  image, flags | IL_LOADFLAG_NO_MAP);
+#ifdef IL_USE_GZIP
+	GzipFinalize(&ctx);
+#endif
+	return error;
 }
 
 void *ILImageMapAddress(ILImage *image, unsigned long address)

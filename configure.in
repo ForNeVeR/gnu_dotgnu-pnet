@@ -210,6 +210,7 @@ fi
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(socket, connect)
 AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_LIB(z, inflate)
 
 dnl Collect up the libraries that we need for GNU readline.
 AC_SUBST(READLINELIBS)
@@ -230,7 +231,7 @@ AC_CHECK_HEADERS(sys/time.h sys/types.h dlfcn.h ieeefp.h)
 AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
 AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
-AC_CHECK_HEADERS(linux/irda.h sys/utsname.h)
+AC_CHECK_HEADERS(linux/irda.h sys/utsname.h zlib.h)
 
 dnl Check for "sin6_scope_id".
 AC_TRY_COMPILE([#include "confdefs.h"

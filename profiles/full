@@ -32,6 +32,9 @@ IL_CONFIG_UNROLL=y
 # Support Java class loading and manipulation (y/n).
 IL_CONFIG_JAVA=y
 
+# Support gzip-compressed program images (y/n).
+IL_CONFIG_GZIP=y
+
 # Force the system to use Latin1 as the default encoding (y/n).
 IL_CONFIG_LATIN1=n
 

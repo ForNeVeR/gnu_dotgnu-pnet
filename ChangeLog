@@ -1,4 +1,11 @@
 
+2003-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, image/link.c, image/pecoff_loader.c,
+	profiles/compact, profiles/compact-fp, profiles/full,
+	profiles/kernel, profiles/kernel-fp, profiles/tiny:
+	add support for gzip-compressed PE/COFF binaries.
+
 2003-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c:

@@ -218,7 +218,7 @@ static char *TestPathForFile(const char *pathname, int pathlen,
 	}
 
 	/* Build the full pathname */
-	path = (char *)ILMalloc(fullLen);
+	path = (char *)ILMalloc(fullLen + 3);
 	if(!path)
 	{
 		return 0;
@@ -292,6 +292,15 @@ static char *TestPathForFile(const char *pathname, int pathlen,
 		{
 			return path;
 		}
+
+#ifdef IL_CONFIG_GZIP
+		/* Try ".dll.gz" as well, in case the library was compressed */
+		strcpy(path + posn - 3, "dll.gz");
+		if(ILFileExists(path, 0))
+		{
+			return path;
+		}
+#endif
 	}
 
 	/* Not found */

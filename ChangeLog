@@ -9,6 +9,8 @@
 	test for delegate types because the "Invoke" method may not be
 	in existence yet.
 
+	* codegen/cg_decls.tc: wrong assembler directives for events.
+
 2002-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, cscc/cscc.c, ilalink/Makefile.am,

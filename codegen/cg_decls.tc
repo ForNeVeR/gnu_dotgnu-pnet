@@ -368,7 +368,7 @@ ILNode_GenDiscard(ILNode_EventDeclarator)
 		{
 			methodInfo = ((ILNode_MethodDeclaration *)(node->addAccessor))
 								->methodInfo;
-			fputs("\t.add ", outstream);
+			fputs("\t.addon ", outstream);
 			ILDumpMethodType(outstream, info->image,
 						     ILMethod_Signature(methodInfo),
 						     IL_DUMP_QUOTE_NAMES, 0,
@@ -379,7 +379,7 @@ ILNode_GenDiscard(ILNode_EventDeclarator)
 		{
 			methodInfo = ((ILNode_MethodDeclaration *)(node->removeAccessor))
 								->methodInfo;
-			fputs("\t.remove ", outstream);
+			fputs("\t.removeon ", outstream);
 			ILDumpMethodType(outstream, info->image,
 						     ILMethod_Signature(methodInfo),
 						     IL_DUMP_QUOTE_NAMES, 0,

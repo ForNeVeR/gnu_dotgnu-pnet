@@ -19,6 +19,10 @@
 	remove or hide obsolete classes that are no longer part of
 	the public API for "runtime".
 
+	* runtime/System/LoaderOptimizationAttribute.cs,
+	runtime/System/MTAThreadAttribute.cs: add missing classes in
+	the "System" namespace.
+
 2003-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/AttributeCollection.cs,

@@ -1,4 +1,9 @@
 
+2003-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_oper.tc: improve the handling of boolean constant
+	values in the C compiler.
+
 2003-09-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_delegate.c:

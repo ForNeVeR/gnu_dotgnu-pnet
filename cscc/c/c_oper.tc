@@ -39,6 +39,19 @@ static ILNode *CreateBoolConstant(ILNode *cloneFrom, ILInt32 value)
 }
 
 /*
+ * Construct a boolean constant semantic value.
+ */
+static CSemValue CreateBoolValue(ILInt32 value)
+{
+	ILEvalValue eval;
+	CSemValue result;
+	eval.valueType = ILMachineType_Boolean;
+	eval.un.i4Value = value;
+	CSemSetConstant(result, ILType_Boolean, eval);
+	return result;
+}
+
+/*
  * Construct a constant node from a compile-time constant.
  * If it isn't possible to construct a node, return "origNode".
  */
@@ -48,6 +61,12 @@ static ILNode *CreateConstantNode(ILNode *cloneFrom, ILNode *origNode,
 	ILNode *node = 0;
 	switch(evalValue->valueType)
 	{
+		case ILMachineType_Boolean:
+		{
+			node = CreateBoolConstant(cloneFrom, evalValue->un.i4Value);
+		}
+		break;
+
 		case ILMachineType_Int8:
 		{
 			if(evalValue->un.i4Value >= 0)
@@ -229,6 +248,7 @@ ILNode_CSemAnalysis(ILNode_LogicalNot)
 	{
 		/* Replace this node with either "true" or "false" */
 		*parent = CreateBoolConstant(node->expr, evalValue->un.i4Value);
+		return CreateBoolValue(evalValue->un.i4Value);
 	}
 	return CSemValueBool;
 }
@@ -272,10 +292,12 @@ ILNode_CSemAnalysis(ILNode_LogicalAnd)
 		if(evalValue1->un.i4Value && evalValue2->un.i4Value)
 		{
 			*parent = CreateBoolConstant((ILNode *)node, 1);
+			return CreateBoolValue(1);
 		}
 		else
 		{
 			*parent = CreateBoolConstant((ILNode *)node, 0);
+			return CreateBoolValue(0);
 		}
 	}
 	else if(evalValue1)
@@ -291,6 +313,7 @@ ILNode_CSemAnalysis(ILNode_LogicalAnd)
 		{
 			/* The whole expression evaluates to false */
 			*parent = CreateBoolConstant((ILNode *)node, 0);
+			return CreateBoolValue(0);
 		}
 	}
 	else if(evalValue2)
@@ -354,10 +377,12 @@ ILNode_CSemAnalysis(ILNode_LogicalOr)
 		if(evalValue1->un.i4Value || evalValue2->un.i4Value)
 		{
 			*parent = CreateBoolConstant((ILNode *)node, 1);
+			return CreateBoolValue(1);
 		}
 		else
 		{
 			*parent = CreateBoolConstant((ILNode *)node, 0);
+			return CreateBoolValue(0);
 		}
 	}
 	else if(evalValue1)
@@ -367,6 +392,7 @@ ILNode_CSemAnalysis(ILNode_LogicalOr)
 		{
 			/* The whole expression evaluates to true */
 			*parent = CreateBoolConstant((ILNode *)node, 1);
+			return CreateBoolValue(1);
 		}
 		else
 		{
@@ -403,13 +429,13 @@ ILNode_CSemAnalysis(ILNode_LogicalOr)
  * Determine if a machine type is numeric or integer.
  */
 #define	IsNumericMachineType(type)	\
-			((type) >= ILMachineType_Int8 && \
+			((type) >= ILMachineType_Boolean && \
 			 (type) <= ILMachineType_NativeFloat)
 #define	IsIntegerMachineType(type)	\
-			((type) >= ILMachineType_Int8 && \
+			((type) >= ILMachineType_Boolean && \
 			 (type) <= ILMachineType_NativeUInt)
 #define	IsSmallIntegerMachineType(type)	\
-			((type) >= ILMachineType_Int8 && \
+			((type) >= ILMachineType_Boolean && \
 			 (type) <= ILMachineType_Int32)
 
 /*
@@ -565,6 +591,7 @@ static ILMachineType CommonBinaryType(ILGenInfo *info,
 	/* Widen the common type to the natural type for the operation */
 	switch(common)
 	{
+		case ILMachineType_Boolean:
 		case ILMachineType_Int8:
 		case ILMachineType_UInt8:
 		case ILMachineType_Int16:
@@ -1308,6 +1335,7 @@ ILNode_CSemAnalysis(ILNode_Neg)
 	type = ILTypeToMachineType(CSemGetType(value));
 	switch(type)
 	{
+		case ILMachineType_Boolean:
 		case ILMachineType_Int8:
 		case ILMachineType_UInt8:
 		case ILMachineType_Int16:
@@ -1404,6 +1432,7 @@ ILNode_CSemAnalysis(ILNode_UnaryPlus)
 	type = ILTypeToMachineType(CSemGetType(value));
 	switch(type)
 	{
+		case ILMachineType_Boolean:
 		case ILMachineType_Int8:
 		case ILMachineType_UInt8:
 		case ILMachineType_Int16:
@@ -1528,6 +1557,7 @@ ILNode_CSemAnalysis(ILNode_Not)
 	type = ILTypeToMachineType(CSemGetType(value));
 	switch(type)
 	{
+		case ILMachineType_Boolean:
 		case ILMachineType_Int8:
 		case ILMachineType_UInt8:
 		case ILMachineType_Int16:
@@ -2263,7 +2293,7 @@ ILNode_CSemAnalysis(ILNode_ToBool)
 								   ILMachineType_Boolean))
 	{
 		*parent = CreateBoolConstant((ILNode *)node, evalValue->un.i4Value);
-		return CSemValueBool;
+		return CreateBoolValue(evalValue->un.i4Value);
 	}
 
 	/* Determine how to test the boolean value */

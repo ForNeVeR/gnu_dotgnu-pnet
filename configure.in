@@ -209,10 +209,11 @@ doc/Makefile
 tests/Makefile])
 
 dnl Configure libffi and libgc.  We do these manually to avoid
-dnl some issues with different versions of autotools.
+dnl some issues with different versions of autotools, and so that
+dnl we can pass specific options to the packages.
 if test "x$no_recursion" != "xyes"; then
 	cd "${srcdir}/libffi"
-	./configure
+	./configure --disable-multilib --disable-shared
 	cd ../libgc
 	./configure --enable-threads=$THREADS
 fi

@@ -7,6 +7,9 @@
 	* config-ml.in, config.if, libtool.m4, ltcf-c.sh, ltconfig, ltmain.sh,
 	move-if-change: new autotools files to assist with building libffi.
 
+	* Makefile.am, configure.in: configure and build libffi and libgc
+	more carefully than we were previously.
+
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c: don't report "unresolved type reference"

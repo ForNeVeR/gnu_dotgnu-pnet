@@ -70,7 +70,8 @@ public class TextBox : TextBoxBase
 		// Trap interesting events.  We do it this way rather
 		// than override virtual methods so that the published
 		// TextBox API is maintained.
-		KeyPress += new KeyPressEventHandler(HandleKeyPress);
+		// Note: except for KeyPress events, for which the 
+		// hooked up calls get priority over TextBox class.
 		MouseDown += new MouseEventHandler(HandleMouseDown);
 		MouseMove += new MouseEventHandler(HandleMouseMove);
 		DoubleClick += new EventHandler(HandleDoubleClick);
@@ -538,6 +539,16 @@ public class TextBox : TextBoxBase
 		if(handler != null)
 		{
 			handler(this, e);
+		}
+	}
+
+	protected void OnKeyPress(Object sender, KeyPressEventArgs e)
+	{
+		base.OnKeyPress(e);
+		
+		if(e.Handled == false)
+		{
+			HandleKeyPress(sender, e);
 		}
 	}
 

@@ -26,7 +26,7 @@
 # modified is included with the above copyright notice.
 #
 # Modified by: Grzegorz Jakacki <jakacki at acm dot org>
-SHELL = /bin/bash
+SHELL = /bin/sh
 
 srcdir = ../.././libgc/doc
 top_srcdir = ../.././libgc
@@ -51,10 +51,10 @@ pkglibdir = $(libdir)/gc
 pkgincludedir = $(includedir)/gc
 top_builddir = ..
 
-ACLOCAL = ${SHELL} /home/Tum/pnet/pnet/libgc/missing --run aclocal-1.6
-AUTOCONF = ${SHELL} /home/Tum/pnet/pnet/libgc/missing --run autoconf
-AUTOMAKE = ${SHELL} /home/Tum/pnet/pnet/libgc/missing --run automake-1.6
-AUTOHEADER = ${SHELL} /home/Tum/pnet/pnet/libgc/missing --run autoheader
+ACLOCAL = ${SHELL} /home/rweather/work/pnet/libgc/missing --run aclocal-1.6
+AUTOCONF = ${SHELL} /home/rweather/work/pnet/libgc/missing --run autoconf
+AUTOMAKE = ${SHELL} /home/rweather/work/pnet/libgc/missing --run automake-1.6
+AUTOHEADER = ${SHELL} /home/rweather/work/pnet/libgc/missing --run autoheader
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
 INSTALL = /usr/bin/install -c
@@ -65,20 +65,20 @@ install_sh_PROGRAM = $(install_sh) -c
 install_sh_SCRIPT = $(install_sh) -c
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_HEADER = $(INSTALL_DATA)
-transform = s,^,i686-pc-cygwin-,
+transform = s,^,i686-pc-linux-gnu-,
 NORMAL_INSTALL = :
 PRE_INSTALL = :
 POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_alias = i686-pc-cygwin
-host_triplet = i686-pc-cygwin
+host_alias = i686-pc-linux-gnu
+host_triplet = i686-pc-linux-gnu
 
-EXEEXT = .exe
+EXEEXT = 
 OBJEXT = o
 PATH_SEPARATOR = :
-AMTAR = ${SHELL} /home/Tum/pnet/pnet/libgc/missing --run tar
+AMTAR = ${SHELL} /home/rweather/work/pnet/libgc/missing --run tar
 AR = ar
 AS = @AS@
 AWK = gawk
@@ -86,13 +86,13 @@ CC = gcc
 CCAS = $(CC)
 CCASFLAGS = $(CFLAGS)
 CFLAGS = -g -O2
-CXX = i686-pc-cygwin-g++
+CXX = g++
 CXXFLAGS = -g -O2
 CXXINCLUDES = 
 DEPDIR = .deps
 DLLTOOL = @DLLTOOL@
 ECHO = echo
-EXTRA_TEST_LIBS = 
+EXTRA_TEST_LIBS =  -ldl
 GC_CFLAGS =  -fexceptions
 GC_VERSION = 
 INCLUDES = -I.././libgc/include
@@ -105,7 +105,7 @@ OBJDUMP = @OBJDUMP@
 PACKAGE = gc
 RANLIB = ranlib
 STRIP = strip
-THREADLIBS = 
+THREADLIBS = -lpthread
 UNWINDLIBS = 
 VERSION = 6.3alpha6
 addincludes = 
@@ -114,7 +114,7 @@ addobjs =  mach_dep.lo
 addtests = 
 am__include = include
 am__quote = 
-install_sh = /home/Tum/pnet/pnet/libgc/install-sh
+install_sh = /home/rweather/work/pnet/libgc/install-sh
 target_all = libgc.la
 
 # installed documentation

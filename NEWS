@@ -1,4 +1,69 @@
 
+0.6.6 (29 May 2004)
+
+	Runtime engine:
+
+	* GetManifestResourceNames internalcall (Russell Stuart).
+	* Add the --trace option to ilrun (Gopal V).
+	* Fix some I4/I/M/T cases in the verifier (Rhys Weatherley, Gopal V).
+	* Fix to Directory.GetFiles internalcall (Russell Stuart).
+	* Many fixes and speedups to the monitor implementation (Thong Nguyen).
+	* Remap some gtk# dll references (Ilyak Kasnacheev).
+	* Automatically load assemblies during "GetType" (Gopal V).
+	* Handling for interruptes and aborts (Thong Nguyen).
+	* Verification of indirect method calls (Gopal V).
+	* Resolve classes properly before layout (Gopal V).
+	* Support for Interlocked* functions (Thong Nguyen).
+	* Looser association of real threads with engine threads, to make
+	  it easier to move to app domains in the future (Thong Nguyen).
+	* Asynchronous delegates (Thong Nguyen).
+	* Better shutdown logic for multi-threaded programs (Thong Nguyen).
+	* ILExecThreadBoxNoValue (Thong Nguyen).
+	* Dynamic invocation of methods with out/ref parameters (Thong Nguyen).
+	* Include inherited interfaces in return from "GetInterfaces" (Gopal V).
+	* Entry points must be in .exe's, not .dll's (Gopal V).
+	* Problems in OutputExceptionTable with nested try/catch (Rhys W).
+	* Fixes to make ilrun compile with gcc 3.4.0 (Norbert Bellow).
+	* Implement Thread.Abort (Thong Nguyen).
+	* Use interlocked increments for profile counts (Thong Nguyen).
+
+	C# Compiler:
+
+	* Stack underflow problem in codegen for "switch" (Rhys Weatherley).
+	* Problem with 8-bit characters in pre-processor lines (Rhys Weatherley).
+	* "/recurse" option for compiler compat mode (Gopal V).
+	* Fix semantic analysis for identifers and member accesses (Gopal V).
+	* Resolve aliases for fully qualified namespaces (Gopal V).
+	* "goto case" should emit a leave inside a "try" (Russell Stuart).
+	* Bug with ';' in #endregion directives (Russell Stuart).
+	* Handle "protected internal" across assemblies (Richard Baumann).
+	* Disambiguate static members and types with the same name (Gopal V).
+
+	C Compiler:
+
+	* Add dependency options to the pre-processor (-M, -MD, etc) (Rhys W).
+	* Fixes for bit field accesses (Rhys Weatherley).
+	* Complex structure initializers (Rhys Weatherley).
+	* Array access on managed arrays (Gopal V).
+
+	Linker:
+
+	* Strong alias linking for vararg methods (Rhys Weatherley).
+
+	Csant:
+
+	* Comma-separated lists of target dependencies (Russell Stuart).
+	* Directory deletion and copying (Russell Stuart).
+
+	Platform Support:
+
+	* Win32-specific filename expansion (Rhys Weatherley).
+	* Disable zlib under mingw32 because of dependency issues (Rhys W).
+	* Fixes for Win32 file operations (Thong Nguyen).
+	* Integrate libgc version 6.3alpha6 (Thong Nguyen).
+	* Overflow bugs in time routines (Thong Nguyen).
+	* ILGetSinceRebootTime for Windows (Thong Nguyen).
+
 0.6.4 (13 March 2004)
 
 	Runtime engine:

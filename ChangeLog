@@ -12,6 +12,8 @@
 	System.Xml/XPath/Private/XPathTokenizer.cs: First cut of the XPath
 	implementation.
 
+	* System.Xml/XPathNavigator.cs: Make XPath implementation available.
+
 2004-10-07  Klaus Treichel  <ktreichel@web.de>
 
 	* samples/developers/MainForm.cs,

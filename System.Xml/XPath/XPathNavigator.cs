@@ -21,6 +21,7 @@
 
 using System;
 using System.Xml;
+using System.Xml.XPath.Private;
 
 namespace System.Xml.XPath
 {
@@ -145,13 +146,29 @@ abstract class XPathNavigator : ICloneable
 	[TODO]
 	public virtual XPathNodeIterator Select(XPathExpression expr)
 			{
-				 throw new NotImplementedException("Select");
+				XPathExpressionBase compiledexpr = (expr as XPathExpressionBase);
+				if(compiledexpr != null)
+				{
+					XPathBaseIterator iter = new XPathSelfIterator(this, null);
+					Object result = compiledexpr.Evaluate(iter);
+					return (result as XPathNodeIterator);
+				}
+				return null;
 			}
 
 	[TODO]
 	public virtual XPathNodeIterator Select(String xpath)
 			{
-				 throw new NotImplementedException("Select");
+				XPathParser parser = new XPathParser();
+				
+				XPathExpressionBase compiledexpr = (parser.Parse(xpath) as XPathExpressionBase);
+				if(compiledexpr != null)
+				{
+					XPathBaseIterator iter = new XPathSelfIterator(this, null);
+					Object result = compiledexpr.Evaluate(iter);
+					return (result as XPathNodeIterator);
+				}
+				return null;
 			}
 
 	[TODO]

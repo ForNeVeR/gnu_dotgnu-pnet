@@ -9,6 +9,9 @@
 	* System/Net/WebRequest.cs, System/Net/FileWebRequest.cs,
 	System/Net/FileWebResponse.cs: Implement file:// URI handling.
 
+	* System.Xml/XmlTextReader.cs, System/Net/WebClient.cs: Implement
+	correct url resolution for xml reader.
+
 2004-11-22  Erich Kitzmuller  <ammoq@ammoq.com>
 
 	* System/Net/HttpWebResponse.cs: Fix minor bug in Chunked support

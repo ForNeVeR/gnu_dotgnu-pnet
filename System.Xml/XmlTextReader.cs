@@ -292,16 +292,15 @@ public class XmlTextReader : XmlReader
 			{
 				// Nothing to do here
 			}
-	[TODO]
+			
 	public XmlTextReader(String url, XmlNameTable nt)
 			: this(nt)
 			{
 				if(url == null) { throw new XmlException("url"); }
 				
-				WebClient webclient = new WebClient();
-				Stream webstream = webclient.OpenRead(url);
-				
-				XmlStreamReader sr = new XmlStreamReader(webstream, true);
+				Uri uri = resolver.ResolveUri(null, url);
+				Stream stream = (Stream)resolver.GetEntity(uri, null, typeof(Stream));
+				XmlStreamReader sr = new XmlStreamReader(stream, true);
 				input.Reader = sr;
 				context.BaseURI = nt.Add(url);
 				context.Encoding = sr.CurrentEncoding;

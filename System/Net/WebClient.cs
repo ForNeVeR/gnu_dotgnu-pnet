@@ -40,6 +40,7 @@ namespace System.Net
 		private WebRequest webrequest=null;
 		private WebResponse webresponse=null;
 		private String baseAddress=null;
+		private ICredentials credentials = null;
 
 		const String defaultContentType = "application/octet-stream";
 		const String fileContentType = "multipart/form-data";
@@ -61,6 +62,12 @@ namespace System.Net
 			{
 				(webrequest as HttpWebRequest).KeepAlive = false;
 			}
+			
+			if(credentials != null)
+			{
+				webrequest.Credentials = credentials;
+			}
+			
 			this.baseAddress = str;
 		}
 
@@ -220,16 +227,15 @@ namespace System.Net
 			}
 		}
 
-		[TODO]
 		public ICredentials Credentials 
 		{
  			get
 			{
-				throw new NotImplementedException("Credentials");
+				return credentials;
 			}
 			set
 			{
-				throw new NotImplementedException("Credentials");
+				credentials = value;
 			}
 		}
 

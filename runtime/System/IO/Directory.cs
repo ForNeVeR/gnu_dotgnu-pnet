@@ -161,10 +161,9 @@ namespace System.IO
 			}
 		}
 
-		[TODO]
 		public static string GetCurrentDirectory()
 		{
-			return null;
+			return DirMethods.GetCurrentDirectory();
 		}
 
 		public static string[] GetDirectories(string path)
@@ -256,9 +255,12 @@ namespace System.IO
 		{
 		}
 
-		[TODO]
 		public static void SetCurrentDirectory(string path)
 		{
+			if(path==null)
+				throw new ArgumentNullException("path");
+			Errno errno=DirMethods.ChangeDirectory(path);
+			ThrowErrnoExceptions(errno,path);
 		}
 
 		[TODO]

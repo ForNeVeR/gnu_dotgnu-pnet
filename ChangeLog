@@ -4,6 +4,9 @@
 	* runtime/System/DateTime.cs: Plug in the DateTimeFormatter into the
 	general DateTime.ToString() method.
 
+	* runtime/Platform/DirMethods.cs, runtime/System/IO/Directory.cs:
+	Implement SetCurrentDirectory() using internal calls.
+
 2002-11-30  Michael Moore <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormatter.cs:

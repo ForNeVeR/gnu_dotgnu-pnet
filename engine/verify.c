@@ -815,11 +815,9 @@ restart:
 			/* An instruction just after an opcode that jumps to
 			   somewhere else in the flow of control.  As this
 			   isn't a jump target, we assume that the stack
-			   must be empty at this point */
-			if(stackSize != 0)
-			{
-				VERIFY_STACK_ERROR();
-			}
+			   must be empty at this point.  The validate code
+			   will ensure that this is checked */
+			VALIDATE_TARGET_STACK(offset);
 
 			/* Reset the coder's notion of the stack to empty */
 			ILCoderStackRefresh(coder, stack, stackSize);

@@ -1840,7 +1840,7 @@ ILNode_CSemAnalysis(ILNode_CAssignArray)
 			  	    _("initializer-string for array of chars is too long"));
 		}
 	}
-	else if(yyisa(node->expr2, ILNode_ArrayInit))
+	else if(yyisa(node->expr2, ILNode_CArrayInit))
 	{
 		/* TODO */
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),

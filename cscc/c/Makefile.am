@@ -1,7 +1,8 @@
 
 noinst_LIBRARIES = libILCLang.a
 
-TREECC_INPUTS = c_builtin.tc \
+TREECC_INPUTS = c_ainit.tc \
+				c_builtin.tc \
 				c_defs.tc \
 				c_const.tc \
 				c_invoke.tc \

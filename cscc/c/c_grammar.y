@@ -298,7 +298,7 @@ static void AddInitializer(char *name, ILNode *node, ILType *type, ILNode *init)
 	ILNode *stmt;
 
 	/* TODO: this is a hack for missing array assignment - fix later */
-	if(yyisa(init, ILNode_ArrayInit))
+	if(yyisa(init, ILNode_CArrayInit))
 	{
 		return;
 	}
@@ -549,15 +549,15 @@ static ILUInt32 ArrayInitializerSize(ILType *type, ILNode *init)
 	}
 
 	/* If this isn't an array initializer, then bail out */
-	if(!yyisa(init, ILNode_ArrayInit))
+	if(!yyisa(init, ILNode_CArrayInit))
 	{
 		CCErrorOnLine(yygetfilename(init), yygetlinenum(init),
 					  _("invalid initializer"));
 		return 1;
 	}
 
-	/* TODO: handle arrays of structures that don't have nested bracketing */
-	return ILNode_List_Length(((ILNode_ArrayInit *)init)->expr);
+	/* Calculate the size from the node, using the type as a guide */
+	return CArrayInitializerSize(type, init);
 }
 
 /*
@@ -2458,8 +2458,8 @@ AbstractDeclarator2
 
 Initializer
 	: AssignmentExpression				{ $$ = $1; }
-	| '{' InitializerList '}'			{ $$ = ILNode_ArrayInit_create($2); }
-	| '{' InitializerList ',' '}'		{ $$ = ILNode_ArrayInit_create($2); }
+	| '{' InitializerList '}'			{ $$ = ILNode_CArrayInit_create($2); }
+	| '{' InitializerList ',' '}'		{ $$ = ILNode_CArrayInit_create($2); }
 	;
 
 InitializerList

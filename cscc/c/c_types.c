@@ -2000,6 +2000,35 @@ ILType *CTypeGetElemType(ILType *type)
 	}
 }
 
+ILUInt32 CTypeGetNumFields(ILType *type)
+{
+	ILClass *classInfo;
+	ILField *field;
+	ILUInt32 num;
+
+	type = ILTypeStripPrefixes(type);
+	if(CTypeIsStruct(type) || CTypeIsUnion(type))
+	{
+		classInfo = ILType_ToValueType(type);
+		field = 0;
+		num = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)field,
+					 IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!ILField_IsStatic(field))
+			{
+				++num;
+			}
+		}
+		return num;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 ILType *CTypeGetPtrRef(ILType *type)
 {
 	type = ILTypeStripPrefixes(type);

@@ -101,6 +101,12 @@ CSemValue CCastNode(ILGenInfo *info, ILNode *node, ILNode **parent,
  */
 void CGenSizeOf(ILGenInfo *info, ILType *type);
 
+/*
+ * Get the size of an array initializer for a particular array or struct type.
+ * The "init" parameter is guaranteed to be a node of type "ILNode_CArrayInit".
+ */
+ILUInt32 CArrayInitializerSize(ILType *type, ILNode *init);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -409,6 +409,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	ILNode *expr2;
 }
 %node ILNode_CToCSharpString ILNode_UnaryExpression
+%node ILNode_CArrayInit ILNode_UnaryExpression
 
 %output "c_semantics.c"
 
@@ -461,6 +462,7 @@ ILNode_CollectCases(ILNode)
 /*
  * Include C-specific definitions.
  */
+%include "c_ainit.tc"
 %include "c_builtin.tc"
 %include "c_const.tc"
 %include "c_lvalue.tc"

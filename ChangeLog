@@ -81,6 +81,13 @@
 	underlying type because there is no way to define an
 	enumerated type that will work across modules otherwise.
 
+	* cscc/c/Makefile.am, cscc/c/c_ainit.tc, cscc/c/c_defs.tc,
+	cscc/c/c_grammar.y, cscc/c/c_internal.h, cscc/c/c_lvalue.tc,
+	cscc/c/c_oper.tc, cscc/c/c_stubs.tc, cscc/c/c_types.c,
+	cscc/c/c_types.h: move the array initializer node types into
+	"c_ainit.tc"; implement a better algorithm for calculating
+	the size of an array initializer.
+
 2003-06-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_grammar.y: implement global

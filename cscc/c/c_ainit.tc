@@ -1,0 +1,105 @@
+/*
+ * c_ainit.tc - Array initializer handling for C.
+ *
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+%{
+
+ILUInt32 CArrayInitializerSize(ILType *type, ILNode *init)
+{
+	ILType *elemType = CTypeGetElemType(type);
+	ILNode *list = ((ILNode_CArrayInit *)init)->expr;
+	ILNode_ListIter iter;
+	ILUInt32 len = 0;
+	ILUInt32 numElems;
+	ILNode *node;
+
+	/* Scan the list, skipping over elements as we find them */
+	ILNode_ListIter_Init(&iter, list);
+	while((node = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(yyisa(node, ILNode_CArrayInit))
+		{
+			/* Nested array dimension or struct value */
+			++len;
+		}
+		else if(CTypeIsStruct(elemType))
+		{
+			/* Struct value which is inline within its parent array */
+			numElems = CTypeGetNumFields(elemType);
+			if(!numElems)
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  _("cannot initialize empty `struct' types"));
+				return 1;
+			}
+			while(numElems > 1 && node)
+			{
+				node = ILNode_ListIter_Next(&iter);
+				--numElems;
+			}
+			++len;
+		}
+		else if(CTypeIsUnion(elemType))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("`union' initializers are not supported"));
+			return 1;
+		}
+		else if(CTypeIsArray(elemType))
+		{
+			/* Nested array which is inline within its parent dimension */
+			numElems = CTypeGetNumElems(elemType);
+			while(numElems > 1 && node)
+			{
+				node = ILNode_ListIter_Next(&iter);
+				--numElems;
+			}
+			++len;
+		}
+		else
+		{
+			/* Ordinary array element */
+			++len;
+		}
+	}
+
+	/* Return the final length to the caller */
+	return len;
+}
+
+%}
+
+/*
+ * Perform semantic analysis for an array initialization expression.
+ */
+ILNode_CSemAnalysis(ILNode_CArrayInit)
+{
+	/* TODO */
+	return CSemValueError;
+}
+
+/*
+ * Stub out code generation for array initializers.
+ */
+ILNode_GetType(ILNode_CArrayInit),
+ILNode_GenValue(ILNode_CArrayInit),
+JavaGenValue(ILNode_CArrayInit)
+{
+	return ILMachineType_Void;
+}

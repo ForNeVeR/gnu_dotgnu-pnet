@@ -271,6 +271,11 @@ ILUInt32 CTypeGetNumElems(ILType *type);
 ILType *CTypeGetElemType(ILType *type);
 
 /*
+ * Get the number of fields in a struct or union type.
+ */
+ILUInt32 CTypeGetNumFields(ILType *type);
+
+/*
  * Get the type that is referenced by a pointer type.
  */
 ILType *CTypeGetPtrRef(ILType *type);

@@ -118,7 +118,8 @@ ILNode_CSemAnalysis(ILNode_Deref),
 ILNode_CSemAnalysis(ILNode_CAttribute),
 ILNode_CSemAnalysis(ILNode_CAttributeValue),
 ILNode_CSemAnalysis(ILNode_CBitField),
-ILNode_CSemAnalysis(ILNode_ArrayLength)
+ILNode_CSemAnalysis(ILNode_ArrayLength),
+ILNode_CSemAnalysis(ILNode_ArrayInit)
 {
 	/* Nothing to do here */
 	return CSemValueError;

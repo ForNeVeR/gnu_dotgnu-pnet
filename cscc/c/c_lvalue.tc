@@ -1271,12 +1271,6 @@ ILNode_EvalConst(ILNode_CArrayAccess)
 	return 1;
 }
 
-ILNode_CSemAnalysis(ILNode_ArrayInit)
-{
-	/* TODO */
-	return CSemValueError;
-}
-
 /*
  * Perform semantic analysis for a pointer dereference node.
  */

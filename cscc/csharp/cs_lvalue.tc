@@ -735,8 +735,8 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	{
 		method = (ILNode_MethodDeclaration *)(info->currentMethod);
 		constVar = (ILNode_SemGuard*)ILScopeDataGetDataNode(data);
-		value = constVar->value; // return type information
-		*parent = constVar->expr; // rewrite node
+		value = constVar->value; /* return type information */
+		*parent = constVar->expr; /* rewrite node */
 		value.kind = CS_SEMKIND_RVALUE;
 		return value;
 	}

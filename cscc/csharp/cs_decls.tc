@@ -609,9 +609,9 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 
 ILNode_SemAnalysis(ILNode_EventDeclaration)
 {
-	CSSemValue value = CSSemValueDefault; //, valueChild;
-	//ILNode_ListIter iter;
-	//ILNode *child;
+	CSSemValue value = CSSemValueDefault; /*, valueChild; */
+	/*ILNode_ListIter iter;*/
+	/*ILNode *child;*/
 
 	/* Enter an unsafe context for the event field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)

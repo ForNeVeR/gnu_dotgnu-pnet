@@ -1474,7 +1474,8 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 						  "initializer is not constant");
 			continue;
 		}
-		//guard the node from re-evaluation
+
+		/* Guard the node from re-evaluation */
 		decl->initializer=ILNode_SemGuard_create(decl->initializer,value);
 		data = ILScopeLookup(info->currentScope, name, 0);
 		if(data)

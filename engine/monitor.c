@@ -225,6 +225,15 @@ ILLockWord	GetObjectLockWord(ILExecThread *thread, ILObject *obj)
 }
 
 /*
+*	Implementation of SetObjectLockWord using hashtables.
+*/
+void SetObjectLockWord(ILExecThread *thread, ILObject *obj, value)
+{
+	*GetObjectLockWordPtr(thread, obj) = value;
+}
+
+
+/*
  *	Implementation of CompareAndExchangeObjectLockWord using hashtables.
  */
 ILLockWord CompareAndExchangeObjectLockWord(ILExecThread *thread, 

@@ -149,7 +149,7 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
 	else if(mutex->owner == wakeup)
 	{
 		/* The mutex is already owned by this thread, so re-acquire it */
-		++(mutex->count);
+		++(mutex->count);		
 		result = IL_WAITREG_ACQUIRED;
 	}
 	else
@@ -360,13 +360,19 @@ int PrivateILWaitMutexRelease(ILWaitHandle *handle, int mode)
 		/* This thread doesn't currently own the mutex */
 		result = 0;
 	}
-	else if (mutex->count == 0 && mode == 2)
+	else if (mode == 2)
 	{
-		mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
-		if(mutex->owner != 0)
+		/* Complete a release (after a call with mode = 1) */
+		
+		if (mutex->count == 0)
 		{
-			mutex->count = 1;
+			mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
+			if(mutex->owner != 0)
+			{
+				mutex->count = 1;
+			}
 		}
+
 		result = 1;
 	}
 	else if(--(mutex->count) == 0)

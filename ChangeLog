@@ -1,4 +1,12 @@
 
+2003-06-27  Thong Nguyen <tum@veridicus.com>
+
+	* support/wait_mutex.c: Fix recursive entry/leave bug in
+	  ILWaitMonitorSpeculativeLeave/CompleteLeave.
+
+	* engine/monitor.c: Added implementation of SetObjectMonitor for
+	  hashing monitors.
+
 2003-06-26  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/Makefile.a: Add monitor.c to the list of files

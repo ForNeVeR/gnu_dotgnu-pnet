@@ -122,7 +122,7 @@ if test "$THREADS" = "no"; then
      	*-*-linux*)
 			THREADS=posix
 			;;
-		*-cygwin)
+	*-*-cygwin*)
 			THREADS=win32
 			;;
 	esac

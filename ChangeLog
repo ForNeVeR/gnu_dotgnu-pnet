@@ -1,4 +1,13 @@
 
+2003-06-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/CJK/*, I18N/Common/CultureName.cs,
+	I18N/Common/CultureNameTable.cs, I18N/Common/RootCulture.cs,
+	I18N/Common/root.txt, I18N/MidEast/*, I18N/Other/*,
+	I18N/West/*.cs, I18N/tools/.cvsignore, I18N/tools/cvtcul.sh,
+	I18N/tools/loc2cul.c: add culture handling for DateTimeFormatInfo
+	and NumberFormatInfo data.
+
 2003-05-31  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebRequest.cs, System/Net/HttpWebRequest.cs,

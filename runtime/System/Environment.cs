@@ -253,6 +253,19 @@ public sealed class Environment
 				}
 			}
 
+#if CONFIG_FRAMEWORK_1_2
+
+	// Get the number of processors in this machine.
+	public static int ProcessorCount
+			{
+				get
+				{
+					return InfoMethods.GetProcessorCount();
+				}
+			}
+
+#endif // CONFIG_FRAMEWORK_1_2
+
 	// Expand environment variable references in a string.
 	public static String ExpandEnvironmentVariables(String name)
 			{

@@ -28,6 +28,9 @@
 	hatch brush bitmaps into "ToolkitBrushBase" so that they
 	aren't duplicated between toolkits.
 
+	* runtime/System/Environment.cs, runtime/Platform/InfoMethods.cs:
+	add the "Environment.ProcessorCount" property for 1.2 compatibility.
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

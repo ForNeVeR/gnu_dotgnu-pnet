@@ -74,6 +74,10 @@ internal class InfoMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String GetUserStorageDir();
 
+	// Get the number of processors on this machine.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int GetProcessorCount();
+
 }; // class InfoMethods
 
 }; // namespace Platform

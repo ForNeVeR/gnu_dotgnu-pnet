@@ -163,6 +163,10 @@ int ILExecProcessLoadFile(ILExecProcess *process, const char *filename)
 	error = ILImageLoad(file, filename, process->context, &image,
 						IL_LOADFLAG_FORCE_32BIT);
 	fclose(file);
+	if(error == 0)
+	{
+		LoadStandard(process, image);
+	}
 	return error;
 }
 

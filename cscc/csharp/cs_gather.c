@@ -958,7 +958,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILClass *interface;
 	ILMember *interfaceMember;
 	ILClass *class1, *class2;
-	
+
 	/* Get the name of the method, and the interface member (if any) */
 	interface = 0;
 	interfaceMember = 0;
@@ -1245,50 +1245,64 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			   ILMethod_IsVirtual((ILMethod *)member) &&
 			   !ILMethod_IsNewSlot(methodInfo))
 			{
-				/* Check for the correct form of virtual method overrides */
-				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0 &&
-				   (method->modifiers & CS_SPECIALATTR_NEW) == 0)
-				{
-					CCWarningOnLine(yygetfilename(method), yygetlinenum(method),
-			  			"declaration of `%s' overrides an inherited member, "
-						"and `override' was not present", name);
-				}
-
-				/* Get the access modifiers for this and the base methods */
-				thisAccess = (method->modifiers &
-				            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
-				baseAccess = (ILMember_Attrs(member) &
-				            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
-
-				/* Check for legal modifiers for overrides */
-				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
-				   (thisAccess != baseAccess) &&
-				   ((ILProgramItem_Image(member) ==
-				     ILProgramItem_Image(methodInfo)) ||
-				    (thisAccess != IL_META_METHODDEF_FAMILY) ||
-				    (baseAccess != IL_META_METHODDEF_FAM_OR_ASSEM)))
-				{
-					class1 = ILMember_Owner(member);
-					class2 = ILMethod_Owner(methodInfo);
-					CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
-						"cannot change the access modifiers while overriding "
-						"method '%s%s%s.%s' with '%s%s%s.%s' ",
-						ILClass_Namespace(class1) ? 
-						ILClass_Namespace(class1) : "" ,
-						ILClass_Namespace(class1) ? "." : "",
-						ILClass_Name(class1),
-						name,
-						ILClass_Namespace(class2) ? 
-						ILClass_Namespace(class2) : "" ,
-						ILClass_Namespace(class2) ? "." : "",
-						ILClass_Name(class2),
-						name);
-				}
 				if(ILMember_Owner(member) == classInfo)
 				{
 					ReportDuplicates(method->name, (ILMember *)methodInfo,
 									 member, classInfo,
 									 method->modifiers, name);
+				}
+
+				/* Check for the correct form of virtual method overrides */
+				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+				{
+					if((method->modifiers & CS_SPECIALATTR_NEW) == 0)
+					{
+						/* Report absent new keyword warning. */
+						ReportDuplicates(method->name, (ILMember *)methodInfo,
+										 member, classInfo,
+										 method->modifiers, name);
+
+						/* Add new slot modifier. */
+						method->modifiers |= CS_SPECIALATTR_NEW;
+					}
+
+					/* Set the method to use a new vtable slot. */
+					ILMemberSetAttrs((ILMember *)methodInfo,
+									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
+									 IL_META_METHODDEF_NEW_SLOT);
+				}
+				else
+				{
+					/* Get the access modifiers for this and the base methods */
+					thisAccess = (method->modifiers &
+					            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+					baseAccess = (ILMember_Attrs(member) &
+					            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+
+					/* Check for legal modifiers for overrides */
+					if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
+					   (thisAccess != baseAccess) &&
+					   ((ILProgramItem_Image(member) ==
+					     ILProgramItem_Image(methodInfo)) ||
+					    (thisAccess != IL_META_METHODDEF_FAMILY) ||
+					    (baseAccess != IL_META_METHODDEF_FAM_OR_ASSEM)))
+					{
+						class1 = ILMember_Owner(member);
+						class2 = ILMethod_Owner(methodInfo);
+						CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+							"cannot change the access modifiers while overriding "
+							"method '%s%s%s.%s' with '%s%s%s.%s' ",
+							ILClass_Namespace(class1) ? 
+							ILClass_Namespace(class1) : "" ,
+							ILClass_Namespace(class1) ? "." : "",
+							ILClass_Name(class1),
+							name,
+							ILClass_Namespace(class2) ? 
+							ILClass_Namespace(class2) : "" ,
+							ILClass_Namespace(class2) ? "." : "",
+							ILClass_Name(class2),
+							name);
+					}
 				}
 			}
 			else if(ILMember_Owner(member) == classInfo ||
@@ -1414,6 +1428,8 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 {
 	char *name;
 	char *basicName;
+	ILUInt32 thisAccess;
+	ILUInt32 baseAccess;
 	ILType *propType;
 	ILType *tempType;
 	ILProperty *propertyInfo;
@@ -1424,7 +1440,9 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	ILUInt32 paramNum;
 	ILMember *member;
 	int interfaceOverride;
-	
+	ILMethod *baseMethod;
+	ILClass *class1, *class2;
+
 	/* Create the get and set methods */
 	if(property->getAccessor)
 	{
@@ -1576,12 +1594,85 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		   PropertyIsVirtual((ILProperty *)member) &&
 		   (property->modifiers & CS_SPECIALATTR_NEW) == 0)
 		{
+			if(ILMember_Owner(member) == classInfo)
+			{
+				ReportDuplicates(property->name, (ILMember *)propertyInfo,
+								 member, classInfo,
+								 property->modifiers, name);
+			}
+
 			/* Check for the correct form of virtual method overrides */
 			if((property->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
 			{
-				CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
-		  			"declaration of `%s' overrides an inherited member, "
-					"and `override' was not present", name);
+				/* Report absent new keyword warning. */
+				ReportDuplicates(property->name, (ILMember *)propertyInfo,
+								 member, classInfo,
+								 property->modifiers, name);
+
+				/* Add new slot modifier for property. */
+				property->modifiers |= CS_SPECIALATTR_NEW;
+
+				/* Set the getter to use a new vtable slot. */
+				if(property->getAccessor)
+				{
+					((ILNode_MethodDeclaration *)property->getAccessor)
+						->modifiers |= CS_SPECIALATTR_NEW;
+					ILMemberSetAttrs((ILMember *)(ILProperty_Getter(propertyInfo)),
+									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
+									 IL_META_METHODDEF_NEW_SLOT);
+				}
+
+				/* Set the setter to use a new vtable slot. */
+				if(property->setAccessor)
+				{
+					((ILNode_MethodDeclaration *)property->setAccessor)
+						->modifiers |= CS_SPECIALATTR_NEW;
+					ILMemberSetAttrs((ILMember *)(ILProperty_Setter(propertyInfo)),
+									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
+									 IL_META_METHODDEF_NEW_SLOT);
+				}
+			}
+			else
+			{
+				/* Get the access modifiers for this property */
+				thisAccess = (property->modifiers &
+				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+
+				/* Get a base getter or setter */
+				baseMethod = ILProperty_Getter((ILProperty *)member);
+				if(!baseMethod)
+				{
+					baseMethod = ILProperty_Setter((ILProperty *)member);
+				}
+
+				/* Get the access modifiers for the base property */
+				baseAccess = (ILMember_Attrs(baseMethod) &
+				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+
+				/* Check for legal modifiers for overrides */
+				if((property->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
+				   (thisAccess != baseAccess) &&
+				   ((ILProgramItem_Image(member) ==
+				     ILProgramItem_Image(propertyInfo)) ||
+				    (thisAccess != IL_META_METHODDEF_FAMILY) ||
+				    (baseAccess != IL_META_METHODDEF_FAM_OR_ASSEM)))
+				{
+					class1 = ILMember_Owner(member);
+					class2 = ILMethod_Owner(propertyInfo);
+					CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+						"cannot change the access modifiers while overriding "
+						"property '%s%s%s.%s' with '%s%s%s.%s' ",
+						ILClass_Namespace(class1) ? 
+						ILClass_Namespace(class1) : "" ,
+						ILClass_Namespace(class1) ? "." : "",
+						ILClass_Name(class1),
+						name,
+						ILClass_Namespace(class2) ? 
+						ILClass_Namespace(class2) : "" ,
+						ILClass_Namespace(class2) ? "." : "",
+						ILClass_Name(class2),
+						name);
+				}
 			}
 		}
 		else
@@ -1606,12 +1697,16 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 {
 	char *name;
 	char *basicName;
+	ILUInt32 thisAccess;
+	ILUInt32 baseAccess;
 	ILNode *eventName;
 	ILEvent *eventInfo;
 	ILType *signature;
 	ILMember *member;
 	int interfaceOverride;
-	
+	ILMethod *baseMethod;
+	ILClass *class1, *class2;
+
 	/* Set the back link for use by code generation */
 	eventDecl->backLink = event;
 
@@ -1735,12 +1830,85 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 		   EventIsVirtual((ILEvent *)member) &&
 		   (event->modifiers & IL_META_METHODDEF_NEW_SLOT) == 0)
 		{
+			if(ILMember_Owner(member) == classInfo)
+			{
+				ReportDuplicates(eventName, (ILMember *)eventInfo,
+								 member, classInfo,
+								 event->modifiers, name);
+			}
+
 			/* Check for the correct form of virtual method overrides */
 			if((event->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
 			{
-				CCErrorOnLine(yygetfilename(eventDecl), yygetlinenum(eventDecl),
-		  			"declaration of `%s' overrides an inherited member, "
-					"and `override' was not present", name);
+				/* Report absent new keyword warning. */
+				ReportDuplicates(eventName, (ILMember *)eventInfo,
+								 member, classInfo,
+								 event->modifiers, name);
+
+				/* Add new slot modifier for event. */
+				event->modifiers |= CS_SPECIALATTR_NEW;
+
+				/* Set the adder to use a new vtable slot. */
+				if(eventDecl->addAccessor)
+				{
+					((ILNode_MethodDeclaration *)eventDecl->addAccessor)
+						->modifiers |= CS_SPECIALATTR_NEW;
+					ILMemberSetAttrs((ILMember *)(ILEvent_AddOn(eventInfo)),
+									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
+									 IL_META_METHODDEF_NEW_SLOT);
+				}
+
+				/* Set the remover to use a new vtable slot. */
+				if(eventDecl->removeAccessor)
+				{
+					((ILNode_MethodDeclaration *)eventDecl->removeAccessor)
+						->modifiers |= CS_SPECIALATTR_NEW;
+					ILMemberSetAttrs((ILMember *)(ILEvent_RemoveOn(eventInfo)),
+									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
+									 IL_META_METHODDEF_NEW_SLOT);
+				}
+			}
+			else
+			{
+				/* Get the access modifiers for this event */
+				thisAccess = (event->modifiers &
+				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+
+				/* Get a base adder or remover */
+				baseMethod = ILEvent_AddOn((ILEvent *)member);
+				if(!baseMethod)
+				{
+					baseMethod = ILEvent_RemoveOn((ILEvent *)member);
+				}
+
+				/* Get the access modifiers for the base event */
+				baseAccess = (ILMember_Attrs(baseMethod) &
+				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+
+				/* Check for legal modifiers for overrides */
+				if((event->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
+				   (thisAccess != baseAccess) &&
+				   ((ILProgramItem_Image(member) ==
+				     ILProgramItem_Image(eventInfo)) ||
+				    (thisAccess != IL_META_METHODDEF_FAMILY) ||
+				    (baseAccess != IL_META_METHODDEF_FAM_OR_ASSEM)))
+				{
+					class1 = ILMember_Owner(member);
+					class2 = ILMethod_Owner(eventInfo);
+					CCErrorOnLine(yygetfilename(event), yygetlinenum(event),
+						"cannot change the access modifiers while overriding "
+						"event '%s%s%s.%s' with '%s%s%s.%s' ",
+						ILClass_Namespace(class1) ? 
+						ILClass_Namespace(class1) : "" ,
+						ILClass_Namespace(class1) ? "." : "",
+						ILClass_Name(class1),
+						name,
+						ILClass_Namespace(class2) ? 
+						ILClass_Namespace(class2) : "" ,
+						ILClass_Namespace(class2) ? "." : "",
+						ILClass_Name(class2),
+						name);
+				}
 			}
 		}
 		else

@@ -1,3 +1,8 @@
+2004-11-29  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* cscc/csharp/cs_gather.c: fix handling of methods, properties, and
+	events which hide base class virtuals and add access modifier
+	consistency checks for derived class properties and events.
 
 2004-11-23  Gopal V  <gopalv82@yahoo.com>
 

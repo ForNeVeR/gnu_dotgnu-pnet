@@ -1,8 +1,18 @@
-2004-05-0d  Russell Stuart  <russell@stuart.id.au>
+
+
+2004-05-03  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/DomainUpDown.cs,
+	System.Windows.Forms/UpDownBase.cs,
+	System.Windows.Forms/UpDownEventArgs.cs,
+	System.Windows.Forms/UpDownEventHandler.cs: Stub out the
+	UpDown controls and their dependencies.
+
+2004-05-05  Russell Stuart  <russell@stuart.id.au>
 	* tests/runtime/System/Threading/TestMonitor.cs: Added
 	tests for Thread.Interrupt.
 	(patch #3006 modified & commited by Thong)
-	
+
 2004-05-04  Gopal V  <gopalv82@yahoo.com>
 
 	* configure.in: change all 'test -e' in configure.in to 'test -f'

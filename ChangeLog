@@ -1,4 +1,9 @@
 
+2003-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/Encoding.cs: back out the UTF8 change because
+	the UTF8 property *must* include the preamble.
+
 2003-01-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Text/Encoding.cs: Disable UTF8 preambles when used
@@ -15,8 +20,7 @@
 	preliminaries for a proxy scheme.
 
 	* System/Net/WebResponse.cs: Fill in the abstract class and remove
-	TODO markers.
-	(Patch #913,Gopal)
+	TODO markers.  (Patch #913,Gopal)
 	
 2003-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 

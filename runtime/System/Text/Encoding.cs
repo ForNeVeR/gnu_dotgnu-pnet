@@ -745,7 +745,7 @@ public abstract class Encoding
 					{
 						if(utf8Encoding == null)
 						{
-							utf8Encoding = new UTF8Encoding();
+							utf8Encoding = new UTF8Encoding(true);
 						}
 						return utf8Encoding;
 					}

@@ -246,7 +246,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 			}
 
 	// Insert the contents of a collection as a range.
-	public virtual void InsertRange(ICollection c, int index)
+	public virtual void InsertRange(int index, ICollection c)
 			{
 				int cCount;
 				IEnumerator enumerator;
@@ -997,7 +997,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 						list.Add(enumerator.Current);
 					}
 				}
-		public override void InsertRange(ICollection c, int index)
+		public override void InsertRange(int index, ICollection c)
 				{
 					if(c == null)
 					{
@@ -1207,9 +1207,9 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				{
 					list.AddRange(c);
 				}
-		public override void InsertRange(ICollection c, int index)
+		public override void InsertRange(int index, ICollection c)
 				{
-					list.InsertRange(c, index);
+					list.InsertRange(index, c);
 				}
 		public override void RemoveRange(int index, int count)
 				{
@@ -1441,7 +1441,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					throw new NotSupportedException
 						(_("NotSupp_FixedSizeCollection"));
 				}
-		public override void InsertRange(ICollection c, int index)
+		public override void InsertRange(int index, ICollection c)
 				{
 					throw new NotSupportedException
 						(_("NotSupp_FixedSizeCollection"));
@@ -1607,13 +1607,13 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 		public override void AddRange(ICollection c)
 				{
 					UnderlyingCheck();
-					list.InsertRange(c, index + count);
+					list.InsertRange(index + count, c);
 					generation = list.generation;
 				}
-		public override void InsertRange(ICollection c, int index)
+		public override void InsertRange(int index, ICollection c)
 				{
 					UnderlyingCheck();
-					list.InsertRange(c, index + this.index);
+					list.InsertRange(index + this.index, c);
 					generation = list.generation;
 				}
 		public override void RemoveRange(int index, int count)
@@ -1855,7 +1855,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				{
 					throw new NotSupportedException(_("NotSupp_ReadOnly"));
 				}
-		public override void InsertRange(ICollection c, int index)
+		public override void InsertRange(int index, ICollection c)
 				{
 					throw new NotSupportedException(_("NotSupp_ReadOnly"));
 				}
@@ -2044,11 +2044,11 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 						list.AddRange(c);
 					}
 				}
-		public override void InsertRange(ICollection c, int index)
+		public override void InsertRange(int index, ICollection c)
 				{
 					lock(SyncRoot)
 					{
-						list.InsertRange(c, index);
+						list.InsertRange(index, c);
 					}
 				}
 		public override void RemoveRange(int index, int count)

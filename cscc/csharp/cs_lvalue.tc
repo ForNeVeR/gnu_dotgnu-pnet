@@ -892,8 +892,6 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			type = ILTypeGetLocal(method->localVarSig, index);
 			CSSemSetLValue(value, type);
 			*parent = ILNode_LocalVar_create(index, ILTypeToMachineType(type));
-			yysetfilename(*parent, yygetfilename(node));
-			yysetlinenum(*parent, yygetlinenum(node));
 		}
 		else
 		{
@@ -922,8 +920,6 @@ ILNode_SemAnalysis(ILNode_Identifier)
 				   compilers allow "out" parameters to be read */
 				*parent = ILNode_RefArgumentVar_create
 					(index, ILTypeToMachineType(type), type);
-				CSSemSetLValue(value, type);
-				return value;
 			}
 			else if(paramMod == ILParamMod_params)
 			{
@@ -948,6 +944,11 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			}
 			CSSemSetLValue(value, type);
 		}
+		if((void*)(*parent) != (void*)node)
+		{
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+		}
 		return value;
 	}
 	else if(data && ILScopeDataGetKind(data) == IL_SCOPE_LOCAL_CONST)
@@ -956,6 +957,11 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		constVar = (ILNode_SemGuard *)(ILScopeDataGetData1(data));
 		*parent = constVar->expr;
 		CSSemSetRValue(value, CSSemGetType(constVar->value));
+		if((void*)(*parent) != (void*)node)
+		{
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+		}
 		return value;
 	}
 

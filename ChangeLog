@@ -1,3 +1,9 @@
+
+2004-06-02  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_lvalue.tc: Add line number information for ArgumentVar
+	and RefArgumentVar nodes created during SemanticAnalysis.
+
 2004-06-02  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: Changed GCNotifyFinalize to not wait for

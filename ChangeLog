@@ -6,6 +6,12 @@
 	finalizers as that will cause deadlock if the allocating thread
 	holds locks the finalizer thread requires.
 	
+	* image/class.c: Fix CompareUnicode not working properly when
+	ignoreCase is true.
+	
+	* image/java_writer.c: Remove pointer on void * to remove
+	compiler warning.
+	
 2004-05-30  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_monitor.c: Removed value type checks for Monitor.Enter.

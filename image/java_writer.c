@@ -106,7 +106,7 @@ void ILJavaAppendCode(ILWriter *writer, ILClass *info, ILMethod *method,
 	{
 		/* use existing buffer */
 		list->code = ILRealloc(list->code, list->length + size);
-		ILMemCpy(list->code + list->length, buffer, size);
+		ILMemCpy((void *)((const char *)list->code + list->length), buffer, size);
 		list->length += size;
 	}
 }

@@ -725,17 +725,22 @@ static int CompareUnicode(const char *str,
 						  const ILUInt16 *str2,
 						  int str2Len, int ignoreCase)
 {
-	int ch;
+	int ch, ch2;
 	if(ignoreCase)
 	{
 		while(*str != '\0' && str2Len > 0)
 		{
 			ch = (*str++ & 0xFF);
+			ch2 = (*str2++ & 0xFF);
 			if(ch >= 'A' && ch <= 'Z')
 			{
 				ch = ch - 'A' + 'a';
 			}
-			if(ch != (int)(*str2++))
+			if(ch2 >= 'A' && ch2 <= 'Z')
+			{
+				ch2 = ch2 - 'A' + 'a';
+			}
+			if(ch != ch2)
 			{
 				return 0;
 			}

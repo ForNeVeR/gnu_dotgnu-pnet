@@ -149,7 +149,83 @@ int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn);
  */
 int ILSysIOHasAsync(void);
 
-#ifdef	__cplusplus
+/*
+ * IPv4 Address placeholder for socket related functions.
+ */
+typedef struct _ILSysIOSockAddr
+{
+  int family;
+  unsigned short port;
+  unsigned long addr;
+
+} ILSysIOSockAddr;
+
+/*
+ * Create a new socket.  Returns ILSysIOHandle_Invalid on error.
+ */
+ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol);
+
+/*
+ * Bind a socket to an address.  Returns zero on error.
+ */
+int ILSysIOSocketBind(ILSysIOHandle sockfd, ILSysIOSockAddr *local_addr);
+
+/*
+ * Connect to a remote socket address.  Returns zero on error.
+ */
+int ILSysIOSocketConnect(ILSysIOHandle sockfd, ILSysIOSockAddr *serv_addr);
+
+/*
+ * Set a socket to listen mode.  Returns zero on error.
+ */
+int ILSysIOSocketListen(ILSysIOHandle sockfd, ILInt32 backlog);
+
+/*
+ * Accept a connection from a remote address on a socket.
+ */
+ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, ILSysIOSockAddr *out);
+
+/*
+ * Receive data on a socket.
+ */
+ILInt32 ILSysIOSocketReceive(ILSysIOHandle sockfd, void *buff,
+							 ILInt32 len, ILInt32 flags);
+
+/*
+ * Send data on a socket.
+ */
+ILInt32 ILSysIOSocketSend(ILSysIOHandle sockfd, const void *msg,
+					      ILInt32 len, ILInt32 flags);
+
+/*
+ * Send data on a socket to a specific address.
+ */
+ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg, ILInt32 len,
+					        ILInt32 flags, const ILSysIOSockAddr *to);
+
+/*
+ * Receive data on a socket from a specific address.
+ */
+ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf, ILInt32 len,
+							  ILInt32 flags, ILSysIOSockAddr *from);
+
+/*
+ * Close a socket.  Returns zero on error.
+ */
+int ILSysIOSocketClose(ILSysIOHandle sockfd);
+
+/*
+ * Perform a shutdown operation on one or more socket directions.
+ * Returns zero on error.
+ *
+ * Values for "how":
+ *		0 - Further receives are disallowed
+ *		1 - Further sends are disallowed
+ *		2 - Further sends and receives are disallowed
+ */
+int ILSysIOSocketShutdown(ILSysIOHandle sockfd, ILInt32 how);
+
+#ifdef	__cplusplus 
 };
 #endif
 

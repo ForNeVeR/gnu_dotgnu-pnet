@@ -24,6 +24,7 @@ libILSupport_a_SOURCES = alloc.c \
 						 read_float.c \
 						 rem_float.c \
 						 sha1.c \
+						 socket.c \
 						 spawn.c \
 						 strings.c \
 						 test_float.c \

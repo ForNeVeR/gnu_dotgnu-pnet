@@ -369,12 +369,12 @@ extern ILBool _IL_SocketMethods_Create(ILExecThread * _thread, ILInt32 af, ILInt
 extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt handle, ILInt32 af, ILInt64 address, ILInt32 port);
 extern ILBool _IL_SocketMethods_Shutdown(ILExecThread * _thread, ILNativeInt handle, ILInt32 how);
 extern ILBool _IL_SocketMethods_Listen(ILExecThread * _thread, ILNativeInt handle, ILInt32 backlog);
-extern ILInt32 _IL_SocketMethods_Accept(ILExecThread * _thread, ILNativeInt handle, ILInt64 * address, ILInt32 * port);
+extern ILBool _IL_SocketMethods_Accept(ILExecThread * _thread, ILNativeInt handle, ILInt64 * address, ILInt32 * port, ILNativeInt * newHandle);
 extern ILBool _IL_SocketMethods_Connect(ILExecThread * _thread, ILNativeInt handle, ILInt32 af, ILInt64 address, ILInt32 port);
 extern ILInt32 _IL_SocketMethods_Receive(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags);
 extern ILInt32 _IL_SocketMethods_ReceiveFrom(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags, ILInt64 * address, ILInt32 * port);
 extern ILInt32 _IL_SocketMethods_Send(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags);
-extern ILInt32 _IL_SocketMethods_SendTo(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags, ILInt64 * address, ILInt32 * port);
+extern ILInt32 _IL_SocketMethods_SendTo(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 size, ILInt32 flags, ILInt64 address, ILInt32 port);
 extern ILBool _IL_SocketMethods_Close(ILExecThread * _thread, ILNativeInt handle);
 extern ILInt32 _IL_SocketMethods_Select(ILExecThread * _thread, System_Array * readarray, System_Array * writearray, System_Array * errorarray, ILInt64 timeout);
 extern ILInt32 _IL_SocketMethods_GetErrno(ILExecThread * _thread);

@@ -1,4 +1,11 @@
 
+2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,
+	include/il_config.h.in, include/il_sysio.h, samples/mscorlib.dll,
+	support/Makefile.am, support/socket.c: integrate socket API
+	contributions, after adjusting for sysio coding conventions.
+
 2002-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilnative/ilinternal.c (processFile): do not free "classTable"

@@ -66,6 +66,12 @@ public sealed class Thread
 	internal bool inThreadPool;
 #endif
 
+	// Private constructor only called by the engine
+	private Thread()
+	{
+		InitializeManaged(null);
+	}
+	
 	// Constructor.
 	public Thread(ThreadStart start)
 			{
@@ -73,9 +79,10 @@ public sealed class Thread
 				{
 					throw new ArgumentNullException("start");
 				}
-				privateData = new IntPtr(0);
-				this.start = start;
+
 				this.createdFromManagedCode = true;
+				
+				InitializeManaged(start);
 
 				InitializeThread();
 			}
@@ -86,6 +93,16 @@ public sealed class Thread
 				FinalizeThread();
 			}
 
+	private void InitializeManaged(ThreadStart start)
+			{
+				privateData = new IntPtr(0);
+				this.start = start;
+
+#if CONFIG_POLICY_OBJECTS
+				principal = new GenericPrincipal(new GenericIdentity(""), null);
+#endif								
+			}
+				
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private void InitializeThread();
 

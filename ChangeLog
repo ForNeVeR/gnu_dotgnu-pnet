@@ -1,3 +1,8 @@
+2004-08-25  Thong Nguyen  <tum@veridicus.com>
+
+	* runtime/System/Threading/Thread.cs: Added principal initialization,
+	InitializeManaged method and private constructor for the engine.
+
 2004-08-23  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/Control.cs: modify BackColor setter to throw an

@@ -1,6 +1,8 @@
 2004-12-17  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 	* System.Drawing/Graphics.cs: Transform and Matrix fix. (patch
 	#3586, applied by drobosson).
+	* System.Drawing/Drawing2D/Matrix.cs: Fix method reset. (patch
+	#3585, applied by drobosson).
 
 2004-12-17  Deryk Robosson  <deryk@0x0a.com>
 	* System.Windows.Forms/NumericUpdown.cs: Reverse operation of up

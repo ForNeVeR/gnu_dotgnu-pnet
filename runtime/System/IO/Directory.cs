@@ -24,6 +24,9 @@
 namespace System.IO
 {
 	using System;
+	using System.Text;
+	using System.Private;
+	using System.Collections;
 	using System.Security;
 	using Platform;
 
@@ -123,52 +126,114 @@ namespace System.IO
 			return File.GetCreationTime(path);
 		}
 
+		private static void VerifyDirectoryAccess(String path)
+		{
+			if(path.Length==0 || (path.Trim()).Length==0)
+		//FIXME:			||	path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
+			{	
+				throw new ArgumentException();
+			}
+			if (path == null)
+			{
+				throw new ArgumentNullException("path");
+			}	
+			long ac;
+			Errno errno = DirMethods.GetLastAccess(path, out ac);
+			ThrowErrnoExceptions(errno,path);
+		}
+
+		private static void ThrowErrnoExceptions(Errno errno,String path)
+		{
+			switch(errno)
+			{
+				case Errno.Success:
+					return;
+				case Errno.ENOENT:
+					throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+				case Errno.ENOTDIR:
+					throw new IOException(String.Format(_("IO_IsNotDir"),path));
+				case Errno.EACCES:
+					throw new SecurityException(_("IO_PathnameSecurity"));
+				case Errno.ENAMETOOLONG:
+					throw new PathTooLongException();
+				default:
+					return;
+			}
+		}
+
 		[TODO]
 		public static string GetCurrentDirectory()
 		{
 			return null;
 		}
 
-		[TODO]
 		public static string[] GetDirectories(string path)
 		{
-			return null;
+			return InternalGetDirectoryEntries(path,"*",
+										FileType.directory);
 		}
 
-		[TODO]
 		public static string[] GetDirectories(string path, string searchPattern)
 		{
-			return null;
+			return InternalGetDirectoryEntries(path,searchPattern,
+										FileType.directory);
 		}
 
-		[TODO]
 		public static string GetDirectoryRoot(string path)
 		{
-			return null;
+			// no difference except for "\\ecmatest"
+			// in Directory shoud give "C:\\" and in Path should give "\\"
+			return Path.GetPathRoot(path); 
 		}
 
-		[TODO]
 		public static string[] GetFileSystemEntries(string path)
 		{
-			return null;
+			return InternalGetDirectoryEntries(path,"*",
+												(FileType)(-1)); // all types
 		}
 
-		[TODO]
-		public static string[] GetFileSystemEntries(string path, string searchPattern)
+		public static string[] GetFileSystemEntries(string path, 
+													string searchPattern)
 		{
-			return null;
+			return InternalGetDirectoryEntries(path,searchPattern,
+														(FileType)(-1));
 		}
 
-		[TODO]
+
 		public static string[] GetFiles(string path)
 		{
-			return null;
+			return InternalGetDirectoryEntries(path,"*",
+										FileType.regularFile);
 		}
 
-		[TODO]
 		public static string[] GetFiles(string path, string searchPattern)
 		{
-			return null;
+			return InternalGetDirectoryEntries(path,searchPattern,
+										FileType.regularFile);
+		}
+	
+		private static String[] InternalGetDirectoryEntries(String path,
+														String searchPattern,
+														FileType type)
+		{
+			VerifyDirectoryAccess(path);
+			InternalFileInfo []dirEnts;
+			Errno errno=DirMethods.GetFilesInDirectory(path,out dirEnts);
+			ThrowErrnoExceptions(errno,path);
+			GlobMatch fnmatch = new GlobMatch(searchPattern);
+			
+			ArrayList list=new ArrayList(dirEnts.Length);
+			foreach(InternalFileInfo info in dirEnts)
+			{
+				if(fnmatch.Match(info.fileName) 
+						&& 	(type == (FileType)(-1) || info.fileType == type ))
+				{
+					list.Add(info.fileName);
+				}
+			}
+			String[] retval=new String[list.Count];
+			list.CopyTo(retval);
+			return retval;
 		}
 
 		public static DateTime GetLastAccessTime(string path)
@@ -205,6 +270,90 @@ namespace System.IO
 		public static void SetLastWriteTime(string path, DateTime lastWriteTime)
 		{
 		}
+		
+		/* internal class to convert Glob expression to Regexp */
+		private class GlobMatch : IDisposable
+		{
+			Regexp expr;
+			String pattern;
+			String translated;
+			bool disposed=false;
+			
+			internal GlobMatch(String glob) 
+			{
+				StringBuilder builder=new StringBuilder();
+				pattern=glob;
+				char[] arr=glob.ToCharArray();
+				for(int i=0;i<arr.Length;i++)
+				{
+					switch(arr[i])
+					{
+						case '.':
+						{
+							if(i < arr.Length-1)
+							{
+								if(arr[i+1]=='?')
+								{
+									builder.Append("\\.{0,1}");
+									i=i+1;
+								}
+								else if(arr[i+1]=='*')
+								{
+									builder.Append(".*");
+									i=i+1;
+								}
+								else
+								{
+									builder.Append("\\.");
+								}
+							}
+							else
+							{
+								builder.Append("\\.");
+							}
+						}
+						break;
+					case '*':
+						builder.Append(".*");
+						break;
+					case '?':
+						builder.Append(".");
+						break;
+					case '[':
+					case ']':
+					case '^':
+					case '\\':
+						builder.Append("\\"+arr[i]);
+						break;
+					default:
+						builder.Append(arr[i]);
+						break;
+					}
+				}
+				translated="^"+builder.ToString()+"$"; //perfect match
+				expr=new Regexp(translated);
+			}
 
-	}
-}
+			public bool Match(String input)
+			{
+				if(input==null)
+					throw new ArgumentNullException("input");
+				return expr.Match(input);
+			}
+
+			public void Dispose()
+			{
+				if(!disposed)expr.Dispose();
+				disposed=true;
+			}
+
+			void IDisposable.Dispose()
+			{
+				this.Dispose();
+			}
+
+		} // class GlobMatch
+
+
+	} // class Directory 
+} // namespace System.IO

@@ -222,7 +222,7 @@ namespace System.IO
 		}
 		
 		/* generate /tmp/pnetXXXXXX */
-		public static String GetTempFilename()
+		public static String GetTempFileName()
 		{
 			String dir = GetTempPath();
 			String pre = "pnet";

@@ -32,7 +32,13 @@
 
 	* runtime/Platform/InternalFileInfo.cs, runtime/Platform/DirMethods.cs : 
 	Move FileInfo to InternalFileInfo.
-	
+
+	* runtime/System/IO/Directory.cs, resources/en_US/runtime/IO.txt: Implement
+	the GetDirectories and similar functions.
+
+	* runtime/System/IO/Path.cs: Fix small typo GetTempFilename to 
+	GetTempFileName 
+
 2002-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Platform/Errno.cs, System/Platform/SocketMethods.cs,

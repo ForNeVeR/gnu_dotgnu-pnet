@@ -19,6 +19,9 @@
 
 	* cscc/cscc.c (ProcessWithPlugin): handle the -E option properly.
 
+	* tests/test_crypt.c, tests/Makefile.am: add regression tests
+	for the cryptographic algorithms.
+
 2002-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_crypt.c, include/il_crypt.h, support/Makefile.am,

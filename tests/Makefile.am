@@ -1,4 +1,4 @@
-noinst_PROGRAMS = test_verify test_thread
+noinst_PROGRAMS = test_verify test_thread test_crypt
 
 test_verify_SOURCES = test_verify.c \
 					  test_varith.c \
@@ -18,8 +18,12 @@ test_thread_SOURCES = test_thread.c \
 test_thread_LDADD   = ../image/libILImage.a ../support/libILSupport.a \
 			  		  $(GCLIBS)
 
+test_crypt_SOURCES  = test_crypt.c \
+					  ilunit.c
+test_crypt_LDADD    = ../image/libILImage.a ../support/libILSupport.a
+
 AM_CFLAGS = -I$(top_srcdir)/include
 
-TESTS = test_verify test_thread
+TESTS = test_verify test_thread test_crypt
 
 CFLAGS =

@@ -365,6 +365,12 @@ char *_ILLinkerNewClassName(ILLinker *linker, ILClass *classInfo)
 	char buf[64];
 	const char *name = ILClass_Name(classInfo);
 	char *newName;
+	if(!strcmp(name, "init-on-demand"))
+	{
+		/* This class must not be renamed - there should be
+		   only one instance of this name per link process */
+		return 0;
+	}
 	sprintf(buf, "-%lu-%lu", (unsigned long)(linker->imageNum),
 			(unsigned long)(ILClass_Token(classInfo) & ~IL_META_TOKEN_MASK));
 	newName = (char *)ILMalloc(strlen(name) + strlen(buf) + 1);

@@ -36,6 +36,7 @@ static ILType *currentStruct = 0;
 static ILType *currentEnum = 0;
 static ILInt32 currentEnumValue = 0;
 static ILNode *initializers = 0;
+static int usedGlobalVar = 0;
 
 /*
  * Imports from the lexical analyser.
@@ -1169,6 +1170,7 @@ PrimaryExpression
 							decayedType = CTypeDecay(&CCCodeGen, type);
 							$$ = ILNode_CGlobalVar_create
 								($1, type, decayedType);
+							usedGlobalVar = 1;
 						}
 						break;
 
@@ -2724,6 +2726,9 @@ FunctionDefinition
 
 				/* Set the new function name */
 				functionName = $1.name;
+
+				/* No global variables in use yet */
+				usedGlobalVar = 0;
 			}
 	  FunctionBody '}'		{
 	  			/* Wrap the function body in a new scope record */
@@ -2739,7 +2744,8 @@ FunctionDefinition
 				CCurrentScope = ILScopeGetParent(CCurrentScope);
 
 				/* Output the finished function */
-				CFunctionOutput(&CCCodeGen, $<methodInfo>4, body);
+				CFunctionOutput(&CCCodeGen, $<methodInfo>4, body,
+								usedGlobalVar);
 
 				/* Reset the function name */
 				functionName = "";
@@ -2779,6 +2785,9 @@ FunctionDefinition
 
 				/* Set the new function name */
 				functionName = $2.name;
+
+				/* No global variables in use yet */
+				usedGlobalVar = 0;
 			}
 	  FunctionBody '}'		{
 	  			/* Wrap the function body in a new scope record */
@@ -2794,7 +2803,8 @@ FunctionDefinition
 				CCurrentScope = ILScopeGetParent(CCurrentScope);
 
 				/* Output the finished function */
-				CFunctionOutput(&CCCodeGen, $<methodInfo>5, body);
+				CFunctionOutput(&CCCodeGen, $<methodInfo>5, body,
+								usedGlobalVar);
 
 				/* Reset the function name */
 				functionName = "";

@@ -40,7 +40,8 @@ void CFunctionDeclareParams(ILGenInfo *info, ILMethod *method);
 /*
  * Output a function that has been fully parsed.
  */
-void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body);
+void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body,
+					 int initGlobalVars);
 
 /*
  * Flush a list of global initializers.

@@ -16,6 +16,11 @@
 	cscc/c/c_oper.tc: rearrange the array initialization code so that
 	all code generation and semantic analysis is in "c_ainit.tc".
 
+	* cscc/c/c_function.c, cscc/c/c_function.h, cscc/c/c_grammar.y,
+	ilalink/link_class.c, ilalink/link_init.c: force the ".init"
+	function to be called when a C library is used from a C#
+	application which doesn't use the crt0 process.
+
 2003-06-27  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fix recursive entry/leave bug in

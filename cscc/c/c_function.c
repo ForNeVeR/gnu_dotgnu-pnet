@@ -379,7 +379,8 @@ void CFunctionDeclareParams(ILGenInfo *info, ILMethod *method)
 	}
 }
 
-void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
+void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body,
+					 int initGlobalVars)
 {
 	FILE *stream = info->asmOutput;
 	unsigned indexVar = 0;
@@ -432,6 +433,16 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 	/* Notify the code generator as to what the return type is */
 	info->returnType = ILTypeGetReturn(signature);
 	returnMachineType = ILTypeToMachineType(info->returnType);
+
+	/* Force initialization of global variables if we were
+	   called from C# code and ".init" hasn't been run yet */
+	if(initGlobalVars)
+	{
+		fputs("\tldtoken 'init-on-demand'\n", stream);
+		fputs("\tcall\tvoid [.library]System.Runtime.CompilerServices"
+				".RuntimeHelpers::RunClassConstructor"
+				"(valuetype [.library]System.RuntimeTypeHandle)\n", stream);
+	}
 
 	/* Create the "setjmp" header if necessary */
 	if(numSetJmpRefs > 0)
@@ -626,7 +637,7 @@ void CFunctionFlushInits(ILGenInfo *info, ILNode *list)
 	((ILNode_NewScope *)list)->scope = scope;
 
 	/* Output the initializer */
-	CFunctionOutput(info, method, list);
+	CFunctionOutput(info, method, list, 0);
 }
 
 void CFunctionPredeclare(ILGenInfo *info)

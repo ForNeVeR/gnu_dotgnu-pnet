@@ -460,6 +460,44 @@ ILImage *_ILLinkerCreateInitFini(ILLinker *linker)
 	CallLibraryFini(stream, linker->libraries);
 	fputs("L6:\n", stream);
 	fputs("\tret\n", stream);
+	fputs("}\n\n", stream);
+
+	/* Generate the "init-on-demand" class, which is used to force
+	   initialization of global variables when a C library is used
+	   from C# code and the global initializer wasn't called by crt0 */
+	fputs(".class private sealed beforefieldinit 'init-on-demand' extends "
+			"[.library]System.Object\n", stream);
+	fputs("{\n", stream);
+	fputs("\t.method private static hidebysig specialname rtspecialname "
+				"void .cctor() cil managed\n", stream);
+	fputs("\t{\n", stream);
+	fputs("\t\t.maxstack 2\n", stream);
+	fputs("\t\t.locals (class [.library]System.Type)\n", stream);
+	fputs("\t\tldtoken 'init-count'\n", stream);
+	fputs("\t\tcall class [.library]System.Type [.library]System.Type::"
+		  "GetTypeFromHandle(valuetype [.library]System.RuntimeTypeHandle)\n",
+		  stream);
+	fputs("\t\tdup\n", stream);
+	fputs("\t\tstloc.0\n", stream);
+	fputs("\t\tcall void [.library]System.Threading.Monitor::Enter"
+		  "(class [.library]System.Object)\n", stream);
+	fputs("\t\t.try {\n", stream);
+	fputs("\t\t\tldsfld int32 'init-count'::'count'\n", stream);
+	fputs("\t\t\tbrtrue L7\n", stream);
+	fputs("\t\t\tleave L8\n", stream);
+	fputs("\t\tL7:\n", stream);
+	fputs("\t\t\tleave L9\n", stream);
+	fputs("\t\t} finally {\n", stream);
+	fputs("\t\t\tldloc.0\n", stream);
+	fputs("\t\t\tcall void [.library]System.Threading.Monitor::Exit"
+		  "(class [.library]System.Object)\n", stream);
+	fputs("\t\t\tendfinally\n", stream);
+	fputs("\t\t}\n", stream);
+	fputs("\tL8:\n", stream);
+	fputs("\t\tcall void '.init'()\n", stream);
+	fputs("\tL9:\n", stream);
+	fputs("\t\tret\n", stream);
+	fputs("\t}\n", stream);
 	fputs("}\n", stream);
 
 	/* Close the temporary stream and assemble it */

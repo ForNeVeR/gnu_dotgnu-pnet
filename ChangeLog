@@ -3,6 +3,9 @@
 
 	* Basic/Strings.cs: add the missing "InStr" and "InStrRev" methods.
 
+	* Basic/Basic.build: use the "-fhidebyname" option when building
+	the VB library, so that the methods have the correct attributes.
+
 2004-07-17  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Private/NumberParser.cs: ParseDouble and ParseDecimal

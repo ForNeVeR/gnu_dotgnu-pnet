@@ -1,3 +1,7 @@
+2004-07-29  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlTextWriter.cs, System.Xml/XmlWriter.cs: fix special
+	attribute (xmlns, xml:space, xml:lang) handling.
 
 2004-07-26  Deryk Robosson  <deryk@0x0a.com>
 

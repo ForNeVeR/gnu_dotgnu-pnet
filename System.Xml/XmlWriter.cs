@@ -62,29 +62,22 @@ public abstract class XmlWriter
 			}
 
 	// Write an attribute string with prefix, local name, and namespace.
-	public void WriteAttributeString(String prefix, String localName,
-									 String ns, String value)
+	public void WriteAttributeString
+				(String prefix, String localName, String ns, String value)
 			{
-				if(((Object)localName) == null || localName.Length == 0)
-				{
-					throw new ArgumentNullException("localName");
-				}
-				if((Object)value != null && value.Length != 0)
-				{
-					bool flagNS = false;
-					if(localName == "xmlns" || localName.StartsWith("xmlns:"))
-					{
-						flagNS = true;
-					}
+				// get the length of local name
+				int len = (((Object)localName) == null ? 0 : localName.Length);
 
-					WriteStartAttribute(prefix, localName, ns, value, flagNS);
-				} 
-				else 
-				{
-					WriteStartAttribute(prefix, localName, ns);
-				}
+				// ensure we have a local name
+				if(len == 0) { throw new ArgumentNullException("localName"); }
 
+				// write the start of the attribute
+				WriteStartAttribute(prefix, localName, ns);
+
+				// write the attribute value
 				WriteString(value);
+
+				// write the end of the attribute
 				WriteEndAttribute();
 			}
 
@@ -363,9 +356,6 @@ public abstract class XmlWriter
 			{
 				WriteStartAttribute(null, localName, ns);
 			}
-
-	// the hack for namespaces
-	internal abstract void WriteStartAttribute(String prefix, String localName, String ns, String value, bool flagNS);
 	
 	// Write the start of an XML document.
 	public abstract void WriteStartDocument(bool standalone);

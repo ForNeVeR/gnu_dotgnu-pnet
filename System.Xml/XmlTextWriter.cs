@@ -29,29 +29,34 @@ using System.Globalization;
 public class XmlTextWriter : XmlWriter
 {
 	// Internal state.
-	internal TextWriter writer;
-	private System.Xml.Formatting formatting;
-	private int indentation;
-	private char indentChar;
-	private char[] indentChars;
-	private bool namespaces;
-	private char quoteChar;
-	private System.Xml.WriteState writeState;
-	private XmlNameTable nameTable;
+	private bool                namespaces;
+	private int                 indentation;
+	private int                 indentLevel;
+	private char                indentChar;
+	private char                quoteChar;
+	private char[]              indentChars;
+	private ElementScope        scope;
+	private Formatting          formatting;
+	private Special             special;
+	private SpecialWriter       specialWriter;
+	private String              nsPrefix;
+	private String              xmlLang;
+	private WriteState          writeState;
+	private XmlNameTable        nameTable;
 	private XmlNamespaceManager namespaceManager;
-	private ElementScope scope;
-	private int indentLevel;
-	private XmlSpace xmlSpace;
-	private String xmlLang;
-	private int pseudoNSNumber;
-	internal bool autoShiftToContent;
+	private XmlSpace            xmlSpace;
+	internal bool               autoShiftToContent;
+	internal TextWriter         writer;
+
 	private enum Special
 	{
-		None  = 0,
-		Lang  = 1,
-		Space = 2
-	}
-	private Special special;
+		None      = 0,
+		Lang      = 1,
+		Space     = 2,
+		Namespace = 3
+
+	}; // enum Special
+
 
 	// Constructors.
 	public XmlTextWriter(Stream w, Encoding encoding)
@@ -80,23 +85,24 @@ public class XmlTextWriter : XmlWriter
 	// Initialize the common writer fields.
 	private void Initialize()
 			{
-				formatting = System.Xml.Formatting.None;
-				indentation = 2;
-				indentChar = ' ';
 				namespaces = true;
+				indentation = 2;
+				indentLevel = 0;
+				indentChar = ' ';
 				quoteChar = '"';
+				indentChars = new char[indentation];
+				scope = null;
+				formatting = System.Xml.Formatting.None;
+				special = Special.None;
+				specialWriter = new SpecialWriter(writer);
+				nsPrefix = null;
+				xmlLang = null;
 				writeState = System.Xml.WriteState.Start;
 				nameTable = new NameTable();
 				namespaceManager = new XmlNamespaceManager(nameTable);
-				scope = null;
-				indentLevel = 0;
 				xmlSpace = XmlSpace.None;
-				xmlLang = null;
-				pseudoNSNumber = 1;
-				special = Special.None;
 				autoShiftToContent = false;
-				indentChars = new char[indentation];
-				for (int i = 0; i < indentation; i++)
+				for(int i = 0; i < indentation; i++)
 				{
 					indentChars[i] = indentChar;
 				}
@@ -119,6 +125,7 @@ public class XmlTextWriter : XmlWriter
 				scope.indent = false;
 				scope.xmlSpace = xmlSpace;
 				scope.xmlLang = xmlLang;
+				scope.genPrefixCount = 0;
 				namespaceManager.PushScope();
 			}
 
@@ -167,6 +174,140 @@ public class XmlTextWriter : XmlWriter
 		ClosedFlag    = (1<<5)
 
 	}; // enum WriteStateFlag
+
+
+	// Generate a prefix for the given namespace.
+	private String GeneratePrefix(String ns)
+			{
+				// Create the prefix builder.
+				StringBuilder prefixBuilder = new StringBuilder();
+
+				// Append the start of the prefix.
+				prefixBuilder.Append("d").Append(indentLevel).Append("p");
+
+				// Get the length of the start of the prefix.
+				int len = prefixBuilder.Length;
+
+				// Generate prefixes until an unused one is found.
+				while(true)
+				{
+					// Update the generated prefix count.
+					++scope.genPrefixCount;
+
+					// Build the prefix.
+					prefixBuilder.Append(scope.genPrefixCount);
+
+					// Get the prefix from the builder.
+					String prefix = prefixBuilder.ToString();
+
+					// Get the mapping for the prefix.
+					Object mapping = namespaceManager.LookupNamespace(prefix);
+
+					// Return the prefix if it is unused.
+					if(mapping == null)
+					{
+						// Add the mapping to the namespace manager.
+						namespaceManager.AddNamespace(prefix, ns);
+
+						// Return the prefix.
+						return prefix;
+					}
+
+					// Reset the prefix builder.
+					prefixBuilder.Length = len;
+				}
+			}
+
+	// Handle the end of a special attribute.
+	private void SpecialAttributeEnd()
+			{
+				switch(special)
+				{
+					case Special.Lang:
+					{
+						// Set the xml:lang value.
+						xmlLang = specialWriter.AttributeValue;
+					}
+					break;
+
+					case Special.Space:
+					{
+						// Get the attribute value.
+						String value = specialWriter.AttributeValue;
+
+						// Get the length of the attribute value.
+						int len = value.Length;
+
+						// Set the xml:space value.
+						if(len == 7 && value == "default")
+						{
+							xmlSpace = System.Xml.XmlSpace.Default;
+						}
+						else if(len == 8 && value == "preserve")
+						{
+							xmlSpace = System.Xml.XmlSpace.Preserve;
+						}
+						else
+						{
+							// Reset the attribute value builder.
+							specialWriter.ResetBuilder();
+
+							// Reset the writer.
+							writer = specialWriter.Writer;
+
+							// Reset the special.
+							special = Special.None;
+
+							// Signal that the xml:space value is invalid.
+							throw new ArgumentException(/* TODO */);
+						}
+					}
+					break;
+
+					case Special.Namespace:
+					{
+						// Get the attribute value.
+						String value = specialWriter.AttributeValue;
+
+						// Add the mapping to the namespace manager.
+						namespaceManager.AddNamespace(nsPrefix, value);
+
+						// Reset the namespace prefix.
+						nsPrefix = null;
+					}
+					break;
+				}
+
+				// Reset the attribute value builder.
+				specialWriter.ResetBuilder();
+
+				// Reset the writer.
+				writer = specialWriter.Writer;
+
+				// Reset the special.
+				special = Special.None;
+			}
+
+	// Handle the start of a special attribute.
+	private void SpecialAttributeStart(bool space)
+			{
+				// Set the type of the special attribute.
+				special = (space ? Special.Space : Special.Lang);
+
+				// Set the writer.
+				writer = specialWriter;
+			}
+	private void SpecialAttributeStart(String prefix)
+			{
+				// Set the namespace prefix.
+				nsPrefix = prefix;
+
+				// Set the type of the special attribute.
+				special = Special.Namespace;
+
+				// Set the writer.
+				writer = specialWriter;
+			}
 
 	// Synchronize the output with a particular document area.
 	private void Sync(WriteStateFlag flags, bool indent)
@@ -746,10 +887,12 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidWriteState"));
 				}
 
+				// Handle the end of a special attribute, if needed.
+				if(special != Special.None) { SpecialAttributeEnd(); }
+
 				// Terminate the attribute and return to the element state.
 				writer.Write(quoteChar);
 				writeState = System.Xml.WriteState.Element;
-				special = Special.None;
 			}
 
 	// Write the document end information and reset to the start state.
@@ -1095,8 +1238,14 @@ public class XmlTextWriter : XmlWriter
 	public override void WriteStartAttribute(String prefix, String localName,
 										     String ns)
 			{
+				// Get the length of the prefix.
+				int prefixLen = (((Object)prefix) == null ? 0 : prefix.Length);
+
+				// Get the length of the namespace.
+				int nsLen = (((Object)ns) == null ? 0 : ns.Length);
+
 				// Validate the parameters.
-				if(!namespaces && (prefix != null || ns != null))
+				if(!namespaces && (prefixLen != 0 || nsLen != 0))
 				{
 					throw new ArgumentException
 						(S._("Xml_NamespacesNotSupported"));
@@ -1105,7 +1254,13 @@ public class XmlTextWriter : XmlWriter
 				// Check the state and output delimiters.
 				if(writeState == System.Xml.WriteState.Attribute)
 				{
+					// Handle the end of a special attribute, if needed.
+					if(special != Special.None) { SpecialAttributeEnd(); }
+
+					// Write the closing quote character for the attribute.
 					writer.Write(quoteChar);
+
+					// Write a space before the start of the attribute.
 					writer.Write(' ');
 				}
 				else if(writeState == System.Xml.WriteState.Element)
@@ -1118,54 +1273,150 @@ public class XmlTextWriter : XmlWriter
 						(S._("Xml_InvalidWriteState"));
 				}
 
+				// Set the special.
+				special = Special.None;
+
 				// Output the name of the attribute, with appropriate prefixes.
-				if(((Object)prefix) != null && prefix != String.Empty &&
-				   ((Object)ns) != null && ns != String.Empty)
+				if(prefixLen != 0)
 				{
-					// We need to associate a prefix with a namespace.
-					String currMapping = LookupPrefix(ns);
-					if(currMapping == prefix)
+					if(prefixLen == 5 && prefix == "xmlns")
 					{
-						// The prefix is already mapped to this URI.
-						if(prefix != scope.prefix)
+						// Ensure the namespace is correct.
+						if(nsLen != 0 &&
+						   (nsLen != 29 ||
+						    ns != "http://www.w3.org/2000/xmlns/"))
 						{
+							throw new ArgumentException(/* TODO */);
+						}
+
+						// Determine if the name starts with (X|x)(M|m)(L|l).
+						bool startsWithXml = localName.ToLower
+							(CultureInfo.InvariantCulture).StartsWith("xml");
+
+						// Ensure that the name is valid.
+						if(startsWithXml)
+						{
+							throw new ArgumentException(/* TODO */);
+						}
+
+						// Handle the start of the special attribute.
+						SpecialAttributeStart(localName);
+					}
+					else if(prefixLen == 3 && prefix == "xml")
+					{
+						// Ensure the namespace is correct.
+						if(nsLen != 0 &&
+						   (nsLen != 36 ||
+						    ns != "http://www.w3.org/XML/1998/namespace"))
+						{
+							throw new ArgumentException(/* TODO */);
+						}
+
+						// Get the length of the local name.
+						int nameLen =
+							(((Object)localName) == null ? 0 : localName.Length);
+
+						// Set the special based on the local name.
+						if(nameLen == 4 && localName == "lang")
+						{
+							// Handle the start of the special attribute.
+							SpecialAttributeStart(false);
+						}
+						else if(nameLen == 5 && localName == "space")
+						{
+							// Handle the start of the special attribute.
+							SpecialAttributeStart(true);
+						}
+					}
+					else if(nsLen != 0)
+					{
+						// Get the current mapping for the namespace.
+						String currMapping = LookupPrefix(ns);
+
+						// Ensure the correct mapping is in scope.
+						if(currMapping != prefix)
+						{
+							// Add the mapping to the namespace manager.
+							namespaceManager.AddNamespace(prefix, ns);
+
+							// Write the namespace declaration.
+							writer.Write("xmlns:");
 							writer.Write(prefix);
-							writer.Write(':');
+							writer.Write('=');
+							writer.Write(quoteChar);
+							WriteQuotedString(ns);
+							writer.Write(quoteChar);
+							writer.Write(' ');
 						}
 					}
 					else
 					{
-						writer.Write("xmlns");
-						writer.Write('=');
-						writer.Write(quoteChar);
-						WriteQuotedString(ns);
-						writer.Write(quoteChar);
-						writer.Write(' ');
+						// Lookup the namespace for the given prefix.
+						ns = namespaceManager.LookupNamespace(prefix);
+
+						// Ensure we have a namespace for the given prefix.
+						if(((Object)ns) == null || ns.Length == 0)
+						{
+							throw new ArgumentException(/* TODO */);
+						}
 					}
+
+					// Write the prefix.
+					writer.Write(prefix);
+					writer.Write(':');
 				}
-				else if(((Object)prefix) != null && prefix != String.Empty)
+				else if(nsLen != 0)
 				{
-					// We were only given a prefix, so output it directly.
-					if(prefix != scope.prefix)
+					if(((Object)localName) != null &&
+					   (localName.Length == 5 && localName == "xmlns"))
 					{
+						// Ensure the namespace is correct.
+						if(nsLen != 29 || ns != "http://www.w3.org/2000/xmlns/")
+						{
+							throw new ArgumentException(/* TODO */);
+						}
+
+						// Handle the start of the special attribute.
+						SpecialAttributeStart(String.Empty);
+					}
+					else if(nsLen == 29 &&
+					        ns == "http://www.w3.org/2000/xmlns/")
+					{
+						throw new ArgumentException(/* TODO */);
+					}
+					else if(nsLen == 36 &&
+					        ns == "http://www.w3.org/XML/1998/namespace")
+					{
+						throw new ArgumentException(/* TODO */);
+					}
+					else
+					{
+						// We were only given a namespace, so find the prefix.
+						prefix = LookupPrefix(ns);
+
+						// Ensure we have a prefix.
+						if(((Object)prefix) == null || prefix.Length == 0)
+						{
+							// Generate a prefix.
+							prefix = GeneratePrefix(ns);
+
+							// Write the namespace declaration for the prefix.
+							writer.Write("xmlns:");
+							writer.Write(prefix);
+							writer.Write('=');
+							writer.Write(quoteChar);
+							WriteQuotedString(ns);
+							writer.Write(quoteChar);
+							writer.Write(' ');
+						}
+
+						// Write the prefix.
 						writer.Write(prefix);
 						writer.Write(':');
 					}
 				}
-				else if(((Object)ns) != null && ns != String.Empty)
-				{
-					// We were only given a namespace, so find the prefix.
-					prefix = LookupPrefix(ns);
-					if(((Object)prefix) == null || prefix.Length == 0)
-					{
-						writer.Write("xmlns");
-						writer.Write('=');
-						writer.Write(quoteChar);
-						WriteQuotedString(ns);
-						writer.Write(quoteChar);
-						writer.Write(' ');
-					}
-				}
+
+				// Write the local name.
 				writer.Write(localName);
 
 				// Output the start of the attribute value.
@@ -1174,150 +1425,8 @@ public class XmlTextWriter : XmlWriter
 
 				// We are now in the attribute state.
 				writeState = System.Xml.WriteState.Attribute;
-
-				// Recognise special attributes.
-				if(prefix == "xml")
-				{
-					if(localName == "lang")
-					{
-						special = Special.Lang;
-					}
-					else if(localName == "space")
-					{
-						special = Special.Space;
-					}
-					else
-					{
-						special = Special.None;
-					}
-				}
-				else
-				{
-					special = Special.None;
-				}
 			}
 
-	// this is sorta a non-spec hack to get namespaces declared from within attributes
-	// to be added to the namespaceManager
-	internal override void WriteStartAttribute(String prefix, String localName,
-										     String ns , String value, bool flagNS)
-			{
-				// heres the hack
-				if((Object)value != null && value != String.Empty && flagNS == true)
-				{
-						// add the namespace and prefix to namespaceManager
-						namespaceManager.AddNamespace(localName, value);
-				}
-				
-				// Validate the parameters.
-				if(!namespaces &&
-				   (((Object)prefix) != null || ((Object)ns) != null))
-				{
-					throw new ArgumentException
-						(S._("Xml_NamespacesNotSupported"));
-				}
-
-				// Check the state and output delimiters.
-				if(writeState == System.Xml.WriteState.Attribute)
-				{
-					writer.Write(quoteChar);
-					writer.Write(' ');
-				}
-				else if(writeState == System.Xml.WriteState.Element)
-				{
-					writer.Write(' ');
-				}
-				else if(writeState == System.Xml.WriteState.Closed)
-				{
-					throw new InvalidOperationException
-						(S._("Xml_InvalidWriteState"));
-				}
-
-				// Output the name of the attribute, with appropriate prefixes.
-				if(((Object)prefix) != null && prefix.Length != 0 &&
-				   ((Object)ns) != null && ns.Length != 0)
-				{
-					// We need to associate a prefix with a namespace.
-					String currMapping = LookupPrefix(ns);
-					if(currMapping == prefix)
-					{
-						// The prefix is already mapped to this URI.
-						if(prefix != scope.prefix)
-						{
-							writer.Write(prefix);
-							writer.Write(':');
-						}
-					}
-					else
-					{
-						// Create a new pseudo-prefix for the URI.
-						writer.Write("xmlns");
-						writer.Write('=');
-						writer.Write(quoteChar);
-						WriteQuotedString(ns);
-						writer.Write(quoteChar);
-						writer.Write(' ');
-					}
-				}
-				else if(((Object)prefix) != null && prefix.Length != 0)
-				{
-					// We were only given a prefix, so output it directly.
-					if(prefix != scope.prefix)
-					{
-						writer.Write(prefix);
-						writer.Write(':');
-					}
-				}
-				else if(((Object)ns) != null && ns.Length != 0)
-				{
-					// We were only given a namespace, so find the prefix.
-					prefix = LookupPrefix(ns);
-					if(((Object)prefix) == null || prefix.Length == 0)
-					{
-						// Create a new pseudo-prefix for the URI.
-						writer.Write("xmlns");
-						writer.Write('=');
-						writer.Write(quoteChar);
-						WriteQuotedString(ns);
-						writer.Write(quoteChar);
-						writer.Write(' ');
-						writer.Write(prefix);
-						writer.Write(':');
-					}
-				}
-				writer.Write(localName);
-
-				// Output the start of the attribute value.
-				writer.Write('=');
-				writer.Write(quoteChar);
-
-				// We are now in the attribute state.
-				writeState = System.Xml.WriteState.Attribute;
-
-				// Recognise special attributes.
-				if(prefix == "xml")
-				{
-					if(localName == "lang")
-					{
-						special = Special.Lang;
-					}
-					else if(localName == "space")
-					{
-						special = Special.Space;
-					}
-					else
-					{
-						special = Special.None;
-					}
-				}
-				else
-				{
-					special = Special.None;
-				}
-
-			}
-
-	
 	// Write the start of an XML document.
 	public override void WriteStartDocument(bool standalone)
 			{
@@ -1618,39 +1727,12 @@ public class XmlTextWriter : XmlWriter
 				// We must not be in the closed state.
 				if(writeState == System.Xml.WriteState.Closed)
 				{
-					if(text != null && text.Length != 0)
+					if(((Object)text) != null && text.Length != 0)
 					{
 						throw new InvalidOperationException
 							(S._("Xml_InvalidWriteState"));
 					}
 					return;
-				}
-
-				// If we are in the attribute state, then check
-				// for the "xml:lang" and "xml:space" attributes.
-				if(writeState == System.Xml.WriteState.Attribute)
-				{
-					if(special == Special.Lang)
-					{
-						xmlLang = text;
-						special = Special.None;
-					}
-					else if(special == Special.Space)
-					{
-						if(text == "default")
-						{
-							xmlSpace = System.Xml.XmlSpace.Default;
-						}
-						else if(text == "preserve")
-						{
-							xmlSpace = System.Xml.XmlSpace.Preserve;
-						}
-						else
-						{
-							xmlSpace = System.Xml.XmlSpace.None;
-						}
-						special = Special.None;
-					}
 				}
 
 				// If we are in the element state, then shift to content.
@@ -1853,12 +1935,114 @@ public class XmlTextWriter : XmlWriter
 		public ElementScope next;		// The next higher scope.
 		public String xmlns;			// Xmlnamespace in scope.
 		public bool indent;				// flag that surrounding element needs DoIndent on end
+		public int genPrefixCount;      // The count of generated prefixes.
 		public ElementScope(ElementScope next)
 				{
 					this.next = next;
 				}
 
 	}; // class ElementScope
+
+	// Class that keeps track of special attribute values, on output, as needed.
+	private sealed class SpecialWriter : TextWriter
+	{
+		// Internal state.
+		private StringBuilder builder;
+		private TextWriter    writer;
+
+
+		// Constructor.
+		public SpecialWriter(TextWriter writer)
+				: base()
+				{
+					this.builder = new StringBuilder();
+					this.writer = writer;
+				}
+
+
+		// Get the attribute value.
+		public String AttributeValue
+				{
+					get { return builder.ToString(); }
+				}
+
+		// Get the attribute value builder.
+		public StringBuilder Builder
+				{
+					get { return builder; }
+				}
+
+		// Get the encoding for this writer.
+		public override Encoding Encoding
+				{
+					get
+					{
+						if(writer == null) { return null; }
+						return writer.Encoding;
+					}
+				}
+
+		// Get the text writer.
+		public TextWriter Writer
+				{
+					get { return writer; }
+				}
+
+
+		// Close this writer.
+		public override void Close()
+				{
+					Dispose(false);
+				}
+
+		// Dispose of this writer.
+		protected override void Dispose(bool disposing)
+				{
+					if(writer != null)
+					{
+						if(disposing)
+						{
+							((IDisposable)writer).Dispose();
+						}
+						else
+						{
+							writer.Close();
+						}
+						builder = null;
+						writer = null;
+					}
+				}
+
+		// Reset the attribute value builder.
+		public void ResetBuilder()
+				{
+					builder.Length = 0;
+				}
+
+		// Write values to this writer.
+		public override void Write(String value)
+				{
+					if(((Object)value) != null)
+					{
+						writer.Write(value);
+						builder.Append(value);
+					}
+				}
+		public override void Write(char[] buffer, int index, int count)
+				{
+					if(count > 0)
+					{
+						writer.Write(buffer, index, count);
+						builder.Append(buffer, index, count);
+					}
+				}
+		public override void Write(char ch)
+				{
+					writer.Write(ch);
+					builder.Append(ch);
+				}
+
+	}; // class SpecialWriter
 
 }; // class XmlTextWriter
 

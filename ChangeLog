@@ -1,3 +1,11 @@
+
+2003-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Collections/Specialized/NameObjectCollectionBase.cs,
+	System/Collections/Specialized/StringCollection.cs,
+	System/Collections/Specialized/StringDictionary.cs:
+	signature-compatibility fixes in "System.Collections.Specialized".
+
 2003-09-04  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
@@ -18,7 +26,6 @@
 	* System.Drawing/Bitmap.cs, System.Drawing/Image.cs,
 	System.Drawing/Region.cs,System.Drawing/Imaging/PropertyItem.cs: minor
 	warning fixes.
-
 
 2003-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -2,7 +2,7 @@
  * StringCollection.cs - Implementation of
  *		"System.Collections.Specialized.StringCollection".
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ public class StringCollection : IList, ICollection, IEnumerable
 					return false;
 				}
 			}
-	public bool IsReadOnly
+	bool IList.IsReadOnly
 			{
 				get
 				{
@@ -134,6 +134,15 @@ public class StringCollection : IList, ICollection, IEnumerable
 				get
 				{
 					return list;
+				}
+			}
+
+	// Determine if this collection is read-only.
+	public bool IsReadOnly
+			{
+				get
+				{
+					return false;
 				}
 			}
 

@@ -102,7 +102,7 @@ abstract class NameObjectCollectionBase
 					return new KeysCollection(this);
 				}
 			}
-	protected virtual bool IsReadOnly
+	protected bool IsReadOnly
 			{
 				get
 				{

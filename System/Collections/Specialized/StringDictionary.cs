@@ -2,7 +2,7 @@
  * StringDictionary.cs - Implementation of
  *		"System.Collections.Specialized.StringDictionary".
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,11 @@ namespace System.Collections.Specialized
 
 using System;
 using System.Collections;
+using System.ComponentModel.Design.Serialization;
 
+#if CONFIG_COMPONENT_MODEL_DESIGN
+[DesignerSerializer("System.Diagnostics.Design.StringDictionaryCodeDomSerializer, System.Design", "System.ComponentModel.Design.Serialization.CodeDomSerializer, System.Design")]
+#endif
 public class StringDictionary : IEnumerable
 {
 	// Internal state.
@@ -79,7 +83,7 @@ public class StringDictionary : IEnumerable
 			}
 
 	// Get the synchronization root for this string dictionary.
-	public Object SyncRoot
+	public virtual Object SyncRoot
 			{
 				get
 				{
@@ -133,7 +137,7 @@ public class StringDictionary : IEnumerable
 			}
 
 	// Remove a member with a specific key from this string dictionary.
-	public void Remove(String key)
+	public virtual void Remove(String key)
 			{
 				hash.Remove(key);
 			}

@@ -9,6 +9,9 @@
 	cscc/c/c_invoke.tc, cscc/c/c_library.c: remove the remaining
 	references to the obsolete "OpenSystem.C.LongDouble" type.
 
+	* cscc/c/c_declspec.c: the type "__native__ int" was not being
+	properly recognised.
+
 2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_typeout.c, cscc/c/c_types.c, doc/c_language_abi.html:

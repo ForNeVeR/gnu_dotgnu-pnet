@@ -419,6 +419,10 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						result.baseType = ILType_Int;
 						okSpecifiers = C_SPEC_SIGNED | C_SPEC_NATIVE;
 					}
+					else
+					{
+						okSpecifiers = C_SPEC_NATIVE;
+					}
 				}
 				break;
 

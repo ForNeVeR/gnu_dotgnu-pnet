@@ -1,4 +1,10 @@
 
+2001-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/TODOAttribute.cs: add the internal "TODO" attribute class
+to the code to make it easier to tag code that is still to be completed,
+and which can be scanned by automated code tools.
+
 2001-12-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Arg.txt,

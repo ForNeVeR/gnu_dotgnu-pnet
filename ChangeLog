@@ -19,6 +19,12 @@
 	runtime/System/Runtime/Serialization/FormatterServices.cs:
 	serialization support for reflection classes.
 
+	* runtime/System/UnitySerializationHolder.cs,
+	runtime/System/Reflection/Assembly.cs,
+	runtime/System/Reflection/Module.cs,
+	runtime/System/Runtime/Serialization/FormatterServices.cs:
+	serialization support for assemblies and modules.
+
 2003-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

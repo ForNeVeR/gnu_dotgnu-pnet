@@ -91,9 +91,9 @@ internal class UnitySerializationHolder : ISerializable, IObjectReference
 			}
 
 	// Implement the IObjectReference interface.
-	[TODO]
 	public Object GetRealObject(StreamingContext context)
 			{
+				Assembly assem;
 				switch(type)
 				{
 					case UnityType.Empty:		return Empty.Value;
@@ -112,18 +112,60 @@ internal class UnitySerializationHolder : ISerializable, IObjectReference
 						{
 							return Type.GetType(data);
 						}
-						Type type = FormatterServices.GetTypeFromAssembly
-							(assembly, data);
-						if(type != null)
+						assem = FormatterServices.GetAssemblyByName(assembly);
+						if(assem == null)
 						{
-							return type;
+							throw new SerializationException
+								(_("Serialize_StateMissing"));
+						}
+						Type clrType =
+							FormatterServices.GetTypeFromAssembly(assem, data);
+						if(clrType != null)
+						{
+							return clrType;
 						}
 						throw new SerializationException
 							(_("Serialize_StateMissing"));
 					}
 					// Not reached.
 
-					// TODO: other unity types
+					case UnityType.Module:
+					{
+						assem = FormatterServices.GetAssemblyByName(assembly);
+						if(assem == null)
+						{
+							throw new SerializationException
+								(_("Serialize_StateMissing"));
+						}
+						try
+						{
+							Module module = assem.GetModule(data);
+							if(module == null)
+							{
+								throw new SerializationException
+									(_("Serialize_StateMissing"));
+							}
+							return module;
+						}
+						catch(Exception)
+						{
+							throw new SerializationException
+								(_("Serialize_StateMissing"));
+						}
+					}
+					// Not reached.
+
+					case UnityType.Assembly:
+					{
+						assem = FormatterServices.GetAssemblyByName(data);
+						if(assem == null)
+						{
+							throw new SerializationException
+								(_("Serialize_StateMissing"));
+						}
+						return assem;
+					}
+					// Not reached.
 
 					default:
 						throw new ArgumentException

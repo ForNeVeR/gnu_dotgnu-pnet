@@ -615,7 +615,6 @@ public class Assembly : IClrProgramItem
 #if CONFIG_SERIALIZATION
 
 	// Serialize this object.
-	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
 			{
@@ -623,7 +622,9 @@ public class Assembly : IClrProgramItem
 				{
 					throw new ArgumentNullException("info");
 				}
-				// TODO
+				UnitySerializationHolder.Serialize
+					(info, UnitySerializationHolder.UnityType.Assembly,
+					 FullName, this);
 			}
 
 #endif // CONFIG_SERIALIZATION

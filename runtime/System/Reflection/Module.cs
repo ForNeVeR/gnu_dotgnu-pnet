@@ -225,7 +225,6 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 #if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this module.
-	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
 							  		  StreamingContext context)
 			{
@@ -233,7 +232,9 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 				{
 					throw new ArgumentNullException("info");
 				}
-				// TODO
+				UnitySerializationHolder.Serialize
+					(info, UnitySerializationHolder.UnityType.Module,
+					 ScopeName, Assembly);
 			}
 
 #endif // CONFIG_SERIALIZATION

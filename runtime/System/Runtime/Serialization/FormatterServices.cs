@@ -154,6 +154,20 @@ public sealed class FormatterServices
 				return members;
 			}
 
+	// Get an assembly by name.
+	internal static Assembly GetAssemblyByName(String assem)
+			{
+				try
+				{
+					Assembly assembly = Assembly.Load(assem);
+					return assembly;
+				}
+				catch(Exception)
+				{
+					return null;
+				}
+			}
+
 	// Get a named type from a specific assembly
 	[SecurityPermission(SecurityAction.LinkDemand,
 						Flags=SecurityPermissionFlag.SerializationFormatter)]
@@ -165,18 +179,6 @@ public sealed class FormatterServices
 					throw new ArgumentNullException("assem");
 				}
 				return assem.GetType(name);
-			}
-	internal static Type GetTypeFromAssembly(String assem, String name)
-			{
-				try
-				{
-					Assembly assembly = Assembly.Load(assem);
-					return assembly.GetType(name);
-				}
-				catch(Exception)
-				{
-					return null;
-				}
 			}
 
 	// Get an uninitialized instance from the runtime engine.

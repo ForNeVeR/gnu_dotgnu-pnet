@@ -81,17 +81,6 @@ void ILDAsmDumpGlobal(ILImage *image, FILE *outstream, int flags);
 void ILDAsmDumpClasses(ILImage *image, FILE *outstream, int flags);
 
 /*
- * Dump the constant value associated with a program item.
- */
-void ILDAsmDumpConstant(ILImage *image, FILE *outstream,
-						ILProgramItem *item, int flags);
-
-/*
- * Dump the contents of a UCS-2 string buffer.
- */
-void ILDAsmDumpString(FILE *outstream, const char *str, unsigned long len);
-
-/*
  * Dump the security information associated with a program item.
  */
 void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,

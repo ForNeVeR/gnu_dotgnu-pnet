@@ -24,12 +24,13 @@ namespace System.Globalization
 #if !ECMA_COMPAT
 
 using System;
-using System.Private;
+using System.Text;
 
 public class RegionInfo
 {
-	// Internal state.
-	private RegionName regionName;
+	// Internal state.  Points to a "RegionInfo" object that
+	// is allocated by the I18N routines.
+	private RegionInfo regionInfo;
 
 	// The current region.
 	private static RegionInfo currentRegion;
@@ -37,7 +38,17 @@ public class RegionInfo
 	// Constructors.
 	public RegionInfo(int culture)
 			{
-				regionName = RegionNameTable.GetNameInfoByID(culture, true);
+				// The I18N routines use -1 to tell this class
+				// not to perform a recursive region lookup.
+				if(culture != -1)
+				{
+					regionInfo = (RegionInfo)
+						(Encoding.InvokeI18N("GetRegion", culture));
+					if(regionInfo == null)
+					{
+						throw new ArgumentException(_("Arg_InvalidRegion"));
+					}
+				}
 			}
 	public RegionInfo(String name)
 			{
@@ -45,7 +56,12 @@ public class RegionInfo
 				{
 					throw new ArgumentNullException("name");
 				}
-				regionName = RegionNameTable.GetNameInfoByName(name, true);
+				regionInfo = (RegionInfo)
+					(Encoding.InvokeI18N("GetRegion", name));
+				if(regionInfo == null)
+				{
+					throw new ArgumentException(_("Arg_InvalidRegion"));
+				}
 			}
 
 	// Get the region for the current culture.
@@ -70,67 +86,63 @@ public class RegionInfo
 			{
 				get
 				{
-					return regionName.currencySymbol;
+					return regionInfo.CurrencySymbol;
 				}
 			}
 	public virtual String DisplayName
 			{
 				get
 				{
-					// The "DisplayName" returns the name of the region
-					// in the installation language, not the current locale.
-					// In our system, the installation language is always
-					// going to be English.
-					return regionName.englishName;
+					return regionInfo.DisplayName;
 				}
 			}
 	public virtual String EnglishName
 			{
 				get
 				{
-					return regionName.englishName;
+					return regionInfo.EnglishName;
 				}
 			}
 	public virtual bool IsMetric
 			{
 				get
 				{
-					return regionName.isMetric;
+					return regionInfo.IsMetric;
 				}
 			}
 	public virtual String ISOCurrencySymbol
 			{
 				get
 				{
-					return regionName.isoCurrencySymbol;
+					return regionInfo.ISOCurrencySymbol;
 				}
 			}
 	public virtual String Name
 			{
 				get
 				{
-					return regionName.name;
+					return regionInfo.Name;
 				}
 			}
 	public virtual String ThreeLetterISORegionName
 			{
 				get
 				{
-					return regionName.threeLetterISOName;
+					return regionInfo.ThreeLetterISORegionName;
 				}
 			}
 	public virtual String ThreeLetterWindowsRegionName
 			{
 				get
 				{
-					return regionName.threeLetterWindowsName;
+					return regionInfo.ThreeLetterWindowsRegionName;
 				}
 			}
 	public virtual String TwoLetterISORegionName
 			{
 				get
 				{
-					return regionName.twoLetterISOName;
+					return regionInfo.TwoLetterISORegionName;
 				}
 			}
 
@@ -140,8 +152,7 @@ public class RegionInfo
 				RegionInfo other = (obj as RegionInfo);
 				if(other != null)
 				{
-					return (regionName.regionID ==
-							other.regionName.regionID);
+					return regionInfo.Equals(other.regionInfo);
 				}
 				else
 				{
@@ -152,13 +163,13 @@ public class RegionInfo
 	// Get the hash code for this object.
 	public override int GetHashCode()
 			{
-				return regionName.regionID;
+				return regionInfo.GetHashCode();
 			}
 
 	// Convert this region into a string.
 	public override String ToString()
 			{
-				return regionName.threeLetterISOName;
+				return ThreeLetterISORegionName;
 			}
 
 }; // class RegionInfo

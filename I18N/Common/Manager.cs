@@ -258,6 +258,34 @@ public class Manager
 				return cultures;
 			}
 
+	// Get region information for an identifier or name.
+	public RegionInfo GetRegion(int culture)
+			{
+				RegionName regionName;
+				regionName = RegionNameTable.GetNameInfoByID(culture);
+				if(regionName != null)
+				{
+					return new RegionData(regionName);
+				}
+				else
+				{
+					return null;
+				}
+			}
+	public RegionInfo GetRegion(String name)
+			{
+				RegionName regionName;
+				regionName = RegionNameTable.GetNameInfoByName(name);
+				if(regionName != null)
+				{
+					return new RegionData(regionName);
+				}
+				else
+				{
+					return null;
+				}
+			}
+
 #endif // !ECMA_COMPAT
 
 	// Instantiate a handler class.  Returns null if it is not

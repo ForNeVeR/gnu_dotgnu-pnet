@@ -1,4 +1,13 @@
 
+2003-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* I18N/Common/Manager.cs, I18N/Common/RegionData.cs,
+	I18N/Common/RegionName.cs, I18N/Common/RegionNameTable.cs,
+	runtime/System/Globalization/RegionInfo.cs,
+	runtime/System/Private/RegionName.cs,
+	runtime/System/Private/RegionNameTable.cs: move the region
+	name table into the I18N assembly.
+
 2003-05-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ListChangedEventHandler.cs: correct a

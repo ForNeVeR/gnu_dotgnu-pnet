@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Private
+namespace I18N.Common
 {
 
 #if !ECMA_COMPAT
@@ -490,7 +490,7 @@ internal sealed class RegionNameTable
 			}
 
 	// Get the name information for a specific region, by name.
-	public static RegionName GetNameInfoByName(String name, bool throwOnError)
+	public static RegionName GetNameInfoByName(String name)
 			{
 				// Create the region name table.
 				CreateNameTable();
@@ -507,15 +507,11 @@ internal sealed class RegionNameTable
 				}
 
 				// Could not find the region.
-				if(throwOnError)
-				{
-					throw new ArgumentException(_("Arg_InvalidRegion"));
-				}
 				return null;
 			}
 
 	// Get the name information for a specific region, by identifier.
-	public static RegionName GetNameInfoByID(int regionID, bool throwOnError)
+	public static RegionName GetNameInfoByID(int regionID)
 			{
 				// Create the region name table.
 				CreateNameTable();
@@ -532,10 +528,6 @@ internal sealed class RegionNameTable
 				}
 
 				// Could not find the region.
-				if(throwOnError)
-				{
-					throw new ArgumentException(_("Arg_InvalidRegion"));
-				}
 				return null;
 			}
 
@@ -543,4 +535,4 @@ internal sealed class RegionNameTable
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.Private
+}; // namespace I18N.Common

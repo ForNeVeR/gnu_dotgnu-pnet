@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Private
+namespace I18N.Common
 {
 
 #if !ECMA_COMPAT
@@ -61,4 +61,4 @@ internal sealed class RegionName
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.Private
+}; // namespace I18N.Common

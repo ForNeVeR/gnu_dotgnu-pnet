@@ -17,6 +17,11 @@ correctly in "AssignCompatible"; pass the unsafe mode flag to
 * image/member.c: nested classes can access private members within
 their nesting parents.
 
+* engine/asmfix.c: replace "incl %esi" with "addl $1, %esi", because
+Intel's performance guidelines suggest that increment instructions
+should be avoided.  This does produce a slight improvement in engine
+performance.
+
 2001-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * tests/Makefile.am, tests/ilunit.c, tests/test_varith.c,

@@ -636,6 +636,13 @@ static void optimizeCode(void)
 							break;
 						}
 					}
+					else if(!StrNCmp(lines[startLine], "\tincl\t%e", 8))
+					{
+						/* Intel performance documentation suggests that
+						   "inc" should be avoided in favour of "add" */
+						fputs("\taddl\t$1, %esi\n", stdout);
+						++startLine;
+					}
 					else
 					{
 						/* Ordinary inlinable line */
@@ -649,6 +656,13 @@ static void optimizeCode(void)
 				/* Jump to somewhere that cannot be inlined */
 				fputs(lines[line], stdout);
 			}
+			++line;
+		}
+		else if(!StrNCmp(lines[line], "\tincl\t%esi", 10))
+		{
+			/* Intel performance documentation suggests that
+			   "inc" should be avoided in favour of "add" */
+			fputs("\taddl\t$1, %esi\n", stdout);
 			++line;
 		}
 		else

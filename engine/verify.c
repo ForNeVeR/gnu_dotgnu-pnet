@@ -489,7 +489,11 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILException *exceptions;
 	ILException *exception;
 	int hasRethrow;
+#ifdef IL_CONFIG_DEBUG_LINES
 	int haveDebug = ILDebugPresent(ILProgramItem_Image(method));
+#else
+	int haveDebug = 0;
+#endif
 
 	/* Include local variables that are required by the include files */
 #define IL_VERIFY_LOCALS

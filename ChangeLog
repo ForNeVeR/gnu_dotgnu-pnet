@@ -25,6 +25,9 @@
 	* engine/cvm_except.c: do not fetch the stack trace if reflection
 	or debug line information has been disabled.
 
+	* engine/verify.c: do not call "ILDebugPresent" if debug line
+	information has been disabled.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2003  Neil Cawse.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +60,6 @@ public class Control : IWin32Window, IDisposable
 	// Outside bounds of the control including windows decorations
 	// in the case of forms and non client areas
 	private int left, top, width, height;
-	private int prevParentWidth, prevParentHeight;
 	internal String text;
 	private String name;
 	private HookedEvent hookedEvents;
@@ -74,6 +74,8 @@ public class Control : IWin32Window, IDisposable
 	internal Color foreColor;
 	private Font font;
 	private Image backgroundImage;
+	private bool layoutInitSuspended;
+	private int prevParentWidth, prevParentHeight;
 	private byte anchorStyles;
 	private byte dockStyle;
 	private byte imeMode;
@@ -203,6 +205,7 @@ public class Control : IWin32Window, IDisposable
 				this.name = String.Empty;
 				this.enabled = true;
 				this.visible = true;
+				this.layoutInitSuspended = false;
 				this.anchorStyles =
 					(byte)(AnchorStyles.Top | AnchorStyles.Left);
 				this.causesValidation = true;
@@ -2388,11 +2391,18 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(parent != null && Dock == DockStyle.None)
 				{
-					// Record the current width and height of the parent
-					// control so that we can reposition during layout later.
-					Rectangle rect = parent.DisplayRectangle;
-					prevParentWidth = rect.Width;
-					prevParentHeight = rect.Height;
+					if(layoutSuspended <= 0)
+					{
+						// Record the current width and height of the parent
+						// control so that we can reposition during layout later.
+						Rectangle rect = parent.DisplayRectangle;
+						prevParentWidth = rect.Width;
+						prevParentHeight = rect.Height;
+					}
+					else
+					{
+						layoutInitSuspended = true;
+					}
 				}
 			}
 
@@ -2627,7 +2637,7 @@ public class Control : IWin32Window, IDisposable
 
 				// If our height is less than the height of an empty control, then we have probably been minimized and we must not layout.
 				Size offset = ClientToBounds(Size.Empty);
-				if (height < offset.Height)
+				if(height < offset.Height)
 				{
 					return;
 				}
@@ -2639,8 +2649,8 @@ public class Control : IWin32Window, IDisposable
 				top = rect.Top;
 				bottom = rect.Bottom;
 
-				// Lay out the docked controls, from first to last 
-				for(posn = 0 ; posn < numChildren ; posn++)
+				// Lay out the docked controls, from first to last
+				for(posn = numChildren - 1; posn >= 0; --posn)
 				{
 					child = children[posn];
 					switch(child.Dock)
@@ -2653,7 +2663,7 @@ public class Control : IWin32Window, IDisposable
 								(left, top, right - left, child.Height);
 							top += child.Height;
 						}
-							break;
+						break;
 
 						case DockStyle.Bottom:
 						{
@@ -2662,7 +2672,7 @@ public class Control : IWin32Window, IDisposable
 								(left, bottom - temp, right - left, temp);
 							bottom -= child.Height;
 						}
-							break;
+						break;
 
 						case DockStyle.Left:
 						{
@@ -2670,7 +2680,7 @@ public class Control : IWin32Window, IDisposable
 								(left, top, child.Width, bottom - top);
 							left += child.Width;
 						}
-							break;
+						break;
 
 						case DockStyle.Right:
 						{
@@ -2679,14 +2689,14 @@ public class Control : IWin32Window, IDisposable
 								(right - temp, top, temp, bottom - top);
 							right -= child.Width;
 						}
-							break;
+						break;
 
 						case DockStyle.Fill:
 						{
 							child.SetBounds
 								(left, top, right - left, bottom - top);
 						}
-							break;
+						break;
 					}
 					if(child.Dock != DockStyle.None)
 					{
@@ -3046,6 +3056,11 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(layoutSuspended <= 0 || (--layoutSuspended) == 0)
 				{
+					if(layoutInitSuspended)
+					{
+						InitLayout();
+						layoutInitSuspended = false;
+					}
 					if(performLayout && !performingLayout)
 					{
 						PerformLayout();
@@ -4935,7 +4950,10 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnPaintBackground(PaintEventArgs e)
 			{
-				// Nothing to do here in this implementation.
+				using(Brush b = CreateBackgroundBrush())
+				{
+					e.Graphics.FillRectangle(b, DisplayRectangle);
+				}
 			}
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]

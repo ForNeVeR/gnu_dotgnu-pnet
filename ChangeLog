@@ -1,3 +1,15 @@
+2004-10-26  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Drawing/StringFormat.cs: fix default settings in
+	constructors and fix GenericDefault and GenericTypographic
+	properties.
+
+	* System.Drawing/Graphics.cs: add a new text layout calculator for
+	string drawing which handles a greater number of cases.
+
+	* System.Windows.Forms/Control.cs: implement OnPaintBackground and
+	defer anchoring information gathering during layout suspension until
+	layout resumption.
 
 2004-10-26  Carl-Adam Brengesjo <ca.brengesjo@telia.com>
 

@@ -38,11 +38,13 @@ public sealed class StringFormat
 	internal CharacterRange[] ranges;
 	private float firstTabOffset;
 	private float[] tabStops;
-	private static StringFormat genericDefault = new StringFormat();
-	private static StringFormat genericTypographic = new StringFormat();
+
 
 	// Constructors.
-	public StringFormat() {}
+	public StringFormat()
+			{
+				this.trimming = StringTrimming.Character;
+			}
 	public StringFormat(StringFormat format)
 			{
 				if(format == null)
@@ -63,18 +65,35 @@ public sealed class StringFormat
 	public StringFormat(StringFormatFlags options)
 			{
 				this.options = options;
+				this.trimming = StringTrimming.Character;
+				
 			}
 	public StringFormat(StringFormatFlags options, int language)
 			{
 				this.options = options;
 				this.language = language;
+				this.trimming = StringTrimming.Character;
 			}
+	private StringFormat(bool typographic)
+			{
+				if(typographic)
+				{
+					this.options = (StringFormatFlags.LineLimit |
+					                StringFormatFlags.NoClip);
+				}
+				else
+				{
+					this.trimming = StringTrimming.Character;
+				}
+			}
+
 
 	// Destructor.
 	~StringFormat()
 			{
 				// Nothing to do here in this implementation.
 			}
+
 
 	// Get or set this object's properties.
 	public StringAlignment Alignment
@@ -154,20 +173,15 @@ public sealed class StringFormat
 	// Get the generic default string format.
 	public static StringFormat GenericDefault
 			{
-				get
-				{
-					return genericDefault;
-				}
+				get { return new StringFormat(false); }
 			}
 
 	// Get the generic typographic string format.
 	public static StringFormat GenericTypographic
 			{
-				get
-				{
-					return genericTypographic;
-				}
+				get { return new StringFormat(true); }
 			}
+
 
 	// Clone this object.
 	public Object Clone()

@@ -2,6 +2,7 @@
  * Graphics.cs - Implementation of the "System.Drawing.Graphics" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  * Contributions from Thomas Fritzsche <tf@noto.de>.
  * Contributions from Neil Cawse.
  *
@@ -36,6 +37,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 {
 	// Internal state.
 	private IToolkitGraphics graphics;
+	private TextLayoutManager textLayoutManager;
 	private Region clip;
 	internal Matrix transform;
 	private float pageScale;
@@ -1478,17 +1480,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawString(String s, Font font, Brush brush,
 						   RectangleF layoutRectangle, StringFormat format)
 			{
-				// Bail out now if there's nothing to draw.
+				// bail out now if there's nothing to draw
 				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
 				{
 					return;
 				}
 
-				// get the text length
-				int len = ((((Object)s) == null) ? 0 : s.Length);
-
 				// bail out now if there's nothing to draw
-				if(len == 0) { return; }
+				if(((Object)s) == null || s.Length == 0) { return; }
 
 				// convert the layout into device coordinates
 				Point[] rect = ConvertRectangle
@@ -1511,42 +1510,21 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				// ensure we have a format and handle hotkey prefix hiding
-				if(format == null)
+				// ensure we have a text layout manager
+				if(textLayoutManager == null)
 				{
-					format = new StringFormat();
-				}
-				else if(format.HotkeyPrefix == HotkeyPrefix.Hide)
-				{
-					// get the index of the prefix
-					int hotkeyIndex = s.IndexOf('&');
-
-					// strip the hotkey prefix if present
-					if(hotkeyIndex != -1 && hotkeyIndex < (len - 1))
-					{
-						// strip the hotkey prefix
-						s = s.Substring(0, hotkeyIndex) +
-						    s.Substring(hotkeyIndex + 1);
-
-						// update the length
-						len -= 1;
-					}
+					textLayoutManager = new TextLayoutManager();
 				}
 
-				// lock this graphics context while drawing
+				// set the default temporary clip
+				Region clipTemp = null;
+
+				// draw the text
 				lock(this)
 				{
-					// select the font into this graphics context
-					SelectFont(font);
-
-					// select the brush into this graphics context
-					SelectBrush(brush);
-
-					// set the default clipping region
-					Region clipTemp = null;
-
 					// get the clipping region, if needed
-					if((format.FormatFlags & StringFormatFlags.NoClip) == 0)
+					if(format == null ||
+					   ((format.FormatFlags & StringFormatFlags.NoClip) == 0))
 					{
 						// get the clipping region, if there is one
 						if(clip != null)
@@ -1559,161 +1537,18 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						}
 					}
 
-					// declare the characters fitted and lines filled
-					int charactersFitted, linesFilled;
-
-					// measure the text to be drawn
-					Size size = ToolkitGraphics.MeasureString
-						(s, null, null, out charactersFitted, out linesFilled,
-						 false);
-
-					// determine if the text contains any new lines
-					bool containsNL =  (s.IndexOf('\n') >= 0);
-
-					// draw the text based on wrapping requirements
-					if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
-					   (size.Width >= deviceLayout.Width || containsNL))
+					// attempt to draw the text
+					try
 					{
-						// declare our drawing position calculator
-						StringDrawPositionCalculator calculator;
-
-						// create our drawing position calculator
-						calculator = new StringDrawPositionCalculator
-							(s, this, font, deviceLayout, format);
-
-						// layout the text, wrapping on word boundaries
-						calculator.LayoutByWords();
-
-						// draw the text with the given brush
-						calculator.Draw(brush);
+						// draw the text
+						textLayoutManager.Draw
+							(this, s, font, deviceLayout, format, brush);
 					}
-					else
+					finally
 					{
-						// get the x position for text layout
-						int x = rect[0].X;
-
-						// get the y position for text layout
-						int y = rect[0].Y;
-
-						// get the text alignment from the string format
-						StringAlignment alignment = format.Alignment;
-
-						// perform text alignment adjustments, if needed
-						if(alignment == StringAlignment.Center)
-						{
-							x += ((rect[1].X - x - (int)size.Width - 1) / 2);
-						}
-						else if(alignment == StringAlignment.Far)
-						{
-							x = rect[1].X - (int)size.Width - 1;
-						}
-
-						// get the line alignment from the string format
-						alignment = format.LineAlignment;
-
-						// perform line alignment adjustments, if needed
-						if(alignment == StringAlignment.Center)
-						{
-							y += ((rect[2].Y - y - (int)font.Height - 1) / 2);
-						}
-						else if(alignment == StringAlignment.Far)
-						{
-							y = rect[2].Y - (int)font.Height - 1;
-						}
-
-						// draw the text based on hotkey prefix showing
-						if(format.HotkeyPrefix == HotkeyPrefix.Show)
-						{
-							// get the index of the prefix
-							int hotkeyIndex = s.IndexOf('&');
-
-							// set the default before hotkey string
-							String before = null;
-
-							// set the default after hotkey string
-							String after = null;
-
-							// set the default hotkey string
-							String hotkey = null;
-
-							// set the strings based on hotkey position
-							if(hotkeyIndex != -1 && hotkeyIndex < (len - 1))
-							{
-								// get the before hotkey string
-								before = s.Substring(0, hotkeyIndex);
-
-								// get the after hotkey string, if needed
-								if(hotkeyIndex < (len - 2))
-								{
-									after = s.Substring(hotkeyIndex + 2);
-								}
-
-								// get the hotkey string
-								hotkey = s[hotkeyIndex+1].ToString();
-							}
-							else
-							{
-								// get the before hotkey string
-								before = s;
-							}
-
-							// draw the before hotkey string, if needed
-							if(before.Length != 0)
-							{
-								// draw the before hotkey string
-								ToolkitGraphics.DrawString
-									(before, x, y, format);
-							}
-
-							// draw the hotkey string, if needed
-							if(((Object)hotkey) != null)
-							{
-								// create the underline font
-								Font underline = new Font
-									(font, font.Style | FontStyle.Underline);
-
-								// get the width of the before hotkey string
-								float beforeWidth =
-										MeasureString(before, font).Width;
-
-								// select the underline font
-								SelectFont(underline);
-
-								// draw the hotkey string
-								ToolkitGraphics.DrawString
-									(hotkey, (x + (int)beforeWidth), y, format);
-
-								// draw the after hotkey string, if needed
-								if(((Object)after) != null)
-								{
-									// get the width of the hotkey string
-									float hotkeyWidth = 
-											MeasureString
-												(hotkey, underline).Width;
-
-									// make sure MeasureString didn't reset
-									// the font
-									SelectFont(font);
-
-									// draw the after hotkey string
-									ToolkitGraphics.DrawString
-										(after,
-										 (x + (int)(beforeWidth + hotkeyWidth)),
-										 y, format);
-								}
-
-							}
-						}
-						else
-						{
-							// draw the given text string
-							ToolkitGraphics.DrawString
-								(s, x, y, format);
-						}
+						// reset the clip
+						if(clipTemp != null) { Clip = clipTemp; }
 					}
-
-					// restore the clipping region
-					if(clipTemp != null) { Clip = clipTemp; }
 				}
 			}
 
@@ -4594,6 +4429,1337 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						 bits, bitsWidth, bitsHeight, color);
 				}
 			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#region    /* TextLayoutManager */
+
+	// Each span of characters we are measuring or drawing.
+	private sealed class CharSpan
+	{
+		// Publicly-accessible state.
+		public int start;
+		public int length;
+		public int pixelWidth;
+		public bool newline;
+
+
+		// Constructor.
+		public CharSpan()
+				{
+					this.start = 0;
+					this.length = 0;
+					this.pixelWidth = -1;
+					this.newline = false;
+				}
+
+
+		// Copy the values of this character span to the given span.
+		public void CopyTo(CharSpan span)
+				{
+					span.start = start;
+					span.length = length;
+					span.pixelWidth = pixelWidth;
+					span.newline = newline;
+				}
+
+		// Set the values of this character span.
+		public void Set(int start, int length, bool newline)
+				{
+					this.start = start;
+					this.length = length;
+					this.pixelWidth = -1;
+					this.newline = newline;
+				}
+
+	}; // class CharSpan
+
+
+
+	// Each span of a full line for center and bottom line justified text.
+	private struct LineSpan
+	{
+		// Publicly-accessible state.
+		public int start;
+		public int length;
+		public int pixelWidth;
+
+
+		// Constructor.
+		public LineSpan(int start, int length, int pixelWidth)
+				{
+					this.start = start;
+					this.length = length;
+					this.pixelWidth = pixelWidth;
+				}
+
+	}; // struct LineSpan
+
+
+
+	// Performs text layout for drawing and measuring calculations.
+	private sealed class TextLayoutManager
+	{
+		// Internal state.
+		private bool             onlyWholeLines;
+		private bool             prevIsNewLine;
+		private int              hotkeyIndex;
+		private int              lineHeight;
+		private int              lineNumber;
+		private int              lineSpaceUsedUp;
+		private int              nextIndex;
+		private Brush            brush;
+		private Font             font;
+		private Font             underlineFont;
+		private Graphics         graphics;
+		private IToolkitGraphics toolkitGraphics;
+		private Rectangle        layout;
+		private String           text;
+		private StringFormat     format;
+
+		private static readonly StringFormat SF_DEFAULT = StringFormat.GenericDefault;
+		private static readonly Point[] MEASURE_LAYOUT_RECT = new Point[0];
+
+
+		// Constructor.
+		public TextLayoutManager()
+				{
+					// nothing to do here
+				}
+
+
+		// Calculate whether a word wraps to a new line.
+		private void CheckForWrap(CharSpan span)
+				{
+					// bail out now if there's nothing to do
+					if(span.length == 0) { return; }
+
+					// reset the line space usage, if needed
+					if(span.newline) { lineSpaceUsedUp = 0; }
+
+					// get the first character of the span
+					char c = text[span.start];
+
+					// handle unwrappable span, if needed
+					if(c != ' ' &&
+					   ((format.FormatFlags & StringFormatFlags.NoWrap) == 0))
+					{
+						// get the width of the span
+						int width = GetSpanWidth(span);
+
+						// handle wrapping of span, as needed
+						if((lineSpaceUsedUp + width) > layout.Width)
+						{
+							// handle unwrappable span trimming, if needed
+							if(width > layout.Width)
+							{
+								// trim the span
+								span.length = TrimTextToChar
+									(span.start, span.length, layout.Width,
+									 out span.pixelWidth);
+
+								// update the text position
+								nextIndex = span.start + span.length;
+
+								// set the new line flag, if needed
+								if(lineNumber > 0) { span.newline = true; }
+
+								// set the previous span ended in new line flag
+								prevIsNewLine = true;
+
+								// we're done here
+								return;
+							}
+
+							// reset line space usage
+							lineSpaceUsedUp = 0;
+
+							// set the new line flag
+							span.newline = true;
+						}
+					}
+
+					// update line space usage
+					lineSpaceUsedUp += GetSpanWidth(span);
+				}
+
+		// Calculate and draw the string by drawing each line.
+		public void Draw
+					(Graphics graphics, String text, Font font,
+					 Rectangle drawLayout, StringFormat format, Brush brush)
+				{
+					// set the current graphics
+					this.graphics = graphics;
+
+					// set the current toolkit graphics
+					this.toolkitGraphics = graphics.ToolkitGraphics;
+
+					// set the current text
+					this.text = text;
+
+					// set the current font
+					this.font = font;
+
+					// set the current layout rectangle
+					this.layout = drawLayout;
+
+					// set the current brush
+					this.brush = brush;
+
+					// ensure we have a string format
+					if(format == null) { format = SF_DEFAULT; }
+
+					// set the current string format
+					this.format = format;
+
+					// set the default hotkey index
+					this.hotkeyIndex = -1;
+
+					// set the current line height
+					lineHeight = font.Height;
+
+					// set the only whole lines flag
+					onlyWholeLines = (((format.FormatFlags &
+					                    StringFormatFlags.LineLimit) != 0) ||
+					                  ((format.Trimming &
+					                    StringTrimming.None) != 0));
+
+					// set the index of the next character
+					nextIndex = 0;
+
+					// set the current line space usage
+					lineSpaceUsedUp = 0;
+
+					// set the current line number
+					lineNumber = 0;
+
+					// set the previous span ended in new line flag
+					prevIsNewLine = false;
+
+					// select the current font into the graphics context
+					graphics.SelectFont(font);
+
+					// select the current brush into the graphics context
+					graphics.SelectBrush(brush);
+
+					// set the current text start
+					int textStart = 0;
+
+					// set the current text length
+					int textLength = 0;
+
+					// set the current text width
+					int textWidth = 0;
+
+					// get the actual hotkey index, if needed
+					if(format.HotkeyPrefix != HotkeyPrefix.None)
+					{
+						// get the hotkey index
+						hotkeyIndex = text.IndexOf('&');
+
+						// handle the hotkey as needed
+						if(hotkeyIndex != -1)
+						{
+							if(hotkeyIndex >= (text.Length - 1) ||
+							   Char.IsControl(text[hotkeyIndex + 1]))
+							{
+								// no need for this anymore
+								hotkeyIndex = -1;
+							}
+							else
+							{
+								// remove the hotkey character
+								text = text.Substring(0, hotkeyIndex) +
+								       text.Substring(hotkeyIndex + 1);
+
+								// set the current text
+								this.text = text;
+
+								// prepare to show or hide the underline
+								if(format.HotkeyPrefix == HotkeyPrefix.Show)
+								{
+									// get the underline font
+									underlineFont = new Font
+										(font, font.Style | FontStyle.Underline);
+								}
+								else
+								{
+									// no need for this anymore
+									hotkeyIndex = -1;
+								}
+							}
+						}
+					}
+
+					// draw the text
+					try
+					{
+						// handle drawing based on line alignment
+						if(format.LineAlignment == StringAlignment.Near)
+						{
+							// set the current y position
+							int y = layout.Top;
+
+							// get the maximum y position
+							int maxY = layout.Bottom;
+
+							// adjust for whole lines, if needed
+							if(onlyWholeLines)
+							{
+								maxY -= ((maxY - y) % lineHeight);
+							}
+
+							// get the last line y position
+							int lastLineY = maxY - lineHeight;
+
+							// create character spans
+							CharSpan span = new CharSpan();
+							CharSpan prev = new CharSpan();
+
+							// set the first span flag
+							bool firstSpan = true;
+
+							// process the text
+							while(nextIndex < text.Length)
+							{
+								// get the next span of characters
+								GetNextSpan(span);
+
+								// draw the pending line, as needed
+								if(span.newline)
+								{
+									// draw the line, if needed
+									if(textWidth > 0)
+									{
+										// remove trailing spaces, if needed
+										if(!firstSpan && text[prev.start] == ' ')
+										{
+											// update text width
+											textWidth -= GetSpanWidth(prev);
+
+											// update text length
+											textLength -= prev.length;
+										}
+
+										// draw the line
+										DrawLine
+											(textStart, textLength, textWidth,
+											 y, (y > lastLineY));
+									}
+
+									// update the y position
+									y += lineHeight;
+
+									// update the line number
+									++lineNumber;
+
+									// update the text start
+									textStart = span.start;
+
+									// reset the text length
+									textLength = 0;
+
+									// reset the text width
+									textWidth = 0;
+								}
+
+								// update the text length
+								textLength += span.length;
+
+								// update the text width
+								textWidth += GetSpanWidth(span);
+
+								// copy span values to previous span
+								span.CopyTo(prev);
+
+								// set the first span flag
+								firstSpan = false;
+
+								// break if the y position is out of bounds
+								if(y > maxY) { break; }
+							}
+
+							// draw the last line, if needed
+							if(textWidth > 0 && y <= maxY)
+							{
+								// draw the last line
+								DrawLine
+									(textStart, textLength, textWidth, y,
+									 (y > lastLineY));
+							}
+						}
+						else
+						{
+							// set default lines to draw
+							int linesToDraw = 0;
+
+							// calculate lines to draw
+							if(onlyWholeLines)
+							{
+								linesToDraw = layout.Height / lineHeight;
+							} 
+							else
+							{
+								linesToDraw = (int)Math.Ceiling((double)layout.Height / lineHeight);
+							}
+
+							// create line span list
+							LineSpan[] lines = new LineSpan[linesToDraw];
+
+							// create character spans
+							CharSpan span = new CharSpan();
+							CharSpan prev = new CharSpan();
+
+							// set the first span flag
+							bool firstSpan = true;
+
+							// set the current line position
+							int linePos = 0;
+
+							// populate line span list
+							while(linePos < lines.Length &&
+							      nextIndex < text.Length)
+							{
+								// get the next span of characters
+								GetNextSpan(span);
+
+								// handle span on new line
+								if(span.newline)
+								{
+									// remove trailing spaces, if needed
+									if(!firstSpan && text[prev.start] == ' ')
+									{
+										// update text width
+										textWidth -= GetSpanWidth(prev);
+
+										// update text length
+										textLength -= prev.length;
+									}
+
+									// create line span for current line
+									LineSpan lineSpan = new LineSpan
+										(textStart, textLength, textWidth);
+
+									// add current line span to line span list
+									lines[linePos++] = lineSpan;
+
+									// update text start
+									textStart = span.start;
+
+									// update text length
+									textLength = 0;
+
+									// update text width
+									textWidth = 0;
+								}
+
+								// update text length
+								textLength += span.length;
+
+								// update text width
+								textWidth += GetSpanWidth(span);
+
+								// copy span values to previous span
+								span.CopyTo(prev);
+
+								// set the first span flag
+								firstSpan = false;
+							}
+
+							// add the last line to the line span list
+							if(linePos < lines.Length)
+							{
+								// create line span for last line
+								LineSpan lineSpan = new LineSpan
+									(textStart, textLength, textWidth);
+
+								// add last line span to the line span list
+								lines[linePos++] = lineSpan;
+							}
+
+							// calculate the top line y
+							int y = (layout.Height - (linePos * lineHeight));
+
+							// adjust y for center alignment, if needed
+							if(format.LineAlignment == StringAlignment.Center)
+							{
+								y /= 2;
+							}
+
+							// translate y to layout rectangle
+							y += layout.Top;
+
+							// adjust line position to last line
+							--linePos;
+
+							// draw the lines
+							for(int i = 0; i < linePos; ++i)
+							{
+								// get the current line
+								LineSpan line = lines[i];
+
+								// draw the current line
+								DrawLine
+									(line.start, line.length, line.pixelWidth,
+									 y, false);
+
+								// update the y position
+								y += lineHeight;
+							}
+
+							// draw the last line
+							DrawLine
+								(lines[linePos].start, lines[linePos].length,
+								 lines[linePos].pixelWidth, y, true);
+						}
+					}
+					finally
+					{
+						// dispose the underline font, if we have one
+						if(underlineFont != null)
+						{
+							// dispose the underline font
+							underlineFont.Dispose();
+
+							// reset the underline font
+							underlineFont = null;
+						}
+					}
+				}
+
+		// Draw a line.
+		private void DrawLine
+					(int start, int length, int width, int y, bool lastLine)
+				{
+					// set default x position
+					int x = 0;
+
+					// set truncate line flag
+					bool truncateLine = false;
+
+					// update the truncate line flag, as needed
+					if((lastLine && ((start + length) < text.Length)) ||
+					   ((width > layout.Width) &&
+					    ((format.FormatFlags & StringFormatFlags.NoWrap) != 0)))
+					{
+						truncateLine = true;
+					}
+
+					// handle no truncation case
+					if(!truncateLine)
+					{
+						// update x position
+						x = GetXPosition(width);
+
+						// draw the line
+						if(hotkeyIndex < start ||
+						   hotkeyIndex >= (start + length))
+						{
+							String s = text.Substring(start, length);
+							toolkitGraphics.DrawString(s, x, y, format);
+						}
+						else
+						{
+							DrawLineWithHotKey(text, start, length, x, y);
+						}
+
+						// we're done here
+						return;
+					}
+
+					// declare out variables
+					int cf, lf;
+
+					// set the default ellipsis
+					String ellipsis = null;
+
+					// set the maximum width
+					int maxWidth = layout.Width;
+
+					// 
+					if(format.Trimming == StringTrimming.EllipsisCharacter ||
+					   format.Trimming == StringTrimming.EllipsisWord ||
+					   format.Trimming == StringTrimming.EllipsisPath)
+					{
+						// set the ellipsis
+						ellipsis = " . . . ";
+
+						// update the maximum width, if needed
+						if(format.Trimming != StringTrimming.EllipsisPath)
+						{
+							// update the maximum width
+							maxWidth -= toolkitGraphics.MeasureString
+								(ellipsis, MEASURE_LAYOUT_RECT, format,
+								 out cf, out lf, false).Width;
+						}
+					}
+
+					// set the default draw string
+					String drawS = null;
+
+					// trim and draw the string
+					switch(format.Trimming)
+					{
+						case StringTrimming.None:
+						case StringTrimming.EllipsisCharacter:
+						case StringTrimming.Character:
+						{
+							// update length, if needed
+							if(width > maxWidth)
+							{
+								// update length
+								length = TrimTextToChar
+									(start, length, maxWidth, out width);
+							}
+
+							// set the draw string
+							drawS = text.Substring(start, length);
+
+							// update the draw string, if needed
+							if(ellipsis != null) { drawS += ellipsis; }
+
+							// update the x position
+							x = GetXPosition(width);
+
+							// draw the line
+							if(hotkeyIndex < start ||
+							   hotkeyIndex >= (start + length))
+							{
+								// draw the line
+								toolkitGraphics.DrawString(drawS, x, y, format);
+							}
+							else
+							{
+								// draw the line with hotkey underlining
+								DrawLineWithHotKey(drawS, 0, drawS.Length, x, y);
+							}
+						}
+						break;
+
+						case StringTrimming.EllipsisWord:
+						case StringTrimming.Word:
+						{
+							// set the draw string
+							drawS = text.Substring
+								(start,
+									TrimTextToWord
+										(start, length, maxWidth, out width));
+
+							// update the draw string, if needed
+							if(ellipsis != null) { drawS += ellipsis; }
+
+							// update the x position
+							x = GetXPosition(width);
+
+							// draw the line
+							if(hotkeyIndex < start ||
+							   hotkeyIndex >= (start + length))
+							{
+								// draw the line
+								toolkitGraphics.DrawString(drawS, x, y, format);
+							}
+							else
+							{
+								// draw the line with hotkey underlining
+								DrawLineWithHotKey(drawS, 0, drawS.Length, x, y);
+							}
+						}
+						break;
+
+						case StringTrimming.EllipsisPath:
+						{
+							// set the draw string
+							drawS = TrimToPath
+								(start, (text.Length - start), maxWidth,
+								 out width, ellipsis);
+
+							// update the x position
+							x = GetXPosition(width);
+
+							// draw the line
+							if(hotkeyIndex < start ||
+							   hotkeyIndex >= (start + length))
+							{
+								// draw the line
+								toolkitGraphics.DrawString(drawS, x, y, format);
+							}
+							else
+							{
+								// draw the line with hotkey underlining
+								DrawLineWithHotKey(drawS, 0, drawS.Length, x, y);
+							}
+						}
+						break;
+					}
+				}
+
+		// Draw a line containing hotkey text.
+		private void DrawLineWithHotKey
+					(String text, int start, int length, int x, int y)
+				{
+					// declare the out variables
+					int cf, lf;
+
+					// set the default text
+					String s = null;
+
+					// draw the pre-hotkey text
+					if(hotkeyIndex > start)
+					{
+						// get the pre-hotkey text
+						s = text.Substring(start, (hotkeyIndex - start));
+
+						// draw the pre-hotkey text
+						toolkitGraphics.DrawString(s, x, y, format);
+
+						// update the x position
+						x += toolkitGraphics.MeasureString
+							(s, MEASURE_LAYOUT_RECT, format, out cf, out lf,
+							 false).Width;
+					}
+
+					// get the hotkey text
+					s = text.Substring(hotkeyIndex, 1);
+
+					// select the underline font
+					graphics.SelectFont(underlineFont);
+
+					// draw the hotkey text
+					toolkitGraphics.DrawString(s, x, y, format);
+
+					// revert to the regular font
+					graphics.SelectFont(font);
+
+					// update the x position
+					x += toolkitGraphics.MeasureString
+						(s, MEASURE_LAYOUT_RECT, format, out cf, out lf,
+						 false).Width;
+
+					// draw the post-hotkey text
+					if(hotkeyIndex < ((start + length) - 1))
+					{
+						// get the start index of the post-hotkey text
+						int index = (hotkeyIndex + 1);
+
+						// get the length of the post-hotkey text
+						length -= (index - start);
+
+						// get the post-hotkey text
+						s = text.Substring(index, length);
+
+						// draw the post-hotkey text
+						toolkitGraphics.DrawString(s, x, y, format);
+					}
+				}
+
+		// Calculate text metrics information.
+		//
+		// Note that this is currently broken. Turn this on at your own risk.
+		public Size GetBounds
+					(Graphics graphics, String text, Font font,
+					 SizeF layoutSize, StringFormat format,
+					 out int charactersFitted, out int linesFilled)
+				{
+					// set the current graphics
+					this.graphics = graphics;
+
+					// set the current toolkit graphics
+					this.toolkitGraphics = graphics.ToolkitGraphics;
+
+					// set the current text
+					this.text = text;
+
+					// set the current font
+					this.font = font;
+
+					// ensure we have a string format
+					if(format == null) { format = SF_DEFAULT; }
+
+					// set the current string format
+					this.format = format;
+
+					// set the current layout rectangle
+					this.layout = new Rectangle
+						(0, 0, (int)layoutSize.Width, (int)layoutSize.Height);
+
+					// set the current line height
+					lineHeight = font.Height;
+
+					// set the only whole lines flag
+					onlyWholeLines = (((format.FormatFlags &
+					                    StringFormatFlags.LineLimit) != 0) ||
+					                  ((format.Trimming &
+					                    StringTrimming.None) != 0));
+
+					// set the index of the next character
+					nextIndex = 0;
+
+					// set the current line space usage
+					lineSpaceUsedUp = 0;
+
+					// set the previous span ended in new line flag
+					prevIsNewLine = false;
+
+					// select the current font into the graphics context
+					graphics.SelectFont(font);
+
+					// set the text width
+					int textWidth = 0;
+
+					// set the maximum width
+					int maxWidth = 0;
+
+					// set the default characters fitted
+					charactersFitted = 0;
+
+					// set the default lines filled
+					linesFilled = 0;
+
+					// remove the hotkey prefix, if needed
+					if(format.HotkeyPrefix != HotkeyPrefix.None)
+					{
+						// get the hotkey index
+						hotkeyIndex = text.IndexOf('&');
+
+						// handle the hotkey as needed
+						if(hotkeyIndex != -1)
+						{
+							if(hotkeyIndex < (text.Length - 1) &&
+							   !Char.IsControl(text[hotkeyIndex + 1]))
+							{
+								// remove the hotkey character
+								text = text.Substring(0, hotkeyIndex) +
+								       text.Substring(hotkeyIndex + 1);
+
+								// set the current text
+								this.text = text;
+
+								// update characters fitted
+								++charactersFitted;
+							}
+
+							// no need for this anymore
+							hotkeyIndex = -1;
+						}
+					}
+
+					// create character spans
+					CharSpan span = new CharSpan();
+					CharSpan prev = new CharSpan();
+
+					// set the first span flag
+					bool firstSpan = true;
+
+					// set the measure trailing spaces flag
+					bool mts = ((format.FormatFlags &
+					             StringFormatFlags.MeasureTrailingSpaces) != 0);
+
+					// process the text
+					while(nextIndex < text.Length)
+					{
+						// get the next span of characters
+						GetNextSpan(span);
+
+						// handle span on new line
+						if(span.newline)
+						{
+							// remove trailing spaces, if needed
+							if(!firstSpan && !mts && text[prev.start] == ' ')
+							{
+								// update the text width
+								textWidth -= GetSpanWidth(prev);
+							}
+
+							// update the maximum width, if needed
+							if(textWidth > maxWidth) { maxWidth = textWidth; }
+
+							// update the text width
+							textWidth = 0;
+
+							// update the lines filled
+							++linesFilled;
+						}
+
+						// update the text width
+						textWidth += GetSpanWidth(span);
+
+						// update the characters fitted
+						charactersFitted += span.length;
+
+						// copy span values to previous span
+						span.CopyTo(prev);
+					}
+
+					// update the maximum width, if needed
+					if(textWidth > maxWidth) { maxWidth = textWidth; }
+
+					// update the lines filled to account for the first line
+					++linesFilled;
+
+					// update the maximum width, if needed
+					if(maxWidth > layout.Width) { maxWidth = layout.Width; }
+
+					// calculate the height
+					int height = (lineHeight * linesFilled);
+
+					// update the height, if needed
+					if(height > layout.Height) { height = layout.Height; }
+
+					// return the size of the text
+					return new Size(maxWidth, height);
+				}
+
+		// Get the next span of characters.
+		private void GetNextSpan(CharSpan span)
+				{
+					// set new line flag
+					bool newline = false;
+
+					// get the start index
+					int start = nextIndex;
+
+					// handle whitespace span
+					while(nextIndex < text.Length && text[nextIndex] == ' ')
+					{
+						++nextIndex;
+					}
+
+					// handle word span
+					if(nextIndex == start)
+					{
+						// find the end of the word
+						while(nextIndex < text.Length)
+						{
+							// get the current character
+							char c = text[nextIndex];
+
+							// find the end of the word
+							if(c == ' ' || c == '\n' || c == '\r') { break; }
+
+							// move to the next character
+							++nextIndex;
+						}
+					}
+
+					// get the length of the span
+					int length = nextIndex - start;
+
+					// handle new line characters
+					if(nextIndex < text.Length)
+					{
+						// get the current character
+						char c = text[nextIndex];
+
+						// check for new line characters
+						if(c == '\r')
+						{
+							// move past the carriage return
+							++nextIndex;
+
+							// move past the line feed, if needed
+							if(nextIndex < text.Length &&
+							   text[nextIndex] == '\n')
+							{
+								++nextIndex;
+							}
+
+							// set the new line flag
+							newline = true;
+						}
+						else if(c == '\n')
+						{
+							// move past the line feed
+							++nextIndex;
+
+							// set the new line flag
+							newline = true;
+						}
+					}
+
+					// set the span values
+					span.Set(start, length, prevIsNewLine);
+
+					// update the previous span ended in new line flag
+					prevIsNewLine = newline;
+
+					// handle wrapping
+					CheckForWrap(span);
+				}
+
+		// Get the width of the span in pixels.
+		private int GetSpanWidth(CharSpan span)
+				{
+					// set the width of the span, if needed
+					if(span.pixelWidth == -1)
+					{
+						// get the text of the span
+						String s = text.Substring(span.start, span.length);
+
+						// declare out variables
+						int cf, lf;
+
+						// set the width of the span
+						span.pixelWidth = toolkitGraphics.MeasureString
+							(s, MEASURE_LAYOUT_RECT, format, out cf, out lf,
+							 false).Width;
+					}
+
+					// return the width of the span
+					return span.pixelWidth;
+				}
+
+		// Calculate the position of the line based on the formatting and width.
+		private int GetXPosition(int width)
+				{
+					// set the default x position
+					int x = layout.X;
+
+					// update the x position based on alignment
+					if(format.Alignment != StringAlignment.Near)
+					{
+						if(format.Alignment == StringAlignment.Far)
+						{
+							x += (layout.Width - width);
+						}
+						else
+						{
+							x += ((layout.Width - width) / 2);
+						}
+					}
+
+					// return the x position
+					return x;
+				}
+
+		// Trim to the nearest character.
+		//
+		// Returns the length of characters from the string once it is trimmed.
+		// The "width" variable returns the pixel width of the trimmed string.
+		private int TrimTextToChar
+					(int start, int length, int maxWidth, out int width)
+				{
+					// declare out variables
+					int cf, lf;
+
+					// set default width
+					width = 0;
+
+					// get the current width
+					int currWidth = toolkitGraphics.MeasureString
+						(text.Substring(start, length), MEASURE_LAYOUT_RECT,
+						 format, out cf, out lf, false).Width;
+
+					// handle trivial case first
+					if(currWidth <= maxWidth)
+					{
+						// set the width
+						width = currWidth;
+
+						// return the characters fitted
+						return length;
+					}
+
+					// set the left boundary
+					int left = 0;
+
+					// set the right boundary
+					int right = (length - 1);
+
+					// set the best fit
+					int best = 0;
+
+					// find the maximum number of characters which fit
+					while(left <= right)
+					{
+						// calculate the middle position
+						int middle = ((left + right) / 2);
+
+						// get the current width
+						currWidth = toolkitGraphics.MeasureString
+							(text.Substring(start, middle),
+							 MEASURE_LAYOUT_RECT, format,
+							 out cf, out lf, false).Width;
+
+						// continue search or return depending on comparison
+						if(currWidth > maxWidth)
+						{
+							// reposition right boundary
+							right = (middle - 1);
+						}
+						else if(currWidth < maxWidth)
+						{
+							// update the best fit
+							best = middle;
+
+							// update the best fit width
+							width = currWidth;
+
+							// reposition left boundary
+							left = (middle + 1);
+						}
+						else
+						{
+							// update the best fit width
+							width = currWidth;
+
+							// return the best fit
+							return middle;
+						}
+					}
+
+					// return the best fit
+					return best;
+				}
+
+		// Trim to the path.
+		//
+		// Returns the trimmed string. The "width" variable returns the pixel
+		// width of the trimmed string. The trimming algorithm tries to place
+		// the characters removed in the center of the string but also tries
+		// to guarantee that the last path seperator character is shown.
+		private String TrimToPath
+					(int start, int length, int maxWidth, out int width,
+					 String ellipsis)
+				{
+					// declare out variables
+					int cf, lf;
+
+					// set the default return value
+					String retval = text.Substring(start, length);
+
+					// measure the width of the return value
+					width = toolkitGraphics.MeasureString
+						(retval, MEASURE_LAYOUT_RECT,
+						 format, out cf, out lf, false).Width;
+
+					// return the text if it fits
+					if(width < maxWidth) { return retval; }
+
+					// set the middle position
+					int middle = ((start + (length / 2)) + 2);
+
+					// set the separator found flag
+					bool seperatorFound = false;
+
+					// set the remove position
+					int removePos = ((start + length) - 1);
+
+					// find the optimal remove position
+					while(removePos >= start)
+					{
+						// get the current character
+						char c = text[removePos];
+
+						// check for separator
+						if(c == '\\' || c == '/') { seperatorFound = true; }
+
+						// break if we've found a separator before the middle
+						if(seperatorFound && removePos <= middle) { break; }
+
+						// update the remove position
+						--removePos;
+					}
+
+					// remove from the middle if no separator was found
+					if(!seperatorFound) { removePos = middle; }
+
+					// set the removal start position
+					int removeStart = (removePos - 1);
+
+					// find and return the optimal trim pattern
+					while(true)
+					{
+						// attempt to fit the ellipsis
+						if(width < maxWidth)
+						{
+							// set the return value to the pre-removal text
+							retval = text.Substring
+								(start, (removeStart - start));
+
+							// append the ellipsis to the return value
+							retval += ellipsis;
+
+							// append the post-removal text to the return value
+							retval += text.Substring
+								(removePos, ((start + length) - removePos));
+
+							// measure the width of the return value
+							width = toolkitGraphics.MeasureString
+								(retval, MEASURE_LAYOUT_RECT, format,
+								 out cf, out lf, false).Width;
+
+							// return the text if it fits
+							if(width < maxWidth) { return retval; }
+						}
+
+						// set the reduced flag
+						bool reduced = false;
+
+						// attempt to reduce
+						if(removeStart > start)
+						{
+							// measure the width of the text
+							width -= toolkitGraphics.MeasureString
+								(text.Substring(removeStart--, 1),
+								 MEASURE_LAYOUT_RECT, format, out cf, out lf,
+								 false).Width;
+
+							// continue if no reduction is needed
+							if(width < maxWidth) { continue; }
+
+							// set the reduced flag
+							reduced = true;
+						}
+
+						// attempt to reduce
+						if(removePos < (start + length))
+						{
+							// measure the width of the text
+							width -= toolkitGraphics.MeasureString
+								(text.Substring(removePos++, 1),
+								 MEASURE_LAYOUT_RECT, format, out cf, out lf,
+								 false).Width;
+
+							// continue if no reduction is needed
+							if(width < maxWidth) { continue; }
+
+							// set the reduced flag
+							reduced = true;
+						}
+
+						// return the ellipsis, if needed
+						if(!reduced)
+						{
+							// measure the width of the ellipsis
+							width = toolkitGraphics.MeasureString
+								(ellipsis, MEASURE_LAYOUT_RECT, format,
+								 out cf, out lf, false).Width;
+
+							// return the ellipsis
+							return ellipsis;
+						}
+					}
+				}
+
+		// Trim to the nearest word or character, as appropriate.
+		//
+		// Returns the length of characters from the string once it is trimmed.
+		// The "width" variable returns the pixel width of the trimmed string.
+		// If the string has no words then it is trimmed to the nearest
+		// character.
+		private int TrimTextToWord
+					(int start, int length, int maxWidth, out int width)
+				{
+					// declare out variables
+					int cf, lf;
+
+					// set the default width
+					width = 0;
+
+					// set the end position
+					int end = start + length;
+
+					// set the start position
+					int pos = start;
+
+					// set the previous position
+					int prevPos = pos;
+
+					// process the text
+					while(pos < end)
+					{
+						// get the current character
+						char c = text[pos];
+
+						// skip over leading spaces
+						if(c == ' ')
+						{
+							// move past space
+							++pos;
+
+							// skip over remaining spaces
+							while(pos < end && text[pos] == ' ') { ++pos; }
+						}
+
+						// skip over word
+						while(pos < end && text[pos] != ' ') { ++pos; }
+
+						// get the width of the text
+						int stringWidth = toolkitGraphics.MeasureString
+							(text.Substring(prevPos, (pos - prevPos)),
+							 MEASURE_LAYOUT_RECT, format, out cf, out lf,
+							 false).Width;
+
+						// return the characters fitted, if max width exceeded
+						if((width + stringWidth) > maxWidth)
+						{
+							// trim within the word, if needed
+							if(width == 0)
+							{
+								// trim within the word
+								return TrimTextToChar
+									(start, length, maxWidth, out width);
+							}
+
+							// return the characters fitted
+							return (prevPos - start);
+						}
+
+						// update the current width
+						width += stringWidth;
+
+						// update the previous position
+						prevPos = pos;
+					}
+
+					// return the characters fitted
+					return length;
+				}
+
+	}; // class TextLayoutManager
+
+#endregion /* TextLayoutManager */
 
 }; // class Graphics
 

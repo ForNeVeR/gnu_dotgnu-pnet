@@ -1,3 +1,17 @@
+2004-07-20  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/Serialization/ChangeLog, System.Xml/Serialization/*.cs:
+	import mono's xmls11n implementation, as a temporary solution, to get
+	things working for now.
+
+	* System.Xml/XmlTextWriter.cs: fix to prefix handling in start
+	elements.
+
+	* System.Xml/XmlWriter.cs: fix to attribute namespace handling.
+
+	* tests/System.Xml/TestXmlElement.cs: remove a test which relies
+	on, now-fixed, broken behavior in XmlElement.
+
 2004-07-20  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/ErrorProvider.cs: fix build error. Move #endif after

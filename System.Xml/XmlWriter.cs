@@ -69,17 +69,14 @@ public abstract class XmlWriter
 				{
 					throw new ArgumentNullException("localName");
 				}
-				if((Object)value != null && value != String.Empty)
+				if((Object)value != null && value.Length != 0)
 				{
-					bool flagNS = true;
-					try {
-						Uri uri = new Uri(value);
-					} 
-					catch (UriFormatException) 
+					bool flagNS = false;
+					if(localName == "xmlns" || localName.StartsWith("xmlns:"))
 					{
-						flagNS = false;
+						flagNS = true;
 					}
-						
+
 					WriteStartAttribute(prefix, localName, ns, value, flagNS);
 				} 
 				else 

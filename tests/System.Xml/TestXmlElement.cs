@@ -156,14 +156,12 @@ public class TestXmlElement : TestCase
 
 				// Add the text node back, switch to non-empty, and remove.
 				element.AppendChild(text);
-				Assert("Properties (13)", element.IsEmpty);
-				element.IsEmpty = false;
-				Assert("Properties (14)", !element.IsEmpty);
+				Assert("Properties (13)", !element.IsEmpty);
 				element.RemoveChild(text);
-				Assert("Properties (15)", !element.IsEmpty);
-				AssertEquals("Properties (16)",
+				Assert("Properties (14)", !element.IsEmpty);
+				AssertEquals("Properties (15)",
 							 "<foo></foo>", element.OuterXml);
-				AssertEquals("Properties (17)", "", element.InnerXml);
+				AssertEquals("Properties (16)", "", element.InnerXml);
 			}
 
 	// Test element remove calls.

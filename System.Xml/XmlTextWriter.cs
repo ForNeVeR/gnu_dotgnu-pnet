@@ -1210,7 +1210,8 @@ public class XmlTextWriter : XmlWriter
 				}
 				
 				// Validate the parameters.
-				if(!namespaces && (prefix != null || ns != null))
+				if(!namespaces &&
+				   (((Object)prefix) != null || ((Object)ns) != null))
 				{
 					throw new ArgumentException
 						(S._("Xml_NamespacesNotSupported"));
@@ -1233,8 +1234,8 @@ public class XmlTextWriter : XmlWriter
 				}
 
 				// Output the name of the attribute, with appropriate prefixes.
-				if(((Object)prefix) != null && prefix != String.Empty &&
-				   ((Object)ns) != null && ns != String.Empty)
+				if(((Object)prefix) != null && prefix.Length != 0 &&
+				   ((Object)ns) != null && ns.Length != 0)
 				{
 					// We need to associate a prefix with a namespace.
 					String currMapping = LookupPrefix(ns);
@@ -1258,7 +1259,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(' ');
 					}
 				}
-				else if(((Object)prefix) != null && prefix != String.Empty)
+				else if(((Object)prefix) != null && prefix.Length != 0)
 				{
 					// We were only given a prefix, so output it directly.
 					if(prefix != scope.prefix)
@@ -1267,7 +1268,7 @@ public class XmlTextWriter : XmlWriter
 						writer.Write(':');
 					}
 				}
-				else if(((Object)ns) != null && ns != String.Empty)
+				else if(((Object)ns) != null && ns.Length != 0)
 				{
 					// We were only given a namespace, so find the prefix.
 					prefix = LookupPrefix(ns);
@@ -1361,7 +1362,8 @@ public class XmlTextWriter : XmlWriter
 										   String ns)
 			{
 				// Validate the parameters.
-				if(!namespaces && (prefix != null || ns != null))
+				if(!namespaces &&
+				   (((Object)prefix) != null || ((Object)ns) != null))
 				{
 					throw new ArgumentException
 						(S._("Xml_NamespacesNotSupported"));
@@ -1388,8 +1390,8 @@ public class XmlTextWriter : XmlWriter
 				// Output the name of the element, with appropriate prefixes.
 				bool scopeShown = false;
 				writer.Write('<');
-				if(((Object)prefix) != null && prefix != String.Empty &&
-				   ((Object)ns) != null && ns != String.Empty)
+				if(((Object)prefix) != null && prefix.Length != 0 &&
+				   ((Object)ns) != null && ns.Length != 0)
 				{
 					// We need to associate a prefix with a namespace.
 					String currMapping = LookupPrefix(ns);
@@ -1407,9 +1409,12 @@ public class XmlTextWriter : XmlWriter
 					else
 					{
 						// Create a new pseudo-prefix for the URI.
+						writer.Write(prefix);
+						writer.Write(':');
 						writer.Write(localName);
 						writer.Write(' ');
-						writer.Write("xmlns");
+						writer.Write("xmlns:");
+						writer.Write(prefix);
 						writer.Write('=');
 						writer.Write(quoteChar);
 						WriteQuotedString(ns);
@@ -1417,7 +1422,7 @@ public class XmlTextWriter : XmlWriter
 						scopeShown = true;
 					}
 				}
-				else if(((Object)prefix) != null && prefix != String.Empty)
+				else if(((Object)prefix) != null && prefix.Length != 0)
 				{
 					// We were only given a prefix, so output it directly.
 					if(prefix != currPrefix)
@@ -1428,24 +1433,24 @@ public class XmlTextWriter : XmlWriter
 					}
 					writer.Write(localName);
 				}
-				else if(((Object)ns) != null && ns != String.Empty)
+				else if(((Object)ns) != null && ns.Length != 0)
 				{
 					// We were only given a namespace, so find the prefix.
 					prefix = LookupPrefix(ns);
-					if((((Object)prefix) == null || prefix.Length == 0) && scope == null)
+					if(((Object)prefix) == null || prefix.Length == 0)
 					{
-						writer.Write(localName);
-						writer.Write(' ');
-						writer.Write("xmlns");
-						writer.Write('=');
-						writer.Write(quoteChar);
-						WriteQuotedString(ns);
-						writer.Write(quoteChar);
-						scopeShown = true;
-					}
-					else if(((Object)prefix) == null || prefix.Length == 0)
-					{
-						if(scope.scopeShown == false || scope.xmlns != ns )
+						if(scope == null)
+						{
+							writer.Write(localName);
+							writer.Write(' ');
+							writer.Write("xmlns");
+							writer.Write('=');
+							writer.Write(quoteChar);
+							WriteQuotedString(ns);
+							writer.Write(quoteChar);
+							scopeShown = true;
+						}
+						else if(scope.scopeShown == false || scope.xmlns != ns)
 						{
 							writer.Write(localName);
 							writer.Write(' ');	
@@ -1461,7 +1466,6 @@ public class XmlTextWriter : XmlWriter
 							writer.Write(localName);
 							scopeShown = true;
 						}
-	
 					}
 					else if(prefix != currPrefix)
 					{
@@ -1485,10 +1489,9 @@ public class XmlTextWriter : XmlWriter
 
 				// Push a new scope record.
 				PushScope(prefix, localName, scopeShown, ns);
-				if(scopeShown)
+				if(scopeShown && ((Object)prefix) != null && prefix.Length != 0)
 				{
-					if(prefix != String.Empty && prefix != null)
-						namespaceManager.AddNamespace(prefix, ns);
+					namespaceManager.AddNamespace(prefix, ns);
 				}
 
 				// We are now in the element state.

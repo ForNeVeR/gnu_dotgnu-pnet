@@ -6,6 +6,9 @@
 	csharp/class/method9.err, csharp/class/method9.jerr,
 	csharp/stmt/return1.cs: new test cases for abstract checks.
 
+	* csharp/stmt/using2.err, csharp/stmt/using2.jerr: modify
+	test cases for "using" aliases to match cscc changes.
+
 2003-02-21  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/class/delegate1.cs, csharp/class/delegate1.il,

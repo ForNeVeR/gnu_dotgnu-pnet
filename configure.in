@@ -424,6 +424,7 @@ cscc/java/Makefile
 cscc/bf/Makefile
 resgen/Makefile
 ilstrip/Makefile
+ilranlib/Makefile
 ildb/Makefile
 csdoc/Makefile
 csant/Makefile

@@ -30,7 +30,8 @@ using System.Security.Permissions;
 [Serializable]
 public sealed class NetCodeGroup : CodeGroup
 {
-	// Constructor.
+	// Constructors.
+	internal NetCodeGroup() {}
 	public NetCodeGroup(IMembershipCondition membershipCondition)
 			: base(membershipCondition, null)
 			{

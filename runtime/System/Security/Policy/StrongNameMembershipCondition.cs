@@ -37,7 +37,8 @@ public sealed class StrongNameMembershipCondition
 	private String name;
 	private Version version;
 
-	// Constructor.
+	// Constructors.
+	internal StrongNameMembershipCondition() {}
 	public StrongNameMembershipCondition
 				(StrongNamePublicKeyBlob blob, String name, Version version)
 			{
@@ -219,7 +220,7 @@ public sealed class StrongNameMembershipCondition
 				element.AddAttribute("PublicKey", blob.ToString());
 				if(name != null)
 				{
-					element.AddAttribute("Name", name);
+					element.AddAttribute("Name", SecurityElement.Escape(name));
 				}
 				if(version != null)
 				{

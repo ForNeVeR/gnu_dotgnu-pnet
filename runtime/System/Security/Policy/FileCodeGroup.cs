@@ -33,7 +33,8 @@ public sealed class FileCodeGroup : CodeGroup
 	// Internal state.
 	private FileIOPermissionAccess access;
 
-	// Constructor.
+	// Constructors.
+	internal FileCodeGroup() {}
 	public FileCodeGroup(IMembershipCondition membershipCondition,
 					     FileIOPermissionAccess access)
 			: base(membershipCondition, null)
@@ -84,11 +85,10 @@ public sealed class FileCodeGroup : CodeGroup
 			}
 
 	// Create the XML form of this code group.
-	[TODO]
 	protected override void CreateXml
 				(SecurityElement element, PolicyLevel level)
 			{
-				// TODO
+				element.AddAttribute("Access", access.ToString());
 			}
 
 	// Compare two code groups for equality.
@@ -136,11 +136,19 @@ public sealed class FileCodeGroup : CodeGroup
 			}
 
 	// Parse the XML form of this code group.
-	[TODO]
 	protected override void ParseXml
 				(SecurityElement element, PolicyLevel level)
 			{
-				// TODO
+				String value = element.Attribute("Access");
+				if(value != null)
+				{
+					access = (FileIOPermissionAccess)
+						Enum.Parse(typeof(FileIOPermissionAccess), value);
+				}
+				else
+				{
+					access = FileIOPermissionAccess.NoAccess;
+				}
 			}
 
 }; // class FileCodeGroup

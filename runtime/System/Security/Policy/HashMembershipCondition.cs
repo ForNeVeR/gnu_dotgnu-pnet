@@ -37,7 +37,8 @@ public sealed class HashMembershipCondition
 	private HashAlgorithm hashAlg;
 	private byte[] value;
 
-	// Constructor.
+	// Constructors.
+	internal HashMembershipCondition() {}
 	public HashMembershipCondition(HashAlgorithm hashAlg, byte[] value)
 			{
 				if(hashAlg == null)
@@ -204,7 +205,8 @@ public sealed class HashMembershipCondition
 				element.AddAttribute
 					("HashValue", StrongNamePublicKeyBlob.ToHex(value));
 				element.AddAttribute
-					("HashAlgorithm", hashAlg.GetType().FullName);
+					("HashAlgorithm",
+					 SecurityElement.Escape(hashAlg.GetType().FullName));
 				return element;
 			}
 

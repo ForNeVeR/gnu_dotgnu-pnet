@@ -83,6 +83,35 @@ public sealed class PolicyStatement
 			{
 				get
 				{
+					if(permSet == null)
+					{
+						permSet = new PermissionSet
+							(PermissionState.None);
+					}
+					return permSet.Copy();
+				}
+				set
+				{
+					if(value != null)
+					{
+						permSet = value.Copy();
+					}
+					else
+					{
+						permSet = new PermissionSet
+							(PermissionState.None);
+					}
+				}
+			}
+	internal PermissionSet PermissionSetNoCopy
+			{
+				get
+				{
+					if(permSet == null)
+					{
+						permSet = new PermissionSet
+							(PermissionState.None);
+					}
 					return permSet;
 				}
 				set
@@ -203,7 +232,8 @@ public sealed class PolicyStatement
 						   level.GetNamedPermissionSet(namedSet.Name) != null)
 						{
 							element.AddAttribute
-								("PermissionSetName", namedSet.Name);
+								("PermissionSetName",
+								 SecurityElement.Escape(namedSet.Name));
 						}
 						else
 						{

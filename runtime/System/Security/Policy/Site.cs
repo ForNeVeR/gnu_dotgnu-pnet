@@ -104,7 +104,8 @@ public sealed class Site
 					("System.Security.Policy.Site");
 				SecurityElement child;
 				element.AddAttribute("version", "1");
-				child = new SecurityElement("Name", name);
+				child = new SecurityElement
+					("Name", SecurityElement.Escape(name));
 				element.AddChild(child);
 				return element.ToString();
 			}

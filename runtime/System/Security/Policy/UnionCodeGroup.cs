@@ -30,7 +30,8 @@ using System.Security.Permissions;
 [Serializable]
 public sealed class UnionCodeGroup : CodeGroup
 {
-	// Constructor.
+	// Constructors.
+	internal UnionCodeGroup() {}
 	public UnionCodeGroup(IMembershipCondition membershipCondition,
 					      PolicyStatement policy)
 			: base(membershipCondition, policy)
@@ -67,23 +68,61 @@ public sealed class UnionCodeGroup : CodeGroup
 			}
 
 	// Resolve the policy for this code group.
-	[TODO]
 	public override PolicyStatement Resolve(Evidence evidence)
 			{
 				if(evidence == null)
 				{
 					throw new ArgumentNullException("evidence");
 				}
-				// TODO
-				return PolicyStatement;
+				if(!MembershipCondition.Check(evidence))
+				{
+					return null;
+				}
+				PolicyStatement stmt = PolicyStatement;
+				PolicyStatement childStmt;
+				foreach(CodeGroup group in Children)
+				{
+					childStmt = group.Resolve(evidence);
+					if(childStmt != null)
+					{
+						if((stmt.Attributes &
+								PolicyStatementAttribute.Exclusive) != 0 &&
+						   (childStmt.Attributes &
+								PolicyStatementAttribute.Exclusive) != 0)
+						{
+							throw new PolicyException(_("Security_Exclusive"));
+						}
+						stmt.PermissionSetNoCopy =
+							stmt.PermissionSetNoCopy.Union
+								(childStmt.PermissionSetNoCopy);
+						stmt.Attributes |= childStmt.Attributes;
+					}
+				}
+				return stmt;
 			}
 
 	// Resolve code groups that match specific evidence.
-	[TODO]
 	public override CodeGroup ResolveMatchingCodeGroups(Evidence evidence)
 			{
-				// TODO
-				return null;
+				if(evidence == null)
+				{
+					throw new ArgumentNullException("evidence");
+				}
+				if(!MembershipCondition.Check(evidence))
+				{
+					return null;
+				}
+				CodeGroup groups = Copy();
+				CodeGroup childGroup;
+				foreach(CodeGroup group in Children)
+				{
+					childGroup = group.ResolveMatchingCodeGroups(evidence);
+					if(childGroup != null)
+					{
+						groups.AddChild(childGroup);
+					}
+				}
+				return groups;
 			}
 
 }; // class UnionCodeGroup

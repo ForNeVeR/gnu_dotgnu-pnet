@@ -30,7 +30,8 @@ using System.Security.Permissions;
 [Serializable]
 public sealed class FirstMatchCodeGroup : CodeGroup
 {
-	// Constructor.
+	// Constructors.
+	internal FirstMatchCodeGroup() {}
 	public FirstMatchCodeGroup(IMembershipCondition membershipCondition,
 					     	   PolicyStatement policy)
 			: base(membershipCondition, policy)
@@ -67,23 +68,78 @@ public sealed class FirstMatchCodeGroup : CodeGroup
 			}
 
 	// Resolve the policy for this code group.
-	[TODO]
 	public override PolicyStatement Resolve(Evidence evidence)
 			{
 				if(evidence == null)
 				{
 					throw new ArgumentNullException("evidence");
 				}
-				// TODO
-				return PolicyStatement;
+				if(!MembershipCondition.Check(evidence))
+				{
+					return null;
+				}
+				PolicyStatement stmt = null;
+				PolicyStatement childStmt;
+				foreach(CodeGroup group in Children)
+				{
+					childStmt = group.Resolve(evidence);
+					if(childStmt != null)
+					{
+						stmt = childStmt;
+						break;
+					}
+				}
+				childStmt = PolicyStatement;
+				if(childStmt == null)
+				{
+					return stmt;
+				}
+				else if(stmt != null)
+				{
+					if((stmt.Attributes &
+							PolicyStatementAttribute.Exclusive) != 0 &&
+					   (childStmt.Attributes &
+							PolicyStatementAttribute.Exclusive) != 0)
+					{
+						throw new PolicyException(_("Security_Exclusive"));
+					}
+					PolicyStatement newStmt = new PolicyStatement(null);
+					newStmt.PermissionSetNoCopy =
+						stmt.PermissionSetNoCopy.Union
+							(childStmt.PermissionSetNoCopy);
+					newStmt.Attributes =
+						(stmt.Attributes | childStmt.Attributes);
+					return newStmt;
+				}
+				else
+				{
+					return childStmt;
+				}
 			}
 
 	// Resolve code groups that match specific evidence.
-	[TODO]
 	public override CodeGroup ResolveMatchingCodeGroups(Evidence evidence)
 			{
-				// TODO
-				return null;
+				if(evidence == null)
+				{
+					throw new ArgumentNullException("evidence");
+				}
+				if(!MembershipCondition.Check(evidence))
+				{
+					return null;
+				}
+				CodeGroup groups = Copy();
+				CodeGroup childGroup;
+				foreach(CodeGroup group in Children)
+				{
+					childGroup = group.ResolveMatchingCodeGroups(evidence);
+					if(childGroup != null)
+					{
+						groups.AddChild(childGroup);
+						break;
+					}
+				}
+				return groups;
 			}
 
 }; // class FirstMatchCodeGroup

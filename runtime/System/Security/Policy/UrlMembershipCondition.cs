@@ -34,7 +34,8 @@ public sealed class UrlMembershipCondition
 	// Internal state.
 	private UrlParser parser;
 
-	// Constructor.
+	// Constructors.
+	internal UrlMembershipCondition() {}
 	public UrlMembershipCondition(String url)
 			{
 				if(url == null)
@@ -136,7 +137,7 @@ public sealed class UrlMembershipCondition
 				}
 				else
 				{
-					throw new ArgumentException(_("Arg_InvalidURL"));
+					throw new ArgumentException(_("Arg_InvalidUrl"));
 				}
 			}
 	public SecurityElement ToXml(PolicyLevel level)
@@ -148,7 +149,7 @@ public sealed class UrlMembershipCondition
 					 SecurityElement.Escape(typeof(UrlMembershipCondition).
 					 						AssemblyQualifiedName));
 				element.AddAttribute("version", "1");
-				element.AddAttribute("Url", parser.URL);
+				element.AddAttribute("Url", SecurityElement.Escape(parser.URL));
 				return element;
 			}
 

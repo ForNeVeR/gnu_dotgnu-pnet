@@ -34,7 +34,8 @@ public sealed class ZoneMembershipCondition
 	// Internal state.
 	private SecurityZone zone;
 
-	// Constructor.
+	// Constructors.
+	internal ZoneMembershipCondition() {}
 	public ZoneMembershipCondition(SecurityZone zone)
 			{
 				if(zone < SecurityZone.MyComputer ||

@@ -36,7 +36,7 @@ public abstract class CodeGroup
 	private String description;
 	private String name;
 
-	// Constructor.
+	// Constructors.
 	public CodeGroup(IMembershipCondition membershipCondition,
 					 PolicyStatement policy)
 			{
@@ -48,14 +48,24 @@ public abstract class CodeGroup
 				this.policy = policy;
 				this.children = new ArrayList();
 			}
+	internal CodeGroup()
+			{
+				this.children = new ArrayList();
+			}
 
 	// Properties.
 	public virtual String AttributeString
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(policy != null)
+					{
+						return policy.AttributeString;
+					}
+					else
+					{
+						return null;
+					}
 				}
 			}
 	public IList Children
@@ -115,7 +125,16 @@ public abstract class CodeGroup
 			{
 				get
 				{
-					// TODO
+					if(policy != null)
+					{
+						NamedPermissionSet permSet;
+						permSet = (policy.PermissionSetNoCopy
+										as NamedPermissionSet);
+						if(permSet != null)
+						{
+							return permSet.Name;
+						}
+					}
 					return null;
 				}
 			}
@@ -123,11 +142,25 @@ public abstract class CodeGroup
 			{
 				get
 				{
-					return policy;
+					if(policy != null)
+					{
+						return policy.Copy();
+					}
+					else
+					{
+						return null;
+					}
 				}
 				set
 				{
-					policy = value;
+					if(value != null)
+					{
+						policy = value.Copy();
+					}
+					else
+					{
+						policy = null;
+					}
 				}
 			}
 
@@ -203,6 +236,12 @@ public abstract class CodeGroup
 			}
 	public void FromXml(SecurityElement et, PolicyLevel level)
 			{
+				SecurityElement child;
+				String className;
+				Type type;
+				ArrayList list;
+				CodeGroup group;
+
 				if(et == null)
 				{
 					throw new ArgumentNullException("et");
@@ -217,7 +256,81 @@ public abstract class CodeGroup
 					throw new ArgumentException
 						(_("Security_PolicyVersion"));
 				}
-				// TODO
+				name = et.Attribute("Name");
+				description = et.Attribute("Description");
+
+				// Load the membership condition information for the group.
+				child = et.SearchForChildByTag("IMembershipCondition");
+				if(child != null)
+				{
+					className = child.Attribute("class");
+					if(className == null)
+					{
+						throw new ArgumentException
+							(_("Invalid_PermissionXml"));
+					}
+					type = Type.GetType(className);
+					if(type == null && className.IndexOf('.') == -1)
+					{
+						// May not have been fully-qualified.
+						type = Type.GetType
+							("System.Security.Policy." + className);
+					}
+					if(!typeof(IMembershipCondition).IsAssignableFrom(type))
+					{
+						throw new ArgumentException
+							(_("Invalid_PermissionXml"));
+					}
+					membershipCondition =
+						(Activator.CreateInstance(type)
+								as IMembershipCondition);
+					if(membershipCondition != null)
+					{
+						membershipCondition.FromXml(child, level);
+					}
+				}
+				else
+				{
+					throw new ArgumentException
+						(_("Arg_InvalidMembershipCondition"));
+				}
+
+				// Load the children within this code group.
+				list = new ArrayList();
+				foreach(SecurityElement elem in et.Children)
+				{
+					if(elem.Tag != "CodeGroup")
+					{
+						continue;
+					}
+					className = child.Attribute("class");
+					if(className == null)
+					{
+						throw new ArgumentException
+							(_("Invalid_PermissionXml"));
+					}
+					type = Type.GetType(className);
+					if(type == null && className.IndexOf('.') == -1)
+					{
+						// May not have been fully-qualified.
+						type = Type.GetType
+							("System.Security.Policy." + className);
+					}
+					if(!typeof(CodeGroup).IsAssignableFrom(type))
+					{
+						throw new ArgumentException
+							(_("Invalid_PermissionXml"));
+					}
+					group = (Activator.CreateInstance(type) as CodeGroup);
+					if(group != null)
+					{
+						group.FromXml(elem, level);
+						list.Add(group);
+					}
+				}
+				children = list;
+
+				// Parse subclass-specific data from the element.
 				ParseXml(et, level);
 			}
 
@@ -258,10 +371,43 @@ public abstract class CodeGroup
 				element = new SecurityElement("CodeGroup");
 				element.AddAttribute
 					("class",
-					 SecurityElement.Escape(typeof(CodeGroup).
-					 						AssemblyQualifiedName));
+					 SecurityElement.Escape(GetType().AssemblyQualifiedName));
 				element.AddAttribute("version", "1");
-				// TODO
+				element.AddChild(membershipCondition.ToXml(level));
+				if(policy != null)
+				{
+					PermissionSet permSet = policy.PermissionSetNoCopy;
+					if(permSet is NamedPermissionSet && level != null &&
+					   level.GetNamedPermissionSet
+					   		(((NamedPermissionSet)permSet).Name) != null)
+					{
+						element.AddAttribute
+							("PermissionSetName",
+							 ((NamedPermissionSet)permSet).Name);
+					}
+					else if(!permSet.IsEmpty())
+					{
+						element.AddChild(permSet.ToXml());
+					}
+					if(policy.Attributes != PolicyStatementAttribute.Nothing)
+					{
+						element.AddAttribute
+							("Attributes", policy.Attributes.ToString());
+					}
+					foreach(CodeGroup group in Children)
+					{
+						element.AddChild(group.ToXml(level));
+					}
+				}
+				if(name != null)
+				{
+					element.AddAttribute("Name", SecurityElement.Escape(name));
+				}
+				if(description != null)
+				{
+					element.AddAttribute
+						("Description", SecurityElement.Escape(description));
+				}
 				CreateXml(element, level);
 				return element;
 			}

@@ -34,7 +34,8 @@ public sealed class SiteMembershipCondition
 	// Internal state.
 	private String site;
 
-	// Constructor.
+	// Constructors.
+	internal SiteMembershipCondition() {}
 	public SiteMembershipCondition(String site)
 			{
 				if(site == null)
@@ -148,7 +149,7 @@ public sealed class SiteMembershipCondition
 					 SecurityElement.Escape(typeof(SiteMembershipCondition).
 					 						AssemblyQualifiedName));
 				element.AddAttribute("version", "1");
-				element.AddAttribute("Site", site);
+				element.AddAttribute("Site", SecurityElement.Escape(site));
 				return element;
 			}
 

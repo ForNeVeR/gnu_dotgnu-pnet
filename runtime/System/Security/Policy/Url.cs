@@ -97,7 +97,8 @@ public sealed class Url
 					("System.Security.Policy.Url");
 				SecurityElement child;
 				element.AddAttribute("version", "1");
-				child = new SecurityElement("Url", parser.URL);
+				child = new SecurityElement
+					("Url", SecurityElement.Escape(parser.URL));
 				element.AddChild(child);
 				return element.ToString();
 			}

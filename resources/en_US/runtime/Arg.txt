@@ -139,6 +139,7 @@ Arg_NotGenericMethod=The specified method is not generic
 Arg_GenericParameterCount=The generic parameter counts do not match
 Arg_InvalidUnityObject=Invalid unity object encountered during deserialization
 Arg_InvalidUrl=Invalid URL
+Arg_InvalidMembershipCondition=Invalid code group membership condition
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

@@ -35,7 +35,8 @@ public sealed class PublisherMembershipCondition
 	// Internal state.
 	private X509Certificate certificate;
 
-	// Constructor.
+	// Constructors.
+	internal PublisherMembershipCondition() {}
 	public PublisherMembershipCondition(X509Certificate certificate)
 			{
 				if(certificate == null)

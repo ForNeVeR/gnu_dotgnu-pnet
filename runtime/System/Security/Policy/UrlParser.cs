@@ -44,7 +44,7 @@ internal sealed class UrlParser
 				this.url = url;
 				if(!Parse(url))
 				{
-					throw new ArgumentException(_("Arg_InvalidURL"));
+					throw new ArgumentException(_("Arg_InvalidUrl"));
 				}
 			}
 

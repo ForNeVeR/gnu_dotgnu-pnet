@@ -125,7 +125,8 @@ public sealed class StrongName
 				SecurityElement element = new SecurityElement("StrongName");
 				element.AddAttribute("version", "1");
 				element.AddAttribute("Key", blob.ToString());
-				element.AddAttribute("Name", name);
+				element.AddAttribute
+					("Name", SecurityElement.Escape(name));
 				element.AddAttribute("Version", version.ToString());
 				return element.ToString();
 			}

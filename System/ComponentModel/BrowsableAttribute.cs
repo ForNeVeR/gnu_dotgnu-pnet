@@ -1,6 +1,6 @@
 /*
- * TypeConverterAttribute.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.TypeConverterAttribute" class.
+ * BrowsableAttribute.cs - Implementation of the
+ *			"System.ComponentModel.BrowsableAttribute" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,55 +24,34 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
-
-public sealed class TypeConverterAttribute : Attribute
+[AttributeUsage(AttributeTargets.All)]
+public sealed class BrowsableAttribute : Attribute
 {
 	// Internal state.
-	private String typeName;
+	private bool browse;
 
-	// Constructors.
-	public TypeConverterAttribute() : this("") {}
-	public TypeConverterAttribute(String typeName)
+	// Constructor.
+	public BrowsableAttribute(bool browsable)
 			{
-				if(typeName == null)
-				{
-					this.typeName = "";
-				}
-				else
-				{
-					this.typeName = typeName;
-				}
-			}
-	public TypeConverterAttribute(Type type)
-			{
-				if(type == null)
-				{
-					typeName = "";
-				}
-				else
-				{
-					typeName = type.FullName;
-				}
+				browse = browsable;
 			}
 
-	// Get the name of the converter type.
-	public String ConverterTypeName
+	// Get the attribute's value.
+	public bool Browsable
 			{
 				get
 				{
-					return typeName;
+					return browse;
 				}
 			}
 
-	// Determine if two type converter attributes are equal.
+	// Determine if two instances of this class are equal.
 	public override bool Equals(Object obj)
 			{
-				TypeConverterAttribute a = (obj as TypeConverterAttribute);
-				if(a != null)
+				BrowsableAttribute other = (obj as BrowsableAttribute);
+				if(other != null)
 				{
-					return (a.typeName == typeName);
+					return (browse == other.browse);
 				}
 				else
 				{
@@ -80,13 +59,26 @@ public sealed class TypeConverterAttribute : Attribute
 				}
 			}
 
-	// Get a hash code for this instance.
+	// Get the hash code for this attribute.
 	public override int GetHashCode()
 			{
-				return typeName.GetHashCode();
+				return browse.GetHashCode();
 			}
 
-}; // class TypeConverterAttribute
+	// Determine if this is the default attribute value.
+	public override bool IsDefaultAttribute()
+			{
+				return Equals(Default);
+			}
+
+	// Predefined instances of this class.
+	public static readonly BrowsableAttribute No =
+		new BrowsableAttribute(false);
+	public static readonly BrowsableAttribute Yes =
+		new BrowsableAttribute(true);
+	public static readonly BrowsableAttribute Default = Yes;
+
+}; // class BrowsableAttribute
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * TypeConverterAttribute.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.TypeConverterAttribute" class.
+ * DefaultPropertyAttribute.cs - Implementation of the
+ *			"System.ComponentModel.DefaultPropertyAttribute" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,55 +24,35 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
-
-public sealed class TypeConverterAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class DefaultPropertyAttribute : Attribute
 {
 	// Internal state.
-	private String typeName;
+	private String name;
 
-	// Constructors.
-	public TypeConverterAttribute() : this("") {}
-	public TypeConverterAttribute(String typeName)
+	// Constructor.
+	public DefaultPropertyAttribute(String name)
 			{
-				if(typeName == null)
-				{
-					this.typeName = "";
-				}
-				else
-				{
-					this.typeName = typeName;
-				}
-			}
-	public TypeConverterAttribute(Type type)
-			{
-				if(type == null)
-				{
-					typeName = "";
-				}
-				else
-				{
-					typeName = type.FullName;
-				}
+				this.name = name;
 			}
 
-	// Get the name of the converter type.
-	public String ConverterTypeName
+	// Get the attribute's value.
+	public String Name
 			{
 				get
 				{
-					return typeName;
+					return name;
 				}
 			}
 
-	// Determine if two type converter attributes are equal.
+	// Determine if two instances of this class are equal.
 	public override bool Equals(Object obj)
 			{
-				TypeConverterAttribute a = (obj as TypeConverterAttribute);
-				if(a != null)
+				DefaultPropertyAttribute other =
+						(obj as DefaultPropertyAttribute);
+				if(other != null)
 				{
-					return (a.typeName == typeName);
+					return (name == other.name);
 				}
 				else
 				{
@@ -80,13 +60,17 @@ public sealed class TypeConverterAttribute : Attribute
 				}
 			}
 
-	// Get a hash code for this instance.
+	// Get the hash code for this attribute.
 	public override int GetHashCode()
 			{
-				return typeName.GetHashCode();
+				return name.GetHashCode();
 			}
 
-}; // class TypeConverterAttribute
+	// Predefined instances of this class.
+	public static readonly DefaultPropertyAttribute Default =
+		new DefaultPropertyAttribute(null);
+
+}; // class DefaultPropertyAttribute
 
 #endif // !ECMA_COMPAT
 

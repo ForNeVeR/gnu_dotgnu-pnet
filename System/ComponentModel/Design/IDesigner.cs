@@ -1,6 +1,6 @@
 /*
- * TypeConverter.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.TypeConverter" class.
+ * IDesigner.cs - Implementation of the
+ *		"System.ComponentModel.Design.IDesigner" interface.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -19,35 +19,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.ComponentModel
+namespace System.ComponentModel.Design
 {
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
-
 [TODO]
-public class TypeConverter
+public interface IDesigner : IDisposable
 {
 	// TODO
 
-	// Convert from another type to the one represented by this class.
-	public Object ConvertFrom(Object value)
-			{
-				return ConvertFrom(null, null, value);
-			}
-	[TODO]
-	public virtual Object ConvertFrom(ITypeDescriptorContext context,
-									  CultureInfo culture,
-									  Object value)
-			{
-				// TODO
-				return value;
-			}
-
-}; // class TypeConverter
+}; // interface IDesigner
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.ComponentModel
+}; // namespace System.ComponentModel.Design

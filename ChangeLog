@@ -25,6 +25,32 @@
 	runtime/System/Reflection/AssemblyVersionAttribute.cs: add a number
 	of non-ECMA reflection attributes.
 
+	* runtime/System/Runtime/InteropServices/ComVisibleAttribute.cs,
+	System/ComponentModel/AmbientValueAttribute.cs,
+	System/ComponentModel/BindableAttribute.cs,
+	System/ComponentModel/BindableSupport.cs,
+	System/ComponentModel/BrowsableAttribute.cs,
+	System/ComponentModel/CategoryAttribute.cs,
+	System/ComponentModel/CollectionChangeAction.cs,
+	System/ComponentModel/DefaultEventAttribute.cs,
+	System/ComponentModel/DefaultPropertyAttribute.cs,
+	System/ComponentModel/DefaultValueAttribute.cs,
+	System/ComponentModel/DescriptionAttribute.cs,
+	System/ComponentModel/DesignerAttribute.cs,
+	System/ComponentModel/DesignerSerializationVisibility.cs,
+	System/ComponentModel/EditorBrowsableState.cs,
+	System/ComponentModel/InheritanceLevel.cs,
+	System/ComponentModel/LicenseUsageMode.cs,
+	System/ComponentModel/ListChangedType.cs,
+	System/ComponentModel/ListSortDirection.cs,
+	System/ComponentModel/PropertyTabScope.cs,
+	System/ComponentModel/RefreshProperties.cs,
+	System/ComponentModel/ToolboxItemFilterType.cs,
+	System/ComponentModel/TypeConverter.cs,
+	System/ComponentModel/TypeConverterAttribute.cs,
+	System/ComponentModel/Design/IDesigner.cs: implement a number of
+	enumerated types and attributes in "System.ComponentModel".
+
 2002-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Common/ByteEncoding.cs: missing "++" when converting strings

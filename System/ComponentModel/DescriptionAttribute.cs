@@ -1,6 +1,6 @@
 /*
- * TypeConverterAttribute.cs - Implementation of the
- *		"System.ComponentModel.ComponentModel.TypeConverterAttribute" class.
+ * DescriptionAttribute.cs - Implementation of the
+ *			"System.ComponentModel.DescriptionAttribute" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -24,55 +24,49 @@ namespace System.ComponentModel
 
 #if !ECMA_COMPAT
 
-using System;
-using System.Globalization;
-
-public sealed class TypeConverterAttribute : Attribute
+[AttributeUsage(AttributeTargets.All)]
+public class DescriptionAttribute : Attribute
 {
 	// Internal state.
-	private String typeName;
+	private String desc;
 
-	// Constructors.
-	public TypeConverterAttribute() : this("") {}
-	public TypeConverterAttribute(String typeName)
+	// Constructor.
+	public DescriptionAttribute()
 			{
-				if(typeName == null)
-				{
-					this.typeName = "";
-				}
-				else
-				{
-					this.typeName = typeName;
-				}
+				desc = String.Empty;
 			}
-	public TypeConverterAttribute(Type type)
+	public DescriptionAttribute(String description)
 			{
-				if(type == null)
-				{
-					typeName = "";
-				}
-				else
-				{
-					typeName = type.FullName;
-				}
+				desc = description;
 			}
 
-	// Get the name of the converter type.
-	public String ConverterTypeName
+	// Get the attribute's value.
+	public virtual String Description
 			{
 				get
 				{
-					return typeName;
+					return DescriptionValue;
+				}
+			}
+	protected virtual String DescriptionValue
+			{
+				get
+				{
+					return desc;
+				}
+				set
+				{
+					desc = value;
 				}
 			}
 
-	// Determine if two type converter attributes are equal.
+	// Determine if two instances of this class are equal.
 	public override bool Equals(Object obj)
 			{
-				TypeConverterAttribute a = (obj as TypeConverterAttribute);
-				if(a != null)
+				DescriptionAttribute other = (obj as DescriptionAttribute);
+				if(other != null)
 				{
-					return (a.typeName == typeName);
+					return (Description == other.Description);
 				}
 				else
 				{
@@ -80,13 +74,21 @@ public sealed class TypeConverterAttribute : Attribute
 				}
 			}
 
-	// Get a hash code for this instance.
+	// Get the hash code for this attribute.
 	public override int GetHashCode()
 			{
-				return typeName.GetHashCode();
+				String value = Description;
+				if(value != null)
+				{
+					return value.GetHashCode();
+				}
+				else
+				{
+					return 0;
+				}
 			}
 
-}; // class TypeConverterAttribute
+}; // class DescriptionAttribute
 
 #endif // !ECMA_COMPAT
 

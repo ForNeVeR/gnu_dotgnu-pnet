@@ -264,6 +264,82 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 						    ILSysIOHandle **exceptfds, ILInt32 numExcept,
 						    ILInt64 timeout);
 
+/*
+ * Set or reset the blocking flag on a socket.  Returns zero on error.
+ */
+int ILSysIOSocketSetBlocking(ILSysIOHandle sockfd, int flag);
+
+/*
+ * Get the number of bytes that are available on a socket.
+ * Returns -1 on error.
+ */
+ILInt32 ILSysIOSocketGetAvailable(ILSysIOHandle sockfd);
+
+/*
+ * Get the name of a local socket's end-point.  Returns zero on error.
+ */
+int ILSysIOSocketGetName(ILSysIOHandle sockfd, ILSysIOSockAddr *addr);
+
+/*
+ * Socket option levels.  Must match "System.Net.Sockets.SocketOptionLevel".
+ */
+#define	IL_SOL_IP			0
+#define	IL_SOL_TCP			6
+#define	IL_SOL_UDP			17
+#define	IL_SOL_SOCKET		65535
+
+/*
+ * Socket option names.  Must match "System.Net.Sockets.SocketOptionName".
+ */
+#define	IL_SO_ADD_MEMBERSHIP	12		/* IP options */
+#define	IL_SO_DROP_MEMBERSHIP	13
+#define	IL_SO_NO_DELAY			1		/* TCP options */
+#define	IL_SO_EXPEDITED			2
+#define	IL_SO_NO_CHECKSUM		1		/* UDP options */
+#define	IL_SO_CHKSUM_COVERAGE	20
+#define	IL_SO_REUSE_ADDRESS		0x0004	/* Socket options */
+#define	IL_SO_KEEEP_ALIVE		0x0008
+#define	IL_SO_SEND_BUFFER		0x1001
+#define	IL_SO_RECV_BUFFER		0x1002
+#define	IL_SO_SEND_TIMEOUT		0x1005
+#define	IL_SO_RECV_TIMEOUT		0x1006
+
+/*
+ * Set an integer or boolean socket option.  Returns zero on error.
+ */
+int ILSysIOSocketSetOption(ILSysIOHandle sockfd, ILInt32 level,
+						   ILInt32 name, ILInt32 value);
+
+/*
+ * Get an integer or boolean socket option.  Returns zero on error.
+ */
+int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
+						   ILInt32 name, ILInt32 *value);
+
+/*
+ * Set the linger option on a socket.  Returns zero on error.
+ */
+int ILSysIOSocketSetLinger(ILSysIOHandle handle, int enabled, int seconds);
+
+/*
+ * Get the linger option on a socket.  Returns zero on error.
+ */
+int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds);
+
+/*
+ * Set a multicast option on a socket.  Returns zero on error.
+ */
+int ILSysIOSocketSetMulticast(ILSysIOHandle handle, ILInt32 name,
+							  ILSysIOSockAddr *group,
+							  ILSysIOSockAddr *mcint);
+
+/*
+ * Get a multicast option on a socket.  Returns zero on error.
+ */
+int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 name,
+							  ILSysIOSockAddr *group,
+							  ILSysIOSockAddr *mcint);
+
 /* dns.c */
 struct hostent* ILGetHostByName(const char *name);
 struct hostent* ILGetHostByAddr(const void *addr, unsigned int len, int type);

@@ -1245,8 +1245,8 @@ IL_METHOD_END
 
 IL_METHOD_BEGIN(ClrSecurity_Methods)
 	IL_METHOD("GetPermissionsFrom", "(i)oSystem.Security.ClrPermissions;", _IL_ClrSecurity_GetPermissionsFrom, marshal_ppi)
-	IL_METHOD("GetPermissions", "(i)oSystem.Security.ClrPermissions;", _IL_ClrSecurity_GetPermissions, marshal_ppi)
 	IL_METHOD("SetPermissions", "(oSystem.Security.ClrPermissions;i)V", _IL_ClrSecurity_SetPermissions, marshal_vppi)
+	IL_METHOD("GetPermissions", "(i)oSystem.Security.ClrPermissions;", _IL_ClrSecurity_GetPermissions, marshal_ppi)
 IL_METHOD_END
 
 #endif
@@ -2342,7 +2342,6 @@ IL_METHOD_BEGIN(FileMethods_Methods)
 	IL_METHOD("ValidatePathname", "(oSystem.String;)Z", _IL_FileMethods_ValidatePathname, marshal_bpp)
 	IL_METHOD("Open", "(oSystem.String;vSystem.IO.FileMode;vSystem.IO.FileAccess;vSystem.IO.FileShare;&j)Z", _IL_FileMethods_Open, marshal_bppiiip)
 	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_FileMethods_GetErrno, marshal_ip)
-	IL_METHOD("HasAsync", "()Z", _IL_FileMethods_HasAsync, marshal_bp)
 	IL_METHOD("CanSeek", "(j)Z", _IL_FileMethods_CanSeek, marshal_bpj)
 	IL_METHOD("CheckHandleAccess", "(jvSystem.IO.FileAccess;)Z", _IL_FileMethods_CheckHandleAccess, marshal_bpji)
 	IL_METHOD("Seek", "(jlvSystem.IO.SeekOrigin;)l", _IL_FileMethods_Seek, marshal_lpjli)
@@ -2357,6 +2356,7 @@ IL_METHOD_BEGIN(FileMethods_Methods)
 	IL_METHOD("SetCreationTime", "(oSystem.String;l)vPlatform.Errno;", _IL_FileMethods_SetCreationTime, marshal_ippl)
 	IL_METHOD("SetLastAccessTime", "(oSystem.String;l)vPlatform.Errno;", _IL_FileMethods_SetLastAccessTime, marshal_ippl)
 	IL_METHOD("SetLastWriteTime", "(oSystem.String;l)vPlatform.Errno;", _IL_FileMethods_SetLastWriteTime, marshal_ippl)
+	IL_METHOD("HasAsync", "()Z", _IL_FileMethods_HasAsync, marshal_bp)
 IL_METHOD_END
 
 #endif
@@ -2562,9 +2562,73 @@ static void marshal_ippppl(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjb(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt8 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjpp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjiii(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjiip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjbi(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt8, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt8 *)(avalue[2])), *((ILInt32 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjill(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, ILInt64, ILInt64))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt64 *)(avalue[3])), *((ILInt64 *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpjipp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt32, void *, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
 #ifndef _IL_SocketMethods_suppressed
 
 IL_METHOD_BEGIN(SocketMethods_Methods)
+	IL_METHOD("GetInvalidHandle", "()j", _IL_SocketMethods_GetInvalidHandle, marshal_jp)
 	IL_METHOD("Create", "(iii&j)Z", _IL_SocketMethods_Create, marshal_bpiiip)
 	IL_METHOD("Bind", "(jili)Z", _IL_SocketMethods_Bind, marshal_bpjili)
 	IL_METHOD("Shutdown", "(ji)Z", _IL_SocketMethods_Shutdown, marshal_bpji)
@@ -2577,8 +2641,21 @@ IL_METHOD_BEGIN(SocketMethods_Methods)
 	IL_METHOD("SendTo", "(j[Biiili)i", _IL_SocketMethods_SendTo, marshal_ipjpiiili)
 	IL_METHOD("Close", "(j)Z", _IL_SocketMethods_Close, marshal_bpj)
 	IL_METHOD("Select", "([j[j[jl)i", _IL_SocketMethods_Select, marshal_ippppl)
+	IL_METHOD("SetBlocking", "(jZ)Z", _IL_SocketMethods_SetBlocking, marshal_bpjb)
+	IL_METHOD("GetAvailable", "(j)i", _IL_SocketMethods_GetAvailable, marshal_ipj)
+	IL_METHOD("GetSockName", "(j&l&i)Z", _IL_SocketMethods_GetSockName, marshal_bpjpp)
+	IL_METHOD("SetSocketOption", "(jiii)Z", _IL_SocketMethods_SetSocketOption, marshal_bpjiii)
+	IL_METHOD("GetSocketOption", "(jii&i)Z", _IL_SocketMethods_GetSocketOption, marshal_bpjiip)
+	IL_METHOD("SetLingerOption", "(jZi)Z", _IL_SocketMethods_SetLingerOption, marshal_bpjbi)
+	IL_METHOD("GetLingerOption", "(j&Z&i)Z", _IL_SocketMethods_GetLingerOption, marshal_bpjpp)
+	IL_METHOD("SetMulticastOption", "(jill)Z", _IL_SocketMethods_SetMulticastOption, marshal_bpjill)
+	IL_METHOD("GetMulticastOption", "(ji&l&l)Z", _IL_SocketMethods_GetMulticastOption, marshal_bpjipp)
 	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_SocketMethods_GetErrno, marshal_ip)
 	IL_METHOD("GetErrnoMessage", "(vPlatform.Errno;)oSystem.String;", _IL_SocketMethods_GetErrnoMessage, marshal_ppi)
+	IL_METHOD("CanStartThreads", "()Z", _IL_SocketMethods_CanStartThreads, marshal_bp)
+	IL_METHOD("QueueCompletionItem", "(oSystem.AsyncCallback;oSystem.IAsyncResult;)Z", _IL_SocketMethods_QueueCompletionItem, marshal_bppp)
+	IL_METHOD("CreateManualResetEvent", "()oSystem.Threading.WaitHandle;", _IL_SocketMethods_CreateManualResetEvent, marshal_pp)
+	IL_METHOD("WaitHandleSet", "(oSystem.Threading.WaitHandle;)V", _IL_SocketMethods_WaitHandleSet, marshal_vpp)
 IL_METHOD_END
 
 #endif

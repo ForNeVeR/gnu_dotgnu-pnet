@@ -234,8 +234,8 @@ extern ILInt32 _IL_DefaultEncoding_InternalGetMaxCharCount(ILExecThread * _threa
 extern ILString * _IL_DefaultEncoding_InternalGetString(ILExecThread * _thread, System_Array * _p1, ILInt32 _p2, ILInt32 _p3);
 
 extern ILObject * _IL_ClrSecurity_GetPermissionsFrom(ILExecThread * _thread, ILInt32 _p1);
-extern ILObject * _IL_ClrSecurity_GetPermissions(ILExecThread * _thread, ILInt32 _p1);
 extern void _IL_ClrSecurity_SetPermissions(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
+extern ILObject * _IL_ClrSecurity_GetPermissions(ILExecThread * _thread, ILInt32 _p1);
 
 extern void _IL_GCHandle_GCFree(ILExecThread * _thread, ILInt32 _p1);
 extern ILObject * _IL_GCHandle_GCGetTarget(ILExecThread * _thread, ILInt32 _p1);
@@ -485,7 +485,6 @@ extern ILString * _IL_FileMethods_GetErrnoMessage(ILExecThread * _thread, ILInt3
 extern ILBool _IL_FileMethods_ValidatePathname(ILExecThread * _thread, ILString * _p1);
 extern ILBool _IL_FileMethods_Open(ILExecThread * _thread, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILNativeInt * handle);
 extern ILInt32 _IL_FileMethods_GetErrno(ILExecThread * _thread);
-extern ILBool _IL_FileMethods_HasAsync(ILExecThread * _thread);
 extern ILBool _IL_FileMethods_CanSeek(ILExecThread * _thread, ILNativeInt _p1);
 extern ILBool _IL_FileMethods_CheckHandleAccess(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 extern ILInt64 _IL_FileMethods_Seek(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2, ILInt32 _p3);
@@ -500,6 +499,7 @@ extern ILInt32 _IL_FileMethods_Copy(ILExecThread * _thread, ILString * _p1, ILSt
 extern ILInt32 _IL_FileMethods_SetCreationTime(ILExecThread * _thread, ILString * _p1, ILInt64 _p2);
 extern ILInt32 _IL_FileMethods_SetLastAccessTime(ILExecThread * _thread, ILString * _p1, ILInt64 _p2);
 extern ILInt32 _IL_FileMethods_SetLastWriteTime(ILExecThread * _thread, ILString * _p1, ILInt64 _p2);
+extern ILBool _IL_FileMethods_HasAsync(ILExecThread * _thread);
 
 extern ILBool _IL_RuntimeSecurityManager_CanUseFileHandle(ILExecThread * _thread, ILObject * _this, ILNativeInt _p1);
 extern ILBool _IL_RuntimeSecurityManager_CanOpenFile(ILExecThread * _thread, ILObject * _this, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4);
@@ -546,6 +546,7 @@ extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt _p1, S
 extern void _IL_CryptoMethods_Encrypt(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, System_Array * _p4, ILInt32 _p5);
 extern void _IL_CryptoMethods_StoreKey(ILExecThread * _thread, ILInt32 _p1, ILString * _p2, System_Array * _p3);
 
+extern ILNativeInt _IL_SocketMethods_GetInvalidHandle(ILExecThread * _thread);
 extern ILBool _IL_SocketMethods_Create(ILExecThread * _thread, ILInt32 _p1, ILInt32 _p2, ILInt32 _p3, ILNativeInt * handle);
 extern ILBool _IL_SocketMethods_Bind(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 _p3, ILInt32 _p4);
 extern ILBool _IL_SocketMethods_Shutdown(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
@@ -558,8 +559,21 @@ extern ILInt32 _IL_SocketMethods_Send(ILExecThread * _thread, ILNativeInt _p1, S
 extern ILInt32 _IL_SocketMethods_SendTo(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt64 _p6, ILInt32 _p7);
 extern ILBool _IL_SocketMethods_Close(ILExecThread * _thread, ILNativeInt _p1);
 extern ILInt32 _IL_SocketMethods_Select(ILExecThread * _thread, System_Array * _p1, System_Array * _p2, System_Array * _p3, ILInt64 _p4);
+extern ILBool _IL_SocketMethods_SetBlocking(ILExecThread * _thread, ILNativeInt _p1, ILBool _p2);
+extern ILInt32 _IL_SocketMethods_GetAvailable(ILExecThread * _thread, ILNativeInt _p1);
+extern ILBool _IL_SocketMethods_GetSockName(ILExecThread * _thread, ILNativeInt _p1, ILInt64 * address, ILInt32 * port);
+extern ILBool _IL_SocketMethods_SetSocketOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4);
+extern ILBool _IL_SocketMethods_GetSocketOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 * value);
+extern ILBool _IL_SocketMethods_SetLingerOption(ILExecThread * _thread, ILNativeInt _p1, ILBool _p2, ILInt32 _p3);
+extern ILBool _IL_SocketMethods_GetLingerOption(ILExecThread * _thread, ILNativeInt _p1, ILBool * enabled, ILInt32 * seconds);
+extern ILBool _IL_SocketMethods_SetMulticastOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 _p3, ILInt64 _p4);
+extern ILBool _IL_SocketMethods_GetMulticastOption(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2, ILInt64 * group, ILInt64 * mcint);
 extern ILInt32 _IL_SocketMethods_GetErrno(ILExecThread * _thread);
 extern ILString * _IL_SocketMethods_GetErrnoMessage(ILExecThread * _thread, ILInt32 _p1);
+extern ILBool _IL_SocketMethods_CanStartThreads(ILExecThread * _thread);
+extern ILBool _IL_SocketMethods_QueueCompletionItem(ILExecThread * _thread, ILObject * _p1, ILObject * _p2);
+extern ILObject * _IL_SocketMethods_CreateManualResetEvent(ILExecThread * _thread);
+extern void _IL_SocketMethods_WaitHandleSet(ILExecThread * _thread, ILObject * _p1);
 
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 _p1);
 extern ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread * _thread, ILInt64 _p1);

@@ -1,4 +1,10 @@
 
+2003-04-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, engine/int_proto.h, engine/int_table.c,
+	engine/lib_socket.c, include/il_sysio.h, support/socket.c:
+	new internalcalls for socket support.
+
 2003-04-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_optable.c, codegen/cg_coerce.h: Add the ILOp_UShr

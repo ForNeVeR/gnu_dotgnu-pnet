@@ -39,6 +39,14 @@
 #endif
 
 /*
+ * public static IntPtr GetInvalidHandle();
+ */
+ILNativeInt _IL_SocketMethods_GetInvalidHandle(ILExecThread *_thread)
+{
+	return _IL_FileMethods_GetInvalidHandle(_thread);
+}
+
+/*
  * public static bool Create(int af, int st, int pt, out IntPtr handle);
  */
 ILBool _IL_SocketMethods_Create(ILExecThread *_thread, ILInt32 af,
@@ -214,6 +222,162 @@ ILInt32 _IL_SocketMethods_Select(ILExecThread *_thread,
 }
 
 /*
+ * public static bool SetBlocking(IntPtr handle, bool blocking);
+ */
+ILBool _IL_SocketMethods_SetBlocking(ILExecThread *_thread,
+									 ILNativeInt handle, ILBool blocking)
+{
+	return (ILSysIOSocketSetBlocking
+				((ILSysIOHandle)handle, (int)blocking) != 0);
+}
+
+/*
+ * public static int GetAvailable(IntPtr handle);
+ */
+ILInt32 _IL_SocketMethods_GetAvailable(ILExecThread *_thread,
+									   ILNativeInt handle)
+{
+	return ILSysIOSocketGetAvailable((ILSysIOHandle)handle);
+}
+
+/*
+ * public static bool GetSockName(IntPtr handle, out long address,
+ *								  out int port);
+ */
+ILBool _IL_SocketMethods_GetSockName(ILExecThread * _thread,
+									 ILNativeInt handle,
+									 ILInt64 *address, ILInt32 *port)
+{
+	ILSysIOSockAddr addr;
+	if(ILSysIOSocketGetName((ILSysIOHandle)handle, &addr))
+	{
+		*address = (ILInt64)(addr.addr);
+		*port = (ILInt32)(addr.port);
+		return 1;
+	}
+	else
+	{
+		*address = 0;
+		*port = 0;
+		return 0;
+	}
+}
+
+/*
+ * public static bool SetSocketOption(IntPtr handle, int level,
+ *									  int name, int value);
+ */
+ILBool _IL_SocketMethods_SetSocketOption(ILExecThread *_thread,
+										 ILNativeInt handle,
+										 ILInt32 level,
+										 ILInt32 name,
+										 ILInt32 value)
+{
+	return (ILSysIOSocketSetOption((ILSysIOHandle)handle,
+								   level, name, value) != 0);
+}
+
+/*
+ * public static bool GetSocketOption(IntPtr handle, int level,
+ *									  int name, out int value);
+ */
+ILBool _IL_SocketMethods_GetSocketOption(ILExecThread *_thread,
+										 ILNativeInt handle,
+										 ILInt32 level,
+										 ILInt32 name,
+										 ILInt32 *value)
+{
+	*value = 0;
+	return (ILSysIOSocketGetOption((ILSysIOHandle)handle,
+								   level, name, value) != 0);
+}
+
+/*
+ * public static bool SetLingerOption(IntPtr handle, bool enabled,
+ *									  int seconds);
+ */
+ILBool _IL_SocketMethods_SetLingerOption(ILExecThread *_thread,
+										 ILNativeInt handle,
+										 ILBool enabled,
+										 ILInt32 seconds)
+{
+	return (ILSysIOSocketSetLinger((ILSysIOHandle)handle,
+								   (enabled != 0), (int)seconds) != 0);
+}
+
+/*
+ * public static bool GetLingerOption(IntPtr handle, out bool enabled,
+ *									  out int seconds);
+ */
+extern ILBool _IL_SocketMethods_GetLingerOption(ILExecThread *_thread,
+												ILNativeInt handle,
+												ILBool *enabled,
+												ILInt32 *seconds)
+{
+	int enab, secs;
+	if(ILSysIOSocketGetLinger((ILSysIOHandle)handle, &enab, &secs))
+	{
+		*enabled = (enab != 0);
+		*seconds = (ILInt32)secs;
+		return 1;
+	}
+	else
+	{
+		*enabled = 0;
+		*seconds = 0;
+		return 0;
+	}
+}
+
+/*
+ * public static bool SetMulticastOption(IntPtr handle, int name,
+ *									     long group, long mcint);
+ */
+ILBool _IL_SocketMethods_SetMulticastOption(ILExecThread *_thread,
+											ILNativeInt handle,
+											ILInt32 name,
+											ILInt64 group,
+											ILInt64 mcint)
+{
+	ILSysIOSockAddr g, m;
+	g.family = AF_INET;
+	g.addr = (unsigned long)group;
+	g.port = 0;
+	m.family = AF_INET;
+	m.addr = (unsigned long)mcint;
+	m.port = 0;
+	return (ILSysIOSocketSetMulticast((ILSysIOHandle)handle,
+									  name, &g, &m) != 0);
+}
+
+/*
+ * public static bool GetMulticastOption(IntPtr handle, int name,
+ *									     out long group, out long mcint);
+ */
+ILBool _IL_SocketMethods_GetMulticastOption(ILExecThread *_thread,
+											ILNativeInt handle,
+											ILInt32 name,
+											ILInt64 *group,
+											ILInt64 *mcint)
+{
+	ILSysIOSockAddr g, m;
+	ILMemZero(&g, sizeof(g));
+	ILMemZero(&m, sizeof(m));
+	if(ILSysIOSocketGetMulticast((ILSysIOHandle)handle, name, &g, &m))
+	{
+		*group = (ILInt64)(g.addr);
+		*mcint = (ILInt64)(m.addr);
+		return 1;
+	}
+	else
+	{
+		*group = 0;
+		*mcint = 0;
+		return 0;
+	}
+}
+
+/*
  * public static Errno GetErrno();
  */
 ILInt32 _IL_SocketMethods_GetErrno(ILExecThread *thread)
@@ -235,6 +399,54 @@ ILString *_IL_SocketMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
 	{
 		return 0;
 	}
+}
+
+/*
+ * public static bool CanStartThreads();
+ */
+ILBool _IL_SocketMethods_CanStartThreads(ILExecThread *_thread)
+{
+	return _IL_Thread_CanStartThreads(_thread);
+}
+
+/*
+ * public static bool QueueCompletionItem(AsyncCallback callback,
+ *										  IAsyncResult state);
+ */
+ILBool _IL_SocketMethods_QueueCompletionItem(ILExecThread *_thread,
+											 ILObject *callback,
+											 ILObject *state)
+{
+	/* This provides backdoor access to "ThreadPool.QueueCompletionItem",
+	   which cannot be called directly from C# code due to security checks */
+	ILBool result = 0;
+	ILExecThreadCallNamed(_thread, "System.Threading.ThreadPool",
+						  "QueueCompletionItem",
+						  "(oSystem.AsyncCallback;oSystem.IAsyncResult;)Z",
+						  &result, callback, state);
+	return result;
+}
+
+/*
+ * public static WaitHandle CreateManualResetEvent();
+ */
+ILObject *_IL_SocketMethods_CreateManualResetEvent(ILExecThread *_thread)
+{
+	return ILExecThreadNew(_thread, "System.Threading.ManualResetEvent",
+						   "(TZ)V", (ILVaInt)0);
+}
+
+/*
+ * public static void WaitHandleSet(WaitHandle waitHandle);
+ */
+void _IL_SocketMethods_WaitHandleSet(ILExecThread *_thread,
+									 ILObject *waitHandle)
+{
+	/* This provides backdoor access to "ManualResetEvent.Set",
+	   which cannot be called directly in ECMA_COMPAT mode */
+	ILBool result = 0;
+	ILExecThreadCallNamed(_thread, "System.Threading.ManualResetEvent",
+						  "Set", "(T)Z", &result, waitHandle);
 }
 
 /*

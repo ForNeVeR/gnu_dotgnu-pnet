@@ -19,6 +19,7 @@
  */
 
 #include "il_sysio.h"
+#include "il_errno.h"
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
@@ -40,6 +41,9 @@
 #endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -366,6 +370,100 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 
 	/* Return the result to the caller */
 	return (ILInt32)result;
+}
+
+int ILSysIOSocketSetBlocking(ILSysIOHandle sockfd, int flag)
+{
+#if defined(FIONBIO) && defined(HAVE_IOCTL)
+	return (ioctl((int)(ILNativeInt)sockfd, FIONBIO, &flag) >= 0);
+#else
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
+#endif
+}
+
+ILInt32 ILSysIOSocketGetAvailable(ILSysIOHandle sockfd)
+{
+#if defined(FIONREAD) && defined(HAVE_IOCTL)
+	int result = 0;
+	if(ioctl((int)(ILNativeInt)sockfd, FIONREAD, &result) >= 0)
+	{
+		return (ILInt32)result;
+	}
+	else
+	{
+		return -1;
+	}
+#else
+	return 0;
+#endif
+}
+
+int ILSysIOSocketGetName(ILSysIOHandle sockfd, ILSysIOSockAddr *addr)
+{
+	struct sockaddr_in iaddr;
+	int size = sizeof(iaddr);
+	ILMemZero(&iaddr, sizeof(iaddr));
+	if(getsockname((int)(ILNativeInt)sockfd,
+				   (struct sockaddr *)&addr, &size) >= 0)
+	{
+		addr->family = (int)(iaddr.sin_family);
+		addr->addr = (unsigned long)(iaddr.sin_addr.s_addr);
+		addr->port = ntohs(iaddr.sin_port);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILSysIOSocketSetOption(ILSysIOHandle sockfd, ILInt32 level,
+						   ILInt32 name, ILInt32 value)
+{
+	/* TODO */
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
+}
+
+int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
+						   ILInt32 name, ILInt32 *value)
+{
+	/* TODO */
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
+}
+
+int ILSysIOSocketSetLinger(ILSysIOHandle handle, int enabled, int seconds)
+{
+	/* TODO */
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
+}
+
+int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds)
+{
+	/* TODO */
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
+}
+
+int ILSysIOSocketSetMulticast(ILSysIOHandle handle, ILInt32 name,
+							  ILSysIOSockAddr *group,
+							  ILSysIOSockAddr *mcint)
+{
+	/* TODO */
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
+}
+
+int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 name,
+							  ILSysIOSockAddr *group,
+							  ILSysIOSockAddr *mcint)
+{
+	/* TODO */
+	ILSysIOSetErrno(IL_ERRNO_EINVAL);
+	return 0;
 }
 
 #ifdef	__cplusplus

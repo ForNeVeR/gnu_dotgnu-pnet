@@ -32,6 +32,7 @@ public class SymReader : ISymbolReader
 {
 	// Internal state.
 	private unsafe ISymUnmanagedReader *pReader;
+	private String linkDirectory;
 	private String filename;
 	private Encoding utf8;
 	internal byte[] data;
@@ -102,6 +103,13 @@ public class SymReader : ISymbolReader
 				   data[stringOffset + stringLength - 1] != 0)
 				{
 					throw new ArgumentException();
+				}
+
+				// Get the link directory, if specified.
+				SymInfoEnumerator e = new SymInfoEnumerator(this, "LDIR");
+				if(e.MoveNext())
+				{
+					linkDirectory = ReadString(e.GetNextInt());
 				}
 			}
 
@@ -380,6 +388,9 @@ public class SymReader : ISymbolReader
 	// Convert a filename into a URL.
 	internal String FilenameToURL(String name)
 			{
+				String temp;
+				bool checkOther;
+
 				// Bail out if the name is empty.
 				if(name == null || name.Length == 0)
 				{
@@ -387,9 +398,19 @@ public class SymReader : ISymbolReader
 				}
 				
 				// Get the full absolute pathname for the file.
-				if(!Path.IsPathRooted(name) && filename != null)
+				checkOther = true;
+				if(!Path.IsPathRooted(name) && linkDirectory != null)
 				{
-					String temp = Path.Combine
+					temp = Path.Combine(linkDirectory, name);
+					if(File.Exists(temp))
+					{
+						name = temp;
+						checkOther = false;
+					}
+				}
+				if(checkOther && !Path.IsPathRooted(name) && filename != null)
+				{
+					temp = Path.Combine
 						(Path.GetDirectoryName(filename), name);
 					if(File.Exists(temp))
 					{

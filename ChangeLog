@@ -48,6 +48,9 @@
 	* runtime/System/IO/FileStream.cs: positioning bug, when seeking
 	within the already-read FileStream buffer contents.
 
+	* ISymWrapper/SymReader.cs: resolve source filenames using
+	the link directory, if present.
+
 2003-09-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/ScrollBar.cs, System.Windows.Forms/ListBox.cs

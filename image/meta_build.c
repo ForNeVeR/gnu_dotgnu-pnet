@@ -1630,6 +1630,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 	int isMethod;
 	ILMethod *method;
 	int loadFlags = (int)userData;
+	ILType *origSig = ILType_Invalid;
 
 	/* Get the member's name */
 	name = ILImageGetString(image, values[IL_OFFSET_MEMBERREF_NAME]);
@@ -1801,6 +1802,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 			/* The parent refers to a local method: ignore the other info */
 			member = ILMember_FromToken
 						(image, values[IL_OFFSET_MEMBERREF_PARENT]);
+			origSig = type;
 		}
 		break;
 
@@ -1881,6 +1883,10 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 		if(!member)
 		{
 			return IL_LOADERR_MEMORY;
+		}
+		if(origSig != ILType_Invalid)
+		{
+			member->signature = origSig;
 		}
 		_ILMemberSetSignatureIndex
 				(member, values[IL_OFFSET_MEMBERREF_SIGNATURE_RAW]);

@@ -966,6 +966,22 @@ static int GetInlineMethodType(ILMethod *method)
 	return -1;
 }
 
+/*
+ * Set return type information within a stack item.
+ */
+static void SetReturnType(ILEngineStackItem *item, ILType *returnType)
+{
+	item->engineType = TypeToEngineType(returnType);
+	if(item->engineType != ILEngineType_M)
+	{
+		item->typeInfo = returnType;
+	}
+	else
+	{
+		item->typeInfo = ILType_Ref(ILTypeStripPrefixes(returnType));
+	}
+}
+
 #elif defined(IL_VERIFY_LOCALS)
 
 ILType *methodSignature;
@@ -1031,8 +1047,7 @@ case IL_OP_CALL:
 				returnType = ILTypeGetReturn(methodSignature);
 				if(returnType != ILType_Void)
 				{
-					stack[stackSize].engineType = TypeToEngineType(returnType);
-					stack[stackSize].typeInfo = returnType;
+					SetReturnType(&(stack[stackSize]), returnType);
 				}
 				else
 				{
@@ -1126,8 +1141,7 @@ case IL_OP_CALLI:
 			returnType = ILTypeGetReturn(methodSignature);
 			if(returnType != ILType_Void)
 			{
-				stack[stackSize].engineType = TypeToEngineType(returnType);
-				stack[stackSize].typeInfo = returnType;
+				SetReturnType(&(stack[stackSize]), returnType);
 			}
 			else
 			{
@@ -1209,8 +1223,7 @@ case IL_OP_CALLVIRT:
 				returnType = ILTypeGetReturn(methodSignature);
 				if(returnType != ILType_Void)
 				{
-					stack[stackSize].engineType = TypeToEngineType(returnType);
-					stack[stackSize].typeInfo = returnType;
+					SetReturnType(&(stack[stackSize]), returnType);
 				}
 				else
 				{

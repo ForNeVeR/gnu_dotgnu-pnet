@@ -1,5 +1,5 @@
 
-2004-07-31  Rainer Groesslinger  <scandium@gentoo.org>
+2004-07-31  Rainer Groesslinger  <rainer.groesslinger@gmx.net>
 
 	* System.Windows.Forms/Control.cs: Fix silly typo in Control.cs.
 	(patch #3257).

@@ -703,8 +703,10 @@ public class XmlTextReader : XmlReader
 					case 'D':
 						if(structFlag != true)
 						{
-							throw new XmlException
-								(S._("Xml_Malformed"));
+							builder.Append((char)ch);
+							ch = ReadChar();
+							AnalyzeChar(ch, false);
+							break;
 						}
 						
 						// document type nodes
@@ -788,6 +790,7 @@ public class XmlTextReader : XmlReader
 						
 						nodeType = XmlNodeType.Text;
 						ch = ReadChar();
+						value = builder.ToString();
 						AnalyzeChar(ch, false);
 						break;
 					
@@ -858,6 +861,7 @@ public class XmlTextReader : XmlReader
 						}
 						return true;
 				}
+				return false;
 			}
 
 	// Read the next attribute value in the input stream.
@@ -961,19 +965,45 @@ public class XmlTextReader : XmlReader
 				}
 				
 				int ch;
-				StringBuilder builder = new StringBuilder();
+				StringBuilder buffer = new StringBuilder();
+				builder = new StringBuilder();
 				if(nodeType == XmlNodeType.Element)
 				{
-					MoveToContent();	
-					Read();
-					return value;
+					MoveToContent();
+					ReadChar();
+					while((ch = ReadChar()) != -1)
+					{
+						builder.Append((char)ch);
+						if((char)ch == '<' && (char)reader.Peek() == '/')
+						{
+							ReadChar();
+							while((ch = ReadChar()) != -1)
+							{
+								builder.Append((char)ch);
+								if((char)ch == '>')
+								{
+									break;
+								}
+								buffer.Append((char)ch);
+							}							
+							if(buffer.ToString() == Name)
+							{
+								return builder.ToString(0,builder.Length - buffer.Length-2);
+							} 
+							else
+							{
+								// reset buffer
+								buffer = new StringBuilder();
+							}
+						}
+					}	
+				
+					return String.Empty; 
 				}
 				else if(nodeType == XmlNodeType.Attribute)
 				{
-					if(ReadAttributeValue() == true)
-					{
-						return value;
-					}
+					Read();
+					return value;
 				}
 			
 				return String.Empty;
@@ -981,11 +1011,41 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read the current node, including all markup.
-	[TODO]
 	public override String ReadOuterXml()
 			{
-				// TODO
-				return null;
+				builder = new StringBuilder();
+				StringBuilder buffer = new StringBuilder();
+				MoveToContent();
+				int ch;
+				String indexKey = "</" + Name + ">";
+				builder.Append("<"+Name);
+				while((ch = ReadChar()) != -1)
+				{
+					builder.Append((char)ch);
+					if((char)ch == '<' && (char)reader.Peek() == '/')
+					{
+						ReadChar();
+						while((ch = ReadChar()) != -1)
+						{
+							builder.Append((char)ch);
+							if((char)ch == '>')
+							{
+								break;
+							}
+							buffer.Append((char)ch);
+						}							
+						if(buffer.ToString() == Name)
+						{
+							return builder.ToString();
+						} 
+						else
+						{
+							// reset buffer
+							buffer = new StringBuilder();
+						}
+					}	
+				}
+				return String.Empty; 
 			}
 
 	// Read the contents of an element or text node as a string.

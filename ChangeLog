@@ -15,6 +15,15 @@
 	System.Windows.Forms/Themes/DefaultThemePainter.cs,
 	samples/FormsTest.cs: profile-related fixes.
 
+	* System.Windows.Forms/Forms.build,
+	System.Windows.Forms/Resources/Makefile,
+	System.Windows.Forms/Resources/ResXFileRef.cs,
+	System.Windows.Forms/Resources/ResXResourceReader.cs,
+	System.Windows.Forms/Resources/ResXResourceSet.cs,
+	System.Windows.Forms/Resources/ResXResourceWriter.cs,
+	samples/samples.build: stub out the "ResX" classes and add
+	"System.Xml" to the assembly dependencies for Winforms.
+
 2003-10-10  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: measureCharacterRanges now complies with

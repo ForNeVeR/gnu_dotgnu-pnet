@@ -20,6 +20,7 @@
 
 			<references>
 				<file name="../System.Drawing/System.Drawing.dll"/>
+				<file name="../System.Xml/System.Xml.dll"/>
 				<file name="../System/System.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../DotGNU.Images/DotGNU.Images.dll"/>

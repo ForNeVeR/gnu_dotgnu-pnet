@@ -170,6 +170,8 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 			{
 				// TODO: line wrapping, etc
 				int width, ascent, descent;
+				charactersFitted = 0;
+				linesFilled = 0;
 				graphics.MeasureString
 					(s, font, out width, out ascent, out descent);
 				if(!ascentOnly)

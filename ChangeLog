@@ -1,4 +1,15 @@
 
+2003-06-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/ColorTranslator.cs, System.Drawing/Font.cs,
+	System.Drawing/Graphics.cs, System.Drawing/Drawing2D/Matrix.cs,
+	System.Drawing/Imaging/WmfPlaceableFileHeader.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Windows.Forms/Button.cs, System.Windows.Forms/CheckBox.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/UserControl.cs,
+	Xsharp/InputOnlyWidget.cs: fix some compilation issues for csc
+	(Neil Cawse <neilc@geotab.ca>).
+
 2003-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs , 

@@ -85,7 +85,8 @@ public sealed class ColorTranslator
 	// This also understands system color indicators, for compatibility.
 	public static Color FromWin32(int win32Color)
 			{
-				if((win32Color & (int)0xFF000000) != (int)0x80000000)
+				if((win32Color & unchecked((int)0xFF000000))
+						!= unchecked((int)0x80000000))
 				{
 					return Color.FromArgb(win32Color & 0xFF,
 									      (win32Color >> 8) & 0xFF,

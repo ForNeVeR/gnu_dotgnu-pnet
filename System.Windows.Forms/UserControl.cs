@@ -44,7 +44,7 @@ public class UserControl : ContainerControl
 			}
 
 	// Get the default size of the user control
-	public override Size DefaultSize
+	protected override Size DefaultSize
 			{
 				get
 				{

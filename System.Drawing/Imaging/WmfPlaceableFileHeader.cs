@@ -38,7 +38,7 @@ public sealed class WmfPlaceableFileHeader
 	// Constructor.
 	public WmfPlaceableFileHeader()
 			{
-				key = (int)0x9AC6CDD7;
+				key = unchecked((int)0x9AC6CDD7);
 			}
 
 	// Get or set this object's properties.

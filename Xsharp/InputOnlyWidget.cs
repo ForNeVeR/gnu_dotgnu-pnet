@@ -35,8 +35,8 @@ public class InputOnlyWidget : Widget
 {
 	// Internal state.
 	private bool focusable;
-	public Xlib.Time lastClickTime;
-	public ButtonName lastClickButton;
+	private Xlib.Time lastClickTime;
+	private ButtonName lastClickButton;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.InputOnlyWidget"/>

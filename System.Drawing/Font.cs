@@ -233,6 +233,7 @@ public sealed class Font
 					{
 						case GraphicsUnit.World:
 						case GraphicsUnit.Pixel:
+						default:
 						{
 							adjust = 72.0f / Graphics.DefaultScreenDpi;
 						}

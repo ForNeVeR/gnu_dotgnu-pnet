@@ -2381,6 +2381,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					newX = (float)x;
 					newY = (float)y;
 				}
+				else
+				{
+					newX = (float)x;
+					newY = (float)y;
+				}
 
 				// Apply the page scale factor.
 				if(pageScale != 1.0f)

@@ -166,8 +166,10 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 					m12 = -(this.m12 / determinant);
 					m21 = -(this.m21 / determinant);
 					m22 = this.m11 / determinant;
-					dx  = (this.m12 * dy - this.m22 * dx) / determinant;
-					dy  = (this.m21 * dx - this.m11 * dy) / determinant;
+					dx  = (this.m12 * this.dy - this.m22 * this.dx)
+								/ determinant;
+					dy  = (this.m21 * this.dx - this.m11 * this.dy)
+								/ determinant;
 
 					// Write the temporary variables back to the matrix.
 					this.m11 = m11;

@@ -27,7 +27,6 @@ using System.Drawing;
 using System.Drawing.Toolkit;
 using System.Drawing.Text;
 using System.Collections;
-using System.Windows.Forms.Toolkit;
 
 #if CONFIG_COMPONENT_MODEL
 public class Control : Component, ISynchronizeInvoke, IWin32Window

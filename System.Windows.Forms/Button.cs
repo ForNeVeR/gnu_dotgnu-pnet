@@ -22,8 +22,6 @@
 namespace System.Windows.Forms
 {
 
-using System.Windows.Forms.Toolkit;
-
 public class Button : ButtonBase, IButtonControl
 {
 	// Internal result.

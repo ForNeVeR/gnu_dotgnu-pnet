@@ -49,6 +49,15 @@ public sealed class StackOverflowException : SystemException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x800703e9;
+				}
+			}
+
 }; // class StackOverflowException
 
 }; // namespace System

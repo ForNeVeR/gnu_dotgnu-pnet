@@ -28,15 +28,33 @@ public class XmlException : SystemException
 
 	// Constructors.
 	public XmlException()
-		: base(S._("Xml_Default")) {}
+		: base(S._("Xml_Default"))
+		{
+		#if !ECMA_COMPAT
+			HResult = (int)0x80131940;
+		#endif
+		}
 	public XmlException(String message)
-		: base(message) {}
+		: base(message)
+		{
+		#if !ECMA_COMPAT
+			HResult = (int)0x80131940;
+		#endif
+		}
 	public XmlException(String message, Exception innerException)
-		: base(message, innerException) {}
+		: base(message, innerException)
+		{
+		#if !ECMA_COMPAT
+			HResult = (int)0x80131940;
+		#endif
+		}
 	public XmlException(String message, Exception innerException,
 						int lineNumber, int linePosition)
 		: base(message, innerException)
 		{
+		#if !ECMA_COMPAT
+			HResult = (int)0x80131940;
+		#endif
 			this.lineNumber = lineNumber;
 			this.linePosition = linePosition;
 		}

@@ -42,6 +42,15 @@ public class MissingMethodException : MissingMemberException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80131513;
+				}
+			}
+
 }; // class MissingMethodException
 
 }; // namespace System

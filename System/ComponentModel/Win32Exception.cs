@@ -30,27 +30,32 @@ namespace System.ComponentModel
 		[TODO]
 		public Win32Exception() : base()
 		{
+			HResult = (int)0x80004005;
 		}
 
 		[TODO]
 		public Win32Exception(int error) : base()
 		{
+			HResult = (int)0x80004005;
 		}
 
 		[TODO]
 		public Win32Exception(int error, String message) : base(message)
 		{
+			HResult = (int)0x80004005;
 		}
 
 		[TODO]
 		internal Win32Exception(String message) : base (message)
 		{
+			HResult = (int)0x80004005;
 		}
 
 		[TODO]
 		internal Win32Exception(String message,Exception inner) 
 			: base (message,inner)
 		{
+			HResult = (int)0x80004005;
 		}
 
 		public int NativeErrorCode 

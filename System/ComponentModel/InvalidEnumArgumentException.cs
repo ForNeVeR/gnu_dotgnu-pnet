@@ -30,12 +30,14 @@ namespace System.ComponentModel
 		[TODO]
 		public InvalidEnumArgumentException()
 		{
+			HResult = (int)0x80070057;
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
 		public InvalidEnumArgumentException(String message)
 		{
+			HResult = (int)0x80070057;
 			throw new NotImplementedException(".ctor");
 		}
 
@@ -43,6 +45,7 @@ namespace System.ComponentModel
 		public InvalidEnumArgumentException(String argumentName, 
 							int invalidValue, Type enumClass)
 		{
+			HResult = (int)0x80070057;
 			throw new NotImplementedException(".ctor");
 		}
 

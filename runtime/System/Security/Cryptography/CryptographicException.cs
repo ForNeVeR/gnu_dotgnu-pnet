@@ -50,6 +50,15 @@ public class CryptographicException : SystemException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80131430;
+				}
+			}
+
 }; // class CryptographicException
 
 #endif // !ECMA_COMPAT

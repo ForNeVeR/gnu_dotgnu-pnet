@@ -28,9 +28,19 @@ public class UriFormatException : FormatException
 
 	// Constructors.
 	public UriFormatException()
-		: base(S._("Exception_UriFormat")) {}
+		: base(S._("Exception_UriFormat"))
+		{
+		#if !ECMA_COMPAT
+			HResult = (int)0x80131537;
+		#endif
+		}
 	public UriFormatException(String msg)
-		: base(msg) {}
+		: base(msg)
+		{
+		#if !ECMA_COMPAT
+			HResult = (int)0x80131537;
+		#endif
+		}
 
 	// Get the default message to use for this exception type.
 	public override String Message

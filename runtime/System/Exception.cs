@@ -1,7 +1,7 @@
 /*
  * Exception.cs - Implementation of the "System.Exception" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@ if "message" is null.  "MessageExtra" provides extra information to be
 inserted into the "ToString()" result just after the message and before
 the stack trace.
 
+A similar approach is used to get the HResult values.
+
 This design is cleaner to implement throughout the library.  Because the
 extra properties are "protected internal", they will not pollute the
 name space of applications that didn't expect them to be present.
@@ -58,6 +60,10 @@ public class Exception
 	private String helpLink;
 	private String source;
 	private PackedStackFrame[] stackTrace;
+#if !ECMA_COMPAT
+	private int hresult;
+	private bool hresultSet;
+#endif
 
 	// Constructors.
 	public Exception() : this(null, null) {}
@@ -176,6 +182,25 @@ public class Exception
 		}
 
 	// Properties.
+#if !ECMA_COMPAT
+	protected int HResult
+		{
+			get
+			{
+				if(!hresultSet)
+				{
+					hresult = (int)HResultDefault;
+					hresultSet = true;
+				}
+				return hresult;
+			}
+			set
+			{
+				hresult = value;
+				hresultSet = true;
+			}
+		}
+#endif
 	public virtual String HelpLink
 		{
 			get
@@ -282,6 +307,15 @@ public class Exception
 			}
 		}
 	
+	// Get the default HResult value for this type of exception.
+	protected internal virtual uint HResultDefault
+		{
+			get
+			{
+				return 0x80131500;
+			}
+		}
+
 #if !ECMA_COMPAT
 	[TODO]
 	public virtual void GetObjectData (SerializationInfo info, 

@@ -41,6 +41,15 @@ public sealed class XmlSyntaxException : SystemException
 			: base(String.Format(_("Exception_XmlSyntaxLineMsg"),
 								 lineNumber, message)) {}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80131418;
+				}
+			}
+
 }; // class XmlSyntaxException
 
 #endif // !ECMA_COMPAT

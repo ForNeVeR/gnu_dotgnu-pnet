@@ -51,6 +51,15 @@ public class CryptographicUnexpectedOperationException : CryptographicException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80131431;
+				}
+			}
+
 }; // class CryptographicUnexpectedOperationException
 
 #endif // !ECMA_COMPAT

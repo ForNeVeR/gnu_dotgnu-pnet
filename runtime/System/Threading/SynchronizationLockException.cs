@@ -42,6 +42,15 @@ public class SynchronizationLockException : SystemException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80131518;
+				}
+			}
+
 }; // class SynchronizationLockException
 
 }; // namespace System.Threading

@@ -7,6 +7,9 @@
 	runtime/System/Reflection/InvalidFilterCriteriaException.cs:
 	implement type filters.
 
+	* runtime/*, System/*, System.Xml/*: add the appropriate HResult
+	values to all exception classes.
+
 2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/IRegistryKeyProvider.cs,

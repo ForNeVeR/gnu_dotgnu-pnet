@@ -64,6 +64,15 @@ public class ExternalException : SystemException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80004005;
+				}
+			}
+
 }; // class ExternalException
 
 #endif // !ECMA_COMPAT

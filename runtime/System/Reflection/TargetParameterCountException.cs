@@ -44,6 +44,15 @@ public sealed class TargetParameterCountException : ApplicationException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x8002000e;
+				}
+			}
+
 }; // class TargetParameterCountException
 
 }; // namespace System.Reflection

@@ -30,12 +30,14 @@ namespace System.ComponentModel
 		[TODO]
 		public WarningException(String message)
 		{
+			HResult = (int)0x80131501;
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
 		public WarningException(String message, String helpUrl)
 		{
+			HResult = (int)0x80131501;
 			throw new NotImplementedException(".ctor");
 		}
 
@@ -43,6 +45,7 @@ namespace System.ComponentModel
 		public WarningException(String message, String helpUrl, 
 										String helpTopic)
 		{
+			HResult = (int)0x80131501;
 			throw new NotImplementedException(".ctor");
 		}
 

@@ -44,6 +44,15 @@ public class TargetException : ApplicationException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80131603;
+				}
+			}
+
 }; // class TargetException
 
 }; // namespace System.Reflection

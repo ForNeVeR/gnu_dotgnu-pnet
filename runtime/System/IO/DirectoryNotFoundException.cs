@@ -44,6 +44,15 @@ public class DirectoryNotFoundException : IOException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80070003;
+				}
+			}
+
 }; // class DirectoryNotFoundException
 
 }; // namespace System.IO

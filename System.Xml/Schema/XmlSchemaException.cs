@@ -30,6 +30,7 @@ namespace System.Xml.Schema
 		[TODO]
 		public XmlSchemaException(String message, Exception innerException)
 		{
+			 HResult = (int)0x80131941;
 			 throw new NotImplementedException(".ctor");
 		}
 

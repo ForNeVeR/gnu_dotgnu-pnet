@@ -59,6 +59,15 @@ public class COMException : ExternalException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80004005;
+				}
+			}
+
 }; // class COMException
 
 #endif // !ECMA_COMPAT

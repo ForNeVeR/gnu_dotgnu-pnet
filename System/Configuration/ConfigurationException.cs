@@ -38,21 +38,22 @@ public class ConfigurationException : SystemException
 	// Constructors.
 	public ConfigurationException()
 			{
-				// Nothing to do here.
+				HResult = (int)0x80131902;
 			}
 	public ConfigurationException(String message)
 			: base(message)
 			{
-				// Nothing to do here.
+				HResult = (int)0x80131902;
 			}
 	public ConfigurationException(String message, Exception inner)
 			: base(message, inner)
 			{
-				// Nothing to do here.
+				HResult = (int)0x80131902;
 			}
 	public ConfigurationException(String message, String filename, int line)
 			: base(message)
 			{
+				HResult = (int)0x80131902;
 				this.filename = filename;
 				this.line = line;
 			}
@@ -60,6 +61,7 @@ public class ConfigurationException : SystemException
 								  String filename, int line)
 			: base(message, inner)
 			{
+				HResult = (int)0x80131902;
 				this.filename = filename;
 				this.line = line;
 			}

@@ -128,6 +128,15 @@ public class FileLoadException : IOException
 			}
 #endif
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x131621;
+				}
+			}
+
 }; // class FileLoadException
 
 }; // namespace System.IO

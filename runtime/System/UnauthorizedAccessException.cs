@@ -42,6 +42,15 @@ public class UnauthorizedAccessException : SystemException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80070005;
+				}
+			}
+
 }; // class UnauthorizedAccessException
 
 }; // namespace System

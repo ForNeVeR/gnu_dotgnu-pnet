@@ -42,6 +42,15 @@ public class DivideByZeroException : ArithmeticException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80020012;
+				}
+			}
+
 }; // class DivideByZeroException
 
 }; // namespace System

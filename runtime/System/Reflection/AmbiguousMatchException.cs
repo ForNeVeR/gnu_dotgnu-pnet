@@ -44,6 +44,15 @@ public sealed class AmbiguousMatchException : SystemException
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x8000211d;
+				}
+			}
+
 }; // class AmbiguousMatchException
 
 }; // namespace System.Reflection

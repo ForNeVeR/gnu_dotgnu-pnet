@@ -44,6 +44,15 @@ public class MissingManifestResourceException : Exception
 				}
 			}
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80131532;
+				}
+			}
+
 }; // class MissingManifestResourceException
 
 }; // namespace System.Resources

@@ -128,6 +128,15 @@ public class FileNotFoundException : IOException
 	}
 #endif
 
+	// Get the default HResult value for this type of exception.
+	protected internal override uint HResultDefault
+			{
+				get
+				{
+					return 0x80070002;
+				}
+			}
+
 }; // class FileNotFoundException
 
 }; // namespace System.IO

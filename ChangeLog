@@ -37,6 +37,8 @@
 	that don't include a ".", to be consistent with standard Windows
 	practice.
 
+	* support/cmdline.c: sort the results of a wildcard match.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

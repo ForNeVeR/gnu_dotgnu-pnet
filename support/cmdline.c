@@ -406,7 +406,7 @@ static void ExpandWildcards(int *argc, char ***argv, int *maxArgc, char *value)
 	ILDir *dir;
 	ILDirEnt *entry;
 	int first;
-	int sawMatch;
+	int firstArg;
 	const char *name;
 	char *full;
 
@@ -500,7 +500,7 @@ static void ExpandWildcards(int *argc, char ***argv, int *maxArgc, char *value)
 	}
 
 	/* Scan the directory for regular expression matches */
-	sawMatch = 0;
+	firstArg = *argc;
 	dir = ILOpenDir(directory);
 	while(dir && (entry = ILReadDir(dir)) != 0)
 	{
@@ -508,7 +508,6 @@ static void ExpandWildcards(int *argc, char ***argv, int *maxArgc, char *value)
 		if(IL_regexec(&state, name, 0, 0, 0) == 0)
 		{
 			/* We have found a match against the regular expression */
-			sawMatch = 1;
 			full = (char *)ILMalloc(strlen(directory) + strlen(name) + 1);
 			if(!full)
 			{
@@ -528,10 +527,27 @@ static void ExpandWildcards(int *argc, char ***argv, int *maxArgc, char *value)
 
 	/* If we didn't find any matches, then add the wildcard specification
 	   as an argument.  The program will probably report "File not found",
-	   which is what we want it to do. */
-	if(!sawMatch)
+	   which is what we want it to do.  Otherwise, sort the results */
+	if(firstArg >= *argc)
 	{
 		AddNewArg(argc, argv, maxArgc, value);
+	}
+	else
+	{
+		int index1, index2;
+		char *temp;
+		for(index1 = firstArg; index1 < (*argc - 1); ++index1)
+		{
+			for(index2 = index1 + 1; index2 < *argc; ++index2)
+			{
+				if(ILStrICmp((*argv)[index1], (*argv)[index2]) > 0)
+				{
+					temp = (*argv)[index1];
+					(*argv)[index1] = (*argv)[index2];
+					(*argv)[index2] = temp;
+				}
+			}
+		}
 	}
 
 	/* Clean up and exit */

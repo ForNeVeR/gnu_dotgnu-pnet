@@ -659,7 +659,7 @@ case IL_OP_LDELEMA:
 			/* The ECMA instruction specification says that this instruction
 			   should throw a run-time exception if the type is incorrect,
 			   rather than bailing out during method verification */
-			ThrowSystem(coder, method, "ArrayTypeMismatchException");
+			ThrowSystem("System", "ArrayTypeMismatchException");
 		}
 	}
 	else

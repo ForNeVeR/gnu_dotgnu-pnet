@@ -69,7 +69,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_LOCALLOC:
 		else
 		{
 			/* The stack must only contain a size or a run-time error occurs */
-			ThrowSystem(coder, method, "ExecutionEngineException");
+			ThrowSystem("System", "ExecutionEngineException");
 		}
 	}
 	else

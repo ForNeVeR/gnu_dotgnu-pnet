@@ -161,10 +161,42 @@ static IL_INLINE int InsideExceptionHandler(ILException *exception,
 /*
  * Emit code to throw a system-level exception.
  */
-static void ThrowSystem(ILCoder *coder, ILMethod *method, const char *name)
+static void _ThrowSystem(ILCoder *coder, ILMethod *method, int hasExceptions,
+						 const char *name, const char *namespace)
 {
-	/* TODO */
+	ILClass *classInfo;
+	ILMethod *ctor;
+
+	/* Find the no-argument constructor for the class */
+	classInfo = ILClassResolveSystem(ILProgramItem_Image(method), 0,
+								     name, namespace);
+	if(!classInfo)
+	{
+		return;
+	}
+	ctor = 0;
+	while((ctor = (ILMethod *)ILClassNextMemberByKind
+			(classInfo, (ILMember *)ctor, IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if(ILMethod_IsConstructor(ctor) &&
+		   ILTypeNumParams(ILMethod_Signature(ctor)) == 0)
+		{
+			break;
+		}
+	}
+	if(!ctor)
+	{
+		return;
+	}
+
+	/* Invoke the constructor */
+	ILCoderCallCtor(coder, 0, 0, ctor);
+
+	/* Throw the object */
+	ILCoderThrow(coder, hasExceptions);
 }
+#define	ThrowSystem(namespace,name)	\
+			_ThrowSystem(coder, method, (exceptions != 0), (name), (namespace))
 
 #elif defined(IL_VERIFY_LOCALS)
 

@@ -274,7 +274,7 @@ case IL_OP_CASTCLASS:
 		}
 		else
 		{
-			ThrowSystem(coder, method, "TypeLoadException");
+			ThrowSystem("System", "TypeLoadException");
 		}
 	}
 	else
@@ -297,7 +297,7 @@ case IL_OP_ISINST:
 		}
 		else
 		{
-			ThrowSystem(coder, method, "TypeLoadException");
+			ThrowSystem("System", "TypeLoadException");
 		}
 	}
 	else
@@ -469,7 +469,7 @@ case IL_OP_LDFLD:
 	{
 		/* The ECMA spec specifies that an exception should be thrown
 		   if the field cannot be found */
-		ThrowSystem(coder, method, "MissingFieldException");
+		ThrowSystem("System", "MissingFieldException");
 	}
 }
 break;
@@ -564,7 +564,7 @@ case IL_OP_LDFLDA:
 	{
 		/* The ECMA spec specifies that an exception should be thrown
 		   if the field cannot be found */
-		ThrowSystem(coder, method, "MissingFieldException");
+		ThrowSystem("System", "MissingFieldException");
 	}
 }
 break;
@@ -659,7 +659,7 @@ case IL_OP_STFLD:
 	{
 		/* The ECMA spec specifies that an exception should be thrown
 		   if the field cannot be found */
-		ThrowSystem(coder, method, "MissingFieldException");
+		ThrowSystem("System", "MissingFieldException");
 	}
 }
 break;
@@ -680,7 +680,7 @@ case IL_OP_LDSFLD:
 	{
 		/* The ECMA spec specifies that an exception should be thrown
 		   if the field cannot be found */
-		ThrowSystem(coder, method, "MissingFieldException");
+		ThrowSystem("System", "MissingFieldException");
 	}
 }
 break;
@@ -701,7 +701,7 @@ case IL_OP_LDSFLDA:
 	{
 		/* The ECMA spec specifies that an exception should be thrown
 		   if the field cannot be found */
-		ThrowSystem(coder, method, "MissingFieldException");
+		ThrowSystem("System", "MissingFieldException");
 	}
 }
 break;
@@ -728,7 +728,7 @@ case IL_OP_STSFLD:
 	{
 		/* The ECMA spec specifies that an exception should be thrown
 		   if the field cannot be found */
-		ThrowSystem(coder, method, "MissingFieldException");
+		ThrowSystem("System", "MissingFieldException");
 	}
 }
 break;

@@ -17,6 +17,11 @@
 	* doc/embedded.html: document how the runtime engine can be
 	stripped down to run in embedded environments.
 
+	* engine/verify_call.c, engine/verify_except.c, engine/verify_obj.c,
+	engine/verify_ptr.c, engine/verify_stack.c: implement the "ThrowSystem"
+	function, which builds and throws exceptions for certain kinds of
+	verification failure.
+
 2002-06-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_engine.h, engine/thread.c: add "ILExecThreadCurrent",

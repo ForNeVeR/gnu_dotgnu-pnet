@@ -969,7 +969,7 @@ case IL_OP_CALL:
 		}
 		else
 		{
-			ThrowSystem(coder, method, "SecurityException");
+			ThrowSystem("System.Security", "SecurityException");
 		}
 	}
 	else
@@ -1165,12 +1165,12 @@ case IL_OP_CALLVIRT:
 		}
 		else
 		{
-			ThrowSystem(coder, method, "SecurityException");
+			ThrowSystem("System.Security", "SecurityException");
 		}
 	}
 	else
 	{
-		ThrowSystem(coder, method, "MissingMethodException");
+		ThrowSystem("System", "MissingMethodException");
 	}
 }
 break;
@@ -1250,7 +1250,7 @@ case IL_OP_NEWOBJ:
 	}
 	else
 	{
-		ThrowSystem(coder, method, "MissingMethodException");
+		ThrowSystem("System", "MissingMethodException");
 	}
 }
 break;

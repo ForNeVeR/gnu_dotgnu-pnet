@@ -1,4 +1,10 @@
 
+2001-03-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y: fix up line numbers on declarations
+	so that errors are generally reported for the first line of
+	a declaration, instead of the last.
+
 2001-03-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant_fileset.c: minor fix to regular expression code

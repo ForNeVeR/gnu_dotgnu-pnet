@@ -2485,6 +2485,7 @@ MethodDeclaration
 				ILUInt32 attrs = CSModifiersToMethodAttrs($3, $2);
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, $8);
+				CloneLine($$, $4);
 			}
 	;
 
@@ -2537,6 +2538,7 @@ PropertyDeclaration
 								   attrs, $3, $4, 0, $6.item1, $6.item2,
 								   (($6.item1 ? 1 : 0) |
 								    ($6.item2 ? 2 : 0)));
+				CloneLine($$, $4);
 
 				/* Create the property method declarations */
 				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
@@ -2583,6 +2585,9 @@ GetAccessorDeclaration
 	: OptAttributes GET TurnOffGetSet AccessorBody TurnOnGetSet		{
 				$$ = ILNode_MethodDeclaration_create
 						($1, 0, 0, 0, 0, $4);
+			#ifdef YYBISON
+				yysetlinenum($$, @2.first_line);
+			#endif
 			}
 	;
 
@@ -2595,6 +2600,9 @@ SetAccessorDeclaration
 	: OptAttributes SET TurnOffGetSet AccessorBody TurnOnGetSet		{
 				$$ = ILNode_MethodDeclaration_create
 						($1, 0, 0, 0, 0, $4);
+			#ifdef YYBISON
+				yysetlinenum($$, @2.first_line);
+			#endif
 			}
 	;
 
@@ -2660,6 +2668,7 @@ EventPropertyDeclaration
 						ILNode_EventDeclarator_create
 							(ILNode_FieldDeclarator_create($5, 0),
 							 $7.item1, $7.item2));
+				CloneLine($$, $5);
 				CreateEventMethods((ILNode_EventDeclaration *)($$));
 			}
 	;
@@ -2695,6 +2704,9 @@ AddAccessorDeclaration
 	: OptAttributes ADD TurnOffGetSet AccessorBody TurnOnGetSet		{
 				$$ = ILNode_MethodDeclaration_create
 						($1, 0, 0, 0, 0, $4);
+			#ifdef YYBISION
+				yysetlinenum($$, @2.first_line);
+			#endif
 			}
 	;
 
@@ -2702,6 +2714,9 @@ RemoveAccessorDeclaration
 	: OptAttributes REMOVE TurnOffGetSet AccessorBody TurnOnGetSet	{
 				$$ = ILNode_MethodDeclaration_create
 						($1, 0, 0, 0, 0, $4);
+			#ifdef YYBISION
+				yysetlinenum($$, @2.first_line);
+			#endif
 			}
 	;
 
@@ -2718,6 +2733,7 @@ IndexerDeclaration
 								   $5.item1, $5.item2,
 								   (($5.item1 ? 1 : 0) |
 								    ($5.item2 ? 2 : 0)));
+				CloneLine($$, $3.ident);
 
 				/* Create the property method declarations */
 				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
@@ -2803,6 +2819,7 @@ NormalOperatorDeclaration
 						($1, attrs, $3,
 						 ILQualIdentSimple(ILInternString($5.unary, -1).string),
 						 params, $10);
+				CloneLine($$, $3);
 			}
 	| OptAttributes OptModifiers Type OPERATOR OverloadableOperator
 			'(' Type Identifier ',' Type Identifier ')' Block	{
@@ -2834,6 +2851,7 @@ NormalOperatorDeclaration
 						 ILQualIdentSimple
 						 	(ILInternString($5.binary, -1).string),
 						 params, $13);
+				CloneLine($$, $3);
 			}
 	;
 
@@ -2882,6 +2900,7 @@ ConversionOperatorDeclaration
 						 ILQualIdentSimple
 						 	(ILInternString("op_Implicit", -1).string),
 						 params, $10);
+				CloneLine($$, $5);
 			}
 	| OptAttributes OptModifiers EXPLICIT OPERATOR Type
 			'(' Type Identifier ')' Block	{
@@ -2902,6 +2921,7 @@ ConversionOperatorDeclaration
 						 ILQualIdentSimple
 						 	(ILInternString("op_Explicit", -1).string),
 						 params, $10);
+				CloneLine($$, $5);
 			}
 	;
 
@@ -2956,6 +2976,7 @@ ConstructorDeclaration
 				{
 					$$.body = ILNode_MethodDeclaration_create
 						  ($1, attrs, 0 /* "void" */, cname, $5, body);
+					CloneLine($$.body, $3);
 					$$.staticCtors = 0;
 				}
 			}
@@ -3010,6 +3031,7 @@ DestructorDeclaration
 							 ILQualIdentSimple
 							 	(ILInternString("Finalize", -1).string),
 							 0, body);
+				CloneLine($$, $3);
 			}
 	;
 
@@ -3181,6 +3203,7 @@ InterfaceMethodDeclaration
 								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, 0);
+				CloneLine($$, $4);
 			}
 	;
 
@@ -3201,6 +3224,7 @@ InterfacePropertyDeclaration
 								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, $4, 0, 0, 0, $6);
+				CloneLine($$, $4);
 
 				/* Create the property method declarations */
 				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
@@ -3264,6 +3288,7 @@ InterfaceIndexerDeclaration
 									(ILInternString("Item", 4).string);
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, name, $5, 0, 0, $7);
+				CloneLine($$, $3);
 
 				/* Create the property method declarations */
 				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));

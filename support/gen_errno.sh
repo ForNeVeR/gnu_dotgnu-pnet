@@ -42,6 +42,11 @@ for f in $ALL_LINES; do
 			CHKLINE=`grep EINVAL "$f"`
 			if test -n "$CHKLINE"; then
 				FILE="$f"
+			else
+				CHKLINE=`grep ENOSYS "$f"`
+				if test -n "$CHKLINE"; then
+					FILE="$f"
+				fi
 			fi
 		fi
 	fi

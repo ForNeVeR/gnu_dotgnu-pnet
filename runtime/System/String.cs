@@ -766,7 +766,8 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 
 	// Fill the contents of a sub-string with a particular character.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void FillChar(String str, int start, int count, char ch);
+	extern private static void FillChar(String str, int start,
+										int count, char ch);
 
 	// Pad a string on the left with spaces to a total width.
 	public String PadLeft(int totalWidth)

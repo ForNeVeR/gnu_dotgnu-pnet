@@ -3,6 +3,8 @@
 
 	* Rewrote the "System.Collections" classes.
 	* A few more classes in "System", particularly array and string related.
+	* Implement enough of "System.Console" and "System.IO" to get
+	  "Hello World" style print examples working.
 
 0.0.2 (6 August 2001)
 

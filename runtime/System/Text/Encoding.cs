@@ -1,5 +1,5 @@
 /*
- * Monitor.cs - Implementation of the "System.Threading.Monitor" class.
+ * Encoding.cs - Implementation of the "System.Text.Encoding" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,22 +18,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Threading
+namespace System.Text
 {
 
-using System.Runtime.InteropServices;
+using System;
 
-public class Monitor
+public abstract class Encoding
 {
 
 // TODO
 
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Enter(Object obj);
+	public static Encoding Default { get { return null; } }
 
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Exit(Object obj);
+}; // class Encoding
 
-}; // class Monitor
-
-}; // namespace System.Threading
+}; // namespace System.Text

@@ -1,5 +1,5 @@
 /*
- * Monitor.cs - Implementation of the "System.Threading.Monitor" class.
+ * IDisposable.cs - Implementation of the "System.IDisposable" interface.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,22 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Threading
+namespace System
 {
 
-using System.Runtime.InteropServices;
-
-public class Monitor
+public interface IDisposable
 {
 
-// TODO
+	void Dispose();
 
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Enter(Object obj);
+}; // interface IDisposable
 
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Exit(Object obj);
-
-}; // class Monitor
-
-}; // namespace System.Threading
+}; // namespace System

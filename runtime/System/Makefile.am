@@ -23,6 +23,8 @@ CSSRC = Activator.cs \
 		Byte.cs \
 		CLSCompliantAttribute.cs \
 		Char.cs \
+		CharEnumerator.cs \
+		Console.cs \
 		ContextBoundObject.cs \
 		Convert.cs \
 		Currency.cs \
@@ -43,7 +45,9 @@ CSSRC = Activator.cs \
 		ICloneable.cs \
 		IComparable.cs \
 		IConvertible.cs \
+		IDisposable.cs \
 		IFormattable.cs \
+		IFormatProvider.cs \
 		IServiceObjectProvider.cs \
 		Int16.cs \
 		Int32.cs \
@@ -106,6 +110,12 @@ CSSRC = Activator.cs \
 		Globalization/NumberStyles.cs \
 		Globalization/TextInfo.cs \
 		Globalization/UnicodeCategory.cs \
+		IO/IOException.cs \
+		IO/StdReader.cs \
+		IO/StdWriter.cs \
+		IO/Stream.cs \
+		IO/TextReader.cs \
+		IO/TextWriter.cs \
 		Private/NumberFormatter.cs \
 		Private/NumberParser.cs \
 		Reflection/Assembly.cs \
@@ -146,11 +156,13 @@ CSSRC = Activator.cs \
 		Security/Permissions/SecurityAction.cs \
 		Security/Permissions/SecurityPermissionAttribute.cs \
 		Security/Policy/Evidence.cs \
+		Text/Encoding.cs \
 		Threading/Monitor.cs \
 		Threading/WaitHandle.cs \
 		../Platform/DirMethods.cs \
 		../Platform/PathInfo.cs \
 		../Platform/PtrSizes.cs \
+		../Platform/Stdio.cs \
 		../Platform/SysCharInfo.cs \
 		../Platform/TaskMethods.cs \
 		../Platform/TimeMethods.cs

@@ -1,5 +1,5 @@
 /*
- * Monitor.cs - Implementation of the "System.Threading.Monitor" class.
+ * Stream.cs - Implementation of the "System.IO.Stream" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,22 +18,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Threading
+namespace System.IO
 {
 
-using System.Runtime.InteropServices;
+using System;
 
-public class Monitor
+public abstract class Stream
 {
 
-// TODO
+}; // class Stream
 
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Enter(Object obj);
-
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Exit(Object obj);
-
-}; // class Monitor
-
-}; // namespace System.Threading
+}; // namespace System.IO

@@ -1,5 +1,5 @@
 /*
- * Monitor.cs - Implementation of the "System.Threading.Monitor" class.
+ * IOException.cs - Implementation of the "System.IO.IOException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,22 +18,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Threading
+namespace System.IO
 {
 
-using System.Runtime.InteropServices;
+using System;
 
-public class Monitor
+public class IOException : Exception
 {
 
-// TODO
+	// Constructors.
+	public IOException()
+		: base(Environment.GetResourceString("Exception_IO")) {}
+	public IOException(String msg)
+		: base(msg) {}
+	public IOException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Enter(Object obj);
+}; // class IOException
 
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Exit(Object obj);
-
-}; // class Monitor
-
-}; // namespace System.Threading
+}; // namespace System.IO

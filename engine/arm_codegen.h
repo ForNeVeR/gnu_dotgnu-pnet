@@ -545,15 +545,18 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 			} while (0)
 #define	arm_load_membase_ushort(inst,reg,basereg,imm)	\
 			do { \
-				arm_load_membase_either((inst), (reg), (basereg), (imm), 0); \
-				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 16); \
-				arm_shift_reg_imm8((inst), ARM_SHR, (reg), (reg), 16); \
+				arm_load_membase_byte((inst), ARM_WORK, (basereg), (imm)); \
+				arm_load_membase_byte((inst), (reg), (basereg), (imm) + 1); \
+				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 8); \
+				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
 			} while (0)
 #define	arm_load_membase_short(inst,reg,basereg,imm)	\
 			do { \
-				arm_load_membase_either((inst), (reg), (basereg), (imm), 0); \
-				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 16); \
+				arm_load_membase_byte((inst), ARM_WORK, (basereg), (imm)); \
+				arm_load_membase_byte((inst), (reg), (basereg), (imm) + 1); \
+				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 24); \
 				arm_shift_reg_imm8((inst), ARM_SAR, (reg), (reg), 16); \
+				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
 			} while (0)
 
 /*
@@ -643,17 +646,26 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 			} while (0)
 #define	arm_load_memindex_ushort(inst,reg,basereg,indexreg)	\
 			do { \
-				arm_load_memindex_either((inst), (reg), (basereg), \
-										 (indexreg), 1, 0); \
-				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 16); \
-				arm_shift_reg_imm8((inst), ARM_SHR, (reg), (reg), 16); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, (basereg), \
+								(indexreg)); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+								(indexreg)); \
+				arm_load_membase_byte((inst), (reg), ARM_WORK, 0); \
+				arm_load_membase_byte((inst), ARM_WORK, ARM_WORK, 1); \
+				arm_shift_reg_imm8((inst), ARM_SHL, ARM_WORK, ARM_WORK, 8); \
+				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
 			} while (0)
 #define	arm_load_memindex_short(inst,reg,basereg,indexreg)	\
 			do { \
-				arm_load_memindex_either((inst), (reg), (basereg), \
-										 (indexreg), 1, 0); \
-				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 16); \
-				arm_shift_reg_imm8((inst), ARM_SAR, (reg), (reg), 16); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, (basereg), \
+								(indexreg)); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+								(indexreg)); \
+				arm_load_membase_byte((inst), (reg), ARM_WORK, 0); \
+				arm_load_membase_byte((inst), ARM_WORK, ARM_WORK, 1); \
+				arm_shift_reg_imm8((inst), ARM_SHL, ARM_WORK, ARM_WORK, 24); \
+				arm_shift_reg_imm8((inst), ARM_SAR, ARM_WORK, ARM_WORK, 16); \
+				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
 			} while (0)
 
 /*

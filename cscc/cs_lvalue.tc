@@ -408,7 +408,8 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
  * Convert a semantic value into an l-value or r-value if necessary.
  */
 static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
-							   CSSemValue value, char *name, ILNode *expr)
+							   CSSemValue value, char *name, ILNode *expr,
+							   CSSemValue *exprSem)
 {
 	ILField *field;
 	ILProperty *property;
@@ -487,7 +488,20 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			/* Replace the node with either the object expression or "this" */
 			if(expr)
 			{
-				*parent = expr;
+				if(CSIsSemValue(exprSem->kind) &&
+				   !ILTypeIsReference(exprSem->type))
+				{
+					/* Make sure that the object expression is an object */
+					if(!ILCoerce(info, expr, parent, exprSem->type,
+								 ILFindSystemType(info, "Object")))
+					{
+						*parent = expr;
+					}
+				}
+				else
+				{
+					*parent = expr;
+				}
 			}
 			else
 			{
@@ -566,6 +580,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 
 		case CS_SEMKIND_EVENT:
 		{
+			/* TODO */
 		}
 		break;
 	}
@@ -622,7 +637,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	value = CSResolveSimpleName(info, (ILNode *)node, node->name);
 
 	/* Convert the result into an l-value or r-value and return it */
-	return SemToLRValue((ILNode *)node, info, parent, value, node->name, 0);
+	return SemToLRValue((ILNode *)node, info, parent, value, node->name, 0, 0);
 }
 
 /*
@@ -631,6 +646,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 ILNode_SemAnalysis(ILNode_QualIdent)
 {
 	CSSemValue value;
+	CSSemValue value2;
 	char *name;
 
 	/* Get the semantic value for the left part of the identifier */
@@ -638,10 +654,11 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->right, 0);
-	value = CSResolveMemberName(info, (ILNode *)node, value, name);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name);
 
 	/* Convert the result into an l-value or r-value and return it */
-	return SemToLRValue((ILNode *)node, info, parent, value, name, node->left);
+	return SemToLRValue((ILNode *)node, info, parent, value2,
+						name, node->left, &value);
 }
 
 /*
@@ -661,6 +678,7 @@ ILNode_SemAnalysis(ILNode_ArgumentVar)
 ILNode_SemAnalysis(ILNode_MemberAccess)
 {
 	CSSemValue value;
+	CSSemValue value2;
 	char *name;
 
 	/* Get the semantic value for the left part of the identifier */
@@ -668,10 +686,11 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->expr2, 0);
-	value = CSResolveMemberName(info, (ILNode *)node, value, name);
+	value2 = CSResolveMemberName(info, (ILNode *)node, value, name);
 
 	/* Convert the result into an l-value or r-value and return it */
-	return SemToLRValue((ILNode *)node, info, parent, value, name, node->expr1);
+	return SemToLRValue((ILNode *)node, info, parent, value2,
+					    name, node->expr1, &value);
 }
 
 /*

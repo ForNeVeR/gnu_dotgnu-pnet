@@ -10,6 +10,10 @@
 	* cscc/cs_invoke.tc (CSBestCandidate): favour a non-params method
 	over a params method when the non-params method comes first.
 
+	* cscc/cs_lvalue.tc: make sure that the object expression within
+	a method invocation node has been coerced to an appropriate
+	object type.
+
 2001-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/member.c: decode Java exception blocks from method code.

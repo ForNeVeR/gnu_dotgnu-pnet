@@ -3,6 +3,10 @@
 
 	* System/Net/HttpWebRequest.cs: remove a stray ';'.
 
+	* System/TODOAttribute.cs: add the pseudo TODO attribute to
+	the "System" assembly, because the version in "runtime" is
+	inaccessible due to being "internal".
+
 2002-03-22  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Began to integrate changes from chiraz's patch

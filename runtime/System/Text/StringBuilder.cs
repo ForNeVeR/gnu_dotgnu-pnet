@@ -548,7 +548,6 @@ public sealed class StringBuilder
 			{
 				int length = InsertSpace(index, 1);
 				String.CharFill(buildString, index, length, value);
-				buildString.length += length;
 				return this;
 			}
 	public StringBuilder Insert(int index, int value)

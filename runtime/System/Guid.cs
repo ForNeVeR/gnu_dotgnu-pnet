@@ -329,18 +329,17 @@ public struct Guid : IFormattable, IComparable
 				{
 					throw new FormatException(_("Format_Guid"));
 				}
-				return start + NumberFormatter.FormatInBase(a__, 16, 32) +
-					   sep   + NumberFormatter.FormatInBase(b__, 16, 16) +
-					   sep   + NumberFormatter.FormatInBase(c__, 16, 16) +
-					   sep   + NumberFormatter.FormatInBase
-					   				((((int)d__) << 8) | ((int)e__), 16, 16) +
-					   sep   + NumberFormatter.FormatInBase
-					   				((((int)f__) << 8) | ((int)g__), 16, 16) +
-					   		   NumberFormatter.FormatInBase
-					   				((((int)h__) << 24) |
-									 (((int)i__) << 16) |
-									 (((int)j__) << 8) |
-									  ((int)k__), 16, 32) +
+				return start + Convert.ToString(a__, 16) +
+					   sep   + Convert.ToString(b__, 16) +
+					   sep   + Convert.ToString(c__, 16) +
+					   sep   + Convert.ToString(d__, 16) + 
+								Convert.ToString(e__, 16) +
+					   sep   + Convert.ToString(f__, 16) +
+								Convert.ToString(g__, 16) +
+								Convert.ToString(h__, 16) +
+								Convert.ToString(i__, 16) +
+								Convert.ToString(j__, 16) +
+								Convert.ToString(k__, 16) +
 					   end;
 			}
 

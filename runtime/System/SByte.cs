@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Private;
+using System.Private.NumberFormat;
 using System.Globalization;
 
 [CLSCompliant(false)]
@@ -67,22 +68,9 @@ public struct SByte : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				unchecked
-				{
-					if(value_ >= 0)
-					{
-						return NumberFormatter.FormatFixedPoint
-									((ulong)value_, 0, 0, false, format,
-									 NumberFormatInfo.GetInstance(provider));
-					}
-					else
-					{
-						return NumberFormatter.FormatFixedPoint
-									((ulong)(uint)(-value_), 0, 0,
-									 true, format,
-									 NumberFormatInfo.GetInstance(provider));
-					}
-				}
+				if (format == null) format = "G";
+				return
+					Formatter.CreateFormatter(format).Format(this, provider);
 			}
 
 	// Parsing methods.

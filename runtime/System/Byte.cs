@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Private;
+using System.Private.NumberFormat;
 using System.Globalization;
 
 public struct Byte : IComparable, IFormattable
@@ -52,27 +53,21 @@ public struct Byte : IComparable, IFormattable
 	// String conversion.
 	public override String ToString()
 			{
-				return NumberFormatter.FormatFixedPoint
-							((ulong)value_, 0, 0, false, null,
-							 NumberFormatInfo.CurrentInfo);
+				return ToString(null, null);
 			}
 	public String ToString(String format)
 			{
-				return NumberFormatter.FormatFixedPoint
-							((ulong)value_, 0, 0, false, format,
-							 NumberFormatInfo.CurrentInfo);
+				return ToString(format, null);
 			}
 	public String ToString(IFormatProvider provider)
 			{
-				return NumberFormatter.FormatFixedPoint
-							((ulong)value_, 0, 0, false, null,
-							 NumberFormatInfo.GetInstance(provider));
+				return ToString(null, provider);
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				return NumberFormatter.FormatFixedPoint
-							((ulong)value_, 0, 0, false, format,
-							 NumberFormatInfo.GetInstance(provider));
+				if (format == null) format = "G";
+				return 
+					Formatter.CreateFormatter(format).Format(this, provider);
 			}
 
 	// Parsing methods.

@@ -1,0 +1,94 @@
+/*
+ * ScientificFormatter.cs - Implementation of the
+ *          "System.Private.NumberFormat.ScientificFormatter" class.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+namespace System.Private.NumberFormat
+{
+
+using System;
+using System.Globalization;
+using System.Text;
+
+//
+//  Scientific Formatter - "Exx" or "exx"
+internal class ScientificFormatter : Formatter
+{
+	private char Ee;
+
+	public ScientificFormatter(int precision, char Ee)
+	{
+		this.precision = precision == -1 ? 6 : 0;
+		this.Ee = Ee;
+	}
+
+	public override string Format(Object o, IFormatProvider provider)
+	{
+		bool isNegative = false;
+
+		double value;
+
+		double mantissa;
+		int exponent;
+
+		string rawnumber;
+		StringBuilder ret;
+
+		value = OToDouble(o);
+		if (value < 0)
+		{
+			isNegative = true;
+			value = -value;
+		}
+
+		//  Calculate exponent and mantissa
+		exponent = (int) Math.Floor(Math.Log10(value));
+		mantissa = value / Math.Pow(10, exponent);
+
+		rawnumber = FormatFloat(mantissa, precision);
+
+		ret = new StringBuilder(
+				rawnumber.Substring(0,rawnumber.IndexOf('.')) +
+				NumberFormatInfo(provider).NumberDecimalSeparator +
+				rawnumber.Substring(rawnumber.IndexOf('.')+1));
+
+		if (isNegative)
+		{
+			ret.Insert(0, NumberFormatInfo(provider).NegativeSign);
+		}
+
+		ret.Append(this.Ee);
+		if (exponent < 0)
+		{
+			ret.Append(NumberFormatInfo(provider).NegativeSign);
+		}
+		else
+		{
+			ret.Append(NumberFormatInfo(provider).PositiveSign);
+		}
+		rawnumber = FormatInteger((ulong)Math.Abs(exponent));
+		ret.Append(rawnumber.Substring(0, rawnumber.IndexOf('.'))
+													.PadLeft(3,'0'));
+
+		return ret.ToString();
+	}		
+} // class ScientificFormatter
+
+} // namespace System.Private.NumberFormat
+

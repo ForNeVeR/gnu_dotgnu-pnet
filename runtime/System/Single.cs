@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Private;
+using System.Private.NumberFormat;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -84,9 +85,9 @@ public struct Single : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				return NumberFormatter.FormatSingle
-						(value_, format,
-						 NumberFormatInfo.GetInstance(provider));
+				if (format == null) format = "G";
+				return
+					Formatter.CreateFormatter(format).Format(this, provider);
 			}
 
 	// Value testing methods.

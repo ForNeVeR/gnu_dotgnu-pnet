@@ -1,4 +1,40 @@
 
+2002-11-27  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* runtime/System/Private/NumberFormat/CurrencyFormatter.cs,
+	runtime/System/Private/NumberFormat/CustomFormatter.cs,
+	runtime/System/Private/NumberFormat/DecimalFormatter.cs,
+	runtime/System/Private/NumberFormat/FixedPointFormatter.cs,
+	runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/GeneralFormatter.cs,
+	runtime/System/Private/NumberFormat/HexadecimalFormatter.cs,
+	runtime/System/Private/NumberFormat/NumberFormatter.cs,
+	runtime/System/Private/NumberFormat/PercentFormatter.cs,
+	runtime/System/Private/NumberFormat/RoundTripFormatter.cs,
+	runtime/System/Private/NumberFormat/ScientificFormatter.cs:
+	Implementation for numeric value types of formatting supported by
+	the IFormattable interface.
+
+	* runtime/System/Byte.cs, runtime/System/Decimal.cs,
+	runtime/System/Double.cs, runtime/System/Int16.cs,
+	runtime/System/Int32.cs, runtime/System/Int64.cs, runtime/System/SByte.cs,
+	runtime/System/Single.cs, runtime/System/UInt16.cs,
+	runtime/System/UInt32.cs, runtime/System/UInt64.cs:  Converted to use new
+	numeric formatting code.
+	
+	* resources/en_US/runtime/Format.txt:  Added two new exception messages.
+
+	* runtime/System/Private/NumberFormatter.cs:  Removed from library.
+
+	* runtime/System/Convert.cs, runtime/System/Guid.cs:  Base conversion code
+	factored in from NumberFormatter.cs.  Guid uses Convert.
+
+	* runtime/System/String.cs, runtime/System/Text/StringBuilder.cs:  Small
+	bug fixes for StringBuilder code.
+
+	* tests/runtime/System/TestString.cs:  Added test cases for some formats.
+	More cases always welcome.
+	
 2002-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Security/Cryptography/RijndaelManaged.cs,

@@ -27,3 +27,5 @@ Format_IP=Bad format for IP address
 Format_FormatString=Invalid format specification
 Format_FormatArgNumber=Invalid argument number in format specification
 Format_Base64ArrayChar=Invalid base64 character in input
+Format_TypeTypeException=Invalid type for specified format
+Format_StringException=Invalid format specification

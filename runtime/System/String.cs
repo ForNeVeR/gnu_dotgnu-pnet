@@ -40,6 +40,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	[NonSerialized]
 	private char firstChar;			// First character in the string.
 
+	// Private constants
+	private static readonly char[] curlyBraces = { '{', '}' };
+
 	// Public constants.
 	public static readonly String Empty = "";
 
@@ -540,11 +543,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Override the inherited Equals method.
 	public override bool Equals(Object obj)
 			{
-				if(this == null)
-				{
-					throw new NullReferenceException();
-				}
-
+				//  Rhys changed the compile so all C# is callvirt.
+				//  This code is now unnecessary.  It had been for ECMA
+				//  compliance.
+				// if(this == null) throw new NullReferenceException(); 
+				
 				if(obj is String)
 				{
 					return Equals(this, (String)obj);
@@ -572,6 +575,13 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Format a single-argument string.
 	public static String Format(String format, Object arg0)
 			{
+				// This check is peculiar to this method.  Ask ECMA.  Really.
+				if (arg0 == null)
+				{
+					throw new ArgumentNullException("arg0");
+				}
+
+				// Now that the paperwork's done, hand the request along.
 				return Format((IFormatProvider)null, format, arg0);
 			}
 
@@ -647,103 +657,116 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				int len = format.Length;
 				int posn = 0;
 				int next, argNum, width;
+				char curr;
 				Object arg;
 				String specifier;
 				String formatted;
-				while((next = format.IndexOf('{', posn, len - posn)) != -1)
+				for(
+					next = format.IndexOfAny(curlyBraces, posn, len - posn);
+					next != -1;
+					next = format.IndexOfAny(curlyBraces, posn, len - posn))
 				{
 					// Append everything up to this point to the builder.
 					sb.Append(format, posn, next - posn);
+
+					// Take care of escape sequences before trying anything
+					// fancy...
+					if(format[next] == '{' && format[next+1] == '{')
+					{
+						sb.Append('{');
+                        posn = next + 2;
+                        continue;
+					}
+
+					if(format[next] == '}')
+					{
+						sb.Append('}');
+						posn = next + 1;
+						if (format[posn] == '}') posn++;
+						continue;
+					}
 					posn = next + 1;
 
 					// Extract the specifier.
 					if(posn >= len)
 					{
-						throw new FormatException(_("Format_FormatString"));
+						throw new FormatException (_("Format_FormatString"));
 					}
-					if(format[posn] != '{')
+					
+					// Get the argument number.
+					argNum = GetFormatInteger(format, len, ref posn);
+
+					if(argNum == -1)
 					{
-						// Get the argument number.
-						argNum = GetFormatInteger(format, len, ref posn);
-						if(argNum == -1)
-						{
-							throw new FormatException
-									(_("Format_FormatString"));
-						}
-						if(format[posn] == ',')
-						{
-							++posn;
-							if(posn >= len)
-							{
-								throw new FormatException
-										(_("Format_FormatString"));
-							}
-							if(format[posn] == '-')
-							{
-								++posn;
-								width = GetFormatInteger(format, len, ref posn);
-								if(width == -1)
-								{
-									throw new FormatException
-											(_("Format_FormatString"));
-								}
-								width = -width;
-							}
-							else
-							{
-								width = GetFormatInteger(format, len, ref posn);
-								if(width == -1)
-								{
-									throw new FormatException
-											(_("Format_FormatString"));
-								}
-							}
-						}
-						else
-						{
-							width = 0;
-						}
-						if(format[posn] == ':')
-						{
-							++posn;
-							if(posn >= len)
-							{
-								throw new FormatException
-										(_("Format_FormatString"));
-							}
-							next = format.IndexOf('}', posn, len - posn);
-							if(next == -1)
-							{
-								throw new FormatException
-										(_("Format_FormatString"));
-							}
-							specifier = format.Substring(posn, next - posn);
-							posn = next;
-						}
-						else
-						{
-							specifier = null;
-						}
-						if(format[posn] != '}')
-						{
-							throw new FormatException
-									(_("Format_FormatString"));
-						}
+						throw new FormatException (_("Format_FormatString"));
+					}
+
+					if(format[posn] == ',')
+					{
 						++posn;
+						if(posn >= len)
+						{
+							throw new FormatException
+												(_("Format_FormatString"));
+						}
+						if(format[posn] == '-')
+						{
+							++posn;
+							width = GetFormatInteger(format, len, ref posn);
+							if(width == -1)
+							{
+								throw new FormatException
+												(_("Format_FormatString"));
+							}
+							width = -width;
+						}
+						else
+						{
+							width = GetFormatInteger(format, len, ref posn);
+							if(width == -1)
+							{
+								throw new FormatException
+												(_("Format_FormatString"));
+							}
+						}
 					}
 					else
 					{
-						// This is a literal '{' character.
-						sb.Append('{');
-						++posn;
-						continue;
+						width = 0;
 					}
+
+					if(format[posn] == ':')
+					{
+						++posn;
+						if(posn >= len)
+						{
+							throw new FormatException
+												(_("Format_FormatString"));
+						}
+						next = format.IndexOf('}', posn, len - posn);
+						if(next == -1)
+						{
+							throw new FormatException
+												(_("Format_FormatString"));
+						}
+						specifier = format.Substring(posn, next - posn);
+						posn = next;
+					}
+					else
+					{
+						specifier = null;
+					}
+					if(format[posn] != '}')
+					{
+						throw new FormatException (_("Format_FormatString"));
+					}
+					++posn;
 
 					// Get the formatted string version of the argument.
 					if(argNum >= args.Length)
 					{
 						throw new FormatException
-								(_("Format_FormatArgNumber"));
+												(_("Format_FormatArgNumber"));
 					}
 					arg = args[argNum];
 					if(arg != null)
@@ -777,7 +800,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						}
 						sb.Append(formatted);
 					}
-					else
+					else // width < 0
 					{
 						// Left-justify the string.
 						sb.Append(formatted);
@@ -787,7 +810,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							sb.Append(' ', width - formatted.Length);
 						}
 					}
-				}
+				} // for (...; next != -1; ...)
 
 				// Append the last non-specifier part to the builder.
 				sb.Append(format, posn, len - posn);

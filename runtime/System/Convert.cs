@@ -1685,6 +1685,102 @@ public sealed class Convert
 				return value;
 			}
 #if !ECMA_COMPAT
+	// Format an integer in base 10.
+	private static String FormatBase10(ulong value, bool isneg)
+	{
+		String basic;
+		if(value == 0)
+		{
+			basic = "0";
+		}
+		else
+		{
+			basic = "";
+			while(value != 0)
+			{
+				basic = ((char)((value % 10) + (int)'0')) + basic;
+				value /= 10;
+			}
+		}
+		if(isneg)
+		{
+			return "-" + basic;
+		}
+		else
+		{
+			return basic;
+		}
+	}
+
+	// Format a number in a specific base.
+	private static String FormatInBase(long value, int toBase, int numBits)
+	{
+		char[] buf;
+		int posn;
+		int digit;
+		if(toBase == 2)
+		{
+			buf = new char[numBits];
+			posn = numBits - 1;
+			while(posn >= 0)
+			{
+				if((value & 1) != 0)
+				{
+					buf[posn--] = '1';
+				}
+				else
+				{
+					buf[posn--] = '0';
+				}
+				value >>= 1;
+			}
+		}
+		else if(toBase == 8)
+		{
+			buf = new char[(numBits + 2) / 3];
+			posn = ((numBits + 2) / 3) - 1;
+			while(posn >= 0)
+			{
+				buf[posn--] = unchecked((char)((value % 8) + (long)'0'));
+				value >>= 3;
+			}
+		}
+		else if(toBase == 10)
+		{
+			if(value < 0)
+			{
+				return FormatBase10(unchecked((ulong)(-value)), true);
+			}
+			else
+			{
+				return FormatBase10(unchecked((ulong)value), false);
+			}
+		}
+		else if(toBase == 16)
+		{
+			buf = new char[numBits / 4];
+			posn = (numBits / 4) - 1;
+			while(posn >= 0)
+			{
+				digit = unchecked((int)(value % 16));
+				if(digit < 10)
+				{
+					buf[posn--] = unchecked((char)(digit + (int)'0'));
+				}
+				else
+				{
+					buf[posn--] = unchecked((char)(digit - 10 + (int)'A'));
+				}
+				value >>= 4;
+			}
+		}
+		else
+		{
+			throw new ArgumentException(_("Arg_InvalidBase"));
+		}
+		return new String(buf);
+	}
+
 	public static String ToString(bool value, IFormatProvider provider)
 			{
 				return value.ToString(provider);
@@ -1695,40 +1791,43 @@ public sealed class Convert
 			}
 	public static String ToString(byte value, int toBase)
 			{
-				return NumberFormatter.FormatInBase((long)value, toBase, 8);
+				return FormatInBase((long)value, toBase, 8);
 			}
 	[CLSCompliant(false)]
 	public static String ToString(sbyte value, int toBase)
 			{
-				return NumberFormatter.FormatInBase((long)value, toBase, 8);
+				return FormatInBase((long)value, toBase, 8);
 			}
 	public static String ToString(short value, int toBase)
 			{
-				return NumberFormatter.FormatInBase((long)value, toBase, 16);
+				return FormatInBase((long)value, toBase, 16);
 			}
 	[CLSCompliant(false)]
 	public static String ToString(ushort value, int toBase)
 			{
-				return NumberFormatter.FormatInBase((long)value, toBase, 16);
+				return FormatInBase((long)value, toBase, 16);
 			}
 	public static String ToString(int value, int toBase)
 			{
-				return NumberFormatter.FormatInBase((long)value, toBase, 32);
+				return FormatInBase((long)value, toBase, 32);
 			}
 	[CLSCompliant(false)]
 	public static String ToString(uint value, int toBase)
 			{
-				return NumberFormatter.FormatInBase((long)value, toBase, 32);
+				return FormatInBase((long)value, toBase, 32);
 			}
 	public static String ToString(long value, int toBase)
 			{
-				return NumberFormatter.FormatInBase((long)value, toBase, 64);
+				return FormatInBase((long)value, toBase, 64);
 			}
 	[CLSCompliant(false)]
 	public static String ToString(ulong value, int toBase)
 			{
-				return NumberFormatter.FormatInBaseUnsigned
-							(value, toBase, 64);
+				if(toBase != 10)
+				{
+					return FormatInBase(unchecked((long)value), toBase, 64);
+				}
+				return FormatBase10(value, false);
 			}
 	public static String ToString(Object value)
 			{

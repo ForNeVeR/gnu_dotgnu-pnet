@@ -262,7 +262,7 @@ public class TestString : TestCase
 	{
 	/*TODO*/
 		AssertEquals ("String.Format(\"\",0)", "", String.Format ("", 0));
-		
+
 		AssertEquals ("String.Format(\"{0}\",\"FooBar\")", 
 				"FooBar", String.Format ("{0}","FooBar"));
 
@@ -325,18 +325,19 @@ public class TestString : TestCase
 		AssertEquals("String.Format (\"<{0,5}>\", 12)",
 			"<12   >",String.Format ("<{0,-5}>", 12));
 
-		AssertEquals ("String.Format(\"The {0} of {1}\",\"Church\",\"Emacs\")",
+		AssertEquals ("String.Format(\"The {1} of {1}\",\"Church\",\"Emacs\")",
 			"The Church of Emacs",
 			String.Format ("The {0} of {1}", "Church", "Emacs"));
 		
-		AssertEquals("String.Format(\"G{0} N{1} U{2}\",\"nu's\",\"ot\",\"nix\")",
+		AssertEquals(
+			"String.Format(\"G{0} N{1} U{2}\",\"nu's\",\"ot\",\"nix\")",
 			"Gnu's Not Unix", 
 			String.Format ("G{0} N{1} U{2}", "nu's", "ot", "nix"));
 
 		AssertEquals ("String.Format (\"{0:x8}\", 0xcafebabe),\"cafebabe\")",
 			"cafebabe", String.Format ("{0:x8}", 0xcafebabe));
 
-		AssertEquals ("String.Format (\"{0:x8}\", 0xcafebabe),\"cafebabe\")",
+		AssertEquals ("String.Format (\"{0:X8}\", 0xcafebabe),\"CAFEBABE\")",
 			"CAFEBABE", String.Format ("{0:X8}", 0xcafebabe));
 
 		AssertEquals ("String.Format (\"<{0,5:x3}>\", 0x55)",
@@ -347,6 +348,42 @@ public class TestString : TestCase
 			
 		AssertEquals ("String.Format (\"if({0}==0){{ .... }}\",\"i\")",
 			"if(i==0){ .... }", String.Format ("if({0}==0){{ .... }}", "i"));
+
+		/*  Some tests inspired by the mailing list  */
+		AssertEquals ("String.Format (\"0x{0:X2}\", (byte)255)",
+				"0xFF", String.Format("0x{0:X2}", (byte)255));
+
+		AssertEquals ("String.Format (\"0x{0:X2}\", (byte)14)",
+				"0x0E", String.Format("0x{0:X2}", (byte)14));
+
+		AssertEquals ("String.Format (\"{0:D2}\", 9)",
+				"09", String.Format("{0:D2}", 9));
+
+		AssertEquals ("String.Format (\"{0:F2}\", 1234567.89)",
+				"1234567.89", String.Format("{0:F2}", 1234567.89));
+
+		AssertEquals ("String.Format (\"{0:C2}\", 1234567)",
+				"\u00a4"+"1,234,567.00", String.Format("{0:C2}", 1234567));
+
+		AssertEquals ("String.Format (\"{0:E}\", 1234568)",
+				"1.234568E+006", String.Format("{0:E}", 1234568));
+
+		AssertEquals ("String.Format (\"{0:e}\", 0.325)",
+				"3.25e-001", String.Format("{0:e}", 0.325));
+
+		/*  Custom Format tests... */
+		AssertEquals ("String.Format(\"{0:#,###,##0.00}\", 1234567.81)",
+				"1,234,567.81", String.Format("{0:#,###,##0.00}", 1234567.81));
+
+		AssertEquals ("String.Format(\"{0:#,##0,}M\", 1234000)",
+				"1,234M", String.Format("{0:#,###,}M", 1234000));
+
+		AssertEquals("String.Format(\"{0:####.##}\", 0)",
+				".", String.Format("{0:####.##}", 0));
+
+		AssertEquals("String.Format(\"{0:###0.0#}\", 0)",
+				"0.0", String.Format("{0:###0.0#}", 0));
+
 	}
 
 	public void TestStringGetEnumerator()

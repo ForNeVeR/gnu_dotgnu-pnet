@@ -20,6 +20,7 @@
 
 #include <cscc/c/c_internal.h>
 #include "il_serialize.h"
+#include "il_crypt.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -1086,7 +1087,296 @@ int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
 	return 1;
 }
 
-void CTypeEndStruct(ILGenInfo *info, ILType *structType)
+/*
+ * Add a character to an MD5 context.
+ */
+#define	MD5HashAddChar(md5,value)	\
+			do { \
+				unsigned char ch = (unsigned char)(value); \
+				ILMD5Data((md5), &ch, 1); \
+			} while (0)
+
+/*
+ * Add a 32-bit size value to an MD5 context.
+ */
+static void MD5HashAddSize(ILMD5Context *md5, ILUInt32 value)
+{
+	unsigned char buf[4];
+	IL_WRITE_UINT32(buf, value);
+	ILMD5Data(md5, buf, 4);
+}
+
+/*
+ * Add a class name to an MD5 context.
+ */
+static void MD5HashAddName(ILMD5Context *md5, ILClass *classInfo)
+{
+	const char *namespace = ILClass_Namespace(classInfo);
+	const char *name = ILClass_Name(classInfo);
+	if(namespace)
+	{
+		ILMD5Data(md5, namespace, strlen(namespace));
+		MD5HashAddChar(md5, '.');
+	}
+	ILMD5Data(md5, name, strlen(name) + 1);
+}
+
+/*
+ * Forward reference.
+ */
+static void MD5HashFields(ILMD5Context *md5, ILClass *classInfo);
+
+/*
+ * Hash a type using a given MD5 context.
+ */
+static void MD5HashType(ILMD5Context *md5, ILType *type)
+{
+	if(ILType_IsPrimitive(type))
+	{
+		/* Hash a primitive type */
+		MD5HashAddChar(md5, ILType_ToElement(md5));
+	}
+	else if(ILType_IsValueType(type))
+	{
+		int structKind = CTypeGetStructKind(type);
+		if(structKind != -1)
+		{
+			/* Hash a struct or union type */
+			MD5HashAddChar(md5, structKind + 100);
+			MD5HashAddName(md5, ILType_ToValueType(type));
+			MD5HashFields(md5, ILType_ToValueType(type));
+			MD5HashAddChar(md5, IL_META_ELEMTYPE_END);
+		}
+		else if(CTypeIsOpenArray(type))
+		{
+			/* Hash an open array type */
+			MD5HashAddChar(md5, 110);
+			MD5HashAddSize(md5, 0);
+			MD5HashType(md5, CTypeGetElemType(type));
+		}
+		else if(CTypeIsArray(type))
+		{
+			MD5HashAddChar(md5, 110);
+			MD5HashAddSize(md5, CTypeGetNumElems(type));
+			MD5HashType(md5, CTypeGetElemType(type));
+		}
+		else
+		{
+			/* Hash an ordinary value type */
+			MD5HashAddChar(md5, IL_META_ELEMTYPE_VALUETYPE);
+			MD5HashAddName(md5, ILType_ToValueType(type));
+		}
+	}
+	else if(ILType_IsClass(type))
+	{
+		/* Hash an object reference type */
+		MD5HashAddChar(md5, IL_META_ELEMTYPE_CLASS);
+		MD5HashAddName(md5, ILType_ToClass(type));
+	}
+	else if(type != 0 && ILType_IsComplex(type))
+	{
+		/* Hash a complex type */
+		switch(ILType_Kind(type))
+		{
+			case IL_TYPE_COMPLEX_BYREF:
+			{
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_BYREF);
+				MD5HashType(md5, ILType_Ref(type));
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_PTR:
+			{
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_PTR);
+				MD5HashType(md5, ILType_Ref(type));
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_ARRAY:
+			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+			{
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_ARRAY);
+				MD5HashAddSize(md5, (ILUInt32)(ILTypeGetRank(type)));
+				MD5HashType(md5, ILTypeGetElemType(type));
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_CMOD_REQD:
+			{
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_CMOD_REQD);
+				MD5HashAddName(md5, type->un.modifier__.info__);
+				MD5HashType(md5, type->un.modifier__.type__);
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_CMOD_OPT:
+			{
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_CMOD_OPT);
+				MD5HashAddName(md5, type->un.modifier__.info__);
+				MD5HashType(md5, type->un.modifier__.type__);
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_SENTINEL:
+			{
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_SENTINEL);
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_PINNED:
+			{
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_PINNED);
+				MD5HashType(md5, ILType_Ref(type));
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_METHOD:
+			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
+			{
+				unsigned long numParams;
+				unsigned long param;
+				MD5HashAddChar(md5, IL_META_ELEMTYPE_FNPTR);
+				MD5HashType(md5, ILTypeGetReturnWithPrefixes(type));
+				numParams = ILTypeNumParams(type);
+				MD5HashAddSize(md5, (ILUInt32)numParams);
+				for(param = 1; param <= numParams; ++param)
+				{
+					MD5HashType(md5, ILTypeGetParamWithPrefixes(type, param));
+				}
+			}
+			break;
+		}
+	}
+}
+
+/*
+ * Hash the fields within a struct or union type.
+ */
+static void MD5HashFields(ILMD5Context *md5, ILClass *classInfo)
+{
+	ILField *field = 0;
+	const char *name;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!ILField_IsStatic(field))
+		{
+			name = ILField_Name(field);
+			ILMD5Data(md5, name, strlen(name) + 1);
+			MD5HashType(md5, ILField_Type(field));
+		}
+	}
+}
+
+/*
+ * Create a new name for a top-level anonymous struct or union.
+ */
+static char *CreateNewAnonName(ILGenInfo *info, ILType *type,
+							   ILClass *classInfo)
+{
+	ILMD5Context md5;
+	unsigned char hash[IL_MD5_HASH_SIZE];
+	int structKind, posn;
+	char name[64];
+	int value, index, bits;
+	static char const encode[] =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_$";
+	char *newName;
+
+	/* Hash the fields in the structure */
+	ILMD5Init(&md5);
+	MD5HashFields(&md5, classInfo);
+	ILMD5Finalize(&md5, hash);
+
+	/* Format the name */
+	structKind = CTypeGetStructKind(type);
+	if(structKind == C_STKIND_STRUCT || structKind == C_STKIND_STRUCT_NATIVE)
+	{
+		strcpy(name, "struct (");
+		posn = 8;
+	}
+	else
+	{
+		strcpy(name, "union (");
+		posn = 7;
+	}
+	value = 0;
+	bits = 0;
+	for(index = 0; index < IL_MD5_HASH_SIZE; ++index)
+	{
+		value = (value << 8) + hash[index];
+		bits += 8;
+		while(bits >= 6)
+		{
+			bits -= 6;
+			name[posn++] = encode[value >> bits];
+			value &= ((1 << bits) - 1);
+		}
+	}
+	value <<= (6 - bits);
+	name[posn++] = encode[value >> bits];
+	name[posn++] = ')';
+	name[posn++] = '\0';
+
+	/* Duplicate the string and return */
+	newName = ILDupString(name);
+	if(!newName)
+	{
+		ILGenOutOfMemory(info);
+	}
+	return newName;
+}
+
+/*
+ * Clone the contents of a structure type.
+ */
+static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
+{
+	ILField *field;
+	ILField *newField;
+	ILFieldLayout *flayout;
+	ILClassLayout *clayout;
+
+	/* Clone the fields */
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(src, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		newField = ILFieldCreate(dest, 0, ILField_Name(field),
+								 ILField_Attrs(field));
+		if(!newField)
+		{
+			ILGenOutOfMemory(info);
+		}
+		ILMemberSetSignature((ILMember *)newField, ILField_Type(field));
+		flayout = ILFieldLayoutGetFromOwner(field);
+		if(flayout)
+		{
+			if(!ILFieldLayoutCreate(info->image, 0, newField,
+									ILFieldLayoutGetOffset(flayout)))
+			{
+				ILGenOutOfMemory(info);
+			}
+		}
+	}
+
+	/* Clone the bit field declarations */
+	/* TODO */
+
+	/* Clone the class layout information */
+	clayout = ILClassLayoutGetFromOwner(src);
+	if(clayout)
+	{
+		if(!ILClassLayoutCreate(info->image, 0, dest,
+								ILClassLayoutGetPackingSize(clayout),
+								ILClassLayoutGetClassSize(clayout)))
+		{
+			ILGenOutOfMemory(info);
+		}
+	}
+}
+
+ILType *CTypeEndStruct(ILGenInfo *info, ILType *structType, int renameAnon)
 {
 	ILClass *classInfo = ILType_ToValueType(structType);
 	ILClassLayout *layout = ILClassLayoutGetFromOwner(classInfo);
@@ -1101,6 +1391,35 @@ void CTypeEndStruct(ILGenInfo *info, ILType *structType)
 			ILClassLayoutSetClassSize(layout, size);
 		}
 	}
+	if(renameAnon)
+	{
+		char *newName;
+		ILClass *newClass;
+
+		/* Create a new name for the anonymous struct or union */
+		newName = CreateNewAnonName(info, structType, classInfo);
+
+		/* See if we already have a type defined with this name */
+		newClass = ILClassLookup(ILClassGlobalScope(info->image), newName, 0);
+		if(newClass)
+		{
+			ILFree(newName);
+			return ILType_FromValueType(newClass);
+		}
+
+		/* Create a new type and clone the original structure into it */
+		newClass = ILClassCreate(ILClassGlobalScope(info->image), 0,
+							     newName, 0, ILClass_ParentRef(classInfo));
+		if(!newClass)
+		{
+			ILGenOutOfMemory(info);
+		}
+		ILFree(newName);
+		ILClassSetAttrs(newClass, ~0, ILClass_Attrs(classInfo));
+		CloneStruct(info, newClass, classInfo);
+		return ILType_FromValueType(newClass);
+	}
+	return structType;
 }
 
 ILField *CTypeLookupField(ILGenInfo *info, ILType *structType,

@@ -4,6 +4,10 @@
 	* engine/ilrun.c: minor change to allow ilrun.c to build with VC++
 	(thanks to Tobias Oberstein <Tobias.Oberstein@gmx.de>).
 
+	* cscc/c/c_grammar.y, cscc/c/c_types.c, cscc/c/c_types.h:
+	generate better names for top-level anonymous structs and unions
+	in the C compiler so that linking such types works correctly.
+
 2003-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_values.h: rearrange the detection of ILInt64 a little

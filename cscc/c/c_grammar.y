@@ -1730,10 +1730,7 @@ StructOrUnionSpecifier
 				currentStruct = $<structInfo>4.parent;
 
 				/* Terminate the structure definition */
-				CTypeEndStruct(&CCCodeGen, $<structInfo>4.type);
-
-				/* Return the completed type to the next higher level */
-				$$ = $<structInfo>4.type;
+				$$ = CTypeEndStruct(&CCCodeGen, $<structInfo>4.type, 0);
 	  		}
 	| StructOrUnion '{' 	{
 				/* Define an anonymous struct or union type */
@@ -1749,10 +1746,8 @@ StructOrUnionSpecifier
 				currentStruct = $<structInfo>3.parent;
 
 				/* Terminate the structure definition */
-				CTypeEndStruct(&CCCodeGen, $<structInfo>3.type);
-
-				/* Return the completed type to the next higher level */
-				$$ = $<structInfo>3.type;
+				$$ = CTypeEndStruct(&CCCodeGen, $<structInfo>3.type,
+							        (currentStruct == 0));
 	  		}
 	| StructOrUnion AnyIdentifier	{
 				/* Look for an existing definition for this type */

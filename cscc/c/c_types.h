@@ -147,9 +147,10 @@ int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
 
 /*
  * End the definition of a "struct" or "union".  This will update
- * the type size to reflect the maximum alignment.
+ * the type size to reflect the maximum alignment.  If "renameAnon"
+ * is non-zero, then we need to rename a top-level anonymous struct.
  */
-void CTypeEndStruct(ILGenInfo *info, ILType *structType);
+ILType *CTypeEndStruct(ILGenInfo *info, ILType *structType, int renameAnon);
 
 /*
  * Look up a field name within a "struct" or "union" type.

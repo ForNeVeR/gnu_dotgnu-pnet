@@ -1,5 +1,5 @@
 /*
- * SynchronizedListIterator.cs - Wrap a list iterator to synchronize it.
+ * FixedSizeDeque.cs - Wrap a deque to make it fixed-size.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,88 +27,80 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedListIterator<T> : IListIterator<T>
+public class FixedSizeDeque<T> : FixedSizeCollection<T>, IDeque<T>
 {
 	// Internal state.
-	protected Object       syncRoot;
-	protected IListIterator<T> iterator;
+	protected IDeque<T> deque;
 
 	// Constructor.
-	public SynchronizedListIterator(Object syncRoot, IListIterator<T> iterator)
+	public FixedSizeDeque(IDeque<T> deque) : base(deque)
 			{
-				this.syncRoot = syncRoot;
-				this.iterator = iterator;
+				this.deque = deque;
 			}
 
-	// Implement the IIterator<T> interface.
-	public bool MoveNext()
+	// Implement the IDeque<T> interface.
+	public void PushFront(T value)
 			{
-				lock(syncRoot)
-				{
-					return iterator.MoveNext();
-				}
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public void Reset()
+	public void PushBack(T value)
 			{
-				lock(syncRoot)
-				{
-					iterator.Reset();
-				}
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public void Remove()
+	public T PopFront()
 			{
-				lock(syncRoot)
-				{
-					iterator.Remove();
-				}
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	T IIterator<T>.Current
+	public T PopBack()
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
+			}
+	public T PeekFront()
+			{
+				return deque.PeekFront();
+			}
+	public T PeekEnd()
+			{
+				return deque.PeekEnd();
+			}
+	public T[] ToArray()
+			{
+				return deque.ToArray();
+			}
+	public bool IsFixedSize
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return ((IIterator<T>)iterator).Current;
-					}
+					return true;
 				}
 			}
-
-	// Implement the IListIterator<T> interface.
-	public bool MovePrev()
-			{
-				lock(syncRoot)
-				{
-					return iterator.MovePrev();
-				}
-			}
-	public int Position
+	public bool IsReadOnly
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Position;
-					}
-				}
-			}
-	public T Current
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return iterator.Current;
-					}
-				}
-				set
-				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
-					}
+					return deque.IsReadOnly;
 				}
 			}
 
-}; // class SynchronizedListIterator<T>
+	// Implement the ICloneable interface.
+	public override Object Clone()
+			{
+				if(deque is ICloneable)
+				{
+					return new FixedSizeDeque<T>
+						((IDeque<T>)(((ICloneable)deque).Clone()));
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_NotCloneable"));
+				}
+			}
+
+}; // class FixedSizeDeque<T>
 
 }; // namespace Generics

@@ -1,5 +1,5 @@
 /*
- * SynchronizedListIterator.cs - Wrap a list iterator to synchronize it.
+ * FixedSizeCollection.cs - Wrap a collection to make it fixed-size.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,88 +27,69 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedListIterator<T> : IListIterator<T>
+public class FixedSizeCollection<T> : ICollection<T>, ICloneable
 {
 	// Internal state.
-	protected Object       syncRoot;
-	protected IListIterator<T> iterator;
+	protected ICollection<T> coll;
 
 	// Constructor.
-	public SynchronizedListIterator(Object syncRoot, IListIterator<T> iterator)
+	public FixedSizeCollection(ICollection<T> coll)
 			{
-				this.syncRoot = syncRoot;
-				this.iterator = iterator;
+				if(coll == null)
+				{
+					throw new ArgumentNullException("coll");
+				}
+				this.coll = coll;
 			}
 
-	// Implement the IIterator<T> interface.
-	public bool MoveNext()
+	// Implement the ICollection<T> interface.
+	public void CopyTo(T[] array, int index)
 			{
-				lock(syncRoot)
-				{
-					return iterator.MoveNext();
-				}
+				coll.CopyTo(array, index);
 			}
-	public void Reset()
-			{
-				lock(syncRoot)
-				{
-					iterator.Reset();
-				}
-			}
-	public void Remove()
-			{
-				lock(syncRoot)
-				{
-					iterator.Remove();
-				}
-			}
-	T IIterator<T>.Current
+	public int Count
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return ((IIterator<T>)iterator).Current;
-					}
+					return coll.Count;
 				}
 			}
-
-	// Implement the IListIterator<T> interface.
-	public bool MovePrev()
-			{
-				lock(syncRoot)
-				{
-					return iterator.MovePrev();
-				}
-			}
-	public int Position
+	public bool IsSynchronized
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Position;
-					}
+					return coll.IsSynchronized;
 				}
 			}
-	public T Current
+	public Object SyncRoot
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Current;
-					}
-				}
-				set
-				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
-					}
+					return coll.SyncRoot;
 				}
 			}
 
-}; // class SynchronizedListIterator<T>
+	// Implement the IIterable<T> interface.
+	public IIterator<T> GetIterator()
+			{
+				return new FixedSizeIterator<T>(coll.GetIterator());
+			}
+
+	// Implement the ICloneable interface.
+	public virtual Object Clone()
+			{
+				if(coll is ICloneable)
+				{
+					return new FixedSizeCollection<T>
+						((ICollection<T>)(((ICloneable)coll).Clone()));
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_NotCloneable"));
+				}
+			}
+
+}; // class FixedSizeCollection<T>
 
 }; // namespace Generics

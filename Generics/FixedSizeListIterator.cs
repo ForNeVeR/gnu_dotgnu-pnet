@@ -1,5 +1,5 @@
 /*
- * SynchronizedListIterator.cs - Wrap a list iterator to synchronize it.
+ * FixedSizeIterator.cs - Wrap a list iterator to make it fixed-size.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,88 +27,63 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedListIterator<T> : IListIterator<T>
+internal sealed class FixedSizeListIterator<T> : IListIterator<T>
 {
 	// Internal state.
-	protected Object       syncRoot;
 	protected IListIterator<T> iterator;
 
 	// Constructor.
-	public SynchronizedListIterator(Object syncRoot, IListIterator<T> iterator)
+	public FixedSizeListIterator(IListIterator<T> iterator)
 			{
-				this.syncRoot = syncRoot;
 				this.iterator = iterator;
 			}
 
 	// Implement the IIterator<T> interface.
 	public bool MoveNext()
 			{
-				lock(syncRoot)
-				{
-					return iterator.MoveNext();
-				}
+				return iterator.MoveNext();
 			}
 	public void Reset()
 			{
-				lock(syncRoot)
-				{
-					iterator.Reset();
-				}
+				iterator.Reset();
 			}
 	public void Remove()
 			{
-				lock(syncRoot)
-				{
-					iterator.Remove();
-				}
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
 	T IIterator<T>.Current
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return ((IIterator<T>)iterator).Current;
-					}
+					return ((IIterator<T>)iterator).Current;
 				}
 			}
 
 	// Implement the IListIterator<T> interface.
 	public bool MovePrev()
 			{
-				lock(syncRoot)
-				{
-					return iterator.MovePrev();
-				}
+				return iterator.MovePrev();
 			}
 	public int Position
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Position;
-					}
+					return iterator.Position;
 				}
 			}
 	public T Current
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Current;
-					}
+					return iterator.Current;
 				}
 				set
 				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
-					}
+					iterator.Current = value;
 				}
 			}
 
-}; // class SynchronizedListIterator<T>
+}; // class FixedSizeListIterator<T>
 
 }; // namespace Generics

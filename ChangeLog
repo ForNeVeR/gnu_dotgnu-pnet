@@ -52,6 +52,21 @@
 	Generics/ReadOnlyStack.cs: add read-only wrapper classes,
 	to replace the concrete-specific "ReadOnly" methods.
 
+	* Generics/ArrayList.cs, Generics/FixedSizeCollection.cs,
+	Generics/FixedSizeDeque.cs, Generics/FixedSizeDictIterator.cs,
+	Generics/FixedSizeDictionary.cs, Generics/FixedSizeIterator.cs,
+	Generics/FixedSizeList.cs, Generics/FixedSizeListIterator.cs,
+	Generics/FixedSizeQueue.cs, Generics/FixedSizeStack.cs,
+	Generics/ReadOnlyCollection.cs, Generics/ReadOnlyDeque.cs,
+	Generics/ReadOnlyDictIterator.cs, Generics/ReadOnlyDictionary.cs,
+	Generics/ReadOnlyIterator.cs, Generics/ReadOnlyList.cs,
+	Generics/ReadOnlyListIterator.cs, Generics/ReadOnlyQueue.cs,
+	Generics/ReadOnlyStack.cs, Generics/ReverseIterator.cs,
+	Generics/SynchronizedDictIterator.cs, Generics/SynchronizedIterator.cs,
+	Generics/SynchronizedListIterator.cs: add fixed-size wrapper
+	classes to replace the concrete-specific "FixedSize" methods;
+	fix Copyright messages.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

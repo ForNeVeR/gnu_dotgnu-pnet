@@ -1,5 +1,5 @@
 /*
- * ReadOnlyCollection.cs - Wrap a collection to make it read-only.
+ * FixedSizeList.cs - Wrap a list to make it fixed-size.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,61 +27,88 @@ namespace Generics
 
 using System;
 
-public class ReadOnlyCollection<T> : ICollection<T>, ICloneable
+public class FixedSizeList<T> : FixedSizeCollection<T>, IList<T>
 {
 	// Internal state.
-	protected ICollection<T> coll;
+	protected IList<T> list;
 
 	// Constructor.
-	public ReadOnlyCollection(ICollection<T> coll)
+	public FixedSizeList(IList<T> list) : base(list)
 			{
-				if(coll == null)
-				{
-					throw new ArgumentNullException("coll");
-				}
-				this.coll = coll;
+				this.list = list;
 			}
 
-	// Implement the ICollection<T> interface.
-	public void CopyTo(T[] array, int index)
+	// Implement the IList<T> interface.
+	public int Add(T value)
 			{
-				coll.CopyTo(array, index);
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public int Count
+	public void Clear()
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
+			}
+	public bool Contains(T value)
+			{
+				return list.Contains(value);
+			}
+	public new IListIterator<T> GetIterator()
+			{
+				return new FixedSizeListIterator<T>(list.GetIterator());
+			}
+	public int IndexOf(T value)
+			{
+				return list.IndexOf(value);
+			}
+	public void Insert(int index, T value)
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
+			}
+	public void Remove(T value)
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
+			}
+	public void RemoveAt(int index)
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
+			}
+	public bool IsFixedSize
 			{
 				get
 				{
-					return coll.Count;
+					return true;
 				}
 			}
-	public bool IsSynchronized
+	public bool IsReadOnly
 			{
 				get
 				{
-					return coll.IsSynchronized;
+					return list.IsReadOnly;
 				}
 			}
-	public Object SyncRoot
+	public T this[int index]
 			{
 				get
 				{
-					return coll.SyncRoot;
+					return list[index];
 				}
-			}
-
-	// Implement the IIterable<T> interface.
-	public IIterator<T> GetIterator()
-			{
-				return new ReadOnlyIterator<T>(coll.GetIterator());
+				set
+				{
+					list[index] = value;
+				}
 			}
 
 	// Implement the ICloneable interface.
-	public virtual Object Clone()
+	public override Object Clone()
 			{
-				if(coll is ICloneable)
+				if(list is ICloneable)
 				{
-					return new ReadOnlyCollection<T>
-						((ICollection<T>)(((ICloneable)coll).Clone()));
+					return new FixedSizeList<T>
+						((IList<T>)(((ICloneable)list).Clone()));
 				}
 				else
 				{
@@ -90,6 +117,6 @@ public class ReadOnlyCollection<T> : ICollection<T>, ICloneable
 				}
 			}
 
-}; // class ReadOnlyCollection<T>
+}; // class FixedSizeList<T>
 
 }; // namespace Generics

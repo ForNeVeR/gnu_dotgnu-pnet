@@ -1,5 +1,5 @@
 /*
- * ReadOnlyQueue.cs - Wrap a queue to make it read-only.
+ * FixedSizeDictionary.cs - Wrap a dictionary to make it fixed-size.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,56 +27,91 @@ namespace Generics
 
 using System;
 
-public class ReadOnlyQueue<T> : ReadOnlyCollection<T>, IQueue<T>
+public class FixedSizeDictionary<KeyT, ValueT>
+	: FixedSizeCollection< DictionaryEntry<KeyT, ValueT> >,
+	  IDictionary<KeyT, ValueT>
 {
 	// Internal state.
-	protected IQueue<T> queue;
+	protected IDictionary<KeyT, ValueT> dict;
 
 	// Constructor.
-	public ReadOnlyQueue(IQueue<T> queue) : base(queue)
+	public FixedSizeDictionary(IDictionary<KeyT, ValueT> dict) : base(dict)
 			{
-				this.queue = queue;
+				this.dict = dict;
 			}
 
-	// Implement the IQueue<T> interface.
-	public void Enqueue(T value)
+	// Implement the IDictionary<KeyT, ValueT> interface.
+	public void Add(KeyT key, ValueT value)
 			{
-				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public T Dequeue()
+	public void Clear()
 			{
-				throw new InvalidOperationException(S._("NotSupp_ReadOnly"));
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public T Peek()
+	public bool Contains(KeyT key)
 			{
-				return queue.Peek();
+				return dict.Contains(key);
 			}
-	public T[] ToArray()
+	public new IDictionaryIterator<KeyT, ValueT> GetIterator()
 			{
-				return queue.ToArray();
+				return new FixedSizeDictIterator<KeyT, ValueT>
+					(dict.GetIterator());
+			}
+	public void Remove(KeyT key)
+			{
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
 	public bool IsFixedSize
-			{
-				get
-				{
-					return queue.IsFixedSize;
-				}
-			}
-	public bool IsReadOnly
 			{
 				get
 				{
 					return true;
 				}
 			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					return dict.IsReadOnly;
+				}
+			}
+	public ValueT this[KeyT key]
+			{
+				get
+				{
+					return dict[key];
+				}
+				set
+				{
+					dict[key] = value;
+				}
+			}
+	public ICollection<KeyT> Keys
+			{
+				get
+				{
+					return new FixedSizeCollection<KeyT>(dict.Keys);
+				}
+			}
+	public ICollection<ValueT> Values
+			{
+				get
+				{
+					return new FixedSizeCollection<ValueT>(dict.Values);
+				}
+			}
 
 	// Implement the ICloneable interface.
 	public override Object Clone()
 			{
-				if(queue is ICloneable)
+				if(dict is ICloneable)
 				{
-					return new ReadOnlyQueue<T>
-						((IQueue<T>)(((ICloneable)queue).Clone()));
+					return new FixedSizeDictionary<T>
+						((IDictionary<T>)(((ICloneable)dict).Clone()));
 				}
 				else
 				{
@@ -85,6 +120,6 @@ public class ReadOnlyQueue<T> : ReadOnlyCollection<T>, IQueue<T>
 				}
 			}
 
-}; // class ReadOnlyQueue<T>
+}; // class FixedSizeDictionary<KeyT, ValueT>
 
 }; // namespace Generics

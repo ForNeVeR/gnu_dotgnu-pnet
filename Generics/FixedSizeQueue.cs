@@ -1,5 +1,5 @@
 /*
- * SynchronizedListIterator.cs - Wrap a list iterator to synchronize it.
+ * FixedSizeQueue.cs - Wrap a queue to make it fixed-size.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,88 +27,66 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedListIterator<T> : IListIterator<T>
+public class FixedSizeQueue<T> : FixedSizeCollection<T>, IQueue<T>
 {
 	// Internal state.
-	protected Object       syncRoot;
-	protected IListIterator<T> iterator;
+	protected IQueue<T> queue;
 
 	// Constructor.
-	public SynchronizedListIterator(Object syncRoot, IListIterator<T> iterator)
+	public FixedSizeQueue(IQueue<T> queue) : base(queue)
 			{
-				this.syncRoot = syncRoot;
-				this.iterator = iterator;
+				this.queue = queue;
 			}
 
-	// Implement the IIterator<T> interface.
-	public bool MoveNext()
+	// Implement the IQueue<T> interface.
+	public void Enqueue(T value)
 			{
-				lock(syncRoot)
-				{
-					return iterator.MoveNext();
-				}
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public void Reset()
+	public T Dequeue()
 			{
-				lock(syncRoot)
-				{
-					iterator.Reset();
-				}
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	public void Remove()
+	public T Peek()
 			{
-				lock(syncRoot)
-				{
-					iterator.Remove();
-				}
+				return queue.Peek();
 			}
-	T IIterator<T>.Current
+	public T[] ToArray()
+			{
+				return queue.ToArray();
+			}
+	public bool IsFixedSize
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return ((IIterator<T>)iterator).Current;
-					}
+					return true;
 				}
 			}
-
-	// Implement the IListIterator<T> interface.
-	public bool MovePrev()
-			{
-				lock(syncRoot)
-				{
-					return iterator.MovePrev();
-				}
-			}
-	public int Position
+	public bool IsReadOnly
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Position;
-					}
-				}
-			}
-	public T Current
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return iterator.Current;
-					}
-				}
-				set
-				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
-					}
+					return queue.IsReadOnly;
 				}
 			}
 
-}; // class SynchronizedListIterator<T>
+	// Implement the ICloneable interface.
+	public override Object Clone()
+			{
+				if(queue is ICloneable)
+				{
+					return new FixedSizeQueue<T>
+						((IQueue<T>)(((ICloneable)queue).Clone()));
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_NotCloneable"));
+				}
+			}
+
+}; // class FixedSizeQueue<T>
 
 }; // namespace Generics

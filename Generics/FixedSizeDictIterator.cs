@@ -1,5 +1,5 @@
 /*
- * SynchronizedListIterator.cs - Wrap a list iterator to synchronize it.
+ * FixedSizeDictIterator.cs - Wrap an iterator to make it fixed-size.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,88 +27,67 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedListIterator<T> : IListIterator<T>
+internal sealed class FixedSizeDictIterator<KeyT, ValueT>
+	: IDictionaryIterator<KeyT, ValueT>
 {
 	// Internal state.
-	protected Object       syncRoot;
-	protected IListIterator<T> iterator;
+	protected IDictionaryIterator<KeyT, ValueT> iterator;
 
 	// Constructor.
-	public SynchronizedListIterator(Object syncRoot, IListIterator<T> iterator)
+	public FixedSizeDictIterator(IDictionaryIterator<KeyT, ValueT> iterator)
 			{
-				this.syncRoot = syncRoot;
 				this.iterator = iterator;
 			}
 
-	// Implement the IIterator<T> interface.
+	// Implement the IIterator<DictionaryEntry<KeyT, ValueT>> interface.
 	public bool MoveNext()
 			{
-				lock(syncRoot)
-				{
-					return iterator.MoveNext();
-				}
+				return iterator.MoveNext();
 			}
 	public void Reset()
 			{
-				lock(syncRoot)
-				{
-					iterator.Reset();
-				}
+				iterator.Reset();
 			}
 	public void Remove()
 			{
-				lock(syncRoot)
-				{
-					iterator.Remove();
-				}
+				throw new InvalidOperationException
+					(S._("NotSupp_FixedSizeCollection"));
 			}
-	T IIterator<T>.Current
+	public DictionaryEntry<KeyT, ValueT> Current
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return ((IIterator<T>)iterator).Current;
-					}
+					return iterator.Current;
 				}
 			}
 
-	// Implement the IListIterator<T> interface.
-	public bool MovePrev()
-			{
-				lock(syncRoot)
-				{
-					return iterator.MovePrev();
-				}
-			}
-	public int Position
+	// Implement the IDictionaryIterator<KeyT, ValueT> interface.
+	public DictionaryEntry<KeyT, ValueT> Entry
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Position;
-					}
+					return iterator.Entry;
 				}
 			}
-	public T Current
+	public KeyT Key
 			{
 				get
 				{
-					lock(syncRoot)
-					{
-						return iterator.Current;
-					}
+					return iterator.Key;
+				}
+			}
+	public ValueT Value
+			{
+				get
+				{
+					return iterator.Value;
 				}
 				set
 				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
-					}
+					iterator.Value = value;
 				}
 			}
 
-}; // class SynchronizedListIterator<T>
+}; // class FixedSizeDictIterator<KeyT, ValueT>
 
 }; // namespace Generics

@@ -384,10 +384,10 @@ ILBool _IL_CryptoMethods_SameKey(ILExecThread *_thread, System_Array *key1,
  * The mixing algorithm used here is based on that described in section
  * 17.14 of the second edition of "Applied Cryptography.
  *
- * We extract seed information from the system (which is "/dev/random" if
- * it is present), and then mix it to generate the material that we require.
- * Once we've extracted roughly 1024 bytes, or the pool is more than
- * 2 seconds old, we discard the pool and acquire new seed material.
+ * We extract seed information from the system (which is "/dev/urandom" or
+ * "/dev/random" if present), and then mix it to generate the material that
+ * we require.  Once we've extracted roughly 1024 bytes, or the pool is more
+ * than 2 seconds old, we discard the pool and acquire new seed material.
  *
  * Feel free to submit patches that make this a better random number
  * generator, particularly when acquiring seed material from the system.
@@ -428,19 +428,25 @@ void _IL_CryptoMethods_GenerateRandom(ILExecThread *thread,
 		if(thread->process->randomBytesDelivered >= 1024 ||
 		   (currentTime.secs - thread->process->randomLastTime) >= 2)
 		{
-			/* Warning!  If the system doesn't have /dev/random,
+			/* Warning!  If the system doesn't have /dev/[u]random,
 			   then this code is unlikely to give good results.
 
-			   Most Unix-like systems do have /dev/random these days,
+			   Most Unix-like systems do have /dev/[u]random these days,
 			   but non-Unix OS'es may require changes to this code.
 
-			   We deliberately don't use /dev/urandom as we want the
-			   kernel to make sure that the values returned are based
-			   on actual system entropy, and not expanded entropy.
-			   We will expand the entropy ourselves. */
+			   Note: technically /dev/urandom isn't quite as random as
+			   /dev/random under Linux, but /dev/random may block for
+			   very long periods of time if the kernel judges that the
+			   entropy pool has expired, but the system doesn't have much
+			   activity to generate new entropy quickly.  We a happy with
+			   the kernel's previous entropy values. */
 			ILMemZero(thread->process->randomPool, IL_SHA_HASH_SIZE);
 		#ifdef HAVE_OPEN
-			fd = open("/dev/random", O_RDONLY, 0);
+			fd = open("/dev/urandom", O_RDONLY, 0);
+			if(fd < 0)
+			{
+				fd = open("/dev/random", O_RDONLY, 0);
+			}
 			if(fd >= 0)
 			{
 				size = read(fd, hash, IL_SHA_HASH_SIZE);

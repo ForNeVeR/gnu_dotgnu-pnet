@@ -1,4 +1,24 @@
 
+2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/System.build,
+	System/CodeDom/Compiler/CodeCompiler.cs,
+	System/Diagnostics/EventLogTraceListener.cs,
+	System/Diagnostics/ICollectData.cs,
+	System/Diagnostics/PerformanceCounterManager.cs,
+	System/Diagnostics/Process.cs,
+	System/Diagnostics/ProcessModule.cs,
+	System/Diagnostics/ProcessModuleCollection.cs,
+	System/Diagnostics/ProcessStartInfo.cs,
+	System/Diagnostics/ProcessThread.cs,
+	System/Diagnostics/ProcessThreadCollection.cs,
+	resources/en_US/System/Arg.txt,
+	resources/en_US/System/Invalid.txt,
+	resources/en_US/System/NotSupp.txt,
+	resources/en_US/runtime/Exception.txt,
+	runtime/System/PlatformNotSupportedException.cs: implement the
+	process start/management classes.
+
 2003-04-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/runtime.build,

@@ -95,3 +95,4 @@ Exception_SEH=Problem with structured exception handling
 Exception_Filter=Invalid filter criteria
 Exception_FilterAttribute=Invalid attribute filter criteria
 Exception_FilterName=Invalid name filter criteria
+Exception_Platform=The requested operation is not supported on this platform

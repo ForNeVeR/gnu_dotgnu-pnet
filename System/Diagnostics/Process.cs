@@ -1,9 +1,7 @@
 /*
- * Process.cs - Implementation of "System.Diagnostics.Process" 
+ * Process.cs - Implementation of the "System.Diagnostics.Process" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * 
- * Contributed by Gopal.V
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,516 +18,1009 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.IO;
-
 namespace System.Diagnostics
 {
-	[TODO]
-	public class Process
-	{
-		[TODO]
-		public Process()
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public void Close()
-		{
-			throw new NotImplementedException("Close");
-		}
+#if !ECMA_COMPAT
 
-		[TODO]
-		public bool CloseMainWindow()
-		{
-			throw new NotImplementedException("CloseMainWindow");
-		}
+using Platform;
+using System.IO;
+using System.ComponentModel;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
+using System.Security.Permissions;
 
-		[TODO]
-		protected virtual void Dispose(bool disposing)
-		{
-			throw new NotImplementedException("Dispose");
-		}
+// This class deliberately supports only a subset of the full API,
+// for reasons of security and portability.  The set of supported
+// features roughly corresponds to "Windows 98 mode" in other systems.
 
-		[TODO]
-		public static void EnterDebugMode()
-		{
-			throw new NotImplementedException("EnterDebugMode");
-		}
+// We need unrestricted permissions to start and manage processes.
+[PermissionSet(SecurityAction.LinkDemand, Unrestricted=true)]
+[PermissionSet(SecurityAction.InheritanceDemand, Unrestricted=true)]
+public class Process : Component
+{
+	// Internal state.
+	private bool enableRaisingEvents;
+	private int exitCode;
+	private IntPtr processHandle;
+	private int processID;
+	private bool hasExited;
+	private String[] argv;
+	private ProcessStartInfo startInfo;
+	private ISynchronizeInvoke syncObject;
+	private StreamWriter stdin; 
+	private StreamReader stdout; 
+	private StreamReader stderr; 
+	private static Process currentProcess;
+	private static ArrayList children;
 
-		[TODO]
-		public static Process GetCurrentProcess()
-		{
-			throw new NotImplementedException("GetCurrentProcess");
-		}
-
-		[TODO]
-		public static Process GetProcessById(int processId)
-		{
-			throw new NotImplementedException("GetProcessById");
-		}
-
-		[TODO]
-		public static Process GetProcessById(int processId, String machineName)
-		{
-			throw new NotImplementedException("GetProcessById");
-		}
-
-		[TODO]
-		public static Process[] GetProcesses()
-		{
-			throw new NotImplementedException("GetProcesses");
-		}
-
-		[TODO]
-		public static Process[] GetProcesses(String machineName)
-		{
-			throw new NotImplementedException("GetProcesses");
-		}
-
-		[TODO]
-		public static Process[] GetProcessesByName(String processName)
-		{
-			throw new NotImplementedException("GetProcessesByName");
-		}
-
-		[TODO]
-		public static Process[] GetProcessesByName(String processName, 
-													String machineName)
-		{
-			throw new NotImplementedException("GetProcessesByName");
-		}
-
-		[TODO]
-		public void Kill()
-		{
-			throw new NotImplementedException("Kill");
-		}
-
-		[TODO]
-		public static void LeaveDebugMode()
-		{
-			throw new NotImplementedException("LeaveDebugMode");
-		}
-
-		[TODO]
-		protected void OnExited()
-		{
-			throw new NotImplementedException("OnExited");
-		}
-
-		[TODO]
-		public void Refresh()
-		{
-			throw new NotImplementedException("Refresh");
-		}
-
-		[TODO]
-		public bool Start()
-		{
-			throw new NotImplementedException("Start");
-		}
-
-		[TODO]
-		public static Process Start(ProcessStartInfo startInfo)
-		{
-			throw new NotImplementedException("Start");
-		}
-
-		[TODO]
-		public static Process Start(String fileName)
-		{
-			throw new NotImplementedException("Start");
-		}
-
-		[TODO]
-		public static Process Start(String fileName, String arguments)
-		{
-			throw new NotImplementedException("Start");
-		}
-
-		[TODO]
-		public override String ToString()
-		{
-			throw new NotImplementedException("ToString");
-		}
-
-		[TODO]
-		public void WaitForExit()
-		{
-			throw new NotImplementedException("WaitForExit");
-		}
-
-		[TODO]
-		public bool WaitForExit(int milliseconds)
-		{
-			throw new NotImplementedException("WaitForExit");
-		}
-
-		[TODO]
-		public bool WaitForInputIdle()
-		{
-			throw new NotImplementedException("WaitForInputIdle");
-		}
-
-		[TODO]
-		public bool WaitForInputIdle(int milliseconds)
-		{
-			throw new NotImplementedException("WaitForInputIdle");
-		}
-
-		[TODO]
-		public int BasePriority 
-		{ 
-			get 
+	// Constructor.
+	public Process()
 			{
-				throw new NotImplementedException("BasePriority");
-			}
-		}
-		[TODO]
-		public bool EnableRaisingEvents 
-		{ 
-			get 
-			{
-				throw new NotImplementedException("EnableRaisingEvents");
+				this.processID = -1;
 			}
 
-			set 
+	// Check to see if the process exists.
+	private void Exists()
 			{
-				throw new NotImplementedException("EnableRaisingEvents");
+				if(processID == -1)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ProcessNotStarted"));
+				}
 			}
-		}
-		[TODO]
-		public int ExitCode 
-		{ 
-			get 
+
+	// Check to see if the process exists and has not exited.
+	private void Running()
 			{
-				throw new NotImplementedException("ExitCode");
+				if(processID == -1)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ProcessNotStarted"));
+				}
+				if(hasExited)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ProcessExited"));
+				}
 			}
-		}
-		[TODO]
-		public DateTime ExitTime 
-		{ 
-			get
+
+	// Check to see if the process has exited.
+	private void Finished()
 			{
-				throw new NotImplementedException("ExitTime");
+				if(processID == -1)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ProcessNotStarted"));
+				}
+				if(!hasExited)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ProcessNotExited"));
+				}
 			}
-		}
-		[TODO]
-		public IntPtr Handle 
-		{ 
-			get
+
+	// Process properties.
+	public int BasePriority
 			{
-				throw new NotImplementedException("Handle");
+				get
+				{
+					// We only use the normal priority in this implementation.
+					Exists();
+					return 8;
+				}
 			}
-		}
-		[TODO]
-		public int HandleCount 
-		{ 
-			get
+	public bool EnableRaisingEvents
 			{
-				throw new NotImplementedException("HandleCount");
+				get
+				{
+					return enableRaisingEvents;
+				}
+				set
+				{
+					enableRaisingEvents = value;
+				}
 			}
-		}
-		[TODO]
-		public bool HasExited 
-		{ 
-			get
+	public int ExitCode
 			{
-				throw new NotImplementedException("HasExited");
+				get
+				{
+					Finished();
+					return exitCode;
+				}
 			}
-		}
-		[TODO]
-		public int Id 
-		{ 
-			get
+	public DateTime ExitTime
 			{
-				throw new NotImplementedException("Id");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public String MachineName 
-		{ 
-			get
+	public IntPtr Handle
 			{
-				throw new NotImplementedException("MachineName");
+				get
+				{
+					Exists();
+					return processHandle;
+				}
 			}
-		}
-		[TODO]
-		public int MainModule 
-		{ 
-			get
+	public int HandleCount
 			{
-				throw new NotImplementedException("MainModule");
+				get
+				{
+					Running();
+					int count = GetHandleCount(processHandle);
+					if(count < 0)
+					{
+						// Don't know how to get the value, so assume that
+						// stdin, stdout, and stderr are the only handles.
+						return 3;
+					}
+					else
+					{
+						return count;
+					}
+				}
 			}
-		}
-		[TODO]
-		public IntPtr MainWindowHandle 
-		{ 
-			get
+	public bool HasExited
 			{
-				throw new NotImplementedException("MainWindowHandle");
+				get
+				{
+					Exists();
+					return hasExited;
+				}
 			}
-		}
-		[TODO]
-		public String MainWindowTitle 
-		{ 
-			get
+	public int Id
 			{
-				throw new NotImplementedException("MainWindowTitle");
+				get
+				{
+					Exists();
+					return processID;
+				}
 			}
-		}
-		[TODO]
-		public IntPtr MaxWorkingSet 
-		{ 
-			get
+	public String MachineName
 			{
-				throw new NotImplementedException("MaxWorkingSet");
+				get
+				{
+					Exists();
+					return ".";		// Only local processes are supported.
+				}
 			}
-		 
-			set
+	public ProcessModule MainModule
 			{
-				throw new NotImplementedException("MaxWorkingSet");
+				get
+				{
+					Running();
+					return new ProcessModule(argv[0], ProcessName);
+				}
 			}
-		}
-		[TODO]
-		public IntPtr MinWorkingSet 
-		{ 
-			get
+	public IntPtr MainWindowHandle
 			{
-				throw new NotImplementedException("MinWorkingSet");
+				get
+				{
+					Running();
+					return GetMainWindowHandle(processHandle);
+				}
 			}
-		 
-			set
+	public String MainWindowTitle
 			{
-				throw new NotImplementedException("MinWorkingSet");
+				get
+				{
+					IntPtr handle = MainWindowHandle;
+					if(handle != IntPtr.Zero)
+					{
+						return GetMainWindowTitle(handle);
+					}
+					else
+					{
+						return String.Empty;
+					}
+				}
 			}
-		}
-		[TODO]
-		public int Modules 
-		{ 
-			get
+	public IntPtr MaxWorkingSet
 			{
-				throw new NotImplementedException("Modules");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
+				set
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int NonpagedSystemMemorySize 
-		{ 
-			get
+	public IntPtr MinWorkingSet
 			{
-				throw new NotImplementedException("NonpagedSystemMemorySize");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
+				set
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int PagedMemorySize 
-		{ 
-			get
+	public ProcessModuleCollection Modules
 			{
-				throw new NotImplementedException("PagedMemorySize");
+				get
+				{
+					// In this implementation, we only report the main module.
+					return new ProcessModuleCollection(MainModule);
+				}
 			}
-		}
-		[TODO]
-		public int PagedSystemMemorySize 
-		{ 
-			get
+	public int NonpagedSystemMemorySize
 			{
-				throw new NotImplementedException("PagedSystemMemorySize");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int PeakPagedMemorySize 
-		{ 
-			get
+	public int PagedMemorySize
 			{
-				throw new NotImplementedException("PeakPagedMemorySize");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int PeakVirtualMemorySize 
-		{ 
-			get
+	public int PeakPagedMemorySize
 			{
-				throw new NotImplementedException("PeakVirtualMemorySize");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int PeakWorkingSet 
-		{ 
-			get
+	public int PeakVirtualMemorySize
 			{
-				throw new NotImplementedException("PeakWorkingSet");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public bool PriorityBoostEnabled 
-		{ 
-			get
+	public int PeakWorkingSet
 			{
-				throw new NotImplementedException("PriorityBoostEnabled");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		 
-			set
+	public bool PriorityBoostEnabled
 			{
-				throw new NotImplementedException("PriorityBoostEnabled");
+				get
+				{
+					return false;
+				}
+				set
+				{
+					// Priority boosting is not supported.
+				}
 			}
-		}
-		[TODO]
-		public int PriorityClass 
-		{ 
-			get
+	public ProcessPriorityClass PriorityClass
 			{
-				throw new NotImplementedException("PriorityClass");
+				get
+				{
+					// Everything is assumed to run at normal priority.
+					return ProcessPriorityClass.Normal;
+				}
+				set
+				{
+					// Priority changes are not supported.
+				}
 			}
-		 
-			set
+	public int PrivateMemorySize
 			{
-				throw new NotImplementedException("PriorityClass");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int PrivateMemorySize 
-		{ 
-			get
+	public TimeSpan PrivilegedProcessorTime
 			{
-				throw new NotImplementedException("PrivateMemorySize");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public TimeSpan PrivilegedProcessorTime 
-		{ 
-			get
+	public String ProcessName
 			{
-				throw new NotImplementedException("PrivilegedProcessorTime");
+				get
+				{
+					// We always use "argv[0]" as the process name.
+					Running();
+					String name = argv[0];
+					if(name != null && name.Length >= 4 &&
+					   String.Compare(name, name.Length - 4,
+					   				  ".exe", 0, 4, true) == 0)
+					{
+						name = name.Substring(0, name.Length - 4);
+					}
+					if(name != null)
+					{
+						int index1, index2;
+						index1 = name.LastIndexOf('\\');
+						index2 = name.LastIndexOf('/');
+						if(index2 > index1)
+						{
+							index1 = index2;
+						}
+						if(index1 != -1)
+						{
+							name = name.Substring(index1 + 1);
+						}
+					}
+					return name;
+				}
 			}
-		}
-		[TODO]
-		public String ProcessName 
-		{ 
-			get
+	public IntPtr ProcessorAffinity
 			{
-				throw new NotImplementedException("ProcessName");
+				get
+				{
+					Running();
+					return new IntPtr(GetProcessorAffinity(processHandle));
+				}
+				set
+				{
+					// Processor affinity cannot be changed.
+				}
 			}
-		}
-		[TODO]
-		public IntPtr ProcessorAffinity 
-		{ 
-			get
+	public bool Responding
 			{
-				throw new NotImplementedException("ProcessorAffinity");
+				get
+				{
+					IntPtr handle = MainWindowHandle;
+					if(handle != IntPtr.Zero)
+					{
+						return MainWindowIsResponding(handle);
+					}
+					return true;
+				}
 			}
-		 
-			set
+	public StreamReader StandardError
 			{
-				throw new NotImplementedException("ProcessorAffinity");
+				get
+				{
+					if(stderr == null)
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_StandardStream"));
+					}
+					return stderr;
+				}
 			}
-		}
-		[TODO]
-		public bool Responding 
-		{ 
-			get
+	public StreamWriter StandardInput
 			{
-				throw new NotImplementedException("Responding");
+				get
+				{
+					if(stdin == null)
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_StandardStream"));
+					}
+					return stdin;
+				}
 			}
-		}
-		[TODO]
-		public StreamReader StandardError 
-		{ 
-			get
+	public StreamReader StandardOutput
 			{
-				throw new NotImplementedException("StandardError");
+				get
+				{
+					if(stdout == null)
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_StandardStream"));
+					}
+					return stdout;
+				}
 			}
-		}
-		[TODO]
-		public StreamWriter StandardInput 
-		{ 
-			get
+	public ProcessStartInfo StartInfo
 			{
-				throw new NotImplementedException("StandardInput");
+				get
+				{
+					return startInfo;
+				}
+				set
+				{
+					if(value == null)
+					{
+						throw new ArgumentNullException("value");
+					}
+					startInfo = value;
+				}
 			}
-		}
-		[TODO]
-		public StreamReader StandardOutput 
-		{ 
-			get
+	public DateTime StartTime
 			{
-				throw new NotImplementedException("StandardOutput");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public ProcessStartInfo StartInfo 
-		{ 
-			get
+	public ISynchronizeInvoke SynchronizingObject
 			{
-				throw new NotImplementedException("StartInfo");
+				get
+				{
+					return syncObject;
+				}
+				set
+				{
+					syncObject = value;
+				}
 			}
-		 
-			set
+	public ProcessThreadCollection Threads
 			{
-				throw new NotImplementedException("StartInfo");
+				get
+				{
+					// We report a single thread corresponding to each process.
+					// See the comments in "ProcessThread.cs" for more info.
+					return new ProcessThreadCollection
+						(new ProcessThread(this));
+				}
 			}
-		}
-		[TODO]
-		public DateTime StartTime 
-		{ 
-			get
+	public TimeSpan TotalProcessorTime
 			{
-				throw new NotImplementedException("StartTime");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int SynchronizingObject 
-		{ 
-			get
+	public TimeSpan UserProcessorTime
 			{
-				throw new NotImplementedException("SynchronizingObject");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		 
-			set
+	public int VirtualMemorySize
 			{
-				throw new NotImplementedException("SynchronizingObject");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public int Threads 
-		{ 
-			get
+	public int WorkingSet
 			{
-				throw new NotImplementedException("Threads");
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
 			}
-		}
-		[TODO]
-		public TimeSpan TotalProcessorTime 
-		{ 
-			get
+
+	// Close all resources associated with this object.
+	public void Close()
 			{
-				throw new NotImplementedException("TotalProcessorTime");
+				if(IsCurrentProcess(this))
+				{
+					// We cannot close the current process.
+					return;
+				}
+				if(processID != -1)
+				{
+					CloseProcess(processHandle, processID);
+					processID = -1;
+					processHandle = IntPtr.Zero;
+				}
+				enableRaisingEvents = false;
+				hasExited = false;
+				if(stdin != null)
+				{
+					stdin.Close();
+					stdin = null;
+				}
+				if(stdout != null)
+				{
+					stdout.Close();
+					stdout = null;
+				}
+				if(stderr != null)
+				{
+					stderr.Close();
+					stderr = null;
+				}
+				argv = null;
+				syncObject = null;
+				lock(typeof(Process))
+				{
+					// Remove this process from the list of active children.
+					if(children != null)
+					{
+						children.Remove(this);
+					}
+				}
 			}
-		}
-		[TODO]
-		public TimeSpan UserProcessorTime 
-		{ 
-			get
+
+	// Close the main window for this process.
+	public bool CloseMainWindow()
 			{
-				throw new NotImplementedException("UserProcessorTime");
+				IntPtr handle = MainWindowHandle;
+				if(handle != IntPtr.Zero)
+				{
+					return CloseMainWindow(handle);
+				}
+				else
+				{
+					return false;
+				}
 			}
-		}
-		[TODO]
-		public int VirtualMemorySize 
-		{ 
-			get
+
+	// Dispose this object.
+	protected override void Dispose(bool disposing)
 			{
-				throw new NotImplementedException("VirtualMemorySize");
+				Close();
 			}
-		}
-		[TODO]
-		public int WorkingSet 
-		{ 
-			get
+
+	// Enter debug mode.
+	public static void EnterDebugMode()
 			{
-				throw new NotImplementedException("WorkingSet");
+				// Nothing to do here.
 			}
-		}
-	}
-}//namespace
+
+	// Get the current process.
+	public static Process GetCurrentProcess()
+			{
+				lock(typeof(Process))
+				{
+					if(currentProcess == null)
+					{
+						currentProcess = new Process();
+						GetCurrentProcessInfo
+							(out currentProcess.processID,
+							 out currentProcess.processHandle);
+						currentProcess.argv = Environment.GetCommandLineArgs();
+						if(currentProcess.argv != null &&
+						   currentProcess.argv.Length > 0)
+						{
+							ProcessStartInfo info = new ProcessStartInfo();
+							info.FileName = currentProcess.argv[0];
+							info.Arguments =
+								ProcessStartInfo.ArgVToArguments
+									(currentProcess.argv, 1, " ");
+							currentProcess.startInfo = info;
+						}
+					}
+					return currentProcess;
+				}
+			}
+
+	// Determine if a process is the current one.
+	private static bool IsCurrentProcess(Process process)
+			{
+				lock(typeof(Process))
+				{
+					return (process == currentProcess);
+				}
+			}
+
+	// Get a particular process by identifier.  Insecure, so not supported.
+	public static Process GetProcessById(int processId)
+			{
+				return GetProcessById(processId, ".");
+			}
+	public static Process GetProcessById(int processId, String machineName)
+			{
+				// Get the full process list and then search it.
+				Process[] list = GetProcesses(machineName);
+				if(list != null)
+				{
+					foreach(Process process in list)
+					{
+						if(process.Id == processId)
+						{
+							return process;
+						}
+					}
+				}
+				throw new ArgumentException(S._("Arg_NoSuchProcess"));
+			}
+
+	// Get a list of all processes.
+	public static Process[] GetProcesses()
+			{
+				// As far as the caller is concerned, the only processes
+				// that exist are the current process and any children
+				// that we have previously forked and have not yet exited.
+				// We don't allow the application to access other processes.
+				lock(typeof(Process))
+				{
+					int count = (children != null ? children.Count : 0);
+					Process[] list = new Process [count + 1];
+					list[0] = GetCurrentProcess();
+					if(children != null)
+					{
+						children.CopyTo(list, 1);
+					}
+					return list;
+				}
+			}
+	public static Process[] GetProcesses(String machineName)
+			{
+				if(machineName == null)
+				{
+					throw new ArgumentNullException("machineName");
+				}
+				else if(machineName == ".")
+				{
+					// Get information on the local machine.
+					return GetProcesses();
+				}
+				else
+				{
+					// Cannot request information about remote computers.
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
+			}
+
+	// Get a list of all processes with a specific name.
+	public static Process[] GetProcessesByName(String processName)
+			{
+				return GetProcessesByName(processName, ".");
+			}
+	public static Process[] GetProcessesByName(String processName,
+											   String machineName)
+			{
+				// Get the process list and then filter it by name.
+				Process[] list = GetProcesses(machineName);
+				int count = 0;
+				foreach(Process p1 in list)
+				{
+					if(String.Compare(p1.ProcessName, processName, true) == 0)
+					{
+						++count;
+					}
+				}
+				Process[] newList = new Process [count];
+				count = 0;
+				foreach(Process p2 in list)
+				{
+					if(String.Compare(p2.ProcessName, processName, true) == 0)
+					{
+						newList[count++] = p2;
+					}
+				}
+				return newList;
+			}
+
+	// Kill the process.
+	public void Kill()
+			{
+				if(IsCurrentProcess(this))
+				{
+					// We cannot kill the current process.
+					return;
+				}
+				Running();
+				KillProcess(processHandle, processID);
+				processHandle = IntPtr.Zero;
+				processID = -1;
+				Close();
+			}
+
+	// Leave debug mode.
+	public void LeaveDebugMode()
+			{
+				// Nothing to do here.
+			}
+
+	// Raise the "Exited" event.
+	protected void OnExited()
+			{
+				if(enableRaisingEvents && Exited != null)
+				{
+					Exited(null, new EventArgs());
+				}
+			}
+
+	// Refresh information from the operating system.
+	public void Refresh()
+			{
+				// Nothing to do here because nothing changeable is cached.
+			}
+
+	// Start a process.
+	public bool Start()
+			{
+				ProcessStartInfo.ProcessStartFlags flags;
+
+				// Validate the start information.
+				if(startInfo == null || startInfo.FileName == String.Empty)
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_ProcessStartInfo"));
+				}
+				flags = startInfo.flags;
+				if((flags & ProcessStartInfo.ProcessStartFlags.UseShellExecute)
+							!= 0)
+				{
+					if((flags & (ProcessStartInfo.ProcessStartFlags
+										.RedirectStdin |
+					             ProcessStartInfo.ProcessStartFlags
+										.RedirectStdout |
+					             ProcessStartInfo.ProcessStartFlags
+										.RedirectStderr)) != 0)
+					{
+						// Cannot redirect if using shell execution.
+						throw new InvalidOperationException
+							(S._("Invalid_ProcessStartInfo"));
+					}
+				}
+
+				// Close the current process information, if any.
+				Close();
+
+				// If attempting to start using the current process,
+				// then we want to do "execute over the top" instead,
+				// replacing the current process with a new one.
+				if(IsCurrentProcess(this))
+				{
+					flags |= ProcessStartInfo.ProcessStartFlags.ExecOverTop;
+				}
+
+				// Get the environment to use in the new process if it
+				// was potentially modified by the programmer.
+				String[] env = null;
+				if(startInfo.envVars != null)
+				{
+					StringCollection coll = new StringCollection();
+					IDictionaryEnumerator e =
+						(IDictionaryEnumerator)
+							(startInfo.envVars.GetEnumerator());
+					while(e.MoveNext())
+					{
+						coll.Add(((String)(e.Key)) + "=" +
+								 ((String)(e.Value)));
+					}
+					env = new String [coll.Count];
+					coll.CopyTo(env, 0);
+				}
+
+				// Get the pathname of the program to be executed.
+				String program;
+				if(startInfo.WorkingDirectory != String.Empty)
+				{
+					program = startInfo.WorkingDirectory +
+							  Path.PathSeparator +
+							  startInfo.FileName;
+				}
+				else
+				{
+					program = startInfo.FileName;
+				}
+
+				// Parse the arguments into a local argv array.
+				String[] args = ProcessStartInfo.ArgumentsToArgV
+						(startInfo.Arguments);
+				argv = new String [args.Length + 1];
+				argv[0] = program;
+				Array.Copy(args, 0, argv, 1, args.Length);
+
+				// Start the process.
+				IntPtr stdinHandle;
+				IntPtr stdoutHandle;
+				IntPtr stderrHandle;
+				if(!StartProcess(program, startInfo.Arguments, argv,
+								 (int)flags, (int)(startInfo.WindowStyle),
+								 env, startInfo.Verb,
+								 startInfo.ErrorDialogParentHandle,
+								 out processHandle, out processID,
+								 out stdinHandle, out stdoutHandle,
+								 out stderrHandle))
+				{
+					throw new Win32Exception();
+				}
+
+				// Wrap up the redirected I/O streams.
+				if(stdinHandle != SocketMethods.GetInvalidHandle())
+				{
+					stdin = new StreamWriter
+						(new FileStream(stdinHandle, FileAccess.Write, true));
+					stdin.AutoFlush = true;
+				}
+				if(stdoutHandle != SocketMethods.GetInvalidHandle())
+				{
+					stdout = new StreamReader
+						(new FileStream(stdoutHandle, FileAccess.Read, true));
+				}
+				if(stderrHandle != SocketMethods.GetInvalidHandle())
+				{
+					stderr = new StreamReader
+						(new FileStream(stderrHandle, FileAccess.Read, true));
+				}
+
+				// Add the process to the list of active children.
+				lock(typeof(Process))
+				{
+					if(children == null)
+					{
+						children = new ArrayList();
+					}
+					children.Add(this);
+				}
+				return true;
+			}
+
+	// Convenience wrappers for "Process.Start()".
+	public static Process Start(ProcessStartInfo startInfo)
+			{
+				Process process = new Process();
+				process.StartInfo = startInfo;
+				if(process.Start())
+				{
+					return process;
+				}
+				else
+				{
+					return null;
+				}
+			}
+	public static Process Start(String fileName)
+			{
+				Process process = new Process();
+				process.StartInfo = new ProcessStartInfo(fileName);
+				if(process.Start())
+				{
+					return process;
+				}
+				else
+				{
+					return null;
+				}
+			}
+	public static Process Start(String fileName, String arguments)
+			{
+				Process process = new Process();
+				process.StartInfo = new ProcessStartInfo(fileName, arguments);
+				if(process.Start())
+				{
+					return process;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ProcessName;
+			}
+
+	// Wait for the process to exit.
+	public void WaitForExit()
+			{
+				WaitForExit(Int32.MaxValue);
+			}
+	public bool WaitForExit(int milliseconds)
+			{
+				Exists();
+				if(hasExited)
+				{
+					// The process has already exited.
+					return true;
+				}
+				if(IsCurrentProcess(this))
+				{
+					// Cannot wait for the current process.
+					return false;
+				}
+				if(!WaitForExit(processHandle, processID,
+								milliseconds, out exitCode))
+				{
+					// Timeout occurred while waiting for the process.
+					return false;
+				}
+				hasExited = true;
+				OnExited();
+				return true;
+			}
+
+	// Wait for the process to reach its idle state.
+	public bool WaitForInputIdle()
+			{
+				return WaitForInputIdle(Int32.MaxValue);
+			}
+	public bool WaitForInputIdle(int milliseconds)
+			{
+				Exists();
+				if(hasExited)
+				{
+					return false;
+				}
+				else if(IsCurrentProcess(this))
+				{
+					// Cannot wait for the current process.
+					return false;
+				}
+				else
+				{
+					return WaitForInputIdle
+						(processHandle, processID, milliseconds);
+				}
+			}
+
+	// Event that is emitted when the process exits.
+	public event EventHandler Exited;
+
+	// Get the main window handle for a process.
+	// Returns IntPtr.Zero if unknown.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static IntPtr GetMainWindowHandle(IntPtr processHandle);
+
+	// Get the title of a main window.  Returns null if unknown.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String GetMainWindowTitle(IntPtr windowHandle);
+
+	// Determine if the main window of a process is responding.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool MainWindowIsResponding(IntPtr windowHandle);
+
+	// Get the process ID and handle of the current process.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void GetCurrentProcessInfo(out int processID,
+											  		 out IntPtr handle);
+
+	// Get the number of handles that are currently open by a process.
+	// Returns -1 if the number cannot be determined on this platform.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int GetHandleCount(IntPtr processHandle);
+
+	// Get the processor mask for which processors a process may run on.
+	// Return 1 if it is impossible to determine the affinity information
+	// (which essentially means "runs on processor 1").
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int GetProcessorAffinity(IntPtr processHandle);
+
+	// Close a process, but leave the process running in the background.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void CloseProcess
+			(IntPtr processHandle, int processID);
+
+	// Kill a process.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void KillProcess
+			(IntPtr processHandle, int processID);
+
+	// Send a request to close a main window.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool CloseMainWindow(IntPtr windowHandle);
+
+	// Wait for a particular process to exit.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool WaitForExit
+			(IntPtr processHandle, int processID,
+			 int milliseconds, out int exitCode);
+
+	// Wait for a particular process to enter the idle state after startup.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool WaitForInputIdle
+			(IntPtr processHandle, int processID, int milliseconds);
+
+	// Start a new process.  Returns false if it could not be started.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool StartProcess
+			(String filename, String arguments, String[] argv,
+			 int flags, int windowStyle, String[] envVars,
+			 String verb, IntPtr errorDialogParent,
+			 out IntPtr processHandle, out int processID,
+			 out IntPtr stdinHandle, out IntPtr stdoutHandle,
+			 out IntPtr stderrHandle);
+
+}; // class Process
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.Diagnostics

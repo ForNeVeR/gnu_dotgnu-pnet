@@ -1,10 +1,8 @@
 /*
- * ProcessStartInfo.cs - Implementation of 
- *							"System.Diagnostics.ProcessStartInfo" class
+ * ProcessStartInfo.cs - Implementation of the
+ *			"System.Diagnostics.ProcessStartInfo" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * 
- * contributed by Gopal.V 
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,210 +19,467 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.Collections;
-using System.Collections.Specialized;
-
 namespace System.Diagnostics
 {
-	public sealed class ProcessStartInfo
+
+#if !ECMA_COMPAT
+
+using System.ComponentModel;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Text;
+
+public class ProcessStartInfo
+{
+	// Special flags for starting processes.
+	[Flags]
+	internal enum ProcessStartFlags
 	{
-		private String filename=null;
-		private String arguments="";
-		private bool createNoWindow=false;
-		private StringDictionary dict=null;
-		private bool errorDialog=false;
-		private IntPtr errorDialogHandle=IntPtr.Zero;
-		private int redirectFlags=0;
-		private bool shellExecute=true;
-		private String verb="";
-		private ProcessWindowStyle windowStyle=ProcessWindowStyle.Normal;
-		private String workingDir=".";
-		public ProcessStartInfo()
-		{
-		}
+		CreateNoWindow  = 0x0001,
+		ErrorDialog     = 0x0002,
+		RedirectStdin   = 0x0004,
+		RedirectStdout  = 0x0008,
+		RedirectStderr  = 0x0010,
+		UseShellExecute = 0x0020,
+		ExecOverTop		= 0x0040
 
-		public ProcessStartInfo(String filename)
-		{
-			this.filename=filename;
-		}
+	}; // enum ProcessStartFlags
 
-		public ProcessStartInfo(String filename, String arguments)
-		{
-			this.filename=filename;
-			this.arguments=arguments;
-		}
+	// Internal state.
+	private String arguments;
+	private String fileName;
+	internal ProcessStartFlags flags;
+	internal StringDictionary envVars;
+	private IntPtr errorDialogParent;
+	private String verb;
+	private ProcessWindowStyle style;
+	private String workingDirectory;
 
-		public String Arguments 
-		{
- 			get
+	// Constructors.
+	public ProcessStartInfo() : this(null, null) {}
+	public ProcessStartInfo(String fileName) : this(fileName, null) {}
+	public ProcessStartInfo(String fileName, String arguments)
 			{
-				return arguments;
+				this.fileName = fileName;
+				this.arguments = arguments;
+				this.flags = ProcessStartFlags.UseShellExecute;
 			}
- 			set
-			{
-				arguments=value;
-			}
- 		}
 
-		public bool CreateNoWindow 
-		{
- 			get
+	// Get a process start flag.
+	private bool GetFlag(ProcessStartFlags flag)
 			{
-				return createNoWindow;
+				return ((flags & flag) != 0);
 			}
- 			set
-			{
-				createNoWindow=value;
-			}
- 		}
 
-		public StringDictionary EnvironmentVariables 
-		{
- 			get
+	// Set a process start flag.
+	private void SetFlag(ProcessStartFlags flag, bool value)
 			{
-				if(dict==null)
+				if(value)
 				{
-					dict=new StringDictionary();
-					IDictionary env=Environment.GetEnvironmentVariables();
-					foreach(String s in env.Keys)
+					flags |= flag;
+				}
+				else
+				{
+					flags &= ~flag;
+				}
+			}
+
+	// Get or set object properties.
+	public String Arguments
+			{
+				get
+				{
+					if(arguments == null)
 					{
-						dict.Add(s,env[s].ToString());
+						return String.Empty;
+					}
+					else
+					{
+						return arguments;
 					}
 				}
-				return this.dict;
+				set
+				{
+					arguments = value;
+				}
 			}
- 		}
+	public bool CreateNoWindow
+			{
+				get
+				{
+					return GetFlag(ProcessStartFlags.CreateNoWindow);
+				}
+				set
+				{
+					SetFlag(ProcessStartFlags.CreateNoWindow, value);
+				}
+			}
+	public StringDictionary EnvironmentVariables
+			{
+				get
+				{
+					if(envVars == null)
+					{
+						envVars = new StringDictionary();
+						IDictionary env = Environment.GetEnvironmentVariables();
+						if(env != null)
+						{
+							IDictionaryEnumerator e = env.GetEnumerator();
+							while(e.MoveNext())
+							{
+								envVars.Add((String)(e.Key), (String)(e.Value));
+							}
+						}
+					}
+					return envVars;
+				}
+			}
+	public bool ErrorDialog
+			{
+				get
+				{
+					return GetFlag(ProcessStartFlags.ErrorDialog);
+				}
+				set
+				{
+					SetFlag(ProcessStartFlags.ErrorDialog, value);
+				}
+			}
+	public IntPtr ErrorDialogParentHandle
+			{
+				get
+				{
+					return errorDialogParent;
+				}
+				set
+				{
+					errorDialogParent = value;
+				}
+			}
+	public String FileName
+			{
+				get
+				{
+					if(fileName == null)
+					{
+						return String.Empty;
+					}
+					else
+					{
+						return fileName;
+					}
+				}
+				set
+				{
+					fileName = value;
+				}
+			}
+	public bool RedirectStandardError
+			{
+				get
+				{
+					return GetFlag(ProcessStartFlags.RedirectStderr);
+				}
+				set
+				{
+					SetFlag(ProcessStartFlags.RedirectStderr, value);
+				}
+			}
+	public bool RedirectStandardInput
+			{
+				get
+				{
+					return GetFlag(ProcessStartFlags.RedirectStdin);
+				}
+				set
+				{
+					SetFlag(ProcessStartFlags.RedirectStdin, value);
+				}
+			}
+	public bool RedirectStandardOutput
+			{
+				get
+				{
+					return GetFlag(ProcessStartFlags.RedirectStdout);
+				}
+				set
+				{
+					SetFlag(ProcessStartFlags.RedirectStdout, value);
+				}
+			}
+	public bool UseShellExecute
+			{
+				get
+				{
+					return GetFlag(ProcessStartFlags.UseShellExecute);
+				}
+				set
+				{
+					SetFlag(ProcessStartFlags.UseShellExecute, value);
+				}
+			}
+	public String Verb
+			{
+				get
+				{
+					if(verb == null)
+					{
+						return String.Empty;
+					}
+					else
+					{
+						return verb;
+					}
+				}
+				set
+				{
+					verb = value;
+				}
+			}
+	public String[] Verbs
+			{
+				get
+				{
+					// We don't use verb lists in this implementation.
+					return new String [0];
+				}
+			}
+	public ProcessWindowStyle WindowStyle
+			{
+				get
+				{
+					return style;
+				}
+				set
+				{
+					if(((int)value) < ((int)(ProcessWindowStyle.Normal)) ||
+					   ((int)value) > ((int)(ProcessWindowStyle.Maximized)))
+					{
+						throw new InvalidEnumArgumentException
+							("value", (int)value, typeof(ProcessWindowStyle));
+					}
+					style = value;
+				}
+			}
+	public String WorkingDirectory
+			{
+				get
+				{
+					if(workingDirectory == null)
+					{
+						return String.Empty;
+					}
+					else
+					{
+						return workingDirectory;
+					}
+				}
+				set
+				{
+					workingDirectory = value;
+				}
+			}
 
-		public bool ErrorDialog 
-		{
- 			get
+	// Quote a string if necessary.
+	private static String Quote(String str)
 			{
-				return errorDialog;
-			}
- 			set
-			{
-				errorDialog=value;
-			}
- 		}
+				// Handle the empty string case first.
+				if(str == null || str == String.Empty)
+				{
+					return "\"\"";
+				}
 
-		public IntPtr ErrorDialogParentHandle 
-		{
- 			get
-			{
-				return errorDialogHandle;
-			}
- 			set
-			{
-				errorDialogHandle=value;
-			}
- 		}
+				// Determine if there is a character that needs quoting.
+				bool quote = false;
+				foreach(char ch in str)
+				{
+					if(Char.IsWhiteSpace(ch) || ch == '"' || ch == '\'')
+					{
+						quote = true;
+						break;
+					}
+				}
+				if(!quote)
+				{
+					return str;
+				}
 
-		public String FileName 
-		{
- 			get
-			{
-				return filename;
+				// Quote the string and return it.
+				StringBuilder builder = new StringBuilder();
+				builder.Append('"');
+				foreach(char ch2 in str)
+				{
+					if(ch2 == '"')
+					{
+						builder.Append('"');
+						builder.Append('"');
+					}
+					else
+					{
+						builder.Append(ch2);
+					}
+				}
+				builder.Append('"');
+				return builder.ToString();
 			}
- 			set
-			{
-				filename=value;
-			}
- 		}
 
-		public bool RedirectStandardError 
-		{
- 			get
+	// Convert an argv array into an argument string, with appropriate quoting.
+	internal static String ArgVToArguments
+				(String[] argv, int startIndex, String separator)
 			{
-				return ((redirectFlags & 0x04) != 0) ;
+				if(argv == null)
+				{
+					return String.Empty;
+				}
+				StringBuilder builder = new StringBuilder();
+				int index = startIndex;
+				while(index < argv.Length)
+				{
+					if(index > startIndex)
+					{
+						builder.Append(separator);
+					}
+					builder.Append(Quote(argv[index]));
+					++index;
+				}
+				return builder.ToString();
 			}
- 			set
-			{
-				redirectFlags  = redirectFlags | (value ? 0x04 : 0x00);
-			}
- 		}
 
-		public bool RedirectStandardInput 
-		{
- 			get
+	// Convert an argument string into an argv array, undoing quoting.
+	internal static String[] ArgumentsToArgV(String arguments)
 			{
-				return ((redirectFlags & 0x02)!=0);
-			}
- 			set
-			{
-				redirectFlags = redirectFlags | (value ? 0x02 : 0x00);
-			}
- 		}
+				// Handle the null case first.
+				if(arguments == null)
+				{
+					return new String [0];
+				}
 
-		public bool RedirectStandardOutput 
-		{
- 			get
-			{
-				return ((redirectFlags & 0x01)!=0);
-			}
- 			set
-			{
-				redirectFlags = redirectFlags | (value ? 0x01 : 0x00);
-			}
- 		}
+				// Count the number of arguments in the string.
+				int count = 0;
+				int posn = 0;
+				char ch, quotech;
+				while(posn < arguments.Length)
+				{
+					ch = arguments[posn];
+					if(Char.IsWhiteSpace(ch))
+					{
+						++posn;
+						continue;
+					}
+					if(ch == '"' || ch == '\'')
+					{
+						// Start of a quoted argument.
+						++posn;
+						quotech = ch;
+						while(posn < arguments.Length)
+						{
+							ch = arguments[posn];
+							if(ch == quotech)
+							{
+								if((posn + 1) < arguments.Length &&
+								   arguments[posn + 1] == quotech)
+								{
+									// Escaped quote character.
+									++posn;
+								}
+								else
+								{
+									// End of quoted sequence.
+									++posn;
+									break;
+								}
+							}
+							++posn;
+						}
+					}
+					else
+					{
+						// Start of an unquoted argument.
+						while(posn < arguments.Length)
+						{
+							ch = arguments[posn];
+							if(Char.IsWhiteSpace(ch) ||
+							   ch == '"' || ch == '\'')
+							{
+								break;
+							}
+							++posn;
+						}
+					}
+				}
 
-		public bool UseShellExecute 
-		{
- 			get
-			{
-				return shellExecute;
-			}
- 			set
-			{
-				shellExecute=value;
-			}
- 		}
+				// Create the argument array and populate it.
+				String[] argv = new String [count];
+				StringBuilder builder;
+				int start;
+				count = 0;
+				posn = 0;
+				while(posn < arguments.Length)
+				{
+					ch = arguments[posn];
+					if(Char.IsWhiteSpace(ch))
+					{
+						++posn;
+						continue;
+					}
+					if(ch == '"' || ch == '\'')
+					{
+						// Start of a quoted argument.
+						++posn;
+						quotech = ch;
+						builder = new StringBuilder();
+						while(posn < arguments.Length)
+						{
+							ch = arguments[posn];
+							if(ch == quotech)
+							{
+								if((posn + 1) < arguments.Length &&
+								   arguments[posn + 1] == quotech)
+								{
+									// Escaped quote character.
+									builder.Append(ch);
+									++posn;
+								}
+								else
+								{
+									// End of quoted sequence.
+									++posn;
+									break;
+								}
+							}
+							else
+							{
+								builder.Append(ch);
+							}
+							++posn;
+						}
+						argv[count++] = builder.ToString();
+					}
+					else
+					{
+						// Start of an unquoted argument.
+						start = posn;
+						while(posn < arguments.Length)
+						{
+							ch = arguments[posn];
+							if(Char.IsWhiteSpace(ch) ||
+							   ch == '"' || ch == '\'')
+							{
+								break;
+							}
+							++posn;
+						}
+						argv[count++] = arguments.Substring
+							(start, posn - start);
+					}
+				}
 
-		public String Verb 
-		{
- 			get
-			{
-				return verb;
+				// Return the argument array to the caller.
+				return argv;
 			}
- 			set
-			{
-				verb=value;
-			}
- 		}
 
-		// huh ? ... what does this do ?
-		[TODO]
-		public String[] Verbs 
-		{
- 			get
-			{
-				throw new NotImplementedException("Verbs");
-			}
- 		}
+}; // class ProcessStartInfo
 
-		public ProcessWindowStyle WindowStyle 
-		{
- 			get
-			{
-				return windowStyle;
-			}
- 			set
-			{
-				windowStyle=value;
-			}
- 		}
+#endif // !ECMA_COMPAT
 
-		public String WorkingDirectory 
-		{
- 			get
-			{
-				return workingDir;
-			}
- 			set
-			{
-				workingDir=value;
-			}
- 		}
-
-	}
-}//namespace
+}; // namespace System.Diagnostics

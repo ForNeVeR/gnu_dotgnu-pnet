@@ -26,6 +26,7 @@ namespace System.CodeDom.Compiler
 
 using System.IO;
 using System.Reflection;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
@@ -42,19 +43,7 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 				{
 					return String.Empty;
 				}
-				StringBuilder sb = new StringBuilder();
-				int posn;
-				for(posn = 0; posn < sa.Length; ++posn)
-				{
-					if(posn > 0)
-					{
-						sb.Append(separator);
-					}
-					sb.Append('"');
-					sb.Append(sa[posn]);
-					sb.Append('"');
-				}
-				return sb.ToString();
+				return ProcessStartInfo.ArgVToArguments(sa, 0, separator);
 			}
 
 	// Get the name of the compiler.

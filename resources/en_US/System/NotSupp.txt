@@ -19,3 +19,4 @@
 #
 NotSupp_Conversion=The requested conversion is not supported
 NotSupp_SelectMode=The requested select mode cannot be used for polling
+NotSupp_MainWindow=Cannot get the main window handle on this platform

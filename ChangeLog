@@ -5,6 +5,10 @@
 	Implement recursive directory creation for CreateDirectory().
 	(fixes Bug #3089).
 
+	* runtime/System/IO/DirectoryInfo.cs: Uncomment the Directory
+	Creation code now that Directory.CreateDirectory() works.
+	(fixes Bug #3090).
+
 2003-04-03  David Hoke  <d_hoke@hotmail.com>
 	
 	* runtime/System/Private/NumberFormat/GeneralFormatter.cs: Apply

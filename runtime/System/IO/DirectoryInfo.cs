@@ -80,15 +80,15 @@ public sealed class DirectoryInfo : FileSystemInfo
 	[TODO]
 	public void Create()
 			{
-				// TODO
-				// Directory.Create(FullPath);
+				Directory.CreateDirectory(FullPath);
+				// TODO : refresh() ?
 			}
 	[TODO]
 	public DirectoryInfo CreateSubdirectory(String name)
 			{
 				String dir = Path.Combine(FullPath, Path.GetFileName(name));
-				// TODO
-				// Directory.Create(dir);
+				Directory.CreateDirectory(dir);
+				// TODO : refresh() ?
 				return new DirectoryInfo(dir);
 			}
 

@@ -1,4 +1,11 @@
 
+0.5.10 (26 July 2003)
+
+	* Began porting the glibc version of stdio into pnetC.
+	* Use the "Type::Method" syntax instead of "__invoke__".
+	* Make sure that autoconf detects cscc as a cross-compiler.
+	* Move the include files from ${prefix}/lib to ${prefix}/share.
+
 0.5.8 (17 June 2003)
 
 	* No change - re-released to match version numbers with pnet/pnetlib.

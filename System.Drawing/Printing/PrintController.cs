@@ -42,10 +42,11 @@ public abstract class PrintController
 			}
 
 	// Event that is emitted at the start of a page.
-	public virtual void OnStartPage
+	public virtual Graphics OnStartPage
 				(PrintDocument document, PrintPageEventArgs e)
 			{
 				// Nothing to do here.
+				return null;
 			}
 
 	// Event that is emitted at the start of the print process.

@@ -24,9 +24,29 @@ namespace System.Drawing.Toolkit
 
 using System.Drawing.Printing;
 
-public interface IToolkitPrintSession : IDisposable
+public interface IToolkitPrintSession
 {
-	// TODO
+	// Get or set the document that is associated with this session.
+	PrintDocument Document { get; set; }
+
+	// Start the printing session.
+	void StartPrint(PrintEventArgs e);
+
+	// End the printing session.
+	void EndPrint(PrintEventArgs e);
+
+	// Start printing a page, and return a "Graphics" object for it.
+	Graphics StartPage(PrintPageEventArgs e);
+
+	// End printing of the current page.
+	void EndPage(PrintPageEventArgs e);
+
+	// Get the preview page information for all pages.  This is only
+	// used for preview sessions.  Normal printers should return null.
+	PreviewPageInfo[] GetPreviewPageInfo();
+
+	// Get or set the anti-alias flag for preview operations.
+	bool UseAntiAlias { get; set; }
 
 }; // interface IToolkitPrintSession
 

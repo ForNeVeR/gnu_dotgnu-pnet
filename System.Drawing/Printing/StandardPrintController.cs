@@ -22,45 +22,61 @@
 namespace System.Drawing.Printing
 {
 
+using System.Drawing.Toolkit;
+
 public class StandardPrintController : PrintController
 {
 	// Constructor.
 	public StandardPrintController() {}
 
+	// Get the printer session for a document.
+	private static IToolkitPrintSession GetSession(PrintDocument document)
+			{
+				if(document.session == null)
+				{
+					document.session =
+						document.PrinterSettings.ToolkitPrinter
+							.GetSession(document);
+					document.session.Document = document;
+				}
+				return document.session;
+			}
+
 	// Event that is emitted at the end of a page.
-	[TODO]
 	public override void OnEndPage
 				(PrintDocument document, PrintPageEventArgs e)
 			{
-				// TODO
-				base.OnEndPage(document, e);
+				GetSession(document).EndPage(e);
 			}
 
 	// Event that is emitted at the end of the print process.
-	[TODO]
 	public override void OnEndPrint
 				(PrintDocument document, PrintEventArgs e)
 			{
-				// TODO
-				base.OnEndPrint(document, e);
+				IToolkitPrintSession session = GetSession(document);
+				try
+				{
+					session.EndPrint(e);
+				}
+				finally
+				{
+					document.session = null;
+				}
 			}
 
 	// Event that is emitted at the start of a page.
-	[TODO]
-	public override void OnStartPage
+	public override Graphics OnStartPage
 				(PrintDocument document, PrintPageEventArgs e)
 			{
-				// TODO
-				base.OnStartPage(document, e);
+				return GetSession(document).StartPage(e);
 			}
 
 	// Event that is emitted at the start of the print process.
-	[TODO]
 	public override void OnStartPrint
 				(PrintDocument document, PrintEventArgs e)
 			{
-				// TODO
-				base.OnStartPrint(document, e);
+				IToolkitPrintSession session = GetSession(document);
+				session.StartPrint(e);
 			}
 
 }; // class StandardPrintController

@@ -27,7 +27,7 @@ public class PrintPageEventArgs : EventArgs
 	// Internal state.
 	private bool cancel;
 	private bool hasMorePages;
-	private Graphics graphics;
+	internal Graphics graphics;
 	private Rectangle marginBounds;
 	private Rectangle pageBounds;
 	private PageSettings pageSettings;
@@ -43,6 +43,19 @@ public class PrintPageEventArgs : EventArgs
 				this.graphics = graphics;
 				this.marginBounds = marginBounds;
 				this.pageBounds = pageBounds;
+				this.pageSettings = pageSettings;
+			}
+	internal PrintPageEventArgs(PageSettings pageSettings)
+			{
+				this.cancel = false;
+				this.hasMorePages = false;
+				this.graphics = null;
+				this.pageBounds = pageSettings.Bounds;
+				Margins margins = pageSettings.Margins;
+				this.marginBounds = new Rectangle
+					(margins.Left, margins.Top,
+					 pageBounds.Width - margins.Left - margins.Right,
+					 pageBounds.Height - margins.Top - margins.Bottom);
 				this.pageSettings = pageSettings;
 			}
 

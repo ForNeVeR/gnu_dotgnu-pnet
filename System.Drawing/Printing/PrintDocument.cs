@@ -23,6 +23,7 @@ namespace System.Drawing.Printing
 {
 
 using System.ComponentModel;
+using System.Drawing.Toolkit;
 
 public class PrintDocument
 #if CONFIG_COMPONENT_MODEL
@@ -35,6 +36,7 @@ public class PrintDocument
 	private bool originAtMargins;
 	private PrintController printController;
 	private PrinterSettings printerSettings;
+	internal IToolkitPrintSession session;
 
 	// Constructor.
 	public PrintDocument()
@@ -80,7 +82,6 @@ public class PrintDocument
 					originAtMargins = value;
 				}
 			}
-	[TODO]
 	public PrintController PrintController
 			{
 				get
@@ -89,8 +90,6 @@ public class PrintDocument
 					{
 						// Create a standard print controller.
 						printController = new StandardPrintController();
-
-						// TODO: wrap the controller with a status dialog.
 					}
 					return printController;
 				}
@@ -112,10 +111,74 @@ public class PrintDocument
 			}
 
 	// Print the document.
-	[TODO]
 	public void Print()
 			{
-				// TODO
+				PrintController controller = PrintController;
+				PrintEventArgs printArgs;
+				QueryPageSettingsEventArgs queryArgs;
+				PrintPageEventArgs pageArgs;
+				Graphics graphics;
+
+				// Begin the printing process.
+				printArgs = new PrintEventArgs();
+				OnBeginPrint(printArgs);
+			#if CONFIG_COMPONENT_MODEL
+				if(printArgs.Cancel)
+				{
+					return;
+				}
+			#endif
+				controller.OnStartPrint(this, printArgs);
+
+				// Wrap the rest in a "try" block so that the controller
+				// will be properly shut down if an exception occurs.
+				try
+				{
+					queryArgs = new QueryPageSettingsEventArgs
+						((PageSettings)(DefaultPageSettings.Clone()));
+					do
+					{
+						// Query the page settings for the next page.
+						OnQueryPageSettings(queryArgs);
+					#if CONFIG_COMPONENT_MODEL
+						if(queryArgs.Cancel)
+						{
+							break;
+						}
+					#endif
+
+						// Create the page argument structure.
+						pageArgs = new PrintPageEventArgs
+							(queryArgs.PageSettings);
+
+						// Get the graphics object to use to draw the page.
+						graphics = controller.OnStartPage(this, pageArgs);
+						pageArgs.graphics = graphics;
+
+						// Print the page.
+						try
+						{
+							OnPrintPage(pageArgs);
+							controller.OnEndPage(this, pageArgs);
+						}
+						finally
+						{
+							graphics.Dispose();
+						}
+					}
+					while(!(pageArgs.Cancel) && pageArgs.HasMorePages);
+				}
+				finally
+				{
+					try
+					{
+						OnEndPrint(printArgs);
+					}
+					finally
+					{
+						controller.OnEndPrint(this, printArgs);
+					}
+				}
 			}
 
 	// Convert this object into a string.

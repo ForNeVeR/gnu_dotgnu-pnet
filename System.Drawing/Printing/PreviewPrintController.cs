@@ -22,15 +22,18 @@
 namespace System.Drawing.Printing
 {
 
+using System.Drawing.Toolkit;
+
 public class PreviewPrintController : PrintController
 {
 	// Internal state.
-	private bool useAntiAlias;
+	private IToolkitPrintSession session;
 
 	// Constructor.
+	[TODO]
 	public PreviewPrintController()
 			{
-				this.useAntiAlias = false;
+				this.session = null;	// TODO: create a preview session.
 			}
 
 	// Get or set the anti-alias property.
@@ -38,56 +41,47 @@ public class PreviewPrintController : PrintController
 			{
 				get
 				{
-					return useAntiAlias;
+					return session.UseAntiAlias;
 				}
 				set
 				{
-					useAntiAlias = value;
+					session.UseAntiAlias = value;
 				}
 			}
 
 	// Get the page preview information for all pages.
-	[TODO]
 	public PreviewPageInfo[] GetPreviewPageInfo()
 			{
-				// TODO
-				return null;
+				return session.GetPreviewPageInfo();
 			}
 
 	// Event that is emitted at the end of a page.
-	[TODO]
 	public override void OnEndPage
 				(PrintDocument document, PrintPageEventArgs e)
 			{
-				// TODO
-				base.OnEndPage(document, e);
+				session.EndPage(e);
 			}
 
 	// Event that is emitted at the end of the print process.
-	[TODO]
 	public override void OnEndPrint
 				(PrintDocument document, PrintEventArgs e)
 			{
-				// TODO
-				base.OnEndPrint(document, e);
+				session.EndPrint(e);
 			}
 
 	// Event that is emitted at the start of a page.
-	[TODO]
-	public override void OnStartPage
+	public override Graphics OnStartPage
 				(PrintDocument document, PrintPageEventArgs e)
 			{
-				// TODO
-				base.OnStartPage(document, e);
+				return session.StartPage(e);
 			}
 
 	// Event that is emitted at the start of the print process.
-	[TODO]
 	public override void OnStartPrint
 				(PrintDocument document, PrintEventArgs e)
 			{
-				// TODO
-				base.OnStartPrint(document, e);
+				session.Document = document;
+				session.StartPrint(e);
 			}
 
 }; // class PreviewPrintController

@@ -1,4 +1,14 @@
 
+2003-07-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/Printing/PreviewPrintController.cs,
+	System.Drawing/Printing/PrintController.cs,
+	System.Drawing/Printing/PrintDocument.cs,
+	System.Drawing/Printing/PrintPageEventArgs.cs,
+	System.Drawing/Printing/StandardPrintController.cs,
+	System.Drawing/Toolkit/IToolkitPrintSession.cs: implement the
+	core loop for sending pages to the printer.
+
 2003-07-17  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/String.cs: Fix minor bug in format parsing 

@@ -1,3 +1,11 @@
+2004-06-14  Thong Nguyen  <tum@veridicus.com>
+
+	* support/wakeup.c: Changed ILWakeupSignal so that it indicates
+	if the target wakeup was signalled or just had a llimit count
+	change.  This prevents a thread waiting inside WaitAll for handles
+	a && b from blocking threads waiting inside WaitOne for handle
+	a || b.
+	
 2004-06-13  Thong Nguyen  <tum@veridicus.com>
 
 	* support/thread.c: Added supporting for threads that need to
@@ -7,7 +15,7 @@
 	Made ILThreadAbort resume the thread if has suspended.
 	Made _ILThreadSuspendRequest flag itself as IL_TS_SUSPENDED_SELF
 	so that it will be correctly woken up when it is resumed.
-
+	
 2004-06-12  Thong Nguyen  <tum@veridicus.com>
 
 	* include/il_gc.h, support/def_gc.c, support/hb_gc.c: Added timeout

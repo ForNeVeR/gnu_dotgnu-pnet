@@ -220,10 +220,15 @@ int _ILWakeupSignal(_ILWakeup *wakeup, void *object)
 		if(wakeup->count >= wakeup->limit)
 		{
 			_ILCondVarSignal(&(wakeup->condition));
-		}
 
-		/* The signal operation succeeded */
-		result = 1;
+			/* The signal operation has suceeded */
+			result = 1;
+		}
+		else
+		{
+			/* The signal operation succeeded and the target is still waiting */
+			result = 2;
+		}
 	}
 
 	/* Unlock the wakeup object and return */
@@ -370,7 +375,7 @@ _ILWakeup *_ILWakeupQueueWake(_ILWakeupQueue *queue)
 	while(item != 0 && !woken)
 	{
 		next = item->next;
-		if(_ILWakeupSignal(item->wakeup, item->object))
+		if(_ILWakeupSignal(item->wakeup, item->object) == 1)
 		{
 			woken = item->wakeup;
 		}

@@ -1182,6 +1182,7 @@ unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
 			thisType = ILNode_GetType(thisExpr, info);
 			if((thisType >= ILMachineType_Boolean &&
 			    thisType <= ILMachineType_NativeFloat) ||
+			   thisType == ILMachineType_Decimal ||
 			   thisType == ILMachineType_ManagedValue)
 			{
 				/* Turn the value into a managed pointer */

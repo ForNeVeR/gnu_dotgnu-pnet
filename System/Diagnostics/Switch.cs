@@ -24,6 +24,7 @@ namespace System.Diagnostics
 #if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System.Collections;
+using System.Collections.Specialized;
 
 public abstract class Switch
 {
@@ -98,8 +99,27 @@ public abstract class Switch
 	// Load the switch values from the configuration into a hash table.
 	private static void LoadSwitchValues(Hashtable values)
 			{
-				// We don't use this form of configuration at the moment.
-				// Provided for compatibility only.
+				Hashtable switches;
+				lock(typeof(Trace))
+				{
+					Trace.Initialize();
+					switches = Trace.switches;
+				}
+				if(switches != null)
+				{
+					IDictionaryEnumerator e = switches.GetEnumerator();
+					while(e.MoveNext())
+					{
+						try
+						{
+							values[e.Key] = Int32.Parse((String)(e.Value));
+						}
+						catch(Exception)
+						{
+							// Ignore parsing errors.
+						}
+					}
+				}
 			}
 
 	// Get a switch value from the configuration.
@@ -109,7 +129,8 @@ public abstract class Switch
 				{
 					if(switchValues == null)
 					{
-						switchValues = new Hashtable();
+						switchValues = CollectionsUtil
+							.CreateCaseInsensitiveHashtable();
 						LoadSwitchValues(switchValues);
 					}
 					Object value = switchValues[displayName];

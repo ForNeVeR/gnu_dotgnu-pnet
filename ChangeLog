@@ -35,6 +35,9 @@
 	* System/Configuration/ConfigurationSettings.cs: change an
 	instance of "machine.schema" to "machine.default".
 
+	* System/Diagnostics/Switch.cs, System/Diagnostics/Trace.cs:
+	configuration of diagnostic switch options.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

@@ -37,13 +37,13 @@ public sealed class Trace
 	private static int indentLevel;
 	private static int indentSize = 4;
 	private static TraceListenerCollection listeners;
-	private static Hashtable switches;
+	internal static Hashtable switches;
 
 	// This class cannot be instantiated.
 	private Trace() {}
 
 	// Make sure that the trace configuration is loaded.
-	private static void Initialize()
+	internal static void Initialize()
 			{
 				Object value;
 

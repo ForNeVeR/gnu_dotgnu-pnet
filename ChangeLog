@@ -1,4 +1,12 @@
 
+2002-11-29  Jeff Post <j_post@pacbell.net>
+
+	* System/Collections/Specialized/NameValueCollection.cs: fixed
+	bug that caused NullReferenceException if key is not in the collection.
+
+	* tests/System/TestWebHeaderCollection.cs, tests/System/TestSystem.cs: 
+	implement unit tests.
+
 2002-11-30  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Globalization/DateTimeFormatInfo.cs: Temporary fix

@@ -35,6 +35,7 @@ public class TestSystem
 
 				suite = new TestSuite("Network Tests");
 				suite.AddTests(typeof(TestIPAddress));
+				suite.AddTests(typeof(TestWebHeaderCollection));
 				fullSuite.AddTest(suite);
 
 				return fullSuite;

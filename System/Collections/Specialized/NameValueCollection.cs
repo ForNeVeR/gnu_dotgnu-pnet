@@ -182,6 +182,8 @@ public class NameValueCollection : NameObjectCollectionBase
 	// Collapse an array list of strings into an array.
 	private static String[] CollapseToArray(ArrayList strings)
 			{
+				if (strings == null)
+					return null;
 				String[] result = new String [strings.Count];
 				strings.CopyTo(result, 0);
 				return result;

@@ -72,7 +72,7 @@ namespace System.Windows.Forms
 			{
 				imageIndex = value;
 				if (base.Parent != null)
-					(Parent as TabControl).InvalidateTabs();
+					(Parent as TabControl).DrawTabs();
 			}
 		}
 
@@ -86,7 +86,7 @@ namespace System.Windows.Forms
 			{
 				base.Text = value;
 				if (base.Parent != null)
-					(Parent as TabControl).InvalidateTabs();
+					(Parent as TabControl).DrawTabs();
 			}
 		}
 

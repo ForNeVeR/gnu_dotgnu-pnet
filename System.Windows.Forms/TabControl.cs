@@ -125,7 +125,7 @@ namespace System.Windows.Forms
 			}
 			GetChildByIndex( selectedIndex ).Visible = true;
 			
-			InvalidateTabs();
+			DrawTabs();
 			if (SelectedIndexChanged != null)
 				SelectedIndexChanged( this, EventArgs.Empty );
 		}
@@ -186,7 +186,7 @@ namespace System.Windows.Forms
 				{
 					hotTrackIndex = -1;
 					hotTrack = value;
-					InvalidateTabs();
+					DrawTabs();
 				}
 			}
 		}
@@ -200,7 +200,7 @@ namespace System.Windows.Forms
 			set
 			{
 				imageList = value;
-				InvalidateTabs();
+				DrawTabs();
 			}
 		}
 
@@ -329,18 +329,35 @@ namespace System.Windows.Forms
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
+			Draw(e.Graphics);
+			// Draw the visible TabPage (child controls)
+			base.OnPaint (e);
+		}
+
+		private void Draw(Graphics g)
+		{
+			Region clipMoveButtons = g.Clip.Clone();
+			if (moveButtonsShowing)
+			{
+				moveButtonLeftBounds = moveButtonRightBounds = new Rectangle( Width - moveButtonSize.Width *2, 1, moveButtonSize.Width, moveButtonSize.Height );
+				moveButtonRightBounds.Offset( moveButtonLeftBounds.Width, 0);
+				Region r = new Region(moveButtonLeftBounds);
+				r.Union(moveButtonRightBounds);
+				g.SetClip(r, Drawing.Drawing2D.CombineMode.Exclude);
+			}
+
+			Region clip = g.Clip.Clone();
+
 			Rectangle newClient = GetTabBaseBounds();
 			// Draw the tab edging
-			ControlPaint.DrawBorder3D(e.Graphics, newClient, Border3DStyle.RaisedInner, Border3DSide.Left);
-			ControlPaint.DrawBorder3D(e.Graphics, newClient, Border3DStyle.Raised, Border3DSide.Bottom);
-			ControlPaint.DrawBorder3D(e.Graphics, newClient, Border3DStyle.Raised, Border3DSide.Right);
-			ControlPaint.DrawBorder3D(e.Graphics, newClient, Border3DStyle.RaisedInner, Border3DSide.Top);
+			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.RaisedInner, Border3DSide.Left);
+			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.Raised, Border3DSide.Bottom);
+			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.Raised, Border3DSide.Right);
+			ControlPaint.DrawBorder3D(g, newClient, Border3DStyle.RaisedInner, Border3DSide.Top);
 			
 			// Clear out the space behind the tabs
 			using ( Brush background = new SolidBrush(BackColor) )
-			{
-				e.Graphics.FillRectangle( background, GetTabsBounds());
-			}
+				g.FillRectangle( background, GetTabsBounds());
 
 			// Draw each tab in the tabControl row 0 first, bottom row last, selected item very last
 			for( int row = 0; row < PositionInfo.totalRows; row++ )
@@ -351,40 +368,40 @@ namespace System.Windows.Forms
 					{
 						Rectangle bounds = GetTabRect(i);
 						// Remove bottom line off bounds if not selected so border isnt covered
-						e.Graphics.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height -1));
-						OnDrawItem( new DrawItemEventArgs(e.Graphics, Font, bounds, i, DrawItemState.None, ForeColor, BackColor));
+						g.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height -1), Drawing.Drawing2D.CombineMode.Intersect);
+						OnDrawItem( new DrawItemEventArgs(g, Font, bounds, i, DrawItemState.None, ForeColor, BackColor));
+						g.Clip = clip;
 					}
 				}
 			}
 			if (selectedIndex > -1)
 			{
 				Rectangle bounds = GetTabRect(selectedIndex);
-				e.Graphics.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height));
+				g.SetClip(new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height), Drawing.Drawing2D.CombineMode.Intersect);
 						
 				DrawItemState state = Focused?DrawItemState.Focus:DrawItemState.None;
-				OnDrawItem( new DrawItemEventArgs(e.Graphics, Font, bounds, selectedIndex, state, ForeColor, BackColor));
+				OnDrawItem( new DrawItemEventArgs(g, Font, bounds, selectedIndex, state, ForeColor, BackColor));
 			}
 
 			// Draw the Tab move buttons if necessary
 			if (moveButtonsShowing)
 			{
-				moveButtonLeftBounds = moveButtonRightBounds = new Rectangle( Width - moveButtonSize.Width *2, 1, moveButtonSize.Width, moveButtonSize.Height );
-				moveButtonRightBounds.Offset( moveButtonLeftBounds.Width, 0);
+				
 
 				using (SolidBrush b = new SolidBrush( foreColor) )
 				{
-					e.Graphics.ResetClip();
-					ControlPaint.DrawButton(e.Graphics, moveButtonLeftBounds, moveButtonLeftState);
+					g.Clip = clipMoveButtons;
+					ControlPaint.DrawButton(g, moveButtonLeftBounds, moveButtonLeftState);
 					// Left Arrow
-					e.Graphics.FillPolygon(b, new Point[]
+					g.FillPolygon(b, new Point[]
 					{
 						new Point(moveButtonLeftBounds.Left + 5, moveButtonLeftBounds.Top + 8),
 						new Point(moveButtonLeftBounds.Left + 8, moveButtonLeftBounds.Top + 5),
 						new Point(moveButtonLeftBounds.Left + 8, moveButtonLeftBounds.Top + 11)
 					});
-					ControlPaint.DrawButton(e.Graphics, moveButtonRightBounds, moveButtonRightState);
+					ControlPaint.DrawButton(g, moveButtonRightBounds, moveButtonRightState);
 					// Right Arrow
-					e.Graphics.FillPolygon(b, new Point[]
+					g.FillPolygon(b, new Point[]
 					{
 						new Point(moveButtonRightBounds.Left + 11, moveButtonRightBounds.Top + 8),
 						new Point(moveButtonRightBounds.Left + 8, moveButtonRightBounds.Top + 5),
@@ -393,8 +410,6 @@ namespace System.Windows.Forms
 					
 				}
 			}
-			// Draw the visible TabPage (child controls)
-			base.OnPaint (e);
 		}
 
 		public Rectangle GetTabRect( int index )
@@ -437,19 +452,12 @@ namespace System.Windows.Forms
 						// Do we need to move the row that was selected to the bottom of the tabs?
 						if (selectedIndex > -1)
 						{
-							// Find the position of the first tab on the last row
-							int last = tabs.Length - 1;
-							for(; last > 0 ; last-- )
-							{
-								if (tabs[last - 1].row != maxRow)
-									break;
-							}
 							// Check to see if we have selected a tab that isnt on the last row and move the tab row down
-							if (selectedIndex < last)
+							if (tabs[selectedIndex].row != maxRow)
 								RowToBottom(ref tabs, tabs[selectedIndex].row, maxRow);
 						}
 
-						//Find the actual bounds
+						// Find the actual bounds
 						LayoutTabBounds( ref tabs, rowWidth );
 						positionInfo = new TabPositionInfo(maxRow + 1, tabs);
 					}
@@ -494,58 +502,173 @@ namespace System.Windows.Forms
 			// Start by sizing as per normal
 			SizeTabsNormal( ref tabs, g, rowWidth, out maxRow, false );
 
-			// Find the total width of all the tabs
-			int width = 0;
-			for (int i = 0; i < tabs.Length; i++)
-			{
-				if ((tabPageCollection[i] as TabPage).Visible)
-					width += tabs[i].bounds.Width;
-			}
-			
-			// This would be the perfect row width
-			int optimalWidth = width / (maxRow + 1);
+			// The details of the row/tab for the smallest padding + tab width
+			// Used to "fill" the last tab if required for the optimal FillRight packing.
+			int minPadded = int.MaxValue;
+			int minTabWidth = 0;
+			int minTabPos = -1;
 
 			int currentPos = 0;
 			for ( int row = 0; row <= maxRow; row++ )
 			{
-				// For the last row pad all the remaining tabs
+				int thisPadded;
+				int thisMinTabPos;
+				int thisMinTabWidth;
+					
+				// For the last row we might want to move a tab in to improve the packing
 				if (row == maxRow)
-					optimalWidth = rowWidth;
-				PadRow( ref tabs, ref currentPos, optimalWidth, row, rowWidth );
+				{
+					// Make a copy of the last row of tabs in case we need to redo that line
+					TabPosition[] tabsCopy = (TabPosition[])tabs.Clone();
+
+					int startOfLastRow = currentPos;
+					PadRow( ref tabs, ref currentPos, out thisPadded, row, rowWidth, out thisMinTabPos, out thisMinTabWidth );
+
+					// Would it be optimal to pack with our best tab?
+					if (minTabPos > -1 && thisPadded >= minPadded + minTabWidth)
+					{
+						// Find the beginning and end of the row that we are removing the tab from.
+						int startPos = -1;
+						int posEnd = -1;
+						int currentRow = tabs[minTabPos].row;
+						for (int i = 0; i < tabs.Length; i++)
+						{
+							if (tabs[i].row == currentRow)
+							{
+								if (startPos == -1)
+									startPos = i;
+								posEnd = i;
+							}
+						}
+
+						// Create a temporary array for the row less the tab we are moving
+						TabPosition[] tabs1 = new TabPosition[posEnd - startPos];
+						int j = startPos;
+						for (int i = 0; i < tabs1.Length; i++)
+						{
+							if (j == minTabPos)
+								j++;
+							tabs1[i] = tabs[j];
+							j++;
+						}
+
+						// Recalculate this row
+						PadTabs(ref tabs1, 0, tabs1.Length, tabs[minTabPos].bounds.Width);
+						CalcTabPosFromWidths(ref tabs1, 0, tabs1.Length, currentRow);
+
+						// Write this back into tabs.
+						j = startPos;
+						for (int i = 0; i < tabs1.Length; i++)
+						{
+							if (j == minTabPos)
+								j++;
+							tabs[j] = tabs1[i];
+							j++;
+						}
+						
+						// minTabPos now starts the last row
+						tabsCopy[startOfLastRow - 1] = tabs[minTabPos];
+						PadTabs(ref tabsCopy, startOfLastRow - 1, tabsCopy.Length, thisPadded - tabs[minTabPos].bounds.Width);
+						CalcTabPosFromWidths(ref tabsCopy, startOfLastRow - 1, tabsCopy.Length, tabs[startOfLastRow].row);
+						// Write the calculated values back to tabs.
+						tabs[minTabPos] = tabsCopy[startOfLastRow - 1];
+						tabs[minTabPos].row = tabs[startOfLastRow].row;
+						for (int i = startOfLastRow; i < tabs.Length; i++)
+							tabs[i] = tabsCopy[i];
+						
+					}
+				}
+				else
+				{
+					PadRow( ref tabs, ref currentPos, out thisPadded, row, rowWidth, out thisMinTabPos, out thisMinTabWidth );
+
+					// Find the minimum Tabsize for this row
+					if (thisPadded + thisMinTabWidth < minPadded + minTabWidth)
+					{
+						minPadded = thisPadded;
+						minTabWidth = thisMinTabWidth;
+						minTabPos = thisMinTabPos;
+					}
+				}
 			}
 		}
 
 		// Pad tab widths evenly, from startPos and ending where total width is greater than the ideal
-		private void PadRow (ref TabPosition[] tabs, ref int startPos, int idealWidth, int newRow, int rowWidth)
+		private void PadRow (ref TabPosition[] tabs, ref int startPos, out int totalPadded, int newRow, int rowWidth, out int minTabPos, out int minTabWidth)
 		{
-			int totalWidth = 0;
+			minTabWidth = int.MaxValue;
+			minTabPos = -1;
+			
+			// Find the last tab that fits into this row and the number of pixels we have to fill.
+			// Also find the smallest tab.
+			totalPadded = rowWidth;
 			int posEnd = startPos;
 			for (; posEnd < tabs.Length; posEnd++)
 			{
-				totalWidth += tabs[posEnd].bounds.Width;
+				if (!(tabPageCollection[posEnd] as TabPage).Visible)
+					continue;
+
+				int width = tabs[posEnd].bounds.Width;
 				// We end the count if we have exceeded the ideal width
-				if (totalWidth > idealWidth)
+				if (totalPadded < width)
 					break;
+				totalPadded -= width;
+				
+				if (minTabWidth > width)
+				{
+					minTabWidth = width;
+					minTabPos = posEnd;
+				}		
 			}
 
-			// How many pixels left for this row
-			int pixelsLeft = rowWidth;
-			// Starting position
-			int posTotal = 0;
-
-			for (int pos = startPos; pos < posEnd; pos++ )
-			{
-				int thisWidth = pixelsLeft/(posEnd - pos);
-				if (tabs[pos].bounds.Width > thisWidth)
-					thisWidth = tabs[pos].bounds.Width;
-				tabs[pos].bounds = new Rectangle(posTotal,0,thisWidth,0);
-				tabs[pos].row = newRow;
-				pixelsLeft -= thisWidth;
-				posTotal += thisWidth;
-			}
+			PadTabs( ref tabs, startPos, posEnd, totalPadded);
+			CalcTabPosFromWidths( ref tabs, startPos, posEnd, newRow);
 
 			// We will start at this position next time
 			startPos = posEnd;
+		}
+
+		// Write the x cooridinate of the tab from the width and write the row we want.
+		private void CalcTabPosFromWidths(ref TabPosition[] tabs, int startPos, int posEnd, int newRow)
+		{
+			int posTotal = 0;
+			for (int pos = startPos; pos < posEnd; pos++ )
+			{
+				if (!(tabPageCollection[pos] as TabPage).Visible)
+					continue;
+				int width = tabs[pos].bounds.Width;
+				tabs[pos].bounds = new Rectangle(posTotal,0,width,0);
+				tabs[pos].row = newRow;
+				posTotal += width;
+			}
+		}
+
+		// Add pixelsToPad to the widths of the tabs
+		private void PadTabs(ref TabPosition[] tabs, int startPos, int posEnd, int pixelsToPad)
+		{
+			// Add 1 pixel to the smallest tab until the row is filled.
+			while (pixelsToPad > 0)
+			{
+				// Find the smallest tab in the row
+				int smallestPos = -1;
+				int smallestWidth = int.MaxValue;
+				for (int i = startPos; i < posEnd; i++ )
+				{
+					if (!(tabPageCollection[i] as TabPage).Visible)
+						continue;
+
+					if (tabs[i].bounds.Width < smallestWidth)
+					{
+						smallestPos = i;
+						smallestWidth = tabs[i].bounds.Width;
+					}
+				}
+				// If we have no visible tabs.
+				if (smallestPos == -1)
+					return;
+				tabs[smallestPos].bounds = new Rectangle(0,0, smallestWidth + 1,0);
+				pixelsToPad--;
+			}
 		}
 
 		// Using the tabs row and the widths, calculate each tabs actual bounds
@@ -598,26 +721,13 @@ namespace System.Windows.Forms
 		// Move a particular row Row to the bottom of the tabs (lastRow)
 		private void RowToBottom(ref TabPosition[] tabs, int row, int lastRow)
 		{
-			// Find pos of first element of row
-			int rowStart = 0;
-			for(; rowStart < tabs.Length; rowStart++)
+			for (int i = 0; i < tabs.Length; i++)
 			{
-				if (tabs[rowStart].row == row)
-					break;
+				if (tabs[i].row == row)
+					tabs[i].row = lastRow;
+				else if (tabs[i].row > row)
+					tabs[i].row--;
 			}
-			// Find pos of last element of row
-			int rowEnd = rowStart;
-			for(; rowEnd < tabs.Length - 1; rowEnd++)
-			{
-				if (tabs[rowEnd + 1].row != row)
-					break;
-			}
-			// Change the row to the new row
-			for( int i = rowStart; i < rowEnd + 1; i++ )
-				tabs[i].row = lastRow;
-			// These rows were all moved up
-			for( int i = rowEnd + 1; i < tabs.Length; i++ )
-				tabs[i].row--;
 		}
 
 		// All tab positions and the total rows
@@ -725,9 +835,12 @@ namespace System.Windows.Forms
 		{
 
 			Color color = hotTrack ? SystemColors.HotTrack : ForeColor;
+			StringFormat format = new StringFormat();
+			format.Alignment = StringAlignment.Center;
+			format.LineAlignment = StringAlignment.Center;
 			using (Brush brush = new SolidBrush( color )) 
 			{
-				graphics.DrawString( text, Font, brush, bounds );
+				graphics.DrawString( text, Font, brush, bounds, format );
 			}
 		}
 
@@ -737,25 +850,23 @@ namespace System.Windows.Forms
 			base.OnMouseDown (e);
 			if (moveButtonsShowing && moveButtonLeftBounds.Contains( e.X, e.Y ))
 			{
+				moveButtonLeftState = ButtonState.Pushed;
 				if (moveButtonsTabOffset > 0)
 				{
 					moveButtonsTabOffset--;
 					positionInfo = null;
-					InvalidateTabs();
+					DrawTabs();
 				}
-				moveButtonLeftState = ButtonState.Pushed;
-				Invalidate( moveButtonLeftBounds );
 			}
 			else if (moveButtonsShowing && moveButtonRightBounds.Contains(e.X, e.Y))
 			{
+				moveButtonRightState = ButtonState.Pushed;
 				if (moveButtonsTabOffset < tabPageCollection.Count - 1 && moveButtonsCovered)
 				{
 					moveButtonsTabOffset++;
 					positionInfo = null;
-					InvalidateTabs();
+					DrawTabs();
 				}
-				moveButtonRightState = ButtonState.Pushed;
-				Invalidate( moveButtonRightBounds );
 			}
 			else
 			{
@@ -785,12 +896,21 @@ namespace System.Windows.Forms
 			if (moveButtonLeftState != ButtonState.Normal)
 			{
 				moveButtonLeftState = ButtonState.Normal;
-				Invalidate( moveButtonLeftBounds );
+				using (Graphics g = CreateGraphics())
+				{
+					g.Clip = new Region(moveButtonLeftBounds);
+					Draw(g);
+				}
 			}
 			if (moveButtonRightState != ButtonState.Normal)
 			{
 				moveButtonRightState = ButtonState.Normal;
-				Invalidate( moveButtonRightBounds );
+				using (Graphics g = CreateGraphics())
+				{
+					g.Clip = new Region(moveButtonRightBounds);
+					Draw(g);
+				}
+			
 			}
 			base.OnMouseUp (e);
 		}
@@ -804,12 +924,23 @@ namespace System.Windows.Forms
 				// Dont draw more than we have to
 				if (hotTrackIndex > -1 && hotTrackIndex != prevHotTrackIndex)
 				{
+					Region r = new Region(positionInfo.positions[hotTrackIndex].bounds);
 					if (prevHotTrackIndex > -1)
-						Invalidate( positionInfo.positions[prevHotTrackIndex].bounds );
-					Invalidate( positionInfo.positions[hotTrackIndex].bounds );
+						r.Union( positionInfo.positions[prevHotTrackIndex].bounds );
+					using (Graphics g = CreateGraphics())
+					{
+						g.Clip =r;
+						Draw(g);
+					}
 				}
 				else if (hotTrackIndex == -1 && prevHotTrackIndex > -1)
-					Invalidate( positionInfo.positions[prevHotTrackIndex].bounds );
+				{
+					using (Graphics g = CreateGraphics())
+					{
+						g.Clip = new Region( positionInfo.positions[prevHotTrackIndex].bounds );
+						Draw(g);
+					}
+				}
 
 			}
 			base.OnMouseMove (e);
@@ -819,9 +950,13 @@ namespace System.Windows.Forms
 		{
 			if (hotTrack && hotTrackIndex > -1)
 			{
-				int prevHottrackIndex = hotTrackIndex;
+				int prevHotTrackIndex = hotTrackIndex;
 				hotTrackIndex = -1;
-				Invalidate( positionInfo.positions[prevHottrackIndex].bounds );
+				using (Graphics g = CreateGraphics())
+				{
+					g.Clip = new Region( positionInfo.positions[prevHotTrackIndex].bounds );
+					Draw(g);
+				}
 			}
 			base.OnMouseLeave (e);
 		}
@@ -848,7 +983,9 @@ namespace System.Windows.Forms
 		// Returns the dimensions of the base (piece without tabs)
 		private Rectangle GetTabBaseBounds()
 		{
-			int offset = TabOffset;
+			int offset = 0;
+			if (IsHandleCreated)
+				offset = TabOffset;
 			switch( alignment )
 			{
 				case TabAlignment.Left:
@@ -876,7 +1013,9 @@ namespace System.Windows.Forms
 		// Returns the dimensions of the tab area
 		private Rectangle GetTabsBounds()
 		{
-			int offset = TabOffset;
+			int offset = 0;
+			if (IsHandleCreated)
+				offset = TabOffset;
 			switch( alignment )
 			{
 				case TabAlignment.Left:
@@ -892,24 +1031,31 @@ namespace System.Windows.Forms
 			}
 		}
 
-		// Because we overwrite the border of the tab base, we need to invalidate more than the tab base bounds
-		internal void InvalidateTabs()
+		internal void DrawTabs()
 		{
+			if (!IsHandleCreated)
+				return;
 			Rectangle bounds = GetTabsBounds();
+			// Because we overwrite the border of the tab base, we need to draw more than the tab base bounds
 			switch (alignment)
 			{
 				case TabAlignment.Left:
-					Invalidate( new Rectangle(bounds.Left, bounds.Top, bounds.Width + 1, bounds.Height));
+					bounds = new Rectangle(bounds.Left, bounds.Top, bounds.Width + 1, bounds.Height);
 					break;
 				case TabAlignment.Top:
-					Invalidate( new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height + 1));
+					bounds = new Rectangle(bounds.Left, bounds.Top, bounds.Width, bounds.Height + 1);
 					break;
 				case TabAlignment.Right:
-					Invalidate( new Rectangle(bounds.Left - 1, bounds.Top, bounds.Width + 1, bounds.Height));
+					bounds =  new Rectangle(bounds.Left - 1, bounds.Top, bounds.Width + 1, bounds.Height);
 					break;
 				case TabAlignment.Bottom:
-					Invalidate( new Rectangle(bounds.Left, bounds.Top - 1, bounds.Width, bounds.Height + 1));
+					bounds =  new Rectangle(bounds.Left, bounds.Top - 1, bounds.Width, bounds.Height + 1);
 					break;
+			}
+			using (Graphics g = CreateGraphics())
+			{
+				g.SetClip(bounds);
+				Draw(g);
 			}
 		}
 

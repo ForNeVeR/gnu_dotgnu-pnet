@@ -1,4 +1,10 @@
 
+2001-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* configure.in, Makefile.am, ildiff/AUTHORS, ildiff/README, ildiff/TODO,
+ildiff/Makefile.am, ildiff/.cvsignore, ildiff/ildiff.c, ildiff/pretty.h: add
+the "ildiff" code to the tree.  Contributed by Gopal V <gopalv82@yahoo.com>.
+
 2001-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h, csdoc/doc_load.c: add the types to a hash table as

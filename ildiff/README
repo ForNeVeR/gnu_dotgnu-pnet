@@ -1,0 +1,14 @@
+Readme
+------
+	This is a diff program for iL images. This is a crude implementation of 
+	ildiff. This is only an idea of how an ildiff can be be programmed.
+	I have made a lot of changes since the last posting. The pretty
+	printing feature has been made into a header file so that any
+	body can use it.
+	
+	
+	Gopal.V
+
++--<===]---+
+|GNU Rulez |
++--[===>---+

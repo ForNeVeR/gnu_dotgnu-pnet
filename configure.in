@@ -80,6 +80,7 @@ ilalink/Makefile
 ilsize/Makefile
 ilnative/Makefile
 ilfind/Makefile
+ildiff/Makefile
 codegen/Makefile
 cscc/Makefile
 resgen/Makefile

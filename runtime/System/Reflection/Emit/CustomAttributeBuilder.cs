@@ -32,6 +32,41 @@ using System.Runtime.CompilerServices;
 [TODO]
 public sealed class CustomAttributeBuilder
 {
+	[TODO]
+	public CustomAttributeBuilder(ConstructorInfo con, 
+										Object[] constructorArgs)
+	{
+		throw new NotImplementedException(".ctor");
+	}
+
+	[TODO]
+	public CustomAttributeBuilder(ConstructorInfo con, 
+										Object[] constructorArgs, 
+										FieldInfo[] namedFields, 
+										Object[] fieldValues)
+	{
+		throw new NotImplementedException(".ctor");
+	}
+
+	[TODO]
+	public CustomAttributeBuilder(ConstructorInfo con,
+										Object[] constructorArgs, 
+										PropertyInfo[] namedProperties, 
+										Object[] propertyValues)
+	{
+		throw new NotImplementedException(".ctor");
+	}
+
+	[TODO]
+	public CustomAttributeBuilder(ConstructorInfo con, 
+										Object[] constructorArgs, 
+										PropertyInfo[] namedProperties, 
+										Object[] propertyValues, 
+										FieldInfo[] namedFields, 
+										Object[] fieldValues)
+	{
+		throw new NotImplementedException(".ctor");
+	}
 
 	// TODO
 

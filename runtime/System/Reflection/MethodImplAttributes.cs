@@ -35,7 +35,7 @@ public enum MethodImplAttributes
 	NoInlining			= 0x0008,
 	ForwardRef			= 0x0010,
 	Synchronized		= 0x0020,
-	PerserveSig			= 0x0080,
+	PreserveSig			= 0x0080,
 	InternalCall		= 0x1000,
 	MaxMethodImplVal	= 0xFFFF
 

@@ -1221,8 +1221,8 @@ System_String *_IL_String_Replace_cc(ILExecThread *thread,
 {
 	System_String *str;
 	ILUInt16 *buf1;
-	ILUInt16 *buf2;
 	ILInt32 len;
+	ILInt32 pos = 0;
 
 	/* If nothing will happen, then return the current string as-is */
 	len = _this->length;
@@ -1231,30 +1231,54 @@ System_String *_IL_String_Replace_cc(ILExecThread *thread,
 		return _this;
 	}
 
-	/* Allocate a new string */
-	str = AllocString(thread, len);
-	if(!str)
-	{
-		return 0;
-	}
-
 	/* Scan the two strings, copying and replacing as we go */
 	buf1 = StringToBuffer(_this);
-	buf2 = StringToBuffer(str);
 	while(len > 0)
 	{
 		if(*buf1 != oldChar)
 		{
-			*buf2++ = *buf1++;
-		}
-		else
-		{
-			*buf2++ = newChar;
 			++buf1;
+			++pos;
+			--len;
 		}
-		--len;
+		else /* found one char to replace */
+		{
+			ILUInt16 *buf2;
+
+			/* Allocate a new string */
+			str = AllocString(thread, _this->length);
+			if(!str)
+			{
+				return 0;
+			}
+			if(pos > 0)
+			{
+				/* copy the allready checked part */
+				ILMemCpy(StringToBuffer(str), StringToBuffer(_this),
+				 sizeof(ILUInt16) * pos);
+			}
+			buf2 = StringToBuffer(str) + pos;
+			++buf1;
+			*buf2++ = newChar;
+			--len;
+			while(len > 0)
+			{
+				if(*buf1 != oldChar)
+				{
+					*buf2++ = *buf1++;
+				}
+				else
+				{
+					*buf2++ = newChar;
+					++buf1;
+				}
+				--len;
+			}
+			return str;
+		}
+
 	}
-	return str;
+	return _this;
 }
 
 /*
@@ -1279,10 +1303,18 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 	ILInt32 posn;
 	System_String *str;
 	ILUInt16 *buf;
+	ILBool foundMatch = 0;
 
-	/* If "oldValue" is null or an empty string, then the
+	/* Validate the parameters */
+	if(!oldValue)
+	{
+		ILExecThreadThrowArgNull(thread, "oldValue");
+		return 0;
+	}
+
+	/* If "oldValue" is an empty string, then the
 	   string will not be changed */
-	if(!oldValue || !(oldValue->length))
+	if(!(oldValue->length))
 	{
 		return _this;
 	}
@@ -1307,6 +1339,7 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 		{
 			finalLen += newLen;
 			posn += oldLen;
+			foundMatch = 1;
 		}
 		else
 		{
@@ -1320,6 +1353,11 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 			return 0;
 		}
 	}
+	if(!foundMatch) /* no match found */
+	{
+		return _this;
+	}
+
 	finalLen += _this->length - posn;
 
 	/* Allocate a new string */
@@ -1333,7 +1371,7 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 	buf = StringToBuffer(str);
 	finalLen = 0;
 	posn = 0;
-	while((posn) <= _this->length)
+	while((posn) < _this->length)
 	{
 		if((posn + oldLen) <= _this->length && EqualRange(_this, posn, oldLen, oldValue, 0))
 		{

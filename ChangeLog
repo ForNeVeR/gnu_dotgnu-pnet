@@ -1,3 +1,8 @@
+2005-03-09  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_string.c: change String.Replace so that a new string is
+	created only if a replacement has to be done.  Changed the off by one
+	bug (thx. to Erich Kitzmüller) that fixed the problem.
 
 2005-03-06  Klaus Treichel  <ktreichel@web.de>
 

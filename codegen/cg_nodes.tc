@@ -798,6 +798,7 @@ struct _tagILSwitchValue
 	char	   *name;
 	char	   *namespace;
 	ILNode     *namespaceNode;
+	ILNode     *typeFormals;
 	ILNode     *baseClass;
 	ILNode     *body;
 	ILNode     *staticCtors;

@@ -908,12 +908,12 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		RankSpecifiers RankSpecifierList 
 %type <node>		OptArrayInitializer ArrayInitializer
 %type <node>		OptVariableInitializerList VariableInitializerList
-%type <node>		TypeActuals
+%type <node>		TypeActuals TypeFormals TypeFormalList
 %type <indexer>		IndexerDeclarator
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 26
+%expect 25
 
 %start CompilationUnit
 %%
@@ -2622,6 +2622,7 @@ ClassDeclaration
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
+							 $5,					/* TypeFormals */
 							 $6,					/* ClassBase */
 							 classBody,
 							 ($9).staticCtors);
@@ -2635,15 +2636,20 @@ ClassDeclaration
 			}
 	;
 
-/* TODO: generic formal parameter list */
 TypeFormals
-	: /* empty */
-	| '<' TypeFormalList '>'
+	: /* empty */					{ $$ = 0; }
+	| '<' TypeFormalList '>'		{ $$ = $2; }
 	;
 
 TypeFormalList
-	: Identifier					{ /* TODO */ }
-	| TypeFormalList ',' Identifier	{ /* TODO */ }
+	: Identifier					{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
+	| TypeFormalList ',' Identifier	{
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
 	;
 
 /* TODO: generic parameter constraints */
@@ -2688,6 +2694,7 @@ ModuleDeclaration
 							 ILInternString("<Module>", -1).string,
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
+							 0,						/* TypeFormals */
 							 0,						/* ClassBase */
 							 classBody,
 							 ($3).staticCtors);
@@ -3280,9 +3287,10 @@ ConversionOperatorDeclaration
  */
 
 ConstructorDeclaration
-	: OptAttributes OptModifiers Identifier '(' OptFormalParameterList ')'
-			ConstructorInitializer MethodBody	{
+	: OptAttributes OptModifiers QualifiedIdentifierPart
+			'(' OptFormalParameterList ')' ConstructorInitializer MethodBody {
 				ILUInt32 attrs = CSModifiersToConstructorAttrs($3, $2);
+				ILNode *ctorName;
 				ILNode *cname;
 				ILNode *initializer = $7;
 				ILNode *body;
@@ -3298,7 +3306,14 @@ ConstructorDeclaration
 								(ILInternString(".ctor", 5).string);
 					ClassNameCtorDefined();
 				}
-				if(!ClassNameSame($3))
+				ctorName = $3;
+				if(yyisa(ctorName, ILNode_GenericReference))
+				{
+					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						"constructors cannot have type parameters");
+					ctorName = ((ILNode_GenericReference *)ctorName)->type;
+				}
+				if(!ClassNameSame(ctorName))
 				{
 					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 						"constructor name does not match class name");
@@ -3316,7 +3331,7 @@ ConstructorDeclaration
 					/* Non-scoped body: create a new scoped body */
 					body = ILNode_NewScope_create
 								(ILNode_Compound_CreateFrom(initializer, $8));
-					CCWarningOnLine(yygetfilename($3),yygetlinenum($3),
+					CCWarningOnLine(yygetfilename($3), yygetlinenum($3),
 						"constructor without body should be declared 'extern'");
 				}
 				else
@@ -3358,13 +3373,23 @@ ConstructorInitializer
 	;
 
 DestructorDeclaration
-	: OptAttributes '~' Identifier '(' ')' Block		{
+	: OptAttributes '~' QualifiedIdentifierPart '(' ')' Block		{
 				ILUInt32 attrs;
+				ILNode *dtorName;
 				ILNode *name;
 				ILNode *body;
 
+				/* Destructors cannot have type parameters */
+				dtorName = $3;
+				if(yyisa(dtorName, ILNode_GenericReference))
+				{
+					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						"destructors cannot have type parameters");
+					dtorName = ((ILNode_GenericReference *)dtorName)->type;
+				}
+
 				/* Validate the destructor name */
-				if(!ClassNameSame($3))
+				if(!ClassNameSame(dtorName))
 				{
 					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 						"destructor name does not match class name");
@@ -3444,6 +3469,7 @@ StructDeclaration
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
+							 $5,					/* TypeFormals */
 							 baseList,				/* ClassBase */
 							 ($9).body,				/* StructBody */
 							 ($9).staticCtors);		/* StaticCtors */
@@ -3507,6 +3533,7 @@ InterfaceDeclaration
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
+							 $5,					/* TypeFormals */
 							 $6,					/* ClassBase */
 							 $9,					/* InterfaceBody */
 							 0);					/* StaticCtors */
@@ -3719,6 +3746,7 @@ EnumDeclaration
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
+							 0,						/* TypeFormals */
 							 baseList,				/* ClassBase */
 							 bodyList,				/* EnumBody */
 							 0);					/* StaticCtors */
@@ -3820,6 +3848,7 @@ DelegateDeclaration
 							 ILQualIdentName($5, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
+							 $6,					/* TypeFormals */
 							 baseList,				/* ClassBase */
 							 bodyList,				/* Body */
 							 0);					/* StaticCtors */

@@ -601,6 +601,38 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 	return 0;
 }
 
+int ILScopeDataGetKind(ILScopeData *data)
+{
+	return data->rbnode.kind;
+}
+
+ILClass *ILScopeDataGetClass(ILScopeData *data)
+{
+	if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
+	{
+		ILNode *node = (ILNode *)(((ILScope *)(data->data))->data);
+		return ((ILNode_ClassDefn *)node)->classInfo;
+	}
+	else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
+	{
+		return (ILClass *)(((ILScope *)(data->data))->data);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILScope *ILScopeDataGetSubScope(ILScopeData *data)
+{
+	return (ILScope *)(data->data);
+}
+
+ILMember *ILScopeDataGetMember(ILScopeData *data)
+{
+	return (ILMember *)(data->data);
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -37,6 +37,10 @@ typedef struct _tagILScopeData ILScopeData;
 #define	IL_SCOPE_LINKED_SCOPE	2	/* Sub-scope linked with "using" */
 #define	IL_SCOPE_IMPORTED_TYPE	3	/* Scope is an imported type */
 #define	IL_SCOPE_DECLARED_TYPE	4	/* Scope is a declared type */
+#define	IL_SCOPE_METHOD			5	/* Item is a method */
+#define	IL_SCOPE_FIELD			6	/* Item is a field */
+#define	IL_SCOPE_PROPERTY		7	/* Item is a property */
+#define	IL_SCOPE_EVENT			8	/* Item is an event */
 
 /*
  * Error codes for scope definitions.
@@ -107,6 +111,26 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 					   const char *namespace, ILClass **classInfo,
 					   ILNode **nodeInfo);
+
+/*
+ * Get the kind value associated with a scope item.
+ */
+int ILScopeDataGetKind(ILScopeData *data);
+
+/*
+ * Get the class structure associated with a scope item.
+ */
+ILClass *ILScopeDataGetClass(ILScopeData *data);
+
+/*
+ * Get the sub-scope structure associated with a scope item.
+ */
+ILScope *ILScopeDataGetSubScope(ILScopeData *data);
+
+/*
+ * Get the member structure associated with a scope item.
+ */
+ILMember *ILScopeDataGetMember(ILScopeData *data);
 
 #ifdef	__cplusplus
 };

@@ -25,6 +25,9 @@ identifiers to using ILNode_PrimitiveType, ILNode_ObjectType, etc.
 * codegen/cg_library.c: add "System.TypedReference" to the set of
 builtin library types.
 
+* codegen/cg_scope.h, codegen/cg_scope.c: implement "ILScopeDataGet*"
+to get information about scope items.
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

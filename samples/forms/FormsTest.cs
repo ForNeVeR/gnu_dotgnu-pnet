@@ -306,6 +306,9 @@ namespace FormsTest
 		private Button messageBox2;
 		private Button messageBox3;
 		private Button messageBox4;
+		
+		private Button dialog1Button;
+		private OpenFileDialog openFileDialog1;
 
 		#endregion
 		
@@ -624,7 +627,7 @@ namespace FormsTest
 			label24.Name = "label24";
 			label24.Size = new Size(465, 40);
 			label24.TabIndex = 23;
-			label24.Text = "A normal label : BorderStyle=FixedSingle , Height=40";
+			label24.Text = "A normal label : BorderStyle=FixedSingle , Height=40" + Environment.NewLine + "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww";
 
 			label25.AutoSize = true;
 			label25.BorderStyle = BorderStyle.FixedSingle;
@@ -2224,7 +2227,7 @@ namespace FormsTest
 			{
 				
 				string s = "Hello\r\n1234 1&2345& 1&&23456 123 12 123&45";
-				string s1 = s + s + s + s + s;
+				string s1 = s + s;
 				StringFormat sf = new StringFormat();
 				Font f = new Font("Arial", 6);
 					
@@ -2839,8 +2842,6 @@ namespace FormsTest
 		private void treeCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			treeView1.CheckBoxes = treeCheckBox.Checked;
-			Console.WriteLine(treeView1.Nodes[3].Nodes[2].Bounds);
-
 		}
 
 		private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
@@ -3520,7 +3521,12 @@ namespace FormsTest
 			messageBox4.Text = "OKInfo";
 			messageBox4.Click+=new EventHandler(messageBox4_Click);
 
-			c.Controls.AddRange(new Control[] {messageBox1, messageBox2, messageBox3, messageBox4});
+			dialog1Button = new Button();
+			dialog1Button.SetBounds(10, 180, 120, 20);
+			dialog1Button.Text = "Open File";
+			dialog1Button.Click+=new EventHandler(dialog1Button_Click);
+
+			c.Controls.AddRange(new Control[] {messageBox1, messageBox2, messageBox3, messageBox4, dialog1Button});
 		}
 
 		private void messageBox1_Click(object sender, EventArgs e)
@@ -3542,6 +3548,18 @@ namespace FormsTest
 		private void messageBox4_Click(object sender, EventArgs e)
 		{
 			MessageBox.Show(this, "Hello","Caption looooooooooooooooooooooooooooooooooooong", MessageBoxButtons.OK, MessageBoxIcon.Information);
+		}
+
+		private void dialog1Button_Click(object sender, EventArgs e)
+		{
+			if ( openFileDialog1 == null)
+			{
+				openFileDialog1 = new OpenFileDialog();
+				String filter = "Text Files|*.txt|";
+				filter += "All Files|*.*";
+				openFileDialog1.Filter = filter;
+			}
+			openFileDialog1.ShowDialog();
 		}
 
 		private void AddResXTest(Control c)
@@ -3664,5 +3682,6 @@ namespace FormsTest
 		{
 			MessageBox.Show(this, "This is a help message.", "Help");
 		}
+
 	}
 }

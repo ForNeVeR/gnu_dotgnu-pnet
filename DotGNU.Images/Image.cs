@@ -364,6 +364,13 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				// TODO: other image formats
 			}
 
+	// Stretch this image to a new size.
+	public Image Stretch(int width, int height)
+			{
+				// TODO: change the size
+				return (Image)(Clone());
+			}
+
 }; // class Image
 
 }; // namespace DotGNU.Images

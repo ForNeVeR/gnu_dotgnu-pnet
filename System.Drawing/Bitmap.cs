@@ -22,6 +22,7 @@ namespace System.Drawing
 {
 
 using System.IO;
+using System.Security;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Drawing.Imaging;
@@ -41,59 +42,74 @@ using System.Drawing.Toolkit;
 public sealed class Bitmap : System.Drawing.Image
 {
 	// Constructors.
-	[TODO]
 	public Bitmap(Image original)
-			{
-				dgImage = (DotGNU.Images.Image)dgImage.Clone();
-			}
+			: this(original, original.Width, original.Height) {}
 	public Bitmap(Image original, Size newSize)
-		: this (original, newSize.Width, newSize.Height)
-			{}
+			: this (original, newSize.Width, newSize.Height) {}
 	public Bitmap(Stream stream) : this(stream, false) {}
-	
 	public Bitmap(Stream stream, bool useIcm)
 			{
-				// TODO Icm
-				dgImage = new DotGNU.Images.Image();
+				DotGNU.Images.Image dgImage = new DotGNU.Images.Image();
 				dgImage.Load(stream);
+				SetDGImage(dgImage);
 			}
 	public Bitmap(String filename) : this(filename, false) {}
-	
 	public Bitmap(String filename, bool useIcm)
 			{
-				// TODO Icm
-				dgImage = new DotGNU.Images.Image();
+				DotGNU.Images.Image dgImage = new DotGNU.Images.Image();
 				dgImage.Load(filename);
+				SetDGImage(dgImage);
 			}
 	public Bitmap(int width, int height)
 			: this(width, height, Imaging.PixelFormat.Format32bppArgb) {}
-	
 	public Bitmap(int width, int height,
 				  System.Drawing.Imaging.PixelFormat format)
 			{
-				dgImage = new DotGNU.Images.Image(width, height,
-					(DotGNU.Images.PixelFormat)format);
+				SetDGImage(new DotGNU.Images.Image
+					(width, height, (DotGNU.Images.PixelFormat)format));
+				dgImage.AddFrame();
 			}
-	[TODO]
 	public Bitmap(int width, int height, Graphics g)
 			{
-				// TODO
+				if(g == null)
+				{
+					throw new ArgumentNullException("g");
+				}
+				SetDGImage(new DotGNU.Images.Image
+					(width, height, DotGNU.Images.PixelFormat.Format32bppArgb));
+				dgImage.AddFrame();
 			}
-	[TODO]
 	public Bitmap(Type type, String resource)
 			{
-				// TODO
+				Stream stream = type.Module.Assembly.GetManifestResourceStream
+					(resource);
+				if(stream == null)
+				{
+					throw new ArgumentException(S._("Arg_UnknownResource"));
+				}
+				try
+				{
+					DotGNU.Images.Image dgImage = new DotGNU.Images.Image();
+					dgImage.Load(stream);
+					SetDGImage(dgImage);
+				}
+				finally
+				{
+					stream.Close();
+				}
 			}
-	[TODO]
 	public Bitmap(Image original, int width, int height)
 			{
-				// TODO
+				if(original.dgImage != null)
+				{
+					SetDGImage(original.dgImage.Stretch(width, height));
+				}
 			}
-	[TODO]
 	public Bitmap(int width, int height, int stride,
 				  System.Drawing.Imaging.PixelFormat format, IntPtr scan0)
 			{
-				// TODO
+				// We don't support loading bitmaps from unmanaged buffers.
+				throw new SecurityException();
 			}
 	internal Bitmap(DotGNU.Images.Image image) : base(image) {}
 #if CONFIG_SERIALIZATION
@@ -118,19 +134,15 @@ public sealed class Bitmap : System.Drawing.Image
 			}
 
 	// Create a bitmap from a native icon handle.
-	[TODO]
 	public static Bitmap FromHicon(IntPtr hicon)
 			{
-				// TODO
-				return null;
+				throw new SecurityException();
 			}
 
 	// Create a bitmap from a Windows resource name.
-	[TODO]
 	public static Bitmap FromResource(IntPtr hinstance, String bitmapName)
 			{
-				// TODO
-				return null;
+				throw new SecurityException();
 			}
 
 	// Convert this bitmap into a native bitmap handle.
@@ -147,8 +159,7 @@ public sealed class Bitmap : System.Drawing.Image
 #endif
 	public IntPtr GetHbitmap(Color background)
 			{
-				// TODO
-				return IntPtr.Zero;
+				throw new SecurityException();
 			}
 
 	// Convert this bitmap into a native icon handle.
@@ -158,25 +169,28 @@ public sealed class Bitmap : System.Drawing.Image
 #endif
 	public IntPtr GetHicon()
 			{
-				// TODO
-				return IntPtr.Zero;
+				throw new SecurityException();
 			}
 
 	// Get the color of a specific pixel.
-	[TODO]
 	public Color GetPixel(int x, int y)
 			{
-				// TODO
+				if(dgImage != null)
+				{
+					int pix = dgImage.GetFrame(0).GetPixel(x, y);
+					return Color.FromArgb((pix >> 16) & 0xFF,
+										  (pix >> 8) & 0xFF,
+										  pix & 0xFF);
+				}
 				return Color.Empty;
 			}
 
 	// Lock a region of this bitmap.
-	[TODO]
 	public BitmapData LockBits(Rectangle rect, ImageLockMode flags,
 							   System.Drawing.Imaging.PixelFormat format)
 			{
-				// TODO
-				return null;
+				// Don't use this: it isn't portable.
+				return new BitmapData();
 			}
 
 	// Make a particular color transparent within this bitmap.
@@ -191,10 +205,13 @@ public sealed class Bitmap : System.Drawing.Image
 			}
 
 	// Set a pixel within this bitmap.
-	[TODO]
 	public void SetPixel(int x, int y, Color color)
 			{
-				// TODO
+				if(dgImage != null)
+				{
+					dgImage.GetFrame(0).SetPixel
+						(x, y, (color.R << 16) | (color.G << 8) | color.B);
+				}
 			}
 
 	// Set the resolution for this bitmap.
@@ -205,10 +222,9 @@ public sealed class Bitmap : System.Drawing.Image
 			}
 
 	// Unlock the bits within this bitmap.
-	[TODO]
 	public void UnlockBits(BitmapData bitmapData)
 			{
-				// TODO
+				// Nothing to do in this implementation.
 			}
 
 }; // class Bitmap

@@ -10,6 +10,11 @@
 	instead of Imlib; modify "XHello" to display a BMP because JPG
 	support isn't present in "DotGNU.Images" just yet.
 
+	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,
+	System.Drawing/Image.cs, System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingImage.cs: hook the new image code
+	into "System.Drawing.Image" and "System.Drawing.Xsharp".
+
 2003-09-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/NotSupp.txt,

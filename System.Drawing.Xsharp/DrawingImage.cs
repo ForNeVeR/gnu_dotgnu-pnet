@@ -21,28 +21,37 @@
 namespace System.Drawing.Toolkit
 {
 
-	using System;
-	using DotGNU.Images;
-	public class DrawingImage : IToolkitImage
-	{
-		Xsharp.Image image;
-		public DrawingImage(Xsharp.Screen screen, DotGNU.Images.Image image)
-		{
-			// TODO: What about other frames?
-			// What screen to use?
-			this.image = new Xsharp.Image(screen, image.Width, image.Height,
-				image.GetFrame(0).Data, image.GetFrame(0).Mask);
-		}
+using System;
+using Xsharp;
+using DotGNU.Images;
 
-		public void Dispose()
-		{
-			image.Destroy();
-		}
+public class DrawingImage : IToolkitImage
+{
+	// Internal state.
+	private Xsharp.Image image;
 
-		public Xsharp.Image GetNativeImage()
-		{
-			return image;
-		}
+	// Constructor.
+	public DrawingImage(Screen screen, DotGNU.Images.Image image)
+			{
+				this.image = new Xsharp.Image(screen, image.GetFrame(0));
+			}
 
-	}
-}
+	// Dispose of this image.
+	public void Dispose()
+			{
+				if(image != null)
+				{
+					image.Destroy();
+					image = null;
+				}
+			}
+
+	// Get the native Xsharp image structure, for drawing purposes.
+	public Xsharp.Image GetNativeImage()
+			{
+				return image;
+			}
+
+}; // class DrawingImage
+
+}; // namespace System.Drawing.Toolkit

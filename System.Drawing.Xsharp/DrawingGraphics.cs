@@ -298,9 +298,13 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	}
 
 	public override void DrawImage(IToolkitImage image, int x, int y)
-	{
-		graphics.DrawImage(x, y, (image as DrawingImage).GetNativeImage());
-	}
+			{
+				Xsharp.Image ximage = (image as DrawingImage).GetNativeImage();
+				if(ximage != null)
+				{
+					graphics.DrawImage(x, y, ximage);
+				}
+			}
 
 }; // class DrawingGraphics
 

@@ -55,41 +55,10 @@ public abstract class Image
 	internal Toolkit.IToolkitImage toolkitImage;
 
 	// Constructors.
-	[TODO]
-	internal Image()
-			{
-				// TODO
-			}
+	internal Image() {}
 	internal Image(DotGNU.Images.Image dgImage)
 			{
-				flags = 0;
-			#if !ECMA_COMPAT
-				switch(dgImage.LoadFormat)
-				{
-					case DotGNU.Images.Image.Png:
-						rawFormat = ImageFormat.Png; break;
-					case DotGNU.Images.Image.Jpeg:
-						rawFormat = ImageFormat.Jpeg; break;
-					case DotGNU.Images.Image.Gif:
-						rawFormat = ImageFormat.Gif; break;
-					case DotGNU.Images.Image.Tiff:
-						rawFormat = ImageFormat.Tiff; break;
-					case DotGNU.Images.Image.Bmp:
-						rawFormat = ImageFormat.Bmp; break;
-					case DotGNU.Images.Image.Icon:
-						rawFormat = ImageFormat.Icon; break;
-				}
-			#endif
-				this.dgImage = dgImage;
-				width = dgImage.Width;
-				height = dgImage.Height;
-				horizontalResolution = Graphics.DefaultScreenDpi;
-				verticalResolution = Graphics.DefaultScreenDpi;
-				pixelFormat = (System.Drawing.Imaging.PixelFormat)
-					(dgImage.PixelFormat);
-#if !ECMA_COMPAT
-				frameDimensionsList = new Guid[0];
-#endif
+				SetDGImage(dgImage);
 			}
 #if CONFIG_SERIALIZATION
 	[TODO]
@@ -459,6 +428,37 @@ public abstract class Image
 			}
 
 #endif
+
+	// Set the dgImage field within this object.
+	internal void SetDGImage(DotGNU.Images.Image dgImage)
+			{
+				flags = 0;
+			#if !ECMA_COMPAT
+				switch(dgImage.LoadFormat)
+				{
+					case DotGNU.Images.Image.Png:
+						rawFormat = ImageFormat.Png; break;
+					case DotGNU.Images.Image.Jpeg:
+						rawFormat = ImageFormat.Jpeg; break;
+					case DotGNU.Images.Image.Gif:
+						rawFormat = ImageFormat.Gif; break;
+					case DotGNU.Images.Image.Tiff:
+						rawFormat = ImageFormat.Tiff; break;
+					case DotGNU.Images.Image.Bmp:
+						rawFormat = ImageFormat.Bmp; break;
+					case DotGNU.Images.Image.Icon:
+						rawFormat = ImageFormat.Icon; break;
+				}
+				frameDimensionsList = new Guid [0];
+			#endif
+				this.dgImage = dgImage;
+				width = dgImage.Width;
+				height = dgImage.Height;
+				horizontalResolution = Graphics.DefaultScreenDpi;
+				verticalResolution = Graphics.DefaultScreenDpi;
+				pixelFormat = (System.Drawing.Imaging.PixelFormat)
+					(dgImage.PixelFormat);
+			}
 
 }; // class Image
 

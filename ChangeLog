@@ -1,4 +1,9 @@
 
+2003-07-08  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/common/cc_preproc.c: Modify to ignore escape sequences in
+	literal strings.
+	
 2003-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_inline.c: use ILExecThreadCallVirtualV instead

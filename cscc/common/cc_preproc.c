@@ -221,6 +221,7 @@ static int GetLines(CCPreProc *preproc)
 	int comment, scomment;
 	int dcomment, quote;
 	int lineStart, sawEOF;
+	int literal;
 	int directive;
 
 	/* Bail out early if we have already seen EOF */
@@ -240,6 +241,7 @@ static int GetLines(CCPreProc *preproc)
 	scomment = 0;
 	dcomment = 0;
 	quote = 0;
+	literal = 0;
 	lineStart = bufLen;
 	directive = 0;
 	preproc->numLines = 0;
@@ -471,24 +473,44 @@ static int GetLines(CCPreProc *preproc)
 			{
 				/* End of the string literal */
 				ADD_CH(ch);
-				quote = 0;
-			}
-			else if(ch == '\\')
-			{
-				/* Escape sequence of some type */
-				ADD_CH('\\');
-				ch = getc(stream);
-				if(ch == '"' || ch == '\'' || ch == '\\')
+				if(literal)
 				{
-					ADD_CH(ch);
-				}
-				else if(ch != EOF)
-				{
-					ungetc(ch, stream);
+					ch=getc(stream);	
+					if(ch==quote)
+					{
+						ADD_CH(quote);
+					}
+					else
+					{
+						ungetc(ch,stream);
+						quote=0;
+						literal=0;
+					}
 				}
 				else
 				{
-					sawEOF = 1;
+					quote = 0;
+				}
+			}
+			else if(ch == '\\')
+			{
+				ADD_CH('\\');
+				if(!literal)
+				{
+					/* Escape sequence of some type */
+					ch = getc(stream);
+					if(ch == '"' || ch == '\'' || ch == '\\')
+					{
+						ADD_CH(ch);
+					}
+					else if(ch != EOF)
+					{
+						ungetc(ch, stream);
+					}
+					else
+					{
+						sawEOF = 1;
+					}
 				}
 			}
 			else
@@ -560,6 +582,22 @@ static int GetLines(CCPreProc *preproc)
 			/* This line may be a pre-processor directive */
 			directive = 1;
 			ADD_CH(ch);
+		}
+		else if(ch == '@')
+		{
+			/* This may be the start of a literal string */
+			ADD_CH(ch);
+			ch = getc(stream);
+			if(ch == '"' || ch == '\'')
+			{
+				quote = ch;
+				literal = 1;
+				ADD_CH(ch);
+			}
+			else
+			{
+				ungetc(ch, stream);
+			}
 		}
 		else
 		{

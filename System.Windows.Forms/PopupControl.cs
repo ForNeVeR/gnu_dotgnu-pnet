@@ -41,12 +41,12 @@ internal class PopupControl : Control
 			}
 
 	protected override Size DefaultSize
-	{
-		get
-		{
-			return new Size(1,1);
-		}
-	}
+			{
+				get
+				{
+					return new Size(1,1);
+				}
+			}
 
 	// Create the toolkit window underlying this control.
 	internal override IToolkitWindow CreateToolkitWindow(IToolkitWindow parent)
@@ -74,12 +74,6 @@ internal class PopupControl : Control
 						PopDown(this, EventArgs.Empty);
 				}
 			}
-
-	protected override void OnMouseMove(MouseEventArgs e)
-	{
-		base.OnMouseMove (e);
-	}
-
 
 }; // class PopupControl
 

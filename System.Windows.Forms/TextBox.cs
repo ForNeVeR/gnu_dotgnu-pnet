@@ -367,7 +367,7 @@ public class TextBox : TextBoxBase
 				Rectangle b = layout.Items[i].bounds;
 				update.Union(new Region(new Rectangle(b.Left,b.Top,b.Width,b.Height + 1)));
 			}
-		update.Translate(ClientOrigin.X - xViewOffset, ClientOrigin.Y - yViewOffset);
+		update.Translate(- xViewOffset, - yViewOffset);
 		AddUpdate(update);
 		caretHiding = true;
 		Redraw(ControlGraphics);
@@ -395,7 +395,7 @@ public class TextBox : TextBoxBase
 	// Redraw the whole client area
 	private void UpdateClientArea()
 	{
-		AddUpdate(new Rectangle(ClientOrigin.X, ClientOrigin.Y, ClientSize.Width, ClientSize.Height));
+		AddUpdate(ClientRectangle);
 	}
 
 	// Handle "KeyPress" events for the text box.
@@ -463,10 +463,7 @@ public class TextBox : TextBoxBase
 	// In our implementation NO painting happens outside of the paint event. This might change because it might not update fast enough
 	private void HandlePaint(Object sender, PaintEventArgs e)
 	{
-		using (Graphics g = CreateNonClientGraphics())
-		{
-			Redraw(g);
-		}
+		Redraw(e.Graphics);
 	}
 
 	// Redraw a specific portion of the textbox
@@ -477,22 +474,11 @@ public class TextBox : TextBoxBase
 			g.FillRegion(DisabledBackBrush, g.Clip);
 		else
 			g.FillRegion(BackBrush, g.Clip);
-		switch (BorderStyle)
-		{
-			case(BorderStyle.Fixed3D):
-				ControlPaint.DrawBorder3D( g, new Rectangle(0,0,Width, Height), Border3DStyle.Sunken);
-				break;
-			case (BorderStyle.FixedSingle):
-				ControlPaint.DrawBorder( g, new Rectangle(0,0,Width - 1, Height - 1), ForeColor, ButtonBorderStyle.Solid);
-				break;
-		}
-		// Clip to text area
-		g.SetClip(new Rectangle(ClientOrigin, ClientSize), System.Drawing.Drawing2D.CombineMode.Intersect);
 		// Draw the background of the selected text
 		if (focused && selectedRegion != null)
 		{
 			Region r = selectedRegion.Clone();
-			r.Translate(ClientOrigin.X - xViewOffset, ClientOrigin.Y - yViewOffset);
+			r.Translate(- xViewOffset, - yViewOffset);
 			g.FillRegion(SelectedBackBrush, r);
 		}
 		DrawText(g, focused);
@@ -517,7 +503,7 @@ public class TextBox : TextBoxBase
 		get
 		{
 			if (graphics == null)
-				graphics = CreateNonClientGraphics();
+				graphics = CreateGraphics();
 			return graphics;
 		}
 	}
@@ -767,7 +753,7 @@ public class TextBox : TextBoxBase
 		{
 			Region redrawRegion = newRegion.Clone();
 			redrawRegion.Xor(selectedRegion);
-			redrawRegion.Translate(- xViewOffset + ClientOrigin.X, - yViewOffset + ClientOrigin.Y);
+			redrawRegion.Translate(-xViewOffset, -yViewOffset);
 			AddUpdate(redrawRegion);
 		}
 		else
@@ -804,7 +790,7 @@ public class TextBox : TextBoxBase
 				}
 			}
 			// Get the offset of the ClientRectangle
-			update.Translate( - xViewOffset + ClientOrigin.X, - yViewOffset + ClientOrigin.Y);
+			update.Translate( - xViewOffset, - yViewOffset);
 			AddUpdate(update);
 		}
 	}
@@ -1012,26 +998,7 @@ public class TextBox : TextBoxBase
 			base.SetClientSizeCore (x - 2 * 2, y - 2 * 2);
 	}
 
-	// Convert a client size into a window bounds size.
-	// This is used to calculate all offsets
-	internal override Size ClientToBounds(Size size)
-	{
-		if (BorderStyle == BorderStyle.None)
-			return new Size(size.Width, size.Height);
-		else
-			return new Size(size.Width + 2 * 2, size.Height + 2 * 2);
-	}
 
-	public override Point ClientOrigin
-	{
-		get
-		{
-			if (BorderStyle == BorderStyle.None)
-				return Point.Empty;
-			else
-				return new Point(2, 2);
-		}
-	}
 
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
@@ -1041,7 +1008,13 @@ public class TextBox : TextBoxBase
 		base.SetBoundsCore (x, y, width, height, specified);
 		// If the height or width changes then relayout the text
 		if ((specified & BoundsSpecified.Height) != 0 | (specified & BoundsSpecified.Width) != 0)
+		{
+			// ControlGraphics must be recreated.
+			if (graphics != null)
+				graphics.Dispose();
+			graphics = null;
 			LayoutFromText();
+		}
 		ResetView();
 	}
 
@@ -1053,7 +1026,7 @@ public class TextBox : TextBoxBase
 		{
 			LayoutInfo.Item item = layout.Items[i];
 			Rectangle bounds = item.bounds;
-			bounds.Offset(-xViewOffset + ClientOrigin.X, -yViewOffset + ClientOrigin.Y);
+			bounds.Offset(-xViewOffset, -yViewOffset);
 			if (item.type == LayoutInfo.Item.CharType.VisibleChar && g.Clip.IsVisible(bounds))
 			{
 				Brush fore;
@@ -1082,10 +1055,10 @@ public class TextBox : TextBoxBase
 			{
 				if (e.Button == MouseButtons.Left)
 				{
-					Point pt = new Point(e.X + ClientOrigin.X,e.Y + ClientOrigin.Y);
+					Point pt = new Point(e.X,e.Y);
 					pt.Offset(xViewOffset, yViewOffset);
 					
-					int closest = CaretGetPosition( pt - new Size(ClientOrigin));
+					int closest = CaretGetPosition(pt);
 					if (closest >= 0)
 						UpdateSelectionInternal(closest);
 				}
@@ -1101,9 +1074,9 @@ public class TextBox : TextBoxBase
 				if (e.Button == MouseButtons.Left) 
 				{
 					// We are clicking to move the caret
-					Point pt = new Point(e.X + ClientOrigin.X,e.Y + ClientOrigin.Y);
+					Point pt = new Point(e.X,e.Y);
 					pt.Offset(xViewOffset, yViewOffset);
-					int closest = CaretGetPosition( pt - new Size(ClientOrigin));
+					int closest = CaretGetPosition(pt);
 					if (closest >= 0)
 					{
 						if (e.Clicks == 2)
@@ -1215,7 +1188,7 @@ public class TextBox : TextBoxBase
 		Region region = new Region(newBounds);
 		if (!caretHiding)
 			region.Xor(caretBounds);
-		region.Translate(- xViewOffset + ClientOrigin.X, - yViewOffset + ClientOrigin.Y);
+		region.Translate(- xViewOffset, - yViewOffset);
 		AddUpdate(region);
 		caretBounds = newBounds;
 		if (Focused)
@@ -1298,7 +1271,7 @@ public class TextBox : TextBoxBase
 	{
 		get
 		{
-			return new Rectangle(caretBounds.Left + ClientOrigin.X - xViewOffset, caretBounds.Top + ClientOrigin.Y - yViewOffset, caretBounds.Width, caretBounds.Height);
+			return new Rectangle(caretBounds.Left - xViewOffset, caretBounds.Top - yViewOffset, caretBounds.Width, caretBounds.Height);
 		}
 	}
 
@@ -1443,6 +1416,16 @@ public class TextBox : TextBoxBase
 		clip.Union( rectangle);
 		ControlGraphics.Clip = clip;
 	}
+
+	protected override void SetBorderStyle(BorderStyle borderStyle)
+	{
+		this.borderStyle = borderStyle;
+		// ControlGraphics must be recreated.
+		if (graphics != null)
+			graphics.Dispose();
+		graphics = null;
+	}
+
 	
 #if !CONFIG_COMPACT_FORMS
 

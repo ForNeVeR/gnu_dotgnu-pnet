@@ -37,7 +37,6 @@ public abstract class TextBoxBase : Control
 	private bool readOnly;
 	private InsertMode insertMode;
 	private bool wordWrap;
-	private BorderStyle borderStyle;
 	private int maxLength;
 
 	// Constructor.
@@ -101,11 +100,13 @@ public abstract class TextBoxBase : Control
 				{
 					if(borderStyle != value)
 					{
-						borderStyle = value;
+						SetBorderStyle(value);
 						OnBorderStyleChanged(EventArgs.Empty);
 					}
 				}
 			}
+
+	protected abstract void SetBorderStyle(BorderStyle borderStyle);
 
 	abstract public bool CanUndo
 			{ get; }

@@ -783,7 +783,8 @@ public class ToolBar : Control
 		for (int i = 0; i < buttons.Count; ++i)
 		{
 			ToolBarButton b = buttons[i];
-			if (b.Visible && !b.viewRectangle.IsEmpty)
+			Rectangle view = b.viewRectangle;
+			if (b.Visible && !view.IsEmpty)
 			{
 				DrawButton(i,g,vertical);
 			}
@@ -792,14 +793,15 @@ public class ToolBar : Control
 	private void DrawButton(int index, Graphics g, bool vertical)
 	{
 		ToolBarButton b = buttons[index];
-		int viewX = b.viewRectangle.X;
-		int viewY = b.viewRectangle.Y;
-		int viewWidth = b.viewRectangle.Width;
-		int viewHeight = b.viewRectangle.Height;
-		int dropX = b.dropRectangle.X;
-		int dropY = b.dropRectangle.Y;
-		int dropWidth = b.dropRectangle.Width;
-		int dropHeight = b.dropRectangle.Height;
+		Rectangle view = b.viewRectangle;
+		int viewX = view.X;
+		int viewY = view.Y;
+		int viewWidth = view.Width;
+		int viewHeight = view.Height;
+		int dropX = view.X;
+		int dropY = view.Y;
+		int dropWidth = view.Width;
+		int dropHeight = view.Height;
 		bool drops = (dropDownArrows && b.Style == ToolBarButtonStyle.DropDownButton);
 		bool flat = (appearance == ToolBarAppearance.Flat);
 

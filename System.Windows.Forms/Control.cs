@@ -73,6 +73,7 @@ public class Control : IWin32Window
 	private AccessibleObject accessibilityObject;
 #endif
 	private static Keys currentModifiers;
+	protected BorderStyle borderStyle;
 
 	// Constructors.
 	public Control()
@@ -87,6 +88,7 @@ public class Control : IWin32Window
 				this.rightToLeft = (byte)(RightToLeft.Inherit);
 				this.tabIndex = -1;
 				this.tabStop = true;
+				borderStyle = BorderStyle.None;
 				// Create the currentParams
 				currentParams = new CreateParams();
 				currentParams = CreateParams;
@@ -1619,6 +1621,10 @@ public class Control : IWin32Window
 			{
 				if(toolkitWindow != null && Visible)
 				{
+					Rectangle i = new Rectangle(rc.X + ClientOrigin.X - ToolkitDrawOrigin.X,
+						rc.Y + ClientOrigin.Y - ToolkitDrawOrigin.Y,
+						rc.Width, rc.Height);
+					i.Intersect(new Rectangle(ClientOrigin, ClientSize));
 					toolkitWindow.Invalidate(rc.X + ClientOrigin.X - ToolkitDrawOrigin.X,
 						rc.Y + ClientOrigin.Y - ToolkitDrawOrigin.Y,
 						rc.Width, rc.Height);
@@ -1633,11 +1639,12 @@ public class Control : IWin32Window
 	
 	public void Invalidate(Region region)
 			{
-				// TODO
+				// TODO Inefficient
 				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
 				for (int i = 0; i < rs.Length; i++)
 				{
 					Rectangle b = Rectangle.Truncate(rs[i]);
+					b.Intersect(new Rectangle(ClientOrigin, ClientSize));
 					b.Offset(ClientOrigin.X - ToolkitDrawOrigin.X,
 						ClientOrigin.Y - ToolkitDrawOrigin.Y);
 					Invalidate(Rectangle.Truncate(rs[i]));
@@ -4438,9 +4445,20 @@ public class Control : IWin32Window
 				// Use CreateNonClientGraphics for access to the whole
 				// control including border and menus.
 
+				// Draw border if needed
+				switch (borderStyle)
+				{
+					case(BorderStyle.Fixed3D):
+						ControlPaint.DrawBorder3D( graphics, new Rectangle(0,0,width, height), Border3DStyle.Sunken);
+						break;
+					case (BorderStyle.FixedSingle):
+						ControlPaint.DrawBorder( graphics, new Rectangle(0,0,width - 1, height - 1), ForeColor, ButtonBorderStyle.Solid);
+						break;
+				}
+		
+				// Create the graphics of the client area.
 				Graphics paintGraphics = new Graphics(graphics,
 					new Rectangle( ClientOrigin - new Size(ToolkitDrawOrigin), ClientSize));
-
 				PaintEventArgs e = new PaintEventArgs(
 					paintGraphics, Rectangle.Truncate(paintGraphics.ClipBounds));
 				OnPaint(e);
@@ -4645,7 +4663,10 @@ public class Control : IWin32Window
 	// Override this function if the clientRectangle is smaller than the full control.
 	internal virtual Size ClientToBounds(Size size)
 			{
-				return size;
+				if (borderStyle == BorderStyle.None)
+					return new Size(size.Width, size.Height);
+				else
+					return new Size(size.Width + 2 * 2, size.Height + 2 * 2);
 			}
 	
 	// This is the Client Origin relative to the top left outside of the window.
@@ -4656,7 +4677,10 @@ public class Control : IWin32Window
 	{
 		get
 		{
-			return Point.Empty;
+			if (borderStyle == BorderStyle.None)
+				return Point.Empty;
+			else
+				return new Point(2, 2);
 		}
 	}
 

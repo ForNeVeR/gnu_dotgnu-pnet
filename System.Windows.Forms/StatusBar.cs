@@ -277,7 +277,6 @@ namespace System.Windows.Forms
 
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
-			StatusBarPanel panel;
 			int left = 0;
 
 			for (int i=0;i < panels.Count;i++)

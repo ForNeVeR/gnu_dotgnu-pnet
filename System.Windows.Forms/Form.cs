@@ -1318,7 +1318,7 @@ public class Form : ContainerControl
 #endif // !CONFIG_COMPACT_FORMS
 
 	// Collection of child controls.
-	public class ControlCollection : Control.ControlCollection
+	public new class ControlCollection : Control.ControlCollection
 	{
 		// Internal state.
 		private Form formOwner;

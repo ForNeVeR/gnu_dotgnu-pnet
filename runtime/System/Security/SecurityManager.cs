@@ -26,6 +26,7 @@ namespace System.Security
 
 using System.Collections;
 using System.Security.Policy;
+using System.Security.Permissions;
 
 public sealed class SecurityManager
 {
@@ -35,15 +36,39 @@ public sealed class SecurityManager
 #if CONFIG_PERMISSIONS
 
 	// Determine if a specific permission has been granted.
-	[TODO]
 	public static bool IsGranted(IPermission perm)
 			{
+				// Bail out if the requested permission is null.
 				if(perm == null)
 				{
 					return true;
 				}
-				// TODO
-				return false;
+
+				// Get the current permission state.
+				ClrPermissions current = ClrSecurity.GetPermissionsFrom(1);
+				if(current == null)
+				{
+					// Null is equivalent to "unrestricted".
+					return true;
+				}
+
+				// Build a permission set with just this permission.
+				PermissionSet set = new PermissionSet(PermissionState.None);
+				set.AddPermission(perm);
+
+				// If "PermitOnly" is set, then only check that set.
+				if(current.permitOnly != null)
+				{
+					return set.IsSubsetOf(current.permitOnly);
+				}
+
+				// The permission must be granted, but not denied.
+				if(!set.IsSubsetOf(current.granted) ||
+				   set.IsSubsetOf(current.denied))
+				{
+					return false;
+				}
+				return true;
 			}
 
 #endif
@@ -51,111 +76,100 @@ public sealed class SecurityManager
 #if CONFIG_POLICY_OBJECTS
 
 	// Load policy level information from a file.
-	[TODO]
 	public static PolicyLevel LoadPolicyLevelFromFile
 				(String path, PolicyLevelType type)
 			{
-				// TODO
+				// Not used in this implementation.
 				return null;
 			}
 
 	// Load policy level information from a string.
-	[TODO]
 	public static PolicyLevel LoadPolicyLevelFromString
 				(String str, PolicyLevelType type)
 			{
-				// TODO
+				// Not used in this implementation.
 				return null;
 			}
 
 	// Get an enumerator for the policy hierarchy.
-	[TODO]
 	public static IEnumerator PolicyHierarchy()
 			{
-				// TODO
+				// Not used in this implementation.
 				return null;
 			}
 
 	// Save a particular policy level.
-	[TODO]
 	public static void SavePolicyLevel(PolicyLevel level)
 			{
-				// TODO
+				// Not used in this implementation.
 			}
 
 #if CONFIG_PERMISSIONS
 
 	// Resolve policy information.
-	[TODO]
 	public static PermissionSet ResolvePolicy
 				(Evidence evidence, PermissionSet reqdPset,
 				 PermissionSet optPset, PermissionSet denyPset,
 				 out PermissionSet denied)
 			{
-				// TODO
+				// Not used in this implementation.
 				denied = null;
 				return null;
 			}
-	[TODO]
 	public static PermissionSet ResolvePolicy(Evidence evidence)
 			{
-				// TODO
+				// Not used in this implementation.
 				return null;
 			}
 
 #endif
 
 	// Resolve policy group information.
-	[TODO]
 	public static IEnumerator ResolvePolicyGroups(Evidence evidence)
 			{
-				// TODO
+				// Not used in this implementation.
 				return null;
 			}
 
 	// Save policy information.
-	[TODO]
 	public static void SavePolicy()
 			{
-				// TODO
+				// Not used in this implementation.
 			}
 
 	// Get or set the execution rights flag.
-	[TODO]
 	public static bool CheckExecutionRights
 			{
 				get
 				{
-					// TODO
+					// Not used in this implementation.
 					return true;
 				}
 				set
 				{
-					// TODO
+					// Not used in this implementation.
 				}
 			}
 
 	// Determine if security features have been enabled.
-	[TODO]
 	public static bool SecurityEnabled
 			{
 				get
 				{
-					// TODO
+					// Not used in this implementation.
 					return true;
 				}
 				set
 				{
-					// TODO
+					// Not used in this implementation.
 				}
 			}
 
 	// Get the zone and origin information
-	[TODO]
 	public static void GetZoneAndOrigin(out ArrayList zone,
 										out ArrayList origin)
 			{
-				// TODO
+				// Not used in this implementation.
 				zone = null;
 				origin = null;
 			}

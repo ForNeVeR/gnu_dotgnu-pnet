@@ -25,10 +25,16 @@ namespace System.Security
 #if CONFIG_PERMISSIONS
 
 using System;
+using System.Text;
+using System.IO;
+using System.Globalization;
 using System.Collections;
 using System.Security.Permissions;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
+using System.Runtime.Serialization.Formatters.Binary;
 
+[Serializable]
 public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 							 IStackWalk, IDeserializationCallback
 {
@@ -467,10 +473,9 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 			}
 
 	// Implement the IDeserializationCallback interface.
-	[TODO]
 	void IDeserializationCallback.OnDeserialization(Object sender)
 			{
-				// TODO
+				// Not needed in this implementation.
 			}
 
 #if !ECMA_COMPAT
@@ -559,12 +564,87 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 			}
 
 	// Convert a permission set from one format to another.
-	[TODO]
 	public static byte[] ConvertPermissionSet
 				(String inFormat, byte[] inData, String outFormat)
 			{
-				// TODO
-				return inData;
+				// Validate the parameters.
+				if(inFormat == null)
+				{
+					throw new ArgumentNullException("inFormat");
+				}
+				if(inData == null)
+				{
+					throw new ArgumentNullException("inData");
+				}
+				if(outFormat == null)
+				{
+					throw new ArgumentNullException("outFormat");
+				}
+
+				// Convert the input data into a permission set.
+				PermissionSet permSet;
+				SecurityElement e;
+				switch(inFormat.ToLower(CultureInfo.InvariantCulture))
+				{
+					case "xml": case "xmlascii":
+					{
+						permSet = new PermissionSet(PermissionState.None);
+						e = (new MiniXml(Encoding.UTF8.GetString(inData)))
+								.Parse();
+						permSet.FromXml(e);
+					}
+					break;
+
+					case "xmlunicode":
+					{
+						permSet = new PermissionSet(PermissionState.None);
+						e = (new MiniXml(Encoding.Unicode.GetString(inData)))
+								.Parse();
+						permSet.FromXml(e);
+					}
+					break;
+
+				#if CONFIG_SERIALIZATION
+					case "binary":
+					{
+						MemoryStream inStream = new MemoryStream(inData);
+						permSet = (PermissionSet)
+							((new BinaryFormatter()).Deserialize(inStream));
+					}
+					break;
+				#endif
+
+					default: return null;
+				}
+
+				// Convert the output data into a permission set.
+				switch(outFormat.ToLower(CultureInfo.InvariantCulture))
+				{
+					case "xml": case "xmlascii":
+					{
+						e = permSet.ToXml();
+						return Encoding.UTF8.GetBytes(e.ToString());
+					}
+					// Not reached.
+
+					case "xmlunicode":
+					{
+						e = permSet.ToXml();
+						return Encoding.Unicode.GetBytes(e.ToString());
+					}
+					// Not reached.
+
+				#if CONFIG_SERIALIZATION
+					case "binary":
+					{
+						MemoryStream outStream = new MemoryStream();
+						(new BinaryFormatter()).Serialize(outStream, permSet);
+						return outStream.ToArray();
+					}
+					// Not reached.
+				#endif
+				}
+				return null;
 			}
 
 #endif // !ECMA_COMPAT

@@ -99,21 +99,25 @@ public class ContextMenu : Menu
 				popupControl.MouseMove +=new MouseEventHandler(OnMouseMove);
 				popupControl.MouseDown +=new MouseEventHandler(OnMouseDown);
 				popupControl.PopDown +=new EventHandler(popupControl_PopDown);
+				popupControl.Paint +=new PaintEventHandler(popupControl_Paint);
 				OnPopup(EventArgs.Empty);
+				Point pt = control.PointToScreen(pos);
 				using (Graphics g = popupControl.CreateGraphics())
 				{
 					Size size = MeasureItemBounds(g);
-					Point pt = control.PointToScreen(pos);
-					popupControl.Bounds = new Rectangle(
-						pt,
-						size);
-					popupControl.Show();
-				
-					g.DrawRectangle(BorderPen, 0, 0, popupControl.Width - 1, popupControl.Height - 1);
-					// Draw the menu items
-					for (int i = 0; i < MenuItems.Count; i++)
-						DrawMenuItem(g, i, false);
+					size.Height -= 1;
+					popupControl.Bounds = new Rectangle( pt, size);
 				}
+				popupControl.Show();
+			}
+
+	private void popupControl_Paint(Object sender, PaintEventArgs e)
+			{
+				Graphics g = e.Graphics;
+				g.DrawRectangle(BorderPen, 0, 0, popupControl.Width - 1, popupControl.Height - 1);
+				// Draw the menu items
+				for (int i = 0; i < MenuItems.Count; i++)
+					DrawMenuItem(g, i, false);
 			}
 
 	private void OnMouseDown(Object s, MouseEventArgs e)

@@ -263,7 +263,7 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 	// Force an update of all invalidated regions.
 	void IToolkitWindow.Update()
 			{
-				// TODO
+				Display.Flush();
 			}
 
 	// Set the event sink to use for this window.

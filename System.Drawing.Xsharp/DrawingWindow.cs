@@ -210,7 +210,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	// Force an update of all invalidated regions.
 	void IToolkitWindow.Update()
 			{
-				// TODO
+				Display.Flush();
 			}
 
 	// Set the event sink to use for this window.
@@ -528,7 +528,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				}
 			}
 	
-	// Convert an Xsharp.Region to System.Drawig.Region
+	// Convert an Xsharp.Region to System.Drawing.Region
 	internal static System.Drawing.Region RegionToDrawingRegion
 				(Xsharp.Region region)
 			{

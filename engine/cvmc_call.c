@@ -133,7 +133,8 @@ static void CVMCoder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
 								 ILEngineStackItem *returnItem,
 								 ILMethod *methodInfo)
 {
-	CVM_WIDE(COP_CALL_VIRTUAL, methodInfo->index);
+	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
+	CVM_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }
 
@@ -143,7 +144,8 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 								   ILMethod *methodInfo)
 {
 	void *ptr = ILMethod_Owner(methodInfo);
-	CVM_WIDE(COP_CALL_INTERFACE, methodInfo->index);
+	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
+	CVM_DWIDE(COP_CALL_INTERFACE, argSize, methodInfo->index);
 	CVM_PTR(ptr);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }

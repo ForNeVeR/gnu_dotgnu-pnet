@@ -339,7 +339,7 @@ static CVMOpcode const opcodes[256] = {
 	{"call_ctor",		CVM_OPER_CALL_EXTERN},
 	{"call_native",		CVM_OPER_CALL_NATIVE},
 	{"call_native_void", CVM_OPER_CALL_NATIVE},
-	{"call_virtual",	CVM_OPER_WIDE_UINT},
+	{"call_virtual",	CVM_OPER_WIDE_TWO_UINT},
 	{"call_interface",	CVM_OPER_CALL_INTERFACE},
 	{"return",			CVM_OPER_NONE},
 	{"return_1",		CVM_OPER_NONE},
@@ -707,11 +707,11 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 		case CVM_OPER_CALL_INTERFACE:
 		{
-			classInfo = (ILClass *)CVMReadPointer(pc + 2);
+			classInfo = (ILClass *)CVMReadPointer(pc + 3);
 			ILDumpClassName(stream, ILProgramItem_Image(currMethod),
 							classInfo, 0);
-			fprintf(stream, ", %d", (int)(pc[1]));
-			size = 2 + sizeof(void *);
+			fprintf(stream, ", %d, %d", (int)(pc[1]), (int)(pc[2]));
+			size = 3 + sizeof(void *);
 		}
 		break;
 
@@ -801,12 +801,13 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 				case CVM_OPER_CALL_INTERFACE:
 				{
-					classInfo = (ILClass *)CVMReadPointer(pc + 6);
+					classInfo = (ILClass *)CVMReadPointer(pc + 10);
 					ILDumpClassName(stream, ILProgramItem_Image(currMethod),
 									classInfo, 0);
-					fprintf(stream, ", %lu",
-							(unsigned long)IL_READ_UINT32(pc + 2));
-					size = 6 + sizeof(void *);
+					fprintf(stream, ", %lu, %lu",
+							(unsigned long)IL_READ_UINT32(pc + 2),
+							(unsigned long)IL_READ_UINT32(pc + 6));
+					size = 10 + sizeof(void *);
 				}
 				break;
 

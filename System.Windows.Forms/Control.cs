@@ -4800,7 +4800,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// If we are double buffering, we need to create a Graphics of a bitmap, do all the drawing on that and then write that to the screen in one go.
-				if (doubleBuffer)
+				if (doubleBuffer && buffer != null)
 				{
 					Graphics gFull = null;
 					Graphics g = null;

@@ -17,6 +17,10 @@
 	toolkit interfaces. Implement for win32. Set TextBox and TreeView to
 	double buffer.
 
+	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:
+	fall back to not double buffering if not available in the toolkit.
+	Add double buffering to the TabControl.
+
 2004-01-18  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs: fix

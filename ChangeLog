@@ -1,4 +1,10 @@
 
+2003-03-09  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/expr/Makefile.am , csharp/expr/ternary1.cs,
+	csharp/expr/ternary1.il, csharp/expr/ternary1.jl: test 
+	ternary operators with implicitly convertible operands.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/enum6.cs,

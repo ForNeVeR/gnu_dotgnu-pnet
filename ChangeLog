@@ -7,6 +7,9 @@
 	* System.Xml/XmlDocument.cs: Partially implement ImportNode using
 	CloneChildrenFrom internal method.
 
+	* System/IO/FileSystemWatcher.cs: Fix Path set accessor to check the 
+	parameter passed in instead of the "path" field.
+
 2004-08-02  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/TreeView.cs: Remove the conversions to

@@ -189,7 +189,7 @@ public class FileSystemWatcher : Component, ISupportInitialize
 				}
 				set
 				{
-					if(path == null || path.Length == 0)
+					if(value == null || value.Length == 0)
 					{
 						throw new ArgumentException(S._("IO_InvalidPathname"));
 					}

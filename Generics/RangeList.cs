@@ -1,5 +1,5 @@
 /*
- * ArrayList.cs - Generic array list class.
+ * RangeList.cs - Wrap an IList to access a sub-range.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,102 +27,65 @@ namespace Generics
 
 using System;
 
-public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
+public sealed class RangeList<T> : IList<T>, ICloneable
 {
 	// Internal state.
-	private int count;
-	private T[] store;
+	private IList<T> list;
+	private int index, count;
 
-	// Simple constructors.
-	public ArrayList()
+	// Constructor.
+	public RangeList(IList<T> list, int index, int count)
 			{
-				count = 0;
-				store = new T [16];
-			}
-	public ArrayList(int capacity)
-			{
-				if(capacity < 0)
+				if(list == null)
+				{
+					throw new ArgumentNullException("list");
+				}
+				if(index < 0 || index > list.Count)
 				{
 					throw new ArgumentOutOfRangeException
-						("capacity", S._("ArgRange_NonNegative"));
+						("index", S._("Arg_InvalidArrayIndex"));
 				}
-				count = 0;
-				store = new T [capacity];
-			}
-
-	// Reallocate the array to accomodate "n" new entries at "index".
-	// This leaves "count" unchanged.
-	private void Realloc(int n, int index)
-			{
-				if((count + n) <= store.Length)
+				else if(count < 0 || (list.Count - index) < count)
 				{
-					// The current capacity is sufficient, so just
-					// shift the contents of the array upwards.
-					int posn = count - 1;
-					while(posn >= index)
-					{
-						store[posn + n] = store[posn];
-						--posn;
-					}
+					throw new ArgumentException(S._("Arg_InvalidArrayRange"));
 				}
-				else
-				{
-					// We need to allocate a new array.
-					int newCapacity = (((count + n) + 31) & ~31);
-					int newCapacity2 = count * 2;
-					if(newCapacity2 > newCapacity)
-					{
-						newCapacity = newCapacity2;
-					}
-					T[] newStore = new T [newCapacity];
-					if(index != 0)
-					{
-						Array.Copy(store, 0, newStore, 0, index);
-					}
-					if(count != index)
-					{
-						Array.Copy(store, index, newStore, index + n,
-								   count - index);
-					}
-					store = newStore;
-				}
-			}
-
-	// Delete "n" entries from the list at "index".
-	// This modifies "count".
-	private void Delete(int n, int index)
-			{
-				while((index + n) < count)
-				{
-					store[index] = store[index + n];
-					++index;
-				}
-				count -= n;
+				this.list = list;
+				this.index = index;
+				this.count = count;
 			}
 
 	// Implement the IList<T> interface.
 	public int Add(T value)
 			{
-				if(count >= store.Length)
-				{
-					Realloc(1, count);
-				}
-				store[count] = value;
-				return count++;
+				list.Insert(index + count, value);
+				++count;
+				return index + count - 1;
 			}
 	public void Clear()
 			{
-				Array.Clear(store, 0, count);
-				count = 0;
+				if(index == 0 && count == list.Count)
+				{
+					list.Clear();
+					count = 0;
+				}
+				else
+				{
+					int posn = index + count - 1;
+					while(count > 0)
+					{
+						list.RemoveAt(posn--);
+						--count;
+					}
+				}
 			}
 	public bool Contains(T item)
 			{
-				int index;
+				int posn;
 				if(typeof(T).IsValueType)
 				{
-					for(index = 0; index < count; ++index)
+					for(posn = 0; posn < count; ++posn)
 					{
-						if(item.Equals(store[index]))
+						if(item.Equals(list[index + posn]))
 						{
 							return true;
 						}
@@ -133,9 +96,9 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 				{
 					if(((Object)item) != null)
 					{
-						for(index = 0; index < count; ++index)
+						for(posn = 0; posn < count; ++posn)
 						{
-							if(item.Equals(store[index]))
+							if(item.Equals(list[index + posn]))
 							{
 								return true;
 							}
@@ -144,9 +107,9 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 					}
 					else
 					{
-						for(index = 0; index < count; ++index)
+						for(posn = 0; posn < count; ++posn)
 						{
-							if(((Object)(store[index])) == null)
+							if(((Object)(list[index + posn])) == null)
 							{
 								return true;
 							}
@@ -157,18 +120,18 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 			}
 	public IListIterator<T> GetIterator()
 			{
-				return new ArrayListIterator<T>(this);
+				return new RangeListIterator<T>(this);
 			}
 	public int IndexOf(T value)
 			{
-				int index;
+				int posn;
 				if(typeof(T).IsValueType)
 				{
-					for(index = 0; index < count; ++index)
+					for(posn = 0; posn < count; ++posn)
 					{
-						if(item.Equals(store[index]))
+						if(item.Equals(list[index + posn]))
 						{
-							return index;
+							return posn;
 						}
 					}
 					return -1;
@@ -177,22 +140,22 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 				{
 					if(((Object)item) != null)
 					{
-						for(index = 0; index < count; ++index)
+						for(posn = 0; posn < count; ++posn)
 						{
-							if(item.Equals(store[index]))
+							if(item.Equals(list[index + posn]))
 							{
-								return index;
+								return posn;
 							}
 						}
 						return -1;
 					}
 					else
 					{
-						for(index = 0; index < count; ++index)
+						for(posn = 0; posn < count; ++posn)
 						{
-							if(((Object)(store[index])) == null)
+							if(((Object)(list[index + posn])) == null)
 							{
-								return index;
+								return posn;
 							}
 						}
 						return -1;
@@ -206,32 +169,64 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 					throw new ArgumentOutOfRangeException
 						("index", S._("ArgRange_Array"));
 				}
-				Realloc(1, index);
-				store[index] = value;
+				list.Insert(this.index + index, value);
 				++count;
 			}
 	public void Remove(T value)
 			{
-				int index = Array.IndexOf(store, T, 0, count);
-				if(index != -1)
+				int posn;
+				if(typeof(T).IsValueType)
 				{
-					Delete(1, index);
+					for(posn = 0; posn < count; ++posn)
+					{
+						if(item.Equals(list[index + posn]))
+						{
+							list.RemoveAt(index + posn);
+							return;
+						}
+					}
+				}
+				else
+				{
+					if(((Object)item) != null)
+					{
+						for(posn = 0; posn < count; ++posn)
+						{
+							if(item.Equals(list[index + posn]))
+							{
+								list.RemoveAt(index + posn);
+								return;
+							}
+						}
+					}
+					else
+					{
+						for(posn = 0; posn < count; ++posn)
+						{
+							if(((Object)(list[index + posn])) == null)
+							{
+								list.RemoveAt(index + posn);
+								return;
+							}
+						}
+					}
 				}
 			}
 	public void RemoveAt(int index)
 			{
-				if(index < 0 || index > count)
+				if(index < 0 || index >= count)
 				{
 					throw new ArgumentOutOfRangeException
 						("index", S._("ArgRange_Array"));
 				}
-				Delete(1, index);
+				list.Remove(this.index + index);
+				--count;
 			}
 	public bool IsRandomAccess
 			{
 				get
 				{
-					return true;
+					return list.IsRandomAccess;
 				}
 			}
 	public T this[int index]
@@ -243,7 +238,7 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 						throw new ArgumentOutOfRangeException
 							("index", S._("ArgRange_Array"));
 					}
-					return store[index];
+					return list[this.index + index];
 				}
 				set
 				{
@@ -252,23 +247,18 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 						throw new ArgumentOutOfRangeException
 							("index", S._("ArgRange_Array"));
 					}
-					store[index] = value;
+					list[this.index + index] = value;
 				}
-			}
-
-	// Implement the ICloneable interface.
-	public Object Clone()
-			{
-				ArrayList<T> clone = new ArrayList<T>(count);
-				clone.count = count;
-				Array.Copy(store, 0, clone.store, 0, count);
-				return clone;
 			}
 
 	// Implement the ICollection<T> interface.
 	public void CopyTo(T[] array, int arrayIndex)
 			{
-				Array.Copy(store, 0, array, arrayIndex, count);
+				int posn;
+				for(posn = 0; posn < count; ++posn)
+				{
+					array[arrayIndex++] = list[index + posn];
+				}
 			}
 	public int Count
 			{
@@ -281,80 +271,64 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 			{
 				get
 				{
-					return false;
+					return list.IsFixedSize;
 				}
 			}
 	public bool IsReadOnly
 			{
 				get
 				{
-					return false;
+					return list.IsReadOnly;
 				}
 			}
 	public bool IsSynchronized
 			{
 				get
 				{
-					return false;
+					return list.IsSynchronized;
 				}
 			}
 	public Object SyncRoot
 			{
 				get
 				{
-					return this;
+					return list.SyncRoot;
 				}
 			}
 
 	// Implement the IIterable<T> interface.
 	IIterator<T> IIterable<T>.GetIterator()
 			{
-				return new ArrayListIterator<T>(this);
+				return new RangeListIterator<T>(this);
 			}
 
-	// Implement the ICapacity interface.
-	public int Capacity
+	// Implement the ICloneable interface.
+	public Object Clone()
 			{
-				get
+				if(list is ICloneable)
 				{
-					return store.Length;
+					return new RangeList<T>
+						((IList<T>)(((ICloneable)list).Clone()),
+						 index, count);
 				}
-				set
+				else
 				{
-					if(value < 0)
-					{
-						throw new ArgumentOutOfRangeException
-							("value", S._("ArgRange_NonNegative"));
-					}
-					if(value < count)
-					{
-						throw new ArgumentOutOfRangeException
-							("value", S._("Arg_CannotReduceCapacity"));
-					}
-					if(value != store.Length)
-					{
-						T[] newStore = new T[value];
-						int index;
-						for(index = 0; index < count; ++index)
-						{
-							newStore[index] = store[index];
-						}
-						store = newStore;
-					}
+					throw new InvalidOperationException
+						(S._("Invalid_NotCloneable"));
 				}
 			}
 
-	// Array list iterator class.
-	private class ArrayListIterator<T> : IListIterator<T>
+	// Range list iterator class.
+	private sealed class RangeListIterator<T> : IListIterator<T>
 	{
 		// Internal state.
-		private ArrayList<T> list;
+		private RangeList<T> list;
 		private int position;
 		private int removed;
 		private bool reset;
 
 		// Constructor.
-		public ArrayListIterator(ArrayList<T> list)
+		public RangeListIterator(RangeList<T> list)
 				{
 					this.list = list;
 					position = -1;
@@ -381,7 +355,7 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 					{
 						++position;
 					}
-					return (position < list.Count);
+					return (position < list.count);
 				}
 		public void Reset()
 				{
@@ -391,7 +365,7 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 				}
 		public void Remove()
 				{
-					if(position < 0 || position >= list.Count || removed != -1)
+					if(position < 0 || position >= list.count || removed != -1)
 					{
 						throw new InvalidOperationException
 							(S._("Invalid_BadIteratorPosition"));
@@ -403,13 +377,13 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 				{
 					get
 					{
-						if(position < 0 || position >= list.Count ||
+						if(position < 0 || position >= list.count ||
 						   removed != -1)
 						{
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
 						}
-						return list[position];
+						return list.list[position + list.index];
 					}
 				}
 
@@ -419,7 +393,7 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 					if(reset)
 					{
 						// Start at the end of the range.
-						position = list.Count - 1;
+						position = list.count - 1;
 						reset = false;
 					}
 					else if(removed != -1)
@@ -438,7 +412,7 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 				{
 					get
 					{
-						if(position < 0 || position >= list.Count ||
+						if(position < 0 || position >= list.count ||
 						   removed != -1)
 						{
 							throw new InvalidOperationException
@@ -451,13 +425,13 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 				{
 					get
 					{
-						if(position < 0 || position >= list.Count ||
+						if(position < 0 || position >= list.count ||
 						   removed != -1)
 						{
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
 						}
-						return list[position];
+						return list.list[position + list.index];
 					}
 					set
 					{
@@ -467,12 +441,12 @@ public sealed class ArrayList<T> : IList<T>, ICapacity, ICloneable
 							throw new InvalidOperationException
 								(S._("Invalid_BadIteratorPosition"));
 						}
-						list[position] = value;
+						list.list[position + list.index] = value;
 					}
 				}
 
-	}; // class ArrayListIterator<T>
+	}; // class RangeListIterator<T>
 
-}; // class ArrayList<T>
+}; // class RangeList<T>
 
 }; // namespace Generics

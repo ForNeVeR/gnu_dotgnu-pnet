@@ -5,6 +5,9 @@
 	Generics/TreeDictionary.cs, Generics/TreeSet.cs: add tree-based
 	collections to the generics library.
 
+	* Generics/ArrayList.cs, Generics/Generics.html, Generics/RangeList.cs:
+	fix the implementation of ArrayList.IndexOf; add the RangeList class.
+
 2003-02-28  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Reflection/Emit/MethodBuilder.cs,

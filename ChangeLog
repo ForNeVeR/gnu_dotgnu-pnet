@@ -1,4 +1,10 @@
 
+2002-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_misc.tc, codegen/cg_nodes.tc, codegen/jv_misc.tc,
+	cscc/c/c_stubs.tc, cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_oper.tc:
+	replace calls to "Array.get_Length" with "ldlen" on simple arrays.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

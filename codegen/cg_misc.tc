@@ -394,6 +394,14 @@ ILNode_GetType(ILNode_RefValue)
 }
 
 /*
+ * Get the type of an array length operator.
+ */
+ILNode_GetType(ILNode_ArrayLength)
+{
+	return ILMachineType_NativeInt;
+}
+
+/*
  * Generate discard code for a comma or argument list expression.
  */
 ILNode_GenDiscard(ILNode_Comma),
@@ -1754,6 +1762,16 @@ ILNode_GenValue(ILNode_RefValue)
 
 	/* Return the value's machine type to the caller */
 	return machineType;
+}
+
+/*
+ * Generate value code for an array length operator.
+ */
+ILNode_GenValue(ILNode_ArrayLength)
+{
+	ILNode_GenValue(node->expr, info);
+	ILGenSimple(info, IL_OP_LDLEN);
+	return ILMachineType_NativeInt;
 }
 
 /*

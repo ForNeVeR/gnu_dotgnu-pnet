@@ -1706,6 +1706,16 @@ JavaGenValue(ILNode_RefValue)
 }
 
 /*
+ * Generate value code for an array length operator.
+ */
+JavaGenValue(ILNode_ArrayLength)
+{
+	JavaGenValue(node->expr, info);
+	ILGenSimple(info, JAVA_OP_ARRAYLENGTH);
+	return ILMachineType_NativeInt;
+}
+
+/*
  * Generate the "then" branch for a comma expression.
  */
 JavaGenThen(ILNode_Comma)

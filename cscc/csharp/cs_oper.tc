@@ -2501,3 +2501,10 @@ ILNode_SemAnalysis(ILNode_IsNonNull)
 	return CSSemValueDefault;
 }
 
+/*
+ * Perform semantic analysis for the array length operator.
+ */
+ILNode_SemAnalysis(ILNode_ArrayLength)
+{
+	return CSSemValueDefault;
+}

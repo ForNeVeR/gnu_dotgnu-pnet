@@ -1023,8 +1023,22 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 		}
 	}
 
-	/* Resolve the member */
+	/* Convert the second subexpression into a name */
 	name = ILQualIdentName(node->expr2, 0);
+
+	/* Check for the special case of "array.Length" */
+	if(CSSemIsValue(value) && !strcmp(name, "Length") &&
+	   ILType_IsSimpleArray(CSSemGetType(value)))
+	{
+		*parent = ILNode_ArrayLength_create(node->expr1);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		*parent = ILNode_CastSimple_create(*parent, ILMachineType_Int32);
+		CSSemSetRValue(value, ILType_Int32);
+		return value;
+	}
+
+	/* Resolve the member */
 	value2 = CSResolveMemberNameQuiet(info, (ILNode *)node, value, name, 0);
 
 	if (CSSemGetKind(value2) != CS_SEMKIND_VOID)

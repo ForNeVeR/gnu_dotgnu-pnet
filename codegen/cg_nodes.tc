@@ -450,6 +450,7 @@ struct _tagILSwitchValue
 {
 	%nocreate ILType *type = {0};
 }
+%node ILNode_ArrayLength ILNode_UnaryExpression
 
 /*
  * Object and array construction expressions.

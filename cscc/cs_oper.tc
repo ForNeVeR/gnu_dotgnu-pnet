@@ -691,16 +691,90 @@ ILNode_SemAnalysis(ILNode_AssignUShr)
 					 &(node->assign), ILOp_Shr, "op_RightShift", ">>");
 }
 
+%{
+
+/*
+ * Perform semantic analysis for increment or decrement operators.
+ */
+static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
+							  ILNode **parent, const char *opName,
+							  const char *errorName,
+							  ILNode *(*createFunc)
+							  		(ILNode *expr, ILMethod *method,
+									 ILMachineType type))
+{
+	ILMethod *method;
+	CSSemValue value;
+	ILMachineType machineType;
+
+	/* Perform semantic analysis on the argument, which must be an lvalue */
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	if(value.kind != CS_SEMKIND_LVALUE)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid lvalue in increment");
+		if(value.kind != CS_SEMKIND_RVALUE)
+		{
+			value.kind = CS_SEMKIND_RVALUE;
+			value.type = ILType_Int32;
+		}
+		return value;
+	}
+
+	/* The final result will be an rvalue */
+	value.kind = CS_SEMKIND_RVALUE;
+
+	/* Can we use the builtin version of the operator? */
+	machineType = ILTypeToMachineType(value.type);
+	switch(machineType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		case ILMachineType_Float32:
+		case ILMachineType_Float64:
+		case ILMachineType_Decimal:
+		{
+			/* Semantic analysis is finished: the code generator
+			   has enough information to do the rest */
+			return value;
+		}
+		/* Not reached */
+
+		default: break;
+	}
+
+	/* Look for an appropriate operator */
+	method = FindUserUnaryOperator(opName, value.type);
+	if(!method)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid operands to unary `%s'", errorName);
+	}
+	else
+	{
+		*parent = (*createFunc)(node->expr, method, machineType);
+	}
+
+	/* Done */
+	return value;
+}
+
+%}
+
 /*
  * Perform semantic analysis for the pre-increment operator.
  */
 ILNode_SemAnalysis(ILNode_PreInc)
 {
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
+					   "op_Increment", "++", ILNode_UserPreInc_create);
 }
 
 /*
@@ -708,11 +782,8 @@ ILNode_SemAnalysis(ILNode_PreInc)
  */
 ILNode_SemAnalysis(ILNode_PreDec)
 {
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
+					   "op_Decrement", "--", ILNode_UserPreDec_create);
 }
 
 /*
@@ -720,11 +791,8 @@ ILNode_SemAnalysis(ILNode_PreDec)
  */
 ILNode_SemAnalysis(ILNode_PostInc)
 {
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
+					   "op_Increment", "++", ILNode_UserPostInc_create);
 }
 
 /*
@@ -732,11 +800,8 @@ ILNode_SemAnalysis(ILNode_PostInc)
  */
 ILNode_SemAnalysis(ILNode_PostDec)
 {
-	/* TODO */
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
+					   "op_Decrement", "--", ILNode_UserPostDec_create);
 }
 
 /*
@@ -1527,6 +1592,17 @@ ILNode_SemAnalysis(ILNode_UserLogicalAnd)
  * Perform semantic analysis for the user-defined logical OR operator.
  */
 ILNode_SemAnalysis(ILNode_UserLogicalOr)
+{
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for user-defined increments and decrements.
+ */
+ILNode_SemAnalysis(ILNode_UserPreInc),
+ILNode_SemAnalysis(ILNode_UserPreDec),
+ILNode_SemAnalysis(ILNode_UserPostInc),
+ILNode_SemAnalysis(ILNode_UserPostDec)
 {
 	return CSSemValueDefault;
 }

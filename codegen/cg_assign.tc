@@ -65,6 +65,17 @@ ILNode_GetType(ILNode_PostDec)
 }
 
 /*
+ * Get the type associated with a user increment or decrement expression.
+ */
+ILNode_GetType(ILNode_UserPreInc),
+ILNode_GetType(ILNode_UserPreDec),
+ILNode_GetType(ILNode_UserPostInc),
+ILNode_GetType(ILNode_UserPostDec)
+{
+	return node->type;
+}
+
+/*
  * Generate discard code for an assignment expression.
  */
 ILNode_GenDiscard(ILNode_Assign)
@@ -257,6 +268,26 @@ ILNode_GenDiscard(ILNode_PostDec)
 }
 
 /*
+ * Generate discard code for a user increment or decrement.
+ */
+ILNode_GenDiscard(ILNode_UserPreInc),
+ILNode_GenDiscard(ILNode_UserPostInc),
+ILNode_GenDiscard(ILNode_UserPreDec),
+ILNode_GenDiscard(ILNode_UserPostDec)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment or decrement the value on the top of the stack */
+	ILGenCallByMethod(info, node->method);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 0, data1, data2);
+}
+
+/*
  * Generate value code for a pre increment.
  */
 ILNode_GenValue(ILNode_PreInc)
@@ -382,6 +413,48 @@ ILNode_GenValue(ILNode_PostDec)
 
 	/* Return the final type to the caller */
 	return finalType;
+}
+
+/*
+ * Generate value code for a user pre increment or decrement.
+ */
+ILNode_GenValue(ILNode_UserPreInc),
+ILNode_GenValue(ILNode_UserPreDec)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment or decrement the value on the top of the stack */
+	ILGenCallByMethod(info, node->method);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 1, data1, data2);
+
+	/* Return the final type to the caller */
+	return node->type;
+}
+
+/*
+ * Generate value code for a user post increment or decrement.
+ */
+ILNode_GenValue(ILNode_UserPostInc),
+ILNode_GenValue(ILNode_UserPostDec)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	ILNode_GetAndPrepare(node->expr, info, 1, &data1, &data2);
+
+	/* Increment or decrement the value on the top of the stack */
+	ILGenCallByMethod(info, node->method);
+
+	/* Store the value into the destination */
+	ILNode_Store(node->expr, info, 0, data1, data2);
+
+	/* Return the final type to the caller */
+	return node->type;
 }
 
 /*

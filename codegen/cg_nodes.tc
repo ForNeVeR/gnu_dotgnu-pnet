@@ -282,6 +282,15 @@ struct _tagILEvalValue
 %node ILNode_PreDec ILNode_UnaryExpression
 %node ILNode_PostInc ILNode_UnaryExpression
 %node ILNode_PostDec ILNode_UnaryExpression
+%node ILNode_UserIncOrDec ILNode_UnaryExpression %abstract =
+{
+	ILMethod     *method;
+	ILMachineType type;
+}
+%node ILNode_UserPreInc ILNode_UserIncOrDec
+%node ILNode_UserPreDec ILNode_UserIncOrDec
+%node ILNode_UserPostInc ILNode_UserIncOrDec
+%node ILNode_UserPostDec ILNode_UserIncOrDec
 
 %output "cg_relop.c"
 

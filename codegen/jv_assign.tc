@@ -229,6 +229,26 @@ JavaGenDiscard(ILNode_PostDec)
 }
 
 /*
+ * Generate discard code for a user increment or decrement.
+ */
+JavaGenDiscard(ILNode_UserPreInc),
+JavaGenDiscard(ILNode_UserPostInc),
+JavaGenDiscard(ILNode_UserPreDec),
+JavaGenDiscard(ILNode_UserPostDec)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	JavaGetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment or decrement the value on the top of the stack */
+	JavaGenCallByMethod(info, node->method);
+
+	/* Store the value into the destination */
+	JavaStore(node->expr, info, 0, data1, data2);
+}
+
+/*
  * Generate value code for a pre increment.
  */
 JavaGenValue(ILNode_PreInc)
@@ -354,6 +374,48 @@ JavaGenValue(ILNode_PostDec)
 
 	/* Return the final type to the caller */
 	return finalType;
+}
+
+/*
+ * Generate value code for a user pre increment or decrement.
+ */
+JavaGenValue(ILNode_UserPreInc),
+JavaGenValue(ILNode_UserPreDec)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	JavaGetAndPrepare(node->expr, info, 0, &data1, &data2);
+
+	/* Increment or decrement the value on the top of the stack */
+	JavaGenCallByMethod(info, node->method);
+
+	/* Store the value into the destination */
+	JavaStore(node->expr, info, 1, data1, data2);
+
+	/* Return the final type to the caller */
+	return node->type;
+}
+
+/*
+ * Generate value code for a user post increment or decrement.
+ */
+JavaGenValue(ILNode_UserPostInc),
+JavaGenValue(ILNode_UserPostDec)
+{
+	void *data1, *data2;
+
+	/* Get and prepare the l-value for a later store operation */
+	JavaGetAndPrepare(node->expr, info, 1, &data1, &data2);
+
+	/* Increment or decrement the value on the top of the stack */
+	JavaGenCallByMethod(info, node->method);
+
+	/* Store the value into the destination */
+	JavaStore(node->expr, info, 0, data1, data2);
+
+	/* Return the final type to the caller */
+	return node->type;
 }
 
 /*

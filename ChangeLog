@@ -34,6 +34,10 @@
 	constant can be represented identically with 32-bits, then use the
 	shorter "ldc.r4" instruction to push the value.
 
+	* codegen/cg_assign.tc, codegen/cg_nodes.tc, codegen/jv_assign.tc,
+	cscc/cs_oper.tc: implement semantic analysis and code generation
+	for increment and decrement operators.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

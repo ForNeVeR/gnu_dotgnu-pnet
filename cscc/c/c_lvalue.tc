@@ -31,37 +31,521 @@ ILNode_CSemAnalysis(ILNode_Identifier)
 /*
  * Perform semantic analysis for a member access node.
  */
-ILNode_CSemAnalysis(ILNode_MemberAccess)
+ILNode_CSemAnalysis(ILNode_CMemberField)
 {
-	/* TODO */
+	CSemValue value;
+	ILType *type;
+	ILType *fieldType;
+	ILClass *classInfo;
+	ILField *field;
+
+	/* Perform semantic analysis on the primary expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			goto typeError;
+		}
+		return CSemValueError;
+	}
+
+	/* Make sure that the expression is a structure or union */
+	type = CSemGetType(value);
+	if(!CTypeIsStruct(type) && !CTypeIsUnion(type))
+	{
+		goto typeError;
+	}
+
+	/* Search for the field within the type */
+	classInfo = ILTypeToClass(info, ILTypeStripPrefixes(type));
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field,
+				 IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!strcmp(ILField_Name(field), node->name) &&
+		   !ILField_IsStatic(field))
+		{
+			break;
+		}
+	}
+	if(!field)
+	{
+		if(CTypeIsStruct(type))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  			  _("structure has no member named `%s'"),
+			  			  node->name);
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  			  _("union has no member named `%s'"),
+			  			  node->name);
+		}
+		return CSemValueError;
+	}
+
+	/* Save the field for the code generator */
+	node->field = field;
+
+	/* Determine if the result is an l-value or an r-value */
+	fieldType = ILField_Type(field);
+	if(CTypeIsConst(type))
+	{
+		/* Add back the "const" modifier from the struct type */
+		fieldType = CTypeAddConst(info, fieldType);
+	}
+	if(CTypeIsVolatile(type))
+	{
+		/* Add back the "volatile" modifier from the struct type */
+		fieldType = CTypeAddVolatile(info, fieldType);
+	}
+	if(CTypeIsArray(fieldType))
+	{
+		if(!CSemIsLValue(value))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  			  _("invalid use of non-lvalue array"));
+		}
+		CSemSetRValue(value, CTypeDecay(info, fieldType));
+	}
+	else
+	{
+		if(CSemIsLValue(value))
+		{
+			CSemSetLValue(value, fieldType);
+		}
+		else
+		{
+			CSemSetRValue(value, fieldType);
+		}
+	}
+	return value;
+
+	/* Report that the type is not consistent with the operation */
+typeError:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  _("request for member `%s' in something not a structure or union"),
+		  node->name);
 	return CSemValueError;
+}
+
+/*
+ * Get the type of a member access node.
+ */
+ILNode_GetType(ILNode_CMemberField)
+{
+	ILType *type = ILField_Type(node->field);
+	if(CTypeIsArray(type))
+	{
+		/* Arrays decay to r-value pointers when accessed */
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return ILTypeToMachineType(type);
+	}
+}
+
+/*
+ * Generate discard code for a member access node.
+ */
+ILNode_GenDiscard(ILNode_CMemberField)
+{
+	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate value code for a member access node.
+ */
+ILNode_GenValue(ILNode_CMemberField)
+{
+	ILType *type = ILField_Type(node->field);
+	if(yyisa(node->expr, ILNode_LValue))
+	{
+		CGenAddress(info, node->expr);
+	}
+	else
+	{
+		ILNode_GenValue(node->expr, info);
+	}
+	if(CTypeIsArray(type))
+	{
+		/* Arrays decay to r-value pointers when accessed */
+		ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+		return ILTypeToMachineType(type);
+	}
+}
+JavaGenValue(ILNode_CMemberField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Prepare to store to a member access node.
+ */
+ILNode_Prepare(ILNode_CMemberField)
+{
+	CGenAddress(info, node->expr);
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+JavaPrepare(ILNode_CMemberField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get and prepare to store to a member access node.
+ */
+ILNode_GetAndPrepare(ILNode_CMemberField)
+{
+	ILType *type = ILField_Type(node->field);
+	CGenAddress(info, node->expr);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	if(leave)
+	{
+		/* Rearrange the stack to leave the value in the correct position */
+		unsigned tempVar1 = ILGenTempTypedVar(info, type);
+		unsigned tempVar2 = ILGenTempTypedVar(info, ILType_Int);
+		ILGenStoreLocal(info, tempVar1);
+		ILGenStoreLocal(info, tempVar2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenLoadLocal(info, tempVar2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar1);
+		ILGenReleaseTempVar(info, tempVar2);
+	}
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+JavaGetAndPrepare(ILNode_CMemberField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Store to a member access node.
+ */
+ILNode_Store(ILNode_CMemberField)
+{
+	if(leave)
+	{
+		ILType *type = ILField_Type(node->field);
+		unsigned tempVar1 = ILGenTempTypedVar(info, type);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempVar1);
+		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenReleaseTempVar(info, tempVar1);
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+	}
+}
+JavaStore(ILNode_CMemberField)
+{
+	/* Nothing to do here: will never be called */
+}
+
+/*
+ * Generate a reference for a member access node.
+ */
+ILNode_GenRef(ILNode_CMemberField)
+{
+	CGenAddress(info, (ILNode *)node);
 }
 
 /*
  * Generate the address of a member access node.
  */
-ILNode_CGenAddress(ILNode_MemberAccess)
+ILNode_CGenAddress(ILNode_CMemberField)
 {
-	/* TODO */
-	return CAddressDefault;
+	CAddress addr;
+	ILFieldLayout *layout = ILFieldLayoutGetFromOwner(node->field);
+	if(layout)
+	{
+		/* Adjust the address using the field's explict offset */
+		addr = ILNode_CGenAddress((ILNode_LValue *)(node->expr), info);
+		addr.offset += (ILInt32)(ILFieldLayoutGetOffset(layout));
+	}
+	else
+	{
+		/* We need to use "ldflda" to find the field's dynamic address */
+		CGenAddress(info, node->expr);
+		ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
+		addr.ptrOnStack = 1;
+		addr.offset = 0;
+	}
+	return addr;
 }
 
 /*
  * Perform semantic analysis for a field dereference node.
  */
-ILNode_CSemAnalysis(ILNode_DerefField)
+ILNode_CSemAnalysis(ILNode_CDerefField)
 {
-	/* TODO */
+	CSemValue value;
+	ILType *type;
+	ILType *structType;
+	ILType *fieldType;
+	ILClass *classInfo;
+	ILField *field;
+
+	/* Perform semantic analysis on the primary expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(!CSemIsRValue(value))
+	{
+		if(!CSemIsError(value))
+		{
+			goto typeError;
+		}
+		return CSemValueError;
+	}
+
+	/* Make sure that the expression is a pointer to a structure or union */
+	type = CSemGetType(value);
+	if(!CTypeIsPointer(type))
+	{
+		goto typeError;
+	}
+	structType = CTypeGetPtrRef(type);
+	if(!CTypeIsStruct(structType) && !CTypeIsUnion(structType))
+	{
+		goto typeError;
+	}
+
+	/* Search for the field within the type */
+	classInfo = ILTypeToClass(info, ILTypeStripPrefixes(structType));
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field,
+				 IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!strcmp(ILField_Name(field), node->name) &&
+		   !ILField_IsStatic(field))
+		{
+			break;
+		}
+	}
+	if(!field)
+	{
+		if(CTypeIsStruct(type))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  			  _("structure has no member named `%s'"),
+			  			  node->name);
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  			  _("union has no member named `%s'"),
+			  			  node->name);
+		}
+		return CSemValueError;
+	}
+
+	/* Save the field for the code generator */
+	node->field = field;
+
+	/* Determine if the result is an l-value or an r-value */
+	fieldType = ILField_Type(field);
+	if(CTypeIsConst(structType))
+	{
+		/* Add back the "const" modifier from the struct type */
+		fieldType = CTypeAddConst(info, fieldType);
+	}
+	if(CTypeIsVolatile(structType))
+	{
+		/* Add back the "volatile" modifier from the struct type */
+		fieldType = CTypeAddVolatile(info, fieldType);
+	}
+	if(CTypeIsArray(fieldType))
+	{
+		CSemSetRValue(value, CTypeDecay(info, fieldType));
+	}
+	else
+	{
+		CSemSetLValue(value, fieldType);
+	}
+	return value;
+
+	/* Report that the type is not consistent with the operation */
+typeError:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  _("request for member `%s' in something not a structure or union"),
+		  node->name);
 	return CSemValueError;
+}
+
+/*
+ * Get the type of a field dereference node.
+ */
+ILNode_GetType(ILNode_CDerefField)
+{
+	ILType *type = ILField_Type(node->field);
+	if(CTypeIsArray(type))
+	{
+		/* Arrays decay to r-value pointers when accessed */
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		return ILTypeToMachineType(type);
+	}
+}
+
+/*
+ * Generate discard code for a field deference node.
+ */
+ILNode_GenDiscard(ILNode_CDerefField)
+{
+	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate value code for a field dereference node.
+ */
+ILNode_GenValue(ILNode_CDerefField)
+{
+	ILType *type = ILField_Type(node->field);
+	ILNode_GenValue(node->expr, info);
+	if(CTypeIsArray(type))
+	{
+		/* Arrays decay to r-value pointers when accessed */
+		ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
+		return ILMachineType_UnmanagedPtr;
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+		return ILTypeToMachineType(type);
+	}
+}
+JavaGenValue(ILNode_CDerefField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Prepare to store to a field dereference node.
+ */
+ILNode_Prepare(ILNode_CDerefField)
+{
+	ILNode_GenValue(node->expr, info);
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+JavaPrepare(ILNode_CDerefField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get and prepare to store to a field dereference node.
+ */
+ILNode_GetAndPrepare(ILNode_CDerefField)
+{
+	ILType *type = ILField_Type(node->field);
+	ILNode_GenValue(node->expr, info);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	if(leave)
+	{
+		/* Rearrange the stack to leave the value in the correct position */
+		unsigned tempVar1 = ILGenTempTypedVar(info, type);
+		unsigned tempVar2 = ILGenTempTypedVar(info, ILType_Int);
+		ILGenStoreLocal(info, tempVar1);
+		ILGenStoreLocal(info, tempVar2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenLoadLocal(info, tempVar2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar1);
+		ILGenReleaseTempVar(info, tempVar2);
+	}
+	return ILTypeToMachineType(ILField_Type(node->field));
+}
+JavaGetAndPrepare(ILNode_CDerefField)
+{
+	/* Nothing to do here: will never be called */
+	return ILMachineType_Void;
+}
+
+/*
+ * Store to a field dereference node.
+ */
+ILNode_Store(ILNode_CDerefField)
+{
+	if(leave)
+	{
+		ILType *type = ILField_Type(node->field);
+		unsigned tempVar1 = ILGenTempTypedVar(info, type);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempVar1);
+		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenReleaseTempVar(info, tempVar1);
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_STFLD, node->field);
+		ILGenAdjust(info, -2);
+	}
+}
+JavaStore(ILNode_CDerefField)
+{
+	/* Nothing to do here: will never be called */
+}
+
+/*
+ * Generate a reference for a field dereference node.
+ */
+ILNode_GenRef(ILNode_CDerefField)
+{
+	CGenAddress(info, (ILNode *)node);
 }
 
 /*
  * Generate the address of a field dereference node.
  */
-ILNode_CGenAddress(ILNode_DerefField)
+ILNode_CGenAddress(ILNode_CDerefField)
 {
-	/* TODO */
-	return CAddressDefault;
+	CAddress addr;
+	ILFieldLayout *layout = ILFieldLayoutGetFromOwner(node->field);
+	ILNode_GenValue(node->expr, info);
+	addr.ptrOnStack = 1;
+	if(layout)
+	{
+		/* Adjust the address using the field's explict offset */
+		addr.offset = (ILInt32)(ILFieldLayoutGetOffset(layout));
+	}
+	else
+	{
+		/* We need to use "ldflda" to find the field's dynamic address */
+		ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
+		addr.offset = 0;
+	}
+	return addr;
 }
 
 /*

@@ -109,6 +109,8 @@ ILNode_CSemAnalysis(ILNode_RefArgumentVar),
 ILNode_CSemAnalysis(ILNode_QualIdent),
 ILNode_CSemAnalysis(ILNode_CDeclarator),
 ILNode_CSemAnalysis(ILNode_ArrayAccess),
+ILNode_CSemAnalysis(ILNode_DerefField),
+ILNode_CSemAnalysis(ILNode_MemberAccess),
 ILNode_CSemAnalysis(ILNode_PreIncPtr),
 ILNode_CSemAnalysis(ILNode_PreDecPtr),
 ILNode_CSemAnalysis(ILNode_PostIncPtr),
@@ -127,7 +129,9 @@ ILNode_CGenAddress(ILNode_BaseElement),
 ILNode_CGenAddress(ILNode_RefArgumentVar),
 ILNode_CGenAddress(ILNode_StaticField),
 ILNode_CGenAddress(ILNode_MemberField),
-ILNode_CGenAddress(ILNode_ArrayAccess)
+ILNode_CGenAddress(ILNode_ArrayAccess),
+ILNode_CGenAddress(ILNode_DerefField),
+ILNode_CGenAddress(ILNode_MemberAccess)
 {
 	/* Nothing to do here */
 	return CAddressDefault;

@@ -340,6 +340,14 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	ILNode *args;
 }
 %node ILNode_CArrayAccess ILNode_ArrayAccess
+%node ILNode_CFieldAccess ILNode_LValue %abstract =
+{
+	ILNode *expr;
+	char *name;
+	%nocreate ILField *field = {0};
+}
+%node ILNode_CDerefField ILNode_CFieldAccess
+%node ILNode_CMemberField ILNode_CFieldAccess
 
 %output "c_semantics.c"
 

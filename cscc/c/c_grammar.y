@@ -936,8 +936,8 @@ PostfixExpression
 						(FixIdentifierNode($1, 1), $3);
 			}
 	| PostfixExpression '.' AnyIdentifier	{
-				$$ = ILNode_MemberAccess_create
-						(FixIdentifierNode($1, 0), ILQualIdentSimple($3));
+				$$ = ILNode_CMemberField_create
+						(FixIdentifierNode($1, 0), $3);
 			}
 	| K_INVOKE TYPE_NAME '.' AnyIdentifier '(' ')'	{
 				$$ = ILNode_CSharpInvocation_create
@@ -948,8 +948,8 @@ PostfixExpression
 						(CScopeGetType(CScopeLookup($2)), $4, $6);
 			}
 	| PostfixExpression PTR_OP AnyIdentifier	{
-				$$ = ILNode_DerefField_create
-						(FixIdentifierNode($1, 0), ILQualIdentSimple($3));
+				$$ = ILNode_CDerefField_create
+						(FixIdentifierNode($1, 0), $3);
 			}
 	| PostfixExpression INC_OP		{
 				$$ = ILNode_PostInc_create(FixIdentifierNode($1, 0));

@@ -1,7 +1,8 @@
 lib_LIBRARIES = libILSupport.a
 noinst_PROGRAMS = mkcategory mknumber
 
-libILSupport_a_SOURCES = allocate.c \
+libILSupport_a_SOURCES = aes.c \
+						 allocate.c \
 						 ansi.c \
 						 clflush.c \
 						 cmdline.c \
@@ -28,6 +29,7 @@ libILSupport_a_SOURCES = allocate.c \
 						 mutex.c \
 						 no_defs.c \
 						 pt_defs.c \
+						 rc2.c \
 						 read_float.c \
 						 rem_float.c \
 						 sha1.c \

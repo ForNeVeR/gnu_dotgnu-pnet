@@ -5,6 +5,10 @@
 	support/sha256.c, support/sha384.c, support/sha512.c: implement
 	the SHA-256, SHA-384, and SHA-512 hash algorithms.
 
+	* engine/lib_crypt.c, include/il_crypt.h, support/Makefile.am,
+	support/aes.c, support/rc2.c: implement the AES and RC2 symmetric
+	encryption algorithms.
+
 2002-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/link.c: error in the handling of module names that already

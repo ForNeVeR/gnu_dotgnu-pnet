@@ -39,6 +39,9 @@ extern	"C" {
 #define	IL_ALG_TRIPLE_DES		6
 #define	IL_ALG_RC2				7
 #define	IL_ALG_RIJNDAEL			8
+#define	IL_ALG_DSA_SIGN			9
+#define	IL_ALG_RSA_ENCRYPT		10
+#define	IL_ALG_RSA_SIGN			11
 
 /*
  * Hash context header.
@@ -54,6 +57,20 @@ typedef struct
 	HashFinalFunc	final;
 
 } HashContext;
+
+/*
+ * Symmetric algorithm context header.
+ */
+typedef void (*SymResetFunc)(void *ctx);
+typedef void (*SymCryptFunc)(void *ctx, unsigned char *input,
+							 unsigned char *output);
+typedef struct
+{
+	SymResetFunc	reset;
+	SymCryptFunc	encrypt;
+	SymCryptFunc	decrypt;
+
+} SymContext;
 
 /*
  * Hash context for the MD5 algorithm.
@@ -106,6 +123,26 @@ typedef struct
 } SHA512HashContext;
 
 /*
+ * Symmetric context for RC2.
+ */
+typedef struct
+{
+	SymContext		sym;
+	ILRC2Context	rc2;
+
+} RC2Context;
+
+/*
+ * Symmetric context for AES/Rijndael.
+ */
+typedef struct
+{
+	SymContext		sym;
+	ILAESContext	aes;
+
+} AESContext;
+
+/*
  * public static bool AlgorithmSupported(int algorithm);
  */
 ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread *_thread,
@@ -117,7 +154,9 @@ ILBool _IL_CryptoMethods_AlgorithmSupported(ILExecThread *_thread,
 		case IL_ALG_SHA1:
 		case IL_ALG_SHA256:
 		case IL_ALG_SHA384:
-		case IL_ALG_SHA512: return 1;
+		case IL_ALG_SHA512:
+		case IL_ALG_RC2:
+		case IL_ALG_RIJNDAEL: return 1;
 	}
 	return 0;
 }
@@ -310,7 +349,47 @@ ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread *_thread,
 											ILInt32 algorithm,
 											System_Array *key)
 {
-	/* TODO */
+	SymContext *context;
+	switch(algorithm)
+	{
+		case IL_ALG_RC2:
+		{
+			/* Create and initialize an RC2 encryption context */
+			context = (SymContext *)ILMalloc(sizeof(RC2Context));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (SymResetFunc)ILRC2Finalize;
+			context->encrypt = (SymCryptFunc)ILRC2Encrypt;
+			context->decrypt = (SymCryptFunc)ILRC2Decrypt;
+			ILRC2Init(&(((RC2Context *)context)->rc2),
+					  ArrayToBuffer(key), (int)(key->length * 8));
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+
+		case IL_ALG_RIJNDAEL:
+		{
+			/* Create and initialize an AES/Rijndael encryption context */
+			context = (SymContext *)ILMalloc(sizeof(AESContext));
+			if(!context)
+			{
+				ILExecThreadThrowOutOfMemory(_thread);
+				return 0;
+			}
+			context->reset = (SymResetFunc)ILAESFinalize;
+			context->encrypt = (SymCryptFunc)ILAESEncrypt;
+			context->decrypt = (SymCryptFunc)ILAESDecrypt;
+			ILAESInit(&(((AESContext *)context)->aes),
+					  ArrayToBuffer(key), (int)(key->length * 8));
+			return (ILNativeInt)context;
+		}
+		/* Not reached */
+	}
+	ILExecThreadSetException(_thread,
+			_ILSystemException(_thread, "System.NotImplementedException"));
 	return 0;
 }
 
@@ -321,8 +400,10 @@ ILNativeInt _IL_CryptoMethods_DecryptCreate(ILExecThread *_thread,
 											ILInt32 algorithm,
 											System_Array *key)
 {
-	/* TODO */
-	return 0;
+	/* "EncryptCreate" and "DecryptCreate" are currently the same,
+	   but there may be algorithms in future that need to set up
+	   the key schedule differently for encryption and decryption */
+	return _IL_CryptoMethods_DecryptCreate(_thread, algorithm, key);
 }
 
 /*
@@ -334,7 +415,10 @@ void _IL_CryptoMethods_Encrypt(ILExecThread *_thread,
 							   ILInt32 inOffset, System_Array *outBuffer,
 							   ILInt32 outOffset)
 {
-	/* TODO */
+	(*(((SymContext *)state)->encrypt))
+			(&(((RC2Context *)state)->rc2),
+			 ((unsigned char *)(ArrayToBuffer(inBuffer))) + inOffset,
+			 ((unsigned char *)(ArrayToBuffer(outBuffer))) + outOffset);
 }
 
 /*
@@ -346,7 +430,10 @@ void _IL_CryptoMethods_Decrypt(ILExecThread *_thread,
 							   ILInt32 inOffset, System_Array *outBuffer,
 							   ILInt32 outOffset)
 {
-	/* TODO */
+	(*(((SymContext *)state)->decrypt))
+			(&(((RC2Context *)state)->rc2),
+			 ((unsigned char *)(ArrayToBuffer(inBuffer))) + inOffset,
+			 ((unsigned char *)(ArrayToBuffer(outBuffer))) + outOffset);
 }
 
 /*
@@ -354,7 +441,8 @@ void _IL_CryptoMethods_Decrypt(ILExecThread *_thread,
  */
 void _IL_CryptoMethods_SymmetricFree(ILExecThread *_thread, ILNativeInt state)
 {
-	/* TODO */
+	(*(((SymContext *)state)->reset))(&(((RC2Context *)state)->rc2));
+	ILFree((void *)state);
 }
 
 #ifdef	__cplusplus

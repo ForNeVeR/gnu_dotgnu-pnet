@@ -183,6 +183,73 @@ void ILSHA384Init(ILSHA384Context *sha);
 void ILSHA384Finalize(ILSHA384Context *sha,
 					  unsigned char hash[IL_SHA384_HASH_SIZE]);
 
+/*
+ * Structure of an AES cipher context object.
+ */
+typedef struct
+{
+	int			numRounds;
+	ILInt32		keySchedule[15 * 4];
+
+} ILAESContext;
+
+/*
+ * Initialize an AES encryption context.
+ */
+void ILAESInit(ILAESContext *aes, unsigned char *key, int keyBits);
+
+/*
+ * Encrypt a single 128-bit block using AES.  The input and
+ * output buffers can overlap.
+ */
+void ILAESEncrypt(ILAESContext *aes, unsigned char *input,
+				  unsigned char *output);
+
+/*
+ * Decrypt a single 128-bit block using AES.  The input and
+ * output buffers can overlap.
+ */
+void ILAESDecrypt(ILAESContext *aes, unsigned char *input,
+				  unsigned char *output);
+
+/*
+ * Finalize an AES encryption context, clearing all sensitive values.
+ */
+void ILAESFinalize(ILAESContext *aes);
+
+/*
+ * Structure of an RC2 encryption context.
+ */
+typedef struct _tagILRC2Context
+{
+	ILUInt16	key[64];
+
+} ILRC2Context;
+
+/*
+ * Initialize an RC2 encryption context.
+ */
+void ILRC2Init(ILRC2Context *rc2, unsigned char *key, int keyBits);
+
+/*
+ * Encrypt a single 64-bit block using RC2.  The input and
+ * output buffers can overlap.
+ */
+void ILRC2Encrypt(ILRC2Context *rc2, unsigned char *input,
+				  unsigned char *output);
+
+/*
+ * Decrypt a single 64-bit block using RC2.  The input and
+ * output buffers can overlap.
+ */
+void ILRC2Decrypt(ILRC2Context *rc2, unsigned char *input,
+				  unsigned char *output);
+
+/*
+ * Finalize an RC2 encryption context, clearing all sensitive values.
+ */
+void ILRC2Finalize(ILRC2Context *rc2);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -230,6 +230,21 @@ void ILLinkerModuleCreate(ILLinker *linker)
 	}
 }
 
+int _ILLinkerIsModule(ILClass *classInfo)
+{
+	const char *name = ILClass_Name(classInfo);
+	const char *namespace = ILClass_Namespace(classInfo);
+	if(!strcmp(name, IL_LINKER_EXE_MODULE_NAME) ||
+	   !strcmp(name, IL_LINKER_DLL_MODULE_NAME))
+	{
+		if(!namespace)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

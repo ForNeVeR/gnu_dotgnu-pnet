@@ -29,12 +29,28 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 	ILField *newField;
 	const char *name = ILField_Name(field);
 	ILType *type = ILFieldGetTypeWithPrefixes(field);
+	char *newName = 0;
+
+	/* Rename the field if it is within the "<Module>" class and private */
+	if(ILField_IsPrivate(field) && ILField_IsStatic(field) &&
+	   _ILLinkerIsModule(ILMember_Owner(field)))
+	{
+		newName = _ILLinkerNewMemberName(linker, (ILMember *)field);
+		if(newName)
+		{
+			name = newName;
+		}
+	}
 
 	/* See if we already have a definition of this field in the class */
 	newField = 0;
 	type = _ILLinkerConvertType(linker, type);
 	if(!type)
 	{
+		if(newName)
+		{
+			ILFree(newName);
+		}
 		return 0;
 	}
 	while((newField = (ILField *)ILClassNextMemberByKind
@@ -51,6 +67,10 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 			if((ILField_Token(newField) & IL_META_TOKEN_MASK)
 					!= IL_META_TOKEN_MEMBER_REF)
 			{
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return 1;
 			}
 
@@ -58,6 +78,10 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 			if(!ILFieldNewToken(newField))
 			{
 				_ILLinkerOutOfMemory(linker);
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return 0;
 			}
 			break;
@@ -70,6 +94,10 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 		if(!newField)
 		{
 			_ILLinkerOutOfMemory(linker);
+			if(newName)
+			{
+				ILFree(newName);
+			}
 			return 0;
 		}
 
@@ -81,6 +109,10 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 		/* Set the attribute flags to their correct values */
 		ILMemberSetAttrs((ILMember *)newField, ~((ILUInt32)0),
 						 ILField_Attrs(field));
+	}
+	if(newName)
+	{
+		ILFree(newName);
 	}
 
 	/* Convert the attributes that are attached to the field */

@@ -312,6 +312,24 @@ char *_ILLinkerNewClassName(ILLinker *linker, ILClass *classInfo)
 	return newName;
 }
 
+char *_ILLinkerNewMemberName(ILLinker *linker, ILMember *member)
+{
+	char buf[64];
+	const char *name = ILMember_Name(member);
+	char *newName;
+	sprintf(buf, "-%lu-%lu", (unsigned long)(linker->imageNum),
+			(unsigned long)(ILMember_Token(member) & ~IL_META_TOKEN_MASK));
+	newName = (char *)ILMalloc(strlen(name) + strlen(buf) + 1);
+	if(!newName)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+	strcpy(newName, name);
+	strcat(newName, buf);
+	return newName;
+}
+
 #ifdef	__cplusplus
 };
 #endif

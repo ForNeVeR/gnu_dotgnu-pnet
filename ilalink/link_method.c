@@ -571,12 +571,28 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	ILMethodCode code;
 	ILException *exceptions;
 	ILUInt32 numParams;
+	char *newName = 0;
+
+	/* Rename the method if it is within the "<Module>" class and private */
+	if(ILMethod_IsPrivate(method) && ILMethod_IsStatic(method) &&
+	   _ILLinkerIsModule(ILMember_Owner(method)))
+	{
+		newName = _ILLinkerNewMemberName(linker, (ILMember *)method);
+		if(newName)
+		{
+			name = newName;
+		}
+	}
 
 	/* See if we already have a definition of this method in the class */
 	newMethod = 0;
 	signature = _ILLinkerConvertType(linker, signature);
 	if(!signature)
 	{
+		if(newName)
+		{
+			ILFree(newName);
+		}
 		return 0;
 	}
 	while((newMethod = (ILMethod *)ILClassNextMemberByKind
@@ -593,6 +609,10 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 			if((ILMethod_Token(newMethod) & IL_META_TOKEN_MASK)
 					!= IL_META_TOKEN_MEMBER_REF)
 			{
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return 1;
 			}
 
@@ -600,6 +620,10 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 			if(!ILMethodNewToken(newMethod))
 			{
 				_ILLinkerOutOfMemory(linker);
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return 0;
 			}
 			break;
@@ -612,6 +636,10 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		if(!newMethod)
 		{
 			_ILLinkerOutOfMemory(linker);
+			if(newName)
+			{
+				ILFree(newName);
+			}
 			return 0;
 		}
 
@@ -627,6 +655,10 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		/* Set the attributes to what they should be */
 		ILMemberSetAttrs((ILMember *)newMethod, ~((ILUInt32)0),
 						 ILMethod_Attrs(method));
+	}
+	if(newName)
+	{
+		ILFree(newName);
 	}
 
 	/* Copy the calling conventions */
@@ -811,6 +843,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	ILLibrary *findLibrary;
 	int findFlags;
 	ILMember *findMember;
+	char *newName = 0;
 
 	/* Convert the member's owner reference */
 	owner = ILMember_Owner(member);
@@ -873,10 +906,24 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 
 	/* Search for an existing member with the requested signature */
 	name = ILMember_Name(member);
+	if((ILMember_Attrs(member) & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
+					== IL_META_METHODDEF_PRIVATE &&
+	   _ILLinkerIsModule(ILMember_Owner(member)))
+	{
+		newName = _ILLinkerNewMemberName(linker, member);
+		if(newName)
+		{
+			name = newName;
+		}
+	}
 	signature = ILMember_Signature(member);
 	signature = _ILLinkerConvertType(linker, signature);
 	if(!signature)
 	{
+		if(newName)
+		{
+			ILFree(newName);
+		}
 		return 0;
 	}
 	if(ILMember_IsMethod(member))
@@ -889,6 +936,10 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			if(!strcmp(ILMethod_Name(method), name) &&
 			   ILTypeIdentical(ILMethod_Signature(method), signature))
 			{
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return (ILMember *)method;
 			}
 		}
@@ -898,10 +949,18 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		if(!method)
 		{
 			_ILLinkerOutOfMemory(linker);
+			if(newName)
+			{
+				ILFree(newName);
+			}
 			return 0;
 		}
 		ILMemberSetSignature((ILMember *)method, signature);
 		ILMethodSetCallConv(method, ILType_CallConv(signature));
+		if(newName)
+		{
+			ILFree(newName);
+		}
 		return (ILMember *)method;
 	}
 	else
@@ -914,6 +973,10 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			if(!strcmp(ILField_Name(field), name) &&
 			   ILTypeIdentical(ILField_Type(field), signature))
 			{
+				if(newName)
+				{
+					ILFree(newName);
+				}
 				return (ILMember *)field;
 			}
 		}
@@ -923,9 +986,17 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 		if(!field)
 		{
 			_ILLinkerOutOfMemory(linker);
+			if(newName)
+			{
+				ILFree(newName);
+			}
 			return 0;
 		}
 		ILMemberSetSignature((ILMember *)field, signature);
+		if(newName)
+		{
+			ILFree(newName);
+		}
 		return (ILMember *)field;
 	}
 }

@@ -317,10 +317,21 @@ const char *_ILLinkerModuleName(ILLinker *linker);
 ILClass *_ILLinkerModuleClass(ILLinker *linker);
 
 /*
+ * Determine if a class looks like a "<Module>" type.
+ */
+int _ILLinkerIsModule(ILClass *classInfo);
+
+/*
  * Get a new name for a private class, that must be renamed
  * to prevent clashes with similar classes in other modules.
  */
 char *_ILLinkerNewClassName(ILLinker *linker, ILClass *classInfo);
+
+/*
+ * Get a new name for a private member, that must be renamed
+ * to prevent clashes with similar names in other modules.
+ */
+char *_ILLinkerNewMemberName(ILLinker *linker, ILMember *member);
 
 #ifdef	__cplusplus
 };

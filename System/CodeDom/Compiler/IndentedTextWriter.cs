@@ -116,7 +116,7 @@ public class IndentedTextWriter : TextWriter
 			}
 
 	// Output tabs at the start of a line if necessary.
-	protected void OutputTabs()
+	protected virtual void OutputTabs()
 			{
 				if(atLineStart)
 				{
@@ -186,12 +186,6 @@ public class IndentedTextWriter : TextWriter
 				OutputTabs();
 				writer.Write(value, arg0, arg1);
 			}
-	public override void Write(String value, Object arg0, Object arg1,
-							   Object arg2)
-			{
-				OutputTabs();
-				writer.Write(value, arg0, arg1, arg2);
-			}
 	public override void Write(String value, params Object[] args)
 			{
 				OutputTabs();
@@ -201,23 +195,6 @@ public class IndentedTextWriter : TextWriter
 			{
 				OutputTabs();
 				writer.Write(value, index, count);
-			}
-	public override void Write(Decimal value)
-			{
-				OutputTabs();
-				writer.Write(value);
-			}
-	[CLSCompliant(false)]
-	public override void Write(uint value)
-			{
-				OutputTabs();
-				writer.Write(value);
-			}
-	[CLSCompliant(false)]
-	public override void Write(ulong value)
-			{
-				OutputTabs();
-				writer.Write(value);
 			}
 
 	// Write values of various types followed by a newline.
@@ -293,13 +270,6 @@ public class IndentedTextWriter : TextWriter
 				writer.WriteLine(value, arg0, arg1);
 				atLineStart = true;
 			}
-	public override void WriteLine(String value, Object arg0, Object arg1,
-							   	   Object arg2)
-			{
-				OutputTabs();
-				writer.WriteLine(value, arg0, arg1, arg2);
-				atLineStart = true;
-			}
 	public override void WriteLine(String value, params Object[] args)
 			{
 				OutputTabs();
@@ -312,21 +282,8 @@ public class IndentedTextWriter : TextWriter
 				writer.WriteLine(value, index, count);
 				atLineStart = true;
 			}
-	public override void WriteLine(Decimal value)
-			{
-				OutputTabs();
-				writer.WriteLine(value);
-				atLineStart = true;
-			}
 	[CLSCompliant(false)]
 	public override void WriteLine(uint value)
-			{
-				OutputTabs();
-				writer.WriteLine(value);
-				atLineStart = true;
-			}
-	[CLSCompliant(false)]
-	public override void WriteLine(ulong value)
 			{
 				OutputTabs();
 				writer.WriteLine(value);

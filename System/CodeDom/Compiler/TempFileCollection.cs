@@ -49,6 +49,12 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 				Dispose(false);
 			}
 
+	// Get an enumerator for this collection.
+	public IEnumerator GetEnumerator()
+			{
+				return files.Keys.GetEnumerator();
+			}
+
 	// Properties.
 	[TODO]
 	public String BasePath
@@ -57,6 +63,13 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 				{
 					// TODO
 					return null;
+				}
+			}
+	public int Count
+			{
+				get
+				{
+					return files.Count;
 				}
 			}
 	public bool KeepFiles
@@ -86,7 +99,7 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 			}
 
 	// Implement the ICollection interface.
-	public int Count
+	int ICollection.Count
 			{
 				get
 				{
@@ -113,7 +126,7 @@ public class TempFileCollection : ICollection, IEnumerable, IDisposable
 			}
 
 	// Implement the IEnumerable interface.
-	public IEnumerator GetEnumerator()
+	IEnumerator IEnumerable.GetEnumerator()
 			{
 				return files.Keys.GetEnumerator();
 			}

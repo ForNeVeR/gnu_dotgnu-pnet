@@ -2,7 +2,7 @@
  * CodeDomProvider.cs - Implementation of the
  *		System.CodeDom.Compiler.CodeDomProvider class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@ namespace System.CodeDom.Compiler
 using System.IO;
 using System.ComponentModel;
 
-/*[ToolboxItem(true)] -- TODO */
-public abstract class CodeDomProvider /* : Component -- TODO */
+[ToolboxItem(false)]
+public abstract class CodeDomProvider : Component
 {
 
 	// Constructor.
@@ -70,6 +70,12 @@ public abstract class CodeDomProvider /* : Component -- TODO */
 	public virtual ICodeParser CreateParser()
 			{
 				return null;
+			}
+
+	// Get a type converter.
+	public virtual TypeConverter GetConverter(Type type)
+			{
+				return TypeDescriptor.GetConverter(type);
 			}
 
 }; // class CodeDomProvider

@@ -2,7 +2,7 @@
  * CodeGenerator.cs - Implementation of the
  *		System.CodeDom.Compiler.CodeGenerator class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -242,8 +242,6 @@ public abstract class CodeGenerator : ICodeGenerator
 				(CodeMethodReferenceExpression e);
 	protected abstract void GenerateObjectCreateExpression
 				(CodeObjectCreateExpression e);
-	protected abstract void GenerateParameterDeclarationExpression
-				(CodeParameterDeclarationExpression e);
 	protected abstract void GeneratePropertyReferenceExpression
 				(CodePropertyReferenceExpression e);
 	protected abstract void GeneratePropertySetValueReferenceExpression
@@ -542,6 +540,19 @@ public abstract class CodeGenerator : ICodeGenerator
 					((ICodeGenerator)this).GenerateCodeFromNamespace
 							(ns, writer.InnerWriter, Options);
 				}
+			}
+
+	// Generate a parameter declaration expression.
+	protected virtual void GenerateParameterDeclarationExpression
+				(CodeParameterDeclarationExpression e)
+			{
+				if(e.CustomAttributes.Count != 0)
+				{
+					OutputAttributeDeclarations(e.CustomAttributes);
+					Output.Write(" ");
+				}
+				OutputDirection(e.Direction);
+				OutputTypeNamePair(e.Type, e.Name);
 			}
 
 	// Hex characters for encoding "char" constants.
@@ -906,7 +917,7 @@ public abstract class CodeGenerator : ICodeGenerator
 			}
 
 	// Generate a particular type declaration.
-	protected void GenerateType(CodeTypeDeclaration e)
+	private void GenerateType(CodeTypeDeclaration e)
 			{
 				currentType = e;
 				GenerateCommentStatements(e.Comments);
@@ -1285,6 +1296,13 @@ public abstract class CodeGenerator : ICodeGenerator
 				{
 					throw new ArgumentException(S._("Arg_InvalidIdentifier"));
 				}
+			}
+
+	// Validate all identifiers in a CodeDom tree.
+	[TODO]
+	public static void ValidateIdentifiers(CodeObject e)
+			{
+				// TODO
 			}
 
 	// Create an escaped identifier if "value" is a language keyword.

@@ -2,7 +2,7 @@
  * CodeTypeDeclaration.cs - Implementation of the
  *		System.CodeDom.CodeTypeDeclaration class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -160,8 +160,8 @@ public class CodeTypeDeclaration : CodeTypeMember
 			}
 
 	// Events.
-	public EventHandler PopulateBaseTypes;
-	public EventHandler PopulateMembers;
+	public event EventHandler PopulateBaseTypes;
+	public event EventHandler PopulateMembers;
 
 }; // class CodeTypeDeclaration
 

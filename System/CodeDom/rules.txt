@@ -1,7 +1,7 @@
 #
 # rules.txt - Code generation rules for "System.CodeDom" classes.
 #
-# Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,8 +66,6 @@ CodeExpressionStatement: CodeExpression<Expression>
 CodeFieldReferenceExpression:
 	CodeExpression<TargetObject> String<FieldName>
 
-CodeGotoStatement: String<Label>
-
 CodeIndexerExpression:
 	CodeExpression<TargetObject> *CodeExpression<Indices>
 CodeIterationStatement:
@@ -75,7 +73,6 @@ CodeIterationStatement:
 	CodeStatement<IncrementStatement> *CodeStatement<Statements>
 
 CodeLabeledStatement: String<Label> ?CodeStatement<Statement>
-CodeLinePragma: String<FileName> int<LineNumber>
 
 CodeMemberProperty-CodeTypeMember:
 	$CodeStatementCollection<GetStatements> \
@@ -100,7 +97,6 @@ CodePropertySetValueReferenceExpression
 CodeSnippetExpression: String<Value>
 CodeSnippetStatement: String<Value>
 CodeSnippetTypeMember-CodeTypeMember: String<Text>
-CodeStatementCollection: CodeStatement
 CodeStatement-CodeObject: $CodeLinePragma<LinePragma>
 
 CodeThisReferenceExpression
@@ -111,7 +107,6 @@ CodeTryCatchFinallyStatement:
 CodeTypeConstructor-CodeMemberMethod
 CodeTypeDeclarationCollection: CodeTypeDeclaration
 CodeTypeMemberCollection: CodeTypeMember
-CodeTypeReferenceCollection: CodeTypeReference
 
 CodeVariableReferenceExpression: String<VariableName>
 

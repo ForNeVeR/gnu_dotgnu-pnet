@@ -26,6 +26,7 @@ namespace System.CodeDom.Compiler
 
 using System.Collections.Specialized;
 using System.Reflection;
+using System.Security.Policy;
 
 public class CompilerResults
 {
@@ -33,6 +34,7 @@ public class CompilerResults
 	private TempFileCollection tempFiles;
 	private Assembly compiledAssembly;
 	private CompilerErrorCollection errors;
+	private Evidence evidence;
 	private int nativeCompilerReturnValue;
 	private StringCollection output;
 	private String pathToAssembly;
@@ -64,6 +66,17 @@ public class CompilerResults
 						errors = new CompilerErrorCollection();
 					}
 					return errors;
+				}
+			}
+	public Evidence Evidence
+			{
+				get
+				{
+					return evidence;
+				}
+				set
+				{
+					evidence = value;
 				}
 			}
 	public int NativeCompilerReturnValue

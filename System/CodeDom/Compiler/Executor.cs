@@ -2,7 +2,7 @@
  * Executor.cs - Implementation of the
  *		System.CodeDom.Compiler.Executor class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ namespace System.CodeDom.Compiler
 
 public sealed class Executor
 {
+	// Cannot instantiate this class.
+	private Executor() {}
 
 	// Execute the compiler and wait for it to return.
 	public static void ExecWait(String cmd, TempFileCollection tempFiles)

@@ -30,8 +30,6 @@ public enum GeneratorSupport
 	ArraysOfArrays              = 0x00000001,
 	EntryPointMethod            = 0x00000002,
 	GotoStatements              = 0x00000004,
-	[Obsolete("Use GotoStatements instead")]
-	GotoStatments               = 0x00000004,
 	MultidimensionalArrays      = 0x00000008,
 	StaticConstructors          = 0x00000010,
 	TryCatchStatements          = 0x00000020,

@@ -1172,39 +1172,6 @@ public class CodeFieldReferenceExpression : CodeExpression
 [Serializable]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
-public class CodeGotoStatement : CodeStatement
-{
-
-	// Internal state.
-	private String _Label;
-
-	// Constructors.
-	public CodeGotoStatement()
-	{
-	}
-	public CodeGotoStatement(String _Label)
-	{
-		this._Label = _Label;
-	}
-
-	// Properties.
-	public String Label
-	{
-		get
-		{
-			return _Label;
-		}
-		set
-		{
-			_Label = value;
-		}
-	}
-
-}; // class CodeGotoStatement
-
-[Serializable]
-[ClassInterface(ClassInterfaceType.AutoDispatch)]
-[ComVisible(true)]
 public class CodeIndexerExpression : CodeExpression
 {
 
@@ -1369,52 +1336,6 @@ public class CodeLabeledStatement : CodeStatement
 	}
 
 }; // class CodeLabeledStatement
-
-[Serializable]
-[ClassInterface(ClassInterfaceType.AutoDispatch)]
-[ComVisible(true)]
-public class CodeLinePragma : CodeObject
-{
-
-	// Internal state.
-	private String _FileName;
-	private int _LineNumber;
-
-	// Constructors.
-	public CodeLinePragma()
-	{
-	}
-	public CodeLinePragma(String _FileName, int _LineNumber)
-	{
-		this._FileName = _FileName;
-		this._LineNumber = _LineNumber;
-	}
-
-	// Properties.
-	public String FileName
-	{
-		get
-		{
-			return _FileName;
-		}
-		set
-		{
-			_FileName = value;
-		}
-	}
-	public int LineNumber
-	{
-		get
-		{
-			return _LineNumber;
-		}
-		set
-		{
-			_LineNumber = value;
-		}
-	}
-
-}; // class CodeLinePragma
 
 [Serializable]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
@@ -1960,85 +1881,6 @@ public class CodeSnippetTypeMember : CodeTypeMember
 [Serializable]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
-public class CodeStatementCollection : CollectionBase
-{
-
-	// Constructors.
-	public CodeStatementCollection()
-	{
-	}
-	public CodeStatementCollection(CodeStatement[] value)
-	{
-		AddRange(value);
-	}
-	public CodeStatementCollection(CodeStatementCollection value)
-	{
-		AddRange(value);
-	}
-
-	// Properties.
-	public CodeStatement this[int index]
-	{
-		get
-		{
-			return (CodeStatement)(List[index]);
-		}
-		set
-		{
-			List[index] = value;
-		}
-	}
-
-	// Methods.
-	public int Add(CodeStatement value)
-	{
-		return List.Add(value);
-	}
-	public void AddRange(CodeStatement[] value)
-	{
-		foreach(CodeStatement e in value)
-		{
-			List.Add(e);
-		}
-	}
-	public void AddRange(CodeStatementCollection value)
-	{
-		foreach(CodeStatement e in value)
-		{
-			List.Add(e);
-		}
-	}
-	public bool Contains(CodeStatement value)
-	{
-		return List.Contains(value);
-	}
-	public void CopyTo(CodeStatement[] array, int index)
-	{
-		List.CopyTo(array, index);
-	}
-	public int IndexOf(CodeStatement value)
-	{
-		return List.IndexOf(value);
-	}
-	public void Insert(int index, CodeStatement value)
-	{
-		List.Insert(index, value);
-	}
-	public void Remove(CodeStatement value)
-	{
-		int index = List.IndexOf(value);
-		if(index < 0)
-		{
-			throw new ArgumentException(S._("Arg_NotCollMember"), "value");
-		}
-		List.RemoveAt(index);
-	}
-
-}; // class CodeStatementCollection
-
-[Serializable]
-[ClassInterface(ClassInterfaceType.AutoDispatch)]
-[ComVisible(true)]
 public class CodeStatement : CodeObject
 {
 
@@ -2345,85 +2187,6 @@ public class CodeTypeMemberCollection : CollectionBase
 	}
 
 }; // class CodeTypeMemberCollection
-
-[Serializable]
-[ClassInterface(ClassInterfaceType.AutoDispatch)]
-[ComVisible(true)]
-public class CodeTypeReferenceCollection : CollectionBase
-{
-
-	// Constructors.
-	public CodeTypeReferenceCollection()
-	{
-	}
-	public CodeTypeReferenceCollection(CodeTypeReference[] value)
-	{
-		AddRange(value);
-	}
-	public CodeTypeReferenceCollection(CodeTypeReferenceCollection value)
-	{
-		AddRange(value);
-	}
-
-	// Properties.
-	public CodeTypeReference this[int index]
-	{
-		get
-		{
-			return (CodeTypeReference)(List[index]);
-		}
-		set
-		{
-			List[index] = value;
-		}
-	}
-
-	// Methods.
-	public int Add(CodeTypeReference value)
-	{
-		return List.Add(value);
-	}
-	public void AddRange(CodeTypeReference[] value)
-	{
-		foreach(CodeTypeReference e in value)
-		{
-			List.Add(e);
-		}
-	}
-	public void AddRange(CodeTypeReferenceCollection value)
-	{
-		foreach(CodeTypeReference e in value)
-		{
-			List.Add(e);
-		}
-	}
-	public bool Contains(CodeTypeReference value)
-	{
-		return List.Contains(value);
-	}
-	public void CopyTo(CodeTypeReference[] array, int index)
-	{
-		List.CopyTo(array, index);
-	}
-	public int IndexOf(CodeTypeReference value)
-	{
-		return List.IndexOf(value);
-	}
-	public void Insert(int index, CodeTypeReference value)
-	{
-		List.Insert(index, value);
-	}
-	public void Remove(CodeTypeReference value)
-	{
-		int index = List.IndexOf(value);
-		if(index < 0)
-		{
-			throw new ArgumentException(S._("Arg_NotCollMember"), "value");
-		}
-		List.RemoveAt(index);
-	}
-
-}; // class CodeTypeReferenceCollection
 
 [Serializable]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]

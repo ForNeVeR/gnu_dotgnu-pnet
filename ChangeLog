@@ -7,6 +7,25 @@
 	runtime/System/IO/DirectoryInfo.cs: implement some of the
 	VB file system routines.
 
+	* System/CodeDom/CodeGotoStatement.cs,
+	System/CodeDom/CodeLinePragma.cs,
+	System/CodeDom/CodeNamespaceImportCollection.cs,
+	System/CodeDom/CodeStatementCollection.cs,
+	System/CodeDom/CodeTypeDeclaration.cs,
+	System/CodeDom/CodeTypeReferenceCollection.cs,
+	System/CodeDom/Makefile, System/CodeDom/RuleOutput.cs,
+	System/CodeDom/rules.txt,
+	System/CodeDom/Compiler/CodeDomProvider.cs,
+	System/CodeDom/Compiler/CodeGenerator.cs,
+	System/CodeDom/Compiler/CompilerParameters.cs,
+	System/CodeDom/Compiler/CompilerResults.cs,
+	System/CodeDom/Compiler/Executor.cs,
+	System/CodeDom/Compiler/GeneratorSupport.cs,
+	System/CodeDom/Compiler/IndentedTextWriter.cs,
+	System/CodeDom/Compiler/Makefile,
+	System/CodeDom/Compiler/TempFileCollection.cs: improve
+	signature-compatibility of the System.CodeDom namespace.
+
 2003-05-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Basic/ErrObject.cs, Basic/Information.cs,

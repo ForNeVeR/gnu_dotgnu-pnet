@@ -2,7 +2,7 @@
  * CodeNamespaceImportCollection.cs - Implementation of the
  *		System.CodeDom.CodeNamespaceImportCollection class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,14 +68,35 @@ public class CodeNamespaceImportCollection : IList, ICollection, IEnumerable
 				list.AddRange(value);
 			}
 
+	// Get the number of items in this collection.
+	public int Count
+			{
+				get
+				{
+					return list.Count;
+				}
+			}
+
+	// Clear this collection.
+	public void Clear()
+			{
+				list.Clear();
+			}
+
+	// Get an enumerator for this collection.
+	public IEnumerator GetEnumerator()
+			{
+				return list.GetEnumerator();
+			}
+
 	// Implement the IList interface.
 	int IList.Add(Object value)
 			{
 				return list.Add((CodeNamespaceImport)value);
 			}
-	public void Clear()
+	void IList.Clear()
 			{
-				list.Clear();
+				Clear();
 			}
 	bool IList.Contains(Object value)
 			{
@@ -128,7 +149,7 @@ public class CodeNamespaceImportCollection : IList, ICollection, IEnumerable
 			{
 				list.CopyTo(array, index);
 			}
-	public int Count
+	int ICollection.Count
 			{
 				get
 				{
@@ -151,9 +172,9 @@ public class CodeNamespaceImportCollection : IList, ICollection, IEnumerable
 			}
 
 	// Implement the IEnumerable interface.
-	public IEnumerator GetEnumerator()
+	IEnumerator IEnumerable.GetEnumerator()
 			{
-				return list.GetEnumerator();
+				return GetEnumerator();
 			}
 
 }; // class CodeNamespaceImportCollection

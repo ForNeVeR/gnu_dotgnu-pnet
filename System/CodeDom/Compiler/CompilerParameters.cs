@@ -2,7 +2,7 @@
  * CompilerParameters.cs - Implementation of the
  *		System.CodeDom.Compiler.CompilerParameters class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,9 @@ namespace System.CodeDom.Compiler
 
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
+using System.Security.Policy;
 
-[ComVisible(true)]
+[ComVisible(false)]
 public class CompilerParameters
 {
 	// Internal state.
@@ -35,6 +36,7 @@ public class CompilerParameters
 	private String outputName;
 	private bool includeDebugInformation;
 	private String compilerOptions;
+	private Evidence evidence;
 	private bool generateExecutable;
 	private bool generateInMemory;
 	private String mainClass;
@@ -82,6 +84,17 @@ public class CompilerParameters
 				set
 				{
 					compilerOptions = value;
+				}
+			}
+	public Evidence Evidence
+			{
+				get
+				{
+					return evidence;
+				}
+				set
+				{
+					evidence = value;
 				}
 			}
 	public bool GenerateExecutable

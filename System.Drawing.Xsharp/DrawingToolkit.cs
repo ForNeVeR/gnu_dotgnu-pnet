@@ -738,12 +738,11 @@ public sealed class DrawingToolkit : IToolkit
 				// TODO
 				return null;
 			}
+
 	// Create a new window buffer.
 	public IToolkitWindowBuffer CreateWindowBuffer(IToolkitWindow window)
 			{
-				return null;
-				// TODO
-				//return new DrawingWindowBuffer(window);
+				return new DrawingWindowBuffer(window);
 			}
 
 }; // class DrawingToolkit

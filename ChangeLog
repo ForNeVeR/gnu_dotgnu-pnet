@@ -1,3 +1,11 @@
+
+2004-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingWindowBuffer.cs,
+	Xsharp/Graphics.cs, Xsharp/Xlib.cs.in: implement double
+	buffering for System.Drawing.Xsharp.
+
 2004-01-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListViewItemConverter.cs,

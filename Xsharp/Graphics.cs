@@ -2283,6 +2283,127 @@ public sealed class Graphics : IDisposable
 			}
 
 	/// <summary>
+	/// <para>Blit a drawable sub-part to this graphics context.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the destination bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the destination bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="drawable">
+	/// <para>The drawable to copy from.</para>
+	/// </param>
+	///
+	/// <param name="srcX">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the drawable sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="srcY">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the drawable sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="srcWidth">
+	/// <para>The width of the drawable sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="srcHeight">
+	/// <para>The height of the drawable sub-part to be drawn.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="drawable"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void BitBlt(int x, int y, Drawable drawable,
+					   int srcX, int srcY, int srcWidth, int srcHeight)
+			{
+				// Validate the drawable parameter.
+				if(drawable == null)
+				{
+					throw new ArgumentNullException("drawable");
+				}
+
+				// Bail out if the source co-ordinates are out of range.
+				int width, height;
+				width = drawable.Width;
+				height = drawable.Height;
+				if(srcX < 0 || srcX >= width ||
+				   srcY < 0 || srcY >= height ||
+				   srcWidth <= 0 || srcHeight <= 0 ||
+				   srcWidth > width || srcHeight > height ||
+				   srcX > (width - srcWidth) ||
+				   srcY > (height - srcHeight))
+				{
+					throw new XException(S._("X_RectCoordRange"));
+				}
+
+				// Blit the contents of the drawable.
+				try
+				{
+					IntPtr display = Lock();
+					Xlib.XCopyArea(display, drawable.GetGCHandle(),
+								   drawableHandle, gc,
+								   srcX, srcY,
+								   (uint)srcWidth, (uint)srcHeight,
+								   x, y);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Blit a drawable's entire contents to this graphics context.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the top-left point of
+	/// the destination bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the top-left point of
+	/// the destination bounding rectangle.</para>
+	/// </param>
+	///
+	/// <param name="drawable">
+	/// <para>The drawable to copy from.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="drawable"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate or size values is out of range.</para>
+	/// </exception>
+	public void BitBlt(int x, int y, Drawable drawable)
+			{
+				// Validate the drawable parameter.
+				if(drawable == null)
+				{
+					throw new ArgumentNullException("drawable");
+				}
+
+				// Perform the blit operation.
+				BitBlt(x, y, drawable, 0, 0, drawable.Width, drawable.Height);
+			}
+
+	/// <summary>
 	/// <para>Draw a string at a particular position using a
 	/// specified font.</para>
 	/// </summary>

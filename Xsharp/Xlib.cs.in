@@ -479,6 +479,13 @@ internal sealed unsafe class Xlib
 			 @X_int@ dest_x, @X_int@ dest_y,
 			 @X_int@ width, @X_int@ height);
 
+	[DllImport("X11")]
+	extern public static @X_int@ XCopyArea
+			(IntPtr display, Drawable src, Drawable dest,
+			 IntPtr gc, @X_int@ src_x, @X_int@ src_y,
+			 @X_uint@ width, @X_uint@ height,
+			 @X_int@ dest_x, @X_int@ dest_y);
+
 	// Declare window manager related external functions.
 
 	[DllImport("X11")]

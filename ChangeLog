@@ -5,6 +5,10 @@
 	engine/lib_crypt.c, samples/mscorlib.dll: implement internalcall's
 	for the "CryptoMethods" class.
 
+	* cscc/csharp/cs_gather.c (CreateEvent): use a slightly different
+	test for delegate types because the "Invoke" method may not be
+	in existence yet.
+
 2002-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, cscc/cscc.c, ilalink/Makefile.am,

@@ -1426,6 +1426,31 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Test for a delegate type.  We cannot use "ILTypeIsDelegate"
+ * because this may be called on a delegate type that hasn't
+ * had its "Invoke" method yet.
+ */
+static int FuzzyIsDelegate(ILType *type)
+{
+	if(ILType_IsClass(type))
+	{
+		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
+		ILClass *parent = ILClass_Parent(classInfo);
+		if(parent)
+		{
+			const char *namespace = ILClass_Namespace(parent);
+			if(namespace && !strcmp(namespace, "System") &&
+			   !strcmp(ILClass_Name(parent), "MulticastDelegate"))
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+
+/*
  * Create an event definition.
  */
 static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
@@ -1437,7 +1462,7 @@ static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
 
 	/* Get the event type and check that it is a delegate */
 	eventType = CSSemType(event->type, info, &(event->type));
-	if(!ILTypeIsDelegate(eventType))
+	if(!FuzzyIsDelegate(eventType))
 	{
 		CCErrorOnLine(yygetfilename(event), yygetlinenum(event),
   			"`%s' is not a delegate type", CSTypeToName(eventType));

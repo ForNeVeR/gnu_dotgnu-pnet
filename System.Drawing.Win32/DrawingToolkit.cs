@@ -168,9 +168,9 @@ public class DrawingToolkit : IToolkit
 			}
 
 	// Create a toolkit font from the properties in the specified object.
-	public IToolkitFont CreateFont(System.Drawing.Font font)
+	public IToolkitFont CreateFont(System.Drawing.Font font, float dpi)
 			{
-				return new DrawingFont(this, font);
+				return new DrawingFont(this, font, dpi);
 			}
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
@@ -377,14 +377,14 @@ public class DrawingToolkit : IToolkit
 	{
 		Timer timer = new Timer(owner, expire);
 		timers.Add(timer);
-		timer.cookie = Win32.Api.SetTimer( IntPtr.Zero, 0, (uint)interval, new Win32.Api.TimerProc(timer.TimerHandler) );
+		//timer.cookie = Win32.Api.SetTimer( IntPtr.Zero, 0, (uint)interval, new Win32.Api.TimerProc(timer.TimerHandler) );
 		return timer.cookie;
 	}
 
 	// Unregister a timer.
 	public void UnregisterTimer(Object cookie)
 	{
-		Win32.Api.KillTimer( IntPtr.Zero, (uint)cookie );
+		//Win32.Api.KillTimer( IntPtr.Zero, (uint)cookie );
 		for( int i = 0; i < timers.Count;  i++ )
 		{
 			Timer timer = timers[i] as Timer;

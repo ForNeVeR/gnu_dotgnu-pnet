@@ -27,19 +27,22 @@ internal class DrawingFont : IToolkitFont
 {
 	// Internal state.
 	internal System.Drawing.Font properties;
+	private float dpi;
 	private IToolkit toolkit;
 	internal IntPtr hFont;
 	
-	public DrawingFont(IToolkit toolkit, System.Drawing.Font properties)
+	public DrawingFont(IToolkit toolkit, System.Drawing.Font properties, float dpi)
 			{
 				this.toolkit = toolkit;
 				this.properties = properties;
+				this.dpi = dpi;
 				CreateFont();
 			}
 
 	// Select this font into a graphics object.
 	public void Select(IToolkitGraphics graphics)
 			{
+				Win32.Api.SelectObject((graphics as DrawingGraphics).hdc, hFont);
 				(graphics as DrawingGraphics).selectedFont = this;
 			}
 
@@ -66,8 +69,9 @@ internal class DrawingFont : IToolkitFont
 
 	private void CreateFont()
 	{
+		properties.FontFamily.GetEmHeight(properties.Style);
 		Win32.Api.LOGFONT lf = new Win32.Api.LOGFONT();
-		lf.lfHeight=(int)-properties.SizeInPoints;
+		lf.lfHeight=(int)(-properties.SizeInPoints*dpi/72);
 		lf.lfFaceName=properties.FontFamily.Name;
 		switch (properties.Style)
 		{

@@ -269,9 +269,9 @@ public sealed class DrawingToolkit : IToolkit
 			}
 
 	// Create a toolkit font from the properties in the specified object.
-	public IToolkitFont CreateFont(System.Drawing.Font font)
+	public IToolkitFont CreateFont(System.Drawing.Font font, float dpi)
 			{
-				return new DrawingFont(font);
+				return new DrawingFont(font, dpi);
 			}
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.

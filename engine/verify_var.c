@@ -26,6 +26,7 @@
 static ILType *GetParamType(ILType *signature, ILMethod *method, ILUInt32 num)
 {
 	ILClass *owner;
+	ILType *synthetic;
 	if(ILType_HasThis(signature))
 	{
 		/* This method has a "this" parameter */
@@ -40,7 +41,15 @@ static ILType *GetParamType(ILType *signature, ILMethod *method, ILUInt32 num)
 				   handling is required */
 				return ILType_Invalid;
 			}
-			return ILType_FromClass(owner);
+			synthetic = ILClassGetSynType(owner);
+			if(synthetic)
+			{
+				return synthetic;
+			}
+			else
+			{
+				return ILType_FromClass(owner);
+			}
 		}
 		else
 		{
@@ -130,7 +139,7 @@ checkSTArg:
 		   This should be done using "stobj" instead */
 		VERIFY_TYPE_ERROR();
 	}
-	else if(!AssignCompatible(&(stack[stackSize - 1]), type))
+	else if(!AssignCompatible(method, &(stack[stackSize - 1]), type))
 	{
 		VERIFY_TYPE_ERROR();
 	}
@@ -206,7 +215,7 @@ checkSTLoc:
 		VERIFY_INSN_ERROR();
 	}
 	type = ILTypeGetLocal(localVars, argNum);
-	if(!AssignCompatible(&(stack[stackSize - 1]), type))
+	if(!AssignCompatible(method, &(stack[stackSize - 1]), type))
 	{
 		VERIFY_TYPE_ERROR();
 	}

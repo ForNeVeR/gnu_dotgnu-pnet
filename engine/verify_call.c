@@ -111,6 +111,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	ILEngineStackItem *item;
 	int hasThis;
 	int isValueThis;
+	ILType *thisType;
 
 	/* Determine if the signature needs an extra "this" parameter */
 	hasThis = (ILType_HasThis(signature) && !suppressThis);
@@ -127,16 +128,23 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 			/* The "this" parameter is a value type, which must be
 			   passed as either a managed or transient pointer */
 			isValueThis = 1;
+			thisType = ILType_FromValueType(owner);
 		}
 		else
 		{
 			/* The "this" parameter is an object reference */
 			isValueThis = 0;
+			thisType = ILClassGetSynType(owner);
+			if(!thisType)
+			{
+				thisType = ILType_FromClass(owner);
+			}
 		}
 	}
 	else
 	{
 		isValueThis = 0;
+		thisType = 0;
 	}
 
 	/* Validate the stack size */
@@ -182,10 +190,9 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				else
 				{
 					/* The "this" parameter must be an object reference */
-					paramType = ILType_FromClass(owner);
 					if(item->engineType != ILEngineType_O ||
 					   (item->typeInfo != 0 &&
-					    !AssignCompatible(item, paramType)))
+					    !AssignCompatible(method, item, thisType)))
 					{
 						return -1;
 					}
@@ -395,7 +402,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 			{
 				/* The supplied value is O */
 				if(IsObjectRef(paramType) &&
-				   (item->typeInfo == 0 || AssignCompatible(item, paramType)))
+				   (item->typeInfo == 0 ||
+				    AssignCompatible(method, item, paramType)))
 				{
 					/* Valid object reference passing */
 				}
@@ -578,7 +586,7 @@ case IL_OP_RET:
 		}
 
 		/* Validate the type of the return value */
-		if(!AssignCompatible(&(stack[stackSize - 1]),
+		if(!AssignCompatible(method, &(stack[stackSize - 1]),
 							 signature->un.method.retType))
 		{
 			VERIFY_TYPE_ERROR();

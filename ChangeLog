@@ -5,6 +5,9 @@
 	be careful when comparing delegates using "==" and "!=" so as
 	not to accidentally pick up the user-defined operator versions.
 
+	* runtime/System/String.cs: improve range checks for negative
+	length values.
+
 2002-06-28  Charlie Carnow   <carnow@gmx.net>
 
 	* System.Xml/XmlReader.cs: Implemented 

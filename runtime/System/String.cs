@@ -933,7 +933,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_Array"));
 				}
-				else if((value.Length - startIndex) < count)
+				else if(count < 0 || (value.Length - startIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_Array"));
@@ -1125,7 +1125,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if((length - startIndex) < count)
+				else if(count < 0 || (length - startIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_StringRange"));
@@ -1253,7 +1253,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if((Length - startIndex) < length)
+				else if(length < 0 || (Length - startIndex) < length)
 				{
 					throw new ArgumentOutOfRangeException
 						("length", _("ArgRange_StringRange"));
@@ -1283,7 +1283,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
 				}
-				else if((Length - startIndex) < length)
+				else if(length < 0 || (Length - startIndex) < length)
 				{
 					throw new ArgumentOutOfRangeException
 						("length", _("ArgRange_StringRange"));

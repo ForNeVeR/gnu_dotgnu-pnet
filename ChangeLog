@@ -23,6 +23,12 @@
 	serif, sans serif, and fixed-width fonts, to deal with systems
 	that don't have the standard X bitmapped fonts installed.
 
+	* System.Drawing.Xsharp/DrawingFont.cs, Xsharp/CaptionWidget.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs, Xsharp/Font.cs:
+	use a fudge factor of 1.4 to convert all Windows-style point
+	sizes into X-style point sizes in System.Drawing.Xsharp, rather
+	than trying to fudge the "8.25" font in Xsharp.
+
 2004-01-05  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Panel.cs,

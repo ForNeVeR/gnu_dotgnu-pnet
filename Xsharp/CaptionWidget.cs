@@ -172,7 +172,7 @@ internal class CaptionWidget : InputOutputWidget
 					if(captionFont == null)
 					{
 						captionFont = Font.CreateFont
-							(Font.DefaultSansSerif, 82, FontStyle.Bold);
+							(Font.DefaultSansSerif, 120, FontStyle.Bold);
 					}
 					return captionFont;
 				}

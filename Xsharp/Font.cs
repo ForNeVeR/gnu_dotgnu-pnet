@@ -272,7 +272,7 @@ public class Font
 					while(font != null)
 					{
 						if(font.family == family &&
-						   font.pointSize == pointSize &&
+						   font.pointSize == NormalizePointSize(pointSize) &&
 						   font.style == (style & ~(FontStyle.Underlined |
 						   							FontStyle.StrikeOut)))
 						{
@@ -296,13 +296,6 @@ public class Font
 						return new PCFFont
 							(family, pointSize, style, font.loadedData);
 					}
-				}
-
-				// Re-adjust point sizes for Windows vs X differences.
-				// "Microsoft Sans Serif 8.25" is approx "Helvetica 12".
-				if(pointSize == 82)
-				{
-					pointSize = 120;
 				}
 
 				// Search for a regular X font that matches the conditions.

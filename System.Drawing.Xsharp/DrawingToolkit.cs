@@ -134,17 +134,19 @@ public sealed class DrawingToolkit : IToolkit
 				String family = Xsharp.Font.DefaultSansSerif;
 				try
 				{
+					// "mss" is 8.25 points in the Windows style,
+					// which makes it approximately 12 in the X style.
 					Xsharp.Font.RegisterFont
-						(family, 82, Xsharp.FontStyle.Normal,
+						(family, 120, Xsharp.FontStyle.Normal,
 						 assembly, "mssR08.pcf");
 					Xsharp.Font.RegisterFont
-						(family, 82, Xsharp.FontStyle.Bold,
+						(family, 120, Xsharp.FontStyle.Bold,
 						 assembly, "mssB08.pcf");
 					Xsharp.Font.RegisterFont
-						(family, 82, Xsharp.FontStyle.Italic,
+						(family, 120, Xsharp.FontStyle.Italic,
 						 assembly, "mssI08.pcf");
 					Xsharp.Font.RegisterFont
-						(family, 82,
+						(family, 120,
 						 Xsharp.FontStyle.Bold | Xsharp.FontStyle.Italic,
 						 assembly, "mssBI08.pcf");
 				}

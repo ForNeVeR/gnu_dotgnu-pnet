@@ -617,7 +617,7 @@ ILNode_SemAnalysis(ILNode_BaseDestructor)
 	ILNode_MethodDeclaration *caller;
 	ILType *type;
 	
-	caller= info->currentMethod;
+	caller= (ILNode_MethodDeclaration *)(info->currentMethod);
 
 	if(!caller)
 	{

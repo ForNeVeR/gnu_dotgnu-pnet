@@ -44,6 +44,8 @@
 	support/spawn.c, support/test_float.c, support/time.c:
 	apply changes to compile in non-cygwin modes under Win32.
 
+	* cscc/csharp/cs_misc.tc: fix a warning.
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

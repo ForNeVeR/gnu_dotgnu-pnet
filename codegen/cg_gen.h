@@ -137,6 +137,7 @@ struct _tagILGenInfo
 	ILNode         *currentSwitch;		/* Current switch being processed */
 	ILArrayInit    *arrayInit;			/* Array initialization information */
 	ILHashTable    *itemHash;			/* Hash program items to nodes */
+	ILVarUsageTable *varUsage;			/* Variable usage table */
 
 };
 

@@ -26,12 +26,14 @@
 %decls %{
 
 #include <codegen/cg_defs.h>
+#include <codegen/cg_varusage.h>
 
 typedef struct _tagILEvalValue ILEvalValue;
 
 %}
 
 %decls %end %{
+#include <codegen/cg_varusage.h>
 #include <codegen/cg_gen.h>
 #include <codegen/cg_output.h>
 #include <codegen/cg_utils.h>
@@ -196,7 +198,10 @@ struct _tagILSwitchValue
 	ILNode *expr2;
 	ILNode *expr3;
 }
-%node ILNode_Statement ILNode %abstract
+%node ILNode_Statement ILNode %abstract =
+{
+	%nocreate ILVarUsageTable *varUsage = {0};
+}
 %node ILNode_List ILNode_Statement =
 {
 	%nocreate ILNode      *item1 = {0};
@@ -975,6 +980,7 @@ struct _tagILSwitchValue
 %operation %virtual void ILNode_GenRef
 				(ILNode_LValue *node, ILGenInfo *info);
 %operation %virtual int ILNode_EndsInReturnImpl(ILNode *node);
+
 
 /*
  * Statements only need "ILNode_GenDiscard".

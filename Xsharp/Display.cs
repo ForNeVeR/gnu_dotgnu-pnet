@@ -528,6 +528,9 @@ public sealed class Display : IDisposable
 					XEvent xevent;
 					int timeout;
 
+					// Processing any pending invalidates that we have.
+					ProcessPendingInvalidates();
+	
 					// Flush any requests that are in the outgoing queue.
 					Xlib.XFlush(dpy);
 	
@@ -537,9 +540,6 @@ public sealed class Display : IDisposable
 						return AppEvent.Quit;
 					}
 
-					// Processing any pending invalidates that we have.
-					ProcessPendingInvalidates();
-	
 					// Do we have pending expose events to process?
 					if(pendingExposes)
 					{

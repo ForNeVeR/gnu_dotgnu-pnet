@@ -1,3 +1,8 @@
+
+2004-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Display.cs: process pending invalidates before the XFlush.
+
 2004-01-05  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Panel.cs,

@@ -815,6 +815,7 @@ static ILUInt32 EvaluateSize(ILNode *expr)
 %token IDENTIFIER		"an identifier"
 %token INTEGER_CONSTANT	"an integer value"
 %token FLOAT_CONSTANT	"a floating point value"
+%token IMAG_CONSTANT	"an imaginary value"
 %token STRING_LITERAL	"a string literal"
 %token TYPE_NAME		"a type identifier"
 
@@ -902,7 +903,7 @@ static ILUInt32 EvaluateSize(ILNode *expr)
  */
 %type <name>		IDENTIFIER TYPE_NAME
 %type <integer>		INTEGER_CONSTANT
-%type <real>		FLOAT_CONSTANT
+%type <real>		FLOAT_CONSTANT IMAG_CONSTANT
 %type <string>		STRING_LITERAL StringLiteral
 
 %type <name>		AnyIdentifier Identifier
@@ -1093,6 +1094,18 @@ PrimaryExpression
 			}
 	| FLOAT_CONSTANT		{
 				/* Convert the floating-point value into a node */
+				if($1.type == ILMachineType_Float32)
+				{
+					$$ = ILNode_Float32_create($1.value);
+				}
+				else
+				{
+					$$ = ILNode_Float64_create($1.value);
+				}
+			}
+	| IMAG_CONSTANT		{
+				/* Convert the imaginary floating-point value into a node */
+				/* TODO: true imaginary constants */
 				if($1.type == ILMachineType_Float32)
 				{
 					$$ = ILNode_Float32_create($1.value);

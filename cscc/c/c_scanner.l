@@ -63,6 +63,7 @@ DIGIT			[0-9]
 IDALPHA			[a-zA-Z_$]
 HEX				[a-fA-F0-9]
 EXPONENT		[Ee][+-]?{DIGIT}+
+IEXPONENT		[Ii][+-]?{DIGIT}+
 FTYPE			(f|F|l|L)
 ITYPE			(u|U|l|L)*
 WHITE			[ \t\v\r\f]
@@ -188,6 +189,17 @@ WHITE			[ \t\v\r\f]
 {DIGIT}+"."{DIGIT}*({EXPONENT})?{FTYPE}?	{
 			CLexParseFloat(yytext, &(yylval.real));
 			RETURNTOK(FLOAT_CONSTANT);
+		}
+
+{DIGIT}+{IEXPONENT}{FTYPE}?		{ CLexParseFloat(yytext, &(yylval.real));
+								  RETURNTOK(IMAG_CONSTANT); }
+{DIGIT}*"."{DIGIT}+{IEXPONENT}{FTYPE}?	{
+			CLexParseFloat(yytext, &(yylval.real));
+			RETURNTOK(IMAG_CONSTANT);
+		}
+{DIGIT}+"."{DIGIT}*{IEXPONENT}{FTYPE}?	{
+			CLexParseFloat(yytext, &(yylval.real));
+			RETURNTOK(IMAG_CONSTANT);
 		}
 
 0[xX]{HEX}+{ITYPE}?				{ CLexParseInt(yytext, &(yylval.integer));

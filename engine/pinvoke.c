@@ -20,6 +20,9 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#if defined(IL_WIN32_PLATFORM)
+#include <objbase.h>
+#endif
 
 #if defined(HAVE_LIBFFI)
 
@@ -47,6 +50,16 @@ int _ILCVMCanUseRawCalls(ILMethod *method, int isInternal);
 
 #ifdef	__cplusplus
 extern	"C" {
+#endif
+
+#if defined(IL_WIN32_PLATFORM)
+	/* MS.NET frees native strings using the COM allocator 
+	http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpguide/html/cpconmemorymanagement.asp
+	*/
+	#define ILFreeNativeString(str) CoTaskMemFree(str)
+#else
+	/* Use the C allocator for other platforms */
+	#define ILFreeNativeString(str) free(str)
 #endif
 
 /*
@@ -515,6 +528,10 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 					if(strValue)
 					{
 						stacktop->ptrValue = ILStringCreate(thread, strValue);
+
+						/* Free the native string */
+						ILFreeNativeString(strValue);
+
 						if(!(stacktop->ptrValue))
 						{
 							return 1;
@@ -538,6 +555,10 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 					{
 						stacktop->ptrValue =
 							ILStringCreateUTF8(thread, strValue);
+
+						/* Free the native string */
+						ILFreeNativeString(strValue);
+
 						if(!(stacktop->ptrValue))
 						{
 							return 1;
@@ -561,6 +582,10 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 					{
 						stacktop->ptrValue =
 							ILStringWCreate(thread, (ILUInt16 *)strValue);
+
+						/* Free the native string */
+						ILFreeNativeString(strValue);
+					
 						if(!(stacktop->ptrValue))
 						{
 							return 1;

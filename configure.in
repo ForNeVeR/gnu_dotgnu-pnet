@@ -38,6 +38,7 @@ dnl 	*)           def_cygwin=true ;;
 dnl esac
 def_cygwin=true
 AC_SUBST(SOCKETLIBS)
+AC_SUBST(WINLIBS)
 AC_ARG_ENABLE(cygwin,
 [  --enable-cygwin         Enable cygwin1.dll under Windows],
 [case "${enableval}" in
@@ -48,12 +49,14 @@ esac],[cygwin=$def_cygwin])
 if test x$cygwin = xfalse ; then
   CC="$CC -mno-cygwin"
   SOCKETLIBS="-lwsock32"
+  WINLIBS="-lole32"
   suppress_libm=yes
 else
   suppress_libm=no
   case "$host" in
   	*-*-mingw*)
       SOCKETLIBS="-lwsock32"
+      WINLIBS="-lole32"
       suppress_libm=yes
 	;;
 	*) ;;
@@ -258,7 +261,8 @@ AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
 AC_CHECK_HEADERS(linux/types.h limits.h inttypes.h stddef.h sys/param.h)
 AC_CHECK_HEADERS(sys/file.h sys/wait.h malloc.h stdbool.h)
-AC_CHECK_HEADERS(setjmp.h sys/ucontext.h sys/sysinfo.h direct.h)
+AC_CHECK_HEADERS(setjmp.h sys/ucontext.h direct.h)
+AC_CHECK_HEADERS(sys/sysinfo.h sys/sysctl.h)
 AC_CHECK_HEADERS(netinet/tcp.h netinet/udp.h)
 AC_CHECK_HEADERS([linux/irda.h], [], [],
 [[#ifdef HAVE_SYS_SOCKET_H
@@ -462,6 +466,7 @@ AC_CHECK_FUNCS(mkdir ioctl setsockopt getsockopt uname)
 AC_CHECK_FUNCS(tcgetattr readlink symlink rmdir strsignal)
 AC_CHECK_FUNCS(chmod umask)
 AC_CHECK_FUNCS(setjmp longjmp signal sigaction abort exit _exit siglongjmp sigsetjmp)
+AC_CHECK_FUNCS(sysinfo sysctl)
 AC_CHECK_FUNCS(gethostname)
 AC_FUNC_ALLOCA
 

@@ -60,7 +60,7 @@ libILEngine_a_SOURCES = cvm.c \
 						md_ia64.c \
 						verify.c
 
-PACKAGE_LIBS = $(FFILIBS) $(GCLIBS) $(SOCKETLIBS)
+PACKAGE_LIBS = $(FFILIBS) $(GCLIBS) $(SOCKETLIBS) $(WINLIBS)
 
 if PNET_TOOLS
 

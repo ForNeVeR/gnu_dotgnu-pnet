@@ -6,6 +6,14 @@
 	* support/time.c: Added ILGetSinceRebootTime implementation for
 	FreeBSD.
 	
+	* configure.in: Added WINLIBS subst so we can include ole32 and
+	other windows specific libraries that we need to link with.
+	
+	* engine/Makefile.am: Added WINLIBS to libraries list.
+	
+	* engine/pinvoke.c: Made it so that strings returned by pinvoked
+	methods are automatically freed.
+	
 2004-06-18  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c: Added much faster implementation of the

@@ -328,7 +328,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	public void Invalidate()
 	{
 		if (hwnd != IntPtr.Zero)
-			Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, false);
+			Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, true);
 	}
 
 	// Called when Windows wants to erase the form background. Use the provided hdc

@@ -1201,7 +1201,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				posn = 0;
 				while(posn < len)
 				{
-					posn = IndexOfAny(separator, posn, len - posn);
+					posn = IndexOfAny(separator, start, len - start);
 					if(posn == -1)
 					{
 						break;

@@ -1406,10 +1406,103 @@ int ILDecimalFromFloat(ILDecimal *value, ILFloat floatValue)
 	return ILDecimalFromDouble(value, (ILDouble)floatValue);
 }
 
+/*
+ * The value 2^96 as a double value.
+ */
+#define	MAX_DECIMAL_AS_DOUBLE	((ILDouble)79228162514264337593543950336.0)
+
+/*
+ * The value 2^64 as a double value.
+ */
+#define	TWO_TO_64				((ILDouble)18446744073709551616.0)
+
+/*
+ * Powers of 10 as double values.
+ */
+static ILDouble const powOfTen[29] =
+		{1.0,
+		 10.0,
+		 100.0,
+		 1000.0,
+		 10000.0,
+		 100000.0,
+		 1000000.0,
+		 10000000.0,
+		 100000000.0,
+		 1000000000.0,
+		 10000000000.0,
+		 100000000000.0,
+		 1000000000000.0,
+		 10000000000000.0,
+		 100000000000000.0,
+		 1000000000000000.0,
+		 10000000000000000.0,
+		 100000000000000000.0,
+		 1000000000000000000.0,
+		 10000000000000000000.0,
+		 100000000000000000000.0,
+		 1000000000000000000000.0,
+		 10000000000000000000000.0,
+		 100000000000000000000000.0,
+		 1000000000000000000000000.0,
+		 10000000000000000000000000.0,
+		 100000000000000000000000000.0,
+		 1000000000000000000000000000.0,
+		 10000000000000000000000000000.0};
+
 int ILDecimalFromDouble(ILDecimal *value, ILDouble floatValue)
 {
-	/* TODO */
-	return 0;
+	int isNeg;
+	int scale;
+	ILUInt64 temp;
+	ILUInt32 values[3];
+
+	/* Bail out if the number is out of range */
+	if(ILNativeFloatIsNaN((ILNativeFloat)floatValue) ||
+	   floatValue >= MAX_DECIMAL_AS_DOUBLE ||
+	   floatValue <= -MAX_DECIMAL_AS_DOUBLE)
+	{
+		return 0;
+	}
+
+	/* Extract the sign */
+	isNeg = (floatValue < (ILDouble)0.0);
+	if(isNeg)
+	{
+		floatValue = -floatValue;
+	}
+
+	/* Determine the scale factor to use with the number */
+	for(scale = 0; scale < 28; ++scale)
+	{
+		if(floatValue < powOfTen[scale])
+		{
+			break;
+		}
+	}
+	scale = 28 - scale;
+
+	/* Re-scale the value to convert it into an integer */
+	floatValue *= powOfTen[scale];
+
+	/* Extract the 96-bit integer component */
+	values[0] = (ILUInt32)ILFloatToUInt64(floatValue / TWO_TO_64);
+	floatValue = ILNativeFloatRem(floatValue, TWO_TO_64);
+	temp = ILFloatToUInt64(floatValue);
+	values[1] = (ILUInt32)(temp >> 32);
+	values[2] = (ILUInt32)temp;
+
+	/* Normalize the result and return it */
+	scale = Normalize(values, 3, scale, IL_DECIMAL_ROUND_HALF_UP);
+	if(scale < 0)
+	{
+		return 0;
+	}
+	value->flags = DECIMAL_MKFLAGS(isNeg, scale);
+	value->high = values[0];
+	value->middle = values[1];
+	value->low = values[2];
+	return 1;
 }
 
 int ILDecimalToInt64(const ILDecimal *value, ILInt64 *intValue)
@@ -1463,36 +1556,6 @@ ILDouble ILDecimalToDouble(const ILDecimal *value)
 {
 	ILDouble temp;
 	int decpt;
-	static ILDouble const powOfTen[29] =
-		{1.0,
-		 10.0,
-		 100.0,
-		 1000.0,
-		 10000.0,
-		 100000.0,
-		 1000000.0,
-		 10000000.0,
-		 100000000.0,
-		 1000000000.0,
-		 10000000000.0,
-		 100000000000.0,
-		 1000000000000.0,
-		 10000000000000.0,
-		 100000000000000.0,
-		 1000000000000000.0,
-		 10000000000000000.0,
-		 100000000000000000.0,
-		 1000000000000000000.0,
-		 10000000000000000000.0,
-		 100000000000000000000.0,
-		 1000000000000000000000.0,
-		 10000000000000000000000.0,
-		 100000000000000000000000.0,
-		 1000000000000000000000000.0,
-		 10000000000000000000000000.0,
-		 100000000000000000000000000.0,
-		 1000000000000000000000000000.0,
-		 10000000000000000000000000000.0};
 
 	/* Convert the fractional part of the value */
 	temp = (ILDouble)(value->low);

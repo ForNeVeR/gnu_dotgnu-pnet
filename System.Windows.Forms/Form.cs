@@ -407,11 +407,15 @@ public class Form : ContainerControl
 								other.Menu = null;
 							}
 						}
+						// Get the ClientSize before we add the menu
+						Size clientSize = ClientSize;
 						menu = value;
 						if(menu != null)
 						{
 							menu.AddToForm(this);
 						}
+						// The clientsize must be the same as the old one
+						ClientSize = clientSize;
 					}
 				}
 			}

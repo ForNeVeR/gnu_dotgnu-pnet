@@ -19,6 +19,19 @@ is a pain to implement across dozens of exception classes.
 
 * runtime/System/Security/SecurityException.cs: new class.
 
+* runtime/System/IO/DirectoryNotFoundException.cs,
+runtime/System/IO/EndOfStreamException.cs,
+runtime/System/IO/FileAccess.cs,
+runtime/System/IO/FileLoadException.cs,
+runtime/System/IO/FileMode.cs,
+runtime/System/IO/FileNotFoundException.cs,
+runtime/System/IO/FileShare.cs,
+runtime/System/IO/FileStream.cs,
+runtime/System/IO/IOException.cs,
+runtime/System/IO/PathTooLongException.cs,
+runtime/System/IO/SeekOrigin.cs,
+runtime/System/IO/Stream.cs: implement many of the "System.IO" classes.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

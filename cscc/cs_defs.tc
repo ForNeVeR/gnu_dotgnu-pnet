@@ -58,14 +58,23 @@ extern CSSemValue CSSemValueDefault;
 #define	CS_SEMKIND_RVALUE			1
 #define	CS_SEMKIND_LVALUE			2
 #define	CS_SEMKIND_TYPE				3
-#define	CS_SEMKIND_MEMBER			4
-#define	CS_SEMKIND_SCOPE			5
+#define	CS_SEMKIND_FIELD			4
+#define	CS_SEMKIND_METHOD_GROUP		5
+#define	CS_SEMKIND_PROPERTY			6
+#define	CS_SEMKIND_EVENT			7
+#define	CS_SEMKIND_NAMESPACE		8
+#define	CS_SEMKIND_AMBIGUOUS		9
 
 /*
  * Determine if a semantic analysis kind is usable as a value.
  */
 #define	CSIsSemValue(kind)	((kind) == CS_SEMKIND_LVALUE || \
 							 (kind) == CS_SEMKIND_RVALUE)
+
+/*
+ * Opaque definition of namespace tree nodes.
+ */
+typedef struct _tagILNamespaceTree ILNamespaceTree;
 
 %}
 
@@ -78,6 +87,11 @@ extern CSSemValue CSSemValueDefault;
 /*
  * Node types that are specific to C#.
  */
+
+/*
+ * Dummy node with no semantic analysis.
+ */
+%node ILNode_DummySem ILNode_Dummy
 
 /*
  * Types.
@@ -167,6 +181,31 @@ extern CSSemValue CSSemValueDefault;
 {
 	char *str;
 	int len;
+}
+
+/*
+ * Namespaces.
+ */
+%node ILNode_Namespace ILNode_DummySem =
+{
+	char *name;
+	ILNode_Namespace *enclosing;
+	%nocreate ILNamespaceTree *tree = {0};
+	%nocreate ILNode_UsingAlias *aliases = {0};
+	%nocreate ILNode_UsingNamespace *using = {0};
+}
+%node ILNode_UsingAlias ILNode_DummySem =
+{
+	char *name;
+	char *ref;
+	%nocreate ILClass *classInfo = {0};
+	%nocreate ILNamespaceTree *tree = {0};
+	%nocreate ILNode_UsingAlias *next = {0};
+}
+%node ILNode_UsingNamespace ILNode_DummySem =
+{
+	char *name;
+	%nocreate ILNode_UsingNamespace *next = {0};
 }
 
 /*

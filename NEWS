@@ -1,4 +1,36 @@
 
+0.2.0 (20 October 2001)
+
+	* Better code generation for "return" statements.
+	* Semantic analysis and code generation for "try", "lock", and
+	  "throw" statements.
+	* Code generation for "foreach" statements.
+	* Continue the implementation of the bytecoder verifier.
+	  Most instructions are handled now.
+	* Fix the instruction format for the "unaligned" instruction.
+	* Centralise the recognition and handling of value types within "image".
+	* Improve system type resolution within "image".
+	* Add two special images: system and synthetic, which are assigned
+	  special roles within the runtime engine.
+	* Implement the "Converted Virtual Machine", or CVM, whose bytecode is
+	  more efficient to execute than raw IL.
+	* Implement the CVM coder, which converts IL into CVM bytecode.
+	* Remove "interpreter.c" which is now obsolete.
+	* Java-style type and method lookup routines, which allow strings like
+	  "(oSystem.String;i)V" to be used as signatures.
+	* New format for call frames, method user data, and the thread state.
+	* A helper library for hash tables, to support better code reuse.
+	* Rewrite the class lookup routines to use the new-style hash tables.
+	* System type lookup in the engine always uses the special "system"
+	  image, to prevent applications redirecting the builtin types.
+	* Simple object allocation.
+	* Implement the "internalcall" methods for "Object", "String", "Array",
+	  "Decimal", and "Stdio".
+	* Hook "ilrun.c" through to the engine so that it is now possible
+	  to run simple "Hello World" style examples.
+	* Perform dynamic linking for member references.
+	* Layout for static fields.
+
 0.1.8 (04 October 2001)
 
 	* Begin implementation of ildb, the IL debugger.  Not much working yet.

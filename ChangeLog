@@ -52,6 +52,8 @@ wish to test the engine.
 
 * configure.in: update the version number to 0.2.0 for the next release.
 
+* NEWS: add news pertaining to the 0.2.0 release.
+
 2001-10-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/internal.c, engine/lib_stdio.c, engine/Makefile.am: add

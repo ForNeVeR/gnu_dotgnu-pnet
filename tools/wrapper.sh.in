@@ -35,13 +35,16 @@ fi
 case "$host" in
 	*-*-mingw*|*-*-cygwin*)
 		# Copy the "clrwrap" binary to the final location.
-		if ! test -f "${CLRWRAP}" ; then
-			CLRWRAP="${CLRWRAP}.exe"
-		fi
 		echo rm -f "$1"
 		rm -f "$1"
-		echo cp "${CLRWRAP}" "$1"
-		exec cp "${CLRWRAP}" "$1"
+		echo cp "${CLRWRAP}.exe" "$1"
+		if cp "${CLRWRAP}.exe" "$1" ; then
+			echo strip "$1"
+			strip "$1" 2>/dev/null
+			exit 0
+		else
+			exit 1
+		fi
 		;;
 	*)
 		# Create a symbolic link from the name to "clrwrap".  We link

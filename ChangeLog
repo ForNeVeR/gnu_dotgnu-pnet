@@ -10,6 +10,8 @@
 	"ilinstall", and "jsrun" executables in the assembly cache,
 	and replace the clrwrap redirect scripts with symlinks to clrwrap.
 
+	* tools/wrapper.sh.in: bug fixes to the Win32 version of "wrapper.sh".
+
 2003-11-26  Adam Ballai <adam@thefrontnetworks.net>
 
 	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs:

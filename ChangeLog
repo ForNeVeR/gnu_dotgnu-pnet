@@ -11,6 +11,14 @@
 	* System/Net/HttpWebRequest.cs: minor semantic problem shown
 	up by MS'es compiler.
 
+	* runtime/System/Collections/ArrayList.cs,
+	runtime/System/Collections/Makefile,
+	tests/runtime/Testruntime.cs,
+	tests/runtime/System/TestString.cs,
+	tests/runtime/System/Collections/TestArrayList.cs: add test cases
+	for ArrayList to the test suite, fix the "ArrayList.Add" bug, and
+	fix up a few other test suite issues.
+
 2002-11-19  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/Sockets/NetworkStream.cs, System/Uri.cs: Fix minor bugs 

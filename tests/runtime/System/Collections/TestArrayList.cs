@@ -43,15 +43,75 @@ public class TestArrayList : TestCase
 				// Nothing to do here.
 			}
 
-	// Test running a foreach loop across a simple String array
-	public void TestIterator()
-	{
-		int i;
-		ArrayList l = new ArrayList();
+	// Test insertion into an array list.
+	public void TestInsert()
+			{
+				int posn;
+				ArrayList list = new ArrayList();
+		
+				for(posn = 0; posn < 100; ++posn)
+				{
+					AssertEquals(list.Count, posn);
+					list.Insert(posn / 2, posn.ToString());
+					AssertEquals(list.Count, posn + 1);
+					AssertEquals(((String)(list[posn / 2])), posn.ToString());
+				}
+			}
 
-		for (i=0;i<100;i++)
-		{
-			l.Insert(i,i.ToString());
-		}
-	}
+	// Test adding to an array list.
+	public void TestAdd()
+			{
+				int posn;
+				ArrayList list = new ArrayList();
+		
+				for(posn = 0; posn < 100; ++posn)
+				{
+					AssertEquals(list.Count, posn);
+					list.Add(posn.ToString());
+					AssertEquals(list.Count, posn + 1);
+					AssertEquals(((String)(list[posn])), posn.ToString());
+				}
+			}
+
+	// Test clearing an array list.
+	public void TestClear()
+			{
+				ArrayList list = new ArrayList();
+				int posn;
+
+				// Clear an empty list.
+				AssertEquals(list.Count, 0);
+				list.Clear();
+				AssertEquals(list.Count, 0);
+
+				// Clear a list with 1 element.
+				list.Add("element");
+				AssertEquals(list.Count, 1);
+				list.Clear();
+				AssertEquals(list.Count, 0);
+
+				// Clear a list with 10 elements.
+				for(posn = 0; posn < 10; ++posn)
+				{
+					list.Add(posn);
+				}
+				AssertEquals(list.Count, 10);
+				list.Clear();
+				AssertEquals(list.Count, 0);
+
+				// Attempt to clear a read-only list.
+				list = ArrayList.ReadOnly(list);
+				try
+				{
+					list.Clear();
+
+					// We should never get here!
+					Fail();
+				}
+				catch(NotSupportedException)
+				{
+					// The test was successfull if we get here.
+				}
+			}
+
 }; // class TestArrayList

@@ -162,8 +162,8 @@ public class TestString : TestCase
 
 	public void TestStringConcat()
 	{
-		String str1="Fu";
-		String str2="Bar";
+		//String str1="Fu";
+		//String str2="Bar";
 		AssertEquals("String.Concat(\"Fu\",\"Bar\")",
 			String.Concat("Fu","Bar"),"FuBar");
 		AssertEquals("String.Concat(\"Foo\",\" \",\"Bar\")",

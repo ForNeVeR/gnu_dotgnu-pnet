@@ -89,9 +89,15 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					// We need to allocate a new array.
 					int newCapacity = (((count + n) + 31) & ~31);
 					Object[] newStore = new Object [newCapacity];
-					Array.Copy(store, 0, newStore, 0, index);
-					Array.Copy(store, index, newStore, index + n,
-							   count - index);
+					if(index != 0)
+					{
+						Array.Copy(store, 0, newStore, 0, index);
+					}
+					if(count != index)
+					{
+						Array.Copy(store, index, newStore, index + n,
+								   count - index);
+					}
 					store = newStore;
 				}
 			}

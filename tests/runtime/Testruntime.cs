@@ -28,8 +28,10 @@ public class Testruntime
 			{
 				TestSuite suite = new TestSuite("Basic Runtime Tests");
 				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestSByte));
 				suite.AddTests(typeof(TestString));
 				suite.AddTests(typeof(TestStringBuilder));
+				suite.AddTests(typeof(TestArrayList));
 				return suite;
 			}
 

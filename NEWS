@@ -1,4 +1,9 @@
 
+0.5.12 (6 September 2003)
+
+	* Add "System.dll" to the dependencies for "System.ServiceProcess".
+	* Remove "System.Configuration.Install" because pnetlib now has it.
+
 0.5.10 (26 July 2003)
 
 	* Updates to match changes to Mono build system (Gopal V).

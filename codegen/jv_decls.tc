@@ -62,19 +62,19 @@ JavaGenDiscard(ILNode_FieldDeclarator)
 }
 
 /*
- * Generate discard code for an event field declaration.
+ * Generate discard code for an event declarations.
  */
-JavaGenDiscard(ILNode_EventFieldDeclaration)
+JavaGenDiscard(ILNode_EventDeclaration)
 {
 	/* TODO */
 }
 
 /*
- * Generate discard code for an event property declaration.
+ * Generate discard code for an event declarators.
  */
-JavaGenDiscard(ILNode_EventPropertyDeclaration)
+JavaGenDiscard(ILNode_EventDeclarator)
 {
-	/* TODO */
+	/* Nothing to do here: handled by ILNode_EventDeclaration */
 }
 
 /* 
@@ -94,11 +94,6 @@ JavaGenDiscard(ILNode_PropertyDeclaration)
 	   definition shell for IL and JL are identical.  It will call
 	   back into JavaGenDiscard when outputting the accessor bodies */
 	ILNode_GenDiscard(node, info);
-}
-
-JavaGenDiscard(ILNode_AccessorDeclaration)
-{
-	/* Nothing to do here: this is just a place-holder */
 }
 
 JavaGenDiscard(ILNode_EnumMemberDeclaration)

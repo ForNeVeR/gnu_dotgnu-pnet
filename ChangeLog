@@ -1,4 +1,10 @@
 
+2001-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_decls.tc, codegen/cg_nodes.tc, codegen/jv_decls.tc,
+	cscc/cs_decls.tc, cscc/cs_gather.c, cscc/cs_grammar.y: modify
+	the way events are created and managed in the compiler.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

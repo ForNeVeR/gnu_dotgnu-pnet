@@ -626,6 +626,15 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Create an event definition.
+ */
+static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
+						ILNode_EventDeclaration *event)
+{
+	/* TODO */
+}
+
+/*
  * Create the members of a class node.
  */
 static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
@@ -691,12 +700,11 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 			CreateProperty(info, classInfo,
 						   (ILNode_PropertyDeclaration *)member);
 		}
-#if 0
 		else if(yykind(member) == yykindof(ILNode_EventDeclaration))
 		{
-			/* TODO: Create an event */
+			CreateEvent(info, classInfo,
+						(ILNode_EventDeclaration *)member);
 		}
-#endif
 		else if(yykind(member) != yykindof(ILNode_ClassDefn))
 		{
 			CSErrorOnLine(yygetfilename(member), yygetlinenum(member),

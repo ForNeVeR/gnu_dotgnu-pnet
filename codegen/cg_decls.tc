@@ -238,37 +238,19 @@ ILNode_GenDiscard(ILNode_FieldDeclarator)
 }
 
 /*
- * Generate discard code for event field declaration
+ * Generate discard code for event declarations.
  */
-ILNode_GenDiscard(ILNode_EventFieldDeclaration)
+ILNode_GenDiscard(ILNode_EventDeclaration)
 {
-#if 0
-	/* FIXME: just pass it down? */
-	if (node->attributes)
-	{
-		ILNode_GenDiscard(node->attributes, info);
-	}
-	DumpTypeName(info->asmOutput, node->type);
-	ILNode_GenDiscard(node->varDeclarators, info);
-#endif
+	/* TODO */
 }
 
 /*
- * Generate discard code for event property declaration
+ * Generate discard code for event declarators.
  */
-ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
+ILNode_GenDiscard(ILNode_EventDeclarator)
 {
-#if 0
-	/* FIXME: just pass it down? */
-	if (node->attributes)
-	{
-		ILNode_GenDiscard(node->attributes, info);
-	}
-	DumpTypeName(info->asmOutput, node->type);
-	ILNode_GenDiscard(node->name, info);
-	ILNode_GenDiscard(node->addAccessor, info);
-	ILNode_GenDiscard(node->removeAccessor, info);
-#endif
+	/* Nothing to do here: handled by ILNode_EventDeclaration */
 }
 
 %{
@@ -673,11 +655,6 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 		ILDumpIdentifier(outstream, ILProperty_Name(node->propertyInfo), 0, 0);
 		putc('\n', outstream);
 	}
-}
-
-ILNode_GenDiscard(ILNode_AccessorDeclaration)
-{
-	/* Nothing to do here: this is just a place-holder */
 }
 
 ILNode_GenDiscard(ILNode_EnumMemberDeclaration)

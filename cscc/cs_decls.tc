@@ -460,16 +460,16 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	return CSSemValueDefault;
 }
 
-ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
+ILNode_SemAnalysis(ILNode_EventDeclaration)
 {
-	CSSemValue value, valueChild;
-	ILNode_ListIter iter;
-	ILNode *child;
+	CSSemValue value = CSSemValueDefault; //, valueChild;
+	//ILNode_ListIter iter;
+	//ILNode *child;
 
 	/* Enter an unsafe context for the event field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
-		CSUnsafeEnter(info, (ILNode *)node, "unsafe event field declaration");
+		CSUnsafeEnter(info, (ILNode *)node, "unsafe event declaration");
 	}
 
 	/* Warn if declaring the event field with an unsafe type */
@@ -478,6 +478,9 @@ ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
 		CSUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
+	/* TODO */
+
+#if 0
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
@@ -490,6 +493,7 @@ ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
 		 * of the fields are consistent with the type declaration
 		 */
 	}
+#endif
 
 	/* Leave the unsafe context for the event field */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -500,37 +504,10 @@ ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
 	return value;
 }
 
-ILNode_SemAnalysis(ILNode_EventPropertyDeclaration)
+ILNode_SemAnalysis(ILNode_EventDeclarator)
 {
-	CSSemValue value;
-
-	/* Enter an unsafe context for the event property if necessary */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
-	{
-		CSUnsafeEnter(info, (ILNode *)node,
-					  "unsafe event property declaration");
-	}
-
-	/* Warn if declaring the event property with an unsafe type */
-	if(CSHasUnsafeType(node->type))
-	{
-		CSUnsafeTypeMessage(info, (ILNode *)node);
-	}
-
-	/* FIXME: optional attributes ? */
-	/* modifier already done in parser */
-	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	/* FIXME: qualifiedIdentifier */
-	value = ILNode_SemAnalysis(node->addAccessor, info, &(node->addAccessor));
-	value = ILNode_SemAnalysis(node->removeAccessor, info, &(node->removeAccessor));
-
-	/* Leave the unsafe context for the event property */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
-	{
-		CSUnsafeLeave(info);
-	}
-
-	return value;
+	/* Place-holder only: the real processing is done elsewhere */
+	return CSSemValueDefault;
 }
 
 ILNode_SemAnalysis(ILNode_MethodDeclaration)
@@ -684,12 +661,6 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 	}
 
 	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_AccessorDeclaration)
-{
-	/* FIXME: optional attributes ? */
-	return ILNode_SemAnalysis(node->body, info, &(node->body));
 }
 
 ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)

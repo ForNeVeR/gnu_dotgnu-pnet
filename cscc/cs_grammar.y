@@ -418,7 +418,7 @@ static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
 		/* Simple name: just add the prefix */
 		node = ILQualIdentSimple
 					(ILInternAppendedString
-						(ILInternString(prefix, 4),
+						(ILInternString(prefix, strlen(prefix)),
 						 ILInternString(ILQualIdentName(name, 0), -1)).string);
 		yysetfilename(node, yygetfilename(name));
 		yysetlinenum(node, yygetlinenum(name));
@@ -463,6 +463,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 				ILNode_MethodDeclaration_create
 						(0, property->modifiers, property->type,
 						 name, property->params, 0);
+			property->getAccessor = (ILNode *)decl;
 		}
 		else
 		{
@@ -494,6 +495,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 			decl = (ILNode_MethodDeclaration *)
 				ILNode_MethodDeclaration_create
 						(0, property->modifiers, 0, name, params, 0);
+			property->setAccessor = (ILNode *)decl;
 		}
 		else
 		{
@@ -502,6 +504,123 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 			decl->type = 0;
 			decl->name = name;
 			decl->params = params;
+		}
+	}
+}
+
+/*
+ * Create the methods needed by an event declarator.
+ */
+static void CreateEventDeclMethods(ILNode_EventDeclaration *event,
+								   ILNode_EventDeclarator *decl)
+{
+	ILNode_MethodDeclaration *method;
+	ILNode *eventName;
+	ILNode *name;
+	ILNode *params;
+
+	/* Get the name of the event */
+	eventName = ((ILNode_FieldDeclarator *)(decl->fieldDeclarator))->name;
+
+	/* Create the parameter information for the "add" and "remove" methods */
+	params = ILNode_List_create();
+	ILNode_List_Add(params,
+		ILNode_FormalParameter_create(0, ILParamMod_empty, event->type,
+				ILQualIdentSimple(ILInternString("value", 5).string)));
+
+	/* Create the "add" method */
+	if(!(decl->addAccessor))
+	{
+		name = AdjustPropertyName(eventName, "add_");
+		method = (ILNode_MethodDeclaration *)(decl->addAccessor);
+		if(!method && event->needFields)
+		{
+			/* Field-based event that needs a pre-defined body */
+			method = (ILNode_MethodDeclaration *)
+				ILNode_MethodDeclaration_create
+						(0, event->modifiers, 0, name, params, 0);
+			/* TODO: construct the method body */
+			decl->addAccessor = (ILNode *)method;
+		}
+		else if(!method)
+		{
+			/* Abstract interface definition */
+			method = (ILNode_MethodDeclaration *)
+				ILNode_MethodDeclaration_create
+						(0, event->modifiers, 0, name, params, 0);
+			decl->addAccessor = (ILNode *)method;
+		}
+		else
+		{
+			/* Regular class definition */
+			method->modifiers = event->modifiers;
+			method->type = 0;
+			method->name = name;
+			method->params = params;
+		}
+	}
+
+	/* Create the "remove" method */
+	if(!(decl->removeAccessor))
+	{
+		name = AdjustPropertyName(eventName, "remove_");
+		method = (ILNode_MethodDeclaration *)(decl->removeAccessor);
+		if(!method && event->needFields)
+		{
+			/* Field-based event that needs a pre-defined body */
+			method = (ILNode_MethodDeclaration *)
+				ILNode_MethodDeclaration_create
+						(0, event->modifiers, 0, name, params, 0);
+			/* TODO: construct the method body */
+			decl->removeAccessor = (ILNode *)method;
+		}
+		else if(!method)
+		{
+			/* Abstract interface definition */
+			method = (ILNode_MethodDeclaration *)
+				ILNode_MethodDeclaration_create
+						(0, event->modifiers, 0, name, params, 0);
+			decl->removeAccessor = (ILNode *)method;
+		}
+		else
+		{
+			/* Regular class definition */
+			method->modifiers = event->modifiers;
+			method->type = 0;
+			method->name = name;
+			method->params = params;
+		}
+	}
+}
+
+/*
+ * Create the methods needed by an event definition.
+ */
+static void CreateEventMethods(ILNode_EventDeclaration *event)
+{
+	ILNode_ListIter iter;
+	ILNode *decl;
+
+	if(yyisa(event->eventDeclarators, ILNode_EventDeclarator))
+	{
+		/* A single declarator indicates a property-style event */
+		event->needFields = 0;
+
+		/* Create the methods for the event declarator */
+		CreateEventDeclMethods
+			(event, (ILNode_EventDeclarator *)(event->eventDeclarators));
+	}
+	else
+	{
+		/* A list of declarators indicates a field-style event */
+		event->needFields =
+			((event->modifiers & IL_META_METHODDEF_ABSTRACT) == 0);
+
+		/* Scan the list and create the methods that we require */
+		ILNode_ListIter_Init(&iter, event->eventDeclarators);
+		while((decl = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			CreateEventDeclMethods(event, (ILNode_EventDeclarator *)decl);
 		}
 	}
 }
@@ -738,7 +857,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %type <node>		VariableInitializer LocalVariableDeclaration
 %type <node>		LocalConstantDeclaration
 %type <node>		EventFieldDeclaration EventDeclaration 
-%type <node>		EventPropertyDeclaration 
+%type <node>		EventPropertyDeclaration EventDeclarators EventDeclarator
 %type <pair>		EventAccessorBlock EventAccessorDeclarations
 
 %type <node>		MethodDeclaration MethodBody
@@ -749,8 +868,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %type <node>		OptGetAccessorDeclaration GetAccessorDeclaration
 %type <node>		OptSetAccessorDeclaration SetAccessorDeclaration
 %type <node>		AccessorBody
-%type <node>		OptAddAccessorDeclaration AddAccessorDeclaration
-%type <node>		OptRemoveAccessorDeclaration RemoveAccessorDeclaration
+%type <node>		AddAccessorDeclaration RemoveAccessorDeclaration
 %type <node>		IndexerDeclaration
 %type <node>		FormalIndexParameters FormalIndexParameter
 %type <node>		FormalIndexParameterList
@@ -2569,9 +2687,33 @@ EventDeclaration
 	;
 
 EventFieldDeclaration
-	: OptAttributes OptModifiers EVENT Type FieldDeclarators ';'	{
+	: OptAttributes OptModifiers EVENT Type EventDeclarators ';'	{
 				ILUInt32 attrs = CSModifiersToEventAttrs($4, $2);
-				$$ = ILNode_EventFieldDeclaration_create($1, attrs, $4, $5);
+				$$ = ILNode_EventDeclaration_create($1, attrs, $4, $5);
+				CreateEventMethods((ILNode_EventDeclaration *)($$));
+			}
+	;
+
+EventDeclarators
+	: EventDeclarator						{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}	
+	| EventDeclarators ',' EventDeclarator {
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
+		
+	;
+
+EventDeclarator
+	: Identifier							{
+				$$ = ILNode_EventDeclarator_create
+						(ILNode_FieldDeclarator_create($1, 0), 0, 0);
+			}
+	| Identifier '=' VariableInitializer	{
+				$$ = ILNode_EventDeclarator_create
+						(ILNode_FieldDeclarator_create($1, $3), 0, 0);
 			}
 	;
 
@@ -2579,8 +2721,12 @@ EventPropertyDeclaration
 	: OptAttributes OptModifiers EVENT Type QualifiedIdentifier
 			StartAccessorBlock EventAccessorBlock	{
 				ILUInt32 attrs = CSModifiersToEventAttrs($4, $2);
-				$$ = ILNode_EventPropertyDeclaration_create($1, 
-									attrs, $4, $5, $7.item1, $7.item2);
+				$$ = ILNode_EventDeclaration_create
+					($1, attrs, $4, 
+						ILNode_EventDeclarator_create
+							(ILNode_FieldDeclarator_create($5, 0),
+							 $7.item1, $7.item2));
+				CreateEventMethods((ILNode_EventDeclaration *)($$));
 			}
 	;
 
@@ -2601,35 +2747,27 @@ EventAccessorBlock
 	;
 
 EventAccessorDeclarations
-	: AddAccessorDeclaration OptRemoveAccessorDeclaration {
+	: AddAccessorDeclaration RemoveAccessorDeclaration {
 				$$.item1 = $1;
 				$$.item2 = $2;
 			}
-	| RemoveAccessorDeclaration OptAddAccessorDeclaration {
+	| RemoveAccessorDeclaration AddAccessorDeclaration {
 				$$.item1 = $2;
 				$$.item2 = $1;
 			}
 	;
 
-OptAddAccessorDeclaration
-	: /* empty */				{ $$ = 0; }
-	| AddAccessorDeclaration	{ $$ = $1; }
-	;
-
 AddAccessorDeclaration
 	: OptAttributes ADD TurnOffGetSet AccessorBody TurnOnGetSet		{
-				MakeBinary(AccessorDeclaration, $1, $4);
+				$$ = ILNode_MethodDeclaration_create
+						($1, 0, 0, 0, 0, $4);
 			}
-	;
-
-OptRemoveAccessorDeclaration
-	: /* empty */				{ $$ = 0; }
-	| RemoveAccessorDeclaration	{ $$ = $1; }
 	;
 
 RemoveAccessorDeclaration
 	: OptAttributes REMOVE TurnOffGetSet AccessorBody TurnOnGetSet	{
-				MakeBinary(AccessorDeclaration, $1, $4);
+				$$ = ILNode_MethodDeclaration_create
+						($1, 0, 0, 0, 0, $4);
 			}
 	;
 
@@ -3147,8 +3285,11 @@ InterfaceEventDeclaration
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
 								 IL_META_METHODDEF_HIDE_BY_SIG;
-				$$ = ILNode_EventPropertyDeclaration_create
-							($1, attrs, $4, $5, 0, 0);
+				$$ = ILNode_EventDeclaration_create
+							($1, attrs, $4,
+							 ILNode_EventDeclarator_create
+							 	(ILNode_FieldDeclarator_create($5, 0), 0, 0));
+				CreateEventMethods((ILNode_EventDeclaration *)($$));
 			}
 	;
 

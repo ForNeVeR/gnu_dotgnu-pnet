@@ -618,21 +618,20 @@ struct _tagILEvalValue
 	ILNode		*initializer;
 	%nocreate ILField *fieldInfo = {0};
 }
-%node ILNode_EventFieldDeclaration ILNode_Declaration =
+%node ILNode_EventDeclaration ILNode_Declaration =
 {
 	ILNode	   *attributes;
 	ILUInt32	modifiers;
 	ILNode	   *type;
-	ILNode	   *varDeclarators;
+	ILNode	   *eventDeclarators;
+	%nocreate int needFields = {0};
 }
-%node ILNode_EventPropertyDeclaration ILNode_Declaration =
+%node ILNode_EventDeclarator ILNode_Declaration =
 {
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *type;
-	ILNode	   *name;
+	ILNode     *fieldDeclarator;
 	ILNode	   *addAccessor;
 	ILNode	   *removeAccessor;
+	%nocreate ILEvent *eventInfo = {0};
 }
 
 /*
@@ -664,15 +663,6 @@ struct _tagILEvalValue
 	ILNode	   *setAccessor;
 	ILUInt32	getsetFlags; /* 1 = get, 2 = set */
 	%nocreate ILProperty *propertyInfo = {0};
-}
-
-/*
- * property accessor declaration
- */
-%node ILNode_AccessorDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILNode	   *body;
 }
 
 %node ILNode_EnumMemberDeclaration ILNode_Declaration =

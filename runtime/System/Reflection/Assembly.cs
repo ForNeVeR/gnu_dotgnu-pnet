@@ -170,13 +170,9 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public virtual FileStream GetFile(String name);
 
-	// Get file streams for all public manifest resources.
-	[TODO]
-	public virtual FileStream[] GetFiles(bool getResourceModules)
-			{
-				// TODO
-				return null;
-			}
+	// Get file streams for all public manifest files.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual FileStream[] GetFiles(bool getResourceModules);
 	public virtual FileStream[] GetFiles()
 			{
 				return GetFiles(false);

@@ -247,6 +247,19 @@ ILNode_SemAnalysis(ILNode_Foreach)
 }
 
 /*
+ * Perform semantic analysis for the "foreach collection" statement.
+ */
+ILNode_SemAnalysis(ILNode_ForeachCollection)
+{
+	/* We don't need to do anything here, as this node type is
+	   synthesized by the "ILNode_Foreach" processing */
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
  * Perform semantic analysis for the "switch" statement.
  */
 ILNode_SemAnalysis(ILNode_Switch)

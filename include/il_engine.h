@@ -632,6 +632,13 @@ ILUInt16 *ILStringToUTF16(ILExecThread *thread, ILString *str);
 char *ILStringToAnsi(ILExecThread *thread, ILString *str);
 
 /*
+ * Convert a string into "ANSI" and normalize any pathname
+ * separators to the system's standard character.  If "str"
+ * is NULL, then NULL will be returned.
+ */
+char *ILStringToPathname(ILExecThread *thread, ILString *str);
+
+/*
  * Get an element of an array.  Returns non-zero if an exception occurred.
  */
 int ILExecThreadGetElem(ILExecThread *thread, void *value,

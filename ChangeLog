@@ -5,6 +5,10 @@
 	cscc/csharp/cs_modifiers.c: report errors for "Finalize" methods
 	that are not properly declared as constructors (Bug #4062).
 
+	* engine/lib_dir.c, engine/lib_file.c, include/il_engine.h:
+	convert '\' into '/' in pathnames to work around Windows programmers
+	who don't use "Path.DirectorySeparatorChar" in their C# code.
+
 2003-06-27  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fix recursive entry/leave bug in

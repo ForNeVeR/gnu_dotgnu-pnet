@@ -26,6 +26,31 @@
 #include "il_sysio.h"
 #include "il_errno.h"
 
+char *ILStringToPathname(ILExecThread *thread, ILString *str)
+{
+#ifdef IL_WIN32_NATIVE
+	/* Win32 understands both '/' and '\' in pathnames, so leave as-is */
+	return ILStringToAnsi(thread, str);
+#else
+	char *path = ILStringToAnsi(thread, str);
+	char *temp;
+	if(!path)
+	{
+		return 0;
+	}
+	temp = path;
+	while(*temp != '\0')
+	{
+		if(*temp == '\\')
+		{
+			*temp = '/';
+		}
+		++temp;
+	}
+	return path;
+#endif
+}
+
 /*
  * public static IntPtr GetInvalidHandle();
  */
@@ -39,7 +64,7 @@ ILNativeInt _IL_FileMethods_GetInvalidHandle(ILExecThread *thread)
  */
 ILBool _IL_FileMethods_ValidatePathname(ILExecThread *thread, ILString *path)
 {
-	char *cpath = ILStringToAnsi(thread, path);
+	char *cpath = ILStringToPathname(thread, path);
 	if(cpath)
 	{
 		return (ILBool)(ILSysIOValidatePathname(cpath));
@@ -55,7 +80,7 @@ ILBool _IL_FileMethods_ValidatePathname(ILExecThread *thread, ILString *path)
  */
 ILInt32 _IL_FileMethods_GetFileType(ILExecThread * _thread, ILString * path)
 {
-	const char *cpath = ILStringToAnsi(_thread,path);
+	const char *cpath = ILStringToPathname(_thread,path);
 	if(cpath)
 	{
 		return ILGetFileType(cpath);
@@ -75,7 +100,7 @@ ILBool _IL_FileMethods_Open(ILExecThread *thread, ILString *path,
 						    ILInt32 mode, ILInt32 access, ILInt32 share,
 							ILNativeInt *handle)
 {
-	char *cpath = ILStringToAnsi(thread, path);
+	char *cpath = ILStringToPathname(thread, path);
 	if(!cpath)
 	{
 		ILSysIOSetErrno(IL_ERRNO_ENOMEM);
@@ -200,8 +225,8 @@ ILString *_IL_FileMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
 ILInt32 _IL_FileMethods_Copy(ILExecThread *_thread,
 							ILString *src, ILString *dest)
 {
-	char * src_ansi  = ILStringToAnsi(_thread, src );
-	char * dest_ansi = ILStringToAnsi(_thread, dest);
+	char * src_ansi  = ILStringToPathname(_thread, src );
+	char * dest_ansi = ILStringToPathname(_thread, dest);
 	if(src_ansi == NULL || dest_ansi == NULL)
 	{
 		return IL_ERRNO_ENOMEM;
@@ -214,7 +239,7 @@ ILInt32 _IL_FileMethods_Copy(ILExecThread *_thread,
  */
 ILInt32 _IL_FileMethods_SetLastWriteTime(ILExecThread *thread, ILString *path, ILInt64 ticks)
 {
-	char *path_ansi = ILStringToAnsi(thread, path);
+	char *path_ansi = ILStringToPathname(thread, path);
 	
 	if(!path_ansi)
 	{
@@ -230,7 +255,7 @@ ILInt32 _IL_FileMethods_SetLastWriteTime(ILExecThread *thread, ILString *path, I
  */
 ILInt32 _IL_FileMethods_SetLastAccessTime(ILExecThread *thread, ILString *path, ILInt64 ticks)
 {
-	char *path_ansi = ILStringToAnsi(thread, path);
+	char *path_ansi = ILStringToPathname(thread, path);
 	
 	if(!path_ansi)
 	{
@@ -246,7 +271,7 @@ ILInt32 _IL_FileMethods_SetLastAccessTime(ILExecThread *thread, ILString *path, 
  */
 ILInt32 _IL_FileMethods_SetCreationTime(ILExecThread *thread, ILString *path, ILInt64 ticks)
 {
-	char *path_ansi = ILStringToAnsi(thread, path);
+	char *path_ansi = ILStringToPathname(thread, path);
 	
 	if(!path_ansi)
 	{

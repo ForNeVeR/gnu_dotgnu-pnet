@@ -106,7 +106,7 @@ ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread *_thread,
 									 ILString *path, ILInt64 *lastac)
 {
 	char *cpath;
-	if (!(cpath = ILStringToAnsi(_thread, path)))
+	if (!(cpath = ILStringToPathname(_thread, path)))
 	{
 		return IL_ERRNO_ENOMEM;
 	}
@@ -120,7 +120,7 @@ ILInt32 _IL_DirMethods_GetLastModification(ILExecThread *_thread,
 										   ILString *path, ILInt64 *last_mod)
 {
 	char *cpath;
-	if (!(cpath = ILStringToAnsi(_thread, path)))
+	if (!(cpath = ILStringToPathname(_thread, path)))
 	{
 		return IL_ERRNO_ENOMEM;
 	}
@@ -134,7 +134,7 @@ ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread *_thread,
 									   ILString *path, ILInt64 *create_time)
 {
 	char *cpath;
-	if (!(cpath = ILStringToAnsi(_thread, path)))
+	if (!(cpath = ILStringToPathname(_thread, path)))
 	{
 		return IL_ERRNO_ENOMEM;
 	}
@@ -156,7 +156,7 @@ ILInt32 _IL_DirMethods_Copy(ILExecThread *_thread,
  */
 ILInt32 _IL_DirMethods_CreateDirectory(ILExecThread *_thread, ILString *path)
 {
-	return ILCreateDir(ILStringToAnsi(_thread, path));
+	return ILCreateDir(ILStringToPathname(_thread, path));
 }
 
 /*
@@ -164,7 +164,7 @@ ILInt32 _IL_DirMethods_CreateDirectory(ILExecThread *_thread, ILString *path)
  */
 ILInt32 _IL_DirMethods_Delete(ILExecThread *_thread, ILString *path)
 {
-	return ILDeleteDir(ILStringToAnsi(_thread, path));
+	return ILDeleteDir(ILStringToPathname(_thread, path));
 }
 
 /*
@@ -174,8 +174,8 @@ ILInt32 _IL_DirMethods_Rename(ILExecThread *_thread,
 							  ILString *old_name,
 							  ILString *new_name)
 {
-	char * old_name_ansi = ILStringToAnsi(_thread, old_name);
-	char * new_name_ansi = ILStringToAnsi(_thread, new_name);
+	char * old_name_ansi = ILStringToPathname(_thread, old_name);
+	char * new_name_ansi = ILStringToPathname(_thread, new_name);
 	if(old_name_ansi == NULL || new_name_ansi == NULL)
 	{
 		return IL_ERRNO_ENOMEM;
@@ -206,7 +206,7 @@ ILString *_IL_DirMethods_GetCurrentDirectory(ILExecThread *_thread)
 ILInt32 _IL_DirMethods_ChangeDirectory(ILExecThread * _thread, 
 										ILString * name)
 {
-	return ILChangeDir(ILStringToAnsi(_thread,name));
+	return ILChangeDir(ILStringToPathname(_thread,name));
 }
 
 /*
@@ -232,7 +232,7 @@ extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILStrin
 	 * 	well as PNETROOT/support/dir.c, as the logic will need to be 
 	 * 	re-vamped a bit*/
 
-	dirStream = ILOpenDir(ILStringToAnsi(_thread, path));
+	dirStream = ILOpenDir(ILStringToPathname(_thread, path));
 	if(!dirStream)
 	{
  		return ILSysIOConvertErrno(errno);

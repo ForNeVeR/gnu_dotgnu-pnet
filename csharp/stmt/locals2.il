@@ -1,0 +1,30 @@
+.assembly extern '.library'
+{
+	.ver 0:0:0:0
+}
+.assembly '<Assembly>'
+{
+	.ver 0:0:0:0
+}
+.module '<Module>'
+.class private auto ansi 'Test' extends ['.library']'System'.'Object'
+{
+.method private static hidebysig int32 'm2'() cil managed 
+{
+	.locals	(int32, int32)
+	ldc.i4.s	10
+	ldc.i4.s	10
+	add
+	stloc.1
+	ldloc.1
+	ret
+	.maxstack 2
+} // method m2
+.method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
+{
+	ldarg.0
+	call	instance void ['.library']'System'.'Object'::'.ctor'()
+	ret
+	.maxstack 1
+} // method .ctor
+} // class Test

@@ -4,6 +4,8 @@ TESTS = block1.cs \
 		foreach1.cs \
 		foreach2.cs \
 		locals1.cs \
+		locals2.cs \
+		locals3.cs \
 		lock1.cs \
 		lock2.cs \
 		return1.cs \

@@ -1,4 +1,11 @@
 
+2002-05-11	Gopal.V <gopalv82@symonds.net>
+	* csharp/stmt/Makefile.am, csharp/stmt/locals2.cs,
+	csharp/stmt/locals2.il,csharp/stmt/local2.jl, 
+	csharp/stmt/locals3.cs,csharp/stmt/locals3.err
+	csharp/stmt/locals3.jerr : test code generation for
+	"const" variables
+
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/Makefile.am, csharp/stmt/return2.cs,

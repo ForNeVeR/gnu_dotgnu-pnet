@@ -24,7 +24,6 @@ namespace System.Windows.Forms
 #if CONFIG_COMPONENT_MODEL
 
 using System;
-using System.Collections;
 using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.Globalization;
@@ -61,7 +60,7 @@ using System.Drawing;
 					if (constructorInfo != null)
 					{
 						object[] arguments = new object[] {subItem.Text, null};
-						return new InstanceDescriptor(constructorInfo, (ICollection)arguments, true);
+						return new InstanceDescriptor(constructorInfo, arguments, true);
 					}
 				}
 				
@@ -70,7 +69,7 @@ using System.Drawing;
 				if (constructorInfo != null)
 				{
 					object[] arguments = new object[] {subItem.Text, subItem.ForeColor, subItem.BackColor, subItem.Font};
-					return new InstanceDescriptor(constructorInfo, (ICollection)arguments, true);
+					return new InstanceDescriptor(constructorInfo, arguments, true);
 				}
 				
 			}

@@ -1,3 +1,8 @@
+2004-01-23  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ListViewItemConverter.cs,
+	System.Windows.Forms/ListViewSubItemConverter.cs: back out my earlier
+	workaround of a cscc bug.
 
 2004-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
@@ -15,7 +20,7 @@
 2004-01-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListViewItemConverter.cs,
-	System.Windows.Forms/ListViewSubItemConverter.cs: fix some cscc	compile
+	System.Windows.Forms/ListViewSubItemConverter.cs: fix some cscc compile
 	issues.
 
 	* System.Xml/EOFHandler.cs, System.Xml/ErrorHandler.cs,

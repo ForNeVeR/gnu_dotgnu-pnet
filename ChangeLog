@@ -12,6 +12,10 @@ classes.
 
 * runtime/System/Makefile.am: add "BitConverter" and "Buffer" to the build.
 
+* resources/en_US/runtime/IO.txt, runtime/System/BitConverter.cs,
+runtime/System/Makefile.am, runtime/System/IO/BinaryReader.cs: implement
+the "System.IO.BinaryReader" class.
+
 2001-12-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/DateTime.cs,

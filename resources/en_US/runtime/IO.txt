@@ -32,6 +32,7 @@ IO_ReadFailed=Read request failed
 IO_SeekFailed=Seek request failed
 IO_SetLengthFailed=SetLength request failed
 IO_EndOfStream=Attempt to seek beyond the end of the stream
+IO_ReadEndOfStream=Attempt to read beyond the end of the stream
 IO_NotSupp_Seek=The specified stream does not support seeking
 IO_NotSupp_SetLength=The specified stream does not support setting its length
 IO_NotSupp_Read=The specified stream does not support reading

@@ -46,11 +46,11 @@ public sealed class BitConverter
 
 	// Convert a float value into a 32-bit integer.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static int FloatToInt32Bits(float value);
+	extern internal static int FloatToInt32Bits(float value);
 
 	// Convert a 32-bit integer into a float value.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static float Int32BitsToFloat(int value);
+	extern internal static float Int32BitsToFloat(int value);
 
 	// Convert a boolean value into an array of bytes.
 	public static byte[] GetBytes(bool value)

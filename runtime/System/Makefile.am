@@ -161,6 +161,7 @@ CSSRC = Activator.cs \
 		Globalization/NumberStyles.cs \
 		Globalization/TextInfo.cs \
 		Globalization/UnicodeCategory.cs \
+		IO/BinaryReader.cs \
 		IO/DirectoryNotFoundException.cs \
 		IO/EndOfStreamException.cs \
 		IO/FileAccess.cs \

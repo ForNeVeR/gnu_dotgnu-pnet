@@ -16,7 +16,6 @@
 
 			<references>
 				<file name="System.dll"/>
-				<file name="../System.Security/System.Security.dll"/>
 			</references>
 
 		</compile>

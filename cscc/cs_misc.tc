@@ -69,8 +69,9 @@ ILNode_GenValue(ILNode_TypeOf)
 	ILGenTypeToken(info, IL_OP_LDTOKEN, node->type);
 	ILGenAdjust(info, 1);
 	ILGenCallByName(info,
-			"class System.Type System.Type::GetTypeFromHandle"
-				"(valuetype System.RuntimeTypeHandle)");
+			"class [.library]System.Type "
+				"[.library]System.Type::GetTypeFromHandle"
+				"(valuetype [.library]System.RuntimeTypeHandle)");
 	return ILMachineType_ObjectRef;
 }
 

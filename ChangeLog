@@ -5,6 +5,10 @@
 	PlatformID.Unix symbol directly in the code so that it will
 	compile under csc.
 
+	* System.Windows.Forms/Application.cs (Application.Exit):
+	work around single-threaded runtime engines that return
+	"null" from "Thread.CurrentThread".
+
 2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: Implemented as much as I could.

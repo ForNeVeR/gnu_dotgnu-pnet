@@ -297,7 +297,8 @@ public sealed class Application
 			{
 				lock(typeof(Application))
 				{
-					if(mainThread != null)
+					if(mainThread != null ||
+					   Thread.CurrentThread == null)
 					{
 						ToolkitManager.Toolkit.Quit();
 					}

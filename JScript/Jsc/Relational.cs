@@ -36,17 +36,24 @@ public class Relational : BinaryOp
 			}
 
 	// Evaluate a relational operator on two values.
-	public double EvaluatRelational(Object v1, Object v2)
+	public double EvaluateRelational(Object v1, Object v2)
 			{
-				// TODO
-				return 0.0;
+				return JScriptCompare(v1, v2);
 			}
 
 	// Compare two values.
 	public static double JScriptCompare(Object v1, Object v2)
 			{
-				// TODO
-				return 0.0;
+				v1 = Convert.ToPrimitive(v1, DefaultValueHint.None);
+				v2 = Convert.ToPrimitive(v2, DefaultValueHint.None);
+				if(v1 is String && v2 is String)
+				{
+					return String.CompareOrdinal((String)v1, (String)v2);
+				}
+				else
+				{
+					return (Convert.ToNumber(v1) - Convert.ToNumber(v2));
+				}
 			}
 
 }; // class Relational

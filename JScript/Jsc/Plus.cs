@@ -33,15 +33,22 @@ public sealed class Plus : BinaryOp
 	// Evaluate a plus operator on two values.
 	public Object EvaluatePlus(Object v1, Object v2)
 			{
-				// TODO
-				return null;
+				return DoOp(v1, v2);
 			}
 
 	// Evaluate a plus operator on two values.
 	public static Object DoOp(Object v1, Object v2)
 			{
-				// TODO
-				return null;
+				v1 = Convert.ToPrimitive(v1, DefaultValueHint.None);
+				v2 = Convert.ToPrimitive(v2, DefaultValueHint.None);
+				if(v1 is String || v2 is String)
+				{
+					return ((String)v1) + ((String)v2);
+				}
+				else
+				{
+					return Convert.ToNumber(v1) + Convert.ToNumber(v2);
+				}
 			}
 
 }; // class Plus

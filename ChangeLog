@@ -1,3 +1,10 @@
+
+2003-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* JScript/Jsc/BitwiseBinary.cs, JScript/Jsc/Instanceof.cs,
+	JScript/Jsc/Plus.cs, JScript/Jsc/Relational.cs,
+	JScript/Nodes/JExpr.tc: implement some easy TODO's in JScript.
+
 2003-08-04  Neil Cawse   <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: small changes to MeasureCharacterRanges.

@@ -429,13 +429,7 @@ Eval(JGe)
 // Evaluate an "instanceof" expression.
 Eval(JInstanceof)
 {
-	Object value1 = expr1.Eval(engine);
-	Object value2 = expr2.Eval(engine);
-	if(!(value2 is ScriptFunction))
-	{
-		throw new JScriptException(JSError.FunctionExpected);
-	}
-	return ((ScriptFunction)value2).HasInstance(value1);
+	return Instanceof.JScriptInstanceof(expr1.Eval(engine), expr2.Eval(engine));
 }
 
 // Evaluate an "in" expression.

@@ -34,8 +34,37 @@ public sealed class Instanceof : BinaryOp
 	// Determine if an object is an instance of a class.
 	public static bool JScriptInstanceof(Object v1, Object v2)
 			{
-				// TODO
-				return false;
+				if(v2 is ScriptFunction)
+				{
+					// Check for function instances.
+					return ((ScriptFunction)v2).HasInstance(v1);
+				}
+				else if(v1 == null)
+				{
+					// Null is never an instance of any type.
+					return false;
+				}
+				else if(v2 is Type)
+				{
+					// Try to coerce to the destination type.
+					Type type = (Type)v2;
+					if(v1 is IConvertible)
+					{
+						try
+						{
+							Convert.CoerceT(v1, type, false);
+						}
+						catch(JScriptException)
+						{
+							return false;
+						}
+					}
+					return type.IsAssignableFrom(v1.GetType());
+				}
+				else
+				{
+					throw new JScriptException(JSError.NeedType);
+				}
 			}
 
 }; // class Instanceof

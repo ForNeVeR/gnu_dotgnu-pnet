@@ -38,8 +38,27 @@ public sealed class BitwiseBinary : BinaryOp
 	// Evaluate a bitwise binary operator on two values.
 	public Object EvaluateBitwiseBinary(Object v1, Object v2)
 			{
-				// TODO
-				return null;
+				int val1 = Convert.ToInt32(v1);
+				int val2 = Convert.ToInt32(v2);
+				Object result;
+				switch(operatorTok)
+				{
+					case JSToken.BitwiseAnd:
+						result = val1 & val2; break;
+					case JSToken.BitwiseOr:
+						result = val1 | val2; break;
+					case JSToken.BitwiseXor:
+						result = val1 ^ val2; break;
+					case JSToken.LeftShift:
+						result = val1 << val2; break;
+					case JSToken.RightShift:
+						result = val1 >> val2; break;
+					case JSToken.UnsignedRightShift:
+						result = ((uint)val1) >> val2; break;
+					default:
+						throw new JScriptException(JSError.InternalError);
+				}
+				return result;
 			}
 
 }; // class BitwiseBinary

@@ -10,6 +10,10 @@
 	* image/meta_build.c: link a dynamically loaded module to
 	the ModuleRef.
 
+	* image/meta_types.c (ILTypeIdentical): check for class identity
+	in a way that will work even if "redo" items are involved and the
+	classes haven't been linked together yet.
+
 2003-11-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/context.c, image/image.h, image/link.c, image/meta_build.c,

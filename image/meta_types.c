@@ -445,6 +445,72 @@ ILType *ILTypeStripPrefixes(ILType *type)
 	return type;
 }
 
+/*
+ * Determine if two classes are identical.
+ */
+static int ClassIdentical(ILClass *classInfo1, ILClass *classInfo2)
+{
+	const char *namespace1;
+	const char *namespace2;
+	ILClass *parent1;
+	ILClass *parent2;
+
+	/* Resolve the classes as far as possible */
+	classInfo1 = ILClassResolve(classInfo1);
+	classInfo2 = ILClassResolve(classInfo2);
+	if(classInfo1 == classInfo2)
+	{
+		return 1;
+	}
+
+	/* If there are no "redo" items, then there is no way to match */
+	if(classInfo1->programItem.image->context->numRedoItems == 0)
+	{
+		return 0;
+	}
+
+	/* If neither is a reference, then they cannot be identical */
+	if(!ILClassIsRef(classInfo1) && !ILClassIsRef(classInfo2))
+	{
+		return 0;
+	}
+
+	/* Check for name identity */
+	if(strcmp(ILClass_Name(classInfo1), ILClass_Name(classInfo2)) != 0)
+	{
+		return 0;
+	}
+	namespace1 = ILClass_Namespace(classInfo1);
+	namespace2 = ILClass_Namespace(classInfo2);
+	if(namespace1 && namespace2)
+	{
+		if(strcmp(namespace1, namespace2) != 0)
+		{
+			return 0;
+		}
+	}
+	else if(namespace1 != namespace2)
+	{
+		return 0;
+	}
+
+	/* Check the nesting scope levels */
+	parent1 = ILClassGetNestedParent(classInfo1);
+	parent2 = ILClassGetNestedParent(classInfo2);
+	if(parent1 && parent2)
+	{
+		return ClassIdentical(parent1, parent2);
+	}
+	else if(parent1 != parent2)
+	{
+		return 0;
+	}
+
+	/* The two classes are identical, or will be after we perform
+	   "redo" operations at the end of the loading process */
+	return 1;
+}
+
 int ILTypeIdentical(ILType *type1, ILType *type2)
 {
 	unsigned long arg;
@@ -478,8 +544,8 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 	{
 		if(ILType_IsClass(type2))
 		{
-			return (ILClassResolve(ILType_ToClass(type1)) ==
-					ILClassResolve(ILType_ToClass(type2)));
+			return ClassIdentical(ILType_ToClass(type1),
+								  ILType_ToClass(type2));
 		}
 		else
 		{
@@ -490,8 +556,8 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 	{
 		if(ILType_IsValueType(type2))
 		{
-			return (ILClassResolve(ILType_ToClass(type1)) ==
-					ILClassResolve(ILType_ToClass(type2)));
+			return ClassIdentical(ILType_ToValueType(type1),
+								  ILType_ToValueType(type2));
 		}
 		else
 		{

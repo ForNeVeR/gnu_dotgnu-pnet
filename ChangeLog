@@ -4,6 +4,9 @@
 	* dumpasm/dump_flags.c: change "public_key" to "publickey" so that
 	the output of the disassember is more palatable to the assembler.
 
+	* dumpasm/dump_class.c: dump the namespace of a class separately
+	from the ".class" header.
+
 2003-01-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* csant/csant_fileset.c: Implement an if conditional flag for the

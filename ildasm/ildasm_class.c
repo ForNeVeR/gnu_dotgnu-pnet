@@ -346,13 +346,21 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 	ILMethod *decl;
 	ILMethod *body;
 
+	/* Dump the namespace if this class is not nested */
+	if(!ILClass_NestedParent(info) && ILClass_Namespace(info))
+	{
+		fputs(".namespace ", outstream);
+		ILDumpIdentifier(outstream, ILClass_Namespace(info), 0, flags);
+		fputs("\n{\n", outstream);
+	}
+
 	/* Dump the type header, if it is not "<Module>" */
 	if(strcmp(ILClass_Name(info), "<Module>") != 0 ||
 	   ILClass_Namespace(info) != 0)
 	{
 		fputs(".class ", outstream);
 		ILDumpFlags(outstream, ILClass_Attrs(info), ILTypeDefinitionFlags, 0);
-		ILDumpClassName(outstream, image, info, flags);
+		ILDumpIdentifier(outstream, ILClass_Name(info), 0, flags);
 		if(ILClass_Parent(info))
 		{
 			fputs(" extends ", outstream);
@@ -486,6 +494,12 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 	else if(ILClassNextMember(info, 0) != 0)
 	{
 		fputs("// }\n", outstream);
+	}
+
+	/* Dump the namespace footer if this class is not nested */
+	if(!ILClass_NestedParent(info) && ILClass_Namespace(info))
+	{
+		fputs("}\n", outstream);
 	}
 }
 

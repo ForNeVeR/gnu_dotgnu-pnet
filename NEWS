@@ -1,4 +1,11 @@
 
+0.2.2 (10 June 2002)
+
+	* Extra internalcalls for DirMethods (Abhaya Agarwal).
+	* System.IO.MemoryStream (Stephen Compall, Haran Shivanan).
+	* System.Net, System.Xml (Peter Minten).
+	* System.Uri (Stephen Compall).
+
 0.2.0 (11 May 2002)
 
 	* Bug fixes to System.Uri, System.IO.StringWriter (Stephen Compall).

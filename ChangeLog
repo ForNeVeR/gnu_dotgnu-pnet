@@ -6,6 +6,8 @@
 	System.Xml/XmlTextReader.cs, runtime/System/IO/MemoryStream.cs:
 	fix semantic errors.
 
+	* configure.in, NEWS: update for the "0.2.2" release.
+
 2002-06-01  Peter Minten  <silvernerd@users.sf.net>
         * runtime/Platform/DnsMethods.cs: Created
         * System.Xml/XmlReader.cs: got rid of useless internal methods

@@ -30,17 +30,33 @@ using Platform;
 // This is a helper class that is used by the DES, TripleDES, RC2,
 // and Rijndael symmetric algorithm classes to create encryptor and
 // decryptor objects that call through to the engine to do the work.
+//
+// This class in turn calls out to classes such as "CBCEncrypt",
+// "ECBDecrypt", etc to handle each of the cipher modes.
 
 public sealed class CryptoAPITransform : ICryptoTransform
 {
+	// Delegate types for the mode-specific processing routines.
+	private delegate int ProcessBlock(CryptoAPITransform transform,
+								      byte[] inputBuffer, int inputOffset,
+									  int inputCount, byte[] outputBuffer,
+									  int outputOffset);
+	private delegate byte[] ProcessFinal(CryptoAPITransform transform,
+								         byte[] inputBuffer, int inputOffset,
+									     int inputCount);
+
 	// Internal state.
-	private IntPtr state;
-	private byte[] iv;
-	private int blockSize;
-	private int feedbackBlockSize;
+	internal IntPtr state;
+	internal IntPtr state2;
+	internal byte[] iv;
+	internal int blockSize;
+	internal int feedbackBlockSize;
+	internal PaddingMode padding;
+	internal byte[] tempBuffer;
+	internal int tempSize;
 	private CipherMode mode;
-	private PaddingMode padding;
-	private bool encrypt;
+	private ProcessBlock processBlock;
+	private ProcessFinal processFinal;
 
 	// Constructor.
 	internal CryptoAPITransform(int algorithm, byte[] iv, byte[] key,
@@ -48,29 +64,164 @@ public sealed class CryptoAPITransform : ICryptoTransform
 								CipherMode mode, PaddingMode padding,
 								bool encrypt)
 			{
-				if(encrypt)
+				// Initialize the common state.
+				if(iv != null)
 				{
-					state = CryptoMethods.EncryptCreate(algorithm, key);
+					this.iv = (byte[])(iv.Clone());
 				}
 				else
 				{
-					state = CryptoMethods.DecryptCreate(algorithm, key);
+					this.iv = null;
 				}
-				this.iv = (byte[])(iv.Clone());
-				this.blockSize = blockSize;
-				this.feedbackBlockSize = feedbackBlockSize;
-				this.mode = mode;
+				this.blockSize = blockSize / 8;
+				this.feedbackBlockSize = feedbackBlockSize / 8;
 				this.padding = padding;
-				this.encrypt = encrypt;
+				this.mode = mode;
+
+				// Determine which processing methods to use based on the
+				// mode and the encrypt/decrypt flag.
+				switch(mode)
+				{
+					case CipherMode.CBC:
+					{
+						// Cipher Block Chaining Mode.
+						if(encrypt)
+						{
+							state = CryptoMethods.EncryptCreate(algorithm, key);
+							processBlock = new ProcessBlock
+								(CBCEncrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(CBCEncrypt.TransformFinalBlock);
+						}
+						else
+						{
+							CBCDecrypt.Initialize(this);
+							state = CryptoMethods.DecryptCreate(algorithm, key);
+							processBlock = new ProcessBlock
+								(CBCDecrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(CBCDecrypt.TransformFinalBlock);
+						}
+					}
+					break;
+
+					case CipherMode.ECB:
+					{
+						// Electronic Code Book Mode.
+						if(encrypt)
+						{
+							state = CryptoMethods.EncryptCreate(algorithm, key);
+							processBlock = new ProcessBlock
+								(ECBEncrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(ECBEncrypt.TransformFinalBlock);
+						}
+						else
+						{
+							ECBDecrypt.Initialize(this);
+							state = CryptoMethods.DecryptCreate(algorithm, key);
+							processBlock = new ProcessBlock
+								(ECBDecrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(ECBDecrypt.TransformFinalBlock);
+						}
+					}
+					break;
+
+					case CipherMode.OFB:
+					{
+						// Output Feed Back Mode.
+						OFBEncrypt.Initialize(this);
+						state = CryptoMethods.EncryptCreate(algorithm, key);
+						processBlock = new ProcessBlock
+							(OFBEncrypt.TransformBlock);
+						processFinal = new ProcessFinal
+							(OFBEncrypt.TransformFinalBlock);
+					}
+					break;
+
+					case CipherMode.CFB:
+					{
+						// Cipher Feed Back Mode.
+						if(encrypt)
+						{
+							CFBEncrypt.Initialize(this);
+							state = CryptoMethods.EncryptCreate(algorithm, key);
+							processBlock = new ProcessBlock
+								(CFBEncrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(CFBEncrypt.TransformFinalBlock);
+						}
+						else
+						{
+							CFBDecrypt.Initialize(this);
+							state = CryptoMethods.EncryptCreate(algorithm, key);
+							processBlock = new ProcessBlock
+								(CFBDecrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(CFBDecrypt.TransformFinalBlock);
+						}
+					}
+					break;
+
+					case CipherMode.CTS:
+					{
+						// Cipher Text Stealing Mode.
+						if(encrypt)
+						{
+							CTSEncrypt.Initialize(this);
+							state = CryptoMethods.EncryptCreate(algorithm, key);
+							processBlock = new ProcessBlock
+								(CTSEncrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(CTSEncrypt.TransformFinalBlock);
+						}
+						else
+						{
+							// We need an encryptor as well to handle
+							// streams with only a single block in them.
+							CTSDecrypt.Initialize(this);
+							state = CryptoMethods.DecryptCreate(algorithm, key);
+							state2 = CryptoMethods.EncryptCreate
+								(algorithm, key);
+							processBlock = new ProcessBlock
+								(CTSDecrypt.TransformBlock);
+							processFinal = new ProcessFinal
+								(CTSDecrypt.TransformFinalBlock);
+						}
+					}
+					break;
+				}
 			}
 
 	// Destructor.
 	~CryptoAPITransform()
 			{
+				Clear();
+			}
+
+	// Clear sensitive state values.
+	private void Clear()
+			{
 				if(state != IntPtr.Zero)
 				{
 					CryptoMethods.SymmetricFree(state);
 					state = IntPtr.Zero;
+				}
+				if(state2 != IntPtr.Zero)
+				{
+					CryptoMethods.SymmetricFree(state2);
+					state2 = IntPtr.Zero;
+				}
+				if(tempBuffer != null)
+				{
+					tempBuffer.Initialize();
+				}
+				tempSize = 0;
+				if(iv != null)
+				{
+					// Usually not sensitive, but let's be paranoid anyway.
+					iv.Initialize();
 				}
 			}
 
@@ -88,7 +239,14 @@ public sealed class CryptoAPITransform : ICryptoTransform
 			{
 				get
 				{
-					return blockSize;
+					if(mode == CipherMode.CFB || mode == CipherMode.OFB)
+					{
+						return 1;
+					}
+					else
+					{
+						return blockSize;
+					}
 				}
 			}
 
@@ -97,7 +255,14 @@ public sealed class CryptoAPITransform : ICryptoTransform
 			{
 				get
 				{
-					return blockSize;
+					if(mode == CipherMode.CFB || mode == CipherMode.OFB)
+					{
+						return 1;
+					}
+					else
+					{
+						return blockSize;
+					}
 				}
 			}
 
@@ -116,8 +281,34 @@ public sealed class CryptoAPITransform : ICryptoTransform
 							  int inputCount, byte[] outputBuffer,
 							  int outputOffset)
 			{
-				// TODO
-				return 0;
+				// Validate the parameters.
+				if(inputBuffer == null)
+				{
+					throw new ArgumentNullException("inputBuffer");
+				}
+				else if(inputOffset < 0 || inputOffset > inputBuffer.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("inputOffset", _("ArgRange_Array"));
+				}
+				else if(inputCount < 0 ||
+				        inputCount > (inputBuffer.Length - inputOffset))
+				{
+					throw new ArgumentException(_("Arg_InvalidArrayRange"));
+				}
+				if(outputBuffer == null)
+				{
+					throw new ArgumentNullException("outputBuffer");
+				}
+				else if(outputOffset < 0 || outputOffset > inputBuffer.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("outputOffset", _("ArgRange_Array"));
+				}
+
+				// Process the input.
+				return processBlock(this, inputBuffer, inputOffset,
+									inputCount, outputBuffer, outputOffset);
 			}
 
 	// Transform the final input block.
@@ -125,8 +316,33 @@ public sealed class CryptoAPITransform : ICryptoTransform
 									  int inputOffset,
 									  int inputCount)
 			{
-				// TODO
-				return null;
+				byte[] outputBuffer;
+
+				// Validate the parameters.
+				if(inputBuffer == null)
+				{
+					throw new ArgumentNullException("inputBuffer");
+				}
+				else if(inputOffset < 0 || inputOffset > inputBuffer.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("inputOffset", _("ArgRange_Array"));
+				}
+				else if(inputCount < 0 ||
+				        inputCount > (inputBuffer.Length - inputOffset))
+				{
+					throw new ArgumentException(_("Arg_InvalidArrayRange"));
+				}
+
+				// Process the input.
+				outputBuffer = processFinal(this, inputBuffer,
+								    		inputOffset, inputCount);
+
+				// Clear sensitive state values.
+				Clear();
+
+				// Return the final output buffer to the caller.
+				return outputBuffer;
 			}
 
 }; // class CryptoAPITransform

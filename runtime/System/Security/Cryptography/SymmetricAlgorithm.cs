@@ -277,16 +277,22 @@ public abstract class SymmetricAlgorithm
 				{
 					throw new ArgumentNullException("rgbKey");
 				}
-				if(rgbIV == null)
-				{
-					throw new ArgumentNullException("rgbIV");
-				}
 				KeySizes.Validate(LegalKeySizesValue, rgbKey.Length,
 								  "Crypto_InvalidKeySize");
-				if(rgbIV.Length != BlockSizeValue)
+				if(rgbIV != null)
 				{
-					throw new CryptographicException
-						(_("Crypto_InvalidIVSize"), rgbIV.Length.ToString());
+					// Verify the size of the IV against the block size.
+					if(rgbIV.Length != BlockSizeValue)
+					{
+						throw new CryptographicException
+							(_("Crypto_InvalidIVSize"),
+							 rgbIV.Length.ToString());
+					}
+				}
+				else if(ModeValue != CipherMode.ECB)
+				{
+					// We must have an IV in every mode except ECB.
+					throw new ArgumentNullException("rgbIV");
 				}
 			}
 

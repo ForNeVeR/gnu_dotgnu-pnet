@@ -42,6 +42,8 @@ include/il_writer.h: remove obsolete code related to Beta 1 support.
 
 * engine/process.c: implement ILExecProcessGetEntry.
 
+* engine/ilrun.c (main): call ILExecProcessGetEntry.
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

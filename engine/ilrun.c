@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 	int state, opt;
 	char *param;
 	ILExecProcess *process;
+	ILMethod *method;
 	int error;
 
 	/* Parse the command-line arguments */
@@ -98,6 +99,15 @@ int main(int argc, char *argv[])
 	else if(error > 0)
 	{
 		fprintf(stderr, "%s: %s\n", argv[1], ILImageLoadError(error));
+		return 1;
+	}
+
+	/* Find the entry point method */
+	method = ILExecProcessGetEntry(process);
+	if(!method)
+	{
+		fprintf(stderr, "%s: no program entry point\n", argv[1]);
+		ILExecProcessDestroy(process);
 		return 1;
 	}
 

@@ -271,7 +271,7 @@ using System;
 								newData[ptrNew++] = colorBlackR;
 							}
 							bit = bit>>1;
-							if (bit == 0)
+							if (bit == 0 && ptrNew < newByteEnd)
 							{
 								bit = 128;
 								ptrOld++;

@@ -44,6 +44,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	public const String Bmp = "bmp";
 	public const String Icon = "icon";
 	public const String Cursor = "cursor";
+	public const String ImageList = "imagelist";
 
 	// Constructors.
 	public Image()
@@ -70,11 +71,9 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				this.transparentPixel = -1;
 			}
 
-	private Image(Image image, Frame thisFrameOnly)
+	private Image(Image image, Frame thisFrameOnly) :
+		this(image, image.PixelFormat)
 			{
-				this.width = image.width;
-				this.height = image.height;
-				this.pixelFormat = image.pixelFormat;
 				if(thisFrameOnly != null)
 				{
 					this.numFrames = 1;
@@ -95,6 +94,14 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 						}
 					}
 				}
+				
+			}
+
+	private Image(Image image, PixelFormat format)
+			{
+				this.width = image.width;
+				this.height = image.height;
+				this.pixelFormat = image.pixelFormat;
 				this.format = image.format;
 				if(image.palette != null)
 				{
@@ -334,6 +341,12 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					// Windows cursor image (same as icon, with hotspots).
 					IconReader.Load(stream, this, true);
 				}
+				/*else if(magic[0] ==77 && magic[1] == 83 &&
+						magic[2] == 70 && magic[3] == 116)
+				{
+					// Windows Imagelist.
+					ImageListReader.Load(stream, this);
+				}*/
 				else
 					// TODO: other formats
 					throw new FormatException();
@@ -398,6 +411,11 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					// Windows cursor image (same as icon, with hotspots).
 					IconWriter.Save(stream, this, true);
 				}
+				/*else if(format == ImageList)
+				{
+					// Windows imageList format.
+					ImageListWriter.Save(stream, this);
+				}*/
 				// TODO: other image formats
 			}
 
@@ -421,6 +439,14 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	public Image ImageFromFrame(int frame)
 			{
 				return new Image(this, GetFrame(frame));
+			}
+
+	public Image Reformat(PixelFormat newFormat)
+			{
+				Image newImage = new Image(this, newFormat);
+				for (int i = 0; i < frames.Length; i++)
+					newImage.AddFrame(frames[i].Reformat(newFormat));
+				return newImage;
 			}
 
 }; // class Image

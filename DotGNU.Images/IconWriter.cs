@@ -30,6 +30,8 @@ internal sealed class IconWriter
 	// is "true", then the image is actually a Windows cursor with hotspots.
 	public static void Save(Stream stream, Image image, bool hotspots)
 			{
+				// TODO: This needs to be fixed and work the way IconReader does.
+				
 				byte[] buffer = new byte [1024];
 				int numImages = image.NumFrames;
 				int offset, index, size, bitCount;

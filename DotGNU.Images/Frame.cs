@@ -241,6 +241,9 @@ public class Frame : MarshalByRefObject, IDisposable
 				int ptr = y * stride;
 				switch (pixelFormat)
 				{
+					case (PixelFormat.Format32bppArgb):
+						ptr += 4 * x;
+						return data[ptr++] | data[ptr++] << 8 | data[ptr++] << 16;
 					case (PixelFormat.Format24bppRgb):
 						ptr += 3 * x;
 						return data[ptr++] | data[ptr++] << 8 | data[ptr++] << 16;
@@ -540,7 +543,7 @@ public class Frame : MarshalByRefObject, IDisposable
 				
 			}
 
-			private void Copy(int bits, int x, int y, int right, int bottom, byte[] sourceData, int sourceStride, byte[] destData, int destStride)
+	private void Copy(int bits, int x, int y, int right, int bottom, byte[] sourceData, int sourceStride, byte[] destData, int destStride)
 			{
 				int pSourceRow = 0;
 				int pDestinationRow = y * stride;
@@ -567,6 +570,23 @@ public class Frame : MarshalByRefObject, IDisposable
 					
 					pSourceRow += sourceStride;
 					pDestinationRow += destStride;
+				}
+			}
+
+	// Add pixels of a specific color to the mask to make them transparent.
+	public void MakeTransparent(int color)
+			{
+				// TODO: This is slow.
+				// Make sure we have a mask.
+				AddMask();
+				for (int y = 0; y < height; y++)
+				{
+					for (int x = 0; x < width; x++)
+					{
+						int pixel = GetPixel(x, y);
+						if (pixel == color)
+							SetMask(x, y, 1);
+					}
 				}
 			}
 

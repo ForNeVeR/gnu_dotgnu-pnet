@@ -34,8 +34,7 @@ internal sealed class IconReader
 				byte[] buffer = new byte [1024];
 				int offset = 4;
 				int numImages, index;
-				int[] offsetList;
-				int width, height, colors;
+				int width, height, bpp;
 				PixelFormat format;
 				Frame frame;
 				int[] palette;
@@ -51,7 +50,12 @@ internal sealed class IconReader
 				offset += 2;
 
 				// Read the resource directory.
-				offsetList = new int [numImages];
+				int[] offsetList = new int [numImages];
+				int[,] hotspotList = null;
+				
+				if (hotspots)
+					hotspotList = new int[numImages, 2];
+
 				for(index = 0; index < numImages; ++index)
 				{
 					if(stream.Read(buffer, 0, 16) != 16)
@@ -59,31 +63,11 @@ internal sealed class IconReader
 						throw new FormatException();
 					}
 					offset += 16;
-					width = buffer[0];
-					height = buffer[1];
-					colors = buffer[2];
-					if(colors == 0)
-					{
-						colors = 256;
-						format = PixelFormat.Format8bppIndexed;
-					}
-					else if(colors == 2)
-					{
-						format = PixelFormat.Format1bppIndexed;
-					}
-					else if(colors == 16)
-					{
-						format = PixelFormat.Format4bppIndexed;
-					}
-					else
-					{
-						throw new FormatException();
-					}
-					frame = image.AddFrame(width, height, format);
+					
 					if(hotspots)
 					{
-						frame.HotspotX = Utils.ReadUInt16(buffer, 4);
-						frame.HotspotY = Utils.ReadUInt16(buffer, 6);
+						hotspotList[index, 0] = Utils.ReadUInt16(buffer, 4);
+						hotspotList[index, 1] = Utils.ReadUInt16(buffer, 6);
 					}
 					offsetList[index] = Utils.ReadInt32(buffer, 12);
 				}
@@ -91,29 +75,45 @@ internal sealed class IconReader
 				// Read the contents of the images in the stream.
 				for(index = 0; index < numImages; ++index)
 				{
+					
 					// Seek to the start of the image.
 					Utils.Seek(stream, offset, offsetList[index]);
 					offset = offsetList[index];
 
-					// Get the frame that this image corresponds to.
-					frame = image.GetFrame(index);
-
-					// Skip the DIB header, which we don't need.
-					// Monochrome cursors don't have a DIB header.
-					if(!hotspots ||
-					   frame.PixelFormat != PixelFormat.Format1bppIndexed)
+					// Read the DIB header.
+					if(stream.Read(buffer, 0, 40) != 40)
 					{
-						if(stream.Read(buffer, 0, 40) != 40)
-						{
-							throw new FormatException();
-						}
-						offset += 40;
+						throw new FormatException();
+					}
+					offset += 40;
+					width = Utils.ReadUInt16(buffer, 4);
+					// The DIB height is the mask and the bitmap.
+					height = Utils.ReadUInt16(buffer, 8) / 2;
+					bpp = Utils.ReadUInt16(buffer, 14);
+					if (bpp == 1)
+						format = PixelFormat.Format1bppIndexed;
+					else if (bpp == 4)
+						format = PixelFormat.Format4bppIndexed;
+					else if (bpp == 8)
+						format = PixelFormat.Format8bppIndexed;
+					else if (bpp == 24)
+						format = PixelFormat.Format24bppRgb;
+					else if (bpp == 32)
+						format = PixelFormat.Format32bppArgb;
+					else
+						throw new FormatException();
+
+					// Create a new frame for this icon.
+					frame = new Frame(image, width, height, format);
+					image.AddFrame(frame);
+					if (hotspots)
+					{
+						frame.HotspotX = hotspotList[index, 0];
+						frame.HotspotY = hotspotList[index, 1];
 					}
 
-					// Read the palette information if necessary.
-					// Monochrome cursors don't have a palette.
-					if(!hotspots ||
-					   frame.PixelFormat != PixelFormat.Format1bppIndexed)
+					// If indexed, get the palette.
+					if((frame.PixelFormat & PixelFormat.Indexed) > 0)
 					{
 						paletteCount =
 							(1 << Utils.FormatToBitCount(frame.PixelFormat));
@@ -132,9 +132,8 @@ internal sealed class IconReader
 						}
 					}
 					else
-					{
-						palette = new int[] {0, 0x00FFFFFF};
-					}
+						palette = null;
+					
 					frame.Palette = palette;
 
 					// Read the main part of the icon or cursor.

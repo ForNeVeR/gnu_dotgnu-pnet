@@ -7,6 +7,12 @@
 	non-virtual instance methods, so that runtime null pointer
 	checks happen automatically.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/System.Xml.dll, samples/System.dll,
+	samples/mscorlib.dll: update the compiled version of all assemblies.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_oper.tc: Do parameter coercion for UserBinary

@@ -25,9 +25,15 @@ extern	"C" {
 #endif
 
 /*
+ * Extra member kinds.
+ */
+#define	CS_MEMBERKIND_TYPE			20
+#define	CS_MEMBERKIND_TYPE_NODE		21
+#define	CS_MEMBERKIND_NAMESPACE		22
+
+/*
  * A list of members that results from a lookup on a type.
  */
-#define	CS_MEMBERKIND_TYPE		0
 typedef struct _tagCSMemberInfo CSMemberInfo;
 struct _tagCSMemberInfo
 {
@@ -375,9 +381,19 @@ static void AmbiguousError(ILNode *node, const char *name,
 			case CS_MEMBERKIND_TYPE:
 			{
 				typeName = CSTypeToName
-						(ILType_FromClass((ILClass *)(member->member)));
+						(ILClassToType((ILClass *)(member->member)));
 				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				              "  type %s", typeName);
+			}
+			break;
+
+			case CS_MEMBERKIND_TYPE_NODE:
+			{
+			}
+			break;
+
+			case CS_MEMBERKIND_NAMESPACE:
+			{
 			}
 			break;
 
@@ -385,7 +401,7 @@ static void AmbiguousError(ILNode *node, const char *name,
 			{
 				typeName = CSTypeToName
 						(ILField_Type((ILField *)(member->member)));
-				typeName2 = CSTypeToName(ILType_FromClass
+				typeName2 = CSTypeToName(ILClassToType
 						(ILField_Owner((ILField *)(member->member))));
 				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				              "  field %s %s.%s", typeName, typeName2, name);
@@ -424,41 +440,43 @@ static CSSemValue LookupToSem(ILNode *node, const char *name,
 		value.type = (ILType *)(results->members);
 		return value;
 	}
-	else if(kind == CS_SEMKIND_AMBIGUOUS)
+	else if(kind == CS_SEMKIND_TYPE)
+	{
+		/* This is a type */
+		value.kind = kind;
+		value.type = ILClassToType((ILClass *)(results->members->member));
+		FreeMembers(results);
+		return value;
+	}
+	else if(kind != CS_SEMKIND_AMBIGUOUS)
+	{
+		/* Type node, field, property, or event */
+		value.kind = kind;
+		value.type = (ILType *)(results->members->member);
+		FreeMembers(results);
+		return value;
+	}
+	else
 	{
 		/* Ambiguous lookup */
 		AmbiguousError(node, name, results);
 		FreeMembers(results);
 		return CSSemValueDefault;
 	}
-	else
-	{
-		/* Type, field, property, or event */
-		value.kind = kind;
-		value.type = (ILType *)(results->members->member);
-		FreeMembers(results);
-		return value;
-	}
 }
-
-struct _tagILNamespaceTree
-{
-	char            *name;			/* Simple name of the namespace */
-	char            *fullName;		/* Full name of the namespace */
-	ILNamespaceTree *members;		/* Members of the namespace */
-	ILNamespaceTree *left;			/* Left sub-tree */
-	ILNamespaceTree *right;			/* Right sub-tree */
-
-};
 
 /*
  * Find the type with a specific name within a namespace.
  */
-static void FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
-								char *namespace, ILClass *accessedFrom,
-								CSMemberLookupInfo *results)
+static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
+							   char *namespace, ILClass *accessedFrom,
+							   CSMemberLookupInfo *results)
 {
 	ILClass *type;
+	ILScopeData *data;
+	int scopeKind;
+	char *fullName;
+	ILNode_ClassDefn *node;
 
 	/* Look in the current image for the type */
 	type = ILClassLookup(ILClassGlobalScope(genInfo->image),
@@ -470,7 +488,7 @@ static void FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	if(type && ILClassAccessible(type, accessedFrom))
 	{
 		AddMember(results, (ILProgramItem *)type, 0, CS_MEMBERKIND_TYPE);
-		return;
+		return CS_SEMKIND_TYPE;
 	}
 
 	/* Look in any image for the type */
@@ -482,8 +500,54 @@ static void FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	if(type && ILClassAccessible(type, accessedFrom))
 	{
 		AddMember(results, (ILProgramItem *)type, 0, CS_MEMBERKIND_TYPE);
-		return;
+		return CS_SEMKIND_TYPE;
 	}
+
+	/* Look in the global scope for a declared type */
+	data = ILScopeLookupInNamespace(CSGlobalScope, namespace, name);
+	if(data)
+	{
+		scopeKind = ILScopeDataGetKind(data);
+		if(scopeKind == IL_SCOPE_SUBSCOPE)
+		{
+			if(namespace)
+			{
+				fullName = ILInternAppendedString
+								(ILInternString(namespace, -1),
+								 ILInternAppendedString
+								 	(ILInternString(".", 1),
+									 ILInternString((char *)name, -1))).string;
+			}
+			else
+			{
+				fullName = (char *)name;
+			}
+			AddMember(results, (ILProgramItem *)fullName,
+					  0, CS_MEMBERKIND_NAMESPACE);
+			return CS_SEMKIND_NAMESPACE;
+		}
+		else if(scopeKind == IL_SCOPE_DECLARED_TYPE)
+		{
+			node = (ILNode_ClassDefn *)(ILScopeDataGetNode(data));
+			if(!(genInfo->typeGather))
+			{
+				if(node->classInfo != 0 &&
+				   node->classInfo != ((ILClass *)1) &&
+				   node->classInfo != ((ILClass *)2))
+				{
+					AddMember(results, (ILProgramItem *)(node->classInfo),
+						      0, CS_MEMBERKIND_TYPE);
+					return CS_SEMKIND_TYPE;
+				}
+			}
+			AddMember(results, (ILProgramItem *)node,
+				      0, CS_MEMBERKIND_TYPE_NODE);
+			return CS_SEMKIND_TYPE_NODE;
+		}
+	}
+
+	/* Could not find a type or namespace with the specified name */
+	return CS_SEMKIND_VOID;
 }
 
 CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
@@ -495,9 +559,8 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	ILNode_Namespace *namespace;
 	ILNode_UsingAlias *alias;
 	ILNode_UsingNamespace *using;
-	ILNamespaceTree *tree;
 	CSSemValue value;
-	int result, cmp;
+	int result;
 
 	/* Find the type to start looking at */
 	if(genInfo->currentMethod)
@@ -550,32 +613,11 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	while(namespace != 0 && !(results.num))
 	{
 		/* Look for the type in the current namespace */
-		FindTypeInNamespace(genInfo, name, namespace->name,
-							accessedFrom, &results);
-		if(results.num != 0)
+		result = FindTypeInNamespace(genInfo, name, namespace->name,
+									 accessedFrom, &results);
+		if(result != CS_SEMKIND_VOID)
 		{
 			break;
-		}
-
-		/* Look for a sub-namespace with the given name */
-		tree = namespace->tree;
-		while(tree != 0)
-		{
-			cmp = strcmp(tree->name, name);
-			if(!cmp)
-			{
-				value.kind = CS_SEMKIND_NAMESPACE;
-				value.type = (ILType *)(tree->members);
-				return value;
-			}
-			else if(cmp < 0)
-			{
-				tree = tree->right;
-			}
-			else
-			{
-				tree = tree->left;
-			}
 		}
 
 		/* Look for an alias directive for the name */
@@ -587,12 +629,12 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 				if(alias->classInfo)
 				{
 					value.kind = CS_SEMKIND_TYPE;
-					value.type = ILType_FromClass(alias->classInfo);
+					value.type = ILClassToType(alias->classInfo);
 				}
 				else
 				{
 					value.kind = CS_SEMKIND_NAMESPACE;
-					value.type = (ILType *)(alias->tree);
+					value.type = (ILType *)(alias->ref);
 				}
 				return value;
 			}
@@ -621,10 +663,18 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	if(results.num != 0)
 	{
 		/* Return the first type in the results list */
-		value.kind = CS_SEMKIND_TYPE;
-		value.type = ILType_FromClass((ILClass *)(results.members->member));
-		FreeMembers(&results);
-		return value;
+		if(results.members->kind == CS_MEMBERKIND_TYPE)
+		{
+			return LookupToSem(node, name, &results, CS_SEMKIND_TYPE);
+		}
+		else if(results.members->kind == CS_MEMBERKIND_TYPE_NODE)
+		{
+			return LookupToSem(node, name, &results, CS_SEMKIND_TYPE_NODE);
+		}
+		else
+		{
+			return LookupToSem(node, name, &results, CS_SEMKIND_NAMESPACE);
+		}
 	}
 	FreeMembers(&results);
 
@@ -796,11 +846,10 @@ static int FilterNonStatic(CSMemberLookupInfo *results, int kind)
 CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 							   CSSemValue value, const char *name)
 {
-	ILNamespaceTree *tree;
-	ILNamespaceTree *temp;
+	char *fullName;
 	CSMemberLookupInfo results;
 	ILClass *accessedFrom;
-	int result, cmp;
+	int result;
 
 	/* Find the accessor scope */
 	if(genInfo->currentMethod)
@@ -825,44 +874,21 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 	{
 		case CS_SEMKIND_NAMESPACE:
 		{
-			/* Look for a type with the given name within the namespace */
-			tree = (ILNamespaceTree *)(value.type);
+			/* Look for a type or sub-namespace with the given name
+			   within the namespace */
+			fullName = (char *)(value.type);
 			InitMembers(&results);
-			FindTypeInNamespace(genInfo, name, tree->fullName,
-								accessedFrom, &results);
-			if(results.num != 0)
+			result = FindTypeInNamespace(genInfo, name, fullName,
+										 accessedFrom, &results);
+			if(result != CS_SEMKIND_VOID)
 			{
-				value.kind = CS_SEMKIND_TYPE;
-				value.type =
-					ILType_FromClass((ILClass *)(results.members->member));
-				return value;
-			}
-
-			/* Look for a sub-namespace with the given name */
-			temp = tree;
-			while(temp != 0)
-			{
-				cmp = strcmp(temp->name, name);
-				if(!cmp)
-				{
-					value.kind = CS_SEMKIND_NAMESPACE;
-					value.type = (ILType *)(temp->members);
-					return value;
-				}
-				else if(cmp < 0)
-				{
-					temp = temp->right;
-				}
-				else
-				{
-					temp = temp->left;
-				}
+				return LookupToSem(node, name, &results, result);
 			}
 
 			/* Could not find the member within the namespace */
 			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the namespace `%s'",
-						  name, tree->fullName);
+						  name, fullName);
 		}
 		break;
 

@@ -76,6 +76,8 @@ int main(int argc, char *argv[])
 	FILE *infile;
 	int errors;
 	ILDocTree *tree;
+	char **inputs;
+	int numInputs;
 
 	/* Initialize the flag buffer */
 	flags = (char **)ILMalloc(sizeof(char *) * argc);
@@ -130,7 +132,7 @@ int main(int argc, char *argv[])
 	/* Get the default output pathname if necessary */
 	if(!outputPath)
 	{
-		outputPath = ILDocDefaultOutput(argc, argv, progname);
+		outputPath = ILDocDefaultOutput(argc - 1, argv + 1, progname);
 		if(!outputPath)
 		{
 			return 1;
@@ -153,6 +155,8 @@ int main(int argc, char *argv[])
 	/* Load the XML documentation files into memory */
 	sawStdin = 0;
 	errors = 0;
+	inputs = argv + 1;
+	numInputs = argc - 1;
 	while(argc > 1)
 	{
 		if(!strcmp(argv[1], "-"))
@@ -171,6 +175,8 @@ int main(int argc, char *argv[])
 			{
 				perror(argv[1]);
 				errors = 1;
+				++argv;
+				--argc;
 				continue;
 			}
 			loadXML(tree, argv[1], infile, 1, progname);
@@ -186,8 +192,14 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Sort the contents of the documentation tree */
+	if(!ILDocTreeSort(tree))
+	{
+		ILDocOutOfMemory(progname);
+	}
+
 	/* Call the backend to perform the conversion */
-	if(!ILDocConvert(tree, outputPath, progname))
+	if(!ILDocConvert(tree, numInputs, inputs, outputPath, progname))
 	{
 		ILDocTreeDestroy(tree);
 		return 1;

@@ -19,6 +19,9 @@ trees on namespace, type, and member.
 
 * csdoc/Makefile.am: add "doc_sort.c" to the "csdoc2texi" build.
 
+* csdoc/doc_main.c: fix a bug in the handling of non-existent files;
+call the ILDocTreeSort function; pass the input files to ILDocConvert.
+
 2001-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_defs.tc, cscc/cs_oper.tc: ILNode_GlobalNamespace, new semantic

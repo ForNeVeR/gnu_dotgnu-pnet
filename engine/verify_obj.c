@@ -61,6 +61,12 @@ static ILField *GetFieldToken(ILMethod *method, unsigned char *pc)
 		return 0;
 	}
 
+	/* Make sure that the field's class has been laid out */
+	if(!_ILLayoutClass(ILField_Owner(fieldInfo)))
+	{
+		return 0;
+	}
+
 	/* We have the requested field */
 	return fieldInfo;
 }
@@ -105,7 +111,7 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 	ILUInt32 size;
 
 	/* Get the size of the value type */
-	size = ILSizeOfType(coder->thread, ILType_FromValueType(boxClass));
+	size = ILSizeOfType(ILType_FromValueType(boxClass));
 
 	/* Determine how to box the value based on its engine type */
 	if(valueType == ILEngineType_I4)

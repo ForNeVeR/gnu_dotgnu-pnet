@@ -47,6 +47,12 @@ static ILMethod *GetMethodToken(ILMethod *method, unsigned char *pc)
 	}
 	methodInfo = (ILMethod *)ILMemberResolve((ILMember *)methodInfo);
 
+	/* Make sure that the method's class has been laid out */
+	if(!_ILLayoutClass(ILMethod_Owner(methodInfo)))
+	{
+		return 0;
+	}
+
 	/* We have the requested method */
 	return methodInfo;
 }

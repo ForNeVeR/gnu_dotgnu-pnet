@@ -18,6 +18,9 @@
 	* samples/README.mscorlib: remove the reference to Microsoft's C#
 	compiler, because we don't need it any more.
 
+	* support/regexp.c: make sure that <sys/types.h> is included
+	before <regex.h>, as BSD systems require it to be present.
+
 2002-11-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_arith.tc, cscc/csharp/cs_oper.tc: Move the reduction in

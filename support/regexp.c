@@ -25,6 +25,9 @@
 #include "il_config.h"
 #include "il_utils.h"
 #include "il_system.h"
+#ifdef HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
 #ifdef HAVE_REGEX_H
 	#include <regex.h>
 #endif

@@ -614,7 +614,7 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
 	node = node->taskChildren;
 	while(node != 0)
 	{
-		if(!strcmp(node->name, "file"))
+		if(!strcmp(node->name, "file") && CheckIf(node))
 		{
 			arg = CSAntTaskParam(node, "name");
 			if(arg)

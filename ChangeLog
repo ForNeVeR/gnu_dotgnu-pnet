@@ -7,6 +7,8 @@
 	* codegen/cg_coerce.c: can explicitly cast between pointer
 	types and IntPtr.
 
+	* csant/csant_fileset.c: check the "if" attribute on <file> tags.
+
 2003-12-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resgen/resgen.c: add the "--extract" option to help with

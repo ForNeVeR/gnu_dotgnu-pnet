@@ -158,12 +158,28 @@ ILMethod *ILResolveConstructor(ILGenInfo *info, ILClass *classInfo,
 					     IL_META_METHODDEF_RT_SPECIAL_NAME, 0, 1);
 }
 
+/*
+ * Get the default call scope.
+ */
+static ILClass *DefaultCallScope(ILGenInfo *info)
+{
+	if(info->currentClass)
+	{
+		return ((ILNode_ClassDefn *)(info->currentClass))->classInfo;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 ILMethod *ILResolveUnaryOperator(ILGenInfo *info, ILClass *classInfo,
 							     const char *name, ILType *argType)
 {
 	ILType *args[1];
 	args[0] = argType;
-	return ResolveMethod(info, classInfo, 0, name, args, 1, 0,
+	return ResolveMethod(info, classInfo, DefaultCallScope(info),
+						 name, args, 1, 0,
 					     IL_META_METHODDEF_STATIC |
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }
@@ -175,7 +191,8 @@ ILMethod *ILResolveBinaryOperator(ILGenInfo *info, ILClass *classInfo,
 	ILType *args[2];
 	args[0] = arg1Type;
 	args[1] = arg2Type;
-	return ResolveMethod(info, classInfo, 0, name, args, 2, 0,
+	return ResolveMethod(info, classInfo, DefaultCallScope(info),
+						 name, args, 2, 0,
 					     IL_META_METHODDEF_STATIC |
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }
@@ -186,7 +203,8 @@ ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
 {
 	ILType *args[1];
 	args[0] = fromType;
-	return ResolveMethod(info, classInfo, 0, name, args, 1, toType,
+	return ResolveMethod(info, classInfo, DefaultCallScope(info),
+						 name, args, 1, toType,
 					     IL_META_METHODDEF_STATIC |
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }

@@ -1,4 +1,9 @@
 
+2004-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/verify_except.c: reverse OutputExceptionTable patch
+	as Tum discovered problems with it.
+
 2004-05-23  Jonas Printzen  <jonas@printzen.net>
 
 	* engine/verify_except.c: change OutputExceptionTable() so that 

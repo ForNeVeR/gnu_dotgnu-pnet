@@ -34,58 +34,76 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 {
 	ILUInt32 offset;
 	ILUInt32 end;
-	ILException *tryEx;     /* Outer iterator, => try-handlers */
-	ILException *genEx;     /* Inner iterator => generation */
+	ILUInt32 lowestTry;
+	ILException *exception;
 	ILClass *classInfo;
 
-    /* Init 'previous-region' to none */
-    offset  = 0;
-    end     = 0;
-
-	/* Process all try-regions in the method, in order */
-	for( tryEx=exceptions; tryEx; tryEx=tryEx->next )
+	/* Process all regions in the method */
+	offset = 0;
+	for(;;)
 	{
-        /* Skip duplicated try-handlers (offset & end is prev region) 
-         *
-         * Note! Matches extra catch AND inner in empty outer = OK!
-         */
-        if( offset == tryEx->tryOffset && end == offset+tryEx->tryLength )
-            continue;
-
-        /* Set current region */
-        offset  = tryEx->tryOffset;
-        end     = offset+tryEx->tryLength;
+		/* Find the exception region that matches the offset */
+		exception = exceptions;
+		lowestTry = IL_MAX_UINT32;
+		while(exception != 0)
+		{
+			if(offset >= exception->tryOffset &&
+			   offset < (exception->tryOffset + exception->tryLength))
+			{
+				/* The offset is within this region */
+				break;
+			}
+			else if(offset < exception->tryOffset)
+			{
+				/* The offset starts entirely before this region */
+				lowestTry = exception->tryOffset;
+				break;
+			}
+			exception = exception->next;
+		}
+		if(!exception)
+		{
+			break;
+		}
+		if(lowestTry != IL_MAX_UINT32)
+		{
+			end = lowestTry;
+		}
+		else
+		{
+			end = exception->tryOffset + exception->tryLength;
+		}
 
 		/* Output the region information to the table */
 		ILCoderTryHandlerStart(coder, offset, end);
 
 		/* Output exception matching code for this region */
-		genEx = exceptions;
-		while(genEx != 0)
+		exception = exceptions;
+		while(exception != 0)
 		{
-			if(offset >= genEx->tryOffset &&
-			   offset < (genEx->tryOffset + genEx->tryLength))
+			if(offset >= exception->tryOffset &&
+			   offset < (exception->tryOffset + exception->tryLength))
 			{
-				if((genEx->flags & (IL_META_EXCEPTION_FINALLY |
+				if((exception->flags & (IL_META_EXCEPTION_FINALLY |
 										IL_META_EXCEPTION_FAULT)) != 0)
 				{
 					/* Call a "finally" or "fault" clause */
-					ILCoderJsr(coder, genEx->handlerOffset);
+					ILCoderJsr(coder, exception->handlerOffset);
 				}
-				else if((genEx->flags & IL_META_EXCEPTION_FILTER) == 0)
+				else if((exception->flags & IL_META_EXCEPTION_FILTER) == 0)
 				{
 					/* Match against a "catch" clause */
 					classInfo = ILProgramItemToClass
 						((ILProgramItem *)ILImageTokenInfo
-							(ILProgramItem_Image(method), genEx->extraArg));
-					ILCoderCatch(coder, genEx, classInfo, hasRethrow);
+							(ILProgramItem_Image(method), exception->extraArg));
+					ILCoderCatch(coder, exception, classInfo, hasRethrow);
 				}
 				else
 				{
 					/* TODO: handle a "filter" clause */
 				}
 			}
-			genEx = genEx->next;
+			exception = exception->next;
 		}
 
 		/* If execution falls off the end of the matching code,
@@ -94,6 +112,9 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 
 		/* Mark the end of the handler */
 		ILCoderTryHandlerEnd(coder);
+
+		/* Advance to the next region within the code */
+		offset = end;
 	}
 
 	/* If execution gets here, then there were no applicable catch blocks,

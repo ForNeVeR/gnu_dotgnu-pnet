@@ -25,7 +25,10 @@ namespace System.Runtime.Serialization
 #if CONFIG_SERIALIZATION
 
 using System.Reflection;
+using System.Security;
 using System.Security.Permissions;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Lifetime;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters;
 
@@ -35,10 +38,20 @@ public sealed class FormatterServices
 	private FormatterServices() {}
 
 	// Check whether a type can be deserialized.
-	[TODO]
 	public static void CheckTypeSecurity(Type t, TypeFilterLevel securityLevel)
 			{
-				// TODO
+			#if CONFIG_REMOTING
+				if(securityLevel == TypeFilterLevel.Low)
+				{
+					if(typeof(IEnvoyInfo).IsAssignableFrom(t) ||
+					   typeof(ISponsor).IsAssignableFrom(t) ||
+					   typeof(ObjRef).IsAssignableFrom(t))
+					{
+						throw new SecurityException
+							(String.Format(_("Security_RemotingCheckType"), t));
+					}
+				}
+			#endif
 			}
 
 	// Extract data from a specified object.

@@ -100,16 +100,92 @@ public abstract class Formatter : IFormatter
 	protected abstract void WriteDouble(double val, String name);
 	protected abstract void WriteDateTime(DateTime val, String name);
 	protected abstract void WriteDecimal(Decimal val, String name);
-	[TODO]
-	protected virtual void WriteMember(String memberName, Object data)
-			{
-				// TODO
-			}
 	protected abstract void WriteObjectRef(Object obj, String name,
 										   Type memberType);
 	protected abstract void WriteTimeSpan(TimeSpan val, String name);
 	protected abstract void WriteValueType(Object obj, String name,
 										   Type memberType);
+
+	// Write a member to the serialization stream.
+	protected virtual void WriteMember(String memberName, Object data)
+			{
+				if(data == null)
+				{
+					WriteObjectRef(null, memberName, typeof(Object));
+				}
+				else if(data is Array)
+				{
+					WriteArray(data, memberName, data.GetType());
+				}
+				else if(data is bool)
+				{
+					WriteBoolean((bool)data, memberName);
+				}
+				else if(data is byte)
+				{
+					WriteByte((byte)data, memberName);
+				}
+				else if(data is sbyte)
+				{
+					WriteSByte((sbyte)data, memberName);
+				}
+				else if(data is short)
+				{
+					WriteInt16((short)data, memberName);
+				}
+				else if(data is ushort)
+				{
+					WriteUInt16((ushort)data, memberName);
+				}
+				else if(data is int)
+				{
+					WriteInt32((int)data, memberName);
+				}
+				else if(data is uint)
+				{
+					WriteUInt32((uint)data, memberName);
+				}
+				else if(data is long)
+				{
+					WriteInt64((long)data, memberName);
+				}
+				else if(data is ulong)
+				{
+					WriteUInt64((ulong)data, memberName);
+				}
+				else if(data is float)
+				{
+					WriteSingle((float)data, memberName);
+				}
+				else if(data is double)
+				{
+					WriteDouble((double)data, memberName);
+				}
+				else if(data is DateTime)
+				{
+					WriteDateTime((DateTime)data, memberName);
+				}
+				else if(data is Decimal)
+				{
+					WriteDecimal((Decimal)data, memberName);
+				}
+				else if(data is TimeSpan)
+				{
+					WriteTimeSpan((TimeSpan)data, memberName);
+				}
+				else
+				{
+					Type type = data.GetType();
+					if(type.IsValueType)
+					{
+						WriteValueType(data, memberName, type);
+					}
+					else
+					{
+						WriteObjectRef(data, memberName, type);
+					}
+				}
+			}
 
 }; // class Formatter
 

@@ -292,6 +292,45 @@ public sealed class SerializationInfo
 				return null;
 			}
 
+	// Get values from this info object, while ignoring case
+	// during name matches.
+	internal String GetStringIgnoreCase(String name)
+			{
+				return (String)GetValueIgnoreCase(name, typeof(String));
+			}
+	internal Object GetValueIgnoreCase(String name, Type type)
+			{
+				int index;
+				Object value;
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				if(type == null)
+				{
+					throw new ArgumentNullException("type");
+				}
+				for(index = 0; index < names.Count; ++index)
+				{
+					if(String.Compare((String)(names[index]), name, true) == 0)
+					{
+						value = values[index];
+						if(value != null)
+						{
+							if(type.IsAssignableFrom((Type)(types[index])))
+							{
+								return value;
+							}
+							else
+							{
+								return converter.Convert(value, type);
+							}
+						}
+					}
+				}
+				return null;
+			}
+
 	// Get an enumerator for iterating over this information object.
 	public SerializationInfoEnumerator GetEnumerator()
 			{

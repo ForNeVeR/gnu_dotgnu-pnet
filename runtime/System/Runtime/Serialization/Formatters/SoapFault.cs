@@ -47,17 +47,32 @@ public sealed class SoapFault : ISerializable
 				this.faultActor = faultActor;
 				this.serverFault = serverFault;
 			}
-	[TODO]
 	internal SoapFault(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				faultCode = info.GetStringIgnoreCase("faultcode");
+				if(faultCode != null)
+				{
+					int posn = faultCode.IndexOf(':');
+					if(posn != -1)
+					{
+						faultCode = faultCode.Substring(posn + 1);
+					}
+				}
+				faultString = info.GetStringIgnoreCase("faultstring");
+				faultActor = info.GetStringIgnoreCase("faultactor");
+				serverFault = info.GetValueIgnoreCase("detail", typeof(Object));
 			}
 
 	// Implement the ISerializable interface.
-	[TODO]
 	public void GetObjectData(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				info.AddValue("faultcode", "SOAP-ENV:" + faultCode);
+				info.AddValue("faultstring", faultString);
+				if(faultActor != null)
+				{
+					info.AddValue("faultactor", faultActor);
+				}
+				info.AddValue("detail", serverFault, typeof(Object));
 			}
 
 	// Get or set the object properties.

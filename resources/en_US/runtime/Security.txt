@@ -22,3 +22,5 @@ Security_AppDirMembershipCondition=ApplicationDirectory
 Security_PolicyVersion=Invalid version for serialized policy object
 Security_PolicyName=Incorrect name for serialized policy object
 Security_NotCodeGroupChild=The object is not a child of the specified code group
+Security_RemotingCheckType=The type {0} cannot be remoted at the `Low' security level
+Security_SelectorCycle=Chaining the specified selectors will create a cycle

@@ -1,3 +1,14 @@
+
+2003-08-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Security.txt,
+	runtime/System/Runtime/Serialization/Formatter.cs,
+	runtime/System/Runtime/Serialization/FormatterServices.cs,
+	runtime/System/Runtime/Serialization/SerializationInfo.cs,
+	runtime/System/Runtime/Serialization/SurrogateSelector.cs,
+	runtime/System/Runtime/Serialization/Formatters/SoapFault.cs:
+	implement some TODO's in "System.Runtime.Serialization".
+
 2003-08-01  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/StatusBar.cs: Cleaned it up along with 

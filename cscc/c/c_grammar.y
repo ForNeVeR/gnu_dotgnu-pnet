@@ -50,6 +50,27 @@ static void yyerror(char *msg)
 	CCPluginParseError(msg, c_text);
 }
 
+/*
+ * Copy the contents of one parameter declaration list to another.
+ */
+static void CopyParamDecls(ILNode *dest, ILNode *src)
+{
+	if(yyisa(src, ILNode_List))
+	{
+		ILNode_ListIter iter;
+		ILNode *node;
+		ILNode_ListIter_Init(&iter, src);
+		while((node = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_List_Add(dest, node);
+		}
+	}
+	else
+	{
+		ILNode_List_Add(dest, src);
+	}
+}
+
 %}
 
 /*
@@ -64,6 +85,7 @@ static void yyerror(char *msg)
 	ILNode             *node;
 	ILType			   *type;
 	CDeclSpec			declSpec;
+	CDeclarator			decl;
 	int					kind;
 	struct {
 		ILType		   *type;
@@ -188,13 +210,22 @@ static void yyerror(char *msg)
 %type <node>		OptStatementList StatementList ExpressionStatement
 %type <node>		SelectionStatement IterationStatement JumpStatement
 
+%type <node>		ParameterIdentifierList IdentifierList ParameterList
+%type <node>		ParameterTypeList ParameterDeclaration ParamDeclaration
+%type <node>		OptParamDeclarationList ParamDeclarationList
+%type <node>		ParamDeclaratorList ParamDeclaration
+
 %type <node>		FunctionBody
 
 %type <type>		TypeName StructOrUnionSpecifier EnumSpecifier
 
 %type <declSpec>	StorageClassSpecifier TypeSpecifier DeclarationSpecifiers
+%type <declSpec>	TypeSpecifierList TypeSpecifierList2
 
-%type <kind>		StructOrUnion
+%type <decl>		Declarator Declarator2 Pointer AbstractDeclarator
+%type <decl>		AbstractDeclarator2 ParamDeclarator ParamDeclarator
+
+%type <kind>		StructOrUnion TypeQualifierList TypeQualifier
 
 %expect 1
 
@@ -568,8 +599,8 @@ InitDeclaratorList
 	;
 
 InitDeclarator
-	: Declarator
-	| Declarator '=' Initializer
+	: Declarator					{}
+	| Declarator '=' Initializer	{}
 	;
 
 StorageClassSpecifier
@@ -592,7 +623,6 @@ TypeSpecifier
 	| K_DOUBLE			{ CDeclSpecSetType($$, ILType_Float64); }
 	| K_CONST			{ CDeclSpecSet($$, C_SPEC_CONST); }
 	| K_VOLATILE		{ CDeclSpecSet($$, C_SPEC_VOLATILE); }
-	| K_NATIVE			{ CDeclSpecSet($$, C_SPEC_NATIVE); }
 	| K_VOID			{ CDeclSpecSetType($$, ILType_Void); }
 	| K_BOOL			{ CDeclSpecSetType($$, ILType_Boolean); }
 	| K_WCHAR			{ CDeclSpecSetType($$, ILType_Char); }
@@ -715,7 +745,7 @@ StructDeclarationList2
 	;
 
 StructDeclaration
-	: TypeSpecifierList StructDeclaratorList ';'
+	: TypeSpecifierList StructDeclaratorList ';'	{}
 	;
 
 StructDeclaratorList
@@ -724,9 +754,9 @@ StructDeclaratorList
 	;
 
 StructDeclarator
-	: Declarator
-	| ':' ConstantExpression
-	| Declarator ':' ConstantExpression
+	: Declarator							{}
+	| ':' ConstantExpression				{}
+	| Declarator ':' ConstantExpression		{}
 	;
 
 EnumSpecifier
@@ -809,20 +839,43 @@ Enumerator
 
 Declarator
 	: Declarator2
-	| Pointer Declarator2
+	| Pointer Declarator2		{ $$ = CDeclCombine($1, $2); }
 	;
 
 Declarator2
-	: IDENTIFIER			{}
-	| '(' Declarator ')'
-	| Declarator2 '[' ']'
-	| Declarator2 '[' ConstantExpression ']'
-	| Declarator2 '(' ')'
-	| Declarator2 '(' ')' FuncAttributes
-	| Declarator2 '(' ParameterTypeList ')'
-	| Declarator2 '(' ParameterTypeList ')' FuncAttributes
-	| Declarator2 '(' ParameterIdentifierList ')'
-	| Declarator2 '(' ParameterIdentifierList ')' FuncAttributes
+	: IDENTIFIER				{
+				CDeclSetName($$, $1, ILQualIdentSimple($1));
+			}
+	| '(' Declarator ')'		{ $$ = $2; }
+	| Declarator2 '[' ']'		{
+				$$ = CDeclCreateArray(&CCCodeGen, $1);
+			}
+	| Declarator2 '[' ConstantExpression ']'	{
+				/* Evaluate the constant value */
+				/* TODO */
+				ILUInt32 size = 1;
+
+				/* Create the array */
+				$$ = CDeclCreateSizedArray(&CCCodeGen, $1, size);
+			}
+	| Declarator2 '(' ')'		{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);
+			}
+	| Declarator2 '(' ')' FuncAttributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0/*TODO*/);
+			}
+	| Declarator2 '(' ParameterTypeList ')'	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);
+			}
+	| Declarator2 '(' ParameterTypeList ')' FuncAttributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0/*TODO*/);
+			}
+	| Declarator2 '(' ParameterIdentifierList ')'	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);
+			}
+	| Declarator2 '(' ParameterIdentifierList ')' FuncAttributes {
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0/*TODO*/);
+			}
 	;
 
 FuncAttributes
@@ -853,21 +906,43 @@ AttributeArgs
 	;
 
 Pointer
-	: '*'
-	| '*' TypeQualifierList
-	| '*' Pointer
-	| '*' TypeQualifierList Pointer
+	: '*'						{
+				$$ = CDeclCreatePointer(&CCCodeGen, 0, 0);
+			}
+	| '*' TypeQualifierList		{
+				$$ = CDeclCreatePointer(&CCCodeGen, $2, 0);
+			}
+	| '*' Pointer				{
+				$$ = CDeclCreatePointer(&CCCodeGen, 0, &($2));
+			}
+	| '*' TypeQualifierList Pointer		{
+				$$ = CDeclCreatePointer(&CCCodeGen, $2, &($3));
+			}
 	;
 
 TypeQualifier
-	: K_CONST
-	| K_VOLATILE
-	| K_NATIVE
+	: K_CONST			{ $$ = C_SPEC_CONST; }
+	| K_VOLATILE		{ $$ = C_SPEC_VOLATILE; }
+	| K_NATIVE			{ $$ = C_SPEC_NATIVE; }
 	;
 
 TypeQualifierList
 	: TypeQualifier
-	| TypeQualifierList TypeQualifier
+	| TypeQualifierList TypeQualifier	{
+				if(($1 & $2 & C_SPEC_CONST) != 0)
+				{
+					CCWarning(_("duplicate `const'"));
+				}
+				if(($1 & $2 & C_SPEC_VOLATILE) != 0)
+				{
+					CCWarning(_("duplicate `volatile'"));
+				}
+				if(($1 & $2 & C_SPEC_NATIVE) != 0)
+				{
+					CCWarning(_("duplicate `__native__'"));
+				}
+				$$ = ($1 | $2);
+			}
 	;
 
 TypeSpecifierList
@@ -875,60 +950,130 @@ TypeSpecifierList
 	;
 
 TypeSpecifierList2
-	: TypeSpecifier						{}
-	| TypeSpecifierList2 TypeSpecifier	{}
+	: TypeSpecifier
+	| TypeSpecifierList2 TypeSpecifier	{ $$ = CDeclSpecCombine($1, $2); }
 	;
 
 ParameterIdentifierList
 	: IdentifierList
-	| IdentifierList ',' K_ELIPSIS
+	| IdentifierList ',' K_ELIPSIS	{
+				ILNode_List_Add($1, ILNode_FormalParameter_create
+					(0, ILParamMod_arglist, 0, 0));
+				$$ = $1;
+			}
 	;
 
 IdentifierList
-	: IDENTIFIER						{}
-	| IdentifierList ',' IDENTIFIER		{}
+	: IDENTIFIER	{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, ILNode_FormalParameter_create
+					(0, ILParamMod_empty, 0, ILQualIdentSimple($1)));
+			}
+	| IdentifierList ',' IDENTIFIER		{
+				ILNode_List_Add($1, ILNode_FormalParameter_create
+					(0, ILParamMod_empty, 0, ILQualIdentSimple($3)));
+				$$ = $1;
+			}
 	;
 
 ParameterTypeList
 	: ParameterList
-	| ParameterList ',' K_ELIPSIS
+	| ParameterList ',' K_ELIPSIS	{
+				ILNode_List_Add($1, ILNode_FormalParameter_create
+					(0, ILParamMod_arglist, 0, 0));
+				$$ = $1;
+			}
 	;
 
 ParameterList
-	: ParameterDeclaration
-	| ParameterList ',' ParameterDeclaration
+	: ParameterDeclaration	{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
+	| ParameterList ',' ParameterDeclaration	{
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
 	;
 
 ParameterDeclaration
-	: TypeSpecifierList Declarator		{}
-	| TypeName							{}
+	: TypeSpecifierList Declarator		{
+				ILType *type;
+				ILNode *nameNode;
+				CDeclSpec spec;
+				spec = CDeclSpecFinalize
+					($1, $2.node, $2.name, C_KIND_PARAMETER_NAME);
+				type = CDeclFinalize(&CCCodeGen, spec, $2, 0, 0);
+				nameNode = $2.node;
+				if(!nameNode && $2.name != 0)
+				{
+					nameNode = ILQualIdentSimple($2.name);
+				}
+				$$ = ILNode_FormalParameter_create
+					(0, ILParamMod_empty,
+					 ILNode_MarkType_create(0, type), nameNode);
+			}
+	| TypeName							{
+				$$ = ILNode_FormalParameter_create
+					(0, ILParamMod_empty, ILNode_MarkType_create(0, $1), 0);
+			}
 	;
 
 TypeName
-	: TypeSpecifierList						{ $$ = ILType_Void; /* TODO */ }
-	| TypeSpecifierList AbstractDeclarator	{ $$ = ILType_Void; /* TODO */ }
+	: TypeSpecifierList			{
+				CDeclarator decl;
+				CDeclSpec spec;
+				CDeclSetName(decl, 0, 0);
+				spec = CDeclSpecFinalize($1, 0, 0, 0);
+				$$ = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
+			}
+	| TypeSpecifierList AbstractDeclarator	{
+				CDeclSpec spec;
+				spec = CDeclSpecFinalize($1, 0, 0, 0);
+				$$ = CDeclFinalize(&CCCodeGen, spec, $2, 0, 0);
+			}
 	;
 
 AbstractDeclarator
 	: Pointer
 	| AbstractDeclarator2
-	| Pointer AbstractDeclarator2
+	| Pointer AbstractDeclarator2		{ $$ = CDeclCombine($1, $2); }
 	;
 
 AbstractDeclarator2
-	: '(' AbstractDeclarator ')'
-	| '[' ']'
-	| '[' ConstantExpression ']'
-	| AbstractDeclarator2 '[' ']'
-	| AbstractDeclarator2 '[' ConstantExpression ']'
-	| '(' ')'
-	| '(' ')' FuncAttributes
-	| '(' ParameterTypeList ')'
-	| '(' ParameterTypeList ')' FuncAttributes
-	| AbstractDeclarator2 '(' ')'
-	| AbstractDeclarator2 '(' ')' FuncAttributes
-	| AbstractDeclarator2 '(' ParameterTypeList ')'
-	| AbstractDeclarator2 '(' ParameterTypeList ')' FuncAttributes
+	: '(' AbstractDeclarator ')'		{ $$ = $2; }
+	| '[' ']'			{
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreateArray(&CCCodeGen, $$);
+			}
+	| '[' ConstantExpression ']'	{
+				/* Evaluate the constant value */
+				/* TODO */
+				ILUInt32 size = 1;
+
+				/* Create the array */
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreateSizedArray(&CCCodeGen, $$, size);
+			}
+	| AbstractDeclarator2 '[' ']'	{
+				$$ = CDeclCreateArray(&CCCodeGen, $1);
+			}
+	| AbstractDeclarator2 '[' ConstantExpression ']'	{
+				/* Evaluate the constant value */
+				/* TODO */
+				ILUInt32 size = 1;
+
+				/* Create the array */
+				$$ = CDeclCreateSizedArray(&CCCodeGen, $1, size);
+			}
+	| '(' ')'	{ /* TODO */ }
+	| '(' ')' FuncAttributes	{ /* TODO */ }
+	| '(' ParameterTypeList ')'	{ /* TODO */ }
+	| '(' ParameterTypeList ')' FuncAttributes	{ /* TODO */ }
+	| AbstractDeclarator2 '(' ')'	{ /* TODO */ }
+	| AbstractDeclarator2 '(' ')' FuncAttributes	{ /* TODO */ }
+	| AbstractDeclarator2 '(' ParameterTypeList ')'	{ /* TODO */ }
+	| AbstractDeclarator2 '(' ParameterTypeList ')' FuncAttributes	{ /* TODO */ }
 	;
 
 Initializer
@@ -1182,22 +1327,102 @@ FunctionDefinition
 	;
 
 OptParamDeclarationList
-	: ParamDeclarationList
-	| /* empty */
+	: ParamDeclarationList		{ $$ = $1; }
+	| /* empty */				{ $$ = ILNode_List_create(); }
 	;
 
 ParamDeclarationList
-	: ParamDeclaration
-	| ParamDeclarationList ParamDeclaration
+	: ParamDeclaration		{
+				if(yyisa($1, ILNode_List))
+				{
+					$$ = $1;
+				}
+				else
+				{
+					$$ = ILNode_List_create();
+					ILNode_List_Add($$, $1);
+				}
+			}
+	| ParamDeclarationList ParamDeclaration	{
+				CopyParamDecls($1, $2);
+				$$ = $1;
+			}
 	;
 
 ParamDeclaration
-	: DeclarationSpecifiers ParamDeclaratorList ';'	{}
+	: DeclarationSpecifiers ParamDeclaratorList ';'	{
+				CDeclSpec spec;
+				char *name;
+				ILNode *nameNode;
+				ILType *type;
+				ILNode_CDeclarator *decl;
+				ILNode_ListIter iter;
+
+				/* Get the first name and its node for error reporting */
+				if(yyisa($2, ILNode_CDeclarator))
+				{
+					name = ((ILNode_CDeclarator *)($2))->decl.name;
+					nameNode = ((ILNode_CDeclarator *)($2))->decl.node;
+				}
+				else
+				{
+					nameNode = ((ILNode_List *)($2))->item1;
+					name = ((ILNode_CDeclarator *)nameNode)->decl.name;
+					nameNode = ((ILNode_CDeclarator *)nameNode)->decl.node;
+				}
+
+				/* Finalize the declaration specifiers */
+				spec = CDeclSpecFinalize($1, nameNode, name,
+										 C_KIND_PARAMETER_NAME);
+
+				/* Build the formal parameters from the declarators */
+				if(yyisa($2, ILNode_CDeclarator))
+				{
+					decl = (ILNode_CDeclarator *)($2);
+					type = CDeclFinalize(&CCCodeGen, spec, decl->decl, 0, 0);
+					$$ = ILNode_FormalParameter_create
+						(0, ILParamMod_empty, ILNode_MarkType_create(0, type),
+						 decl->decl.node);
+				}
+				else
+				{
+					$$ = ILNode_List_create();
+					ILNode_ListIter_Init(&iter, $2);
+					while((decl = (ILNode_CDeclarator *)
+							ILNode_ListIter_Next(&iter)) != 0)
+					{
+						type = CDeclFinalize(&CCCodeGen, spec,
+											 decl->decl, 0, 0);
+						ILNode_List_Add($$, ILNode_FormalParameter_create
+							(0, ILParamMod_empty,
+							 ILNode_MarkType_create(0, type),
+							 decl->decl.node));
+					}
+				}
+			}
 	;
 
 ParamDeclaratorList
-	: ParamDeclarator
-	| ParamDeclaratorList ',' ParamDeclarator
+	: ParamDeclarator		{
+				/* Don't bother creating a list for the common case
+				   of there being only one declarator */
+				$$ = ILNode_CDeclarator_create($1);
+			}
+	| ParamDeclaratorList ',' ParamDeclarator	{
+				if(yyisa($1, ILNode_List))
+				{
+					/* Add the declarator to the existing list */
+					ILNode_List_Add($1, ILNode_CDeclarator_create($3));
+					$$ = $1;
+				}
+				else
+				{
+					/* At least two declarators: create a new list */
+					$$ = ILNode_List_create();
+					ILNode_List_Add($$, $1);
+					ILNode_List_Add($$, ILNode_CDeclarator_create($3));
+				}
+			}
 	;
 
 ParamDeclarator

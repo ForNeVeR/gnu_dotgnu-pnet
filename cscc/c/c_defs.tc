@@ -39,6 +39,7 @@
 #include <codegen/cg_scope.h>
 #include <cscc/common/cc_preproc.h>
 #include <cscc/common/cc_options.h>
+#include <cscc/c/c_declspec.h>
 
 /*
  * Define the semantic analysis value for C nodes.
@@ -247,6 +248,10 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 	ILType *type;
 }
 %node ILNode_TwoConditional ILNode_BinaryExpression
+%node ILNode_CDeclarator ILNode_Dummy =
+{
+	CDeclarator decl;
+}
 
 %output "c_semantics.c"
 

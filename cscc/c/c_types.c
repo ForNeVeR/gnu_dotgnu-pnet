@@ -269,6 +269,10 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType, int nativePtr)
 {
 	ILType *type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR, refType);
+	if(!type)
+	{
+		ILGenOutOfMemory(info);
+	}
 	if(nativePtr)
 	{
 		/* Add a modifier to the type to indicate its native status */

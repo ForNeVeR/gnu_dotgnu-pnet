@@ -73,7 +73,8 @@ extern	"C" {
  */
 #define	C_KIND_GLOBAL_NAME		(1<<0)
 #define	C_KIND_LOCAL_NAME		(1<<1)
-#define	C_KIND_FUNCTION			(1<<2)
+#define	C_KIND_PARAMETER_NAME	(1<<2)
+#define	C_KIND_FUNCTION			(1<<3)
 
 /*
  * Structure of a declaration specifier.
@@ -129,6 +130,74 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2);
  */
 CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 							const char *name, int kind);
+
+/*
+ * Information about a declarator.
+ */
+typedef struct
+{
+	char    *name;			/* Name represented by the declarator */
+	ILNode  *node;			/* Node that defines the name, for errors */
+	ILType  *type;			/* Type template for the declarator */
+	ILType **typeHole;		/* The hole in the template for the base type */
+	int		 isKR;			/* Non-zero if a K&R-style prototype */
+	ILNode  *params;		/* Declared function parameters */
+	ILNode  *attrs;			/* Declared function attributes */
+
+} CDeclarator;
+
+/*
+ * Set a declarator to a name.
+ */
+#define	CDeclSetName(decl,dname,dnode)	\
+			do { \
+				(decl).name = (dname); \
+				(decl).node = (dnode); \
+				(decl).type = ILType_Invalid; \
+				(decl).typeHole = 0; \
+				(decl).isKR = 0; \
+				(decl).params = 0; \
+				(decl).attrs = 0; \
+			} while (0)
+
+/*
+ * Create an array declarator, with unspecified size.
+ */
+CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem);
+
+/*
+ * Create an array declarator, with a specified size.
+ */
+CDeclarator CDeclCreateSizedArray(ILGenInfo *info, CDeclarator elem,
+								  ILUInt32 size);
+
+/*
+ * Create a pointer declarator.  "refType" will be non-NULL when
+ * creating a pointer to another pointer type.
+ */
+CDeclarator CDeclCreatePointer(ILGenInfo *info, int qualifiers,
+							   CDeclarator *refType);
+
+/*
+ * Create a function prototype declarator.
+ */
+CDeclarator CDeclCreatePrototype(ILGenInfo *info, CDeclarator decl,
+								 ILNode *params, ILNode *attributes);
+
+/*
+ * Combine two declarators, where "decl1" is inserted into the
+ * type hole in "decl2".  "decl1" is assumed to be a pointer type.
+ */
+CDeclarator CDeclCombine(CDeclarator decl1, CDeclarator decl2);
+
+/*
+ * Combine a set of declaration specifiers and a declarator
+ * to produce a final type and function parameter list.
+ * "declaredParams" are the K&R-style parameter declarations.
+ * "method" is non-NULL to set the signature for a method.
+ */
+ILType *CDeclFinalize(ILGenInfo *info, CDeclSpec spec, CDeclarator decl,
+					  ILNode *declaredParams, ILMethod *method);
 
 #ifdef	__cplusplus
 };

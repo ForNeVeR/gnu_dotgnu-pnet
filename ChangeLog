@@ -17,6 +17,9 @@
 	as the parent, to avoid conflicts with third-party CLI's, and
 	without needing hacks like "pnetlib.here".
 
+	* image/link.c: look in a version-specific sub-directory
+	before looking in the main directory during assembly resolution.
+
 2003-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, support/console.c: use a better detection mechanism

@@ -388,31 +388,41 @@ static int TestPathForPnetlibHere(const char *pathname, int pathlen)
  */
 static int FindAssemblyInPaths(const char **paths, unsigned long numPaths,
 							   const char *name, int namelen, int isSystem,
-							   char **path, char **firstPath)
+							   char **path, char **firstPath,
+							   const ILUInt16 *version)
 {
 	unsigned long posn;
+	char versionBuffer[64];
+	const char *versionPrefix;
+	if(version && (version[0] != 0 || version[1] != 0 ||
+				   version[2] != 0 || version[3] != 0))
+	{
+		sprintf(versionBuffer, "%d.%d.%d.%d/",
+				(int)(version[0]), (int)(version[1]),
+				(int)(version[2]), (int)(version[3]));
+		versionPrefix = versionBuffer;
+	}
+	else
+	{
+		versionBuffer[0] = '\0';
+		versionPrefix = 0;
+	}
 	for(posn = 0; posn < numPaths; ++posn)
 	{
 		*path = TestPathForFile(paths[posn], strlen(paths[posn]),
-							    name, namelen, 0, ".dll", 0, 0);
+							    name, namelen, versionPrefix, ".dll", 0, 0);
 		if(*path)
 		{
-			if(!isSystem ||
-			   TestPathForPnetlibHere(paths[posn], strlen(paths[posn])))
+			return 1;
+		}
+		if(versionPrefix)
+		{
+			/* Retry without the version directory prefix */
+			*path = TestPathForFile(paths[posn], strlen(paths[posn]),
+								    name, namelen, 0, ".dll", 0, 0);
+			if(*path)
 			{
-				if(*firstPath)
-				{
-					ILFree(*firstPath);
-				}
 				return 1;
-			}
-			if(*firstPath)
-			{
-				ILFree(*path);
-			}
-			else
-			{
-				*firstPath = *path;
 			}
 		}
 	}
@@ -467,7 +477,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 
 	/* Search the before path list */
 	if(FindAssemblyInPaths(beforePaths, numBeforePaths, name, namelen,
-						   isSystem, &path, &firstPath))
+						   isSystem, &path, &firstPath, version))
 	{
 		return path;
 	}
@@ -478,7 +488,8 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 		LoadSystemPath();
 		if(FindAssemblyInPaths((const char **)importantSystemPath,
 							   (unsigned long)importantSystemPathSize,
-							   name, namelen, isSystem, &path, &firstPath))
+							   name, namelen, isSystem, &path, &firstPath,
+							   version))
 		{
 			return path;
 		}
@@ -523,7 +534,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 		LoadSystemPath();
 		if(FindAssemblyInPaths((const char **)systemPath,
 							   (unsigned long)systemPathSize, name, namelen,
-							   isSystem, &path, &firstPath))
+							   isSystem, &path, &firstPath, version))
 		{
 			return path;
 		}
@@ -531,7 +542,7 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 
 	/* Search the after path list */
 	if(FindAssemblyInPaths(afterPaths, numAfterPaths, name, namelen,
-						   isSystem, &path, &firstPath))
+						   isSystem, &path, &firstPath, version))
 	{
 		return path;
 	}

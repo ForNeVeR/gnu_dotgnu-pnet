@@ -1,4 +1,8 @@
 
+2003-06-26  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/Makefile.a: Add monitor.c to the list of files
+
 2003-06-26  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c:  New monitor implementation.  Uses 

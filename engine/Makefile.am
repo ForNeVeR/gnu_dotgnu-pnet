@@ -42,6 +42,7 @@ libILEngine_a_SOURCES = cvm.c \
 						lib_time.c \
 						lib_type.c \
 						lookup.c \
+						monitor.c \
 						method_cache.c \
 						null_coder.c \
 						pinvoke.c \

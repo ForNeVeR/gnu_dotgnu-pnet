@@ -245,6 +245,117 @@ void ILCmdLineHelp(const ILCmdLineOption *options);
  */
 int ILSpawnProcess(char *argv[]);
 
+/*
+ * Opaque definition of the hash table type.
+ */
+typedef struct _tagILHashTable ILHashTable;
+
+/*
+ * Opaque definition of the hash entry type.
+ */
+typedef struct _tagILHashEntry ILHashEntry;
+
+/*
+ * Structure that is used to iterate over an entire hash table.
+ */
+typedef struct
+{
+	ILHashTable	   *hashtab;
+	int				index;
+	ILHashEntry	   *entry;
+
+} ILHashIter;
+
+/*
+ * Compute the hash value for a particular element.
+ */
+typedef unsigned long (*ILHashComputeFunc)(const void *elem);
+
+/*
+ * Compute the hash value for a particular key.
+ */
+typedef unsigned long (*ILHashKeyComputeFunc)(const void *key);
+
+/*
+ * Determine if we have a match between an element
+ * in the hash table and a particular key.
+ */
+typedef int (*ILHashMatchFunc)(const void *elem, const void *key);
+
+/*
+ * Free an element.
+ */
+typedef void (*ILHashFreeFunc)(void *elem);
+
+/*
+ * Create a hash table.  If "size" is zero, then use a
+ * builtin default size.  All functions must be supplied,
+ * except "freeFunc", which can be NULL if the elements
+ * do not need to be free'd.  Returns NULL if out of memory.
+ */
+ILHashTable *ILHashCreate(int size, ILHashComputeFunc computeFunc,
+						  ILHashKeyComputeFunc keyComputeFunc,
+						  ILHashMatchFunc matchFunc,
+						  ILHashFreeFunc freeFunc);
+
+/*
+ * Destroy a hash table.  If "freeFunc" is not NULL, then
+ * also free all of the elements in the hash table.
+ */
+void ILHashDestroy(ILHashTable *hashtab);
+
+/*
+ * Add a new element to a hash table.  Returns zero if
+ * out of memory.
+ */
+int ILHashAdd(ILHashTable *hashtab, void *elem);
+
+/*
+ * Find an element within a hash table by key.  Returns
+ * the element, or NULL if not present.
+ */
+void *ILHashFind(ILHashTable *hashtab, const void *key);
+
+/*
+ * Helper macro for finding an element and then casting
+ * the result to a particular structure type.
+ */
+#define	ILHashFindType(hashtab,key,type)	\
+			((type *)ILHashFind((hashtab), (key)))
+
+/*
+ * Remove an element from the hash table.  The element will be
+ * free'd if "freeElem" is non-zero, and "freeFunc" is not NULL.
+ */
+void ILHashRemove(ILHashTable *hashtab, void *elem, int freeElem);
+
+/*
+ * Remove a subset of the elements from the hash table.  The
+ * elements will be free'd if "freeElem" is non-zero, and
+ * "freeFunc" is not NULL.
+ */
+void ILHashRemoveSubset(ILHashTable *hashtab, ILHashMatchFunc matchFunc,
+						const void *key, int freeElem);
+
+/*
+ * Initialize an iterator for scanning all elements
+ * within a hash table.
+ */
+void ILHashIterInit(ILHashIter *iter, ILHashTable *hashtab);
+
+/*
+ * Get the next element within a hash table.  Returns NULL
+ * at the end of the table.
+ */
+void *ILHashIterNext(ILHashIter *iter);
+
+/*
+ * Helper macro for getting the next element within a hash
+ * table and casting the result to a particular structure type.
+ */
+#define	ILHashIterNextType(iter,type)	\
+				((type *)ILHashIterNext((iter), (type)))
+
 #ifdef	__cplusplus
 };
 #endif

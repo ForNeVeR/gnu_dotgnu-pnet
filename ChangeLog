@@ -1,4 +1,9 @@
 
+2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* include/il_utils.h, support/hashtab.c, support/Makefile.am:
+implement a new helper library for hash tables.
+
 2001-10-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/Makefile.am: remove "interpreter.c" from the engine build;

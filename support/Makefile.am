@@ -8,6 +8,7 @@ libILSupport_a_SOURCES = alloc.c \
 						 filemap.c \
 						 guid.c \
 						 hash.c \
+						 hashtab.c \
 						 intern.c \
 						 memory.c \
 						 mempool.c \

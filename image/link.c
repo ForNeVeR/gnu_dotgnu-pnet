@@ -44,6 +44,29 @@ static char **importantSystemPath = 0;
 static int importantSystemPathSize = 0;
 
 /*
+ * Cached information from "pinvoke.map" files.
+ */
+typedef struct _tagILMapContents
+{
+	char *name;
+	int nameLen;
+	char *systemType;
+	char *remappedName;
+	struct _tagILMapContents *next;
+
+} ILMapContents;
+typedef struct _tagILMapDirectory
+{
+	char *directory;
+	int directoryLen;
+	ILMapContents *contents;
+	struct _tagILMapDirectory *next;
+
+} ILMapDirectory;
+static ILMapDirectory *mapDirs = 0;
+static ILMapDirectory *lastMapDir = 0;
+
+/*
  * Add a pathname to "systemPaths".
  */
 static void AddSystemPath(const char *path, int len, int importantPath)
@@ -323,6 +346,148 @@ static char *TestPathForFile(const char *pathname, int pathlen,
 }
 
 /*
+ * Extract a field from a buffer.
+ */
+static char *ExtractField(char *buffer, int *_posn)
+{
+	int posn = *_posn;
+	char *result;
+	while(buffer[posn] != '\0' && buffer[posn] != '#' &&
+		  (buffer[posn] == ' ' || buffer[posn] == '\t' ||
+		   buffer[posn] == '\r' || buffer[posn] == '\n'))
+	{
+		++posn;
+	}
+	result = buffer + posn;
+	while(buffer[posn] != '\0' && buffer[posn] != '#' &&
+		  buffer[posn] != ' ' && buffer[posn] != '\t' &&
+		  buffer[posn] != '\r' && buffer[posn] != '\n')
+	{
+		++posn;
+	}
+	if(buffer[posn] == '#')
+	{
+		buffer[posn] = '\0';
+	}
+	else if(buffer[posn] != '\0')
+	{
+		buffer[posn++] = '\0';
+	}
+	*_posn = posn;
+	return result;
+}
+
+/*
+ * Load the contents of a "pinvoke.map" file.
+ */
+static ILMapDirectory *LoadPInvokeMap(const char *pathname, int pathlen)
+{
+	ILMapDirectory *dir;
+	char *mapFile;
+	FILE *file;
+	char buffer[BUFSIZ];
+	char *field1;
+	char *field2;
+	char *field3;
+	int posn;
+	ILMapContents *contents;
+	ILMapContents *last;
+
+	/* Allocate space for the directory and initialize it */
+	dir = (ILMapDirectory *)ILMalloc(sizeof(ILMapDirectory));
+	if(!dir)
+	{
+		return 0;
+	}
+	dir->directory = ILDupNString(pathname, pathlen);
+	if(!(dir->directory))
+	{
+		ILFree(dir);
+		return 0;
+	}
+	dir->directoryLen = pathlen;
+	dir->contents = 0;
+	dir->next = 0;
+	if(lastMapDir)
+	{
+		lastMapDir->next = dir;
+	}
+	else
+	{
+		mapDirs = dir;
+	}
+	lastMapDir = dir;
+
+	/* Try to open the "pinvoke.map" file */
+	if((mapFile = (char *)ILMalloc(pathlen + 13)) == 0)
+	{
+		return dir;
+	}
+	strncpy(mapFile, pathname, pathlen);
+	strcpy(mapFile + pathlen, "/pinvoke.map");
+	if((file = fopen(mapFile, "r")) == NULL)
+	{
+		ILFree(mapFile);
+		return dir;
+	}
+	ILFree(mapFile);
+
+	/* Read the lines into memory */
+	last = 0;
+	while(fgets(buffer, sizeof(buffer), file))
+	{
+		posn = 0;
+		field1 = ExtractField(buffer, &posn);
+		field2 = ExtractField(buffer, &posn);
+		field3 = ExtractField(buffer, &posn);
+		if(field1[0] != '\0' && field2[0] != '\0' && field3[0] != '\0')
+		{
+			contents = (ILMapContents *)ILMalloc(sizeof(ILMapContents));
+			if(!contents)
+			{
+				break;
+			}
+			contents->name = ILDupString(field1);
+			if(!(contents->name))
+			{
+				ILFree(contents);
+				break;
+			}
+			contents->systemType = ILDupString(field2);
+			if(!(contents->systemType))
+			{
+				ILFree(contents->name);
+				ILFree(contents);
+				break;
+			}
+			contents->remappedName = ILDupString(field3);
+			if(!(contents->remappedName))
+			{
+				ILFree(contents->systemType);
+				ILFree(contents->name);
+				ILFree(contents);
+				break;
+			}
+			contents->nameLen = strlen(field1);
+			contents->next = 0;
+			if(last)
+			{
+				last->next = contents;
+			}
+			else
+			{
+				dir->contents = contents;
+			}
+			last = contents;
+		}
+	}
+	fclose(file);
+
+	/* Finished */
+	return dir;
+}
+
+/*
  * Test a specific pathname for a native library file.
  */
 static char *TestPathForNativeLib(const char *pathname, int pathlen,
@@ -331,6 +496,26 @@ static char *TestPathForNativeLib(const char *pathname, int pathlen,
 {
 	char *fullName;
 	int retryLower;
+	ILMapDirectory *dir;
+
+	/* Look for a "pinvoke.map" file in the directory */
+	dir = mapDirs;
+	while(dir != 0)
+	{
+		if(dir->directoryLen == pathlen &&
+		   !ILMemCmp(dir->directory, pathname, pathlen))
+		{
+			break;
+		}
+		dir = dir->next;
+	}
+	if(!dir)
+	{
+		/* We haven't seen this directory before, so load "pinvoke.map".
+		   If there is no "pinvoke.map", then cache the fact that it
+		   isn't there so that we don't try to load it again */
+		LoadPInvokeMap(pathname, pathlen);
+	}
 
 	/* Try looking for an exact match */
 	fullName = TestPathForFile(pathname, pathlen, name, namelen,
@@ -1037,118 +1222,17 @@ static int SearchForDllMap(ILProgramItem *item, const char *name,
 	return -1;
 }
 
-char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
+/*
+ * Search the path for a native library.
+ */
+static char *PInvokeSearchPath(ILPInvoke *pinvoke, char *baseName,
+							   const char *optPrefix, const char *suffix)
 {
 	const char *name;
-	const char *remapName;
 	int namelen;
 	int posn;
-	char *baseName;
 	char *fullName;
 	ILContext *context;
-	const char *optPrefix = 0;
-	const char *suffix = 0;
-
-	/* Validate the module name that was provided */
-	if(!pinvoke || !(pinvoke->module) || !(pinvoke->module->name) ||
-	   pinvoke->module->name[0] == '\0')
-	{
-		return 0;
-	}
-	name = pinvoke->module->name;
-
-	/* Disallow the request if the image containing the PInvoke
-	   declaration is marked as insecure */
-	if(!(pinvoke->member.programItem.image->secure))
-	{
-		return 0;
-	}
-
-	/* Does the name need to be remapped for this platform? */
-	namelen = SearchForDllMap(&(pinvoke->memberInfo->programItem),
-							  name, &remapName);
-	if(namelen == -1)
-	{
-		namelen = SearchForDllMap(&(pinvoke->memberInfo->owner->programItem),
-							  	  name, &remapName);
-		if(namelen == -1)
-		{
-			namelen = strlen(name);
-		}
-		else
-		{
-			name = remapName;
-		}
-	}
-	else
-	{
-		name = remapName;
-	}
-
-	/* If the name already includes a root directory specification,
-	   then assume that this is the path we are looking for */
-	if(namelen > 0 && (name[0] == '/' || name[0] == '\\'))
-	{
-		return ILDupNString(name, namelen);
-	}
-	else if(namelen > 1 && name[1] == ':')
-	{
-		return ILDupNString(name, namelen);
-	}
-
-	/* Determine the platform-specific prefix and suffix to add */
-#ifndef IL_WIN32_PLATFORM
-	{
-		int needSuffix = 1;
-		posn = 0;
-		while(posn <= (namelen - 3))
-		{
-			if(name[posn] == '.' && name[posn + 1] == 's' &&
-			   name[posn + 2] == 'o' &&
-			   ((posn + 3) == namelen || name[posn + 3] == '.'))
-			{
-				/* The name already includes ".so" somewhere */
-				needSuffix = 0;
-				break;
-			}
-			++posn;
-		}
-		if(needSuffix)
-		{
-			/* Strip ".dll" from the end of the name if present */
-			if(namelen >= 4 && name[namelen - 4] == '.' &&
-			   (name[namelen - 3] == 'd' || name[namelen - 3] == 'D') &&
-			   (name[namelen - 2] == 'l' || name[namelen - 2] == 'L') &&
-			   (name[namelen - 1] == 'l' || name[namelen - 1] == 'L'))
-			{
-				namelen -= 4;
-				needSuffix = 1;
-			}
-		}
-		if(needSuffix)
-		{
-		#if defined(__APPLE__) && defined(__MACH__)
-			suffix = ".dylib";
-		#else
-			suffix = ".so";
-		#endif
-		}
-	}
-#else
-	/* Add ".dll" to the end of the name if not present */
-	if(namelen < 4 || name[namelen - 4] != '.' ||
-	   (name[namelen - 3] != 'd' && name[namelen - 3] != 'D') ||
-	   (name[namelen - 2] != 'l' && name[namelen - 2] != 'L') ||
-	   (name[namelen - 1] != 'l' && name[namelen - 1] != 'L'))
-	{
-		suffix = ".dll";
-	}
-#endif
-	if(namelen >= 3 && strncmp(name, "lib", 3) != 0)
-	{
-		optPrefix = "lib";
-	}
-	baseName = ILDupNString(name, namelen);
 
 	/* Look in the same directory as the assembly first,
 	   in case the programmer has shipped the native library
@@ -1218,6 +1302,162 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 			ILFree(baseName);
 			return fullName;
 		}
+	}
+
+	/* If we get here, then we were unable to find the name */
+	return 0;
+}
+
+char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
+{
+	const char *name;
+	const char *remapName;
+	int namelen;
+	int posn;
+	char *baseName;
+	char *fullName;
+	const char *optPrefix = 0;
+	const char *suffix = 0;
+	const char *systemType;
+	ILMapDirectory *dir;
+	ILMapContents *contents;
+
+	/* Validate the module name that was provided */
+	if(!pinvoke || !(pinvoke->module) || !(pinvoke->module->name) ||
+	   pinvoke->module->name[0] == '\0')
+	{
+		return 0;
+	}
+	name = pinvoke->module->name;
+
+	/* Disallow the request if the image containing the PInvoke
+	   declaration is marked as insecure */
+	if(!(pinvoke->member.programItem.image->secure))
+	{
+		return 0;
+	}
+
+	/* Does the name need to be remapped for this platform? */
+	namelen = SearchForDllMap(&(pinvoke->memberInfo->programItem),
+							  name, &remapName);
+	if(namelen == -1)
+	{
+		namelen = SearchForDllMap(&(pinvoke->memberInfo->owner->programItem),
+							  	  name, &remapName);
+		if(namelen == -1)
+		{
+			namelen = strlen(name);
+		}
+		else
+		{
+			name = remapName;
+		}
+	}
+	else
+	{
+		name = remapName;
+	}
+
+	/* If the name already includes a root directory specification,
+	   then assume that this is the path we are looking for */
+	if(namelen > 0 && (name[0] == '/' || name[0] == '\\'))
+	{
+		return ILDupNString(name, namelen);
+	}
+	else if(namelen > 1 && name[1] == ':')
+	{
+		return ILDupNString(name, namelen);
+	}
+
+	/* Determine the platform-specific prefix and suffix to add */
+#ifndef IL_WIN32_PLATFORM
+	systemType = "so";
+	{
+		int needSuffix = 1;
+		posn = 0;
+		while(posn <= (namelen - 3))
+		{
+			if(name[posn] == '.' && name[posn + 1] == 's' &&
+			   name[posn + 2] == 'o' &&
+			   ((posn + 3) == namelen || name[posn + 3] == '.'))
+			{
+				/* The name already includes ".so" somewhere */
+				needSuffix = 0;
+				break;
+			}
+			++posn;
+		}
+		if(needSuffix)
+		{
+			/* Strip ".dll" from the end of the name if present */
+			if(namelen >= 4 && name[namelen - 4] == '.' &&
+			   (name[namelen - 3] == 'd' || name[namelen - 3] == 'D') &&
+			   (name[namelen - 2] == 'l' || name[namelen - 2] == 'L') &&
+			   (name[namelen - 1] == 'l' || name[namelen - 1] == 'L'))
+			{
+				namelen -= 4;
+				needSuffix = 1;
+			}
+		}
+		if(needSuffix)
+		{
+		#if defined(__APPLE__) && defined(__MACH__)
+			suffix = ".dylib";
+			systemType = "dylib";
+		#else
+			suffix = ".so";
+		#endif
+		}
+	}
+#else
+	/* Add ".dll" to the end of the name if not present */
+	systemType = "dll";
+	if(namelen < 4 || name[namelen - 4] != '.' ||
+	   (name[namelen - 3] != 'd' && name[namelen - 3] != 'D') ||
+	   (name[namelen - 2] != 'l' && name[namelen - 2] != 'L') ||
+	   (name[namelen - 1] != 'l' && name[namelen - 1] != 'L'))
+	{
+		suffix = ".dll";
+	}
+#endif
+	if(namelen >= 3 && strncmp(name, "lib", 3) != 0)
+	{
+		optPrefix = "lib";
+	}
+	baseName = ILDupNString(name, namelen);
+
+	/* Search the path for the name, without remappings */
+	fullName = PInvokeSearchPath(pinvoke, baseName, optPrefix, suffix);
+	if(fullName)
+	{
+		return fullName;
+	}
+
+	/* Try the "pinvoke.map" files to see if we have a remapping */
+	dir = mapDirs;
+	while(dir != 0)
+	{
+		contents = dir->contents;
+		while(contents != 0)
+		{
+			if(contents->nameLen == strlen(baseName) &&
+			   !ILMemCmp(contents->name, baseName, contents->nameLen) &&
+			   !strcmp(contents->systemType, systemType))
+			{
+				char *newBase = ILDupString(contents->remappedName);
+				if(newBase)
+				{
+					fullName = PInvokeSearchPath(pinvoke, newBase, 0, 0);
+					if(fullName)
+					{
+						ILFree(baseName);
+						return fullName;
+					}
+				}
+			}
+			contents = contents->next;
+		}
+		dir = dir->next;
 	}
 
 	/* Let "ILDynLibraryOpen" do the hard work of finding it later */

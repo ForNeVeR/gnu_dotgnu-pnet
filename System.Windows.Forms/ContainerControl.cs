@@ -3,6 +3,7 @@
  *			"System.Windows.Forms.ContainerControl" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,10 +83,44 @@ public class ContainerControl : ScrollableControl, IContainerControl
 			}
 
 	// Activate a specific control.
-	[TODO]
 	public bool ActivateControl(Control active)
 			{
-				// TODO
+				bool activated = ActivateControlInternal(active);
+				//TODO: Scroll active into view if its not visible.
+				return activated;
+			}
+
+	private bool ActivateControlInternal(Control active)
+			{
+				if (Parent != null)
+				{
+					ContainerControl container = Parent.GetContainerControl() as ContainerControl;
+					if (container != null && container.ActiveControl != this && !container.ActivateControlInternal(this))
+						return false; 
+				}
+				if (active == this.activeControl)
+					return true;
+				
+				bool activated;
+				if (active == this)
+					activated = FocusControl(null);
+				else
+					activated = FocusControl(active);
+				Form form = FindForm();
+				if (form != null)
+				form.UpdateDefaultButton();
+				return activated;
+			}
+
+	protected virtual void UpdateDefaultButton()
+			{
+			}
+
+	private bool FocusControl(Control active)
+			{
+				activeControl = active;
+				if (activeControl != null)
+					activeControl.Focus();
 				return true;
 			}
 
@@ -135,39 +170,60 @@ public class ContainerControl : ScrollableControl, IContainerControl
 				if ((keyData & (Keys.Alt | Keys.Control)) == 0)
 				{
 					Keys key = keyData & Keys.KeyCode;
-					if (key != Keys.Tab)
+					if (key == Keys.Tab)
 					{
-						switch (key)
-						{
-							case Keys.Left:
-							case Keys.Up:
-							case Keys.Right:
-							case Keys.Down:
-								Control control;
-								if (activeControl != null)
-									control = activeControl.Parent;
-								else
-									control = this;
-								bool forward = (key == Keys.Right || key == Keys.Down);
-								if (control.SelectNextControl(activeControl, forward , false, false, true))
-									return true;
-								break;
-						}
-						return base.ProcessDialogKey(keyData);
-
+						if (ProcessTabKey((keyData & Keys.Shift) == 0))
+							return true;
 					}
-					else if (ProcessTabKey((keyData & Keys.Shift) == 0))
-						return true;
+					else if (key == Keys.Left || key == Keys.Up || key == Keys.Right || key == Keys.Down)
+					{
+						Control control;
+						if (activeControl != null)
+							control = activeControl.Parent;
+						else
+							control = this;
+						bool forward = (key == Keys.Right || key == Keys.Down);
+						if (control.SelectNextControl(activeControl, forward , false, false, true))
+							return true;
+					}
 				}
 				return base.ProcessDialogKey(keyData);
 			}
 
 	// Process a key mnemonic.
-	[TODO]
 	protected override bool ProcessMnemonic(char charCode)
 			{
-				// TODO
-				return base.ProcessMnemonic(charCode);
+				if (Controls.Count == 0)
+				{
+					return false; 
+				}
+				Control active = ActiveControl;
+				// Find the bottom most active control or the container if there isn't one.
+				while (!(active is ContainerControl) && active != null)
+					active = (active as ContainerControl).ActiveControl;
+
+				// Process the mnemonics if needed.
+				bool back = false;
+				Control mnemonicControl = active;
+
+				do
+				{
+					mnemonicControl = GetNextControl(mnemonicControl, true);
+					if (mnemonicControl == null)
+					{
+						if (back)
+							break;
+						back = true;
+					}
+					else
+					{
+						if (mnemonicControl.ProcessMnemonicInternal(charCode))
+							return true; 
+					}
+				}
+				while (mnemonicControl != active);
+				return false; 
+
 			}
 
 	// Process the tab key.
@@ -177,10 +233,41 @@ public class ContainerControl : ScrollableControl, IContainerControl
 			}
 
 	// Select this control.
-	[TODO]
 	protected override void Select(bool directed, bool forward)
 			{
-				// TODO
+				if (Parent != null)
+				{
+					IContainerControl container = Parent.GetContainerControl();
+					if (container != null)
+					{
+						container.ActiveControl = this;
+						if (directed && container.ActiveControl == this)
+							SelectNextControl(null, forward, true, true, false);		 
+					}
+				}
+				if (directed)
+					SelectNextControl(null, forward, true, true, false);
+			}
+
+	private void SetFocus(Control control)
+			{
+				ContainerControl container;
+				if (control != null && control.Visible)
+				{
+					// TODO
+					control.Focus();
+					return; 
+				}
+				// Find the first visible container.
+				for (container = this; container != null; container = container.GetContainerControl() as ContainerControl)
+				{
+					if (container.Visible)
+					{
+						// TODO
+						container.Focus();
+						break;
+					}
+				}
 			}
 
 #if !CONFIG_COMPACT_FORMS

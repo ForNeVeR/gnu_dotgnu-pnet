@@ -69,6 +69,7 @@ namespace System.Windows.Forms
 			selectedIndex = -1;
 			SetStyle(ControlStyles.ResizeRedraw, true);
 			textEntry.BorderStyle = BorderStyle.None;
+			textEntry.TabStop = false;
 			this.Controls.Add(textEntry);
 		
 			popup = new PopupControl();
@@ -115,13 +116,22 @@ namespace System.Windows.Forms
 			using (Brush b = Enabled ? new SolidBrush(BackColor) : SystemBrushes.Control)
 				g.FillRectangle(b, 0, ClientSize.Height - 2, ClientSize.Width, 2);
 			DrawButton(g);
-			if (DropDownStyle == ComboBoxStyle.DropDownList && selectedIndex != -1)
+			if (DropDownStyle == ComboBoxStyle.DropDownList)
 			{
-				Rectangle bounds = new Rectangle(textEntry.Left, textEntry.Top, textEntry.Width - 1, textEntry.Height -1);
-				g.FillRectangle(SystemBrushes.Highlight, bounds);
-				// HACK bug in DrawString
-				g.SetClip(bounds);
-				g.DrawString(Text, Font, SystemBrushes.HighlightText, bounds);
+				Rectangle bounds = new Rectangle(textEntry.Left + 1, textEntry.Top + 1, textEntry.Width - 1, textEntry.Height -1);
+				if (Focused)
+				{
+					g.FillRectangle(SystemBrushes.Highlight, bounds);
+					g.DrawString(Text, Font, SystemBrushes.HighlightText, bounds);
+				}
+				else
+				{
+					using (Brush back = new SolidBrush(BackColor), fore = new SolidBrush(ForeColor))
+					{
+						g.FillRectangle(back, bounds);
+						g.DrawString(Text, Font, fore, bounds);
+					}
+				}
 			}
 		}
 
@@ -496,6 +506,27 @@ namespace System.Windows.Forms
 				return base.CreateParams;
 			}
 		}
+
+		// Non Microsoft.
+		protected override void OnEnter(EventArgs e)
+		{
+			base.OnEnter (e);
+			if (DropDownStyle == ComboBoxStyle.DropDownList)
+				Draw();
+			else
+			{
+				textEntry.Focus();
+				textEntry.SelectAll();
+			}
+		}
+
+		protected override void OnLeave(EventArgs e)
+		{
+			base.OnLeave (e);
+			if (DropDownStyle == ComboBoxStyle.DropDownList)
+				Draw();
+		}
+
 
 		protected virtual void AddItemsCore(object[] value)
 		{

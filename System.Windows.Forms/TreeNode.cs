@@ -35,12 +35,12 @@ namespace System.Windows.Forms
 		internal TreeNode parent;
 		internal bool expanded;
 		internal Rectangle bounds;
-		internal Rectangle heirarchyMarkerBounds;
+		internal Rectangle hierarchyMarkerBounds;
 		// The y coordinate of the marker line.
 		internal int markerLineY;
 		internal TreeView treeView;
 		private string text;
-		private bool isChecked;
+		internal bool isChecked;
 		private int imageIndex;
 		private int selectedImageIndex;
 		private TreeNodeCollection nodes;

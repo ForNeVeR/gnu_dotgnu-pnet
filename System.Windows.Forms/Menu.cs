@@ -283,6 +283,11 @@ public abstract class Menu
 				return -1;
 			}
 
+	internal protected bool ProcessCmdKey(ref Message msg, Keys keyData)
+			{
+				// TODO
+				return false;
+			} 
 	
 	// Collection of menu items.
 	public class MenuItemCollection : IList

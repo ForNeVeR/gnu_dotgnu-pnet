@@ -44,6 +44,22 @@ namespace System.Windows.Forms
 			return new TabPageControlCollection( this );
 		}
 
+		// This method is not overridden by Microsoft - but we must.
+		protected override void Select(bool directed, bool forward)
+		{
+			if (Parent.Focused)
+				// Move off the tab page onto the first or last child.
+				SelectNextControl(this, forward, true, true, true);
+			else
+			{
+				(Parent as TabControl).ActiveControl = Parent;
+				// Selecting the Parent will move to the first child.
+				// This way we set the focus directly to the parent.
+				Parent.Focus();
+			}
+			return;
+		}
+
 		//TODO:
 		public static TabPage GetTabPageOfComponent(object comp)
 		{

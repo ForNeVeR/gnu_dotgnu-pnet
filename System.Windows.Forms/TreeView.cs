@@ -51,6 +51,7 @@ namespace System.Windows.Forms
 		private Pen markerPen;
 		private TreeNode topNode;
 		private TextBox textBox;
+		private bool layoutSuspended;
  
 		public event TreeViewEventHandler AfterCheck;
 		public event TreeViewEventHandler AfterCollapse;
@@ -80,6 +81,7 @@ namespace System.Windows.Forms
 		}
 		public void BeginUpdate()
 		{
+			layoutSuspended = true;
 		}
 		public void CollapseAll()
 		{
@@ -87,18 +89,20 @@ namespace System.Windows.Forms
 		}
 		public void EndUpdate()
 		{
+			layoutSuspended = false;
 		}
 		public void ExpandAll()
 		{
 			root.ExpandAll();
 		}
+		[TODO]
 		public TreeNode GetNodeAt(int x, int y)
 		{
 			return null;
 		}
 		public TreeNode GetNodeAt(Point pt)
 		{
-			return null;
+			return GetNodeAt(pt.X, pt.Y);
 		}
 
 		public int GetNodeCount(bool includeSubTrees)
@@ -108,7 +112,45 @@ namespace System.Windows.Forms
 
 		protected override bool IsInputKey(Keys keyData)
 		{
+			if (editNode != null && (keyData & Keys.Alt) == 0)
+			{
+				Keys key = keyData & Keys.KeyCode;
+				if (key == Keys.Return || key == Keys.Escape || key == Keys.Prior || key == Keys.Next || key == Keys.Home || key == Keys.End)
+					return true;
+			}
 			return base.IsInputKey(keyData);
+		}
+
+		protected override void OnKeyPress(KeyPressEventArgs e)
+		{
+			base.OnKeyPress(e);
+			// Swallow the space
+			if (!e.Handled && e.KeyChar == ' ')
+				e.Handled = true;
+		}
+
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			base.OnKeyDown(e);
+			if (!e.Handled && checkBoxes && selectedNode != null && (e.KeyData & Keys.KeyCode) == Keys.Space)
+			{
+				TreeViewCancelEventArgs args = new TreeViewCancelEventArgs(selectedNode, false, TreeViewAction.ByKeyboard);
+				this.OnBeforeCheck(args);
+				if (!args.Cancel)
+				{
+					selectedNode.isChecked = !selectedNode.isChecked;
+					this.OnAfterCheck(new TreeViewEventArgs(selectedNode, TreeViewAction.ByKeyboard));
+				}
+				e.Handled = true;
+			}
+		}
+
+		protected override void OnKeyUp(KeyEventArgs e)
+		{
+			base.OnKeyUp (e);
+			// Swallow the space
+			if (!e.Handled && (e.KeyData & Keys.KeyCode) == Keys.Space)
+				e.Handled = true;
 		}
 
 		protected internal virtual void OnAfterCheck(TreeViewEventArgs e)
@@ -540,6 +582,8 @@ namespace System.Windows.Forms
 		// Render the treeview starting from startingLine
 		internal void Draw(Graphics g, TreeNode startNode)
 		{
+			if (layoutSuspended)
+				return;
 			int x = Offset.X;
 			int y = Offset.Y;
 			int line = 0;
@@ -572,8 +616,8 @@ namespace System.Windows.Forms
 				
 				if (drawing)
 				{
-					node.heirarchyMarkerBounds = new Rectangle(x, y , indent - 6, ItemHeight);
-					DrawHeirarchyMarker(g, node);
+					node.hierarchyMarkerBounds = new Rectangle(x, y , indent - 6, ItemHeight);
+					DrawHierarchyMarker(g, node);
 					int imageWidth = 0;
 					node.bounds.Location = new Point(x + indent, y + 1);
 					if (imageList != null)
@@ -605,7 +649,7 @@ namespace System.Windows.Forms
 				}
 				if (!inView)
 				{
-					node.heirarchyMarkerBounds = Rectangle.Empty;
+					node.hierarchyMarkerBounds = Rectangle.Empty;
 					node.bounds = Rectangle.Empty;
 				}
 
@@ -644,7 +688,7 @@ namespace System.Windows.Forms
 			while (nodes.MoveNext())
 			{
 				TreeNode node = nodes.Current as TreeNode;
-				if (node.heirarchyMarkerBounds.Contains(x, y))
+				if (node.hierarchyMarkerBounds.Contains(x, y))
 					node.Toggle();
 				if (node.bounds.Contains(x, y))
 				{
@@ -689,10 +733,10 @@ namespace System.Windows.Forms
 			editNode = null;
 		}
 
-		private void DrawHeirarchyMarker(Graphics g, TreeNode node)
+		private void DrawHierarchyMarker(Graphics g, TreeNode node)
 		{
-			int midX = node.heirarchyMarkerBounds.X + 4;
-			int midY = node.heirarchyMarkerBounds.Y + node.heirarchyMarkerBounds.Height / 2;
+			int midX = node.hierarchyMarkerBounds.X + 4;
+			int midY = node.hierarchyMarkerBounds.Y + node.hierarchyMarkerBounds.Height / 2;
 			int lineRightStart = midX;
 			int lineTopEnd = midY;
 			if (node.Nodes.Count > 0)
@@ -707,8 +751,8 @@ namespace System.Windows.Forms
 				lineTopEnd -= 6;
 			}
 			// Draw the right lead line
-			if (node.heirarchyMarkerBounds.Right > lineRightStart)
-				g.DrawLine(MarkerPen, lineRightStart, midY, node.heirarchyMarkerBounds.Right, midY);
+			if (node.hierarchyMarkerBounds.Right > lineRightStart)
+				g.DrawLine(MarkerPen, lineRightStart, midY, node.hierarchyMarkerBounds.Right, midY);
 			// Draw the top lead line
 			TreeNode lineNode = node.PrevNode;
 			if (lineNode == null)

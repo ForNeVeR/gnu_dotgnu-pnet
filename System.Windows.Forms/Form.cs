@@ -3,6 +3,7 @@
  *			"System.Windows.Forms.Form" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -409,14 +410,14 @@ public class Form : ContainerControl
 								other.Menu = null;
 							}
 						}
-						// Get the ClientSize before we add the menu
+						// Get the ClientSize before we add the menu.
 						Size clientSize = ClientSize;
 						menu = value;
 						if(menu != null)
 						{
 							menu.AddToForm(this);
 						}
-						// The clientsize must be the same as the old one
+						// The ClientSize must be the original.
 						ClientSize = clientSize;
 					}
 				}
@@ -595,6 +596,7 @@ public class Form : ContainerControl
 			{
 				get
 				{
+					// TODO:
 					return true;
 				}
 			}
@@ -1212,11 +1214,13 @@ public class Form : ContainerControl
 			}
 
 	// Process a command key.
-	[TODO]
 	protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 			{
-				// TODO
-				return base.ProcessCmdKey(ref msg, keyData);
+				if (base.ProcessCmdKey(ref msg, keyData))
+					return true;
+				if (menu != null)
+					return menu.ProcessCmdKey(ref msg, keyData);
+				return false;
 			}
 
 	// Process a dialog key.
@@ -1260,11 +1264,16 @@ public class Form : ContainerControl
 			}
 
 	// Process the tab key.
-	[TODO]
 	protected override bool ProcessTabKey(bool forward)
 			{
-				// TODO
-				return base.ProcessTabKey(forward);
+				return SelectNextControl(ActiveControl, forward, true, true, true);
+			}
+
+	protected override bool ProcessDialogChar(char charCode)
+			{
+				if (GetTopLevel() && ProcessMnemonic(charCode))
+					return true; 
+				return base.ProcessDialogChar(charCode); 
 			}
 
 	// Inner core of "Scale".
@@ -1276,12 +1285,36 @@ public class Form : ContainerControl
 			}
 
 	// Select this control.
-	[TODO]
 	protected override void Select(bool directed, bool forward)
 			{
-				// TODO
-				base.Select(directed, forward);
+				if (directed)
+					base.SelectNextControl(null, forward, true, true, false);
+			
+				if (TopLevel)
+					toolkitWindow.Focus();
+
+				Form parent = ParentForm;
+				if (parent != null)
+					parent.ActiveControl = this;
 			}
+
+	protected override void UpdateDefaultButton()
+			{
+				// Find the bottom active control.
+				Control c = this;
+				while (c is ContainerControl)
+					c = (c as ContainerControl).ActiveControl;
+
+				if (c is IButtonControl)
+				{
+					// Notify the previous button that it is not the default.
+					if (acceptButton != null)
+						(acceptButton as IButtonControl).NotifyDefault(false);
+					acceptButton = c as IButtonControl;
+					if (acceptButton != null)
+						(acceptButton as IButtonControl).NotifyDefault(true);
+				}
+			} 
 
 	// Inner core of "SetBounds".
 	protected override void SetBoundsCore

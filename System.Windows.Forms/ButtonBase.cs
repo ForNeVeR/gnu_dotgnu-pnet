@@ -429,12 +429,19 @@ public abstract class ButtonBase : Control
 				RedrawIfChanged();
 				base.OnEnabledChanged(e);
 			}
-	protected override void OnGotFocus(EventArgs e)
+	protected override void OnEnter(EventArgs e)
 			{
 				hasFocus = true;
 				RedrawIfChanged();
-				base.OnGotFocus(e);
+				base.OnEnter(e);
 			}
+	protected override void OnLeave(EventArgs e)
+			{
+				hasFocus = false;
+				RedrawIfChanged();
+				base.OnLeave (e);
+			}
+
 	[TODO]
 	protected override void OnKeyDown(KeyEventArgs e)
 			{
@@ -447,13 +454,17 @@ public abstract class ButtonBase : Control
 				// TODO
 				base.OnKeyUp(e);
 			}
-	[TODO]
-	protected override void OnLostFocus(EventArgs e)
-			{
-				hasFocus = false;
-				RedrawIfChanged();
-				base.OnLostFocus(e);
-			}
+
+	protected override bool ProcessMnemonic(char charCode)
+	{
+		if (Control.IsMnemonic(charCode, Text))
+		{
+			OnClick(EventArgs.Empty);
+			return true;
+		}
+		return base.ProcessMnemonic(charCode);
+	}
+
 	protected override void OnMouseDown(MouseEventArgs e)
 			{
 				if(button == MouseButtons.None)

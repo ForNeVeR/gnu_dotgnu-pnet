@@ -3,6 +3,7 @@
  *			"System.Windows.Forms.Control" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +76,7 @@ public class Control : IWin32Window
 	private static Keys currentModifiers;
 	private BorderStyle borderStyle;
 	private static Point mousePosition;
+	private static MouseButtons mouseButtons;
 	private int controlStyle;
 
 	// Constructors.
@@ -389,7 +391,14 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					return GetStyle(ControlStyles.Selectable);
+					if (!GetStyle(ControlStyles.Selectable))
+						return false;
+					for (Control control = this; control != null; control = control.parent)
+					{
+						if (!control.Visible || !control.Enabled)
+							return false;
+					}
+					return true;
 				}
 			}
 	public bool CausesValidation
@@ -466,7 +475,7 @@ public class Control : IWin32Window
 				{
 					if (Focused)
 						return true;
-					for (int i = 0; i < children.Length; i++)
+					for (int i = 0; i < numChildren; i++)
 						if (children[i].Focused)
 							return true;
 					return false;
@@ -1082,6 +1091,8 @@ public class Control : IWin32Window
 			{
 				get
 				{
+					if (tabIndex == -1)
+						return 0;
 					return tabIndex;
 				}
 				set
@@ -1215,13 +1226,12 @@ public class Control : IWin32Window
 			}
 
 	// Get the global state of the mouse buttons.
-	[TODO]
+	// TODO: This only works when the mouse is within the bounds of a form
 	public static MouseButtons MouseButtons
 			{
 				get
 				{
-					// TODO
-					return MouseButtons.None;
+					return mouseButtons;
 				}
 			}
 
@@ -1301,7 +1311,13 @@ public class Control : IWin32Window
 	// Determine if this control contains a particular child.
 	public bool Contains(Control ctl)
 			{
-				return (ctl != null && ctl.Parent == this);
+				while (ctl != null)
+				{
+					ctl = ctl.Parent;
+					if (ctl == this)
+						return true; 
+				}
+				return false;
 			}
 
 	// Force the control to be created.
@@ -1513,9 +1529,18 @@ protected virtual void Dispose(bool disposing)
 	// Set the input focus to this control.
 	public bool Focus()
 			{
-				if (toolkitWindow != null)
+				if (CanFocus && toolkitWindow != null)
 					toolkitWindow.Focus();
-				return Focused;
+				bool focused = Focused;
+
+				// Set the active control in the parent container.
+				if (focused && Parent != null)
+				{
+					ContainerControl container = Parent.GetContainerControl() as ContainerControl;
+					if (container != null)
+						container.ActiveControl = this;
+				}
+				return focused;
 			}
 
 	// Convert a child HWND into the corresponding Control object.
@@ -1560,7 +1585,7 @@ protected virtual void Dispose(bool disposing)
 	// Get the container control for this control.
 	public IContainerControl GetContainerControl()
 			{
-				Control current = Parent;
+				Control current = this;
 				while(current != null && !(current is IContainerControl))
 				{
 					current = current.Parent;
@@ -1569,11 +1594,86 @@ protected virtual void Dispose(bool disposing)
 			}
 
 	// Get the next or previous control in the tab order.
-	[TODO]
 	public Control GetNextControl(Control ctl, bool forward)
 			{
-				// TODO
-				return null;
+				if (!Contains(ctl))
+					ctl = this;
+
+				if (forward && ctl.children != null && ctl.numChildren > 0 && (ctl == this || !(ctl is IContainerControl) || !ctl.GetStyle(ControlStyles.ContainerControl)))
+				{
+					// Find the first control in the children.
+					Control found = ctl.children[0];
+					for (int i = 1; i < ctl.numChildren; i++)
+					{
+						if (found.tabIndex > ctl.children[i].tabIndex)
+							found = ctl.children[i];
+					}
+					return found;
+				}
+				
+				// Search through the childs hierarchy for the next control, until we've search "this" control.
+				while (ctl != this)
+				{
+					Control found = null;
+					Control parent = ctl.parent;
+					if (parent.children != null)
+					{
+						bool passedStart = false;
+						if (forward)
+						{
+							for (int i = 0; i < parent.numChildren; i++)
+							{
+								Control child = parent.children[i];
+								if (child == ctl)
+									passedStart = true;
+								else if (child.tabIndex >= ctl.tabIndex && (child.tabIndex != ctl.tabIndex || passedStart))
+								{
+									if (found == null || found.tabIndex > child.tabIndex)
+										found = parent.children[i];
+								}
+							}
+						}
+						else //backwards
+						{
+							// Search up through the childs hierarchy for the previous control, until we've search in this control.
+							for (int i = parent.numChildren - 1; i >= 0 ; i--)
+							{
+								Control child = parent.children[i];
+								if (child == ctl)
+									passedStart = true;
+								else if (child.tabIndex < ctl.tabIndex && (child.tabIndex != ctl.tabIndex || passedStart))
+								{
+									if (found == null || found.tabIndex <= child.tabIndex)
+										found = parent.children[i];
+								}
+							}
+						}
+						if (found != null)
+							return found;
+					}
+					ctl = ctl.parent;
+				}
+
+				if (!forward)
+				{
+					// Find the container because there was no control found.
+					while (ctl.numChildren > 0 && (ctl ==this || !(ctl is IContainer) || !ctl.GetStyle(ControlStyles.ContainerControl)))
+					{
+						Control found = ctl.children[ctl.numChildren - 1];
+						for (int i = ctl.numChildren - 2; i >= 0; i--)
+						{
+							Control c = ctl.children[i];
+							if (found.tabIndex < c.tabIndex)
+								found = c;
+						}
+						ctl = found;
+					}
+				}
+			
+				if (ctl != this)
+					return ctl;
+				else
+					return null;
 			}
 
 	// Get a particular style flag.
@@ -1743,15 +1843,7 @@ protected virtual void Dispose(bool disposing)
 	// Determine if a key is recognized by a control as an input key.
 	protected virtual bool IsInputKey(Keys keyData)
 			{
-				// By default, pass the request up to our parent.
-				if(parent != null)
-				{
-					return parent.IsInputKey(keyData);
-				}
-				else
-				{
-					return true;
-				}
+				return false; 
 			}
 
 	// Determine if a character is mnemonic in a string.
@@ -2098,6 +2190,12 @@ protected virtual void Dispose(bool disposing)
 				return false;
 			}
 
+	// Used by ContainerControl to process the mnemonic.
+	internal virtual bool ProcessMnemonicInternal(char charCode)
+			{
+				return ProcessMnemonic(charCode);
+			}
+
 	// Force the handle to be recreated.
 	[TODO]
 	protected void RecreateHandle()
@@ -2287,10 +2385,26 @@ protected virtual void Dispose(bool disposing)
 			}
 
 	// Inner core of "Scale".
-	[TODO]
 	protected virtual void ScaleCore(float dx, float dy)
 			{
-				// TODO
+				layoutSuspended++;
+				int newLeft = (int)Math.Floor(dx * left);
+				int newTop = (int)Math.Floor(dy * top);
+				int newWidth = width;
+				if (!GetStyle(ControlStyles.FixedWidth))
+					newWidth = (int) (dx *  (left + width) + 0.5) - newLeft;
+				int newHeight = height;
+				if (!GetStyle(ControlStyles.FixedHeight))
+					newHeight = (int) (dy *  (top + height) + 0.5) - newTop;
+				SetBoundsCore(newLeft, newTop, newWidth, newHeight, BoundsSpecified.All);
+				// Scale the children.
+				if (children != null)
+				{
+					for (int i = 0; i < numChildren; i++)
+						children[i].Scale(dx, dy);
+				}
+				layoutSuspended--;
+
 			}
 
 	// Select this control.
@@ -2298,19 +2412,42 @@ protected virtual void Dispose(bool disposing)
 			{
 				Select(false, false);
 			}
-	[TODO]
+	
 	protected virtual void Select(bool directed, bool forward)
 			{
-				// TODO
+				IContainerControl container = this.GetContainerControl();
+				if (container != null)
+					container.ActiveControl = this;
 			}
 
 	// Select the next control.
-	[TODO]
 	public bool SelectNextControl
 		(Control ctl, bool forward, bool tabStopOnly,
 		bool nested, bool wrap)
 			{
-				// TODO
+				if (!nested && ctl.parent != this || !Contains(ctl))
+					ctl = null;
+
+				Control control = ctl;
+				// Look for the next control we can select.
+				do
+				{
+					ctl = GetNextControl(ctl, forward);
+					if (ctl == null)
+					{
+						if (!wrap)
+							break;
+						continue;
+					}
+					if (ctl.CanSelect && (ctl.TabStop || !tabStopOnly) && (nested || ctl.parent == this))
+					{
+						// Found a control.
+						ctl.Select(true, forward);
+						return true;
+					}
+				}
+				while (ctl != control);
+				// Did not find a control.
 				return false;
 			}
 
@@ -2354,7 +2491,6 @@ protected virtual void Dispose(bool disposing)
 			}
 
 	// Inner core of "SetBounds".
-	[TODO]
 	protected virtual void SetBoundsCore
 		(int x, int y, int width, int height,
 		BoundsSpecified specified)
@@ -4262,6 +4398,19 @@ protected virtual void Dispose(bool disposing)
 								// Change the parent to the new owner.
 								value.Parent = owner;
 
+								// Assign the next tab order if the control doesnt have one.
+								if (value.tabIndex == -1)
+								{
+									int lastIndex = 0;
+									for (int i = 0; i < owner.numChildren; i++)
+									{
+										int index = owner.children[i].TabIndex;
+										if (lastIndex <= index)
+											lastIndex = index + 1;
+									}
+									value.tabIndex = lastIndex;
+								}
+
 								// Initialize layout within the new context.
 								value.InitLayout();
 							}
@@ -4606,9 +4755,10 @@ protected virtual void Dispose(bool disposing)
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				mouseButtons = (MouseButtons)buttons;
 					
 				currentModifiers = (Keys)modifiers;
-				// Walk up the heirarchy and see if we must focus the control
+				// Walk up the hierarchy and see if we must focus the control
 				bool canFocus = true;
 				for (Control c = this; c != null; c = c.parent)
 				{
@@ -4635,6 +4785,7 @@ protected virtual void Dispose(bool disposing)
 				// Convert to client coordinates
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				mouseButtons = (MouseButtons)buttons;
 					
 				currentModifiers = (Keys)modifiers;
 				OnMouseUp(new MouseEventArgs

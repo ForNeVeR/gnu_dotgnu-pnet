@@ -24,6 +24,7 @@ namespace System.Security.Policy
 
 #if CONFIG_POLICY_OBJECTS
 
+using System.Collections;
 using System.Security.Permissions;
 
 [Serializable]
@@ -36,6 +37,11 @@ public sealed class ZoneMembershipCondition
 	// Constructor.
 	public ZoneMembershipCondition(SecurityZone zone)
 			{
+				if(zone < SecurityZone.MyComputer ||
+				   zone > SecurityZone.Untrusted)
+				{
+					throw new ArgumentException(_("Arg_SecurityZone"));
+				}
 				this.zone = zone;
 			}
 
@@ -48,16 +54,32 @@ public sealed class ZoneMembershipCondition
 				}
 				set
 				{
+					if(zone < SecurityZone.MyComputer ||
+					   zone > SecurityZone.Untrusted)
+					{
+						throw new ArgumentException(_("Arg_SecurityZone"));
+					}
 					zone = value;
 				}
 			}
 
 	// Implement the IMembership interface.
-	[TODO]
 	public bool Check(Evidence evidence)
 			{
-				// TODO
-				return true;
+				if(evidence == null)
+				{
+					return false;
+				}
+				IEnumerator e = evidence.GetHostEnumerator();
+				while(e.MoveNext())
+				{
+					Zone z = (e.Current as Zone);
+					if(z != null && z.SecurityZone == zone)
+					{
+						return true;
+					}
+				}
+				return false;
 			}
 	public IMembershipCondition Copy()
 			{
@@ -76,11 +98,9 @@ public sealed class ZoneMembershipCondition
 					return false;
 				}
 			}
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return "Zone - " + zone.ToString();
 			}
 
 	// Implement the ISecurityEncodable interface.
@@ -94,16 +114,42 @@ public sealed class ZoneMembershipCondition
 			}
 
 	// Implement the ISecurityPolicyEncodable interface.
-	[TODO]
 	public void FromXml(SecurityElement et, PolicyLevel level)
 			{
-				// TODO
+				if(et == null)
+				{
+					throw new ArgumentNullException("et");
+				}
+				if(et.Tag != "IMembershipCondition")
+				{
+					throw new ArgumentException(_("Security_PolicyName"));
+				}
+				if(et.Attribute("version") != "1")
+				{
+					throw new ArgumentException(_("Security_PolicyVersion"));
+				}
+				String value = et.Attribute("Zone");
+				if(value != null)
+				{
+					zone = (SecurityZone)
+						Enum.Parse(typeof(SecurityZone), value);
+				}
+				else
+				{
+					throw new ArgumentException(_("Arg_SecurityZone"));
+				}
 			}
-	[TODO]
 	public SecurityElement ToXml(PolicyLevel level)
 			{
-				// TODO
-				return null;
+				SecurityElement element;
+				element = new SecurityElement("IMembershipCondition");
+				element.AddAttribute
+					("class",
+					 SecurityElement.Escape(typeof(ZoneMembershipCondition).
+					 						AssemblyQualifiedName));
+				element.AddAttribute("version", "1");
+				element.AddAttribute("Zone", zone.ToString());
+				return element;
 			}
 
 	// Get the hash code for this instance.

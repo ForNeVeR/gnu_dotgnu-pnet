@@ -24,6 +24,7 @@ namespace System.Security.Policy
 
 #if CONFIG_X509_CERTIFICATES && CONFIG_POLICY_OBJECTS
 
+using System.Collections;
 using System.Security.Permissions;
 using System.Security.Cryptography.X509Certificates;
 
@@ -62,11 +63,23 @@ public sealed class PublisherMembershipCondition
 			}
 
 	// Implement the IMembership interface.
-	[TODO]
 	public bool Check(Evidence evidence)
 			{
-				// TODO
-				return true;
+				if(evidence == null)
+				{
+					return false;
+				}
+				IEnumerator e = evidence.GetHostEnumerator();
+				while(e.MoveNext())
+				{
+					Publisher publisher = (e.Current as Publisher);
+					if(publisher != null &&
+					   publisher.Certificate.Equals(certificate))
+					{
+						return true;
+					}
+				}
+				return false;
 			}
 	public IMembershipCondition Copy()
 			{
@@ -85,11 +98,9 @@ public sealed class PublisherMembershipCondition
 					return false;
 				}
 			}
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return "Publisher - " + certificate.GetRawCertDataString();
 			}
 
 	// Implement the ISecurityEncodable interface.
@@ -103,16 +114,37 @@ public sealed class PublisherMembershipCondition
 			}
 
 	// Implement the ISecurityPolicyEncodable interface.
-	[TODO]
 	public void FromXml(SecurityElement et, PolicyLevel level)
 			{
-				// TODO
+				if(et == null)
+				{
+					throw new ArgumentNullException("et");
+				}
+				if(et.Tag != "IMembershipCondition")
+				{
+					throw new ArgumentException(_("Security_PolicyName"));
+				}
+				if(et.Attribute("version") != "1")
+				{
+					throw new ArgumentException(_("Security_PolicyVersion"));
+				}
+				String value = et.Attribute("X509Certificate");
+				certificate = new X509Certificate
+					(StrongNamePublicKeyBlob.FromHex(value));
 			}
-	[TODO]
 	public SecurityElement ToXml(PolicyLevel level)
 			{
-				// TODO
-				return null;
+				SecurityElement element;
+				element = new SecurityElement("IMembershipCondition");
+				element.AddAttribute
+					("class",
+					 SecurityElement.Escape
+					 		(typeof(PublisherMembershipCondition).
+					 		 AssemblyQualifiedName));
+				element.AddAttribute("version", "1");
+				element.AddAttribute
+					("X509Certificate", certificate.GetRawCertDataString());
+				return element;
 			}
 
 	// Get the hash code for this instance.

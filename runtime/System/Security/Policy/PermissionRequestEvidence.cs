@@ -73,11 +73,31 @@ public sealed class PermissionRequestEvidence
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				SecurityElement element = new SecurityElement
+					("System.Security.Policy.PermissionRequestEvidence");
+				SecurityElement child;
+				element.AddAttribute("version", "1");
+				if(request != null)
+				{
+					child = new SecurityElement("Request");
+					child.AddChild(request.ToXml());
+					element.AddChild(child);
+				}
+				if(optional != null)
+				{
+					child = new SecurityElement("Optional");
+					child.AddChild(optional.ToXml());
+					element.AddChild(child);
+				}
+				if(denied != null)
+				{
+					child = new SecurityElement("Denied");
+					child.AddChild(denied.ToXml());
+					element.AddChild(child);
+				}
+				return element.ToString();
 			}
 
 }; // class PermissionRequestEvidence

@@ -24,6 +24,7 @@ namespace System.Security.Policy
 
 #if CONFIG_POLICY_OBJECTS
 
+using System.Collections;
 using System.Security.Permissions;
 
 [Serializable]
@@ -31,7 +32,7 @@ public sealed class UrlMembershipCondition
 	: IMembershipCondition, ISecurityEncodable, ISecurityPolicyEncodable
 {
 	// Internal state.
-	private String url;
+	private UrlParser parser;
 
 	// Constructor.
 	public UrlMembershipCondition(String url)
@@ -40,7 +41,7 @@ public sealed class UrlMembershipCondition
 				{
 					throw new ArgumentNullException("url");
 				}
-				this.url = url;
+				parser = new UrlParser(url);
 			}
 
 	// Get or set this object's properties.
@@ -48,7 +49,7 @@ public sealed class UrlMembershipCondition
 			{
 				get
 				{
-					return url;
+					return parser.URL;
 				}
 				set
 				{
@@ -56,20 +57,34 @@ public sealed class UrlMembershipCondition
 					{
 						throw new ArgumentNullException("value");
 					}
-					url = value;
+					parser = new UrlParser(value);
 				}
 			}
 
 	// Implement the IMembership interface.
-	[TODO]
 	public bool Check(Evidence evidence)
 			{
-				// TODO
-				return true;
+				if(evidence == null)
+				{
+					return false;
+				}
+				IEnumerator e = evidence.GetHostEnumerator();
+				while(e.MoveNext())
+				{
+					Url url = (e.Current as Url);
+					if(url != null)
+					{
+						if(parser.Matches(url.parser))
+						{
+							return true;
+						}
+					}
+				}
+				return false;
 			}
 	public IMembershipCondition Copy()
 			{
-				return new UrlMembershipCondition(url);
+				return new UrlMembershipCondition(parser.URL);
 			}
 	public override bool Equals(Object obj)
 			{
@@ -77,18 +92,16 @@ public sealed class UrlMembershipCondition
 				other = (obj as UrlMembershipCondition);
 				if(other != null)
 				{
-					return (other.url == url);
+					return (other.parser.URL == parser.URL);
 				}
 				else
 				{
 					return false;
 				}
 			}
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return "Url - " + parser.URL;
 			}
 
 	// Implement the ISecurityEncodable interface.
@@ -102,22 +115,47 @@ public sealed class UrlMembershipCondition
 			}
 
 	// Implement the ISecurityPolicyEncodable interface.
-	[TODO]
 	public void FromXml(SecurityElement et, PolicyLevel level)
 			{
-				// TODO
+				if(et == null)
+				{
+					throw new ArgumentNullException("et");
+				}
+				if(et.Tag != "IMembershipCondition")
+				{
+					throw new ArgumentException(_("Security_PolicyName"));
+				}
+				if(et.Attribute("version") != "1")
+				{
+					throw new ArgumentException(_("Security_PolicyVersion"));
+				}
+				String value = et.Attribute("Url");
+				if(value != null)
+				{
+					parser = new UrlParser(value);
+				}
+				else
+				{
+					throw new ArgumentException(_("Arg_InvalidURL"));
+				}
 			}
-	[TODO]
 	public SecurityElement ToXml(PolicyLevel level)
 			{
-				// TODO
-				return null;
+				SecurityElement element;
+				element = new SecurityElement("IMembershipCondition");
+				element.AddAttribute
+					("class",
+					 SecurityElement.Escape(typeof(UrlMembershipCondition).
+					 						AssemblyQualifiedName));
+				element.AddAttribute("version", "1");
+				element.AddAttribute("Url", parser.URL);
+				return element;
 			}
 
 	// Get the hash code for this instance.
 	public override int GetHashCode()
 			{
-				return url.GetHashCode();
+				return parser.URL.GetHashCode();
 			}
 
 }; // class UrlMembershipCondition

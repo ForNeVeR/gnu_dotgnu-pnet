@@ -24,6 +24,8 @@ namespace System.Security.Policy
 
 #if CONFIG_POLICY_OBJECTS
 
+using System.Collections;
+
 [Serializable]
 public sealed class ApplicationDirectoryMembershipCondition
 	: IMembershipCondition, ISecurityEncodable, ISecurityPolicyEncodable
@@ -31,12 +33,51 @@ public sealed class ApplicationDirectoryMembershipCondition
 	// Constructor.
 	public ApplicationDirectoryMembershipCondition() {}
 
+	// Determine if we have an application directory match.
+	private static bool Match(UrlParser url, String dir)
+			{
+				if(dir.EndsWith("/"))
+				{
+					dir = dir + "*";
+				}
+				else
+				{
+					dir = dir + "/*";
+				}
+				UrlParser parser = new UrlParser(dir);
+				return parser.Matches(url);
+			}
+
 	// Implement the IMembership interface.
-	[TODO]
 	public bool Check(Evidence evidence)
 			{
-				// TODO
-				return true;
+				if(evidence == null)
+				{
+					return false;
+				}
+				IEnumerator e = evidence.GetHostEnumerator();
+				IEnumerator e2;
+				while(e.MoveNext())
+				{
+					ApplicationDirectory appDir =
+						(e.Current as ApplicationDirectory);
+					if(appDir != null)
+					{
+						e2 = evidence.GetHostEnumerator();
+						while(e2.MoveNext())
+						{
+							Url url = (e2.Current as Url);
+							if(url != null)
+							{
+								if(Match(url.parser, appDir.Directory))
+								{
+									return true;
+								}
+							}
+						}
+					}
+				}
+				return false;
 			}
 	public IMembershipCondition Copy()
 			{

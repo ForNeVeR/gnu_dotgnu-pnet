@@ -33,7 +33,7 @@ public sealed class Url
 #endif
 {
 	// Internal state.
-	private String name;
+	internal UrlParser parser;
 
 	// Constructor.
 	public Url(String name)
@@ -42,7 +42,7 @@ public sealed class Url
 				{
 					throw new ArgumentNullException("name");
 				}
-				this.name = name;
+				parser = new UrlParser(name);
 			}
 
 	// Get this object's value.
@@ -50,14 +50,14 @@ public sealed class Url
 			{
 				get
 				{
-					return name;
+					return parser.URL;
 				}
 			}
 
 	// Make a copy of this object.
 	public Object Copy()
 			{
-				return new Url(name);
+				return new Url(parser.URL);
 			}
 
 #if CONFIG_PERMISSIONS
@@ -65,7 +65,7 @@ public sealed class Url
 	// Implement the IIdentityPermissionFactory interface
 	public IPermission CreateIdentityPermission(Evidence evidence)
 			{
-				return new UrlIdentityPermission(name);
+				return new UrlIdentityPermission(parser.URL);
 			}
 
 #endif
@@ -76,7 +76,7 @@ public sealed class Url
 				Url other = (obj as Url);
 				if(other != null)
 				{
-					return (other.name == name);
+					return (other.parser.URL == parser.URL);
 				}
 				else
 				{
@@ -87,15 +87,19 @@ public sealed class Url
 	// Get the hash code for this object.
 	public override int GetHashCode()
 			{
-				return name.GetHashCode();
+				return parser.URL.GetHashCode();
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return name;
+				SecurityElement element = new SecurityElement
+					("System.Security.Policy.Url");
+				SecurityElement child;
+				element.AddAttribute("version", "1");
+				child = new SecurityElement("Url", parser.URL);
+				element.AddChild(child);
+				return element.ToString();
 			}
 
 }; // class Url

@@ -63,12 +63,8 @@ public sealed class Site
 	// Create a new site from a URL.
 	public static Site CreateFromUrl(String url)
 			{
-				if(url == null)
-				{
-					throw new ArgumentNullException("url");
-				}
-				// TODO
-				return null;
+				UrlParser parser = new UrlParser(url);
+				return new Site(parser.Host);
 			}
 
 #if CONFIG_PERMISSIONS
@@ -102,11 +98,15 @@ public sealed class Site
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return name;
+				SecurityElement element = new SecurityElement
+					("System.Security.Policy.Site");
+				SecurityElement child;
+				element.AddAttribute("version", "1");
+				child = new SecurityElement("Name", name);
+				element.AddChild(child);
+				return element.ToString();
 			}
 
 }; // class Site

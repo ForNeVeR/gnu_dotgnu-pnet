@@ -92,11 +92,16 @@ public sealed class Publisher
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return cert.ToString();
+				SecurityElement element = new SecurityElement
+					("System.Security.Policy.Publisher");
+				SecurityElement child;
+				element.AddAttribute("version", "1");
+				child = new SecurityElement
+					("X509v3Certificate", cert.GetRawCertDataString());
+				element.AddChild(child);
+				return element.ToString();
 			}
 
 }; // class Publisher

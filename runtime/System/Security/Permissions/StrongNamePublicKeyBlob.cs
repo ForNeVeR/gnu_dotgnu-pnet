@@ -111,6 +111,22 @@ public sealed class StrongNamePublicKeyBlob
 				return blob;
 			}
 
+	// Convert a byte buffer into a hex string.
+	internal static String ToHex(byte[] buffer)
+			{
+				if(buffer == null)
+				{
+					return String.Empty;
+				}
+				StringBuilder builder = new StringBuilder();
+				int posn;
+				for(posn = 0; posn < buffer.Length; ++posn)
+				{
+					BitConverter.AppendHex(builder, buffer[posn]);
+				}
+				return builder.ToString();
+			}
+
 	// Determine if two objects are equal.
 	public override bool Equals(Object obj)
 			{
@@ -148,13 +164,7 @@ public sealed class StrongNamePublicKeyBlob
 	// Convert this public key into a string.
 	public override String ToString()
 			{
-				StringBuilder builder = new StringBuilder();
-				int posn;
-				for(posn = 0; posn < blob.Length; ++posn)
-				{
-					BitConverter.AppendHex(builder, blob[posn]);
-				}
-				return builder.ToString();
+				return ToHex(blob);
 			}
 
 }; // class StrongNamePublicKeyBlob

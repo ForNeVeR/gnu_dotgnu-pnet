@@ -24,6 +24,8 @@ namespace System.Security.Policy
 
 #if CONFIG_CRYPTO && CONFIG_POLICY_OBJECTS
 
+using System.Text;
+using System.Collections;
 using System.Security.Permissions;
 using System.Security.Cryptography;
 
@@ -83,11 +85,38 @@ public sealed class HashMembershipCondition
 			}
 
 	// Implement the IMembership interface.
-	[TODO]
 	public bool Check(Evidence evidence)
 			{
-				// TODO
-				return true;
+				if(evidence == null)
+				{
+					return false;
+				}
+				IEnumerator e = evidence.GetHostEnumerator();
+				while(e.MoveNext())
+				{
+					Hash hash = (e.Current as Hash);
+					if(hash != null)
+					{
+						byte[] computed = hash.GenerateHash(hashAlg);
+						if(computed == null || value.Length != computed.Length)
+						{
+							continue;
+						}
+						int posn;
+						for(posn = 0; posn < computed.Length; ++posn)
+						{
+							if(computed[posn] != value[posn])
+							{
+								break;
+							}
+						}
+						if(posn >= computed.Length)
+						{
+							return true;
+						}
+					}
+				}
+				return false;
 			}
 	public IMembershipCondition Copy()
 			{
@@ -122,11 +151,14 @@ public sealed class HashMembershipCondition
 					return false;
 				}
 			}
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				StringBuilder builder = new StringBuilder();
+				builder.Append("Hash - ");
+				builder.Append(hashAlg.GetType().AssemblyQualifiedName);
+				builder.Append(" = ");
+				builder.Append(StrongNamePublicKeyBlob.ToHex(value));
+				return builder.ToString();
 			}
 
 	// Implement the ISecurityEncodable interface.
@@ -140,16 +172,40 @@ public sealed class HashMembershipCondition
 			}
 
 	// Implement the ISecurityPolicyEncodable interface.
-	[TODO]
 	public void FromXml(SecurityElement et, PolicyLevel level)
 			{
-				// TODO
+				if(et == null)
+				{
+					throw new ArgumentNullException("et");
+				}
+				if(et.Tag != "IMembershipCondition")
+				{
+					throw new ArgumentException(_("Security_PolicyName"));
+				}
+				if(et.Attribute("version") != "1")
+				{
+					throw new ArgumentException(_("Security_PolicyVersion"));
+				}
+				String val = et.Attribute("HashValue");
+				value = StrongNamePublicKeyBlob.FromHex(val);
+				val = et.Attribute("HashAlgorithm");
+				hashAlg = HashAlgorithm.Create(val);
 			}
-	[TODO]
 	public SecurityElement ToXml(PolicyLevel level)
 			{
-				// TODO
-				return null;
+				SecurityElement element;
+				element = new SecurityElement("IMembershipCondition");
+				element.AddAttribute
+					("class",
+					 SecurityElement.Escape
+					 		(typeof(HashMembershipCondition).
+					 		 AssemblyQualifiedName));
+				element.AddAttribute("version", "1");
+				element.AddAttribute
+					("HashValue", StrongNamePublicKeyBlob.ToHex(value));
+				element.AddAttribute
+					("HashAlgorithm", hashAlg.GetType().FullName);
+				return element;
 			}
 
 	// Get the hash code for this instance.

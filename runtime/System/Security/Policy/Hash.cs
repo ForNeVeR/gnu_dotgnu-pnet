@@ -27,6 +27,7 @@ namespace System.Security.Policy
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
+using System.Security.Permissions;
 
 [Serializable]
 public sealed class Hash
@@ -50,10 +51,13 @@ public sealed class Hash
 				this.assembly = assembly;
 			}
 #if CONFIG_SERIALIZATION
-	[TODO]
 	internal Hash(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				dataToHash = (byte[])info.GetValue("RawData", typeof(byte[]));
 			}
 #endif
 
@@ -83,39 +87,64 @@ public sealed class Hash
 				}
 			}
 
-	// Generate the hash value for this assembly using a given algorith.
+	// Get the raw data to be hashed.
 	[TODO]
+	private byte[] RawData
+			{
+				get
+				{
+					if(dataToHash == null)
+					{
+						// TODO: get the data to be hashed.
+						throw new NotSupportedException();
+					}
+					return dataToHash;
+				}
+			}
+
+	// Generate the hash value for this assembly using a given algorith.
 	public byte[] GenerateHash(HashAlgorithm hashAlg)
 			{
 				if(hashAlg == null)
 				{
 					throw new ArgumentNullException("hashAlg");
 				}
-				if(dataToHash == null)
+				byte[] rawData = RawData;
+				if(rawData == null)
 				{
-					// TODO: get the data to be hashed.
+					return null;
 				}
 				hashAlg.Initialize();
-				return hashAlg.ComputeHash(dataToHash);
+				return hashAlg.ComputeHash(rawData);
 			}
 
 #if CONFIG_SERIALIZATION
 
 	// Implement the ISerialization interface.
-	[TODO]
 	public void GetObjectData(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("RawData", RawData, typeof(byte[]));
 			}
 
 #endif
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				SecurityElement element;
+				element = new SecurityElement("System.Security.Policy.Hash");
+				element.AddAttribute("version", "1");
+				byte[] rawData = RawData;
+				if(rawData != null && rawData.Length != 0)
+				{
+					element.AddChild(new SecurityElement
+						("RawData", StrongNamePublicKeyBlob.ToHex(rawData)));
+				}
+				return element.ToString();
 			}
 
 }; // class Hash

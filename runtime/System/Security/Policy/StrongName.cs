@@ -116,15 +116,18 @@ public sealed class StrongName
 	// Get the hash code for this object.
 	public override int GetHashCode()
 			{
-				return name.GetHashCode();
+				return blob.GetHashCode();
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				SecurityElement element = new SecurityElement("StrongName");
+				element.AddAttribute("version", "1");
+				element.AddAttribute("Key", blob.ToString());
+				element.AddAttribute("Name", name);
+				element.AddAttribute("Version", version.ToString());
+				return element.ToString();
 			}
 
 }; // class StrongName

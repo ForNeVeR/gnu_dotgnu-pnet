@@ -1,4 +1,26 @@
 
+2003-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Security/Permissions/StrongNamePublicKeyBlob.cs,
+	runtime/System/Security/Policy/ApplicationDirectory.cs,
+	runtime/System/Security/Policy/ApplicationDirectoryMembershipCondition.cs,
+	runtime/System/Security/Policy/Hash.cs,
+	runtime/System/Security/Policy/HashMembershipCondition.cs,
+	runtime/System/Security/Policy/PermissionRequestEvidence.cs,
+	runtime/System/Security/Policy/PolicyStatement.cs,
+	runtime/System/Security/Policy/Publisher.cs,
+	runtime/System/Security/Policy/PublisherMembershipCondition.cs,
+	runtime/System/Security/Policy/Site.cs,
+	runtime/System/Security/Policy/SiteMembershipCondition.cs,
+	runtime/System/Security/Policy/StrongName.cs,
+	runtime/System/Security/Policy/StrongNameMembershipCondition.cs,
+	runtime/System/Security/Policy/Url.cs,
+	runtime/System/Security/Policy/UrlMembershipCondition.cs,
+	runtime/System/Security/Policy/UrlParser.cs,
+	runtime/System/Security/Policy/ZoneMembershipCondition.cs:
+	implement missing TODO's in "System.Security.Policy".
+
 2003-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt, runtime/System/DBNull.cs,

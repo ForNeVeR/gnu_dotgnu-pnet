@@ -28,7 +28,7 @@ namespace System.Security.Policy
 public sealed class ApplicationDirectory
 {
 	// Internal state.
-	private String name;
+	internal UrlParser parser;
 
 	// Constructor.
 	public ApplicationDirectory(String name)
@@ -37,7 +37,7 @@ public sealed class ApplicationDirectory
 				{
 					throw new ArgumentNullException("name");
 				}
-				this.name = name;
+				parser = new UrlParser(name);
 			}
 
 	// Get the directory path from this object.
@@ -45,14 +45,14 @@ public sealed class ApplicationDirectory
 			{
 				get
 				{
-					return name;
+					return parser.URL;
 				}
 			}
 
 	// Create a copy of this object.
 	public Object Copy()
 			{
-				return new ApplicationDirectory(name);
+				return new ApplicationDirectory(parser.URL);
 			}
 
 	// Determine if two objects are equal.
@@ -61,7 +61,7 @@ public sealed class ApplicationDirectory
 				ApplicationDirectory other = (obj as ApplicationDirectory);
 				if(other != null)
 				{
-					return (other.name == name);
+					return (other.parser.URL == parser.URL);
 				}
 				else
 				{
@@ -72,7 +72,7 @@ public sealed class ApplicationDirectory
 	// Get the hash code for this instance.
 	public override int GetHashCode()
 			{
-				return name.GetHashCode();
+				return parser.URL.GetHashCode();
 			}
 
 	// Convert this object into a string.
@@ -80,7 +80,7 @@ public sealed class ApplicationDirectory
 			{
 				return "<System.Security.Policy.ApplicationDirectory>\n" +
 					   "   <Directory>" +
-					   SecurityElement.Escape(name) +
+					   SecurityElement.Escape(parser.URL) +
 					   "</Directory>\n" +
 					   "</System.Security.Policy.ApplicationDirectory>\n";
 			}

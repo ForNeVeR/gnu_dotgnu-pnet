@@ -30,6 +30,8 @@ public sealed class PolicyStatement {}
 
 #else // CONFIG_PERMISSIONS
 
+using System.Security.Permissions;
+
 [Serializable]
 public sealed class PolicyStatement
 	: ISecurityEncodable, ISecurityPolicyEncodable
@@ -65,8 +67,16 @@ public sealed class PolicyStatement
 			{
 				get
 				{
-					// TODO
-					return null;
+					switch(attributes & PolicyStatementAttribute.All)
+					{
+						case PolicyStatementAttribute.Exclusive:
+							return "Exclusive";
+						case PolicyStatementAttribute.LevelFinal:
+							return "LevelFinal";
+						case PolicyStatementAttribute.All:
+							return "Exclusive LevelFinal";
+					}
+					return String.Empty;
 				}
 			}
 	public PermissionSet PermissionSet
@@ -114,7 +124,61 @@ public sealed class PolicyStatement
 					throw new ArgumentException
 						(_("Security_PolicyVersion"));
 				}
-				// TODO
+				String value = et.Attribute("Attributes");
+				if(value != null)
+				{
+					attributes = (PolicyStatementAttribute)
+						Enum.Parse(typeof(PolicyStatementAttribute), value);
+				}
+				else
+				{
+					attributes = PolicyStatementAttribute.Nothing;
+				}
+				permSet = null;
+				if(level != null)
+				{
+					String name = et.Attribute("PermissionSetName");
+					if(name != null)
+					{
+						permSet = level.GetNamedPermissionSet(value);
+						if(permSet == null)
+						{
+							permSet = new PermissionSet(PermissionState.None);
+						}
+					}
+				}
+				if(permSet == null)
+				{
+					SecurityElement child;
+					child = et.SearchForChildByTag("PermissionSet");
+					if(child != null)
+					{
+						String permClass;
+						permClass = child.Attribute("class");
+						if(permClass != null &&
+						   permClass.IndexOf("NamedPermissionSet") != -1)
+						{
+							permSet = new NamedPermissionSet
+								("DefaultName", PermissionState.None);
+						}
+						else
+						{
+							permSet = new PermissionSet(PermissionState.None);
+						}
+						try
+						{
+							permSet.FromXml(child);
+						}
+						catch(Exception)
+						{
+							// Ignore errors during set loading.
+						}
+					}
+				}
+				if(permSet == null)
+				{
+					permSet = new PermissionSet(PermissionState.None);
+				}
 			}
 	public SecurityElement ToXml(PolicyLevel level)
 			{
@@ -125,7 +189,32 @@ public sealed class PolicyStatement
 					 SecurityElement.Escape(typeof(PolicyStatement).
 					 						AssemblyQualifiedName));
 				element.AddAttribute("version", "1");
-				// TODO
+				if(attributes != PolicyStatementAttribute.Nothing)
+				{
+					element.AddAttribute("Attributes", attributes.ToString());
+				}
+				if(permSet != null)
+				{
+					NamedPermissionSet namedSet;
+					namedSet = (permSet as NamedPermissionSet);
+					if(namedSet != null)
+					{
+						if(level != null &&
+						   level.GetNamedPermissionSet(namedSet.Name) != null)
+						{
+							element.AddAttribute
+								("PermissionSetName", namedSet.Name);
+						}
+						else
+						{
+							element.AddChild(permSet.ToXml());
+						}
+					}
+					else
+					{
+						element.AddChild(permSet.ToXml());
+					}
+				}
 				return element;
 			}
 

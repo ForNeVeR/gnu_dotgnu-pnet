@@ -24,6 +24,7 @@ namespace System.Security.Policy
 
 #if CONFIG_POLICY_OBJECTS
 
+using System.Collections;
 using System.Security.Permissions;
 
 [Serializable]
@@ -61,11 +62,25 @@ public sealed class SiteMembershipCondition
 			}
 
 	// Implement the IMembership interface.
-	[TODO]
 	public bool Check(Evidence evidence)
 			{
-				// TODO
-				return true;
+				if(evidence == null)
+				{
+					return false;
+				}
+				IEnumerator e = evidence.GetHostEnumerator();
+				while(e.MoveNext())
+				{
+					Site s = (e.Current as Site);
+					if(s != null)
+					{
+						if(UrlParser.HostMatches(site, s.Name))
+						{
+							return true;
+						}
+					}
+				}
+				return false;
 			}
 	public IMembershipCondition Copy()
 			{
@@ -84,11 +99,9 @@ public sealed class SiteMembershipCondition
 					return false;
 				}
 			}
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return "Site - " + site;
 			}
 
 	// Implement the ISecurityEncodable interface.
@@ -102,16 +115,41 @@ public sealed class SiteMembershipCondition
 			}
 
 	// Implement the ISecurityPolicyEncodable interface.
-	[TODO]
 	public void FromXml(SecurityElement et, PolicyLevel level)
 			{
-				// TODO
+				if(et == null)
+				{
+					throw new ArgumentNullException("et");
+				}
+				if(et.Tag != "IMembershipCondition")
+				{
+					throw new ArgumentException(_("Security_PolicyName"));
+				}
+				if(et.Attribute("version") != "1")
+				{
+					throw new ArgumentException(_("Security_PolicyVersion"));
+				}
+				String value = et.Attribute("Site");
+				if(value != null)
+				{
+					site = value;
+				}
+				else
+				{
+					throw new ArgumentException(_("Arg_InvalidSite"));
+				}
 			}
-	[TODO]
 	public SecurityElement ToXml(PolicyLevel level)
 			{
-				// TODO
-				return null;
+				SecurityElement element;
+				element = new SecurityElement("IMembershipCondition");
+				element.AddAttribute
+					("class",
+					 SecurityElement.Escape(typeof(SiteMembershipCondition).
+					 						AssemblyQualifiedName));
+				element.AddAttribute("version", "1");
+				element.AddAttribute("Site", site);
+				return element;
 			}
 
 	// Get the hash code for this instance.

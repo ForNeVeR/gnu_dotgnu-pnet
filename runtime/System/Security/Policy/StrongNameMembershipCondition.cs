@@ -24,6 +24,8 @@ namespace System.Security.Policy
 
 #if CONFIG_POLICY_OBJECTS
 
+using System.Text;
+using System.Collections;
 using System.Security.Permissions;
 
 [Serializable]
@@ -88,11 +90,27 @@ public sealed class StrongNameMembershipCondition
 			}
 
 	// Implement the IMembership interface.
-	[TODO]
 	public bool Check(Evidence evidence)
 			{
-				// TODO
-				return true;
+				if(evidence == null)
+				{
+					return false;
+				}
+				IEnumerator e = evidence.GetHostEnumerator();
+				while(e.MoveNext())
+				{
+					StrongName sn = (e.Current as StrongName);
+					if(sn != null)
+					{
+						if(sn.PublicKey.Equals(blob) &&
+						   sn.Name == name &&
+						   sn.Version.Equals(version))
+						{
+							return true;
+						}
+					}
+				}
+				return false;
 			}
 	public IMembershipCondition Copy()
 			{
@@ -104,20 +122,43 @@ public sealed class StrongNameMembershipCondition
 				other = (obj as StrongNameMembershipCondition);
 				if(other != null)
 				{
-					return (other.blob.Equals(blob) &&
-							other.name == name &&
-							other.version == version);
+					if(other.blob.Equals(blob) && other.name == name)
+					{
+						if(other.version == null)
+						{
+							return (version == null);
+						}
+						else
+						{
+							return other.version.Equals(version);
+						}
+					}
+					else
+					{
+						return false;
+					}
 				}
 				else
 				{
 					return false;
 				}
 			}
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				StringBuilder builder = new StringBuilder();
+				builder.Append("StrongName - ");
+				builder.Append(blob.ToString());
+				if(name != null)
+				{
+					builder.Append(" name = ");
+					builder.Append(name);
+				}
+				if(version != null)
+				{
+					builder.Append(" version = ");
+					builder.Append(version.ToString());
+				}
+				return builder.ToString();
 			}
 
 	// Implement the ISecurityEncodable interface.
@@ -131,16 +172,60 @@ public sealed class StrongNameMembershipCondition
 			}
 
 	// Implement the ISecurityPolicyEncodable interface.
-	[TODO]
 	public void FromXml(SecurityElement et, PolicyLevel level)
 			{
-				// TODO
+				if(et == null)
+				{
+					throw new ArgumentNullException("et");
+				}
+				if(et.Tag != "IMembershipCondition")
+				{
+					throw new ArgumentException(_("Security_PolicyName"));
+				}
+				if(et.Attribute("version") != "1")
+				{
+					throw new ArgumentException(_("Security_PolicyVersion"));
+				}
+				String value = et.Attribute("PublicKey");
+				if(value != null)
+				{
+					blob = new StrongNamePublicKeyBlob(value);
+				}
+				else
+				{
+					throw new ArgumentException(_("Arg_PublicKeyBlob"));
+				}
+				name = et.Attribute("Name");
+				value = et.Attribute("AssemblyVersion");
+				if(value != null)
+				{
+					version = new Version(value);
+				}
+				else
+				{
+					version = null;
+				}
 			}
-	[TODO]
 	public SecurityElement ToXml(PolicyLevel level)
 			{
-				// TODO
-				return null;
+				SecurityElement element;
+				element = new SecurityElement("IMembershipCondition");
+				element.AddAttribute
+					("class",
+					 SecurityElement.Escape
+					 		(typeof(StrongNameMembershipCondition).
+					 		 AssemblyQualifiedName));
+				element.AddAttribute("version", "1");
+				element.AddAttribute("PublicKey", blob.ToString());
+				if(name != null)
+				{
+					element.AddAttribute("Name", name);
+				}
+				if(version != null)
+				{
+					element.AddAttribute("AssemblyVersion", version.ToString());
+				}
+				return element;
 			}
 
 	// Get the hash code for this instance.

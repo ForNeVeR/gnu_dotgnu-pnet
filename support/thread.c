@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
+ * Contributions from Thong Nguyen (tum) [tum@veridicus.com]
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -573,70 +575,78 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 	}
 	else
 	{
-		/* Add ourselves to the foreign thread's join queue */
-		if(!_ILWakeupQueueAdd(&(thread->joinQueue), &(self->wakeup), self))
+		/* Note: We must set our wait limit before adding ourselves to any wait queues.
+		    Failure to do so may mean we may miss some signals because they will be 
+			aborted by the signal invoker (which reads us as having a null wait limit).
+			In this specific case, the order doesn't actually matter because we have locked 
+			the queue owner (the thread) but both operations must be performed before we
+			unlock the thread - Tum */
+
+		/* Set our wait limit to 1 */
+		if(!_ILWakeupSetLimit(&(self->wakeup), 1))
 		{
-			result = IL_JOIN_MEMORY;
+			result = -1;
 		}
 		else
-		{
-			/* Unlock the foreign thread */
-			_ILMutexUnlock(&(thread->lock));
-
-			/* Put ourselves into the "wait/sleep/join" state */
-			_ILMutexLock(&(self->lock));
-			if((self->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+		{			
+			/* Add ourselves to the foreign thread's join queue */
+			if(!_ILWakeupQueueAdd(&(thread->joinQueue), &(self->wakeup), self))
 			{
-				/* The current thread is aborted */
-				_ILMutexUnlock(&(self->lock));
-				_ILMutexLock(&(thread->lock));
-				_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
+				result = IL_JOIN_MEMORY;
+			}
+			else
+			{
+				/* Unlock the foreign thread */
 				_ILMutexUnlock(&(thread->lock));
-				return IL_JOIN_ABORTED;
-			}
-			self->state |= IL_TS_WAIT_SLEEP_JOIN;
-			_ILMutexUnlock(&(self->lock));
 
-			/* Wait until we are woken or a timeout occurs */
-			if(_ILWakeupSetLimit(&(self->wakeup), 1))
-			{
+				/* Put ourselves into the "wait/sleep/join" state */
+				_ILMutexLock(&(self->lock));
+				if((self->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+				{
+					/* The current thread is aborted */
+					_ILMutexUnlock(&(self->lock));
+					_ILMutexLock(&(thread->lock));
+					_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
+					_ILMutexUnlock(&(thread->lock));
+					return IL_JOIN_ABORTED;
+				}
+				self->state |= IL_TS_WAIT_SLEEP_JOIN;
+				_ILMutexUnlock(&(self->lock));
+
 				result = _ILWakeupWait(&(self->wakeup), ms, (void **)0);
-			}
-			else
-			{
-				result = -1;
-			}
-			if(result < 0)
-			{
-				/* The wakeup was interrupted.  It may be either an
-				   "interrupt" or an "abort request".  We assume abort
-				   for now until we can inspect "self->state" below */
-				result = IL_JOIN_ABORTED;
-			}
-			else if(result > 0)
-			{
-				result = IL_JOIN_OK;
-			}
-			else
-			{
-				result = IL_JOIN_TIMEOUT;
-			}
+				
+				if(result < 0)
+				{
+					/* The wakeup was interrupted.  It may be either an
+					"interrupt" or an "abort request".  We assume abort
+					for now until we can inspect "self->state" below */
+					result = IL_JOIN_ABORTED;
+				}
+				else if(result > 0)
+				{
+					result = IL_JOIN_OK;
+				}
+				else
+				{
+					result = IL_JOIN_TIMEOUT;
+				}
 
-			/* Remove ourselves from the "wait/sleep/join" state,
-			   and check for a pending interrupt */
-			_ILMutexLock(&(self->lock));
-			if((self->state & IL_TS_INTERRUPTED) != 0)
-			{
-				result = IL_JOIN_INTERRUPTED;
+				/* Remove ourselves from the "wait/sleep/join" state,
+				and check for a pending interrupt */
+				_ILMutexLock(&(self->lock));
+				if((self->state & IL_TS_INTERRUPTED) != 0)
+				{
+					result = IL_JOIN_INTERRUPTED;
+				}
+				self->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
+				_ILMutexUnlock(&(self->lock));
+
+				/* Lock down the foreign thread again */
+				_ILMutexLock(&(thread->lock));
+
+				/* Remove ourselves from the foreign thread's join queue */
+				_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
 			}
-			self->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
-			_ILMutexUnlock(&(self->lock));
-
-			/* Lock down the foreign thread again */
-			_ILMutexLock(&(thread->lock));
-
-			/* Remove ourselves from the foreign thread's join queue */
-			_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
 		}
 	}
 

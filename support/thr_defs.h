@@ -84,6 +84,17 @@ typedef struct _tagILWakeupQueue
 } _ILWakeupQueue;
 
 /*
+ *	Supports linked lists of cleanup functions.
+ */
+typedef struct _tagILThreadCleanupEntry ILThreadCleanupEntry;
+
+struct _tagILThreadCleanupEntry
+{
+	ILThreadCleanupFunc cleanup;
+	ILThreadCleanupEntry *next;
+};
+
+/*
  * Internal structure of a thread descriptor.
  */
 struct _tagILThread
@@ -101,7 +112,8 @@ struct _tagILThread
 	void *            	volatile	objectArg;
 	_ILWakeup						wakeup;
 	_ILWakeupQueue					joinQueue;
-
+	ILThreadCleanupEntry		*firstCleanupEntry;
+	ILThreadCleanupEntry		*lastCleanupEntry;
 };
 
 /*

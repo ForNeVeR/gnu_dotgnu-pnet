@@ -44,11 +44,6 @@ extern	"C" {
 #define	IL_TS_ABORTED			0x0100
 
 /*
- * Type for a thread start function.
- */
-typedef void (*ILThreadStartFunc)(void *objectArg);
-
-/*
  * Opaque types for thread-related objects.
  */
 typedef struct _tagILThread     ILThread;
@@ -56,6 +51,15 @@ typedef struct _tagILMutex      ILMutex;
 typedef struct _tagILRWLock     ILRWLock;
 typedef struct _tagILWaitHandle ILWaitHandle;
 
+/*
+ * Type for a thread start function.
+ */
+typedef void (*ILThreadStartFunc)(void *objectArg);
+
+/*
+ *	Cleanup function for ILThread.
+ */
+typedef void (*ILThreadCleanupFunc)(ILThread *thread);
 
 /*
  *	Registers an ILThread and allow it to execute managed code. 
@@ -245,6 +249,20 @@ int ILThreadSleep(ILUInt32 ms);
  * (except the main thread) to finish.  A timeout of -1 means infinite.
  */
 void ILThreadWaitForForegroundThreads(int timeout);
+
+/*
+ *	Registers a function that will be called by the thread when it has thread finished.
+ *
+ * Returns 0 on success.
+ */
+int ILThreadRegisterCleanup(ILThread *thread, ILThreadCleanupFunc func);
+
+/*
+ *	Unregisters a thread cleanup function.
+ *
+ * Returns 0 on success.
+ */
+int ILThreadUnregisterCleanup(ILThread *thread, ILThreadCleanupFunc func);
 
 /*
  * Create a mutex.  Note: this type of mutex will not

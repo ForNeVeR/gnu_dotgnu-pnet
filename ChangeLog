@@ -4,6 +4,14 @@
 	multiple threads from claiming the same monitor into their
 	free lists.
 	
+	* include/il_thread.h, support/thr_defs.h, support/thread.c:
+	Add support for registering thread cleanup handlers.
+	
+	* support/thread.c: Fix race condition bug in ILThreadJoin
+	by reordering the ILWakeupSetLimit, _ILWakeupQueueAdd and
+	_ILMutexLock calls.  This race condition would cause 
+	ILThreadJoin to miss a signal and deadlock.
+	
 2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/Makefile.am, image/image.h, image/pecoff_loader.c,

@@ -1653,8 +1653,8 @@ public sealed class Graphics : IDisposable
 	/// </exception>
 	public void DrawRectangle(int x, int y, int width, int height)
 			{
-				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
-				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				if(x < -32768 || x > 32767 || width <  -32768 || width > 32767 ||
+				   y < -32768 || y > 32767 || height < -32768 || height > 32767)
 				{
 					throw new XException(S._("X_RectCoordRange"));
 				}
@@ -1720,8 +1720,8 @@ public sealed class Graphics : IDisposable
 	/// </exception>
 	public void FillRectangle(int x, int y, int width, int height)
 			{
-				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
-				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				if(x < -32768 || x > 32767 || width < -32768 || width > 32767 ||
+				   y < -32768 || y > 32767 || height < -32768 || height > 32767)
 				{
 					throw new XException(S._("X_RectCoordRange"));
 				}
@@ -1912,8 +1912,8 @@ public sealed class Graphics : IDisposable
 	public void DrawArc(int x, int y, int width, int height,
 						float startAngle, float sweepAngle)
 			{
-				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
-				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				if(x < -32768 || x > 32767 || width < -32768 || width > 32767 ||
+				   y < -32768 || y > 32767 || height < -32768 || height > 32767)
 				{
 					throw new XException(S._("X_RectCoordRange"));
 				}
@@ -1972,8 +1972,8 @@ public sealed class Graphics : IDisposable
 	public void DrawPie(int x, int y, int width, int height,
 						float startAngle, float sweepAngle)
 			{
-				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
-				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				if(x < -32768 || x > 32767 || width < -32768 || width > 32767 ||
+				   y < -32768 || y > 32767 || height < -32768 || height > 32767)
 				{
 					throw new XException(S._("X_RectCoordRange"));
 				}
@@ -2057,8 +2057,8 @@ public sealed class Graphics : IDisposable
 	public void FillArc(int x, int y, int width, int height,
 						float startAngle, float sweepAngle)
 			{
-				if(x < -32768 || x > 32767 || width < 0 || width > 65535 ||
-				   y < -32768 || y > 32767 || height < 0 || height > 65535)
+				if(x < -32768 || x > 32767 || width < -32768 || width > 32767 ||
+				   y < -32768 || y > 32767 || height < -32768 || height > 32767)
 				{
 					throw new XException(S._("X_RectCoordRange"));
 				}

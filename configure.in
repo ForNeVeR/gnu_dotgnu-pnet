@@ -117,4 +117,5 @@ runtime/System/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile
-csunit/Makefile])
+csunit/Makefile
+csunit/TestVersion.cs])

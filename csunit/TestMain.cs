@@ -26,9 +26,6 @@ using System.Reflection;
 
 public sealed class TestMain
 {
-	// Version of this program.
-	private static readonly String Version = "0.0.1";
-
 	// Main entry point for the program.
 	public static int Main(String[] args)
 			{
@@ -209,7 +206,8 @@ public sealed class TestMain
 	private static void ShowVersion()
 			{
 				Console.WriteLine
-					("CSUNIT " + Version + " - C# Unit Testing Framework");
+					("CSUNIT " + TestVersion.Version +
+					 " - C# Unit Testing Framework");
 				Console.WriteLine
 					("Copyright (c) 2001 Southern Storm Software, Pty Ltd.");
 				Console.WriteLine();
@@ -228,7 +226,8 @@ public sealed class TestMain
 	private static void ShowUsage()
 			{
 				Console.Error.WriteLine
-					("CSUNIT " + Version + " - C# Unit Testing Framework");
+					("CSUNIT " + TestVersion.Version +
+					 " - C# Unit Testing Framework");
 				Console.Error.WriteLine
 					("Copyright (c) 2001 Southern Storm Software, Pty Ltd.");
 				Console.Error.WriteLine();

@@ -4,6 +4,10 @@
 	* runtime/System/IO/TextReader.cs: properly increment the
 	number of character read (Stephen Compall).
 
+	* csunit/Makefile.am, System.Configuration.Install/Makefile.am,
+	JScript/Makefile.am: use "INSTALL_SCRIPT" instead of "INSTALL_PROGRAM"
+	in several places (pancake <sergipop@mx3.redestb.es>).
+
 2003-10-18  Adam Ballai  <adam@thefrontnetworks.net>
 
 	* resources/ca_ES/Xsharp/Makefile.am,

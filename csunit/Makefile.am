@@ -15,7 +15,7 @@ install-exec-local:
 	$(INSTALL_DATA) cstest.dll $(DESTDIR)$(libdir)/cscc/lib/cstest.dll
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) csunit.exe $(DESTDIR)$(bindir)/csunit.exe
-	$(INSTALL_PROGRAM) $(srcdir)/csunit-run.sh $(DESTDIR)$(bindir)/csunit
+	$(INSTALL_SCRIPT) $(srcdir)/csunit-run.sh $(DESTDIR)$(bindir)/csunit
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

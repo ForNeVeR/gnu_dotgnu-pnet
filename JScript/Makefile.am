@@ -22,7 +22,7 @@ install-exec-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) jsrun.exe $(DESTDIR)$(bindir)/jsrun.exe
-	$(INSTALL_PROGRAM) $(srcdir)/jsrun.sh $(DESTDIR)$(bindir)/jsrun
+	$(INSTALL_SCRIPT) $(srcdir)/jsrun.sh $(DESTDIR)$(bindir)/jsrun
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

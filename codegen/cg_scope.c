@@ -579,10 +579,18 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 		{
 			*classInfo = ILClassLookup
 					(ILClassGlobalScope(scope->info->libImage),
-				     ((ILNode_Identifier *)(qident->left))->name,
-				     ((ILNode_Identifier *)(qident->right))->name);
+				     ((ILNode_Identifier *)(qident->right))->name,
+				     ((ILNode_Identifier *)(qident->left))->name);
 			if((*classInfo) != 0)
 			{
+				/* Import the library type into the main image */
+				*classInfo = ILClassImport(scope->info->image, *classInfo);
+				if(!(*classInfo))
+				{
+					ILGenOutOfMemory(scope->info);
+				}
+
+				/* Return the details to the caller */
 				*nodeInfo = 0;
 				return 1;
 			}

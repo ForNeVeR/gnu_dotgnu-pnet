@@ -14,6 +14,10 @@ most of the node creation functionality to the C# grammar.
 * codegen/cg_output.h, codegen/cg_output.c (ILGenModulesAndAssemblies),
 cscc/cs_main.c (main): dump modules assemblies to the assembly stream.
 
+* codegen/cg_scope.c (ILScopeResolveType): reverse name and namespace
+arguments for library lookups, and import library classes into the
+main image properly.
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

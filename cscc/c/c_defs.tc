@@ -254,6 +254,15 @@ extern CSemValue CSemValueError;
 			} while (0)
 
 /*
+ * Convert l-values into r-values, while retaining constant information.
+ */
+#define	CSemLToRValue(value)	\
+			do { \
+				(value).kind__ &= ~C_SEMKIND_LVALUE; \
+				(value).kind__ |= C_SEMKIND_RVALUE; \
+			} while (0)
+
+/*
  * Perform inline semantic analysis on a node, in a specific scope.
  */
 CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);

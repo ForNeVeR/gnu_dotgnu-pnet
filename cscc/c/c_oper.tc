@@ -2119,12 +2119,15 @@ static ILType *CommonCondType(ILGenInfo *info, ILType *type1, ILType *type2)
  */
 ILNode_CSemAnalysis(ILNode_Conditional)
 {
+	CSemValue boolValue;
 	CSemValue value1;
 	CSemValue value2;
 	ILType *commonType;
+	ILEvalValue *evalValue;
 
 	/* Perform semantic analysis on the boolean condition */
-	ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
+	boolValue = ILNode_CSemAnalysis(node->expr1, info,
+									&(node->expr1), stmtLevel);
 
 	/* Perform semantic analysis on the "then" and "else" clauses */
 	value1 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
@@ -2159,9 +2162,29 @@ ILNode_CSemAnalysis(ILNode_Conditional)
 	}
 	else
 	{
-		CCoerceNode(info, node->expr2, &(node->expr2), value1, commonType);
-		CCoerceNode(info, node->expr3, &(node->expr3), value2, commonType);
-		CSemSetRValue(value1, commonType);
+		value1 = CCoerceNode(info, node->expr2, &(node->expr2),
+							 value1, commonType);
+		value2 = CCoerceNode(info, node->expr3, &(node->expr3),
+							 value2, commonType);
+		evalValue = CSemGetConstant(boolValue);
+		if(evalValue)
+		{
+			if(evalValue->un.i4Value)
+			{
+				*parent = node->expr2;
+				CSemLToRValue(value1);
+			}
+			else
+			{
+				*parent = node->expr3;
+				CSemLToRValue(value2);
+				return value2;
+			}
+		}
+		else
+		{
+			CSemSetRValue(value1, commonType);
+		}
 		return value1;
 	}
 

@@ -32,7 +32,12 @@ static void CVMCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 	}
 	else if(opcode == IL_OP_LDC_I4_S)
 	{
+	#ifdef IL_CVM_DIRECT
+		/* In direct mode, "ldc_i4" is more efficient than "ldc_i4_s" */
+		CVM_OUT_WORD(COP_LDC_I4, (ILInt32)(ILInt8)(arg[0]));
+	#else
 		CVM_OUT_BYTE(COP_LDC_I4_S, arg[0]);
+	#endif
 		CVM_ADJUST(1);
 	}
 	else if(opcode == IL_OP_LDC_I4)

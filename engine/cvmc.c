@@ -68,115 +68,10 @@ struct _tagILCVMCoder
 	ILMemPool		labelPool;
 	ILCVMLabel     *labelList;
 	int				labelOutOfMemory;
-	unsigned long	switchStart;
+	unsigned char  *switchStart;
 	ILMethod	   *currentMethod;
 
 };
-
-#if 0
-
-/*
- * Get the current method position.
- */
-#define	CVM_POSN()		(ILCacheGetPosn(&(((ILCVMCoder *)coder)->codePosn)))
-
-/*
- * Determine if "n" bytes at "addr" are valid.
- */
-#define	CVM_VALID(addr,n)	\
-			((((unsigned char *)(addr)) + (n)) <= \
-				((ILCVMCoder *)coder)->codePosn.limit)
-
-/*
- * Output a single byte to the CVM coder buffer.
- */
-#define	CVM_BYTE(byte)		\
-			do { \
-				ILCacheByte(&(((ILCVMCoder *)coder)->codePosn), (byte)); \
-			} while (0)
-
-/*
- * Output a 32-bit value to the CVM coder buffer.
- */
-#define	CVM_WORD(value)	\
-			do { \
-				ILCacheWord32(&(((ILCVMCoder *)coder)->codePosn), (value)); \
-			} while (0)
-
-/*
- * Output a pointer value to the CVM coder buffer.
- */
-#ifdef IL_NATIVE_INT32
-#define	CVM_PTR(value)	\
-			do { \
-				ILCacheWord32(&(((ILCVMCoder *)coder)->codePosn), (value)); \
-			} while (0)
-#else
-#define	CVM_PTR(value)	\
-			do { \
-				ILCacheWord64(&(((ILCVMCoder *)coder)->codePosn), (value)); \
-			} while (0)
-#endif
-
-/*
- * Output a wide instruction to the CVM coder buffer.
- */
-#define	CVM_WIDE(opcode,value)	\
-			do { \
-				if((value) < 256) \
-				{ \
-					CVM_BYTE((opcode)); \
-					CVM_BYTE((value)); \
-				} \
-				else \
-				{ \
-					CVM_BYTE(COP_WIDE); \
-					CVM_BYTE((opcode)); \
-					CVM_WORD((value)); \
-				} \
-			} while (0)
-
-/*
- * Output a double wide instruction to the CVM coder buffer.
- */
-#define	CVM_DWIDE(opcode,value1,value2)	\
-			do { \
-				if((value1) < 256 && (value2) < 256) \
-				{ \
-					CVM_BYTE((opcode)); \
-					CVM_BYTE((value1)); \
-					CVM_BYTE((value2)); \
-				} \
-				else \
-				{ \
-					CVM_BYTE(COP_WIDE); \
-					CVM_BYTE((opcode)); \
-					CVM_WORD((value1)); \
-					CVM_WORD((value2)); \
-				} \
-			} while (0)
-
-/*
- * Output a return instruction.
- */
-#define	CVM_RETURN(size)	\
-			do { \
-				if((size) == 1) \
-				{ \
-					CVM_BYTE(COP_RETURN_1); \
-				} \
-				else if((size) == 2) \
-				{ \
-					CVM_BYTE(COP_RETURN_2); \
-				} \
-				else \
-				{ \
-					CVM_BYTE(COP_RETURN_N); \
-					CVM_WORD((size)); \
-				} \
-			} while (0)
-
-#endif
 
 /*
  * Include the CVM code generation macros.
@@ -254,6 +149,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	ILMemPoolInit(&(coder->labelPool), sizeof(ILCVMLabel), 8);
 	coder->labelList = 0;
 	coder->labelOutOfMemory = 0;
+	coder->switchStart = 0;
 	coder->currentMethod = 0;
 	return &(coder->coder);
 }

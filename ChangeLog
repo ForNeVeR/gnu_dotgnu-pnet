@@ -27,6 +27,11 @@
 	source files compile quicker and don't overload the compiler's
 	optimisation engine.
 
+	* engine/cvm_format.h, engine/cvmc.c, engine/cvmc_branch.c,
+	engine/cvmc_const.c, engine/cvmc_gen.h: implement some of the
+	code generation and instruction pattern macros that are needed
+	to support direct threaded interpretation.
+
 2002-05-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* auto_gen.sh, configure.in, codegen/Makefile.am, csant/Makefile.am,

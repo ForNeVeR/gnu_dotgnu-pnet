@@ -435,11 +435,10 @@ static void CVMCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 
 	/* Record the current position so that we know the
 	   relative starting point for switch entry values */
-	((ILCVMCoder *)coder)->switchStart =
-			(ILUInt32)(CVM_POSN() - ((ILCVMCoder *)coder)->start);
+	((ILCVMCoder *)coder)->switchStart = CVM_POSN();
 
 	/* Determine the offset of the default case */
-	defCase = 9 + numEntries * 4;
+	defCase = CVM_DEFCASE_OFFSET(numEntries);
 
 	/* Output the head of the switch statement */
 	CVM_OUT_SWHEAD(numEntries, defCase);
@@ -469,7 +468,7 @@ static void CVMCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 	if(label->offset != ILCVM_LABEL_UNDEF)
 	{
 		/* Output the relative address now */
-		relative = (ILInt32)(label->offset - coder->switchStart);
+		relative = (ILInt32)(label->offset - (coder->switchStart - CVM_POSN()));
 		CVM_OUT_SWENTRY(coder->switchStart, relative);
 	}
 	else
@@ -479,7 +478,7 @@ static void CVMCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 		if(ref)
 		{
 			ref->address = (ILUInt32)(CVM_POSN() - coder->start);
-			ref->offset = coder->switchStart;
+			ref->offset = coder->switchStart - CVM_POSN();
 			ref->next = 0;
 			ref->nextRef = label->nextRef;
 			label->nextRef = ref;

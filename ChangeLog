@@ -11,6 +11,12 @@
 	tests/runtime/System/Security/Cryptography/TestDES.cs:
 	fix some ECB mode bugs; add test case support for testing cipher modes.
 
+	* runtime/Platform/TaskMethods.cs, runtime/System/Environment.cs,
+	runtime/System/OperatingSystem.cs, runtime/System/PlatformID.cs,
+	runtime/System/Version.cs: implement/stub the missing methods in
+	"System.Environment"; bug fixes to the order or build/revision
+	numbers in "Version".
+
 2002-11-27  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberFormat/CurrencyFormatter.cs,

@@ -56,6 +56,10 @@ internal class TaskMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String GetEnvironmentValue(int posn);
 
+	// Get the version number for the runtime engine as a string.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetRuntimeVersion();
+
 }; // class TaskMethods
 
 }; // namespace Platform

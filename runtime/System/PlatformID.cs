@@ -1,7 +1,7 @@
 /*
  * PlatformID.cs - Implementation of the "System.PlatformID" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ public enum PlatformID
 {
 	Win32S       = 0,
 	Win32Windows = 1,
-	Win32NT      = 2
+	Win32NT      = 2,
+	Unix         = 128
 
 }; // enum PlatformID
 

@@ -1,7 +1,7 @@
 /*
  * Environment.cs - Implementation of the "System.Environment" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@ namespace System
 
 using System.Security;
 using System.Collections;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
 using Platform;
 
 public sealed class Environment
@@ -116,12 +119,10 @@ public sealed class Environment
 			}
 
 	// Determine if application shutdown has started.
-	[TODO]
 	public static bool HasShutdownStarted
 			{
 				get
 				{
-					// TODO: set this to true during application finalization.
 					return false;
 				}
 			}
@@ -131,8 +132,7 @@ public sealed class Environment
 			{
 				get
 				{
-					// We don't support stack traces.
-					return String.Empty;
+					return (new StackTrace(1)).ToString();
 				}
 			}
 
@@ -155,13 +155,11 @@ public sealed class Environment
 			}
 
 	// Get the version of the runtime engine.
-	[TODO]
 	public static Version Version
 			{
 				get
 				{
-					// TODO
-					return new Version();
+					return new Version(TaskMethods.GetRuntimeVersion());
 				}
 			}
 
@@ -215,6 +213,182 @@ public sealed class Environment
 			{
 				return new EnvironmentDictionary();
 			}
+
+#if !ECMA_COMPAT
+
+	// Get or set the current working directory.
+	public static String CurrentDirectory
+			{
+				get
+				{
+					return Directory.GetCurrentDirectory();
+				}
+				set
+				{
+					Directory.SetCurrentDirectory(value);
+				}
+			}
+
+	// Get the NetBIOS machine name.
+	[TODO]
+	public static String MachineName
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
+	// Get the operating system version.
+	public static OperatingSystem OSVersion
+			{
+				get
+				{
+					// In our world, everyone is "Unix 0.0".
+					return new OperatingSystem(PlatformID.Unix, new Version());
+				}
+			}
+
+	// Get the domain name for this machine.
+	[TODO]
+	public static String UserDomainName
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
+	// Determine if we are in interactive mode.
+	public static bool UserInteractive
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Get the name of the current user.
+	[TODO]
+	public static String UserName
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+
+	// Get the size of the working set.
+	public static long WorkingSet
+			{
+				get
+				{
+					// There is no reliable and portable way to get this.
+					return 0;
+				}
+			}
+
+	// Expand environment variable references in a string.
+	public static String ExpandEnvironmentVariables(String name)
+			{
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				if(name.IndexOf('%') != -1)
+				{
+					return name;
+				}
+				StringBuilder builder = new StringBuilder();
+				int posn = 0;
+				int index;
+				String tag, value;
+				while(posn < name.Length)
+				{
+					index = name.IndexOf('%', posn);
+					if(index == -1)
+					{
+						builder.Append(name, posn, name.Length - posn);
+						break;
+					}
+					if(index > posn)
+					{
+						builder.Append(name, posn, index - posn);
+						posn = index;
+						index = name.IndexOf('%', posn + 1);
+						if(index == -1)
+						{
+							builder.Append(name, posn, name.Length - posn);
+							break;
+						}
+						tag = name.Substring(posn + 1, index - posn - 1);
+						value = GetEnvironmentVariable(tag);
+						if(value != null)
+						{
+							builder.Append(value);
+						}
+						else
+						{
+							builder.Append(name, posn, index + 1 - posn);
+						}
+						posn = index + 1;
+					}
+				}
+				return builder.ToString();
+			}
+
+	// Special folder names.
+	public enum SpecialFolder
+	{
+		Programs              = 0x02,
+		Personal              = 0x05,
+		Favorites             = 0x06,
+		Startup               = 0x07,
+		Recent                = 0x08,
+		SendTo                = 0x09,
+		StartMenu             = 0x0b,
+		DesktopDirectory      = 0x10,
+		Templates             = 0x15,
+		ApplicationData	      = 0x1a,
+		LocalApplicationData  = 0x1c,
+		InternetCache         = 0x20,
+		Cookies               = 0x21,
+		History               = 0x22,
+		CommonApplicationData = 0x23,
+		System                = 0x25,
+		ProgramFiles          = 0x26,
+		CommonProgramFiles    = 0x2b
+
+	}; // enum SpecialFolder
+
+	// Get a path to a specific system folder.
+	public static String GetFolderPath(SpecialFolder folder)
+			{
+				// For security reasons, we don't allow access to
+				// system folders except "System", which will normally
+				// be rejected by the runtime engine anyway.
+				if(folder == SpecialFolder.System)
+				{
+					return DirMethods.GetSystemDirectory();
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Get a list of logical drives on the system.
+	[TODO]
+	public static String[] GetLogicalDrives()
+			{
+				// TODO
+				return null;
+			}
+
+#endif // !ECMA_COMPAT
 
 	// Private class that implements a dictionary for environment variables.
 	private sealed class EnvironmentDictionary : IDictionary

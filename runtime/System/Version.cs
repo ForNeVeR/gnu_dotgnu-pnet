@@ -52,6 +52,8 @@ public sealed class Version : ICloneable, IComparable
 						{
 							this.major = Int32.Parse(substrings[0]);
 							this.minor = Int32.Parse(substrings[1]);
+							this.build = -1;
+							this.revision = -1;
 						}
 						catch(Exception e)
 						{
@@ -64,7 +66,8 @@ public sealed class Version : ICloneable, IComparable
 						{
 							this.major = Int32.Parse(substrings[0]);
 							this.minor = Int32.Parse(substrings[1]);
-							this.revision = Int32.Parse(substrings[2]);
+							this.build = Int32.Parse(substrings[2]);
+							this.revision = -1;
 						}
 						catch(Exception e)
 						{
@@ -77,8 +80,8 @@ public sealed class Version : ICloneable, IComparable
 						{
 							this.major = Int32.Parse(substrings[0]);
 							this.minor = Int32.Parse(substrings[1]);
-							this.revision = Int32.Parse(substrings[2]);
-							this.build = Int32.Parse(substrings[3]);
+							this.build = Int32.Parse(substrings[2]);
+							this.revision = Int32.Parse(substrings[3]);
 						}
 						catch(Exception e)
 						{
@@ -101,15 +104,21 @@ public sealed class Version : ICloneable, IComparable
 					throw new ArgumentOutOfRangeException
 						("minor", _("ArgRange_NonNegative"));
 				}
-				if(this.build < 0)
+				if(substrings.Length > 2)
 				{
-					throw new ArgumentOutOfRangeException
-						("build", _("ArgRange_NonNegative"));
+					if(this.build < 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("build", _("ArgRange_NonNegative"));
+					}
 				}
-				if(this.revision < 0)
+				if(substrings.Length > 3)
 				{
-					throw new ArgumentOutOfRangeException
-						("revision", _("ArgRange_NonNegative"));
+					if(this.revision < 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("revision", _("ArgRange_NonNegative"));
+					}
 				}
 			}
 

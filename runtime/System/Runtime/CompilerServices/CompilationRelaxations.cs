@@ -1,8 +1,8 @@
 /*
- * CompilationRelaxationsAttribute.cs - Implementation of the
- *	"System.Runtime.CompilerServices.CompilationRelaxationsAttribute" class.
+ * CompilationRelaxations.cs - Implementation of the
+ *	"System.Runtime.CompilerServices.CompilationRelaxations" class.
  *
- * Copyright (C) 2001, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,38 +22,15 @@
 namespace System.Runtime.CompilerServices
 {
 
-#if !ECMA_COMPAT
-
-[AttributeUsage(AttributeTargets.Module)]
-public class CompilationRelaxationsAttribute : Attribute
-{
-
-	// Internal state.
-	private int value;
-
-	// Constructors.
-	public CompilationRelaxationsAttribute(int relaxations)
-			{
-				value = relaxations;
-			}
 #if CONFIG_FRAMEWORK_1_2
-	public CompilationRelaxationsAttribute(CompilationRelaxations relaxations)
-			{
-				value = (int)relaxations;
-			}
+
+[Flags]
+public enum CompilationRelaxations
+{
+	NoStringInterning = 0x0008
+
+}; // enum CompilationRelaxations
+
 #endif // CONFIG_FRAMEWORK_1_2
-
-	// Properties.
-	public int CompilationRelaxations
-			{
-				get
-				{
-					return value;
-				}
-			}
-
-}; // class CompilationRelaxationsAttribute
-
-#endif // !ECMA_COMPAT
 
 }; // namespace System.Runtime.CompilerServices

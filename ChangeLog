@@ -5,6 +5,45 @@
 	runtime/System/Console.cs, samples/simple/snake.cs: implement a
 	new internalcall interface for the extended console.
 
+	* runtime/System/Runtime/CompilerServices/CompilationRelaxations.cs,
+	runtime/System/Runtime/CompilerServices/CompilationRelaxationsAttribute.cs,
+	runtime/System/Runtime/CompilerServices/CompilerGeneratedAttribute.cs,
+	runtime/System/Runtime/CompilerServices/CompilerMarshalOverride.cs,
+	runtime/System/Runtime/CompilerServices/DefaultDependencyAttribute.cs,
+	runtime/System/Runtime/CompilerServices/DependencyAttribute.cs,
+	runtime/System/Runtime/CompilerServices/FixedAddressValueTypeAttribute.cs,
+	runtime/System/Runtime/CompilerServices/FixedBufferAttribute.cs,
+	runtime/System/Runtime/CompilerServices/HasCopySemanticsAttribute.cs,
+	runtime/System/Runtime/CompilerServices/InternalsVisibleToAttribute.cs,
+	runtime/System/Runtime/CompilerServices/IsBoxed.cs,
+	runtime/System/Runtime/CompilerServices/IsByValue.cs,
+	runtime/System/Runtime/CompilerServices/IsConst.cs,
+	runtime/System/Runtime/CompilerServices/IsExplicitlyDereferenced.cs,
+	runtime/System/Runtime/CompilerServices/IsImplicitlyDereferenced.cs,
+	runtime/System/Runtime/CompilerServices/IsJitIntrinsic.cs,
+	runtime/System/Runtime/CompilerServices/IsLong.cs,
+	runtime/System/Runtime/CompilerServices/IsPinned.cs,
+	runtime/System/Runtime/CompilerServices/IsSignUnspecifiedByte.cs,
+	runtime/System/Runtime/CompilerServices/IsUdtReturn.cs,
+	runtime/System/Runtime/CompilerServices/LoadHint.cs,
+	runtime/System/Runtime/CompilerServices/NGenAttribute.cs,
+	runtime/System/Runtime/CompilerServices/NGenHint.cs,
+	runtime/System/Runtime/CompilerServices/ScopelessEnumAttribute.cs,
+	runtime/System/Runtime/CompilerServices/StringFreezingAttribute.cs,
+	runtime/System/Runtime/CompilerServices/SuppressMergeCheckAttribute.cs,
+	runtime/System/Runtime/CompilerServices/UnsafeValueTypeAttribute.cs,
+	runtime/System/Runtime/ConstrainedExecution/CER.cs,
+	runtime/System/Runtime/ConstrainedExecution/Consistency.cs,
+	runtime/System/Runtime/ConstrainedExecution/CriticalFinalizerObject.cs,
+	runtime/System/Runtime/ConstrainedExecution/PrePrepareMethodAttribute.cs,
+	runtime/System/Runtime/ConstrainedExecution/ReliabilityContractAttribute.cs,
+	runtime/System/Runtime/Reliability/CER.cs,
+	runtime/System/Runtime/Reliability/Consistency.cs,
+	runtime/System/Runtime/Reliability/PrePrepareMethodAttribute.cs,
+	runtime/System/Runtime/Reliability/ReliabilityContractAttribute.cs:
+	add .NET SDK 1.2 and 2.0 classes in "System.Runtime.CompilerServices",
+	"System.Runtime.ConstrainedExecution", and "System.Runtime.Reliability".
+
 2004-07-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/IO/Compression/Adler32.cs,

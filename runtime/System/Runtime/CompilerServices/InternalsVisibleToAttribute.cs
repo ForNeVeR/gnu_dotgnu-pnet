@@ -1,8 +1,8 @@
 /*
- * CompilationRelaxationsAttribute.cs - Implementation of the
- *	"System.Runtime.CompilerServices.CompilationRelaxationsAttribute" class.
+ * InternalsVisibleToAttribute.cs - Implementation of the
+ *	"System.Runtime.CompilerServices.InternalsVisibleToAttribute" class.
  *
- * Copyright (C) 2001, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,38 +22,36 @@
 namespace System.Runtime.CompilerServices
 {
 
+using System.Runtime.InteropServices;
+
+#if CONFIG_FRAMEWORK_1_2
+
 #if !ECMA_COMPAT
-
-[AttributeUsage(AttributeTargets.Module)]
-public class CompilationRelaxationsAttribute : Attribute
+[ComVisible(false)]
+#endif
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=true, Inherited=false)]
+public sealed class InternalsVisibleToAttribute : Attribute
 {
-
 	// Internal state.
-	private int value;
+	private String assemblyName;
 
 	// Constructors.
-	public CompilationRelaxationsAttribute(int relaxations)
+	public InternalsVisibleToAttribute(String assemblyName)
 			{
-				value = relaxations;
+				this.assemblyName = assemblyName;
 			}
-#if CONFIG_FRAMEWORK_1_2
-	public CompilationRelaxationsAttribute(CompilationRelaxations relaxations)
-			{
-				value = (int)relaxations;
-			}
-#endif // CONFIG_FRAMEWORK_1_2
 
-	// Properties.
-	public int CompilationRelaxations
+	// Get this attribute's properties.
+	public String AssemblyName
 			{
 				get
 				{
-					return value;
+					return assemblyName;
 				}
 			}
 
-}; // class CompilationRelaxationsAttribute
+}; // class InternalsVisibleToAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Runtime.CompilerServices

@@ -1,8 +1,8 @@
 /*
- * CompilationRelaxationsAttribute.cs - Implementation of the
- *	"System.Runtime.CompilerServices.CompilationRelaxationsAttribute" class.
+ * IsUdtReturn.cs - Implementation of the
+ *	"System.Runtime.CompilerServices.IsUdtReturn" class.
  *
- * Copyright (C) 2001, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,38 +22,15 @@
 namespace System.Runtime.CompilerServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_FRAMEWORK_2_0
 
-[AttributeUsage(AttributeTargets.Module)]
-public class CompilationRelaxationsAttribute : Attribute
+public abstract sealed class IsUdtReturn
 {
-
-	// Internal state.
-	private int value;
-
 	// Constructors.
-	public CompilationRelaxationsAttribute(int relaxations)
-			{
-				value = relaxations;
-			}
-#if CONFIG_FRAMEWORK_1_2
-	public CompilationRelaxationsAttribute(CompilationRelaxations relaxations)
-			{
-				value = (int)relaxations;
-			}
-#endif // CONFIG_FRAMEWORK_1_2
+	private IsUdtReturn() {}
 
-	// Properties.
-	public int CompilationRelaxations
-			{
-				get
-				{
-					return value;
-				}
-			}
+}; // class IsUdtReturn
 
-}; // class CompilationRelaxationsAttribute
-
-#endif // !ECMA_COMPAT
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Runtime.CompilerServices

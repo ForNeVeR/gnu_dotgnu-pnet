@@ -1,8 +1,8 @@
 /*
- * CompilationRelaxationsAttribute.cs - Implementation of the
- *	"System.Runtime.CompilerServices.CompilationRelaxationsAttribute" class.
+ * ScopelessEnumAttribute.cs - Implementation of the
+ *	"System.Runtime.CompilerServices.ScopelessEnumAttribute" class.
  *
- * Copyright (C) 2001, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,38 +22,16 @@
 namespace System.Runtime.CompilerServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_FRAMEWORK_2_0
 
-[AttributeUsage(AttributeTargets.Module)]
-public class CompilationRelaxationsAttribute : Attribute
+[AttributeUsage(AttributeTargets.Enum)]
+public sealed class ScopelessEnumAttribute : Attribute
 {
-
-	// Internal state.
-	private int value;
-
 	// Constructors.
-	public CompilationRelaxationsAttribute(int relaxations)
-			{
-				value = relaxations;
-			}
-#if CONFIG_FRAMEWORK_1_2
-	public CompilationRelaxationsAttribute(CompilationRelaxations relaxations)
-			{
-				value = (int)relaxations;
-			}
-#endif // CONFIG_FRAMEWORK_1_2
+	public ScopelessEnumAttribute() {}
 
-	// Properties.
-	public int CompilationRelaxations
-			{
-				get
-				{
-					return value;
-				}
-			}
+}; // class ScopelessEnumAttribute
 
-}; // class CompilationRelaxationsAttribute
-
-#endif // !ECMA_COMPAT
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Runtime.CompilerServices

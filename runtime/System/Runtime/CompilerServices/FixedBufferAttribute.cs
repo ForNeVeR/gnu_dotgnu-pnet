@@ -1,8 +1,8 @@
 /*
- * CompilationRelaxationsAttribute.cs - Implementation of the
- *	"System.Runtime.CompilerServices.CompilationRelaxationsAttribute" class.
+ * FixedBufferAttribute.cs - Implementation of the
+ *	"System.Runtime.CompilerServices.FixedBufferAttribute" class.
  *
- * Copyright (C) 2001, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,38 +22,40 @@
 namespace System.Runtime.CompilerServices
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_FRAMEWORK_1_2
 
-[AttributeUsage(AttributeTargets.Module)]
-public class CompilationRelaxationsAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field, Inherited=false)]
+public sealed class FixedBufferAttribute : Attribute
 {
-
 	// Internal state.
-	private int value;
+	private Type elementType;
+	private int length;
 
 	// Constructors.
-	public CompilationRelaxationsAttribute(int relaxations)
+	public FixedBufferAttribute(Type elementType, int length)
 			{
-				value = relaxations;
+				this.elementType = elementType;
+				this.length = length;
 			}
-#if CONFIG_FRAMEWORK_1_2
-	public CompilationRelaxationsAttribute(CompilationRelaxations relaxations)
-			{
-				value = (int)relaxations;
-			}
-#endif // CONFIG_FRAMEWORK_1_2
 
-	// Properties.
-	public int CompilationRelaxations
+	// Get this attribute's properties.
+	public Type ElementType
 			{
 				get
 				{
-					return value;
+					return elementType;
+				}
+			}
+	public int Length
+			{
+				get
+				{
+					return length;
 				}
 			}
 
-}; // class CompilationRelaxationsAttribute
+}; // class FixedBufferAttribute
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Runtime.CompilerServices

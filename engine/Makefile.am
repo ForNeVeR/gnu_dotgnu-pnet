@@ -7,6 +7,7 @@ libILEngine_a_SOURCES = cvm.c \
 						call.c \
 						convert.c \
 						cvm_dasm.c \
+						cvm_lengths.c \
 						cvmc.c \
 						heap.c \
 						internal.c \
@@ -39,6 +40,7 @@ libILEngine_a_SOURCES = cvm.c \
 						register.c \
 						thread.c \
 						throw.c \
+						unroll_x86.c \
 						verify.c
 
 PACKAGE_LIBS = $(FFILIBS) ../libgc/.libs/libgc.a

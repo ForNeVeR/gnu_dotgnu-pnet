@@ -15,6 +15,9 @@ properties that are inherited from "MemberInfo".
 
 * runtime/System/Makefile.am: add the new classes to the build.
 
+* resources/en_US/runtime/Exception.txt: default error messages for
+the new exception classes.
+
 2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs: Use "InternalGetFullName" for the "ToString"

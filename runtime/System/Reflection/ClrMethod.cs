@@ -28,8 +28,12 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 internal sealed class ClrMethod : MethodInfo, IClrProgramItem
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 
 	// Private data used by the runtime engine.  This must be the first field.
@@ -276,6 +280,21 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 					return method.BindGenericParametersImpl(typeArgs);
 				}
 			}
+
+#if CONFIG_SERIALIZATION
+
+	// Get the serialization data for this method.
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				MemberInfoSerializationHolder.Serialize
+					(info, MemberTypes.Method, Name, ToString(), ReflectedType);
+			}
+
+#endif
 
 }; // class ClrMethod
 

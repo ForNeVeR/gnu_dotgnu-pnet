@@ -100,6 +100,29 @@ internal class UnitySerializationHolder : ISerializable, IObjectReference
 					case UnityType.DBNull:		return DBNull.Value;
 					case UnityType.Missing:		return Missing.Value;
 
+					case UnityType.ClrType:
+					{
+						if(data == null || data.Length == 0 ||
+						   assembly == null)
+						{
+							throw new SerializationException
+								(_("Serialize_StateMissing"));
+						}
+						if(assembly == String.Empty)
+						{
+							return Type.GetType(data);
+						}
+						Type type = FormatterServices.GetTypeFromAssembly
+							(assembly, data);
+						if(type != null)
+						{
+							return type;
+						}
+						throw new SerializationException
+							(_("Serialize_StateMissing"));
+					}
+					// Not reached.
+
 					// TODO: other unity types
 
 					default:

@@ -28,8 +28,12 @@ using System;
 using System.Text;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 internal sealed class ClrField : FieldInfo, IClrProgramItem
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 
 	// Private data used by the runtime engine.
@@ -146,6 +150,21 @@ internal sealed class ClrField : FieldInfo, IClrProgramItem
 				builder.Append(Name);
 				return builder.ToString();
 			}
+
+#if CONFIG_SERIALIZATION
+
+	// Get the serialization data for this field.
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				MemberInfoSerializationHolder.Serialize
+					(info, MemberTypes.Field, Name, ToString(), ReflectedType);
+			}
+
+#endif
 
 }; // class ClrField
 

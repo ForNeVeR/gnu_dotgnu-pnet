@@ -25,8 +25,12 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 internal class ClrType : Type, ICloneable, IClrProgramItem
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 	// Internal state.
 	internal IntPtr privateData;
@@ -1042,6 +1046,22 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	extern public override Type GetGenericTypeDefinition();
 
 #endif // CONFIG_REFLECTION
+
+#if CONFIG_SERIALIZATION
+
+	// Get the serialization data for this type.
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				UnitySerializationHolder.Serialize
+					(info, UnitySerializationHolder.UnityType.ClrType,
+					 FullName, Assembly);
+			}
+
+#endif
 
 }; // class ClrType
 

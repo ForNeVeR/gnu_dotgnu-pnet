@@ -5,6 +5,20 @@
 	runtime/System/Runtime/Remoting/Messaging/MethodCall.cs:
 	missing functionality in "System.Runtime.Remoting.Messaging".
 
+	* runtime/System/RuntimeFieldHandle.cs,
+	runtime/System/RuntimeMethodHandle.cs,
+	runtime/System/RuntimeTypeHandle.cs,
+	runtime/System/UnitySerializationHolder.cs,
+	runtime/System/Reflection/ClrConstructor.cs,
+	runtime/System/Reflection/ClrEvent.cs,
+	runtime/System/Reflection/ClrField.cs,
+	runtime/System/Reflection/ClrMethod.cs,
+	runtime/System/Reflection/ClrProperty.cs,
+	runtime/System/Reflection/ClrType.cs,
+	runtime/System/Reflection/MemberInfoSerializationHolder.cs,
+	runtime/System/Runtime/Serialization/FormatterServices.cs:
+	serialization support for reflection classes.
+
 2003-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

@@ -22,6 +22,7 @@
 namespace System
 {
 
+using System.Reflection;
 using System.Runtime.Serialization;
 
 public struct RuntimeFieldHandle
@@ -50,20 +51,38 @@ public struct RuntimeFieldHandle
 #if CONFIG_SERIALIZATION
 
 	// De-serialize this object.
-	[TODO]
 	internal RuntimeFieldHandle(SerializationInfo info,
 								StreamingContext context)
 			{
-				// TODO
-				value_ = IntPtr.Zero;
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				FieldInfo field = (FieldInfo)(info.GetValue
+					("FieldObj", typeof(ClrField)));
+				if(field == null)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				value_ = field.FieldHandle.value_;
 			}
 
 	// Get the serialization data for this object.
-	[TODO]
 	public void GetObjectData(SerializationInfo info,
 							  StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				if(value_ == IntPtr.Zero)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				ClrField field = (ClrField)(FieldInfo.GetFieldFromHandle(this));
+				info.AddValue("FieldObj", field, typeof(ClrField));
 			}
 
 #endif // CONFIG_SERIALIZATION

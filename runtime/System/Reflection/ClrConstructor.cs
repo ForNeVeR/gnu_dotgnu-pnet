@@ -28,8 +28,12 @@ using System;
 using System.Text;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 
 	// Private data used by the runtime engine.
@@ -186,6 +190,22 @@ internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 				builder.Append(')');
 				return builder.ToString();
 			}
+
+#if CONFIG_SERIALIZATION
+
+	// Get the serialization data for this constructor.
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				MemberInfoSerializationHolder.Serialize
+					(info, MemberTypes.Constructor,
+					 Name, ToString(), ReflectedType);
+			}
+
+#endif
 
 }; // class ClrConstructor
 

@@ -24,6 +24,7 @@ namespace System
 
 #if CONFIG_RUNTIME_INFRA
 
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
@@ -59,20 +60,55 @@ public struct RuntimeMethodHandle
 #if CONFIG_SERIALIZATION
 
 	// De-serialize this object.
-	[TODO]
 	internal RuntimeMethodHandle(SerializationInfo info,
 								 StreamingContext context)
 			{
-				// TODO
-				value_ = IntPtr.Zero;
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				MethodBase method = (MethodBase)(info.GetValue
+					("MethodObj", typeof(ClrMethod)));
+				if(method == null)
+				{
+					// Extension: check for constructors as well.
+					method = (MethodBase)(info.GetValue
+						("ConstructorObj", typeof(ClrConstructor)));
+				}
+				if(method == null)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				value_ = method.MethodHandle.value_;
 			}
 
 	// Get the serialization data for this object.
-	[TODO]
 	public void GetObjectData(SerializationInfo info,
 							  StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				if(value_ == IntPtr.Zero)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				MethodBase method = (MethodBase)
+					(MethodBase.GetMethodFromHandle(this));
+				if(method is ClrConstructor)
+				{
+					// Extension: properly serialize constructor handles.
+					info.AddValue("MethodObj", null, typeof(ClrMethod));
+					info.AddValue("ConstructorObj", method,
+								  typeof(ClrConstructor));
+				}
+				else
+				{
+					info.AddValue("MethodObj", method, typeof(ClrMethod));
+				}
 			}
 
 #endif // CONFIG_SERIALIZATION

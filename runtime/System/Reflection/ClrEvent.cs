@@ -26,8 +26,12 @@ namespace System.Reflection
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 internal sealed class ClrEvent : EventInfo, IClrProgramItem
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 
 	// Private data used by the runtime engine.
@@ -115,6 +119,21 @@ internal sealed class ClrEvent : EventInfo, IClrProgramItem
 						 	 MethodSemanticsAttributes.RemoveOn,
 							 nonPublic);
 			}
+
+#if CONFIG_SERIALIZATION
+
+	// Get the serialization data for this event.
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				MemberInfoSerializationHolder.Serialize
+					(info, MemberTypes.Event, Name, ToString(), ReflectedType);
+			}
+
+#endif
 
 }; // class ClrEvent
 

@@ -166,6 +166,18 @@ public sealed class FormatterServices
 				}
 				return assem.GetType(name);
 			}
+	internal static Type GetTypeFromAssembly(String assem, String name)
+			{
+				try
+				{
+					Assembly assembly = Assembly.Load(assem);
+					return assembly.GetType(name);
+				}
+				catch(Exception)
+				{
+					return null;
+				}
+			}
 
 	// Get an uninitialized instance from the runtime engine.
 	[MethodImpl(MethodImplOptions.InternalCall)]

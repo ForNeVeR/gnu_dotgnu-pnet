@@ -21,6 +21,7 @@
 namespace System
 {
 
+using System.Reflection;
 using System.Runtime.Serialization;
 
 public struct RuntimeTypeHandle
@@ -49,20 +50,37 @@ public struct RuntimeTypeHandle
 #if CONFIG_SERIALIZATION
 
 	// De-serialize this object.
-	[TODO]
 	internal RuntimeTypeHandle(SerializationInfo info,
 							   StreamingContext context)
 			{
-				// TODO
-				value_ = IntPtr.Zero;
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				Type t = (Type)(info.GetValue("TypeObj", typeof(ClrType)));
+				if(t == null)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				value_ = t.TypeHandle.value_;
 			}
 
 	// Get the serialization data for this object.
-	[TODO]
 	public void GetObjectData(SerializationInfo info,
 							  StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				if(value_ == IntPtr.Zero)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				ClrType type = (ClrType)(Type.GetTypeFromHandle(this));
+				info.AddValue("TypeObj", type, typeof(ClrType));
 			}
 
 #endif // CONFIG_SERIALIZATION

@@ -1619,6 +1619,7 @@ int CSAntTask_ResLink(CSAntTask *task)
 				AddValueArg(&argv, &argc, "-fresources=",
 							CSAntFileSetFile(resources, file));
 			}
+			AddValueArg(&argv, &argc, "-fculture=", language);
 		}
 		else
 		{

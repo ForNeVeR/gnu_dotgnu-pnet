@@ -242,7 +242,8 @@ Otherwise the exit status is 0.
 @example
 -e ENTRYPOINT -LDIR -nostdlib -lLIBRARY
 -shared -static -m32bit-only -fresources=RESFILE
--mcui-subsystem -mgui-subsystem -gtk -gnome
+-fculture=NAME -mcui-subsystem -mgui-subsystem
+-gtk -gnome -winforms
 @end example
 
 @item Other Options
@@ -708,6 +709,10 @@ the resultant program less portable.
 Specify the name of a resource file to be linked with the final
 library or executable.  Multiple @code{-fresources} options
 may be used to specify multiple resource files.
+
+@cindex -fculture option (cscc)
+@item -fculture=NAME
+Specify the resource culture (e.g. "en-US").
 
 @cindex -mcui-subsystem option (cscc)
 @item -mcui-subsystem
@@ -3708,9 +3713,15 @@ Set the assembly hash algorithm to @code{ALG}, which must be either
 @cindex -V option (ilalink)
 @cindex -fmetadata-version option (ilalink)
 @item -V vN.N.NNNN
-@itemx -fmetadata-version vN.N.NNNN
+@itemx -fmetadata-version=vN.N.NNNN
 Set the final metadata version to @code{vN.N.NNNN}.  The default is
 inferred from the metadata version on @code{mscorlib}.
+
+@cindex -u option (ilalink)
+@cindex -fculture option (ilalink)
+@item -u NAME
+@itemx -fculture=NAME
+Specify the resource culture (e.g. "en-US").
 
 @cindex -z option (ilalink)
 @cindex -fminimize-parameters option (ilalink)

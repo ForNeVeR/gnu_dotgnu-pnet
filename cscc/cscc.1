@@ -115,6 +115,7 @@ curve for new users.
 \-static
 \-m32bit\-only
 \-fresources=\fIresfile\fR
+\-fculture=\fIname\fR
 \-mcui\-subsystem
 \-mgui\-subsystem
 \-gtk
@@ -448,6 +449,9 @@ the resultant program less portable.
 Specify the name of a resource file to be linked with the final
 library or executable.  Multiple `\fB\-fresources\fR' options
 may be used to specify multiple resource files.
+.TP
+.B \-fculture=\fIname\fR
+Specify the resource culture (e.g. "en-US").
 .TP
 .B \-mcui\-subsystem
 Tag the output file so that it can run within the command-line subsystem

@@ -71,6 +71,11 @@ void ILLinkerSetMetadataVersion(ILLinker *linker, const char *version,
 								const char *stdLibrary);
 
 /*
+ * Set the culture name on the assembly.
+ */
+void ILLinkerSetCulture(ILLinker *linker, const char *culture);
+
+/*
  * Add a directory to a linker context to search for libraries.
  * Returns zero on error.
  */

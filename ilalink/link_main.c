@@ -120,6 +120,9 @@ static ILCmdLineOption const options[] = {
 	{"-V", 'V', 1,
 		"-fmetadata-version=version  or -V version",
 		"Specify the metadata version to embed in the assembly."},
+	{"-u", 'u', 1,
+		"-fculture=name              or -u name",
+		"Specify the resource culture (e.g. \"en-US\")."},
 	{"-3", '3', 0,
 		"-m32bit-only                or -3",
 		"The resulting output file can only be used on 32-bit systems."},
@@ -148,7 +151,7 @@ static ILCmdLineOption const options[] = {
 	{"/comp*", '?', 1, 0, 0},		/* "/company:text" */
 	{"/config*", '?', 1, 0, 0},		/* "/configuration:text" */
 	{"/copy*", '?', 1, 0, 0},		/* "/copyright:text" */
-	{"/c*", '?', 1, 0, 0},			/* "/culture:text" */
+	{"/c*", 'u', 1, 0, 0},			/* "/culture:text" */
 	{"/delay*", '?', 0, 0, 0},		/* "/delaysign[+|-]" */
 	{"/descr*", '?', 1, 0, 0},		/* "/description:text" */
 	{"/embed*", 'Q', 1, 0, 0},		/* "/embedresource:filename" */
@@ -208,6 +211,7 @@ int ILLinkerMain(int argc, char *argv[])
 	char *entryPoint = NULL;
 	int hashAlgorithm = IL_META_HASHALG_SHA1;
 	char *metadataVersion = NULL;
+	char *culture = NULL;
 	int len;
 	char **libraries;
 	int numLibraries = 0;
@@ -362,6 +366,12 @@ int ILLinkerMain(int argc, char *argv[])
 			case 'V':
 			{
 				metadataVersion = param;
+			}
+			break;
+
+			case 'u':
+			{
+				culture = param;
 			}
 			break;
 
@@ -542,6 +552,10 @@ int ILLinkerMain(int argc, char *argv[])
 				else if(!strncmp(param, "module-name=", 12))
 				{
 					moduleName = param + 12;
+				}
+				else if(!strncmp(param, "culture=", 8))
+				{
+					culture = param + 8;
 				}
 				else if(!strncmp(param, "resources=", 10))
 				{
@@ -802,6 +816,12 @@ int ILLinkerMain(int argc, char *argv[])
 
 	/* Set the metadata version in the assembly's header */
 	ILLinkerSetMetadataVersion(linker, metadataVersion, stdLibrary);
+
+	/* Set the culture name on the assembly */
+	if(culture)
+	{
+		ILLinkerSetCulture(linker, culture);
+	}
 
 	/* Process the input files that aren't libraries */
 	sawStdin = 0;

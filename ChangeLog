@@ -1,4 +1,11 @@
 
+2004-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csant/csant_cscc.c, cscc/cscc.1, cscc/common/cc_compat.c,
+	cscc/common/cc_options.c, doc/pnettools.texi, ilalink/ilalink.1,
+	ilalink/link_create.c, ilalink/link_main.c, include/il_linker.h:
+	add the "-fculture" option to the compiler and linker.
+
 2004-08-06  Gopal V  <gopalv82@yahoo.com>
 
 	* support/interlocked_x86.h: Fix SSE2 checks to use __SSE2__ instead

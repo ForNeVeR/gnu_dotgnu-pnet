@@ -514,6 +514,13 @@ void ILLinkerSetMetadataVersion(ILLinker *linker, const char *version,
 	}
 }
 
+void ILLinkerSetCulture(ILLinker *linker, const char *culture)
+{
+	ILAssemblySetLocale
+		(ILAssembly_FromToken(linker->image, IL_META_TOKEN_ASSEMBLY | 1),
+		 culture);
+}
+
 int ILLinkerSetFlags(ILLinker *linker, int flags)
 {
 	int oldFlags = linker->linkerFlags;

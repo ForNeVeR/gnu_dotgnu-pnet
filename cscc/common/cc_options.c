@@ -1098,7 +1098,7 @@ void CCStringListAdd(char ***list, int *num, char *str)
 
 void CCStringListAddOption(char ***list, int *num, char *option, char *str)
 {
-	char * concat = malloc(strlen(str) + 3);
+	char * concat = malloc(strlen(option) + strlen(str) + 1);
 	strcpy(concat, option);
 	strcat(concat, str);
 	AddString(list, num, concat);

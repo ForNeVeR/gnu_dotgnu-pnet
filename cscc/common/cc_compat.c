@@ -333,6 +333,15 @@ static void resourceOption(char *arg)
 }
 
 /*
+ * Process a "/culture" option.
+ */
+static void cultureOption(char *arg)
+{
+	CCStringListAddOption(&extension_flags, &num_extension_flags,
+						  "culture=", arg);
+}
+
+/*
  * Process a "/target" option.
  */
 static void targetOption(char *arg)
@@ -444,6 +453,10 @@ static CmdLineOpt const compatOptions[] = {
 			N_("/resource:<file>"),
 			N_("Specify an embedded resource file")},
 	{"/res",		4,	0,						0,	resourceOption, 0, 0},
+	{"/culture",	8,	0,						0,	cultureOption,
+			N_("/culture:<name>"),
+			N_("Specify the resource culture name")},
+	{"/c",			2,	0,						0,	cultureOption, 0, 0},
 	{"/target",		7,	0,						0,	targetOption,
 			N_("/target:<type>"),
 			N_("Specify target type")},
@@ -505,6 +518,8 @@ static CmdLineOpt const compatOptions[] = {
 	{"-res",		4,	0,						0,	resourceOption, 0, 0},
 	{"--resource",	10,	0,						0,	resourceOption, 0, 0},
 	{"--res",		5,	0,						0,	resourceOption, 0, 0},
+	{"-culture",	8,	0,						0,	cultureOption, 0, 0},
+	{"--culture",	9,	0,						0,	cultureOption, 0, 0},
 	{"-target",		7,	0,						0,	targetOption, 0, 0},
 	{"-t",			2,	0,						0,	targetOption, 0, 0},
 	{"-unsafe",		0,	&unsafe_value,			1,	0, 0, 0},

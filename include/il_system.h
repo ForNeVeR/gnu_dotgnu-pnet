@@ -187,6 +187,12 @@ void ILCacheFlush(void *buf, long length);
 char *ILGetStandardLibraryPath(const char *tail);
 
 /*
+ * Get the location of a standard data directory. e.g. "${prefix}/share/tail".
+ * Returns NULL if not found.  Use "ILFree" to free the return value.
+ */
+char *ILGetStandardDataPath(const char *tail);
+
+/*
  * Get the location of a standard program directory. e.g. "${prefix}/bin".
  * Returns NULL if not found.  Use "ILFree" to free the return value.
  */

@@ -202,6 +202,18 @@ char *ILGetStandardLibraryPath(const char *tail)
 	}
 }
 
+char *ILGetStandardDataPath(const char *tail)
+{
+	if(tail)
+	{
+		return GetFileInBasePath("/share/", tail);
+	}
+	else
+	{
+		return GetFileInBasePath("/share", 0);
+	}
+}
+
 char *ILGetStandardProgramPath(void)
 {
 	return GetFileInBasePath("/bin", 0);
@@ -228,6 +240,26 @@ char *ILGetStandardLibraryPath(const char *tail)
 	else
 	{
 		return ILDupString(CSCC_LIB_PREFIX);
+	}
+}
+
+char *ILGetStandardDataPath(const char *tail)
+{
+	if(tail)
+	{
+		char *path = (char *)ILMalloc(strlen(CSCC_DATA_PREFIX) +
+									  strlen(tail) + 2);
+		if(path)
+		{
+			strcpy(path, CSCC_DATA_PREFIX);
+			strcat(path, "/");
+			strcat(path, tail);
+		}
+		return path;
+	}
+	else
+	{
+		return ILDupString(CSCC_DATA_PREFIX);
 	}
 }
 

@@ -48,16 +48,16 @@ extern	"C" {
  */
 #define	INCLUDE_PATH	\
 			"/usr/local/lib/cscc/lib:" \
-			"/usr/local/lib/cscc/include:" \
+			"/usr/local/share/cscc/include:" \
 			"/usr/lib/cscc/lib:" \
-			"/usr/lib/cscc/include"
+			"/usr/share/cscc/include"
 
 /*
  * The default system C++ include path.
  */
 #define	INCLUDE_CPP_PATH	\
-			"/usr/local/lib/cscc/include/c++:" \
-			"/usr/lib/cscc/include/c++"
+			"/usr/local/share/cscc/include/c++:" \
+			"/usr/share/cscc/include/c++"
 
 /*
  * The default system library link path.
@@ -421,7 +421,7 @@ static void ParseCommandLine(int argc, char *argv[])
 			CCAddPathStrings(&sys_include_dirs, &num_sys_include_dirs,
 							 INCLUDE_PATH,
 							 ILGetStandardLibraryPath("cscc/lib"),
-							 ILGetStandardLibraryPath("cscc/include"));
+							 ILGetStandardDataPath("cscc/include"));
 		}
 	}
 	if(!nostdinc_cpp_flag)
@@ -436,7 +436,7 @@ static void ParseCommandLine(int argc, char *argv[])
 		{
 			CCAddPathStrings(&sys_cpp_include_dirs, &num_sys_cpp_include_dirs,
 							 INCLUDE_CPP_PATH,
-							 ILGetStandardLibraryPath("cscc/include/c++"), 0);
+							 ILGetStandardDataPath("cscc/include/c++"), 0);
 		}
 	}
 

@@ -1,4 +1,10 @@
 
+2003-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cscc.c, include/il_system.h, support/Makefile.am,
+	support/path.c: move the cscc include directories from ${prefix}/lib
+	to ${prefix}/share, to be consistent with Debian guidelines.
+
 2003-07-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_enum.c: Fix a sign extension issue with masking.

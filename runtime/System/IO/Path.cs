@@ -267,7 +267,7 @@ namespace System.IO
 		{
 			String tmp=Environment.GetEnvironmentVariable("TMPDIR"); // *nix
 			if(tmp!=null)return tmp;
-			tmp=Environment.GetEnvironmentVariable("TEMP_DIR"); // Win32 (?)
+			tmp=Environment.GetEnvironmentVariable("TEMP"); // Win32
 			if(tmp!=null)return tmp;
 			return "/tmp"; 
 			/* TODO : might just think about returning P_tmpdir from stdio.h */

@@ -5,6 +5,10 @@
 	engine/pinvoke.c: implement native methods for "Platform.TaskMethods"
 	and "Platform.DirMethods".
 
+	* samples/.cvsignore, samples/Makefile.am, samples/getenv.cs:
+	check in the "getenv.cs" code, which demonstrates how to obtain
+	system environment variables from C# code.
+
 2001-01-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_lvalue.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

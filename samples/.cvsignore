@@ -4,3 +4,4 @@ Makefile.in
 evenodd.exe
 hello.exe
 fib.exe
+getenv.exe

@@ -475,6 +475,7 @@ public abstract class FileDialog : CommonDialog
 							}
 							else
 							{
+								path = Path.GetDirectoryName(path);
 								path = Path.Combine(path, link);
 							}
 						}
@@ -702,6 +703,49 @@ public abstract class FileDialog : CommonDialog
 				// Sort the entry list and return it.
 				Array.Sort(entries);
 				return entries;
+			}
+
+	// Determine if a path is a directory, and handle the symlink case.
+	private static bool IsDirectory(String path)
+			{
+				if(Directory.Exists(path))
+				{
+					return true;
+				}
+				else if(!File.Exists(path))
+				{
+					return false;
+				}
+			#if __CSCC__
+				if(!SymbolicLinks.IsSymbolicLink(path))
+				{
+					return false;
+				}
+				int count = 20;
+				String link;
+				do
+				{
+					try
+					{
+						link = SymbolicLinks.ReadLink(path);
+					}
+					catch(Exception)
+					{
+						link = null;
+					}
+					if(link == null)
+					{
+						return Directory.Exists(path);
+					}
+					else
+					{
+						path = Path.GetDirectoryName(path);
+						path = Path.Combine(path, link);
+					}
+				}
+				while(--count > 0);
+			#endif
+				return false;
 			}
 
 	// List box like control that manages a group of file icons.
@@ -1453,7 +1497,7 @@ public abstract class FileDialog : CommonDialog
 		public bool ChangeDirectory(String dir)
 				{
 					// Bail out if the directory does not exist.
-					if(!Directory.Exists(dir))
+					if(!IsDirectory(dir))
 					{
 						return false;
 					}
@@ -1707,7 +1751,7 @@ public abstract class FileDialog : CommonDialog
 					{
 						// Ordinary filename, relative to current directory.
 						filename = Path.Combine(currentDirectory, filename);
-						if(Directory.Exists(filename))
+						if(IsDirectory(filename))
 						{
 							// This is a directory.
 							ChangeDirectory(filename);

@@ -7,6 +7,9 @@
 	* System.Windows.Forms/ButtonBase.cs,
 	System.Windows.Forms/Themes/DefaultThemePainter.cs: draw image buttons.
 
+	* System.Windows.Forms/FileDialog.cs: properly handle the case
+	where a symbolic link is actually a directory.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

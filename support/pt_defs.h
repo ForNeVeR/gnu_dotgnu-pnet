@@ -47,7 +47,11 @@ extern	"C" {
  * of a pain as most of the obvious candidates are already in
  * use by pthreads or libgc.  Unix needs more signals!
  */
-#if !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 14)
+#if defined(__sun)
+#define	IL_SIG_SUSPEND		(__SIGRTMIN+0)
+#define	IL_SIG_RESUME		(__SIGRTMIN+1)
+#define	IL_SIG_ABORT		(__SIGRTMIN+2)
+#elif !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 14)
 #define	IL_SIG_SUSPEND		SIGALRM
 #define	IL_SIG_RESUME		SIGVTALRM
 #define	IL_SIG_ABORT		SIGFPE
@@ -61,11 +65,11 @@ extern	"C" {
  * Signals that are used inside pthreads itself.  This is a bit of
  * a hack, but there isn't any easy way to get this information.
  */
-#if !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 3)
-#define PTHREAD_SIG_RESTART	SIGUSR1
+#if defined(SIGCANCEL)
+#define PTHREAD_SIG_CANCEL	SIGCANCEL
+#elif !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 3)
 #define PTHREAD_SIG_CANCEL	SIGUSR2
 #else
-#define PTHREAD_SIG_RESTART	(__SIGRTMIN)
 #define PTHREAD_SIG_CANCEL	(__SIGRTMIN+1)
 #endif
 

@@ -197,6 +197,7 @@ case "$THREADS" in
      *-*-solaris*)
 	AC_DEFINE(GC_SOLARIS_THREADS, 1, [Define to use libgc solaris thread support])
 	AC_DEFINE(GC_SOLARIS_PTHREADS, 1, [Define to use libgc solaris pthread support])
+	THREADLIBS="-lpthread -lrt"
 	;;
      *-*-irix*)
 	AC_DEFINE(GC_IRIX_THREADS, 1, [Define to use libgc irix thread support])

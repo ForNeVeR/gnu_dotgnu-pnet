@@ -1,4 +1,9 @@
 
+2004-09-05  Robin KAY  <komadori@gekkou.co.uk>
+
+	* configure.in, support/pt_defs.h, support/thr_choose.h:
+	Enable threading for Solaris (patch #3340, Gopal).
+
 2004-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_info.c: fix a compile problem that causes breakages

@@ -27,6 +27,9 @@ using System;
 // A modifier class that is used to mark "const" types.
 public sealed class IsConst {}
 
+// A modifier class that is used to mark function pointer types.
+public sealed class IsFunctionPointer {}
+
 // An attribute class that is used to declare bit fields.
 [AttributeUsage(AttributeTargets.Struct, AllowMultiple=true)]
 public sealed class BitFieldAttribute : Attribute

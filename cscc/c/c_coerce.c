@@ -193,7 +193,7 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 				return C_COERCE_SIMPLE;
 			}
 		}
-		else if(CTypeIsPointer(toType) || CTypeIsMethod(toType))
+		else if(CTypeIsPointer(toType) || CTypeIsFunctionPtr(toType))
 		{
 			if(TypeIsInteger(ILType_ToElement(fromType)))
 			{
@@ -220,7 +220,7 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 			return C_COERCE_OK;
 		}
 	}
-	else if(CTypeIsPointer(fromType) || CTypeIsMethod(fromType))
+	else if(CTypeIsPointer(fromType) || CTypeIsFunctionPtr(fromType))
 	{
 		/* Coercing a pointer type */
 		if(IsConstPtr(fromType) && !IsConstPtr(toType))
@@ -236,7 +236,7 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 			/* Coercing a pointer type to itself */
 			return C_COERCE_OK | constFlags;
 		}
-		else if(CTypeIsPointer(toType) || CTypeIsMethod(toType))
+		else if(CTypeIsPointer(toType) || CTypeIsFunctionPtr(toType))
 		{
 			if(IsVoidPtr(fromType) || IsVoidPtr(toType))
 			{
@@ -254,6 +254,14 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 		{
 			/* Coercing a pointer to an integer type */
 			return C_COERCE_PTR_TO_INT | constFlags;
+		}
+	}
+	else if(CTypeIsFunction(fromType) && CTypeIsFunctionPtr(toType))
+	{
+		/* We are coecing a function reference to a pointer destination */
+		if(CTypeIsIdentical(fromType, ILTypeStripPrefixes(toType)))
+		{
+			return C_COERCE_OK;
 		}
 	}
 

@@ -1,4 +1,12 @@
 
+2002-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_coerce.c, cscc/c/c_declspec.c, cscc/c/c_library.c,
+	cscc/c/c_oper.tc, cscc/c/c_types.c, cscc/c/c_types.h,
+	csupport/Markers.cs, doc/c_language_abi.html: mark function pointer
+	types with the "IsFunctionPointer" modifier so that they can be
+	distinguished from function types.
+
 2002-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, cscc/csharp/cs_gather.c,

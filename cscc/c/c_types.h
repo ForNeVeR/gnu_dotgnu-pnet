@@ -93,6 +93,11 @@ ILType *CTypeAddConst(ILGenInfo *info, ILType *type);
 ILType *CTypeAddVolatile(ILGenInfo *info, ILType *type);
 
 /*
+ * Mark a C type as a function pointer type.
+ */
+ILType *CTypeAddFunctionPtr(ILGenInfo *info, ILType *type);
+
+/*
  * Determine if a type returned from "CTypeCreateStruct",
  * "CTypeCreateUnion", or "CTypeCreateEnum" has already
  * been defined by the compiler.
@@ -207,9 +212,14 @@ int CTypeIsOpenArray(ILType *type);
 int CTypeIsPointer(ILType *type);
 
 /*
- * Determine if a C type is a method type.
+ * Determine if a C type is a function pointer type.
  */
-int CTypeIsMethod(ILType *type);
+int CTypeIsFunctionPtr(ILType *type);
+
+/*
+ * Determine if a C type is a function type.
+ */
+int CTypeIsFunction(ILType *type);
 
 /*
  * Determine if a C type is not a C type at all, but is

@@ -6,7 +6,7 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2002/08/13 00:34:51 $<p>
+Last Modified: $Date: 2002/08/18 23:59:35 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -208,6 +208,9 @@ in the "<code>OpenSystem.C</code>" namespace:<p>
 <dl>
 <dt><code>IsConst</code></dt>
 	<dd>A modifier class for marking a type as "<code>const</code>".</dd>
+<dt><code>IsFunctionPointer</code></dt>
+	<dd>A modifier class for marking a type as a function pointer, rather
+	    than as a function signature.</dd>
 <dt><code>BitFieldAttribute</code></dt>
 	<dd>An attribute that describes the position and size of a bit
 		field within a larger integer field.</dd>
@@ -721,7 +724,19 @@ an appropriate memory model modifier set.  The compiler's bit order may not
 match the native platform's bit order, leading to problems with PInvoke'd
 functions.<p>
 
-<h3>4.9. Argument types</h3>
+<h3>4.9. Function pointer types</h3>
+
+CLI metadata uses the same representation for method signatures and
+pointers to methods.  C requires that signatures and pointers be
+distinct type categories.  We therefore mark function pointers with
+the "<code>OpenSystem.C.IsFunctionPointer</code>" modifier:
+
+<blockquote><pre>void (*func)(int);
+
+.field public static method void * (int32) modopt(IsFunctionPointer) func
+</pre></blockquote>
+
+<h3>4.10. Argument types</h3>
 
 When arguments are passed to a function, it is sometimes necessary
 to alter the type to conform with C conventions or to work around

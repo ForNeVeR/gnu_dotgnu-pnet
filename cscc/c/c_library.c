@@ -125,6 +125,10 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	classInfo = CreateClass(info, scope, "IsConst", objectClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
+	/* Create "OpenSystem.C.IsFunctionPointer" */
+	classInfo = CreateClass(info, scope, "IsFunctionPointer", objectClass);
+	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
+
 	/* Create "OpenSystem.C.BitFieldAttribute" */
 	classInfo = CreateClass(info, scope, "BitFieldAttribute", attributeClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Int32);

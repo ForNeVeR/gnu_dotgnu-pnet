@@ -406,6 +406,31 @@ ILType *CTypeAddVolatile(ILGenInfo *info, ILType *type)
 	}
 }
 
+ILType *CTypeAddFunctionPtr(ILGenInfo *info, ILType *type)
+{
+	ILClass *classInfo;
+	ILType *modifiers;
+	classInfo = ILType_ToClass(ILFindNonSystemType
+			(info, "IsFunctionPointer", "OpenSystem.C"));
+	if(ILTypeHasModifier(type, classInfo))
+	{
+		/* The type already has the specified modifier, so don't add again */
+		return type;
+	}
+	else
+	{
+		/* Add a modifier prefix to the type */
+		modifiers = ILTypeCreateModifier(info->context, 0,
+										 IL_TYPE_COMPLEX_CMOD_OPT,
+										 classInfo);
+		if(!modifiers)
+		{
+			ILGenOutOfMemory(info);
+		}
+		return ILTypeAddModifiers(info->context, modifiers, type);
+	}
+}
+
 int CTypeAlreadyDefined(ILType *type)
 {
 	if(ILType_IsValueType(type))
@@ -1029,8 +1054,22 @@ int CTypeIsPointer(ILType *type)
 	}
 }
 
-int CTypeIsMethod(ILType *type)
+int CTypeIsFunctionPtr(ILType *type)
 {
+	if(!CheckForModifier(type, "IsFunctionPointer", "OpenSystem.C"))
+	{
+		return 0;
+	}
+	type = ILTypeStripPrefixes(type);
+	return ILType_IsMethod(type);
+}
+
+int CTypeIsFunction(ILType *type)
+{
+	if(CheckForModifier(type, "IsFunctionPointer", "OpenSystem.C"))
+	{
+		return 0;
+	}
 	type = ILTypeStripPrefixes(type);
 	return ILType_IsMethod(type);
 }

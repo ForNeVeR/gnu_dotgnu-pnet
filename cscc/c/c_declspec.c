@@ -1207,11 +1207,12 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 		{
 			case IL_TYPE_COMPLEX_PTR:
 			{
-				/* If the pointed-to type is a function, then remove
-				   the pointer reference as it is unnecessary in CIL */
+				/* If the pointed-to type is a function, then remove the
+				   pointer reference and replace with "IsFunctionPointer" */
 				if(ILType_IsMethod(ILType_Ref(type)))
 				{
 					type = ReplaceArrayTypes(info, ILType_Ref(type));
+					type = CTypeAddFunctionPtr(info, type);
 				}
 				else
 				{

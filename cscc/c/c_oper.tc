@@ -1694,7 +1694,7 @@ ILNode_CSemAnalysis(ILNode_ToBool)
 		}
 	}
 	else if(CTypeIsPointer(CSemGetType(value)) ||
-	        CTypeIsMethod(CSemGetType(value)))
+	        CTypeIsFunctionPtr(CSemGetType(value)))
 	{
 		*parent = ILNode_IsNonNull_create(node->expr);
 		CGenCloneLine(*parent, node->expr);

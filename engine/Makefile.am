@@ -23,6 +23,7 @@ COMMON_ENGINE_SOURCES = call.c \
 						lib_thread.c \
 						lib_type.c \
 						lookup.c \
+						null_coder.c \
 						pinvoke.c \
 						process.c \
 						thread.c \

@@ -1,7 +1,7 @@
 Name:		pnetc
+Summary:	C library for DotGNU Portable .NET
 Version:	@VERSION@
 Release:	custom
-Summary:	C library for Portable.NET's CLR environment
 
 Group:		System Environment/Base
 License:	LGPL
@@ -20,9 +20,9 @@ BuildRequires:	pnetlib >= 0:@VERSION@
 BuildArch:	noarch
 
 %description
-An ANSI-compatible C library that can be compiled with 
-Portable.NET's "cscc" compiler, and run under Portable.NET's
-CLR environment.
+This is DotGNU's implementation of the C Standard Library.
+It is designed to be used with programs compiled for the
+CLR and locally executed in the pnet-interpreter.
 
 %prep
 %setup -q -n pnetC-%{version}

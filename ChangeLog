@@ -1,4 +1,13 @@
 
+2004-09-07  Russell Stuart <russell-savannah@stuart.id.au>
+
+	* build-debian-packages.conf,
+	  build-debian-packages.conf,
+	  debian,
+	  pnetc.spec.in:
+	  Added debian packages
+	  
+
 2004-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.8" release.

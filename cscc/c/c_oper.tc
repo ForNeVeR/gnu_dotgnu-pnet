@@ -585,6 +585,25 @@ ILNode_CSemAnalysis(ILNode_NoPedantic)
 }
 
 /*
+ * Generate l-value addresses for "as is" operators.
+ */
+ILNode_CGenAddress(ILNode_AsIs),
+ILNode_CGenAddress(ILNode_Overflow),
+ILNode_CGenAddress(ILNode_NoOverflow),
+ILNode_CGenAddress(ILNode_Pedantic),
+ILNode_CGenAddress(ILNode_NoPedantic)
+{
+	if(yyisa(node->expr, ILNode_LValue))
+	{
+		return ILNode_CGenAddress((ILNode_LValue *)(node->expr), info);
+	}
+	else
+	{
+		return CAddressDefault;
+	}
+}
+
+/*
  * Perform semantic analysis for the simple cast operator.
  */
 ILNode_CSemAnalysis(ILNode_CastSimple)
@@ -724,7 +743,7 @@ ILNode_CSemAnalysis(ILNode_ToBool)
 	/* Determine how to test the boolean value */
 	if(CTypeIsPrimitive(CSemGetType(value)))
 	{
-		switch(ILType_ToElement(ILTypeStripPrefixes(CSemGetType(value))))
+		switch(CTypeToElementType(CSemGetType(value)))
 		{
 			case IL_META_ELEMTYPE_BOOLEAN:
 			case IL_META_ELEMTYPE_I1:
@@ -866,19 +885,7 @@ ILNode_GetType(ILNode_SizeOfExpr)
 ILNode_GenValue(ILNode_SizeOfType),
 ILNode_GenValue(ILNode_SizeOfExpr)
 {
-	ILUInt32 size;
-	size = CTypeSizeAndAlign(node->type, (ILUInt32 *)0);
-	if(size != CTYPE_DYNAMIC)
-	{
-		/* Expand the size to a constant */
-		ILGenUInt32(info, size);
-	}
-	else
-	{
-		/* Compute the value dynamically at runtime */
-		ILGenTypeToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF, node->type);
-	}
-	ILGenAdjust(info, 1);
+	CGenSizeOf(info, node->type);
 	return ILMachineType_UInt32;
 }
 JavaGenValue(ILNode_SizeOfType),

@@ -18,22 +18,50 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/*
+ * Perform semantic analysis for a simple identifier.
+ */
 ILNode_CSemAnalysis(ILNode_Identifier)
 {
-	/* TODO */
+	/* Nothing to do here: the grammar should have replaced this
+	   node with something more appropriate by now */
 	return CSemValueError;
 }
 
+/*
+ * Perform semantic analysis for a member access node.
+ */
 ILNode_CSemAnalysis(ILNode_MemberAccess)
 {
 	/* TODO */
 	return CSemValueError;
 }
 
+/*
+ * Generate the address of a member access node.
+ */
+ILNode_CGenAddress(ILNode_MemberAccess)
+{
+	/* TODO */
+	return CAddressDefault;
+}
+
+/*
+ * Perform semantic analysis for a field dereference node.
+ */
 ILNode_CSemAnalysis(ILNode_DerefField)
 {
 	/* TODO */
 	return CSemValueError;
+}
+
+/*
+ * Generate the address of a field dereference node.
+ */
+ILNode_CGenAddress(ILNode_DerefField)
+{
+	/* TODO */
+	return CAddressDefault;
 }
 
 /*
@@ -44,6 +72,16 @@ ILNode_CSemAnalysis(ILNode_ArgumentVar)
 {
 	/* These node types aren't used by the grammar */
 	return CSemValueError;
+}
+
+/*
+ * Generate the address of a local variable reference.
+ */
+ILNode_CGenAddress(ILNode_LocalVar),
+ILNode_CGenAddress(ILNode_ArgumentVar)
+{
+	/* These node types aren't used by the grammar */
+	return CAddressDefault;
 }
 
 /*
@@ -88,6 +126,19 @@ ILNode_GenValue(ILNode_CLocalVar)
 }
 
 /*
+ * Generate the address of a local variable reference.
+ */
+ILNode_CGenAddress(ILNode_CLocalVar)
+{
+	CAddress addr;
+	ILGenLoadLocalAddr(info, node->index);
+	ILGenAdjust(info, 1);
+	addr.ptrOnStack = 1;
+	addr.offset = 0;
+	return addr;
+}
+
+/*
  * Perform semantic analysis for a C argument variable reference.
  */
 ILNode_CSemAnalysis(ILNode_CArgumentVar)
@@ -95,6 +146,19 @@ ILNode_CSemAnalysis(ILNode_CArgumentVar)
 	CSemValue value;
 	CSemSetLValue(value, node->type);
 	return value;
+}
+
+/*
+ * Generate the address of an argument reference.
+ */
+ILNode_CGenAddress(ILNode_CArgumentVar)
+{
+	CAddress addr;
+	ILGenLoadArgAddr(info, node->index);
+	ILGenAdjust(info, 1);
+	addr.ptrOnStack = 1;
+	addr.offset = 0;
+	return addr;
 }
 
 /*
@@ -176,6 +240,15 @@ ILNode_GenRef(ILNode_CGlobalVar)
 }
 
 /*
+ * Generate the address of a global variable reference.
+ */
+ILNode_CGenAddress(ILNode_CGlobalVar)
+{
+	/* TODO */
+	return CAddressDefault;
+}
+
+/*
  * Stub out unnecessary Java code generation functions.
  */
 JavaGenValue(ILNode_CGlobalVar),
@@ -190,10 +263,461 @@ JavaStore(ILNode_CGlobalVar)
 	/* Never called: nothing to do here */
 }
 
-ILNode_CSemAnalysis(ILNode_ArrayAccess)
+/*
+ * Perform semantic analysis for an array access node.
+ */
+ILNode_CSemAnalysis(ILNode_CArrayAccess)
 {
-	/* TODO */
-	return CSemValueError;
+	CSemValue value1;
+	CSemValue value2;
+	CSemValue tempValue;
+	ILNode *tempNode;
+	ILType *rawElemType;
+	ILType *elemType;
+
+	/* Perform semantic analysis on the two values.  We deliberately
+	   turn off "stmtLevel" processing, because we don't know if we
+	   may need to swap the values below.  This only affects "setjmp"
+	   and "alloca", which probably won't be present here anyway */
+	value1 = ILNode_CSemAnalysis(node->array, info, &(node->array), 0);
+	value2 = ILNode_CSemAnalysis(node->indices, info, &(node->indices), 0);
+
+	/* Swap the values if the second is the pointer.  We need to do
+	   this to support code of the form "3[p]", which is legal ANSI C,
+	   but not necessarily a very smart coding convention */
+	if(CSemIsRValue(value1) && CSemIsRValue(value2) &&
+	   !CTypeIsPointer(CSemGetType(value1)) &&
+	   CTypeIsPointer(CSemGetType(value2)))
+	{
+		tempValue = value1;
+		value1 = value2;
+		value2 = tempValue;
+		tempNode = node->array;
+		node->array = node->indices;
+		node->indices = tempNode;
+	}
+
+	/* Validate the arguments to the array access operator */
+	if(!CSemIsRValue(value1) || !CTypeIsPointer(CSemGetType(value1)))
+	{
+		if(!CSemIsError(value1))
+		{
+			CCErrorOnLine(yygetfilename(node->array),
+						  yygetlinenum(node->array),
+						  _("subscripted value is neither array nor pointer"));
+		}
+		elemType = 0;
+		rawElemType = 0;
+	}
+	else
+	{
+		rawElemType = CTypeGetPtrRef(CSemGetType(value1));
+		elemType = CTypeDecay(info, rawElemType);
+		if(ILTypeStripPrefixes(elemType) == ILType_Void)
+		{
+			CCErrorOnLine(yygetfilename(node->array),
+						  yygetlinenum(node->array),
+						  _("dereferencing `void *' pointer"));
+		}
+	}
+	if(!CSemIsRValue(value2) || !CTypeIsInteger(CSemGetType(value2)))
+	{
+		if(!CSemIsError(value2))
+		{
+			CCErrorOnLine(yygetfilename(node->indices),
+						  yygetlinenum(node->indices),
+						  _("array subscript is not an integer"));
+		}
+	}
+
+	/* Set the type values in the node, for use by the code generators */
+	node->arrayType = CSemGetType(value1);
+	node->elemType = elemType;
+
+	/* Determine the final semantic value to return */
+	if(elemType)
+	{
+		if(elemType == rawElemType)
+		{
+			/* Non-array element type, which is an l-value */
+			CSemSetLValue(value1, elemType);
+		}
+		else
+		{
+			/* The array element decays into a pointer, which is an r-value */
+			CSemSetRValue(value1, elemType);
+		}
+		return value1;
+	}
+	else
+	{
+		return CSemValueError;
+	}
+}
+
+/*
+ * Generate value code for an array access node.
+ */
+ILNode_GenValue(ILNode_CArrayAccess)
+{
+	ILMachineType type = ILTypeToMachineType(node->elemType);
+
+	/* Push the address of the array element onto the stack */
+	CGenAddress(info, (ILNode *)node);
+
+	/* Load the value from the pointer if not a sub-array */
+	if(node->elemType == CTypeGetPtrRef(node->arrayType))
+	{
+		ILGenLoadManaged(info, type, ILTypeStripPrefixes(node->elemType));
+	}
+
+	/* Return the machine type for the element */
+	return type;
+}
+
+/*
+ * Prepare to store to an array access node.
+ */
+ILNode_Prepare(ILNode_CArrayAccess)
+{
+	/* Push the address of the array element onto the stack */
+	CGenAddress(info, (ILNode *)node);
+
+	/* Return the machine type for the element */
+	return ILTypeToMachineType(node->elemType);
+}
+
+/*
+ * Get and prepare to store to an array access node.
+ */
+ILNode_GetAndPrepare(ILNode_CArrayAccess)
+{
+	ILMachineType type = ILTypeToMachineType(node->elemType);
+	unsigned tempVar1;
+	unsigned tempVar2;
+
+	/* Push the address of the array element onto the stack */
+	CGenAddress(info, (ILNode *)node);
+
+	/* Duplicate the pointer on the stack for the store */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+
+	/* Load the current value from the pointer */
+	ILGenLoadManaged(info, type, ILTypeStripPrefixes(node->elemType));
+
+	/* Rearrange the contents of the stack if "leave" is set */
+	if(leave)
+	{
+		tempVar1 = ILGenTempTypedVar(info, ILType_Int);
+		tempVar2 = ILGenTempTypedVar
+			(info, ILTypeStripPrefixes(node->elemType));
+		ILGenStoreLocal(info, tempVar2);
+		ILGenStoreLocal(info, tempVar1);
+		ILGenLoadLocal(info, tempVar2);
+		ILGenLoadLocal(info, tempVar1);
+		ILGenLoadLocal(info, tempVar2);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar1);
+		ILGenReleaseTempVar(info, tempVar2);
+	}
+
+	/* Return the machine type for the element */
+	return type;
+}
+
+/*
+ * Store to an array access node.
+ */
+ILNode_Store(ILNode_CArrayAccess)
+{
+	ILMachineType type = ILTypeToMachineType(node->elemType);
+	unsigned tempVar;
+	if(leave)
+	{
+		tempVar = ILGenTempTypedVar
+			(info, ILTypeStripPrefixes(node->elemType));
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempVar);
+		ILGenStoreManaged(info, type, ILTypeStripPrefixes(node->elemType));
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, -2);
+		ILGenReleaseTempVar(info, tempVar);
+	}
+	else
+	{
+		ILGenStoreManaged(info, type, ILTypeStripPrefixes(node->elemType));
+		ILGenAdjust(info, -2);
+	}
+}
+
+/*
+ * Generate reference code for an array access node.
+ */
+ILNode_GenRef(ILNode_CArrayAccess)
+{
+	/* Generate the address of this node, and force its
+	   conversion into a pointer value on the stack */
+	CGenAddress(info, (ILNode *)node);
+}
+
+/*
+ * Generate the address of an array access node.
+ */
+ILNode_CGenAddress(ILNode_CArrayAccess)
+{
+	CAddress addr;
+	ILEvalValue value;
+	ILUInt32 size;
+	ILInt64 temp;
+
+	/* Get the address of the array start */
+	if(ILNode_EvalConst(node->array, info, &value) &&
+	   value.valueType == ILMachineType_UnmanagedPtr)
+	{
+		addr.ptrOnStack = 0;
+		addr.offset = value.un.i4Value;
+	}
+	else
+	{
+		ILNode_GenValue(node->array, info);
+		addr.ptrOnStack = 1;
+		addr.offset = 0;
+	}
+
+	/* Adjust the pointer by the array index */
+	size = CTypeSizeAndAlign(node->elemType, 0);
+	if(size != CTYPE_DYNAMIC && ILNode_EvalConst(node->indices, info, &value))
+	{
+		/* Adjust the address offset by a constant index */
+		temp = (ILInt64)size;
+		switch(value.valueType)
+		{
+			case ILMachineType_Int8:
+			case ILMachineType_UInt8:
+			case ILMachineType_Int16:
+			case ILMachineType_UInt16:
+			case ILMachineType_Char:
+			case ILMachineType_Int32:
+			{
+				temp *= (ILInt64)(value.un.i4Value);
+			}
+			break;
+
+			case ILMachineType_UInt32:
+			{
+				temp *= (ILInt64)(ILUInt32)(value.un.i4Value);
+			}
+			break;
+
+			case ILMachineType_Int64:
+			{
+				if(value.un.i8Value >= (ILInt64)IL_MIN_INT32 &&
+				   value.un.i8Value <= (ILInt64)IL_MAX_INT32)
+				{
+					temp *= value.un.i8Value;
+				}
+				else
+				{
+					goto force;
+				}
+			}
+			break;
+
+			case ILMachineType_UInt64:
+			{
+				if(value.un.i8Value >= 0 &&
+				   value.un.i8Value <= (ILInt64)IL_MAX_INT32)
+				{
+					temp *= value.un.i8Value;
+				}
+				else
+				{
+					goto force;
+				}
+			}
+			break;
+
+			default: goto force;
+		}
+		temp += (ILInt64)(addr.offset);
+		if(temp < (ILInt64)IL_MIN_INT32 || temp > (ILInt64)IL_MAX_INT32)
+		{
+			goto force;
+		}
+		addr.offset = (ILInt32)temp;
+	}
+	else
+	{
+	force:
+		/* Force the pointer onto the stack */
+		if(!(addr.ptrOnStack) && addr.offset != 0)
+		{
+			ILGenUIntNative(info, addr.offset);
+			ILGenAdjust(info, 1);
+			addr.ptrOnStack = 1;
+			addr.offset = 0;
+		}
+
+		/* Push the array index value onto the stack */
+		ILGenCast(info, ILNode_GenValue(node->indices, info),
+				  ILMachineType_NativeInt);
+		ILGenAdjust(info, 1);
+
+		/* Multiply the array index by the element size */
+		if(size != CTYPE_DYNAMIC)
+		{
+			switch(size)
+			{
+				case 1:		break;
+
+				case 2:
+				{
+					ILGenSimple(info, IL_OP_LDC_I4_1);
+					ILGenSimple(info, IL_OP_SHL);
+					ILGenExtend(info, 1);
+				}
+				break;
+
+				case 4:
+				{
+					ILGenSimple(info, IL_OP_LDC_I4_2);
+					ILGenSimple(info, IL_OP_SHL);
+					ILGenExtend(info, 1);
+				}
+				break;
+
+				case 8:
+				{
+					ILGenSimple(info, IL_OP_LDC_I4_3);
+					ILGenSimple(info, IL_OP_SHL);
+					ILGenExtend(info, 1);
+				}
+				break;
+
+				default:
+				{
+					ILGenIntNative(info, (ILInt32)size);
+					ILGenSimple(info, IL_OP_MUL);
+					ILGenExtend(info, 1);
+				}
+				break;
+			}
+		}
+		else
+		{
+			CGenSizeOf(info, node->elemType);
+			ILGenSimple(info, IL_OP_CONV_U);
+			ILGenSimple(info, IL_OP_MUL);
+			ILGenAdjust(info, -1);
+		}
+
+		/* Add the computed offset to the pointer */
+		if(addr.ptrOnStack)
+		{
+			ILGenSimple(info, IL_OP_ADD);
+			ILGenAdjust(info, -1);
+		}
+		else
+		{
+			/* The original pointer was NULL, so there is no need to add */
+			addr.ptrOnStack = 1;
+		}
+	}
+
+	/* Return the final address to the caller */
+	return addr;
+}
+
+/*
+ * Evaluate the constant value of an array access node.
+ */
+ILNode_EvalConst(ILNode_CArrayAccess)
+{
+	ILEvalValue arrayValue;
+	ILEvalValue indexValue;
+	ILUInt32 size;
+	ILInt64 ptr;
+
+	/* Evaluate the two arguments */
+	if(!ILNode_EvalConst(node->array, info, &arrayValue) ||
+	   arrayValue.valueType != ILMachineType_UnmanagedPtr ||
+	   !ILNode_EvalConst(node->indices, info, &indexValue))
+	{
+		return 0;
+	}
+
+	/* Get the size of the array element type */
+	size = CTypeSizeAndAlign(node->elemType, 0);
+	if(size == CTYPE_DYNAMIC)
+	{
+		return 0;
+	}
+
+	/* Compute the new constant pointer value */
+	ptr = (ILInt64)(arrayValue.un.i4Value);
+	switch(indexValue.valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		{
+			ptr += ((ILInt64)(indexValue.un.i4Value)) * ((ILInt64)size);
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			ptr += ((ILInt64)(ILUInt32)(indexValue.un.i4Value))
+						* ((ILInt64)size);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			if(indexValue.un.i8Value >= (ILInt64)IL_MIN_INT32 &&
+			   indexValue.un.i8Value <= (ILInt64)IL_MAX_INT32)
+			{
+				ptr += indexValue.un.i8Value * ((ILInt64)size);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			if(indexValue.un.i8Value >= 0 &&
+			   indexValue.un.i8Value <= (ILInt64)IL_MAX_INT32)
+			{
+				ptr += indexValue.un.i8Value * ((ILInt64)size);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		break;
+
+		default: return 0;
+	}
+
+	/* Bail out if the constant pointer is outside the 32-bit range */
+	if(ptr < (ILInt64)IL_MIN_INT32 || ptr > (ILInt64)IL_MAX_INT32)
+	{
+		return 0;
+	}
+
+	/* Create the new constant pointer value and return it */
+	arrayValue.valueType = ILMachineType_UnmanagedPtr;
+	arrayValue.un.i4Value = (ILInt32)ptr;
+	return 1;
 }
 
 ILNode_CSemAnalysis(ILNode_ArrayInit)

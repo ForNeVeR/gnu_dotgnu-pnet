@@ -14,6 +14,12 @@
 	* cscc/c/c_declspec.c, cscc/c/c_grammar.y, cscc/c/c_library.c,
 	cscc/c/c_types.c, image/meta_types.c: fix bugs in type declarators.
 
+	* cscc/c/c_defs.tc, cscc/c/c_internal.c, cscc/c/c_internal.h,
+	cscc/c/c_lvalue.tc, cscc/c/c_oper.tc, cscc/c/c_stubs.tc,
+	cscc/c/c_types.c, cscc/c/c_types.h: implement node routines for
+	array operators; add a "GenAddress" node routine for doing
+	efficient computations of effective addresses at runtime.
+
 2002-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_invoke.tc,

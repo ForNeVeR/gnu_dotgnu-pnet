@@ -162,9 +162,14 @@ int CTypeIsConst(ILType *type);
 int CTypeIsVolatile(ILType *type);
 
 /*
- * Determine if a C type is primitive.
+ * Determine if a C type is primitive (this includes enumerated types).
  */
 int CTypeIsPrimitive(ILType *type);
+
+/*
+ * Determine if a C type is primitive and integer.
+ */
+int CTypeIsInteger(ILType *type);
 
 /*
  * Determine if a C type is a structure.
@@ -212,6 +217,11 @@ int CTypeIsMethod(ILType *type);
  * such as C#.
  */
 int CTypeIsForeign(ILType *type);
+
+/*
+ * Convert a C type into an element type.
+ */
+int CTypeToElementType(ILType *type);
 
 /*
  * Get the number of elements within an array type.

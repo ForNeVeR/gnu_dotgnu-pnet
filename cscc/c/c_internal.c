@@ -29,7 +29,7 @@ CSemValue CSemValueDefault = {C_SEMKIND_VOID, ILType_Void, 0};
 CSemValue CSemValueBool = {C_SEMKIND_RVALUE | C_SEMKIND_BOOLEAN,
 						   ILType_Boolean, 0};
 CSemValue CSemValueError = {C_SEMKIND_ERROR, ILType_Void, 0};
-
+CAddress CAddressDefault = {0, 0};
 
 void *CSemDupExtra(const void *buf, unsigned int len)
 {
@@ -111,6 +111,66 @@ void CGenEndCode(ILGenInfo *info)
 	{
 		CGenCrt0(info, stream);
 	}
+}
+
+void CGenAddress(ILGenInfo *info, ILNode *node)
+{
+	CAddress addr;
+	if(yyisa(node, ILNode_LValue))
+	{
+		addr = ILNode_CGenAddress((ILNode_LValue *)node, info);
+		if(addr.ptrOnStack)
+		{
+			/* Add the offset to the pointer */
+			if(addr.offset)
+			{
+				ILGenIntNative(info, addr.offset);
+				ILGenSimple(info, IL_OP_ADD);
+				ILGenExtend(info, 1);
+			}
+		}
+		else
+		{
+			/* Push the literal offset onto the stack */
+			ILGenIntNative(info, addr.offset);
+			ILGenAdjust(info, 1);
+		}
+	}
+}
+
+void CGenSizeOf(ILGenInfo *info, ILType *type)
+{
+	ILUInt32 size = CTypeSizeAndAlign(type, 0);
+	if(size != CTYPE_DYNAMIC)
+	{
+		ILGenUInt32(info, size);
+	}
+	else
+	{
+		type = ILTypeStripPrefixes(type);
+		if(type == ILType_Float)
+		{
+			/* We need to use a special value type to measure
+			   native floats, because the CLS doesn't have an
+			   appropriate type that we can measure directly */
+			type = ILFindNonSystemType(info, "NativeFloat", "OpenSystem.C");
+			ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+							ILTypeToClass(info, type));
+		}
+		else if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
+		{
+			/* Calculate the size of the underlying value type */
+			ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						    ILTypeToClass(info, type));
+		}
+		else
+		{
+			/* Assume that everything else is pointer-sized */
+			ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						    ILTypeToClass(info, ILType_Int));
+		}
+	}
+	ILGenAdjust(info, 1);
 }
 
 #ifdef	__cplusplus

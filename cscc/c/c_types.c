@@ -852,7 +852,45 @@ int CTypeIsVolatile(ILType *type)
 int CTypeIsPrimitive(ILType *type)
 {
 	type = ILTypeStripPrefixes(type);
-	return ILType_IsPrimitive(type);
+	if(ILType_IsPrimitive(type) || ILTypeIsEnum(type))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int CTypeIsInteger(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	if(ILType_IsPrimitive(type))
+	{
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:	return 1;
+		}
+		return 0;
+	}
+	else if(ILTypeIsEnum(type))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 int CTypeIsStruct(ILType *type)
@@ -1060,6 +1098,19 @@ int CTypeIsForeign(ILType *type)
 		}
 	}
 	return 1;
+}
+
+int CTypeToElementType(ILType *type)
+{
+	type = ILTypeGetEnumType(ILTypeStripPrefixes(type));
+	if(ILType_IsPrimitive(type))
+	{
+		return ILType_ToElement(type);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 ILUInt32 CTypeGetNumElems(ILType *type)

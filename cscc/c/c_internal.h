@@ -99,6 +99,12 @@ CSemValue CCoerceNode(ILGenInfo *info, ILNode *node, ILNode **parent,
 CSemValue CCastNode(ILGenInfo *info, ILNode *node, ILNode **parent,
 			        CSemValue fromValue, ILType *toType);
 
+/*
+ * Generate code for computing the size of a type and pushing it
+ * onto the runtime stack.
+ */
+void CGenSizeOf(ILGenInfo *info, ILType *type);
+
 #ifdef	__cplusplus
 };
 #endif

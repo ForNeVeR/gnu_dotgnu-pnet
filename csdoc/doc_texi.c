@@ -443,19 +443,19 @@ static void PrintDocList(FILE *stream, ILDocText *contents,
 				fputs("@item\n", stream);
 				if(term)
 				{
-					lastWasNL = PrintDocContents(stream, term, 1);
+					lastWasNL = PrintDocContents(stream, term->children, 1);
 				}
 				else
 				{
-					lastWasNL = PrintDocContents(stream, description, 1);
+					lastWasNL = PrintDocContents(stream, description->children, 1);
 				}
 			}
 			else
 			{
 				fputs("@item ", stream);
-				PrintDocContents(stream, description, 0);
+				lastWasNL = PrintDocContents(stream, term->children, 0);
 				fputs(" @tab ", stream);
-				lastWasNL = PrintDocContents(stream, term, 0);
+				PrintDocContents(stream, description->children, 0);
 			}
 		}
 		child = child->next;

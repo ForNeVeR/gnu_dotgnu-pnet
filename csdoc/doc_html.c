@@ -1137,28 +1137,28 @@ static void PrintDocList(FILE *stream, ILDocType *fromType,
 				fputs("<LI>", stream);
 				if(term)
 				{
-					PrintDocContents(stream, fromType, term, 0);
+					PrintDocContents(stream, fromType, term->children, 0);
 				}
 				else
 				{
-					PrintDocContents(stream, fromType, description, 0);
+					PrintDocContents(stream, fromType, description->children, 0);
 				}
 				fputs("</LI>\n", stream);
 			}
 			else if(!strcmp(child->text, "listheader"))
 			{
 				fprintf(stream, "<TR BGCOLOR=\"%s\"><TH>", headerColor);
-				PrintDocContents(stream, fromType, description, 0);
+				PrintDocContents(stream, fromType, term->children, 0);
 				fputs("</TH><TH>", stream);
-				PrintDocContents(stream, fromType, term, 0);
+				PrintDocContents(stream, fromType, description->children, 0);
 				fputs("</TH></TR>\n", stream);
 			}
 			else
 			{
 				fputs("<TR><TD>", stream);
-				PrintDocContents(stream, fromType, description, 0);
+				PrintDocContents(stream, fromType, term->children, 0);
 				fputs("</TD><TD>", stream);
-				PrintDocContents(stream, fromType, term, 0);
+				PrintDocContents(stream, fromType, description->children, 0);
 				fputs("</TD></TR>\n", stream);
 			}
 		}

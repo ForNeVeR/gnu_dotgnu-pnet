@@ -349,11 +349,11 @@ public class ToolBar : Control
 			DockStyle dock = Dock;
 			if (limitWidth == -1)
 			{
-				limitWidth = Parent.Width;
+				limitWidth = Parent == null ? 0 : Parent.Width;
 			}
 			if (limitHeight == -1)
 			{
-				limitHeight = Parent.Height;
+				limitHeight = Parent == null ? 0 : Parent.Height;
 			}
 			if (dock == DockStyle.Left || dock == DockStyle.Right)
 			{

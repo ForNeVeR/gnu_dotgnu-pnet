@@ -30,6 +30,9 @@
 	Generics/List.cs, Generics/ReadOnlyIterator.cs: read-only iterators;
 	rename List<T> to LinkedList<T>; finish implementing LinkedList<T>.
 
+	* Generics/ArrayStack.cs, Generics/IStack.cs, Generics/Stack.cs:
+	rename Stack<T> to ArrayStack<T> and add the IStack<T> interface.
+
 2003-02-21  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/Version.cs: == and != operator overloading for 

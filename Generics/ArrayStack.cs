@@ -1,5 +1,5 @@
 /*
- * Stack.cs - Generic stack class.
+ * ArrayStack.cs - Generic stack class, implemented as an array.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
+public class ArrayStack<T> : IStack<T>, ICloneable
 {
 	// Internal state.
 	private T[] items;
@@ -41,13 +41,13 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	private const int GrowSize = 10;
 
 	// Constructors.
-	public Stack()
+	public ArrayStack()
 			{
 				items = new T [DefaultCapacity];
 				size = 0;
 				generation = 0;
 			}
-	public Stack(int initialCapacity)
+	public ArrayStack(int initialCapacity)
 			{
 				if(initialCapacity < 0)
 				{
@@ -58,7 +58,7 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 				size = 0;
 				generation = 0;
 			}
-	public Stack(ICollection<T> col)
+	public ArrayStack(ICollection<T> col)
 			{
 				if(col == null)
 				{
@@ -116,7 +116,7 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	// Implement the ICloneable interface.
 	public virtual Object Clone()
 			{
-				Stack<T> stack = (Stack<T>)MemberwiseClone();
+				ArrayStack<T> stack = (ArrayStack<T>)MemberwiseClone();
 				stack.items = (T[])items.Clone();
 				return stack;
 			}
@@ -125,6 +125,12 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	public virtual IEnumerator<T> GetEnumerator()
 			{
 				return new StackEnumerator<T>(this);
+			}
+
+	// Implement the IIterable<T> interface.
+	public virtual IIterator<T> GetIterator()
+			{
+				return new StackIterator<T>(this);
 			}
 
 	// Determine if this stack is read-only.
@@ -177,7 +183,28 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 				return false;
 			}
 
-	// Pop an item.
+	// Implement the IStack<T> interface.
+	public virtual void Push(T value)
+			{
+				if(size < items.Length)
+				{
+					// The stack is big enough to hold the new item.
+					items[size++] = value;
+				}
+				else
+				{
+					// We need to increase the size of the stack.
+					int newCapacity = items.Length + GrowSize;
+					T[] newItems = new T [newCapacity];
+					if(size > 0)
+					{
+						Array.Copy(items, newItems, size);
+					}
+					items = newItems;
+					items[size++] = value;
+				}
+				++generation;
+			}
 	public virtual T Pop()
 			{
 				if(size > 0)
@@ -191,30 +218,6 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 						(S._("Invalid_EmptyStack"));
 				}
 			}
-
-	// Push an item.
-	public virtual void Push(T obj)
-			{
-				if(size < items.Length)
-				{
-					// The stack is big enough to hold the new item.
-					items[size++] = obj;
-				}
-				else
-				{
-					// We need to increase the size of the stack.
-					int newCapacity = items.Length + GrowSize;
-					T[] newItems = new T [newCapacity];
-					if(size > 0)
-					{
-						Array.Copy(items, newItems, size);
-					}
-					items = newItems;
-				}
-				++generation;
-			}
-
-	// Peek at the top-most item without popping it.
 	public virtual T Peek()
 			{
 				if(size > 0)
@@ -227,8 +230,6 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 						(S._("Invalid_EmptyStack"));
 				}
 			}
-
-	// Convert the contents of this stack into an array.
 	public virtual T[] ToArray()
 			{
 				T[] array = new T [size];
@@ -241,7 +242,7 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 			}
 
 	// Convert this stack into a synchronized stack.
-	public static Stack<T> Synchronized(Stack<T> stack)
+	public static ArrayStack<T> Synchronized(ArrayStack<T> stack)
 			{
 				if(stack == null)
 				{
@@ -258,13 +259,13 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 			}
 
 	// Private class that implements synchronized stacks.
-	private class SynchronizedStack<T> : Stack<T>
+	private class SynchronizedStack<T> : ArrayStack<T>
 	{
 		// Internal state.
-		private Stack<T> stack;
+		private ArrayStack<T> stack;
 
 		// Constructor.
-		public SynchronizedStack(Stack<T> stack)
+		public SynchronizedStack(ArrayStack<T> stack)
 				{
 					this.stack = stack;
 				}
@@ -305,16 +306,27 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 		// Implement the ICloneable interface.
 		public override Object Clone()
 				{
-					return new SynchronizedStack<T>((Stack<T>)(stack.Clone()));
+					return new SynchronizedStack<T>
+						((ArrayStack<T>)(stack.Clone()));
 				}
 
-		// Implement the IEnumerable interface.
+		// Implement the IEnumerable<T> interface.
 		public override IEnumerator<T> GetEnumerator()
 				{
 					lock(SyncRoot)
 					{
 						return new SynchronizedEnumerator<T>
 							(SyncRoot, stack.GetEnumerator());
+					}
+				}
+
+		// Implement the IIterable<T> interface.
+		public override IIterator<T> GetIterator()
+				{
+					lock(SyncRoot)
+					{
+						return new SynchronizedIterator<T>
+							(SyncRoot, stack.GetIterator());
 					}
 				}
 
@@ -378,19 +390,19 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 	private class StackEnumerator<T> : IEnumerator<T>
 	{
 		// Internal state.
-		private Stack<T> stack;
-		private int      generation;
-		private int      position;
+		private ArrayStack<T> stack;
+		private int generation;
+		private int position;
 
 		// Constructor.
-		public StackEnumerator(Stack<T> stack)
+		public StackEnumerator(ArrayStack<T> stack)
 				{
 					this.stack = stack;
 					generation = stack.generation;
 					position   = -1;
 				}
 
-		// Implement the IEnumerator interface.
+		// Implement the IEnumerator<T> interface.
 		public bool MoveNext()
 				{
 					if(generation != stack.generation)
@@ -435,6 +447,92 @@ public class Stack<T> : ICollection<T>, IEnumerable<T>, ICloneable
 
 	}; // class StackEnumerator<T>
 
-}; // class Stack<T>
+	// Private class for implementing stack iteration.
+	private class StackIterator<T> : IIterator<T>
+	{
+		// Internal state.
+		private ArrayStack<T> stack;
+		private int position;
+		private bool reset;
+
+		// Constructor.
+		public StackIterator(ArrayStack<T> stack)
+				{
+					this.stack = stack;
+					position = -1;
+					reset = true;
+				}
+
+		// Implement the IEnumerator<T> interface.
+		public bool MoveNext()
+				{
+					if(reset)
+					{
+						position = 0;
+						reset = false;
+					}
+					else
+					{
+						++position;
+					}
+					return (position < stack.size);
+				}
+		public void Reset()
+				{
+					position = -1;
+					reset = true;
+				}
+		T IEnumerator<T>.Current
+				{
+					get
+					{
+						if(position < 0 || position >= stack.size)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadEnumeratorPosition"));
+						}
+						return stack.items[stack.size - position - 1];
+					}
+				}
+
+		// Implement the IIterator<T> interface.
+		public bool MovePrev()
+				{
+					if(reset)
+					{
+						position = stack.size - 1;
+						reset = false;
+					}
+					else
+					{
+						--position;
+					}
+					return (position >= 0);
+				}
+		public T Current
+				{
+					get
+					{
+						if(position < 0 || position >= stack.size)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						return stack.items[stack.size - position - 1];
+					}
+					set
+					{
+						if(position < 0 || position >= stack.size)
+						{
+							throw new InvalidOperationException
+								(S._("Invalid_BadIteratorPosition"));
+						}
+						stack.items[stack.size - position - 1] = value;
+					}
+				}
+
+	}; // class StackIterator<T>
+
+}; // class ArrayStack<T>
 
 }; // namespace Generics

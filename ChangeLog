@@ -1,4 +1,8 @@
 
+2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* samples/mscorlib.dll: new version with "UtcNow" fix.
+
 2001-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c: allow the CVM

@@ -1,3 +1,9 @@
+
+2004-03-12  Russell Stuart  <russell@stuart.id.au>
+
+	* configure.in, pnetlib.spec.in: autodetect the treecc version
+	for "pnetlib.spec.in".
+
 2004-03-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlWriter.cs, tests/System.Xml/TestXmlTextReader.cs: fix

@@ -8,11 +8,12 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Group: System/Emulators
 BuildArch: noarch
 
-BuildRequires:  treecc >= 0:0.2.8
+BuildRequires:  treecc >= 0:@TREECC_VERSION@
 BuildRequires:  pnet-interpreter >= 0:@VERSION@
 BuildRequires:  pnet-compiler >= 0:@VERSION@
 BuildRequires:  pnet-tools >= 0:@VERSION@
 BuildRequires:  XFree86-devel
+
 Requires:       pnet-interpreter >= 0:@VERSION@
 Requires:       pnet-tools >= 0:@VERSION@
 

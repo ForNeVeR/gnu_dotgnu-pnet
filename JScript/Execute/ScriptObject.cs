@@ -179,11 +179,11 @@ public abstract class ScriptObject : IReflect
 					Object value;
 					if(index >= 0)
 					{
-						value = GetPropertyByIndex(index);
+						value = GetIndex(index);
 					}
 					else
 					{
-						value = GetProperty(Convert.ToString(index));
+						value = Get(Convert.ToString(index));
 					}
 					if(!(value is Missing))
 					{
@@ -198,12 +198,11 @@ public abstract class ScriptObject : IReflect
 				{
 					if(index >= 0)
 					{
-						SetPropertyByIndex(index, value);
+						PutIndex(index, value);
 					}
 					else
 					{
-						SetProperty(Convert.ToString(index), value,
-									PropertyAttributes.None);
+						Put(Convert.ToString(index), value);
 					}
 				}
 			}
@@ -215,11 +214,11 @@ public abstract class ScriptObject : IReflect
 					if(index >= 0.0 && index <= (double)(Int32.MaxValue) &&
 					   Math.Round(index) == index)
 					{
-						value = GetPropertyByIndex((int)index);
+						value = GetIndex((int)index);
 					}
 					else
 					{
-						value = GetProperty(Convert.ToString(index));
+						value = Get(Convert.ToString(index));
 					}
 					if(!(value is Missing))
 					{
@@ -235,12 +234,11 @@ public abstract class ScriptObject : IReflect
 					if(index >= 0.0 && index <= (double)(Int32.MaxValue) &&
 					   Math.Round(index) == index)
 					{
-						SetPropertyByIndex((int)index, value);
+						PutIndex((int)index, value);
 					}
 					else
 					{
-						SetProperty(Convert.ToString(index), value,
-									PropertyAttributes.None);
+						Put(Convert.ToString(index), value);
 					}
 				}
 			}
@@ -248,7 +246,7 @@ public abstract class ScriptObject : IReflect
 			{
 				get
 				{
-					Object value = GetProperty(name);
+					Object value = Get(name);
 					if(!(value is Missing))
 					{
 						return value;
@@ -260,7 +258,7 @@ public abstract class ScriptObject : IReflect
 				}
 				set
 				{
-					SetProperty(name, value, PropertyAttributes.None);
+					Put(name, value);
 				}
 			}
 	public Object this[params Object[] pars]
@@ -344,38 +342,97 @@ public abstract class ScriptObject : IReflect
 				return null;
 			}
 
-	// Get a property from this object.  Null if not present.
-	internal virtual Object GetProperty(String name)
+	// Get the internal "[[Class]]" property for this object.
+	internal virtual String Class
 			{
-				// TODO
-				return null;
+				get
+				{
+					return "Object";
+				}
 			}
 
-	// Set a property in this object.
-	internal virtual void SetProperty(String name, Object value,
-							  		  PropertyAttributes attrs)
+	// Get a property from this object.  Null if not present.
+	internal virtual Object Get(String name)
 			{
-				// TODO
+				// The base class only needs to check the prototype.
+				if(parent != null)
+				{
+					return parent.Get(name);
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Get a property from this object by numeric index.
+	internal virtual Object GetIndex(int index)
+			{
+				return Get(Convert.ToString(index));
+			}
+
+	// Put a property to this object.
+	internal virtual void Put(String name, Object value)
+			{
+				// Normally overridden in subclasses.
+			}
+
+	// Put a property to this object by numeric index.
+	internal virtual void PutIndex(int index, Object value)
+			{
+				Put(Convert.ToString(index), value);
+			}
+
+	// Determine if we can put a property to this object.
+	internal virtual bool CanPut(String name)
+			{
+				// The base class only needs to check the prototype.
+				if(parent != null)
+				{
+					return parent.CanPut(name);
+				}
+				else
+				{
+					return true;
+				}
 			}
 
 	// Determine if this object has a specific property.
 	internal virtual bool HasOwnProperty(String name)
 			{
-				// TODO
+				// Normally overridden in subclasses.
 				return false;
 			}
 
-	// Get a property from this object by numeric index.
-	internal virtual Object GetPropertyByIndex(int index)
+	// Determine if this object or one of its prototypes has a property.
+	internal virtual bool HasProperty(String name)
 			{
-				return GetProperty(Convert.ToString(index));
+				if(HasOwnProperty(name))
+				{
+					return true;
+				}
+				else if(parent != null)
+				{
+					return parent.HasProperty(name);
+				}
+				else
+				{
+					return false;
+				}
 			}
 
-	// Get a property from this object by numeric index.
-	internal virtual void SetPropertyByIndex(int index, Object value)
+	// Delete a property from this object.
+	internal virtual bool Delete(String name)
 			{
-				SetProperty(Convert.ToString(index), value,
-							PropertyAttributes.None);
+				// Normally overridden in subclasses.
+				return true;
+			}
+
+	// Get the default value for this object.
+	internal virtual Object DefaultValue(DefaultValueHint hint)
+			{
+				// TODO
+				return null;
 			}
 
 	// Normalize this object to remove object wrappers.

@@ -1,3 +1,20 @@
+
+2003-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* JScript/Builtins/ArrayPrototype.cs,
+	JScript/Builtins/FunctionConstructor.cs,
+	JScript/Builtins/FunctionPrototype.cs,
+	JScript/Builtins/GlobalObject.cs,
+	JScript/Builtins/ObjectConstructor.cs,
+	JScript/Builtins/ObjectPrototype.cs,
+	JScript/Execute/ActivationObject.cs,
+	JScript/Execute/DefaultValueHint.cs,
+	JScript/Execute/JSObject.cs, JScript/Execute/ScriptFunction.cs,
+	JScript/Execute/ScriptObject.cs, JScript/Execute/Support.cs,
+	JScript/Jsc/Globals.cs, JScript/Nodes/JExpr.tc,
+	doc/JScript-internals.txt: bring the names of builtin properties
+	and functions into alignment with the names in ECMA-262.
+
 2003-01-13  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextWriter.cs: Implemented CDATA, ProcessInstructions,

@@ -209,12 +209,13 @@ we implement as follows:
 		The name, GetParent, is used for backwards-compatibility.
 
 	[[Class]]
-		"ScriptObject.Class" retrieve an object's class.  This normally
+		"ScriptObject.Class" retrieves an object's class.  This normally
 		returns something like "Object" or "Function".
 
 	[[Value]]
-		"ScriptObject.Value" retrieves an object's value if the object
-		wraps up a primitive value.
+		This property is handled internally in classes that need it,
+		such as "Boolean", "Number", etc.  There is no actual C# property
+		or method associated with it.
 
 	[[Get]]
 		"ScriptObject.Get()" retrieves the value of an object property.
@@ -244,11 +245,11 @@ we implement as follows:
 		object, which is normally a primitive value such as a string.
 
 	[[Construct]]
-		"ScriptObject.Construct()" uses the current object as a constructor
+		"ScriptFunction.Construct()" uses the current object as a constructor
 		to create a new object.
 
 	[[Call]]
-		"ScriptObject.Call()" uses the current object as a function
+		"ScriptFunction.Call()" uses the current object as a function
 		to be called.
 
 	[[HasInstance]]

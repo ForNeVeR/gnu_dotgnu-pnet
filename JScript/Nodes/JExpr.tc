@@ -68,9 +68,7 @@ Eval(JObjectLiteral)
 	JExprListElem elem = first;
 	while(elem != null)
 	{
-		value.SetProperty(Convert.ToString(elem.name),
-						  elem.expr.Eval(engine),
-						  PropertyAttributes.None);
+		value.Put(Convert.ToString(elem.name), elem.expr.Eval(engine));
 		elem = elem.next;
 	}
 

@@ -60,15 +60,15 @@ public class GlobalObject
 				AddBuiltin(inst, "ScriptEngineMajorVersion");
 				AddBuiltin(inst, "ScriptEngineMinorVersion");
 				AddBuiltin(inst, "unescape");
-				globalObject.SetProperty("Infinity", Double.PositiveInfinity,
-										 PropertyAttributes.DontEnum |
-										 PropertyAttributes.DontDelete);
-				globalObject.SetProperty("NaN", Double.NaN,
-										 PropertyAttributes.DontEnum |
-										 PropertyAttributes.DontDelete);
-				globalObject.SetProperty("undefined", null,
-										 PropertyAttributes.DontEnum |
-										 PropertyAttributes.DontDelete);
+				globalObject.Put("Infinity", Double.PositiveInfinity,
+								 PropertyAttributes.DontEnum |
+								 PropertyAttributes.DontDelete);
+				globalObject.Put("NaN", Double.NaN,
+								 PropertyAttributes.DontEnum |
+								 PropertyAttributes.DontDelete);
+				globalObject.Put("undefined", null,
+								 PropertyAttributes.DontEnum |
+								 PropertyAttributes.DontDelete);
 #if false
 				AddProperty("ActiveXObject", ActiveXObject);
 #endif
@@ -102,7 +102,7 @@ public class GlobalObject
 	private void AddBuiltin(EngineInstance inst, string name)
 			{
 				MethodInfo method = typeof(GlobalObject).GetMethod(name);
-				globalObject.SetProperty(name, new BuiltinFunction
+				globalObject.Put(name, new BuiltinFunction
 					(inst.GetFunctionPrototype(), name, method),
 					PropertyAttributes.None);
 			}
@@ -110,8 +110,7 @@ public class GlobalObject
 	// Add a property to the global object.
 	private void AddProperty(string name, object value)
 			{
-				globalObject.SetProperty(name, value,
-										 PropertyAttributes.None);
+				globalObject.Put(name, value, PropertyAttributes.None);
 			}
 
 #if false
@@ -545,27 +544,27 @@ public sealed class LenientGlobalObject : GlobalObject
 				@double = GlobalObject.@double;
 				@decimal = GlobalObject.@decimal;
 				@void = GlobalObject.@void;
-				CollectGarbage = globalObject.GetProperty("CollectGarbage");
-				decodeURI = globalObject.GetProperty("decodeURI");
+				CollectGarbage = globalObject.Get("CollectGarbage");
+				decodeURI = globalObject.Get("decodeURI");
 				decodeURIComponent =
-					globalObject.GetProperty("decodeURIComponent");
-				encodeURI = globalObject.GetProperty("encodeURI");
+					globalObject.Get("decodeURIComponent");
+				encodeURI = globalObject.Get("encodeURI");
 				encodeURIComponent =
-					globalObject.GetProperty("encodeURIComponent");
-				escape = globalObject.GetProperty("escape");
-				eval = globalObject.GetProperty("eval");
-				isFinite = globalObject.GetProperty("isFinite");
-				isNaN = globalObject.GetProperty("isNaN");
-				parseFloat = globalObject.GetProperty("parseFloat");
-				parseInt = globalObject.GetProperty("parseInt");
-				ScriptEngine = globalObject.GetProperty("ScriptEngine");
+					globalObject.Get("encodeURIComponent");
+				escape = globalObject.Get("escape");
+				eval = globalObject.Get("eval");
+				isFinite = globalObject.Get("isFinite");
+				isNaN = globalObject.Get("isNaN");
+				parseFloat = globalObject.Get("parseFloat");
+				parseInt = globalObject.Get("parseInt");
+				ScriptEngine = globalObject.Get("ScriptEngine");
 				ScriptEngineBuildVersion =
-					globalObject.GetProperty("ScriptEngineBuildVersion");
+					globalObject.Get("ScriptEngineBuildVersion");
 				ScriptEngineMajorVersion =
-					globalObject.GetProperty("ScriptEngineMajorVersion");
+					globalObject.Get("ScriptEngineMajorVersion");
 				ScriptEngineMinorVersion =
-					globalObject.GetProperty("ScriptEngineMinorVersion");
-				unescape = globalObject.GetProperty("unescape");
+					globalObject.Get("ScriptEngineMinorVersion");
+				unescape = globalObject.Get("unescape");
 				Infinity = Double.PositiveInfinity;
 				NaN = Double.NaN;
 				undefined = null;

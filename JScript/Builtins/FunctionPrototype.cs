@@ -39,8 +39,7 @@ public class FunctionPrototype : ScriptFunction
 
 				// Add the builtin "Function" properties to the prototype.
 				EngineInstance inst = EngineInstance.GetEngineInstance(engine);
-				SetProperty("constructor", inst.GetFunctionConstructor(),
-							PropertyAttributes.None);
+				Put("constructor", inst.GetFunctionConstructor());
 				AddBuiltin(inst, "apply");
 				AddBuiltin(inst, "call");
 				AddBuiltin(inst, "toString");
@@ -109,10 +108,10 @@ public class LenientFunctionPrototype : FunctionPrototype
 	internal override void Init(VsaEngine engine, ScriptObject parent)
 			{
 				base.Init(engine, parent);
-				constructor = GetProperty("constructor");
-				apply = GetProperty("apply");
-				call = GetProperty("call");
-				toString = GetProperty("toString");
+				constructor = Get("constructor");
+				apply = Get("apply");
+				call = Get("call");
+				toString = Get("toString");
 			}
 
 }; // class LenientFunctionPrototype

@@ -43,10 +43,10 @@ public sealed class ObjectConstructor : ScriptFunction
 				ScriptObject prototype =
 					EngineInstance.GetEngineInstance(engine)
 						.GetObjectPrototype();
-				SetProperty("prototype", prototype,
-						    PropertyAttributes.ReadOnly |
-							PropertyAttributes.DontEnum |
-							PropertyAttributes.DontDelete);
+				Put("prototype", prototype,
+				    PropertyAttributes.ReadOnly |
+					PropertyAttributes.DontEnum |
+					PropertyAttributes.DontDelete);
 			}
 
 	// Construct a new "Object" instance.

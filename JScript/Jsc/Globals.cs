@@ -35,7 +35,7 @@ public sealed class Globals
 	public static ArrayObject ConstructArray(params Object[] args)
 			{
 				return (ArrayObject)
-					(ArrayPrototype.constructor.CallConstructor(args));
+					(ArrayPrototype.constructor.Construct(args));
 			}
 
 	// Construct an array literal.  Don't use - not re-entrant safe.

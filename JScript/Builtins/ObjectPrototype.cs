@@ -37,8 +37,7 @@ public class ObjectPrototype : JSObject
 
 				// Add the builtin "Object" properties to the prototype.
 				EngineInstance inst = EngineInstance.GetEngineInstance(engine);
-				SetProperty("constructor", inst.GetObjectConstructor(),
-							PropertyAttributes.None);
+				Put("constructor", inst.GetObjectConstructor());
 				AddBuiltin(inst, "toString");
 				AddBuiltin(inst, "toLocaleString");
 				AddBuiltin(inst, "valueOf");
@@ -62,12 +61,9 @@ public class ObjectPrototype : JSObject
 	public static bool hasOwnProperty(Object thisob, Object name)
 			{
 				String cname = Convert.ToString(name);
-				if(thisob is JSObject)
+				if(thisob is ScriptObject)
 				{
-					if(((JSObject)thisob).GetProperty(cname) != null)
-					{
-						return true;
-					}
+					return ((ScriptObject)thisob).HasOwnProperty(cname);
 				}
 				return false;
 			}
@@ -122,7 +118,7 @@ public class ObjectPrototype : JSObject
 				String className;
 				if(thisob is JSObject)
 				{
-					className = ((JSObject)thisob).ClassName;
+					className = ((JSObject)thisob).Class;
 				}
 				else
 				{
@@ -161,13 +157,13 @@ public class LenientObjectPrototype : ObjectPrototype
 	internal override void Init(VsaEngine engine)
 			{
 				base.Init(engine);
-				constructor = GetProperty("constructor");
-				hasOwnProperty = GetProperty("hasOwnProperty");
-				isPrototypeOf = GetProperty("isPrototypeOf");
-				propertyIsEnumerable = GetProperty("propertyIsEnumerable");
-				toLocaleString = GetProperty("toLocaleString");
-				toString = GetProperty("toString");
-				valueOf = GetProperty("valueOf");
+				constructor = Get("constructor");
+				hasOwnProperty = Get("hasOwnProperty");
+				isPrototypeOf = Get("isPrototypeOf");
+				propertyIsEnumerable = Get("propertyIsEnumerable");
+				toLocaleString = Get("toLocaleString");
+				toString = Get("toString");
+				valueOf = Get("valueOf");
 			}
 
 }; // class LenientObjectPrototype

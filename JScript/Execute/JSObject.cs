@@ -106,7 +106,7 @@ public class JSObject : ScriptObject, IEnumerable
 				ScriptFunction toStr;
 				do
 				{
-					toStr = (temp.GetProperty("toString") as ScriptFunction);
+					toStr = (temp.Get("toString") as ScriptFunction);
 					if(toStr != null)
 					{
 						// Invoke the "toString" method.
@@ -118,17 +118,8 @@ public class JSObject : ScriptObject, IEnumerable
 				return String.Empty;
 			}
 
-	// Get the internal "[[Class]]" property for this object.
-	internal virtual String ClassName
-			{
-				get
-				{
-					return "Object";
-				}
-			}
-
 	// Get a property from this object.  Null if not present.
-	internal override Object GetProperty(String name)
+	internal override Object Get(String name)
 			{
 				Property prop;
 
@@ -142,7 +133,7 @@ public class JSObject : ScriptObject, IEnumerable
 					}
 					else
 					{
-						return null;
+						return base.Get(name);
 					}
 				}
 
@@ -157,8 +148,8 @@ public class JSObject : ScriptObject, IEnumerable
 					prop = prop.next;
 				}
 
-				// Could not find the property.
-				return null;
+				// Try looking in the prototype.
+				return base.Get(name);
 			}
 
 	// Determine if a property is enumerable.
@@ -222,9 +213,12 @@ public class JSObject : ScriptObject, IEnumerable
 				return false;
 			}
 
-	// Set a property in this object.
-	internal override void SetProperty(String name, Object value,
-							  		   PropertyAttributes attrs)
+	// Put a property in this object.
+	internal override void Put(String name, Object value)
+			{
+				Put(name, value, PropertyAttributes.None);
+			}
+	internal void Put(String name, Object value, PropertyAttributes attrs)
 			{
 				Property prop, prev;
 				int num;
@@ -298,11 +292,60 @@ public class JSObject : ScriptObject, IEnumerable
 				overflow[name] = new Property(name, value, attrs);
 			}
 
+	// Delete a property from this object.
+	internal override bool Delete(String name)
+			{
+				Property prop, prev;
+
+				// Check the overflow hash table first, if it exists.
+				if(overflow != null)
+				{
+					prop = (Property)(overflow[name]);
+					if(prop != null)
+					{
+						if((prop.attrs & PropertyAttributes.DontDelete) != 0)
+						{
+							return false;
+						}
+						overflow.Remove(name);
+					}
+					return true;
+				}
+
+				// Scan the property list.
+				prop = properties;
+				prev = null;
+				while(prop != null)
+				{
+					if(prop.name == name)
+					{
+						if((prop.attrs & PropertyAttributes.DontDelete) != 0)
+						{
+							return false;
+						}
+						if(prev != null)
+						{
+							prev.next = prop.next;
+						}
+						else
+						{
+							properties = prop.next;
+						}
+						return true;
+					}
+					prev = prop;
+					prop = prop.next;
+				}
+
+				// Could not find the property, so act as though it is deleted.
+				return true;
+			}
+
 	// Add a builtin method to a prototype.
 	internal void AddBuiltin(EngineInstance inst, String name)
 			{
 				MethodInfo method = GetType().GetMethod(name);
-				SetProperty(name, new BuiltinFunction
+				Put(name, new BuiltinFunction
 					(inst.GetFunctionPrototype(), name, method),
 					PropertyAttributes.None);
 			}

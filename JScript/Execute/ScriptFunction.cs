@@ -75,7 +75,7 @@ public abstract class ScriptFunction : JSObject
 	[JSFunction(JSFunctionAttributeEnum.HasVarArgs)]
 	public Object CreateInstance(params Object[] args)
 			{
-				return CallConstructor(args);
+				return Construct(args);
 			}
 
 	// Get the prototype for a constructed function object.
@@ -147,7 +147,7 @@ public abstract class ScriptFunction : JSObject
 	internal abstract Object Call(Object thisob, Object[] args);
 
 	// Perform a constructor call on this object.
-	internal virtual Object CallConstructor(Object[] args)
+	internal virtual Object Construct(Object[] args)
 			{
 				JSObject obj = new JSObject(GetPrototypeForConstructedObject());
 				Object result = Call(obj, args);
@@ -162,7 +162,7 @@ public abstract class ScriptFunction : JSObject
 			}
 
 	// Get the internal "[[Class]]" property for this object.
-	internal override String ClassName
+	internal override String Class
 			{
 				get
 				{

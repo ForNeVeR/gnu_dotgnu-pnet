@@ -32,8 +32,7 @@ public class ArrayPrototype : ArrayObject
 			: base(parent)
 			{
 				// Add the builtin "Array" properties to the prototype.
-				SetProperty("constructor", inst.GetArrayConstructor(),
-							PropertyAttributes.None);
+				Put("constructor", inst.GetArrayConstructor());
 				AddBuiltin(inst, "concat");
 				AddBuiltin(inst, "join");
 				AddBuiltin(inst, "pop");
@@ -210,18 +209,18 @@ public class LenientArrayPrototype : ArrayPrototype
 			: base(parent, inst)
 			{
 				constructor = inst.GetArrayConstructor();
-				concat = GetProperty("concat");
-				join = GetProperty("join");
-				pop = GetProperty("pop");
-				push = GetProperty("push");
-				reverse = GetProperty("reverse");
-				shift = GetProperty("shift");
-				slice = GetProperty("slice");
-				sort = GetProperty("sort");
-				splice = GetProperty("splice");
-				toLocaleString = GetProperty("toLocaleString");
-				toString = GetProperty("toString");
-				unshift = GetProperty("unshift");
+				concat = Get("concat");
+				join = Get("join");
+				pop = Get("pop");
+				push = Get("push");
+				reverse = Get("reverse");
+				shift = Get("shift");
+				slice = Get("slice");
+				sort = Get("sort");
+				splice = Get("splice");
+				toLocaleString = Get("toLocaleString");
+				toString = Get("toString");
+				unshift = Get("unshift");
 			}
 
 }; // class LenientArrayPrototype

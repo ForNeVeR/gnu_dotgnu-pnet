@@ -60,7 +60,7 @@ public abstract class ActivationObject : ScriptObject, IActivationObject,
 				{
 					if(storage.HasOwnProperty(name))
 					{
-						return storage.GetProperty(name);
+						return storage.Get(name);
 					}
 					else if(parent != null)
 					{
@@ -106,17 +106,17 @@ public abstract class ActivationObject : ScriptObject, IActivationObject,
 			{
 				if(storage.HasOwnProperty(name))
 				{
-					return storage.GetProperty(name);
+					return storage.Get(name);
 				}
 				else
 				{
-					storage.SetProperty(name, null, PropertyAttributes.None);
+					storage.Put(name, null);
 					return null;
 				}
 			}
 	void IVariableAccess.SetVariable(String name, Object value)
 			{
-				storage.SetProperty(name, value, PropertyAttributes.None);
+				storage.Put(name, value);
 			}
 
 }; // class ActivationObject

@@ -134,7 +134,7 @@ internal sealed class Support
 						}
 						else if(value is JSObject)
 						{
-							return ((JSObject)value).ClassName.ToLower();
+							return ((JSObject)value).Class.ToLower();
 						}
 						else
 						{

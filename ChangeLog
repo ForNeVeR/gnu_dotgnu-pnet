@@ -4,6 +4,9 @@
 	* System/System.build: add "System.Xml" to the dependencies
 	for "System.dll" because pnet now supports recursive assemblies.
 
+	* Xsharp/Xlib.cs.in, Xsharp/Image.cs: remove references to
+	"Imlib" from "Xsharp", because it isn't used any more.
+
 2003-11-22  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpReformatter.cs, DotGNU.Images/Frame.cs,

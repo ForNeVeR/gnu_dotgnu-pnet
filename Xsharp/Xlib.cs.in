@@ -586,19 +586,6 @@ internal sealed unsafe class Xlib
 	extern public static void XSharpSendClose
 			(IntPtr display, Xlib.Window window);
 
-	// Helper functions from "libImlib.so" for loading images.
-
-	[DllImport("Imlib")]
-	extern public static IntPtr Imlib_init(IntPtr disp);
-
-	[DllImport("Imlib")]
-	extern public static @X_int@ Imlib_load_file_to_pixmap
-			(IntPtr id, String filename, ref Pixmap pixmap,
-			 ref Pixmap mask);
-
-	[DllImport("Xext")]
-	extern public static Bool XShmQueryExtension(IntPtr display);
-
 	// Helper functions for creating and managing application groups.
 
 	[DllImport("Xext")]

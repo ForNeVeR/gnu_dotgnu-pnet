@@ -269,51 +269,6 @@ public sealed class Image : IDisposable
 				{
 					dpy.Unlock();
 				}
-			#if false
-				try
-				{
-					// Lock down the display while we do this.
-					IntPtr display = dpy.Lock();
-
-					// Call "XShmQueryExtension" before "Imlib_init".
-					// This is a hack to make sure that "Xext" is loaded
-					// into memory before "Imlib" goes looking for it.
-					Xlib.XShmQueryExtension(display);
-
-					// Initialize the Imlib library if necessary.
-					if(dpy.imlibData == IntPtr.Zero)
-					{
-						dpy.imlibData = Xlib.Imlib_init(display);
-					}
-
-					// Load the file and convert it into a pixmap and mask.
-					Xlib.Pixmap pixmap, mask;
-					pixmap = Xlib.Pixmap.Zero;
-					mask = Xlib.Pixmap.Zero;
-					if(Xlib.Imlib_load_file_to_pixmap
-							(dpy.imlibData, filename, ref pixmap, ref mask)
-									== 0)
-					{
-						throw new XInvalidOperationException
-							(S._("X_InvalidImageFile"));
-					}
-
-					// Wrap the returned XID's in Pixmap/Bitmap objects.
-					this.pixmap = new Pixmap(dpy, screen, pixmap);
-					if(mask != Xlib.Pixmap.Zero)
-					{
-						this.mask = new Bitmap(dpy, screen, mask);
-					}
-					else
-					{
-						this.mask = null;
-					}
-				}
-				finally
-				{
-					dpy.Unlock();
-				}
-			#endif
 			}
 
 	/// <summary>

@@ -103,6 +103,13 @@ public class DrawItemEventArgs : EventArgs
 					return state;
 				}
 			}
+	public Font Font
+			{
+				get
+				{
+					return font;
+				}
+			}
 
 	// Draw the background of the item, using BackColor.
 	public virtual void DrawBackground()

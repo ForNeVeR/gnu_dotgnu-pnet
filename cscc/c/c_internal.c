@@ -60,14 +60,14 @@ void CGenBeginCode(ILGenInfo *info)
 		if(gen_32bit_only)
 		{
 			fputs(".custom instance void "
-					"OpenSystem.Languages.C.MemoryModelAttribute"
+					"OpenSystem.C.MemoryModelAttribute"
 					"::.ctor(int32) = (01 00 20 00 00 00 00 00)\n",
 				  info->asmOutput);
 		}
 		else
 		{
 			fputs(".custom instance void "
-					"OpenSystem.Languages.C.MemoryModelAttribute"
+					"OpenSystem.C.MemoryModelAttribute"
 					"::.ctor(int32) = (01 00 40 00 00 00 00 00)\n",
 				  info->asmOutput);
 		}

@@ -279,7 +279,7 @@ ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType, int nativePtr)
 		ILClass *classInfo;
 		ILType *modifiers;
 		classInfo = ILType_ToClass(ILFindNonSystemType
-				(info, "IsNativePointer", "OpenSystem.Languages.C"));
+				(info, "IsNativePointer", "OpenSystem.C"));
 		modifiers = ILTypeCreateModifier(info->context, 0,
 										 IL_TYPE_COMPLEX_CMOD_OPT,
 										 classInfo);
@@ -324,7 +324,7 @@ ILType *CTypeAddConst(ILGenInfo *info, ILType *type)
 	ILClass *classInfo;
 	ILType *modifiers;
 	classInfo = ILType_ToClass(ILFindNonSystemType
-			(info, "IsConst", "OpenSystem.Languages.C"));
+			(info, "IsConst", "OpenSystem.C"));
 	if(ILTypeHasModifier(type, classInfo))
 	{
 		/* The type already has the specified modifier, so don't add again */
@@ -791,7 +791,7 @@ static int CheckForModifier(ILType *type, const char *name,
 
 int CTypeIsConst(ILType *type)
 {
-	return CheckForModifier(type, "IsConst", "OpenSystem.Languages.C");
+	return CheckForModifier(type, "IsConst", "OpenSystem.C");
 }
 
 int CTypeIsVolatile(ILType *type)
@@ -899,7 +899,7 @@ int CTypeIsPointer(ILType *type)
 
 int CTypeIsNativePointer(ILType *type)
 {
-	return CheckForModifier(type, "IsNativePointer", "OpenSystem.Languages.C");
+	return CheckForModifier(type, "IsNativePointer", "OpenSystem.C");
 }
 
 int CTypeIsForeign(ILType *type)
@@ -1269,7 +1269,7 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 				return SIZE_PTR32;
 			}
 			else if(force || !CheckForModifier(_type, "IsNativePointer",
-										       "OpenSystem.Languages.C"))
+										       "OpenSystem.C"))
 			{
 				*align = ALIGN_PTR64;
 				return SIZE_PTR64;
@@ -1456,7 +1456,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 			stripped = ILTypeStripPrefixes(type);
 			modFlags = 0;
 			if(CheckForModifier(type, "IsConst",
-							    "OpenSystem.Languages.C"))
+							    "OpenSystem.C"))
 			{
 				modFlags |= 1;
 			}
@@ -1466,7 +1466,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 				modFlags |= 2;
 			}
 			if(CheckForModifier(type, "IsNativePointer",
-							    "OpenSystem.Languages.C") &&
+							    "OpenSystem.C") &&
 			   CTypeIsPointer(stripped))
 			{
 				name = AppendThree(info, 0,

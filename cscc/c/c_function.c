@@ -284,11 +284,11 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 		valueVar = ILGenTempTypedVar(info, ILType_Int32);
 		exceptVar = ILGenTempTypedVar
 			(info, ILFindNonSystemType(info, "LongJmpException",
-									   "OpenSystem.Languages.C"));
+									   "OpenSystem.C"));
 
 		/* Initialize the setjmp control variables */
 		ILGenInt32(info, (ILInt32)numSetJmpRefs);
-		fputs("\tcall\tint32 'OpenSystem.Languages.C'.'LongJmpException'"
+		fputs("\tcall\tint32 'OpenSystem.C'.'LongJmpException'"
 					"::'GetMarkers'(int32)\n", stream);
 		ILGenStoreLocal(info, markerVar);
 		ILGenSimple(info, IL_OP_LDC_I4_M1);
@@ -339,7 +339,7 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 		}
 
 		/* Output the start of the catch block for "LongJmpException" */
-		fputs("} catch 'OpenSystem.Languages.C'.'LongJmpException' {\n",
+		fputs("} catch 'OpenSystem.C'.'LongJmpException' {\n",
 			  stream);
 
 		/* Store the exception reference */
@@ -349,7 +349,7 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 		/* Get the "Marker" value from the "LongJmpException" object,
 		   and subtract our local "marker" reference from it */
 		ILGenLoadLocal(info, exceptVar);
-		fputs("\tcall\tinstance int32 'OpenSystem.Languages.C'."
+		fputs("\tcall\tinstance int32 'OpenSystem.C'."
 					"'LongJmpException'::get_Marker()\n", stream);
 		ILGenLoadLocal(info, markerVar);
 		ILGenAdjust(info, 2);
@@ -365,7 +365,7 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 		/* Get the "Value" from the "LongJmpException" object and then
 		   jump back to the top of the function to restart it */
 		ILGenLoadLocal(info, exceptVar);
-		fputs("\tcall\tinstance int32 'OpenSystem.Languages.C'."
+		fputs("\tcall\tinstance int32 'OpenSystem.C'."
 					"'LongJmpException'::get_Value()\n", stream);
 		ILGenStoreLocal(info, valueVar);
 		fputs("\tleave\tLrestart\n", stream);

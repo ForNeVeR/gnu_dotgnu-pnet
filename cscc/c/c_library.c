@@ -44,7 +44,7 @@ static ILClass *CreateClass(ILGenInfo *info, ILProgramItem *scope,
 {
 	ILClass *classInfo;
 	ABORT_IF(classInfo, ILClassCreate
-				(scope, 0, name, "OpenSystem.Languages.C", parent));
+				(scope, 0, name, "OpenSystem.C", parent));
 	ILClassSetAttrs(classInfo, ~0,
 				    IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SEALED |
@@ -111,46 +111,46 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	attributeClass = ILTypeToClass(info, ILFindSystemType(info, "Atribute"));
 	exceptionClass = ILTypeToClass(info, ILFindSystemType(info, "Exception"));
 
-	/* Create "OpenSystem.Languages.C.Crt0" */
+	/* Create "OpenSystem.C.Crt0" */
 	classInfo = CreateClass(info, scope, "Crt0", objectClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.FileTable" */
+	/* Create "OpenSystem.C.FileTable" */
 	classInfo = CreateClass(info, scope, "FileTable", objectClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.IsConst" */
+	/* Create "OpenSystem.C.IsConst" */
 	classInfo = CreateClass(info, scope, "IsConst", objectClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.IsNativePointer" */
+	/* Create "OpenSystem.C.IsNativePointer" */
 	classInfo = CreateClass(info, scope, "IsNativePointer", objectClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.BitFieldAttribute" */
+	/* Create "OpenSystem.C.BitFieldAttribute" */
 	classInfo = CreateClass(info, scope, "BitFieldAttribute", attributeClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Int32);
 
-	/* Create "OpenSystem.Languages.C.WeakAliasForAttribute" */
+	/* Create "OpenSystem.C.WeakAliasForAttribute" */
 	classInfo = CreateClass(info, scope, "WeakAliasForAttribute",
 							attributeClass);
 	AddConstructor(classInfo, ILFindSystemType(info, "String"), ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.InitializerAttribute" */
+	/* Create "OpenSystem.C.InitializerAttribute" */
 	classInfo = CreateClass(info, scope, "InitializerAttribute",
 						    attributeClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.FinalizerAttribute" */
+	/* Create "OpenSystem.C.FinalizerAttribute" */
 	classInfo = CreateClass(info, scope, "FinalizerAttribute", attributeClass);
 	AddConstructor(classInfo, ILType_Invalid, ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.MemoryModelAttribute" */
+	/* Create "OpenSystem.C.MemoryModelAttribute" */
 	classInfo = CreateClass(info, scope, "MemoryModelAttribute",
 							attributeClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Invalid);
 
-	/* Create "OpenSystem.Languages.C.LongJmpException" */
+	/* Create "OpenSystem.C.LongJmpException" */
 	classInfo = CreateClass(info, scope, "LongJmpException", exceptionClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Int32);
 }

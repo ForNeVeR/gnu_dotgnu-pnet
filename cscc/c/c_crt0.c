@@ -200,12 +200,12 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	fputs("\tldarg.0\n", stream);
 	fprintf(stream, "\tldc.i4.%d\n", ptrSize);
 	fputs("\tldloca\t0\n", stream);
-	fputs("\tcall\tnative int 'OpenSystem.Languages.C'.'Crt0'::"
+	fputs("\tcall\tnative int 'OpenSystem.C'.'Crt0'::"
 			"GetArgV(class [.library]System.String[], int32, int32 &)\n",
 			stream);
 	fputs("\tstloc.1\n", stream);
-	fputs("\tcall\tnative int 'OpenSystem.Languages.C'.'Crt0'::"
-				"GetEnvironment()\n", stream);
+	fputs("\tcall\tnative int 'OpenSystem.C'.'Crt0'::GetEnvironment()\n",
+		  stream);
 	fputs("\tstloc.2\n", stream);
 
 	/* Push the name of the "libc" library assembly onto the stack, so
@@ -222,7 +222,7 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	}
 
 	/* Perform other system startup tasks */
-	fputs("\tcall\tvoid 'OpenSystem.Languages.C'.'Crt0'::Startup"
+	fputs("\tcall\tvoid 'OpenSystem.C'.'Crt0'::Startup"
 				"(class [.library]System.String)\n", stream);
 
 	/* Invoke the "main" function with the required arguments */
@@ -250,7 +250,7 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	}
 
 	/* Perform system shutdown tasks, including calling "exit" */
-	fputs("\tcall\tvoid 'OpenSystem.Languages.C'.'Crt0'::"
+	fputs("\tcall\tvoid 'OpenSystem.C'.'Crt0'::"
 				"Shutdown(int32)\n", stream);
 
 	/* Handle exceptions that are caught by the try block */
@@ -260,7 +260,7 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	fputs("} catch [.library]System.Object {\n", stream);
 	fputs("\tstloc.3\n", stream);
 	fputs("\tldloc.3\n", stream);
-	fputs("\tcall\tclass [.library]System.Object 'OpenSystem.Languages.C'."
+	fputs("\tcall\tclass [.library]System.Object 'OpenSystem.C'."
 				"'Crt0'::ShutdownWithException"
 				"(class [.library]System.Object)\n", stream);
 	fputs("\tthrow\n", stream);

@@ -1,4 +1,30 @@
 
+2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Exception.txt,
+	resources/en_US/runtime/Serialize.txt,
+	resources/en_US/runtime/Makefile.am,
+	runtime/System/Runtime/Serialization/Formatter.cs,
+	runtime/System/Runtime/Serialization/FormatterConverter.cs,
+	runtime/System/Runtime/Serialization/FormatterServices.cs,
+	runtime/System/Runtime/Serialization/IDeserializationCallback.cs,
+	runtime/System/Runtime/Serialization/IFormatter.cs,
+	runtime/System/Runtime/Serialization/IFormatterConverter.cs,
+	runtime/System/Runtime/Serialization/IObjectReference.cs,
+	runtime/System/Runtime/Serialization/ISerializable.cs,
+	runtime/System/Runtime/Serialization/ISerializationSurrogate.cs,
+	runtime/System/Runtime/Serialization/ISurrogateSelector.cs,
+	runtime/System/Runtime/Serialization/ObjectIDGenerator.cs,
+	runtime/System/Runtime/Serialization/ObjectManager.cs,
+	runtime/System/Runtime/Serialization/SerializationBinder.cs,
+	runtime/System/Runtime/Serialization/SerializationEntry.cs,
+	runtime/System/Runtime/Serialization/SerializationException.cs,
+	runtime/System/Runtime/Serialization/SerializationInfo.cs,
+	runtime/System/Runtime/Serialization/SerializationInfoEnumerator.cs,
+	runtime/System/Runtime/Serialization/StreamingContext.cs,
+	runtime/System/Runtime/Serialization/StreamingContextStates.cs:
+	add new "System.Runtime.Serialization" classes.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

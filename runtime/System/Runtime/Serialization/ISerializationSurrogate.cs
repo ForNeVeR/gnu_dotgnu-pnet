@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * ISerializationSurrogate.cs - Implementation of the
+ *			"System.Runtime.Serialization.ISerializationSurrogate" interface.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,19 @@ namespace System.Runtime.Serialization
 
 #if !ECMA_COMPAT
 
-public interface ISerializable
+public interface ISerializationSurrogate
 {
 
-	void GetObjectData(SerializationInfo info,
+	// Populate a SerializationInfo instance with serialization data.
+	void GetObjectData(Object obj, SerializationInfo info,
 					   StreamingContext context);
 
-}; // interface ISerializable
+	// Populate an object using information in a SerializationInfo instance.
+	Object SetObjectData(Object obj, SerializationInfo info,
+						 StreamingContext context,
+						 ISurrogateSelector selector);
+
+}; // interface ISerializationSurrogate
 
 #endif // !ECMA_COMPAT
 

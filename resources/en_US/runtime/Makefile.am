@@ -11,7 +11,8 @@ RESOURCEFILES = Arg.txt \
 				IO.txt \
 				NotSupp.txt \
 				Overflow.txt \
-				Reflection.txt
+				Reflection.txt \
+				Serialize.txt
 
 noinst_DATA = $(RESOURCENAME)
 

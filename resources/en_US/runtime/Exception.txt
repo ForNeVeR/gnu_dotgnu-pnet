@@ -80,3 +80,4 @@ Exception_Security=A security violation has occurred
 Exception_SecurityNotGranted=The calling code was not granted the requested permissions
 Exception_Remoting=A failure occurred during a remoting operation
 Exception_Verification=Could not verify the code
+Exception_Serialization=An error occurred during serialization operations

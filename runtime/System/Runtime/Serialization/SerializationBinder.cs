@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * SerializationBinder.cs - Implementation of the
+ *			"System.Runtime.Serialization.SerializationBinder" class.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,16 @@ namespace System.Runtime.Serialization
 
 #if !ECMA_COMPAT
 
-public interface ISerializable
+public abstract class SerializationBinder
 {
 
-	void GetObjectData(SerializationInfo info,
-					   StreamingContext context);
+	// Constructor.
+	protected SerializationBinder() {}
 
-}; // interface ISerializable
+	// Bind a type name to an actual type.
+	public abstract Type BindToType(String assemblyName, String typeName);
+
+}; // class SerializationBinder
 
 #endif // !ECMA_COMPAT
 

@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * IFormatter.cs - Implementation of the
+ *			"System.Runtime.Serialization.IFormatter" interface.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,27 @@ namespace System.Runtime.Serialization
 
 #if !ECMA_COMPAT
 
-public interface ISerializable
+using System.IO;
+
+public interface IFormatter
 {
 
-	void GetObjectData(SerializationInfo info,
-					   StreamingContext context);
+	// Get or set the binder that performs type lookups.
+	SerializationBinder Binder { get; set; }
 
-}; // interface ISerializable
+	// Get or set the streaming context to use for serialization.
+	StreamingContext Context { get; set; }
+
+	// Get or set the surrogate selector for the current formatter.
+	ISurrogateSelector SurrogateSelector { get; set; }
+
+	// Deserialize an object from a stream.
+	Object Deserialize(Stream serializationStream);
+
+	// Serialize an object graph to a stream.
+	void Serialize(Stream seralizationStream, Object graph);
+
+}; // interface IFormatter
 
 #endif // !ECMA_COMPAT
 

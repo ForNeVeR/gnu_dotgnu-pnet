@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * IDeserializationCallback.cs - Implementation of the
+ *			"System.Runtime.Serialization.IDeserializationCallback" interface.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,12 @@ namespace System.Runtime.Serialization
 
 #if !ECMA_COMPAT
 
-public interface ISerializable
+public interface IDeserializationCallback
 {
 
-	void GetObjectData(SerializationInfo info,
-					   StreamingContext context);
+	void OnDeserialization(Object sender);
 
-}; // interface ISerializable
+}; // interface IDeserializationCallback
 
 #endif // !ECMA_COMPAT
 

@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * SerializationEntry.cs - Implementation of the
+ *			"System.Runtime.Serialization.SerializationEntry" structure.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,49 @@ namespace System.Runtime.Serialization
 
 #if !ECMA_COMPAT
 
-public interface ISerializable
+public struct SerializationEntry
 {
+	// Internal state.
+	private String name;
+	private Type type;
+	private Object value;
 
-	void GetObjectData(SerializationInfo info,
-					   StreamingContext context);
+	// Constructor.
+	internal SerializationEntry(String name, Type type, Object value)
+			{
+				this.name = name;
+				this.type = type;
+				this.value = value;
+			}
 
-}; // interface ISerializable
+	// Get the name of the object.
+	public String Name
+			{
+				get
+				{
+					return name;
+				}
+			}
+
+	// Get the type of the object.
+	public Type ObjectType
+			{
+				get
+				{
+					return type;
+				}
+			}
+
+	// Get the value contained in the object.
+	public Object Value
+			{
+				get
+				{
+					return value;
+				}
+			}
+
+}; // struct SerializationEntry
 
 #endif // !ECMA_COMPAT
 

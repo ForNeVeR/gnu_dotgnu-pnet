@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * ISurrogateSelector.cs - Implementation of the
+ *			"System.Runtime.Serialization.ISurrogateSelector" interface.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,20 @@ namespace System.Runtime.Serialization
 
 #if !ECMA_COMPAT
 
-public interface ISerializable
+public interface ISurrogateSelector
 {
 
-	void GetObjectData(SerializationInfo info,
-					   StreamingContext context);
+	// Specify the next ISurrogateSelector in the chain to examine.
+	void ChainSelector(ISurrogateSelector selector);
 
-}; // interface ISerializable
+	// Get the next selector in the chain.
+	ISurrogateSelector GetNextSelector();
+
+	// Get the surrogate that represents a particular object type.
+	ISerializationSurrogate GetSurrogate(Type type, StreamingContext context,
+										 out ISurrogateSelector selector);
+
+}; // interface ISurrogateSelector
 
 #endif // !ECMA_COMPAT
 

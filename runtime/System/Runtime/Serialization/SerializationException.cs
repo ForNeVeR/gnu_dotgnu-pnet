@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * SerializationException.cs - Implementation of the
+ *			"System.Runtime.Serialization.SerializationException" class.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,26 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
-
-public interface ISerializable
+public class SerializationException : SystemException
 {
+	// Constructors.
+	public SerializationException()
+		: base(_("Exception_Serialization")) {}
+	public SerializationException(String msg)
+		: base(msg) {}
+	public SerializationException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-	void GetObjectData(SerializationInfo info,
-					   StreamingContext context);
 
-}; // interface ISerializable
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return _("Exception_Serialization");
+				}
+			}
 
-#endif // !ECMA_COMPAT
+}; // class SerializationException
 
 }; // namespace System.Runtime.Serialization

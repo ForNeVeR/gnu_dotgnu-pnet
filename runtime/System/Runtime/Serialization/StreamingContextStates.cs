@@ -1,8 +1,8 @@
 /*
- * ISerializable.cs - Implementation of the
- *			"System.Runtime.Serialization.ISerializable" interface.
+ * StreamingContextStates.cs - Implementation of the
+ *			"System.Runtime.Serialization.StreamingContextStates" enum.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,21 @@ namespace System.Runtime.Serialization
 
 #if !ECMA_COMPAT
 
-public interface ISerializable
+[Flags]
+public enum StreamingContextStates
 {
 
-	void GetObjectData(SerializationInfo info,
-					   StreamingContext context);
+	CrossProcess   = 0x01,
+	CrossMachine   = 0x02,
+	File           = 0x04,
+	Persistence    = 0x08,
+	Remoting       = 0x10,
+	Other          = 0x20,
+	Clone          = 0x40,
+	CrossAppDomain = 0x80,
+	All            = 0xFF
 
-}; // interface ISerializable
+}; // enum StreamingContextStates
 
 #endif // !ECMA_COMPAT
 

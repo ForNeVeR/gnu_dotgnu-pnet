@@ -1,4 +1,9 @@
 
+2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in: look for "mcs-sources" locally first, in case
+	we have the mcs sources in the local directory.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* class/ByteFX.Data/ByteFX.Data.build,

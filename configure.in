@@ -56,18 +56,22 @@ AC_ARG_WITH(mono-sources,
 ])
 if test "x$MONO_SOURCE_PATH" = "x" ; then
 	# Try looking in some likely default locations.
-	if test -f "../mono/mcs/class/library.make" ; then
-		MONO_SOURCE_PATH="`pwd`/../mono/mcs"
+	if test -f "./mcs-sources/class/library.make" ; then
+		MONO_SOURCE_PATH="`pwd`/mcs-sources"
 	else
-		if test -f "../mcs/class/library.make" ; then
-			MONO_SOURCE_PATH="`pwd`/../mcs"
+		if test -f "../mono/mcs/class/library.make" ; then
+			MONO_SOURCE_PATH="`pwd`/../mono/mcs"
 		else
-			AC_MSG_WARN(not found)
-			echo '****************************************************'
-			echo "Supply the --with-mono-sources option to specify the"
-			echo "location of the Mono library sources."
-			echo '****************************************************'
-			exit 1
+			if test -f "../mcs/class/library.make" ; then
+				MONO_SOURCE_PATH="`pwd`/../mcs"
+			else
+				AC_MSG_WARN(not found)
+				echo '****************************************************'
+				echo "Supply the --with-mono-sources option to specify the"
+				echo "location of the Mono library sources."
+				echo '****************************************************'
+				exit 1
+			fi
 		fi
 	fi
 else

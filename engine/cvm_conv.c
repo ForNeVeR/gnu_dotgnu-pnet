@@ -87,6 +87,235 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
 	}
 }
 
+/*
+ * Convert "ulong" into "native float".
+ *
+ * Some platforms cannot perform the conversion directly,
+ * so we need to do it in stages.
+ */
+static IL_INLINE ILNativeFloat LU2F(ILUInt64 value)
+{
+	if(value < (((ILUInt64)1) << 63))
+	{
+		return (ILNativeFloat)(ILInt64)value;
+	}
+	else
+	{
+		return ((ILNativeFloat)(((ILInt64)value) + IL_MIN_INT64)) +
+					(ILNativeFloat)9223372036854775808.0;
+	}
+}
+
+/*
+ * Convert "native float" into "ulong".
+ *
+ * Some platforms cannot perform the conversion directly,
+ * so we need to do it in stages.
+ */
+static IL_INLINE ILUInt64 F2LU(ILNativeFloat value)
+{
+	if(FLOAT_IS_FINITE(value))
+	{
+		if(value >= (ILNativeFloat)0.0)
+		{
+			if(value < (ILNativeFloat)9223372036854775808.0)
+			{
+				return (ILUInt64)(ILInt64)value;
+			}
+			else if(value < (ILNativeFloat)18446744073709551616.0)
+			{
+				ILInt64 temp = (ILInt64)(value - 9223372036854775808.0);
+				return (ILUInt64)(temp - IL_MIN_INT64);
+			}
+			else
+			{
+				return IL_MAX_UINT64;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+	}
+#ifdef HAVE_ISNAN
+	else if(isnan(value))
+#else
+	else if(value != value)
+#endif
+	{
+		return 0;
+	}
+	else if(value < (ILNativeFloat)0.0)
+	{
+		return 0;
+	}
+	else
+	{
+		return IL_MAX_UINT64;
+	}
+}
+
+/*
+ * Convert "long" into "int" with overflow testing.
+ */
+static IL_INLINE int L2IOvf(CVMWord *posn)
+{
+	ILInt64 longValue = ReadLong(posn);
+	if(longValue >= (ILInt64)IL_MIN_INT32 &&
+	   longValue <= (ILInt64)IL_MAX_INT32)
+	{
+		posn->intValue = (ILInt32)longValue;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Convert "long" into "uint" with overflow testing.
+ */
+static IL_INLINE int L2UIOvf(CVMWord *posn)
+{
+	ILInt64 longValue = ReadLong(posn);
+	if(longValue >= 0 &&
+	   longValue <= (ILInt64)IL_MAX_UINT32)
+	{
+		posn->uintValue = (ILUInt32)longValue;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Convert "ulong" into "int" with overflow testing.
+ */
+static IL_INLINE int LU2IOvf(CVMWord *posn)
+{
+	ILUInt64 ulongValue = ReadULong(posn);
+	if(ulongValue <= (ILUInt64)IL_MAX_INT32)
+	{
+		posn->intValue = (ILInt32)ulongValue;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Convert "ulong" into "uint" with overflow testing.
+ */
+static IL_INLINE int LU2UIOvf(CVMWord *posn)
+{
+	ILUInt64 ulongValue = ReadULong(posn);
+	if(ulongValue <= (ILUInt64)IL_MAX_UINT32)
+	{
+		posn->uintValue = (ILUInt32)ulongValue;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Convert "native float" into "int" with overflow testing.
+ */
+static IL_INLINE int F2IOvf(CVMWord *posn)
+{
+	ILNativeFloat value = ReadFloat(posn);
+	if(FLOAT_IS_FINITE(value))
+	{
+		if(value > (ILNativeFloat)(-2147483649.0) &&
+		   value < (ILNativeFloat)2147483648.0)
+		{
+			posn->intValue = (ILInt32)value;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
+ * Convert "native float" into "uint" with overflow testing.
+ */
+static IL_INLINE int F2UIOvf(CVMWord *posn)
+{
+	ILNativeFloat value = ReadFloat(posn);
+	if(FLOAT_IS_FINITE(value))
+	{
+		if(value >= (ILNativeFloat)0.0 &&
+		   value < (ILNativeFloat)4294967296.0)
+		{
+			posn->uintValue = (ILUInt32)value;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
+ * Convert "native float" into "long" with overflow testing.
+ */
+static IL_INLINE int F2LOvf(CVMWord *posn)
+{
+	ILNativeFloat value = ReadFloat(posn);
+	if(FLOAT_IS_FINITE(value))
+	{
+		if(value >= (ILNativeFloat)9223372036854775808.0 &&
+		   value < (ILNativeFloat)9223372036854775808.0)
+		{
+			WriteLong(posn, (ILInt64)value);
+			return 1;
+		}
+		else if(value < (ILNativeFloat)0.0)
+		{
+			/* Account for the range -9223372036854775809.0 to
+			   -9223372036854775808.0, which may get rounded
+			   off if we aren't careful */
+			value += (ILNativeFloat)9223372036854775808.0;
+			if(value > (ILNativeFloat)(-1.0))
+			{
+				WriteLong(posn, IL_MAX_INT64);
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+/*
+ * Convert "native float" into "ulong" with overflow testing.
+ */
+static IL_INLINE int F2LUOvf(CVMWord *posn)
+{
+	ILNativeFloat value = ReadFloat(posn);
+	if(FLOAT_IS_FINITE(value))
+	{
+ 		/* Some platforms cannot perform the conversion directly,
+ 		   so we need to do it in stages */
+		if(value < (ILNativeFloat)9223372036854775808.0)
+		{
+			WriteULong(posn, (ILUInt64)(ILInt64)value);
+			return 1;
+		}
+		else if(value < (ILNativeFloat)18446744073709551616.0)
+		{
+			ILInt64 temp = (ILInt64)(value - 9223372036854775808.0);
+			WriteULong(posn, (ILUInt64)(temp - IL_MIN_INT64));
+			return 1;
+		}
+	}
+	return 0;
+}
+
 #elif defined(IL_CVM_LOCALS)
 
 ILInt32 position;
@@ -180,8 +409,7 @@ case COP_LU2F:
 {
 	/* Convert from unsigned long to "native float" */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_LONG]),
-		(ILNativeFloat)(ReadULong
-							(&(stacktop[-CVM_WORDS_PER_LONG]))));
+			   LU2F(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG]))));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT -
 						   CVM_WORDS_PER_LONG);
 }
@@ -218,8 +446,8 @@ break;
 case COP_F2LU:
 {
 	/* Convert from "native float" to unsigned long */
-	WriteULong(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]), (ILUInt64)
-		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
+	WriteULong(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
+			   F2LU(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT -
 							 CVM_WORDS_PER_LONG));
 }
@@ -301,148 +529,296 @@ break;
 
 case COP_PREFIX_I2B_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "int" into "sbyte" with overflow testing */
+	if(stacktop[-1].intValue >= -128 && stacktop[-1].intValue <= 127)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_I2UB_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "int" into "byte" with overflow testing */
+	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 255)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_IU2B_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "uint" into "sbyte" with overflow testing */
+	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 127)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_IU2UB_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "uint" into "byte" with overflow testing */
+	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 255)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_I2S_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "int" into "short" with overflow testing */
+	if(stacktop[-1].intValue >= -32768 && stacktop[-1].intValue <= 32767)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_I2US_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "int" into "ushort" with overflow testing */
+	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 65535)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_IU2S_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "uint" into "short" with overflow testing */
+	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 32767)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_IU2US_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "uint" into "ushort" with overflow testing */
+	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 65535)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_I2IU_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "int" into "uint" with overflow testing */
+	if(stacktop[-1].intValue >= 0)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_IU2I_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "uint" into "int" with overflow testing */
+	if(stacktop[-1].intValue >= 0)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_I2UL_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "int" into "ulong" with overflow testing */
+	if(stacktop[-1].intValue >= 0)
+	{
+		WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].intValue));
+		MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_LONG - 1);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_L2I_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "long" into "int" with overflow testing */
+	if(L2IOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
+	{
+		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_L2UI_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "long" into "uint" with overflow testing */
+	if(L2UIOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
+	{
+		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_LU2I_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "ulong" into "int" with overflow testing */
+	if(LU2IOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
+	{
+		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_LU2IU_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "ulong" into "uint" with overflow testing */
+	if(LU2UIOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
+	{
+		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_LONG);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_L2UL_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "long" into "ulong" with overflow testing */
+	if(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])) >= 0)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_LU2L_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "ulong" into "long" with overflow testing */
+	if(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])) <= (ILUInt64)IL_MAX_INT64)
+	{
+		MODIFY_PC_AND_STACK(2, 0);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_F2I_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "native float" into "int" with overflow testing */
+	if(F2IOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
+	{
+		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_NATIVE_FLOAT);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_F2IU_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "native float" into "uint" with overflow testing */
+	if(F2UIOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
+	{
+		MODIFY_PC_AND_STACK(2, 1 - CVM_WORDS_PER_NATIVE_FLOAT);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_F2L_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "native float" into "long" with overflow testing */
+	if(F2LOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
+	{
+		MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_LONG - CVM_WORDS_PER_NATIVE_FLOAT);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 
 case COP_PREFIX_F2LU_OVF:
 {
-	/* TODO */
-	MODIFY_PC_AND_STACK(2, 0);
+	/* Convert "native float" into "long" with overflow testing */
+	if(F2LUOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
+	{
+		MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_LONG - CVM_WORDS_PER_NATIVE_FLOAT);
+	}
+	else
+	{
+		OVERFLOW_EXCEPTION();
+	}
 }
 break;
 

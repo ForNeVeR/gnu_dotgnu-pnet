@@ -24,6 +24,8 @@ engine/cvm_conv.c: implement the "box" instruction.
 
 * engine/verify_obj.c: implement "IsSubClass" for array and other types.
 
+* engine/cvm_conv.c: implement the remaining CVM conversion opcodes.
+
 2001-10-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/doc_texi.c: fixed a bug in the handling

@@ -1,4 +1,15 @@
 
+2002-07-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Crypto.txt,
+	runtime/System/Security/Cryptography/ASN1Builder.cs,
+	runtime/System/Security/Cryptography/CryptoConfig.cs,
+	runtime/System/Security/Cryptography/DSAParameters.cs,
+	runtime/System/Security/Cryptography/PasswordDeriveBytes.cs,
+	runtime/System/Security/Cryptography/RSAParameters.cs,
+	runtime/System/Security/Cryptography/SignatureDescription.cs:
+	continue implementation of cryptography classes.
+
 2002-07-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Crypto.txt,

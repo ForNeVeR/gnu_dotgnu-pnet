@@ -46,3 +46,6 @@ Crypto_RSAParamsNotSet=The RSA parameters have not been set
 Crypto_InvalidRSAParams=Invalid RSA parameters
 Crypto_MD5OrSHA1=The hash algorithm must be MD5 or SHA-1
 Crypto_NeedsRSA=RSA algorithm instance required
+Crypto_HashAlreadySet=The hash algorithm has already been set
+Crypto_CountAlreadySet=The iteration count has already been set
+Crypto_SaltAlreadySet=The salt bytes have already been set

@@ -140,6 +140,61 @@ public class CryptoConfig
 			"Rijndael",			typeof(RijndaelManaged),
 			"System.Security.Cryptography.Rijndael",
 								typeof(RijndaelManaged),
+
+			"PKCS1MaskGenerationMethod",
+								typeof(PKCS1MaskGenerationMethod),
+			"System.Security.Cryptography.MaskGenerationMethod",
+								typeof(MaskGenerationMethod),
+			"System.Security.Cryptography.PKCS1MaskGenerationMethod",
+								typeof(PKCS1MaskGenerationMethod),
+
+			"RSAPKCS1KeyExchangeFormatter",
+								typeof(RSAPKCS1KeyExchangeFormatter),
+			"System.Security.Cryptography.RSAPKCS1KeyExchangeFormatter",
+								typeof(RSAPKCS1KeyExchangeFormatter),
+			"System.Security.Cryptography.AsymmetricKeyExchangeFormatter",
+								typeof(RSAPKCS1KeyExchangeFormatter),
+
+			"RSAOAEPKeyExchangeFormatter",
+								typeof(RSAOAEPKeyExchangeFormatter),
+			"System.Security.Cryptography.RSAOAEPKeyExchangeFormatter",
+								typeof(RSAOAEPKeyExchangeFormatter),
+
+			"RSAPKCS1KeyExchangeDeformatter",
+								typeof(RSAPKCS1KeyExchangeDeformatter),
+			"System.Security.Cryptography.RSAPKCS1KeyExchangeDeformatter",
+								typeof(RSAPKCS1KeyExchangeDeformatter),
+			"System.Security.Cryptography.AsymmetricKeyExchangeDeformatter",
+								typeof(RSAPKCS1KeyExchangeDeformatter),
+
+			"RSAOAEPKeyExchangeDeformatter",
+								typeof(RSAOAEPKeyExchangeDeformatter),
+			"System.Security.Cryptography.RSAOAEPKeyExchangeDeformatter",
+								typeof(RSAOAEPKeyExchangeDeformatter),
+
+			"RSAPKCS1SignatureFormatter",
+								typeof(RSAPKCS1SignatureFormatter),
+			"System.Security.Cryptography.RSAPKCS1SignatureFormatter",
+								typeof(RSAPKCS1SignatureFormatter),
+			"System.Security.Cryptography.AsymmetricSignatureFormatter",
+								typeof(RSAPKCS1SignatureFormatter),
+
+			"RSAPKCS1SignatureDeformatter",
+								typeof(RSAPKCS1SignatureDeformatter),
+			"System.Security.Cryptography.RSAPKCS1SignatureDeformatter",
+								typeof(RSAPKCS1SignatureDeformatter),
+			"System.Security.Cryptography.AsymmetricSignatureDeformatter",
+								typeof(RSAPKCS1SignatureDeformatter),
+
+			"DSASignatureFormatter",
+								typeof(DSASignatureFormatter),
+			"System.Security.Cryptography.DSASignatureFormatter",
+								typeof(DSASignatureFormatter),
+
+			"DSASignatureDeformatter",
+								typeof(DSASignatureDeformatter),
+			"System.Security.Cryptography.DSASignatureDeformatter",
+								typeof(DSASignatureDeformatter),
 		};
 
 	// Table that maps algorithm names to OID's.

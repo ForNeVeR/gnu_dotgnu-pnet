@@ -34,8 +34,8 @@ using System.Collections;
 internal class ASN1Builder
 {
 	// Internal state.
-	protected ASN1Type type;
-	private ArrayList  list;
+	protected ASN1Type  type;
+	protected ArrayList list;
 
 	// Constructors.
 	public ASN1Builder() : this(ASN1Type.Sequence) {}
@@ -92,6 +92,10 @@ internal class ASN1Builder
 	public void AddBitString(byte[] value)
 			{
 				list.Add(new ASN1BitStringBuilder(ASN1Type.BitString, value));
+			}
+	public ASN1Builder AddBitStringContents()
+			{
+				return new ASN1BitStringContentsBuilder(ASN1Type.BitString);
 			}
 
 	// Add a string to this builder.
@@ -613,6 +617,45 @@ internal class ASN1Builder
 			}
 
 	}; // class ASN1BitStringBuilder
+
+	// Builder node that stores a bit string in "contents" mode.
+	private class ASN1BitStringContentsBuilder : ASN1Builder
+	{
+		// Constructor.
+		public ASN1BitStringContentsBuilder(ASN1Type type) : base(type) {}
+
+		// Get the length of this builder when it is encoded using DER.
+		protected override int GetLength()
+			{
+				int len = 1;
+				foreach(ASN1Builder builder in list)
+				{
+					len += builder.GetLength();
+				}
+				return 1 + GetBytesForLength(len) + len;
+			}
+
+		// Encode this builder in a byte array as DER.  Returns the length.
+		protected override int Encode(byte[] result, int offset)
+			{
+				int start = offset;
+				int len = 1;
+				int hdrlen;
+				foreach(ASN1Builder builder in list)
+				{
+					len += builder.GetLength();
+				}
+				result[offset++] = (byte)type;
+				offset += EncodeLength(result, offset, len);
+				result[offset++] = (byte)0;
+				foreach(ASN1Builder builder in list)
+				{
+					offset += builder.Encode(result, offset);
+				}
+				return offset - start;
+			}
+
+	}; // class ASN1BitStringContentsBuilder
 
 }; // class ASN1Builder
 

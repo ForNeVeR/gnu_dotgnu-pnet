@@ -143,17 +143,33 @@ public struct DSAParameters
 			}
 
 	// Convert DSA public parameters into an ASN.1 buffer.
-	internal void PublicToASN1(ASN1Builder builder)
+	internal void PublicToASN1(ASN1Builder builder, bool x509)
 			{
-				builder.AddBigInt(P);
-				builder.AddBigInt(Q);
-				builder.AddBigInt(G);
-				builder.AddBigInt(Y);
+				if(x509)
+				{
+					// Output an X.509 "SubjectPublicKeyInfo" block.
+					ASN1Builder alg = builder.AddSequence();
+					alg.AddObjectIdentifier(dsaID);
+					ASN1Builder inner = alg.AddSequence();
+					inner.AddBigInt(P);
+					inner.AddBigInt(Q);
+					inner.AddBigInt(G);
+					ASN1Builder bitString = builder.AddBitStringContents();
+					bitString.AddBigInt(Y);
+				}
+				else
+				{
+					// Output the raw public parameters.
+					builder.AddBigInt(P);
+					builder.AddBigInt(Q);
+					builder.AddBigInt(G);
+					builder.AddBigInt(Y);
+				}
 			}
-	internal byte[] PublicToASN1()
+	internal byte[] PublicToASN1(bool x509)
 			{
 				ASN1Builder builder = new ASN1Builder();
-				PublicToASN1(builder);
+				PublicToASN1(builder, x509);
 				return builder.ToByteArray();
 			}
 

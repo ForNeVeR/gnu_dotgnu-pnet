@@ -150,7 +150,8 @@ public struct RSAParameters
 					ASN1Builder alg = builder.AddSequence();
 					alg.AddObjectIdentifier(rsaID);
 					alg.AddNull();
-					ASN1Builder inner = builder.AddSequence();
+					ASN1Builder bitString = builder.AddBitStringContents();
+					ASN1Builder inner = bitString.AddSequence();
 					inner.AddBigInt(Modulus);
 					inner.AddBigInt(Exponent);
 				}

@@ -264,7 +264,7 @@ public class IPAddress
 					try
 					{
 						retval[i] =
-							UInt16.Parse("0x"+toks[i],NumberStyles.HexNumber);
+							UInt16.Parse(toks[i],NumberStyles.HexNumber);
 					}
 					catch(OverflowException)
 					{

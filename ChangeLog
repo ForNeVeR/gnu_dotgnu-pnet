@@ -1,4 +1,9 @@
 
+2004-05-22  Gopal V  <gopalv82@yahoo.com>
+
+	* System/Net/IPAddress.cs: Remove hex prefix (0x) during parsing 
+	of IPv6 address blocks.
+
 2004-04-23  Ilyak Kasnacheev <ilyak@online.ru>
 
 	* Xsharp/Dcop/DcopClient.cs, Xsharp/Dcop/DcopReply.cs, 
@@ -11,7 +16,6 @@
 	Xsharp/Ice/IceReplyWaitInfo.cs: Huge patch to enable DCOP Support 
 	for Xsharp , features deserialization of QData , changes to ICE
 	to fix a segfault. (patch #3087, some bits re-done by Gopal)
-
 
 2004-05-22  Richard Baumann  <biochem333@nyc.rr.com>
 

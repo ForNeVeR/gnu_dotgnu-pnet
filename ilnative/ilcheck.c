@@ -26,19 +26,25 @@
 #include "il_dumpasm.h"
 #include "il_utils.h"
 #include "il_engine.h"
-#include "../engine/engine.h"
+#define OUT_OF_MEMORY() fprintf(stderr,"%s: out of memory \n",progname);
+#ifdef	__cplusplus
+extern	"C" {
+#endif
 
-typedef struct _ILDiffDict
+static char* progname;
+
+typedef struct _ILDict
 {
 	char *name;
 	void *info;
-	struct _ILDiffDict *methods;
-	struct _ILDiffDict *prev;
+	struct _ILDict *methods;
+	struct _ILDict *prev;
 }ILDict;
 
 ILDict * ILDict_new(ILDict *prev,char *name)
 {
 	ILDict *retval=(ILDict*)calloc(1,sizeof(ILDict));
+	if(!retval)OUT_OF_MEMORY();
 	if(name!=NULL)retval->name=name;
 	retval->prev=prev;
 	return retval;
@@ -54,19 +60,17 @@ ILDict * ILDict_search(ILDict *end,char *name)
 	return NULL;
 }
 
-ILDict *klasses;
-#ifdef	__cplusplus
-extern	"C" {
-#endif
+static ILDict *klasses;
 
 /*
  * Table of command-line options.
  */
 static ILCmdLineOption const options[] = {
 	{"-v", 'v', 0, 0, 0},
-	{"-a",'a',0,"-a","output all internal calls"},
-	{"--all",'a',0,0,0},
-	{"-fxml",'f',1,"-fxml","output XML instead of human-readable text"},
+	{"-a",'a',0,0,0},
+	{"--all",'a',0,"-a or --all"," output info for all methods"},
+	{"--xml",'x',0,"--xml","output XML instead of human-readable text"},
+	{"-L",'l',2,"-L","add library to search path"},
 	{"--version", 'v', 0,
 		"--version    or -v",
 		"Print the version of the program."},
@@ -81,14 +85,31 @@ static void version(void);
 static int printNatives(const char *filename, ILContext *context,
 						int xml,int all);
 
+//snitched from some of rhys's code
+static void AddString(char ***list, int *num, char *str)
+{
+	char **newlist = (char **)ILRealloc(*list, sizeof(char *) * (*num + 1));
+	if(!newlist)
+	{
+		OUT_OF_MEMORY();
+		return;
+	}
+	*list = newlist;
+	(*list)[*num] = str;
+	++(*num);
+}
+
+
 int main(int argc, char *argv[])
 {
-	char *progname = argv[0];
 	int sawStdin;
 	int state, opt;
 	char *param;
 	int errors,xml=0,all=0;
 	ILContext *context;
+	char **libraryDirs=NULL;
+	int numLibraryDirs=0;
+	progname = argv[0];
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -103,7 +124,7 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 			/* Not reached */
-			case 'f':
+			case 'x':
 			{
 				xml=1;
 				break;
@@ -111,6 +132,19 @@ int main(int argc, char *argv[])
 			case 'a':
 			{
 				all=1;
+				break;
+			}
+#ifdef DEBUG
+			case -1:
+			{
+				fprintf(stderr,"Got <%c> instead of valid option\n",opt);
+				return 0;
+				break;
+			}
+#endif
+			case 'l':
+			{
+				AddString(&(libraryDirs),&(numLibraryDirs),param);
 				break;
 			}
 			default:
@@ -129,14 +163,14 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	/* Create a context to use for image loading */
 	context = ILContextCreate();
+	/* Create a context to use for image loading */
 	if(!context)
 	{
 		fprintf(stderr, "%s: out of memory\n", progname);
 		return 1;
 	}
-
+	ILContextSetLibraryDirs(context,libraryDirs,numLibraryDirs);
 	/* Load and print information about the input files */
 	sawStdin = 0;
 	errors = 0;
@@ -169,7 +203,7 @@ int main(int argc, char *argv[])
 
 static void usage(const char *progname)
 {
-	fprintf(stdout, "ILCHECK " VERSION " - IL Internal Call Check \n");
+	fprintf(stdout, "ILCHECK " VERSION " - IL PInvoke Check \n");
 	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
 	fprintf(stdout, "          (c) 2002 FSF India.\n");
 	fprintf(stdout, "\n");
@@ -181,7 +215,7 @@ static void usage(const char *progname)
 static void version(void)
 {
 
-	printf("ILCHECK " VERSION " - IL Internal Call Check \n");
+	printf("ILCHECK " VERSION " - IL PInvoke Check \n");
 	printf("Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
 	printf("          (c) 2002 FSF India.\n");
 	printf("\n");
@@ -192,41 +226,45 @@ static void version(void)
 	printf("Use the `--help' option to get help on the command-line options.\n");
 }
 
+
 /*
  * Dump information about a native method.
  */
-static void dumpMethodInfoTxt(ILImage *image, ILMethod *method,char *stat)
+static void dumpMethodInfo(ILImage *image, ILMethod *method,char *stat,int xml)
 {
 	/* Dump the method attributes */
-	ILDumpFlags(stdout, ILMethod_Attrs(method),
+	if(xml)
+	{
+		printf("\t <pinvoke name=\"%s\" ",ILMethod_Name(method));
+		printf("class = \"%s.%s\" ",
+				ILClass_Namespace(ILMethod_Owner(method)),
+				ILClass_Name(ILMethod_Owner(method)));
+		printf(" signature=\" ");
+		/* Dump the method signature */
+		ILDumpMethodType(stdout, image, ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method), ILMethod_Name(method),
+					 method);
+		/* Terminate the line */
+		printf("\" status=\"%s\"/>\n",stat);
+	}
+	else
+	{
+		ILDumpFlags(stdout, ILMethod_Attrs(method),
 				ILMethodDefinitionFlags, 0);
 
-	/* Dump the method signature */
-	ILDumpMethodType(stdout, image, ILMethod_Signature(method), 0,
+		/* Dump the method signature */
+		ILDumpMethodType(stdout, image, ILMethod_Signature(method), 0,
 					 ILMethod_Owner(method), ILMethod_Name(method),
 					 method);
-	putc(' ', stdout);
+		putc(' ', stdout);
 
-	/* Dump the implementation flags */
-	ILDumpFlags(stdout, ILMethod_ImplAttrs(method),
+		/* Dump the implementation flags */
+		ILDumpFlags(stdout, ILMethod_ImplAttrs(method),
 				ILMethodImplementationFlags, 0);
 
-	/* Terminate the line */
-	putc('\n', stdout);
-}
-
-static void dumpMethodInfoXml(ILImage *image, ILMethod *method,char *stat)
-{
-	/* Dump the method attributes */
-	printf("\t <internalcall name=\"%s\"",ILMethod_Name(method));
-	printf("class = \"%s.%s\" ",ILClass_Namespace(ILMethod_Owner(method)),ILClass_Name(ILMethod_Owner(method)));
-	printf(" signature=\"");
-	/* Dump the method signature */
-	ILDumpMethodType(stdout, image, ILMethod_Signature(method), 0,
-					 ILMethod_Owner(method), ILMethod_Name(method),
-					 method);
-	/* Terminate the line */
-	printf("\" status=\"%s\"/>\n",stat);
+		/* Terminate the line */
+		putc('\n', stdout);
+	}
 }
 static void addmethodinfo(ILImage *image, ILMethod *method,char *stat)
 {
@@ -241,6 +279,35 @@ static void addmethodinfo(ILImage *image, ILMethod *method,char *stat)
 	this_class->methods=ILDict_new(this_class->methods,stat);
 	this_class->methods->info=method;
 }
+
+static int FindPInvoke(ILMethod *method)
+{
+	ILPInvoke *pinvoke;
+	void *handle;
+	char *module_name=NULL;
+	if(!method)return 0;
+	pinvoke=ILPInvokeFind(method);
+	if(!pinvoke)return 0;
+	module_name=ILPInvokeResolveModule(pinvoke);
+	if(!ILFileExists(module_name,NULL))
+	{
+		fprintf(stderr,"%s: File does not exist '%s' \n",progname,module_name);
+		return -1;
+	}
+	handle=ILDynLibraryOpen(module_name);
+	if(!handle)
+	{
+		fprintf(stderr,"%s: Could not dlopen '%s' \n",progname,module_name);
+		return -1;
+	}
+	if(!ILDynLibraryGetSymbol(handle,ILMethod_Name(method)))
+	{
+		return 0;
+		//the func will throw it's own error message :-(
+	}
+	ILDynLibraryClose(handle);
+	return 1;
+}
 /*
  * Load an IL image an display the native methods.
  */
@@ -251,9 +318,9 @@ static int printNatives(const char *filename, ILContext *context,
 	unsigned long numMethods;
 	unsigned long token;
 	ILMethod *method;
-	ILInternalInfo info;
 	
-	ILDict *klass,*mthd;
+	ILDict *klass, *mthd;
+	int error;
 	
 	klasses=ILDict_new(NULL,"<start>");
 	/* Attempt to load the image into memory */
@@ -273,10 +340,14 @@ static int printNatives(const char *filename, ILContext *context,
 									(image, IL_META_TOKEN_METHOD_DEF | token);
 		if(method)
 		{
-			if(ILMethod_IsInternalCall(method) ||
-			        ILMethod_IsNative(method))
+			if(ILMethod_HasPInvokeImpl(method))
 			{								
-				if(!_ILFindInternalCall(method,0,&info))
+				error=FindPInvoke(method);
+				if(error==-1)
+				{
+					break;
+				}
+				else if(!error)
 				{
 					addmethodinfo(image,method,"MISSING");
 				}
@@ -287,7 +358,7 @@ static int printNatives(const char *filename, ILContext *context,
 			}
 		}
 	}
-	if(xml)printf("<InternalCallStatus>\n");
+	if(xml)printf("<PInvokeCallStatus>\n");
 	for(klass=klasses;klass->prev!=NULL;klass=klass->prev)
 	{
 		if(xml)
@@ -296,15 +367,14 @@ static int printNatives(const char *filename, ILContext *context,
 		}
 		for(mthd=klass->methods;mthd!=NULL;mthd=mthd->prev)
 		{
-			if(xml)dumpMethodInfoXml(image,mthd->info,mthd->name);
-			else dumpMethodInfoTxt(image,mthd->info,mthd->name);
+			dumpMethodInfo(image,mthd->info,mthd->name,xml);
 		}
 		if(xml)
 		{
 			printf("</class>\n");
 		}
 	}
-	if(xml)printf("</InternalCallStatus>\n");
+	if(xml)printf("</PInvokeCallStatus>\n");
 	/* Clean up and exit */
 	ILImageDestroy(image);
 	return 0;

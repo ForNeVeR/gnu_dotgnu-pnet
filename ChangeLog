@@ -1,4 +1,9 @@
 
+2002-06-26  Gopal.V  <gopalv82@symonds.net>
+
+	* ilnative/ilcheck.c : repurpose it for checking for PInvoke 
+	calls and their images in the DSO files.	
+
 2002-06-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ildb/ildb_display.c, ildb/ildb_utils.h: debugger support for

@@ -4,6 +4,8 @@
 	* runtime/System/Makefile.am, runtime/System/Threading/Timer.cs,
 	runtime/System/Threading/TimerCallback.cs: new timer classes.
 
+	* runtime/System/String.cs: begin implementing "String.Format".
+
 2002-03-10  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Moved some const Strings here, fixed

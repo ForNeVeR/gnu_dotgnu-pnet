@@ -599,8 +599,42 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					throw new ArgumentNullException("args");
 				}
-				// TODO
-				return format;
+				System.Text.StringBuilder sb= new System.Text.StringBuilder();
+				for( int i=0 ; i< format.Length ; i++)
+				{
+					String nextChar = format.SubString(i,1);
+					if(String.Equals(nextChar,"{"))
+					{
+						if(String.Equals( format.SubString(i+1,1),"{"))
+						{
+							sb.Appand("{");
+							i++;
+							continue;
+						}
+						else
+						{
+						//TODO : get the args number and format it.
+						}
+					}
+					else if(String.Equals( nextChar,"}"))
+					{
+						if(String.Equals( format.SubString(i+1,1),"}"))
+						{
+							sb.Appand("}");
+							i++;
+							continue;
+						}
+						else
+						{
+						//TODO : get the args number and format it.
+						}
+					}
+					else
+					{
+						sb.Append(nextChar);
+					}
+				}
+				return sb.ToString();
 			}
 
 	// Get an enumerator for this string.

@@ -48,10 +48,10 @@ extern	"C" {
  * This pointer is known as the object's lockword.
  * If an object's lockword is 0, the algorithm knows *for sure* that the object is
  * unlocked and will then use a compare-and-exchange to to attach a monitor
- * to the object.  When a thread completly exits a monitor, the monitor is
+ * to the object.  When a thread completely exits a monitor, the monitor is
  * returned to a thread-local free list and the objects' lockword is reset to 0.
  * Because objects are always properly aligned on word boundaries, the first
- * (and second) bits of the pointer/object-lockword is always zero allowing us to 
+ * (and second) bits of the pointer/object-lockword are always zero allowing us to 
  * utilize them to store other bits of information.  The first bit of the 
  * lockword is used as a spin lock so that the algorithm can, at necessary 
  * critical sections, prevent other thread from changing the monitor and/or
@@ -85,7 +85,7 @@ extern	"C" {
  * This file includes support/wait_mutex.h so that it can have fast access
  * to certain data structures.  These structures should never be accessed
  * directly but should be accessed through MACROs or inline functions
- * define in support/wait_mutex.h.
+ * defined in support/wait_mutex.h.
  *
  * You can enable thin-locks by configuring pnet with the full-tl profile (1).
  *

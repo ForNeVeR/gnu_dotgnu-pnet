@@ -39,6 +39,9 @@
 	* Generics/ArrayQueue.cs, Generics/IQueue.cs, Generics/Queue.cs:
 	rename Queue<T> to ArrayQueue<T> and add the IQueue<T> interface.
 
+	* runtime/System/Collections/Queue.cs: bug in Queue.Enqueue() - the
+	new item was not pushed when the queue was reallocated.
+
 2003-02-21  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/Version.cs: == and != operator overloading for 

@@ -260,6 +260,9 @@ class Queue : ICollection, IEnumerable, ICloneable
 					items = newItems;
 					add = size;
 					remove = 0;
+					items[add] = obj;
+					add = (add + 1) % items.Length;
+					++size;
 				}
 				++generation;
 			}

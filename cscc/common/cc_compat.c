@@ -414,6 +414,8 @@ static CmdLineOpt const compatOptions[] = {
 			N_("/debug[+|-]"),
 			N_("Specify the debug information mode")},
 	{"/debug+",		0,	&debug_flag,			1,	0, 0, 0},
+	{"/debug:full", 0,  &debug_flag,			1,	0, 0, 0},
+	{"/debug:pdbonly", 0, &debug_flag,			1,	0, 0, 0},
 	{"/debug-",		0,	&debug_flag,			0,	0, 0, 0},
 	{"/lib",		4,	0,						0,	libOption,
 			N_("/lib:<dirs>"),

@@ -53,7 +53,7 @@ public interface IMethodMessage : IMessage
 	String TypeName { get; }
 
 	// Get the called object's URI.
-	String Uri { get; }
+	String Uri { get; set; }
 
 	// Get a specific argument.
 	Object GetArg(int argNum);

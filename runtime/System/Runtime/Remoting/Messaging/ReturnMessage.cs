@@ -162,6 +162,10 @@ public class ReturnMessage : IMethodReturnMessage, IMethodMessage, IMessage
 				{
 					return mcm.Uri;
 				}
+				set
+				{
+					mcm.Uri = value;
+				}
 			}
 	public Object GetArg(int argNum)
 			{

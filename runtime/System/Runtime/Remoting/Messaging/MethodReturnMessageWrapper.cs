@@ -110,6 +110,10 @@ public class MethodReturnMessageWrapper
 				{
 					return mrm.Uri;
 				}
+				set
+				{
+					mrm.Uri = value;
+				}
 			}
 	public virtual Object GetArg(int argNum)
 			{

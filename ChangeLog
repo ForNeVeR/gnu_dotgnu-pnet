@@ -1,4 +1,13 @@
 
+2004-08-04  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Runtime/Remoting/Messaging/IMethodMessage.cs,
+	runtime/System/Runtime/Remoting/Messaging/MethodCallMessageWrapper.cs,
+	runtime/System/Runtime/Remoting/Messaging/MethodReturnMessageWrapper.cs,
+	runtime/System/Runtime/Remoting/Messaging/NullMessage.cs,
+	runtime/System/Runtime/Remoting/Messaging/ReturnMessage.cs: Uri property 
+	of IMethodMessage has a set accessor as well as a get.
+
 2004-08-03  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XmlDocument.cs: Remove the explicit cast to XmlTextReader,

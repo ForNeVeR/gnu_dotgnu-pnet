@@ -104,6 +104,10 @@ internal class NullMessage : IMessage, IMethodMessage, IMethodCallMessage
 				{
 					return "Exception";
 				}
+				set
+				{
+					// Nothing
+				}
 			}
 	public Object GetArg(int argNum)
 			{

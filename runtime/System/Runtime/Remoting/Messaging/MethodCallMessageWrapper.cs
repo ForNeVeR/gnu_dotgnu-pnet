@@ -110,6 +110,10 @@ public class MethodCallMessageWrapper
 				{
 					return mcm.Uri;
 				}
+				set
+				{
+					mcm.Uri = value;
+				}
 			}
 	public virtual int InArgCount
 			{

@@ -23,6 +23,7 @@
 
 #include <cscc/common/cc_errors.h>
 #include <cscc/common/cc_options.h>
+#include <cscc/common/cc_preproc.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -109,6 +110,11 @@ extern ILNode *CCParseTreeEnd;
  * Global definition scope.
  */
 extern ILScope *CCGlobalScope;
+
+/*
+ * Pre-processor stream.
+ */
+CCPreProc CCPreProcessorStream;
 
 /*
  * Main entry point.  Call this from the plugin's "main".

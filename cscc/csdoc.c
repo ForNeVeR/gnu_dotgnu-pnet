@@ -80,6 +80,7 @@ int CCPluginParse(void)
 
 void CCPluginRestart(FILE *infile)
 {
+	CCPreProcessorStream.docComments = 1;
 	cs_restart(infile);
 }
 
@@ -207,6 +208,10 @@ static void DumpDocComments(FILE *stream, ILNode *attrs, int indent)
 	char *str;
 	int len;
 	int sawComment = 0;
+	if(attrs && yyisa(attrs, ILNode_AttributeTree))
+	{
+		attrs = ((ILNode_AttributeTree *)attrs)->sections;
+	}
 	ILNode_ListIter_Init(&iter, attrs);
 	while((node = ILNode_ListIter_Next(&iter)) != 0)
 	{
@@ -257,6 +262,10 @@ static void DumpDocComments(FILE *stream, ILNode *attrs, int indent)
  */
 static void DumpAttributes(FILE *stream, ILNode *attrs, int indent)
 {
+	if(attrs && yyisa(attrs, ILNode_AttributeTree))
+	{
+		attrs = ((ILNode_AttributeTree *)attrs)->sections;
+	}
 	/* TODO */
 	Indent(stream, indent);
 	fputs("<Attributes/>\n", stream);

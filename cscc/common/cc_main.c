@@ -44,7 +44,7 @@ static void ParseFile(FILE *file, const char *filename, int is_stdin);
 /*
  * State for the pre-processor.
  */
-static CCPreProc CCPreProcessorStream;
+CCPreProc CCPreProcessorStream;
 static FILE *preproc_outfile = 0;
 static int preproc_is_stdout = 0;
 static const char *preproc_filename = 0;

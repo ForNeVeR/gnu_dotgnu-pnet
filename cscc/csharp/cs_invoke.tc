@@ -1301,6 +1301,7 @@ static ILType *GetItemSignature(ILProgramItem *item)
 	ILMethod *method;
 	ILProperty *property;
 	ILClass *classInfo;
+	ILEvent *event;
 
 	/* Determine what kind of item we are dealing with */
 	if((method = ILProgramItemToMethod(item)) != 0)
@@ -1320,7 +1321,11 @@ static ILType *GetItemSignature(ILProgramItem *item)
 			return ILMethod_Signature(method);
 		}
 	}
-
+	else if((event = ILProgramItemToEvent(item)) != 0)
+	{
+		return ILEvent_Type(event);
+	}
+	
 	/* If we get here, then we do not know how to obtain the signature */
 	return 0;
 }
@@ -1732,6 +1737,7 @@ const char *CSItemToName(ILProgramItem *item)
 	ILProperty *property;
 	ILClass *classInfo;
 	ILClass *owner;
+	ILEvent *event;
 
 	/* Get the name of the item, and find an underlying method */
 	if((method = ILProgramItemToMethod(item)) != 0)
@@ -1758,6 +1764,13 @@ const char *CSItemToName(ILProgramItem *item)
 		method = GetDelegateInvoke(classInfo);
 		owner = classInfo;
 	}
+	else if((event = ILProgramItemToEvent(item)) != 0)
+	{
+		name = ILEvent_Name(event);
+		kind = IL_META_MEMBERKIND_EVENT;
+		method = 0;
+		owner = ILEvent_Owner(event);
+	}
 	else
 	{
 		name = "unknown";
@@ -1783,12 +1796,37 @@ const char *CSItemToName(ILProgramItem *item)
 	/* Get the type of the class that contains the method */
 	type = (owner ? ILType_FromClass(owner) : 0);
 
-	/* The formatting is slightly different for constructors */
-	if(!strcmp(name, ".ctor") || !strcmp(name, ".cctor"))
+	/* add the "event" if it is an event */
+	if(kind == IL_META_MEMBERKIND_EVENT)
 	{
+		str = ILInternAppendedString(str, ILInternString("event ", 6));
+
+		/* Convert the event type into a string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName
+										(signature), -1));
+		str = ILInternAppendedString(str, ILInternString(" ", 1));
+		
 		/* Append the class name to the string */
 		str = ILInternAppendedString
 				(str, ILInternString((char *)CSTypeToName(type), -1));
+
+		/* Append a dot to the string */
+		str = ILInternAppendedString(str, ILInternString(".", 1));
+
+		/* Append the event name to the string */
+		str = ILInternAppendedString(str, ILInternString((char *)name, -1));
+		
+		/* return final string to caller */
+		return str.string;
+		
+	}
+	/* The formatting is slightly different for constructors */
+	else if(!strcmp(name, ".ctor") || !strcmp(name, ".cctor"))
+	{
+		/* Append the class name to the string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName(type), -1));	
 	}
 	else
 	{
@@ -1818,7 +1856,7 @@ const char *CSItemToName(ILProgramItem *item)
 	{
 		str = ILInternAppendedString(str, ILInternString("[", 1));
 	}
-	else
+	else 
 	{
 		str = ILInternAppendedString(str, ILInternString("(", 1));
 	}

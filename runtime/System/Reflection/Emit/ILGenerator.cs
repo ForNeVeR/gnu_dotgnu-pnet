@@ -368,7 +368,7 @@ public class ILGenerator : IDetachItem
 				{
 					LabelInfo[] newLabels = new LabelInfo [numLabels * 2];
 					Array.Copy(labels, 0, newLabels, 0, numLabels);
-					newLabels = labels;
+					labels = newLabels;
 				}
 				return new Label(numLabels++);
 			}
@@ -722,7 +722,7 @@ public class ILGenerator : IDetachItem
 					longForm = opcode.value;
 					if(longForm >= 0x38 && longForm <= 0x44)
 					{
-						shortForm = longForm - 0x2B + 0x38;
+						shortForm = longForm + 0x2B - 0x38;
 					}
 					else
 					{

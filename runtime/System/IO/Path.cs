@@ -173,6 +173,10 @@ namespace System.IO
 					/* Hack : instead of 'removing' , I just trim it 
 					   like this , faster this way */
 				}
+				else if(frags[i]==".")
+				{
+					// do nothing
+				}
 				else if(frags[i].Length>0)
 				{
 					sb.Append('/');
@@ -306,13 +310,3 @@ namespace System.IO
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-

@@ -1,3 +1,13 @@
+2003-08-05  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/IO/Path.cs: fix to GetFullPath for handling ".".
+
+	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: fixes to Save and
+	constructor for handling the save directory.
+
+	* runtime/System/Reflection/Emit/ILGenerator.cs: fix to DefineLabel
+	for labels array resizing, and fix to Emit(OpCode, Label) for converting
+	long form branches to short form branches.
 
 2003-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -53,7 +53,7 @@ public sealed class AssemblyBuilder : Assembly
 							 String directory, bool isSynchronized)
 			{
 				this.access = access;
-				this.directory = directory;
+				this.directory = (directory == null) ? "." : directory;
 				this.isSynchronized = isSynchronized;
 				this.saved = false;
 				this.entryPoint = null;
@@ -334,9 +334,13 @@ public sealed class AssemblyBuilder : Assembly
 				{
 					throw new InvalidOperationException(/* TODO */);
 				}
+				directory = Path.GetFullPath(directory);
+				if (!Directory.Exists(directory))
+				{
+					throw new ArgumentException(/* TODO */);
+				}
+				String path = Path.Combine(directory, assemblyFileName);
 				/* TODO: the rest of the exception throwing checks */
-				String path = directory+assemblyFileName;
-				/* TODO: checks on the dir and filename */
 				IntPtr entry = IntPtr.Zero;
 				if (entryPoint != null)
 				{

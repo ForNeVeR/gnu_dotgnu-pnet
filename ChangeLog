@@ -1,4 +1,43 @@
+2004-06-12  Thong Nguyen  <tum@veridicus.com>
 
+	* include/il_gc.h, support/def_gc.c, support/hb_gc.c: Added timeout
+	& return values to ILGCinvokeFinalizers & ILGCDisableFinalizers.
+	
+	* support/hb_gc: Tidy up finalization code.  Added support for
+	running finalization on the main thread if there is only one thread
+	(for performance).  Added support for interruption/abortion
+	of ILGCInvokeFinalizers & ILCDisableFinalizers.
+	
+	* support/thr_defs.h, support/thread.c: Removed TerminateThread from
+	ILThreadDestroy because it is unsafe and deferred destroying until
+	the thread is actually finished.
+	
+	* support/w32_defs.h: Included windows.h.
+
+	* engine/convert.c, engine/heap.c: Updated calls to
+	ILGCDisableFinalizers & ILGCInvokeFinalizers with timeouts.
+	
+	* engine/cvm_call.c: Refactored CHECK_ABORT so it uses the new
+	_ILExecThreadSelfAborting function.
+	
+	* engine/engine.h, engine/thread.c: Added _ILexecThreadAbort,
+	_ILExecThreadSelfAborting, _ILExecThreadHandleWaitResult.
+	
+	* engine/cvm.h, engine/cvm_lengths.c: Added lengths for new CVM
+	instructions.
+	
+	* engine/lib_gc.c: Added support for interruption/abortion of
+	GC.InvokeFinalizers.
+	
+	* engine/lib_monitor.c, engine/lib_thread.c: Updated calls to
+	_ILHandleWaitResult/_ILExecThreadHandleWaitResult.
+	
+	* engine/lib_thread.c: Updated abort implementation to use
+	new functions inside thread.c.
+	
+	* engine/process.c: Rewrote ILExecThreadDestroy to be cleaner
+	and handle long running finalizations.
+	
 2004-06-12  Llewellyn Pritchard  <leppie@ataris.co.za>
 
 	* ilalink/link_res.c, image/misc_token.c, image/meta_build.c,

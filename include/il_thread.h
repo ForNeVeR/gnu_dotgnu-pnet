@@ -60,6 +60,12 @@ typedef void (*ILThreadStartFunc)(void *objectArg);
  */
 typedef void (*ILThreadCleanupFunc)(ILThread *thread);
 
+
+/*
+ * Clear (length) amount of bytes from the stack.
+ */
+void ILThreadClearStack(int length);
+
 /*
  * Determine if the system has thread support.  This can
  * be called either before or after "ILThreadInit".

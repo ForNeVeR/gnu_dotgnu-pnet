@@ -79,7 +79,7 @@ void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
  */
 void _IL_GC_WaitForPendingFinalizers(ILExecThread *_thread)
 {	
-	ILGCInvokeFinalizers();
+	_ILExecThreadHandleWaitResult(_thread, ILGCInvokeFinalizers(-1));
 }
 
 /*

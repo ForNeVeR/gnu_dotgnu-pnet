@@ -161,18 +161,15 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 #define CHECK_ABORT()	\
 	if (thread->abortRequested && ILThreadIsAbortRequested())	\
 	{	\
-		thread->abortRequested = 0;	\
-		/* Mark the thread as aborted if it hasn't already been aborted	*/ \
-		if (ILThreadSelfAborting(thread->supportThread))	\
-		{	\
-			/* Great, thread hasn't aborted itself yet so throw a ThreadAbortException. */ \
+		/* Lock/Unlock the process lock because all abort flags \
+		   need to set atomically (see ILExecThreadAbort) */ \
+		ILMutexLock(thread->process->lock); \
+		ILMutexUnlock(thread->process->lock); \
+		if (_ILExecThreadSelfAborting(thread)) \
+		{ \
+			thread->abortRequested = 0;	\
 			stacktop[0].ptrValue = _ILExecThreadNewThreadAbortException(thread, 0); \
-			thread->aborting = 1; \
-			thread->abortHandlerEndPC = 0; \
-			thread->abortHandlerFrame = 0; \
-			thread->threadAbortException = 0; \
 			stacktop += 1; \
-			thread->runningManagedCode = 1;	\
 			if (!ILCoderPCToHandler(thread->process->coder, pc, 0)) \
 			{ \
 				goto throwException; \
@@ -181,7 +178,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 			{ \
 				goto prefixThrowException; \
 			} \
-		}	\
+		} \
 	}
 
 #define BEGIN_NATIVE_CALL()	\

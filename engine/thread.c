@@ -23,6 +23,10 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -166,6 +170,120 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 	_ILExecThreadDestroy(execThread);
 }
 
+/*
+ * Called by the current thread when it was to begin its abort sequence.
+ * Returns 1 if the thread has successfully self aborted.
+ */
+int _ILExecThreadSelfAborting(ILExecThread *thread)
+{
+	ILObject *exception;
+
+	/* Determine if we currently have an abort in progress,
+	   or if we need to throw a new abort exception */
+	if(!ILThreadIsAborting())
+	{
+		if(ILThreadSelfAborting())
+		{
+			/* Allocate an instance of "ThreadAbortException" and throw */
+			
+			exception = _ILExecThreadNewThreadAbortException(thread, 0);
+			thread->aborting = 1;
+			thread->abortRequested = 0;
+			thread->abortHandlerEndPC = 0;
+			thread->threadAbortException = 0;
+			thread->abortHandlerFrame = 0;
+
+			ILExecThreadSetException(thread, exception);
+
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+/*
+ * Abort the given thread.  The caller of this function should 
+ * hold the process lock to prevent the thread from destroying itself.
+ */
+void _ILExecThreadAbort(ILExecThread *thread, ILObject *target)
+{
+	ILThread *supportThread;
+	ILExecThread *execThread;
+
+	supportThread = ((System_Thread *)target)->privateData;
+
+	/* Lock the process to prevent the ILExecThread from destroying
+	   itself while we are accessing it. */
+
+	ILMutexLock(thread->process->lock);
+
+	execThread = ILExecThreadFromThread(supportThread);
+
+	if (execThread == 0)
+	{	
+		/* The thread has already finished */
+		ILMutexUnlock(thread->process->lock);
+
+		return;
+	}
+	else
+	{
+		/* Mark the flag so the thread self aborts when it next returns
+		   to managed code */
+		execThread->abortRequested = 1;
+	}
+
+	/* Abort the thread if its in or when it next enters a wait/sleep/join
+	   state */
+	ILThreadAbort(supportThread);
+
+	ILMutexUnlock(thread->process->lock);
+
+	/* If the current thread is aborting itself then abort immediately */
+	if (supportThread == thread->supportThread)
+	{
+		/* Since the caller is the target thread then execThread should be stable
+		   so no need to lock process->lock */
+		_ILExecThreadSelfAborting(execThread);		
+	}
+}
+
+/*
+ * Handle the result from an "ILWait*" function call.
+ */
+int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result)
+{
+	switch (result)
+	{
+	case IL_WAIT_INTERRUPTED:
+		{
+			ILExecThreadThrowSystem
+				(
+				thread,
+				"System.Threading.ThreadInterruptedException",
+				(const char *)0
+				);
+		}
+		break;
+	case IL_WAIT_ABORTED:
+		{
+			_ILExecThreadSelfAborting(thread);			
+		}
+		break;
+	case IL_WAIT_FAILED:
+		{
+			ILExecThreadThrowSystem
+				(
+					thread,
+					"System.Threading.SystemException",
+					(const char *)0
+				);
+		}
+	}
+
+	return result;
+}
 ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 {
 	ILExecThread *thread;

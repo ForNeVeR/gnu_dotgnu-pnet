@@ -188,12 +188,12 @@ void ILGCCollect(void)
 	/* Nothing to do here */
 }
 
-void ILGCInvokeFinalizers(void)
+int ILGCInvokeFinalizers(int timeout)
 {
 	/* Nothing to do here because we don't do finalization */
 }
 
-void ILGCDisableFinalizers(void)
+int ILGCDisableFinalizers(int timeout)
 {
 	/* Nothing to do here because we don't do finalization */
 }

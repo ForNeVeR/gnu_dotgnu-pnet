@@ -226,7 +226,7 @@ retry:
 					_ILExecMonitorAppendToFreeList(thread, monitor);
 				}
 
-				_ILHandleWaitResult(thread, result);
+				_ILExecThreadHandleWaitResult(thread, result);
 
 				return 0;
 			}
@@ -302,7 +302,7 @@ retry:
 	if (result != 0)
 	{
 		/* Handle ThreadAbort etc */		
-		_ILHandleWaitResult(thread, result);
+		_ILExecThreadHandleWaitResult(thread, result);
 	}
 
 	return result == 0;
@@ -474,7 +474,7 @@ ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
 
 		/* Handle ThreadAbort etc */
 
-		_ILHandleWaitResult(thread, result);
+		_ILExecThreadHandleWaitResult(thread, result);
 
 		return 1;
 	}
@@ -545,7 +545,7 @@ void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
 
 		/* Handle ThreadAbort etc */
 
-		_ILHandleWaitResult(thread, result);
+		_ILExecThreadHandleWaitResult(thread, result);
 
 		return;
 	}
@@ -616,7 +616,7 @@ void _IL_Monitor_PulseAll(ILExecThread *thread, ILObject *obj)
 
 		/* Handle ThreadAbort etc */
 
-		_ILHandleWaitResult(thread, result);
+		_ILExecThreadHandleWaitResult(thread, result);
 
 		return;
 	}

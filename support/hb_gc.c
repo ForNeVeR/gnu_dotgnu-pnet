@@ -53,7 +53,7 @@ static _ILMutex _FinalizerLock;
 static volatile int _FinalizerStopFlag = 0;
 
 /*
- *	Flag that is 1 if finalizers are running.
+ *	Flag that is set if finalizers are running.
  */
 static volatile int _FinalizersRunning = 0;
 
@@ -104,6 +104,8 @@ static void _FinalizerThreadFunc(void *data)
 
 		_FinalizersRunning = 1;
 
+		ILThreadMemoryBarrier();
+
 		if (GC_should_invoke_finalizers() && !_FinalizersDisabled)
 		{
 			GC_TRACE("GC:_FinalizerThread: Finalizers running [thread:%d]\n", (int)ILThreadSelf());
@@ -114,6 +116,8 @@ static void _FinalizerThreadFunc(void *data)
 		}
 
 		_FinalizersRunning = 0;
+
+		ILThreadMemoryBarrier();
 		
 		if (_FinalizerStopFlag)
 		{
@@ -131,79 +135,82 @@ static void _FinalizerThreadFunc(void *data)
 		GC_TRACE("GC:_FinalizerThread: Response [thread:%d]\n", (int)ILThreadSelf());
 
 		ILWaitEventReset(_FinalizerSignal);
+
 		/* Wake all waiting threads */
 		ILWaitEventPulse(_FinalizerResponse);
 	}
 }
 
 /*
- *	Resolves the situation where a finalizer thread can't be created or started.
- * Returns 0 if the situation couldn't be resolved.
+ * Tries to invoke finalizers synchronously.
+ * Returns 0 if successful or -1 if it would be unsafe to do so.
  */
-static int Resolve_FinalizerThreadCantRun()
+static int _InvokeFinalizersSynchronously()
 {
 	long fg, bg;
 
 	ILThreadGetCounts(&fg, &bg);
 
+	if (!GC_should_invoke_finalizers())
+	{
+		return 0;
+	}
+
 	if (fg + bg > 1)
 	{
-		/* Threads are supported and there are other threads active */
-		/* Can't be resolved without potentially causing a deadlock down the road */
+		/* Threads are supported and there are other threads active so it isn't
+		   safe to invoke finalizers synchronously. */
 
-		return 0;
+		return -1;
 	}
 	else
 	{
-		/* Threads are supported and there are no other threads active
-		    Can invoke the finalizers synchronously.
-			Note: Since this is the only thread, no other threads can be started
-			so safety is assured */
+		/* Because there is only one thread active (this thread), it is safe to
+		   invoke finalizers synchronously */
+
+		_FinalizersRunning = 1;
 
 		GC_invoke_finalizers();
 
-		return 1;
+		_FinalizersRunning = 0;
+
+		return 0;
 	}
 }
 
 /*
  * Notify the finalization thread that there is work to do.
  */
-static int PrivateGCNotifyFinalize(int timeout)
+static int PrivateGCNotifyFinalize(int timeout, int ignoreDisabled)
 {
-	if (_FinalizersDisabled)
-	{
-		return 0;
-	}
-
-	if (_FinalizersRunning || ILThreadSelf() == _FinalizerThread)
-	{
-		/* Finalizer thread can't recursively call finalizers */
-		
-		return 0;
-	}
+	int result;
 	
-	/* If threading isn't supported then invoke the finalizers synchronously */
-
-	if (!ILHasThreads())
+	if (_FinalizersDisabled && !ignoreDisabled)
 	{
-		_FinalizersRunning = 1;
-		
-		GC_invoke_finalizers();
-		
-		_FinalizersRunning = 0;
-
-		return 1;
+		return 0;
 	}
 
-	/* Threads are supported but there is no finalizer thread! */
+	/* Prevent recursive finalization */
+	if (ILThreadSelf() == _FinalizerThread)
+	{	
+		return 0;
+	}
+
+	/* Try to invoke synchronously (for performance & single threaded systems) */
+	if (_InvokeFinalizersSynchronously() == 0)
+	{
+		return 0;
+	}
+
+	/* There is no finalizer thread!
+	   We've already attempted to invoke synchronously (above) so just exit. */
 	if (_FinalizerThread == 0)
 	{
-		return Resolve_FinalizerThreadCantRun();		
+		return 0;
 	}
 	
-	/* Start the finalizer thread if it hasn't been started */
-
+	/* Finalizers need to be run on a seperate thread.
+	   Start the finalizer thread if it hasn't been started */
 	if (!_FinalizerThreadStarted)
 	{
 		_ILMutexLock(&_FinalizerLock);
@@ -214,11 +221,15 @@ static int PrivateGCNotifyFinalize(int timeout)
 			{
 				/* Couldn't create the finalizer thread */
 
-				GC_TRACE("ILGCInvokeFinalizers: Couldn't start finalizer thread [thread: %d]\n", (int)ILThreadSelf());
+				GC_TRACE("PrivateGCInvokeFinalizers: Couldn't " \
+						 "start finalizer thread [thread: %d]\n",
+						 (int)ILThreadSelf());
 				
 				_ILMutexUnlock(&_FinalizerLock);
 
-				return Resolve_FinalizerThreadCantRun();
+				_InvokeFinalizersSynchronously();
+
+				return 0;
 			}
 
 			_FinalizerThreadStarted = 1;
@@ -229,13 +240,14 @@ static int PrivateGCNotifyFinalize(int timeout)
 
 	/* Signal the finalizer thread */
 
-	GC_TRACE("ILGCInvokeFinalizers: Invoking finalizers and waiting [thread: %d]\n", (int)ILThreadSelf());
+	GC_TRACE("PrivateGCInvokeFinalizers: Invoking finalizers " \
+			"and waiting [thread: %d]\n", (int)ILThreadSelf());
 
-	ILSignalAndWait(_FinalizerSignal, _FinalizerResponse, timeout);
+	result = ILSignalAndWait(_FinalizerSignal, _FinalizerResponse, timeout);
 	
-	GC_TRACE("ILGCInvokeFinalizers: Finalizers finished[thread: %d]\n", (int)ILThreadSelf());
+	GC_TRACE("PrivateGCInvokeFinalizers: Finalizers finished[thread: %d]\n", (int)ILThreadSelf());
 
-	return 1;
+	return result;
 }
 
 /*
@@ -249,13 +261,12 @@ static void GCNotifyFinalize(void)
 	 * by finalizers otherwise finalizers may deadlock waiting for
 	 * any locks that the (blocked) allocating thread might own.
 	 */
-	PrivateGCNotifyFinalize(0);
+	PrivateGCNotifyFinalize(0, 0);
 }
 
 void ILGCInit(unsigned long maxSize)
 {
-	GC_INIT();		/* For shared library initialization on sparc */
-	GC_init();		/* For Cygwin and Win32 threads */
+	GC_INIT();		/* For shared library initialization on sparc */	
 	GC_set_max_heap_size((size_t)maxSize);
 	
 	/* Set up the finalization system the way we want it */
@@ -275,7 +286,7 @@ void ILGCInit(unsigned long maxSize)
 		_FinalizerSignal = ILWaitEventCreate(1, 0);
 		_FinalizerResponse = ILWaitEventCreate(1, 0);
 
-		/* Make the thread a background thread */
+		/* Make the finalizer thread a background thread */
 		ILThreadSetBackground(_FinalizerThread, 1);
 
 		/* To speed up simple command line apps, the finalizer thread doesn't start
@@ -300,8 +311,8 @@ void ILGCDeinit()
 		
 		GC_TRACE("ILGCDeinit: Waiting for finalizer thread to end [thread:%d]\n", (int)ILThreadSelf());
 
-		/* Unregister and destroy the finalizer thread if it's responding */
-		if (ILThreadJoin(_FinalizerThread, 1000))
+		/* Wait for the finalizer thread */
+		if (ILThreadJoin(_FinalizerThread, 15000))
 		{
 			GC_TRACE("ILGCDeinit: Finalizer thread finished [thread:%d]\n", (int)ILThreadSelf());			
 		}
@@ -310,6 +321,7 @@ void ILGCDeinit()
 			GC_TRACE("ILGCDeinit: Finalizer thread not responding [thread:%d]\n", (int)ILThreadSelf());
 		}
 
+		/* Destroy the finalizer thread */
 		ILThreadDestroy(_FinalizerThread);			
 	}
 
@@ -346,7 +358,7 @@ ILNativeInt ILGCCreateTypeDescriptor(ILNativeUInt bitmap[], ILNativeUInt len)
 
 void *ILGCAllocExplicitlyTyped(unsigned long size, ILNativeInt descriptor)
 {
-	return GC_malloc_explicitly_typed(size, descriptor);
+	return GC_malloc_explicitly_typed(size, (GC_descr)descriptor);
 }
 
 void ILGCFreePersistent(void *block)
@@ -374,28 +386,38 @@ void ILGCCollect(void)
 	GC_gcollect();
 }
 
-void ILGCInvokeFinalizers(void)
+int ILGCInvokeFinalizers(int timeout)
 {
+	int retval = 0;
+	
 	if (GC_should_invoke_finalizers())
 	{
-		PrivateGCNotifyFinalize(-1);
+		retval = PrivateGCNotifyFinalize(timeout, 0);
 	}
+	
+	return retval;
 }
 
-void ILGCDisableFinalizers(void)
+int ILGCDisableFinalizers(int timeout)
 {
 	_FinalizersDisabled = 1;
+
+	ILThreadMemoryBarrier();
 
 	if (_FinalizersRunning && ILHasThreads())
 	{
 		/* Invoke and wait so we can guarantee no finalizers will run after this method ends */
-		PrivateGCNotifyFinalize(-1);
+		return PrivateGCNotifyFinalize(timeout, 1);
 	}
+	
+	return 0;
 }
 
 void ILGCEnableFinalizers(void)
 {
 	_FinalizersDisabled = 0;
+
+	ILThreadMemoryBarrier();
 }
 
 long ILGCGetHeapSize(void)

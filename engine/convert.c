@@ -95,13 +95,13 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
 #define	METADATA_WRLOCK(thread)	\
 			do { \
 				IL_METADATA_WRLOCK((thread)); \
-				ILGCDisableFinalizers(); \
+				ILGCDisableFinalizers(0); \
 			} while (0)
 #define	METADATA_UNLOCK(thread)	\
 			do { \
 				ILGCEnableFinalizers(); \
 				IL_METADATA_UNLOCK((thread)); \
-				ILGCInvokeFinalizers(); \
+				ILGCInvokeFinalizers(0); \
 			} while (0)
 
 /*

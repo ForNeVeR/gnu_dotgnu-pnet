@@ -87,12 +87,12 @@ void ILGCCollect(void);
 /*
  * Invoke the pending finalizers and wait for them to complete.
  */
-void ILGCInvokeFinalizers(void);
+int ILGCInvokeFinalizers(int timeout);
 
 /*
  * Temporarily disable finalizers that are called during allocation.
  */
-void ILGCDisableFinalizers(void);
+int ILGCDisableFinalizers(int timeout);
 
 /*
  * Re-enable finalizers that are called during allocation.

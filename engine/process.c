@@ -22,6 +22,7 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#include "il_utils.h"
 #include "il_console.h"
 
 #ifdef	__cplusplus
@@ -184,13 +185,6 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	return process;
 }
 
-typedef struct _tagThreadListEntry ThreadListEntry;
-struct _tagThreadListEntry
-{
-	ILThread *thread;
-	ThreadListEntry *next;
-};
-
 /*
  * Unloads a process and all threads associated with it.
  * The process may not unload immediately (or even ever).
@@ -231,10 +225,18 @@ void ILExecProcessUnload(ILExecProcess *process)
  */
 void ILExecProcessDestroy(ILExecProcess *process)
 {
-	int result;
-	int mainIsFinalizer = 0;
-	ILExecThread *thread, *nextThread;	
-	ThreadListEntry *firstEntry, *entry, *next;
+	int count;
+	ILObject *target;
+	int mainIsFinalizer;
+	ILExecThread *thread;	
+	ILQueueEntry *abortQueue1, *abortQueue2;
+	
+	abortQueue1 = ILQueueCreate();
+	abortQueue2 = ILQueueCreate();
+
+	/* Clear 4K of stack space in case it contains some stray pointers 
+	   that may still be picked up by not so accurate collectors */
+	ILThreadClearStack(4096);
 
 	/* Determine if this is a single-threaded system where the main
 	   thread is the finalizer thread */
@@ -246,7 +248,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		{
 			/* If the main thread is the finalizer thread then
 			   we have to zero the memory of the CVM stack so that
-			   stray pointers are erased. */
+			   stray pointers are erased */
 			ILMemZero(process->mainThread->stackBase, process->stackSize);
 			ILMemZero(process->mainThread->frameStack, process->frameStackSize);
 		}
@@ -258,64 +260,34 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		}
 	}
 
-	/* Delete all managed threads so the objects they used can be finalizerd */
-	/* Keeps deleting managed threads until they're all gone just in case
-	    threads spawn new threads when they exit */
+	/* Delete all managed threads so the objects they used can be finalized.
+	   We keep trying to kill more threads over and over because threads may
+	   start new threads in response to being killed */
 	for (;;)
-	{				
-		firstEntry = 0;
+	{
+		count = 0;
 
 		/* Lock down the process */
 		ILMutexLock(process->lock);
 
-		/* Walk all the threads */
-		thread = process->firstThread;
+		/* Walk all the threads, collecting CLR thread pointers since they are GC
+		   managed and stable */
 
+		thread = process->firstThread;
+		
 		while (thread)
 		{
-			if (thread != process->finalizerThread && 
+			if (thread != process->finalizerThread
 				/* Make sure its a managed thread */
-				(thread->clrThread || thread == process->mainThread)
+				&& (thread->clrThread || thread == process->mainThread)
 				&& thread->supportThread != ILThreadSelf())
 			{
-				/*
-				 * Instead of aborting and then waiting on each thread, we abort all
-				 * threads and then wait for them all at the bottom.  This prevents us from
-				 * deadlocking on a thread that's waiting on another (not yet aborted) thread.
-				 */
+				ILQueueAdd(&abortQueue1, thread->clrThread);
+				ILQueueAdd(&abortQueue2, thread->clrThread);
+				
+				thread = thread->nextThread;
 
-				nextThread = thread->nextThread;
-
-				entry = ILMalloc(sizeof(ThreadListEntry));
-
-				if (!entry)
-				{
-					ILExecThreadThrowOutOfMemory(ILExecThreadCurrent());
-
-					return;
-				}
-
-				entry->thread = thread->supportThread;
-								
-				if (!firstEntry)
-				{
-					entry->next = 0;
-					firstEntry = entry;
-				}
-				else
-				{
-					entry->next = firstEntry;
-					firstEntry = entry;
-				}
-
-				/* Abort the thread */			
-				ILThreadAbort(thread->supportThread);
-
-				thread = nextThread;
-
-				/* Note: The CLR thread (and thus the support thread) might still be used
-					by another thread so the support thread is left to be destroyed by the 
-					CLR thread's finalizer */
+				count++;
 			}
 			else
 			{
@@ -327,48 +299,35 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		/* Unlock the process */
 		ILMutexUnlock(process->lock);
 
-		entry = firstEntry;
-
-		/*
-		 *	Wait for the threads that have been aborted.
-		 */
-
-		if (entry)
+		if (!abortQueue1)
 		{
-			while (entry)
+			if (count != 0)
 			{
-				next = entry->next;
-				
-				result = ILThreadJoin(entry->thread, -1);
-				ILFree(entry);
-
-				if (result != 0)
-				{
-					/* The thread might be aborted while trying to exit */
-
-					entry = next;
-
-					while (entry)
-					{
-						next = entry->next;
-						ILFree(entry);
-						entry = next;
-					}
-
-					_ILHandleWaitResult(ILExecThreadCurrent(), result);
-
-					return;
-				}
-
-				entry = next;
+				/* Probably ran out of memory trying to build the abortQueues */
+				return;
 			}
-		}
-		else
-		{
+
+			/* No more threads to wait on */
 			break;
 		}
-	}
 
+		/* Abort all threads */
+		while (abortQueue1)
+		{
+			target = (ILObject *)ILQueueRemove(&abortQueue1);
+
+			_ILExecThreadAbort(ILExecThreadCurrent(), target);
+		}
+
+		/* Wait for all threads */
+		while (abortQueue2)
+		{
+			target = (ILObject *)ILQueueRemove(&abortQueue2);
+
+			ILThreadJoin(((System_Thread *)target)->privateData, -1);
+		}
+	}
+	
 	/* Unregister (and destroy) the current thread if it isn't needed
 	   for finalization and if it belongs to this domain. */
 	if (!mainIsFinalizer 
@@ -376,26 +335,37 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		&& ILExecThreadCurrent()->process == process)
 	{
 		ILThreadUnregisterForManagedExecution(ILThreadSelf());
-	}	
-	
-	/* Invoke the finalizers -- hopefully finalizes all objects left in the process being destroyed */
-	/* Any objects left lingering (because of a stray or fake pointer) are orphans */
+	}
+
+	/* Invoke the finalizers -- hopefully finalizes all objects left in the
+	   process being destroyed.  Objects left lingering are orphans */
 	ILGCCollect();
-	ILGCInvokeFinalizers();
 
-	/* We must ensure that objects created and then orphaned by this process won't 
-	    finalize themselves from this point on (because the process will no longer be valid).
-		Objects can be orphaned if we're using a conservative GC like the Boehm GC */
+	if (ILGCInvokeFinalizers(30000) != 0)
+	{
+		/* Finalizers are taking too long.  Abandon unloading of this process */
+		return;
+	}
 
-	/* Disable finalizers to ensure no finalizers are running until we reenable them */
-	ILGCDisableFinalizers();
+	/* We must ensure that objects created and then orphaned by this process
+	   won't finalize themselves from this point on (because the process will
+	   no longer be valid).  Objects can be orphaned if the GC is conservative
+	   (like the boehm GC) */
 
-	/* Mark the process as dead in the finalization context.  This prevents orphans from
-	    finalizing */
+	/* Disable finalizers to ensure no finalizers are running until we 
+	   reenable them */
+	if (ILGCDisableFinalizers(10000) != 0)
+	{
+		/* Finalizers are taking too long.  Abandon unloading of this process */
+		return;
+	}
+
+	/* Mark the process as dead in the finalization context.  This prevents
+	   orphans from finalizing */
 	process->finalizationContext->process = 0;
 
 	/* Reenable finalizers */
-	ILGCEnableFinalizers();	
+	ILGCEnableFinalizers();
 
 	/* Unregister (and destroy) the current thread if it 
 	   wasn't destroyed above and if it belongs to this domain */
@@ -410,13 +380,13 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	if (process->finalizerThread)
 	{
 		/* Only destroy the engine thread.  The support thread is shared by other
-		    engine processes and is destroyed when the engine is deinitialized */
+		   engine processes and is destroyed when the engine is deinitialized */
 		_ILExecThreadDestroy(process->finalizerThread);
 	}
 
+	/* Destroy the CVM coder instance */
 	if (process->coder)
 	{
-		/* Destroy the CVM coder instance */
 		ILCoderDestroy(process->coder);
 	}
 
@@ -509,9 +479,6 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
-
-	ILGCCollect();
-	ILGCInvokeFinalizers();
 
 	/* Reset the console to the "normal" mode */
 	ILConsoleSetMode(IL_CONSOLE_NORMAL);

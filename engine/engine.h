@@ -725,14 +725,22 @@ ILObject *_ILExecThreadNewThreadAbortException(ILExecThread *thread, ILObject *s
 int _ILExecThreadCurrentExceptionThreadIsAbortException(ILExecThread *thread);
 
 /*
- *	Aborts the current thread.
- */
-void _ILAbortThread(ILExecThread *thread);
+* Aborts the current thread.
+* Returns 1 if the thread has successfully self aborted.
+*/
+void _ILExecThreadAbort(ILExecThread *thread, ILObject *target);
 
 /*
- *	Handles thread aborts & interruption.
+* Called by the current thread when it was to begin its abort sequence.
+* Returns 1 if the thread has successfully self aborted.
+*/
+int _ILExecThreadSelfAborting(ILExecThread *thread);
+
+/*
+ * Handles thread aborts & interruption.
+ * Returns the result.
  */
-void _ILHandleWaitResult(ILExecThread *thread, int result);
+int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result);
 
 /*
  * Creates a monitor used by the execution engine.

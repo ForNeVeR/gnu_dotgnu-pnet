@@ -48,11 +48,6 @@ extern	"C" {
  */
 #define IL_CLR_WAIT_TIMEOUT (258L)
 
-/*
- * Maximum number of wait handles that can be processed at once.
- */
-#define	IL_MAX_WAIT_HANDLES		64
-
 
 /*************************************/
 /* Interlocked functions for ILInt32 */
@@ -208,7 +203,6 @@ ILObject *_IL_Interlocked_CompareExchange_RObjectObjectObject
 	return (ILObject *)ILInterlockedCompareAndExchangePointers((void **)location1, (void *)value, (void *)comparand);
 }
 
-
 /*
  *  Thread function for ILThread.
  *
@@ -234,6 +228,8 @@ static void __PrivateThreadStart(void *objectArg)
 	{				
 		ILExecThreadPrintException(thread);
 	}
+
+	ILThreadClearStack(4096);
 }
 
 /*
@@ -306,38 +302,7 @@ void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
  */
 void _IL_Thread_Abort(ILExecThread *thread, ILObject *_this)
 {
-	ILThread *supportThread;
-	ILExecThread *execThread;
-
-	supportThread = ((System_Thread *)_this)->privateData;
-
-	/* Lock the process to prevent the ILExecThread from being destroyed
-	   while we are accessing it (This could happen if Abort is called on a
-	   thread that has finished and is in the process of cleaning up itself) */
-	
-	ILMutexLock(thread->process->lock);
-
-	execThread = ILExecThreadFromThread(supportThread);
-
-	if (execThread == 0)
-	{		
-		ILMutexUnlock(thread->process->lock);
-		return;
-	}
-	else
-	{
-		execThread->abortRequested = 1;
-	}
-
-	ILMutexUnlock(thread->process->lock);
-
-	ILThreadAbort(supportThread);
-
-	/* If the current thread is aborting itself then abort immediately */
-	if (supportThread == thread->supportThread)
-	{
-		_ILAbortThread(thread);		
-	}
+	_ILExecThreadAbort(thread, _this);
 }
 
 /*
@@ -394,7 +359,10 @@ void _IL_Thread_SpinWait(ILExecThread *_thread, ILInt32 iterations)
 		 *
 		 * Also, usleep() isn't thread safe on some platforms.
 		 */
-		ILThreadYield();		
+		while ((iterations--) > 0)
+		{
+			ILThreadYield();
+		}
 	}
 }
 
@@ -439,7 +407,7 @@ ILBool _IL_Thread_InternalJoin(ILExecThread *thread, ILObject *_this,
 
 	case IL_JOIN_ABORTED:
 
-		_ILAbortThread(thread);
+		_ILExecThreadSelfAborting(thread);
 
 		return 0;
 
@@ -494,17 +462,13 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
  */
 void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
 {
-	int result;
-	
 	if (timeout < -1)
 	{
 		ILExecThreadThrowSystem(thread,
 			"System.ArgumentOutOfRangeException", (const char *)0);
 	}
 	
-	result = ILThreadSleep((ILUInt32)timeout);
-	
-	_ILHandleWaitResult(thread, result);
+	_ILExecThreadHandleWaitResult(thread, ILThreadSleep((ILUInt32)timeout));
 }
 
 /*
@@ -557,10 +521,11 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 
 	if (ILThreadStart(supportThread) == 0)
 	{
-		/* Start unsuccessul.  Do a GC then try again */
+		/* Start unsuccessul.  Do a GC then try again. */
 
 		ILGCCollect();
-		ILGCInvokeFinalizers();
+		/* Wait a resonable amount of time (1 sec) for finalizers to run */
+		ILGCInvokeFinalizers(1000);
 	
 		if (ILThreadStart(supportThread) == 0)
 		{
@@ -981,64 +946,6 @@ void _IL_WaitHandle_InternalClose(ILExecThread *_thread,
 	}
 }
 
-void _ILAbortThread(ILExecThread *thread)
-{
-	/* Determine if we currently have an abort in progress,
-	or if we need to throw a new abort exception */
-	if(!ILThreadIsAborting())
-	{
-		if(ILThreadSelfAborting())
-		{
-			/* Allocate an instance of "ThreadAbortException" and throw */
-
-			ILObject *exception;
-
-			exception = _ILExecThreadNewThreadAbortException(thread, 0);
-			thread->aborting = 1;
-			thread->abortRequested = 0;
-			thread->abortHandlerEndPC = 0;
-			thread->threadAbortException = 0;
-			thread->abortHandlerFrame = 0;
-
-			ILExecThreadThrow(thread, exception);
-		}
-	}
-}
-
-/*
- * Handle the result from an "ILWait*" function call.
- */
-void _ILHandleWaitResult(ILExecThread *thread, int result)
-{
-	switch (result)
-	{
-		case IL_WAIT_INTERRUPTED:
-		{
-			ILExecThreadThrowSystem
-				(
-					thread,
-					"System.Threading.ThreadInterruptedException",
-					(const char *)0
-				);
-		}
-		break;
-		case IL_WAIT_ABORTED:
-		{
-			_ILAbortThread(thread);			
-		}
-		break;
-		case IL_WAIT_FAILED:
-		{
-			ILExecThreadThrowSystem
-				(
-					thread,
-					"System.Threading.SystemException",
-					(const char *)0
-				);
-		}
-	}
-}
-
 /*
  * private static bool InternalWaitAll(WaitHandle[] waitHandles,
  *									   int timeout, bool exitContext);
@@ -1069,7 +976,7 @@ ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
 	}
 	else if (result < 0)
 	{
-		_ILHandleWaitResult(_thread, result);
+		_ILExecThreadHandleWaitResult(_thread, result);
 
 		return 0;
 	}
@@ -1108,7 +1015,7 @@ ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
 	}
 	else if (result < 0)
 	{
-		_ILHandleWaitResult(_thread, result);
+		_ILExecThreadHandleWaitResult(_thread, result);
 
 		result = 0;
 	}
@@ -1126,7 +1033,7 @@ ILBool _IL_WaitHandle_InternalWaitOne(ILExecThread *_thread,
 	if(privateData)
 	{
 		int result = ILWaitOne((ILWaitHandle *)privateData, timeout);
-		_ILHandleWaitResult(_thread, result);
+		_ILExecThreadHandleWaitResult(_thread, result);
 		return (result == 0);
 	}
 	return 0;

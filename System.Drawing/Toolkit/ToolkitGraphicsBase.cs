@@ -395,8 +395,8 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 				length+=Math.Sqrt((x1-x2)*(x1-x2) + (y1-y2) * (y1-y2));
 				length+=Math.Sqrt((x2-x3)*(x2-x3) + (y2-y3) * (y2-y3));
 				length+=Math.Sqrt((x3-x4)*(x3-x4) + (y3-y4) * (y3-y4));
-
-				return (int)Math.Ceiling(length);	
+				
+                                return (int)Math.Ceiling(length);	
 			}
 
 	private Point[] ComputeBezier(int x1, int y1, int x2, int y2,		
@@ -465,7 +465,11 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 			{
 				// TODO: Optimize this to plot points without 
 				// involving line-drawing operations
-				DrawLines(ComputeBezier(x1,y1,x2,y2,x3,y3,x4,y4));
+                                Point [] points = ComputeBezier(x1,y1,x2,y2,x3,y3,x4,y4);
+                                if (points.Length > 2)
+				{
+					DrawLines(points);
+				}
 			}
 
 	// Draw a closed cardinal curve using the current pen.

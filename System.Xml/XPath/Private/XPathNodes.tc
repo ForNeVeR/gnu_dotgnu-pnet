@@ -72,7 +72,6 @@ using System.Collections;
 
 %node PathExpression Expression 
 
-%node RecursiveDescentPathExpression PathExpression
 %node RootPathExpression PathExpression
 
 %node SlashExpression PathExpression =
@@ -80,6 +79,13 @@ using System.Collections;
 	Expression left;
 	Expression right;
 }
+
+%node RecursiveDescentPathExpression PathExpression = 
+{
+	Expression left;
+	Expression right;
+}
+
 
 %node StepExpression PathExpression=
 {

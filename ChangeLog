@@ -1,4 +1,15 @@
 
+2004-10-15  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XPath/Private/XPathEvaluate.tc,
+	System.Xml/XPath/Private/XPathIterators.cs,
+	System.Xml/XPath/Private/XPathNodes.tc,
+	System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathParser.jay,
+	System.Xml/XPath/Private/XPathTokenizer.cs: Fix a resolution bug
+	for names with the same as axis specifiers, implement "//" operation,
+	add and/or evaluations.
+
 2004-10-15  Adam Gibson  <adam.gibson@gmail.com>
 
 	* System/Platform/PortMethods.cs, System/IO/Ports/SerialPort.cs:

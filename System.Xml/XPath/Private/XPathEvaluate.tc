@@ -66,6 +66,34 @@ EvaluateInternal(NodeTest)
 									(XPathBaseIterator)iterator);
 		}
 		break;
+
+		case XPathAxis.Ancestor:
+		{
+			axis = new XPathAncestorIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+		
+		case XPathAxis.AncestorOrSelf:
+		{
+			axis = new XPathAncestorOrSelfIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+		
+		case XPathAxis.Descendant:
+		{
+			axis = new XPathDescendantIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+		
+		case XPathAxis.DescendantOrSelf:
+		{
+			axis = new XPathDescendantOrSelfIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
 		
 		default:
 		{
@@ -81,6 +109,16 @@ EvaluateInternal(SlashExpression)
 {
 	XPathBaseIterator lhs = (XPathBaseIterator)node.left.Evaluate(iterator);
 	return new XPathSlashIterator(lhs, node.right);
+}
+
+EvaluateInternal(RecursiveDescentPathExpression)
+{
+	XPathBaseIterator lhs = (XPathBaseIterator)node.left.Evaluate(iterator);
+	NodeTest test = new NodeTest(XPathAxis.DescendantOrSelf, 
+								 XPathNodeType.All, null);
+	return new XPathSlashIterator(
+					new XPathSlashIterator(lhs, test ),
+					node.right);
 }
 
 EvaluateInternal(FilterExpression)
@@ -184,4 +222,18 @@ EvaluateInternal(EqualityExpression)
 					node.right.EvaluateAs(iterator, XPathResultType.String))));
 	}
 	return false;
+}
+
+EvaluateInternal(AndExpression)
+{
+	return	
+	(((bool)node.left.EvaluateAs(iterator, XPathResultType.Boolean) == true) && 
+	((bool)node.right.EvaluateAs(iterator, XPathResultType.Boolean) == true));
+}
+
+EvaluateInternal(OrExpression)
+{
+	return	
+	(((bool)node.left.EvaluateAs(iterator, XPathResultType.Boolean) == true) ||
+	((bool)node.right.EvaluateAs(iterator, XPathResultType.Boolean) == true));
 }

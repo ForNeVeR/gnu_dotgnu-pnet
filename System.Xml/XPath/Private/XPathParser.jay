@@ -202,11 +202,18 @@ Predicate
 /* [10] */
 AbbreviatedAbsoluteLocationPath 
 	: RECURSIVE_DESCENT RelativeLocationPath
+	{
+		$$ = new RecursiveDescentPathExpression(new RootPathExpression(), 
+												(Expression)$2); 
+	}
 	;
 
 /* [11] */
 AbbreviatedRelativeLocationPath
 	: RelativeLocationPath RECURSIVE_DESCENT Step
+	{
+		$$ = new RecursiveDescentPathExpression((Expression)$1, (Expression)$3); 
+	}
 	;
 
 /* [12] */

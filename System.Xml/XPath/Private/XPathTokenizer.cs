@@ -58,7 +58,9 @@ namespace System.Xml.XPath.Private
 				 text == "preceding"  ||
 				 text == "following"  ||
 				 text == "descendant" ||
-				 text == "ancestor")  
+				 text == "ancestor"   || 
+				 text == "ancestor-or"|| 
+				 text == "descendant-or")
 				 
 				 || 
 				
@@ -500,8 +502,29 @@ namespace System.Xml.XPath.Private
 
 			if(token != -1)
 			{
-				// valid axis names are filtered out here
-				return token;
+				if((token == Token.FUNCTIONNAME || 
+						token == Token.NODETYPE))
+				{
+					if(Peek() == '(')
+					{
+						return token;	
+					}
+				}
+				else if(token == Token.AXISNAME)
+				{
+					// valid axis names are filtered out here
+					// TODO : rework parser to check for axis
+					// names fully  - "ancestor:*" is also valid
+					// XPath
+					if(Peek() == ':')
+					{
+						return token;
+					}
+				}
+				else
+				{
+					return token;
+				}
 			}
 
 			if(Peek() == ':')

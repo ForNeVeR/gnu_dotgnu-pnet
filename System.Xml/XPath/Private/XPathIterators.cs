@@ -21,6 +21,7 @@
 using System;
 using System.Xml;
 using System.Xml.XPath;
+using System.Collections;
 
 namespace System.Xml.XPath.Private
 {
@@ -181,6 +182,107 @@ namespace System.Xml.XPath.Private
 			return false;
 		}
 	}
+	
+	internal class XPathAncestorIterator : XPathSimpleIterator
+	{
+		ArrayList parents = null;
+
+		public XPathAncestorIterator (XPathBaseIterator iterator) : base (iterator)
+		{
+		}
+
+		public XPathAncestorIterator(XPathAncestorIterator copy) : base (copy)
+		{
+			// TODO : do we need to clone this ?
+			if(this.parents != null)
+			{
+				this.parents = (ArrayList)this.parents.Clone();
+			}
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathAncestorIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			if(parents == null)
+			{
+				parents = new ArrayList();
+				while(navigator.MoveToParent())
+				{
+					if(navigator.NodeType == XPathNodeType.Root)
+					{
+						break;
+					}
+					// TODO: duplicate check
+					parents.Add(navigator.Clone());
+				}
+				parents.Reverse();
+			}
+
+			if(pos < parents.Count)
+			{
+				current = (XPathNavigator)parents[pos];
+				pos++;
+				return true;
+			}
+
+			return false;
+		}
+	}
+	
+	internal class XPathAncestorOrSelfIterator : XPathSimpleIterator
+	{
+		ArrayList parents = null;
+
+		public XPathAncestorOrSelfIterator (XPathBaseIterator iterator) : base (iterator)
+		{
+		}
+
+		public XPathAncestorOrSelfIterator(XPathAncestorOrSelfIterator copy) : base (copy)
+		{
+			// TODO : do we need to clone this ?
+			if(this.parents != null)
+			{
+				this.parents = (ArrayList)this.parents.Clone();
+			}
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathAncestorOrSelfIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			if(parents == null)
+			{
+				parents = new ArrayList();
+				parents.Add(navigator.Clone());
+				while(navigator.MoveToParent())
+				{
+					if(navigator.NodeType == XPathNodeType.Root)
+					{
+						break;
+					}
+					// TODO: duplicate check
+					parents.Add(navigator.Clone());
+				}
+				parents.Reverse();
+			}
+
+			if(pos < parents.Count)
+			{
+				current = (XPathNavigator)parents[pos];
+				pos++;
+				return true;
+			}
+
+			return false;
+		}
+	}
 
 	internal class XPathParentIterator : XPathSimpleIterator
 	{
@@ -212,6 +314,130 @@ namespace System.Xml.XPath.Private
 			return false;
 		}
 	}
+
+	internal class XPathDescendantIterator : XPathSimpleIterator
+	{
+		private int depth  = 0 ;
+		private bool finished = false; 
+		
+		public XPathDescendantIterator (XPathBaseIterator iterator) : base (iterator)
+		{
+		}
+
+		public XPathDescendantIterator(XPathDescendantIterator copy) : base (copy)
+		{
+			this.depth = copy.depth;
+			this.finished = copy.finished;
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathDescendantIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			// This is needed as at the end of the loop, the original will be restored 
+			// as the navigator value.
+			if(finished) 
+			{
+				return false;
+			}
+
+			if(navigator.MoveToFirstChild())
+			{
+				depth++;
+				pos++;
+				current = navigator.Clone();
+				return true;
+			}
+			while(depth != 0)
+			{
+				if(navigator.MoveToNext())
+				{
+					pos++;
+					current = navigator.Clone();
+					return true;
+				}
+				if(!navigator.MoveToParent())
+				{
+					// TODO: resources
+					throw new XPathException("there should be parent for depth != 0" , null);
+				}
+				depth--;
+			}
+
+			finished = true;
+
+			return false;
+		}
+	}
+
+	internal class XPathDescendantOrSelfIterator : XPathSimpleIterator
+	{
+		private int depth  = 0 ;
+		private bool finished = false; 
+		
+		public XPathDescendantOrSelfIterator (XPathBaseIterator iterator) : base (iterator)
+		{
+		}
+
+		public XPathDescendantOrSelfIterator(XPathDescendantOrSelfIterator copy) : base (copy)
+		{
+			this.depth = copy.depth;
+			this.finished = copy.finished;
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathDescendantOrSelfIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			// This is needed as at the end of the loop, the original 
+			// will be restored as the navigator value.
+			if(finished) 
+			{
+				return false;
+			}
+
+			if(pos == 0)
+			{
+				pos++;
+				current = navigator.Clone();
+				return true;
+			}
+
+			if(navigator.MoveToFirstChild())
+			{
+				depth++;
+				pos++;
+				current = navigator.Clone();
+				return true;
+			}
+			while(depth != 0)
+			{
+				if(navigator.MoveToNext())
+				{
+					pos++;
+					current = navigator.Clone();
+					return true;
+				}
+				if(!navigator.MoveToParent())
+				{
+					// TODO: resources
+					throw new XPathException("there should be parent for depth != 0" , null);
+				}
+				depth--;
+			}
+
+			finished = true;
+
+			return false;
+		}
+	}
+
 
 	internal class XPathAxisIterator : XPathBaseIterator
 	{

@@ -439,103 +439,116 @@ case 21:
 		yyVal = yyVals[-1+yyTop];
 	}
   break;
+case 22:
+#line 205 "XPathParser.jay"
+  {
+		yyVal = new RecursiveDescentPathExpression(new RootPathExpression(), 
+												(Expression)yyVals[0+yyTop]); 
+	}
+  break;
+case 23:
+#line 214 "XPathParser.jay"
+  {
+		yyVal = new RecursiveDescentPathExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]); 
+	}
+  break;
 case 24:
-#line 215 "XPathParser.jay"
+#line 222 "XPathParser.jay"
   {
 		yyVal = new NodeTest(XPathAxis.Self, XPathNodeType.All, null);
 	}
   break;
 case 25:
-#line 219 "XPathParser.jay"
+#line 226 "XPathParser.jay"
   {
 		yyVal = new NodeTest(XPathAxis.Parent, XPathNodeType.All, null);
 	}
   break;
 case 26:
-#line 227 "XPathParser.jay"
+#line 234 "XPathParser.jay"
   {
 		yyVal = XPathAxis.Child;
 	}
   break;
 case 27:
-#line 231 "XPathParser.jay"
+#line 238 "XPathParser.jay"
   {
 		yyVal = XPathAxis.Attribute;
 	}
   break;
 case 29:
-#line 243 "XPathParser.jay"
+#line 250 "XPathParser.jay"
   { yyVal = null; }
   break;
 case 30:
-#line 244 "XPathParser.jay"
+#line 251 "XPathParser.jay"
   { yyVal = null; }
   break;
 case 31:
-#line 245 "XPathParser.jay"
+#line 252 "XPathParser.jay"
   { yyVal = new LiteralExpression((String)yyVals[0+yyTop]); }
   break;
 case 32:
-#line 246 "XPathParser.jay"
+#line 253 "XPathParser.jay"
   { yyVal = new NumberExpression((Double)yyVals[0+yyTop]); }
   break;
 case 34:
-#line 252 "XPathParser.jay"
+#line 259 "XPathParser.jay"
   {
 		/* TODO: neede for XSL */
 		yyVal = null;
 	}
   break;
 case 35:
-#line 261 "XPathParser.jay"
+#line 268 "XPathParser.jay"
   {
 		yyVal = new FunctionCallExpression((String)yyVals[-2+yyTop]);
 	}
   break;
 case 36:
-#line 265 "XPathParser.jay"
+#line 272 "XPathParser.jay"
   {
 		yyVal = new FunctionCallExpression((String)yyVals[-3+yyTop]);
 	}
   break;
 case 41:
-#line 285 "XPathParser.jay"
+#line 292 "XPathParser.jay"
   {
 		yyVal = new UnionExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 44:
-#line 295 "XPathParser.jay"
+#line 302 "XPathParser.jay"
   {
 		yyVal = new SlashExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[-1+yyTop]);
 	}
   break;
 case 45:
-#line 299 "XPathParser.jay"
+#line 306 "XPathParser.jay"
   {
 		yyVal = null; /* TODO */
 	}
   break;
 case 47:
-#line 308 "XPathParser.jay"
+#line 315 "XPathParser.jay"
   {
 		yyVal = new FilterExpression((Expression)yyVals[-1+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 51:
-#line 323 "XPathParser.jay"
+#line 330 "XPathParser.jay"
   {
 		yyVal = new AndExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 53:
-#line 332 "XPathParser.jay"
+#line 339 "XPathParser.jay"
   {
 		yyVal = new EqualityExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop], false); 
 	}
   break;
 case 54:
-#line 336 "XPathParser.jay"
+#line 343 "XPathParser.jay"
   {
 		yyVal = new EqualityExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop], true);
 	}
@@ -802,7 +815,7 @@ case 54:
   294,   -1,   -1,  294,  298,   -1,   -1,  298,
   };
 
-#line 372 "XPathParser.jay"
+#line 379 "XPathParser.jay"
 }
 #line default
 namespace yydebug {

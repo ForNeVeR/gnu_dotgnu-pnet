@@ -146,7 +146,7 @@
 	conv.ovf.i1.un
 	stloc.0
 	ldloc.3
-	conv.ovf.i1.un
+	conv.ovf.u1.un
 	stloc.1
 	ldloc.3
 	conv.ovf.i2.un
@@ -213,7 +213,7 @@
 	conv.ovf.i1.un
 	stloc.0
 	ldloc.s	5
-	conv.ovf.i1.un
+	conv.ovf.u1.un
 	stloc.1
 	ldloc.s	5
 	conv.ovf.i2.un
@@ -284,7 +284,7 @@
 	conv.ovf.i1.un
 	stloc.0
 	ldloc.s	7
-	conv.ovf.i1.un
+	conv.ovf.u1.un
 	stloc.1
 	ldloc.s	7
 	conv.ovf.i2.un
@@ -321,7 +321,7 @@
 	conv.ovf.i1.un
 	stloc.0
 	ldloc.s	8
-	conv.ovf.i1.un
+	conv.ovf.u1.un
 	stloc.1
 	ldloc.s	8
 	conv.ovf.i2.un
@@ -591,7 +591,7 @@
 	conv.i1
 	stloc.0
 	ldloc.3
-	conv.i1
+	conv.u1
 	stloc.1
 	ldloc.3
 	conv.i2
@@ -657,7 +657,7 @@
 	conv.i1
 	stloc.0
 	ldloc.s	5
-	conv.i1
+	conv.u1
 	stloc.1
 	ldloc.s	5
 	conv.i2
@@ -726,7 +726,7 @@
 	conv.i1
 	stloc.0
 	ldloc.s	7
-	conv.i1
+	conv.u1
 	stloc.1
 	ldloc.s	7
 	conv.i2
@@ -762,7 +762,7 @@
 	conv.i1
 	stloc.0
 	ldloc.s	8
-	conv.i1
+	conv.u1
 	stloc.1
 	ldloc.s	8
 	conv.i2

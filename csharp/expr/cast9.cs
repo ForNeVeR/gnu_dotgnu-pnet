@@ -1,5 +1,5 @@
 /*
- * cast8.cs - Test the handling of name collisions for cast expressions
+ * cast9.cs - Test the handling of indirect or two step casts
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -20,17 +20,27 @@
 
 using System;
 
-namespace Foo
+public class Convertible
 {
-	public class Muncher
+	public static implicit operator Parent(Convertible a)
 	{
+		return new Parent();
 	}
 }
 
-public class Test
+public class Parent
 {
-	public void Bar(Object Foo)
+}
+
+public class Child : Parent
+{
+}
+
+
+public class Testing
+{
+	public static void Main()
 	{
-		Foo.Muncher f=(Foo.Muncher)Foo;	
+		Child y=(Child) (new Convertible());
 	}
 }

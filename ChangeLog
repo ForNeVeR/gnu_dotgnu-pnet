@@ -1,4 +1,14 @@
 
+2003-06-22  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/expr/cast1.il: Modify output to reflect changes in the compiler
+
+	* csharp/expr/cast8.cs: Modify license header to correctly describe the
+	test case
+
+	* csharp/expr/Makefile.am, csharp/expr/cast9.cs, csharp/expr/cast9.il,
+	csharp/expr/cast9.jl: New test cases for indirect or two step casts.
+
 2003-05-24  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/stmt/locals2.il, csharp/stmt/locals2.jl: Modify output

@@ -506,8 +506,8 @@ typedef union
 	/* Pad this structure to the best alignment on the underlying platform.
 	   This is usually needed on 64-bit platforms to ensure that stack
 	   words are always aligned on the best boundary.  We don't do this for
-	   Win32 because IL_BEST_ALIGNMENT is 8 there, and we need it to be 4 */
-#if !defined(_WIN32)
+	   i386 because IL_BEST_ALIGNMENT is sometimes 8, and we need it to be 4 */
+#if !defined(__i386) && !defined(__i386__)
 	char		padding[IL_BEST_ALIGNMENT];
 #endif
 

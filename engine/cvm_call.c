@@ -87,6 +87,7 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 					pc = thread->pc; \
 					stacktop[0].ptrValue = thread->thrownException; \
 					thread->thrownException = 0; \
+					stacktop += 1; \
 					goto throwException; \
 				} \
 			} while (0)

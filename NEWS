@@ -1,4 +1,22 @@
 
+0.3.0 (5 November 2002)
+
+	* System.Uri fixes (Stephen Compall).
+	* System.Net.Sockets.TcpClient, TcpListener (Francis Rogers).
+	* System.Net.Dns (Gopal V).
+	* Test suite updates (lots of people).
+	* Rearrange test suite to make it more logical (Jonathan Springer).
+	* Remove csunit code from pnetlib, as it is now in pnet.
+	* Turn off metadata compiles, as it now builds with pnet.
+	* System.IO.Path (Gopal V).
+	* System.Reflection.Emit.TypeBuilder (Richard Baumann).
+	* System.Attribute.GetAttr (Gopal V).
+	* System.Collections.ArrayList.MoveNext (Gopal V).
+	* GetFilesInDirectory, GetPathRoot (Charles Schuller).
+	* File get time methods (Richard Baumann).
+	* Math.Max fix (Richard Baumann).
+	* Simple number formatting for floating-point values (Richard Baumann).
+
 0.2.8 (2 September 2002)
 
 	* System.Runtime.Serialization, System.Xml.

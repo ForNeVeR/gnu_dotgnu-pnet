@@ -4,6 +4,8 @@
 	* runtime/System/DateTime.cs: change to "DateToTicks" to correct
 	for the change Richard made to "YearToTicks".
 
+	* NEWS, configure.in: update version for the "0.3.0" release.
+
 2002-11-03  Richard Baumann  <biochem333@nyc.rr.com>
 	
 	* runtime/System/Private/NumberFormatter.cs: Implement basic

@@ -1,4 +1,9 @@
 
+2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* class/System.ServiceProcess/System.ServiceProcess.build:
+	add "System.dll" to the dependencies for "System.ServiceProcess.dll".
+
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, copy-mcs.sh: look for "build/library.make" in

@@ -12,6 +12,10 @@
 				<excludes name="Test/**"/>
 			</sources>
 
+			<references>
+				<file name="System.dll"/>
+			</references>
+
 		</compile>
 	</target>
 </project>

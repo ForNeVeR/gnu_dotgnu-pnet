@@ -19,6 +19,9 @@ runtime/System/Collections/SortedList.cs,
 runtime/System/Collections/SynchronizedList.cs: implement the remainder
 of the "System.Collections" namespace.
 
+* runtime/System/Makefile.am: enable optimization in the C# compiler
+to generate more efficient code.
+
 2001-12-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Arg.txt,

@@ -357,7 +357,7 @@ CSSRC = Activator.cs \
 
 CSCC_WARNINGS = -Wno-silly-warnings -Wno-empty-input
 
-CSCC_FLAGS = $(CSCC_WARNINGS) -funsafe -nostdlib -fresources=$(DEFRESOURCES)
+CSCC_FLAGS = $(CSCC_WARNINGS) -O2 -funsafe -nostdlib -fresources=$(DEFRESOURCES)
 
 mscorlib.dll: $(CSSRC) $(DEFRESOURCES)
 	$(CSCC_COMPILE) -o $@ $(CSSRC)

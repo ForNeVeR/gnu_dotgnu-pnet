@@ -1116,7 +1116,6 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_FUNC			"`__func__'"
 %token K_LONG_LONG		"`__long_long__'"
 %token K_UINT			"`__unsigned_int__'"
-%token K_THREAD_SPECIFIC "`__thread_specific__'"
 %token K_TRY			"`__try__'"
 %token K_CATCH			"`__catch__'"
 %token K_FINALLY		"`__finally__'"
@@ -1131,6 +1130,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_NAMESPACE		"`__namespace__'"
 %token K_CS_TYPEOF		"`__typeof'"
 %token K_BOX			"`__box'"
+%token K_DECLSPEC		"`__declspec'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -1188,6 +1188,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <decl>		AbstractDeclarator2 ParamDeclarator /*ParamDeclarator*/
 
 %type <kind>		StructOrUnion TypeQualifierList TypeQualifier
+%type <kind>		DeclSpecArg
 
 %expect 18
 
@@ -1852,7 +1853,7 @@ StorageClassSpecifier
 	| K_AUTO			{ CDeclSpecSet($$, C_SPEC_AUTO); }
 	| K_REGISTER		{ CDeclSpecSet($$, C_SPEC_REGISTER); }
 	| K_INLINE			{ CDeclSpecSet($$, C_SPEC_INLINE); }
-	| K_THREAD_SPECIFIC	{ CDeclSpecSet($$, C_SPEC_THREAD_SPECIFIC); }
+	| K_DECLSPEC '(' DeclSpecArg ')'	{ CDeclSpecSet($$, $3); }
 	;
 
 TypeSpecifier
@@ -1893,6 +1894,22 @@ TypeSpecifier
 				CDeclSpecSetType($$, type);
 			}
 	| NamespaceQualifiedType		{ CDeclSpecSetType($$, $1); }
+	;
+
+DeclSpecArg
+	: /* empty */			{ $$ = 0; }
+	| AnyIdentifier			{
+				/* Check for the "thread" declaration specifier */
+				if(!strcmp($1, "thread") || !strcmp($1, "__thread__"))
+				{
+					$$ = C_SPEC_THREAD_SPECIFIC;
+				}
+				else
+				{
+					$$ = 0;
+				}
+			}
+	| AnyIdentifier '(' StringLiteral ')'	{ $$ = 0; }
 	;
 
 StructOrUnionSpecifier

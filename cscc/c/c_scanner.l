@@ -168,8 +168,6 @@ WHITE			[ \t\v\r\f]
 "__PRETTY_FUNCTION__"	{ RETURNTOK(K_FUNCTION); }
 "__func__"				{ RETURNTOK(K_FUNC); }
 
-"__thread_specific__"	{ RETURNTOK(K_THREAD_SPECIFIC); }
-
 "__try__"				{ RETURNTOK(K_TRY); /* Counterparts to C# keywords */ }
 "__catch__"				{ RETURNTOK(K_CATCH); }
 "__finally__"			{ RETURNTOK(K_FINALLY); }
@@ -187,6 +185,7 @@ WHITE			[ \t\v\r\f]
 "__int64"				{ RETURNTOK(K_LONG_LONG); }
 "__finally"				{ RETURNTOK(K_FINALLY); }
 "__box"					{ RETURNTOK(K_BOX); }
+"__declspec"			{ RETURNTOK(K_DECLSPEC); }
 
 \"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(STRING_LITERAL); }

@@ -1297,6 +1297,13 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 					type = ReplaceArrayTypes(info, ILType_Ref(type));
 					type = CTypeAddFunctionPtr(info, type);
 				}
+				else if(ILType_IsClass(ILType_Ref(type)))
+				{
+					/* Pointing to a class reference.  Remove the pointer.
+					   This turns types like "String *" into "String" for
+					   compatibility with Managed C++ */
+					type = ILType_Ref(type);
+				}
 				else
 				{
 					ILType_Ref(type) =

@@ -18,6 +18,9 @@
 	to the C compiler, for interacting with C# methods that have
 	"ref" and "out" parameters.
 
+	* cscc/c/c_declspec.c, cscc/c/c_grammar.y, cscc/c/c_scanner.l:
+	replace "__thread_specific__" with "__declspec(thread)".
+
 2004-02-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_scope.c, codegen/cg_scope.h, cscc/c/c_grammar.y,

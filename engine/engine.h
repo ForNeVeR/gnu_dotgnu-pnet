@@ -106,6 +106,20 @@ struct _tagILExecThread
 };
 
 /*
+ * Private information that is associated with a class.
+ */
+typedef struct _tagILClassPrivate ILClassPrivate;
+struct _tagILClassPrivate
+{
+	ILUInt32		size;				/* Full instance size */
+	ILUInt32		inLayout : 1;		/* Non-zero if in layout algorithm */
+	ILUInt32		alignment : 15;		/* Preferred instance alignment */
+	ILUInt32		vtableSize : 16;	/* Size of the vtable */
+	ILMethod      **vtable;				/* Methods within the vtable */
+
+};
+
+/*
  * Execute the interpreter on a thread.
  */
 void _ILInterpreter(ILExecThread *thread);

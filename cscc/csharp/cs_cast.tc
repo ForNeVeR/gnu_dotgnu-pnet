@@ -65,6 +65,16 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	}
 
 	/* Determine if we can cast between the types */
+	if(CSSemGetType(value) == ILType_Null && 
+		CSSemGetType(type) == ILType_Int)
+	{
+		// Special case (IntPtr)(null) is possible even without a NULL
+		// replacing with IntPtr.Zero
+		*parent = ILNode_Int_create(0,0,0); 
+		node->expr2 = *parent;
+		CSSemSetRValue(value, CSSemGetType(type));
+	}
+
 	if(!ILCast(info, node->expr2, &(node->expr2),
 			   CSSemGetType(value), CSSemGetType(type),1))
 	{

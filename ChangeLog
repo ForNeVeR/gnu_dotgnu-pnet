@@ -14,6 +14,9 @@
 	* cscc/csharp/cs_cast.tc: Fix stupid typo where "69" is passed where
 	a "1" is expected.
 
+	* cscc/csharp/cs_cast.c: Allow null to be casted to System.IntPtr even
+	outside unsafe mode (fixes bug #8207)
+
 2004-06-07  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Fix type bug in constant field accesses 

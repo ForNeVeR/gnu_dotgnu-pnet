@@ -37,6 +37,9 @@ typedef struct
 	/* Method to call to perform the conversion */
 	ILMethod	*method;
 
+	/* Explicit type to cast to using a checked cast instruction */
+	ILType	    *castType;
+
 	/* Builtin conversion */
 	const ILConversion *builtin;
 
@@ -90,6 +93,7 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 	/* Clear the rules */
 	rules->boxClass = 0;
 	rules->method = 0;
+	rules->castType = 0;
 	rules->builtin = 0;
 
 	/* Strip type prefixes before we start */
@@ -171,6 +175,7 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 	/* "Object" can be explicitly converted into any reference type */
 	if(ILTypeIsObjectClass(fromType) && explicit)
 	{
+		rules->castType = toType;
 		return 1;
 	}
 
@@ -193,6 +198,7 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 		if(ILClassInheritsFrom(classTo, classFrom))
 		{
 			/* Explicit conversion to a descendent type */
+			rules->castType = toType;
 			return 1;
 		}
 	}
@@ -204,6 +210,34 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 		if(ILClassImplements(classFrom, classTo))
 		{
 			/* Implicit conversion to an interface */
+			return 1;
+		}
+		else if(explicit && !ILClass_IsSealed(classFrom))
+		{
+			/* Explicit conversion to an interface */
+			rules->castType = toType;
+			return 1;
+		}
+	}
+
+	/* Check for explicit interface conversions */
+	if(explicit && ILClass_IsInterface(classFrom))
+	{
+		if(!ILClass_IsInterface(classTo))
+		{
+			if(!ILClass_IsSealed(classTo) ||
+		       ILClassImplements(classTo, classFrom))
+			{
+				/* Explicit conversion from an interface to a
+				   class that may implement it */
+				rules->castType = toType;
+				return 1;
+			}
+		}
+		else if(!ILClassImplements(classFrom, classTo))
+		{
+			/* Explicit conversion between unrelated interfaces */
+			rules->castType = toType;
 			return 1;
 		}
 	}
@@ -222,6 +256,11 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 			{
 				if(GetConvertRules(info, elemFrom, elemTo, explicit, rules))
 				{
+					if(rules->castType)
+					{
+						/* Move the explicit cast up to the array level */
+						rules->castType = toType;
+					}
 					return 1;
 				}
 			}
@@ -252,6 +291,7 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 	if(rules->builtin)
 	{
 		ILApplyConversion(info, node, parent, rules->builtin);
+		node = *parent;
 	}
 
 	/* Call a method to perform the conversion */
@@ -265,6 +305,15 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 		}
 		*parent = ILNode_UserConversion_create
 						(node, ILTypeToMachineType(toType), method);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		node = *parent;
+	}
+
+	/* Cast to an explicit type */
+	if(rules->castType)
+	{
+		*parent = ILNode_CastType_create(node, rules->castType);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 	}
@@ -405,7 +454,7 @@ int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
 	else if((constType = CanCoerceConst(info, node, fromType, toType))
 					!= ILMachineType_Void)
 	{
-		*parent = ILNode_Cast_create(node, constType);
+		*parent = ILNode_CastSimple_create(node, constType);
 		return 1;
 	}
 	else

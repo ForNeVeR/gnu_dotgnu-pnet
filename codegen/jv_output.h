@@ -230,6 +230,11 @@ void JavaGenCallCtorIntrinsic(ILGenInfo *info, const char *className,
 void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo);
 
 /*
+ * Generate an instruction that refers to a type.
+ */
+void JavaGenTypeRef(ILGenInfo *info, int opcode, ILType *type);
+
+/*
  * Generate an instruction that refers to a class by name.
  */
 void JavaGenClassName(ILGenInfo *info, int opcode, const char *className);

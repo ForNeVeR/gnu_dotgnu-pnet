@@ -843,6 +843,24 @@ void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo)
 	/* TODO */
 }
 
+void JavaGenTypeRef(ILGenInfo *info, int opcode, ILType *type)
+{
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "\t%s\t", ILJavaOpcodeTable[opcode].name);
+		if(ILType_IsClass(type) || ILType_IsValueType(type))
+		{
+			ILDumpClassName(info->asmOutput, info->image,
+							ILType_ToClass(type), IL_DUMP_QUOTE_NAMES);
+		}
+		else
+		{
+			ILDumpType(info->asmOutput, info->image, type, IL_DUMP_QUOTE_NAMES);
+		}
+		putc('\n', info->asmOutput);
+	}
+}
+
 void JavaGenClassName(ILGenInfo *info, int opcode, const char *className)
 {
 	/* TODO */

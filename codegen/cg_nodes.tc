@@ -316,9 +316,13 @@ struct _tagILEvalValue
 %node ILNode_NoOverflow ILNode_LValueNoRefUnaryExpr
 %node ILNode_Pedantic ILNode_LValueNoRefUnaryExpr
 %node ILNode_NoPedantic ILNode_LValueNoRefUnaryExpr
-%node ILNode_Cast ILNode_UnaryExpression =
+%node ILNode_CastSimple ILNode_UnaryExpression =
 {
 	ILMachineType machineType;
+}
+%node ILNode_CastType ILNode_UnaryExpression =
+{
+	ILType *type;
 }
 %node ILNode_UserConversion ILNode_UnaryExpression =
 {

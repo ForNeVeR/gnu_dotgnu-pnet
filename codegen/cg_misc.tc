@@ -96,9 +96,13 @@ ILNode_GetType(ILNode_NoPedantic)
 /*
  * Get the type of a cast expression.
  */
-ILNode_GetType(ILNode_Cast)
+ILNode_GetType(ILNode_CastSimple)
 {
 	return node->machineType;
+}
+ILNode_GetType(ILNode_CastType)
+{
+	return ILTypeToMachineType(node->type);
 }
 
 /*
@@ -530,11 +534,17 @@ ILNode_GenValue(ILNode_NoPedantic)
 /*
  * Generate value code for a cast expression.
  */
-ILNode_GenValue(ILNode_Cast)
+ILNode_GenValue(ILNode_CastSimple)
 {
 	ILMachineType type = ILNode_GenValue(node->expr, info);
 	ILGenCast(info, type, node->machineType);
 	return node->machineType;
+}
+ILNode_GenValue(ILNode_CastType)
+{
+	ILNode_GenValue(node->expr, info);
+	ILGenTypeToken(info, IL_OP_CASTCLASS, node->type);
+	return ILTypeToMachineType(node->type);
 }
 
 /*
@@ -1859,7 +1869,7 @@ ILNode_EvalConst(ILNode_NoPedantic)
 /*
  * Evaluate the constant value of a cast expression.
  */
-ILNode_EvalConst(ILNode_Cast)
+ILNode_EvalConst(ILNode_CastSimple)
 {
 	return (ILNode_EvalConst(node->expr, info, value) &&
 		    ILGenCastConst(info, value, value->valueType, node->machineType));

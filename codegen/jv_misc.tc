@@ -260,11 +260,20 @@ JavaGenValue(ILNode_NoPedantic)
 /*
  * Generate value code for a cast expression.
  */
-JavaGenValue(ILNode_Cast)
+JavaGenValue(ILNode_CastSimple)
 {
 	ILMachineType type = JavaGenValue(node->expr, info);
 	JavaGenCast(info, type, node->machineType);
 	return node->machineType;
+}
+JavaGenValue(ILNode_CastType)
+{
+	ILMachineType type = JavaGenValue(node->expr, info);
+	JavaGenTypeRef(info, JAVA_OP_CHECKCAST, node->type);
+	JavaGenAdjust(info, -JavaGenTypeSize(type));
+	type = ILTypeToMachineType(node->type);
+	JavaGenAdjust(info, JavaGenTypeSize(type));
+	return type;
 }
 
 /*

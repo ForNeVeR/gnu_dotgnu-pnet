@@ -1035,7 +1035,7 @@ static void InsertPrimitive(ILGenInfo *info, ILNode *node, ILNode **parent,
 {
 	if(node != 0 && ILNode_GetType(node, info) != type)
 	{
-		*parent = ILNode_Cast_create(node, type);
+		*parent = ILNode_CastSimple_create(node, type);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 	}

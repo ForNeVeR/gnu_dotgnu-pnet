@@ -1588,9 +1588,13 @@ ILNode_SemAnalysis(ILNode_Unbox)
 }
 
 /*
- * Perform semantic analysis for the low-level cast operator.
+ * Perform semantic analysis for the low-level cast operators.
  */
-ILNode_SemAnalysis(ILNode_Cast)
+ILNode_SemAnalysis(ILNode_CastSimple)
+{
+	return CSSemValueDefault;
+}
+ILNode_SemAnalysis(ILNode_CastType)
 {
 	return CSSemValueDefault;
 }

@@ -698,10 +698,26 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	/* Perform semantic analysis on the method body */
 	if(node->body)
 	{
+		if((node->modifiers & IL_META_METHODDEF_ABSTRACT) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`abstract' cannot be used with a method body");
+		}
+		if((node->modifiers & CS_SPECIALATTR_EXTERN) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`extern' cannot be used with a method body");
+		}
 		savedScope = info->currentScope;
 		info->currentScope = scope;
 		ILNode_SemAnalysis(node->body, info, &(node->body));
 		info->currentScope = savedScope;
+	}
+	else if((node->modifiers & CS_SPECIALATTR_EXTERN) == 0 &&
+			(node->modifiers & IL_META_METHODDEF_ABSTRACT) == 0)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "method with no body requires `abstract' or `extern'");
 	}
 
 	/* If the return type is not void, then make sure that the

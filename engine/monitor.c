@@ -47,6 +47,7 @@ ILExecMonitor *ILExecMonitorCreate(void)
 
 	monitor->waiters = 0;
 	monitor->next = 0;
+	monitor->owner = 0;
 
 	return monitor;
 }

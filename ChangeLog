@@ -1,4 +1,21 @@
+2004-05-03  Thong Nguyen <tum@veridicus.com>
 
+	* support/thr_defs.h: Added waiters field to ILMonitor.
+	
+	* support/wait_mutex.c: Made ILWaitMonitorWait notify
+	threads already tring to enter before waiting itself.
+	Added code to prevent monitors from being closed if they
+	are in a wait state (especially if they in between getting
+	our of the wait queue and entering the ready queue).
+	This fixes a race between ILWaitMonitorTryEnter and
+	ILWaitMonitorWait.
+	
+	* engine/monitor.c: Initialize monitor->owner to null.
+	
+	* engine/lib_thread.c: Simplified and tidied a lot of
+	monitor enter/leave/wait/pulse code by tracking the current
+	monitor's owner thread.
+	
 2004-04-29  Gopal V <gopalv82@yahoo.com>
 
 	* engine/lib_type.c: Type.GetType picks up types from the caller 

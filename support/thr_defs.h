@@ -226,7 +226,7 @@ typedef struct
 {
 	ILWaitMutex				parent;
 	_ILWakeupQueue          signalQueue;
-
+	int						waiters;
 } ILMonitor;
 
 /*

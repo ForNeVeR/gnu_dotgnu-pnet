@@ -62,7 +62,7 @@ void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)
 /*
  * Spins until the object is unmarked and the current thread can mark it.
  */
-static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volatile ILObject *obj)
+static IL_INLINE void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volatile ILObject *obj)
 {
 	ILLockWord lockword;
 
@@ -74,14 +74,16 @@ static void _IL_ObjectLockword_WaitAndMark(ILExecThread *thread, volatile ILObje
 			IL_LW_UNMARK(lockword)) == IL_LW_UNMARK(lockword)))
 		{
 			break;
-		}		
+		}
+		
+		ILThreadSleep(0);
 	}
 }
 
 /*
  * Unmarks an object's lockword.
  */
-static void _IL_ObjectLockword_Unmark(ILExecThread *thread, volatile ILObject *obj)
+static IL_INLINE void _IL_ObjectLockword_Unmark(ILExecThread *thread, volatile ILObject *obj)
 {
 	ILLockWord lockword;
 
@@ -102,6 +104,7 @@ static void _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, IL
 	if (monitor == 0)
 	{
 		/* The monitor has already been claimed by another thread */
+		
 		return;
 	}
 
@@ -121,6 +124,7 @@ static void _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, IL
 
 			/* Return the monitor to this thread's free list */
 
+			monitor->owner = 0;
 			monitor->next = thread->freeMonitor;
 			thread->freeMonitor = monitor;
 		}
@@ -134,6 +138,10 @@ static void _IL_Monitor_CheckAndReturnMonitorToFreeList(ILExecThread *thread, IL
 
 /*
  * public static bool InternalTryEnter(Object obj, int timeout);
+ *
+ * The acquisition algorithm used is designed to be only require
+ * a compare-and-exchange when the monitor is uncontested
+ * (the most likely case).
  */
 ILBool _IL_Monitor_InternalTryEnter(ILExecThread *thread,
 		  	    		ILObject *objnv, ILInt32 timeout)
@@ -199,8 +207,6 @@ retry:
 		{
 			/* Succesfully installed the new monitor */
 
-			monitor->owner = thread;
-			
 			/* Let the support monitor know we've entered */
 			result = ILWaitMonitorEnter(monitor->supportMonitor);
 
@@ -230,6 +236,8 @@ retry:
 
 			thread->freeMonitor = next;
 
+			monitor->owner = thread;
+			
 			/* Finally allow other threads to enter the monitor */
 			_IL_ObjectLockword_Unmark(thread, obj);
 			
@@ -250,49 +258,29 @@ retry:
 		}
 	}
 
-	/* If the lockword is marked then it means that another thread is attempting
-	       disassociate the monitor with the object. */
-	if (IL_LW_MARKED(lockword))
-	{		
-		/* Yeld CPU time while spinning.  This appears to speed up monitors
-		    but may cause us to never enter the object's monitor, so threads releasing
-			the same monitor will sleep too */
-		ILThreadSleep(0);
-		
-		/* Spin */
-		goto retry;
-	}
+	/* Make sure noone is allowed to change the object's monitor */
+	_IL_ObjectLockword_WaitAndMark(thread, obj);
 
-	monitor = IL_LW_UNMARK(lockword);
-
-	/* Speculatively increment the number of waiters */
-	_IL_Interlocked_Increment_Ri(thread, (ILInt32 *)&monitor->waiters);
-
-	/* Now double check and see if another thread is trying to exit
-	       now that monitor->waiters has been incremented */
 	lockword = GetObjectLockWord(thread, obj);
-	
-	if (IL_LW_MARKED(lockword)
-		/* This doubles as a check for lockword == 0 */
-		|| IL_LW_UNMARK(lockword) != monitor)
-	{
-		/* Mark the object's lockword */
-		_IL_ObjectLockword_WaitAndMark(thread, obj);
-
-		/* The current thread has exclusive access to the object's lockword */
-
-		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
-
-		/* Unmark the object's lockword */
-		_IL_ObjectLockword_Unmark(thread, obj);
-
-		/* Spin */
-		goto retry;
-	}
 
 	/* If we get here then we know that no other thread can reassign the object's
 	       monitor */
+
+	monitor = IL_LW_UNMARK(lockword);
+	
+	if (monitor == 0 || monitor->owner == 0)
+	{
+		/* Some other thread owned the monitor but has released it
+		   since we last called GetObjectLockWord */
+
+		_IL_ObjectLockword_Unmark(thread, obj);
+		   
+		goto retry;
+	}
+
+	_IL_Interlocked_Increment_Ri(thread, (ILInt32 *)&monitor->waiters);
+
+	_IL_ObjectLockword_Unmark(thread, obj);
 
 	/* Try entering the monitor */	
 	result = ILWaitMonitorTryEnter(monitor->supportMonitor, timeout);
@@ -300,23 +288,22 @@ retry:
 	/* Failed or timed out somehow */
 	if (result != 0)
 	{
-		/* Mark the object's lockword */
-		_IL_ObjectLockword_WaitAndMark(thread, obj);
-
-		/* The current thread has exclusive access to the object's lockword */
-
+		/*
+		 * Decrement the waiters count and return the monitor to the free-list
+		 * if the object is no longer in any synchronized blocks.
+		 */
+		_IL_ObjectLockword_WaitAndMark(thread, obj);		
 		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
-
-		/* Unmark the object's lockword */
+		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);		
 		_IL_ObjectLockword_Unmark(thread, obj);
 
-		/* Handle ThreadAbort etc */	
+		/* Handle ThreadAbort etc */		
 		_ILHandleWaitResult(thread, result);
 	}
 	else
 	{
 		monitor->owner = thread;
+		
 		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
 	}
 
@@ -359,7 +346,7 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 		_IL_ObjectLockword_Unmark(thread, obj);
 
 		ILExecThreadThrowSystem
-			(
+		(
 				thread,
 				"System.Threading.SynchronizationLockException",	
 				"Exception_ThreadNeedsLock"
@@ -374,8 +361,8 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
 				
 		/* There are waiters.  Unmark the lockword */		
-		_IL_ObjectLockword_Unmark(thread, obj);
-		
+		_IL_ObjectLockword_Unmark(thread, obj);		
+
 		/* Notify waiting monitors */
 		ILWaitMonitorCompleteLeave(monitor->supportMonitor);		
 
@@ -392,12 +379,17 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *objnv)
 		/* Unmark the lockword */
 		_IL_ObjectLockword_Unmark(thread, obj);
 
-		/* We don't own the monitor */				
+		/* 
+		 * Support code doesn't think this thread owns the monitor
+		 * but we know it should cause engine level algorithms
+		 * should have ensured that it does.  This must be a VM
+		 * bug.
+		 */
 		ILExecThreadThrowSystem
 			(
 				thread,					
-				"System.Threading.SynchronizationLockException",
-				"Exception_ThreadNeedsLock"
+				"System.ExecutionEngineException",
+				"Exception_UnexpectedEngineState"
 			);
 	}	
 }
@@ -423,139 +415,16 @@ ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
 		return 0;
 	}
 
-retry:
-
+	_IL_ObjectLockword_WaitAndMark(thread, obj);
 	lockword = GetObjectLockWord(thread, obj);
-	
-	/* If the lockword is marked then it means that another thread is attempting
-		  disassociate the monitor with the object. */
-	if (IL_LW_MARKED(lockword))
-	{
-		
-		/* Spin */
-		goto retry;
-	}
-
-	/*
-	 * Problem:
-	 *
-	 * A gets here.
-	 * B marks the lock word.
-	 * B notices there are no waiters.
-	 * B returns obj's monitor to the free list.
-	 * A increments waiters and then uses the stale monitor!
-	 * B unmarks the lockword.
-	 *
-	 * Solution:
-	 * 
-	 * Increment waiters and then double check that lockword isn't marked.
-	 * If lockword is marked then reverse the increment and spin.
-	 */
 
 	monitor = IL_LW_UNMARK(lockword);
 
 	if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
 	{
-		/* Object is not synchronized */				
-		ILExecThreadThrowSystem
-			(
-				thread,					
-				"System.Threading.SynchronizationLockException",
-				"Exception_ThreadNeedsLock"
-			);
-			
-		return 0;
-	}
-	
-	_IL_Interlocked_Increment_Ri(thread, (ILInt32 *)&monitor->waiters);
-
-	/* Now double check and see if another thread is trying to exit
-	       now that monitor->waiters has been incremented */	
-	lockword = GetObjectLockWord(thread, obj);
-
-	if (IL_LW_MARKED(lockword)
-		/* This doubles as a check for lockword == 0 */
-		|| IL_LW_UNMARK(lockword) != monitor)
-	{
-		/* 
-		 * Problem:
-		 *
-		 * A gets here after failing the double check cause B *just* marked the lock word.
-		 * B notices there is one waiter.
-		 * B doesn't return the monitor to the free list.
-		 * A notices that B has marked the lock word.
-		 * A decrements the waiter count.
-		 * The monitor now has no owner and has not been returned to the free list.
-		 * B unmarks the lock word.
-		 * "obj" gets garbage collected and the monitor leaks.
-		 *
-		 * Solution:
-		 *
-		 * A should return obj's monitor to the free list.
-		 */
-
-		/* 
-		 * Problem:
-		 *
-		 * A gets here after failing the double check cause B *just* marked the lock word.
-		 * A decrements counter.
-		 * B notices there are no waiters.
-		 * B returns the monitor to the free list.
-		 * A notices that B has marked the lock word.
-		 * A decrements the waiter count.
-		 * B unmarks the lockword.
-		 * C enters obj and creates a new monitor for obj.
-		 * A returns the obj's new monitor to the free list.
-		 * C calls exit and fails because the obj's monitor has been removed.
-		 *
-		 * Solution:
-		 *
-		 * Make A free the monitor it knows, not obj's current monitor.
-		 * Don't zero obj's lockword if it doesn't match the current lockword.
-		 * Both of these are performed in _IL_Monitor_CheckAndReturnMonitorToFreeList
-		 */
-
-		/*
-		 * Problem:
-		 *
-		 * A gets here (monitor->waiters = 1)
-		 * B does speculative leave  (monitor->Waiters = 1)
-	 	 * A decrements monitor->waiters (monitor->waiters = 0).
-		 * B return monitor to free list.
-		 * A returns monitor to free list.
-		 *
-		 * A gets here (monitor->waiters = 1)
-		 * A decrements monitor->waiters (monitor->waiters = 0).
-		 * b notices waters = 0.
-		 * B does speculative leave  (monitor->Waiters = 0)
-		 * B return monitor to free list.
-		 * A returns monitor to free list.
-		 *
-		 * Don't decrement monitor->waiters until we know B has unmarked
-		 * the lockword thus preventing B from returning the monitor to the
-		 * free list.
-		 */
-
-		/* Mark the object's lockword */
-		_IL_ObjectLockword_WaitAndMark(thread, obj);
-
-		/* The current thread has exclusive access to the object's lockword */
-
-		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
-
-		/* Unmark the object's lockword */
 		_IL_ObjectLockword_Unmark(thread, obj);
 
-		/* Spin */
-		goto retry;
-	}
-
-	monitor = IL_LW_UNMARK(lockword);
-
-	if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
-	{
-		/* Object doesn't even have a lock */
+		/* Object needs to own monitor */
 
 		ILExecThreadThrowSystem
 			(
@@ -566,52 +435,55 @@ retry:
 
 		return 0;
 	}
-	
+
+	/*
+	 * Inside the engine, monitor->waiters is used to prevent
+	 * _IL_Monitor_Exit from dissociating the monitor with the object.
+	 * However, in this method we know that no other thread can call 
+	 * _IL_Monitor_Exit before we call ILWaitMonitorWait because we know 
+	 * that we own the monitor.  However, once ILWaitMonitorWait has been
+	 * called, it releases the monitor so another thread theoretically could
+	 * exit it but it won't cause ILWaitMonitorCanClose knows that monitors
+	 * can't be closed (preventing monitor-object dissociiation in 
+	 * _IL_Monitor_Exit).  ILWaitMontiorCanClose knows this by using a 
+	 * different waiters count that is stored in the support monitor.
+	 *
+	 * What this all means is that we aren't required to increment/decrement
+	 * monitor->waiters to prevent premature monitor dissociation while we
+	 * "Wait".  For performance reasons, we won't do what isn't required.
+	 */
+
+	_IL_ObjectLockword_Unmark(thread, obj);
+
 	/* If we get here then we know that no other thread can reassign the object's
-	    monitor */
+	    monitor because we know we own the monitor */
 
 	switch (result = ILWaitMonitorWait(monitor->supportMonitor, timeout))
 	{
-	case 0:
+	case 0:		
 
-		/* Thread doesn't currently own lock */
-
-		/* Mark the object's lockword */
-		_IL_ObjectLockword_WaitAndMark(thread, obj);
-
-		/* The current thread has exclusive access to the object's lockword */
-
-		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
-
-		/* Unmark the object's lockword */
-		_IL_ObjectLockword_Unmark(thread, obj);
+		/* 
+		 * Support code doesn't think this thread owns the monitor
+		 * but we know it should cause engine level algorithms
+		 * should have ensured that it does.  This must be a VM
+ 		 * bug.
+		 */
 
 		ILExecThreadThrowSystem
 			(
 				thread,
-				"System.Threading.SynchronizationLockException",
-				"Exception_ThreadNeedsLock"
+				"System.ExecutionEngineException",
+				"Exception_UnexpectedEngineState"
 			);
+
 		
 		return 0;
 
 	case 1:
 
-		/* Successfully waited */
-
-		/* Mark the object's lockword */
-		_IL_ObjectLockword_WaitAndMark(thread, obj);
-
 		/* The current thread has exclusive access to the object's lockword */
 
 		monitor->owner = thread;
-		
-		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
-
-		/* Unmark the object's lockword */
-		_IL_ObjectLockword_Unmark(thread, obj);
 
 		return 1;
 
@@ -619,34 +491,12 @@ retry:
 	case IL_WAIT_FAILED:
 
 		/* Timed out */
-
-		/* Mark the object's lockword */
-		_IL_ObjectLockword_WaitAndMark(thread, obj);
-
-		/* The current thread has exclusive access to the object's lockword */
-
-		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
-
-		/* Unmark the object's lockword */
-		_IL_ObjectLockword_Unmark(thread, obj);
-
+	
 		return 0;
 
 	default:
 
 		/* Handle ThreadAbort etc */
-
-		/* Mark the object's lockword */
-		_IL_ObjectLockword_WaitAndMark(thread, obj);
-
-		/* The current thread has exclusive access to the object's lockword */
-
-		_IL_Interlocked_Decrement_Ri(thread, (ILInt32 *)&monitor->waiters);
-		_IL_Monitor_CheckAndReturnMonitorToFreeList(thread, monitor, obj);
-
-		/* Unmark the object's lockword */
-		_IL_ObjectLockword_Unmark(thread, obj);
 
 		_ILHandleWaitResult(thread, result);
 
@@ -662,57 +512,68 @@ void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
 	int result;
 	ILExecMonitor *monitor;
 
-	if(obj)
-	{		
-		monitor = GetObjectMonitor(thread, obj);
-
-		if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
-		{
-			/* Object needs to own lock */
-
-			ILExecThreadThrowSystem
-				(
-					thread,
-					"System.Threading.SynchronizationLockException",
-					"Exception_ThreadNeedsLock"
-				);
-
-			return;
-		}
-
-		switch (result = ILWaitMonitorPulse(monitor->supportMonitor))
-		{
-		case 0:
-
-			/* Thread doesn't currently own lock */
-
-			ILExecThreadThrowSystem
-				(
-					thread,
-					"System.Threading.SynchronizationLockException",
-					"Exception_ThreadNeedsLock"
-				);
-
-			return;
-
-		case 1:
-
-			/* Successfully pulsed */
-			
-			return;
-
-		default:
-
-			/* Handle ThreadAbort etc */
-
-			_ILHandleWaitResult(thread, result);
-
-			return;
-		}
-	}
-	else
+	if(obj == 0)
 	{
 		ILExecThreadThrowArgNull(thread, "obj");
+	}
+
+	_IL_ObjectLockword_WaitAndMark(thread, obj);
+	
+	monitor = GetObjectMonitor(thread, obj);
+
+	if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
+	{
+		/* Object needs to own monitor */
+
+		_IL_ObjectLockword_Unmark(thread, obj);
+
+		ILExecThreadThrowSystem
+			(
+				thread,
+				"System.Threading.SynchronizationLockException",
+				"Exception_ThreadNeedsLock"
+			);
+
+		return;
+	}
+	
+	_IL_ObjectLockword_Unmark(thread, obj);
+
+	result = ILWaitMonitorPulse(monitor->supportMonitor);
+	
+	switch (result)
+	{
+	case 0:
+
+		/* 
+		* Support code doesn't think this thread owns the monitor
+		* but we know it should cause engine level algorithms
+		* should have ensured that it does.  This must be a VM
+		* bug.
+		*/
+
+		ILExecThreadThrowSystem
+			(
+				thread,
+				"System.ExecutionEngineException",
+				"Exception_UnexpectedEngineState"
+			);
+
+		return;
+
+	case 1:
+
+		/* Successfully pulsed */
+		
+		return;
+
+	default:
+
+		/* Handle ThreadAbort etc */
+
+		_ILHandleWaitResult(thread, result);
+
+		return;
 	}
 }
 
@@ -724,57 +585,68 @@ void _IL_Monitor_PulseAll(ILExecThread *thread, ILObject *obj)
 	int result;
 	ILExecMonitor *monitor;
 
-	if(obj)
-	{		
-		monitor = GetObjectMonitor(thread, obj);
-
-		if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
-		{
-			/* Object needs to own lock */
-
-			ILExecThreadThrowSystem
-				(
-					thread,
-					"System.Threading.SynchronizationLockException",
-					"Exception_ThreadNeedsLock"
-				);
-
-			return;
-		}
-
-		switch (result = ILWaitMonitorPulseAll(monitor->supportMonitor))
-		{
-		case 0:
-
-			/* Thread doesn't currently own lock */
-
-			ILExecThreadThrowSystem
-				(
-					thread,
-					"System.Threading.SynchronizationLockException",
-					"Exception_ThreadNeedsLock"
-				);
-
-			return;
-
-		case 1:
-
-			/* Successfully pulsed */
-
-			return;
-
-		default:
-
-			/* Handle ThreadAbort etc */
-
-			_ILHandleWaitResult(thread, result);
-
-			return;
-		}
-	}
-	else
+	if(obj == 0)
 	{
 		ILExecThreadThrowArgNull(thread, "obj");
+	}
+
+	_IL_ObjectLockword_WaitAndMark(thread, obj);
+
+	monitor = GetObjectMonitor(thread, obj);
+
+	if (monitor == 0 || (monitor != 0 && monitor->owner != thread))
+	{
+		/* Object needs to own monitor */
+
+		_IL_ObjectLockword_Unmark(thread, obj);
+
+		ILExecThreadThrowSystem
+			(
+				thread,
+				"System.Threading.SynchronizationLockException",
+				"Exception_ThreadNeedsLock"
+			);
+
+		return;
+	}
+
+	_IL_ObjectLockword_Unmark(thread, obj);
+
+	result = ILWaitMonitorPulseAll(monitor->supportMonitor);
+
+	switch (result)
+	{ 
+	case 0:
+
+		/* 
+		 * Support code doesn't think this thread owns the monitor
+		 * but we know it should cause engine level algorithms
+		 * should have ensured that it does.  This must be a VM
+		 * bug.
+		 */
+
+		ILExecThreadThrowSystem
+				(
+				thread,
+				"System.ExecutionEngineException",
+				"Exception_UnexpectedEngineState"
+				);
+
+		return;
+
+	case 1:
+
+		/* Successfully pulsed */
+
+		return;
+
+	default:
+
+		/* Handle ThreadAbort etc */
+
+		_ILHandleWaitResult(thread, result);
+
+		return;
 	}
 }
 

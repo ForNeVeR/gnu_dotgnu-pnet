@@ -49,8 +49,24 @@ ILCmdLineOption const ILDocProgramOptions[] = {
 	{"-fassembly-map", 'f', 1,
 		"-fassembly-map=NAME1,NAME2",
 		"Map the assembly `NAME1' in the image to `NAME2' in the XML file."},
+	{"-fxml", 'f', 1,
+		"-fxml",
+		"Write the output in XML instead of human-readable text."},
+	{"-fignore-assembly-names", 'f', 1,
+		"-fignore-assembly-names",
+		"Ignore assembly names when validating the input image."},
 	{0, 0, 0, 0, 0}
 };
+
+/*
+ * Flag that is set to indicate XML output.
+ */
+static int xmlOutput = 0;
+
+/*
+ * Flag that is set to ignore assembly names.
+ */
+static int ignoreAssemblyNames = 0;
 
 char *ILDocDefaultOutput(int numInputs, char **inputs, const char *progname)
 {
@@ -381,12 +397,54 @@ static int MatchPropertySignature(ILType *signature,
 }
 
 /*
+ * Print a string to a stream, quoting as necessary for XML.
+ */
+static void PrintString(const char *str, FILE *stream)
+{
+	if(xmlOutput)
+	{
+		char ch;
+		while((ch = *str++) != '\0')
+		{
+			if(ch == '<')
+			{
+				fputs("&lt;", stream);
+			}
+			else if(ch == '>')
+			{
+				fputs("&gt;", stream);
+			}
+			else if(ch == '&')
+			{
+				fputs("&amp;", stream);
+			}
+			else if(ch == '"')
+			{
+				fputs("&quot;", stream);
+			}
+			else if(ch == '\'')
+			{
+				fputs("&apos;", stream);
+			}
+			else
+			{
+				putc(ch, stream);
+			}
+		}
+	}
+	else
+	{
+		fputs(str, stream);
+	}
+}
+
+/*
  * Print the name of an image type.
  */
 static void PrintType(FILE *stream, ILType *type)
 {
 	char *name = TypeToName(type, 0);
-	fputs(name, stream);
+	PrintString(name, stream);
 	ILFree(name);
 }
 
@@ -400,13 +458,25 @@ static void PrintMethodName(FILE *stream, ILDocMember *member)
 	/* Print the type and member name */
 	if((member->memberAttrs & IL_META_METHODDEF_STATIC) != 0)
 	{
-		fputs("static ", stream);
+		PrintString("static ", stream);
 	}
-	fputs(member->type->fullName, stream);
-	if(member->memberType != ILDocMemberType_Constructor)
+	if(xmlOutput && member->memberType != ILDocMemberType_Constructor)
 	{
-		fputs("::", stream);
-		fputs(member->name, stream);
+		if(member->returnType)
+		{
+			PrintString(member->returnType, stream);
+			putc(' ', stream);
+		}
+		PrintString(member->name, stream);
+	}
+	else
+	{
+		PrintString(member->type->fullName, stream);
+		if(member->memberType != ILDocMemberType_Constructor)
+		{
+			PrintString("::", stream);
+			PrintString(member->name, stream);
+		}
 	}
 
 	/* Print the parameters */
@@ -414,7 +484,12 @@ static void PrintMethodName(FILE *stream, ILDocMember *member)
 	param = member->parameters;
 	while(param != 0)
 	{
-		fputs(param->type, stream);
+		PrintString(param->type, stream);
+		if(xmlOutput && param->name)
+		{
+			putc(' ', stream);
+			PrintString(param->name, stream);
+		}
 		param = param->next;
 		if(param != 0)
 		{
@@ -426,10 +501,16 @@ static void PrintMethodName(FILE *stream, ILDocMember *member)
 	   !strcmp(member->name, "op_Explicit"))
 	{
 		/* Report the return type too for conversion operators */
-		fputs(" : ", stream);
-		fputs(member->returnType, stream);
+		PrintString(" : ", stream);
+		PrintString(member->returnType, stream);
 	}
 }
+
+/*
+ * Flag that indicates if a member or type name has already been written.
+ */
+static int memberNameWritten = 0;
+static int typeNameWritten = 0;
 
 /*
  * Print the name and category of a program item.
@@ -438,63 +519,239 @@ static void PrintName(FILE *stream, ILDocType *type, ILDocMember *member)
 {
 	if(member)
 	{
+		if(xmlOutput && !typeNameWritten)
+		{
+			fputs("\t<class name=\"", stream);
+			PrintString(type->fullName, stream);
+			if(type->assembly)
+			{
+				fputs("\" assembly=\"", stream);
+				PrintString(type->assembly, stream);
+			}
+			fputs("\">\n", stream);
+			typeNameWritten = 1;
+		}
 		switch(member->memberType)
 		{
 			case ILDocMemberType_Constructor:
 			{
-				PrintMethodName(stream, member);
-				fputs(" constructor ", stream);
+				if(xmlOutput)
+				{
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<ctor signature=\"", stream);
+						PrintMethodName(stream, member);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					PrintMethodName(stream, member);
+					fputs(" constructor ", stream);
+				}
 			}
 			break;
 
 			case ILDocMemberType_Method:
 			{
-				PrintMethodName(stream, member);
-				fputs(" method ", stream);
+				if(xmlOutput)
+				{
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<method name=\"", stream);
+						PrintString(member->name, stream);
+						fputs("\" signature=\"", stream);
+						PrintMethodName(stream, member);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					PrintMethodName(stream, member);
+					fputs(" method ", stream);
+				}
 			}
 			break;
 
 			case ILDocMemberType_Field:
 			{
-				fputs(type->fullName, stream);
-				fputs("::", stream);
-				fputs(member->name, stream);
-				fputs(" field ", stream);
+				if(xmlOutput)
+				{
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<field name=\"", stream);
+						PrintString(member->name, stream);
+						fputs("\" type=\"", stream);
+						PrintString(member->returnType, stream);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					PrintString(type->fullName, stream);
+					fputs("::", stream);
+					PrintString(member->name, stream);
+					fputs(" field ", stream);
+				}
 			}
 			break;
 
 			case ILDocMemberType_Property:
 			{
-				fputs(type->fullName, stream);
-				fputs("::", stream);
-				fputs(member->name, stream);
-				fputs(" property ", stream);
+				if(xmlOutput)
+				{
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<property name=\"", stream);
+						PrintString(member->name, stream);
+						fputs("\" type=\"", stream);
+						PrintString(member->returnType, stream);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					PrintString(type->fullName, stream);
+					fputs("::", stream);
+					PrintString(member->name, stream);
+					fputs(" property ", stream);
+				}
 			}
 			break;
 
 			case ILDocMemberType_Event:
 			{
-				fputs(type->fullName, stream);
-				fputs("::", stream);
-				fputs(member->name, stream);
-				fputs(" event ", stream);
+				if(xmlOutput)
+				{
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<event name=\"", stream);
+						PrintString(member->name, stream);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					PrintString(type->fullName, stream);
+					fputs("::", stream);
+					PrintString(member->name, stream);
+					fputs(" event ", stream);
+				}
 			}
 			break;
 
 			case ILDocMemberType_Unknown:
 			{
-				fputs(type->fullName, stream);
-				fputs("::", stream);
-				fputs(member->name, stream);
-				fputs(" member ", stream);
+				if(xmlOutput)
+				{
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<member name=\"", stream);
+						PrintString(member->name, stream);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					PrintString(type->fullName, stream);
+					fputs("::", stream);
+					PrintString(member->name, stream);
+					fputs(" member ", stream);
+				}
 			}
 			break;
 		}
 	}
 	else
 	{
-		fputs(type->fullName, stream);
-		putc(' ', stream);
+		if(xmlOutput)
+		{
+			if(!typeNameWritten)
+			{
+				fputs("\t<class name=\"", stream);
+				PrintString(type->fullName, stream);
+				if(type->assembly)
+				{
+					fputs("\" assembly=\"", stream);
+					PrintString(type->assembly, stream);
+				}
+				fputs("\">\n", stream);
+				typeNameWritten = 1;
+			}
+		}
+		else
+		{
+			PrintString(type->fullName, stream);
+			putc(' ', stream);
+		}
+	}
+}
+
+/*
+ * Terminate information about a particular member.
+ */
+static void PrintEndMember(FILE *stream, ILDocType *type, ILDocMember *member)
+{
+	if(!xmlOutput)
+	{
+		return;
+	}
+	if(member)
+	{
+		if(!memberNameWritten)
+		{
+			return;
+		}
+		switch(member->memberType)
+		{
+			case ILDocMemberType_Constructor:
+			{
+				fputs("\t\t</ctor>\n", stream);
+			}
+			break;
+
+			case ILDocMemberType_Method:
+			{
+				fputs("\t\t</method>\n", stream);
+			}
+			break;
+
+			case ILDocMemberType_Field:
+			{
+				fputs("\t\t</field>\n", stream);
+			}
+			break;
+
+			case ILDocMemberType_Property:
+			{
+				fputs("\t\t</property>\n", stream);
+			}
+			break;
+
+			case ILDocMemberType_Event:
+			{
+				fputs("\t\t</event>\n", stream);
+			}
+			break;
+
+			case ILDocMemberType_Unknown:
+			{
+				fputs("\t\t</member>\n", stream);
+			}
+			break;
+		}
+		memberNameWritten = 0;
+	}
+	else if(typeNameWritten)
+	{
+		fputs("\t</class>\n", stream);
+		typeNameWritten = 0;
 	}
 }
 
@@ -533,59 +790,223 @@ static void PrintILSignature(FILE *stream, ILType *signature,
  */
 static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 {
-	switch(ILMemberGetKind(member))
+	if(member)
 	{
-		case IL_META_MEMBERKIND_METHOD:
+		switch(ILMemberGetKind(member))
 		{
-			if(ILMethod_IsConstructor((ILMethod *)member))
+			case IL_META_MEMBERKIND_METHOD:
 			{
-				fputs(type->fullName, stream);
-				PrintILSignature(stream, ILMember_Signature(member),
-								 ILMember_Name(member));
-				fputs(" constructor ", stream);
+				if(ILMethod_IsConstructor((ILMethod *)member))
+				{
+					if(xmlOutput)
+					{
+						PrintILName(stream, type, 0);
+						if(!memberNameWritten)
+						{
+							fputs("\t\t<ctor signature=\"", stream);
+							PrintString(type->fullName, stream);
+							PrintILSignature(stream, ILMember_Signature(member),
+											 ILMember_Name(member));
+							fputs("\">\n", stream);
+							memberNameWritten = 1;
+						}
+					}
+					else
+					{
+						fputs(type->fullName, stream);
+						PrintILSignature(stream, ILMember_Signature(member),
+										 ILMember_Name(member));
+						fputs(" constructor ", stream);
+					}
+				}
+				else
+				{
+					if(xmlOutput)
+					{
+						PrintILName(stream, type, 0);
+						if(!memberNameWritten)
+						{
+							fputs("\t\t<method name=\"", stream);
+							PrintString(ILMember_Name(member), stream);
+							fputs("\" signature=\"", stream);
+							if(ILMethod_IsStatic((ILMethod *)member))
+							{
+								fputs("static ", stream);
+							}
+							PrintType(stream, ILMember_Signature(member)
+												->un.method.retType);
+							putc(' ', stream);
+							PrintString(ILMember_Name(member), stream);
+							PrintILSignature(stream, ILMember_Signature(member),
+											 ILMember_Name(member));
+							fputs("\">\n", stream);
+							memberNameWritten = 1;
+						}
+					}
+					else
+					{
+						if(ILMethod_IsStatic((ILMethod *)member))
+						{
+							fputs("static ", stream);
+						}
+						fputs(type->fullName, stream);
+						fputs("::", stream);
+						fputs(ILMember_Name(member), stream);
+						PrintILSignature(stream, ILMember_Signature(member),
+										 ILMember_Name(member));
+						fputs(" method ", stream);
+					}
+				}
 			}
-			else
+			break;
+
+			case IL_META_MEMBERKIND_FIELD:
 			{
-				fputs(type->fullName, stream);
-				fputs("::", stream);
-				fputs(ILMember_Name(member), stream);
-				PrintILSignature(stream, ILMember_Signature(member),
-								 ILMember_Name(member));
-				fputs(" method ", stream);
+				if(xmlOutput)
+				{
+					PrintILName(stream, type, 0);
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<field name=\"", stream);
+						PrintString(ILMember_Name(member), stream);
+						fputs("\" type=\"", stream);
+						PrintType(stream, ILField_Type((ILField *)member));
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					fputs(type->fullName, stream);
+					fputs("::", stream);
+					fputs(ILMember_Name(member), stream);
+					fputs(" field ", stream);
+				}
 			}
-		}
-		break;
+			break;
+	
+			case IL_META_MEMBERKIND_PROPERTY:
+			{
+				if(xmlOutput)
+				{
+					PrintILName(stream, type, 0);
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<property name=\"", stream);
+						PrintString(ILMember_Name(member), stream);
+						fputs("\" type=\"", stream);
+						PrintType(stream, ILMember_Signature(member)
+											->un.method.retType);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					fputs(type->fullName, stream);
+					fputs("::", stream);
+					fputs(ILMember_Name(member), stream);
+					fputs(" property ", stream);
+				}
+			}
+			break;
 
-		case IL_META_MEMBERKIND_FIELD:
-		{
-			fputs(type->fullName, stream);
-			fputs("::", stream);
-			fputs(ILMember_Name(member), stream);
-			fputs(" field ", stream);
+			case IL_META_MEMBERKIND_EVENT:
+			{
+				if(xmlOutput)
+				{
+					PrintILName(stream, type, 0);
+					if(!memberNameWritten)
+					{
+						fputs("\t\t<event name=\"", stream);
+						PrintString(ILMember_Name(member), stream);
+						fputs("\">\n", stream);
+						memberNameWritten = 1;
+					}
+				}
+				else
+				{
+					fputs(type->fullName, stream);
+					fputs("::", stream);
+					fputs(ILMember_Name(member), stream);
+					fputs(" event ", stream);
+				}
+			}
+			break;
+			
+			default: return 0;
 		}
-		break;
-
-		case IL_META_MEMBERKIND_PROPERTY:
+	}
+	else if(xmlOutput && !typeNameWritten)
+	{
+		fputs("\t<class name=\"", stream);
+		PrintString(type->fullName, stream);
+		if(type->assembly)
 		{
-			fputs(type->fullName, stream);
-			fputs("::", stream);
-			fputs(ILMember_Name(member), stream);
-			fputs(" property ", stream);
+			fputs("\" assembly=\"", stream);
+			PrintString(type->assembly, stream);
 		}
-		break;
-
-		case IL_META_MEMBERKIND_EVENT:
-		{
-			fputs(type->fullName, stream);
-			fputs("::", stream);
-			fputs(ILMember_Name(member), stream);
-			fputs(" event ", stream);
-		}
-		break;
-		
-		default: return 0;
+		fputs("\">\n", stream);
+		typeNameWritten = 1;
 	}
 	return 1;
+}
+
+/*
+ * Print the end of an IL member description.
+ */
+static void PrintILEndMember(FILE *stream, ILDocType *type, ILMember *member)
+{
+	if(!xmlOutput)
+	{
+		return;
+	}
+	if(member)
+	{
+		if(!memberNameWritten)
+		{
+			return;
+		}
+		switch(ILMemberGetKind(member))
+		{
+			case IL_META_MEMBERKIND_METHOD:
+			{
+				if(ILMethod_IsConstructor((ILMethod *)member))
+				{
+					fputs("\t\t</ctor>\n", stream);
+				}
+				else
+				{
+					fputs("\t\t</method>\n", stream);
+				}
+			}
+			break;
+	
+			case IL_META_MEMBERKIND_FIELD:
+			{
+				fputs("\t\t</field>\n", stream);
+			}
+			break;
+	
+			case IL_META_MEMBERKIND_PROPERTY:
+			{
+				fputs("\t\t</property>\n", stream);
+			}
+			break;
+	
+			case IL_META_MEMBERKIND_EVENT:
+			{
+				fputs("\t\t</event>\n", stream);
+			}
+			break;
+		}
+		memberNameWritten = 0;
+	}
+	else if(typeNameWritten)
+	{
+		fputs("\t</class>\n", stream);
+		typeNameWritten = 0;
+	}
 }
 
 /*
@@ -790,16 +1211,20 @@ static char *AttributeToName(ILAttribute *attr)
 	{
 		return 0;
 	}
-	if(ILClass_IsPrivate(ILMethod_Owner(method)))
-	{
-		return 0;
-	}
 
 	/* Get the attribute name */
 	name = ILDupString(ILClass_Name(ILMethod_Owner(method)));
 	if(!name)
 	{
 		ILDocOutOfMemory(0);
+	}
+
+	/* If the attribute is private, and not "TODO", then bail out */
+	if(ILClass_IsPrivate(ILMethod_Owner(method)) &&
+	   strcmp(name, "TODOAttribute") != 0)
+	{
+		ILFree(name);
+		return 0;
 	}
 
 	/* Get the attribute value and prepare to parse it */
@@ -923,8 +1348,26 @@ static int ValidateAttributes(FILE *stream, ILDocType *type,
 		}
 		if(!itemAttr)
 		{
-			PrintName(stream, type, member);
-			fprintf(stream, "should have custom attribute %s\n", docAttr->name);
+			if(xmlOutput)
+			{
+				PrintName(stream, type, member);
+				if(member)
+					fputs("\t\t\t<attribute name=\"", stream);
+				else
+					fputs("\t\t<attribute name=\"", stream);
+				PrintString(docAttr->name, stream);
+				fputs("\">\n", stream);
+				if(member)
+					fputs("\t\t\t\t<missing/>\n\t\t\t</attribute>\n", stream);
+				else
+					fputs("\t\t\t<missing/>\n\t\t</attribute>\n", stream);
+			}
+			else
+			{
+				PrintName(stream, type, member);
+				fprintf(stream, "should have custom attribute %s\n",
+						docAttr->name);
+			}
 			valid = 0;
 		}
 		docAttr = docAttr->next;
@@ -948,10 +1391,45 @@ static int ValidateAttributes(FILE *stream, ILDocType *type,
 			}
 			docAttr = docAttr->next;
 		}
-		if(!docAttr)
+		if(!docAttr && strcmp(name, "TODOAttribute") != 0)
 		{
-			PrintName(stream, type, member);
-			fprintf(stream, "has extra custom attribute %s\n", name);
+			if(xmlOutput)
+			{
+				PrintName(stream, type, member);
+				if(member)
+					fputs("\t\t\t<attribute name=\"", stream);
+				else
+					fputs("\t\t<attribute name=\"", stream);
+				PrintString(name, stream);
+				fputs("\">\n", stream);
+				if(member)
+					fputs("\t\t\t\t<extra/>\n\t\t\t</attribute>\n", stream);
+				else
+					fputs("\t\t\t<extra/>\n\t\t</attribute>\n", stream);
+			}
+			else
+			{
+				PrintName(stream, type, member);
+				fprintf(stream, "has extra custom attribute %s\n", name);
+			}
+			valid = 0;
+		}
+		else if(!docAttr)
+		{
+			/* This member is marked as "TODO" */
+			if(xmlOutput)
+			{
+				PrintName(stream, type, member);
+				if(member)
+					fputs("\t\t\t<todo/>\n", stream);
+				else
+					fputs("\t\t<todo/>\n", stream);
+			}
+			else
+			{
+				PrintName(stream, type, member);
+				fprintf(stream, "is unimplemented\n");
+			}
 			valid = 0;
 		}
 		ILFree(name);
@@ -987,7 +1465,14 @@ static int ValidateConstructor(FILE *stream, ILImage *image,
 	if(!method)
 	{
 		PrintName(stream, type, member);
-		fputs("is missing\n", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<missing/>\n", stream);
+		}
+		else
+		{
+			fputs("is missing\n", stream);
+		}
 		return 0;
 	}
 
@@ -1000,13 +1485,22 @@ static int ValidateConstructor(FILE *stream, ILImage *image,
 			(member->memberAttrs & VALID_CTOR_FLAGS))
 	{
 		PrintName(stream, type, member);
-		fputs("should have attributes `", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have attributes `", stream);
 		ILDumpFlags(stream, (member->memberAttrs & VALID_CTOR_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("', but has `", stream);
+		PrintString("', but has `", stream);
 		ILDumpFlags(stream, (ILMethod_Attrs(method) & VALID_CTOR_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1061,7 +1555,14 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 	if(!method)
 	{
 		PrintName(stream, type, member);
-		fputs("is missing\n", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<missing/>\n", stream);
+		}
+		else
+		{
+			fputs("is missing\n", stream);
+		}
 		return 0;
 	}
 
@@ -1074,13 +1575,22 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 			(member->memberAttrs & VALID_METHOD_FLAGS))
 	{
 		PrintName(stream, type, member);
-		fputs("should have attributes `", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have attributes `", stream);
 		ILDumpFlags(stream, (member->memberAttrs & VALID_METHOD_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("', but has `", stream);
+		PrintString("', but has `", stream);
 		ILDumpFlags(stream, (ILMethod_Attrs(method) & VALID_METHOD_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1089,10 +1599,20 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 				  member->returnType))
 	{
 		PrintName(stream, type, member);
-		fprintf(stream, "should have return type `%s', but has `",
-				member->returnType);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have return type `", stream);
+		PrintString(member->returnType, stream);
+		PrintString("', but has `", stream);
 		PrintType(stream, ILMethod_Signature(method)->un.method.retType);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1132,7 +1652,14 @@ static int ValidateField(FILE *stream, ILImage *image,
 	if(!field)
 	{
 		PrintName(stream, type, member);
-		fputs("is missing\n", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<missing/>\n", stream);
+		}
+		else
+		{
+			fputs("is missing\n", stream);
+		}
 		return 0;
 	}
 
@@ -1145,23 +1672,43 @@ static int ValidateField(FILE *stream, ILImage *image,
 			(member->memberAttrs & VALID_FIELD_FLAGS))
 	{
 		PrintName(stream, type, member);
-		fputs("should have attributes `", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have attributes `", stream);
 		ILDumpFlags(stream, (member->memberAttrs & VALID_FIELD_FLAGS),
 				    ILFieldDefinitionFlags, 0);
-		fputs("', but has `", stream);
+		PrintString("', but has `", stream);
 		ILDumpFlags(stream, (ILField_Attrs(field) & VALID_FIELD_FLAGS),
 				    ILFieldDefinitionFlags, 0);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
 	/* Match the field type */
 	if(!MatchType(ILField_Type(field), member->returnType))
 	{
-		fprintf(stream, "%s::%s field should have type `%s', but has `",
-				type->fullName, member->name, member->returnType);
+		PrintName(stream, type, member);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have type `", stream);
+		PrintString(member->returnType, stream);
+		PrintString("', but has `", stream);
 		PrintType(stream, ILField_Type(field));
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1217,7 +1764,16 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 			if(!accessor)
 			{
 				PrintName(stream, type, member);
-				fputs(" does not have a get or set accessor\n", stream);
+				if(xmlOutput)
+				{
+					fputs("\t\t\t<msg>", stream);
+				}
+				fputs("does not have a get or set accessor", stream);
+				if(xmlOutput)
+				{
+					fputs("</msg>", stream);
+				}
+				putc('\n', stream);
 				return 0;
 			}
 			isSet = 1;
@@ -1234,7 +1790,14 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 	if(!property)
 	{
 		PrintName(stream, type, member);
-		fputs("is missing\n", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<missing/>\n", stream);
+		}
+		else
+		{
+			fputs("is missing\n", stream);
+		}
 		return 0;
 	}
 
@@ -1247,13 +1810,22 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 			(member->memberAttrs & VALID_METHOD_FLAGS))
 	{
 		PrintName(stream, type, member);
-		fputs("should have attributes `", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have attributes `", stream);
 		ILDumpFlags(stream, (member->memberAttrs & VALID_METHOD_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("', but has `", stream);
+		PrintString("', but has `", stream);
 		ILDumpFlags(stream, (ILMethod_Attrs(accessor) & VALID_METHOD_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1261,10 +1833,20 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 	if(!MatchType(propertyType, member->returnType))
 	{
 		PrintName(stream, type, member);
-		fprintf(stream, "should have type `%s', but has `",
-				member->returnType);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have type `", stream);
+		PrintString(member->returnType, stream);
+		PrintString("', but has `", stream);
 		PrintType(stream, propertyType);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1305,7 +1887,14 @@ static int ValidateEvent(FILE *stream, ILImage *image,
 	if(!event)
 	{
 		PrintName(stream, type, member);
-		fputs("is missing\n", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<missing/>\n", stream);
+		}
+		else
+		{
+			fputs("is missing\n", stream);
+		}
 		return 0;
 	}
 
@@ -1330,13 +1919,22 @@ static int ValidateEvent(FILE *stream, ILImage *image,
 			(member->memberAttrs & VALID_EVENT_FLAGS))
 	{
 		PrintName(stream, type, member);
-		fputs("should have attributes `", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have attributes `", stream);
 		ILDumpFlags(stream, (member->memberAttrs & VALID_EVENT_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("', but has `", stream);
+		PrintString("', but has `", stream);
 		ILDumpFlags(stream, (ILMethod_Attrs(accessor) & VALID_EVENT_FLAGS),
 				    ILMethodDefinitionFlags, 0);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1345,10 +1943,21 @@ static int ValidateEvent(FILE *stream, ILImage *image,
 	/* Match the event type */
 	if(!MatchType(ILEvent_Type(event), member->returnType))
 	{
-		fprintf(stream, "%s::%s event should have type `%s', but has `",
-				type->fullName, member->name, member->returnType);
+		PrintName(stream, type, member);
+		if(xmlOutput)
+		{
+			fputs("\t\t\t<msg>", stream);
+		}
+		PrintString("should have type `", stream);
+		PrintString(member->returnType, stream);
+		PrintString("', but has `", stream);
 		PrintType(stream, ILEvent_Type(event));
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 #endif
@@ -1419,6 +2028,9 @@ static int ValidateMember(FILE *stream, ILImage *image, ILClass *classInfo,
 		}
 		break;
 	}
+
+	/* Terminate the XML tag for a member if necessary */
+	PrintEndMember(stream, type, member);
 
 	/* Done */
 	return valid;
@@ -1506,6 +2118,25 @@ static int MemberIsVisible(ILMember *member)
 }
 
 /*
+ * Report that a type is of one category when it should be of another.
+ */
+static void ReportTypeMismatch(FILE *stream, ILDocType *type,
+							   const char *isA, const char *shouldBeA)
+{
+	PrintName(stream, type, 0);
+	if(xmlOutput)
+	{
+		fputs("\t\t<msg>", stream);
+	}
+	fprintf(stream, "is a %s, but should be a %s", isA, shouldBeA);
+	if(xmlOutput)
+	{
+		fputs("</msg>", stream);
+	}
+	putc('\n', stream);
+}
+
+/*
  * Validate a documentation type against an IL image.
  * Returns zero if a validation error occurred.
  */
@@ -1527,8 +2158,35 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 							  type->name, type->namespace->name);
 	if(!classInfo)
 	{
+		/* Report that the class is missing */
 		PrintName(stream, type, 0);
-		fputs("is missing\n", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t<missing/>\n", stream);
+		}
+		else
+		{
+			fputs("is missing\n", stream);
+		}
+
+		/* Report that all members are also missing */
+		member = type->members;
+		while(member != 0)
+		{
+			PrintName(stream, type, member);
+			if(xmlOutput)
+			{
+				fputs("\t\t\t<missing/>\n", stream);
+			}
+			else
+			{
+				fputs("is missing\n", stream);
+			}
+			PrintEndMember(stream, type, member);
+			member = member->next;
+		}
+
+		/* Bail out */
 		return 0;
 	}
 
@@ -1539,8 +2197,7 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		{
 			if(ILClass_IsInterface(classInfo))
 			{
-				fprintf(stream, "%s is an interface, but should be a class\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "interface", "class");
 				valid = 0;
 			}
 			else if(ILClassIsValueType(classInfo))
@@ -1548,21 +2205,18 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 				if(ILTypeGetEnumType(ILType_FromValueType(classInfo)) !=
 						ILType_FromValueType(classInfo))
 				{
-					fprintf(stream, "%s is an enum, but should be a class\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "enum", "class");
 					valid = 0;
 				}
 				else
 				{
-					fprintf(stream, "%s is a struct, but should be a class\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "struct", "class");
 					valid = 0;
 				}
 			}
 			else if(IsDelegateType(classInfo))
 			{
-				fprintf(stream, "%s is a delegate, but should be a class\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "delegate", "class");
 				valid = 0;
 			}
 		}
@@ -1579,31 +2233,23 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 				if(ILTypeGetEnumType(ILType_FromValueType(classInfo)) !=
 						ILType_FromValueType(classInfo))
 				{
-					fprintf(stream, "%s is an enum, but should "
-									"be an interface\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "enum", "interface");
 					valid = 0;
 				}
 				else
 				{
-					fprintf(stream, "%s is a struct, but should "
-									"be an interface\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "struct", "interface");
 					valid = 0;
 				}
 			}
 			else if(IsDelegateType(classInfo))
 			{
-				fprintf(stream, "%s is a delegate, but should "
-								"be an interface\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "delegate", "interface");
 				valid = 0;
 			}
 			else
 			{
-				fprintf(stream, "%s is a class, but should "
-								"be an interface\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "class", "interface");
 				valid = 0;
 			}
 		}
@@ -1613,8 +2259,7 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		{
 			if(ILClass_IsInterface(classInfo))
 			{
-				fprintf(stream, "%s is an interface, but should be a struct\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "interface", "struct");
 				valid = 0;
 			}
 			else if(ILClassIsValueType(classInfo))
@@ -1622,21 +2267,18 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 				if(ILTypeGetEnumType(ILType_FromValueType(classInfo)) !=
 						ILType_FromValueType(classInfo))
 				{
-					fprintf(stream, "%s is an enum, but should be a struct\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "enum", "struct");
 					valid = 0;
 				}
 			}
 			else if(IsDelegateType(classInfo))
 			{
-				fprintf(stream, "%s is a delegate, but should be a struct\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "delegate", "struct");
 				valid = 0;
 			}
 			else
 			{
-				fprintf(stream, "%s is a class, but should be a struct\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "class", "struct");
 				valid = 0;
 			}
 		}
@@ -1646,8 +2288,7 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		{
 			if(ILClass_IsInterface(classInfo))
 			{
-				fprintf(stream, "%s is an interface, but should be an enum\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "interface", "enum");
 				valid = 0;
 			}
 			else if(ILClassIsValueType(classInfo))
@@ -1655,21 +2296,18 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 				if(ILTypeGetEnumType(ILType_FromValueType(classInfo)) ==
 						ILType_FromValueType(classInfo))
 				{
-					fprintf(stream, "%s is a struct, but should be an enum\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "struct", "enum");
 					valid = 0;
 				}
 			}
 			else if(IsDelegateType(classInfo))
 			{
-				fprintf(stream, "%s is a delegate, but should be an enum\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "delegate", "enum");
 				valid = 0;
 			}
 			else
 			{
-				fprintf(stream, "%s is a class, but should be an enum\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "class", "enum");
 				valid = 0;
 			}
 		}
@@ -1679,9 +2317,7 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		{
 			if(ILClass_IsInterface(classInfo))
 			{
-				fprintf(stream, "%s is an interface, but should "
-								"be a delegate\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "interface", "delegate");
 				valid = 0;
 			}
 			else if(ILClassIsValueType(classInfo))
@@ -1689,22 +2325,18 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 				if(ILTypeGetEnumType(ILType_FromValueType(classInfo)) !=
 						ILType_FromValueType(classInfo))
 				{
-					fprintf(stream, "%s is an enum, but should be a delegate\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "enum", "delegate");
 					valid = 0;
 				}
 				else
 				{
-					fprintf(stream, "%s is a struct, but should "
-									"be a delegate\n",
-							type->fullName);
+					ReportTypeMismatch(stream, type, "struct", "delegate");
 					valid = 0;
 				}
 			}
 			else if(!IsDelegateType(classInfo))
 			{
-				fprintf(stream, "%s is a class, but should be a delegate\n",
-						type->fullName);
+				ReportTypeMismatch(stream, type, "class", "delegate");
 				valid = 0;
 			}
 		}
@@ -1724,13 +2356,22 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 	   		(type->typeAttrs & VALID_TYPE_FLAGS))
 	{
 		PrintName(stream, type, 0);
-		fputs("should have attributes `", stream);
+		if(xmlOutput)
+		{
+			fputs("\t\t<msg>", stream);
+		}
+		PrintString("should have attributes `", stream);
 		ILDumpFlags(stream, (type->typeAttrs & VALID_TYPE_FLAGS),
 				    ILTypeDefinitionFlags, 0);
-		fputs("', but has `", stream);
+		PrintString("', but has `", stream);
 		ILDumpFlags(stream, (ILClass_Attrs(classInfo) & VALID_TYPE_FLAGS),
 				    ILTypeDefinitionFlags, 0);
-		fputs("' instead\n", stream);
+		PrintString("' instead", stream);
+		if(xmlOutput)
+		{
+			fputs("</msg>", stream);
+		}
+		putc('\n', stream);
 		valid = 0;
 	}
 
@@ -1740,8 +2381,19 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 	{
 		if(type->baseType)
 		{
-			fprintf(stream, "%s should have base type %s, but has no base\n",
-					type->fullName, type->baseType);
+			PrintName(stream, type, 0);
+			if(xmlOutput)
+			{
+				fputs("\t\t<msg>", stream);
+			}
+			fputs("should have base type ", stream);
+			PrintString(type->baseType, stream);
+			fputs(", but has no base", stream);
+			if(xmlOutput)
+			{
+				fputs("</msg>", stream);
+			}
+			putc('\n', stream);
 			valid = 0;
 		}
 	}
@@ -1750,8 +2402,18 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		fullName = GetFullClassName(parent);
 		if(!(type->baseType))
 		{
-			fprintf(stream, "%s should have no base type, but has base %s\n",
-					type->fullName, fullName);
+			PrintName(stream, type, 0);
+			if(xmlOutput)
+			{
+				fputs("\t\t<msg>", stream);
+			}
+			fputs("should have no base type, but has base ", stream);
+			PrintString(fullName, stream);
+			if(xmlOutput)
+			{
+				fputs("</msg>", stream);
+			}
+			putc('\n', stream);
 			valid = 0;
 		}
 		else if(strcmp(type->baseType, fullName) != 0)
@@ -1767,9 +2429,21 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 				if(!(type->excludedBaseType) ||
 				   strcmp(type->excludedBaseType, fullName) != 0)
 				{
-					fprintf(stream, "%s should have base type %s, "
-									"but has base %s instead\n",
-							type->fullName, type->baseType, fullName);
+					PrintName(stream, type, 0);
+					if(xmlOutput)
+					{
+						fputs("\t\t<msg>", stream);
+					}
+					fputs("should have base type ", stream);
+					PrintString(type->baseType, stream);
+					fputs(" but has base ", stream);
+					PrintString(fullName, stream);
+					fputs(" instead", stream);
+					if(xmlOutput)
+					{
+						fputs("</msg>", stream);
+					}
+					putc('\n', stream);
 					valid = 0;
 				}
 			}
@@ -1802,8 +2476,19 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		}
 		if(!implemented)
 		{
-			fprintf(stream, "%s should implement %s, but does not\n",
-					type->fullName, interface->name);
+			PrintName(stream, type, 0);
+			if(xmlOutput)
+			{
+				fputs("\t\t<msg>", stream);
+			}
+			fputs("should implement ", stream);
+			PrintString(interface->name, stream);
+			fputs(", but does not", stream);
+			if(xmlOutput)
+			{
+				fputs("</msg>", stream);
+			}
+			putc('\n', stream);
 			valid = 0;
 		}
 		interface = interface->next;
@@ -1839,8 +2524,19 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		}
 		if(fullName)
 		{
-			fprintf(stream, "%s implements %s, but should not\n",
-					type->fullName, fullName);
+			PrintName(stream, type, 0);
+			if(xmlOutput)
+			{
+				fputs("\t\t<msg>", stream);
+			}
+			fputs("implements ", stream);
+			PrintString(fullName, stream);
+			fputs(", but should not", stream);
+			if(xmlOutput)
+			{
+				fputs("</msg>", stream);
+			}
+			putc('\n', stream);
 			ILFree(fullName);
 			valid = 0;
 		}
@@ -1878,7 +2574,15 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 			{
 				if(PrintILName(stream, type, classMember))
 				{
-					fputs("is not documented\n", stream);
+					if(xmlOutput)
+					{
+						fputs("\t\t\t<extra/>\n", stream);
+					}
+					else
+					{
+						fputs("is not documented\n", stream);
+					}
+					PrintILEndMember(stream, type, classMember);
 					valid = 0;
 				}
 			}
@@ -1894,7 +2598,8 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
  * and an image.
  */
 #define	AssemblyMatch(name1,name2)	\
-			(!(name1) || !(name2) || !ILStrICmp((name1), (name2)))
+			(ignoreAssemblyNames || \
+			 (!(name1) || !(name2) || !ILStrICmp((name1), (name2))))
 
 /*
  * Scan an image to check for global public types that are defined
@@ -1907,8 +2612,6 @@ static int CheckForExtraTypes(FILE *stream, ILImage *image,
 {
 	ILClass *classInfo;
 	int numExtras = 0;
-	const char *name;
-	const char *namespace;
 	char *fullName;
 	ILDocType *type;
 
@@ -1920,54 +2623,56 @@ static int CheckForExtraTypes(FILE *stream, ILImage *image,
 		if(ILClass_IsPublic(classInfo) && !ILClass_NestedParent(classInfo))
 		{
 			/* Build the full class name */
-			name = ILClass_Name(classInfo);
-			namespace = ILClass_Namespace(classInfo);
-			if(namespace)
-			{
-				fullName = (char *)ILMalloc(strlen(namespace) +
-											strlen(name) + 2);
-				if(!fullName)
-				{
-					ILDocOutOfMemory(progname);
-				}
-				strcpy(fullName, namespace);
-				strcat(fullName, ".");
-				strcat(fullName, name);
-			}
-			else
-			{
-				fullName = (char *)ILMalloc(strlen(name) + 1);
-				if(!fullName)
-				{
-					ILDocOutOfMemory(progname);
-				}
-				strcpy(fullName, name);
-			}
+			fullName = GetFullClassName(classInfo);
 
 			/* Look for a type in the documentation */
 			type = ILDocTypeFind(tree, fullName);
-			ILFree(fullName);
 			if(!type)
 			{
 				/* This is an extra type */
 				++numExtras;
-				if(namespace)
+				if(xmlOutput)
 				{
-					fprintf(stream, "%s.%s is not documented\n",
-							namespace, name);
+					fputs("\t<class name=\"", stream);
+					PrintString(fullName, stream);
+					fputs("\" assembly=\"", stream);
+					PrintString(ILImageGetAssemblyName
+						(ILProgramItem_Image(classInfo)), stream);
+					fputs("\">\n", stream);
+					fprintf(stream, "\t\t<extra/>\n");
+					fprintf(stream, "\t</class>\n");
 				}
 				else
 				{
-					fprintf(stream, "%s is not documented\n", name);
+					fprintf(stream, "%s is not documented\n", fullName);
 				}
 			}
 			else if(!AssemblyMatch(type->assembly, assemName))
 			{
-				fprintf(stream, "%s should be in the assembly %s, "
+				if(xmlOutput)
+				{
+					fputs("\t<class name=\"", stream);
+					PrintString(fullName, stream);
+					fputs("\" assembly=\"", stream);
+					PrintString(ILImageGetAssemblyName
+						(ILProgramItem_Image(classInfo)), stream);
+					fputs("\">\n", stream);
+					fprintf(stream, "\t\t<msg>\n");
+					fprintf(stream, "%s should be in the assembly %s, "
 								"but was instead found in the assembly %s\n",
-						type->fullName, type->assembly, assemName);
+							type->fullName, type->assembly, assemName);
+					fprintf(stream, "</msg>\n");
+					fprintf(stream, "\t</class>\n");
+				}
+				else
+				{
+					fprintf(stream, "%s should be in the assembly %s, "
+								"but was instead found in the assembly %s\n",
+							type->fullName, type->assembly, assemName);
+				}
 				++numExtras;
 			}
+			ILFree(fullName);
 		}
 	}
 
@@ -1991,6 +2696,10 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	const char *assemName;
 	int assemNameLen;
 	const char *mapName;
+
+	/* Set various global flags */
+	xmlOutput = ILDocFlagSet("xml");
+	ignoreAssemblyNames = ILDocFlagSet("ignore-assembly-names");
 
 	/* Load the IL image to be validated */
 	imageFilename = ILDocFlagValue("image");
@@ -2041,6 +2750,13 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 		}
 	}
 
+	/* Output the XML header */
+	if(xmlOutput)
+	{
+		fputs("<?xml version=\"1.0\"?>\n", stream);
+		fputs("<class_status>\n", stream);
+	}
+
 	/* Process every type in the documentation tree */
 	numTypes = 0;
 	numValidated = 0;
@@ -2057,6 +2773,7 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 				{
 					++numValidated;
 				}
+				PrintEndMember(stream, type, 0);
 			}
 			type = type->nextNamespace;
 		}
@@ -2075,16 +2792,31 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	}
 
 	/* Print a summary of how many types were validated */
-	if(numExtraTypes != 0)
+	if(xmlOutput)
 	{
-		fprintf(stream, "\n%d types in document, %d were validated, "
-						"%d undocumented types in image\n",
+		fprintf(stream,
+		        "\t<summary types=\"%d\" validated=\"%d\" extra=\"%d\"/>\n",
 				numTypes, numValidated, numExtraTypes);
 	}
 	else
 	{
-		fprintf(stream, "\n%d types in document, %d were validated\n",
-				numTypes, numValidated);
+		if(numExtraTypes != 0)
+		{
+			fprintf(stream, "\n%d types in document, %d were validated, "
+							"%d undocumented types in image\n",
+					numTypes, numValidated, numExtraTypes);
+		}
+		else
+		{
+			fprintf(stream, "\n%d types in document, %d were validated\n",
+					numTypes, numValidated);
+		}
+	}
+
+	/* Output the XML footer */
+	if(xmlOutput)
+	{
+		fputs("</class_status>\n", stream);
 	}
 
 	/* Clean up and exit */

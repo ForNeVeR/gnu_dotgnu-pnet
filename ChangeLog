@@ -1,4 +1,11 @@
 
+2001-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csdoc/doc_valil.c, csdoc/status.dtd, csdoc/status.sh: add code
+	to "csdocvalil" to output an XML description of the differences
+	between an assembly and the ECMA specification, suitable for
+	automated processing by other tools.
+
 2001-12-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c (CallMethod, CallMethodV): throw a "missing method"

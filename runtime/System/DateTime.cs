@@ -22,8 +22,11 @@ namespace System
 {
 
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Platform;
 
+// ECMA requires that this have "auto" layout.
+[StructLayout(LayoutKind.Auto)]
 public struct DateTime : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible

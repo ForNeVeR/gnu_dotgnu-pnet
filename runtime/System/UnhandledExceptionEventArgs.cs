@@ -46,7 +46,7 @@ public class UnhandledExceptionEventArgs : EventArgs
 			}
 
 	// Get the "isTerminating" flag.
-	public Object IsTerminating
+	public bool IsTerminating
 			{
 				get
 				{

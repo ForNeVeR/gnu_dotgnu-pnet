@@ -70,10 +70,9 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			}
 
 	// Wait for an asynchronous write operation to end.
-	public virtual int EndWrite(IAsyncResult asyncResult)
+	public virtual void EndWrite(IAsyncResult asyncResult)
 			{
 				// TODO
-				return 0;
 			}
 
 	// Close the stream.

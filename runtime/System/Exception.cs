@@ -149,7 +149,7 @@ public class Exception
 				return helpLink;
 			}
 		}
-	public virtual Exception InnerException
+	public Exception InnerException
 		{
 			get
 			{

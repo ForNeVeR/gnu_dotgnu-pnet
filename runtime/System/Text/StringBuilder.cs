@@ -22,6 +22,7 @@ namespace System.Text
 {
 
 using System;
+using System.Runtime.CompilerServices;
 
 public sealed class StringBuilder
 {
@@ -548,7 +549,7 @@ public sealed class StringBuilder
 			{
 				return Insert(index, value.ToString());
 			}
-	public StringBuilder Append(int index, uint value)
+	public StringBuilder Insert(int index, uint value)
 			{
 				return Insert(index, value.ToString());
 			}
@@ -802,6 +803,9 @@ public sealed class StringBuilder
 			}
 
 	// Get or set a particular character within this string builder.
+	// The "IndexerName" attribute ensures that the get
+	// accessor method is named according to the ECMA spec.
+	[IndexerName("Chars")]
 	public char this[int index]
 			{
 				get

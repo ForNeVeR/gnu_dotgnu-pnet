@@ -1,6 +1,5 @@
 /*
- * CodeAccessSecurityAttribute.cs - Implementation of the
- *			"System.Security.Permissions.CodeAccessSecurityAttribute" class.
+ * _AppDomain.cs - Implementation of the "System._AppDomain" interface.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,14 +18,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Security.Permissions
+namespace System
 {
 
-public abstract class CodeAccessSecurityAttribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+interface _AppDomain
 {
+	// Get the friendly name associated with this application domain.
+	String FriendlyName { get; }
 
-// TODO
+	// Event that is emitted when an assembly is loaded into this domain.
+	event AssemblyLoadEventHandler AssemblyLoad;
 
-}; // class CodeAccessSecurityAttribute
+	// Event that is emitted when an application domain is unloaded.
+	event EventHandler DomainUnload;
 
-}; // namespace System.Security.Permissions
+	// Event that is emitted when an exception is unhandled by the domain.
+	event UnhandledExceptionEventHandler UnhandledException;
+
+}; // interface _AppDomain
+
+}; // namespace System

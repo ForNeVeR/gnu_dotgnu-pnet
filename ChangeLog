@@ -1,4 +1,39 @@
 
+2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/AppDomain.cs,
+runtime/System/Array.cs,
+runtime/System/Boolean.cs,
+runtime/System/DateTime.cs,
+runtime/System/Enum.cs,
+runtime/System/Environment.cs,
+runtime/System/Exception.cs,
+runtime/System/Makefile.am,
+runtime/System/Object.cs,
+runtime/System/ObsoleteAttribute.cs,
+runtime/System/String.cs,
+runtime/System/Type.cs,
+runtime/System/UnhandledExceptionEventArgs.cs,
+runtime/System/Version.cs,
+runtime/System/_AppDomain.cs,
+runtime/System/Collections/IDictionary.cs,
+runtime/System/Globalization/NumberFormatInfo.cs,
+runtime/System/Globalization/UnicodeCategory.cs,
+runtime/System/IO/FileStream.cs,
+runtime/System/IO/Stream.cs,
+runtime/System/Reflection/ClrEvent.cs,
+runtime/System/Reflection/ClrType.cs,
+runtime/System/Reflection/DefaultMemberAttribute.cs,
+runtime/System/Reflection/EventInfo.cs,
+runtime/System/Reflection/Module.cs,
+runtime/System/Reflection/TypeAttributes.cs,
+runtime/System/Runtime/InteropServices/MarshalAsAttribute.cs,
+runtime/System/Security/Permissions/CodeAccessSecurityAttribute.c,
+runtime/System/Text/StringBuilder.cs,
+runtime/System/Text/UTF8Encoding.cs,
+runtime/System/Threading/Monitor.cs: small changes here and there to improve
+the ECMA-compatibility of the class definitions.
+
 2001-12-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * tools/mscsc.sh, runtime/System/Makefile.am, csunit/Makefile.am: disable

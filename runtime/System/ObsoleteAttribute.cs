@@ -23,7 +23,7 @@ namespace System
 {
 
 [AttributeUsage(AttributeTargets.All)]
-public class ObsoleteAttribute : Attribute
+public sealed class ObsoleteAttribute : Attribute
 {
 
 	// Internal state.

@@ -118,7 +118,8 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private Object GetMembersImpl(MemberTypes memberTypes,
 										 BindingFlags bindingAttr,
-										 Type arrayType);
+										 Type arrayType,
+										 String name);
 
 	// Implementation of "GetConstructor" provided by subclasses.
 	protected override ConstructorInfo
@@ -139,7 +140,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				return (ConstructorInfo[])GetMembersImpl
 							(MemberTypes.Constructor, bindingAttr,
-							 typeof(ConstructorInfo[]));
+							 typeof(ConstructorInfo[]), null);
 			}
 
 	// Get an event from this type.
@@ -156,7 +157,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				return (EventInfo[])GetMembersImpl
 							(MemberTypes.Event, bindingAttr,
-							 typeof(EventInfo[]));
+							 typeof(EventInfo[]), null);
 			}
 
 	// Get a field from this type.
@@ -173,23 +174,32 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				return (FieldInfo[])GetMembersImpl
 							(MemberTypes.Field, bindingAttr,
-							 typeof(FieldInfo[]));
+							 typeof(FieldInfo[]), null);
 			}
 
 	// Get a member from this type.
-	public override MemberInfo GetMember(String name, BindingFlags bindingAttr)
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	override MemberInfo[] GetMember
+				(String name, MemberTypes type, BindingFlags bindingAttr)
 			{
-				return GetMemberImpl(name, MemberTypes.All,
-									 bindingAttr, null,
-									 CallingConventions.Any,
-									 null, null);
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				return (MemberInfo[])GetMembersImpl
+					(type, bindingAttr, typeof(MemberInfo[]), name);
 			}
 
 	// Get all members from this type.
 	public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
 			{
 				return (MemberInfo[])GetMembersImpl
-					(MemberTypes.All, bindingAttr, typeof(MemberInfo[]));
+							(MemberTypes.All, bindingAttr,
+							 typeof(MemberInfo[]), null);
 			}
 
 	// Implementation of "GetMethod" provided by subclasses.
@@ -211,7 +221,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				return (MethodInfo[])GetMembersImpl
 							(MemberTypes.Method, bindingAttr,
-							 typeof(MethodInfo[]));
+							 typeof(MethodInfo[]), null);
 			}
 
 	// Get a nested type from this type.
@@ -228,7 +238,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				return (Type[])GetMembersImpl
 							(MemberTypes.NestedType, bindingAttr,
-							 typeof(Type[]));
+							 typeof(Type[]), null);
 			}
 
 	// Implementation of "GetProperty" provided by subclasses.
@@ -249,7 +259,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				return (PropertyInfo[])GetMembersImpl
 							(MemberTypes.Property, bindingAttr,
-							 typeof(PropertyInfo[]));
+							 typeof(PropertyInfo[]), null);
 			}
 
 	// Implementation of the "HasElementType" property.

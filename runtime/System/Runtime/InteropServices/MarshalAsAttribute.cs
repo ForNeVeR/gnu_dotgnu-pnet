@@ -45,7 +45,7 @@ public sealed class MarshalAsAttribute : Attribute
 	public UnmanagedType ArraySubType;
 	public String MarshalCookie;
 	public String MarshalType;
-	public String MarshalTypeRef;
+	public Type MarshalTypeRef;
 	public int SizeConst;
 	public short SizeParamIndex;
 

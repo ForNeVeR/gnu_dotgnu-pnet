@@ -5,6 +5,7 @@ DEFRESOURCES = $(top_srcdir)/resources/en_US/runtime/runtime.resources
 
 CSSRC = Activator.cs \
 		AppDomain.cs \
+		_AppDomain.cs \
 		AppDomainUnloadedException.cs \
 		ApplicationException.cs \
 		ArgIterator.cs \

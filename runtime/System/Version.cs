@@ -27,6 +27,13 @@ public sealed class Version : ICloneable, IComparable
 	private int major, minor, build, revision;
 
 	// Constructors.
+	public Version()
+			{
+				major = 0;
+				minor = 0;
+				build = -1;
+				revision = -1;
+			}
 	public Version(String version)
 			{
 				// TODO

@@ -51,6 +51,23 @@ public class Object
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern protected Object MemberwiseClone();
 
+	// Compare two objects for equality.
+	public static bool Equals(Object objA, Object objB)
+			{
+				if(objA == objB)
+				{
+					return true;
+				}
+				else if(objA != null && objB != null)
+				{
+					return objA.Equals(objB);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
 	// Determine if two object references are equal.
 	public static bool ReferenceEquals(Object objA, Object objB)
 			{

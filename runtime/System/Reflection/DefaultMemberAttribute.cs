@@ -23,7 +23,7 @@ namespace System.Reflection
 {
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-public class DefaultMemberAttribute : Attribute
+public sealed class DefaultMemberAttribute : Attribute
 {
 
 	// Internal state.
@@ -34,7 +34,7 @@ public class DefaultMemberAttribute : Attribute
 		: base() { memberName = name; }
 
 	// Properties.
-	public virtual String MemberName
+	public String MemberName
 		{
 			get
 			{

@@ -155,7 +155,7 @@ public abstract class Type : MemberInfo
 
 	// Get all events from this type.
 	public abstract EventInfo[] GetEvents(BindingFlags bindingAttr);
-	public EventInfo[] GetEvents()
+	public virtual EventInfo[] GetEvents()
 			{
 				return GetEvents(BindingFlags.Public |
 								 BindingFlags.Instance |
@@ -205,13 +205,25 @@ public abstract class Type : MemberInfo
 	public abstract Type[] GetInterfaces();
 
 	// Get a member from this type.
-	public abstract MemberInfo GetMember(String name, BindingFlags bindingAttr);
-	public MemberInfo GetMember(String name)
+	public virtual MemberInfo[] GetMember
+				(String name, BindingFlags bindingAttr)
 			{
-				return GetMember(name, BindingFlags.Public |
-									   BindingFlags.Instance |
-									   BindingFlags.Static);
+				return GetMember(name, MemberTypes.All, bindingAttr);
 			}
+	public MemberInfo[] GetMember(String name)
+			{
+				return GetMember(name, MemberTypes.All,
+								 BindingFlags.Public |
+								 BindingFlags.Instance |
+								 BindingFlags.Static);
+			}
+#if ECMA_COMPAT
+	internal
+#else
+	public
+#endif
+	abstract MemberInfo[] GetMember(String name, MemberTypes type,
+								    BindingFlags bindingAttr);
 
 	// Get all members from this type.
 	public abstract MemberInfo[] GetMembers(BindingFlags bindingAttr);
@@ -223,7 +235,7 @@ public abstract class Type : MemberInfo
 			}
 
 	// Get a method from this type.
-	public MethodInfo GetMethod(String name, BindingFlags bindingAttr)
+	public virtual MethodInfo GetMethod(String name, BindingFlags bindingAttr)
 			{
 				if(name == null)
 				{
@@ -232,9 +244,9 @@ public abstract class Type : MemberInfo
 				return GetMethodImpl(name, bindingAttr, null,
 								     CallingConventions.Any, null, null);
 			}
-	public MethodInfo GetMethod(String name, BindingFlags bindingAttr,
-								Binder binder, Type[] types,
-								ParameterModifier[] modifiers)
+	public virtual MethodInfo GetMethod(String name, BindingFlags bindingAttr,
+										Binder binder, Type[] types,
+										ParameterModifier[] modifiers)
 			{
 				if(name == null)
 				{
@@ -394,7 +406,8 @@ public abstract class Type : MemberInfo
 									   BindingFlags.Static,
 									   null, returnType, types, null);
 			}
-	public PropertyInfo GetProperty(String name, BindingFlags bindingAttr)
+	public virtual PropertyInfo GetProperty(String name,
+											BindingFlags bindingAttr)
 			{
 				if(name == null)
 				{
@@ -422,10 +435,11 @@ public abstract class Type : MemberInfo
 									   BindingFlags.Static,
 									   null, returnType, types, modifiers);
 			}
-	public PropertyInfo GetProperty(String name,
-								    BindingFlags bindingAttr, Binder binder,
-								    Type returnType, Type[] types,
-									ParameterModifier[] modifiers)
+	public virtual PropertyInfo GetProperty(String name,
+								    		BindingFlags bindingAttr,
+											Binder binder,
+								    		Type returnType, Type[] types,
+											ParameterModifier[] modifiers)
 			{
 				if(name == null)
 				{
@@ -669,6 +683,8 @@ public abstract class Type : MemberInfo
 	public bool IsPrimitive { get { return IsPrimitiveImpl(); } }
 	public bool IsValueType { get { return IsValueTypeImpl(); } }
 	public override Type ReflectedType { get { return this; } }
+	public TypeAttributes Attributes
+				{ get { return GetAttributeFlagsImpl(); } }
 
 	// Test for various type attributes.
 	public bool IsAbstract
@@ -755,7 +771,7 @@ public abstract class Type : MemberInfo
 				{
 					return ((GetAttributeFlagsImpl() &
 							 TypeAttributes.LayoutMask) ==
-							 	TypeAttributes.LayoutSequential);
+							 	TypeAttributes.SequentialLayout);
 				}
 			}
 	public bool IsNestedAssembly

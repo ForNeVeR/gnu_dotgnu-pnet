@@ -86,13 +86,6 @@ internal sealed class ClrEvent : EventInfo, IClrProgramItem
 						ClrHelpers.GetMemberAttrs(privateData);
 				}
 			}
-	public override Type EventHandlerType
-			{
-				get
-				{
-					return GetEventType(privateData);
-				}
-			}
 
 	// Get the add method for this event.
 	public override MethodInfo GetAddMethod(bool nonPublic)
@@ -120,10 +113,6 @@ internal sealed class ClrEvent : EventInfo, IClrProgramItem
 						 	 MethodSemanticsAttributes.RemoveOn,
 							 nonPublic);
 			}
-
-	// Get the type associated with this event item.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Type GetEventType(IntPtr item);
 
 }; // class ClrEvent
 

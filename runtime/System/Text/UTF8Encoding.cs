@@ -30,7 +30,13 @@ public class UTF8Encoding : Encoding
 	internal const int UTF8_CODE_PAGE = 65001;
 
 	// Constructors.
-	public UTF8Encoding() : base(UTF8_CODE_PAGE)
+	public UTF8Encoding()
+			: this(false, false) {}
+	public UTF8Encoding(bool encoderShouldEmitUTF8Identifier)
+			: this(encoderShouldEmitUTF8Identifier, false) {}
+	public UTF8Encoding(bool encoderShouldEmitUTF8Identifier,
+						bool throwOnInvalidBytes)
+			: base(UTF8_CODE_PAGE)
 			{
 				// TODO
 			}

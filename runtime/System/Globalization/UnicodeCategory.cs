@@ -29,7 +29,7 @@ public enum UnicodeCategory
 	ModifierLetter				= 3,
 	OtherLetter					= 4,
 	NonSpacingMark				= 5,
-	SpaceCombiningMark			= 6,
+	SpacingCombiningMark		= 6,
 	EnclosingMark				= 7,
 	DecimalDigitNumber			= 8,
 	LetterNumber				= 9,

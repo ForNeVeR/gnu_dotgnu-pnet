@@ -227,6 +227,14 @@ public class FileStream : Stream
 			}
 #endif
 
+	// Destructor.
+	~FileStream()
+			{
+				// Nothing to do here: the parent class does
+				// the actual work.  However, we have to declare
+				// this destructor because ECMA requires it.
+			}
+
 	// Begin an asynchronous read operation.
 	public override IAsyncResult BeginRead
 				(byte[] buffer, int offset, int count,
@@ -255,10 +263,9 @@ public class FileStream : Stream
 			}
 
 	// Wait for an asynchronous write operation to end.
-	public override int EndWrite(IAsyncResult asyncResult)
+	public override void EndWrite(IAsyncResult asyncResult)
 			{
 				// TODO
-				return 0;
 			}
 
 	// Flush read data from the buffer.
@@ -348,7 +355,13 @@ public class FileStream : Stream
 					}
 				}
 			}
-#endif
+#else	// !ECMA_COMPAT
+	// Close the stream.
+	public override void Close()
+			{
+				Dispose(true);
+			}
+#endif	// !ECMA_COMPAT
 
 	// Create a wait handle for asynchronous operations.
 	protected override WaitHandle CreateWaitHandle()

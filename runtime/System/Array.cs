@@ -167,7 +167,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	extern public void Initialize();
 
 	// Clone this array.
-	public Object Clone()
+	public virtual Object Clone()
 	{
 		return MemberwiseClone();
 	}
@@ -196,7 +196,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 								   int destinationIndex, int length);
 
 	// Implement the ICollection interface.
-	public void CopyTo(Array array, int index)
+	public virtual void CopyTo(Array array, int index)
 	{
 		if(array == null)
 		{
@@ -218,14 +218,14 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			return Length;
 		}
 	}
-	public bool IsSynchronized
+	public virtual bool IsSynchronized
 	{
 		get
 		{
 			return false;
 		}
 	}
-	public Object SyncRoot
+	public virtual Object SyncRoot
 	{
 		get
 		{
@@ -362,7 +362,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	}
 
 	// Implement the IEnumerable interface.
-	public IEnumerator GetEnumerator()
+	public virtual IEnumerator GetEnumerator()
 	{
 		int rank = Rank;
 		if(rank == 1)
@@ -1189,14 +1189,14 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		throw new NotSupportedException(_("NotSupp_FixedSizeCollection"));
 	}
-	public bool IsFixedSize
+	public virtual bool IsFixedSize
 	{
 		get
 		{
 			return true;
 		}
 	}
-	public bool IsReadOnly
+	public virtual bool IsReadOnly
 	{
 		get
 		{

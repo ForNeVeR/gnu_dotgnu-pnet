@@ -95,6 +95,16 @@ public sealed class Environment
 				}
 			}
 
+	// Determine if application shutdown has started.
+	public static bool HasShutdownStarted
+			{
+				get
+				{
+					// TODO: set this to true during application finalization.
+					return false;
+				}
+			}
+
 	// Get the stack trace for the current context.
 	public static String StackTrace
 			{
@@ -120,6 +130,16 @@ public sealed class Environment
 						throw new NotSupportedException
 							(_("Exception_NoSystemDir"));
 					}
+				}
+			}
+
+	// Get the version of the runtime engine.
+	public static Version Version
+			{
+				get
+				{
+					// TODO
+					return new Version();
 				}
 			}
 
@@ -209,6 +229,40 @@ public sealed class Environment
 					}
 				}
 
+		// Copy the contents of this dictionary to an array.
+		public void CopyTo(Array array, int index)
+				{
+					int count;
+					if(array == null)
+					{
+						throw new ArgumentNullException("array");
+					}
+					if(index < 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("index", _("ArgRange_Array"));
+					}
+					if(array.Rank != 1)
+					{
+						throw new ArgumentException(_("Arg_RankMustBe1"));
+					}
+					count = TaskMethods.GetEnvironmentCount();
+					if(index >= array.Length ||
+					   count > (array.Length - index))
+					{
+						throw new ArgumentException
+							(_("Arg_InvalidArrayIndex"));
+					}
+					int posn;
+					for(posn = 0; posn < count; ++posn)
+					{
+						array.SetValue(new DictionaryEntry
+								(TaskMethods.GetEnvironmentKey(posn),
+								 TaskMethods.GetEnvironmentValue(posn)),
+								index + posn);
+					}
+				}
+
 		// Enumerate all values in this dictionary.
 		IEnumerator IEnumerable.GetEnumerator()
 				{
@@ -223,6 +277,15 @@ public sealed class Environment
 		public void Remove(Object key)
 				{
 					throw new NotSupportedException(_("NotSupp_ReadOnly"));
+				}
+
+		// Count the number of items in this dictionary.
+		public int Count
+				{
+					get
+					{
+						return TaskMethods.GetEnvironmentCount();
+					}
 				}
 
 		// Determine if this dictionary has a fixed size.
@@ -240,6 +303,24 @@ public sealed class Environment
 					get
 					{
 						return true;
+					}
+				}
+
+		// Determine if this dictionary is synchronized.
+		public bool IsSynchronized
+				{
+					get
+					{
+						return false;
+					}
+				}
+
+		// Get the synchronization root for this dictionary.
+		public Object SyncRoot
+				{
+					get
+					{
+						return this;
 					}
 				}
 

@@ -103,7 +103,28 @@ public abstract class EventInfo : MemberInfo
 	public abstract EventAttributes Attributes { get; }
 
 	// Get the handler type for this event.
-	public abstract Type EventHandlerType { get; }
+	public Type EventHandlerType
+			{
+				get
+				{
+					// Search for a parameter to the "Add" method
+					// that inherits from "Delegate".
+					ParameterInfo[] parameters;
+					Type delegateType = typeof(Delegate);
+					parameters = GetAddMethod(true).GetParameters();
+					int posn;
+					Type paramType;
+					for(posn = 0; posn < parameters.Length; ++posn)
+					{
+						paramType = parameters[posn].ParameterType;
+						if(paramType.IsSubclassOf(delegateType))
+						{
+							return paramType;
+						}
+					}
+					return null;
+				}
+			}
 
 #if !ECMA_COMPAT
 

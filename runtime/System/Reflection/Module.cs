@@ -117,7 +117,7 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 			}
 
 	// Get the assembly that contains this module.
-	public virtual System.Reflection.Assembly Assembly
+	public System.Reflection.Assembly Assembly
 			{
 				get
 				{
@@ -135,7 +135,7 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 			}
 
 	// Get the name of this module.
-	public virtual String Name
+	public String Name
 			{
 				get
 				{

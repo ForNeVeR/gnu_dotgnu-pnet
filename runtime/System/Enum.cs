@@ -580,7 +580,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			{
 				return ToString(null, provider);
 			}
-	public virtual String ToString(String format, IFormatProvider provider)
+	public String ToString(String format, IFormatProvider provider)
 			{
 				if(format == null)
 				{

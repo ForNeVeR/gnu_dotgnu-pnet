@@ -21,7 +21,7 @@
 namespace System
 {
 
-public sealed class AppDomain : MarshalByRefObject
+public sealed class AppDomain : MarshalByRefObject, _AppDomain
 {
 	// Internal state.
 	private String friendlyName;
@@ -74,7 +74,7 @@ public sealed class AppDomain : MarshalByRefObject
 	}
 
 	// Get the friendly name associated with this application domain.
-	public string FriendlyName
+	public String FriendlyName
 	{
 		get
 		{

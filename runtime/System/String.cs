@@ -1226,6 +1226,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	extern internal void SetChar(int posn, char value);
 
 	// Get a specific character from the current string.
+	// The "IndexerName" attribute ensures that the get
+	// accessor method is named according to the ECMA spec.
+	[IndexerName("Chars")]
 	public char this[int posn]
 			{
 				get

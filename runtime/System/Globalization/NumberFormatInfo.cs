@@ -24,7 +24,7 @@ namespace System.Globalization
 
 using System;
 
-public class NumberFormatInfo : Object, ICloneable, IFormatProvider
+public sealed class NumberFormatInfo : Object, ICloneable, IFormatProvider
 {
 	// Internal state.
 	private static NumberFormatInfo invariantInfo;

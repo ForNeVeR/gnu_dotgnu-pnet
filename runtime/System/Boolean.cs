@@ -28,8 +28,8 @@ public struct Boolean : IComparable
 {
 	private bool value__;
 
-	public const String TrueString = "True";
-	public const String FalseString = "False";
+	public static readonly String TrueString = "True";
+	public static readonly String FalseString = "False";
 
 	// Override inherited methods.
 	public override int GetHashCode()

@@ -24,7 +24,7 @@ namespace System.Collections
 
 using System;
 
-public interface IDictionary : IEnumerable
+public interface IDictionary : IEnumerable, ICollection
 {
 
 	void Add(Object key, Object value);

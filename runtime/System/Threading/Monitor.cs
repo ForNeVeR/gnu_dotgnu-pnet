@@ -40,7 +40,7 @@ public sealed class Monitor
 			}
 
 	// Try to enter a monitor on an object within a specified timeout.
-	static bool TryEnter(Object obj, int millisecondsTimeout)
+	public static bool TryEnter(Object obj, int millisecondsTimeout)
 			{
 				if(obj == null)
 				{

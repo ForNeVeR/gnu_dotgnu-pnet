@@ -84,6 +84,12 @@ int ILDocFlagSet(const char *flag);
  */
 const char *ILDocFlagValue(const char *flag);
 
+/*
+ * Get the n'th value of a command-line flag with multiple values.
+ * Returns NULL if n is invalid.
+ */
+const char *ILDocFlagValueN(const char *flag, int n);
+
 #ifdef	__cplusplus
 };
 #endif

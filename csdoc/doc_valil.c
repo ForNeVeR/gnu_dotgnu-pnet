@@ -117,7 +117,7 @@ static char *GetFullClassName(ILClass *classInfo)
  */
 static int IsDelegateType(ILClass *classInfo)
 {
-	ILClass *parent = ILClass_ParentRef(classInfo);
+	ILClass *parent = ILClass_Parent(classInfo);
 	const char *name;
 	while(parent != 0)
 	{
@@ -130,7 +130,7 @@ static int IsDelegateType(ILClass *classInfo)
 				return 1;
 			}
 		}
-		parent = ILClass_ParentRef(parent);
+		parent = ILClass_Parent(parent);
 	}
 	return 0;
 }
@@ -2142,8 +2142,9 @@ static void ReportTypeMismatch(FILE *stream, ILDocType *type,
  * Validate a documentation type against an IL image.
  * Returns zero if a validation error occurred.
  */
-static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
+static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 {
+	ILImage *image;
 	ILClass *classInfo;
 	ILClass *tempClass;
 	ILClass *parent;
@@ -2155,9 +2156,8 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 	int implemented;
 	ILDocMember *member;
 
-	/* See if the type exists within the image */
-	classInfo = ILClassLookup(ILClassGlobalScope(image),
-							  type->name, type->namespace->name);
+	/* Find the type and the image in which is resides */
+	classInfo = ILClassLookupGlobal(context, type->name, type->namespace->name);
 	if(!classInfo)
 	{
 		/* Report that the class is missing */
@@ -2191,6 +2191,9 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 		/* Bail out */
 		return 0;
 	}
+
+	/* Get the image for the class */
+	image = ILClassToImage(classInfo);
 
 	/* Validate the type kind */
 	switch(type->kind)
@@ -2378,7 +2381,7 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 	}
 
 	/* Validate the base type */
-	parent = ILClass_ParentRef(classInfo);
+	parent = ILClass_Parent(classInfo);
 	if(!parent)
 	{
 		if(type->baseType)
@@ -2474,7 +2477,7 @@ static int ValidateType(FILE *stream, ILImage *image, ILDocType *type)
 				}
 				ILFree(fullName);
 			}
-			tempClass = ILClass_ParentRef(tempClass);
+			tempClass = ILClass_Parent(tempClass);
 		}
 		if(!implemented)
 		{
@@ -2698,27 +2701,37 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	const char *assemName;
 	int assemNameLen;
 	const char *mapName;
+	int imageNum;
 
 	/* Set various global flags */
 	xmlOutput = ILDocFlagSet("xml");
 	ignoreAssemblyNames = ILDocFlagSet("ignore-assembly-names");
 
-	/* Load the IL image to be validated */
+	/* Load the IL images to be validated */
 	imageFilename = ILDocFlagValue("image");
 	if(!imageFilename)
 	{
 		fprintf(stderr, "%s: `-fimage=PATH' must be specified\n", progname);
 		return 0;
 	}
+	imageNum = 0;
 	context = ILContextCreate();
 	if(!context)
 	{
 		ILDocOutOfMemory(progname);
 	}
-	if(ILImageLoadFromFile(imageFilename, context, &image,
-						   IL_LOADFLAG_FORCE_32BIT |
-						   IL_LOADFLAG_NO_RESOLVE, 1) != 0)
+	while((imageFilename = ILDocFlagValueN("image", imageNum)) != 0)
 	{
+		if(ILImageLoadFromFile(imageFilename, context, &image,
+							   IL_LOADFLAG_FORCE_32BIT, 1) != 0)
+		{
+			return 0;
+		}
+		++imageNum;
+	}
+	if(imageNum != 1 && !ignoreAssemblyNames)
+	{
+		fprintf(stderr, "%s: `-fignore-assembly-names' must be used with multiple `-fimage=PATH' options\n", progname);
 		return 0;
 	}
 
@@ -2740,7 +2753,7 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	}
 
 	/* Get the name of the image's assembly */
-	assemName = ILImageGetAssemblyName(image);
+	assemName = (imageNum == 1 ? ILImageGetAssemblyName(image) : 0);
 	mapName = ILDocFlagValue("assembly-map");
 	if(assemName && mapName)
 	{
@@ -2771,7 +2784,7 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 			if(AssemblyMatch(type->assembly, assemName))
 			{
 				++numTypes;
-				if(ValidateType(stream, image, type))
+				if(ValidateType(stream, context, type))
 				{
 					++numValidated;
 				}
@@ -2785,8 +2798,14 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	/* Process public types that are in the image, but not the documentation */
 	if(!ILDocFlagSet("extra-types-ok"))
 	{
-		numExtraTypes = CheckForExtraTypes(stream, image, tree,
-										   assemName, progname);
+		image = 0;
+		numExtraTypes = 0;
+		while((image = ILContextNextImage(context, image)) != 0)
+		{
+			assemName = ILImageGetAssemblyName(image);
+			numExtraTypes += CheckForExtraTypes(stream, image, tree,
+											    assemName, progname);
+		}
 	}
 	else
 	{

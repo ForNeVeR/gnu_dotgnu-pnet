@@ -18,6 +18,9 @@
 	the direct parent class in "base.X" expressions, even if
 	"X" lives in an indirect ancestor.
 
+	* csdoc/doc_backend.h, csdoc/doc_main.c, csdoc/doc_valil.c,
+	csdoc/status.sh: process multiple "-fimage" options in "csdocvalil".
+
 2002-04-21  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_test.c : Test stubber for ECMA classes , added

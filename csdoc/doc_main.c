@@ -280,6 +280,42 @@ const char *ILDocFlagValue(const char *flag)
 	return 0;
 }
 
+const char *ILDocFlagValueN(const char *flag, int n)
+{
+	int num, len1, len2;
+	len1 = strlen(flag);
+	for(num = 0; num < numFlags; ++num)
+	{
+		len2 = strlen(flags[num]);
+		if(len1 <= len2 && !strncmp(flags[num], flag, len1))
+		{
+			if(flags[num][len1] == '\0')
+			{
+				if(n == 0)
+				{
+					return "";
+				}
+				else
+				{
+					--n;
+				}
+			}
+			else if(flags[num][len1] == '=')
+			{
+				if(n == 0)
+				{
+					return flags[num] + len1 + 1;
+				}
+				else
+				{
+					--n;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 /*
  * XML reader function.
  */

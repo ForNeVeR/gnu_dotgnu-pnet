@@ -2620,6 +2620,18 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 		ILExecThreadThrowOutOfMemory(thread);
 		return 0;
 	}
+	if(lowerBounds)
+	{
+		for(dim = 0; dim < rank; ++dim)
+		{
+			ILTypeSetLowBound
+				(type, (unsigned long)(long)dim,
+				 (long)((ILInt32 *)ArrayToBuffer(lowerBounds))[dim]);
+			ILTypeSetSize
+				(type, (unsigned long)(long)dim,
+				 (long)((ILInt32 *)ArrayToBuffer(lengths))[dim]);
+		}
+	}
 	classInfo = ILClassFromType(ILProgramItem_Image(thread->method),
 								0, type, 0);
 	if(!classInfo)

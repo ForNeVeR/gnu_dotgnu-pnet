@@ -1,8 +1,11 @@
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Text;
+using System.Resources;
+using System.Collections;
 
 namespace FormsTest
 {
@@ -30,6 +33,11 @@ namespace FormsTest
 		private TabPage tabPage18;
 		private TabPage tabPage19;
 		private TabPage tabPage20;
+		private TabPage tabPage21;
+		private TabPage tabPage22;
+		private TabPage tabPage23;
+		private TabPage tabPage24;
+		private TabPage tabPage25;
 		
 		// Tab1 Labels Test
 		private Label label;
@@ -205,8 +213,8 @@ namespace FormsTest
 		private ContextMenu contextMenu;
 		private Label contextMenuLabel1;
 
-		private Image image1;
-		private Icon icon2;
+		private Image imageOld;
+		private Image imageNew;
 
 		private ComboBox comboBox1, comboBox2;
 
@@ -225,6 +233,47 @@ namespace FormsTest
 		private TextBox scroll2TextBoxMin, scroll2TextBoxMax, scroll2TextBoxValue, scroll2TextBoxLarge, scroll2TextBoxSmall;
 
 		private TextBox textBoxTest2a, textBoxTest2b;
+
+		private PictureBox pictureBox1;
+		private PictureBox pictureBox2;
+		private PictureBox pictureBox3;
+		private PictureBox pictureBox4;
+		private PictureBox pictureBox5;
+
+		private Button buttonResXRead;
+		private Button buttonResXWrite;
+		private TextBox textBoxResXData;
+
+		private ImageList imageList1;
+		private Button buttonImageListRead;
+		private Button buttonImageListWrite;
+		private Button buttonImageListSet;
+		private Label labelImageListSize;
+		private TextBox textBoxImageListSize;
+		private Label labelImageListColorDepth;
+		private TextBox textBoxImageListColorDepth;
+
+		private  Button buttonImageLoad24bpp;
+		private  Button buttonImageLoad15bpp;
+		private  Button buttonImageLoad16bpp;
+		private  Button buttonImageLoad8bpp;
+		private  Button buttonImageLoad4bpp;
+		private  Button buttonImageLoad1bpp;
+		private  Button buttonImageLoad32bppIcon;
+		private  Button buttonImageConvert24bpp;
+		private  Button buttonImageConvert16bpp;
+		private  Button buttonImageConvert15bpp;
+		private  Button buttonImageConvert8bpp;
+		private  Button buttonImageConvert4bpp;
+		private  Button buttonImageConvert1bpp;
+		private Label labelImageWidth;
+		private TextBox textBoxImageWidth;
+		private Label labelImageHeight;
+		private TextBox textBoxImageHeight;
+		private Label labelImageFileName;
+		private TextBox textBoxImageFileName;
+		private Button buttonImageSave;
+		
 
 		//private PropertyGrid propertyGrid;
 		#endregion
@@ -246,6 +295,24 @@ namespace FormsTest
 			tabControl1.Multiline = true;
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
 			
+			tabPage10 = new TabPage();
+			tabPage10.Text = "Image";
+			tabControl1.Controls.Add(tabPage10);
+			tabPage25 = new TabPage();
+			tabPage25.Text = "ImageList";
+			tabControl1.Controls.Add(tabPage25);
+			tabPage24 = new TabPage();
+			tabPage24.Text = "ResX";
+			tabControl1.Controls.Add(tabPage24);
+			tabPage23 = new TabPage();
+			tabPage23.Text = "ControlPaint 2";
+			tabControl1.Controls.Add(tabPage23);
+			tabPage22 = new TabPage();
+			tabPage22.Text = "ControlPaint";
+			tabControl1.Controls.Add(tabPage22);
+			tabPage21 = new TabPage();
+			tabPage21.Text = "PictureBox";
+			tabControl1.Controls.Add(tabPage21);
 			tabPage20 = new TabPage();
 			tabPage20.Text = "TextBox 2";
 			tabControl1.Controls.Add(tabPage20);
@@ -304,10 +371,6 @@ namespace FormsTest
 			tabPage9 = new TabPage();
 			tabPage9.Text = "ContextMenu";
 			tabControl1.Controls.Add(tabPage9);
-			tabPage10 = new TabPage();
-			tabPage10.Text = "Image";
-			tabControl1.Controls.Add(tabPage10);
-			tabControl1.SelectedTab = tabPage10;
 			
 			Controls.Add(tabControl1);
 
@@ -332,6 +395,11 @@ namespace FormsTest
 			AddTransformsTest(tabPage15);
 			AddScrollbarTest(tabPage18);
 			AddPropertyGridTest(tabPage19);
+			AddPictureBoxTest(tabPage21);
+			AddControlPaintTest(tabPage22);
+			AddControlPaintTest2(tabPage23);
+			AddResXTest(tabPage24);
+			AddImageListTest(tabPage25);
 
 			ResumeLayout(false);
 		}
@@ -542,31 +610,31 @@ namespace FormsTest
 			label23.Text = "A normal label : Dock=Bottom";
 
 			control.Controls.AddRange(new Control[] {
-																			 label25,
-																			 label24,
-																			 label23,
-																			 label22,
-																			 label21,
-																			 label20,
-																			 label19,
-																			 label18,
-																			 label17,
-																			 label16,
-																			 label15,
-																			 label14,
-																			 label13,
-																			 label12,
-																			 label11,
-																			 label10,
-																			 label9,
-																			 label8,
-																			 label7,
-																			 label6,
-																			 label5,
-																			 label4,
-																			 label3,
-																			 label2,
-																			 label});
+														label25,
+														label24,
+														label23,
+														label22,
+														label21,
+														label20,
+														label19,
+														label18,
+														label17,
+														label16,
+														label15,
+														label14,
+														label13,
+														label12,
+														label11,
+														label10,
+														label9,
+														label8,
+														label7,
+														label6,
+														label5,
+														label4,
+														label3,
+														label2,
+														label});
 		}
 
 		private void AddButtonTest(Control control)
@@ -900,30 +968,30 @@ namespace FormsTest
 			textBoxSelectedTextButton.Click+=new EventHandler(textBoxSelectedTextButton_Click);
 
 			control.Controls.AddRange(new Control[] {
-																			textBox19,
-																			textBox20,
-																			textBox18,
-																			textBox17,
-																			textBox16,
-																			textBox15,
-																			textBox14,
-																			textBox13,
-																			textBox12,
-																			textBox11,
-																			textBox10,
-																			textBox9,
-																			textBox8,
-																			textBox6,
-																			textBox5,
-																			textBox4,
-																			textBox3,
-																			textBox2,
-																			textBox,
-																			textBox1,
-																			textBoxLinesButton,
-																			textBoxTextButton,
-																			textBoxSelectedTextButton
-																		 });
+														textBox19,
+														textBox20,
+														textBox18,
+														textBox17,
+														textBox16,
+														textBox15,
+														textBox14,
+														textBox13,
+														textBox12,
+														textBox11,
+														textBox10,
+														textBox9,
+														textBox8,
+														textBox6,
+														textBox5,
+														textBox4,
+														textBox3,
+														textBox2,
+														textBox,
+														textBox1,
+														textBoxLinesButton,
+														textBoxTextButton,
+														textBoxSelectedTextButton
+													});
 		}
 
 		private void textBoxLinesButton_Click(object sender, EventArgs e)
@@ -1248,39 +1316,39 @@ namespace FormsTest
 			radioButton31.Text = "Font=Verdana; 8,25pt";
 
 			control.Controls.AddRange(new Control[] {
-																			 radioButton33,
-																			 radioButton32,
-																			 radioButton31,
-																			 radioButton30,
-																			 radioButton16,
-																			 radioButton8,
-																			 radioButton12,
-																			 radioButton29,
-																			 radioButton28,
-																			 radioButton27,
-																			 radioButton24,
-																			 radioButton25,
-																			 radioButton26,
-																			 radioButton23,
-																			 radioButton22,
-																			 radioButton20,
-																			 radioButton6,
-																			 radioButton21,
-																			 radioButton19,
-																			 radioButton18,
-																			 radioButton17,
-																			 radioButton15,
-																			 radioButton14,
-																			 radioButton13,
-																			 radioButton11,
-																			 radioButton10,
-																			 radioButton9,
-																			 radioButton7,
-																			 radioButton5,
-																			 radioButton4,
-																			 radioButton3,
-																			 radioButton2,
-																			 radioButton});
+														radioButton33,
+														radioButton32,
+														radioButton31,
+														radioButton30,
+														radioButton16,
+														radioButton8,
+														radioButton12,
+														radioButton29,
+														radioButton28,
+														radioButton27,
+														radioButton24,
+														radioButton25,
+														radioButton26,
+														radioButton23,
+														radioButton22,
+														radioButton20,
+														radioButton6,
+														radioButton21,
+														radioButton19,
+														radioButton18,
+														radioButton17,
+														radioButton15,
+														radioButton14,
+														radioButton13,
+														radioButton11,
+														radioButton10,
+														radioButton9,
+														radioButton7,
+														radioButton5,
+														radioButton4,
+														radioButton3,
+														radioButton2,
+														radioButton});
 		}
 		private void AddRegionsTest(Control control)
 		{
@@ -1898,9 +1966,9 @@ namespace FormsTest
 					StringFormat sf = new StringFormat();
 					sf.SetMeasurableCharacterRanges(new CharacterRange[] { new CharacterRange(0,1), new CharacterRange(1,1) });
 					RectangleF re = g.MeasureCharacterRanges("jM",f,new Rectangle(0,0,100,100),sf)[0].GetBounds(g);
-				#if CONFIG_EXTENDED_NUMERICS
+#if CONFIG_EXTENDED_NUMERICS
 					g.DrawString("jM Meas:" + re.Left +"," + re.Top + "," + re.Width + "," + re.Height, f, b, x, y);
-				#endif
+#endif
 					y+=20;
 					g.DrawString("jM", f, b, x, y, sf);
 					re.Offset(x,y);
@@ -1908,9 +1976,9 @@ namespace FormsTest
 
 					DrawPrimitive(g, 19, "Arial 10", out x, out y);
 					re = g.MeasureCharacterRanges("jM",f,new Rectangle(0,0,100,100),sf)[1].GetBounds(g);
-				#if CONFIG_EXTENDED_NUMERICS
+#if CONFIG_EXTENDED_NUMERICS
 					g.DrawString("jM Meas:" + re.Left +"," + re.Top + "," + re.Width + "," + re.Height, f, b, x, y);
-				#endif
+#endif
 					y+=20;
 					g.DrawString("jM", f, b, x, y, sf);
 					re.Offset(x,y);
@@ -1936,22 +2004,22 @@ namespace FormsTest
 		private void AddMenuTest()
 		{
 			seperatorMenuItem = new MenuItem("-");
-					thisMenuItem = new MenuItem("This");
-					thatMenuItem = new MenuItem("That");
-						otherAMenuItem = new MenuItem("OtherA");
-						otherBMenuItem = new MenuItem("OtherB");
-						otherCMenuItem = new MenuItem("OtherC");
-					otherMenuItem = new MenuItem("Other", new MenuItem[]{otherAMenuItem, otherBMenuItem, seperatorMenuItem, otherCMenuItem});
-				newMenuItem = new MenuItem("New", new MenuItem[]{thisMenuItem, thatMenuItem, otherMenuItem});
-				openMenuItem = new MenuItem("Open");
-				exitMenuItem = new MenuItem("Exit");
-				exitMenuItem.Click +=new EventHandler(exitMenuItem_Click);
+			thisMenuItem = new MenuItem("This");
+			thatMenuItem = new MenuItem("That");
+			otherAMenuItem = new MenuItem("OtherA");
+			otherBMenuItem = new MenuItem("OtherB");
+			otherCMenuItem = new MenuItem("OtherC");
+			otherMenuItem = new MenuItem("Other", new MenuItem[]{otherAMenuItem, otherBMenuItem, seperatorMenuItem, otherCMenuItem});
+			newMenuItem = new MenuItem("New", new MenuItem[]{thisMenuItem, thatMenuItem, otherMenuItem});
+			openMenuItem = new MenuItem("Open");
+			exitMenuItem = new MenuItem("Exit");
+			exitMenuItem.Click +=new EventHandler(exitMenuItem_Click);
 			fileMenuItem = new MenuItem("File",new MenuItem[] {newMenuItem, openMenuItem, exitMenuItem});
-				cutMenuItem = new MenuItem("Cut");
-				copyMenuItem = new MenuItem("Copy");
-				pasteMenuItem = new MenuItem("Paste");
+			cutMenuItem = new MenuItem("Cut");
+			copyMenuItem = new MenuItem("Copy");
+			pasteMenuItem = new MenuItem("Paste");
 			editMenuItem = new MenuItem("Edit", new MenuItem[] {cutMenuItem, copyMenuItem, seperatorMenuItem, pasteMenuItem});
-				aboutMenuItem = new MenuItem("About");
+			aboutMenuItem = new MenuItem("About");
 			helpMenuItem = new MenuItem("Help", new MenuItem[] {aboutMenuItem});
 			mainMenu = new MainMenu(new MenuItem[] { fileMenuItem, editMenuItem, helpMenuItem });
 			Menu = mainMenu;
@@ -1973,60 +2041,60 @@ namespace FormsTest
 			Rectangle b;
 
 			using (Brush bb = new SolidBrush(Color.Black), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
-				using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
-				{
-					b = NextBounds(g, "DrawArc");
-					g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 90);
-					b = NextBounds(g, "DrawArc");
-					g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 270);
-					b = NextBounds(g, "DrawBezier");
-					g.DrawBezier(rp, b.Left, b.Top, b.Left, b.Top + .1F * b.Height, b.Right, b.Top + .2F * b. Height, b.Right, b.Bottom );
-					b = NextBounds(g, "DrawClosedCurve");
-					g.DrawClosedCurve(rp, new Point[] {b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)});
-					b = NextBounds(g, "DrawCurve");
-					g.DrawCurve(rp, new Point[]{b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)}); 
-					b = NextBounds(g, "DrawCurve");
-					g.DrawCurve(rp, new Point[]{b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)}, 0.5F);
-					b = NextBounds(g, "DrawEllipse");
-					g.DrawEllipse(rp, b);
-					b = NextBounds(g, "DrawIcon");
-					//g.DrawIcon()
-					b = NextBounds(g, "DrawIconUnstretched");
-					//g.DrawIconUnstretched();
-					b = NextBounds(g, "DrawImage");
-					//g.DrawImage();
-					b = NextBounds(g, "DrawImageUnscaled");
-					//g.DrawImageUnscaled();
-					b = NextBounds(g, "DrawLine");
-					g.DrawLine(rp, b.Left, b.Top, b.Right, b.Bottom);
-					b = NextBounds(g, "DrawLines");
-					g.DrawLines(rp, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
-					b = NextBounds(g, "DrawPie");
-					g.DrawPie(rp, b, 0, 45);
-					b = NextBounds(g, "DrawPie");
-					g.DrawPie(rp, b, 135, 270);
-					b = NextBounds(g, "DrawPolygon");
-					g.DrawPolygon(rp, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
-					b = NextBounds(g, "DrawRectangle");
-					g.DrawRectangle(rp, b);
-					b = NextBounds(g, "DrawRectangles");
-					g.DrawRectangles(rp, new Rectangle[] { b, new Rectangle(b.Right - 5, b.Bottom - 5, 10, 10)});
-					b = NextBounds(g, "FillClosedCurve");
-					g.FillClosedCurve(rb, new Point[] {b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)});
-					b = NextBounds(g, "FillEllipse");
-					g.FillEllipse(rb, b);
-					b = NextBounds(g, "FillPie");
-					g.FillPie(rb, b, 135, 270);
-					b = NextBounds(g, "FillPolygon");
-					g.FillPolygon(rb, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
-					b = NextBounds(g, "FillRectangle");
-					g.FillRectangle(rb, b);
-					b = NextBounds(g, "FillRectangles");
-					g.FillRectangles(rb, new Rectangle[] { b, new Rectangle(b.Right - 5, b.Bottom - 5, 10, 10)});
-				}
+			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
+			{
+				b = NextBounds(g, "DrawArc");
+				g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 90);
+				b = NextBounds(g, "DrawArc");
+				g.DrawArc(rp, b.Left, b.Top, b.Width, b.Height, 45, 270);
+				b = NextBounds(g, "DrawBezier");
+				g.DrawBezier(rp, b.Left, b.Top, b.Left, b.Top + .1F * b.Height, b.Right, b.Top + .2F * b. Height, b.Right, b.Bottom );
+				b = NextBounds(g, "DrawClosedCurve");
+				g.DrawClosedCurve(rp, new Point[] {b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)});
+				b = NextBounds(g, "DrawCurve");
+				g.DrawCurve(rp, new Point[]{b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)}); 
+				b = NextBounds(g, "DrawCurve");
+				g.DrawCurve(rp, new Point[]{b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)}, 0.5F);
+				b = NextBounds(g, "DrawEllipse");
+				g.DrawEllipse(rp, b);
+				b = NextBounds(g, "DrawIcon");
+				//g.DrawIcon()
+				b = NextBounds(g, "DrawIconUnstretched");
+				//g.DrawIconUnstretched();
+				b = NextBounds(g, "DrawImage");
+				//g.DrawImage();
+				b = NextBounds(g, "DrawImageUnscaled");
+				//g.DrawImageUnscaled();
+				b = NextBounds(g, "DrawLine");
+				g.DrawLine(rp, b.Left, b.Top, b.Right, b.Bottom);
+				b = NextBounds(g, "DrawLines");
+				g.DrawLines(rp, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
+				b = NextBounds(g, "DrawPie");
+				g.DrawPie(rp, b, 0, 45);
+				b = NextBounds(g, "DrawPie");
+				g.DrawPie(rp, b, 135, 270);
+				b = NextBounds(g, "DrawPolygon");
+				g.DrawPolygon(rp, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
+				b = NextBounds(g, "DrawRectangle");
+				g.DrawRectangle(rp, b);
+				b = NextBounds(g, "DrawRectangles");
+				g.DrawRectangles(rp, new Rectangle[] { b, new Rectangle(b.Right - 5, b.Bottom - 5, 10, 10)});
+				b = NextBounds(g, "FillClosedCurve");
+				g.FillClosedCurve(rb, new Point[] {b.Location, new Point(b.Right, b.Top), new Point(b.Right, b.Bottom), new Point(b.Left, b.Bottom)});
+				b = NextBounds(g, "FillEllipse");
+				g.FillEllipse(rb, b);
+				b = NextBounds(g, "FillPie");
+				g.FillPie(rb, b, 135, 270);
+				b = NextBounds(g, "FillPolygon");
+				g.FillPolygon(rb, new Point[] { b.Location, new Point (b.Right, b.Bottom), new Point(b.Right, b.Top), new Point(b.Left, b.Bottom)});
+				b = NextBounds(g, "FillRectangle");
+				g.FillRectangle(rb, b);
+				b = NextBounds(g, "FillRectangles");
+				g.FillRectangles(rb, new Rectangle[] { b, new Rectangle(b.Right - 5, b.Bottom - 5, 10, 10)});
+			}
 
 			
-				/*g.DrawString("BeginContainer", Font, bb, 0, 0);
+			/*g.DrawString("BeginContainer", Font, bb, 0, 0);
 				g.SetClip(new Rectangle(20,20, 50, 50));
 				g.FillRectangle(rb, 0, 0, 100, 100);
 				System.Drawing.Drawing2D.GraphicsContainer gc =  g.BeginContainer();
@@ -2210,15 +2278,254 @@ namespace FormsTest
 
 		private void AddImageTest(Control c)
 		{
-			image1 = Image.FromFile("test.bmp");
-			icon2 = new Icon("test.ico");
+			int gap = 10;
+			int x = 10;
+			Rectangle r = new Rectangle(x, 425, 70, 24);
+			buttonImageLoad24bpp = new Button();
+			buttonImageLoad24bpp.Text = "Load 24bpp";
+			buttonImageLoad24bpp.Bounds = r;
+			buttonImageLoad24bpp.Click+=new EventHandler(buttonImageLoad24bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageLoad16bpp = new Button();
+			buttonImageLoad16bpp.Text = "Load 16bpp";
+			buttonImageLoad16bpp.Bounds = r;
+			buttonImageLoad16bpp.Click+=new EventHandler(buttonImageLoad16bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageLoad15bpp = new Button();
+			buttonImageLoad15bpp.Text = "Load 15bpp";
+			buttonImageLoad15bpp.Bounds = r;
+			buttonImageLoad15bpp.Click+=new EventHandler(buttonImageLoad15bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageLoad8bpp = new Button();
+			buttonImageLoad8bpp.Text = "Load 8bpp";
+			buttonImageLoad8bpp.Bounds = r;
+			buttonImageLoad8bpp.Click+=new EventHandler(buttonImageLoad8bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageLoad4bpp = new Button();
+			buttonImageLoad4bpp.Text = "Load 4bpp";
+			buttonImageLoad4bpp.Bounds = r;
+			buttonImageLoad4bpp.Click+=new EventHandler(buttonImageLoad4bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageLoad1bpp = new Button();
+			buttonImageLoad1bpp.Text = "Load 1bpp";
+			buttonImageLoad1bpp.Bounds = r;
+			buttonImageLoad1bpp.Click+=new EventHandler(buttonImageLoad1bpp_Click);
+				r = new Rectangle(x, r.Y + r.Height + gap, r.Width, r.Height);
+			buttonImageConvert24bpp = new Button();
+			buttonImageConvert24bpp.Text = "-> 24bpp";
+			buttonImageConvert24bpp.Bounds = r;
+			buttonImageConvert24bpp.Click+=new EventHandler(buttonImageConvert24bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageConvert16bpp = new Button();
+			buttonImageConvert16bpp.Text = "-> 16bpp";
+			buttonImageConvert16bpp.Bounds = r;
+			buttonImageConvert16bpp.Click+=new EventHandler(buttonImageConvert16bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageConvert15bpp = new Button();
+			buttonImageConvert15bpp.Text = "-> 15bpp";
+			buttonImageConvert15bpp.Bounds = r;
+			buttonImageConvert15bpp.Click+=new EventHandler(buttonImageConvert15bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageConvert8bpp = new Button();
+			buttonImageConvert8bpp.Text = "-> 8bpp";
+			buttonImageConvert8bpp.Bounds = r;
+			buttonImageConvert8bpp.Click+=new EventHandler(buttonImageConvert8bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageConvert4bpp = new Button();
+			buttonImageConvert4bpp.Text = "-> 4bpp";
+			buttonImageConvert4bpp.Bounds = r;
+			buttonImageConvert4bpp.Click+=new EventHandler(buttonImageConvert4bpp_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageConvert1bpp = new Button();
+			buttonImageConvert1bpp.Text = "-> 1bpp";
+			buttonImageConvert1bpp.Bounds = r;
+			buttonImageConvert1bpp.Click+=new EventHandler(buttonImageConvert1bpp_Click);
+			r = new Rectangle(x, r.Y + r.Height + gap, r.Width, r.Height);
+			buttonImageSave = new Button();
+			buttonImageSave.Text = "Save";
+			buttonImageSave.Bounds = r;
+			buttonImageSave.Click+=new EventHandler(buttonImageSave_Click);
+			r.Offset(gap + r.Width, 0);
+			buttonImageLoad32bppIcon = new Button();
+			buttonImageLoad32bppIcon.Text = "Ld 32b Icon";
+			buttonImageLoad32bppIcon.Bounds = r;
+			buttonImageLoad32bppIcon.Click+=new EventHandler(buttonImageLoad32bppIcon_Click);
+			r = new Rectangle(x, r.Y + r.Height + gap, 40, 20);
+			labelImageWidth = new Label();
+			labelImageWidth.Text = "Width:";
+			labelImageWidth.Bounds = r;
+			r.Offset(gap + r.Width,0);
+			textBoxImageWidth = new TextBox();
+			textBoxImageWidth.Text = "64";
+			textBoxImageWidth.Bounds = r;
+			r.Offset(gap + r.Width,0);
+			labelImageHeight = new Label();
+			labelImageHeight.Text = "Height:";
+			labelImageHeight.Bounds = r;
+			r.Offset(gap + r.Width,0);
+			textBoxImageHeight = new TextBox();
+			textBoxImageHeight.Text = "64";
+			textBoxImageHeight.Bounds = r;
+			r.Width *=2;
+			r.Offset(gap + r.Width,0);
+			labelImageFileName = new Label();
+			labelImageFileName.Text = "FileName:";
+			labelImageFileName.Bounds = r;
+			r.Offset(gap + r.Width,0);
+			textBoxImageFileName = new TextBox();
+			textBoxImageFileName.Text = "new";
+			textBoxImageFileName.Bounds = r;
 			c.Paint += new PaintEventHandler(Image_Paint);
+			c.Controls.AddRange(new Control[] {buttonImageLoad24bpp, buttonImageLoad16bpp, buttonImageLoad8bpp, buttonImageLoad4bpp, buttonImageLoad1bpp, buttonImageConvert24bpp, buttonImageConvert16bpp, buttonImageConvert8bpp, buttonImageConvert4bpp, buttonImageConvert1bpp, labelImageWidth, labelImageHeight, textBoxImageWidth, textBoxImageHeight, labelImageFileName, textBoxImageFileName, buttonImageSave, buttonImageConvert15bpp, buttonImageLoad15bpp, buttonImageLoad32bppIcon});
+		}
+
+		
+		private void buttonImageSave_Click(object sender, EventArgs e)
+		{
+			textBoxImageFileName.Text = textBoxImageFileName.Text.Trim();
+			int i = textBoxImageFileName.Text.IndexOf('.');
+			if (i>0)
+				textBoxImageFileName.Text = textBoxImageFileName.Text.Substring(0,i);
+			textBoxImageFileName.Text += ".bmp";
+/*
+			ImageCodecInfo bmpImageCodecInfo = null;
+			ImageCodecInfo[] encoders =  ImageCodecInfo.GetImageEncoders();
+			for(int j = 0; j < encoders.Length; ++j)
+			{
+				//Console.WriteLine(encoders[j].MimeType);
+				if(encoders[j].MimeType == "image/bmp")
+				{
+					bmpImageCodecInfo = encoders[j];
+					//break;
+				}
+			}
+*/
+			if (imageNew != null)
+				imageNew.Save(textBoxImageFileName.Text);
 		}
 
 		private void Image_Paint(object sender, PaintEventArgs e)
 		{
-			e.Graphics.DrawImage(image1, 10, 10);
-			e.Graphics.DrawIcon(icon2, 200, 200);
+			Image_Draw(e.Graphics);
+		}
+
+		private void Image_Draw(Graphics g)
+		{
+			if (imageOld != null)
+			{
+				using (Brush b = new SolidBrush(Color.Black))
+					g.DrawString("Original: " + imageOld.PixelFormat.ToString(), Font, b, 2, 2);
+				g.DrawImage(imageOld, 10, 25);
+			}
+			if (imageNew != null)
+			{
+				using (Brush b = new SolidBrush(Color.Black))
+					g.DrawString("Converted: " + imageNew.PixelFormat.ToString(), Font, b, 202, 2);
+				g.DrawImage(imageNew, 200, 25);
+			}
+		}
+
+		private void ConvertImage(System.Drawing.Imaging.PixelFormat p)
+		{
+			int width = int.Parse(textBoxImageWidth.Text);
+			int height = int.Parse(textBoxImageHeight.Text);
+			Region r = new Region();
+			r.MakeEmpty();
+			if (imageNew != null)
+				r = new Region(new Rectangle(200, 25, imageNew.Width, imageNew.Height));
+			imageNew = new Bitmap(width, height, p);
+			r.Union(new Rectangle(200, 25, imageNew.Width, imageNew.Height));
+			r.Union(new Rectangle(0,0, 400, 25));
+			try
+			{
+				using (Graphics g = Graphics.FromImage(imageNew))
+					g.DrawImage(imageOld, 0, 0, width - 1, height - 1);
+			}
+			catch
+			{
+				imageNew.Dispose();
+				imageNew = null;
+			}
+			tabPage10.Invalidate(r, true);
+		}
+
+		private void LoadImage(String file)
+		{
+			Region r = new Region();
+			r.MakeEmpty();
+			if (imageOld != null)
+				r = new Region(new Rectangle(10, 25, imageOld.Width, imageOld.Height));
+			imageOld = Image.FromFile(file);
+			r.Union(new Rectangle(10, 25, imageOld.Width, imageOld.Height));
+			r.Union(new Rectangle(0,0, 400, 25));
+			textBoxImageWidth.Text = imageOld.Width.ToString();
+			textBoxImageHeight.Text = imageOld.Height.ToString();
+			tabPage10.Invalidate(r, true);
+		}
+		
+		private void buttonImageLoad24bpp_Click(object sender, EventArgs e)
+		{
+			LoadImage("test.bmp");
+		}
+
+		private void buttonImageLoad16bpp_Click(object sender, EventArgs e)
+		{
+			LoadImage("test 16bpp.bmp");
+		}
+
+		private void buttonImageLoad15bpp_Click(object sender, EventArgs e)
+		{
+			LoadImage("test 15bpp.bmp");
+		}
+
+		private void buttonImageLoad8bpp_Click(object sender, EventArgs e)
+		{
+			LoadImage("test 8bpp.bmp");
+		}
+
+		private void buttonImageLoad4bpp_Click(object sender, EventArgs e)
+		{
+			LoadImage("test 4bpp.bmp");
+		}
+
+		private void buttonImageLoad1bpp_Click(object sender, EventArgs e)
+		{
+			LoadImage("test 1bpp.bmp");
+		}
+
+		private void buttonImageLoad32bppIcon_Click(object sender, EventArgs e)
+		{
+			LoadImage("test.ico");
+		}
+
+		private void buttonImageConvert24bpp_Click(object sender, EventArgs e)
+		{
+			ConvertImage(System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+		}
+
+		private void buttonImageConvert16bpp_Click(object sender, EventArgs e)
+		{
+			ConvertImage(System.Drawing.Imaging.PixelFormat.Format16bppRgb565);
+		}
+
+		private void buttonImageConvert15bpp_Click(object sender, EventArgs e)
+		{
+			ConvertImage(System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+		}
+
+		private void buttonImageConvert8bpp_Click(object sender, EventArgs e)
+		{
+			ConvertImage(System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+		}
+
+		private void buttonImageConvert4bpp_Click(object sender, EventArgs e)
+		{
+			ConvertImage(System.Drawing.Imaging.PixelFormat.Format4bppIndexed);
+		}
+
+		private void buttonImageConvert1bpp_Click(object sender, EventArgs e)
+		{
+			ConvertImage(System.Drawing.Imaging.PixelFormat.Format1bppIndexed);
 		}
 
 		private void AddComboTest(Control c)
@@ -2274,6 +2581,7 @@ namespace FormsTest
 
 		private void AddListBoxTest(Control c)
 		{
+			return;
 			listBox1 = new ListBox();
 			listBox1.Bounds = new Rectangle(10, 10, 200, 100);
 			listBox2 = new ListBox();
@@ -2483,6 +2791,399 @@ namespace FormsTest
 			propertyGrid.SelectedObject = propertyGrid;
 			propertyGrid.DumpPropsToConsole();*/
 
+		}
+
+		private void AddPictureBoxTest(Control c)
+		{
+			pictureBox1 = new PictureBox();
+			pictureBox1.BorderStyle = BorderStyle.Fixed3D;
+			pictureBox1.Bounds = new Rectangle(10,10,100,100);
+			pictureBox1.Image = Image.FromFile("test.bmp");
+			c.Controls.Add(pictureBox1);
+			pictureBox2 = new PictureBox();
+			pictureBox2.BorderStyle = BorderStyle.FixedSingle;
+			pictureBox2.Bounds = new Rectangle(150,10,100,100);
+			pictureBox2.Image = pictureBox1.Image;
+			c.Controls.Add(pictureBox2);
+			pictureBox3 = new PictureBox();
+			pictureBox3.BorderStyle = BorderStyle.FixedSingle;
+			pictureBox3.SizeMode = PictureBoxSizeMode.CenterImage;
+			pictureBox3.Bounds = new Rectangle(10,150,120,120);
+			pictureBox3.Image =  pictureBox1.Image;
+			c.Controls.Add(pictureBox3);
+			pictureBox4 = new PictureBox();
+			pictureBox4.BorderStyle = BorderStyle.FixedSingle;
+			pictureBox4.SizeMode = PictureBoxSizeMode.AutoSize;
+			pictureBox4.Bounds = new Rectangle(150,150,120,100);
+			pictureBox4.Image =  pictureBox1.Image;
+			c.Controls.Add(pictureBox4);
+			pictureBox5 = new PictureBox();
+			pictureBox5.BorderStyle = BorderStyle.FixedSingle;
+			pictureBox5.SizeMode = PictureBoxSizeMode.StretchImage;
+			pictureBox5.Bounds = new Rectangle(10,300,120,140);
+			pictureBox5.Image =  pictureBox1.Image;
+			c.Controls.Add(pictureBox5);
+		}
+
+		private void AddControlPaintTest(Control c)
+		{
+			c.Paint+=new PaintEventHandler(ControlPaintTest_Paint);
+		}
+
+		private void ControlPaintTest_Paint(object sender, PaintEventArgs e)
+		{
+			Graphics g = e.Graphics;
+			boundsX = boundsY = boundsPad;
+			Rectangle b;
+
+			using (Brush bg = new SolidBrush(Color.Blue), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
+			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
+			{
+				g.FillRectangle(bg, e.ClipRectangle);
+
+				b = NextBoundsPaint(g, "DrawBorder - Solid");
+				ControlPaint.DrawBorder(g, b, Color.Red, ButtonBorderStyle.Solid);
+				b = NextBoundsPaint(g, "- Inset");
+				ControlPaint.DrawBorder(g, b, Color.Red, ButtonBorderStyle.Inset);
+				b = NextBoundsPaint(g, "- Outset");
+				ControlPaint.DrawBorder(g, b, Color.Red, ButtonBorderStyle.Outset);
+				b = NextBoundsPaint(g, "- Dashed");
+				ControlPaint.DrawBorder(g, b, Color.Red, ButtonBorderStyle.Dashed);
+				b = NextBoundsPaint(g, "- Dotted");
+				ControlPaint.DrawBorder(g, b, Color.Red, ButtonBorderStyle.Dotted);
+				b = NextBoundsPaint(g, "- Solid");
+				ControlPaint.DrawBorder(g, b, Color.Red, ButtonBorderStyle.Solid);
+				b = NextBoundsPaint(g, "- None");
+				ControlPaint.DrawBorder(g, b, Color.Red, ButtonBorderStyle.None);
+
+				b = NextBoundsPaint(g, "DrawBorder3D");
+				ControlPaint.DrawBorder3D(g, b);
+				b = NextBoundsPaint(g, "- Left Adjust");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.Adjust, Border3DSide.Left);
+				b = NextBoundsPaint(g, "- Top Bump");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.Bump, Border3DSide.Top);
+				b = NextBoundsPaint(g, "- Right Etched");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.Etched, Border3DSide.Right);
+				b = NextBoundsPaint(g, "- Bottom Flat");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.Flat, Border3DSide.Bottom);
+				b = NextBoundsPaint(g, "- Raised");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.Raised, Border3DSide.All);
+				b = NextBoundsPaint(g, "- RaisedInner");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.RaisedInner, Border3DSide.All);
+				b = NextBoundsPaint(g, "- RaisedOuter");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.RaisedOuter, Border3DSide.All);
+				b = NextBoundsPaint(g, "- Sunken");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.Sunken, Border3DSide.All);
+				b = NextBoundsPaint(g, "- SunkenInner");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.SunkenInner, Border3DSide.All);
+				b = NextBoundsPaint(g, "- SunkenOuter");
+				ControlPaint.DrawBorder3D(g, b, Border3DStyle.SunkenOuter, Border3DSide.All);
+
+				b = NextBoundsPaint(g, "DrawButton - Pushed");
+				ControlPaint.DrawButton(g, b, ButtonState.Pushed);
+				b = NextBoundsPaint(g, "- Normal");
+				ControlPaint.DrawButton(g, b, ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Inactive");
+				ControlPaint.DrawButton(g, b, ButtonState.Inactive);
+				b = NextBoundsPaint(g, "- Flat");
+				ControlPaint.DrawButton(g, b, ButtonState.Flat);
+				b = NextBoundsPaint(g, "- Checked");
+				ControlPaint.DrawButton(g, b, ButtonState.Checked);
+				b = NextBoundsPaint(g, "- All");
+				ControlPaint.DrawButton(g, b, ButtonState.All);
+
+				b = NextBoundsPaint(g, "DrawCaptionB - Close");
+				ControlPaint.DrawCaptionButton(g,b, CaptionButton.Close, ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Help Pushed");
+				ControlPaint.DrawCaptionButton(g,b, CaptionButton.Help, ButtonState.Pushed);
+				b = NextBoundsPaint(g, "- Max Inactive");
+				ControlPaint.DrawCaptionButton(g,b, CaptionButton.Maximize, ButtonState.Inactive);
+				b = NextBoundsPaint(g, "- Minimize");
+				ControlPaint.DrawCaptionButton(g,b, CaptionButton.Minimize, ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Restore");
+				ControlPaint.DrawCaptionButton(g,b, CaptionButton.Restore, ButtonState.Normal);
+
+				b = NextBoundsPaint(g, "DCheckBox");
+				ControlPaint.DrawCheckBox(g, new Rectangle(b.X, b.Y, 20, 20),ButtonState.Normal );
+				b = NextBoundsPaint(g, "- Pushed");
+				ControlPaint.DrawCheckBox(g, new Rectangle(b.X, b.Y, 20, 20),ButtonState.Pushed );
+				b = NextBoundsPaint(g, "- Inactive");
+				ControlPaint.DrawCheckBox(g, new Rectangle(b.X, b.Y, 20, 20),ButtonState.Inactive );
+				b = NextBoundsPaint(g, "- Flat");
+				ControlPaint.DrawCheckBox(g, new Rectangle(b.X, b.Y, 20, 20),ButtonState.Flat );
+				b = NextBoundsPaint(g, "- Checked");
+				ControlPaint.DrawCheckBox(g, new Rectangle(b.X, b.Y, 20, 20),ButtonState.Checked );
+				b = NextBoundsPaint(g, "- All");
+				ControlPaint.DrawCheckBox(g, new Rectangle(b.X, b.Y, 20, 20),ButtonState.All );
+
+				b = NextBoundsPaint(g, "DComboButton");
+				ControlPaint.DrawComboButton(g, b, ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Pushed");
+				ControlPaint.DrawComboButton(g, b, ButtonState.Pushed);
+				b = NextBoundsPaint(g, "- Inactive");
+				ControlPaint.DrawComboButton(g, b, ButtonState.Inactive);
+
+				b = NextBoundsPaint(g, "DContGrabHand");
+				ControlPaint.DrawContainerGrabHandle(g, new Rectangle(b.X, b.Y, 20, 20));
+
+				b = NextBoundsPaint(g, "dFocusRectangle");
+				ControlPaint.DrawFocusRectangle(g, new Rectangle(b.X, b.Y, 20, 20));
+				b = NextBoundsPaint(g, " - Green/Yellow");
+				ControlPaint.DrawFocusRectangle(g, new Rectangle(b.X, b.Y, 20, 20), Color.Green, Color.Yellow);
+			}
+
+		}
+
+		private void AddControlPaintTest2(Control c)
+		{
+			c.Paint+=new PaintEventHandler(ControlPaintTest2_Paint);
+		}
+
+		private void ControlPaintTest2_Paint(object sender, PaintEventArgs e)
+		{
+			Graphics g = e.Graphics;
+			boundsX = boundsY = boundsPad;
+			Rectangle b;
+
+			using (Brush bb = new SolidBrush(Color.Blue), rb = new SolidBrush(Color.Red), gb = new SolidBrush(Color.Green))
+			using (Pen bp = new Pen(Color.Black), rp = new Pen(Color.Red), gp = new Pen(Color.Green))
+			{
+				g.FillRectangle(bb, e.ClipRectangle);
+
+				b = NextBoundsPaint(g, "DGrabHandle");
+				ControlPaint.DrawGrabHandle(g, new Rectangle(b.X, b.Y, 20, 20),true, true);
+				b = NextBoundsPaint(g, "- !primary !enabled");
+				ControlPaint.DrawGrabHandle(g, new Rectangle(b.X, b.Y, 20, 20), false, false);
+
+				b = NextBoundsPaint(g, "DGrid - (1,1)");
+				ControlPaint.DrawGrid(g, b, new Size(2, 2), Color.Green);
+				b = NextBoundsPaint(g, "- (2,2)");
+				ControlPaint.DrawGrid(g, b, new Size(10, 10), Color.Green);
+
+				b = NextBoundsPaint(g, "DImageDisabled");
+				ControlPaint.DrawImageDisabled(g, Image.FromFile("test.bmp"), b.X, b.Y, Color.Blue);
+
+				b = NextBoundsPaint(g, "DLockedFrame");
+				ControlPaint.DrawLockedFrame(g, b, true);
+				b = NextBoundsPaint(g, "- !primary");
+				ControlPaint.DrawLockedFrame(g, b, false);
+
+				b = NextBoundsPaint(g, "DMenuGlyph - Arrow");
+				ControlPaint.DrawMenuGlyph(g, b, MenuGlyph.Arrow);
+				b = NextBoundsPaint(g, "- Bullet");
+				ControlPaint.DrawMenuGlyph(g, b, MenuGlyph.Bullet);
+				b = NextBoundsPaint(g, "- Checkmark");
+				ControlPaint.DrawMenuGlyph(g, b, MenuGlyph.Checkmark);
+				b = NextBoundsPaint(g, "- Max");
+				ControlPaint.DrawMenuGlyph(g, b, MenuGlyph.Max);
+				b = NextBoundsPaint(g, "- Min");
+				ControlPaint.DrawMenuGlyph(g, b, MenuGlyph.Min);
+
+				b = NextBoundsPaint(g, "DMixedCheckBox");
+				ControlPaint.DrawMixedCheckBox(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Normal);
+				b = NextBoundsPaint(g, "- All");
+				ControlPaint.DrawMixedCheckBox(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.All);
+				b = NextBoundsPaint(g, "- Checked");
+				ControlPaint.DrawMixedCheckBox(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Checked);
+				b = NextBoundsPaint(g, "- Flat");
+				ControlPaint.DrawMixedCheckBox(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Flat);
+				b = NextBoundsPaint(g, "- Inactive");
+				ControlPaint.DrawMixedCheckBox(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Inactive);
+				b = NextBoundsPaint(g, "- Pushed");
+				ControlPaint.DrawMixedCheckBox(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Pushed);
+				
+				b = NextBoundsPaint(g, "DRadioButton");
+				ControlPaint.DrawRadioButton(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Pushed");
+				ControlPaint.DrawRadioButton(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Pushed);
+				b = NextBoundsPaint(g, "- Flat");
+				ControlPaint.DrawRadioButton(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Flat);
+				b = NextBoundsPaint(g, "- Inactive");
+				ControlPaint.DrawRadioButton(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Inactive);
+				b = NextBoundsPaint(g, "- Checked");
+				ControlPaint.DrawRadioButton(g, new Rectangle(b.X, b.Y, 20, 20), ButtonState.Checked);
+
+				b = NextBoundsPaint(g, "DRevFrame - Dashed");
+				Point pt = PointToScreen(new Point(b.Left + 5, b.Top + 5));
+				ControlPaint.DrawReversibleFrame(new Rectangle(pt,b.Size), Color.Gray, FrameStyle.Dashed);
+				b = NextBoundsPaint(g, "- Thick");
+				pt = PointToScreen(new Point(b.Left + 5, b.Top + 5));
+				ControlPaint.DrawReversibleFrame(new Rectangle(pt,b.Size), Color.Gray, FrameStyle.Thick);
+
+				b = NextBoundsPaint(g, "DReversibleLine");
+				pt = PointToScreen(new Point(b.Left + 5, b.Top + 5));
+				ControlPaint.DrawReversibleLine(pt, new Point(pt.X + b.Width, pt.Y + b.Height),Color.Gray);
+
+				b = NextBoundsPaint(g, "DScrollButton - Down");
+				ControlPaint.DrawScrollButton(g, b, ScrollButton.Down, ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Left Pushed");
+				ControlPaint.DrawScrollButton(g, b, ScrollButton.Left, ButtonState.Pushed);
+				b = NextBoundsPaint(g, "- Max Inactive");
+				ControlPaint.DrawScrollButton(g, b, ScrollButton.Max, ButtonState.Inactive);
+				b = NextBoundsPaint(g, "- Min");
+				ControlPaint.DrawScrollButton(g, b, ScrollButton.Min, ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Right");
+				ControlPaint.DrawScrollButton(g, b, ScrollButton.Right, ButtonState.Normal);
+				b = NextBoundsPaint(g, "- Up");
+				ControlPaint.DrawScrollButton(g, b, ScrollButton.Up, ButtonState.Normal);
+				
+				b = NextBoundsPaint(g, "DSelectionFrame");
+				ControlPaint.DrawSelectionFrame(g, true, b, new Rectangle(b.Left + 5, b.Top + 5, b.Width - 10, b.Height - 10), Color.Blue);
+
+				b = NextBoundsPaint(g, "DSizeGrip");
+				ControlPaint.DrawSizeGrip(g, Color.Blue, b);
+
+				b = NextBoundsPaint(g, "DStringDisabled");
+				ControlPaint.DrawStringDisabled(g, "disabled", Font, Color.Blue, b, StringFormat.GenericDefault);
+
+				b = NextBoundsPaint(g, "FillReverRect");
+				g.DrawString("Hello", Font, bb, b.X + 5, b.Y + 5);
+				pt = PointToScreen(b.Location);
+				ControlPaint.FillReversibleRectangle(new Rectangle(pt.X, pt.Y, b.Width, b.Height), Color.Blue);
+
+				b = NextBoundsPaint(g, "Light - 10%");
+				using (Brush bc= new SolidBrush(ControlPaint.Light(Color.Blue, .1f)))
+					g.FillRectangle(bc, b);
+				b = NextBoundsPaint(g, "Light 90%");
+				using (Brush bc= new SolidBrush(ControlPaint.Light(Color.Blue, .9f)))
+					g.FillRectangle(bc, b);
+
+				b = NextBoundsPaint(g, "LightLight");
+				using (Brush bc= new SolidBrush(ControlPaint.LightLight(Color.Blue)))
+					g.FillRectangle(bc, b);
+			}
+
+		}
+		private Rectangle NextBoundsPaint(Graphics g, string text)
+		{
+			int boundSizePaint = 60;
+			Rectangle r = new Rectangle(boundsX, boundsY, boundSizePaint, boundSizePaint);
+			using (Brush b = new SolidBrush(Color.LightGray))
+				g.FillRectangle(b, r);
+			boundsX += boundSizePaint + boundsPad;
+			if (boundsX + boundsSize > Width - 10)
+			{
+				boundsX = boundsPad;
+				boundsY += boundSizePaint + boundsPad;
+			}
+			g.DrawRectangle(SystemPens.ControlLightLight, r);
+			g.DrawString(text, new Font("Arial", 7),SystemBrushes.ControlLightLight, r.X, r.Bottom);
+			return r;
+		}
+
+		private void AddResXTest(Control c)
+		{
+			int height = 400;
+			int width = 300;
+			buttonResXWrite = new Button();
+			buttonResXWrite.Location = new Point(20, height - 40);
+			buttonResXWrite.Text = "Write ResX";
+			buttonResXWrite.Click+=new EventHandler(buttonResXWrite_Click);
+			buttonResXRead = new Button();
+			buttonResXRead.Location = new Point(buttonResXRead.Right + 20, height - 40);
+			buttonResXRead.Text = "Read ResX";
+			buttonResXRead.Click+=new EventHandler(buttonResXRead_Click);
+			textBoxResXData = new TextBox();
+			textBoxResXData.Multiline = true;
+			textBoxResXData.Bounds = new Rectangle(10, 10, width - 10, height - 50);
+			textBoxResXData.ReadOnly = true;
+			c.Controls.AddRange(new Control[3] {textBoxResXData, buttonResXWrite, buttonResXRead});
+		}
+
+		private void buttonResXWrite_Click(object sender, EventArgs e)
+		{
+			ResXResourceWriter w = new ResXResourceWriter("test.resx");
+			w.AddResource("my string", "Hello");
+			w.AddResource("my color", Color.Red);
+			w.AddResource("my byte array", new Byte[3] { 255, 254, 253 });
+			w.Generate();
+			w.Close();
+		}
+
+		private void buttonResXRead_Click(object sender, EventArgs e)
+		{
+			ResXResourceSet rs = new ResXResourceSet("test.resx");
+			textBoxResXData.AppendText("my string:" + rs.GetObject("my string") + "\r\n");
+			textBoxResXData.AppendText("my color:" + rs.GetObject("my color") + "\r\n");
+			byte[] b = (byte[])rs.GetObject("my byte array") ;
+			textBoxResXData.AppendText("my byte array:" + b.ToString()+ "\r\n");
+			textBoxResXData.AppendText("{" + b[0] +"," + b[1]+"," + b[2]+"}");
+		}
+
+		private void AddImageListTest(Control c)
+		{
+			imageList1 = new ImageList();
+
+			int height = 400;
+			buttonImageListWrite = new Button();
+			buttonImageListWrite.Location = new Point(20, height - 40);
+			buttonImageListWrite.Text = "Add Image";
+			buttonImageListWrite.Click+=new EventHandler(buttonImageListWrite_Click);
+			c.Controls.Add(buttonImageListWrite);
+			buttonImageListRead = new Button();
+			buttonImageListRead.Location = new Point(buttonImageListWrite.Right + 20, height - 40);
+			buttonImageListRead.Text = "Read Image";
+			buttonImageListRead.Click+=new EventHandler(buttonImageListRead_Click);
+			c.Controls.Add(buttonImageListRead);
+			labelImageListSize = new Label();
+			labelImageListSize.Bounds = new Rectangle(buttonImageListRead.Right + 20, height - 40, 28, 20);
+			labelImageListSize.Text = "Size";
+			c.Controls.Add(labelImageListSize);
+			textBoxImageListSize = new TextBox();
+			textBoxImageListSize.Bounds = new Rectangle(labelImageListSize.Right + 20, height - 40, 30, 20);
+			textBoxImageListSize.Text = imageList1.ImageSize.Width.ToString();
+			c.Controls.Add(textBoxImageListSize);
+			labelImageListColorDepth = new Label();
+			labelImageListColorDepth.Bounds = new Rectangle(textBoxImageListSize.Right + 20, height - 40, 40, 20);
+			labelImageListColorDepth.Text = "Depth";
+			c.Controls.Add(labelImageListColorDepth);
+			textBoxImageListColorDepth = new TextBox();
+			textBoxImageListColorDepth.Bounds = new Rectangle(labelImageListColorDepth.Right + 20, height - 40, 30, 20);
+			textBoxImageListColorDepth.Text = ((int)imageList1.ColorDepth).ToString();
+			c.Controls.Add(textBoxImageListColorDepth);
+			buttonImageListSet = new Button();
+			buttonImageListSet.Bounds = new Rectangle(textBoxImageListColorDepth.Right + 20, height - 40, 50, 22);
+			buttonImageListSet.Text = "Set";
+			buttonImageListSet.Click+=new EventHandler(buttonImageListSet_Click);
+			c.Controls.Add(buttonImageListSet);
+
+			c.Paint+=new PaintEventHandler(c_Paint);
+
+			//ResourceManager resources = new ResourceManager(typeof(FormsTest));
+			
+			//object o = resources.GetObject("hearts.ImageStream");
+			//imageList1.ImageStream = (System.Windows.Forms.ImageListStreamer)o;
+		}
+
+		private void buttonImageListWrite_Click(object sender, EventArgs e)
+		{
+			//imageList1.Images.Add(new Bitmap("test 1bpp.bmp"));
+			//imageList1.Images.Add(new Bitmap("test 4bpp.bmp"));
+			//imageList1.Images.Add(new Bitmap("test 8bpp.bmp"));
+			imageList1.Images.Add(new Bitmap("test.bmp"));
+			Invalidate(true);
+		}
+		private void buttonImageListRead_Click(object sender, EventArgs e)
+		{
+			Console.WriteLine(imageList1.Images.Count);
+		}
+
+		private void c_Paint(object sender, PaintEventArgs e)
+		{
+			int x = 10;
+			for (int i = 0; i < imageList1.Images.Count; i++)
+			{
+				imageList1.Draw(e.Graphics,x,10, i);
+				x += imageList1.Images[i].Width + 10;
+			}
+		}
+
+		private void buttonImageListSet_Click(object sender, EventArgs e)
+		{
+			int s = int.Parse(textBoxImageListSize.Text);
+			imageList1.ImageSize = new Size(s,s );
+			imageList1.ColorDepth = (ColorDepth)int.Parse(textBoxImageListColorDepth.Text);
+			Invalidate(true);
 		}
 	}
 }

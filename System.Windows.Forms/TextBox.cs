@@ -209,7 +209,6 @@ public class TextBox : TextBoxBase
 				vScrollBar.ValueChanged+=new EventHandler(vScrollBar_ValueChanged);
 				SetScrollBarPositions();
 				Controls.Add(vScrollBar);
-				//TODO adjust scrollbar
 			}
 			vScrollBar.Maximum = 0;
 		}
@@ -229,7 +228,6 @@ public class TextBox : TextBoxBase
 				hScrollBar.ValueChanged+=new EventHandler(hScrollBar_ValueChanged);
 				SetScrollBarPositions();
 				Controls.Add(hScrollBar);
-				//TODO adjust scrollbar
 			}
 			hScrollBar.Maximum = 0;
 		}
@@ -645,7 +643,7 @@ public class TextBox : TextBoxBase
 	private void Redraw(Graphics g)
 	{
 		// Draw scrollbar corner if both are visible
-		if (vScrollBar != null && hScrollBar != null)
+		if (vScrollBar != null && hScrollBar != null && vScrollBar.Visible && hScrollBar.Visible)
 			g.FillRectangle(SystemBrushes.Control, hScrollBar.Right, vScrollBar.Bottom, vScrollBar.Width, hScrollBar.Height);
 		// Only allow updates in the TextDrawArea
 		Region clip = g.Clip;
@@ -866,22 +864,18 @@ public class TextBox : TextBoxBase
 	{
 		if (caretBounds.Top - YViewOffset < TextDrawArea.Top)
 		{
-			SetClipAllText();
 			YViewOffset = caretBounds.Top;
 		}
 		else if (caretBounds.Bottom - YViewOffset > TextDrawArea.Bottom)
 		{
-			SetClipAllText();
 			YViewOffset = caretBounds.Bottom - TextDrawArea.Bottom + 1;
 		}
 		if (caretBounds.Left- XViewOffset < TextDrawArea.Left)
 		{
-			SetClipAllText();
 			XViewOffset = caretBounds.Left;
 		}
 		else if (caretBounds.Right - XViewOffset > TextDrawArea.Right)
 		{
-			SetClipAllText();
 			XViewOffset = caretBounds.Right - TextDrawArea.Right;
 		}
 	}
@@ -1398,7 +1392,7 @@ public class TextBox : TextBoxBase
 		int height = Font.Height;
 		if (Text.Length == 0)
 		{
-			newBounds = new Rectangle(CaretXFromAlign, 1, 1, height - 1);
+			newBounds = new Rectangle(CaretXFromAlign, 1, 1, height);
 		}
 		else
 		{
@@ -1411,7 +1405,7 @@ public class TextBox : TextBoxBase
 				LayoutInfo.Item item = layout.Items[position -1];
 				newBounds = item.bounds;
 				if (item.type == LayoutInfo.Item.CharType.LF)
-					newBounds = new Rectangle(CaretXFromAlign, newBounds.Top + height, 1, height - 1);
+					newBounds = new Rectangle(CaretXFromAlign, newBounds.Top + height, 1, height);
 				else
 					newBounds = new Rectangle(newBounds.Right, newBounds.Top, 1, newBounds.Height + 1);			
 			}
@@ -1685,9 +1679,9 @@ public class TextBox : TextBoxBase
 		get
 		{
 			Rectangle rect = ClientRectangle;
-			if (vScrollBar != null)
+			if (vScrollBar != null && vScrollBar.Visible)
 				rect.Width -= vScrollBar.Width;
-			if (hScrollBar != null)
+			if (hScrollBar != null && hScrollBar.Visible)
 				rect.Height -= hScrollBar.Height;
 			return rect;
 		}
@@ -1701,6 +1695,10 @@ public class TextBox : TextBoxBase
 		}
 		set
 		{
+			if (value == xViewOffset)
+				return;
+			// Make sure the entire textbox is redrawn
+			SetClipAllText();
 			xViewOffset = value;
 			if (hScrollBar != null)
 				hScrollBar.Value = xViewOffset;
@@ -1715,8 +1713,12 @@ public class TextBox : TextBoxBase
 		}
 		set
 		{
+			if (value == yViewOffset)
+				return;
+			// Make sure the entire textbox is redrawn
+			SetClipAllText();
 			yViewOffset = value;
-			if (vScrollBar != null)
+			if (vScrollBar != null && vScrollBar.Visible)
 				vScrollBar.Value = yViewOffset;
 		}
 	}

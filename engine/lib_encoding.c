@@ -524,10 +524,8 @@ ILInt32 _IL_DefaultEncoding_InternalCodePage(ILExecThread *_thread)
 	   the magic Windows code page number for it */
 	return 28591;
 #else
-	/* We have no idea what the code page is, so force the
-	   "System.Text.Encoding.Default" property to allocate an
-	   instance of the "System.Text.DefaultEncoding" class */
-	return 0;
+	/* Ask the system what it thinks the code page is */
+	return (unsigned)ILGetCodePage();
 #endif
 }
 

@@ -5,6 +5,9 @@
 	runtime/Platform/FileType.cs: integrate Charles Schuller's patches 
 	to GetFilesInDirectory
 
+	* runtime/Platform/FileType.cs: Add the values to the enum members
+	for program clarity.
+
 2002-10-19  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Collections/ArrayList.cs: Fix MoveNext() in the

@@ -153,6 +153,7 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 				ProcessStartInfo startInfo;
 				startInfo = new ProcessStartInfo(CompilerName, args);
 				startInfo.RedirectStandardError = true;
+				startInfo.UseShellExecute = false;
 
 				// Create and run the process.
 				Process process = Process.Start(startInfo);

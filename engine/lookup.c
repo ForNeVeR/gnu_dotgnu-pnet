@@ -62,7 +62,7 @@ An example of a signature:
 		public System.String ToString();
 	}
 
-	"System.Decimal" "ToString" "(T)OSystem.String;"
+	"System.Decimal" "ToString" "(T)oSystem.String;"
 */
 
 #include "engine.h"

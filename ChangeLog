@@ -7,6 +7,9 @@
 	actually indicate a little-endian CPU and so it would be confusing;
 	use "ILHasThreads" to detect thread support rather than #ifdef's.
 
+	* engine/lookup.c: slight bug in signature example - object refs
+	use 'o', not 'O'.
+
 2003-07-23  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/process.c:  Unregister the main thread when a process

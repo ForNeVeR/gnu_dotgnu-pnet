@@ -1,6 +1,12 @@
 
 2002-10-27  Richard Baumann  <biochem333@nyc.rr.com>
 
+	* runtime/System/IO/Directory.cs, runtime/System/IO/File.cs: added
+	private constructors to prevent instantiations; default constructor
+	goes against the spec. which gives no constructor.
+
+2002-10-27  Richard Baumann  <biochem333@nyc.rr.com>
+
 	* runtime/System/DateTime.cs: fixed a bug in YearToTicks
 
 2002-10-26  Richard Baumann  <biochem333@nyc.rr.com>

@@ -28,6 +28,10 @@ namespace System.IO
 
 	public sealed class File
 	{
+		private File()
+		{
+			// private constructor... do nothing
+		}
 		public static StreamWriter AppendText(string path) 
 		{
 			return new StreamWriter(path, true);

@@ -32,6 +32,11 @@ namespace System.IO
 		
 		private static PathInfo pathinfo = DirMethods.GetPathInfo();
 
+		private Directory()
+		{
+			// private constructor... do nothing
+		}
+
 		public static void Delete(string path)
 		{
 			Delete(path,false);	

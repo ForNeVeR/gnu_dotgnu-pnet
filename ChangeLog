@@ -78,6 +78,8 @@ allocate space for zero local variables.
 
 * engine/cvm_call.c: implement the call-related opcodes.
 
+* engine/cvm_ptr.c: stub out the "new_value" opcode.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

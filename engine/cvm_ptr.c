@@ -695,6 +695,14 @@ case COP_NEW:
 }
 break;
 
+case COP_NEW_VALUE:
+{
+	/* Create a new value type and insert it below the constructors */
+	/* TODO */
+	MODIFY_PC_AND_STACK(1, 2);
+}
+break;
+
 #elif defined(IL_CVM_WIDE)
 
 case COP_MREAD:
@@ -739,6 +747,14 @@ case COP_CKNULL_N:
 	{
 		NULL_POINTER_EXCEPTION();
 	}
+}
+break;
+
+case COP_NEW_VALUE:
+{
+	/* Wide version of "new_value" */
+	/* TODO */
+	MODIFY_PC_AND_STACK(2, 2);
 }
 break;
 

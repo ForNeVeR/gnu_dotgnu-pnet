@@ -79,6 +79,7 @@ typedef unsigned long       __t_uscalar_t;
 typedef int32_t             __ufs_daddr_t, ufs_daddr_t;
 typedef uint32_t            __uid_t, uid_t;
 typedef unsigned int        __useconds_t, useconds_t;
+typedef long                __suseconds_t, suseconds_t;
 #define __BIT_TYPES_DEFINED__   1
 
 #if 0 /* TODO */

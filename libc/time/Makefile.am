@@ -5,7 +5,10 @@ noinst_LIBRARIES = libCTime.a
 SUFFIXES = .cs
 
 libCTime_a_SOURCES = clock.c \
+					 gettimeofday.c \
                      gmtime.c \
+					 itimer.c \
+					 settimeofday.c \
                      time.c \
                      time-defs.h \
 					 time-glue.cs \

@@ -29,13 +29,17 @@
 __BEGIN_DECLS
 
 /*
- * Time values and specifications.
+ * Time values.
  */
 struct timeval
   {
-    time_t tv_sec;
-    long   tv_usec;
+    time_t      tv_sec;
+    suseconds_t tv_usec;
   };
+
+/*
+ * Time specifications.
+ */
 struct timespec
   {
     time_t tv_sec;

@@ -194,7 +194,7 @@ static int TryInlineLoad(ILMethod *method, int numParams,
 	ADVANCE();
 
 	/* Make sure that that was the last instruction */
-	if ((int)pc - (int)code->code != code->codeLen)
+	if (((unsigned char *)pc - (unsigned char *)code->code) != code->codeLen)
 	{
 		return 0;
 	}
@@ -317,7 +317,7 @@ static int TryInlineStore(ILMethod *method, int numParams,
 	ADVANCE();
 
 	/* Make sure that the IL_OP_RET was the last instruction */
-	if ((int)pc - (int)code->code != code->codeLen)
+	if (((unsigned char *)pc - (unsigned char *)code->code) != code->codeLen)
 	{
 		return 0;
 	}

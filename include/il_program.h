@@ -1017,6 +1017,12 @@ void *ILMethodGetUserData1(ILMethod *method);
 void *ILMethodGetUserData2(ILMethod *method);
 
 /*
+ * Determine if a method has the correct signature for
+ * an instance constructor.
+ */
+int ILMethodIsConstructor(ILMethod *method);
+
+/*
  * Helper macros for querying information about a method.
  */
 #define	ILMethod_FromToken(image,token)	\
@@ -1031,6 +1037,7 @@ void *ILMethodGetUserData2(ILMethod *method);
 #define	ILMethod_RVA(method)			(ILMethodGetRVA((method)))
 #define	ILMethod_UserData1(method)		(ILMethodGetUserData1((method)))
 #define	ILMethod_UserData2(method)		(ILMethodGetUserData2((method)))
+#define	ILMethod_IsConstructor(method)	(ILMethodIsConstructor((method)))
 #define	ILMethod_IsCompilerControlled(method)	\
 	((ILMemberGetAttrs((ILMember *)(method)) & \
 				IL_META_METHODDEF_MEMBER_ACCESS_MASK) \

@@ -673,6 +673,22 @@ void *ILMethodGetUserData2(ILMethod *method)
 	return method->userData2;
 }
 
+int ILMethodIsConstructor(ILMethod *method)
+{
+	if(!strcmp(method->member.name, ".ctor") &&
+	   (method->member.attributes & IL_META_METHODDEF_RT_SPECIAL_NAME) != 0 &&
+	   (method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0 &&
+	   ILType_HasThis(method->member.signature) &&
+	   method->member.signature->un.method.retType == ILType_Void)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 ILParameter *ILParameterCreate(ILMethod *method, ILToken token,
 							   const char *name, ILUInt32 attributes,
 							   ILUInt32 paramNum)

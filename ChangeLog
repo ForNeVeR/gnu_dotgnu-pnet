@@ -33,6 +33,9 @@ functions to "throw.c".
 
 * engine/pinvoke.c: implement "_ILMakeCifForConstructor".
 
+* include/il_program.h, image/member.c, image/test_macros.c: declare
+and implement "ILMethodIsConstructor" and "ILMethod_IsConstructor".
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

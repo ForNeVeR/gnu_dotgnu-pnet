@@ -21,7 +21,10 @@
 namespace System
 {
 
-public struct Boolean : IComparable, IConvertible
+public struct Boolean : IComparable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private bool value__;
 
@@ -45,7 +48,13 @@ public struct Boolean : IComparable, IConvertible
 
 	// String conversion.
 	public override String ToString()
-			{ return (value__ ? TrueString : FalseString); }
+			{
+				return (value__ ? TrueString : FalseString);
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return (value__ ? TrueString : FalseString);
+			}
 
 	// String parsing.
 	public static bool Parse(String value)
@@ -105,6 +114,8 @@ public struct Boolean : IComparable, IConvertible
 					return 1;
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -171,14 +182,12 @@ public struct Boolean : IComparable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Boolean", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return (value__ ? TrueString : FalseString);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class Boolean
 

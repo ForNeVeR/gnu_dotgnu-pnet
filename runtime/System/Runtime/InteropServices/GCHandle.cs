@@ -108,7 +108,7 @@ public struct GCHandle
 	// Convert to and from the native integer representation.
 	public static explicit operator GCHandle(IntPtr value)
 			{
-				int handle = (int)value;
+				int handle = value.ToInt32();
 				if(InternalValidate(handle))
 				{
 					return new GCHandle(handle);
@@ -121,7 +121,7 @@ public struct GCHandle
 			}
 	public static explicit operator IntPtr(GCHandle handle)
 			{
-				return (IntPtr)(handle.handle);
+				return new IntPtr(handle.handle);
 			}
 
 	// Internal method to validate a handle.

@@ -23,6 +23,7 @@ namespace System
 
 using System.Reflection;
 
+[AttributeUsage(AttributeTargets.All, AllowMultiple=false, Inherited=true)]
 public abstract class Attribute
 {
 

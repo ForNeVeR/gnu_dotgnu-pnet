@@ -24,7 +24,10 @@ namespace System
 using System.Globalization;
 using Platform;
 
-public struct DateTime : IComparable, IConvertible, IFormattable
+public struct DateTime : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 
 	private long value__;
@@ -185,6 +188,10 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 			{
 				return ToString(format, null);
 			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
 	public String ToString(String format, IFormatProvider provider)
 			{
 				// TODO
@@ -239,6 +246,8 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 					return 1;
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -331,10 +340,8 @@ public struct DateTime : IComparable, IConvertible, IFormattable
 			{
 				return this;
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(null, provider);
-			}
+
+#endif // !ECMA_COMPAT
 
 	// Properties.
 	public DateTime Date

@@ -46,6 +46,24 @@ runtime/System/Reflection/ParameterInfo.cs: implement "GetCustomAttributes"
 and "IsDefined" within the "Attribute" class, together with the extra
 reflection functionality needed to support it.
 
+* resources/en_US/runtime/Reflection.txt, runtime/System/Attribute.cs,
+runtime/System/Boolean.cs, runtime/System/Byte.cs, runtime/System/Char.cs,
+runtime/System/Convert.cs, runtime/System/DBNull.cs,
+runtime/System/DateTime.cs, runtime/System/Decimal.cs,
+runtime/System/Double.cs, runtime/System/Enum.cs,
+runtime/System/IConvertible.cs, runtime/System/Int16.cs,
+runtime/System/Int32.cs, runtime/System/Int64.cs,
+runtime/System/IntPtr.cs, runtime/System/Makefile.am,
+runtime/System/SByte.cs, runtime/System/Single.cs,
+runtime/System/String.cs, runtime/System/UInt16.cs,
+runtime/System/UInt32.cs, runtime/System/UInt64.cs,
+runtime/System/UIntPtr.cs, runtime/System/Variant.cs,
+runtime/System/Reflection/ClrHelpers.cs,
+runtime/System/Reflection/ClrType.cs,
+runtime/System/Runtime/InteropServices/GCHandle.cs: add #if code to only
+include ECMA-specified features when ECMA_COMPAT is defined; add the
+CLSCompliant attribute to methods that need it.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing

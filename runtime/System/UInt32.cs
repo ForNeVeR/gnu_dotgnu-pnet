@@ -24,7 +24,11 @@ namespace System
 using System.Private;
 using System.Globalization;
 
-public struct UInt32 : IComparable, IFormattable, IConvertible
+[CLSCompliant(false)]
+public struct UInt32 : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private uint value__;
 
@@ -61,6 +65,12 @@ public struct UInt32 : IComparable, IFormattable, IConvertible
 							((ulong)value__, 0, 0, false, format,
 							 NumberFormatInfo.CurrentInfo);
 			}
+	public String ToString(IFormatProvider provider)
+			{
+				return NumberFormatter.FormatFixedPoint
+							((ulong)value__, 0, 0, false, null,
+							 NumberFormatInfo.GetInstance(provider));
+			}
 	public String ToString(String format, IFormatProvider provider)
 			{
 				return NumberFormatter.FormatFixedPoint
@@ -69,6 +79,7 @@ public struct UInt32 : IComparable, IFormattable, IConvertible
 			}
 
 	// Parsing methods.
+	[CLSCompliant(false)]
 	public static uint Parse(String s, NumberStyles style,
 							 IFormatProvider provider)
 			{
@@ -76,14 +87,17 @@ public struct UInt32 : IComparable, IFormattable, IConvertible
 				return NumberParser.ParseUInt32
 					(s, style, NumberFormatInfo.GetInstance(provider), 0);
 			}
+	[CLSCompliant(false)]
 	public static uint Parse(String s)
 			{
 				return Parse(s, NumberStyles.Integer, null);
 			}
+	[CLSCompliant(false)]
 	public static uint Parse(String s, IFormatProvider provider)
 			{
 				return Parse(s, NumberStyles.Integer, provider);
 			}
+	[CLSCompliant(false)]
 	public static uint Parse(String s, NumberStyles style)
 			{
 				return Parse(s, style, null);
@@ -117,6 +131,8 @@ public struct UInt32 : IComparable, IFormattable, IConvertible
 					return 1;
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -181,16 +197,12 @@ public struct UInt32 : IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "UInt32", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
-							 NumberFormatInfo.GetInstance(provider));
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class UInt32
 

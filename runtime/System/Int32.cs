@@ -24,7 +24,10 @@ namespace System
 using System.Private;
 using System.Globalization;
 
-public struct Int32 : IComparable, IFormattable, IConvertible
+public struct Int32 : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private int value__;
 
@@ -54,6 +57,10 @@ public struct Int32 : IComparable, IFormattable, IConvertible
 	public String ToString(String format)
 			{
 				return ToString(format, null);
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
@@ -124,6 +131,8 @@ public struct Int32 : IComparable, IFormattable, IConvertible
 				}
 			}
 
+#if !ECMA_COMPAT
+
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
 			{
@@ -187,14 +196,12 @@ public struct Int32 : IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Int32", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(null, provider);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class Int32
 

@@ -24,7 +24,10 @@ namespace System
 using System.Private;
 using System.Globalization;
 
-public struct Byte : IComparable, IFormattable, IConvertible
+public struct Byte : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private byte value__;
 
@@ -58,6 +61,12 @@ public struct Byte : IComparable, IFormattable, IConvertible
 				return NumberFormatter.FormatFixedPoint
 							((ulong)value__, 0, 0, false, format,
 							 NumberFormatInfo.CurrentInfo);
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return NumberFormatter.FormatFixedPoint
+							((ulong)value__, 0, 0, false, null,
+							 NumberFormatInfo.GetInstance(provider));
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
@@ -103,6 +112,8 @@ public struct Byte : IComparable, IFormattable, IConvertible
 					return 1;
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -167,16 +178,12 @@ public struct Byte : IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Byte", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return NumberFormatter.FormatFixedPoint
-							((ulong)value__, 0, 0, false, null,
-							 NumberFormatInfo.GetInstance(provider));
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class Byte
 

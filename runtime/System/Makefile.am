@@ -30,7 +30,6 @@ CSSRC = Activator.cs \
 		Console.cs \
 		ContextBoundObject.cs \
 		Convert.cs \
-		Currency.cs \
 		DBNull.cs \
 		DateTime.cs \
 		Decimal.cs \
@@ -183,6 +182,7 @@ CSSRC = Activator.cs \
 		Reflection/FieldAttributes.cs \
 		Reflection/FieldInfo.cs \
 		Reflection/IClrProgramItem.cs \
+		Reflection/ICustomAttributeProvider.cs \
 		Reflection/IReflect.cs \
 		Reflection/MemberInfo.cs \
 		Reflection/MemberTypes.cs \

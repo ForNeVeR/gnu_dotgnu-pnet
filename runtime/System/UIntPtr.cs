@@ -25,6 +25,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Platform;
 
+[CLSCompliant(false)]
 public struct UIntPtr
 {
 	// Public constants.
@@ -34,10 +35,12 @@ public struct UIntPtr
 	unsafe private void *value__;
 
 	// Constructors.
+	[CLSCompliant(false)]
 	unsafe public UIntPtr(uint value)
 			{
 				value__ = (void *)value;
 			}
+	[CLSCompliant(false)]
 	unsafe public UIntPtr(ulong value)
 			{
 				if(Size == 4 &&
@@ -47,10 +50,13 @@ public struct UIntPtr
 				}
 				value__ = (void *)value;
 			}
+#if !ECMA_COMPAT
+	[CLSCompliant(false)]
 	unsafe public UIntPtr(void *value)
 			{
 				value__ = value;
 			}
+#endif
 
 	// Override inherited methods.
 	unsafe public override int GetHashCode()
@@ -88,6 +94,7 @@ public struct UIntPtr
 			}
 
 	// Get the pointer within this object.
+	[CLSCompliant(false)]
 	unsafe public void *ToPointer()
 			{
 				return value__;
@@ -124,6 +131,9 @@ public struct UIntPtr
 			{
 				return (x.value__ != y.value__);
 			}
+
+#if !ECMA_COMPAT
+
 	unsafe public static explicit operator UIntPtr(uint x)
 			{
 				return new UIntPtr(x);
@@ -132,6 +142,7 @@ public struct UIntPtr
 			{
 				return new UIntPtr(x);
 			}
+	[CLSCompliant(false)]
 	unsafe public static explicit operator UIntPtr(void *x)
 			{
 				return new UIntPtr(x);
@@ -144,10 +155,13 @@ public struct UIntPtr
 			{
 				return x.ToUInt64();
 			}
+	[CLSCompliant(false)]
 	unsafe public static explicit operator void *(UIntPtr x)
 			{
 				return x.ToPointer();
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // struct UIntPtr
 

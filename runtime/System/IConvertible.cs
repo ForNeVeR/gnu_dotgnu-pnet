@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 [CLSCompliant(false)]
 public interface IConvertible
 {
@@ -44,5 +46,7 @@ public interface IConvertible
 	Object ToType(Type conversionType, IFormatProvider provider);
 
 }; // interface IConvertible
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

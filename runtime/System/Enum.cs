@@ -21,7 +21,10 @@
 namespace System
 {
 
-public abstract class Enum : ValueType, IComparable, IFormattable, IConvertible
+public abstract class Enum : ValueType, IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 
 	// Implement the IComparable interface.
@@ -224,10 +227,16 @@ public abstract class Enum : ValueType, IComparable, IFormattable, IConvertible
 			{
 				return ToString(format, null);
 			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
 	public virtual String ToString(String format, IFormatProvider provider)
 			{
 				return Format(GetType(), this, format);
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -330,14 +339,12 @@ public abstract class Enum : ValueType, IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Byte", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(null, provider);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 	// Determine if an enumerated type is signed.
 	private static bool IsSigned(Type type)

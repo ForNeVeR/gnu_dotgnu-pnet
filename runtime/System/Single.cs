@@ -25,7 +25,10 @@ using System.Private;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public struct Single : IComparable, IFormattable, IConvertible
+public struct Single : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private float value__;
 
@@ -41,7 +44,6 @@ public struct Single : IComparable, IFormattable, IConvertible
 	public const float PositiveInfinity = (1.0f / 0.0f);
 	public const float NegativeInfinity = (-1.0f / 0.0f);
 	public const float NaN              = (0.0f / 0.0f);
-	public const float Empty            = 0.0f;
 
 	// Override inherited methods.
 	public override int GetHashCode()
@@ -75,6 +77,10 @@ public struct Single : IComparable, IFormattable, IConvertible
 	public String ToString(String format)
 			{
 				return ToString(format, null);
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
@@ -183,6 +189,8 @@ public struct Single : IComparable, IFormattable, IConvertible
 				}
 			}
 
+#if !ECMA_COMPAT
+
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
 			{
@@ -248,14 +256,12 @@ public struct Single : IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Single", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(null, provider);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class Single
 

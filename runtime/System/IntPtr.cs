@@ -48,10 +48,13 @@ public struct IntPtr
 				}
 				value__ = (void *)value;
 			}
+#if !ECMA_COMPAT
+	[CLSCompliant(false)]
 	unsafe public IntPtr(void *value)
 			{
 				value__ = value;
 			}
+#endif
 
 	// Override inherited methods.
 	unsafe public override int GetHashCode()
@@ -90,6 +93,7 @@ public struct IntPtr
 			}
 
 	// Get the pointer within this object.
+	[CLSCompliant(false)]
 	unsafe public void *ToPointer()
 			{
 				return value__;
@@ -126,6 +130,9 @@ public struct IntPtr
 			{
 				return (x.value__ != y.value__);
 			}
+
+#if !ECMA_COMPAT
+
 	unsafe public static explicit operator IntPtr(int x)
 			{
 				return new IntPtr(x);
@@ -134,6 +141,7 @@ public struct IntPtr
 			{
 				return new IntPtr(x);
 			}
+	[CLSCompliant(false)]
 	unsafe public static explicit operator IntPtr(void *x)
 			{
 				return new IntPtr(x);
@@ -146,10 +154,13 @@ public struct IntPtr
 			{
 				return x.ToInt64();
 			}
+	[CLSCompliant(false)]
 	unsafe public static explicit operator void *(IntPtr x)
 			{
 				return x.ToPointer();
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // struct IntPtr
 

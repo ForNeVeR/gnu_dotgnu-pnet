@@ -37,7 +37,8 @@ internal sealed class ClrHelpers
 	public static Object[] GetCustomAttributes
 					(IClrProgramItem item, bool inherit)
 			{
-				return GetCustomAttributes(item.ClrHandle, (IntPtr)0, inherit);
+				return GetCustomAttributes(item.ClrHandle,
+										   IntPtr.Zero, inherit);
 			}
 
 	// Get the custom attributes of a specific type that are
@@ -104,7 +105,7 @@ internal sealed class ClrHelpers
 
 				// Get the handle and validate it.
 				handle = clrType.ClrHandle;
-				if(handle == (IntPtr)0)
+				if(handle == IntPtr.Zero)
 				{
 					throw new ArgumentException(_("Arg_MustBeType"));
 				}

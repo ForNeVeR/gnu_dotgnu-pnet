@@ -26,7 +26,10 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
+public sealed class String : IComparable, ICloneable, IEnumerable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 
 	// Internal string state.
@@ -1193,6 +1196,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				return this;
 			}
 
+	// Other string conversions.
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString();
+			}
+
 	// List of whitespace characters in Unicode.
 	private readonly char[] WhitespaceChars =
 		{'\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020',
@@ -1288,6 +1297,8 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				}
 			}
 
+#if !ECMA_COMPAT
+
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
 			{
@@ -1349,14 +1360,12 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 			{
 				return Convert.ToDateTime(this);
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString();
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class String
 

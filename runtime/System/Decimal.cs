@@ -25,7 +25,10 @@ using System.Private;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public struct Decimal : IComparable, IFormattable, IConvertible
+public struct Decimal : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private int flags, high, middle, low;
 
@@ -39,27 +42,36 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	// Public routines that are imported from the runtime engine.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Add(decimal x, decimal y);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int Compare(decimal x, decimal y);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Divide(decimal x, decimal y);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Floor(decimal x);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Remainder(decimal x, decimal y);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Multiply(decimal x, decimal y);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Negate(decimal x);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Round(decimal x, int decimals);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Subtract(decimal x, decimal y);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static decimal Truncate(decimal x);
 
-	// Public routines that can be implemented in IL bytecode.
-	public static decimal Abs(decimal value)
+	// Other routines that can be implemented in IL bytecode.
+	internal static decimal Abs(decimal value)
 			{
 				return new Decimal(value.low, value.middle,
 								   value.high, value.flags & 0x7FFFFFFF);
@@ -68,14 +80,14 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 			{
 				return (Compare(x, y) == 0);
 			}
-	public static decimal Max(decimal x, decimal y)
+	internal static decimal Max(decimal x, decimal y)
 			{
 				if(Compare(x, y) > 0)
 					return x;
 				else
 					return y;
 			}
-	public static decimal Min(decimal x, decimal y)
+	internal static decimal Min(decimal x, decimal y)
 			{
 				if(Compare(x, y) < 0)
 					return x;
@@ -119,20 +131,24 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				{ return (Compare(x, y) <= 0); }
 	public static bool operator>=(decimal x, decimal y)
 				{ return (Compare(x, y) >= 0); }
+	[CLSCompliant(false)]
 	public static implicit operator decimal(sbyte x)
 				{ return new Decimal((int)x); }
 	public static implicit operator decimal(byte x)
 				{ return new Decimal((uint)x); }
 	public static implicit operator decimal(short x)
 				{ return new Decimal((int)x); }
+	[CLSCompliant(false)]
 	public static implicit operator decimal(ushort x)
 				{ return new Decimal((uint)x); }
 	public static implicit operator decimal(int x)
 				{ return new Decimal(x); }
+	[CLSCompliant(false)]
 	public static implicit operator decimal(uint x)
 				{ return new Decimal(x); }
 	public static implicit operator decimal(long x)
 				{ return new Decimal(x); }
+	[CLSCompliant(false)]
 	public static implicit operator decimal(ulong x)
 				{ return new Decimal(x); }
 	public static implicit operator decimal(char x)
@@ -141,20 +157,24 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				{ return new Decimal(x); }
 	public static explicit operator decimal(double x)
 				{ return new Decimal(x); }
+	[CLSCompliant(false)]
 	public static explicit operator sbyte(decimal x)
 				{ return ToSByte(x); }
 	public static explicit operator byte(decimal x)
 				{ return ToByte(x); }
 	public static explicit operator short(decimal x)
 				{ return ToInt16(x); }
+	[CLSCompliant(false)]
 	public static explicit operator ushort(decimal x)
 				{ return ToUInt16(x); }
 	public static explicit operator int(decimal x)
 				{ return ToInt32(x); }
+	[CLSCompliant(false)]
 	public static explicit operator uint(decimal x)
 				{ return ToUInt32(x); }
 	public static explicit operator long(decimal x)
 				{ return ToInt64(x); }
+	[CLSCompliant(false)]
 	public static explicit operator ulong(decimal x)
 				{ return ToUInt64(x); }
 	public static explicit operator char(decimal x)
@@ -180,6 +200,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				middle = 0;
 				high = 0;
 			}
+	[CLSCompliant(false)]
 	public Decimal(uint value)
 			{
 				low = unchecked((int)value);
@@ -204,6 +225,7 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 				}
 				high = 0;
 			}
+	[CLSCompliant(false)]
 	public Decimal(ulong value)
 			{
 				low = unchecked((int)value);
@@ -215,14 +237,6 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	extern public Decimal(float value);
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public Decimal(double value);
-	internal Decimal(Currency value)
-			{
-				decimal temp = Currency.ToDecimal(value);
-				low = temp.low;
-				middle = temp.middle;
-				high = temp.high;
-				flags = temp.flags;
-			}
 	public Decimal(int[] bits)
 			{
 				if(bits == null)
@@ -243,6 +257,10 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 					throw new ArgumentException(_("Arg_DecBitCtor"));
 				}
 			}
+
+	// Note: this contructor is not ECMA-compliant, but Microsoft's Beta 2
+	// C# compiler will explode if it isn't present.  So we have to include
+	// this constructor even when compiling with ECMA_COMPAT.
 	public Decimal(int _low, int _middle, int _high, bool _isneg, byte _scale)
 			{
 				if(_scale <= 28)
@@ -259,6 +277,8 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 						(_("ArgRange_DecimalScale"));
 				}
 			}
+
+	// Private constructor used only by this class.
 	private Decimal(int _low, int _middle, int _high, int _flags)
 			{
 				low = _low;
@@ -290,6 +310,10 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	public String ToString(String format)
 			{
 				return ToString(format, null);
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
@@ -337,6 +361,8 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 					return 1;
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -403,14 +429,12 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Decimal", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(null, provider);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 	// Static conversion methods.
 	private static int TruncateToInt32(decimal value)
@@ -425,6 +449,11 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 					return unchecked(-(temp.low));
 				}
 			}
+
+#if !ECMA_COMPAT
+
+	// Non-ECMA declares these as public.
+
 	public static byte ToByte(decimal value)
 			{
 				if(value >= 0.0m && value <= 255.0m)
@@ -531,10 +560,119 @@ public struct Decimal : IComparable, IFormattable, IConvertible
 	extern public static float ToSingle(decimal value);
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static double ToDouble(decimal value);
-	public static Currency ToCurrency(decimal value)
+
+#else // ECMA_COMPAT
+
+	// ECMA does not have these, but we need them to implement "Convert".
+
+	internal static byte ToByte(decimal value)
 			{
-				return new Currency(value);
+				if(value >= 0.0m && value <= 255.0m)
+				{
+					return unchecked((byte)(TruncateToInt32(value)));
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_Byte"));
+				}
 			}
+	internal static sbyte ToSByte(decimal value)
+			{
+				if(value >= -128.0m && value <= 127.0m)
+				{
+					return unchecked((sbyte)(TruncateToInt32(value)));
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_SByte"));
+				}
+			}
+	internal static short ToInt16(decimal value)
+			{
+				if(value >= -32768.0m && value <= 32767.0m)
+				{
+					return unchecked((short)(TruncateToInt32(value)));
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_Int16"));
+				}
+			}
+	internal static ushort ToUInt16(decimal value)
+			{
+				if(value >= 0.0m && value <= 65535.0m)
+				{
+					return unchecked((ushort)(TruncateToInt32(value)));
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_UInt16"));
+				}
+			}
+	internal static int ToInt32(decimal value)
+			{
+				if(value >= -2147483648.0m && value <= 2147483647.0m)
+				{
+					return unchecked(TruncateToInt32(value));
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_Int32"));
+				}
+			}
+	internal static uint ToUInt32(decimal value)
+			{
+				if(value >= 0.0m && value <= 4294967295.0m)
+				{
+					decimal temp = Truncate(value);
+					return unchecked((uint)(temp.low));
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_UInt32"));
+				}
+			}
+	internal static long ToInt64(decimal value)
+			{
+				if(value >= -9223372036854775808.0m &&
+				   value <= 9223372036854775807.0m)
+				{
+					decimal temp = Truncate(value);
+					if(temp.flags >= 0)
+					{
+						return unchecked((((long)(temp.middle)) << 32) |
+										  ((long)(ulong)(uint)(temp.low)));
+					}
+					else
+					{
+						return unchecked(-((((long)(temp.middle)) << 32) |
+										    ((long)(ulong)(uint)(temp.low))));
+					}
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_Int64"));
+				}
+			}
+	internal static ulong ToUInt64(decimal value)
+			{
+				if(value >= 0.0m && value <= 18446744073709551615.0m)
+				{
+					decimal temp = Truncate(value);
+					return unchecked((((ulong)(uint)(temp.middle)) << 32) |
+									  ((ulong)(uint)(temp.low)));
+				}
+				else
+				{
+					throw new OverflowException(_("Overflow_UInt64"));
+				}
+			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static float ToSingle(decimal value);
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static double ToDouble(decimal value);
+
+#endif // ECMA_COMPAT
 
 	// Get the bits of a decimal value.
 	public static int[] GetBits(decimal x)

@@ -25,7 +25,10 @@ using System.Private;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-public struct Double : IComparable, IFormattable, IConvertible
+public struct Double : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private double value__;
 
@@ -84,6 +87,10 @@ public struct Double : IComparable, IFormattable, IConvertible
 	public String ToString(String format)
 			{
 				return ToString(format, null);
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
@@ -182,6 +189,8 @@ public struct Double : IComparable, IFormattable, IConvertible
 				}
 			}
 
+#if !ECMA_COMPAT
+
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
 			{
@@ -247,14 +256,12 @@ public struct Double : IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Double", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(null, provider);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class Double
 

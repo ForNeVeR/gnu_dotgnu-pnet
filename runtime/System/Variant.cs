@@ -76,13 +76,19 @@ internal struct Variant
 		 typeof(System.UInt32), typeof(System.Int64), typeof(System.UInt64),
 		 typeof(System.Single), typeof(System.Double), typeof(System.String),
 		 typeof(void), typeof(System.DateTime), typeof(System.TimeSpan),
-		 typeof(System.Object), typeof(System.Decimal),
-		 typeof(System.Currency), typeof(System.Object),
-		 typeof(System.Reflection.Missing), typeof(System.DBNull)};
+		 typeof(System.Object), typeof(System.Decimal), typeof(System.Object),
+		 typeof(System.Reflection.Missing)
+#if !ECMA_COMPAT
+		 , typeof(System.DBNull)};
+#else
+		};
+#endif
 
 	// Special variant values.
+#if !ECMA_COMPAT
 	public static readonly Variant DBNull =
 				new Variant(CV_NULL, System.DBNull.Value);
+#endif
 	public static readonly Variant Empty;
 	public static readonly Variant Missing =
 				new Variant(CV_MISSING, Type.Missing);
@@ -193,14 +199,6 @@ internal struct Variant
 				data2__ = unchecked((int)(ticks >> 32));
 				ref__   = null;
 			}
-	public Variant(Currency value)
-			{
-				long curr = Currency.ToOACurrency(value);
-				flags__ = CV_CURRENCY;
-				data1__ = unchecked((int)curr);
-				data2__ = unchecked((int)(curr >> 32));
-				ref__   = null;
-			}
 	public Variant(Decimal value)
 			{
 				flags__ = CV_DECIMAL;
@@ -277,10 +275,12 @@ internal struct Variant
 				{
 					this = Empty;
 				}
+			#if !ECMA_COMPAT
 				else if(value == System.DBNull.Value)
 				{
 					this = DBNull;
 				}
+			#endif
 				else if(value == Type.Missing)
 				{
 					this = Missing;

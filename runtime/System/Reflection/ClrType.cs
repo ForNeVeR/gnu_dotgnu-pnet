@@ -32,7 +32,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 
 	// Constructor.  This class is normally instantiated
 	// by the runtime engine, not by the class library.
-	internal ClrType() : base() { privateData = (IntPtr)0; }
+	internal ClrType() : base() { privateData = IntPtr.Zero; }
 
 	// Implement the ICloneable interface.
 	public Object Clone()
@@ -137,7 +137,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 			{
 				// We convert via long to prevent IntPtr throwing
 				// an overflow exception on 64-bit platforms.
-				return unchecked((int)(long)privateData);
+				return unchecked((int)(privateData.ToInt64()));
 			}
 
 	// Get an interface that this type implements.

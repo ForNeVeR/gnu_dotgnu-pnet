@@ -21,6 +21,8 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 using System.Runtime.Serialization;
 
 public sealed class DBNull : IConvertible
@@ -103,5 +105,7 @@ public sealed class DBNull : IConvertible
 			}
 
 }; // class DBNull
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

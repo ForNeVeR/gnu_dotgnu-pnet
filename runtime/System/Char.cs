@@ -23,7 +23,10 @@ namespace System
 
 using System.Globalization;
 
-public struct Char : IComparable, IConvertible
+public struct Char : IComparable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private char value__;
 
@@ -48,12 +51,18 @@ public struct Char : IComparable, IConvertible
 	// String conversion.
 	public override String ToString()
 			{
-				return ToString(value__);
+				return new String (value__, 1);
 			}
+	public String ToString(IFormatProvider provider)
+			{
+				return new String (value__, 1);
+			}
+#if !ECMA_COMPAT
 	public static String ToString(char value)
 			{
 				return new String(value, 1);
 			}
+#endif
 
 	// Parsing methods.
 	public static char Parse(String s)
@@ -91,6 +100,8 @@ public struct Char : IComparable, IConvertible
 					return 1;
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -163,14 +174,12 @@ public struct Char : IComparable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "Char", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(value__);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 	// Get the numeric value associated with a character.
 	public static double GetNumericValue(char c)
@@ -378,6 +387,15 @@ public struct Char : IComparable, IConvertible
 			}
 
 	// Case conversion.
+	public static char ToLower(char c)
+			{
+				return CultureInfo.CurrentCulture.TextInfo.ToLower(c);
+			}
+	public static char ToUpper(char c)
+			{
+				return CultureInfo.CurrentCulture.TextInfo.ToUpper(c);
+			}
+#if !ECMA_COMPAT
 	public static char ToLower(char c, CultureInfo culture)
 			{
 				if(culture != null)
@@ -388,10 +406,6 @@ public struct Char : IComparable, IConvertible
 				{
 					throw new ArgumentNullException("culture");
 				}
-			}
-	public static char ToLower(char c)
-			{
-				return CultureInfo.CurrentCulture.TextInfo.ToLower(c);
 			}
 	public static char ToUpper(char c, CultureInfo culture)
 			{
@@ -404,10 +418,7 @@ public struct Char : IComparable, IConvertible
 					throw new ArgumentNullException("culture");
 				}
 			}
-	public static char ToUpper(char c)
-			{
-				return CultureInfo.CurrentCulture.TextInfo.ToUpper(c);
-			}
+#endif
 
 }; // class Char
 

@@ -24,7 +24,11 @@ namespace System
 using System.Private;
 using System.Globalization;
 
-public struct SByte : IComparable, IFormattable, IConvertible
+[CLSCompliant(false)]
+public struct SByte : IComparable, IFormattable
+#if !ECMA_COMPAT
+	, IConvertible
+#endif
 {
 	private sbyte value__;
 
@@ -57,6 +61,10 @@ public struct SByte : IComparable, IFormattable, IConvertible
 			{
 				return ToString(format, null);
 			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
 	public String ToString(String format, IFormatProvider provider)
 			{
 				unchecked
@@ -77,6 +85,7 @@ public struct SByte : IComparable, IFormattable, IConvertible
 			}
 
 	// Parsing methods.
+	[CLSCompliant(false)]
 	public static sbyte Parse(String s, NumberStyles style,
 							  IFormatProvider provider)
 			{
@@ -84,14 +93,17 @@ public struct SByte : IComparable, IFormattable, IConvertible
 				return Convert.ToSByte(NumberParser.ParseInt32
 					(s, style, NumberFormatInfo.GetInstance(provider), 128));
 			}
+	[CLSCompliant(false)]
 	public static sbyte Parse(String s)
 			{
 				return Parse(s, NumberStyles.Integer, null);
 			}
+	[CLSCompliant(false)]
 	public static sbyte Parse(String s, IFormatProvider provider)
 			{
 				return Parse(s, NumberStyles.Integer, provider);
 			}
+	[CLSCompliant(false)]
 	public static sbyte Parse(String s, NumberStyles style)
 			{
 				return Parse(s, style, null);
@@ -113,6 +125,8 @@ public struct SByte : IComparable, IFormattable, IConvertible
 					return 1;
 				}
 			}
+
+#if !ECMA_COMPAT
 
 	// Implementation of the IConvertible interface.
 	public TypeCode GetTypeCode()
@@ -177,14 +191,12 @@ public struct SByte : IComparable, IFormattable, IConvertible
 					(String.Format
 						(_("InvalidCast_FromTo"), "SByte", "DateTime"));
 			}
-	public String ToString(IFormatProvider provider)
-			{
-				return ToString(null, provider);
-			}
 	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
 			{
 				return Convert.DefaultToType(this, conversionType, provider);
 			}
+
+#endif // !ECMA_COMPAT
 
 }; // class SByte
 

@@ -5,6 +5,8 @@
 	
 	* engine/lib_monitor.c:  Fixed some spelling mistakes in
 	the documentation.  Removed some benign test code.
+	
+	* engine/no_defs.h: Add definition for _ILThreadYield.
 
 2004-05-10  Gopal V  <gopalv82@yahoo.com>
 

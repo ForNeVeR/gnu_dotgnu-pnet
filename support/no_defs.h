@@ -125,6 +125,8 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 				} \
 			} while (0)
 
+#define _ILThreadYield()
+
 #ifdef	__cplusplus
 };
 #endif

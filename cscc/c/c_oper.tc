@@ -2297,6 +2297,30 @@ ILNode_CSemAnalysis(ILNode_SizeOfExpr)
 	CSemValue value;
 	ILEvalValue evalValue;
 
+	/* Special cases for strings */
+	if(yyisa(node->expr, ILNode_CString))
+	{
+		evalValue.valueType = ILMachineType_UInt32;
+		evalValue.un.i4Value =
+			(ILInt32)(((ILNode_CString *)(node->expr))->len + 1);
+		CSemSetConstant(value, ILType_UInt32, evalValue);
+		*parent = CreateConstantNode
+			((ILNode *)node, (ILNode *)node, &evalValue);
+		return value;
+	}
+	else if(yyisa(node->expr, ILNode_CWString))
+	{
+		evalValue.valueType = ILMachineType_UInt32;
+		evalValue.un.i4Value =
+			(ILInt32)((CGenWStringLength
+						(((ILNode_CWString *)(node->expr))->str,
+						 ((ILNode_CWString *)(node->expr))->len) + 1) * 2);
+		CSemSetConstant(value, ILType_UInt32, evalValue);
+		*parent = CreateConstantNode
+			((ILNode *)node, (ILNode *)node, &evalValue);
+		return value;
+	}
+
 	/* Perform semantic analysis on the expression */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
 	if(!CSemIsRValue(value))

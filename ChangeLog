@@ -29,6 +29,9 @@
 	* cscc/c/c_internal.c (CGenSizeOf): the boxed form of "long double"
 	is "OpenSystem.C.LongDouble", not "OpenSystem.C.NativeFloat".
 
+	* cscc/c/c_oper.tc (ILNode_SizeOfExpr): special "sizeof" cases
+	for calculating the size of string constants.
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

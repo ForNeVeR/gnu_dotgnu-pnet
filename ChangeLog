@@ -1,3 +1,10 @@
+
+2004-01-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Collections/Queue.cs: fix a minor bug in
+	the queue enumerator: wrong length used to wrap the remove
+	position.
+
 2004-01-26  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs, System.Drawing/Region.cs,

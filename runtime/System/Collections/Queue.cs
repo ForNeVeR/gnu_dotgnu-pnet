@@ -501,7 +501,7 @@ class Queue : ICollection, IEnumerable, ICloneable
 								(_("Invalid_BadEnumeratorPosition"));
 						}
 						return queue.items
-							[(queue.remove + position) % queue.size];
+							[(queue.remove + position) % queue.items.Length];
 					}
 				}
 

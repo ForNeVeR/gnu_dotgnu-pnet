@@ -88,10 +88,13 @@ void CCPluginRestart(FILE *infile)
 
 void CCPluginSemAnalysis(void)
 {
-	/* Perform type gathering only */
+	/* Perform type gathering */
 	CCCodeGen.typeGather = 1;
 	CCParseTree = CSTypeGather(&CCCodeGen, CCGlobalScope, CCParseTree);
 	CCCodeGen.typeGather = 0;
+
+	/* Perform semantic analysis */
+	ILNode_SemAnalysis(CCParseTree, &CCCodeGen, &CCParseTree);
 }
 
 void CCPluginPostCodeGen(void)
@@ -162,7 +165,7 @@ static void DumpClassNameOther(FILE *stream, ILClass *classInfo, ILClass *other)
 {
 	const char *name = ILClass_Name(classInfo);
 	const char *namespace = ILClass_Namespace(classInfo);
-	const char *namespace2 = ILClass_Namespace(other);
+	const char *namespace2 = (other ? ILClass_Namespace(other) : 0);
 	if(namespace)
 	{
 		if(!namespace2 || strcmp(namespace, namespace2) != 0)
@@ -261,17 +264,88 @@ static void DumpDocComments(FILE *stream, ILNode *attrs, int indent)
 }
 
 /*
+ * Dump a specific attribute.
+ */
+static void DumpAttribute(FILE *stream, ILAttribute *attr,
+						  ILClass *owner, int indent)
+{
+	ILMethod *ctor;
+	ILType *signature;
+
+	/* Convert the attribute's type into a constructor reference */
+	ctor = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+	if(!ctor)
+	{
+		return;
+	}
+	signature = ILMethod_Signature(ctor);
+
+	/* Output the attribute header */
+	Indent(stream, indent);
+	fputs("<Attribute>\n", stream);
+
+	/* Output the attribute name start */
+	Indent(stream, indent + 2);
+	fputs("<AttributeName>", stream);
+	DumpClassNameOther(stream, ILMethod_Owner(ctor), owner);
+
+	/* Output the parameters */
+	if(ILTypeNumParams(signature) != 0)
+	{
+		/* TODO: output the constant values for the parameters */
+		putc('(', stream);
+		putc('?', stream);
+		putc(')', stream);
+	}
+
+	/* Output the attribute name end */
+	fputs("</AttributeName>\n", stream);
+
+	/* Output the attribute footer */
+	Indent(stream, indent + 2);
+	fputs("<Excluded>0</Excluded>\n", stream);
+	Indent(stream, indent);
+	fputs("</Attribute>\n", stream);
+}
+
+/*
  * Dump the attributes for an item.
  */
-static void DumpAttributes(FILE *stream, ILNode *attrs, int indent)
+static void DumpAttributes(FILE *stream, ILProgramItem *item, int indent)
 {
-	if(attrs && yyisa(attrs, ILNode_AttributeTree))
+	ILAttribute *attr = ILProgramItemNextAttribute(item, 0);
+	ILClass *owner;
+	ILMember *member;
+	if(attr)
 	{
-		attrs = ((ILNode_AttributeTree *)attrs)->sections;
+		owner = ILProgramItemToClass(item);
+		if(!owner)
+		{
+			member = ILProgramItemToMember(item);
+			if(member)
+			{
+				owner = ILMember_Owner(member);
+			}
+			else
+			{
+				owner = 0;
+			}
+		}
+		Indent(stream, indent);
+		fputs("<Attributes>\n", stream);
+		do
+		{
+			DumpAttribute(stream, attr, owner, indent + 2);
+		}
+		while((attr = ILProgramItemNextAttribute(item, attr)) != 0);
+		Indent(stream, indent);
+		fputs("</Attributes>\n", stream);
 	}
-	/* TODO */
-	Indent(stream, indent);
-	fputs("<Attributes/>\n", stream);
+	else
+	{
+		Indent(stream, indent);
+		fputs("<Attributes/>\n", stream);
+	}
 }
 
 /*
@@ -422,7 +496,7 @@ static void GenerateDocsForField(FILE *stream, ILNode_FieldDeclaration *decl,
 		fputs("<MemberType>Field</MemberType>\n", stream);
 
 		/* Dump the attributes for the field */
-		DumpAttributes(stream, decl->attributes, indent + 2);
+		DumpAttributes(stream, ILToProgramItem(field), indent + 2);
 
 		/* Output the field's type */
 		Indent(stream, indent + 2);
@@ -497,7 +571,7 @@ static void GenerateDocsForEnum(FILE *stream,
 	fputs("<MemberType>Field</MemberType>\n", stream);
 
 	/* Dump the attributes for the enumerated member */
-	DumpAttributes(stream, decl->attributes, indent + 2);
+	DumpAttributes(stream, ILToProgramItem(field), indent + 2);
 
 	/* Output the field's type */
 	Indent(stream, indent + 2);
@@ -755,7 +829,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	}
 
 	/* Dump the attributes for the method */
-	DumpAttributes(stream, decl->attributes, indent + 2);
+	DumpAttributes(stream, ILToProgramItem(method), indent + 2);
 
 	/* Output the method's type */
 	Indent(stream, indent + 2);
@@ -965,7 +1039,7 @@ static void GenerateDocsForProperty(FILE *stream,
 	fputs("<MemberType>Property</MemberType>\n", stream);
 
 	/* Dump the attributes for the property */
-	DumpAttributes(stream, decl->attributes, indent + 2);
+	DumpAttributes(stream, ILToProgramItem(property), indent + 2);
 
 	/* Output the property's type */
 	Indent(stream, indent + 2);
@@ -1227,7 +1301,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	}
 
 	/* Dump the attributes for the type */
-	DumpAttributes(stream, defn->attributes, indent);
+	DumpAttributes(stream, ILToProgramItem(classInfo), indent);
 
 	/* Dump the class members */
 	Indent(stream, indent);

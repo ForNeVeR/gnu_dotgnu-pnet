@@ -1248,7 +1248,7 @@ public class ILGenerator : IDetachItem
 	internal int WriteCode(bool initLocals)
 			{
 				// TODO
-				return 0;
+				return module.assembly.WriteMethod(code);
 			}
 
 	// Write an explicit method body to the code section and

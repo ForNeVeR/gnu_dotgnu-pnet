@@ -1,3 +1,8 @@
+2003-07-23  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/Reflection/Emit/AssemblyBuilder.cs,
+	runtime/System/Reflection/Emit/ILGenerator.cs: implement method body
+	output for dynamic assemblies.
 
 2003-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 

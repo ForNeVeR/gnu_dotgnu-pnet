@@ -452,6 +452,11 @@ public sealed class AssemblyBuilder : Assembly
 				}
 			}
 
+	internal int WriteMethod(byte[] code)
+	{
+		return ClrWriteMethod(privateData, writer, code);
+	}
+
 	// Create a new assembly.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrAssemblyCreate
@@ -472,6 +477,13 @@ public sealed class AssemblyBuilder : Assembly
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static IntPtr ClrGetItemFromToken
 			(IntPtr assembly, int token);
+
+	// Write the body of a method to the code section and return the RVA
+	// that corresponds to it.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int ClrWriteMethod(IntPtr assembly,
+	                                         IntPtr writer,
+	                                         byte[] code);
 
 }; // class AssemblyBuilder
 

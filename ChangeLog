@@ -10,6 +10,10 @@
 
 	* engine/verify_arith.c: add the I/M and I/T cases to unsafe "sub".
 
+2004-03-19  Russell Stuart  <russell@stuart.id.au>
+
+	* csant/csant_build.c: fix a typo (patch #2824).
+
 2004-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_library.c, ilalink/link_method.c,

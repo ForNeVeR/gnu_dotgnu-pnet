@@ -139,7 +139,7 @@ static int ProcessTask(CSAntTask *task)
 		{
 			/* Validate that the task can be executed in the
 			   install/uninstall modes of csant */
-			if((!CSAntInstallMode && !CSAntInstallMode) ||
+			if((!CSAntInstallMode && !CSAntUninstallMode) ||
 			   CSAntTasks[posn].installMode)
 			{
 				return (*(CSAntTasks[posn].func))(task);

@@ -259,12 +259,12 @@ ILNode_GenValue(ILNode_VaArg)
 	}
 	else
 	{
-		/* Use the "Unpack" method on the "OpenSystem.C.NativeFloat"
+		/* Use the "Unpack" method on the "OpenSystem.C.LongDouble"
 		   type to unpack "native float" arguments */
 		if(info->asmOutput)
 		{
-			fputs("\trefanyval\tOpenSystem.C.NativeFloat\n", info->asmOutput);
-			fputs("\tcall\tinstance native float OpenSystem.C.NativeFloat::"
+			fputs("\trefanyval\tOpenSystem.C.LongDouble\n", info->asmOutput);
+			fputs("\tcall\tinstance native float OpenSystem.C.LongDouble::"
 						"Unpack()\n", info->asmOutput);
 		}
 		machineType = ILMachineType_NativeFloat;
@@ -533,7 +533,7 @@ ILNode_GetType(ILNode_NativeFloatPack)
 ILNode_GenValue(ILNode_NativeFloatPack)
 {
 	ILNode_GenValue(node->expr, info);
-	ILGenNewObj(info, "OpenSystem.C.NativeFloat", "(native float)");
+	ILGenNewObj(info, "OpenSystem.C.LongDouble", "(native float)");
 	return ILMachineType_ManagedValue;
 }
 JavaGenValue(ILNode_NativeFloatPack)

@@ -1011,7 +1011,7 @@ static CSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 				if(elemType == ILType_Float)
 				{
 					elemType = ILFindNonSystemType
-						(info, "NativeFloat", "OpenSystem.C");
+						(info, "LongDouble", "OpenSystem.C");
 				}
 				elemClass = ILTypeToClass(info, elemType);
 				if(yyisa(node, ILNode_PreInc))

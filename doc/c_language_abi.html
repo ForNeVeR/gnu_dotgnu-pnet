@@ -6,7 +6,7 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2002/08/22 00:21:04 $<p>
+Last Modified: $Date: 2002/08/22 01:18:36 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -253,7 +253,7 @@ in the "<code>OpenSystem.C</code>" namespace:<p>
 <dt><code>Crt0</code></dt>
 	<dd>A class that provides utility methods to manage the startup and
 		shutdown of C applications.</dd>
-<dt><code>NativeFloat</code></dt>
+<dt><code>LongDouble</code></dt>
 	<dd>A value type class that wraps up the runtime engine's
 		"<code>native float</code>" type.  The standard C# base
 		class library lacks a suitable class.  This class has
@@ -808,7 +808,7 @@ converted into their "natural passing type" first:<p>
 <tr><td><code>double</code></td>
 	<td><code>double</code></td></tr>
 <tr><td><code>long double</code></td>
-	<td><code>OpenSystem.C.NativeFloat</code></td></tr>
+	<td><code>OpenSystem.C.LongDouble</code></td></tr>
 <tr><td><code>type *</code></td>
 	<td><code>long</code></td></tr>
 <tr><td><code>struct</code> and <code>union</code></td>

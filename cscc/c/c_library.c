@@ -166,8 +166,8 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	classInfo = CreateClass(info, scope, "LongJmpException", exceptionClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Int32);
 
-	/* Create "OpenSystem.C.NativeFloat" */
-	classInfo = CreateClass(info, scope, "NativeFloat", valueTypeClass);
+	/* Create "OpenSystem.C.LongDouble" */
+	classInfo = CreateClass(info, scope, "LongDouble", valueTypeClass);
 	ILClassSetAttrs(classInfo,
 					IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
 						IL_META_TYPEDEF_VALUE_TYPE,

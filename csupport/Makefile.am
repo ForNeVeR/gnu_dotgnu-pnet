@@ -4,9 +4,9 @@ clang_DATA = OpenSystem.C.dll
 
 CSSRC = $(srcdir)/Crt0.cs \
 		$(srcdir)/FileTable.cs \
+		$(srcdir)/LongDouble.cs \
 		$(srcdir)/LongJmp.cs \
-		$(srcdir)/Markers.cs \
-		$(srcdir)/NativeFloat.il
+		$(srcdir)/Markers.cs
 
 CSCC = ../cscc/cscc
 

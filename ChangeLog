@@ -11,6 +11,12 @@
 	"__long_double" keyword to the C# compiler, to make it easier to
 	define standard ABI types for C.
 
+	* cscc/c/c_builtin.tc, cscc/c/c_library.c, cscc/c/c_oper.tc,
+	csupport/LongDouble.cs, csupport/Makefile.am, csupport/Markers.cs,
+	csupport/NativeFloat.il, doc/c_language_abi.html: rename the
+	"NativeFloat" class to "LongDouble", and implement in C# instead
+	of in IL.
+
 2002-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/common/cc_main.c, ilalink/link_create.c, ilalink/link_library.c,

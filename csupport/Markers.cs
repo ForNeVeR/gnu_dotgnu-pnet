@@ -95,4 +95,11 @@ public sealed class OriginalNameAttribute : Attribute
 	public OriginalNameAttribute(String name) {}
 }
 
+// An attribute class that is used to mark the C name of a type.
+[AttributeUsage(AttributeTargets.Struct)]
+public sealed class CNameAttribute : Attribute
+{
+	public CNameAttribute(String name) {}
+}
+
 } // namespace OpenSystem.C

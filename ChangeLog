@@ -30,6 +30,10 @@
 	* cscc/cs_gather.c: report a warning if the "new" keyword is used
 	on a declaration that doesn't strictly require it.
 
+	* codegen/cg_output.c (ILGenLoadFloat64): if a 64-bit floating-point
+	constant can be represented identically with 32-bits, then use the
+	shorter "ldc.r4" instruction to push the value.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_library.c,

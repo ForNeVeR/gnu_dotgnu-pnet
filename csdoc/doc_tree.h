@@ -161,6 +161,7 @@ struct _tagILDocMember
 	char		   *returnType;		/* Return type (NULL for "void") */
 	ILDocParameter *parameters;		/* List of member parameters */
 	ILDocAttribute *attributes;		/* Attributes attached to the type */
+	int				index;			/* Index value for conversion routines */
 	ILDocText      *doc;			/* Text of the type's documentation */
 	ILDocMember    *next;			/* Next member within the type */
 

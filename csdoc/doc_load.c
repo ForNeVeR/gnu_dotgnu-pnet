@@ -273,6 +273,7 @@ static int ParseMember(ILDocTree *tree, ILDocType *type,
 	member->returnType = 0;
 	member->parameters = 0;
 	member->attributes = 0;
+	member->index = 0;
 	member->doc = 0;
 	member->next = 0;
 	if(*last)

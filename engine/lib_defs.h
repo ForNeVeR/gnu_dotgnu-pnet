@@ -90,6 +90,16 @@ int _ILIsSArray(System_Array *array);
 int _ILIsMArray(System_Array *array);
 
 /*
+ * Clone a single-dimensional array.
+ */
+ILObject *_ILCloneSArray(ILExecThread *thread, System_Array *array);
+
+/*
+ * Clone a multi-dimensional array.
+ */
+ILObject *_ILCloneMArray(ILExecThread *thread, System_MArray *array);
+
+/*
  * Internal structure of a reflection object.  Types, methods, fields, etc.
  */
 typedef struct

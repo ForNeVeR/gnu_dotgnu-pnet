@@ -1439,8 +1439,7 @@ static ILObject *System_Array_CreateArray(ILExecThread *thread,
 	elemSize = ILSizeOfType(elemType);
 
 	/* Determine if the element type is primitive */
-	if(ILType_IsPrimitive(type->un.array.elemType) &&
-	   type->un.array.elemType != ILType_TypedRef)
+	if(ILType_IsPrimitive(elemType) && elemType != ILType_TypedRef)
 	{
 		isPrimitive = 1;
 	}
@@ -1688,8 +1687,7 @@ static ILObject *System_Array_CreateArray_2(ILExecThread *thread,
 	}
 
 	/* Allocate the data portion of the array */
-	if(ILType_IsPrimitive(type->un.array.elemType) &&
-	   type->un.array.elemType != ILType_TypedRef)
+	if(ILType_IsPrimitive(elemType) && elemType != ILType_TypedRef)
 	{
 		/* The array will never contain pointers,
 		   so use atomic allocation */
@@ -2525,6 +2523,93 @@ int ILExecThreadSetElem(ILExecThread *thread, ILObject *_array,
 		ILExecThreadThrowSystem(thread, "System.ArrayTypeMismatchException",
 							    (const char *)0);
 		return 1;
+	}
+}
+
+ILObject *_ILCloneSArray(ILExecThread *thread, System_Array *array)
+{
+	System_Array *newArray;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILUInt32 totalLen;
+
+	/* Get the element type and size */
+	elemType = GetArrayElemType(array);
+	elemSize = ILSizeOfType(elemType);
+
+	/* Get the total length of the array object */
+	totalLen = sizeof(System_Array) + elemSize * ((ILUInt32)(array->length));
+
+	/* Allocate differently for primitive and non-primitive arrays */
+	if(ILType_IsPrimitive(elemType) && elemType != ILType_TypedRef)
+	{
+		newArray = (System_Array *)_ILEngineAllocAtomic
+				(thread, GetObjectClass(array), totalLen);
+	}
+	else
+	{
+		newArray = (System_Array *)_ILEngineAlloc
+				(thread, GetObjectClass(array), totalLen);
+	}
+
+	/* Copy the contents of the original array */
+	if(newArray)
+	{
+		ILMemCpy(newArray, array, totalLen);
+	}
+	return (ILObject *)newArray;
+}
+
+ILObject *_ILCloneMArray(ILExecThread *thread, System_MArray *array)
+{
+	System_MArray *newArray;
+	ILType *elemType;
+	ILUInt32 elemSize;
+	ILUInt32 headerLen;
+	ILUInt32 totalLen;
+	ILInt32 dim;
+
+	/* Get the element type and size */
+	elemType = GetArrayElemType((System_Array *)array);
+	elemSize = ILSizeOfType(elemType);
+
+	/* Get the total length of the array header and data */
+	headerLen = sizeof(System_MArray) + array->rank * sizeof(MArrayBounds);
+	totalLen = elemSize;
+	for(dim = 0; dim < array->rank; ++dim)
+	{
+		totalLen *= (ILUInt32)(array->bounds[dim].size);
+	}
+
+	/* Allocate a new array header */
+	newArray = (System_MArray *)_ILEngineAlloc
+					(thread, GetObjectClass(array), headerLen);
+	if(!newArray)
+	{
+		return 0;
+	}
+	ILMemCpy(newArray, array, headerLen);
+
+	/* Allocate the data differently for primitive and non-primitive arrays */
+	if(ILType_IsPrimitive(elemType) && elemType != ILType_TypedRef)
+	{
+		newArray->data = (System_Array *)_ILEngineAllocAtomic
+				(thread, 0, totalLen);
+	}
+	else
+	{
+		newArray->data = (System_Array *)_ILEngineAlloc(thread, 0, totalLen);
+	}
+
+	/* Copy the contents of the original array */
+	if(newArray->data)
+	{
+		ILMemCpy(newArray->data, array->data, totalLen);
+		return (ILObject *)newArray;
+	}
+	else
+	{
+		return 0;
 	}
 }
 

@@ -766,7 +766,7 @@ void CFunctionWeakAlias(ILGenInfo *info, const char *name, ILNode *node,
 
 	/* Dump the weak alias name attribute */
 	fputs(".custom instance void OpenSystem.C.WeakAliasForAttribute::.ctor"
-				"([.library]System.String) = (01 00 ", stream);
+				"(class [.library]System.String) = (01 00 ", stream);
 	PrintAttributeString(stream, aliasFor);
 	fputs("00 00)\n", stream);
 
@@ -835,7 +835,7 @@ void CFunctionStrongAlias(ILGenInfo *info, const char *name, ILNode *node,
 
 	/* Dump the strong alias name attribute */
 	fputs(".custom instance void OpenSystem.C.StrongAliasForAttribute::.ctor"
-				"([.library]System.String) = (01 00 ", stream);
+				"(class [.library]System.String) = (01 00 ", stream);
 	PrintAttributeString(stream, aliasFor);
 	fputs("00 00)\n", stream);
 

@@ -47,6 +47,24 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags);
 int ILLinkerDestroy(ILLinker *linker);
 
 /*
+ * Add a directory to a linker context to search for libraries.
+ * Returns zero on error.
+ */
+int ILLinkerAddLibraryDir(ILLinker *linker, const char *pathname);
+
+/*
+ * Add all system library directories to a linker context.
+ * Returns zero on error.
+ */
+int ILLinkerAddSystemDirs(ILLinker *linker);
+
+/*
+ * Resolve a library name into a full pathname.  Returns an
+ * ILMalloc'ed copy of the full pathname, or NULL if not found.
+ */
+char *ILLinkerResolveLibrary(ILLinker *linker, const char *name);
+
+/*
  * Add an image to a linker context as a library.
  * Returns zero on error.
  */

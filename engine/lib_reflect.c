@@ -191,6 +191,7 @@ static ILObject *DeserializeAttribute(ILExecThread *thread,
 	ILMethod *method;
 	System_Array *parameters;
 	ILInt32 numParams=0;
+	ILInt32 paramNum;
 	ILSerializeReader *reader;
 	void *blob;
 	unsigned long len;
@@ -232,16 +233,17 @@ static ILObject *DeserializeAttribute(ILExecThread *thread,
 	 *       Also , I'm going the path of maximum safety
 	 *       here.. By going via method sigs first.
 	 * */
+	paramNum=0;
 	while(numParams--)
 	{
-		param=ILTypeGetParam(sig,numParams+1);
+		param=ILTypeGetParam(sig,paramNum+1);
 		if((serialType=ILSerializeReaderGetParamType(reader))<=0)
 		{
 			ILExecThreadThrowSystem(thread, 
 			"System.Runtime.Serialization.SerializationException", 0);
 			return 0;
 		}
-		buf[numParams]=DeserializeObject(thread,reader,param,serialType);
+		buf[paramNum++]=DeserializeObject(thread,reader,param,serialType);
 	}
 	retval=InvokeMethod(thread, method, sig, 0, 
 					parameters, 1);

@@ -5,6 +5,9 @@
 	include/il_opcodes.h: dump the "field" or "method" prefix on
 	"ldtoken" opcodes in the assembler.
 
+	* engine/lib_reflect.c (DeserializeAttribute): the order of
+	parameter extraction was reversed.
+
 2002-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* dumpasm/dump_flags.c: change "public_key" to "publickey" so that

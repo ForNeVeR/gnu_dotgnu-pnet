@@ -434,7 +434,7 @@ internal sealed class DrawingMdiClient : MdiClientWidget, IToolkitMdiClient
 				sink.ToolkitMdiActivate((IToolkitWindow)child);
 			}
 	
-	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 			{
 				base.SendBeginInvoke(i_gch);
 			}

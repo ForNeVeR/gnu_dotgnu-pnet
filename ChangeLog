@@ -1,3 +1,12 @@
+
+2004-07-19  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Drawing.Xsharp/DrawingMdiClient.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs: Remove private modifiers for
+	IToolkitWindow.SendBeginInvoke interface implementation.
+
 2004-07-19  Chris Ferell  <chrissferrell@yahoo.com>
 
 	* System.Windows.Forms/FontDialog.cs, 
@@ -9,7 +18,7 @@
 	System.Xml/Private/XmlDTDReader.cs: Fix all compile errors while building
 	with CSC. (patches #3217, #3219, #3220, #3215, #3213, #3212, Gopal)
 
-2004-07-18  Deryk Robosson <deryk@0x0a.com>
+2004-07-19  Deryk Robosson <deryk@0x0a.com>
 
 	* System.Xml/XmlUrlResolver.cs: implement GetEntity functionality. 
 	(patches #3214, Gopal)

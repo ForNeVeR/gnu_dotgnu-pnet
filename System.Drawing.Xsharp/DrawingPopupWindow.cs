@@ -389,7 +389,7 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 			}
 
 
-	private void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 		{
 			base.SendBeginInvoke(i_gch);
 		}

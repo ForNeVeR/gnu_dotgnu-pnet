@@ -914,8 +914,7 @@ public class XmlTextReader : XmlReader
 						}
 						else
 						{
-							nodeType = XmlNodeType.Text;
-							
+								
 							ch = ReadChar(); 
 							if((char)ch != '<')
 							{
@@ -924,6 +923,8 @@ public class XmlTextReader : XmlReader
 							}
 							else
 							{
+								ClearNodeInfo();
+								nodeType = XmlNodeType.Text;
 								ungetch = ch;
 								value = builder.ToString();
 							}

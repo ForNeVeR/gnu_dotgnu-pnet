@@ -43,6 +43,9 @@ public interface IToolkitWindow
 	// Determine if this window currently has the input focus.
 	bool Focused { get; }
 
+	// Set the focus to this window.
+	void Focus();
+
 	// Destroy this window and all of its children.
 	void Destroy();
 

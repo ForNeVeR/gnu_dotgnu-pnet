@@ -484,7 +484,7 @@ static void CVMCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 		if(ref)
 		{
 			ref->address = (ILUInt32)(CVM_POSN() - coder->start);
-			ref->offset = coder->switchStart - CVM_POSN();
+			ref->offset = coder->switchStart - coder->start;
 			ref->next = 0;
 			ref->nextRef = label->nextRef;
 			label->nextRef = ref;

@@ -1,4 +1,8 @@
 
+2002-06-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvmc_branch.c: wrong offset for switch entries.
+
 2002-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_x86.c (ReExecute): fix a bug in the stack height

@@ -339,6 +339,12 @@ static int ClassNameSame(ILNode *name)
 		ILNode		   *params;
 
 	} indexer;
+	struct
+	{
+		ILNode		   *decl;
+		ILNode		   *init;
+
+	} varInit;
 }
 
 /*
@@ -509,7 +515,8 @@ static int ClassNameSame(ILNode *name)
 %type <node>		FixedPointerDeclarators FixedPointerDeclarator
 
 %type <node>		ConstantDeclaration ConstantDeclarators ConstantDeclarator
-%type <node>		FieldDeclaration VariableDeclarators VariableDeclarator
+%type <node>		FieldDeclaration FieldDeclarators FieldDeclarator
+%type <varInit>		VariableDeclarators VariableDeclarator
 %type <node>		VariableInitializer LocalVariableDeclaration
 %type <node>		LocalConstantDeclaration
 %type <node>		EventFieldDeclaration EventDeclaration 
@@ -1341,25 +1348,61 @@ EmbeddedStatement
 
 LocalVariableDeclaration
 	: LocalVariableType VariableDeclarators		{
-				$$ = ILNode_VarDeclaration_create(0, 0, $1, $2);
+				/* "VariableDeclarators" has split the declaration into
+				   a list of variable names, plus a list of assignment
+				   statements to set the initial values.  Turn the result
+				   into a local variable declaration followed by the
+				   assignment statements */
+				if($2.init)
+				{
+					$$ = ILNode_Compound_CreateFrom
+							(ILNode_LocalVarDeclaration_create($1, $2.decl),
+							 $2.init);
+				}
+				else
+				{
+					$$ = ILNode_LocalVarDeclaration_create($1, $2.decl);
+				}
 			}
 	;
 
 VariableDeclarators
-	: VariableDeclarator						{
-				$$ = ILNode_List_create();
-				ILNode_List_Add($$, $1);
+	: VariableDeclarator							{
+				$$.decl = ILNode_List_create();
+				ILNode_List_Add($$.decl, $1.decl);
+				$$.init = $1.init;
 			}	
-	| VariableDeclarators ',' VariableDeclarator{
-				ILNode_List_Add($1, $3);
-				$$ = $1;
+	| VariableDeclarators ',' VariableDeclarator	{
+				ILNode_List_Add($1.decl, $3.decl);
+				$$.decl = $1.decl;
+				if($1.init)
+				{
+					if($3.init)
+					{
+						$$.init = ILNode_Compound_CreateFrom($1.init, $3.init);
+					}
+					else
+					{
+						$$.init = $1.init;
+					}
+				}
+				else if($3.init)
+				{
+					$$.init = $3.init;
+				}
+				else
+				{
+					$$.init = 0;
+				}
 			}
-		
 	;
 
 VariableDeclarator
-	: Identifier							{MakeBinary(VarDeclarator, $1, 0);}
-	| Identifier '=' VariableInitializer	{MakeBinary(VarDeclarator, $1, $3);}
+	: Identifier							{ $$.decl = $1; $$.init = 0; }
+	| Identifier '=' VariableInitializer	{
+				$$.decl = $1;
+				$$.init = ILNode_Assign_create($1, $3);
+			}
 	;
 
 LocalConstantDeclaration
@@ -1369,7 +1412,7 @@ LocalConstantDeclaration
 	;
 
 Block
-	: '{' OptStatementList '}'	{ $$ = $2; }
+	: '{' OptStatementList '}'	{ MakeUnary(NewScope, $2); }
 	| '{' error '}'		{
 				/*
 				 * This production recovers from parse errors in
@@ -1952,9 +1995,30 @@ ConstantDeclarator
  */
 
 FieldDeclaration
-	: OptAttributes OptModifiers Type VariableDeclarators ';'	{
+	: OptAttributes OptModifiers Type FieldDeclarators ';'	{
 				ILUInt32 attrs = CSModifiersToFieldAttrs($2);
 				$$ = ILNode_FieldDeclaration_create($1, attrs, $3, $4);
+			}
+	;
+
+FieldDeclarators
+	: FieldDeclarator						{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}	
+	| FieldDeclarators ',' FieldDeclarator {
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
+		
+	;
+
+FieldDeclarator
+	: Identifier							{
+				MakeBinary(FieldDeclarator, $1, 0);
+			}
+	| Identifier '=' VariableInitializer	{
+				MakeBinary(FieldDeclarator, $1, $3);
 			}
 	;
 
@@ -1967,7 +2031,7 @@ MethodDeclaration
 			'(' OptFormalParameterList ')' MethodBody	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $3, $4, $6, 0, $8);
+						($1, attrs, $3, $4, $6, $8);
 			}
 	;
 
@@ -2095,7 +2159,7 @@ EventDeclaration
 	;
 
 EventFieldDeclaration
-	: OptAttributes OptModifiers EVENT Type VariableDeclarators ';'	{
+	: OptAttributes OptModifiers EVENT Type FieldDeclarators ';'	{
 				ILUInt32 attrs = CSModifiersToEventAttrs($2);
 				$$ = ILNode_EventFieldDeclaration_create($1, attrs, $4, $5);
 			}
@@ -2251,7 +2315,7 @@ NormalOperatorDeclaration
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3,
 						 ILQualIdentSimple(ILInternString($5.unary, -1).string),
-						 params, 0, $10);
+						 params, $10);
 			}
 	| OptAttributes OptModifiers Type OPERATOR OverloadableOperator
 			'(' Type Identifier ',' Type Identifier ')' Block	{
@@ -2282,7 +2346,7 @@ NormalOperatorDeclaration
 						($1, attrs, $3,
 						 ILQualIdentSimple
 						 	(ILInternString($5.binary, -1).string),
-						 params, 0, $13);
+						 params, $13);
 			}
 	;
 
@@ -2330,7 +2394,7 @@ ConversionOperatorDeclaration
 						($1, attrs, $5,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Implicit", -1).string),
-						 params, 0, $10);
+						 params, $10);
 			}
 	| OptAttributes OptModifiers EXPLICIT OPERATOR Type
 			'(' Type Identifier ')' Block	{
@@ -2350,7 +2414,7 @@ ConversionOperatorDeclaration
 						($1, attrs, $5,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Explicit", -1).string),
-						 params, 0, $10);
+						 params, $10);
 			}
 	;
 
@@ -2363,6 +2427,7 @@ ConstructorDeclaration
 			ConstructorInitializer MethodBody	{
 				ILUInt32 attrs = CSModifiersToConstructorAttrs($2);
 				ILNode *cname;
+				ILNode *body;
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
 				{
 					cname = ILQualIdentSimple
@@ -2378,13 +2443,29 @@ ConstructorDeclaration
 					CSErrorOnLine(yygetfilename($3), yygetlinenum($3),
 						"constructor name does not match class name");
 				}
+				if($8 && yykind($8) == yykindof(ILNode_NewScope))
+				{
+					/* Push the initializer into the body scope */
+					body = $8;
+					((ILNode_NewScope *)body)->stmt =
+						ILNode_Compound_CreateFrom
+							($7, ((ILNode_NewScope *)body)->stmt);
+				}
+				else
+				{
+					/* Non-scoped body: create a new scoped body */
+					body = ILNode_NewScope_create
+								(ILNode_Compound_CreateFrom($7, $8));
+				}
 				$$ = ILNode_MethodDeclaration_create
-					  ($1, attrs, 0 /* "void" */, cname, $5, $7, $8);
+					  ($1, attrs, 0 /* "void" */, cname, $5, body);
 			}
 	;
 
 ConstructorInitializer
-	: /* empty */							{ $$ = 0; }
+	: /* empty */							{
+				MakeBinary(InvocationExpression, ILNode_BaseInit_create(), 0);
+			}
 	| ':' BASE '(' OptArgumentList ')'		{
 				MakeBinary(InvocationExpression, ILNode_BaseInit_create(), $4);
 			}
@@ -2428,7 +2509,7 @@ DestructorDeclaration
 							($1, attrs, 0 /* void */,
 							 ILQualIdentSimple
 							 	(ILInternString("Finalize", -1).string),
-							 0, 0, body);
+							 0, body);
 			}
 	;
 
@@ -2585,7 +2666,7 @@ InterfaceMethodDeclaration
 								 IL_META_METHODDEF_ABSTRACT |
 								 IL_META_METHODDEF_HIDE_BY_SIG;
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $3, $4, $6, 0, 0);
+						($1, attrs, $3, $4, $6, 0);
 			}
 	;
 

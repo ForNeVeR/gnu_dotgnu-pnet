@@ -27,6 +27,9 @@ current class or method that is being processed.
 
 * cscc/cs_stmt.tc: semantic analysis for local variable declarations.
 
+* cscc/cs_grammar.y: separate field and local variable declarators, wrap
+"Block" in a "NewScope" node, empty constructors should not be NULL.
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

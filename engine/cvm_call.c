@@ -552,7 +552,7 @@ ILUInt32 _ILGetMethodParamCount(ILExecThread *thread, ILMethod *method,
 #elif defined(IL_CVM_LOCALS)
 
 ILMethod *methodToCall;
-ILCallFrame *callFrame;
+ILCallFrame *callFrame = 0;
 
 #elif defined(IL_CVM_MAIN)
 

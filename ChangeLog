@@ -1,4 +1,10 @@
 
+2005-02-28  Marc Haisenko  <marc@darkdust.net>
+
+	* engine/cvm_call.c: callFrame now defaults to zero (otherwise I get an
+	'might be used unitialized' warning with my profiling patch and callFrame
+	having invalid values)
+
 2005-02-23  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_stmt.tc: Fix overflow bug in determining type of

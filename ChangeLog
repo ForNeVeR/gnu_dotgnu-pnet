@@ -7,6 +7,10 @@
 	* engine/pecoff_writer.c: output the correct relocation offset
 	in the ".reloc" section for the benefit of Windows systems.
 
+	* codegen/cg_decls.tc (ILNode_ClassDefn): output a ".size 1"
+	declaration in empty "struct" types to match C# requirements
+	that a value type can never be zero-sized.
+
 2002-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/context.c (ILContextGetAssembly): if "mscorlib" is not

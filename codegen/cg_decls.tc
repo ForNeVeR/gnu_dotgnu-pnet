@@ -168,6 +168,13 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 						(unsigned long)(ILClassLayout_PackingSize(layout)));
 			}
 		}
+		else if(!ILClassNextMemberByKind
+					(classInfo, 0, IL_META_MEMBERKIND_FIELD) &&
+			    ILClassIsValueType(classInfo))
+		{
+			/* Make sure that "struct"'s are never zero-sized */
+			fprintf(info->asmOutput, ".size 1\n");
+		}
 	}
 
 	/* Output the class members */

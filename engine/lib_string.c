@@ -34,9 +34,9 @@ static System_String *AllocString(ILExecThread *thread, ILInt32 length)
 	ILClass *classInfo;
 	ILInt32 roundLen = ((length + 7) & ~7);	/* Round to a multiple of 8 */
 	classInfo = ILMethod_Owner(thread->method);
-	str = (System_String *)_ILEngineAlloc(thread, classInfo,
-						 				  sizeof(System_String) +
-						 				  roundLen * sizeof(ILUInt16));
+	str = (System_String *)_ILEngineAllocAtomic(thread, classInfo,
+						 				  		sizeof(System_String) +
+						 				  		roundLen * sizeof(ILUInt16));
 	if(str)
 	{
 		str->arrayLength = roundLen;

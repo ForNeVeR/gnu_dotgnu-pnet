@@ -241,6 +241,13 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 						 ILUInt32 size);
 
 /*
+ * Allocate a block of memory that is guaranteed never to contain
+ * pointers to other objects, and to never need finalization.
+ */
+ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
+							   ILUInt32 size);
+
+/*
  * Allocate a block of memory for a specific class.  Get the size
  * from the class information block.
  */

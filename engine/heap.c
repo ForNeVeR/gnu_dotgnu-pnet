@@ -67,6 +67,33 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
 }
 
+ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
+							   ILUInt32 size)
+{
+	void *ptr;
+
+	/* Make sure the class has been initialized before we start */
+	if(classInfo != 0 && !InitializeClass(thread, classInfo))
+	{
+		return 0;
+	}
+
+	/* Allocate memory from the heap */
+	ptr = ILGCAllocAtomic(size + IL_BEST_ALIGNMENT);
+	if(!ptr)
+	{
+		/* Throw an "OutOfMemoryException" */
+		thread->thrownException = thread->process->outOfMemoryObject;
+		return 0;
+	}
+
+	/* Set the class into the block */
+	*((ILClass **)ptr) = classInfo;
+
+	/* Return a pointer to the data just after the class information */
+	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
+}
+
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)
 {
 	if(!InitializeClass(thread, classInfo))

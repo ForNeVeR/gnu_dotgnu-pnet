@@ -90,8 +90,19 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
 	}
 
 	/* Allocate the array, initialize, and return it */
-	array = (System_Array *)_ILEngineAlloc
-			(thread, classInfo, sizeof(System_Array) + (ILUInt32)totalSize);
+	if(ILType_IsPrimitive(type->un.array.elemType) &&
+	   type->un.array.elemType != ILType_TypedRef)
+	{
+		/* The array will never contain pointers, so use atomic allocation */
+		array = (System_Array *)_ILEngineAllocAtomic
+				(thread, classInfo, sizeof(System_Array) + (ILUInt32)totalSize);
+	}
+	else
+	{
+		/* The array might contain pointers, so play it safe */
+		array = (System_Array *)_ILEngineAlloc
+				(thread, classInfo, sizeof(System_Array) + (ILUInt32)totalSize);
+	}
 	if(array)
 	{
 		array->length = (ILInt32)length;
@@ -103,7 +114,8 @@ static System_Array *System_SArray_ctor(ILExecThread *thread,
  * Construct the header part of a multi-dimensional array.
  */
 static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
-											ILClass *classInfo)
+											ILClass *classInfo,
+											int *elemIsPrimitive)
 {
 	System_MArray *_this;
 	ILType *type;
@@ -132,6 +144,8 @@ static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
 		/* Shouldn't happen, but do something sane anyway */
 		elemType = ILType_Int32;
 	}
+	*elemIsPrimitive = (ILType_IsPrimitive(elemType) &&
+						elemType != ILType_TypedRef);
 
 	/* Allocate space for the array header */
 	_this = (System_MArray *)_ILEngineAlloc
@@ -153,7 +167,8 @@ static System_MArray *ConstructMArrayHeader(ILExecThread *thread,
  * Construct the data part of a multi-dimensional array.
  */
 static System_MArray *ConstructMArrayData(ILExecThread *thread,
-									      System_MArray *array)
+									      System_MArray *array,
+										  int elemIsPrimitive)
 {
 	ILUInt64 sizeInBytes;
 	int dim;
@@ -185,8 +200,18 @@ static System_MArray *ConstructMArrayData(ILExecThread *thread,
 	}
 
 	/* Allocate the data part of the array */
-	array->data = _ILEngineAlloc(thread, (ILClass *)0,
-								 (ILUInt32)sizeInBytes);
+	if(elemIsPrimitive)
+	{
+		/* The array will never contain pointers, so use atomic allocation */
+		array->data = _ILEngineAllocAtomic(thread, (ILClass *)0,
+									 	   (ILUInt32)sizeInBytes);
+	}
+	else
+	{
+		/* The array might contain pointers, so play it safe */
+		array->data = _ILEngineAlloc(thread, (ILClass *)0,
+									 (ILUInt32)sizeInBytes);
+	}
 	if(!(array->data))
 	{
 		return 0;
@@ -339,9 +364,11 @@ static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
 	System_MArray *_this;
 	ILInt32 dim;
 	ArgWalker args;
+	int elemIsPrimitive;
 
 	/* Construct the header part of the array */
-	_this = ConstructMArrayHeader(thread, ILMethod_Owner(thread->method));
+	_this = ConstructMArrayHeader(thread, ILMethod_Owner(thread->method),
+								  &elemIsPrimitive);
 	if(!_this)
 	{
 		return 0;
@@ -356,7 +383,7 @@ static System_MArray *System_MArray_ctor_1(ILExecThread *thread)
 	}
 
 	/* Construct the data part of the array */
-	return ConstructMArrayData(thread, _this);
+	return ConstructMArrayData(thread, _this, elemIsPrimitive);
 }
 
 /*
@@ -369,9 +396,11 @@ static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
 	System_MArray *_this;
 	ILInt32 dim;
 	ArgWalker args;
+	int elemIsPrimitive;
 
 	/* Construct the header part of the array */
-	_this = ConstructMArrayHeader(thread, ILMethod_Owner(thread->method));
+	_this = ConstructMArrayHeader(thread, ILMethod_Owner(thread->method),
+								  &elemIsPrimitive);
 	if(!_this)
 	{
 		return 0;
@@ -386,7 +415,7 @@ static System_MArray *System_MArray_ctor_2(ILExecThread *thread)
 	}
 
 	/* Construct the data part of the array */
-	return ConstructMArrayData(thread, _this);
+	return ConstructMArrayData(thread, _this, elemIsPrimitive);
 }
 
 /*

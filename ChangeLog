@@ -31,6 +31,11 @@ collector instead of the dummy heap implementation.
 * engine/ilrun.c: add the `-H' (heap size) option to the engine, and
 initialize the engine using "ILExecInit".
 
+* engine/engine.h, engine/heap.c, engine/lib_string.c, engine/lib_array.c:
+use atomic memory allocation for strings and arrays of non-pointer values
+so that the garbage collector can avoid wasting time scanning them for
+object pointer values.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

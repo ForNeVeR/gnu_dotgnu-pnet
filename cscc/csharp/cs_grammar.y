@@ -3149,6 +3149,8 @@ ConstructorDeclaration
 					/* Non-scoped body: create a new scoped body */
 					body = ILNode_NewScope_create
 								(ILNode_Compound_CreateFrom(initializer, $8));
+					CCWarningOnLine(yygetfilename($3),yygetlinenum($3),
+						"constructor without body should be declared 'extern'");
 				}
 				else
 				{

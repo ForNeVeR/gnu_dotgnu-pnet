@@ -24,7 +24,7 @@ namespace ThreadsDemo
 	{
 		private System.ComponentModel.IContainer components;
 		public virtual event EventHandler Start;
-		private int m_NumberOfPhilosophers;
+		private int m_NumberOfDevelopers;
 		private int m_DefaultDeveloperWidth;
 		private int m_DefaultDeveloperHeight;
 		private System.Windows.Forms.Panel topPanel;
@@ -49,6 +49,8 @@ namespace ThreadsDemo
 
 		public MainForm()
 		{
+			const string filename = "DotGNU_Logo.png";
+
 			//
 			// Required for Windows Form Designer support
 			//
@@ -69,10 +71,10 @@ namespace ThreadsDemo
 			try
 			{
 				// Load the DotGNU logo
-
+				
 				PictureBox picture = new PictureBox();
 
-				picture.Image = Image.FromFile("DotGNU_Logo.png");
+				picture.Image = Image.FromFile(filename);
 				
 				mainPanel.Controls.Add(picture);
 				picture.SendToBack();
@@ -86,11 +88,11 @@ namespace ThreadsDemo
 			}
 			catch (FileNotFoundException)
 			{
-				Console.Error.WriteLine("Warning: Couldn't find gnulogo.jpg");
+				Console.Error.WriteLine("Warning: Couldn't find {0}", filename);
 			}
 
 			// Layout the developers.
-			mainPanel.Layout += new LayoutEventHandler(PhilosopherViews_Layout);			
+			mainPanel.Layout += new LayoutEventHandler(DeveloperViews_Layout);			
 			mainPanel.PerformLayout();
 
 			scrollSpinSpeed.Value = scrollSpinSpeed.Maximum / 2;
@@ -164,7 +166,7 @@ namespace ThreadsDemo
 
 			Console.WriteLine("Coding Developers ({0}) {1}", GetType().Module.Name, name.Version);
 			Console.WriteLine();
-			Console.WriteLine("This program is an implementation of the \"dining philosophers\" problem and");
+			Console.WriteLine("This program is an implementation of the \"dining Developers\" problem and");
 			Console.WriteLine("is used to to test and demonstrate Portable.NET's Threading and UI libraries");
 			Console.WriteLine("as well as attach faces to names of some DotGNU developers.");
 			Console.WriteLine();
@@ -248,7 +250,7 @@ namespace ThreadsDemo
 		/// <summary>
 		/// Layout the developers in an ellipse formation.
 		/// </summary>
-		private void PhilosopherViews_Layout(object sender, LayoutEventArgs e)
+		private void DeveloperViews_Layout(object sender, LayoutEventArgs e)
 		{			
 			DeveloperView view;			
 			int x, y, centrex, centrey;
@@ -256,7 +258,7 @@ namespace ThreadsDemo
 
 			Control panel = sender as Control;
 
-			if (m_NumberOfPhilosophers == 0)
+			if (m_NumberOfDevelopers == 0)
 			{
 				return;
 			}
@@ -270,7 +272,7 @@ namespace ThreadsDemo
 			radiusy = centrey - m_DefaultDeveloperHeight / 2;
 			
 			angle = -90 + angleSpin;
-			angleDelta = 360 / m_NumberOfPhilosophers;
+			angleDelta = 360 / m_NumberOfDevelopers;
 			
 			foreach (Control ctl in panel.Controls)
 			{
@@ -337,7 +339,7 @@ namespace ThreadsDemo
 				name = match.Groups["name"].Value;
 
 
-				m_NumberOfPhilosophers++;
+				m_NumberOfDevelopers++;
 
 				Console.WriteLine("Found " + files[i].Name);
 
@@ -350,7 +352,7 @@ namespace ThreadsDemo
 					prev.Right = developer;
 				}
 
-				if (m_NumberOfPhilosophers == 1)
+				if (m_NumberOfDevelopers == 1)
 				{
 					first = developer;
 				}
@@ -366,7 +368,7 @@ namespace ThreadsDemo
 
 			}
 			
-			if (m_NumberOfPhilosophers < 1)
+			if (m_NumberOfDevelopers < 1)
 			{
 				string message = "No developer pictures found.";
 

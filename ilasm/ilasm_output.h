@@ -132,6 +132,11 @@ char *ILAsmOutIntLabel(ILInt64 label);
 char *ILAsmOutUniqueLabel(void);
 
 /*
+ * Add debug line information at this point within the method.
+ */
+void ILAsmOutDebugLine(char *filename, ILUInt32 line);
+
+/*
  * Start output of an SSA instruction.
  */
 void ILAsmOutSSAStart(ILInt32 opcode);

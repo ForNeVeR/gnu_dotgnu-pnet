@@ -19,7 +19,10 @@
  */
 
 #include "il_values.h"
+#include "il_writer.h"
+#include "il_debug.h"
 #include "ilasm_build.h"
+#include "ilasm_output.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -817,10 +820,23 @@ void ILAsmDebugLine(ILUInt32 line, char *filename)
 				IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF)
 		{
 			/* Debug line information within the body of a method */
+			ILAsmOutDebugLine(filename, line);
 		}
 		else
 		{
 			/* Debug line information attached to some other kind of token */
+			unsigned char buf[IL_META_COMPRESS_MAX_SIZE * 3];
+			ILProgramItem *item = ILProgramItem_FromToken
+										(ILAsmImage, ILAsmLastToken);
+			int len = ILMetaCompressData
+				(buf, ILWriterDebugString(ILAsmWriter, filename));
+			len += ILMetaCompressData(buf + len, line);
+			len += ILMetaCompressData(buf + len, 0);		/* column number */
+			if(item)
+			{
+				ILWriterDebugAdd(ILAsmWriter, item,
+				 				 IL_DEBUGTYPE_LINE_COL, buf, len);
+			}
 		}
 		ILAsmDebugLastFile = filename;
 	}

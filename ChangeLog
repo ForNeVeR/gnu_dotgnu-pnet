@@ -5,6 +5,10 @@
 	include/Makefile.am, include/il_debug.h, include/il_writer.h:
 	implement reading code for the "ildebug" section.
 
+	* ilasm/ilasm_build.c, ilasm/ilasm_output.c, ilasm/ilasm_output.h,
+	image/debug_writer.c: output debug line information from the
+	assembler.
+
 2002-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, include/il_config.h.in: detect some new library

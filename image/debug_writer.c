@@ -46,7 +46,7 @@ void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
 
 	/* Write the debug data to the section */
 	posn = ILMetaCompressData(header, (unsigned long)type);
-	posn = ILMetaCompressData(header + posn, len);
+	posn += ILMetaCompressData(header + posn, len);
 	offset = writer->debugData.offset + IL_DEBUG_HEADER_SIZE;
 	if(!_ILWBufferListAdd(&(writer->debugData), header, posn) ||
 	   !_ILWBufferListAdd(&(writer->debugData), info, len))

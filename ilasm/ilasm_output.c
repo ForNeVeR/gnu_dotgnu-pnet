@@ -20,6 +20,7 @@
 
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_debug.h"
 #include "ilasm_build.h"
 #include "ilasm_output.h"
 #include "il_opcodes.h"
@@ -65,6 +66,7 @@ static LocalInfo	 *localNames = 0;
 static ILAsmOutException *exceptionList = 0;
 static ILAsmOutException *lastException = 0;
 static unsigned long  numExceptions = 0;
+static int            haveDebug = 0;
 
 /*
  * Output a single byte to the buffer.
@@ -114,6 +116,8 @@ typedef struct _tagLabelInfo
 	int			  tokenFixup : 1;
 	LabelRef     *refs;
 	struct _tagLabelInfo *next;
+	char		 *debugFilename;
+	ILUInt32	  debugLine;
 
 } LabelInfo;
 static ILMemPool labelPool;
@@ -517,6 +521,8 @@ static LabelInfo *GetLabel(char *name)
 	label->tokenFixup = 0;
 	label->refs = 0;
 	label->next = labels;
+	label->debugFilename = 0;
+	label->debugLine = 0;
 	labels = label;
 	return label;
 }
@@ -1187,6 +1193,18 @@ char *ILAsmOutUniqueLabel(void)
 	return name;
 }
 
+void ILAsmOutDebugLine(char *filename, ILUInt32 line)
+{
+	/* Output a unique label at this position */
+	char *label = ILAsmOutUniqueLabel();
+	LabelInfo *info = GetLabel(label);
+
+	/* Attach the debug information to the label */
+	info->debugFilename = filename;
+	info->debugLine = line;
+	haveDebug = 1;
+}
+
 static ILUInt32 ssaStartOffset = 0;
 
 void ILAsmOutSSAStart(ILInt32 opcode)
@@ -1503,6 +1521,56 @@ static int FinishLabels(void)
 	return fatExceptions;
 }
 
+/*
+ * Output debug information for a method.
+ */
+static void OutputDebugInfo(ILMethod *method)
+{
+	unsigned char buf[256];
+	char *prevFilename = 0;
+	LabelInfo *label = labels;
+	unsigned long len = 0;
+	while(label != 0)
+	{
+		if(label->debugFilename)
+		{
+			/* If the filename has changed, then flush the buffer */
+			if(prevFilename != label->debugFilename)
+			{
+				if(len > 0)
+				{
+					ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
+									 IL_DEBUGTYPE_LINE_OFFSETS, buf, len);
+					len = 0;
+				}
+				len += ILMetaCompressData
+					(buf + len, ILWriterDebugString
+									(ILAsmWriter, label->debugFilename));
+				prevFilename = label->debugFilename;
+			}
+
+			/* Add the line and offset information */
+			len += ILMetaCompressData(buf + len, label->debugLine);
+			len += ILMetaCompressData(buf + len, label->address);
+
+			/* Flush the buffer if it is nearly full */
+			if(len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 3))
+			{
+				ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
+								 IL_DEBUGTYPE_LINE_OFFSETS, buf, len);
+				len = 0;
+			}
+		}
+		label = label->next;
+	}
+	if(len > 0)
+	{
+		/* Flush the remainder of the debug information */
+		ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
+						 IL_DEBUGTYPE_LINE_OFFSETS, buf, len);
+	}
+}
+
 void ILAsmOutFinalizeMethod(ILMethod *method)
 {
 	unsigned char header[24];
@@ -1530,6 +1598,12 @@ void ILAsmOutFinalizeMethod(ILMethod *method)
 	if(!offset)
 	{
 		goto cleanup;
+	}
+
+	/* Output debug information for the method */
+	if(haveDebug)
+	{
+		OutputDebugInfo(method);
 	}
 
 	/* Align the text section on the next 4-byte boundary */
@@ -1752,6 +1826,7 @@ cleanup:
 		ILMemPoolClear(&labelRefPool);
 	}
 	labels = 0;
+	haveDebug = 0;
 }
 
 #ifdef	__cplusplus

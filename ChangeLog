@@ -1,3 +1,7 @@
+2004-07-05  Klaus Treichel  <ktreichel@web.de>
+
+	* support/time.c: fix problem with daylight savings.
+	(patch #3180 by David Logan)
 
 2004-06-21  Gopal V  <gopalv82@yahoo.com>
 

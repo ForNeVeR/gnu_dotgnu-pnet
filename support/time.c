@@ -224,7 +224,7 @@ ILInt32 ILGetTimeZoneAdjust(void)
 #endif
 		initialized = 1;
 	}
-	return (ILInt32)(timezone - (isdst ? 3600 : 0));
+	return (ILInt32)timezone;
 #else
 	/* TODO */
 	return 0;

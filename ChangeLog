@@ -11,6 +11,9 @@
 	* Xsharp/XsharpSupport.c: optimize for 16bpp-LSBFirst and
 	24bpp-MSBFirst screens in the XImage conversion code.
 
+	* Xsharp/XsharpSupport.c: temporarily disable the
+	24bpp-MSBFirst optimization because it isn't working correctly.
+
 2003-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Private/DateTimeFormat/DateTimeParser.cs:

@@ -824,6 +824,7 @@ static WriteFunc GetWriteFunc(XImage *image)
 			return Write_DirectSwap;
 		}
 	}
+#if 0
 	if(image->depth == 24 && image->red_mask == 0x00FF0000 &&
 	   image->green_mask == 0x0000FF00 && image->blue_mask == 0x000000FF &&
 	   image->byte_order == MSBFirst && image->bitmap_bit_order == MSBFirst)
@@ -837,6 +838,7 @@ static WriteFunc GetWriteFunc(XImage *image)
 			return Write_Direct;
 		}
 	}
+#endif
 	if(image->depth == 16 && image->red_mask == 0x0000F800 &&
 	   image->green_mask == 0x000007E0 && image->blue_mask == 0x0000001F &&
 	   image->byte_order == LSBFirst && image->bitmap_bit_order == LSBFirst)

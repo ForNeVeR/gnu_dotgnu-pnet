@@ -22,7 +22,7 @@
 namespace System.Runtime.InteropServices
 {
 
-#ifdef !ECMA_COMPAT
+#if !ECMA_COMPAT
 
 public sealed class InterfaceTypeAttribute : Attribute
 {

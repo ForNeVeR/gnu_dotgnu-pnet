@@ -333,6 +333,12 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				}
 			}
 
+	[TODO]
+	public virtual AssemblyName GetName()
+	{
+		throw new NotImplementedException("GetName");
+	}
+
 	// Convert this assembly into a string.
 	public override String ToString()
 			{

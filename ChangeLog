@@ -3,6 +3,12 @@
 	
 	* runtime/System/Runtime/InteropServices/InterfaceTypeAttribute.cs: 
 	add attribute to support some external libraries.
+	
+	* runtime/System/Runtime/InteropServices/InterfaceTypeAttribute.cs: 
+	fix a compile issue with ECMA_COMPAT
+
+	* runtime/System/Reflection/Assembly.cs: Stub about GetName() function
+	to support some external libraries.
 
 2002-12-29  Ian Fung  <if26@cornell.edu>
 	

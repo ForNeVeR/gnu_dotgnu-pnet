@@ -25,6 +25,8 @@ the missing gaps in the "System" namespace.
 * resources/en_US/runtime/Format.txt, runtime/System/Enum.cs: complete
 the implementation of "System.Enum".
 
+* runtime/Platform/PtrSizes.cs: remove obsolete class.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

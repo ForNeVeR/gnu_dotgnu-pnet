@@ -890,7 +890,7 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 
 #endif /* THREADS && !SRC_M3 */
 
-#if defined(GC_WIN32_THREADS) && !defined(__CYGWIN32__) && !defined(__CYGWIN__)
+#if defined(GC_WIN32_THREADS) /* && !defined(__CYGWIN32__) && !defined(__CYGWIN__) */
 # include <windows.h>
 
   /*

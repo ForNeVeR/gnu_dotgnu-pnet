@@ -4,6 +4,9 @@
 	* runtime/System/AppDomain.cs: Fake implementations of CreateInstance
 	and use non-null evidence for the default appdomain.
 
+	* runtime/System/LocalDataStoreSlot.cs: Fix minor typo bug , which
+	was preventing an empty slot from being filled.
+
 2004-05-21  Gopal V  <gopalv82@yahoo.com>
 
 	* Xsharp/Widget.cs: Checks for CaptionWidget are more proper

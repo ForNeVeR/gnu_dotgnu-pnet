@@ -140,7 +140,7 @@ public sealed class LocalDataStoreSlot
 							Array.Copy(data, 0, tempData1, 0, data.Length);
 						}
 						data = tempData1;
-						tempData[slotNum] = value;
+						tempData1[slotNum] = value;
 					}
 				}
 			}

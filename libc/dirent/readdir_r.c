@@ -3,6 +3,7 @@
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,10 +24,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <dirent.h>
-
-typedef __csharp__(System.Runtime.InteropServices.Marshal) Marshal;
-
-extern void *__syscall_readdir(void *gc_handle, void *err, void *len);
+#include "dirent-glue.h"
 
 int
 __readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result)
@@ -42,27 +40,24 @@ __readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result)
     }
 
   err = 0;
-  len = 0;
-  str = (char *)__syscall_readdir (dirp->gc_handle, &err, &len);
+  str = (char *)__syscall_readdir (dirp->gc_handle, &err);
 
   if (err)
     {
       errno = err;
+	  *result = NULL;
+	  return NULL;
     }
   if (str == NULL)
     {
       *result = NULL;
       return err;
     }
-  if (len == 0)
-    {
-      (void)Marshal::FreeHGlobal((__native__ int)str);
-      *result = NULL;
-      return err;
-    }
 
+  len = sizeof(entry->d_name) - 1;
   strncpy (entry->d_name, str, len);
   entry->d_name[len] = '\0';
+  entry->d_ino = 0;
   (void)Marshal::FreeHGlobal((__native__ int)str);
   *result = entry;
 

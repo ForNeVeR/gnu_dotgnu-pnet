@@ -3,6 +3,7 @@
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,17 +22,18 @@
 
 #include <stddef.h>
 #include <dirent.h>
+#include <errno.h>
+#include "dirent-glue.h"
 
-extern long long __syscall_telldir(void *gc_handle);
-
-long
+off_t
 __telldir (DIR *dirp)
 {
   if (dirp == NULL || dirp->gc_handle == NULL)
     {
+      errno = EBADF;
       return -1l;
     }
 
-  return (long)__syscall_telldir (dirp->gc_handle);
+  return (off_t)__syscall_telldir (dirp->gc_handle);
 }
 weak_alias (__telldir, telldir)

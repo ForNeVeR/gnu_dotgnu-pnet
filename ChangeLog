@@ -1,4 +1,18 @@
 
+2004-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/Makefile.am, include/dirent.h, include/langinfo.h,
+	include/locale.h, libc/dirent/dirent-glue.h, libc/dirent/closedir.c,
+	libc/dirent/dirent-glue.cs, libc/dirent/opendir.c,
+	libc/dirent/readdir.c, libc/dirent/readdir_r.c,
+	libc/dirent/rewinddir.c, libc/dirent/seekdir.c, libc/dirent/telldir.c,
+	libc/pthread/monitor.cs, libc/pthread/thread.cs,
+	libc/signal/Makefile.am, libc/signal/signal-glue.cs,
+	libc/stdlib/Makefile.am, libc/stdlib/getenv-glue.cs,
+	libc/time/time-glue.cs, libc/unistd/unistd-glue.cs:
+	remove references to "__module" from libc and replace with the
+	"GlobalScope" attribute; add some extra headers.
+
 2004-02-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libc/stdlib/Makefile.am, libc/stdlib/atof.c, libc/stdlib/atoi.c:

@@ -19,37 +19,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+namespace OpenSystem.C
+{
+
 using System;
 using System.Collections;
 using System.Threading;
 using OpenSystem.C;
 
-namespace OpenSystem.C
-{
-
-// Class that keeps track of the thread identifiers in the system.
-internal class ThreadInfo
+[GlobalScope]
+public class LibCThread
 {
 	// Internal state.
 	public static Hashtable threads = new Hashtable();
 	public static Hashtable states  = new Hashtable();
 	public static long nextId = 1;
 
-}; // class ThreadInfo
-
-}; // namespace OpenSystem.C
-
-__module
-{
-
 	// Register a thread that was created by "pthread_create".
 	public static long __libc_thread_register(Thread thread, Object state)
 			{
-				lock(typeof(ThreadInfo))
+				lock(typeof(LibCThread))
 				{
-					long id = (ThreadInfo.nextId)++;
-					ThreadInfo.threads[id] = thread;
-					ThreadInfo.states[id] = state;
+					long id = nextId++;
+					threads[id] = thread;
+					states[id] = state;
 					return id;
 				}
 			}
@@ -57,10 +50,10 @@ __module
 	// Register a thread that was created by a foreign process.
 	public static long __libc_thread_register_foreign(Thread thread)
 			{
-				lock(typeof(ThreadInfo))
+				lock(typeof(LibCThread))
 				{
-					long id = (ThreadInfo.nextId)++;
-					ThreadInfo.threads[id] = thread;
+					long id = nextId++;
+					threads[id] = thread;
 					return id;
 				}
 			}
@@ -68,29 +61,31 @@ __module
 	// Unregister a thread.
 	public static void __libc_thread_unregister(long id)
 			{
-				lock(typeof(ThreadInfo))
+				lock(typeof(LibCThread))
 				{
-					ThreadInfo.threads.Remove(id);
-					ThreadInfo.states.Remove(id);
+					threads.Remove(id);
+					states.Remove(id);
 				}
 			}
 
 	// Get the thread object associated with a thread identifier.
 	public static Thread __libc_thread_object(long id)
 			{
-				lock(typeof(ThreadInfo))
+				lock(typeof(LibCThread))
 				{
-					return (Thread)(ThreadInfo.threads[id]);
+					return (Thread)(threads[id]);
 				}
 			}
 
 	// Get the state object associated with a thread identifier.
 	public static Object __libc_thread_state(long id)
 			{
-				lock(typeof(ThreadInfo))
+				lock(typeof(LibCThread))
 				{
-					return ThreadInfo.states[id];
+					return states[id];
 				}
 			}
 
-} // __module
+} // class LibCThread
+
+} // namespace OpenSystem.C

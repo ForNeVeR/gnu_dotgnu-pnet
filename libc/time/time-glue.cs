@@ -2,7 +2,7 @@
  * time-glue.cs - Glue between time and the C# system library.
  *
  * This file is part of the Portable.NET C library.
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+namespace OpenSystem.C
+{
+
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-__module
+[GlobalScope]
+public class LibCTime
 {
 
 	// Get the current system time in UTC.
@@ -69,4 +73,6 @@ __module
 				Thread.Sleep(new TimeSpan(ticks));
 			}
 
-} // __module
+} // class LibCTime
+
+} // namespace OpenSystem.C

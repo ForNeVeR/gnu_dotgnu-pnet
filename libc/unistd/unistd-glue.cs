@@ -19,13 +19,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+namespace OpenSystem.C
+{
+
 using System;
 using System.IO;
 using System.Security;
 using System.Runtime.InteropServices;
-using OpenSystem.C;
 
-__module
+[GlobalScope]
+public class LibCUnistd
 {
 
 	// Open a file descriptor, based on a file.
@@ -409,4 +412,6 @@ __module
 				}
 			}
 
-} // __module
+} // class LibCUnistd
+
+} // namespace OpenSystem.C

@@ -29,17 +29,13 @@ __BEGIN_DECLS
 
 struct dirent
   {
-    ino_t d_ino; /* TODO: file serial number */
+    ino_t d_ino; /* File serial number */
     char d_name[256]; /* name of entry */
   };
 
-#define d_ino d_fileno /* backward compatibility */
+#define d_fileno d_ino
 
-typedef struct
-  {
-    void *gc_handle; /* handle for managed directory information */
-    struct dirent current; /* storage for readdir() calls */
-  } DIR;
+typedef struct __dirstream DIR;
 
 extern int closedir (DIR *__dirp);
 extern DIR *opendir (const char *__name);
@@ -48,9 +44,9 @@ extern int readdir_r (DIR * __restrict __dirp,
                       struct dirent * __restrict __entry,
                       struct dirent ** __restrict __result);
 extern void rewinddir (DIR *__dirp);
-extern void seekdir (DIR *__dirp, long __pos);
-extern long telldir (DIR *__dirp);
+extern void seekdir (DIR *__dirp, off_t __pos);
+extern off_t telldir (DIR *__dirp);
 
 __END_DECLS
 
-#endif /* dirent.h  */
+#endif /* _DIRENT.H  */

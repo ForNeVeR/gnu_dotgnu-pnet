@@ -3,6 +3,7 @@
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,11 +22,10 @@
 
 #include <stddef.h>
 #include <dirent.h>
-
-extern void __syscall_seekdir(void *gc_handle, long long pos);
+#include "dirent-glue.h"
 
 void
-__seekdir (DIR *dirp, long pos)
+__seekdir (DIR *dirp, off_t pos)
 {
   if (dirp == NULL || dirp->gc_handle == NULL)
     {

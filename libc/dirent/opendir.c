@@ -3,6 +3,7 @@
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,15 +25,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-
-extern void *__syscall_opendir (void *name, void *err, int limit);
+#include "dirent-glue.h"
 
 DIR *
 __opendir (const char *name)
 {
   DIR *retval;
   int err;
-  int limit;
 
   if (name == NULL || *name == '\0')
     {
@@ -40,7 +39,7 @@ __opendir (const char *name)
       return NULL;
     }
 
-  retval = (DIR *)malloc (sizeof(DIR));
+  retval = (DIR *)calloc (1, sizeof(DIR));
   if (retval == NULL)
     {
       errno = ENOMEM;
@@ -48,13 +47,13 @@ __opendir (const char *name)
     }
 
   err = 0;
-  memset (retval, 0, sizeof(DIR));
-  limit = sizeof(retval->current.d_name) - 1;
-  retval->gc_handle = __syscall_opendir ((void *)name, &err, limit);
+  retval->gc_handle = __syscall_opendir (name, &err);
 
   if (err)
     {
+      free (retval);
       errno = err;
+      return NULL;
     }
 
   return retval;

@@ -19,113 +19,196 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.Threading;
-using OpenSystem.C;
-
 namespace OpenSystem.C
 {
 
-// Control object that keeps track of signals within the system.
-internal class SignalController
+using System;
+using System.Threading;
+
+[GlobalScope]
+public class LibCSignal
 {
-	// Internal state.
-	private static SignalController controller;
-	private SignalInfo info;
-	private uint process_signals;
 
-	// Information about the pending signals for a specific thread.
-	private class SignalInfo
+	// Control object that keeps track of signals within the system.
+	private class SignalController
 	{
-		public long thread;
-		public uint pending;
-		public int nextToTest;
-		public SignalInfo next;
-
-	}; // class SignalInfo
-
-	// Constructor.
-	private SignalController()
-			{
-				info = null;
-				process_signals = 0;
-			}
-
-	// Get the global signal controller.
-	public static SignalController Controller
-			{
-				get
+		// Internal state.
+		private static SignalController controller;
+		private SignalInfo info;
+		private uint process_signals;
+	
+		// Information about the pending signals for a specific thread.
+		private class SignalInfo
+		{
+			public long thread;
+			public uint pending;
+			public int nextToTest;
+			public SignalInfo next;
+	
+		}; // class SignalInfo
+	
+		// Constructor.
+		private SignalController()
 				{
-					lock(typeof(SignalController))
+					info = null;
+					process_signals = 0;
+				}
+
+		// Get the global signal controller.
+		public static SignalController Controller
+				{
+					get
 					{
-						if(controller == null)
+						lock(typeof(SignalController))
 						{
-							controller = new SignalController();
+							if(controller == null)
+							{
+								controller = new SignalController();
+							}
+							return controller;
 						}
-						return controller;
 					}
 				}
-			}
-
-	// Deliver a signal to a particular thread.
-	public void Deliver(long thread, int signal)
-			{
-				lock(this)
+	
+		// Initialize signal handling for a particular thread.
+		public void Initialize(long thread)
 				{
-					if(thread == -1)
+					lock(this)
 					{
-						/* This signal was delivered process-wide */
-						process_signals |= (((uint)1) << signal);
-						return;
-					}
-					SignalInfo current = info;
-					while(current != null)
-					{
-						if(current.thread == thread)
+						SignalInfo current = info;
+						while(current != null)
 						{
-							current.pending |= (((uint)1) << signal);
+							if(current.thread == thread)
+							{
+								return;
+							}
+							current = current.next;
+						}
+						if(current == null)
+						{
+							current = new SignalInfo();
+							current.thread = thread;
+							current.pending = 0;
+							current.nextToTest = 0;
+							current.next = info;
+							info = current;
+						}
+					}
+				}
+	
+		// Deliver a signal to a particular thread.
+		public void Deliver(long thread, int signal)
+				{
+					lock(this)
+					{
+						if(thread == -1)
+						{
+							/* This signal was delivered process-wide */
+							process_signals |= (((uint)1) << signal);
 							return;
 						}
-						current = current.next;
-					}
-					current = new SignalInfo();
-					current.thread = thread;
-					current.pending = (((uint)1) << signal);
-					current.nextToTest = 0;
-					current.next = info;
-					info = current;
-					Monitor.PulseAll(this);
-				}
-			}
-
-	// Suspend the current thread until a signal arrives.
-	public int Suspend(long thread, uint blocked)
-			{
-				lock(this)
-				{
-					// Get the signal information block for this thread.
-					SignalInfo current = info;
-					while(current != null)
-					{
-						if(current.thread == thread)
+						SignalInfo current = info;
+						while(current != null)
 						{
-							break;
+							if(current.thread == thread)
+							{
+								current.pending |= (((uint)1) << signal);
+								return;
+							}
+							current = current.next;
 						}
-						current = current.next;
-					}
-					if(current == null)
-					{
 						current = new SignalInfo();
 						current.thread = thread;
-						current.pending = 0;
+						current.pending = (((uint)1) << signal);
 						current.nextToTest = 0;
 						current.next = info;
+						info = current;
+						Monitor.PulseAll(this);
 					}
-
-					// Wait until an unblocked signal is delivered to us.
-					int signal = 0;
-					for(;;)
+				}
+	
+		// Suspend the current thread until a signal arrives.
+		public int Suspend(long thread, uint blocked)
+				{
+					lock(this)
 					{
+						// Get the signal information block for this thread.
+						SignalInfo current = info;
+						while(current != null)
+						{
+							if(current.thread == thread)
+							{
+								break;
+							}
+							current = current.next;
+						}
+						if(current == null)
+						{
+							current = new SignalInfo();
+							current.thread = thread;
+							current.pending = 0;
+							current.nextToTest = 0;
+							current.next = info;
+							info = current;
+						}
+	
+						// Wait until an unblocked signal is delivered to us.
+						int signal = 0;
+						for(;;)
+						{
+							uint available =
+								(current.pending | process_signals);
+							if((available & ~blocked) != 0)
+							{
+								// We use "nextToTest" to create fairness
+								// between multiple signals that arrive at
+								// the thread.
+								uint test = (((uint)1) << current.nextToTest);
+								while((available & ~blocked & test) == 0)
+								{
+									current.nextToTest =
+										(current.nextToTest + 1) & 31;
+									test = (((uint)1) << current.nextToTest);
+								}
+								current.pending &= ~test;
+								process_signals &= ~test;
+								signal = current.nextToTest;
+								current.nextToTest =
+									(current.nextToTest + 1) & 31;
+								break;
+							}
+							Monitor.Wait(this);
+						}
+						return signal;
+					}
+				}
+	
+		// Get the next pending signal, or -1 if none is available.
+		public int Next(long thread, uint blocked)
+				{
+					lock(this)
+					{
+						// Get the signal information block for this thread.
+						SignalInfo current = info;
+						while(current != null)
+						{
+							if(current.thread == thread)
+							{
+								break;
+							}
+							current = current.next;
+						}
+						if(current == null)
+						{
+							current = new SignalInfo();
+							current.thread = thread;
+							current.pending = 0;
+							current.nextToTest = 0;
+							current.next = info;
+							info = current;
+						}
+	
+						// Find an unblocked signal that was delivered to us.
 						uint available = (current.pending | process_signals);
 						if((available & ~blocked) != 0)
 						{
@@ -140,90 +223,38 @@ internal class SignalController
 							}
 							current.pending &= ~test;
 							process_signals &= ~test;
-							signal = current.nextToTest;
+							int signal = current.nextToTest;
 							current.nextToTest = (current.nextToTest + 1) & 31;
-							break;
+							return signal;
 						}
-						Monitor.Wait(this);
+						return -1;
 					}
-					return signal;
 				}
-			}
-
-	// Get the next pending signal, or -1 if none is available.
-	public int Next(long thread, uint blocked)
-			{
-				lock(this)
+	
+		// Return the set of pending signals for this thread.
+		public uint Pending(long thread)
 				{
-					// Get the signal information block for this thread.
-					SignalInfo current = info;
-					while(current != null)
+					lock(this)
 					{
-						if(current.thread == thread)
+						SignalInfo current = info;
+						while(current != null)
 						{
-							break;
+							if(current.thread == thread)
+							{
+								return current.pending;
+							}
+							current = current.next;
 						}
-						current = current.next;
+						return 0;
 					}
-					if(current == null)
-					{
-						current = new SignalInfo();
-						current.thread = thread;
-						current.pending = 0;
-						current.nextToTest = 0;
-						current.next = info;
-					}
-
-					// Find an unblocked signal that was delivered to us.
-					uint available = (current.pending | process_signals);
-					if((available & ~blocked) != 0)
-					{
-						// We use "nextToTest" to create fairness between
-						// multiple signals that arrive at the thread.
-						uint test = (((uint)1) << current.nextToTest);
-						while((available & ~blocked & test) == 0)
-						{
-							current.nextToTest =
-								(current.nextToTest + 1) & 31;
-							test = (((uint)1) << current.nextToTest);
-						}
-						current.pending &= ~test;
-						process_signals &= ~test;
-						int signal = current.nextToTest;
-						current.nextToTest = (current.nextToTest + 1) & 31;
-						return signal;
-					}
-					return -1;
 				}
-			}
+	
+	} // class SignalController
 
-	// Return the set of pending signals for this thread.
-	public uint Pending(long thread)
-			{
-				lock(this)
-				{
-					SignalInfo current = info;
-					while(current != null)
-					{
-						if(current.thread == thread)
-						{
-							return current.pending;
-						}
-						current = current.next;
-					}
-					return 0;
-				}
-			}
-
-}; // class SignalController
-
-}; // namespace OpenSystem.C
-
-__module
-{
-	// Initialize signal handler for a particular thread.
+	// Initialize signal handling for a particular thread.
 	public static void __syscall_siginit(long thread)
 			{
+				SignalController.Controller.Initialize(thread);
 			}
 
 	// Deliver a signal to a particular thread.
@@ -252,4 +283,6 @@ __module
 				return SignalController.Controller.Pending(thread);
 			}
 
-} // __module
+} // class LibCSignal
+
+} // namespace OpenSystem.C

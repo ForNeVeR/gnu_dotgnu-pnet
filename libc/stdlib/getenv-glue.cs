@@ -19,10 +19,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+namespace OpenSystem.C
+{
+
 using System;
 using System.Runtime.InteropServices;
 
-__module
+[GlobalScope]
+public class LibCEnviron
 {
 
 	// Get the value of the environment variable with the given name
@@ -35,4 +39,6 @@ __module
 				return Marshal.StringToHGlobalAnsi(rv);
 			}
 
-} // __module
+} // class LibCEnviron
+
+} // namespace OpenSystem.C

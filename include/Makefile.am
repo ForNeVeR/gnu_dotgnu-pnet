@@ -16,6 +16,8 @@ libinclude_HEADERS = \
 	ieee754.h \
 	inttypes.h \
 	limits.h \
+	langinfo.h \
+	locale.h \
 	malloc.h \
 	math.h \
 	pthread.h \

@@ -3,6 +3,7 @@
  *
  * This file is part of the Portable.NET C library.
  * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,8 +24,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <dirent.h>
-
-extern void __syscall_closedir (void *gc_handle, void *err);
+#include "dirent-glue.h"
 
 int
 __closedir (DIR *dirp)

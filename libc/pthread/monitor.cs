@@ -19,11 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+namespace OpenSystem.C
+{
+
 using System;
 using System.Threading;
 using System.Runtime.InteropServices;
 
-__module
+[GlobalScope]
+public class LibCMonitor
 {
 	// Initialize a monitor.
 	public static unsafe void __libc_monitor_init(void **monitor)
@@ -108,4 +112,6 @@ __module
 				Monitor.PulseAll(((GCHandle)(IntPtr)(*monitor)).Target);
 			}
 
-} // __module
+} // class LibCMonitor
+
+} // namespace OpenSystem.C

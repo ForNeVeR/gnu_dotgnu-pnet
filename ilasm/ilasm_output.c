@@ -129,12 +129,14 @@ typedef struct _tagLabelInfo
 	struct _tagLabelInfo *next;
 	char		 *debugFilename;
 	ILUInt32	  debugLine;
+	ILUInt32	  debugColumn;
 
 } LabelInfo;
 static ILMemPool labelPool;
 static ILMemPool labelRefPool;
 static int       initLabelPool = 0;
 static LabelInfo *labels = 0;
+static int		 haveColumnInfo = 0;
 
 /*
  * Emit a warning when an attempt was made to encode an
@@ -304,6 +306,7 @@ void ILAsmOutReset(void)
 	defaultLookupSwitchLabel = 0;
 	initLabelPool = 0;
 	labels = 0;
+	haveColumnInfo = 0;
 }
 
 void ILAsmOutCreate(FILE *stream, int seekable, int type, int flags)
@@ -594,6 +597,7 @@ static LabelInfo *GetLabel(char *name)
 	label->next = labels;
 	label->debugFilename = 0;
 	label->debugLine = 0;
+	label->debugColumn = 0;
 	labels = label;
 	return label;
 }
@@ -1283,7 +1287,7 @@ char *ILAsmOutUniqueLabel(void)
 	return name;
 }
 
-void ILAsmOutDebugLine(char *filename, ILUInt32 line)
+void ILAsmOutDebugLine(char *filename, ILUInt32 line, ILUInt32 column)
 {
 	/* Output a unique label at this position */
 	char *label = ILAsmOutUniqueLabel();
@@ -1292,7 +1296,9 @@ void ILAsmOutDebugLine(char *filename, ILUInt32 line)
 	/* Attach the debug information to the label */
 	info->debugFilename = filename;
 	info->debugLine = line;
+	info->debugColumn = column;
 	haveDebug = 1;
+	haveColumnInfo |= (column != 0);
 }
 
 void ILAsmOutSSAStart(ILInt32 opcode)
@@ -1668,6 +1674,11 @@ static void OutputDebugInfo(ILMethod *method)
 	char *prevFilename = 0;
 	LabelInfo *label = labels;
 	unsigned long len = 0;
+	int type = IL_DEBUGTYPE_LINE_OFFSETS;
+	if(haveColumnInfo)
+	{
+		type = IL_DEBUGTYPE_LINE_COL_OFFSETS;
+	}
 	while(label != 0)
 	{
 		if(label->debugFilename)
@@ -1678,7 +1689,7 @@ static void OutputDebugInfo(ILMethod *method)
 				if(len > 0)
 				{
 					ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
-									 IL_DEBUGTYPE_LINE_OFFSETS, buf, len);
+									 type, buf, len);
 					len = 0;
 				}
 				len += ILMetaCompressData
@@ -1689,13 +1700,17 @@ static void OutputDebugInfo(ILMethod *method)
 
 			/* Add the line and offset information */
 			len += ILMetaCompressData(buf + len, label->debugLine);
+			if(haveColumnInfo)
+			{
+				len += ILMetaCompressData(buf + len, label->debugColumn);
+			}
 			len += ILMetaCompressData(buf + len, label->address);
 
 			/* Flush the buffer if it is nearly full */
-			if(len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 3))
+			if(len >= (sizeof(buf) - IL_META_COMPRESS_MAX_SIZE * 4))
 			{
 				ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
-								 IL_DEBUGTYPE_LINE_OFFSETS, buf, len);
+								 type, buf, len);
 				len = 0;
 			}
 		}
@@ -1705,7 +1720,7 @@ static void OutputDebugInfo(ILMethod *method)
 	{
 		/* Flush the remainder of the debug information */
 		ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
-						 IL_DEBUGTYPE_LINE_OFFSETS, buf, len);
+						 type, buf, len);
 	}
 }
 
@@ -2063,6 +2078,7 @@ cleanup:
 	}
 	labels = 0;
 	haveDebug = 0;
+	haveColumnInfo = 0;
 }
 
 void ILAsmOutAddResource(const char *name, FILE *stream)

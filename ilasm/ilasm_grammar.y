@@ -961,7 +961,7 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 %type <params>		MethodRefGenericParams
 %type <type>		ActualGenericParams
 
-%expect 8
+%expect 9
 
 %start File
 %%
@@ -3273,13 +3273,23 @@ CallingConventions
 
 ExternalSourceSpecification
 	: D_LINE INTEGER_CONSTANT SQUOTE_STRING	{
-				ILAsmDebugLine((ILUInt32)($2), $3.string);
+				ILAsmDebugLine((ILUInt32)($2), 0, $3.string);
+			}
+	| D_LINE INTEGER_CONSTANT ':' INTEGER_CONSTANT SQUOTE_STRING	{
+				ILAsmDebugLine((ILUInt32)($2), (ILUInt32)($4), $5.string);
 			}
 	| D_LINE INTEGER_CONSTANT DQUOTE_STRING	{
-				ILAsmDebugLine((ILUInt32)($2), $3.string);
+				ILAsmDebugLine((ILUInt32)($2), 0, $3.string);
+			}
+	| D_LINE INTEGER_CONSTANT ':' INTEGER_CONSTANT DQUOTE_STRING	{
+				ILAsmDebugLine((ILUInt32)($2), (ILUInt32)($4), $5.string);
 			}
 	| D_LINE INTEGER_CONSTANT	{
-				ILAsmDebugLine((ILUInt32)($2), ILAsmDebugLastFile);
+				ILAsmDebugLine((ILUInt32)($2), 0, ILAsmDebugLastFile);
+			}
+	| D_LINE INTEGER_CONSTANT ':' INTEGER_CONSTANT	{
+				ILAsmDebugLine((ILUInt32)($2), (ILUInt32)($4),
+							   ILAsmDebugLastFile);
 			}
 	;
 

@@ -1051,7 +1051,7 @@ void ILAsmAddSemantics(int type, ILToken token)
 	}
 }
 
-void ILAsmDebugLine(ILUInt32 line, char *filename)
+void ILAsmDebugLine(ILUInt32 line, ILUInt32 column, char *filename)
 {
 	if(ILAsmDebugMode)
 	{
@@ -1059,7 +1059,7 @@ void ILAsmDebugLine(ILUInt32 line, char *filename)
 				IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF)
 		{
 			/* Debug line information within the body of a method */
-			ILAsmOutDebugLine(filename, line);
+			ILAsmOutDebugLine(filename, line, column);
 		}
 		else
 		{
@@ -1070,7 +1070,7 @@ void ILAsmDebugLine(ILUInt32 line, char *filename)
 			int len = ILMetaCompressData
 				(buf, ILWriterDebugString(ILAsmWriter, filename));
 			len += ILMetaCompressData(buf + len, line);
-			len += ILMetaCompressData(buf + len, 0);		/* column number */
+			len += ILMetaCompressData(buf + len, column);
 			if(item)
 			{
 				ILWriterDebugAdd(ILAsmWriter, item,

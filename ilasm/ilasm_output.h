@@ -139,7 +139,7 @@ char *ILAsmOutUniqueLabel(void);
 /*
  * Add debug line information at this point within the method.
  */
-void ILAsmOutDebugLine(char *filename, ILUInt32 line);
+void ILAsmOutDebugLine(char *filename, ILUInt32 line, ILUInt32 column);
 
 /*
  * Start output of an SSA instruction.

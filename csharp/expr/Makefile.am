@@ -30,6 +30,7 @@ TESTS = arglist1.cs \
 		incdec2.cs \
 		indexer1.cs \
 		invoke1.cs \
+		invoke2.cs \
 		is1.cs \
 		is2.cs \
 		new1.cs \

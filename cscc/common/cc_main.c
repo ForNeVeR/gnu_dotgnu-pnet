@@ -334,6 +334,13 @@ static int LoadLibraryFromPath(const char *path, int freePath)
 	loadError = ILImageLoadFromFile(path, CCCodeGen.context, &image,
 									IL_LOADFLAG_FORCE_32BIT |
 									IL_LOADFLAG_PRE_VALIDATE, 1);
+	if(loadError == 0)
+	{
+		if(!ILAssemblyCreateImport(CCCodeGen.image, image))
+		{
+			CCOutOfMemory();
+		}
+	}
 
 	/* Clean up and exit */
 	if(freePath)
@@ -439,6 +446,7 @@ static int InitCodeGen(void)
 {
 	FILE *outfile;
 	int library;
+	int useBuiltinLibrary;
 
 	/* Attempt to open the assembly output stream */
 	if(!CCStringListContains(extension_flags, num_extension_flags,
@@ -467,11 +475,17 @@ static int InitCodeGen(void)
 		outfile = NULL;
 	}
 
+	/* Determine if we need the builtin mscorlib-replacement library.
+	   This is mainly of use to the "cscctest" test suite */
+	useBuiltinLibrary = CCStringListContains(extension_flags,
+											 num_extension_flags,
+											 "builtin-library");
+
 	/* Initialize the code generator */
 	ILGenInfoInit(&CCCodeGen, progname,
 				  CCStringListGetValue(extension_flags, num_extension_flags,
 				  					   "target-assembly-name"),
-				  outfile, nostdlib_flag);
+				  outfile, useBuiltinLibrary);
 	CCCodeGen.debugFlag = debug_flag;
 
 	/* Set the default "checked" state */

@@ -67,7 +67,7 @@ static ILImage *CreateBasicImage(ILContext *context, const char *assemName)
 
 void ILGenInfoInit(ILGenInfo *info, char *progname,
 				   const char *assemName,
-				   FILE *asmOutput, int nostdlib)
+				   FILE *asmOutput, int useBuiltinLibrary)
 {
 	info->progname = progname;
 	info->asmOutput = asmOutput;
@@ -83,7 +83,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	{
 		ILGenOutOfMemory(info);
 	}
-	if(nostdlib)
+	if(useBuiltinLibrary)
 	{
 		if((info->libImage = CreateBasicImage(info->context, ".library")) == 0)
 		{
@@ -132,7 +132,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->currentMethod = 0;
 	info->currentNamespace = 0;
 	info->arrayInit = 0;
-	if(nostdlib)
+	if(useBuiltinLibrary)
 	{
 		ILGenMakeLibrary(info);
 	}

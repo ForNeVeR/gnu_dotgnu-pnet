@@ -1,4 +1,11 @@
 
+2002-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/common/cc_main.c:
+	never use the ".library" builtin unless the "-fbuiltin-library"
+	command-line option is supplied; create AssemblyRef's for all
+	libraries that are specified by "-l" options.
+
 2002-04-21  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_test.c : Test stubber for ECMA classes , added

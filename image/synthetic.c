@@ -78,6 +78,8 @@ static unsigned long HashType(unsigned long start, ILType *type)
 			}
 			/* Not reached */
 
+			case IL_TYPE_COMPLEX_WITH:
+			case IL_TYPE_COMPLEX_PROPERTY:
 			case IL_TYPE_COMPLEX_METHOD:
 			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
 			{
@@ -88,6 +90,14 @@ static unsigned long HashType(unsigned long start, ILType *type)
 					start = HashType
 						(start, ILTypeGetParamWithPrefixes(type, param));
 				}
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_VAR:
+			case IL_TYPE_COMPLEX_MVAR:
+			{
+				start = (start << 5) + start +
+						(unsigned long)ILType_VarNum(type);
 			}
 			break;
 		}

@@ -1,3 +1,10 @@
+2003-07-12  Neil Cawse  <neilc@geotab.ca>
+
+	* System.Windows.Forms/TabControl.cs, TabPage : 
+	New tab control.
+	Other small changes to allow compiling with csc.
+	Added new sample TabTest.cs and updated build file.
+
 2003-07-11  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* sample/FormsHello.cs: Re-insert the explicit Dock settings for

@@ -1838,6 +1838,7 @@ ILObject *_IL_MethodBase_GetCurrentMethod(ILExecThread *thread)
 ILNativeInt _IL_RuntimeMethodHandle_GetFunctionPointer
 				(ILExecThread *thread, void *_this)
 {
+#if defined(HAVE_LIBFFI)
 	ILMethod *method = *((ILMethod **)_this);
 	if(method)
 	{
@@ -1845,6 +1846,7 @@ ILNativeInt _IL_RuntimeMethodHandle_GetFunctionPointer
 		return (ILNativeInt)(_ILMakeClosureForDelegate(0, method));
 	}
 	else
+#endif
 	{
 		/* Invalid RuntimeMethodHandle value */
 		return 0;

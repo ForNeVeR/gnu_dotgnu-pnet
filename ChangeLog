@@ -20,6 +20,9 @@
 
 	* configure.in: update working version to "0.5.9".
 
+	* engine/lib_reflect.c: closures are not available if libffi
+	is disabled.
+
 2003-06-17  James Michael DuPont  <mdupont777@yahoo.com>
 
 	* doc/cvm.dtd: DTD file for the CVM opcode definitions.

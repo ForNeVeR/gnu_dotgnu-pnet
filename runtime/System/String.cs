@@ -681,6 +681,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							return -1;
 						}
 					}
+					temp++;
 				}
 				return -1;
 			}

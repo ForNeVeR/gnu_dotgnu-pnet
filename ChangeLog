@@ -1,4 +1,10 @@
-2003-06-16  Thong Nguuyen <tum@veridicus.com>
+
+2003-07-17  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/String.cs: Fix minor bug in format parsing 
+	of multiple digit specifiers.
+	
+2003-07-16  Thong Nguuyen <tum@veridicus.com>
 
 	* tests/System/Threading/TestWaitHandle.cs: Make TestWaitAll check
 	for the right return value when exitContext isn't true.

@@ -22,22 +22,36 @@
 namespace System.Threading
 {
 
-#if !ECMA_COMPAT
-
-public sealed class RegisteredWaitHandle : MarshalByRefObject
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class RegisteredWaitHandle : MarshalByRefObject
 {
+	// Internal state.
+	private ThreadPool.WorkItem workItem;
 
 	// Constructor.
-	internal RegisteredWaitHandle() {}
+	internal RegisteredWaitHandle(ThreadPool.WorkItem workItem)
+			{
+				this.workItem = workItem;
+			}
 
 	// Unregister using a specific wait object.
 	public bool Unregister(WaitHandle waitObject)
 			{
-				return true;
+				if(workItem.waitObject == waitObject)
+				{
+					workItem.registered = false;
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 }; // class RegisteredWaitHandle
-
-#endif // !ECMA_COMPAT
 
 }; // namespace System.Threading

@@ -43,6 +43,13 @@
 	runtime/System/Threading/RegisteredWaitHandle.cs: implement
 	missing classes in the "System.Threading" namespace.
 
+	* runtime/System/Threading/RegisteredWaitHandle.cs,
+	runtime/System/Threading/ThreadPool.cs,
+	runtime/System/Threading/Timer.cs,
+	runtime/System/Threading/WaitCallback.cs,
+	runtime/System/Threading/WaitOrTimerCallback.cs: implement the
+	"ThreadPool" class.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

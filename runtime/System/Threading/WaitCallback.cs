@@ -22,12 +22,13 @@
 
 using System;
 
-#if !ECMA_COMPAT
-
 namespace System.Threading
 {
 	[Serializable]
-	public delegate void WaitCallback(Object state);
-}//namespace
-
+#if ECMA_COMPAT
+	internal
+#else
+	public
 #endif
+	delegate void WaitCallback(Object state);
+}//namespace

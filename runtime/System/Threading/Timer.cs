@@ -232,10 +232,8 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 				}
 			}
 
-#if !ECMA_COMPAT
-
 	// Convert an unsigned integer value into a milliseconds value.
-	private static int UIntToMS(uint value)
+	internal static int UIntToMS(uint value)
 			{
 				if(value > (uint)(Int32.MaxValue))
 				{
@@ -246,7 +244,7 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 			}
 
 	// Convert a long integer value into a milliseconds value.
-	private static int LongToMS(long value)
+	internal static int LongToMS(long value)
 			{
 				if(value < (-1L) || value > (long)(Int32.MaxValue))
 				{
@@ -255,8 +253,6 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 				}
 				return (int)value;
 			}
-
-#endif // !ECMA_COMPAT
 
 	// Method that runs the timer thread.
 	private void Run()

@@ -24,6 +24,7 @@ namespace Microsoft.VisualBasic.CompilerServices
 
 using System;
 using System.ComponentModel;
+using System.Reflection;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class ProjectData
@@ -53,7 +54,7 @@ public sealed class ProjectData
 	// End the application.
 	public static void EndApp()
 			{
-				FileSystem.Reset();
+				File.CloseAll(Assembly.GetCallingAssembly());
 				Environment.Exit(0);
 			}
 

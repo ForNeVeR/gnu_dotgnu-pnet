@@ -154,7 +154,7 @@ public sealed class DirectoryInfo : FileSystemInfo
 					throw new ArgumentNullException("pattern");
 				}
 				return (FileSystemInfo[])(Directory.ScanDirectoryForInfos
-					(FullPath, null, Directory.ScanType.DirectoriesAndFiles,
+					(FullPath, pattern, Directory.ScanType.DirectoriesAndFiles,
 					 typeof(FileSystemInfo)));
 			}
 

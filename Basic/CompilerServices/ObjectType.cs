@@ -252,7 +252,7 @@ public sealed class ObjectType
 			}
 
 	// Get the type code for an object.
-	private static TypeCode GetTypeCode(Object obj)
+	internal static TypeCode GetTypeCode(Object obj)
 			{
 				IConvertible ic = (obj as IConvertible);
 				if(ic != null)

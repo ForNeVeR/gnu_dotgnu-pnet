@@ -450,6 +450,35 @@ public class LibCUnistd
 				}
 			}
 
+	// Determine if a file descriptor is non-blocking.
+	public static int __syscall_is_nonblocking(int fd)
+			{
+				Stream stream = FileTable.GetStream(fd);
+				if(stream is LibCFDOperations)
+				{
+					return ((LibCFDOperations)stream).NonBlocking ? 1 : 0;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+	// Set the non-blocking state for a file descriptor.
+	public static void __syscall_set_nonblocking(int fd, int value)
+			{
+				Stream stream = FileTable.GetStream(fd);
+				if(stream is LibCFDOperations)
+				{
+					((LibCFDOperations)stream).NonBlocking =
+						(value != 0 ? true : false);
+				}
+				else
+				{
+					throw new NotSupportedException();
+				}
+			}
+
 	// Wrap the stdin, stdout, and stderr file descriptors.
 	public static void __syscall_wrap_stdfds()
 			{

@@ -5618,7 +5618,7 @@ public class Control : IWin32Window, IDisposable
 
 					// Find the previous index of the control.
 					int index = IndexOf(child);
-
+		
 					// Move the control.
 					int posn;
 					if(index < newIndex)
@@ -5633,7 +5633,7 @@ public class Control : IWin32Window, IDisposable
 					else if(index > newIndex)
 					{
 						MoveToAbove(owner.children[newIndex], child);
-						for(posn = newIndex; posn > index; --posn)
+						for(posn = index; posn > newIndex; --posn)
 						{
 							owner.children[posn] = owner.children[posn - 1];
 						}

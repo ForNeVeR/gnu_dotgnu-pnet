@@ -1,6 +1,11 @@
 
 2004-11-18  Klaus Treichel  <ktreichel@web.de>
 
+	* System.Windows.Forms/Control.cs: Fix bug #11020. Move down Controls in 
+	correct order.
+
+2004-11-18  Klaus Treichel  <ktreichel@web.de>
+
 	* runtime/System/Text/StringBuilder.cs: Throw correct exceptions and fix
 	various other errors like setting buildString.length in constructor and
 	some index checks. Fix Capacity property.

@@ -92,6 +92,7 @@ AC_OBJEXT
 AC_OUTPUT([
 Makefile
 include/Makefile
+include/gnu/Makefile
 include/sys/Makefile
 libc/Makefile
 libc/malloc/Makefile

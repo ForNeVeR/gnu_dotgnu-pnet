@@ -1,5 +1,5 @@
 
-SUBDIRS = . sys
+SUBDIRS = . gnu sys
 
 libincludedir      = $(libdir)/cscc/include
 libinclude_HEADERS = alloca.h \

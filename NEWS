@@ -1,4 +1,10 @@
 
+0.6.12 (16 January 2005)
+
+	* Add references to Mono.Security where necessary (Klaus Treichel).
+	* Build fixes for SqlSharp (Klaus Treichel).
+	* Exclude test directories for System.Data (Klaus Treichel).
+
 0.6.10 (30 October 2004)
 
 	* README updates (Gopal V).

@@ -15,6 +15,7 @@ COMMON_ENGINE_SOURCES = box.c \
 						lib_array.c \
 						lib_decimal.c \
 						lib_diag.c \
+						lib_emit.c \
 						lib_encoding.c \
 						lib_enum.c \
 						lib_file.c \

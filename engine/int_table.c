@@ -314,6 +314,7 @@ IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Assembly_GetTypes)
 	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName)
 	IL_METHOD("LoadFromFile", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromFile)
+	IL_METHOD("GetEntryPoint", "(T)vSystem.RuntimeMethodHandle;", _IL_Assembly_GetEntryPoint)
 IL_METHOD_END
 
 IL_METHOD_BEGIN(MethodBase_Methods)
@@ -402,6 +403,14 @@ IL_METHOD_BEGIN(Module_Methods)
 	IL_METHOD("GetModuleType", "(T)oSystem.Type;", _IL_Module_GetModuleType)
 	IL_METHOD("GetAssembly", "(T)oSystem.Reflection.Assembly;", _IL_Module_GetAssembly)
 	IL_METHOD("GetFullName", "(T)oSystem.String;", _IL_Module_GetFullName)
+IL_METHOD_END
+
+IL_METHOD_BEGIN(AssemblyBuilder_Methods)
+	IL_METHOD("ClrSetEntryPoint", "(TjvSystem.Reflection.Emit.PEFileKinds;)V", _IL_AssemblyBuilder_ClrSetEntryPoint)
+IL_METHOD_END
+
+IL_METHOD_BEGIN(ModuleBuilder_Methods)
+	IL_METHOD("ClrModuleCreate", "(joSystem.String;)j", _IL_ModuleBuilder_ClrModuleCreate)
 IL_METHOD_END
 
 IL_METHOD_BEGIN(Debugger_Methods)
@@ -527,6 +536,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"ArgIterator", "System", ArgIterator_Methods},
 	{"Array", "System", Array_Methods},
 	{"Assembly", "System.Reflection", Assembly_Methods},
+	{"AssemblyBuilder", "System.Reflection.Emit", AssemblyBuilder_Methods},
 	{"BitConverter", "System", BitConverter_Methods},
 	{"Buffer", "System", Buffer_Methods},
 	{"ClrConstructor", "System.Reflection", ClrConstructor_Methods},
@@ -556,6 +566,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Math", "System", Math_Methods},
 	{"MethodBase", "System.Reflection", MethodBase_Methods},
 	{"Module", "System.Reflection", Module_Methods},
+	{"ModuleBuilder", "System.Reflection.Emit", ModuleBuilder_Methods},
 	{"Monitor", "System.Threading", Monitor_Methods},
 	{"Mutex", "System.Threading", Mutex_Methods},
 	{"Object", "System", Object_Methods},

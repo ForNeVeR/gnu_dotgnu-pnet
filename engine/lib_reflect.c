@@ -939,6 +939,32 @@ ILObject *_IL_Assembly_GetType(ILExecThread *thread, ILObject *_this,
 }
 
 /*
+ * private RuntimeMethodHandle GetEntryPoint();
+ */
+void _IL_Assembly_GetEntryPoint(ILExecThread *thread,
+							    void *result, ILObject *_this)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	if(image)
+	{
+		ILToken token = ILImageGetEntryPoint(image);
+		if(token != 0)
+		{
+			*((void **)result) = ILMethod_FromToken(image, token);
+		}
+		else
+		{
+			*((void **)result) = 0;
+		}
+	}
+	else
+	{
+		*((void **)result) = 0;
+	}
+}
+
+/*
  * private static ParameterAttributes GetParamAttrs(IntPtr itemPrivate);
  */
 ILInt32 _IL_ClrParameter_GetParamAttrs(ILExecThread *thread,

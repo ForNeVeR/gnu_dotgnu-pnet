@@ -259,6 +259,7 @@ extern ILObject * _IL_Assembly_GetType(ILExecThread * _thread, ILObject * _this,
 extern System_Array * _IL_Assembly_GetTypes(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Assembly_LoadFromName(ILExecThread * _thread, ILString * name, ILInt32 * error, ILObject * parent);
 extern ILObject * _IL_Assembly_LoadFromFile(ILExecThread * _thread, ILString * name, ILInt32 * error, ILObject * parent);
+extern void _IL_Assembly_GetEntryPoint(ILExecThread * _thread, void * _result, ILObject * _this);
 
 extern ILObject * _IL_MethodBase_GetMethodFromHandle(ILExecThread * _thread, void * handle);
 extern ILObject * _IL_MethodBase_GetCurrentMethod(ILExecThread * _thread);
@@ -325,6 +326,10 @@ extern ILBool _IL_Module_IsResource(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Module_GetModuleType(ILExecThread * _thread, ILObject * _this);
 extern ILObject * _IL_Module_GetAssembly(ILExecThread * _thread, ILObject * _this);
 extern ILString * _IL_Module_GetFullName(ILExecThread * _thread, ILObject * _this);
+
+extern void _IL_AssemblyBuilder_ClrSetEntryPoint(ILExecThread * _thread, ILObject * _this, ILNativeInt clrMethod, ILInt32 fileKind);
+
+extern ILNativeInt _IL_ModuleBuilder_ClrModuleCreate(ILExecThread * _thread, ILNativeInt assembly, ILString * name);
 
 extern ILBool _IL_Debugger_InternalIsAttached(ILExecThread * _thread);
 extern void _IL_Debugger_Break(ILExecThread * _thread);

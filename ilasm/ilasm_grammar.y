@@ -823,7 +823,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 /*
  * Instruction types.
  */
-%token I_NONE I_VAR I_INT I_FLOAT I_BRANCH I_METHOD I_IMETHOD I_FIELD I_TYPE
+%token I_NONE I_VAR I_INT I_FLOAT I_BRANCH I_METHOD I_FIELD I_TYPE
 %token I_STRING I_SIGNATURE I_RVA I_TOKEN I_SSA I_SWITCH I_CONST
 %token I_IINC I_LSWITCH I_IMETHOD I_NEWARRAY I_MULTINEWARRAY
 
@@ -856,7 +856,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <integer>     LayoutOption AtOption JavaArrayType
 %type <fieldAttrs>	FieldAttributes FieldAttributeList FieldAttributeName
 %type <methodAttrs>	MethodAttributes MethodAttributeList MethodAttributeName
-%type <opcode>		I_NONE I_VAR I_BRANCH I_METHOD I_IMETHOD I_FIELD I_TYPE
+%type <opcode>		I_NONE I_VAR I_BRANCH I_METHOD I_FIELD I_TYPE
 %type <opcode>		I_INT I_FLOAT I_STRING I_SIGNATURE I_RVA I_TOKEN
 %type <opcode>		I_SSA I_SWITCH I_CONST I_IINC I_LSWITCH I_IMETHOD
 %type <opcode>		I_NEWARRAY I_MULTINEWARRAY

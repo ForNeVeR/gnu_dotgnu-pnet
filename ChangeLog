@@ -1,4 +1,9 @@
 
+2002-12-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* doc/native.html: remove "native.html" because it is hopelessly
+	out of date.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

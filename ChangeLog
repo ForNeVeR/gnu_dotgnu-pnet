@@ -16,6 +16,10 @@
 	Generics/SynchronizedStack.cs: add "Clear" and "Contains" to
 	the IQueue and IStack interfaces.
 
+	* Generics/FixedSizeSet.cs, Generics/ISet.cs, Generics/ListSet.cs,
+	Generics/ReadOnlySet.cs, Generics/SynchronizedSet.cs: add set
+	collections to the generics library.
+
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader (ReadIdentifier): append the character

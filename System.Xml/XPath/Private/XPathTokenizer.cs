@@ -51,9 +51,9 @@ namespace System.Xml.XPath.Private
 
 		private static void Assert(bool condition)
 		{
-#if !ECMA_COMPAT
-			Debug.Assert(condition);
-#endif
+			#if !ECMA_COMPAT		
+				Debug.Assert(condition);
+			#endif
 		}
 
 		/* <Prefix>-<Suffix> format detection */
@@ -321,19 +321,6 @@ namespace System.Xml.XPath.Private
 				}
 				break;
 
-				case ':':
-				{
-					Assert(Read() == ch);
-					if(Peek() == ch)
-					{
-						inOperator = true;
-						Assert(Read() == ch);
-						return Token.AXIS_SUFFIX;
-					}
-					return Token.ERROR;
-				}
-				break;
-				
 				case '.':
 				{
 					Assert(Read() == ch);
@@ -517,18 +504,7 @@ namespace System.Xml.XPath.Private
 						return token;	
 					}
 				}
-				else if(token == Token.AXISNAME)
-				{
-					// valid axis names are filtered out here
-					// TODO : rework parser to check for axis
-					// names fully  - "ancestor:*" is also valid
-					// XPath
-					if(Peek() == ':')
-					{
-						return token;
-					}
-				}
-				else
+				else if(token != Token.AXISNAME) // axis name falls through
 				{
 					return token;
 				}
@@ -536,9 +512,15 @@ namespace System.Xml.XPath.Private
 
 			if(Peek() == ':')
 			{
-				// QNAME | WILDCARD_NAME 
+				// QNAME | WILDCARD_NAME | AXISNAME
 				Assert(Read() == ':');
 				ch = Peek(); 
+				if(token == Token.AXISNAME && ch == ':')
+				{
+					Assert(Read() == ':');
+					inOperator = true;
+					return token;
+				}
 				if(Char.IsLetter((Char)ch) || Char.IsDigit((Char)ch) 
 					|| ch == '_')
 				{

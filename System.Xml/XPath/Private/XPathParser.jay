@@ -67,7 +67,6 @@ namespace System.Xml.XPath.Private
 %token NODETYPE					"node type"
 
 %token PARENT_NODE				".."
-%token AXIS_SUFFIX				"::"
 %token RECURSIVE_DESCENT		"//"
 
 %left OP_AND
@@ -176,7 +175,7 @@ OptPredicates
 
 /* [5] */
 AxisSpecifier
-	: AXISNAME AXIS_SUFFIX
+	: AXISNAME
 	{
 		$$ = $1;
 	}

@@ -8,6 +8,11 @@
 	* System.Windows.Forms/Form.cs: Do not calculate WindowBorders if 
 	the BorderStyle is None. (bug #10718).
 
+	* System.Xml/XPath/Private/XPathParser.cs, 
+	System.Xml/XPath/Private/XPathParser.jay,
+	System.Xml/XPath/Private/XPathTokenizer.cs: Fix parsing of AxisSpecifiers
+	to allow the same names to be used as QNames.
+
 2004-10-20  Deryk Robosson <deryk@0x0a.com>	
 
 	* Xsharp/TopLevelWindow.cs: Add skip pager state to work with

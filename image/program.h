@@ -164,7 +164,6 @@ struct _tagILClass
 	const char	   *name;				/* Name of the class */
 	const char	   *namespace;			/* Name of the class's namespace */
 	ILClass		   *parent;				/* Parent class */
-	ILClass		   *nextHash;			/* Next entry in class hash table */
 	ILImplements   *implements;			/* List of implemented interfaces */
 	ILMember	   *firstMember;		/* First member owned by the class */
 	ILMember	   *lastMember;			/* Last member owned by the class */
@@ -241,7 +240,8 @@ struct _tagILMethod
 	ILUInt16		callingConventions;	/* Calling conventions for method */
 	ILUInt32		rva;				/* Address of the method's code */
 	ILParameter    *parameters;			/* Parameter definitions */
-	void           *userData;			/* User data for the runtime engine */
+	void           *userData1;			/* User data for the runtime engine */
+	void           *userData2;			/* User data for the runtime engine */
 	ILUInt32		index;				/* Data added by the runtime engine */
 
 };

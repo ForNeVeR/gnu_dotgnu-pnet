@@ -63,7 +63,6 @@ public class Uri : MarshalByRefObject
 	
 
 	/* State specific fields */
-	private String				absoluteUri		= null;
 	private bool				userEscaped		= false ;
 	private UriHostNameType		hostNameType	= UriHostNameType.Unknown;
 	private String				scheme			= null;
@@ -71,6 +70,7 @@ public class Uri : MarshalByRefObject
 	private String				userinfo		= null;
 	private String				host 			= null;
 	private int					port 			= -1;
+	private String				portString		= null;
 	private String				path			= null;
 	private String				query			= null;
 	private String				fragment		= null;
@@ -173,10 +173,14 @@ public class Uri : MarshalByRefObject
 	public Uri(String uriString, bool dontEscape)
 	{
 		userEscaped = dontEscape;
-		this.absoluteUri = uriString;
-		ParseString(uriString);
+		ParseString(uriString,true);
 		Escape();
 		Canonicalize();
+	}
+
+	private Uri()
+	{
+		/* Be warned , using this is kinda ugly in the end */
 	}
 
 	public Uri(Uri baseUri, String relativeUri) : 
@@ -186,38 +190,69 @@ public class Uri : MarshalByRefObject
 
 	public Uri(Uri baseUri, String relativeUri, bool dontEscape)
 	{
+		
+		if(relativeUri == null)
+		{
+			throw new ArgumentNullException("relativeUri");
+		}
+		
+		userEscaped = dontEscape;
+		this.scheme = baseUri.scheme;
+		this.delim = baseUri.delim;
+		this.host = baseUri.host;
+		this.port = baseUri.port;
+		this.userinfo = baseUri.userinfo;
+
+		if(relativeUri == String.Empty)
+		{
+			this.path = baseUri.path;
+			this.query = baseUri.query;
+			this.fragment = baseUri.fragment;
+			return;
+		}
+		
+		Uri uri=new Uri();
+
+		uri.ParseString(relativeUri,false);
+		
+		if(uri.scheme == null)
+		{
+			this.path = this.path + uri.path;	
+			this.query = uri.query;
+			this.fragment = uri.fragment;
+		}
+		else if(uri.scheme == this.scheme && uri.delim == ":")
+		{
+			this.path = this.path + uri.Authority + uri.path;	
+			this.query = uri.query;
+			this.fragment = uri.fragment;
+		}
+		else if(uri.scheme == this.scheme && uri.delim == "://")
+		{
+			ParseString(relativeUri,true);
+		}
+		else if(uri.scheme != this.scheme)
+		{
+			ParseString(relativeUri,true);
+		}
+		Escape();
+		Canonicalize();
 	}
 
-	/* This method is to be re-written */
 	protected virtual void Canonicalize()
 	{
-		// TODO: Implement completely to remove default ports 
-		this.path = this.path.Replace('\\', '/');
-		while (this.path.IndexOf("//") >= 0) // double-slashes to strip
+		if(this.path!=null)
 		{
-			this.path = this.path.Replace("//", "/");
-		}
-
-		// find out if .. dirs are present
-		if (path.IndexOf("/../") > -1 || path.EndsWith("/..")
-		    || path.IndexOf("/./") > -1 || path.EndsWith("/.")) 
-		{
+			this.path = this.path.Replace('\\', '/');
+			while (this.path.IndexOf("//") >= 0) // double-slashes to strip
+			{
+				this.path = this.path.Replace("//", "/");
+			}
 			path = StripMetaDirectories(path);
 		}
-
-		// remove the slash at the end, unless it's alone
-		int psize = path.Length; // efficiency
-		if (psize > 1)
-		{
-			if (path[psize-1] == '/')
-				path = path.Substring(0, psize-1);
-		}
-		else
-			path = "/";
 	}
 
-	/* This method is to be re-written */
-	private static String StripMetaDirectories(String oldpath)
+	private String StripMetaDirectories(String oldpath)
 	{
 		int toBeRemoved = 0;
 
@@ -227,15 +262,16 @@ public class Uri : MarshalByRefObject
 		{
 			if (dirs[curDir] == "..")
 			{
-				++toBeRemoved;
-				// removed w/o affecting toBeRemoved
+				toBeRemoved++;
 				dirs[curDir] = null;
 			}
 			else if (dirs[curDir] == ".")
-				dirs[curDir] = null; // doesn't affect anything
+			{
+				dirs[curDir] = null; 
+			}
 			else if (toBeRemoved > 0) // remove this one
 			{
-				--toBeRemoved;
+				toBeRemoved--;
 				dirs[curDir] = null;
 			}
 		}
@@ -259,12 +295,14 @@ public class Uri : MarshalByRefObject
 		}
 
 		// we always must have at least a slash
-		// special case: if the last one is "invisible", add
-		// a slash, because it is the directory mark of the
-		// previous item
-		if (newpath.Length == 0 || dirs[dirs.Length-1].Length == 0)
+		// general assumption that path based systems use "://" instead
+		// of the ":" only delimiter
+		if (delim=="://")
 		{
-			newpath.Append('/');
+			if(newpath.Length == 0)
+			{
+				newpath.Append('/');
+			}
 		}
 		return newpath.ToString();
 	}
@@ -276,7 +314,7 @@ public class Uri : MarshalByRefObject
 			if(tok.Length==0 || !Char.IsLetter(tok[0])) return false;
 			for(int i=1; i< tok.Length ; i++)
 			{
-				if(!Char.IsLetterOrDigit(tok[i]) && tok[i]!='-')
+				if(!Char.IsLetterOrDigit(tok[i]) && tok[i]!='-' && tok[i]!='_')
 				{
 					return false;
 				}
@@ -354,17 +392,39 @@ public class Uri : MarshalByRefObject
 		 throw new NotImplementedException("CheckSecurity");
 	}
 
-	[TODO]
 	public override bool Equals(Object comparand)
 	{
-		 throw new NotImplementedException("Equals");
+		if(comparand == null)
+		{
+			return false;
+		}
+		Uri uri = (comparand as Uri);
+		if(uri == null)
+		{
+			String s = (comparand as String);
+			
+			if(s==null) return false;
+			try
+			{
+				uri = new Uri(s);
+			}
+			catch
+			{
+				return false;
+			}
+		}
+		return 
+			((this.Authority == uri.Authority) &&
+			 (this.path == uri.path) &&
+			 (this.scheme == uri.scheme) &&
+			 (this.delim == uri.delim));
 	}
 
 	protected virtual void Escape()
 	{
 		if(!userEscaped)
 		{
-			if(this.host==null)
+			if(this.host!=null)
 			{
 				this.host = EscapeStringInternal(this.host, true, false);
 			}
@@ -547,7 +607,7 @@ public class Uri : MarshalByRefObject
 	{
 	}
 
-	protected void ParseString(String uriString)
+	protected void ParseString(String uriString,bool reportErrors)
 	{
 		if(hasFastRegex)
 		{
@@ -556,6 +616,42 @@ public class Uri : MarshalByRefObject
 		else
 		{
 			SlowParse(uriString);
+		}
+		if(reportErrors)
+		{
+			CheckParsed();
+		}
+	}
+
+	private void CheckParsed()
+	{
+		if(hostNameType==UriHostNameType.Unknown)
+		{
+			throw new UriFormatException(S._("Arg_UriHostName"));
+		}
+		if(!CheckSchemeName(this.scheme))
+		{
+			throw new UriFormatException(S._("Arg_InvalidScheme"));
+		}
+		if(portString!= null)
+		{
+			try
+			{
+				int value=Int32.Parse(portString);
+				port = value;
+			}
+			catch(FormatException)
+			{
+				this.port = -1; 
+			}
+			catch(OverflowException)
+			{
+				throw new UriFormatException (S._("Arg_UriPort"));
+			}
+		}
+		else
+		{
+			this.port = DefaultPortForScheme(this.scheme);
 		}
 	}
 
@@ -590,39 +686,11 @@ public class Uri : MarshalByRefObject
 			11 --> query
 			13 --> fragment */
 		this.scheme = MatchToString(uriString, matches,2);
-		if(!CheckSchemeName(this.scheme))
-		{
-			throw new UriFormatException(S._("Arg_InvalidScheme"));
-		}
 		this.delim = ":"+MatchToString(uriString, matches, 4);
 		this.userinfo = MatchToString(uriString, matches, 6);
 		this.host = MatchToString(uriString, matches,7);
 		this.hostNameType = CheckHostName(this.host);
-		if(hostNameType==UriHostNameType.Unknown)
-		{
-			throw new UriFormatException(S._("Arg_UriHostName"));
-		}
-		tmp = MatchToString(uriString, matches,9);
-		if(tmp!= null)
-		{
-			try
-			{
-				int value=Int32.Parse(tmp);
-				port = value;
-			}
-			catch(FormatException)
-			{
-				this.port = -1; 
-			}
-			catch(OverflowException)
-			{
-				throw new UriFormatException (S._("Arg_UriPort"));
-			}
-		}
-		else
-		{
-			this.port = -1 ;
-		}
+		this.portString = MatchToString(uriString, matches,9);
 		this.path = MatchToString(uriString, matches, 10);
 		this.query = MatchToString(uriString, matches, 11);
 		this.fragment = MatchToString(uriString, matches,13);
@@ -630,11 +698,12 @@ public class Uri : MarshalByRefObject
 
 	private void SlowParse(String uriString)
 	{
+		throw new NotImplementedException("SlowParse");
 	}
 
 	public override String ToString()
 	{
-		StringBuilder sb = new StringBuilder(absoluteUri.Length);
+		StringBuilder sb = new StringBuilder();
 
 		sb.Append(this.scheme);
 
@@ -674,7 +743,7 @@ public class Uri : MarshalByRefObject
 	{
  		get
 		{
-			return absoluteUri;	
+			return this.ToString();	
 		}
 	}
 
@@ -692,7 +761,7 @@ public class Uri : MarshalByRefObject
 			{
 				sb.Append(this.host);
 			}
-			if(this.port!=-1)
+			if(this.port!=-1 && this.port!=DefaultPortForScheme(this.scheme))
 			{
 				sb.Append(':');
 				sb.Append(this.port);

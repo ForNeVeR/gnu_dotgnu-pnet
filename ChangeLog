@@ -1,3 +1,8 @@
+2005-01-01  Deryk Robosson  <deryk@0x0a.com>
+
+	* System.Windows.Forms/ComboBox.cs: Consistantly use Items property
+	throughout instead of items field directly.  Related to bug #11428.
+
 2004-12-30  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/ComboBox.cs: If list is empty, do not attempt

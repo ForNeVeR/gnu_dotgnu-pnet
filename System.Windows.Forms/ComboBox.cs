@@ -219,7 +219,7 @@ namespace System.Windows.Forms
 			set
 			{
 				if (value == droppedDown ||
-						items.Count == 0)
+						Items.Count == 0)
 					return;
 				droppedDown = value;
 				if (value)
@@ -233,11 +233,11 @@ namespace System.Windows.Forms
 					buttonState = ButtonState.Pushed;
 					using (Graphics g = CreateGraphics())
 						DrawButton(g);
-					scrollbar.Maximum = items.Count - 1;
+					scrollbar.Maximum = Items.Count - 1;
 					scrollbar.LargeChange = maxDropDownItems;
 					scrollbar.Value = (selectedIndex==-1) ? 0 :  selectedIndex;
-					if (items.Count < MaxDropDownItems)
-						popup.Height = items.Count * actualItemHeight;
+					if (Items.Count < MaxDropDownItems)
+						popup.Height = Items.Count * actualItemHeight;
 					else
 						popup.Height = maxDropDownItems * actualItemHeight;
 					popupMouseItem = selectedIndex;
@@ -540,7 +540,7 @@ namespace System.Windows.Forms
 				
 				for (int i = 0; i < Items.Count; i++)
 				{
-					if (string.Compare(value, items[i].ToString()) == 0)
+					if (string.Compare(value, Items[i].ToString()) == 0)
 					{
 						SelectedIndex = i;
 						return; 
@@ -914,7 +914,7 @@ namespace System.Windows.Forms
 			{
 				int y = 0;
 				g.SetClip(new Rectangle(0, 0, popupDrawWidth, popup.Height));
-				for (int i = scrollbar.Value; i < items.Count; i++)
+				for (int i = scrollbar.Value; i < Items.Count; i++)
 				{
 					if (pos == -1 | i == pos)
 					{
@@ -924,12 +924,12 @@ namespace System.Windows.Forms
 							if (popupMouseItem == i)
 							{
 								g.FillRectangle(SystemBrushes.Highlight, layout); 
-								g.DrawString(items[i].ToString(), Font, SystemBrushes.HighlightText, 0, y);
+								g.DrawString(Items[i].ToString(), Font, SystemBrushes.HighlightText, 0, y);
 							}
 							else
 							{
 								g.FillRectangle(backBrush, layout); 
-								g.DrawString(items[i].ToString(), Font, foreBrush, 0, y);
+								g.DrawString(Items[i].ToString(), Font, foreBrush, 0, y);
 							}
 						}
 						else
@@ -1009,7 +1009,7 @@ namespace System.Windows.Forms
 			if (DrawMode != DrawMode.OwnerDrawVariable)
 				return y / actualItemHeight + scrollbar.Value;
 			int itemY = 0;
-			for (int i = scrollbar.Value; i < items.Count; i++)
+			for (int i = scrollbar.Value; i < Items.Count; i++)
 			{
 				itemY += itemHeights[i];
 				if (y < itemY)

@@ -376,16 +376,19 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 			}
 		}
 
-		/* Scan the interfaces that this class implements */
-		impl = 0;
-		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+		/* Scan parent interfaces if this class is itself an interface */
+		if(ILClass_IsInterface(classInfo))
 		{
-			member = FindMemberByName
-				(ILClassResolve(ILImplementsGetInterface(impl)),
-				 name, scope);
-			if(member)
+			impl = 0;
+			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
-				return member;
+				member = FindMemberByName
+					(ILClassResolve(ILImplementsGetInterface(impl)),
+					 name, scope);
+				if(member)
+				{
+					return member;
+				}
 			}
 		}
 
@@ -444,16 +447,19 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 			}
 		}
 
-		/* Scan the interfaces that this class implements */
-		impl = 0;
-		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+		/* Scan parent interfaces if this class is itself an interface */
+		if(ILClass_IsInterface(classInfo))
 		{
-			member = FindMemberBySignature
-				(ILClassResolve(ILImplementsGetInterface(impl)),
-				 name, signature, notThis, scope);
-			if(member)
+			impl = 0;
+			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
-				return member;
+				member = FindMemberBySignature
+					(ILClassResolve(ILImplementsGetInterface(impl)),
+					 name, signature, notThis, scope);
+				if(member)
+				{
+					return member;
+				}
 			}
 		}
 

@@ -18,6 +18,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+%{
+
+/*
+ * Error reporting function for "ILGenImplementsAllInterfaces".
+ */
+static void InterfaceErrorFunc(ILNode *node, ILClass *classInfo,
+							   ILMember *missingMember)
+{
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("`%s' does not implement `%s'"),
+				  CSTypeToName(ILClassToType(classInfo)),
+				  CSItemToName((ILProgramItem *)missingMember));
+}
+
+%}
+
 /*
  * Perform semantic analysis for class definitions.
  */
@@ -82,6 +98,12 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	{
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Int32;
+	}
+	if(node->classInfo && !ILClass_IsInterface(node->classInfo))
+	{
+		/* Check that the class implements all of its interfaces */
+		ILGenImplementsAllInterfaces(info, (ILNode *)node, node->classInfo,
+									 InterfaceErrorFunc);
 	}
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{

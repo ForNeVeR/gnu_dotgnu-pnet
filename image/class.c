@@ -1593,6 +1593,98 @@ void ILClassSetUserData(ILClass *info, void *data)
 	info->userData = data;
 }
 
+ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method)
+{
+	ILMethod *method2;
+	ILMethod *result = 0;
+	const char *name;
+	ILType *signature;
+	ILClass *parent;
+	ILOverride *over;
+
+	/* Cache the name and signature information for the interface method */
+	name = ILMethod_Name(method);
+	signature = ILMethod_Signature(method);
+
+	/* Search for an exact match within the class, looking for
+	   a newly declared virtual method in a new slot */
+	method2 = 0;
+	while((method2 = (ILMethod *)ILClassNextMemberByKind
+					(info, (ILMember *)method2,
+				 	 IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if((ILMethod_Attrs(method2) &
+				(IL_META_METHODDEF_MEMBER_ACCESS_MASK |
+				 IL_META_METHODDEF_VIRTUAL |
+				 IL_META_METHODDEF_NEW_SLOT)) ==
+						(IL_META_METHODDEF_PUBLIC |
+				 		 IL_META_METHODDEF_VIRTUAL |
+						 IL_META_METHODDEF_NEW_SLOT))
+		{
+			if(strcmp(ILMethod_Name(method2), name) != 0 ||
+			   !ILTypeIdentical(ILMethod_Signature(method2), signature))
+			{
+				continue;
+			}
+			result = method2;
+			break;
+		}
+	}
+
+	/* If the result is still unknown, then search the class
+	   hierarchy for a normal virtual method match */
+	if(!result)
+	{
+		parent = info;
+		while(parent != 0)
+		{
+			method2 = 0;
+			while((method2 = (ILMethod *)ILClassNextMemberByKind
+							(parent, (ILMember *)method2,
+						 	 IL_META_MEMBERKIND_METHOD)) != 0)
+			{
+				if((ILMethod_Attrs(method2) &
+						(IL_META_METHODDEF_MEMBER_ACCESS_MASK |
+						 IL_META_METHODDEF_VIRTUAL)) ==
+								(IL_META_METHODDEF_PUBLIC |
+						 		 IL_META_METHODDEF_VIRTUAL))
+				{
+					if(strcmp(ILMethod_Name(method2), name) != 0 ||
+					   !ILTypeIdentical(ILMethod_Signature(method2),
+					   					signature))
+					{
+						continue;
+					}
+					result = method2;
+					break;
+				}
+			}
+			if(result)
+			{
+				break;
+			}
+			parent = ILClassGetParent(parent);
+		}
+	}
+
+	/* Look for an override for the interface method */
+	over = 0;
+	while((over = (ILOverride *)ILClassNextMemberByKind
+						(info, (ILMember *)over,
+						 IL_META_MEMBERKIND_OVERRIDE)) != 0)
+	{
+		if(ILMemberResolve((ILMember *)(ILOverrideGetDecl(over)))
+				== (ILMember *)method)
+		{
+			result = ILOverrideGetBody(over);
+			break;
+		}
+	}
+
+	/* Return the method that we found to the caller */
+	return result;
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -750,6 +750,12 @@ void *ILClassGetUserData(ILClass *info);
 void ILClassSetUserData(ILClass *info, void *data);
 
 /*
+ * Get the implementation of a particular interface method
+ * on a class.  Returns NULL if no implementation found.
+ */
+ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method);
+
+/*
  * Helper macros for querying information about a class.
  */
 #define	ILClass_FromToken(image,token)	\

@@ -249,6 +249,17 @@ void ILGenItemAddAttribute(ILGenInfo *info, ILProgramItem *item,
 ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
 									  ILUInt32 num, ILType **type);
 
+/*
+ * Determine if "classInfo" fully implements all of its interfaces.
+ * The node is used for error reporting.  Returns zero if there
+ * were errors.
+ */
+typedef void (*ILGenInterfaceErrorFunc)(ILNode *node, ILClass *classInfo,
+										ILMember *missingMember);
+int ILGenImplementsAllInterfaces(ILGenInfo *info, ILNode *node,
+							     ILClass *classInfo,
+								 ILGenInterfaceErrorFunc error);
+
 #ifdef	__cplusplus
 };
 #endif

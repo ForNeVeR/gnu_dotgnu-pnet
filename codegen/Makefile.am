@@ -48,6 +48,7 @@ TREECC_OUTPUT = $(TREECC_SRCOUT) cg_nodes.h
 libILCodeGen_a_SOURCES = $(TREECC_SRCOUT) \
 						 cg_coerce.c \
 						 cg_gen.c \
+						 cg_interface.c \
 						 cg_library.c \
 						 cg_optable.c \
 						 cg_output.c \

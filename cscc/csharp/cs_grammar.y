@@ -3196,6 +3196,7 @@ InterfacePropertyDeclaration
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
 								 IL_META_METHODDEF_HIDE_BY_SIG |
+								 IL_META_METHODDEF_SPECIAL_NAME |
 								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, $4, 0, 0, 0, $6);
@@ -3256,6 +3257,7 @@ InterfaceIndexerDeclaration
 								 IL_META_METHODDEF_VIRTUAL |
 								 IL_META_METHODDEF_ABSTRACT |
 								 IL_META_METHODDEF_HIDE_BY_SIG |
+								 IL_META_METHODDEF_SPECIAL_NAME |
 								 IL_META_METHODDEF_NEW_SLOT;
 				ILNode *name = ILQualIdentSimple
 									(ILInternString("Item", 4).string);

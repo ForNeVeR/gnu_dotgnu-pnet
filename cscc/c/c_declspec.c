@@ -167,13 +167,13 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt16;
-						okSpecifiers = C_SPEC_UNSIGNED;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_SHORT;
 					}
 					else if(((spec1.specifiers | spec2.specifiers)
 								& C_SPEC_SIGNED) != 0)
 					{
 						result.baseType = ILType_Int16;
-						okSpecifiers = C_SPEC_SIGNED;
+						okSpecifiers = C_SPEC_SIGNED | C_SPEC_SHORT;
 					}
 				}
 				break;
@@ -185,7 +185,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt16;
-						okSpecifiers = C_SPEC_UNSIGNED;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_SHORT;
 					}
 				}
 				break;

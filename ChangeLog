@@ -18,6 +18,9 @@
 	add serialization support to exception classes in "System" and
 	"System.Xml".
 
+	* runtime/System/Resources/ResourceManager.cs: implement
+	"GetNeutralResourcesLanguage" and "GetSatelliteContractVersion".
+
 2003-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/RegexpMethods.cs, runtime/System/IO/Directory.cs,

@@ -27,6 +27,7 @@ using System.IO;
 using System.Reflection;
 using System.Globalization;
 using System.Collections;
+using System.Private;
 
 public class ResourceManager
 {
@@ -44,6 +45,7 @@ public class ResourceManager
 	private bool ignoreCase;
 	private Type resourceSetType;
 	private String resourceDir;
+	private static bool reEnterCheck = false;
 
 	// Constructors.
 	protected ResourceManager()
@@ -296,18 +298,78 @@ public class ResourceManager
 			}
 
 	// Get the neutral culture to use, based on an assembly's attributes.
-	[TODO]
 	protected static CultureInfo GetNeutralResourcesLanguage(Assembly a)
 			{
-				// TODO
-				return null;
+			#if !ECMA_COMPAT
+				Object[] attrs = a.GetCustomAttributes
+					(typeof(NeutralResourcesLanguageAttribute), false);
+				if(attrs != null && attrs.Length > 0)
+				{
+					String culture;
+					culture = ((NeutralResourcesLanguageAttribute)(attrs[0]))
+									.CultureName;
+					if(culture != null)
+					{
+						// Make sure that the culture name exists.
+						// We are careful not to throw an exception,
+						// because that may recursively re-enter us!
+						CultureName name;
+						name = CultureNameTable.GetNameInfoByName
+							(culture, false);
+						if(name != null)
+						{
+							return new CultureInfo(culture);
+						}
+					}
+				}
+			#endif
+				return CultureInfo.InvariantCulture;
 			}
 
 	// Get the satellite contract version from an assembly.
-	[TODO]
 	protected static Version GetSatelliteContractVersion(Assembly a)
 			{
-				// TODO
+			#if !ECMA_COMPAT
+				// Check for recursive re-entry and bail out if necessary.
+				lock(typeof(ResourceManager))
+				{
+					if(reEnterCheck)
+					{
+						return null;
+					}
+					reEnterCheck = true;
+				}
+				try
+				{
+					Object[] attrs = a.GetCustomAttributes
+						(typeof(SatelliteContractVersionAttribute), false);
+					if(attrs != null && attrs.Length > 0)
+					{
+						String version;
+						version =
+							((SatelliteContractVersionAttribute)(attrs[0]))
+										.Version;
+						if(version != null)
+						{
+							try
+							{
+								return new Version(version);
+							}
+							catch(Exception)
+							{
+								// Ignore version parsing errors.
+							}
+						}
+					}
+				}
+				finally
+				{
+					lock(typeof(ResourceManager))
+					{
+						reEnterCheck = false;
+					}
+				}
+			#endif
 				return null;
 			}
 

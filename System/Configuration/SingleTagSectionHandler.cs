@@ -25,6 +25,7 @@ namespace System.Configuration
 #if !ECMA_COMPAT
 
 using System;
+using System.Collections;
 #if SECOND_PASS
 using System.Xml;
 #endif
@@ -37,11 +38,34 @@ public class SingleTagSectionHandler : IConfigurationSectionHandler
 #if SECOND_PASS
 
 	// Create a configuration object for a section.
-	[TODO]
 	public Object Create(Object parent, Object configContext, XmlNode section)
 			{
-				// TODO
-				return null;
+				// The section must not have child nodes.
+				if(section.HasChildNodes)
+				{
+					throw new ConfigurationException
+						(S._("Config_HasChildNodes"), section.FirstChild);
+				}
+
+				// Create the hash table to hold the results.
+				Hashtable hash;
+				if(parent != null)
+				{
+					hash = new Hashtable((Hashtable)parent);
+				}
+				else
+				{
+					hash = new Hashtable();
+				}
+
+				// Add configuration information from the specified section.
+				foreach(XmlAttribute attr in section.Attributes)
+				{
+					hash[attr.Name] = attr.Value;
+				}
+
+				// Return the result hash table to the caller.
+				return hash;
 			}
 
 #endif // SECOND_PASS

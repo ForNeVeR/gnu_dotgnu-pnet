@@ -25,6 +25,7 @@ namespace System.Configuration
 #if !ECMA_COMPAT
 
 using System;
+using System.IO;
 #if SECOND_PASS
 using System.Xml;
 #endif
@@ -37,11 +38,62 @@ public class NameValueFileSectionHandler : IConfigurationSectionHandler
 #if SECOND_PASS
 
 	// Create a configuration object for a section.
-	[TODO]
 	public Object Create(Object parent, Object configContext, XmlNode section)
 			{
-				// TODO
-				return null;
+				Object coll;
+				String filename;
+				ConfigXmlDocument doc;
+
+				// Remove the "file" attribute from the section.
+				XmlAttribute file =
+					(section.Attributes.RemoveNamedItem("file")
+							as XmlAttribute);
+
+				// Load the main name/value pairs from the children.
+				coll = NameValueSectionHandler.Create
+					(parent, section, "key", "value");
+
+				// Process the "file" attribute, if it is present.
+				if(file != null && file.Value != String.Empty)
+				{
+					// Combine the base filename with the new filename.
+					filename = file.Value;
+					if(file is IConfigXmlNode)
+					{
+						filename = Path.Combine
+							(Path.GetDirectoryName
+								(((IConfigXmlNode)file).Filename), filename);
+					}
+					if(File.Exists(filename))
+					{
+						// Load the new configuration file into memory.
+						doc = new ConfigXmlDocument();
+						try
+						{
+							doc.Load(filename);
+						}
+						catch(XmlException xe)
+						{
+							throw new ConfigurationException
+								(xe.Message, xe, filename, xe.LineNumber);
+						}
+
+						// The document root must match the section name.
+						if(doc.DocumentElement.Name != section.Name)
+						{
+							throw new ConfigurationException
+								(S._("Config_DocNameMatch"),
+								 doc.DocumentElement);
+						}
+
+						// Load the contents of the file.
+						coll = NameValueSectionHandler.Create
+							(coll, doc.DocumentElement, "key", "value");
+					}
+				}
+
+				// Return the final collection to the caller.
+				return coll;
 			}
 
 #endif // SECOND_PASS

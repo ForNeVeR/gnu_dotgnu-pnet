@@ -25,14 +25,21 @@ namespace System.Configuration
 #if !ECMA_COMPAT
 
 using System;
+using System.Collections.Specialized;
+using System.Globalization;
 
 public class AppSettingsReader
 {
+	// Internal state.
+	private NameValueCollection coll;
+
 	// Constructor.
-	public AppSettingsReader() {}
+	public AppSettingsReader()
+			{
+				coll = ConfigurationSettings.AppSettings;
+			}
 
 	// Get a specific application setting value.
-	[TODO]
 	public Object GetValue(String key, Type type)
 			{
 				if(key == null)
@@ -43,8 +50,29 @@ public class AppSettingsReader
 				{
 					throw new ArgumentNullException("type");
 				}
-				// TODO
-				return null;
+				String value = coll[key];
+				if(value != null)
+				{
+					if(String.Compare(value, "None", true,
+									  CultureInfo.InvariantCulture) == 0)
+					{
+						return null;
+					}
+					try
+					{
+						return Convert.ChangeType(value, type);
+					}
+					catch(Exception)
+					{
+						throw new InvalidOperationException
+							(S._("Config_CannotConvert"));
+					}
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Config_KeyNotPresent"));
+				}
 			}
 
 }; // class AppSettingsReader

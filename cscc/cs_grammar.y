@@ -780,7 +780,7 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %type <indexer>		IndexerDeclarator
 %type <catchinfo>	CatchNameInfo
 
-%expect 18
+%expect 17
 
 %start CompilationUnit
 %%
@@ -1063,9 +1063,6 @@ NonExpressionType
 	| NonExpressionType '[' DimensionSeparators ']'	{
 				MakeBinary(ArrayType, $1, $3);
 			}
-	| Expression '[' DimensionSeparators ']'	{
-				MakeBinary(ArrayType, $1, $3);
-			}
 	| NonExpressionType '*'	{
 				MakeUnary(PtrType, $1);
 			}
@@ -1156,6 +1153,20 @@ PrimaryExpression
 	| BuiltinType '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
 	| InvocationExpression			{ $$ = $1; }
 	| PrimaryExpression '[' ExpressionList ']'	{ /* safe and unsafe */ }
+	| PrimaryExpression '[' ']'		{
+				/*
+				 * This is actually a type, but we have to recognise
+				 * it here to avoid shift/reduce conflicts in the
+				 * definition of casts in UnaryExpression.  We would
+				 * like to handle this in NonExpressionType, but then it
+				 * creates problems for casts to array types like "A[]".
+				 */
+				MakeBinary(ArrayType, $1, 1);
+			}
+	| PrimaryExpression '[' DimensionSeparatorList ']'		{
+				/* This is also a type */
+				MakeBinary(ArrayType, $1, $3);
+			}
 	| THIS							{ MakeSimple(This); }
 	| BASE '.' Identifier			{ MakeUnary(BaseAccess, $3); }
 	| BASE '[' ExpressionList ']'	{ MakeUnary(BaseElement, $3); }

@@ -176,16 +176,6 @@ static ILClass *CreateSynthetic(ILImage *image, const char *name,
 /*
  * Add methods to a synthetic class that corresponds
  * to a single-dimensional array.
- *
- * Note: strictly speaking, single-dimensional arrays
- * don't have constructors, as the "newarr" instruction
- * is used for that purpose.  However, it makes it easier
- * on the runtime engine if we treat all array types
- * uniformly.
- *
- * To remain ECMA-compliant, we mark the constructor as
- * "private", which prevents applications from calling
- * it directly.  But the runtime engine can still call it.
  */
 static int AddSArrayMethods(ILClass *info, ILType *type)
 {

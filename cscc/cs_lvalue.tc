@@ -24,8 +24,22 @@
 ILNode_SemAnalysis(ILNode_This)
 {
 	CSSemValue value;
+	ILNode_MethodDeclaration *method;
+
+	/* Find the method declaration */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* If the method is static, then we cannot use "this" */
+	if((method->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "cannot use `this' in static methods");
+		return CSSemValueDefault;
+	}
+
+	/* Get the type from the method's class and return */
 	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	value.type = ILType_FromClass(ILMethod_Owner(method->methodInfo));
 	return value;
 }
 
@@ -56,6 +70,8 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	CSSemValue value;
 	ILScopeData *data;
 	ILClass *classInfo;
+	unsigned long index;
+	ILNode_MethodDeclaration *method;
 
 	/* Look up the identifier in the current scope */
 	data = ILScopeLookup(info->currentScope, node->name, 1);
@@ -124,6 +140,39 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		}
 		break;
 
+		case IL_SCOPE_LOCAL:
+		{
+			/* This is a local variable or argument reference */
+			index = ILScopeDataGetIndex(data);
+			method = (ILNode_MethodDeclaration *)(info->currentMethod);
+			if((index & CS_LOCAL_IS_ARG) == 0)
+			{
+				/* Local variable reference */
+				value.type = ILTypeGetLocal(method->localVarSig, index);
+				*parent = ILNode_LocalVar_create
+							(index, ILTypeToMachineType(value.type));
+			}
+			else
+			{
+				/* Argument reference */
+				index &= ~CS_LOCAL_IS_ARG;
+				if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
+				{
+					value.type = ILTypeGetParam
+						(ILMethod_Signature(method->methodInfo), index);
+				}
+				else
+				{
+					value.type = ILTypeGetParam
+						(ILMethod_Signature(method->methodInfo), index - 1);
+				}
+				*parent = ILNode_ArgumentVar_create
+							(index, ILTypeToMachineType(value.type));
+			}
+			value.kind = CS_SEMKIND_LVALUE;
+		}
+		break;
+
 		default:
 		{
 			/* Don't know what to do with this (shouldn't happen) */
@@ -145,6 +194,17 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;
+}
+
+/*
+ * Perform semantic analysis for local and argument variables.
+ */
+ILNode_SemAnalysis(ILNode_LocalVar),
+ILNode_SemAnalysis(ILNode_ArgumentVar)
+{
+	/* This should never be called: these node types are
+	   synthesised when ILNode_Identifier is analysed */
+	return CSSemValueDefault;
 }
 
 /*

@@ -1,6 +1,6 @@
 /*
- * IDesignerLoaderService.cs - Implementation of the
- *	"System.ComponentModel.Design.Serialization.IDesignerLoaderService" class.
+ * IInheritanceService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IInheritanceService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,26 +19,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.ComponentModel.Design.Serialization
+namespace System.ComponentModel.Design
 {
 
 #if !ECMA_COMPAT
 
-using System.Collections;
-
-public interface IDesignerLoaderService
+public interface IInheritanceService
 {
-	// Add a load dependency.
-	void AddLoadDependency();
+	// Add inherited components.
+	void AddInheritedComponents(IComponent component, IContainer container);
 
-	// Signal that a dependent load has completed.
-	void DependentLoadComplete(bool successful, ICollection errorCollection);
+	// Get the inheritance attribute for a component.
+	InheritanceAttribute GetInheritanceAttribute(IComponent component);
 
-	// Reload the design document.
-	bool Reload();
-
-}; // interface IDesignerLoaderService
+}; // interface IInheritanceService
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.ComponentModel.Design.Serialization
+}; // namespace System.ComponentModel.Design

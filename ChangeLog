@@ -111,6 +111,13 @@
 	* ChangeLog, doc/ChangeLog-3: trim ChangeLog and move the
 	tail into "doc/ChangeLog-3".
 
+	* System/ComponentModel/InheritanceAttribute.cs,
+	System/ComponentModel/Design/IInheritanceService.cs,
+	System/ComponentModel/Design/Serialization/DesignerSerializerAttribute.cs,
+	System/ComponentModel/Design/Serialization/IDesignerLoaderService.cs,
+	System/ComponentModel/Design/Serialization/RootDesignerSerializerAttribute.cs:
+	missing classes and more signature-compatibility.
+
 2003-05-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Platform/RegexpMethods.cs, System/Private/Regex.cs

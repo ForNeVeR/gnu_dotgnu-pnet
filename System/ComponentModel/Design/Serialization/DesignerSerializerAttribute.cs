@@ -24,7 +24,8 @@ namespace System.ComponentModel.Design.Serialization
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface,
+				AllowMultiple=true, Inherited=true)]
 public sealed class DesignerSerializerAttribute : Attribute
 {
 	// Internal state.

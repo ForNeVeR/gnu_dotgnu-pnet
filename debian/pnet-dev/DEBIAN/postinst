@@ -1,9 +1,0 @@
-#!/bin/sh
-set -e
-# Automatically added by dh_installdocs
-if [ "$1" = "configure" ]; then
-	if [ -d /usr/doc -a ! -e /usr/doc/pnet-dev -a -d /usr/share/doc/pnet-dev ]; then
-		ln -sf ../share/doc/pnet-dev /usr/doc/pnet-dev
-	fi
-fi
-# End automatically added section

@@ -183,7 +183,15 @@ public sealed class Directory
 	// Determine if a directory with a specific path exists.
 	public static bool Exists(String path)
 			{
-				ValidatePath(path);
+				try
+				{
+					ValidatePath(path);
+				}
+				catch (ArgumentException)
+				{
+					return false;
+				}
+				
 				return (FileMethods.GetFileType(path) == FileType.directory);
 			}
 

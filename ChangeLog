@@ -4,6 +4,10 @@
 	* runtime/System/Collections/Hashtable.cs: Fix a few cases where 
 	the "removed" object should be checked for.
 
+	* System/CodeDom/rules.txt, System/CodeDom/RuleOutput.cs,
+	System/CodeDom/CodeMemberProperty.cs: Move CodeMemberProperty class
+	out of rule-generated code to fix the HasSet/HasGet properties.
+
 2004-09-11  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/Thread.cs: Updated private

@@ -1,4 +1,11 @@
 
+2002-06-13	Gopal.V  <gopalv82@symonds.net>
+
+	* csharp/stmt/Makefile.am, csharp/stmt/foreach4.cs, 
+	csharp/stmt/foreach4.il, csharp/stmt/foreach4.jl : test 
+	code generation of "foreach" statements that iterate over 
+	collections.
+
 2002-06-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/switch1.il, csharp/stmt/switch1.jl: new output

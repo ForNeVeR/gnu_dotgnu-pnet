@@ -143,12 +143,6 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				Lower();
 			}
 
-	// Iconify the window.
-	void IToolkitWindow.Iconify()
-			{
-				// Not used for ordinary windows.
-			}
-
 	// Reparent this window to underneath a new parent.
 	void IToolkitWindow.Reparent(IToolkitWindow parent, int x, int y)
 			{
@@ -169,12 +163,6 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 					(toolkit, new Xsharp.Graphics(this));
 			}
 
-	// Set the window title (top-level windows only).
-	void IToolkitWindow.SetTitle(String title)
-			{
-				// Not used for ordinary windows.
-			}
-
 	// Set the foreground of the window to a solid color.
 	void IToolkitWindow.SetForeground(System.Drawing.Color color)
 			{
@@ -185,12 +173,6 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	void IToolkitWindow.SetBackground(System.Drawing.Color color)
 			{
 				Background = DrawingToolkit.DrawingToXColor(color);
-			}
-
-	// Change the set of supported window decorations and functions.
-	void IToolkitWindow.SetWindowFlags(ToolkitWindowFlags flags)
-			{
-				// Not used for ordinary windows.
 			}
 
 	// Move this window to above one of its siblings.

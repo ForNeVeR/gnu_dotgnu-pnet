@@ -9,6 +9,22 @@
 	System.Windows.Forms/VBoxLayout.cs: fix some bugs in the layout
 	management classes and the file dialog.
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitTopLevelWindow.cs,
+	System.Drawing/Toolkit/IToolkitWindow.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Windows.Forms/Form.cs,
+	System.Windows.Forms/MessageBox.cs: add the "IToolkitTopLevelWindow"
+	interface to encapsulate top-level window operations; implement some
+	more top-level window operations in "Form".
+
 2003-11-30  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:

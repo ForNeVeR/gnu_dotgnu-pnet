@@ -76,6 +76,13 @@ public class Form : ContainerControl
 			}
 
 	// Get or set this control's properties.
+	private IToolkitTopLevelWindow ToolkitWindow
+			{
+				get
+				{
+					return (toolkitWindow as IToolkitTopLevelWindow);
+				}
+			}
 	public IButtonControl AcceptButton
 			{
 				get
@@ -242,7 +249,6 @@ public class Form : ContainerControl
 					SetWindowFlag(ToolkitWindowFlags.Help, value);
 				}
 			}
-	[TODO]
 	public Icon Icon
 			{
 				get
@@ -251,8 +257,14 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// TODO: send the icon to the window manager.
-					icon = value;
+					if(icon != value)
+					{
+						icon = value;
+						if(ToolkitWindow != null)
+						{
+							ToolkitWindow.SetIcon(value);
+						}
+					}
 				}
 			}
 	public bool IsMdiChild
@@ -310,7 +322,6 @@ public class Form : ContainerControl
 					// TODO
 				}
 			}
-	[TODO]
 	public Size MaximumSize
 			{
 				get
@@ -319,7 +330,6 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// TODO: send the maximum size to the window manager.
 					if(value.Width < 0)
 					{
 						throw new ArgumentOutOfRangeException
@@ -330,7 +340,14 @@ public class Form : ContainerControl
 						throw new ArgumentOutOfRangeException
 							("value.Height", S._("SWF_NonNegative"));
 					}
-					maximumSize = value;
+					if(maximumSize != value)
+					{
+						maximumSize = value;
+						if(ToolkitWindow != null)
+						{
+							ToolkitWindow.SetMaximumSize(value);
+						}
+					}
 				}
 			}
 	public Form[] MdiChildren
@@ -364,7 +381,6 @@ public class Form : ContainerControl
 					SetWindowFlag(ToolkitWindowFlags.Minimize, value);
 				}
 			}
-	[TODO]
 	public Size MinimumSize
 			{
 				get
@@ -373,7 +389,6 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// TODO: send the minimum size to the window manager.
 					if(value.Width < 0)
 					{
 						throw new ArgumentOutOfRangeException
@@ -384,7 +399,14 @@ public class Form : ContainerControl
 						throw new ArgumentOutOfRangeException
 							("value.Height", S._("SWF_NonNegative"));
 					}
-					minimumSize = value;
+					if(minimumSize != value)
+					{
+						minimumSize = value;
+						if(ToolkitWindow != null)
+						{
+							ToolkitWindow.SetMinimumSize(value);
+						}
+					}
 				}
 			}
 	public MainMenu Menu
@@ -550,7 +572,6 @@ public class Form : ContainerControl
 					transparencyKey = value;
 				}
 			}
-	[TODO]
 	public FormWindowState WindowState
 			{
 				get
@@ -559,8 +580,27 @@ public class Form : ContainerControl
 				}
 				set
 				{
-					// TODO: pass the state change to the window manager
-					windowState = value;
+					if(windowState != value)
+					{
+						windowState = value;
+						if(ToolkitWindow != null)
+						{
+							if(value == FormWindowState.Normal)
+							{
+								ToolkitWindow.Restore();
+							}
+						#if !CONFIG_COMPACT_FORMS
+							else if(value == FormWindowState.Minimized)
+							{
+								ToolkitWindow.Iconify();
+							}
+						#endif
+							else if(value == FormWindowState.Maximized)
+							{
+								ToolkitWindow.Maximize();
+							}
+						}
+					}
 				}
 			}
 
@@ -571,13 +611,31 @@ public class Form : ContainerControl
 				CreateParams cp = CreateParams;
 
 				// Create the window and set its initial caption.
-				IToolkitWindow window =
+				IToolkitTopLevelWindow window =
 					ToolkitManager.Toolkit.CreateTopLevelWindow
-						(cp.Width - ToolkitDrawSize.Width, cp.Height - ToolkitDrawSize.Height, this);
+						(cp.Width - ToolkitDrawSize.Width,
+						 cp.Height - ToolkitDrawSize.Height, this);
 				window.SetTitle(cp.Caption);
 
-				// Adjust the window decorations to match our requirements.
+				// Adjust the window hints to match our requirements.
 				SetWindowFlags(window);
+				if(icon != null)
+				{
+					window.SetIcon(icon);
+				}
+				window.SetMaximumSize(maximumSize);
+				window.SetMinimumSize(minimumSize);
+			#if !CONFIG_COMPACT_FORMS
+				if(windowState == FormWindowState.Minimized)
+				{
+					window.Iconify();
+				}
+				else
+			#endif
+				if(windowState == FormWindowState.Maximized)
+				{
+					window.Maximize();
+				}
 
 				// Center the window on-screen if necessary.
 				if(formStartPosition == FormStartPosition.CenterScreen)
@@ -657,7 +715,7 @@ public class Form : ContainerControl
 	// Set the current state of the window decoration flags on a window.
 	private void SetWindowFlags(IToolkitWindow window)
 			{
-				window.SetWindowFlags(GetFullFlags());
+				((IToolkitTopLevelWindow)window).SetWindowFlags(GetFullFlags());
 			}
 
 	// Set the current state of a window decoration flag.
@@ -1200,9 +1258,9 @@ public class Form : ContainerControl
 	// Override the "TextChanged" event.
 	protected override void OnTextChanged(EventArgs e)
 			{
-				if(toolkitWindow != null)
+				if(ToolkitWindow != null)
 				{
-					toolkitWindow.SetTitle(Text);
+					ToolkitWindow.SetTitle(Text);
 				}
 				base.OnTextChanged(e);
 			}

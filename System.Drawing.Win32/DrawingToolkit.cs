@@ -212,9 +212,9 @@ public class DrawingToolkit : IToolkit
 			}
 
 	// Create a form.
-	public IToolkitWindow CreateTopLevelWindow(int width, int height, IToolkitEventSink sink)
+	public IToolkitTopLevelWindow CreateTopLevelWindow(int width, int height, IToolkitEventSink sink)
 			{
-				DrawingWindow window = new DrawingTopLevelWindow(this, string.Empty, width, height, sink);
+				DrawingTopLevelWindow window = new DrawingTopLevelWindow(this, string.Empty, width, height, sink);
 				windows.Add(window);
 				window.CreateWindow();
 				return window;

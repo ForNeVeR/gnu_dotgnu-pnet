@@ -144,8 +144,8 @@ public class NullToolkit : IToolkit
 			}
 
 	// Create a top-level application window.
-	public virtual IToolkitWindow CreateTopLevelWindow(int width, int height,
-													   IToolkitEventSink sink)
+	public virtual IToolkitTopLevelWindow CreateTopLevelWindow
+				(int width, int height, IToolkitEventSink sink)
 			{
 				return null;
 			}

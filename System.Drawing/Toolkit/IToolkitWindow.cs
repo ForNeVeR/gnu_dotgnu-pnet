@@ -62,26 +62,17 @@ public interface IToolkitWindow : IDisposable
 	// Lower this window respective to its siblings.
 	void Lower();
 
-	// Iconify the window (top-level windows only).
-	void Iconify();
-
 	// Reparent this window to underneath a new parent.
 	void Reparent(IToolkitWindow parent, int x, int y);
 
 	// Get a toolkit graphics object for this window.
 	IToolkitGraphics GetGraphics();
 
-	// Set the window title (top-level windows only).
-	void SetTitle(String title);
-
 	// Set the foreground of the window to a solid color.
 	void SetForeground(Color color);
 
 	// Set the background of the window to a solid color.
 	void SetBackground(Color color);
-
-	// Change the set of supported window decorations and functions.
-	void SetWindowFlags(ToolkitWindowFlags flags);
 
 	// Move this window to above one of its siblings.
 	void MoveToAbove(IToolkitWindow sibling);

@@ -97,8 +97,8 @@ public interface IToolkit
 	IntPtr GetHalftonePalette();
 
 	// Create a top-level application window.
-	IToolkitWindow CreateTopLevelWindow(int width, int height,
-										IToolkitEventSink sink);
+	IToolkitTopLevelWindow CreateTopLevelWindow
+			(int width, int height, IToolkitEventSink sink);
 
 	// Create a top-level dialog shell.
 	IToolkitWindow CreateTopLevelDialog

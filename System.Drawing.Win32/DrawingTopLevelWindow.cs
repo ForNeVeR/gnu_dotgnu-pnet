@@ -22,7 +22,7 @@ namespace System.Drawing.Toolkit
 
 using System;
 
-internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
+internal class DrawingTopLevelWindow : DrawingWindow, IToolkitTopLevelWindow
 {
 
 	protected static uint createCount;
@@ -56,8 +56,66 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitWindow
 				topOfHeirarchy = this;
 			}
 
+	void IToolkitTopLevelWindow.Iconify()
+	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("Can not minimize, window not created yet");
+		
+		Win32.Api.CloseWindow(hwnd);
+		//Console.WriteLine("DrawingWindow.Iconify, "+sink);
+	}
+
+	// Maximize the window.
+	void IToolkitTopLevelWindow.Maximize()
+	{
+		// TODO
+	}
+
+	// Restore the window from its iconified or maximized state.
+	void IToolkitTopLevelWindow.Restore()
+	{
+		// TODO
+	}
+
+	// Set the owner for modal and modeless dialog support.
+	void IToolkitTopLevelWindow.SetDialogOwner(IToolkitTopLevelWindow owner)
+	{
+		// TODO
+	}
+
+	// Set this window's icon.
+	void IToolkitTopLevelWindow.SetIcon(Icon icon)
+	{
+		// TODO
+	}
+
+	// Set this window's maximum size.
+	void IToolkitTopLevelWindow.SetMaximumSize(Size size)
+	{
+		// TODO
+	}
+
+	// Set this window's minimum size.
+	void IToolkitTopLevelWindow.SetMinimumSize(Size size)
+	{
+		// TODO
+	}
+
+	// Set the window title.
+	void IToolkitTopLevelWindow.SetTitle(String title)
+	{
+		if (hwnd == IntPtr.Zero)
+			throw new ApplicationException("DrawingWindow.SetTitle ERROR:Cant set title. Hwnd not created yet");
+		if(title == null)
+		{
+			title = String.Empty;
+		}
+		Win32.Api.SetWindowTextA(hwnd, title);
+		//Console.WriteLine("DrawingWindow.SetTitle, " + sink);
+	}
+
 	// Change the set of supported window decorations and functions.
-	void IToolkitWindow.SetWindowFlags(ToolkitWindowFlags flags)
+	void IToolkitTopLevelWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
 				if (hwnd == IntPtr.Zero)
 					throw new ApplicationException("DrawingTopLevelWindow.SetWindowsFlags ERROR: Cant SetWindowsFlags. Hwnd not created yet");

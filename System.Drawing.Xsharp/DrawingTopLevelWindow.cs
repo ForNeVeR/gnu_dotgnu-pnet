@@ -27,7 +27,8 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
 using Xsharp;
 
-internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
+internal sealed class DrawingTopLevelWindow
+	: TopLevelWindow, IToolkitTopLevelWindow
 {
 	// Internal state.
 	private IToolkit toolkit;
@@ -142,12 +143,6 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				Lower();
 			}
 
-	// Iconify the window.
-	void IToolkitWindow.Iconify()
-			{
-				Iconify();
-			}
-
 	// Reparent this window to underneath a new parent.
 	void IToolkitWindow.Reparent(IToolkitWindow parent, int x, int y)
 			{
@@ -168,16 +163,6 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 					(toolkit, new Xsharp.Graphics(this));
 			}
 
-	// Set the window title (top-level windows only).
-	void IToolkitWindow.SetTitle(String title)
-			{
-				if(title == null)
-				{
-					title = String.Empty;
-				}
-				Name = title;
-			}
-
 	// Set the foreground of the window to a solid color.
 	void IToolkitWindow.SetForeground(System.Drawing.Color color)
 			{
@@ -190,8 +175,98 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				Background = DrawingToolkit.DrawingToXColor(color);
 			}
 
+	// Move this window to above one of its siblings.
+	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
+			{
+				// TODO
+			}
+
+	// Move this window to below one of its siblings.
+	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
+			{
+				// TODO
+			}
+
+	// Get the HWND for this window.  IntPtr.Zero if not supported.
+	IntPtr IToolkitWindow.GetHwnd()
+			{
+				return IntPtr.Zero;
+			}
+
+	// Invalidate this window.
+	void IToolkitWindow.Invalidate()
+			{
+				Repaint();
+			}
+
+	// Invalidate a rectangle within this window.
+	void IToolkitWindow.Invalidate(int x, int y, int width, int height)
+			{
+				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
+				DrawingToolkit.ValidateWindowSize(ref width, ref height);
+				Repaint(x, y, width, height);
+			}
+
+	// Force an update of all invalidated regions.
+	void IToolkitWindow.Update()
+			{
+				Display.Flush();
+			}
+
+	// Iconify the window.
+	void IToolkitTopLevelWindow.Iconify()
+			{
+				Iconify();
+			}
+
+	// Maximize the window.
+	void IToolkitTopLevelWindow.Maximize()
+			{
+				// TODO
+			}
+
+	// Restore the window from its iconified or maximized state.
+	void IToolkitTopLevelWindow.Restore()
+			{
+				// TODO
+			}
+
+	// Set the owner for modal and modeless dialog support.
+	void IToolkitTopLevelWindow.SetDialogOwner(IToolkitTopLevelWindow owner)
+			{
+				// TODO
+			}
+
+	// Set this window's icon.
+	void IToolkitTopLevelWindow.SetIcon(Icon icon)
+			{
+				// TODO
+			}
+
+	// Set this window's maximum size.
+	void IToolkitTopLevelWindow.SetMaximumSize(Size size)
+			{
+				// TODO
+			}
+
+	// Set this window's minimum size.
+	void IToolkitTopLevelWindow.SetMinimumSize(Size size)
+			{
+				// TODO
+			}
+
+	// Set the window title (top-level windows only).
+	void IToolkitTopLevelWindow.SetTitle(String title)
+			{
+				if(title == null)
+				{
+					title = String.Empty;
+				}
+				Name = title;
+			}
+
 	// Change the set of supported window decorations and functions.
-	void IToolkitWindow.SetWindowFlags(ToolkitWindowFlags flags)
+	void IToolkitTopLevelWindow.SetWindowFlags(ToolkitWindowFlags flags)
 			{
 				// Set the default Motif decoration flags.
 				MotifDecorations decorations = MotifDecorations.All;
@@ -244,44 +319,6 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				Decorations = decorations;
 				Functions = functions;
 				InputType = inputType;
-			}
-
-	// Move this window to above one of its siblings.
-	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
-			{
-				// TODO
-			}
-
-	// Move this window to below one of its siblings.
-	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
-			{
-				// TODO
-			}
-
-	// Get the HWND for this window.  IntPtr.Zero if not supported.
-	IntPtr IToolkitWindow.GetHwnd()
-			{
-				return IntPtr.Zero;
-			}
-
-	// Invalidate this window.
-	void IToolkitWindow.Invalidate()
-			{
-				Repaint();
-			}
-
-	// Invalidate a rectangle within this window.
-	void IToolkitWindow.Invalidate(int x, int y, int width, int height)
-			{
-				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
-				DrawingToolkit.ValidateWindowSize(ref width, ref height);
-				Repaint(x, y, width, height);
-			}
-
-	// Force an update of all invalidated regions.
-	void IToolkitWindow.Update()
-			{
-				Display.Flush();
 			}
 
 	// Override the button press event from Xsharp.

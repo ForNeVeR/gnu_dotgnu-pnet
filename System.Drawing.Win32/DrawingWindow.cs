@@ -60,19 +60,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 		this.toolkit = toolkit;
 	}
 
-	// Set the window title (top-level windows only).
-	void IToolkitWindow.SetTitle(String title)
-	{
-		if (hwnd == IntPtr.Zero)
-			throw new ApplicationException("DrawingWindow.SetTitle ERROR:Cant set title. Hwnd not created yet");
-		if(title == null)
-		{
-			title = String.Empty;
-		}
-		Win32.Api.SetWindowTextA(hwnd, title);
-		//Console.WriteLine("DrawingWindow.SetTitle, " + sink);
-	}
-
 	void IToolkitWindow.Lower()
 	{
 		//if (hwnd == IntPtr.Zero)
@@ -211,10 +198,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 		Dispose(false);
 	}
 
-	void IToolkitWindow.SetWindowFlags(System.Drawing.Toolkit.ToolkitWindowFlags flags)
-	{
-	}
-
 	// Set the background of the window to a solid color.
 	void IToolkitWindow.SetBackground(System.Drawing.Color color)
 	{
@@ -289,16 +272,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 	void IToolkitWindow.SetForeground(Color color)
 	{
 	}
-
-	void IToolkitWindow.Iconify()
-	{
-		if (hwnd == IntPtr.Zero)
-			throw new ApplicationException("Can not minimize, window not created yet");
-		
-		Win32.Api.CloseWindow(hwnd);
-		//Console.WriteLine("DrawingWindow.Iconify, "+sink);
-	}
-
 
 	// Get a toolkit graphics object for this window.
 	IToolkitGraphics IToolkitWindow.GetGraphics()

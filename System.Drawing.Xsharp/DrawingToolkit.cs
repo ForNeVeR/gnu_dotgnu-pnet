@@ -360,7 +360,8 @@ public sealed class DrawingToolkit : IToolkit
 			}
 
 	// Create a top-level application window.
-	public IToolkitWindow CreateTopLevelWindow(int width, int height, IToolkitEventSink sink)
+	public IToolkitTopLevelWindow CreateTopLevelWindow
+				(int width, int height, IToolkitEventSink sink)
 			{
 				ValidateWindowSize(ref width, ref height);
 				return new DrawingTopLevelWindow

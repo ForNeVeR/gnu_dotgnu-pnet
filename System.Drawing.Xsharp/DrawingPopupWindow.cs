@@ -211,7 +211,7 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 	// Force an update of all invalidated regions.
 	void IToolkitWindow.Update()
 			{
-				Update();
+				Update(false);
 				Display.Flush();
 			}
 

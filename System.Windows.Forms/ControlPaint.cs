@@ -43,63 +43,52 @@ public sealed class ControlPaint
 				}
 			}
 
-	// Convert HSB values into an RGB value.  Algorithm based on:
-	// http://www.cs.rit.edu/~ncs/color/t_convert.html
+	// Convert HSB values into an RGB value.
+	// Adapted from the algoritm in Foley and Van-Dam.
 	private static Color FromHSB(float hue, float saturation, float brightness)
+	{
+
+		float r=0, g=0, b=0;
+		if(brightness != 0)
+		{
+			if(saturation==0)
 			{
-				float f, p, q, t, r, g, b;
-				int temp;
-				if(saturation == 0.0f)
-				{
-					temp = (int)(brightness * 255.0f);
-					return Color.FromArgb(temp, temp, temp);
-				}
+				r=g=b=brightness;
+			} 
+			else 
+			{
+				float temp2;
+				if (brightness<=0.5)
+					temp2 = brightness * (1.0f + saturation);
 				else
+					temp2 = brightness + saturation - brightness*saturation;
+
+				float temp1 = 2.0f * brightness - temp2;
+				float[] t=new float[]{hue + 120.0f, hue, hue - 120.0f};
+				float[] color=new float[]{0, 0, 0};
+				for(int i=0;i<3;i++)
 				{
-					hue /= 60.0f;
-					temp = (int)hue;
-					f = hue - (float)temp;
-					p = brightness * (1.0f - saturation);
-					q = brightness * (1.0f - saturation * f);
-					t = brightness * (1.0f - saturation * (1.0f - f));
-					switch(temp)
-					{
-						case 0:
-							r = brightness;
-							g = t;
-							b = p;
-							break;
-						case 1:
-							r = q;
-							g = brightness;
-							b = p;
-							break;
-						case 2:
-							r = p;
-							g = brightness;
-							b = t;
-							break;
-						case 3:
-							r = p;
-							g = q;
-							b = brightness;
-							break;
-						case 4:
-							r = t;
-							g = p;
-							b = brightness;
-							break;
-						default:
-							r = brightness;
-							g = p;
-							b = q;
-							break;
-					}
-					return Color.FromArgb
-						((int)(r * 255.0f), (int)(g * 255.0f),
-						 (int)(b * 255.0f));
+					if(t[i] < 0.0f)
+						t[i] += 360.0f;
+					if(t[i] > 360.0f)
+						t[i] -= 360.0f;
+  
+					if(t[i] < 60.0f)
+						color[i] = temp1 + (temp2 - temp1) * t[i] / 60.0f;
+					else if(t[i] < 180.0f)
+						color[i] = temp2;
+					else if(t[i] < 240.0f)
+						color[i] = temp1 + (temp2 - temp1) * (240.0f - t[i]) / 60.0f;
+					else
+						color[i] = temp1;
 				}
+				r=color[0];
+				g=color[1];
+				b=color[2];
 			}
+		}
+		return Color.FromArgb((int)(255*r),(int)(255*g),(int)(255*b)); 
+	}
 
 	// Get the "dark" version of a color.
 	public static Color Dark(Color baseColor)
@@ -138,7 +127,7 @@ public sealed class ControlPaint
 				float hue = baseColor.GetHue();
 				float saturation = baseColor.GetSaturation();
 				float brightness = baseColor.GetBrightness();
-				brightness -= percOfDarkDark * 0.666f;
+				brightness -= brightness * percOfDarkDark * 0.333f;
 				if(brightness < 0.0f)
 				{
 					brightness = 0.0f;
@@ -183,12 +172,12 @@ public sealed class ControlPaint
 				float hue = baseColor.GetHue();
 				float saturation = baseColor.GetSaturation();
 				float brightness = baseColor.GetBrightness();
-				brightness += percOfLightLight * 0.666f;
+				brightness += brightness * percOfLightLight * 0.5f;
 				if(brightness > 1.0f)
 				{
 					brightness = 1.0f;
 				}
-				return FromHSB(hue, saturation, brightness);
+				return  FromHSB(hue, saturation, brightness);
 			}
 
 	// Draw a simple button border.

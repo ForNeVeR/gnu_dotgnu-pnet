@@ -225,6 +225,8 @@ namespace System.Windows.Forms
 		{
 			get
 			{
+				if (imageIndex == -1 && treeView != null)
+					return treeView.ImageIndex;
 				return imageIndex;
 			}
 			set
@@ -388,6 +390,8 @@ namespace System.Windows.Forms
 		{
 			get
 			{
+				if (selectedImageIndex == -1 && treeView != null)
+					return treeView.SelectedImageIndex;
 				return selectedImageIndex;
 			}
 			set

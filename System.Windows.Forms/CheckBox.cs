@@ -62,7 +62,7 @@ public class CheckBox : ButtonBase
 				{
 					checkState = ButtonState.Checked;
 				}
-				else if(state == CheckState.Indeterminate)
+				else //state == CheckState.Indeterminate
 				{
 					// Special flag for "IThemePainter.DrawCheckBox".
 					checkState = ButtonState.Checked | (ButtonState)0x10000;

@@ -33,7 +33,7 @@ namespace System.Windows.Forms
 		private bool fullRowSelect;
 		private bool hideSelection;
 		private bool hotTracking;
-		internal int imageIndex;
+		internal int imageIndex = 0;
 		private ImageList imageList;
 		private int indent;
 		private int itemHeight;
@@ -42,7 +42,7 @@ namespace System.Windows.Forms
 		private string pathSeparator = @"\";
 		internal TreeNode root;
 		private bool scrollable;
-		internal int selectedImageIndex;
+		internal int selectedImageIndex = 0;
 		internal TreeNode selectedNode;
 		private bool showLines;
 		private bool showPlusMinus;
@@ -574,18 +574,34 @@ namespace System.Windows.Forms
 				{
 					node.heirarchyMarkerBounds = new Rectangle(x, y , indent - 6, ItemHeight);
 					DrawHeirarchyMarker(g, node);
-					node.bounds.Size = g.MeasureString(node.Text, Font).ToSize();
+					int imageWidth = 0;
 					node.bounds.Location = new Point(x + indent, y + 1);
+					if (imageList != null)
+					{
+						// Padding.
+						imageWidth += 3;
+						Image image;
+						if (node == selectedNode)
+							image = imageList.Images[selectedImageIndex];
+						else
+							image = imageList.Images[imageIndex];
+						g.DrawImage(image, node.bounds.X + imageWidth, node.bounds.Y);
+						// Padding and size.
+						imageWidth += image.Width + 3;
+					}
+					Size textSize = g.MeasureString(node.Text, Font).ToSize();
+					node.bounds.Size = new Size(textSize.Width +imageWidth, textSize.Height);
+					Rectangle textBounds = new Rectangle(node.bounds.X + imageWidth, node.bounds.Y, textSize.Width, textSize.Height);
 					if (node == selectedNode && Focused)
 					{
-						g.FillRectangle(SystemBrushes.Highlight,node.bounds);
-						g.DrawString(node.Text, Font, SystemBrushes.HighlightText, node.bounds,format);
-						Rectangle r = node.bounds;
+						g.FillRectangle(SystemBrushes.Highlight,textBounds);
+						g.DrawString(node.Text, Font, SystemBrushes.HighlightText, textBounds,format);
+						Rectangle r = textBounds;
 						r = new Rectangle(r.X - 1, r.Y - 1, r.Width + 1, r.Height + 1);
 						ControlPaint.DrawFocusRectangle(g, r);
 					}
 					else
-						g.DrawString(node.Text, Font, SystemBrushes.ControlText, node.bounds,format);
+						g.DrawString(node.Text, Font, SystemBrushes.ControlText, textBounds,format);
 				}
 				if (!inView)
 				{

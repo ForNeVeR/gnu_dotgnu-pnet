@@ -64,25 +64,16 @@ ILNode_SemAnalysis(ILNode_NewScope)
 %{
 
 /*
- * Report an accessibility error.
- */
-static void AccessibilityError(ILNode *node, const char *name,
-							   ILClass *classInfo)
-{
-	const char *namespace = ILClass_Namespace(classInfo);
-	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-				  "`%s%s%s.%s' is not accessible in the current scope",
-				  (namespace ? namespace : ""),
-				  (namespace ? "." : ""), ILClass_Name(classInfo), name);
-}
-
-/*
  * Convert a semantic value into an l-value or r-value if necessary.
  */
 static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
-							   CSSemValue value, char *name)
+							   CSSemValue value, char *name, ILNode *expr)
 {
 	ILField *field;
+	ILProperty *property;
+	ILType *signature;
+	ILMethod *getter;
+	ILMethod *setter;
 
 	switch(value.kind)
 	{
@@ -101,13 +92,8 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 				return value;
 			}
 
-			/* Find the field descriptor and check its access */
+			/* Find the field descriptor */
 			field = (ILField *)(value.type);
-			if(!ILMemberAccessible((ILMember *)field,
-					((ILNode_ClassDefn *)(info->currentClass))->classInfo))
-			{
-				AccessibilityError((ILNode *)node, name, ILField_Owner(field));
-			}
 
 			/* Create the final semantic type */
 			value.kind = CS_SEMKIND_LVALUE;
@@ -117,6 +103,10 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			if(ILField_IsStatic(field))
 			{
 				*parent = ILNode_StaticField_create(field);
+			}
+			else if(expr)
+			{
+				*parent = ILNode_MemberField_create(expr, field);
 			}
 			else
 			{
@@ -128,6 +118,68 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 
 		case CS_SEMKIND_PROPERTY:
 		{
+			/* Reference to a class field */
+			if(!(info->currentMethod))
+			{
+				/* We are performing semantic analysis of declarations,
+				   which does not permit property to be used as types */
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`%s' is not declared as a type in the current scope",
+					  name);
+				value.kind = CS_SEMKIND_TYPE;
+				value.type = ILType_Int32;
+				return value;
+			}
+
+			/* Find the property descriptor */
+			property = (ILProperty *)(value.type);
+
+			/* Create the final semantic type */
+			signature = ILProperty_Signature(property);
+			getter = ILProperty_Getter(property);
+			setter = ILProperty_Setter(property);
+			if(getter != 0)
+			{
+				if(setter != 0)
+				{
+					/* Both "get" and "set" are supported */
+					value.kind = CS_SEMKIND_LVALUE;
+				}
+				else
+				{
+					/* Only "get" is supported */
+					value.kind = CS_SEMKIND_RVALUE;
+				}
+			}
+			else if(setter != 0)
+			{
+				/* Only "set" is supported */
+				value.kind = CS_SEMKIND_SVALUE;
+			}
+			else
+			{
+				/* Neither "get" nor "set" is supported */
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "property has neither `get' nor `set' methods");
+				value.kind = CS_SEMKIND_LVALUE;
+			}
+			value.type = signature->un.method.retType;
+
+			/* Replace this identifier with a property access node */
+			if((getter != 0 && ILMethod_IsStatic(getter)) ||
+			   (setter != 0 && ILMethod_IsStatic(setter)))
+			{
+				*parent = ILNode_StaticProperty_create(property);
+			}
+			else if(expr)
+			{
+				*parent = ILNode_MemberProperty_create(expr, property);
+			}
+			else
+			{
+				*parent = ILNode_MemberProperty_create
+							(ILNode_This_create(), property);
+			}
 		}
 		break;
 
@@ -189,7 +241,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	value = CSResolveSimpleName(info, (ILNode *)node, node->name);
 
 	/* Convert the result into an l-value or r-value and return it */
-	return SemToLRValue((ILNode *)node, info, parent, value, node->name);
+	return SemToLRValue((ILNode *)node, info, parent, value, node->name, 0);
 }
 
 /*
@@ -208,45 +260,7 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 	value = CSResolveMemberName(info, (ILNode *)node, value, name);
 
 	/* Convert the result into an l-value or r-value and return it */
-	return SemToLRValue((ILNode *)node, info, parent, value, name);
-
-#if 0
-	/* Determine how to resolve the right part of the identifier */
-	switch(value.kind)
-	{
-		case CS_SEMKIND_LVALUE:
-		case CS_SEMKIND_RVALUE:
-		{
-			/* Looking for an instance member of an object's type */
-		}
-		break;
-
-		case CS_SEMKIND_TYPE:
-		{
-			/* Looking for a static member of a type */
-		}
-		break;
-
-#if 0
-		case CS_SEMKIND_SCOPE:
-		{
-			/* Look in the scope for the name */
-		}
-		break;
-#endif
-
-		default:
-		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-						  "invalid left operand to `.'");
-			value = CSSemValueDefault;
-		}
-		break;
-	}
-
-	/* Done */
-	return value;
-#endif
+	return SemToLRValue((ILNode *)node, info, parent, value, name, node->left);
 }
 
 /*
@@ -266,9 +280,17 @@ ILNode_SemAnalysis(ILNode_ArgumentVar)
 ILNode_SemAnalysis(ILNode_MemberAccess)
 {
 	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	char *name;
+
+	/* Get the semantic value for the left part of the identifier */
+	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+
+	/* Resolve the member */
+	name = ILQualIdentName(node->expr2, 0);
+	value = CSResolveMemberName(info, (ILNode *)node, value, name);
+
+	/* Convert the result into an l-value or r-value and return it */
+	return SemToLRValue((ILNode *)node, info, parent, value, name, node->expr1);
 }
 
 /*
@@ -309,7 +331,9 @@ ILNode_SemAnalysis(ILNode_DerefField)
  * Perform semantic analysis for the synthesised node types used above.
  */
 ILNode_SemAnalysis(ILNode_StaticField),
-ILNode_SemAnalysis(ILNode_MemberField)
+ILNode_SemAnalysis(ILNode_MemberField),
+ILNode_SemAnalysis(ILNode_StaticProperty),
+ILNode_SemAnalysis(ILNode_MemberProperty)
 {
 	return CSSemValueDefault;
 }

@@ -10,6 +10,9 @@ ILNode_GlobalNamespace; fix the signature for property "set" methods.
 * codegen/cg_nodes.tc, codegen/cg_lvalue.tc, codegen/jv_lvalue.tc:
 implement ILNode_StaticProperty and ILNode_MemberProperty.
 
+* cscc/cs_lvalue.tc: semantic analysis for ILNode_MemberAccess; field
+access within objects that are not "this"; semantic analysis for properties.
+
 2001-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_lookup.c: new routines for looking up names in scopes, according

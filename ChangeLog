@@ -1,4 +1,9 @@
 
+2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* samples/mscorlib.dll: new version with many changes to exceptions, I/O,
+resources, etc.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c, engine/verify_var.c: detect unsafe pointer types

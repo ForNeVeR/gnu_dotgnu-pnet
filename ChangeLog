@@ -19,6 +19,9 @@
 	System.Drawing.Xsharp/DrawingToolkit.cs: implement texture
 	brushes in "System.Drawing.Xsharp".
 
+	* System.Drawing.Xsharp/DrawingImage.cs: make "ImageChanged"
+	a little more robust against "null" values.
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

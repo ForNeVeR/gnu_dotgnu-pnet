@@ -43,9 +43,16 @@ public class DrawingImage : ToolkitImageBase
 
 	public override void ImageChanged()
 			{
-				if (xImage != null)
+				if(xImage != null)
+				{
 					xImage.Dispose();
-				xImage = new Xsharp.Image(screen, base.image.GetFrame(base.frame));
+					xImage = null;
+				}
+				if(base.image != null)
+				{
+					xImage = new Xsharp.Image
+						(screen, base.image.GetFrame(base.frame));
+				}
 			}
 
 

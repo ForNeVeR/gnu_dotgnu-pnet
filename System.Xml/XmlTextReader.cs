@@ -549,13 +549,14 @@ public class XmlTextReader : XmlReader
 				{
 					prefix = nameTable.Add(identifier.Substring(0, index));
 					localName = nameTable.Add(identifier.Substring(index + 1));
+					namespaceURI = namespaceManager.LookupNamespace(prefix);
 				}
 				else
 				{
 					prefix = String.Empty;
 					localName = nameTable.Add(identifier);
+					namespaceURI = String.Empty;
 				}
-				namespaceURI = String.Empty;
 			}
 
 	
@@ -836,7 +837,7 @@ public class XmlTextReader : XmlReader
 						name = builder.ToString();
 						SetName(name);
 						nodeType = XmlNodeType.Attribute;
-						attr = new XmlAttributeToken(nameTable,builder.ToString(),null);
+						attr = new XmlAttributeToken(nameTable, name ,null);
 						attributeIndex++;
 						// reset buffer
 						builder = new StringBuilder();
@@ -858,6 +859,12 @@ public class XmlTextReader : XmlReader
 								attr.Value = builder.ToString();
 								attributes.Append(attr);
 								nodeType = XmlNodeType.Text;
+								if(prefix == "xmlns")
+								{
+									// append namespace
+									namespaceManager.AddNamespace(localName, builder.ToString());
+								}
+								
 								
 								// go to next char
 								SkipWhite();

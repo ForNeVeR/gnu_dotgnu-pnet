@@ -629,6 +629,11 @@ class XmlDocument : XmlNode
 			}
 	public virtual void Load(String filename)
 			{
+				if(!File.Exists(filename))
+				{
+					throw new XmlException
+						(S._("XmlException_LoadError"));
+				}
 				Load(new XmlTextReader(filename));
 			}
 	[TODO]
@@ -638,6 +643,7 @@ class XmlDocument : XmlNode
 			}
 	public virtual void Load(XmlReader reader)
 			{
+				
 				RemoveAll();
 				XmlNode node;
 				while((node = ReadNode(reader)) != null)

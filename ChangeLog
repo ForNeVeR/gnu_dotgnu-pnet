@@ -1,9 +1,12 @@
 2003-01-27  Adam Ballai	 <minddog@cannibutter.com>
 
-	* System.Xml/XmlDocument.cs, XmlTextReader.cs: Implemented ReadNode
+	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs: Implemented ReadNode
 	and Load methods.  Adding support for applications written for
 	Rdf parsing using XmlDocument.  Parsing of XmlDeclarations and
 	ProcessingInstructions fixed up a bit.
+	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs: Fixed up
+	bugs found from rdf parsing and added Namespace support to
+	XmlTextReader.
 
 2003-01-26  Adam Ballai  <minddog@cannibutter.com>
 	

@@ -657,14 +657,20 @@ void ILMethodFreeExceptions(ILException *exceptions)
 	}
 }
 
-void ILMethodSetUserData(ILMethod *method, void *userData)
+void ILMethodSetUserData(ILMethod *method, void *userData1, void *userData2)
 {
-	method->userData = userData;
+	method->userData1 = userData1;
+	method->userData2 = userData2;
 }
 
-void *ILMethodGetUserData(ILMethod *method)
+void *ILMethodGetUserData1(ILMethod *method)
 {
-	return method->userData;
+	return method->userData1;
+}
+
+void *ILMethodGetUserData2(ILMethod *method)
+{
+	return method->userData2;
 }
 
 ILParameter *ILParameterCreate(ILMethod *method, ILToken token,

@@ -25,6 +25,9 @@ corresponding image is destroyed.
 
 * engine/lookup.c: use length-based lookups to avoid malloc overheads.
 
+* image/member.c: implement the new user data get and set functions
+for methods.
+
 2001-10-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/Makefile.am: remove "interpreter.c" from the engine build;

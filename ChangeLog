@@ -12,6 +12,13 @@
 	DotGNU.Images/Utils.cs: move the "bit count to pixel format"
 	conversion into "Utils" so that other format loaders can share it.
 
+	* System.Windows.Forms/ControlPaint.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/IThemePainter.cs,
+	System.Windows.Forms/Themes/Makefile,
+	System.Windows.Forms/Themes/ThemeManager.cs: shift the theme
+	handling into the "System.Windows.Forms.Themes" namespace.
+
 2003-07-06  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListControl.cs: Stub some missing methods.

@@ -1543,7 +1543,7 @@ callNonvirtualFromVirtual:
 								}
 								argNum = IL_READ_UINT32(tryInlinePc + 1);
 								if((argNum & IL_META_TOKEN_MASK) != IL_META_TOKEN_STRING ||
-								!ILImageGetUserString(ILProgramItem_Image(method),
+								!ILImageGetUserString(ILProgramItem_Image(methodInfo),
 	   													argNum & ~IL_META_TOKEN_MASK, &strLen))
 								{
 									VERIFY_INSN_ERROR();
@@ -1551,7 +1551,7 @@ callNonvirtualFromVirtual:
 								if(thread)
 								{
 									ILCoderStringConstant(coder, (ILToken)argNum,
-											_ILStringInternFromImage(thread, ILProgramItem_Image(method),
+											_ILStringInternFromImage(thread, ILProgramItem_Image(methodInfo),
 																	(ILToken)argNum));
 								}
 								else

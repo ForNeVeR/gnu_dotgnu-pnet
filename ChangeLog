@@ -1,3 +1,9 @@
+
+2004-06-09  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/verify_call.c: Load the user strings from the image of
+	the inlined method to inline ldstr.
+
 2004-06-09  Thong Nguyen <tum@veridicus.com>
 
 	* include/il_coder.h: Added GetFlags to ILCoder.

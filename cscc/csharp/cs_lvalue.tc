@@ -462,6 +462,21 @@ static ILType *CurrentClassType(ILGenInfo *info)
 }
 
 /*
+ * Check if the method is the psuedo method ".init" which is expanded
+ * into the constructor body inline.
+ */
+static int ILMethodIsPsuedoConstructor(ILMethod *method)
+{
+	ILType *signature=ILMethod_Signature(method);
+	ILUInt32 attrs=	(IL_META_METHODDEF_PRIVATE| IL_META_METHODDEF_HIDE_BY_SIG);
+
+	return (!strcmp(ILMethod_Name(method),".init") && 
+			((ILMethod_Attrs(method) & attrs) !=0) &&
+			(ILTypeNumParams(signature)==0) &&
+			ILTypeIdentical(ILTypeGetReturn(signature),ILType_Void));
+}
+
+/*
  * Convert a semantic value into an l-value or r-value if necessary.
  */
 static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
@@ -519,14 +534,17 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 						allowConst = 0;
 					}
 					else if(!ILField_IsStatic(field) &&
-					        ILMethodIsConstructor(method))
+					        (ILMethodIsConstructor(method)||
+							ILMethodIsPsuedoConstructor(method)))
 					{
-						/* Instance readonly used within instance constructor.
+						/* Instance readonly used within instance constructor
+						   or the ".init" psuedo constructor
 						   Nothing needs to be done here */
 					}
 					else
 					{
-						/* The field is used elsewhere, so make it an r-value */
+						/* The field is used elsewhere, so make it an 
+						r-value */
 						CSSemSetRValue(value, ILField_Type(field));
 					}
 				}

@@ -7,6 +7,9 @@
 	* cscc/csharp/cs_decls.tc: Improve error reporting for field
 	decarations and value assignments.
 
+	* cscc/csharp/cs_lvalue.tc: Allow readonly variables to be assigned
+	values from the psuedo constructor as well.
+
 2003-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/box.c, engine/lib_reflect.c, include/il_engine.h: handle

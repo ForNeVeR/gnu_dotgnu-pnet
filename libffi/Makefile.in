@@ -97,9 +97,12 @@ MULTICLEAN = true
 @USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
 
 noinst_LTLIBRARIES = libffi.la
+noinst_LIBRARIES = libffi.a
 
 nodist_libffi_la_SOURCES = t-ffi.c t-asm.S
 libffi_la_SOURCES = debug.c prep_cif.c types.c 		raw_api.c java_raw_api.c $(nodist_libffi_la_SOURCES)
+
+libffi_a_SOURCES = debug.c prep_cif.c types.c 		raw_api.c java_raw_api.c $(nodist_libffi_la_SOURCES)
 
 
 AM_CFLAGS = -fexceptions
@@ -111,13 +114,19 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = fficonfig.h
 CONFIG_CLEAN_FILES = 
-LTLIBRARIES =  $(noinst_LTLIBRARIES)
+LIBRARIES =  $(noinst_LIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I.
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+libffi_a_LIBADD = 
+libffi_a_OBJECTS =  debug.o prep_cif.o types.o raw_api.o java_raw_api.o \
+t-ffi.o t-asm.o
+AR = ar
+LTLIBRARIES =  $(noinst_LTLIBRARIES)
+
 libffi_la_LIBADD = 
 libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo raw_api.lo \
 java_raw_api.lo t-ffi.lo t-asm.lo
@@ -138,8 +147,8 @@ TAR = gtar
 GZIP_ENV = --best
 DEP_FILES =  .deps/debug.P .deps/java_raw_api.P .deps/prep_cif.P \
 .deps/raw_api.P .deps/t-asm.P .deps/t-ffi.P .deps/types.P
-SOURCES = $(libffi_la_SOURCES)
-OBJECTS = $(libffi_la_OBJECTS)
+SOURCES = $(libffi_a_SOURCES) $(libffi_la_SOURCES)
+OBJECTS = $(libffi_a_OBJECTS) $(libffi_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -187,14 +196,14 @@ distclean-hdr:
 
 maintainer-clean-hdr:
 
-mostlyclean-noinstLTLIBRARIES:
+mostlyclean-noinstLIBRARIES:
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
-distclean-noinstLTLIBRARIES:
+distclean-noinstLIBRARIES:
 
-maintainer-clean-noinstLTLIBRARIES:
+maintainer-clean-noinstLIBRARIES:
 
 .s.o:
 	$(COMPILE) -c $<
@@ -227,6 +236,20 @@ clean-libtool:
 distclean-libtool:
 
 maintainer-clean-libtool:
+
+libffi.a: $(libffi_a_OBJECTS) $(libffi_a_DEPENDENCIES)
+	-rm -f libffi.a
+	$(AR) cru libffi.a $(libffi_a_OBJECTS) $(libffi_a_LIBADD)
+	$(RANLIB) libffi.a
+
+mostlyclean-noinstLTLIBRARIES:
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+
+distclean-noinstLTLIBRARIES:
+
+maintainer-clean-noinstLTLIBRARIES:
 
 libffi.la: $(libffi_la_OBJECTS) $(libffi_la_DEPENDENCIES)
 	$(LINK)  $(libffi_la_LDFLAGS) $(libffi_la_OBJECTS) $(libffi_la_LIBADD) $(LIBS)
@@ -442,7 +465,7 @@ install-am: all-am
 install: install-recursive
 uninstall-am:
 uninstall: uninstall-recursive
-all-am: Makefile $(LTLIBRARIES) fficonfig.h
+all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) fficonfig.h
 all-redirect: all-recursive-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -459,28 +482,32 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-noinstLTLIBRARIES \
+mostlyclean-am:  mostlyclean-hdr mostlyclean-noinstLIBRARIES \
 		mostlyclean-compile mostlyclean-libtool \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+		mostlyclean-noinstLTLIBRARIES mostlyclean-tags \
+		mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-noinstLTLIBRARIES clean-compile clean-libtool \
-		clean-tags clean-depend clean-generic mostlyclean-am
+clean-am:  clean-hdr clean-noinstLIBRARIES clean-compile clean-libtool \
+		clean-noinstLTLIBRARIES clean-tags clean-depend \
+		clean-generic mostlyclean-am
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-noinstLTLIBRARIES \
-		distclean-compile distclean-libtool distclean-tags \
-		distclean-depend distclean-generic clean-am
+distclean-am:  distclean-hdr distclean-noinstLIBRARIES distclean-compile \
+		distclean-libtool distclean-noinstLTLIBRARIES \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
 maintainer-clean-am:  maintainer-clean-hdr \
-		maintainer-clean-noinstLTLIBRARIES \
+		maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-noinstLTLIBRARIES \
 		maintainer-clean-tags maintainer-clean-depend \
 		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
@@ -490,11 +517,13 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
 .PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-mostlyclean-noinstLTLIBRARIES distclean-noinstLTLIBRARIES \
-clean-noinstLTLIBRARIES maintainer-clean-noinstLTLIBRARIES \
+mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
+clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
-clean-libtool maintainer-clean-libtool install-data-recursive \
+clean-libtool maintainer-clean-libtool mostlyclean-noinstLTLIBRARIES \
+distclean-noinstLTLIBRARIES clean-noinstLTLIBRARIES \
+maintainer-clean-noinstLTLIBRARIES install-data-recursive \
 uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \

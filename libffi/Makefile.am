@@ -33,10 +33,13 @@ toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
 noinst_LTLIBRARIES = libffi.la
+noinst_LIBRARIES = libffi.a
 
 ## Work around automake deficiency
 nodist_libffi_la_SOURCES = t-ffi.c t-asm.S
 libffi_la_SOURCES = debug.c prep_cif.c types.c \
+		raw_api.c java_raw_api.c $(nodist_libffi_la_SOURCES)
+libffi_a_SOURCES = debug.c prep_cif.c types.c \
 		raw_api.c java_raw_api.c $(nodist_libffi_la_SOURCES)
 
 AM_CFLAGS = -fexceptions

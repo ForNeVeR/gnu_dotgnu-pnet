@@ -36,6 +36,8 @@ include/il_writer.h: remove obsolete code related to Beta 1 support.
 
 * image/link.c (LocateAssembly): "off by one" bug in pathname code.
 
+* libffi: update makefiles and configuration to build "libffi.a".
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

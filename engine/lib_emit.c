@@ -390,13 +390,15 @@ ILNativeInt _IL_AssemblyBuilder_ClrAttributeCreate
 {
 	if(assembly && blob)
 	{
+		ILMember * member = ILProgramItemToMember((ILProgramItem*)ctor);
+		member = ILMemberImport(ILProgramItem_Image((ILAssembly *) assembly), member);
 		ILAttribute *attr = ILAttributeCreate
 			(ILProgramItem_Image((ILAssembly *)assembly), 0);
 		if(!attr)
 		{
 			return 0;
 		}
-		ILAttributeSetType(attr, (ILProgramItem *)ctor);
+		ILAttributeSetType(attr, ILToProgramItem(member));
 		if(!ILAttributeSetValue(attr, ArrayToBuffer(blob),
 								(unsigned long)(long)(blob->length)))
 		{

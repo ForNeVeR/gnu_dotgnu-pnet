@@ -417,7 +417,6 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 	unsigned char *addr;
 	unsigned long len;
 	ILToken localVars;
-	ILUInt32 temp;
 
 	/* Bail out if the method does not have any IL code */
 	if(!(method->rva) ||
@@ -435,9 +434,12 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		return 0;
 	}
 
+#ifdef IL_CONFIG_JAVA
 	/* If this is a Java method, we need to use a different technique */
 	if((method->implementAttrs & IL_META_METHODIMPL_JAVA) != 0)
 	{
+		ILUInt32 temp;
+
 		/* Validate the length of the "Code" attribute */
 		if(len < 4)
 		{
@@ -490,6 +492,7 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		/* Ready to go */
 		return 1;
 	}
+#endif /* IL_CONFIG_JAVA */
 
 	/* Determine whether the method header is tiny or fat format */
 	if((*addr & 0x03) == 0x02)
@@ -577,9 +580,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 	unsigned long adjust;
 	unsigned long sectSize;
 	unsigned long posn;
-	unsigned long index;
 	int kind, isTiny;
-	ILClass *classInfo;
 
 	/* Initialize the exception list */
 	*exceptions = 0;
@@ -590,9 +591,13 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 	rva = method->rva + code->headerSize + code->codeLen;
 	len = code->remaining;
 
+#ifdef IL_CONFIG_JAVA
 	/* Is this a Java method or an IL method? */
 	if((method->implementAttrs & IL_META_METHODIMPL_JAVA) != 0)
 	{
+		ILClass *classInfo;
+		unsigned long index;
+
 		/* Read the number of Java exception blocks */
 		if(len < 2)
 		{
@@ -648,6 +653,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 		}
 	}
 	else
+#endif /* IL_CONFIG_JAVA */
 	{
 		/* Read all of the IL method's sections.  A truncated section
 		   is treated as the end of the list */

@@ -20,6 +20,8 @@
 	engine/lib_helpers.c, engine/lib_misc.c: disable floating-point
 	CVM instructions and internalcalls if disabled by the profile.
 
+	* image/member.c: #ifdef out Java support if disabled by the profile.
+
 2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_config_win.h, include/il_values.h: remove the out

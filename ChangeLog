@@ -1,4 +1,9 @@
+2004-05-18  Thong Nguyen  <tum@veridicus.com>
 
+	* tests/runtime/System/Reflection/SuiteReflection.cs,
+	tests/runtime/System/Reflection/TestInvoke.cs: Unit tests for
+	Method.Invoke/Delegate.Invoke etc.
+	
 2004-05-17  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Collections/Hashtable.cs: Rename HashCodeProviderName

@@ -2855,7 +2855,7 @@ ILObject *_IL_Array_Get_iii(ILExecThread *thread, ILObject *thisObj,
 	ILUInt32 elemSize = ILSizeOfType(thread, elemType);
 	if(_ILIsSArray(_this))
 	{
-		if(index1 >= 0 && index1 < _this->length)
+		if(index1 < 0 || index1 >= _this->length)
 		{
 			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 									"Arg_InvalidArrayIndex");
@@ -3080,7 +3080,7 @@ void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
 
 	if(_ILIsSArray(_this))
 	{
-		if(index1 >= 0 && index1 < _this->length)
+		if(index1 < 0 || index1 >= _this->length)
 		{
 			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
 									"Arg_InvalidArrayIndex");

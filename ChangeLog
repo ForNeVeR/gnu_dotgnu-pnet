@@ -1,3 +1,15 @@
+
+2003-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, DotGNU.Terminal/.cvsignore,
+	DotGNU.Terminal/ConsoleExtensions.cs,
+	DotGNU.Terminal/DotGNU.Terminal.build, DotGNU.Terminal/History.cs,
+	DotGNU.Terminal/Makefile.am, DotGNU.Terminal/Readline.cs,
+	DotGNU.Terminal/TabCompleteEventArgs.cs,
+	DotGNU.Terminal/TabCompleteEventHandler.cs: add the new
+	assembly "DotGNU.Terminal" to the system, which implements a
+	readline-like line input mechanism using the extended console.
+
 2003-11-07  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs,

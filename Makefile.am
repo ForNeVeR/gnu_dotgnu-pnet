@@ -4,7 +4,8 @@ SUBDIRS = tools resources runtime I18N DotGNU.SSL System System.Xml . \
 		  SharpZipLib System.Configuration.Install JScript Basic \
 		  DotGNU.Images Xsharp System.Drawing System.Drawing.Xsharp \
 		  System.Drawing.Win32 System.Drawing.Postscript \
-		  System.EnterpriseServices System.Windows.Forms tests samples
+		  System.EnterpriseServices System.Windows.Forms \
+		  DotGNU.Terminal tests samples
 else
 SUBDIRS = tools resources runtime DotGNU.SSL System System.Xml . \
 		  System.Net.IrDA samples

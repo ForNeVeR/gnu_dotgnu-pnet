@@ -71,12 +71,12 @@ ILObject *_ILGetCurrentClrThread(ILExecThread *thread)
 /*
  *	Registers a thread for managed execution
  */
-ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread, int isUserThread)
+ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread)
 {	
 	ILExecThread *execThread;
 
 	/* Create a new engine-level thread */	
-	execThread = _ILExecThreadCreate(process, isUserThread);
+	execThread = _ILExecThreadCreate(process);
 
 	/* Associate the new engine-level thread with the OS-level thread */
 	ILThreadSetObject(thread, execThread);
@@ -87,7 +87,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 	return execThread;
 }
 
-ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int isUserThread)
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 {
 	ILExecThread *thread;
 
@@ -122,8 +122,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int isUserThread)
 	/* Initialize the thread state */
 	thread->supportThread = 0;
 	thread->clrThread = 0;	
-	thread->freeMonitor = 0;
-	thread->isUserThread = isUserThread;
+	thread->freeMonitor = 0;	
 	thread->pc = 0;
 	thread->frame = thread->stackBase;
 	thread->stackTop = thread->stackBase;
@@ -144,17 +143,6 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int isUserThread)
 	}
 	process->firstThread = thread;
 
-	if (isUserThread)
-	{
-		process->userThreadCount++;
-	}
-
-	if (process->userThreadCount > 0)
-	{
-		/* Prevent the process from exiting */
-		ILWaitEventReset(process->noMoreUserThreads);
-	}
-
 	ILMutexUnlock(process->lock);
 	
 	/* Return the thread block to the caller */
@@ -173,18 +161,6 @@ void ILExecThreadDestroy(ILExecThread *thread)
 	if(process->mainThread == thread)
 	{
 		process->mainThread = 0;
-	}
-
-	/* Decrement the use thread count */
-	if (thread->isUserThread)
-	{
-		process->userThreadCount--;	
-	}
-
-	/* Let the main process exit */
-	if (process->userThreadCount == 0)
-	{
-		ILWaitEventSet(process->noMoreUserThreads);
 	}
 
 	/* Delete the free monitors list */

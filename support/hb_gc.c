@@ -127,7 +127,7 @@ static int PrivateGCNotifyFinalize(int timeout)
 		
 		if (thread != 0)
 		{
-			ILThreadRegisterForManagedExecution(ILExecThreadGetProcess(thread), g_FinalizerThread, 0);
+			ILThreadRegisterForManagedExecution(ILExecThreadGetProcess(thread), g_FinalizerThread);
 		}
 		else
 		{
@@ -179,6 +179,7 @@ void ILGCInit(unsigned long maxSize)
 		g_FinalizerResponse = ILWaitEventCreate(1, 0);
 
 		ILThreadStart(g_FinalizerThread);
+		ILThreadSetBackground(g_FinalizerThread, 1);
 	}
 }
 

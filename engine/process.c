@@ -35,12 +35,6 @@ void ILExecInit(unsigned long maxSize)
 	ILGCInit(maxSize);	
 }
 
-void ILExecProcessWaitForUserThreads(ILExecProcess *process)
-{
-	/* Wait for all user threads to finish */
-	ILWaitOne(process->noMoreUserThreads, -1);
-}
-
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
 {
 	ILExecProcess *process;
@@ -55,7 +49,6 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->lock = 0;
 	process->firstThread = 0;
 	process->mainThread = 0;
-	process->userThreadCount = 0;		
 #ifdef USE_HASHING_MONITORS
 	process->monitorHash = 0;
 #endif
@@ -89,14 +82,6 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->randomLastTime = 0;
 	process->randomCount = 0;
 	process->numThreadStaticSlots = 0;
-
-	/* Create a new event that indicates when there are more no user threads */
-	/* The event is initially set */
-	if ((process->noMoreUserThreads = ILWaitEventCreate(1, 1)) == 0)
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
@@ -140,7 +125,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	}
 
 	/* Register the main thread for managed execution */
-	process->mainThread = ILThreadRegisterForManagedExecution(process, ILThreadSelf(), 0);
+	process->mainThread = ILThreadRegisterForManagedExecution(process, ILThreadSelf());
 	
 	if(!(process->mainThread))
 	{
@@ -176,9 +161,6 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Destroy the CVM coder instance */
 	ILCoderDestroy(process->coder);
-
-	/* Destroy the NoMoreUserThreads wait event */
-	ILWaitHandleClose(process->noMoreUserThreads);
 
 	/* Destroy the metadata lock */
 	if(process->metadataLock)
@@ -256,6 +238,9 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
+
+	/* Cleanup the threading subsystem */
+	ILThreadDeinit();
 }
 
 void ILExecProcessSetLibraryDirs(ILExecProcess *process,

@@ -187,11 +187,6 @@ void ILExecInit(unsigned long maxSize);
 ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize, unsigned long cachePageSize);
 
 /*
- *	Wait for all user threads in a process to finish.
- */
-void ILExecProcessWaitForUserThreads(ILExecProcess *process);
-
-/*
  * Destroy a process and all threads associated with it.
  */
 void ILExecProcessDestroy(ILExecProcess *process);

@@ -22,6 +22,7 @@
 #include "il_system.h"
 #include "il_image.h"
 #include "il_utils.h"
+#include "il_thread.h"
 #if defined(HAVE_UNISTD_H) && !defined(_MSC_VER)
 #include <unistd.h>
 #endif
@@ -432,8 +433,8 @@ int main(int argc, char *argv[])
 		ILExecThreadPrintException(thread);
 	}
 
-	/* Wait for all other threads to finish */
-	ILExecProcessWaitForUserThreads(process);
+	/* Wait for all other foreground threads to finish */
+	ILThreadWaitForForegroundThreads(-1);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	/* Print profile information if requested */
@@ -479,6 +480,7 @@ int main(int argc, char *argv[])
 	/* Clean up the process and exit */
 	error = ILExecProcessGetStatus(process);
 	ILExecProcessDestroy(process);
+
 	return (int)retval;
 }
 

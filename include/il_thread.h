@@ -60,7 +60,7 @@ typedef struct _tagILWaitHandle ILWaitHandle;
 /*
  *	Registers an ILThread and allow it to execute managed code. 
  */
-ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread, int isUserThread);
+ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread);
 
 /*
  * Determine if the system has thread support.  This can
@@ -73,6 +73,12 @@ int ILHasThreads(void);
  * called once but it is safe to call multiple times.
  */
 void ILThreadInit(void);
+
+/*
+ * Cleans up the threading subsystem.  Safe to call multiple times.  The thread
+ * subsystem can't be reinitialized after it has been deinitialized.
+ */
+void ILThreadDeinit(void);
 
 /*
  * Create a new thread, initially in the "unstarted" state.
@@ -228,6 +234,12 @@ void ILThreadGetCounts(unsigned long *numForeground,
  * thread was aborted, and 1 if the sleep completed.
  */
 int ILThreadSleep(ILUInt32 ms);
+
+/*
+ *	Wait for a specified amount of time (in ms) for a all foreground threads
+ * (except the main thread) to finish.  A timeout of -1 means infinite.
+ */
+void ILThreadWaitForForegroundThreads(int timeout);
 
 /*
  * Create a mutex.  Note: this type of mutex will not

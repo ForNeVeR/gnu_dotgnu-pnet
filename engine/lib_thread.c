@@ -1058,7 +1058,7 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 
 	/* Register the support thread for managed code execution */
 
-	if ((execThread = ILThreadRegisterForManagedExecution(thread->process, supportThread, 1)) == 0)
+	if ((execThread = ILThreadRegisterForManagedExecution(thread->process, supportThread)) == 0)
 	{
 		/* Runtime isn't fully initialized.  This should never happen */
 

@@ -38,6 +38,7 @@ extern	"C" {
 static _ILMutex threadLockAll;
 static long volatile numThreads;
 static long volatile numBackgroundThreads;
+static ILWaitHandle *foregroundThreadsFinished;
 
 /*
  * Global mutex for atomic operations.
@@ -80,6 +81,8 @@ static void ThreadInit(void)
 	_ILWakeupCreate(&(mainThread.wakeup));
 	_ILWakeupQueueCreate(&(mainThread.joinQueue));
 
+	foregroundThreadsFinished = ILWaitEventCreate(1, 1);
+
 	/* Set the thread object for the "main" thread */
 	_ILThreadSetSelf(&mainThread);
 
@@ -88,9 +91,22 @@ static void ThreadInit(void)
 	numBackgroundThreads = 0;
 }
 
+void ThreadDeinit(void)
+{
+	if (foregroundThreadsFinished != 0)
+	{
+		ILWaitHandleClose(foregroundThreadsFinished);
+	}
+}
+
 void ILThreadInit(void)
 {
 	_ILCallOnce(ThreadInit);
+}
+
+void ILThreadDeinit(void)
+{
+	_ILCallOnce(ThreadDeinit);
 }
 
 void _ILThreadRun(ILThread *thread)
@@ -118,6 +134,13 @@ void _ILThreadRun(ILThread *thread)
 	if(isbg)
 	{
 		numBackgroundThreads -= 1;
+	}
+
+	/* If there are no more foreground threads (except the main one) then set
+		the event that signals that state */
+	if(numThreads - numBackgroundThreads == 1)
+	{
+		ILWaitEventSet(foregroundThreadsFinished);
 	}
 	_ILMutexUnlock(&threadLockAll);
 }
@@ -153,7 +176,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *objectArg)
 
 	/* Lock out the thread system */
 	_ILMutexLock(&threadLockAll);
-
+	
 	/* We have one extra thread in the system at present */
 	++numThreads;
 
@@ -181,6 +204,18 @@ int ILThreadStart(ILThread *thread)
 		{
 			/* Set the thread state to running (0) */
 			thread->state &= ~IL_TS_UNSTARTED;
+			
+			/* If this thread isn't a background thread then unset the
+				foregroundThreadsFinished event.
+				This occurs here rather than in ILThreadCreate so that unstarted
+				threads won't unset the foregroundThreadsFinished event without ever 
+				setting it again (which normally happens at the end of _ILThreadRun) */
+
+			if (!ILThreadGetBackground(thread))
+			{
+				ILWaitEventReset(foregroundThreadsFinished);
+			}
+
 			result = 1;
 		}
 	}
@@ -239,6 +274,14 @@ void ILThreadDestroy(ILThread *thread)
 	{
 		--numBackgroundThreads;
 	}
+
+	/* If there are no more foreground threads (except the main one) then set
+		the event that signals that state */
+	if (numThreads - numBackgroundThreads == 1)
+	{
+		ILWaitEventSet(foregroundThreadsFinished);
+	}
+
 	_ILMutexUnlock(&threadLockAll);
 }
 
@@ -637,6 +680,14 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 	/* Adjust "numBackgroundThreads" */
 	_ILMutexLock(&threadLockAll);
 	numBackgroundThreads += change;
+
+	/* If there are no more foreground threads (except the main one) then set
+		the event that signals that state */
+	if (numThreads - numBackgroundThreads == 1)
+	{
+		ILWaitEventSet(foregroundThreadsFinished);
+	}
+
 	_ILMutexUnlock(&threadLockAll);
 }
 
@@ -752,6 +803,15 @@ int ILThreadSleep(ILUInt32 ms)
 	/* Unlock the thread and exit */
 	_ILMutexUnlock(&(thread->lock));
 	return result;
+}
+
+void ILThreadWaitForForegroundThreads(int timeout)
+{
+#ifdef IL_NO_THREADS
+	/* Nothing to do */
+#else	
+	ILWaitOne(foregroundThreadsFinished, timeout);
+#endif
 }
 
 void _ILThreadSuspendRequest(ILThread *thread)

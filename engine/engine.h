@@ -130,11 +130,6 @@ struct _tagILExecProcess
 	ILMutex		*monitorSystemLock;
 #endif
 
-	int userThreadCount;
-
-	/* WaitEvent that gets set when the last non-main thread is destroyed */
-	ILWaitHandle *noMoreUserThreads;
-
 	/* Hash table that maps program items to reflection objects */
 	void		   *reflectionHash;
 
@@ -231,10 +226,6 @@ struct _tagILExecThread
 	ILCallFrame	   *frameStack;
 	ILUInt32		numFrames;
 	ILUInt32		maxFrames;
-
-	/* 1 if the thread is a user (non runtime) thread.  User threads keep the
-		process from exiting until they finish */
-	ILUInt32		isUserThread;
 
 	/* Thread-static values for this thread */
 	void		  **threadStaticSlots;
@@ -365,7 +356,7 @@ int _ILCVMInterpreter(ILExecThread *thread);
  * Inner version of "ILExecThreadCreate".  The caller is
  * responsible for creating the OS-level thread.
  */
-ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int userThread);
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process);
 
 /*
  * Lay out a class's fields, virtual methods, and interfaces.

@@ -11,6 +11,8 @@
 	in the "HostToNetworkOrder" functions to prevent gcc optimizing away
 	important code that is needed for the conversion.
 
+	* NEWS, configure.in: update version for the "0.4.8" release.
+
 2002-11-22  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/lib_regexp.c, support/regexp.c, support/Makefile.am,

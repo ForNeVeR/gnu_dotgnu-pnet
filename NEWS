@@ -1,4 +1,79 @@
 
+0.4.8 (23 November 2002)
+
+	Runtime engine:
+
+	* Better handling for uncaught exceptions to prevent misleading
+	  "virtual memory exhausted" indications.
+	* Resolve explicit assembly references in "Type.GetType".
+	* Allow any method to suppress finalization on an object (Gopal V).
+	* Fix internalcalls for String and StringBuilder (Jonathan Springer).
+	* Bug fix to verification of "stobj" (Gopal V).
+	* Registration of third-party internalcalls (Gopal V).
+	* Regular expression handling (Gopal V).
+	* Verification of tail calls on 64-bit systems (C H Gowri Kumar).
+	* "HostToNetworkOrder" problems with "gcc -O2".
+
+	C# Compiler:
+
+	* Coerce the correct node in array initializers (Robert Hwang).
+	* IndexerName attributes on properties (Gopal V).
+	* Make sure that the finally block of a "try" statement covers
+	  the catch clauses as well as the statement body.
+	* Raise an error when attempting to define a private virtual.
+	* Infer the correct machine type for value type "new" calls (Gopal V).
+	* Foreach statements without IEnumerable (Gopal V).
+	* Perform constant coercion before operator lookup (Gopal V).
+	* ECMA fixes for reducing method candidate sets.
+	* References to types without an explicit "using" (Jonathan Springer).
+	* Indexers that have "params" arguments (Gopal V).
+	* Warn when a non-extern constructor has no body (Gopal V).
+	* Fixes to value type casting (Gopal V).
+	* Parameter coercion for user-defined binary operators (Gopal V).
+	* Use "callvirt" for instance methods even if not virtual.
+	* Alias support for "using" declarations (Gopal V).
+	* Multi-step coercions for user-defined operators (Gopal V).
+	* Numeric type promotion for "bool" values (Gopal V).
+	* Process static constructors in textual order (Jonathan Springer).
+	* Access modifier fixes for nested types (Robert Hwang).
+	* Fix line numbers on replacement nodes (Gopal V).
+	* Improve errors when base class constructors cannot be resolved.
+	* Use "rem.un" for unsigned integer types.
+	* Strength reduction for multiply and divide operators (Gopal V).
+	* Use "ldlen" to get the length of single-dimensional arrays.
+	* Better error recovery for syntax errors in the C# grammar.
+	* Remove the obsolete "value" flag from structure types.
+	* Interface, modifier, and attribute fixes for ECMA compatibility.
+	* Add the "DefaultMember" attribute to classes that have indexers.
+
+	C Compiler:
+
+	* Fix the use of "&" on local arrays.
+
+	Documentation:
+
+	* Recognise the name forms of attribute targets in "csdocvalil".
+	* References to attributes in foreign assemblies in "csdocvalil".
+
+	Loader and Metadata:
+
+	* Convert pointer and byref types into synthetic classes.
+	* Recognise "Serializable", "NonSerialized", and "IndexerName"
+	  as special builtin attributes.
+
+	Platform Support:
+
+	* Portability fixes to time and directory handling.
+	* Determine the current culture from the "LANG" variable.
+	* Use "execvp" to spawn child processes instead of "execv".
+
+	Other:
+
+	* Emulate parts of the NUnit API in "csunit" to assist with the
+	  migration of NUnit test cases.
+	* Improve source file listing capabilities in "ildb".
+	* Type sizes and alignment in libffi for ia64 (C H Gowri Kumar).
+
 0.4.6 (5 November 2002)
 
 	Runtime engine:

@@ -787,7 +787,9 @@ SIGN			[+-]
 						  return I_SWITCH; }
 
 "ldelem"				{ OPCODE_TYPE(LDELEM); }
+"ldelem.any"			{ OPCODE_TYPE(LDELEM); }	/* Alias */
 "stelem"				{ OPCODE_TYPE(STELEM); }
+"stelem.any"			{ OPCODE_TYPE(STELEM); }	/* Alias */
 "unbox.any"				{ OPCODE_TYPE(UNBOX_ANY); }
 
 <JAVAMODE>"nop"			{ JOPCODE_NONE(NOP); }	/* Java opcodes with no args */

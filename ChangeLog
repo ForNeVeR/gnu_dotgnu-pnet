@@ -14,6 +14,10 @@
 	"ilasm", and "ildasm"; some syntax extensions for Generic C#, but
 	no semantic analysis (yet).
 
+	* ilasm/ilasm_scanner.l: add "ldelem.any" and "stelem.any" as
+	aliases for "ldelem" and "stelem", because there is some code
+	already in existence that uses the "*.any" forms of the name.
+
 2003-02-17 Aditya P. Bansod <abansod@fullenergy.com>
 
 	* configure.in, engine/int_proto.h, engine/int_table.c

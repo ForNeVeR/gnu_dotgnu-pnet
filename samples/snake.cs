@@ -75,6 +75,9 @@ public class Snake
 				// "alternative" screen mode under Unix.
 				Console.Clear();
 
+				// Set the terminal window's title.
+				Console.Title = "DotGNU Snake!";
+
 				// Create the game object.
 				Snake snake;
 				if(args.Length > 0 && args[0] == "--monochrome")

@@ -4,6 +4,9 @@
 	* samples/samples.build, samples/snake.cs: check in a simple
 	"Snake" game, to demonstrate the extended console.
 
+	* samples/snake.cs: make a small modification to set the title
+	bar to "DotGNU Snake!".
+
 2003-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Console.cs: use different lock objects for

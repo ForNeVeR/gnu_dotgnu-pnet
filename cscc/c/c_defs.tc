@@ -354,6 +354,15 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	%nocreate ILType *type = {0};
 	%nocreate ILMachineType machineType = {ILMachineType_Void};
 }
+%node ILNode_CAttribute ILNode_Dummy =
+{
+	char *name;
+	ILNode *args;
+}
+%node ILNode_CAttributeValue ILNode_Dummy =
+{
+	ILEvalValue value;
+}
 
 %output "c_semantics.c"
 

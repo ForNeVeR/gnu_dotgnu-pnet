@@ -307,6 +307,98 @@ static void ReportRedeclared(const char *name, ILNode *node, void *data)
 }
 
 /*
+ * Process attributes that were attached to a function definition.
+ */
+static void ProcessFunctionAttributes(CDeclSpec spec, CDeclarator decl,
+									  ILType *signature)
+{
+	const char *arg;
+	const char *name;
+	ILUInt32 flags;
+	int isPrivate = ((spec.specifiers & C_SPEC_STATIC) != 0);
+
+	/* Flush any initializers that are pending */
+	if(initializers)
+	{
+		CFunctionFlushInits(&CCCodeGen, initializers);
+		initializers = 0;
+	}
+
+	/* Check for strong and weak alias definitions */
+	if((arg = CAttrGetString(decl.attrs, "alias", "__alias__")) != 0)
+	{
+		if(CAttrPresent(decl.attrs, "weak", "__weak__"))
+		{
+			CFunctionWeakAlias(&CCCodeGen, decl.name, decl.node,
+							   signature, arg, isPrivate);
+		}
+		else
+		{
+			CFunctionStrongAlias(&CCCodeGen, decl.name, decl.node,
+								 signature, arg, isPrivate);
+		}
+		return;
+	}
+
+	/* Check for PInvoke definitions */
+	if((arg = CAttrGetString(decl.attrs, "pinvoke", "__pinvoke__")) != 0)
+	{
+		name = CAttrGetString(decl.attrs, "name", "__name__");
+		if(CAttrPresent(decl.attrs, "ansi", "__ansi__"))
+		{
+			flags = IL_META_PINVOKE_CHAR_SET_ANSI;
+		}
+		else if(CAttrPresent(decl.attrs, "unicode", "__unicode__"))
+		{
+			flags = IL_META_PINVOKE_CHAR_SET_UNICODE;
+		}
+		else if(CAttrPresent(decl.attrs, "auto", "__auto__"))
+		{
+			flags = IL_META_PINVOKE_CHAR_SET_AUTO;
+		}
+		else
+		{
+			flags = IL_META_PINVOKE_CHAR_SET_NOT_SPEC;
+		}
+		if(CAttrPresent(decl.attrs, "nomangle", "__nomangle__"))
+		{
+			flags |= IL_META_PINVOKE_NO_MANGLE;
+		}
+		if(CAttrPresent(decl.attrs, "preservesig", "__preservesig__"))
+		{
+			flags |= IL_META_PINVOKE_OLE;
+		}
+		if(CAttrPresent(decl.attrs, "lasterr", "__lasterr__"))
+		{
+			flags |= IL_META_PINVOKE_SUPPORTS_LAST_ERROR;
+		}
+		if(CAttrPresent(decl.attrs, "winapi", "__winapi__"))
+		{
+			flags |= IL_META_PINVOKE_CALL_CONV_WINAPI;
+		}
+		else if(CAttrPresent(decl.attrs, "cdecl", "__cdecl__"))
+		{
+			flags |= IL_META_PINVOKE_CALL_CONV_CDECL;
+		}
+		else if(CAttrPresent(decl.attrs, "stdcall", "__stdcall__"))
+		{
+			flags |= IL_META_PINVOKE_CALL_CONV_STDCALL;
+		}
+		else if(CAttrPresent(decl.attrs, "thiscall", "__thiscall__"))
+		{
+			flags |= IL_META_PINVOKE_CALL_CONV_THISCALL;
+		}
+		else if(CAttrPresent(decl.attrs, "fastcall", "__fastcall__"))
+		{
+			flags |= IL_META_PINVOKE_CALL_CONV_FASTCALL;
+		}
+		CFunctionPInvoke(&CCCodeGen, decl.name, decl.node,
+						 signature, arg, name, flags, isPrivate);
+		return;
+	}
+}
+
+/*
  * Process a local or global function declaration.
  */
 static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
@@ -344,12 +436,20 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 				{
 					ReportRedeclared(decl.name, decl.node, data);
 				}
+				else if(decl.attrs)
+				{
+					ProcessFunctionAttributes(spec, decl, signature);
+				}
 			}
 			else
 			{
 				if(!CTypeIsIdentical(signature, CScopeGetType(data)))
 				{
 					ReportRedeclared(decl.name, decl.node, data);
+				}
+				else if(decl.attrs)
+				{
+					ProcessFunctionAttributes(spec, decl, signature);
 				}
 			}
 		}
@@ -368,6 +468,14 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 				/* Convert the K&R prototype into an ANSI prototype */
 				CScopeUpdateFunction(decl.name, C_SCDATA_FUNCTION_FORWARD,
 									 decl.node, signature);
+				if(decl.attrs)
+				{
+					ProcessFunctionAttributes(spec, decl, signature);
+				}
+			}
+			else if(decl.attrs)
+			{
+				ProcessFunctionAttributes(spec, decl, signature);
 			}
 		}
 		else
@@ -375,6 +483,12 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 			ReportRedeclared(decl.name, decl.node, data);
 		}
 		return;
+	}
+
+	/* Process any function attributes that are present */
+	if(decl.attrs)
+	{
+		ProcessFunctionAttributes(spec, decl, signature);
 	}
 
 	/* Add the function's forward definition to the global scope */
@@ -823,7 +937,7 @@ static ILUInt32 EvaluateSize(ILNode *expr)
 %type <node>		QualifiedIdentifier
 %type <kind>		DimensionSeparators DimensionSeparatorList
 
-%type <node>		FunctionBody
+%type <node>		FunctionBody Attributes AttributeList Attribute
 
 %type <type>		TypeName StructOrUnionSpecifier EnumSpecifier
 
@@ -1794,9 +1908,17 @@ Declarator2
 	: IDENTIFIER				{
 				CDeclSetName($$, $1, ILQualIdentSimple($1));
 			}
+	| IDENTIFIER Attributes		{
+				CDeclSetName($$, $1, ILQualIdentSimple($1));
+				$$.attrs = $2;
+			}
 	| '(' Declarator ')'		{ $$ = $2; }
 	| Declarator2 '[' ']'		{
 				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
+			}
+	| Declarator2 '[' ']' Attributes		{
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
+				$$.attrs = $4;
 			}
 	| Declarator2 '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
@@ -1805,43 +1927,85 @@ Declarator2
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
 			}
+	| Declarator2 '[' ConstantExpression ']' Attributes	{
+				/* Evaluate the constant value */
+				ILUInt32 size = EvaluateSize($3);
+
+				/* Create the array */
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
+				$$.attrs = $5;
+			}
 	| Declarator2 '(' ')'		{
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);
 			}
-	| Declarator2 '(' ')' FuncAttributes	{
-				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0/*TODO*/);
+	| Declarator2 '(' ')' Attributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, $4);
 			}
 	| Declarator2 '(' ParameterTypeList ')'	{
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);
 			}
-	| Declarator2 '(' ParameterTypeList ')' FuncAttributes	{
-				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0/*TODO*/);
+	| Declarator2 '(' ParameterTypeList ')' Attributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, $5);
 			}
 	| Declarator2 '(' ParameterIdentifierList ')'	{
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);
 			}
-	| Declarator2 '(' ParameterIdentifierList ')' FuncAttributes {
-				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0/*TODO*/);
+	| Declarator2 '(' ParameterIdentifierList ')' Attributes {
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, $5);
 			}
 	;
 
-FuncAttributes
-	: K_ATTRIBUTE '(' '(' AttributeList ')' ')'
+Attributes
+	: K_ATTRIBUTE '(' '(' AttributeList ')' ')'	{ $$ = $4; }
 	;
 
 AttributeList
-	: Attribute
-	| AttributeList ',' Attribute
+	: Attribute			{
+				$$ = ILNode_List_create();
+				ILNode_List_Add($$, $1);
+			}
+	| AttributeList ',' Attribute	{
+				ILNode_List_Add($1, $3);
+				$$ = $1;
+			}
 	;
 
 Attribute
-	: AnyIdentifier								{}
-	| AnyIdentifier '(' AttributeArgs ')'		{}
+	: AnyIdentifier		{
+				$$ = ILNode_CAttribute_create($1, 0);
+			}
+	| AnyIdentifier '(' AttributeArgs ')'		{
+				$$ = ILNode_CAttribute_create($1, $3);
+			}
 	;
 
 ConstantAttributeExpression
 	: ConditionalExpression		{
-				$$ = ILNode_ToConst_create($1);
+				ILNode *node = ILNode_ToConst_create($1);
+				CSemValue value;
+				ILEvalValue evalValue;
+				value = CSemInlineAnalysis(&CCCodeGen, node, CCurrentScope);
+				if(CSemIsRValue(value))
+				{
+					if(yyisa($1, ILNode_CString))
+					{
+						evalValue.valueType = ILMachineType_String;
+						evalValue.un.strValue.str =
+								((ILNode_CString *)($1))->str;
+						evalValue.un.strValue.len =
+								((ILNode_CString *)($1))->len;
+					}
+					else if(!ILNode_EvalConst(node, &CCCodeGen, &evalValue))
+					{
+						CCError(_("compile-time constant value required"));
+						evalValue.valueType = ILMachineType_Void;
+					}
+				}
+				else
+				{
+					evalValue.valueType = ILMachineType_Void;
+				}
+				$$ = ILNode_CAttributeValue_create(evalValue);
 			}
 	;
 
@@ -1984,6 +2148,11 @@ AbstractDeclarator2
 				CDeclSetName($$, 0, 0);
 				$$ = CDeclCreateOpenArray(&CCCodeGen, $$);
 			}
+	| '[' ']' Attributes			{
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $$);
+				$$.attrs = $3;
+			}
 	| '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
 				ILUInt32 size = EvaluateSize($2);
@@ -1992,8 +2161,21 @@ AbstractDeclarator2
 				CDeclSetName($$, 0, 0);
 				$$ = CDeclCreateArray(&CCCodeGen, $$, size);
 			}
+	| '[' ConstantExpression ']' Attributes	{
+				/* Evaluate the constant value */
+				ILUInt32 size = EvaluateSize($2);
+
+				/* Create the array */
+				CDeclSetName($$, 0, 0);
+				$$ = CDeclCreateArray(&CCCodeGen, $$, size);
+				$$.attrs = $4;
+			}
 	| AbstractDeclarator2 '[' ']'	{
 				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
+			}
+	| AbstractDeclarator2 '[' ']' Attributes	{
+				$$ = CDeclCreateOpenArray(&CCCodeGen, $1);
+				$$.attrs = $4;
 			}
 	| AbstractDeclarator2 '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
@@ -2002,33 +2184,41 @@ AbstractDeclarator2
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
 			}
+	| AbstractDeclarator2 '[' ConstantExpression ']' Attributes	{
+				/* Evaluate the constant value */
+				ILUInt32 size = EvaluateSize($3);
+
+				/* Create the array */
+				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
+				$$.attrs = $5;
+			}
 	| '(' ')'		{
 				CDeclSetName($$, 0, 0);
 				$$ = CDeclCreatePrototype(&CCCodeGen, $$, 0, 0);
 			}
-	| '(' ')' FuncAttributes	{
+	| '(' ')' Attributes	{
 				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreatePrototype(&CCCodeGen, $$, 0, 0);/*TODO*/
+				$$ = CDeclCreatePrototype(&CCCodeGen, $$, 0, $3);
 			}
 	| '(' ParameterTypeList ')'	{
 				CDeclSetName($$, 0, 0);
 				$$ = CDeclCreatePrototype(&CCCodeGen, $$, $2, 0);
 			}
-	| '(' ParameterTypeList ')' FuncAttributes	{
+	| '(' ParameterTypeList ')' Attributes	{
 				CDeclSetName($$, 0, 0);
-				$$ = CDeclCreatePrototype(&CCCodeGen, $$, $2, 0);/*TODO*/
+				$$ = CDeclCreatePrototype(&CCCodeGen, $$, $2, $4);
 			}
 	| AbstractDeclarator2 '(' ')'	{
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);
 			}
-	| AbstractDeclarator2 '(' ')' FuncAttributes	{
-				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, 0);/*TODO*/
+	| AbstractDeclarator2 '(' ')' Attributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, 0, $4);
 			}
 	| AbstractDeclarator2 '(' ParameterTypeList ')'	{
 				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);
 			}
-	| AbstractDeclarator2 '(' ParameterTypeList ')' FuncAttributes	{
-				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, 0);/*TODO*/
+	| AbstractDeclarator2 '(' ParameterTypeList ')' Attributes	{
+				$$ = CDeclCreatePrototype(&CCCodeGen, $1, $3, $5);
 			}
 	;
 

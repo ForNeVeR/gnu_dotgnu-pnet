@@ -79,6 +79,38 @@ ILMethod *CFunctionGetCurrent(void);
  */
 unsigned CGenAllocLocal(ILGenInfo *info, ILType *type);
 
+/*
+ * Define a weak alias for a function.
+ */
+void CFunctionWeakAlias(ILGenInfo *info, const char *name, ILNode *node,
+						ILType *signature, const char *aliasFor,
+						int isPrivate);
+
+/*
+ * Define a strong alias for a function.
+ */
+void CFunctionStrongAlias(ILGenInfo *info, const char *name, ILNode *node,
+						  ILType *signature, const char *aliasFor,
+						  int isPrivate);
+
+/*
+ * Declare a PInvoke import.
+ */
+void CFunctionPInvoke(ILGenInfo *info, const char *name, ILNode *node,
+					  ILType *signature, const char *moduleName,
+					  const char *aliasName, ILUInt32 flags, int isPrivate);
+
+/*
+ * Determine if an attribute is present in a list.
+ */
+int CAttrPresent(ILNode *attrs, const char *name, const char *altName);
+
+/*
+ * Get the value of a string attribute from a list.
+ */
+const char *CAttrGetString(ILNode *attrs, const char *name,
+						   const char *altName);
+
 #ifdef	__cplusplus
 };
 #endif

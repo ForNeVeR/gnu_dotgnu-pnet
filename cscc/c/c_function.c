@@ -703,6 +703,241 @@ unsigned CGenAllocLocal(ILGenInfo *info, ILType *type)
 	return num;
 }
 
+/*
+ * Print the hex version of an attribute string.
+ */
+static void PrintHex(FILE *stream, unsigned char *buf, int len)
+{
+	while(len > 0)
+	{
+		fprintf(stream, "%02X ", (int)(*buf));
+		++buf;
+		--len;
+	}
+}
+static void PrintAttributeString(FILE *stream, const char *str)
+{
+	unsigned char header[IL_META_COMPRESS_MAX_SIZE];
+	int len;
+	len = ILMetaCompressData(header, strlen(str));
+	PrintHex(stream, header, len);
+	PrintHex(stream, (unsigned char *)str, strlen(str));
+}
+
+void CFunctionWeakAlias(ILGenInfo *info, const char *name, ILNode *node,
+						ILType *signature, const char *aliasFor,
+						int isPrivate)
+{
+	unsigned long numParams;
+	unsigned long paramNum;
+	FILE *stream = info->asmOutput;
+	if(!stream)
+	{
+		return;
+	}
+
+	/* Create a strong alias instead if the function involves varargs,
+	   because it is impossible to set up the necessary call-through logic */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		CFunctionStrongAlias(info, name, node, signature, aliasFor, isPrivate);
+		return;
+	}
+
+	/* Declare the "name-alias" field, which contains the method pointer */
+	if(isPrivate)
+		fputs(".field private static ", stream);
+	else
+		fputs(".field public static ", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, 0, 0);
+	fprintf(stream, " '%s-alias'\n", name);
+
+	/* Dump the method header */
+	fputs(".method ", stream);
+	if(isPrivate)
+		fputs("private static ", stream);
+	else
+		fputs("public static ", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, name, 0);
+	fputs(" cil managed\n{\n", stream);
+
+	/* Dump the weak alias name attribute */
+	fputs(".custom instance void OpenSystem.C.WeakAliasForAttribute::.ctor"
+				"([.library]System.String) = (01 00 ", stream);
+	PrintAttributeString(stream, aliasFor);
+	fputs("00 00)\n", stream);
+
+	/* Dump a dummy method body to redirect control to the
+	   aliased function if this one is called */
+	numParams = ILTypeNumParams(signature);
+	for(paramNum = 0; paramNum < numParams; ++paramNum)
+	{
+		fprintf(stream, "\tldarg\t%lu\n", paramNum);
+	}
+	fputs("\tldsfld\t", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, 0, 0);
+	fprintf(stream, " '%s-alias'\n", name);
+	fputs("\tcalli\t", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, "", 0);
+	fputs("\n\tret\n", stream);
+	fprintf(stream, "\t.maxstack %lu\n", numParams + 1);
+
+	/* Dump the method footer */
+	fputs("}\n", stream);
+
+	/* Dump the method header for the alias initializer */
+	fprintf(stream, ".method private static specialname void '.init-%s'",
+			name);
+	fputs("() cil managed\n{\n", stream);
+	fputs(".custom instance void OpenSystem.C.InitializerAttribute::.ctor()"
+				" = (01 00 00 00)\n", stream);
+
+	/* Initialize the "name-alias" variable */
+	fputs("\tldftn\t", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, aliasFor, 0);
+	fputs("\n\tstsfld\t", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, 0, 0);
+	fprintf(stream, " '%s-alias'\n", name);
+	fputs("\tret\n\t.maxstack 1\n", stream);
+
+	/* Dump the method footer for the alias initializer */
+	fputs("}\n", stream);
+}
+
+void CFunctionStrongAlias(ILGenInfo *info, const char *name, ILNode *node,
+						  ILType *signature, const char *aliasFor,
+						  int isPrivate)
+{
+	unsigned long numParams;
+	unsigned long paramNum;
+	FILE *stream = info->asmOutput;
+	if(!stream)
+	{
+		return;
+	}
+
+	/* Dump the method header */
+	fputs(".method ", stream);
+	if(isPrivate)
+		fputs("private static ", stream);
+	else
+		fputs("public static ", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, name, 0);
+	fputs(" cil managed\n{\n", stream);
+
+	/* Dump the strong alias name attribute */
+	fputs(".custom instance void OpenSystem.C.StrongAliasForAttribute::.ctor"
+				"([.library]System.String) = (01 00 ", stream);
+	PrintAttributeString(stream, aliasFor);
+	fputs("00 00)\n", stream);
+
+	/* Bail out here if the alias involves varargs because there
+	   is no way to call through to the underlying function */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		fputs("}\n", stream);
+		return;
+	}
+
+	/* Dump a dummy method body to redirect control to the
+	   aliased function if this one is called */
+	numParams = ILTypeNumParams(signature);
+	for(paramNum = 0; paramNum < numParams; ++paramNum)
+	{
+		fprintf(stream, "\tldarg\t%lu\n", paramNum);
+	}
+	fputs("\tcall\t", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, aliasFor, 0);
+	fputs("\n\tret\n", stream);
+	if(ILTypeGetReturn(signature) != ILType_Void && numParams == 0)
+	{
+		fputs("\t.maxstack 1\n", stream);
+	}
+	else
+	{
+		fprintf(stream, "\t.maxstack %lu\n", numParams);
+	}
+
+	/* Dump the method footer */
+	fputs("}\n", stream);
+}
+
+void CFunctionPInvoke(ILGenInfo *info, const char *name, ILNode *node,
+					  ILType *signature, const char *moduleName,
+					  const char *aliasName, ILUInt32 flags, int isPrivate)
+{
+	FILE *stream = info->asmOutput;
+	if(!stream)
+	{
+		return;
+	}
+	fputs(".method ", stream);
+	if(isPrivate)
+		fputs("private static pinvokeimpl(", stream);
+	else
+		fputs("public static pinvokeimpl(", stream);
+	ILDumpString(stream, moduleName);
+	if(aliasName)
+	{
+		fputs(" as ", stream);
+		ILDumpString(stream, aliasName);
+	}
+	putc(' ', stream);
+	ILDumpFlags(stream, flags, ILPInvokeImplementationFlags, 0);
+	fputs(") ", stream);
+	ILDumpMethodType(stream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, name, 0);
+	fputs(" cil managed {}\n", stream);
+}
+
+int CAttrPresent(ILNode *attrs, const char *name, const char *altName)
+{
+	ILNode_ListIter iter;
+	ILNode_CAttribute *arg;
+	ILNode_ListIter_Init(&iter, attrs);
+	while((arg = (ILNode_CAttribute *)ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if((!strcmp(arg->name, name) || !strcmp(arg->name, altName)) &&
+		   arg->args == 0)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+const char *CAttrGetString(ILNode *attrs, const char *name,
+						   const char *altName)
+{
+	ILNode_ListIter iter;
+	ILNode_CAttribute *arg;
+	ILEvalValue *value;
+	ILNode_ListIter_Init(&iter, attrs);
+	while((arg = (ILNode_CAttribute *)ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if((!strcmp(arg->name, name) || !strcmp(arg->name, altName)) &&
+		   yyisa(arg->args, ILNode_CAttributeValue))
+		{
+			value = &(((ILNode_CAttributeValue *)(arg->args))->value);
+			if(value->valueType == ILMachineType_String)
+			{
+				return value->un.strValue.str;
+			}
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

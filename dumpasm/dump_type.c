@@ -480,7 +480,10 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 	}
 	if(methodName)
 	{
-		ILDumpIdentifier(stream, methodName, 0, flags);
+		if(*methodName != '\0')
+		{
+			ILDumpIdentifier(stream, methodName, 0, flags);
+		}
 	}
 	else
 	{

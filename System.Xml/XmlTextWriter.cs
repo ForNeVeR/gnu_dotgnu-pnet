@@ -722,7 +722,7 @@ public class XmlTextWriter : XmlWriter
 						DoIndent();
 					}
 					writer.Write("</");
-					if(scope.scopeShown && scope.prefix != null)
+					if(scope.scopeShown && scope.prefix != null && scope.prefix != String.Empty)
 					{
 						writer.Write(scope.prefix);
 						writer.Write(':');
@@ -773,7 +773,7 @@ public class XmlTextWriter : XmlWriter
 						DoIndent();
 					}
 					writer.Write("</");
-					if(scope.scopeShown)
+					if(scope.scopeShown && scope.prefix != null && scope.prefix != String.Empty)
 					{
 						writer.Write(scope.prefix);
 						writer.Write(':');
@@ -917,7 +917,7 @@ public class XmlTextWriter : XmlWriter
 
 									if (writeState == System.Xml.WriteState.Attribute)
 									{
-										if (prefix != scope.prefix)
+										if (prefix != scope.prefix && prefix != String.Empty)
 										{
 											writer.Write("{0}:{1}", prefix, localName);
 										}
@@ -933,7 +933,7 @@ public class XmlTextWriter : XmlWriter
 											throw new ArgumentException
 												(S._("Xml_NamespaceValueNull"));
 										}
-										else if (prefix != scope.prefix)
+										else if (prefix != scope.prefix && prefix != String.Empty)
 										{
 											writer.Write("{0}:{1}", prefix, localName);
 										}

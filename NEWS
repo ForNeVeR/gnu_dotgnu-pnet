@@ -1,4 +1,10 @@
 
+0.6.8 (8 August 2004)
+
+	* Fix spinlocks to use CompareExchange, not Exchange (Thong Nguyen).
+	* Update HACKING file (Klaus Treichel).
+	* Detect the patch for "cscc-cpp" correctly (Rhys Weatherley).
+
 0.6.6 (29 May 2004)
 
 	* Use dependency tracking in Makefile's because cscc supports it.

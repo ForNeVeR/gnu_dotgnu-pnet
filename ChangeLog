@@ -1,4 +1,10 @@
 
+2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,
+	cscc/csharp/cs_modifiers.c: report errors for "Finalize" methods
+	that are not properly declared as constructors (Bug #4062).
+
 2003-06-27  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fix recursive entry/leave bug in

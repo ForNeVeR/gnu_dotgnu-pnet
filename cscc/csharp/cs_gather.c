@@ -864,6 +864,46 @@ static char *GetFullExplicitName(ILClass *interface, char *memberName)
 }
 
 /*
+ * Determine if a declaration of "Finalize" will override
+ * the one in "Object" or if it is on a separate "new" slot.
+ */
+static int IsRealFinalizer(ILClass *classInfo)
+{
+	ILClass *parent = ILClass_Parent(classInfo);
+	ILMethod *method;
+	ILType *signature;
+	while(parent != 0)
+	{
+		if(ILTypeIsObjectClass(ILType_FromClass(parent)))
+		{
+			/* We've found the declaration in "System.Object" */
+			return 1;
+		}
+		method = 0;
+		while((method = (ILMethod *)ILClassNextMemberMatch
+				(parent, (ILMember *)method,
+				 IL_META_MEMBERKIND_METHOD, "Finalize", 0)) != 0)
+		{
+			signature = ILMethod_Signature(method);
+			if(ILTypeGetReturn(signature) == ILType_Void &&
+			   ILTypeNumParams(signature) == 0)
+			{
+				if((ILMethod_Attrs(method) &
+						(IL_META_METHODDEF_NEW_SLOT |
+						 IL_META_METHODDEF_VIRTUAL)) !=
+					 IL_META_METHODDEF_VIRTUAL)
+				{
+					/* We've found something other than the real "Finalize" */
+					return 0;
+				}
+			}
+		}
+		parent = ILClass_Parent(parent);
+	}
+	return 0;
+}
+
+/*
  * Create a method definition.
  */
 static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
@@ -972,6 +1012,27 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 
 	/* Get the return type */
 	tempType = CSSemTypeVoid(method->type, info, &(method->type));
+
+	/* Special handling for "Finalize" to be consistent with the ECMA spec */
+	if(!strcmp(name, "Finalize") &&
+	   (method->params == 0 || yyisa(method->params, ILNode_Empty)) &&
+	   tempType == ILType_Void &&
+	   (method->modifiers & CS_SPECIALATTR_DESTRUCTOR) == 0)
+	{
+		if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+		{
+			if(IsRealFinalizer(classInfo))
+			{
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+							  "do not override `Object.Finalize'; provide "
+							  "a destructor instead");
+			}
+		}
+		else if(!ILTypeIsObjectClass(ILType_FromClass(classInfo)))
+		{
+			method->modifiers |= CS_SPECIALATTR_NEW;
+		}
+	}
 
 	/* Create the method signature type */
 	signature = ILTypeCreateMethod(info->context, tempType);

@@ -833,7 +833,8 @@ ILUInt32 CSModifiersToDestructorAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs |= IL_META_METHODDEF_FAMILY |
 			 IL_META_METHODDEF_HIDE_BY_SIG |
 			 IL_META_METHODDEF_VIRTUAL |
-			 CS_SPECIALATTR_OVERRIDE;
+			 CS_SPECIALATTR_OVERRIDE |
+			 CS_SPECIALATTR_DESTRUCTOR;
 
 	/* Done */
 	return attrs;

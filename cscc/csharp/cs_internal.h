@@ -58,6 +58,7 @@ extern	"C" {
 #define	CS_SPECIALATTR_EXTERN		0x02000000
 #define	CS_SPECIALATTR_OVERRIDE		0x01000000
 #define	CS_SPECIALATTR_VOLATILE		0x00800000
+#define	CS_SPECIALATTR_DESTRUCTOR	0x00400000
 
 /*
  * Flag bit that is used to distinguish args from locals.

@@ -14,6 +14,10 @@
 	shift mmap and friends into "libc/unistd/mman-stub.c" to clean
 	things up a bit.
 
+	* include/errno.h: remove the #define for errno because the
+	"__thread_specific__" declaration in errno.c takes care of
+	making the variable thread-specific.
+
 2004-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, include/pthread-support.h,

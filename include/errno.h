@@ -153,7 +153,10 @@ __BEGIN_DECLS
 
 extern int errno;
 extern int *__errno_location(void);
-#define	errno (*__errno_location())
+
+/* Note: not needed in this implementation because "errno" is
+   declared internally as __thread_specific__ */
+/*#define errno (*__errno_location())*/
 
 __END_DECLS
 

@@ -1087,6 +1087,13 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token K_CATCH			"`__catch__'"
 %token K_FINALLY		"`__finally__'"
 %token K_THROW			"`__throw__'"
+%token K_CHECKED		"`__checked__'"
+%token K_UNCHECKED		"`__unchecked__'"
+%token K_NULL			"`__null__'"
+%token K_TRUE			"`__true__'"
+%token K_FALSE			"`__false__'"
+%token K_LOCK			"`__lock__'"
+%token K_CS_TYPEOF		"`__typeof'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -1126,7 +1133,8 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <node>		TryStatement CatchClauses SpecificCatchClauses
 %type <node>		OptSpecificCatchClauses GeneralCatchClause
 %type <node>		OptGeneralCatchClause FinallyClause SpecificCatchClause
-%type <node>		ThrowStatement
+%type <node>		ThrowStatement CheckedStatement LockStatement
+%type <node>		CSharpStatement
 %type <catchInfo>	CatchNameInfo
 
 %type <type>		CSharpSpecifier CSharpType CSharpBuiltinType
@@ -1344,6 +1352,9 @@ PrimaryExpression
 				ILIntString str = ILInternString(functionName, -1);
 				$$ = ILNode_CString_create(str.string, str.len);
 			}
+	| K_NULL		{ $$ = ILNode_Null_create(); }
+	| K_TRUE		{ $$ = ILNode_True_create(); }
+	| K_FALSE		{ $$ = ILNode_False_create(); }
 	| '(' Expression ')'		{ $$ = $2; }
 	| '(' CompoundStatement ')'	{ $$ = $2; }
 	| '(' error ')'				{ $$ = ILNode_Error_create(); }
@@ -1450,6 +1461,23 @@ UnaryExpression
 	| K_SIZEOF UnaryExpression	{ $$ = ILNode_SizeOfExpr_create($2); }
 	| K_SIZEOF '(' TypeName ')'	{ $$ = ILNode_SizeOfType_create($3); }
 	| AND_OP IDENTIFIER			{ $$ = ILNode_CLabelRef_create($2); }
+	| K_CHECKED '(' Expression ')' {
+				$$ = ILNode_Overflow_create($3);
+			}
+	| K_UNCHECKED '(' Expression ')' {
+				$$ = ILNode_NoOverflow_create($3);
+			}
+	| K_CS_TYPEOF UnaryExpression	{
+				/* Perform inline semantic analysis on the expression */
+				CSemValue value = CSemInlineAnalysis
+						(&CCCodeGen, $2, CCurrentScope);
+
+				/* Use the type of the expression as our return value */
+				$$ = ILNode_CSharpTypeOf_create(CSemGetType(value));
+			}
+	| K_CS_TYPEOF '(' TypeName ')'	{
+				$$ = ILNode_CSharpTypeOf_create($3);
+			}
 	;
 
 CastExpression
@@ -2139,11 +2167,22 @@ CSharpSpecifier
 CSharpType
 	: QualifiedIdentifier	{
 				/* Resolve the qualified identifier to a type name */
-				$$ = CTypeFromCSharp(&CCCodeGen, $1);
+				$$ = CTypeFromCSharp(&CCCodeGen, 0, $1);
 				if(!($$))
 				{
 					CCError(_("could not resolve `%s' as a C# type"),
 							ILQualIdentName($1, 0));
+					$$ = ILType_Int32;
+				}
+			}
+	| '[' QualifiedIdentifier ']' QualifiedIdentifier	{
+				/* Resolve the assembly-qualified identifier to a type name */
+				char *assembly = ILQualIdentName($2, 0);
+				$$ = CTypeFromCSharp(&CCCodeGen, assembly, $4);
+				if(!($$))
+				{
+					CCError(_("could not resolve `[%s]%s' as a C# type"),
+							assembly, ILQualIdentName($4, 0));
 					$$ = ILType_Int32;
 				}
 			}
@@ -2608,8 +2647,7 @@ Statement2
 	| IterationStatement
 	| JumpStatement
 	| AsmStatement
-	| TryStatement
-	| ThrowStatement
+	| CSharpStatement
 	| error ';'			{ $$ = ILNode_Empty_create(); }
 	;
 
@@ -2773,6 +2811,13 @@ AsmStatement
 			}
 	;
 
+CSharpStatement
+	: TryStatement
+	| ThrowStatement
+	| CheckedStatement
+	| LockStatement
+	;
+
 TryStatement
 	: K_TRY CompoundStatement CatchClauses		{
 				$$ = ILNode_Try_create($2, $3, 0);
@@ -2882,6 +2927,17 @@ FinallyClause
 ThrowStatement
 	: K_THROW ';'						{ $$ = ILNode_Throw_create(); }
 	| K_THROW Expression ';'			{ $$ = ILNode_ThrowExpr_create($2); }
+	;
+
+CheckedStatement
+	: K_CHECKED CompoundStatement	{ $$ = ILNode_Overflow_create($2); }
+	| K_UNCHECKED CompoundStatement	{ $$ = ILNode_NoOverflow_create($2); }
+	;
+
+LockStatement
+	: K_LOCK '(' Expression ')' Statement	{
+				$$ = ILNode_Lock_create($3, $5);
+			}
 	;
 
 File

@@ -84,98 +84,108 @@ WHITE			[ \t\v\r\f]
 							_("unknown directive %s"), yytext);
 		}
 
-"++"					{ return INC_OP; }
-"--"					{ return DEC_OP; }
-"<<"					{ return LEFT_OP; }
-">>"					{ return RIGHT_OP; }
-"<="					{ return LE_OP; }
-">="					{ return GE_OP; }
-"=="					{ return EQ_OP; }
-"!="					{ return NE_OP; }
-"&&"					{ return AND_OP; }
-"||"					{ return OR_OP; }
-"*="					{ return MUL_ASSIGN_OP; }
-"/="					{ return DIV_ASSIGN_OP; }
-"%="					{ return MOD_ASSIGN_OP; }
-"+="					{ return ADD_ASSIGN_OP; }
-"-="					{ return SUB_ASSIGN_OP; }
-"<<="					{ return LEFT_ASSIGN_OP; }
-">>="					{ return RIGHT_ASSIGN_OP; }
-"&="					{ return AND_ASSIGN_OP; }
-"^="					{ return XOR_ASSIGN_OP; }
-"|="					{ return OR_ASSIGN_OP; }
-"->"					{ return PTR_OP; }
-"::"					{ return COLON_COLON_OP; }
+"++"					{ RETURNTOK(INC_OP); }
+"--"					{ RETURNTOK(DEC_OP); }
+"<<"					{ RETURNTOK(LEFT_OP); }
+">>"					{ RETURNTOK(RIGHT_OP); }
+"<="					{ RETURNTOK(LE_OP); }
+">="					{ RETURNTOK(GE_OP); }
+"=="					{ RETURNTOK(EQ_OP); }
+"!="					{ RETURNTOK(NE_OP); }
+"&&"					{ RETURNTOK(AND_OP); }
+"||"					{ RETURNTOK(OR_OP); }
+"*="					{ RETURNTOK(MUL_ASSIGN_OP); }
+"/="					{ RETURNTOK(DIV_ASSIGN_OP); }
+"%="					{ RETURNTOK(MOD_ASSIGN_OP); }
+"+="					{ RETURNTOK(ADD_ASSIGN_OP); }
+"-="					{ RETURNTOK(SUB_ASSIGN_OP); }
+"<<="					{ RETURNTOK(LEFT_ASSIGN_OP); }
+">>="					{ RETURNTOK(RIGHT_ASSIGN_OP); }
+"&="					{ RETURNTOK(AND_ASSIGN_OP); }
+"^="					{ RETURNTOK(XOR_ASSIGN_OP); }
+"|="					{ RETURNTOK(OR_ASSIGN_OP); }
+"->"					{ RETURNTOK(PTR_OP); }
+"::"					{ RETURNTOK(COLON_COLON_OP); }
 
-"asm"					{ return K_ASM; }
-"__asm__"				{ return K_ASM; }
-"auto"					{ return K_AUTO; }
-"break"					{ return K_BREAK; }
-"case"					{ return K_CASE; }
-"char"					{ return K_CHAR; }
-"const"					{ return K_CONST; }
-"__const__"				{ return K_CONST; }
-"continue"				{ return K_CONTINUE; }
-"default"				{ return K_DEFAULT; }
-"do"					{ return K_DO; }
-"double"				{ return K_DOUBLE; }
-"else"					{ return K_ELSE; }
-"enum"					{ return K_ENUM; }
-"extern"				{ return K_EXTERN; }
-"float"					{ return K_FLOAT; }
-"for"					{ return K_FOR; }
-"goto"					{ return K_GOTO; }
-"if"					{ return K_IF; }
-"inline"				{ return K_INLINE; }
-"__inline__"			{ return K_INLINE; }
-"int"					{ return K_INT; }
-"long"					{ return K_LONG; }
-"register"				{ return K_REGISTER; }
-"return"				{ return K_RETURN; }
-"short"					{ return K_SHORT; }
-"signed"				{ return K_SIGNED; }
-"__signed__"			{ return K_SIGNED; }
-"sizeof"				{ return K_SIZEOF; }
-"static"				{ return K_STATIC; }
-"struct"				{ return K_STRUCT; }
-"switch"				{ return K_SWITCH; }
-"typedef"				{ return K_TYPEDEF; }
-"typeof"				{ return K_TYPEOF; }
-"__typeof__"			{ return K_TYPEOF; }
-"union"					{ return K_UNION; }
-"unsigned"				{ return K_UNSIGNED; }
-"void"					{ return K_VOID; }
-"volatile"				{ return K_VOLATILE; }
-"__volatile__"			{ return K_VOLATILE; }
-"while"					{ return K_WHILE; }
+"asm"					{ RETURNTOK(K_ASM); }
+"__asm__"				{ RETURNTOK(K_ASM); }
+"auto"					{ RETURNTOK(K_AUTO); }
+"break"					{ RETURNTOK(K_BREAK); }
+"case"					{ RETURNTOK(K_CASE); }
+"char"					{ RETURNTOK(K_CHAR); }
+"const"					{ RETURNTOK(K_CONST); }
+"__const__"				{ RETURNTOK(K_CONST); }
+"continue"				{ RETURNTOK(K_CONTINUE); }
+"default"				{ RETURNTOK(K_DEFAULT); }
+"do"					{ RETURNTOK(K_DO); }
+"double"				{ RETURNTOK(K_DOUBLE); }
+"else"					{ RETURNTOK(K_ELSE); }
+"enum"					{ RETURNTOK(K_ENUM); }
+"extern"				{ RETURNTOK(K_EXTERN); }
+"float"					{ RETURNTOK(K_FLOAT); }
+"for"					{ RETURNTOK(K_FOR); }
+"goto"					{ RETURNTOK(K_GOTO); }
+"if"					{ RETURNTOK(K_IF); }
+"inline"				{ RETURNTOK(K_INLINE); }
+"__inline__"			{ RETURNTOK(K_INLINE); }
+"int"					{ RETURNTOK(K_INT); }
+"long"					{ RETURNTOK(K_LONG); }
+"register"				{ RETURNTOK(K_REGISTER); }
+"return"				{ RETURNTOK(K_RETURN); }
+"short"					{ RETURNTOK(K_SHORT); }
+"signed"				{ RETURNTOK(K_SIGNED); }
+"__signed__"			{ RETURNTOK(K_SIGNED); }
+"sizeof"				{ RETURNTOK(K_SIZEOF); }
+"static"				{ RETURNTOK(K_STATIC); }
+"struct"				{ RETURNTOK(K_STRUCT); }
+"switch"				{ RETURNTOK(K_SWITCH); }
+"typedef"				{ RETURNTOK(K_TYPEDEF); }
+"typeof"				{ RETURNTOK(K_TYPEOF); }
+"__typeof__"			{ RETURNTOK(K_TYPEOF); }
+"union"					{ RETURNTOK(K_UNION); }
+"unsigned"				{ RETURNTOK(K_UNSIGNED); }
+"void"					{ RETURNTOK(K_VOID); }
+"volatile"				{ RETURNTOK(K_VOLATILE); }
+"__volatile__"			{ RETURNTOK(K_VOLATILE); }
+"while"					{ RETURNTOK(K_WHILE); }
 
-"..."					{ return K_ELIPSIS; }
-"__builtin_va_list"		{ return K_VA_LIST; }
-"__builtin_va_start"	{ return K_VA_START; }
-"__builtin_va_arg"		{ return K_VA_ARG; }
-"__builtin_va_end"		{ return K_VA_END; }
-"__builtin_setjmp"		{ return K_SETJMP; }
-"__builtin_alloca"		{ return K_ALLOCA; }
-"__attribute__"			{ return K_ATTRIBUTE; }
+"..."					{ RETURNTOK(K_ELIPSIS); }
+"__builtin_va_list"		{ RETURNTOK(K_VA_LIST); }
+"__builtin_va_start"	{ RETURNTOK(K_VA_START); }
+"__builtin_va_arg"		{ RETURNTOK(K_VA_ARG); }
+"__builtin_va_end"		{ RETURNTOK(K_VA_END); }
+"__builtin_setjmp"		{ RETURNTOK(K_SETJMP); }
+"__builtin_alloca"		{ RETURNTOK(K_ALLOCA); }
+"__attribute__"			{ RETURNTOK(K_ATTRIBUTE); }
 
-"_Bool"					{ return K_BOOL; }
-"__wchar__"				{ return K_WCHAR; }
-"__native__"			{ return K_NATIVE; }
-"__csharp__"			{ return K_CSHARP; }
+"_Bool"					{ RETURNTOK(K_BOOL); }
+"__wchar__"				{ RETURNTOK(K_WCHAR); }
+"__native__"			{ RETURNTOK(K_NATIVE); }
+"__csharp__"			{ RETURNTOK(K_CSHARP); }
 
-"__FUNCTION__"			{ return K_FUNCTION; }
-"__PRETTY_FUNCTION__"	{ return K_FUNCTION; }
-"__func__"				{ return K_FUNC; }
+"__FUNCTION__"			{ RETURNTOK(K_FUNCTION); }
+"__PRETTY_FUNCTION__"	{ RETURNTOK(K_FUNCTION); }
+"__func__"				{ RETURNTOK(K_FUNC); }
 
-"__long_long__"			{ return K_LONG_LONG; }
-"__unsigned_int__"		{ return K_UINT; }
+"__long_long__"			{ RETURNTOK(K_LONG_LONG); }
+"__unsigned_int__"		{ RETURNTOK(K_UINT); }
 
-"__thread_specific__"	{ return K_THREAD_SPECIFIC; }
+"__thread_specific__"	{ RETURNTOK(K_THREAD_SPECIFIC); }
 
-"__try__"				{ return K_TRY; }
-"__catch__"				{ return K_CATCH; }
-"__finally__"			{ return K_FINALLY; }
-"__throw__"				{ return K_THROW; }
+"__try__"				{ RETURNTOK(K_TRY); /* Counterparts to C# keywords */ }
+"__catch__"				{ RETURNTOK(K_CATCH); }
+"__finally__"			{ RETURNTOK(K_FINALLY); }
+"__throw__"				{ RETURNTOK(K_THROW); }
+"__checked__"			{ RETURNTOK(K_CHECKED); }
+"__unchecked__"			{ RETURNTOK(K_UNCHECKED); }
+"__null__"				{ RETURNTOK(K_NULL); }
+"__true__"				{ RETURNTOK(K_TRUE); }
+"__false__"				{ RETURNTOK(K_FALSE); }
+"__lock__"				{ RETURNTOK(K_LOCK); }
+
+"__typeof"				{ RETURNTOK(K_CS_TYPEOF); /* Managed C++ compat */ }
+"__int64"				{ RETURNTOK(K_LONG_LONG); }
+"__finally"				{ RETURNTOK(K_FINALLY); }
 
 \"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
 								  RETURNTOK(STRING_LITERAL); }
@@ -241,6 +251,6 @@ l'(\\.|[^\\'])+'				{ CLexParseChar(yytext, &(yylval.integer));
 
 \n								;
 
-.								{ return (((int)(yytext[0])) & 0xFF); }
+.								{ RETURNTOK(((int)(yytext[0])) & 0xFF); }
 
 %%

@@ -367,7 +367,7 @@ static int LoadLibraryFromPath(const char *path, int freePath)
  * Load the contents of a library into the code generator's context.
  * Returns zero if the library load failed.
  */
-static int LoadLibrary(const char *name, int nostdlib_flag)
+static int LoadLibrary(const char *name, int nostdlib_flag, int later_load)
 {
 	int len;
 	int index;
@@ -450,7 +450,14 @@ static int LoadLibrary(const char *name, int nostdlib_flag)
 	   since libraries are normally fixed up at link time */
 	if(CCPluginUsesPreproc == CC_PREPROC_C)
 	{
-		return 1;
+		if(later_load)
+		{
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
 	}
 
 	/* Could not locate the library */
@@ -544,7 +551,7 @@ static int InitCodeGen(void)
 		{
 			name = "mscorlib";
 		}
-		if(!LoadLibrary(name, 0))
+		if(!LoadLibrary(name, 0, 0))
 		{
 			return 1;
 		}
@@ -560,7 +567,7 @@ static int InitCodeGen(void)
 	/* Load all of the other libraries, in reverse order */
 	for(library = num_libraries - 1; library >= 0; --library)
 	{
-		if(!LoadLibrary(libraries[library], nostdlib_flag))
+		if(!LoadLibrary(libraries[library], nostdlib_flag, 0))
 		{
 			return 1;
 		}
@@ -1224,6 +1231,11 @@ void CCPluginAddTopLevel(ILNode *node)
 	{
 		CCParseTreeEnd = (ILNode *)(((ILNode_List *)CCParseTreeEnd)->rest);
 	}
+}
+
+int CCLoadLibrary(const char *name)
+{
+	return LoadLibrary(name, nostdlib_flag, 1);
 }
 
 /*

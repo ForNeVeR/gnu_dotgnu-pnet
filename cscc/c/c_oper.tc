@@ -2013,8 +2013,6 @@ ILNode_CSemAnalysis(ILNode_Comma)
  * Perform semantic analysis for "as is" operators.
  */
 ILNode_CSemAnalysis(ILNode_AsIs),
-ILNode_CSemAnalysis(ILNode_Overflow),
-ILNode_CSemAnalysis(ILNode_NoOverflow),
 ILNode_CSemAnalysis(ILNode_Pedantic),
 ILNode_CSemAnalysis(ILNode_NoPedantic)
 {
@@ -2022,11 +2020,41 @@ ILNode_CSemAnalysis(ILNode_NoPedantic)
 }
 
 /*
+ * Perform semantic analysis for the "checked" operator.
+ */
+ILNode_CSemAnalysis(ILNode_Overflow)
+{
+	CSemValue value;
+	int overflow = info->overflowInsns;
+	int changed = info->overflowChanged;
+	info->overflowInsns = 1;
+	info->overflowChanged = 1;
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	info->overflowInsns = overflow;
+	info->overflowChanged = changed;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "unchecked" operator.
+ */
+ILNode_CSemAnalysis(ILNode_NoOverflow)
+{
+	CSemValue value;
+	int overflow = info->overflowInsns;
+	int changed = info->overflowChanged;
+	info->overflowInsns = 0;
+	info->overflowChanged = 1;
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	info->overflowInsns = overflow;
+	info->overflowChanged = changed;
+	return value;
+}
+
+/*
  * Generate l-value addresses for "as is" operators.
  */
 ILNode_CGenAddress(ILNode_AsIs),
-ILNode_CGenAddress(ILNode_Overflow),
-ILNode_CGenAddress(ILNode_NoOverflow),
 ILNode_CGenAddress(ILNode_Pedantic),
 ILNode_CGenAddress(ILNode_NoPedantic)
 {
@@ -2038,6 +2066,52 @@ ILNode_CGenAddress(ILNode_NoPedantic)
 	{
 		return CAddressDefault;
 	}
+}
+
+/*
+ * Generate l-value addresses for the "checked" operator.
+ */
+ILNode_CGenAddress(ILNode_Overflow)
+{
+	CAddress value;
+	int overflow = info->overflowInsns;
+	int changed = info->overflowChanged;
+	info->overflowInsns = 1;
+	info->overflowChanged = 1;
+	if(yyisa(node->expr, ILNode_LValue))
+	{
+		value = ILNode_CGenAddress((ILNode_LValue *)(node->expr), info);
+	}
+	else
+	{
+		value = CAddressDefault;
+	}
+	info->overflowInsns = overflow;
+	info->overflowChanged = changed;
+	return value;
+}
+
+/*
+ * Generate l-value addresses for the "unchecked" operator.
+ */
+ILNode_CGenAddress(ILNode_NoOverflow)
+{
+	CAddress value;
+	int overflow = info->overflowInsns;
+	int changed = info->overflowChanged;
+	info->overflowInsns = 0;
+	info->overflowChanged = 1;
+	if(yyisa(node->expr, ILNode_LValue))
+	{
+		value = ILNode_CGenAddress((ILNode_LValue *)(node->expr), info);
+	}
+	else
+	{
+		value = CAddressDefault;
+	}
+	info->overflowInsns = overflow;
+	info->overflowChanged = changed;
+	return value;
 }
 
 /*
@@ -2592,4 +2666,42 @@ JavaGenValue(ILNode_SizeOfExpr)
 ILNode_CSemAnalysis(ILNode_Error)
 {
 	return CSemValueError;
+}
+
+/*
+ * Perform semantic analysis for the C# typeof operator ("__typeof").
+ */
+ILNode_CSemAnalysis(ILNode_CSharpTypeOf)
+{
+	/* The return value is always "System.Type" */
+	CSemValue value;
+	CSemSetRValue(value, ILFindSystemType(info, "Type"));
+	return value;
+}
+
+/*
+ * Get the machine type for the C# typeof operator.
+ */
+ILNode_GetType(ILNode_CSharpTypeOf)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for the C# typeof operator.
+ */
+ILNode_GenValue(ILNode_CSharpTypeOf)
+{
+	ILGenTypeToken(info, IL_OP_LDTOKEN, node->type);
+	ILGenAdjust(info, 1);
+	ILGenCallByName(info,
+			"class [.library]System.Type "
+				"[.library]System.Type::GetTypeFromHandle"
+				"(valuetype [.library]System.RuntimeTypeHandle)");
+	return ILMachineType_ObjectRef;
+}
+JavaGenValue(ILNode_CSharpTypeOf)
+{
+	/* Nothing to do here */
+	return ILMachineType_ObjectRef;
 }

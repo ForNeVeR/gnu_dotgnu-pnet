@@ -1363,3 +1363,57 @@ ILNode_CSemAnalysis(ILNode_FinallyClause)
 	/* Done */
 	return CSemValueDefault;
 }
+
+/*
+ * Perform semantic analysis for the "lock" statement.
+ */
+ILNode_CSemAnalysis(ILNode_Lock)
+{
+	CSemValue value;
+	ILType *objectType = ILFindSystemType(info, "Object");
+
+	/* Lock blocks must be at the statement level of the function */
+	if(!stmtLevel)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("`__lock__' used within expression statement"));
+		return CSemValueDefault;
+	}
+
+	/* Perform semantic analysis on the lock expression */
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(CSemIsError(value))
+	{
+		/* We've already reported an error for a bad expression,
+		   so don't bother complaining about the situation again */
+	}
+	else if(!CSemIsRValue(value))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("invalid lock expression"));
+	}
+	else if(!CCanCoerce(CSemGetType(value), objectType))
+	{
+		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
+					  _("no conversion from `%s' to `%s'"),
+					  CTypeToName(info, CSemGetType(value)),
+					  CTypeToName(info, objectType));
+	}
+	else
+	{
+		CCoerceNode(info, node->expr, &(node->expr), value, objectType);
+	}
+
+	/* Enter a "try" context */
+	PushStmtContext(info, C_STMT_TRY);
+
+	/* Perform semantic analysis on the lock statement body */
+	StmtSem(node->stmt, info, &(node->stmt), stmtLevel);
+
+	/* Exit from the "try" context */
+	PopStmtContext(info);
+
+	/* Done */
+	return CSemValueDefault;
+}
+

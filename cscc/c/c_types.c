@@ -2521,11 +2521,13 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 	return name;
 }
 
-ILType *CTypeFromCSharp(ILGenInfo *info, ILNode *node)
+ILType *CTypeFromCSharp(ILGenInfo *info, char *assembly, ILNode *node)
 {
 	char *name;
 	char *namespace;
 	ILType *type;
+	ILClass *classInfo;
+	const char *assemblyName;
 
 	/* Break the identifier into name and namespace */
 	if(yyisa(node, ILNode_Identifier))
@@ -2534,7 +2536,11 @@ ILType *CTypeFromCSharp(ILGenInfo *info, ILNode *node)
 		namespace = 0;
 
 		/* Recognise C# builtin types that aren't C keywords */
-		if(!strcmp(name, "byte"))
+		if(!strcmp(name, "bool"))
+		{
+			return ILType_Boolean;
+		}
+		else if(!strcmp(name, "byte"))
 		{
 			return ILType_UInt8;
 		}
@@ -2561,15 +2567,40 @@ ILType *CTypeFromCSharp(ILGenInfo *info, ILNode *node)
 		namespace = ILQualIdentName(((ILNode_QualIdent *)node)->left, 0);
 	}
 
+	/* Make sure that we have the specified assembly loaded */
+	if(assembly)
+	{
+		if(!CCLoadLibrary(assembly))
+		{
+			return 0;
+		}
+	}
+
 	/* Look up the type (returns NULL if not found) */
 	type = ILFindNonSystemType(info, name, namespace);
 	if(!type)
 	{
 		return 0;
 	}
+	classInfo = ILTypeToClass(info, type);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Make sure that we found the right assembly */
+	if(assembly)
+	{
+		assemblyName = ILImageGetAssemblyName
+			(ILProgramItem_Image(ILClassResolve(classInfo)));
+		if(!assemblyName || strcmp(assemblyName, assembly) != 0)
+		{
+			return 0;
+		}
+	}
 
 	/* Convert builtin classes to their primitive forms */
-	return ILClassToType(ILTypeToClass(info, type));
+	return ILClassToType(classInfo);
 }
 
 #ifdef	__cplusplus

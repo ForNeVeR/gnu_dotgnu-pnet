@@ -16,6 +16,14 @@
 	cscc/c/c_stubs.tc: add exception statements to the C compiler,
 	so that exceptions that are thrown by C# code can be caught.
 
+	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_oper.tc,
+	cscc/c/c_scanner.l, cscc/c/c_stmt.tc, cscc/c/c_stubs.tc,
+	cscc/c/c_types.c, cscc/c/c_types.h, cscc/common/cc_main.c,
+	cscc/common/cc_main.h, doc/c_users_guide.html: add counterparts
+	to the C# lock, null, true, false, checked, and unchecked
+	keywords; permit an assembly name to be used with "__csharp__"
+	for importing from assemblies other than "mscorlib".
+
 2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_typeout.c, cscc/c/c_types.c, doc/c_language_abi.html:

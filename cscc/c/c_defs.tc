@@ -435,6 +435,10 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 {
 	ILNode *expr;
 }
+%node ILNode_CSharpTypeOf ILNode_Expression =
+{
+	ILType *type;
+}
 
 %output "c_semantics.c"
 

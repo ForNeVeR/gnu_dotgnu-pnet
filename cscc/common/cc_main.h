@@ -157,6 +157,11 @@ void CCPluginParseError(char *msg, char *text);
  */
 void CCPluginAddTopLevel(ILNode *node);
 
+/*
+ * Load a library into the compiler.
+ */
+int CCLoadLibrary(const char *name);
+
 #ifdef	__cplusplus
 };
 #endif

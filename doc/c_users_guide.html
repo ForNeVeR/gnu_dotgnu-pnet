@@ -6,7 +6,7 @@
 <h1>Using Portable.NET's C Compiler</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2004/02/25 10:32:45 $<p>
+Last Modified: $Date: 2004/02/28 07:20:49 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -339,6 +339,14 @@ int ticks = Environment::get_TickCount();</pre></blockquote><p>
 This example also demonstrates how C# properties are accessed from C:
 you must call the underlying "<code>get</code>" or "<code>set</code>"
 method.<p>
+
+You can supply the assembly name explicitly using the syntax
+"<code>__csharp__ ([<i>assembly</i>]<i>type</i>)</code>".  For example:<p>
+
+<blockquote><pre>typedef __csharp__([System.Xml]System.Xml.XmlDocument) XmlDocument;</pre></blockquote><p>
+
+The assembly qualifier is normally needed for types that are
+not declared within "<code>mscorlib.dll</code>".<p>
 
 If the method is an instance or virtual method, then the object
 is supplied as the first parameter:<p>

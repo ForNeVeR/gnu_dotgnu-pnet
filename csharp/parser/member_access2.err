@@ -39,6 +39,6 @@
 ./member_access2.cs:77: `sealed' cannot be used in this context
 ./member_access2.cs:54: warning: declaration of `m4' includes unnecessary `new' keyword
 ./member_access2.cs:57: warning: declaration of `m7' includes unnecessary `new' keyword
-./member_access2.cs:84: declaration of `m1' hides an inherited member, and `new' was not present
-./member_access2.cs:85: declaration of `m6' hides an inherited member, and `new' was not present
+./member_access2.cs:84: warning: declaration of `m1' hides an inherited member, and `new' was not present
+./member_access2.cs:85: warning: declaration of `m6' hides an inherited member, and `new' was not present
 ./member_access2.cs:62: `abstract' cannot be used with a method body

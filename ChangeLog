@@ -1,4 +1,13 @@
 
+2002-10-18  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/class/field3.err,csharp/class/field3.jerr,
+	csharp/class/method8.err,csharp/class/method8.jerr,
+	csharp/class/property3.err,csharp/class/property3.jerr
+	csharp/parser/member_access2.err,csharp/parser/member_access2.jerr:
+	update output files that were affected by the latest cscc
+	fixes to convert Errors to Warnings for missing 'new' and 'override'.
+
 2002-10-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/switch1.jl: change output file to reflect Java patches.

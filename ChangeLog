@@ -25,6 +25,9 @@
 	add conversion tables and code page handlers for KS C 5601,
 	GB2312, BIG5, and Johab.
 
+	* I18N/CJK/MultiByteEncoding.cs: map unknown Unicode characters
+	to the empty string, not NUL.
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/CJK/CP51932.cs, I18N/CJK/CP932.cs: changes to the

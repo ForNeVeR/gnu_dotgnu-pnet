@@ -149,7 +149,11 @@ public unsafe abstract class MultiByteEncoding : Encoding
 					{
 						value = 0;
 					}
-					if(value < 0x0100)
+					if(value == 0)
+					{
+						continue;
+					}
+					else if(value < 0x0100)
 					{
 						++length;
 					}
@@ -240,7 +244,11 @@ public unsafe abstract class MultiByteEncoding : Encoding
 					{
 						value = 0;
 					}
-					if(value < 0x0100)
+					if(value == 0)
+					{
+						continue;
+					}
+					else if(value < 0x0100)
 					{
 						if(posn >= byteLength)
 						{

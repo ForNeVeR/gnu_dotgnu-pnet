@@ -218,7 +218,18 @@ CSSRC = Activator.cs \
 		Security/Permissions/SecurityPermissionAttribute.cs \
 		Security/Policy/Evidence.cs \
 		Text/Encoding.cs \
+		Threading/Interlocked.cs \
 		Threading/Monitor.cs \
+		Threading/Mutex.cs \
+		Threading/SynchronizationLockException.cs \
+		Threading/Thread.cs \
+		Threading/ThreadAbortException.cs \
+		Threading/ThreadInterruptedException.cs \
+		Threading/ThreadPriority.cs \
+		Threading/ThreadStart.cs \
+		Threading/ThreadState.cs \
+		Threading/ThreadStateException.cs \
+		Threading/Timeout.cs \
 		Threading/WaitHandle.cs \
 		../Platform/DirMethods.cs \
 		../Platform/PathInfo.cs \

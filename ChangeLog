@@ -7,6 +7,21 @@ runtime/System/MissingManifestResourceException.cs,
 runtime/System/NeutralResourcesLanguageAttribute.cs,
 runtime/System/SatelliteContractVersionAttribute.cs: resource-related classes.
 
+* runtime/System/Makefile.am,
+runtime/System/Threading/Interlocked.cs,
+runtime/System/Threading/Monitor.cs,
+runtime/System/Threading/Mutex.cs,
+runtime/System/Threading/SynchronizationLockException.cs,
+runtime/System/Threading/Thread.cs,
+runtime/System/Threading/ThreadAbortException.cs,
+runtime/System/Threading/ThreadInterruptedException.cs,
+runtime/System/Threading/ThreadPriority.cs,
+runtime/System/Threading/ThreadStart.cs,
+runtime/System/Threading/ThreadState.cs,
+runtime/System/Threading/ThreadStateException.cs,
+runtime/System/Threading/Timeout.cs,
+runtime/System/Threading/WaitHandle.cs: thread-related classes.
+
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update version and news for 0.0.6 release.

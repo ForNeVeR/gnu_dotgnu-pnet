@@ -40,6 +40,8 @@ public class TestTimer : TestCase
 
 	protected override void Setup()
 	{
+		if (!TestThread.IsThreadingSupported)
+			return;
 		this.timer = new Timer(this.timerCallbackDelegate, this,
 			Timeout.Infinite, Timeout.Infinite);
 		this.timeTimerExpired = DateTime.MaxValue;
@@ -50,6 +52,8 @@ public class TestTimer : TestCase
 
 	protected override void Cleanup()
 	{
+		if (!TestThread.IsThreadingSupported)
+			return;
 		this.timer.Dispose();
 	}
 
@@ -86,10 +90,10 @@ public class TestTimer : TestCase
 	//
 	public void TestTimerConstructor()
 	{
-		TimerCallback timerCallbackDummyDelegate =
-			new TimerCallback(timerCallbackDummy);
 		if (!TestThread.IsThreadingSupported)
 			return;
+		TimerCallback timerCallbackDummyDelegate =
+			new TimerCallback(timerCallbackDummy);
 		//
 		// Verify it checks the arguments correctly.
 		//

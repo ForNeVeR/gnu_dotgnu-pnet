@@ -28,6 +28,9 @@
 	runtime/System/AttributeTargets.cs: add the "NewConstraintAttribute"
 	class, and the attribute flag bit for generic parameters.
 
+	* runtime/System/Text/Encoding.cs, runtime/System/Text/UTF32Encoding.cs:
+	add the "UTF32Encoding" class for 1.2 compatibility.
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

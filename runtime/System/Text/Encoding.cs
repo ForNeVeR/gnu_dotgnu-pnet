@@ -397,6 +397,12 @@ public abstract class Encoding
 					case Latin1Encoding.ISOLATIN_CODE_PAGE:
 						return ISOLatin1;
 
+					case UTF32Encoding.UTF32_CODE_PAGE:
+						return UTF32;
+
+					case UTF32Encoding.UTF32_BIG_ENDIAN_CODE_PAGE:
+						return BigEndianUTF32;
+
 					default: break;
 				}
 
@@ -439,14 +445,16 @@ public abstract class Encoding
 	// Table of builtin web encoding names and the corresponding code pages.
 	private static readonly String[] encodingNames =
 		{"us-ascii", "utf-7", "utf-8", "utf-16",
-		 "unicodeFFFE", "iso-8859-1"};
+		 "unicodeFFFE", "iso-8859-1", "ucs-4", "ucs-4-be"};
 	private static readonly int[] encodingCodePages =
 		{ASCIIEncoding.ASCII_CODE_PAGE,
 		 UTF7Encoding.UTF7_CODE_PAGE,
 		 UTF8Encoding.UTF8_CODE_PAGE,
 		 UnicodeEncoding.UNICODE_CODE_PAGE,
 		 UnicodeEncoding.BIG_UNICODE_CODE_PAGE,
-		 Latin1Encoding.ISOLATIN_CODE_PAGE};
+		 Latin1Encoding.ISOLATIN_CODE_PAGE,
+		 UTF32Encoding.UTF32_CODE_PAGE,
+		 UTF32Encoding.UTF32_BIG_ENDIAN_CODE_PAGE};
 
 	// Get an encoding object for a specific web encoding name.
 	public static Encoding GetEncoding(String name)
@@ -729,6 +737,8 @@ public abstract class Encoding
 	private static Encoding utf8Encoding = null;
 	private static Encoding unicodeEncoding = null;
 	private static Encoding isoLatin1Encoding = null;
+	private static Encoding utf32Encoding = null;
+	private static Encoding bigEndianUtf32Encoding = null;
 
 	// Get the standard ASCII encoding object.
 	public static Encoding ASCII
@@ -860,6 +870,44 @@ public abstract class Encoding
 							unicodeEncoding = new UnicodeEncoding();
 						}
 						return unicodeEncoding;
+					}
+				}
+			}
+
+	// Get the standard UTF-32 encoding object.
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
+	public
+#else
+	internal
+#endif
+	static Encoding UTF32
+			{
+				get
+				{
+					lock(typeof(Encoding))
+					{
+						if(utf32Encoding == null)
+						{
+							utf32Encoding = new UTF32Encoding();
+						}
+						return utf32Encoding;
+					}
+				}
+			}
+
+	// Get the big-endian UTF-32 encoding object.
+	private static Encoding BigEndianUTF32
+			{
+				get
+				{
+					lock(typeof(Encoding))
+					{
+						if(bigEndianUtf32Encoding == null)
+						{
+							bigEndianUtf32Encoding = new UTF32Encoding
+								(true, true);
+						}
+						return bigEndianUtf32Encoding;
 					}
 				}
 			}

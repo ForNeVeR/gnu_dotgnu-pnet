@@ -1,4 +1,8 @@
 
+2001-01-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/typeof1.jl: new JVM output file for the "typeof1" test.
+
 2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/cast4.cs, csharp/expr/cast4.il, csharp/expr/cast4.jl,

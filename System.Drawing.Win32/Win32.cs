@@ -1111,6 +1111,12 @@ internal class Api
 
 	[DllImport("gdi32")]
 	public static extern bool DeleteDC(IntPtr hdc);
+	
+	[DllImport("kernel32")]
+	public static extern uint GetLastError();
+	
+	[DllImport("kernel32")]
+	public static extern uint SetLastError(uint errorCode);
 
 	// Retrieves Windows version
 	// To obtain e.g. the major version:

@@ -1,4 +1,11 @@
+2004-11-21  Thong Nguyen  <tum@veridicus.com>
 
+	* System.Drawing.Win32/Win32.cs: Added GetLastError and SetLastError.
+	
+	* System.Drawing.Win32/DrawingTopLevelWindow.cs: Fixed SetWindowLong
+	do that it checks for errors using GetLastError (checking for a return
+	value of zero is insufficient because the previous value could be zero).
+	
 2004-11-20  Erich Kitzmuller  <ammoq@ammoq.com>
 
 	* System/Net/HttpWebResponse.cs: Add HTTP Chunked support to 

@@ -6,7 +6,7 @@
    Darwin ABI support (c) 2001 John Hornkvist
    AIX ABI support (c) 2002 Free Software Foundation, Inc.
 
-   $Id: ffi_darwin.c,v 1.1 2002/05/10 23:04:40 rweather Exp $
+   $Id: ffi_darwin.c,v 1.2 2002/05/13 01:33:16 rweather Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -455,6 +455,7 @@ ffi_prep_closure (ffi_closure* closure,
 {
   unsigned int *tramp;
   struct ffi_aix_trampoline_struct *tramp_aix;
+  aix_fd *fd;
  
   switch (cif->abi)
     {  
@@ -486,7 +487,7 @@ ffi_prep_closure (ffi_closure* closure,
     case FFI_AIX:
 
       tramp_aix = (struct ffi_aix_trampoline_struct *) (closure->tramp);
-      aix_fd *fd = (aix_fd *)(void *)ffi_closure_ASM;
+      fd = (aix_fd *)(void *)ffi_closure_ASM;
 
       FFI_ASSERT (cif->abi == FFI_AIX);
 

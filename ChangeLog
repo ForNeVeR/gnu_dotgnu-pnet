@@ -1,4 +1,10 @@
 
+2004-12-12  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	*	runtime/System/Runtime/Serialization/Formatters/Binary/
+	BinaryValueWriter.cs: Fix serialization of ISerializable
+	types (patch #3531, Gopal).
+
 2004-12-12  Gopal V  <gopalv82@yahoo.com>
 
 	* Xsharp/PopupWindow.cs: Override Raise() operation to raise the

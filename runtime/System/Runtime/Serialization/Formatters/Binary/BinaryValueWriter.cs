@@ -93,9 +93,9 @@ internal abstract class BinaryValueWriter
 						else if(queue.Count > 0)
 						{
 							Object obj = queue.Peek();
-							if(OutputAssembly(obj))
+							if(OutputAssembly(obj)) 
 							{
-	    	    				formatter.WriteObject(this, queue.Dequeue());
+								formatter.WriteObject(this, queue.Dequeue());
 							}
 						}
 						else
@@ -105,22 +105,22 @@ internal abstract class BinaryValueWriter
 					}
 				}
 
-        public bool OutputAssembly(Object obj)
-        {
-            bool firstTime;
+		public bool OutputAssembly(Object obj)
+		{
+			bool firstTime;
 
-            Type tp = obj.GetType();
-            while(tp.IsArray)
+			Type tp = obj.GetType();
+			while(tp.IsArray)
 			{
 				tp = tp.GetElementType();
 			}
-            gen.GetId(tp.Assembly, out firstTime);
-            if(firstTime) 
+			gen.GetId(tp.Assembly, out firstTime);
+			if(firstTime) 
 			{
-                assemblyQueue.Enqueue(tp.Assembly);
-            }
-            return !firstTime;
-        }
+				assemblyQueue.Enqueue(tp.Assembly);
+			}
+			return !firstTime;
+		}
 
 	}; // class BinaryValueContext
 
@@ -605,16 +605,23 @@ internal abstract class BinaryValueWriter
 		// Write the object header information for a type.
 		// IS11n objects are written like normal objects, but the
 		// members are replaced by the key->value pairs from the
-		// SerInfo.
+		// SerInfo. There is an exception if the Object is serialized
+		// using another type (SetType()), then this type is serialized instead
 		public override void WriteObjectHeader(BinaryValueContext context,
 											   Object value, Type type,
 											   long objectID, long prevObject)
 				{
+					// get members
+					StreamingContext streamContext = context.formatter.Context;
+					SerializationInfo info = new SerializationInfo(type, context.formatter.converter);
+					((ISerializable) value).GetObjectData(info, streamContext);
+					Assembly iserAssembly = Assembly.Load(info.AssemblyName);
+
 					if(prevObject == -1)
 					{
 						// Write the full type information.
 						long assemblyID;
-						if(type.Assembly == Assembly.GetExecutingAssembly())
+						if(iserAssembly == Assembly.GetExecutingAssembly())
 						{
 							context.writer.Write
 								((byte)(BinaryElementType.RuntimeObject));
@@ -624,24 +631,20 @@ internal abstract class BinaryValueWriter
 						{
 							bool firstTime;
 							assemblyID = context.gen.GetId
-								(type.Assembly, out firstTime);
+								(iserAssembly, out firstTime);
 							if(firstTime)
 							{
 								context.writer.Write
 									((byte)(BinaryElementType.Assembly));
 								context.writer.Write((int)assemblyID);
-								WriteAssemblyName(context, type.Assembly);
+								WriteAssemblyName(context, iserAssembly);
 							}
 							context.writer.Write
 								((byte)(BinaryElementType.ExternalObject));
 						}
-						context.writer.Write((int)objectID);
-						context.writer.Write(type.FullName);
 
-						// get members
-						StreamingContext streamContext = context.formatter.Context;
-						SerializationInfo info = new SerializationInfo(type, context.formatter.converter);
-						((ISerializable) value).GetObjectData(info, streamContext);
+						context.writer.Write((int)objectID);
+						context.writer.Write(info.FullTypeName);
 
 						// write out number of members
 						context.writer.Write((int)info.MemberCount);
@@ -687,9 +690,9 @@ internal abstract class BinaryValueWriter
 			
 			((ISerializable) value).GetObjectData(info, streamContext);
 
-            // the entries are written using the type-spec supplied when
-            // they were put into the SerInfo, but the writer is determined
-            // by the real type!
+			// the entries are written using the type-spec supplied when
+			// they were put into the SerInfo, but the writer is determined
+			// by the real type!
 			foreach(SerializationEntry entry in info)
 			{
 				Object val = entry.Value;
@@ -700,7 +703,7 @@ internal abstract class BinaryValueWriter
 				}
 				else
 				{
-                    // NULL is always written as object
+					// NULL is always written as object
 					GetWriter(context, typeof(Object)).WriteInline
 						(context, val, typeof(Object), entry.ObjectType);
 				}
@@ -1578,94 +1581,94 @@ internal abstract class BinaryValueWriter
 		public override void WriteObject(BinaryValueContext context,
 										 Object value, Type type)
 				{
-				    Type elementType = type.GetElementType();
+					Type elementType = type.GetElementType();
 
-			        if(elementType == typeof(Boolean)) 
+					if(elementType == typeof(Boolean)) 
 					{
 						foreach(bool elem in (bool[])value)
 						{
 							context.writer.Write(elem);
 						}
-			        } 
+					} 
 					else if(elementType == typeof(Byte)) 
 					{
-				        context.writer.Write((byte[]) value);
-			        }
+						context.writer.Write((byte[]) value);
+					}
 					else if(elementType == typeof(SByte)) 
 					{
 						/* wish we had macros */
 						foreach(sbyte elem in (sbyte[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        }
+					}
 					else if(elementType == typeof(Char)) 
 					{
 						foreach(char elem in (char[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        }
+					}
 					else if(elementType == typeof(Int16)) 
 					{
 						foreach(short elem in (short[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        }
+					}
 					else if(elementType == typeof(UInt16))
 					{
 						foreach(ushort elem in (ushort[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        } 
+					} 
 					else if(elementType == typeof(Int32)) 
 					{
 						foreach(int elem in (int[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
 					}
 					else if(elementType == typeof(UInt32)) 
 					{
 						foreach(uint elem in (uint[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        }
+					}
 					else if(elementType == typeof(Int64)) 
 					{
 						foreach(long elem in (long[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        }
+					}
 					else if(elementType == typeof(UInt64))
 					{
 						foreach(ulong elem in (ulong[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        }
+					}
 					else if(elementType == typeof(Single))
 					{
 						foreach(float elem in (float[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-			        }
+					}
 					else if(elementType == typeof(Double)) 
 					{
 						foreach(double elem in (double[])value)
 						{
-				        	context.writer.Write(elem);
+							context.writer.Write(elem);
 						}
-				    }
+					}
 					else 
 					{
-				        // other arrays are treated with more respect
-    					Array ar = (Array) value;
+						// other arrays are treated with more respect
+						Array ar = (Array) value;
 						BinaryValueWriter writer = GetWriter(context, elementType);
 						if(writer == null)
 						{
@@ -1673,21 +1676,21 @@ internal abstract class BinaryValueWriter
 								(String.Format
 									(_("Serialize_CannotSerialize"), type));
 						}
-    					for(int i = 0; i < ar.GetLength(0); i++) 
-    					{
-    						object o = ar.GetValue(i);
-    						if(o == null)
-    						{
-    							// Write a null value.
-    							context.writer.Write
-    								((byte)(BinaryElementType.NullValue));
-    						}
-    						else
-    						{
+						for(int i = 0; i < ar.GetLength(0); i++) 
+						{
+							object o = ar.GetValue(i);
+							if(o == null)
+							{
+								// Write a null value.
+								context.writer.Write
+									((byte)(BinaryElementType.NullValue));
+							}
+							else
+							{
 								writer.WriteInline(context, o, o.GetType(), type);
-    						}
-    					}
-				    }
+							}
+						}
+					}
 				}
 	}; // class ArrayWriter
 

@@ -129,6 +129,7 @@ struct _tagILLinker
 	int				error;			/* Some other error occurred */
 	int				is32Bit;		/* Non-zero if "-m32bit-only" supplied */
 	int				linkerFlags;	/* Extra flags for the linker */
+	int				hasDebug;		/* Non-zero if an image has debug info */
 	ILLinkImage    *images;			/* List of images to be linked */
 	ILLinkImage    *lastImage;		/* Last image on the "images" list */
 	ILUInt32		imageNum;		/* Number of the image being linked */

@@ -179,6 +179,12 @@ void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
 					  const void *info, unsigned long len);
 
 /*
+ * Add debug information for a pseudo-token to the debug section.
+ */
+void ILWriterDebugAddPseudo(ILWriter *writer, unsigned long token, int type,
+					  		const void *info, unsigned long len);
+
+/*
  * Create a resource section handler for an image, in writing mode.
  * Returns NULL if out of memory.
  */

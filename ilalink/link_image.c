@@ -217,6 +217,10 @@ int ILLinkerAddImage(ILLinker *linker, ILContext *context,
 	}
 	linker->lastImage = linkImage;
 	_ILLinkerAddSymbols(linker, image);
+	if(ILDebugPresent(image))
+	{
+		linker->hasDebug = 1;
+	}
 	return 1;
 }
 
@@ -263,6 +267,10 @@ int ILLinkerPerformLink(ILLinker *linker)
 {
 	ILLinkImage *image = linker->images;
 	ILImage *initImage;
+	char *curdir;
+	unsigned long curdirOffset;
+	unsigned char buffer[IL_META_COMPRESS_MAX_SIZE];
+	int buflen;
 	int ok = 1;
 
 	/* Process the main images */
@@ -284,6 +292,20 @@ int ILLinkerPerformLink(ILLinker *linker)
 		if(!ProcessImage(linker, initImage, "init-link"))
 		{
 			ok = 0;
+		}
+	}
+
+	/* Add the link directory name if there was debug information */
+	if(ok && linker->hasDebug)
+	{
+		curdir = ILGetCwd();
+		if(curdir)
+		{
+			curdirOffset = ILWriterDebugString(linker->writer, curdir);
+			buflen = ILMetaCompressData(buffer, curdirOffset);
+			ILWriterDebugAddPseudo(linker->writer,
+								   ILDebugGetPseudo("LDIR"), 0,
+								   buffer, (unsigned long)(long)buflen);
 		}
 	}
 

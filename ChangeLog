@@ -4,6 +4,11 @@
 	* ilasm/ilasm_output.c (OutputDebugInfo): make sure that the
 	proper filename is written to debug overflow blocks.
 
+	* ilalink/link_create.c, ilalink/link_image.c, ilalink/linker.h,
+	image/debug_writer.c, image/image.h, include/il_writer.h:
+	add the link directory to the debug symbol table so that
+	the full pathname of a source file can be recovered later.
+
 2003-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant.1, doc/pnettools.texi: update the documentation

@@ -324,6 +324,7 @@ typedef struct _tagILWBufferList
 typedef struct _tagILDebugToken
 {
 	ILProgramItem  *item;
+	unsigned long	pseudo;
 	unsigned long	offset;
 
 } ILDebugToken;

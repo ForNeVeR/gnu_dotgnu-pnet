@@ -104,8 +104,9 @@ unsigned long ILWriterDebugString(ILWriter *writer, const char *str)
 	return offset;
 }
 
-void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
-					  const void *info, unsigned long len)
+static void WriterDebugAdd(ILWriter *writer, ILProgramItem *item,
+						   unsigned long pseudo, int type,
+					       const void *info, unsigned long len)
 {
 	unsigned char header[IL_META_COMPRESS_MAX_SIZE * 2];
 	int posn;
@@ -126,6 +127,7 @@ void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
 	if(writer->numDebugTokens < writer->maxDebugTokens)
 	{
 		writer->debugTokens[writer->numDebugTokens].item = item;
+		writer->debugTokens[writer->numDebugTokens].pseudo = pseudo;
 		writer->debugTokens[writer->numDebugTokens].offset = offset;
 		++(writer->numDebugTokens);
 	}
@@ -143,10 +145,23 @@ void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
 			writer->debugTokens = newTokens;
 			writer->maxDebugTokens += 256;
 			newTokens[writer->numDebugTokens].item = item;
+			newTokens[writer->numDebugTokens].pseudo = pseudo;
 			newTokens[writer->numDebugTokens].offset = offset;
 			++(writer->numDebugTokens);
 		}
 	}
+}
+
+void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
+					  const void *info, unsigned long len)
+{
+	WriterDebugAdd(writer, item, 0, type, info, len);
+}
+
+void ILWriterDebugAddPseudo(ILWriter *writer, unsigned long token, int type,
+					  		const void *info, unsigned long len)
+{
+	WriterDebugAdd(writer, 0, token, type, info, len);
 }
 
 /*
@@ -178,12 +193,29 @@ static void WriteListToDebug(ILWriter *writer, ILWBufferList *list)
  */
 static int DebugIndexCompare(const void *e1, const void *e2)
 {
-	if(((ILDebugToken *)e1)->item->token < ((ILDebugToken *)e2)->item->token)
+	unsigned long token1;
+	unsigned long token2;
+	if(((ILDebugToken *)e1)->item)
+	{
+		token1 = ((ILDebugToken *)e1)->item->token;
+	}
+	else
+	{
+		token1 = ((ILDebugToken *)e1)->pseudo;
+	}
+	if(((ILDebugToken *)e2)->item)
+	{
+		token2 = ((ILDebugToken *)e2)->item->token;
+	}
+	else
+	{
+		token2 = ((ILDebugToken *)e2)->pseudo;
+	}
+	if(token1 < token2)
 	{
 		return -1;
 	}
-	else if(((ILDebugToken *)e1)->item->token >
-			((ILDebugToken *)e2)->item->token)
+	else if(token1 > token2)
 	{
 		return 1;
 	}
@@ -261,18 +293,39 @@ void _ILWriteDebug(ILWriter *writer)
 		/* We don't have "qsort", so use a simple sorting algorithm */
 		unsigned long posn2;
 		unsigned long temp;
+		unsigned long token1;
+		unsigned long token2;
 		ILProgramItem *tempItem;
 		for(posn = 0; posn < (writer->numDebugTokens - 1); ++posn)
 		{
 			for(posn2 = (posn + 1); posn2 < writer->numDebugTokens; ++posn2)
 			{
-				if(writer->debugTokens[posn].item->token >
-				   writer->debugTokens[posn2].item->token)
+				if(writer->debugTokens[posn].item)
 				{
-					tempItem = writer->debugTokens[posn].item->token;
-					writer->debugTokens[posn].item->token =
-						writer->debugTokens[posn2].item->token;
-					writer->debugTokens[posn2].token = tempItem;
+					token1 = writer->debugTokens[posn].item->token;
+				}
+				else
+				{
+					token1 = writer->debugTokens[posn].pseudo;
+				}
+				if(writer->debugTokens[posn2].item)
+				{
+					token2 = writer->debugTokens[posn2].item->token;
+				}
+				else
+				{
+					token2 = writer->debugTokens[posn2].pseudo;
+				}
+				if(token1 > token2)
+				{
+					tempItem = writer->debugTokens[posn].item;
+					writer->debugTokens[posn].item =
+						writer->debugTokens[posn2].item;
+					writer->debugTokens[posn2].item = tempItem;
+					temp = writer->debugTokens[posn].pseudo;
+					writer->debugTokens[posn].pseudo =
+						writer->debugTokens[posn2].pseudo;
+					writer->debugTokens[posn2].pseudo = temp;
 					temp = writer->debugTokens[posn].offset;
 					writer->debugTokens[posn].offset =
 						writer->debugTokens[posn2].offset;
@@ -286,7 +339,14 @@ void _ILWriteDebug(ILWriter *writer)
 	/* Write the token index to the ".ildebug" section */
 	for(posn = 0; posn < writer->numDebugTokens; ++posn)
 	{
-		value = writer->debugTokens[posn].item->token;
+		if(writer->debugTokens[posn].item)
+		{
+			value = writer->debugTokens[posn].item->token;
+		}
+		else
+		{
+			value = writer->debugTokens[posn].pseudo;
+		}
 		IL_WRITE_UINT32(header, value);
 		value = writer->debugTokens[posn].offset;
 		IL_WRITE_UINT32(header + 4, value);

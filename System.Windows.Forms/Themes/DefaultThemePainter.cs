@@ -955,29 +955,15 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a combo box's drop down button control.
-	[TODO]
 	public virtual void DrawComboButton(Graphics graphics, int x, int y,
 								        int width, int height,
 									    ButtonState state)
 			{
-				Brush brush = new SolidBrush(Color.White);
-				ControlPaint.DrawBorder3D(graphics, x, y, width, height, Border3DStyle.Sunken, Border3DSide.All);
-				graphics.FillRectangle(brush, x + 2, y + 2, width - 2, height - 2);
-				brush.Dispose();
-				
-				if (state == ButtonState.Checked)
-				{
-					Brush blackBrush = new SolidBrush(Color.Black);
-					Pen pen = new Pen(blackBrush, 2);
-
-					GraphicsPath path = new GraphicsPath();
-					path.AddLine(x + 3, y + 5, x + 4, y + 7);
-					path.AddLine(x + 5, y + 8, x + 9, y + 3);
-					graphics.DrawPath(pen, path);
-					brush.Dispose();
-					pen.Dispose();
-				}
-			}
+				Border3DStyle style = (state == ButtonState.Pushed) ?
+					Border3DStyle.Sunken : Border3DStyle.Raised;
+				ControlPaint.DrawBorder3D(graphics, x, y, width, height, style, Border3DSide.All);				graphics.FillRectangle(SystemBrushes.Control, x + 2, y + 2, width - 4, height - 4);				x += width / 2;				y += height * 2 / 3;				Brush arrow = (state == ButtonState.Inactive) ?					SystemBrushes.ControlDark : SystemBrushes.ControlText;				graphics.FillPolygon(arrow, new PointF[]
+					{
+						new Point(x, y), new Point(x - 4, y - 4), new Point(x + 4, y - 4)					});			}
 
 	// Draw a container grab handle.
 	public virtual void DrawContainerGrabHandle

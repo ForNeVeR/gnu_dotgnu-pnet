@@ -1,3 +1,12 @@
+2003-08-29  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing.Xsharp/DrawingGraphics.cs : maximum internal coord is
+	a short, not just the parameters passed to Xlib.
+
+	* System.Windows.Forms/ComboBox.cs, 
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	samples/FormsTest.cs : incomplete combo box implementation by Simon
+	Guindon and changed by Neil. 
 
 2003-08-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2003  Free Software Foundation, Inc.
+ * 
+ * Contributions from Simon Guindon, Neil Cawse
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,777 +23,532 @@
 
 namespace System.Windows.Forms
 {
-
-using System.Collections;
-using System.Drawing;
-
-[TODO]
+ using System;
+ using System.Collections;
+ using System.ComponentModel;
+ using System.Drawing;
+ 
 public class ComboBox : ListControl
 {
-	[TODO]
-	public ComboBox()
-	{
-		throw new NotImplementedException(".ctor");
+ 	public event DrawItemEventHandler DrawItem;
+ 	public event EventHandler DropDown;
+ 	public event EventHandler DropDownStyleChanged;
+ 	public event MeasureItemEventHandler MeasureItem;
+ 	public event EventHandler SelectedIndexChanged;
+ 	public event EventHandler SelectionChangeCommitted;
+
+ 	private DrawMode drawMode;
+ 	private ComboBoxStyle dropDownStyle;
+ 	private int dropDownWidth;
+ 	private bool integralHeight;
+ 	private int itemHeight;
+ 	private ObjectCollection items;
+ 	private int maxDropDownItems;
+ 	private int maxLength;
+ 	private int preferredHeight = 0;
+ 	private int selectedIndex;
+ 	private bool sorted;
+ 	private ButtonState buttonState;
+ 	private TextBox txtEntry;
+ 	private PopupControl popup;
+ 	private VScrollBar scrollbar;
+ 	
+ 	public ComboBox()
+ 	{
+ 		items = new ObjectCollection(this);
+
+		txtEntry = new TextBox();
+		txtEntry.BorderStyle = BorderStyle.None;
+		txtEntry.Location = new Point(BorderSize);
+		this.Controls.Add(txtEntry);
+ 		
+		popup = new PopupControl();
+		popup.BackColor = SystemColors.Window;
+		popup.Paint += new PaintEventHandler(popup_Paint);
+		popup.PopDown += new EventHandler(popup_PopDown);
+
+		scrollbar = new VScrollBar();
+		scrollbar.Dock = DockStyle.Right;
+		scrollbar.BackColor = SystemColors.Control;
+		popup.Controls.Add(scrollbar);
+
 	}
 
-	[TODO]
-	public override Color BackColor
-	{
-		get
-		{
-			throw new NotImplementedException("BackColor");
-		}
-		set
-		{
-			throw new NotImplementedException("BackColor");
-		}
-	}
-
-	[TODO]
-	public override Image BackgroundImage
-	{
-		get
-		{
-			throw new NotImplementedException("BackgroundImage");
-		}
-		set
-		{
-			throw new NotImplementedException("BackgroundImage");
-		}
-	}
-
-	[TODO]
-	protected override CreateParams CreateParams
-	{
-		get
-		{
-			throw new NotImplementedException("CreateParams");
-		}
-	}
-
-	[TODO]
-	protected override Size DefaultSize
-	{
-		get
-		{
-			throw new NotImplementedException("DefaultSize");
-		}
-	}
-
-	[TODO]
-	public DrawMode DrawMode
+ 	protected override Size DefaultSize
 	{
 		get
 		{
-			throw new NotImplementedException("DrawMode");
-		}
-		set
-		{
-			throw new NotImplementedException("DrawMode");
+			return new Size(121, PreferredHeight);
 		}
 	}
 
-	[TODO]
-	public ComboBoxStyle DropDownStyle
+ 	protected override void OnPaint(PaintEventArgs e)
+ 	{
+		DrawCombo(e.Graphics);
+ 	}
+
+	protected void DrawCombo(Graphics g)
+	{
+		ControlPaint.DrawBorder3D(g, 0, 0, Width, Height, Border3DStyle.Sunken, Border3DSide.All);
+		// Fill in the piece between the textbox and the bottom
+		Brush b = Enabled ? SystemBrushes.Window : SystemBrushes.Control;
+		g.FillRectangle(b, BorderSize.Width, Height - BorderSize.Height - 3, Width - BorderSize.Width * 2, 3);
+		DrawButton(g);
+	}
+
+	private Size ButtonSize
 	{
 		get
 		{
-			throw new NotImplementedException("DropDownStyle");
-		}
-		set
-		{
-			throw new NotImplementedException("DropDownStyle");
+			return new Size(17, 17);
 		}
 	}
 
-	[TODO]
-	public int DropDownWidth
+	private Size BorderSize
 	{
 		get
 		{
-			throw new NotImplementedException("DropDownWidth");
-		}
-		set
-		{
-			throw new NotImplementedException("DropDownWidth");
+			return new Size(2,2);
 		}
 	}
 
-	[TODO]
-	public bool DroppedDown
+	private void DrawButton(Graphics g)
 	{
-		get
+		ControlPaint.DrawComboButton(g, Width - BorderSize.Width - ButtonSize.Width, BorderSize.Width, ButtonSize.Width, ButtonSize.Height, buttonState);
+	}
+
+ 	private void popup_Paint(object sender, PaintEventArgs e)
+ 	{
+ 		Rectangle rect = new Rectangle(0, 0, (int)e.Graphics.ClipBounds.Width, (int)e.Graphics.ClipBounds.Height);
+ 		ControlPaint.DrawBorder(e.Graphics, rect, Color.Black, ButtonBorderStyle.Solid);
+ 	}
+
+ 	public DrawMode DrawMode 
+ 	{
+ 		get { return drawMode; }
+ 		set { drawMode = value; }
+ 	}
+
+ 	public ComboBoxStyle DropDownStyle 
+ 	{
+ 		get { return dropDownStyle; }
+ 		set { dropDownStyle = value; }
+ 	}
+
+ 	public int DropDownWidth 
+ 	{
+ 		get { return dropDownWidth; }
+ 		set { dropDownWidth = value; }
+ 	}
+
+ 	public bool DroppedDown
+ 	{
+ 		get { return buttonState == ButtonState.Pushed; }
+ 		set
 		{
-			throw new NotImplementedException("DroppedDown");
-		}
-		set
-		{
-			throw new NotImplementedException("DroppedDown");
-		}
-	}
-
-	[TODO]
-	public override bool Focused
-	{
-		get
-		{
-			throw new NotImplementedException("Focused");
-		}
-	}
-
-	[TODO]
-	public override Color ForeColor
-	{
-		get
-		{
-			throw new NotImplementedException("ForeColor");
-		}
-		set
-		{
-			throw new NotImplementedException("ForeColor");
-		}
-	}
-
-	[TODO]
-	public bool IntegralHeight
-	{
-		get
-		{
-			throw new NotImplementedException("IntegralHeight");
-		}
-		set
-		{
-			throw new NotImplementedException("IntegralHeight");
-		}
-	}
-
-	[TODO]
-	public int ItemHeight
-	{
-		get
-		{
-			throw new NotImplementedException("ItemHeight");
-		}
-		set
-		{
-			throw new NotImplementedException("ItemHeight");
-		}
-	}
-
-	[TODO]
-	public ComboBox.ObjectCollection Items
-	{
-		get
-		{
-			throw new NotImplementedException("Items");
-		}
-	}
-
-	[TODO]
-	public int MaxDropDownItems
-	{
-		get
-		{
-			throw new NotImplementedException("MaxDropDownItems");
-		}
-		set
-		{
-			throw new NotImplementedException("MaxDropDownItems");
-		}
-	}
-
-	[TODO]
-	public int MaxLength
-	{
-		get
-		{
-			throw new NotImplementedException("MaxLength");
-		}
-		set
-		{
-			throw new NotImplementedException("MaxLength");
-		}
-	}
-
-	[TODO]
-	public int PreferredHeight
-	{
-		get
-		{
-			throw new NotImplementedException("PreferredHeight");
-		}
-	}
-
-	[TODO]
-	public override int SelectedIndex
-	{
-		get
-		{
-			throw new NotImplementedException("SelectedIndex");
-		}
-		set
-		{
-			throw new NotImplementedException("SelectedIndex");
-		}
-	}
-
-	[TODO]
-	public object SelectedItem
-	{
-		get
-		{
-			throw new NotImplementedException("SelectedItem");
-		}
-		set
-		{
-			throw new NotImplementedException("SelectedItem");
-		}
-	}
-
-	[TODO]
-	public string SelectedText
-	{
-		get
-		{
-			throw new NotImplementedException("SelectedText");
-		}
-		set
-		{
-			throw new NotImplementedException("SelectedText");
-		}
-	}
-
-	[TODO]
-	public int SelectionLength
-	{
-		get
-		{
-			throw new NotImplementedException("SelectionLength");
-		}
-		set
-		{
-			throw new NotImplementedException("SelectionLength");
-		}
-	}
-
-	[TODO]
-	public int SelectionStart
-	{
-		get
-		{
-			throw new NotImplementedException("SelectionStart");
-		}
-		set
-		{
-			throw new NotImplementedException("SelectionStart");
-		}
-	}
-
-	[TODO]
-	public bool Sorted
-	{
-		get
-		{
-			throw new NotImplementedException("Sorted");
-		}
-		set
-		{
-			throw new NotImplementedException("Sorted");
-		}
-	}
-
-	[TODO]
-	public override string Text
-	{
-		get
-		{
-			throw new NotImplementedException("Text");
-		}
-		set
-		{
-			throw new NotImplementedException("Text");
-		}
-	}
-
-	[TODO]
-	protected virtual void AddItemsCore(object[] value)
-	{
-		throw new NotImplementedException("AddItemsCore");
-	}
-
-	[TODO]
-	public void BeginUpdate()
-	{
-		throw new NotImplementedException("BeginUpdate");
-	}
-
-	[TODO]
-	protected override void Dispose(bool disposing)
-	{
-		throw new NotImplementedException("Dispose");
-	}
-
-	[TODO]
-	public void EndUpdate()
-	{
-		throw new NotImplementedException("EndUpdate");
-	}
-
-	[TODO]
-	public int FindString(string s)
-	{
-		throw new NotImplementedException("FindString");
-	}
-
-	[TODO]
-	public int FindString(string s, int startIndex)
-	{
-		throw new NotImplementedException("FindString");
-	}
-
-	[TODO]
-	public int FindStringExact(string s)
-	{
-		throw new NotImplementedException("FindStringExact");
-	}
-
-	[TODO]
-	public int FindStringExact(string s, int startIndex)
-	{
-		throw new NotImplementedException("FindStringExact");
-	}
-
-	[TODO]
-	public int GetItemHeight(int index)
-	{
-		throw new NotImplementedException("GetItemHeight");
-	}
-
-	[TODO]
-	protected override bool IsInputKey(Keys keyData)
-	{
-		throw new NotImplementedException("IsInputKey");
-	}
-
-	[TODO]
-	protected override void OnBackColorChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnBackColorChanged");
-	}
-
-	[TODO]
-	protected override void OnDataSourceChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnDataSourceChanged");
-	}
-
-	[TODO]
-	protected override void OnDisplayMemberChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnDisplayMemberChanged");
-	}
-
-	[TODO]
-	protected virtual void OnDrawItem(DrawItemEventArgs e)
-	{
-		throw new NotImplementedException("OnDrawItem");
-	}
-
-	[TODO]
-	protected virtual void OnDropDown(EventArgs e)
-	{
-		throw new NotImplementedException("OnDropDown");
-	}
-
-	[TODO]
-	protected virtual void OnDropDownStyleChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnDropDownStyleChanged");
-	}
-
-	[TODO]
-	protected override void OnFontChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnFontChanged");
-	}
-
-	[TODO]
-	protected override void OnForeColorChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnForeColorChanged");
-	}
-
-	[TODO]
-	protected override void OnHandleCreated(EventArgs e)
-	{
-		throw new NotImplementedException("OnHandleCreated");
-	}
-
-	[TODO]
-	protected override void OnHandleDestroyed(EventArgs e)
-	{
-		throw new NotImplementedException("OnHandleDestroyed");
-	}
-
-	[TODO]
-	protected override void OnKeyPress(KeyPressEventArgs e)
-	{
-		throw new NotImplementedException("OnKeyPress");
-	}
-
-	[TODO]
-	protected virtual void OnMeasureItem(MeasureItemEventArgs e)
-	{
-		throw new NotImplementedException("OnMeasureItem");
-	}
-
-	[TODO]
-	protected override void OnParentBackColorChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnParentBackColorChanged");
-	}
-
-	[TODO]
-	protected override void OnResize(EventArgs e)
-	{
-		throw new NotImplementedException("OnResize");
-	}
-
-	[TODO]
-	protected override void OnSelectedIndexChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnSelectedIndexChanged");
-	}
-
-	[TODO]
-	protected virtual void OnSelectedItemChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnSelectedItemChanged");
-	}
-
-	[TODO]
-	protected override void OnSelectedValueChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnSelectedValueChanged");
-	}
-
-	[TODO]
-	protected virtual void OnSelectionChangeCommitted(EventArgs e)
-	{
-		throw new NotImplementedException("OnSelectionChangeCommitted");
-	}
-
-	[TODO]
-	protected override void RefreshItem(int index)
-	{
-		throw new NotImplementedException("RefreshItem");
-	}
-
-	[TODO]
-	public void Select(int start, int length)
-	{
-		throw new NotImplementedException("Select");
-	}
-
-	[TODO]
-	public void SelectAll()
-	{
-		throw new NotImplementedException("SelectAll");
-	}
-
-	[TODO]
-	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
-	{
-		throw new NotImplementedException("SetBoundsCore");
-	}
-
-	[TODO]
-	protected override void SetItemCore(int index, object value)
-	{
-		throw new NotImplementedException("SetItemCore");
-	}
-
-	[TODO]
-	protected override void SetItemsCore(IList value)
-	{
-		throw new NotImplementedException("SetItemsCore");
-	}
-
-	[TODO]
-	public override string ToString()
-	{
-		throw new NotImplementedException("ToString");
-	}
-
-	[TODO]
-	protected override void WndProc(ref Message m)
-	{
-		throw new NotImplementedException("WndProc");
-	}
-
-	[TODO]
-	public new event EventHandler BackgroundImageChanged
-	{
-		add
-		{
-			throw new NotImplementedException("BackgroundImageChanged");
-		}
-		remove
-		{
-			throw new NotImplementedException("BackgroundImageChanged");
-		}
-	}
-
-	[TODO]
-	public event DrawItemEventHandler DrawItem
-	{
-		add
-		{
-			throw new NotImplementedException("DrawItem");
-		}
-		remove
-		{
-			throw new NotImplementedException("DrawItem");
-		}
-	}
-
-	[TODO]
-	public event EventHandler DropDown
-	{
-		add
-		{
-			throw new NotImplementedException("DropDown");
-		}
-		remove
-		{
-			throw new NotImplementedException("DropDown");
-		}
-	}
-
-	[TODO]
-	public event EventHandler DropDownStyleChanged
-	{
-		add
-		{
-			throw new NotImplementedException("DropDownStyleChanged");
-		}
-		remove
-		{
-			throw new NotImplementedException("DropDownStyleChanged");
-		}
-	}
-
-	[TODO]
-	public event MeasureItemEventHandler MeasureItem
-	{
-		add
-		{
-			throw new NotImplementedException("MeasureItem");
-		}
-		remove
-		{
-			throw new NotImplementedException("MeasureItem");
-		}
-	}
-
-	[TODO]
-	public new event PaintEventHandler Paint
-	{
-		add
-		{
-			throw new NotImplementedException("Paint");
-		}
-		remove
-		{
-			throw new NotImplementedException("Paint");
-		}
-	}
-
-	[TODO]
-	public event EventHandler SelectedIndexChanged
-	{
-		add
-		{
-			throw new NotImplementedException("SelectedIndexChanged");
-		}
-		remove
-		{
-			throw new NotImplementedException("SelectedIndexChanged");
-		}
-	}
-
-	[TODO]
-	public event EventHandler SelectionChangeCommitted
-	{
-		add
-		{
-			throw new NotImplementedException("SelectionChangeCommitted");
-		}
-		remove
-		{
-			throw new NotImplementedException("SelectionChangeCommitted");
-		}
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	[TODO]
-	public class ObjectCollection : IList, ICollection, IEnumerable
-	{
-		[TODO]
-		public ObjectCollection(ComboBox owner)
-		{
-			throw new NotImplementedException(".ctor");
-		}
-
-		[TODO]
-		public virtual int Count
-		{
-			get
+			if (value == DroppedDown)
+				return;
+			if (value)
 			{
-				throw new NotImplementedException("Count");
+				buttonState = ButtonState.Pushed;
+				using (Graphics g = CreateGraphics())
+					DrawButton(g);
+				popup.Height = 100;
+				// TODO calculate height from items
+				popup.Width = Width;
+				popup.Location = PointToScreen(new Point(0, Height));
+				popup.Visible = true;
+			}
+			else
+			{
+				buttonState = ButtonState.Normal;
+				using (Graphics g = CreateGraphics())
+					DrawButton(g);
+				popup.Visible = false;
 			}
 		}
+ 	}
 
-		[TODO]
-		public virtual bool IsReadOnly
-		{
-			get
-			{
-				throw new NotImplementedException("IsReadOnly");
-			}
-		}
+ 	protected override void OnEnabledChanged(EventArgs e)
+ 	{
+		txtEntry.Enabled = Enabled;
+ 		if (Enabled)
+ 			buttonState = ButtonState.Normal;
+ 		else
+ 		{
+ 			buttonState = ButtonState.Inactive;
+ 			Text = "";
+ 		}
+ 		base.OnEnabledChanged(e);
+ 	}
 
-		[TODO]
-		public virtual object this[int index]
-		{
-			get
-			{
-				throw new NotImplementedException("this");
-			}
-			set
-			{
-				throw new NotImplementedException("this");
-			}
-		}
+ 	public override bool Focused 
+ 	{
+ 		get { return base.Focused; }
+ 	}
 
-		[TODO]
-		bool ICollection.IsSynchronized
-		{
-			get
-			{
-				throw new NotImplementedException("ICollection.IsSynchronized");
-			}
-		}
+ 	public bool IntegralHeight 
+ 	{
+ 		get { return integralHeight; }
+ 		set { integralHeight = value; }
+ 	}
 
-		[TODO]
-		object ICollection.SyncRoot
-		{
-			get
-			{
-				throw new NotImplementedException("ICollection.SyncRoot");
-			}
-		}
+ 	public int ItemHeight 
+ 	{
+ 		get { return itemHeight; }
+ 		set { itemHeight = value; }
+ 	}
 
-		[TODO]
-		bool IList.IsFixedSize
-		{
-			get
-			{
-				throw new NotImplementedException("IList.IsFixedSize");
-			}
-		}
+ 	public ObjectCollection Items 
+ 	{
+ 		get { return items; }
+ 	}
 
-		[TODO]
-		public int Add(object item)
-		{
-			throw new NotImplementedException("Add");
-		}
+ 	public int MaxDropDownItems 
+ 	{
+ 		get { return maxDropDownItems; }
+ 		set { maxDropDownItems = value; }
+ 	}
 
-		[TODO]
-		public void AddRange(object[] items)
-		{
-			throw new NotImplementedException("AddRange");
-		}
+ 	public int MaxLength 
+ 	{
+ 		get { return maxLength; }
+ 		set { maxLength = value; }
+ 	}
 
-		[TODO]
-		public virtual void Clear()
+ 	public int PreferredHeight 
+ 	{
+ 		get
 		{
-			throw new NotImplementedException("Clear");
+			if (preferredHeight == 0)
+				preferredHeight = FontHeight + SystemInformation.BorderSize.Height * 4 + 3;
+			return preferredHeight;
 		}
+ 	}
 
-		[TODO]
-		public virtual bool Contains(object value)
-		{
-			throw new NotImplementedException("Contains");
-		}
+ 	public override int SelectedIndex 
+ 	{
+ 		get { return selectedIndex; }
+ 		set { selectedIndex = value; }
+ 	}
 
-		[TODO]
-		public void CopyTo(object[] dest, int arrayIndex)
-		{
-			throw new NotImplementedException("CopyTo");
-		}
+ 	public object SelectedItem 
+ 	{
+ 		get { return base.SelectedValue; }
+ 		set { base.SelectedValue = value; }
+ 	}
 
-		[TODO]
-		public virtual IEnumerator GetEnumerator()
+ 	public string SelectedText 
+ 	{
+ 		get
 		{
-			throw new NotImplementedException("GetEnumerator");
+			return txtEntry.SelectedText;
 		}
+ 		set 
+ 		{
+ 			txtEntry.SelectedText = value; 
+ 		}
+ 	}
 
-		[TODO]
-		void ICollection.CopyTo(Array dest, int index)
-		{
-			throw new NotImplementedException("ICollection.CopyTo");
-		}
+ 	public int SelectionLength 
+ 	{
+ 		get { return txtEntry.SelectionLength; }
+ 		set { txtEntry.SelectionLength = value; }
+ 	}
 
-		[TODO]
-		int IList.Add(object item)
-		{
-			throw new NotImplementedException("IList.Add");
-		}
+ 	public int SelectionStart
+ 	{
+ 		get { return txtEntry.SelectionStart; }
+ 		set { txtEntry.SelectionStart = value; }
+ 	}
 
-		[TODO]
-		public virtual int IndexOf(object value)
-		{
-			throw new NotImplementedException("IndexOf");
-		}
+ 	public bool Sorted 
+ 	{
+ 		get { return sorted; }
+ 		set { sorted = value; }
+ 	}
 
-		[TODO]
-		public virtual void Insert(int index, object item)
+ 	public override string Text 
+ 	{
+ 		get
 		{
-			throw new NotImplementedException("Insert");
+			return txtEntry.Text;
 		}
+ 		set
+		{
+			txtEntry.Text = value;
+		}
+ 	}
 
-		[TODO]
-		public virtual void Remove(object value)
-		{
-			throw new NotImplementedException("Remove");
-		}
+ 	[TODO]
+ 	public void BeginUpdate()
+ 	{
+ 		throw new NotImplementedException("BeginUpdate");
+ 	}
 
-		[TODO]
-		public virtual void RemoveAt(int index)
-		{
-			throw new NotImplementedException("RemoveAt");
-		}
+ 	[TODO]
+ 	public void EndUpdate()
+ 	{
+ 		throw new NotImplementedException("EndUpdate");
+ 	}
+
+
+ 	[TODO]
+ 	public int GetItemHeight(int index)
+ 	{
+ 		throw new NotImplementedException("GetItemHeight");
+ 	}
+
+ 	[TODO]
+ 	public void Select(int start, int length)
+ 	{
+ 		throw new NotImplementedException("Select");
+ 	}
+
+ 	[TODO]
+ 	public new void Select()
+ 	{
+ 		throw new NotImplementedException("Select");
+ 	}
+
+ 	[TODO]
+ 	protected new virtual void Select(bool directed, bool forward)
+ 	{
+ 		throw new NotImplementedException("Select");
+ 	}
+
+ 	[TODO]
+ 	public void SelectAll()
+ 	{
+ 		throw new NotImplementedException("SelectAll");
+ 	}
+
+ 	protected override CreateParams CreateParams 
+ 	{
+ 		get { return base.CreateParams; }
+ 	}
+
+ 	protected virtual void AddItemsCore(object[] value)
+ 	{
+ 	}
+
+ 	protected override bool IsInputKey(Keys keyData)
+ 	{
+ 		return base.IsInputKey(keyData);
+ 	}
+
+ 	protected override void OnMouseDown(MouseEventArgs e)
+ 	{
+ 		if (e.X >= Width - ButtonSize.Width - BorderSize.Width)
+ 			DroppedDown = !DroppedDown;
+ 		base.OnMouseDown(e);
+ 	}
+
+	private void popup_PopDown(object sender, EventArgs e)
+	{
+		DroppedDown = false;
+	}
+
+ 	protected override void OnDataSourceChanged(EventArgs e)
+ 	{
+ 		base.OnDataSourceChanged(e);
+ 	}
+
+ 	protected override void OnDisplayMemberChanged(EventArgs e)
+ 	{
+ 		base.OnDisplayMemberChanged(e);
+ 	}
+
+ 	protected virtual void OnDrawItem(DrawItemEventArgs e)
+ 	{
+ 		if (DrawItem != null)
+ 		{
+ 			DrawItem(this, e);
+ 		}
+ 	}
+
+ 	protected virtual void OnDropDown(EventArgs e)
+ 	{
+ 		if (DropDown != null)
+ 		{
+ 			DropDown(this, e);
+ 		}
+ 	}
+
+ 	protected virtual void OnDropDownStyleChanged(EventArgs e)
+ 	{
+ 		if (DropDownStyleChanged != null)
+ 		{
+ 			DropDownStyleChanged(this, e);
+ 		}
+ 	}
+
+ 	protected virtual void OnMeasureItem(MeasureItemEventArgs e)
+ 	{
+ 		if (MeasureItem != null)
+ 		{
+ 			MeasureItem(this, e);
+ 		}
+ 	}
+
+ 	protected override void OnParentBackColorChanged(EventArgs e)
+ 	{
+ 		base.OnParentBackColorChanged(e);
+ 	}
+
+ 	protected override void OnSelectedIndexChanged(EventArgs e)
+ 	{
+ 		base.OnSelectedIndexChanged(e);
+ 	}
+
+ 	protected override void OnSelectedValueChanged(EventArgs e)
+ 	{
+ 		base.OnSelectedValueChanged(e);
+ 	}
+
+ 	protected virtual void OnSelectionChangeCommitted(EventArgs e)
+ 	{
+ 		if (SelectionChangeCommitted != null)
+ 		{
+ 			SelectionChangeCommitted(this, e);
+ 		}
+ 	}
+
+ 	protected override void RefreshItem(int item)
+ 	{
+ 	}
+
+ 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
+ 	{
+ 		txtEntry.Width = width - ButtonSize.Width - BorderSize.Width * 2;
+		base.SetBoundsCore(x, y, width, txtEntry.Height + BorderSize.Height * 2, specified);	
+ 	}
+
+ 	protected override void SetItemsCore(IList list)
+ 	{
+ 	}
+
+ 	#if CONFIG_COMPACT_FORMS
+ 	// Process a message.
+ 	protected override void WndProc(ref Message m)
+ 	{
+ 		base.WndProc(ref m);
+ 	}
+ 	#endif // CONFIG_COMPACT_FORMS
+
+ 	public class ObjectCollection : IList, ICollection, IEnumerable	
+ 	{
+ 		private ComboBox owner;
+ 		private ArrayList list;
+
+ 		public ObjectCollection(ComboBox owner)
+ 		{
+ 			this.owner = owner;
+ 			list = new ArrayList();
+ 		}
+
+ 		// Implement the ICollection interface.
+ 		public void CopyTo(Array array, int index)
+ 		{
+ 			List.CopyTo(array, index);
+ 		}
+
+ 		public virtual int Count
+  		{
+ 			get { return List.Count; }
+ 		}
+ 	
+ 		bool ICollection.IsSynchronized
+ 		{
+ 			get { return false; }
+  		}
+
+ 		Object ICollection.SyncRoot
+  		{
+ 			get { return this; }
+  		}
+
+ 		// Implement the IEnumerable interface.
+ 		public IEnumerator GetEnumerator()
+  		{
+ 			return List.GetEnumerator();
+ 		}
+
+ 		// Determine if the collection is read-only.
+ 		public bool IsReadOnly
+  		{
+ 			get { return false; }
+  		}
+
+ 		bool IList.IsFixedSize
+  		{
+ 			get { return false; }
+  		}
+
+ 		// Get the array list that underlies this collection
+ 		Object IList.this[int index]
+  		{
+ 			get { return List[index]; }
+ 			set { List[index] = value; }
+  		}
+
+ 		Object this[int index]
+  		{
+ 			get { return List[index]; }
+ 			set { List[index] = value; }
+  		}
+
+ 		protected virtual ArrayList List
+ 		{
+ 			get { return list; }
+ 		}
+ 	
+ 		public int Add(Object value)
+ 		{
+ 			int result;
+ 			result =  List.Add(value);
+ 			owner.Invalidate();
+ 			return result;
+ 		}
+
+ 		public virtual void AddRange(Object[] items)
+ 		{
+ 			List.AddRange(items);
+ 			owner.Invalidate();
+ 		}
+
+ 		public virtual void Clear()
+ 		{
+ 			List.Clear();
+ 			owner.Invalidate();
+ 		}
+
+ 		public bool Contains(Object value)
+ 		{
+ 			return List.Contains(value);
+ 		}
+
+ 		public int IndexOf(Object value)
+ 		{
+ 			return List.IndexOf(value);
+ 		}
+
+ 		public void Insert(int index, Object value)
+ 		{
+ 			List.Insert(index, value);
+ 			owner.Invalidate();
+ 		}
+
+ 		public void Remove(Object value)
+ 		{
+ 			List.Remove(value);
+ 			owner.Invalidate();
+ 		}
+
+ 		public void RemoveAt(int index)
+ 		{
+ 			List.RemoveAt(index);
+ 		}
 
 	}; // class ComboBox.ObjectCollection
 

@@ -18,6 +18,7 @@ namespace FormsTest
 		private TabPage tabPage8;
 		private TabPage tabPage9;
 		private TabPage tabPage10;
+		private TabPage tabPage11;
 		
 		// Tab1 Labels Test
 		private System.Windows.Forms.Label label;
@@ -196,16 +197,20 @@ namespace FormsTest
 
 		private Image image1;
 
+		private ComboBox comboBox1, comboBox2;
+
 		#endregion
 		public FormsTest()
 		{
 			ClientSize = new System.Drawing.Size(500, 820);
 			Text = "System.Windows.Forms Tests";
 			
-			//Bug when suspending layout!
 			SuspendLayout();
 			tabControl1 = new TabControl();
 			tabControl1.Dock = DockStyle.Fill;
+			tabPage11 = new TabPage();
+			tabPage11.Text = "ComboBox";
+			tabControl1.Controls.Add(this.tabPage11);
 			tabPage1 = new TabPage();
 			tabPage1.Text = "Labels";
 			tabControl1.Controls.Add(this.tabPage1);
@@ -237,7 +242,7 @@ namespace FormsTest
 			tabPage10 = new TabPage();
 			tabPage10.Text = "Images";
 			tabControl1.Controls.Add(this.tabPage10);
-
+			
 			Controls.Add(tabControl1);
 
 			AddLabelTest(tabPage1);
@@ -251,6 +256,7 @@ namespace FormsTest
 			AddGraphicsTest();
 			AddContextTest();
 			AddImageTest();
+			AddComboTest(tabPage11);
 
 			ResumeLayout(false);
 
@@ -2110,6 +2116,34 @@ namespace FormsTest
 		{
 			image1 = Image.FromFile("test.bmp");
 			tabPage10.Paint+=new PaintEventHandler(Image_Paint);
+		}
+
+		private void AddComboTest(Control control)
+		{
+			comboBox1 = new ComboBox();
+			comboBox2 = new ComboBox();
+			comboBox1.Location = new Point(10, 10);
+			comboBox1.Enabled = false;
+			comboBox1.Items.AddRange(new object[]
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3",
+				"Item 4",
+				"Item 5"
+			});
+
+			comboBox2.Location = new Point(10, 50);
+			comboBox2.Items.AddRange(new object[]
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3",
+				"Item 4",
+				"Item 5"
+			});
+			control.Controls.AddRange(new Control[] {comboBox1, comboBox2});
+			comboBox1.Visible = true;
 		}
 		public static void Main(String[] args)
 		{

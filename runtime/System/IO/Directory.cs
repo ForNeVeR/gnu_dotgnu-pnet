@@ -68,15 +68,13 @@ public sealed class Directory
 						throw new UnauthorizedAccessException
 							(_("IO_AccessDenied"));
 					}
-					break;
-
+					
 					case Errno.ENAMETOOLONG:
 					{
 						throw new PathTooLongException
 							(_("Exception_PathTooLong"));
 					}
-					break;
-
+					
 					default:
 					{
 						throw new IOException(error);
@@ -109,15 +107,13 @@ public sealed class Directory
 						throw new UnauthorizedAccessException
 							(_("IO_AccessDenied"));
 					}
-					break;
 
 					case Errno.ENAMETOOLONG:
 					{
 						throw new PathTooLongException
 							(_("Exception_PathTooLong"));
 					}
-					break;
-
+					
 					default:
 					{
 						throw new IOException(error);

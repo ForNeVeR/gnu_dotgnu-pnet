@@ -111,7 +111,7 @@ public class SocketException :
 			}
 
 	// Get the default message to use for this exception type.
-	private String DefaultMessage(String msg, Errno errno)
+	private static String DefaultMessage(String msg, Errno errno)
 			{
 				if(msg != null)
 				{

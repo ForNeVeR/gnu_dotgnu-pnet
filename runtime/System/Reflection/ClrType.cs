@@ -279,7 +279,8 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 						goto overrideCheck;
 					}
 				}
-				MethodBase method1, method2;
+				MethodBase method1 = null;
+				MethodBase method2 = null;
 				switch(m1.MemberType)
 				{
 					case MemberTypes.Constructor:

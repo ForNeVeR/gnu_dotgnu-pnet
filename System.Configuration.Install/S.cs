@@ -45,7 +45,6 @@ internal sealed class S
 			{
 				lock(typeof(S))
 				{
-					String value;
 					if(ourResources == null)
 					{
 					#if ECMA_COMPAT

@@ -113,7 +113,7 @@ public class ClientSponsor : MarshalByRefObject, ISponsor
 				ILease lease;
 				lock(this)
 				{
-					ILease lease = (ILease)(sponsoredObjects[obj]);
+					lease = (ILease)(sponsoredObjects[obj]);
 					if(lease == null)
 					{
 						return;

@@ -122,7 +122,6 @@ namespace System.Windows.Forms
 				base.Font = value;
 			}
 		}
-
 		public override Color ForeColor
 		{
 			get
@@ -302,7 +301,6 @@ namespace System.Windows.Forms
 					if (value < minimum || value > maximum)
 						throw new ArgumentException();
 					this.value = value;
-					CheckValue();
 					// Redraw
 					OnValueChanged(EventArgs.Empty);
 				}
@@ -436,8 +434,26 @@ namespace System.Windows.Forms
 		// Draw the trackbar
 		private void Draw(Graphics g)
 		{
+			// Paint based on TickStyle(None, TopLeft, BottomRight, Both)
+			// Also Orientation.Horizontal/Vertical
+				
 		}
-		
+
+		protected override void OnMouseDown(MouseEventArgs e)
+		{
+			base.OnMouseDown (e);
+		}
+
+		protected override void OnMouseMove(MouseEventArgs e)
+		{
+			base.OnMouseMove (e);
+		}
+
+		protected override void OnMouseUp(MouseEventArgs e)
+		{
+			base.OnMouseUp (e);
+		}
+
 		public override string ToString()
 		{
 			return base.ToString() + ", Minimum: " + Minimum + ", Maximum: " + Maximum + ", Value: " + Value;
@@ -451,10 +467,8 @@ namespace System.Windows.Forms
 #endif
 		protected override void OnPaint(PaintEventArgs e)
 		{
+			Draw(e.Graphics);
 			base.OnPaint (e);
-			// Paint based on TickStyle(None, TopLeft, BottomRight, Both)
-			// Also Orientation.Horizontal/Vertical
-				
 		}
 
 	}

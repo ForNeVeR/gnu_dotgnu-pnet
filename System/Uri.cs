@@ -162,7 +162,7 @@ public class Uri : MarshalByRefObject
 								(matches[i].end == expected[i][1]) ;
 			}
 		}
-		catch(Exception err)
+		catch
 		{
 			if(uriRegex!=null) 
 			{
@@ -629,7 +629,6 @@ public class Uri : MarshalByRefObject
 				break;
 			}
 		}
-		bool lastWasDir = false;
 
 		StringBuilder sb = new StringBuilder();
 		for(int i = k ; i < seg1.Length ; i++)
@@ -668,8 +667,6 @@ public class Uri : MarshalByRefObject
 
 	private void CheckParsed()
 	{
-		bool isPath=false;
-		
 		if((this.host==null || this.host=="") && 
 			(this.scheme=="file" || this.scheme==null))
 		{
@@ -730,7 +727,6 @@ public class Uri : MarshalByRefObject
 			throw new UriFormatException();
 		}
 
-		String tmp;
 		/*
 			0 --> full
 			2 --> scheme

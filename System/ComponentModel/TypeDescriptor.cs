@@ -551,12 +551,12 @@ public sealed class TypeDescriptor
 											.EditorBaseTypeName)
 								== editorBaseType)
 						{
-							Type type = Type.GetType
+							Type type1 = Type.GetType
 								(((EditorAttribute)attr).EditorTypeName);
-							if(type != null)
+							if(type1 != null)
 							{
 								return Activator.CreateInstance
-									(type, new Object [] {type});
+									(type1, new Object [] {type});
 							}
 						}
 					}

@@ -645,7 +645,6 @@ class XmlDocument : XmlNode
 			{
 				
 				RemoveAll();
-				XmlNode node;
 		
 				try
 				{
@@ -657,7 +656,7 @@ class XmlDocument : XmlNode
 					
 					
 				}
-				catch(XmlException e)
+				catch(XmlException)
 				{
 					throw new XmlException(
 							S._("XmlException_ParseError"));
@@ -678,7 +677,7 @@ class XmlDocument : XmlNode
 				{
 					BuildStructure(reader);
 				}
-				catch(XmlException e)
+				catch(XmlException)
 				{
 					throw new XmlException(
 							S._("XmlException_ParseError"));
@@ -718,8 +717,8 @@ class XmlDocument : XmlNode
 	public virtual XmlNode ReadNode(XmlReader reader)
 			{
 				XmlNode currentNode = null,
-					newNode = null,
-					resultNode = null;
+				newNode = null,
+				resultNode = null;
 				
 				int startDepth = reader.Depth;
 				
@@ -765,15 +764,15 @@ class XmlDocument : XmlNode
 							currentNode = newElementNode;
 							break;
 						case XmlNodeType.Attribute:
-							XmlAttribute newAttributeNode = CreateAttribute(reader.Name);
+							XmlAttribute newAttributeNode1 = CreateAttribute(reader.Name);
 										 
 							
 							if(reader.ReadAttributeValue())
 							{
-								newAttributeNode.Value = reader.Value;
+								newAttributeNode1.Value = reader.Value;
 							}
 								
-							currentNode.AppendChild(newAttributeNode);
+							currentNode.AppendChild(newAttributeNode1);
 							break;
 						case XmlNodeType.CDATA:
 							XmlCDataSection newCDATANode = CreateCDataSection(reader.Value);

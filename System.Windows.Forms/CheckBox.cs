@@ -37,7 +37,6 @@ public class CheckBox : ButtonBase
 	private bool autoCheck;
 	private bool threeState;
 	private CheckState state;
-	private ImeMode defaultImeMode;
 	private Size defaultSize;
 	private int checkSize = 13;
 
@@ -356,7 +355,7 @@ public class CheckBox : ButtonBase
 			{
 				get
 				{
-					return defaultImeMode;
+					return base.DefaultImeMode;
 				}
 			}
 	// Gets the default size of the control.	

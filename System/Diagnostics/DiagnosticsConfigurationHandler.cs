@@ -25,7 +25,9 @@ namespace System.Diagnostics
 #if CONFIG_EXTENDED_DIAGNOSTICS
 
 using System;
+#if SECOND_PASS
 using System.Xml;
+#endif
 using System.Configuration;
 
 public class DiagnosticsConfigurationHandler : IConfigurationSectionHandler

@@ -79,10 +79,10 @@ internal sealed class Validator
 				}
 				else if(e is ICollection)
 				{
-					IEnumerator e = ((ICollection)e).GetEnumerator();
-					while(e.MoveNext())
+					IEnumerator en = ((ICollection)e).GetEnumerator();
+					while(en.MoveNext())
 					{
-						Validate(e.Current);
+						Validate(en.Current);
 					}
 				}
 				else if(e is CodeArrayCreateExpression)

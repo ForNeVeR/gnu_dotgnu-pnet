@@ -224,6 +224,8 @@ public abstract class ButtonBase : Control
 	// Set the correct string format, based on text alignment and RTL info.
 	private void SetStringFormat()
 			{
+				format.FormatFlags |= StringFormatFlags.NoClip | StringFormatFlags.NoWrap;
+				
 				switch(RtlTranslateAlignment(TextAlign))
 				{
 					case ContentAlignment.TopLeft:

@@ -21,6 +21,7 @@
 namespace DotGNU.SSL
 {
 
+using System;
 using System.Reflection;
 
 internal sealed class Utils

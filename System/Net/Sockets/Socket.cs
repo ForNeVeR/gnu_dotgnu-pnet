@@ -145,8 +145,6 @@ public class Socket : IDisposable
 	// Accept an incoming connection on this socket.
 	public Socket Accept()
 			{
-				long address;
-				int port;
 				IntPtr currentHandle;
 				IntPtr newHandle;
 				EndPoint remoteEP;
@@ -1818,8 +1816,6 @@ public class Socket : IDisposable
 			{
 				get
 				{
-					long address;
-					int port;
 					lock(this)
 					{
 						if(handle == InvalidHandle)

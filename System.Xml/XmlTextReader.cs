@@ -1296,7 +1296,6 @@ public class XmlTextReader : XmlReader
 	internal bool ReadDeclaration()
 			{
 				int ch;
-				string tempName;
 				builder = new StringBuilder();
 
 				// Validate the current state of the stream.
@@ -1438,8 +1437,6 @@ public class XmlTextReader : XmlReader
 					}
 					return true;
 				}
-			
-				return false;
 
 			}
 
@@ -1505,7 +1502,6 @@ public class XmlTextReader : XmlReader
 						}
 						return true;
 				}
-				return false;
 			}
 
 	// Read the next attribute value in the input stream.

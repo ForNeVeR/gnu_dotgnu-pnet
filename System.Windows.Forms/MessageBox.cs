@@ -200,7 +200,7 @@ public class MessageBox
 							break;
 						}
 					}
-					catch(Exception e)
+					catch
 					{
 						// Could not load the icon - ignore this condition.
 					}

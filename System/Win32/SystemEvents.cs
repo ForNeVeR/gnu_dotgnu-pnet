@@ -24,6 +24,7 @@ namespace Microsoft.Win32
 
 #if CONFIG_WIN32_SPECIFICS
 
+using System;
 using System.Collections;
 using System.Threading;
 
@@ -39,6 +40,7 @@ using System.Threading;
 
 public sealed class SystemEvents
 {
+
 	// This class cannot be instantiated.
 	private SystemEvents() {}
 

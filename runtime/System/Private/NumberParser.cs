@@ -1064,7 +1064,6 @@ internal sealed class NumberParser
 				&& (str[stridx] == 'e' || str[stridx] == 'E') ) 
 		{
 			uint exp = 0;
-			bool negExponent = false;
 			decimal mult;
 
 			stridx++;

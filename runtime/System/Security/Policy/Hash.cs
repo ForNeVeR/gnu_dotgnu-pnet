@@ -68,7 +68,7 @@ public sealed class Hash
 				{
 					if(md5 == null)
 					{
-						md5 = GenerateHash(MD5.Create());
+						md5 = GenerateHash(Cryptography.MD5.Create());
 					}
 					return md5;
 				}
@@ -81,7 +81,7 @@ public sealed class Hash
 				{
 					if(sha1 == null)
 					{
-						sha1 = GenerateHash(SHA1.Create());
+						sha1 = GenerateHash(Cryptography.SHA1.Create());
 					}
 					return sha1;
 				}

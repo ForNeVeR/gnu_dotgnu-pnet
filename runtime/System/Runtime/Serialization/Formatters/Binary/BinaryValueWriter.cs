@@ -81,7 +81,6 @@ internal abstract class BinaryValueWriter
 		public void ProcessQueue()
 				{
 					Assembly assembly;
-					Object obj;
 					bool firstTime;
 					long objectID;
 					for(;;)

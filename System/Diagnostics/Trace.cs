@@ -19,12 +19,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define	TRACE
+
 namespace System.Diagnostics
 {
 
 #if !ECMA_COMPAT
-
-#define	TRACE
 
 public sealed class Trace
 {

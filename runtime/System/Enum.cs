@@ -136,11 +136,11 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 					/* Note: ECMA says atleast '8' and MS.NET does 
 					 * the same as the underlying size */ 
 				#if !ECMA_COMPAT
-					Type type=Enum.GetUnderlyingType(enumType);
-					if(type==typeof(Byte) || type==typeof(SByte)) format="X2";
-					if(type==typeof(Int16) || type==typeof(UInt16))format="X4";
-					if(type==typeof(Int32) || type==typeof(UInt32))format="X8";
-					if(type==typeof(Int64) || type==typeof(UInt64))format="X16";
+					Type type1=Enum.GetUnderlyingType(enumType);
+					if(type1==typeof(Byte) || type1==typeof(SByte)) format="X2";
+					if(type1==typeof(Int16) || type1==typeof(UInt16))format="X4";
+					if(type1==typeof(Int32) || type1==typeof(UInt32))format="X8";
+					if(type1==typeof(Int64) || type1==typeof(UInt64))format="X16";
 				#else
 					format="X8";
 				#endif

@@ -25,7 +25,9 @@ namespace System.Configuration
 #if !ECMA_COMPAT
 
 using System;
+#if SECOND_PASS
 using System.Xml;
+#endif
 
 public class NameValueFileSectionHandler : IConfigurationSectionHandler
 {

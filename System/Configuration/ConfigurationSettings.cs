@@ -27,7 +27,9 @@ namespace System.Configuration
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+#if SECOND_PASS
 using System.Xml;
+#endif
 
 public sealed class ConfigurationSettings
 {

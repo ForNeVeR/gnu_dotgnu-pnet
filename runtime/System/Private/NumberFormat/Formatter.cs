@@ -410,7 +410,6 @@ internal abstract class Formatter
 		//  Variable declarations
 		int [] bits = Decimal.GetBits(value);
 	    int scale = (bits[3] >> 16) & 0xff;
-		uint lowOrderBits;			// temporary storage for low-order bits
 		decimal work = value;
 		StringBuilder ret = new StringBuilder();
 

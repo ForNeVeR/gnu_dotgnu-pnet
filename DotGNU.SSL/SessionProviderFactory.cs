@@ -22,6 +22,8 @@
 namespace DotGNU.SSL
 {
 
+using System;
+
 /// <summary>
 /// <para>The <see cref="T:DotGNU.SSL.SessionProviderFactory"/> class is used
 /// to get an initial <see cref="T:DotGNU.SSL.ISecureSessionProvider"/>

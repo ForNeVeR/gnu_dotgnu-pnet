@@ -51,7 +51,7 @@ internal sealed class UrlParser
 	// Parse a URL into its constituent components.
 	private bool Parse(String url)
 			{
-				int index, index2;
+				int index;
 
 				// Extract the scheme.
 				index = url.IndexOf(':');

@@ -40,7 +40,7 @@ public class SocketAddress
 				}
 				array = new byte[size];
 				array[0] = (byte)family;
-				array[1] = (byte)(family >> 8);
+				array[1] = (byte)((int)family >> 8);
 			}
 	internal SocketAddress(byte[] array)
 			{

@@ -40,11 +40,11 @@ public enum ToolkitWindowFlags
 	Move			= (1 << 9),
 	TopMost			= (1 << 10),
 	Modal			= (1 << 11),
-	ShowInTaskBar	= (1 << 12),
+	ShowInTaskbar	= (1 << 12),
 	ToolWindow		= (1 << 13),
 	Default			= (Close | Minimize | Maximize | Caption |
 					   Border | ResizeHandles | Menu | Resize |
-					   Move | ShowInTaskBar)
+					   Move | ShowInTaskbar)
 
 }; // enum Decorations
 

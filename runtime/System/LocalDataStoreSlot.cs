@@ -134,12 +134,12 @@ public sealed class LocalDataStoreSlot
 					}
 					else
 					{
-						Object[] tempData = new Object [(slotNum + 8) & ~7];
+						Object[] tempData1 = new Object [(slotNum + 8) & ~7];
 						if(data != null)
 						{
-							Array.Copy(data, 0, tempData, 0, data.Length);
+							Array.Copy(data, 0, tempData1, 0, data.Length);
 						}
-						data = tempData;
+						data = tempData1;
 						tempData[slotNum] = value;
 					}
 				}

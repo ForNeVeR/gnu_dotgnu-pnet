@@ -52,7 +52,7 @@ public class TransactedInstaller : Installer
 						Context.LogLine(S._("Installer_BeginInstall"));
 						base.Install(stateSaver);
 					}
-					catch(SystemException e)
+					catch(SystemException)
 					{
 						// Roll back the transaction.
 						Context.LogLine(S._("Installer_BeginRollback"));

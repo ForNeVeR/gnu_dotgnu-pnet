@@ -75,7 +75,7 @@ public abstract class XmlWriter
 					try {
 						Uri uri = new Uri(value);
 					} 
-					catch (UriFormatException e) 
+					catch (UriFormatException) 
 					{
 						flagNS = false;
 					}

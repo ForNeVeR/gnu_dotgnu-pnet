@@ -441,6 +441,7 @@ public class SoapServices
 				if(!DecodeXmlNamespaceForClrTypeNamespace
 						(name, out typeName, out assemblyName))
 				{
+					hasAssembly = false;
 					return null;
 				}
 				if(assemblyName == null || assemblyName.Length == 0)

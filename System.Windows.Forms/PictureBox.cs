@@ -30,7 +30,6 @@ public class PictureBox : Control
 	[TODO]
 	public PictureBox()
 	{
-		throw new NotImplementedException(".ctor");
 	}
 
 	[TODO]
@@ -72,43 +71,39 @@ public class PictureBox : Control
 		}
 	}
 
-	[TODO]
 	protected override CreateParams CreateParams
 	{
 		get
 		{
-			throw new NotImplementedException("CreateParams");
+			return base.CreateParams;
 		}
 	}
 
-	[TODO]
 	protected override ImeMode DefaultImeMode
 	{
 		get
 		{
-			throw new NotImplementedException("DefaultImeMode");
+			return base.DefaultImeMode;
 		}
 	}
 
-	[TODO]
 	protected override Size DefaultSize
 	{
 		get
 		{
-			throw new NotImplementedException("DefaultSize");
+			return base.DefaultSize;
 		}
 	}
 
-	[TODO]
 	public override Font Font
 	{
 		get
 		{
-			throw new NotImplementedException("Font");
+			return base.Font;
 		}
 		set
 		{
-			throw new NotImplementedException("Font");
+			base.Font = value;
 		}
 	}
 
@@ -151,16 +146,15 @@ public class PictureBox : Control
 		}
 	}
 
-	[TODO]
 	public override RightToLeft RightToLeft
 	{
 		get
 		{
-			throw new NotImplementedException("RightToLeft");
+			return base.RightToLeft;
 		}
 		set
 		{
-			throw new NotImplementedException("RightToLeft");
+			base.RightToLeft = value;
 		}
 	}
 
@@ -177,29 +171,27 @@ public class PictureBox : Control
 		}
 	}
 
-	[TODO]
 	public new int TabIndex
 	{
 		get
 		{
-			throw new NotImplementedException("TabIndex");
+			return base.TabIndex;
 		}
 		set
 		{
-			throw new NotImplementedException("TabIndex");
+			base.TabIndex = value;
 		}
 	}
 
-	[TODO]
 	public new bool TabStop
 	{
 		get
 		{
-			throw new NotImplementedException("TabStop");
+			return base.TabStop;
 		}
 		set
 		{
-			throw new NotImplementedException("TabStop");
+			base.TabStop = value;
 		}
 	}
 
@@ -243,7 +235,7 @@ public class PictureBox : Control
 	[TODO]
 	protected override void OnResize(EventArgs e)
 	{
-		throw new NotImplementedException("OnResize");
+		base.OnResize(e);
 	}
 
 	[TODO]
@@ -255,13 +247,12 @@ public class PictureBox : Control
 	[TODO]
 	protected override void OnVisibleChanged(EventArgs e)
 	{
-		throw new NotImplementedException("OnVisibleChanged");
+		base.OnVisibleChanged(e);
 	}
 
-	[TODO]
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
-		throw new NotImplementedException("SetBoundsCore");
+		base.SetBoundsCore(x, y, width, height, specified);
 	}
 
 	[TODO]

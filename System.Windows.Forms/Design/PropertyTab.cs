@@ -36,7 +36,7 @@ using System.Drawing;
 		{
 			get
 			{
-				return null;
+				return new Bitmap(16,16);
 			}
 		}
 

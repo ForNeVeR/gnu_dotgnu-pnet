@@ -55,7 +55,7 @@ public sealed class Version : ICloneable, IComparable
 							this.build = -1;
 							this.revision = -1;
 						}
-						catch(Exception e)
+						catch
 						{
 							throw new FormatException(_("Format_Version"));
 						}
@@ -69,7 +69,7 @@ public sealed class Version : ICloneable, IComparable
 							this.build = Int32.Parse(substrings[2]);
 							this.revision = -1;
 						}
-						catch(Exception e)
+						catch
 						{
 							throw new FormatException(_("Format_Version"));
 						}
@@ -83,7 +83,7 @@ public sealed class Version : ICloneable, IComparable
 							this.build = Int32.Parse(substrings[2]);
 							this.revision = Int32.Parse(substrings[3]);
 						}
-						catch(Exception e)
+						catch
 						{
 							throw new FormatException(_("Format_Version"));
 						}

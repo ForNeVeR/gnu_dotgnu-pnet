@@ -308,7 +308,6 @@ public class Manager
 				}
 				IDictionaryEnumerator e = handlers.GetEnumerator();
 				String name;
-				int num;
 				while(e.MoveNext())
 				{
 					name = (String)(e.Key);

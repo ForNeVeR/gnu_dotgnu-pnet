@@ -144,7 +144,6 @@ internal sealed class ClrField : FieldInfo, IClrProgramItem
 	public override String ToString()
 			{
 				StringBuilder builder = new StringBuilder();
-				ParameterInfo paramInfo;
 				builder.Append(FieldType.ToString());
 				builder.Append(' ');
 				builder.Append(Name);

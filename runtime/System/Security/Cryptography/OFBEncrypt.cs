@@ -56,7 +56,6 @@ internal sealed class OFBEncrypt
 				int offset = outputOffset;
 				byte[] tempBuffer = transform.tempBuffer;
 				int tempSize = transform.tempSize;
-				int index;
 
 				// Process all of the bytes in the input.
 				while(inputCount > 0)

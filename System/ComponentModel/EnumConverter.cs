@@ -47,7 +47,7 @@ public class EnumConverter : TypeConverter
 			{
 				get
 				{
-					return Comparer.DefaultInvariant;
+					return Collections.Comparer.DefaultInvariant;
 				}
 			}
 

@@ -46,7 +46,7 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 	private int[] namePosn;
 	private long nameStart;
 	private long dataStart;
-	private Type[] types;
+	internal Type[] types;
 
 	// Constructors.
 	public ResourceReader(Stream stream)
@@ -625,18 +625,18 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 						stream.Seek(reader.dataStart + (long)valuePosn,
 									SeekOrigin.Begin);
 						typeCode = ReadLength(stream);
-						if(typeCode < 0 || typeCode >= types.Length)
+						if(typeCode < 0 || typeCode >= reader.types.Length)
 						{
 							value = null;
 						}
-						else if(types[typeCode] == typeof(String))
+						else if(reader.types[typeCode] == typeof(String))
 						{
 							// This is the most common case.
 							value = ReadString(stream);
 						}
 						else
 						{
-							value = ReadObject(stream, types[typeCode]);
+							value = ReadObject(stream, reader.types[typeCode]);
 						}
 						if(value == null)
 						{

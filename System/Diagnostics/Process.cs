@@ -693,9 +693,11 @@ public class Process
 					if(currentProcess == null)
 					{
 						currentProcess = new Process();
+						int processID = currentProcess.processID;
+						IntPtr processHandle = currentProcess.processHandle;
 						GetCurrentProcessInfo
-							(out currentProcess.processID,
-							 out currentProcess.processHandle);
+							(out processID,
+							 out processHandle);
 						currentProcess.argv = Environment.GetCommandLineArgs();
 						if(currentProcess.argv != null &&
 						   currentProcess.argv.Length > 0)

@@ -55,7 +55,7 @@ public class Form : ContainerControl
 	private Color transparencyKey;
 	private FormWindowState windowState;
 	internal static Form activeForm;
-	private bool showInTaskBar;
+	private bool showInTaskbar;
 	private bool controlBox;
 	
 	// Constructor.
@@ -462,18 +462,18 @@ public class Form : ContainerControl
 					owner = value;
 				}
 			}
-	public bool ShowInTaskBar
+	public bool ShowInTaskbar
 			{
 				get
 				{
-					return GetWindowFlag(ToolkitWindowFlags.ShowInTaskBar);
+					return GetWindowFlag(ToolkitWindowFlags.ShowInTaskbar);
 				}
 				set
 				{
-					if (value != showInTaskBar)
+					if (value != showInTaskbar)
 					{
-						showInTaskBar = value;
-						SetWindowFlag(ToolkitWindowFlags.ShowInTaskBar, value);
+						showInTaskbar = value;
+						SetWindowFlag(ToolkitWindowFlags.ShowInTaskbar, value);
 					}
 				}
 			}
@@ -629,7 +629,7 @@ public class Form : ContainerControl
 						flags &= ~(ToolkitWindowFlags.Maximize |
 								   ToolkitWindowFlags.ResizeHandles |
 								   ToolkitWindowFlags.Resize |
-								   ToolkitWindowFlags.ShowInTaskBar);
+								   ToolkitWindowFlags.ShowInTaskbar);
 						flags |= ToolkitWindowFlags.ToolWindow;
 					}
 					break;
@@ -638,7 +638,7 @@ public class Form : ContainerControl
 
 					case FormBorderStyle.SizableToolWindow:
 					{
-						flags &= ~(ToolkitWindowFlags.ShowInTaskBar);
+						flags &= ~(ToolkitWindowFlags.ShowInTaskbar);
 						flags |= ToolkitWindowFlags.ToolWindow;
 					}
 					break;

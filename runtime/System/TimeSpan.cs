@@ -382,7 +382,7 @@ public struct TimeSpan : IComparable
 	
 				}
 	
-				catch (Exception e)
+				catch
 				{
 					throw new FormatException(_("Exception_Format"));
 				}

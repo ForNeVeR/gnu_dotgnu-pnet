@@ -78,7 +78,6 @@ internal sealed class CBCEncrypt
 				int offset = 0;
 				int size, pad, index;
 				byte[] outputBuffer;
-				byte[] lastBlock;
 
 				// Allocate space for the final block.
 				if(transform.padding == PaddingMode.PKCS7)

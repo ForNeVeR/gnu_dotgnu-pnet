@@ -92,7 +92,6 @@ public sealed class ZoneIdentityPermission : CodeAccessPermission
 			}
 	public override IPermission Intersect(IPermission target)
 			{
-				FileDialogPermissionAccess newFlags;
 				if(target == null)
 				{
 					return target;

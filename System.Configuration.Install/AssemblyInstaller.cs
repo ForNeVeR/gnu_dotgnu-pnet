@@ -39,7 +39,7 @@ public class AssemblyInstaller : Installer
 	private AssemblyInfo info;
 	private static AssemblyInfo[] assemblies;
 
-	private class AssemblyInfo
+	internal class AssemblyInfo
 	{
 		public String filename;
 		public Assembly assembly;
@@ -243,7 +243,7 @@ public class AssemblyInstaller : Installer
 					{
 						// See if we have a cached information block,
 						// from when we loaded the assembly previously.
-						fullName = Path.GetFullPath(filename);
+						fullName = IO.Path.GetFullPath(filename);
 						if(assemblies != null)
 						{
 							for(index = 0; index < assemblies.Length; ++index)

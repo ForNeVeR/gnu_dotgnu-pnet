@@ -478,9 +478,10 @@ internal sealed class FileKeyProvider : IRegistryKeyProvider
 						e.SetAttribute("type", "strings");
 						String[] list = (String[])value;
 						SecurityElement child;
-						foreach(String str in list)
+						for(int i = 0; i < list.Length; i++)
 						{
 							child = new SecurityElement("string");
+							String str = list[i];
 							if(str == null)
 							{
 								str = String.Empty;

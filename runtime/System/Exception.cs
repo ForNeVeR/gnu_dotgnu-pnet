@@ -278,7 +278,6 @@ public class Exception
 				}
 				else
 				{
-					String typeName;
 					try
 					{
 						return String.Format

@@ -121,7 +121,7 @@ namespace System.IO
 
 		private void FillBuffer()
 		{
-			int len, outLen;
+			int len;
 			
 			/* this is lifted off StreamReader */
 			while(inBufferPosn >= inBufferLen && !sawEOF)

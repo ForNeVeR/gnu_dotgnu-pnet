@@ -710,7 +710,6 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				int len = format.Length;
 				int posn = 0;
 				int next, argNum, width;
-				char curr;
 				Object arg;
 				String specifier;
 				String formatted;

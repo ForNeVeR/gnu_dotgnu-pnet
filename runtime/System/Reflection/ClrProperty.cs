@@ -291,7 +291,6 @@ internal sealed class ClrProperty : PropertyInfo, IClrProgramItem
 	public override String ToString()
 			{
 				StringBuilder builder = new StringBuilder();
-				ParameterInfo paramInfo;
 				builder.Append(PropertyType.ToString());
 				builder.Append(' ');
 				builder.Append(Name);

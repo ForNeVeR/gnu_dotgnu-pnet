@@ -88,7 +88,7 @@ public class TypeDelegator : Type
 	// Implementation of the "IsValueType" property.
 	protected override bool IsValueTypeImpl()
 			{
-				return typeImpl.IsValueTypeImpl();
+				return typeImpl.IsValueType();
 			}
 
 	// General properties.
@@ -158,7 +158,7 @@ public class TypeDelegator : Type
 								       Type[] types,
 								       ParameterModifier[] modifiers)
 			{
-				return typeImpl.GetConstructorImpl
+				return typeImpl.GetConstructor
 					(bindingAttr, binder, callingConventions,
 					 types, modifiers);
 			}
@@ -219,7 +219,7 @@ public class TypeDelegator : Type
 								  Type[] types,
 								  ParameterModifier[] modifiers)
 			{
-				return typeImpl.GetMethodImpl
+				return typeImpl.GetMethod
 					(name, bindingAttr, binder, callingConventions,
 					 types, modifiers);
 			}
@@ -249,7 +249,7 @@ public class TypeDelegator : Type
 								    Type returnType, Type[] types,
 								    ParameterModifier[] modifiers)
 			{
-				return typeImpl.GetPropertyImpl
+				return typeImpl.GetProperty
 					(name, bindingAttr, binder, returnType,
 					 types, modifiers);
 			}
@@ -331,11 +331,11 @@ public class TypeDelegator : Type
 
 	protected override bool HasGenericArgumentsImpl()
 			{
-				return typeImpl.HasGenericArgumentsImpl();
+				return typeImpl.HasGenericArguments;
 			}
 	protected override bool HasGenericParametersImpl()
 			{
-				return typeImpl.HasGenericParametersImpl();
+				return typeImpl.HasGenericParameters;
 			}
 	public override Type[] GetGenericArguments()
 			{

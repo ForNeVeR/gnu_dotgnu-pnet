@@ -80,11 +80,11 @@ public class CultureInfoConverter : TypeConverter
 					CultureInfo[] cultures;
 					cultures = CultureInfo.GetCultures
 						(CultureTypes.AllCultures);
-					foreach(CultureInfo culture in cultures)
+					foreach(CultureInfo cultureInfo in cultures)
 					{
-						if(String.Compare(culture.DisplayName, name, true) == 0)
+						if(String.Compare(cultureInfo.DisplayName, name, true) == 0)
 						{
-							return culture;
+							return cultureInfo;
 						}
 					}
 					throw new ArgumentException

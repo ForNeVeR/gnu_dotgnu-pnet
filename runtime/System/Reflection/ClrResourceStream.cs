@@ -153,8 +153,6 @@ internal sealed class ClrResourceStream : Stream
 	// Seek to a new position within this stream.
 	public override long Seek(long offset, SeekOrigin origin)
 			{
-				long newPosn;
-
 				// Bail out if the handle is invalid.
 				if(handle == IntPtr.Zero)
 				{

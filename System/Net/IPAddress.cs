@@ -220,7 +220,6 @@ public class IPAddress
 				int quadB;
 				int quadC;
 				int quadD;
-				bool  numbersign;
 				
 				// this only takes char[]. not String
 				tokenizedString = ipString.Split(new char[]{'.'}, 4);

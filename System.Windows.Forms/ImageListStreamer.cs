@@ -31,6 +31,9 @@ using System.Runtime.Serialization;
 public class ImageListStreamer : ISerializable
 {
 	// TODO
+	private ImageListStreamer(SerializationInfo info, StreamingContext context)
+	{
+	}
 
 	public virtual void GetObjectData(SerializationInfo si, StreamingContext context)
 	{

@@ -139,7 +139,6 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 			{
 				int posn;
 				IPermission perm;
-				CodeAccessPermission caperm;
 				for(posn = 0; posn < permissions.Count; ++posn)
 				{
 					perm = ((IPermission)(permissions[posn]));

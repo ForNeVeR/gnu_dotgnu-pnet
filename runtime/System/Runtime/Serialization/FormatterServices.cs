@@ -133,9 +133,11 @@ public sealed class FormatterServices
 			}
 
 	// Get a named type from a specific assembly
+	#if (__CSCC__)
 	[SecurityPermission(SecurityAction.LinkDemand,
 						Flags=SecurityPermissionFlag.SerializationFormatter)]
 	[ReflectionPermission(SecurityAction.LinkDemand, TypeInformation=true)]
+	#endif
 	public static Type GetTypeFromAssembly(Assembly assem, String name)
 			{
 				if(assem == null)

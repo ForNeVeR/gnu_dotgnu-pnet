@@ -93,7 +93,6 @@ internal class HexadecimalFormatter : Formatter
 
 	public override string Format(Object o, IFormatProvider provider)
 	{
-		long value;
 		minPrecision=PrecisionOf(o);
 
 		//  Type validation

@@ -957,7 +957,7 @@ public class XmlTextWriter : XmlWriter
 									}
 								}	
 							}	
-							catch (UriFormatException e)
+							catch (UriFormatException)
 							{
 								throw new ArgumentException
 									(S._("Xml_InvalidUriFormat"), "ns");

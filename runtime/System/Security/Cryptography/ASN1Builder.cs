@@ -204,7 +204,6 @@ internal class ASN1Builder
 			{
 				int start = offset;
 				int len = 0;
-				int hdrlen;
 				foreach(ASN1Builder builder in list)
 				{
 					len += builder.GetLength();
@@ -640,7 +639,6 @@ internal class ASN1Builder
 			{
 				int start = offset;
 				int len = 1;
-				int hdrlen;
 				foreach(ASN1Builder builder in list)
 				{
 					len += builder.GetLength();

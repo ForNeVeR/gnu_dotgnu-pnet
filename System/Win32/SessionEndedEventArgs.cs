@@ -22,6 +22,8 @@
 namespace Microsoft.Win32
 {
 
+using System;
+
 #if CONFIG_WIN32_SPECIFICS
 
 public class SessionEndedEventArgs : EventArgs

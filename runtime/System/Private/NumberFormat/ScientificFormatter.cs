@@ -51,6 +51,18 @@ internal class ScientificFormatter : Formatter
 		StringBuilder ret;
 
 		value = OToDouble(o);
+		if (Double.IsNaN(value))
+		{
+			return NumberFormatInfo(provider).NaNSymbol;
+		}
+		else if(Double.IsPositiveInfinity(value))
+		{
+			return NumberFormatInfo(provider).PositiveInfinitySymbol;
+		}
+		else if(Double.IsNegativeInfinity(value))
+		{
+			return NumberFormatInfo(provider).NegativeInfinitySymbol;
+		}
 		if (value < 0)
 		{
 			isNegative = true;

@@ -87,7 +87,7 @@ internal class PercentFormatter : Formatter
 		//
 		int precision = (this.precision == -1) ?
 			NumberFormatInfo(provider).NumberDecimalDigits : this.precision;
-		string rawnumber = FormatAnyRound(o, precision + 2);
+		string rawnumber = FormatAnyRound(o, precision + 2, provider);
 
 		//
 		// "Multiply" by 100

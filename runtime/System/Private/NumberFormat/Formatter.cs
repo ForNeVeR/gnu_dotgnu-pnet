@@ -52,10 +52,24 @@ internal abstract class Formatter
 	static protected NumberFormatInfo 
 		NumberFormatInfo(IFormatProvider provider)
 	{
-		return provider == null ?
-			System.Globalization.NumberFormatInfo.CurrentInfo :
-			(NumberFormatInfo) provider.GetFormat(
+		if(provider == null)
+		{
+			return System.Globalization.NumberFormatInfo.CurrentInfo;
+		}
+		else
+		{
+			NumberFormatInfo nfi =
+				(NumberFormatInfo) provider.GetFormat(
 								typeof(System.Globalization.NumberFormatInfo));
+			if(nfi != null)
+			{
+				return nfi;
+			}
+			else
+			{
+				return System.Globalization.NumberFormatInfo.CurrentInfo;
+			}
+		}
 	}
 
 	static protected bool IsSignedInt(Object o)
@@ -273,7 +287,8 @@ internal abstract class Formatter
 		return ret;
 	}
 
-	static protected string FormatAnyRound(Object o, int precision)
+	static protected string FormatAnyRound(Object o, int precision,
+										   IFormatProvider provider)
 	{
 		string ret;
 
@@ -315,17 +330,30 @@ internal abstract class Formatter
 		else if (IsFloat(o))
 		{
 			// Beware rounding code
-			if (OToDouble(o) < 0)
+			double val = OToDouble(o);
+			if (Double.IsNaN(val))
+			{
+				return NumberFormatInfo(provider).NaNSymbol;
+			}
+			else if (Double.IsPositiveInfinity(val))
+			{
+				return NumberFormatInfo(provider).PositiveInfinitySymbol;
+			}
+			else if (Double.IsNegativeInfinity(val))
+			{
+				return NumberFormatInfo(provider).NegativeInfinitySymbol;
+			}
+			else if (val < 0)
 			{
 				ret = "-" + 
 					Formatter.FormatFloat(
-							-OToDouble(o) + 5 * Math.Pow(10, -precision - 1)
+							-val + 5 * Math.Pow(10, -precision - 1)
 							,precision);
 			}
 			else
 			{
 				ret = Formatter.FormatFloat(
-						OToDouble(o) + 5 * Math.Pow(10, -precision - 1) 
+						val + 5 * Math.Pow(10, -precision - 1) 
 						,precision);
 			}
 		}

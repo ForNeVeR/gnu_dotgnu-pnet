@@ -141,7 +141,7 @@ internal class CurrencyFormatter : Formatter
 		//
 		int precision = (this.precision == -1) ?
 			NumberFormatInfo(provider).CurrencyDecimalDigits : this.precision;
-		string rawnumber = FormatAnyRound(o, precision);
+		string rawnumber = FormatAnyRound(o, precision, provider);
 
 		//
 		//  Test for negative numbers

@@ -42,7 +42,7 @@ internal class RoundTripFormatter : Formatter
 		else throw new FormatException(_("Format_TypeException"));
 
 		//  Get initial number
-		string rawnumber = FormatAnyRound(o, precision);
+		string rawnumber = FormatAnyRound(o, precision, provider);
 		StringBuilder ret = new StringBuilder();
 
 		if (rawnumber[0] == '-')

@@ -40,7 +40,7 @@ internal class FixedPointFormatter : Formatter
 			NumberFormatInfo(provider).NumberDecimalDigits : this.precision;
 
 		//  Get string
-		string rawnumber = FormatAnyRound(o, precision);
+		string rawnumber = FormatAnyRound(o, precision, provider);
 		StringBuilder ret = new StringBuilder();
 
 		if (rawnumber[0] == '-')

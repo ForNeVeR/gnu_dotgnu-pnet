@@ -81,7 +81,7 @@ internal class NumberFormatter : Formatter
 		//
 		int precision = (this.precision == -1) ?
 			NumberFormatInfo(provider).NumberDecimalDigits : this.precision;
-		string rawnumber = FormatAnyRound(o, precision);
+		string rawnumber = FormatAnyRound(o, precision, provider);
 
 		//
 		//  Test for negative numbers

@@ -63,6 +63,9 @@ extern	"C" {
 	#define	_IL_ClrResourceStream_suppressed
 	#define	_IL_CodeTable_suppressed
 #endif
+#if !defined(IL_CONFIG_RUNTIME_INFRA)
+	#define	_IL_GCHandle_suppressed
+#endif
 #if !defined(IL_CONFIG_DEBUG_LINES)
 	#define _IL_Debugger_suppressed
 	#define _IL_StackFrame_suppressed

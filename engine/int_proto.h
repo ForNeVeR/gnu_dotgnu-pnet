@@ -74,6 +74,8 @@ extern void _IL_GC_KeepAlive(ILExecThread * _thread, ILObject * obj);
 extern void _IL_GC_ReRegisterForFinalize(ILExecThread * _thread, ILObject * obj);
 extern void _IL_GC_SuppressFinalize(ILExecThread * _thread, ILObject * obj);
 extern void _IL_GC_WaitForPendingFinalizers(ILExecThread * _thread);
+extern void _IL_GC_Collect(ILExecThread * _thread);
+extern ILInt64 _IL_GC_GetTotalMemory(ILExecThread * _thread, ILBool forceFullCollection);
 
 extern void _IL_Guid_NewGuid(ILExecThread * _thread, void * _result);
 

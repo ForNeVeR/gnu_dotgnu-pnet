@@ -55,10 +55,7 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 	return 1;
 }
 
-/*
- * Finalization callback that is invoked by the garbage collector.
- */
-static void FinalizeObject(void *block, void *data)
+void _ILFinalizeObject(void *block, void *data)
 {
 	ILObject *object;
 	ILClass *classInfo;
@@ -123,7 +120,7 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	if(classInfo != 0 &&
 	   ((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
 	{
-		ILGCRegisterFinalizer(ptr, FinalizeObject, 0);
+		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, 0);
 	}
 
 	/* Return a pointer to the data just after the class information */

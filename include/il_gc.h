@@ -80,10 +80,9 @@ void ILGCMarkNoPointers(void *start, unsigned long size);
 void ILGCCollect(void);
 
 /*
- * Perform a little bit of garbage collection.
- * Returns zero if nothing more to do.
+ * Invoke the pending finalizers and wait for them to complete.
  */
-int ILGCCollectALittle(void);
+void ILGCInvokeFinalizers(void);
 
 /*
  * Get the current size of the garbage collector's heap.

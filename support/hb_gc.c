@@ -97,9 +97,10 @@ void ILGCCollect(void)
 	GC_gcollect();
 }
 
-int ILGCCollectALittle(void)
+void ILGCInvokeFinalizers(void)
 {
-	return GC_collect_a_little();
+	GCNotifyFinalize();
+	/* TODO: wait for the finalizer thread to complete its work */
 }
 
 long ILGCGetHeapSize(void)

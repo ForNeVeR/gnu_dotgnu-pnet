@@ -308,6 +308,11 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal);
 unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method);
 
 /*
+ * Finalization callback that is invoked by the garbage collector.
+ */
+void _ILFinalizeObject(void *block, void *data);
+
+/*
  * Allocate a block of memory and associate it with a specific class.
  * This will throw an exception if out of memory, and return zero.
  */

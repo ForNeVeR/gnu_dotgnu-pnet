@@ -172,10 +172,9 @@ void ILGCCollect(void)
 	/* Nothing to do here */
 }
 
-int ILGCCollectALittle(void)
+void ILGCInvokeFinalizers(void)
 {
-	/* Nothing to do here */
-	return 0;
+	/* Nothing to do here because we don't do finalization */
 }
 
 long ILGCGetHeapSize(void)

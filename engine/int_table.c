@@ -439,6 +439,15 @@ static void marshal_vp(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_lpb(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILInt8))fn)(*((void * *)(avalue[0])), *((ILInt8 *)(avalue[1])));
+}
+
+#endif
+
 #ifndef _IL_GC_suppressed
 
 IL_METHOD_BEGIN(GC_Methods)
@@ -446,6 +455,8 @@ IL_METHOD_BEGIN(GC_Methods)
 	IL_METHOD("ReRegisterForFinalize", "(oSystem.Object;)V", _IL_GC_ReRegisterForFinalize, marshal_vpp)
 	IL_METHOD("SuppressFinalize", "(oSystem.Object;)V", _IL_GC_SuppressFinalize, marshal_vpp)
 	IL_METHOD("WaitForPendingFinalizers", "()V", _IL_GC_WaitForPendingFinalizers, marshal_vp)
+	IL_METHOD("Collect", "()V", _IL_GC_Collect, marshal_vp)
+	IL_METHOD("GetTotalMemory", "(Z)l", _IL_GC_GetTotalMemory, marshal_lpb)
 IL_METHOD_END
 
 #endif

@@ -19,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
+#include "engine_private.h"
 #include "lib_defs.h"
 
 #ifdef	__cplusplus
@@ -31,7 +31,10 @@ extern	"C" {
  */
 void _IL_GC_KeepAlive(ILExecThread *_thread, ILObject *obj)
 {
-	/* TODO */
+	/* This internalcall exists purely to ensure that the object
+	   stays alive until this method is called, by keeping it
+	   somewhere on the current thread's stack.  In other words,
+	   once this method is called, we have nothing to do */
 }
 
 /*
@@ -39,7 +42,32 @@ void _IL_GC_KeepAlive(ILExecThread *_thread, ILObject *obj)
  */
 void _IL_GC_ReRegisterForFinalize(ILExecThread *_thread, ILObject *obj)
 {
-	/* TODO */
+	if(obj)
+	{
+		/* We can only register finalization if the current method
+		   has the same class as the object itself */
+		ILMethod *method = ILExecThreadStackMethod(_thread, 1);
+		if(method && ILMethod_Owner(method) == GetObjectClass(obj))
+		{
+	   		if(((ILClassPrivate *)((GetObjectClass(obj))->userData))
+					->hasFinalizer)
+			{
+				ILGCRegisterFinalizer
+					((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
+					 _ILFinalizeObject, (void *)0);
+			}
+		}
+		else
+		{
+			ILExecThreadThrowSystem
+				(_thread, "System.ExecutionEngineException",
+				 (const char *)0);
+		}
+	}
+	else
+	{
+		ILExecThreadThrowArgNull(_thread, "obj");
+	}
 }
 
 /*
@@ -47,16 +75,60 @@ void _IL_GC_ReRegisterForFinalize(ILExecThread *_thread, ILObject *obj)
  */
 void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
 {
-	/* TODO */
+	if(obj)
+	{
+		/* We can only suppress finalization if the current method
+		   has the same class as the object itself */
+		ILMethod *method = ILExecThreadStackMethod(_thread, 1);
+		if(method && ILMethod_Owner(method) == GetObjectClass(obj))
+		{
+			ILGCRegisterFinalizer
+				((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
+				 (ILGCFinalizer)0, (void *)0);
+		}
+		else
+		{
+			ILExecThreadThrowSystem
+				(_thread, "System.InvalidOperationException",
+				 (const char *)0);
+		}
+	}
+	else
+	{
+		ILExecThreadThrowArgNull(_thread, "obj");
+	}
 }
 
 /*
  * public static void WaitForPendingFinalizers();
  */
-void _IL_GC_WaitForPendingFinalizers(ILExecThread * _thread)
+void _IL_GC_WaitForPendingFinalizers(ILExecThread *_thread)
 {
-	/* TODO */
+	ILGCInvokeFinalizers();
 }
+
+/*
+ * public static void Collect();
+ */
+void _IL_GC_Collect(ILExecThread *_thread)
+{
+	ILGCCollect();
+}
+
+/*
+ * public static long GetTotalMemory();
+ */
+ILInt64 _IL_GC_GetTotalMemory(ILExecThread *_thread,
+							  ILBool forceFullCollection)
+{
+	if(forceFullCollection)
+	{
+		ILGCCollect();
+	}
+	return (ILInt64)ILGCGetHeapSize();
+}
+
+#ifdef IL_CONFIG_RUNTIME_INFRA
 
 ILNativeInt _IL_GCHandle_GCAddrOfPinnedObject(ILExecThread *_thread,
 											  ILInt32 handle)
@@ -94,6 +166,8 @@ void _IL_GCHandle_GCSetTarget(ILExecThread *_thread, ILInt32 handle,
 {
 	/* TODO */
 }
+
+#endif /* IL_CONFIG_RUNTIME_INFRA */
 
 #ifdef	__cplusplus
 };

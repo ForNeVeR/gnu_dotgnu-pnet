@@ -5,6 +5,8 @@
 	ilheader/ilheader.1, ilheader/ilheader.c: add the "ilheader" utility,
 	which generates .h files from C# assemblies.
 
+	* engine/layout.c: fix a reversed test in "ComputeInterfaceTable".
+
 2002-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-3: move the contents of "ChangeLog" to

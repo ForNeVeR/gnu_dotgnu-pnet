@@ -274,7 +274,7 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 	/* Determine if the parent class implements the interface */
 	parent = info;
 	impl2 = 0;
-	while(impl2 != 0 && (parent = ILClassGetParent(parent)) != 0)
+	while(impl2 == 0 && (parent = ILClassGetParent(parent)) != 0)
 	{
 		impl2 = ((ILClassPrivate *)(parent->userData))->implements;
 		while(impl2 != 0)

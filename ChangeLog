@@ -1,4 +1,10 @@
 
+2003-03-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Generics/Generics.html, Generics/TreeBase.cs,
+	Generics/TreeDictionary.cs, Generics/TreeSet.cs: add tree-based
+	collections to the generics library.
+
 2003-02-28  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Reflection/Emit/MethodBuilder.cs,

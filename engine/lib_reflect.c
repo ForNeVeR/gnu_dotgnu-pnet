@@ -757,6 +757,79 @@ static ILObject *ImageToAssembly(ILExecThread *thread, ILImage *image)
 }
 
 /*
+ * public Assembly[] GetAssemblies();
+ */
+System_Array *_IL_AppDomain_GetAssemblies(ILExecThread *thread,
+                                          ILObject *_this)
+{
+	ILContext *context;
+	ILImage *image;
+	ILInt32 num;
+	System_Array *array;
+	ILObject **buffer;
+	ILImage **images;
+	ILImage **ptr;
+
+	IL_METADATA_RDLOCK(thread);
+
+	context = thread->process->context;
+
+	/* count out the number of images */
+	image = 0;
+	num = 0;
+	while((image = ILContextNextImage(context, image)) != 0)
+	{
+		++num;
+	}
+
+	/* create the image array */
+	if (!(images = (ILImage *)ILMalloc(sizeof(ILImage *)*num)))
+	{
+		IL_METADATA_UNLOCK(thread);
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* fill the image array */
+	image = 0;
+	ptr = images;
+	while((image = ILContextNextImage(context, image)) != 0)
+	{
+		*ptr = image;
+		++ptr;
+	}
+
+	IL_METADATA_UNLOCK(thread);
+
+	/* create the assembly array */
+	array = (System_Array *)ILExecThreadNew(thread,
+	                                        "[oSystem.Reflection.Assembly;",
+	                                        "(Ti)V", (ILVaInt)num);
+	if(!array)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* fill the assembly array */
+	ptr = images;
+	buffer = (ILObject **)(ArrayToBuffer(array));
+	while(num > 0)
+	{
+		*buffer = ImageToAssembly(thread, *ptr);
+		++buffer;
+		++ptr;
+		--num;
+	}
+
+	/* cleanup */
+	ILFree(images);
+
+	/* return the assembly array */
+	return array;
+}
+
+/*
  * public static Assembly GetCallingAssembly();
  */
 ILObject *_IL_Assembly_GetCallingAssembly(ILExecThread *thread)
@@ -948,6 +1021,61 @@ System_Array *_IL_Assembly_GetFiles(ILExecThread *thread,
 {
 	/* We don't support manifest files yet */
 	return 0;
+}
+
+/*
+ * private String GetLocation();
+ */
+ILString *_IL_Assembly_GetLocation(ILExecThread *thread,
+                                        ILObject *_this)
+{
+	ILString *retval;
+	ILProgramItem *item;
+	ILImage *image;
+	char *path;
+	int len;
+
+	/* Bail out we have no filename to work with */
+	if (!(item = (ILProgramItem *)_ILClrFromObject(thread, _this)))
+	{
+		return 0;
+	}
+	if (!(image = ILProgramItem_Image(item)))
+	{
+		return 0;
+	}
+	if(!(image->filename))
+	{
+		return 0;
+	}
+
+	/* Strip the base name off the image's filename */
+	len = strlen(image->filename);
+	while(len > 0 &&
+	      image->filename[len-1] != '/' &&
+	      image->filename[len-1] != '\\')
+	{
+		--len;
+	}
+
+	/* Bail out we have an empty path */
+	if (!len)
+	{
+		return 0;
+	}
+
+	/* Construct the path */
+	if(!(path = (char *)ILMalloc(len+1)))
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	strncpy(path, image->filename, len);
+	retval = ILStringCreate(thread, path);
+	ILFree(path);
+
+	/* Return the path to the caller */
+	return retval;
 }
 
 /*

@@ -38,6 +38,14 @@ IL_METHOD_END
 
 #endif
 
+#ifndef _IL_AppDomain_suppressed
+
+IL_METHOD_BEGIN(AppDomain_Methods)
+	IL_METHOD("GetAssemblies", "(T)[oSystem.Reflection.Assembly;", _IL_AppDomain_GetAssemblies, marshal_ppp)
+IL_METHOD_END
+
+#endif
+
 #if !defined(HAVE_LIBFFI)
 
 static void marshal_vppp(void (*fn)(), void *rvalue, void **avalue)
@@ -1312,6 +1320,15 @@ static void marshal_jpj(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_ppji(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_vppiji(void (*fn)(), void *rvalue, void **avalue)
 {
 	(*(void (*)(void *, void *, ILInt32, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILNativeUInt *)(avalue[3])), *((ILInt32 *)(avalue[4])));
@@ -1333,15 +1350,6 @@ static void marshal_vpjpii(void (*fn)(), void *rvalue, void **avalue)
 static void marshal_jppp(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ppji(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt32 *)(avalue[2])));
 }
 
 #endif
@@ -1484,14 +1492,14 @@ static void marshal_vpjij(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_Marshal_suppressed
 
 IL_METHOD_BEGIN(Marshal_Methods)
+	IL_METHOD("FreeHGlobal", "(j)V", _IL_Marshal_FreeHGlobal, marshal_vpj)
 	IL_METHOD("AllocHGlobal", "(j)j", _IL_Marshal_AllocHGlobal, marshal_jpj)
+	IL_METHOD("PtrToStringUniInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringUniInternal, marshal_ppji)
+	IL_METHOD("PtrToStringAnsiInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringAnsiInternal, marshal_ppji)
 	IL_METHOD("CopyMU", "(oSystem.Array;iji)V", _IL_Marshal_CopyMU, marshal_vppiji)
 	IL_METHOD("CopyUM", "(joSystem.Array;ii)V", _IL_Marshal_CopyUM, marshal_vpjpii)
-	IL_METHOD("FreeHGlobal", "(j)V", _IL_Marshal_FreeHGlobal, marshal_vpj)
 	IL_METHOD("OffsetOfInternal", "(oSystem.Type;oSystem.String;)j", _IL_Marshal_OffsetOfInternal, marshal_jppp)
-	IL_METHOD("PtrToStringAnsiInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringAnsiInternal, marshal_ppji)
 	IL_METHOD("PtrToStringAutoInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringAutoInternal, marshal_ppji)
-	IL_METHOD("PtrToStringUniInternal", "(ji)oSystem.String;", _IL_Marshal_PtrToStringUniInternal, marshal_ppji)
 	IL_METHOD("PtrToStructureInternal", "(joSystem.Object;Z)Z", _IL_Marshal_PtrToStructureInternal, marshal_bpjpb)
 	IL_METHOD("DestroyStructureInternal", "(joSystem.Type;)Z", _IL_Marshal_DestroyStructureInternal, marshal_bpjp)
 	IL_METHOD("StructureToPtrInternal", "(oSystem.Object;j)Z", _IL_Marshal_StructureToPtrInternal, marshal_bppj)
@@ -1567,6 +1575,7 @@ IL_METHOD_BEGIN(Assembly_Methods)
 	IL_METHOD("LoadFromName", "(oSystem.String;&ioSystem.Reflection.Assembly;)oSystem.Reflection.Assembly;", _IL_Assembly_LoadFromName, marshal_ppppp)
 	IL_METHOD("GetEntryPoint", "(T)vSystem.RuntimeMethodHandle;", _IL_Assembly_GetEntryPoint, marshal_vppp)
 	IL_METHOD("GetImageRuntimeVersion", "(T)oSystem.String;", _IL_Assembly_GetImageRuntimeVersion, marshal_ppp)
+	IL_METHOD("GetLocation", "(T)oSystem.String;", _IL_Assembly_GetLocation, marshal_ppp)
 IL_METHOD_END
 
 #endif
@@ -1842,8 +1851,8 @@ IL_METHOD_END
 #ifndef _IL_Module_suppressed
 
 IL_METHOD_BEGIN(Module_Methods)
-	IL_METHOD("GetAssembly", "(T)oSystem.Reflection.Assembly;", _IL_Module_GetAssembly, marshal_ppp)
 	IL_METHOD("GetModuleType", "(T)oSystem.Type;", _IL_Module_GetModuleType, marshal_ppp)
+	IL_METHOD("GetAssembly", "(T)oSystem.Reflection.Assembly;", _IL_Module_GetAssembly, marshal_ppp)
 	IL_METHOD("GetFullName", "(T)oSystem.String;", _IL_Module_GetFullName, marshal_ppp)
 	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;", _IL_Module_GetType, marshal_ppppbb)
 	IL_METHOD("GetTypes", "(T)[oSystem.Type;", _IL_Module_GetTypes, marshal_ppp)
@@ -2204,6 +2213,29 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_lp(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *))fn)(*((void * *)(avalue[0])));
+}
+
+#endif
+
+#ifndef _IL_InfoMethods_suppressed
+
+IL_METHOD_BEGIN(InfoMethods_Methods)
+	IL_METHOD("GetRuntimeVersion", "()oSystem.String;", _IL_InfoMethods_GetRuntimeVersion, marshal_pp)
+	IL_METHOD("GetNetBIOSMachineName", "()oSystem.String;", _IL_InfoMethods_GetNetBIOSMachineName, marshal_pp)
+	IL_METHOD("GetPlatformID", "()vSystem.PlatformID;", _IL_InfoMethods_GetPlatformID, marshal_ip)
+	IL_METHOD("GetUserDomainName", "()oSystem.String;", _IL_InfoMethods_GetUserDomainName, marshal_pp)
+	IL_METHOD("IsUserInteractive", "()Z", _IL_InfoMethods_IsUserInteractive, marshal_bp)
+	IL_METHOD("GetUserName", "()oSystem.String;", _IL_InfoMethods_GetUserName, marshal_pp)
+	IL_METHOD("GetWorkingSet", "()l", _IL_InfoMethods_GetWorkingSet, marshal_lp)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_vpjpipi(void (*fn)(), void *rvalue, void **avalue)
 {
 	(*(void (*)(void *, ILNativeUInt, void *, ILInt32, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((void * *)(avalue[4])), *((ILInt32 *)(avalue[5])));
@@ -2355,8 +2387,8 @@ static void marshal_jp(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_FileMethods_suppressed
 
 IL_METHOD_BEGIN(FileMethods_Methods)
-	IL_METHOD("ValidatePathname", "(oSystem.String;)Z", _IL_FileMethods_ValidatePathname, marshal_bpp)
 	IL_METHOD("GetFileType", "(oSystem.String;)vPlatform.FileType;", _IL_FileMethods_GetFileType, marshal_ipp)
+	IL_METHOD("ValidatePathname", "(oSystem.String;)Z", _IL_FileMethods_ValidatePathname, marshal_bpp)
 	IL_METHOD("SetCreationTime", "(oSystem.String;l)vPlatform.Errno;", _IL_FileMethods_SetCreationTime, marshal_ippl)
 	IL_METHOD("SetLastAccessTime", "(oSystem.String;l)vPlatform.Errno;", _IL_FileMethods_SetLastAccessTime, marshal_ippl)
 	IL_METHOD("SetLastWriteTime", "(oSystem.String;l)vPlatform.Errno;", _IL_FileMethods_SetLastWriteTime, marshal_ippl)
@@ -2377,30 +2409,6 @@ IL_METHOD_BEGIN(FileMethods_Methods)
 	IL_METHOD("GetInvalidHandle", "()j", _IL_FileMethods_GetInvalidHandle, marshal_jp)
 	IL_METHOD("HasAsync", "()Z", _IL_FileMethods_HasAsync, marshal_bp)
 	IL_METHOD("Copy", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_FileMethods_Copy, marshal_ippp)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_lp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *))fn)(*((void * *)(avalue[0])));
-}
-
-#endif
-
-#ifndef _IL_InfoMethods_suppressed
-
-IL_METHOD_BEGIN(InfoMethods_Methods)
-	IL_METHOD("GetRuntimeVersion", "()oSystem.String;", _IL_InfoMethods_GetRuntimeVersion, marshal_pp)
-	IL_METHOD("GetNetBIOSMachineName", "()oSystem.String;", _IL_InfoMethods_GetNetBIOSMachineName, marshal_pp)
-	IL_METHOD("GetPlatformID", "()vSystem.PlatformID;", _IL_InfoMethods_GetPlatformID, marshal_ip)
-	IL_METHOD("GetUserDomainName", "()oSystem.String;", _IL_InfoMethods_GetUserDomainName, marshal_pp)
-	IL_METHOD("IsUserInteractive", "()Z", _IL_InfoMethods_IsUserInteractive, marshal_bp)
-	IL_METHOD("GetUserName", "()oSystem.String;", _IL_InfoMethods_GetUserName, marshal_pp)
-	IL_METHOD("GetWorkingSet", "()l", _IL_InfoMethods_GetWorkingSet, marshal_lp)
-	IL_METHOD("GetSpecialFolder", "(vSystem.Environment/SpecialFolder;)oSystem.String;", _IL_InfoMethods_GetSpecialFolder, marshal_ppi)
 IL_METHOD_END
 
 #endif
@@ -2810,6 +2818,9 @@ typedef struct
 
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
+#ifndef _IL_AppDomain_suppressed
+	{"AppDomain", "System", AppDomain_Methods},
+#endif
 #ifndef _IL_ArgIterator_suppressed
 	{"ArgIterator", "System", ArgIterator_Methods},
 #endif

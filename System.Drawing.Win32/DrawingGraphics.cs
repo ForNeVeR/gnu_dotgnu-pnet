@@ -52,6 +52,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a line between two points using the current pen.
 	public override void DrawLine( int x1, int y1, int x2, int y2 )
 			{
+				Win32.Api.SetBkMode(hdc, Win32.Api.BackGroundModeType.TRANSPARENT);
 				IntPtr prevhPen = Win32.Api.SelectObject( hdc, (pen as DrawingPen).hPen );
 				Win32.Api.MoveToEx( hdc, x1, y1,IntPtr.Zero );
 				Win32.Api.LineTo( hdc, x2, y2 );
@@ -87,6 +88,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 
 	private void Polygon( System.Drawing.Point[] points, IntPtr hBrush, IntPtr hPen )
 			{
+				Win32.Api.SetBkMode(hdc, Win32.Api.BackGroundModeType.TRANSPARENT);
 				IntPtr prevhPen = Win32.Api.SelectObject( hdc, hPen );
 				IntPtr prevhBrush = Win32.Api.SelectObject( hdc, hBrush );
 				Win32.Api.POINT[] wPoints = ConvertPoints(points);
@@ -101,6 +103,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw an arc within a rectangle defined by four points.
 	public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
+				Win32.Api.SetBkMode(hdc, Win32.Api.BackGroundModeType.TRANSPARENT);
 				IntPtr prevhPen = Win32.Api.SelectObject( hdc, (pen as DrawingPen).hPen );
 				if (sweepAngle == 360)
 				{
@@ -129,6 +132,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				if (sweepAngle == 360)
 				{
 					IntPtr prevBrush = Win32.Api.SelectObject( hdc, (brush as DrawingBrush).hBrush );
+					Win32.Api.SetBkMode(hdc, Win32.Api.BackGroundModeType.TRANSPARENT);
 					IntPtr prevPen = Win32.Api.SelectObject(hdc, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
 					Win32.Api.Ellipse(hdc, rect[0].X, rect[0].Y, rect[2].X + 2, rect[2].Y +2);
 					Win32.Api.SelectObject( hdc, prevPen );
@@ -141,6 +145,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	private void Pie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )
 			{
 				IntPtr prevBrush = Win32.Api.SelectObject( hdc, hBrush );
+				Win32.Api.SetBkMode(hdc, Win32.Api.BackGroundModeType.TRANSPARENT);
 				IntPtr prevPen = Win32.Api.SelectObject( hdc, hPen );
 				Rectangle intersect = EllipseIntersect( rect, startAngle, sweepAngle );
 						

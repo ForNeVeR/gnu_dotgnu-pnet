@@ -44,7 +44,7 @@ internal class PopupControl : Control
 			{
 				get
 				{
-					return new Size(1,1);
+					return new Size(1000,1000);
 				}
 			}
 

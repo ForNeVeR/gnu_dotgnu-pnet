@@ -90,6 +90,7 @@ namespace TextBoxTest
 		private System.Windows.Forms.TextBox textBox18;
 		private System.Windows.Forms.TextBox textBox19;
 		private System.Windows.Forms.TextBox textBox20;
+		private Button textBoxLinesButton;
 
 		// Tab4 RadioButtons Test
 		private System.Windows.Forms.RadioButton radioButton;
@@ -846,6 +847,7 @@ namespace TextBoxTest
 			this.textBox16 = new System.Windows.Forms.TextBox();
 			this.textBox15 = new System.Windows.Forms.TextBox();
 			this.textBox14 = new System.Windows.Forms.TextBox();
+			textBoxLinesButton = new Button();
 
 			//
 			// textBox19
@@ -936,7 +938,7 @@ namespace TextBoxTest
 			this.textBox4.ScrollBars = System.Windows.Forms.ScrollBars.Both;
 			this.textBox4.Size = new System.Drawing.Size(450, 40);
 			this.textBox4.TabIndex = 4;
-			this.textBox4.Text = "A MultiLine textbox - MS Sans Serif : ScrollBars=Both, Height=40";
+			this.textBox4.Text = "A MultiLine textbox - MS Sans Serif : ScrollBars=Both, Height=40\nOh give me a home\nWhere the buffalo roam\nAnd the deer and 45 (forty-five) antelope play\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day.\nHome, Home on the Range\nWhere the deer and the antelope play.\nWhere seldom is heard\nA discouraging word\nAnd the skies are not cloudy all day....";
 
 			//
 			// textBox5
@@ -1062,6 +1064,11 @@ namespace TextBoxTest
 			this.textBox14.Size = new System.Drawing.Size(450, 20);
 			this.textBox14.TabIndex = 14;
 			this.textBox14.Text = "A normal textbox - MS Sans Serif : MaxLength=50";
+
+			textBoxLinesButton.Bounds = new Rectangle( 10, 510, 150, 30);
+			textBoxLinesButton.Text = "Lines[] for Multiline";
+			textBoxLinesButton.Click+=new EventHandler(textBoxLinesButton_Click);
+
 			control.Controls.AddRange(new System.Windows.Forms.Control[] {
 																			this.textBox19,
 																			this.textBox20,
@@ -1083,7 +1090,9 @@ namespace TextBoxTest
 																			this.textBox3,
 																			this.textBox2,
 																			this.textBox,
-																			this.textBox1});
+																			this.textBox1,
+																			textBoxLinesButton
+																		 });
 		}
 
 		private void AddRadioButtonsTest(Control control)
@@ -2242,6 +2251,12 @@ namespace TextBoxTest
 				g.DrawString(s,Font, bl, x, y);
 				y+=20;
 			}
+		}
+
+		private void textBoxLinesButton_Click(object sender, EventArgs e)
+		{
+			foreach(String s in textBox4.Lines)
+				Console.WriteLine(s);
 		}
 	}
 }

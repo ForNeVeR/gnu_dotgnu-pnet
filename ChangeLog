@@ -41,6 +41,8 @@ RVA, but the code is native rather than IL.
 * image/meta_build.c: remember the original call site signature when
 a MemberRef points at a method.
 
+* dumpasm/dump_type.c: print "..." for sentinels.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

@@ -263,7 +263,7 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 
 			case IL_TYPE_COMPLEX_SENTINEL:
 			{
-				/* Nothing to output for a sentinel */
+				fputs("...", stream);
 			}
 			break;
 

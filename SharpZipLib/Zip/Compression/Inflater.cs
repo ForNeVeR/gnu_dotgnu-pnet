@@ -1,5 +1,7 @@
 // Inflater.cs
+//
 // Copyright (C) 2001 Mike Krueger
+// Copyright (C) 2004 John Reilly
 //
 // This file was translated from java, it was part of the GNU Classpath
 // Copyright (C) 2001 Free Software Foundation, Inc.
@@ -45,7 +47,11 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 	
 	/// <summary>
 	/// Inflater is used to decompress data that has been compressed according
-	/// to the "deflate" standard described in rfc1950.
+	/// to the "deflate" standard described in rfc1951.
+	/// 
+	/// By default Zlib (rfc1950) headers and footers are expected in the input.
+	/// You can use constructor <code> public Inflater(bool noHeader)</code> passing true
+	/// if there is no Zlib header information
 	///
 	/// The usage is as following.  First you have to set some input with
 	/// <code>setInput()</code>, then inflate() it.  If inflate doesn't
@@ -69,58 +75,58 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <summary>
 		/// Copy lengths for literal codes 257..285
 		/// </summary>
-		private static int[] CPLENS = {
-										  3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
-										  35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258
-									  };
+		static int[] CPLENS = {
+								 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+								 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258
+							  };
 		
 		/// <summary>
 		/// Extra bits for literal codes 257..285
 		/// </summary>
-		private static int[] CPLEXT = {
-										  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
-										  3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0
-									  };
+		static int[] CPLEXT = {
+								 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+								 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0
+							  };
 		
 		/// <summary>
 		/// Copy offsets for distance codes 0..29
 		/// </summary>
-		private static int[] CPDIST = {
-										  1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
-										  257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
-										  8193, 12289, 16385, 24577
-									  };
+		static int[] CPDIST = {
+								1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+								257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+								8193, 12289, 16385, 24577
+							  };
 		
 		/// <summary>
 		/// Extra bits for distance codes
 		/// </summary>
-		private static int[] CPDEXT = {
-										  0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
-										  7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
-										  12, 12, 13, 13
-									  };
+		static int[] CPDEXT = {
+								0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+								7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
+								12, 12, 13, 13
+							  };
 		
 		/// <summary>
-		/// This are the state in which the inflater can be.
+		/// These are the possible states for an inflater
 		/// </summary>
-		private const int DECODE_HEADER           = 0;
-		private const int DECODE_DICT             = 1;
-		private const int DECODE_BLOCKS           = 2;
-		private const int DECODE_STORED_LEN1      = 3;
-		private const int DECODE_STORED_LEN2      = 4;
-		private const int DECODE_STORED           = 5;
-		private const int DECODE_DYN_HEADER       = 6;
-		private const int DECODE_HUFFMAN          = 7;
-		private const int DECODE_HUFFMAN_LENBITS  = 8;
-		private const int DECODE_HUFFMAN_DIST     = 9;
-		private const int DECODE_HUFFMAN_DISTBITS = 10;
-		private const int DECODE_CHKSUM           = 11;
-		private const int FINISHED                = 12;
+		const int DECODE_HEADER           = 0;
+		const int DECODE_DICT             = 1;
+		const int DECODE_BLOCKS           = 2;
+		const int DECODE_STORED_LEN1      = 3;
+		const int DECODE_STORED_LEN2      = 4;
+		const int DECODE_STORED           = 5;
+		const int DECODE_DYN_HEADER       = 6;
+		const int DECODE_HUFFMAN          = 7;
+		const int DECODE_HUFFMAN_LENBITS  = 8;
+		const int DECODE_HUFFMAN_DIST     = 9;
+		const int DECODE_HUFFMAN_DISTBITS = 10;
+		const int DECODE_CHKSUM           = 11;
+		const int FINISHED                = 12;
 		
 		/// <summary>
 		/// This variable contains the current state.
 		/// </summary>
-		private int mode;
+		int mode;
 		
 		/// <summary>
 		/// The adler checksum of the dictionary or of the decompressed
@@ -128,51 +134,53 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// compressed stream. 
 		/// Only valid if mode is DECODE_DICT or DECODE_CHKSUM.
 		/// </summary>
-		private int readAdler;
+		int readAdler;
 		
 		/// <summary>
 		/// The number of bits needed to complete the current state.  This
 		/// is valid, if mode is DECODE_DICT, DECODE_CHKSUM,
 		/// DECODE_HUFFMAN_LENBITS or DECODE_HUFFMAN_DISTBITS.
 		/// </summary>
-		private int neededBits;
-		private int repLength, repDist;
-		private int uncomprLen;
+		int neededBits;
+		int repLength;
+		int repDist;
+		int uncomprLen;
 		
 		/// <summary>
 		/// True, if the last block flag was set in the last block of the
 		/// inflated stream.  This means that the stream ends after the
 		/// current block.
 		/// </summary>
-		private bool isLastBlock;
+		bool isLastBlock;
 		
 		/// <summary>
 		/// The total number of inflated bytes.
 		/// </summary>
-		private int totalOut;
+		int totalOut;
 		
 		/// <summary>
 		/// The total number of bytes set with setInput().  This is not the
-		/// value returned by getTotalIn(), since this also includes the
+		/// value returned by the TotalIn property, since this also includes the
 		/// unprocessed input.
 		/// </summary>
-		private int totalIn;
+		int totalIn;
 		
 		/// <summary>
-		/// This variable stores the nowrap flag that was given to the constructor.
-		/// True means, that the inflated stream doesn't contain a header nor the
-		/// checksum in the footer.
+		/// This variable stores the noHeader flag that was given to the constructor.
+		/// True means, that the inflated stream doesn't contain a Zlib header or 
+		/// footer.
 		/// </summary>
-		private bool nowrap;
+		bool noHeader;
 		
-		private StreamManipulator input;
-		private OutputWindow outputWindow;
-		private InflaterDynHeader dynHeader;
-		private InflaterHuffmanTree litlenTree, distTree;
-		private Adler32 adler;
+		StreamManipulator input;
+		OutputWindow outputWindow;
+		InflaterDynHeader dynHeader;
+		InflaterHuffmanTree litlenTree, distTree;
+		Adler32 adler;
 		
 		/// <summary>
-		/// Creates a new inflater.
+		/// Creates a new inflater or RFC1951 decompressor
+		/// RFC1950/Zlib headers and footers will be expected in the input data
 		/// </summary>
 		public Inflater() : this(false)
 		{
@@ -181,19 +189,22 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <summary>
 		/// Creates a new inflater.
 		/// </summary>
-		/// <param name="nowrap">
-		/// true if no header and checksum field appears in the
-		/// stream.  This is used for GZIPed input.  For compatibility with
+		/// <param name="noHeader">
+		/// True if no RFC1950/Zlib header and footer fields are expected in the input data
+		/// 
+		/// This is used for GZIPed/Zipped input.
+		/// 
+		/// For compatibility with
 		/// Sun JDK you should provide one byte of input more than needed in
 		/// this case.
 		/// </param>
-		public Inflater(bool nowrap)
+		public Inflater(bool noHeader)
 		{
-			this.nowrap = nowrap;
+			this.noHeader = noHeader;
 			this.adler = new Adler32();
 			input = new StreamManipulator();
 			outputWindow = new OutputWindow();
-			mode = nowrap ? DECODE_BLOCKS : DECODE_HEADER;
+			mode = noHeader ? DECODE_BLOCKS : DECODE_HEADER;
 		}
 		
 		/// <summary>
@@ -202,7 +213,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// </summary>
 		public void Reset()
 		{
-			mode = nowrap ? DECODE_BLOCKS : DECODE_HEADER;
+			mode = noHeader ? DECODE_BLOCKS : DECODE_HEADER;
 			totalIn = totalOut = 0;
 			input.Reset();
 			outputWindow.Reset();
@@ -214,32 +225,30 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		}
 		
 		/// <summary>
-		/// Decodes the deflate header.
+		/// Decodes a zlib/RFC1950 header.
 		/// </summary>
 		/// <returns>
-		/// false if more input is needed.
+		/// False if more input is needed.
 		/// </returns>
-		/// <exception cref="System.FormatException">
-		/// if header is invalid.
+		/// <exception cref="System.ApplicationException">
+		/// The header is invalid.
 		/// </exception>
 		private bool DecodeHeader()
 		{
 			int header = input.PeekBits(16);
-			if (header < 0) 
-			{
+			if (header < 0) {
 				return false;
 			}
 			input.DropBits(16);
+			
 			/* The header is written in "wrong" byte order */
 			header = ((header << 8) | (header >> 8)) & 0xffff;
-			if (header % 31 != 0) 
-			{
-				throw new FormatException("Header checksum illegal");
+			if (header % 31 != 0) {
+				throw new ApplicationException("Header checksum illegal");
 			}
 			
-			if ((header & 0x0f00) != (Deflater.DEFLATED << 8)) 
-			{
-				throw new FormatException("Compression Method unknown");
+			if ((header & 0x0f00) != (Deflater.DEFLATED << 8)) {
+				throw new ApplicationException("Compression Method unknown");
 			}
 			
 			/* Maximum size of the backwards window in bits.
@@ -249,12 +258,9 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			int max_wbits = ((header & 0x7000) >> 12) + 8;
 			*/
 			
-			if ((header & 0x0020) == 0) 
-			{ // Dictionary flag?
+			if ((header & 0x0020) == 0) { // Dictionary flag?
 				mode = DECODE_BLOCKS;
-			} 
-			else 
-			{
+			} else {
 				mode = DECODE_DICT;
 				neededBits = 32;
 			}
@@ -265,15 +271,13 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// Decodes the dictionary checksum after the deflate header.
 		/// </summary>
 		/// <returns>
-		/// false if more input is needed.
+		/// False if more input is needed.
 		/// </returns>
 		private bool DecodeDict()
 		{
-			while (neededBits > 0) 
-			{
+			while (neededBits > 0) {
 				int dictByte = input.PeekBits(8);
-				if (dictByte < 0) 
-				{
+				if (dictByte < 0) {
 					return false;
 				}
 				input.DropBits(8);
@@ -290,35 +294,28 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// false if more input is needed, true if output window is
 		/// full or the current block ends.
 		/// </returns>
-		/// <exception cref="System.FormatException">
+		/// <exception cref="System.ApplicationException">
 		/// if deflated stream is invalid.
 		/// </exception>
 		private bool DecodeHuffman()
 		{
 			int free = outputWindow.GetFreeSpace();
-			while (free >= 258) 
-			{
+			while (free >= 258) {
 				int symbol;
-				switch (mode) 
-				{
+				switch (mode) {
 					case DECODE_HUFFMAN:
 						/* This is the inner loop so it is optimized a bit */
-						while (((symbol = litlenTree.GetSymbol(input)) & ~0xff) == 0) 
-						{
+						while (((symbol = litlenTree.GetSymbol(input)) & ~0xff) == 0) {
 							outputWindow.Write(symbol);
-							if (--free < 258) 
-							{
+							if (--free < 258) {
 								return true;
 							}
 						}
-						if (symbol < 257) 
-						{
-							if (symbol < 0) 
-							{
+						
+						if (symbol < 257) {
+							if (symbol < 0) {
 								return false;
-							} 
-							else 
-							{
+							} else {
 								/* symbol == 256: end of block */
 								distTree = null;
 								litlenTree = null;
@@ -327,23 +324,19 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 							}
 						}
 						
-						try 
-						{
+						try {
 							repLength = CPLENS[symbol - 257];
 							neededBits = CPLEXT[symbol - 257];
-						} 
-						catch (Exception) 
-						{
-							throw new FormatException("Illegal rep length code");
+						} catch (Exception) {
+							throw new ApplicationException("Illegal rep length code");
 						}
-						goto case DECODE_HUFFMAN_LENBITS;/* fall through */
+						goto case DECODE_HUFFMAN_LENBITS; /* fall through */
+						
 					case DECODE_HUFFMAN_LENBITS:
-						if (neededBits > 0) 
-						{
+						if (neededBits > 0) {
 							mode = DECODE_HUFFMAN_LENBITS;
 							int i = input.PeekBits(neededBits);
-							if (i < 0) 
-							{
+							if (i < 0) {
 								return false;
 							}
 							input.DropBits(neededBits);
@@ -351,41 +344,40 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 						}
 						mode = DECODE_HUFFMAN_DIST;
 						goto case DECODE_HUFFMAN_DIST;/* fall through */
+						
 					case DECODE_HUFFMAN_DIST:
 						symbol = distTree.GetSymbol(input);
-						if (symbol < 0) 
-						{
+						if (symbol < 0) {
 							return false;
 						}
-						try 
-						{
+						
+						try {
 							repDist = CPDIST[symbol];
 							neededBits = CPDEXT[symbol];
-						} 
-						catch (Exception) 
-						{
-							throw new FormatException("Illegal rep dist code");
+						} catch (Exception) {
+							throw new ApplicationException("Illegal rep dist code");
 						}
 						
 						goto case DECODE_HUFFMAN_DISTBITS;/* fall through */
+						
 					case DECODE_HUFFMAN_DISTBITS:
-						if (neededBits > 0) 
-						{
+						if (neededBits > 0) {
 							mode = DECODE_HUFFMAN_DISTBITS;
 							int i = input.PeekBits(neededBits);
-							if (i < 0) 
-							{
+							if (i < 0) {
 								return false;
 							}
 							input.DropBits(neededBits);
 							repDist += i;
 						}
+						
 						outputWindow.Repeat(repLength, repDist);
 						free -= repLength;
 						mode = DECODE_HUFFMAN;
 						break;
+					
 					default:
-						throw new FormatException();
+						throw new ApplicationException("Inflater unknown mode");
 				}
 			}
 			return true;
@@ -397,27 +389,22 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <returns>
 		/// false if more input is needed.
 		/// </returns>
-		/// <exception cref="System.FormatException">
-		/// DataFormatException, if checksum doesn't match.
+		/// <exception cref="ApplicationException">
+		/// If checksum doesn't match.
 		/// </exception>
 		private bool DecodeChksum()
 		{
-			while (neededBits > 0) 
-			{
+			while (neededBits > 0) {
 				int chkByte = input.PeekBits(8);
-				if (chkByte < 0) 
-				{
+				if (chkByte < 0) {
 					return false;
 				}
 				input.DropBits(8);
 				readAdler = (readAdler << 8) | chkByte;
 				neededBits -= 8;
 			}
-			if ((int) adler.Value != readAdler) 
-			{
-				throw new FormatException("Adler chksum doesn't match: "
-					+ (int)adler.Value
-					+ " vs. " + readAdler);
+			if ((int) adler.Value != readAdler) {
+				throw new ApplicationException("Adler chksum doesn't match: " + (int)adler.Value + " vs. " + readAdler);
 			}
 			mode = FINISHED;
 			return false;
@@ -429,13 +416,12 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <returns>
 		/// false if more input is needed, or if finished.
 		/// </returns>
-		/// <exception cref="System.FormatException">
-		/// DataFormatException, if deflated stream is invalid.
+		/// <exception cref="ApplicationException">
+		/// ApplicationException, if deflated stream is invalid.
 		/// </exception>
 		private bool Decode()
 		{
-			switch (mode) 
-			{
+			switch (mode) {
 				case DECODE_HEADER:
 					return DecodeHeader();
 				case DECODE_DICT:
@@ -444,15 +430,11 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					return DecodeChksum();
 				
 				case DECODE_BLOCKS:
-					if (isLastBlock) 
-					{
-						if (nowrap) 
-						{
+					if (isLastBlock) {
+						if (noHeader) {
 							mode = FINISHED;
 							return false;
-						} 
-						else 
-						{
+						} else {
 							input.SkipToByteBoundary();
 							neededBits = 32;
 							mode = DECODE_CHKSUM;
@@ -461,67 +443,62 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					}
 					
 					int type = input.PeekBits(3);
-					if (type < 0) 
-					{
+					if (type < 0) {
 						return false;
 					}
 					input.DropBits(3);
 					
-					if ((type & 1) != 0) 
-					{
+					if ((type & 1) != 0) {
 						isLastBlock = true;
 					}
-				switch (type >> 1) 
-				{
-					case DeflaterConstants.STORED_BLOCK:
-						input.SkipToByteBoundary();
-						mode = DECODE_STORED_LEN1;
-						break;
-					case DeflaterConstants.STATIC_TREES:
-						litlenTree = InflaterHuffmanTree.defLitLenTree;
-						distTree = InflaterHuffmanTree.defDistTree;
-						mode = DECODE_HUFFMAN;
-						break;
-					case DeflaterConstants.DYN_TREES:
-						dynHeader = new InflaterDynHeader();
-						mode = DECODE_DYN_HEADER;
-						break;
-					default:
-						throw new FormatException("Unknown block type "+type);
-				}
+					switch (type >> 1){
+						case DeflaterConstants.STORED_BLOCK:
+							input.SkipToByteBoundary();
+							mode = DECODE_STORED_LEN1;
+							break;
+						case DeflaterConstants.STATIC_TREES:
+							litlenTree = InflaterHuffmanTree.defLitLenTree;
+							distTree = InflaterHuffmanTree.defDistTree;
+							mode = DECODE_HUFFMAN;
+							break;
+						case DeflaterConstants.DYN_TREES:
+							dynHeader = new InflaterDynHeader();
+							mode = DECODE_DYN_HEADER;
+							break;
+						default:
+							throw new ApplicationException("Unknown block type " + type);
+					}
 					return true;
 				
 				case DECODE_STORED_LEN1: 
 				{
-					if ((uncomprLen = input.PeekBits(16)) < 0) 
-					{
+					if ((uncomprLen = input.PeekBits(16)) < 0) {
 						return false;
 					}
 					input.DropBits(16);
 					mode = DECODE_STORED_LEN2;
 				}
 					goto case DECODE_STORED_LEN2; /* fall through */
+					
 				case DECODE_STORED_LEN2: 
 				{
 					int nlen = input.PeekBits(16);
-					if (nlen < 0) 
-					{
+					if (nlen < 0) {
 						return false;
 					}
 					input.DropBits(16);
-					if (nlen != (uncomprLen ^ 0xffff)) 
-					{
-						throw new FormatException("broken uncompressed block");
+					if (nlen != (uncomprLen ^ 0xffff)) {
+						throw new ApplicationException("broken uncompressed block");
 					}
 					mode = DECODE_STORED;
 				}
 					goto case DECODE_STORED;/* fall through */
+					
 				case DECODE_STORED: 
 				{
 					int more = outputWindow.CopyStored(input, uncomprLen);
 					uncomprLen -= more;
-					if (uncomprLen == 0) 
-					{
+					if (uncomprLen == 0) {
 						mode = DECODE_BLOCKS;
 						return true;
 					}
@@ -529,8 +506,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 				}
 				
 				case DECODE_DYN_HEADER:
-					if (!dynHeader.Decode(input)) 
-					{
+					if (!dynHeader.Decode(input)) {
 						return false;
 					}
 					
@@ -538,15 +514,18 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					distTree = dynHeader.BuildDistTree();
 					mode = DECODE_HUFFMAN;
 					goto case DECODE_HUFFMAN; /* fall through */
+					
 				case DECODE_HUFFMAN:
 				case DECODE_HUFFMAN_LENBITS:
 				case DECODE_HUFFMAN_DIST:
 				case DECODE_HUFFMAN_DISTBITS:
 					return DecodeHuffman();
+				
 				case FINISHED:
 					return false;
+				
 				default:
-					throw new FormatException();
+					throw new ApplicationException("Inflater.Decode unknown mode");
 			}
 		}
 			
@@ -557,10 +536,10 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// function returns the checksum of the dictionary needed.
 		/// </summary>
 		/// <param name="buffer">
-		/// the dictionary.
+		/// The dictionary.
 		/// </param>
 		/// <exception cref="System.InvalidOperationException">
-		/// if no dictionary is needed.
+		/// No dictionary is needed.
 		/// </exception>
 		/// <exception cref="System.ArgumentException">
 		/// if the dictionary checksum is wrong.
@@ -577,37 +556,32 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// function returns the checksum of the dictionary needed.
 		/// </summary>
 		/// <param name="buffer">
-		/// the dictionary.
+		/// The dictionary.
 		/// </param>
-		/// <param name="off">
-		/// the offset into buffer where the dictionary starts.
+		/// <param name="offset">
+		/// The offset into buffer where the dictionary starts.
 		/// </param>
 		/// <param name="len">
-		/// the length of the dictionary.
+		/// The length of the dictionary.
 		/// </param>
 		/// <exception cref="System.InvalidOperationException">
-		/// if no dictionary is needed.
+		/// No dictionary is needed.
 		/// </exception>
-		/// <exception cref="System.ArgumentException">
-		/// if the dictionary checksum is wrong.
+		/// <exception cref="ApplicationException">
+		/// The adler checksum for the buffer is invalid
 		/// </exception>
-		/// <exception cref="System.ArgumentOutOfRangeException">
-		/// if the off and/or len are wrong.
-		/// </exception>
-		public void SetDictionary(byte[] buffer, int off, int len)
+		public void SetDictionary(byte[] buffer, int offset, int len)
 		{
-			if (!IsNeedingDictionary) 
-			{
+			if (!IsNeedingDictionary) {
 				throw new InvalidOperationException();
 			}
 			
-			adler.Update(buffer, off, len);
-			if ((int) adler.Value != readAdler) 
-			{
-				throw new ArgumentException("Wrong adler checksum");
+			adler.Update(buffer, offset, len);
+			if ((int)adler.Value != readAdler) {
+				throw new ApplicationException("Wrong adler checksum");
 			}
 			adler.Reset();
-			outputWindow.CopyDict(buffer, off, len);
+			outputWindow.CopyDict(buffer, offset, len);
 			mode = DECODE_BLOCKS;
 		}
 		
@@ -630,25 +604,25 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// Sets the input.  This should only be called, if needsInput()
 		/// returns true.
 		/// </summary>
-		/// <param name="buf">
-		/// the input.
+		/// <param name="buffer">
+		/// The source of input data
 		/// </param>
-		/// <param name="off">
-		/// the offset into buffer where the input starts.
+		/// <param name="offset">
+		/// The offset into buffer where the input starts.
 		/// </param>
-		/// <param name="len">
-		/// the length of the input.
+		/// <param name="length">
+		/// The number of bytes of input to use.
 		/// </param>
 		/// <exception cref="System.InvalidOperationException">
-		/// if no input is needed.
+		/// No input is needed.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
-		/// if the off and/or len are wrong.
+		/// The off and/or len are wrong.
 		/// </exception>
-		public void SetInput(byte[] buf, int off, int len)
+		public void SetInput(byte[] buffer, int offset, int length)
 		{
-			input.SetInput(buf, off, len);
-			totalIn += len;
+			input.SetInput(buffer, offset, length);
+			totalIn += length;
 		}
 		
 		/// <summary>
@@ -684,7 +658,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <param name = "buf">
 		/// the output buffer.
 		/// </param>
-		/// <param name = "off">
+		/// <param name = "offset">
 		/// the offset into buffer where the output should start.
 		/// </param>
 		/// <param name = "len">
@@ -697,32 +671,34 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// if len is &lt;= 0.
 		/// </exception>
 		/// <exception cref="System.ArgumentOutOfRangeException">
-		/// if the off and/or len are wrong.
+		/// if the offset and/or len are wrong.
 		/// </exception>
 		/// <exception cref="System.FormatException">
 		/// if deflated stream is invalid.
 		/// </exception>
-		public int Inflate(byte[] buf, int off, int len)
+		public int Inflate(byte[] buf, int offset, int len)
 		{
-			if (len < 0) 
-			{
+			if (len < 0) {
 				throw new ArgumentOutOfRangeException("len < 0");
 			}
+			
 			// Special case: len may be zero
-			if (len == 0) 
-			{
+			if (len == 0) {
+				if (IsFinished == false) {// -jr- 08-Nov-2003 INFLATE_BUG fix..
+					Decode();
+				}
 				return 0;
 			}
-			/*			// Check for correct buff, off, len triple
-						if (off < 0 || off + len >= buf.Length) {
-							throw new ArgumentException("off/len outside buf bounds");
-						}*/
+/*
+			// Check for correct buff, off, len triple
+			if (off < 0 || off + len >= buf.Length) {
+				throw new ArgumentException("off/len outside buf bounds");
+			}
+*/
 			int count = 0;
 			int more;
-			do 
-			{
-				if (mode != DECODE_CHKSUM) 
-				{
+			do {
+				if (mode != DECODE_CHKSUM) {
 					/* Don't give away any output, if we are waiting for the
 					* checksum in the input stream.
 					*
@@ -730,19 +706,17 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					*   needsInput() and not finished()
 					*   implies more output can be produced.
 					*/
-					more = outputWindow.CopyOutput(buf, off, len);
-					adler.Update(buf, off, more);
-					off += more;
+					more = outputWindow.CopyOutput(buf, offset, len);
+					adler.Update(buf, offset, more);
+					offset += more;
 					count += more;
 					totalOut += more;
 					len -= more;
-					if (len == 0) 
-					{
+					if (len == 0) {
 						return count;
 					}
 				}
-			} while (Decode() || (outputWindow.GetAvailable() > 0 &&
-				mode != DECODE_CHKSUM));
+			} while (Decode() || (outputWindow.GetAvailable() > 0 && mode != DECODE_CHKSUM));
 			return count;
 		}
 		
@@ -751,10 +725,8 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// You should then call setInput(). 
 		/// NOTE: This method also returns true when the stream is finished.
 		/// </summary>
-		public bool IsNeedingInput 
-		{
-			get 
-			{
+		public bool IsNeedingInput {
+			get {
 				return input.IsNeedingInput;
 			}
 		}
@@ -762,10 +734,8 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <summary>
 		/// Returns true, if a preset dictionary is needed to inflate the input.
 		/// </summary>
-		public bool IsNeedingDictionary 
-		{
-			get 
-			{
+		public bool IsNeedingDictionary {
+			get {
 				return mode == DECODE_DICT && neededBits == 0;
 			}
 		}
@@ -774,10 +744,8 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// Returns true, if the inflater has finished.  This means, that no
 		/// input is needed and no output can be produced.
 		/// </summary>
-		public bool IsFinished 
-		{
-			get 
-			{
+		public bool IsFinished {
+			get {
 				return mode == FINISHED && outputWindow.GetAvailable() == 0;
 			}
 		}
@@ -791,10 +759,8 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <returns>
 		/// the adler checksum.
 		/// </returns>
-		public int Adler 
-		{
-			get 
-			{
+		public int Adler {
+			get {
 				return IsNeedingDictionary ? readAdler : (int) adler.Value;
 			}
 		}
@@ -805,10 +771,8 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// <returns>
 		/// the total number of output bytes.
 		/// </returns>
-		public int TotalOut 
-		{
-			get 
-			{
+		public int TotalOut {
+			get {
 				return totalOut;
 			}
 		}
@@ -817,28 +781,44 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// Gets the total number of processed compressed input bytes.
 		/// </summary>
 		/// <returns>
-		/// the total number of bytes of processed input bytes.
+		/// The total number of bytes of processed input bytes.
 		/// </returns>
-		public int TotalIn 
-		{
-			get 
-			{
+		public int TotalIn {
+			get {
 				return totalIn - RemainingInput;
 			}
 		}
 		
+#if TEST_HAK		
 		/// <summary>
-		/// Gets the number of unprocessed input.  Useful, if the end of the
+		/// -jr test hak trying to figure out a bug
+		///</summary>
+		public int UnseenInput {
+			get {
+				return totalIn - ((input.AvailableBits + 7) >> 3);
+			}
+		}
+		
+		/// <summary>
+		/// -jr test hak trying to figure out a bug
+		///</summary>
+		public int PlainTotalIn {
+			get {
+				return totalIn;
+			}
+		}
+#endif
+		
+		/// <summary>
+		/// Gets the number of unprocessed input bytes.  Useful, if the end of the
 		/// stream is reached and you want to further process the bytes after
 		/// the deflate stream.
 		/// </summary>
 		/// <returns>
-		/// the number of bytes of the input which were not processed.
+		/// The number of bytes of the input which have not been processed.
 		/// </returns>
-		public int RemainingInput 
-		{
-			get 
-			{
+		public int RemainingInput {
+			get {
 				return input.AvailableBytes;
 			}
 		}

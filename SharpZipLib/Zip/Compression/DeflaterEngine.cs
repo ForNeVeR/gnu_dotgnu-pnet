@@ -1,5 +1,7 @@
 // DeflaterEngine.cs
+//
 // Copyright (C) 2001 Mike Krueger
+// Copyright (C) 2004 John Reilly
 //
 // This file was translated from java, it was part of the GNU Classpath
 // Copyright (C) 2001 Free Software Foundation, Inc.
@@ -42,27 +44,40 @@ using ICSharpCode.SharpZipLib.Checksums;
 namespace ICSharpCode.SharpZipLib.Zip.Compression 
 {
 	
+	/// <summary>
+	/// Strategies for deflater
+	/// </summary>
 	public enum DeflateStrategy 
 	{
-		// The default strategy.
+		/// <summary>
+		/// The default strategy
+		/// </summary>
 		Default  = 0,
 		
-		// This strategy will only allow longer string repetitions.  It is
-		// useful for random data with a small character set.
+		/// <summary>
+		/// This strategy will only allow longer string repetitions.  It is
+		/// useful for random data with a small character set.
+		/// </summary>
 		Filtered = 1,
-		
-		// This strategy will not look for string repetitions at all.  It
-		// only encodes with Huffman trees (which means, that more common
-		// characters get a smaller encoding.
+
+			
+		/// <summary>
+		/// This strategy will not look for string repetitions at all.  It
+		/// only encodes with Huffman trees (which means, that more common
+		/// characters get a smaller encoding.
+		/// </summary>
 		HuffmanOnly = 2
 	}
 	
+	/// <summary>
+	/// Low level compression engine for deflate algorithm which uses a 32K sliding window
+	/// with secondary compression from Huffman/Shannon-Fano codes.
+	/// </summary>
 	public class DeflaterEngine : DeflaterConstants 
 	{
 		static int TOO_FAR = 4096;
 		
 		int ins_h;
-		//		private byte[] buffer;
 		short[] head;
 		short[] prev;
 		
@@ -108,6 +123,12 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		/// </summary>
 		Adler32 adler;
 		
+		/// <summary>
+		/// Construct instance with pending buffer
+		/// </summary>
+		/// <param name="pending">
+		/// Pending buffer to use
+		/// </param>>
 		public DeflaterEngine(DeflaterPending pending) 
 		{
 			this.pending = pending;
@@ -118,12 +139,15 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			head   = new short[HASH_SIZE];
 			prev   = new short[WSIZE];
 			
-			/* We start at index 1, to avoid a implementation deficiency, that
+			/* We start at index 1, to avoid an implementation deficiency, that
 			* we cannot build a repeat pattern at index 0.
 			*/
 			blockStart = strstart = 1;
 		}
-		
+
+		/// <summary>
+		/// Reset internal state
+		/// </summary>		
 		public void Reset()
 		{
 			huffman.Reset();
@@ -134,50 +158,56 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			prevAvailable = false;
 			matchLen = MIN_MATCH - 1;
 			
-			for (int i = 0; i < HASH_SIZE; i++) 
-			{
+			for (int i = 0; i < HASH_SIZE; i++) {
 				head[i] = 0;
 			}
 			
-			for (int i = 0; i < WSIZE; i++) 
-			{
+			for (int i = 0; i < WSIZE; i++) {
 				prev[i] = 0;
 			}
 		}
-		
+
+		/// <summary>
+		/// Reset Adler checksum
+		/// </summary>		
 		public void ResetAdler()
 		{
 			adler.Reset();
 		}
-		
-		public int Adler 
-		{
-			get 
-			{
+
+		/// <summary>
+		/// Get current value of Adler checksum
+		/// </summary>		
+		public int Adler {
+			get {
 				return (int)adler.Value;
 			}
 		}
-		
-		public int TotalIn 
-		{
-			get 
-			{
+
+		/// <summary>
+		/// Total data processed
+		/// </summary>		
+		public int TotalIn {
+			get {
 				return totalIn;
 			}
 		}
-		
-		public DeflateStrategy Strategy 
-		{
-			get 
-			{
+
+		/// <summary>
+		/// Get/set the <see cref="DeflateStrategy">deflate strategy</see>
+		/// </summary>		
+		public DeflateStrategy Strategy {
+			get {
 				return strategy;
 			}
-			set 
-			{
+			set {
 				strategy = value;
 			}
 		}
 		
+		/// <summary>
+		/// Set the deflate level (0-9)
+		/// </summary>
 		public void SetLevel(int lvl)
 		{
 			goodLength = DeflaterConstants.GOOD_LENGTH[lvl];
@@ -185,17 +215,14 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			niceLength = DeflaterConstants.NICE_LENGTH[lvl];
 			max_chain  = DeflaterConstants.MAX_CHAIN[lvl];
 			
-			if (DeflaterConstants.COMPR_FUNC[lvl] != comprFunc) 
-			{
+			if (DeflaterConstants.COMPR_FUNC[lvl] != comprFunc) {
 				//				if (DeflaterConstants.DEBUGGING) {
-				//					//Console.WriteLine("Change from "+comprFunc +" to "
+				//					//Console.WriteLine("Change from " + comprFunc + " to "
 				//					                  + DeflaterConstants.COMPR_FUNC[lvl]);
 				//				}
-				switch (comprFunc) 
-				{
+				switch (comprFunc) {
 					case DEFLATE_STORED:
-						if (strstart > blockStart) 
-						{
+						if (strstart > blockStart) {
 							huffman.FlushStoredBlock(window, blockStart,
 								strstart - blockStart, false);
 							blockStart = strstart;
@@ -203,22 +230,18 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 						UpdateHash();
 						break;
 					case DEFLATE_FAST:
-						if (strstart > blockStart) 
-						{
+						if (strstart > blockStart) {
 							huffman.FlushBlock(window, blockStart, strstart - blockStart,
 								false);
 							blockStart = strstart;
 						}
 						break;
 					case DEFLATE_SLOW:
-						if (prevAvailable) 
-						{
+						if (prevAvailable) {
 							huffman.TallyLit(window[strstart-1] & 0xff);
 						}
-						if (strstart > blockStart) 
-						{
-							huffman.FlushBlock(window, blockStart, strstart - blockStart,
-								false);
+						if (strstart > blockStart) {
+							huffman.FlushBlock(window, blockStart, strstart - blockStart, false);
 							blockStart = strstart;
 						}
 						prevAvailable = false;
@@ -229,7 +252,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			}
 		}
 		
-		private void UpdateHash() 
+		void UpdateHash() 
 		{
 			//			if (DEBUGGING) {
 			//				//Console.WriteLine("updateHash: "+strstart);
@@ -237,7 +260,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			ins_h = (window[strstart] << HASH_SHIFT) ^ window[strstart + 1];
 		}
 		
-		private int InsertString() 
+		int InsertString() 
 		{
 			short match;
 			int hash = ((ins_h << HASH_SHIFT) ^ window[strstart + (MIN_MATCH -1)]) & HASH_MASK;
@@ -246,10 +269,10 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			//				if (hash != (((window[strstart] << (2*HASH_SHIFT)) ^ 
 			//				              (window[strstart + 1] << HASH_SHIFT) ^ 
 			//				              (window[strstart + 2])) & HASH_MASK)) {
-			//						throw new Exception("hash inconsistent: "+hash+"/"
-			//						                    +window[strstart]+","
-			//						                    +window[strstart+1]+","
-			//						                    +window[strstart+2]+","+HASH_SHIFT);
+			//						throw new Exception("hash inconsistent: " + hash + "/"
+			//						                    +window[strstart] + ","
+			//						                    +window[strstart+1] + ","
+			//						                    +window[strstart+2] + "," + HASH_SHIFT);
 			//					}
 			//			}
 			
@@ -269,39 +292,37 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			/* Slide the hash table (could be avoided with 32 bit values
 			 * at the expense of memory usage).
 			 */
-			for (int i = 0; i < HASH_SIZE; ++i) 
-			{
+			for (int i = 0; i < HASH_SIZE; ++i) {
 				int m = head[i] & 0xffff;
 				head[i] = (short)(m >= WSIZE ? (m - WSIZE) : 0);
 			}
 			
 			/* Slide the prev table. */
-			for (int i = 0; i < WSIZE; i++) 
-			{
+			for (int i = 0; i < WSIZE; i++) {
 				int m = prev[i] & 0xffff;
 				prev[i] = (short)(m >= WSIZE ? (m - WSIZE) : 0);
 			}
 		}
 		
+		/// <summary>
+		/// Fill the window
+		/// </summary>
 		public void FillWindow()
 		{
 			/* If the window is almost full and there is insufficient lookahead,
 			 * move the upper half to the lower one to make room in the upper half.
 			 */
-			if (strstart >= WSIZE + MAX_DIST) 
-			{
+			if (strstart >= WSIZE + MAX_DIST) {
 				SlideWindow();
 			}
 			
 			/* If there is not enough lookahead, but still some input left,
 			 * read in the input
 			 */
-			while (lookahead < DeflaterConstants.MIN_LOOKAHEAD && inputOff < inputEnd) 
-			{
+			while (lookahead < DeflaterConstants.MIN_LOOKAHEAD && inputOff < inputEnd) {
 				int more = 2 * WSIZE - lookahead - strstart;
 				
-				if (more > inputEnd - inputOff) 
-				{
+				if (more > inputEnd - inputOff) {
 					more = inputEnd - inputOff;
 				}
 				
@@ -313,13 +334,12 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 				lookahead += more;
 			}
 			
-			if (lookahead >= MIN_MATCH) 
-			{
+			if (lookahead >= MIN_MATCH) {
 				UpdateHash();
 			}
 		}
 		
-		private bool FindLongestMatch(int curMatch) 
+		bool FindLongestMatch(int curMatch) 
 		{
 			int chainLength = this.max_chain;
 			int niceLength  = this.niceLength;
@@ -336,35 +356,29 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			byte scan_end  = window[best_end];
 			
 			/* Do not waste too much time if we already have a good match: */
-			if (best_len >= this.goodLength) 
-			{
+			if (best_len >= this.goodLength) {
 				chainLength >>= 2;
 			}
 			
 			/* Do not look for matches beyond the end of the input. This is necessary
 			* to make deflate deterministic.
 			*/
-			if (niceLength > lookahead) 
-			{
+			if (niceLength > lookahead) {
 				niceLength = lookahead;
 			}
 			
-			if (DeflaterConstants.DEBUGGING && strstart > 2 * WSIZE - MIN_LOOKAHEAD) 
-			{
+			if (DeflaterConstants.DEBUGGING && strstart > 2 * WSIZE - MIN_LOOKAHEAD) {
 				throw new InvalidOperationException("need lookahead");
 			}
 			
-			do 
-			{
-				if (DeflaterConstants.DEBUGGING && curMatch >= strstart) 
-				{
+			do {
+				if (DeflaterConstants.DEBUGGING && curMatch >= strstart) {
 					throw new InvalidOperationException("future match");
 				}
 				if (window[curMatch + best_len] != scan_end      || 
 					window[curMatch + best_len - 1] != scan_end1 || 
 					window[curMatch] != window[scan]             || 
-					window[curMatch + 1] != window[scan + 1]) 
-				{
+					window[curMatch + 1] != window[scan + 1]) {
 					continue;
 				}
 				
@@ -372,7 +386,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 				scan += 2;
 				
 				/* We check for insufficient lookahead only every 8th comparison;
-				* the 256th check will be made at strstart+258.
+				* the 256th check will be made at strstart + 258.
 				*/
 			while (window[++scan] == window[++match] && 
 				window[++scan] == window[++match] && 
@@ -383,15 +397,14 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 				window[++scan] == window[++match] && 
 				window[++scan] == window[++match] && scan < strend) ;
 				
-				if (scan > best_end) 
-				{
+				if (scan > best_end) {
 					//  	if (DeflaterConstants.DEBUGGING && ins_h == 0)
 					//  	  System.err.println("Found match: "+curMatch+"-"+(scan-strstart));
 					matchStart = curMatch;
 					best_end = scan;
 					best_len = scan - strstart;
-					if (best_len >= niceLength) 
-					{
+					
+					if (best_len >= niceLength) {
 						break;
 					}
 					
@@ -405,19 +418,19 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			return matchLen >= MIN_MATCH;
 		}
 		
+		/// <summary>
+		/// Set compression dictionary
+		/// </summary>
 		public void SetDictionary(byte[] buffer, int offset, int length) 
 		{
-			if (DeflaterConstants.DEBUGGING && strstart != 1) 
-			{
+			if (DeflaterConstants.DEBUGGING && strstart != 1) {
 				throw new InvalidOperationException("strstart not 1");
 			}
 			adler.Update(buffer, offset, length);
-			if (length < MIN_MATCH) 
-			{
+			if (length < MIN_MATCH) {
 				return;
 			}
-			if (length > MAX_DIST) 
-			{
+			if (length > MAX_DIST) {
 				offset += length - MAX_DIST;
 				length = MAX_DIST;
 			}
@@ -426,8 +439,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			
 			UpdateHash();
 			--length;
-			while (--length > 0) 
-			{
+			while (--length > 0) {
 				InsertString();
 				strstart++;
 			}
@@ -435,10 +447,9 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			blockStart = strstart;
 		}
 		
-		private bool DeflateStored(bool flush, bool finish)
+		bool DeflateStored(bool flush, bool finish)
 		{
-			if (!flush && lookahead == 0) 
-			{
+			if (!flush && lookahead == 0) {
 				return false;
 			}
 			
@@ -449,11 +460,9 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			
 			if ((storedLen >= DeflaterConstants.MAX_BLOCK_SIZE) || /* Block is full */
 				(blockStart < WSIZE && storedLen >= MAX_DIST) ||   /* Block may move out of window */
-				flush) 
-			{
+				flush) {
 				bool lastBlock = finish;
-				if (storedLen > DeflaterConstants.MAX_BLOCK_SIZE) 
-				{
+				if (storedLen > DeflaterConstants.MAX_BLOCK_SIZE) {
 					storedLen = DeflaterConstants.MAX_BLOCK_SIZE;
 					lastBlock = false;
 				}
@@ -471,24 +480,20 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 		
 		private bool DeflateFast(bool flush, bool finish)
 		{
-			if (lookahead < MIN_LOOKAHEAD && !flush) 
-			{
+			if (lookahead < MIN_LOOKAHEAD && !flush) {
 				return false;
 			}
 			
-			while (lookahead >= MIN_LOOKAHEAD || flush) 
-			{
-				if (lookahead == 0) 
-				{
+			while (lookahead >= MIN_LOOKAHEAD || flush) {
+				if (lookahead == 0) {
 					/* We are flushing everything */
 					huffman.FlushBlock(window, blockStart, strstart - blockStart, finish);
 					blockStart = strstart;
 					return false;
 				}
 				
-				if (strstart > 2 * WSIZE - MIN_LOOKAHEAD)
-				{
-					/* slide window, as findLongestMatch need this.
+				if (strstart > 2 * WSIZE - MIN_LOOKAHEAD) {
+					/* slide window, as findLongestMatch needs this.
 					 * This should only happen when flushing and the window
 					 * is almost full.
 					 */
@@ -500,8 +505,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					(hashHead = InsertString()) != 0 && 
 					strategy != DeflateStrategy.HuffmanOnly &&
 					strstart - hashHead <= MAX_DIST && 
-					FindLongestMatch(hashHead)) 
-				{
+					FindLongestMatch(hashHead)) {
 					/* longestMatch sets matchStart and matchLen */
 					//					if (DeflaterConstants.DEBUGGING) {
 					//						for (int i = 0 ; i < matchLen; i++) {
@@ -511,42 +515,38 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					//						}
 					//					}
 					
-					huffman.TallyDist(strstart - matchStart, matchLen);
+					// -jr- Hak hak hak this stops problems with fast/low compression and index out of range
+					if (huffman.TallyDist(strstart - matchStart, matchLen)) {
+						bool lastBlock = finish && lookahead == 0;
+						huffman.FlushBlock(window, blockStart, strstart - blockStart, lastBlock);
+						blockStart = strstart;
+					}
 					
 					lookahead -= matchLen;
-					if (matchLen <= max_lazy && lookahead >= MIN_MATCH) 
-					{
-						while (--matchLen > 0) 
-						{
+					if (matchLen <= max_lazy && lookahead >= MIN_MATCH) {
+						while (--matchLen > 0) {
 							++strstart;
 							InsertString();
 						}
 						++strstart;
-					} 
-					else 
-					{
+					} else {
 						strstart += matchLen;
-						if (lookahead >= MIN_MATCH - 1) 
-						{
+						if (lookahead >= MIN_MATCH - 1) {
 							UpdateHash();
 						}
 					}
 					matchLen = MIN_MATCH - 1;
 					continue;
-				} 
-				else 
-				{
+				} else {
 					/* No match found */
 					huffman.TallyLit(window[strstart] & 0xff);
 					++strstart;
 					--lookahead;
 				}
 				
-				if (huffman.IsFull()) 
-				{
+				if (huffman.IsFull()) {
 					bool lastBlock = finish && lookahead == 0;
-					huffman.FlushBlock(window, blockStart, strstart - blockStart,
-						lastBlock);
+					huffman.FlushBlock(window, blockStart, strstart - blockStart, lastBlock);
 					blockStart = strstart;
 					return !lastBlock;
 				}
@@ -554,26 +554,21 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			return true;
 		}
 		
-		private bool DeflateSlow(bool flush, bool finish)
+		bool DeflateSlow(bool flush, bool finish)
 		{
-			if (lookahead < MIN_LOOKAHEAD && !flush) 
-			{
+			if (lookahead < MIN_LOOKAHEAD && !flush) {
 				return false;
 			}
 			
-			while (lookahead >= MIN_LOOKAHEAD || flush) 
-			{
-				if (lookahead == 0) 
-				{
-					if (prevAvailable) 
-					{
+			while (lookahead >= MIN_LOOKAHEAD || flush) {
+				if (lookahead == 0) {
+					if (prevAvailable) {
 						huffman.TallyLit(window[strstart-1] & 0xff);
 					}
 					prevAvailable = false;
 					
 					/* We are flushing everything */
-					if (DeflaterConstants.DEBUGGING && !flush) 
-					{
+					if (DeflaterConstants.DEBUGGING && !flush) {
 						throw new Exception("Not flushing, but no lookahead");
 					}
 					huffman.FlushBlock(window, blockStart, strstart - blockStart,
@@ -582,8 +577,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					return false;
 				}
 				
-				if (strstart >= 2 * WSIZE - MIN_LOOKAHEAD)
-				{
+				if (strstart >= 2 * WSIZE - MIN_LOOKAHEAD) {
 					/* slide window, as findLongestMatch need this.
 					 * This should only happen when flushing and the window
 					 * is almost full.
@@ -593,24 +587,20 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 				
 				int prevMatch = matchStart;
 				int prevLen = matchLen;
-				if (lookahead >= MIN_MATCH) 
-				{
+				if (lookahead >= MIN_MATCH) {
 					int hashHead = InsertString();
-					if (strategy != DeflateStrategy.HuffmanOnly && hashHead != 0 && strstart - hashHead <= MAX_DIST && FindLongestMatch(hashHead))
-					{
+					if (strategy != DeflateStrategy.HuffmanOnly && hashHead != 0 && strstart - hashHead <= MAX_DIST && FindLongestMatch(hashHead)) {
 						/* longestMatch sets matchStart and matchLen */
 							
 						/* Discard match if too small and too far away */
-						if (matchLen <= 5 && (strategy == DeflateStrategy.Filtered || (matchLen == MIN_MATCH && strstart - matchStart > TOO_FAR))) 
-						{
+						if (matchLen <= 5 && (strategy == DeflateStrategy.Filtered || (matchLen == MIN_MATCH && strstart - matchStart > TOO_FAR))) {
 							matchLen = MIN_MATCH - 1;
 						}
 					}
 				}
 				
 				/* previous match was better */
-				if (prevLen >= MIN_MATCH && matchLen <= prevLen) 
-				{
+				if (prevLen >= MIN_MATCH && matchLen <= prevLen) {
 					//					if (DeflaterConstants.DEBUGGING) {
 					//						for (int i = 0 ; i < matchLen; i++) {
 					//							if (window[strstart-1+i] != window[prevMatch + i])
@@ -619,12 +609,10 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					//					}
 					huffman.TallyDist(strstart - 1 - prevMatch, prevLen);
 					prevLen -= 2;
-					do 
-					{
+					do {
 						strstart++;
 						lookahead--;
-						if (lookahead >= MIN_MATCH) 
-						{
+						if (lookahead >= MIN_MATCH) {
 							InsertString();
 						}
 					} while (--prevLen > 0);
@@ -632,11 +620,8 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					lookahead--;
 					prevAvailable = false;
 					matchLen = MIN_MATCH - 1;
-				} 
-				else 
-				{
-					if (prevAvailable) 
-					{
+				} else {
+					if (prevAvailable) {
 						huffman.TallyLit(window[strstart-1] & 0xff);
 					}
 					prevAvailable = true;
@@ -644,11 +629,9 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 					lookahead--;
 				}
 				
-				if (huffman.IsFull()) 
-				{
+				if (huffman.IsFull()) {
 					int len = strstart - blockStart;
-					if (prevAvailable) 
-					{
+					if (prevAvailable) {
 						len--;
 					}
 					bool lastBlock = (finish && lookahead == 0 && !prevAvailable);
@@ -660,19 +643,20 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			return true;
 		}
 		
+		/// <summary>
+		/// Deflate drives actual compression of data
+		/// </summary>
 		public bool Deflate(bool flush, bool finish)
 		{
 			bool progress;
-			do 
-			{
+			do {
 				FillWindow();
 				bool canFlush = flush && inputOff == inputEnd;
 				//				if (DeflaterConstants.DEBUGGING) {
 				//					//Console.WriteLine("window: ["+blockStart+","+strstart+","
 				//					                  +lookahead+"], "+comprFunc+","+canFlush);
 				//				}
-				switch (comprFunc) 
-				{
+				switch (comprFunc) {
 					case DEFLATE_STORED:
 						progress = DeflateStored(canFlush, finish);
 						break;
@@ -688,11 +672,12 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			} while (pending.IsFlushed && progress); /* repeat while we have no pending output and progress was made */
 			return progress;
 		}
-		
+
+		/// Sets input data to be deflated.  Should only be called when <code>NeedsInput()</code>
+		/// returns true
 		public void SetInput(byte[] buf, int off, int len)
 		{
-			if (inputOff < inputEnd) 
-			{
+			if (inputOff < inputEnd) {
 				throw new InvalidOperationException("Old input was not completely processed");
 			}
 			
@@ -701,8 +686,7 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			/* We want to throw an ArrayIndexOutOfBoundsException early.  The
 			* check is very tricky: it also handles integer wrap around.
 			*/
-			if (0 > off || off > end || end > buf.Length) 
-			{
+			if (0 > off || off > end || end > buf.Length) {
 				throw new ArgumentOutOfRangeException();
 			}
 			
@@ -710,7 +694,10 @@ namespace ICSharpCode.SharpZipLib.Zip.Compression
 			inputOff = off;
 			inputEnd = end;
 		}
-		
+
+		/// <summary>
+		/// Return true if input is needed <see cref="SetInput"> via SetInput</see>
+		/// </summary>		
 		public bool NeedsInput()
 		{
 			return inputEnd == inputOff;

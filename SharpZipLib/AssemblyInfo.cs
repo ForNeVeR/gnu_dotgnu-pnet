@@ -1,4 +1,5 @@
 // AssemblyInfo.cs
+//
 // Copyright (C) 2001 Mike Krueger
 //
 // This program is free software; you can redistribute it and/or
@@ -32,19 +33,22 @@
 // obligated to do so.  If you do not wish to do so, delete this
 // exception statement from your version.
 
+using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+[assembly: CLSCompliant(true)]
+
 [assembly: AssemblyTitle("ICSharpCode.SharpZipLibrary")]
-[assembly: AssemblyDescription("free C# zlib implementation")]
+[assembly: AssemblyDescription("A free C# compression library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("#ZipLibrary")]
-[assembly: AssemblyCopyright("(c) Mike Krueger 2001-2003")]
+[assembly: AssemblyCopyright("Copyright Mike Krueger 2001-2004")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("0.5.1.0")]
+[assembly: AssemblyVersion("0.81.0.1407")]
 
 [assembly: AssemblyDelaySign(false)]
-[assembly: AssemblyKeyFile("ICSharpCode.SharpZipLib.key")]
+[assembly: AssemblyKeyFile("../ICSharpCode.SharpZipLib.key")]

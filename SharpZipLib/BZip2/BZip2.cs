@@ -45,40 +45,34 @@ namespace ICSharpCode.SharpZipLib.BZip2
 	/// </summary>
 	public sealed class BZip2
 	{
+		/// <summary>
+		/// Decompress <paramref name="instream">input</paramref> writing 
+		/// decompressed data to <paramref name="outstream">output stream</paramref>
+		/// </summary>
 		public static void Decompress(Stream instream, Stream outstream) 
 		{
 			System.IO.Stream bos = outstream;
 			System.IO.Stream bis = instream;
-			int b = bis.ReadByte();
-			if (b != 'B') 
-			{
-				return;
-			}
-			b = bis.ReadByte();
-			if (b != 'Z') 
-			{
-				return;
-			}
 			BZip2InputStream bzis = new BZip2InputStream(bis);
 			int ch = bzis.ReadByte();
-			while (ch != -1) 
-			{
+			while (ch != -1) {
 				bos.WriteByte((byte)ch);
 				ch = bzis.ReadByte();
 			}
 			bos.Flush();
 		}
 		
+		/// <summary>
+		/// Compress <paramref name="instream">input stream</paramref> sending 
+		/// result to <paramref name="outputstream">output stream</paramref>
+		/// </summary>
 		public static void Compress(Stream instream, Stream outstream, int blockSize) 
 		{			
 			System.IO.Stream bos = outstream;
-			bos.WriteByte((byte)'B');
-			bos.WriteByte((byte)'Z');
 			System.IO.Stream bis = instream;
 			int ch = bis.ReadByte();
-			BZip2OutputStream bzos = new BZip2OutputStream(bos);
-			while(ch != -1) 
-			{
+			BZip2OutputStream bzos = new BZip2OutputStream(bos, blockSize);
+			while (ch != -1) {
 				bzos.WriteByte((byte)ch);
 				ch = bis.ReadByte();
 			}
@@ -87,6 +81,7 @@ namespace ICSharpCode.SharpZipLib.BZip2
 		}
 	}
 }
+
 /* derived from a file which contained this license :
  * Copyright (c) 1999-2001 Keiron Liddle, Aftex Software
  *

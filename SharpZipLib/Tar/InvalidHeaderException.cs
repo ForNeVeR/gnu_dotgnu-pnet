@@ -1,4 +1,4 @@
-// BZip2OutputStream.cs
+// InvalidHeaderException.cs
 // Copyright (C) 2001 Mike Krueger
 //
 // This program is free software; you can redistribute it and/or
@@ -45,10 +45,18 @@ namespace ICSharpCode.SharpZipLib.Tar {
 	/// </summary>
 	public class InvalidHeaderException : System.IO.IOException
 	{
+		/// <summary>
+		/// Construct default instance
+		/// Used to indicate problems with Tar archive headers
+		/// </summary>
 		public InvalidHeaderException()
 		{
 		}
-	
+
+		/// <summary>
+		/// Construct instance with a message
+		/// Used to indicate problems with Tar archive headers
+		/// </summary>
 		public InvalidHeaderException(string msg) : base(msg)
 		{
 		}

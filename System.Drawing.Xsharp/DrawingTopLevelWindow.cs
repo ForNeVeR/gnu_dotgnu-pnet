@@ -36,9 +36,10 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 
 	// Constructor.
 	public DrawingTopLevelWindow(IToolkit toolkit, String name,
-						 		 int width, int height)
+						 		 int width, int height, IToolkitEventSink sink)
 			: base(name, width, height)
 			{
+				this.sink = sink;
 				this.toolkit = toolkit;
 				this.AutoMapChildren = false;
 			}
@@ -281,12 +282,6 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 	void IToolkitWindow.Update()
 			{
 				Display.Flush();
-			}
-
-	// Set the event sink to use for this window.
-	void IToolkitWindow.SetEventSink(IToolkitEventSink sink)
-			{
-				this.sink = sink;
 			}
 
 	// Override the button press event from Xsharp.

@@ -323,22 +323,22 @@ public sealed class DrawingToolkit : IToolkit
 			}
 
 	// Create a top-level application window.
-	public IToolkitWindow CreateTopLevelWindow(int width, int height)
+	public IToolkitWindow CreateTopLevelWindow(int width, int height, IToolkitEventSink sink)
 			{
 				ValidateWindowSize(ref width, ref height);
 				return new DrawingTopLevelWindow
-					(this, String.Empty, width, height);
+					(this, String.Empty, width, height, sink);
 			}
 
 	// Create a top-level dialog shell.
 	public IToolkitWindow CreateTopLevelDialog
 				(int width, int height, bool modal, bool resizable,
-				 IToolkitWindow dialogParent)
+				 IToolkitWindow dialogParent, IToolkitEventSink sink)
 			{
 				DrawingTopLevelWindow window;
 				ValidateWindowSize(ref width, ref height);
 				window = new DrawingTopLevelWindow
-					(this, String.Empty, width, height);
+					(this, String.Empty, width, height, sink);
 				if(dialogParent is TopLevelWindow)
 				{
 					window.TransientFor = (TopLevelWindow)dialogParent;
@@ -366,15 +366,16 @@ public sealed class DrawingToolkit : IToolkit
 	// any borders and grab the mouse and keyboard when they are mapped
 	// to the screen.  They are used for menus, drop-down lists, etc.
 	public IToolkitWindow CreatePopupWindow
-				(int x, int y, int width, int height)
+				(int x, int y, int width, int height, IToolkitEventSink sink)
 			{
-				return new DrawingPopupWindow(this, x, y, width, height);
+				return new DrawingPopupWindow(this, x, y, width, height, sink);
 			}
 
 	// Create a child window.  If "parent" is null, then the child
 	// does not yet have a "real" parent - it will be reparented later.
 	public IToolkitWindow CreateChildWindow
-				(IToolkitWindow parent, int x, int y, int width, int height)
+				(IToolkitWindow parent, int x, int y, int width, int height, 
+				 IToolkitEventSink sink)
 			{
 				Widget wparent;
 				if(parent is Widget)
@@ -387,7 +388,7 @@ public sealed class DrawingToolkit : IToolkit
 				}
 				ValidateWindowPosition(ref x, ref y);
 				ValidateWindowSize(ref width, ref height);
-				return new DrawingWindow(this, wparent, x, y, width, height);
+				return new DrawingWindow(this, wparent, x, y, width, height, sink);
 			}
 
 	// Map a System.Drawing color into an Xsharp color.
@@ -508,10 +509,12 @@ public sealed class DrawingToolkit : IToolkit
 			{
 				// X adds borders separately in the window manager.
 				// They are not counted in the size of the app window.
-				leftAdjust = 0;
-				topAdjust = 0;
-				rightAdjust = 0;
-				bottomAdjust = 0;
+				// There is no portable way to get the window borders before
+				// a window is created. These are representive values.
+				leftAdjust = 2;
+				topAdjust = 19 + 2;
+				rightAdjust = 2;
+				bottomAdjust = 2;
 			}
 
 	// Register a timer that should fire every "interval" milliseconds.

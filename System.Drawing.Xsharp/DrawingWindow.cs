@@ -37,9 +37,10 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 
 	// Constructor.
 	public DrawingWindow(IToolkit toolkit, Widget parent,
-						 int x, int y, int width, int height)
+						 int x, int y, int width, int height, IToolkitEventSink sink)
 			: base(parent, x, y, width, height)
 			{
+				this.sink = sink;
 				this.toolkit = toolkit;
 				this.AutoMapChildren = false;
 			}
@@ -228,12 +229,6 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	void IToolkitWindow.Update()
 			{
 				Display.Flush();
-			}
-
-	// Set the event sink to use for this window.
-	void IToolkitWindow.SetEventSink(IToolkitEventSink sink)
-			{
-				this.sink = sink;
 			}
 
 	// Map an Xsharp key description into a "ToolkitKeys" value.

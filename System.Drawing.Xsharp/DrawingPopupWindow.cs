@@ -36,9 +36,11 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 
 	// Constructor.
 	public DrawingPopupWindow
-				(IToolkit toolkit, int x, int y, int width, int height)
+				(IToolkit toolkit, int x, int y, int width, int height,
+				 IToolkitEventSink sink)
 			: base(x, y, width, height)
 			{
+				this.sink = sink;
 				this.toolkit = toolkit;
 				this.AutoMapChildren = false;
 			}
@@ -229,12 +231,6 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 				Display.Flush();
 			}
 
-	// Set the event sink to use for this window.
-	void IToolkitWindow.SetEventSink(IToolkitEventSink sink)
-			{
-				this.sink = sink;
-			}
-
 	// Override the button press event from Xsharp.
 	protected override void OnButtonPress(int x, int y, ButtonName button,
 									      ModifierMask modifiers)
@@ -382,12 +378,17 @@ internal sealed class DrawingPopupWindow : PopupWindow, IToolkitWindow
 				if(sink != null)
 				{
 					DrawingGraphics g = new DrawingGraphics(toolkit, graphics);
-					System.Drawing.Graphics gr =
-						ToolkitManager.CreateGraphics(g);
-					sink.ToolkitExpose(gr);
-					gr.Dispose();
+					using(System.Drawing.Graphics gr =
+							  ToolkitManager.CreateGraphics(g))
+					{
+						gr.SetClip(DrawingWindow.RegionToDrawingRegion
+							(graphics.ExposeRegion),
+							CombineMode.Replace);
+						sink.ToolkitExpose(gr);
+					}
 				}
 			}
+
 
 }; // class DrawingPopupWindow
 

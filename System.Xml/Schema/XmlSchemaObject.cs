@@ -58,9 +58,9 @@ namespace System.Xml.Schema
 				throw new NotImplementedException("LinePosition");
 			}
  		}
-/*
+
 		[TODO]
-		public System.Xml.Serialization.XmlSerializerNamespaces Namespaces 
+		public XmlSerializerNamespaces Namespaces 
 		{
  			get
 			{
@@ -71,7 +71,7 @@ namespace System.Xml.Schema
 				throw new NotImplementedException("Namespaces");
 			}
  		}
-*/
+
 		[TODO]
 		public String SourceUri 
 		{

@@ -1,4 +1,9 @@
 
+2004-04-18  Gopal V <gopalv82@yahoo.com>
+
+	* System.Xml/Schema/XmlSchemaObject.cs: Uncomment the Namespaces 
+	property (thanks to Klaus Treichel <ktreichel@web.de>).
+
 2004-04-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs :

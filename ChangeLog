@@ -1,4 +1,8 @@
 
+2001-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_gather.c: handle interface overrides for properties.
+
 2001-03-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: fix up line numbers on declarations

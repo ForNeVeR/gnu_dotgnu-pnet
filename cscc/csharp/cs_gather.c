@@ -318,12 +318,6 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	/* Record the node on the class as user data */
 	ILClassSetUserData(classInfo, defn);
 
-	/* Add the type to the new top-level list in create order */
-	if(!(defn->nestedParent))
-	{
-		ILNode_List_Add(list, type);
-	}
-
 	/* Process the nested types */
 	node = defn->body;
 	if(node && yyisa(node, ILNode_ScopeChange))
@@ -337,6 +331,12 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		{
 			CreateType(info, globalScope, list, systemObjectName, node);
 		}
+	}
+
+	/* Add the type to the new top-level list in create order */
+	if(!(defn->nestedParent))
+	{
+		ILNode_List_Add(list, type);
 	}
 }
 
@@ -1064,14 +1064,32 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	/* Get the name of the property */
 	if(yykind(property->name) == yykindof(ILNode_Identifier))
 	{
-		/* Simple method name */
+		/* Simple property name */
 		name = ILQualIdentName(property->name, 0);
 	}
 	else
 	{
-		/* Qualified property name that overrides some
-		   interface property (TODO) */
+		/* Qualified property name that overrides some interface property */
 		name = ILQualIdentName(property->name, 0);
+		signature = CSSemType
+				(((ILNode_QualIdent *)(property->name))->left, info,
+			     &(((ILNode_QualIdent *)(property->name))->left));
+		if(signature)
+		{
+			if(!ILType_IsClass(signature) ||
+			   !ILClass_IsInterface(ILType_ToClass(signature)))
+			{
+				CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+							  "`%s' is not an interface",
+							  CSTypeToName(signature));
+			}
+		}
+		if(ILClass_IsInterface(classInfo))
+		{
+			CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+				  "cannot use explicit interface member implementations "
+				  "within interfaces");
+		}
 	}
 
 	/* Get the property type */

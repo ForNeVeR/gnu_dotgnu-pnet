@@ -66,6 +66,7 @@ typedef struct
 	int			operands;
 
 } CVMOpcode;
+
 static CVMOpcode const opcodes[256] = {
 
 	/*
@@ -559,9 +560,13 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"local_alloc",		CVM_OPER_NONE},
 
 	/*
+	 * Method profiling.
+	 */
+	{"profile_count",	CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_55",	CVM_OPER_NONE},
 	{"preserved_56",	CVM_OPER_NONE},
 	{"preserved_57",	CVM_OPER_NONE},
 	{"preserved_58",	CVM_OPER_NONE},

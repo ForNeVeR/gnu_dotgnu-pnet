@@ -515,6 +515,11 @@ int ILExecProcessAddInternalCallTable(ILExecProcess* process,
 	return 1;
 }
 
+void ILExecProcessSetCoderFlags(ILExecProcess *process,int flags)
+{
+	ILCoderSetFlags(process->coder,flags);
+}
+
 #ifdef	__cplusplus
 };
 #endif

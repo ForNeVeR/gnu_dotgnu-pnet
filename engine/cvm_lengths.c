@@ -518,9 +518,13 @@ unsigned char const _ILCVMLengths[512] = {
 	/* local_alloc */		CVMP_LEN_NONE,
 
 	/*
+	 * Method profiling.
+	 */
+	/* profile_count */		CVMP_LEN_NONE,
+	
+	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_55 */		CVMP_LEN_NONE,
 	/* preserved_56 */		CVMP_LEN_NONE,
 	/* preserved_57 */		CVMP_LEN_NONE,
 	/* preserved_58 */		CVMP_LEN_NONE,

@@ -47,6 +47,7 @@ int _ILDumpVarProfile(FILE *stream);
  */
 int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process);
 
+
 /*
  * Table of command-line options.
  */
@@ -121,10 +122,11 @@ int main(int argc, char *argv[])
 	int registerMode = 0;
 	char *ilprogram;
 	int ilprogramLen;
+	int flags=0;
 #ifndef IL_CONFIG_REDUCE_CODE
 	int dumpInsnProfile = 0;
-	int dumpMethodProfile = 0;
 	int dumpVarProfile = 0;
+	int dumpMethodProfile = 0;
 	int dumpParams = 0;
 #endif
 
@@ -190,6 +192,12 @@ int main(int argc, char *argv[])
 
 			case 'M':
 			{
+				/*TODO*/
+				/*flags |= IL_CODER_FLAG_METHOD_PROFILE;
+				 *Should have been something like the above
+				 *but for making it work temporarily, doing this
+				 **/
+				flags |= 2;
 				dumpMethodProfile = 1;
 			}
 			break;
@@ -257,6 +265,8 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "%s: could not create process\n", progname);
 		return 1;
 	}
+
+	ILExecProcessSetCoderFlags(process,flags);
 
 	/* Set the list of directories to use for path searching */
 	if(numLibraryDirs > 0)

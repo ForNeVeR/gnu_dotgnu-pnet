@@ -108,6 +108,12 @@ struct _tagILCoder
 #define	IL_CODER_END_RESTART	1		/* Restart is required */
 #define	IL_CODER_END_TOO_BIG	2		/* Method is too big for the cache */
 
+/* 
+ * Profiling flags
+ */
+
+#define IL_CODER_FLAG_IR_DUMP 1
+#define IL_CODER_FLAG_METHOD_PROFILE 2
 /*
  * Coder class definition.
  */
@@ -687,6 +693,13 @@ struct _tagILCoderClass
 	void (*markEnd)(ILCoder *coder);
 
 	/*
+	 * Set the different flags which enable or disable
+	 * profiling, debugging etc.
+	 */
+	void (*setFlags)(ILCoder *coder,int flags);
+
+	
+	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
 	const char *sentinel;
@@ -929,6 +942,10 @@ struct _tagILCoderClass
 												      (offset), (exact)))
 #define	ILCoderMarkBytecode(coder,offset) \
 			((*((coder)->classInfo->markBytecode))((coder), (offset)))
+
+#define ILCoderSetFlags(coder,flags) \
+	((*((coder)->classInfo->setFlags))((coder), (flags)))
+
 #define	ILCoderMarkEnd(coder) \
 			((*((coder)->classInfo->markEnd))((coder)))
 

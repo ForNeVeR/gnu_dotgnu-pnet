@@ -500,6 +500,11 @@ extern	"C" {
 #define	COP_PREFIX_LOCAL_ALLOC		0x54
 
 /*
+ * Method profiling.
+ */
+#define COP_PREFIX_PROFILE_COUNT	0x55
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

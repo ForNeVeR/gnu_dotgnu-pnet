@@ -242,6 +242,7 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	ILUInt32 num;
 	ILType *type;
 
+
 	/* Determine where the new method will start output within the buffer */
 	if(newStart)
 	{
@@ -339,6 +340,12 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	   up at the end of the method with the maximum height */
 	coder->stackCheck = CVM_POSN();
 	CVM_OUT_CKHEIGHT();
+
+	/* Output the CVM code to do the profiling of the methods*/
+	if((coder->flags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
+	{
+		CVMP_OUT_NONE(COP_PREFIX_PROFILE_COUNT);
+	}
 
 	/* Mark this method as perhaps needing to be unrolled later */
 	if(ordinaryMethod && _ILCVMUnrollPossible() && !(coder->debugEnabled))
@@ -1302,6 +1309,19 @@ static int CVMCoder_Finish(ILCoder *_coder)
 
 	/* Ready to go */
 	return result;
+}
+
+/*
+ * Set the flags for profiling debugging etc.
+ */
+static void CVMCoder_SetFlags(ILCoder *_coder,int flags)
+{
+	ILCVMCoder *coder = (ILCVMCoder*)_coder;
+	/*TODO*/
+	/*Need a better of doing this using the bitwise operators.
+	 * But for now the flags are just assigned
+	 */
+	  coder->flags = flags;
 }
 
 /*

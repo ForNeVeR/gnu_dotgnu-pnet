@@ -472,9 +472,6 @@ VMCASE(COP_CALL):
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
 	}
-#ifdef IL_PROFILE_CVM_METHODS
-	++(method->count);
-#endif
 }
 VMBREAK(COP_CALL);
 
@@ -557,9 +554,6 @@ VMCASE(COP_CALL_CTOR):
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
 	}
-#ifdef IL_PROFILE_CVM_METHODS
-	++(method->count);
-#endif
 }
 VMBREAK(COP_CALL_CTOR);
 
@@ -781,9 +775,6 @@ VMCASE(COP_CALL_VIRTUAL):
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
 		}
-	#ifdef IL_PROFILE_CVM_METHODS
-		++(method->count);
-	#endif
 	}
 	else
 	{
@@ -883,9 +874,6 @@ VMCASE(COP_CALL_INTERFACE):
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
 		}
-	#ifdef IL_PROFILE_CVM_METHODS
-		++(method->count);
-	#endif
 	}
 	else
 	{
@@ -1292,9 +1280,6 @@ VMCASE(COP_CALLI):
 	{
 		NULL_POINTER_EXCEPTION();
 	}
-#ifdef IL_PROFILE_CVM_METHODS
-	++(method->count);
-#endif
 }
 VMBREAK(COP_CALLI);
 
@@ -1342,9 +1327,6 @@ case COP_CALL_VIRTUAL:
 		pc = (unsigned char *)tempptr;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
-	#ifdef IL_PROFILE_CVM_METHODS
-		++(method->count);
-	#endif
 	}
 	else
 	{
@@ -1392,9 +1374,6 @@ case COP_CALL_INTERFACE:
 		pc = (unsigned char *)tempptr;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
-	#ifdef IL_PROFILE_CVM_METHODS
-		++(method->count);
-	#endif
 	}
 	else
 	{
@@ -1471,9 +1450,6 @@ VMCASE(COP_PREFIX_TAIL_CALL):
 	REPORT_METHOD_CALL();
 	pc = (unsigned char *)tempptr;
 	method = methodToCall;
-#ifdef IL_PROFILE_CVM_METHODS
-	++(method->count);
-#endif
 }
 VMBREAK(COP_PREFIX_TAIL_CALL);
 
@@ -1630,5 +1606,28 @@ VMCASE(COP_PREFIX_PACK_VARARGS):
 #endif
 }
 VMBREAK(COP_PREFIX_PACK_VARARGS);
+
+/**
+ *<opcode name="profile_count" group="Profiling Instructions">
+ *	<operation>Count the number of times the current method is
+ *             invoked</operation>
+ *
+ * 	<format>profile_count</format>
+ * 	<dformat>{profile_count}</dformat>
+ *
+ * 	<form name="profile_count" code="COP_PREFIX_PROFILE_COUNT"/>
+ *
+ *  <description>This instruction adds 1 to the profiling count for
+ *  the current method.  It is normally inserted at the beginning
+ *  of a method's code by the CVM coder when the engine is running
+ *  in the profiling mode.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_PROFILE_COUNT):
+{
+	++(method->count);
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,0);
+}
+VMBREAK(COP_PREFIX_PROFILE_COUNT);
 
 #endif /* IL_CVM_PREFIX */

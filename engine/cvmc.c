@@ -76,7 +76,7 @@ struct _tagILCVMCoder
 	ILMethod	   *currentMethod;
 	int				tailCallFlag;
 	int				debugEnabled;
-
+	int				flags;
 };
 
 /*
@@ -159,7 +159,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->currentMethod = 0;
 	coder->tailCallFlag = 0;
 	coder->debugEnabled = 0;
-
+	coder->flags = 0;
 	/* Call the interpreter to export the label tables for
 	   use in code generation for direct threading */
 	_ILCVMInterpreter(0);
@@ -458,6 +458,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_GetNativeOffset,
 	CVMCoder_MarkBytecode,
 	CVMCoder_MarkEnd,
+	CVMCoder_SetFlags,
 	"sentinel"
 };
 

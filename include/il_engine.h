@@ -197,6 +197,12 @@ void ILExecProcessSetLibraryDirs(ILExecProcess *process,
 								 int numLibraryDirs);
 
 /*
+ *Set the flags for profiling, debugging etc
+ */
+void ILExecProcessSetCoderFlags(ILExecProcess *process,
+								int flags);
+
+/*
  * Get the IL context associated with a process.
  */
 ILContext *ILExecProcessGetContext(ILExecProcess *process);

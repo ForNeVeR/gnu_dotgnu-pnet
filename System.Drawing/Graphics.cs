@@ -66,6 +66,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 		: this(graphics)
 			{
 				this.baseWindow = baseWindow;
+				Clip = new Region(baseWindow);
 			}
 
 	// Create a Graphics that is internally offset to baseWindow
@@ -1243,6 +1244,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				Point[] rect = ConvertRectangle
 					(layoutRectangle.X, layoutRectangle.Y,
 					 layoutRectangle.Width, layoutRectangle.Height);
+				if (clip != null && !clip.GetBounds(this).IntersectsWith(new Rectangle(rect[0].X, rect[0].Y, rect[1].X - rect[0].X, rect[2].Y- rect[0].Y)))
+					return;
 				lock(this)
 				{
 					SelectFont(font);
@@ -1259,20 +1262,20 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						if(format.Alignment == StringAlignment.Center)
 						{
 							rect[0].X +=
-								(rect[1].X - rect[0].X - size.Width - 1) / 2;
+								(rect[1].X - rect[0].X - size.Width - 2) / 2;
 						}
 						else if(format.Alignment == StringAlignment.Far)
 						{
-							rect[0].X = rect[1].X - size.Width - 1;
+							rect[0].X = rect[1].X - size.Width - 3;
 						}
 						if(format.LineAlignment == StringAlignment.Center)
 						{
 							rect[0].Y +=
-								(rect[2].Y - rect[0].Y - size.Height - 1) / 2;
+								(rect[2].Y - rect[0].Y - size.Height - 2) / 2;
 						}
-						else if(format.Alignment == StringAlignment.Far)
+						else if(format.LineAlignment == StringAlignment.Far)
 						{
-							rect[0].Y = rect[2].Y - size.Height - 1;
+							rect[0].Y = rect[2].Y - size.Height - 2;
 						}
 					}
 					ToolkitGraphics.DrawString
@@ -1292,6 +1295,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				}
 				int dx, dy;
 				ConvertPoint(x, y, out dx, out dy);
+				// Simple optimization
+				if (clip != null)
+				{
+					RectangleF bounds = clip.GetBounds(this);
+					if (dx > bounds.Right || dy > bounds.Bottom)
+						return;
+				}
 				lock(this)
 				{
 					SelectFont(font);
@@ -2027,7 +2037,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						if (bounds[i] != Rectangle.Empty)
 						{
 							RectangleF rect = bounds[i];
-							bounds[i] = new RectangleF( rect.Left + xOffset + layoutRect.Left, rect.Top + (lines.CurrentLine - 1) * fontHeight + layoutRect.Top, rect.Width, rect.Height);
+							bounds[i] = new RectangleF( rect.Left + xOffset + layoutRect.Left, rect.Top + (lines.CurrentLine - 1) * fontHeight + layoutRect.Top + 1, rect.Width, rect.Height);
 						}
 						i++;
 					}

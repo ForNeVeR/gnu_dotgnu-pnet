@@ -3,6 +3,11 @@
 
 	* engine/HACKING: describe more of the engine architecture.
 
+	* configure.in, include/Makefile.am, include/il_thread.h,
+	support/Makefile.am, support/no_thread.c, support/pt_include.h,
+	support/pt_thread.c: begin adding threading primitives, based
+	on pthreads.
+
 2002-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/common/cc_main.c:

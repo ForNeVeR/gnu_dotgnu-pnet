@@ -15,6 +15,7 @@ libILinclude_HEADERS = il_coder.h \
 					   il_serialize.h \
 					   il_sysio.h \
 					   il_system.h \
+					   il_thread.h \
 					   il_types.h \
 					   il_utils.h \
 					   il_values.h \

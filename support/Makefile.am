@@ -22,6 +22,8 @@ libILSupport_a_SOURCES = alloc.c \
 						 mempool.c \
 						 memstack.c \
 						 mul_long.c \
+						 no_thread.c \
+						 pt_thread.c \
 						 read_float.c \
 						 rem_float.c \
 						 sha1.c \
@@ -41,7 +43,9 @@ mkcategory_SOURCES = mkcategory.c
 mknumber_SOURCES = mknumber.c
 
 if USINGGCC
-INCLUDES = -Wall
+INCLUDES = -Wall -I../libgc/include
+else
+INCLUDES = -I../libgc/include
 endif
 
 CLEANFILES = errno_map.c

@@ -40,6 +40,18 @@ AC_ARG_ENABLE(threads, [  --enable-threads=TYPE   choose threading package],
     fi
     AC_MSG_RESULT([$THREADS])])
 
+dnl Force pthreads on for GNU/Linux systems.
+if test "$THREADS" = "no"; then
+	case "$host" in
+     	x86-*-linux* | ia64-*-linux* | i586-*-linux* | i686-*-linux*)
+			THREADS=posix
+			;;
+     	*-*-linux*)
+			THREADS=posix
+		;;
+	esac
+fi
+
 THREADLIBS=
 case "$THREADS" in
  no | none | single)

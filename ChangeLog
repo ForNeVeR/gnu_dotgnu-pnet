@@ -9,6 +9,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.6.4 release.
 
+	* configure.in: update working version to "0.6.5".
+
 2004-03-12  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlTextWriter.cs, tests/System.Xml/TestXmlTextReader.cs:

@@ -1,4 +1,9 @@
 
+2001-12-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* tools/mscsc.sh, runtime/System/Makefile.am, csunit/Makefile.am: disable
+warning messages from Microsoft's C# compiler that don't mean anything useful.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

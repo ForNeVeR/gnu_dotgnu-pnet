@@ -47,8 +47,7 @@ for i in $*; do
 			-c|-S|-E|-v|-vv)		;;
 			-Werror)				FLAGS="$FLAGS /warnaserror+" ;;
 			-Wall)					FLAGS="$FLAGS /warn:4" ;;
-			-Wno-dll-import)		FLAGS="$FLAGS /nowarn:626" ;;
-			-Wno-field-assign)		FLAGS="$FLAGS /nowarn:649" ;;
+			-Wno-silly-warnings)	FLAGS="$FLAGS /nowarn:626 /nowarn:649 /nowarn:168 /nowarn:67 /nowarn:169" ;;
 			-fsyntax-check)			;; #FLAGS="$FLAGS /nooutput" ;;
 			-fchecked)				FLAGS="$FLAGS /checked+" ;;
 			-funchecked)			FLAGS="$FLAGS /checked-" ;;

@@ -13,7 +13,7 @@ CSSRC = Test.cs \
 		TestSuite.cs \
 		TestWriterResult.cs
 
-CSCC_WARNINGS = -Wno-dll-import -Wno-field-assign
+CSCC_WARNINGS = -Wno-silly-warnings
 
 CSCC_FLAGS = $(CSCC_WARNINGS) -funsafe $(CSCC_EXE_LIBS)
 

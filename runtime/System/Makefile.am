@@ -322,7 +322,7 @@ CSSRC = Activator.cs \
 		../Platform/TaskMethods.cs \
 		../Platform/TimeMethods.cs
 
-CSCC_WARNINGS = -Wno-dll-import -Wno-field-assign
+CSCC_WARNINGS = -Wno-silly-warnings -Wno-empty-input
 
 CSCC_FLAGS = $(CSCC_WARNINGS) -funsafe -nostdlib -fresources=$(DEFRESOURCES)
 
@@ -330,6 +330,6 @@ mscorlib.dll: $(CSSRC) $(DEFRESOURCES)
 	$(CSCC_COMPILE) -o $@ $(CSSRC)
 
 mscorlib_ecma.dll: $(CSSRC) $(DEFRESOURCES)
-	$(CSCC_COMPILE) -DECMA_COMPAT -Wno-empty-input -o $@ $(CSSRC)
+	$(CSCC_COMPILE) -DECMA_COMPAT -o $@ $(CSSRC)
 
 CLEANFILES = mscorlib.dll mscorlib_ecma.dll

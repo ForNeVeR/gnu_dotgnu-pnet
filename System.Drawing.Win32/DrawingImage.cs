@@ -1,5 +1,5 @@
 /*
- * DrawingFont.cs - Implementation of fonts for System.Drawing.Win32.
+ * DrawingImage.cs - Implementation of DrawingImage for System.Drawing.Win32.
  * Copyright (C) 2003  Neil Cawse.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -107,6 +107,10 @@ namespace System.Drawing.Toolkit
 			int initialCount = width * height;
 			if (initialCount > 3900)
 				initialCount = 3900;
+
+			// TODO: Check if we should add the rectangles each time
+			// For now just do 10 rectangles at a time.
+			initialCount = 10;
 			
 			uint count = 0;
 			// Set the initial quantity of the rectangles.
@@ -120,7 +124,7 @@ namespace System.Drawing.Toolkit
 			uint ptr = 32;
 
 			bool writeRect = false;
-			bool writeAlways = false;
+			bool addToRegion = false;
 
 			IntPtr hMaskRegion = IntPtr.Zero;
 
@@ -133,11 +137,13 @@ namespace System.Drawing.Toolkit
 
 				for(int x = 0; x < width; x++)
 				{
-					int bitPos = 7 - x % 8;
+					int bitPos = 7 - x & 0x07;
 					if (bitPos == 7)
 						currentByte = mask[y * stride + (int)(x / 8)];
 
-					if ((currentByte & 1<<bitPos)==0)
+					bool bit = (currentByte & 1<<bitPos)==0;
+
+					if (bit)
 					{
 						if (!prevMaskBit)
 						{
@@ -146,28 +152,23 @@ namespace System.Drawing.Toolkit
 						}
 							
 					}
-					else
-					{
-						if (prevMaskBit)
-							// The current bit requires writing
+					// The current bit requires writing.
+					else if (prevMaskBit)
 							writeRect = true;
-					}
 
 					// Are we at the end of the line?
 					if (x == width - 1)
 					{
-						if (y == height - 1)
+						// Move past the last region.
+						if (bit)
 						{
-							writeRect = true;
-							// End of data so we must always write
-							writeAlways = true;
-						}
-						else if (prevMaskBit)
-						{
-							// The current bit requires writing
+							x++;
 							writeRect = true;
 						}
-						x++;
+						// End of data so we must always write.
+						if (y == height - 1 && (count > 0 || writeRect))
+							addToRegion = true;
+						
 					}
 					
 					if (writeRect)
@@ -175,30 +176,33 @@ namespace System.Drawing.Toolkit
 						count++;
 						WriteRect(RGNData, ref ptr, new Rectangle(xBlockStart, y, x - xBlockStart, 1));
 								
-						if (count == initialCount || writeAlways)
-						{
-							// Set the rectangle count in RGNHeader
-							RGNData[8] = (byte)count;
-							RGNData[9] = (byte)(count >> 8);
-							RGNData[10] = (byte)(count >> 16);
-							RGNData[11] = (byte)(count >> 24);
-							
-							// Create the new region.
-							IntPtr hTemp = Win32.Api.ExtCreateRegion(IntPtr.Zero, 32 + 16 * count, ref RGNData[0]);
-							if (hMaskRegion == IntPtr.Zero)
-								hMaskRegion = hTemp;
-							else
-							{
-								// OR the new region with the current one.
-								Win32.Api.CombineRgn(hMaskRegion, hMaskRegion, hTemp, Win32.Api.RegionCombineMode.RGN_OR);
-								Win32.Api.DeleteObject(hTemp);
-							}
-							count = 0;
-							ptr = 32;
-							writeAlways = false;
-						}
+						if (count == initialCount)
+							addToRegion = true;
 						writeRect = false;
 						prevMaskBit = false;
+					}
+
+					if (addToRegion)
+					{
+						// Set the rectangle count in RGNHeader
+						RGNData[8] = (byte)count;
+						RGNData[9] = (byte)(count >> 8);
+						RGNData[10] = (byte)(count >> 16);
+						RGNData[11] = (byte)(count >> 24);
+							
+						// Create the new region.
+						IntPtr hTemp = Win32.Api.ExtCreateRegion(IntPtr.Zero, 32 + 16 * count, ref RGNData[0]);
+						if (hMaskRegion == IntPtr.Zero)
+							hMaskRegion = hTemp;
+						else
+						{
+							// OR the new region with the current one.
+							Win32.Api.CombineRgn(hMaskRegion, hTemp, hMaskRegion, Win32.Api.RegionCombineMode.RGN_OR);
+							Win32.Api.DeleteObject(hTemp);
+						}
+						count = 0;
+						ptr = 32;
+						addToRegion = false;
 					}
 				}
 			}

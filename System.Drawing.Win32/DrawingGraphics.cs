@@ -342,11 +342,48 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
 	// in the form of an xbm bitmap.
 	public override void DrawGlyph(int x, int y,
-				   				   byte[] bits, int bitsWidth, int bitsHeight,
+				   				   byte[] xbmBits, int bitsWidth, int bitsHeight,
 				   				   System.Drawing.Color color)
 	{
-		IntPtr hMaskRegion = DrawingImage.MaskToRegion(bitsWidth, bitsHeight, (bitsWidth + 7) / 8, bits);
-		byte[] bitmapInfo = DrawingImage.GetBitmapInfo(DotGNU.Images.PixelFormat.Format1bppIndexed, bitsWidth, bitsHeight, null);
+		// Convert the xbm data to the bmp format.
+		int[] palette = new int[] {0, color.ToArgb()};
+		byte[] bitmapInfo = DrawingImage.GetBitmapInfo(DotGNU.Images.PixelFormat.Format1bppIndexed, bitsWidth, bitsHeight, palette);
+		int xbmBytesPerRow = (bitsWidth + 7) / 8;
+		int bmpStride = (xbmBytesPerRow + 3) & ~3;
+		// Setup the array to hold the converted data
+		byte[] bits = new byte[bmpStride * bitsHeight];
+
+		int bmpStartStride = 0;
+		int xbmStartStride = 0;
+		for (int y1 = 0; y1 < bitsHeight; y1++)
+		{
+			byte bmpBit = 0x80;
+			byte bmpByte = 0x00;
+			int bmpPos = bmpStartStride;
+			
+			for (int x1 = 0; x1 < bitsWidth; x1++)
+			{
+				// Get the xbm bit.
+				byte xbmByte = xbmBits[xbmStartStride + x1 / 8];
+				bool bit = (xbmByte & (1<< (x1 & 0x07))) > 0;
+				// Set the bmp byte.
+				if (bit)
+					bmpByte |= bmpBit;
+				bmpBit = (byte)(bmpBit >> 1);
+				// Update when we are on a byte boundary.
+				if (bmpBit == 0 || x1 == bitsWidth -1)
+				{
+					bits[bmpPos++] = bmpByte;
+					bmpBit = 0x80;
+					bmpByte = 0x00;
+				}
+			}
+			bmpStartStride += bmpStride;
+			xbmStartStride += xbmBytesPerRow;
+		}
+
+		IntPtr hMaskRegion = DrawingImage.MaskToRegion(bitsWidth, bitsHeight, bmpStride, bits);
+		
 		// Save the current clipping so we can restore later.
 		Win32.Api.SaveDC(hdc);
 		// Move mask to position

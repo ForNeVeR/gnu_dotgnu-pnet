@@ -801,13 +801,31 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 					CVM_OUT_WIDE(COP_PSTORE, offset);
 				}
 				CVM_ADJUST(-1);
-				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg, offset);
+				if(ctx->nativeArg < 8)
+				{
+					CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg, offset);
+				}
+				else
+				{
+					CVMP_OUT_WORD2(COP_PREFIX_WADDR_NATIVE_N,
+								   (ILUInt32)(ILInt32)(ctx->nativeArg),
+								   offset);
+				}
 			}
 			else
 			{
 				/* Push a pointer to the actual arg onto the native stack */
-				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg,
-							 coder->argOffsets[param - thisAdjust]);
+				if(ctx->nativeArg < 8)
+				{
+					CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg,
+								 coder->argOffsets[param - thisAdjust]);
+				}
+				else
+				{
+					CVMP_OUT_WORD2(COP_PREFIX_WADDR_NATIVE_N,
+								   (ILUInt32)(ILInt32)(ctx->nativeArg),
+								   coder->argOffsets[param - thisAdjust]);
+				}
 			}
 			++(ctx->nativeArg);
 		}

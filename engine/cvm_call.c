@@ -1641,4 +1641,28 @@ VMCASE(COP_PREFIX_PROFILE_COUNT):
 }
 VMBREAK(COP_PREFIX_PROFILE_COUNT);
 
+/**
+ * <opcode name="waddr_native_n" group="Call management instructions">
+ *   <operation>Set position <i>n</i> of the native argument buffer
+ *              to the address of a local variable</operation>
+ *
+ *   <format>prefix<fsep/>waddr_native_n<fsep/>N[4]<fsep/>V[4]</format>
+ *   <dformat>{waddr_native_n}<fsep/>N<fsep/>V</dformat>
+ *
+ *   <form name="waddr_native_n" code="COP_PREFIX_WADDR_NATIVE_N"/>
+ *
+ *   <description>Set position <i>N</i> of the native argument buffer
+ *   to the address of local variable <i>V</i>.  For an "InternalCall"
+ *   method, 0 is the first argument.  For a "PInvoke" method,
+ *   -1 (<i>m1</i>) is the first argument.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_WADDR_NATIVE_N):
+{
+	/* Set a value within the native argument stack */
+	nativeArgs[CVMP_ARG_WORD + 1] = (void *)(&(frame[CVMP_ARG_WORD2]));
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2, 0);
+}
+VMBREAK(COP_PREFIX_WADDR_NATIVE_N);
+
 #endif /* IL_CVM_PREFIX */

@@ -573,9 +573,13 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"thread_static",	CVM_OPER_TWO_UINT32},
 
 	/*
+	 * Argument packing for native calls.
+	 */
+	{"waddr_native_n",	CVM_OPER_TWO_UINT32},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_5B",	CVM_OPER_NONE},
 	{"preserved_5C",	CVM_OPER_NONE},
 	{"preserved_5D",	CVM_OPER_NONE},
 	{"preserved_5E",	CVM_OPER_NONE},

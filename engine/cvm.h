@@ -515,6 +515,11 @@ extern	"C" {
 #define	COP_PREFIX_THREAD_STATIC	0x5A
 
 /*
+ * Argument packing for native calls.
+ */
+#define	COP_PREFIX_WADDR_NATIVE_N	0x5B
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */
@@ -556,7 +561,7 @@ typedef union
 /*
  * Maximum number of arguments that can be packed for a native call.
  */
-#define	CVM_MAX_NATIVE_ARGS		8
+#define	CVM_MAX_NATIVE_ARGS		32
 
 #ifdef	__cplusplus
 };

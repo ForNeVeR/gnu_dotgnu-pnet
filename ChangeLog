@@ -1,4 +1,11 @@
 
+2002-08-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/verify.c (AssignCompatible): resolve classes before
+	checking for compatibility.
+
+	* samples/mscorlib.dll: new version with Gopal V's File patch.
+
 2002-08-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_misc.tc, cscc/c/c_builtin.tc, cscc/c/c_defs.tc,
@@ -11,9 +18,6 @@
 
 	* image/pecoff_writer.c: add extra padding at the beginning
 	of a PE/COFF image to make room for 4 or more sections.
-
-	* engine/verify.c (AssignCompatible): resolve classes before
-	checking for compatibility.
 
 2002-08-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -41,6 +41,13 @@
 #define	YYERROR_VERBOSE
 
 /*
+ * An ugly hack to work around missing "-lfl" libraries on MacOSX.
+ */
+#if defined(__APPLE_CC__) && !defined(YYTEXT_POINTER)
+	#define	YYTEXT_POINTER 1
+#endif
+
+/*
  * Imports from the lexical analyser.
  */
 extern int yylex(void);

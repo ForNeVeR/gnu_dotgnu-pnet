@@ -24,6 +24,9 @@
 	* cscc/common/cc_main.c (CCPluginParseError): recognise error
 	message forms from Bison 1.29 and higher.
 
+	* cscc/csharp/cs_grammar.y, ilasm/ilasm_grammar.y: add an ugly
+	hack to work around missing "-lfl" on MacOSX.
+
 2002-05-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc,codegen/cg_lvalue.tc,codegen/cg_misc.tc

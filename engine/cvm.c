@@ -51,7 +51,19 @@ extern	"C" {
 /*#define	IL_PROFILE_CVM_METHODS*/
 #ifdef IL_PROFILE_CVM_INSNS
 extern int _ILCVMInsnCount[];
-#undef HAVE_COMPUTED_GOTO
+#endif
+
+/*
+ * Determine what kind of instruction dumping to perform.
+ */
+#if defined(IL_DUMP_CVM)
+	#define	CVM_DUMP()	\
+		_ILDumpCVMInsn(IL_DUMP_CVM_STREAM, method, pc)
+#elif defined(IL_PROFILE_CVM_INSNS)
+	#define	CVM_DUMP()	\
+		++(_ILCVMInsnCount[pc[0]]);
+#else
+	#define	CVM_DUMP()
 #endif
 
 /*
@@ -410,12 +422,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 
 	for(;;)
 	{
-	#ifdef IL_DUMP_CVM
-		_ILDumpCVMInsn(IL_DUMP_CVM_STREAM, method, pc);
-	#endif
-	#ifdef IL_PROFILE_CVM_INSNS
-		++(_ILCVMInsnCount[pc[0]]);
-	#endif
+		CVM_DUMP();
 		VMSWITCH(pc[0])
 		{
 			/**

@@ -18,6 +18,9 @@
 	goto's separately because older versions of gcc only support
 	the non-PIC form.
 
+	* engine/cvm.c, engine/mklabel.sh: make instruction debugging
+	work in the presence of computed goto's.
+
 2002-05-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_lvalue.tc,

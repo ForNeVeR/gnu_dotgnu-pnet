@@ -89,7 +89,9 @@ echo '#define VMPREFIXSWITCH(val) goto *(&&COP_NOP_label + prefix_label_table[(v
 echo '#define VMCASE(val)         val##_label'
 echo '#define VMDEFAULT           _DEFAULT_MAIN_label'
 echo '#define VMPREFIXDEFAULT     _DEFAULT_PREFIX_label'
-echo '#define VMBREAK             goto *(&&COP_NOP_label + main_label_table[*pc])'
+echo '#define VMBREAK             \
+            CVM_DUMP(); \
+            goto *(&&COP_NOP_label + main_label_table[*pc])'
 echo '#define VMOUTERBREAK'
 echo ''
 
@@ -144,7 +146,9 @@ echo '#define VMPREFIXSWITCH(val) goto *prefix_label_table[(val)];'
 echo '#define VMCASE(val)         val##_label'
 echo '#define VMDEFAULT           _DEFAULT_MAIN_label'
 echo '#define VMPREFIXDEFAULT     _DEFAULT_PREFIX_label'
-echo '#define VMBREAK             goto *main_label_table[*pc]'
+echo '#define VMBREAK             \
+            CVM_DUMP(); \
+            goto *main_label_table[*pc]'
 echo '#define VMOUTERBREAK'
 echo ''
 

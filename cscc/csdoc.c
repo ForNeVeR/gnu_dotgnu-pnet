@@ -65,6 +65,7 @@ int const CCPluginForceStdlib = 0;
 
 int CCPluginInit(void)
 {
+	CSMetadataOnly = 1;
 	/* Nothing to do here */
 	return 1;
 }

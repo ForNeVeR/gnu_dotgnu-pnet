@@ -1,4 +1,11 @@
 
+2003-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Postscript/PostscriptGraphics.cs,
+	System.Drawing.Postscript/PostscriptPrintSession.cs: put some
+	basic infrastructure in place to output page headers and
+	footers to "output.ps".
+
 2003-07-18  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Private/NumberFormat/Formatter.cs,

@@ -22,14 +22,25 @@
 namespace System.Drawing.Toolkit
 {
 
+using System.IO;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Drawing.Drawing2D;
 
 internal class PostscriptGraphics : ToolkitGraphicsBase
 {
+	// Internal state.
+	private TextWriter writer;
+	private PostscriptPrintSession session;
+
 	// Constructor.
-	public PostscriptGraphics(IToolkit toolkit) : base(toolkit) {}
+	public PostscriptGraphics(IToolkit toolkit, TextWriter writer,
+							  PostscriptPrintSession session)
+			: base(toolkit)
+			{
+				this.writer = writer;
+				this.session = session;
+			}
 
 	// Get or set the graphics object's properties.
 	public override float DpiX

@@ -8,6 +8,8 @@
 
 	* runtime/System/Convert.cs: signature-compatibility fixes.
 
+	* runtime/System/DateTime.cs: convert to and from UTC file times.
+
 2003-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/BestFitMappingAttribute.cs,

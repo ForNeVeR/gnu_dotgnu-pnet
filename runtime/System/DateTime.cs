@@ -228,6 +228,18 @@ public struct DateTime : IComparable, IFormattable
 	// Convert a Windows file time into a DateTime value.
 	public static DateTime FromFileTime(long fileTime)
 			{
+				return FromFileTimeUtc(fileTime).ToLocalTime();
+			}
+
+	// Convert a DateTime value into a Windows file time.
+	public long ToFileTime()
+			{
+				return ToUniversalTime().ToFileTimeUtc();
+			}
+
+	// Convert a UTC file time value into a DateTime value.
+	public static DateTime FromFileTimeUtc(long fileTime)
+			{
 				checked
 				{
 					try
@@ -242,8 +254,8 @@ public struct DateTime : IComparable, IFormattable
 				}
 			}
 
-	// Convert a DateTime value into a Windows file time.
-	public long ToFileTime()
+	// Convert a DateTime value into a UTC file time value.
+	public long ToFileTimeUtc()
 			{
 				long time = value_ - FileTimeBase.Ticks;
 				if(time < 0)

@@ -88,11 +88,6 @@ static LONG CALLBACK __UnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInf
 			thread->interruptHandler(&context);
 
 			break;
-			
-		default:
-		
-			printf("FUUUUUUUUUUUUUUUUUUUUUUUU %d\n", 
-				ExceptionInfo->ExceptionRecord->ExceptionCode);
 	}
 
 	return EXCEPTION_CONTINUE_SEARCH;

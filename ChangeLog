@@ -4,6 +4,10 @@
 	* ChangeLog, doc/ChangeLog-4: move the bulk of ChangeLog into
 	doc/ChangeLog-4 to trim things down a little.
 
+	* engine/md_arm.c, engine/md_arm.h, engine/md_default.h,
+	engine/md_x86.c, engine/md_x86.h, engine/unroll.c,
+	engine/unroll_arith.c: add some more code to the generic unroller.
+
 2003-07-09  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_reflect.c: Generate arrays of the attribute type 

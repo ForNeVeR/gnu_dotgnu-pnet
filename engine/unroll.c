@@ -1277,7 +1277,7 @@ static void DumpCode(ILMethod *method, unsigned char *start, int len)
  * Include the global definitions needed by the cases.
  */
 #define	IL_UNROLL_GLOBAL
-//#include "unroll_arith.c"
+#include "unroll_arith.c"
 //#include "unroll_branch.c"
 //#include "unroll_const.c"
 //#include "unroll_conv.c"
@@ -1359,7 +1359,7 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 		switch(opcode)
 		{
 			#define	IL_UNROLL_CASES
-			//#include "unroll_arith.c"
+			#include "unroll_arith.c"
 			//#include "unroll_branch.c"
 			//#include "unroll_const.c"
 			//#include "unroll_conv.c"

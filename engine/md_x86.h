@@ -131,7 +131,7 @@ extern	"C" {
  * Set it to zero if integer division is too hard to be performed
  * inline using a simple opcode.
  */
-#define	MD_HAS_INT_DIVISION			0
+#define	MD_HAS_INT_DIVISION			1
 
 /*
  * Type of the instruction pointer for outputting code.
@@ -231,33 +231,11 @@ typedef unsigned char *md_inst_ptr;
 /*
  * Store a byte value to an offset from a pointer register.
  */
-static md_inst_ptr _x86_mov_membase_reg_byte
-			(md_inst_ptr inst, int basereg, int offset, int srcreg)
-{
-	if(srcreg == X86_EAX || srcreg == X86_EBX ||
-	   srcreg == X86_ECX || srcreg == X86_EDX)
-	{
-		x86_mov_membase_reg(inst, basereg, offset, srcreg, 1);
-	}
-	else if(basereg != X86_EAX)
-	{
-		x86_push_reg(inst, X86_EAX);
-		x86_mov_reg_reg(inst, X86_EAX, srcreg, 4);
-		x86_mov_membase_reg(inst, basereg, offset, X86_EAX, 1);
-		x86_pop_reg(inst, X86_EAX);
-	}
-	else
-	{
-		x86_push_reg(inst, X86_EDX);
-		x86_mov_reg_reg(inst, X86_EDX, srcreg, 4);
-		x86_mov_membase_reg(inst, basereg, offset, X86_EDX, 1);
-		x86_pop_reg(inst, X86_EDX);
-	}
-	return inst;
-}
+md_inst_ptr _md_x86_mov_membase_reg_byte
+			(md_inst_ptr inst, int basereg, int offset, int srcreg);
 #define	md_store_membase_byte(inst,reg,basereg,offset)	\
 			do { \
-				(inst) = _x86_mov_membase_reg_byte	\
+				(inst) = _md_x86_mov_membase_reg_byte	\
 					((inst), (basereg), (int)(offset), (reg)); \
 			} while (0)
 
@@ -307,7 +285,7 @@ static md_inst_ptr _x86_mov_membase_reg_byte
 /*
  * Perform arithmetic and logical operations on 32-bit word registers.
  *
- * Note: x86 divisions and shifts are handled elsewhere, because they are hard.
+ * Division is tricky, so it is handled elsewhere for x86.
  */
 #define	md_add_reg_reg_word_32(inst,reg1,reg2)	\
 			x86_alu_reg_reg((inst), X86_ADD, (reg1), (reg2))
@@ -315,6 +293,8 @@ static md_inst_ptr _x86_mov_membase_reg_byte
 			x86_alu_reg_reg((inst), X86_SUB, (reg1), (reg2))
 #define	md_mul_reg_reg_word_32(inst,reg1,reg2)	\
 			x86_imul_reg_reg((inst), (reg1), (reg2))
+extern md_inst_ptr _md_x86_divide(md_inst_ptr inst, int reg1, int reg2,
+								  int isSigned, int wantRemainder);
 #define	md_div_reg_reg_word_32(inst,reg1,reg2)	\
 			do { ; } while (0)
 #define	md_udiv_reg_reg_word_32(inst,reg1,reg2)	\
@@ -333,12 +313,16 @@ static md_inst_ptr _x86_mov_membase_reg_byte
 			x86_alu_reg_reg((inst), X86_OR, (reg1), (reg2))
 #define	md_not_reg_word_32(inst,reg)	\
 			x86_not_reg((inst), (reg))
+extern md_inst_ptr _md_x86_shift(md_inst_ptr inst, int opc, int reg1, int reg2);
 #define	md_shl_reg_reg_word_32(inst,reg1,reg2)	\
-			do { ; } while (0)
+			do { (inst) = _md_x86_shift \
+					((inst), X86_SHL, (reg1), (reg2)); } while (0)
 #define	md_shr_reg_reg_word_32(inst,reg1,reg2)	\
-			do { ; } while (0)
+			do { (inst) = _md_x86_shift \
+					((inst), X86_SAR, (reg1), (reg2)); } while (0)
 #define	md_ushr_reg_reg_word_32(inst,reg1,reg2)	\
-			do { ; } while (0)
+			do { (inst) = _md_x86_shift \
+					((inst), X86_SHR, (reg1), (reg2)); } while (0)
 
 /*
  * Perform arithmetic operations on native float values.  If the system
@@ -354,8 +338,11 @@ static md_inst_ptr _x86_mov_membase_reg_byte
 			x86_fp_op_reg((inst), X86_FMUL, 1, 1)
 #define	md_div_reg_reg_float(inst,reg1,reg2)	\
 			x86_fp_op_reg((inst), X86_FDIV, 1, 1)
-#define	md_rem_reg_reg_float(inst,reg1,reg2)	\
-			do { ; } while (0)
+extern md_inst_ptr _md_x86_rem_float
+			(md_inst_ptr inst, int reg1, int reg2, int used);
+#define	md_rem_reg_reg_float(inst,reg1,reg2,used)	\
+			do { (inst) = _md_x86_rem_float \
+					((inst), (reg1), (reg2), (used)); } while (0)
 #define	md_neg_reg_float(inst,reg)	\
 			x86_fchs((inst))
 
@@ -446,6 +433,35 @@ static md_inst_ptr _x86_mov_membase_reg_byte
  */
 #define	md_mov_reg_reg(inst,dreg,sreg)	\
 			x86_mov_reg_reg((inst), (dreg), (sreg), 4)
+
+/*
+ * Set a register to a 0 or 1 value based on a condition.
+ */
+extern md_inst_ptr _md_x86_setcc(md_inst_ptr inst, int reg, int cond);
+#define	md_seteq_reg(inst,reg)	\
+			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_EQ); } while (0)
+#define	md_setne_reg(inst,reg)	\
+			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_NE); } while (0)
+#define	md_setlt_reg(inst,reg)	\
+			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_LT); } while (0)
+#define	md_setle_reg(inst,reg)	\
+			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_LE); } while (0)
+#define	md_setgt_reg(inst,reg)	\
+			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_GT); } while (0)
+#define	md_setge_reg(inst,reg)	\
+			do { (inst) = _md_x86_setcc((inst), (reg), X86_CC_GE); } while (0)
+
+/*
+ * Set a register to -1, 0, or 1 based on comparing two values.
+ */
+extern md_inst_ptr _md_x86_compare
+				(md_inst_ptr inst, int reg1, int reg2, int isSigned);
+#define	md_cmp_reg_reg_word_32(inst,reg1,reg2)	\
+			do { (inst) = _md_x86_compare \
+					((inst), (reg1), (reg2), 1); } while (0)
+#define	md_ucmp_reg_reg_word_32(inst,reg1,reg2)	\
+			do { (inst) = _md_x86_compare \
+					((inst), (reg1), (reg2), 0); } while (0)
 
 #ifdef	__cplusplus
 };

@@ -1,0 +1,415 @@
+/*
+ * unroll_arith.c - Arithmetic handling for generic CVM unrolling.
+ *
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#ifdef IL_UNROLL_GLOBAL
+
+#ifdef CVM_X86
+
+/*
+ * Perform an integer division or remainder.
+ */
+static void X86Divide(MDUnroll *unroll, int isSigned, int wantRemainder,
+				      unsigned char *pc, unsigned char *label)
+{
+	unsigned char *patch1, *patch2, *patch3;
+
+	/* Get the arguments into EAX and ECX so we know where they are */
+	if(unroll->pseudoStackSize != 2 ||
+	   unroll->pseudoStack[0] != X86_EAX ||
+	   unroll->pseudoStack[1] != X86_ECX)
+	{
+		FlushRegisterStack(unroll);
+		unroll->stackHeight -= 8;
+		x86_mov_reg_membase(unroll->out, X86_EAX, MD_REG_STACK,
+							unroll->stackHeight, 4);
+		x86_mov_reg_membase(unroll->out, X86_ECX, MD_REG_STACK,
+							unroll->stackHeight + 4, 4);
+		unroll->pseudoStack[0] = X86_EAX;
+		unroll->pseudoStack[1] = X86_ECX;
+		unroll->pseudoStackSize = 2;
+		unroll->regsUsed |= ((1 << X86_EAX) | (1 << X86_ECX));
+	}
+
+	/* Check for conditions that may cause an exception */
+	x86_alu_reg_imm(unroll->out, X86_CMP, X86_ECX, 0);
+	patch1 = unroll->out;
+	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
+	x86_alu_reg_imm(unroll->out, X86_CMP, X86_ECX, -1);
+	patch2 = unroll->out;
+	x86_branch32(unroll->out, X86_CC_NE, 0, 0);
+	x86_alu_reg_imm(unroll->out, X86_CMP, X86_EAX, (int)0x80000000);
+	patch3 = unroll->out;
+	x86_branch32(unroll->out, X86_CC_NE, 0, 0);
+	x86_patch(patch1, unroll->out);
+
+	/* Re-execute the division instruction to throw the exception */
+	ReExecute(unroll, pc, label);
+
+	/* Perform the division */
+	x86_patch(patch2, unroll->out);
+	x86_patch(patch3, unroll->out);
+	if(isSigned)
+	{
+		x86_cdq(unroll->out);
+	}
+	else
+	{
+		x86_clear_reg(unroll->out, X86_EDX);
+	}
+	x86_div_reg(unroll->out, X86_ECX, isSigned);
+
+	/* Pop ECX from the pseudo stack */
+	FreeTopRegister(unroll, -1);
+
+	/* If we want the remainder, then replace EAX with EDX on the stack */
+	if(wantRemainder)
+	{
+		unroll->pseudoStack[0] = X86_EDX;
+		unroll->regsUsed = (1 << X86_EDX);
+	}
+}
+
+#endif /* CVM_X86 */
+
+#elif defined(IL_UNROLL_CASES)
+
+case COP_IADD:
+{
+	/* Add integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_add_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_ISUB:
+{
+	/* Subtract integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_sub_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IMUL:
+{
+	/* Multiply integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_mul_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#ifdef CVM_X86
+
+case COP_IDIV:
+{
+	/* Divide integers */
+	UNROLL_START();
+	X86Divide(&unroll, 1, 0, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IDIV_UN:
+{
+	/* Divide unsigned integers */
+	UNROLL_START();
+	X86Divide(&unroll, 0, 0, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IREM:
+{
+	/* Remainder integers */
+	UNROLL_START();
+	X86Divide(&unroll, 1, 1, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IREM_UN:
+{
+	/* Remainder unsigned integers */
+	UNROLL_START();
+	X86Divide(&unroll, 0, 1, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* CVM_X86 */
+
+case COP_INEG:
+{
+	/* Negate integer */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_neg_reg_word_32(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#ifdef MD_HAS_FP
+
+case COP_FADD:
+{
+	/* Add floating point */
+	UNROLL_START();
+	GetTopTwoFPRegisters(&unroll, &reg, &reg2, 0);
+	md_add_reg_reg_float(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_FSUB:
+{
+	/* Subtract floating point */
+	UNROLL_START();
+	GetTopTwoFPRegisters(&unroll, &reg, &reg2, 0);
+	md_sub_reg_reg_float(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_FMUL:
+{
+	/* Multiply floating point */
+	UNROLL_START();
+	GetTopTwoFPRegisters(&unroll, &reg, &reg2, 0);
+	md_mul_reg_reg_float(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_FDIV:
+{
+	/* Divide floating point */
+	UNROLL_START();
+	GetTopTwoFPRegisters(&unroll, &reg, &reg2, 0);
+	md_div_reg_reg_float(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_FREM:
+{
+	/* Remainder floating point */
+	UNROLL_START();
+	GetTopTwoFPRegisters(&unroll, &reg, &reg2, 1);
+	md_rem_reg_reg_float(unroll.out, reg, reg2, unroll.regsUsed);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_FNEG:
+{
+	/* Negate floating point */
+	UNROLL_START();
+	reg = GetTopFPRegister(&unroll);
+	md_neg_reg_float(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* MD_HAS_FP */
+
+case COP_IAND:
+{
+	/* Bitwise and integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_and_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IOR:
+{
+	/* Bitwise or integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_or_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IXOR:
+{
+	/* Bitwise xor integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_xor_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_INOT:
+{
+	/* Bitwise not integer */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_not_reg_word_32(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_ISHL:
+{
+	/* Left shift integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_shl_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_ISHR:
+{
+	/* Right shift integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_shr_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_ISHR_UN:
+{
+	/* Unsigned right shift integers */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_ushr_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_ICMP:
+{
+	/* Compare integer values with -1, 0, or 1 result */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_cmp_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_ICMP_UN:
+{
+	/* Compare unsigned integer values with -1, 0, or 1 result */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2, MD_REG1_32BIT | MD_REG2_32BIT);
+	md_ucmp_reg_reg_word_32(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_PCMP:
+{
+	/* Compare native word values with -1, 0, or 1 result */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_NATIVE);
+	md_ucmp_reg_reg_word_native(unroll.out, reg, reg2);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_SETEQ:
+{
+	/* Set if top of stack is equal to zero */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_seteq_reg(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_SETNE:
+{
+	/* Set if top of stack is not equal to zero */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_setne_reg(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_SETLT:
+{
+	/* Set if top of stack is less than zero */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_setlt_reg(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_SETLE:
+{
+	/* Set if top of stack is less than or equal to zero */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_setle_reg(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_SETGT:
+{
+	/* Set if top of stack is greater than zero */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_setgt_reg(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_SETGE:
+{
+	/* Set if top of stack is greater than or equal to zero */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_32BIT);
+	md_setge_reg(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+#endif /* IL_UNROLL_CASES */

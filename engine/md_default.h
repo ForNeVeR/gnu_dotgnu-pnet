@@ -74,10 +74,20 @@ extern	"C" {
 			do { ; } while (0)
 #define	md_div_reg_reg_float(inst,reg1,reg2)	\
 			do { ; } while (0)
-#define	md_rem_reg_reg_float(inst,reg1,reg2)	\
+#define	md_rem_reg_reg_float(inst,reg1,reg2,used)	\
 			do { ; } while (0)
 #define	md_neg_reg_float(inst,reg)	\
 			do { ; } while (0)
+#endif
+
+/*
+ * Set a register to -1, 0, or 1 based on comparing two values.
+ */
+#if defined(IL_NATIVE_INT32) && !defined(md_cmp_reg_reg_word_native)
+#define	md_cmp_reg_reg_word_native(inst,reg1,reg2)	\
+			md_cmp_reg_reg_word_32((inst), (reg1), (reg2))
+#define	md_ucmp_reg_reg_word_native(inst,reg1,reg2)	\
+			md_ucmp_reg_reg_word_32((inst), (reg1), (reg2))
 #endif
 
 #ifdef	__cplusplus

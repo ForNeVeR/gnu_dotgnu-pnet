@@ -387,144 +387,49 @@ typedef arm_inst_ptr	md_inst_ptr;
 			arm_mov_reg_reg((inst), (dreg), (sreg))
 
 /*
- * Helper routine for the complex cases of "arm_mov_reg_imm".
- * TODO: make this static.
+ * Set a register to a 0 or 1 value based on a condition.
  */
-arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value)
-{
-	/* Handle bytes in various positions */
-	if((value & 0x000000FF) == value)
-	{
-		arm_mov_reg_imm8(inst, reg, value);
-		return inst;
-	}
-	else if((value & 0x0000FF00) == value)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, (value >> 8), 12);
-		return inst;
-	}
-	else if((value & 0x00FF0000) == value)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, (value >> 16), 8);
-		return inst;
-	}
-	else if((value & 0xFF000000) == value)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, ((value >> 24) & 0xFF), 4);
-		return inst;
-	}
-
-	/* Handle inverted bytes in various positions */
-	value = ~value;
-	if((value & 0x000000FF) == value)
-	{
-		arm_mov_reg_imm8(inst, reg, value);
-		arm_alu_reg(inst, ARM_MVN, reg, reg);
-		return inst;
-	}
-	else if((value & 0x0000FF00) == value)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, (value >> 8), 12);
-		arm_alu_reg(inst, ARM_MVN, reg, reg);
-		return inst;
-	}
-	else if((value & 0x00FF0000) == value)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, (value >> 16), 8);
-		arm_alu_reg(inst, ARM_MVN, reg, reg);
-		return inst;
-	}
-	else if((value & 0xFF000000) == value)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, ((value >> 24) & 0xFF), 4);
-		arm_alu_reg(inst, ARM_MVN, reg, reg);
-		return inst;
-	}
-
-	/* Build the value the hard way, byte by byte */
-	value = ~value;
-	if((value & 0xFF000000) != 0)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, ((value >> 24) & 0xFF), 4);
-		if((value & 0x00FF0000) != 0)
-		{
-			arm_alu_reg_imm8_rotate
-				(inst, ARM_ADD, reg, reg, ((value >> 16) & 0xFF), 8);
-		}
-		if((value & 0x0000FF00) != 0)
-		{
-			arm_alu_reg_imm8_rotate
-				(inst, ARM_ADD, reg, reg, ((value >> 8) & 0xFF), 12);
-		}
-		if((value & 0x000000FF) != 0)
-		{
-			arm_alu_reg_imm8(inst, ARM_ADD, reg, reg, (value & 0xFF));
-		}
-	}
-	else if((value & 0x00FF0000) != 0)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, ((value >> 16) & 0xFF), 8);
-		if((value & 0x0000FF00) != 0)
-		{
-			arm_alu_reg_imm8_rotate
-				(inst, ARM_ADD, reg, reg, ((value >> 8) & 0xFF), 12);
-		}
-		if((value & 0x000000FF) != 0)
-		{
-			arm_alu_reg_imm8(inst, ARM_ADD, reg, reg, (value & 0xFF));
-		}
-	}
-	else if((value & 0x0000FF00) != 0)
-	{
-		arm_mov_reg_imm8_rotate(inst, reg, ((value >> 8) & 0xFF), 12);
-		if((value & 0x000000FF) != 0)
-		{
-			arm_alu_reg_imm8(inst, ARM_ADD, reg, reg, (value & 0xFF));
-		}
-	}
-	else
-	{
-		arm_mov_reg_imm8(inst, reg, (value & 0xFF));
-	}
-	return inst;
-}
+extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
+								 int cond, int invcond);
+#define	md_seteq_reg(inst,reg)	\
+			do { (inst) = _md_arm_setcc \
+					((inst), (reg), ARM_CC_EQ, ARM_CC_NE); } while (0)
+#define	md_setne_reg(inst,reg)	\
+			do { (inst) = _md_arm_setcc \
+					((inst), (reg), ARM_CC_NE, ARM_CC_EQ); } while (0)
+#define	md_setlt_reg(inst,reg)	\
+			do { (inst) = _md_arm_setcc \
+					((inst), (reg), ARM_CC_LT, ARM_CC_GE); } while (0)
+#define	md_setle_reg(inst,reg)	\
+			do { (inst) = _md_arm_setcc \
+					((inst), (reg), ARM_CC_LE, ARM_CC_GT); } while (0)
+#define	md_setgt_reg(inst,reg)	\
+			do { (inst) = _md_arm_setcc \
+					((inst), (reg), ARM_CC_GT, ARM_CC_LE); } while (0)
+#define	md_setge_reg(inst,reg)	\
+			do { (inst) = _md_arm_setcc \
+					((inst), (reg), ARM_CC_GE, ARM_CC_LT); } while (0)
 
 /*
- * Helper routine for the complex cases of "arm_alu_reg_imm".
+ * Set a register to -1, 0, or 1 based on comparing two values.
  */
-arm_inst_ptr _arm_alu_reg_imm(arm_inst_ptr inst, int opc,
-					          int dreg, int sreg, int imm,
-					          int saveWork)
-{
-	int tempreg;
-	if(saveWork)
-	{
-		if(dreg != ARM_R2 && sreg != ARM_R2)
-		{
-			tempreg = ARM_R2;
-		}
-		else if(dreg != ARM_R3 && sreg != ARM_R3)
-		{
-			tempreg = ARM_R3;
-		}
-		else
-		{
-			tempreg = ARM_R4;
-		}
-		arm_push_reg(inst, tempreg);
-	}
-	else
-	{
-		tempreg = ARM_WORK;
-	}
-	_arm_mov_reg_imm(inst, tempreg, imm);
-	arm_alu_reg_reg(inst, opc, dreg, sreg, tempreg);
-	if(saveWork)
-	{
-		arm_pop_reg(inst, tempreg);
-	}
-	return inst;
-}
+#define	md_cmp_reg_reg_word_32(inst,reg1,reg2)	\
+			do { \
+				arm_test_reg_reg((inst), ARM_CMP, reg1, reg2); \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 1, ARM_CC_GT); \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 0, ARM_CC_LE); \
+				arm_alu_reg_cond((inst), ARM_MVN, reg1, reg1, ARM_CC_LT); \
+			} while (0)
+#define	md_ucmp_reg_reg_word_32(inst,reg1,reg2)	\
+			do { \
+				arm_test_reg_reg((inst), ARM_CMP, reg1, reg2); \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 1, \
+									  ARM_CC_GT_UN); \
+				arm_alu_reg_imm8_cond((inst), ARM_MOV, reg1, 0, 0, \
+									  ARM_CC_LE_UN); \
+				arm_alu_reg_cond((inst), ARM_MVN, reg1, reg1, \
+								 ARM_CC_LT_UN); \
+			} while (0)
 
 #ifdef	__cplusplus
 };

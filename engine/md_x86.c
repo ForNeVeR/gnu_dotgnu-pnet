@@ -1,0 +1,154 @@
+/*
+ * md_x86.c - Machine-dependent definitions for x86.
+ *
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "md_x86.h"
+
+#ifdef	__cplusplus
+extern	"C" {
+#endif
+
+md_inst_ptr _md_x86_shift(md_inst_ptr inst, int opc, int reg1, int reg2)
+{
+	if(reg2 == X86_ECX)
+	{
+		/* The shift value is already in ECX */
+		x86_shift_reg(inst, opc, reg1);
+	}
+	else if(reg1 == X86_ECX)
+	{
+		/* The value to be shifted is in ECX, so swap the order */
+		x86_xchg_reg_reg(inst, reg1, reg2, 4);
+		x86_shift_reg(inst, opc, reg2);
+		x86_mov_reg_reg(inst, reg1, reg2, 4);
+	}
+	else
+	{
+		/* Save ECX, perform the shift, and then restore ECX */
+		x86_push_reg(inst, X86_ECX);
+		x86_mov_reg_reg(inst, X86_ECX, reg2, 4);
+		x86_shift_reg(inst, opc, reg1);
+		x86_pop_reg(inst, X86_ECX);
+	}
+	return inst;
+}
+
+md_inst_ptr _md_x86_mov_membase_reg_byte
+			(md_inst_ptr inst, int basereg, int offset, int srcreg)
+{
+	if(srcreg == X86_EAX || srcreg == X86_EBX ||
+	   srcreg == X86_ECX || srcreg == X86_EDX)
+	{
+		x86_mov_membase_reg(inst, basereg, offset, srcreg, 1);
+	}
+	else if(basereg != X86_EAX)
+	{
+		x86_push_reg(inst, X86_EAX);
+		x86_mov_reg_reg(inst, X86_EAX, srcreg, 4);
+		x86_mov_membase_reg(inst, basereg, offset, X86_EAX, 1);
+		x86_pop_reg(inst, X86_EAX);
+	}
+	else
+	{
+		x86_push_reg(inst, X86_EDX);
+		x86_mov_reg_reg(inst, X86_EDX, srcreg, 4);
+		x86_mov_membase_reg(inst, basereg, offset, X86_EDX, 1);
+		x86_pop_reg(inst, X86_EDX);
+	}
+	return inst;
+}
+
+md_inst_ptr _md_x86_rem_float
+		(md_inst_ptr inst, int reg1, int reg2, int used)
+{
+	md_inst_ptr label;
+	if((used & (1 << X86_EAX)) != 0)
+	{
+		x86_push_reg(inst, X86_EAX);
+	}
+	label = inst;
+	x86_fprem1(inst);
+	x86_fnstsw(inst);
+	x86_alu_reg_imm(inst, X86_AND, X86_EAX, 0x0400);
+	x86_branch(inst, X86_CC_NZ, label, 0);
+	x86_fstp(inst, 1);
+	if((used & (1 << X86_EAX)) != 0)
+	{
+		x86_pop_reg(inst, X86_EAX);
+	}
+	return inst;
+}
+
+md_inst_ptr _md_x86_setcc(md_inst_ptr inst, int reg, int cond)
+{
+	if(cond == X86_CC_EQ || cond == X86_CC_NE)
+	{
+		x86_alu_reg_reg(inst, X86_OR, reg, reg);
+	}
+	else
+	{
+		x86_alu_reg_imm(inst, X86_CMP, reg, 0);
+	}
+	if(reg == X86_EAX || reg == X86_EBX || reg == X86_ECX || reg == X86_EDX)
+	{
+		/* Use a SETcc instruction if we have a basic register */
+		x86_set_reg(inst, cond, reg, 1);
+		x86_widen_reg(inst, reg, reg, 0, 0);
+	}
+	else
+	{
+		/* The register is not useable as an 8-bit destination */
+		unsigned char *patch1, *patch2;
+		patch1 = inst;
+		x86_branch8(inst, cond, 0, 1);
+		x86_clear_reg(inst, reg);
+		patch2 = inst;
+		x86_jump8(inst, 0);
+		x86_patch(patch1, inst);
+		x86_mov_reg_imm(inst, reg, 1);
+		x86_patch(patch2, inst);
+	}
+	return inst;
+}
+
+md_inst_ptr _md_x86_compare(md_inst_ptr inst, int reg1, int reg2, int isSigned)
+{
+	unsigned char *patch1, *patch2, *patch3;
+	x86_alu_reg_reg(inst, X86_CMP, reg1, reg2);
+	patch1 = inst;
+	x86_branch8(inst, X86_CC_GE, 0, isSigned);
+	x86_mov_reg_imm(inst, reg1, -1);
+	patch2 = inst;
+	x86_jump8(inst, 0);
+	x86_patch(patch1, inst);
+	patch1 = inst;
+	x86_branch8(inst, X86_CC_EQ, 0, 0);
+	x86_mov_reg_imm(inst, reg1, 1);
+	patch3 = inst;
+	x86_jump8(inst, 0);
+	x86_patch(patch1, inst);
+	x86_clear_reg(inst, reg1);
+	x86_patch(patch2, inst);
+	x86_patch(patch3, inst);
+	return inst;
+}
+
+#ifdef	__cplusplus
+};
+#endif

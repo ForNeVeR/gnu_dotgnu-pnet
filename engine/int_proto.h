@@ -386,6 +386,7 @@ extern void _IL_CryptoMethods_Encrypt(ILExecThread * _thread, ILNativeInt state,
 extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
 extern void _IL_CryptoMethods_SymmetricFree(ILExecThread * _thread, ILNativeInt state);
 extern System_Array * _IL_CryptoMethods_NumAdd(ILExecThread * _thread, System_Array * x, System_Array * y, System_Array * modulus);
+extern System_Array * _IL_CryptoMethods_NumSub(ILExecThread * _thread, System_Array * x, System_Array * y, System_Array * modulus);
 extern System_Array * _IL_CryptoMethods_NumMul(ILExecThread * _thread, System_Array * x, System_Array * y, System_Array * modulus);
 extern System_Array * _IL_CryptoMethods_NumPow(ILExecThread * _thread, System_Array * x, System_Array * y, System_Array * modulus);
 extern System_Array * _IL_CryptoMethods_NumInv(ILExecThread * _thread, System_Array * x, System_Array * modulus);

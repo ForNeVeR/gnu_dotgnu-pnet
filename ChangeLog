@@ -1,4 +1,10 @@
 
+2002-07-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_crypt.c,
+	samples/mscorlib.dll: implement the "NumSub" helper method for
+	implementing RSA; check-in a new version of pnetlib.
+
 2002-07-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/bignum.c, tests/test_crypt.c: rewrite the big number

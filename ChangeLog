@@ -5,6 +5,9 @@
 	support code for Parrot code generation (incomplete and
 	doesn't compile yet).
 
+	* codegen/pm_output.c: change the xor operator from "^" to "~",
+	to be compatible with the Perl-ish conventions of imcc.
+
 2002-10-21  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, codegen/cg_nodes.tc, codegen/cg_stmt.tc, 

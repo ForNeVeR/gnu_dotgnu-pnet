@@ -1739,6 +1739,7 @@ static void OutputDebugInfo(ILMethod *method)
 			{
 				ILWriterDebugAdd(ILAsmWriter, (ILProgramItem *)method,
 								 type, buf, len);
+				prevFilename = 0;
 				len = 0;
 			}
 		}

@@ -1,4 +1,9 @@
 
+2003-09-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilasm/ilasm_output.c (OutputDebugInfo): make sure that the
+	proper filename is written to debug overflow blocks.
+
 2003-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant.1, doc/pnettools.texi: update the documentation

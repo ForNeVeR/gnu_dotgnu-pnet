@@ -1,13 +1,16 @@
 
 .PHONY: System.Data.dll
 
-all-local: System.Data.dll
+all-local: Parser.cs System.Data.dll
 
 System.Data.dll:
 	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-b "$(srcdir)" -B . -f System.Data.build all
 
-CLEANFILES = System.Data.dll
+Parser.cs : $(MONO_SOURCE_PATH)/class/System.Data/Mono.Data.SqlExpressions/Parser.jay $(MONO_SOURCE_PATH)/jay/skeleton.cs
+	$(top_builddir)/jay/jay -ct < $(MONO_SOURCE_PATH)/jay/skeleton.cs $< >$@
+
+CLEANFILES = System.Data.dll Parser.cs
 
 install-data-local:
 	@$(NORMAL_INSTALL)

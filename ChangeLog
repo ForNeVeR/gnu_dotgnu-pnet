@@ -5,6 +5,10 @@
 	enable it to build System.Data.
 	
 	* Makefile.am: place jay before all other tools.
+
+	* class/System.Data/Makefile.am , class/System.Data/System.Data.build:
+	Generate Parser.cs locally using jay and let it compile System.Data
+	out of the box.
 	
 2004-04-30  Klaus Treichel  <ktreichel@web.de>
 

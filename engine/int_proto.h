@@ -531,12 +531,6 @@ extern ILInt32 _IL_FileMethods_GetLength(ILExecThread * _thread, ILString * _p1,
 extern ILBool _IL_FileMethods_HasAsync(ILExecThread * _thread);
 extern ILInt32 _IL_FileMethods_Copy(ILExecThread * _thread, ILString * _p1, ILString * _p2);
 
-extern ILBool _IL_RuntimeSecurityManager_CanUseFileHandle(ILExecThread * _thread, ILObject * _this, ILNativeInt _p1);
-extern ILBool _IL_RuntimeSecurityManager_CanOpenFile(ILExecThread * _thread, ILObject * _this, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4);
-
-extern ILObject * _IL_Security_GetSecurityManager(ILExecThread * _thread);
-extern void _IL_Security_SetSecurityManager(ILExecThread * _thread, ILObject * _p1);
-
 extern ILInt32 _IL_InfoMethods_GetPlatformID(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetRuntimeVersion(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetNetBIOSMachineName(ILExecThread * _thread);

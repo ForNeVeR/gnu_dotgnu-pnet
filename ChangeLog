@@ -5,6 +5,10 @@
 	include/il_sysio.h, support/file.c: stub out the internalcalls
 	for "FileMethods.Lock" and "FileMethods.Unlock".
 
+	* engine/engine.h, engine/int_proto.h, engine/int_table.c,
+	engine/lib_security.c, engine/thread.c: remove the obsolete
+	platform security manager classes, which will be superceded by CAS.
+
 2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/pecoff_loader.c (MemoryRead): reversed test, causing segv

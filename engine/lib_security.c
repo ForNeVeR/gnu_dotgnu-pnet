@@ -80,54 +80,6 @@ void _IL_ClrSecurity_SetPermissions(ILExecThread *_thread,
 	}
 }
 
-/*
- * public bool CanUseFileHandle(IntPtr handle);
- */
-ILBool _IL_RuntimeSecurityManager_CanUseFileHandle(ILExecThread *_thread,
-												   ILObject *_this,
-												   ILNativeInt handle)
-{
-	/* TODO */
-	return 0;
-}
-
-/*
- * public bool CanOpenFile(String path, FileMode mode,
- *						   FileAccess access, FileShare share);
- */
-ILBool _IL_RuntimeSecurityManager_CanOpenFile(ILExecThread *_thread,
-											  ILObject *_this,
-											  ILString * path,
-											  ILInt32 mode, ILInt32 access,
-											  ILInt32 share)
-{
-	/* TODO */
-	return 1;
-}
-
-/*
- * private static ISecurityManager GetSecurityManager();
- */
-ILObject *_IL_Security_GetSecurityManager(ILExecThread *_thread)
-{
-	ILObject *mgr = _thread->securityManager;
-	if(!mgr)
-	{
-		mgr = ILExecThreadNew(_thread, "Platform.RuntimeSecurityManager",
-							  "(T)V");
-		_thread->securityManager = mgr;
-	}
-	return mgr;
-}
-
-/*
- * private static void SetSecurityManager(ISecurityManager mgr);
- */
-void _IL_Security_SetSecurityManager(ILExecThread *_thread, ILObject *mgr)
-{
-	_thread->securityManager = mgr;
-}
-
 #ifdef	__cplusplus
 };
 #endif

@@ -2466,33 +2466,6 @@ IL_METHOD_END
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpppiii(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, ILInt32, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])), *((ILInt32 *)(avalue[5])));
-}
-
-#endif
-
-#ifndef _IL_RuntimeSecurityManager_suppressed
-
-IL_METHOD_BEGIN(RuntimeSecurityManager_Methods)
-	IL_METHOD("CanUseFileHandle", "(Tj)Z", _IL_RuntimeSecurityManager_CanUseFileHandle, marshal_bppj)
-	IL_METHOD("CanOpenFile", "(ToSystem.String;vSystem.IO.FileMode;vSystem.IO.FileAccess;vSystem.IO.FileShare;)Z", _IL_RuntimeSecurityManager_CanOpenFile, marshal_bpppiii)
-IL_METHOD_END
-
-#endif
-
-#ifndef _IL_Security_suppressed
-
-IL_METHOD_BEGIN(Security_Methods)
-	IL_METHOD("GetSecurityManager", "()oPlatform.ISecurityManager;", _IL_Security_GetSecurityManager, marshal_pp)
-	IL_METHOD("SetSecurityManager", "(oPlatform.ISecurityManager;)V", _IL_Security_SetSecurityManager, marshal_vpp)
-IL_METHOD_END
-
-#endif
-
 #ifndef _IL_InfoMethods_suppressed
 
 IL_METHOD_BEGIN(InfoMethods_Methods)
@@ -3001,12 +2974,6 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_RuntimeMethodHandle_suppressed
 	{"RuntimeMethodHandle", "System", RuntimeMethodHandle_Methods},
-#endif
-#ifndef _IL_RuntimeSecurityManager_suppressed
-	{"RuntimeSecurityManager", "Platform", RuntimeSecurityManager_Methods},
-#endif
-#ifndef _IL_Security_suppressed
-	{"Security", "Platform", Security_Methods},
 #endif
 #ifndef _IL_SignatureHelper_suppressed
 	{"SignatureHelper", "System.Reflection.Emit", SignatureHelper_Methods},

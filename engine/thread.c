@@ -184,7 +184,6 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;
 	thread->thrownException = 0;	
-	thread->securityManager = 0;
 	thread->threadStaticSlots = 0;
 	thread->threadStaticSlotsUsed = 0;
 

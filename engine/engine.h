@@ -251,9 +251,6 @@ struct _tagILExecThread
 	/* Indicates if an abort is in progress */
 	int				aborting;
 
-	/* Security manager in use by this thread */
-	ILObject	   *securityManager;
-
 	/* System.Threading.Thread object */
 	ILObject *clrThread;
 

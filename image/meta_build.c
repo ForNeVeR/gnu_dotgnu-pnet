@@ -1184,7 +1184,10 @@ static int Load_MethodDef(ILImage *image, ILUInt32 *values,
 							   values[IL_OFFSET_METHODDEF_SIGNATURE_RAW]);
 
 	/* Set the other method fields */
-	ILMethodSetImplAttrs(method, ~0, values[IL_OFFSET_METHODDEF_IMPL_ATTRS]);
+	ILMethodSetImplAttrs(method, ~0,
+		(values[IL_OFFSET_METHODDEF_IMPL_ATTRS] &
+			~(IL_META_METHODIMPL_JAVA_FP_STRICT |
+			  IL_META_METHODIMPL_JAVA)));
 	ILMethodSetCallConv(method, (signature->kind >> 8));
 	ILMethodSetRVA(method, values[IL_OFFSET_METHODDEF_RVA]);
 

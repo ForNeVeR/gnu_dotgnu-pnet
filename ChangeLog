@@ -18,6 +18,9 @@ legitimate image type.
 * dumpasm/dump_flags.c (ILMethodImplementationFlags): add implementation
 flags that are relevant to Java class files.
 
+* image/meta_build.c (Load_MethodDef): mask off Java-related flags
+to prevent potentional security breaches.
+
 2001-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

@@ -121,6 +121,7 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 	ILType *typeAttr;
 	ILType *systemType=ILExecThreadLookupType(thread,"oSystem.Type");
 	ILClass *classInfo;
+	char *copyStr;
 	
 	if(serialType!=ILSerializeGetType(type))
 	{
@@ -173,7 +174,12 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 					{
 						return NULL;
 					}
-					classInfo = ILExecThreadLookupClass(thread,strValue);
+					/* NOTE: Make sure the string used for lookup is NULL
+					 * terminated */
+					copyStr=(char*) ILCalloc(strLen+1,sizeof(char));
+					ILMemCpy(copyStr,strValue,strLen);
+					classInfo = ILExecThreadLookupClass(thread,copyStr);
+					ILFree(copyStr);
 					if(!classInfo)
 					{
 						return NULL;
@@ -230,7 +236,12 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 							{
 								return NULL;
 							}
-							classInfo=ILExecThreadLookupClass(thread,strValue);
+							/* NOTE: Make sure the string used for lookup 
+							 * is NULL terminated */
+							copyStr=(char*) ILCalloc(strLen+1,sizeof(char));
+							ILMemCpy(copyStr,strValue,strLen);
+							classInfo = ILExecThreadLookupClass(thread,copyStr);
+							ILFree(copyStr);
 							if(!classInfo)
 							{
 								return NULL;

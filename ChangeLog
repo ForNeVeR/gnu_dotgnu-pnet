@@ -1,4 +1,9 @@
 
+2003-05-09  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/expr/cast8.cs , csharp/expr/cast8.il, csharp/expr/cast8.jl:
+	Test for type resolution conflicts in cast expressions.
+
 2003-05-08  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/class/type2.cs , csharp/class/type2.il,  csharp/class/type2.jl:

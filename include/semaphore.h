@@ -31,7 +31,7 @@ __BEGIN_DECLS
 /*
  * Structure of a semaphore.
  */
-typedef struct
+typedef struct __sem_s
   {
     void *__sem_monitor;
     int __sem_value;

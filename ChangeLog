@@ -1,4 +1,10 @@
 
+2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/pthread.h, include/semaphore.h, include/wchar.h:
+	add names to some anonymous structures so that they can be
+	accessed from C# in a reasonable fashion.
+
 2004-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am, include/dirent.h, include/langinfo.h,

@@ -68,7 +68,7 @@ typedef unsigned int wint_t;
 #ifndef __mbstate_t_defined
 # define __mbstate_t_defined	1
 /* Conversion state information.  */
-typedef struct
+typedef struct __mbstate_s
 {
   int __count;
   union

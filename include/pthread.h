@@ -121,7 +121,7 @@ struct sched_param
 /*
  * Thread attributes.
  */
-typedef struct
+typedef struct __pthread_attr_s
   {
     int __detachstate;
     int __schedpolicy;
@@ -137,7 +137,7 @@ typedef struct
 /*
  * Structure of a mutex, which is wrapped around a C# monitor.
  */
-typedef struct
+typedef struct __pthread_mutex_s
   {
     void *__m_monitor;
   } pthread_mutex_t;
@@ -152,7 +152,7 @@ typedef struct
 /*
  * Mutex attributes.
  */
-typedef struct
+typedef struct __pthread_mutexattr_s
   {
     int __mutex_kind;
     int __mutex_pshared;
@@ -171,7 +171,7 @@ typedef pthread_spinlock_t pthread_once_t;
 /*
  * Condition variables.
  */
-typedef struct
+typedef struct __pthread_cond_s
   {
     pthread_spinlock_t __lock;
     pthread_mutex_t *__wait_mutex;
@@ -181,7 +181,7 @@ typedef struct
 /*
  * Condition variable attributes.
  */
-typedef struct
+typedef struct __pthread_condattr_s
   {
     int __pshared;
     clockid_t __clock_id;
@@ -190,7 +190,7 @@ typedef struct
 /*
  * Read-write locks.
  */
-typedef struct
+typedef struct __pthread_rwlock_s
   {
     pthread_mutex_t __lock;
   } pthread_rwlock_t;
@@ -202,7 +202,7 @@ typedef struct
 /*
  * Read-write lock attributes.
  */
-typedef struct
+typedef struct __pthread_rwlockattr_s
   {
     pthread_mutexattr_t __attr;
   } pthread_rwlockattr_t;
@@ -226,7 +226,7 @@ typedef long long pthread_key_t;
 /*
  * Barrier type.
  */
-typedef struct
+typedef struct __pthread_barrier_s
   {
     pthread_mutex_t __lock;
     pthread_cond_t __condition;
@@ -237,7 +237,7 @@ typedef struct
 /*
  * Barrer attribute type.
  */
-typedef struct
+typedef struct __pthread_barrierattr_s
   {
     int __pshared;
   } pthread_barrierattr_t;

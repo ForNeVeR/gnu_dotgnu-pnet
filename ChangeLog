@@ -1,4 +1,9 @@
 
+2003-06-30  Jeff Post  <j_post@pacbell.net>
+
+	* csdoc/doc_html.c: add code to generate href links to the
+	output of cssrc2html.
+
 2003-06-30  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c: Fix argument exception instead of

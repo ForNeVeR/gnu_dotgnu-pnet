@@ -80,6 +80,12 @@ ILCmdLineOption const ILDocProgramOptions[] = {
 	{"-fheader-color", 'f', 1,
 		"-fheader-color=COLOR",
 		"Specify the color to use in table headers"},
+	{"-fsource-xref-tags", 'f', 1,
+		"-fsource-xref-tags",
+		"Enable generation of tags for source cross reference"},
+	{"-fsource-xref-dir", 'f', 1,
+		"-fsource-xref-dir=DIR",
+		"Specify relative location of directory containing source html file"},
 	{0, 0, 0, 0, 0}
 };
 
@@ -97,6 +103,10 @@ static int isSingleFile;
 static int separateMembers;
 static int namespaceDirectories;
 static int useFrames;
+
+static int	sourceXrefTags = 0;
+static char	*sourceXrefName = NULL;
+static char	*sourceXrefDir = NULL;
 
 /*
  * The next index to use to create unique filenames.
@@ -1527,6 +1537,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 	fputs("<H4>See Also</H4>\n\n", stream);
 	fputs("<BLOCKQUOTE>\n", stream);
 	needComma = 0;
+
 	child = ILDocTextFirstChild(doc, "seealso");
 	while(child != 0)
 	{
@@ -1876,6 +1887,21 @@ static void ConvertType(FILE *stream, ILDocType *type,
 		/* Print the signature for the member */
 		PrintSignature(memberStream, member->csSignature);
 
+		if (sourceXrefTags && (member->memberType == ILDocMemberType_Method || member->memberType == ILDocMemberType_Constructor))
+		{
+			fprintf(memberStream, "<a HREF=\"%s/%s#", sourceXrefDir, sourceXrefName);
+			if (type->namespace)
+			{
+				fprintf(memberStream, "%s.", type->namespace->name);
+			}
+			fputs(type->name, memberStream);
+			if (member->memberType == ILDocMemberType_Method)
+			{
+				fprintf(memberStream, ".%s", member->name);
+			}
+			fputs("\">Source Code</a>", memberStream);
+		}
+
 		/* Print the documentation for the member */
 		PrintDocs(memberStream, member->doc, type, member);
 
@@ -1903,6 +1929,46 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	ILDocType *type;
 	const char *title;
 	const char *color;
+	int	len;
+
+	sourceXrefTags = ILDocFlagSet("source-xref-tags");
+	sourceXrefDir = (char *) ILDocFlagValue("source-xref-dir");
+	if (!sourceXrefDir)
+	{
+		sourceXrefDir = "..";
+	}
+	else
+	{
+		sourceXrefTags = 1;		/* implicit enable if directory specified */
+		/* Adjust the first input filename to end in ".html" */
+		len = strlen(inputs[0]);
+		while(len > 0 && inputs[0][len - 1] != '/' &&
+			  inputs[0][len - 1] != '\\' &&
+			  inputs[0][len - 1] != '.')
+		{
+			--len;
+		}
+		if(len > 0 && inputs[0][len - 1] == '.')
+		{
+			sourceXrefName = (char *)ILMalloc(len + 5);
+			if(!sourceXrefName)
+			{
+				ILDocOutOfMemory(progname);
+			}
+			ILMemCpy(sourceXrefName, inputs[0], len);
+			strcpy(sourceXrefName + len, "html");
+		}
+		else
+		{
+			sourceXrefName = (char *)ILMalloc(strlen(inputs[0]) + 6);
+			if(!sourceXrefName)
+			{
+				ILDocOutOfMemory(progname);
+			}
+			strcpy(sourceXrefName, inputs[0]);
+			strcat(sourceXrefName, ".html");
+		}
+	}
 
 	/* Attempt to open the output stream */
 	isSingleFile = ILDocFlagSet("single-file");

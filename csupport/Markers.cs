@@ -2,7 +2,7 @@
  * Markers.cs - Classes that mark program items for special C behaviours.
  *
  * This file is part of the Portable.NET "C language support" library.
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -100,6 +100,14 @@ public sealed class OriginalNameAttribute : Attribute
 public sealed class CNameAttribute : Attribute
 {
 	public CNameAttribute(String name) {}
+}
+
+// An attribute class that is used to export a C# type's contents
+// into the global scope for direct access by C functions.
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class GlobalScopeAttribute : Attribute
+{
+	public GlobalScopeAttribute() {}
 }
 
 } // namespace OpenSystem.C

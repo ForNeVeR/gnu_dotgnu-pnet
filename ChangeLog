@@ -6,6 +6,10 @@
 	and "InternalWaitAny" internalcalls to take "IntPtr[]" parameters
 	rather than "WaitHandle[]" parameters (fixes bug #7455).
 
+	* csupport/Markers.cs: add the "GlobalScopeAttribute" class,
+	which indicates that a C# type's contents are visible as
+	C functions within the global scope.
+
 2004-02-08  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlTextReader.cs: fix a bug in empty attribute value

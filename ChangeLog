@@ -11,6 +11,9 @@
 	* support/wait_mutex.c: Added fast hashtable support code
 	for wakeup owned mutexes.
 	
+	* engine/cvm_inline.c: Fixed comments so that CVM doc generation
+	works again.
+	
 2004-06-18  Thong Nguyen  <tum@veridicus.com>
 
 	* include/il_thread.h: Changed Interrupt handling functions to

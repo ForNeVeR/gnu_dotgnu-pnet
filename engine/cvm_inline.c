@@ -528,36 +528,274 @@ VMCASE(COP_PREFIX_IS_WHITE_SPACE):
 VMBREAK(COP_PREFIX_IS_WHITE_SPACE);
 
 /**
-* <opcode name="*" group="Inline methods">
- *   <operation>Compute a mathmatical function</operation>
+ * <opcode name="asin" group="Inline methods">
+ *   <operation>Compute the angle whose sine is the specified number</operation>
  *
- *   <format>prefix<fsep/>*</format>
- *   <dformat>{*}</dformat>
+ *   <format>prefix<fsep/>asin</format>
+ *   <dformat>{asin}</dformat>
  *
- *   <form name="*" code="COP_PREFIX_*"/>
+ *   <form name="asin" code="COP_PREFIX_ASIN"/>
  *
- *   <before>..., db</before>
+ *   <before>..., number</before>
  *   <after>..., result</after>
  * </opcode>
  */
-
 COP_PREFIX_MATH_CASE(ASIN, Asin);
+
+/**
+ * <opcode name="atan" group="Inline methods">
+ *   <operation>Compute the angle whose tangent is the specified number</operation>
+ *
+ *   <format>prefix<fsep/>atan</format>
+ *   <dformat>{atan}</dformat>
+ *
+ *   <form name="atan" code="COP_PREFIX_ATAN"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(ATAN, Atan);
+
+/**
+ * <opcode name="atan2" group="Inline methods">
+ *   <operation>Compute the angle whose tangent is quotient of the two specified numbers</operation>
+ *
+ *   <format>prefix<fsep/>atan2</format>
+ *   <dformat>{atan2}</dformat>
+ *
+ *   <form name="atan2" code="COP_PREFIX_ATAN"/>
+ *
+ *   <before>..., number1, number2</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE_2(ATAN2, Atan2);
+
+/**
+ * <opcode name="ceiling" group="Inline methods">
+ *   <operation>Returns the smallest whole number greater than or equal to the specified number</operation>
+ *
+ *   <format>prefix<fsep/>ceiling</format>
+ *   <dformat>{ceiling}</dformat>
+ *
+ *   <form name="ceiling" code="COP_PREFIX_CEILING"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(CEILING, Ceiling);
+
+/**
+ * <opcode name="cos" group="Inline methods">
+ *   <operation>Compute the cosine of the specified angle</operation>
+ *
+ *   <format>prefix<fsep/>cos</format>
+ *   <dformat>{cos}</dformat>
+ *
+ *   <form name="cos" code="COP_PREFIX_COS"/>
+ *
+ *   <before>..., angle</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(COS, Cos);
+
+/**
+ * <opcode name="cosh" group="Inline methods">
+ *   <operation>Returns the hyperbolic cosine of the specified angle</operation>
+ *
+ *   <format>prefix<fsep/>cosh</format>
+ *   <dformat>{cosh}</dformat>
+ *
+ *   <form name="cosh" code="COP_PREFIX_COSH"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(COSH, Cosh);
+
+/**
+ * <opcode name="exp" group="Inline methods">
+ *   <operation>Computes e raised to the specified power</operation>
+ *
+ *   <format>prefix<fsep/>exp</format>
+ *   <dformat>{exp}</dformat>
+ *
+ *   <form name="exp" code="COP_PREFIX_EXP"/>
+ *
+ *   <before>..., power</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(EXP, Exp);
+
+/**
+ * <opcode name="floor" group="Inline methods">
+ *   <operation>Computes the largest whole number less than or equal to the specified number</operation>
+ *
+ *   <format>prefix<fsep/>floor</format>
+ *   <dformat>{floor}</dformat>
+ *
+ *   <form name="floor" code="COP_PREFIX_FLOOR"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(FLOOR, Floor);
+
+/**
+ * <opcode name="ieeeremainder" group="Inline methods">
+ *   <operation>Computes the remainder resulting from the division of 
+ *   a specified number by another specified number.</operation>
+ *
+ *   <format>prefix<fsep/>ieeeremainder</format>
+ *   <dformat>{ieeeremainder}</dformat>
+ *
+ *   <form name="ieeeremainder" code="COP_PREFIX_IEEEREMAINDER"/>
+ *
+ *   <before>..., number1, number2</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE_2(IEEEREMAINDER, IEEERemainder);
+
+/**
+ * <opcode name="log" group="Inline methods">
+ *   <operation>Computes the natural (base e) logarithm of the specified number</operation>
+ *
+ *   <format>prefix<fsep/>log</format>
+ *   <dformat>{log}</dformat>
+ *
+ *   <form name="log" code="COP_PREFIX_LOG"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(LOG, Log);
+
+/**
+ * <opcode name="log10" group="Inline methods">
+ *   <operation>Computes the base 10 logarithm of the specified number</operation>
+ *
+ *   <format>prefix<fsep/>log10</format>
+ *   <dformat>{log10}</dformat>
+ *
+ *   <form name="log10" code="COP_PREFIX_LOG10"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(LOG10, Log10);
+
+/**
+ * <opcode name="pow" group="Inline methods">
+ *   <operation>Computes the given number raised to a specific power</operation>
+ *
+ *   <format>prefix<fsep/>pow</format>
+ *   <dformat>{pow}</dformat>
+ *
+ *   <form name="pow" code="COP_PREFIX_POW"/>
+ *
+ *   <before>..., number, power</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE_2(POW, Pow);
+
+/**
+ * <opcode name="round" group="Inline methods">
+ *   <operation>Computes the whole number nearest to the specified number</operation>
+ *
+ *   <format>prefix<fsep/>round</format>
+ *   <dformat>{round}</dformat>
+ *
+ *   <form name="round" code="COP_PREFIX_ROUND"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(ROUND, Round);
+
+/**
+ * <opcode name="sin" group="Inline methods">
+ *   <operation>Compute the sine of the specified angle</operation>
+ *
+ *   <format>prefix<fsep/>sin</format>
+ *   <dformat>{sin}</dformat>
+ *
+ *   <form name="sin" code="COP_PREFIX_SIN"/>
+ *
+ *   <before>..., angle</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(SIN, Sin);
+
+/**
+ * <opcode name="sinh" group="Inline methods">
+ *   <operation>Computes the hyperbolic sine of the specified angle</operation>
+ *
+ *   <format>prefix<fsep/>sinh</format>
+ *   <dformat>{sinh}</dformat>
+ *
+ *   <form name="sinh" code="COP_PREFIX_SINH"/>
+ *
+ *   <before>..., angle</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(SINH, Sinh);
+
+/**
+ * <opcode name="sqrt" group="Inline methods">
+ *   <operation>Computes the square root of the specified number</operation>
+ *
+ *   <format>prefix<fsep/>sqrt</format>
+ *   <dformat>{sqrt}</dformat>
+ *
+ *   <form name="sqrt" code="COP_PREFIX_SQRT"/>
+ *
+ *   <before>..., number</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(SQRT, Sqrt);
+
+/**
+ * <opcode name="tan" group="Inline methods">
+ *   <operation>Computes the tangent of the specified angle</operation>
+ *
+ *   <format>prefix<fsep/>tan</format>
+ *   <dformat>{tan}</dformat>
+ *
+ *   <form name="tan" code="COP_PREFIX_TAN"/>
+ *
+ *   <before>..., angle</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(TAN, Tan);
+
+/**
+ * <opcode name="tanh" group="Inline methods">
+ *   <operation>Computes the hyperbolic tangent of the specified angle</operation>
+ *
+ *   <format>prefix<fsep/>tanh</format>
+ *   <dformat>{tanh}</dformat>
+ *
+ *   <form name="tanh" code="COP_PREFIX_TANH"/>
+ *
+ *   <before>..., angle</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
 COP_PREFIX_MATH_CASE(TANH, Tanh);
 
 /**
@@ -569,7 +807,7 @@ COP_PREFIX_MATH_CASE(TANH, Tanh);
  *
  *   <form name="min_i4" code="COP_PREFIX_MIN_I4"/>
  *
- *   <before>..., db</before>
+ *   <before>..., int</before>
  *   <after>..., result</after>
  * </opcode>
  */
@@ -593,7 +831,7 @@ VMBREAK(COP_PREFIX_MIN_I4);
  *
  *   <form name="max_i4" code="COP_PREFIX_MAX_I4"/>
  *
- *   <before>..., db</before>
+ *   <before>...,  int</before>
  *   <after>..., result</after>
  * </opcode>
  */
@@ -875,7 +1113,7 @@ VMBREAK(COP_PREFIX_ABS_R4);
  *   <format>prefix<fsep/>abs_r8</format>
  *   <dformat>{abs_r8}</dformat>
  *
- *   <form name="abs_r8" code="COP_PREFIX_ABS_R*"/>
+ *   <form name="abs_r8" code="COP_PREFIX_ABS_R8"/>
  *
  *   <before>..., db</before>
  *   <after>..., result</after>

@@ -246,13 +246,19 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	// Set the clipping region to a single rectangle.
 	public override void SetClipRect(int x, int y, int width, int height)
 			{
-				// TODO
+				using (Xsharp.Region region = new Xsharp.Region(x, y, width, height))
+				{
+					graphics.SetClipRegion( region, 0, 0);
+				}
 			}
 
 	// Set the clipping region to a list of rectangles.
 	public override void SetClipRects(System.Drawing.Rectangle[] rects)
 			{
-				// TODO
+				using (Xsharp.Region region = rectsToRegion(rects))
+				{
+					graphics.SetClipRegion( region, 0, 0);
+				}
 			}
 
 	// Set the clipping region to a complex mask.
@@ -268,6 +274,25 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				return extents.Ascent + extents.Descent;
 			}
 
+	//Convert a System.Drawing.Region to Xsharp.Region
+	private static Xsharp.Region rectsToRegion( System.Drawing.Rectangle[] rectangles)
+		{
+			Xsharp.Region newRegion =  new Xsharp.Region();
+			for( int i = 0; i < rectangles.Length; i++)
+			{
+				System.Drawing.Rectangle rect = rectangles[i];
+				// Check if the rectangle is infinite and dont union
+				if (rect == new System.Drawing.Rectangle(-4194304, -4194304, 8388608, 8388608))
+				{
+					newRegion = new Xsharp.Region(short.MinValue, short.MinValue, ushort.MaxValue, ushort.MaxValue); 
+				}
+				else
+				{
+					newRegion.Union( rect.X, rect.Y, rect.Width, rect.Height);
+				}
+			}
+			return newRegion;
+		}
 }; // class DrawingGraphics
 
 }; // namespace System.Drawing.Toolkit

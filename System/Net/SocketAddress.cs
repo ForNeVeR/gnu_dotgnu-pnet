@@ -30,7 +30,7 @@ public class SocketAddress
 	private AddressFamily family;	
 	
 	public SocketAddress(AddressFamily family) 
-		: SocketAddress(family, 32)
+		: this(family, 32)
 	{
 	}
 		
@@ -44,7 +44,7 @@ public class SocketAddress
 		this.myarray = new byte[size];
 	}
 		
-	public override Equals(object comparand) 
+	public override bool Equals(object comparand) 
 	{
 		if (comparand is SocketAddress)
 		{

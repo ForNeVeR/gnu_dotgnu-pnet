@@ -1,4 +1,8 @@
 
+2002-06-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/SocketAddress.cs: fix some syntax errors.
+
 2002-06-12  Charlie Carnow   <carnow@gmx.net>
 
 	* System/Net/SocketAddress.cs: Completed except for GetHashCode()

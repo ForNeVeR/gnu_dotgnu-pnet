@@ -1092,7 +1092,7 @@ static System_String *InternString(ILExecThread *thread,
 		if(entry->value->length == str->length &&
 		   (entry->value->length == 0 ||
 		    !ILMemCmp(StringToBuffer(entry->value), StringToBuffer(str),
-					  entry->value->length)))
+					  entry->value->length * 2)))
 		{
 			if(add || entry->value == str)
 			{

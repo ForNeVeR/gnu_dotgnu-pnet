@@ -5,6 +5,9 @@
 	need to be able to turn libffi and libgc off in configure, and
 	the previous change did not support this.
 
+	* engine/lib_string.c: use the correct length when comparing
+	strings in the intern'ed string table.
+
 2002-12-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* Makefile.am: Include libgc and libffi directories while doing 

@@ -4,6 +4,9 @@
 	* System/Net/HttpWebRequest.cs: minor fixes, pre-authenticate POST
 	requests for the proxy.
 
+	* System.Windows.Forms/EventId.cs,
+	System.Windows.Forms/MonthCalendar.cs: implement "MonthCalendar".
+
 2004-01-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: get the file dialog to the

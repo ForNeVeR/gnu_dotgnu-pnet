@@ -168,6 +168,10 @@ internal enum EventId
 	BeforeSelect,
 	ItemDrag,
 
+	// MonthCalendar events
+	DateChanged,
+	DateSelected,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

@@ -102,12 +102,18 @@ ILInt32 ILGetTimeZoneAdjust(void)
 #if !defined(__palmos__)
 	static int initialized = 0;
 	static int isdst = 0;
+#ifdef HAVE_TM_GMTOFF
+    static long timezone = 0;
+#endif
 	if(!initialized)
 	{
-		/* Call "localtime", which will initialise "timezone" for us */
+		/* Call "localtime", which will set the global "timezone" for us */
 		time_t temp = time(0);
 		struct tm *tms = localtime(&temp);
 		isdst = tms->tm_isdst;
+#ifdef HAVE_TM_GMTOFF
+		timezone = -(tms->tm_gmtoff);
+#endif
 		initialized = 1;
 	}
 	return (ILInt32)(timezone - (isdst ? 3600 : 0));

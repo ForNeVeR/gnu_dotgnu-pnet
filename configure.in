@@ -349,6 +349,15 @@ if test x$GCC = xyes ; then
 	CFLAGS="$CFLAGS -Wall"
 fi
 
+dnl Check for "tm_gmtoff" in "struct tm".
+AC_CACHE_CHECK([for tm_gmtoff in struct tm], ac_cv_struct_tm_gmtoff,
+[AC_TRY_COMPILE([#include <sys/types.h>
+#include <time.h>], [struct tm t; t.tm_gmtoff;],
+ac_cv_struct_tm_gmtoff=yes, ac_cv_struct_tm_gmtoff=no)])
+if test $ac_cv_struct_tm_gmtoff = yes; then
+  AC_DEFINE(HAVE_TM_GMTOFF, 1, [Define if struct tm contains tm_gmtoff])
+fi
+
 dnl Check to see whether cc accepts "-no-cpp-precomp" or not.
 AC_CACHE_CHECK(whether ${CC-cc} accepts -no-cpp-precomp, ac_cv_prog_cc_precomp,
 [echo 'int main(){return 0;}' > conftest.c

@@ -27,6 +27,7 @@ namespace FormsTest
 		private TabPage tabPage16;
 		private TabPage tabPage17;
 		private TabPage tabPage18;
+		private TabPage tabPage19;
 		
 		// Tab1 Labels Test
 		private Label label;
@@ -203,6 +204,7 @@ namespace FormsTest
 		private Label contextMenuLabel1;
 
 		private Image image1;
+		private Icon icon2;
 
 		private ComboBox comboBox1, comboBox2;
 
@@ -220,6 +222,7 @@ namespace FormsTest
 		private TextBox scroll1TextBoxMin, scroll1TextBoxMax, scroll1TextBoxValue, scroll1TextBoxLarge, scroll1TextBoxSmall;
 		private TextBox scroll2TextBoxMin, scroll2TextBoxMax, scroll2TextBoxValue, scroll2TextBoxLarge, scroll2TextBoxSmall;
 
+		//private PropertyGrid propertyGrid;
 		#endregion
 		
 		public static void Main(String[] args)
@@ -239,6 +242,9 @@ namespace FormsTest
 			tabControl1.Multiline = true;
 			tabControl1.SizeMode = TabSizeMode.FillToRight;
 			
+			tabPage19 = new TabPage();
+			tabPage19.Text = "PropertyGrid";
+			tabControl1.Controls.Add(tabPage19);
 			tabPage18 = new TabPage();
 			tabPage18.Text = "Scrollbar";
 			tabControl1.Controls.Add(tabPage18);
@@ -316,6 +322,7 @@ namespace FormsTest
 			AddFormsTest(tabPage14);
 			AddTransformsTest(tabPage15);
 			AddScrollbarTest(tabPage18);
+			AddPropertyGridTest(tabPage19);
 
 			ResumeLayout(false);
 		}
@@ -2155,12 +2162,14 @@ namespace FormsTest
 		private void AddImageTest(Control c)
 		{
 			image1 = Image.FromFile("test.bmp");
+			icon2 = new Icon("test.ico");
 			c.Paint += new PaintEventHandler(Image_Paint);
 		}
 
 		private void Image_Paint(object sender, PaintEventArgs e)
 		{
 			e.Graphics.DrawImage(image1, 10, 10);
+			e.Graphics.DrawIcon(icon2, 200, 200);
 		}
 
 		private void AddComboTest(Control c)
@@ -2412,5 +2421,19 @@ namespace FormsTest
 			
 		}
 
+
+		private void AddPropertyGridTest(Control c)
+		{
+			/*propertyGrid = new PropertyGrid();
+			propertyGrid.CommandsVisibleIfAvailable = true;
+			propertyGrid.Location = new Point(50, 20);
+			propertyGrid.Size = new System.Drawing.Size(400, 500);
+			propertyGrid.Text = "Property Grid";
+
+			c.Controls.Add(propertyGrid);
+			propertyGrid.SelectedObject = propertyGrid;
+			propertyGrid.DumpPropsToConsole();*/
+
+		}
 	}
 }

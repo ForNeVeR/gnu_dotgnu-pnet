@@ -67,6 +67,14 @@ public class FormsHello : Form
 		Paint += new PaintEventHandler(HandlePaint);
 		button.Click += new EventHandler(HandleClick);
 
+		// Create a scrollbar control.
+		scrollbar = new HScrollBar();
+		scrollbar.Dock = DockStyle.Bottom;
+		Controls.Add(scrollbar);
+		scrollbar = new VScrollBar();
+		scrollbar.Dock = DockStyle.Right;
+		Controls.Add(scrollbar);
+
 		// Create a toolbar control and some toolbar buttons.
 		toolbar = new ToolBar();
 		toolbar.Buttons.Add("Hello");
@@ -95,14 +103,6 @@ public class FormsHello : Form
 		toolbar.Dock = DockStyle.Left;
 		//toolbar.DropDownArrows = false;
 		//Controls.Add(toolbar);
-
-		// Create a scrollbar control.
-		scrollbar = new HScrollBar();
-		scrollbar.Dock = DockStyle.Bottom;
-		Controls.Add(scrollbar);
-		scrollbar = new VScrollBar();
-		scrollbar.Dock = DockStyle.Right;
-		Controls.Add(scrollbar);
 
 		checkbox=new CheckBox();
 		checkbox.Location=new Point(70,95);

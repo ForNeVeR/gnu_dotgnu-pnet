@@ -7,7 +7,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.class private auto ansi 'Test' extends ['.library']'System'.'Object'
+.class private auto ansi beforefieldinit 'Test' extends ['.library']'System'.'Object'
 {
 .field public static literal bool 'True' = bool(true)
 .field public static literal bool 'False' = bool(false)

@@ -4,6 +4,11 @@
 	* tools/make_test.sh.in, tools/run_test.sh.in: add the
 	"-fbuiltin-library" option to the compiler command-line.
 
+	* csharp/class/ainit1.il, csharp/class/ainit1.jl,
+	csharp/class/const2.il, csharp/class/const2.jl,
+	csharp/lexer/literal1.il, csharp/lexer/literal1.jl:
+	add "beforefieldinit" to test output files that require it.
+
 2002-03-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/enum1.cs,

@@ -1,5 +1,10 @@
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 
+	* support/hb_gc.c: Fix ILGCDisableFinalizers not atomically
+	checking existing disable status.
+	
+2004-06-14  Thong Nguyen  <tum@veridicus.com>
+
 	* tests/test_thread.c: Changed thread_other_object test
 	to account for new semantics for ILThread objects and
 	start args.

@@ -400,9 +400,18 @@ int ILGCInvokeFinalizers(int timeout)
 
 int ILGCDisableFinalizers(int timeout)
 {
+	_ILMutexLock(&_FinalizerLock);
+
+	if (_FinalizersDisabled)
+	{
+		_ILMutexUnlock(&_FinalizerLock);
+
+		return 0;
+	}
+
 	_FinalizersDisabled = 1;
 
-	ILThreadMemoryBarrier();
+	_ILMutexUnlock(&_FinalizerLock);
 
 	if (_FinalizersRunning && ILHasThreads())
 	{

@@ -27,6 +27,7 @@ public class Snake
 {
 	// Internal state.
 	private bool monochrome;
+	private int originX, originY;
 	private int left, top, width, height;
 	private Occupied[] occupied;
 	private int headX, headY;
@@ -63,9 +64,17 @@ public class Snake
 	// Constructor.
 	public Snake(bool mono)
 			{
+				originX = Console.CursorLeft;
+				originY = Console.CursorTop;
 				monochrome = mono;
 				random = new Random();
 				NewGame();
+			}
+
+	// Set the cursor position, using window-relative co-ordinates.
+	private void SetCursorPosition(int x, int y)
+			{
+				Console.SetCursorPosition(originX + x, originY + y);
 			}
 
 	// Main entry point.
@@ -162,7 +171,7 @@ public class Snake
 				}
 
 				// Draw the top line.
-				Console.SetCursorPosition(left - 1, top - 1);
+				SetCursorPosition(left - 1, top - 1);
 				Console.Write('+');
 				for(temp = 0; temp < width; ++temp)
 				{
@@ -171,7 +180,7 @@ public class Snake
 				Console.Write('+');
 
 				// Draw the bottom line.
-				Console.SetCursorPosition(left - 1, top + height);
+				SetCursorPosition(left - 1, top + height);
 				Console.Write('+');
 				for(temp = 0; temp < width; ++temp)
 				{
@@ -182,9 +191,9 @@ public class Snake
 				// Draw the left and right sides.
 				for(temp = 0; temp < height; ++temp)
 				{
-					Console.SetCursorPosition(left - 1, top + temp);
+					SetCursorPosition(left - 1, top + temp);
 					Console.Write('|');
-					Console.SetCursorPosition(left + width, top + temp);
+					SetCursorPosition(left + width, top + temp);
 					Console.Write('|');
 				}
 
@@ -197,7 +206,7 @@ public class Snake
 						Occupied occ = occupied[x + y * width];
 						if(occ == Occupied.Star)
 						{
-							Console.SetCursorPosition(left + x, top + y);
+							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
 								Console.SetTextAttribute
@@ -208,7 +217,7 @@ public class Snake
 						}
 						else if(occ == Occupied.Wall)
 						{
-							Console.SetCursorPosition(left + x, top + y);
+							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
 								Console.SetTextAttribute
@@ -219,7 +228,7 @@ public class Snake
 						}
 						else if(occ != Occupied.Empty)
 						{
-							Console.SetCursorPosition(left + x, top + y);
+							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
 								Console.SetTextAttribute
@@ -242,7 +251,7 @@ public class Snake
 	// doesn't clutter up the main viewing area.
 	private void ShiftCursor()
 			{
-				Console.SetCursorPosition(0, top + height + 2);
+				SetCursorPosition(0, top + height + 1);
 			}
 
 	// Place a star on the board in a random location.
@@ -257,7 +266,7 @@ public class Snake
 						occupied[x + y * width] = Occupied.Star;
 						if(draw)
 						{
-							Console.SetCursorPosition(left + x, top + y);
+							SetCursorPosition(left + x, top + y);
 							if(!monochrome)
 							{
 								Console.SetTextAttribute
@@ -274,7 +283,7 @@ public class Snake
 	// Print the current score.
 	private void PrintScore()
 			{
-				Console.SetCursorPosition(width - 14, height + 2);
+				SetCursorPosition(width - 14, height + 2);
 				if(!monochrome)
 				{
 					Console.SetTextAttribute
@@ -303,7 +312,7 @@ public class Snake
 				}
 
 				// Draw the top line.
-				Console.SetCursorPosition(left, top);
+				SetCursorPosition(left, top);
 				Console.Write('+');
 				for(temp = 2; temp < width; ++temp)
 				{
@@ -312,7 +321,7 @@ public class Snake
 				Console.Write('+');
 
 				// Draw the bottom line.
-				Console.SetCursorPosition(left, top + height - 1);
+				SetCursorPosition(left, top + height - 1);
 				Console.Write('+');
 				for(temp = 2; temp < width; ++temp)
 				{
@@ -323,7 +332,7 @@ public class Snake
 				// Draw the left and right sides and clear the insides.
 				for(temp = 1; temp < (height - 1); ++temp)
 				{
-					Console.SetCursorPosition(left, top + temp);
+					SetCursorPosition(left, top + temp);
 					Console.Write('|');
 					if(!monochrome)
 					{
@@ -348,7 +357,7 @@ public class Snake
 					Console.SetTextAttribute
 						(ConsoleColor.Gray, ConsoleColor.Black);
 				}
-				Console.SetCursorPosition(left + 4, top + 2);
+				SetCursorPosition(left + 4, top + 2);
 				Console.Write(msg);
 
 				// Shift the cursor out of the way.
@@ -471,7 +480,7 @@ public class Snake
 					Console.SetTextAttribute
 						(ConsoleColor.DarkGreen, ConsoleColor.DarkGreen);
 				}
-				Console.SetCursorPosition(newX + left, newY + top);
+				SetCursorPosition(newX + left, newY + top);
 				Console.Write('#');
 				occupied[headX + headY * width] = piece;
 				occupied[newX + newY * width] = piece;
@@ -486,7 +495,7 @@ public class Snake
 						Console.SetTextAttribute
 							(ConsoleColor.Gray, ConsoleColor.Black);
 					}
-					Console.SetCursorPosition(tailX + left, tailY + top);
+					SetCursorPosition(tailX + left, tailY + top);
 					Console.Write(' ');
 					occupied[tailX + tailY * width] = Occupied.Empty;
 					tailX = newTailX;

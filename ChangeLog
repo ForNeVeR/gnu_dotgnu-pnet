@@ -14,6 +14,19 @@
 
 	* configure.in: update working version to "0.5.9".
 
+	* System.Windows.Forms/CancelEventArgs.cs,
+	System.Windows.Forms/CancelEventHandler.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/EventId.cs,
+	System.Windows.Forms/Form.cs,
+	System.Windows.Forms/InputLanguageChangedEventArgs.cs,
+	System.Windows.Forms/InputLanguageChangedEventHandler.cs,
+	System.Windows.Forms/InputLanguageChangingEventArgs.cs,
+	System.Windows.Forms/InputLanguageChangingEventHandler.cs,
+	System.Windows.Forms/TreeViewCancelEventArgs.cs: stub the rest
+	of the "Form" class, including its event handler dependencies;
+	copy "CancelEvent*" into the forms library to replace the missing
+	component model classes when CONFIG_COMPONENT_MODEL is not defined.
+
 2003-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/FormsHello.cs: use the client rectangle to paint,

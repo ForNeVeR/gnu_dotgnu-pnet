@@ -469,7 +469,7 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					return new ControlCollection(this);
+					return CreateControlsInstance();
 				}
 			}
 	public bool Created
@@ -3068,7 +3068,6 @@ public class Control : IWin32Window
 					RemoveHandler(EventId.Validated, value);
 				}
 			}
-#if CONFIG_COMPONENT_MODEL
 	public event CancelEventHandler Validating
 			{
 				add
@@ -3080,7 +3079,6 @@ public class Control : IWin32Window
 					RemoveHandler(EventId.Validating, value);
 				}
 			}
-#endif
 	public event EventHandler VisibleChanged
 			{
 				add
@@ -3784,7 +3782,6 @@ public class Control : IWin32Window
 					handler(this, e);
 				}
 			}
-#if CONFIG_COMPONENT_MODEL
 	protected virtual void OnValidating(CancelEventArgs e)
 			{
 				CancelEventHandler handler;
@@ -3794,7 +3791,6 @@ public class Control : IWin32Window
 					handler(this, e);
 				}
 			}
-#endif
 	protected virtual void OnVisibleChanged(EventArgs e)
 			{
 				// Map or unmap the toolkit window.

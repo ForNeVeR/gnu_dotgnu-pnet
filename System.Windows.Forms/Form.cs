@@ -24,8 +24,8 @@ namespace System.Windows.Forms
 
 using System.Drawing;
 using System.Drawing.Toolkit;
+using System.ComponentModel;
 
-[TODO]
 public class Form : ContainerControl
 {
 	// Internal state.
@@ -155,6 +155,27 @@ public class Form : ContainerControl
 					cancelButton = value;
 				}
 			}
+	protected override CreateParams CreateParams
+			{
+				get
+				{
+					return base.CreateParams;
+				}
+			}
+	protected override ImeMode DefaultImeMode
+			{
+				get
+				{
+					return ImeMode.NoControl;
+				}
+			}
+	protected override Size DefaultSize
+			{
+				get
+				{
+					return new Size(300, 300);
+				}
+			}
 	public Rectangle DesktopBounds
 			{
 				get
@@ -269,6 +290,19 @@ public class Form : ContainerControl
 				set
 				{
 					SetWindowFlag(ToolkitWindowFlags.Maximize, value);
+				}
+			}
+	[TODO]
+	protected Rectangle MaximizedBounds
+			{
+				get
+				{
+					// TODO
+					return Rectangle.Empty;
+				}
+				set
+				{
+					// TODO
 				}
 			}
 	[TODO]
@@ -393,6 +427,7 @@ public class Form : ContainerControl
 					return ownedForms;
 				}
 			}
+	[TODO]
 	public Form Owner
 			{
 				get
@@ -401,6 +436,7 @@ public class Form : ContainerControl
 				}
 				set
 				{
+					// TODO: update the owned child list
 					owner = value;
 				}
 			}
@@ -531,16 +567,6 @@ public class Form : ContainerControl
 				}
 			}
 
-	// Handle the text changed event from "Control".
-	protected override void OnTextChanged(EventArgs e)
-			{
-				if(toolkitWindow != null)
-				{
-					toolkitWindow.SetTitle(Text);
-				}
-				base.OnTextChanged(e);
-			}
-
 	// Get the current state of a window decoration flag.
 	private bool GetWindowFlag(ToolkitWindowFlags flag)
 			{
@@ -613,6 +639,603 @@ public class Form : ContainerControl
 					SetWindowFlags(toolkitWindow);
 				}
 			}
+
+	// Activate the form and give it focus.
+	[TODO]
+	public void Activate()
+			{
+				// TODO
+			}
+
+	// Add an owned form to this form.
+	public void AddOwnedForm(Form ownedForm)
+			{
+				if(ownedForm != null)
+				{
+					ownedForm.Owner = this;
+				}
+			}
+
+	// Close this form.
+	[TODO]
+	public void Close()
+			{
+				// TODO
+			}
+
+	// Get the auto scale base size for a particular font.
+	[TODO]
+	public static SizeF GetAutoScalSize(Font font)
+			{
+				// TODO
+				return SizeF.Empty;
+			}
+
+	// Layout the MDI children of this form.
+	[TODO]
+	public void LayoutMdi(MdiLayout value)
+			{
+				// TODO
+			}
+
+	// Remove an owned form from this form.
+	public void RemoveOwnedForm(Form ownedForm)
+			{
+				if(ownedForm != null && ownedForm.Owner == this)
+				{
+					ownedForm.Owner = null;
+				}
+			}
+
+#if !CONFIG_COMPACT_FORMS
+
+	// Set the desktop bounds of this form.
+	public void SetDesktopBounds(int x, int y, int width, int height)
+			{
+				Rectangle workingArea = SystemInformation.WorkingArea;
+				SetBoundsCore(workingArea.X + x, workingArea.Y + y,
+							  width, height, BoundsSpecified.All);
+			}
+
+	// Set the desktop location of this form.
+	public void SetDesktopLocation(int x, int y)
+			{
+				Rectangle workingArea = SystemInformation.WorkingArea;
+				Location = new Point(workingArea.X + x, workingArea.Y + y);
+			}
+
+#endif // !CONFIG_COMPACT_FORMS
+
+	// Show this form as a modal dialog.
+	[TODO]
+	private DialogResult ShowDialog(Form owner)
+			{
+				// TODO
+				return DialogResult.None;
+			}
+	public DialogResult ShowDialog()
+			{
+				return ShowDialog(Owner);
+			}
+	public DialogResult ShowDialog(IWin32Window owner)
+			{
+				return ShowDialog(owner as Form);
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return base.ToString() + ", Text: " + Text;
+			}
+
+	// Event that is emitted when this form is activated.
+	public event EventHandler Activated
+			{
+				add
+				{
+					AddHandler(EventId.Activated, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.Activated, value);
+				}
+			}
+
+	// Event that is emitted when this form is closed.
+	public event EventHandler Closed
+			{
+				add
+				{
+					AddHandler(EventId.Closed, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.Closed, value);
+				}
+			}
+
+	// Event that is emitted when this form is closing.
+	public event CancelEventHandler Closing
+			{
+				add
+				{
+					AddHandler(EventId.Closing, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.Closing, value);
+				}
+			}
+
+	// Event that is emitted when this form is deactivated.
+	public event EventHandler Deactivate
+			{
+				add
+				{
+					AddHandler(EventId.Deactivate, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.Deactivate, value);
+				}
+			}
+
+	// Event that is emitted when the input language of a form is changed.
+	public event InputLanguageChangedEventHandler InputLanguageChanged
+			{
+				add
+				{
+					AddHandler(EventId.InputLanguageChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.InputLanguageChanged, value);
+				}
+			}
+
+	// Event that is emitted when the input language of a form is changing.
+	public event InputLanguageChangingEventHandler InputLanguageChanging
+			{
+				add
+				{
+					AddHandler(EventId.InputLanguageChanging, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.InputLanguageChanging, value);
+				}
+			}
+
+	// Event that is emitted when this form is first loaded.
+	public event EventHandler Load
+			{
+				add
+				{
+					AddHandler(EventId.Load, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.Load, value);
+				}
+			}
+
+	// Event that is emitted when the maximized bounds change.
+	public event EventHandler MaximizedBoundsChanged
+			{
+				add
+				{
+					AddHandler(EventId.MaximizedBoundsChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.MaximizedBoundsChanged, value);
+				}
+			}
+
+	// Event that is emitted when the maximum size changes.
+	public event EventHandler MaximumSizeChanged
+			{
+				add
+				{
+					AddHandler(EventId.MaximumSizeChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.MaximumSizeChanged, value);
+				}
+			}
+
+	// Event that is emitted when an MDI child is activated.
+	public event EventHandler MdiChildActivate
+			{
+				add
+				{
+					AddHandler(EventId.MdiChildActivate, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.MdiChildActivate, value);
+				}
+			}
+
+	// Event that is emitted at the end of processing a menu item.
+	public event EventHandler MenuComplete
+			{
+				add
+				{
+					AddHandler(EventId.MenuComplete, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.MenuComplete, value);
+				}
+			}
+
+	// Event that is emitted at the start of processing a menu item.
+	public event EventHandler MenuStart
+			{
+				add
+				{
+					AddHandler(EventId.MenuStart, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.MenuStart, value);
+				}
+			}
+
+	// Event that is emitted when the minimum size changes.
+	public event EventHandler MinimumSizeChanged
+			{
+				add
+				{
+					AddHandler(EventId.MinimumSizeChanged, value);
+				}
+				remove
+				{
+					RemoveHandler(EventId.MinimumSizeChanged, value);
+				}
+			}
+
+	// Create a new control collection for this instance.
+	protected override Control.ControlCollection CreateControlsInstance()
+			{
+				return new ControlCollection(this);
+			}
+
+	// Create the handle for this control.
+	protected override void CreateHandle()
+			{
+				// Let the base class do the work.
+				base.CreateHandle();
+			}
+
+	// Dispose of this control.
+	protected override void Dispose(bool disposing)
+			{
+				base.Dispose(disposing);
+			}
+
+	// Emit the "Activated" event.
+	protected virtual void OnActivated(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.Activated));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "Closed" event.
+	protected virtual void OnClosed(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.Closed));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "Closing" event.
+	protected virtual void OnClosing(CancelEventArgs e)
+			{
+				CancelEventHandler handler;
+				handler = (CancelEventHandler)(GetHandler(EventId.Closing));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Handle initial control creation.
+	protected override void OnCreateControl()
+			{
+				base.OnCreateControl();
+				OnLoad(EventArgs.Empty);
+			}
+
+	// Emit the "Deactivate" event.
+	protected virtual void OnDeactivate(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.Deactivate));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Override the "FontChanged" event.
+	protected override void OnFontChanged(EventArgs e)
+			{
+				base.OnFontChanged(e);
+			}
+
+	// Override the "HandleCreated" event.
+	protected override void OnHandleCreated(EventArgs e)
+			{
+				base.OnHandleCreated(e);
+			}
+
+	// Override the "HandleDestroyed" event.
+	protected override void OnHandleDestroyed(EventArgs e)
+			{
+				base.OnHandleDestroyed(e);
+			}
+
+	// Emit the "InputLanguageChanged" event.
+	protected virtual void OnInputLanguageChanged
+				(InputLanguageChangedEventArgs e)
+			{
+				InputLanguageChangedEventHandler handler;
+				handler = (InputLanguageChangedEventHandler)
+					(GetHandler(EventId.InputLanguageChanged));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "InputLanguageChanging" event.
+	protected virtual void OnInputLanguageChanging
+				(InputLanguageChangingEventArgs e)
+			{
+				InputLanguageChangingEventHandler handler;
+				handler = (InputLanguageChangingEventHandler)
+					(GetHandler(EventId.InputLanguageChanging));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "Load" event.
+	protected virtual void OnLoad(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.Load));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "MaximizedBoundsChanged" event.
+	protected virtual void OnMaximizedBoundsChanged(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)
+					(GetHandler(EventId.MaximizedBoundsChanged));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "MaximumSizeChanged" event.
+	protected virtual void OnMaximumSizeChanged(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)
+					(GetHandler(EventId.MaximumSizeChanged));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "MdiChildActivate" event.
+	protected virtual void OnMdiChildActivate(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.MdiChildActivate));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "MenuComplete" event.
+	protected virtual void OnMenuComplete(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.MenuComplete));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "MenuStart" event.
+	protected virtual void OnMenuStart(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)(GetHandler(EventId.MenuStart));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Emit the "MinimumSizeChanged" event.
+	protected virtual void OnMinimumSizeChanged(EventArgs e)
+			{
+				EventHandler handler;
+				handler = (EventHandler)
+					(GetHandler(EventId.MinimumSizeChanged));
+				if(handler != null)
+				{
+					handler(this, e);
+				}
+			}
+
+	// Override the "Paint" event.
+	protected override void OnPaint(PaintEventArgs e)
+			{
+				base.OnPaint(e);
+			}
+
+	// Override the "Resize" event.
+	protected override void OnResize(EventArgs e)
+			{
+				base.OnResize(e);
+			}
+
+	// Override the "StyleChanged" event.
+	protected override void OnStyleChanged(EventArgs e)
+			{
+				base.OnStyleChanged(e);
+			}
+
+	// Override the "TextChanged" event.
+	protected override void OnTextChanged(EventArgs e)
+			{
+				if(toolkitWindow != null)
+				{
+					toolkitWindow.SetTitle(Text);
+				}
+				base.OnTextChanged(e);
+			}
+
+	// Override the "VisibleChanged" event.
+	protected override void OnVisibleChanged(EventArgs e)
+			{
+				base.OnVisibleChanged(e);
+			}
+
+	// Process a command key.
+	[TODO]
+	protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+			{
+				// TODO
+				return base.ProcessCmdKey(ref msg, keyData);
+			}
+
+	// Process a dialog key.
+	[TODO]
+	protected override bool ProcessDialogKey(Keys keyData)
+			{
+				// TODO
+				return base.ProcessDialogKey(keyData);
+			}
+
+	// Preview a keyboard message.
+	[TODO]
+	protected override bool ProcessKeyPreview(ref Message msg)
+			{
+				// TODO
+				return base.ProcessKeyPreview(ref msg);
+			}
+
+	// Process the tab key.
+	[TODO]
+	protected override bool ProcessTabKey(bool forward)
+			{
+				// TODO
+				return base.ProcessTabKey(forward);
+			}
+
+	// Inner core of "Scale".
+	[TODO]
+	protected override void ScaleCore(float dx, float dy)
+			{
+				// TODO
+				base.ScaleCore(dx, dy);
+			}
+
+	// Select this control.
+	[TODO]
+	protected override void Select(bool directed, bool forward)
+			{
+				// TODO
+				base.Select(directed, forward);
+			}
+
+	// Inner core of "SetBounds".
+	protected override void SetBoundsCore
+				(int x, int y, int width, int height,
+				 BoundsSpecified specified)
+			{
+				base.SetBoundsCore(x, y, width, height, specified);
+			}
+
+	// Inner core of setting the client size.
+	protected override void SetClientSizeCore(int x, int y)
+			{
+				base.SetClientSizeCore(x, y);
+			}
+
+	// Inner core of setting the visibility state.
+	protected override void SetVisibleCore(bool value)
+			{
+				base.SetVisibleCore(value);
+			}
+
+#if !CONFIG_COMPACT_FORMS
+
+	// Default window procedure for this control class.
+	protected override void DefWndProc(ref Message msg)
+			{
+				base.DefWndProc(ref msg);
+			}
+
+	// Process a message.
+	public override void WndProc(ref Message m)
+			{
+				base.WndProc(ref m);
+			}
+
+#endif // !CONFIG_COMPACT_FORMS
+
+	// Collection of child controls.
+	public class ControlCollection : Control.ControlCollection
+	{
+		// Internal state.
+		private Form formOwner;
+
+		// Constructor.
+		public ControlCollection(Form owner) : base(owner)
+				{
+					this.formOwner = owner;
+				}
+
+		// Override the "Add" and "Remove" behavior.
+		[TODO]
+		public override void Add(Control control)
+				{
+					// TODO
+					base.Add(control);
+				}
+		[TODO]
+		public override void Remove(Control control)
+				{
+					// TODO
+					base.Remove(control);
+				}
+
+	}; // class ControlCollection
 
 }; // class Form
 

@@ -97,6 +97,20 @@ internal enum EventId
 	// "UserControl" events.
 	Load,
 
+	// "Form" events.
+	Activated,
+	Closed,
+	Closing,
+	Deactivate,
+	InputLanguageChanged,
+	InputLanguageChanging,
+	MaximizedBoundsChanged,
+	MaximumSizeChanged,
+	MdiChildActivate,
+	MenuComplete,
+	MenuStart,
+	MinimumSizeChanged,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

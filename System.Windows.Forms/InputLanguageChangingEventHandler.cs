@@ -1,6 +1,6 @@
 /*
- * TreeViewCancelEventArgs.cs - Implementation of the
- *			"System.Windows.Forms.TreeViewCancelEventArgs" class.
+ * InputLanguageChangingEventHandler.cs - Implementation of the
+ *			"System.Windows.Forms.InputLanguageChangingEventHandler" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,41 +22,11 @@
 namespace System.Windows.Forms
 {
 
-using System.ComponentModel;
+#if !CONFIG_COMPACT_FORMS
 
-public class TreeViewCancelEventArgs : CancelEventArgs
-{
-	// Internal state.
-	private TreeNode node;
-	private TreeViewAction action;
+public delegate void InputLanguageChangingEventHandler
+		(Object sender, InputLanguageChangingEventArgs e);
 
-	// Constructor.
-	public TreeViewCancelEventArgs
-				(TreeNode node, bool cancel, TreeViewAction action)
-			: base(cancel)
-			{
-				this.node = node;
-				this.action = action;
-			}
-
-	// Get the action that caused the event.
-	public TreeViewAction Action
-			{
-				get
-				{
-					return action;
-				}
-			}
-
-	// Get the node that was affected by the event.
-	public TreeNode Node
-			{
-				get
-				{
-					return node;
-				}
-			}
-
-}; // class TreeViewCancelEventArgs
+#endif
 
 }; // namespace System.Windows.Forms

@@ -1,6 +1,6 @@
 /*
- * TreeViewCancelEventArgs.cs - Implementation of the
- *			"System.Windows.Forms.TreeViewCancelEventArgs" class.
+ * InputLanguageChangedEventArgs.cs - Implementation of the
+ *			"System.Windows.Forms.InputLanguageChangedEventArgs" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,41 +22,56 @@
 namespace System.Windows.Forms
 {
 
-using System.ComponentModel;
+#if !CONFIG_COMPACT_FORMS
 
-public class TreeViewCancelEventArgs : CancelEventArgs
+using System.Globalization;
+
+public class InputLanguageChangedEventArgs : EventArgs
 {
 	// Internal state.
-	private TreeNode node;
-	private TreeViewAction action;
+	private CultureInfo culture;
+	private InputLanguage inputLanguage;
+	private byte charSet;
 
-	// Constructor.
-	public TreeViewCancelEventArgs
-				(TreeNode node, bool cancel, TreeViewAction action)
-			: base(cancel)
+	// Constructors.
+	public InputLanguageChangedEventArgs
+				(CultureInfo culture, byte charSet)
 			{
-				this.node = node;
-				this.action = action;
+				this.culture = culture;
+				this.charSet = charSet;
+			}
+	public InputLanguageChangedEventArgs
+				(InputLanguage inputLanguage, byte charSet)
+			{
+				this.inputLanguage = inputLanguage;
+				this.charSet = charSet;
 			}
 
-	// Get the action that caused the event.
-	public TreeViewAction Action
-			{
-				get
-				{
-					return action;
-				}
-			}
-
-	// Get the node that was affected by the event.
-	public TreeNode Node
+	// Get this object's properties.
+	public CultureInfo Culture
 			{
 				get
 				{
-					return node;
+					return culture;
+				}
+			}
+	public InputLanguage InputLanguage
+			{
+				get
+				{
+					return inputLanguage;
+				}
+			}
+	public byte CharSet
+			{
+				get
+				{
+					return charSet;
 				}
 			}
 
-}; // class TreeViewCancelEventArgs
+}; // class InputLanguageChangedEventArgs
+
+#endif // !CONFIG_COMPACT_FORMS
 
 }; // namespace System.Windows.Forms

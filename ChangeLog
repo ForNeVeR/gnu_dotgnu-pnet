@@ -14,6 +14,10 @@
 	field static so that popup windows will register different WNDCLASS'es
 	for each window.
 
+	* System.Drawing/Toolkit/ToolkitManager.cs: look for the "--toolkit"
+	option and "PNET_WINFORMS_TOOLKIT" environment variable to override
+	the default drawing toolkit selection.
+
 2003-10-08  Neil Cawse  <neilcawse@geotab.com>
 
 	* : many small fixes to compile with csc

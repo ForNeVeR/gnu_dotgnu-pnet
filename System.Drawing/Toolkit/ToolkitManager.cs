@@ -146,19 +146,69 @@ public sealed class ToolkitManager
 				return new Graphics(graphics);
 			}
 
+	// Get the override toolkit name.
+	private static String GetToolkitOverride()
+			{
+				String name;
+
+				// Search for "--toolkit" in the command-line options.
+				String[] args = Environment.GetCommandLineArgs();
+				int index;
+				name = null;
+				for(index = 1; index < args.Length; ++index)
+				{
+					if(args[index] == "--toolkit")
+					{
+						if((index + 1) < args.Length)
+						{
+							name = args[index + 1];
+							break;
+						}
+					}
+					else if(args[index].StartsWith("--toolkit="))
+					{
+						name = args[index].Substring(10);
+						break;
+					}
+				}
+
+				// Check the environment next.
+				if(name == null)
+				{
+					name = Environment.GetEnvironmentVariable
+						("PNET_WINFORMS_TOOLKIT");
+				}
+
+				// Bail out if no toolkit name specified.
+				if(name == null || name == String.Empty)
+				{
+					return null;
+				}
+
+				// Prepend "System.Drawing." if necessary.
+				if(name.IndexOf('.') == -1)
+				{
+					name = "System.Drawing." + name;
+				}
+				return name;
+			}
+
 	// Create the default toolkit.
 	private static IToolkit CreateDefaultToolkit()
 			{
 			#if CONFIG_REFLECTION
 				// Determine the name of the toolkit we wish to use.
-				String name;
-				if(IsUnix())
+				String name = GetToolkitOverride();
+				if(name == null)
 				{
-					name = "System.Drawing.Xsharp";
-				}
-				else
-				{
-					name = "System.Drawing.Win32";
+					if(IsUnix())
+					{
+						name = "System.Drawing.Xsharp";
+					}
+					else
+					{
+						name = "System.Drawing.Win32";
+					}
 				}
 
 				// Load the toolkit's assembly.

@@ -162,9 +162,8 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 
 void ILExecProcessDestroy(ILExecProcess *process)
 {
-	/* Run the garbage collector and a finalizer pass */
-	ILGCCollect();
-	ILGCInvokeFinalizers();
+	/* Deinit should run the last garbage collector
+		and a finalizer pass */
 
 	/* Tell the GC we're history */
 	ILGCDeinit();

@@ -407,7 +407,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 					}
 					else
 					{
-						finalValue = EnumValueOr(value, newValue);
+						finalValue = EnumValueOr(finalValue, newValue);
 					}
 				}
 

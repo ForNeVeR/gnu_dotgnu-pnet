@@ -36,14 +36,14 @@ typedef struct
 
 extern imaxdiv_t imaxdiv(intmax_t __numer, intmax_t __denom);
 extern intmax_t  imaxabs(intmax_t __j);
-extern intmax_t  strtoimax(const char * __restrict__ __nptr,
-                           char ** __restrict__ __endptr, int __base);
-extern uintmax_t strtoumax(const char * __restrict__ __nptr,
-                           char ** __restrict__ __endptr, int __base);
-extern intmax_t  wcstoimax(const wchar_t * __restrict__ __nptr,
-                           char ** __restrict__ __endptr, int __base);
-extern uintmax_t wcstoumax(const wchar_t * __restrict__ __nptr,
-                           char ** __restrict__ __endptr, int __base);
+extern intmax_t  strtoimax(const char * __restrict __nptr,
+                           char ** __restrict __endptr, int __base);
+extern uintmax_t strtoumax(const char * __restrict __nptr,
+                           char ** __restrict __endptr, int __base);
+extern intmax_t  wcstoimax(const wchar_t * __restrict __nptr,
+                           char ** __restrict __endptr, int __base);
+extern uintmax_t wcstoumax(const wchar_t * __restrict __nptr,
+                           char ** __restrict __endptr, int __base);
 
 #define PRId8           "d"
 #define PRId16          "d"

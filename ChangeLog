@@ -1,3 +1,10 @@
+
+2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/XsharpSupport.c: implement a special case for Latin1
+	locales to use XFontStruct-based fonts rather than XFontSet-based
+	fonts.  This should give better performance on some X systems.
+
 2003-11-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs: Background mode not being

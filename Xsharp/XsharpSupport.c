@@ -94,8 +94,42 @@ int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 #define	FontStyle_Italic		2
 #define	FontStyle_Underline		4
 #define	FontStyle_StrikeOut		8
+#define	FontStyle_Latin1		0x80
 
 #ifndef USE_XFT_EXTENSION
+
+/*
+ * Determine if the locale looks like Latin1, which we can optimize
+ * by using the XFontStruct version of a font, not the XFontSet version.
+ */
+static int IsLatin1Locale(void)
+{
+	char *env = getenv("LANG");
+	if(!env || !strcmp(env, "C") || !strcmp(env, "en_US"))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Convert an XFontStruct pointer into an XFontSet.
+ */
+#define	FontStructToSet(ptr)	((XFontSet)(((unsigned long)(ptr)) | 1))
+
+/*
+ * Convert an XFontSet into an XFontStruct pointer.
+ */
+#define	FontSetToStruct(ptr)	\
+			((XFontStruct *)(((unsigned long)(ptr)) & ~((unsigned long)1)))
+
+/*
+ * Determine if an XFontSet pointer is actually an XFontStruct.
+ */
+#define	FontSetIsStruct(ptr)	((((unsigned long)(ptr)) & 1) != 0)
 
 /*
  * Try to create a font with specific parameters.
@@ -146,6 +180,23 @@ static XFontSet TryCreateFont(Display *dpy, const char *family,
 	{
 		sprintf(name, "-*-%s-%s-%s-*-*-*-*-*-*-*-*-*-*",
 				(family ? family : "*"), weight, slant);
+	}
+
+	/* Use the Latin1 XFontStruct creation method if requested */
+	if((style & FontStyle_Latin1) != 0)
+	{
+		XFontStruct *fs;
+		fs = XLoadQueryFont(dpy, name);
+		if(fs)
+		{
+			free(name);
+			return FontStructToSet(fs);
+		}
+		else
+		{
+			free(name);
+			return 0;
+		}
 	}
 
 	/* Try to create the font set using just the base name */
@@ -229,6 +280,12 @@ void *XSharpCreateFont(Display *dpy, const char *family,
 
 	XFontSet fontSet;
 
+	/* Force creation of a Latin1 XFontStruct if necessary */
+	if(IsLatin1Locale())
+	{
+		style |= FontStyle_Latin1;
+	}
+
 	/* Try with the actual parameters first */
 	fontSet = TryCreateFont(dpy, family, pointSize, style);
 	if(fontSet)
@@ -271,7 +328,14 @@ void XSharpFreeFont(Display *dpy, void *fontSet)
 #ifdef USE_XFT_EXTENSION
 	XftFontClose(dpy, (XftFont *)fontSet);
 #else
-	XFreeFontSet(dpy, (XFontSet)fontSet);
+	if(FontSetIsStruct(fontSet))
+	{
+		XFreeFont(dpy, FontSetToStruct(fontSet));
+	}
+	else
+	{
+		XFreeFontSet(dpy, (XFontSet)fontSet);
+	}
 #endif
 }
 
@@ -298,6 +362,7 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 	XGCValues values;
 #else
 	XFontSetExtents *extents;
+	XFontStruct *fs = 0;
 #endif
 	int line1, line2;
 
@@ -331,8 +396,17 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 #else
 
 	/* Draw the string using the core API */
-	XmbDrawString(dpy, drawable, (XFontSet)fontSet, gc, x, y,
-				  str, strlen(str));
+	if(FontSetIsStruct(fontSet))
+	{
+		fs = FontSetToStruct(fontSet);
+		XSetFont(dpy, gc, fs->fid);
+		XDrawString(dpy, drawable, gc, x, y, str, strlen(str));
+	}
+	else
+	{
+		XmbDrawString(dpy, drawable, (XFontSet)fontSet, gc, x, y,
+					  str, strlen(str));
+	}
 
 #endif
 
@@ -350,14 +424,21 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 	#ifdef USE_XFT_EXTENSION
 		line2 = y + (((XftFont *)fontSet)->height / 2);
 	#else
-		extents = XExtentsOfFontSet(fontSet);
-		if(extents)
+		if(FontSetIsStruct(fontSet))
 		{
-			line2 = y + (extents->max_logical_extent.y / 2);
+			line2 = y - (fs->ascent / 2);
 		}
 		else
 		{
-			line2 = y;
+			extents = XExtentsOfFontSet(fontSet);
+			if(extents)
+			{
+				line2 = y + (extents->max_logical_extent.y / 2);
+			}
+			else
+			{
+				line2 = y;
+			}
 		}
 	#endif
 	}
@@ -410,8 +491,26 @@ void XSharpTextExtents(Display *dpy, void *fontSet, const char *str,
 	overall_logical_return->height = extents.y + extents.yOff;
 
 #else
-	XmbTextExtents((XFontSet)fontSet, str, strlen(str),
-			 	   overall_ink_return, overall_logical_return);
+	if(FontSetIsStruct(fontSet))
+	{
+		int direction, ascent, descent;
+		XCharStruct overall;
+		XTextExtents(FontSetToStruct(fontSet), str, strlen(str),
+					 &direction, &ascent, &descent, &overall);
+		overall_ink_return->x = overall.lbearing;
+		overall_ink_return->y = -(overall.ascent);
+		overall_ink_return->width = overall.rbearing - overall.lbearing;
+		overall_ink_return->height = overall.ascent + overall.descent;
+		overall_logical_return->x = 0;
+		overall_logical_return->y = -ascent;
+		overall_logical_return->width = overall.width;
+		overall_logical_return->height = ascent + descent;
+	}
+	else
+	{
+		XmbTextExtents((XFontSet)fontSet, str, strlen(str),
+				 	   overall_ink_return, overall_logical_return);
+	}
 #endif
 }
 
@@ -435,11 +534,28 @@ void XSharpFontExtents(void *fontSet,
 #else
 
 	XFontSetExtents *extents;
-	extents = XExtentsOfFontSet((XFontSet)fontSet);
-	if(extents)
+	if(FontSetIsStruct(fontSet))
 	{
-		*max_ink_return = extents->max_ink_extent;
-		*max_logical_return = extents->max_logical_extent;
+		XFontStruct *fs = FontSetToStruct(fontSet);
+		max_ink_return->x = fs->min_bounds.lbearing;
+		max_ink_return->y = -(fs->max_bounds.ascent);
+		max_ink_return->width =
+			fs->max_bounds.rbearing - fs->min_bounds.lbearing;
+		max_ink_return->height =
+			fs->max_bounds.ascent + fs->max_bounds.descent;
+		max_logical_return->x = 0;
+		max_logical_return->y = -(fs->ascent);
+		max_logical_return->width = fs->max_bounds.width;
+		max_logical_return->height = fs->ascent + fs->descent;
+	}
+	else
+	{
+		extents = XExtentsOfFontSet((XFontSet)fontSet);
+		if(extents)
+		{
+			*max_ink_return = extents->max_ink_extent;
+			*max_logical_return = extents->max_logical_extent;
+		}
 	}
 
 #endif

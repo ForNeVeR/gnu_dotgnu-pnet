@@ -5,9 +5,3 @@ extras that are modelled on the C++ Standard Template Library.
 
 See the file "Generics.html" for a description of the design considerations
 and an overview of the classes provided.
-
-The license on these classes is the MIT X11 license.  This license
-was chosen to maximize the number of people who can use the generic
-class library.  We only ask that if you fix bugs or add new functionality
-that you consider contributing the changes back to the Portable.NET
-development team, but this isn't mandatory.

@@ -23,6 +23,9 @@
 	System.Drawing.Postscript/System.Drawing.Postscript.build:
 	add the skeleton of the postscript printer driver to the tree.
 
+	* Generics/*: change the licenses on the Generics library to
+	match the rest of pnetlib.
+
 2003-07-17  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/String.cs: Fix minor bug in format parsing 

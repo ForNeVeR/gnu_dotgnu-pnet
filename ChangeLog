@@ -15,6 +15,12 @@
 	begin implementing Win32 thread routines and centralise the
 	detection of thread packages into "thr_choose.h".
 
+	* image/Makefile.am, image/meta_types.c, image/misc.c,
+	image/misc_token.c, image/types.c, support/Makefile.am,
+	support/alloc.c, support/allocate.c, support/convert.c,
+	support/cvt_float.c: rename some source files that had duplicate
+	names because it was causing breakpoint problems in gdb.
+
 2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING: describe more of the engine architecture.

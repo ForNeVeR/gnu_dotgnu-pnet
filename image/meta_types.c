@@ -1,5 +1,5 @@
 /*
- * types.c - Type handling for IL images.
+ * meta_types.c - Type handling for IL images.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

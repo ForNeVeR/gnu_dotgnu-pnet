@@ -1,9 +1,9 @@
 lib_LIBRARIES = libILSupport.a
 noinst_PROGRAMS = mkcategory mknumber
 
-libILSupport_a_SOURCES = alloc.c \
+libILSupport_a_SOURCES = allocate.c \
 						 cmdline.c \
-						 convert.c \
+						 cvt_float.c \
 						 decimal.c \
 						 dynlib.c \
 						 errno_map.c \

@@ -1,5 +1,5 @@
 /*
- * convert.c - Perform difficult numeric conversions.
+ * cvt_float.c - Perform difficult numeric conversions.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

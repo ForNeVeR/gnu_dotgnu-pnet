@@ -21,8 +21,9 @@ libILImage_a_SOURCES = assembly.c \
 					   meta_build.c \
 					   meta_header.c \
 					   meta_index.c \
+					   meta_types.c \
 					   meta_writer.c \
-					   misc.c \
+					   misc_token.c \
 					   module.c \
 					   opcodes.c \
 					   pecoff_loader.c \
@@ -31,7 +32,6 @@ libILImage_a_SOURCES = assembly.c \
 					   sig_parse.c \
 					   sig_writer.c \
 					   synthetic.c \
-					   types.c \
 					   uncompress.c \
 					   writer.c
 

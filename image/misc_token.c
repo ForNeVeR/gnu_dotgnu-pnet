@@ -1,5 +1,5 @@
 /*
- * misc.c - Handle miscellaneous tokens within images.
+ * misc_token.c - Handle miscellaneous tokens within images.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

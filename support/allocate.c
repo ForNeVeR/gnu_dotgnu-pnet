@@ -1,5 +1,5 @@
 /*
- * alloc.c - System memory allocation routines.
+ * allocate.c - System memory allocation routines.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

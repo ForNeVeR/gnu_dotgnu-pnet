@@ -293,15 +293,13 @@ public sealed class PolicyLevel
 				// TODO
 				return null;
 			}
-	[TODO]
 	public CodeGroup ResolveMatchingCodeGroups(Evidence evidence)
 			{
 				if(evidence == null)
 				{
 					throw new ArgumentNullException("evidence");
 				}
-				// TODO
-				return null;
+				return RootCodeGroup.ResolveMatchingCodeGroups(evidence);
 			}
 
 	// Convert this object into an XML element.

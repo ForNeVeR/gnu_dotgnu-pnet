@@ -9,6 +9,12 @@
 	* runtime/System/Enum.cs: sort the return values from
 	"Enum.GetValues" and "Enum.GetNames".
 
+	* runtime/System/Security/Policy/FileCodeGroup.cs,
+	runtime/System/Security/Policy/Hash.cs,
+	runtime/System/Security/Policy/NetCodeGroup.cs,
+	runtime/System/Security/Policy/PolicyLevel.cs: missing functionality
+	in the "System.Security.Policy" namespace.
+
 2003-09-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/ClrType.cs: redesign the "TrimMembers"

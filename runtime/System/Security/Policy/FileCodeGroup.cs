@@ -115,24 +115,123 @@ public sealed class FileCodeGroup : CodeGroup
 				return base.GetHashCode();
 			}
 
+	// Make a policy from url information.
+	private PolicyStatement MakePolicy(UrlParser url)
+			{
+				if(String.Compare(url.Scheme, "file", true) != 0)
+				{
+					return null;
+				}
+				PermissionSet permSet = new PermissionSet
+					(PermissionState.None);
+				permSet.AddPermission(new FileIOPermission(access, url.Rest));
+				return new PolicyStatement
+					(permSet, PolicyStatementAttribute.Nothing);
+			}
+
 	// Resolve the policy for this code group.
-	[TODO]
 	public override PolicyStatement Resolve(Evidence evidence)
 			{
+				PolicyStatement stmt;
+				PolicyStatement childStmt;
+				IEnumerator e;
+				Site site;
+				UrlParser url;
+
+				// Validate the parameter.
 				if(evidence == null)
 				{
 					throw new ArgumentNullException("evidence");
 				}
-				// TODO
-				return PolicyStatement;
+
+				// Check the membership condition.
+				if(!MembershipCondition.Check(evidence))
+				{
+					return null;
+				}
+
+				// Scan the host evidence for a policy and site.
+				stmt = null;
+				site = null;
+				e = evidence.GetHostEnumerator();
+				while(e.MoveNext())
+				{
+					if(e.Current is Url)
+					{
+						url = ((Url)(e.Current)).parser;
+						stmt = MakePolicy(url);
+					}
+					else if(e.Current is Site && site == null)
+					{
+						site = (Site)(e.Current);
+					}
+				}
+
+				// Create a default policy statement if necessary.
+				if(stmt == null)
+				{
+					stmt = new PolicyStatement
+						(new PermissionSet(PermissionState.None),
+						 PolicyStatementAttribute.Nothing);
+				}
+
+				// Modify the policy statement from this code group.
+				foreach(CodeGroup group in Children)
+				{
+					childStmt = group.Resolve(evidence);
+					if(childStmt != null)
+					{
+						if((stmt.Attributes &
+								PolicyStatementAttribute.Exclusive) != 0 &&
+						   (childStmt.Attributes &
+								PolicyStatementAttribute.Exclusive) != 0)
+						{
+							throw new PolicyException(_("Security_Exclusive"));
+						}
+					}
+					stmt.PermissionSetNoCopy =
+						stmt.PermissionSetNoCopy.Union
+							(childStmt.PermissionSetNoCopy);
+					stmt.Attributes |= childStmt.Attributes;
+				}
+				return stmt;
 			}
 
 	// Resolve code groups that match specific evidence.
-	[TODO]
 	public override CodeGroup ResolveMatchingCodeGroups(Evidence evidence)
 			{
-				// TODO
-				return null;
+				FileCodeGroup newGroup;
+				CodeGroup child;
+
+				// Validate the parameter.
+				if(evidence == null)
+				{
+					throw new ArgumentNullException("evidence");
+				}
+
+				// Check the membership condition.
+				if(!MembershipCondition.Check(evidence))
+				{
+					return null;
+				}
+
+				// Clone this group, except for the children.
+				newGroup = new FileCodeGroup(MembershipCondition, access);
+				newGroup.Name = Name;
+				newGroup.Description = Description;
+
+				// Resolve and add the children.
+				foreach(CodeGroup group in Children)
+				{
+					child = group.ResolveMatchingCodeGroups(evidence);
+					if(child != null)
+					{
+						newGroup.AddChild(child);
+					}
+				}
+
+				// Return the result.
+				return newGroup;
 			}
 
 	// Parse the XML form of this code group.

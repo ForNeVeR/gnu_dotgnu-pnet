@@ -88,17 +88,12 @@ public sealed class Hash
 			}
 
 	// Get the raw data to be hashed.
-	[TODO]
 	private byte[] RawData
 			{
 				get
 				{
-					if(dataToHash == null)
-					{
-						// TODO: get the data to be hashed.
-						throw new NotSupportedException();
-					}
-					return dataToHash;
+					// Strong names not supported in this implementation.
+					throw new NotSupportedException();
 				}
 			}
 

@@ -1,4 +1,38 @@
 
+0.4.8 (23 November 2002)
+
+	* Bring version numbers into sync with "pnet".
+	* Small bug in I18N.Common.ByteEncoding (Gonzalo Paniagua Javier).
+	* Implement "ToString" for reflection classes.
+	* Use the "InvokeMember" flag from "Activator.CreateInstance".
+	* Run regression tests from the in-tree built copy of pnetlib.
+	* Implement the rest of "System.Collections.Specialized".
+	* Missing non-ECMA attribute classes in "System.Reflection".
+	* Implement some of the easy "System.ComponentModel" classes.
+	* Missing byte count for "BinaryReader" and "BinaryWriter" (Gopal V).
+	* Implement "System.CodeDom" and "System.CodeDom.Compiler".
+	* "make install" now works (Gopal V).
+	* Bugs in "StringBuilder.Insert" (Jonathan Springer).
+	* Bug fixes to "StreamWriter" (Jeff Post and Adam Treat).
+	* More directory functions (Charlie Carnow).
+	* Test fixes (Jonathan Springer, Gopal V, Rhys Weatherley, etc)
+	* Globalization English fallbacks for ToUpper/ToLower (Gopal V).
+	* Fix enumerator logic for "System.Array" (Gopal V).
+	* Add I18N hooks for non-charset Globalization functionality.
+	* Fix "ArrayList.IndexRange" to match ECMA.
+	* Fixes to various "System.Net" classes (Gopal V).
+	* Bug fixes to "ArrayList".
+	* Fix makefile dependency checks so that csant-using components
+	  rebuild properly when source files change.
+	* Rename tests to make it clearer which test class failed.
+	* Move security-sensitive public internalcalls from runtime to System.
+	* ECMA compatibility fixes to reduce the number of validation errors.
+	* Private regular expression routines to support "Directory" (Gopal V).
+	* Test cases for cryptographic API's.
+	* Range check problem in "FileStream" constructor (Yannis BRES).
+	* Uri test case fixes (Gopal V).
+	* Make "mklist.sh" BSD-friendly.
+
 0.3.0 (5 November 2002)
 
 	* System.Uri fixes (Stephen Compall).

@@ -4,6 +4,8 @@
 	* I18N/mklist.sh: remove "-" from the "sed" command lines because
 	it doesn't work with BSD-ish sed programs.
 
+	* NEWS, configure.in: update version for the "0.4.8" release.
+
 2002-11-23  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Uri.cs: Fix some minor bugs in System.Uri

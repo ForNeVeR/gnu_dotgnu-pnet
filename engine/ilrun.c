@@ -22,7 +22,7 @@
 #include "il_system.h"
 #include "il_image.h"
 #include "il_utils.h"
-#if HAVE_UNISTD_H
+#if defined(HAVE_UNISTD_H) && !defined(_MSC_VER)
 #include <unistd.h>
 #endif
 

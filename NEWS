@@ -1,4 +1,102 @@
 
+0.6.6 (29 May 2004)
+
+	System.Windows.Forms & System.Drawing:
+
+	* HelpProvider, TabPageCollection (Russell Stuart).
+	* Button.PerformClick should only work when button is enabled and
+	  visible (Jens Kuehner).
+	* Allow multiple texture brushes to use the same image (Gopal V).
+	* Generate image masks from alpha information (Gopal V).
+	* Null reference exception in MessageBox (Gopal V).
+	* UpDown controls (Klaus Treichel).
+	* Ignore KeyPress events in TextBox that are already handled (Gopal V).
+	* Process application KeyPress's before local (Heiko Weiss).
+	* Fixes to MainMenu, SystemIcons, CheckListBox (Gopal V).
+	* Bug in empty TreeView's (leppie).
+	* Performance improvements to MainMenu, Control, ContextMenu (Richard B).
+	* Double-click bug in TextBox (David Logan).
+	* Deserialization of images (Gopal V).
+	* Double buffering of TabControl (Thong Nguyen).
+	* Fixes to ScrollableControl (Gopal V).
+	* ColumnHeader, ListBindingConverter, ImageIndexConverter (Klaus Treichel).
+
+	Xsharp:
+
+	* Properly fall back to DISPLAY when displayName null (Ilyak Kasnacheev).
+	* Improve ICE and DCOP to the point of being useful (Ilyak Kasnacheev).
+	* Recognize transparent "ParentRelative" backgrounds (Rhys Weatherley).
+	* Detect MDI top-level windows properly (David Logan, Gopal V).
+
+	System.Xml:
+
+	* Fix parsing of empty elements (Richard Baumann).
+	* Various fixes for ml-pnet (Klaus Treichel, Gopal V).
+	* Fixes to element list enumeration (Gopal V).
+	* Attribute handling in XmlDocument (Richard Baumann).
+	* Whitespace and namespace handling (Richard Baumann).
+	* Proper name table usage in NameCache (Richard Baumann).
+	* Lots of small fixes and TODO's (Richard Baumann).
+	* Implement XmlSerialization classes (Richard Baumann).
+	* Fixes for compatibility with ml-pnet (Klaus Treichel).
+	* XmlDocument.Save (Andres March).
+	* Change default namespace URL to expected value (Gopal V).
+	* Processing instructions (Richard Baumann).
+
+	Serialization:
+
+	* Binary serialization for decimal, array, string, null (Andre Seidelt).
+	* Implement binary de-serialization (Andre Seidelt).
+	* Fix incompatibilities between systems (Andre Seidelt).
+	* Serialization of keys and array elements (Andre Seidelt).
+	* Handle ISerializable types properly (Andre Seidelt).
+
+	JScript:
+
+	* Array accesses in JScript (Carl-Adam Brengesjo).
+	* Argument passing fixes (Carl-Adam Brengesjo).
+	* Parse problems with ++ and -- (Gopal V).
+	* --help and --version for jsrun command (Carl-Adam Brengesjo).
+	* Use ScriptStream for output where required (Carl-Adam Brengesjo).
+
+	Networking:
+
+	* Sign extension bug in IPv4 addresses (Russell Stuart).
+	* TcpClient fix (Gopal V).
+	* Stub out cookie and certificate handling in HTTP classes (Gopal V).
+	* SSL tunnelling for HTTP proxies (Gopal V).
+	* Fix parsing of IPv6 hex addresses (Gopal V).
+
+	Threading:
+
+	* Internalcall fixes and tests for pnet threading changes (Thong Nguyen).
+	* Rewrote the Threading.Timer class (Russell Stuart).
+	* Asynchonrous delegates (Thong Nguyen).
+	* Minor typo that prevented LocalDataStoreSlot from working (Gopal V).
+
+	Other:
+
+	* Improvements to "csupport" for pnetC (Rhys Weatherley).
+	* Bug in TimeSpan (Gopal V).
+	* Fix stream length and buffering in StreamReader/XmlStreamReader (Gopal V).
+	* Hex number parsing (Russell Stuart).
+	* Fixes to file routines to make them more ECMA compliant (Russell Stuart).
+	* Interfaces should be assignable to System.Object (Russell Stuart).
+	* Fixes to Hashtable for removed entries (Russell Stuart).
+	* Partial names in Assembly.LoadFrom (Gopal V).
+	* CodeCompiler/ShellExecute bug with redirected stderr (Gopal V).
+	* Only use response files in CodeCompile with long cmdlines (Gopal V).
+	* Small patch to Security Element (Carl-Adam Brengesjo).
+	* Change "test -e" to "test -f" for Solaris compat (Sebastien BOCQ).
+	* Patches to generic classes (Richard Baumann).
+	* Test cases for System.Reflection.Emit (Jonas Printzen).
+	* ClrConstructor.InvokeOnEmpty for post-allocation construction (Gopal V).
+	* Bugs in "machine.default" file (Gopal V).
+	* "default1.1" profile to build 1.1 and install as default (Rhys W).
+	* Parse fixes to System.Configuration handlers (Gopal V).
+	* Use non-null evidence in AppDomain.CreateInstance (Gopal V).
+	* Handle "file://" URL's in Assembly.LoadFrom (Gopal V).
+
 0.6.4 (13 March 2004)
 
 	System.Windows.Forms & System.Drawing:

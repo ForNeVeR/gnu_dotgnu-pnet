@@ -206,7 +206,7 @@ public class Assembly : IClrProgramItem
 				{
 					return null;
 				}
-				else if(type == null)
+				else if(type != null)
 				{
 					return GetManifestResourceStream(type.Namespace + "." +
 													 name);

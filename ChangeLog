@@ -6,6 +6,9 @@
 	runtime/System/Reflection/ClrResourceStream.cs: implement the
 	ClrResourceStream class and its dependencies.
 
+	* runtime/Platform/SocketMethods.cs: declare Close as internalcall;
+	modify the signature of Select to better match Posix behaviour.
+
 2002-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Resources/IResourceReader.cs,

@@ -71,11 +71,16 @@ public class SocketMethods
 	extern public static int SendTo(IntPtr handle, byte[] buffer, int offset, int size, int flags, ref long address, ref int port);
 
 	// Close a socket (regardless of pending in/output)
+	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool Close(IntPtr handle);
 
-	//Determines the read, write and error status of a set of Sockets
+	// Determines the read, write and error status of a set of Sockets
+	// The arrays are adjusted to reflect which sockets had events.
+	// Unused entries are replaced with IntPtr.Zero.  Returns the number
+	// of descriptors that fired, 0 on timeout, or -1 on error.  The
+	// timeout is in ticks (100 nanosecond intervals).
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Select(IntPtr[] readarray, IntPtr[] writearray, IntPtr[] errorarray, int timeout);
+	extern public static int Select(IntPtr[] readarray, IntPtr[] writearray, IntPtr[] errorarray, long timeout);
 
 	// Get the last-occurring system error code for the current thread.
 	[MethodImpl(MethodImplOptions.InternalCall)]

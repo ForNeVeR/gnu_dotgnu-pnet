@@ -53,6 +53,9 @@ calls on the underlying accessor nodes.
 * cscc/cs_grammar.y, cscc/cs_gather.c, cscc/cs_decls.tc: convert property
 accessors into first-class method declaration nodes.
 
+* codegen/jv_opcodes.h, codegen/jv_nodes.tc: remove "jv_opcodes.h", which
+is superceded by "include/il_jopcodes.h".
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

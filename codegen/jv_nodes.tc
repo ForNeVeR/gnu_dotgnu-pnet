@@ -25,7 +25,7 @@
 %}
 
 %decls %end %{
-#include "jv_opcodes.h"
+#include "il_jopcodes.h"
 #include "jv_output.h"
 %}
 

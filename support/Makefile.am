@@ -19,6 +19,7 @@ libILSupport_a_SOURCES = alloc.c \
 						 mul_long.c \
 						 read_float.c \
 						 rem_float.c \
+						 sha1.c \
 						 spawn.c \
 						 strings.c \
 						 test_float.c \

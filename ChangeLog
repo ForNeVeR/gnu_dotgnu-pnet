@@ -1,3 +1,11 @@
+2002-03-25  Stephen Compall  <rushing@sigecom.net>
+
+	* System/UriBuilder.cs: Fixed compiler error as reported by
+	Mr. Weatherley.
+
+	* maintain.xml: Added information about my current work on
+	pnetlib.
+
 2002-03-23  Peter Minten  <silvernerd@users.sf.net>
 	* System/Net/Sockets/Socket.cs: Added methods.
 

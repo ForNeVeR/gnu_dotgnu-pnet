@@ -5,6 +5,19 @@
 <libraries>
 
 <library name="pnetlib">
+	<namespace name="System">
+		<class name="Uri">
+			<maintainers>
+				<maintainer name="Stephen Compall" status="working"/>
+			</maintainers>
+		</class>
+		<class name="UriBuilder">
+			<maintainers>
+				<maintainer name="Stephen Compall" status="working"/>
+			</maintainers>
+		</class>
+	</namespace>
+
 	<namespace name="System.Net">
 		<class name="HttpWebRequest">
 			<maintainers>

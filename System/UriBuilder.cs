@@ -134,7 +134,7 @@ public class UriBuilder
 	// Methods.
 
 	// takes the string and sets all values on that basis
-	private void ParseString(String instr, boolean escaped)
+	private void ParseString(String instr, bool escaped)
 	{
 
 		// TODO: make default scheme "http://" if none given (OK done)
@@ -252,7 +252,7 @@ public class UriBuilder
 			this.fragment = String.Empty;
 	}
 
-	private static String ValidateScheme(String scheme, boolean escaped)
+	private static String ValidateScheme(String scheme, bool escaped)
 	{
 		
 	}

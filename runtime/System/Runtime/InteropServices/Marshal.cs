@@ -548,14 +548,26 @@ public sealed class Marshal
 			{
 				throw new NotImplementedException();
 			}
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void PtrToStructureInternal(IntPtr ptr, 
+					Object structure);
 	public static void PtrToStructure(IntPtr ptr, Object structure)
-			{
-				throw new NotImplementedException();
-			}
+	{
+		if(structure.GetType().IsValueType)
+		{
+			throw new ArgumentException("Object must be of type class.");
+		}
+		PtrToStructureInternal(ptr,structure);
+	}
+
 	public static Object PtrToStructure(IntPtr ptr, Type structureType)
-			{
-				throw new NotImplementedException();
-			}
+	{
+		Object obj=Activator.CreateInstance(structureType);
+		PtrToStructureInternal(ptr,obj);
+		return obj;
+	}
+
 	public static IntPtr StringToBSTR(String s)
 			{
 				throw new NotImplementedException();

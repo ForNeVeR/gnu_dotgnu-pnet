@@ -1,4 +1,9 @@
 
+2002-12-05  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Runtime/InteropServices/Marshal.cs: Implement the
+	PtrToStructure() methods .
+
 2002-12-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlAttributeCollection.cs, System.Xml/XmlCDataSection.cs,

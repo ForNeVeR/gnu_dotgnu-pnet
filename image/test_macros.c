@@ -143,7 +143,8 @@ void TestMethodMacros(ILMethod *method)
 	IGNORE(ILMethod_ImplAttrs(method));
 	IGNORE(ILMethod_CallConv(method));
 	IGNORE(ILMethod_RVA(method));
-	IGNORE(ILMethod_UserData(method));
+	IGNORE(ILMethod_UserData1(method));
+	IGNORE(ILMethod_UserData2(method));
 	IGNORE(ILMethod_IsCompilerControlled(method));
 	IGNORE(ILMethod_IsPrivate(method));
 	IGNORE(ILMethod_IsFamAndAssem(method));

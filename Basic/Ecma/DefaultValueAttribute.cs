@@ -1,8 +1,8 @@
 /*
  * DefaultValueAttribute.cs - Implementation of the
- *			"Microsoft.VisualBasic.DefaultValueAttribute" class.
+ *			"System.ComponentModel.DefaultValueAttribute" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace Microsoft.VisualBasic
+namespace System.ComponentModel
 {
 
-// Special class that is recognized by "cscc" to indicate the
-// default value for an "optional" parameter, and to then turn
-// it into the correct metadata.
+#if !CONFIG_COMPONENT_MODEL && !CONFIG_EXTENDED_DIAGNOSTICS
 
-[AttributeUsage(AttributeTargets.Parameter)]
+[AttributeUsage(AttributeTargets.All)]
 internal sealed class DefaultValueAttribute : Attribute
 {
 	// Internal state.
@@ -73,6 +71,20 @@ internal sealed class DefaultValueAttribute : Attribute
 			{
 				obj = value;
 			}
+#if false
+	public DefaultValueAttribute(Type type, String value)
+			{
+				try
+				{
+					obj = TypeDescriptor.GetConverter(type)
+							.ConvertFromInvariantString(value);
+				}
+				catch(Exception)
+				{
+					// Ignore exceptions during type conversion.
+				}
+			}
+#endif
 
 	// Get the attribute's value.
 	public Object Value
@@ -83,6 +95,35 @@ internal sealed class DefaultValueAttribute : Attribute
 				}
 			}
 
+	// Determine if two instances of this class are equal.
+	public override bool Equals(Object obj)
+			{
+				DefaultValueAttribute other = (obj as DefaultValueAttribute);
+				if(other != null)
+				{
+					return obj.Equals(other.obj);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this attribute.
+	public override int GetHashCode()
+			{
+				if(obj != null)
+				{
+					return obj.GetHashCode();
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
 }; // class DefaultValueAttribute
 
-}; // namespace Microsoft.VisualBasic
+#endif // !CONFIG_COMPONENT_MODEL && !CONFIG_EXTENDED_DIAGNOSTICS
+
+}; // namespace System.ComponentModel

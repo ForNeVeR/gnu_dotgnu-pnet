@@ -1,4 +1,10 @@
 
+2004-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Basic/DefaultValueAttribute.cs, Basic/Ecma/DefaultValueAttribute.cs:
+	use "System.ComponentModel.DefaultValueAttribute" to mark default
+	parameter values, for compatibility with other systems.
+
 2004-07-08  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/Form.cs: Add dummy implementation of 

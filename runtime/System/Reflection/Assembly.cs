@@ -779,8 +779,13 @@ public class Assembly : IClrProgramItem
 				{
 					throw new ArgumentNullException("culture");
 				}
+				String shortName = FullName;
+				if(shortName.IndexOf(',') != -1)
+				{
+					shortName = shortName.Substring(0, shortName.IndexOf(','));
+				}
 				String baseName = culture.Name + Path.DirectorySeparatorChar +
-					 			  FullName + ".resources.dll";
+					 			  shortName + ".resources.dll";
 				String path = GetSatellitePath(baseName);
 				if(path == null)
 				{

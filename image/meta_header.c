@@ -1,7 +1,7 @@
 /*
  * meta_header.c - Routines for walking the header of the metadata section.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -300,6 +300,43 @@ unsigned long ILImageMetaHeaderSize(ILImage *image)
 
 	/* The offset is the header's size */
 	return offset;
+}
+
+const char *ILImageMetaRuntimeVersion(ILImage *image, int *length)
+{
+	unsigned char *addr;
+	unsigned long len;
+	unsigned long headerLen;
+	unsigned long numEntries;
+	unsigned long versionLen;
+	const char *version;
+
+	/* Find the metadata section and validate it */
+	numEntries = GetMetadata(image, &addr, &len, &headerLen);
+	if(numEntries == (unsigned long)0xFFFFFFFF)
+	{
+		return 0;
+	}
+
+	/* Determine the size of the version string */
+	versionLen = headerLen - 20;
+
+	/* The version is at offset 16 within the metadata header */
+	version = (const char *)(addr + 16);
+
+	/* Trim trailing zeros from the version string */
+	while(versionLen > 0 && version[versionLen - 1] == '\0')
+	{
+		--versionLen;
+	}
+	if(!versionLen)
+	{
+		return 0;
+	}
+
+	/* Return the version information to the caller */
+	*length = (int)versionLen;
+	return version;
 }
 
 #ifdef	__cplusplus

@@ -326,6 +326,12 @@ void *ILImageMetaEntryInfo(ILImage *image, unsigned long entry,
 unsigned long ILImageMetaHeaderSize(ILImage *image);
 
 /*
+ * Get the runtime version that was written to the metadata
+ * header by the compiler.
+ */
+const char *ILImageMetaRuntimeVersion(ILImage *image, int *length);
+
+/*
  * Get a string from the string pool.  Returns NULL if "offset" is invalid.
  * The return pointer is guaranteed to be fixed for the lifetime of the image.
  */

@@ -1312,6 +1312,31 @@ ILString *_IL_Assembly_GetSatellitePath(ILExecThread *thread,
 	}
 }
 
+ILString *_IL_Assembly_GetImageRuntimeVersion(ILExecThread *_thread,
+											  ILObject *_this)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	const char *version;
+	int length;
+	if(image)
+	{
+		version = ILImageMetaRuntimeVersion(image, &length);
+		if(version)
+		{
+			return ILStringCreateLen(_thread, version, length);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 #ifdef IL_CONFIG_REFLECTION
 
 /*

@@ -316,7 +316,7 @@ static void SortClasses(ILImage *image)
  * Version data to embed in the metadata header.
  * Must be padded to a multiple of 4 in size.
  */
-#define	VERSION_STRING		"v1.0.2914\0\0\0"
+#define	VERSION_STRING		"v1.1.4322\0\0\0"
 #define	VERSION_STRING_LEN	12
 
 void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)

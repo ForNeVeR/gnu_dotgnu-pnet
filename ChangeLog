@@ -1,4 +1,10 @@
 
+2003-04-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_reflect.c,
+	image/meta_header.c, image/writer.c, include/il_image.h:
+	Add the "Assembly.GetImageRuntimeVersion" internalcall.
+
 2003-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c,

@@ -1028,6 +1028,10 @@ int ILClassImplements(ILClass *info, ILClass *interface)
 {
 	info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
 	interface = (ILClass *)(_ILProgramItemResolve(&(interface->programItem)));
+	if (info == interface)
+	{
+		return 1;
+	}
 	return ImplementsResolved(info, interface);
 }
 

@@ -7,6 +7,9 @@
 	* ilasm/ilasm_build.c (ILAsmResolveMember): allow extra vararg
 	call sites to be resolved after a class has been "completed".
 
+	* engine/cvm_call.c, engine/cvm_except.c: fix a bug in the CVM
+	instruction dump code.
+
 2003-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (MatchSignature): pass the correct

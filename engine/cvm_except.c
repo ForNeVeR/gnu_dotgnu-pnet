@@ -296,7 +296,7 @@ throwCaller:
 		if(methodToCall)
 		{
 			fprintf(IL_DUMP_CVM_STREAM, "Throwing Back To %s::%s\n",
-				    methodToCall->member.owner->name,
+				    methodToCall->member.owner->className->name,
 				    methodToCall->member.name);
 		}
 #endif

@@ -109,7 +109,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 #define	REPORT_METHOD_CALL()	\
 			do { \
 				fprintf(IL_DUMP_CVM_STREAM, "Entering %s::%s (%ld)\n", \
-					    methodToCall->member.owner->name, \
+					    methodToCall->member.owner->className->name, \
 					    methodToCall->member.name, \
 					    (long)(stacktop - thread->stackBase)); \
 				DUMP_STACK(); \
@@ -973,7 +973,7 @@ popFrame:
 #ifdef IL_DUMP_CVM
 	/* Dump the name of the method we are returning to */
 	fprintf(IL_DUMP_CVM_STREAM, "Returning to %s::%s (%ld)\n",
-			method->member.owner->name,
+			method->member.owner->className->name,
 		    method->member.name, (long)(stacktop - thread->stackBase));
 	DUMP_STACK();
 #endif

@@ -133,8 +133,8 @@ JavaGenValue(ILNode_Add)
 	}
 
 	/* Evaluate the sub-expressions and cast to the common type */
-	JavaGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
-	JavaGenCast(info, ILNode_GenValue(node->expr2, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr2, info), commonType);
 
 	/* Apply the operator */
 	JavaBinary_ApplyOp(info, (ILNode_BinaryArith *)node, commonType);
@@ -160,8 +160,8 @@ JavaGenValue(ILNode_BinaryBitwise)
 	commonType = ILCommonType(type1, type2, 1, info->pedanticArith);
 
 	/* Evaluate the sub-expressions and cast to the common type */
-	JavaGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
-	JavaGenCast(info, ILNode_GenValue(node->expr2, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr2, info), commonType);
 
 	/* Apply the operator */
 	JavaBitwise_ApplyOp(info, node, commonType);
@@ -183,7 +183,7 @@ JavaGenValue(ILNode_BinaryShift)
 	commonType = ILCommonType(type, type, 1, info->pedanticArith);
 
 	/* Evaluate the first sub-expression and cast to the common type */
-	JavaGenCast(info, ILNode_GenValue(node->expr1, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr1, info), commonType);
 
 	/* If we are doing an unsigned shift right on an 8-bit or
 	   16-bit value, we need to mask off the sign bits first */
@@ -201,7 +201,7 @@ JavaGenValue(ILNode_BinaryShift)
 	}
 
 	/* Evaluate the second sub-expression and cast to "native uint" */
-	JavaGenCast(info, ILNode_GenValue(node->expr2, info),
+	JavaGenCast(info, JavaGenValue(node->expr2, info),
 			    ILMachineType_NativeUInt);
 
 	/* Apply the operator */
@@ -224,7 +224,7 @@ JavaGenValue(ILNode_Neg)
 	commonType = ILCommonType(type, type, 0, info->pedanticArith);
 
 	/* Evaluate the sub-expression and cast to the common type */
-	JavaGenCast(info, ILNode_GenValue(node->expr, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr, info), commonType);
 
 	/* Apply the operator */
 	JavaNegate_ApplyOp(info, commonType);
@@ -246,7 +246,7 @@ JavaGenValue(ILNode_UnaryPlus)
 	commonType = ILCommonType(type, type, 0, info->pedanticArith);
 
 	/* Generate code for the sub-expression and cast to the common type */
-	JavaGenCast(info, ILNode_GenValue(node->expr, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr, info), commonType);
 
 	/* Return the common type to the caller */
 	return commonType;
@@ -265,7 +265,7 @@ JavaGenValue(ILNode_Not)
 	commonType = ILCommonType(type, type, 1, info->pedanticArith);
 
 	/* Generate code for the sub-expression and cast to the common type */
-	JavaGenCast(info, ILNode_GenValue(node->expr, info), commonType);
+	JavaGenCast(info, JavaGenValue(node->expr, info), commonType);
 
 	/* Apply the operator */
 	JavaNot_ApplyOp(info, commonType);

@@ -8,3 +8,5 @@ config.status
 pnet.spec
 aclocal.m4
 confdefs.h
+madcow.log
+madcow.bak

@@ -105,6 +105,15 @@ return your tree to a pristine pre-configure state.  Always test your
 patches on a pristine build that has been updated from the CVS repository
 before submitting them.
 
+If you would like some assistance building the code or you are having
+problems, then run the Portable.NET Mad Cow diagnostic utility, which
+will walk you through it one step at a time:
+
+	$ ./madcow
+
+This script dumps out a "madcow.log" file which can help the Portable.NET
+developers diagnose any build problems that you may be having.
+
 Standards
 ---------
 

@@ -7,6 +7,9 @@
 	update the "pnet_build.sh" script to match the current repository
 	layout and to dump information about the system and tool versions.
 
+	* .cvsignore, HACKING, README, madcow: add the "madcow" script,
+	for diagnosing common build problems.
+
 2002-12-10  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_defs.tc, cscc/csharp/cs_grammar.y,

@@ -223,9 +223,10 @@ public sealed class Display : IDisposable
 							}
 
 							// Disassociate the fonts from this display.
-							foreach(Font font in fonts)
+							IDictionaryEnumerator e = fonts.GetEnumerator();
+							while(e.MoveNext())
 							{
-								font.Disassociate(this);
+								((Font)(e.Value)).Disassociate(this);
 							}
 							fonts.Clear();
 

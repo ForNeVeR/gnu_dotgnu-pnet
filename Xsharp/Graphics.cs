@@ -2113,6 +2113,177 @@ public sealed class Graphics : IDisposable
 				SetClipMask(null);
 			}
 
+	/// <summary>
+	/// <para>Draw a string at a particular position using a
+	/// specified font.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the position to start drawing text.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the position to start drawing text.</para>
+	/// </param>
+	///
+	/// <param name="str">
+	/// <para>The string to be drawn.</para>
+	/// </param>
+	///
+	/// <param name="font">
+	/// <para>The font to use to draw the string.</para>
+	/// </param>
+	///
+	/// <exception cref="T:Xsharp.XException">
+	/// <para>One of the co-ordinate values is out of range.</para>
+	/// </exception>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="font"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	public void DrawString(int x, int y, String str, Font font)
+			{
+				// Validate the parameters.
+				if(x < -32768 || x > 32767 || y < -32768 || y > 32767)
+				{
+					throw new XException(S._("X_PointCoordRange"));
+				}
+				if(font == null)
+				{
+					throw new ArgumentNullException("font");
+				}
+				if(str == null || str == String.Empty)
+				{
+					return;
+				}
+
+				// Get the font set to use for the font.
+				IntPtr fontSet = font.GetFontSet(dpy);
+				if(fontSet == IntPtr.Zero)
+				{
+					return;
+				}
+
+				// Draw the string using the specified font set.
+				try
+				{
+					IntPtr display = dpy.Lock();
+					Xlib.XSharpDrawString
+							(display, drawableHandle, gc,
+							 fontSet, x, y, str, (int)(font.Style));
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Get extent information for a particular font, when drawing
+	/// onto this graphics context.</para>
+	/// </summary>
+	///
+	/// <param name="font">
+	/// <para>The font to obtain extents for.</para>
+	/// </param>
+	///
+	/// <returns>
+	/// <para>Returns the extent information.</para>
+	/// </returns>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="font"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	public FontExtents GetFontExtents(Font font)
+			{
+				if(font == null)
+				{
+					throw new ArgumentNullException("font");
+				}
+				FontExtents extents = null;
+				font.GetFontSet(dpy, out extents);
+				return extents;
+			}
+
+	/// <summary>
+	/// <para>Measure the width, ascent, and descent of a string,
+	/// to calculate its extents when drawn on this graphics context
+	/// using a specific font.</para>
+	/// </summary>
+	///
+	/// <param name="str">
+	/// <para>The string to be measured.</para>
+	/// </param>
+	///
+	/// <param name="font">
+	/// <para>The font to use to measure the string.</para>
+	/// </param>
+	///
+	/// <param name="width">
+	/// <para>The width of the string, in pixels.</para>
+	/// </param>
+	///
+	/// <param name="ascent">
+	/// <para>The ascent of the string, in pixels.</para>
+	/// </param>
+	///
+	/// <param name="descent">
+	/// <para>The descent of the string, in pixels.</para>
+	/// </param>
+	///
+	/// <exception cref="T:System.ArgumentNullException">
+	/// <para>Raised if <paramref name="font"/> is <see langword="null"/>.
+	/// </para>
+	/// </exception>
+	public void MeasureString(String str, Font font, out int width,
+							  out int ascent, out int descent)
+			{
+				// Validate the parameters.
+				if(font == null)
+				{
+					throw new ArgumentNullException("font");
+				}
+				if(str == null || str == String.Empty)
+				{
+					width = 0;
+					ascent = 0;
+					descent = 0;
+					return;
+				}
+
+				// Get the font set to use to measure the string.
+				IntPtr fontSet = font.GetFontSet(dpy);
+				if(fontSet == IntPtr.Zero)
+				{
+					width = 0;
+					ascent = 0;
+					descent = 0;
+					return;
+				}
+
+				// Get the text extents and decode them into useful values.
+				XRectangle overall_ink;
+				XRectangle overall_logical;
+				Xlib.XSharpTextExtents
+					(fontSet, str, out overall_ink, out overall_logical);
+				width = overall_ink.width;
+				ascent = -(overall_ink.y);
+				descent = overall_ink.height + overall_ink.y;
+
+				// Increase the descent to account for underlining.
+				// We always draw the underline two pixels below
+				// the font base line.
+				if((font.Style & FontStyle.Underlined) != 0)
+				{
+					if(descent < 3)
+					{
+						descent = 3;
+					}
+				}
+			}
+
 	// Draw a radio button.
 	private void DrawRadio(IntPtr display,
 						   int x, int y, int width, int height,

@@ -33,6 +33,7 @@ public sealed class Font
 	private class FontInfo
 	{
 		public FontInfo next;
+		public FontExtents extents;
 		public Display dpy;
 		public IntPtr fontSet;
 
@@ -274,6 +275,11 @@ public sealed class Font
 	// Get the XFontSet structure for this font on a particular display.
 	internal IntPtr GetFontSet(Display dpy)
 			{
+				FontExtents extents;
+				return GetFontSet(dpy, out extents);
+			}
+	internal IntPtr GetFontSet(Display dpy, out FontExtents extents)
+			{
 				lock(typeof(Font))
 				{
 					// Map this object to the one that actually stores
@@ -282,6 +288,7 @@ public sealed class Font
 					if(font == null)
 					{
 						font = this;
+						dpy.fonts[this] = this;
 					}
 
 					// Search for existing font set information.
@@ -290,16 +297,41 @@ public sealed class Font
 					{
 						if(info.dpy == dpy)
 						{
+							extents = info.extents;
 							return info.fontSet;
 						}
 						info = info.next;
 					}
 
-					// TODO: create a new font set.
+					// Create a new font set.
+					IntPtr fontSet;
+					try
+					{
+						IntPtr display = dpy.Lock();
+						fontSet = Xlib.XSharpCreateFont
+							(display, family, pointSize, (int)style);
+						if(fontSet == IntPtr.Zero)
+						{
+							extents = null;
+							return IntPtr.Zero;
+						}
+					}
+					finally
+					{
+						dpy.Unlock();
+					}
 
-					// TODO: associate the font set with the display.
+					// Associate the font set with the display.
+					info = new FontInfo();
+					info.next = font.infoList;
+					info.extents = new FontExtents(font, fontSet);
+					info.dpy = dpy;
+					info.fontSet = fontSet;
+					font.infoList = info;
 
-					return IntPtr.Zero;
+					// Return the font set to the caller.
+					extents = info.extents;
+					return fontSet;
 				}
 			}
 

@@ -27,6 +27,10 @@
 	using Imlib to do the loading; update XHello to display the DotGNU
 	logo instead of crossed lines.
 
+	* Xsharp/Display.cs, Xsharp/Font.cs, Xsharp/FontExtents.cs,
+	Xsharp/Graphics.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c:
+	add font handling code to Xsharp.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

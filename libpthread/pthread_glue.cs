@@ -359,8 +359,8 @@ __module
 	// Lock a spin lock.
 	public static unsafe int pthread_spin_lock(int *_lock)
 			{
-				while(Interlocked.Exchange
-							(ref ((SpinLock *)_lock)->value, 1) != 0)
+				while(Interlocked.CompareExchange
+							(ref ((SpinLock *)_lock)->value, 1, 0) != 0)
 				{
 					// Spin until the value was zero before the exchange.
 				}
@@ -370,7 +370,7 @@ __module
 	// Try to lock a spin lock.
 	public static unsafe int pthread_spin_trylock(int *_lock)
 			{
-				if(Interlocked.Exchange(ref ((SpinLock *)_lock)->value, 1) == 0)
+				if(Interlocked.CompareExchange(ref ((SpinLock *)_lock)->value, 1, 0) == 0)
 				{
 					return 0;
 				}
@@ -384,7 +384,7 @@ __module
 	// Try to lock a spin lock, without side-effecting errno.
 	public static unsafe int __pt_spin_trylock(int *_lock)
 			{
-				if(Interlocked.Exchange(ref ((SpinLock *)_lock)->value, 1) == 0)
+				if(Interlocked.CompareExchange(ref ((SpinLock *)_lock)->value, 1, 0) == 0)
 				{
 					return 0;
 				}

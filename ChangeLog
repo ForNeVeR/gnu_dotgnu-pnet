@@ -1,3 +1,8 @@
+2004-05-30  Thong Nguyen  <tum@veridicus.com>
+
+	* libpthread/pthread_glue.cs: Changed spinlock lock/trylock
+	functions to use CompareExchange rather than Exchange
+	because exchange shouldn't be made unless lock is unlocked.	
 
 2004-05-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 

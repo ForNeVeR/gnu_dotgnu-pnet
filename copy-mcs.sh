@@ -44,6 +44,7 @@ else
 fi
 cp -p "$MCS_SOURCES/class/corlib/System/TODOAttribute.cs" mcs-sources/class/corlib/System/TODOAttribute.cs
 cp -pr "$MCS_SOURCES/tools/SqlSharp" mcs-sources/tools
+cp -pr "$MCS_SOURCES/jay" mcs-sources/
 
 for dir in Custommarshalers \
 		  System.Configuration.Install \
@@ -65,6 +66,8 @@ for dir in Custommarshalers \
 		  System.Data.OracleClient \
 		  System.Data.SqlXml \
 		  System.Data.ObjectSpaces \
+		  System.Web \
+		  System.Web.Services \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix \

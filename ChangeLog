@@ -1,4 +1,8 @@
 
+2003-05-24  Gopal.V  <gopalv82@yahoo.com>
+
+	* copy-mcs.sh: Add the new directories to copy-mcs.sh.
+
 2003-05-21  Gopal.V  <gopalv82@yahoo.com>
 
 	* class/System.Web.Services/System.Web.Services.build: Add references

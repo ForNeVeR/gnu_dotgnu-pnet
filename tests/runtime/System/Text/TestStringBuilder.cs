@@ -65,26 +65,6 @@ public class TestStringBuilder : TestCase
 				s, sb.ToString());
 	}
 
-	public void TestStringBuilderAppend()
-	{
-	/*TODO*/	
-	}
-
-	public void TestStringBuilderAppendFormat()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringBuilderEnsureCapacity()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringBuilderEquals()
-	{
-	/*TODO*/
-	}
-
 	public void TestStringBuilderInsert()
 	{
 		StringBuilder sb;
@@ -107,33 +87,5 @@ public class TestStringBuilder : TestCase
 		sb.Insert(0, "/"+path);
 		AssertEquals("Insert at 0 w/ concatenation",
 				"/some/path", sb.ToString());
-	}
-
-	public void TestStringBuilderRemove()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringBuilderReplace()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringBuilderToString()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringBuilderCapacity()
-	{
-	/*TODO*/
-	}
-	public void TestStringBuilderChars()
-	{
-	/*TODO*/
-	}
-	public void TestStringBuilderLength()
-	{
-	/*TODO*/
 	}
 }

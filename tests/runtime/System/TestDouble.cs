@@ -45,41 +45,6 @@ public class TestDouble : TestCase
 	}
 
 #if CONFIG_EXTENDED_NUMERICS
-	public void TestDoubleCompareTo()
-	{
-	/*TODO*/
-	}
-
-	public void TestDoubleEquals()
-	{
-	/*TODO*/
-	}
-
-	public void TestDoubleGetHashCode()
-	{
-	/*TODO*/
-	}
-
-	public void TestDoubleIsInfinity()
-	{
-	/*TODO*/
-	}
-
-	public void TestDoubleIsNaN()
-	{
-	/*TODO*/
-	}
-
-	public void TestDoubleIsNegativeInfinity()
-	{
-	/*TODO*/
-	}
-
-	public void TestDoubleIsPositiveInfinity()
-	{
-	/*TODO*/
-	}
-
 	public void TestDoubleParse()
 	{
 		AssertEquals("Double.Parse(\"1.0\")",

@@ -45,61 +45,6 @@ public class TestDecimal : TestCase
 	}
 #if CONFIG_EXTENDED_NUMERICS
 
-	public void TestConstructor()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalAdd()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalCompare()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalCompareTo()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalDivide()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalEquals()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalFloor()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalGetBits()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalGetHashCode()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalMultiply()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalNegate()
-	{
-	/*TODO*/
-	}
-
 	public void TestDecimalParse()
 	{
 		AssertEquals("Decimal.Parse(\"1.0\")",
@@ -126,21 +71,6 @@ public class TestDecimal : TestCase
 				100m, Decimal.Parse("1e2"));
 	}
 
-	public void TestDecimalRemainder()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalRound()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalSubtract()
-	{
-	/*TODO*/
-	}
-
 	public void TestDecimalToString()
 	{
 		decimal d;
@@ -158,94 +88,5 @@ public class TestDecimal : TestCase
 		AssertEquals("-1.13", "-1.13", d.ToString());
 	}
 
-	public void TestDecimalTruncate()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Addition()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Decrement()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Division()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Equality()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Explicit()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_GreaterThan()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_GreaterThanOrEqual()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Implicit()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Increment()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Inequality()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_LessThan()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_LessThanOrEqual()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Modulus()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Multiply()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_Subtraction()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_UnaryNegation()
-	{
-	/*TODO*/
-	}
-
-	public void TestDecimalop_UnaryPlus()
-	{
-	/*TODO*/
-	}
 #endif // CONFIG_EXTENDED_NUMERICS
 }

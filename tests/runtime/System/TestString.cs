@@ -1202,16 +1202,6 @@ public class TestString : TestCase
 		AssertEquals("foo.Replace(null,\"Foo Bar\")",foo,foo.Replace(null,"Foo Bar")); // I'm beginning to hate the ECMA -- Rich
 	}
 
-	public void TestStringSplit()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringStartsWith()
-	{
-	/*TODO*/
-	}
-
 	public void TestStringSubstring()
 	{
 		// if you pass Length, SHOULD NOT THROW!
@@ -1227,41 +1217,6 @@ public class TestString : TestCase
 		}
 	}
 
-
-	public void TestStringToCharArray()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringToLower()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringToString()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringToUpper()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringTrim()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringTrimEnd()
-	{
-	/*TODO*/
-	}
-
-	public void TestStringTrimStart()
-	{
-	/*TODO*/
-	}
 
 	public void TestStringop_Equality()
 	{

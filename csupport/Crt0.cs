@@ -76,7 +76,9 @@ public unsafe sealed class Crt0
 	private static int argC;
 	private static IntPtr environ;
 	private static Module libcModule;
+	private static MethodInfo finiMethod;
 	private static bool startupDone = false;
+	private static bool finiDone = false;
 
 	// Get the "argv" and "argc" values for the running task.
 	// "mainArgs" is the value passed to the program's entry point.
@@ -290,6 +292,21 @@ public unsafe sealed class Crt0
 				FileTable.SetFileDescriptor(2, Console.OpenStandardError());
 			#endif
 
+				// Let "libc" apply additional wrapping to the standard
+				// file descriptors if it needs to.
+				if(libcModule != null)
+				{
+					type = libcModule.GetType("OpenSystem.C.LibCUnistd");
+					if(type != null)
+					{
+						method = type.GetMethod("__syscall_wrap_stdfds");
+						if(method != null)
+						{
+							method.Invoke(null, null);
+						}
+					}
+				}
+
 				// Invoke the application's ".init" function, if present.
 				if(mainModule != null)
 				{
@@ -300,14 +317,14 @@ public unsafe sealed class Crt0
 					}
 				}
 
-				// Register the app's ".fini" function with "atexit".
+				// Locate the application's ".fini" function.
 				if(mainModule != null)
 				{
-					MethodInfo finiMethod = mainModule.GetMethod(".fini");
-					if(finiMethod != null)
-					{
-						// TODO
-					}
+					finiMethod = mainModule.GetMethod(".fini");
+				}
+				else
+				{
+					finiMethod = null;
 				}
 			}
 
@@ -339,6 +356,23 @@ public unsafe sealed class Crt0
 				// Nothing to do here yet, so return the exception object
 				// to the caller to be rethrown to the runtime engine.
 				return e;
+			}
+
+	// Invoke the ".fini" function at system shutdown.
+	public static void InvokeFini()
+			{
+				lock(typeof(Crt0))
+				{
+					if(finiDone)
+					{
+						return;
+					}
+					finiDone = true;
+				}
+				if(finiMethod != null)
+				{
+					finiMethod.Invoke(null, null);
+				}
 			}
 
 	// Get the module that contains "libc".  Returns "null" if unknown.

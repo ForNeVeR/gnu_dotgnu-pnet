@@ -99,10 +99,10 @@ extern	"C" {
 				} \
 			} while (0)
 
-static int CallMethod(ILExecThread *thread, ILMethod *method,
-					  void *result, int isCtor,
-					  void *_this, VA_LIST va)
+int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
+					    int isCtor, void *_this, void *userData)
 {
+	VA_LIST va = *((VA_LIST *)userData);
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
 	ILUInt32 param, numParams;
@@ -111,10 +111,6 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	ILUInt32 size, sizeInWords;
 	ILInt64 int64Value;
 	ILNativeFloat fValue;
-	ILCallFrame *frame;
-	unsigned char *savePC;
-	int threwException;
-	unsigned char *pcstart;
 
 	/* Get the top and extent of the stack */
 	stacktop = thread->stackTop;
@@ -249,204 +245,21 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 		}
 	}
 
-	/* Record the number of arguments for popping later */
-	sizeInWords = thread->stackTop - thread->stackBase;
+	/* Update the stack top */
 	thread->stackTop = stacktop;
-
-	/* Clear the pending exception on entry to the method */
-	thread->thrownException = 0;
-
-	/* Convert the method into CVM bytecode */
-	pcstart = _ILConvertMethod(thread, method);
-	if(!pcstart)
-	{
-		/* "_ILConvertMethod" threw an exception */
-		return 1;
-	}
-
-	/* Create a call frame for the method */
-	if(thread->numFrames >= thread->maxFrames)
-	{
-	    if((frame = _ILAllocCallFrame(thread)) == 0)
-		{
-			thread->thrownException = _ILSystemException
-				(thread, "System.StackOverflowException");
-			return 1;
-	    }
-	}
-	else
-	{
-		frame = &(thread->frameStack[(thread->numFrames)++]);
-	}
-	savePC = thread->pc;
-	frame->method = thread->method;
-	frame->pc = IL_INVALID_PC;
-	frame->frame = thread->frame;
-	frame->exceptHeight = thread->exceptHeight;
-
-	/* Call the method */
-	if(isCtor)
-	{
-		/* We are calling the allocation constructor, which starts
-		   several bytes before the actual method entry point */
-		thread->pc = pcstart - ILCoderCtorOffset(thread->process->coder);
-	}
-	else
-	{
-		thread->pc = pcstart;
-	}
-	thread->exceptHeight = 0;
-	thread->method = method;
-	threwException = _ILCVMInterpreter(thread);
-	if(threwException)
-	{
-		/* An exception occurred, which is already stored in the thread */
-	}
-	else if(isCtor)
-	{
-		/* Copy the returned object value */
-		*((void **)result) = thread->stackTop[-1].ptrValue;
-		--(thread->stackTop);
-	}
-	else
-	{
-		/* Copy the return value into place */
-		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
-		if(ILType_IsPrimitive(paramType))
-		{
-			/* Process a primitive value */
-			switch(ILType_ToElement(paramType))
-			{
-				case IL_META_ELEMTYPE_VOID:		break;
-
-				case IL_META_ELEMTYPE_BOOLEAN:
-				case IL_META_ELEMTYPE_I1:
-				case IL_META_ELEMTYPE_U1:
-				{
-					*((ILInt8 *)result) =
-						(ILInt8)(thread->stackTop[-1].intValue);
-					--(thread->stackTop);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I2:
-				case IL_META_ELEMTYPE_U2:
-				case IL_META_ELEMTYPE_CHAR:
-				{
-					*((ILInt16 *)result) =
-						(ILInt16)(thread->stackTop[-1].intValue);
-					--(thread->stackTop);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I4:
-				case IL_META_ELEMTYPE_U4:
-			#ifdef IL_NATIVE_INT32
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					*((ILInt32 *)result) = thread->stackTop[-1].intValue;
-					--(thread->stackTop);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I8:
-				case IL_META_ELEMTYPE_U8:
-			#ifdef IL_NATIVE_INT64
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					ILMemCpy(result, thread->stackTop - CVM_WORDS_PER_LONG,
-							 sizeof(ILInt64));
-					thread->stackTop -= CVM_WORDS_PER_LONG;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R4:
-				{
-					ILMemCpy(&fValue,
-							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
-							 sizeof(ILNativeFloat));
-					*((ILFloat *)result) = (ILFloat)fValue;
-					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R8:
-				{
-					ILMemCpy(&fValue,
-							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
-							 sizeof(ILNativeFloat));
-					*((ILDouble *)result) = (ILDouble)fValue;
-					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R:
-				{
-					ILMemCpy(result,
-							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
-							 sizeof(ILNativeFloat));
-					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_TYPEDBYREF:
-				{
-					ILMemCpy(result,
-							 thread->stackTop - CVM_WORDS_PER_TYPED_REF,
-							 sizeof(ILTypedRef));
-					thread->stackTop -= CVM_WORDS_PER_TYPED_REF;
-				}
-				break;
-			}
-		}
-		else if(ILType_IsClass(paramType))
-		{
-			/* Process an object reference */
-			*((void **)result) = thread->stackTop[-1].ptrValue;
-			--(thread->stackTop);
-		}
-		else if(ILType_IsValueType(paramType))
-		{
-			/* Process a value type */
-			size = ILSizeOfType(thread, paramType);
-			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
-			ILMemCpy(result, thread->stackTop - sizeInWords, size);
-			thread->stackTop -= sizeInWords;
-		}
-		else
-		{
-			/* Assume that everything else is an object reference */
-			*((void **)result) = thread->stackTop[-1].ptrValue;
-			--(thread->stackTop);
-		}
-	}
-
-	/* Restore the original PC: everything else was restored
-	   by the "return" instruction within the interpreter */
-	thread->pc = savePC;
-
-	/* Done */
-	return threwException;
+	return 0;
 }
 
-static int CallMethodV(ILExecThread *thread, ILMethod *method,
-					   ILExecValue *result, int isCtor,
-					   void *_this, ILExecValue *args)
+int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
+					   int isCtor, void *_this, void *userData)
 {
+	ILExecValue *args = (ILExecValue *)userData;
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
 	ILUInt32 param, numParams;
 	ILType *paramType;
 	void *ptr;
 	ILUInt32 size, sizeInWords;
-	ILCallFrame *frame;
-	unsigned char *savePC;
-	int threwException;
-	unsigned char *pcstart;
 
 	/* Get the top and extent of the stack */
 	stacktop = thread->stackTop;
@@ -588,60 +401,152 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 		}
 	}
 
-	/* Record the number of arguments for popping later */
-	sizeInWords = thread->stackTop - thread->stackBase;
+	/* Update the stack top */
 	thread->stackTop = stacktop;
+	return 0;
+}
 
-	/* Clear the pending exception on entry to the method */
-	thread->thrownException = 0;
+void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
+					           int isCtor, void *result)
+{
+	ILType *signature = ILMethod_Signature(method);
+	ILType *paramType;
+	ILUInt32 size, sizeInWords;
+	ILNativeFloat fValue;
 
-	/* Convert the method into CVM bytecode */
-	pcstart = _ILConvertMethod(thread, method);
-	if(!pcstart)
-	{
-		/* "_ILConvertMethod" threw an exception */
-		return 1;
-	}
-
-	/* Create a call frame for the method */
-	if(thread->numFrames >= thread->maxFrames)
-	{
-	    if((frame = _ILAllocCallFrame(thread)) == 0)
-		{
-			thread->thrownException = _ILSystemException
-				(thread, "System.StackOverflowException");
-			return 1;
-	    }
-	}
-	else
-	{
-		frame = &(thread->frameStack[(thread->numFrames)++]);
-	}
-	savePC = thread->pc;
-	frame->method = thread->method;
-	frame->pc = IL_INVALID_PC;
-	frame->frame = thread->frame;
-	frame->exceptHeight = thread->exceptHeight;
-
-	/* Call the method */
 	if(isCtor)
 	{
-		/* We are calling the allocation constructor, which starts
-		   several bytes before the actual method entry point */
-		thread->pc = pcstart - ILCoderCtorOffset(thread->process->coder);
+		/* Copy the returned object value */
+		*((void **)result) = thread->stackTop[-1].ptrValue;
+		--(thread->stackTop);
 	}
 	else
 	{
-		thread->pc = pcstart;
+		/* Copy the return value into place */
+		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
+
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				{
+					*((ILInt8 *)result) =
+						(ILInt8)(thread->stackTop[-1].intValue);
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				{
+					*((ILInt16 *)result) =
+						(ILInt16)(thread->stackTop[-1].intValue);
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I4:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*((ILInt32 *)result) = thread->stackTop[-1].intValue;
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					ILMemCpy(result, thread->stackTop - CVM_WORDS_PER_LONG,
+							 sizeof(ILInt64));
+					thread->stackTop -= CVM_WORDS_PER_LONG;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				{
+					ILMemCpy(&fValue,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					*((ILFloat *)result) = (ILFloat)fValue;
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R8:
+				{
+					ILMemCpy(&fValue,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					*((ILDouble *)result) = (ILDouble)fValue;
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R:
+				{
+					ILMemCpy(result,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					ILMemCpy(result,
+							 thread->stackTop - CVM_WORDS_PER_TYPED_REF,
+							 sizeof(ILTypedRef));
+					thread->stackTop -= CVM_WORDS_PER_TYPED_REF;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			*((void **)result) = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type */
+			size = ILSizeOfType(thread, paramType);
+			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+			ILMemCpy(result, thread->stackTop - sizeInWords, size);
+			thread->stackTop -= sizeInWords;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			*((void **)result) = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
 	}
-	thread->exceptHeight = 0;
-	thread->method = method;
-	threwException = _ILCVMInterpreter(thread);
-	if(threwException)
-	{
-		/* An exception occurred, which is already stored in the thread */
-	}
-	else if(isCtor)
+}
+
+void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
+				          int isCtor, void *_result)
+{
+	ILExecValue *result = (ILExecValue *)_result;
+	ILType *signature = ILMethod_Signature(method);
+	ILType *paramType;
+	ILUInt32 size, sizeInWords;
+
+	if(isCtor)
 	{
 		/* Copy the returned object value */
 		result->objValue = (ILObject *)(thread->stackTop[-1].ptrValue);
@@ -732,6 +637,78 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 			--(thread->stackTop);
 		}
 	}
+}
+
+int _ILCallMethod(ILExecThread *thread, ILMethod *method,
+				  ILCallUnpackFunc unpack, void *result,
+				  int isCtor, void *_this,
+				  ILCallPackFunc pack, void *userData)
+{
+	ILCallFrame *frame;
+	unsigned char *savePC;
+	int threwException;
+	unsigned char *pcstart;
+
+	/* Push the arguments onto the evaluation stack */
+	if((*pack)(thread, method, isCtor, _this, userData))
+	{
+		return 1;
+	}
+
+	/* Clear the pending exception on entry to the method */
+	thread->thrownException = 0;
+
+	/* Convert the method into CVM bytecode */
+	pcstart = _ILConvertMethod(thread, method);
+	if(!pcstart)
+	{
+		/* "_ILConvertMethod" threw an exception */
+		return 1;
+	}
+
+	/* Create a call frame for the method */
+	if(thread->numFrames >= thread->maxFrames)
+	{
+	    if((frame = _ILAllocCallFrame(thread)) == 0)
+		{
+			thread->thrownException = _ILSystemException
+				(thread, "System.StackOverflowException");
+			return 1;
+	    }
+	}
+	else
+	{
+		frame = &(thread->frameStack[(thread->numFrames)++]);
+	}
+	savePC = thread->pc;
+	frame->method = thread->method;
+	frame->pc = IL_INVALID_PC;
+	frame->frame = thread->frame;
+	frame->exceptHeight = thread->exceptHeight;
+
+	/* Call the method */
+	if(isCtor)
+	{
+		/* We are calling the allocation constructor, which starts
+		   several bytes before the actual method entry point */
+		thread->pc = pcstart - ILCoderCtorOffset(thread->process->coder);
+	}
+	else
+	{
+		thread->pc = pcstart;
+	}
+	thread->exceptHeight = 0;
+	thread->method = method;
+	threwException = _ILCVMInterpreter(thread);
+	if(threwException)
+	{
+		/* An exception occurred, which is already stored in the thread */
+	}
+	else
+	{
+		/* Unpack the return value */
+		(*unpack)(thread, method, isCtor, result);
+	}
 
 	/* Restore the original PC: everything else was restored
 	   by the "return" instruction within the interpreter */
@@ -809,7 +786,10 @@ static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
 	if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0)
 	{
 		/* This is a normal method which has been called incorrectly */
-		return CallMethod(thread, method, result, 0, _this, va);
+		return _ILCallMethod(thread, method,
+							 _ILCallUnpackDirectResult, result,
+							 0, _this,
+							 _ILCallPackVaParams, &va);
 	}
 	classInfo = method->member.owner;
 	objectClass = GetObjectClass(_this);
@@ -823,7 +803,10 @@ static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
 											  method->index);
 			if(method)
 			{
-				return CallMethod(thread, method, result, 0, _this, va);
+				return _ILCallMethod(thread, method,
+									 _ILCallUnpackDirectResult, result,
+									 0, _this,
+									 _ILCallPackVaParams, &va);
 			}
 		}
 	}
@@ -836,7 +819,10 @@ static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
 							vtable[method->index];
 			if(method)
 			{
-				return CallMethod(thread, method, result, 0, _this, va);
+				return _ILCallMethod(thread, method,
+									 _ILCallUnpackDirectResult, result,
+									 0, _this,
+									 _ILCallPackVaParams, &va);
 			}
 		}
 	}
@@ -866,7 +852,10 @@ static int CallVirtualMethodV(ILExecThread *thread, ILMethod *method,
 	if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0)
 	{
 		/* This is a normal method which has been called incorrectly */
-		return CallMethodV(thread, method, result, 0, _this, args);
+		return _ILCallMethod(thread, method,
+							 _ILCallUnpackVResult, result,
+							 0, _this,
+							 _ILCallPackVParams, args);
 	}
 	classInfo = method->member.owner;
 	objectClass = GetObjectClass(_this);
@@ -880,7 +869,10 @@ static int CallVirtualMethodV(ILExecThread *thread, ILMethod *method,
 											  method->index);
 			if(method)
 			{
-				return CallMethodV(thread, method, result, 0, _this, args);
+				return _ILCallMethod(thread, method,
+									 _ILCallUnpackVResult, result,
+									 0, _this,
+									 _ILCallPackVParams, args);
 			}
 		}
 	}
@@ -893,7 +885,10 @@ static int CallVirtualMethodV(ILExecThread *thread, ILMethod *method,
 							vtable[method->index];
 			if(method)
 			{
-				return CallMethodV(thread, method, result, 0, _this, args);
+				return _ILCallMethod(thread, method,
+									 _ILCallUnpackVResult, result,
+									 0, _this,
+									 _ILCallPackVParams, args);
 			}
 		}
 	}
@@ -908,7 +903,10 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 {
 	int threwException;
 	VA_START(result);
-	threwException = CallMethod(thread, method, result, 0, 0, VA_GET_LIST);
+	threwException = _ILCallMethod(thread, method,
+								   _ILCallUnpackDirectResult, result,
+								   0, 0,
+								   _ILCallPackVaParams, &VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
@@ -916,21 +914,26 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 int ILExecThreadCallV(ILExecThread *thread, ILMethod *method,
 					  ILExecValue *result, ILExecValue *args)
 {
-	return CallMethodV(thread, method, result, 0, 0, args);
+	return _ILCallMethod(thread, method,
+						 _ILCallUnpackVResult, result,
+						 0, 0,
+						 _ILCallPackVParams, args);
 }
 
 ILObject *ILExecThreadCallCtorV(ILExecThread *thread, ILMethod *ctor,
                                 ILExecValue *args)
 {
-	ILExecValue result;
-	result.objValue = 0;
-	if(CallMethodV(thread, ctor, &result, 1, 0, args))
+	ILObject *result = 0;
+	if(_ILCallMethod(thread, ctor,
+					 _ILCallUnpackDirectResult, &result,
+					 1, 0,
+					 _ILCallPackVParams, args))
 	{
 		return 0;
 	}
 	else
 	{
-		return result.objValue;
+		return result;
 	}
 }
 
@@ -972,7 +975,10 @@ int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 		/* There is a pending exception waiting for the caller */
 		return 1;
 	}
-	threwException = CallMethod(thread, method, result, 0, 0, VA_GET_LIST);
+	threwException = _ILCallMethod(thread, method,
+								   _ILCallUnpackDirectResult, result,
+								   0, 0,
+								   _ILCallPackVaParams, &VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
@@ -992,7 +998,10 @@ int ILExecThreadCallNamedV(ILExecThread *thread, const char *typeName,
 		/* There is a pending exception waiting for the caller */
 		return 1;
 	}
-	return CallMethodV(thread, method, result, 0, 0, args);
+	return _ILCallMethod(thread, method,
+						 _ILCallUnpackVResult, result,
+						 0, 0,
+						 _ILCallPackVParams, args);
 }
 
 int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
@@ -1074,7 +1083,10 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 
 	/* Call the constructor */
 	result = 0;
-	if(CallMethod(thread, ctor, &result, 1, 0, VA_GET_LIST))
+	if(_ILCallMethod(thread, ctor,
+					 _ILCallUnpackDirectResult, &result,
+					 1, 0,
+					 _ILCallPackVaParams, &VA_GET_LIST))
 	{
 		/* The constructor threw an exception */
 		VA_END;
@@ -1089,7 +1101,7 @@ ILObject *ILExecThreadNewV(ILExecThread *thread, const char *typeName,
 {
 	ILMethod *ctor;
 	ILClass *classInfo;
-	ILExecValue result;
+	ILObject *result;
 
 	/* Find the constructor */
 	ctor = ILExecThreadLookupMethod(thread, typeName, ".ctor", signature);
@@ -1114,13 +1126,16 @@ ILObject *ILExecThreadNewV(ILExecThread *thread, const char *typeName,
 	IL_METADATA_UNLOCK(thread);
 
 	/* Call the constructor */
-	ILMemZero(&result, sizeof(result));
-	if(CallMethodV(thread, ctor, &result, 1, 0, args))
+	result = 0;
+	if(_ILCallMethod(thread, ctor,
+					 _ILCallUnpackDirectResult, &result,
+					 1, 0,
+					 _ILCallPackVParams, args))
 	{
 		/* The constructor threw an exception */
 		return 0;
 	}
-	return result.objValue;
+	return result;
 }
 
 #ifdef	__cplusplus

@@ -192,7 +192,7 @@ typedef struct
 typedef struct
 {
 	ILObject   *target;
-	ILObject   *methodInfo;
+	ILMethod   *methodInfo;
 	void       *closure;
 
 } System_Delegate;

@@ -256,6 +256,54 @@ typedef struct
 extern ILCoderClass const _ILCVMCoderClass;
 
 /*
+ * Pack parameters onto the CVM stack for a call, using a "va_list"
+ * as the source of the values.
+ */
+int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
+					    int isCtor, void *_this, void *userData);
+
+/*
+ * Pack parameters onto the CVM stack for a call, using an array
+ * of ILExecValue values to supply the parameters.
+ */
+int _ILCallPackVParams(ILExecThread *thread, ILMethod *method,
+					   int isCtor, void *_this, void *userData);
+
+/*
+ * Unpack a method result from the CVM stack and store it into
+ * a direct result buffer.
+ */
+void _ILCallUnpackDirectResult(ILExecThread *thread, ILMethod *method,
+					           int isCtor, void *result);
+
+/*
+ * Unpack a method result from the CVM stack and store it into
+ * an ILExecValue result buffer.
+ */
+void _ILCallUnpackVResult(ILExecThread *thread, ILMethod *method,
+				          int isCtor, void *result);
+
+/*
+ * Prototype for a parameter packing function.
+ */
+typedef int (*ILCallPackFunc)(ILExecThread *thread, ILMethod *method,
+					          int isCtor, void *_this, void *userData);
+
+/*
+ * Prototype for a return value unpacking function.
+ */
+typedef void (*ILCallUnpackFunc)(ILExecThread *thread, ILMethod *method,
+					             int isCtor, void *result);
+
+/*
+ * Call a method using the supplied packing and unpacking rules.
+ */
+int _ILCallMethod(ILExecThread *thread, ILMethod *method,
+				  ILCallUnpackFunc unpack, void *result,
+				  int isCtor, void *_this,
+				  ILCallPackFunc pack, void *userData);
+
+/*
  * Execute the CVM interpreter on a thread.  Returns zero for
  * a regular return, or non-zero if an exception was thrown.
  */
@@ -460,6 +508,12 @@ int _ILDelegateSignatureMatch(ILClass *delegateClass, ILMethod *method);
  * if the closure could not be created for some reason.
  */
 void *_ILDelegateGetClosure(ILObject *delegate);
+
+/*
+ * Get the number of parameter words for a method.
+ */
+ILUInt32 _ILGetMethodParamCount(ILExecThread *thread, ILMethod *method,
+								int suppressThis);
 
 /*
  * Lock metadata for reading or writing from the current thread.

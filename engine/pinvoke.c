@@ -436,34 +436,24 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 				{ \
 					thread->thrownException = _ILSystemException \
 						(thread, "System.StackOverflowException"); \
-					return; \
+					return 1; \
 				} \
 			} while (0)
 
 /*
- * Invoke a delegate from a closure.
+ * Pack the parameters for a delegate closure call onto the CVM stack.
  */
-static void DelegateInvoke(ffi_cif *cif, void *result,
-						   void **args, void *delegate)
+static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
+					          int isCtor, void *_this, void *userData)
 {
-	ILExecThread *thread = ILExecThreadCurrent();
-	ILMethod *method;
-	ILType *signature;
+	void **args = (void **)userData;
+	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
 	ILUInt32 param, numParams;
 	ILType *paramType;
 	void *ptr;
 	ILUInt32 size, sizeInWords;
-	ILCallFrame *frame;
-	unsigned char *savePC;
-	int threwException;
-	unsigned char *pcstart;
 	ILNativeFloat tempFloat;
-
-	/* Extract the method from the delegate */
-	method = ((System_Reflection *)(((System_Delegate *)delegate)->methodInfo))
-				->privateData;
-	signature = ILMethod_Signature(method);
 
 	/* Get the top and extent of the stack */
 	stacktop = thread->stackTop;
@@ -474,7 +464,7 @@ static void DelegateInvoke(ffi_cif *cif, void *result,
 	{
 		/* Push the "this" argument */
 		CHECK_SPACE(1);
-		stacktop->ptrValue = ((System_Delegate *)delegate)->target;
+		stacktop->ptrValue = _this;
 		++stacktop;
 	}
 	numParams = ILTypeNumParams(signature);
@@ -601,170 +591,163 @@ static void DelegateInvoke(ffi_cif *cif, void *result,
 		}
 	}
 
-	/* Record the number of arguments for popping later */
-	sizeInWords = thread->stackTop - thread->stackBase;
+	/* Update the stack top */
 	thread->stackTop = stacktop;
+	return 0;
+}
 
-	/* Clear the pending exception on entry to the method */
-	thread->thrownException = 0;
+/*
+ * Unpack the result of a delegate closure call.
+ */
+static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
+					             int isCtor, void *result)
+{
+	ILType *signature = ILMethod_Signature(method);
+	ILType *paramType;
+	ILUInt32 size, sizeInWords;
+	ILNativeFloat tempFloat;
 
-	/* Convert the method into CVM bytecode */
-	pcstart = _ILConvertMethod(thread, method);
-	if(!pcstart)
+	/* TODO: marshal native return values */
+
+	/* Copy the return value into place */
+	paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+	if(ILType_IsPrimitive(paramType))
 	{
-		/* "_ILConvertMethod" threw an exception */
-		savePC = thread->pc;
-		goto exception;
-	}
-
-	/* Create a call frame for the method */
-	if(thread->numFrames >= thread->maxFrames)
-	{
-	    if((frame = _ILAllocCallFrame(thread)) == 0)
+		/* Process a primitive value */
+		switch(ILType_ToElement(paramType))
 		{
-			thread->thrownException = _ILSystemException
-				(thread, "System.StackOverflowException");
-			savePC = thread->pc;
-			goto exception;
-	    }
+			case IL_META_ELEMTYPE_VOID:		break;
+
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
+			{
+				*((ILInt32 *)result) = thread->stackTop[-1].intValue;
+				--(thread->stackTop);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
+			{
+				ILMemCpy(result,
+						 thread->stackTop - CVM_WORDS_PER_LONG,
+						 sizeof(ILInt64));
+				thread->stackTop -= CVM_WORDS_PER_LONG;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+				ILMemCpy(&tempFloat,
+						 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+						 sizeof(ILNativeFloat));
+				*((ILFloat *)result) = (ILFloat)tempFloat;
+				thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+				ILMemCpy(&tempFloat,
+						 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+						 sizeof(ILNativeFloat));
+				*((ILDouble *)result) = (ILDouble)tempFloat;
+				thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R:
+			{
+				ILMemCpy(result,
+						 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+						 sizeof(ILNativeFloat));
+				thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+				ILMemCpy(result,
+						 thread->stackTop - CVM_WORDS_PER_TYPED_REF,
+						 sizeof(ILTypedRef));
+				thread->stackTop -= CVM_WORDS_PER_TYPED_REF;
+			}
+			break;
+		}
+	}
+	else if(ILType_IsClass(paramType))
+	{
+		/* Process an object reference */
+		*((void **)result) = thread->stackTop[-1].ptrValue;
+		--(thread->stackTop);
+	}
+	else if(ILType_IsValueType(paramType))
+	{
+		/* Process a value type */
+		size = ILSizeOfType(thread, paramType);
+		sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+		ILMemCpy(result, thread->stackTop - sizeInWords, size);
+		thread->stackTop -= sizeInWords;
 	}
 	else
 	{
-		frame = &(thread->frameStack[(thread->numFrames)++]);
+		/* Assume that everything else is an object reference */
+		*((void **)result) = thread->stackTop[-1].ptrValue;
+		--(thread->stackTop);
 	}
-	savePC = thread->pc;
-	frame->method = thread->method;
-	frame->pc = IL_INVALID_PC;
-	frame->frame = thread->frame;
-	frame->exceptHeight = thread->exceptHeight;
+}
+
+/*
+ * Invoke a delegate from a closure.
+ */
+static void DelegateInvoke(ffi_cif *cif, void *result,
+						   void **args, void *delegate)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+	ILMethod *method;
+	ILType *type;
+	ILUInt32 size;
+
+	/* Extract the method from the delegate */
+	method = ((System_Delegate *)delegate)->methodInfo;
+	if(!method)
+	{
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException",
+								(const char *)0);
+		return;
+	}
 
 	/* Call the method */
-	thread->pc = pcstart;
-	thread->exceptHeight = 0;
-	thread->method = method;
-	threwException = _ILCVMInterpreter(thread);
-	if(threwException)
+	if(_ILCallMethod(thread, method,
+				     UnpackDelegateResult, result,
+				     0, ((System_Delegate *)delegate)->target,
+				     PackDelegateParams, args))
 	{
 		/* An exception occurred, which is already stored in the thread */
-	exception:
-		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
-		if(paramType != ILType_Void)
+		type = ILMethod_Signature(method);
+		type = ILTypeGetEnumType(ILTypeGetReturn(type));
+		if(type != ILType_Void)
 		{
 			/* Clear the native return value, because we cannot assume
 			   that the native caller knows how to handle exceptions */
-			size = ILSizeOfType(thread, paramType);
+			size = ILSizeOfType(thread, type);
 			ILMemZero(result, size);
 		}
 	}
-	else
-	{
-		/* TODO: marshal native return values */
-
-		/* Copy the return value into place */
-		paramType = ILTypeGetEnumType(ILTypeGetReturn(signature));
-		if(ILType_IsPrimitive(paramType))
-		{
-			/* Process a primitive value */
-			switch(ILType_ToElement(paramType))
-			{
-				case IL_META_ELEMTYPE_VOID:		break;
-
-				case IL_META_ELEMTYPE_BOOLEAN:
-				case IL_META_ELEMTYPE_I1:
-				case IL_META_ELEMTYPE_U1:
-				case IL_META_ELEMTYPE_I2:
-				case IL_META_ELEMTYPE_U2:
-				case IL_META_ELEMTYPE_CHAR:
-				case IL_META_ELEMTYPE_I4:
-				case IL_META_ELEMTYPE_U4:
-			#ifdef IL_NATIVE_INT32
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					*((ILInt32 *)result) = thread->stackTop[-1].intValue;
-					--(thread->stackTop);
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I8:
-				case IL_META_ELEMTYPE_U8:
-			#ifdef IL_NATIVE_INT64
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					ILMemCpy(result,
-							 thread->stackTop - CVM_WORDS_PER_LONG,
-							 sizeof(ILInt64));
-					thread->stackTop -= CVM_WORDS_PER_LONG;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R4:
-				{
-					ILMemCpy(&tempFloat,
-							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
-							 sizeof(ILNativeFloat));
-					*((ILFloat *)result) = (ILFloat)tempFloat;
-					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R8:
-				{
-					ILMemCpy(&tempFloat,
-							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
-							 sizeof(ILNativeFloat));
-					*((ILDouble *)result) = (ILDouble)tempFloat;
-					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R:
-				{
-					ILMemCpy(result,
-							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
-							 sizeof(ILNativeFloat));
-					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_TYPEDBYREF:
-				{
-					ILMemCpy(result,
-							 thread->stackTop - CVM_WORDS_PER_TYPED_REF,
-							 sizeof(ILTypedRef));
-					thread->stackTop -= CVM_WORDS_PER_TYPED_REF;
-				}
-				break;
-			}
-		}
-		else if(ILType_IsClass(paramType))
-		{
-			/* Process an object reference */
-			*((void **)result) = thread->stackTop[-1].ptrValue;
-			--(thread->stackTop);
-		}
-		else if(ILType_IsValueType(paramType))
-		{
-			/* Process a value type */
-			size = ILSizeOfType(thread, paramType);
-			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
-			ILMemCpy(result, thread->stackTop - sizeInWords, size);
-			thread->stackTop -= sizeInWords;
-		}
-		else
-		{
-			/* Assume that everything else is an object reference */
-			*((void **)result) = thread->stackTop[-1].ptrValue;
-			--(thread->stackTop);
-		}
-	}
-
-	/* Restore the original PC: everything else was restored
-	   by the "return" instruction within the interpreter */
-	thread->pc = savePC;
 }
 
 #endif /* FFI_CLOSURES */

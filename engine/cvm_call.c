@@ -343,10 +343,10 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 #endif /* IL_CONFIG_VARARGS */
 
 /*
- * Get the number of parameter words for a tail call method.
+ * Get the number of parameter words for a method.
  */
-static ILUInt32 GetTailParamCount(ILExecThread *thread, ILMethod *method,
-								  int suppressThis)
+ILUInt32 _ILGetMethodParamCount(ILExecThread *thread, ILMethod *method,
+								int suppressThis)
 {
 	ILType *signature = ILMethod_Signature(method);
 	ILUInt32 num = 0;
@@ -1464,7 +1464,7 @@ VMCASE(COP_PREFIX_TAIL_CALL):
 	/* TODO: we should add an argument to the "tail" instruction
 	   that contains "tempNum", so that we don't have to compute
 	   the value dynamically */
-	tempNum = GetTailParamCount(thread, methodToCall, 0);
+	tempNum = _ILGetMethodParamCount(thread, methodToCall, 0);
 	IL_MEMMOVE(frame, stacktop - tempNum, tempNum * sizeof(CVMWord));
 	stacktop = frame + tempNum;
 

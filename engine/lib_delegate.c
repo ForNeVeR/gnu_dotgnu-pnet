@@ -74,8 +74,7 @@ int _ILDelegateSignatureMatch(ILClass *delegateClass, ILMethod *method)
 void *_ILDelegateGetClosure(ILObject *delegate)
 {
 #if defined(HAVE_LIBFFI)
-	ILObject *methodInfo;
-	ILMethod *method;
+	ILMethod *methodInfo;
 
 	/* See if we have a cached closure from last time */
 	if(!delegate)
@@ -93,15 +92,10 @@ void *_ILDelegateGetClosure(ILObject *delegate)
 	{
 		return 0;
 	}
-	method = ((System_Reflection *)methodInfo)->privateData;
-	if(!method)
-	{
-		return 0;
-	}
 
 	/* Make a native closure and cache it for next time */
 	((System_Delegate *)delegate)->closure =
-		_ILMakeClosureForDelegate(delegate, method);
+		_ILMakeClosureForDelegate(delegate, methodInfo);
 	return ((System_Delegate *)delegate)->closure;
 #else
 	/* We don't have support for creating closures on this system */
@@ -154,7 +148,71 @@ static ILObject *Delegate_ctor(ILExecThread *thread,
 							   ILObject *target,
 							   ILNativeInt method)
 {
-	/* TODO */
+	ILClass *classInfo;
+	ILObject *_this;
+
+	/* Allocate space for the delegate object */
+	classInfo = ILMethod_Owner(thread->method);
+	_this = _ILEngineAllocObject(thread, classInfo);
+	if(!_this)
+	{
+		return 0;
+	}
+
+	/* Set the delegate's fields */
+	((System_Delegate *)_this)->target = target;
+	((System_Delegate *)_this)->methodInfo = (ILMethod *)method;
+	((System_Delegate *)_this)->closure = 0;
+
+	/* Done */
+	return _this;
+}
+
+/*
+ * Parameter information for delegate invocation.
+ */
+typedef struct
+{
+	CVMWord *words;
+	ILUInt32 numWords;
+
+} DelegateInvokeParams;
+
+/*
+ * Pack the parameters for a delegate invocation.
+ */
+static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
+					                int isCtor, void *_this, void *userData)
+{
+	DelegateInvokeParams *params = (DelegateInvokeParams *)userData;
+	ILType *signature = ILMethod_Signature(method);
+	CVMWord *stacktop = thread->stackTop;
+
+	/* Push the "this" pointer if necessary */
+	if(ILType_HasThis(signature))
+	{
+		if(stacktop >= thread->stackLimit)
+		{
+			thread->thrownException = _ILSystemException
+				(thread, "System.StackOverflowException");
+			return 1;
+		}
+		stacktop->ptrValue = _this;
+		++stacktop;
+	}
+
+	/* Push the parameter words */
+	if((stacktop + params->numWords) >= thread->stackLimit)
+	{
+		thread->thrownException = _ILSystemException
+			(thread, "System.StackOverflowException");
+		return 1;
+	}
+	ILMemCpy(stacktop, params->words, params->numWords * sizeof(CVMWord));
+	stacktop += params->numWords;
+
+	/* Update the stack top */
+	thread->stackTop = stacktop;
 	return 0;
 }
 
@@ -165,7 +223,30 @@ static void Delegate_Invoke(ILExecThread *thread,
 							void *result,
 							ILObject *_this)
 {
-	/* TODO */
+	ILObject *target;
+	ILMethod *method;
+	DelegateInvokeParams params;
+
+	/* Extract the fields from the delegate and validate them */
+	target = ((System_Delegate *)_this)->target;
+	method = ((System_Delegate *)_this)->methodInfo;
+	if(!method)
+	{
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException",
+								(const char *)0);
+		return;
+	}
+
+	/* Locate the start and end of the parameters to "Invoke",
+	   excluding the "this" value that represents the delegate */
+	params.words = thread->frame + 1;
+	params.numWords = _ILGetMethodParamCount(thread, method, 1);
+
+	/* Call the method */
+	_ILCallMethod(thread, method,
+				  _ILCallUnpackDirectResult, result,
+				  0, target,
+				  PackDelegateInvokeParams, &params);
 }
 
 #if !defined(HAVE_LIBFFI)

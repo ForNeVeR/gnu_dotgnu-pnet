@@ -48,6 +48,8 @@
 	Xsharp/XsharpPCF.c: fix some metrics issues in "mssR08.pcf" and
 	enable the PCF-based font renderer.
 
+	* Xsharp/XsharpPCF.c: bypass "XPutPixel" to speed up glyph rendering.
+
 2003-11-30  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:

@@ -1,7 +1,7 @@
 /*
  * link.c - Dynamic linking support for IL images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,149 +30,78 @@ extern	"C" {
 #endif
 
 /*
- * The default system assembly link path.
- */
-#ifdef CSCC_LIB_DIR
-#define	ASSEMBLY_LINK_PATH	\
-			CSCC_LIB_DIR "/cscc/lib:" \
-			"/usr/local/lib/cscc/lib:" \
-			"/usr/lib/cscc/lib"
-#else
-#define	ASSEMBLY_LINK_PATH	\
-			"/usr/local/lib/cscc/lib:" \
-			"/usr/lib/cscc/lib"
-#endif
-
-/*
- * The default system module link path for PInvoke modules.
- */
-#ifdef CSCC_LIB_DIR
-#define	MODULE_LINK_PATH	\
-			CSCC_LIB_DIR ":" \
-			"/usr/local/lib:" \
-			"/usr/lib"
-#else
-#define	MODULE_LINK_PATH	\
-			"/usr/local/lib:" \
-			"/usr/lib"
-#endif
-
-/*
- * Test a specific pathname for an assembly.
- */
-static char *TestAssemblyPath(const char *pathname, int pathlen,
-							  const char *name, int namelen,
-							  int needSuffix, int insertLib)
-{
-	int nameStart;
-#ifndef IL_WIN32_PLATFORM
-	int sawUpper;
-#endif
-
-	/* Build the full pathname */
-	char *path = (char *)ILMalloc(pathlen + namelen + 16);
-	if(!path)
-	{
-		return 0;
-	}
-	if(pathlen)
-	{
-		ILMemCpy(path, pathname, pathlen);
-		path[pathlen] = '/';
-		if(insertLib)
-		{
-			ILMemCpy(path + pathlen + 1, "lib", 3);
-			nameStart = pathlen + 4;
-		}
-		else
-		{
-			nameStart = pathlen + 1;
-		}
-		ILMemCpy(path + nameStart, name, namelen);
-		if(needSuffix)
-		{
-			strcpy(path + nameStart + namelen, ".dll");
-		}
-		else
-		{
-			path[nameStart + namelen] = '\0';
-		}
-		nameStart = pathlen + 1;
-	}
-	else
-	{
-		if(insertLib)
-		{
-			ILMemCpy(path, "lib", 3);
-			nameStart = 3;
-		}
-		else
-		{
-			nameStart = 0;
-		}
-		ILMemCpy(path + nameStart, name, namelen);
-		if(needSuffix)
-		{
-			strcpy(path + nameStart + namelen, ".dll");
-		}
-		else
-		{
-			path[nameStart + namelen] = '\0';
-		}
-		nameStart = 0;
-	}
-
-	/* Test for the file's presence */
-	if(ILFileExists(path, 0))
-	{
-		return path;
-	}
-
-#ifndef IL_WIN32_PLATFORM
-	/* Try converting the name to lower case and retrying.
-	   This is designed to get around Windows case issues on Unix */
-	sawUpper = 0;
-	while(path[nameStart] != '\0')
-	{
-		if(path[nameStart] >= 'A' && path[nameStart] <= 'Z')
-		{
-			sawUpper = 1;
-			path[nameStart] = path[nameStart] - 'A' + 'a';
-		}
-		++nameStart;
-	}
-	if(sawUpper)
-	{
-		if(ILFileExists(path, 0))
-		{
-			return path;
-		}
-	}
-#endif
-
-	/* Not found */
-	ILFree(path);
-	return 0;
-}
-
-/*
  * Determine the pathname separator to use on this platform.
  */
-#if (defined(_WIN32) || defined(WIN32)) && !defined(__CYGWIN__)
-	#define	PATH_SEP	';'
+#if defined(IL_WIN32_PLATFORM) && !defined(__CYGWIN__)
+	#define	PATH_SEP			';'
+	#define	PATH_SEP_STRING		";"
 #else
-	#define	PATH_SEP	':'
+	#define	PATH_SEP			':'
+	#define	PATH_SEP_STRING		":"
 #endif
 
 /*
- * Search a pathname list for a specific assembly.
+ * Various default path lists.
  */
-static char *SearchPathForAssembly(char *list, const char *name, int namelen,
-								   const ILUInt16 *version)
+#ifdef CSCC_LIB_DIR
+#define	CSCC_LIB_PATH_DEFAULT	\
+			CSCC_LIB_DIR "/cscc/lib" PATH_SEP_STRING \
+			"/usr/local/lib/cscc/lib" PATH_SEP_STRING \
+			"/usr/lib/cscc/lib"
+#define	MONO_PATH_DEFAULT	\
+			CSCC_LIB_DIR
+#define	LD_LIBRARY_PATH_DEFAULT	\
+			CSCC_LIB_DIR PATH_SEP_STRING \
+			"/usr/local/lib" PATH_SEP_STRING \
+			"/usr/lib"
+#else
+#define	CSCC_LIB_PATH_DEFAULT	\
+			"/usr/local/lib/cscc/lib" PATH_SEP_STRING \
+			"/usr/lib/cscc/lib"
+#define	MONO_PATH_DEFAULT	0
+#define	LD_LIBRARY_PATH_DEFAULT	\
+			"/usr/local/lib" PATH_SEP_STRING \
+			"/usr/lib"
+#endif
+
+/*
+ * The cached system path, loaded from the environment.
+ */
+static char **systemPath = 0;
+static int systemPathSize = 0;
+
+/*
+ * The explicit list of pnetlib assemblies which must override
+ * any others with these names that we may encounter (e.g. Mono's).
+ * We detect the pnetlib versions by looking for "pnetlib.here".
+ */
+static const char * const systemAssemblies[] = {
+	"mscorlib",
+	"System",
+	"System.Xml",
+};
+#define	systemAssembliesSize	\
+			(sizeof(systemAssemblies) / sizeof(systemAssemblies[0]))
+
+/*
+ * Split a pathname list and add it to the global list of system paths.
+ */
+static void SplitPathString(char *list, char *defaultPath)
 {
 	int len;
-	char *path;
+	char **newPathList;
 
+	/* Use the default path if necessary */
+	if(!list || *list == '\0')
+	{
+		list = defaultPath;
+		if(!list)
+		{
+			return;
+		}
+	}
+
+	/* Split the pathname list */
 	while(*list != '\0')
 	{
 		/* Skip separators between directory pathnames */
@@ -195,29 +124,251 @@ static char *SearchPathForAssembly(char *list, const char *name, int namelen,
 			--len;
 		}
 
-		/* Test for the assembly within this directory */
-		path = TestAssemblyPath(list, len, name, namelen, 1, 0);
-		if(path)
+		/* Add the path to the global list */
+		newPathList = (char **)ILRealloc
+			(systemPath, (systemPathSize + 1) * sizeof(char *));
+		if(!newPathList)
 		{
-			return path;
+			return;
 		}
+		systemPath = newPathList;
+		systemPath[systemPathSize] = ILDupNString(list, len);
+		if(!(systemPath[systemPathSize]))
+		{
+			return;
+		}
+		++systemPathSize;
 
 		/* Advance to the next path */
 		list += len;
+	}
+}
+
+/*
+ * Load the system path.
+ */
+static void LoadSystemPath(void)
+{
+	if(!systemPath)
+	{
+		SplitPathString(getenv("CSCC_LIB_PATH"), CSCC_LIB_PATH_DEFAULT);
+		SplitPathString(getenv("MONO_PATH"), MONO_PATH_DEFAULT);
+		SplitPathString(getenv("LD_LIBRARY_PATH"), LD_LIBRARY_PATH_DEFAULT);
+	#ifdef IL_WIN32_PLATFORM
+		/* Win32: try looking in PATH also, since Win32 puts dll's there */
+		SplitPathString(getenv("PATH"), 0);
+	#endif
+	}
+}
+
+/*
+ * Test a specific pathname for a file.
+ */
+static char *TestPathForFile(const char *pathname, int pathlen,
+							 const char *name, int namelen,
+							 const char *prefix, const char *suffix,
+							 int *retryLower, int forceLower)
+{
+	int fullLen;
+	int posn;
+	char *path;
+
+	/* Determine the length of the full pathname */
+	fullLen = pathlen + namelen + 1;
+	if(pathlen)
+	{
+		++fullLen;
+	}
+	if(prefix)
+	{
+		fullLen += strlen(prefix);
+	}
+	if(suffix)
+	{
+		fullLen += strlen(suffix);
+	}
+
+	/* Build the full pathname */
+	path = (char *)ILMalloc(fullLen);
+	if(!path)
+	{
+		return 0;
+	}
+	if(pathlen)
+	{
+		ILMemCpy(path, pathname, pathlen);
+		path[pathlen] = '/';
+		posn = pathlen + 1;
+	}
+	else
+	{
+		posn = 0;
+	}
+	if(prefix)
+	{
+		strcpy(path + posn, prefix);
+		posn += strlen(prefix);
+	}
+	if(forceLower)
+	{
+		while(namelen > 0)
+		{
+			if(*name >= 'A' && *name <= 'Z')
+			{
+				path[posn++] = (*name++ - 'A' + 'a');
+			}
+			else
+			{
+				path[posn++] = *name++;
+			}
+			--namelen;
+		}
+	}
+	else if(retryLower)
+	{
+		*retryLower = 0;
+		while(namelen > 0)
+		{
+			if(*name >= 'A' && *name <= 'Z')
+			{
+				*retryLower = 1;
+			}
+			path[posn++] = *name++;
+			--namelen;
+		}
+	}
+	else
+	{
+		ILMemCpy(path + posn, name, namelen);
+		posn += namelen;
+	}
+	if(suffix)
+	{
+		strcpy(path + posn, suffix);
+		posn += strlen(suffix);
+	}
+	path[posn] = '\0';
+
+	/* Test for the file's presence */
+	if(ILFileExists(path, 0))
+	{
+		return path;
+	}
+
+	/* Not found */
+	ILFree(path);
+	return 0;
+}
+
+/*
+ * Test a specific pathname for a native library file.
+ */
+static char *TestPathForNativeLib(const char *pathname, int pathlen,
+							      const char *name, int namelen,
+							      const char *optPrefix, const char *suffix)
+{
+	char *fullName;
+	int retryLower;
+
+	/* Try looking for an exact match */
+	fullName = TestPathForFile(pathname, pathlen, name, namelen,
+							   (const char *)0, suffix,
+							   &retryLower, 0);
+
+	/* Try changing the name to lower case and retrying, to get
+	   around Win32 vs Unix discrepancies in naming conventions */
+	if(!fullName && retryLower)
+	{
+		fullName = TestPathForFile(pathname, pathlen, name, namelen,
+								   (const char *)0, suffix, 0, 1);
+	}
+
+	/* Try adding the "lib" prefix to the name */
+	if(!fullName && optPrefix)
+	{
+		fullName = TestPathForFile(pathname, pathlen, name, namelen,
+								   optPrefix, suffix, &retryLower, 0);
+
+		/* Try changing the name to lower case and adding the "lib" prefix */
+		if(!fullName && retryLower)
+		{
+			fullName = TestPathForFile(pathname, pathlen, name, namelen,
+									   optPrefix, suffix, 0, 1);
+		}
+	}
+
+	/* Return the name that we found, or NULL if nothing worked */
+	return fullName;
+}
+
+/*
+ * Test for a "pnetlib.here" file in a specific directory.
+ * This file marks the location of the standard pnetlib assemblies.
+ */
+static int TestPathForPnetlibHere(const char *pathname, int pathlen)
+{
+	char *path = TestPathForFile(pathname, pathlen, "pnetlib.here", 12,
+								 0, 0, 0, 0);
+	if(path)
+	{
+		ILFree(path);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Find a particular assembly in a set of paths.  Returns
+ * non-zero if the assembly has been located.
+ */
+static int FindAssemblyInPaths(const char **paths, unsigned long numPaths,
+							   const char *name, int namelen, int isSystem,
+							   char **path, char **firstPath)
+{
+	unsigned long posn;
+	for(posn = 0; posn < numPaths; ++posn)
+	{
+		*path = TestPathForFile(paths[posn], strlen(paths[posn]),
+							    name, namelen, 0, ".dll", 0, 0);
+		if(*path)
+		{
+			if(!isSystem ||
+			   TestPathForPnetlibHere(paths[posn], strlen(paths[posn])))
+			{
+				if(*firstPath)
+				{
+					ILFree(*firstPath);
+				}
+				return 1;
+			}
+			if(*firstPath)
+			{
+				ILFree(*path);
+			}
+			else
+			{
+				*firstPath = *path;
+			}
+		}
 	}
 	return 0;
 }
 
 char *ILImageSearchPath(const char *name, const ILUInt16 *version,
+						const char *parentAssemblyFile,
 						const char **beforePaths, unsigned long numBeforePaths,
 						const char **afterPaths, unsigned long numAfterPaths,
-						int suppressStandardPaths)
+						int suppressStandardPaths, int *sameDir)
 {
-	static ILUInt16 const zeroVersion[4] = {0, 0, 0, 0};
 	int namelen;
 	unsigned long posn;
 	char *path;
-	char *env;
+	char *firstPath;
+	int len;
+	int isSystem;
 
 	/* Bail out immediately if the name is invalid */
 	if(!name)
@@ -235,156 +386,92 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 		return 0;
 	}
 
-	/* Make sure that "version" is non-NULL */
-	if(!version)
+	/* Convert "corlib" into "mscorlib", in case we loaded a Mono app */
+	if(namelen == 6 && !strncmp(name, "corlib", 6))
 	{
-		version = zeroVersion;
+		name = "mscorlib";
+		namelen = 8;
 	}
 
-	/* Search the before path list */
-	for(posn = 0; posn < numBeforePaths; ++posn)
+	/* Is this a system assembly that we must handle specially? */
+	isSystem = 0;
+	for(posn = 0; posn < systemAssembliesSize; ++posn)
 	{
-		path = TestAssemblyPath(beforePaths[posn], strlen(beforePaths[posn]),
-								name, namelen, 1, 0);
-		if(path)
+		if(namelen == strlen(systemAssemblies[posn]) &&
+		   !strncmp(systemAssemblies[posn], name, namelen))
 		{
-			return path;
+			isSystem = 1;
+			break;
 		}
-	}
-
-	/* Search the standard paths */
-	if(!suppressStandardPaths)
-	{
-		/* Try looking in CSCC_LIB_PATH for the assembly */
-		env = getenv("CSCC_LIB_PATH");
-		if(env && *env != '\0')
-		{
-			path = SearchPathForAssembly(env, name, namelen, version);
-			if(path)
-			{
-				return path;
-			}
-		}
-		else
-		{
-			path = SearchPathForAssembly(ASSEMBLY_LINK_PATH,
-										 name, namelen, version);
-			if(path)
-			{
-				return path;
-			}
-		}
-
-		/* Try looking in LD_LIBRARY_PATH for the assembly */
-		env = getenv("LD_LIBRARY_PATH");
-		if(env && *env != '\0')
-		{
-			path = SearchPathForAssembly(env, name, namelen, version);
-			if(path)
-			{
-				return path;
-			}
-		}
-		else
-		{
-			path = SearchPathForAssembly(MODULE_LINK_PATH,
-										 name, namelen, version);
-			if(path)
-			{
-				return path;
-			}
-		}
-
-	#ifdef IL_WIN32_PLATFORM
-		/* Win32: try looking in PATH for the assembly */
-		env = getenv("PATH");
-		if(env && *env != '\0')
-		{
-			path = SearchPathForAssembly(env, name, namelen, version);
-			if(path)
-			{
-				return path;
-			}
-		}
-	#endif
-	}
-
-	/* Search the after path list */
-	for(posn = 0; posn < numAfterPaths; ++posn)
-	{
-		path = TestAssemblyPath(afterPaths[posn], strlen(afterPaths[posn]),
-								name, namelen, 1, 0);
-		if(path)
-		{
-			return path;
-		}
-	}
-
-	/* Could not find the assembly */
-	return 0;
-}
-
-/*
- * Locate an assembly given its name and version.
- * Returns the malloc'ed path, or NULL if not found.
- */
-static char *LocateAssembly(ILContext *context, const char *name,
-							ILUInt16 *version, const char *parentAssemblyPath,
-							int *sameDir)
-{
-	int namelen;
-	int pathlen;
-	char *path;
-
-	/* Strip ".dll" from the name, if present */
-	namelen = strlen(name);
-	if(namelen > 4 && name[namelen - 4] == '.' &&
-	   (name[namelen - 3] == 'd' || name[namelen - 3] == 'D') &&
-	   (name[namelen - 2] == 'l' || name[namelen - 2] == 'L') &&
-	   (name[namelen - 1] == 'l' || name[namelen - 1] == 'L'))
-	{
-		namelen -= 4;
 	}
 
 	/* Look in the same directory as the parent assembly */
-	*sameDir = 1;
-	if(parentAssemblyPath)
+	firstPath = 0;
+	if(sameDir)
 	{
-		pathlen = strlen(parentAssemblyPath);
-		while(pathlen > 0 && parentAssemblyPath[pathlen - 1] != '/' &&
-		      parentAssemblyPath[pathlen - 1] != '\\')
+		*sameDir = 1;
+	}
+	if(parentAssemblyFile)
+	{
+		len = strlen(parentAssemblyFile);
+		while(len > 0 && parentAssemblyFile[len - 1] != '/' &&
+		      parentAssemblyFile[len - 1] != '\\')
 		{
-			--pathlen;
+			--len;
 		}
-		if(pathlen > 0)
+		if(len > 1)
 		{
-			path = TestAssemblyPath(parentAssemblyPath,
-									pathlen - 1, name, namelen, 1, 0);
-			if(path)
+			--len;
+		}
+		path = TestPathForFile(parentAssemblyFile, len,
+							   name, namelen, 0, ".dll", 0, 0);
+		if(path)
+		{
+			if(!isSystem || TestPathForPnetlibHere(parentAssemblyFile, len))
 			{
 				return path;
 			}
-		}
-		else
-		{
-			/* The parent assembly is in the current directory */
-			path = TestAssemblyPath(".", 0, name, namelen, 1, 0);
-			if(path)
-			{
-				return path;
-			}
+			firstPath = path;
 		}
 	}
-	*sameDir = 0;
+	if(sameDir)
+	{
+		*sameDir = 0;
+	}
 
-	/* Use the standard search order */
-	return ILImageSearchPath(name, version,
-							 (const char **)(context->libraryDirs),
-							 context->numLibraryDirs, 0, 0, 0);
+	/* Search the before path list */
+	if(FindAssemblyInPaths(beforePaths, numBeforePaths, name, namelen,
+						   isSystem, &path, &firstPath))
+	{
+		return path;
+	}
+
+	/* Search the standard system paths */
+	if(!suppressStandardPaths)
+	{
+		LoadSystemPath();
+		if(FindAssemblyInPaths((const char **)systemPath,
+							   (unsigned long)systemPathSize, name, namelen,
+							   isSystem, &path, &firstPath))
+		{
+			return path;
+		}
+	}
+
+	/* Search the after path list */
+	if(FindAssemblyInPaths(afterPaths, numAfterPaths, name, namelen,
+						   isSystem, &path, &firstPath))
+	{
+		return path;
+	}
+
+	/* Use the first match that we found, if any */
+	return firstPath;
 }
 
 int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 {
+	ILContext *context = ILImageToContext(image);
 	ILAssembly *assem;
 	char *pathname;
 	int error;
@@ -402,9 +489,11 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 			continue;
 		}
 
-		/* Locate the assembly */
-		pathname = LocateAssembly(image->context, assem->name,
-								  assem->version, filename, &sameDir);
+		/* Locate the assembly along the search path */
+		pathname = ILImageSearchPath(assem->name, assem->version, filename,
+									 (const char **)(context->libraryDirs),
+							 		 context->numLibraryDirs,
+									 0, 0, 0, &sameDir);
 		if(!pathname)
 		{
 		#if IL_DEBUG_META
@@ -478,8 +567,9 @@ int ILImageLoadAssembly(const char *name, ILContext *context,
 	}
 
 	/* Try to locate the assembly relative to its parent assembly */
-	pathname = LocateAssembly(context, name, (ILUInt16 *)0,
-							  parentImage->filename, &sameDir);
+	pathname = ILImageSearchPath(name, (ILUInt16 *)0, parentImage->filename,
+							     (const char **)(context->libraryDirs),
+							     context->numLibraryDirs, 0, 0, 0, &sameDir);
 	if(!pathname)
 	{
 		return -1;
@@ -678,6 +768,8 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	char *baseName;
 	char *fullName;
 	ILContext *context;
+	const char *optPrefix = 0;
+	const char *suffix = 0;
 
 	/* Validate the module name that was provided */
 	if(!pinvoke || !(pinvoke->module) || !(pinvoke->module->name) ||
@@ -715,11 +807,19 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 		name = remapName;
 	}
 
-	/* Determine the platform-specific suffix to add, and then
-	   allocate a string that contains the base search name */
+	/* If the name already includes a directory specification,
+	   then assume that this is the path we are looking for */
+	for(posn = 0; posn < namelen; ++posn)
+	{
+		if(name[posn] == '/' || name[posn] == '\\')
+		{
+			return ILDupNString(name, namelen);
+		}
+	}
+
+	/* Determine the platform-specific prefix and suffix to add */
 #ifndef IL_WIN32_PLATFORM
 	{
-		int posn = 0;
 		int needSuffix = 1;
 		while(posn <= (namelen - 3))
 		{
@@ -733,114 +833,64 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 			}
 			++posn;
 		}
+		if(!needSuffix)
+		{
+			/* Strip ".dll" from the end of the name if present */
+			if(namelen >= 4 && name[namelen - 4] == '.' &&
+			   (name[namelen - 3] == 'd' || name[namelen - 3] == 'D') &&
+			   (name[namelen - 2] == 'l' || name[namelen - 2] == 'L') &&
+			   (name[namelen - 1] == 'l' || name[namelen - 1] == 'L'))
+			{
+				namelen -= 4;
+				needSuffix = 1;
+			}
+		}
 		if(needSuffix)
 		{
-			baseName = (char *)ILMalloc(namelen + 4);
-			if(!baseName)
-			{
-				return 0;
-			}
-			ILMemCpy(baseName, name, namelen);
-			baseName[namelen++] = '.';
-			baseName[namelen++] = 's';
-			baseName[namelen++] = 'o';
-			baseName[namelen] = '\0';
-		}
-		else
-		{
-			baseName = (char *)ILMalloc(namelen + 1);
-			if(!baseName)
-			{
-				return 0;
-			}
-			ILMemCpy(baseName, name, namelen);
-			baseName[namelen] = '\0';
+			suffix = ".so";
 		}
 	}
 #else
+	/* Add ".dll" to the end of the name if not present */
 	if(namelen < 4 || name[namelen - 4] != '.' ||
 	   (name[namelen - 3] != 'd' && name[namelen - 3] != 'D') ||
 	   (name[namelen - 2] != 'l' && name[namelen - 2] != 'L') ||
 	   (name[namelen - 1] != 'l' && name[namelen - 1] != 'L'))
 	{
-		baseName = (char *)ILMalloc(namelen + 5);
-		if(!baseName)
-		{
-			return 0;
-		}
-		ILMemCpy(baseName, name, namelen);
-		strcpy(baseName + namelen, ".dll");
-		namelen += 4;
-	}
-	else
-	{
-		baseName = (char *)ILMalloc(namelen + 1);
-		if(!baseName)
-		{
-			return 0;
-		}
-		ILMemCpy(baseName, name, namelen);
-		baseName[namelen] = '\0';
+		suffix = ".dll";
 	}
 #endif
-
-	/* If the name already includes a directory specification,
-	   then assume that this is the path we are looking for */
-	name = baseName;
-	while(*name != '\0')
+	if(namelen >= 3 && strncmp(name, "lib", 3) != 0)
 	{
-		if(*name == '/' || *name == '\\')
-		{
-			return baseName;
-		}
-		++name;
+		optPrefix = "lib";
 	}
+	baseName = ILDupNString(name, namelen);
 
 	/* Look in the same directory as the assembly first,
 	   in case the programmer has shipped the native library
 	   along-side the assembly that imports it */
 	if((name = pinvoke->member.programItem.image->filename) != 0)
 	{
+		/* Get the name of the directory containing the assembly */
 		namelen = strlen(name);
 		while(namelen > 0 && name[namelen - 1] != '/' &&
 			  name[namelen - 1] != '\\')
 		{
 			--namelen;
 		}
-		if(namelen <= 0)
+		if(namelen > 1)
 		{
-			/* The assembly was loaded from the current directory */
-			name = "./";
-			namelen = 2;
+			--namelen;
 		}
-		fullName = (char *)ILMalloc(namelen + strlen(baseName) + 1);
+
+		/* Look for the native library */
+		fullName = TestPathForNativeLib(name, namelen,
+										baseName, strlen(baseName),
+								        optPrefix, suffix);
 		if(fullName)
 		{
-			ILMemCpy(fullName, name, namelen);
-			strcpy(fullName + namelen, baseName);
-			if(ILFileExists(fullName, (char **)0))
-			{
-				ILFree(baseName);
-				return fullName;
-			}
-			ILFree(fullName);
-		}
-		if(strncmp(baseName, "lib", 3) != 0)
-		{
-			/* Try again, after pre-pending "lib" to the base name */
-			fullName = (char *)ILMalloc(namelen + strlen(baseName) + 4);
-			if(fullName)
-			{
-				ILMemCpy(fullName, name, namelen);
-				strcpy(fullName + namelen, "lib");
-				strcpy(fullName + namelen + 3, baseName);
-				if(ILFileExists(fullName, (char **)0))
-				{
-					ILFree(baseName);
-					return fullName;
-				}
-				ILFree(fullName);
-			}
+			ILFree(baseName);
+			return fullName;
 		}
 	}
 
@@ -848,32 +898,66 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	context = pinvoke->member.programItem.image->context;
 	for(posn = 0; posn < context->numLibraryDirs; ++posn)
 	{
-		fullName = TestAssemblyPath(context->libraryDirs[posn],
-									strlen(context->libraryDirs[posn]),
-									baseName, strlen(baseName), 0, 0);
+		fullName = TestPathForNativeLib(context->libraryDirs[posn],
+									    strlen(context->libraryDirs[posn]),
+									    baseName, strlen(baseName),
+										optPrefix, suffix);
 		if(fullName)
 		{
 			ILFree(baseName);
 			return fullName;
 		}
-		if(strncmp(baseName, "lib", 3) != 0)
+	}
+
+	/* Look on the standard system search path */
+	LoadSystemPath();
+	for(posn = 0; posn < systemPathSize; ++posn)
+	{
+		fullName = TestPathForNativeLib(systemPath[posn],
+									    strlen(systemPath[posn]),
+									    baseName, strlen(baseName),
+										optPrefix, suffix);
+		if(fullName)
 		{
-			/* Try again, after pre-pending "lib" to the base name */
-			fullName = TestAssemblyPath(context->libraryDirs[posn],
-										strlen(context->libraryDirs[posn]),
-										baseName, strlen(baseName), 0, 1);
-			if(fullName)
-			{
-				ILFree(baseName);
-				return fullName;
-			}
+			ILFree(baseName);
+			return fullName;
 		}
 	}
 
-	/* Assume that the library is somewhere on the standard
-	   search path and let "ILDynLibraryOpen" do the hard work
-	   of finding it later */
-	return baseName;
+	/* Let "ILDynLibraryOpen" do the hard work of finding it later */
+#ifdef IL_WIN32_PLATFORM
+	if(!suffix)
+#else
+	if(!suffix && !optPrefix)
+#endif
+	{
+		return baseName;
+	}
+	else
+	{
+		/* Add the prefix and suffix, to make it look like something
+		   that "ILDynLibraryOpen" would be interested in */
+		fullName = (char *)ILMalloc
+			((optPrefix ? strlen(optPrefix) : 0) +
+			 strlen(baseName) +
+			 (suffix ? strlen(suffix) : 0) + 1);
+		if(!fullName)
+		{
+			return baseName;
+		}
+		if(optPrefix)
+		{
+			strcpy(fullName, optPrefix);
+			strcat(fullName, baseName);
+		}
+		else
+		{
+			strcpy(fullName, baseName);
+		}
+		strcat(fullName, suffix);
+		ILFree(baseName);
+		return fullName;
+	}
 }
 
 #else	/* !IL_CONFIG_PINVOKE */

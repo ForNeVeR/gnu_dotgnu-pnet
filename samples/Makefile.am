@@ -48,4 +48,5 @@ pnetassemblies_DATA = mscorlib.dll \
 					  I18N.West.dll \
 					  I18N-handlers.def \
 					  System.dll \
-					  System.Xml.dll
+					  System.Xml.dll \
+					  pnetlib.here

@@ -408,9 +408,10 @@ const char *ILImageLoadError(int error);
  * containing the full pathname otherwise.
  */
 char *ILImageSearchPath(const char *name, const ILUInt16 *version,
+						const char *parentAssemblyPath,
 						const char **beforePaths, unsigned long numBeforePaths,
 						const char **afterPaths, unsigned long numAfterPaths,
-						int suppressStandardPaths);
+						int suppressStandardPaths, int *sameDir);
 
 #ifdef	__cplusplus
 };

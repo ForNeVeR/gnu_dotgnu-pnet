@@ -4,6 +4,12 @@
 	* libffi/configure, libffi/configure.in: add host detection
 	for GNU/Hurd (thanks to Andrew Mitchell).
 
+	* image/link.c, include/il_image.h, samples/Makefile.am,
+	samples/pnetlib.here: re-write assembly path resolution so that
+	it can "see past" system assemblies from other CLR's that may
+	be on the path prior to the pnetlib assemblies; use the same
+	path for PInvoke modules.
+
 2002-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with delegate comparison fix.

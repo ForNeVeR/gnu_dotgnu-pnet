@@ -1,7 +1,9 @@
 /*
  * TestDelegate.cs - Tests for the "Delegate" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ *
+ * Contributors:  Thong Nguyen (tum@veridicus.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +65,7 @@ public class TestDelegate : TestCase
 		
 		result = (int)m.EndInvoke(ar);
 		
-		AssertEquals("result==30", result, 30);
+		AssertEquals("result==30", 30, result);
 	}
 
 	/*
@@ -100,7 +102,7 @@ public class TestDelegate : TestCase
 		
 		Assert("x==y2", Object.ReferenceEquals(x, y2));
 		Assert("y==x2", Object.ReferenceEquals(y, x2));
-		AssertEquals("result==30", result, 30);
+		AssertEquals("result==30", 30, result);
 	}
 
 	/*
@@ -123,7 +125,7 @@ public class TestDelegate : TestCase
 		
 		result = m.EndInvoke(ar);
 		
-		AssertEquals("result==30", result, 30);
+		AssertEquals("result==30", 30, result);
 	}
 
 	/*
@@ -154,9 +156,9 @@ public class TestDelegate : TestCase
 		
 		result = m.EndInvoke(ref x, ref y, ar);
 		
-		AssertEquals("x==20", x, 20);
-		AssertEquals("y==10", y, 10);
-		AssertEquals("result==30", result, 30);
+		AssertEquals("x==20", 20, x);
+		AssertEquals("y==10", 10, y);
+		AssertEquals("result==30", 30, result);
 	}
 		
 	/*
@@ -179,7 +181,7 @@ public class TestDelegate : TestCase
 		
 		result = m.EndInvoke(ar);
 		
-		AssertEquals("result==30", result, (double)30);
+		AssertEquals("result==30", (double)30, result);
 	}	
 
 	/*
@@ -213,7 +215,7 @@ public class TestDelegate : TestCase
 		
 		AssertEquals("x==20", (double)20, x);
 		AssertEquals("y==10", (double)10, y);
-		AssertEquals("result==30", result, (double)30);
+		AssertEquals("result==30", (double)30, result);
 	}	
 
 	/*
@@ -249,7 +251,7 @@ public class TestDelegate : TestCase
 		
 		result = m.EndInvoke(ar);
 		
-		AssertEquals("result==Point(40, 60)", result, new Point(40, 60));
+		AssertEquals("result==Point(40, 60)", new Point(40, 60), result);
 	}	
 
 	/*
@@ -259,16 +261,13 @@ public class TestDelegate : TestCase
 	
 	private Point PointByRefAdd(ref Point x, ref Point y)
 	{
-		/*Point tmp;
+		Point tmp;
 		
 		tmp = x;
 		x = y;
 		y = tmp;
 		
 		return new Point(x.X + y.X, x.Y + y.Y);
-		*/
-		
-		return new Point();
 	}
 
 	public void TestAsyncCallWithValueTypesByRef()
@@ -282,10 +281,10 @@ public class TestDelegate : TestCase
 		
 		ar = m.BeginInvoke(ref x, ref y, null, null);
 		
-		//result = m.EndInvoke(ref x, ref y, ar);
+		result = m.EndInvoke(ref x, ref y, ar);
 		
-		//AssertEquals("x=(30,40)", x, new Point(30, 40));
-		//AssertEquals("y=(10,20)", y, new Point(10, 20));
-		//AssertEquals("result==Point(40, 60)", result, new Point(40, 60));
+		AssertEquals("x=(30,40)", new Point(30, 40), x);
+		AssertEquals("y=(10,20)", new Point(10, 20), y);
+		AssertEquals("result==Point(40, 60)", new Point(40, 60), result);
 	}	
 }; // class TestArray

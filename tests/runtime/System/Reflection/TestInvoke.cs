@@ -188,4 +188,41 @@ public class TestInvoke : TestCase
 	{
 		DoTestByRef("FooWithStringByRef", "POKWER", "pokwer", false);
 	}
+	
+	public int InvokeValueTypeParamAsNull(int x)
+	{
+		AssertEquals("x=0", 0, x);
+		
+		return x + 1;
+	}
+	
+	public void TestInvokeValueTypeParamAsNull()
+	{
+		object result;
+		object[] args = new object[1];
+		MethodInfo method = typeof(TestInvoke).GetMethod("InvokeValueTypeParamAsNull");
+		
+		result = method.Invoke(this, args);
+		
+		AssertEquals("result=1", 1, result);
+	}
+	
+	public int InvokeValueTypeRefParamAsNull(ref int x)
+	{
+		x++;
+		
+		return x;
+	}
+	
+	public void TestInvokeValueTypeRefParamAsNull()
+	{
+		object result;
+		object[] args = new object[1];
+		MethodInfo method = typeof(TestInvoke).GetMethod("InvokeValueTypeRefParamAsNull");
+		
+		result = method.Invoke(this, args);
+		
+		AssertEquals("result=1", 1, result);
+		AssertEquals("args[0]=1", 1, args[0]);
+	}
 }

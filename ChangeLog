@@ -6,8 +6,11 @@
 	
 	* tests/runtime/Testruntime.cs: Added SuiteReflection.
 	
-	* tests/runtime/TestDelegate.cs: Added tests for asynchronous
+	* tests/runtime/System/TestDelegate.cs: Added tests for asynchronous
 	method calls with out/ref parameters.
+	
+	* tests/runtime/System/Reflection/TestInvoke.cs: Added tests
+	for passing nulls to value-type parameters.
 	
 2004-05-17  Andre Seidelt <pnet-devel01@foobarquarium.de>
 

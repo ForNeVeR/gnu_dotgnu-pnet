@@ -82,7 +82,7 @@ struct _tagILInterruptContext
 		#define IL_LONGJMP(buf, arg) \
 			longjmp(buf, arg)
 
-		#define IL_JMP_BUFFER sigjmp_buf
+		#define IL_JMP_BUFFER jmp_buf
 	#endif
 
 	#if defined(WIN32) && !(defined(__CYGWIN32__) || defined(__CYGWIN))

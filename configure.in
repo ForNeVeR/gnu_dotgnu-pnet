@@ -157,6 +157,21 @@ if test ! -f "$MONO_SOURCE_PATH/class/library.make" ; then
 fi
 AC_MSG_RESULT($MONO_SOURCE_PATH)
 
+dnl The --with-profile=NAME option is used to change the build profile.
+AC_SUBST(PROFILE_NAME)
+AC_ARG_WITH(profile,
+[  --with-profile=NAME     use build profile NAME],
+[
+	if test -f "${srcdir}/profiles/${withval}" ; then
+		PROFILE_NAME="${withval}"
+	else
+		AC_MSG_ERROR(unknown build profile ${withval})
+	fi
+],
+[
+	PROFILE_NAME=framework1.1
+])
+
 dnl Option to disable debug line number information.
 AC_ARG_ENABLE(debug,
 [  --disable-debug         disable debug line number information],
@@ -272,7 +287,7 @@ else
 			CYG_CACHE=`"$CYGPATH" -w "${prefix}/lib/cscc/lib"`
 		fi
 	fi
-	CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" -Ddebug.flag="$(DEBUG_FLAG)" -Dilgac="$(CYG_ILGAC)" --assembly-cache "$(DESTDIR)$(CYG_CACHE)" -DFRAMEWORK_VERSION="$(FRAMEWORK_VERSION)" -DSECONDARY_VERSION="$(SECONDARY_VERSION)"'
+	CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)" -Ddebug.flag="$(DEBUG_FLAG)" -Dilgac="$(CYG_ILGAC)" --assembly-cache "$(DESTDIR)$(CYG_CACHE)" -DFRAMEWORK_VERSION="$(FRAMEWORK_VERSION)" -DSECONDARY_VERSION="$(SECONDARY_VERSION)"'
 fi
 
 AC_OUTPUT([

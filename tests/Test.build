@@ -166,9 +166,6 @@
 				 install="false"
 				 installasdefault="false">
 
-			<define name="NET_1_1" value="true"/>
-			<define name="ONLY_1_1" value="true"/>
-
 			<sources basedir="${mono.sources}/class/System.Data/Test">
 				<includes name="**/*.cs"/>
 				<excludes name="PostgresTest.cs"/>
@@ -207,8 +204,6 @@
 				 install="false"
 				 installasdefault="false">
 
-			<define name="NET_1_1" value="true"/>
-
 			<sources basedir="${mono.sources}/class/System.Web.Services/Test">
 				<includes name="**/*.cs"/>
 				<excludes name="standalone/**"/>
@@ -240,8 +235,6 @@
 				 unsafe="true"
 				 install="false"
 				 installasdefault="false">
-
-			<define name="NET_1_1" value="true"/>
 
 			<sources basedir="${mono.sources}/class/System.Runtime.Remoting/Test">
 				<includes name="**/*.cs"/>

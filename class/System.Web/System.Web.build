@@ -9,8 +9,6 @@
 				 install="true"
 				 installasdefault="true">
 
-			<define name="NET_1_1" value="true"/>
-
 			<sources basedir="${mono.sources}/class/System.Web/">
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>

@@ -1,4 +1,29 @@
 
+2004-09-27  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in, profiles/framework1.1, profiles/framework2.0: change the
+	build system to support profiles (framework1.1 is default because 2.0 does
+	not build completely yet).
+	
+	* class/Makefile.am: switch Mono.Security and System.Security because of
+	dependecy changes in 2.0.
+
+	* class/System.Data/System.Data.build,
+	class/System.Data.ObjectSpaces/System.Data.ObjectSpaces.build,
+	class/System.Data.SqlXml/System.Data.SqlXml.build,
+	class/System.Security/System.Sqcurity.build,
+	class/System.Web/System.Web.build,
+	class/System.Web.Services/System.Web.Services.build,
+	class/System.Runtime.Remoting/System.Runtime.Remoting.build,
+	class/System.Runtime.Serialization.Formatters.Soap/System.Runtime.Serialization.Formatters.Soap.build,
+	tests/Test.build: remove defines of NET_1_1 and ONLY_1_1
+
+	* class/System.Data/System.Data.build,
+	class/System.Data.SqlNotificationInfo.cs,
+	class/System.Data/SqlNotificationSource.cs,
+	class/System.Data/SqlNotificationType.cs: added/changed to build System.Data
+	for .NET 2.0
+  
 2004-09-17  Gopal.V  <gopalv82@yahoo.com>
 
 	* class/System.Web/System.Web.build: remove the -flatin1-only and

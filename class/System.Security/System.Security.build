@@ -9,18 +9,16 @@
 				 install="true"
 				 installasdefault="true">
 
-			<define name="NET_1_2" value="true"/>
-
 			<sources basedir="${mono.sources}/class/System.Security">
 				<includes name="**/*.cs"/> 
 				<excludes name="Test/**"/>
 				<excludes name="System.Security.Cryptography.Pkcs/**"/>
-				<excludes name="System.Security.Cryptography.X509Certificates/**"/>
 			</sources>
 
 			<references>
 				<file name="System.Xml.dll"/>
 				<file name="System.dll"/>
+				<file name="../Mono.Security/Mono.Security.dll"/>
 			</references>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>

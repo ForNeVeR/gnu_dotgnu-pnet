@@ -5,8 +5,8 @@ SUBDIRS = Custommarshalers \
 		  System.ServiceProcess \
 		  System.Runtime.Serialization.Formatters.Soap \
 		  PEAPI \
-		  System.Security \
 		  Mono.Security \
+		  System.Security \
 		  Mono.Data.Tds \
 		  System.Data \
 		  Mono.Data.PostgreSqlClient \

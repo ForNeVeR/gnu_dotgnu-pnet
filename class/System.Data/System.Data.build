@@ -9,14 +9,14 @@
 				 install="true"
 				 installasdefault="true">
 
-			<define name="NET_1_1" value="true"/>
-			<define name="ONLY_1_1" value="true"/>
-
 			<sources basedir="${mono.sources}/class/System.Data/">
 				<includes name="**/*.cs"/> 
 				<excludes name="Mono.Data.SqlExpressions/Parser.cs"/>
 				<excludes name="Test/**"/>
 				<file basedir="./" name="Parser.cs"/>
+				<file basedir="./" name="SqlNotificationInfo.cs"/>
+				<file basedir="./" name="SqlNotificationSource.cs"/>
+				<file basedir="./" name="SqlNotificationType.cs"/>
 				<excludes name="System.Data.OleDb/TestGDA.cs"/>
 				<excludes name="System.Data.OleDb/TestOleDb.cs"/>
 			</sources>

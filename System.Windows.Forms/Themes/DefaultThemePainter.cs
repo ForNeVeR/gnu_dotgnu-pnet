@@ -705,17 +705,6 @@ internal class DefaultThemePainter : IThemePainter
 						break;
 				}
 
-				if(width >= 2 && height >= 2)
-				{
-					pen = new Pen(foreColor, 1.0f);
-					pen.EndCap = LineCap.Square;
-					graphics.DrawRectangle(pen, x, y, width, height);
-					pen.Dispose();
-					++x;
-					++y;
-					width -= 2;
-					height -= 2;
-				}
 				if(doubleBorder && (width >= 4 && height >= 4))
 				{
 					pen = new Pen(left1, 1.0f);
@@ -953,14 +942,14 @@ internal class DefaultThemePainter : IThemePainter
 				
 				if (state == ButtonState.Checked)
 				{
-					Brush brush = new SolidBrush(Color.Black);
-					Pen pen = new Pen(brush, 2);
+					Brush blackBrush = new SolidBrush(Color.Black);
+					Pen pen = new Pen(blackBrush, 2);
 
 					GraphicsPath path = new GraphicsPath();
 					path.AddLine(x + 3, y + 5, x + 4, y + 7);
 					path.AddLine(x + 5, y + 8, x + 9, y + 3);
 					graphics.DrawPath(pen, path);
-					brush.Dispose();
+					blackBrush.Dispose();
 					pen.Dispose();
 				}
 			}
@@ -978,8 +967,8 @@ internal class DefaultThemePainter : IThemePainter
 				
 				if (state == ButtonState.Checked)
 				{
-					Brush brush = new SolidBrush(Color.Black);
-					Pen pen = new Pen(brush, 2);
+					Brush blackBrush = new SolidBrush(Color.Black);
+					Pen pen = new Pen(blackBrush, 2);
 
 					GraphicsPath path = new GraphicsPath();
 					path.AddLine(x + 3, y + 5, x + 4, y + 7);

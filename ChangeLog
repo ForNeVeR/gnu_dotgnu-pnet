@@ -9,6 +9,9 @@
 	convert '\' into '/' in pathnames to work around Windows programmers
 	who don't use "Path.DirectorySeparatorChar" in their C# code.
 
+	* cscc/c/c_ainit.tc (CArrayInitializerSize): further improvements
+	to array size computation - handle nested structs within structs, etc.
+
 2003-06-27  Thong Nguyen <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fix recursive entry/leave bug in

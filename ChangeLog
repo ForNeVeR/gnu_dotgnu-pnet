@@ -19,6 +19,9 @@ rename "cvm_interpreter" to "_ILCVMInterpreter"; implement the macro
 * engine/engine.h: new format for call frames; method user data; and the
 active thread state.
 
+* engine/process.c, engine/thread.c: new initialization code for processes
+and threads.
+
 2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c: mark the stack as empty on entry to a try region.

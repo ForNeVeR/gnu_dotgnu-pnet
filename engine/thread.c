@@ -35,7 +35,7 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	}
 
 	/* Allocate space for the thread-specific value stack */
-	if((thread->stackBase = (ILValue *)ILMalloc(sizeof(ILValue) *
+	if((thread->stackBase = (CVMWord *)ILMalloc(sizeof(CVMWord) *
 												process->stackSize)) == 0)
 	{
 		ILFree(thread);
@@ -43,13 +43,25 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	}
 	thread->stackLimit = thread->stackBase + process->stackSize;
 
+	/* Allocate space for the initial frame stack */
+	if((thread->frameStack = (ILCallFrame *)ILMalloc(sizeof(ILCallFrame) *
+													 process->frameStackSize))
+			== 0)
+	{
+		ILFree(thread->stackBase);
+		ILFree(thread);
+		return 0;
+	}
+	thread->numFrames = 0;
+	thread->maxFrames = process->frameStackSize;
+
 	/* Initialize the thread state */
+	thread->pcstart = 0;
 	thread->pc = 0;
-	thread->stackTop = thread->stackBase;
-	thread->args = thread->stackBase;
-	thread->locals = thread->stackBase;
-	thread->method = 0;
 	thread->frame = 0;
+	thread->stackTop = thread->stackBase;
+	thread->method = 0;
+	thread->thrownException = 0;
 
 	/* Attach the thread to the process */
 	thread->process = process;
@@ -87,6 +99,12 @@ void ILExecThreadDestroy(ILExecThread *thread)
 		thread->process->firstThread = thread->nextThread;
 	}
 
+	/* Destroy the operand stack */
+	ILFree(thread->stackBase);
+
+	/* Destroy the call frame stack */
+	ILFree(thread->frameStack);
+
 	/* Destroy the thread block */
 	ILFree(thread);
 }
@@ -96,498 +114,29 @@ ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)
 	return thread->process;
 }
 
-/*
- * Size of ILCallFrame, rounded up to a multiple of "sizeof(ILValue)".
- */
-#define	CALL_FRAME_SIZE	\
-	(sizeof(ILCallFrame) + \
-		((sizeof(ILCallFrame) % sizeof(ILValue)) != 0 ? \
-			(sizeof(ILValue) - (sizeof(ILCallFrame) % sizeof(ILValue))) : 0))
-
-int _ILExecThreadFramePush(ILExecThread *thread, ILMethod *method)
-{
-	ILUInt32 numArgs;
-	ILType *methodSig;
-	ILType *localVarSig;
-	ILType *localType;
-	ILUInt32 numLocals;
-	ILUInt32 localNum;
-	ILUInt32 space;
-	ILCallFrame *frame;
-	ILValue *stackBase;
-	ILMethodCode code;
-
-	/* Get the number of arguments for the method */
-	methodSig = method->member.signature;	/* Illegal program.h access */
-	numArgs = methodSig->num;
-	if((methodSig->kind & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
-	{
-		--numArgs;
-	}
-	if((methodSig->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (methodSig->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
-	{
-		++numArgs;
-	}
-
-	/* Get information about the method's code */
-	if(ILMethodGetCode(method, &code))
-	{
-		/* Get the raw type signature for the local variables */
-		if(code.localVarSig)
-		{
-			localVarSig = code.localVarSig->type; /* Illegal program.h access */
-			numLocals = localVarSig->num;
-		}
-		else
-		{
-			localVarSig = 0;
-			numLocals = 0;
-		}
-	}
-	else
-	{
-		localVarSig = 0;
-		numLocals = 0;
-		code.code = 0;
-		code.maxStack = 8;
-	}
-
-	/* Determine if we have enough space on the stack */
-	space = (CALL_FRAME_SIZE / sizeof(ILValue)) + numLocals + code.maxStack;
-	if(space > (ILUInt32)(thread->stackLimit - thread->stackTop))
-	{
-		/* Stack overflow: we may reallocate the stack here later */
-		return 0;
-	}
-
-	/* Create the new frame */
-	frame = (ILCallFrame *)(thread->stackTop);
-	frame->pc = thread->pc;
-	stackBase = thread->stackBase;
-	frame->stackTop = ((ILUInt32)(thread->stackTop - stackBase)) - numArgs;
-	frame->args = (ILUInt32)(thread->args - stackBase);
-	frame->locals = (ILUInt32)(thread->locals - stackBase);
-	frame->method = thread->method;
-	if(thread->frame)
-	{
-		frame->parent = (ILUInt32)(((ILValue *)(thread->frame)) - stackBase);
-	}
-	else
-	{
-		frame->parent = IL_MAX_UINT32;
-	}
-	thread->frame = frame;
-
-	/* Set up the new frame */
-	thread->args = thread->stackTop - numArgs;
-	thread->stackTop += (CALL_FRAME_SIZE / sizeof(ILValue));
-	thread->locals = thread->stackTop;
-	thread->stackTop += numLocals;
-	thread->method = method;
-
-	/* Set the "actualType" fields for the argument values */
-	stackBase = thread->args;
-	if((methodSig->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (methodSig->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
-	{
-		/* The actual type of "this" is always object reference */
-		stackBase->actualType = IL_TYPE_OBJECT_REF;
-		++stackBase;
-		--numArgs;
-	}
-	localNum = 0;
-	while(localNum < numArgs)
-	{
-		/* Get the type of the next argument */
-		if(localNum < 3)
-		{
-			localType = methodSig->un.method.param[localNum];
-		}
-		else
-		{
-			localType = methodSig->un.params.param[(localNum - 3) & 3];
-		}
-		++localNum;
-
-		/* Set the argument's actual type */
-		if(ILType_IsPrimitive(localType))
-		{
-			/* Primitive element type */
-			switch(ILType_ToElement(localType))
-			{
-				case IL_META_ELEMTYPE_BOOLEAN:
-				{
-					stackBase->actualType = IL_TYPE_BOOLEAN;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_CHAR:
-				{
-					stackBase->actualType = IL_TYPE_CHAR;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I1:
-				{
-					stackBase->actualType = IL_TYPE_INT8;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U1:
-				{
-					stackBase->actualType = IL_TYPE_UINT8;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I2:
-				{
-					stackBase->actualType = IL_TYPE_INT16;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U2:
-				{
-					stackBase->actualType = IL_TYPE_UINT16;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I4:
-				{
-					stackBase->actualType = IL_TYPE_INT32;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U4:
-				{
-					stackBase->actualType = IL_TYPE_UINT32;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I8:
-				{
-					stackBase->actualType = IL_TYPE_INT64;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U8:
-				{
-					stackBase->actualType = IL_TYPE_UINT64;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R4:
-				{
-					stackBase->actualType = IL_TYPE_FLOAT32;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R8:
-				{
-					stackBase->actualType = IL_TYPE_FLOAT64;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I:
-				{
-					stackBase->actualType = IL_TYPE_NATIVE_INT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U:
-				{
-					stackBase->actualType = IL_TYPE_NATIVE_UINT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R:
-				{
-					stackBase->actualType = IL_TYPE_NATIVE_FLOAT;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_TYPEDBYREF:
-				{
-					stackBase->actualType = IL_TYPE_OBJECT_REF;
-				}
-				break;
-
-				default:
-				{
-					stackBase->actualType = IL_TYPE_INT32;
-				}
-				break;
-			}
-		}
-		else if(ILType_IsValueType(localType))
-		{
-			/* Managed value */
-			stackBase->actualType = IL_TYPE_MANAGED_VALUE;
-		}
-		else
-		{
-			/* Everything else has a default value of "null" */
-			stackBase->actualType = IL_TYPE_OBJECT_REF;
-		}
-
-		/* Advance to the next argument */
-		++stackBase;
-	}
-
-	/* Initialize the local variables */
-	localNum = 0;
-	stackBase = thread->locals;
-	while(localNum < numLocals)
-	{
-		/* Get the type of the next local variable */
-		switch(localNum & 3)
-		{
-			case 0:
-			{
-				localType = localVarSig->un.locals.local[0];
-				++localNum;
-			}
-			break;
-
-			case 1:
-			{
-				localType = localVarSig->un.locals.local[1];
-				++localNum;
-			}
-			break;
-
-			case 2:
-			{
-				localType = localVarSig->un.locals.local[2];
-				++localNum;
-			}
-			break;
-
-			default:
-			{
-				localType = localVarSig->un.locals.local[3];
-				localVarSig = localVarSig->un.locals.next;
-				++localNum;
-			}
-			break;
-		}
-
-		/* Initialize the local variable according to its type */
-		if(ILType_IsPrimitive(localType))
-		{
-			/* Primitive element type */
-			switch(ILType_ToElement(localType))
-			{
-				case IL_META_ELEMTYPE_BOOLEAN:
-				{
-					stackBase->valueType = IL_TYPE_BOOLEAN;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_CHAR:
-				{
-					stackBase->valueType = IL_TYPE_CHAR;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I1:
-				{
-					stackBase->valueType = IL_TYPE_INT8;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U1:
-				{
-					stackBase->valueType = IL_TYPE_UINT8;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I2:
-				{
-					stackBase->valueType = IL_TYPE_INT16;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U2:
-				{
-					stackBase->valueType = IL_TYPE_UINT16;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I4:
-				{
-					stackBase->valueType = IL_TYPE_INT32;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U4:
-				{
-					stackBase->valueType = IL_TYPE_UINT32;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I8:
-				{
-					stackBase->valueType = IL_TYPE_INT64;
-					stackBase->un.i8Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U8:
-				{
-					stackBase->valueType = IL_TYPE_UINT64;
-					stackBase->un.i8Value = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R4:
-				{
-					stackBase->valueType = IL_TYPE_FLOAT32;
-					stackBase->un.fValue = 0.0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R8:
-				{
-					stackBase->valueType = IL_TYPE_FLOAT64;
-					stackBase->un.fValue = 0.0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I:
-				{
-					stackBase->valueType = IL_TYPE_NATIVE_INT;
-					stackBase->un.iValue = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U:
-				{
-					stackBase->valueType = IL_TYPE_NATIVE_UINT;
-					stackBase->un.iValue = 0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R:
-				{
-					stackBase->valueType = IL_TYPE_NATIVE_FLOAT;
-					stackBase->un.fValue = 0.0;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_TYPEDBYREF:
-				{
-					stackBase->valueType = IL_TYPE_OBJECT_REF;
-					stackBase->un.oValue = 0;
-				}
-				break;
-
-				default:
-				{
-					stackBase->valueType = IL_TYPE_INT32;
-					stackBase->un.i4Value = 0;
-				}
-				break;
-			}
-		}
-		else if(ILType_IsValueType(localType))
-		{
-			/* Allocate some heap space for a new value of this type */
-			stackBase->valueType = IL_TYPE_MANAGED_VALUE;
-			stackBase->un.oValue = 0;
-		}
-		else
-		{
-			/* Everything else has a default value of "null" */
-			stackBase->valueType = IL_TYPE_OBJECT_REF;
-			stackBase->un.oValue = 0;
-		}
-		stackBase->actualType = stackBase->valueType;
-
-		/* Advance to the next local */
-		++stackBase;
-	}
-
-	/* Set the program counter for the new frame.  This will be
-	   set to NULL if the method is native, runtime, or PInvoke */
-	thread->pc = (unsigned char *)(code.code);
-
-	/* Done */
-	return 1;
-}
-
-void _ILExecThreadFramePop(ILExecThread *thread)
-{
-	ILCallFrame *frame;
-	ILValue *stackBase;
-	ILValue *stackTop;
-	int hasReturn;
-
-	/* Does this method have a return value? */
-	hasReturn = (thread->method->member.signature->un.method.retType
-						!= ILType_Void);
-
-	/* Find the base of the stack to adjust the saved frame values */
-	stackBase = thread->stackBase;
-
-	/* Remember the stack top in case we need to copy a return value */
-	stackTop = thread->stackTop;
-
-	/* Copy the contents of the frame to the thread state */
-	frame = thread->frame;
-	thread->pc = frame->pc;
-	thread->stackTop = stackBase + frame->stackTop;
-	thread->args = stackBase + frame->args;
-	thread->locals = stackBase + frame->locals;
-	thread->method = frame->method;
-
-	/* Pop the frame */
-	if(frame->parent != IL_MAX_UINT32)
-	{
-		thread->frame = (ILCallFrame *)(stackBase + frame->parent);
-	}
-	else
-	{
-		thread->frame = 0;
-	}
-
-	/* Copy the return value */
-	if(hasReturn)
-	{
-		*(thread->stackTop) = stackTop[-1];
-		++(thread->stackTop);
-	}
-}
-
 ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num)
 {
 	ILCallFrame *frame;
+	ILUInt32 posn;
 	if(!num)
 	{
 		return thread->method;
 	}
-	frame = thread->frame;
-	while(num > 1)
+	posn = thread->numFrames;
+	while(posn > 0)
 	{
-		if(frame->parent != IL_MAX_UINT32)
+		frame = &(thread->frameStack[posn]);
+		if(frame->except == IL_MAX_UINT32)
 		{
-			thread->frame = (ILCallFrame *)(thread->stackBase + frame->parent);
+			--num;
+			if(!num)
+			{
+				return frame->method;
+			}
 		}
-		else
-		{
-			return 0;
-		}
-		--num;
+		--posn;
 	}
-	return frame->method;
+	return 0;
 }
 
 #ifdef	__cplusplus

@@ -1,3 +1,9 @@
+
+2004-06-04  Thomas Fritzsche  <tf@noto.de>
+
+	* System.Drawing/Graphics.cs: Implement HotKeyPrefix.Show and Hide
+	for DrawString (reviewed by Gopal, patch #3111).
+
 2004-06-03  Thong Nguyen  <tum@veridicus.com>
 
 	* Xsharp/Bitmap.cs, DoubleBuffer.cs, Drawable.cs, Pixmap.cs, Widget.cs:

@@ -1364,6 +1364,23 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				if (format == null)
 					format = new StringFormat();
+
+				if(format.HotkeyPrefix == Text.HotkeyPrefix.Hide)
+				{
+					int HotKeyIdx = s.IndexOf('&');
+
+					if(HotKeyIdx != -1 && (HotKeyIdx >= s.Length-1 || 
+							Char.IsControl(s[HotKeyIdx])))
+					{
+						HotKeyIdx = -1;
+					}
+					
+					if(HotKeyIdx != -1)
+					{
+						s = s.Substring(0,HotKeyIdx) + s.Substring(HotKeyIdx+1);
+					}
+				}
+
 				Point[] rect = ConvertRectangle
 					(layoutRectangle.X + baseWindow.X, layoutRectangle.Y + baseWindow.Y,
 					 layoutRectangle.Width - 1, layoutRectangle.Height - 1, pageUnit);
@@ -1415,7 +1432,57 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								rect[0].Y = rect[2].Y - (int)size.Height - 1;
 						}
 
-						ToolkitGraphics.DrawString(s, rect[0].X, rect[0].Y, format);
+						if (format.HotkeyPrefix == HotkeyPrefix.Show)
+						{
+							int HotKeyIdx = s.IndexOf('&');
+							if(HotKeyIdx != -1 &&  (s.Length < HotKeyIdx + 1 || 
+									Char.IsControl(s[HotKeyIdx])))
+							{
+								HotKeyIdx = -1;
+							}
+							String startString = "";
+							String endString = "";
+							String hotkey = "";
+							
+							if(HotKeyIdx != -1)
+							{
+								startString = s.Substring(0 , HotKeyIdx);
+								if(HotKeyIdx + 2 < s.Length) 
+								{
+									endString = s.Substring(HotKeyIdx+2);
+								}
+								hotkey = s.Substring(HotKeyIdx+1,1);
+							} 
+							else
+							{
+								startString = s;
+							}
+							
+							SelectFont(font);
+							ToolkitGraphics.DrawString(startString, rect[0].X, rect[0].Y, format);
+							if(hotkey.Length != 0 && endString.Length != 0)
+							{
+								// .Length != 0 is faster than == ""
+								// floating point operations are costly
+								// do them only if you have to :)
+
+								Font underlineFont = new Font (font, 
+											font.Style | FontStyle.Underline);
+							
+								float startWidth = 
+										MeasureString(startString, font).Width;
+								float hotkeyWidth = 
+										MeasureString(hotkey,underlineFont).Width;
+								
+								ToolkitGraphics.DrawString(endString,rect[0].X+(int)(startWidth+hotkeyWidth), rect[0].Y, format);
+								SelectFont(underlineFont);
+								ToolkitGraphics.DrawString(hotkey,rect[0].X+(int)startWidth, rect[0].Y, format);
+							}
+						}
+						else 
+						{
+							ToolkitGraphics.DrawString(s, rect[0].X, rect[0].Y, format);
+						}
 					}
 					if (clipTemp != null)
 						Clip = clipTemp;
@@ -2105,6 +2172,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 		private Font font;
 		private RectangleF layout;
 		private StringFormat format;
+		private int HotKeyIdx;
 
 		// Details for each word
 		private  struct SplitWord
@@ -2129,6 +2197,25 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					this.font = font;
 					this.layout = layout;
 					this.format = format;
+					this.HotKeyIdx = -1;
+					
+					if(format.HotkeyPrefix == System.Drawing.Text.HotkeyPrefix.Show)
+					{
+						HotKeyIdx = text.IndexOf('&');
+						if( HotKeyIdx != -1)
+						{
+							if (HotKeyIdx >= text.Length-1 ||
+						 		Char.IsControl(text[HotKeyIdx]))
+							{
+								HotKeyIdx = -1;
+							}
+							else
+							{
+								this.text = text.Substring(0,HotKeyIdx) +
+											text.Substring(HotKeyIdx + 1);
+							}
+						}	
+					}
 				}
 
 		public void LayoutByWords()
@@ -2222,8 +2309,29 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						// Draw if some of it is within layout.
 						if(linePosition.X <= layout.Right && linePosition.Y <= layout.Bottom)
 						{
-							String lineText = text.Substring(textStart, textLength);
-							graphics.ToolkitGraphics.DrawString(lineText, linePosition.X, linePosition.Y, null);
+							if (HotKeyIdx >= textStart && HotKeyIdx < textStart+textLength)
+							{
+								String startString = text.Substring(textStart, 
+													 	HotKeyIdx -  textStart );
+								String endString = text.Substring(HotKeyIdx+1, 
+														textLength - (HotKeyIdx -textStart) -1);
+								graphics.ToolkitGraphics.DrawString(startString, linePosition.X, linePosition.Y, null);  
+								Font underlineFont = new Font (font, font.Style | FontStyle.Underline);
+								float startWidth = graphics.MeasureString(startString,font).Width;
+								float hotkeyWidth = graphics.MeasureString(text.Substring(HotKeyIdx,1),underlineFont).Width;
+								graphics.SelectFont(font);
+								graphics.ToolkitGraphics.DrawString(endString,
+											linePosition.X+(int)(startWidth+hotkeyWidth), linePosition.Y, null);
+								graphics.SelectFont(underlineFont);
+								graphics.ToolkitGraphics.DrawString(text.Substring(HotKeyIdx,1),
+											linePosition.X+(int)startWidth, linePosition.Y, null);
+								graphics.SelectFont(font);
+							} 
+							else
+							{
+								String lineText = text.Substring(textStart, textLength);
+								graphics.ToolkitGraphics.DrawString(lineText, linePosition.X, linePosition.Y, null);
+							}
 						}
 						textStart = word.start;
 						textLength = word.length;

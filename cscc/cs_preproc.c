@@ -265,6 +265,14 @@ static int GetLines(CSPreProc *preproc)
 			lineStart = bufLen;
 			directive = 0;
 
+			/* Turn off quoting if "'" - sometimes this is used in
+			   pre-processor #error directives without a matching
+			   end-"'".  We use end of line to detect when to stop */
+			if(quote == '\'')
+			{
+				quote = 0;
+			}
+
 			/* If no longer in a comment or string, then we are finished */
 			if(!comment && !quote)
 			{

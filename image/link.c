@@ -821,6 +821,7 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 #ifndef IL_WIN32_PLATFORM
 	{
 		int needSuffix = 1;
+		posn = 0;
 		while(posn <= (namelen - 3))
 		{
 			if(name[posn] == '.' && name[posn + 1] == 's' &&

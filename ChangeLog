@@ -6,7 +6,16 @@
 	* engine/lib_monitor.c:  Fixed some spelling mistakes in
 	the documentation.  Removed some benign test code.
 	
-	* engine/no_defs.h: Add definition for _ILThreadYield.
+	* support/no_defs.h: Add definition for _ILThreadYield.
+	
+	* support/thread.c: Fixed ILThreadDestroy decrementing
+	thread count incorrectly if a thread had been created but
+	not started.
+	
+	* tests/test_thread.c: Changed background thread count check
+	to allow 0 (not just 1) because GC thread is created only when
+	needed.  Changed thread_sleep_interrupt to check for
+	return value of IL_WAIT_INTERRUPTED instead of 0.	
 
 2004-05-10  Gopal V  <gopalv82@yahoo.com>
 

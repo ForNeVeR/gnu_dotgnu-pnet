@@ -868,9 +868,9 @@ static void thread_sleep_interrupt(void *arg)
 	{
 		ILUnitFailed("sleep was not interrupted");
 	}
-	if(sleepResult)
+	if(sleepResult != IL_WAIT_INTERRUPTED)
 	{
-		ILUnitFailed("sleep returned 1 when it should have returned 0");
+		ILUnitFailed("sleep should have returned IL_WAIT_INTERRUPTED");
 	}
 }
 
@@ -1090,10 +1090,11 @@ static void thread_counts(void *arg)
 	{
 		ILUnitFailed("foreground thread count has not returned to 1");
 	}
-	if(numBackground != 1)
+	if(numBackground > 1)
 	{
+		/* The GC thread doesn't start until needed so numBackground can be 0 */
 		/* Currently there is one background thread (the finalizer thread) */
-		ILUnitFailed("background thread count has not returned to 1");
+		ILUnitFailed("background thread count has not returned to 0 or 1");
 	}
 }
 

@@ -724,6 +724,18 @@ ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName)
 	return ILType_FromValueType(classInfo);
 }
 
+ILType *CTypeResolveAnonEnum(ILType *type)
+{
+	if(!CTypeIsAnonEnum(type))
+	{
+		return type;
+	}
+	else
+	{
+		return ILTypeGetEnumType(ILTypeStripPrefixes(type));
+	}
+}
+
 ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 					 	  const char *fieldName, ILType *fieldType)
 {
@@ -1724,6 +1736,19 @@ int CTypeIsEnum(ILType *type)
 	if(ILType_IsValueType(type))
 	{
 		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "enum ", 5))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int CTypeIsAnonEnum(ILType *type)
+{
+	type = ILTypeStripPrefixes(type);
+	if(ILType_IsValueType(type))
+	{
+		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "enum (", 6))
 		{
 			return 1;
 		}

@@ -76,6 +76,11 @@
 	* cscc/c/c_typeout.c (OutputPendingClass): don't output class
 	references, as they aren't defined in the current module.
 
+	* cscc/c/c_grammar.y, cscc/c/c_types.c, cscc/c/c_types.h:
+	resolve anonymous enumerated types and constants to the
+	underlying type because there is no way to define an
+	enumerated type that will work across modules otherwise.
+
 2003-06-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_grammar.y: implement global

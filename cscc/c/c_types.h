@@ -132,6 +132,12 @@ ILType *CTypeDefineEnum(ILGenInfo *info, const char *name,
 ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName);
 
 /*
+ * Resolve an anonymous enumerated type to its underlying type.
+ * Regular enumerated types are left as-is.
+ */
+ILType *CTypeResolveAnonEnum(ILType *type);
+
+/*
  * Define a new field within a "struct" or "union".  Returns NULL
  * if the type is dynamic in size.
  */
@@ -211,6 +217,11 @@ int CTypeGetStructKind(ILType *type);
  * Determine if a C type is an enumerated type.
  */
 int CTypeIsEnum(ILType *type);
+
+/*
+ * Determine if a C type is an anonymous enumerated type.
+ */
+int CTypeIsAnonEnum(ILType *type);
 
 /*
  * Determine if a C type is an array (open or with a specified size).

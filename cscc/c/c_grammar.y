@@ -1911,7 +1911,7 @@ EnumSpecifier
 				currentEnum = $<structInfo>3.parent;
 
 				/* Return the completed type to the next higher level */
-				$$ = $<structInfo>3.type;
+				$$ = CTypeResolveAnonEnum($<structInfo>3.type);
 	  		}
 	| K_ENUM AnyIdentifier '{'	{
 				/* Look for a definition in the local scope */
@@ -1993,7 +1993,8 @@ Enumerator
 					CTypeDefineEnumConst(&CCCodeGen, currentEnum,
 										 $1, currentEnumValue);
 					CScopeAddEnumConst($1, ILQualIdentSimple($1),
-									   currentEnumValue, currentEnum);
+									   currentEnumValue,
+									   CTypeResolveAnonEnum(currentEnum));
 				}
 				++currentEnumValue;
 			}
@@ -2021,7 +2022,8 @@ Enumerator
 					CTypeDefineEnumConst(&CCCodeGen, currentEnum,
 										 $1, currentEnumValue);
 					CScopeAddEnumConst($1, ILQualIdentSimple($1),
-									   currentEnumValue, currentEnum);
+									   currentEnumValue,
+									   CTypeResolveAnonEnum(currentEnum));
 				}
 				++currentEnumValue;
 			}

@@ -1,4 +1,8 @@
 
+2003-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/Dns.cs: add "using Platform" to fix an ECMA_COMPAT bug.
+
 2003-05-12  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/IO/MemoryStream.cs:  Fixed bug that prevented

@@ -21,6 +21,7 @@
 namespace System.Net
 {
 
+using Platform;
 using System;
 using System.Runtime.CompilerServices;
 using System.Net;

@@ -1,4 +1,19 @@
 
+2003-03-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Security/Permissions/EnvironmentPermission.cs,
+	runtime/System/Security/Permissions/EnvironmentPermissionAccess.cs,
+	runtime/System/Security/Permissions/EnvironmentPermissionAttribute.cs,
+	runtime/System/Security/Permissions/FileIOPermission.cs,
+	runtime/System/Security/Permissions/FileIOPermissionAccess.cs,
+	runtime/System/Security/Permissions/FileIOPermissionAttribute.cs,
+	runtime/System/Security/Permissions/IUnrestrictedPermission.cs,
+	runtime/System/Security/Permissions/ReflectionPermission.cs,
+	runtime/System/Security/Permissions/ReflectionPermissionAttribute.cs,
+	runtime/System/Security/Permissions/SecurityPermission.cs:
+	implement the rest of the ECMA-compatible permissions classes.
+
 2003-03-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/UTF8Encoding.cs,

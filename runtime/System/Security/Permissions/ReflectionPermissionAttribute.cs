@@ -120,11 +120,9 @@ public sealed class ReflectionPermissionAttribute : CodeAccessSecurityAttribute
 #endif // !ECMA_COMPAT
 
 	// Create a permission object that corresponds to this attribute.
-	[TODO]
 	public override IPermission CreatePermission()
 			{
-				// TODO
-				return null;
+				return new ReflectionPermission(flags);
 			}
 
 }; // class ReflectionPermissionAttribute

@@ -1,8 +1,8 @@
 /*
- * SecurityPermission.cs - Implementation of the
- *		"System.Security.Permissions.SecurityPermission" class.
+ * ReflectionPermission.cs - Implementation of the
+ *		"System.Security.Permissions.ReflectionPermission" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,19 +25,19 @@ namespace System.Security.Permissions
 using System;
 using System.Security;
 
-public sealed class SecurityPermission
+public sealed class ReflectionPermission
 	: CodeAccessPermission, IUnrestrictedPermission
 {
 	// Internal state.
 	private PermissionState state;
-	private SecurityPermissionFlag flags;
+	private ReflectionPermissionFlag flags;
 
 	// Constructor.
-	public SecurityPermission(PermissionState state)
+	public ReflectionPermission(PermissionState state)
 			{
 				this.state = state;
 			}
-	public SecurityPermission(SecurityPermissionFlag flags)
+	public ReflectionPermission(ReflectionPermissionFlag flags)
 			{
 				this.flags = flags;
 			}
@@ -66,12 +66,12 @@ public sealed class SecurityPermission
 				value = esd.Attribute("Flags");
 				if(value != null)
 				{
-					flags = (SecurityPermissionFlag)
-						Enum.Parse(typeof(SecurityPermissionFlag), value);
+					flags = (ReflectionPermissionFlag)
+						Enum.Parse(typeof(ReflectionPermissionFlag), value);
 				}
 				else
 				{
-					flags = SecurityPermissionFlag.NoFlags;
+					flags = ReflectionPermissionFlag.NoFlags;
 				}
 			}
 
@@ -82,10 +82,10 @@ public sealed class SecurityPermission
 				element = new SecurityElement("IPermission");
 				element.AddAttribute
 					("class",
-					 SecurityElement.Escape(typeof(SecurityPermission).
+					 SecurityElement.Escape(typeof(ReflectionPermission).
 					 						AssemblyQualifiedName));
 				element.AddAttribute("version", "1");
-				if(flags != SecurityPermissionFlag.NoFlags)
+				if(flags != ReflectionPermissionFlag.NoFlags)
 				{
 					element.AddAttribute("Flags", flags.ToString());
 				}
@@ -99,27 +99,27 @@ public sealed class SecurityPermission
 	// Implement the IPermission interface.
 	public override IPermission Copy()
 			{
-				if(flags != SecurityPermissionFlag.NoFlags)
+				if(flags != ReflectionPermissionFlag.NoFlags)
 				{
-					return new SecurityPermission(flags);
+					return new ReflectionPermission(flags);
 				}
 				else
 				{
-					return new SecurityPermission(state);
+					return new ReflectionPermission(state);
 				}
 			}
 	public override IPermission Intersect(IPermission target)
 			{
-				SecurityPermissionFlag newFlags;
+				ReflectionPermissionFlag newFlags;
 				if(target == null)
 				{
 					return target;
 				}
-				else if(!(target is SecurityPermission))
+				else if(!(target is ReflectionPermission))
 				{
 					throw new ArgumentException(_("Arg_PermissionMismatch"));
 				}
-				else if(((SecurityPermission)target).IsUnrestricted())
+				else if(((ReflectionPermission)target).IsUnrestricted())
 				{
 					if(IsUnrestricted())
 					{
@@ -132,11 +132,11 @@ public sealed class SecurityPermission
 				}
 				else if(IsUnrestricted())
 				{
-					newFlags = ((SecurityPermission)target).flags;
+					newFlags = ((ReflectionPermission)target).flags;
 				}
 				else
 				{
-					newFlags = ((SecurityPermission)target).flags & flags;
+					newFlags = ((ReflectionPermission)target).flags & flags;
 				}
 				if(newFlags == 0)
 				{
@@ -144,20 +144,20 @@ public sealed class SecurityPermission
 				}
 				else
 				{
-					return new SecurityPermission(newFlags);
+					return new ReflectionPermission(newFlags);
 				}
 			}
 	public override bool IsSubsetOf(IPermission target)
 			{
 				if(target == null)
 				{
-					return (flags == SecurityPermissionFlag.NoFlags);
+					return (flags == ReflectionPermissionFlag.NoFlags);
 				}
-				else if(!(target is SecurityPermission))
+				else if(!(target is ReflectionPermission))
 				{
 					throw new ArgumentException(_("Arg_PermissionMismatch"));
 				}
-				else if(((SecurityPermission)target).IsUnrestricted())
+				else if(((ReflectionPermission)target).IsUnrestricted())
 				{
 					return true;
 				}
@@ -167,7 +167,7 @@ public sealed class SecurityPermission
 				}
 				else
 				{
-					return ((flags & ~(((SecurityPermission)target).flags))
+					return ((flags & ~(((ReflectionPermission)target).flags))
 								== 0);
 				}
 			}
@@ -177,20 +177,20 @@ public sealed class SecurityPermission
 				{
 					return Copy();
 				}
-				else if(!(target is SecurityPermission))
+				else if(!(target is ReflectionPermission))
 				{
 					throw new ArgumentException(_("Arg_PermissionMismatch"));
 				}
 				else if(IsUnrestricted() ||
-				        ((SecurityPermission)target).IsUnrestricted())
+				        ((ReflectionPermission)target).IsUnrestricted())
 				{
-					return new SecurityPermission
+					return new ReflectionPermission
 						(PermissionState.Unrestricted);
 				}
 				else
 				{
-					return new SecurityPermission
-						(flags | ((SecurityPermission)target).flags);
+					return new ReflectionPermission
+						(flags | ((ReflectionPermission)target).flags);
 				}
 			}
 
@@ -211,7 +211,7 @@ public sealed class SecurityPermission
 #if !ECMA_COMPAT
 
 	// Get or set the flags on this permissions object.
-	public SecurityPermissionFlag Flags
+	public ReflectionPermissionFlag Flags
 			{
 				get
 				{
@@ -219,15 +219,15 @@ public sealed class SecurityPermission
 				}
 				set
 				{
-					if((flags & ~(SecurityPermissionFlag.AllFlags)) != 0)
+					if((flags & ~(ReflectionPermissionFlag.AllFlags)) != 0)
 					{
-						throw new ArgumentException(_("Arg_SecurityFlag"));
+						throw new ArgumentException(_("Arg_ReflectionFlag"));
 					}
 				}
 			}
 
 #endif // !ECMA_COMPAT
 
-}; // class SecurityPermission
+}; // class ReflectionPermission
 
 }; // namespace System.Security.Permissions

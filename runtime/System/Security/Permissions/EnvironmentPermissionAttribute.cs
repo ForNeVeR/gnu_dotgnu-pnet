@@ -82,11 +82,12 @@ public sealed class EnvironmentPermissionAttribute
 			}
 
 	// Create a permission object that corresponds to this attribute.
-	[TODO]
 	public override IPermission CreatePermission()
 			{
-				// TODO
-				return null;
+				return new EnvironmentPermission
+					(PermissionState.None,
+					 EnvironmentPermission.SplitPath(read),
+					 EnvironmentPermission.SplitPath(write));
 			}
 
 }; // class EnvironmentPermissionAttribute

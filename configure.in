@@ -58,6 +58,7 @@ AC_PATH_XTRA
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_CHECK_HEADERS(time.h sys/time.h sys/types.h sys/select.h unistd.h)
+AC_CHECK_HEADERS(sys/stat.h)
 AC_CHECK_FUNCS(select)
 
 dnl Determine if we should add -lX11 and -lXft to the link line
@@ -318,7 +319,25 @@ AC_MSG_CHECKING(size of $1)
 AC_CACHE_VAL(AC_CV_NAME,
 [for ac_size in 4 8 1 2 12 16 $2 ; do # List sizes in rough order of prevalence.
   AC_TRY_COMPILE([#include "confdefs.h"
+#if TIME_WITH_SYS_TIME
+	#include <sys/time.h>
+    #include <time.h>
+#else
+    #if HAVE_SYS_TIME_H
+		#include <sys/time.h>
+    #else
+        #include <time.h>
+    #endif
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 ], [switch (0) case 0: case (sizeof ($1) == $ac_size):;], AC_CV_NAME=$ac_size)
   if test x$AC_CV_NAME != x ; then break; fi
 done
@@ -327,58 +346,153 @@ if test x$AC_CV_NAME = x ; then
   AC_CV_NAME=0
 fi
 AC_MSG_RESULT($AC_CV_NAME)
-AC_DEFINE_UNQUOTED(AC_TYPE_NAME, $AC_CV_NAME, [The number of bytes in type $1])
 undefine([AC_TYPE_NAME])dnl
 undefine([AC_CV_NAME])dnl
 ])
 
-dnl Determine the definitions of int, uint, long, and ulong on this platform.
+dnl A macro that sets a signed data type based on a detected size.
+dnl Example: AC_SET_CSHARP_TYPE(int, X_int, int, int)
+AC_DEFUN([AC_SET_CSHARP_TYPE],
+[changequote(<<, >>)dnl
+dnl The type name to set.
+define(<<AC_CV_TYPE>>, $2)dnl
+dnl The cache variable name.
+define(<<AC_CV_NAME>>, translit(ac_cv_sizeof_$3, [ *], [_p]))dnl
+changequote([, ])dnl
+AC_MSG_CHECKING(for the csharp $1 mapping)
+if test x$AC_CV_NAME = x1 ; then
+	AC_CV_TYPE=sbyte
+elif test x$AC_CV_NAME = x2 ; then
+	AC_CV_TYPE=short
+elif test x$AC_CV_NAME = x4 ; then
+	AC_CV_TYPE=int
+elif test x$AC_CV_NAME = x8 ; then
+	AC_CV_TYPE=long
+else
+	AC_CV_TYPE=$4
+fi
+AC_MSG_RESULT($AC_CV_TYPE)
+undefine([AC_CV_TYPE])dnl
+undefine([AC_CV_NAME])dnl
+])
+
+dnl A macro that sets an unsigned data type based on a detected size.
+dnl Example: AC_SET_UNSIGNED_CSHARP_TYPE(unsigned int, X_uint, int, int)
+AC_DEFUN([AC_SET_UNSIGNED_CSHARP_TYPE],
+[changequote(<<, >>)dnl
+dnl The type name to set.
+define(<<AC_CV_TYPE>>, $2)dnl
+dnl The cache variable name.
+define(<<AC_CV_NAME>>, translit(ac_cv_sizeof_$3, [ *], [_p]))dnl
+changequote([, ])dnl
+AC_MSG_CHECKING(for the csharp $1 mapping)
+if test x$AC_CV_NAME = x1 ; then
+	AC_CV_TYPE=byte
+elif test x$AC_CV_NAME = x2 ; then
+	AC_CV_TYPE=ushort
+elif test x$AC_CV_NAME = x4 ; then
+	AC_CV_TYPE=uint
+elif test x$AC_CV_NAME = x8 ; then
+	AC_CV_TYPE=ulong
+else
+	AC_CV_TYPE=$4
+fi
+AC_MSG_RESULT($AC_CV_TYPE)
+undefine([AC_CV_TYPE])dnl
+undefine([AC_CV_NAME])dnl
+])
+
+dnl A macro that helps detect if char is unsigned in a cross-compile env.
+AC_DEFUN([AC_COMPILE_CHAR_UNSIGNED],
+[changequote(<<, >>)dnl
+dnl The cache variable name.
+define(<<AC_CV_NAME>>, ac_cv_compile_char_unsigned)dnl
+changequote([, ])dnl
+AC_MSG_CHECKING(if char is unsigned)
+AC_CACHE_VAL(AC_CV_NAME,
+[AC_TRY_COMPILE([#include "confdefs.h"
+#include <sys/types.h>
+], [switch (0) case 0: case (((char)255) != -1):;], AC_CV_NAME=yes)
+])
+if test x$AC_CV_NAME = x ; then
+  AC_CV_NAME=no
+fi
+AC_MSG_RESULT($AC_CV_NAME)
+undefine([AC_CV_NAME])dnl
+])
+
+dnl Get the size of various interesting types.
+AC_COMPILE_CHECK_SIZEOF(char, 1)
+AC_COMPILE_CHECK_SIZEOF(short, 2)
+AC_COMPILE_CHECK_SIZEOF(int, 4)
+AC_COMPILE_CHECK_SIZEOF(long, 4)
+AC_COMPILE_CHECK_SIZEOF(long long, 8)
+AC_COMPILE_CHECK_SIZEOF(size_t, 4)
+AC_COMPILE_CHECK_SIZEOF(time_t, 4)
+AC_COMPILE_CHECK_SIZEOF(off_t, 4)
+AC_COMPILE_CHECK_SIZEOF(off64_t, 8)
+AC_COMPILE_CHECK_SIZEOF(ino_t, 4)
+AC_COMPILE_CHECK_SIZEOF(ino64_t, 8)
+AC_COMPILE_CHECK_SIZEOF(uid_t, 4)
+AC_COMPILE_CHECK_SIZEOF(gid_t, 4)
+AC_COMPILE_CHECK_SIZEOF(pid_t, 4)
+AC_COMPILE_CHECK_SIZEOF(mode_t, 4)
+AC_COMPILE_CHECK_SIZEOF(dev_t, 4)
+AC_COMPILE_CHECK_SIZEOF(nlink_t, 4)
+AC_COMPILE_CHAR_UNSIGNED
+
+dnl Determine the C# definitions of various types on this platform.
+AC_SUBST(X_schar)
+AC_SUBST(X_uchar)
+AC_SUBST(X_short)
+AC_SUBST(X_ushort)
 AC_SUBST(X_int)
 AC_SUBST(X_uint)
 AC_SUBST(X_long)
 AC_SUBST(X_ulong)
-case "$TYPE_SPEC" in
-	il32)	X_int=int
-		  	X_uint=uint
-		  	X_long=int
-		  	X_ulong=uint ;;
-	il64)	X_int=long
-		  	X_uint=ulong
-		  	X_long=long
-		  	X_ulong=ulong ;;
-	i32l64) X_int=int
-			X_uint=uint
-			X_long=long
-			X_ulong=ulong ;;
-	i64l32)	X_int=long
-			X_uint=ulong
-			X_long=int
-			X_ulong=uint ;;
-	*)	AC_COMPILE_CHECK_SIZEOF(int, 4)
-		AC_COMPILE_CHECK_SIZEOF(long, 4)
-		if test "$ac_cv_sizeof_int" = 4 ; then
-			X_int=int
-			X_uint=uint
-		elif test "$ac_cv_sizeof_int" = 8 ; then
-			X_int=long
-			X_uint=ulong
-		else
-			AC_MSG_ERROR(int is neither 32-bits nor 64-bits on this platform)
-		fi
-		if test "$ac_cv_sizeof_long" = 4 ; then
-			X_long=int
-			X_ulong=uint
-		elif test "$ac_cv_sizeof_long" = 8 ; then
-			X_long=long
-			X_ulong=ulong
-		else
-			AC_MSG_ERROR(long is neither 32-bits nor 64-bits on this platform)
-		fi ;;
-esac
-AC_MSG_CHECKING(for the correct int mapping)
-AC_MSG_RESULT($X_int)
-AC_MSG_CHECKING(for the correct long mapping)
-AC_MSG_RESULT($X_long)
+AC_SUBST(X_longlong)
+AC_SUBST(X_ulonglong)
+AC_SUBST(X_size_t)
+AC_SUBST(X_ssize_t)
+AC_SUBST(X_time_t)
+AC_SUBST(X_off_t)
+AC_SUBST(X_off64_t)
+AC_SUBST(X_ino_t)
+AC_SUBST(X_ino64_t)
+AC_SUBST(X_uid_t)
+AC_SUBST(X_gid_t)
+AC_SUBST(X_pid_t)
+AC_SUBST(X_mode_t)
+AC_SUBST(X_dev_t)
+AC_SUBST(X_nlink_t)
+if test x$ac_cv_compile_char_unsigned = xyes ; then
+	AC_SET_UNSIGNED_CSHARP_TYPE(char, X_char, char, byte)
+else
+	AC_SET_CSHARP_TYPE(char, X_char, char, sbyte)
+fi
+AC_SET_CSHARP_TYPE(signed char, X_schar, char, sbyte)
+AC_SET_UNSIGNED_CSHARP_TYPE(unsigned char, X_uchar, char, byte)
+AC_SET_CSHARP_TYPE(short, X_short, short, short)
+AC_SET_UNSIGNED_CSHARP_TYPE(unsigned short, X_ushort, short, ushort)
+AC_SET_CSHARP_TYPE(int, X_int, int, int)
+AC_SET_UNSIGNED_CSHARP_TYPE(unsigned int, X_uint, int, uint)
+AC_SET_CSHARP_TYPE(long, X_long, long, int)
+AC_SET_UNSIGNED_CSHARP_TYPE(unsigned long, X_ulong, long, uint)
+AC_SET_CSHARP_TYPE(long long, X_longlong, long long, long)
+AC_SET_UNSIGNED_CSHARP_TYPE(unsigned long long, X_ulonglong, long long, ulong)
+AC_SET_UNSIGNED_CSHARP_TYPE(size_t, X_size_t, size_t, uint)
+AC_SET_CSHARP_TYPE(ssize_t, X_ssize_t, size_t, int)
+AC_SET_CSHARP_TYPE(time_t, X_time_t, time_t, int)
+AC_SET_CSHARP_TYPE(off_t, X_off_t, off_t, int)
+AC_SET_CSHARP_TYPE(off64_t, X_off64_t, off64_t, long)
+AC_SET_UNSIGNED_CSHARP_TYPE(ino_t, X_ino_t, ino_t, uint)
+AC_SET_UNSIGNED_CSHARP_TYPE(ino64_t, X_ino64_t, ino64_t, ulong)
+AC_SET_UNSIGNED_CSHARP_TYPE(uid_t, X_uid_t, uid_t, uint)
+AC_SET_UNSIGNED_CSHARP_TYPE(gid_t, X_gid_t, gid_t, uint)
+AC_SET_CSHARP_TYPE(pid_t, X_pid_t, pid_t, uint)
+AC_SET_UNSIGNED_CSHARP_TYPE(mode_t, X_mode_t, mode_t, uint)
+AC_SET_UNSIGNED_CSHARP_TYPE(dev_t, X_dev_t, dev_t, uint)
+AC_SET_UNSIGNED_CSHARP_TYPE(nlink_t, X_nlink_t, nlink_t, uint)
 
 AC_OUTPUT([
 Makefile

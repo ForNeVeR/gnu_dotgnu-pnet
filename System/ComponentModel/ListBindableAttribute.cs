@@ -28,13 +28,13 @@ namespace System.ComponentModel
 	public sealed class ListBindableAttribute: Attribute
 	{
 		[TODO]
-		public void ListBindableAttribute(bool listBindable)
+		public ListBindableAttribute(bool listBindable)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void ListBindableAttribute(BindableSupport flags)
+		public ListBindableAttribute(BindableSupport flags)
 		{
 			throw new NotImplementedException(".ctor");
 		}

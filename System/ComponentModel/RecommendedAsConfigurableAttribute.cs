@@ -28,7 +28,7 @@ namespace System.ComponentModel
 	public class RecommendedAsConfigurableAttribute: Attribute
 	{
 		[TODO]
-		public void RecommendedAsConfigurableAttribute(
+		public RecommendedAsConfigurableAttribute(
 							bool recommendedAsConfigurable)
 		{
 			throw new NotImplementedException(".ctor");

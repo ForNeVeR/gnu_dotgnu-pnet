@@ -28,19 +28,19 @@ namespace System.ComponentModel
 	public class Win32Exception: ExternalException
 	{
 		[TODO]
-		public void Win32Exception()
+		public Win32Exception()
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void Win32Exception(int error)
+		public Win32Exception(int error)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void Win32Exception(int error, String message)
+		public Win32Exception(int error, String message)
 		{
 			throw new NotImplementedException(".ctor");
 		}

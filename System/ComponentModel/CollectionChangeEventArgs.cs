@@ -30,7 +30,7 @@ namespace System.ComponentModel
 	public class CollectionChangeEventArgs: EventArgs
 	{
 		[TODO]
-		public void CollectionChangeEventArgs(CollectionChangeAction action, 
+		public CollectionChangeEventArgs(CollectionChangeAction action, 
 						Object element)
 		{
 			throw new NotImplementedException(".ctor");

@@ -27,7 +27,7 @@ namespace System.ComponentModel
 	public class Component: MarshalByRefObject, IDisposable, IComponent
 	{
 		[TODO]
-		public void Component()
+		public Component()
 		{
 			throw new NotImplementedException(".ctor");
 		}

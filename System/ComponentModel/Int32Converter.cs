@@ -27,7 +27,7 @@ namespace System.ComponentModel
 	public class Int32Converter: BaseNumberConverter
 	{
 		[TODO]
-		public void Int32Converter()
+		public Int32Converter()
 		{
 			throw new NotImplementedException(".ctor");
 		}

@@ -28,13 +28,13 @@ namespace System.ComponentModel
 	public class RefreshEventArgs: EventArgs
 	{
 		[TODO]
-		public void RefreshEventArgs(Object componentChanged)
+		public RefreshEventArgs(Object componentChanged)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void RefreshEventArgs(Type typeChanged)
+		public RefreshEventArgs(Type typeChanged)
 		{
 			throw new NotImplementedException(".ctor");
 		}

@@ -29,7 +29,7 @@ namespace System.ComponentModel
 	public class EnumConverter: TypeConverter
 	{
 		[TODO]
-		public void EnumConverter(Type type)
+		public EnumConverter(Type type)
 		{
 			throw new NotImplementedException(".ctor");
 		}

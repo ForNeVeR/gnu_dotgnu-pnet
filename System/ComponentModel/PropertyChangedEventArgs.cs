@@ -28,11 +28,12 @@ namespace System.ComponentModel
 	public class PropertyChangedEventArgs: EventArgs
 	{
 		[TODO]
-		public void PropertyChangedEventArgs(String name)
+		public PropertyChangedEventArgs(String name)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
+		[TODO]
 		public virtual String PropertyName 
 		{
 			get

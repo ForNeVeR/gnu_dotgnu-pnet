@@ -27,7 +27,7 @@ namespace System.ComponentModel
 	public class Container: IDisposable, IContainer
 	{
 		[TODO]
-		public void Container()
+		public Container()
 		{
 			throw new NotImplementedException(".ctor");
 		}

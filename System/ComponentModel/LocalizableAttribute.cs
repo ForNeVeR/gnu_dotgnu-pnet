@@ -28,7 +28,7 @@ namespace System.ComponentModel
 	public sealed class LocalizableAttribute: Attribute
 	{
 		[TODO]
-		public void LocalizableAttribute(bool localizable)
+		public LocalizableAttribute(bool localizable)
 		{
 			throw new NotImplementedException(".ctor");
 		}

@@ -28,7 +28,7 @@ namespace System.ComponentModel
 	public sealed class ReadOnlyAttribute: Attribute
 	{
 		[TODO]
-		public void ReadOnlyAttribute(bool read_only)
+		public ReadOnlyAttribute(bool read_only)
 		{
 			throw new NotImplementedException(".ctor");
 		}

@@ -28,21 +28,21 @@ namespace System.ComponentModel
 	public class ListChangedEventArgs: EventArgs
 	{
 		[TODO]
-		public void ListChangedEventArgs(ListChangedType listChangedType, 
+		public ListChangedEventArgs(ListChangedType listChangedType, 
 										int newIndex)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void ListChangedEventArgs(ListChangedType listChangedType, 
+		public ListChangedEventArgs(ListChangedType listChangedType, 
 											PropertyDescriptor propDesc)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void ListChangedEventArgs(ListChangedType listChangedType, 
+		public ListChangedEventArgs(ListChangedType listChangedType, 
 											int newIndex, int oldIndex)
 		{
 			throw new NotImplementedException(".ctor");

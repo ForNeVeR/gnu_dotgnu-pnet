@@ -28,19 +28,19 @@ namespace System.ComponentModel
 	public class InvalidEnumArgumentException: ArgumentException
 	{
 		[TODO]
-		public void InvalidEnumArgumentException()
+		public InvalidEnumArgumentException()
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void InvalidEnumArgumentException(String message)
+		public InvalidEnumArgumentException(String message)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void InvalidEnumArgumentException(String argumentName, 
+		public InvalidEnumArgumentException(String argumentName, 
 							int invalidValue, Type enumClass)
 		{
 			throw new NotImplementedException(".ctor");

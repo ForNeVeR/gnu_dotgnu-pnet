@@ -32,7 +32,7 @@ namespace System.ComponentModel
 	public class BaseNumberConverter: TypeConverter
 	{
 		[TODO]
-		public void BaseNumberConverter()
+		public BaseNumberConverter()
 		{
 			throw new NotImplementedException(".ctor");
 		}

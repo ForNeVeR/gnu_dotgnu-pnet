@@ -27,7 +27,7 @@ namespace System.ComponentModel
 	public class ExpandableObjectConverter: TypeConverter
 	{
 		[TODO]
-		public void ExpandableObjectConverter()
+		public ExpandableObjectConverter()
 		{
 			throw new NotImplementedException(".ctor");
 		}

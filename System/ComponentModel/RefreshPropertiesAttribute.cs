@@ -28,7 +28,7 @@ namespace System.ComponentModel
 	public sealed class RefreshPropertiesAttribute: Attribute
 	{
 		[TODO]
-		public void RefreshPropertiesAttribute(RefreshProperties refresh)
+		public RefreshPropertiesAttribute(RefreshProperties refresh)
 		{
 			throw new NotImplementedException(".ctor");
 		}

@@ -32,13 +32,13 @@ namespace System.ComponentModel
 	public class CancelEventArgs: EventArgs
 	{
 		[TODO]
-		public void CancelEventArgs()
+		public CancelEventArgs()
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void CancelEventArgs(bool cancel)
+		public CancelEventArgs(bool cancel)
 		{
 			throw new NotImplementedException(".ctor");
 		}

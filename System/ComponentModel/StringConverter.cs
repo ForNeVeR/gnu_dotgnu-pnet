@@ -29,7 +29,7 @@ namespace System.ComponentModel
 	public class StringConverter: TypeConverter
 	{
 		[TODO]
-		public void StringConverter()
+		public StringConverter()
 		{
 			throw new NotImplementedException(".ctor");
 		}

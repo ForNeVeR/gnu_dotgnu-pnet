@@ -28,7 +28,7 @@ namespace System.ComponentModel
 	public sealed class NotifyParentPropertyAttribute: Attribute
 	{
 		[TODO]
-		public void NotifyParentPropertyAttribute(bool notifyParent)
+		public NotifyParentPropertyAttribute(bool notifyParent)
 		{
 			throw new NotImplementedException(".ctor");
 		}

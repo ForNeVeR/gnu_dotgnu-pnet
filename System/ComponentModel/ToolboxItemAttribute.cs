@@ -28,19 +28,19 @@ namespace System.ComponentModel
 	public class ToolboxItemAttribute: Attribute
 	{
 		[TODO]
-		public void ToolboxItemAttribute(bool defaultType)
+		public ToolboxItemAttribute(bool defaultType)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void ToolboxItemAttribute(String toolboxItemName)
+		public ToolboxItemAttribute(String toolboxItemName)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void ToolboxItemAttribute(Type toolboxItemType)
+		public ToolboxItemAttribute(Type toolboxItemType)
 		{
 			throw new NotImplementedException(".ctor");
 		}

@@ -28,25 +28,25 @@ namespace System.ComponentModel
 	public sealed class EditorAttribute: Attribute
 	{
 		[TODO]
-		public void EditorAttribute()
+		public EditorAttribute()
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void EditorAttribute(String typeName, String baseTypeName)
+		public EditorAttribute(String typeName, String baseTypeName)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void EditorAttribute(String typeName, Type baseType)
+		public EditorAttribute(String typeName, Type baseType)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void EditorAttribute(Type type, Type baseType)
+		public EditorAttribute(Type type, Type baseType)
 		{
 			throw new NotImplementedException(".ctor");
 		}

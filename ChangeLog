@@ -1,4 +1,30 @@
 
+2002-12-31  Gopal.V  <gopalv82@symonds.net>
+	* System/ComponentModel/BaseNumberConverter.cs,
+	System/ComponentModel/CancelEventArgs.cs,
+	System/ComponentModel/CollectionChangeEventArgs.cs,
+	System/ComponentModel/Component.cs,
+	System/ComponentModel/Container.cs,
+	System/ComponentModel/EditorAttribute.cs,
+	System/ComponentModel/EnumConverter.cs,
+	System/ComponentModel/ExpandableObjectConverter.cs,
+	System/ComponentModel/Int32Converter.cs,
+	System/ComponentModel/InvalidEnumArgumentException.cs,
+	System/ComponentModel/ListBindableAttribute.cs,
+	System/ComponentModel/ListChangedEventArgs.cs,
+	System/ComponentModel/LocalizableAttribute.cs,
+	System/ComponentModel/NotifyParentPropertyAttribute.cs,
+	System/ComponentModel/PropertyChangedEventArgs.cs,
+	System/ComponentModel/ReadOnlyAttribute.cs,
+	System/ComponentModel/RecommendedAsConfigurableAttribute.cs,
+	System/ComponentModel/RefreshEventArgs.cs,
+	System/ComponentModel/RefreshPropertiesAttribute.cs,
+	System/ComponentModel/StringConverter.cs,
+	System/ComponentModel/ToolboxItemAttribute.cs,
+	System/ComponentModel/WarningException.cs,
+	System/ComponentModel/Win32Exception.cs: Fix bug in stubbing out for
+	constructors.
+	
 2002-12-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* compat/Makefile.am, compat/compat.build, Vsa.cs: implement the

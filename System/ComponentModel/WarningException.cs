@@ -28,24 +28,25 @@ namespace System.ComponentModel
 	public class WarningException: SystemException
 	{
 		[TODO]
-		public void WarningException(String message)
+		public WarningException(String message)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void WarningException(String message, String helpUrl)
+		public WarningException(String message, String helpUrl)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public void WarningException(String message, String helpUrl, 
+		public WarningException(String message, String helpUrl, 
 										String helpTopic)
 		{
 			throw new NotImplementedException(".ctor");
 		}
 
+		[TODO]
 		public String HelpTopic 
 		{
 			get
@@ -54,6 +55,7 @@ namespace System.ComponentModel
 			}
 		}
 
+		[TODO]
 		public String HelpUrl 
 		{
 			get

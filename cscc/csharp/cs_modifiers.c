@@ -767,7 +767,7 @@ ILUInt32 CSModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers)
 	{
 		BadModifiers(node,
 					 modifiers & ~(CS_MODIFIER_STATIC | CS_MODIFIER_UNSAFE));
-		attrs = IL_META_METHODDEF_PUBLIC | IL_META_METHODDEF_STATIC;
+		attrs = IL_META_METHODDEF_PRIVATE | IL_META_METHODDEF_STATIC;
 	}
 
 	/* Process the "unsafe" modifier */

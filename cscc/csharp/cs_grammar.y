@@ -181,6 +181,24 @@ static void yyerror(char *msg)
 			(ILNode_GlobalNamespace_create(ILQualIdentTwo("System", #name)))
 
 /*
+ * Make a list from an existing list (may be NULL), and a new node
+ * (which may also be NULL).
+ */
+static ILNode *MakeList(ILNode *list, ILNode *node)
+{
+	if(!node)
+	{
+		return list;
+	}
+	else if(!list)
+	{
+		list = ILNode_List_create();
+	}
+	ILNode_List_Add(list, node);
+	return list;
+}
+
+/*
  * Negate an integer node.
  */
 static ILNode *NegateInteger(ILNode_Integer *node)
@@ -553,6 +571,12 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 		ILNode		   *init;
 
 	} varInit;
+	struct
+	{
+		ILNode		   *body;
+		ILNode		   *staticCtors;
+
+	} member;
 }
 
 /*
@@ -693,10 +717,11 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 
 %type <node>		Type NonExpressionType LocalVariableType
 
-%type <node>		TypeDeclaration ClassDeclaration ClassBase ClassBody
-%type <node>		TypeList OptClassMemberDeclarations ClassMemberDeclarations
-%type <node>		ClassMemberDeclaration StructDeclaration StructInterfaces
-%type <node>		StructBody
+%type <node>		TypeDeclaration ClassDeclaration ClassBase TypeList
+%type <member>		ClassBody OptClassMemberDeclarations
+%type <member>		ClassMemberDeclarations ClassMemberDeclaration
+%type <member>		StructBody
+%type <node> 		StructDeclaration StructInterfaces
 
 %type <node>		PrimaryExpression UnaryExpression Expression
 %type <node>		MultiplicativeExpression AdditiveExpression
@@ -755,8 +780,8 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		EnumDeclaration EnumBody OptEnumMemberDeclarations
 %type <node>		EnumMemberDeclarations EnumMemberDeclaration
 %type <node>		EnumBase EnumBaseType
-%type <node>		DelegateDeclaration
-%type <node>		ConstructorDeclaration ConstructorInitializer
+%type <node>		DelegateDeclaration ConstructorInitializer
+%type <member>		ConstructorDeclaration
 %type <node>		DestructorDeclaration
 %type <node>		OperatorDeclaration NormalOperatorDeclaration
 %type <node>		ConversionOperatorDeclaration
@@ -2280,7 +2305,7 @@ ClassDeclaration
 				ClassNamePush($4);
 			}
 			ClassBody OptSemiColon	{
-				ILNode *classBody = ($7);
+				ILNode *classBody = ($7).body;
 
 				/* Validate the modifiers */
 				ILUInt32 attrs =
@@ -2320,7 +2345,8 @@ ClassDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 $5,					/* ClassBase */
-							 classBody);
+							 classBody,
+							 ($7).staticCtors);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -2347,37 +2373,38 @@ ClassBody
 				 * This production recovers from errors in class bodies.
 				 */
 				yyerrok;
-				$$ = 0;
+				$$.body = 0;
+				$$.staticCtors = 0;
 			}
 	;
 
 OptClassMemberDeclarations
-	: /* empty */					{ $$ = 0; }
+	: /* empty */					{ $$.body = 0; $$.staticCtors = 0; }
 	| ClassMemberDeclarations		{ $$ = $1; }
 	;
 
 ClassMemberDeclarations
 	: ClassMemberDeclaration		{
-				$$ = ILNode_List_create();
-				ILNode_List_Add($$, $1);
+				$$.body = MakeList(0, $1.body);
+				$$.staticCtors = MakeList(0, $1.staticCtors);
 			}
 	| ClassMemberDeclarations ClassMemberDeclaration	{
-				ILNode_List_Add($1, $2);
-				$$ = $1;
+				$$.body = MakeList($1.body, $2.body);
+				$$.staticCtors = MakeList($1.staticCtors, $2.staticCtors);
 			}
 	;
 
 ClassMemberDeclaration
-	: ConstantDeclaration		{ $$ = $1; }
-	| FieldDeclaration			{ $$ = $1; }
-	| MethodDeclaration			{ $$ = $1; }
-	| PropertyDeclaration		{ $$ = $1; }
-	| EventDeclaration			{ $$ = $1; }
-	| IndexerDeclaration		{ $$ = $1; }
-	| OperatorDeclaration		{ $$ = $1; }
+	: ConstantDeclaration		{ $$.body = $1; $$.staticCtors = 0; }
+	| FieldDeclaration			{ $$.body = $1; $$.staticCtors = 0; }
+	| MethodDeclaration			{ $$.body = $1; $$.staticCtors = 0; }
+	| PropertyDeclaration		{ $$.body = $1; $$.staticCtors = 0; }
+	| EventDeclaration			{ $$.body = $1; $$.staticCtors = 0; }
+	| IndexerDeclaration		{ $$.body = $1; $$.staticCtors = 0; }
+	| OperatorDeclaration		{ $$.body = $1; $$.staticCtors = 0; }
 	| ConstructorDeclaration	{ $$ = $1; }
-	| DestructorDeclaration		{ $$ = $1; }
-	| TypeDeclaration			{ $$ = $1; }
+	| DestructorDeclaration		{ $$.body = $1; $$.staticCtors = 0; }
+	| TypeDeclaration			{ $$.body = $1; $$.staticCtors = 0; }
 	;
 
 /*
@@ -2912,8 +2939,17 @@ ConstructorDeclaration
 					body = ILNode_NewScope_create
 								(ILNode_Compound_CreateFrom(initializer, $8));
 				}
-				$$ = ILNode_MethodDeclaration_create
-					  ($1, attrs, 0 /* "void" */, cname, $5, body);
+				if((attrs & IL_META_METHODDEF_STATIC) != 0)
+				{
+					$$.body = 0;
+					$$.staticCtors = body;
+				}
+				else
+				{
+					$$.body = ILNode_MethodDeclaration_create
+						  ($1, attrs, 0 /* "void" */, cname, $5, body);
+					$$.staticCtors = 0;
+				}
 			}
 	;
 
@@ -3012,7 +3048,8 @@ StructDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 baseList,				/* ClassBase */
-							 $7);					/* StructBody */
+							 ($7).body,				/* StructBody */
+							 ($7).staticCtors);		/* StaticCtors */
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3033,7 +3070,8 @@ StructBody
 				/*
 				 * This production recovers from errors in struct declarations.
 				 */
-				$$ = 0;
+				$$.body = 0;
+				$$.staticCtors = 0;
 				yyerrok;
 			}
 	;
@@ -3071,7 +3109,8 @@ InterfaceDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 $5,					/* ClassBase */
-							 $7);					/* ClassBody */
+							 $7,					/* InterfaceBody */
+							 0);					/* StaticCtors */
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3276,7 +3315,8 @@ EnumDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 baseList,				/* ClassBase */
-							 bodyList);				/* EnumBody */
+							 bodyList,				/* EnumBody */
+							 0);					/* StaticCtors */
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -3375,7 +3415,8 @@ DelegateDeclaration
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 baseList,				/* ClassBase */
-							 bodyList);				/* Body */
+							 bodyList,				/* Body */
+							 0);					/* StaticCtors */
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;

@@ -150,6 +150,15 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 		ILNode_GenDiscard(node->body, info);
 	}
 
+	/* Output the static constructor for the class */
+	if(node->staticCtorsMethod && info->asmOutput)
+	{
+		MethodGenDiscard(info, info->asmOutput,
+						 (ILNode_MethodDeclaration *)(node->staticCtorsMethod),
+						 ((ILNode_MethodDeclaration *)(node->staticCtorsMethod))
+						 		->methodInfo);
+	}
+
 	/* Output the class footer */
 	if(info->asmOutput)
 	{

@@ -5,6 +5,12 @@
 	codegen/jv_stmt.tc, cscc/csharp/cs_stmt.tc: implement Java-style
 	labelled loops, switch's, break's, and continue's.
 
+	* codegen/cg_decls.tc, codegen/cg_nodes.tc, cscc/csharp/cs_decls.tc,
+	cscc/csharp/cs_grammar.y, cscc/csharp/cs_modifiers.c: collect
+	up static constructor fragments separate from the main class
+	declarations so that we can add extra fragments during semantic
+	analysis.
+
 2001-03-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, cscc/cc_errors.c, cscc/cc_errors.h,

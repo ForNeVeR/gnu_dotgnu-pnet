@@ -682,8 +682,10 @@ struct _tagILSwitchValue
 	ILNode     *namespaceNode;
 	ILNode     *baseClass;
 	ILNode     *body;
+	ILNode     *staticCtors;
 	%nocreate ILClass *classInfo = {0};
 	%nocreate ILUInt64 nextEnum = {0};
+	%nocreate ILNode *staticCtorsMethod = {0};
 
 }
 %node ILNode_ScopeChange ILNode_Declaration =

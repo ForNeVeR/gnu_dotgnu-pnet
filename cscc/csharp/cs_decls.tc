@@ -37,9 +37,46 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentClass = (ILNode *)node;
 		info->currentNamespace = node->namespaceNode;
 		value = ILNode_SemAnalysis(node->body, info, &(node->body));
+		if(node->staticCtors)
+		{
+			/* Create a method for the static constructors and
+			   then perform semantic analysis on its contents */
+			ILMethod *methodInfo;
+			ILType *signature;
+			node->staticCtorsMethod =
+				ILNode_MethodDeclaration_create
+					(0, IL_META_METHODDEF_PRIVATE |
+						IL_META_METHODDEF_STATIC |
+						IL_META_METHODDEF_HIDE_BY_SIG |
+						IL_META_METHODDEF_SPECIAL_NAME |
+						IL_META_METHODDEF_RT_SPECIAL_NAME,
+					 0 /* void */,
+					 ILQualIdentSimple(ILInternString(".cctor", 6).string),
+					 0 /* no parameters */,
+					 ILNode_NewScope_create(node->staticCtors));
+			methodInfo = ILMethodCreate(node->classInfo, 0, ".cctor",
+										IL_META_METHODDEF_PRIVATE |
+										IL_META_METHODDEF_STATIC |
+										IL_META_METHODDEF_HIDE_BY_SIG |
+										IL_META_METHODDEF_SPECIAL_NAME |
+										IL_META_METHODDEF_RT_SPECIAL_NAME);
+			if(!methodInfo)
+			{
+				CCOutOfMemory();
+			}
+			signature = ILTypeCreateMethod(info->context, ILType_Void);
+			if(!signature)
+			{
+				CCOutOfMemory();
+			}
+			ILMemberSetSignature((ILMember *)methodInfo, signature);
+			((ILNode_MethodDeclaration *)(node->staticCtorsMethod))
+					->methodInfo = methodInfo;
+			ILNode_SemAnalysis(node->staticCtorsMethod, info,
+							   &(node->staticCtorsMethod));
+		}
 		info->currentClass = savedClass;
 		info->currentNamespace = savedNamespace;
-		return value;
 	}
 	else
 	{

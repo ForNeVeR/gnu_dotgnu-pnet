@@ -540,8 +540,8 @@ unsigned char const _ILCVMLengths[512] = {
 	 * Method trace opcodes
 	 */
 
-	/* trace_in */			CVMP_LEN_PTR,
-	/* trace_out */			CVMP_LEN_NONE,
+	/* trace_in */			CVMP_LEN_WORD,
+	/* trace_out */			CVMP_LEN_WORD,
 
 	/*
 	 * Reserved opcodes.

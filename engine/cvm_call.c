@@ -32,6 +32,8 @@
 #define	CVM_OPTIMIZE_BLOCK()
 #endif
 
+//#define INDENT_TRACE
+
 /*
  * Call a function via the FFI interface.  If we have "libffi",
  * then use the "ffi_call" and "ffi_raw_call" functions.
@@ -1815,32 +1817,40 @@ VMBREAK(COP_PREFIX_WADDR_NATIVE_N);
 /**
  *<opcode name="trace_in" group="Profiling Instructions">
  *	<operation>Print the name of the called method . This is injected
- *             for every method call in --trace mode</operation>
+ *             at the top of every method in --trace mode</operation>
  *
- * 	<format>trace_in<fsep/>method</format>
- * 	<dformat>{trace_in}<fsep/>method</dformat>
+ * 	<format>trace_in<fsep/>reason</format>
+ * 	<dformat>{trace_in}<fsep/>reason</dformat>
  *
  * 	<form name="trace_in" code="COP_PREFIX_TRACE_IN"/>
  *
  *  <description>This instruction prints out the called method .  
  *  It is normally inserted immediately before a method call when 
- *  the engine is running in --trace mode.
+ *  the engine is running in --trace mode. The reason parameter
+ *  is provided for future additions , and is ignored in the current
+ *  implementation.
  *  </description>
  * </opcode>
  */
 VMCASE(COP_PREFIX_TRACE_IN):
 {
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-	ILMethod *calledMethod = CVMP_ARG_PTR(ILMethod *);
-	fputs("Calling ", stdout);
-	ILDumpMethodType(stdout, ILProgramItem_Image(calledMethod),
-					 ILMethod_Signature(calledMethod), 0,
-					 ILMethod_Owner(calledMethod),
-					 ILMethod_Name(calledMethod), calledMethod);
+#ifdef INDENT_TRACE
+	int depth = thread->numFrames;
+	while(depth--) 
+	{
+		putc(' ',stdout); 
+	}
+#endif
+	fputs("Entering ", stdout);
+	ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method),
+					 ILMethod_Name(method), method);
 	putc('\n',stdout);
 	fflush(stdout);
 #endif
-	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 }
 VMBREAK(COP_PREFIX_TRACE_IN);
 
@@ -1849,8 +1859,8 @@ VMBREAK(COP_PREFIX_TRACE_IN);
  *	<operation>Print the name of the callee method while returning to it. 
  *             This is injected for every return in --trace mode</operation>
  *
- * 	<format>trace_out</format>
- * 	<dformat>{trace_out}</dformat>
+ * 	<format>trace_out<fsep/>reason</format>
+ * 	<dformat>{trace_out}<fsep/>reason</dformat>
  *
  * 	<form name="trace_out" code="COP_PREFIX_TRACE_OUT"/>
  *
@@ -1865,7 +1875,16 @@ VMBREAK(COP_PREFIX_TRACE_IN);
 VMCASE(COP_PREFIX_TRACE_OUT):
 {
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	// NOTE: at some point of time use the Reason parameter to
+	// carry more information about this 
 	ILMethod * methodToReturn = ILExecThreadStackMethod(thread, 1);
+#ifdef INDENT_TRACE
+	int depth = thread->numFrames;
+	while(depth--) 
+	{
+		putc(' ',stdout); 
+	}
+#endif
 	fputs("Returning to ", stdout);
 	if(methodToReturn)
 	{
@@ -1881,7 +1900,7 @@ VMCASE(COP_PREFIX_TRACE_OUT):
 	putc('\n',stdout);
 	fflush(stdout);
 #endif
-	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 }
 VMBREAK(COP_PREFIX_TRACE_OUT);
 

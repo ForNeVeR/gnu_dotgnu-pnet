@@ -586,8 +586,8 @@ static CVMOpcode const prefixOpcodes[0x70] = {
 	/*
 	 * Method trace opcodes
 	 */
-	{"trace_in",	CVM_OPER_METHOD},
-	{"trace_out",	CVM_OPER_NONE},
+	{"trace_in",	CVM_OPER_UINT32},
+	{"trace_out",	CVM_OPER_UINT32},
 
 	/*
 	 * Reserved opcodes.

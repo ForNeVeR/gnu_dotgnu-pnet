@@ -347,6 +347,13 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 		CVMP_OUT_NONE(COP_PREFIX_PROFILE_COUNT);
 	}
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)
+	{
+		CVMP_OUT_WORD(COP_PREFIX_TRACE_IN, 0);
+	}
+#endif
+
 #if defined(DONT_UNROLL_SYSTEM)
 {
 	const char *assemName;

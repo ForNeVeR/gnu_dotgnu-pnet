@@ -20,30 +20,6 @@
 
 #ifdef IL_CVMC_CODE
 
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-
-#define INJECT_TRACE_IN(coder,methodinfo) \
-	do\
-	{\
-		if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)\
-		{\
-			CVMP_OUT_PTR(COP_PREFIX_TRACE_IN, methodinfo);\
-		}\
-	}while(0)
-
-#define INJECT_TRACE_OUT(coder) \
-	do\
-	{\
-		if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)\
-		{\
-			CVMP_OUT_NONE(COP_PREFIX_TRACE_OUT);\
-		}\
-	}while(0)
-#else
-#define INJECT_TRACE_IN(coder, methodinfo) 
-#define INJECT_TRACE_OUT(coder)
-#endif
-
 static void CVMCoder_UpConvertArg(ILCoder *coder, ILEngineStackItem *args,
 						          ILUInt32 numArgs, ILUInt32 param,
 						          ILType *paramType)
@@ -113,7 +89,6 @@ static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
 			if(cctor != ((ILCVMCoder *)coder)->currentMethod)
 			{
 				/* Output a call to the static constructor */
-				INJECT_TRACE_IN(coder, cctor);
 				CVM_OUT_PTR(COP_CALL, cctor);
 			}
 		}
@@ -170,12 +145,10 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
 	if(info->tailCall)
 	{
-		INJECT_TRACE_IN(coder,methodInfo);
 		CVMP_OUT_PTR(COP_PREFIX_TAIL_CALL, methodInfo);
 	}
 	else
 	{
-		INJECT_TRACE_IN(coder,methodInfo);
 		CVM_OUT_PTR(COP_CALL, methodInfo);
 	}
 	AdjustForCall(coder, info, returnItem);
@@ -200,7 +173,6 @@ static void CVMCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 					   		  ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 1);
-	INJECT_TRACE_IN(coder,methodInfo);
 	CVM_OUT_PTR(COP_CALL_CTOR, methodInfo);
 	AdjustForCall(coder, info, 0);
 	CVM_ADJUST(1);
@@ -217,12 +189,10 @@ static void CVMCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	}
 	if(info->tailCall)
 	{
-		INJECT_TRACE_IN(coder,methodInfo);
 		CVMP_OUT_WORD2(COP_PREFIX_TAIL_CALLVIRT, argSize, methodInfo->index);
 	}
 	else
 	{
-		INJECT_TRACE_IN(coder,methodInfo);
 		CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
 	}
 	AdjustForCall(coder, info, returnItem);
@@ -233,7 +203,6 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 								   ILMethod *methodInfo)
 {
 	ILUInt32 argSize = ComputeStackSize(coder, info->args, info->numBaseArgs);
-	INJECT_TRACE_IN(coder,methodInfo);
 	if(info->hasParamArray)
 	{
 		++argSize;
@@ -464,7 +433,6 @@ static void CVMCoder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
 static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 							    ILType *returnType)
 {
-	INJECT_TRACE_OUT(coder);
 	switch(engineType)
 	{
 		case ILEngineType_Invalid:

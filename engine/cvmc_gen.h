@@ -139,6 +139,10 @@ extern	"C" {
  */
 #define	_CVM_OUT_RETURN(size)	\
 			do { \
+				if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)\
+				{\
+					CVMP_OUT_WORD(COP_PREFIX_TRACE_OUT,0);\
+				}\
 				if(((ILCVMCoder *)coder)->debugEnabled) \
 				{ \
 					_CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
@@ -644,6 +648,10 @@ extern	"C" {
  */
 #define	_CVM_OUT_RETURN(size)	\
 			do { \
+				if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)\
+				{\
+					CVMP_OUT_WORD(COP_PREFIX_TRACE_OUT,0);\
+				}\
 				if(((ILCVMCoder *)coder)->debugEnabled) \
 				{ \
 					_CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \

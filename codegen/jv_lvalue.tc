@@ -40,7 +40,8 @@ JavaGenElse(ILNode_QualIdent)
  * Generate discard code for local and argument variables.
  */
 JavaGenDiscard(ILNode_LocalVar),
-JavaGenDiscard(ILNode_ArgumentVar)
+JavaGenDiscard(ILNode_ArgumentVar),
+JavaGenDiscard(ILNode_RefArgumentVar)
 {
 	/* Nothing needs to be done here */
 }
@@ -121,7 +122,8 @@ JavaGenValue(ILNode_LocalVar)
 /*
  * Generate value code for an argument variable.
  */
-JavaGenValue(ILNode_ArgumentVar)
+JavaGenValue(ILNode_ArgumentVar),
+JavaGenValue(ILNode_RefArgumentVar)
 {
 	JavaGenLoadArg(info, node->index, node->machineType);
 	JavaGenAdjust(info, JavaGenTypeSize(node->machineType));
@@ -324,7 +326,8 @@ JavaGenValue(ILNode_IndexerAccess)
  * Prepare to store into a local variable.
  */
 JavaPrepare(ILNode_LocalVar),
-JavaPrepare(ILNode_ArgumentVar)
+JavaPrepare(ILNode_ArgumentVar),
+JavaPrepare(ILNode_RefArgumentVar)
 {
 	/* No preparation is needed for locals or arguments */
 	return node->machineType;
@@ -475,7 +478,8 @@ JavaGetAndPrepare(ILNode_LocalVar)
 /*
  * Get and prepare to store into an argument variable.
  */
-JavaGetAndPrepare(ILNode_ArgumentVar)
+JavaGetAndPrepare(ILNode_ArgumentVar),
+JavaGetAndPrepare(ILNode_RefArgumentVar)
 {
 	int size = JavaGenTypeSize(node->machineType);
 	JavaGenLoadArg(info, node->index, node->machineType);
@@ -852,7 +856,8 @@ JavaStore(ILNode_LocalVar)
 /*
  * Store into an argument variable.
  */
-JavaStore(ILNode_ArgumentVar)
+JavaStore(ILNode_ArgumentVar),
+JavaStore(ILNode_RefArgumentVar)
 {
 	int size = JavaGenTypeSize(node->machineType);
 	if(leave)

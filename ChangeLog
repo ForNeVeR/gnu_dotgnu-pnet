@@ -10,6 +10,10 @@
 	cscc/csharp/cs_internal.h, cscc/csharp/cs_invoke.tc:
 	implement non-static field initializers.
 
+	* codegen/cg_lvalue.tc, codegen/cg_nodes.tc, codegen/cg_utils.c,
+	codegen/cg_utils.h, codegen/jv_lvalue.tc, cscc/csharp/cs_lvalue.tc:
+	implement code generation for "ref" and "out" argument variables.
+
 2002-05-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

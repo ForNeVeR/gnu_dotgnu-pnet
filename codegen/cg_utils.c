@@ -468,6 +468,168 @@ void ILGenStoreArray(ILGenInfo *info, ILMachineType elemMachineType,
 	}
 }
 
+void ILGenLoadManaged(ILGenInfo *info, ILMachineType machineType,
+					  ILType *type)
+{
+	switch(machineType)
+	{
+		case ILMachineType_Void:		break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		{
+			ILGenSimple(info, IL_OP_LDIND_I1);
+		}
+		break;
+
+		case ILMachineType_UInt8:
+		{
+			ILGenSimple(info, IL_OP_LDIND_U1);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		{
+			ILGenSimple(info, IL_OP_LDIND_I2);
+		}
+		break;
+
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		{
+			ILGenSimple(info, IL_OP_LDIND_U2);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			ILGenSimple(info, IL_OP_LDIND_I4);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			ILGenSimple(info, IL_OP_LDIND_I8);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		case ILMachineType_ManagedPtr:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			ILGenSimple(info, IL_OP_LDIND_I);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			ILGenSimple(info, IL_OP_LDIND_R4);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			ILGenSimple(info, IL_OP_LDIND_R8);
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		case ILMachineType_ManagedValue:
+		{
+			ILGenTypeToken(info, IL_OP_LDOBJ, type);
+		}
+		break;
+
+		case ILMachineType_ObjectRef:
+		case ILMachineType_String:
+		{
+			ILGenSimple(info, IL_OP_LDIND_REF);
+		}
+		break;
+	}
+}
+
+void ILGenStoreManaged(ILGenInfo *info, ILMachineType machineType,
+					   ILType *type)
+{
+	switch(machineType)
+	{
+		case ILMachineType_Void:		break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		{
+			ILGenSimple(info, IL_OP_STIND_I1);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		{
+			ILGenSimple(info, IL_OP_STIND_I2);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			ILGenSimple(info, IL_OP_STIND_I4);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			ILGenSimple(info, IL_OP_STIND_I8);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		case ILMachineType_ManagedPtr:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			ILGenSimple(info, IL_OP_STIND_I);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			ILGenSimple(info, IL_OP_STIND_R4);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			ILGenSimple(info, IL_OP_STIND_R8);
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		case ILMachineType_ManagedValue:
+		{
+			ILGenTypeToken(info, IL_OP_STOBJ, type);
+		}
+		break;
+
+		case ILMachineType_ObjectRef:
+		case ILMachineType_String:
+		{
+			ILGenSimple(info, IL_OP_STIND_REF);
+		}
+		break;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

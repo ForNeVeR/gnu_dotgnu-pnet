@@ -461,6 +461,12 @@ struct _tagILSwitchValue
 	unsigned long index;
 	ILMachineType machineType;
 }
+%node ILNode_RefArgumentVar ILNode_LValue =
+{
+	unsigned long index;
+	ILMachineType machineType;
+	ILType *type;
+}
 %node ILNode_MemberAccess ILNode_LValueBinaryExpr =
 {
 	%nocreate ILMachineType machineType = {ILMachineType_Void};

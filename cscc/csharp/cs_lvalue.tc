@@ -635,6 +635,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	ILScopeData *data;
 	unsigned long index;
 	ILNode_MethodDeclaration *method;
+	ILParameterModifier paramMod;
 
 	/* Look for local variables in the current scope */
 	data = ILScopeLookup(info->currentScope, node->name, 1);
@@ -655,16 +656,33 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			index &= ~CS_LOCAL_IS_ARG;
 			if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
 			{
-				value.type = ILTypeGetParam
-					(ILMethod_Signature(method->methodInfo), index);
+				paramMod = ILGenGetParamInfo(method->methodInfo, 0,
+											 index, &(value.type));
 			}
 			else
 			{
-				value.type = ILTypeGetParam
-					(ILMethod_Signature(method->methodInfo), index + 1);
+				paramMod = ILGenGetParamInfo(method->methodInfo, 0,
+											 index + 1, &(value.type));
 			}
-			*parent = ILNode_ArgumentVar_create
-						(index, ILTypeToMachineType(value.type));
+			if(paramMod == ILParamMod_ref)
+			{
+				/* Handle by-reference parameters */
+				*parent = ILNode_RefArgumentVar_create
+					(index, ILTypeToMachineType(value.type), value.type);
+			}
+			else if(paramMod == ILParamMod_out)
+			{
+				/* Handle output-only parameters */
+				*parent = ILNode_RefArgumentVar_create
+					(index, ILTypeToMachineType(value.type), value.type);
+				value.kind = CS_SEMKIND_SVALUE;
+				return value;
+			}
+			else
+			{
+				*parent = ILNode_ArgumentVar_create
+							(index, ILTypeToMachineType(value.type));
+			}
 		}
 		value.kind = CS_SEMKIND_LVALUE;
 		return value;
@@ -702,7 +720,8 @@ ILNode_SemAnalysis(ILNode_QualIdent)
  * Perform semantic analysis for local and argument variables.
  */
 ILNode_SemAnalysis(ILNode_LocalVar),
-ILNode_SemAnalysis(ILNode_ArgumentVar)
+ILNode_SemAnalysis(ILNode_ArgumentVar),
+ILNode_SemAnalysis(ILNode_RefArgumentVar)
 {
 	/* This should never be called: these node types are
 	   synthesised when ILNode_Identifier is analysed */

@@ -60,6 +60,14 @@ ILNode_GetType(ILNode_ArgumentVar)
 }
 
 /*
+ * Get the type of a by-reference argument variable.
+ */
+ILNode_GetType(ILNode_RefArgumentVar)
+{
+	return node->machineType;
+}
+
+/*
  * Get the type of a field access operator.
  */
 ILNode_GetType(ILNode_MemberAccess),
@@ -109,7 +117,8 @@ ILNode_GetType(ILNode_IndexerAccess)
  * Generate discard code for a local or argument variable.
  */
 ILNode_GenDiscard(ILNode_LocalVar),
-ILNode_GenDiscard(ILNode_ArgumentVar)
+ILNode_GenDiscard(ILNode_ArgumentVar),
+ILNode_GenDiscard(ILNode_RefArgumentVar)
 {
 	/* Nothing needs to be done here */
 }
@@ -184,6 +193,22 @@ ILNode_GenValue(ILNode_ArgumentVar)
 {
 	ILGenLoadArg(info, node->index);
 	ILGenAdjust(info, 1);
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a by-reference argument variable.
+ */
+ILNode_GenValue(ILNode_RefArgumentVar)
+{
+	/* Load the reference onto the stack */
+	ILGenLoadArg(info, node->index);
+	ILGenAdjust(info, 1);
+
+	/* Dereference the pointer to get the actual value */
+	ILGenLoadManaged(info, node->machineType, node->type);
+
+	/* Return the value's type to the caller */
 	return node->machineType;
 }
 
@@ -353,6 +378,17 @@ ILNode_Prepare(ILNode_ArgumentVar)
 }
 
 /*
+ * Prepare to store into a by-reference argument variable.
+ */
+ILNode_Prepare(ILNode_RefArgumentVar)
+{
+	/* Load the managed pointer onto the stack */
+	ILGenLoadArg(info, node->index);
+	ILGenAdjust(info, 1);
+	return node->machineType;
+}
+
+/*
  * Prepare to store into a member access destination.
  */
 ILNode_Prepare(ILNode_MemberAccess)
@@ -495,6 +531,37 @@ ILNode_GetAndPrepare(ILNode_ArgumentVar)
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
 	}
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a by-reference argument variable.
+ */
+ILNode_GetAndPrepare(ILNode_RefArgumentVar)
+{
+	/* Do we need to leave an extra copy of the value on the stack? */
+	if(leave)
+	{
+		/* Load the managed pointer onto the stack */
+		ILGenLoadArg(info, node->index);
+		ILGenAdjust(info, 1);
+
+		/* Get the current value of the variable for the left copy */
+		ILGenLoadManaged(info, node->machineType, node->type);
+	}
+
+	/* Load the managed pointer onto the stack */
+	ILGenLoadArg(info, node->index);
+	ILGenAdjust(info, 1);
+
+	/* Duplicate the pointer for a later store */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+
+	/* Get the current value of the variable */
+	ILGenLoadManaged(info, node->machineType, node->type);
+
+	/* Return the value's type to the caller */
 	return node->machineType;
 }
 
@@ -990,6 +1057,41 @@ ILNode_Store(ILNode_ArgumentVar)
 }
 
 /*
+ * Store into an by-reference argument variable.
+ */
+ILNode_Store(ILNode_RefArgumentVar)
+{
+	if(leave)
+	{
+		/* Allocate a temporary local to hold the "left" copy */
+		unsigned tempVar = ILGenTempTypedVar(info, node->type);
+
+		/* Duplicate the top-most value and store into the temporary local */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenStoreLocal(info, tempVar);
+		ILGenAdjust(info, -1);
+
+		/* Store the value into the managed pointer */
+		ILGenStoreManaged(info, node->machineType, node->type);
+		ILGenAdjust(info, -2);
+
+		/* Re-push the temporary local */
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 1);
+
+		/* Release the temporary local, which we no longer require */
+		ILGenReleaseTempVar(info, tempVar);
+	}
+	else
+	{
+		/* Store the value into the managed pointer */
+		ILGenStoreManaged(info, node->machineType, node->type);
+		ILGenAdjust(info, -2);
+	}
+}
+
+/*
  * Store into a member access destination.
  */
 ILNode_Store(ILNode_MemberAccess)
@@ -1231,6 +1333,15 @@ ILNode_GenRef(ILNode_LocalVar)
 ILNode_GenRef(ILNode_ArgumentVar)
 {
 	ILGenLoadArgAddr(info, node->index);
+	ILGenAdjust(info, 1);
+}
+
+/*
+ * Generate reference code for by-reference argument nodes.
+ */
+ILNode_GenRef(ILNode_RefArgumentVar)
+{
+	ILGenLoadArg(info, node->index);
 	ILGenAdjust(info, 1);
 }
 

@@ -110,6 +110,18 @@ int ILGenStoreArrayPrepare(ILGenInfo *info, ILMachineType elemMachineType,
 void ILGenStoreArray(ILGenInfo *info, ILMachineType elemMachineType,
 					 ILType *elemType);
 
+/*
+ * Load the contents of a managed pointer onto the stack.
+ */
+void ILGenLoadManaged(ILGenInfo *info, ILMachineType machineType,
+					  ILType *type);
+
+/*
+ * Store a value to a managed pointer.
+ */
+void ILGenStoreManaged(ILGenInfo *info, ILMachineType machineType,
+					   ILType *type);
+
 #ifdef	__cplusplus
 };
 #endif

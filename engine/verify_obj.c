@@ -201,12 +201,19 @@ static int BoxValue(ILCoder *coder, ILEngineType valueType,
 }
 
 /*
- * Get a particular system type.
+ * Get a particular system value type.
  */
-static ILType *GetSystemType(ILMethod *method, const char *name)
+static ILType *GetSystemValueType(ILMethod *method, const char *name)
 {
 	ILClass *classInfo = _ILCreateSystemType(ILProgramItem_Image(method), name);
-	return ClassTokenToType(classInfo);
+	if(classInfo)
+	{
+		return ILType_FromValueType(classInfo);
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 #elif defined(IL_VERIFY_LOCALS)
@@ -716,7 +723,7 @@ case IL_OP_MKREFANY:
 	classInfo = GetClassToken(method, pc);
 	if(classInfo)
 	{
-		classType = ClassTokenToType(classInfo);
+		classType = ILClassToType(classInfo);
 		if((STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T) &&
 		   ILTypeIdentical(classType, stack[stackSize - 1].typeInfo))
 		{
@@ -752,7 +759,7 @@ case IL_OP_REFANYVAL:
 	{
 		ILCoderRefAnyVal(coder, classInfo);
 		stack[stackSize - 1].engineType = ILEngineType_M;
-		stack[stackSize - 1].typeInfo = ClassTokenToType(classInfo);
+		stack[stackSize - 1].typeInfo = ILClassToType(classInfo);
 	}
 	else
 	{
@@ -769,7 +776,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_REFANYTYPE:
 		ILCoderRefAnyType(coder);
 		stack[stackSize - 1].engineType = ILEngineType_MV;
 		stack[stackSize - 1].typeInfo =
-				GetSystemType(method, "RuntimeTypeHandle");
+				GetSystemValueType(method, "RuntimeTypeHandle");
 	}
 	else
 	{
@@ -790,9 +797,10 @@ case IL_OP_LDTOKEN:
 			if(ILClassAccessible(classInfo, ILMethod_Owner(method)))
 			{
 				ILCoderPushToken(coder, (ILProgramItem *)classInfo);
-				stack[stackSize - 1].engineType = ILEngineType_MV;
-				stack[stackSize - 1].typeInfo =
-						GetSystemType(method, "RuntimeTypeHandle");
+				stack[stackSize].engineType = ILEngineType_MV;
+				stack[stackSize].typeInfo =
+						GetSystemValueType(method, "RuntimeTypeHandle");
+				++stackSize;
 			}
 			else
 			{
@@ -805,9 +813,10 @@ case IL_OP_LDTOKEN:
 								  ILMethod_Owner(method)))
 			{
 				ILCoderPushToken(coder, (ILProgramItem *)methodInfo);
-				stack[stackSize - 1].engineType = ILEngineType_MV;
-				stack[stackSize - 1].typeInfo =
-						GetSystemType(method, "RuntimeMethodHandle");
+				stack[stackSize].engineType = ILEngineType_MV;
+				stack[stackSize].typeInfo =
+						GetSystemValueType(method, "RuntimeMethodHandle");
+				++stackSize;
 			}
 			else
 			{
@@ -820,9 +829,10 @@ case IL_OP_LDTOKEN:
 								  ILMethod_Owner(method)))
 			{
 				ILCoderPushToken(coder, (ILProgramItem *)fieldInfo);
-				stack[stackSize - 1].engineType = ILEngineType_MV;
-				stack[stackSize - 1].typeInfo =
-						GetSystemType(method, "RuntimeFieldHandle");
+				stack[stackSize].engineType = ILEngineType_MV;
+				stack[stackSize].typeInfo =
+						GetSystemValueType(method, "RuntimeFieldHandle");
+				++stackSize;
 			}
 			else
 			{
@@ -849,7 +859,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_ARGLIST:
 		ILCoderArgList(coder);
 		stack[stackSize - 1].engineType = ILEngineType_MV;
 		stack[stackSize - 1].typeInfo =
-				GetSystemType(method, "RuntimeArgumentHandle");
+				GetSystemValueType(method, "RuntimeArgumentHandle");
 	}
 	else
 	{

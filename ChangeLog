@@ -20,6 +20,9 @@ for "ldelem.ref".
 in instance methods; type identity and value type testing in
 "AssignCompatible".
 
+* engine/verify_obj.c: stack push error in "ldtoken"; convert "GetSystemType"
+into "GetSystemValueType".
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

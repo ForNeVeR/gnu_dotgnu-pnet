@@ -1840,9 +1840,28 @@ ILNode_SemAnalysis(ILNode_Ge)
 ILNode_SemAnalysis(ILNode_Deref)
 {
 	CSSemValue value;
+	ILType *type;
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe pointer dereference");
-	/* TODO */
-	CSSemSetRValue(value, ILType_Int32);
+	value=ILNode_SemAnalysis(node->expr,info,&(node->expr));
+	if(!CSSemIsValue(value) || !CSSemGetType(value))
+	{
+		CCErrorOnLine(yygetfilename(node->expr),yygetlinenum(node->expr),
+				"invalid argument for dereference operator");
+		CSSemSetLValue(value,ILType_Int32);
+		return value;
+	}
+	type=CSSemGetType(value);
+	if(ILType_IsComplex(type) && (ILType_Kind(type) == IL_TYPE_COMPLEX_PTR))
+	{
+		CSSemSetLValue(value,ILType_Ref(CSSemGetType(value)));
+		return value;
+	}
+	else
+	{
+		CCErrorOnLine(yygetfilename(node->expr),yygetlinenum(node->expr),
+			"cannot deference '%s' type",CSTypeToName(CSSemGetType(value)));
+	}
+	CSSemSetLValue(value, ILType_Int32);
 	return value;
 }
 

@@ -2298,7 +2298,7 @@ FixedStatement
 
 FixedPointerDeclarators
 	: FixedPointerDeclarator		{
-				$$ = ILNode_FixedDeclList_create();
+				$$ = ILNode_List_create();
 				ILNode_List_Add($$, $1);
 			}
 	| FixedPointerDeclarators ',' FixedPointerDeclarator	{
@@ -2318,12 +2318,11 @@ FixedPointerDeclarator
 				 */
 				if(yykind($3) == yykindof(ILNode_AddressOf))
 				{
-					MakeBinary(FixAddress, ILQualIdentName($1, 0),
-							   ((ILNode_UnaryExpression *)($3))->expr);
+					MakeBinary(FixAddress, $1,$3);
 				}
 				else
 				{
-					MakeBinary(FixExpr, ILQualIdentName($1, 0), $3);
+					MakeBinary(FixExpr, $1, $3);
 				}
 			}
 	;
@@ -2407,7 +2406,8 @@ Attribute
 	;
 
 AttributeArguments
-	: '(' PositionalArgumentList ')'			{
+	: '(' ')' {	/* empty */ }
+	| '(' PositionalArgumentList ')'			{
 				MakeBinary(AttrArgs, $2, 0);
 			}
 	| '(' PositionalArgumentList ',' NamedArgumentList ')'	{

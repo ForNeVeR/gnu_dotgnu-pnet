@@ -1637,13 +1637,79 @@ ILNode_EndsInReturnImpl(ILNode_Unsafe)
  */
 ILNode_SemAnalysis(ILNode_Fixed)
 {
+	ILType *type;
+	char *name;
+	ILNode_MethodDeclaration *method;
+	ILNode *errorNode;
+	ILNode_ListIter iter;
+	ILNode *varNode;
+	ILNode *nameNode;
+	ILScopeData *data;
+
+	/* Locate the method that this local is declared within */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
 	/* TODO */
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe `fixed' statement");
 	if(info->outputIsJava)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`fixed' disallowed when compiling to Java bytecode");
+		return CSSemValueDefault;
 	}
+
+	/* Perform semantic analysis on the local variable type */
+	type = CSSemType(node->type, info, &(node->type));
+
+	/* Scan through the variable names and declare them in the current scope */
+	ILNode_ListIter_Init(&iter, node->decls);
+	while((varNode = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		nameNode=((ILNode_FixedVariable*)varNode)->name;
+		name = ILQualIdentName(nameNode,0);
+		data = ILScopeLookup(info->currentScope, name, 0);
+		if(data)
+		{
+			/* The name is already declared in this scope */
+			CCErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
+						  "`%s' is already declared in this scope", name);
+			errorNode = ILScopeDataGetNode(data);
+			if(errorNode)
+			{
+				CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+							  "previous declaration here");
+			}
+		}
+		else
+		{
+			/* Add the type to the local variable signature for this method */
+			if(!(method->localVarSig))
+			{
+				method->localVarSig = ILTypeCreateLocalList(info->context);
+				if(!(method->localVarSig))
+				{
+					CCOutOfMemory();
+				}
+			}
+			
+			if(yyisa(varNode,ILNode_FixAddress))
+			{
+				/* TODO : figure the right way to pin variables */
+			}
+			
+			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
+			{
+				CCOutOfMemory();
+			}
+
+			/* Create a local variable entry in the current scope */
+			ILScopeDeclareLocal(info->currentScope, name,
+								ILTypeNumLocals(method->localVarSig) - 1,
+								((ILNode_FixedVariable*)varNode)->name);
+			ILNode_SemAnalysis(varNode,info,iter.last);
+		}
+	}
+	ILNode_SemAnalysis(node->stmt,info,&(node->stmt));
 	return CSSemValueDefault;
 }
 
@@ -1652,7 +1718,8 @@ ILNode_SemAnalysis(ILNode_Fixed)
  */
 ILNode_GenDiscard(ILNode_Fixed)
 {
-	/* TODO */
+	ILNode_GenDiscard(node->decls,info);
+	ILNode_GenDiscard(node->stmt,info);
 }
 
 /*
@@ -1672,19 +1739,14 @@ ILNode_EndsInReturnImpl(ILNode_Fixed)
 }
 
 /*
- * Perform semantic analysis for "fixed declarator" lists.
- */
-ILNode_SemAnalysis(ILNode_FixedDeclList)
-{
-	return CSSemValueDefault;
-}
-
-/*
  * Perform semantic analysis for the "fix address" node.
  */
 ILNode_SemAnalysis(ILNode_FixAddress)
 {
-	/* TODO */
+	*parent=ILNode_Assign_create(node->name,node->address);
+	yysetfilename(*parent, yygetfilename(node));
+	yysetlinenum(*parent, yygetlinenum(node));
+	ILNode_SemAnalysis(*parent,info,parent);
 	return CSSemValueDefault;
 }
 
@@ -1693,7 +1755,11 @@ ILNode_SemAnalysis(ILNode_FixAddress)
  */
 ILNode_SemAnalysis(ILNode_FixExpr)
 {
-	/* TODO */
+	/* TODO : Convert the types array T[] into T* */
+	*parent=ILNode_Assign_create(node->name,node->expr);
+	yysetfilename(*parent, yygetfilename(node));
+	yysetlinenum(*parent, yygetlinenum(node));
+	ILNode_SemAnalysis(*parent,info,parent);
 	return CSSemValueDefault;
 }
 

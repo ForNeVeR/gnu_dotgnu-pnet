@@ -1,4 +1,10 @@
 
+2002-12-16 Gopal.V  <gopalv82@symonds.net>
+	
+	* codegen/cg_resolve.c: Prevent infinite lookups in conversion
+	operators by preventing the conversion from being attempted again
+	with args of the same implicit operator.
+
 2002-12-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_system.h, support/Makefile.am, support/path.c:

@@ -40,7 +40,8 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 							   ILClass *callScope, const char *name,
 							   ILType **args, int numArgs,
 						       ILType *returnType, ILUInt32 attrs,
-							   int normalOrVirtual, int dontInherit)
+							   int normalOrVirtual, int dontInherit,
+							   int indirect)
 {
 	ILMember *member;
 	ILMethod *method;
@@ -94,7 +95,8 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 				argType = ILTypeGetParam(signature, arg);
 				if(!ILTypeIdentical(argType, args[arg - 1]))
 				{
-					if(!ILCanCoerce(info, args[arg - 1], argType,1))
+					if(!ILCanCoerceKind(info, args[arg - 1], argType,
+									IL_CONVERT_STANDARD,indirect))
 					{
 						break;
 					}
@@ -135,7 +137,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 				method = ResolveMethod(info, ILImplementsGetInterface(impl),
 									   callScope, name, args, numArgs,
 									   returnType, attrs, normalOrVirtual,
-									   dontInherit);
+									   dontInherit,indirect);
 				if(method)
 				{
 					return method;
@@ -158,7 +160,7 @@ ILMethod *ILResolveStaticMethod(ILGenInfo *info, ILClass *classInfo,
 								ILType **args, int numArgs)
 {
 	return ResolveMethod(info, classInfo, callScope, name, args, numArgs, 0,
-					     IL_META_METHODDEF_STATIC, 0, 0);
+					     IL_META_METHODDEF_STATIC, 0, 0, 1);
 }
 
 ILMethod *ILResolveInstanceMethod(ILGenInfo *info, ILClass *classInfo,
@@ -166,7 +168,7 @@ ILMethod *ILResolveInstanceMethod(ILGenInfo *info, ILClass *classInfo,
 								  ILType **args, int numArgs)
 {
 	return ResolveMethod(info, classInfo, callScope, name,
-						 args, numArgs, 0, 0, 1, 0);
+						 args, numArgs, 0, 0, 1, 0, 1);
 }
 
 ILMethod *ILResolveConstructor(ILGenInfo *info, ILClass *classInfo,
@@ -175,7 +177,7 @@ ILMethod *ILResolveConstructor(ILGenInfo *info, ILClass *classInfo,
 	return ResolveMethod(info, classInfo, callScope, ".ctor",
 						 args, numArgs, ILType_Void,
 					     IL_META_METHODDEF_SPECIAL_NAME |
-					     IL_META_METHODDEF_RT_SPECIAL_NAME, 0, 1);
+					     IL_META_METHODDEF_RT_SPECIAL_NAME, 0, 1, 1);
 }
 
 /*
@@ -201,7 +203,7 @@ ILMethod *ILResolveUnaryOperator(ILGenInfo *info, ILClass *classInfo,
 	return ResolveMethod(info, classInfo, DefaultCallScope(info),
 						 name, args, 1, 0,
 					     IL_META_METHODDEF_STATIC |
-					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
+					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0, 1);
 }
 
 ILMethod *ILResolveBinaryOperator(ILGenInfo *info, ILClass *classInfo,
@@ -214,7 +216,7 @@ ILMethod *ILResolveBinaryOperator(ILGenInfo *info, ILClass *classInfo,
 	return ResolveMethod(info, classInfo, DefaultCallScope(info),
 						 name, args, 2, 0,
 					     IL_META_METHODDEF_STATIC |
-					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
+					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0, 1);
 }
 
 ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
@@ -226,7 +228,7 @@ ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
 	return ResolveMethod(info, classInfo, DefaultCallScope(info),
 						 name, args, 1, toType,
 					     IL_META_METHODDEF_STATIC |
-					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
+					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0, 0);
 }
 
 #define  PROPERTY_TYPE_ATTRS (IL_META_PROPDEF_SPECIAL_NAME | \

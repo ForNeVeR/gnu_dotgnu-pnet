@@ -243,6 +243,15 @@
 /* Define if you have the regcomp function.  */
 #undef HAVE_REGCOMP
 
+/* Define if you have the regerror function.  */
+#undef HAVE_REGERROR
+
+/* Define if you have the regexec function.  */
+#undef HAVE_REGEXEC
+
+/* Define if you have the regfree function.  */
+#undef HAVE_REGFREE
+
 /* Define if you have the remainder function.  */
 #undef HAVE_REMAINDER
 

@@ -4,6 +4,9 @@
 	* engine/Makefile.am, ildb/Makefile.am, ilnative/Makefile.am,
 	tests/Makefile.am: add $REGEXLIBS to makefiles that require it.
 
+	* include/il_config.h.in: update "il_config.h.in" using the
+	latest "configure.in".
+
 2002-11-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_arith.tc, cscc/csharp/cs_oper.tc: Move the reduction in

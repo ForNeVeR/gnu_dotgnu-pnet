@@ -76,105 +76,232 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 
 	// Implement the ICloneable interface.
 	public Object Clone()
-	{
-		return this;
-	}
+			{
+				return this;
+			}
 
 	// Compare two strings.
-	public static int Compare(String strA, String strB)
-	{
-		// TODO
-		return 0;
-	}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int Compare(String strA, String strB);
+
+	// Internal version of "Compare", with all parameters.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int InternalCompare
+				(String strA, int indexA, int lengthA,
+				 String strB, int indexB, int lengthB,
+				 bool ignoreCase, CultureInfo culture);
 
 	// Compare two strings while optionally ignoring case.
 	public static int Compare(String strA, String strB, bool ignoreCase)
-	{
-		// TODO
-		return 0;
-	}
+			{
+				return InternalCompare
+						(strA, 0, ((strA != null) ? strA.Length : 0),
+					     strB, 0, ((strB != null) ? strB.Length : 0),
+					     ignoreCase, null);
+			}
 
 	// Compare two strings using a particular culture's comparison rules.
-	public static int Compare(String strA, String strB, bool ignoreCase,
-							  CultureInfo culture)
-	{
-		// TODO
-		return 0;
-	}
+	public static int Compare(String strA, String strB,
+							  bool ignoreCase, CultureInfo culture)
+			{
+				if(culture == null)
+				{
+					throw new ArgumentNullException("culture");
+				}
+				return InternalCompare
+						(strA, 0, ((strA != null) ? strA.Length : 0),
+						 strB, 0, ((strB != null) ? strB.Length : 0),
+						 ignoreCase, culture);
+			}
+
+	// Validate sub-string ranges for "Compare".
+	public static void ValidateCompare(String strA, int indexA,
+									   String strB, int indexB,
+									   int length)
+			{
+				if(indexA < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("indexA",
+				 		 Environment.GetResourceString
+						 		("ArgRange_StringIndex"));
+				}
+				if(indexB < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("indexB",
+				 		 Environment.GetResourceString
+						 		("ArgRange_StringIndex"));
+				}
+				if(length < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("length",
+		 				 Environment.GetResourceString
+						 		("ArgRange_StringRange"));
+				}
+				if(strA != null)
+				{
+					if(indexA >= strA.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexA",
+					 		 Environment.GetResourceString
+							 		("ArgRange_StringIndex"));
+					}
+					if(length > (strA.Length - indexA))
+					{
+						throw new ArgumentOutOfRangeException
+							("length",
+			 				 Environment.GetResourceString
+							 		("ArgRange_StringRange"));
+					}
+				}
+				else
+				{
+					if(indexA > 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexA",
+					 		 Environment.GetResourceString
+							 		("ArgRange_StringIndex"));
+					}
+					if(length > 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("length",
+					 		 Environment.GetResourceString
+							 		("ArgRange_StringRange"));
+					}
+				}
+				if(strB != null)
+				{
+					if(indexB >= strB.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexB",
+					 		 Environment.GetResourceString
+							 		("ArgRange_StringIndex"));
+					}
+					if(length > (strB.Length - indexB))
+					{
+						throw new ArgumentOutOfRangeException
+							("length",
+			 				 Environment.GetResourceString
+							 		("ArgRange_StringRange"));
+					}
+				}
+				else
+				{
+					if(indexB > 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("indexB",
+					 		 Environment.GetResourceString
+							 		("ArgRange_StringIndex"));
+					}
+					if(length > 0)
+					{
+						throw new ArgumentOutOfRangeException
+							("length",
+					 		 Environment.GetResourceString
+							 		("ArgRange_StringRange"));
+					}
+				}
+			}
 
 	// Compare two sub-strings.
 	public static int Compare(String strA, int indexA,
 							  String strB, int indexB,
 							  int length)
-	{
-		// TODO
-		return 0;
-	}
+			{
+				ValidateCompare(strA, indexA, strB, indexB, length);
+				return InternalCompare(strA, indexA, length,
+									   strB, indexB, length,
+									   false, null);
+			}
 
 	// Compare two sub-strings while optionally ignoring case.
 	public static int Compare(String strA, int indexA,
 							  String strB, int indexB,
 							  int length, bool ignoreCase)
-	{
-		// TODO
-		return 0;
-	}
+			{
+				ValidateCompare(strA, indexA, strB, indexB, length);
+				return InternalCompare(strA, indexA, length,
+									   strB, indexB, length,
+									   ignoreCase, null);
+			}
 
 	// Compare two sub-strings with a particular culture's comparison rules.
 	public static int Compare(String strA, int indexA,
-							  String strB, int indexB,
-							  int length, bool ignoreCase,
-							  CultureInfo culture)
-	{
-		// TODO
-		return 0;
-	}
+					  		  String strB, int indexB,
+					  		  int length, bool ignoreCase,
+					  		  CultureInfo culture)
+			{
+				if(culture == null)
+				{
+					throw new ArgumentNullException("culture");
+				}
+				ValidateCompare(strA, indexA, strB, indexB, length);
+				return InternalCompare(strA, indexA, length,
+									   strB, indexB, length,
+									   ignoreCase, culture);
+			}
+
+	// Internal version of "CompareOrdinal", with all parameters.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int InternalOrdinal
+				(String strA, int indexA, int lengthA,
+				 String strB, int indexB, int lengthB);
 
 	// Compare two strings by ordinal character value.
 	public static int CompareOrdinal(String strA, String strB)
-	{
-		// TODO
-		return 0;
-	}
+			{
+				return InternalOrdinal
+							(strA, 0, ((strA != null) ? strA.Length : 0),
+							 strB, 0, ((strB != null) ? strB.Length : 0));
+			}
 
 	// Compare two sub-strings by ordinal character value.
 	public static int CompareOrdinal(String strA, int indexA,
-									 String strB, int indexB)
-	{
-		// TODO
-		return 0;
-	}
+							         String strB, int indexB,
+							         int length)
+			{
+				ValidateCompare(strA, indexA, strB, indexB, length);
+				return InternalOrdinal(strA, indexA, length,
+							    	   strB, indexB, length);
+			}
 
 	// Implement the IComparable interface.
 	public int CompareTo(Object value)
-	{
-		if(!(value is String))
-		{
-			throw new ArgumentException
-				(Environment.GetResourceString("Arg_MustBeString"));
-		}
-		else if(value != null)
-		{
-			return Compare(this, (String)value);
-		}
-		else
-		{
-			return 1;
-		}
-	}
+			{
+				if(!(value is String))
+				{
+					throw new ArgumentException
+						(Environment.GetResourceString("Arg_MustBeString"));
+				}
+				else if(value != null)
+				{
+					return Compare(this, (String)value);
+				}
+				else
+				{
+					return 1;
+				}
+			}
 
 	// Compare this string against another.
 	public int CompareTo(String value)
-	{
-		if(value != null)
-		{
-			return Compare(this, value);
-		}
-		else
-		{
-			return 1;
-		}
-	}
+			{
+				if(value != null)
+				{
+					return Compare(this, value);
+				}
+				else
+				{
+					return 1;
+				}
+			}
 
 	// Methods that are supplied by the runtime to assist with string building.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -488,7 +615,7 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 			{
 				if(obj is String)
 				{
-					return (Compare(this, (String)obj) == 0);
+					return Equals(this, (String)obj);
 				}
 				else
 				{
@@ -497,22 +624,13 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 			}
 
 	// Determine if two strings are equal.
-	public static bool Equals(String a, String b)
-			{
-				return (Compare(a, b) == 0);
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool Equals(String a, String b);
 
 	// Determine if this string is the same as another.
 	public bool Equals(String value)
 			{
-				if(value != null)
-				{
-					return (Compare(this, value) == 0);
-				}
-				else
-				{
-					return false;
-				}
+				return Equals(this, value);
 			}
 
 	// Format a single-argument string.

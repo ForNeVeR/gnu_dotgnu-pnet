@@ -5,6 +5,10 @@
 	ilranlib/Makefile.am, ilranlib/ilranlib.1, ilranlib/ilranlib.c:
 	add the "ilranlib" program to the system.
 
+	* cscc/Makefile.am, ilranlib/Makefile.am, ilsize/Makefile.am,
+	ilstrip/Makefile.am: add some symlinks to make the IL tools
+	look like a cross-compile toolchain with the prefix "cli-unknown".
+
 2003-07-05  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/lib_thread.c: Implemented internal calls Thread.Abort

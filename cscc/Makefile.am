@@ -43,6 +43,10 @@ cscc_bf_LDADD   = bf/libILBf.a common/libILCCommon.a \
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
+## The "cscc" compiler is symlinked as "cli-unknown-gcc" to fool
+## autoconf-using cross-compiler systems into using "cscc" to compile
+## C code into IL.  It isn't a real gcc implementation, of course.
+
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/plugins
@@ -56,8 +60,10 @@ install-exec-local:
 	$(INSTALL_PROGRAM) csdoc $(DESTDIR)$(bindir)/csdoc
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-gcc
 	$(LN_S) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp
 	$(LN_S) cscc-bf $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
+	$(LN_S) cscc $(DESTDIR)$(bindir)/cli-unknown-gcc
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
@@ -70,3 +76,4 @@ uninstall-local:
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-b
 	rm -f $(DESTDIR)$(bindir)/cscc
 	rm -f $(DESTDIR)$(bindir)/csdoc
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-gcc

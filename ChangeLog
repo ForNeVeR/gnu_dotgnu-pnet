@@ -6,6 +6,15 @@
 	"OperatingSystem.ToString()" for "Unix" platforms so that
 	applications can detect the system type should they need to.
 
+	* Basic/Basic.build, JScript/JScript.build, System/System.build,
+	System.Configuration.Install/System.Configuration.Install.build,
+	System.Drawing/System.Drawing.build, System.Net.IrDA/IrDA.build,
+	System.Windows.Forms/Forms.build, System.Xml/Xml.build,
+	compat/compat.build, runtime/runtime.build: remove the
+	"-fminimize-parameters" option from the build files because
+	recent changes to "pnet/image" mean that parameters are no longer
+	the memory hog that they used to be.
+
 2003-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/Cookie.cs, System/Net/CookieCollection.cs,

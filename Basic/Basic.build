@@ -30,7 +30,7 @@
 -->
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>
-			<arg compiler="cscc" value="-fminimize-parameters"/>
+			<!-- arg compiler="cscc" value="-fminimize-parameters"/ -->
 			<arg compiler="cscc" value="-fassembly-version=7.0.5000.0"/>
 			<arg compiler="cscc" value="-fassembly-key=ms"/>
 			<arg compiler="cscc" value="-flatin1-charset"/>

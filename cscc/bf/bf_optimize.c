@@ -38,34 +38,31 @@ ILNode * BFOptimize(ILGenInfo *info, ILNode *tree)
 	ILNode_ListIter_Init(&iter,list);
 	while((item = ILNode_ListIter_Next(&iter)) !=NULL)
 	{
+		item = BFOptimize(info,item);
+
 		if(lastItem == NULL)
 		{
-			ILNode_List_Add(newList,item);
 			lastItem = item;
 		}
 		else
 		{
-			if(yyisa(lastItem,ILNode_BFOpt))
+			if(yyisa(lastItem,ILNode_BFOpt) &&
+				yykind(lastItem) == yykind(item))
 			{
-				if(yykind(lastItem) == yykind(item))
-				{
-					((ILNode_BFOpt*)lastItem)->count+=
-										((ILNode_BFOpt*)item)->count;
-				}
-			}
-			else if(yyisa(item, ILNode_BFBody))
-			{
-				lastItem = NULL;
-				item = BFOptimize(info, item);
-				ILNode_List_Add(newList, item);
+				((ILNode_BFOpt*)lastItem)->count+=
+					((ILNode_BFOpt*)item)->count;
 			}
 			else
 			{
-				ILNode_List_Add(newList, item);
+				ILNode_List_Add(newList,lastItem);
 				lastItem = item;
 			}
 		}
-	}	
+	}
+	if (lastItem != NULL)
+	{
+		ILNode_List_Add(newList,lastItem);
+	}
 	((ILNode_BFBody*)tree)->body=newList;
 	return tree;
 }

@@ -112,7 +112,7 @@ void ILDumpClassName(FILE *stream, ILImage *image, ILClass *info, int flags)
 		/* Imported from a module */
 		if(ILModuleIsRef(module) || ILProgramItem_Image(module) != image)
 		{
-			putc('[', stream);
+			fputs("[.module ", stream);
 			ILDumpIdentifier(stream, ILModule_Name(module), 0, flags);
 			putc(']', stream);
 		}

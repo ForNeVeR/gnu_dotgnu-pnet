@@ -22,6 +22,8 @@ main image properly.
 when dumping class names for parents and interfaces so that the correct
 scope information is output.
 
+* dumpasm/dump_ident.c (ILDumpClassName): prefix module scopes with ".module".
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

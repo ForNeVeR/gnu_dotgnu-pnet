@@ -38,6 +38,14 @@ typedef struct
 } LayoutInfo;
 
 /*
+ * Perform a security check (TODO: replace this with something better).
+ */
+int _ILSecurityCheck(ILExecThread *thread, ILProgramItem *info, int type)
+{
+	return 0;
+}
+
+/*
  * Forward declaration.
  */
 static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout);

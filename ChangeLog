@@ -6,6 +6,8 @@ instructions.
 
 * engine/verify_ptr.c (ClassTokenToType): new function.
 
+* engine/layout.c: stub out the security check temporarily.
+
 2001-10-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_stack.c, engine/verify_call.c, engine/verify_ptr.c,

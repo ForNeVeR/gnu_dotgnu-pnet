@@ -7,6 +7,9 @@
 	* runtime/System/Private/NumberFormat/HexadecimalFormatter.cs: Fix
 	formatting of negative numbers. (bug #3050).
 
+	* runtime/System/Enum.cs: Fix hexadecimal formatting of enums to
+	generate zero padded output.
+
 2003-07-20  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: change how

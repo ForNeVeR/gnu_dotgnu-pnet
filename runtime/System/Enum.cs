@@ -105,7 +105,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				}
 
 				// Determine what to do based on the format.
-				if(format == "G" || format == "g")
+				if(format == "G" || format == "g" || format=="")
 				{
 				#if CONFIG_REFLECTION
 					if(Attribute.IsDefined(enumType, typeof(FlagsAttribute)))
@@ -129,7 +129,18 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				}
 				else if(format == "X" || format == "x")
 				{
-					return ((IFormattable)value).ToString("X", null);
+					/* Note: ECMA says atleast '8' and MS.NET does 
+					 * the same as the underlying size */ 
+				#if !ECMA_COMPAT
+					Type type=Enum.GetUnderlyingType(enumType);
+					if(type==typeof(Byte) || type==typeof(SByte)) format="X2";
+					if(type==typeof(Int16) || type==typeof(UInt16))format="X4";
+					if(type==typeof(Int32) || type==typeof(UInt32))format="X8";
+					if(type==typeof(Int64) || type==typeof(UInt64))format="X16";
+				#else
+					format="X8";
+				#endif
+					return ((IFormattable)value).ToString(format, null);
 				}
 				else if(format == "D" || format == "d")
 				{

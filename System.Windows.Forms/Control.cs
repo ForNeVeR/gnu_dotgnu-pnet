@@ -528,6 +528,11 @@ public class Control : IWin32Window, IDisposable
 				{
 					if(value != backColor)
 					{
+						if(value.A < 255 &&
+						   !GetStyle(ControlStyles.SupportsTransparentBackColor))
+						{
+							throw new ArgumentException("value"); // TODO: msg
+						}
 						backColor = value;
 						OnBackColorChanged(EventArgs.Empty);
 					}

@@ -561,6 +561,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawArc(Pen pen, float x, float y, float width, float height,
 						float startAngle, float sweepAngle)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -587,6 +593,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawBezier(Pen pen, float x1, float y1, float x2, float y2,
 						   float x3, float y3, float x4, float y4)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				int dx1, dy1, dx2, dy2;
 				int dx3, dy3, dx4, dy4;
 				ConvertPoint(x1 + baseWindow.X, y1 + baseWindow.Y, out dx1, out dy1, pageUnit);
@@ -651,6 +663,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawClosedCurve(Pen pen, Point[] points,
 								float tension, FillMode fillMode)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				points = ConvertPoints(points, 4, pageUnit);
 				BaseOffsetPoints(points);
 				lock(this)
@@ -662,6 +680,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawClosedCurve(Pen pen, PointF[] points,
 								float tension, FillMode fillMode)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] dpoints = ConvertPoints(points, 4, pageUnit);
 				BaseOffsetPoints(dpoints);
 				lock(this)
@@ -730,6 +754,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					throw new ArgumentOutOfRangeException
 						("numberOfSegments", S._("Arg_InvalidCurveSegments"));
 				}
+
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
+
 				lock(this)
 				{
 					SelectPen(pen);
@@ -753,6 +785,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					throw new ArgumentOutOfRangeException
 						("numberOfSegments", S._("Arg_InvalidCurveSegments"));
 				}
+
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				lock(this)
 				{
 					SelectPen(pen);
@@ -772,6 +811,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void DrawEllipse(Pen pen, int x, int y, int width, int height)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -782,6 +827,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawEllipse(Pen pen, float x, float y,
 							float width, float height)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -1160,6 +1211,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void DrawLine(Pen pen, int x1, int y1, int x2, int y2)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				ConvertPoint(ref x1, ref y1, pageUnit);
 				ConvertPoint(ref x2, ref y2, pageUnit);
 				if (x1 == x2 && y1 == y2)
@@ -1173,6 +1230,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void DrawLine(Pen pen, float x1, float y1, float x2, float y2)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				int dx1, dy1, dx2, dy2;
 				ConvertPoint(x1, y1, out dx1, out dy1, pageUnit);
 				ConvertPoint(x2, y2, out dx2, out dy2, pageUnit);
@@ -1187,6 +1250,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Draw a series of connected line segments.
 	public void DrawLines(Pen pen, Point[] points)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				points = ConvertPoints(points, 2, pageUnit);
 				BaseOffsetPoints(points);
 				lock(this)
@@ -1197,6 +1266,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void DrawLines(Pen pen, PointF[] points)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] dpoints = ConvertPoints(points, 2, pageUnit);
 				BaseOffsetPoints(dpoints);
 				lock(this)
@@ -1217,6 +1292,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentNullException("path");
 				}
+
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				path.Draw(this, pen);
 			}
 
@@ -1245,6 +1327,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawPie(Pen pen, int x, int y, int width, int height,
 						int startAngle, int sweepAngle)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -1255,6 +1343,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawPie(Pen pen, float x, float y, float width, float height,
 						float startAngle, float sweepAngle)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -1266,6 +1360,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Draw a polygon.
 	public void DrawPolygon(Pen pen, Point[] points)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				points = ConvertPoints(points, 2, pageUnit);
 				BaseOffsetPoints(points);
 				lock(this)
@@ -1276,6 +1376,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void DrawPolygon(Pen pen, PointF[] points)
 			{
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] dpoints = ConvertPoints(points, 2, pageUnit);
 				BaseOffsetPoints(dpoints);
 				lock(this)
@@ -1294,6 +1400,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				if (width>0 && height>0)
 				{
+					// Bail out now if there's nothing to draw.
+					if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+					{
+						return;
+					}
+
 					lock(this)
 					{
 						SelectPen(pen);
@@ -1306,6 +1418,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				if (width>0 && height>0)
 				{
+					// Bail out now if there's nothing to draw.
+					if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
+					{
+						return;
+					}
+
 					lock(this)
 					{
 						SelectPen(pen);
@@ -1360,6 +1478,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawString(String s, Font font, Brush brush,
 						   RectangleF layoutRectangle, StringFormat format)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				// get the text length
 				int len = ((((Object)s) == null) ? 0 : s.Length);
 
@@ -1917,6 +2041,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void FillClosedCurve(Brush brush, Point[] points,
 								FillMode fillMode, float tension)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				points = ConvertPoints(points, 4, pageUnit);
 				BaseOffsetPoints(points);
 				lock(this)
@@ -1929,6 +2059,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void FillClosedCurve(Brush brush, PointF[] points,
 								FillMode fillMode, float tension)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] dpoints = ConvertPoints(points, 4, pageUnit);
 				BaseOffsetPoints(dpoints);
 				lock(this)
@@ -1950,6 +2086,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void FillEllipse(Brush brush, int x, int y, int width, int height)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -1960,6 +2102,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void FillEllipse(Brush brush, float x, float y,
 							float width, float height)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -1979,6 +2127,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentNullException("path");
 				}
+
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				path.Fill(this, brush);
 			}
 
@@ -2001,6 +2156,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void FillPie(Brush brush, int x, int y, int width, int height,
 						int startAngle, int sweepAngle)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -2012,6 +2173,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						float width, float height,
 						float startAngle, float sweepAngle)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
 				lock(this)
 				{
@@ -2031,6 +2198,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void FillPolygon(Brush brush, Point[] points, FillMode fillMode)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				points = ConvertPoints(points, 2, pageUnit);
 				BaseOffsetPoints(points);
 				lock(this)
@@ -2041,6 +2214,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void FillPolygon(Brush brush, PointF[] points, FillMode fillMode)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				Point[] dpoints = ConvertPoints(points, 2, pageUnit);
 				BaseOffsetPoints(dpoints);
 				lock(this)
@@ -2061,6 +2240,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 	public void FillRectangle(Brush brush, int x, int y, int width, int height)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				lock(this)
 				{
 					SelectBrush(brush);
@@ -2071,6 +2256,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void FillRectangle(Brush brush, float x, float y,
 							  float width, float height)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				lock(this)
 				{
 					SelectBrush(brush);
@@ -2110,6 +2301,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	// Fill a region.
 	public void FillRegion(Brush brush, Region region)
 			{
+				// Bail out now if there's nothing to draw.
+				if((brush is SolidBrush) && ((SolidBrush)brush).Color.A == 0)
+				{
+					return;
+				}
+
 				RectangleF[] rs = region.GetRegionScans(new Drawing.Drawing2D.Matrix());
 				for (int i = 0; i < rs.Length; i++)
 				{
@@ -3014,6 +3211,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 					while (currentPos < text.Length);
 				}
+
 	}; // class StringMeasurePositionCalculator
 
 	// Measure the character ranges for a string.
@@ -3060,8 +3258,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							   SizeF layoutArea, StringFormat format)
 			{
 				int charactersFitted, linesFilled;
-				return MeasureString(text, font, layoutArea, format,
-									 out charactersFitted, out linesFilled);
+				return MeasureString
+					(text, font, layoutArea, format, out charactersFitted,
+					 out linesFilled);
 			}
 	public SizeF MeasureString(String text, Font font, SizeF layoutArea,
 	                           StringFormat format, out int charactersFitted,
@@ -4373,6 +4572,9 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						    byte[] bits, int bitsWidth, int bitsHeight,
 						    Color color)
 			{
+				// Bail out now if there's nothing to draw.
+				if(color.A == 0) { return; }
+
 				int dx, dy;
 				ConvertPoint(x, y, out dx, out dy, pageUnit);
 				lock(this)

@@ -1,3 +1,12 @@
+2004-08-23  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/Control.cs: modify BackColor setter to throw an
+	ArgumentException on colors without full alpha if the
+	SupportsTransparentBackColor control style has not been set.
+
+	* System.Drawing/Graphics.cs: modify draw/fill operations to do
+	nothing when alpha is zero.
+
 2004-08-24  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/IO/Directory.cs: Changed Directory.Exists so

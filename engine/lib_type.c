@@ -776,7 +776,7 @@ static ILInt32 NameOutputString(ILUInt16 *buf, const char *str, int quoteDot)
 	unsigned long tempch;
 	slen = strlen(str);
 	sposn = 0;
-	while(sposn < len)
+	while(sposn < slen)
 	{
 		ch = ILUTF8ReadChar(str, slen, &sposn);
 		if(ch == '\\' || (ch == '.' && quoteDot) || ch == '+' ||
@@ -798,6 +798,7 @@ static ILInt32 NameOutputString(ILUInt16 *buf, const char *str, int quoteDot)
 			{
 				*buf++ = (ILUInt16)ch;
 			}
+			++len;
 		}
 		else if(ch < ((((unsigned long)1)) << 20))
 		{
@@ -817,18 +818,6 @@ static ILInt32 NameOutputString(ILUInt16 *buf, const char *str, int quoteDot)
 }
 
 /*
- * Output a character to a Unicode name buffer.
- */
-static ILInt32 NameOutputChar(ILUInt16 *buf, unsigned ch)
-{
-	if(buf)
-	{
-		buf[0] = (ILUInt16)ch;
-	}
-	return 1;
-}
-
-/*
  * Output a class name to a Unicode name buffer, or compute the length.
  * Returns the computed length.
  */
@@ -845,7 +834,14 @@ static ILInt32 NameOutputClassName(ILUInt16 *buf, ILClass *classInfo,
 		{
 			len = NameOutputClassName(buf, ILClassResolve(nestedParent),
 									  fullyQualified);
-			len += NameOutputChar(buf + len, '+');
+			if(buf != 0)
+			{
+				buf[len++] = (ILUInt16)'+';
+			}
+			else
+			{
+				++len;
+			}
 		}
 		else
 		{
@@ -853,7 +849,14 @@ static ILInt32 NameOutputClassName(ILUInt16 *buf, ILClass *classInfo,
 			if(namespace)
 			{
 				len = NameOutputString(buf, namespace, 0);
-				len += NameOutputChar(buf + len, '.');
+				if(buf != 0)
+				{
+					buf[len++] = (ILUInt16)'.';
+				}
+				else
+				{
+					++len;
+				}
 			}
 			else
 			{
@@ -865,7 +868,14 @@ static ILInt32 NameOutputClassName(ILUInt16 *buf, ILClass *classInfo,
 	{
 		len = 0;
 	}
-	return len + NameOutputString(buf + len, ILClass_Name(classInfo), 1);
+	if(buf != 0)
+	{
+		return len + NameOutputString(buf + len, ILClass_Name(classInfo), 1);
+	}
+	else
+	{
+		return len + NameOutputString(0, ILClass_Name(classInfo), 1);
+	}
 }
 
 /*
@@ -881,8 +891,15 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 		if(type->kind == IL_TYPE_COMPLEX_ARRAY)
 		{
 			len += NameOutputTypeSuffixes(buf, type->un.array.elemType);
-			len += NameOutputChar(buf + len, '[');
-			len += NameOutputChar(buf + len, ']');
+			if(buf != 0)
+			{
+				buf[len++] = (ILUInt16)'[';
+				buf[len++] = (ILUInt16)']';
+			}
+			else
+			{
+				len += 2;
+			}
 		}
 		else if(type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
@@ -895,23 +912,58 @@ static ILInt32 NameOutputTypeSuffixes(ILUInt16 *buf, ILType *type)
 				type = type->un.array.elemType;
 			}
 			len += NameOutputTypeSuffixes(buf, type);
-			len += NameOutputChar(buf + len, '[');
+			if(buf != 0)
+			{
+				buf[len++] = (ILUInt16)'[';
+			}
+			else
+			{
+				++len;
+			}
 			while(rank > 0)
 			{
-				len += NameOutputChar(buf + len, ',');
+				if(buf != 0)
+				{
+					buf[len++] = (ILUInt16)',';
+				}
+				else
+				{
+					++len;
+				}
 				--rank;
 			}
-			len += NameOutputChar(buf + len, ']');
+			if(buf != 0)
+			{
+				buf[len++] = (ILUInt16)']';
+			}
+			else
+			{
+				++len;
+			}
 		}
 		else if(type->kind == IL_TYPE_COMPLEX_BYREF)
 		{
 			len += NameOutputTypeSuffixes(buf, type->un.refType);
-			len += NameOutputChar(buf + len, '&');
+			if(buf != 0)
+			{
+				buf[len++] = (ILUInt16)'&';
+			}
+			else
+			{
+				++len;
+			}
 		}
 		else if(type->kind == IL_TYPE_COMPLEX_PTR)
 		{
 			len += NameOutputTypeSuffixes(buf, type->un.refType);
-			len += NameOutputChar(buf + len, '*');
+			if(buf != 0)
+			{
+				buf[len++] = (ILUInt16)'*';
+			}
+			else
+			{
+				++len;
+			}
 		}
 	}
 	return len;
@@ -973,13 +1025,12 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 	len = NameOutputClassName(0, elemInfo, fullyQualified);
 	if(classInfo != elemInfo)
 	{
-		len += NameOutputTypeSuffixes(buf + len, synType);
+		len += NameOutputTypeSuffixes(0, synType);
 	}
 
 	/* Allocate a string to hold the full name */
-	str = 0;
-	ILExecThreadNew(thread, "System.String", "(Tci)V",
-					&str, (ILVaInt)' ', (ILVaInt)len);
+	str = (ILString *)ILExecThreadNew(thread, "System.String", "(Tci)V",
+						  			  (ILVaInt)' ', (ILVaInt)len);
 	if(!str)
 	{
 		return 0;

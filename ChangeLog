@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_grammar.y: generate a warning when a no-body
 	non-extern constructor is encountered.
 
+	* csdoc/doc_stub.c: fix a long outstanding bug concerning default
+	output paths.
+
 2002-11-11  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* engine/lib_string.c: Corrected some exception handling to follow ECMA

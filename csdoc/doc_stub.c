@@ -66,7 +66,7 @@ char *license="\
  */\n\n";
 
 /*********END GOPAL's H4cks**************/
-		
+/*#define CSDOC_STUB_DEBUG */	
 char const ILDocProgramHeader[] =
 	"CSDOC2STUB " VERSION " - Convert C# documentation into Stub C#";
 
@@ -117,6 +117,7 @@ void ILDocPrintType(ILDocNamespace *ns, ILDocType *type,char *name)
 	if(!fp)
 	{
 		fprintf(stderr,"Could not open %s\n",fname);
+		return;
 	}
 	printf("\twriting %s\n",fname);
 	fprintf(fp,license,type->name,type->fullName);
@@ -140,7 +141,7 @@ void ILDocPrintNS(ILDocNamespace *ns,char *outputPath)
 	int j;
 	char *name=(char*)calloc(strlen(outputPath)+strlen(ns->name),sizeof(char));
 	strcat(name,outputPath);
-	if(name[strlen(name)-1]!='/')
+	if(name && strlen(name) && name[strlen(name)-1]!='/')
 	{
 		name[strlen(name)]='/';
 	}
@@ -155,7 +156,9 @@ void ILDocPrintNS(ILDocNamespace *ns,char *outputPath)
 				name[j]='/';
 			}
 	}
+#ifdef CSDOC_STUB_DEBUG
 	printf("Processing %s namespace\n",name);
+#endif
 	mkdir(name,0777);//make dir if still not made
 	for(i=ns->types;i!=NULL;i=i->nextNamespace)
 	{
@@ -205,6 +208,10 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 	ILDocNamespace *i=tree->namespaces;
 	char *klass=(char*)ILDocFlagValue("class");
 	char *ns=(char*)ILDocFlagValue("namespace");
+	if(!outputPath || !strcmp(outputPath,"."))
+	{
+		outputPath=getcwd(NULL,0);
+	}
 	if(klass!=NULL)
 	{
 		return	ILDocPrintClass(i,klass,outputPath);
@@ -220,7 +227,7 @@ int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
 			}
 			i=i->next;
 		}
-		fprintf(stderr," Namespace %s not found in XML file ",ns);
+		fprintf(stderr," Namespace %s not found in XML file\n",ns);
 		return 0;
 	}
 	else 

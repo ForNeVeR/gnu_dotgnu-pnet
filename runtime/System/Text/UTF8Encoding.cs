@@ -50,7 +50,7 @@ public class UTF8Encoding : Encoding
 	// state between multiple calls to this method.
 	private static int InternalGetByteCount(char[] chars, int index,
 											int count, uint leftOver,
-											bool emitIdentifier, bool flush)
+											bool flush)
 			{
 				// Validate the parameters.
 				if(chars == null)
@@ -122,14 +122,13 @@ public class UTF8Encoding : Encoding
 				}
 
 				// Return the final length to the caller.
-				return length + (emitIdentifier ? 3 : 0);
+				return length;
 			}
 
 	// Get the number of bytes needed to encode a character buffer.
 	public override int GetByteCount(char[] chars, int index, int count)
 			{
-				return InternalGetByteCount(chars, index, count, 0,
-										    emitIdentifier, true);
+				return InternalGetByteCount(chars, index, count, 0, true);
 			}
 
 	// Convenience wrappers for "GetByteCount".
@@ -181,7 +180,7 @@ public class UTF8Encoding : Encoding
 				}
 
 				// Return the final length to the caller.
-				return length + (emitIdentifier ? 3 : 0);
+				return length;
 			}
 
 	// Internal version of "GetBytes" which can handle a rolling
@@ -189,7 +188,7 @@ public class UTF8Encoding : Encoding
 	private static int InternalGetBytes(char[] chars, int charIndex,
 									    int charCount, byte[] bytes,
 									    int byteIndex, ref uint leftOver,
-										bool emitIdentifier, bool flush)
+										bool flush)
 			{
 				// Validate the parameters.
 				if(chars == null)
@@ -222,17 +221,6 @@ public class UTF8Encoding : Encoding
 				uint pair;
 				uint left = leftOver;
 				int posn = byteIndex;
-				if(emitIdentifier)
-				{
-					if((posn + 3) > length)
-					{
-						throw new ArgumentException
-							(_("Arg_InsufficientSpace"), "bytes");
-					}
-					bytes[posn++] = (byte)0xEF;
-					bytes[posn++] = (byte)0xBB;
-					bytes[posn++] = (byte)0xBF;
-				}
 				while(charCount > 0)
 				{
 					// Fetch the next UTF-16 character pair value.
@@ -342,8 +330,7 @@ public class UTF8Encoding : Encoding
 			{
 				uint leftOver = 0;
 				return InternalGetBytes(chars, charIndex, charCount,
-									    bytes, byteIndex, ref leftOver,
-										emitIdentifier, true);
+									    bytes, byteIndex, ref leftOver, true);
 			}
 
 	// Convenience wrappers for "GetBytes".
@@ -380,17 +367,6 @@ public class UTF8Encoding : Encoding
 				int length = bytes.Length;
 				uint pair;
 				int posn = byteIndex;
-				if(emitIdentifier)
-				{
-					if((posn + 3) > length)
-					{
-						throw new ArgumentException
-							(_("Arg_InsufficientSpace"), "bytes");
-					}
-					bytes[posn++] = (byte)0xEF;
-					bytes[posn++] = (byte)0xBB;
-					bytes[posn++] = (byte)0xBF;
-				}
 				while(charCount > 0)
 				{
 					// Fetch the next UTF-16 character pair value.
@@ -810,7 +786,7 @@ public class UTF8Encoding : Encoding
 					throw new ArgumentOutOfRangeException
 						("charCount", _("ArgRange_NonNegative"));
 				}
-				return charCount * 4 + (emitIdentifier ? 3 : 0);
+				return charCount * 4;
 			}
 
 	// Get the maximum number of characters needed to decode a
@@ -834,7 +810,7 @@ public class UTF8Encoding : Encoding
 	// Get a UTF8-specific encoder that is attached to this instance.
 	public override Encoder GetEncoder()
 			{
-				return new UTF8Encoder(emitIdentifier);
+				return new UTF8Encoder();
 			}
 
 	// Get the UTF8 preamble.
@@ -1001,13 +977,11 @@ public class UTF8Encoding : Encoding
 	[Serializable]
 	private sealed class UTF8Encoder : Encoder
 	{
-		private bool emitIdentifier;
 		private uint leftOver;
 
 		// Constructor.
-		public UTF8Encoder(bool emitIdentifier)
+		public UTF8Encoder()
 				{
-					this.emitIdentifier = emitIdentifier;
 					leftOver = 0;
 				}
 
@@ -1016,8 +990,7 @@ public class UTF8Encoding : Encoding
 										 int count, bool flush)
 				{
 					return InternalGetByteCount
-						(chars, index, count, leftOver,
-						 emitIdentifier, flush);
+						(chars, index, count, leftOver, flush);
 				}
 		public override int GetBytes(char[] chars, int charIndex,
 									 int charCount, byte[] bytes,
@@ -1026,8 +999,7 @@ public class UTF8Encoding : Encoding
 					int result;
 					result = InternalGetBytes
 						(chars, charIndex, charCount, bytes, byteCount,
-						 ref leftOver, emitIdentifier, flush);
-					emitIdentifier = false;
+						 ref leftOver, flush);
 					return result;
 				}
 

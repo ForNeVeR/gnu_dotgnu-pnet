@@ -17,6 +17,11 @@
 	"System.Environment"; bug fixes to the order or build/revision
 	numbers in "Version".
 
+	* runtime/System/Text/UTF8Encoding.cs,
+	runtime/System/Text/UnicodeEncoding.cs: apply patches from the
+	Mono project which remove unnecessary preambles from UTF-8 and
+	Unicode text streams.
+
 2002-11-27  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberFormat/CurrencyFormatter.cs,

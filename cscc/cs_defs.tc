@@ -63,18 +63,14 @@ extern CSSemValue CSSemValueDefault;
 #define	CS_SEMKIND_PROPERTY			6
 #define	CS_SEMKIND_EVENT			7
 #define	CS_SEMKIND_NAMESPACE		8
-#define	CS_SEMKIND_AMBIGUOUS		9
+#define	CS_SEMKIND_TYPE_NODE		9
+#define	CS_SEMKIND_AMBIGUOUS		10
 
 /*
  * Determine if a semantic analysis kind is usable as a value.
  */
 #define	CSIsSemValue(kind)	((kind) == CS_SEMKIND_LVALUE || \
 							 (kind) == CS_SEMKIND_RVALUE)
-
-/*
- * Opaque definition of namespace tree nodes.
- */
-typedef struct _tagILNamespaceTree ILNamespaceTree;
 
 %}
 
@@ -190,7 +186,6 @@ typedef struct _tagILNamespaceTree ILNamespaceTree;
 {
 	char *name;
 	ILNode_Namespace *enclosing;
-	%nocreate ILNamespaceTree *tree = {0};
 	%nocreate ILNode_UsingAlias *aliases = {0};
 	%nocreate ILNode_UsingNamespace *using = {0};
 }
@@ -199,7 +194,6 @@ typedef struct _tagILNamespaceTree ILNamespaceTree;
 	char *name;
 	char *ref;
 	%nocreate ILClass *classInfo = {0};
-	%nocreate ILNamespaceTree *tree = {0};
 	%nocreate ILNode_UsingAlias *next = {0};
 }
 %node ILNode_UsingNamespace ILNode_DummySem =

@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.5.12" release.
 
+	* configure.in: update working version to "0.5.13".
+
 2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* class/System.ServiceProcess/System.ServiceProcess.build:

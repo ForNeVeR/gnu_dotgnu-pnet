@@ -29,7 +29,6 @@ libILEngine_a_SOURCES = cvm.c \
 						lib_marshal.c \
 						lib_math.c \
 						lib_misc.c \
-						lib_numformat.c \
 						lib_object.c \
 						lib_reflect.c \
 						lib_regexp.c \

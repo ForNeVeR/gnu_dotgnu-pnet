@@ -32,7 +32,6 @@ libILSupport_a_SOURCES = aes.c \
 						 mul_long.c \
 						 mutex.c \
 						 no_defs.c \
-						 numformat.c\
 						 pt_defs.c \
 						 queue.c \
 						 rc2.c \

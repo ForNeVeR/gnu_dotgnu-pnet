@@ -493,13 +493,3 @@ exit 0
 #  51950 Traditional Chinese (EUC)
 #  52936 Chinese Simplified (HZ)
 #  54936 GB 18030-2000 Simplified Chinese
-#  57002 ISCII Devanagari
-#  57003 ISCII Bengali
-#  57004 ISCII Tamil
-#  57005 ISCII Telugu
-#  57006 ISCII Assamese
-#  57007 ISCII Oriya
-#  57008 ISCII Kannada
-#  57009 ISCII Malayalam
-#  57010 ISCII Gujarati
-#  57011 ISCII Punjabi

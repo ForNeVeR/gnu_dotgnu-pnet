@@ -322,8 +322,14 @@ public class TestString : TestCase
 		AssertEquals("String.Format (\"<{0,5}>\", 12)",
 			"<   12>",String.Format ("<{0,5}>", 12));
 		
-		AssertEquals("String.Format (\"<{0,5}>\", 12)",
+		AssertEquals("String.Format (\"<{0,-5}>\", 12)",
 			"<12   >",String.Format ("<{0,-5}>", 12));
+
+		AssertEquals("String.Format (\"<{0,10}>\", 42)",
+			"<        42>",String.Format ("<{0,10}>", 42));
+		
+		AssertEquals("String.Format (\"<{0,-10}>\", 42)",
+			"<42        >",String.Format ("<{0,-10}>", 42));
 
 		AssertEquals ("String.Format(\"The {1} of {1}\",\"Church\",\"Emacs\")",
 			"The Church of Emacs",

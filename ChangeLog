@@ -3,6 +3,9 @@
 	
 	* runtime/System/String.cs: Fix minor bug in format parsing 
 	of multiple digit specifiers.
+
+	* tests/runtime/System/TestString.cs: Add an additional test case for 
+	the above bug.
 	
 2003-07-16  Thong Nguuyen <tum@veridicus.com>
 

@@ -1,4 +1,12 @@
 
+2003-06-08  Gopal.V  <gopalv82@symonds.net>
+	
+	* System.Xml/Xsl/IXsltContextFunction.cs, System.Xml/Xsl/XslTransform.cs,
+	System.Xml/Xsl/IXsltContextVariable.cs, System.Xml/Xsl/XsltException.cs,
+	System.Xml/Xsl/XsltArgumentList.cs, System.Xml/Xsl/XsltContext.cs,
+	System.Xml/Xsl/XsltCompileException.cs: Stub out the System.Xml.Xsl
+	namespace.
+
 2003-06-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, System.Drawing/*, System.Drawing.Xsharp/*:

@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 [Serializable]
 public sealed class SoapNmtoken : ISoapXsd
@@ -79,6 +79,6 @@ public sealed class SoapNmtoken : ISoapXsd
 
 }; // class SoapNmtoken
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

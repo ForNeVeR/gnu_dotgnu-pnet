@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 [Serializable]
 public sealed class SoapEntity : ISoapXsd
@@ -79,6 +79,6 @@ public sealed class SoapEntity : ISoapXsd
 
 }; // class SoapEntity
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

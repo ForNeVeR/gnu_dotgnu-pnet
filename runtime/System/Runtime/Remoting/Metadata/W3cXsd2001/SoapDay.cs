@@ -22,7 +22,9 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
+
+using System.Globalization;
 
 [Serializable]
 public sealed class SoapDay : ISoapXsd
@@ -65,24 +67,25 @@ public sealed class SoapDay : ISoapXsd
 				return XsdType;
 			}
 
+	// Format values for "Parse".
+	private static String[] formats = {"---dd", "---ddzzz"};
+
 	// Parse a value into an instance of this class.
-	[TODO]
 	public static SoapDay Parse(String value)
 			{
-				// TODO
-				return null;
+				return new SoapDay(DateTime.ParseExact
+					(value, formats, CultureInfo.InvariantCulture,
+					 DateTimeStyles.None));
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return value.ToString("---dd", CultureInfo.InvariantCulture);
 			}
 
 }; // class SoapDay
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

@@ -22,7 +22,9 @@
 namespace System.Runtime.Remoting.Metadata
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
+
+using System.Reflection;
 
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class SoapMethodAttribute : SoapAttribute
@@ -37,12 +39,18 @@ public sealed class SoapMethodAttribute : SoapAttribute
 	public SoapMethodAttribute() {}
 
 	// Get or set the attribute's properties.
-	[TODO]
 	public String ResponseXmlElementName
 			{
 				get
 				{
-					// TODO: default element name handling.
+					if(responseXmlElementName == null)
+					{
+						if(ReflectInfo != null)
+						{
+							responseXmlElementName =
+								((MemberInfo)ReflectInfo).Name + "Response";
+						}
+					}
 					return responseXmlElementName;
 				}
 				set
@@ -74,7 +82,7 @@ public sealed class SoapMethodAttribute : SoapAttribute
 				{
 					if(returnXmlElementName == null)
 					{
-						return "__return";
+						return "return";
 					}
 					return returnXmlElementName;
 				}
@@ -83,12 +91,15 @@ public sealed class SoapMethodAttribute : SoapAttribute
 					returnXmlElementName = value;
 				}
 			}
-	[TODO]
 	public String SoapAction
 			{
 				get
 				{
-					// TODO: default action handling
+					if(soapAction == null)
+					{
+						soapAction = GetReflectNamespace() + "#" +
+									 ((MemberInfo)ReflectInfo).Name;
+					}
 					return soapAction;
 				}
 				set
@@ -112,7 +123,10 @@ public sealed class SoapMethodAttribute : SoapAttribute
 			{
 				get
 				{
-					// TODO: default namespace handling
+					if(ProtXmlNamespace == null)
+					{
+						ProtXmlNamespace = GetReflectNamespace();
+					}
 					return ProtXmlNamespace;
 				}
 				set
@@ -121,8 +135,19 @@ public sealed class SoapMethodAttribute : SoapAttribute
 				}
 			}
 
+	// Get the namespace corresponding to the reflected member.
+	private String GetReflectNamespace()
+			{
+				if(ReflectInfo != null)
+				{
+					Type type = ((MemberInfo)ReflectInfo).DeclaringType;
+					return SoapTypeAttribute.GetNamespaceForType(type);
+				}
+				return null;
+			}
+
 }; // class SoapMethodAttribute
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata

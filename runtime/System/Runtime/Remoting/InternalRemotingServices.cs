@@ -22,14 +22,19 @@
 namespace System.Runtime.Remoting
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
+using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Metadata;
 
 public class InternalRemotingServices
 {
+	// Internal state.
+	private static Hashtable attributeHash;
+
 	// Output debug information.  Not used in this implementation.
 	[Conditional("_LOGGING")]
 	public static void DebugOutChnl(String s) {}
@@ -46,14 +51,110 @@ public class InternalRemotingServices
 			}
 
 	// Get the cached SOAP attribute data for an object.
-	// Not used in this implementation.
 	public static SoapAttribute GetCachedSoapAttribute(Object reflectionObject)
 			{
-				return null;
+				// Validate the paramter to ensure that it is a
+				// legitimate reflection object.
+				if(reflectionObject == null)
+				{
+					return null;
+				}
+				else if(!(reflectionObject is MemberInfo) &&
+						!(reflectionObject is ParameterInfo))
+				{
+					return null;
+				}
+				lock(typeof(InternalRemotingServices))
+				{
+					Object attr;
+					Object[] attrs;
+
+					// Look for a cached value from last time.
+					if(attributeHash == null)
+					{
+						attributeHash = new Hashtable();
+					}
+					else if((attr = attributeHash[reflectionObject]) != null)
+					{
+						return (attr as SoapAttribute);
+					}
+
+					// Get the attribute information from the type.
+					if(reflectionObject is Type)
+					{
+						attrs = ((Type)reflectionObject).GetCustomAttributes
+							(typeof(SoapTypeAttribute), true);
+						if(attrs == null || attrs.Length < 1)
+						{
+							attr = new SoapTypeAttribute();
+						}
+						else
+						{
+							attr = attrs[0];
+						}
+					}
+					else if(reflectionObject is MethodBase)
+					{
+						attrs = ((MethodBase)reflectionObject)
+							.GetCustomAttributes
+								(typeof(SoapMethodAttribute), true);
+						if(attrs == null || attrs.Length < 1)
+						{
+							attr = new SoapMethodAttribute();
+						}
+						else
+						{
+							attr = attrs[0];
+						}
+					}
+					else if(reflectionObject is FieldInfo)
+					{
+						attrs = ((FieldInfo)reflectionObject)
+							.GetCustomAttributes
+								(typeof(SoapFieldAttribute), true);
+						if(attrs == null || attrs.Length < 1)
+						{
+							attr = new SoapFieldAttribute();
+						}
+						else
+						{
+							attr = attrs[0];
+						}
+					}
+					else if(reflectionObject is ParameterInfo)
+					{
+						attrs = ((ParameterInfo)reflectionObject)
+							.GetCustomAttributes
+								(typeof(SoapParameterAttribute), true);
+						if(attrs == null || attrs.Length < 1)
+						{
+							attr = new SoapParameterAttribute();
+						}
+						else
+						{
+							attr = attrs[0];
+						}
+					}
+					else
+					{
+						attrs = ((MemberInfo)reflectionObject)
+							.GetCustomAttributes(typeof(SoapAttribute), true);
+						if(attrs == null || attrs.Length < 1)
+						{
+							attr = new SoapAttribute();
+						}
+						else
+						{
+							attr = attrs[0];
+						}
+					}
+					((SoapAttribute)attr).SetReflectInfo(reflectionObject);
+					return (SoapAttribute)attr;
+				}
 			}
 
 }; // class InternalRemotingServices
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting

@@ -22,7 +22,9 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
+
+using System.Globalization;
 
 [Serializable]
 public sealed class SoapMonthDay : ISoapXsd
@@ -65,24 +67,25 @@ public sealed class SoapMonthDay : ISoapXsd
 				return XsdType;
 			}
 
+	// Format values for "Parse".
+	private static String[] formats = {"--MM-dd", "--MM-ddzzz"};
+
 	// Parse a value into an instance of this class.
-	[TODO]
 	public static SoapMonthDay Parse(String value)
 			{
-				// TODO
-				return null;
+				return new SoapMonthDay(DateTime.ParseExact
+					(value, formats, CultureInfo.InvariantCulture,
+					 DateTimeStyles.None));
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				return value.ToString("--MM-dd", CultureInfo.InvariantCulture);
 			}
 
 }; // class SoapMonthDay
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

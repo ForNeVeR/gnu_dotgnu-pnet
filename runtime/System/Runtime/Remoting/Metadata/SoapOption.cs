@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Metadata
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 [Serializable]
 [Flags]
@@ -37,6 +37,6 @@ public enum SoapOption
 
 }; // enum SoapOption
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata

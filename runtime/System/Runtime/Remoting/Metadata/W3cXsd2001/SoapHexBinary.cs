@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.Text;
 
@@ -72,13 +72,47 @@ public sealed class SoapHexBinary : ISoapXsd
 			{
 				if(value == null)
 				{
-					return new SoapHexBinary();
+					return new SoapHexBinary(new byte [0]);
 				}
-				else
+				byte[] buf = new byte [value.Length];
+				int posn = 0;
+				int temp = -1;
+				int digit;
+				foreach(char ch in value)
 				{
-					// TODO
-					return null;
+					if(ch >= '0' && ch <= '9')
+					{
+						digit = (int)(ch - '0');
+					}
+					else if(ch >= 'A' && ch <= 'F')
+					{
+						digit = (int)(ch - 'A' + 10);
+					}
+					else if(ch >= 'a' && ch <= 'f')
+					{
+						digit = (int)(ch - 'a' + 10);
+					}
+					else
+					{
+						throw new RemotingException(_("Arg_InvalidSoapValue"));
+					}
+					if(temp == -1)
+					{
+						temp = digit;
+					}
+					else
+					{
+						buf[posn++] = (byte)((temp << 4) + digit);
+						temp = -1;
+					}
 				}
+				if(temp != -1)
+				{
+					throw new RemotingException(_("Arg_InvalidSoapValue"));
+				}
+				byte[] result = new byte [posn];
+				Array.Copy(buf, 0, result, 0, posn);
+				return new SoapHexBinary(result);
 			}
 
 	// Convert this object into a string.
@@ -86,14 +120,20 @@ public sealed class SoapHexBinary : ISoapXsd
 			{
 				if(value == null)
 				{
-					return null;
+					return String.Empty;
 				}
-				// TODO
-				return null;
+				StringBuilder builder = new StringBuilder(value.Length * 2);
+				String hexchars = "0123456789ABCDEF";
+				foreach(char ch in value)
+				{
+					builder.Append(hexchars[(ch >> 4) & 0x0F]);
+					builder.Append(hexchars[ch & 0x0F]);
+				}
+				return builder.ToString();
 			}
 
 }; // class SoapHexBinary
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

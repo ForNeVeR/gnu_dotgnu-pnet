@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System;
 using System.Runtime.Serialization;
@@ -64,6 +64,6 @@ public class RemotingException : SystemException
 
 }; // class RemotingException
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting

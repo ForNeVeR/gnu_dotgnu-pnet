@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 using System.Text;
 
@@ -102,6 +102,6 @@ public sealed class SoapBase64Binary : ISoapXsd
 
 }; // class SoapBase64Binary
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

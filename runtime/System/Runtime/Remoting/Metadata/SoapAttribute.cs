@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Metadata
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 public class SoapAttribute : Attribute
 {
@@ -71,8 +71,14 @@ public class SoapAttribute : Attribute
 				}
 			}
 
+	// Set the initial "ReflectInfo" value.
+	internal void SetReflectInfo(Object reflectInfo)
+			{
+				ReflectInfo = reflectInfo;
+			}
+
 }; // class SoapAttribute
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata

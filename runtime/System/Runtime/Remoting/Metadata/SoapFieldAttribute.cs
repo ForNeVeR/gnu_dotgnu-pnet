@@ -22,7 +22,9 @@
 namespace System.Runtime.Remoting.Metadata
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
+
+using System.Reflection;
 
 [AttributeUsage(AttributeTargets.Field)]
 public sealed class SoapFieldAttribute : SoapAttribute
@@ -50,6 +52,13 @@ public sealed class SoapFieldAttribute : SoapAttribute
 			{
 				get
 				{
+					if(xmlElementName == null)
+					{
+						if(ReflectInfo != null)
+						{
+							xmlElementName = ((FieldInfo)ReflectInfo).Name;
+						}
+					}
 					return xmlElementName;
 				}
 				set
@@ -67,6 +76,6 @@ public sealed class SoapFieldAttribute : SoapAttribute
 
 }; // class SoapFieldAttribute
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata

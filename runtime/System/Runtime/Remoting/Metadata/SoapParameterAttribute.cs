@@ -22,7 +22,7 @@
 namespace System.Runtime.Remoting.Metadata
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
 
 [AttributeUsage(AttributeTargets.Parameter)]
 public sealed class SoapParameterAttribute : SoapAttribute
@@ -32,6 +32,6 @@ public sealed class SoapParameterAttribute : SoapAttribute
 
 }; // class SoapParameterAttribute
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata

@@ -22,7 +22,10 @@
 namespace System.Runtime.Remoting.Metadata
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
+
+using System.Reflection;
+using System.Text;
 
 [AttributeUsage(AttributeTargets.Class |
 				AttributeTargets.Struct |
@@ -68,7 +71,13 @@ public sealed class SoapTypeAttribute : SoapAttribute
 			{
 				get
 				{
-					// TODO: default element name handling
+					if(xmlElementName == null)
+					{
+						if(ReflectInfo != null)
+						{
+							xmlElementName = ((Type)ReflectInfo).Name;
+						}
+					}
 					return xmlElementName;
 				}
 				set
@@ -91,7 +100,10 @@ public sealed class SoapTypeAttribute : SoapAttribute
 			{
 				get
 				{
-					// TODO: default namespace handling
+					if(ProtXmlNamespace == null)
+					{
+						ProtXmlNamespace = XmlTypeNamespace;
+					}
 					return ProtXmlNamespace;
 				}
 				set
@@ -103,7 +115,13 @@ public sealed class SoapTypeAttribute : SoapAttribute
 			{
 				get
 				{
-					// TODO: default type name handling
+					if(xmlTypeName == null)
+					{
+						if(ReflectInfo != null)
+						{
+							xmlTypeName = ((Type)ReflectInfo).Name;
+						}
+					}
 					return xmlTypeName;
 				}
 				set
@@ -115,7 +133,14 @@ public sealed class SoapTypeAttribute : SoapAttribute
 			{
 				get
 				{
-					// TODO: default type namespace handling
+					if(xmlTypeNamespace == null)
+					{
+						if(ReflectInfo != null)
+						{
+							xmlTypeNamespace = GetNamespaceForType
+								((Type)ReflectInfo);
+						}
+					}
 					return xmlTypeNamespace;
 				}
 				set
@@ -124,8 +149,37 @@ public sealed class SoapTypeAttribute : SoapAttribute
 				}
 			}
 
+	// Get the namespace corresponding to a particular type.
+	internal static String GetNamespaceForType(Type type)
+			{
+				StringBuilder builder = new StringBuilder();
+				if(type.Assembly == Assembly.GetExecutingAssembly())
+				{
+					builder.Append(SoapServices.XmlNsForClrTypeWithNs);
+					builder.Append(type.FullName);
+				}
+				else
+				{
+					builder.Append
+						(SoapServices.XmlNsForClrTypeWithNsAndAssembly);
+					builder.Append(type.FullName);
+					builder.Append('/');
+					String assembly = type.Assembly.FullName;
+					int index = assembly.IndexOf(',');
+					if(index != -1)
+					{
+						builder.Append(assembly, 0, index);
+					}
+					else
+					{
+						builder.Append(assembly);
+					}
+				}
+				return builder.ToString();
+			}
+
 }; // class SoapTypeAttribute
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata

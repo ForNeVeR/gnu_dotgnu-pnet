@@ -22,7 +22,9 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
+
+using System.Globalization;
 
 [Serializable]
 public sealed class SoapTime : ISoapXsd
@@ -65,24 +67,54 @@ public sealed class SoapTime : ISoapXsd
 				return XsdType;
 			}
 
+	// Format values for "Parse".
+	private static String[] formats = {
+				"HH:mm:ss.fffffffzzz",
+				"HH:mm:ss.ffff",
+				"HH:mm:ss.ffffzzz",
+				"HH:mm:ss.fff",
+				"HH:mm:ss.fffzzz",
+				"HH:mm:ss.ff",
+				"HH:mm:ss.ffzzz",
+				"HH:mm:ss.f",
+				"HH:mm:ss.fzzz",
+				"HH:mm:ss", 
+				"HH:mm:sszzz",
+				"HH:mm:ss.fffff",
+				"HH:mm:ss.fffffzzz",
+				"HH:mm:ss.ffffff",
+				"HH:mm:ss.ffffffzzz",
+				"HH:mm:ss.fffffff",
+				"HH:mm:ss.ffffffff",
+				"HH:mm:ss.ffffffffzzz",
+				"HH:mm:ss.fffffffff",
+				"HH:mm:ss.fffffffffzzz",
+				"HH:mm:ss.fffffffff",
+				"HH:mm:ss.fffffffffzzz"
+			};
+
 	// Parse a value into an instance of this class.
-	[TODO]
 	public static SoapTime Parse(String value)
 			{
-				// TODO
-				return null;
+				if(value != null && value.EndsWith("Z"))
+				{
+					value = value.Substring(0, value.Length - 1) + "-00:00";
+				}
+				return new SoapTime(DateTime.ParseExact
+					(value, formats, CultureInfo.InvariantCulture,
+					 DateTimeStyles.None));
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				DateTime time = DateTime.Today + value.TimeOfDay;
+				return time.ToString("HH:mm:ss.fffffffzzz",
+									 CultureInfo.InvariantCulture);
 			}
 
 }; // class SoapTime
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

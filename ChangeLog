@@ -6,6 +6,49 @@
 	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
 	begin adding the infrastructure for binary serialization readers.
 
+	* runtime/System/Runtime/Remoting/InternalRemotingServices.cs,
+	runtime/System/Runtime/Remoting/RemotingException.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapAttribute.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapFieldAttribute.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapMethodAttribute.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapOption.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapParameterAttribute.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapTypeAttribute.cs,
+	runtime/System/Runtime/Remoting/Metadata/XmlFieldOrderOption.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/ISoapXsd.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapAnyUri.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapBase64Binary.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapDate.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapDateTime.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapDay.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapDuration.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapEntities.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapEntity.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapHexBinary.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapId.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapIdref.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapIdrefs.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapInteger.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapLanguage.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapMonth.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapMonthDay.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapName.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNcName.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNegativeInteger.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNmtoken.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNmtokens.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNonNegativeInteger.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNonPositiveInteger.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNormalizedString.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapNotation.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapPositiveInteger.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapQName.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapTime.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapToken.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapYear.cs,
+	runtime/System/Runtime/Remoting/Metadata/W3cXsd2001/SoapYearMonth.cs:
+	outstanding TODO's with the SOAP-related routines in runtime.
+
 2003-08-05  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/Path.cs: fix to GetFullPath for handling ".".

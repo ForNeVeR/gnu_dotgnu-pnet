@@ -22,7 +22,9 @@
 namespace System.Runtime.Remoting.Metadata.W3cXsd2001
 {
 
-#if CONFIG_REMOTING
+#if CONFIG_SERIALIZATION
+
+using System.Globalization;
 
 [Serializable]
 public sealed class SoapYear : ISoapXsd
@@ -89,24 +91,50 @@ public sealed class SoapYear : ISoapXsd
 				return XsdType;
 			}
 
+	// Format values for "Parse".
+	private static String[] formats = {"yyyy", "yyyyzzz"};
+
 	// Parse a value into an instance of this class.
-	[TODO]
 	public static SoapYear Parse(String value)
 			{
-				// TODO
-				return null;
+				int sign;
+				if(value[0] == '-')
+				{
+					value = value.Substring(1);
+					sign = -1;
+				}
+				else if(value[0] == '+')
+				{
+					value = value.Substring(1);
+					sign = 0;
+				}
+				else
+				{
+					sign = 0;
+				}
+				DateTime time = DateTime.ParseExact
+					(value, formats, CultureInfo.InvariantCulture,
+					 DateTimeStyles.None);
+				return new SoapYear(time, sign);
 			}
 
 	// Convert this object into a string.
-	[TODO]
 	public override String ToString()
 			{
-				// TODO
-				return null;
+				if(sign >= 0)
+				{
+					return value.ToString("yyyy",
+										  CultureInfo.InvariantCulture);
+				}
+				else
+				{
+					return value.ToString("'-'yyyy",
+										  CultureInfo.InvariantCulture);
+				}
 			}
 
 }; // class SoapYear
 
-#endif // CONFIG_REMOTING
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Remoting.Metadata.W3cXsd2001

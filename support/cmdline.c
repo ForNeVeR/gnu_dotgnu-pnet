@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_regex.h"
+#include "il_sysio.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -381,6 +383,154 @@ static void AddNewArg(int *argc, char ***argv, int *maxArgc, char *value)
 	++(*argc);
 }
 
+/*
+ * Do we need to expand wildcard specifications?
+ */
+#ifdef	IL_WIN32_NATIVE
+	#define	IL_EXPAND_WILDCARDS	1
+#endif
+
+#ifdef IL_EXPAND_WILDCARDS
+
+/*
+ * Expand wildcards from an argument specification.
+ */
+static void ExpandWildcards(int *argc, char ***argv, int *maxArgc, char *value)
+{
+	int len;
+	char *directory;
+	char *baseName;
+	char *regex;
+	int posn, ch;
+	regex_t state;
+	ILDir *dir;
+	ILDirEnt *entry;
+	int first;
+	int sawMatch;
+	const char *name;
+	char *full;
+
+	/* Split the value into directory and base name components */
+	len = strlen(value);
+	while(len > 0 && value[len - 1] != '/' && value[len - 1] != '\\' &&
+	      value[len - 1] != ':')
+	{
+		--len;
+	}
+	directory = ILDupNString(value, len);
+	if(!directory)
+	{
+		OutOfMemory();
+	}
+	baseName = value + len;
+
+	/* Convert the base name into a regular expression */
+	regex = (char *)ILMalloc(strlen(baseName) * 2 + 16);
+	if(!regex)
+	{
+		OutOfMemory();
+	}
+	posn = 0;
+	regex[posn++] = '^';
+	first = 1;
+	while(*baseName != '\0')
+	{
+		ch = *baseName++;
+		if(ch == '?')
+		{
+			if(first)
+			{
+				/* Don't match '.' at the start of the name */
+				regex[posn++] = '[';
+				regex[posn++] = '^';
+				regex[posn++] = '.';
+				regex[posn++] = ']';
+			}
+			else
+			{
+				regex[posn++] = '.';
+			}
+		}
+		else if(ch == '*')
+		{
+			if(first)
+			{
+				/* Don't match '.' at the start of the name */
+				regex[posn++] = '[';
+				regex[posn++] = '^';
+				regex[posn++] = '.';
+				regex[posn++] = ']';
+				regex[posn++] = '*';
+			}
+			else
+			{
+				regex[posn++] = '.';
+				regex[posn++] = '*';
+			}
+		}
+		else if(ch == '.' || ch == '^' || ch == '$' || ch == '[' ||
+				ch == ']' || ch == '\\' || ch == '(' || ch == ')')
+		{
+			regex[posn++] = '\\';
+			regex[posn++] = (char)ch;
+		}
+		else
+		{
+			regex[posn++] = (char)ch;
+		}
+		first = 0;
+	}
+	regex[posn++] = '$';
+	regex[posn] = '\0';
+	if(IL_regcomp(&state, regex, REG_EXTENDED | REG_NOSUB) != 0)
+	{
+		fprintf(stderr, "Invalid regular expression: %s\n", regex);
+		exit(1);
+	}
+
+	/* Scan the directory for regular expression matches */
+	sawMatch = 0;
+	dir = ILOpenDir(directory);
+	while(dir && (entry = ILReadDir(dir)) != 0)
+	{
+		name = ILDirEntName(entry);
+		if(IL_regexec(&state, name, 0, 0, 0) == 0)
+		{
+			/* We have found a match against the regular expression */
+			sawMatch = 1;
+			full = (char *)ILMalloc(strlen(directory) + strlen(name) + 1);
+			if(!full)
+			{
+				ILCloseDir(dir);
+				OutOfMemory();
+			}
+			strcpy(full, directory);
+			strcat(full, name);
+			AddNewArg(argc, argv, maxArgc, full);
+		}
+		ILFree(entry);
+	}
+	if(dir)
+	{
+		ILCloseDir(dir);
+	}
+
+	/* If we didn't find any matches, then add the wildcard specification
+	   as an argument.  The program will probably report "File not found",
+	   which is what we want it to do. */
+	if(!sawMatch)
+	{
+		AddNewArg(argc, argv, maxArgc, value);
+	}
+
+	/* Clean up and exit */
+	IL_regfree(&state);
+	ILFree(directory);
+	ILFree(regex);
+}
+
+#endif /* IL_EXPAND_WILDCARDS */
+
 void ILCmdLineExpand(int *argc, char ***argv)
 {
 	int arg;
@@ -394,17 +544,24 @@ void ILCmdLineExpand(int *argc, char ***argv)
 	char *temp;
 	char *respfile;
 
-	/* See if we have any response file references first */
+	/* See if we have any response file or wildcard references first */
 	for(arg = 1; arg < *argc; ++arg)
 	{
 		if((*argv)[arg][0] == '@')
 		{
 			break;
 		}
+#ifdef IL_EXPAND_WILDCARDS
+		if(strchr((*argv)[arg], '?') != 0 ||
+		   strchr((*argv)[arg], '*') != 0)
+		{
+			break;
+		}
+#endif
 	}
 	if(arg >= *argc)
 	{
-		/* No response files, so nothing further to do */
+		/* No response files or wildcards, so nothing further to do */
 		return;
 	}
 
@@ -480,6 +637,14 @@ void ILCmdLineExpand(int *argc, char ***argv)
 				exit(1);
 			}
 		}
+#ifdef IL_EXPAND_WILDCARDS
+		else if(strchr((*argv)[arg], '?') != 0 ||
+		        strchr((*argv)[arg], '*') != 0)
+		{
+			/* Expand wildcards within the argument */
+			ExpandWildcards(&newArgc, &newArgv, &maxArgc, (*argv)[arg]);
+		}
+#endif
 		else
 		{
 			/* Ordinary argument */

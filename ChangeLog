@@ -31,6 +31,8 @@
 	* support/cmdline.c, support/spawn.c: improve response file
 	handling for mingw32 systems.
 
+	* support/cmdline.c: expand wildcards on the command-line.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

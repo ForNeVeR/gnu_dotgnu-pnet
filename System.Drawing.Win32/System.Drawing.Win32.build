@@ -16,7 +16,6 @@
 
 			<references>
 				<file name="../System.Drawing/System.Drawing.dll"/>
-				<file name="../Xsharp/Xsharp.dll"/>
 				<file name="../System/first/System.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>

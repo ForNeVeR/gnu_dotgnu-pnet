@@ -11,6 +11,9 @@
 	Xsharp/Xlib.cs.in: add popup window support to Xsharp, to
 	support menu functionality.
 
+	* System.Drawing.Win32/System.Drawing.Win32.build: the "Win32"
+	backend should not depend upon "Xsharp.dll".
+
 2003-06-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/Panel.cs: Stub out the Panel control

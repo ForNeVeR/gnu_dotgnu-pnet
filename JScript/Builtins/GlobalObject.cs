@@ -22,7 +22,9 @@ namespace Microsoft.JScript
 {
 
 using System;
+using System.Text;
 using System.Reflection;
+using System.Globalization;
 using Microsoft.JScript.Vsa;
 
 public class GlobalObject
@@ -367,36 +369,245 @@ public class GlobalObject
 			#endif
 			}
 
+	// Determine if a character is reserved within URI's.
+	private static bool IsURIReserved(char ch)
+			{
+				switch (ch)
+				{
+					case ';': case '/': case '?': case ':': case '@': case '&':
+					case '=': case '+': case '$': case ',': case '#':
+						return true;
+				}
+				return false;
+			}
+
+	// Parse the rest of a UTF-8 sequence within an encoded URI.
+	private static int ParseRestOfUTF8(int utf8, String uri, ref int _index)
+			{
+				int index = _index;
+				int size;
+				int utf8Char;
+				if((utf8 & 0xE0) == 0xC0)
+				{
+					size = 1;
+					utf8 &= 0x1F;
+				}
+				else if((utf8 & 0xF0) == 0xE0)
+				{
+					size = 2;
+					utf8 &= 0x0F;
+				}
+				else if((utf8 & 0xF8) == 0xF0)
+				{
+					size = 3;
+					utf8 &= 0x07;
+				}
+				else if((utf8 & 0xFC) == 0xF8)
+				{
+					size = 4;
+					utf8 &= 0x03;
+				}
+				else
+				{
+					// Invalid UTF-8 start character.
+					throw new JScriptException(JSError.URIDecodeError);
+				}
+				while(size > 0)
+				{
+					if((index + 2) >= uri.Length || uri[index] != '%' ||
+					   !JSScanner.IsHexDigit(uri[index + 1]) ||
+					   !JSScanner.IsHexDigit(uri[index + 2]))
+					{
+						throw new JScriptException(JSError.URIDecodeError);
+					}
+					utf8Char = (JSScanner.FromHex(uri[index + 1]) << 4) |
+							    JSScanner.FromHex(uri[index + 2]);
+					if((utf8Char & 0xC0) != 0x80)
+					{
+						// Invalid UTF-8 component character.
+						throw new JScriptException(JSError.URIDecodeError);
+					}
+					index += 3;
+					utf8 = (utf8 << 6) | (utf8Char & 0x3F);
+					--size;
+				}
+				_index = index;
+				if(utf8 < 0)
+				{
+					// Invalid UTF-8 character.
+					throw new JScriptException(JSError.URIDecodeError);
+				}
+				return utf8;
+			}
+
+	// Internal URI decoding logic.
+	private static string InternalDecode(string uri, bool reserved)
+			{
+				StringBuilder builder = new StringBuilder(uri.Length);
+				int index = 0;
+				char ch;
+				int utf8Char;
+				int start;
+				while(index < uri.Length)
+				{
+					ch = uri[index++];
+					if(ch != '%')
+					{
+						builder.Append(ch);
+					}
+					else if((index + 1) >= uri.Length ||
+					        !JSScanner.IsHexDigit(uri[index]) ||
+							!JSScanner.IsHexDigit(uri[index + 1]))
+					{
+						// Invalid hexadecimal sequence.
+						throw new JScriptException(JSError.URIDecodeError);
+					}
+					else
+					{
+						start = index - 1;
+						utf8Char = (JSScanner.FromHex(uri[index]) << 4) |
+								    JSScanner.FromHex(uri[index + 1]);
+						index += 2;
+						if(utf8Char >= 0x80)
+						{
+							// Parse the rest of the UTF-8 sequence.
+							utf8Char = ParseRestOfUTF8
+								(utf8Char, uri, ref index);
+						}
+						if(utf8Char < 0x10000)
+						{
+							// Single-character.
+							if(reserved && IsURIReserved((char)utf8Char))
+							{
+								builder.Append(uri, start, index - start);
+							}
+							else
+							{
+								builder.Append((char)utf8Char);
+							}
+						}
+						else if(utf8Char < 0x110000)
+						{
+							// Surrogate pair.
+							utf8Char -= 0x10000;
+							builder.Append((char)((utf8Char >> 10) + 0xD800));
+							builder.Append((char)((utf8Char & 0x3FF) + 0xDC00));
+						}
+						else
+						{
+							// UTF-8 character is out of range.
+							throw new JScriptException(JSError.URIDecodeError);
+						}
+					}
+				}
+				return builder.ToString();
+			}
+
 	// Decode a URI.
 	[JSFunction(0, JSBuiltin.Global_decodeURI)]
 	public static string decodeURI(object encodedURI)
 			{
-				// TODO
-				return string.Empty;
+				return InternalDecode(Convert.ToString(encodedURI), true);
 			}
 
 	// Decode a URI component.
 	[JSFunction(0, JSBuiltin.Global_decodeURIComponent)]
 	public static string decodeURIComponent(object encodedURI)
 			{
-				// TODO
-				return string.Empty;
+				return InternalDecode(Convert.ToString(encodedURI), false);
+			}
+
+	// Hexadecimal characters for URI encoding.
+	private const String hex = "0123456789ABCDEF";
+
+	// Append a hex sequence to a string builder.
+	private static void AppendHex(StringBuilder builder, int value)
+			{
+				builder.Append('%');
+				builder.Append(hex[(value >> 4) & 0x0F]);
+				builder.Append(hex[value & 0x0F]);
+			}
+
+	// Internal URI encoding logic.
+	private static string InternalEncode(string uri, bool reserved)
+			{
+				StringBuilder builder = new StringBuilder(uri.Length);
+				int index = 0;
+				char ch;
+				int value;
+				while(index < uri.Length)
+				{
+					ch = uri[index++];
+					if((ch >= 'A' && ch <= 'Z') ||
+					   (ch >= 'a' && ch <= 'z') ||
+					   (ch >= '0' && ch <= '9') ||
+					   ch == '-' || ch == '_' || ch == '.' ||
+					   ch == '!' || ch == '~' || ch == '*' ||
+					   ch == '\'' || ch == '(' || ch == ')')
+					{
+						builder.Append(ch);
+					}
+					else if(reserved &&
+							(ch == ';' || ch == '/' || ch == '?' ||
+							 ch == ':' || ch == '@' || ch == '&' ||
+							 ch == '=' || ch == '+' || ch == '$' ||
+							 ch == ',' || ch == '#'))
+					{
+						builder.Append(ch);
+					}
+					else if(ch < 0x80)
+					{
+						AppendHex(builder, ch);
+					}
+					else if(ch < (1 << 11))
+					{
+						AppendHex(builder, (ch >> 6) | 0xC0);
+						AppendHex(builder, (ch & 0x3F) | 0x80);
+					}
+					else if(ch >= 0xD800 && ch <= 0xDBFF)
+					{
+						if(index >= uri.Length)
+						{
+							throw new JScriptException(JSError.URIEncodeError);
+						}
+						value = (ch - 0xD800) << 10;
+						ch = uri[index++];
+						if(ch < 0xDC00 || ch > 0xDFFF)
+						{
+							throw new JScriptException(JSError.URIEncodeError);
+						}
+						value += (ch - 0xDC00) + 0x10000;
+						AppendHex(builder, (ch >> 18) | 0xF0);
+						AppendHex(builder, ((ch >> 12) & 0x3F) | 0x80);
+						AppendHex(builder, ((ch >> 6) & 0x3F) | 0x80);
+						AppendHex(builder, (ch & 0x3F) | 0x80);
+					}
+					else if(ch >= 0xDC00 && ch <= 0xDFFF)
+					{
+						throw new JScriptException(JSError.URIEncodeError);
+					}
+					else
+					{
+						AppendHex(builder, (ch >> 12) | 0xE0);
+						AppendHex(builder, ((ch >> 6) & 0x3F) | 0x80);
+						AppendHex(builder, (ch & 0x3F) | 0x80);
+					}
+				}
+				return builder.ToString();
 			}
 
 	// Encode a URI.
 	[JSFunction(0, JSBuiltin.Global_encodeURI)]
 	public static string encodeURI(object uri)
 			{
-				// TODO
-				return string.Empty;
+				return InternalEncode(Convert.ToString(uri), true);
 			}
 
 	// Encode a URI component.
 	[JSFunction(0, JSBuiltin.Global_encodeURIComponent)]
 	public static string encodeURIComponent(object uri)
 			{
-				// TODO
-				return string.Empty;
+				return InternalEncode(Convert.ToString(uri), false);
 			}
 
 	// Escape a string.
@@ -404,12 +615,40 @@ public class GlobalObject
 	[NotRecommended("escape")]
 	public static string escape(object str)
 			{
-				// TODO
-				return Convert.ToString(str);
+				String s = Convert.ToString(str);
+				StringBuilder builder = new StringBuilder(s.Length);
+				foreach(char ch in s)
+				{
+					if((ch >= 'A' && ch <= 'Z') ||
+					   (ch >= 'a' && ch <= 'z') ||
+					   (ch >= '0' && ch <= '9') ||
+					   ch == '@' || ch == '*' || ch == '_' ||
+					   ch == '+' || ch == '-' || ch == '.' ||
+					   ch == '/')
+					{
+						builder.Append(ch);
+					}
+					else if(ch < 0x0100)
+					{
+						builder.Append('%');
+						builder.Append(hex[(ch >> 4) & 0x0F]);
+						builder.Append(hex[ch & 0x0F]);
+					}
+					else
+					{
+						builder.Append('%');
+						builder.Append('u');
+						builder.Append(hex[(ch >> 12) & 0x0F]);
+						builder.Append(hex[(ch >> 8) & 0x0F]);
+						builder.Append(hex[(ch >> 4) & 0x0F]);
+						builder.Append(hex[ch & 0x0F]);
+					}
+				}
+				return builder.ToString();
 			}
 
 	// Evaluate a string.
-	[JSFunction(0, JSBuiltin.Global_escape)]
+	[JSFunction(0, JSBuiltin.Global_eval)]
 	public static object eval(object str)
 			{
 				// The parser recognizes "eval" as a special node type,
@@ -435,16 +674,203 @@ public class GlobalObject
 	[JSFunction(0, JSBuiltin.Global_parseFloat)]
 	public static double parseFloat(object str)
 			{
-				// TODO
-				return 0.0;
+				String s = Convert.ToString(str);
+				int index = 0;
+				int start;
+				char ch;
+
+				// Skip leading white space.
+				while(index < s.Length && Char.IsWhiteSpace(s[index]))
+				{
+					++index;
+				}
+
+				// Check for infinities.
+				if((s.Length - index) >= 8 &&
+				   String.Compare(s, index, "Infinity", 0, 8) == 0)
+				{
+					return Double.PositiveInfinity;
+				}
+				if((s.Length - index) >= 9 &&
+				   String.Compare(s, index, "-Infinity", 0, 9) == 0)
+				{
+					return Double.NegativeInfinity;
+				}
+				if((s.Length - index) >= 9 &&
+				   String.Compare(s, index, "+Infinity", 0, 9) == 0)
+				{
+					return Double.PositiveInfinity;
+				}
+
+				// Find the longest prefix that looks like a float.
+				start = index;
+				if(index < s.Length && (s[index] == '-' || s[index] == '+'))
+				{
+					++index;
+				}
+				if(index >= s.Length)
+				{
+					return Double.NaN;
+				}
+				ch = s[index];
+				if((ch < '0' || ch > '9') && ch != '.')
+				{
+					return Double.NaN;
+				}
+				while(ch >= '0' && ch <= '9')
+				{
+					++index;
+					if(index >= s.Length)
+					{
+						break;
+					}
+					ch = s[index];
+				}
+				if(index < s.Length && s[index] == '.')
+				{
+					++index;
+					while(index < s.Length)
+					{
+						ch = s[index];
+						if(ch < '0' || ch > '9')
+						{
+							break;
+						}
+						++index;
+					}
+				}
+				if(index < s.Length && (s[index] == 'e' || s[index] == 'E'))
+				{
+					++index;
+					if(index < s.Length && (s[index] == '-' || s[index] == '+'))
+					{
+						++index;
+					}
+					if(index >= s.Length)
+					{
+						return Double.NaN;
+					}
+					ch = s[index];
+					if(ch < '0' || ch > '9')
+					{
+						return Double.NaN;
+					}
+					++index;
+					while(index < s.Length)
+					{
+						ch = s[index];
+						if(ch < '0' || ch > '9')
+						{
+							break;
+						}
+						++index;
+					}
+				}
+				if(start == index)
+				{
+					return Double.NaN;
+				}
+
+				// Convert the string into a floating-point value.
+				return Double.Parse(s.Substring(start, index - start),
+									NumberFormatInfo.InvariantInfo);
 			}
 
 	// Parse an integer value.
 	[JSFunction(0, JSBuiltin.Global_parseInt)]
 	public static double parseInt(object str, object radix)
 			{
-				// TODO
-				return 0.0;
+				String s = Convert.ToString(str);
+				int r = Convert.ToInt32(radix);
+				int index = 0;
+				double value = 0.0;
+				double sign = 1.0;
+				int numDigits = 0;
+				int digit;
+				char ch;
+
+				// Skip leading white space.
+				while(index < s.Length && Char.IsWhiteSpace(s[index]))
+				{
+					++index;
+				}
+
+				// Handle the sign.
+				if(index < s.Length)
+				{
+					if(s[index] == '-')
+					{
+						++index;
+						sign = -1.0;
+					}
+					else if(s[index] == '+')
+					{
+						++index;
+					}
+				}
+
+				// If the string is empty, or the radix is invalid
+				// then return NaN.
+				if(index >= s.Length)
+				{
+					return Double.NaN;
+				}
+				if(r == 0)
+				{
+					r = 10;
+					if(s[index] == '0')
+					{
+						if((index + 1) < s.Length &&
+						   (s[index + 1] == 'x' || s[index + 1] == 'X'))
+						{
+							r = 16;
+							index += 2;
+						}
+						else
+						{
+							r = 8;
+						}
+					}
+				}
+				else if(r < 2 || r > 36)
+				{
+					return Double.NaN;
+				}
+
+				// Process the digits until we hit something else.
+				while(index < s.Length)
+				{
+					ch = s[index++];
+					if(ch >= '0' && ch <= '9')
+					{
+						digit = ch - '0';
+					}
+					else if(ch >= 'A' && ch <= 'Z')
+					{
+						digit = ch - 'A' + 10;
+					}
+					else if(ch >= 'a' && ch <= 'z')
+					{
+						digit = ch - 'a' + 10;
+					}
+					else
+					{
+						digit = 36;
+					}
+					if(digit >= r)
+					{
+						break;
+					}
+					value = value * (double)r + (double)digit;
+					++numDigits;
+				}
+				if(numDigits == 0)
+				{
+					return Double.NaN;
+				}
+
+				// Return the final value.
+				return value * sign;
 			}
 
 	// Get the name and version information for the script engine.
@@ -483,8 +909,46 @@ public class GlobalObject
 	[NotRecommended("unescape")]
 	public static string unescape(object str)
 			{
-				// TODO
-				return Convert.ToString(str);
+				String s = Convert.ToString(str);
+				StringBuilder builder = new StringBuilder(s.Length);
+				int index = 0;
+				char ch;
+				while(index < s.Length)
+				{
+					ch = s[index++];
+					if(ch != '%')
+					{
+						builder.Append(ch);
+					}
+					else if((index + 1) < s.Length &&
+						    JSScanner.IsHexDigit(s[index]) &&
+						    JSScanner.IsHexDigit(s[index + 1]))
+					{
+						ch = (char)((JSScanner.FromHex(s[index]) << 4) |
+									JSScanner.FromHex(s[index + 1]));
+						builder.Append(ch);
+						index += 2;
+					}
+					else if((index + 4) < s.Length &&
+						    s[index] == 'u' &&
+						    JSScanner.IsHexDigit(s[index + 1]) &&
+						    JSScanner.IsHexDigit(s[index + 2]) &&
+						    JSScanner.IsHexDigit(s[index + 3]) &&
+						    JSScanner.IsHexDigit(s[index + 4]))
+					{
+						ch = (char)((JSScanner.FromHex(s[index + 1]) << 12) |
+									(JSScanner.FromHex(s[index + 2]) << 8) |
+									(JSScanner.FromHex(s[index + 3]) << 4) |
+									JSScanner.FromHex(s[index + 4]));
+						builder.Append(ch);
+						index += 5;
+					}
+					else
+					{
+						builder.Append(ch);
+					}
+				}
+				return builder.ToString();
 			}
 
 }; // class GlobalObject

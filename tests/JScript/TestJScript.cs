@@ -38,6 +38,10 @@ public class TestJScript
 				suite.AddTests(typeof(TestEngine));
 				fullSuite.AddTest(suite);
 
+				suite = new TestSuite("Global Tests");
+				suite.AddTests(typeof(TestGlobal));
+				fullSuite.AddTest(suite);
+
 				return fullSuite;
 			}
 

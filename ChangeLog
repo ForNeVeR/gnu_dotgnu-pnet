@@ -1,4 +1,11 @@
 
+2003-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* JScript/Builtins/GlobalObject.cs, JScript/Execute/Convert.cs,
+	JScript/Parser/JSScanner.cs, tests/JScript/TestGlobal.cs,
+	tests/JScript/TestJScript.cs: implementation and test cases for
+	the functions in the JScript global object.
+
 2003-03-06  Michael Moore <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormat/ParsedDateTime.cs: ECMA update 

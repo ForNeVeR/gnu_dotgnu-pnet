@@ -1142,7 +1142,7 @@ public sealed class JSScanner
 			}
 
 	// Determine if a character is a hexadecimal digit.
-	private static bool IsHexDigit(int ch)
+	internal static bool IsHexDigit(int ch)
 			{
 				if(ch >= '0' && ch <= '9')
 				{
@@ -1163,7 +1163,7 @@ public sealed class JSScanner
 			}
 
 	// Convert a hexadecimal digit into a value from 0 to 15.
-	private static int FromHex(int ch)
+	internal static int FromHex(int ch)
 			{
 				if(ch >= '0' && ch <= '9')
 				{

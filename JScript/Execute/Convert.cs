@@ -586,8 +586,33 @@ public sealed class Convert
 	// Convert an object into a string.
 	public static String ToString(Object value, bool explicitOK)
 			{
-				// TODO
-				return value.ToString();
+				// Bail out immediately if it is already a string.
+				String s = (value as String);
+				if(s != null)
+				{
+					return s;
+				}
+
+				// Handle conversions of null values.
+				if(value == null)
+				{
+					return (explicitOK ? "undefined" : null);
+				}
+				else if(DBNull.IsDBNull(value))
+				{
+					return (explicitOK ? "null" : null);
+				}
+
+				// Use the standard "Object.ToString()" method.
+				s = value.ToString();
+				if(s != null)
+				{
+					return s;
+				}
+				else
+				{
+					return (explicitOK ? "undefined" : null);
+				}
 			}
 	internal static String ToString(Object value)
 			{

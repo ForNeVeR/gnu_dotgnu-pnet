@@ -1,5 +1,10 @@
 
-2002-11-14  Gopal.V  <gopalv82@symonds.net>
+2002-11-16  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_oper.tc: Correct a minor fix in coercion of the 
+	argument parameters.
+	
+2002-11-15  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lvalue.tc, codegen/cg_scope.c, codegen/cg_scope.h,
 	cscc/csharp/cs_grammar.y, cscc/csharp/cs_lookup.c, 
@@ -11,6 +16,7 @@
 	cscc/csharp/cs_lookup.c, codegen/cg_scope.h, cscc/csharp/cs_internal.h, 
 	cscc/csharp/cs_defs.tc: Create a seperate localScope for looking up 
 	aliases so that they do not spillover to other files.
+
 
 2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 

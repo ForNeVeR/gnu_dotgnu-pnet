@@ -82,8 +82,8 @@ static void ApplyUserBinaryOperator(ILGenInfo *info, ILMethod *method,
 	returnType = ILTypeGetReturn(sig);
 	
 	/* NOTE: this is valid even for non-static operators */
-	argType1=ILTypeGetParam(sig,0); 
-	argType2=ILTypeGetParam(sig,1);
+	argType1=ILTypeGetParam(sig,1); 
+	argType2=ILTypeGetParam(sig,2);
 	
 	if(ILCanCoerce(info,CSSemGetType(*value1),argType1))
 	{

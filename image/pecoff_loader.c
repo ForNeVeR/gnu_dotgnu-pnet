@@ -320,13 +320,16 @@ int ILImageLoad(FILE *file, const char *filename,
 			debugRVA = newMap->virtAddr;
 			debugSize = newMap->virtSize;
 		}
-		if(newMap->realAddr < minAddress)
+		if(newMap->realSize > 0)
 		{
-			minAddress = newMap->realAddr;
-		}
-		if((newMap->realAddr + newMap->realSize) > maxAddress)
-		{
-			maxAddress = newMap->realAddr + newMap->realSize;
+			if(newMap->realAddr < minAddress)
+			{
+				minAddress = newMap->realAddr;
+			}
+			if((newMap->realAddr + newMap->realSize) > maxAddress)
+			{
+				maxAddress = newMap->realAddr + newMap->realSize;
+			}
 		}
 		--numSections;
 	}

@@ -16,6 +16,11 @@
 	about casting integers to pointers of different sizes; inserted
 	an extra cast to "ILNativeUInt" to remove the problem.
 
+	* image/pecoff_loader.c (ILImageLoad): do not update the "minAddress"
+	and "maxAddress" values if the size of a section is zero; some
+	files use a zero-size section with a zero base address, which messes
+	up the address checks further along in the load process.
+
 2001-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_string.c, engine/lib_type.c, ilasm/ilasm_grammar.y,

@@ -27,76 +27,79 @@ extern	"C" {
 /*
  * Report errors for each modifier in a mask.
  */
-static void ModifierError(ILUInt32 modifiers, const char *msg)
+static void ModifierError(char *filename, long linenum,
+						  ILUInt32 modifiers, const char *msg)
 {
 	if((modifiers & CS_MODIFIER_PUBLIC) != 0)
 	{
-		CSError(msg, "public");
+		CSErrorOnLine(filename, linenum, msg, "public");
 	}
 	if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 	{
-		CSError(msg, "private");
+		CSErrorOnLine(filename, linenum, msg, "private");
 	}
 	if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 	{
-		CSError(msg, "protected");
+		CSErrorOnLine(filename, linenum, msg, "protected");
 	}
 	if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 	{
-		CSError(msg, "internal");
+		CSErrorOnLine(filename, linenum, msg, "internal");
 	}
 	if((modifiers & CS_MODIFIER_NEW) != 0)
 	{
-		CSError(msg, "new");
+		CSErrorOnLine(filename, linenum, msg, "new");
 	}
 	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
 	{
-		CSError(msg, "abstract");
+		CSErrorOnLine(filename, linenum, msg, "abstract");
 	}
 	if((modifiers & CS_MODIFIER_SEALED) != 0)
 	{
-		CSError(msg, "sealed");
+		CSErrorOnLine(filename, linenum, msg, "sealed");
 	}
 	if((modifiers & CS_MODIFIER_STATIC) != 0)
 	{
-		CSError(msg, "static");
+		CSErrorOnLine(filename, linenum, msg, "static");
 	}
 	if((modifiers & CS_MODIFIER_READONLY) != 0)
 	{
-		CSError(msg, "readonly");
+		CSErrorOnLine(filename, linenum, msg, "readonly");
 	}
 	if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
-		CSError(msg, "virtual");
+		CSErrorOnLine(filename, linenum, msg, "virtual");
 	}
 	if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 	{
-		CSError(msg, "override");
+		CSErrorOnLine(filename, linenum, msg, "override");
 	}
 	if((modifiers & CS_MODIFIER_EXTERN) != 0)
 	{
-		CSError(msg, "extern");
+		CSErrorOnLine(filename, linenum, msg, "extern");
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		CSError(msg, "unsafe");
+		CSErrorOnLine(filename, linenum, msg, "unsafe");
 	}
 }
 
 /*
  * Report errors for modifiers that cannot be used in a particular context.
  */
-static void BadModifiers(ILUInt32 modifiers)
+static void BadModifiers(ILNode *node, ILUInt32 modifiers)
 {
-	ModifierError(modifiers, "`%s' cannot be used in this context");
+	ModifierError(yygetfilename(node), yygetlinenum(node),
+				  modifiers, "`%s' cannot be used in this context");
 }
 
-void CSModifiersUsedTwice(ILUInt32 modifiers)
+void CSModifiersUsedTwice(char *filename, long linenum, ILUInt32 modifiers)
 {
-	ModifierError(modifiers, "`%s' specified multiple times");
+	ModifierError(filename, linenum,
+				  modifiers, "`%s' specified multiple times");
 }
 
-ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
+ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 {
 	ILUInt32 attrs;
 
@@ -109,15 +112,18 @@ ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSError("cannot use both `public' and `private'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSError("cannot use both `public' and `protected'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `protected'");
 			}
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSError("cannot use both `public' and `internal'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `internal'");
 			}
 		}
 		else if((modifiers & CS_MODIFIER_INTERNAL) != 0)
@@ -125,11 +131,13 @@ ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSError("cannot use both `internal' and `private'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `internal' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSError("cannot use both `internal' and `protected'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `internal' and `protected'");
 			}
 		}
 		else
@@ -137,20 +145,23 @@ ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSError("`private' modifier is not permitted "
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "`private' modifier is not permitted "
 						"on non-nested types");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSError("`protected' modifier is not permitted "
-						"on non-nested types");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "`protected' modifier is not permitted "
+							  "on non-nested types");
 			}
 		}
 
 		/* The "new" modifier is not allowed on top-level classes */
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSError("`new' modifier is not permitted on non-nested types");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`new' modifier is not permitted on non-nested types");
 		}
 	}
 	else
@@ -161,15 +172,18 @@ ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NESTED_PUBLIC;
 			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 			{
-				CSError("cannot use both `public' and `private'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `private'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSError("cannot use both `public' and `protected'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `protected'");
 			}
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSError("cannot use both `public' and `internal'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `internal'");
 			}
 		}
 		else if((modifiers & CS_MODIFIER_PRIVATE) != 0)
@@ -177,11 +191,13 @@ ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
 			attrs = IL_META_TYPEDEF_NESTED_PRIVATE;
 			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				CSError("cannot use both `private' and `internal'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `private' and `internal'");
 			}
 			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 			{
-				CSError("cannot use both `private' and `protected'");
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `private' and `protected'");
 			}
 		}
 		else if((modifiers & CS_MODIFIER_PROTECTED) != 0)
@@ -226,7 +242,8 @@ ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
 	}
 
 	/* Report errors for any remaining modifiers */
-	BadModifiers(modifiers & (CS_MODIFIER_STATIC | CS_MODIFIER_READONLY |
+	BadModifiers(node,
+				 modifiers & (CS_MODIFIER_STATIC | CS_MODIFIER_READONLY |
 							  CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE |
 							  CS_MODIFIER_EXTERN));
 
@@ -237,21 +254,24 @@ ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested)
 /*
  * Validate access modifiers and return the access level.
  */
-static ILUInt32 ValidateAccess(ILUInt32 modifiers)
+static ILUInt32 ValidateAccess(ILNode *node, ILUInt32 modifiers)
 {
 	if((modifiers & CS_MODIFIER_PUBLIC) != 0)
 	{
 		if((modifiers & CS_MODIFIER_PRIVATE) != 0)
 		{
-			CSError("cannot use both `public' and `private'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `public' and `private'");
 		}
 		if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 		{
-			CSError("cannot use both `public' and `protected'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `public' and `protected'");
 		}
 		if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 		{
-			CSError("cannot use both `public' and `internal'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `public' and `internal'");
 		}
 		return IL_META_FIELDDEF_PUBLIC;
 	}
@@ -259,11 +279,13 @@ static ILUInt32 ValidateAccess(ILUInt32 modifiers)
 	{
 		if((modifiers & CS_MODIFIER_INTERNAL) != 0)
 		{
-			CSError("cannot use both `private' and `internal'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `private' and `internal'");
 		}
 		if((modifiers & CS_MODIFIER_PROTECTED) != 0)
 		{
-			CSError("cannot use both `private' and `protected'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `private' and `protected'");
 		}
 		return IL_META_FIELDDEF_PRIVATE;
 	}
@@ -288,12 +310,12 @@ static ILUInt32 ValidateAccess(ILUInt32 modifiers)
 	}
 }
 
-ILUInt32 CSModifiersToConstAttrs(ILUInt32 modifiers)
+ILUInt32 CSModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = ValidateAccess(modifiers);
+	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the "new" modifier */
 	if((modifiers & CS_MODIFIER_NEW) != 0)
@@ -305,7 +327,8 @@ ILUInt32 CSModifiersToConstAttrs(ILUInt32 modifiers)
 	attrs |= IL_META_FIELDDEF_LITERAL;
 
 	/* Report errors for the remaining modifiers */
-	BadModifiers(modifiers & (CS_MODIFIER_ABSTRACT | CS_MODIFIER_SEALED |
+	BadModifiers(node,
+				 modifiers & (CS_MODIFIER_ABSTRACT | CS_MODIFIER_SEALED |
 							  CS_MODIFIER_STATIC | CS_MODIFIER_READONLY |
 							  CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE |
 							  CS_MODIFIER_EXTERN | CS_MODIFIER_UNSAFE));
@@ -314,12 +337,12 @@ ILUInt32 CSModifiersToConstAttrs(ILUInt32 modifiers)
 	return attrs;
 }
 
-ILUInt32 CSModifiersToFieldAttrs(ILUInt32 modifiers)
+ILUInt32 CSModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = ValidateAccess(modifiers);
+	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the "static", "readonly", and "new" modifiers */
 	if((modifiers & CS_MODIFIER_STATIC) != 0)
@@ -340,7 +363,8 @@ ILUInt32 CSModifiersToFieldAttrs(ILUInt32 modifiers)
 	}
 
 	/* Report errors for the remaining modifiers */
-	BadModifiers(modifiers & (CS_MODIFIER_ABSTRACT | CS_MODIFIER_SEALED |
+	BadModifiers(node,
+				 modifiers & (CS_MODIFIER_ABSTRACT | CS_MODIFIER_SEALED |
 							  CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE |
 							  CS_MODIFIER_EXTERN));
 
@@ -348,12 +372,12 @@ ILUInt32 CSModifiersToFieldAttrs(ILUInt32 modifiers)
 	return attrs;
 }
 
-ILUInt32 CSModifiersToMethodAttrs(ILUInt32 modifiers)
+ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = ValidateAccess(modifiers);
+	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the other method modifiers */
 	if((modifiers & CS_MODIFIER_STATIC) != 0)
@@ -377,7 +401,8 @@ ILUInt32 CSModifiersToMethodAttrs(ILUInt32 modifiers)
 		}
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
-			CSError("cannot use both `virtual' and `override'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `virtual' and `override'");
 		}
 	}
 	else if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
@@ -385,7 +410,8 @@ ILUInt32 CSModifiersToMethodAttrs(ILUInt32 modifiers)
 		attrs |= IL_META_METHODDEF_VIRTUAL | CS_SPECIALATTR_OVERRIDE;
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSError("cannot use both `override' and `new'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `override' and `new'");
 		}
 	}
 	else if((modifiers & CS_MODIFIER_NEW) != 0)
@@ -408,12 +434,12 @@ ILUInt32 CSModifiersToMethodAttrs(ILUInt32 modifiers)
 	return attrs;
 }
 
-ILUInt32 CSModifiersToEventAttrs(ILUInt32 modifiers)
+ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = ValidateAccess(modifiers);
+	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the other property modifiers */
 	if((modifiers & CS_MODIFIER_STATIC) != 0)
@@ -437,7 +463,8 @@ ILUInt32 CSModifiersToEventAttrs(ILUInt32 modifiers)
 		}
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
-			CSError("cannot use both `virtual' and `override'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `virtual' and `override'");
 		}
 	}
 	else if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
@@ -445,7 +472,8 @@ ILUInt32 CSModifiersToEventAttrs(ILUInt32 modifiers)
 		attrs |= IL_META_METHODDEF_VIRTUAL | CS_SPECIALATTR_OVERRIDE;
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSError("cannot use both `override' and `new'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `override' and `new'");
 		}
 	}
 	else if((modifiers & CS_MODIFIER_NEW) != 0)
@@ -458,18 +486,18 @@ ILUInt32 CSModifiersToEventAttrs(ILUInt32 modifiers)
 	}
 
 	/* Report errors for the remaining modifiers */
-	BadModifiers(modifiers & CS_MODIFIER_EXTERN);
+	BadModifiers(node, modifiers & CS_MODIFIER_EXTERN);
 
 	/* Done */
 	return attrs;
 }
 
-ILUInt32 CSModifiersToPropertyAttrs(ILUInt32 modifiers)
+ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = ValidateAccess(modifiers);
+	attrs = ValidateAccess(node, modifiers);
 
 	/* Process the other property modifiers */
 	if((modifiers & CS_MODIFIER_STATIC) != 0)
@@ -493,7 +521,8 @@ ILUInt32 CSModifiersToPropertyAttrs(ILUInt32 modifiers)
 		}
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
-			CSError("cannot use both `virtual' and `override'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `virtual' and `override'");
 		}
 	}
 	else if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
@@ -501,7 +530,8 @@ ILUInt32 CSModifiersToPropertyAttrs(ILUInt32 modifiers)
 		attrs |= IL_META_METHODDEF_VIRTUAL | CS_SPECIALATTR_OVERRIDE;
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
-			CSError("cannot use both `override' and `new'");
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `override' and `new'");
 		}
 	}
 	else if((modifiers & CS_MODIFIER_NEW) != 0)
@@ -514,46 +544,50 @@ ILUInt32 CSModifiersToPropertyAttrs(ILUInt32 modifiers)
 	}
 
 	/* Report errors for the remaining modifiers */
-	BadModifiers(modifiers & CS_MODIFIER_EXTERN);
+	BadModifiers(node, modifiers & CS_MODIFIER_EXTERN);
 
 	/* Done */
 	return attrs;
 }
 
-ILUInt32 CSModifiersToOperatorAttrs(ILUInt32 modifiers)
+ILUInt32 CSModifiersToOperatorAttrs(ILNode *node, ILUInt32 modifiers)
 {
 	ILUInt32 attrs = 0;
 	if((modifiers & CS_MODIFIER_PUBLIC) == 0)
 	{
-		CSError("operators must have `public' access");
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "operators must have `public' access");
 	}
 	if((modifiers & CS_MODIFIER_STATIC) == 0)
 	{
-		CSError("operators must have `static' access");
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "operators must have `static' access");
 	}
 	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
-	BadModifiers(modifiers & ~(CS_MODIFIER_PUBLIC | CS_MODIFIER_STATIC |
+	BadModifiers(node,
+				 modifiers & ~(CS_MODIFIER_PUBLIC | CS_MODIFIER_STATIC |
 							   CS_MODIFIER_UNSAFE));
 	return (attrs | IL_META_METHODDEF_PUBLIC | IL_META_METHODDEF_STATIC |
 			IL_META_METHODDEF_SPECIAL_NAME | IL_META_METHODDEF_HIDE_BY_SIG);
 }
 
-ILUInt32 CSModifiersToConstructorAttrs(ILUInt32 modifiers)
+ILUInt32 CSModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers)
 {
 	ILUInt32 attrs;
 
 	/* Different flags are used for instance and static constructors */
 	if((modifiers & CS_MODIFIER_STATIC) == 0)
 	{
-		attrs = ValidateAccess(modifiers);
+		attrs = ValidateAccess(node, modifiers);
 		if((modifiers & CS_MODIFIER_EXTERN) != 0)
 		{
 			attrs |= CS_SPECIALATTR_EXTERN;
 		}
-		BadModifiers(modifiers & ~(CS_MODIFIER_PUBLIC |
+		BadModifiers(node,
+					 modifiers & ~(CS_MODIFIER_PUBLIC |
 								   CS_MODIFIER_PRIVATE |
 								   CS_MODIFIER_PROTECTED |
 								   CS_MODIFIER_INTERNAL |
@@ -562,7 +596,8 @@ ILUInt32 CSModifiersToConstructorAttrs(ILUInt32 modifiers)
 	}
 	else
 	{
-		BadModifiers(modifiers & ~(CS_MODIFIER_STATIC | CS_MODIFIER_UNSAFE));
+		BadModifiers(node,
+					 modifiers & ~(CS_MODIFIER_STATIC | CS_MODIFIER_UNSAFE));
 		attrs = IL_META_METHODDEF_PUBLIC | IL_META_METHODDEF_STATIC;
 	}
 

@@ -163,19 +163,19 @@ int CSHasUnsafeType(ILNode *node);
 /*
  * Report that some modifiers have been specified more than once.
  */
-void CSModifiersUsedTwice(ILUInt32 modifiers);
+void CSModifiersUsedTwice(char *filename, long linenum, ILUInt32 modifiers);
 
 /*
  * Convert modifiers into attribute flag masks for program elements.
  */
-ILUInt32 CSModifiersToTypeAttrs(ILUInt32 modifiers, int isNested);
-ILUInt32 CSModifiersToConstAttrs(ILUInt32 modifiers);
-ILUInt32 CSModifiersToFieldAttrs(ILUInt32 modifiers);
-ILUInt32 CSModifiersToMethodAttrs(ILUInt32 modifiers);
-ILUInt32 CSModifiersToEventAttrs(ILUInt32 modifiers);
-ILUInt32 CSModifiersToPropertyAttrs(ILUInt32 modifiers);
-ILUInt32 CSModifiersToOperatorAttrs(ILUInt32 modifiers);
-ILUInt32 CSModifiersToConstructorAttrs(ILUInt32 modifiers);
+ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested);
+ILUInt32 CSModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 CSModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 CSModifiersToOperatorAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 CSModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers);
 
 /*
  * Convert a built-in constant name into a constant node.

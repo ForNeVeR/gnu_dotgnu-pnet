@@ -9,7 +9,8 @@ RESOURCEFILES = Arg.txt \
 				Format.txt \
 				IO.txt \
 				NotSupp.txt \
-				Overflow.txt
+				Overflow.txt \
+				Reflection.txt
 
 noinst_DATA = $(RESOURCENAME)
 

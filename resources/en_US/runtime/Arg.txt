@@ -65,6 +65,7 @@ Arg_EndsWithResources=The specified base name must not end in ".resources"
 Arg_VersionFields=The specified version field count is invalid
 Arg_GuidArray8=The Guid byte buffer should have 8 items
 Arg_GuidArray16=The Guid byte buffer should have 16 items
+Arg_NonPrimitiveArray=The supplied array does not contain primitive elements
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

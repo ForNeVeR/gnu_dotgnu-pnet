@@ -1,4 +1,10 @@
 
+2001-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/BitConverter.cs, runtime/System/Buffer.cs,
+resources/en_US/runtime/Arg.txt: new classes "System.BitConverter" and
+"System.Buffer".
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs,

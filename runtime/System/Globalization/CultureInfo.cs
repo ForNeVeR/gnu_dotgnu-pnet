@@ -163,7 +163,18 @@ public class CultureInfo : ICloneable, IFormatProvider
 						   _I18NCultureHandler.GetCultureHandler
 						   		(id, true) == null)
 						{
-							currentCulture = InvariantCulture;
+							// TODO: this is a temporary hack - it must
+							// be removed once there are real culture
+							// handlers in the I18N assemblies.
+							if(id == 0x007F || id <= 0)
+							{
+								currentCulture = InvariantCulture;
+							}
+							else
+							{
+								currentCulture = new CultureInfo(id);
+								currentCulture.readOnly = true;
+							}
 						}
 						else
 						{

@@ -20,6 +20,10 @@
 	identifier for "English (Zimbabwe)" so that it doesn't conflict
 	with "English (United States)".
 
+	* runtime/System/Globalization/CultureInfo.cs: use the invariant
+	culture rules with the current culture identifier if there isn't
+	a specific handler for the culture.
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 
 	* resources/de_DE/I18N/Makefile.am, de_DE/runtime/Makefile.am, 

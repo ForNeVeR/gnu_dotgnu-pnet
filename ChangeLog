@@ -17,6 +17,10 @@
 	* missing: update the "missing" script so that it is no longer
 	"too old or missing".
 
+	* System.Xml/IXmlNamespaceResolver.cs, System.Xml/XmlNamespaceScope.cs,
+	System.Xml/Schema/XmlSchemaBuiltInType.cs: add some framework 1.2
+	types to "System.Xml" that are needed by "ml-pnet".
+
 2003-11-26  Adam Ballai <adam@thefrontnetworks.net>
 
 	* System.Xml/XmlDocument.cs, System.Xml/XmlTextReader.cs:

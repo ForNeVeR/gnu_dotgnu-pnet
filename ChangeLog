@@ -8,6 +8,9 @@
 	Xsharp/Types/Xauth.cs: add support to Xsharp to embed third
 	party X applications inside a child widget using XC-APPGROUP.
 
+	* samples/XClockEmbed.cs, samples/samples.build: check in a
+	sample application that demonstrates how to use "EmbeddedApplication".
+
 2003-10-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/TextReader.cs: properly increment the

@@ -22,6 +22,8 @@ handle "unaligned" properly.
 
 * engine/verify_obj.c: verification for load/store field instructions.
 
+* include/il_coder.h, engine/ilverify.c: more coder API's and stubs.
+
 2001-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc: add "ILNode_ForeachCollection" and add extra

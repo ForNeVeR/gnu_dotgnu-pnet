@@ -264,6 +264,63 @@ struct _tagILCoderClass
 	 */
 	void (*localAlloc)(ILCoder *coder, ILEngineType sizeType);
 
+	/*
+	 * Cast the top-most object on the stack to a new class.
+	 * If "throwException" is non-zero, then throw an exception
+	 * if the object is not an instance of the class.  Otherwise
+	 * push NULL onto the stack.
+	 */
+	void (*castClass)(ILCoder *coder, ILClass *classInfo,
+					  int throwException);
+
+	/*
+	 * Load the contents of an instance field onto the stack.
+	 * "ptrType" is the type of pointer that is being used to
+	 * dereference the field.  "objectType" is the type of the
+	 * entire object.  "field" is the field descriptor.
+	 * "fieldType" is the type of the field.
+	 */
+	void (*loadField)(ILCoder *coder, ILEngineType ptrType,
+					  ILType *objectType, ILField *field,
+					  ILType *fieldType);
+
+	/*
+	 * Load the contents of a static field onto the stack.
+	 */
+	void (*loadStaticField)(ILCoder *coder, ILField *field,
+							ILType *fieldType);
+
+	/*
+	 * Load the address of an instance field onto the stack.
+	 */
+	void (*loadFieldAddr)(ILCoder *coder, ILEngineType ptrType,
+					      ILType *objectType, ILField *field,
+					      ILType *fieldType);
+
+	/*
+	 * Load the address of a static field onto the stack.
+	 */
+	void (*loadStaticFieldAddr)(ILCoder *coder, ILField *field,
+							    ILType *fieldType);
+
+	/*
+	 * Store a value from the stack into an instance field.
+	 * "ptrType" is the type of pointer that is being used to
+	 * dereference the field.  "objectType" is the type of the
+	 * entire object.  "field" is the field descriptor.
+	 * "fieldType" is the type of the field.  "valueType" is
+	 * the type of the value currently on the stack.
+	 */
+	void (*storeField)(ILCoder *coder, ILEngineType ptrType,
+					   ILType *objectType, ILField *field,
+					   ILType *fieldType, ILEngineType valueType);
+
+	/*
+	 * Store a value from the stack into a stack field.
+	 */
+	void (*storeStaticField)(ILCoder *coder, ILField *field,
+							 ILType *fieldType, ILEngineType valueType);
+
 };
 
 /*
@@ -347,6 +404,30 @@ struct _tagILCoderClass
 											   (lengthType)))
 #define	ILCoderLocalAlloc(coder,sizeType) \
 			((*((coder)->classInfo->localAlloc))((coder), (sizeType)))
+#define	ILCoderCastClass(coder,classInfo,throwException) \
+			((*((coder)->classInfo->castClass))((coder), (classInfo), \
+												(throwException)))
+#define	ILCoderLoadField(coder,ptrType,objectType,field,fieldType) \
+			((*((coder)->classInfo->loadField))((coder), (ptrType), \
+												(objectType), (field), \
+												(fieldType)))
+#define	ILCoderLoadStaticField(coder,field,fieldType) \
+			((*((coder)->classInfo->loadStaticField))((coder), (field), \
+													  (fieldType)))
+#define	ILCoderLoadFieldAddr(coder,ptrType,objectType,field,fieldType) \
+			((*((coder)->classInfo->loadFieldAddr))((coder), (ptrType), \
+												    (objectType), (field), \
+												    (fieldType)))
+#define	ILCoderLoadStaticFieldAddr(coder,field,fieldType) \
+			((*((coder)->classInfo->loadStaticFieldAddr))((coder), (field), \
+													      (fieldType)))
+#define	ILCoderStoreField(coder,ptrType,objectType,field,fieldType,valueType) \
+			((*((coder)->classInfo->storeField))((coder), (ptrType), \
+												 (objectType), (field), \
+												 (fieldType), (valueType)))
+#define	ILCoderStoreStaticField(coder,field,fieldType,valueType) \
+			((*((coder)->classInfo->storeStaticField))((coder), (field), \
+											       (fieldType), (valueType)))
 
 #ifdef	__cplusplus
 };

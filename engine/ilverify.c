@@ -271,7 +271,8 @@ static void Coder_ComparePtr(ILCoder *coder, int opcode,
 static void Coder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 {
 }
-static void Coder_ToPointer(ILCoder *coder, ILEngineType type)
+static void Coder_ToPointer(ILCoder *coder, ILEngineType type1,
+							ILEngineType type2)
 {
 }
 static void Coder_PtrPrefix(ILCoder *coder, int alignment)
@@ -285,6 +286,37 @@ static void Coder_NewArray(ILCoder *coder, ILType *elemType,
 {
 }
 static void Coder_LocalAlloc(ILCoder *coder, ILEngineType sizeType)
+{
+}
+static void Coder_CastClass(ILCoder *coder, ILClass *classInfo,
+							int throwException)
+{
+}
+static void Coder_LoadField(ILCoder *coder, ILEngineType ptrType,
+							ILType *objectType, ILField *field,
+							ILType *fieldType)
+{
+}
+static void Coder_LoadStaticField(ILCoder *coder, ILField *field,
+							      ILType *fieldType)
+{
+}
+static void Coder_LoadFieldAddr(ILCoder *coder, ILEngineType ptrType,
+							    ILType *objectType, ILField *field,
+							    ILType *fieldType)
+{
+}
+static void Coder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
+							          ILType *fieldType)
+{
+}
+static void Coder_StoreField(ILCoder *coder, ILEngineType ptrType,
+							 ILType *objectType, ILField *field,
+							 ILType *fieldType, ILEngineType valueType)
+{
+}
+static void Coder_StoreStaticField(ILCoder *coder, ILField *field,
+							       ILType *fieldType, ILEngineType valueType)
 {
 }
 
@@ -325,6 +357,13 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_ArrayLength,
 	Coder_NewArray,
 	Coder_LocalAlloc,
+	Coder_CastClass,
+	Coder_LoadField,
+	Coder_LoadStaticField,
+	Coder_LoadFieldAddr,
+	Coder_LoadStaticFieldAddr,
+	Coder_StoreField,
+	Coder_StoreStaticField,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

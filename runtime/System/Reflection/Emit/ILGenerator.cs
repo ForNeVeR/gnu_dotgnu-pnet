@@ -413,14 +413,15 @@ public class ILGenerator : IDetachItem
 	// Emit a raw opcode with no stack adjustments.
 	private void EmitRawOpcode(int value)
 			{
+				value &= 0xFFFF;
 				if(value < 0x0100)
 				{
 					EmitByte(value);
 				}
 				else
 				{
+					EmitByte(value >> 8);
 					EmitByte(value);
-					EmitByte(value & 0xFF);
 				}
 			}
 
@@ -431,15 +432,15 @@ public class ILGenerator : IDetachItem
 	private void EmitOpcode(ref OpCode opcode)
 			{
 				// Output the opcode to the instruction stream.
-				int value = opcode.value;
+				int value = (opcode.value & 0xFFFF);
 				if(value < 0x0100)
 				{
 					EmitByte(value);
 				}
 				else
 				{
+					EmitByte(value >> 8);
 					EmitByte(value);
-					EmitByte(value & 0xFF);
 				}
 
 				// Adjust the stack requirements.
@@ -593,25 +594,78 @@ public class ILGenerator : IDetachItem
 				}
 
 				// Adjust the stack to account for the changes.
-				if(opcode.stackPush == (int)(StackBehaviour.Varpush))
+				switch((StackBehaviour)(opcode.stackPop))
 				{
-					++height;
-				}
-				if(opcode.stackPop == (int)(StackBehaviour.Varpop))
-				{
-					if(constructor is ConstructorBuilder)
+					case StackBehaviour.Pop0:
+						break;
+
+					case StackBehaviour.Varpop:
 					{
-						height -= ((ConstructorBuilder)constructor).numParams;
-					}
-					else
-					{
-						ParameterInfo[] paramList = constructor.GetParameters();
-						if(paramList != null)
+						if(constructor is ConstructorBuilder)
 						{
-							height -= paramList.Length;
+							height -= ((ConstructorBuilder)constructor).numParams;
+						}
+						else
+						{
+							ParameterInfo[] paramList = constructor.GetParameters();
+							if(paramList != null)
+							{
+								height -= paramList.Length;
+							}
 						}
 					}
+					break;
+
+					case StackBehaviour.Pop1:
+					case StackBehaviour.Popi:
+					case StackBehaviour.Popref:
+						--height;
+						break;
+
+					case StackBehaviour.Pop1_pop1:
+					case StackBehaviour.Popi_pop1:
+					case StackBehaviour.Popi_popi:
+					case StackBehaviour.Popi_popi8:
+					case StackBehaviour.Popi_popr4:
+					case StackBehaviour.Popi_popr8:
+					case StackBehaviour.Popref_pop1:
+					case StackBehaviour.Popref_popi:
+						height -= 2;
+						break;
+
+					case StackBehaviour.Popi_popi_popi:
+					case StackBehaviour.Popref_popi_popi:
+					case StackBehaviour.Popref_popi_popi8:
+					case StackBehaviour.Popref_popi_popr4:
+					case StackBehaviour.Popref_popi_popr8:
+					case StackBehaviour.Popref_popi_popref:
+						height -= 3;
+						break;
+
+					default: break;
 				}
+				switch((StackBehaviour)(opcode.stackPush))
+				{
+					case StackBehaviour.Push0:
+						break;
+
+					case StackBehaviour.Push1:
+					case StackBehaviour.Pushi:
+					case StackBehaviour.Pushi8:
+					case StackBehaviour.Pushr4:
+					case StackBehaviour.Pushr8:
+					case StackBehaviour.Pushref:
+					case StackBehaviour.Varpush:
+						++height;
+						break;
+
+					case StackBehaviour.Push1_push1:
+						height += 2;
+						break;
+
+					default: break;
+				}
+
 				if(height > maxHeight)
 				{
 					maxHeight = height;
@@ -861,32 +915,90 @@ public class ILGenerator : IDetachItem
 				}
 
 				// Adjust the stack to account for the changes.
-				if(opcode.stackPush == (int)(StackBehaviour.Varpush))
+				switch((StackBehaviour)(opcode.stackPop))
 				{
-					if(method.ReturnType != typeof(void))
+					case StackBehaviour.Pop0:
+						break;
+
+					case StackBehaviour.Varpop:
 					{
-						++height;
-					}
-				}
-				if(opcode.stackPop == (int)(StackBehaviour.Varpop))
-				{
-					if(method is MethodBuilder)
-					{
-						height -= ((MethodBuilder)method).numParams;
-					}
-					else
-					{
-						ParameterInfo[] paramList = method.GetParameters();
-						if(paramList != null)
+						if(method is MethodBuilder)
 						{
-							height -= paramList.Length;
+							height -= ((MethodBuilder)method).numParams;
+						}
+						else
+						{
+							ParameterInfo[] paramList = method.GetParameters();
+							if(paramList != null)
+							{
+								height -= paramList.Length;
+							}
+						}
+						if(!method.IsStatic && opcode.value != 0x73) // "newobj"
+						{
+							--height;
 						}
 					}
-					if(!method.IsStatic && opcode.value != 0x73) // "newobj"
-					{
+					break;
+
+					case StackBehaviour.Pop1:
+					case StackBehaviour.Popi:
+					case StackBehaviour.Popref:
 						--height;
-					}
+						break;
+
+					case StackBehaviour.Pop1_pop1:
+					case StackBehaviour.Popi_pop1:
+					case StackBehaviour.Popi_popi:
+					case StackBehaviour.Popi_popi8:
+					case StackBehaviour.Popi_popr4:
+					case StackBehaviour.Popi_popr8:
+					case StackBehaviour.Popref_pop1:
+					case StackBehaviour.Popref_popi:
+						height -= 2;
+						break;
+
+					case StackBehaviour.Popi_popi_popi:
+					case StackBehaviour.Popref_popi_popi:
+					case StackBehaviour.Popref_popi_popi8:
+					case StackBehaviour.Popref_popi_popr4:
+					case StackBehaviour.Popref_popi_popr8:
+					case StackBehaviour.Popref_popi_popref:
+						height -= 3;
+						break;
+
+					default: break;
 				}
+				switch((StackBehaviour)(opcode.stackPush))
+				{
+					case StackBehaviour.Push0:
+						break;
+
+					case StackBehaviour.Push1:
+					case StackBehaviour.Pushi:
+					case StackBehaviour.Pushi8:
+					case StackBehaviour.Pushr4:
+					case StackBehaviour.Pushr8:
+					case StackBehaviour.Pushref:
+						++height;
+						break;
+
+					case StackBehaviour.Varpush:
+					{
+						if(method.ReturnType != typeof(void))
+						{
+							++height;
+						}
+					}
+					break;
+
+					case StackBehaviour.Push1_push1:
+						height += 2;
+						break;
+
+					default: break;
+				}
+
 				if(height > maxHeight)
 				{
 					maxHeight = height;

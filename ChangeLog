@@ -31,6 +31,9 @@
 	* samples/samples.build, samples/Emit.cs: add an example program for
 	System.Reflection.Emit.
 
+	* runtime/System/Reflection/Emit/ILGenerator.cs: fix some stack height and
+	long opcode bugs.
+
 2003-07-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Display.cs, runtime/System/DllNotFoundException.cs:

@@ -1874,6 +1874,88 @@ static int ParameterTypeMatch(ILExecThread *thread, ILImage *image,
 	return 1;
 }
 
+/*
+ * Get the method underlying a member, for permission and access checks.
+ * Returns NULL if there is no underlying method.
+ */
+static ILMethod *GetUnderlyingMethod(ILMember *member)
+{
+	ILMethod *method;
+
+	switch(ILMemberGetKind(member))
+	{
+		case IL_META_MEMBERKIND_METHOD:
+		{
+			return (ILMethod *)member;
+		}
+		/* Not reached */
+
+		case IL_META_MEMBERKIND_PROPERTY:
+		{
+			method = ILProperty_Getter((ILProperty *)member);
+			if(method)
+			{
+				return method;
+			}
+			method = ILProperty_Setter((ILProperty *)member);
+			if(method)
+			{
+				return method;
+			}
+		}
+		break;
+
+		case IL_META_MEMBERKIND_EVENT:
+		{
+			method = ILEvent_AddOn((ILEvent *)member);
+			if(method)
+			{
+				return method;
+			}
+			method = ILEvent_RemoveOn((ILEvent *)member);
+			if(method)
+			{
+				return method;
+			}
+		}
+		break;
+	}
+
+	return 0;
+}
+
+/* 
+ * Check if member1 override member2 or vice versa , return overriding 
+ * member , else return NULL.
+ *
+ * TODO: handle "new" instance methods, fields and methods
+ */
+static ILMember * CheckMemberOverride(ILMember *member1, ILMember *member2)
+{
+	ILMethod *method1, *method2;
+	ILClass *class1, *class2;
+
+	method1=GetUnderlyingMethod(member1);
+	method2=GetUnderlyingMethod(member2);
+	if(!method1 || !method2) return NULL;
+	if(!ILMethod_IsVirtual(method1) || !ILMethod_IsVirtual(method2)) 
+	{
+		return NULL;
+	}
+	class1=ILMember_Owner(member1);
+	class2=ILMember_Owner(member2);
+	/* Note: I'm assuming here that the object heirarchy says it all */
+	if(ILClassInheritsFrom(class1,class2))
+	{
+		return member1;
+	}
+	if(ILClassInheritsFrom(class2, class1))
+	{
+		return member2;
+	}
+	return NULL;
+}
+
 #endif /* IL_CONFIG_REFLECTION */
 
 /*
@@ -1898,6 +1980,7 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 	ILClass *classInfo;
 	char *nameUtf8;
 	ILMember *member;
+	ILMember *otherMember;
 	ILProgramItem *foundItem;
 	ILNestedInfo *nested;
 	ILClass *child;
@@ -2002,6 +2085,14 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 			/* This is a candidate member */
 			if(foundItem)
 			{
+				otherMember=ILProgramItemToMember(foundItem);
+				if(ILMemberGetKind(member) == ILMemberGetKind(otherMember) &&
+				  (otherMember=CheckMemberOverride(otherMember, member))!=NULL)
+				{
+					foundItem = &(otherMember->programItem);
+					member = member->nextMember;
+					continue;					
+				}
 				/* The member match is ambiguous */
 			ambiguous:
 				ILExecThreadThrowSystem

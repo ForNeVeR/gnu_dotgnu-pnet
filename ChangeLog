@@ -48,6 +48,11 @@
 	* I18N/CJK/CP51932.cs, I18N/CJK/CP932.cs: add code page 51932 (euc-jp)
 	to the I18N routines.
 
+	* I18N/.cvsignore, I18N/I18N.build, I18N/Makefile.am,
+	I18N/README, I18N/Common/HandlerCollection.cs, I18N/Common/Manager.cs:
+	convert the I18N directory into a two-phase build so that
+	"I18N-handlers.def" can be bound to I18N.dll as a resource.
+
 2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, System.Configuration.Install/.cvsignore,

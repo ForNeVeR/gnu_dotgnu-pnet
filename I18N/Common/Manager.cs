@@ -467,21 +467,13 @@ public class Manager
 	// Load the list of classes that are present in all region assemblies.
 	private void LoadClassList()
 			{
-				FileStream stream;
+				Stream stream;
 
-				// Look for "I18N-handlers.def" in the same directory
-				// as this assembly.  Note: this assumes that the
-				// "Assembly.GetFile" method can access files that
-				// aren't explicitly part of the assembly manifest.
-				//
-				// This is necessary because the "I18N-handlers.def"
-				// file is generated after the "i18n" assembly is
-				// compiled and linked.  So it cannot be embedded
-				// directly into the assembly manifest.
+				// Look for "I18N-handlers.def" in the manifest resources.
 				try
 				{
 					stream = Assembly.GetExecutingAssembly()
-								.GetFile("I18N-handlers.def");
+						.GetManifestResourceStream("I18N-handlers.def");
 					if(stream == null)
 					{
 						return;

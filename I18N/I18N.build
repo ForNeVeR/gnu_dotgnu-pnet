@@ -2,8 +2,8 @@
 <project name="pnetlib I18N" default="all">
 	<target name="all">
 
-		<!-- Build the primary I18N.dll library -->
-		<compile output="I18N.dll"
+		<!-- Build the first phase I18N.dll library -->
+		<compile output="first/I18N.dll"
 				 target="library"
 				 unsafe="true"
 				 nostdlib="true"
@@ -46,7 +46,7 @@
 			</resources>
 
 			<references>
-				<file name="I18N.dll"/>
+				<file name="first/I18N.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -71,7 +71,7 @@
 			</sources>
 
 			<references>
-				<file name="I18N.dll"/>
+				<file name="first/I18N.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -96,7 +96,7 @@
 			</sources>
 
 			<references>
-				<file name="I18N.dll"/>
+				<file name="first/I18N.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -121,7 +121,7 @@
 			</sources>
 
 			<references>
-				<file name="I18N.dll"/>
+				<file name="first/I18N.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -146,7 +146,7 @@
 			</sources>
 
 			<references>
-				<file name="I18N.dll"/>
+				<file name="first/I18N.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -160,4 +160,38 @@
 		</compile>
 
 	</target>
+
+	<target name="phase-two">
+
+		<!-- Build the second phase I18N.dll library -->
+		<compile output="I18N.dll"
+				 target="library"
+				 unsafe="true"
+				 nostdlib="true"
+				 optimize="true">
+
+			<sources>
+				<includes name="Common/*.cs"/>
+			</sources>
+
+			<resources>
+				<file name="../resources/en_US/I18N/I18N.resources"/>
+				<file name="I18N-handlers.def"/>
+			</resources>
+
+			<references>
+				<file name="../runtime/mscorlib.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-fminimize-parameters"/>
+			<arg compiler="csc" value="/nowarn:626"/>
+			<arg compiler="csc" value="/nowarn:649"/>
+			<arg compiler="csc" value="/nowarn:168"/>
+			<arg compiler="csc" value="/nowarn:67"/>
+			<arg compiler="csc" value="/nowarn:169"/>
+		</compile>
+
+	</target>
+
 </project>

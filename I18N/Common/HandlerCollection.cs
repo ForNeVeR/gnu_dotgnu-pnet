@@ -39,7 +39,7 @@ public sealed class HandlerCollection : IDictionary
 
 	// Estimate of the number of handlers (should be >= the number
 	// of lines in the "I18N-handlers.def" file).
-	private const int HandlerCountEstimate = 160;
+	private const int HandlerCountEstimate = 512;
 
 	// Constructor.
 	public HandlerCollection()

@@ -1,4 +1,10 @@
 
+2002-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/method13.cs,
+	csharp/class/method13.il, csharp/class/method13.jl:
+	add a new test case for "base" member access.
+
 2002-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/delegate1.il, csharp/class/event1.il,

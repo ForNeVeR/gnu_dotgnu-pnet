@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 	char *outputFile = NULL;
 	int format = -1;
 	int flags = 0;
-	int resourcesOnly = 1;
+	int resourcesOnly = 0;
 	char *assemblyName = NULL;
 	ILUInt16 assemblyVersion[4] = {0, 0, 0, 0};
 	char *moduleName = NULL;
@@ -660,30 +660,33 @@ int main(int argc, char *argv[])
 
 	/* Set the default entry point, or report an error about
 	   incorrect entry point specifications */
-	if(entryPoint)
+	if(!resourcesOnly)
 	{
-		if(!ILLinkerSetEntryPoint(linker, entryPoint))
+		if(entryPoint)
 		{
-			fprintf(stderr, "%s: could not locate the entry point `%s'",
-					outputFile, entryPoint);
-			errors = 1;
+			if(!ILLinkerSetEntryPoint(linker, entryPoint))
+			{
+				fprintf(stderr, "%s: could not locate the entry point `%s'",
+						outputFile, entryPoint);
+				errors = 1;
+			}
 		}
-	}
-	if(format == IL_IMAGETYPE_EXE)
-	{
-		if(!ILLinkerHasEntryPoint(linker))
+		if(format == IL_IMAGETYPE_EXE)
 		{
-			fprintf(stderr, "%s: no entry point specified\n", outputFile);
-			errors = 1;
+			if(!ILLinkerHasEntryPoint(linker))
+			{
+				fprintf(stderr, "%s: no entry point specified\n", outputFile);
+				errors = 1;
+			}
 		}
-	}
-	else if(format == IL_IMAGETYPE_DLL)
-	{
-		if(ILLinkerHasEntryPoint(linker))
+		else if(format == IL_IMAGETYPE_DLL)
 		{
-			fprintf(stderr, "%s: DLL's cannot have entry points\n",
-					outputFile);
-			errors = 1;
+			if(ILLinkerHasEntryPoint(linker))
+			{
+				fprintf(stderr, "%s: DLL's cannot have entry points\n",
+						outputFile);
+				errors = 1;
+			}
 		}
 	}
 

@@ -6,6 +6,9 @@ new function, to assist the linker when it converts strings.
 
 * ilalink/link_method.c: convert method bodies within the linker.
 
+* ilalink/ilalink.c: "resourcesOnly" should default to 0, not 1; don't
+bother with entry points if the assembly only contains resources.
+
 2001-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilalink/linker.h: include "il_dumpasm.h" because it is needed in multiple

@@ -7,8 +7,8 @@ System.Data.dll:
 	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
 			-b "$(srcdir)" -B . -f System.Data.build all
 
-Parser.cs : $(MONO_SOURCE_PATH)/class/System.Data/Mono.Data.SqlExpressions/Parser.jay $(MONO_SOURCE_PATH)/jay/skeleton.cs
-	$(top_builddir)/jay/jay -ct < $(MONO_SOURCE_PATH)/jay/skeleton.cs $< >$@
+Parser.cs : $(MONO_SOURCE_PATH)/class/System.Data/Mono.Data.SqlExpressions/Parser.jay $(top_srcdir)/jay/skeleton.cs
+	$(top_builddir)/jay/jay -ct < $(top_srcdir)/jay/skeleton.cs $< >$@
 
 CLEANFILES = System.Data.dll Parser.cs
 

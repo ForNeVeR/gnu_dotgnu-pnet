@@ -1,9 +1,19 @@
 
-2003-05-24  Gopal.V  <gopalv82@yahoo.com>
+2004-05-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* class/System.Data/Makefile.am, jay/.cvsignore, jay/Makefile.am,
+	jay/README, jay/README.jay, jay/closure.c, jay/defs.h, jay/error.c,
+	jay/lalr.c, jay/lr0.c, jay/main.c, jay/mkpar.c, jay/output.c,
+	jay/reader.c, jay/skeleton, jay/skeleton.cs, jay/symtab.c,
+	jay/verbose.c, jay/warshall.c: check in the full sources for jay
+	because automake 1.4 cannot handle directory specifications in
+	SOURCES lines.
+
+2004-05-24  Gopal.V  <gopalv82@yahoo.com>
 
 	* copy-mcs.sh: Add the new directories to copy-mcs.sh.
 
-2003-05-21  Gopal.V  <gopalv82@yahoo.com>
+2004-05-21  Gopal.V  <gopalv82@yahoo.com>
 
 	* class/System.Web.Services/System.Web.Services.build: Add references
 	to System.Data and its dependencies to support a clean build.
@@ -11,14 +21,14 @@
 	* class/System.Web/System.Web.build, class/System.Web/ICall.cs: Add
 	stubs to replace the mono internal calls.
 
-2003-05-20  Gopal.V  <gopalv82@yahoo.com>
+2004-05-20  Gopal.V  <gopalv82@yahoo.com>
 
 	* configure.in, class/Makefile.am, 
 	class/System.Web.Services/Makefile.am, 
 	class/System.Web.Services/System.Web.Services.build: Add
 	System.Web.Services to ml-pnet.
 	
-2003-05-19  Gopal.V  <gopalv82@yahoo.com>
+2004-05-19  Gopal.V  <gopalv82@yahoo.com>
 
 	* configure.in, jay/Makefile.am: add jay as no-inst binary to 
 	enable it to build System.Data.

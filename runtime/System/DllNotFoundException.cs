@@ -29,6 +29,8 @@ using System.Runtime.Serialization;
 [Serializable]
 public class DllNotFoundException : TypeLoadException
 {
+	private String dllName;
+	
 	// Constructors.
 	public DllNotFoundException()
 		: base(_("Exception_DllNotFound")) {}
@@ -47,7 +49,7 @@ public class DllNotFoundException : TypeLoadException
 			{
 				get
 				{
-					return _("Exception_DllNotFound");
+					return String.Format(_("Exception_DllNotFound"), dllName);
 				}
 			}
 

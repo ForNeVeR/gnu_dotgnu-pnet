@@ -1,4 +1,12 @@
+2004-06-19  Thong Nguyen  <tum@veridicus.com>
 
+	* resources/ca_ES/runtime/Exception.txt, resources/de_DE/runtime/
+	Exception.txt, resources/en_US/runtime/Exception.txt: Added dll
+	name placeholder for Exception_DllNotFound.
+	
+	* runtime/System/DllNotFoundException.cs: Added dllName field
+	and dll name in default error message.
+	
 2004-06-18  Gopal V  <gopalv82@yahoo.com>
 
 	* System/Net/Dns.cs, System/Platform/DnsMethods.cs: Create a new

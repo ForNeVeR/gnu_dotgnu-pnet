@@ -276,6 +276,26 @@ static void CVMCoder_Destroy(ILCoder *_coder)
 }
 
 /*
+ * Get an IL offset from a native offset within a method.
+ */
+static ILUInt32 CVMCoder_GetILOffset(ILCoder *_coder, void *start,
+									 ILUInt32 offset, int exact)
+{
+	return ILCacheGetBytecode(((ILCVMCoder *)_coder)->cache, start,
+							  offset, exact);
+}
+
+/*
+ * Get a native offset from an IL offset within a method.
+ */
+static ILUInt32 CVMCoder_GetNativeOffset(ILCoder *_coder, void *start,
+									     ILUInt32 offset, int exact)
+{
+	return ILCacheGetNative(((ILCVMCoder *)_coder)->cache, start,
+							offset, exact);
+}
+
+/*
  * Include the rest of the CVM conversion routines from other files.
  * We split the implementation to make it easier to maintain the code.
  */
@@ -378,6 +398,8 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_Catch,
 	CVMCoder_PCToHandler,
 	CVMCoder_PCToMethod,
+	CVMCoder_GetILOffset,
+	CVMCoder_GetNativeOffset,
 	"sentinel"
 };
 

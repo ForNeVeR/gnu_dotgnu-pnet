@@ -132,6 +132,7 @@ ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n)
 		{
 			return frame;
 		}
+		--n;
 	}
 	return 0;
 }

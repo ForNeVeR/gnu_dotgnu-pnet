@@ -20,6 +20,7 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#include "il_debug.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -115,8 +116,25 @@ void _IL_StackFrame_InternalGetMethod(ILExecThread *thread,
 ILInt32 _IL_StackFrame_InternalGetILOffset(ILExecThread *thread,
 										   ILInt32 skipFrames)
 {
-	/* Debug symbol information is not yet supported */
-	return -1;
+	ILCallFrame *frame = _ILGetCallFrame(thread, skipFrames);
+	unsigned char *start;
+	if(frame && frame->method && frame->pc != IL_INVALID_PC)
+	{
+		/* Consult the coder to convert the PC into an IL offset */
+		start = (unsigned char *)ILMethodGetUserData(frame->method);
+		if(ILMethodIsConstructor(frame->method))
+		{
+			start -= ILCoderCtorOffset(thread->process->coder);
+		}
+		return (ILInt32)(ILCoderGetILOffset
+					(thread->process->coder, (void *)start,
+					 (ILUInt32)(frame->pc - start), 0));
+	}
+	else
+	{
+		/* Probably a native function which does not have offsets */
+		return -1;
+	}
 }
 
 /*
@@ -126,12 +144,20 @@ ILInt32 _IL_StackFrame_InternalGetNativeOffset(ILExecThread *thread,
 											   ILInt32 skipFrames)
 {
 	ILCallFrame *frame = _ILGetCallFrame(thread, skipFrames);
-	if(frame)
+	unsigned char *start;
+	if(frame && frame->method && frame->pc != IL_INVALID_PC)
 	{
-		return (ILInt32)(frame->pc);
+		/* Convert the PC into a native offset using the method start */
+		start = (unsigned char *)ILMethodGetUserData(frame->method);
+		if(ILMethodIsConstructor(frame->method))
+		{
+			start -= ILCoderCtorOffset(thread->process->coder);
+		}
+		return (ILInt32)(frame->pc - start);
 	}
 	else
 	{
+		/* Probably a native function which does not have offsets */
 		return -1;
 	}
 }
@@ -142,13 +168,49 @@ ILInt32 _IL_StackFrame_InternalGetNativeOffset(ILExecThread *thread,
  *											  out int line, out int col);
  */
 ILString *_IL_StackFrame_InternalGetDebugInfo
-				(ILExecThread *thread, void *method, ILInt32 offset,
+				(ILExecThread *thread, void *_method, ILInt32 offset,
 				 ILInt32 *line, ILInt32 *col)
 {
-	/* Debug symbol information is not yet supported */
+	ILMethod *method;
+	ILDebugContext *dbg;
+	const char *filename;
+
+	/* Initialize the return parameters in case of error */
 	*line = 0;
 	*col = 0;
-	return 0;
+
+	/* Validate the method handle */
+	method = *((ILMethod **)_method);
+	if(!method)
+	{
+		return 0;
+	}
+
+	/* Bail out if the method's image does not have any debug information */
+	if(!ILDebugPresent(ILProgramItem_Image(method)))
+	{
+		return 0;
+	}
+
+	/* Get the symbol debug information */
+	if((dbg = ILDebugCreate(ILProgramItem_Image(method))) == 0)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	filename = ILDebugGetLineInfo(dbg, ILMethod_Token(method),
+								  (ILUInt32)offset,
+								  (ILUInt32 *)line, (ILUInt32 *)col);
+	ILDebugDestroy(dbg);
+
+	/* No debug information if "filename" is NULL */
+	if(!filename)
+	{
+		return 0;
+	}
+
+	/* Convert the filename into a string and exit */
+	return ILStringCreate(thread, filename);
 }
 
 /*
@@ -174,6 +236,7 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 	ILObject *array;
 	PackedStackFrame *data;
 	ILMethod *method;
+	unsigned char *start;
 
 	/* Get the number of frames on the stack, and also determine
 	   where the exception constructors stop and real code starts */
@@ -228,8 +291,29 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 	while(frame != 0)
 	{
 		data->method = frame->method;
-		data->offset = -1;	/* Debug symbol information is not yet supported */
-		data->nativeOffset = (ILInt32)(frame->pc);
+		if(frame->method && frame->pc != IL_INVALID_PC)
+		{
+			/* Find the start of the frame method */
+			start = (unsigned char *)ILMethodGetUserData(frame->method);
+			if(ILMethodIsConstructor(frame->method))
+			{
+				start -= ILCoderCtorOffset(thread->process->coder);
+			}
+
+			/* Get the native offset from the method start */
+			data->nativeOffset = (ILInt32)(frame->pc - start);
+
+			/* Get the IL offset from the coder */
+			data->offset = (ILInt32)ILCoderGetILOffset
+				(thread->process->coder, (void *)start,
+				 (ILUInt32)(data->nativeOffset), 0);
+		}
+		else
+		{
+			/* Probably a native method that does not have offsets */
+			data->offset = -1;
+			data->nativeOffset = -1;
+		}
 		++data;
 		frame = _ILGetNextCallFrame(thread, frame);
 	}

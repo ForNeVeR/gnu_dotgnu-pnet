@@ -326,6 +326,16 @@ static ILMethod *Coder_PCToMethod(ILCoder *coder, void *pc, int beyond)
 {
 	return 0;
 }
+static ILUInt32 Coder_GetILOffset(ILCoder *coder, void *start,
+								  ILUInt32 offset, int exact)
+{
+	return IL_MAX_UINT32;
+}
+static ILUInt32 Coder_GetNativeOffset(ILCoder *coder, void *start,
+								      ILUInt32 offset, int exact)
+{
+	return IL_MAX_UINT32;
+}
 
 /*
  * Null coder class and instance.
@@ -411,6 +421,8 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_Catch,
 	Coder_PCToHandler,
 	Coder_PCToMethod,
+	Coder_GetILOffset,
+	Coder_GetNativeOffset,
 	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};

@@ -610,6 +610,20 @@ struct _tagILCoderClass
 	ILMethod *(*pcToMethod)(ILCoder *coder, void *pc, int beyond);
 
 	/*
+	 * Get the IL offset that corresponds to a native offset
+	 * within a method.  Returns IL_MAX_UINT32 if no IL offset.
+	 */
+	ILUInt32 (*getILOffset)(ILCoder *coder, void *start,
+							ILUInt32 offset, int exact);
+
+	/*
+	 * Get the native offset that corresponds to an IL offset
+	 * within a method.  Returns IL_MAX_UINT32 if no native offset.
+	 */
+	ILUInt32 (*getNativeOffset)(ILCoder *coder, void *start,
+							    ILUInt32 offset, int exact);
+
+	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
 	const char *sentinel;
@@ -824,6 +838,12 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->pcToHandler))((coder), (pc), (beyond)))
 #define	ILCoderPCToMethod(coder,pc,beyond) \
 			((*((coder)->classInfo->pcToMethod))((coder), (pc), (beyond)))
+#define	ILCoderGetILOffset(coder,start,offset,exact) \
+			((*((coder)->classInfo->getILOffset))((coder), (start), \
+												  (offset), (exact)))
+#define	ILCoderGetNativeOffset(coder,start,offset,exact) \
+			((*((coder)->classInfo->getNativeOffset))((coder), (start), \
+												      (offset), (exact)))
 
 #ifdef	__cplusplus
 };

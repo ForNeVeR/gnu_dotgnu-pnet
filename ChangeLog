@@ -1,4 +1,9 @@
 
+2002-05-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csdoc/doc_valil.c (AttributeToName): length-determination error
+	that caused SEGV's when converting attributes.
+
 2002-05-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y (OuterDeclaration): don't call "yyerrok"

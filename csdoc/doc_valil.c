@@ -1201,7 +1201,7 @@ static char *AttributeToName(ILAttribute *attr)
 	ILUInt32 numParams;
 	ILUInt32 numExtras;
 	int needComma;
-	int type;
+	int type, posn;
 	ILMember *member;
 	const char *memberName;
 	int memberNameLen;
@@ -1293,8 +1293,9 @@ static char *AttributeToName(ILAttribute *attr)
 		{
 			ILDocOutOfMemory(0);
 		}
-		ILMemCpy(name + strlen(name), memberName, memberNameLen);
-		strcpy(name + strlen(name) + memberNameLen, "=");
+		posn = strlen(name);
+		ILMemCpy(name + posn, memberName, memberNameLen);
+		strcpy(name + posn + memberNameLen, "=");
 		name = AppendAttrValue(name, reader, type);
 		if(!name)
 		{

@@ -18,12 +18,218 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+%{
+
+/*
+ * Construct a boolean constant node.
+ */
+static ILNode *CreateBoolConstant(ILNode *cloneFrom, ILInt32 value)
+{
+	ILNode *node;
+	if(value)
+	{
+		node = ILNode_True_create();
+	}
+	else
+	{
+		node = ILNode_False_create();
+	}
+	CGenCloneLine(node, cloneFrom);
+	return node;
+}
+
+/*
+ * Construct a constant node from a compile-time constant.
+ * If it isn't possible to construct a node, return "origNode".
+ */
+static ILNode *CreateConstantNode(ILNode *cloneFrom, ILNode *origNode,
+								  ILEvalValue *evalValue)
+{
+	ILNode *node = 0;
+	switch(evalValue->valueType)
+	{
+		case ILMachineType_Int8:
+		{
+			if(evalValue->un.i4Value >= 0)
+			{
+				node = ILNode_Int8_create
+					((ILUInt64)(evalValue->un.i4Value), 0, 1);
+			}
+			else
+			{
+				node = ILNode_Int8_create
+					((ILUInt64)(-((ILInt64)(evalValue->un.i4Value))), 1, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_UInt8:
+		{
+			node = ILNode_UInt8_create
+				((ILUInt64)(evalValue->un.i4Value), 0, 0);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		{
+			if(evalValue->un.i4Value >= 0)
+			{
+				node = ILNode_Int16_create
+					((ILUInt64)(evalValue->un.i4Value), 0, 1);
+			}
+			else
+			{
+				node = ILNode_Int16_create
+					((ILUInt64)(-((ILInt64)(evalValue->un.i4Value))), 1, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_UInt16:
+		{
+			node = ILNode_UInt16_create
+				((ILUInt64)(evalValue->un.i4Value), 0, 0);
+		}
+		break;
+
+		case ILMachineType_Char:
+		{
+			node = ILNode_Char_create
+				((ILUInt64)(evalValue->un.i4Value), 0, 0);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		{
+			if(evalValue->un.i4Value >= 0)
+			{
+				node = ILNode_Int32_create
+					((ILUInt64)(evalValue->un.i4Value), 0, 1);
+			}
+			else
+			{
+				node = ILNode_Int32_create
+					((ILUInt64)(-((ILInt64)(evalValue->un.i4Value))), 1, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			node = ILNode_UInt32_create
+				((ILUInt64)(ILUInt32)(evalValue->un.i4Value), 0, 0);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			if(evalValue->un.i4Value >= 0)
+			{
+				node = ILNode_Int64_create
+					((ILUInt64)(evalValue->un.i8Value), 0, 1);
+			}
+			else
+			{
+				node = ILNode_Int64_create
+					((ILUInt64)(-(evalValue->un.i8Value)), 1, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			node = ILNode_UInt64_create
+				((ILUInt64)(evalValue->un.i8Value), 0, 0);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		{
+			if(evalValue->un.i4Value >= 0)
+			{
+				node = ILNode_Int_create
+					((ILUInt64)(evalValue->un.i4Value), 0, 1);
+			}
+			else
+			{
+				node = ILNode_Int_create
+					((ILUInt64)(-((ILInt64)(evalValue->un.i4Value))), 1, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_NativeUInt:
+		{
+			node = ILNode_UInt_create
+				((ILUInt64)(ILUInt32)(evalValue->un.i4Value), 0, 0);
+		}
+		break;
+
+		case ILMachineType_UnmanagedPtr:
+		{
+			if(evalValue->un.i4Value >= 0)
+			{
+				node = ILNode_CastSimple_create(ILNode_Int_create
+					((ILUInt64)(evalValue->un.i4Value), 0, 1),
+					ILMachineType_UnmanagedPtr);
+			}
+			else
+			{
+				node = ILNode_CastSimple_create(ILNode_Int_create
+					((ILUInt64)(-((ILInt64)(evalValue->un.i4Value))), 1, 1),
+					ILMachineType_UnmanagedPtr);
+			}
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			node = ILNode_Float32_create(evalValue->un.r4Value);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		{
+			node = ILNode_Float64_create(evalValue->un.r8Value);
+		}
+		break;
+
+		case ILMachineType_NativeFloat:
+		{
+			node = ILNode_Float_create(evalValue->un.r8Value);
+		}
+		break;
+
+		default: break;
+	}
+	if(node)
+	{
+		CGenCloneLine(node, cloneFrom);
+		return node;
+	}
+	else
+	{
+		return cloneFrom;
+	}
+}
+
+%}
+
 /*
  * Perform semantic analysis for the logical NOT operator.
  */
 ILNode_CSemAnalysis(ILNode_LogicalNot)
 {
-	ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	CSemValue value;
+	ILEvalValue *evalValue;
+	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if((evalValue = CSemGetConstant(value)) != 0 &&
+	   ILGenCastConst(info, evalValue, evalValue->valueType,
+	   				  ILMachineType_Boolean))
+	{
+		/* Replace this node with either "true" or "false" */
+		*parent = CreateBoolConstant(node->expr, evalValue->un.i4Value);
+	}
 	return CSemValueBool;
 }
 
@@ -32,8 +238,80 @@ ILNode_CSemAnalysis(ILNode_LogicalNot)
  */
 ILNode_CSemAnalysis(ILNode_LogicalAnd)
 {
-	ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
-	ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
+	CSemValue value1;
+	CSemValue value2;
+	ILEvalValue *evalValue1;
+	ILEvalValue *evalValue2;
+
+	/* Perform semantic analysis on the two arguments */
+	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
+
+	/* Perform constant evaluation */
+	evalValue1 = CSemGetConstant(value1);
+	if(evalValue1)
+	{
+		if(!ILGenCastConst(info, evalValue1, evalValue1->valueType,
+	   				  	   ILMachineType_Boolean))
+		{
+			evalValue1 = 0;
+		}
+	}
+	evalValue2 = CSemGetConstant(value2);
+	if(evalValue1)
+	{
+		if(!ILGenCastConst(info, evalValue1, evalValue1->valueType,
+	   				  	   ILMachineType_Boolean))
+		{
+			evalValue1 = 0;
+		}
+	}
+	if(evalValue1 && evalValue2)
+	{
+		/* Both arguments are boolean constants */
+		if(evalValue1->un.i4Value && evalValue2->un.i4Value)
+		{
+			*parent = CreateBoolConstant((ILNode *)node, 1);
+		}
+		else
+		{
+			*parent = CreateBoolConstant((ILNode *)node, 0);
+		}
+	}
+	else if(evalValue1)
+	{
+		/* The first argument is a boolean constant */
+		if(evalValue1->un.i4Value)
+		{
+			/* The whole expression evaluates to the second argument */
+			*parent = ILNode_ToBool_create(node->expr2);
+			CGenCloneLine(*parent, node->expr2);
+		}
+		else
+		{
+			/* The whole expression evaluates to false */
+			*parent = CreateBoolConstant((ILNode *)node, 0);
+		}
+	}
+	else if(evalValue2)
+	{
+		/* The second argument is a boolean constant */
+		if(evalValue2->un.i4Value)
+		{
+			/* The whole expression evaluates to the first argument */
+			*parent = ILNode_ToBool_create(node->expr1);
+			CGenCloneLine(*parent, node->expr1);
+		}
+		else
+		{
+			/* Evaluate side effects in the first expression and return false */
+			*parent = ILNode_Comma_create(node->expr1,
+										  CreateBoolConstant(node->expr2, 0));
+			CGenCloneLine(*parent, (ILNode *)node);
+		}
+	}
+
+	/* The result is always boolean */
 	return CSemValueBool;
 }
 
@@ -42,8 +320,80 @@ ILNode_CSemAnalysis(ILNode_LogicalAnd)
  */
 ILNode_CSemAnalysis(ILNode_LogicalOr)
 {
-	ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
-	ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
+	CSemValue value1;
+	CSemValue value2;
+	ILEvalValue *evalValue1;
+	ILEvalValue *evalValue2;
+
+	/* Perform semantic analysis on the two arguments */
+	value1 = ILNode_CSemAnalysis(node->expr1, info, &(node->expr1), stmtLevel);
+	value2 = ILNode_CSemAnalysis(node->expr2, info, &(node->expr2), stmtLevel);
+
+	/* Perform constant evaluation */
+	evalValue1 = CSemGetConstant(value1);
+	if(evalValue1)
+	{
+		if(!ILGenCastConst(info, evalValue1, evalValue1->valueType,
+	   				  	   ILMachineType_Boolean))
+		{
+			evalValue1 = 0;
+		}
+	}
+	evalValue2 = CSemGetConstant(value2);
+	if(evalValue1)
+	{
+		if(!ILGenCastConst(info, evalValue1, evalValue1->valueType,
+	   				  	   ILMachineType_Boolean))
+		{
+			evalValue1 = 0;
+		}
+	}
+	if(evalValue1 && evalValue2)
+	{
+		/* Both arguments are boolean constants */
+		if(evalValue1->un.i4Value || evalValue2->un.i4Value)
+		{
+			*parent = CreateBoolConstant((ILNode *)node, 1);
+		}
+		else
+		{
+			*parent = CreateBoolConstant((ILNode *)node, 0);
+		}
+	}
+	else if(evalValue1)
+	{
+		/* The first argument is a boolean constant */
+		if(evalValue1->un.i4Value)
+		{
+			/* The whole expression evaluates to true */
+			*parent = CreateBoolConstant((ILNode *)node, 1);
+		}
+		else
+		{
+			/* The whole expression evaluates to the second argument */
+			*parent = ILNode_ToBool_create(node->expr2);
+			CGenCloneLine(*parent, node->expr2);
+		}
+	}
+	else if(evalValue2)
+	{
+		/* The second argument is a boolean constant */
+		if(evalValue2->un.i4Value)
+		{
+			/* Evaluate side effects in the first expression and return true */
+			*parent = ILNode_Comma_create(node->expr1,
+										  CreateBoolConstant(node->expr2, 1));
+			CGenCloneLine(*parent, (ILNode *)node);
+		}
+		else
+		{
+			/* The whole expression evaluates to the first argument */
+			*parent = ILNode_ToBool_create(node->expr1);
+			CGenCloneLine(*parent, node->expr1);
+		}
+	}
+
+	/* The result is always boolean */
 	return CSemValueBool;
 }
 
@@ -265,6 +615,7 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	ILType *elemType;
 	ILType *elemType2;
 	ILType *finalType = ILType_Invalid;
+	ILEvalValue evalValue;
 
 	/* Perform semantic analysis on the two arguments, and
 	   check that they are both r-values */
@@ -421,7 +772,7 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		}
 	}
 
-	/* Cast the arguments to their final types and return */
+	/* Cast the arguments to their final types */
 	if(common1 != type1)
 	{
 		temp = ILNode_CastSimple_create(node->expr1, common1);
@@ -446,6 +797,14 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 			((ILNode *)node, ILMachineType_UnmanagedPtr);
 		CSemSetRValue(value1, finalType);
 	}
+
+	/* Attempt to perform constant evaluation on the entire expression */
+	if(ILNode_EvalConst(*parent, info, &evalValue))
+	{
+		*parent = CreateConstantNode((ILNode *)node, *parent, &evalValue);
+	}
+
+	/* Return the type of the entire expression */
 	return value1;
 
 	/* Report an invalid operands error and bail out */
@@ -710,6 +1069,7 @@ static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	ILType *elemType;
 	ILType *elemType2;
 	ILNode *temp;
+	ILEvalValue evalValue;
 
 	/* Perform semantic analysis on the two arguments, and
 	   check that they are both r-values */
@@ -821,7 +1181,7 @@ static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		goto invalid;
 	}
 
-	/* Cast the arguments to their final types and return */
+	/* Cast the arguments to their final types */
 	if(common != type1)
 	{
 		temp = ILNode_CastSimple_create(node->expr1, common);
@@ -834,6 +1194,15 @@ static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		CGenCloneLine(temp, node->expr2);
 		node->expr2 = temp;
 	}
+
+	/* Attempt to perform constant evaluation on the entire expression */
+	if(ILNode_EvalConst(*parent, info, &evalValue))
+	{
+		*parent = CreateConstantNode
+			((ILNode *)node, (ILNode *)node, &evalValue);
+	}
+
+	/* Return the type of the entire expression */
 	return CSemValueBool;
 
 	/* Report an invalid operands error and bail out */
@@ -1690,6 +2059,7 @@ ILNode_CSemAnalysis(ILNode_AddressOf)
 ILNode_CSemAnalysis(ILNode_ToBool)
 {
 	CSemValue value;
+	ILEvalValue *evalValue;
 
 	/* Perform semantic analysis on the expression */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -1703,6 +2073,15 @@ ILNode_CSemAnalysis(ILNode_ToBool)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  _("invalid boolean expression"));
+		return CSemValueBool;
+	}
+
+	/* Perform constant evaluation */
+	evalValue = CSemGetConstant(value);
+	if(evalValue && ILGenCastConst(info, evalValue, evalValue->valueType,
+								   ILMachineType_Boolean))
+	{
+		*parent = CreateBoolConstant((ILNode *)node, evalValue->un.i4Value);
 		return CSemValueBool;
 	}
 

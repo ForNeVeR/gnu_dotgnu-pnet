@@ -1707,7 +1707,8 @@ ILGenCastConst(ILMachineType_Char, ILMachineType_Boolean),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_Boolean),
 ILGenCastConst(ILMachineType_UInt32, ILMachineType_Boolean),
 ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Boolean),
-ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Boolean)
+ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Boolean),
+ILGenCastConst(ILMachineType_UnmanagedPtr, ILMachineType_Boolean)
 {
 	value->un.i4Value = (value->un.i4Value != 0);
 	value->valueType = ILMachineType_Boolean;

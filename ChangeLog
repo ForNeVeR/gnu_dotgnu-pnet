@@ -1,4 +1,12 @@
 
+2003-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/InteropServices/BestFitMappingAttribute.cs,
+	runtime/System/Runtime/InteropServices/ComCompatibleVersionAttribute.cs,
+	runtime/System/Runtime/InteropServices/TypeLibVersionAttribute.cs,
+	runtime/System/Runtime/Serialization/Formatters/TypeFilterLevel.cs:
+	new classes in .NET Framework SDK 1.1.
+
 2003-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/System/IO/FileStream.cs,

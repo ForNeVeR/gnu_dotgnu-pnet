@@ -441,9 +441,34 @@ ILScopeData *ILScopeLookup(ILScope *scope, const char *identifier, int up)
 	return 0;
 }
 
+ILScopeData *ILScopeLookupInNamespace(ILScope *globalScope,
+									  const char *namespace,
+									  const char *identifier)
+{
+	ILScope *scope;
+	if(!namespace)
+	{
+		scope = globalScope;
+	}
+	else
+	{
+		scope = FindNamespaceScope(globalScope, namespace);
+		if(!scope)
+		{
+			return 0;
+		}
+	}
+	return ILScopeLookup(scope, identifier, 0);
+}
+
 ILScopeData *ILScopeNextItem(ILScopeData *data)
 {
 	return (ILScopeData *)(ILRBTreeNext(&(data->rbnode)));
+}
+
+void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace)
+{
+	FindNamespaceScope(globalScope, namespace);
 }
 
 int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,

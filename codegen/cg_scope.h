@@ -91,10 +91,22 @@ void ILScopeClearUsing(ILScope *scope);
 ILScopeData *ILScopeLookup(ILScope *scope, const char *identifier, int up);
 
 /*
+ * Look up an identifier within a specific namespace.
+ */
+ILScopeData *ILScopeLookupInNamespace(ILScope *globalScope,
+									  const char *namespace,
+									  const char *identifier);
+
+/*
  * Get the next item associated with a name within a scope.
  * Returns NULL if no more items with the same name.
  */
 ILScopeData *ILScopeNextItem(ILScopeData *data);
+
+/*
+ * Declare a namespace within a scope.
+ */
+void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace);
 
 /*
  * Declare a type within a particular scope.  If the name

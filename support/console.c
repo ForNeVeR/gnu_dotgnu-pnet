@@ -21,7 +21,14 @@
 #include "il_console.h"
 #include "il_system.h"
 #include <stdio.h>
-#ifndef IL_WIN32_PLATFORM
+#ifdef IL_WIN32_PLATFORM
+#include <windows.h>
+#ifdef IL_WIN32_NATIVE
+	#include <malloc.h>
+#else
+	#include <alloca.h>
+#endif
+#else
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
@@ -1347,6 +1354,330 @@ void ILConsoleWriteChar(ILInt32 ch)
 	else
 	{
 		putc(ch, stdout);
+	}
+}
+
+#elif defined(IL_WIN32_PLATFORM)
+
+/*
+ * State variables for the Win32 console routines.
+ */
+static int consoleMode = IL_CONSOLE_NORMAL;
+static HANDLE consoleInput = INVALID_HANDLE_VALUE;
+static HANDLE consoleOutput = INVALID_HANDLE_VALUE;
+static DWORD inputState = 0;
+static DWORD outputState = 0;
+static WORD attributes = 0;
+
+/*
+ * Determine if stdin and stdout are connected to the console.
+ */
+static int IsUsingConsole(void)
+{
+	HANDLE stdinHandle = GetStdHandle(STD_INPUT_HANDLE);
+	HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD mode;
+	if(stdinHandle == INVALID_HANDLE_VALUE ||
+	   !GetConsoleMode(stdinHandle, &mode))
+	{
+		return 0;
+	}
+	if(stdoutHandle == INVALID_HANDLE_VALUE ||
+	   !GetConsoleMode(stdoutHandle, &mode))
+	{
+		return 0;
+	}
+	return 1;
+}
+
+void ILConsoleSetMode(ILInt32 mode)
+{
+	if(mode == IL_CONSOLE_NORMAL || !IsUsingConsole())
+	{
+		/* Close the console input and output handles */
+		if(consoleInput != INVALID_HANDLE_VALUE)
+		{
+			SetConsoleMode(consoleInput, inputState);
+			consoleInput = INVALID_HANDLE_VALUE;
+		}
+		if(consoleOutput != INVALID_HANDLE_VALUE)
+		{
+			SetConsoleMode(consoleOutput, outputState);
+			consoleOutput = INVALID_HANDLE_VALUE;
+		}
+	}
+	else
+	{
+		/* Open the console input and output sides */
+		if(consoleInput == INVALID_HANDLE_VALUE)
+		{
+			consoleInput = GetStdHandle(STD_INPUT_HANDLE);
+			inputState = 0;
+			GetConsoleMode(consoleInput, &inputState);
+			SetConsoleMode(consoleInput, ENABLE_WINDOW_INPUT);
+		}
+		if(consoleOutput == INVALID_HANDLE_VALUE)
+		{
+			consoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+			outputState = 0;
+			GetConsoleMode(consoleOutput, &outputState);
+			SetConsoleMode(consoleOutput, ENABLE_PROCESSED_OUTPUT |
+										  ENABLE_WRAP_AT_EOL_OUTPUT);
+			attributes = 0x07;
+			SetConsoleTextAttribute(consoleOutput, attributes);
+		}
+	}
+	consoleMode = mode;
+}
+
+ILInt32 ILConsoleGetMode(void)
+{
+	return consoleMode;
+}
+
+void ILConsoleBeep(void)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		unsigned char buf[1] = {(unsigned char)0x07};
+		DWORD numWritten;
+		WriteConsole(consoleOutput, (LPVOID)buf, 1, &numWritten, NULL);
+	}
+}
+
+void ILConsoleClear(void)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		CONSOLE_SCREEN_BUFFER_INFO info;
+		SMALL_RECT bounds;
+		COORD scrollTo;
+		CHAR_INFO charInfo;
+		if(GetConsoleScreenBufferInfo(consoleOutput, &info))
+		{
+			bounds = info.srWindow;
+			scrollTo.X = 0;
+			scrollTo.Y = (SHORT)(-(bounds.Bottom - bounds.Top + 1));
+			charInfo.Char.AsciiChar = ' ';
+			charInfo.Attributes = attributes;
+			ScrollConsoleScreenBuffer
+				(consoleOutput, &bounds, NULL, scrollTo, &charInfo);
+			scrollTo.X = info.srWindow.Left;
+			scrollTo.Y = info.srWindow.Top;
+			SetConsoleCursorPosition(consoleOutput, scrollTo);
+		}
+	}
+}
+
+int ILConsoleKeyAvailable(void)
+{
+	if(consoleInput != INVALID_HANDLE_VALUE)
+	{
+		DWORD numPending = 0;
+		DWORD numRead = 0;
+		PINPUT_RECORD records;
+		if(GetNumberOfConsoleInputEvents(consoleInput, &numPending) &&
+		   numPending > 0)
+		{
+			/* Look for key down and window size events in the input queue */
+			records = (PINPUT_RECORD)
+				alloca(sizeof(INPUT_RECORD) * numPending);
+			if(PeekConsoleInput(consoleInput, records,
+								numPending, &numRead) &&
+			   numRead <= numPending)
+			{
+				while(numRead > 0)
+				{
+					if(records->EventType == KEY_EVENT &&
+					   records->Event.KeyEvent.bKeyDown)
+					{
+						return 1;
+					}
+					if(records->EventType == WINDOW_BUFFER_SIZE_EVENT)
+					{
+						return 1;
+					}
+					++records;
+					--numRead;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+void ILConsoleReadKey(ILUInt16 *ch, ILInt32 *key, ILInt32 *modifiers)
+{
+	if(consoleInput != INVALID_HANDLE_VALUE)
+	{
+		INPUT_RECORD record;
+		DWORD numRead;
+		DWORD mods;
+		while(ReadConsoleInput(consoleInput, &record, 1, &numRead) &&
+			  numRead == 1)
+		{
+			if(record.EventType == KEY_EVENT &&
+			   record.Event.KeyEvent.bKeyDown)
+			{
+				/* Convert the keydown event into what the application needs */
+				*ch = (ILUInt16)(record.Event.KeyEvent.uChar.AsciiChar);
+				*key = (ILInt32)(record.Event.KeyEvent.wVirtualKeyCode);
+				mods = record.Event.KeyEvent.dwControlKeyState;
+				*modifiers = 0;
+				if((mods & SHIFT_PRESSED) != 0)
+				{
+					*modifiers |= Mod_Shift;
+				}
+				if((mods & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) != 0)
+				{
+					*modifiers |= Mod_Control;
+				}
+				if((mods & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) != 0)
+				{
+					*modifiers |= Mod_Alt;
+				}
+
+				/* Check for CTRL-C and CTRL-BREAK in the input queue */
+				if(*key == Key_C && *modifiers == Mod_Control)
+				{
+					if(consoleMode == IL_CONSOLE_CBREAK ||
+					   consoleMode == IL_CONSOLE_CBREAK_ALT)
+					{
+						*ch = 0;
+						*key = Key_Interrupt;
+						*modifiers = 0;
+					}
+				}
+				else if(*key == Key_Pause && *modifiers == Mod_Control)
+				{
+					if(consoleMode == IL_CONSOLE_CBREAK ||
+					   consoleMode == IL_CONSOLE_CBREAK_ALT)
+					{
+						*ch = 0;
+						*key = Key_CtrlBreak;
+						*modifiers = 0;
+					}
+				}
+				return;
+			}
+			else if(record.EventType == WINDOW_BUFFER_SIZE_EVENT)
+			{
+				/* Tell the application that the window size has changed */
+				*ch = 0;
+				*key = Key_SizeChanged;
+				*modifiers = 0;
+				return;
+			}
+		}
+		*ch = 0;
+		*key = 0;
+		*modifiers = 0;
+	}
+	else
+	{
+		int c = (getc(stdin) & 0xFF);
+		*ch = (ILUInt16)c;
+		*key = 0;
+		*modifiers = 0;
+	}
+}
+
+void ILConsoleSetPosition(ILInt32 x, ILInt32 y)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		COORD posn;
+		posn.X = (SHORT)x;
+		posn.Y = (SHORT)y;
+		SetConsoleCursorPosition(consoleOutput, posn);
+	}
+}
+
+void ILConsoleGetPosition(ILInt32 *x, ILInt32 *y)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		CONSOLE_SCREEN_BUFFER_INFO info;
+		if(GetConsoleScreenBufferInfo(consoleOutput, &info))
+		{
+			*x = (ILInt32)(info.dwCursorPosition.X);
+			*y = (ILInt32)(info.dwCursorPosition.Y);
+			return;
+		}
+	}
+	*x = 0;
+	*y = 0;
+}
+
+void ILConsoleGetBufferSize(ILInt32 *width, ILInt32 *height)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		CONSOLE_SCREEN_BUFFER_INFO info;
+		if(GetConsoleScreenBufferInfo(consoleOutput, &info))
+		{
+			*width = (ILInt32)(info.dwSize.X);
+			*height = (ILInt32)(info.dwSize.Y);
+			return;
+		}
+	}
+	*width = 80;
+	*height = 25;
+}
+
+void ILConsoleGetWindowSize(ILInt32 *left, ILInt32 *top,
+							ILInt32 *width, ILInt32 *height)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		CONSOLE_SCREEN_BUFFER_INFO info;
+		if(GetConsoleScreenBufferInfo(consoleOutput, &info))
+		{
+			*left = (ILInt32)(info.srWindow.Left);
+			*top = (ILInt32)(info.srWindow.Top);
+			*width = (ILInt32)(info.srWindow.Right - info.srWindow.Left + 1);
+			*height = (ILInt32)(info.srWindow.Bottom - info.srWindow.Top + 1);
+			return;
+		}
+	}
+	*left = 0;
+	*top = 0;
+	*width = 80;
+	*height = 25;
+}
+
+void ILConsoleSetTitle(const char *title)
+{
+	if(title)
+	{
+		SetConsoleTitle(title);
+	}
+	else
+	{
+		SetConsoleTitle("");
+	}
+}
+
+void ILConsoleSetAttributes(ILInt32 attrs)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		SetConsoleTextAttribute(consoleOutput, (attrs & 0xFF));
+		attributes = (WORD)(attrs & 0xFF);
+	}
+}
+
+void ILConsoleWriteChar(ILInt32 ch)
+{
+	if(consoleOutput != INVALID_HANDLE_VALUE)
+	{
+		unsigned char buf[1] = {(unsigned char)ch};
+		DWORD numWritten;
+		WriteConsole(consoleOutput, (LPVOID)buf, 1, &numWritten, NULL);
+	}
+	else
+	{
+		putc(ch & 0xFF, stdout);
 	}
 }
 

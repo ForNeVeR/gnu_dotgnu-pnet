@@ -21,9 +21,9 @@
 %decls %end %{
 
 /*
- * Get the offset of a particular string within the string constant pool.
+ * Get the index of a particular string within the string constant pool.
  */
-ILUInt32 CGenStringOffset(ILGenInfo *info, const char *str, int len);
+ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len);
 
 /*
  * Dump the contents of the string constant pool.
@@ -373,26 +373,20 @@ ILNode_CSemAnalysis(ILNode_CString)
  */
 ILNode_GenValue(ILNode_CString)
 {
-	ILUInt32 offset;
+	ILUInt32 index;
 
 	/* Look for this string in the string pool */
-	offset = CGenStringOffset(info, node->str, node->len);
+	index = CGenStringIndex(info, node->str, node->len);
 
-	/* Get the address of the string pool start */
+	/* Get the address of the string in the pool */
 	if(info->asmOutput)
 	{
-		fputs("\tldsflda\tvaluetype '$strings'/'type' '$strings'::'pool'\n",
-			  info->asmOutput);
+		fprintf(info->asmOutput,
+		        "\tldsflda\tvaluetype '$strings'/'type%d' "
+					"'$strings'::'str%lu'\n",
+				node->len + 1, (unsigned long)index);
 	}
 	ILGenAdjust(info, 1);
-
-	/* Add the string offset to the address */
-	if(offset != 0)
-	{
-		ILGenUIntNative(info, offset);
-		ILGenSimple(info, IL_OP_ADD);
-		ILGenExtend(info, 1);
-	}
 
 	/* Strings are passed on the stack as unmanaged pointers (type I) */
 	return ILMachineType_UnmanagedPtr;
@@ -426,13 +420,14 @@ typedef struct
 {
 	const char *str;
 	int len;
-	ILUInt32 offset;
+	ILUInt32 index;
 
 } StringHashEntry;
 static unsigned long poolSize = 0;
 static StringBuffer *poolFirst = 0;
 static StringBuffer *poolLast = 0;
 static ILHashTable  *poolHash = 0;
+static ILUInt32      poolIndex = 0;
 
 /*
  * Compute the hash value for a string pool element.
@@ -455,9 +450,8 @@ static int PoolHash_Match(const StringHashEntry *elem,
 	return (elem->len == 0 || !ILMemCmp(elem->str, key->str, elem->len));
 }
 
-ILUInt32 CGenStringOffset(ILGenInfo *info, const char *str, int len)
+ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len)
 {
-	ILUInt32 offset;
 	StringHashEntry *entry;
 	StringHashEntry key;
 	StringBuffer *buf;
@@ -471,7 +465,7 @@ ILUInt32 CGenStringOffset(ILGenInfo *info, const char *str, int len)
 		entry = ILHashFindType(poolHash, &key, StringHashEntry);
 		if(entry)
 		{
-			return entry->offset;
+			return entry->index;
 		}
 	}
 
@@ -505,7 +499,6 @@ ILUInt32 CGenStringOffset(ILGenInfo *info, const char *str, int len)
 	poolLast->buffer[poolLast->used + len] = '\0';
 	str = poolLast->buffer + poolLast->used;
 	poolLast->used += len + 1;
-	offset = (ILUInt32)poolSize;
 	poolSize += (unsigned long)(len + 1);
 
 	/* Add the string to the hash table */
@@ -527,21 +520,46 @@ ILUInt32 CGenStringOffset(ILGenInfo *info, const char *str, int len)
 	}
 	entry->str = str;
 	entry->len = len;
-	entry->offset = offset;
+	entry->index = poolIndex;
 	if(!ILHashAdd(poolHash, entry))
 	{
 		ILGenOutOfMemory(info);
 	}
 
-	/* Return the offset to the caller */
-	return offset;
+	/* Return the index to the caller */
+	return poolIndex++;
 }
+
+#if HAVE_QSORT
+
+static int IntCompare(const void *e1, const void *e2)
+{
+	if(*((int *)e1) < *((int *)e2))
+	{
+		return -1;
+	}
+	else if(*((int *)e1) > *((int *)e2))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+#endif
 
 void CGenStringPool(ILGenInfo *info)
 {
 	FILE *stream = info->asmOutput;
-	StringBuffer *buf;
-	int column, posn, size;
+	int column;
+	const char *str;
+	int len;
+	ILHashIter iter;
+	StringHashEntry *entry;
+	int *lengths;
+	int numLengths;
 
 	/* Bail out if no assembly output stream or string pool */
 	if(!stream || !poolSize)
@@ -553,37 +571,85 @@ void CGenStringPool(ILGenInfo *info)
 	fputs(".class private sealed '$strings' extends [.library]System.Object\n",
 		  stream);
 	fputs("{\n", stream);
-	fputs(".class nested public value sealed explicit 'type' extends "
-	      "[.library]System.ValueType\n", stream);
-	fprintf(stream, "{\n\t.pack 1\n\t.size %lu\n}\n", poolSize);
 
-	/* Dump the contents of the string pool to the ".sdata" section */
-	fputs(".data PoolData = bytearray(\n", stream);
-	buf = poolFirst;
-	column = 0;
-	while(buf != 0)
+	/* Collect up the length values of all strings and sort them */
+	lengths = (int *)ILMalloc(sizeof(int) * poolIndex);
+	if(!lengths)
 	{
-		posn = 0;
-		size = buf->used;
-		while(posn < size)
+		ILGenOutOfMemory(info);
+	}
+	numLengths = 0;
+	ILHashIterInit(&iter, poolHash);
+	while((entry = ILHashIterNextType(&iter, StringHashEntry)) != 0)
+	{
+		lengths[numLengths++] = entry->len + 1;
+	}
+#if HAVE_QSORT
+	qsort(lengths, numLengths, sizeof(int), IntCompare);
+#else
+	{
+		int x, y;
+		for(x = 0; x < (numLengths - 1); ++x)
 		{
-			fprintf(stream, " %02X", (int)(buf->buffer[posn]));
-			++posn;
+			for(y = x + 1; y < numLengths; ++y)
+			{
+				if(lengths[x] > lengths[y])
+				{
+					len = lengths[x];
+					lengths[x] = lengths[y];
+					lengths[y] = len;
+				}
+			}
+		}
+	}
+#endif
+
+	/* Declare value types for each distinct length value */
+	for(len = 0; len < numLengths; ++len)
+	{
+		if(len < (numLengths - 1) && lengths[len] == lengths[len + 1])
+		{
+			continue;
+		}
+		fprintf(stream, ".class nested public value sealed explicit "
+						"'type%d' extends [.library]System.ValueType\n",
+				lengths[len]);
+		fprintf(stream, "{\n\t.pack 1\n\t.size %d\n}\n", lengths[len]);
+	}
+
+	/* Dump the contents of all strings to the ".sdata" section */
+	ILHashIterInit(&iter, poolHash);
+	while((entry = ILHashIterNextType(&iter, StringHashEntry)) != 0)
+	{
+		fprintf(stream, ".data StrData%lu = bytearray(\n",
+				(unsigned long)(entry->index));
+		column = 0;
+		str = entry->str;
+		len = entry->len + 1;
+		while(len > 0)
+		{
+			fprintf(stream, " %02X", (int)(*str));
+			--len;
+			++str;
 			++column;
-			if((column % 24) == 0)
+			if(len > 0 && (column % 24) == 0)
 			{
 				putc('\n', stream);
 				column = 0;
 			}
 		}
-		buf = buf->next;
+		fputs(")\n", stream);
+		fprintf(stream, ".field public static valuetype '$strings'/'type%d' "
+						"str%lu at StrData%lu\n",
+				entry->len + 1, (unsigned long)(entry->index),
+				(unsigned long)(entry->index));
 	}
-	fputs(")\n", stream);
 
-	/* Declare the "pool" field and terminate the "$strings" class */
-	fputs(".field public static valuetype '$strings'/'type' pool "
-				"at PoolData\n", stream);
+	/* Output the end of the "$strings" type */
 	fputs("}\n", stream);
+
+	/* Done */
+	ILFree(lengths);
 }
 
 %}

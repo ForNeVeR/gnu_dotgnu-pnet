@@ -1354,6 +1354,61 @@ ILObject *_IL_FieldInfo_GetFieldFromHandle(ILExecThread *thread,
 }
 
 /*
+ * Unpack a constant into the correct boxed type
+ */
+ILObject* UnpackConstant(ILExecThread *thread,ILConstant* constant,
+							ILType *type)
+{
+	unsigned long len;
+ 	ILInt32 intValue;
+ 	ILUInt32 uintValue;
+ 	ILInt64 longValue;
+ 	ILUInt64 ulongValue;
+ 	ILFloat floatValue;
+ 	ILDouble doubleValue;
+ 	const char* strValue;
+ 	switch(ILConstantGetElemType(constant))
+ 	{
+ 		case IL_META_ELEMTYPE_BOOLEAN:
+ 		case IL_META_ELEMTYPE_CHAR:
+ 		case IL_META_ELEMTYPE_I1:
+ 		case IL_META_ELEMTYPE_I2:	
+ 		case IL_META_ELEMTYPE_I4:
+ 			intValue = *((ILInt32*)(ILConstantGetValue(constant,&(len))));
+ 			return ILExecThreadBox(thread,type,&(intValue));
+ 			break;
+ 		case IL_META_ELEMTYPE_U1:
+ 		case IL_META_ELEMTYPE_U2:
+ 		case IL_META_ELEMTYPE_U4:
+ 			uintValue = *((ILUInt32*)(ILConstantGetValue(constant,&(len))));
+ 			return ILExecThreadBox(thread,type,&(uintValue));
+ 			break;
+ 		case IL_META_ELEMTYPE_I8:
+ 			longValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
+ 			return ILExecThreadBox(thread,type,&(longValue));
+ 			break;
+ 		case IL_META_ELEMTYPE_U8:
+ 			ulongValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
+ 			return ILExecThreadBox(thread,type,&(ulongValue));
+ 			break;
+ 		case IL_META_ELEMTYPE_R4:
+ 			floatValue =  *((ILFloat*)(ILConstantGetValue(constant,&(len))));
+ 			return ILExecThreadBox(thread,type,&(floatValue));
+ 			break;
+ 		case IL_META_ELEMTYPE_R8:	
+ 			doubleValue =  *((ILDouble*)(ILConstantGetValue(constant,&(len))));
+ 			return ILExecThreadBox(thread,type,&(doubleValue));
+ 			break;
+ 		case IL_META_ELEMTYPE_STRING:
+ 			strValue = (const char *)(ILConstantGetValue(constant, &len));
+ 			return (ILObject*)((System_String*)ILStringCreateLen(thread,
+ 									strValue,len));
+ 		/* TODO : implement the object unpacking ? */
+  	}
+	return 0;
+}
+
+/*
  * public override Object GetValue(Object obj);
  */
 ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
@@ -1362,6 +1417,7 @@ ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 	ILField *field;
 	ILType *type;
 	void *ptr;
+	ILConstant *constant;
 
 	/* Get the program item for the field reference */
 	field = _ILClrFromObject(thread, _this);
@@ -1381,8 +1437,9 @@ ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 	/* Is the field literla, static or instance? */
 	if(ILField_IsLiteral(field))
 	{
-		/* TODO: unpack the constant and return it */
-		return 0;
+		constant=ILConstantGetFromOwner((ILProgramItem*)field);
+		if(!constant)return 0;
+		return UnpackConstant(thread,constant,ILField_Type(field));
 	}
 	else if(ILField_IsStatic(field))
 	{

@@ -1,4 +1,9 @@
 
+2003-01-07  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/lib_reflect.c: Check the constant unpacking code back in,
+	which was removed in last commit. (Bug #2149)
+
 2003-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_reflect.c: implement "GetValue" and "SetValue"

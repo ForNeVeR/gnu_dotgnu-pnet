@@ -329,7 +329,7 @@ ILString *_IL_Enum_GetEnumName(ILExecThread *thread, ILObject *enumType,
 	{
 		if(fieldValue == enumValue)
 		{
-			return ILStringCreate(thread, ILField_Name(classInfo));
+			return ILStringCreate(thread, ILField_Name(field));
 		}
 	}
 	return 0;

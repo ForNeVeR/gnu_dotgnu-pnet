@@ -6,6 +6,8 @@
 
 	* codegen/jv_assign.tc: remove obsolete function.
 
+	* cscc/csharp/cs_semvalue.h: clean up the list of semantic kinds.
+
 2002-11-03  Richard Baumann <biochem333@nyc.rr.com>
 	
 	* support/numformat.c, support/Makefile.am, include/il_utils.h: Add an

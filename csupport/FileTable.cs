@@ -53,34 +53,28 @@ public sealed class FileTable
 	public const int MaxDescriptors = 256;
 	private static StreamRef[] fds = new StreamRef [MaxDescriptors];
 
-	// Set a file descriptor to a specific stream, closing the
-	// previous stream that was associated with the descriptor.
-	// This is normally used to initialize stdin, stdout, and stderr.
+	// Set a file descriptor to a specific stream.  The previous
+	// association is lost, so it should only be used on a slot
+	// that is known to be empty.
 	public static void SetFileDescriptor(int fd, Stream stream)
 			{
-				Stream streamToClose = null;
-				if(stream == null)
-				{
-					return;
-				}
 				lock(typeof(FileTable))
 				{
 					StreamRef[] table = fds;
+					StreamRef sref;
 					if(fd >= 0 && fd < MaxDescriptors)
 					{
-						if(table[fd] != null)
+						if((sref = table[fd]) == null)
 						{
-							if(--(table[fd].count) == 0)
-							{
-								streamToClose = table[fd].stream;
-							}
+							table[fd] = new StreamRef(stream);
 						}
-						table[fd] = new StreamRef(stream);
+						else
+						{
+							sref.stream = stream;
+							sref.count = 1;
+							sref.buffer = null;
+						}
 					}
-				}
-				if(streamToClose != null)
-				{
-					streamToClose.Close();
 				}
 			}
 
@@ -155,22 +149,30 @@ public sealed class FileTable
 				return -1;
 			}
 
-	// Allocate a new descriptor and associate it with a stream.
-	// Returns -1 if there are no free descriptors available.
-	public static int AllocFD(Stream stream)
+	// Allocate a new file descriptor, with no stream association.
+	public static int AllocFD()
 			{
-				if(stream == null)
-				{
-					return -1;
-				}
 				lock(typeof(FileTable))
 				{
 					int newFD = NewFD();
 					if(newFD != -1)
 					{
-						fds[newFD] = new StreamRef(stream);
+						fds[newFD] = new StreamRef(null);
 					}
 					return newFD;
+				}
+			}
+
+	// Release a file descriptor that was allocated with "AllocFD",
+	// but is no longer required due to error conditions.
+	public static void ReleaseFD(int fd)
+			{
+				lock(typeof(FileTable))
+				{
+					if(fd >= 0 && fd < MaxDescriptors)
+					{
+						fds[fd] = null;
+					}
 				}
 			}
 

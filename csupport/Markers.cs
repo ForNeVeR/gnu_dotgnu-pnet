@@ -89,12 +89,11 @@ public sealed class FinalizerOrderAttribute : Attribute
 	public FinalizerOrderAttribute(int order) {}
 }
 
-// An attribute class that is used to mark the memory model.
+// An attribute class that is used to mark a module as C.
 [AttributeUsage(AttributeTargets.Module)]
-public sealed class MemoryModelAttribute : Attribute
+public sealed class ModuleAttribute : Attribute
 {
-	public MemoryModelAttribute(int ptrBits) {}
-	public MemoryModelAttribute(int ptrBits, int alignFlags) {}
+	public ModuleAttribute() {}
 }
 
 // An attribute class that is used to mark linker symbol renames.

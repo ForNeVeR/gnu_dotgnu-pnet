@@ -620,7 +620,6 @@ public class HttpWebRequest : WebRequest
 	{	
 		private HttpWebRequest request;
 		private Stream underlying=null;
-		private static SecureConnection secured=null;
 
 		public HttpStream(HttpWebRequest req) 
 			: this(req, HttpStream.OpenStream(req))
@@ -739,11 +738,10 @@ public class HttpWebRequest : WebRequest
 			Socket sock=OpenSocket(req);
 			if(req.isSecured)
 			{
-				if(secured==null)
-				{
-					secured=new SecureConnection();
-				}
-				return secured.OpenStream(sock);
+				SecureConnection secured=new SecureConnection();
+				Stream retval=secured.OpenStream(sock);
+				secured.Dispose();
+				return retval;
 			}
 			else
 			{
@@ -769,12 +767,12 @@ public class HttpWebRequest : WebRequest
 
 	private class SecureConnection: IDisposable
 	{
-		ISecureSessionProvider provider=null;
+		static ISecureSessionProvider 
+				provider=SessionProviderFactory.GetProvider();
 		ISecureSession session=null;
 
 		public SecureConnection()
 		{
-			provider = SessionProviderFactory.GetProvider();
 			session = provider.CreateClientSession(Protocol.AutoDetect);
 		}
 		

@@ -7,6 +7,9 @@
 	* System/Net/HttpWebRequest.cs: Allow the use of IPv6 addresses 
 	to connect via HttpWebRequest.
 
+	* System/Net/HttpWebRequest.cs: Re-adjust SSL negotiation procedures 
+	to dispose a session immediately after connection.
+
 2003-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Common/Manager.cs, I18N/Common/RegionData.cs,

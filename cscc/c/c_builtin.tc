@@ -443,6 +443,73 @@ JavaGenDiscard(ILNode_AsmStmt)
 	/* Never called: nothing to do here */
 }
 
+%output "c_nodes.c"
+
+%{
+
+/*
+ * Check for an assembly code instruction match.
+ */
+static int AsmCheckFor(const char *line, int len, const char *insn)
+{
+	int insnlen = strlen(insn);
+	if(insnlen <= len &&
+	   !strncmp(line, insn, insnlen) &&
+	   (insnlen == len || line[insnlen] == ' ' || line[insnlen] == '\t'))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+%}
+
+%output "c_semantics.c"
+
+/*
+ * Determine if an "__asm__" statement ends in a return instruction.
+ */
+ILNode_EndsInReturnImpl(ILNode_AsmStmt)
+{
+	const char *code = node->code;
+	int end = strlen(code);
+	int start;
+
+	/* Find the start and end of the last line in the assembly code */
+	while(end > 0 && (code[end - 1] == ' ' || code[end - 1] == '\t' ||
+	                  code[end - 1] == '\n' || code[end - 1] == '\r'))
+	{
+		--end;
+	}
+	start = end;
+	while(start > 0 && code[start - 1] != '\n' && code[start - 1] != '\r')
+	{
+		--start;
+	}
+	while(start < end && (code[start] == ' ' || code[start] == '\t'))
+	{
+		++start;
+	}
+
+	/* Check for instructions that cause a return to occur */
+	if(AsmCheckFor(code + start, end - start, "ret") ||
+	   AsmCheckFor(code + start, end - start, "throw") ||
+	   AsmCheckFor(code + start, end - start, "rethrow") ||
+	   AsmCheckFor(code + start, end - start, "br") ||
+	   AsmCheckFor(code + start, end - start, "br.s") ||
+	   AsmCheckFor(code + start, end - start, "leave") ||
+	   AsmCheckFor(code + start, end - start, "leave.s") ||
+	   AsmCheckFor(code + start, end - start, "endfinally") ||
+	   AsmCheckFor(code + start, end - start, "endfilter"))
+	{
+		return 1;
+	}
+	return 0;
+}
+
 /*
  * Perform semantic analysis for the "pack native float" expression.
  */

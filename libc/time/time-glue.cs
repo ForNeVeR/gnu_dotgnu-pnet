@@ -21,6 +21,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 __module
 {
@@ -60,6 +61,12 @@ __module
 				Marshal.WriteInt32(tm, 24, (int)(dt.DayOfWeek));
 				Marshal.WriteInt32(tm, 28, dt.DayOfYear);
 				Marshal.WriteInt32(tm, 32, 0);	/* TODO - tm_isdst */
+			}
+
+	// Sleep for a number of ticks.
+	public static void __syscall_sleep_ticks(long ticks)
+			{
+				Thread.Sleep(new TimeSpan(ticks));
 			}
 
 } // __module

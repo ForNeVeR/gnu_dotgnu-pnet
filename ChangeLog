@@ -4,6 +4,10 @@
 	* tools/run_test.sh.in: set the locale to "C" when running tests
 	so that locale-sensitive tests work on non-English systems.
 
+	* System.Configuration.Install/IManagedInstaller.cs,
+	System.Configuration.Install/Installer.cs: signature-compatibility
+	fixes for "System.Configuration.Install".
+
 2003-09-03  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/ScrollBar.cs: apply patch #1873,

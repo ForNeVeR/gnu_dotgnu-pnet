@@ -28,6 +28,7 @@ using System.Runtime.InteropServices;
 
 #if CONFIG_COM_INTEROP
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 #endif
 #if !ECMA_COMPAT
 [Guid("1E233FE7-C16D-4512-8C3B-2E9988F08D38")]

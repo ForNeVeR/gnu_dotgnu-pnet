@@ -26,8 +26,11 @@ namespace System.Configuration.Install
 
 using System.Collections;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 
 #if CONFIG_COMPONENT_MODEL
+[Designer("Microsoft.VisualStudio.Configuration.InstallerDesigner, Microsoft.VisualStudio", typeof(IRootDesigner))]
+[DefaultEvent("AfterInstall")]
 public class Installer : Component
 #else
 public class Installer
@@ -42,6 +45,10 @@ public class Installer
     public Installer() {}
 
     // Get or set the installer's context.
+#if CONFIG_COMPONENT_MODEL
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
+#endif
     public InstallContext Context
 			{
 				get
@@ -64,6 +71,10 @@ public class Installer
 			}
 
     // Get the collection of installers contained within this one.
+#if CONFIG_COMPONENT_MODEL
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	[Browsable(false)]
+#endif
     public InstallerCollection Installers
 			{
 				get
@@ -77,6 +88,11 @@ public class Installer
 			}
 
     // Get or set this installer's parent collection.
+#if CONFIG_COMPONENT_MODEL
+	[TypeConverter("System.Configuration.Design.InstallerParentConverter")]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(true)]
+#endif
     public Installer Parent
 			{
 				get

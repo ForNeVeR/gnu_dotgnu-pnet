@@ -862,6 +862,81 @@ const char *ILDocTextGetParam(ILDocText *text, const char *name)
 	}
 }
 
+ILDocText *ILDocTextFirstChild(ILDocText *text, const char *name)
+{
+	ILDocText *child;
+	if(!text)
+	{
+		return 0;
+	}
+	child = text;
+	while(child != 0)
+	{
+		if(child->isTag && !strcmp(child->text, name))
+		{
+			return child;
+		}
+		child = child->next;
+	}
+	return 0;
+}
+
+ILDocText *ILDocTextGetChild(ILDocText *text, const char *name)
+{
+	ILDocText *child;
+	if(!text || !(text->isTag))
+	{
+		return 0;
+	}
+	child = text->children;
+	while(child != 0)
+	{
+		if(child->isTag && !strcmp(child->text, name))
+		{
+			return child;
+		}
+		child = child->next;
+	}
+	return 0;
+}
+
+ILDocText *ILDocTextNextChild(ILDocText *text, const char *name)
+{
+	ILDocText *child = text->next;
+	while(child != 0)
+	{
+		if(child->isTag && !strcmp(child->text, name))
+		{
+			return child;
+		}
+		child = child->next;
+	}
+	return 0;
+}
+
+int ILDocTextAllSpaces(ILDocText *text)
+{
+	if(!(text->isTag))
+	{
+		const char *temp = text->text;
+		while(*temp != '\0')
+		{
+			if(*temp != ' ' && *temp != '\t' &&
+			   *temp != '\r' && *temp != '\n' &&
+			   *temp != '\f' && *temp != '\v')
+			{
+				return 0;
+			}
+			++temp;
+		}
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

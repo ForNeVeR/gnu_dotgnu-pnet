@@ -219,6 +219,29 @@ void ILDocTreeDestroy(ILDocTree *tree);
  */
 const char *ILDocTextGetParam(ILDocText *text, const char *name);
 
+/*
+ * Get the first element in a documentation list with a given tag node.
+ * Returns NULL if the element does not exist.
+ */
+ILDocText *ILDocTextFirstChild(ILDocText *text, const char *name);
+
+/*
+ * Get a named child of a documentation tag node.
+ * Returns NULL if the child does not exist.
+ */
+ILDocText *ILDocTextGetChild(ILDocText *text, const char *name);
+
+/*
+ * Get the next child with the same name.
+ * Returns NULL if no more children.
+ */
+ILDocText *ILDocTextNextChild(ILDocText *text, const char *name);
+
+/*
+ * Determine if a text node only consists of white space.
+ */
+int ILDocTextAllSpaces(ILDocText *text);
+
 #ifdef	__cplusplus
 };
 #endif

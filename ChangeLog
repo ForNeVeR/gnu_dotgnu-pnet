@@ -1,4 +1,9 @@
 
+2001-09-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* csdoc/doc_tree.h, csdoc/doc_load.c: new functions for accessing XML
+documentation elements.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

@@ -102,8 +102,17 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	public override void DrawArc( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
 				IntPtr prevhPen = Win32.Api.SelectObject( hdc, (pen as DrawingPen).hPen );
-				Rectangle intersect = EllipseIntersect( rect, startAngle, sweepAngle );
-				Win32.Api.Arc( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, intersect.Left, intersect.Top, intersect.Right, intersect.Bottom );
+				if (sweepAngle == 360)
+				{
+					IntPtr prevBrush = Win32.Api.SelectObject(hdc, Win32.Api.GetStockObject( Win32.Api.StockObjectType.HOLLOW_BRUSH));
+					Win32.Api.Ellipse(hdc, rect[0].X, rect[0].Y, rect[2].X + 1, rect[2].Y + 1);
+					Win32.Api.SelectObject(hdc, prevBrush);
+				}
+				else
+				{
+					Rectangle intersect = EllipseIntersect( rect, startAngle, sweepAngle );
+					Win32.Api.Arc( hdc, rect[0].X, rect[0].Y, rect[2].X + 1, rect[2].Y + 1, intersect.Left, intersect.Top, intersect.Right, intersect.Bottom );
+				}
 				Win32.Api.SelectObject( hdc, prevhPen );
 
 			}
@@ -111,14 +120,22 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 	// Draw a pie slice within a rectangle defined by four points.
 	public override void DrawPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-				
 				Pie( rect, startAngle, sweepAngle, Win32.Api.GetStockObject( Win32.Api.StockObjectType.HOLLOW_BRUSH ), (pen as DrawingPen).hPen );
 			}
 
 	// Fill a pie slice within a rectangle defined by four points.
 	public override void FillPie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle )
 			{
-				Pie( rect, startAngle, sweepAngle, (brush as DrawingBrush).hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
+				if (sweepAngle == 360)
+				{
+					IntPtr prevBrush = Win32.Api.SelectObject( hdc, (brush as DrawingBrush).hBrush );
+					IntPtr prevPen = Win32.Api.SelectObject(hdc, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
+					Win32.Api.Ellipse(hdc, rect[0].X, rect[0].Y, rect[2].X + 2, rect[2].Y +2);
+					Win32.Api.SelectObject( hdc, prevPen );
+					Win32.Api.SelectObject( hdc, prevBrush );
+				}
+				else
+					Pie( rect, startAngle, sweepAngle, (brush as DrawingBrush).hBrush, Win32.Api.GetStockObject( Win32.Api.StockObjectType.NULL_PEN));
 			}
 
 	private void Pie ( System.Drawing.Point[] rect, float startAngle, float sweepAngle, IntPtr hBrush, IntPtr hPen )
@@ -127,7 +144,7 @@ internal class DrawingGraphics : ToolkitGraphicsBase, IDisposable
 				IntPtr prevPen = Win32.Api.SelectObject( hdc, hPen );
 				Rectangle intersect = EllipseIntersect( rect, startAngle, sweepAngle );
 						
-				Win32.Api.Pie( hdc, rect[0].X, rect[0].Y, rect[2].X, rect[2].Y, intersect.Left, intersect.Top, intersect.Right, intersect.Bottom );
+				Win32.Api.Pie( hdc, rect[0].X, rect[0].Y, rect[2].X + 1, rect[2].Y + 1, intersect.Left, intersect.Top, intersect.Right, intersect.Bottom );
 				Win32.Api.SelectObject( hdc, prevPen );
 				Win32.Api.SelectObject( hdc, prevBrush );
 

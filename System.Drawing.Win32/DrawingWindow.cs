@@ -331,21 +331,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 			Win32.Api.InvalidateRect(hwnd, IntPtr.Zero, true);
 	}
 
-	// Called when Windows wants to erase the form background. Use the provided hdc
-	internal void EraseBackground(IntPtr hdc) 
-	{
-		if (hwnd == IntPtr.Zero)
-			throw new ApplicationException("Can not EraseBackground, window not created yet");
-		
-		if (backgroundBrush!=IntPtr.Zero) 
-		{
-			Win32.Api.RECT clientRectangle;
-			Win32.Api.GetClientRect(hwnd, out clientRectangle);
-			clientRectangle = new System.Drawing.Win32.Api.RECT(clientRectangle.left, clientRectangle.top, clientRectangle.right, clientRectangle.bottom);
-			Win32.Api.FillRect(hdc, ref clientRectangle,backgroundBrush);
-		}
-	}
-
 	// This occurs when a top level window (form) receives focus)
 	internal virtual int Activate(int wParam, int lParam)
 	{

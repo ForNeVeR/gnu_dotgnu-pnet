@@ -589,10 +589,6 @@ public class DrawingToolkit : IToolkit
 			case Win32.Api.WindowsMessages.WM_PAINT:
 				DrawingWindow(hwnd).Paint();
 				break;
-			case Win32.Api.WindowsMessages.WM_ERASEBKGND:
-				DrawingWindow(hwnd).EraseBackground( new IntPtr(wParam) );
-				retval=1;
-				break;
 
 			case Win32.Api.WindowsMessages.WM_SETCURSOR:
 				//TEMP

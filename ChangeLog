@@ -9,6 +9,9 @@
 	* runtime/System/IO/BinaryWriter.cs: Add missing byteCount for
 	Write(String).
 
+	* runtime/System/IO/BinaryReader.cs: Change the charCount to a
+	byteCount header for ReadString().
+
 2002-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Collections/Specialized/Makefile,

@@ -422,29 +422,23 @@ public class BinaryReader : IDisposable
 	// Read a buffer of characters.
 	public virtual char[] ReadChars(int count)
 			{
-				char[] buffer;
-				int result;
+				byte[] buffer;
+				int len;
 				if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_NonNegative"));
 				}
-				buffer = new char [count];
-				result = Read(buffer, 0, count);
-				if(result == 0)
+				buffer = ReadBytes(count);
+				if(buffer.Length <= 0 || buffer.Length!=count)
 				{
+					/* this exception fall through to the ReadString */
 					throw new EndOfStreamException(_("IO_ReadEndOfStream"));
 				}
-				if(result != count)
-				{
-					char[] newBuffer = new char [result];
-					Array.Copy(buffer, newBuffer, result);
-					return newBuffer;
-				}
-				else
-				{
-					return buffer;
-				}
+				len=encoding.GetCharCount(buffer,0,buffer.Length);
+				char[] newBuffer = new char[len];
+				encoding.GetChars(buffer,0,buffer.Length,newBuffer,0);
+				return newBuffer;
 			}
 
 	// Read a prefix-encoded string.
@@ -459,11 +453,7 @@ public class BinaryReader : IDisposable
 				else
 				{
 					chars = ReadChars(len);
-					if(chars.Length != len)
-					{
-						// The string was truncated.
-						throw new EndOfStreamException(_("IO_ReadEndOfStream"));
-					}
+					/* an exception is thrown from ReadChars for EndOfStream */
 					return new String(chars);
 				}
 			}

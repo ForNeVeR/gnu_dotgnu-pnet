@@ -33,6 +33,7 @@ public sealed class SoapTypeAttribute : SoapAttribute
 	// Internal state.
 	private SoapOption soapOptions;
 	private String xmlElementName;
+	private XmlFieldOrderOption xmlFieldOrder;
 	private String xmlTypeName;
 	private String xmlTypeNamespace;
 
@@ -73,6 +74,17 @@ public sealed class SoapTypeAttribute : SoapAttribute
 				set
 				{
 					xmlElementName = value;
+				}
+			}
+	public XmlFieldOrderOption XmlFieldOrder
+			{
+				get
+				{
+					return xmlFieldOrder;
+				}
+				set
+				{
+					xmlFieldOrder = value;
 				}
 			}
 	public override String XmlNamespace

@@ -26,7 +26,11 @@ using System.Reflection;
 using System.Globalization;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public abstract class Type
 #if CONFIG_REFLECTION
 	: MemberInfo

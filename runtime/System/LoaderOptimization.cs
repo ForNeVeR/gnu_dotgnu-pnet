@@ -25,10 +25,12 @@ namespace System
 
 public enum LoaderOptimization
 {
-	NotSpecified	= 0,
-	SingleDomain    = 1,
-	MultiDomain     = 2,
-	MultiDomainHost = 3
+	NotSpecified	 = 0,
+	SingleDomain     = 1,
+	MultiDomain      = 2,
+	DomainMask       = 3,
+	MultiDomainHost  = 3,
+	DisallowBindings = 4,
 
 }; // enum LoaderOptimization
 

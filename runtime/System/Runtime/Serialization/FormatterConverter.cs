@@ -48,6 +48,7 @@ public class FormatterConverter : IFormatterConverter
 			{
 				return System.Convert.ToByte(value);
 			}
+	[CLSCompliant(false)]
 	public sbyte ToSByte(Object value)
 			{
 				return System.Convert.ToSByte(value);
@@ -56,6 +57,7 @@ public class FormatterConverter : IFormatterConverter
 			{
 				return System.Convert.ToInt16(value);
 			}
+	[CLSCompliant(false)]
 	public ushort ToUInt16(Object value)
 			{
 				return System.Convert.ToUInt16(value);
@@ -68,6 +70,7 @@ public class FormatterConverter : IFormatterConverter
 			{
 				return System.Convert.ToInt32(value);
 			}
+	[CLSCompliant(false)]
 	public uint ToUInt32(Object value)
 			{
 				return System.Convert.ToUInt32(value);
@@ -76,6 +79,7 @@ public class FormatterConverter : IFormatterConverter
 			{
 				return System.Convert.ToInt64(value);
 			}
+	[CLSCompliant(false)]
 	public ulong ToUInt64(Object value)
 			{
 				return System.Convert.ToUInt16(value);

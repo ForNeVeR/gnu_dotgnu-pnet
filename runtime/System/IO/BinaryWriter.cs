@@ -1,7 +1,7 @@
 /*
  * BinaryWriter.cs - Implementation of the "System.IO.BinaryWriter" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,12 +71,6 @@ public class BinaryWriter : IDisposable
 				encoder = encoding.GetEncoder();
 				smallBuffer = new byte [16];
 				smallCharBuffer = new char [1];
-			}
-
-	// Destructor.
-	~BinaryWriter()
-			{
-				Dispose(false);
 			}
 
 	// Get the base stream that underlies this binary writer.
@@ -375,7 +369,7 @@ public class BinaryWriter : IDisposable
 			}
 
 	// Write a 7-bit encoded integer value to the output.
-	public virtual void Write7BitEncodedInt(int value)
+	protected void Write7BitEncodedInt(int value)
 			{
 				uint temp = (uint)value;
 				while(temp >= 128)

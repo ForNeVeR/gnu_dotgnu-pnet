@@ -29,7 +29,9 @@ using System.Runtime.Remoting.Activation;
 
 [Serializable]
 [AttributeUsage(AttributeTargets.Class)]
-public class SynchronizationAttribute : ContextAttribute
+public class SynchronizationAttribute
+	: ContextAttribute, IContributeServerContextSink,
+	  IContributeClientContextSink
 {
 	// Internal state.
 	private int flag;
@@ -96,6 +98,14 @@ public class SynchronizationAttribute : ContextAttribute
 				(IConstructionCallMessage ctorMsg)
 			{
 				// TODO
+			}
+
+	// Get the server context sink.
+	[TODO]
+	public virtual IMessageSink GetServerContextSink(IMessageSink nextSink)
+			{
+				// TODO
+				return null;
 			}
 
 	// Determine if a context is OK with respect to this attribute.

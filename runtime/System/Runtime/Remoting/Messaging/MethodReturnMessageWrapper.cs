@@ -28,7 +28,7 @@ using System.Collections;
 using System.Reflection;
 
 public class MethodReturnMessageWrapper
-	: InternalMessageWrapper, IMethodReturnMessage
+	: InternalMessageWrapper, IMethodReturnMessage, IMethodMessage, IMessage
 {
 	// Internal state.
 	private IMethodReturnMessage mrm;

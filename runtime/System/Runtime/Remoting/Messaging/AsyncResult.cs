@@ -31,6 +31,9 @@ using System.Threading;
 // is required to implement asynchronous delegates.
 
 public class AsyncResult : IAsyncResult
+#if CONFIG_REMOTING
+	, IMessageSink
+#endif
 {
 	// Internal state.
 	private Object del;
@@ -193,6 +196,31 @@ public class AsyncResult : IAsyncResult
 					}
 				}
 			}
+
+#if CONFIG_REMOTING
+
+	// Implement the IMessageSink interface.
+	public IMessageSink NextSink
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+	public virtual IMessageCtrl AsyncProcessMessage
+				(IMessage msg, IMessageSink replySink)
+			{
+				// TODO
+				return null;
+			}
+	public virtual IMessage SyncProcessMessage(IMessage msg)
+			{
+				// TODO
+				return null;
+			}
+
+#endif // CONFIG_REMOTING
 
 }; // class AsyncResult
 

@@ -54,8 +54,8 @@ public class SurrogateSelector : ISurrogateSelector
 			}
 
 	// Add a surrogate for a specific type.
-	public virtual void RemoveSurrogate(Type type, StreamingContext context,
-									    ISerializationSurrogate surrogate)
+	public virtual void AddSurrogate(Type type, StreamingContext context,
+									 ISerializationSurrogate surrogate)
 			{
 				// TODO
 			}

@@ -22,6 +22,7 @@
 namespace System.Runtime.CompilerServices
 {
 
+[Flags]
 public enum MethodImplOptions
 {
 	Unmanaged       = 0x0004,

@@ -1,7 +1,7 @@
 /*
  * ArrayList.cs - Implementation of the "System.Collections.ArrayList" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1491,6 +1491,130 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 
 	}; // class FixedSizeWrapper
 
+#if !ECMA_COMPAT
+
+	// Adapt an ordinary list to appear to have a fixed size.
+	public static IList FixedSize(IList list)
+			{
+				if(list == null)
+				{
+					throw new ArgumentNullException("list");
+				}
+				else
+				{
+					return new FixedSizeListWrapper(list);
+				}
+			}
+
+	// Wrapper class for fixed-sized lists.
+	private sealed class FixedSizeListWrapper : IList
+	{
+		// Internal state.
+		private IList list;
+
+		// Constructor.
+		public FixedSizeListWrapper(IList list)
+				{
+					this.list = list;
+				}
+
+		// Implement the IList interface.
+		public int Add(Object value)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_FixedSizeCollection"));
+				}
+		public void Clear()
+				{
+					throw new NotSupportedException
+						(_("NotSupp_FixedSizeCollection"));
+				}
+		public bool Contains(Object value)
+				{
+					return list.Contains(value);
+				}
+		public int  IndexOf(Object value)
+				{
+					return list.IndexOf(value);
+				}
+		public void Insert(int index, Object value)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_FixedSizeCollection"));
+				}
+		public void Remove(Object value)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_FixedSizeCollection"));
+				}
+		public void RemoveAt(int index)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_FixedSizeCollection"));
+				}
+		public bool IsFixedSize
+				{
+					get
+					{
+						return true;
+					}
+				}
+		public bool IsReadOnly
+				{
+					get
+					{
+						return list.IsReadOnly;
+					}
+				}
+		public Object this[int index]
+				{
+					get
+					{
+						return list[index];
+					}
+					set
+					{
+						list[index] = value;
+					}
+				}
+
+		// Implement the ICollection interface.
+		public void CopyTo(Array array, int index)
+				{
+					list.CopyTo(array, index);
+				}
+		public int Count
+				{
+					get
+					{
+						return list.Count;
+					}
+				}
+		public bool IsSynchronized
+				{
+					get
+					{
+						return list.IsSynchronized;
+					}
+				}
+		public Object SyncRoot
+				{
+					get
+					{
+						return list.SyncRoot;
+					}
+				}
+
+		// Implement the IEnumerable interface.
+		public IEnumerator GetEnumerator()
+				{
+					return list.GetEnumerator();
+				}
+
+	}; // class FixedSizeListWrapper
+
+#endif // !ECMA_COMPAT
+
 	// Adapt an array list to get access to a sub-range.
 	public virtual ArrayList GetRange(int index, int count)
 			{
@@ -1943,6 +2067,131 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 
 	}; // class ReadOnlyWrapper
 
+#if !ECMA_COMPAT
+
+	// Adapt an ordinary list to appear to be read-only.
+	public static IList ReadOnly(IList list)
+			{
+				if(list == null)
+				{
+					throw new ArgumentNullException("list");
+				}
+				else
+				{
+					return new ReadOnlyListWrapper(list);
+				}
+			}
+
+	// Wrapper class for read-only lists.
+	private sealed class ReadOnlyListWrapper : IList
+	{
+		// Internal state.
+		private IList list;
+
+		// Constructor.
+		public ReadOnlyListWrapper(IList list)
+				{
+					this.list = list;
+				}
+
+		// Implement the IList interface.
+		public int Add(Object value)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_ReadOnly"));
+				}
+		public void Clear()
+				{
+					throw new NotSupportedException
+						(_("NotSupp_ReadOnly"));
+				}
+		public bool Contains(Object value)
+				{
+					return list.Contains(value);
+				}
+		public int  IndexOf(Object value)
+				{
+					return list.IndexOf(value);
+				}
+		public void Insert(int index, Object value)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_ReadOnly"));
+				}
+		public void Remove(Object value)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_ReadOnly"));
+				}
+		public void RemoveAt(int index)
+				{
+					throw new NotSupportedException
+						(_("NotSupp_ReadOnly"));
+				}
+		public bool IsFixedSize
+				{
+					get
+					{
+						return list.IsFixedSize;
+					}
+				}
+		public bool IsReadOnly
+				{
+					get
+					{
+						return true;
+					}
+				}
+		public Object this[int index]
+				{
+					get
+					{
+						return list[index];
+					}
+					set
+					{
+						throw new NotSupportedException
+							(_("NotSupp_ReadOnly"));
+					}
+				}
+
+		// Implement the ICollection interface.
+		public void CopyTo(Array array, int index)
+				{
+					list.CopyTo(array, index);
+				}
+		public int Count
+				{
+					get
+					{
+						return list.Count;
+					}
+				}
+		public bool IsSynchronized
+				{
+					get
+					{
+						return list.IsSynchronized;
+					}
+				}
+		public Object SyncRoot
+				{
+					get
+					{
+						return list.SyncRoot;
+					}
+				}
+
+		// Implement the IEnumerable interface.
+		public IEnumerator GetEnumerator()
+				{
+					return list.GetEnumerator();
+				}
+
+	}; // class ReadOnlyListWrapper
+
+#endif // !ECMA_COMPAT
+
 	// Adapt an array list to appear to be synchonrized
 	public static ArrayList Synchronized(ArrayList list)
 			{
@@ -2301,6 +2550,169 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 				}
 
 	}; // class SynchronizedWrapper
+
+#if !ECMA_COMPAT
+
+	// Adapt an ordinary list to appear to be synchronized.
+	public static IList Synchronized(IList list)
+			{
+				if(list == null)
+				{
+					throw new ArgumentNullException("list");
+				}
+				else
+				{
+					return new SynchronizedListWrapper(list);
+				}
+			}
+
+	// Wrapper class for synchronized lists.
+	private sealed class SynchronizedListWrapper : IList
+	{
+		// Internal state.
+		private IList list;
+
+		// Constructor.
+		public SynchronizedListWrapper(IList list)
+				{
+					this.list = list;
+				}
+
+		// Implement the IList interface.
+		public int Add(Object value)
+				{
+					lock(SyncRoot)
+					{
+						return list.Add(value);
+					}
+				}
+		public void Clear()
+				{
+					lock(SyncRoot)
+					{
+						list.Clear();
+					}
+				}
+		public bool Contains(Object value)
+				{
+					lock(SyncRoot)
+					{
+						return list.Contains(value);
+
+					}
+				}
+		public int  IndexOf(Object value)
+				{
+					lock(SyncRoot)
+					{
+						return list.IndexOf(value);
+					}
+				}
+		public void Insert(int index, Object value)
+				{
+					lock(SyncRoot)
+					{
+						list.Insert(index, value);
+					}
+				}
+		public void Remove(Object value)
+				{
+					lock(SyncRoot)
+					{
+						list.Remove(value);
+					}
+				}
+		public void RemoveAt(int index)
+				{
+					lock(SyncRoot)
+					{
+						list.RemoveAt(index);
+					}
+				}
+		public bool IsFixedSize
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list.IsFixedSize;
+						}
+					}
+				}
+		public bool IsReadOnly
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list.IsReadOnly;
+						}
+					}
+				}
+		public Object this[int index]
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list[index];
+						}
+					}
+					set
+					{
+						lock(SyncRoot)
+						{
+							list[index] = value;
+						}
+					}
+				}
+
+		// Implement the ICollection interface.
+		public void CopyTo(Array array, int index)
+				{
+					lock(SyncRoot)
+					{
+						list.CopyTo(array, index);
+					}
+				}
+		public int Count
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list.Count;
+						}
+					}
+				}
+		public bool IsSynchronized
+				{
+					get
+					{
+						return true;
+					}
+				}
+		public Object SyncRoot
+				{
+					get
+					{
+						return list.SyncRoot;
+					}
+				}
+
+		// Implement the IEnumerable interface.
+		public IEnumerator GetEnumerator()
+				{
+					lock(SyncRoot)
+					{
+						return new SynchronizedEnumerator
+							(SyncRoot, list.GetEnumerator());
+					}
+				}
+
+	}; // class SynchronizedListWrapper
+
+#endif // !ECMA_COMPAT
 
 }; // class ArrayList
 

@@ -26,7 +26,8 @@ using System;
 using System.Security.Permissions;
 using System.Runtime.CompilerServices;
 
-public abstract class CodeAccessPermission : IPermission, IStackWalk
+public abstract class CodeAccessPermission
+	: IPermission, IStackWalk, ISecurityEncodable
 {
 
 	// Constructor.

@@ -27,7 +27,8 @@ namespace System.Runtime.InteropServices
 [AttributeUsage(AttributeTargets.Class |
 				AttributeTargets.Struct |
 				AttributeTargets.Enum |
-				AttributeTargets.Interface)]
+				AttributeTargets.Interface,
+				Inherited=false)]
 public sealed class TypeLibTypeAttribute : Attribute
 {
 	// Internal state.

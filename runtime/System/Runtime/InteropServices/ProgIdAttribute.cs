@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, Inherited=false)]
 public sealed class ProgIdAttribute : Attribute
 {
 	// Internal state.

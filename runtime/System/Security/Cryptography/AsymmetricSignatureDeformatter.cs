@@ -28,6 +28,8 @@ using System;
 
 public abstract class AsymmetricSignatureDeformatter
 {
+	// Constructor.
+	public AsymmetricSignatureDeformatter() {}
 
 	// Set the hash algorithm.
 	public abstract void SetHashAlgorithm(string strName);

@@ -37,6 +37,14 @@ public class ServerChannelSinkStack
 				// TODO
 			}
 
+	// Process a response asynchronously.
+	[TODO]
+	public void AsyncProcessResponse
+		(IMessage msg, ITransportHeaders headers, Stream stream)
+			{
+				// TODO
+			}
+
 	// Get the response stream.
 	[TODO]
 	public Stream GetResponseStream(IMessage msg, ITransportHeaders headers)
@@ -56,6 +64,27 @@ public class ServerChannelSinkStack
 	// Push an item onto the stack.
 	[TODO]
 	public void Push(IServerChannelSink sink, Object state)
+			{
+				// TODO
+			}
+
+	// Handle a server callback.
+	[TODO]
+	public void ServerCallback(IAsyncResult ar)
+			{
+				// TODO
+			}
+
+	// Store into this sink stack.
+	[TODO]
+	public void Store(IServerChannelSink sink, Object state)
+			{
+				// TODO
+			}
+
+	// Store into this sink stack and then dispatch.
+	[TODO]
+	public void StoreAndDispatch(IServerChannelSink sink, Object state)
 			{
 				// TODO
 			}

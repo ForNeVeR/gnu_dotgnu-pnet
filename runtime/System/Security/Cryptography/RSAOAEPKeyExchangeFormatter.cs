@@ -31,6 +31,7 @@ public class RSAOAEPKeyExchangeFormatter : AsymmetricKeyExchangeFormatter
 	// Internal state.
 	private RSACryptoServiceProvider keyContainer;
 	private byte[] padding;
+	private RandomNumberGenerator rng;
 
 	// Constructors.
 	public RSAOAEPKeyExchangeFormatter()
@@ -79,6 +80,19 @@ public class RSAOAEPKeyExchangeFormatter : AsymmetricKeyExchangeFormatter
 				}
 			}
 
+	// Get or set the random number generator to be used.
+	public RandomNumberGenerator Rng
+			{
+				get
+				{
+					return rng;
+				}
+				set
+				{
+					rng = value;
+				}
+			}
+
 	// Create key exchange material from key data.
 	public override byte[] CreateKeyExchange(byte[] data)
 			{
@@ -87,7 +101,11 @@ public class RSAOAEPKeyExchangeFormatter : AsymmetricKeyExchangeFormatter
 					throw new CryptographicException
 						(_("Crypto_MissingKey"));
 				}
-				return keyContainer.EncryptOAEP(data, padding);
+				if(rng == null)
+				{
+					rng = new RNGCryptoServiceProvider();
+				}
+				return keyContainer.EncryptOAEP(data, padding, rng);
 			}
 	public override byte[] CreateKeyExchange(byte[] data, Type symAlgType)
 			{

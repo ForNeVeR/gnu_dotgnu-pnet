@@ -26,7 +26,12 @@ namespace System.Reflection
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public abstract class PropertyInfo : MemberInfo
 {
 
@@ -70,6 +75,10 @@ public abstract class PropertyInfo : MemberInfo
 	public abstract Object GetValue(Object obj, BindingFlags invokeAttr,
 									Binder binder, Object[] index,
 									CultureInfo culture);
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public virtual Object GetValue(Object obj, Object[] index)
 			{
 				return GetValue(obj, BindingFlags.Default,
@@ -80,6 +89,10 @@ public abstract class PropertyInfo : MemberInfo
 	public abstract void SetValue(Object obj, Object value,
 								  BindingFlags invokeAttr, Binder binder,
 								  Object[] index, CultureInfo culture);
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public virtual void SetValue(Object obj, Object value, Object[] index)
 			{
 				SetValue(obj, value, BindingFlags.Default,

@@ -155,6 +155,12 @@ public class KoreanCalendar : Calendar
 										  second, millisecond, era);
 			}
 
+	// Convert a two-digit year value into a four-digit year value.
+	public override int ToFourDigitYear(int year)
+			{
+				return variant.ToFourDigitYear(year);
+			}
+
 }; // class KoreanCalendar
 
 }; // namespace System.Globalization

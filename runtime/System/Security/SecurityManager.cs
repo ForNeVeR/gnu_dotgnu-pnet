@@ -27,7 +27,7 @@ namespace System.Security
 using System.Collections;
 using System.Security.Policy;
 
-public class SecurityManager
+public sealed class SecurityManager
 {
 
 	// Determine if a specific permission has been granted.

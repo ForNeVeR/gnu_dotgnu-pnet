@@ -31,7 +31,8 @@ using System.Runtime.Remoting.Activation;
 
 [Serializable]
 [CLSCompliant(false)]
-public class ConstructionCall : MethodCall, IConstructionCallMessage
+public class ConstructionCall : MethodCall, IConstructionCallMessage,
+								IMethodMessage, IMessage
 {
 	// Internal state.
 	private IActivator activator;

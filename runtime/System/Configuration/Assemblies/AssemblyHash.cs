@@ -2,7 +2,7 @@
  * AssemblyHash.cs - Implementation of the
  *		"System.Configuration.Assemblies.AssemblyHash" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ public struct AssemblyHash : ICloneable
 			}
 
 	// Set the hash value that is stored in this object.
-	public void GetValue(byte[] value)
+	public void SetValue(byte[] value)
 			{
 				hash = value;
 			}

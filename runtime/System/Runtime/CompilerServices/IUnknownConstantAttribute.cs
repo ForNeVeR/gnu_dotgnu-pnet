@@ -26,7 +26,9 @@ namespace System.Runtime.CompilerServices
 
 using System.Runtime.InteropServices;
 
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
+[AttributeUsage(AttributeTargets.Field |
+				AttributeTargets.Parameter,
+				Inherited=false)]
 public sealed class IUnknownConstantAttribute : CustomConstantAttribute
 {
 	// Constructors.

@@ -2,7 +2,7 @@
  * AssemblyNameFlags.cs - Implementation of the
  *			"System.Reflection.AssemblyNameFlags" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,9 @@ namespace System.Reflection
 [Flags]
 public enum AssemblyNameFlags
 {
-	None      = 0x0000,
-	PublicKey = 0x0001
+	None         = 0x0000,
+	PublicKey    = 0x0001,
+	Retargetable = 0x0100
 
 }; // enum AssemblyNameFlags
 

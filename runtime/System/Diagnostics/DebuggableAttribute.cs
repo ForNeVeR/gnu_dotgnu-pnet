@@ -26,7 +26,7 @@ namespace System.Diagnostics
 
 [AttributeUsage(AttributeTargets.Assembly |
 				AttributeTargets.Module,
-				AllowMultiple=false, Inherited=true)]
+				AllowMultiple=false)]
 public sealed class DebuggableAttribute : Attribute
 {
 	// Internal state.

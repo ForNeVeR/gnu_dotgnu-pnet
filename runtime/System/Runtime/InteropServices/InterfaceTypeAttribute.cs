@@ -2,7 +2,7 @@
  * InterfaceTypeAttribute.cs - Implementation of the
  *			"System.Runtime.InteropServices.InterfaceTypeAttribute" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Interface, Inherited=false)]
 public sealed class InterfaceTypeAttribute : Attribute
 {
 	private ComInterfaceType type;
@@ -32,6 +32,10 @@ public sealed class InterfaceTypeAttribute : Attribute
 	public InterfaceTypeAttribute(ComInterfaceType interfaceType)
 	{
 		this.type=interfaceType;
+	}
+	public InterfaceTypeAttribute(short interfaceType)
+	{
+		this.type=(ComInterfaceType)interfaceType;
 	}
 
 	public ComInterfaceType Value

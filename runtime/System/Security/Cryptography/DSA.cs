@@ -29,6 +29,8 @@ using System.Text;
 
 public abstract class DSA : AsymmetricAlgorithm
 {
+	// Constructor.
+	internal DSA() {}
 
 	// Create an instance of the default DSA implementation.
 	public new static DSA Create()

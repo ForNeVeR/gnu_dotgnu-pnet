@@ -1,7 +1,7 @@
 /*
  * TypedReference.cs - Implementation of the "System.TypedReference" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ namespace System
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+[CLSCompliant(false)]
 #if ECMA_COMPAT
 internal
 #else
@@ -99,6 +100,7 @@ struct TypedReference
 				(Object target, FieldInfo[] flds);
 
 	// Set the value within a typed reference.
+	[CLSCompliant(false)]
 	public static void SetTypedReference(TypedReference target, Object value)
 			{
 				if(value == null)

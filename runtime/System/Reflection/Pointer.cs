@@ -26,6 +26,7 @@ namespace System.Reflection
 using System;
 using System.Runtime.Serialization;
 
+[CLSCompliant(false)]
 public unsafe sealed class Pointer : ISerializable
 {
 	// Internal state.

@@ -57,7 +57,7 @@ public class RuntimeEnvironment
 			}
 
 	// Get the version of the runtime being used for the current process.
-	public static String GetRuntimeVersion()
+	public static String GetSystemVersion()
 			{
 				return Environment.Version.ToString();
 			}

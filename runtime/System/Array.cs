@@ -1405,11 +1405,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			return GetLength();
 		}
 	}
-#if ECMA_COMPAT
 	public long LongLength
-#else
-	private long LongLength
-#endif
 	{
 		get
 		{

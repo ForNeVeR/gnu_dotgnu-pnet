@@ -27,7 +27,7 @@ namespace System.Security.Cryptography
 using System;
 using Platform;
 
-public class RNGCryptoServiceProvider : RandomNumberGenerator
+public sealed class RNGCryptoServiceProvider : RandomNumberGenerator
 {
 	// Constructors.  We ignore the supplied parameters, and use
 	// the runtime engine's random number generator instead.

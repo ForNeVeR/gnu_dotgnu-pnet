@@ -36,10 +36,11 @@ using Platform;
 // This implementation is based on the RSA description in PKCS #1 v2.1,
 // available from "http://www.rsa.com/".
 
-public class RSACryptoServiceProvider : RSA
+public sealed class RSACryptoServiceProvider : RSA
 {
 	// Internal state.
 	private bool persistKey;
+	private static bool useMachineKeyStore;
 	private RSAParameters rsaParams;
 
 	// Constructors.
@@ -144,6 +145,19 @@ public class RSACryptoServiceProvider : RSA
 				{
 					// W3C identifier for the RSA-SHA1 algorithm.
 					return "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+				}
+			}
+
+	// Determine if we should use the machine key store.
+	public static bool UseMachineKeyStore
+			{
+				get
+				{
+					return useMachineKeyStore;
+				}
+				set
+				{
+					useMachineKeyStore = value;
 				}
 			}
 
@@ -410,7 +424,8 @@ public class RSACryptoServiceProvider : RSA
 
 	// Encrypt a value using a specified OAEP padding array.
 	// The array may be null to pad with zeroes.
-	internal byte[] EncryptOAEP(byte[] rgb, byte[] padding)
+	internal byte[] EncryptOAEP(byte[] rgb, byte[] padding,
+								RandomNumberGenerator rng)
 			{
 				// Check the data against null.
 				if(rgb == null)
@@ -457,7 +472,7 @@ public class RSACryptoServiceProvider : RSA
 
 				// Generate a random seed to use to generate masks.
 				byte[] seed = new byte [20];
-				CryptoMethods.GenerateRandom(seed, 0, 20);
+				rng.GetBytes(seed);
 
 				// Generate a mask and encrypt the above message.
 				byte[] mask = maskGen.GenerateMask(seed, msg.Length);
@@ -539,7 +554,8 @@ public class RSACryptoServiceProvider : RSA
 			{
 				if(fOAEP)
 				{
-					return EncryptOAEP(rgb, null);
+					return EncryptOAEP
+						(rgb, null, new RNGCryptoServiceProvider());
 				}
 				else
 				{

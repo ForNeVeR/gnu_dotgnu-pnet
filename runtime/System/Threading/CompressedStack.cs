@@ -39,7 +39,7 @@ public class CompressedStack
 			}
 
 	// Get the unmanaged compressed stack handle.
-	public IntPtr UnmanagedCompressedStack { get { return IntPtr.Zero; } }
+	internal IntPtr UnmanagedCompressedStack { get { return IntPtr.Zero; } }
 
 }; // class CompressedStack
 

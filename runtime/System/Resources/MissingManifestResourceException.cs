@@ -32,7 +32,7 @@ internal
 #else
 public
 #endif
-class MissingManifestResourceException : Exception
+class MissingManifestResourceException : SystemException
 {
 
 	// Constructors.
@@ -43,8 +43,8 @@ class MissingManifestResourceException : Exception
 	public MissingManifestResourceException(String msg, Exception inner)
 		: base(msg, inner) {}
 #if !ECMA_COMPAT
-	internal MissingManifestResourceException(SerializationInfo info,
-										      StreamingContext context)
+	protected MissingManifestResourceException(SerializationInfo info,
+										       StreamingContext context)
 		: base(info, context) {}
 #endif
 

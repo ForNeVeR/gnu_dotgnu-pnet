@@ -564,7 +564,7 @@ public sealed class SecurityElement
 			}
 
 	// Search for the text of a named child.
-	public String SearchForTextByTag(String tag)
+	public String SearchForTextOfTag(String tag)
 			{
 				if(tag == null)
 				{

@@ -27,7 +27,8 @@ namespace System.Runtime.InteropServices
 [AttributeUsage(AttributeTargets.Assembly |
 				AttributeTargets.Class |
 				AttributeTargets.Struct |
-				AttributeTargets.Interface)]
+				AttributeTargets.Interface,
+				Inherited=false)]
 public sealed class BestFitMappingAttribute : Attribute
 {
 	// Internal state.

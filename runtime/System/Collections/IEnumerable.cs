@@ -2,7 +2,7 @@
  * IEnumerable.cs - Implementation of the
  *		"System.Collections.IEnumerable" interface.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,17 @@ namespace System.Collections
 {
 
 using System;
+using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
+[Guid("496B0ABE-CDEE-11d3-88E8-00902754C43A")]
+#endif
 public interface IEnumerable
 {
 
+#if !ECMA_COMPAT
+	[DispId(-4)]
+#endif
 	IEnumerator GetEnumerator();
 
 }; // interface IEnumerable

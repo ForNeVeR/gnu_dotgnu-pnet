@@ -85,11 +85,7 @@ public sealed class Environment
 			}
 
 	// Determine if application shutdown has started.
-#if ECMA_COMPAT
 	public static bool HasShutdownStarted
-#else
-	public bool HasShutdownStarted
-#endif
 			{
 				get
 				{

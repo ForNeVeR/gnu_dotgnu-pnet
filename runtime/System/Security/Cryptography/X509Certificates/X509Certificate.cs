@@ -223,7 +223,7 @@ public class X509Certificate
 			}
 
 	// Get the expiration date of this certificate as a string.
-	public virtual String GetExpriationDateString()
+	public virtual String GetExpirationDateString()
 			{
 				return expirationDate;
 			}

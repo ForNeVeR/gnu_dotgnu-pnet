@@ -32,6 +32,9 @@ public class HijriCalendar : Calendar
 	// Useful constants.
 	private const int DefaultTwoDigitMax = 1451;
 
+	// Internal state.
+	private int adjustment;
+
 	// Constructor.
 	[TODO]
 	public HijriCalendar()
@@ -47,6 +50,21 @@ public class HijriCalendar : Calendar
 					int[] eras = new int [1];
 					eras[0] = HijriEra;
 					return eras;
+				}
+			}
+
+	// Get or set the Hijri adjustment value.
+	[TODO]
+	public int HijriAdjustment
+			{
+				get
+				{
+					return adjustment;
+				}
+				set
+				{
+					// TODO: validate the adjustment value
+					adjustment = value;
 				}
 			}
 
@@ -229,6 +247,12 @@ public class HijriCalendar : Calendar
 				// TODO
 				return new DateTime(year, month, day, hour,
 									minute, second, millisecond);
+			}
+
+	// Convert a two-digit year value into a four-digit year value.
+	public override int ToFourDigitYear(int year)
+			{
+				return base.ToFourDigitYear(year);
 			}
 
 }; // class HijriCalendar

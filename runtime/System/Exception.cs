@@ -22,6 +22,7 @@ namespace System
 {
 
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Diagnostics;
 
@@ -51,6 +52,9 @@ applications that didn't expect them to be present.
 
 */
 
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public class Exception
 #if !ECMA_COMPAT
 	: ISerializable

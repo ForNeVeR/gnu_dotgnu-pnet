@@ -2,7 +2,7 @@
  * Hashtable.cs - Implementation of the
  *			"System.Collections.Hashtable" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,12 @@ namespace System.Collections
 using System;
 using System.Private;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
+#if !ECMA_COMPAT
+	, ISerializable, IDeserializationCallback
+#endif
 {
 
 	// Contents of a hash bucket.
@@ -380,6 +384,11 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("loadFactor", _("ArgRange_HashLoadFactor"));
 				}
+			}
+	[TODO]
+	protected Hashtable(SerializationInfo info, StreamingContext context)
+			{
+				// TODO
 			}
 
 #endif // !ECMA_COMPAT
@@ -830,6 +839,25 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				}
 			}
 
+#if !ECMA_COMPAT
+
+	// Get the serialization data for this object.
+	[TODO]
+	public virtual void GetObjectData(SerializationInfo info,
+									  StreamingContext context)
+			{
+				// TODO
+			}
+
+	// Process a deserialization callback.
+	[TODO]
+	public virtual void OnDeserialization(Object sender)
+			{
+				// TODO
+			}
+
+#endif // !ECMA_COMPAT
+
 	// Determine if an item is equal to a key value.
 	protected virtual bool KeyEquals(Object item, Object key)
 			{
@@ -879,7 +907,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 #if !ECMA_COMPAT
 
 	// Get the hash code provider that is being used by this instance.
-	protected virtual IHashCodeProvider hcp
+	protected IHashCodeProvider hcp
 			{
 				get
 				{
@@ -888,7 +916,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 			}
 
 	// Get the comparer that is being used by this instance.
-	protected virtual IComparer comparer
+	protected IComparer comparer
 			{
 				get
 				{
@@ -918,6 +946,15 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					this.table = table;
 				}
+#if !ECMA_COMPAT
+		[TODO]
+		internal SynchronizedHashtable(SerializationInfo info,
+									   StreamingContext context)
+				: base(info, context)
+				{
+					// TODO
+				}
+#endif
 
 		// Implement the ICloneable interface.
 		public override Object Clone()
@@ -1105,37 +1142,18 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 
 #if !ECMA_COMPAT
 
-		// Get the hash code provider that is being used by this instance.
-		protected override IHashCodeProvider hcp
+		// Get the serialization data for this object.
+		[TODO]
+		public override void GetObjectData(SerializationInfo info,
+										   StreamingContext context)
 				{
-					get
-					{
-						// We don't lock this because it does not modify
-						// the underlying hash table, or access fields
-						// that may be modified by other threads.
-						return table.hcp;
-					}
+					// TODO
 				}
 
-		// Get the comparer that is being used by this instance.
-		protected override IComparer comparer
+		// Process a deserialization callback.
+		public override void OnDeserialization(Object sender)
 				{
-					get
-					{
-						// we do lock this because the comparer might
-						// be set by another thread 
-						lock(SyncRoot)
-						{
-							return table.comparer;
-						}
-					}
-					set
-					{
-						lock(SyncRoot)
-						{
-							table.comparer = value;
-						}
-					}
+					// Nothing to do here for synchronized hash tables.
 				}
 
 #endif // !ECMA_COMPAT

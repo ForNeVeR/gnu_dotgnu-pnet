@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Assembly)]
+[AttributeUsage(AttributeTargets.Assembly, Inherited=false)]
 public sealed class PrimaryInteropAssemblyAttribute : Attribute
 {
 	// Internal state.

@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[Guid("")]
+[Guid("00000102-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface UCOMIEnumMoniker
 {

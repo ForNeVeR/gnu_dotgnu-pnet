@@ -27,7 +27,7 @@ namespace System.Security.Cryptography
 using System;
 using Platform;
 
-public class MD5CryptoServiceProvider : MD5
+public sealed class MD5CryptoServiceProvider : MD5
 {
 	// Internal state from the runtime engine.
 	private IntPtr state;

@@ -30,7 +30,8 @@ public enum TypeLibImporterFlags
 {
 	PrimaryInteropAssembly = 0x0001,
 	UnsafeInterfaces       = 0x0002,
-	SafeArrayAsSystemArray = 0x0004
+	SafeArrayAsSystemArray = 0x0004,
+	TransformDispRetVals   = 0x0008
 
 }; // enum TypeLibImporterFlags
 

@@ -23,6 +23,11 @@ namespace System.Reflection
 
 #if CONFIG_REFLECTION
 
+using System.Runtime.InteropServices;
+
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public abstract class MethodInfo : MethodBase
 {
 

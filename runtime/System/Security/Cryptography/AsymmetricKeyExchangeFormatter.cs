@@ -28,6 +28,8 @@ using System;
 
 public abstract class AsymmetricKeyExchangeFormatter
 {
+	// Constructor.
+	public AsymmetricKeyExchangeFormatter() {}
 
 	// Get the key exchange parameters.
 	public abstract String Parameters { get; }

@@ -24,6 +24,9 @@ namespace System.Runtime.Remoting
 
 #if CONFIG_REMOTING
 
+using System.Runtime.InteropServices;
+
+[ClassInterface(ClassInterfaceType.AutoDual)]
 public class ObjectHandle : MarshalByRefObject, IObjectHandle
 {
 	// Internal state.

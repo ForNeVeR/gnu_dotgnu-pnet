@@ -2,7 +2,7 @@
  * CaseInsensitiveComparer.cs - Implementation of the
  *			"System.Collections.CaseInsensitiveComparer" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,19 +29,28 @@ using System.Globalization;
 
 public class CaseInsensitiveComparer : IComparer
 {
-	// The default case insensitive comparer instance.
+	// The default case insensitive comparer instances.
 	private static readonly CaseInsensitiveComparer defaultComparer =
 		new CaseInsensitiveComparer();
+	private static readonly CaseInsensitiveComparer defaultInvariantComparer =
+		new CaseInsensitiveComparer(CultureInfo.InvariantCulture);
 
 	// Internal state.
 	private CompareInfo compare;
 
-	// Get the default comparer instance.
+	// Get the default comparer instances.
 	public static CaseInsensitiveComparer Default
 			{
 				get
 				{
 					return defaultComparer;
+				}
+			}
+	public static CaseInsensitiveComparer DefaultInvariant
+			{
+				get
+				{
+					return defaultInvariantComparer;
 				}
 			}
 

@@ -1,7 +1,7 @@
 /*
  * Thread.cs - Implementation of the "System.Threading.Thread" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -150,30 +150,35 @@ public sealed class Thread
 	extern public static byte VolatileRead(ref byte address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static sbyte VolatileRead(ref sbyte address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static short VolatileRead(ref short address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static ushort VolatileRead(ref ushort address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int VolatileRead(ref int address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static uint VolatileRead(ref uint address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static long VolatileRead(ref long address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static ulong VolatileRead(ref ulong address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static IntPtr VolatileRead(ref IntPtr address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static UIntPtr VolatileRead(ref UIntPtr address);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -190,30 +195,35 @@ public sealed class Thread
 	extern public static void VolatileWrite(ref byte address, byte value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static void VolatileWrite(ref sbyte address, sbyte value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void VolatileWrite(ref short address, short value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static void VolatileWrite(ref ushort address, ushort value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void VolatileWrite(ref int address, int value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static void VolatileWrite(ref uint address, uint value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void VolatileWrite(ref long address, long value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static void VolatileWrite(ref ulong address, ulong value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void VolatileWrite(ref IntPtr address, IntPtr value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
+	[CLSCompliant(false)]
 	extern public static void VolatileWrite(ref UIntPtr address, UIntPtr value);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]

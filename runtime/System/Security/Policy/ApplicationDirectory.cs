@@ -50,7 +50,7 @@ public sealed class ApplicationDirectory
 			}
 
 	// Create a copy of this object.
-	public ApplicationDirectory Copy()
+	public Object Copy()
 			{
 				return new ApplicationDirectory(name);
 			}

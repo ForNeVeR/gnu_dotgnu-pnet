@@ -1,7 +1,7 @@
 /*
  * BinaryReader.cs - Implementation of the "System.IO.BinaryReader" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,12 +60,6 @@ public class BinaryReader : IDisposable
 				decoder = encoding.GetDecoder();
 				smallBuffer = new byte [16];
 				smallCharBuffer = new char [1];
-			}
-
-	// Destructor.
-	~BinaryReader()
-			{
-				Dispose(false);
 			}
 
 	// Get the base stream that underlies this binary reader.
@@ -177,14 +171,14 @@ public class BinaryReader : IDisposable
 			}
 
 	// Read the next character, throwing an exception at EOF.
-	public virtual int ReadChar()
+	public virtual char ReadChar()
 			{
 				int ch = Read();
 				if(ch == -1)
 				{
 					throw new EndOfStreamException(_("IO_ReadEndOfStream"));
 				}
-				return ch;
+				return (char)ch;
 			}
 
 	// Read a buffer of bytes.
@@ -459,7 +453,7 @@ public class BinaryReader : IDisposable
 			}
 
 	// Read an integer value that is encoded in a 7-bit format.
-	protected virtual int Read7BitEncodedInt()
+	protected int Read7BitEncodedInt()
 			{
 				int value = 0;
 				int byteval;

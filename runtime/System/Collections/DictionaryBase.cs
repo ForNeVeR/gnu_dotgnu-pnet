@@ -63,7 +63,7 @@ public abstract class DictionaryBase : IDictionary, ICollection, IEnumerable
 			{
 				return table.Contains(key);
 			}
-	IDictionaryEnumerator IDictionary.GetEnumerator()
+	public IDictionaryEnumerator GetEnumerator()
 			{
 				return ((IDictionary)table).GetEnumerator();
 			}
@@ -164,7 +164,7 @@ public abstract class DictionaryBase : IDictionary, ICollection, IEnumerable
 			}
 
 	// Implement the IEnumerable interface.
-	public IEnumerator GetEnumerator()
+	IEnumerator IEnumerable.GetEnumerator()
 			{
 				return ((IEnumerable)table).GetEnumerator();
 			}
@@ -190,7 +190,10 @@ public abstract class DictionaryBase : IDictionary, ICollection, IEnumerable
 	// Dictionary control methods.
 	protected virtual void OnClear() {}
 	protected virtual void OnClearComplete() {}
-	protected virtual void OnGet(Object key, Object currentValue) {}
+	protected virtual Object OnGet(Object key, Object currentValue)
+			{
+				return currentValue;
+			}
 	protected virtual void OnInsert(Object key, Object value) {}
 	protected virtual void OnInsertComplete(Object key, Object value) {}
 	protected virtual void OnRemove(Object key, Object value) {}

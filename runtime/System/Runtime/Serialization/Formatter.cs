@@ -84,19 +84,27 @@ public abstract class Formatter : IFormatter
 									   Type memberType);
 	protected abstract void WriteBoolean(bool val, String name);
 	protected abstract void WriteByte(byte val, String name);
+	[CLSCompliant(false)]
 	protected abstract void WriteSByte(sbyte val, String name);
 	protected abstract void WriteInt16(short val, String name);
+	[CLSCompliant(false)]
 	protected abstract void WriteUInt16(ushort val, String name);
 	protected abstract void WriteChar(char val, String name);
 	protected abstract void WriteInt32(int val, String name);
+	[CLSCompliant(false)]
 	protected abstract void WriteUInt32(uint val, String name);
 	protected abstract void WriteInt64(long val, String name);
+	[CLSCompliant(false)]
 	protected abstract void WriteUInt64(ulong val, String name);
 	protected abstract void WriteSingle(float val, String name);
 	protected abstract void WriteDouble(double val, String name);
 	protected abstract void WriteDateTime(DateTime val, String name);
 	protected abstract void WriteDecimal(Decimal val, String name);
-	protected abstract void WriteMember(String memberName, Object data);
+	[TODO]
+	protected virtual void WriteMember(String memberName, Object data)
+			{
+				// TODO
+			}
 	protected abstract void WriteObjectRef(Object obj, String name,
 										   Type memberType);
 	protected abstract void WriteTimeSpan(TimeSpan val, String name);

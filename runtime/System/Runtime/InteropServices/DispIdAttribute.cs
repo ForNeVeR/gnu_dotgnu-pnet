@@ -27,7 +27,8 @@ namespace System.Runtime.InteropServices
 [AttributeUsage(AttributeTargets.Method |
 				AttributeTargets.Field |
 				AttributeTargets.Property |
-				AttributeTargets.Event)]
+				AttributeTargets.Event,
+				Inherited=false)]
 public sealed class DispIdAttribute : Attribute
 {
 	// Internal state.

@@ -2,7 +2,7 @@
  * RC2CryptoServiceProvider.cs - Implementation of the
  *		"System.Security.Cryptography.RC2CryptoServiceProvider" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +81,25 @@ public sealed class RC2CryptoServiceProvider : RC2
 					Array.Clear(KeyValue, 0, KeyValue.Length);
 				}
 				KeyValue = key;
+			}
+
+	// Get or set the effective key size.
+	public override int EffectiveKeySize
+			{
+				get
+				{
+					return KeySizeValue;
+				}
+				set
+				{
+					// We cannot change the effective key size for
+					// the RC2CryptoServiceProvider implementation.
+					if(value != KeySizeValue)
+					{
+						throw new CryptographicException
+							(_("Crypto_InvalidKeySize"), value.ToString());
+					}
+				}
 			}
 
 }; // class RC2CryptoServiceProvider

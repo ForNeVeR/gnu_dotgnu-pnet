@@ -25,6 +25,7 @@ namespace System.Runtime.InteropServices
 #if !ECMA_COMPAT
 
 [ComVisible(false)]
+[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
 public struct VARDESC
 {
 	[StructLayout(LayoutKind.Explicit)]

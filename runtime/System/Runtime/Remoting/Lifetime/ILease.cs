@@ -48,7 +48,7 @@ public interface ILease
 	void Register(ISponsor obj, TimeSpan renewalTime);
 
 	// Renew the lease.
-	void Renew(TimeSpan renewalTime);
+	TimeSpan Renew(TimeSpan renewalTime);
 
 	// Unregister a sponsor.
 	void Unregister(ISponsor obj);

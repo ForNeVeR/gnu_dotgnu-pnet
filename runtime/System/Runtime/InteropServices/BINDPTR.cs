@@ -25,7 +25,7 @@ namespace System.Runtime.InteropServices
 #if !ECMA_COMPAT
 
 [ComVisible(false)]
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Explicit, CharSet=CharSet.Unicode)]
 public struct BINDPTR
 {
 	// Accessible state.

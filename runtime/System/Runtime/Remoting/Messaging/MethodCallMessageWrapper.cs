@@ -28,7 +28,7 @@ using System.Collections;
 using System.Reflection;
 
 public class MethodCallMessageWrapper
-	: InternalMessageWrapper, IMethodCallMessage
+	: InternalMessageWrapper, IMethodCallMessage, IMethodMessage, IMessage
 {
 	// Internal state.
 	private IMethodCallMessage mcm;
@@ -69,7 +69,7 @@ public class MethodCallMessageWrapper
 					return mcm.HasVarArgs;
 				}
 			}
-	public LogicalCallContext LogicalCallContext
+	public virtual LogicalCallContext LogicalCallContext
 			{
 				get
 				{

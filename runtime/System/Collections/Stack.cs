@@ -1,7 +1,7 @@
 /*
  * Stack.cs - Implementation of the "System.Collections.Stack" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -128,15 +128,6 @@ public class Stack : ICollection, IEnumerable, ICloneable
 	public virtual IEnumerator GetEnumerator()
 			{
 				return new StackEnumerator(this);
-			}
-
-	// Determine if this stack is read-only.
-	public virtual bool IsReadOnly
-			{
-				get
-				{
-					return false;
-				}
 			}
 
 	// Clear the contents of this stack.

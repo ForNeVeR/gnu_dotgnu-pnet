@@ -29,7 +29,8 @@ namespace System.Runtime.InteropServices
 				AttributeTargets.Struct |
 				AttributeTargets.Enum |
 				AttributeTargets.Interface |
-				AttributeTargets.Delegate)]
+				AttributeTargets.Delegate,
+				Inherited=false)]
 public sealed class GuidAttribute : Attribute
 {
 	// Internal state.

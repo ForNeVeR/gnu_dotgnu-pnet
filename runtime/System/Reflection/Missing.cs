@@ -28,6 +28,8 @@ public
 #endif
 sealed class Missing
 {
+	// Cannot instantiate this class externally.
+	private Missing() {}
 
 	// The only instance of Missing in the system.
 	public static readonly Missing Value = new Missing();

@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Field)]
+[AttributeUsage(AttributeTargets.Field, Inherited=false)]
 public sealed class TypeLibVarAttribute : Attribute
 {
 	// Internal state.

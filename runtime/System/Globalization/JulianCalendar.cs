@@ -396,6 +396,12 @@ public class JulianCalendar : Calendar
 				throw new ArgumentOutOfRangeException(_("ArgRange_YMD"));
 			}
 
+	// Convert a two-digit year value into a four-digit year value.
+	public override int ToFourDigitYear(int year)
+			{
+				return base.ToFourDigitYear(year);
+			}
+
 }; // class JulianCalendar
 
 }; // namespace System.Globalization

@@ -48,7 +48,6 @@ enum TypeAttributes
 	Interface				= 0x00000020,
 	Abstract				= 0x00000080,
 	Sealed					= 0x00000100,
-	Enum					= 0x00000200,
 	SpecialName				= 0x00000400,
 	Import					= 0x00001000,
 	Serializable			= 0x00002000,

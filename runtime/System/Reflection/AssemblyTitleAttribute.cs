@@ -2,7 +2,7 @@
  * AssemblyTitleAttribute.cs - Implementation of the
  *			"System.Reflection.AssemblyTitleAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ namespace System.Reflection
 using System;
 using System.Configuration.Assemblies;
 
-[AttributeUsage(AttributeTargets.Assembly)]
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=false)]
 public sealed class AssemblyTitleAttribute : Attribute
 {
 
@@ -42,7 +42,7 @@ public sealed class AssemblyTitleAttribute : Attribute
 			}
 
 	// Properties.
-	public String TitleName
+	public String Title
 			{
 				get
 				{

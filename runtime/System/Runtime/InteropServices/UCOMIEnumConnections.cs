@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[Guid("")]
+[Guid("B196B287-BAB4-101A-B69C-00AA00341D07")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface UCOMIEnumConnections
 {

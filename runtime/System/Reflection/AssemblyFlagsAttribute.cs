@@ -2,7 +2,7 @@
  * AssemblyFlagsAttribute.cs - Implementation of the
  *			"System.Reflection.AssemblyFlagsAttribute" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ namespace System.Reflection
 using System;
 using System.Configuration.Assemblies;
 
-[AttributeUsage(AttributeTargets.Assembly)]
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=false)]
 public sealed class AssemblyFlagsAttribute : Attribute
 {
 
@@ -35,6 +35,12 @@ public sealed class AssemblyFlagsAttribute : Attribute
 	private uint flagValues;
 
 	// Constructors.
+	public AssemblyFlagsAttribute(int flags)
+			: base()
+			{
+				flagValues = (uint)flags;
+			}
+	[CLSCompliant(false)]
 	public AssemblyFlagsAttribute(uint flags)
 			: base()
 			{
@@ -42,6 +48,14 @@ public sealed class AssemblyFlagsAttribute : Attribute
 			}
 
 	// Properties.
+	public int AssemblyFlags
+			{
+				get
+				{
+					return (int)flagValues;
+				}
+			}
+	[CLSCompliant(false)]
 	public uint Flags
 			{
 				get

@@ -77,6 +77,14 @@ public class RemotingConfiguration
 				// TODO
 			}
 
+	// Determine if custom errors are enabled.
+	[TODO]
+	public static bool CustomErrorsEnabled(bool isLocalRequest)
+			{
+				// TODO
+				return false;
+			}
+
 	// Get a list of client types that can be activated remotely.
 	[TODO]
 	public static ActivatedClientTypeEntry[]

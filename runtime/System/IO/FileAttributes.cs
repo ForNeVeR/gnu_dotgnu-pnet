@@ -25,6 +25,7 @@ namespace System.IO
 
 using System;
 
+[Flags]
 public enum FileAttributes
 {
 	ReadOnly			= 0x00001,

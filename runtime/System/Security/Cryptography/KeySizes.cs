@@ -26,7 +26,7 @@ namespace System.Security.Cryptography
 
 using System;
 
-public class KeySizes
+public sealed class KeySizes
 {
 	// Internal state.
 	private int minSize, maxSize, skipSize;

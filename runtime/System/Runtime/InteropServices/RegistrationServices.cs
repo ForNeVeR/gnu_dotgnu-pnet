@@ -29,7 +29,7 @@ using System.Reflection;
 // We don't support COM registration in this implementation.
 
 [ClassInterface(ClassInterfaceType.None)]
-[Guid("")]
+[Guid("475E398F-8AFA-43a7-A3BE-F4EF8D6787C9")]
 public class RegistrationServices : IRegistrationServices
 {
 

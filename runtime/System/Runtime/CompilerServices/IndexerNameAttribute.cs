@@ -25,7 +25,7 @@ namespace System.Runtime.CompilerServices
 // This class is not ECMA-compatible, but is needed to implement
 // the C# compiler's indexer name override mechanism.
 
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property, Inherited=true)]
 public sealed class IndexerNameAttribute : Attribute
 {
 

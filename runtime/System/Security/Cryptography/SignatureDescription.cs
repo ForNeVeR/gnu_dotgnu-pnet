@@ -35,6 +35,10 @@ public class SignatureDescription
 	private String key;
 
 	// Constructor.
+	public SignatureDescription()
+			{
+				// Nothing to do here.
+			}
 	public SignatureDescription(SecurityElement el)
 			{
 				if(el == null)

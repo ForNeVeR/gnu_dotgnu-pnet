@@ -28,7 +28,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Remoting.Messaging;
 
-public sealed class BinaryFormatter : IRemotingFormatter
+public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 {
 	// Internal state.
 	private SerializationBinder binder;

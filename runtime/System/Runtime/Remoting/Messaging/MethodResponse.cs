@@ -30,7 +30,8 @@ using System.Runtime.Serialization;
 
 [Serializable]
 [CLSCompliant(false)]
-public class MethodResponse : IMethodReturnMessage, ISerializable
+public class MethodResponse : IMethodReturnMessage, ISerializable,
+							  IMethodMessage, IMessage
 {
 	// Internal state.
 	protected IDictionary ExternalProperties;

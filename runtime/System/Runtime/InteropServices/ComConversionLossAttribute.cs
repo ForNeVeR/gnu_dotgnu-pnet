@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.All)]
+[AttributeUsage(AttributeTargets.All, Inherited=false)]
 public sealed class ComConversionLossAttribute : Attribute
 {
 	// Constructor.

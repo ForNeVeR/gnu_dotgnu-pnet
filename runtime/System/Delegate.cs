@@ -22,9 +22,13 @@ namespace System
 {
 
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public abstract class Delegate : ICloneable
 #if !ECMA_COMPAT
 	, ISerializable

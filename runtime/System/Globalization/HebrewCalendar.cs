@@ -273,6 +273,12 @@ public class HebrewCalendar : Calendar
 				return new DateTime(0);
 			}
 
+	// Convert a two-digit year value into a four-digit year value.
+	public override int ToFourDigitYear(int year)
+			{
+				return base.ToFourDigitYear(year);
+			}
+
 }; // class HebrewCalendar
 
 }; // namespace System.Globalization

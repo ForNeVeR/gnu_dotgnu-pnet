@@ -2,7 +2,7 @@
  * ToBase64Transform.cs - Implementation of the
  *		"System.Security.Cryptography.ToBase64Transform" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,15 @@ public class ToBase64Transform : ICryptoTransform, IDisposable
 	~ToBase64Transform()
 			{
 				Dispose(false);
+			}
+
+	// Determine if we can reuse this transform object.
+	public virtual bool CanReuseTransform
+			{
+				get
+				{
+					return true;
+				}
 			}
 
 	// Determine if this transformation can process multiple blocks.

@@ -53,7 +53,7 @@ public class Context
 
 	// Allocate a named local data slot.
 	[TODO]
-	public static LocalDataStoreSlot AllocNamedDataSlot(String name)
+	public static LocalDataStoreSlot AllocateNamedDataSlot(String name)
 			{
 				// TODO
 				return null;
@@ -75,7 +75,7 @@ public class Context
 
 	// Freeze this context.
 	[TODO]
-	public void Freeze()
+	public virtual void Freeze()
 			{
 				// TODO
 			}
@@ -145,7 +145,7 @@ public class Context
 			}
 
 	// Get the identifier for this context.
-	public int ContextID
+	public virtual int ContextID
 			{
 				get
 				{
@@ -154,7 +154,7 @@ public class Context
 			}
 
 	// Get the properties on this context.
-	public IContextProperty[] ContextProperties
+	public virtual IContextProperty[] ContextProperties
 			{
 				get
 				{

@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Interface, Inherited=false)]
 public sealed class CoClassAttribute : Attribute
 {
 	// Internal state.

@@ -7,6 +7,9 @@
 	runtime/System/Runtime/Serialization/Formatters/TypeFilterLevel.cs:
 	new classes in .NET Framework SDK 1.1.
 
+	* runtime/*: minor tweaks to a lot of classes to make them more
+	signature compatible with .NET Framework SDK 1.1.
+
 2003-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/System/IO/FileStream.cs,

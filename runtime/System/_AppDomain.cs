@@ -37,7 +37,7 @@ using System.Security.Principal;
 internal
 #else
 [CLSCompliant(false)]
-[Guid("")]
+[Guid("05F696DC-2B29-3663-AD8B-C4389CF2A713")]
 [InterfaceType(ComInterfaceType.InterfaceIsDual)]
 public
 #endif

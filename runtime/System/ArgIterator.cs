@@ -1,7 +1,7 @@
 /*
  * ArgIterator.cs - Implementation of the "System.ArgIterator" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ public struct ArgIterator
 	extern public unsafe ArgIterator(RuntimeArgumentHandle argList, void *ptr);
 
 	// Move the iterator to the end of the argument list.
-	[MethodImpl(MethodImplOptions.InternalCall), CLSCompliant(false)]
+	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public void End();
 
 	// Inherited methods.

@@ -89,6 +89,17 @@ public class ObjRef : IObjectReference, ISerializable
 					channelInfo = value;
 				}
 			}
+	public virtual IEnvoyInfo EnvoyInfo
+			{
+				get
+				{
+					return envoyInfo;
+				}
+				set
+				{
+					envoyInfo = value;
+				}
+			}
 	public virtual IRemotingTypeInfo TypeInfo
 			{
 				get

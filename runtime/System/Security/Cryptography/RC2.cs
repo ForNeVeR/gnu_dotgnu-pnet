@@ -1,7 +1,7 @@
 /*
  * RC2.cs - Implementation of the "System.Security.Cryptography.RC2" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ using System;
 
 public abstract class RC2 : SymmetricAlgorithm
 {
+	// Internal state.
+	protected int EffectiveKeySizeValue;
 
 	// Constructor.
 	public RC2()
@@ -50,6 +52,55 @@ public abstract class RC2 : SymmetricAlgorithm
 	public new static RC2 Create(String algName)
 			{
 				return (RC2)(CryptoConfig.CreateFromName(algName, null));
+			}
+
+	// Get or set the effective key size.
+	public virtual int EffectiveKeySize
+			{
+				get
+				{
+					if(EffectiveKeySize != 0)
+					{
+						return EffectiveKeySize;
+					}
+					else
+					{
+						return KeySizeValue;
+					}
+				}
+				set
+				{
+					if(value == 0)
+					{
+						// Reset the effective key size to the real key size.
+						EffectiveKeySizeValue = 0;
+					}
+					else if(value < 40 || value > KeySizeValue)
+					{
+						// Invalid effective key size.
+						throw new CryptographicException
+							(_("Crypto_InvalidKeySize"), value.ToString());
+					}
+					EffectiveKeySizeValue = value;
+				}
+			}
+
+	// Get or set the real key size.
+	public override int KeySize
+			{
+				get
+				{
+					return KeySizeValue;
+				}
+				set
+				{
+					if(value < EffectiveKeySizeValue)
+					{
+						throw new CryptographicException
+							(_("Crypto_InvalidKeySize"), value.ToString());
+					}
+					base.KeySize = value;
+				}
 			}
 
 }; // class RC2

@@ -24,7 +24,9 @@ namespace System.Runtime.CompilerServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
+[AttributeUsage(AttributeTargets.Field |
+				AttributeTargets.Parameter,
+				Inherited=false)]
 public abstract class CustomConstantAttribute : Attribute
 {
 

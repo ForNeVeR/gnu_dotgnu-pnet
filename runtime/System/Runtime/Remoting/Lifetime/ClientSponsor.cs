@@ -36,6 +36,12 @@ public class ClientSponsor : MarshalByRefObject, ISponsor
 				this.renewalTime = renewalTime;
 			}
 
+	// Destructor.
+	~ClientSponsor()
+			{
+				// Nothing to do here except declare the finalizer.
+			}
+
 	// Get or set the renewal time.
 	public TimeSpan RenewalTime
 			{

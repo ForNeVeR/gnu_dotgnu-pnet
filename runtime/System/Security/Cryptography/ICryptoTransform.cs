@@ -2,7 +2,7 @@
  * ICryptoTransform.cs - Implementation of the
  *		"System.Security.Cryptography.ICryptoTransform" interface.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,11 @@ namespace System.Security.Cryptography
 
 using System;
 
-public interface ICryptoTransform
+public interface ICryptoTransform : IDisposable
 {
+
+	// Determine if we can reuse this transform object.
+	bool CanReuseTransform { get; }
 
 	// Determine if multiple blocks can be transformed.
 	bool CanTransformMultipleBlocks { get; }

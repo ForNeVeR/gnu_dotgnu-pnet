@@ -32,7 +32,7 @@ public class InvalidFilterCriteriaException : ApplicationException
 {
 
 	// Constructors.
-	private InvalidFilterCriteriaException()
+	public InvalidFilterCriteriaException()
 		: base(_("Exception_Filter")) {}
 	public InvalidFilterCriteriaException(String msg)
 		: base(msg) {}

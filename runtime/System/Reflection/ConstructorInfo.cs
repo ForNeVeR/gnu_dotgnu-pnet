@@ -2,7 +2,7 @@
  * ConstructorInfo.cs - Implementation of the
  *		"System.Reflection.ConstructorInfo" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,12 @@ namespace System.Reflection
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public abstract class ConstructorInfo : MethodBase
 {
 
@@ -47,6 +52,10 @@ public abstract class ConstructorInfo : MethodBase
 			}
 
 	// Invoke this constructor.
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public Object Invoke(Object[] parameters)
 			{
 				return Invoke(BindingFlags.Default, null, parameters, null);

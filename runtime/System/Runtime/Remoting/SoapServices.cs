@@ -127,7 +127,7 @@ public class SoapServices
 
 	// Get type and method information from a SOAP action.
 	[TODO]
-	public static bool GetTypeAndMethodNameFromSoapAcion
+	public static bool GetTypeAndMethodNameFromSoapAction
 				(String soapAction, out String typeName, out String methodName)
 			{
 				// TODO

@@ -24,6 +24,7 @@ namespace System.Reflection.Emit
 
 #if !ECMA_COMPAT
 
+[Flags]
 public enum PackingSize
 {
 

@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[Guid("")]
+[Guid("00020401-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface UCOMITypeInfo
 {
@@ -43,6 +43,7 @@ public interface UCOMITypeInfo
 	void GetNames(int memid, String[] rgBstrNames, int cMaxNames,
 				  out int pcNames);
 	void GetRefTypeInfo(int hRef, out UCOMITypeInfo ppTI);
+	void GetRefTypeOfImplType(int index, out int href);
 	void GetTypeAttr(out IntPtr ppTypeAttr);
 	void GetTypeComp(out UCOMITypeComp ppTComp);
 	void GetVarDesc(int index, out IntPtr ppVarDesc);

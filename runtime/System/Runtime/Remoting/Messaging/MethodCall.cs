@@ -30,7 +30,8 @@ using System.Runtime.Serialization;
 
 [Serializable]
 [CLSCompliant(false)]
-public class MethodCall : IMethodCallMessage, ISerializable
+public class MethodCall : IMethodCallMessage, ISerializable,
+						  IMethodMessage, IMessage
 {
 	// Internal state.
 	protected IDictionary ExternalProperties;
@@ -50,7 +51,7 @@ public class MethodCall : IMethodCallMessage, ISerializable
 
 	// Implement the IMethodCallMessage interface.
 	[TODO]
-	public IDictionary Properties
+	public virtual IDictionary Properties
 			{
 				get
 				{

@@ -25,6 +25,7 @@ namespace System.Runtime.InteropServices
 #if !ECMA_COMPAT
 
 [ComVisible(false)]
+[StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
 public struct TYPEATTR
 {
 	// Accessible state.
@@ -46,7 +47,7 @@ public struct TYPEATTR
 	public short wMajorVerNum;
 	public short wMinorVerNum;
 	public TYPEDESC tdescAlias;
-	public IDLDESC ildescType;
+	public IDLDESC idldescType;
 
 }; // struct TYPEATTR
 

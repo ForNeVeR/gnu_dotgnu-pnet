@@ -176,6 +176,13 @@ public sealed class RemotingServices
 				return false;
 			}
 
+	// Set the log remoting stage.
+	[TODO]
+	public static void LogRemotingStage(int stage)
+			{
+				// TODO
+			}
+
 	// Marshal an object.
 	public static ObjRef Marshal(MarshalByRefObject Obj)
 			{

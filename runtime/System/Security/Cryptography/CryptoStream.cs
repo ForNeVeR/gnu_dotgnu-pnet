@@ -2,7 +2,7 @@
  * CryptoStream.cs - Implementation of the
  *		"System.Security.Cryptography.CryptoStream" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -164,11 +164,11 @@ public class CryptoStream : Stream, IDisposable
 				{
 					Array.Clear(outBuffer, 0, outBuffer.Length);
 				}
-				if(transform != null && transform is IDisposable)
+				if(transform != null)
 				{
-					((IDisposable)transform).Dispose();
+					transform.Dispose();
+					transform = null;
 				}
-				transform = null;
 			}
 
 	// Flush the final block to the output stream.

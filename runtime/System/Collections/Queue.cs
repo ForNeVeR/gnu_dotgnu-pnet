@@ -1,7 +1,7 @@
 /*
  * Queue.cs - Implementation of the "System.Collections.Queue" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,15 +169,6 @@ class Queue : ICollection, IEnumerable, ICloneable
 				return new QueueEnumerator(this);
 			}
 
-	// Determine if this queue is read-only.
-	public virtual bool IsReadOnly
-			{
-				get
-				{
-					return false;
-				}
-			}
-
 	// Clear the contents of this queue.
 	public virtual void Clear()
 			{
@@ -300,6 +291,15 @@ class Queue : ICollection, IEnumerable, ICloneable
 					}
 				}
 				return array;
+			}
+
+	// Trim this queue to its actual size.
+	public virtual void TrimToSize()
+			{
+				items = ToArray();
+				add = items.Length;
+				remove = 0;
+				size = items.Length;
 			}
 
 	// Convert this queue into a synchronized queue.
@@ -431,6 +431,15 @@ class Queue : ICollection, IEnumerable, ICloneable
 					lock(SyncRoot)
 					{
 						return queue.ToArray();
+					}
+				}
+
+		// Trim this queue to its actual size.
+		public override void TrimToSize()
+				{
+					lock(SyncRoot)
+					{
+						queue.TrimToSize();
 					}
 				}
 

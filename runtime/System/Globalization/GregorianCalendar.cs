@@ -102,6 +102,10 @@ public class GregorianCalendar : Calendar
 			{
 				return time.AddMonths(months);
 			}
+	public override DateTime AddWeeks(DateTime time, int weeks)
+			{
+				return base.AddWeeks(time, weeks);
+			}
 	public override DateTime AddYears(DateTime time, int years)
 			{
 				return time.AddYears(years);
@@ -246,6 +250,12 @@ public class GregorianCalendar : Calendar
 				}
 				return new DateTime(year, month, day, hour,
 									minute, second, millisecond);
+			}
+
+	// Convert a two-digit year value into a four-digit year value.
+	public override int ToFourDigitYear(int year)
+			{
+				return base.ToFourDigitYear(year);
 			}
 
 }; // class GregorianCalendar

@@ -75,7 +75,7 @@ public class ReturnMessage : IMethodReturnMessage, IMethodMessage, IMessage
 					return outArgs;
 				}
 			}
-	public Object ReturnValue
+	public virtual Object ReturnValue
 			{
 				get
 				{
@@ -173,7 +173,7 @@ public class ReturnMessage : IMethodReturnMessage, IMethodMessage, IMessage
 			}
 
 	// Implement the IMessage interface.
-	public IDictionary Properties
+	public virtual IDictionary Properties
 			{
 				get
 				{

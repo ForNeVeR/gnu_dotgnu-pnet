@@ -31,6 +31,7 @@ public class RSAPKCS1KeyExchangeDeformatter
 {
 	// Internal state.
 	private RSACryptoServiceProvider keyContainer;
+	private RandomNumberGenerator rng;
 
 	// Constructors.
 	public RSAPKCS1KeyExchangeDeformatter()
@@ -53,6 +54,19 @@ public class RSAPKCS1KeyExchangeDeformatter
 				set
 				{
 					// PKCS1 does not have any parameters.
+				}
+			}
+
+	// Get or set the random number generator to be used.
+	public RandomNumberGenerator RNG
+			{
+				get
+				{
+					return rng;
+				}
+				set
+				{
+					rng = value;
 				}
 			}
 

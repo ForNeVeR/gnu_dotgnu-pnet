@@ -25,9 +25,10 @@ namespace System.Security
 using System;
 using System.Collections;
 using System.Security.Permissions;
+using System.Runtime.Serialization;
 
 public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
-							 IStackWalk
+							 IStackWalk, IDeserializationCallback
 {
 
 	// Internal state.
@@ -463,6 +464,13 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 				}
 			}
 
+	// Implement the IDeserializationCallback interface.
+	[TODO]
+	void IDeserializationCallback.OnDeserialization(Object sender)
+			{
+				// TODO
+			}
+
 #if !ECMA_COMPAT
 
 	// Determine if this permission set is read-only.
@@ -476,7 +484,7 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 
 	// Determine if the set contains permissions that do not
 	// derive from CodeAccessPermission.
-	public bool ContainsNonCodeAccessPermisssions()
+	public bool ContainsNonCodeAccessPermissions()
 			{
 				int posn;
 				for(posn = 0; posn < permissions.Count; ++posn)
@@ -546,6 +554,15 @@ public class PermissionSet : ICollection, IEnumerable, ISecurityEncodable,
 					}
 				}
 				return null;
+			}
+
+	// Convert a permission set from one format to another.
+	[TODO]
+	public static byte[] ConvertPermissionSet
+				(String inFormat, byte[] inData, String outFormat)
+			{
+				// TODO
+				return inData;
 			}
 
 #endif // !ECMA_COMPAT

@@ -76,7 +76,7 @@ public abstract class RealProxy
 			}
 
 	// Get the type being proxied by this instance.
-	public virtual Type GetProxyType()
+	public virtual Type GetProxiedType()
 			{
 				return type;
 			}

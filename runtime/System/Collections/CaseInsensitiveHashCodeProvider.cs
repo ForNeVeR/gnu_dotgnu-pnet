@@ -2,7 +2,7 @@
  * CaseInsensitiveHashCodeProvider.cs - Implementation of the
  *			"System.Collections.CaseInsensitiveHashCodeProvider" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,19 +29,30 @@ using System.Globalization;
 
 public class CaseInsensitiveHashCodeProvider : IHashCodeProvider
 {
-	// The default case insensitive comparer instance.
-	private static readonly CaseInsensitiveHashCodeProvider defaultProvider =
-		new CaseInsensitiveHashCodeProvider();
+	// The default case insensitive comparer instances.
+	private static readonly CaseInsensitiveHashCodeProvider
+		defaultProvider =
+			new CaseInsensitiveHashCodeProvider();
+	private static readonly CaseInsensitiveHashCodeProvider
+		defaultInvariantProvider =
+			new CaseInsensitiveHashCodeProvider(CultureInfo.InvariantCulture);
 
 	// Internal state.
 	private TextInfo info;
 
-	// Get the default comparer instance.
+	// Get the default comparer instances.
 	public static CaseInsensitiveHashCodeProvider Default
 			{
 				get
 				{
 					return defaultProvider;
+				}
+			}
+	public static CaseInsensitiveHashCodeProvider DefaultInvariant
+			{
+				get
+				{
+					return defaultInvariantProvider;
 				}
 			}
 

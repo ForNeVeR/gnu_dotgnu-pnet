@@ -1,7 +1,7 @@
 /*
  * Console.cs - Implementation of the "System.Console" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -205,6 +205,26 @@ public sealed class Console
 			{
 				Out.Write(format, args);
 			}
+#if !ECMA_COMPAT
+	[CLSCompliant(false)]
+	public static void Write(String format, Object arg0, Object arg1,
+							 Object arg2, Object arg3, __arglist)
+			{
+				ArgIterator iter = new ArgIterator(__arglist);
+				Object[] list = new Object [4 + iter.GetRemainingCount()];
+				list[0] = arg0;
+				list[1] = arg1;
+				list[2] = arg2;
+				list[3] = arg3;
+				int posn = 4;
+				while(posn < list.Length)
+				{
+					list[posn] = TypedReference.ToObject(iter.GetNextArg());
+					++posn;
+				}
+				Out.Write(format, list);
+			}
+#endif // !ECMA_COMPAT
 
 	// Write primitive values to standard output.
 	public static void Write(bool value)
@@ -288,6 +308,26 @@ public sealed class Console
 			{
 				Out.WriteLine(format, args);
 			}
+#if !ECMA_COMPAT
+	[CLSCompliant(false)]
+	public static void WriteLine(String format, Object arg0, Object arg1,
+							     Object arg2, Object arg3, __arglist)
+			{
+				ArgIterator iter = new ArgIterator(__arglist);
+				Object[] list = new Object [4 + iter.GetRemainingCount()];
+				list[0] = arg0;
+				list[1] = arg1;
+				list[2] = arg2;
+				list[3] = arg3;
+				int posn = 4;
+				while(posn < list.Length)
+				{
+					list[posn] = TypedReference.ToObject(iter.GetNextArg());
+					++posn;
+				}
+				Out.WriteLine(format, list);
+			}
+#endif // !ECMA_COMPAT
 
 	// Write primitive values to standard output followed by a newline.
 	public static void WriteLine(bool value)

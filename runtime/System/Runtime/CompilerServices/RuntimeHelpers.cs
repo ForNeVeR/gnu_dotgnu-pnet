@@ -40,6 +40,12 @@ public sealed class RuntimeHelpers
 #if !ECMA_COMPAT
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Object GetObjectValue(Object obj);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static new bool Equals(Object o1, Object o2);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int GetHashCode(Object o);
 #endif
 
 	public static int OffsetToStringData

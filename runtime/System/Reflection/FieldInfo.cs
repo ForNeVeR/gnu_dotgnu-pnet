@@ -1,7 +1,7 @@
 /*
  * FieldInfo.cs - Implementation of the "System.Reflection.FieldInfo" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,14 @@ namespace System.Reflection
 #if CONFIG_REFLECTION
 
 using System;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Globalization;
+using System.Diagnostics;
 
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public abstract class FieldInfo : MemberInfo
 {
 
@@ -52,6 +57,10 @@ public abstract class FieldInfo : MemberInfo
 	public abstract Object GetValue(Object obj);
 
 	// Set the value associated with this field on an object.
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public void SetValue(Object obj, Object value)
 			{
 				SetValue(obj, value, BindingFlags.Default,

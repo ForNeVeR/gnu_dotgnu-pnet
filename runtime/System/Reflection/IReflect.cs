@@ -1,7 +1,7 @@
 /*
  * IReflect.cs - Implementation of the "System.Reflection.IReflect" interface.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@ namespace System.Reflection
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
+[Guid("AFBF15E5-C37C-11d2-B88E-00A0C9B471B8")]
 public interface IReflect
 {
 

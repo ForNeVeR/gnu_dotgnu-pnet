@@ -55,16 +55,16 @@ public class RemotingSurrogateSelector : ISurrogateSelector
 
 	// Implement the ISurrogateSelector interface.
 	[TODO]
-	public void ChainSelector(ISurrogateSelector selector)
+	public virtual void ChainSelector(ISurrogateSelector selector)
 			{
 				// TODO
 			}
-	public ISurrogateSelector GetNextSelector()
+	public virtual ISurrogateSelector GetNextSelector()
 			{
 				return next;
 			}
 	[TODO]
-	public ISerializationSurrogate GetSurrogate
+	public virtual ISerializationSurrogate GetSurrogate
 				(Type type, StreamingContext context,
 				 out ISurrogateSelector selector)
 			{

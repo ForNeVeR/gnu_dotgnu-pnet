@@ -43,7 +43,8 @@ public enum SecurityPermissionFlag
 	ControlAppDomain       = 0x0400,
 	RemotingConfiguration  = 0x0800,
 	Infrastructure         = 0x1000,
-	AllFlags               = 0x1FFF
+	BindingRedirects	   = 0x2000,
+	AllFlags               = 0x3FFF
 #endif // !ECMA_COMPAT
 
 }; // enum SecurityPermissionFlag

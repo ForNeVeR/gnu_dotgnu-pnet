@@ -464,13 +464,33 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  (obj3 != null ? obj3.ToString() : null));
 			}
 #if !ECMA_COMPAT
+	[CLSCompliant(false)]
 	public static String Concat(Object obj1, Object obj2,
-								Object obj3, Object obj4)
+								Object obj3, Object obj4,
+								__arglist)
 			{
-				return Concat((obj1 != null ? obj1.ToString() : null),
-							  (obj2 != null ? obj2.ToString() : null),
-							  (obj3 != null ? obj3.ToString() : null),
-							  (obj4 != null ? obj4.ToString() : null));
+				ArgIterator iter = new ArgIterator(__arglist);
+				String[] list = new String [4 + iter.GetRemainingCount()];
+				list[0] = (obj1 != null ? obj1.ToString() : null);
+				list[1] = (obj2 != null ? obj2.ToString() : null);
+				list[2] = (obj3 != null ? obj3.ToString() : null);
+				list[3] = (obj4 != null ? obj4.ToString() : null);
+				int posn = 4;
+				Object obj;
+				while(posn < list.Length)
+				{
+					obj = TypedReference.ToObject(iter.GetNextArg());
+					if(obj != null)
+					{
+						list[posn] = obj.ToString();
+					}
+					else
+					{
+						list[posn] = null;
+					}
+					++posn;
+				}
+				return Concat(list);
 			}
 #endif
 	public static String Concat(params Object[] args)

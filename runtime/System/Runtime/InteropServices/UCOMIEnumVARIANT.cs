@@ -24,12 +24,12 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[Guid("")]
+[Guid("00020404-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface UCOMIEnumVARIANT
 {
-	void Clone(out UCOMIEnumVARIANT ppenum);
-	int Next(int celt, int rgvar, out int pceltFetched);
+	void Clone(int ppenum);
+	int Next(int celt, int rgvar, int pceltFetched);
 	int Reset();
 	int Skip(int celt);
 

@@ -24,10 +24,11 @@ namespace System.Runtime.Remoting.Proxies
 
 #if CONFIG_REMOTING
 
+using System.Runtime.Remoting.Activation;
 using System.Runtime.Remoting.Contexts;
 
-[AttributeUsage(AttributeTargets.Class)]
-public class ProxyAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
+public class ProxyAttribute : Attribute, IContextAttribute
 {
 	// Constructor.
 	public ProxyAttribute() {}
@@ -48,6 +49,21 @@ public class ProxyAttribute : Attribute
 			{
 				// TODO
 				return null;
+			}
+
+	// Get the properties for a new construction context.
+	[TODO]
+	public void GetPropertiesForNewContext(IConstructionCallMessage ctorMsg)
+			{
+				// TODO
+			}
+
+	// Determine if a context is OK with respect to this attribute.
+	[TODO]
+	public bool IsContextOK(Context ctx, IConstructionCallMessage msg)
+			{
+				// TODO
+				return false;
 			}
 
 }; // class ProxyAttribute

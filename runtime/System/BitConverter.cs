@@ -1,7 +1,7 @@
 /*
  * BitConverter.cs - Implementation of the "System.BitConverter" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -516,7 +516,7 @@ public sealed class BitConverter
 			}
 
 	// Append the hex version of a byte to a string builder.
-	public static void AppendHex(StringBuilder builder, int value)
+	internal static void AppendHex(StringBuilder builder, int value)
 			{
 				int digit = ((value / 16) & 0x0F);
 				if(digit < 10)

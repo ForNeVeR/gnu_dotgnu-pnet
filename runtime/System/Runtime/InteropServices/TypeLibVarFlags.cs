@@ -35,7 +35,7 @@ public enum TypeLibVarFlags
 	FDisplayBind      = 0x0010,
 	FDefaultBind      = 0x0020,
 	FHidden           = 0x0040,
-	FUsesGetLastError = 0x0080,
+	FRestricted       = 0x0080,
 	FDefaultCollelem  = 0x0100,
 	FUiDefault        = 0x0200,
 	FNonBrowsable     = 0x0400,

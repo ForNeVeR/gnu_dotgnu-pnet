@@ -24,7 +24,9 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
+[AttributeUsage(AttributeTargets.Class |
+				AttributeTargets.Interface,
+				Inherited=false)]
 public sealed class ComImportAttribute : Attribute
 {
 	// Constructor.

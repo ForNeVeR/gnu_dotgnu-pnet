@@ -24,6 +24,7 @@ namespace System.Runtime.CompilerServices
 
 #if !ECMA_COMPAT
 
+[Flags]
 public enum MethodCodeType
 {
 	IL      = 0,

@@ -24,7 +24,9 @@ namespace System.Runtime.InteropServices
 
 #if !ECMA_COMPAT
 
-[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Assembly |
+				AttributeTargets.Class,
+				Inherited=false)]
 public sealed class IDispatchImplAttribute : Attribute
 {
 	// Internal state.

@@ -162,7 +162,7 @@ public sealed class SerializationInfo
 			{
 				AddValue(name, (Object)value, typeof(Decimal));
 			}
-	public void AddValue(String name, String value)
+	internal void AddValue(String name, String value)
 			{
 				AddValue(name, (Object)value, typeof(String));
 			}

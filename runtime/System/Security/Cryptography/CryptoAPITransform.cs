@@ -2,7 +2,7 @@
  * CryptoAPITransform.cs - Implementation of the
  *		"System.Security.Cryptography.CryptoAPITransform" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -233,6 +233,15 @@ public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 				{
 					// Usually not sensitive, but let's be paranoid anyway.
 					Array.Clear(iv, 0, iv.Length);
+				}
+			}
+
+	// Determine if we can reuse this transform object.
+	public bool CanReuseTransform
+			{
+				get
+				{
+					return true;
 				}
 			}
 

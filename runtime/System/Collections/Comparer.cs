@@ -1,7 +1,7 @@
 /*
  * Comparer.cs - Implementation of the "System.Collections.Comparer" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,16 @@ namespace System.Collections
 {
 
 using System;
+using System.Globalization;
 
 public sealed class Comparer : IComparer
 {
-	// Default comparer.
+	// Default comparers.
 	public static readonly Comparer Default = new Comparer();
+#if !ECMA_COMPAT
+	public static readonly Comparer DefaultInvariant
+		= new Comparer(CultureInfo.InvariantCulture);
+#endif
 
 	// Private constructor for the default comparer.
 	private Comparer()
@@ -34,12 +39,33 @@ public sealed class Comparer : IComparer
 		// Nothing to do here.
 	}
 
+#if !ECMA_COMPAT
+	// Internal state.
+	private CompareInfo info;
+
+	// Public constructor for a culture-based comparer.
+	public Comparer(CultureInfo culture)
+	{
+		if(culture == null)
+		{
+			throw new ArgumentNullException("culture");
+		}
+		this.info = culture.CompareInfo;
+	}
+#endif
+
 	// Implement the IComparer interface.
 	public int Compare(Object a, Object b)
 	{
 		IComparable cmp;
 		if(a != null && b != null)
 		{
+		#if !ECMA_COMPAT
+			if(info != null && a is String && b is String)
+			{
+				return info.Compare((String)a, (String)b);
+			}
+		#endif
 			cmp = (a as IComparable);
 			if(cmp != null)
 			{

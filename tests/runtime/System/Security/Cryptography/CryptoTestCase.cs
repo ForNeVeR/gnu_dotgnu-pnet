@@ -111,10 +111,7 @@ public class CryptoTestCase : TestCase
 				{
 					Fail("did not encrypt to the expected output");
 				}
-				if(encryptor is IDisposable)
-				{
-					((IDisposable)encryptor).Dispose();
-				}
+				encryptor.Dispose();
 
 				// Create a decryptor and run the test backwards.
 				ICryptoTransform decryptor = alg.CreateDecryptor(key, null);
@@ -132,10 +129,7 @@ public class CryptoTestCase : TestCase
 				{
 					Fail("did not decrypt to the original plaintext");
 				}
-				if(decryptor is IDisposable)
-				{
-					((IDisposable)decryptor).Dispose();
-				}
+				decryptor.Dispose();
 			}
 	protected void RunSymmetric(String name, byte[] key,
 								byte[] plaintext, byte[] expected)
@@ -356,10 +350,7 @@ public class CryptoTestCase : TestCase
 				alg.Padding = padding;
 				encryptor.TransformBlock(buf, index, alg.BlockSize / 8,
 										 buf, index);
-				if(encryptor is IDisposable)
-				{
-					((IDisposable)encryptor).Dispose();
-				}
+				encryptor.Dispose();
 			}
 
 	// XOR two blocks.

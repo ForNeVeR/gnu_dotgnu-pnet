@@ -27,7 +27,7 @@ namespace System.Runtime.InteropServices
 using System.Runtime.Serialization;
 
 [Serializable]
-public class SEHException : SystemException
+public class SEHException : ExternalException
 {
 
 	// Constructors.

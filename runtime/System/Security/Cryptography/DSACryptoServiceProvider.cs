@@ -2,7 +2,7 @@
  * DSACryptoServiceProvider.cs - Implementation of the
  *		"System.Security.Cryptography.DSACryptoServiceProvider" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,10 +37,11 @@ using Platform;
 // edition of "Applied Cryptography: Protocols, Algorithms, and
 // Source Code in C", Bruce Schneier, John Wiley & Sons, Inc, 1996.
 
-public class DSACryptoServiceProvider : DSA
+public sealed class DSACryptoServiceProvider : DSA
 {
 	// Internal state.
 	private bool persistKey;
+	private static bool useMachineKeyStore;
 	private DSAParameters dsaParams;
 
 	// Constructors.
@@ -168,6 +169,19 @@ public class DSACryptoServiceProvider : DSA
 				{
 					// W3C identifier for the DSA-SHA1 algorithm.
 					return "http://www.w3.org/2000/09/xmldsig#dsa-sha1";
+				}
+			}
+
+	// Determine if we should use the machine key store.
+	public static bool UseMachineKeyStore
+			{
+				get
+				{
+					return useMachineKeyStore;
+				}
+				set
+				{
+					useMachineKeyStore = value;
 				}
 			}
 

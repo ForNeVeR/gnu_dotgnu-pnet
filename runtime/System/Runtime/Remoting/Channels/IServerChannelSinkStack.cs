@@ -36,6 +36,15 @@ public interface IServerChannelSinkStack
 	// Push an item onto the stack.
 	void Push(IServerChannelSink sink, Object state);
 
+	// Handle a server callback.
+	void ServerCallback(IAsyncResult ar);
+
+	// Store into this sink stack.
+	void Store(IServerChannelSink sink, Object state);
+
+	// Store into this sink stack and then dispatch.
+	void StoreAndDispatch(IServerChannelSink sink, Object state);
+
 }; // interface IServerChannelSinkStack
 
 #endif // CONFIG_REMOTING

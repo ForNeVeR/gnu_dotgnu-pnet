@@ -2,7 +2,7 @@
  * HashAlgorithm.cs - Implementation of the
  *		"System.Security.Cryptography.HashAlgorithm" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,15 @@ public abstract class HashAlgorithm : ICryptoTransform, IDisposable
 			{
 				return (HashAlgorithm)
 					(CryptoConfig.CreateFromName(hashName, null));
+			}
+
+	// Determine if we can reuse this transform object.
+	public virtual bool CanReuseTransform
+			{
+				get
+				{
+					return true;
+				}
 			}
 
 	// Determine if multiple blocks can be transformed.

@@ -26,7 +26,7 @@ namespace System.Resources
 
 using System;
 
-[AttributeUsage(AttributeTargets.Assembly)]
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=false)]
 #if ECMA_COMPAT
 internal
 #else

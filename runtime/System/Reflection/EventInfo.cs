@@ -1,7 +1,7 @@
 /*
  * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,12 @@ namespace System.Reflection
 #if CONFIG_REFLECTION
 
 using System;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
 public abstract class EventInfo : MemberInfo
 {
 
@@ -41,6 +46,10 @@ public abstract class EventInfo : MemberInfo
 			}
 
 	// Add a new handler to this event.
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public void AddEventHandler(Object target, Delegate handler)
 			{
 				MethodInfo add = GetAddMethod(true);
@@ -82,6 +91,10 @@ public abstract class EventInfo : MemberInfo
 			}
 
 	// Remove an event handler from this event.
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public void RemoveEventHandler(Object target, Delegate handler)
 			{
 				MethodInfo remove = GetRemoveMethod(true);

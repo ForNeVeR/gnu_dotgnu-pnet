@@ -28,7 +28,7 @@ using System.Collections;
 using System.Runtime.Serialization;
 
 [Serializable]
-public class LogicalCallContext : ISerializable, ICloneable
+public sealed class LogicalCallContext : ISerializable, ICloneable
 {
 	// Internal state.
 	private Hashtable table;

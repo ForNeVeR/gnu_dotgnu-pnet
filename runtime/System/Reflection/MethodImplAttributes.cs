@@ -24,6 +24,7 @@ namespace System.Reflection
 
 #if CONFIG_REFLECTION
 
+[Flags]
 public enum MethodImplAttributes
 {
 	CodeTypeMask		= 0x0003,

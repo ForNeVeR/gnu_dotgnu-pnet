@@ -27,61 +27,31 @@ namespace System.Runtime.Remoting.Messaging
 [Serializable]
 public class Header
 {
-	// Internal state.
-	private String name;
-	private Object value;
-	private bool mustUnderstand;
-	private String headerNamespace;
+	// Accessible internal state.
+	public String Name;
+	public Object Value;
+	public bool MustUnderstand;
+	public String HeaderNamespace;
 
 	// Constructor.
 	public Header(String _Name, Object _Value)
 			{
-				this.name = _Name;
-				this.value = _Value;
+				this.Name = _Name;
+				this.Value = _Value;
 			}
 	public Header(String _Name, Object _Value, bool _MustUnderstand)
 			{
-				this.name = _Name;
-				this.value = _Value;
-				this.mustUnderstand = _MustUnderstand;
+				this.Name = _Name;
+				this.Value = _Value;
+				this.MustUnderstand = _MustUnderstand;
 			}
 	public Header(String _Name, Object _Value, bool _MustUnderstand,
 				  String _HeaderNamespace)
 			{
-				this.name = _Name;
-				this.value = _Value;
-				this.mustUnderstand = _MustUnderstand;
-				this.headerNamespace = _HeaderNamespace;
-			}
-
-	// Get the properties of this object.
-	public String HeaderNamespace
-			{
-				get
-				{
-					return headerNamespace;
-				}
-			}
-	public bool MustUnderstand
-			{
-				get
-				{
-					return mustUnderstand;
-				}
-			}
-	public String Name
-			{
-				get
-				{
-					return name;
-				}
-			}
-	public Object Value
-			{
-				get
-				{
-					return value;
-				}
+				this.Name = _Name;
+				this.Value = _Value;
+				this.MustUnderstand = _MustUnderstand;
+				this.HeaderNamespace = _HeaderNamespace;
 			}
 
 }; // class Header

@@ -24,6 +24,7 @@ namespace System.Reflection
 
 #if CONFIG_REFLECTION
 
+[Flags]
 public enum MethodAttributes
 {
 	MemberAccessMask		= 0x0007,
@@ -41,6 +42,9 @@ public enum MethodAttributes
 	VtableLayoutMask		= 0x0100,
 	ReuseSlot				= 0x0000,
 	NewSlot					= 0x0100,
+#if !ECMA_COMPAT
+	CheckAccessOnOverride   = 0x0200,
+#endif
 	Abstract				= 0x0400,
 	SpecialName				= 0x0800,
 	PinvokeImpl				= 0x2000,

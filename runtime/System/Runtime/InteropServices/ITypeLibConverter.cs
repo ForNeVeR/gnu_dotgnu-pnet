@@ -27,7 +27,7 @@ namespace System.Runtime.InteropServices
 using System.Reflection;
 using System.Reflection.Emit;
 
-[Guid("")]
+[Guid("F1C3BF78-C3E4-11d3-88E7-00902754C43A")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface ITypeLibConverter
 {

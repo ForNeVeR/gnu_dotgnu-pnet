@@ -30,8 +30,8 @@ using System.Reflection.Emit;
 // We don't support COM type library conversion in this implementation.
 
 [ClassInterface(ClassInterfaceType.None)]
-[Guid("")]
-public class TypeLibConverter : ITypeLibConverter
+[Guid("F1C3BF79-C3E4-11d3-88E7-00902754C43A")]
+public sealed class TypeLibConverter : ITypeLibConverter
 {
 
 	// Constructor.

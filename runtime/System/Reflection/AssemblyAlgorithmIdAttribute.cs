@@ -27,7 +27,7 @@ namespace System.Reflection
 using System;
 using System.Configuration.Assemblies;
 
-[AttributeUsage(AttributeTargets.Assembly)]
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=false)]
 public sealed class AssemblyAlgorithmIdAttribute : Attribute
 {
 
@@ -42,6 +42,7 @@ public sealed class AssemblyAlgorithmIdAttribute : Attribute
 		: base() { hashAlg = algorithmId; }
 
 	// Properties.
+	[CLSCompliant(false)]
 	public uint AlgorithmId
 		{
 			get

@@ -2,7 +2,7 @@
  * DllImportAttribute.cs - Implementation of the
  *			"System.Runtime.InteropServices.DllImportAttribute" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,10 @@ public sealed class DllImportAttribute : Attribute
 	public bool ExactSpelling;
 	public bool PreserveSig;
 	public bool SetLastError;
+#if !ECMA_COMPAT
+	public bool BestFitMapping;
+	public bool ThrowOnUnmappableChar;
+#endif
 
 	// Properties.
 	public String Value

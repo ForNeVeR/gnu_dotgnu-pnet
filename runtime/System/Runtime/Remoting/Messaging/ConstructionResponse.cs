@@ -31,7 +31,8 @@ using System.Runtime.Remoting.Activation;
 
 [Serializable]
 [CLSCompliant(false)]
-public class ConstructionResponse : MethodResponse, IConstructionReturnMessage
+public class ConstructionResponse : MethodResponse, IConstructionReturnMessage,
+									IMethodMessage, IMessage
 {
 	// Constructor.
 	public ConstructionResponse(Header[] h1, IMethodCallMessage mcm)

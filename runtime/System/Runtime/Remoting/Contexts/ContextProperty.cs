@@ -38,14 +38,14 @@ public class ContextProperty
 			}
 
 	// Get the name or value from this property.
-	public String Name
+	public virtual String Name
 			{
 				get
 				{
 					return name;
 				}
 			}
-	public Object Value
+	public virtual Object Property
 			{
 				get
 				{

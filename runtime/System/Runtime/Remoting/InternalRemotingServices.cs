@@ -39,6 +39,7 @@ public class InternalRemotingServices
 	public static void RemotingAssert(bool condition, String message) {}
 
 	// Set the server identity on a method call object.
+	[CLSCompliant(false)]
 	public static void SetServerIdentity(MethodCall m, Object srvID)
 			{
 				m.SetServerIdentity(srvID);

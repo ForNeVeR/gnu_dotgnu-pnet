@@ -29,6 +29,10 @@ using System.Runtime.Remoting.Messaging;
 
 public interface IServerResponseChannelSinkStack
 {
+	// Process a response asynchronously.
+	void AsyncProcessResponse
+		(IMessage msg, ITransportHeaders headers, Stream stream);
+
 	// Get the response stream.
 	Stream GetResponseStream(IMessage msg, ITransportHeaders headers);
 

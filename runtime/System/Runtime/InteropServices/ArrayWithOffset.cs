@@ -27,11 +27,11 @@ namespace System.Runtime.InteropServices
 public struct ArrayWithOffset
 {
 	// Internal state.
-	private Array array;
+	private Object array;
 	private int offset;
 
 	// Constructor.
-	public ArrayWithOffset(Array array, int offset)
+	public ArrayWithOffset(Object array, int offset)
 			{
 				this.array = array;
 				this.offset = offset;
@@ -52,7 +52,7 @@ public struct ArrayWithOffset
 			}
 
 	// Get the array from this structure.
-	public Array GetArray()
+	public Object GetArray()
 			{
 				return array;
 			}

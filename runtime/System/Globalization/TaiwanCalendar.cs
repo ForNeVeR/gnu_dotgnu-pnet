@@ -27,7 +27,7 @@ using System;
 public class TaiwanCalendar : Calendar
 {
 	// The Taiwan era.
-	public const int TaiwanEra = 1;
+	private const int TaiwanEra = 1;
 
 	// Useful constants.
 	private const int DefaultTwoDigitMax = 99;
@@ -153,6 +153,12 @@ public class TaiwanCalendar : Calendar
 			{
 				return variant.ToDateTime(year, month, day, hour, minute,
 										  second, millisecond, era);
+			}
+
+	// Convert a two-digit year value into a four-digit year value.
+	public override int ToFourDigitYear(int year)
+			{
+				return variant.ToFourDigitYear(year);
 			}
 
 }; // class TaiwanCalendar

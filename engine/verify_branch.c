@@ -67,6 +67,24 @@ static char const unsafeCompareMatrix
 	/* I:  */ {T_I,  T_NO, T_I,  T_NO, T_M,  T_NO, T_T,  T_NO},
 	/* F:  */ {T_NO, T_NO, T_NO, T_F,  T_NO, T_NO, T_NO, T_NO},
 	/* &:  */ {T_NO, T_NO, T_M,  T_NO, T_M,  T_NO, T_T,  T_NO},
+	/* O:  */ {T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO},
+	/* *:  */ {T_NO, T_NO, T_T,  T_NO, T_T,  T_NO, T_T,  T_NO},
+	/* MV: */ {T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO},
+};
+
+/*
+ * Type inference matrix for binary equality operations,
+ * when unsafe pointer comparisons are allowed.
+ */
+static char const unsafeEqualityMatrix
+			[ILEngineType_ValidTypes][ILEngineType_ValidTypes] =
+{
+		    /* I4    I8    I     F     &     O     *     MV */
+	/* I4: */ {T_I4, T_NO, T_I,  T_NO, T_NO, T_NO, T_NO, T_NO},
+	/* I8: */ {T_NO, T_I8, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO},
+	/* I:  */ {T_I,  T_NO, T_I,  T_NO, T_M,  T_NO, T_T,  T_NO},
+	/* F:  */ {T_NO, T_NO, T_NO, T_F,  T_NO, T_NO, T_NO, T_NO},
+	/* &:  */ {T_NO, T_NO, T_M,  T_NO, T_M,  T_NO, T_T,  T_NO},
 	/* O:  */ {T_NO, T_NO, T_NO, T_NO, T_NO, T_O,  T_NO, T_NO},
 	/* *:  */ {T_NO, T_NO, T_T,  T_NO, T_T,  T_NO, T_T,  T_NO},
 	/* MV: */ {T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO},
@@ -461,7 +479,7 @@ case IL_OP_BNE_UN_S:
 binaryEquality:
 	if(unsafeAllowed)
 	{
-		commonType = unsafeCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+		commonType = unsafeEqualityMatrix[STK_BINARY_1][STK_BINARY_2];
 	}
 	else
 	{
@@ -505,7 +523,14 @@ case IL_OP_BLT_UN_S:
 	/* Binary conditional short branch */
 	dest = GET_SHORT_DEST();
 binaryBranch:
-	commonType = binaryCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+	if(unsafeAllowed)
+	{
+		commonType = unsafeCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+	}
+	else
+	{
+		commonType = binaryCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+	}
 	if(commonType != ILEngineType_Invalid)
 	{
 		ILCoderBranch(coder, opcode, dest, STK_BINARY_1, STK_BINARY_2);
@@ -605,7 +630,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CEQ:
 	/* Binary equality comparison */
 	if(unsafeAllowed)
 	{
-		commonType = unsafeCompareMatrix[STK_BINARY_1][STK_BINARY_2];
+		commonType = unsafeEqualityMatrix[STK_BINARY_1][STK_BINARY_2];
 	}
 	else
 	{

@@ -5,6 +5,8 @@
 they are loaded; implement ILDocTypeFind to find types by name; load
 interfaces from the XML input.
 
+* csdoc/doc_html.c: dump class cross-references and base types.
+
 2001-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/Makefile.am: implement the "csdoc2html" program.

@@ -1012,17 +1012,45 @@ static void PrintSignature(FILE *stream, char *signature)
 /*
  * Print a cross-reference.
  */
-static void PrintCRef(FILE *stream, const char *cref, int href)
+static void PrintCRef(FILE *stream, ILDocTree *tree, const char *cref,
+					  ILDocType *from, int nameOnly)
 {
+	ILDocType *type;
 	if(cref)
 	{
 		if(cref[0] != '\0' && cref[1] == ':')
 		{
-			PrintEitherString(stream, cref + 2, href);
+			if(cref[0] == 'T')
+			{
+				/* Print a reference to a type */
+				type = ILDocTypeFind(tree, cref + 2);
+				if(type)
+				{
+					PrintTypeReference(stream, type, from, "contents");
+					if(nameOnly)
+					{
+						if(type->fullyQualify)
+						{
+							PrintString(stream, type->fullName);
+						}
+						else
+						{
+							PrintString(stream, type->name);
+						}
+					}
+					else
+					{
+						PrintTypeName(stream, type, 0);
+					}
+					fputs("</A>", stream);
+					return;
+				}
+			}
+			PrintString(stream, cref + 2);
 		}
 		else
 		{
-			PrintEitherString(stream, cref, href);
+			PrintString(stream, cref);
 		}
 	}
 }
@@ -1030,7 +1058,8 @@ static void PrintCRef(FILE *stream, const char *cref, int href)
 /*
  * Forward declaration.
  */
-static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL);
+static int PrintDocContents(FILE *stream, ILDocType *type,
+							ILDocText *contents, int lastWasNL);
 
 #define	LIST_TYPE_BULLET		0
 #define	LIST_TYPE_NUMBER		1
@@ -1039,8 +1068,9 @@ static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL);
 /*
  * Print the contents of a list tag.
  */
-static void PrintDocList(FILE *stream, ILDocText *contents,
-						 const char *type, int lastWasNL)
+static void PrintDocList(FILE *stream, ILDocType *fromType,
+					     ILDocText *contents, const char *type,
+						 int lastWasNL)
 {
 	int listType;
 	ILDocText *child;
@@ -1107,28 +1137,28 @@ static void PrintDocList(FILE *stream, ILDocText *contents,
 				fputs("<LI>", stream);
 				if(term)
 				{
-					PrintDocContents(stream, term, 0);
+					PrintDocContents(stream, fromType, term, 0);
 				}
 				else
 				{
-					PrintDocContents(stream, description, 0);
+					PrintDocContents(stream, fromType, description, 0);
 				}
 				fputs("</LI>\n", stream);
 			}
 			else if(!strcmp(child->text, "listheader"))
 			{
 				fprintf(stream, "<TR BGCOLOR=\"%s\"><TH>", headerColor);
-				PrintDocContents(stream, description, 0);
+				PrintDocContents(stream, fromType, description, 0);
 				fputs("</TH><TH>", stream);
-				PrintDocContents(stream, term, 0);
+				PrintDocContents(stream, fromType, term, 0);
 				fputs("</TH></TR>\n", stream);
 			}
 			else
 			{
 				fputs("<TR><TD>", stream);
-				PrintDocContents(stream, description, 0);
+				PrintDocContents(stream, fromType, description, 0);
 				fputs("</TD><TD>", stream);
-				PrintDocContents(stream, term, 0);
+				PrintDocContents(stream, fromType, term, 0);
 				fputs("</TD></TR>\n", stream);
 			}
 		}
@@ -1153,7 +1183,8 @@ static void PrintDocList(FILE *stream, ILDocText *contents,
 /*
  * Print the contents of a documentation node.
  */
-static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL)
+static int PrintDocContents(FILE *stream, ILDocType *type,
+						    ILDocText *contents, int lastWasNL)
 {
 	const char *value;
 	while(contents != 0)
@@ -1163,43 +1194,43 @@ static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL)
 			/* Tag node */
 			if(!strcmp(contents->text, "para"))
 			{
-				lastWasNL = PrintDocContents(stream, contents->children,
-											 lastWasNL);
+				lastWasNL = PrintDocContents(stream, type,
+											 contents->children, lastWasNL);
 				fputs("<P>\n\n", stream);
 				lastWasNL = 1;
 			}
 			else if(!strcmp(contents->text, "b"))
 			{
 				fputs("<B>", stream);
-				PrintDocContents(stream, contents->children, 0);
+				PrintDocContents(stream, type, contents->children, 0);
 				fputs("</B>", stream);
 				lastWasNL = 0;
 			}
 			else if(!strcmp(contents->text, "c"))
 			{
 				fputs("<CODE>", stream);
-				PrintDocContents(stream, contents->children, 0);
+				PrintDocContents(stream, type, contents->children, 0);
 				fputs("</CODE>", stream);
 				lastWasNL = 0;
 			}
 			else if(!strcmp(contents->text, "i"))
 			{
 				fputs("<I>", stream);
-				PrintDocContents(stream, contents->children, 0);
+				PrintDocContents(stream, type, contents->children, 0);
 				fputs("</I>", stream);
 				lastWasNL = 0;
 			}
 			else if(!strcmp(contents->text, "sub"))
 			{
 				fputs("<SUB>", stream);
-				PrintDocContents(stream, contents->children, 0);
+				PrintDocContents(stream, type, contents->children, 0);
 				fputs("</SUB>", stream);
 				lastWasNL = 0;
 			}
 			else if(!strcmp(contents->text, "sup"))
 			{
 				fputs("<SUP>", stream);
-				PrintDocContents(stream, contents->children, 0);
+				PrintDocContents(stream, type, contents->children, 0);
 				fputs("</SUP>", stream);
 				lastWasNL = 0;
 			}
@@ -1221,13 +1252,14 @@ static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL)
 			        !strcmp(contents->text, "pre"))
 			{
 				fputs("<PRE>", stream);
-				PrintDocContents(stream, contents->children, 0);
+				PrintDocContents(stream, type, contents->children, 0);
 				fputs("</PRE>\n", stream);
 				lastWasNL = 1;
 			}
 			else if(!strcmp(contents->text, "see"))
 			{
-				PrintCRef(stream, ILDocTextGetParam(contents, "cref"), 0);
+				PrintCRef(stream, type->tree,
+						  ILDocTextGetParam(contents, "cref"), type, 1);
 				lastWasNL = 0;
 			}
 			else if(!strcmp(contents->text, "paramref"))
@@ -1271,19 +1303,20 @@ static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL)
 				{
 					fputs(": ", stream);
 				}
-				PrintDocContents(stream, contents->children, 0);
+				PrintDocContents(stream, type, contents->children, 0);
 				fputs("]<P>\n\n", stream);
 			}
 			else if(!strcmp(contents->text, "list"))
 			{
-				PrintDocList(stream, contents->children,
+				PrintDocList(stream, type, contents->children,
 							 ILDocTextGetParam(contents, "type"),
 							 lastWasNL);
 				lastWasNL = 1;
 			}
 			else
 			{
-				lastWasNL = PrintDocContents(stream, contents->children,
+				lastWasNL = PrintDocContents(stream, type,
+											 contents->children,
 											 lastWasNL);
 			}
 		}
@@ -1300,10 +1333,11 @@ static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL)
 /*
  * Print the contents of a documentation node, indented an extra level.
  */
-static void PrintDocContentsIndent(FILE *stream, ILDocText *contents)
+static void PrintDocContentsIndent(FILE *stream, ILDocType *type,
+								   ILDocText *contents)
 {
 	fputs("<BLOCKQUOTE>\n", stream);
-	if(!PrintDocContents(stream, contents, 1))
+	if(!PrintDocContents(stream, type, contents, 1))
 	{
 		putc('\n', stream);
 	}
@@ -1326,7 +1360,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 	if(child)
 	{
 		fputs("<H4>Summary</H4>\n\n", stream);
-		PrintDocContentsIndent(stream, child->children);
+		PrintDocContentsIndent(stream, type, child->children);
 	}
 
 	/* Print the parameter, return, and value information */
@@ -1345,7 +1379,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 
 			/* Print the description of the parameter */
 			fputs("<DD>", stream);
-			PrintDocContents(stream, child->children, 1);
+			PrintDocContents(stream, type, child->children, 1);
 			fputs("</DD>\n", stream);
 
 			/* Move on to the next parameter */
@@ -1358,13 +1392,13 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 	if(child)
 	{
 		fputs("<H4>Return Value</H4>\n\n", stream);
-		PrintDocContentsIndent(stream, child->children);
+		PrintDocContentsIndent(stream, type, child->children);
 	}
 	child = ILDocTextFirstChild(doc, "value");
 	if(child)
 	{
 		fputs("<H4>Property Value</H4>\n\n", stream);
-		PrintDocContentsIndent(stream, child->children);
+		PrintDocContentsIndent(stream, type, child->children);
 	}
 
 	/* Print the exceptions */
@@ -1379,9 +1413,10 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 		while(child != 0)
 		{
 			fputs("<TR><TD>", stream);
-			PrintCRef(stream, ILDocTextGetParam(child, "cref"), 0);
+			PrintCRef(stream, type->tree,
+					  ILDocTextGetParam(child, "cref"), type, 1);
 			fputs("</TD><TD>", stream);
-			PrintDocContents(stream, child->children, 0);
+			PrintDocContents(stream, type, child->children, 0);
 			fputs("</TD></TR>\n", stream);
 			child = ILDocTextNextChild(child, "exception");
 		}
@@ -1394,7 +1429,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 	if(child)
 	{
 		fputs("<H4>Description</H4>\n\n", stream);
-		PrintDocContentsIndent(stream, child->children);
+		PrintDocContentsIndent(stream, type, child->children);
 	}
 
 	/* Print any additional information */
@@ -1402,7 +1437,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 	if(child)
 	{
 		fputs("<H4>Additional Information</H4>\n\n", stream);
-		PrintDocContentsIndent(stream, child->children);
+		PrintDocContentsIndent(stream, type, child->children);
 	}
 
 	/* Print the examples */
@@ -1419,7 +1454,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 			{
 				fprintf(stream, "Example %d<P>\n\n", example);
 				++example;
-				PrintDocContents(stream, child->children, 1);
+				PrintDocContents(stream, type, child->children, 1);
 				fputs("<P>\n\n", stream);
 				child = ILDocTextNextChild(child, "example");
 			}
@@ -1429,7 +1464,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 		{
 			/* There is only one example */
 			fputs("<H4>Example</H4>\n\n", stream);
-			PrintDocContentsIndent(stream, child->children);
+			PrintDocContentsIndent(stream, type, child->children);
 		}
 	}
 
@@ -1447,7 +1482,7 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 			{
 				fputs(", ", stream);
 			}
-			PrintCRef(stream, cref, 0);
+			PrintCRef(stream, type->tree, cref, type, 0);
 			needComma = 1;
 		}
 		child = ILDocTextNextChild(child, "seealso");
@@ -1478,6 +1513,53 @@ static void PrintDocs(FILE *stream, ILDocText *doc,
 }
 
 /*
+ * Print spaces for an indent level.
+ */
+static void PrintIndent(FILE *stream, int indent)
+{
+	while(indent > 0)
+	{
+		fputs("&nbsp;", stream);
+		--indent;
+	}
+}
+
+/*
+ * Print the inheritance tree for a type.
+ */
+static int PrintInheritTree(FILE *stream, ILDocType *type,
+						    char *base, int indent)
+{
+	ILDocType *baseType = ILDocTypeFind(type->tree, base);
+	if(baseType)
+	{
+		if(baseType->baseType)
+		{
+			indent = PrintInheritTree(stream, type,
+									  baseType->baseType, indent);
+		}
+		PrintIndent(stream, indent);
+		PrintTypeReference(stream, baseType, type, "contents");
+		if(baseType->fullyQualify)
+		{
+			PrintString(stream, baseType->fullName);
+		}
+		else
+		{
+			PrintString(stream, baseType->name);
+		}
+		fputs("</A><BR>\n", stream);
+	}
+	else
+	{
+		PrintIndent(stream, indent);
+		PrintString(stream, base);
+		fputs("<BR>\n", stream);
+	}
+	return indent + 2;
+}
+
+/*
  * Convert the contents of a type into texinfo.
  */
 static void ConvertType(FILE *stream, ILDocType *type,
@@ -1488,6 +1570,9 @@ static void ConvertType(FILE *stream, ILDocType *type,
 	ILDocMemberType lastMemberType;
 	const char *heading;
 	FILE *memberStream;
+	ILDocInterface *interface;
+	ILDocType *tempType;
+	int indent;
 
 	/* Validate that the type node is more or less meaningful */
 	if(!(type->name) || !(type->fullName))
@@ -1507,6 +1592,74 @@ static void ConvertType(FILE *stream, ILDocType *type,
 
 	/* Print the C# definition for the type */
 	PrintSignature(stream, type->csSignature);
+
+	/* Print the type's inheritance relationships */
+	if(type->baseType || type->interfaces)
+	{
+		fputs("<H4>Base Types</H4>\n\n", stream);
+		fputs("<BLOCKQUOTE>\n", stream);
+		if(type->baseType)
+		{
+			indent = PrintInheritTree(stream, type, type->baseType, 0);
+			PrintIndent(stream, indent);
+			if(type->fullyQualify)
+			{
+				PrintString(stream, type->fullName);
+			}
+			else
+			{
+				PrintString(stream, type->name);
+			}
+			fputs("<P>\n\n", stream);
+		}
+		if(type->interfaces)
+		{
+			fputs("This type implements ", stream);
+			interface = type->interfaces;
+			while(interface != 0)
+			{
+				if(interface != type->interfaces)
+				{
+					if(interface->next != 0)
+					{
+						/* Three or more interfaces */
+						fputs(", ", stream);
+					}
+					else if(type->interfaces->next == interface)
+					{
+						/* Last when exactly two interfaces */
+						fputs(" and ", stream);
+					}
+					else
+					{
+						/* Last when three or more interfaces */
+						fputs(", and ", stream);
+					}
+				}
+				tempType = ILDocTypeFind(type->tree, interface->name);
+				if(tempType)
+				{
+					PrintTypeReference(stream, tempType, type, "contents");
+					if(tempType->fullyQualify)
+					{
+						PrintString(stream, tempType->fullName);
+					}
+					else
+					{
+						PrintString(stream, tempType->name);
+					}
+					fputs("</A>", stream);
+				}
+				else
+				{
+					PrintString(stream, interface->name);
+				}
+				interface = interface->next;
+			}
+			fputs(".\n", stream);
+		}
+		fputs("</BLOCKQUOTE>\n\n", stream);
+	}
 
 	/* Print the documentation for the type */
 	PrintDocs(stream, type->doc, type, 0);

@@ -194,7 +194,7 @@ public class RadioButton : ButtonBase
 				if (isChecked)
 				{
 					state |= ButtonState.Checked;
-					if (appearance == appearance.Button)
+					if (appearance == Appearance.Button)
 					{
 						state |= ButtonState.Pushed;
 					}

@@ -15,6 +15,9 @@
 * image/context.c: initialize the synthetic types hash when the
 context is created.
 
+* image/misc.c (ILTypeSpecGetClass): use "ILClassFromType" instead
+of "_ILTypeToSyntheticClass".
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

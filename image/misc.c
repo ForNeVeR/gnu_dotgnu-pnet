@@ -71,8 +71,8 @@ ILClass *ILTypeSpecGetClass(ILTypeSpec *spec)
 	else
 	{
 		/* Make a synthetic class that corresponds to the type */
-		spec->classInfo = _ILTypeToSyntheticClass
-							(spec->programItem.image, spec->type);
+		spec->classInfo = ILClassFromType(spec->programItem.image, 0,
+										  spec->type, ILClassResolveSystem);
 		return spec->classInfo;
 	}
 }

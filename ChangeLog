@@ -5,6 +5,9 @@
 	with Encoding.UTF8 to prevent the Console streams from using it.
 	(Bug #2118)
 
+	* runtime/System/Int32.cs: Add a ToString(Int32) static method to
+	maintain .NET compatibility.
+
 2003-01-02  Jason Lee <jason.lee@mac.com>
 	
 	* System/Net/DnsPermission.cs, System/Net/DnsPermissionAttribute.cs,

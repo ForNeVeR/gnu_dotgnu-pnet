@@ -93,6 +93,32 @@ ILNode_GenDiscard(ILNode_Assign)
 	ILNode_Store(node->expr1, info, 0, data1, data2);
 }
 
+%{
+
+/*
+ * Determine the common type for an assignment expression.
+ */
+static ILMachineType AssignCommonType(ILGenInfo *info,
+									  ILMachineType type1,
+									  ILMachineType type2)
+{
+	if(type1 == ILMachineType_String || type2 == ILMachineType_String)
+	{
+		return ILMachineType_String;
+	}
+	else if(type1 == ILMachineType_ObjectRef ||
+			type2 == ILMachineType_ObjectRef)
+	{
+		return ILMachineType_ObjectRef;
+	}
+	else
+	{
+		return ILCommonType(info, type1, type2, 0);
+	}
+}
+
+%}
+
 /*
  * Generate discard code for an arithmetic assignment expression.
  */
@@ -109,7 +135,7 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 
 	/* Determine the common type for the operation */
 	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = ILCommonType(info, finalType, secondType, 0);
+	commonType = AssignCommonType(info, finalType, secondType);
 
 	/* Cast the first sub-expression to the common type */
 	ILGenCast(info, finalType, commonType);
@@ -125,6 +151,46 @@ ILNode_GenDiscard(ILNode_AssignExpression)
 	else if(yyisa(bnode, ILNode_BinaryBitwise))
 	{
 		ILBitwise_ApplyOp(info, (ILNode_BinaryBitwise *)bnode, commonType);
+	}
+	else if(yyisa(bnode, ILNode_Concat))
+	{
+		if(finalType == ILMachineType_String &&
+		   secondType == ILMachineType_String)
+		{
+			ILGenCallByName(info,
+			  "class [.library]System.String [.library]System.String::Concat"
+					"(class [.library]String.Delegate, "
+					 "class [.library]String.Delegate)");
+			ILGenAdjust(info, -1);
+		}
+		else
+		{
+			ILGenCallByName(info,
+			  "class [.library]System.String [.library]System.String::Concat"
+					"(class [.library]String.Object, "
+					 "class [.library]String.Object)");
+			ILGenAdjust(info, -1);
+		}
+	}
+	else if(yyisa(bnode, ILNode_DelegateAdd))
+	{
+		ILGenCallByName(info,
+		  "class [.library]System.Delegate [.library]System.Delegate::Combine"
+				"(class [.library]System.Delegate, "
+				 "class [.library]System.Delegate)");
+		ILGenAdjust(info, -1);
+		ILGenClassToken(info, IL_OP_CASTCLASS,
+				((ILNode_DelegateAdd *)bnode)->delegateClass);
+	}
+	else if(yyisa(bnode, ILNode_DelegateSub))
+	{
+		ILGenCallByName(info,
+		  "class [.library]System.Delegate [.library]System.Delegate::Remove"
+				"(class [.library]System.Delegate, "
+				 "class [.library]System.Delegate)");
+		ILGenAdjust(info, -1);
+		ILGenClassToken(info, IL_OP_CASTCLASS,
+				((ILNode_DelegateSub *)bnode)->delegateClass);
 	}
 	else
 	{
@@ -175,7 +241,7 @@ ILNode_GenValue(ILNode_AssignExpression)
 
 	/* Determine the common type for the operation */
 	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = ILCommonType(info, finalType, secondType, 0);
+	commonType = AssignCommonType(info, finalType, secondType);
 
 	/* Cast the first sub-expression to the common type */
 	ILGenCast(info, finalType, commonType);
@@ -191,6 +257,46 @@ ILNode_GenValue(ILNode_AssignExpression)
 	else if(yyisa(bnode, ILNode_BinaryBitwise))
 	{
 		ILBitwise_ApplyOp(info, (ILNode_BinaryBitwise *)bnode, commonType);
+	}
+	else if(yyisa(bnode, ILNode_Concat))
+	{
+		if(finalType == ILMachineType_String &&
+		   secondType == ILMachineType_String)
+		{
+			ILGenCallByName(info,
+			  "class [.library]System.String [.library]System.String::Concat"
+					"(class [.library]String.Delegate, "
+					 "class [.library]String.Delegate)");
+			ILGenAdjust(info, -1);
+		}
+		else
+		{
+			ILGenCallByName(info,
+			  "class [.library]System.String [.library]System.String::Concat"
+					"(class [.library]String.Object, "
+					 "class [.library]String.Object)");
+			ILGenAdjust(info, -1);
+		}
+	}
+	else if(yyisa(bnode, ILNode_DelegateAdd))
+	{
+		ILGenCallByName(info,
+		  "class [.library]System.Delegate [.library]System.Delegate::Combine"
+				"(class [.library]System.Delegate, "
+				 "class [.library]System.Delegate)");
+		ILGenAdjust(info, -1);
+		ILGenClassToken(info, IL_OP_CASTCLASS,
+				((ILNode_DelegateAdd *)bnode)->delegateClass);
+	}
+	else if(yyisa(bnode, ILNode_DelegateSub))
+	{
+		ILGenCallByName(info,
+		  "class [.library]System.Delegate [.library]System.Delegate::Remove"
+				"(class [.library]System.Delegate, "
+				 "class [.library]System.Delegate)");
+		ILGenAdjust(info, -1);
+		ILGenClassToken(info, IL_OP_CASTCLASS,
+				((ILNode_DelegateSub *)bnode)->delegateClass);
 	}
 	else
 	{

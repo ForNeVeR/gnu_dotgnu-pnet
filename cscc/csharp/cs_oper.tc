@@ -298,6 +298,18 @@ ILNode_SemAnalysis(ILNode_Add)
 		return value1;
 	}
 
+	/* If both arguments are delegates of the same type,
+	   then perform delegate combination */
+	if(ILTypeIsDelegate(value1.type) && ILTypeIsDelegate(value2.type) &&
+	   ILTypeIdentical(value1.type, value2.type))
+	{
+		*parent = ILNode_DelegateAdd_create
+			(node->expr1, node->expr2, ILType_ToClass(value1.type));
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		return value1;
+	}
+
 	/* Could not find a suitable operator */
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -312,8 +324,76 @@ error:
  */
 ILNode_SemAnalysis(ILNode_Sub)
 {
-	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Sub, "op_Subtraction", "-");
+	const ILOperator *oper;
+	ILMethod *method;
+	ILType *returnType;
+	CSSemValue value1;
+	CSSemValue value2;
+	ILType *resultType;
+
+	/* Perform semantic analysis on the arguments */
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* The two arguments must be values */
+	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	{
+		goto error;
+	}
+
+	/* Look for a builtin operator */
+	oper = ILFindBinaryOperator
+				(ILOp_Sub, value1.type, value2.type, &resultType);
+	if(oper)
+	{
+		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
+		value1.kind = CS_SEMKIND_RVALUE;
+		if(resultType)
+		{
+			value1.type = resultType;
+		}
+		else
+		{
+			value1.type = ILFindSystemType(info, "Decimal");
+		}
+		return value1;
+	}
+
+	/* Look for a user-specified operator */
+	method = FindUserBinaryOperator(info, "op_Subtraction",
+									value1.type, value2.type);
+	if(method)
+	{
+		returnType = ILTypeGetReturn(ILMethod_Signature(method));
+		*parent = ILNode_UserBinaryOp_create
+						(node->expr1, node->expr2,
+						 ILTypeToMachineType(returnType), method);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = returnType;
+		return value1;
+	}
+
+	/* If both arguments are delegates of the same type,
+	   then perform delegate removal */
+	if(ILTypeIsDelegate(value1.type) && ILTypeIsDelegate(value2.type) &&
+	   ILTypeIdentical(value1.type, value2.type))
+	{
+		*parent = ILNode_DelegateSub_create
+			(node->expr1, node->expr2, ILType_ToClass(value1.type));
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		return value1;
+	}
+
+	/* Could not find a suitable operator */
+error:
+	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to binary `-'");
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Int32;
+	return value1;
 }
 
 /*
@@ -610,6 +690,44 @@ static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		value1.kind = CS_SEMKIND_RVALUE;
 		value1.type = returnType;
 		return value1;
+	}
+
+	/* Should we be performing string concatenation? */
+	if(ILTypeIsStringClass(value1.type) && yyisa(node, ILNode_Add))
+	{
+		if(!ILTypeIsStringClass(value2.type))
+		{
+			/* Convert the second argument into "ObjectRef" */
+			ILCast(info, node->expr2, &(node->expr2), value2.type,
+				   ILFindSystemType(info, "Object"));
+		}
+		*parent = ILNode_Concat_create(node->expr1, node->expr2);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		return value1;
+	}
+
+	/* Should be be performing delegate combination or removal? */
+	if(ILTypeIsDelegate(value1.type))
+	{
+		if(yyisa(node, ILNode_Add) &&
+		   ILTypeIdentical(value1.type, value2.type))
+		{
+			*parent = ILNode_DelegateAdd_create
+				(node->expr1, node->expr2, ILType_ToClass(value1.type));
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+			return value1;
+		}
+		else if(yyisa(node, ILNode_Sub) &&
+		        ILTypeIdentical(value1.type, value2.type))
+		{
+			*parent = ILNode_DelegateSub_create
+				(node->expr1, node->expr2, ILType_ToClass(value1.type));
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+			return value1;
+		}
 	}
 
 	/* Could not find a suitable operator */
@@ -1703,6 +1821,15 @@ ILNode_SemAnalysis(ILNode_NoPedantic)
  * Perform semantic analysis for the concatenation operator.
  */
 ILNode_SemAnalysis(ILNode_Concat)
+{
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for delegate operators.
+ */
+ILNode_SemAnalysis(ILNode_DelegateAdd),
+ILNode_SemAnalysis(ILNode_DelegateSub)
 {
 	return CSSemValueDefault;
 }

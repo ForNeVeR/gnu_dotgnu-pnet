@@ -298,6 +298,14 @@ struct _tagILSwitchValue
 	ILMethod *method;
 }
 %node ILNode_Concat ILNode_BinaryExpression
+%node ILNode_DelegateAdd ILNode_BinaryExpression =
+{
+	ILClass *delegateClass;
+}
+%node ILNode_DelegateSub ILNode_BinaryExpression =
+{
+	ILClass *delegateClass;
+}
 
 %output "cg_assign.c"
 

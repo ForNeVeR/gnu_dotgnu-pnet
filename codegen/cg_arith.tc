@@ -179,13 +179,24 @@ ILNode_GetType(ILNode_Concat)
 }
 
 /*
+ * Get the type associated with a delegate operator.
+ */
+ILNode_GetType(ILNode_DelegateAdd),
+ILNode_GetType(ILNode_DelegateSub)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
  * Generate discard code for various arithmetic operator types.
  */
 ILNode_GenDiscard(ILNode_BinaryArith),
 ILNode_GenDiscard(ILNode_BinaryBitwise),
 ILNode_GenDiscard(ILNode_BinaryShift),
 ILNode_GenDiscard(ILNode_UserBinaryOp),
-ILNode_GenDiscard(ILNode_Concat)
+ILNode_GenDiscard(ILNode_Concat),
+ILNode_GenDiscard(ILNode_DelegateAdd),
+ILNode_GenDiscard(ILNode_DelegateSub)
 {
 	ILNode_GenDiscard(node->expr1, info);
 	ILNode_GenDiscard(node->expr2, info);
@@ -465,6 +476,46 @@ ILNode_GenValue(ILNode_Concat)
 	}
 	ILGenAdjust(info, -1);
 	return ILMachineType_String;
+}
+
+/*
+ * Generate value code for delegate addition.
+ */
+ILNode_GenValue(ILNode_DelegateAdd)
+{
+	/* Generate code for the two arguments */
+	ILNode_GenValue(node->expr1, info);
+	ILNode_GenValue(node->expr2, info);
+
+	/* Call the delegate combination operator in "System.Delegate" */
+	ILGenCallByName(info,
+	  "class [.library]System.Delegate [.library]System.Delegate::Combine"
+		"(class [.library]System.Delegate, class [.library]System.Delegate)");
+	ILGenAdjust(info, -1);
+	ILGenClassToken(info, IL_OP_CASTCLASS, node->delegateClass);
+
+	/* The result is always an object reference */
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for delegate subtraction.
+ */
+ILNode_GenValue(ILNode_DelegateSub)
+{
+	/* Generate code for the two arguments */
+	ILNode_GenValue(node->expr1, info);
+	ILNode_GenValue(node->expr2, info);
+
+	/* Call the delegate removal operator in "System.Delegate" */
+	ILGenCallByName(info,
+	  "class [.library]System.Delegate [.library]System.Delegate::Remove"
+		"(class [.library]System.Delegate, class [.library]System.Delegate)");
+	ILGenAdjust(info, -1);
+	ILGenClassToken(info, IL_OP_CASTCLASS, node->delegateClass);
+
+	/* The result is always an object reference */
+	return ILMachineType_ObjectRef;
 }
 
 /*

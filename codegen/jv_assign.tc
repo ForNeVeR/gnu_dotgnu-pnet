@@ -54,6 +54,59 @@ JavaGenDiscard(ILNode_Assign)
 	JavaStore(node->expr1, info, 0, data1, data2);
 }
 
+%output "cg_assign.c"
+
+%{
+
+/*
+ * Concatenation two string values on the stack.  We assume that
+ * the first will be a string, but the second may need conversion.
+ */
+static void ConcatString(ILGenInfo *info, ILMachineType type1,
+						 ILMachineType type2)
+{
+	/* Convert the second argument into a string if necessary */
+	if(type2 >= ILMachineType_Boolean &&
+	   type2 <= ILMachineType_Decimal)
+	{
+		JavaGenCast(info, type2, ILMachineType_String);
+		type2 = ILMachineType_String;
+	}
+	else if(type2 != ILMachineType_String)
+	{
+		JavaGenCast(info, type2, ILMachineType_ObjectRef);
+		if(info->useJavaLib)
+		{
+			JavaGenCallVirtual(info, "java/lang/Object", "toString",
+							   "()Ljava/lang/String;");
+			type2 = ILMachineType_String;
+		}
+	}
+
+	/* Apply either the string or the object concatenation function */
+	if(type1 == ILMachineType_String && type2 == ILMachineType_String)
+	{
+		if(info->useJavaLib)
+		{
+			JavaGenCallVirtual(info, "java/lang/String", "concat",
+							   "(Ljava/lang/String;)Ljava/lang/String;");
+		}
+		else
+		{
+			JavaGenCallByName(info, "System/String", "Concat",
+					  "(LSystem/String;LSystem/String;)LSystem/String;");
+		}
+	}
+	else
+	{
+		JavaGenCallByName(info, "System/String", "Concat",
+				  "(LSystem/Object;LSystem/Object;)LSystem/String;");
+	}
+	JavaGenAdjust(info, -1);
+}
+
+%}
+
 /*
  * Generate discard code for an arithmetic assignment expression.
  */
@@ -70,7 +123,7 @@ JavaGenDiscard(ILNode_AssignExpression)
 
 	/* Determine the common type for the operation */
 	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = ILCommonType(info, finalType, secondType, 0);
+	commonType = AssignCommonType(info, finalType, secondType);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -86,6 +139,26 @@ JavaGenDiscard(ILNode_AssignExpression)
 	else if(yyisa(bnode, ILNode_BinaryBitwise))
 	{
 		JavaBitwise_ApplyOp(info, (ILNode_BinaryBitwise *)bnode, commonType);
+	}
+	else if(yyisa(bnode, ILNode_Concat))
+	{
+		ConcatString(info, finalType, secondType);
+	}
+	else if(yyisa(bnode, ILNode_DelegateAdd))
+	{
+		JavaGenCallByName(info, "System/Delegate", "Combine",
+				  "(LSystem/Delegate;LSystem/Delegate;)LSystem/Delegate;");
+		JavaGenAdjust(info, -1);
+		JavaGenClassRef(info, JAVA_OP_CHECKCAST,
+				((ILNode_DelegateAdd *)bnode)->delegateClass);
+	}
+	else if(yyisa(bnode, ILNode_DelegateSub))
+	{
+		JavaGenCallByName(info, "System/Delegate", "Remove",
+				  "(LSystem/Delegate;LSystem/Delegate;)LSystem/Delegate;");
+		JavaGenAdjust(info, -1);
+		JavaGenClassRef(info, JAVA_OP_CHECKCAST,
+				((ILNode_DelegateSub *)bnode)->delegateClass);
 	}
 	else
 	{
@@ -136,7 +209,7 @@ JavaGenValue(ILNode_AssignExpression)
 
 	/* Determine the common type for the operation */
 	secondType = ILNode_GetType(bnode->expr2, info);
-	commonType = ILCommonType(info, finalType, secondType, 0);
+	commonType = AssignCommonType(info, finalType, secondType);
 
 	/* Cast the first sub-expression to the common type */
 	JavaGenCast(info, finalType, commonType);
@@ -152,6 +225,26 @@ JavaGenValue(ILNode_AssignExpression)
 	else if(yyisa(bnode, ILNode_BinaryBitwise))
 	{
 		JavaBitwise_ApplyOp(info, (ILNode_BinaryBitwise *)bnode, commonType);
+	}
+	else if(yyisa(bnode, ILNode_Concat))
+	{
+		ConcatString(info, finalType, secondType);
+	}
+	else if(yyisa(bnode, ILNode_DelegateAdd))
+	{
+		JavaGenCallByName(info, "System/Delegate", "Combine",
+				  "(LSystem/Delegate;LSystem/Delegate;)LSystem/Delegate;");
+		JavaGenAdjust(info, -1);
+		JavaGenClassRef(info, JAVA_OP_CHECKCAST,
+				((ILNode_DelegateAdd *)bnode)->delegateClass);
+	}
+	else if(yyisa(bnode, ILNode_DelegateSub))
+	{
+		JavaGenCallByName(info, "System/Delegate", "Remove",
+				  "(LSystem/Delegate;LSystem/Delegate;)LSystem/Delegate;");
+		JavaGenAdjust(info, -1);
+		JavaGenClassRef(info, JAVA_OP_CHECKCAST,
+				((ILNode_DelegateSub *)bnode)->delegateClass);
 	}
 	else
 	{

@@ -67,7 +67,9 @@ JavaGenDiscard(ILNode_BinaryArith),
 JavaGenDiscard(ILNode_BinaryBitwise),
 JavaGenDiscard(ILNode_BinaryShift),
 JavaGenDiscard(ILNode_UserBinaryOp),
-JavaGenDiscard(ILNode_Concat)
+JavaGenDiscard(ILNode_Concat),
+JavaGenDiscard(ILNode_DelegateAdd),
+JavaGenDiscard(ILNode_DelegateSub)
 {
 	JavaGenDiscard(node->expr1, info);
 	JavaGenDiscard(node->expr2, info);
@@ -364,8 +366,46 @@ JavaGenValue(ILNode_Concat)
 		JavaGenCallByName(info, "System/String", "Concat",
 				  "(LSystem/Object;LSystem/Object;)LSystem/String;");
 	}
-	ILGenAdjust(info, -1);
+	JavaGenAdjust(info, -1);
 	return ILMachineType_String;
+}
+
+/*
+ * Generate value code for delegate addition.
+ */
+JavaGenValue(ILNode_DelegateAdd)
+{
+	/* Generate code for the two arguments */
+	JavaGenValue(node->expr1, info);
+	JavaGenValue(node->expr2, info);
+
+	/* Call the delegate combination operator in "System.Delegate" */
+	JavaGenCallByName(info, "System/Delegate", "Combine",
+			  "(LSystem/Delegate;LSystem/Delegate;)LSystem/Delegate;");
+	JavaGenAdjust(info, -1);
+	JavaGenClassRef(info, JAVA_OP_CHECKCAST, node->delegateClass);
+
+	/* The result is always an object reference */
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for delegate subtraction.
+ */
+JavaGenValue(ILNode_DelegateSub)
+{
+	/* Generate code for the two arguments */
+	JavaGenValue(node->expr1, info);
+	JavaGenValue(node->expr2, info);
+
+	/* Call the delegate removal operator in "System.Delegate" */
+	JavaGenCallByName(info, "System/Delegate", "Remove",
+			  "(LSystem/Delegate;LSystem/Delegate;)LSystem/Delegate;");
+	JavaGenAdjust(info, -1);
+	JavaGenClassRef(info, JAVA_OP_CHECKCAST, node->delegateClass);
+
+	/* The result is always an object reference */
+	return ILMachineType_ObjectRef;
 }
 
 /*

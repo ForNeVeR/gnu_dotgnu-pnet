@@ -3,6 +3,8 @@
 
 	* image/member.c: decode Java exception blocks from method code.
 
+	* ildasm/ildasm_java.c: dump Java exception blocks in the disassembler.
+
 2001-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilasm/ilasm_grammar.y: adjustments to the syntax of "switch"

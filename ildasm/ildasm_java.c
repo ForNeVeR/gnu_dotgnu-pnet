@@ -217,11 +217,6 @@ static int DumpJavaInstructions(ILImage *image, ILClass *classInfo,
 		MarkDest(clauses->tryOffset);
 		MarkDest(clauses->tryOffset + clauses->tryLength);
 		MarkDest(clauses->handlerOffset);
-		MarkDest(clauses->handlerOffset + clauses->handlerLength);
-		if((clauses->flags & IL_META_EXCEPTION_FILTER) != 0)
-		{
-			MarkDest(clauses->extraArg);
-		}
 		clauses = clauses->next;
 	}
 
@@ -784,10 +779,9 @@ void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
 {
 	unsigned long addr;
 	ILMethodCode code;
-/*
 	ILException *clauses;
 	ILException *tempClause;
-*/
+	ILClass *catchClass;
 
 	/* Read the method code and exception information */
 	if(!ILMethodGetCode(method, &code))
@@ -797,12 +791,10 @@ void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
 		fputs("\t\t// Cannot dump the code for native methods\n", outstream);
 		return;
 	}
-/*
 	if(!ILMethodGetExceptions(method, &code, &clauses))
 	{
 		return;
 	}
-*/
 
 	/* Determine the address of the first instruction in the method */
 	addr = ILMethod_RVA(method);
@@ -824,13 +816,12 @@ void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
 	/* Dump the instructions within the method */
 	if(!DumpJavaInstructions(image, ILMethod_Owner(method),
 							 outstream, (unsigned char *)(code.code),
-						     code.codeLen, addr, 0, /*clauses,*/ flags))
+						     code.codeLen, addr, clauses, flags))
 	{
-		/*ILMethodFreeExceptions(clauses);*/
+		ILMethodFreeExceptions(clauses);
 		return;
 	}
 
-#if 0
 	/* Dump information about the exceptions */
 	tempClause = clauses;
 	while(tempClause != 0)
@@ -838,37 +829,32 @@ void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
 		fprintf(outstream, "\t\t.try ?L%lx to ?L%lx",
 				tempClause->tryOffset + addr,
 				tempClause->tryOffset + tempClause->tryLength + addr);
-		if((tempClause->flags & IL_META_EXCEPTION_FILTER) != 0)
-		{
-			/* Filter clause */
-			fprintf(outstream, " filter ?L%lx", tempClause->extraArg + addr);
-		}
-		else if((tempClause->flags & IL_META_EXCEPTION_FINALLY) != 0)
+		if((tempClause->flags & IL_META_EXCEPTION_FINALLY) != 0)
 		{
 			/* Finally clause */
 			fprintf(outstream, " finally");
-		}
-		else if((tempClause->flags & IL_META_EXCEPTION_FAULT) != 0)
-		{
-			/* Fault clause */
-			fprintf(outstream, " fault");
 		}
 		else
 		{
 			/* Catch clause */
 			fputs(" catch ", outstream);
-			DumpToken(image, outstream, flags | ILDASM_SUPPRESS_PREFIX,
-					  tempClause->extraArg);
+			catchClass = ILClass_FromToken(image, tempClause->extraArg);
+			if(catchClass)
+			{
+				ILDumpClassName(outstream, image, catchClass, flags);
+			}
+			else
+			{
+				fputs("??", outstream);
+			}
 		}
-		fprintf(outstream, " handler ?L%lx to ?L%lx\n",
-				tempClause->handlerOffset + addr,
-				tempClause->handlerOffset + tempClause->handlerLength + addr);
+		fprintf(outstream, " handler ?L%lx\n",
+				tempClause->handlerOffset + addr);
 		tempClause = tempClause->next;
 	}
 
 	/* Free the exception list and exit */
 	ILMethodFreeExceptions(clauses);
-#endif
 }
 
 #ifdef	__cplusplus

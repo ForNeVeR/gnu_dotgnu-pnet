@@ -1,4 +1,8 @@
-
+2004-05-0d  Russell Stuart  <russell@stuart.id.au>
+	* tests/runtime/System/Threading/TestMonitor.cs: Added
+	tests for Thread.Interrupt.
+	(patch #3006 modified & commited by Thong)
+	
 2004-05-04  Gopal V  <gopalv82@yahoo.com>
 
 	* configure.in: change all 'test -e' in configure.in to 'test -f'

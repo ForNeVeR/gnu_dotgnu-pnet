@@ -249,7 +249,7 @@ public class TestMonitor
 	public void TestMonitorExtremeMultiThreadedThrash()
 	{
 		Thread[] threads;
-		
+			
 		if (!TestThread.IsThreadingSupported)
 		{
 			return;
@@ -295,6 +295,11 @@ public class TestMonitor
 	
 	public void TestMonitorWaitWithoutLock()
 	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
 		object o = new object();
 		
 		try
@@ -311,6 +316,11 @@ public class TestMonitor
 		
 	public void TestMonitorWaitWithLockTimeout()
 	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
 		object o = new object();
 		
 		try
@@ -360,6 +370,11 @@ public class TestMonitor
 	
 	public void TestMonitorEnterFalseLeave()
 	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
 		Assert("Monitor.Exit should throw an exception if the thread doesn't own the lock", new TestEnterFalseLeave().Test());
 	}
 	
@@ -443,5 +458,343 @@ public class TestMonitor
 		}
 		
 		Assert("Monitor.Wait doesn't work", new TestWaitThenPulse().Test());
+	}
+
+	/*
+	 * Test that a Monitor re-aquires the lock if interrupted during a
+	 * Wait().
+	 */
+	public void TestMonitorInterruptDuringWait()
+	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
+		MonitorInterruptDuringWait test = new MonitorInterruptDuringWait();
+		String result = test.testMonitorInterruptDuringWait();
+		if (result != null)
+	  		Assert(result, result == null);
+	}
+
+	public class MonitorInterruptDuringWait
+	{
+		Object o = new Object();
+		bool seen;
+		String result = "Oops - something went wrong!";
+
+		public String testMonitorInterruptDuringWait()
+		{
+			Thread thread;
+			lock (this)
+			{
+				thread = new Thread(new ThreadStart(threadFunc));
+				thread.Start();
+				this.seen = false;
+				Monitor.Wait(this);
+			}
+			lock (this.o)
+			{
+				Thread.Sleep(1*1000);
+				thread.Interrupt();
+				Thread.Sleep(2*1000);
+				this.seen = true;
+			}
+			thread.Join();
+			return this.result;
+		}
+
+		void threadFunc()
+		{
+			Monitor.Enter(this.o);
+			lock (this)
+			{
+				Monitor.Pulse(this);
+			}
+			try
+			{
+				Monitor.Wait(this.o);
+				this.result = "Expected System.Threading.ThreadInterruptedException";
+				return;
+			}
+			catch (ThreadInterruptedException)
+			{
+			}
+			if (!this.seen)
+				this.result = "Wait did not re-aquire lock after interrupt";
+			try
+			{
+				Monitor.Exit(this.o);
+			}
+			catch (System.Exception e)
+			{
+				this.result = "Got unexpected exception during Exit: " + e;
+			}
+			this.result = null;
+		}
+	}
+
+	/*
+	 * Test that Interrupt of Sleep() works.
+	 */
+	public void TestMonitorInterruptDuringSleep()
+	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
+		MonitorInterruptDuringSleep test = new MonitorInterruptDuringSleep();
+		String result = test.testMonitorInterruptDuringSleep();
+		if (result != null)
+	  		Assert(result, result == null);
+	}
+
+	public class MonitorInterruptDuringSleep
+	{
+		String result = "Oops - something went wrong!";
+
+		public String testMonitorInterruptDuringSleep()
+		{
+			Thread thread;
+			thread = new Thread(new ThreadStart(threadFunc));
+			thread.Start();
+			while ((thread.ThreadState & ThreadState.WaitSleepJoin) == 0)
+				continue;
+			thread.Interrupt();
+			thread.Join();
+			return this.result;
+		}
+
+		void threadFunc()
+		{
+			try
+			{
+				Thread.Sleep(1000 * 1000);
+				this.result = "Expected System.Threading.ThreadInterruptedException";
+				return;
+			}
+			catch (ThreadInterruptedException)
+			{
+			}
+			this.result = null;
+		}
+	}
+
+	/*
+	 * Test that an Interrupt outside of a lock hits the next attempt to lock.
+	 */
+	public void TestMonitorInterruptEnter()
+	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
+		MonitorInterruptEnter test = new MonitorInterruptEnter();
+		String result = test.testMonitorInterruptEnter();
+		if (result != null)
+	  		Assert(result, result == null);
+	}
+
+	public class MonitorInterruptEnter
+	{
+		Object o = new Object();
+		bool seen = false;
+		String result = "Oops - something went wrong!";
+
+		public String testMonitorInterruptEnter()
+		{
+			Thread thread;
+			lock (this)
+			{
+				thread = new Thread(new ThreadStart(threadFunc));
+				thread.Start();
+				Monitor.Wait(this);
+			}
+			thread.Interrupt();
+			lock (this.o)
+			{
+				this.seen = true;
+				Thread.MemoryBarrier();
+				thread.Join();
+			}
+			return this.result;
+		}
+
+		void threadFunc()
+		{
+			try
+			{
+				Monitor.Enter(this.o);
+			}
+			catch (System.Exception e)
+			{
+				this.result = "Got unexpected exception during Enter: " + e;
+				return;
+			}
+			lock (this)
+			{
+				Monitor.Pulse(this);
+			}
+			try
+			{
+				Monitor.Exit(this.o);
+			}
+			catch (System.Exception e)
+			{
+				this.result = "Got unexpected exception during Exit: " + e;
+				return;
+			}
+			while (!this.seen)
+			{
+				Thread.MemoryBarrier();
+			}
+			try
+			{
+				Monitor.Enter(this.o);
+				this.result = "Expected System.Threading.ThreadInterruptedException";
+				return;
+			}
+			catch (ThreadInterruptedException)
+			{
+			}
+			this.result = null;
+		}
+	}
+
+	/*
+	 * Test that an Interrupt outside of a Sleep hits the next
+	 * attempt to Sleep.
+	 */
+	public void TestMonitorInterruptSleep()
+	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
+		MonitorInterruptSleep test = new MonitorInterruptSleep();
+		String result = test.testMonitorInterruptSleep();
+		if (result != null)
+	  		Assert(result, result == null);
+	}
+
+	public class MonitorInterruptSleep
+	{
+		Object o = new Object();
+		bool seen = false;
+		String result = "Oops - something went wrong!";
+
+		public String testMonitorInterruptSleep()
+		{
+			Thread thread;
+			lock (this)
+			{
+				thread = new Thread(new ThreadStart(threadFunc));
+				thread.Start();
+				Monitor.Wait(this);
+			}
+			thread.Interrupt();
+			this.seen = true;
+			Thread.MemoryBarrier();
+			thread.Join();
+			return this.result;
+		}
+
+		void threadFunc()
+		{
+			lock (this)
+			{
+				Monitor.Pulse(this);
+			}
+			while (!this.seen)
+			{
+				Thread.MemoryBarrier();
+			}
+			try
+			{
+				Thread.Sleep(1000 * 1000);
+				this.result = "Expected System.Threading.ThreadInterruptedException";
+				return;
+			}
+			catch (ThreadInterruptedException)
+			{
+			}
+			this.result = null;
+		}
+	}
+
+	/*
+	 * Test that a Monitor re-aquires the lock if aborted during a
+	 * Wait().
+	 */
+	public void TestMonitorAbortDuringWait()
+	{
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
+		MonitorAbortDuringWait test = new MonitorAbortDuringWait();
+		String result = test.testMonitorAbortDuringWait();
+		if (result != null)
+	  		Assert(result, result == null);
+	}
+
+	public class MonitorAbortDuringWait
+	{
+		Object o = new Object();
+		bool seen;
+		String result = null;
+
+		public String testMonitorAbortDuringWait()
+		{
+			Thread thread;
+			lock (this)
+			{
+				thread = new Thread(new ThreadStart(threadFunc));
+				thread.Start();
+				this.seen = false;
+				Monitor.Wait(this);
+			}
+			lock (this.o)
+			{
+				thread.Abort();
+				Thread.Sleep(2);
+				this.seen = true;
+			}
+			thread.Join();
+			return result;
+		}
+
+		void threadFunc()
+		{
+			Monitor.Enter(this.o);
+			lock (this)
+			{
+				Monitor.Pulse(this);
+			}
+			try 
+			{
+				Monitor.Wait(this.o);
+				this.result = "Expected System.Threading.ThreadAbortException";
+				return;
+			}
+			catch (ThreadAbortException)
+			{
+				if (!this.seen)
+					this.result = "Wait did not re-aquire lock after abort";
+				try
+				{
+					System.Threading.Monitor.Exit(this.o);
+				}
+				catch (System.Exception e)
+				{
+					this.result = "Got unexpected exception during Exit: " + e;
+				}
+			}
+			this.result = "Abort was not automatically re-thrown in catch";
+		}
 	}
 }

@@ -64,6 +64,15 @@ public class CultureInfo : ICloneable, IFormatProvider
 					cultureID   = culture;
 					cultureName = CultureNameTable.GetNameInfoByID(0x0C0A);
 				}
+				else if(culture == 0x007F)
+				{
+					cultureID   = 0x007F;
+					cultureName =
+						new CultureName
+							("iv",    0x007F, "iv", "IVL", "IVL",
+							 "Invariant Language (Invariant Country)",
+							 "Invariant Language (Invariant Country)");
+				}
 				else
 				{
 					cultureID   = culture;
@@ -151,7 +160,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 				get
 				{
 					// TODO.
-					return null;
+					return InvariantCulture;
 				}
 			}
 

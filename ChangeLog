@@ -18,6 +18,9 @@ runtime/System/Security/Permissions/SecurityPermissionAttribute.cs,
 runtime/System/Security/Permissions/SecurityPermissionFlag.cs: implement
 a number of security-related classes.
 
+* runtime/System/Globalization/CultureInfo.cs: temporarily work around
+some broken code in the culture system.
+
 2001-12-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/Arg.txt,

@@ -1,4 +1,13 @@
 
+2004-09-27  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Security/Cryptography/X509Certificates/X509Certificate.cs:
+	stubb out additional .NET 2.0 methods.
+
+	* runtime/System/Boolean.cs: add .NET 2.0 method TryParse
+
+	* tests/runtime/System/TestBoolean.cs: add tests for TryParse.
+	
 2004-09-26  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/Label.cs: Fixes background transparency

@@ -28,8 +28,16 @@ using System;
 using System.IO;
 using System.Text;
 using System.Security.Cryptography;
+#if CONFIG_FRAMEWORK_2_0
+using System.Runtime.Serialization;
+#endif
 
+[Serializable]
+#if CONFIG_FRAMEWORK_2_0
+public class X509Certificate: IDeserializationCallback, ISerializable
+#else
 public class X509Certificate
+#endif
 {
 	// Internal state.
 	private byte[] rawData;
@@ -44,6 +52,14 @@ public class X509Certificate
 	private byte[] serialNumber;
 
 	// Constructors.
+#if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	public X509Certificate()
+			{
+				throw new NotImplementedException("X509Certificate()");
+			}
+
+#endif
 	public X509Certificate(byte[] data)
 			{
 				if(data == null)
@@ -52,12 +68,46 @@ public class X509Certificate
 				}
 				Parse(data);
 			}
+#if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	public X509Certificate(byte[] rawData, String password)
+			{
+				throw new NotImplementedException("X509Certificate(byte[], String)");
+			}
+	[TODO]
+	public X509Certificate(byte[] rawData, String password, X509KeyStorageFlags keyStorageFlags)
+			{
+				throw new NotImplementedException("X509Certificate(byte[], String, X509KeyStorageFlags)");
+			}
+#endif
 	public X509Certificate(IntPtr handle)
 			{
 				// Handle-based certificate construction is not supported.
 				throw new NotSupportedException
 					(_("Crypto_CertNotSupp"));
 			}
+#if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	public X509Certificate(SerializationInfo info, StreamingContext context)
+			{
+				throw new NotImplementedException("X509Certificate(SerializationInfo, StreamingContext)");
+			}
+	[TODO]
+	public X509Certificate(String fileName)
+			{
+				throw new NotImplementedException("X509Certificate(String)");
+			}
+	[TODO]
+	public X509Certificate(String fileName, String password)
+			{
+				throw new NotImplementedException("X509Certificate(String, String)");
+			}
+	[TODO]
+	public X509Certificate(String fileName, String password, X509KeyStorageFlags keyStorageFlags)
+			{
+				throw new NotImplementedException("X509Certificate(String, String, X509KeyStorageFlags)");
+			}
+#endif
 	public X509Certificate(X509Certificate cert)
 			{
 				if(cert == null)
@@ -189,6 +239,18 @@ public class X509Certificate
 				return true;
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	public virtual byte[] Export(X509ContentType contentType)
+			{
+				throw new NotImplementedException("Export");
+			}
+	[TODO]
+	public virtual byte[] Export(X509ContentType contentType, String password)
+			{
+				throw new NotImplementedException("Export");
+			}
+#endif
 	// Convert a byte array into a hexadecimal string.
 	private static String ToHex(byte[] array)
 			{
@@ -317,6 +379,51 @@ public class X509Certificate
 				return ToHex(GetSerialNumber());
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				throw new NotImplementedException("GetObjectData");
+			}
+	[TODO]
+	public IntPtr Handle
+			{
+				get
+				{
+					throw new NotImplementedException("Handle");
+				}
+			}
+	[TODO]
+	public virtual void Import(byte[] rawData)
+			{
+				throw new NotImplementedException("Import");
+			}
+	[TODO]
+	public virtual void Import(byte[] rawData, String password, X509KeyStorageFlags keyStorageFlags)
+			{
+				throw new NotImplementedException("Import");
+			}
+	[TODO]
+	public virtual void Import(String fileName)
+			{
+				throw new NotImplementedException("Import");
+			}
+	[TODO]
+	public virtual void Import(String fileName, String password, X509KeyStorageFlags keyStorageFlags)
+			{
+				throw new NotImplementedException("Import");
+			}
+	[TODO]
+	void IDeserializationCallback.OnDeserialization(Object sender)
+			{
+				throw new NotImplementedException("OnDeserialization");
+			}
+	[TODO]
+	public virtual void Reset()
+			{
+				throw new NotImplementedException("Reset");
+			}
+#endif
 	// Get the string represenation of this certificate.
 	public override String ToString()
 			{

@@ -316,6 +316,186 @@ public class TestBoolean : TestCase
 //							 ((IConvertible)false).ToType(typeof(int), null));
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+	// Test the TryParse method.
+	public void TestBooleanTryParse()
+			{
+				// Test the null argument case.
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse(null, out result);
+					Assert("Returnvalue Boolean.Parse(null, out result)", !rc);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(null, out result) should not throw any exception");
+				}
+
+				// Test parses that are expected to succeed.
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse("True", out result);
+					Assert("Returnvalue Boolean.Parse(\"True\", out result)", rc);
+					Assert("result Boolean.Parse(\"True\", out result)", result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"True\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse("False", out result);
+					Assert("Returnvalue Boolean.Parse(\"False\", out result)", rc);
+					Assert("result Boolean.Parse(\"False\", out result)", !result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"False\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse("true", out result);
+					Assert("Returnvalue Boolean.Parse(\"true\", out result)", rc);
+					Assert("result Boolean.Parse(\"true\", out result)", result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"true\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse("false", out result);
+					Assert("Returnvalue Boolean.Parse(\"false\", out result)", rc);
+					Assert("result Boolean.Parse(\"false\", out result)", !result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"false\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse(" true", out result);
+					Assert("Returnvalue Boolean.Parse(\" true\", out result)", rc);
+					Assert("result Boolean.Parse(\" true\", out result)", result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\" true\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse(" false", out result);
+					Assert("Returnvalue Boolean.Parse(\" false\", out result)", rc);
+					Assert("result Boolean.Parse(\" false\", out result)", !result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\" false\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse("true ", out result);
+					Assert("Returnvalue Boolean.Parse(\"true \", out result)", rc);
+					Assert("result Boolean.Parse(\"true \", out result)", result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"true \", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+					bool rc;
+
+					rc = Boolean.TryParse("false ", out result);
+					Assert("Returnvalue Boolean.Parse(\"false \", out result)", rc);
+					Assert("result Boolean.Parse(\"false \", out result)", !result);
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"false \", out result) should not throw any exception");
+				}
+
+				// Test parses that are expected to fail.
+				try
+				{
+					bool result;
+
+					Assert("false = Boolean.TryParse(\"TrueBlue\")", !Boolean.TryParse("TrueBlue", out result));
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"TrueBlue\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+
+					Assert("false = Boolean.TryParse(\"\")", !Boolean.TryParse("", out result));
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+
+					Assert("false = Boolean.TryParse(\"x\")", !Boolean.TryParse("x", out result));
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"x\", out result) should not throw any exception");
+				}
+				try
+				{
+					bool result;
+
+					Assert("false = Boolean.TryParse(\"   \")", !Boolean.TryParse("   ", out result));
+				}
+				catch
+				{
+					// Failure
+					Fail("Boolean.TryParse(\"   \", out result) should not throw any exception");
+				}
+			}
+#endif // CONFIG_FRAMEWORK_2_0
 #endif // !ECMA_COMPAT
 
 }; // class TestBoolean

@@ -188,6 +188,28 @@ public struct Boolean : IComparable
 											 provider, true);
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+	public static bool TryParse(String value, out bool result)
+			{
+				result = false;
+
+				if(value != null)
+				{
+					value = value.Trim();
+					if (String.Compare(value, TrueString, true) == 0)
+					{
+						result = true;
+						return true;
+					}
+					else if (String.Compare(value, FalseString, true) == 0)
+					{
+						result = false;
+						return true;
+					}
+				}
+				return false;
+			}
+#endif // CONFIG_FRAMEWORK_2_0
 #endif // !ECMA_COMPAT
 
 }; // class Boolean

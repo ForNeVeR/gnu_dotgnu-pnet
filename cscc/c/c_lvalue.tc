@@ -1286,6 +1286,12 @@ ILNode_CSemAnalysis(ILNode_CDeref)
 
 	/* Perform semantic analysis on the pointer value */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
+	if(CSemIsRValue(value) && CTypeIsFunctionPtr(CSemGetType(value)))
+	{
+		/* Remove the dereference from a function pointer expression */
+		*parent = node->expr;
+		return value;
+	}
 	if(!CSemIsRValue(value) || !CTypeIsPointer(CSemGetType(value)))
 	{
 		if(!CSemIsError(value))

@@ -12,6 +12,9 @@
 	* engine/lib_emit.c: Do not check for parents for <Module> ,
 	Interfaces and System.Object in ClrTypeCreate.
 
+	* configure.in: Add the --enable-multilibs=no to allow compilation
+	on FreeBSD.
+
 2003-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_config.h, engine/dumpconfig.c: remove potentional

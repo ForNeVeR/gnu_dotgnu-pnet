@@ -162,16 +162,6 @@ if test "$ILFIND" = "" ; then
 	exit 1
 fi
 
-dnl Find the Portable.NET sample httpsrv program.
-AC_PATH_PROG(HTTPSRV, httpsrv.exe,, $PNET_PATH/samples:$PATH)
-if test "$HTTPSRV" = "" ; then
-	echo '**************************************************************'
-	echo "Portable.NET's sample httpsrv program is required to test"
-	echo "portions of the system."
-	echo "Use the --with-pnet option to specify Portable.NET's location."
-	echo '**************************************************************'
-fi
-
 AC_OUTPUT([
 Makefile
 tools/Makefile

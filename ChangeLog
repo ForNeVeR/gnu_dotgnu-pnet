@@ -15,6 +15,10 @@
 
 	* System.Xml/XmlNodeReader.cs: stub out the methods in "XmlNodeReader".
 
+	* configure.in: remove "httpsrv.exe" from the configuration phase,
+	as it won't be living in "pnet" for much longer, and it isn't
+	currently used for testing pnetlib.
+
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 
 	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.

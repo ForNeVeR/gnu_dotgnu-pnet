@@ -12,13 +12,11 @@
 .method private static hidebysig int32 'm2'() cil managed 
 {
 	.locals	(int32, int32)
-	ldc.i4.s	10
-	ldc.i4.s	10
-	add
+	ldc.i4.s	20
 	stloc.1
 	ldloc.1
 	ret
-	.maxstack 2
+	.maxstack 1
 } // method m2
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {

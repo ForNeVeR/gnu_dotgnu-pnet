@@ -1,4 +1,9 @@
 
+2002-09-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/stmt/locals2.il, csharp/stmt/locals2.jl:
+	modify output files to track constant evaluation changes.
+
 2002-08-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/type1.c, c/decl/type2.c: change "__bool__" into "_Bool",

@@ -1439,7 +1439,19 @@ ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 	{
 		constant=ILConstantGetFromOwner((ILProgramItem*)field);
 		if(!constant)return 0;
-		return UnpackConstant(thread,constant,ILField_Type(field));
+		/*
+		 * Note: this is to support some non-compliant code generated
+		 * by Mono's compiler */
+		type=ILClassToType(ILField_Owner(field));
+		if(ILTypeIsEnum(type))
+		{
+			return UnpackConstant(thread,constant,ILClassToType(
+									ILField_Owner(field)));
+		}
+		else
+		{
+			return UnpackConstant(thread,constant,ILField_Type(field));
+		}
 	}
 	else if(ILField_IsStatic(field))
 	{

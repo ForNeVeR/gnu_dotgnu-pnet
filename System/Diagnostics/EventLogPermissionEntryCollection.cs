@@ -110,7 +110,7 @@ public class EventLogPermissionEntryCollection : CollectionBase
 			}
 
 	// Remove an element from this collection.
-	public virtual void Remove(EventLogPermissionEntry value)
+	public void Remove(EventLogPermissionEntry value)
 			{
 				((IList)this).Remove(value);
 			}

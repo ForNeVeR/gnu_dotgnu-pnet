@@ -27,6 +27,7 @@ namespace System.Diagnostics
 using System.ComponentModel;
 using System.Security;
 
+[DefaultEvent("EntryWritten")]
 public class EventLog : Component, ISupportInitialize
 {
 	// Internal state.
@@ -57,6 +58,9 @@ public class EventLog : Component, ISupportInitialize
 			}
 
 	// Get or set event log properties.
+	[MonitoringDescription("LogMonitoring")]
+	[DefaultValue(false)]
+	[Browsable(false)]
 	public bool EnableRaisingEvents
 			{
 				get
@@ -68,6 +72,10 @@ public class EventLog : Component, ISupportInitialize
 					enableRaisingEvents = value;
 				}
 			}
+	[MonitoringDescription("LogEntries")]
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[TODO]
 	public EventLogEntryCollection Entries
 			{
 				get
@@ -76,6 +84,12 @@ public class EventLog : Component, ISupportInitialize
 					return null;
 				}
 			}
+	[MonitoringDescription("LogLog")]
+	[ReadOnly(true)]
+	[DefaultValue("")]
+	[RecommendedAsConfigurable(true)]
+	[TypeConverter
+		("System.Diagnostics.Design.LogConverter, System.Design")]
 	public String Log
 			{
 				get
@@ -91,6 +105,7 @@ public class EventLog : Component, ISupportInitialize
 					logName = value;
 				}
 			}
+	[Browsable(false)]
 	public String LogDisplayName
 			{
 				get
@@ -100,6 +115,10 @@ public class EventLog : Component, ISupportInitialize
 					return logName;
 				}
 			}
+	[MonitoringDescription("LogMachineName")]
+	[ReadOnly(true)]
+	[DefaultValue(".")]
+	[RecommendedAsConfigurable(true)]
 	public String MachineName
 			{
 				get
@@ -115,6 +134,12 @@ public class EventLog : Component, ISupportInitialize
 					machineName = value;
 				}
 			}
+	[MonitoringDescription("LogSource")]
+	[DefaultValue("")]
+	[ReadOnly(true)]
+	[RecommendedAsConfigurable(true)]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String Source
 			{
 				get
@@ -126,6 +151,8 @@ public class EventLog : Component, ISupportInitialize
 					source = (value == null ? "" : source);
 				}
 			}
+	[MonitoringDescription("LogSynchronizingObject")]
+	[Browsable(false)]
 	public ISynchronizeInvoke SynchronizingObject
 			{
 				get
@@ -149,12 +176,14 @@ public class EventLog : Component, ISupportInitialize
 			}
 
 	// Clear all entries from the event log.
+	[TODO]
 	public void Clear()
 			{
 				// TODO
 			}
 
 	// Close this event log.
+	[TODO]
 	public void Close()
 			{
 				// TODO
@@ -165,6 +194,7 @@ public class EventLog : Component, ISupportInitialize
 			{
 				CreateEventSource(source, logName, ".");
 			}
+	[TODO]
 	public static void CreateEventSource
 				(String source, String logName, String machineName)
 			{
@@ -197,6 +227,7 @@ public class EventLog : Component, ISupportInitialize
 			{
 				Delete(logName, ".");
 			}
+	[TODO]
 	public static void Delete(String logName, String machineName)
 			{
 				// TODO
@@ -207,12 +238,14 @@ public class EventLog : Component, ISupportInitialize
 			{
 				DeleteEventSource(source, ".");
 			}
+	[TODO]
 	public static void DeleteEventSource(String source, String machineName)
 			{
 				// TODO
 			}
 
 	// Dispose of this event log.
+	[TODO]
 	protected override void Dispose(bool disposing)
 			{
 				// TODO
@@ -223,6 +256,7 @@ public class EventLog : Component, ISupportInitialize
 			{
 				return Exists(logName, ".");
 			}
+	[TODO]
 	public static bool Exists(String logName, String machineName)
 			{
 				// TODO
@@ -234,6 +268,7 @@ public class EventLog : Component, ISupportInitialize
 			{
 				return GetEventLogs(".");
 			}
+	[TODO]
 	public static EventLog[] GetEventLogs(String machineName)
 			{
 				// TODO
@@ -245,62 +280,18 @@ public class EventLog : Component, ISupportInitialize
 			{
 				return SourceExists(source, ".");
 			}
+	[TODO]
 	public static bool SourceExists(String source, String machineName)
 			{
 				// TODO
 				return false;
 			}
 
-	// Write an entry to an event log.
-	public void WriteEntry(String message)
-			{
-				WriteEntry(Source, message, EventLogEntryType.Information,
-						   0, (short)0, null);
-			}
-	public void WriteEntry(String message, EventLogEntryType type)
-			{
-				WriteEntry(Source, message, type, 0, (short)0, null);
-			}
-	public void WriteEntry(String message, EventLogEntryType type, int eventID)
-			{
-				WriteEntry(Source, message, type, eventID, (short)0, null);
-			}
-	public void WriteEntry(String source, String message)
-			{
-				WriteEntry(source, message, EventLogEntryType.Information,
-						   0, (short)0, null);
-			}
-	public void WriteEntry(String source, String message,
-						   EventLogEntryType type)
-			{
-				WriteEntry(source, message, type, 0, (short)0, null);
-			}
-	public void WriteEntry(String message, EventLogEntryType type,
-						   int eventID, short category)
-			{
-				WriteEntry(Source, message, type, eventID, category, null);
-			}
-	public void WriteEntry(String source, String message,
-						   EventLogEntryType type, int eventID)
-			{
-				WriteEntry(source, message, type, eventID, (short)0, null);
-			}
-	public void WriteEntry(String message, EventLogEntryType type,
-						   int eventID, short category, byte[] rawData)
-			{
-				WriteEntry(Source, message, type, eventID,
-						   category, rawData);
-			}
-	public void WriteEntry(String source, String message,
-						   EventLogEntryType type, int eventID,
-						   short category)
-			{
-				WriteEntry(source, message, type, eventID,
-						   category, null);
-			}
-	public void WriteEntry(String source, String message,
-						   EventLogEntryType type, int eventID,
-						   short category, byte[] rawData)
+	// Write an entry to this event log.
+	[TODO]
+	private void WriteEntryToLog(String source, String message,
+						   		 EventLogEntryType type, int eventID,
+						   		 short category, byte[] rawData)
 			{
 				// Change to the new source.
 				if(source != this.source)
@@ -334,7 +325,66 @@ public class EventLog : Component, ISupportInitialize
 				}
 			}
 
+	// Write an entry to an event log.
+	public void WriteEntry(String message)
+			{
+				WriteEntryToLog(Source, message, EventLogEntryType.Information,
+						  		0, (short)0, null);
+			}
+	public void WriteEntry(String message, EventLogEntryType type)
+			{
+				WriteEntryToLog(Source, message, type, 0, (short)0, null);
+			}
+	public void WriteEntry(String message, EventLogEntryType type, int eventID)
+			{
+				WriteEntryToLog(Source, message, type,
+								eventID, (short)0, null);
+			}
+	public void WriteEntry(String message, EventLogEntryType type,
+				   		   int eventID, short category)
+			{
+				WriteEntryToLog(Source, message, type, eventID,
+								category, null);
+			}
+	public void WriteEntry(String message, EventLogEntryType type,
+				   		   int eventID, short category, byte[] rawData)
+			{
+				WriteEntryToLog(Source, message, type, eventID,
+						   		category, rawData);
+			}
+	public static void WriteEntry(String source, String message)
+			{
+				WriteEntry(source, message, EventLogEntryType.Information,
+						   0, (short)0, null);
+			}
+	public static void WriteEntry(String source, String message,
+						   		  EventLogEntryType type)
+			{
+				WriteEntry(source, message, type, 0, (short)0, null);
+			}
+	public static void WriteEntry(String source, String message,
+						   		  EventLogEntryType type, int eventID)
+			{
+				WriteEntry(source, message, type, eventID, (short)0, null);
+			}
+	public static void WriteEntry(String source, String message,
+						   		  EventLogEntryType type, int eventID,
+						   		  short category)
+			{
+				WriteEntry(source, message, type, eventID,
+						   category, null);
+			}
+	[TODO]
+	public static void WriteEntry(String source, String message,
+						   		  EventLogEntryType type, int eventID,
+						   		  short category, byte[] rawData)
+			{
+				// TODO: find the log for the source and call
+				// the "WriteEntryToLog" method.
+			}
+
 	// Event that indicates when an entry is written to the log.
+	[MonitoringDescription("LogEntryWritten")]
 	public event EntryWrittenEventHandler EntryWritten;
 
 }; // class EventLog

@@ -24,7 +24,11 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
+using System.ComponentModel;
+
 [Serializable]
+[TypeConverter
+	("System.Diagnostics.Design.CounterCreationDataConverter, System.Design")]
 public class CounterCreationData
 {
 	// Internal state.
@@ -48,6 +52,8 @@ public class CounterCreationData
 			}
 
 	// Get or set the object properties.
+	[DefaultValue("")]
+	[MonitoringDescription("CounterHelp")]
 	public String CounterHelp
 			{
 				get
@@ -59,6 +65,10 @@ public class CounterCreationData
 					counterHelp = value;
 				}
 			}
+	[DefaultValue("")]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
+	[MonitoringDescription("CounterName")]
 	public String CounterName
 			{
 				get
@@ -70,6 +80,7 @@ public class CounterCreationData
 					counterName = value;
 				}
 			}
+	[MonitoringDescription("CounterType")]
 	public PerformanceCounterType CounterType
 			{
 				get

@@ -57,6 +57,7 @@ public sealed class EventLogEntry : Component, ISerializable
 			}
 
 	// Event log properties.
+	[MonitoringDescription("LogEntryCategory")]
 	public String Category
 			{
 				get
@@ -64,6 +65,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return category;
 				}
 			}
+	[MonitoringDescription("LogEntryCategoryNumber")]
 	public short CategoryNumber
 			{
 				get
@@ -71,6 +73,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return categoryNumber;
 				}
 			}
+	[MonitoringDescription("LogEntryData")]
 	public byte[] Data
 			{
 				get
@@ -78,6 +81,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return data;
 				}
 			}
+	[MonitoringDescription("LogEntryEntryType")]
 	public EventLogEntryType EntryType
 			{
 				get
@@ -85,6 +89,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return entryType;
 				}
 			}
+	[MonitoringDescription("LogEntryEventID")]
 	public int EventID
 			{
 				get
@@ -92,6 +97,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return eventID;
 				}
 			}
+	[MonitoringDescription("LogEntryIndex")]
 	public int Index
 			{
 				get
@@ -99,6 +105,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return index;
 				}
 			}
+	[MonitoringDescription("LogEntryMachineName")]
 	public String MachineName
 			{
 				get
@@ -106,6 +113,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return machineName;
 				}
 			}
+	[MonitoringDescription("LogEntryMessage")]
 	public String Message
 			{
 				get
@@ -113,6 +121,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return message;
 				}
 			}
+	[MonitoringDescription("LogEntryReplacementStrings")]
 	public String[] ReplacementStrings
 			{
 				get
@@ -120,6 +129,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return replacementStrings;
 				}
 			}
+	[MonitoringDescription("LogEntrySource")]
 	public String Source
 			{
 				get
@@ -127,6 +137,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return source;
 				}
 			}
+	[MonitoringDescription("LogEntryTimeGenerated")]
 	public DateTime TimeGenerated
 			{
 				get
@@ -134,6 +145,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return timeGenerated;
 				}
 			}
+	[MonitoringDescription("LogEntryTimeWritten")]
 	public DateTime TimeWritten
 			{
 				get
@@ -141,6 +153,7 @@ public sealed class EventLogEntry : Component, ISerializable
 					return timeWritten;
 				}
 			}
+	[MonitoringDescription("LogEntryUserName")]
 	public String UserName
 			{
 				get
@@ -255,10 +268,6 @@ public sealed class EventLogEntry : Component, ISerializable
 					return false;
 				}
 				return true;
-			}
-	public override bool Equals(Object obj)
-			{
-				return Equals(obj as EventLogEntry);
 			}
 
 	// Implement the ISerializable interface.

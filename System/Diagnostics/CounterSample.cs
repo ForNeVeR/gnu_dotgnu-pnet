@@ -130,6 +130,19 @@ public struct CounterSample
 				}
 			}
 
+	// Calculate performance values.
+	public static float Calculate(CounterSample counterSample)
+			{
+				return CounterSampleCalculator.ComputeCounterValue
+					(counterSample);
+			}
+	public static float Calculate(CounterSample counterSample,
+								  CounterSample nextCounterSample)
+			{
+				return CounterSampleCalculator.ComputeCounterValue
+					(counterSample, nextCounterSample);
+			}
+
 }; // struct CounterSample
 
 #endif // !ECMA_COMPAT

@@ -33,7 +33,8 @@ using System.Security.Permissions;
 				AttributeTargets.Struct |
 				AttributeTargets.Constructor |
 				AttributeTargets.Method |
-				AttributeTargets.Event)]
+				AttributeTargets.Event,
+				AllowMultiple=true, Inherited=false)]
 public class EventLogPermissionAttribute : CodeAccessSecurityAttribute
 {
 	// Internal state.

@@ -30,6 +30,7 @@ using System.ComponentModel;
 // portable to non-Windows operating systems.  So this class returns
 // dummy information.
 
+[Designer("System.Diagnostics.Design.ProcessModuleDesigner, System.Design")]
 public class ProcessModule : Component
 {
 	// Internal state.
@@ -44,6 +45,7 @@ public class ProcessModule : Component
 			}
 
 	// Module properties.
+	[MonitoringDescription("ProcModBaseAddress")]
 	public IntPtr BaseAddress
 			{
 				get
@@ -51,6 +53,7 @@ public class ProcessModule : Component
 					return IntPtr.Zero;
 				}
 			}
+	[MonitoringDescription("ProcModEntryPointAddress")]
 	public IntPtr EntryPointAddress
 			{
 				get
@@ -58,6 +61,7 @@ public class ProcessModule : Component
 					return IntPtr.Zero;
 				}
 			}
+	[MonitoringDescription("ProcModFileName")]
 	public String FileName
 			{
 				get
@@ -65,6 +69,7 @@ public class ProcessModule : Component
 					return fileName;
 				}
 			}
+	[Browsable(false)]
 	public FileVersionInfo FileVersionInfo
 			{
 				get
@@ -72,6 +77,7 @@ public class ProcessModule : Component
 					return FileVersionInfo.GetVersionInfo(fileName);
 				}
 			}
+	[MonitoringDescription("ProcModModuleMemorySize")]
 	public int ModuleMemorySize
 			{
 				get
@@ -79,6 +85,7 @@ public class ProcessModule : Component
 					return 0;
 				}
 			}
+	[MonitoringDescription("ProcModModuleName")]
 	public String ModuleName
 			{
 				get

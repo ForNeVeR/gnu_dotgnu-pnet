@@ -213,12 +213,12 @@ public class TraceListenerCollection : IList, ICollection, IEnumerable
 			}
 
 	// Add a trace listener to this collection.
-	public void Add(TraceListener listener)
+	public int Add(TraceListener listener)
 			{
 				CloneSettings(listener);
 				lock(this)
 				{
-					list.Add(listener);
+					return list.Add(listener);
 				}
 			}
 
@@ -270,6 +270,15 @@ public class TraceListenerCollection : IList, ICollection, IEnumerable
 				lock(this)
 				{
 					return list.IndexOf(listener);
+				}
+			}
+
+	// Insert a listener into this collection.
+	public void Insert(int index, TraceListener listener)
+			{
+				lock(this)
+				{
+					list.Insert(index, listener);
 				}
 			}
 

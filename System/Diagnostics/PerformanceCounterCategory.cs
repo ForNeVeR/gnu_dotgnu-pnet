@@ -24,7 +24,7 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
-public class PerformanceCounterCategory
+public sealed class PerformanceCounterCategory
 {
 	// Internal state.
 	private String categoryHelp;
@@ -232,13 +232,13 @@ public class PerformanceCounterCategory
 				}
 				return false;	// We don't support performance counters.
 			}
-	public bool InstanceExists(String instanceName, String categoryName)
+	public static bool InstanceExists(String instanceName, String categoryName)
 			{
 				return (new PerformanceCounterCategory(categoryName))
 							.InstanceExists(instanceName);
 			}
-	public bool InstanceExists(String instanceName, String categoryName,
-							   String machineName)
+	public static bool InstanceExists(String instanceName, String categoryName,
+							          String machineName)
 			{
 				return (new PerformanceCounterCategory
 							(categoryName, machineName))

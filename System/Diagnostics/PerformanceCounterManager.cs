@@ -24,6 +24,10 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
+using System.Runtime.InteropServices;
+
+[Guid("82840BE1-D273-11D2-B94A-00600893B17A")]
+[ComVisible(true)]
 public sealed class PerformanceCounterManager : ICollectData
 {
 	// Constructor.

@@ -26,6 +26,7 @@ namespace System.Diagnostics
 
 using System.Runtime.InteropServices;
 
+[ComImport]
 [Guid("73386977-D6FD-11D2-BED5-00C04F79E3AE")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public interface ICollectData

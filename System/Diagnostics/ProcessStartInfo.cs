@@ -29,7 +29,8 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Text;
 
-public class ProcessStartInfo
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public sealed class ProcessStartInfo
 {
 	// Special flags for starting processes.
 	[Flags]
@@ -85,6 +86,11 @@ public class ProcessStartInfo
 			}
 
 	// Get or set object properties.
+	[RecommendedAsConfigurable(true)]
+	[DefaultValue("")]
+	[MonitoringDescription("ProcessArguments")]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String Arguments
 			{
 				get
@@ -103,6 +109,8 @@ public class ProcessStartInfo
 					arguments = value;
 				}
 			}
+	[MonitoringDescription("ProcessCreateNoWindow")]
+	[DefaultValue(false)]
 	public bool CreateNoWindow
 			{
 				get
@@ -114,6 +122,11 @@ public class ProcessStartInfo
 					SetFlag(ProcessStartFlags.CreateNoWindow, value);
 				}
 			}
+	[MonitoringDescription("ProcessEnvironmentVariables")]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	[Editor
+		("System.Diagnostics.Design.StringDictionaryEditor, System.Design",
+		 "System.Drawing.Design.UITypeEditor, System.Drawing")]
 	public StringDictionary EnvironmentVariables
 			{
 				get
@@ -134,6 +147,8 @@ public class ProcessStartInfo
 					return envVars;
 				}
 			}
+	[MonitoringDescription("ProcessErrorDialog")]
+	[DefaultValue(false)]
 	public bool ErrorDialog
 			{
 				get
@@ -145,6 +160,8 @@ public class ProcessStartInfo
 					SetFlag(ProcessStartFlags.ErrorDialog, value);
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IntPtr ErrorDialogParentHandle
 			{
 				get
@@ -156,6 +173,14 @@ public class ProcessStartInfo
 					errorDialogParent = value;
 				}
 			}
+	[Editor
+		("System.Diagnostics.Design.StartFileNameEditor, System.Design",
+		 "System.Drawing.Design.UITypeEditor, System.Drawing")]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
+	[DefaultValue("")]
+	[MonitoringDescription("ProcessFileName")]
+	[RecommendedAsConfigurable(true)]
 	public String FileName
 			{
 				get
@@ -174,6 +199,8 @@ public class ProcessStartInfo
 					fileName = value;
 				}
 			}
+	[MonitoringDescription("ProcessRedirectStandardError")]
+	[DefaultValue(false)]
 	public bool RedirectStandardError
 			{
 				get
@@ -185,6 +212,8 @@ public class ProcessStartInfo
 					SetFlag(ProcessStartFlags.RedirectStderr, value);
 				}
 			}
+	[MonitoringDescription("ProcessRedirectStandardInput")]
+	[DefaultValue(false)]
 	public bool RedirectStandardInput
 			{
 				get
@@ -196,6 +225,8 @@ public class ProcessStartInfo
 					SetFlag(ProcessStartFlags.RedirectStdin, value);
 				}
 			}
+	[MonitoringDescription("ProcessRedirectStandardOutput")]
+	[DefaultValue(false)]
 	public bool RedirectStandardOutput
 			{
 				get
@@ -207,6 +238,8 @@ public class ProcessStartInfo
 					SetFlag(ProcessStartFlags.RedirectStdout, value);
 				}
 			}
+	[MonitoringDescription("ProcessUseShellExecute")]
+	[DefaultValue(true)]
 	public bool UseShellExecute
 			{
 				get
@@ -218,6 +251,9 @@ public class ProcessStartInfo
 					SetFlag(ProcessStartFlags.UseShellExecute, value);
 				}
 			}
+	[MonitoringDescription("ProcessVerb")]
+	[DefaultValue("")]
+	[TypeConverter("System.Diagnostics.Design.VerbConverter, System.Design")]
 	public String Verb
 			{
 				get
@@ -236,6 +272,8 @@ public class ProcessStartInfo
 					verb = value;
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
 	public String[] Verbs
 			{
 				get
@@ -244,6 +282,7 @@ public class ProcessStartInfo
 					return new String [0];
 				}
 			}
+	[MonitoringDescription("ProcessWindowStyle")]
 	public ProcessWindowStyle WindowStyle
 			{
 				get
@@ -261,6 +300,14 @@ public class ProcessStartInfo
 					style = value;
 				}
 			}
+	[MonitoringDescription("ProcessWorkingDirectory")]
+	[DefaultValue("")]
+	[RecommendedAsConfigurable(true)]
+	[Editor
+		("System.Diagnostics.Design.WorkingDirectoryEditor, System.Design",
+		 "System.Drawing.Design.UITypeEditor, System.Drawing")]
+	[TypeConverter
+		("System.Diagnostics.Design.StringValueConverter, System.Design")]
 	public String WorkingDirectory
 			{
 				get

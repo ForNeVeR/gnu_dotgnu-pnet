@@ -33,6 +33,7 @@ using System.ComponentModel;
 // has created threads using "System.Threading.Thread".  Therefore, use
 // of this API is severely discouraged.
 
+[Designer("System.Diagnostics.Design.ProcessThreadDesigner, System.Design")]
 public class ProcessThread : Component
 {
 	// Internal state.
@@ -45,6 +46,7 @@ public class ProcessThread : Component
 			}
 
 	// Thread properties.
+	[MonitoringDescription("ThreadBasePriority")]
 	public int BasePriority
 			{
 				get
@@ -52,6 +54,7 @@ public class ProcessThread : Component
 					return process.BasePriority;
 				}
 			}
+	[MonitoringDescription("ThreadCurrentPriority")]
 	public int CurrentPriority
 			{
 				get
@@ -60,6 +63,7 @@ public class ProcessThread : Component
 					return process.BasePriority;
 				}
 			}
+	[MonitoringDescription("ThreadId")]
 	public int Id
 			{
 				get
@@ -67,6 +71,7 @@ public class ProcessThread : Component
 					return process.Id;
 				}
 			}
+	[Browsable(false)]
 	public int IdealProcessor
 			{
 				set
@@ -74,6 +79,7 @@ public class ProcessThread : Component
 					process.ProcessorAffinity = new IntPtr(1 << value);
 				}
 			}
+	[MonitoringDescription("ThreadPriorityBoostEnabled")]
 	public bool PriorityBoostEnabled
 			{
 				get
@@ -85,6 +91,7 @@ public class ProcessThread : Component
 					process.PriorityBoostEnabled = value;
 				}
 			}
+	[MonitoringDescription("ThreadPriorityLevel")]
 	public ThreadPriorityLevel PriorityLevel
 			{
 				get
@@ -96,6 +103,7 @@ public class ProcessThread : Component
 					// Cannot change the priority level for threads.
 				}
 			}
+	[MonitoringDescription("ThreadPrivilegedProcessorTime")]
 	public TimeSpan PrivilegedProcessorTime
 			{
 				get
@@ -103,6 +111,7 @@ public class ProcessThread : Component
 					return process.PrivilegedProcessorTime;
 				}
 			}
+	[Browsable(false)]
 	public IntPtr ProcessorAffinity
 			{
 				set
@@ -110,6 +119,7 @@ public class ProcessThread : Component
 					process.ProcessorAffinity = value;
 				}
 			}
+	[MonitoringDescription("ThreadStartAddress")]
 	public IntPtr StartAddress
 			{
 				get
@@ -117,6 +127,7 @@ public class ProcessThread : Component
 					return IntPtr.Zero;
 				}
 			}
+	[MonitoringDescription("ThreadStartTime")]
 	public DateTime StartTime
 			{
 				get
@@ -124,6 +135,7 @@ public class ProcessThread : Component
 					return process.StartTime;
 				}
 			}
+	[MonitoringDescription("ThreadThreadState")]
 	public ThreadState ThreadState
 			{
 				get
@@ -133,6 +145,7 @@ public class ProcessThread : Component
 					return ThreadState.Running;
 				}
 			}
+	[MonitoringDescription("ThreadTotalProcessorTime")]
 	public TimeSpan TotalProcessorTime
 			{
 				get
@@ -140,6 +153,7 @@ public class ProcessThread : Component
 					return process.TotalProcessorTime;
 				}
 			}
+	[MonitoringDescription("ThreadUserProcessorTime")]
 	public TimeSpan UserProcessorTime
 			{
 				get
@@ -147,6 +161,7 @@ public class ProcessThread : Component
 					return process.UserProcessorTime;
 				}
 			}
+	[MonitoringDescription("ThreadWaitReason")]
 	public ThreadWaitReason WaitReason
 			{
 				get

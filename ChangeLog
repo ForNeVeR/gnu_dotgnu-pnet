@@ -1,4 +1,28 @@
 
+2003-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Diagnostics/BooleanSwitch.cs,
+	System/Diagnostics/CounterCreationData.cs,
+	System/Diagnostics/CounterSample.cs,
+	System/Diagnostics/EventLog.cs,
+	System/Diagnostics/EventLogEntry.cs,
+	System/Diagnostics/EventLogEntryCollection.cs,
+	System/Diagnostics/EventLogPermission.cs,
+	System/Diagnostics/EventLogPermissionAttribute.cs,
+	System/Diagnostics/EventLogPermissionEntryCollection.cs,
+	System/Diagnostics/EventLogTraceListener.cs,
+	System/Diagnostics/ICollectData.cs,
+	System/Diagnostics/PerformanceCounter.cs,
+	System/Diagnostics/PerformanceCounterCategory.cs,
+	System/Diagnostics/PerformanceCounterManager.cs,
+	System/Diagnostics/Process.cs,
+	System/Diagnostics/ProcessModule.cs,
+	System/Diagnostics/ProcessStartInfo.cs,
+	System/Diagnostics/ProcessThread.cs,
+	System/Diagnostics/ProcessThreadCollection.cs,
+	System/Diagnostics/TraceListenerCollection.cs: signature-compatibility
+	fixes for "System.Diagnostics".
+
 2003-05-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Implement this non-ecma class partially for

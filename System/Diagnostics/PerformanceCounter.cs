@@ -30,7 +30,7 @@ using System.ComponentModel;
 // the system performance counters as they are highly Windows-specific
 // and probably insecure to access anyway.
 
-public class PerformanceCounter : Component, ISupportInitialize
+public sealed class PerformanceCounter : Component, ISupportInitialize
 {
 	// Internal state.
 	private String categoryName;
@@ -41,6 +41,9 @@ public class PerformanceCounter : Component, ISupportInitialize
 	private String machineName;
 	private long rawValue;
 	private bool readOnly;
+
+	// The default file mapping size to use.
+	public static int DefaultFileMappingSize = 0x80000;
 
 	// Constructor.
 	public PerformanceCounter() {}
@@ -89,6 +92,11 @@ public class PerformanceCounter : Component, ISupportInitialize
 			}
 
 	// Counter properties.
+	[ReadOnly(true)]
+	[RecommendedAsConfigurable(true)]
+	[TypeConverter
+		("System.Diagnostics.Design.CategoryValueConverter, System.Design")]
+	[DefaultValue("")]
 	public String CategoryName
 			{
 				get
@@ -104,6 +112,9 @@ public class PerformanceCounter : Component, ISupportInitialize
 					categoryName = value;
 				}
 			}
+	[MonitoringDescription("PC_CounterHelp")]
+	[ReadOnly(true)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public String CounterHelp
 			{
 				get
@@ -116,6 +127,11 @@ public class PerformanceCounter : Component, ISupportInitialize
 					return counterHelp;
 				}
 			}
+	[TypeConverter
+		("System.Diagnostics.Design.CounterNameConverter, System.Design")]
+	[ReadOnly(true)]
+	[RecommendedAsConfigurable(true)]
+	[DefaultValue("")]
 	public String CounterName
 			{
 				get
@@ -131,6 +147,8 @@ public class PerformanceCounter : Component, ISupportInitialize
 					counterName = value;
 				}
 			}
+	[MonitoringDescription("PC_CounterType")]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public PerformanceCounterType CounterType
 			{
 				get
@@ -143,6 +161,11 @@ public class PerformanceCounter : Component, ISupportInitialize
 					return counterType;
 				}
 			}
+	[TypeConverter
+		("System.Diagnostics.Design.InstanceNameConverter, System.Design")]
+	[ReadOnly(true)]
+	[DefaultValue("")]
+	[RecommendedAsConfigurable(true)]
 	public String InstanceName
 			{
 				get
@@ -154,6 +177,9 @@ public class PerformanceCounter : Component, ISupportInitialize
 					instanceName = value;
 				}
 			}
+	[Browsable(false)]
+	[DefaultValue(".")]
+	[RecommendedAsConfigurable(true)]
 	public String MachineName
 			{
 				get
@@ -169,6 +195,9 @@ public class PerformanceCounter : Component, ISupportInitialize
 					machineName = value;
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
+	[MonitoringDescription("PC_RawValue")]
 	public long RawValue
 			{
 				get
@@ -183,6 +212,24 @@ public class PerformanceCounter : Component, ISupportInitialize
 				set
 				{
 					rawValue = value;
+				}
+			}
+	[DefaultValue(true)]
+	[Browsable(false)]
+	[MonitoringDescription("PC_ReadOnly")]
+	public bool ReadOnly
+			{
+				get
+				{
+					return readOnly;
+				}
+				set
+				{
+					if(readOnly != value)
+					{
+						readOnly = value;
+						Close();
+					}
 				}
 			}
 
@@ -203,7 +250,7 @@ public class PerformanceCounter : Component, ISupportInitialize
 			}
 
 	// Decrement the performance counter's raw value.
-	public void Decrement()
+	public long Decrement()
 			{
 				if(readOnly)
 				{
@@ -218,11 +265,12 @@ public class PerformanceCounter : Component, ISupportInitialize
 				lock(this)
 				{
 					--rawValue;
+					return rawValue;
 				}
 			}
 
 	// Increment the performance counter's raw value.
-	public void Increment()
+	public long Increment()
 			{
 				if(readOnly)
 				{
@@ -237,11 +285,12 @@ public class PerformanceCounter : Component, ISupportInitialize
 				lock(this)
 				{
 					++rawValue;
+					return rawValue;
 				}
 			}
 
 	// Increment the performance counter's raw value by a particular amount.
-	public void IncrementBy(long value)
+	public long IncrementBy(long value)
 			{
 				if(readOnly)
 				{
@@ -256,6 +305,7 @@ public class PerformanceCounter : Component, ISupportInitialize
 				lock(this)
 				{
 					rawValue += value;
+					return rawValue;
 				}
 			}
 
@@ -296,6 +346,12 @@ public class PerformanceCounter : Component, ISupportInitialize
 	protected override void Dispose(bool disposing)
 			{
 				Close();
+			}
+
+	// Close resources that are shared between performance counters.
+	public static void CloseSharedResources()
+			{
+				// Nothing to do in this implementation.
 			}
 
 }; // class PerformanceCounter

@@ -31,7 +31,7 @@ public class BooleanSwitch : Switch
 			: base(displayName, description) {}
 
 	// Get or set the switch state.
-	public bool BooleanSwitch
+	public bool Enabled
 			{
 				get
 				{

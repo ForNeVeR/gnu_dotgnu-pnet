@@ -65,7 +65,7 @@ public class EventLogEntryCollection : ICollection, IEnumerable
 			}
 
 	// Implement the IEnumerable interface.
-	IEnumerator IEnumerable.GetEnumerator()
+	public IEnumerator GetEnumerator()
 			{
 				return list.GetEnumerator();
 			}

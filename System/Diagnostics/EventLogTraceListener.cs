@@ -24,7 +24,7 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
-public class EventLogTraceListener : TraceListener
+public sealed class EventLogTraceListener : TraceListener
 {
 	// Internal state.
 	private EventLog eventLog;

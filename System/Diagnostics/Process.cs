@@ -38,6 +38,9 @@ using System.Security.Permissions;
 // We need unrestricted permissions to start and manage processes.
 [PermissionSet(SecurityAction.LinkDemand, Unrestricted=true)]
 [PermissionSet(SecurityAction.InheritanceDemand, Unrestricted=true)]
+[DefaultProperty("StartInfo")]
+[DefaultEvent("Exited")]
+[Designer("System.Diagnostics.Design.ProcessDesigner, System.Design")]
 public class Process : Component
 {
 	// Internal state.
@@ -102,6 +105,8 @@ public class Process : Component
 			}
 
 	// Process properties.
+	[MonitoringDescription("ProcessBasePriority")]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int BasePriority
 			{
 				get
@@ -111,6 +116,9 @@ public class Process : Component
 					return 8;
 				}
 			}
+	[DefaultValue(false)]
+	[Browsable(false)]
+	[MonitoringDescription("ProcessEnableRaisingEvents")]
 	public bool EnableRaisingEvents
 			{
 				get
@@ -122,6 +130,9 @@ public class Process : Component
 					enableRaisingEvents = value;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessExitCode")]
 	public int ExitCode
 			{
 				get
@@ -130,6 +141,9 @@ public class Process : Component
 					return exitCode;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessExitTime")]
 	public DateTime ExitTime
 			{
 				get
@@ -138,6 +152,9 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessHandle")]
 	public IntPtr Handle
 			{
 				get
@@ -146,6 +163,8 @@ public class Process : Component
 					return processHandle;
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessHandleCount")]
 	public int HandleCount
 			{
 				get
@@ -164,6 +183,9 @@ public class Process : Component
 					}
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessTerminated")]
 	public bool HasExited
 			{
 				get
@@ -172,6 +194,8 @@ public class Process : Component
 					return hasExited;
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessId")]
 	public int Id
 			{
 				get
@@ -180,6 +204,9 @@ public class Process : Component
 					return processID;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessMachineName")]
 	public String MachineName
 			{
 				get
@@ -188,6 +215,9 @@ public class Process : Component
 					return ".";		// Only local processes are supported.
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessMainModule")]
 	public ProcessModule MainModule
 			{
 				get
@@ -196,6 +226,8 @@ public class Process : Component
 					return new ProcessModule(argv[0], ProcessName);
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessMainWindowHandle")]
 	public IntPtr MainWindowHandle
 			{
 				get
@@ -204,6 +236,8 @@ public class Process : Component
 					return GetMainWindowHandle(processHandle);
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessMainWindowTitle")]
 	public String MainWindowTitle
 			{
 				get
@@ -219,6 +253,8 @@ public class Process : Component
 					}
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessMaxWorkingSet")]
 	public IntPtr MaxWorkingSet
 			{
 				get
@@ -232,6 +268,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessMinWorkingSet")]
 	public IntPtr MinWorkingSet
 			{
 				get
@@ -245,6 +283,9 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessModules")]
 	public ProcessModuleCollection Modules
 			{
 				get
@@ -253,6 +294,8 @@ public class Process : Component
 					return new ProcessModuleCollection(MainModule);
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessNonpagedSystemMemorySize")]
 	public int NonpagedSystemMemorySize
 			{
 				get
@@ -261,6 +304,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPagedMemorySize")]
 	public int PagedMemorySize
 			{
 				get
@@ -269,6 +314,18 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPagedSystemMemorySize")]
+	public int PagedSystemMemorySize
+			{
+				get
+				{
+					throw new PlatformNotSupportedException
+						(S._("Invalid_Platform"));
+				}
+			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPeakPagedMemorySize")]
 	public int PeakPagedMemorySize
 			{
 				get
@@ -277,6 +334,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPeakVirtualMemorySize")]
 	public int PeakVirtualMemorySize
 			{
 				get
@@ -285,6 +344,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPeakWorkingSet")]
 	public int PeakWorkingSet
 			{
 				get
@@ -293,6 +354,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPriorityBoostEnabled")]
 	public bool PriorityBoostEnabled
 			{
 				get
@@ -304,6 +367,8 @@ public class Process : Component
 					// Priority boosting is not supported.
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPriorityClass")]
 	public ProcessPriorityClass PriorityClass
 			{
 				get
@@ -316,6 +381,8 @@ public class Process : Component
 					// Priority changes are not supported.
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPrivateMemorySize")]
 	public int PrivateMemorySize
 			{
 				get
@@ -324,6 +391,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessPrivilegedProcessorTime")]
 	public TimeSpan PrivilegedProcessorTime
 			{
 				get
@@ -332,6 +401,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessProcessName")]
 	public String ProcessName
 			{
 				get
@@ -362,6 +433,8 @@ public class Process : Component
 					return name;
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessProcessorAffinity")]
 	public IntPtr ProcessorAffinity
 			{
 				get
@@ -374,6 +447,8 @@ public class Process : Component
 					// Processor affinity cannot be changed.
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessResponding")]
 	public bool Responding
 			{
 				get
@@ -386,6 +461,9 @@ public class Process : Component
 					return true;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessStandardError")]
 	public StreamReader StandardError
 			{
 				get
@@ -398,6 +476,9 @@ public class Process : Component
 					return stderr;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessStandardInput")]
 	public StreamWriter StandardInput
 			{
 				get
@@ -410,6 +491,9 @@ public class Process : Component
 					return stdin;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessStandardOutput")]
 	public StreamReader StandardOutput
 			{
 				get
@@ -422,6 +506,9 @@ public class Process : Component
 					return stdout;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	[MonitoringDescription("ProcessStartInfo")]
 	public ProcessStartInfo StartInfo
 			{
 				get
@@ -437,6 +524,8 @@ public class Process : Component
 					startInfo = value;
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessStartTime")]
 	public DateTime StartTime
 			{
 				get
@@ -445,6 +534,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[Browsable(false)]
+	[MonitoringDescription("ProcessSynchronizingObject")]
 	public ISynchronizeInvoke SynchronizingObject
 			{
 				get
@@ -456,6 +547,9 @@ public class Process : Component
 					syncObject = value;
 				}
 			}
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessThreads")]
 	public ProcessThreadCollection Threads
 			{
 				get
@@ -466,6 +560,8 @@ public class Process : Component
 						(new ProcessThread(this));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessTotalProcessorTime")]
 	public TimeSpan TotalProcessorTime
 			{
 				get
@@ -474,6 +570,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessUserProcessorTime")]
 	public TimeSpan UserProcessorTime
 			{
 				get
@@ -482,6 +580,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessVirtualMemorySize")]
 	public int VirtualMemorySize
 			{
 				get
@@ -490,6 +590,8 @@ public class Process : Component
 						(S._("Invalid_Platform"));
 				}
 			}
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[MonitoringDescription("ProcessWorkingSet")]
 	public int WorkingSet
 			{
 				get
@@ -710,7 +812,7 @@ public class Process : Component
 			}
 
 	// Leave debug mode.
-	public void LeaveDebugMode()
+	public static void LeaveDebugMode()
 			{
 				// Nothing to do here.
 			}
@@ -953,6 +1055,8 @@ public class Process : Component
 			}
 
 	// Event that is emitted when the process exits.
+	[MonitoringDescription("ProcessExited")]
+	[Category("Behavior")]
 	public event EventHandler Exited;
 
 	// Get the main window handle for a process.

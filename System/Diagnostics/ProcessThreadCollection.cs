@@ -49,9 +49,9 @@ public class ProcessThreadCollection : ReadOnlyCollectionBase
 			}
 
 	// Add an element to this collection.
-	public void Add(ProcessThread value)
+	public int Add(ProcessThread value)
 			{
-				InnerList.Add(value);
+				return InnerList.Add(value);
 			}
 
 	// Determine if an item exists in this collection.

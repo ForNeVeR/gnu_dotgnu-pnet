@@ -27,7 +27,7 @@ namespace System.Diagnostics
 using System.Security.Permissions;
 
 [Serializable]
-public class EventLogPermission : ResourcePermissionBase
+public sealed class EventLogPermission : ResourcePermissionBase
 {
 	// Constructors.
 	public EventLogPermission() : this(PermissionState.None) {}

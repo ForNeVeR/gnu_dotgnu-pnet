@@ -1,4 +1,9 @@
 
+2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,
+engine/cvm_except.c: implement exception handling opcodes in CVM.
+
 2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * samples/mscorlib.dll: new version with "UtcNow" fix.

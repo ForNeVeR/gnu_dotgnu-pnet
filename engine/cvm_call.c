@@ -81,6 +81,15 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 				frame = thread->stackBase + thread->frame; \
 				stackbottom = thread->stackBase; \
 				stackmax = thread->stackLimit; \
+				if(thread->thrownException != 0) \
+				{ \
+					/* An exception occurred, which we now must handle */ \
+					pcstart = thread->pcstart; \
+					pc = pcstart + thread->pc; \
+					stacktop[0].ptrValue = thread->thrownException; \
+					thread->thrownException = 0; \
+					goto throwException; \
+				} \
 			} while (0)
 
 #elif defined(IL_CVM_LOCALS)
@@ -103,11 +112,13 @@ case COP_CALL:
 	callFrame->pc = (ILUInt32)(pc - pcstart + sizeof(void *) + 5);
 	callFrame->frame = (ILUInt32)(frame - stackbottom);
 	callFrame->except = thread->except;
+	callFrame->exceptHeight = thread->exceptHeight;
 
 	/* Pass control to the new method */
 	pc += IL_READ_INT32(pc + 1);
 	pcstart = pc;
 	thread->except = IL_MAX_UINT32;
+	thread->exceptHeight = 0;
 	method = methodToCall;
 }
 break;
@@ -146,11 +157,13 @@ case COP_CALL_EXTERN:
 	callFrame->pc = thread->pc + 5 + sizeof(void *);
 	callFrame->frame = thread->frame;
 	callFrame->except = thread->except;
+	callFrame->exceptHeight = thread->exceptHeight;
 
 	/* Restore the state information and jump to the new method */
 	RESTORE_STATE_FROM_THREAD();
 	pc = pcstart;
 	thread->except = IL_MAX_UINT32;
+	thread->exceptHeight = 0;
 	method = methodToCall;
 }
 break;
@@ -178,6 +191,7 @@ case COP_CALL_CTOR:
 	callFrame->pc = thread->pc + 5 + sizeof(void *);
 	callFrame->frame = thread->frame;
 	callFrame->except = thread->except;
+	callFrame->exceptHeight = thread->exceptHeight;
 
 	/* Restore the state information and jump to the new method.
 	   Note: "pcstart" must point to the non-allocation start
@@ -186,6 +200,7 @@ case COP_CALL_CTOR:
 	RESTORE_STATE_FROM_THREAD();
 	pc = pcstart - ILCoderCtorOffset(thread->process->coder);
 	thread->except = IL_MAX_UINT32;
+	thread->exceptHeight = 0;
 	method = methodToCall;
 }
 break;
@@ -245,11 +260,13 @@ case COP_CALL_VIRTUAL:
 		callFrame->pc = thread->pc + 3;
 		callFrame->frame = thread->frame;
 		callFrame->except = thread->except;
+		callFrame->exceptHeight = thread->exceptHeight;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = pcstart;
 		thread->except = IL_MAX_UINT32;
+		thread->exceptHeight = 0;
 		method = methodToCall;
 	}
 	else
@@ -292,11 +309,13 @@ case COP_CALL_INTERFACE:
 		callFrame->pc = thread->pc + 3 + sizeof(void *);
 		callFrame->frame = thread->frame;
 		callFrame->except = thread->except;
+		callFrame->exceptHeight = thread->exceptHeight;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = pcstart;
 		thread->except = IL_MAX_UINT32;
+		thread->exceptHeight = 0;
 		method = methodToCall;
 	}
 	else
@@ -344,6 +363,7 @@ popFrame:
 	}
 	pc = pcstart + callFrame->pc;
 	thread->except = callFrame->except;
+	thread->exceptHeight = callFrame->exceptHeight;
 	frame = stackbottom + callFrame->frame;
 	method = methodToCall;
 
@@ -473,11 +493,13 @@ case COP_CALL_VIRTUAL:
 		callFrame->pc = thread->pc + 10;
 		callFrame->frame = thread->frame;
 		callFrame->except = thread->except;
+		callFrame->exceptHeight = thread->exceptHeight;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = pcstart;
 		thread->except = IL_MAX_UINT32;
+		thread->exceptHeight = 0;
 		method = methodToCall;
 	}
 	else
@@ -520,11 +542,13 @@ case COP_CALL_INTERFACE:
 		callFrame->pc = thread->pc + 10 + sizeof(void *);
 		callFrame->frame = thread->frame;
 		callFrame->except = thread->except;
+		callFrame->exceptHeight = thread->exceptHeight;
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
 		pc = pcstart;
 		thread->except = IL_MAX_UINT32;
+		thread->exceptHeight = 0;
 		method = methodToCall;
 	}
 	else

@@ -116,9 +116,9 @@ extern	"C" {
  */
 #define	OVERFLOW_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "OverflowException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, "System.OverflowException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -128,9 +128,9 @@ extern	"C" {
  */
 #define	ARITHMETIC_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "ArithmeticException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, "System.ArithmeticException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -140,9 +140,9 @@ extern	"C" {
  */
 #define	ZERO_DIV_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "DivideByZeroException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, "System.DivideByZeroException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -152,9 +152,9 @@ extern	"C" {
  */
 #define	NULL_POINTER_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "NullReferenceException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, "System.NullReferenceException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -164,9 +164,9 @@ extern	"C" {
  */
 #define	STACK_OVERFLOW_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "StackOverflowException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, "System.StackOverflowException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -176,9 +176,9 @@ extern	"C" {
  */
 #define	MISSING_METHOD_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "MissingMethodException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, "System.MissingMethodException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -188,9 +188,9 @@ extern	"C" {
  */
 #define	INVALID_CAST_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "InvalidCastException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, "System.InvalidCastException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -200,9 +200,10 @@ extern	"C" {
  */
 #define	ARRAY_INDEX_EXCEPTION()	\
 			do { \
+				COPY_STATE_TO_THREAD(); \
 				stacktop[0].ptrValue = \
-					SystemException(thread, "IndexOutOfRangeException", \
-									(ILInt32)(pc - pcstart)); \
+					SystemException(thread, \
+									"System.IndexOutOfRangeException"); \
 				stacktop += 1; \
 				goto throwException; \
 			} while (0)
@@ -330,15 +331,6 @@ static IL_INLINE void *ReadPointer(unsigned char *pc)
 		return (void *)(IL_READ_UINT64(pc));
 	}
 #endif
-}
-
-/*
- * Create a system exception object of a particular class.
- */
-static void *SystemException(ILExecThread *thread, const char *className,
-							 ILInt32 pcoffset)
-{
-	return 0;
 }
 
 /*

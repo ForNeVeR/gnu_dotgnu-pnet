@@ -272,6 +272,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	frame->pc = IL_MAX_UINT32;
 	frame->frame = thread->frame;
 	frame->except = thread->except;
+	frame->exceptHeight = thread->exceptHeight;
 
 	/* Call the method */
 	if(isCtor)
@@ -286,6 +287,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	}
 	thread->pc = 0;
 	thread->except = IL_MAX_UINT32;
+	thread->exceptHeight = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)
@@ -605,6 +607,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	frame->pc = IL_MAX_UINT32;
 	frame->frame = thread->frame;
 	frame->except = thread->except;
+	frame->exceptHeight = thread->exceptHeight;
 
 	/* Call the method */
 	if(isCtor)
@@ -619,6 +622,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	}
 	thread->pc = 0;
 	thread->except = IL_MAX_UINT32;
+	thread->exceptHeight = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)

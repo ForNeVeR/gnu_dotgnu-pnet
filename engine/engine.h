@@ -117,10 +117,11 @@ struct _tagILExecProcess
  */
 typedef struct _tagILCallFrame
 {
-	ILMethod       *method;		/* Method being executed in the frame */
-	ILUInt32		pc;			/* PC to return to in the parent method */
-	ILUInt32	   	frame;		/* Base of the local variable frame */
-	ILUInt32		except;		/* PC to jump to on an exception */
+	ILMethod       *method;			/* Method being executed in the frame */
+	ILUInt32		pc;				/* PC to return to in the parent method */
+	ILUInt32	   	frame;			/* Base of the local variable frame */
+	ILUInt32		except;			/* PC to jump to on an exception */
+	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
 
 } ILCallFrame;
 
@@ -141,12 +142,13 @@ struct _tagILExecThread
 	CVMWord		   *stackLimit;
 
 	/* Current thread state */
-	unsigned char  *pcstart;	/* Start of the CVM code for the method */
-	ILUInt32		pc;			/* Offset to the current position */
-	ILUInt32		except;		/* Offset to the exception handler table */
-	ILUInt32		frame;		/* Base of the local variable frame */
-	CVMWord        *stackTop;	/* Current stack top */
-	ILMethod       *method;		/* Current method being executed */
+	unsigned char  *pcstart;		/* Start of the CVM code for the method */
+	ILUInt32		pc;				/* Offset to the current position */
+	ILUInt32		except;			/* Offset to the exception handler table */
+	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
+	ILUInt32		frame;			/* Base of the local variable frame */
+	CVMWord        *stackTop;		/* Current stack top */
+	ILMethod       *method;			/* Current method being executed */
 
 	/* Last exception that was thrown */
 	ILObject       *thrownException;

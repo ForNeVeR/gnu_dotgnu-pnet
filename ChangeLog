@@ -3,6 +3,8 @@
 
 	* SharpZipLib/*: update SharpZipLib to version 0.8.1.
 
+	* configure.in, NEWS: update version and news for the 0.6.10 release.
+
 2004-10-28  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TextBox.cs: Fixed scrollbars being displayed

@@ -1,4 +1,119 @@
 
+0.6.10 (30 October 2004)
+
+	System.Windows.Forms & System.Drawing:
+
+	* Event handling fixes in TreeView (Deryk Robosson).
+	* Signature fixes in MenuItem (Gopal V).
+	* Some support for the alpha component in colors (Richard Baumann).
+	* Web hex color parsing mode in ColorConverter (Gopal V).
+	* Stack overflow in ContainsFocus (Rhys Weatherley).
+	* Implement Bitmap.LockBits (Rhys Weatherley, Ovidu Sabou).
+	* Handling of alpha values in BmpReformatter (Gopal V).
+	* Fix visibility of TabPage constructors (Gopal V).
+	* TextBox's initial ForeColor should be WindowText (Gopal V).
+	* BeginInvoke fixes (Derek Robosson).
+	* IsTopLevel check when switching between MDI and non-MDI (Gopal V).
+	* Adam7 interlace decoding in the png reader (Gopal V).
+	* Mnemonic rendering (Gopal V, Derek Robosson).
+	* TextBox.set_Lines wasn't working (Carl-Adam Brengesjo).
+	* Docking layout (Derek Robosson).
+	* Enable OnControlAdded when parent set (Derek Robosson).
+	* StartLocation on forms (Gopal V).
+	* ListBox.ItemHeight property (Richard Baumann).
+	* Correct result for TextBox.Lines (Gopal V).
+	* Do not calculate window borders if border style is none (Gopal V).
+	* Various missing attributes (Gopal V).
+	* Correct the defaults for StringFormat (Richard Baumann).
+	* Improved text layout algorithm (Richard Baumann).
+	* Control.OnPaintBackground (Richard Baumann).
+	* Defer anchoring information during layout suspension (Richard Baumann).
+	* Fix backwards z-ordering of controls (Richard Baumann).
+	* Correct display of TextBox scroll bars (Heiko Weiss).
+
+	Xsharp:
+
+	* Adjust point sizes to better match Win32 equivalents (Richard Baumann).
+	* Use the X display's actual DPI in calculations (Richard Baumann).
+	* Vertical alignment problems when drawing xft fonts (Richard Baumann).
+	* Don't clear during invalidate flush if widget is destroyed (Rhys W).
+	* Work around broken xft pattern matching rules (Richard Baumann).
+	* Add the "skip pager" hint when appropriate (Deryk Robosson).
+
+	System.Xml:
+
+	* Path navigator implementation for XmlDocument (Gopal V).
+	* XPath implementation (Gopal V).
+	* Navigation issues in Xml (Gopal V).
+
+	Serialization and Remoting:
+
+	* Make sure that the logical call context is non-null (Gopal V).
+	* Improve bulk array serialization for primitive types (Andre Seidelt).
+	* Proper serialization for object arrays (Andre Seidelt).
+
+	Basic:
+
+	JScript:
+
+	* Enumerators for ArrayObject (Carl-Adam Brengesjo).
+	* Associative array support (Carl-Adam Brengesjo).
+	* Hex literal and bitwise operator parsing (Gopal V).
+	* Generate objects in Convert.ToObject() correctly (Gopal V).
+	* Use the right token identifiers in JAssignOp (Gopal V).
+	* Logical-And and Try/Catch expression parsing (Gopal V).
+	* String.charAt, charCodeAt, length (Gopal V).
+	* Various sample programs for JScript (Gopal V).
+	* MathObject, LenientMathObject, NumberObject (Carl-Adam Brengesjo).
+	* GlobalObject.GetObject (Carl-Adam Brengesjo).
+	* Parsing of integer values to long, not double (Carl-Adam Brengesjo).
+	* Signature-compatibility issues (Carl-Adam Brengesjo).
+
+	Networking:
+
+	* Configuration settings for System.Web (Gopal V).
+	* Use different lock objects for read and write in NetworkStream (Gopal V).
+
+	Threading:
+
+	* Don't run timer tests if threading is disabled (Russell Stuart).
+	* Changes to match new internalcall engine interface (Thong Nguyen).
+
+	Culture Handling:
+
+	.NET 2.0 Compatibility:
+
+	* Add ACL-related classes to System.Security.AccessControl (Rhys W).
+	* New WinForms classes for 2.0, particularly VisualStyles (Klaus Treichel).
+	* System.Security.Cryptography.X509Certificates (Klaus Treichel).
+	* System.Boolean.TryParse (Klaus Treichel).
+
+	Other:
+
+	* Fixed to UnmanagedMarshal (Marcus Urban).
+	* Implement CustomAttributeBuilder (Marcus Urban).
+	* Use lowercase keys in StringDictionary (Marcus Urban).
+	* DateTime formatting problems (David Logan).
+	* Fixes to path handling in System.IO (Thong Nguyen).
+	* Recursive loop in Type.GetTypeCode for enums (Carl-Adam Brengesjo).
+	* Fixes in System.Diagostics.Trace (Carl-Adam Brengesjo).
+	* Clean up debian packaging rules (Russell Stuart).
+	* Fix enumerator reset for SortedList (Carl-Adam Brengesjo).
+	* Hashtable.Remove fixes (Gopal V).
+	* System.CodeDom fixes (Gopal V).
+	* Fake some more of the AppDomain functionality (Gopal V).
+	* Overflow handling in NumberParser (Klaus Treichel).
+	* Fix System.Convert.FromBase64String (Gopal V).
+	* Fake external module creations in S.R.Emit (Gopal V).
+	* Fake version information for assemblies in S.R.Emit (Gopal V).
+	* Fixes for out of tree builds (Miroslaw Dobrzanski-Neumann).
+	* Fixes to the stream classes in System.IO (Klaus Treichel).
+	* Profile and ml-pnet fixes (Klaus Treichel).
+	* Missing functionality in System.IO.Ports (Gopal V, Adam Gibson).
+	* Throw correct exception for Decimal division by zero (Klaus Treichel).
+	* ECMA profile fixes (Gopal V).
+	* Update SharpZipLib to version 0.8.1 (Rhys Weatherley).
+
 0.6.8 (8 August 2004)
 
 	System.Windows.Forms & System.Drawing:

@@ -88,6 +88,7 @@ public class IsolatedStorageFileStream : FileStream
 									 FileAccess access, FileShare share,
 									 int bufferSize,
 									 IsolatedStorageFile sf)
+			: base(path)
 			{
 				// Validate the parameters.
 				if(path == null)

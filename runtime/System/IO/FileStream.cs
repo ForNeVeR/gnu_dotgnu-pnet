@@ -40,6 +40,7 @@ public class FileStream : Stream
 	private FileAccess access;
 	private bool ownsHandle;
 	private bool isAsync;
+	private String path;
 
 	// Buffer information.
 	private int bufferSize;
@@ -151,6 +152,7 @@ public class FileStream : Stream
 				this.access = access;
 				this.ownsHandle = true;
 				this.isAsync = useAsync;
+				this.path = path;
 				this.bufferSize = bufferSize;
 				this.buffer = new byte [bufferSize];
 				this.bufferPosn = 0;
@@ -227,7 +229,10 @@ public class FileStream : Stream
 			}
 
 	// Internal constructor used by IsolatedStorageFileStream.
-	internal FileStream() {}
+	internal FileStream(String path)
+			{
+				this.path = path;
+			}
 #endif
 
 	// Destructor.
@@ -839,6 +844,26 @@ public class FileStream : Stream
 					return isAsync;
 				}
 			}
+
+#if !ECMA_COMPAT
+
+	// Get the name of the file underlying this stream object.
+	public String Name
+			{
+				get
+				{
+					if(path != null)
+					{
+						return path;
+					}
+					else
+					{
+						return _("IO_UnknownFile");
+					}
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class FileStream
 

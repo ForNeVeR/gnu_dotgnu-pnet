@@ -51,3 +51,4 @@ IO_RegistryKeyClosed=Registry key has already been closed
 IO_RegistryReadOnly=Registry key is read-only
 IO_RegistryKeyNotExist=Registry key does not exist
 IO_RegistryHasSubKeys=Registry key still has sub keys
+IO_UnknownFile=Unknown filename

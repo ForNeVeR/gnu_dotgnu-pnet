@@ -358,6 +358,15 @@ static void ReportDuplicates(ILNode *node, ILMember *newMember,
 }
 
 /*
+ * Report a warning for an unnecessary "new" keyword on a declaration.
+ */
+static void ReportUnnecessaryNew(ILNode *node)
+{
+	CSWarningOnLine(yygetfilename(node), yygetlinenum(node),
+			        "declaration includes unnecessary `new' keyword");
+}
+
+/*
  * Create a field definition.
  */
 static void CreateField(ILGenInfo *info, ILClass *classInfo,
@@ -418,6 +427,10 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		{
 			ReportDuplicates((ILNode *)decl, (ILMember *)fieldInfo,
 							 member, classInfo, field->modifiers);
+		}
+		else if((field->modifiers & CS_SPECIALATTR_NEW) != 0)
+		{
+			ReportUnnecessaryNew((ILNode *)decl);
 		}
 
 		/* Add the field to the current scope */
@@ -702,6 +715,10 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		ReportDuplicates((ILNode *)property, (ILMember *)propertyInfo,
 						 member, classInfo, property->modifiers);
+	}
+	else if((property->modifiers & CS_SPECIALATTR_NEW) != 0)
+	{
+		ReportUnnecessaryNew((ILNode *)property);
 	}
 
 	/* Add the property to the current scope */

@@ -304,10 +304,10 @@ internal class GrabWindow : OverrideWindow
 					foreach(InputOutputWidget child in parent)
 					{
 						if (child.IsMapped &&
-							parent.X >= child.X &&
-							parent.X < (child.X + child.Width) &&
-							parent.Y >= child.y &&
-							parent.Y < (child.Y + child.Height))
+							x - parent.X >= child.X &&
+							x - parent.X < (child.X + child.Width) &&
+							y - parent.Y >= child.y &&
+							y - parent.Y < (child.Y + child.Height))
 							return child;
 					}
 				}
@@ -334,7 +334,6 @@ internal class GrabWindow : OverrideWindow
 				Xlib.KeySym keysym;
 				PopupWindow popup;
 				InputOutputWidget child = null;
-
 				switch(xevent.type)
 				{
 					case EventType.ButtonPress:
@@ -371,7 +370,11 @@ internal class GrabWindow : OverrideWindow
 							popup.DispatchEvent(ref xevent);
 							// Re-dispatch to the child window if necessary.
 							if (child != null)
+							{
+								xevent.xbutton.x__ -= child.x;
+								xevent.xbutton.y__ -= child.y;
 								child.DispatchEvent(ref xevent);
+							}
 						}
 					}
 					break;
@@ -409,7 +412,11 @@ internal class GrabWindow : OverrideWindow
 							popup.DispatchEvent(ref xevent);
 							// Re-dispatch to the child window if necessary.
 							if (child != null)
+							{
+								xevent.xbutton.x__ -= child.x;
+								xevent.xbutton.y__ -= child.y;
 								child.DispatchEvent(ref xevent);
+							}
 						}
 					}
 					break;
@@ -442,7 +449,11 @@ internal class GrabWindow : OverrideWindow
 							popup.DispatchEvent(ref xevent);
 							// Re-dispatch to the child window if necessary.
 							if (child != null)
+							{
+								xevent.xbutton.x__ -= child.x;
+								xevent.xbutton.y__ -= child.y;
 								child.DispatchEvent(ref xevent);
+							}
 						}
 					}
 					break;

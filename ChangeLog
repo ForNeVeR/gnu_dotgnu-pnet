@@ -1,3 +1,7 @@
+2003-09-08  Neil Cawse  <neilcawse@geotab.com>
+
+	* Xsharp/GrabWindow.cs: wrong version checked in for "popup windows now
+	dispatch mouse and keyboard events to child controls of the windows."
 
 2003-09-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 

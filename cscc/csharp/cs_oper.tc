@@ -101,7 +101,8 @@ static int IsEnumZero(CSSemValue *value)
  */
 static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 					        ILNode **parent, const ILOperator *table,
-					        const char *name, const char *errorName)
+					        const char *name, const char *errorName,
+							int canCoerce)
 {
 	const ILOperator *oper;
 	ILMethod *method;
@@ -121,15 +122,16 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	}
 
 	/* try constant coercion before operator lookup */
-	if(ILCanCoerceNodeKind(info,node->expr1,CSSemGetType(value1),
+	if(canCoerce && ILCanCoerceNodeKind(info,node->expr1,CSSemGetType(value1),
 			CSSemGetType(value2),IL_CONVERT_CONSTANT))
 	{
 		ILCoerceKind(info,node->expr1,&(node->expr1),CSSemGetType(value1),
 			CSSemGetType(value2),IL_CONVERT_CONSTANT);
 		CSSemSetRValue(value1,CSSemGetType(value2));
 	}
-	else if(ILCanCoerceNodeKind(info,node->expr2,CSSemGetType(value2),
-			CSSemGetType(value1),IL_CONVERT_CONSTANT))
+	else if(canCoerce && 
+			ILCanCoerceNodeKind(info,node->expr2,CSSemGetType(value2),
+				CSSemGetType(value1),IL_CONVERT_CONSTANT))
 	{
 		ILCoerceKind(info,node->expr2,&(node->expr2),CSSemGetType(value2),
 			CSSemGetType(value1),IL_CONVERT_CONSTANT);
@@ -175,6 +177,11 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		return value1;
 	}
 	
+	if(!canCoerce)
+	{
+		goto error;
+	}
+
 	/* As a last resort try coercion */
 	if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
 					   CSSemGetType(value2)))
@@ -597,7 +604,7 @@ error:
 ILNode_SemAnalysis(ILNode_Mul)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Mul, "op_Multiply", "*");
+					 parent, ILOp_Mul, "op_Multiply", "*",1);
 }
 
 /*
@@ -606,7 +613,7 @@ ILNode_SemAnalysis(ILNode_Mul)
 ILNode_SemAnalysis(ILNode_Div)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Div, "op_Division", "/");
+					 parent, ILOp_Div, "op_Division", "/",1);
 }
 
 /*
@@ -615,7 +622,7 @@ ILNode_SemAnalysis(ILNode_Div)
 ILNode_SemAnalysis(ILNode_Rem)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Rem, "op_Modulus", "%");
+					 parent, ILOp_Rem, "op_Modulus", "%",1);
 }
 
 /*
@@ -642,7 +649,7 @@ ILNode_SemAnalysis(ILNode_UnaryPlus)
 ILNode_SemAnalysis(ILNode_And)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_And, "op_BitwiseAnd", "&");
+					 parent, ILOp_And, "op_BitwiseAnd", "&",1);
 }
 
 /*
@@ -651,7 +658,7 @@ ILNode_SemAnalysis(ILNode_And)
 ILNode_SemAnalysis(ILNode_Xor)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Xor, "op_ExclusiveOr", "^");
+					 parent, ILOp_Xor, "op_ExclusiveOr", "^",1);
 }
 
 /*
@@ -660,7 +667,7 @@ ILNode_SemAnalysis(ILNode_Xor)
 ILNode_SemAnalysis(ILNode_Or)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Or, "op_BitwiseOr", "|");
+					 parent, ILOp_Or, "op_BitwiseOr", "|",1);
 }
 
 /*
@@ -678,7 +685,7 @@ ILNode_SemAnalysis(ILNode_Not)
 ILNode_SemAnalysis(ILNode_Shl)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Shl, "op_LeftShift", "<<");
+					 parent, ILOp_Shl, "op_LeftShift", "<<",0);
 }
 
 /*
@@ -687,7 +694,7 @@ ILNode_SemAnalysis(ILNode_Shl)
 ILNode_SemAnalysis(ILNode_Shr)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Shr, "op_RightShift", ">>");
+					 parent, ILOp_Shr, "op_RightShift", ">>",0);
 }
 
 /*
@@ -698,7 +705,7 @@ ILNode_SemAnalysis(ILNode_UShr)
 	/* C# doesn't actually have an unsigned right shift, but we
 	   still need to include this case for completeness sake */
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Shr, "op_RightShift", ">>");
+					 parent, ILOp_Shr, "op_RightShift", ">>",0);
 }
 
 %{
@@ -1766,7 +1773,7 @@ ILNode_SemAnalysis(ILNode_Ne)
 ILNode_SemAnalysis(ILNode_Lt)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Lt, "op_LessThan", "<");
+					 parent, ILOp_Lt, "op_LessThan", "<",1);
 }
 
 /*
@@ -1775,7 +1782,7 @@ ILNode_SemAnalysis(ILNode_Lt)
 ILNode_SemAnalysis(ILNode_Le)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Le, "op_LessThanOrEqual", "<=");
+					 parent, ILOp_Le, "op_LessThanOrEqual", "<=",1);
 }
 
 /*
@@ -1784,7 +1791,7 @@ ILNode_SemAnalysis(ILNode_Le)
 ILNode_SemAnalysis(ILNode_Gt)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Gt, "op_GreaterThan", ">");
+					 parent, ILOp_Gt, "op_GreaterThan", ">",1);
 }
 
 /*
@@ -1793,7 +1800,7 @@ ILNode_SemAnalysis(ILNode_Gt)
 ILNode_SemAnalysis(ILNode_Ge)
 {
 	return BinarySem(info, (ILNode_BinaryExpression *)node,
-					 parent, ILOp_Ge, "op_GreaterThanOrEqual", ">=");
+					 parent, ILOp_Ge, "op_GreaterThanOrEqual", ">=",1);
 }
 
 /*

@@ -198,8 +198,134 @@ static ILMethod *FindVirtualAncestor(ILClass *scope, ILClass *info,
  * Compute the method table for a class's interface.
  */
 static int ComputeInterfaceTable(ILClass *info, ILImplements *implements,
-								 ILClass *parent)
+								 ILClass *interface)
 {
+	ILClass *parent;
+	ILImplements *impl;
+	ILUInt32 size;
+	ILUInt16 *table;
+	ILUInt32 slot;
+	ILMethod *method;
+	ILMethod *method2;
+	ILOverride *over;
+
+	/* Create a new interface method table for the class */
+	size = ((ILClassPrivate *)(interface->userData))->vtableSize;
+	table = (ILUInt16 *)ILMemStackAllocItem
+					(&(info->programItem.image->memStack),
+				     size * sizeof(ILUInt16));
+	if(!table)
+	{
+		return 0;
+	}
+
+	/* Determine if the parent class implements the interface */
+	parent = info;
+	impl = 0;
+	while(impl != 0 && (parent = ILClassGetParent(parent)) != 0)
+	{
+		impl = parent->implements;
+		while(impl != 0)
+		{
+			if(ILClassResolve(impl->interface) == interface)
+			{
+				break;
+			}
+			impl = impl->nextInterface;
+		}
+	}
+
+	/* Copy the parent's interface method table, or mark all slots abstract */
+	if(impl && impl->userData)
+	{
+		ILMemCpy(table, impl->userData, size * sizeof(ILUInt16));
+	}
+	else
+	{
+		ILMemSet(table, 0xFF, size * sizeof(ILUInt16));
+	}
+
+	/* Fill the interface table slots */
+	for(slot = 0; slot < size; ++slot)
+	{
+		/* Get the method for this slot */
+		method = ((ILClassPrivate *)(interface->userData))->vtable[slot];
+		if(!method)
+		{
+			continue;
+		}
+
+		/* Search for a method in the current class with a matching name */
+		method2 = 0;
+		while((method2 = (ILMethod *)ILClassNextMemberByKind
+						(info, (ILMember *)method2,
+					 	 IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if((method2->member.attributes &
+					(IL_META_METHODDEF_MEMBER_ACCESS_MASK |
+					 IL_META_METHODDEF_VIRTUAL |
+					 IL_META_METHODDEF_NEW_SLOT)) ==
+							(IL_META_METHODDEF_PUBLIC |
+					 		 IL_META_METHODDEF_VIRTUAL |
+							 IL_META_METHODDEF_NEW_SLOT))
+			{
+				if(strcmp(method2->member.name, method->member.name) != 0 ||
+				   !ILTypeIdentical(method2->member.signature,
+				   					method->member.signature))
+				{
+					continue;
+				}
+				table[slot] = (ILUInt16)(method2->index);
+				break;
+			}
+		}
+
+		/* If the slot is still empty, then search the class
+		   hierarchy for a virtual method match */
+		if(table[slot] == (ILUInt16)0xFFFF)
+		{
+			parent = info;
+			while(parent != 0)
+			{
+				method2 = 0;
+				while((method2 = (ILMethod *)ILClassNextMemberByKind
+								(parent, (ILMember *)method2,
+							 	 IL_META_MEMBERKIND_METHOD)) != 0)
+				{
+					if((method2->member.attributes &
+							(IL_META_METHODDEF_MEMBER_ACCESS_MASK |
+							 IL_META_METHODDEF_VIRTUAL)) ==
+									(IL_META_METHODDEF_PUBLIC |
+							 		 IL_META_METHODDEF_VIRTUAL))
+					{
+						if(strcmp(method2->member.name,
+								  method->member.name) != 0 ||
+						   !ILTypeIdentical(method2->member.signature,
+						   					method->member.signature))
+						{
+							continue;
+						}
+						table[slot] = (ILUInt16)(method2->index);
+						break;
+					}
+				}
+				if(table[slot] != (ILUInt16)0xFFFF)
+				{
+					break;
+				}
+				parent = ILClassGetParent(parent);
+			}
+		}
+
+		/* Look for an override for the interface method */
+		over = ILOverrideFromMethod(method);
+		if(over)
+		{
+			table[slot] = (ILOverrideGetBody(over))->index;
+		}
+	}
+
+	/* Done */
 	return 1;
 }
 

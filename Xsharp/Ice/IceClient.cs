@@ -287,7 +287,7 @@ public abstract unsafe class IceClient
 						throw new XInvalidOperationException("I/O Error or server gone away?");
 					}
 				}
-				while(readyRet == XBool.False)
+				while(readyRet == XBool.False);
 			}
 
 	protected void BeginMessage(int minor)

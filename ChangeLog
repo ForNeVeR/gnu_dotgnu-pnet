@@ -1,3 +1,9 @@
+
+2004-07-17  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Collections/ArrayList.cs
+	Xsharp/Ice/IceClient.cs : Fix missing ';' for do-while statements.
+	
 2004-07-17  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:

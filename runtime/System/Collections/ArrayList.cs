@@ -259,7 +259,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					{
 						store[count++] = enumerator.Current;
 					}
-					while(enumerator.MoveNext())
+					while(enumerator.MoveNext());
 				}
 			}
 
@@ -293,7 +293,7 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					{
 						store[index++] = enumerator.Current;
 					}
-					while(enumerator.MoveNext())
+					while(enumerator.MoveNext());
 				}
 				count += cCount;
 			}

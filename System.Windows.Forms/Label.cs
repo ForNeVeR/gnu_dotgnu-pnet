@@ -430,6 +430,8 @@ public class Label : Control
 			{
 				Graphics graphics = e.Graphics;
 				Rectangle rect = ClientRectangle;
+				rect = new Rectangle(rect.Left, rect.Top, rect.Width-1, rect.Height-1);
+				int textOffset = 1;
 
 				// Draw the border on the label.
 				switch(BorderStyle)
@@ -448,13 +450,13 @@ public class Label : Control
 
 					case BorderStyle.Fixed3D:
 					{
-						ControlPaint.DrawBorder
-							(graphics, rect, BackColor,
-							 ButtonBorderStyle.Inset);
-						rect.X += 1;
-						rect.Width -= 2;
-						rect.Y += 1;
-						rect.Height -= 2;
+						ControlPaint.DrawBorder3D
+							(graphics, rect, Border3DStyle.Sunken);
+						rect.X += 2;
+						rect.Width -= 4;
+						rect.Y += 2;
+						rect.Height -= 4;
+						textOffset++;
 					}
 					break;
 				}
@@ -462,9 +464,10 @@ public class Label : Control
 				// Fill the background if we aren't transparent.
 				if(!RenderTransparent)
 				{
-					Brush brush = CreateBackgroundBrush();
-					graphics.FillRectangle(brush, rect);
-					brush.Dispose();
+					using( Brush brush = CreateBackgroundBrush())
+					{
+						graphics.FillRectangle(brush, rect);
+					}
 				}
 
 				// Draw the text within the label.
@@ -477,6 +480,7 @@ public class Label : Control
 					if(Enabled)
 					{
 						Brush brush = new SolidBrush(ForeColor);
+						layout.Y -= textOffset;
 						graphics.DrawString(text, font, brush, layout, format);
 						brush.Dispose();
 					}

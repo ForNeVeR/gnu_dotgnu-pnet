@@ -21,6 +21,10 @@
 	to be slightly more opaque, and then update every usage of the API
 	to be consistent with the modifications.
 
+	* codegen/cg_decls.tc, ildasm/ildasm_class.c, image/member.c,
+	include/il_program.h: add the functions "ILFieldGetType" and
+	"ILFieldGetTypeWithPrefixes".
+
 2001-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_gather.c (CreateMethod, CreateProperty, CreateMembers):

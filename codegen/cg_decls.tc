@@ -187,7 +187,7 @@ static void DumpField(ILGenInfo *info, ILField *field)
 	fputs(".field ", info->asmOutput);
 	ILDumpFlags(info->asmOutput, ILField_Attrs(field),
 			    ILFieldDefinitionFlags, 0);
-	ILDumpType(info->asmOutput, info->image, ILField_Type(field),
+	ILDumpType(info->asmOutput, info->image, ILFieldGetTypeWithPrefixes(field),
 			   IL_DUMP_QUOTE_NAMES);
 	fputc(' ', info->asmOutput);
 	ILDumpIdentifier(info->asmOutput, ILField_Name(field), 0,

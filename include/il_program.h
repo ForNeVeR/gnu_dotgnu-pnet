@@ -1224,6 +1224,16 @@ ILField *ILFieldCreate(ILClass *info, ILToken token,
 int ILFieldNewToken(ILField *field);
 
 /*
+ * Get the field's type, without modifier prefixes.
+ */
+ILType *ILFieldGetType(ILField *field);
+
+/*
+ * Get the field's type, including modifier prefixes.
+ */
+ILType *ILFieldGetTypeWithPrefixes(ILField *field);
+
+/*
  * Helper macros for querying information about a field.
  */
 #define	ILField_FromToken(image,token)	\
@@ -1231,7 +1241,7 @@ int ILFieldNewToken(ILField *field);
 #define	ILField_Token(field)		(ILProgramItem_Token((field)))
 #define	ILField_Owner(field)		(ILMember_Owner((field)))
 #define	ILField_Name(field)			(ILMember_Name((field)))
-#define	ILField_Type(field)			(ILMember_Signature((field)))
+#define	ILField_Type(field)			(ILFieldGetType((field)))
 #define	ILField_Attrs(field)		(ILMember_Attrs((field)))
 #define	ILField_IsCompilerControlled(field)	\
 	((ILMemberGetAttrs((ILMember *)(field)) & \

@@ -810,6 +810,16 @@ int ILFieldNewToken(ILField *field)
 						    0, IL_META_TOKEN_FIELD_DEF);
 }
 
+ILType *ILFieldGetType(ILField *field)
+{
+	return ILTypeStripPrefixes(ILMember_Signature(field));
+}
+
+ILType *ILFieldGetTypeWithPrefixes(ILField *field)
+{
+	return ILMember_Signature(field);
+}
+
 ILEvent *ILEventCreate(ILClass *info, ILToken token,
 					   const char *name, ILUInt32 attributes,
 					   ILClass *type)

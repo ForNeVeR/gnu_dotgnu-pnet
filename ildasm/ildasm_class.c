@@ -152,7 +152,7 @@ static void Dump_FieldDef(ILImage *image, FILE *outstream, int flags,
 			}
 		}
 	}
-	ILDumpType(outstream, image, ILField_Type(field), flags);
+	ILDumpType(outstream, image, ILFieldGetTypeWithPrefixes(field), flags);
 	putc(' ', outstream);
 	ILDumpIdentifier(outstream, ILField_Name(field), 0, flags);
 	if((ILField_Attrs(field) & IL_META_FIELDDEF_HAS_FIELD_RVA) != 0)

@@ -1,4 +1,8 @@
 
+2003-08-14  Mario D.Santana  <mds@medleysoft.com>
+
+	* make_patch.sh: add the helper patch script to pnetC.
+
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.5.10" release.

@@ -7,6 +7,10 @@
 	* runtime/Platform/DirMethods.cs: remove "DirMethods.Copy",
 	which is no longer used.
 
+	* System/CodeDom/Compiler/CodeGenerator.cs,
+	System/CodeDom/Compiler/Validator.cs: implement identifier validation
+	for the System.CodeDom routines.
+
 2003-07-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Double.cs: Make ECMA compatible by adding some 

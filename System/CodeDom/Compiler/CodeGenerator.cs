@@ -1299,10 +1299,9 @@ public abstract class CodeGenerator : ICodeGenerator
 			}
 
 	// Validate all identifiers in a CodeDom tree.
-	[TODO]
 	public static void ValidateIdentifiers(CodeObject e)
 			{
-				// TODO
+				Validator.Validate(e);
 			}
 
 	// Create an escaped identifier if "value" is a language keyword.

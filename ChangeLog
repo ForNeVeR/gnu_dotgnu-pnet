@@ -17,6 +17,9 @@
 	* cscc/c/c_declspec.c: fix bugs in the type specifier logic
 	for the basic numeric types.
 
+	* image/meta_build.c (Load_MemberRef): store the correct
+	signature in a member reference.
+
 2002-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_grammar.y,

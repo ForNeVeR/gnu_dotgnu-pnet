@@ -801,6 +801,11 @@ unsigned long ILScopeDataGetIndex(ILScopeData *data)
 	return (unsigned long)(data->data);
 }
 
+ILScope *ILScopeGetParent(ILScope *scope)
+{
+	return scope->parent;
+}
+
 #ifdef	__cplusplus
 };
 #endif

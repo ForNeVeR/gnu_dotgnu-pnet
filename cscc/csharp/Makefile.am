@@ -18,6 +18,7 @@ TREECC_SRCOUT = cs_nodes.c cs_semantics.c
 TREECC_OUTPUT = $(TREECC_SRCOUT) cs_defs.h
 
 libILCSharp_a_SOURCES  = $(TREECC_SRCOUT) \
+						 cs_attrs.c \
 				         cs_gather.c \
 				         cs_grammar.y \
 				         cs_lookup.c \

@@ -196,6 +196,16 @@ int CSGetGroupMemberForm(void *group, unsigned long n);
  */
 void CSAddStaticCtor(ILGenInfo *info, ILNode *stmt);
 
+/*
+ * Initialize the attributes on a class.
+ */
+void CSClassInitAttrs(ILGenInfo *info, ILClass *classInfo);
+
+/*
+ * Initialize the attributes on a class member.
+ */
+void CSMemberInitAttrs(ILGenInfo *info, ILMember *member);
+
 #ifdef	__cplusplus
 };
 #endif

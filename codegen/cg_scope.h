@@ -170,6 +170,11 @@ ILMember *ILScopeDataGetMember(ILScopeData *data);
  */
 unsigned long ILScopeDataGetIndex(ILScopeData *data);
 
+/*
+ * Get the parent of a scope.
+ */
+ILScope *ILScopeGetParent(ILScope *scope);
+
 #ifdef	__cplusplus
 };
 #endif

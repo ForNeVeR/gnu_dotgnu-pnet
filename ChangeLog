@@ -1,4 +1,11 @@
 
+2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat
+"Float64" as "float", instead of "double"; add "char" conversions to
+the "ConvertIndex" table; set the value type for the builtin "decimal"
+properly.
+
 2001-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_stmt.tc: semantic analysis for return statements.

@@ -58,7 +58,7 @@ static ILBuiltinType const ILSystemSingle =
 static ILBuiltinType const ILSystemDecimal =
 	{"System", "Decimal",
 	 ILType_Invalid	/* Decimal is represented as a struct */,
-	 0,
+	 ILMachineType_Decimal,
 	 0, 0};
 
 static ILBuiltinType const ILSystemInt32 =
@@ -923,6 +923,7 @@ static struct
 		{&ILSystemUInt32,  ILConvert_UInt32},
 		{&ILSystemInt64,   ILConvert_Int64},
 		{&ILSystemUInt64,  ILConvert_UInt64},
+		{&ILSystemChar,    ILConvert_Char},
 		{&ILSystemSingle,  ILConvert_Single},
 		{&ILSystemDouble,  ILConvert_Double},
 		{&ILSystemDecimal, ILConvert_Decimal},
@@ -977,7 +978,7 @@ static const ILBuiltinType *GetBuiltinType(ILType *type)
 	}
 	else if(type == ILType_Float64)
 	{
-		return &ILSystemSingle;
+		return &ILSystemDouble;
 	}
 	else if(type == ILType_Char)
 	{

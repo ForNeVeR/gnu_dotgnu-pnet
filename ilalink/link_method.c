@@ -24,6 +24,32 @@
 extern	"C" {
 #endif
 
+/*
+ * Determine if a type is a simple array of strings.
+ */
+static int IsStringArray(ILType *type)
+{
+	const char *namespace;
+	if(type == 0 || !ILType_IsComplex(type) ||
+	   type->kind != IL_TYPE_COMPLEX_ARRAY ||
+	   type->un.array.size != 0 ||
+	   type->un.array.lowBound != 0)
+	{
+		return 0;
+	}
+	type = type->un.array.elemType;
+	if(!ILType_IsClass(type))
+	{
+		return 0;
+	}
+	if(strcmp(ILClass_Name(ILType_ToClass(type)), "String") != 0)
+	{
+		return 0;
+	}
+	namespace = ILClass_Namespace(ILType_ToClass(type));
+	return (namespace != 0 && !strcmp(namespace, "System"));
+}
+
 int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 						   ILClass *newClass)
 {
@@ -175,6 +201,35 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		{
 			_ILLinkerOutOfMemory(linker);
 			return 0;
+		}
+	}
+
+	/* Set up the entry point information */
+	if(ILImageGetEntryPoint(ILProgramItem_Image(method))
+			== ILMethod_Token(method))
+	{
+		/* This method was marked as an entry point by the compiler */
+	setEntryPoint:
+		if(linker->entryPoint)
+		{
+			fputs("program has multiple entry points\n", stderr);
+		}
+		ILWriterSetEntryPoint(linker->writer, newMethod);
+		linker->entryPoint = newMethod;
+	}
+	else if(!strcmp(name, "Main") && ILMethod_IsStatic(method))
+	{
+		/* This may be an entry point method: check the signature */
+		if(signature->un.method.retType == ILType_Int32 ||
+		   signature->un.method.retType == ILType_UInt32 ||
+		   signature->un.method.retType == ILType_Void)
+		{
+			if(signature->num == 0 ||
+			   (signature->num == 1 &&
+			    IsStringArray(signature->un.method.param[0])))
+			{
+				goto setEntryPoint;
+			}
 		}
 	}
 

@@ -86,6 +86,7 @@ struct _tagILLinker
 	int				outOfMemory;	/* Set to non-zero when out of memory */
 	int				error;			/* Some other error occurred */
 	unsigned long	resourceRVA;	/* RVA of resource section start */
+	ILMethod       *entryPoint;		/* Current entry point that is set */
 
 };
 

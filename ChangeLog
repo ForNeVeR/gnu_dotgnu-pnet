@@ -48,6 +48,9 @@ new function.
 ilalink/link_res.c, ilalink/linker.h, ilalink/Makefile.am:
 link resources against the final output image.
 
+* ilalink/linker.h, ilalink/link_create.c, ilalink/link_method.c:
+detect method entry points within the linker.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

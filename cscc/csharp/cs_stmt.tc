@@ -1475,7 +1475,6 @@ ILNode_SemAnalysis(ILNode_Using)
 	CSSemValue value;
 	ILType *type;
 	ILType *disposable;
-	unsigned tempVar;
 	
 	if(yyisa(node->resource,ILNode_Expression))
 	{

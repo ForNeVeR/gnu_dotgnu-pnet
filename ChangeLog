@@ -15,6 +15,9 @@
 	for batch compiles for CodeCompiler and load the assembly from output
 	path in CompilerResults.
 
+	* System.Drawing/ColorConverter.cs: Add Web hex color parsing code 
+	to ColorConverter.
+
 2004-09-14  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Collections/Hashtable.cs: Fix a few cases where 

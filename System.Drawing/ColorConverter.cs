@@ -177,6 +177,14 @@ public class ColorConverter : TypeConverter
 					return color;
 				}
 
+				if(str[0] == '#' && str.Length == 7)
+				{
+					// Web color 
+					return Color.FromArgb(
+							Int32.Parse(str.Substring(1), 
+											NumberStyles.HexNumber));
+				}
+
 				// Parse "[A,] R, G, B" components from the string.
 				int[] numbers = new int [4];
 				int posn = 0;

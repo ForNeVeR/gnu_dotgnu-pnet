@@ -278,19 +278,27 @@ static void RemoveMutexFromWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 	/* Get the initial (and correct right) bucket */
 
 	#if SIZEOF_INT <= 4
-		i = (((int)mutex) >> 2) % wakeup->ownedMutexesCapacity;
+		j = i = (((int)mutex) >> 2) % wakeup->ownedMutexesCapacity;
 	#else
-		i = (((int)mutex) >> 3) % wakeup->ownedMutexesCapacity;
+		j = i = (((int)mutex) >> 3) % wakeup->ownedMutexesCapacity;
 	#endif
 
 	/* Scan the hashtable and clear the entry for the mutex (if found) */
 
-	for (j = 0; j < wakeup->ownedMutexesCount; i++, j++)
+	for (;;)
 	{
 		if (ownedMutexes[i] == mutex)
 		{
 			ownedMutexes[i] = 0;
 
+			break;
+		}
+		
+		i++;
+		i %= wakeup->ownedMutexesCapacity;
+		
+		if (i == j)
+		{
 			break;
 		}
 	}

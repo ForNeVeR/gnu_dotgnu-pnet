@@ -1,5 +1,11 @@
 
 2002-10-20  Gopal.V <gopalv82@symonds.net>
+	
+	* csharp/stmt/switch4.cs,csharp/stmt/switch4.il,csharp/stmt/switch4.jl,
+	csharp/stmt/switch5.cs,csharp/stmt/switch5.err,csharp/stmt/switch5.jerr,
+	csharp/stmt/Makefile.am: tests for goto case and goto default in switch.
+
+2002-10-20  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/enum5.cs,csharp/class/enum5.il,csharp/class/enum5.jl,
 	Makefile.am: add tests for << and >> operators on enum members inside

@@ -251,6 +251,11 @@ int ILCmdLineNextOption(int *argc, char ***argv, int *state,
 void ILCmdLineHelp(const ILCmdLineOption *options);
 
 /*
+ * Expand response files that are referenced by a command-line.
+ */
+void ILCmdLineExpand(int *argc, char ***argv);
+
+/*
  * Spawn a child process and wait for it to exit.
  * Returns the exit status, or -1 on error.
  */

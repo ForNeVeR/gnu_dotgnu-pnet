@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include "il_system.h"
+#include "il_utils.h"
 #include "cs_options.h"
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
@@ -478,6 +479,9 @@ void CSParseCommandLine(int argc, char *argv[], int mode, char *versname)
 	/* Save the program's name away for later error reporting */
 	progname = argv[0];
 	version_name = versname;
+
+	/* Expand response file references in the command-line */
+	ILCmdLineExpand(&argc, &argv);
 
 	/* If the only option is "-v", then print the version and exit.
 	   Otherwise, "-v" is interpreted as enabling "verbose mode" */

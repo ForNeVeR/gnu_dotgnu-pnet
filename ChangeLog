@@ -49,6 +49,9 @@ a MemberRef points at a method.
 * engine/cvm.h: temporarily disable CVMWord structure alignment under cygwin
 because it gives the wrong value and causes problems with "libffi".
 
+* include/il_utils.h, support/cmdline.c, cscc/cs_options.c: implement and
+use the "ILCmdLineExpand" function to handle "@"-specified response files.
+
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c: load library images into the C# compiler to assist

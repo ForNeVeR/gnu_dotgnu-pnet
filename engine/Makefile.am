@@ -13,6 +13,7 @@ COMMON_ENGINE_SOURCES = call.c \
 						layout.c \
 						lib_array.c \
 						lib_decimal.c \
+						lib_diag.c \
 						lib_helpers.c \
 						lib_math.c \
 						lib_object.c \

@@ -44,6 +44,8 @@ extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
 extern ILMethodTableEntry const _ILPlatformPtrSizesMethods;
 extern ILMethodTableEntry const _ILPlatformTimeMethods;
 extern ILMethodTableEntry const _ILRuntimeHelpersMethods;
+extern ILMethodTableEntry const _ILDiagnosticsDebuggerMethods;
+extern ILMethodTableEntry const _ILDiagnosticsStackFrameMethods;
 
 /*
  * Table that contains all classes that have "internalcall" methods.
@@ -58,6 +60,7 @@ typedef struct
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
 	{"Array",		"Array",		&_ILSystemArrayMethods},
+	{"Debugger",	"System.Diagnostics", &_ILDiagnosticsDebuggerMethods},
 	{"Decimal",		"System",		&_ILSystemDecimalMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
 	{"Interlocked",	"System.Threading", &_ILSystemThreadingInterlockedMethods},
@@ -69,6 +72,7 @@ static InternalClassInfo const internalClassTable[] = {
 			&_ILRuntimeHelpersMethods},
 	{"RuntimeType",	"System",		&_ILSystemRuntimeTypeMethods},
 	{"Single",		"System",		&_ILSystemSingleMethods},
+	{"StackFrame",	"System.Diagnostics", &_ILDiagnosticsStackFrameMethods},
 	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},
 	{"String",		"System",		&_ILSystemStringMethods},
 	{"SysCharInfo",	"Platform",		&_ILPlatformSysCharInfoMethods},

@@ -51,6 +51,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->coder = 0;
 	process->coderGeneration = 0;
 	process->stringClass = 0;
+	process->exceptionClass = 0;
 	process->runtimeTypeClass = 0;
 	process->outOfMemoryObject = 0;
 	ILGetCurrTime(&(process->startTime));
@@ -130,6 +131,16 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 								        "OutOfMemoryException", "System");
 		if(classInfo)
 		{
+			/* We call the "OutOfMemoryException(int dummy)" constructor
+			   in "pnetlib", which sets up the out of memory exception
+			   object with the necessary localised string information,
+			   but with no stack trace associated with it */
+#if 0
+			process->outOfMemoryObject =
+				ILExecThreadNew(process->mainThread,
+								"System.OutOfMemoryException",
+								"(Ti)V", (ILVaInt)0);
+#endif
 			process->outOfMemoryObject =
 				_ILEngineAllocObject(process->mainThread, classInfo);
 		}
@@ -140,6 +151,13 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 	{
 		process->stringClass = ILClassLookupGlobal(ILImageToContext(image),
 							        			   "String", "System");
+	}
+
+	/* Look for "System.Exception" */
+	if(!(process->exceptionClass))
+	{
+		process->exceptionClass = ILClassLookupGlobal(ILImageToContext(image),
+							        			      "Exception", "System");
 	}
 
 	/* Look for "System.RuntimeType" */

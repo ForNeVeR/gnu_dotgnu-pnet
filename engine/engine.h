@@ -79,6 +79,7 @@ struct _tagILExecProcess
 
 	/* Useful builtin classes */
 	ILClass        *stringClass;
+	ILClass        *exceptionClass;
 	ILClass        *runtimeTypeClass;
 
 	/* The object to throw when the system runs out of memory */
@@ -312,6 +313,18 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc);
  * Get the element type of an array.
  */
 ILType *_ILGetElementType(ILType *array);
+
+/*
+ * Get a call frame which is a specific number of frames up the stack,
+ * not counting the active frame.  Returns NULL if "n" is invalid.
+ */
+ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n);
+
+/*
+ * Get the next higher call frame after "frame".  Returns NULL
+ * if "frame" is the top-most frame on the stack.
+ */
+ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame);
 
 #ifdef	__cplusplus
 };

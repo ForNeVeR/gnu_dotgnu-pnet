@@ -115,29 +115,63 @@ ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)
 	return thread->process;
 }
 
-ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num)
+ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n)
 {
 	ILCallFrame *frame;
 	ILUInt32 posn;
-	if(!num)
+	if(n < 0)
 	{
-		return thread->method;
+		return 0;
 	}
 	posn = thread->numFrames;
 	while(posn > 0)
 	{
+		--posn;
 		frame = &(thread->frameStack[posn]);
 		if(frame->except == IL_MAX_UINT32)
 		{
-			--num;
-			if(!num)
+			if(!n)
 			{
-				return frame->method;
+				return frame;
 			}
+			--n;
 		}
-		--posn;
 	}
 	return 0;
+}
+
+ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
+{
+	ILUInt32 posn;
+	posn = frame - thread->frameStack;
+	while(posn > 0)
+	{
+		--posn;
+		frame = &(thread->frameStack[posn]);
+		if(frame->except == IL_MAX_UINT32)
+		{
+			return frame;
+		}
+	}
+	return 0;
+}
+
+ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num)
+{
+	ILCallFrame *frame;
+	if(!num)
+	{
+		return thread->method;
+	}
+	frame = _ILGetCallFrame(thread, (ILInt32)(num - 1));
+	if(frame)
+	{
+		return frame->method;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 #ifdef	__cplusplus

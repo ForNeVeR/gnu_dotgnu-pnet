@@ -140,6 +140,276 @@ int ILIsWhitespaceUnicode(unsigned ch)
 #endif
 }
 
+/*
+ * Include the Unicode case conversion value table from "unicase.c".
+ * The table is automatically generated from "UnicodeData.txt"
+ * using the "mkcase" program.
+ */
+#include "unicase.c"
+
+unsigned ILUnicodeCharToUpper(unsigned ch)
+{
+#ifdef SMALL_UNICODE_TABLE
+	if(ch < 0x0100)
+	{
+		return unicodeToUpper[ch];
+	}
+	else
+	{
+		return ch;
+	}
+#else
+	if(ch <= UNICASE_RANGE1_UPPER)
+	{
+		return unicodeToUpper[ch];
+	}
+	else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
+	{
+		return unicodeToUpper
+			[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+	}
+	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+	{
+		return unicodeToUpper
+			[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+	}
+	else
+	{
+		return ch;
+	}
+#endif
+}
+
+unsigned ILUnicodeCharToLower(unsigned ch)
+{
+#ifdef SMALL_UNICODE_TABLE
+	if(ch < 0x0100)
+	{
+		return unicodeToLower[ch];
+	}
+	else
+	{
+		return ch;
+	}
+#else
+	if(ch <= UNICASE_RANGE1_UPPER)
+	{
+		return unicodeToLower[ch];
+	}
+	else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
+	{
+		return unicodeToLower
+			[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+	}
+	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+	{
+		return unicodeToLower
+			[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+	}
+	else
+	{
+		return ch;
+	}
+#endif
+}
+
+unsigned ILUnicodeCharToTitle(unsigned ch)
+{
+#ifdef SMALL_UNICODE_TABLE
+	if(ch < 0x0100)
+	{
+		return unicodeToTitle[ch];
+	}
+	else
+	{
+		return ch;
+	}
+#else
+	if(ch <= UNICASE_RANGE1_UPPER)
+	{
+		return unicodeToTitle[ch];
+	}
+	else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
+	{
+		return unicodeToTitle
+			[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+	}
+	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+	{
+		return unicodeToTitle
+			[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+	}
+	else
+	{
+		return ch;
+	}
+#endif
+}
+
+void ILUnicodeStringToUpper(unsigned short *dest, const unsigned short *src,
+					 		unsigned long len)
+{
+	unsigned ch;
+	while(len > 0)
+	{
+		ch = *src++;
+#ifdef SMALL_UNICODE_TABLE
+		if(ch < 0x0100)
+		{
+			ch = unicodeToUpper[ch];
+		}
+#else
+		if(ch <= UNICASE_RANGE1_UPPER)
+		{
+			ch = unicodeToUpper[ch];
+		}
+		else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
+		{
+			ch = unicodeToUpper
+				[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+		}
+		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+		{
+			ch = unicodeToUpper
+				[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+		}
+#endif
+		*dest++ = (ILUInt16)ch;
+		--len;
+	}
+}
+
+void ILUnicodeStringToLower(unsigned short *dest, const unsigned short *src,
+					 		unsigned long len)
+{
+	unsigned ch;
+	while(len > 0)
+	{
+		ch = *src++;
+#ifdef SMALL_UNICODE_TABLE
+		if(ch < 0x0100)
+		{
+			ch = unicodeToLower[ch];
+		}
+#else
+		if(ch <= UNICASE_RANGE1_UPPER)
+		{
+			ch = unicodeToLower[ch];
+		}
+		else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
+		{
+			ch = unicodeToLower
+				[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+		}
+		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+		{
+			ch = unicodeToLower
+				[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+		}
+#endif
+		*dest++ = (ILUInt16)ch;
+		--len;
+	}
+}
+
+void ILUnicodeStringToTitle(unsigned short *dest, const unsigned short *src,
+					 		unsigned long len)
+{
+	unsigned ch;
+	while(len > 0)
+	{
+		ch = *src++;
+#ifdef SMALL_UNICODE_TABLE
+		if(ch < 0x0100)
+		{
+			ch = unicodeToTitle[ch];
+		}
+#else
+		if(ch <= UNICASE_RANGE1_UPPER)
+		{
+			ch = unicodeToTitle[ch];
+		}
+		else if(ch >= UNICASE_RANGE2_LOWER && ch <= UNICASE_RANGE2_UPPER)
+		{
+			ch = unicodeToTitle
+				[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+		}
+		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+		{
+			ch = unicodeToTitle
+				[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+		}
+#endif
+		*dest++ = (ILUInt16)ch;
+		--len;
+	}
+}
+
+int ILUnicodeStringCompare(const unsigned short *str1,
+						   const unsigned short *str2,
+						   unsigned long len)
+{
+	unsigned ch1;
+	unsigned ch2;
+	while(len > 0)
+	{
+		ch1 = *str1++;
+#ifdef SMALL_UNICODE_TABLE
+		if(ch1 < 0x0100)
+		{
+			ch1 = unicodeToLower[ch1];
+		}
+#else
+		if(ch1 <= UNICASE_RANGE1_UPPER)
+		{
+			ch1 = unicodeToLower[ch1];
+		}
+		else if(ch1 >= UNICASE_RANGE2_LOWER && ch1 <= UNICASE_RANGE2_UPPER)
+		{
+			ch1 = unicodeToLower
+				[ch1 - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+		}
+		else if(ch1 >= UNICASE_RANGE3_LOWER && ch1 <= UNICASE_RANGE3_LOWER)
+		{
+			ch1 = unicodeToLower
+				[ch1 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+		}
+#endif
+		ch2 = *str2++;
+#ifdef SMALL_UNICODE_TABLE
+		if(ch2 < 0x0100)
+		{
+			ch2 = unicodeToLower[ch2];
+		}
+#else
+		if(ch2 <= UNICASE_RANGE1_UPPER)
+		{
+			ch2 = unicodeToLower[ch2];
+		}
+		else if(ch2 >= UNICASE_RANGE2_LOWER && ch2 <= UNICASE_RANGE2_UPPER)
+		{
+			ch2 = unicodeToLower
+				[ch2 - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
+		}
+		else if(ch2 >= UNICASE_RANGE3_LOWER && ch2 <= UNICASE_RANGE3_LOWER)
+		{
+			ch2 = unicodeToLower
+				[ch2 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
+		}
+#endif
+		if(ch1 < ch2)
+		{
+			return -1;
+		}
+		else if(ch1 > ch2)
+		{
+			return 1;
+		}
+		--len;
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

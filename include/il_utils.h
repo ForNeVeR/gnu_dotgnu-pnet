@@ -305,6 +305,30 @@ double ILGetUnicodeValue(unsigned ch);
 int ILIsWhitespaceUnicode(unsigned ch);
 
 /*
+ * Convert a unicode character into upper, lower, or title case.
+ */
+unsigned ILUnicodeCharToUpper(unsigned ch);
+unsigned ILUnicodeCharToLower(unsigned ch);
+unsigned ILUnicodeCharToTitle(unsigned ch);
+
+/*
+ * Convert a unicode string into upper, lower, or title case.
+ */
+void ILUnicodeStringToUpper(unsigned short *dest, const unsigned short *src,
+					 		unsigned long len);
+void ILUnicodeStringToLower(unsigned short *dest, const unsigned short *src,
+					 		unsigned long len);
+void ILUnicodeStringToTitle(unsigned short *dest, const unsigned short *src,
+					 		unsigned long len);
+
+/*
+ * Compare two unicode strings, while ignoring case.
+ */
+int ILUnicodeStringCompare(const unsigned short *str1,
+						   const unsigned short *str2,
+						   unsigned long len);
+
+/*
  * Option descriptors for command-line parsing support.
  */
 typedef struct

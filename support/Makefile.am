@@ -1,5 +1,5 @@
 lib_LIBRARIES = libILSupport.a
-noinst_PROGRAMS = mkcategory mknumber
+noinst_PROGRAMS = mkcategory mknumber mkcase
 
 libILSupport_a_SOURCES = aes.c \
 						 allocate.c \
@@ -64,6 +64,8 @@ libILSupport_a_SOURCES = aes.c \
 mkcategory_SOURCES = mkcategory.c
 
 mknumber_SOURCES = mknumber.c
+
+mkcase_SOURCES = mkcase.c
 
 AM_CFLAGS = -I$(top_srcdir)/libgc/include -I$(top_srcdir)/include \
 			-DCSCC_LIB_PREFIX=\"$(libdir)\" \

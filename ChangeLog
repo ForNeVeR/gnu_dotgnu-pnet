@@ -1,4 +1,10 @@
 
+2003-08-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_utils.h, support/.cvsignore, support/Makefile.am,
+	support/mkcase.c, support/unicase.c, support/unicode.c:
+	add support routines for performing Unicode case conversion.
+
 2003-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, image/link.c, image/pecoff_loader.c,

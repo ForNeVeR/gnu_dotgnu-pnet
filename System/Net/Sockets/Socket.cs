@@ -36,7 +36,8 @@ public class Socket : IDisposable
 	private ProtocolType protocol;
 	private bool blocking;
 	private bool connected;
-	private IPEndPoint remoteEP;
+	private EndPoint localEP;
+	private EndPoint remoteEP;
 
 	// Invalid socket handle.
 	private static readonly IntPtr InvalidHandle =
@@ -51,8 +52,8 @@ public class Socket : IDisposable
 				{
 					addressFamily = AddressFamily.InterNetwork;
 				}
-				else if(addressFamily != AddressFamily.InterNetwork &&
-				        addressFamily != AddressFamily.InterNetworkV6)
+				else if(!SocketMethods.AddressFamilySupported
+							((int)addressFamily))
 				{
 					throw new SocketException(Errno.EINVAL);
 				}
@@ -90,11 +91,15 @@ public class Socket : IDisposable
 				this.protocol = protocolType;
 				this.blocking = true;
 				this.connected = false;
+				this.localEP = null;
 				this.remoteEP = null;
 
 				// Attempt to create the socket.  This may bail out for
-				// "addressFamily == InterNetworkV6" if ipv6 is not supported
-				// by the underlying operating system.
+				// some address families, even if "AddressFamilySupported"
+				// returned true.  This can happen, for example, if the user
+				// space definitions are available for IrDA, but the kernel
+				// drivers are not.  "AddressFamilySupported" may not be
+				// able to detect the kernel capabilities on all platforms.
 				if(!SocketMethods.Create((int)addressFamily, (int)socketType,
 										 (int)protocolType, out handle))
 				{
@@ -103,7 +108,7 @@ public class Socket : IDisposable
 			}
 	private Socket(AddressFamily addressFamily, SocketType socketType,
 				   ProtocolType protocolType, IntPtr handle, bool blocking,
-				   IPEndPoint remoteEP)
+				   EndPoint remoteEP)
 			{
 				// Set up for a new socket that has just been accepted.
 				this.handle = handle;
@@ -112,6 +117,7 @@ public class Socket : IDisposable
 				this.protocol = protocolType;
 				this.blocking = blocking;
 				this.connected = true;
+				this.localEP = null;
 				this.remoteEP = remoteEP;
 			}
 
@@ -135,7 +141,7 @@ public class Socket : IDisposable
 				int port;
 				IntPtr currentHandle;
 				IntPtr newHandle;
-				IPEndPoint remoteEP;
+				EndPoint remoteEP;
 
 				// Get the socket handle, synchronized against "Close".
 				lock(this)
@@ -149,22 +155,25 @@ public class Socket : IDisposable
 					currentHandle = handle;
 				}
 
+				// Create the sockaddr buffer from the local end point.
+				byte[] addrReturn = LocalEndPoint.Serialize().Array;
+				Array.Clear(addrReturn, 0, addrReturn.Length);
+
 				// Accept a new connection on the socket.  We do this outside
 				// of the lock's protection so that multiple threads can
 				// wait for incoming connections on the same socket.
-				// TODO: ipv6 support
 				if(!SocketMethods.Accept
-					  (currentHandle, out address, out port, out newHandle))
+					  (currentHandle, addrReturn, out newHandle))
 				{
 					throw new SocketException(SocketMethods.GetErrno());
 				}
 
 				// Create the end-point object for the remote side.
-				remoteEP = new IPEndPoint(address, port);
+				remoteEP = LocalEndPoint.Create(new SocketAddress(addrReturn));
 
 				// Create and return a new socket object.
 				return new Socket(family, socketType, protocol,
-								  handle, blocking, remoteEP);
+								  newHandle, blocking, remoteEP);
 			}
 
 	// Asynchronous operation types.
@@ -404,12 +413,11 @@ public class Socket : IDisposable
 									 Object state)
 			{
 				// Validate the parameters.
-				// TODO: ipv6 support
 				if(remoteEP == null)
 				{
 					throw new ArgumentNullException("remoteEP");
 				}
-				else if(!(remoteEP is IPEndPoint))
+				else if(remoteEP.AddressFamily != family)
 				{
 					throw new SocketException(Errno.EINVAL);
 				}
@@ -489,14 +497,13 @@ public class Socket : IDisposable
 			{
 				// Validate the parameters.
 				ValidateBuffer(buffer, offset, size);
-				// TODO: ipv6 support
 				if(remoteEP == null)
 				{
 					throw new ArgumentNullException("remoteEP");
 				}
-				if(!(remoteEP is IPEndPoint))
+				else if(remoteEP.AddressFamily != family)
 				{
-					remoteEP = new IPEndPoint(0, 0);
+					throw new SocketException(Errno.EINVAL);
 				}
 
 				// Create the result object.
@@ -576,12 +583,11 @@ public class Socket : IDisposable
 			{
 				// Validate the parameters.
 				ValidateBuffer(buffer, offset, size);
-				// TODO: ipv6 support
 				if(remoteEP == null)
 				{
 					throw new ArgumentNullException("remoteEP");
 				}
-				else if(!(remoteEP is IPEndPoint))
+				else if(remoteEP.AddressFamily != family)
 				{
 					throw new SocketException(Errno.EINVAL);
 				}
@@ -618,19 +624,18 @@ public class Socket : IDisposable
 	// Bind this socket to a specific end-point.
 	public void Bind(EndPoint localEP)
 			{
-				IPEndPoint endPoint;
-
 				// Validate the parameter.
-				// TODO: ipv6 support
 				if(localEP == null)
 				{
 					throw new ArgumentNullException("localEP");
 				}
-				else if(!(localEP is IPEndPoint))
+				else if(localEP.AddressFamily != family)
 				{
 					throw new SocketException(Errno.EINVAL);
 				}
-				endPoint = (IPEndPoint)localEP;
+
+				// Convert the end point into a sockaddr buffer.
+				byte[] addr = localEP.Serialize().Array;
 
 				// Lock down the socket object while we do the bind.
 				lock(this)
@@ -642,14 +647,14 @@ public class Socket : IDisposable
 							(S._("Exception_Disposed"));
 					}
 
-					// Bind an address to the socket.
-					// TODO: ipv6 support
-					if(!SocketMethods.Bind
-						  (handle, (int)family,
-						   endPoint.Address.Address, endPoint.Port))
+					// Bind the address to the socket.
+					if(!SocketMethods.Bind(handle, addr))
 					{
 						throw new SocketException(SocketMethods.GetErrno());
 					}
+
+					// Record the local end point for later.
+					this.localEP = localEP;
 				}
 			}
 
@@ -663,19 +668,18 @@ public class Socket : IDisposable
 	// Connect to a remote end-point.
 	public void Connect(EndPoint remoteEP)
 			{
-				IPEndPoint endPoint;
-
 				// Validate the parameter.
-				// TODO: ipv6 support
 				if(remoteEP == null)
 				{
 					throw new ArgumentNullException("remoteEP");
 				}
-				else if(!(remoteEP is IPEndPoint))
+				else if(remoteEP.AddressFamily != family)
 				{
 					throw new SocketException(Errno.EINVAL);
 				}
-				endPoint = (IPEndPoint)remoteEP;
+
+				// Convert the end point into a sockaddr buffer.
+				byte[] addr = remoteEP.Serialize().Array;
 
 				// Lock down the socket object while we do the connect.
 				lock(this)
@@ -688,16 +692,12 @@ public class Socket : IDisposable
 					}
 
 					// Connect to the foreign location.
-					// TODO: ipv6 support
-					if(!SocketMethods.Connect
-						  (handle, (int)family,
-						   endPoint.Address.Address, endPoint.Port))
+					if(!SocketMethods.Connect(handle, addr))
 					{
 						throw new SocketException(SocketMethods.GetErrno());
 					}
 					connected = true;
-					this.remoteEP = new IPEndPoint
-						(endPoint.Address.Address, endPoint.Port);
+					this.remoteEP = remoteEP;
 				}
 			}
 
@@ -835,7 +835,8 @@ public class Socket : IDisposable
 					   optionName == SocketOptionName.DropMembership)
 					{
 						// Get the contents of the multicast membership set.
-						long group, mcint;
+						byte[] group;
+						byte[] mcint;
 						lock(this)
 						{
 							if(handle == InvalidHandle)
@@ -843,15 +844,18 @@ public class Socket : IDisposable
 								throw new ObjectDisposedException
 									(S._("Exception_Disposed"));
 							}
+							group = new byte [32];
+							mcint = new byte [32];
 							if(!SocketMethods.GetMulticastOption
-									(handle, (int)optionName,
-									 out group, out mcint))
+									(handle, (int)family, (int)optionName,
+									 group, mcint))
 							{
 								throw new SocketException
 									(SocketMethods.GetErrno());
 							}
 							return new MulticastOption
-								(new IPAddress(group), new IPAddress(mcint));
+								((new SocketAddress(group)).IPAddress,
+								 (new SocketAddress(mcint)).IPAddress);
 						}
 					}
 				}
@@ -868,7 +872,32 @@ public class Socket : IDisposable
 								  SocketOptionName optionName,
 								  int optionLength)
 			{
-				// This version is not portable - do not use.
+				// Check for the IrDA device discovery option.
+				if(optionLevel == (SocketOptionLevel)255 &&
+				   optionName == (SocketOptionName)16)
+				{
+					lock(this)
+					{
+						if(handle == InvalidHandle)
+						{
+							throw new ObjectDisposedException
+								(S._("Exception_Disposed"));
+						}
+						else if(family != AddressFamily.Irda)
+						{
+							throw new SocketException(Errno.EINVAL);
+						}
+						byte[] data = new byte [optionLength];
+						if(!SocketMethods.DiscoverIrDADevices(handle, data))
+						{
+							throw new SocketException
+								(SocketMethods.GetErrno());
+						}
+						return data;
+					}
+				}
+
+				// Everything else is non-portable - do not use.
 				throw new SecurityException(S._("Arg_SocketOption"));
 			}
 
@@ -1016,8 +1045,7 @@ public class Socket : IDisposable
 					       SocketFlags socketFlags, ref EndPoint remoteEP)
 			{
 				int result;
-				long address;
-				int port;
+				byte[] addrReturn;
 
 				// Validate the arguments.
 				ValidateBuffer(buffer, offset, size);
@@ -1025,6 +1053,14 @@ public class Socket : IDisposable
 				{
 					throw new ArgumentNullException("remoteEP");
 				}
+				else if(remoteEP.AddressFamily != family)
+				{
+					throw new SocketException(Errno.EINVAL);
+				}
+
+				// Create a sockaddr buffer to write the address into.
+				addrReturn = remoteEP.Serialize().Array;
+				Array.Clear(addrReturn, 0, addrReturn.Length);
 
 				// Perform the receive operation.
 				lock(this)
@@ -1034,29 +1070,17 @@ public class Socket : IDisposable
 						throw new ObjectDisposedException
 							(S._("Exception_Disposed"));
 					}
-					// TODO: ipv6 support
 					result = SocketMethods.ReceiveFrom
-						(handle, buffer, offset, size, (int)socketFlags,
-						 out address, out port);
+						(handle, buffer, offset, size,
+						 (int)socketFlags, addrReturn);
 					if(result < 0)
 					{
 						throw new SocketException(SocketMethods.GetErrno());
 					}
 					else
 					{
-						if(socketType == SocketType.Dgram)
-						{
-							if(!(remoteEP is IPEndPoint))
-							{
-								remoteEP = new IPEndPoint(address, port);
-							}
-							else
-							{
-								((IPEndPoint)remoteEP).Address =
-									new IPAddress(address);
-								((IPEndPoint)remoteEP).Port = port;
-							}
-						}
+						remoteEP = remoteEP.Create
+							(new SocketAddress(addrReturn));
 						return result;
 					}
 				}
@@ -1343,20 +1367,21 @@ public class Socket : IDisposable
 					  SocketFlags socketFlags, EndPoint remoteEP)
 			{
 				int result;
-				IPEndPoint endPoint;
+				byte[] addr;
 
 				// Validate the arguments.
 				ValidateBuffer(buffer, offset, size);
-				// TODO: ipv6 support
 				if(remoteEP == null)
 				{
 					throw new ArgumentNullException("remoteEP");
 				}
-				else if(!(remoteEP is IPEndPoint))
+				else if(remoteEP.AddressFamily != family)
 				{
 					throw new SocketException(Errno.EINVAL);
 				}
-				endPoint = (IPEndPoint)remoteEP;
+
+				// Convert the end point into a sockaddr buffer.
+				addr = remoteEP.Serialize().Array;
 
 				// Perform the send operation.
 				lock(this)
@@ -1366,10 +1391,8 @@ public class Socket : IDisposable
 						throw new ObjectDisposedException
 							(S._("Exception_Disposed"));
 					}
-					// TODO: ipv6 support
 					result = SocketMethods.SendTo
-						(handle, buffer, offset, size, (int)socketFlags,
-						 endPoint.Address.Address, endPoint.Port);
+						(handle, buffer, offset, size, (int)socketFlags, addr);
 					if(result < 0)
 					{
 						throw new SocketException(SocketMethods.GetErrno());
@@ -1559,6 +1582,12 @@ public class Socket : IDisposable
 						}
 						MulticastOption multicast =
 							(MulticastOption)optionValue;
+						byte[] group =
+							(new IPEndPoint(multicast.Group, 0))
+								.Serialize().Array;
+						byte[] mcint =
+							(new IPEndPoint(multicast.LocalAddress, 0))
+								.Serialize().Array;
 						lock(this)
 						{
 							if(handle == InvalidHandle)
@@ -1567,9 +1596,8 @@ public class Socket : IDisposable
 									(S._("Exception_Disposed"));
 							}
 							if(!SocketMethods.SetMulticastOption
-									(handle, (int)optionName,
-									 multicast.Group.Address,
-									 multicast.LocalAddress.Address))
+									(handle, (int)family, (int)optionName,
+									 group, mcint))
 							{
 								throw new SocketException
 									(SocketMethods.GetErrno());
@@ -1700,8 +1728,8 @@ public class Socket : IDisposable
 			{
 				get
 				{
-					long address;
-					int port;
+					byte[] addrReturn;
+					EndPoint ep;
 					lock(this)
 					{
 						if(handle == InvalidHandle)
@@ -1709,17 +1737,43 @@ public class Socket : IDisposable
 							throw new ObjectDisposedException
 								(S._("Exception_Disposed"));
 						}
-						// TODO: ipv6 support
-						if(!SocketMethods.GetSockName
-								(handle, out address, out port))
+						if(localEP != null)
+						{
+							return localEP;
+						}
+
+						// Get a sockaddr buffer of the right size.
+						ep = remoteEP;
+						if(ep == null)
+						{
+							// We don't have a remote end-point to guess
+							// the size from, so check for known families.
+							if(family == AddressFamily.InterNetwork)
+							{
+								ep = new IPEndPoint(IPAddress.Any, 0);
+							}
+							else if(family == AddressFamily.InterNetworkV6)
+							{
+								ep = new IPEndPoint(IPAddress.IPv6Any, 0);
+							}
+							else
+							{
+								throw new SocketException(Errno.EINVAL);
+							}
+						}
+						addrReturn = ep.Serialize().Array;
+						Array.Clear(addrReturn, 0, addrReturn.Length);
+
+						// Get the name of the socket.
+						if(!SocketMethods.GetSockName(handle, addrReturn))
 						{
 							throw new SocketException
 								(SocketMethods.GetErrno());
 						}
-						else
-						{
-							return new IPEndPoint(address, port);
-						}
+
+						// Create a new end-point object using addrReturn.
+						localEP = ep.Create(new SocketAddress(addrReturn));
+						return localEP;
 					}
 				}
 			}
@@ -1751,7 +1805,7 @@ public class Socket : IDisposable
 						{
 							throw new SocketException(Errno.ENOTCONN);
 						}
-						return new IPEndPoint(remoteEP.Address, remoteEP.Port);
+						return remoteEP;
 					}
 				}
 			}

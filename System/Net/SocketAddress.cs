@@ -42,6 +42,10 @@ public class SocketAddress
 				array[0] = (byte)family;
 				array[1] = (byte)(family >> 8);
 			}
+	internal SocketAddress(byte[] array)
+			{
+				this.array = array;
+			}
 
 	// Determine if two objects are equal.
 	public override bool Equals(Object comparand) 
@@ -130,6 +134,34 @@ public class SocketAddress
 				get
 				{
 					return array.Length;
+				}
+			}
+
+	// Get the underlying array within this socket address.
+	internal byte[] Array
+			{
+				get
+				{
+					return array;
+				}
+			}
+
+	// Extract the IP address portion of this socket address.
+	internal IPAddress IPAddress
+			{
+				get
+				{
+					IPEndPoint ep;
+					if(Family == AddressFamily.InterNetwork)
+					{
+						ep = new IPEndPoint(IPAddress.Any, 0);
+					}
+					else
+					{
+						ep = new IPEndPoint(IPAddress.IPv6Any, 0);
+					}
+					ep = (IPEndPoint)(ep.Create(this));
+					return ep.Address;
 				}
 			}
 

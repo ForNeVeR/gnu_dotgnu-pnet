@@ -1,8 +1,10 @@
 /*
  * SocketMethods.cs - Implementation of the "Platform.SocketMethods" class.
  *
+ * Copyright (C) 2003 Southern Storm Software, Pty Ltd
  * Copyright (C) 2002 Free Software Foundation
- * Author : Sidney Richards <sidney.richards@xs4all.nl>
+ *
+ * Contributions from Sidney Richards <sidney.richards@xs4all.nl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,50 +34,58 @@ internal class SocketMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static IntPtr GetInvalidHandle();
 
+	// Determine if an address family is supported by the engine.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool AddressFamilySupported(int af);
+
 	// Create a socket and obtain a socket descriptor (return true on success).
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool Create(int af, int st, int pt, out IntPtr handle);
 
-	// Bind a socket to an IP address
-	//TODO: add support for something other than IPv4
+	// Bind a socket to a socket address.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Bind(IntPtr handle, int af, long address, int port);
+	extern public static bool Bind(IntPtr handle, byte[] addr);
 
-	// Shutdown a socket
+	// Shutdown a socket.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool Shutdown(IntPtr handle, int how);
 
-	// Start listening
+	// Start listening.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool Listen(IntPtr handle, int backlog);
 
-	// Accept an incoming connection
+	// Accept an incoming connection.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Accept(IntPtr handle, out long address,
-									 out int port, out IntPtr newHandle);
+	extern public static bool Accept(IntPtr handle, byte[] addrReturn,
+									 out IntPtr newHandle);
 
-	// Connect to specified address
-	// TODO: add support for something other than IPv4
+	// Connect to specified address.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool Connect(IntPtr handle, int af, long address, int port);
+	extern public static bool Connect(IntPtr handle, byte[] addr);
 
-	// Receive bytes from connected socket
+	// Receive bytes from connected socket.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int Receive(IntPtr handle, byte[] buffer, int offset, int size, int flags);
+	extern public static int Receive
+		(IntPtr handle, byte[] buffer, int offset, int size, int flags);
 
-	// Receive bytes from specified EndPoint (noted in address and port)
+	// Receive bytes from specified EndPoint (noted in address and port).
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int ReceiveFrom(IntPtr handle, byte[] buffer, int offset, int size, int flags, out long address, out int port);
+	extern public static int ReceiveFrom
+		(IntPtr handle, byte[] buffer, int offset, int size,
+		 int flags, byte[] addrReturn);
 
-	// Send bytes to connected socket
+	// Send bytes to connected socket.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int Send(IntPtr handle, byte[] buffer, int offset, int size, int flags);
+	extern public static int Send
+		(IntPtr handle, byte[] buffer, int offset, int size, int flags);
 
-	// Receive bytes from specified EndPoint (noted in address and port)
+	// Receive bytes from specified EndPoint (noted in address and port).
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int SendTo(IntPtr handle, byte[] buffer, int offset, int size, int flags, long address, int port);
+	extern public static int SendTo
+		(IntPtr handle, byte[] buffer, int offset, int size,
+		 int flags, byte[] addr);
 
-	// Close a socket (regardless of pending in/output)
+	// Close a socket (regardless of pending in/output).
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool Close(IntPtr handle);
 
@@ -85,7 +95,9 @@ internal class SocketMethods
 	// of descriptors that fired, 0 on timeout, or -1 on error.  The
 	// timeout is in microseconds.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int Select(IntPtr[] readarray, IntPtr[] writearray, IntPtr[] errorarray, long timeout);
+	extern public static int Select
+		(IntPtr[] readarray, IntPtr[] writearray,
+		 IntPtr[] errorarray, long timeout);
 
 	// Change the blocking mode on a socket.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -97,8 +109,7 @@ internal class SocketMethods
 
 	// Get the name of the local end-point on a socket.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool GetSockName(IntPtr handle, out long address,
-										  out int port);
+	extern public static bool GetSockName(IntPtr handle, byte[] addrReturn);
 
 	// Set a numeric or boolean socket option.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -120,15 +131,19 @@ internal class SocketMethods
 	extern public static bool GetLingerOption
 			(IntPtr handle, out bool enabled, out int seconds);
 
-	// Set a multicast socket option.  TODO: ipv6
+	// Set a multicast socket option.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool SetMulticastOption
-			(IntPtr handle, int name, long group, long mcint);
+			(IntPtr handle, int af, int name, byte[] group, byte[] mcint);
 
-	// Get a multicast socket option.  TODO: ipv6
+	// Get a multicast socket option.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool GetMulticastOption
-			(IntPtr handle, int name, out long group, out long mcint);
+			(IntPtr handle, int af, int name, byte[] group, byte[] mcint);
+
+	// Discover the IrDA devices that are available on a socket.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool DiscoverIrDADevices(IntPtr handle, byte[] buf);
 
 	// Get the last-occurring system error code for the current thread.
 	[MethodImpl(MethodImplOptions.InternalCall)]

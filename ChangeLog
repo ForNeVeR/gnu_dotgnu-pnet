@@ -4,6 +4,9 @@
 * configure.in, Makefile.am, ildb/: add the source code for the
 "ildb" program to the tree.
 
+* include/il_config.h.in, acconfig.h: changes to support the
+inclusion of the readline and history libraries.
+
 2001-09-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resgen/resgen.c: update to understand Beta 2 resource formats, and

@@ -9,6 +9,8 @@ interfaces from the XML input.
 
 * csdoc/csdoc2html.1: new man page for "csdoc2html".
 
+* csdoc/Makefile.am: add "csdoc2html.1" to the "csdoc" directory build.
+
 2001-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/Makefile.am: implement the "csdoc2html" program.

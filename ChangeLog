@@ -1,4 +1,14 @@
 
+2003-06-01  Gopal.V  <gopalv82@symonds.net>
+	
+	* class/ByteFX.Data/ByteFX.Data.build,
+	class/Mono.Data.DB2Client/Mono.Data.DB2Client.build,
+	class/Mono.Data.MySql/Mono.Data.MySql.build,
+	class/Mono.Data.PostgreSqlClient/Mono.Data.PostgreSqlClient.build,
+	class/System.Data.OracleClient/System.Data.OracleClient.build,
+	tools/SqlSharp/SqlSharp.build: Provide the path to the various
+	dependency libraries inside ml-pnet for builds using System.Data
+
 2003-05-31  Gopal.V  <gopalv82@symonds.net>
 
 	* configure.in, Makefile.am, tools/Makefile.am

@@ -4,6 +4,11 @@
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating
 	over a node list when encountering a null "XmlNode.list".
 
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs: always use the
+	"ScrollBar" and "ControlLightLight" colors to draw the background of
+	scroll bars, regardless of the foreground and background colors,
+	to match MS behaviour.
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

@@ -1453,8 +1453,10 @@ internal class DefaultThemePainter : IThemePainter
 					backColor != hatchBackColor))
 						hatchBrush.Dispose();
 				if (hatchBrush == null)
-					hatchBrush = new HatchBrush(HatchStyle.Percent50,
-						   backColor, foreColor);
+					hatchBrush = new HatchBrush
+						  (HatchStyle.Percent50,
+						   SystemColors.ScrollBar,
+						   SystemColors.ControlLightLight);
 
 				Color color;
 				if (backColor.GetBrightness() > 0.5f)

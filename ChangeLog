@@ -8,6 +8,9 @@
 	because the former may not be constant on some platforms
 	(thanks to Miroslaw Dobrzanski-Neumann).
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_info.c:
+	add the "InfoMethods.GetProcessorCount" internalcall.
+
 2003-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/console.c, support/serial.c: work around missing termios

@@ -2569,6 +2569,7 @@ IL_METHOD_BEGIN(InfoMethods_Methods)
 	IL_METHOD("IsUserInteractive", "()Z", _IL_InfoMethods_IsUserInteractive, marshal_bp)
 	IL_METHOD("GetUserName", "()oSystem.String;", _IL_InfoMethods_GetUserName, marshal_pp)
 	IL_METHOD("GetWorkingSet", "()l", _IL_InfoMethods_GetWorkingSet, marshal_lp)
+	IL_METHOD("GetProcessorCount", "()i", _IL_InfoMethods_GetProcessorCount, marshal_ip)
 	IL_METHOD("GetPlatformName", "()oSystem.String;", _IL_InfoMethods_GetPlatformName, marshal_pp)
 	IL_METHOD("GetGlobalConfigDir", "()oSystem.String;", _IL_InfoMethods_GetGlobalConfigDir, marshal_pp)
 IL_METHOD_END

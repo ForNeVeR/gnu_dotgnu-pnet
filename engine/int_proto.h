@@ -571,6 +571,7 @@ extern ILString * _IL_InfoMethods_GetUserDomainName(ILExecThread * _thread);
 extern ILBool _IL_InfoMethods_IsUserInteractive(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetUserName(ILExecThread * _thread);
 extern ILInt64 _IL_InfoMethods_GetWorkingSet(ILExecThread * _thread);
+extern ILInt32 _IL_InfoMethods_GetProcessorCount(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetPlatformName(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetGlobalConfigDir(ILExecThread * _thread);
 

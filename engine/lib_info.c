@@ -140,6 +140,15 @@ ILInt64 _IL_InfoMethods_GetWorkingSet(ILExecThread *thread)
 }
 
 /*
+ * public static int GetProcessorCount();
+ */
+ILInt32 _IL_InfoMethods_GetProcessorCount(ILExecThread *thread)
+{
+	/* Simulate a uniprocessor machine */
+	return 1;
+}
+
+/*
  * public static String GetGlobalConfigDir();
  */
 extern ILString *_IL_InfoMethods_GetGlobalConfigDir(ILExecThread *_thread)

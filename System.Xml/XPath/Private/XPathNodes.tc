@@ -124,10 +124,16 @@ using System.Collections;
 	Double number;
 }
 
+%node ArgumentList Expression =
+{
+	Expression expr;
+	%nocreate ArgumentList next = {null};
+}
+
 %node FunctionCallExpression Expression =
 {
 	String name;
-	/* TODO */	
+	ArgumentList args;
 }
 
 %include "XPathCompile.tc"

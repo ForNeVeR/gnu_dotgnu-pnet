@@ -265,18 +265,26 @@ VariableReference
 FunctionCall
 	: FUNCTIONNAME '(' ')'
 	{
-		$$ = new FunctionCallExpression((String)$1);
+		$$ = new FunctionCallExpression((String)$1, null);
 	}
 	| FUNCTIONNAME '(' ArgumentList ')'
 	{
-		$$ = new FunctionCallExpression((String)$1);
+		$$ = new FunctionCallExpression((String)$1, (ArgumentList)$3);
 	}
 	;
 
 /* avoid left recursion */
 ArgumentList
 	: Argument
+	{
+		$$ = new ArgumentList((Expression)$1);
+	}
 	| Argument ',' ArgumentList
+	{
+		ArgumentList list = new ArgumentList((Expression)$1);
+		list.next = (ArgumentList)$3;
+		$$ = list;
+	}
 	;
 
 /* [17] */

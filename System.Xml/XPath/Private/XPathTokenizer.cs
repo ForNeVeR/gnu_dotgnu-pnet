@@ -550,8 +550,8 @@ namespace System.Xml.XPath.Private
 		{
 			currToken = GetNext();
 #if XPATH_DEBUG			
-			Debug.Write(XPathParser.yyname(Token) + " ");
-			if(Token == Token.EOF)
+			Debug.Write(XPathParser.yyname(currToken) + " ");
+			if(currToken == Token.EOF)
 			{
 				Debug.Write("\n");
 			}

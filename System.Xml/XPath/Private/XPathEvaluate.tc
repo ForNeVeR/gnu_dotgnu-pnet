@@ -203,23 +203,35 @@ EvaluateInternal(EqualityExpression)
 	else if( ltype == XPathResultType.Boolean || 
 	         rtype == XPathResultType.Boolean)
 	{
-		return (node.invert != 
-				((node.left.EvaluateAs(iterator, XPathResultType.Boolean) == 
-					node.right.EvaluateAs(iterator, XPathResultType.Boolean))));
+		bool lbool = (bool)(node.left.EvaluateAs(iterator, 
+												XPathResultType.Boolean));
+		bool rbool = (bool)(node.right.EvaluateAs(iterator, 
+												XPathResultType.Boolean));
+		return (node.invert != (lbool == rbool));
 	}
 	else if( ltype == XPathResultType.Number || 
 	         rtype == XPathResultType.Number)
 	{
-		return (node.invert !=
-				((node.left.EvaluateAs(iterator, XPathResultType.Number) == 
-					node.right.EvaluateAs(iterator, XPathResultType.Number))));
+		double ldouble = (double) (node.left.EvaluateAs(
+													iterator, 
+													XPathResultType.Number));
+													
+		double rdouble = (double) (node.right.EvaluateAs(
+													iterator, 
+													XPathResultType.Number));
+		return (node.invert != (ldouble == rdouble));
 	}
 	else if( ltype == XPathResultType.String || 
 	         rtype == XPathResultType.String)
 	{
-		return (node.invert != 
-				((node.left.EvaluateAs(iterator, XPathResultType.String) == 
-					node.right.EvaluateAs(iterator, XPathResultType.String))));
+		String lstring = (String) (node.left.EvaluateAs(
+											iterator, 
+											XPathResultType.String));
+		String rstring = (String) (node.right.EvaluateAs(
+											iterator, 
+											XPathResultType.String));
+													
+		return (node.invert != (lstring == rstring)); 
 	}
 	return false;
 }
@@ -236,4 +248,47 @@ EvaluateInternal(OrExpression)
 	return	
 	(((bool)node.left.EvaluateAs(iterator, XPathResultType.Boolean) == true) ||
 	((bool)node.right.EvaluateAs(iterator, XPathResultType.Boolean) == true));
+}
+
+
+EvaluateInternal(FunctionCallExpression)
+{
+	switch(node.name)
+	{
+		case "true":
+		{
+			return true;
+		}
+		break;
+		case "false":
+		{
+			return false;
+		}
+		break;
+		case "boolean":
+		{
+			return (bool)node.args.expr.EvaluateAs(iterator, XPathResultType.Boolean);
+		}
+		break;
+		case "number":
+		{
+			return (double)node.args.expr.EvaluateAs(iterator, XPathResultType.Number);
+		}
+		break;
+		case "string-length":
+		{
+			// TODO
+		}
+		break;
+		case "string":
+		{
+			// TODO
+		}
+		break;
+		case "local-name":
+		{
+		}
+		break;
+	}
+	throw new NotImplementedException("TODO:" + node.name + "()");
 }

@@ -501,53 +501,67 @@ case 34:
 case 35:
 #line 267 "XPathParser.jay"
   {
-		yyVal = new FunctionCallExpression((String)yyVals[-2+yyTop]);
+		yyVal = new FunctionCallExpression((String)yyVals[-2+yyTop], null);
 	}
   break;
 case 36:
 #line 271 "XPathParser.jay"
   {
-		yyVal = new FunctionCallExpression((String)yyVals[-3+yyTop]);
+		yyVal = new FunctionCallExpression((String)yyVals[-3+yyTop], (ArgumentList)yyVals[-1+yyTop]);
+	}
+  break;
+case 37:
+#line 279 "XPathParser.jay"
+  {
+		yyVal = new ArgumentList((Expression)yyVals[0+yyTop]);
+	}
+  break;
+case 38:
+#line 283 "XPathParser.jay"
+  {
+		ArgumentList list = new ArgumentList((Expression)yyVals[-2+yyTop]);
+		list.next = (ArgumentList)yyVals[0+yyTop];
+		yyVal = list;
 	}
   break;
 case 41:
-#line 291 "XPathParser.jay"
+#line 299 "XPathParser.jay"
   {
 		yyVal = new UnionExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 44:
-#line 301 "XPathParser.jay"
+#line 309 "XPathParser.jay"
   {
 		yyVal = new SlashExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[-1+yyTop]);
 	}
   break;
 case 45:
-#line 305 "XPathParser.jay"
+#line 313 "XPathParser.jay"
   {
 		yyVal = null; /* TODO */
 	}
   break;
 case 47:
-#line 314 "XPathParser.jay"
+#line 322 "XPathParser.jay"
   {
 		yyVal = new FilterExpression((Expression)yyVals[-1+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 51:
-#line 329 "XPathParser.jay"
+#line 337 "XPathParser.jay"
   {
 		yyVal = new AndExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop]);
 	}
   break;
 case 53:
-#line 338 "XPathParser.jay"
+#line 346 "XPathParser.jay"
   {
 		yyVal = new EqualityExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop], false); 
 	}
   break;
 case 54:
-#line 342 "XPathParser.jay"
+#line 350 "XPathParser.jay"
   {
 		yyVal = new EqualityExpression((Expression)yyVals[-2+yyTop], (Expression)yyVals[0+yyTop], true);
 	}
@@ -816,7 +830,7 @@ case 54:
   296,
   };
 
-#line 378 "XPathParser.jay"
+#line 386 "XPathParser.jay"
 }
 #line default
 namespace yydebug {

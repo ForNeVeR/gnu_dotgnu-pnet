@@ -1,4 +1,14 @@
 
+2004-12-07  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XPath/Private/XPathCompile.tc,
+	System.Xml/XPath/Private/XPathEvaluate.tc,
+	System.Xml/XPath/Private/XPathNodes.tc,
+	System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathParser.jay,
+	System.Xml/XPath/Private/XPathTokenizer.cs: Implement a set of
+	basic function handling code for XPath.
+	
 2004-12-07  Erich Kitzmuller  <ammoq@ammoq.com>
 
 	* System.Drawing/Graphics.cs: Work around the one-off bug in DrawString.

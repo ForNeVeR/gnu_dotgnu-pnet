@@ -3661,8 +3661,6 @@ protected virtual void Dispose(bool disposing)
 				{
 					contextMenu.Show(this, new Point(e.X, e.Y));
 				}
-				if (e.Button == MouseButtons.Left)
-					OnClick(EventArgs.Empty);
 			}
 	internal void OnMouseDownInternal(MouseEventArgs e)
 			{

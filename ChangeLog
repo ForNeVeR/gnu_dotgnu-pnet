@@ -10,6 +10,8 @@
 	* engine/throw.c: insert 'T' into the signatures of constructors
 	when creating exception objects with "ILExecThreadNew".
 
+	* samples/mscorlib.dll: new version with security changes.
+
 2001-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with the latest pnetlib changes.

@@ -131,7 +131,14 @@ int main(int argc, char *argv[])
 	if(CSHaveErrors == 0)
 	{
 		ILGenModulesAndAssemblies(&CSCodeGen);
-		ILNode_GenDiscard(CSParseTree, &CSCodeGen);
+		if(CSCodeGen.outputIsJava)
+		{
+			JavaGenDiscard(CSParseTree, &CSCodeGen);
+		}
+		else
+		{
+			ILNode_GenDiscard(CSParseTree, &CSCodeGen);
+		}
 	}
 
 	/* Close the code generator */
@@ -315,7 +322,13 @@ static int InitCodeGen(void)
 	}
 	else
 	{
-		CSCodeGen.overflowInsns = 1;
+		CSCodeGen.overflowInsns = 0;
+	}
+
+	/* Switch to Java mode if necessary */
+	if(CSStringListContains(machine_flags, num_machine_flags, "jvm"))
+	{
+		ILGenInfoToJava(&CSCodeGen);
 	}
 
 	/* Ready to go now */

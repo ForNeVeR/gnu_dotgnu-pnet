@@ -326,6 +326,8 @@ ildb/Makefile
 csdoc/Makefile
 csant/Makefile
 clrwrap/Makefile
+csunit/Makefile
+csunit/TestVersion.cs
 samples/Makefile
 doc/Makefile
 tests/Makefile])

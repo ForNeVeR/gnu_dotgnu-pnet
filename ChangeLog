@@ -27,6 +27,10 @@
 	* image/debug_reader.c (ILDebugIterInit): update "left" and "right"
 	when searching for the extents of a debug information range.
 
+	* Makefile.am, configure.in, csunit/*: copy the "csunit" program
+	from pnetlib to pnet, so that we can use it for testing other
+	applications and libraries besides pnetlib.
+
 2002-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_lvalue.tc, codegen/cg_utils.c:

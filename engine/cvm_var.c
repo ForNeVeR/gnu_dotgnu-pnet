@@ -923,7 +923,7 @@ case COP_DFIXUP:
 {
 	COPY_STATE_TO_THREAD();
 	stacktop[0].ptrValue =
-		_ILSystemException(thread, "System.NotSupportedException");
+		_ILSystemException(thread, "System.NotImplementedException");
 	stacktop += 1;
 	goto throwException;
 }

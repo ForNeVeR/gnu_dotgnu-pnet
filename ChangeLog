@@ -1,4 +1,11 @@
 
+2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/convert.c, engine/cvm_arith.c, engine/cvm_var.c,
+	engine/lib_misc.c, engine/lib_type.c, samples/mscorlib.dll:
+	change "NotSupportedException" into "NotImplementedException",
+	to be ECMA-compatible.
+
 2002-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_conv.c, engine/lib_string.c, include/il_engine.h:

@@ -30,7 +30,7 @@ extern	"C" {
 #define	IL_CONVERT_OK				0
 #define	IL_CONVERT_VERIFY_FAILED	1
 #define	IL_CONVERT_MISSING_METHOD	2
-#define	IL_CONVERT_NOT_SUPPORTED	3
+#define	IL_CONVERT_NOT_IMPLEMENTED	3
 #define	IL_CONVERT_OUT_OF_MEMORY	4
 #define	IL_CONVERT_TYPE_INIT		5
 
@@ -126,7 +126,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 			IL_META_CALLCONV_VARARG)
 	{
 		IL_METADATA_UNLOCK(thread);
-		*errorCode = IL_CONVERT_NOT_SUPPORTED;
+		*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 		return 0;
 	}
 #endif
@@ -220,7 +220,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
 			#else /* !IL_CONFIG_PINVOKE */
 				IL_METADATA_UNLOCK(thread);
-				*errorCode = IL_CONVERT_NOT_SUPPORTED;
+				*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 				return 0;
 			#endif /* IL_CONFIG_PINVOKE */
 			}
@@ -246,14 +246,14 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 						if(!_ILFindInternalCall(method, 1, &ctorfnInfo))
 						{
 							IL_METADATA_UNLOCK(thread);
-							*errorCode = IL_CONVERT_NOT_SUPPORTED;
+							*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 							return 0;
 						}
 					}
 					else
 					{
 						IL_METADATA_UNLOCK(thread);
-						*errorCode = IL_CONVERT_NOT_SUPPORTED;
+						*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 						return 0;
 					}
 				}
@@ -281,7 +281,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 			if(pinv)
 				*errorCode = IL_CONVERT_MISSING_METHOD;
 			else
-				*errorCode = IL_CONVERT_NOT_SUPPORTED;
+				*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 			return 0;
 		}
 
@@ -421,11 +421,11 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			}
 			break;
 
-			case IL_CONVERT_NOT_SUPPORTED:
+			case IL_CONVERT_NOT_IMPLEMENTED:
 			{
 				ILExecThreadSetException
 					(thread, _ILSystemException(thread, 
-						"System.NotSupportedException"));
+						"System.NotImplementedException"));
 			}
 			break;
 

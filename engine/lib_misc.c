@@ -69,7 +69,7 @@ ILInt64 _IL_BitConverter_DoubleToInt64Bits(ILExecThread *thread,
 	convert.input = value;
 	return convert.output;
 #else
-	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	ILExecThreadThrowSystem(thread, "System.NotImplementedException", 0);
 	return 0;
 #endif
 }
@@ -90,7 +90,7 @@ ILDouble _IL_BitConverter_Int64BitsToDouble(ILExecThread *thread,
 	convert.input = value;
 	return convert.output;
 #else
-	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	ILExecThreadThrowSystem(thread, "System.NotImplementedException", 0);
 	return 0;
 #endif
 }
@@ -111,7 +111,7 @@ ILInt32 _IL_BitConverter_FloatToInt32Bits(ILExecThread *thread,
 	convert.input = value;
 	return convert.output;
 #else
-	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	ILExecThreadThrowSystem(thread, "System.NotImplementedException", 0);
 	return 0;
 #endif
 }
@@ -132,7 +132,7 @@ ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
 	convert.input = value;
 	return convert.output;
 #else
-	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	ILExecThreadThrowSystem(thread, "System.NotImplementedException", 0);
 	return 0;
 #endif
 }

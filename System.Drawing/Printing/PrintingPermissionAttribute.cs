@@ -28,7 +28,7 @@ using System;
 using System.Security;
 using System.Security.Permissions;
 
-[AttributeUsage(AttributeTargets.All)]
+[AttributeUsage(AttributeTargets.All, AllowMultiple=true)]
 public sealed class PrintingPermissionAttribute : CodeAccessSecurityAttribute
 {
 	// Internal state.

@@ -26,7 +26,7 @@ using System.ComponentModel;
 using System.Text;
 
 #if CONFIG_COMPONENT_MODEL
-[TypeConverter("System.Drawing.Printing.MarginsConverter")]
+[TypeConverter(typeof(MarginsConverter))]
 #endif
 public class Margins : ICloneable
 {

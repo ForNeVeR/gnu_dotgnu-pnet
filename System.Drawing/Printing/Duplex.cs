@@ -26,7 +26,7 @@ public enum Duplex
 {
 	Default		= -1,
 	Simplex		= 1,
-	Veritcal	= 2,
+	Vertical	= 2,
 	Horizontal	= 3
 
 }; // enum Duplex

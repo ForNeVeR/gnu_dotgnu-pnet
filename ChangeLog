@@ -9,6 +9,15 @@
 	System/CodeDom/Compiler/CodeCompiler.cs: implement the
 	remaining TODO's in "System.CodeDom.Compiler".
 
+	* System.Drawing/Printing/Duplex.cs,
+	System.Drawing/Printing/Margins.cs,
+	System.Drawing/Printing/ModeField.cs,
+	System.Drawing/Printing/PaperKind.cs,
+	System.Drawing/Printing/PrintDocument.cs,
+	System.Drawing/Printing/PrinterSettings.cs,
+	System.Drawing/Printing/PrintingPermissionAttribute.cs:
+	signature-compatibility fixes in "System.Drawing.Printing".
+
 2003-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/BinaryWriter.cs,

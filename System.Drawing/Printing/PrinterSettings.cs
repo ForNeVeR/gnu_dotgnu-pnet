@@ -36,7 +36,7 @@ public class PrinterSettings : ICloneable
 {
 	// Internal state.
 	private bool collate;
-	private int copies;
+	private short copies;
 	private PageSettings defaultPageSettings;
 	private Duplex duplex;
 	private int fromPage;
@@ -87,7 +87,7 @@ public class PrinterSettings : ICloneable
 					collate = value;
 				}
 			}
-	public int Copies
+	public short Copies
 			{
 				get
 				{

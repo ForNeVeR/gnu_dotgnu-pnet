@@ -25,6 +25,9 @@ namespace System.Drawing.Printing
 using System.ComponentModel;
 using System.Drawing.Toolkit;
 
+#if CONFIG_COMPONENT_MODEL
+[DefaultEvent("PrintPage")]
+#endif
 public class PrintDocument
 #if CONFIG_COMPONENT_MODEL
 	: Component
@@ -49,6 +52,9 @@ public class PrintDocument
 			}
 
 	// Get or set the document's properties.
+#if CONFIG_COMPONENT_MODEL
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public PageSettings DefaultPageSettings
 			{
 				get
@@ -60,6 +66,9 @@ public class PrintDocument
 					defaultPageSettings = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[DefaultValue("document")]
+#endif
 	public String DocumentName
 			{
 				get
@@ -82,6 +91,9 @@ public class PrintDocument
 					originAtMargins = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public PrintController PrintController
 			{
 				get
@@ -98,6 +110,9 @@ public class PrintDocument
 					printController = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public PrinterSettings PrinterSettings
 			{
 				get

@@ -147,6 +147,26 @@ static int GetConvertRules(ILContext *context, ILType *fromType,
 		}
 	}
 
+	/* See if "fromType" inherits from "toType", or vice versa */
+	if(ILType_IsClass(fromType) && ILType_IsClass(toType))
+	{
+		if(ILClassInheritsFrom(ILType_ToClass(fromType),
+							   ILType_ToClass(toType)))
+		{
+			// Implicit conversion to a base type.
+			return 1;
+		}
+		if(explicit)
+		{
+			if(ILClassInheritsFrom(ILType_ToClass(toType),
+								   ILType_ToClass(fromType)))
+			{
+				// Explicit conversion to a descendent type.
+				return 1;
+			}
+		}
+	}
+
 	/* If we get here, then we do not know how to convert */
 	return 0;
 }
@@ -183,19 +203,121 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 	}
 }
 
+/*
+ * Determine if there is an implicit constant coercion
+ * between two types for a particular node.  Returns the
+ * new type, or ILMachineType_Void if there is no coercion.
+ */
+static ILMachineType CanCoerceConst(ILGenInfo *info, ILNode *node,
+									ILType *fromType, ILType *toType)
+{
+	ILEvalValue value;
+	if(ILType_IsPrimitive(fromType) && ILType_IsPrimitive(toType) &&
+	   ILNode_EvalConst(node, info, &value))
+	{
+		/* We can implicitly down-convert some types of constants,
+		   but only if the result remains the same */
+		if(fromType == ILType_Int32)
+		{
+			if(toType == ILType_Int8)
+			{
+				if(value.un.i4Value >= ((ILInt32)(-128)) &&
+				   value.un.i4Value <= ((ILInt32)127))
+				{
+					return ILMachineType_Int8;
+				}
+			}
+			else if(toType == ILType_UInt8)
+			{
+				if(value.un.i4Value >= ((ILInt32)0) &&
+				   value.un.i4Value <= ((ILInt32)255))
+				{
+					return ILMachineType_UInt8;
+				}
+			}
+			else if(toType == ILType_Int16)
+			{
+				if(value.un.i4Value >= ((ILInt32)(-32768)) &&
+				   value.un.i4Value <= ((ILInt32)32767))
+				{
+					return ILMachineType_Int16;
+				}
+			}
+			else if(toType == ILType_UInt16)
+			{
+				if(value.un.i4Value >= ((ILInt32)0) &&
+				   value.un.i4Value <= ((ILInt32)65535))
+				{
+					return ILMachineType_UInt16;
+				}
+			}
+			else if(toType == ILType_UInt32)
+			{
+				if(value.un.i4Value >= 0)
+				{
+					return ILMachineType_UInt32;
+				}
+			}
+			else if(toType == ILType_UInt64)
+			{
+				if(value.un.i4Value >= 0)
+				{
+					return ILMachineType_UInt64;
+				}
+			}
+		}
+		else if(fromType == ILType_Int64)
+		{
+			if(toType == ILType_UInt64)
+			{
+				if(value.un.i8Value >= 0)
+				{
+					return ILMachineType_UInt64;
+				}
+			}
+		}
+	}
+	return ILMachineType_Void;
+}
+
 int ILCanCoerce(ILContext *context, ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
 	return GetConvertRules(context, fromType, toType, 0, &rules);
 }
 
-int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
-			 ILType *fromType, ILType *toType)
+int ILCanCoerceNode(ILGenInfo *info, ILNode *node,
+				    ILType *fromType, ILType *toType)
 {
 	ConvertRules rules;
 	if(GetConvertRules(info->context, fromType, toType, 0, &rules))
 	{
+		return 1;
+	}
+	else if(CanCoerceConst(info, node, fromType, toType) != ILMachineType_Void)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILCoerce(ILGenInfo *info, ILNode *node, ILNode **parent,
+			 ILType *fromType, ILType *toType)
+{
+	ConvertRules rules;
+	ILMachineType constType;
+	if(GetConvertRules(info->context, fromType, toType, 0, &rules))
+	{
 		ApplyRules(info, node, parent, &rules, toType);
+		return 1;
+	}
+	else if((constType = CanCoerceConst(info, node, fromType, toType))
+					!= ILMachineType_Void)
+	{
+		*parent = ILNode_Cast_create(node, constType);
 		return 1;
 	}
 	else

@@ -20,6 +20,10 @@ the system library.
 
 * cscc/cs_defs.tc, cscc/cs_misc.tc: semantic analysis for TypeOf and SizeOf.
 
+* codegen/cg_coerce.h, codegen/cg_coerce.c: implement coercions to object
+base types, and explicit casts to descendent types; implement implicit
+constant coercions
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

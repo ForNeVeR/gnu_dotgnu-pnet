@@ -18,6 +18,9 @@
 
 	* tools/csccwrap.sh.in: fix various shell variable expansion bugs.
 
+	* Makefile.am, configure.in, System/.cvsignore, System/Makefile.am,
+	System/System.build: integrate the "System" directory into the build.
+
 2002-03-20 Gerard Toonstra <toonstra@ntlworld.com>
 
 	* System/Net/IPAddress.cs: First class contributed! Mostly

@@ -133,6 +133,7 @@ AC_OUTPUT([
 Makefile
 tools/Makefile
 runtime/Makefile
+System/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile

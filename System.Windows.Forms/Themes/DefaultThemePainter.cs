@@ -906,12 +906,81 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a caption button control.
-	[TODO]
 	public virtual void DrawCaptionButton
 				(Graphics graphics, int x, int y, int width, int height,
 				 CaptionButton button, ButtonState state)
 			{
-				// TODO
+				// Draw the border on the button.
+				DrawButton(graphics, x, y, width, height, state,
+						   SystemColors.ControlText, SystemColors.Control,
+						   false);
+
+				// Adjust the glyph position if necessary.
+				if((state & ButtonState.Pushed) != 0)
+				{
+					++x;
+					++y;
+				}
+
+				// Determine the color to use for the glyph.
+				Color color;
+				if((state & ButtonState.Inactive) != 0)
+				{
+					color = SystemColors.ControlDark;
+				}
+				else
+				{
+					color = SystemColors.ControlText;
+				}
+
+				// Draw the glyph on the button.
+				switch(button)
+				{
+					case CaptionButton.Close:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.close_button_bits,
+								  Glyphs.close_button_width,
+								  Glyphs.close_button_height, color);
+					}
+					break;
+
+					case CaptionButton.Minimize:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.minimize_button_bits,
+								  Glyphs.minimize_button_width,
+								  Glyphs.minimize_button_height, color);
+					}
+					break;
+
+					case CaptionButton.Maximize:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.maximize_button_bits,
+								  Glyphs.maximize_button_width,
+								  Glyphs.maximize_button_height, color);
+					}
+					break;
+
+					case CaptionButton.Restore:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.restore_button_bits,
+								  Glyphs.restore_button_width,
+								  Glyphs.restore_button_height, color);
+					}
+					break;
+
+					case CaptionButton.Help:
+					{
+						DrawGlyph(graphics, x, y, width, height,
+								  Glyphs.help_button_bits,
+								  Glyphs.help_button_width,
+								  Glyphs.help_button_height, color);
+					}
+					break;
+				}
 			}
 
 	// Draw a progress bar control.

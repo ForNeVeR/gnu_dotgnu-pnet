@@ -54,6 +54,10 @@
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: off by one
 	bug when drawing the outline of a flat checkbox.
 
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/Glyphs.cs: draw caption buttons
+	using the appropriate glyphs.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

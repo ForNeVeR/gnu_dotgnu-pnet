@@ -1,4 +1,9 @@
 
+2003-06-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/Toolkit/ToolkitManager.cs: detect Win32 systems
+	and load "System.Drawing.Win32" instead of "System.Drawing.Xsharp".
+
 2003-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/ButtonBase.cs,

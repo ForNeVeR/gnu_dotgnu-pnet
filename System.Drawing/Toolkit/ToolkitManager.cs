@@ -24,6 +24,7 @@ namespace System.Drawing.Toolkit
 
 using System.Drawing.Printing;
 using System.Reflection;
+using System.IO;
 
 public sealed class ToolkitManager
 {
@@ -124,10 +125,17 @@ public sealed class ToolkitManager
 	private static IToolkit CreateDefaultToolkit()
 			{
 			#if CONFIG_REFLECTION
-				// TODO: handle other graphical toolkits.
-
 				// Determine the name of the toolkit we wish to use.
-				String name = "System.Drawing.Xsharp";
+				String name;
+				if(Path.DirectorySeparatorChar == '\\' ||
+				   Path.AltDirectorySeparatorChar == '\\')
+				{
+					name = "System.Drawing.Win32";
+				}
+				else
+				{
+					name = "System.Drawing.Xsharp";
+				}
 
 				// Load the toolkit's assembly.
 				Assembly assembly = Assembly.Load(name);

@@ -34,7 +34,7 @@ using Xsharp.Types;
 public class Font
 {
 	// Internal class that keeps track of displays and fontsets.
-	private class FontInfo
+	internal class FontInfo
 	{
 		public FontInfo next;
 		public FontExtents extents;

@@ -181,21 +181,21 @@ public class TopLevelWindow : InputOutputWidget
 					SetWMHints(display, handle);
 
 					// Set some other string properties.
-					String name = CultureInfo.CurrentCulture.Name;
-					if(name == null || name == String.Empty)
+					String cultureName = CultureInfo.CurrentCulture.Name;
+					if(cultureName == null || cultureName == String.Empty)
 					{
-						name = "en_US";
+						cultureName = "en_US";
 					}
 					else
 					{
-						name = name.Replace("-", "_");
+						cultureName = cultureName.Replace("-", "_");
 					}
-					SetTextProperty(display, handle, "WM_LOCALE_NAME", name);
-					name = Application.Hostname;
-					if(name != null)
+					SetTextProperty(display, handle, "WM_LOCALE_NAME", cultureName);
+					cultureName = Application.Hostname;
+					if(cultureName != null)
 					{
 						SetTextProperty(display, handle,
-										"WM_CLIENT_MACHINE", name);
+										"WM_CLIENT_MACHINE", cultureName);
 					}
 					if(isFirst)
 					{
@@ -722,7 +722,7 @@ public class TopLevelWindow : InputOutputWidget
 	private void SendMaximizeMessage
 				(IntPtr display, Xlib.Window handle, bool maximize)
 			{
-				XEvent xevent;
+				XEvent xevent = new XEvent();
 				xevent.xany.type = (int)(EventType.ClientMessage);
 				xevent.xany.window = handle;
 				xevent.xclient.message_type = Xlib.XInternAtom

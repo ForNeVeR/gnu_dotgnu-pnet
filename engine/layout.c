@@ -819,8 +819,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		while(implements != 0)
 		{
 			parent = ILClassResolve(implements->interface);
-			if(parent->userData &&
-			   ((ILClassPrivate *)(parent->userData))->vtableSize)
+			if(parent->userData)
 			{
 				if(!ComputeInterfaceTable(info, parent))
 				{

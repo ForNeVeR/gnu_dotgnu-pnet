@@ -6,6 +6,8 @@ documentation elements.
 
 * csdoc/doc_texi.c: dump the contents of "Docs" elements.
 
+* cscc/cs_misc.tc: remove invoke-related node types.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

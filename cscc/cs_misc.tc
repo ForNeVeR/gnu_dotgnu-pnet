@@ -300,17 +300,3 @@ ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
 	/* TODO */
 	return CSSemValueDefault;
 }
-
-ILNode_SemAnalysis(ILNode_InvocationExpression)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_BaseInit),
-ILNode_SemAnalysis(ILNode_ThisInit)
-{
-	/* These are place-holders that assist "InvocationExpression"
-	   when invoking parent class constructors */
-	return CSSemValueDefault;
-}

@@ -2003,6 +2003,57 @@ cleanup:
 	haveDebug = 0;
 }
 
+void ILAsmOutAddResource(const char *name, FILE *stream)
+{
+	unsigned long rva;
+	unsigned long length;
+	char buffer[BUFSIZ];
+	int len;
+	ILManifestRes *res;
+
+	/* Strip the directory information from the filename */
+	len = strlen(name);
+	while(len > 0 && name[len - 1] != '/' && name[len - 1] != '\\')
+	{
+		--len;
+	}
+	name += len;
+
+	/* Initialize the resources section */
+	ILWriterTextAlign(ILAsmWriter);
+	rva = ILWriterGetTextRVA(ILAsmWriter);
+
+	/* Write a place-holder for the resource length */
+	ILMemZero(buffer, 4);
+	ILWriterTextWrite(ILAsmWriter, buffer, 4);
+
+	/* Copy the contents of the input stream to the resource section */
+	length = 0;
+	while((len = fread(buffer, 1, BUFSIZ, stream)) > 0)
+	{
+		ILWriterTextWrite(ILAsmWriter, buffer, len);
+		length += (unsigned long)len;
+		if(len < BUFSIZ)
+		{
+			break;
+		}
+	}
+
+	/* Back-patch the place-holder with the resource length */
+	ILWriterTextWrite32Bit(ILAsmWriter, rva, length);
+
+	/* Update the total size of the resources section */
+	ILWriterUpdateHeader(ILAsmWriter, IL_IMAGEENTRY_RESOURCES, rva,
+						 ILWriterGetTextRVA(ILAsmWriter) - rva);
+
+	/* Add a manifest resource record to the metadata */
+	res = ILManifestResCreate(ILAsmImage, 0, name, IL_META_MANIFEST_PUBLIC);
+	if(!res)
+	{
+		ILAsmOutOfMemory();
+	}
+}
+
 void ILJavaAsmInitPool()
 {
 	ILJavaInitPool(ILAsmWriter, ILAsmClass);

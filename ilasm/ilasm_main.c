@@ -86,6 +86,25 @@ static ILCmdLineOption const options[] = {
 	{"--help", 'h', 0,
 		"--help",
 		"Print this help message."},
+
+	/* Options for compatibility with Microsoft's IL assembler */
+	{"/ali*", '?', 1, 0, 0},	/* "/alignment=integer" */
+	{"/bas*", '?', 1, 0, 0},	/* "/base=integer" */
+	{"/clo*", '?', 0, 0, 0},	/* "/clock" */
+	{"/deb*", 'g', 0, 0, 0},	/* "/debug" */
+	{"/dll", 'd', 0, 0, 0},
+	{"/exe", 'e', 0, 0, 0},
+	{"/fla*", '?', 1, 0, 0},	/* "/flags=integer" */
+	{"/key", '?', 1, 0, 0},		/* "/key:key-identifier" */
+	{"/lis*", '?', 0, 0, 0},	/* "/listing" */
+	{"/nol*", 'N', 0, 0, 0},	/* "/nologo" */
+	{"/out*", 'o', 1, 0, 0},	/* "/output:filename" */
+	{"/qui*", 'N', 0, 0, 0},	/* "/quiet" */
+	{"/res*", 'R', 1, 0, 0},	/* "/resource:filename" */
+	{"/sub*", '?', 1, 0, 0},	/* "/subsystem=integer" */
+	{"/?", 'h', 0, 0, 0},
+	{"/hel*", 'h', 0, 0, 0},	/* "/help" */
+
 	{0, 0, 0, 0, 0}
 };
 
@@ -125,6 +144,8 @@ int main(int argc, char *argv[])
 	FILE *infile;
 	FILE *outfile;
 	int flags = IL_WRITEFLAG_SUBSYS_CUI;
+	int defFormatIsExe = 0;
+	char *resourceFile = 0;
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -298,6 +319,27 @@ int main(int argc, char *argv[])
 			}
 			/* Not reached */
 
+			case '?':
+			{
+				/* Compatibility option that is ignored */
+			}
+			break;
+
+			case 'N':
+			{
+				/* "/nologo" or "/quiet": switch the default format to ".exe"
+				   instead of ".obj", to be compatible with MS'es ilasm */
+				defFormatIsExe = 1;
+			}
+			break;
+
+			case 'R':
+			{
+				/* Resource file specified using "/resource:FILE" */
+				resourceFile = param;
+			}
+			break;
+
 			default:
 			{
 				usage(progname);
@@ -317,7 +359,7 @@ int main(int argc, char *argv[])
 	/* Determine the default output format from the output file extension */
 	if(format == -1)
 	{
-		format = IL_IMAGETYPE_OBJ;
+		format = (defFormatIsExe ? IL_IMAGETYPE_EXE : IL_IMAGETYPE_OBJ);
 		if(outputFile)
 		{
 			len = strlen(outputFile);
@@ -438,6 +480,26 @@ int main(int argc, char *argv[])
 		}
 		++argv;
 		--argc;
+	}
+
+	/* Process the MS compatibility resource file specification */
+	if(resourceFile)
+	{
+		if((infile = fopen(resourceFile, "rb")) == NULL)
+		{
+			/* Try again, in case libc does not understand "rb" */
+			infile = fopen(resourceFile, "r");
+		}
+		if(!infile)
+		{
+			perror(resourceFile);
+			ILAsmErrors = 1;
+		}
+		else
+		{
+			ILAsmOutAddResource(resourceFile, infile);
+			fclose(infile);
+		}
 	}
 
 	/* Exit if errors occurred during the parse */

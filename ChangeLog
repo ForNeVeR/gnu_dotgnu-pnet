@@ -13,6 +13,10 @@
 	* image/sig_writer.c (WriteType): fix the writing of multi-dimensional
 	array types (Bug #1961).
 
+	* ilasm/ilasm_main.c, ilasm/ilasm_output.c, ilasm/ilasm_output.h,
+	support/cmdline.c: add Microsoft command-line syntax compatibility
+	support to "ilasm".
+
 2002-12-11  Dawkins, David  <david.dawkins@brooks-pri.com>
 
 	* make_patch.sh: warn the user if updates occurred during the

@@ -223,6 +223,11 @@ void ILAsmOutAddTryBlock(char *blockStart, char *blockEnd,
 void ILAsmOutFinalizeMethod(ILMethod *method);
 
 /*
+ * Output a resource stream to the image being constructed.
+ */
+void ILAsmOutAddResource(const char *name, FILE *stream);
+
+/*
  * Initialize the constant pool attached to the current class
  */
 void ILJavaAsmInitPool();

@@ -26,10 +26,130 @@
 extern	"C" {
 #endif
 
+/*
+ * Determine if an option list contains '/' compatibility options.
+ */
+static int HasSlashOptions(const ILCmdLineOption *options)
+{
+	while(options->name != 0)
+	{
+		if(options->name[0] == '/')
+		{
+			return 1;
+		}
+		++options;
+	}
+	return 0;
+}
+
+/*
+ * Recognize a '/' compatibility option.  Returns the option value
+ * if valid, zero if not recognized, or -1 if an error occurred.
+ */
+static int RecognizeSlashOption(const ILCmdLineOption *options,
+								char *arg, char **param)
+{
+	int namelen;
+	const char *optname;
+	int posn, ch1, ch2;
+
+	/* Parse the option into name and value */
+	namelen = 1;
+	while(arg[namelen] != '\0' && arg[namelen] != ':' && arg[namelen] != '=')
+	{
+		++namelen;
+	}
+	if(arg[namelen] == '\0')
+	{
+		*param = 0;
+	}
+	else
+	{
+		*param = arg + namelen + 1;
+	}
+
+	/* Look through the option table for a match */
+	while(options->name != 0)
+	{
+		/* Skip non-slash options */
+		if(options->name[0] != '/')
+		{
+			++options;
+			continue;
+		}
+
+		/* Match the option name, while ignoring case.  If we come
+		   across a '*', then match only the prefix up to that point */
+		posn = 1;
+		optname = options->name;
+		while(optname[posn] != '\0')
+		{
+			ch1 = optname[posn];
+			if(ch1 >= 'A' && ch1 <= 'Z')
+			{
+				ch1 = ch1 - 'A' + 'a';
+			}
+			if(posn < namelen)
+			{
+				ch2 = arg[posn];
+			}
+			else
+			{
+				ch2 = '\0';
+			}
+			if(ch2 >= 'A' && ch2 <= 'Z')
+			{
+				ch2 = ch2 - 'A' + 'a';
+			}
+			if(ch1 == '*')
+			{
+				break;
+			}
+			else if(ch1 != ch2)
+			{
+				break;
+			}
+			++posn;
+		}
+
+		/* Did we get an option match? */
+		if((optname[posn] == '\0' && posn == namelen) || optname[posn] == '*')
+		{
+			if(options->hasParam)
+			{
+				if(*param)
+				{
+					return options->value;
+				}
+				else
+				{
+					return -1;
+				}
+			}
+			else
+			{
+				if(*param)
+				{
+					return -1;
+				}
+				else
+				{
+					return options->value;
+				}
+			}
+		}
+
+		/* Proceed to the next option in the table */
+		++options;
+	}
+	return 0;
+}
+
 int ILCmdLineNextOption(int *argc, char ***argv, int *state,
 						const ILCmdLineOption *options, char **param)
 {
 	char opt;
+	int value;
 
 	if(*state == 0)
 	{
@@ -45,6 +165,21 @@ int ILCmdLineNextOption(int *argc, char ***argv, int *state,
 		if(*argc <= 1)
 		{
 			return 0;
+		}
+		if((*argv)[1][0] == '/' && HasSlashOptions(options))
+		{
+			/* Recognise compatibility options that start with '/' */
+			value = RecognizeSlashOption(options, (*argv)[1], param);
+			if(value > 0)
+			{
+				--(*argc);
+				++(*argv);
+				return value;
+			}
+			else if(value < 0)
+			{
+				return value;
+			}
 		}
 		if((*argv)[1][0] != '-' || (*argv)[1][1] == '\0')
 		{

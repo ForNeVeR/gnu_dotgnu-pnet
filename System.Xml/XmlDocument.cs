@@ -622,10 +622,10 @@ class XmlDocument : XmlNode
 			}
 
 	// Load XML into this document.
-	[TODO]
 	public virtual void Load(Stream inStream)
 			{
-				// TODO
+				RemoveAll();
+				Load(new XmlTextReader(inStream));
 			}
 	public virtual void Load(String filename)
 			{
@@ -636,19 +636,31 @@ class XmlDocument : XmlNode
 				}
 				Load(new XmlTextReader(filename));
 			}
-	[TODO]
 	public virtual void Load(TextReader txtReader)
 			{
-				// TODO
+				RemoveAll();
+				Load(new XmlTextReader(txtReader));
 			}
 	public virtual void Load(XmlReader reader)
 			{
 				
 				RemoveAll();
 				XmlNode node;
-				while((node = ReadNode(reader)) != null)
+		
+				try
 				{
-					AppendChild(node);
+					if(!BuildStructure((XmlTextReader)reader))
+					{
+						throw new XmlException(
+								S._("XmlException_NoXml"));
+					}
+					
+					
+				}
+				catch(XmlException e)
+				{
+					throw new XmlException(
+							S._("XmlException_ParseError"));
 				}
 			}
 
@@ -657,11 +669,20 @@ class XmlDocument : XmlNode
 			{
 				if (xml == null || xml == String.Empty)
 				{
-					throw(new XmlException("no Xml to parse", null));
+					throw new XmlException(
+							S._("XmlException_NoXml"));
 				}
 				
 				XmlTextReader reader = new XmlTextReader(xml, XmlNodeType.Element, null);
-				BuildStructure(reader);
+				try
+				{
+					BuildStructure(reader);
+				}
+				catch(XmlException e)
+				{
+					throw new XmlException(
+							S._("XmlException_ParseError"));
+				}
 			}
 
 	// Used by Load/LoadXml methods to do the DOM structure
@@ -670,28 +691,12 @@ class XmlDocument : XmlNode
 				XmlNode parent = this;
 				XmlNode current = null;
 
-				while (reader.Read())
-				{
-					if (reader.IsStartElement() == true)
-					{
-						XmlElement elem = this.CreateElement(reader.Name);
-						parent.AppendChild(elem);
-						parent = elem;
-						current = elem;
-					}
-					else
-					{
-						parent = parent.ParentNode;
-					}
-					if (reader.NodeType == XmlNodeType.Text)
-					{
-						// If node has body text
-						current.InnerText = reader.Value;
-					}
-				}
+				parent = ReadNode(reader);
 				
-				if (this.ChildNodes.Count >0)
+				if(parent != null)
 				{
+				
+					this.AppendChild(parent);
 					return true;
 				}
 				else
@@ -701,7 +706,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Read a node into this document.
-	public virtual XmlNode ReadNode(XmlReader reader)
+	public virtual XmlNode ReadNode(XmlTextReader reader)
 			{
 				XmlNode currentNode = null,
 					newNode = null,

@@ -1,3 +1,9 @@
+2003-03-31  Adam Ballai  <minddog@cannibutter.com>
+
+	* System.Xml/XmlTextReader.cs,
+	System.Xml/XmlDocument.cs,
+	tests/System.Xml/TestXmlDocument.cs: Fix for bug(3012) and more
+	implemented methods in XmlDocument.
 
 2003-03-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -20,6 +20,7 @@
 
 using CSUnit;
 using System;
+using System.IO;
 using System.Xml;
 
 #if !ECMA_COMPAT
@@ -45,6 +46,8 @@ public class TestXmlDocument : TestCase
 				// Nothing to do here.
 			}
 
+	public string xmlASCII = "<UI version=\"3.1\" stdsetdef=\"1\"><class>Form1</class><widget class=\"QDialog\"><property name=\"name\"><cstring>Form1</cstring></property><property name=\"geometry\"><rect><x>0</x><y>0</y><width>179</width><height>158</height></rect></property><property name=\"caption\"><string>Form1</string></property></widget></UI>";
+		
 	// Test document construction.
 	public void TestXmlDocumentConstruct()
 			{
@@ -292,6 +295,20 @@ public class TestXmlDocument : TestCase
 
 				// Adding a document type before should succeed.
 				doc.InsertBefore(type, element);
+			}
+	
+	// Test searching children ie: doc["elementname"]
+	public void TestXmlDocumentFindElement()
+			{
+				XmlDocument doc = new XmlDocument();
+				doc.Load( new StringReader(xmlASCII) );
+				XmlElement e = doc["UI"];
+				AssertEquals("XmlFindElement (1)", "UI", e.Name);
+				AssertEquals("XmlFindElement (2)", "Form1", e["class"].InnerText);
+				AssertEquals("XmlFindElement (3)", "Form1", e["widget"]["property"].InnerText);
+				
+				XmlElement n = doc["notgonnabefound"];
+				AssertNull("XmlFindElement (2)", n);
 			}
 
 }; // class TestXmlDocument

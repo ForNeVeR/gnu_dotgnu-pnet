@@ -167,7 +167,7 @@ public class XmlTextReader : XmlReader
 				reader = input;
 				if(input is StreamReader)
 				{
-					encoding = ((XmlStreamReader)input).CurrentEncoding;
+					encoding = ((StreamReader)input).CurrentEncoding;
 				}
 			}
 	public XmlTextReader(Stream xmlFragment, XmlNodeType fragType,

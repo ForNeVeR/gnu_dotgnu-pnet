@@ -1,6 +1,4 @@
 
-AUTOMAKE_OPTIONS = no-dependencies
-
 SUBDIRS = ctype \
 		  dirent \
 		  locale \

@@ -1,6 +1,4 @@
 
-AUTOMAKE_OPTIONS = no-dependencies
-
 noinst_PROGRAMS = dirent.exe hello.exe hello2.exe stack.exe pwd.exe
 
 dirent_exe_SOURCES = dirent.c

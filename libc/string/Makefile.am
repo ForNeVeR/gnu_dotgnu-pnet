@@ -1,4 +1,3 @@
-AUTOMAKE_OPTIONS = no-dependencies
 
 noinst_LIBRARIES = libCString.a
 

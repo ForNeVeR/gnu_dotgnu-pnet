@@ -1,4 +1,3 @@
-AUTOMAKE_OPTIONS = no-dependencies
 
 all-local: libm.dll
 

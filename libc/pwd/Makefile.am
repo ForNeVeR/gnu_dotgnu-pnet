@@ -1,6 +1,4 @@
 
-AUTOMAKE_OPTIONS = no-dependencies
-
 noinst_LIBRARIES = libCPwd.a
 
 libCPwd_a_SOURCES = endgrent.c \

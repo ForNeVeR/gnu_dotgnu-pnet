@@ -1,4 +1,9 @@
 
+2003-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingWindow.cs: map X11 key codes to
+	System.Drawing key codes.
+
 2003-07-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/XmlTextWriter.cs: Fix indentation problem with textwriter

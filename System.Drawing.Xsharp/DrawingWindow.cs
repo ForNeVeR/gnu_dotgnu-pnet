@@ -222,7 +222,111 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	// Map an Xsharp key description into a "ToolkitKeys" value.
 	internal static ToolkitKeys MapKey(KeyName key, ModifierMask modifiers)
 			{
-				// TODO
+				switch(key)
+				{
+					case KeyName.XK_BackSpace:		return ToolkitKeys.Back;
+					case KeyName.XK_Tab:			return ToolkitKeys.Tab;
+					case KeyName.XK_KP_Tab:			return ToolkitKeys.Tab;
+					case KeyName.XK_Linefeed:		return ToolkitKeys.LineFeed;
+					case KeyName.XK_Clear:			return ToolkitKeys.Clear;
+					case KeyName.XK_Return:			return ToolkitKeys.Enter;
+					case KeyName.XK_KP_Enter:		return ToolkitKeys.Enter;
+					case KeyName.XK_Pause:			return ToolkitKeys.Pause;
+					case KeyName.XK_Scroll_Lock:	return ToolkitKeys.Scroll;
+					case KeyName.XK_Escape:			return ToolkitKeys.Escape;
+					case KeyName.XK_Delete:			return ToolkitKeys.Delete;
+					case KeyName.XK_KP_Delete:		return ToolkitKeys.Delete;
+					case KeyName.XK_Home:			return ToolkitKeys.Home;
+					case KeyName.XK_KP_Home:		return ToolkitKeys.Home;
+					case KeyName.XK_Begin:			return ToolkitKeys.Home;
+					case KeyName.XK_KP_Begin:		return ToolkitKeys.Home;
+					case KeyName.XK_Left:			return ToolkitKeys.Left;
+					case KeyName.XK_KP_Left:		return ToolkitKeys.Left;
+					case KeyName.XK_Up:				return ToolkitKeys.Up;
+					case KeyName.XK_KP_Up:			return ToolkitKeys.Up;
+					case KeyName.XK_Right:			return ToolkitKeys.Right;
+					case KeyName.XK_KP_Right:		return ToolkitKeys.Right;
+					case KeyName.XK_Down:			return ToolkitKeys.Down;
+					case KeyName.XK_KP_Down:		return ToolkitKeys.Down;
+					case KeyName.XK_Prior:			return ToolkitKeys.Prior;
+					case KeyName.XK_KP_Prior:		return ToolkitKeys.Prior;
+					case KeyName.XK_Next:			return ToolkitKeys.Next;
+					case KeyName.XK_KP_Next:		return ToolkitKeys.Next;
+					case KeyName.XK_End:			return ToolkitKeys.End;
+					case KeyName.XK_KP_End:			return ToolkitKeys.End;
+					case KeyName.XK_Select:			return ToolkitKeys.Select;
+					case KeyName.XK_Print:			return ToolkitKeys.Print;
+					case KeyName.XK_Execute:		return ToolkitKeys.Execute;
+					case KeyName.XK_Insert:			return ToolkitKeys.Insert;
+					case KeyName.XK_KP_Insert:		return ToolkitKeys.Insert;
+					case KeyName.XK_Help:			return ToolkitKeys.Help;
+					case KeyName.XK_Num_Lock:		return ToolkitKeys.NumLock;
+					case KeyName.XK_KP_Space:		return ToolkitKeys.Space;
+					case KeyName.XK_F1:				return ToolkitKeys.F1;
+					case KeyName.XK_KP_F1:			return ToolkitKeys.F1;
+					case KeyName.XK_F2:				return ToolkitKeys.F2;
+					case KeyName.XK_KP_F2:			return ToolkitKeys.F2;
+					case KeyName.XK_F3:				return ToolkitKeys.F3;
+					case KeyName.XK_KP_F3:			return ToolkitKeys.F3;
+					case KeyName.XK_F4:				return ToolkitKeys.F4;
+					case KeyName.XK_KP_F4:			return ToolkitKeys.F4;
+					case KeyName.XK_F5:				return ToolkitKeys.F5;
+					case KeyName.XK_F6:				return ToolkitKeys.F6;
+					case KeyName.XK_F7:				return ToolkitKeys.F7;
+					case KeyName.XK_F8:				return ToolkitKeys.F8;
+					case KeyName.XK_F9:				return ToolkitKeys.F9;
+					case KeyName.XK_F10:			return ToolkitKeys.F10;
+					case KeyName.XK_F11:			return ToolkitKeys.F11;
+					case KeyName.XK_F12:			return ToolkitKeys.F12;
+					case KeyName.XK_F13:			return ToolkitKeys.F13;
+					case KeyName.XK_F14:			return ToolkitKeys.F14;
+					case KeyName.XK_F15:			return ToolkitKeys.F15;
+					case KeyName.XK_F16:			return ToolkitKeys.F16;
+					case KeyName.XK_F17:			return ToolkitKeys.F17;
+					case KeyName.XK_F18:			return ToolkitKeys.F18;
+					case KeyName.XK_F19:			return ToolkitKeys.F19;
+					case KeyName.XK_F20:			return ToolkitKeys.F20;
+					case KeyName.XK_F21:			return ToolkitKeys.F21;
+					case KeyName.XK_F22:			return ToolkitKeys.F22;
+					case KeyName.XK_F23:			return ToolkitKeys.F23;
+					case KeyName.XK_F24:			return ToolkitKeys.F24;
+					case KeyName.XK_KP_Multiply:	return ToolkitKeys.Multiply;
+					case KeyName.XK_KP_Add:			return ToolkitKeys.Add;
+					case KeyName.XK_KP_Separator:
+							return ToolkitKeys.Separator;
+					case KeyName.XK_KP_Subtract:	return ToolkitKeys.Subtract;
+					case KeyName.XK_KP_Decimal:		return ToolkitKeys.Decimal;
+					case KeyName.XK_KP_Divide:		return ToolkitKeys.Divide;
+					case KeyName.XK_KP_0:			return ToolkitKeys.NumPad0;
+					case KeyName.XK_KP_1:			return ToolkitKeys.NumPad1;
+					case KeyName.XK_KP_2:			return ToolkitKeys.NumPad2;
+					case KeyName.XK_KP_3:			return ToolkitKeys.NumPad3;
+					case KeyName.XK_KP_4:			return ToolkitKeys.NumPad4;
+					case KeyName.XK_KP_5:			return ToolkitKeys.NumPad5;
+					case KeyName.XK_KP_6:			return ToolkitKeys.NumPad6;
+					case KeyName.XK_KP_7:			return ToolkitKeys.NumPad7;
+					case KeyName.XK_KP_8:			return ToolkitKeys.NumPad8;
+					case KeyName.XK_KP_9:			return ToolkitKeys.NumPad9;
+					case KeyName.XK_Shift_L:
+							return ToolkitKeys.LShiftKey;
+					case KeyName.XK_Shift_R:
+							return ToolkitKeys.RShiftKey;
+					case KeyName.XK_Control_L:
+							return ToolkitKeys.LControlKey;
+					case KeyName.XK_Control_R:
+							return ToolkitKeys.RControlKey;
+					case KeyName.XK_Meta_L:
+					case KeyName.XK_Alt_L:
+					case KeyName.XK_Super_L:
+					case KeyName.XK_Hyper_L:
+							return ToolkitKeys.LMenu;
+					case KeyName.XK_Meta_R:
+					case KeyName.XK_Alt_R:
+					case KeyName.XK_Super_R:
+					case KeyName.XK_Hyper_R:
+							return ToolkitKeys.RMenu;
+					case KeyName.XK_Caps_Lock:		return ToolkitKeys.CapsLock;
+				}
 				return ToolkitKeys.None;
 			}
 

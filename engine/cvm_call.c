@@ -156,7 +156,7 @@ ILInt32 numParams;
  *   a full account of frame handling, argument handling, etc.</notes>
  * </opcode>
  */
-case COP_CALL:
+VMCASE(COP_CALL):
 {
 	/* Call a method that has already been converted into CVM code */
 	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
@@ -178,7 +178,7 @@ case COP_CALL:
 	++(method->count);
 #endif
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="call_extern" group="Call management instructions">
@@ -222,7 +222,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CALL_EXTERN:
+VMCASE(COP_CALL_EXTERN):
 {
 	/* Call a method that we don't know if it has been converted */
 	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
@@ -273,7 +273,7 @@ case COP_CALL_EXTERN:
 	++(method->count);
 #endif
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="call_ctor" group="Call management instructions">
@@ -304,7 +304,7 @@ break;
  *   a full account of frame handling, argument handling, etc.</notes>
  * </opcode>
  */
-case COP_CALL_CTOR:
+VMCASE(COP_CALL_CTOR):
 {
 	/* Call a constructor that we don't know if it has been converted */
 	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
@@ -337,7 +337,7 @@ case COP_CALL_CTOR:
 	++(method->count);
 #endif
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="call_native" group="Call management instructions">
@@ -369,7 +369,7 @@ break;
  *   the CVM stack prior to exiting.</notes>
  * </opcode>
  */
-case COP_CALL_NATIVE:
+VMCASE(COP_CALL_NATIVE):
 {
 	/* Call a native method */
 	COPY_STATE_TO_THREAD();
@@ -380,7 +380,7 @@ case COP_CALL_NATIVE:
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="call_native_void" group="Call management instructions">
@@ -395,7 +395,7 @@ break;
  *   not to have a return value.</description>
  * </opcode>
  */
-case COP_CALL_NATIVE_VOID:
+VMCASE(COP_CALL_NATIVE_VOID):
 {
 	/* Call a native method that has no return value */
 	COPY_STATE_TO_THREAD();
@@ -405,7 +405,7 @@ case COP_CALL_NATIVE_VOID:
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="call_virtual" group="Call management instructions">
@@ -434,7 +434,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CALL_VIRTUAL:
+VMCASE(COP_CALL_VIRTUAL):
 {
 	/* Call a virtual method */
 	tempptr = stacktop[-((ILInt32)(pc[1]))].ptrValue;
@@ -477,7 +477,7 @@ case COP_CALL_VIRTUAL:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="call_interface" group="Call management instructions">
@@ -510,7 +510,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CALL_INTERFACE:
+VMCASE(COP_CALL_INTERFACE):
 {
 	/* Call an interface method */
 	tempptr = stacktop[-((ILInt32)(pc[1]))].ptrValue;
@@ -558,7 +558,7 @@ case COP_CALL_INTERFACE:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="cctor_once" group="Call management instructions">
@@ -582,7 +582,7 @@ break;
  *   looping indefinitely.</notes>
  * </opcode>
  */
-case COP_CCTOR_ONCE:
+VMCASE(COP_CCTOR_ONCE):
 {
 	/* Execute the rest of this static constructor method once only */
 	if((method->member.owner->attributes & IL_META_TYPEDEF_CCTOR_ONCE) == 0)
@@ -590,7 +590,7 @@ case COP_CCTOR_ONCE:
 		/* We haven't executed this method yet, so mark and continue */
 		method->member.owner->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
 		MODIFY_PC_AND_STACK(1, 0);
-		break;
+		VMBREAK;
 	}
 }
 /* Fall through to the next case */
@@ -619,7 +619,7 @@ case COP_CCTOR_ONCE:
  *   is executed, the first step above will pop all of the arguments.</notes>
  * </opcode>
  */
-case COP_RETURN:
+VMCASE(COP_RETURN):
 {
 	/* Return from a method with no return value */
 	stacktop = frame;
@@ -646,7 +646,7 @@ popFrame:
 	DUMP_STACK();
 #endif
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="return_1" group="Call management instructions">
@@ -676,7 +676,7 @@ break;
  *   with the single-word return value left in their place.</notes>
  * </opcode>
  */
-case COP_RETURN_1:
+VMCASE(COP_RETURN_1):
 {
 	/* Return from a method with a single-word return value */
 	frame[0] = stacktop[-1];
@@ -713,7 +713,7 @@ case COP_RETURN_1:
  *   with the double-word return value left in their place.</notes>
  * </opcode>
  */
-case COP_RETURN_2:
+VMCASE(COP_RETURN_2):
 {
 	/* Return from a method with a double-word return value */
 	frame[0] = stacktop[-2];
@@ -751,7 +751,7 @@ case COP_RETURN_2:
  *   with the <i>n</i>-word return value left in their place.</notes>
  * </opcode>
  */
-case COP_RETURN_N:
+VMCASE(COP_RETURN_N):
 {
 	/* Return from a method with an N-word return value */
 	tempNum = IL_READ_UINT32(pc + 1);
@@ -776,13 +776,13 @@ case COP_RETURN_N:
  *   </description>
  * </opcode>
  */
-case COP_PUSH_THREAD:
+VMCASE(COP_PUSH_THREAD):
 {
 	/* Push a pointer to the thread value onto the native argument stack */
 	nativeArgs[0] = (void *)&thread;
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pushdown" group="Call management instructions">
@@ -807,7 +807,7 @@ break;
  *   argument for the constructor method.</notes>
  * </opcode>
  */
-case COP_PUSHDOWN:
+VMCASE(COP_PUSHDOWN):
 {
 	/* Push a value on the stack top down and duplicate it twice */
 	if(((ILUInt32)(stackmax - stacktop)) >= 1)
@@ -828,16 +828,16 @@ case COP_PUSHDOWN:
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 #define COP_WADDR_NATIVE(name,value)	\
-case COP_WADDR_NATIVE_##name: \
+VMCASE(COP_WADDR_NATIVE_##name): \
 { \
 	/* Set a value within the native argument stack */ \
 	nativeArgs[(value) + 1] = (void *)(&(frame[pc[1]])); \
 	MODIFY_PC_AND_STACK(2, 0); \
 } \
-break
+VMBREAK
 
 /**
  * <opcode name="waddr_native_&lt;n&gt;" group="Call management instructions">
@@ -918,7 +918,7 @@ case COP_CALL_VIRTUAL:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 case COP_CALL_INTERFACE:
 {
@@ -968,23 +968,23 @@ case COP_CALL_INTERFACE:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
-case COP_CALLI:
+VMCASE(COP_CALLI):
 {
 	/* Call a method by pointer */
 	/* TODO */
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
-case COP_JMPI:
+VMCASE(COP_JMPI):
 {
 	/* Jump to a method by pointer */
 	/* TODO */
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 #define COP_WADDR_NATIVE_WIDE(name,value)	\
 case COP_WADDR_NATIVE_##name: \
@@ -1021,7 +1021,7 @@ COP_WADDR_NATIVE_WIDE(7, 7);
  *   use tail call semantics.</description>
  * </opcode>
  */
-case COP_PREFIX_TAIL:
+VMCASE(COP_PREFIX_TAIL):
 {
 	/*
 	 * It will be necessary to adjust the stack based upon the
@@ -1072,6 +1072,7 @@ case COP_PREFIX_TAIL:
 #ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);
 #endif
+		break;
 
 	default:
 		MODIFY_PC_AND_STACK(2, 0);
@@ -1079,7 +1080,7 @@ case COP_PREFIX_TAIL:
 		break;
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldftn" group="Call management instructions">
@@ -1099,13 +1100,13 @@ break;
  *   depending upon the platform.</notes>
  * </opcode>
  */
-case COP_PREFIX_LDFTN:
+VMCASE(COP_PREFIX_LDFTN):
 {
 	/* Load the address of a function onto the stack */
 	stacktop[0].ptrValue = ReadPointer(pc + 2);
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldvirtftn" group="Call management instructions">
@@ -1125,7 +1126,7 @@ break;
  *   as type <code>ptr</code>.</description>
  * </opcode>
  */
-case COP_PREFIX_LDVIRTFTN:
+VMCASE(COP_PREFIX_LDVIRTFTN):
 {
 	/* Load the address of a virtual function onto the stack */
 	tempptr = stacktop[-1].ptrValue;
@@ -1141,7 +1142,7 @@ case COP_PREFIX_LDVIRTFTN:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldinterfftn" group="Call management instructions">
@@ -1165,7 +1166,7 @@ break;
  *   depending upon the platform.</notes>
  * </opcode>
  */
-case COP_PREFIX_LDINTERFFTN:
+VMCASE(COP_PREFIX_LDINTERFFTN):
 {
 	/* Load the address of an interface function onto the stack */
 	tempptr = stacktop[-1].ptrValue;
@@ -1182,6 +1183,6 @@ case COP_PREFIX_LDINTERFFTN:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_PREFIX */

@@ -48,21 +48,21 @@
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_LDNULL:
+VMCASE(COP_LDNULL):
 {
 	/* Load the "null" pointer value to the stack top */
 	stacktop[0].ptrValue = 0;
 	MODIFY_PC_AND_STACK(1, 1);
 }
-break;
+VMBREAK;
 
 #define	COP_LDC_I4_VALUE(name,value)	\
-case COP_LDC_I4_##name: \
+VMCASE(COP_LDC_I4_##name): \
 { \
 	stacktop[0].intValue = (ILInt32)(value); \
 	MODIFY_PC_AND_STACK(1, 1); \
 } \
-break \
+VMBREAK \
 
 /**
  * <opcode name="ldc_i4_&lt;n&gt;" group="Constant loading">
@@ -122,13 +122,13 @@ COP_LDC_I4_VALUE(8, 8);
  *   of type <code>uint32</code> onto the stack.</notes>
  * </opcode>
  */
-case COP_LDC_I4_S:
+VMCASE(COP_LDC_I4_S):
 {
 	/* Load an 8-bit integer constant onto the stack */
 	stacktop[0].intValue = (ILInt32)(ILInt8)(pc[1]);
 	MODIFY_PC_AND_STACK(2, 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldc_i4" group="Constant loading">
@@ -148,13 +148,13 @@ break;
  *   of type <code>uint32</code> onto the stack.</notes>
  * </opcode>
  */
-case COP_LDC_I4:
+VMCASE(COP_LDC_I4):
 {
 	/* Load a 32-bit integer constant onto the stack */
 	stacktop[0].intValue = IL_READ_INT32(pc + 1);
 	MODIFY_PC_AND_STACK(5, 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldc_i8" group="Constant loading">
@@ -174,13 +174,13 @@ break;
  *   of type <code>uint64</code> onto the stack.</notes>
  * </opcode>
  */
-case COP_LDC_I8:
+VMCASE(COP_LDC_I8):
 {
 	/* Load a 64-bit integer constant onto the stack */
 	WriteLong(&(stacktop[0]), IL_READ_INT64(pc + 1));
 	MODIFY_PC_AND_STACK(9, CVM_WORDS_PER_LONG);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldc_r4" group="Constant loading">
@@ -198,14 +198,14 @@ break;
  *   stack as <i>value</i>.</description>
  * </opcode>
  */
-case COP_LDC_R4:
+VMCASE(COP_LDC_R4):
 {
 	/* Load a 32-bit floating point value onto the stack */
 	WriteFloat(&(stacktop[0]),
 		(ILNativeFloat)IL_READ_FLOAT(pc + 1));
 	MODIFY_PC_AND_STACK(5, CVM_WORDS_PER_NATIVE_FLOAT);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldc_r8" group="Constant loading">
@@ -223,13 +223,13 @@ break;
  *   stack as <i>value</i>.</description>
  * </opcode>
  */
-case COP_LDC_R8:
+VMCASE(COP_LDC_R8):
 {
 	/* Load a 64-bit floating point value onto the stack */
 	WriteFloat(&(stacktop[0]),
 		(ILNativeFloat)IL_READ_DOUBLE(pc + 1));
 	MODIFY_PC_AND_STACK(9, CVM_WORDS_PER_NATIVE_FLOAT);
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_MAIN */

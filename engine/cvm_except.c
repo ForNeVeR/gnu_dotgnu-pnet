@@ -112,14 +112,14 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
  *   blocks.</notes>
  * </opcode>
  */
-case COP_JSR:
+VMCASE(COP_JSR):
 {
 	/* Jump to a subroutine within this method */
 	stacktop[0].ptrValue = (void *)(pc + 6);
 	pc += (ILInt32)(ILInt8)(pc[1]);
 	stacktop += 1;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ret_jsr" group="Exception handling instructions">
@@ -139,13 +139,13 @@ break;
  *   blocks.</notes>
  * </opcode>
  */
-case COP_RET_JSR:
+VMCASE(COP_RET_JSR):
 {
 	/* Return from a subroutine within this method */
 	pc = (unsigned char *)(stacktop[-1].ptrValue);
 	stacktop -= 1;
 }
-break;
+VMBREAK;
 
 #elif defined(IL_CVM_PREFIX)
 
@@ -167,13 +167,13 @@ break;
  *   to when an exception is thrown.</notes>
  * </opcode>
  */
-case COP_PREFIX_ENTER_TRY:
+VMCASE(COP_PREFIX_ENTER_TRY):
 {
 	/* Enter a try context for this method */
 	thread->exceptHeight = (ILUInt32)(stacktop - frame);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /* Label that we jump to when the engine throws an internal exception */
 throwException:
@@ -211,7 +211,7 @@ throwException:
  *   the exception matching code.</notes>
  * </opcode>
  */
-case COP_PREFIX_THROW:
+VMCASE(COP_PREFIX_THROW):
 {
 	/* Move the exception object down the stack to just above the locals */
 	frame[thread->exceptHeight].ptrValue = stacktop[-1].ptrValue;
@@ -231,7 +231,7 @@ searchForHandler:
 	}
 	pc += 12;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="throw_caller" group="Exception handling instructions">
@@ -256,7 +256,7 @@ break;
  *   if the method does include <code>try</code> blocks.</notes>
  * </opcode>
  */
-case COP_PREFIX_THROW_CALLER:
+VMCASE(COP_PREFIX_THROW_CALLER):
 {
 	/* Throw an exception to the caller of this method */
 throwCaller:

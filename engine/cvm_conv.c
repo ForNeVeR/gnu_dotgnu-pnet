@@ -206,13 +206,13 @@ ILInt32 position;
  *   onto the stack.</description>
  * </opcode>
  */
-case COP_I2B:
+VMCASE(COP_I2B):
 {
 	/* Convert from integer to signed byte */
 	stacktop[-1].intValue = (ILInt32)(ILInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2ub" group="Conversion operators">
@@ -232,13 +232,13 @@ break;
  *   onto the stack.</description>
  * </opcode>
  */
-case COP_I2UB:
+VMCASE(COP_I2UB):
 {
 	/* Convert from integer to unsigned byte */
 	stacktop[-1].intValue = (ILInt32)(ILUInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2s" group="Conversion operators">
@@ -258,13 +258,13 @@ break;
  *   onto the stack.</description>
  * </opcode>
  */
-case COP_I2S:
+VMCASE(COP_I2S):
 {
 	/* Convert from integer to signed short */
 	stacktop[-1].intValue = (ILInt32)(ILInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2us" group="Conversion operators">
@@ -284,13 +284,13 @@ break;
  *   onto the stack.</description>
  * </opcode>
  */
-case COP_I2US:
+VMCASE(COP_I2US):
 {
 	/* Convert from integer to unsigned short */
 	stacktop[-1].intValue = (ILInt32)(ILUInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2l" group="Conversion operators">
@@ -309,13 +309,13 @@ break;
  *   The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_I2L:
+VMCASE(COP_I2L):
 {
 	/* Convert from integer to long */
 	WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].intValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iu2l" group="Conversion operators">
@@ -334,13 +334,13 @@ break;
  *   The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_IU2L:
+VMCASE(COP_IU2L):
 {
 	/* Convert from unsigned integer to long */
 	WriteLong(&(stacktop[-1]), (ILInt64)(stacktop[-1].uintValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_LONG - 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2f" group="Conversion operators">
@@ -359,13 +359,13 @@ break;
  *   <i>result</i>.  The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_I2F:
+VMCASE(COP_I2F):
 {
 	/* Convert from integer to "native float" */
 	WriteFloat(&(stacktop[-1]), (ILNativeFloat)(stacktop[-1].intValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iu2f" group="Conversion operators">
@@ -384,13 +384,13 @@ break;
  *   <i>result</i>.  The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_IU2F:
+VMCASE(COP_IU2F):
 {
 	/* Convert from unsigned integer to "native float" */
 	WriteFloat(&(stacktop[-1]), (ILNativeFloat)(stacktop[-1].uintValue));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="l2i" group="Conversion operators">
@@ -409,14 +409,14 @@ break;
  *   The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_L2I:
+VMCASE(COP_L2I):
 {
 	/* Convert from long to integer */
 	stacktop[-CVM_WORDS_PER_LONG].intValue =
 		(ILInt32)(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_LONG - 1));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="l2f" group="Conversion operators">
@@ -441,7 +441,7 @@ break;
  *   conversions from <code>int64</code> to <code>native float</code>.</notes>
  * </opcode>
  */
-case COP_L2F:
+VMCASE(COP_L2F):
 {
 	/* Convert from long to "native float" */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_LONG]),
@@ -449,7 +449,7 @@ case COP_L2F:
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT -
 						   CVM_WORDS_PER_LONG);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="lu2f" group="Conversion operators">
@@ -474,7 +474,7 @@ break;
  *   conversions from <code>uint64</code> to <code>native float</code>.</notes>
  * </opcode>
  */
-case COP_LU2F:
+VMCASE(COP_LU2F):
 {
 	/* Convert from unsigned long to "native float" */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_LONG]),
@@ -482,7 +482,7 @@ case COP_LU2F:
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT -
 						   CVM_WORDS_PER_LONG);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2i" group="Conversion operators">
@@ -501,14 +501,14 @@ break;
  *   <i>result</i>.  The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_F2I:
+VMCASE(COP_F2I):
 {
 	/* Convert from "native float" to integer */
 	stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = (ILInt32)
 		(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2iu" group="Conversion operators">
@@ -527,14 +527,14 @@ break;
  *   <i>result</i>.  The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_F2IU:
+VMCASE(COP_F2IU):
 {
 	/* Convert from "native float" to unsigned integer */
 	stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].uintValue = (ILUInt32)
 		(ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT - 1));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2l" group="Conversion operators">
@@ -553,7 +553,7 @@ break;
  *   <i>result</i>.  The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_F2L:
+VMCASE(COP_F2L):
 {
 	/* Convert from "native float" to long */
 	WriteLong(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]), (ILInt64)
@@ -561,7 +561,7 @@ case COP_F2L:
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT -
 							 CVM_WORDS_PER_LONG));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2lu" group="Conversion operators">
@@ -580,7 +580,7 @@ break;
  *   <i>result</i>.  The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_F2LU:
+VMCASE(COP_F2LU):
 {
 	/* Convert from "native float" to unsigned long */
 	WriteULong(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
@@ -588,7 +588,7 @@ case COP_F2LU:
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT -
 							 CVM_WORDS_PER_LONG));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2f" group="Conversion operators">
@@ -608,7 +608,7 @@ break;
  *   The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_F2F:
+VMCASE(COP_F2F):
 {
 	/* Convert from "native float" to "float" */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
@@ -616,7 +616,7 @@ case COP_F2F:
 		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2d" group="Conversion operators">
@@ -636,7 +636,7 @@ break;
  *   The <i>result</i> is pushed onto the stack.</description>
  * </opcode>
  */
-case COP_F2D:
+VMCASE(COP_F2D):
 {
 	/* Convert from "native float" to "double" */
 	WriteFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]),
@@ -644,7 +644,7 @@ case COP_F2D:
 		ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2p_lower" group="Conversion operators">
@@ -668,7 +668,7 @@ break;
  *   for use in unmanaged pointer operations.</notes>
  * </opcode>
  */
-case COP_I2P_LOWER:
+VMCASE(COP_I2P_LOWER):
 {
 	/* Convert an I4 value into a pointer value that
 	   is lower down on the stack */
@@ -676,7 +676,7 @@ case COP_I2P_LOWER:
 	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="fix_i4_i" group="Conversion operators">
@@ -707,7 +707,7 @@ break;
  *   be used to acheive the same result on 64-bit platforms.</notes>
  * </opcode>
  */
-case COP_FIX_I4_I:
+VMCASE(COP_FIX_I4_I):
 {
 	/* Fix a (I4, I) pair on the stack to be (I, I) */
 #ifdef IL_NATIVE_INT64
@@ -720,7 +720,7 @@ case COP_FIX_I4_I:
 	MODIFY_PC_AND_STACK(1, 0);
 #endif
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="fix_i4_u" group="Conversion operators">
@@ -751,7 +751,7 @@ break;
  *   be used to acheive the same result on 64-bit platforms.</notes>
  * </opcode>
  */
-case COP_FIX_I4_U:
+VMCASE(COP_FIX_I4_U):
 {
 	/* Fix a (I4, U) pair on the stack to be (U, U) */
 #ifdef IL_NATIVE_INT64
@@ -764,7 +764,7 @@ case COP_FIX_I4_U:
 	MODIFY_PC_AND_STACK(1, 0);
 #endif
 }
-break;
+VMBREAK;
 
 #elif defined(IL_CVM_WIDE)
 
@@ -776,7 +776,7 @@ case COP_I2P_LOWER:
 	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
 	MODIFY_PC_AND_STACK(6, 0);
 }
-break;
+VMBREAK;
 
 #elif defined(IL_CVM_PREFIX)
 
@@ -806,7 +806,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_I2B_OVF:
+VMCASE(COP_PREFIX_I2B_OVF):
 {
 	/* Convert "int" into "sbyte" with overflow testing */
 	if(stacktop[-1].intValue >= -128 && stacktop[-1].intValue <= 127)
@@ -818,7 +818,7 @@ case COP_PREFIX_I2B_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2ub_ovf" group="Conversion operators">
@@ -846,7 +846,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_I2UB_OVF:
+VMCASE(COP_PREFIX_I2UB_OVF):
 {
 	/* Convert "int" into "byte" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 255)
@@ -858,7 +858,7 @@ case COP_PREFIX_I2UB_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iu2b_ovf" group="Conversion operators">
@@ -884,7 +884,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_IU2B_OVF:
+VMCASE(COP_PREFIX_IU2B_OVF):
 {
 	/* Convert "uint" into "sbyte" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 127)
@@ -896,7 +896,7 @@ case COP_PREFIX_IU2B_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iu2ub_ovf" group="Conversion operators">
@@ -922,7 +922,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_IU2UB_OVF:
+VMCASE(COP_PREFIX_IU2UB_OVF):
 {
 	/* Convert "uint" into "byte" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 255)
@@ -934,7 +934,7 @@ case COP_PREFIX_IU2UB_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2s_ovf" group="Conversion operators">
@@ -962,7 +962,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_I2S_OVF:
+VMCASE(COP_PREFIX_I2S_OVF):
 {
 	/* Convert "int" into "short" with overflow testing */
 	if(stacktop[-1].intValue >= -32768 && stacktop[-1].intValue <= 32767)
@@ -974,7 +974,7 @@ case COP_PREFIX_I2S_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2us_ovf" group="Conversion operators">
@@ -1002,7 +1002,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_I2US_OVF:
+VMCASE(COP_PREFIX_I2US_OVF):
 {
 	/* Convert "int" into "ushort" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 65535)
@@ -1014,7 +1014,7 @@ case COP_PREFIX_I2US_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iu2s_ovf" group="Conversion operators">
@@ -1040,7 +1040,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_IU2S_OVF:
+VMCASE(COP_PREFIX_IU2S_OVF):
 {
 	/* Convert "uint" into "short" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 32767)
@@ -1052,7 +1052,7 @@ case COP_PREFIX_IU2S_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iu2us_ovf" group="Conversion operators">
@@ -1078,7 +1078,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_IU2US_OVF:
+VMCASE(COP_PREFIX_IU2US_OVF):
 {
 	/* Convert "uint" into "ushort" with overflow testing */
 	if(stacktop[-1].intValue >= 0 && stacktop[-1].intValue <= 65535)
@@ -1090,7 +1090,7 @@ case COP_PREFIX_IU2US_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2iu_ovf" group="Conversion operators">
@@ -1116,7 +1116,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_I2IU_OVF:
+VMCASE(COP_PREFIX_I2IU_OVF):
 {
 	/* Convert "int" into "uint" with overflow testing */
 	if(stacktop[-1].intValue >= 0)
@@ -1128,7 +1128,7 @@ case COP_PREFIX_I2IU_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iu2i_ovf" group="Conversion operators">
@@ -1154,7 +1154,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_IU2I_OVF:
+VMCASE(COP_PREFIX_IU2I_OVF):
 {
 	/* Convert "uint" into "int" with overflow testing */
 	if(stacktop[-1].intValue >= 0)
@@ -1166,7 +1166,7 @@ case COP_PREFIX_IU2I_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2ul_ovf" group="Conversion operators">
@@ -1192,7 +1192,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_I2UL_OVF:
+VMCASE(COP_PREFIX_I2UL_OVF):
 {
 	/* Convert "int" into "ulong" with overflow testing */
 	if(stacktop[-1].intValue >= 0)
@@ -1205,7 +1205,7 @@ case COP_PREFIX_I2UL_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="l2i_ovf" group="Conversion operators">
@@ -1231,7 +1231,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_L2I_OVF:
+VMCASE(COP_PREFIX_L2I_OVF):
 {
 	/* Convert "long" into "int" with overflow testing */
 	if(L2IOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
@@ -1243,7 +1243,7 @@ case COP_PREFIX_L2I_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="l2ui_ovf" group="Conversion operators">
@@ -1269,7 +1269,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_L2UI_OVF:
+VMCASE(COP_PREFIX_L2UI_OVF):
 {
 	/* Convert "long" into "uint" with overflow testing */
 	if(L2UIOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
@@ -1281,7 +1281,7 @@ case COP_PREFIX_L2UI_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="lu2i_ovf" group="Conversion operators">
@@ -1307,7 +1307,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_LU2I_OVF:
+VMCASE(COP_PREFIX_LU2I_OVF):
 {
 	/* Convert "ulong" into "int" with overflow testing */
 	if(LU2IOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
@@ -1319,7 +1319,7 @@ case COP_PREFIX_LU2I_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="lu2iu_ovf" group="Conversion operators">
@@ -1345,7 +1345,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_LU2IU_OVF:
+VMCASE(COP_PREFIX_LU2IU_OVF):
 {
 	/* Convert "ulong" into "uint" with overflow testing */
 	if(LU2UIOvf(&(stacktop[-CVM_WORDS_PER_LONG])))
@@ -1357,7 +1357,7 @@ case COP_PREFIX_LU2IU_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="l2ul_ovf" group="Conversion operators">
@@ -1383,7 +1383,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_L2UL_OVF:
+VMCASE(COP_PREFIX_L2UL_OVF):
 {
 	/* Convert "long" into "ulong" with overflow testing */
 	if(ReadLong(&(stacktop[-CVM_WORDS_PER_LONG])) >= 0)
@@ -1395,7 +1395,7 @@ case COP_PREFIX_L2UL_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="lu2l_ovf" group="Conversion operators">
@@ -1421,7 +1421,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_LU2L_OVF:
+VMCASE(COP_PREFIX_LU2L_OVF):
 {
 	/* Convert "ulong" into "long" with overflow testing */
 	if(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])) <= (ILUInt64)IL_MAX_INT64)
@@ -1433,7 +1433,7 @@ case COP_PREFIX_LU2L_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2i_ovf" group="Conversion operators">
@@ -1460,7 +1460,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_F2I_OVF:
+VMCASE(COP_PREFIX_F2I_OVF):
 {
 	/* Convert "native float" into "int" with overflow testing */
 	if(F2IOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
@@ -1472,7 +1472,7 @@ case COP_PREFIX_F2I_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2iu_ovf" group="Conversion operators">
@@ -1499,7 +1499,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_F2IU_OVF:
+VMCASE(COP_PREFIX_F2IU_OVF):
 {
 	/* Convert "native float" into "uint" with overflow testing */
 	if(F2UIOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
@@ -1511,7 +1511,7 @@ case COP_PREFIX_F2IU_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2l_ovf" group="Conversion operators">
@@ -1538,7 +1538,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_F2L_OVF:
+VMCASE(COP_PREFIX_F2L_OVF):
 {
 	/* Convert "native float" into "long" with overflow testing */
 	if(F2LOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
@@ -1550,7 +1550,7 @@ case COP_PREFIX_F2L_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2lu_ovf" group="Conversion operators">
@@ -1577,7 +1577,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_F2LU_OVF:
+VMCASE(COP_PREFIX_F2LU_OVF):
 {
 	/* Convert "native float" into "long" with overflow testing */
 	if(F2LUOvf(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT])))
@@ -1589,7 +1589,7 @@ case COP_PREFIX_F2LU_OVF:
 		OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2b_aligned" group="Conversion operators">
@@ -1613,13 +1613,13 @@ break;
  *   it with the <i>box</i> instruction.</notes>
  * </opcode>
  */
-case COP_PREFIX_I2B_ALIGNED:
+VMCASE(COP_PREFIX_I2B_ALIGNED):
 {
 	/* Convert a 32-bit value into a byte and align it on a word boundary */
 	*((ILInt8 *)(stacktop - 1)) = (ILInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="i2s_aligned" group="Conversion operators">
@@ -1643,13 +1643,13 @@ break;
  *   it with the <i>box</i> instruction.</notes>
  * </opcode>
  */
-case COP_PREFIX_I2S_ALIGNED:
+VMCASE(COP_PREFIX_I2S_ALIGNED):
 {
 	/* Convert a 32-bit value into a short and align it on a word boundary */
 	*((ILInt16 *)(stacktop - 1)) = (ILInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2f_aligned" group="Conversion operators">
@@ -1677,14 +1677,14 @@ break;
  *   are popped from the stack.</notes>
  * </opcode>
  */
-case COP_PREFIX_F2F_ALIGNED:
+VMCASE(COP_PREFIX_F2F_ALIGNED):
 {
 	/* Convert a native float into a float32 and align it on a word boundary */
 	*((ILFloat *)(stacktop - CVM_WORDS_PER_NATIVE_FLOAT)) =
 			   ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT);
 	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_FLOAT - CVM_WORDS_PER_NATIVE_FLOAT);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="f2d_aligned" group="Conversion operators">
@@ -1712,14 +1712,14 @@ break;
  *   are popped from the stack.</notes>
  * </opcode>
  */
-case COP_PREFIX_F2D_ALIGNED:
+VMCASE(COP_PREFIX_F2D_ALIGNED):
 {
 	/* Convert a native float into a float64 and align it on a word boundary */
 	WriteDouble(stacktop - CVM_WORDS_PER_NATIVE_FLOAT,
 			    ReadFloat(stacktop - CVM_WORDS_PER_NATIVE_FLOAT));
 	MODIFY_PC_AND_STACK(2, CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="str2ansi" group="Conversion operators">
@@ -1743,7 +1743,7 @@ break;
  *   character buffers during "PInvoke" marshalling operations.</notes>
  * </opcode>
  */
-case COP_PREFIX_STR2ANSI:
+VMCASE(COP_PREFIX_STR2ANSI):
 {
 	/* Convert a string object into an "ANSI" character buffer */
 	if(stacktop[-1].ptrValue)
@@ -1755,7 +1755,7 @@ case COP_PREFIX_STR2ANSI:
 	}
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="str2utf8" group="Conversion operators">
@@ -1779,7 +1779,7 @@ break;
  *   character buffers during "PInvoke" marshalling operations.</notes>
  * </opcode>
  */
-case COP_PREFIX_STR2UTF8:
+VMCASE(COP_PREFIX_STR2UTF8):
 {
 	/* Convert a string object into a UTF-8 character buffer */
 	if(stacktop[-1].ptrValue)
@@ -1791,6 +1791,6 @@ case COP_PREFIX_STR2UTF8:
 	}
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_PREFIX */

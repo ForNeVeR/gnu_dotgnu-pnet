@@ -7,3 +7,4 @@ ilverify
 asmfix
 cvm_opt.s
 cvm_opt.s.tmp
+cvm_labels.h

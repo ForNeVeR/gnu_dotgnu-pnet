@@ -43,13 +43,13 @@
  *   the stack, and then push it twice.</description>
  * </opcode>
  */
-case COP_DUP:
+VMCASE(COP_DUP):
 {
 	/* Duplicate the top-most word on the stack */
 	stacktop[0] = stacktop[-1];
 	MODIFY_PC_AND_STACK(1, 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="dup2" group="Stack manipulation">
@@ -66,14 +66,14 @@ break;
  *   the stack and then push them twice.</description>
  * </opcode>
  */
-case COP_DUP2:
+VMCASE(COP_DUP2):
 {
 	/* Duplicate the top two words on the stack */
 	stacktop[0] = stacktop[-2];
 	stacktop[1] = stacktop[-1];
 	MODIFY_PC_AND_STACK(1, 2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="dup_n" group="Stack manipulation">
@@ -94,7 +94,7 @@ break;
  *   than 2 words in size.</notes>
  * </opcode>
  */
-case COP_DUP_N:
+VMCASE(COP_DUP_N):
 {
 	/* Duplicate the top N words on the stack */
 	IL_MEMCPY(&(stacktop[0]), &(stacktop[-((int)(pc[1]))]),
@@ -102,7 +102,7 @@ case COP_DUP_N:
 	stacktop += (unsigned)(pc[1]);
 	pc += 2;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="dup_word_n" group="Stack manipulation">
@@ -121,13 +121,13 @@ break;
  *   down the stack and push it onto the top of the stack.</description>
  * </opcode>
  */
-case COP_DUP_WORD_N:
+VMCASE(COP_DUP_WORD_N):
 {
 	/* Duplicate a word which is N words down the stack */
 	stacktop[0] = stacktop[-(((int)(pc[1])) + 1)];
 	MODIFY_PC_AND_STACK(2, 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pop" group="Stack manipulation">
@@ -144,12 +144,12 @@ break;
  *   the stack.</description>
  * </opcode>
  */
-case COP_POP:
+VMCASE(COP_POP):
 {
 	/* Pop the top-most word from the stack */
 	MODIFY_PC_AND_STACK(1, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pop2" group="Stack manipulation">
@@ -166,12 +166,12 @@ break;
  *   from the stack.</description>
  * </opcode>
  */
-case COP_POP2:
+VMCASE(COP_POP2):
 {
 	/* Pop the top two words from the stack */
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pop_n" group="Stack manipulation">
@@ -189,13 +189,13 @@ break;
  *   from the stack.</description>
  * </opcode>
  */
-case COP_POP_N:
+VMCASE(COP_POP_N):
 {
 	/* Pop the top N words from the stack */
 	stacktop -= (unsigned)(pc[1]);
 	pc += 2;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="squash" group="Stack manipulation">
@@ -213,7 +213,7 @@ break;
  *   <i>N</i> words down the stack.</description>
  * </opcode>
  */
-case COP_SQUASH:
+VMCASE(COP_SQUASH):
 {
 	/* Squash N words out of the stack, M words down the stack */
 	IL_MEMMOVE(&(stacktop[-(((int)(pc[1])) + ((int)(pc[2])))]),
@@ -222,7 +222,7 @@ case COP_SQUASH:
 	stacktop -= (int)(pc[2]);
 	pc += 3;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ckheight" group="Stack manipulation">
@@ -249,7 +249,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CKHEIGHT:
+VMCASE(COP_CKHEIGHT):
 {
 	/* Check the height of the stack to ensure that we have
 	   at least 8 stack slots available.  This instruction
@@ -264,7 +264,7 @@ case COP_CKHEIGHT:
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ckheight_n" group="Stack manipulation">
@@ -288,7 +288,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CKHEIGHT_N:
+VMCASE(COP_CKHEIGHT_N):
 {
 	/* Check the height of the stack to ensure that we have
 	   at least N stack slots available */
@@ -301,7 +301,7 @@ case COP_CKHEIGHT_N:
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="set_num_args" group="Call management instructions">
@@ -319,13 +319,13 @@ break;
  *   sets up the local variable frame.</notes>
  * </opcode>
  */
-case COP_SET_NUM_ARGS:
+VMCASE(COP_SET_NUM_ARGS):
 {
 	/* Set the number of argument stack slots */
 	frame = stacktop - ((ILUInt32)(pc[1]));
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 #elif defined(IL_CVM_WIDE)
 
@@ -337,7 +337,7 @@ case COP_DUP_N:
 			  sizeof(CVMWord) * tempNum);
 	MODIFY_PC_AND_STACK(6, tempNum);
 }
-break;
+VMBREAK;
 
 case COP_DUP_WORD_N:
 {
@@ -345,7 +345,7 @@ case COP_DUP_WORD_N:
 	stacktop[0] = stacktop[-(((int)IL_READ_UINT32(pc + 2)) + 1)];
 	MODIFY_PC_AND_STACK(6, 1);
 }
-break;
+VMBREAK;
 
 case COP_POP_N:
 {
@@ -353,7 +353,7 @@ case COP_POP_N:
 	stacktop -= IL_READ_UINT32(pc + 2);
 	pc += 6;
 }
-break;
+VMBREAK;
 
 case COP_SQUASH:
 {
@@ -364,7 +364,7 @@ case COP_SQUASH:
 	stacktop -= IL_READ_UINT32(pc + 6);
 	pc += 10;
 }
-break;
+VMBREAK;
 
 case COP_SET_NUM_ARGS:
 {
@@ -372,6 +372,6 @@ case COP_SET_NUM_ARGS:
 	frame = stacktop - IL_READ_UINT32(pc + 2);
 	MODIFY_PC_AND_STACK(6, 0);
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_WIDE */

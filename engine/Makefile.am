@@ -79,4 +79,9 @@ cvm_opt.s: cvm.c asmfix cvm.o
 asmfix: asmfix.c
 	$(COMPILE) -o $@ $< ../support/libILSupport.a
 
-CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix
+cvm.o: cvm_labels.h
+
+cvm_labels.h: cvm.h mklabel.sh
+	$(SHELL) mklabel.sh "$(AWK)" cvm.h >cvm_labels.h
+
+CLEANFILES = cvm_opt.s cvm_opt.s.tmp asmfix cvm_labels.h

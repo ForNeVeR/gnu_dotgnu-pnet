@@ -1,7 +1,16 @@
+
 2002-05-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_lvalue.tc,
 	cscc/csharp/cs_stmt.tc: convert '//' comments into '/*'.
+
+	* engine/.cvsignore, engine/Makefile.am, engine/cvm.c,
+	engine/cvm_arith.c, engine/cvm_branch.c, engine/cvm_call.c,
+	engine/cvm_compare.c, engine/cvm_const.c, engine/cvm_conv.c,
+	engine/cvm_except.c, engine/cvm_inline.c, engine/cvm_ptr.c,
+	engine/cvm_stack.c, engine/cvm_var.c, engine/mklabel.sh:
+	modify the CVM interpreter so that it can use computed goto's
+	instead of "switch" on compilers that support it.
 
 2002-05-11  Gopal.V  <gopalv82@symonds.net>
 

@@ -60,12 +60,12 @@
  *   runs faster on short branches.</notes>
  * </opcode>
  */
-case COP_BR:
+VMCASE(COP_BR):
 {
 	/* Unconditional branch */
 	pc += (ILInt32)(ILInt8)(pc[1]);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="beq" group="Branch instructions">
@@ -92,7 +92,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BEQ:
+VMCASE(COP_BEQ):
 {
 	/* Branch if the top two integers are equal */
 	if(stacktop[-2].intValue == stacktop[-1].intValue)
@@ -105,7 +105,7 @@ case COP_BEQ:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bne" group="Branch instructions">
@@ -132,7 +132,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BNE:
+VMCASE(COP_BNE):
 {
 	/* Branch if the top two integers are not equal */
 	if(stacktop[-2].intValue != stacktop[-1].intValue)
@@ -145,7 +145,7 @@ case COP_BNE:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="blt" group="Branch instructions">
@@ -167,7 +167,7 @@ break;
  *   Otherwise, the program continues with the next instruction.</description>
  * </opcode>
  */
-case COP_BLT:
+VMCASE(COP_BLT):
 {
 	/* Branch if the top two integers are less than */
 	if(stacktop[-2].intValue < stacktop[-1].intValue)
@@ -180,7 +180,7 @@ case COP_BLT:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="blt_un" group="Branch instructions">
@@ -202,7 +202,7 @@ break;
  *   Otherwise, the program continues with the next instruction.</description>
  * </opcode>
  */
-case COP_BLT_UN:
+VMCASE(COP_BLT_UN):
 {
 	/* Branch if the top two unsigned integers are less than */
 	if(stacktop[-2].uintValue < stacktop[-1].uintValue)
@@ -215,7 +215,7 @@ case COP_BLT_UN:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ble" group="Branch instructions">
@@ -238,7 +238,7 @@ break;
  *   next instruction.</description>
  * </opcode>
  */
-case COP_BLE:
+VMCASE(COP_BLE):
 {
 	/* Branch if the top two integers are less than or equal */
 	if(stacktop[-2].intValue <= stacktop[-1].intValue)
@@ -251,7 +251,7 @@ case COP_BLE:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ble_un" group="Branch instructions">
@@ -274,7 +274,7 @@ break;
  *   next instruction.</description>
  * </opcode>
  */
-case COP_BLE_UN:
+VMCASE(COP_BLE_UN):
 {
 	/* Branch if the top two unsigned integers
 	   are less than or equal */
@@ -288,7 +288,7 @@ case COP_BLE_UN:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bgt" group="Branch instructions">
@@ -310,7 +310,7 @@ break;
  *   Otherwise, the program continues with the next instruction.</description>
  * </opcode>
  */
-case COP_BGT:
+VMCASE(COP_BGT):
 {
 	/* Branch if the top two integers are greater than */
 	if(stacktop[-2].intValue > stacktop[-1].intValue)
@@ -323,7 +323,7 @@ case COP_BGT:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bgt_un" group="Branch instructions">
@@ -345,7 +345,7 @@ break;
  *   Otherwise, the program continues with the next instruction.</description>
  * </opcode>
  */
-case COP_BGT_UN:
+VMCASE(COP_BGT_UN):
 {
 	/* Branch if the top two unsigned integers are greater than */
 	if(stacktop[-2].uintValue > stacktop[-1].uintValue)
@@ -358,7 +358,7 @@ case COP_BGT_UN:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bge" group="Branch instructions">
@@ -381,7 +381,7 @@ break;
  *   next instruction.</description>
  * </opcode>
  */
-case COP_BGE:
+VMCASE(COP_BGE):
 {
 	/* Branch if the top two integers are greater than or equal */
 	if(stacktop[-2].intValue >= stacktop[-1].intValue)
@@ -394,7 +394,7 @@ case COP_BGE:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bge_un" group="Branch instructions">
@@ -417,7 +417,7 @@ break;
  *   next instruction.</description>
  * </opcode>
  */
-case COP_BGE_UN:
+VMCASE(COP_BGE_UN):
 {
 	/* Branch if the top two unsigned integers
 	   are greater than or equal */
@@ -431,7 +431,7 @@ case COP_BGE_UN:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="brtrue" group="Branch instructions">
@@ -458,7 +458,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BRTRUE:
+VMCASE(COP_BRTRUE):
 {
 	/* Branch if the top value is non-zero */
 	if(stacktop[-1].intValue)
@@ -471,7 +471,7 @@ case COP_BRTRUE:
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="brfalse" group="Branch instructions">
@@ -498,7 +498,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BRFALSE:
+VMCASE(COP_BRFALSE):
 {
 	/* Branch if the top value is zero */
 	if(!(stacktop[-1].intValue))
@@ -511,7 +511,7 @@ case COP_BRFALSE:
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="brnull" group="Branch instructions">
@@ -538,7 +538,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BRNULL:
+VMCASE(COP_BRNULL):
 {
 	/* Branch if the top value is null */
 	if(!(stacktop[-1].ptrValue))
@@ -551,7 +551,7 @@ case COP_BRNULL:
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="brnonnull" group="Branch instructions">
@@ -578,7 +578,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BRNONNULL:
+VMCASE(COP_BRNONNULL):
 {
 	/* Branch if the top value is non-null */
 	if(stacktop[-1].ptrValue)
@@ -591,7 +591,7 @@ case COP_BRNONNULL:
 		MODIFY_PC_AND_STACK(6, -1);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="br_peq" group="Branch instructions">
@@ -618,7 +618,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BR_PEQ:
+VMCASE(COP_BR_PEQ):
 {
 	/* Branch if the top two pointers are equal */
 	if(stacktop[-2].ptrValue == stacktop[-1].ptrValue)
@@ -631,7 +631,7 @@ case COP_BR_PEQ:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="br_pne" group="Branch instructions">
@@ -658,7 +658,7 @@ break;
  *   all platforms.</notes>
  * </opcode>
  */
-case COP_BR_PNE:
+VMCASE(COP_BR_PNE):
 {
 	/* Branch if the top two pointers are not equal */
 	if(stacktop[-2].ptrValue != stacktop[-1].ptrValue)
@@ -671,7 +671,7 @@ case COP_BR_PNE:
 		MODIFY_PC_AND_STACK(6, -2);
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="br_long" group="Branch instructions">
@@ -688,7 +688,7 @@ break;
  *   information on their long forms.</notes>
  * </opcode>
  */
-case COP_BR_LONG:
+VMCASE(COP_BR_LONG):
 {
 	/* Determine which type of long branch to use */
 	switch(pc[1])
@@ -699,7 +699,7 @@ case COP_BR_LONG:
 			/* Unconditional branch */
 			pc += IL_READ_INT32(pc + 2);
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BEQ:
 		{
@@ -714,7 +714,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BNE:
 		{
@@ -729,7 +729,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BLT:
 		{
@@ -744,7 +744,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BLT_UN:
 		{
@@ -760,7 +760,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BLE:
 		{
@@ -776,7 +776,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BLE_UN:
 		{
@@ -792,7 +792,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BGT:
 		{
@@ -807,7 +807,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BGT_UN:
 		{
@@ -823,7 +823,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BGE:
 		{
@@ -839,7 +839,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BGE_UN:
 		{
@@ -855,7 +855,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BRTRUE:
 		{
@@ -870,7 +870,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BRFALSE:
 		{
@@ -885,7 +885,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BRNULL:
 		{
@@ -900,7 +900,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BRNONNULL:
 		{
@@ -915,7 +915,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -1);
 			}
 		}
-		break;
+		VMBREAK;
 
 		case COP_BR_PEQ:
 		{
@@ -930,7 +930,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 		
 		case COP_BR_PNE:
 		{
@@ -945,7 +945,7 @@ case COP_BR_LONG:
 				MODIFY_PC_AND_STACK(6, -2);
 			}
 		}
-		break;
+		VMBREAK;
 
 		case COP_JSR:
 		{
@@ -954,10 +954,10 @@ case COP_BR_LONG:
 			pc += IL_READ_INT32(pc + 2);
 			stacktop += 1;
 		}
-		break;
+		VMBREAK;
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="switch" group="Branch instructions">
@@ -981,7 +981,7 @@ break;
  *   values are in little-endian byte order.</notes>
  * </opcode>
  */
-case COP_SWITCH:
+VMCASE(COP_SWITCH):
 {
 	/* Process a switch statement */
 	if(stacktop[-1].uintValue < IL_READ_UINT32(pc + 1))
@@ -998,6 +998,6 @@ case COP_SWITCH:
 		--stacktop;
 	}
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_MAIN */

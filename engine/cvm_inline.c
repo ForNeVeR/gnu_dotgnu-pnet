@@ -77,7 +77,7 @@ static IL_INLINE int StringEquals(System_String *str1,
  *   <code>String.Concat(String, String)</code> method.</notes>
  * </opcode>
  */
-case COP_PREFIX_STRING_CONCAT_2:
+VMCASE(COP_PREFIX_STRING_CONCAT_2):
 {
 	/* Concatenate two strings */
 	COPY_STATE_TO_THREAD();
@@ -88,7 +88,7 @@ case COP_PREFIX_STRING_CONCAT_2:
 	RESTORE_STATE_FROM_THREAD();
 	MODIFY_PC_AND_STACK(2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="string_concat_3" group="Inline methods">
@@ -111,7 +111,7 @@ break;
  *   <code>String.Concat(String, String, String)</code> method.</notes>
  * </opcode>
  */
-case COP_PREFIX_STRING_CONCAT_3:
+VMCASE(COP_PREFIX_STRING_CONCAT_3):
 {
 	/* Concatenate three strings */
 	COPY_STATE_TO_THREAD();
@@ -123,7 +123,7 @@ case COP_PREFIX_STRING_CONCAT_3:
 	RESTORE_STATE_FROM_THREAD();
 	MODIFY_PC_AND_STACK(2, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="string_concat_4" group="Inline methods">
@@ -146,7 +146,7 @@ break;
  *   <code>String.Concat(String, String, String, String)</code> method.</notes>
  * </opcode>
  */
-case COP_PREFIX_STRING_CONCAT_4:
+VMCASE(COP_PREFIX_STRING_CONCAT_4):
 {
 	/* Concatenate four strings */
 	COPY_STATE_TO_THREAD();
@@ -159,7 +159,7 @@ case COP_PREFIX_STRING_CONCAT_4:
 	RESTORE_STATE_FROM_THREAD();
 	MODIFY_PC_AND_STACK(2, -3);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="string_eq" group="Inline methods">
@@ -183,7 +183,7 @@ break;
  *   <code>String.op_Equality(String, String)</code> method.</notes>
  * </opcode>
  */
-case COP_PREFIX_STRING_EQ:
+VMCASE(COP_PREFIX_STRING_EQ):
 {
 	/* Test two strings for equality */
 	stacktop[-2].intValue =
@@ -191,7 +191,7 @@ case COP_PREFIX_STRING_EQ:
 					 (System_String *)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="string_ne" group="Inline methods">
@@ -215,7 +215,7 @@ break;
  *   <code>String.op_Inequality(String, String)</code> method.</notes>
  * </opcode>
  */
-case COP_PREFIX_STRING_NE:
+VMCASE(COP_PREFIX_STRING_NE):
 {
 	/* Test two strings for inequality */
 	stacktop[-2].intValue =
@@ -223,7 +223,7 @@ case COP_PREFIX_STRING_NE:
 					  (System_String *)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="string_get_char" group="Inline methods">
@@ -256,7 +256,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_STRING_GET_CHAR:
+VMCASE(COP_PREFIX_STRING_GET_CHAR):
 {
 	/* Get a character from a string */
 	tempptr = stacktop[-2].ptrValue;
@@ -279,7 +279,7 @@ case COP_PREFIX_STRING_GET_CHAR:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="type_from_handle" group="Inline methods">
@@ -303,7 +303,7 @@ break;
  *   <code>Type.GetTypeFromHandle(RuntimeTypeHandle)</code> method.</notes>
  * </opcode>
  */
-case COP_PREFIX_TYPE_FROM_HANDLE:
+VMCASE(COP_PREFIX_TYPE_FROM_HANDLE):
 {
 	/* Get a character from a string */
 	tempptr = stacktop[-1].ptrValue;
@@ -316,6 +316,6 @@ case COP_PREFIX_TYPE_FROM_HANDLE:
 	}
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_PREFIX */

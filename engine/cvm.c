@@ -403,6 +403,10 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	#include "cvm_inline.c"
 	#undef IL_CVM_LOCALS
 
+	/* Include helper definitions and macros for the switch loop
+	   that handle computed goto labels if necessary */
+	#include "cvm_labels.h"
+
 	for(;;)
 	{
 	#ifdef IL_DUMP_CVM
@@ -411,7 +415,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	#ifdef IL_PROFILE_CVM_INSNS
 		++(_ILCVMInsnCount[pc[0]]);
 	#endif
-		switch(pc[0])
+		VMSWITCH(pc[0])
 		{
 			/**
 			 * <opcode name="nop" group="Miscellaneous instructions">
@@ -424,12 +428,12 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 *   <description>Do nothing.</description>
 			 * </opcode>
 			 */
-			case COP_NOP:
+			VMCASE(COP_NOP):
 			{
 				/* The world's simplest instruction */
 				MODIFY_PC_AND_STACK(1, 0);
 			}
-			break;
+			VMBREAK;
 
 			/* Include the instruction categories for the main switch */
 			#define IL_CVM_MAIN
@@ -462,7 +466,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 *   information on their wide forms where appropriate.</notes>
 			 * </opcode>
 			 */
-			case COP_WIDE:
+			VMCASE(COP_WIDE):
 			{
 			#ifdef IL_PROFILE_CVM_INSNS
 				++(_ILCVMInsnCount[((int)(pc[1]))]);
@@ -492,7 +496,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					break;
 				}
 			}
-			break;
+			VMBREAK;
 
 			/**
 			 * <opcode name="prefix" group="Miscellaneous instructions">
@@ -509,13 +513,13 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 *   256 distinct instructions.</description>
 			 * </opcode>
 			 */
-			case COP_PREFIX:
+			VMCASE(COP_PREFIX):
 			{
 				/* Execute a prefixed opcode */
 			#ifdef IL_PROFILE_CVM_INSNS
 				++(_ILCVMInsnCount[((int)(pc[1])) + 0x100]);
 			#endif
-				switch(pc[1])
+				VMPREFIXSWITCH(pc[1])
 				{
 					/* Include instruction categories for the prefix switch */
 					#define IL_CVM_PREFIX
@@ -532,22 +536,22 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					#include "cvm_inline.c"
 					#undef IL_CVM_PREFIX
 
-					default:
+					VMPREFIXDEFAULT:
 					{
 						/* Treat all other prefixed opcodes as NOP */
 						MODIFY_PC_AND_STACK(2, 0);
 					}
-					break;
+					VMBREAK;
 				}
 			}
-			break;
+			VMOUTERBREAK;
 
-			default:
+			VMDEFAULT:
 			{
 				/* Treat all other opcodes as NOP */
 				MODIFY_PC_AND_STACK(1, 0);
 			}
-			break;
+			VMBREAK;
 		}
 	}
 

@@ -90,13 +90,13 @@ ILUInt32 tempSize;
  *   the stack.</description>
  * </opcode>
  */
-case COP_BREAD:
+VMCASE(COP_BREAD):
 {
 	/* Read a signed byte quantity from a pointer */
 	stacktop[-1].intValue = (ILInt32)(*((ILInt8 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ubread" group="Pointer handling">
@@ -115,13 +115,13 @@ break;
  *   the stack.</description>
  * </opcode>
  */
-case COP_UBREAD:
+VMCASE(COP_UBREAD):
 {
 	/* Read an unsigned byte quantity from a pointer */
 	stacktop[-1].uintValue = (ILUInt32)(*((ILUInt8 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="sread" group="Pointer handling">
@@ -140,13 +140,13 @@ break;
  *   the stack.</description>
  * </opcode>
  */
-case COP_SREAD:
+VMCASE(COP_SREAD):
 {
 	/* Read a signed short quantity from a pointer */
 	stacktop[-1].intValue = (ILInt32)(*((ILInt16 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="usread" group="Pointer handling">
@@ -165,13 +165,13 @@ break;
  *   the stack.</description>
  * </opcode>
  */
-case COP_USREAD:
+VMCASE(COP_USREAD):
 {
 	/* Read an unsigned short quantity from a pointer */
 	stacktop[-1].uintValue = (ILUInt32)(*((ILUInt16 *)(stacktop[-1].ptrValue)));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iread" group="Pointer handling">
@@ -192,13 +192,13 @@ break;
  *   values from memory.</notes>
  * </opcode>
  */
-case COP_IREAD:
+VMCASE(COP_IREAD):
 {
 	/* Read an integer quantity from a pointer */
 	stacktop[-1].intValue = *((ILInt32 *)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="fread" group="Pointer handling">
@@ -217,7 +217,7 @@ break;
  *   and push it onto the stack.</description>
  * </opcode>
  */
-case COP_FREAD:
+VMCASE(COP_FREAD):
 {
 	/* Read a float quantity from a pointer and push
 	   it onto the stack as a "native float" value */
@@ -225,7 +225,7 @@ case COP_FREAD:
 		(ILNativeFloat)(*((ILFloat *)(stacktop[-1].ptrValue))));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="dread" group="Pointer handling">
@@ -244,7 +244,7 @@ break;
  *   and push it onto the stack.</description>
  * </opcode>
  */
-case COP_DREAD:
+VMCASE(COP_DREAD):
 {
 	/* Read a double quantity from a pointer and push
 	   it onto the stack as a "native float" value */
@@ -252,7 +252,7 @@ case COP_DREAD:
 		(ILNativeFloat)(*((ILDouble *)(stacktop[-1].ptrValue))));
 	MODIFY_PC_AND_STACK(1, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pread" group="Pointer handling">
@@ -275,13 +275,13 @@ break;
  *   platforms.</notes>
  * </opcode>
  */
-case COP_PREAD:
+VMCASE(COP_PREAD):
 {
 	/* Read a pointer quantity from a pointer */
 	stacktop[-1].ptrValue = *((void **)(stacktop[-1].ptrValue));
 	MODIFY_PC_AND_STACK(1, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="mread" group="Pointer handling">
@@ -304,7 +304,7 @@ break;
  *   upon the underlying platform.</notes>
  * </opcode>
  */
-case COP_MREAD:
+VMCASE(COP_MREAD):
 {
 	/* Read a multi-byte value from a pointer */
 	IL_MEMCPY(&(stacktop[-1]), stacktop[-1].ptrValue, (unsigned)(pc[1]));
@@ -312,7 +312,7 @@ case COP_MREAD:
 						/ sizeof(CVMWord)) - 1);
 	pc += 2;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bwrite" group="Pointer handling">
@@ -334,13 +334,13 @@ break;
  *   type <code>uint8</code> to memory.</notes>
  * </opcode>
  */
-case COP_BWRITE:
+VMCASE(COP_BWRITE):
 {
 	/* Write a byte quantity to a pointer */
 	*((ILInt8 *)(stacktop[-2].ptrValue)) = (ILInt8)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="swrite" group="Pointer handling">
@@ -362,13 +362,13 @@ break;
  *   type <code>uint16</code> to memory.</notes>
  * </opcode>
  */
-case COP_SWRITE:
+VMCASE(COP_SWRITE):
 {
 	/* Write a short quantity to a pointer */
 	*((ILInt16 *)(stacktop[-2].ptrValue)) = (ILInt16)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iwrite" group="Pointer handling">
@@ -389,13 +389,13 @@ break;
  *   type <code>uint32</code> to memory.</notes>
  * </opcode>
  */
-case COP_IWRITE:
+VMCASE(COP_IWRITE):
 {
 	/* Write an integer quantity to a pointer */
 	*((ILInt32 *)(stacktop[-2].ptrValue)) = (ILInt32)(stacktop[-1].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="fwrite" group="Pointer handling">
@@ -414,14 +414,14 @@ break;
  *   to <i>pointer</i> in memory.</description>
  * </opcode>
  */
-case COP_FWRITE:
+VMCASE(COP_FWRITE):
 {
 	/* Write a "native float" value to a pointer as a "float" */
 	*((ILFloat *)(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT + 1)] .ptrValue)) =
 		(ILFloat)ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="dwrite" group="Pointer handling">
@@ -440,7 +440,7 @@ break;
  *   to <i>pointer</i> in memory.</description>
  * </opcode>
  */
-case COP_DWRITE:
+VMCASE(COP_DWRITE):
 {
 	/* Write a "native float" value to a pointer as a "double" */
 	WriteDouble((CVMWord *)
@@ -449,7 +449,7 @@ case COP_DWRITE:
 					(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pwrite" group="Pointer handling">
@@ -472,13 +472,13 @@ break;
  *   platforms.</notes>
  * </opcode>
  */
-case COP_PWRITE:
+VMCASE(COP_PWRITE):
 {
 	/* Write a pointer quantity to a pointer */
 	*((void **)(stacktop[-2].ptrValue)) = stacktop[-1].ptrValue;
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="mwrite" group="Pointer handling">
@@ -498,7 +498,7 @@ break;
  *   <i>value</i> to <i>pointer</i> in memory.</description>
  * </opcode>
  */
-case COP_MWRITE:
+VMCASE(COP_MWRITE):
 {
 	/* Write a multi-byte value to a pointer */
 	stacktop -= (((((unsigned)(pc[1])) + sizeof(CVMWord) - 1)
@@ -506,7 +506,7 @@ case COP_MWRITE:
 	IL_MEMCPY(stacktop[0].ptrValue, &(stacktop[1]), (unsigned)(pc[1]));
 	pc += 2;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bwrite_r" group="Pointer handling">
@@ -529,13 +529,13 @@ break;
  *   type <code>uint8</code> to memory.</notes>
  * </opcode>
  */
-case COP_BWRITE_R:
+VMCASE(COP_BWRITE_R):
 {
 	/* Write a byte quantity to a pointer with reversed args */
 	*((ILInt8 *)(stacktop[-1].ptrValue)) = (ILInt8)(stacktop[-2].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="swrite_r" group="Pointer handling">
@@ -558,13 +558,13 @@ break;
  *   type <code>uint16</code> to memory.</notes>
  * </opcode>
  */
-case COP_SWRITE_R:
+VMCASE(COP_SWRITE_R):
 {
 	/* Write a short quantity to a pointer with reversed args */
 	*((ILInt16 *)(stacktop[-1].ptrValue)) = (ILInt16)(stacktop[-2].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iwrite_r" group="Pointer handling">
@@ -586,13 +586,13 @@ break;
  *   type <code>uint32</code> to memory.</notes>
  * </opcode>
  */
-case COP_IWRITE_R:
+VMCASE(COP_IWRITE_R):
 {
 	/* Write an integer quantity to a pointer with reversed args */
 	*((ILInt32 *)(stacktop[-1].ptrValue)) = (ILInt32)(stacktop[-2].intValue);
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="fwrite_r" group="Pointer handling">
@@ -612,7 +612,7 @@ break;
  *   to <i>pointer</i> in memory.</description>
  * </opcode>
  */
-case COP_FWRITE_R:
+VMCASE(COP_FWRITE_R):
 {
 	/* Write a "native float" value to a pointer as a "float",
 	   with reversed arguments */
@@ -620,7 +620,7 @@ case COP_FWRITE_R:
 		ReadFloat(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT + 1)]));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="dwrite_r" group="Pointer handling">
@@ -640,7 +640,7 @@ break;
  *   to <i>pointer</i> in memory.</description>
  * </opcode>
  */
-case COP_DWRITE_R:
+VMCASE(COP_DWRITE_R):
 {
 	/* Write a "native float" value to a pointer as a "double",
 	   with reversed arguments */
@@ -649,7 +649,7 @@ case COP_DWRITE_R:
 				(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT + 1)]))));
 	MODIFY_PC_AND_STACK(1, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pwrite_r" group="Pointer handling">
@@ -673,13 +673,13 @@ break;
  *   platforms.</notes>
  * </opcode>
  */
-case COP_PWRITE_R:
+VMCASE(COP_PWRITE_R):
 {
 	/* Write a pointer quantity to a pointer with reversed args */
 	*((void **)(stacktop[-1].ptrValue)) = stacktop[-2].ptrValue;
 	MODIFY_PC_AND_STACK(1, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="mwrite_r" group="Pointer handling">
@@ -700,7 +700,7 @@ break;
  *   Write <i>value</i> to <i>pointer</i> in memory.</description>
  * </opcode>
  */
-case COP_MWRITE_R:
+VMCASE(COP_MWRITE_R):
 {
 	/* Write a multi-byte value to a pointer with reversed args */
 	tempptr = stacktop[-1].ptrValue;
@@ -709,7 +709,7 @@ case COP_MWRITE_R:
 	IL_MEMCPY(tempptr, &(stacktop[0]), (unsigned)(pc[1]));
 	pc += 2;
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="padd_offset" group="Pointer handling">
@@ -727,7 +727,7 @@ break;
  *   onto the stack.</description>
  * </opcode>
  */
-case COP_PADD_OFFSET:
+VMCASE(COP_PADD_OFFSET):
 {
 	/* Add an explicit byte offset to a pointer.  This is used
 	   to obtain the address of a field within a managed value */
@@ -736,7 +736,7 @@ case COP_PADD_OFFSET:
 				(unsigned)(pc[1]));
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="padd_offset_n" group="Pointer handling">
@@ -761,7 +761,7 @@ break;
  *   <i>N == 0</i> and <i>M &lt; 256</i>.</notes>
  * </opcode>
  */
-case COP_PADD_OFFSET_N:
+VMCASE(COP_PADD_OFFSET_N):
 {
 	/* Add an explicit byte offset to a pointer that is N
 	   values down the stack */
@@ -770,7 +770,7 @@ case COP_PADD_OFFSET_N:
 				.ptrValue)) + (ILUInt32)(pc[2]));
 	MODIFY_PC_AND_STACK(3, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="padd_i4" group="Pointer handling">
@@ -792,7 +792,7 @@ break;
  *   <i>value</i> is constant and less than 256.</notes>
  * </opcode>
  */
-case COP_PADD_I4:
+VMCASE(COP_PADD_I4):
 {
 	/* Add a 32-bit integer to a pointer */
 	stacktop[-2].ptrValue = (void *)
@@ -800,7 +800,7 @@ case COP_PADD_I4:
 		 ((ILInt32)(stacktop[-1].intValue)));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="padd_i4_r" group="Pointer handling">
@@ -820,7 +820,7 @@ break;
  *   <i>newpointer</i> onto the stack.</description>
  * </opcode>
  */
-case COP_PADD_I4_R:
+VMCASE(COP_PADD_I4_R):
 {
 	/* Add a 32-bit integer to a pointer with reversed args */
 	stacktop[-2].ptrValue = (void *)
@@ -828,7 +828,7 @@ case COP_PADD_I4_R:
 		 ((ILInt32)(stacktop[-2].intValue)));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="padd_i8" group="Pointer handling">
@@ -850,7 +850,7 @@ break;
  *   with 32 bit pointers.</notes>
  * </opcode>
  */
-case COP_PADD_I8:
+VMCASE(COP_PADD_I8):
 {
 	/* Add a 64-bit integer to a pointer */
 #if SIZEOF_LONG != 4
@@ -868,7 +868,7 @@ case COP_PADD_I8:
 #endif
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="padd_i8_r" group="Pointer handling">
@@ -891,7 +891,7 @@ break;
  *   with 32 bit pointers.</notes>
  * </opcode>
  */
-case COP_PADD_I8_R:
+VMCASE(COP_PADD_I8_R):
 {
 	/* Add a 64-bit integer to a pointer with reversed args */
 #if SIZEOF_LONG != 4
@@ -907,7 +907,7 @@ case COP_PADD_I8_R:
 #endif
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="psub" group="Pointer handling">
@@ -927,7 +927,7 @@ break;
  *   upon the platform.</description>
  * </opcode>
  */
-case COP_PSUB:
+VMCASE(COP_PSUB):
 {
 	/* Subtract two pointers with a "native int" result */
 #ifdef IL_NATIVE_INT64
@@ -941,7 +941,7 @@ case COP_PSUB:
 #endif
 	MODIFY_PC_AND_STACK(1, -2 + CVM_WORDS_PER_NATIVE_INT);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="psub_i4" group="Pointer handling">
@@ -960,7 +960,7 @@ break;
  *   <i>newpointer</i> onto the stack.</description>
  * </opcode>
  */
-case COP_PSUB_I4:
+VMCASE(COP_PSUB_I4):
 {
 	/* Subtract a 32-bit integer from a pointer */
 	stacktop[-2].ptrValue = (void *)
@@ -968,7 +968,7 @@ case COP_PSUB_I4:
 		 ((ILInt32)(stacktop[-1].intValue)));
 	MODIFY_PC_AND_STACK(1, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="psub_i8" group="Pointer handling">
@@ -990,7 +990,7 @@ break;
  *   with 32 bit pointers.</notes>
  * </opcode>
  */
-case COP_PSUB_I8:
+VMCASE(COP_PSUB_I8):
 {
 	/* Subtract a 64-bit integer from a pointer */
 #if SIZEOF_LONG != 4
@@ -1008,7 +1008,7 @@ case COP_PSUB_I8:
 #endif
 	MODIFY_PC_AND_STACK(1, -CVM_WORDS_PER_LONG);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="cknull" group="Object handling">
@@ -1026,7 +1026,7 @@ break;
  *   Otherwise do nothing.</description>
  * </opcode>
  */
-case COP_CKNULL:
+VMCASE(COP_CKNULL):
 {
 	/* Check the stack top for "null" */
 	if(stacktop[-1].ptrValue != 0)
@@ -1038,7 +1038,7 @@ case COP_CKNULL:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="cknull_n" group="Object handling">
@@ -1061,7 +1061,7 @@ break;
  *   <i>N == 0</i>.</notes>
  * </opcode>
  */
-case COP_CKNULL_N:
+VMCASE(COP_CKNULL_N):
 {
 	/* Check a value some way down the stack for "null" */
 	if(stacktop[-(((int)(pc[1])) + 1)].ptrValue != 0)
@@ -1073,20 +1073,20 @@ case COP_CKNULL_N:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
-case COP_LDRVA:
+VMCASE(COP_LDRVA):
 {
 	/* Load a relative virtual address (RVA) onto the stack */
 	/* TODO */
 	stacktop[0].ptrValue = 0;
 	MODIFY_PC_AND_STACK(5, 1);
 }
-break;
+VMBREAK;
 
 /* Read a simple value from an array element */
 #define	SIMPLE_READ_ELEM(name,type) \
-case name: \
+VMCASE(COP_##name): \
 { \
 	if((tempptr = stacktop[-2].ptrValue) != 0) \
 	{ \
@@ -1108,7 +1108,7 @@ case name: \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-break
+VMBREAK
 
 /**
  * <opcode name="bread_elem" group="Array handling">
@@ -1135,7 +1135,7 @@ break
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_READ_ELEM(COP_BREAD_ELEM,  ILInt8);
+SIMPLE_READ_ELEM(BREAD_ELEM,  ILInt8);
 
 /**
  * <opcode name="ubread_elem" group="Array handling">
@@ -1162,7 +1162,7 @@ SIMPLE_READ_ELEM(COP_BREAD_ELEM,  ILInt8);
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_READ_ELEM(COP_UBREAD_ELEM, ILUInt8);
+SIMPLE_READ_ELEM(UBREAD_ELEM, ILUInt8);
 
 /**
  * <opcode name="sread_elem" group="Array handling">
@@ -1189,7 +1189,7 @@ SIMPLE_READ_ELEM(COP_UBREAD_ELEM, ILUInt8);
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_READ_ELEM(COP_SREAD_ELEM,  ILInt16);
+SIMPLE_READ_ELEM(SREAD_ELEM,  ILInt16);
 
 /**
  * <opcode name="usread_elem" group="Array handling">
@@ -1216,7 +1216,7 @@ SIMPLE_READ_ELEM(COP_SREAD_ELEM,  ILInt16);
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_READ_ELEM(COP_USREAD_ELEM, ILUInt16);
+SIMPLE_READ_ELEM(USREAD_ELEM, ILUInt16);
 
 /**
  * <opcode name="iread_elem" group="Array handling">
@@ -1245,7 +1245,7 @@ SIMPLE_READ_ELEM(COP_USREAD_ELEM, ILUInt16);
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_READ_ELEM(COP_IREAD_ELEM,  ILInt32);
+SIMPLE_READ_ELEM(IREAD_ELEM,  ILInt32);
 
 /**
  * <opcode name="pread_elem" group="Array handling">
@@ -1276,7 +1276,7 @@ SIMPLE_READ_ELEM(COP_IREAD_ELEM,  ILInt32);
  *   </exceptions>
  * </opcode>
  */
-case COP_PREAD_ELEM:
+VMCASE(COP_PREAD_ELEM):
 {
 	/* Read a pointer value from an array element */
 	if((tempptr = stacktop[-2].ptrValue) != 0)
@@ -1298,11 +1298,11 @@ case COP_PREAD_ELEM:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /* Write a simple value to an array element */
 #define	SIMPLE_WRITE_ELEM(name,type) \
-case name: \
+VMCASE(COP_##name): \
 { \
 	if((tempptr = stacktop[-3].ptrValue) != 0) \
 	{ \
@@ -1323,7 +1323,7 @@ case name: \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-break
+VMBREAK
 
 /**
  * <opcode name="bwrite_elem" group="Array handling">
@@ -1350,7 +1350,7 @@ break
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_WRITE_ELEM(COP_BWRITE_ELEM, ILInt8);
+SIMPLE_WRITE_ELEM(BWRITE_ELEM, ILInt8);
 
 /**
  * <opcode name="swrite_elem" group="Array handling">
@@ -1377,7 +1377,7 @@ SIMPLE_WRITE_ELEM(COP_BWRITE_ELEM, ILInt8);
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_WRITE_ELEM(COP_SWRITE_ELEM, ILInt16);
+SIMPLE_WRITE_ELEM(SWRITE_ELEM, ILInt16);
 
 /**
  * <opcode name="iwrite_elem" group="Array handling">
@@ -1404,7 +1404,7 @@ SIMPLE_WRITE_ELEM(COP_SWRITE_ELEM, ILInt16);
  *   </exceptions>
  * </opcode>
  */
-SIMPLE_WRITE_ELEM(COP_IWRITE_ELEM, ILInt32);
+SIMPLE_WRITE_ELEM(IWRITE_ELEM, ILInt32);
 
 /**
  * <opcode name="pwrite_elem" group="Array handling">
@@ -1436,7 +1436,7 @@ SIMPLE_WRITE_ELEM(COP_IWRITE_ELEM, ILInt32);
  *   </exceptions>
  * </opcode>
  */
-case COP_PWRITE_ELEM:
+VMCASE(COP_PWRITE_ELEM):
 {
 	/* Write a pointer value to an array element */
 	if((tempptr = stacktop[-3].ptrValue) != 0)
@@ -1458,7 +1458,7 @@ case COP_PWRITE_ELEM:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ckarray_load_i4" group="Array handling">
@@ -1495,7 +1495,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CKARRAY_LOAD_I4:
+VMCASE(COP_CKARRAY_LOAD_I4):
 {
 	/* Check an array load that uses an I4 index */
 	if((tempptr = stacktop[-2].ptrValue) != 0)
@@ -1518,7 +1518,7 @@ case COP_CKARRAY_LOAD_I4:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ckarray_load_i8" group="Array handling">
@@ -1555,7 +1555,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CKARRAY_LOAD_I8:
+VMCASE(COP_CKARRAY_LOAD_I8):
 {
 	/* Check an array load that uses an I8 index */
 	if((tempptr = stacktop[-(CVM_WORDS_PER_LONG + 1)].ptrValue) != 0)
@@ -1578,7 +1578,7 @@ case COP_CKARRAY_LOAD_I8:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ckarray_store_i8" group="Array handling">
@@ -1615,7 +1615,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CKARRAY_STORE_I8:
+VMCASE(COP_CKARRAY_STORE_I8):
 {
 	/* Check an array store that uses an I8 index */
 	tempNum = ((ILUInt32)(pc[1]));
@@ -1636,7 +1636,7 @@ case COP_CKARRAY_STORE_I8:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="array_len" group="Array handling">
@@ -1659,7 +1659,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_ARRAY_LEN:
+VMCASE(COP_ARRAY_LEN):
 {
 	/* Get the length of an array */
 	if(stacktop[-1].ptrValue != 0)
@@ -1678,7 +1678,7 @@ case COP_ARRAY_LEN:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 #define GET_FIELD(type)	\
 (*((type *)(((unsigned char *)(stacktop[-1].ptrValue)) + \
@@ -1711,7 +1711,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_BREAD_FIELD:
+VMCASE(COP_BREAD_FIELD):
 {
 	/* Read a byte value from an object field */
 	if(stacktop[-1].ptrValue != 0)
@@ -1724,7 +1724,7 @@ case COP_BREAD_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ubread_field" group="Object handling">
@@ -1750,7 +1750,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_UBREAD_FIELD:
+VMCASE(COP_UBREAD_FIELD):
 {
 	/* Read an unsigned byte value from an object field */
 	if(stacktop[-1].ptrValue != 0)
@@ -1763,7 +1763,7 @@ case COP_UBREAD_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="sread_field" group="Object handling">
@@ -1789,7 +1789,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_SREAD_FIELD:
+VMCASE(COP_SREAD_FIELD):
 {
 	/* Read a short value from an object field */
 	if(stacktop[-1].ptrValue != 0)
@@ -1802,7 +1802,7 @@ case COP_SREAD_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="usread_field" group="Object handling">
@@ -1828,7 +1828,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_USREAD_FIELD:
+VMCASE(COP_USREAD_FIELD):
 {
 	/* Read an unsigned short value from an object field */
 	if(stacktop[-1].ptrValue != 0)
@@ -1841,7 +1841,7 @@ case COP_USREAD_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iread_field" group="Object handling">
@@ -1867,7 +1867,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_IREAD_FIELD:
+VMCASE(COP_IREAD_FIELD):
 {
 	/* Read an integer value from an object field */
 	if(stacktop[-1].ptrValue != 0)
@@ -1880,7 +1880,7 @@ case COP_IREAD_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pread_field" group="Object handling">
@@ -1911,7 +1911,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREAD_FIELD:
+VMCASE(COP_PREAD_FIELD):
 {
 	/* Read a pointer value from an object field */
 	if(stacktop[-1].ptrValue != 0)
@@ -1924,7 +1924,7 @@ case COP_PREAD_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="bwrite_field" group="Object handling">
@@ -1954,7 +1954,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_BWRITE_FIELD:
+VMCASE(COP_BWRITE_FIELD):
 {
 	/* Write a byte value to an object field */
 	if(stacktop[-2].ptrValue != 0)
@@ -1967,7 +1967,7 @@ case COP_BWRITE_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="swrite_field" group="Object handling">
@@ -1997,7 +1997,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_SWRITE_FIELD:
+VMCASE(COP_SWRITE_FIELD):
 {
 	/* Write a short value to an object field */
 	if(stacktop[-2].ptrValue != 0)
@@ -2010,7 +2010,7 @@ case COP_SWRITE_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iwrite_field" group="Object handling">
@@ -2039,7 +2039,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_IWRITE_FIELD:
+VMCASE(COP_IWRITE_FIELD):
 {
 	/* Write an integer value to an object field */
 	if(stacktop[-2].ptrValue != 0)
@@ -2052,7 +2052,7 @@ case COP_IWRITE_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pwrite_field" group="Object handling">
@@ -2083,7 +2083,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PWRITE_FIELD:
+VMCASE(COP_PWRITE_FIELD):
 {
 	/* Write a pointer value to an object field */
 	if(stacktop[-2].ptrValue != 0)
@@ -2096,7 +2096,7 @@ case COP_PWRITE_FIELD:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 #define GET_THIS_FIELD(type)	\
 (*((type *)(((unsigned char *)(frame[0].ptrValue)) + \
@@ -2126,7 +2126,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREAD_THIS:
+VMCASE(COP_PREAD_THIS):
 {
 	/* Read a pointer value from a field within "this" */
 	if(frame[0].ptrValue != 0)
@@ -2139,7 +2139,7 @@ case COP_PREAD_THIS:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="iread_this" group="Object handling">
@@ -2166,7 +2166,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_IREAD_THIS:
+VMCASE(COP_IREAD_THIS):
 {
 	/* Read an integer value from a field within "this" */
 	if(frame[0].ptrValue != 0)
@@ -2179,7 +2179,7 @@ case COP_IREAD_THIS:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="castclass" group="Object handling">
@@ -2210,7 +2210,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CASTCLASS:
+VMCASE(COP_CASTCLASS):
 {
 	/* Cast the object on the stack top to a new class */
 	classInfo = (ILClass *)(ReadPointer(pc + 1));
@@ -2224,7 +2224,7 @@ case COP_CASTCLASS:
 		INVALID_CAST_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="isinst" group="Object handling">
@@ -2250,7 +2250,7 @@ break;
  *   Use <i>isinterface</i> to test for interface membership.</notes>
  * </opcode>
  */
-case COP_ISINST:
+VMCASE(COP_ISINST):
 {
 	/* Determine if the object on the stack top is an
 	   instance of a particular class */
@@ -2262,7 +2262,7 @@ case COP_ISINST:
 	}
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="castinterface" group="Object handling">
@@ -2293,7 +2293,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_CASTINTERFACE:
+VMCASE(COP_CASTINTERFACE):
 {
 	/* Cast the object on the stack top to a new interface */
 	classInfo = (ILClass *)(ReadPointer(pc + 1));
@@ -2307,7 +2307,7 @@ case COP_CASTINTERFACE:
 		INVALID_CAST_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="isinterface" group="Object handling">
@@ -2334,7 +2334,7 @@ break;
  *   Use <i>isinst</i> to test for normal inheritance.</notes>
  * </opcode>
  */
-case COP_ISINTERFACE:
+VMCASE(COP_ISINTERFACE):
 {
 	/* Determine if the object on the stack top is an
 	   instance of a particular interface */
@@ -2346,7 +2346,7 @@ case COP_ISINTERFACE:
 	}
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="get_static" group="Object handling">
@@ -2378,7 +2378,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_GET_STATIC:
+VMCASE(COP_GET_STATIC):
 {
 	/* Get the static data area for a particular class */
 	classInfo = (ILClass *)(ReadPointer(pc + 1));
@@ -2387,7 +2387,7 @@ case COP_GET_STATIC:
 		stacktop[0].ptrValue =
 			((ILClassPrivate *)(classInfo->userData))->staticData;
 		MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
-		break;
+		VMBREAK;
 	}
 	COPY_STATE_TO_THREAD();
 	((ILClassPrivate *)(classInfo->userData))->staticData =
@@ -2398,7 +2398,7 @@ case COP_GET_STATIC:
 		((ILClassPrivate *)(classInfo->userData))->staticData;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="new" group="Object handling">
@@ -2425,7 +2425,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_NEW:
+VMCASE(COP_NEW):
 {
 	/* Create a new object of the current method's class */
 	if(((ILUInt32)(stackmax - stacktop)) >= 1)
@@ -2445,7 +2445,7 @@ case COP_NEW:
 		STACK_OVERFLOW_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="new_value" group="Object handling">
@@ -2470,7 +2470,7 @@ break;
  *   stack prior to running the main constructor code.</notes>
  * </opcode>
  */
-case COP_NEW_VALUE:
+VMCASE(COP_NEW_VALUE):
 {
 	/* Create a new value type and insert it below the constructors */
 	tempNum = (ILUInt32)(pc[1]);
@@ -2481,7 +2481,7 @@ case COP_NEW_VALUE:
 	(stacktop - tempNum + tempSize)->ptrValue = (void *)(stacktop - tempNum);
 	MODIFY_PC_AND_STACK(3, tempSize + 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldstr" group="Constant loading">
@@ -2504,7 +2504,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_LDSTR:
+VMCASE(COP_LDSTR):
 {
 	/* Load a string constant onto the stack */
 	COPY_STATE_TO_THREAD();
@@ -2514,7 +2514,7 @@ case COP_LDSTR:
 	pc = thread->pc;
 	MODIFY_PC_AND_STACK(5, 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="ldtoken" group="Miscellaneous instructions">
@@ -2537,13 +2537,13 @@ break;
  *   descriptors onto the stack as handle instances.</notes>
  * </opcode>
  */
-case COP_LDTOKEN:
+VMCASE(COP_LDTOKEN):
 {
 	/* Load a token handle onto the stack */
 	stacktop[0].ptrValue = ReadPointer(pc + 1);
 	MODIFY_PC_AND_STACK(1 + sizeof(void *), 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="box" group="Object handling">
@@ -2575,7 +2575,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_BOX:
+VMCASE(COP_BOX):
 {
 	/* Box a managed value */
 	classInfo = (ILClass *)ReadPointer(pc + 2);
@@ -2587,7 +2587,7 @@ case COP_BOX:
 	stacktop[-((ILInt32)tempNum)].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), -((ILInt32)(tempNum - 1)));
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="box_ptr" group="Object handling">
@@ -2615,7 +2615,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_BOX_PTR:
+VMCASE(COP_BOX_PTR):
 {
 	/* Box a managed pointer */
 	classInfo = (ILClass *)ReadPointer(pc + 2);
@@ -2626,7 +2626,7 @@ case COP_BOX_PTR:
 	stacktop[-1].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="memcpy" group="Miscellaneous instructions">
@@ -2654,13 +2654,13 @@ break;
  *   that do not have a fixed size.</notes>
  * </opcode>
  */
-case COP_MEMCPY:
+VMCASE(COP_MEMCPY):
 {
 	/* Copy a fixed-size memory block */
 	IL_MEMCPY(stacktop[-2].ptrValue, stacktop[-1].ptrValue, (unsigned)(pc[1]));
 	MODIFY_PC_AND_STACK(2, -2);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="memmove" group="Miscellaneous instructions">
@@ -2682,14 +2682,14 @@ break;
  *   will guarantee to produce the correct result.</notes>
  * </opcode>
  */
-case COP_MEMMOVE:
+VMCASE(COP_MEMMOVE):
 {
 	/* Move a variable-size memory block */
 	IL_MEMMOVE(stacktop[-3].ptrValue, stacktop[-2].ptrValue,
 			   stacktop[-1].uintValue);
 	MODIFY_PC_AND_STACK(1, -3);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="memzero" group="Miscellaneous instructions">
@@ -2714,13 +2714,13 @@ break;
  *   fill value is something other than zero.</notes>
  * </opcode>
  */
-case COP_MEMZERO:
+VMCASE(COP_MEMZERO):
 {
 	/* Fill a fixed-size memory block with zeroes */
 	IL_MEMZERO(stacktop[-1].ptrValue, (unsigned)(pc[1]));
 	MODIFY_PC_AND_STACK(2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="memset" group="Miscellaneous instructions">
@@ -2739,14 +2739,14 @@ break;
  *   <i>dest</i> with <i>value</i>.</description>
  * </opcode>
  */
-case COP_MEMSET:
+VMCASE(COP_MEMSET):
 {
 	/* Set the contents of a memory block to the same byte value */
 	IL_MEMSET(stacktop[-3].ptrValue, (int)(stacktop[-2].intValue),
 			  stacktop[-1].uintValue);
 	MODIFY_PC_AND_STACK(1, -3);
 }
-break;
+VMBREAK;
 
 #elif defined(IL_CVM_WIDE)
 
@@ -2758,7 +2758,7 @@ case COP_MREAD:
 	stacktop += (((tempNum + sizeof(CVMWord) - 1) / sizeof(CVMWord)) - 1);
 	pc += 6;
 }
-break;
+VMBREAK;
 
 case COP_MWRITE:
 {
@@ -2768,7 +2768,7 @@ case COP_MWRITE:
 	IL_MEMCPY(stacktop[0].ptrValue, &(stacktop[1]), tempNum);
 	pc += 6;
 }
-break;
+VMBREAK;
 
 case COP_MWRITE_R:
 {
@@ -2779,7 +2779,7 @@ case COP_MWRITE_R:
 	IL_MEMCPY(tempptr, &(stacktop[0]), tempNum);
 	pc += 6;
 }
-break;
+VMBREAK;
 
 case COP_CKNULL_N:
 {
@@ -2793,7 +2793,7 @@ case COP_CKNULL_N:
 		NULL_POINTER_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 case COP_PADD_OFFSET_N:
 {
@@ -2804,7 +2804,7 @@ case COP_PADD_OFFSET_N:
 				.ptrValue)) + IL_READ_UINT32(pc + 6));
 	MODIFY_PC_AND_STACK(10, 0);
 }
-break;
+VMBREAK;
 
 case COP_NEW_VALUE:
 {
@@ -2817,7 +2817,7 @@ case COP_NEW_VALUE:
 	(stacktop - tempNum + tempSize)->ptrValue = (void *)(stacktop - tempNum);
 	MODIFY_PC_AND_STACK(10, tempSize + 1);
 }
-break;
+VMBREAK;
 
 case COP_BOX:
 {
@@ -2832,7 +2832,7 @@ case COP_BOX:
 	stacktop[-((ILInt32)tempNum)].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(6 + sizeof(void *), -((ILInt32)(tempNum - 1)));
 }
-break;
+VMBREAK;
 
 case COP_BOX_PTR:
 {
@@ -2846,7 +2846,7 @@ case COP_BOX_PTR:
 	stacktop[-1].ptrValue = tempptr;
 	MODIFY_PC_AND_STACK(6 + sizeof(void *), 0);
 }
-break;
+VMBREAK;
 
 case COP_MEMCPY:
 {
@@ -2855,7 +2855,7 @@ case COP_MEMCPY:
 			  IL_READ_UINT32(pc + 2));
 	MODIFY_PC_AND_STACK(6, -2);
 }
-break;
+VMBREAK;
 
 case COP_MEMZERO:
 {
@@ -2863,13 +2863,13 @@ case COP_MEMZERO:
 	IL_MEMZERO(stacktop[-1].ptrValue, IL_READ_UINT32(pc + 2));
 	MODIFY_PC_AND_STACK(6, -1);
 }
-break;
+VMBREAK;
 
 #elif defined(IL_CVM_PREFIX)
 
 /* Read a large value from an array element */
 #define	LARGE_READ_ELEM(name,type,size,read,write) \
-case name: \
+VMCASE(COP_##name): \
 { \
 	if((tempptr = stacktop[-2].ptrValue) != 0) \
 	{ \
@@ -2891,7 +2891,7 @@ case name: \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-break
+VMBREAK
 
 /**
  * <opcode name="lread_elem" group="Array handling">
@@ -2920,7 +2920,7 @@ break
  *   </exceptions>
  * </opcode>
  */
-LARGE_READ_ELEM(COP_PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
+LARGE_READ_ELEM(PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				ReadLong, WriteLong);
 
 /**
@@ -2948,7 +2948,7 @@ LARGE_READ_ELEM(COP_PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
  *   </exceptions>
  * </opcode>
  */
-LARGE_READ_ELEM(COP_PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
+LARGE_READ_ELEM(PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
 				(ILNativeFloat)*(ILFloat *), WriteFloat);
 
 /**
@@ -2976,12 +2976,12 @@ LARGE_READ_ELEM(COP_PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  *   </exceptions>
  * </opcode>
  */
-LARGE_READ_ELEM(COP_PREFIX_DREAD_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
+LARGE_READ_ELEM(PREFIX_DREAD_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 				ReadDouble, WriteFloat);
 
 /* Write a large value to an array element */
 #define	LARGE_WRITE_ELEM(name,type,size,read,write) \
-case name: \
+VMCASE(COP_##name): \
 { \
 	if((tempptr = stacktop[-(size + 2)].ptrValue) != 0) \
 	{ \
@@ -3003,7 +3003,7 @@ case name: \
 		NULL_POINTER_EXCEPTION(); \
 	} \
 } \
-break
+VMBREAK
 
 /**
  * <opcode name="lwrite_elem" group="Array handling">
@@ -3033,7 +3033,7 @@ break
  *   </exceptions>
  * </opcode>
  */
-LARGE_WRITE_ELEM(COP_PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
+LARGE_WRITE_ELEM(PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				 ReadLong, WriteHardLong);
 
 /**
@@ -3061,7 +3061,7 @@ LARGE_WRITE_ELEM(COP_PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
  *   </exceptions>
  * </opcode>
  */
-LARGE_WRITE_ELEM(COP_PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
+LARGE_WRITE_ELEM(PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
 				 ReadFloat, WriteFloat32);
 
 /**
@@ -3089,7 +3089,7 @@ LARGE_WRITE_ELEM(COP_PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  *   </exceptions>
  * </opcode>
  */
-LARGE_WRITE_ELEM(COP_PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
+LARGE_WRITE_ELEM(PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 				 ReadFloat, WriteDouble);
 
 /**
@@ -3112,14 +3112,14 @@ LARGE_WRITE_ELEM(COP_PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
  *   32 or 64 bits in size, depending upon the platform.</notes>
  * </opcode>
  */
-case COP_PREFIX_MKREFANY:
+VMCASE(COP_PREFIX_MKREFANY):
 {
 	/* Make a typedref from an address and class information block */
 	((ILTypedRef *)(stacktop - 1))->value = stacktop[-1].ptrValue;
 	((ILTypedRef *)(stacktop - 1))->type = ReadPointer(pc + 2);
 	MODIFY_PC_AND_STACK(2 + sizeof(void *), CVM_WORDS_PER_TYPED_REF - 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="refanyval" group="Object handling">
@@ -3148,7 +3148,7 @@ break;
  *   </exceptions>
  * </opcode>
  */
-case COP_PREFIX_REFANYVAL:
+VMCASE(COP_PREFIX_REFANYVAL):
 {
 	/* Extract the value part of a typedref */
 	if(((ILTypedRef *)(stacktop - CVM_WORDS_PER_TYPED_REF))->type ==
@@ -3164,7 +3164,7 @@ case COP_PREFIX_REFANYVAL:
 		INVALID_CAST_EXCEPTION();
 	}
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="refanytype" group="Object handling">
@@ -3182,13 +3182,13 @@ break;
  *   <i>reference</i> and push it onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_REFANYTYPE:
+VMCASE(COP_PREFIX_REFANYTYPE):
 {
 	/* Extract the type part of a typedref */
 	stacktop[-CVM_WORDS_PER_TYPED_REF].ptrValue =
 		((ILTypedRef *)(stacktop - CVM_WORDS_PER_TYPED_REF))->type;
 	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_TYPED_REF - 1));
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_PREFIX */

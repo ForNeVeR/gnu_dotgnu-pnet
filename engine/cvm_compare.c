@@ -117,7 +117,7 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_ICMP:
+VMCASE(COP_PREFIX_ICMP):
 {
 	/* Compare integer values */
 	if(stacktop[-2].intValue < stacktop[-1].intValue)
@@ -134,7 +134,7 @@ case COP_PREFIX_ICMP:
 	}
 	MODIFY_PC_AND_STACK(2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="icmp_un" group="Comparison operators">
@@ -160,7 +160,7 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_ICMP_UN:
+VMCASE(COP_PREFIX_ICMP_UN):
 {
 	/* Compare unsigned integer values */
 	if(stacktop[-2].uintValue < stacktop[-1].uintValue)
@@ -177,7 +177,7 @@ case COP_PREFIX_ICMP_UN:
 	}
 	MODIFY_PC_AND_STACK(2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="lcmp" group="Comparison operators">
@@ -203,7 +203,7 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_LCMP:
+VMCASE(COP_PREFIX_LCMP):
 {
 	/* Compare long values */
 	stacktop[-(CVM_WORDS_PER_LONG * 2)].intValue =
@@ -211,7 +211,7 @@ case COP_PREFIX_LCMP:
 		     &(stacktop[-CVM_WORDS_PER_LONG]));
 	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_LONG * 2) + 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="lcmp_un" group="Comparison operators">
@@ -237,7 +237,7 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_LCMP_UN:
+VMCASE(COP_PREFIX_LCMP_UN):
 {
 	/* Compare unsigned long values */
 	stacktop[-(CVM_WORDS_PER_LONG * 2)].intValue =
@@ -245,7 +245,7 @@ case COP_PREFIX_LCMP_UN:
 		      &(stacktop[-CVM_WORDS_PER_LONG]));
 	MODIFY_PC_AND_STACK(2, -(CVM_WORDS_PER_LONG * 2) + 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="fcmpl" group="Comparison operators">
@@ -273,7 +273,7 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_FCMPL:
+VMCASE(COP_PREFIX_FCMPL):
 {
 	/* Compare float values */
 	stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)].intValue =
@@ -282,7 +282,7 @@ case COP_PREFIX_FCMPL:
 	MODIFY_PC_AND_STACK
 		(2, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="fcmpg" group="Comparison operators">
@@ -311,7 +311,7 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_FCMPG:
+VMCASE(COP_PREFIX_FCMPG):
 {
 	/* Compare float values */
 	stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)].intValue =
@@ -320,7 +320,7 @@ case COP_PREFIX_FCMPG:
 	MODIFY_PC_AND_STACK
 		(2, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="pcmp" group="Comparison operators">
@@ -346,7 +346,7 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_PCMP:
+VMCASE(COP_PREFIX_PCMP):
 {
 	/* Compare pointer values */
 	if(stacktop[-2].ptrValue < stacktop[-1].ptrValue)
@@ -363,7 +363,7 @@ case COP_PREFIX_PCMP:
 	}
 	MODIFY_PC_AND_STACK(2, -1);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="seteq" group="Comparison operators">
@@ -388,13 +388,13 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_SETEQ:
+VMCASE(COP_PREFIX_SETEQ):
 {
 	/* Set true if the stack top is zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue == 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="setne" group="Comparison operators">
@@ -419,13 +419,13 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_SETNE:
+VMCASE(COP_PREFIX_SETNE):
 {
 	/* Set true if the stack top is non-zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue != 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="setlt" group="Comparison operators">
@@ -450,13 +450,13 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_SETLT:
+VMCASE(COP_PREFIX_SETLT):
 {
 	/* Set true if the stack top is less than zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue < 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="setle" group="Comparison operators">
@@ -481,13 +481,13 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_SETLE:
+VMCASE(COP_PREFIX_SETLE):
 {
 	/* Set true if the stack top is less or equal to zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue <= 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="setgt" group="Comparison operators">
@@ -512,13 +512,13 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_SETGT:
+VMCASE(COP_PREFIX_SETGT):
 {
 	/* Set true if the stack top is greater than zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue > 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 /**
  * <opcode name="setge" group="Comparison operators">
@@ -543,12 +543,12 @@ break;
  *   The <i>result</i> is then pushed onto the stack.</description>
  * </opcode>
  */
-case COP_PREFIX_SETGE:
+VMCASE(COP_PREFIX_SETGE):
 {
 	/* Set true if the stack top greater or equal to zero */
 	stacktop[-1].intValue = (stacktop[-1].intValue >= 0);
 	MODIFY_PC_AND_STACK(2, 0);
 }
-break;
+VMBREAK;
 
 #endif /* IL_CVM_PREFIX */

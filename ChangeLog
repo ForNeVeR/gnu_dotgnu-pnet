@@ -24,6 +24,8 @@ array ranks properly.
 * image/sig_parse.c (ParseArrayShape): allow zero sizes in multi-rank
 array signatures.
 
+* ilasm/ilasm_grammar.y: build array types properly in the assembler.
+
 2001-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c: fix a bug that caused GetBuiltinType to treat

@@ -501,6 +501,61 @@ static char byteBuffer[ILASM_BYTE_BUFSIZ];
  */
 #define	GetToken(item)		(ILProgramItemGetToken(ILToProgramItem((item))))
 
+/*
+ * Combine an array shell with an element type.
+ */
+static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
+{
+	ILType *temp;
+	ILType *temp2;
+
+	if(!elemType || !shell)
+	{
+		ILAsmOutOfMemory();
+	}
+
+	/* If the element type is an array, we need to insert the shell
+	   at the inner-most level of the element type */
+	if(ILType_IsComplex(elemType) && elemType != 0 &&
+	   (elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+	    elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	{
+		temp = elemType;
+		while(ILType_IsComplex(temp->un.array.elemType) &&
+			  temp->un.array.elemType != 0 &&
+			  (temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+			   temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+		{
+			temp = temp->un.array.elemType;
+		}
+		temp2 = temp->un.array.elemType;
+		temp->un.array.elemType = shell;
+		if(cont)
+		{
+			temp->kind = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
+		}
+		temp = shell;
+		while(temp->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		{
+			temp = temp->un.array.elemType;
+		}
+		temp->un.array.elemType = temp2;
+		return elemType;
+	}
+
+	/* Wrap the shell around the element type */
+	temp = shell;
+	while(ILType_IsComplex(temp->un.array.elemType) &&
+		  temp->un.array.elemType != 0 &&
+		  (temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY ||
+		   temp->un.array.elemType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	{
+		temp = temp->un.array.elemType;
+	}
+	temp->un.array.elemType = elemType;
+	return shell;
+}
+
 %}
 
 /*
@@ -864,7 +919,7 @@ static char byteBuffer[ILASM_BYTE_BUFSIZ];
 %type <floatValue>	Float64 InstructionFloat
 %type <byteList>	ByteList
 %type <classInfo>	ExtendsClause ClassName CatchClause
-%type <type>		Type
+%type <type>		Type ArrayBounds Bounds
 %type <marshType>	MarshalledType
 %type <typeSpec>	TypeSpecification
 %type <params>		OptSignatureArguments SignatureArguments SignatureArgument
@@ -2387,10 +2442,11 @@ Type
 	| K_VALUETYPE ClassName			{ $$ = ILType_FromValueType($2); }
 	| K_BOXED ClassName				{ $$ = ILType_FromClass($2); }
 	| Type '[' '?' ']'	{
-				$$ = ILTypeCreateArray(ILAsmContext, 1, $1);
+				$$ = CombineArrayType
+						($1, ILTypeCreateArray(ILAsmContext, 1, 0), 0);
 			}
 	| Type '[' ArrayBounds ']'	{
-				$$ = ILTypeCreateArray(ILAsmContext, 1, $1);
+				$$ = CombineArrayType($1, $3, 0);
 			}
 	| Type '&'			{
 				$$ = ILTypeCreateRef(ILAsmContext, IL_TYPE_COMPLEX_BYREF, $1);
@@ -2444,8 +2500,10 @@ Type
 	;
 
 ArrayBounds
-	: Bounds
-	| ArrayBounds ',' Bounds
+	: Bounds					{ $$ = $1; }
+	| ArrayBounds ',' Bounds	{
+				$$ = CombineArrayType($1, $3, 1);
+			}
 	;
 
 /*
@@ -2455,13 +2513,30 @@ ArrayBounds
  * eating one of the dots in the "...".
  */
 Bounds
-	: /* empty */
-	| DOT_DOT_DOT
-	| Integer32			{}
-	| Integer32 DOT_DOT_DOT Integer32	{}
-	| FLOAT_CONSTANT DOT_DOT Integer32	{}
-	| Integer32 DOT_DOT_DOT {}
-	| FLOAT_CONSTANT DOT_DOT {}
+	: /* empty */			{ $$ = ILTypeCreateArray(ILAsmContext, 1, 0); }
+	| DOT_DOT_DOT			{ $$ = ILTypeCreateArray(ILAsmContext, 1, 0); }
+	| Integer32				{
+				$$ = ILTypeCreateArray(ILAsmContext, 1, 0);
+				ILTypeSetSize($$, 0, (long)$1);
+			}
+	| Integer32 DOT_DOT_DOT Integer32	{
+				$$ = ILTypeCreateArray(ILAsmContext, 1, 0);
+				ILTypeSetSize($$, 0, (long)($3 - $1 + 1));
+				ILTypeSetLowBound($$, 0, (long)$1);
+			}
+	| FLOAT_CONSTANT DOT_DOT Integer32	{
+				$$ = ILTypeCreateArray(ILAsmContext, 1, 0);
+				ILTypeSetSize($$, 0, (long)($3 - $1 + 1));
+				ILTypeSetLowBound($$, 0, (long)$1);
+			}
+	| Integer32 DOT_DOT_DOT {
+				$$ = ILTypeCreateArray(ILAsmContext, 1, 0);
+				ILTypeSetLowBound($$, 0, (long)$1);
+			}
+	| FLOAT_CONSTANT DOT_DOT {
+				$$ = ILTypeCreateArray(ILAsmContext, 1, 0);
+				ILTypeSetLowBound($$, 0, (long)$1);
+			}
 	;
 
 NativeType

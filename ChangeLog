@@ -1,4 +1,10 @@
 
+2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/meta_build.c (Load_MemberRef): report "unresolved external
+	references" instead of "invalid metadata" when a MemberRef cannot
+	be resolved.
+
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_inline.c,

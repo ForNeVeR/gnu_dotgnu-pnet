@@ -1861,15 +1861,13 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 			   !strcmp(classInfo->namespace, "$Synthetic"))
 			{
 				fprintf(stderr,
-						"metadata error in token 0x%08lX: "
-								"member `%s.%s' not found\n",
+						"token 0x%08lX: member `%s.%s' not found\n",
 						(unsigned long)token, classInfo->name, name);
 			}
 			else
 			{
 				fprintf(stderr,
-						"metadata error in token 0x%08lX: "
-								"member `%s%s%s.%s' not found\n",
+						"token 0x%08lX: member `%s%s%s.%s' not found\n",
 						(unsigned long)token,
 						(classInfo->namespace ? classInfo->namespace : ""),
 						(classInfo->namespace ? "." : ""),
@@ -1879,11 +1877,11 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 		else
 		{
 			fprintf(stderr,
-					"metadata error in token 0x%08lX: member %s not found\n",
+					"token 0x%08lX: member %s not found\n",
 					(unsigned long)token, name);
 		}
 	#endif
-		return IL_LOADERR_BAD_META;
+		return IL_LOADERR_UNRESOLVED;
 	}
 	if(!ILMember_IsMethod(member) && !ILMember_IsField(member))
 	{

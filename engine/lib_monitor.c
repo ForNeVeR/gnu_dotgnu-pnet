@@ -59,8 +59,8 @@ extern	"C" {
  * may never be returned to the thread-local free list even if the monitor is fully 
  * released.  This isn't actually a problem because monitors are always allocated 
  * on the GC heap.  If the object is locked and unlocked again, the monitor may 
- * get another change to be returned to the free list.  If the object becomes 
- * garbage and is  collected the monitor will eventually be collected as well.
+ * get another chance to be returned to the free list.  If the object becomes 
+ * garbage and is collected then then monitor will eventually be collected as well.
  *
  * Both algorithms uses 3 main functions: GetObjectLockWord, SetObjectLockWord and 
  * CompareAndExchangeObjectLockWord.  The implementation of these functions is
@@ -68,8 +68,9 @@ extern	"C" {
  * engine/lib_def.h.
  * On some platforms, CompareAndExchangeObjectLockWord may use a global lock
  * because it uses ILInterlockedCompareAndExchangePointers which may not be
- * ported to that platform (support/interlocked.h).  CompareAndExchangeObjectLockWord
- * always uses a global lock if the thin-lock algorithm is used.
+ * ported to that platform (see support/interlocked.h).  
+ * CompareAndExchangeObjectLockWord always uses a global lock if the thin-lock
+ * algorithm is used.
  *
  * The algorithm ASSUMES ILInterlockedCompareAndExchangePointers acts as a
  * memory barrier.
@@ -167,8 +168,6 @@ ILBool _IL_Monitor_InternalTryEnter(ILExecThread *thread,
 	int result;	
 	ILLockWord lockword;
 	ILExecMonitor *monitor, *next;
-	ILMonitor *mutex;
-
 	
 	/* Make sure the object isn't null */
 	if (obj == 0)
@@ -210,8 +209,6 @@ retry:
 		{
 			monitor = _ILExecMonitorCreate();
 		}
-
-		mutex = (ILMonitor *)monitor->waitMutex;
 
 		next = monitor->next;
 
@@ -274,8 +271,6 @@ retry:
 
 	monitor = IL_LW_UNMARK(lockword);
 
-	mutex = (ILMonitor *)monitor->waitMutex;
-
 	/* We assume that _ILObjectLockWord_WaitAndMark flushed the CPU's cache
 	   so that we can see the monitor */
 
@@ -308,21 +303,15 @@ retry:
 		result = ILWaitMonitorTryEnter(monitor->waitMutex, timeout);
 	}
 
+	_ILObjectLockWord_WaitAndMark(thread, obj);
+	--monitor->waiters;
+	_ILObjectLockWord_Unmark(thread, obj);
+
 	/* Failed or timed out somehow */
 	if (result != 0)
 	{
-		_ILObjectLockWord_WaitAndMark(thread, obj);
-		--monitor->waiters;
-		_ILObjectLockWord_Unmark(thread, obj);
-
 		/* Handle ThreadAbort etc */		
 		_ILHandleWaitResult(thread, result);
-	}
-	else
-	{
-		_ILObjectLockWord_WaitAndMark(thread, obj);
-		--monitor->waiters;
-		_ILObjectLockWord_Unmark(thread, obj);
 	}
 
 	return result == 0;
@@ -336,7 +325,6 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
 	int result;
 	ILLockWord lockword;
 	ILExecMonitor *monitor;
-	ILMonitor *mutex;
 
 	/* Make sure obj isn't null */
 	if(obj == 0)
@@ -352,8 +340,6 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
 	/* We assume that _ILObjectLockWord_WaitAndMark flushed the CPU's cache
 	   so that we can see the monitor */
 	monitor = IL_LW_UNMARK(lockword);
-
-	mutex = (ILMonitor *)monitor->waitMutex;
 
 	/* Make sure the monitor is valid */
 	if (monitor == 0 || (monitor != 0 

@@ -2,6 +2,9 @@
 
 	* support/interlocked_x86.h:  Make ILInterlockedDecrement
 	return decremented value not incremented value.
+	
+	* engine/lib_monitor.c:  Fixed some spelling mistakes in
+	the documentation.  Removed some benign test code.
 
 2004-05-10  Gopal V  <gopalv82@yahoo.com>
 
@@ -9,7 +12,7 @@
 
 2004-05-10  Thong Nguyen  <tum@veridicus.com>
 
-	* profiles/full: Made full profile use standard lcosk.
+	* profiles/full: Made full profile use standard locks.
 		
 	* profiles/full-tl: New full profile with thin-locks.
 	
@@ -60,10 +63,11 @@
 	IL_CONFIG_THIN_LOCKS.  Added definitions for ILExecMonitorProcess
  	Create and ILExecMonitorProcessDestroy.
  	
- 	* Changed ILGCalloc(*) not allocate header space if the
- 	block isn't going to be used for a managed type.  Made ILGCAllocAtomic
- 	use typed-allocation so that the monitor in the object header of
- 	primitive-type arrays will not be prematurely collected.
+ 	* engine/heap.c: Changed ILGCalloc(*) not allocate header space
+ 	if the block isn't going to be used for a managed type.  Made 
+ 	ILGCAllocAtomic use typed-allocation so that the monitor in the 
+ 	object header of primitive-type arrays will not be prematurely
+ 	collected.
  	
  	* engine/ilrun.c: Changed ilrun to only print exceptions at the
  	end if the thread isn't aborting.
@@ -110,7 +114,9 @@
 	* support/thread.c: Tidied and refactored code.  Added
 	IL_TS_RUNNING state to threads that are running.  Made
 	ILThreadWaitForForegoundThreads ignore interrupts/aborts.
-	Added implementation of ILThreadSelfAborting.
+	Added implementation of ILThreadSelfAborting.  Fixed ILThreadJoin
+	so that it returns IL_JOIN_UNSTARTED if the thread hasn't been
+	started.
 	
 	* support/w32_defs.h: Added implementation of ILThreadYield.
 	
@@ -119,8 +125,6 @@
 	thread is aborting (made them respond differently to abort
 	requests than they do to aborts underway).
 	Added _ILWaitOneBackupInterruptsAndAborts implementation.
-	
-	* support/wait_event.c:
 	
 	* support/wait_mutex.c: Allow monitors to be destroyed even
 	if they are owned.  Remove FastClaim.  Removed

@@ -80,6 +80,20 @@ static void RegexChar(char **regex, int *regexLen, int *regexMax, char ch)
 				} \
 			} while (0)
 
+static int CheckIf(CSAntTask *node)
+{
+	const char *val=CSAntTaskParam(node,"if");
+	if(!val)
+	{
+		return 1;
+	}
+	if(val && !ILStrICmp(val,"true"))
+	{
+		return 1;
+	}
+	return 0;
+}
+
 /*
  * Build a regular expression from a set of include or exclude names.
  * Returns non-zero if recursion into sub-directories is specified.
@@ -101,6 +115,11 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 	subNode = node->taskChildren;
 	while(subNode != 0)
 	{
+		if(!CheckIf(subNode))
+		{
+			subNode=subNode->next;
+			continue;
+		}
 		if(!strcmp(subNode->name, name) &&
 		   (arg = CSAntTaskParam(subNode, "name")) != 0)
 		{

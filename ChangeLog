@@ -1,4 +1,9 @@
 
+2003-01-02  Gopal.V  <gopalv82@symonds.net>
+	
+	* csant/csant_fileset.c: Implement an if conditional flag for the
+	csant include and exclude tasks.
+
 2003-01-02  Jeff Post  <j_post@pacbell.net>
 
 	* engine/lib_enum.c: GetEnumValueFromName - increment name

@@ -642,7 +642,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 	public int IndexOf(String value, int startIndex, int count)
 			{
-				int valueLen;
+				int valueLen, posn;
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");
@@ -658,13 +658,14 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						("count", _("ArgRange_StringRange"));
 				}
 				valueLen = value.length;
-				while((startIndex + valueLen) <= (startIndex + count))
+				posn = startIndex;
+				while((posn + valueLen) <= (startIndex + count))
 				{
-					if(EqualRange(startIndex, valueLen, value, 0))
+					if(EqualRange(posn, valueLen, value, 0))
 					{
-						return startIndex;
+						return posn;
 					}
-					++startIndex;
+					++posn;
 				}
 				return -1;
 			}
@@ -824,7 +825,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			}
 	public int LastIndexOf(String value, int startIndex, int count)
 			{
-				int valueLen;
+				int valueLen, posn;
 				if(value == null)
 				{
 					throw new ArgumentNullException("value");
@@ -840,14 +841,15 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						("count", _("ArgRange_StringRange"));
 				}
 				valueLen = value.length;
-				while((startIndex - valueLen + 1) >= (startIndex - count + 1))
+				posn = startIndex;
+				while((posn - valueLen + 1) >= (startIndex - count + 1))
 				{
-					if(EqualRange(startIndex - valueLen + 1,
+					if(EqualRange(posn - valueLen + 1,
 								  valueLen, value, 0))
 					{
-						return startIndex;
+						return posn;
 					}
-					--startIndex;
+					--posn;
 				}
 				return -1;
 			}

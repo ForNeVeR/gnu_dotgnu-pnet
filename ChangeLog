@@ -4,6 +4,9 @@
 	* runtime/Platform/DirMethods.cs: misspelled "InternalCall" in
 	previous version.
 
+	* runtime/System/String.cs: bug fixes to "IndexOf" and "LastIndexOf",
+	when searching for a string.
+
 2002-01-23  Charlie Carnow <carnow@gmx.net> 
 
 	* runtime/Platform/DirMethods.cs: Added internal methods for

@@ -4,6 +4,9 @@
 	* engine/lib_reflect.c: Generate arrays of the attribute type 
 	instead of generating Object[] arrays .
 
+	* engine/verify_call.c: Fix minor bug (or typo) in verification
+	of the ldvirtftn.
+
 2003-07-09  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/thread.c, engine/process.c: Fix bug that caused the

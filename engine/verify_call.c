@@ -1440,7 +1440,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN:
 	methodInfo = GetMethodToken(method, pc, (ILType **)0);
 	if(methodInfo && STK_UNARY == ILEngineType_O)
 	{
-		classInfo = ILMethod_Owner(method);
+		classInfo = ILMethod_Owner(methodInfo);
 		if(AssignCompatible(method, &(stack[stackSize - 1]),
 							ILType_FromClass(classInfo),
 							unsafeAllowed))

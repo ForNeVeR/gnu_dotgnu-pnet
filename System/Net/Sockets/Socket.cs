@@ -61,7 +61,11 @@ public class Socket : IDisposable
 				{
 					if(protocolType == ProtocolType.Unspecified)
 					{
-						protocolType = ProtocolType.Tcp;
+						if(addressFamily == AddressFamily.InterNetwork ||
+						   addressFamily == AddressFamily.InterNetworkV6)
+						{
+							protocolType = ProtocolType.Tcp;
+						}
 					}
 					else if(protocolType != ProtocolType.Tcp)
 					{
@@ -72,7 +76,11 @@ public class Socket : IDisposable
 				{
 					if(protocolType == ProtocolType.Unspecified)
 					{
-						protocolType = ProtocolType.Udp;
+						if(addressFamily == AddressFamily.InterNetwork ||
+						   addressFamily == AddressFamily.InterNetworkV6)
+						{
+							protocolType = ProtocolType.Udp;
+						}
 					}
 					else if(protocolType != ProtocolType.Udp)
 					{

@@ -22,6 +22,10 @@
 	more I18N support to defer the rest of the CultureInfo functionality
 	to the I18N plugin layer.
 
+	* runtime/System/Globalization/CultureInfo.cs: look for internal
+	cultures using either ID or name, because different engines may
+	have different requirements.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

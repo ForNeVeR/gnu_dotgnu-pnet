@@ -123,6 +123,9 @@ public class CultureInfo : ICloneable, IFormatProvider
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int InternalCultureID();
 
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String InternalCultureName();
+
 	// Get the current culture object for the running thread.
 	public static CultureInfo CurrentCulture
 			{
@@ -135,7 +138,21 @@ public class CultureInfo : ICloneable, IFormatProvider
 							return currentCulture;
 						}
 						int id = InternalCultureID();
-						if(id == 0 ||
+						if(id <= 0)
+						{
+							// Try getting the name instead, in case this
+							// engine doesn't know about culture ID's.
+							String name = InternalCultureName();
+							try
+							{
+								id = MapNameToID(name);
+							}
+							catch(ArgumentException)
+							{
+								id = -1;
+							}
+						}
+						if(id <= 0 ||
 						   _I18NCultureHandler.GetCultureHandler(id) == null)
 						{
 							currentCulture = InvariantCulture;

@@ -110,6 +110,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	ILCallFrame *frame;
 	ILUInt32 savePC;
 	int threwException;
+	unsigned char *pcstart;
 
 	/* Get the top and extent of the stack */
 	stacktop = thread->stackTop;
@@ -241,6 +242,13 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	/* Clear the pending exception on entry to the method */
 	thread->thrownException = 0;
 
+	/* Convert the method into CVM bytecode */
+	pcstart = _ILConvertMethod(thread, method);
+	if(!pcstart)
+	{
+		/* TODO: throw a "MissingMethodException" */
+	}
+
 	/* Create a call frame for the method */
 	if(thread->numFrames >= thread->maxFrames)
 	{
@@ -254,6 +262,9 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	frame->except = IL_MAX_UINT32;
 
 	/* Call the method */
+	thread->pcstart = pcstart;
+	thread->pc = 0;
+	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)
 	{
@@ -261,10 +272,126 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 		thread->thrownException = thread->stackTop[-1].ptrValue;
 		--(thread->stackTop);
 	}
+	else
+	{
+		/* Copy the return value into place */
+		paramType = ILTypeGetEnumType(signature->un.method.retType);
+		if(ILType_IsPrimitive(paramType))
+		{
+			/* Process a primitive value */
+			switch(ILType_ToElement(paramType))
+			{
+				case IL_META_ELEMTYPE_VOID:		break;
 
-	/* Pop the call frame */
+				case IL_META_ELEMTYPE_BOOLEAN:
+				case IL_META_ELEMTYPE_I1:
+				case IL_META_ELEMTYPE_U1:
+				{
+					*((ILInt8 *)result) =
+						(ILInt8)(thread->stackTop[-1].intValue);
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I2:
+				case IL_META_ELEMTYPE_U2:
+				case IL_META_ELEMTYPE_CHAR:
+				{
+					*((ILInt16 *)result) =
+						(ILInt16)(thread->stackTop[-1].intValue);
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I4:
+				case IL_META_ELEMTYPE_U4:
+			#ifdef IL_NATIVE_INT32
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					*((ILInt32 *)result) = thread->stackTop[-1].intValue;
+					--(thread->stackTop);
+				}
+				break;
+
+				case IL_META_ELEMTYPE_I8:
+				case IL_META_ELEMTYPE_U8:
+			#ifdef IL_NATIVE_INT64
+				case IL_META_ELEMTYPE_I:
+				case IL_META_ELEMTYPE_U:
+			#endif
+				{
+					ILMemCpy(result, thread->stackTop - CVM_WORDS_PER_LONG,
+							 sizeof(ILInt64));
+					thread->stackTop -= CVM_WORDS_PER_LONG;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R4:
+				{
+					ILMemCpy(&fValue,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					*((ILFloat *)result) = (ILFloat)fValue;
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R8:
+				{
+					ILMemCpy(&fValue,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					*((ILDouble *)result) = (ILDouble)fValue;
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_R:
+				{
+					ILMemCpy(result,
+							 thread->stackTop - CVM_WORDS_PER_NATIVE_FLOAT,
+							 sizeof(ILNativeFloat));
+					thread->stackTop -= CVM_WORDS_PER_NATIVE_FLOAT;
+				}
+				break;
+
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+				{
+					ILMemCpy(result,
+							 thread->stackTop - CVM_WORDS_PER_TYPED_REF,
+							 sizeof(ILTypedRef));
+					thread->stackTop -= CVM_WORDS_PER_TYPED_REF;
+				}
+				break;
+			}
+		}
+		else if(ILType_IsClass(paramType))
+		{
+			/* Process an object reference */
+			*((void **)result) = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
+		else if(ILType_IsValueType(paramType))
+		{
+			/* Process a value type */
+			size = ILSizeOfType(thread, paramType);
+			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+			ILMemCpy(result, thread->stackTop - sizeInWords, size);
+			thread->stackTop -= sizeInWords;
+		}
+		else
+		{
+			/* Assume that everything else is an object reference */
+			*((void **)result) = thread->stackTop[-1].ptrValue;
+			--(thread->stackTop);
+		}
+	}
+
+	/* Restore the original PC: everything else was restored
+	   by the "return" instruction within the interpreter */
 	thread->pc = savePC;
-	thread->stackTop = thread->stackBase + sizeInWords;
 
 	/* Done */
 	return threwException;

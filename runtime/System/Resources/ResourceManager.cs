@@ -388,6 +388,34 @@ public class ResourceManager
 				return null;
 			}
 
+	// Create a resource set using a type.
+	private static ResourceSet AttemptCreate(Type resourceSetType,
+											 Stream stream)
+			{
+				if(resourceSetType == typeof(BuiltinResourceSet))
+				{
+					// Special case the builtin resources, because we
+					// may not have sufficient reflection support to
+					// create the resource set via "CreateInstance".
+					return new BuiltinResourceSet(stream);
+				}
+				else
+				{
+					try
+					{
+						Object[] args = new Object [1];
+						args[0] = stream;
+						return (ResourceSet)
+							(Activator.CreateInstance(resourceSetType, args));
+					}
+					catch(NotSupportedException)
+					{
+						// We don't have enough reflection support.
+						return null;
+					}
+				}
+			}
+
 	// Attempt to load a resource set for a particular culture.
 	private ResourceSet AttemptLoad(CultureInfo culture)
 			{
@@ -399,10 +427,7 @@ public class ResourceManager
 							(GetResourceFileName(culture));
 					if(stream != null)
 					{
-						Object[] args = new Object [1];
-						args[0] = stream;
-						return (ResourceSet)
-							(Activator.CreateInstance(resourceSetType, args));
+						return AttemptCreate(resourceSetType, stream);
 					}
 				}
 				else if(resourceDir != null)
@@ -421,10 +446,7 @@ public class ResourceManager
 						// The file or directory probably does not exist.
 						return null;
 					}
-					Object[] args = new Object [1];
-					args[0] = stream;
-					return (ResourceSet)
-						(Activator.CreateInstance(resourceSetType, args));
+					return AttemptCreate(resourceSetType, stream);
 				}
 				return null;
 			}

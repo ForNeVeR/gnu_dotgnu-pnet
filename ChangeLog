@@ -10,6 +10,9 @@
 	* runtime/System/Collections/Hashtable.cs: make hash tables work
 	even if the runtime engine does not support floating-point.
 
+	* runtime/System/Resources/ResourceManager.cs: harden "AttemptLoad"
+	against the runtime engine missing reflection support.
+
 2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs: fix semantic compile errors.

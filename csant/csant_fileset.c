@@ -20,11 +20,9 @@
 
 #include "csant_defs.h"
 #include "csant_fileset.h"
+#include "il_regex.h"
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
-#ifdef HAVE_REGEX_H
-#include <regex.h>
 #endif
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
@@ -86,11 +84,7 @@ static void RegexChar(char **regex, int *regexLen, int *regexMax, char ch)
  * Build a regular expression from a set of include or exclude names.
  * Returns non-zero if recursion into sub-directories is specified.
  */
-#ifdef HAVE_REGCOMP
 typedef regex_t RegexState;
-#else
-typedef int RegexState;
-#endif
 static int BuildIncludeRegex(CSAntTask *node, const char *name,
 							 RegexState *state)
 {
@@ -248,28 +242,11 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 	REGEX_CHAR('\0');
 
 	/* Compile the register expression and exit */
-#ifdef HAVE_REGCOMP
-	/* POSIX-style regular expression library */
-	if(regcomp(state, regex, REG_EXTENDED | REG_NOSUB) != 0)
+	if(IL_regcomp(state, regex, REG_EXTENDED | REG_NOSUB) != 0)
 	{
 		fprintf(stderr, "Invalid regular expression: %s\n", regex);
 		exit(1);
 	}
-#else
-#ifdef HAVE_RE_COMP
-	/* BSD-style regular expression library */
-	if(re_comp(regex) != 0)
-	{
-		fprintf(stderr, "Invalid regular expression: %s\n", regex);
-		exit(1);
-	}
-	*state = 0;
-#else
-	fprintf(stderr, "Regular expression library not present - aborting\n");
-	exit(1);
-	*state = 0;
-#endif
-#endif
 	ILFree(regex);
 	return recursive;
 }
@@ -279,15 +256,7 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
  */
 static int MatchInclude(char *pathname, RegexState *state)
 {
-#ifdef HAVE_REGCOMP
-	return (regexec(state, pathname, 0, 0, 0) == 0);
-#else
-#ifdef HAVE_RE_COMP
-	return (re_exec(pathname) != 0);
-#else
-	return 0;
-#endif
-#endif
+	return (IL_regexec(state, pathname, 0, 0, 0) == 0);
 }
 
 /*
@@ -465,9 +434,7 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
 	}
 
 	/* Free the regular expression state */
-#ifdef HAVE_REGCOMP
-	regfree(&state);
-#endif
+	IL_regfree(&state);
 
 	/* Construct a new regular expression for the "excludes" list */
 	BuildIncludeRegex(node, "excludes", &state);
@@ -515,9 +482,7 @@ CSAntFileSet *CSAntFileSetLoad(CSAntTask *task, const char *name,
 	ILFree(baseDir);
 
 	/* Free the regular expression state */
-#ifdef HAVE_REGCOMP
-	regfree(&state);
-#endif
+	IL_regfree(&state);
 
 	/* Done */
 	return fileset;

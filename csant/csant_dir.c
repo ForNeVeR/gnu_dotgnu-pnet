@@ -19,12 +19,10 @@
  */
 
 #include "csant_defs.h"
+#include "il_regex.h"
 #include <dirent.h>
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
-#ifdef HAVE_REGEX_H
-#include <regex.h>
 #endif
 #ifdef HAVE_SYS_CYGWIN_H
 #include <sys/cygwin.h>
@@ -42,9 +40,7 @@ struct _tagCSAntDir
 	ILDir  *dirInfo;
 	int     useRegex;
 	char   *name;
-#ifdef HAVE_REGCOMP
 	regex_t regexState;
-#endif
 };
 
 CSAntDir *CSAntDirOpen(const char *pathname, const char *fileRegex)
@@ -132,26 +128,11 @@ CSAntDir *CSAntDirOpen(const char *pathname, const char *fileRegex)
 	/* Compile the regular expression */
 	if(regex)
 	{
-#ifdef HAVE_REGCOMP
-		/* POSIX-style regular expression library */
-		if(regcomp(&(dir->regexState), regex, REG_EXTENDED | REG_NOSUB) != 0)
+		if(IL_regcomp(&(dir->regexState), regex, REG_EXTENDED | REG_NOSUB) != 0)
 		{
 			fprintf(stderr, "Invalid regular expression\n");
 			exit(1);
 		}
-#else
-#ifdef HAVE_RE_COMP
-		/* BSD-style regular expression library */
-		if(re_comp(regex) != 0)
-		{
-			fprintf(stderr, "Invalid regular expression\n");
-			exit(1);
-		}
-#else
-		fprintf(stderr, "Regular expression library not present - aborting\n");
-		exit(1);
-#endif
-#endif
 		ILFree(regex);
 		dir->useRegex = 1;
 	}
@@ -171,12 +152,10 @@ void CSAntDirClose(CSAntDir *dir)
 	{
 		ILFree(dir->name);
 	}
-#ifdef HAVE_REGCOMP
 	if(dir->useRegex)
 	{
-		regfree(&(dir->regexState));
+		IL_regfree(&(dir->regexState));
 	}
-#endif
 	ILFree(dir);
 }
 
@@ -205,21 +184,11 @@ const char *CSAntDirNext(CSAntDir *dir)
 		/* Ignore the name if the regular expression does not match */
 		if(dir->useRegex)
 		{
-		#ifdef HAVE_REGCOMP
-			if(regexec(&(dir->regexState), name, 0, 0, 0) != 0)
+			if(IL_regexec(&(dir->regexState), name, 0, 0, 0) != 0)
 			{
 				ILFree(entry);
 				continue;
 			}
-		#else
-		#ifdef HAVE_RE_COMP
-			if(!re_exec(name))
-			{
-				ILFree(entry);
-				continue;
-			}
-		#endif
-		#endif
 		}
 
 		/* We have a match */

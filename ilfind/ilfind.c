@@ -22,11 +22,9 @@
 #include "il_system.h"
 #include "il_program.h"
 #include "il_utils.h"
+#include "il_regex.h"
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
-#ifdef HAVE_REGEX_H
-#include <regex.h>
 #endif
 
 #ifdef	__cplusplus
@@ -455,9 +453,7 @@ static int searchFile(const char *filename, ILContext *context,
 	return 0;
 }
 
-#ifdef HAVE_REGCOMP
 static regex_t RegexState;
-#endif
 
 /*
  * Compile a regular expression for the search string.
@@ -601,27 +597,12 @@ static void CompileRegex(char *searchString, int wholeString,
 	*out = '\0';
 
 	/* Compile the regular expression */
-#ifdef HAVE_REGCOMP
-	/* POSIX-style regular expression library */
-	if(regcomp(&RegexState, regexp, REG_EXTENDED | REG_NOSUB |
-									(libIgnoreCase ? REG_ICASE : 0)) != 0)
+	if(IL_regcomp(&RegexState, regexp, REG_EXTENDED | REG_NOSUB |
+									   (libIgnoreCase ? REG_ICASE : 0)) != 0)
 	{
 		fprintf(stderr, "Invalid regular expression\n");
 		exit(1);
 	}
-#else
-#ifdef HAVE_RE_COMP
-	/* BSD-style regular expression library */
-	if(re_comp(regexp) != 0)
-	{
-		fprintf(stderr, "Invalid regular expression\n");
-		exit(1);
-	}
-#else
-	fprintf(stderr, "Regular expression library not present - aborting\n");
-	exit(1);
-#endif
-#endif
 }
 
 /*
@@ -629,17 +610,7 @@ static void CompileRegex(char *searchString, int wholeString,
  */
 static int MatchRegex(const char *string)
 {
-#ifdef HAVE_REGCOMP
-	/* POSIX-style regular expression library */
-	return (regexec(&RegexState, string, 0, 0, 0) == 0);
-#else
-#ifdef HAVE_RE_COMP
-	/* BSD-style regular expression library */
-	return re_exec((char *)string);
-#else
-	return 0;
-#endif
-#endif
+	return (IL_regexec(&RegexState, string, 0, 0, 0) == 0);
 }
 
 #ifdef	__cplusplus

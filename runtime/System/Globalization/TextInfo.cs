@@ -23,6 +23,7 @@ namespace System.Globalization
 
 using System;
 using System.Runtime.Serialization;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 public class TextInfo : IDeserializationCallback
@@ -111,60 +112,18 @@ public class TextInfo : IDeserializationCallback
 			}
 
 	// Convert characters or strings to lower case.
-	public virtual char ToLower(char c)
-			{
-				// Perform the invariant case.  Subclasses implement
-				// culture-specific conversions.
-				if(c >= 'A' && c <= 'Z')
-				{
-					return (char)(c - 'A' + 'a');
-				}
-				else
-				{
-					return c;
-				}
-			}
-	public virtual String ToLower(String str)
-			{
-				if(str == null)
-				{
-					throw new ArgumentNullException("str");
-				}
-				StringBuilder builder = new StringBuilder();
-				foreach(char ch in str)
-				{
-					builder.Append(ToLower(ch));
-				}
-				return builder.ToString();
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual char ToLower(char c);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual String ToLower(String str);
 
 	// Convert characters or strings to upper case.
-	public virtual char ToUpper(char c)
-			{
-				// Perform the invariant case.  Subclasses implement
-				// culture-specific conversions.
-				if(c >= 'a' && c <= 'z')
-				{
-					return (char)(c - 'a' + 'A');
-				}
-				else
-				{
-					return c;
-				}
-			}
-	public virtual String ToUpper(String str)
-			{
-				if(str == null)
-				{
-					throw new ArgumentNullException("str");
-				}
-				StringBuilder builder = new StringBuilder();
-				foreach(char ch in str)
-				{
-					builder.Append(ToUpper(ch));
-				}
-				return builder.ToString();
-			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual char ToUpper(char c);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual String ToUpper(String str);
 
 	// Convert a string to title case.
 	public String ToTitleCase(String str)

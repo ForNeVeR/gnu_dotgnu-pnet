@@ -35,6 +35,9 @@
 	comparisons through the culture routines; remove the "InternalCompare"
 	internalcall and replace with a new one for the invariant culture.
 
+	* runtime/System/Globalization/TextInfo.cs: add internalcalls
+	for the ToLower/ToUpper methods in TextInfo.
+
 2003-08-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,

@@ -1,4 +1,9 @@
 
+2003-05-02  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_attrs.tc: Split out the serialization stuff into a
+	single function.
+
 2003-05-01  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_invoke.tc: Report correct error messages for 

@@ -234,6 +234,74 @@ static int IsAttributeTargetDistinct(ILGenInfo *info, ILProgramItem *item,
 	return 1;
 }
 
+/* 
+ * write an entry into the serialized stream using the provide paramType and
+ * argValue and serialType 
+ */
+
+static void WriteSerializedEntry(ILSerializeWriter *writer, 
+								 ILType *paramType,
+								 ILEvalValue *argValue,
+								 int serialType)
+{
+	switch(serialType)
+	{
+		case IL_META_SERIALTYPE_BOOLEAN:
+		case IL_META_SERIALTYPE_I1:
+		case IL_META_SERIALTYPE_U1:
+		case IL_META_SERIALTYPE_I2:
+		case IL_META_SERIALTYPE_U2:
+		case IL_META_SERIALTYPE_CHAR:
+		case IL_META_SERIALTYPE_I4:
+		case IL_META_SERIALTYPE_U4:
+		{
+			ILSerializeWriterSetInt32(writer, argValue->un.i4Value,
+									  serialType);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I8:
+		case IL_META_SERIALTYPE_U8:
+		{
+			ILSerializeWriterSetInt64(writer, argValue->un.i8Value);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R4:
+		{
+			ILSerializeWriterSetFloat32(writer, argValue->un.r4Value);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R8:
+		{
+			ILSerializeWriterSetFloat64(writer, argValue->un.r8Value);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_STRING:
+		{
+			ILSerializeWriterSetString(writer, argValue->un.strValue.str,
+									   argValue->un.strValue.len);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_TYPE:
+		{
+			const char *name = CSTypeToName
+				((ILType *)(argValue->un.strValue.str));
+			ILSerializeWriterSetString(writer, name, strlen(name));
+		}
+		break;
+
+		default:
+		{
+			/* TODO: arrays and implicit coercions to Object */
+		}
+		break;
+	}
+}
+
 /*
  * Process a single attribute in a section.
  */
@@ -681,64 +749,9 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
 		paramType = ILTypeGetParam(signature, argNum + 1);
-		serialType = ILSerializeGetType(paramType);
 		argValue = &(evalValues[argNum]);
-		switch(serialType)
-		{
-			case IL_META_SERIALTYPE_BOOLEAN:
-			case IL_META_SERIALTYPE_I1:
-			case IL_META_SERIALTYPE_U1:
-			case IL_META_SERIALTYPE_I2:
-			case IL_META_SERIALTYPE_U2:
-			case IL_META_SERIALTYPE_CHAR:
-			case IL_META_SERIALTYPE_I4:
-			case IL_META_SERIALTYPE_U4:
-			{
-				ILSerializeWriterSetInt32(writer, argValue->un.i4Value,
-										  serialType);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_I8:
-			case IL_META_SERIALTYPE_U8:
-			{
-				ILSerializeWriterSetInt64(writer, argValue->un.i8Value);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_R4:
-			{
-				ILSerializeWriterSetFloat32(writer, argValue->un.r4Value);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_R8:
-			{
-				ILSerializeWriterSetFloat64(writer, argValue->un.r8Value);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_STRING:
-			{
-				ILSerializeWriterSetString(writer, argValue->un.strValue.str,
-										   argValue->un.strValue.len);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_TYPE:
-			{
-				const char *name = CSTypeToName
-					((ILType *)(argValue->un.strValue.str));
-				ILSerializeWriterSetString(writer, name, strlen(name));
-			}
-			break;
-
-			default:
-			{
-				/* TODO: arrays and implicit coercions to Object */
-			}
-			break;
-		}
+		serialType = ILSerializeGetType(paramType);
+		WriteSerializedEntry(writer,paramType,argValue,serialType);
 	}
 	ILSerializeWriterSetNumExtra(writer, numNamedArgs);
 	for(argNum = 0; argNum < numNamedArgs; ++argNum)
@@ -765,62 +778,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 				(writer, ILMember_Name((ILMember *)(namedFields[argNum])),
 				 serialType);
 		}
-		switch(serialType)
-		{
-			case IL_META_SERIALTYPE_BOOLEAN:
-			case IL_META_SERIALTYPE_I1:
-			case IL_META_SERIALTYPE_U1:
-			case IL_META_SERIALTYPE_I2:
-			case IL_META_SERIALTYPE_U2:
-			case IL_META_SERIALTYPE_CHAR:
-			case IL_META_SERIALTYPE_I4:
-			case IL_META_SERIALTYPE_U4:
-			{
-				ILSerializeWriterSetInt32(writer, argValue->un.i4Value,
-										  serialType);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_I8:
-			case IL_META_SERIALTYPE_U8:
-			{
-				ILSerializeWriterSetInt64(writer, argValue->un.i8Value);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_R4:
-			{
-				ILSerializeWriterSetFloat32(writer, argValue->un.r4Value);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_R8:
-			{
-				ILSerializeWriterSetFloat64(writer, argValue->un.r8Value);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_STRING:
-			{
-				ILSerializeWriterSetString(writer, argValue->un.strValue.str,
-										   argValue->un.strValue.len);
-			}
-			break;
-
-			case IL_META_SERIALTYPE_TYPE:
-			{
-				const char *name = CSTypeToName
-					((ILType *)(argValue->un.strValue.str));
-				ILSerializeWriterSetString(writer, name, strlen(name));
-			}
-			break;
-
-			default:
-			{
-				/* TODO: arrays and implicit coercions to Object */
-			}
-			break;
-		}
+		WriteSerializedEntry(writer,paramType,argValue,serialType);
 	}
 	blob = ILSerializeWriterGetBlob(writer, &blobLen);
 	if(!blob)

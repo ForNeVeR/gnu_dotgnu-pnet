@@ -7,6 +7,9 @@
 	* cscc/c/c_grammar.y, doc/pnettools.texi: set the default
 	PInvoke calling conventions to "cdecl".
 
+	* pnet.spec.in: improve the RPM spec file (thanks to
+	Russell Stuart <russell@stuart.id.au>).
+
 2004-03-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c: output the parameter types for

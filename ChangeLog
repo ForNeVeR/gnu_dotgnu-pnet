@@ -1,29 +1,51 @@
+
+2003-07-03  Gopal.V  <gopalv82@symonds.net>
+	
+	* System.Windows.Forms/MessageBox.cs: Stub out this control .
+
 2003-07-04  Richard Baumann  <biochem333@nyc.rr.com>
+
 	* System.Windows.Forms/ToolBar.cs: Layout and button drawing fixes.
+	
 	* System.Windows.Forms/ToolBarButton.cs: Fix Contains method.
 
 2003-07-04  Richard Baumann  <biochem333@nyc.rr.com>
+	
 	* System.Windows.Forms/ToolBar.cs: Added and mostly implemented.
+	
 	* System.Windows.Forms/ToolBarButton.cs: Fully implemented.
+	
 	* System.Windows.Forms/ImageList.cs: Fixes to properly deal with the
 	sealed/virtual compile problems in csc. Add support for the
 	RecreateHandle event.
+	
 	* System.Windows.Forms/EventId.cs: Add IDs for ToolBar events.
+	
 	* samples/FormsHello.cs: Add ToolBar example.
 
 2003-07-03  Neil Cawse  <neilc@geotab.ca>
 
-	* System.Windows.Forms/AccessibleObject.cs, LinkLabel.cs :
-	Changes to allow compiling with csc.
-	System.Windows.Forms/Control.cs :
-	CreateControl only creates the toolkit window if it doesnt exist.
-	System.Drawing/Rectangle.cs : fixed Contains.
-	System.Drawing.Win32/DrawingWindow.cs, DrawingTopLevelWindow.cs,
-	DrawingToolkit.cs, DrawingTextureBrush.cs, DrawingSolidBrush.cs,
-	DrawingPen.cs, DrawingHatchBrush, DrawingGraphics.cs, DrawingFont.cs,
-	DrawingControlWindow.cs, DrawingBrush.cs, Win32.cs :
-	More error checking, changed reparent to be consistent with
-	Drawing.Xsharp.
+	* System.Windows.Forms/AccessibleObject.cs, 
+	System.Windows.Forms/LinkLabel.cs :	Changes to allow compiling with csc.
+	
+	* System.Windows.Forms/Control.cs :	CreateControl only creates the 
+	toolkit window if it doesnt exist.
+	
+	* System.Drawing/Rectangle.cs : fixed Contains.
+	
+	* System.Drawing.Win32/DrawingWindow.cs, 
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs, 
+	System.Drawing.Win32/DrawingTextureBrush.cs, 
+	System.Drawing.Win32/DrawingSolidBrush.cs,
+	System.Drawing.Win32/DrawingPen.cs, 
+	System.Drawing.Win32/DrawingHatchBrush, 
+	System.Drawing.Win32/DrawingGraphics.cs, 
+	System.Drawing.Win32/DrawingFont.cs,
+	System.Drawing.Win32/DrawingControlWindow.cs, 
+	System.Drawing.Win32/DrawingBrush.cs, 
+	System.Drawing.Win32/Win32.cs :	More error checking, changed 
+	reparent to be consistent with Drawing.Xsharp.
 
 2003-07-03  Gopal.V  <gopalv82@symonds.net>
 	

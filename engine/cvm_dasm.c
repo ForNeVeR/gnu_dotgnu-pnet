@@ -447,6 +447,8 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"lwrite_elem",		CVM_OPER_NONE},
 	{"fwrite_elem",		CVM_OPER_NONE},
 	{"dwrite_elem",		CVM_OPER_NONE},
+	{"get2d",			CVM_OPER_NONE},
+	{"set2d",			CVM_OPER_UINT32},
 
 	/*
 	 * Prefixed call management opcodes.
@@ -467,8 +469,6 @@ static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_1c",	CVM_OPER_NONE},
-	{"preserved_1d",	CVM_OPER_NONE},
 	{"preserved_1e",	CVM_OPER_NONE},
 
 	/*

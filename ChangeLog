@@ -1,4 +1,10 @@
 
+2002-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_ptr.c:
+	add the "get2d" and "set2d" instructions to the CVM instruction
+	set to help speed up 2D array operations.
+
 2002-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_misc.tc, codegen/cg_nodes.tc, codegen/jv_misc.tc,

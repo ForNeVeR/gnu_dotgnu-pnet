@@ -394,22 +394,24 @@ extern	"C" {
 #define	COP_PREFIX_LWRITE_ELEM		0x11
 #define	COP_PREFIX_FWRITE_ELEM		0x12
 #define	COP_PREFIX_DWRITE_ELEM		0x13
+#define	COP_PREFIX_GET2D			0x14
+#define	COP_PREFIX_SET2D			0x15
 
 /*
  * Prefixed call management opcodes.
  */
-#define	COP_PREFIX_TAIL_CALL		0x14
-#define	COP_PREFIX_LDFTN			0x15
-#define	COP_PREFIX_LDVIRTFTN		0x16
-#define	COP_PREFIX_LDINTERFFTN		0x17
-#define	COP_PREFIX_PACK_VARARGS		0x18
+#define	COP_PREFIX_TAIL_CALL		0x16
+#define	COP_PREFIX_LDFTN			0x17
+#define	COP_PREFIX_LDVIRTFTN		0x18
+#define	COP_PREFIX_LDINTERFFTN		0x19
+#define	COP_PREFIX_PACK_VARARGS		0x1A
 
 /*
  * Prefixed exception handling opcodes.
  */
-#define	COP_PREFIX_ENTER_TRY		0x19
-#define	COP_PREFIX_THROW			0x1A
-#define	COP_PREFIX_THROW_CALLER		0x1B
+#define	COP_PREFIX_ENTER_TRY		0x1B
+#define	COP_PREFIX_THROW			0x1C
+#define	COP_PREFIX_THROW_CALLER		0x1D
 
 /*
  * Prefixed typedref handling opcodes.

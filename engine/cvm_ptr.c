@@ -3194,6 +3194,130 @@ LARGE_WRITE_ELEM(PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 #endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
+ * <opcode name="get2d" group="Array handling">
+ *   <operation>Prepare for a two-dimensional array get operation</operation>
+ *
+ *   <format>prefix<fsep/>get2d</format>
+ *   <dformat>{get2d}</dformat>
+ *
+ *   <form name="get2d" code="COP_PREFIX_GET2D"/>
+ *
+ *   <before>..., array, index1, index2</before>
+ *   <after>..., address</after>
+ *
+ *   <description>Pop <i>array</i>, <i>index1</i>, and
+ *   <i>index2</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>int32</code> respectively.
+ *   The <i>address</i> of <i>array[index1, index2]</i> is pushed onto
+ *   the stack as type <code>ptr</code>.</description>
+ *
+ *   <notes>This instruction is normally followed by a <i>*read</i>
+ *   instruction to read the contents of the array element.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException">Raised if
+ *     <i>index1</i> or <i>index2</i> is not within the array's
+ *     bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_GET2D):
+{
+	if(stacktop[-3].ptrValue)
+	{
+		System_MArray *array = (System_MArray *)(stacktop[-3].ptrValue);
+		ILInt32 index1 = stacktop[-2].intValue - array->bounds[0].lower;
+		ILInt32 index2 = stacktop[-1].intValue - array->bounds[1].lower;
+		if(((ILUInt32)index1) < ((ILUInt32)(array->bounds[0].size)) &&
+		   ((ILUInt32)index2) < ((ILUInt32)(array->bounds[1].size)))
+		{
+			stacktop[-3].ptrValue = (void *)
+				(((unsigned char *)(array->data)) +
+				 index1 * array->bounds[0].multiplier +
+				 index2 * array->bounds[1].multiplier);
+			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+VMBREAK(COP_PREFIX_GET2D);
+
+/**
+ * <opcode name="set2d" group="Array handling">
+ *   <operation>Prepare for a two-dimensional array set operation</operation>
+ *
+ *   <format>prefix<fsep/>set2d<fsep/>N[4]</format>
+ *   <dformat>{set2d}<fsep/>N</dformat>
+ *
+ *   <form name="set2d" code="COP_PREFIX_SET2D"/>
+ *
+ *   <before>..., array, index1, index2, value</before>
+ *   <after>..., address, value</after>
+ *
+ *   <description>Remove <i>array</i>, <i>index1</i>, and
+ *   <i>index2</i> from the stack as the types <code>ptr</code>,
+ *   <code>int32</code>, and <code>int32</code> respectively.
+ *   The <i>address</i> of <i>array[index1, index2]</i> is pushed into
+ *   the stack as type <code>ptr</code> just below <i>value</i>.
+ *   The operand <i>N</i> indicates the number of stack words that
+ *   are occupied by <i>value<i>.</description>
+ *
+ *   <notes>This instruction is normally followed by a <i>*write</i>
+ *   instruction to write the contents of the array element.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException">Raised if
+ *     <i>index1</i> or <i>index2</i> is not within the array's
+ *     bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SET2D):
+{
+	tempNum = CVMP_ARG_WORD;
+	if((stacktop - tempNum - 3)->ptrValue)
+	{
+		System_MArray *array =
+			(System_MArray *)((stacktop - tempNum - 3)->ptrValue);
+		ILInt32 index1 = (stacktop - tempNum - 2)->intValue -
+						 array->bounds[0].lower;
+		ILInt32 index2 = (stacktop - tempNum - 1)->intValue -
+						 array->bounds[1].lower;
+		if(((ILUInt32)index1) < ((ILUInt32)(array->bounds[0].size)) &&
+		   ((ILUInt32)index2) < ((ILUInt32)(array->bounds[1].size)))
+		{
+			(stacktop - tempNum - 3)->ptrValue = (void *)
+				(((unsigned char *)(array->data)) +
+				 index1 * array->bounds[0].multiplier +
+				 index2 * array->bounds[1].multiplier);
+			ILMemMove(stacktop - tempNum - 2, stacktop - tempNum,
+					  tempNum * sizeof(CVMWord));
+			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
+}
+VMBREAK(COP_PREFIX_SET2D);
+
+/**
  * <opcode name="mkrefany" group="Object handling">
  *   <operation>Make a <code>typedref</code></operation>
  *

@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.6.6 release.
 
+	* configure.in: update working version to "0.6.7".
+
 2004-05-29  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/ThreadPool.cs: Fix NullReferenceException

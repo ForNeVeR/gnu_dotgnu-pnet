@@ -26,6 +26,9 @@
 	values (the real problem is an interaction between BaseOffsetPoints
 	and PictureBox and needs to be solved separately).
 
+	* DotGNU.Images/Frame.cs: generate the transparency mask from the
+	"TransparentPixel" value if an explicit mask was not supplied.
+
 2004-01-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListViewItemConverter.cs,

@@ -155,6 +155,11 @@ public class Frame : MarshalByRefObject, IDisposable
 			{
 				get
 				{
+					if(mask == null && transparentPixel != -1)
+					{
+						// Generate the mask from the pixel information.
+						GenerateTransparencyMask();
+					}
 					return mask;
 				}
 			}
@@ -642,6 +647,88 @@ public class Frame : MarshalByRefObject, IDisposable
 					
 					pSourceRow += sourceStride;
 					pDestinationRow += destStride;
+				}
+			}
+
+	// Generate a mask from a transparency color.
+	private void GenerateTransparencyMask()
+			{
+				byte[] data = this.data;
+
+				// Make sure that the frame is compatible with this operation.
+				if(palette == null || transparentPixel < 0 ||
+				   transparentPixel >= palette.Length ||
+				   (pixelFormat & PixelFormat.Indexed) == 0 ||
+				   data == null)
+				{
+					return;
+				}
+
+				// Add the mask bits to the frame.
+				AddMask();
+				byte[] mask = this.mask;
+
+				// Process the image lines looking for the transparency color.
+				int x, y, transparent, offset, maskOffset;
+				int width = this.width;
+				transparent = transparentPixel;
+				for(y = 0; y < height; ++y)
+				{
+					offset = y * stride;
+					maskOffset = y * maskStride;
+					if(pixelFormat == PixelFormat.Format8bppIndexed)
+					{
+						for(x = 0; x < width; ++x)
+						{
+							if(data[offset + x] != transparent)
+							{
+								mask[maskOffset + (x >> 3)] |=
+									(byte)(0x80 >> (x & 7));
+							}
+						}
+					}
+					else if(pixelFormat == PixelFormat.Format4bppIndexed)
+					{
+						for(x = 0; x < width; ++x)
+						{
+							if((x & 1) == 0)
+							{
+								if(((data[offset + (x >> 1)] & 0xF0) >> 4)
+										!= transparent)
+								{
+									mask[maskOffset + (x >> 3)] |=
+										(byte)(0x80 >> (x & 7));
+								}
+							}
+							else
+							{
+								if((data[offset + (x >> 1)] & 0x0F)
+										!= transparent)
+								{
+									mask[maskOffset + (x >> 3)] |=
+										(byte)(0x80 >> (x & 7));
+								}
+							}
+						}
+					}
+					else if(pixelFormat == PixelFormat.Format1bppIndexed)
+					{
+						if(transparent == 0)
+						{
+							for(x = 0; x < stride; ++x)
+							{
+								mask[maskOffset + x] = data[offset + x];
+							}
+						}
+						else
+						{
+							for(x = 0; x < stride; ++x)
+							{
+								mask[maskOffset + x] =
+									(byte)(~(data[offset + x]));
+							}
+						}
+					}
 				}
 			}
 

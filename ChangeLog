@@ -7,6 +7,10 @@
 	* cscc/csharp/cs_grammar.y: #ifdef around YYEOF because some
 	versions of yacc don't have it.
 
+	* tools/pnet_build.sh, tools/pnet_build.cfg, tools/pnet_build.README:
+	add an automated build script to the system, to assist people who
+	want to do regular sanity-check builds.
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

@@ -40,37 +40,37 @@ typedef struct _tagILClass     ILClass;
  * Convert a primitive element type into a type representation.
  */
 #define	ILType_FromElement(elemType)	\
-				((ILType *)((((unsigned long)(elemType)) << 2) | 0x01))
+				((ILType *)((((ILNativeUInt)(elemType)) << 2) | 0x01))
 
 /*
  * Convert a type representation into a primitive element type.
  */
 #define	ILType_ToElement(type)	\
-				(((unsigned long)(type)) >> 2)
+				(((ILNativeUInt)(type)) >> 2)
 
 /*
  * Convert a class pointer into a type representation.
  */
 #define	ILType_FromClass(info)	\
-				((ILType *)(((unsigned long)(info)) | 0x02))
+				((ILType *)(((ILNativeUInt)(info)) | 0x02))
 
 /*
  * Convert a type representation back into a class pointer.
  */
 #define	ILType_ToClass(type)	\
-				((ILClass *)(((unsigned long)(type)) & ~0x03))
+				((ILClass *)(((ILNativeUInt)(type)) & ~0x03))
 
 /*
  * Convert a value type pointer into a type representation.
  */
 #define	ILType_FromValueType(info)	\
-				((ILType *)(((unsigned long)(info)) | 0x03))
+				((ILType *)(((ILNativeUInt)(info)) | 0x03))
 
 /*
  * Convert a type representation back into a value type pointer.
  */
 #define	ILType_ToValueType(type)	\
-				((ILClass *)(((unsigned long)(type)) & ~0x03))
+				((ILClass *)(((ILNativeUInt)(type)) & ~0x03))
 
 /*
  * Primitive types.
@@ -159,25 +159,25 @@ struct _tagILType
  * Determine if a type is primitive.
  */
 #define	ILType_IsPrimitive(type)	\
-				((((unsigned long)(type)) & 0x03) == 0x01)
+				((((ILNativeUInt)(type)) & 0x03) == 0x01)
 
 /*
  * Determine if a type is a class reference.
  */
 #define	ILType_IsClass(type)	\
-				((((unsigned long)(type)) & 0x03) == 0x02)
+				((((ILNativeUInt)(type)) & 0x03) == 0x02)
 
 /*
  * Determine if a type is a value type reference.
  */
 #define	ILType_IsValueType(type)	\
-				((((unsigned long)(type)) & 0x03) == 0x03)
+				((((ILNativeUInt)(type)) & 0x03) == 0x03)
 
 /*
  * Determine if a type is complex.
  */
 #define	ILType_IsComplex(type)	\
-				((((unsigned long)(type)) & 0x03) == 0x00)
+				((((ILNativeUInt)(type)) & 0x03) == 0x00)
 
 /*
  * Determine if a method type has a non-explicit "this" argument.

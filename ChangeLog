@@ -6,6 +6,10 @@
 	* support/gen_errno.sh: support platforms that spread errno codes
 	across multiple .h files (bug #10485).
 
+	* include/il_types.h: use "ILNativeUInt" instead of "unsigned long"
+	in the type macros because on some platforms, "long" is not the
+	same size as a pointer.
+
 2004-09-22  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/cpp/Makefile.am: Add rm -f for cli-unknown-cpp man page.

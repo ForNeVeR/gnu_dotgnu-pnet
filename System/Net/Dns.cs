@@ -25,9 +25,129 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 public sealed class Dns
 {
+	// Asynchronous operation types.
+	private enum DnsOperation
+	{
+		Resolve ,
+		GetHostByName
+
+	}; // enum DnsOperation
+
+	private sealed class DnsAsyncResult : IAsyncResult
+	{
+		// Internal state.
+		private WaitHandle waitHandle;
+		private bool completedSynchronously;
+		private bool completed;
+		private DnsOperation operation;
+		private AsyncCallback callback;
+		private Object state;
+		private IPHostEntry acceptResult;
+		private Exception exception;
+
+		// Constructor.
+		public DnsAsyncResult(AsyncCallback callback, Object state,
+								DnsOperation operation)
+				{
+				#if ECMA_COMPAT
+					this.waitHandle = SocketMethods.CreateManualResetEvent();
+				#else
+					this.waitHandle = new ManualResetEvent(false);
+				#endif
+					this.completedSynchronously = false;
+					this.completed = false;
+					this.operation = operation;
+					this.callback = callback;
+					this.state = state;
+					this.acceptResult = null;
+					this.exception = null;
+				}
+
+		// Run the operation thread.
+		public void BeginInvoke(String hostName)
+				{
+					try
+					{
+						switch(operation)
+						{
+							case DnsOperation.GetHostByName:
+							{
+								acceptResult = Dns.GetHostByName(hostName);
+							}
+							break;
+
+							case DnsOperation.Resolve:
+							{
+								acceptResult = Dns.Resolve(hostName);
+							}
+							break;
+						}
+					}
+					catch(Exception e)
+					{
+						// Save the exception to be thrown in EndXXX.
+						exception = e;
+					}
+					completed = true;
+					if(callback != null)
+					{
+						callback(this);
+					}
+				#if ECMA_COMPAT
+					SocketMethods.WaitHandleSet(waitHandle);
+				#else
+					((ManualResetEvent)waitHandle).Set();
+				#endif
+				}
+
+		public IPHostEntry EndInvoke()
+				{
+					if(exception != null)
+					{
+						throw exception;
+					}
+					if(completed)
+					{
+						return acceptResult;
+					}
+					throw new NotImplementedException(
+								"TODO: Threaded Asynchronous Operations");
+				}
+
+		// Implement the IAsyncResult interface.
+		public Object AsyncState
+				{
+					get
+					{
+						return state;
+					}
+				}
+		public WaitHandle AsyncWaitHandle
+				{
+					get
+					{
+						return waitHandle;
+					}
+				}
+		public bool CompletedSynchronously
+				{
+					get
+					{
+						return completedSynchronously;
+					}
+				}
+		public bool IsCompleted
+				{
+					get
+					{
+						return completed;
+					}
+				}
+	}; // class DnsAsyncResult
 
 	// Begin an asynchronous "get host by name" operation.
 	[TODO]
@@ -36,7 +156,10 @@ public sealed class Dns
 		 Object stateObject)
 			{
 				// TODO
-				return null;
+				DnsAsyncResult result=new DnsAsyncResult(requestedCallback,
+									stateObject,DnsOperation.GetHostByName);
+				result.BeginInvoke(hostName);
+				return (IAsyncResult) (result);				
 			}
 
 	// Begin an asynchronous name or IP resolution operation.
@@ -46,7 +169,10 @@ public sealed class Dns
 		 Object stateObject)
 			{
 				// TODO
-				return null;
+				DnsAsyncResult result=new DnsAsyncResult(requestedCallback,
+									stateObject,DnsOperation.Resolve);
+				result.BeginInvoke(hostName);
+				return (IAsyncResult) (result);				
 			}
 
 	// End an asynchronous "get host by name" operation.
@@ -54,7 +180,7 @@ public sealed class Dns
 	public static IPHostEntry EndGetHostByName(IAsyncResult asyncResult)
 			{
 				// TODO
-				return null;
+				return ((DnsAsyncResult)(asyncResult)).EndInvoke();
 			}
 
 	// End an asynchronous name or IP resolution operation.
@@ -62,7 +188,7 @@ public sealed class Dns
 	public static IPHostEntry EndResolve(IAsyncResult asyncResult)
 			{
 				// TODO
-				return null;
+				return ((DnsAsyncResult)(asyncResult)).EndInvoke();
 			}
 
 	// Get a host by address synchronously.

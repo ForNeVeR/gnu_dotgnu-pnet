@@ -1,4 +1,8 @@
 
+2003-05-12  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/Dns.cs: Faked asynchronous operations for DNS class.
+
 2003-05-10  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/IO/BinaryReader.cs, runtime/System/IO/BinaryWriter.cs:

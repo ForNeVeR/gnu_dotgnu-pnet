@@ -25,8 +25,9 @@
 					name="../resources/en_US/System.Net.IrDA/System.Net.IrDA.resources"/>
 			</resources>
 
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=ms"/>
 			<arg compiler="cscc" value="-Wno-empty-input"/>
-			<!-- arg compiler="cscc" value="-fminimize-parameters"/ -->
 			<arg compiler="cscc" value="-flatin1-charset"/>
 			<arg compiler="csc" value="/nowarn:626"/>
 			<arg compiler="csc" value="/nowarn:649"/>

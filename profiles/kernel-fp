@@ -2,8 +2,17 @@
 <profile>
 <!-- Kernel profile with floating-point -->
 
+<!-- Main framework version -->
+<define name="FRAMEWORK_VERSION" value="1.2.3400.0"/>
+
+<!-- Secondary framework version -->
+<define name="SECONDARY_VERSION" value="8.0.1000.0"/>
+
 <!-- Only use ECMA-compatible features -->
 <define name="ECMA_COMPAT" value="true"/>
+
+<!-- Include .NET Framework 1.2 features -->
+<define name="CONFIG_FRAMEWORK_1_2" value="true"/>
 
 <!-- Use reflection facilities -->
 <define name="CONFIG_REFLECTION" value="false"/>

@@ -2,11 +2,20 @@
 <profile>
 <!-- Full profile, that enables all relevant features -->
 
+<!-- Main framework version -->
+<define name="FRAMEWORK_VERSION" value="1.2.3400.0"/>
+
+<!-- Secondary framework version -->
+<define name="SECONDARY_VERSION" value="8.0.1000.0"/>
+
 <!-- Provides non-ECMA features -->
 <define name="NON_ECMA" value="true"/>
 
 <!-- Only use ECMA-compatible features -->
 <define name="ECMA_COMPAT" value="false"/>
+
+<!-- Include .NET Framework 1.2 features -->
+<define name="CONFIG_FRAMEWORK_1_2" value="true"/>
 
 <!-- Use reflection facilities -->
 <define name="CONFIG_REFLECTION" value="true"/>

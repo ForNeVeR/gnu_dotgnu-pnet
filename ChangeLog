@@ -1,4 +1,21 @@
 
+2003-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Basic/Basic.build, ISymWrapper/ISymWrapper.build,
+	JScript/JScript.build, System/System.build,
+	System.Configuration.Install/System.Configuration.Install.build,
+	System.Drawing/System.Drawing.build,
+	System.EnterpriseServices/System.EnterpriseServices.build,
+	System.Net.IrDA/IrDA.build, System.Windows.Forms/Forms.build,
+	System.Xml/Xml.build, compat/compat.build, profiles/compact,
+	profiles/compact-fp, profiles/ecma, profiles/framework1.1,
+	profiles/full, profiles/kernel, profiles/kernel-fp,
+	profiles/mscompact, profiles/tiny, profiles/tiny-fp,
+	runtime/runtime.build: update all profiles to 1.2; add a new
+	"framework1.1" profile for strict 1.1 compatibility; make the
+	version information configurable from the profile (needs a new
+	version of csant).
+
 2003-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, DotGNU.Terminal/.cvsignore,

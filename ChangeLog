@@ -1,4 +1,26 @@
 
+2002-03-03  Peter Minten  <silvernerd@users.sf.net>
+
+	* System/Net/HttpStatusCode.cs, System/Net/HttpVersion.cs,
+	System/Net/IAuthenticationModule.cs, System/Net/ICredentials.cs,
+	System/Net/IPAddress.cs, System/Net/IWebProxy.cs,
+	System/Net/IWebRequestCreate.cs, System/Net/NetworkAccess.cs,
+	System/Net/TransportType.cs, System/Net/WebException.cs,
+	System/Net/WebExceptionStatus.cs, System/Net/WebRequest.cs,
+	System/Net/Sockets/AddressFamily.cs,
+	System/Net/Sockets/LingerOption.cs,
+	System/Net/Sockets/MulticastOption.cs,
+	System/Net/Sockets/ProtocolType.cs,
+	System/Net/Sockets/SelectMode.cs,
+	System/Net/Sockets/SocketException.cs,
+	System/Net/Sockets/SocketFlags.cs,
+	System/Net/Sockets/SocketOptionLevel.cs,
+	System/Net/Sockets/SocketOptionName.cs,
+	System/Net/Sockets/SocketShutdown.cs,
+	System/Net/Sockets/SocketType.cs,
+	resources/en_US/System/Exception.txt: the simple stuff in
+	the System.Net and System.Net.Sockets namespaces.
+
 2002-02-23  Peter Minten  <silvernerd@users.sf.net>
 
 	* runtime/System/Version.cs: Added constructor

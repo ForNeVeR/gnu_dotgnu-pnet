@@ -118,6 +118,21 @@ int ILExecProcessGetStatus(ILExecProcess *process)
 	return process->exitStatus;
 }
 
+ILMethod *ILExecProcessGetEntry(ILExecProcess *process)
+{
+	ILImage *image = 0;
+	ILToken token;
+	while((image = ILContextNextImage(process->context, image)) != 0)
+	{
+		token = ILImageGetEntryPoint(image);
+		if(token && (token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF)
+		{
+			return ILMethod_FromToken(image, token);
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

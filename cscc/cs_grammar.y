@@ -2085,8 +2085,8 @@ SetAccessorDeclaration
 	;
 
 AccessorBody
-	: Block				{ $$ = $1;}
-	| ';'				{ MakeSimple(Empty);}
+	: Block				{ $$ = $1; }
+	| ';'				{ $$ = 0; }
 	;
 
 TurnOffGetSet

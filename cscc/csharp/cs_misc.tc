@@ -317,6 +317,7 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 	ILEvalValue evalValue;
 	int numDimensions = 0;
 	int dim;
+	ILType *elemType;
 
 	/* Determine if the array creation is normal or initializer-based */
 	if(node->indexes)
@@ -418,6 +419,18 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 			CSSemSetRValue(value, node->arrayType);
 			return value;
 		}
+	}
+
+	/* Check that the element type has a class form associated with it.
+	   If we are compiling in a "no floating point" profile, the
+	   "System.Single" and "System.Double" classes won't exist, which
+	   will lead to problems during the code generation phase */
+	elemType = ILTypeGetElemType(node->arrayType);
+	if(!ILTypeToClass(info, elemType))
+	{
+		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+					  "array of `%s' used in a profile that cannot support it",
+					  CSTypeToName(elemType));
 	}
 
 	/* Handle array initializers */

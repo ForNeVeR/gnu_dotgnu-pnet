@@ -1,4 +1,10 @@
 
+2003-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_misc.tc (ILNode_NewExpression): report an error
+	if "float[]" or "double[]" is used in a profile that does not
+	have the floating-point classes in the runtime library.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (ResolveTypeRefs): if a TypeRef to a foreign

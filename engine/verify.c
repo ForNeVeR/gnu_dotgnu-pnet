@@ -271,27 +271,42 @@ static int IsObjectRef(ILType *type)
  * a particular memory slot (argument, local, field, etc).
  */
 static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
-							ILType *type)
+							ILType *type, int unsafeAllowed)
 {
 	ILImage *image;
 	ILClass *classInfo;
 	ILClass *classInfo2;
 
-	if(item->engineType == ILEngineType_I &&
-	   item->typeInfo != 0 && ILType_IsComplex(item->typeInfo))
+	/* Check for safe and unsafe pointer assignments */
+	if(item->engineType == ILEngineType_I)
 	{
-		/* May be trying to assign a method pointer to a method type */
-		if((item->typeInfo->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+		if(item->typeInfo != 0 && ILType_IsComplex(item->typeInfo))
 		{
-			return ILTypeIdentical(item->typeInfo, type);
+			/* May be trying to assign a method pointer to a method type */
+			if((item->typeInfo->kind & IL_TYPE_COMPLEX_METHOD) != 0)
+			{
+				if(ILTypeIdentical(item->typeInfo, type))
+				{
+					return 1;
+				}
+			}
 		}
-		else
+		if(unsafeAllowed)
 		{
-			return 0;
+			if(type != 0 && ILType_IsComplex(type))
+			{
+				if((type->kind & IL_TYPE_COMPLEX_METHOD) != 0 ||
+				   type->kind == IL_TYPE_COMPLEX_PTR)
+				{
+					return 1;
+				}
+			}
 		}
 	}
-	else if(item->engineType == ILEngineType_I4 ||
-	        item->engineType == ILEngineType_I)
+
+	/* Check for regular assignments */
+	if(item->engineType == ILEngineType_I4 ||
+	   item->engineType == ILEngineType_I)
 	{
 		type = ILTypeGetEnumType(type);
 		switch((unsigned long)type)

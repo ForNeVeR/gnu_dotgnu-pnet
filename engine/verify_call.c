@@ -192,7 +192,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 					/* The "this" parameter must be an object reference */
 					if(item->engineType != ILEngineType_O ||
 					   (item->typeInfo != 0 &&
-					    !AssignCompatible(method, item, thisType)))
+					    !AssignCompatible(method, item, thisType,
+										  unsafeAllowed)))
 					{
 						return -1;
 					}
@@ -403,7 +404,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				/* The supplied value is O */
 				if(IsObjectRef(paramType) &&
 				   (item->typeInfo == 0 ||
-				    AssignCompatible(method, item, paramType)))
+				    AssignCompatible(method, item, paramType,
+									 unsafeAllowed)))
 				{
 					/* Valid object reference passing */
 				}
@@ -706,7 +708,8 @@ case IL_OP_RET:
 
 		/* Validate the type of the return value */
 		if(!AssignCompatible(method, &(stack[stackSize - 1]),
-							 signature->un.method.retType))
+							 signature->un.method.retType,
+							 unsafeAllowed))
 		{
 			VERIFY_TYPE_ERROR();
 		}
@@ -926,7 +929,8 @@ case IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN:
 	{
 		classInfo = ILMethod_Owner(method);
 		if(AssignCompatible(method, &(stack[stackSize - 1]),
-							ILType_FromClass(classInfo)))
+							ILType_FromClass(classInfo),
+							unsafeAllowed))
 		{
 			if(ILMemberAccessible((ILMember *)methodInfo, classInfo))
 			{

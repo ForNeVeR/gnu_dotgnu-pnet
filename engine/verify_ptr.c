@@ -365,7 +365,8 @@ case IL_OP_STIND_REF:
 		   IsObjectRef(stack[stackSize - 2].typeInfo))
 		{
 	   		if(AssignCompatible(method, &(stack[stackSize - 1]),
-							    stack[stackSize - 2].typeInfo))
+							    stack[stackSize - 2].typeInfo,
+								unsafeAllowed))
 			{
 				ILCoderPtrAccess(coder, opcode);
 				stackSize -= 2;
@@ -680,7 +681,8 @@ case IL_OP_STELEM_REF:
 	   STK_TERNARY_3 == ILEngineType_O)
 	{
 		if(elemType == ILType_Void ||
-		   AssignCompatible(method, &(stack[stackSize - 1]), elemType))
+		   AssignCompatible(method, &(stack[stackSize - 1]),
+		   					elemType, unsafeAllowed))
 		{
 			ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType);
 			stackSize -= 3;

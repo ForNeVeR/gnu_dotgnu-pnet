@@ -147,7 +147,8 @@ checkSTArg:
 		   This should be done using "stobj" instead */
 		VERIFY_TYPE_ERROR();
 	}
-	else if(!AssignCompatible(method, &(stack[stackSize - 1]), type))
+	else if(!AssignCompatible(method, &(stack[stackSize - 1]),
+							  type, unsafeAllowed))
 	{
 		VERIFY_TYPE_ERROR();
 	}
@@ -223,7 +224,8 @@ checkSTLoc:
 		VERIFY_INSN_ERROR();
 	}
 	type = ILTypeGetLocal(localVars, argNum);
-	if(!AssignCompatible(method, &(stack[stackSize - 1]), type))
+	if(!AssignCompatible(method, &(stack[stackSize - 1]),
+						 type, unsafeAllowed))
 	{
 		VERIFY_TYPE_ERROR();
 	}

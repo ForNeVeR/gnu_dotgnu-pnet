@@ -316,7 +316,7 @@ ILFlagInfo const ILPInvokeImplementationFlags[] = {
  * Assembly flag table.
  */
 ILFlagInfo const ILAssemblyFlags[] = {
-	{"public_key", IL_META_ASSEM_PUBLIC_KEY, 0},
+	{"publickey", IL_META_ASSEM_PUBLIC_KEY, 0},
 	{"/side_by_side", IL_META_ASSEM_SIDE_BY_SIDE_COMPATIBLE,
 				IL_META_ASSEM_COMPATIBILITY_MASK},
 	{"noappdomain", IL_META_ASSEM_NON_SIDE_BY_SIDE_APP_DOMAIN,

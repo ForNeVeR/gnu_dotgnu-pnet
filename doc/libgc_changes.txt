@@ -33,3 +33,29 @@ include/gc.h:
 Other changes:
 
 win32_threads.c:  MAX_THREADS increased to 1024.
+
+dyn_load.gc: Changes needed for the AIX C compiler:
+
+--- pnet-0.6.0-org/libgc/dyn_load.c	2003-02-06 02:36:13.000000000 +0100
++++ pnet-0.6.0-new/libgc/dyn_load.c	2003-11-13 09:52:58.000000000 +0100
+@@ -439,7 +439,7 @@
+     memcpy(prot_buf, buf_ptr+OFFSET_MAP_PROT, 4); // do the protections first
+     prot_buf[4] = '\0';
+
+-    if (prot_buf[1] == 'w') { // we can skip all of this if it's not writable
++    if (prot_buf[1] == 'w') { // we can skip all of this if it is not writable
+
+         tok = buf_ptr;
+         buf_ptr[OFFSET_MAP_START+ADDR_WIDTH] = '\0';
+@@ -1069,8 +1069,8 @@
+ 		len = ldi->ldinfo_next;
+ 		GC_add_roots_inner(
+ 				ldi->ldinfo_dataorg,
+-				(unsigned long)ldi->ldinfo_dataorg
+-			        + ldi->ldinfo_datasize,
++				(ptr_t) ((unsigned long)ldi->ldinfo_dataorg
++			        + ldi->ldinfo_datasize),
+ 				TRUE);
+ 		ldi = len ? (struct ld_info *)((char *)ldi + len) : 0;
+ 	}
+

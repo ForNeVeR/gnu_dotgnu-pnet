@@ -187,6 +187,7 @@ static int printDependencies(const char *filename, ILContext *context,
 	ILMethod *method;
 	ILFileDecl *file;
 	ILManifestRes *res;
+	static ILUInt16 const zeroVersion[4] = {0, 0, 0, 0};
 
 	/* Attempt to load the image into memory */
 	if(ILImageLoadFromFile(filename, context, &image,
@@ -196,18 +197,31 @@ static int printDependencies(const char *filename, ILContext *context,
 		return 1;
 	}
 
+	/* Get the assembly version */
+	assem = ILAssembly_FromToken(image, IL_META_TOKEN_ASSEMBLY | 1);
+	if(assem)
+	{
+		version = ILAssemblyGetVersion(assem);
+	}
+	else
+	{
+		version = zeroVersion;
+	}
+
 	/* Print the file header if we have multiple files */
 	if(multiple)
 	{
 		if(!strcmp(filename, "-"))
 		{
-			fputs("stdin:\n", stdout);
+			fputs("stdin", stdout);
 		}
 		else
 		{
 			fputs(filename, stdout);
-			fputs(":\n", stdout);
 		}
+		printf(" [%d:%d:%d:%d]:\n",
+			   (int)(version[0]), (int)(version[1]),
+			   (int)(version[2]), (int)(version[3]));
 	}
 
 	/* Print the assemblies that this file depends upon */

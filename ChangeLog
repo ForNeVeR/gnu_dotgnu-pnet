@@ -5,6 +5,9 @@
 	if "float[]" or "double[]" is used in a profile that does not
 	have the floating-point classes in the runtime library.
 
+	* ildd/ildd.c: print the assembly version for each file
+	that is scanned.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (ResolveTypeRefs): if a TypeRef to a foreign

@@ -33,6 +33,7 @@ using System;
 
 namespace System.Xml.Serialization
 {
+#if CONFIG_SERIALIZATION
 	public class SoapSchemaExporter
 	{
 		XmlSchemaExporter _exporter;
@@ -58,4 +59,5 @@ namespace System.Xml.Serialization
 			_exporter.ExportTypeMapping (xmlTypeMapping);
 		}
 	}
+#endif // CONFIG_SERIALIZATION
 }

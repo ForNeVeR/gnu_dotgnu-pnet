@@ -34,6 +34,7 @@ using System.Xml.Schema;
 using System.Collections;
 
 namespace System.Xml.Serialization {
+#if CONFIG_SERIALIZATION
 	public class XmlSchemaExporter {
 
 		#region Fields
@@ -743,4 +744,5 @@ namespace System.Xml.Serialization {
 
 		#endregion // Methods
 	}
+#endif // CONFIG_SERIALIZATION
 }

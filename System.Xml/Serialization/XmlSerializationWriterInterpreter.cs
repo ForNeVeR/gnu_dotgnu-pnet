@@ -36,6 +36,7 @@ using System.Xml.Schema;
 
 namespace System.Xml.Serialization
 {
+#if CONFIG_SERIALIZATION
 	internal class XmlSerializationWriterInterpreter: XmlSerializationWriter
 	{
 		XmlMapping _typeMap;
@@ -519,4 +520,5 @@ namespace System.Xml.Serialization
 		}
 
 	}
+#endif // CONFIG_SERIALIZATION
 }

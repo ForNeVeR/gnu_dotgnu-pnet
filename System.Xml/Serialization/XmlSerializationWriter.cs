@@ -38,6 +38,7 @@ using System.Xml.Schema;
 using System.Runtime.Serialization;
 
 namespace System.Xml.Serialization {
+#if CONFIG_SERIALIZATION
 	public abstract class XmlSerializationWriter {
 
 		#region Fields
@@ -862,4 +863,5 @@ namespace System.Xml.Serialization {
 			public XmlSerializationWriteCallback Callback;
 		}
 	}
+#endif // CONFIG_SERIALIZATION
 }

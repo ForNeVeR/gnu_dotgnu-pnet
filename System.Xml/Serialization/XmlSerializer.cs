@@ -44,7 +44,7 @@ using System.Configuration;
 
 namespace System.Xml.Serialization
 {
-
+#if CONFIG_SERIALIZATION
 	public class XmlSerializer
 	{
 		internal const string WsdlNamespace = "http://schemas.xmlsoap.org/wsdl/";
@@ -570,4 +570,5 @@ namespace System.Xml.Serialization
 		
 #endregion // Methods
 	}
+#endif // CONFIG_SERIALIZATION
 }

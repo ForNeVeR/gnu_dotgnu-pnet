@@ -37,8 +37,13 @@ namespace System.Text.RegularExpressions {
 		CultureInvariant		= 0x200 
 	}
 	
+#if CONFIG_SERIALIZATION
 	[Serializable]
 	public class Regex : ISerializable {
+#else
+	public class Regex {
+#endif // CONFIG_SERIALIZATION
+#if CONFIG_SERIALIZATION_EMIT
 		public static void CompileToAssembly
 			(RegexCompilationInfo[] regexes, AssemblyName aname)
 		{
@@ -86,6 +91,7 @@ namespace System.Text.RegularExpressions {
 			asmBuilder.Save(aname.Name);
 			*/
 		}
+#endif // CONFIG_REFLECTION_EMIT
 		
 		public static string Escape (string str) {
 			return Parser.Escape (str);
@@ -209,10 +215,12 @@ namespace System.Text.RegularExpressions {
 			}
 		}
 
+#if CONFIG_SERIALIZATION
 		protected Regex (SerializationInfo info, StreamingContext context) :
 			this (info.GetString ("pattern"), 
 			      (RegexOptions) info.GetValue ("roptions", typeof (RegexOptions))) {			
 		}
+#endif // CONFIG_SERIALIZATION
 
 
 		// public instance properties
@@ -441,11 +449,13 @@ namespace System.Text.RegularExpressions {
 			return pattern;
 		}
 
+#if CONFIG_SERIALIZATION
 		// ISerializable interface
 		void ISerializable.GetObjectData (SerializationInfo info, StreamingContext context) {
 			info.AddValue ("pattern", this.ToString (), typeof (string));
 			info.AddValue ("roptions", this.Options, typeof (RegexOptions));
 		}
+#endif // CONFIG_SERIALIZATION
 
 		// internal
 

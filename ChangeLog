@@ -1,4 +1,26 @@
 
+2004-10-05  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs,
+	runtime/System/Reflection/Assembly.cs,
+	System/Text/RegularExpressions/regex.cs,
+	System.Xml/Serialization/XmlSerializationWriter.cs,
+	System.Xml/Serialization/XmlSerializationWriterInterpreter.cs,
+	System.Xml/Serialization/XmlSerializer.cs,
+	System.Xml/Serialization/XmlSerializationReaderInterpreter.cs,
+	System.Xml/Serialization/SerializationCodeGenerator.cs,
+	System.Xml/Serialization/SoapCodeExporter.cs,
+	System.Xml/Serialization/XmlCodeExporter.cs,
+	System.Xml/Serialization/MapCodeGenerator.cs,
+	System.Xml/Serialization/XmlSerializationReader.cs,
+	System.Xml/Serialization/SoapReflectionImporter.cs,
+	System.Xml/Serialization/XmlSchemaExporter.cs,
+	System.Xml/Serialization/XmlSchemaImporter.cs,
+	System.Xml/Serialization/SoapSchemaImporter.cs,
+	System.Xml/Serialization/SoapSchemaExporter.cs,
+	JScript/Vsa/VsaCodeItem.cs: Start fixing dependency problems when building
+	with profile mscompact.
+
 2004-10-03  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/IO/Stream.cs: Fix ValidateBuffer so that the correct

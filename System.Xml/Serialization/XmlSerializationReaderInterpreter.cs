@@ -34,6 +34,7 @@ using System.Collections;
 
 namespace System.Xml.Serialization
 {
+#if CONFIG_SERIALIZATION
 	internal class XmlSerializationReaderInterpreter: XmlSerializationReader
 	{
 		XmlMapping _typeMap;
@@ -773,4 +774,5 @@ namespace System.Xml.Serialization
 			}
 		}
 	}
+#endif // CONFIG_SERIALIZATION
 }

@@ -120,7 +120,7 @@ internal sealed class VsaCodeItem : VsaItem, IVsaCodeItem
 					}
 					catch(JScriptException e)
 					{
-#if !CONFIG_SMALLCONSOLE
+#if !CONFIG_SMALL_CONSOLE
 						ScriptStream.Error.WriteLine(e.Message);
 #else
 						ScriptStream.WriteLine(e.Message);

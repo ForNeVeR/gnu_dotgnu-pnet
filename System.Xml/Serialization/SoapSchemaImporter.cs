@@ -31,6 +31,7 @@
 using System.Xml;
 
 namespace System.Xml.Serialization {
+#if CONFIG_SERIALIZATION
 	public class SoapSchemaImporter {
 
 		#region Fields
@@ -85,4 +86,5 @@ namespace System.Xml.Serialization {
 
 		#endregion // Methods
 	}
+#endif // CONFIG_SERIALIZATION
 }

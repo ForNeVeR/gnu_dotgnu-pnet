@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization.Formatters.Binary
 {
 
-//#if CONFIG_SERIALIZATION
+#if CONFIG_SERIALIZATION
 
 using System.IO;
 using System.Reflection;
@@ -1673,6 +1673,6 @@ internal abstract class BinaryValueWriter
 
 }; // class BinaryValueWriter
 
-//#endif // CONFIG_SERIALIZATION
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization.Formatters.Binary

@@ -32,6 +32,7 @@
 using System.CodeDom;
 
 namespace System.Xml.Serialization {
+#if CONFIG_SERIALIZATION
 	public class SoapCodeExporter {
 
 		#region Fields
@@ -165,4 +166,5 @@ namespace System.Xml.Serialization {
 			AddCustomAttribute (codeField, "System.Xml.Serialization.SoapIgnore");
 		}
 	}
+#endif // CONFIG_SERIALIZATION
 }

@@ -34,6 +34,7 @@ using System.Globalization;
 using System.Xml.Schema;
 
 namespace System.Xml.Serialization {
+#if CONFIG_SERIALIZATION
 	internal class MapCodeGenerator {
 
 		CodeNamespace codeNamespace;
@@ -605,4 +606,5 @@ namespace System.Xml.Serialization {
 
 		#endregion
 	}
+#endif // CONFIG_SERIALIZATION
 }

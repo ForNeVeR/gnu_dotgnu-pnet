@@ -36,6 +36,7 @@ using System.Globalization;
 
 namespace System.Xml.Serialization
 {
+#if CONFIG_SERIALIZATION
 	internal class SerializationCodeGenerator
 	{
 		XmlMapping _typeMap;
@@ -2440,5 +2441,5 @@ namespace System.Xml.Serialization
 		public string WriteMethodName;
 		public string Namespace;
 	}
-	
+#endif // CONFIG_SERIALIZATION	
 }

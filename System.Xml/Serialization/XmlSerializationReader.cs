@@ -38,6 +38,7 @@ using System.Xml;
 using System.Xml.Schema;
 
 namespace System.Xml.Serialization {
+#if CONFIG_SERIALIZATION
 	public abstract class XmlSerializationReader {
 
 		#region Fields
@@ -1029,4 +1030,5 @@ namespace System.Xml.Serialization {
 		}
 
 	}
+#endif // CONFIG_SERIALIZATION
 }

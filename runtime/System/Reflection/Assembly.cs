@@ -333,9 +333,23 @@ public class Assembly : IClrProgramItem
 				}
 				else
 				{
+#if !ECMA_COMPAT
 					AssemblyName name = AssemblyName.Parse(assemblyString);
 					assembly = LoadFromName(name.Name, out error, 
 											caller);
+#else
+					if(assemblyString.IndexOf(",") == -1)
+					{
+						assembly = LoadFromName(assemblyString, out error,
+												 caller);
+					}
+					else
+					{
+						assembly = LoadFromName(assemblyString.Substring(0,
+													assemblyString.IndexOf(",")),
+													out error, caller);
+					}
+#endif // !ECMA_COMPAT
 				}
 				if(error == LoadError_OK)
 				{
@@ -399,10 +413,24 @@ public class Assembly : IClrProgramItem
 				}
 				else
 				{
+#if !ECMA_COMPAT
 					AssemblyName name = AssemblyName.Parse(assemblyFile);
 					assembly = LoadFromName(name.Name, out error,
 												 caller);
-				}
+#else
+					if(assemblyFile.IndexOf(",") == -1)
+					{
+						assembly = LoadFromName(assemblyFile, out error,
+												 caller);
+					}
+					else
+					{
+						assembly = LoadFromName(assemblyFile.Substring(0,
+													assemblyFile.IndexOf(",")),
+													out error, caller);
+					}
+#endif // !ECMA_COMPAT
+					}
 				if(error == LoadError_OK)
 				{
 					return assembly;

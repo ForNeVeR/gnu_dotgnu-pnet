@@ -1828,12 +1828,224 @@ static ILObject *ClrType_GetMemberImpl(ILExecThread *thread,
 static ILObject *ClrType_GetMembersImpl(ILExecThread *thread,
 									    ILObject *_this,
 										ILInt32 memberTypes,
-										ILInt32 bindingAttr,
+										ILInt32 bindingAttrs,
 										ILObject *arrayType,
 										ILString *name)
 {
-	/* TODO */
-	return 0;
+	ILClass *classInfo;
+	char *nameUtf8;
+	ILMember *member;
+	ILObject *foundObject;
+	ILNestedInfo *nested;
+	ILClass *child;
+	System_Array *array;
+	System_Array *newArray;
+	ILClass *arrayClass;
+	ILInt32 numFound;
+
+	/* Validate the parameters */
+	if(bindingAttrs == 0)
+	{
+		bindingAttrs = (ILInt32)(BF_Public | BF_Instance | BF_Static);
+	}
+
+	/* Convert the name into a UTF-8 string */
+	if(name)
+	{
+		nameUtf8 = ILStringToUTF8(thread, name);
+		if(!nameUtf8)
+		{
+			return 0;
+		}
+
+		/* If the name is greater than 128 characters in length,
+		   then turn off the "ignore case" flag.  This is an ECMA
+		   requirement, even though we can handle arbitrarily
+		   sized member names just fine */
+		if(strlen(nameUtf8) >= 128)
+		{
+			bindingAttrs &= ~(ILInt32)BF_IgnoreCase;
+		}
+	}
+	else
+	{
+		nameUtf8 = 0;
+	}
+
+	/* Allocate the initial array */
+	arrayClass = _ILGetClrClass(thread, arrayType);
+	if(!arrayClass)
+	{
+		return 0;
+	}
+	array = (System_Array *)_ILEngineAlloc(thread, arrayClass,
+										   sizeof(System_Array) +
+										   sizeof(void *) * 4);
+	if(!array)
+	{
+		return 0;
+	}
+	array->length = 4;
+
+	/* Convert the type into an ILClass structure */
+	classInfo = _ILGetClrClass(thread, _this);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Scan the class hierarchy looking for member matches */
+	numFound = 0;
+	do
+	{
+		member = classInfo->firstMember;
+		while(member != 0)
+		{
+			/* Check for a name match first */
+			if(nameUtf8)
+			{
+				if((bindingAttrs & (ILInt32)BF_IgnoreCase) == 0)
+				{
+					if(strcmp(member->name, nameUtf8) != 0)
+					{
+						member = member->nextMember;
+						continue;
+					}
+				}
+				else
+				{
+					if(ILStrICmp(member->name, nameUtf8) != 0)
+					{
+						member = member->nextMember;
+						continue;
+					}
+				}
+			}
+	
+			/* Filter based on the member type */
+			if(!MemberTypeMatch(member, memberTypes))
+			{
+				member = member->nextMember;
+				continue;
+			}
+	
+			/* Filter based on the binding attributes */
+			if(!BindingAttrMatch(member, bindingAttrs, CC_Any))
+			{
+				member = member->nextMember;
+				continue;
+			}
+	
+			/* Check that we have reflection access for this member */
+			if(!_ILClrCheckAccess(thread, (ILClass *)0, member))
+			{
+				member = member->nextMember;
+				continue;
+			}
+	
+			/* Add the member to the array */
+			foundObject = ItemToClrObject(thread, &(member->programItem));
+			if(!foundObject)
+			{
+				return 0;
+			}
+			if(numFound >= array->length)
+			{
+				newArray = (System_Array *)_ILEngineAlloc
+						(thread, arrayClass,
+					     sizeof(System_Array) +
+						 	sizeof(void *) * (array->length + 4));
+				if(!newArray)
+				{
+					return 0;
+				}
+				ILMemCpy(ArrayToBuffer(newArray), ArrayToBuffer(array),
+						 sizeof(void *) * array->length);
+				newArray->length = array->length + 4;
+				array = newArray;
+			}
+			((void **)ArrayToBuffer(array))[numFound++] = foundObject;
+	
+			/* Advance to the next member */
+			member = member->nextMember;
+		}
+
+		/* Scan the nested types also */
+		if((memberTypes & (ILInt32)MT_NestedType) != 0)
+		{
+			nested = 0;
+			while((nested = ILClassNextNested(classInfo, nested)) != 0)
+			{
+				child = ILNestedInfoGetChild(nested);
+				if(child)
+				{
+					/* Filter the child based on its name */
+					if(nameUtf8)
+					{
+						if((bindingAttrs & (ILInt32)BF_IgnoreCase) == 0)
+						{
+							if(strcmp(child->name, nameUtf8) != 0)
+							{
+								continue;
+							}
+						}
+						else
+						{
+							if(ILStrICmp(child->name, nameUtf8) != 0)
+							{
+								continue;
+							}
+						}
+					}
+
+					/* Filter the child based on its access level */
+					if(!BindingAttrClassMatch(child, bindingAttrs))
+					{
+						continue;
+					}
+
+					/* Check that we have reflection access for this child */
+					if(!_ILClrCheckAccess(thread, child, (ILMember *)0))
+					{
+						continue;
+					}
+	
+					/* Add the nested type to the array */
+					foundObject = ItemToClrObject
+						(thread, &(child->programItem));
+					if(!foundObject)
+					{
+						return 0;
+					}
+					if(numFound >= array->length)
+					{
+						newArray = (System_Array *)_ILEngineAlloc
+								(thread, arrayClass,
+							     sizeof(System_Array) +
+								 	sizeof(void *) * (array->length + 4));
+						if(!newArray)
+						{
+							return 0;
+						}
+						ILMemCpy(ArrayToBuffer(newArray), ArrayToBuffer(array),
+								 sizeof(void *) * array->length);
+						newArray->length = array->length + 4;
+						array = newArray;
+					}
+					((void **)ArrayToBuffer(array))[numFound++] = foundObject;
+				}
+			}
+		}
+
+		/* Move up the class hierarchy */
+		classInfo = ILClass_Parent(classInfo);
+	}
+	while(classInfo != 0 &&
+	      (bindingAttrs & (ILInt32)BF_DeclaredOnly) == 0);
+
+	/* Truncate the array to its actual length and return it */
+	array->length = numFound;
+	return (ILObject *)array;
 }
 
 /*

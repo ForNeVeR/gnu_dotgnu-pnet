@@ -1925,8 +1925,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					MeasureLine (ref bounds, ref currentPos, ref text, xMax, this, font, vertical, noWrap);
 					lines.Add(currentPos);
-					if (currentPos < text.Length && text[currentPos] == (char)10)
-						currentPos++;
 					lineSizeRemaining -= fontHeight;
 					if (currentPos >= text.Length || lineSizeRemaining < 0 || noWrap)
 						break;
@@ -2028,10 +2026,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				do
 				{
 					char c = text[currentPos];
-					if (c == (char)10)
+					if (c == '\n')
+					{
+						currentPos++;
 						return;
-					// Ignore char 13
-					if (c!= (char)13)
+					}
+					// Ignore returns
+					if (c!= '\r')
 					{
 						//TODO use Platform specific measure function & take into account kerning
 						Size s = g.MeasureString( c.ToString(), f).ToSize();
@@ -2050,7 +2051,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								// Backtrack to wrap the word
 								for (int i = currentPos; i > initialPos; i--)
 								{
-									if (text[i] == (char)32)
+									if (text[i] == ' ')
 									{
 										// Swallow the space
 										bounds[i++] = Rectangle.Empty;

@@ -93,7 +93,7 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 		{
 			constBuf[0] = (unsigned char)(evalValue->un.i4Value);
 			constBufLen = 1;
-			constElemType = IL_META_ELEMTYPE_VOID;
+			constElemType = IL_META_ELEMTYPE_BOOLEAN;
 		}
 		break;
 

@@ -1,3 +1,10 @@
+
+2004-05-07  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* JScript/Execute/Support.cs: Arguments were not properly assigned, 
+	a function defined "foo(a,b)" and called with "foo(1,2)" would get 
+	arguments a=1 and b=null. (patch #3025, Gopal).
+
 2004-05-06  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* .cvsignore, DotGNU.XmlRpc/.cvsignore, System.Design/.cvsignore:

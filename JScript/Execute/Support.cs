@@ -328,10 +328,12 @@ internal sealed class Support
 				else
 				{
 					len = 1;
-					while(node is JArgList)
+					JNode temp = node;
+					/* Extract the length */
+					while(temp is JArgList)
 					{
 						++len;
-						node = ((JArgList)node).expr1;
+						temp = ((JArgList)temp).expr1;
 					}
 				}
 				Object[] args = new Object [len];

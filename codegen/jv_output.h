@@ -130,6 +130,11 @@ void JavaGenRet(ILGenInfo *info, unsigned varNum);
 int JavaGenTypeSize(ILMachineType type);
 
 /*
+ * Duplicate a machine type on the stack, and adjust the stack height.
+ */
+void JavaGenDup(ILGenInfo *info, ILMachineType type);
+
+/*
  * Load a value from an array element.
  */
 void JavaGenLoadArray(ILGenInfo *info, ILMachineType type);
@@ -233,6 +238,11 @@ void JavaGenClassName(ILGenInfo *info, int opcode, const char *className);
  * Output a "new array" instruction.
  */
 void JavaGenNewArray(ILGenInfo *info, ILType *elemType);
+
+/*
+ * Output an instruction that refers to a field.
+ */
+void JavaGenFieldRef(ILGenInfo *info, int opcode, ILField *field);
 
 /*
  * Output the correct form of return instruction based on a machine type.

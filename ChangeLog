@@ -5,6 +5,9 @@
 	add the "specialname" property to the "get" and "set" accessor
 	methods for a property.
 
+	* codegen/jv_lvalue.tc, codegen/jv_output.c, codegen/jv_output.h:
+	implement field access node types for JVM bytecode output.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values

@@ -502,6 +502,20 @@ int JavaGenTypeSize(ILMachineType type)
 	}
 }
 
+void JavaGenDup(ILGenInfo *info, ILMachineType type)
+{
+	int size = JavaGenTypeSize(type);
+	if(size == 1)
+	{
+		JavaGenSimple(info, JAVA_OP_DUP);
+	}
+	else if(size == 2)
+	{
+		JavaGenSimple(info, JAVA_OP_DUP2);
+	}
+	JavaGenAdjust(info, size);
+}
+
 void JavaGenLoadArray(ILGenInfo *info, ILMachineType type)
 {
 	switch(type)
@@ -832,6 +846,25 @@ void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo)
 void JavaGenClassName(ILGenInfo *info, int opcode, const char *className)
 {
 	/* TODO */
+}
+
+void JavaGenFieldRef(ILGenInfo *info, int opcode, ILField *field)
+{
+	if(info->asmOutput)
+	{
+		putc('\t', info->asmOutput);
+		fputs(ILJavaOpcodeTable[opcode].name, info->asmOutput);
+		putc('\t', info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, ILField_Type(field),
+				   IL_DUMP_QUOTE_NAMES);
+		putc(' ', info->asmOutput);
+		ILDumpClassName(info->asmOutput, info->image, ILField_Owner(field),
+						IL_DUMP_QUOTE_NAMES);
+		fputs("::", info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, ILField_Name(field), 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
 }
 
 void JavaGenNewArray(ILGenInfo *info, ILType *elemType)

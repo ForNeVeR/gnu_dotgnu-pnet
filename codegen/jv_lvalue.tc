@@ -149,8 +149,10 @@ JavaGenValue(ILNode_DerefField)
  */
 JavaGenValue(ILNode_StaticField)
 {
-	/* TODO */
-	return ILTypeToMachineType(ILField_Type(node->field));
+	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
+	JavaGenFieldRef(info, JAVA_OP_GETSTATIC, node->field);
+	JavaGenAdjust(info, JavaGenTypeSize(type));
+	return type;
 }
 
 /*
@@ -158,8 +160,12 @@ JavaGenValue(ILNode_StaticField)
  */
 JavaGenValue(ILNode_MemberField)
 {
-	/* TODO */
-	return ILTypeToMachineType(ILField_Type(node->field));
+	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
+	JavaGenFieldRef(info, JAVA_OP_GETFIELD, node->field);
+	JavaGenAdjust(info, JavaGenTypeSize(type) - 1);
+	return type;
 }
 
 /*
@@ -242,7 +248,8 @@ JavaPrepare(ILNode_StaticField)
  */
 JavaPrepare(ILNode_MemberField)
 {
-	/* TODO */
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
 	return ILTypeToMachineType(ILField_Type(node->field));
 }
 
@@ -276,15 +283,7 @@ JavaGetAndPrepare(ILNode_LocalVar)
 	JavaGenAdjust(info, size);
 	if(leave)
 	{
-		if(size == 2)
-		{
-			JavaGenSimple(info, JAVA_OP_DUP2);
-		}
-		else
-		{
-			JavaGenSimple(info, JAVA_OP_DUP);
-		}
-		JavaGenAdjust(info, size);
+		JavaGenDup(info, node->machineType);
 	}
 	return node->machineType;
 }
@@ -299,15 +298,7 @@ JavaGetAndPrepare(ILNode_ArgumentVar)
 	JavaGenAdjust(info, size);
 	if(leave)
 	{
-		if(size == 2)
-		{
-			JavaGenSimple(info, JAVA_OP_DUP2);
-		}
-		else
-		{
-			JavaGenSimple(info, JAVA_OP_DUP);
-		}
-		JavaGenAdjust(info, size);
+		JavaGenDup(info, node->machineType);
 	}
 	return node->machineType;
 }
@@ -353,8 +344,14 @@ JavaGetAndPrepare(ILNode_DerefField)
  */
 JavaGetAndPrepare(ILNode_StaticField)
 {
-	/* Nothing needs to be done here */
-	return ILTypeToMachineType(ILField_Type(node->field));
+	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
+	JavaGenFieldRef(info, JAVA_OP_GETSTATIC, node->field);
+	JavaGenAdjust(info, JavaGenTypeSize(type));
+	if(leave)
+	{
+		JavaGenDup(info, type);
+	}
+	return type;
 }
 
 /*
@@ -362,8 +359,34 @@ JavaGetAndPrepare(ILNode_StaticField)
  */
 JavaGetAndPrepare(ILNode_MemberField)
 {
-	/* TODO */
-	return ILTypeToMachineType(ILField_Type(node->field));
+	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
+	int size = JavaGenTypeSize(type);
+
+	/* Generate the object reference */
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+				ILMachineType_ObjectRef);
+
+	/* Duplicate it and get the current value */
+	JavaGenDup(info, type);
+	JavaGenFieldRef(info, JAVA_OP_GETFIELD, node->field);
+	JavaGenAdjust(info, size);
+
+	/* If the value should be left on the stack, then duplicate it */
+	if(leave)
+	{
+		if(size == 1)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP_X1);
+		}
+		else if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2_X1);
+		}
+		JavaGenAdjust(info, size);
+	}
+
+	/* Return the field's machine type to the caller */
+	return type;
 }
 
 /*
@@ -394,15 +417,7 @@ JavaStore(ILNode_LocalVar)
 	int size = JavaGenTypeSize(node->machineType);
 	if(leave)
 	{
-		if(size == 2)
-		{
-			JavaGenSimple(info, JAVA_OP_DUP2);
-		}
-		else
-		{
-			JavaGenSimple(info, JAVA_OP_DUP);
-		}
-		JavaGenAdjust(info, size);
+		JavaGenDup(info, node->machineType);
 	}
 	JavaGenStoreLocal(info, node->index, node->machineType);
 	JavaGenAdjust(info, -size);
@@ -416,15 +431,7 @@ JavaStore(ILNode_ArgumentVar)
 	int size = JavaGenTypeSize(node->machineType);
 	if(leave)
 	{
-		if(size == 2)
-		{
-			JavaGenSimple(info, JAVA_OP_DUP2);
-		}
-		else
-		{
-			JavaGenSimple(info, JAVA_OP_DUP);
-		}
-		JavaGenAdjust(info, size);
+		JavaGenDup(info, node->machineType);
 	}
 	JavaGenStoreArg(info, node->index, node->machineType);
 	JavaGenAdjust(info, -size);
@@ -467,7 +474,14 @@ JavaStore(ILNode_DerefField)
  */
 JavaStore(ILNode_StaticField)
 {
-	/* TODO */
+	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
+	int size = JavaGenTypeSize(type);
+	if(leave)
+	{
+		JavaGenDup(info, type);
+	}
+	JavaGenFieldRef(info, JAVA_OP_PUTSTATIC, node->field);
+	JavaGenAdjust(info, -size);
 }
 
 /*
@@ -475,7 +489,26 @@ JavaStore(ILNode_StaticField)
  */
 JavaStore(ILNode_MemberField)
 {
-	/* TODO */
+	ILMachineType type = ILTypeToMachineType(ILField_Type(node->field));
+	int size = JavaGenTypeSize(type);
+
+	/* Duplicate the value on the stack if we need it afterwards */
+	if(leave)
+	{
+		if(size == 1)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP_X1);
+		}
+		else if(size == 2)
+		{
+			JavaGenSimple(info, JAVA_OP_DUP2_X1);
+		}
+		JavaGenAdjust(info, size);
+	}
+
+	/* Store the value into the field */
+	JavaGenFieldRef(info, JAVA_OP_PUTFIELD, node->field);
+	JavaGenAdjust(info, -(size + 1));
 }
 
 /*

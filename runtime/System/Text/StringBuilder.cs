@@ -170,12 +170,12 @@ public sealed class StringBuilder
 	private int AppendSpace(int length)
 			{
 				int buildLen = buildString.length;
-				int newLength;
+				int newLength, temp;
 
 				// Determine the new length.
 				if(buildString.capacity < 2048)
 				{
-					int temp = buildLen + length;
+					temp = buildLen + length;
 					newLength = buildString.capacity * 2;
 					if(temp > newLength)
 					{
@@ -189,7 +189,11 @@ public sealed class StringBuilder
 				if(newLength > maxCapacity)
 				{
 					newLength = maxCapacity;
-					length = newLength - buildLen;
+					temp = newLength - buildLen;
+					if(temp < length)
+					{
+						length = temp;
+					}
 				}
 
 				// Reallocate the string as necessary.

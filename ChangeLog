@@ -1,3 +1,9 @@
+
+2004-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Text/StringBuilder.cs: wrong length returned
+	from "AppendSpace" when the maximum capacity is exceeded.
+
 2004-01-19  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs,

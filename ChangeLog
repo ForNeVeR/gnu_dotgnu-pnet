@@ -1,3 +1,4 @@
+2004-07-25  Deryk Robosson   <deryk@0x0a.com>
 
 2004-07-31  Deryk Robosson  <deryk@0x0a.com>
 
@@ -7,6 +8,9 @@
 	* System.Windows.Forms/ToolTip.cs: Add InitialDelay property. 
 	Also add private variables with default values set for all properties.
 	(patch #3233, Gopal).
+	
+	* System.Windows.Forms/Control.cs: implement timer to enable MouseHover
+	events (patch #3228, Gopal).
 
 2004-07-31  David Logan  <djlogan2@comcast.net>
 

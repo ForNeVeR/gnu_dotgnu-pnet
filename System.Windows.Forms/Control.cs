@@ -103,6 +103,7 @@ public class Control : IWin32Window, IDisposable
 	private bool validationCancelled = false;
 	private IToolkitWindowBuffer buffer;
 	private ControlBindingsCollection controlBindingsCollection;
+	private Timer hoverTimer;
 	
 	//
 	// Implentation of classes and variables for Invoke/BeginInvoke/EndInvoke
@@ -223,6 +224,10 @@ public class Control : IWin32Window, IDisposable
 				height = initialSize.Height;
 
 				controlBindingsCollection = new ControlBindingsCollection(this);
+				hoverTimer = new Timer();
+				hoverTimer.Interval = 1000;
+				hoverTimer.Enabled = false;
+				hoverTimer.Tick += new EventHandler(this.ProcessHoverTimerEvent);
 			}
 	public Control(String text) : this()
 			{
@@ -293,6 +298,12 @@ public class Control : IWin32Window, IDisposable
 						(null, x, y, width, height, this);
 				}
 			}
+
+	// Process a hoverTimer event
+	private void ProcessHoverTimerEvent(object sender, EventArgs e)
+	{
+		OnMouseHover(e);
+	}
 
 #if CONFIG_COMPONENT_MODEL
 
@@ -4767,6 +4778,9 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseDown(MouseEventArgs e)
 			{
+				hoverTimer.Enabled = false;
+				hoverTiemr.Stop();
+
 				MouseEventHandler handler;
 				handler = (MouseEventHandler)(GetHandler(EventId.MouseDown));
 				if(handler != null)
@@ -4783,6 +4797,9 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseEnter(EventArgs e)
 			{
+				hoverTimer.Enabled = true;
+				hoverTimer.Start();
+
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.MouseEnter));
 				if(handler != null)
@@ -4795,6 +4812,8 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseHover(EventArgs e)
 			{
+				hoverTimer.Stop();
+
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.MouseHover));
 				if(handler != null)
@@ -4807,6 +4826,9 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseLeave(EventArgs e)
 			{
+				hoverTiemr.Enabled = false;
+				hoverTimer.Stop();
+
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.MouseLeave));
 				if(handler != null)
@@ -4831,6 +4853,9 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseUp(MouseEventArgs e)
 			{
+				hoverTimer.Enabled = false;
+				hoverTimer.Stop();
+
 				MouseEventHandler handler;
 				handler = (MouseEventHandler)(GetHandler(EventId.MouseUp));
 				if(handler != null)
@@ -4847,6 +4872,9 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseWheel(MouseEventArgs e)
 			{
+				hoverTimer.Enabled = false;
+				hoverTimer.Stop();
+
 				MouseEventHandler handler;
 				handler = (MouseEventHandler)(GetHandler(EventId.MouseWheel));
 				if(handler != null)

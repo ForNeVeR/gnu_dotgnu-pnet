@@ -27,7 +27,7 @@ namespace System.Runtime.InteropServices
 [AttributeUsage(AttributeTargets.Field |
 				AttributeTargets.Parameter |
 				AttributeTargets.ReturnValue,
-				AllowMultiple=false, Inherited=false)]
+				Inherited=false)]
 public sealed class MarshalAsAttribute : Attribute
 {
 	// Internal state.

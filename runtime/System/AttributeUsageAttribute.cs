@@ -22,7 +22,7 @@
 namespace System
 {
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
+[AttributeUsage(AttributeTargets.Class, Inherited=true)]
 public sealed class AttributeUsageAttribute : Attribute
 {
 	// Internal state.

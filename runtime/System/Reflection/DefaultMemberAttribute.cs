@@ -24,8 +24,7 @@ namespace System.Reflection
 
 [AttributeUsage(AttributeTargets.Class |
 				AttributeTargets.Struct |
-				AttributeTargets.Interface,
-				AllowMultiple=false, Inherited=true)]
+				AttributeTargets.Interface)]
 public sealed class DefaultMemberAttribute : Attribute
 {
 

@@ -32,7 +32,7 @@ namespace System
 				AttributeTargets.Event |
 				AttributeTargets.Interface |
 				AttributeTargets.Delegate,
-				AllowMultiple=false, Inherited=false)]
+				Inherited=false)]
 public sealed class ObsoleteAttribute : Attribute
 {
 

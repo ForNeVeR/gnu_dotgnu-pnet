@@ -26,8 +26,7 @@ namespace System.Runtime.CompilerServices
 
 [CLSCompliant(false)]
 [AttributeUsage(AttributeTargets.Field |
-				AttributeTargets.Parameter,
-				AllowMultiple=false, Inherited=false)]
+				AttributeTargets.Parameter, Inherited=false)]
 public sealed class DecimalConstantAttribute : Attribute
 {
 

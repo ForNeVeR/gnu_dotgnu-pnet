@@ -22,7 +22,7 @@
 namespace System
 {
 
-[AttributeUsage(AttributeTargets.Enum, AllowMultiple=false, Inherited=false)]
+[AttributeUsage(AttributeTargets.Enum, Inherited=false)]
 public class FlagsAttribute : Attribute
 {
 }; // class FlagsAttribute

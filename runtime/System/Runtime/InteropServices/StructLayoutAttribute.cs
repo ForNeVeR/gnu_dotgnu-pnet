@@ -25,7 +25,7 @@ namespace System.Runtime.InteropServices
 #if CONFIG_RUNTIME_INFRA
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
-				AllowMultiple=false, Inherited=false)]
+				Inherited=false)]
 public sealed class StructLayoutAttribute : Attribute
 {
 	// Internal state.

@@ -8,6 +8,21 @@
 	System.Configuration.Install/Installer.cs: signature-compatibility
 	fixes for "System.Configuration.Install".
 
+	* runtime/System/Attribute.cs,
+	runtime/System/AttributeUsageAttribute.cs,
+	runtime/System/CLSCompliantAttribute.cs,
+	runtime/System/FlagsAttribute.cs, runtime/System/ObsoleteAttribute.cs,
+	runtime/System/ParamArrayAttribute.cs,
+	runtime/System/Reflection/DefaultMemberAttribute.cs,
+	runtime/System/Runtime/CompilerServices/DecimalConstantAttribute.cs,
+	runtime/System/Runtime/CompilerServices/MethodImplAttribute.cs,
+	runtime/System/Runtime/InteropServices/FieldOffsetAttribute.cs,
+	runtime/System/Runtime/InteropServices/InAttribute.cs,
+	runtime/System/Runtime/InteropServices/MarshalAsAttribute.cs,
+	runtime/System/Runtime/InteropServices/OutAttribute.cs,
+	runtime/System/Runtime/InteropServices/StructLayoutAttribute.cs:
+	signature-compatibility fixes for "AttributeUsage" declarations.
+
 2003-09-03  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/ScrollBar.cs: apply patch #1873,

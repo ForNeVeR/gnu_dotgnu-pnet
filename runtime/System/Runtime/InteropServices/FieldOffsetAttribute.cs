@@ -24,7 +24,7 @@ namespace System.Runtime.InteropServices
 
 #if CONFIG_RUNTIME_INFRA
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple=false, Inherited=false)]
+[AttributeUsage(AttributeTargets.Field, Inherited=false)]
 public sealed class FieldOffsetAttribute : Attribute
 {
 	// Internal state.

@@ -36,6 +36,14 @@ public enum OtherHints
 	HelpButton			= (1 << 2),
 	Dialog				= (1 << 3),
 	TopMost				= (1 << 4),
+	Desktop				= (1 << 5),
+	Dock				= (1 << 6),
+	Menu				= (1 << 7),
+	Splash				= (1 << 8),
+	Sticky				= (1 << 9),
+	Shaded				= (1 << 10),
+	Hidden				= (1 << 11),
+	FullScreen			= (1 << 12)
 
 } // enum OtherHints
 

@@ -1,4 +1,9 @@
 
+2005-02-16  Deryk Robosson  <deryk@0x0a.com>
+
+	* Xsharp/TopLevelWindow.cs, Xsharp/OtherHints.cs: Add other extended
+	windowmanager hints.
+
 2005-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* SharpZipLib/Tar/TarArchive.cs, System.Windows.Forms/CheckListBox.cs,

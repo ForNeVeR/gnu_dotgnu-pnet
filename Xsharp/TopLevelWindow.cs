@@ -42,6 +42,10 @@ public class TopLevelWindow : InputOutputWidget
 	internal bool maximized;
 	internal bool hasPrimaryFocus;
 	internal bool reparented;
+	internal bool sticky;
+	internal bool shaded;
+	internal bool hidden;
+	internal bool fullScreen;
 	private bool firstMapDone;
 	private IntPtr keyBuffer;
 	internal InputOnlyWidget focusWidget;
@@ -146,6 +150,10 @@ public class TopLevelWindow : InputOutputWidget
 				this.maximized = false;
 				this.hasPrimaryFocus = false;
 				this.reparented = false;
+				this.sticky = false;
+				this.shaded = false;
+				this.hidden = false;
+				this.fullScreen = false;
 				this.keyBuffer = IntPtr.Zero;
 				this.focusWidget = this;
 				this.defaultFocus = null;
@@ -417,6 +425,42 @@ public class TopLevelWindow : InputOutputWidget
 						(Xlib.Xlong)Xlib.XInternAtom
 							(display, "_NET_WM_STATE_ABOVE",
 						     XBool.False);
+				}
+
+				// Determine if we should stick in a fixed position
+				if((otherHints & OtherHints.Sticky) != 0)
+				{
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_STICKY",
+						    XBool.False);
+				}
+
+				// Determine if we should shade
+				if((otherHints & OtherHints.Shaded) != 0)
+				{
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_SHADED",
+						    XBool.False);
+				}
+
+				// Determine if we should hide
+				if((otherHints & OtherHints.Hidden) != 0)
+				{
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_HIDDEN",
+						    XBool.False);
+				}
+
+				// Determine if we should go full screen
+				if((otherHints & OtherHints.FullScreen) != 0)
+				{
+					atoms[numAtoms++] =
+						(Xlib.Xlong)Xlib.XInternAtom
+							(display, "_NET_WM_STATE_FULLSCREEN",
+						    XBool.False);
 				}
 
 				// Determine if the window should be maximized by default.
@@ -1190,6 +1234,34 @@ public class TopLevelWindow : InputOutputWidget
 								type = Xlib.XInternAtom
 									(display,
 									 "_NET_WM_WINDOW_TYPE_DIALOG",
+									 XBool.False);
+							}
+							else if((value & OtherHints.Desktop) != 0)
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_WINDOW_TYPE_DESKTOP",
+									 XBool.False);
+							}
+							else if((value & OtherHints.Dock) != 0)
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_WINDOW_TYPE_DOCK",
+									 XBool.False);
+							}
+							else if((value & OtherHints.Menu) != 0)
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_WINDOW_TYPE_MENU",
+									 XBool.False);
+							}
+							else if((value & OtherHints.Splash) != 0)
+							{
+								type = Xlib.XInternAtom
+									(display,
+									 "_NET_WM_WINDOW_TYPE_SPLASH",
 									 XBool.False);
 							}
 							else

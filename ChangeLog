@@ -1,4 +1,9 @@
 
+2004-05-02  Gopal V  <gopalv82@yahoo.com>
+
+	* libpthread/pthread_glue.cs: Fix the signature of the extern
+	definition of __pt_thread_run to match the C version.
+
 2004-03-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am, include/netdb.h, include/bits/Makefile.am,

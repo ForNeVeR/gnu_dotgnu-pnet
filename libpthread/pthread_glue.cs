@@ -67,7 +67,7 @@ internal unsafe class ThreadStartup
 				try
 				{
 					__module.__libc_thread_set_self(id);
-					exitval = __module.__pt_thread_run(start, arg);
+					exitval = __module.__pt_thread_run(id, start, arg);
 				}
 				finally
 				{
@@ -174,7 +174,7 @@ __module
 {
 
 	// Import functions from "pthread_thread.c" and "pthread_key.c".
-	extern public static unsafe void *__pt_thread_run(void *start, void *arg);
+	extern public static unsafe void *__pt_thread_run(long id, void *start, void *arg);
 	extern public static unsafe void pthread_exit(void *exitval);
 	extern public static unsafe void __pt_destroy_keys();
 

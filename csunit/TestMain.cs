@@ -115,7 +115,7 @@ public sealed class TestMain
 					}
 					if(index != -1)
 					{
-						typeName = typeName.Substring(index);
+						typeName = typeName.Substring(index + 1);
 					}
 				}
 

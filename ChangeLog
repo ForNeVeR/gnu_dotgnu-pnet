@@ -1,4 +1,9 @@
 
+2004-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/InputOutputWidget.cs (FlushInvalidates): don't perform a
+	clear if the widget has been destroyed (suggested by Mohan Embar).
+
 2004-09-27  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Security/Cryptography/X509Certificates/X509Certificate.cs:

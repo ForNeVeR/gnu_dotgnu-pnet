@@ -476,7 +476,7 @@ public class InputOutputWidget : InputOnlyWidget
 				if(region != null)
 				{
 					// No point redrawing if we are unmapped.
-					if(mapped && AncestorsMapped)
+					if(handle != XDrawable.Zero && mapped && AncestorsMapped)
 					{
 						ClearRegion(region, XBool.True);
 					}

@@ -1,4 +1,9 @@
 
+2004-07-12  Klaus Treichel  <ktreichel@web.de>
+
+	* HACKING: updated broken links, instructions to get current cvs version
+	and removed reference to daily snapshots.
+
 2004-07-10  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/ControlPaint.cs: Fix minor bug in HSB to RGB 

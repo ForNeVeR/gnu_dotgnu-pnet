@@ -10,6 +10,11 @@ and "_ILLayoutClass"; implement the layout algorithm for static fields.
 * engine/heap.c, engine/call.c, engine/lib_array.c: remove the
 thread argument from calls to "ILSizeOfType" and "_ILLayoutClass".
 
+* engine/cvmc_call.c: remove the thread argument from calls to
+"GetTypeSize"; make sure that the static constructor is called
+before any static method or instance constructor is called on
+a class.
+
 2001-10-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/internal.c, engine/lib_stdio.c, engine/Makefile.am: add

@@ -38,9 +38,57 @@ static void CVMCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								   ILEngineStackItem *args, ILUInt32 numArgs)
 {
 	ILUInt32 posn = ComputeStackSize(coder, args, numArgs);
-	ILUInt32 size = GetTypeSize(coder->thread, ILType_FromValueType(classInfo));
+	ILUInt32 size = GetTypeSize(ILType_FromValueType(classInfo));
 	CVM_DWIDE(COP_NEW_VALUE, posn, size);
 	CVM_ADJUST(size + 1);
+}
+
+/*
+ * Call the static constructor for a class if necessary.
+ */
+static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
+								  int isCtor)
+{
+	if((classInfo->attributes & IL_META_TYPEDEF_CCTOR_ONCE) != 0)
+	{
+		/* We already know that the static constructor has been called,
+		   so there is no point outputting a call to it again */
+		return;
+	}
+	if(isCtor ||
+	   (classInfo->attributes & IL_META_TYPEDEF_BEFORE_FIELD_INIT) == 0)
+	{
+		/* We must call the static constructor before instance
+		   constructors, or before static methods when the
+		   "beforefieldinit" attribute is not present */
+		ILMethod *cctor = 0;
+		while((cctor = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)cctor,
+					 IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(ILMethod_IsStaticConstructor(cctor))
+			{
+				break;
+			}
+		}
+		if(cctor != 0)
+		{
+			/* Don't call it if we are within the constructor already */
+			if(cctor != ((ILCVMCoder *)coder)->currentMethod)
+			{
+				/* Output a call to the static constructor */
+				CVM_BYTE(COP_CALL_EXTERN);
+				CVM_WORD(0);
+				CVM_PTR(cctor);
+			}
+		}
+		else
+		{
+			/* This class does not have a static constructor,
+			   so mark it so that we never do this test again */
+			classInfo->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
+		}
+	}
 }
 
 /*
@@ -62,6 +110,7 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 								ILEngineStackItem *returnItem,
 								ILMethod *methodInfo)
 {
+	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
 	CVM_BYTE(COP_CALL_EXTERN);
 	CVM_WORD(0);
 	CVM_PTR(methodInfo);
@@ -71,6 +120,7 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 static void CVMCoder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
 					   		  ILUInt32 numArgs, ILMethod *methodInfo)
 {
+	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 1);
 	CVM_BYTE(COP_CALL_CTOR);
 	CVM_WORD(0);
 	CVM_PTR(methodInfo);
@@ -146,7 +196,7 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 
 		case ILEngineType_MV:
 		{
-			ILUInt32 size = GetTypeSize(coder->thread, returnType);
+			ILUInt32 size = GetTypeSize(returnType);
 			CVM_RETURN(size);
 			CVM_ADJUST(-(ILInt32)size);
 		}

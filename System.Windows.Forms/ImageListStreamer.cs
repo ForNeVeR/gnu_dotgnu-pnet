@@ -26,7 +26,7 @@ namespace System.Windows.Forms
 using System.Runtime.Serialization;
 
 [Serializable]
-public sealed class ImageListStreamer : ISerializable
+public class ImageListStreamer : ISerializable
 {
 	// TODO
 

@@ -137,21 +137,21 @@ public sealed class Marshal
 
 	// Convert a pointer to an ANSI string into a string object.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static String PtrToStringANSI(IntPtr ptr);
+	extern public static String PtrToStringAnsi(IntPtr ptr);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static String PtrToStringANSI(IntPtr ptr, int len);
+	extern public static String PtrToStringAnsi(IntPtr ptr, int len);
 
 	// Convert a pointer to an Auto string into a string object.
 	public static String PtrToStringAuto(IntPtr ptr)
 			{
 				// Auto and ANSI are identical in this implementation.
-				return PtrToStringANSI(ptr);
+				return PtrToStringAnsi(ptr);
 			}
 	public static String PtrToStringAuto(IntPtr ptr, int len)
 			{
 				// Auto and ANSI are identical in this implementation.
-				return PtrToStringANSI(ptr, len);
+				return PtrToStringAnsi(ptr, len);
 			}
 
 	// Convert an object into a pointer to its first byte.

@@ -192,7 +192,6 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	extern public virtual Stream GetManifestResourceStream(String name);
 
 	// Get a stream for a particular manifest resource, scoped by a type.
-	[MethodImpl(MethodImplOptions.InternalCall)]
 	public virtual Stream GetManifestResourceStream(Type type, String name)
 			{
 				if(name == null)

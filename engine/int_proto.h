@@ -128,7 +128,7 @@ extern void _IL_String_CopyToChecked(ILExecThread * _thread, System_String * _th
 extern ILBool _IL_String_Equals(ILExecThread * _thread, System_String * a, System_String * b);
 extern ILInt32 _IL_String_GetHashCode(ILExecThread * _thread, System_String * _this);
 extern ILInt32 _IL_String_IndexOf(ILExecThread * _thread, System_String * _this, ILUInt16 value, ILInt32 startIndex, ILInt32 count);
-extern ILBool _IL_String_EqualRange(ILExecThread * _thread, System_String * _this, ILInt32 srcIndex, ILInt32 count, System_String * dest, ILInt32 destIndex);
+extern ILInt32 _IL_String_FindInRange(ILExecThread * _thread, System_String * _this, ILInt32 srcFirst, ILInt32 srcLast, ILInt32 step, System_String * dest);
 extern ILInt32 _IL_String_IndexOfAny(ILExecThread * _thread, System_String * _this, System_Array * anyOf, ILInt32 startIndex, ILInt32 count);
 extern System_String * _IL_String_Intern(ILExecThread * _thread, System_String * str);
 extern System_String * _IL_String_IsInterned(ILExecThread * _thread, System_String * str);

@@ -1,4 +1,11 @@
 
+2002-07-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_string.c:
+	replace the "String.EqualRange" internalcall with the new
+	"String.FindInRange" interncall.  Based on a suggestion by
+	Gopal V.
+
 2002-07-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_crypt.c, include/il_crypt.h, support/Makefile.am,

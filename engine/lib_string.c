@@ -982,19 +982,44 @@ int _IL_String_LastIndexOfAny(ILExecThread *thread,
 }
 
 /*
- * private bool EqualRange(int srcIndex, int count,
- *						   String dest, int destIndex);
+ * private int FindInRange(int srcFirst, int srcLast,
+ *						   int step, String dest);
  */
-ILBool _IL_String_EqualRange(ILExecThread *thread,
-						     System_String *_this,
-						     ILInt32 srcIndex,
-						     ILInt32 count,
-						     System_String *dest,
-						     ILInt32 destIndex)
+ILInt32 _IL_String_FindInRange(ILExecThread *thread, System_String *_this,
+							   ILInt32 srcFirst, ILInt32 srcLast,
+							   ILInt32 step, System_String *dest)
 {
-	ILUInt16 *buf1 = StringToBuffer(_this) + srcIndex;
-	ILUInt16 *buf2 = StringToBuffer(dest) + destIndex;
-	return (!ILMemCmp(buf1, buf2, count * sizeof(ILUInt16)));
+	ILUInt16 *buf1 = StringToBuffer(_this) + srcFirst;
+	ILUInt16 *buf2 = StringToBuffer(dest);
+	ILUInt32 size = (ILUInt32)(dest->length * sizeof(ILUInt16));
+	if(step > 0)
+	{
+		/* Scan forwards for the string */
+		while(srcFirst <= srcLast)
+		{
+			if(!ILMemCmp(buf1, buf2, size))
+			{
+				return srcFirst;
+			}
+			++buf1;
+			++srcFirst;
+		}
+		return -1;
+	}
+	else
+	{
+		/* Scan backwards for the string */
+		while(srcFirst >= srcLast)
+		{
+			if(!ILMemCmp(buf1, buf2, size))
+			{
+				return srcFirst;
+			}
+			--buf1;
+			--srcFirst;
+		}
+		return -1;
+	}
 }
 
 /*
@@ -1202,6 +1227,14 @@ System_String *_IL_String_Replace_cc(ILExecThread *thread,
 }
 
 /*
+ * Determine if a range of characters in two strings are equal.
+ */
+#define	EqualRange(str1,posn1,count,str2,posn2)	\
+			(!ILMemCmp(StringToBuffer((str1)) + (posn1), \
+					   StringToBuffer((str2)) + (posn2), \
+					   (count) * sizeof(ILUInt16)))
+
+/*
  * public String Replace(String oldValue, String newValue)
  */
 System_String *_IL_String_Replace_StringString(ILExecThread *thread,
@@ -1239,7 +1272,7 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 	posn = 0;
 	while((posn + oldLen) <= _this->length)
 	{
-		if(_IL_String_EqualRange(thread, _this, posn, oldLen, oldValue, 0))
+		if(EqualRange(_this, posn, oldLen, oldValue, 0))
 		{
 			finalLen += newLen;
 			posn += oldLen;
@@ -1270,7 +1303,7 @@ System_String *_IL_String_Replace_StringString(ILExecThread *thread,
 	posn = 0;
 	while((posn + oldLen) <= _this->length)
 	{
-		if(_IL_String_EqualRange(thread, _this, posn, oldLen, oldValue, 0))
+		if(EqualRange(_this, posn, oldLen, oldValue, 0))
 		{
 			if(newLen > 0)
 			{

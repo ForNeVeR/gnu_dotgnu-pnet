@@ -314,7 +314,7 @@ static CVMOpcode const opcodes[256] = {
 	{"pwrite_elem",		CVM_OPER_NONE},
 	{"ckarray_load_i4",	CVM_OPER_NONE},
 	{"ckarray_load_i8",	CVM_OPER_NONE},
-	{"ckarray_store_i8", CVM_OPER_NONE},
+	{"ckarray_store_i8", CVM_OPER_TWO_UINT8},
 	{"array_len",		CVM_OPER_NONE},
 
 	/*

@@ -32,6 +32,8 @@ engine/cvm_conv.c: implement the "box" instruction.
 * engine/cvmc_ptr.c: account for the true size of "native int" when
 getting the length of an array.
 
+* engine/cvm_dasm.c: fix the operand type for "ckarray_store_i8".
+
 2001-10-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/doc_texi.c: fixed a bug in the handling

@@ -1068,11 +1068,9 @@ static int processImage(ILLinker *linker, const char *filename,
 						int useStdlib, int isFirstFile)
 {
 	int errors = 0;
-	int model, alignFlags;
 
 	/* Add the image to the linker context */
-	model = ILLinkerCMemoryModel(image, &alignFlags);
-	if(model != 0)
+	if(ILLinkerIsCObject(image))
 	{
 		/* Load the standard C libraries that we need for linking */
 		if(isFirstFile)
@@ -1099,8 +1097,7 @@ static int processImage(ILLinker *linker, const char *filename,
 		}
 
 		/* Add the C object file to the linker */
-		if(!ILLinkerAddCObject(linker, context, image,
-							   filename, model, alignFlags))
+		if(!ILLinkerAddCObject(linker, context, image, filename))
 		{
 			errors |= 1;
 		}

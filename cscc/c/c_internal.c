@@ -93,30 +93,12 @@ void CGenBeginCode(ILGenInfo *info)
 	/* C doesn't have goto label scopes */
 	info->hasGotoScopes = 0;
 
-	/* Tag the module with the memory model, which tells the linker
+	/* Tag the module with "ModuleAttribute", which tells the linker
 	   that this is a C module requiring special treatment */
 	if(info->asmOutput)
 	{
-		if(CTypeAlignModifiers != 0)
-		{
-			fprintf(info->asmOutput, ".custom instance void "
-					"OpenSystem.C.MemoryModelAttribute"
-					"::.ctor(int32, int32) = "
-					"(01 00 %02X 00 00 00 %02X %02X %02X %02X 00 00)\n",
-					(int)(CTypePtrSize * 8),
-					(int)(CTypeAlignModifiers & 0xFF),
-					(int)((CTypeAlignModifiers >> 8) & 0xFF),
-					(int)((CTypeAlignModifiers >> 16) & 0xFF),
-					(int)((CTypeAlignModifiers >> 24) & 0xFF));
-		}
-		else
-		{
-			fprintf(info->asmOutput, ".custom instance void "
-					"OpenSystem.C.MemoryModelAttribute"
-					"::.ctor(int32) = "
-					"(01 00 %02X 00 00 00 00 00)\n",
-					(int)(CTypePtrSize * 8));
-		}
+		fprintf(info->asmOutput, ".custom instance void "
+				"OpenSystem.C.ModuleAttribute::.ctor() = (01 00 00 00)\n");
 	}
 
 	/* Initialize the global definition scope */

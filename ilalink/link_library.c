@@ -335,13 +335,11 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 		{
 			nextLibrary->classHash = 0;
 			nextLibrary->symbolHash = 0;
-			nextLibrary->memoryModel = library->memoryModel;
-			nextLibrary->modelFlags = library->modelFlags;
+			nextLibrary->isCImage = library->isCImage;
 		}
 		else
 		{
-			nextLibrary->memoryModel =
-				ILLinkerCMemoryModel(image, &(nextLibrary->modelFlags));
+			nextLibrary->isCImage = ILLinkerIsCObject(image);
 			originator = ILAssemblyGetOriginator(assem, &originatorLen);
 			if(originator && originatorLen)
 			{

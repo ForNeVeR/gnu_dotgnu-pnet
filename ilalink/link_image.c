@@ -57,7 +57,6 @@ static int ProcessImage(ILLinker *linker, ILImage *image,
 	ILUInt32 compat;
 	void *dataSection;
 	unsigned long dataLen;
-	int alignFlags;
 
 	/* Get the module and assembly for the final output image */
 	thisModule = (ILModule *)ILImageTokenInfo(linker->image,
@@ -66,7 +65,7 @@ static int ProcessImage(ILLinker *linker, ILImage *image,
 											   (IL_META_TOKEN_ASSEMBLY | 1));
 
 	/* Copy module information from the image if not a C object file */
-	if(ILLinkerCMemoryModel(image, &alignFlags) == 0)
+	if(!ILLinkerIsCObject(image))
 	{
 		module = 0;
 		while((module = (ILModule *)ILImageNextToken
@@ -225,31 +224,18 @@ int ILLinkerAddImage(ILLinker *linker, ILContext *context,
 }
 
 int ILLinkerAddCObject(ILLinker *linker, ILContext *context,
-					   ILImage *image, const char *filename,
-					   int memoryModel, int alignFlags)
+					   ILImage *image, const char *filename)
 {
 	ILProgramItem *oldItem;
 	ILProgramItem *newItem;
 
 	/* Check that the memory model is consistent with the
 	   values from previous object files that we linked */
-	if(linker->memoryModel != 0)
+	if(!(linker->isCLink))
 	{
-		if(linker->memoryModel != memoryModel ||
-		   linker->modelFlags != alignFlags)
-		{
-			fprintf(stderr,
-					"%s: memory model is inconsistent with other objects\n",
-					filename);
-			linker->error = 1;
-		}
-	}
-	else
-	{
-		/* This is the first C object, so set the memory model
+		/* This is the first C object, so set the module flag
 		   locally and in the final image */
-		linker->memoryModel = memoryModel;
-		linker->modelFlags = alignFlags;
+		linker->isCLink = 1;
 		oldItem = ILProgramItem_FromToken(image, IL_META_TOKEN_MODULE | 1);
 		newItem = ILProgramItem_FromToken
 			(linker->image, IL_META_TOKEN_MODULE | 1);

@@ -20,6 +20,12 @@
 	* ilalink/link_create.c, ilalink/link_library.c, ilalink/link_main.c:
 	remove the need for "64.dll" and "32.dll" from the linker.
 
+	* cscc/c/c_internal.c, cscc/c/c_library.c, ilalink/link_class.c,
+	ilalink/link_create.c, ilalink/link_image.c, ilalink/link_init.c,
+	ilalink/link_library.c, ilalink/link_main.c, ilalink/link_module.c,
+	ilalink/link_type.c, ilalink/linker.h, include/il_linker.h:
+	change "MemoryModelAttribute" to "ModuleAttribute" for the new ABI.
+
 2004-03-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: detect some extra headers in configure.in for "cpp".

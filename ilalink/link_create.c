@@ -75,8 +75,7 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->entryPoint = 0;
 	linker->dataLength = 0;
 	linker->tlsLength = 0;
-	linker->memoryModel = 0;
-	linker->modelFlags = 0;
+	linker->isCLink = 0;
 	if(!_ILLinkerCreateSymbolHash(linker))
 	{
 		ILWriterDestroy(linker->writer);
@@ -150,7 +149,7 @@ static void ReportUnresolved(ILLinker *linker)
 	int flags;
 
 	/* Set the dump flags to use */
-	if(linker->memoryModel != 0)
+	if(linker->isCLink)
 	{
 		flags = IL_DUMP_C_TYPES;
 	}

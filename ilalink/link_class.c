@@ -76,7 +76,7 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		/* Map the "<Module>" class to its final name */
 		name = _ILLinkerModuleName(linker);
 	}
-	else if(ILClass_IsPrivate(classInfo) && linker->memoryModel != 0)
+	else if(ILClass_IsPrivate(classInfo) && linker->isCLink)
 	{
 		/* Rename the private class to prevent name clashes
 		   with definitions in other C object files */
@@ -113,7 +113,7 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 			{
 				isModule = 1;
 			}
-			else if(linker->memoryModel != 0 ||
+			else if(linker->isCLink ||
 			        !strncmp(ILClass_Name(classInfo), "$ArrayType$", 11))
 			{
 				/* Duplicate classes are valid in C objects, as they
@@ -410,7 +410,7 @@ int _ILLinkerLibraryReplacement(ILLinker *linker, ILLibraryFind *find,
 	   _ILLinkerFindClass(find, ILClass_Name(classInfo),
 						  ILClass_Namespace(classInfo)))
 	{
-		if(linker->memoryModel != 0)
+		if(linker->isCLink)
 		{
 			return 1;
 		}

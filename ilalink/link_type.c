@@ -137,7 +137,7 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 		name = _ILLinkerModuleName(linker);
 	}
 	else if(ILClass_IsPrivate(classInfo) &&
-	        linker->memoryModel != 0 && !ILClassIsRef(classInfo))
+	        linker->isCLink && !ILClassIsRef(classInfo))
 	{
 		/* Rename the private class to prevent name clashes
 		   with definitions in other C object files */

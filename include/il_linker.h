@@ -92,8 +92,7 @@ int ILLinkerAddImage(ILLinker *linker, ILContext *context,
  * This must be done after all libraries have been added.
  */
 int ILLinkerAddCObject(ILLinker *linker, ILContext *context,
-					   ILImage *image, const char *filename,
-					   int memoryModel, int alignFlags);
+					   ILImage *image, const char *filename);
 
 /*
  * Add a binary resource to a linker context.  Returns zero
@@ -151,11 +150,9 @@ ILAttribute *ILLinkerFindAttribute(ILProgramItem *item,
 ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr);
 
 /*
- * Get the C memory model associated with an image.  Returns
- * 32 or 64 for the memory model, or zero if not a C image.
- * Optional native alignment flags are returned in "alignFlags".
+ * Determine if an image is a C object.
  */
-int ILLinkerCMemoryModel(ILImage *image, int *alignFlags);
+int ILLinkerIsCObject(ILImage *image);
 
 /*
  * Create the module class for a C application.

@@ -93,8 +93,7 @@ struct _tagILLibrary
 	ILUInt32		publicKeyLen;	/* Length of the public key value */
 	ILHashTable    *classHash;		/* Hash table for class name lookup */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
-	int				memoryModel;	/* Memory model for the library */
-	int				modelFlags;		/* Memory model flags for the library */
+	int				isCImage;		/* Non-zero if a C image */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
 	ILContext      *context;		/* Context containing the library image */
 	ILImage        *image;			/* Image that corresponds to the library */
@@ -138,8 +137,7 @@ struct _tagILLinker
 	ILMethod       *entryPoint;		/* Current entry point that is set */
 	ILUInt32		dataLength;		/* Length of ".sdata" section */
 	ILUInt32		tlsLength;		/* Length of ".tls" section */
-	int				memoryModel;	/* Memory model of a C application */
-	int				modelFlags;		/* Alignment flags for the memory model */
+	int				isCLink;		/* Non-zero if linking a C image */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
 	char     	   *moduleName;		/* Name of the "<Module>" class */

@@ -215,8 +215,8 @@ void CGenRegisterLibrary(ILGenInfo *info)
 							attributeClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Invalid);
 
-	/* Create "OpenSystem.C.MemoryModelAttribute" */
-	classInfo = CreateClass(info, scope, "MemoryModelAttribute",
+	/* Create "OpenSystem.C.ModuleAttribute" */
+	classInfo = CreateClass(info, scope, "ModuleAttribute",
 							attributeClass);
 	AddConstructor(classInfo, ILType_Int32, ILType_Invalid);
 

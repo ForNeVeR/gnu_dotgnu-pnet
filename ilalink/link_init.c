@@ -265,7 +265,7 @@ static void CallLibraryInit(FILE *stream, ILLibrary *library)
 {
 	while(library != 0)
 	{
-		if(library->memoryModel)
+		if(library->isCImage)
 		{
 			fprintf(stream, "\tcall void [%s]'%s'::'.init'()\n",
 					library->name, library->moduleName);
@@ -284,7 +284,7 @@ static void CallLibraryFini(FILE *stream, ILLibrary *library)
 		return;
 	}
 	CallLibraryFini(stream, library->next);
-	if(library->memoryModel)
+	if(library->isCImage)
 	{
 		fprintf(stream, "\tcall void [%s]'%s'::'.fini'()\n",
 				library->name, library->moduleName);
@@ -306,7 +306,7 @@ ILImage *_ILLinkerCreateInitFini(ILLinker *linker)
 	/* Only generate initializers and finalizers for C applications.
 	   C# applications will need to explicitly call the initializers
 	   using helper methods within the "OpenSystem.C" assembly */
-	if(!(linker->memoryModel))
+	if(!(linker->isCLink))
 	{
 		return 0;
 	}
@@ -359,26 +359,9 @@ ILImage *_ILLinkerCreateInitFini(ILLinker *linker)
 	/* Generate assembly, module, and memory model information */
 	fputs(".assembly '<Assembly>' {}\n", stream);
 	fputs(".module '<Module>'\n", stream);
-	if(linker->modelFlags != 0)
-	{
-		fprintf(stream, ".custom instance void "
-				"[OpenSystem.C]OpenSystem.C.MemoryModelAttribute"
-				"::.ctor(int32, int32) = "
-				"(01 00 %02X 00 00 00 %02X %02X %02X %02X 00 00)\n",
-				linker->memoryModel,
-				(int)(linker->modelFlags & 0xFF),
-				(int)((linker->modelFlags >> 8) & 0xFF),
-				(int)((linker->modelFlags >> 16) & 0xFF),
-				(int)((linker->modelFlags >> 24) & 0xFF));
-	}
-	else
-	{
-		fprintf(stream, ".custom instance void "
-				"[OpenSystem.C]OpenSystem.C.MemoryModelAttribute"
-				"::.ctor(int32) = "
-				"(01 00 %02X 00 00 00 00 00)\n",
-				linker->memoryModel);
-	}
+	fprintf(stream, ".custom instance void "
+			"[OpenSystem.C]OpenSystem.C.ModuleAttribute::.ctor() = "
+			"(01 00 00 00)\n");
 	fputs("\n", stream);
 
 	/* Dump the "init-count" helper class, which keeps track

@@ -1,4 +1,127 @@
 
+0.5.0 (11 January 2003)
+
+	Runtime engine:
+
+	* Internalcalls for querying information about the runtime engine.
+	* Inline 2D array operations to remove the method call overhead.
+	* Internalcalls for "System.IO" (Gopal V, Aditya P. Bansod).
+	* Fixes to "System.String" internalcalls (Jonathan Springer, Rhys).
+	* Implement "GetValue" and "SetValue" for fields (Gopal V, Rhys).
+	* "Marshal.PtrToStruct" (Gopal V).
+	* Verifier fixes for native pointers and arrays (Gopal V).
+	* Pop garbage from the stack when "leave" is seen (Gopal V).
+	* Better reporting for exceptions that cannot be converted into strings.
+	* Intern strings at verification time, not use time.
+	* Fixes to "System.Enum" internalcalls (Jeff Post).
+	* Deserialize attributes properly.
+
+	C# Compiler:
+
+	* Ensure that value types are never zero-sized even if they don't
+	  have any fields.
+	* Negation of int64 constants when converting literal fields.
+	* Reset the "overflowInsns" value when jumping into another context
+	  so that the destination value is used, not the source value.
+	* Allow "this" to be used as an l-value within value types.
+	* Reduction in strength optimizations (Gopal V).
+	* Use of enum constants in function calls (Gopal V).
+	* Array initializers (Gopal V, Rhys Weatherley).
+	* Problems in best method candidate resolution (Gopal V).
+	* "base.X" property set calls.
+	* Recognize "null" properly in member accesses (Gopal V).
+	* Adjustments to how "-nostdlib" works (Gopal V).
+	* Delegate creation expressions (Gopal V).
+	* Implement the "using" and "fixed" statements (Gopal V).
+	* Use type-specific semantic analysis for "typeof" (Gopal V).
+	* Implement the pointer address-of operator (Gopal V).
+	* Support for "extern" properties (Gopal V).
+	* Fixes for no-argument attributes and attributes whose classes do
+	  not end in "Attribute" (Gopal V).
+	* Revamp error message reporting for virtual overrides (Gopal V).
+	* Inhibit infinite loops in operator resolution (Gopal V).
+	* Order of compilation issues for nested classes (Gopal V).
+	* Force local variables to be initialized with ".locals init".
+	* Work around C# compilers that use the underlying type for enums.
+
+	C Compiler:
+
+	* Implicit coercions between C and C# string types in interop code.
+
+	Assembler:
+
+	* Fix parsing of octal escape sequences.
+	* Turn the assembler into a library that can be directly linked
+	  into the "cscc" compiler front-end.
+
+	Disassembler:
+
+	* Fixed word order in dumping of the "ldc.i8" operand.
+	* Round-tripping fixes.
+
+	Documentation:
+
+	* Man page for ildb.
+	* Generate better-formatted code in "csdoc2stub" (Gopal V).
+
+	Linker:
+
+	* Resource-only satellite assembly support.
+	* Handle multiple definitions of struct types in C object files.
+	* Favour struct definitions in a C library over the program's version.
+
+	Loader and Metadata:
+
+	* Fix relocation information in the Win32 exe stub.
+	* Add native offsets to fields so that we can eventually support
+	  marshalling of structures with different IL/native layouts.
+	* Correct encoding of marshal types with unspecified array elements.
+	* Multi-dimensional array encodings.
+	* Revove duplicate entries from the PropertyMap and EventMap tables.
+	* Allow zero-length strings in the "#Strings" blob.
+
+	Cryptopgraphy:
+
+	* Ignore parity bits when comparing Triple-DES keys.
+	* Implement the cryptographically secure random number generator.
+	* Robustness fixes for NULL algorithm handles.
+
+	Csant:
+
+	* Extra properties for cscc plugin locations.
+	* Add the "delete" task (Gopal V).
+	* Implement "if" conditionals for file sets (Gopal V).
+
+	Platform Support:
+
+	* Fix overflow-tested multiplication of 64-bit values to stop truncation.
+	* Wait events (Thong Nguyen).
+	* Work around bugs in "isinf" on certain platforms.
+	* Rename instances of "errno" to "error" to avoid problems on
+	  platforms where "errno" is a macro.
+	* Add support for mingw32 builds under Windows.
+	* Integrate glibc's regex so that we have a consistent set of regex
+	  handling routines across the stack.
+	* Centralize path searching so the install location can be made
+	  variable on Win32 systems.
+	* Win32-specific directory routines.
+	* Implement globbing for systems that don't do it automtically.
+
+	Other:
+
+	* Update RPM spec files (Gopal V, Stephen Compall).
+	* Add "--disable-optimizations" to "configure" (James McParlane).
+	* Fix "fopen" call in resgen for CRLF systems (David Dawkins).
+	* Out of tree builds for libffi and libgc (Stephen Compall).
+	* Remove files from the tree that are created by "auto_gen.sh"
+	  and "configure".
+	* Remove the need for "acconfig.h" (David Dawkins, Rhys Weatherley).
+	* Move "csunit" and "csupport" to the pnetlib repository.
+	* Remove all pre-compiled assemblies from the pnet repository because
+	  pnetlib can now build cleanly from source using cscc.
+	* Microsoft-style command-line options for various tools.
+	* Install libgc and libffi.
+
 0.4.8 (23 November 2002)
 
 	Runtime engine:

@@ -8,6 +8,8 @@
 	* support/pt_defs.c (_ILCondVarTimedWait): mismatch between
 	microseconds and nanoseconds.
 
+	* tests/test_thread.c: tests for "ILThreadSleep".
+
 2002-04-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/Makefile.am, support/mutex.c, support/no_defs.c,

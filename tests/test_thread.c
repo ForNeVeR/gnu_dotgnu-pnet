@@ -36,9 +36,11 @@ static void sleepFor(int steps)
 #ifdef HAVE_USLEEP
 	/* Time steps are 100ms in length */
 	usleep(steps * 100000);
+#define	STEPS_TO_MS(steps)	(steps * 100)
 #else
 	/* Time steps are 1s in length */
 	sleep(steps);
+#define	STEPS_TO_MS(steps)	(steps * 1000)
 #endif
 }
 
@@ -745,6 +747,234 @@ static void thread_suspend_main_self(void *arg)
 }
 
 /*
+ * Flags that are used by "sleepILThread".
+ */
+static int volatile sleepResult;
+static int volatile sleepDone;
+
+/*
+ * A thread procedure that sleeps for a number of time steps
+ * using the "ILThreadSleep" function.
+ */
+static void sleepILThread(void *arg)
+{
+	sleepResult = ILThreadSleep((ILUInt32)STEPS_TO_MS((int)arg));
+	sleepDone = 1;
+}
+
+/*
+ * Test thread sleep functionality.
+ */
+static void thread_sleep(void *arg)
+{
+	ILThread *thread;
+	int done1;
+
+	/* Create the thread */
+	thread = ILThreadCreate(sleepILThread, (void *)2);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the global flags */
+	sleepResult = 0;
+	sleepDone = 0;
+
+	/* Start the thread */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* The sleep should not be done yet */
+	done1 = sleepDone;
+
+	/* Wait 2 more time steps for the thread to exit */
+	sleepFor(2);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(done1)
+	{
+		ILUnitFailed("thread did not sleep for the required amount of time");
+	}
+	if(!sleepDone)
+	{
+		ILUnitFailed("sleep did not end when expected");
+	}
+	if(!sleepResult)
+	{
+		ILUnitFailed("sleep was interrupted");
+	}
+}
+
+/*
+ * Test thread sleep interrupt functionality.
+ */
+static void thread_sleep_interrupt(void *arg)
+{
+	ILThread *thread;
+	int done1;
+	int result1;
+
+	/* Create the thread */
+	thread = ILThreadCreate(sleepILThread, (void *)3);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the global flags */
+	sleepResult = 0;
+	sleepDone = 0;
+
+	/* Start the thread */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* Interrupt the thread */
+	ILThreadInterrupt(thread);
+
+	/* Wait 1 time step for the interrupt to be processed */
+	sleepFor(1);
+
+	/* Check that the sleep is done */
+	done1 = sleepDone;
+	result1 = sleepResult;
+
+	/* Wait 2 more time steps for the thread to exit */
+	sleepFor(2);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(!done1)
+	{
+		ILUnitFailed("sleep was not interrupted");
+	}
+	if(sleepResult)
+	{
+		ILUnitFailed("sleep returned 1 when it should have returned 0");
+	}
+}
+
+/*
+ * Test thread sleep suspend functionality.
+ */
+static void thread_sleep_suspend(void *arg)
+{
+	ILThread *thread;
+	int done1;
+	int done2;
+
+	/* Create the thread */
+	thread = ILThreadCreate(sleepILThread, (void *)2);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the global flags */
+	sleepResult = 0;
+	sleepDone = 0;
+
+	/* Start the thread */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* Suspend the thread.  The suspend will wait until the sleep finishes */
+	ILThreadSuspend(thread);
+
+	/* Wait 2 time steps for the sleep to finish */
+	sleepFor(2);
+
+	/* The "sleepDone" flag should not be set yet, because the
+	   thread has been suspended before it can be set */
+	done1 = sleepDone;
+
+	/* Resume the thread */
+	ILThreadResume(thread);
+
+	/* Wait 1 more time step for the thread to exit */
+	sleepFor(1);
+
+	/* The "sleepDone" flag should now be set */
+	done2 = sleepDone;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(done1)
+	{
+		ILUnitFailed("thread did not suspend after the sleep");
+	}
+	if(!done2)
+	{
+		ILUnitFailed("thread did not resume");
+	}
+}
+
+/*
+ * Test thread sleep suspend functionality, when the suspend is
+ * resumed before the sleep finishes.
+ */
+static void thread_sleep_suspend_ignore(void *arg)
+{
+	ILThread *thread;
+	int done1;
+
+	/* Create the thread */
+	thread = ILThreadCreate(sleepILThread, (void *)3);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clear the global flags */
+	sleepResult = 0;
+	sleepDone = 0;
+
+	/* Start the thread */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* Suspend the thread.  The suspend will not be processed just yet */
+	ILThreadSuspend(thread);
+
+	/* Wait 1 time step */
+	sleepFor(1);
+
+	/* Resume the thread */
+	ILThreadResume(thread);
+
+	/* Wait 2 more time steps for the thread to exit */
+	sleepFor(2);
+
+	/* The "sleepDone" flag should now be set */
+	done1 = sleepDone;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(!done1)
+	{
+		ILUnitFailed("resume was not ignored");
+	}
+}
+
+/*
  * Flags that are used by "checkGetSetValue".
  */
 static int volatile correctFlag1;
@@ -911,6 +1141,15 @@ void ILUnitRegisterTests(void)
 	ILUnitRegister("thread_suspend_wrlock", thread_suspend_rwlock, (void *)0);
 	RegisterSimple(thread_suspend_main);
 	RegisterSimple(thread_suspend_main_self);
+
+	/*
+	 * Test thread sleep and interrupt behaviours.
+	 */
+	ILUnitRegisterSuite("Thread Sleep");
+	RegisterSimple(thread_sleep);
+	RegisterSimple(thread_sleep_interrupt);
+	RegisterSimple(thread_sleep_suspend);
+	RegisterSimple(thread_sleep_suspend_ignore);
 
 	/*
 	 * Test miscellaneous thread behaviours.

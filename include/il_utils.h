@@ -497,43 +497,6 @@ int ILQueueAdd(ILQueueEntry **listRoot, void *newData);
 /* Remove entry and Free entry , but not data . return NULL on fail */
 void *ILQueueRemove(ILQueueEntry **listRoot);
 
-/*
- * Opaque handle for regexp_
- */
-typedef void* ILRegexpHandle;
-
-/*
- * Non-Opaque handle for regexp results
- */
-struct _ILRegexpMatch
-{
-	int start;
-	int end;
-};
-typedef struct _ILRegexpMatch ILRegexpMatch;
-
-/* 
- * Regexp compile mapping on to regcomp 
- */
-ILRegexpHandle ILRegexpCompile(char* pattern,int flags, int* error);
-
-/*
- * Regexp execute mapping onto regexec
- * Note: match is allocated inside this function
- */
-int ILRegexpExec(ILRegexpHandle handle,char* input,int flags,
-										ILRegexpMatch** match);
-
-/*
- * Regexp error reporting function (auto alloc)
- */
-char* ILRegexpError(int errorcode, ILRegexpHandle handle);
-
-/*
- * Regexp free to free the handle
- */
-void ILRegexpFree(ILRegexpHandle handle);
-
 #ifdef	__cplusplus
 };
 #endif

@@ -10,7 +10,7 @@ ilnative_LDADD   = ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
 ilcheck_SOURCES = ilcheck.c
 ilcheck_LDADD = ../engine/libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  $(FFILIBS) $(GCLIBS) $(REGEXLIBS)
+			  $(FFILIBS) $(GCLIBS)
 
 ilinternal_SOURCES = ilinternal.c
 ilinternal_LDADD   = ../image/libILImage.a ../support/libILSupport.a

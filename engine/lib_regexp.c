@@ -2,8 +2,9 @@
  * lib_regexp.c - Internalcall methods for "Platform.Regexp"
  *
  * Copyright (C) 2002  Free Software Foundation, Inc.
+ * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  * 
- * Contributed by Gopal V
+ * Contributions by Gopal V, Rhys Weatherley
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@
 #include "engine.h"
 #include "lib_defs.h"
 #include "il_utils.h"
+#include "il_regex.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -33,49 +35,52 @@ ILNativeInt _IL_RegexpMethods_CompileInternal(ILExecThread * _thread,
 {
 	char *pat;
 	int error;
-	ILRegexpHandle result;
+	regex_t *result;
 	pat=ILStringToAnsi(_thread,pattern);
 	if(!pat)
 	{
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
-	result=ILRegexpCompile(pat,flags,&(error));
+	result=ILCalloc(1,sizeof(regex_t));
 	if(!result)
 	{
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
+	error=IL_regcomp(result,pat,flags);
 	if(error)
 	{
-		pat=ILRegexpError(error,result);
-		/* TODO: throw correct exception here */
+		/* TODO: use regerror to add a descriptive message to the exception */
 		ILExecThreadThrowSystem(_thread, "System.ArgumentException",0);
-		ILRegexpFree(result);
+		ILFree(result);
 		return 0;
 	}
 	return (ILNativeInt)result;
 }
 
 ILInt32 _IL_RegexpMethods_ExecInternal(ILExecThread * _thread,
-						ILNativeInt compiled, ILString * input, ILInt32 flags)
+									   ILNativeInt compiled,
+									   ILString * input, ILInt32 flags)
 {
 	char *pat;
-	ILRegexpMatch *match;
 	pat= ILStringToAnsi(_thread,input);
 	if(!pat)
 	{
 		ILExecThreadThrowOutOfMemory(_thread);
 		return -1;
 	}
-	return ILRegexpExec((ILRegexpHandle)compiled,pat,flags,&match);
+	return IL_regexec((regex_t*)compiled,pat,flags,0,0);
 }
 
 void _IL_RegexpMethods_FreeInternal(ILExecThread * _thread, 
-											ILNativeInt compiled)
+									ILNativeInt compiled)
 {
-	ILRegexpFree((ILRegexpHandle)compiled);
-	return;
+	if(compiled)
+	{
+		IL_regfree((regex_t*)compiled);
+		ILFree((void*)compiled);
+	}
 }
 #ifdef	__cplusplus
 };

@@ -17,6 +17,12 @@
 	to remove the "documented bug" about needing a POSIX-compatible
 	regex library.
 
+	* configure.in, engine/Makefile.am, engine/lib_regexp.c,
+	ildb/Makefile.am, ilnative/Makefile.am, include/il_utils.h,
+	support/Makefile.am, support/regexp.c, tests/Makefile.am:
+	use the builtin pnet regex routines in "lib_regexp.c"; remove
+	all references to the system regex library from the build system.
+
 2002-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ildb/ildb.1, ildb/Makefile.am: add the manpage for ildb.

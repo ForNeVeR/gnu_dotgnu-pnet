@@ -7,6 +7,8 @@
 * include/il_coder.h, engine/ilverify.c, engine/cvmc.c, engine/cvmc_const.c:
 add the "StringConstant" coder API.
 
+* engine/cvm.h, engine/cvm_ptr.c: implement the "ldstr" opcode.
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

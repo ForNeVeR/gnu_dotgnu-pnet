@@ -314,6 +314,7 @@ extern	"C" {
 #define	COP_GET_STATIC				0xE2
 #define	COP_NEW						0xE3
 #define	COP_NEW_VALUE				0xE4
+#define	COP_LDSTR					0xE5
 
 /*
  * Make the next instruction wider.

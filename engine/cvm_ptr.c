@@ -1,5 +1,5 @@
 /*
- * cvm_var.c - Opcodes for accessing pointers.
+ * cvm_ptr.c - Opcodes for accessing pointers.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -700,6 +700,19 @@ case COP_NEW_VALUE:
 	/* Create a new value type and insert it below the constructors */
 	/* TODO */
 	MODIFY_PC_AND_STACK(1, 2);
+}
+break;
+
+case COP_LDSTR:
+{
+	/* Load a string constant onto the stack */
+	COPY_STATE_TO_THREAD();
+	stacktop[0].ptrValue = _ILStringInternFromImage
+			(thread, ILProgramItem_Image(method), IL_READ_UINT32(pc + 1));
+	RESTORE_STATE_FROM_THREAD();
+	pcstart = thread->pcstart;
+	pc = pcstart + thread->pc;
+	MODIFY_PC_AND_STACK(5, 1);
 }
 break;
 

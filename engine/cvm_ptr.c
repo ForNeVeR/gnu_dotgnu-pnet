@@ -2513,9 +2513,7 @@ VMCASE(COP_NEW):
 		/* Allocate the object and push it onto the stack */
 		classInfo = method->member.owner;
 		COPY_STATE_TO_THREAD();
-		tempptr = _ILEngineAlloc(thread, classInfo,
-								 ((ILClassPrivate *)(classInfo->userData))
-								 		->size);
+		tempptr = _ILEngineAllocObject(thread, classInfo);
 		RESTORE_STATE_FROM_THREAD();
 		stacktop[0].ptrValue = tempptr;
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, 1);

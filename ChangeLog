@@ -4,6 +4,10 @@
 	* engine/heap.c (InitializeClass): throw "TypeInitializationException"
 	if a class could not be initialized by the layout routines.
 
+	* engine/cvm_ptr.c: use "_ILEngineAllocObject" instead of
+	"_ILEngineAlloc" in the CVM "new" instruction, because the class
+	may not have been laid out yet.
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

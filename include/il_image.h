@@ -43,7 +43,8 @@ extern	"C" {
 #define	IL_LOADERR_BAD_META		9	/* Something wrong with the metadata */
 #define	IL_LOADERR_UNDOC_META	10	/* Uses undocumented metadata feature */
 #define	IL_LOADERR_UNRESOLVED	11	/* Unresolved items in metadata */
-#define	IL_LOADERR_MAX			11	/* Maximum error value */
+#define	IL_LOADERR_ARCHIVE		12	/* File is an "ar" archive */
+#define	IL_LOADERR_MAX			12	/* Maximum error value */
 
 /*
  * Flags that may be supplied to "ILImageLoad".

@@ -38,7 +38,8 @@ const char *ILImageLoadError(int error)
 		 "bad addresses in image",
 		 "invalid metadata in image",
 		 "uses undocumented metadata feature",
-		 "unresolved external references"};
+		 "unresolved external references",
+		 "file is an `ar' archive"};
 	if(error >= 0 && error <= IL_LOADERR_MAX)
 	{
 		return errors[error];

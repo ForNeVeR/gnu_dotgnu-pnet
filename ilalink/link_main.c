@@ -903,6 +903,82 @@ static int addResource(ILLinker *linker, const char *filename,
 }
 
 /*
+ * Process a loaded image and link it into the final image.
+ * Returns non-zero on error.
+ */
+static int processImage(ILLinker *linker, const char *filename,
+						ILImage *image, const char *stdCLibrary,
+						int useStdlib, int isFirstFile)
+{
+	int errors = 0;
+	int model, alignFlags;
+#if 0
+	char libcName[64];
+#endif
+
+	/* Add the image to the linker context */
+	model = ILLinkerCMemoryModel(image, &alignFlags);
+	if(model != 0)
+	{
+		/* Load the standard C libraries that we need for linking */
+		if(isFirstFile)
+		{
+			/* Make sure that we have the "OpenSystem.C" assembly */
+			if(!ILLinkerHasLibrary(linker, "OpenSystem.C"))
+			{
+				/* Load "OpenSystem.C" */
+				errors |= addLibrary(linker, "OpenSystem.C");
+			}
+
+			/* Make sure that we have the "libc" library */
+		#if 0	/* TODO: Temporarily disabled until we have a libc */
+			if(useStdlib)
+			{
+				if(!stdCLibrary)
+				{
+					sprintf(libcName, "libc%d", model);
+					stdCLibrary = libcName;
+				}
+				if(!ILLinkerHasLibrary(linker, stdCLibrary))
+				{
+					errors |= addLibrary(linker, stdCLibrary);
+				}
+			}
+		#endif
+		}
+
+		/* Add the C object file to the linker */
+		if(!ILLinkerAddCObject(linker, image, filename, model, alignFlags))
+		{
+			errors |= 1;
+		}
+	}
+	else 
+	{
+		if(!ILLinkerAddImage(linker, image, filename))
+		{
+			errors = 1;
+		}
+	}
+
+	/* Return the error state to the caller */
+	return errors;
+}
+
+/*
+ * Structure of an "ar" file header.
+ */
+struct ar_hdr
+  {
+    char ar_name[16];		/* Member file name, sometimes / terminated. */
+    char ar_date[12];		/* File date, decimal seconds since Epoch.  */
+    char ar_uid[6], ar_gid[6];	/* User and group IDs, in ASCII decimal.  */
+    char ar_mode[8];		/* File mode, in ASCII octal.  */
+    char ar_size[10];		/* File size, in ASCII decimal.  */
+    char ar_fmag[2];		/* Always contains ARFMAG.  */
+  };
+
+/*
  * Process an image file to be linked into the final image.
  * Returns non-zero on error.
  */
@@ -915,10 +991,9 @@ static int processFile(ILLinker *linker, const char *filename,
 	ILContext *context;
 	ILImage *image;
 	int loadError;
-	int model, alignFlags;
-#if 0
-	char libcName[64];
-#endif
+	struct ar_hdr arhdr;
+	long posn, size;
+	int temp;
 
 	/* Attempt to load the image into memory */
 	context = ILContextCreate();
@@ -928,11 +1003,80 @@ static int processFile(ILLinker *linker, const char *filename,
 	}
 	loadError = ILImageLoad(stream, filename, context, &image,
 							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
-	if(!isStdin)
+	if(loadError == IL_LOADERR_ARCHIVE)
 	{
-		fclose(stream);
+		/* Process an "ar" file that may contain multiple images */
+		if(isStdin)
+		{
+			fprintf(stderr, "%s: cannot process `ar' archives from stdin\n",
+					filename);
+			errors = 1;
+		}
+		else
+		{
+			while(fread(&arhdr, 1, sizeof(arhdr), stream) == sizeof(arhdr))
+			{
+				/* Save the current archive position */
+				posn = ftell(stream);
+				if(posn == -1)
+				{
+					perror(filename);
+					errors = 1;
+					break;
+				}
+				size = 0;
+				for(temp = 0; temp < 10; ++temp)
+				{
+					if(arhdr.ar_size[temp] >= '0' &&
+					   arhdr.ar_size[temp] <= '9')
+					{
+						size = size * 10 + (long)(arhdr.ar_size[temp] - '0');
+					}
+				}
+				temp = 16;
+				while(temp > 0 && arhdr.ar_name[temp - 1] == ' ')
+				{
+					--temp;
+				}
+				arhdr.ar_name[temp] = '\0';
+
+				/* Attempt to load a PE/COFF image from this
+				   position in the "ar" archive file */
+				loadError = ILImageLoad(stream, arhdr.ar_name, context, &image,
+							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
+				if(loadError != 0)
+				{
+					fprintf(stderr, "%s: %s\n", arhdr.ar_name,
+							ILImageLoadError(loadError));
+					errors = 1;
+				}
+				else
+				{
+					/* Process the loaded image */
+					errors |= processImage(linker, arhdr.ar_name,
+										   image, stdCLibrary,
+							   			   useStdlib, isFirstFile);
+
+					/* Destroy the context and re-create for the next file */
+					ILContextDestroy(context);
+					context = ILContextCreate();
+					if(!context)
+					{
+						outOfMemory();
+					}
+				}
+
+				/* Skip to the next file in the "ar" archive */
+				if(fseek(stream, posn + size, 0) < 0)
+				{
+					perror(filename);
+					errors = 1;
+					break;
+				}
+			}
+		}
 	}
-	if(loadError != 0)
+	else if(loadError != 0)
 	{
 		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
 		errors = 1;
@@ -940,49 +1084,12 @@ static int processFile(ILLinker *linker, const char *filename,
 	else
 	{
 		/* Add the image to the linker context */
-		model = ILLinkerCMemoryModel(image, &alignFlags);
-		if(model != 0)
-		{
-			/* Load the standard C libraries that we need for linking */
-			if(isFirstFile)
-			{
-				/* Make sure that we have the "OpenSystem.C" assembly */
-				if(!ILLinkerHasLibrary(linker, "OpenSystem.C"))
-				{
-					/* Load "OpenSystem.C" */
-					errors |= addLibrary(linker, "OpenSystem.C");
-				}
-
-				/* Make sure that we have the "libc" library */
-			#if 0	/* TODO: Temporarily disabled until we have a libc */
-				if(useStdlib)
-				{
-					if(!stdCLibrary)
-					{
-						sprintf(libcName, "libc%d", model);
-						stdCLibrary = libcName;
-					}
-					if(!ILLinkerHasLibrary(linker, stdCLibrary))
-					{
-						errors |= addLibrary(linker, stdCLibrary);
-					}
-				}
-			#endif
-			}
-
-			/* Add the C object file to the linker */
-			if(!ILLinkerAddCObject(linker, image, filename, model, alignFlags))
-			{
-				errors |= 1;
-			}
-		}
-		else 
-		{
-			if(!ILLinkerAddImage(linker, image, filename))
-			{
-				errors = 1;
-			}
-		}
+		errors |= processImage(linker, filename, image, stdCLibrary,
+							   useStdlib, isFirstFile);
+	}
+	if(!isStdin)
+	{
+		fclose(stream);
 	}
 
 	/* Clean up and exit */

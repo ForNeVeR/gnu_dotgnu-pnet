@@ -211,6 +211,20 @@ int ILImageLoad(FILE *file, const char *filename,
 		return _ILImageJavaLoad(file, filename, context, image, flags, buffer);
 	}
 #endif
+	else if(buffer[0] == '!' && buffer[1] == '<')
+	{
+		/* This may be an "ar" archive file: read the rest of the header */
+		if(fread(buffer, 1, 6, file) != 6)
+		{
+			return IL_LOADERR_NOT_PE;
+		}
+		if(buffer[0] == 'a' && buffer[1] == 'r' && buffer[2] == 'c' &&
+		   buffer[3] == 'h' && buffer[4] == '>' && buffer[5] == '\n')
+		{
+			return IL_LOADERR_ARCHIVE;
+		}
+		return IL_LOADERR_NOT_PE;
+	}
 	else
 	{
 		/* Unknown file format */

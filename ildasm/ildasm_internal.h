@@ -37,6 +37,7 @@ extern	"C" {
  * Extra flags for altering the output, in addition to "IL_DUMP_xxx".
  */
 #define	ILDASM_REAL_OFFSETS			256
+#define	ILDASM_SUPPRESS_PREFIX		512
 
 /*
  * Dump a binary blob to an output stream.

@@ -114,13 +114,16 @@ static void DumpToken(ILImage *image, FILE *outstream,
 			info = ILClass_FromToken(image, token);
 			if(info)
 			{
-				if(ILClass_IsValueType(info))
+				if((flags & ILDASM_SUPPRESS_PREFIX) == 0)
 				{
-					fputs("valuetype ", outstream);
-				}
-				else
-				{
-					fputs("class ", outstream);
+					if(ILClass_IsValueType(info))
+					{
+						fputs("valuetype ", outstream);
+					}
+					else
+					{
+						fputs("class ", outstream);
+					}
 				}
 				ILDumpClassName(outstream, image, info, flags);
 			}
@@ -573,7 +576,7 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 
 			case IL_OPCODE_ARGS_FLOAT32:
 			{
-				fprintf(outstream, "float32[0x%02X%02X%02X%02X]",
+				fprintf(outstream, "float32(0x%02X%02X%02X%02X)",
 						(((int)(temp[args + 3])) & 0xFF),
 						(((int)(temp[args + 2])) & 0xFF),
 						(((int)(temp[args + 1])) & 0xFF),
@@ -584,7 +587,7 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 			case IL_OPCODE_ARGS_FLOAT64:
 			{
 				fprintf(outstream,
-						"float64[0x%02X%02X%02X%02X%02X%02X%02X%02X]",
+						"float64(0x%02X%02X%02X%02X%02X%02X%02X%02X)",
 						(((int)(temp[args + 7])) & 0xFF),
 						(((int)(temp[args + 6])) & 0xFF),
 						(((int)(temp[args + 5])) & 0xFF),
@@ -892,7 +895,8 @@ void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 		{
 			/* Catch clause */
 			fputs(" catch ", outstream);
-			DumpToken(image, outstream, flags, tempClause->extraArg);
+			DumpToken(image, outstream, flags | ILDASM_SUPPRESS_PREFIX,
+					  tempClause->extraArg);
 		}
 		fprintf(outstream, " handler ?L%lx to ?L%lx\n",
 				tempClause->handlerOffset + addr,

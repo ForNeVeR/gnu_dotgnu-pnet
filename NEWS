@@ -1,4 +1,142 @@
 
+0.5.10 (26 July 2003)
+
+	Runtime engine:
+
+	* Enable the verifier debug mode by default.
+	* Implement tail calls properly.
+	* Enum string formatting (Thong Nguyen, Gopal V).
+	* Run a final GC and finalizer pass before engine shutdown.
+	* Explicitly call the static constructor in the main class (Gopal V).
+	* Add the "-C" option to control the method cache size (Yannis Bres).
+	* Add stack traces to exception objects thrown by the engine.
+	* New monitor implementation (Thong Nguyen).
+	* Prevent the process from exiting until all user threads have
+	  been properly terminated (Thong Nguyen).
+	* Configuration switch for object or hashing monitors (Thong Nguyen).
+	* Internalcalls for threading (Thong Nguyen).
+	* De-initialize the GC properly at engine shutdown (Thong Nguyen).
+	* Move finalization to a separate thread (Thong Nguyen).
+	* Use atomic allocation for objects with no GC'able fields.
+	* Register finalizers for atomic objects (Thong Nguyen).
+	* Lock out the method cache while the unroller is running.
+	* Don't create an OS thread until "Thread.Start" (Thong Nguyen).
+	* Work around "va_list" problems under PPC GNU/Linux systems.
+	* Bytecode verifier fixes (Gopal V).
+	* Implement the generic unroller for x86 and ARM.
+	* Internalcalls for "System.Reflection.Emit" (Richard Baumann).
+	* Manual register assignment for PPC (two times speed up).
+	* Change interface dispatch to use Interface Method Tables (IMT's).
+	* Abandon finalization for objects that survive shutdown (Thong Nguyen).
+	* Reuse array types where possible to prevent memory leaks.
+	* Compute the right array offsets for multi-dimensional arrays (Gopal V).
+	* Handle "GetType" properly for array types (Gopal V).
+	* Promote primitive types during array references (Gopal V).
+	* Internalcalls for "System.Diagnostics.Process".
+	* Add a "--dumpconfig" option (Gopal V).
+	* Handle nested types properly in the internalcall table (Gopal V).
+	* Look for both ".exe" and ".EXE" file extensions.
+	* Fix stack merging for ternary control flows (Gopal V).
+
+	Common Compiler Issues:
+
+	* Incorrect code generation for casting "uint" to "byte".
+	* Speed up the detection of "-flatin1-charset" (Gopal V).
+	* Fixes to indirect casting (Gopal V).
+	* Add the "-winforms" convenience option (Gopal V).
+	* Grammar errors detected by Bison 1.75 (Gopal V).
+	* Add the "--version" option (Gopal V).
+	* Detect single-file plugins correctly in the front end.
+
+	C# Compiler:
+
+	* Some new syntax for calling C# from C - can simply declare an
+	  "extern" method inside the "__module" type.
+	* Report errors for "Finalize" methods that are not properly
+	  declared as destructors.
+	* Report an error for "override" members with no corresponding "virtual".
+	* "unchecked" is required for large "uint" to "int" conversions.
+	* Fully gather a type before moving to nested types (Gopal V).
+	* Handle escape sequences in the C# pre-processor better (Gopal V).
+	* Distinguish '<' used as an operator or in a generic type reference.
+	* Handle NaN properly for relational operators (Gopal V).
+
+	C Compiler:
+
+	* Flush global initializers between functions.
+	* Remove unnecessary dereferencing in "(*f)()" expressions.
+	* Semantic analysis problems in the third argument of "?:".
+	* Always allow casts to "void", regardless of source type.
+	* Permit "register" to appear in a formal parameter list.
+	* Decay array types are dereferencing with '*'.
+	* Clone all type modifiers when copying a "struct" type.
+	* Don't output type definitions for dangling class references.
+	* Anonymous enumerated types are always replaced with the underlying type.
+	* Code generation and semantic analysis for initializers.
+	* Force ".init" to be called from any function that references
+	  global variables, so that C# code can call C without going
+	  through the Crt0 initialization step first.
+	* Wide character constants and strings.
+	* Fix "sizeof(long double)" to use the correct boxing type.
+	* Fix "sizeof" to correctly measure the length of strings.
+	* Replace the clumsy "__invoke__" syntax with "T::method" instead.
+	* Quote cpp arguments on MacOS X.
+	* Add "error" declarations to the parser to improve error recovery.
+	* Move includes from ${prefix}/lib to ${prefix}/share to be consistent
+	  with Debian packaging guidelines.
+
+	Java Compiler:
+
+	* Wrap "for" statements in a scope block (Gopal V).
+
+	Assembler:
+
+	* Output debug information for local variables and their scopes.
+
+	Loader and Metadata:
+
+	* Scope problems - sometimes finding a nested class instead of global.
+	* Move the ".ildebug" section to the end of the image so it can be
+	  more easily stripped using "ilstrip".
+	* Forcibly change TypeRef's into TypeDef's in "ILClassCreate" to
+	  work around MS'es assembler which outputs same-assembly TypeRef's.
+	* Start adding support for ".rsrc" sections.
+	* Load "ParamDef" tokens on-demand.
+	* Modifications to support "System.Reflection.Emit" (Richard Baumann).
+	* Look for both ".dll" and ".DLL" file extensions.
+
+	Linker:
+
+	* Properly resolve nested types with the same names by different parents.
+	* Initializers and finalizers.
+	* Strip multiple '/' characters from the end of ar member names,
+	  because some archives have filenames ending in "//".
+	* Change the default output from "a.out.exe" to "a.out" or "a.exe",
+	  to be consistent with gcc.
+
+	Platform Support:
+
+	* Modify libffi so that it works for both cdecl and winapi.
+	* Always use "LoadLibrary" to load native DLL's under Win32.
+	* Recognize both '/' and '\' as pathname separators, to work around
+	  Windows programmers who don't use DirectorySeparatorChar like
+	  they should.
+	* Better detection in configure.in for the thread system (Thong Nguyen).
+	* Socket options (Gopal V).
+	* Change "MAX_THREADS" to 1024 in libgc (Thong Nguyen).
+	* Remove "ffitest" from the build because it breaks IA-64.
+	* Move the console input code to "support".
+
+	Other:
+
+	* Adjust hash tables to use prime sizes for better element spread.
+	* Add the "cssrc2html" program (Jeff Post).
+	* Modify "csdoc2html" to generate href's to "cssrc2html" (Jeff Post).
+	* Update the C ABI and users guide.
+	* Modify "ilheader" to match changes to the C compiler.
+	* Add "ilstrip" and "ilranlib" to round out the toolchain.
+	* All "cli-unknown-*" symlinks to make cscc look like a cross-compiler.
+
 0.5.8 (17 June 2003)
 
 	Runtime engine:

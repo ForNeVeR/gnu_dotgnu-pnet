@@ -129,6 +129,7 @@ typedef struct
 
 #define IL_CODER_FLAG_IR_DUMP 1
 #define IL_CODER_FLAG_METHOD_PROFILE 2
+#define IL_CODER_FLAG_METHOD_TRACE 4
 /*
  * Coder class definition.
  */

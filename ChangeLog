@@ -8,6 +8,13 @@
 	* cscc/common/cc_preproc.c: fix a problem with Russian characters
 	in single-line comments (bug #6190).
 
+2004-03-16  Gopal.V  <gopalv82@symonds.net>
+
+	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvm_lengths.c, engine/cvmc_call.c, engine/ilrun.c,
+	include/il_coder.h: add the "--trace" option to ilrun, which
+	provides runtime tracing of all method calls and returns.
+
 2004-03-16  Russell Stuart  <russell@stuart.id.au>
 
 	* engine/lib_reflect.c: implement "GetManifestResourceNames()".

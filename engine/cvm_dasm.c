@@ -582,12 +582,16 @@ static CVMOpcode const prefixOpcodes[0x70] = {
 	 * Argument packing for native calls.
 	 */
 	{"waddr_native_n",	CVM_OPER_TWO_UINT32},
+	
+	/*
+	 * Method trace opcodes
+	 */
+	{"trace_in",	CVM_OPER_METHOD},
+	{"trace_out",	CVM_OPER_NONE},
 
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_60",	CVM_OPER_NONE},
-	{"preserved_61",	CVM_OPER_NONE},
 	{"preserved_62",	CVM_OPER_NONE},
 	{"preserved_63",	CVM_OPER_NONE},
 	{"preserved_64",	CVM_OPER_NONE},

@@ -524,6 +524,12 @@ extern	"C" {
 #define	COP_PREFIX_WADDR_NATIVE_N	0x5F
 
 /*
+ * Method Trace Instructions
+ */
+#define COP_PREFIX_TRACE_IN		0x60
+#define COP_PREFIX_TRACE_OUT		0x61
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

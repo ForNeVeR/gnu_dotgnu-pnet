@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "il_dumpasm.h"
+
 #if defined(IL_CVM_GLOBALS)
 
 /*
@@ -1809,5 +1811,80 @@ VMCASE(COP_PREFIX_WADDR_NATIVE_N):
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2, 0);
 }
 VMBREAK(COP_PREFIX_WADDR_NATIVE_N);
+
+/**
+ *<opcode name="trace_in" group="Profiling Instructions">
+ *	<operation>Print the name of the called method . This is injected
+ *             for every method call in --trace mode</operation>
+ *
+ * 	<format>trace_in<fsep/>method</format>
+ * 	<dformat>{trace_in}<fsep/>method</dformat>
+ *
+ * 	<form name="trace_in" code="COP_PREFIX_TRACE_IN"/>
+ *
+ *  <description>This instruction prints out the called method .  
+ *  It is normally inserted immediately before a method call when 
+ *  the engine is running in --trace mode.
+ *  </description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_TRACE_IN):
+{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	ILMethod *calledMethod = CVMP_ARG_PTR(ILMethod *);
+	fputs("Calling ", stdout);
+	ILDumpMethodType(stdout, ILProgramItem_Image(calledMethod),
+					 ILMethod_Signature(calledMethod), 0,
+					 ILMethod_Owner(calledMethod),
+					 ILMethod_Name(calledMethod), calledMethod);
+	putc('\n',stdout);
+	fflush(stdout);
+#endif
+	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, 0);
+}
+VMBREAK(COP_PREFIX_TRACE_IN);
+
+/**
+ *<opcode name="trace_out" group="Profiling Instructions">
+ *	<operation>Print the name of the callee method while returning to it. 
+ *             This is injected for every return in --trace mode</operation>
+ *
+ * 	<format>trace_out</format>
+ * 	<dformat>{trace_out}</dformat>
+ *
+ * 	<form name="trace_out" code="COP_PREFIX_TRACE_OUT"/>
+ *
+ *  <description>This instruction prints out the callee method 
+ *  on returning from the current method.  It is normally inserted 
+ *  immediately before a return from a method when the engine is 
+ *  running in --trace mode.
+ *  </description>
+ * </opcode>
+ */
+
+VMCASE(COP_PREFIX_TRACE_OUT):
+{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	ILMethod * methodToReturn = ILExecThreadStackMethod(thread, 1);
+	fputs("Returning to ", stdout);
+	if(methodToReturn)
+	{
+		ILDumpMethodType(stdout, ILProgramItem_Image(methodToReturn),
+						 ILMethod_Signature(methodToReturn), 0,
+						 ILMethod_Owner(methodToReturn),
+						 ILMethod_Name(methodToReturn), methodToReturn);
+	}
+	else
+	{
+		fputs(" (ilrun_main) ",stdout);
+	}
+	putc('\n',stdout);
+	fflush(stdout);
+#endif
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_TRACE_OUT);
+
+
 
 #endif /* IL_CVM_PREFIX */

@@ -537,10 +537,15 @@ unsigned char const _ILCVMLengths[512] = {
 	/* waddr_native_n */	CVMP_LEN_WORD2,
 
 	/*
+	 * Method trace opcodes
+	 */
+
+	/* trace_in */			CVMP_LEN_PTR,
+	/* trace_out */			CVMP_LEN_NONE,
+
+	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_60 */		CVMP_LEN_NONE,
-	/* preserved_61 */		CVMP_LEN_NONE,
 	/* preserved_62 */		CVMP_LEN_NONE,
 	/* preserved_63 */		CVMP_LEN_NONE,
 	/* preserved_64 */		CVMP_LEN_NONE,

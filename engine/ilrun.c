@@ -111,6 +111,8 @@ static ILCmdLineOption const options[] = {
 	{"--dump-params", 'P', 0, 0, 0},
 	{"-D", 'D', 0, 0, 0},
 	{"--dump-config", 'D', 0, 0, 0},
+	{"-T", 'T', 0, 0, 0},
+	{"--trace",	  'T', 0, 0, 0},
 #endif
 
 	{0, 0, 0, 0, 0}
@@ -265,6 +267,12 @@ int main(int argc, char *argv[])
 			case 'D':
 			{
 				dumpConfig+=1;
+			}
+			break;
+
+			case 'T':
+			{
+				flags |= IL_CODER_FLAG_METHOD_TRACE;
 			}
 			break;
 		#endif

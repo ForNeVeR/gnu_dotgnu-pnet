@@ -33,6 +33,8 @@ into CS_SEMKIND_MEMBER.
 
 * cscc/cs_lvalue.tc (ILNode_Identifier): implement semantic analysis.
 
+* cscc/cs_grammar.y: convert operators into method definitions in the parser.
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

@@ -285,6 +285,12 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 		ILNode		   *args;
 	} cinit;
 	ILParameterModifier	pmod;
+	struct
+	{
+		char           *binary;
+		char           *unary;
+
+	} opName;
 }
 
 /*
@@ -490,7 +496,7 @@ static ILNode *NegateInteger(ILNode_Integer *node)
 %type <node>		DestructorDeclaration
 %type <node>		OperatorDeclaration OperatorDeclarator
 %type <node>		NormalOperatorDeclarator ConversionOperatorDeclarator 
-%type <charValue>	OverloadableOperator
+%type <opName>		OverloadableOperator
 %type <node>		TypeSuffix TypeSuffixList TypeSuffixes
 %type <node>		OptAttributes AttributeSections AttributeSection
 %type <node>		AttributeList Attribute AttributeArguments
@@ -1951,7 +1957,7 @@ FieldDeclaration
  */
 
 MethodDeclaration
-	: MethodHeader MethodBody				{ MakeBinary(MethodDeclaration, $1, $2);}
+	: MethodHeader MethodBody		{ MakeBinary(MethodDeclaration, $1, $2); }
 	;
 
 MethodHeader
@@ -1977,18 +1983,18 @@ MethodHeader
 	;
 
 ReturnType
-	: Type			{ $$ = $1;}
-	| VOID			{ MakeSimple(VoidType);}
+	: Type			{ $$ = $1; }
+	| VOID			{ MakeSimple(VoidType); }
 	;
 
 MethodBody
-	: Block			{ $$ = $1;}
-	| ';'			{ MakeSimple(Empty);}
+	: Block			{ $$ = $1; }
+	| ';'			{ MakeSimple(Empty); }
 	;
 
 OptFormalParameterList
-	: /* empty */			{ MakeSimple(Empty);}
-	| FormalParameterList	{ $$ = $1;}
+	: /* empty */			{ MakeSimple(Empty); }
+	| FormalParameterList	{ $$ = $1; }
 	;
 
 FormalParameterList
@@ -2239,10 +2245,7 @@ FormalIndexParameter
  */
 
 OperatorDeclaration
-	: OptAttributes OptModifiers OperatorDeclarator Block	{
-				ILUInt32 attrs = CSModifiersToOperatorAttrs($2);
-				$$ = ILNode_OperatorDeclaration_create($1, attrs, $3, $4);
-			}
+	: OperatorDeclarator Block		{ MakeBinary(MethodDeclaration, $1, $2); }
 	;
 
 OperatorDeclarator
@@ -2251,51 +2254,150 @@ OperatorDeclarator
 	;
 
 NormalOperatorDeclarator
-	: Type OPERATOR OverloadableOperator '(' Type Identifier ')'	{
-				$$ = ILNode_NormalOperatorDeclarator_create
-					($1, $3, $5, $6, 0, 0);
+	: OptAttributes OptModifiers Type OPERATOR OverloadableOperator
+			'(' Type Identifier ')'	{
+				ILUInt32 attrs;
+				ILNode *params;
+
+				/* Validate the name of the unary operator */
+				if($5.unary == 0)
+				{
+					CSError("overloadable unary operator expected");
+					$5.unary = $5.binary;
+				}
+
+				/* Get the operator attributes */
+				attrs = CSModifiersToOperatorAttrs($2);
+				if((CSHasUnsafeType($3) || CSHasUnsafeType($7)) &&
+				   ($2 & CS_MODIFIER_UNSAFE) == 0)
+				{
+					CSUnsafeTypeMessage();
+				}
+
+				/* Build the formal parameter list */
+				params = ILNode_List_create();
+				ILNode_List_Add(params,
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+
+				/* Create a method definition for the operator */
+				$$ = ILNode_MethodHeader_create
+						($1, attrs, $3,
+						 ILQualIdentSimple(ILInternString($5.unary, -1).string),
+						 params);
 			}
-		
-	| Type OPERATOR OverloadableOperator
-				'(' Type Identifier ',' Type Identifier ')'		{
-				$$ = ILNode_NormalOperatorDeclarator_create
-					($1, $3, $5, $6, $8, $9);
+	| OptAttributes OptModifiers Type OPERATOR OverloadableOperator
+			'(' Type Identifier ',' Type Identifier ')'		{
+				ILUInt32 attrs;
+				ILNode *params;
+
+				/* Validate the name of the binary operator */
+				if($5.binary == 0)
+				{
+					CSError("overloadable binary operator expected");
+					$5.binary = $5.unary;
+				}
+
+				/* Get the operator attributes */
+				attrs = CSModifiersToOperatorAttrs($2);
+				if((CSHasUnsafeType($3) || CSHasUnsafeType($7)) &&
+				   ($2 & CS_MODIFIER_UNSAFE) == 0)
+				{
+					CSUnsafeTypeMessage();
+				}
+
+				/* Build the formal parameter list */
+				params = ILNode_List_create();
+				ILNode_List_Add(params,
+					ILNode_FormalParameter_create
+						(0, ILParamMod_empty, $7, $8));
+				ILNode_List_Add(params,
+					ILNode_FormalParameter_create
+						(0, ILParamMod_empty, $10, $11));
+
+				/* Create a method definition for the operator */
+				$$ = ILNode_MethodHeader_create
+						($1, attrs, $3,
+						 ILQualIdentSimple
+						 	(ILInternString($5.binary, -1).string),
+						 params);
 			}
 	;
 
 OverloadableOperator
-	: '+'	{ $$ = '+';}
-	| '-'	{ $$ = '-';}
-	| '!'	{ $$ = '!';}
-	| '~'	{ $$ = '~';}
-	| INC_OP	{ $$ = INC_OP;}
-	| DEC_OP	{ $$ = DEC_OP;}
-	| TRUE	{ $$ = TRUE;}
-	| FALSE	{ $$ = FALSE;}
-	| '*'	{ $$ = '*';}
-	| '/'	{ $$ = '/';}
-	| '%'	{ $$ = '%';}
-	| '&'	{ $$ = '&';}
-	| '|'	{ $$ = '|';}
-	| '^'	{ $$ = '^';}
-	| LEFT_OP	{ $$ = LEFT_OP;}
-	| RIGHT_OP	{ $$ = RIGHT_OP;}
-	| EQ_OP	{ $$ = EQ_OP;}
-	| NE_OP	{ $$ = NE_OP;}
-	| '>'	{ $$ = '>';}
-	| '<'	{ $$ = '<';}
-	| GE_OP	{ $$ = GE_OP;}
-	| LE_OP	{ $$ = LE_OP;}
+	: '+'		{ $$.binary = "op_Addition"; $$.unary = "op_UnaryPlus"; }
+	| '-'		{ $$.binary = "op_Subtraction"; $$.unary = "op_UnaryNegation"; }
+	| '!'		{ $$.binary = 0; $$.unary = "op_LogicalNot"; }
+	| '~'		{ $$.binary = 0; $$.unary = "op_OnesComplement"; }
+	| INC_OP	{ $$.binary = 0; $$.unary = "op_Increment"; }
+	| DEC_OP	{ $$.binary = 0; $$.unary = "op_Decrement"; }
+	| TRUE		{ $$.binary = 0; $$.unary = "op_True"; }
+	| FALSE		{ $$.binary = 0; $$.unary = "op_False"; }
+	| '*'		{ $$.binary = "op_Multiply"; $$.unary = 0; }
+	| '/'		{ $$.binary = "op_Division"; $$.unary = 0; }
+	| '%'		{ $$.binary = "op_Modulus"; $$.unary = 0; }
+	| '&'		{ $$.binary = "op_BitwiseAnd"; $$.unary = 0; }
+	| '|'		{ $$.binary = "op_BitwiseOr"; $$.unary = 0; }
+	| '^'		{ $$.binary = "op_ExclusiveOr"; $$.unary = 0; }
+	| LEFT_OP	{ $$.binary = "op_LeftShift"; $$.unary = 0; }
+	| RIGHT_OP	{ $$.binary = "op_RightShift"; $$.unary = 0; }
+	| EQ_OP		{ $$.binary = "op_Equality"; $$.unary = 0; }
+	| NE_OP		{ $$.binary = "op_Inequality"; $$.unary = 0; }
+	| '>'		{ $$.binary = "op_GreaterThan"; $$.unary = 0; }
+	| '<'		{ $$.binary = "op_LessThan"; $$.unary = 0; }
+	| GE_OP		{ $$.binary = "op_GreaterThanOrEqual"; $$.unary = 0; }
+	| LE_OP		{ $$.binary = "op_LessThanOrEqual"; $$.unary = 0; }
 	;
 
 ConversionOperatorDeclarator
-	: IMPLICIT OPERATOR Type '(' Type Identifier ')'	{
-				$$ = ILNode_ConversionOperatorDeclarator_create
-					(ILConversion_implicit, $3, $5, $6);
+	: OptAttributes OptModifiers IMPLICIT OPERATOR Type
+			'(' Type Identifier ')'	{
+				ILUInt32 attrs;
+				ILNode *params;
+
+				/* Get the operator attributes */
+				attrs = CSModifiersToOperatorAttrs($2);
+				if((CSHasUnsafeType($5) || CSHasUnsafeType($7)) &&
+				   ($2 & CS_MODIFIER_UNSAFE) == 0)
+				{
+					CSUnsafeTypeMessage();
+				}
+
+				/* Build the formal parameter list */
+				params = ILNode_List_create();
+				ILNode_List_Add(params,
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+
+				/* Create a method definition for the operator */
+				$$ = ILNode_MethodHeader_create
+						($1, attrs, $5,
+						 ILQualIdentSimple
+						 	(ILInternString("op_Implicit", -1).string),
+						 params);
 			}
-	| EXPLICIT OPERATOR Type '(' Type Identifier ')'	{
-				$$ = ILNode_ConversionOperatorDeclarator_create
-					(ILConversion_explicit, $3, $5, $6);
+	| OptAttributes OptModifiers EXPLICIT OPERATOR Type
+			'(' Type Identifier ')'	{
+				ILUInt32 attrs;
+				ILNode *params;
+
+				/* Get the operator attributes */
+				attrs = CSModifiersToOperatorAttrs($2);
+				if((CSHasUnsafeType($5) || CSHasUnsafeType($7)) &&
+				   ($2 & CS_MODIFIER_UNSAFE) == 0)
+				{
+					CSUnsafeTypeMessage();
+				}
+
+				/* Build the formal parameter list */
+				params = ILNode_List_create();
+				ILNode_List_Add(params,
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+
+				/* Create a method definition for the operator */
+				$$ = ILNode_MethodHeader_create
+						($1, attrs, $5,
+						 ILQualIdentSimple
+						 	(ILInternString("op_Explicit", -1).string),
+						 params);
 			}
 	;
 

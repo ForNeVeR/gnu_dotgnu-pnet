@@ -1,4 +1,8 @@
 
+2004-05-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/ContextMenu.cs: apply patch #2850.
+
 2004-05-22  Gopal V  <gopalv82@yahoo.com>
 
 	* System/Net/IPAddress.cs: Remove hex prefix (0x) during parsing 

@@ -108,11 +108,49 @@ public class ContextMenu : Menu
 		OnPopup(EventArgs.Empty);
 
 		// Figure out where we need to put the popup and its size.
-		Point pt = control.PointToScreen(pos);
+		Point pt = control.PointToScreen(new Point(0,0));
+                Rectangle rcWork = Screen.PrimaryScreen.WorkingArea;
 		using (Graphics g = popupControl.CreateGraphics())
 		{
 			Size size = MeasureItemBounds(g);
 			size.Height -= 1;
+			//align it to control
+			if (pt.X < Screen.PrimaryScreen.WorkingArea.Left)
+			{
+				pt.X += size.Width;
+			}
+			if (pt.X > Screen.PrimaryScreen.WorkingArea.Right - size.Width)
+			{
+				pt.X -= size.Width;
+			}
+			if (pt.Y < Screen.PrimaryScreen.WorkingArea.Top)
+			{
+				pt.Y += size.Height;
+			}
+			if (pt.Y > Screen.PrimaryScreen.WorkingArea.Bottom - size.Height)
+			{
+				pt.Y -= size.Height;
+			}
+			//add offset pos
+			pt.X += pos.X;
+			pt.Y += pos.Y;
+			//ensure that it is completely visible on screen
+			if (pt.X < rcWork.Left)
+			{
+				pt.X = rcWork.Left;
+			}
+			if (pt.X > rcWork.Right - size.Width)
+			{
+				pt.X = rcWork.Right - size.Width;
+			}
+			if (pt.Y < rcWork.Top)
+			{
+				pt.Y = rcWork.Top;
+			}
+			if (pt.Y > rcWork.Bottom + size.Height)
+			{
+				pt.Y = rcWork.Bottom - size.Height;
+			}
 			popupControl.Bounds = new Rectangle( pt, size);
 		}
 		popupControl.Show();

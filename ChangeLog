@@ -1,4 +1,10 @@
 
+2003-06-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/verify_call.c (InsertCtorArgs): convert ILEngineType_MV
+	into ILEngineType_I when constructing an instance of IntPtr
+	or UIntPtr.
+
 2003-06-03  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc: Allow enum initializers to add non-identical

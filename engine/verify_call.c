@@ -800,7 +800,15 @@ static void InsertCtorArgs(ILEngineStackItem *stack, ILUInt32 stackSize,
 		--stackSize;
 		stack[stackSize + 2] = stack[stackSize];
 	}
-	stack[insertPosn].engineType = engineType1;
+	if(typeInfo1 == ILType_Int || typeInfo1 == ILType_UInt)
+	{
+		/* Convert MV into I for the IntPtr and UIntPtr types */
+		stack[insertPosn].engineType = ILEngineType_I;
+	}
+	else
+	{
+		stack[insertPosn].engineType = engineType1;
+	}
 	stack[insertPosn].typeInfo = typeInfo1;
 	stack[insertPosn + 1].engineType = engineType2;
 	stack[insertPosn + 1].typeInfo = typeInfo2;

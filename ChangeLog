@@ -1,3 +1,9 @@
+
+2003-10-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/FileStream.cs: disable the handle access
+	check temporarily because it doesn't seem to work with pipes.
+
 2003-10-10  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: measureCharacterRanges now complies with

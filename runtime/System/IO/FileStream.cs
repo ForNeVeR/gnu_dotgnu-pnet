@@ -190,11 +190,13 @@ public class FileStream : Stream
 					throw new ArgumentOutOfRangeException
 						("access", _("IO_FileAccess"));
 				}
+			#if false
 				if(!FileMethods.CheckHandleAccess(handle, access))
 				{
 					throw new UnauthorizedAccessException
 						(_("IO_IncorrectAccess"));
 				}
+			#endif
 
 				// Initialize the object state.
 				this.handle = handle;

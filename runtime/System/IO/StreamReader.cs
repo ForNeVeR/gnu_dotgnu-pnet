@@ -411,9 +411,10 @@ public class StreamReader : TextReader
 					}
 					Array.Copy(outBuffer, outBufferPosn,
 							   buffer, index, templen);
-					outBufferLen += templen;
+					outBufferPosn += templen;
 					index += templen;
 					count -= templen;
+					len += templen;
 				}
 				return len;
 			}

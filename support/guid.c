@@ -20,6 +20,7 @@
 
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_crypt.h"
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
@@ -62,9 +63,8 @@ void ILGUIDGenerate(unsigned char *guid)
 #ifdef HAVE_PID
 	int pid;
 #endif
-	unsigned char keyTable[256];
-	int i, j, k;
-	unsigned char temp;
+	ILSHAContext sha;
+	unsigned char hash[IL_SHA_HASH_SIZE];
 
 	/* Clear the buffer before we start */
 	ILMemZero(guid, 16);
@@ -72,7 +72,7 @@ void ILGUIDGenerate(unsigned char *guid)
 
 #ifdef HAVE_OPEN
 	/* Attempt to open the "/dev/urandom" device, which exists
-	   on Linux systems and provides good random number values.
+	   on GNU/Linux systems and provides good random number values.
 	   Note: /dev/random produces much better values, but it
 	   can block sometimes while it collects super-random
 	   entropy values.  We don't quite need that level of
@@ -119,35 +119,26 @@ void ILGUIDGenerate(unsigned char *guid)
 		entropySize = randomSize;
 	}
 
-	/* Try to re-distribute the entropy a little bit.  We do
-	   this by "encrypting" a block of zeros with a key based
-	   on the entropy.  This isn't intended to be secure
-	   cryptographically.  It is used solely to spread the
-	   entropy in the bits across the entire GUID buffer.
-	   The algorithm is based on RC4 */
-	for(i = 0; i < 256; ++i)
-	{
-		keyTable[i] = (unsigned char)i;
-	}
-	j = 0;
-	for(i = 0; i < 256; ++i)
-	{
-		j = (j + keyTable[i] + guid[i % entropySize]) & 255;
-		temp = keyTable[i];
-		keyTable[i] = keyTable[j];
-		keyTable[j] = temp;
-	}
-	i = 0;
-	j = 0;
-	for(k = 0; k < 16; ++k)
-	{
-		i = (i + 1) & 255;
-		j = (j + keyTable[i]) & 255;
-		temp = keyTable[i];
-		keyTable[i] = keyTable[j];
-		keyTable[j] = temp;
-		guid[k] = keyTable[keyTable[i] + keyTable[j]];
-	}
+	/* Try to re-distribute the entropy a little bit by hashing
+	   the contents of the seed with SHA1 four times.  This isn't
+	   intended to be secure cryptographically.  It is used solely
+	   to spread the entropy in the bits across the entire buffer */
+	ILSHAInit(&sha);
+	ILSHAData(&sha, guid, entropySize);
+	ILSHAFinalize(&sha, hash);
+	ILSHAInit(&sha);
+	ILSHAData(&sha, guid, entropySize);
+	ILSHAData(&sha, hash, IL_SHA_HASH_SIZE);
+	ILSHAFinalize(&sha, hash);
+	ILSHAInit(&sha);
+	ILSHAData(&sha, guid, entropySize);
+	ILSHAData(&sha, hash, IL_SHA_HASH_SIZE);
+	ILSHAFinalize(&sha, hash);
+	ILSHAInit(&sha);
+	ILSHAData(&sha, guid, entropySize);
+	ILSHAData(&sha, hash, IL_SHA_HASH_SIZE);
+	ILSHAFinalize(&sha, hash);
+	ILMemCpy(guid, hash, 16);
 }
 
 #ifdef	__cplusplus

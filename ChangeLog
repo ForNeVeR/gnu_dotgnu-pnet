@@ -12,6 +12,8 @@ more internalcall updates to match the latest pnetlib requirements.
 * include/il_crypt.h, include/Makefile.am, support/Makefile.am,
 support/sha1.c: implement the SHA1 hash algorithm.
 
+* support/guid.c: re-distribute the entropy in the GUID buffer using SHA1.
+
 2001-12-03  Bradley M. Kuhn  <bkuhn@ebb.org>
 
 * README, pnet.spec (Summary): Minor terminology changes.

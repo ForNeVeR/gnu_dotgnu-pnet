@@ -109,7 +109,8 @@ Otherwise the exit status is 0.
 @ref{Language Options}
 @example
 -flatin1-charset -foctal-constants -fdecimal-constants
--fchecked -funchecked -fsyntax-check -funsafe
+-fchecked -funchecked -fsyntax-check -fsemantic-check
+-funsafe
 @end example
 
 @item Warning Options
@@ -296,6 +297,11 @@ source files to override this setting.
 @item -fsyntax-check
 Parse the input source file to check its syntax, but don't
 go any further with compilation.
+
+@cindex -fsemantic-check option (cscc)
+@item -fsemantic-check
+Parse the input source file to check its syntax and perform
+semantic analysis, but don't go any further with compilation.
 
 @cindex -funsafe option (cscc)
 @item -funsafe

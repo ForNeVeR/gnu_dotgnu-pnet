@@ -50,6 +50,7 @@ curve for new users.
 \-fchecked
 \-funchecked
 \-fsyntax-check
+\-fsemantic-check
 \-funsafe
 .TP
 .B Warning Options
@@ -216,6 +217,10 @@ source files to override this setting.
 .B \-fsyntax\-check
 Parse the input source file to check its syntax, but don't
 go any further with compilation.
+.TP
+.B \-fsemantic\-check
+Parse the input source file to check its syntax and perform semantic
+analysis, but don't go any further with compilation.
 .TP
 .B \-funsafe
 Permit the use of unsafe C# language constructs in the input

@@ -92,7 +92,6 @@ internal sealed class SelectNodeList : XmlNodeList
 					{
 						XmlDocumentNavigator navigator = 
 									((current.Current) as XmlDocumentNavigator);
-						Debug.Assert(navigator != null, "navigator is XmlDocumentNavigator");
 						cached.Add(navigator.CurrentNode);
 						count++;
 					}

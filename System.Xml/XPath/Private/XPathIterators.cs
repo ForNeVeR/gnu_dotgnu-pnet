@@ -385,9 +385,11 @@ namespace System.Xml.XPath.Private
 				bool match = false;
 				switch(predicate.ReturnType)
 				{
+					case XPathResultType.String:
+					case XPathResultType.NodeSet:
 					case XPathResultType.Boolean:
 					{
-						match = (bool)predicate.Evaluate(iterator);
+						match = (bool)predicate.EvaluateAs(iterator, XPathResultType.Boolean);
 					}
 					break;
 					case XPathResultType.Number:

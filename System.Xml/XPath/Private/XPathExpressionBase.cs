@@ -75,5 +75,141 @@ internal abstract class XPathExpressionBase : XPathExpression
 		throw new Exception("Unknown type to Eval:" + this.GetType());
 	}
 
+	// Note: this would have been much cleaner if I could use
+	// TreeCC's coercion system.
+	internal Object EvaluateAs(XPathNodeIterator iterator, XPathResultType type)
+	{
+		Object result = Evaluate(iterator);
+		XPathResultType resultType = ReturnType;
+		if(ReturnType == XPathResultType.Any)
+		{
+			if(result is XPathNodeIterator)
+			{
+				resultType = XPathResultType.NodeSet;
+			}
+			else if(result is String) 
+			{
+				resultType = XPathResultType.String; 
+			}
+			else if(result is bool)
+			{
+				resultType = XPathResultType.Boolean;
+			}
+			else if(result is double)
+			{
+				resultType = XPathResultType.Number;
+			}
+			else if(result is XPathNavigator)
+			{
+				resultType = XPathResultType.Navigator;
+			}
+			else
+			{
+				throw new XPathException("unknown node type: " + result.GetType(), null); 
+			}
+		}
+		
+		// easy cases first :)
+		if(resultType == type)
+		{
+			return result;
+		}
+		
+		switch(resultType)
+		{
+			case XPathResultType.Boolean:
+			{
+				bool boolValue = (bool)result;
+				switch(type)
+				{
+					case XPathResultType.Number:
+					{
+						return boolValue ? 1 : 0;
+					}
+					break;
+					case XPathResultType.String:
+					{
+						return boolValue ? "true" : "false";
+					}
+					break;
+				}
+			}
+			break;
+			case XPathResultType.String:
+			{
+				String strValue;
+				if(result is XPathNavigator)
+				{
+					result = (result as XPathNavigator).Value;
+				}
+				else 
+				{
+					result = (String) result;
+				}
+
+				switch(type)
+				{
+					case XPathResultType.Boolean:
+					{
+						return (strValue.Length != 0);
+					}
+					break;
+					case XPathResultType.Number:
+					{
+						// TODO
+					}
+					break;
+				}
+			}
+			break;
+			case XPathResultType.Number:
+			{
+				double val = (double)result;
+				switch(type)
+				{
+					case XPathResultType.Boolean:
+					{
+						return (val != 0.0 && val != -0.0 && !Double.IsNaN(val));
+					}
+					break;
+					case XPathResultType.String:
+					{
+						// TODO: 1.0 vs 1
+					}
+					break;
+				}
+			}
+			break;
+			case XPathResultType.NodeSet:
+			{
+				XPathNodeIterator iterValue = (XPathNodeIterator) result;
+				switch(type)
+				{
+					case XPathResultType.Boolean:
+					{
+						return (iterValue != null && iterValue.MoveNext()) ;
+					}
+					break;
+					case XPathResultType.String:
+					{
+						if(iterValue != null && iterValue.MoveNext())
+						{
+							return iterValue.Current.Value;
+						}
+						return String.Empty;
+					}
+					break;
+					case XPathResultType.Number:
+					{
+						// TODO:
+					}
+					break;
+				}
+			}
+			break;
+		}
+		throw new Exception("Unknown type to Eval:" + this.GetType());
+	}
+
 }
 }//namespace

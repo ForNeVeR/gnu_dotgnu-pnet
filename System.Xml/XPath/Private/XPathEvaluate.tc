@@ -103,12 +103,85 @@ EvaluateInternal(EqualityExpression)
 {
 	Object lhs = node.left.Evaluate(iterator);
 	Object rhs = node.right.Evaluate(iterator);
-	// TODO this only works for attribute matches right now 
-	// like [@name = '10']
-	XPathNodeIterator it = (XPathNodeIterator)lhs;
-	if(it.MoveNext() && it.Current.Value == (String)rhs)
+	
+	XPathResultType ltype = node.left.ReturnType;
+	XPathResultType rtype = node.right.ReturnType;
+	
+	// TODO: remove double evaluation of iterators 
+	//       implement proper coercion methods or at least some memoization
+
+	if(ltype == XPathResultType.NodeSet || rtype == XPathResultType.NodeSet)
 	{
-		return true;
+		Expression left = node.left;
+		Expression right = node.right;
+		
+		// Flip the order as a == b is the same as b == a
+		// TODO: do this while compiling itself , if possible
+		if(ltype != XPathResultType.NodeSet)
+		{
+			left = node.right;
+			right = node.left;
+			XPathResultType tmp = ltype;
+			ltype = rtype;
+			rtype = tmp;
+		}
+		switch(rtype)
+		{
+			case XPathResultType.Boolean:
+			{
+				return (node.invert != 
+							(left.EvaluateAs(iterator, rtype) == 
+								left.EvaluateAs(iterator, rtype)));
+			}
+			break;
+			case XPathResultType.Number:
+			{
+				XPathNodeIterator iterleft = (XPathNodeIterator)left.Evaluate(iterator);
+				double d = (double) right.EvaluateAs(iterator, XPathResultType.Number);
+				while(iterleft.MoveNext())
+				{
+					return node.invert != 
+						((Convert.ToDouble(iterleft.Current.Value) == d));
+				}
+			}
+			break;
+			case XPathResultType.String:
+			{
+				XPathNodeIterator iterleft = (XPathNodeIterator)left.Evaluate(iterator);
+				String  s = (String)right.EvaluateAs(iterator, XPathResultType.String);
+				while(iterleft.MoveNext())
+				{
+					return(invert != (iterleft.Current.Value == s));
+				}
+			}
+			break;
+			case XPathResultType.NodeSet:
+			{
+			}
+			break;
+			
+		}
+	}
+	else if( ltype == XPathResultType.Boolean || 
+	         rtype == XPathResultType.Boolean)
+	{
+		return (node.invert != 
+				((node.left.EvaluateAs(iterator, XPathResultType.Boolean) == 
+					node.right.EvaluateAs(iterator, XPathResultType.Boolean))));
+	}
+	else if( ltype == XPathResultType.Number || 
+	         rtype == XPathResultType.Number)
+	{
+		return (node.invert !=
+				((node.left.EvaluateAs(iterator, XPathResultType.Number) == 
+					node.right.EvaluateAs(iterator, XPathResultType.Number))));
+	}
+	else if( ltype == XPathResultType.String || 
+	         rtype == XPathResultType.String)
+	{
+		return (node.invert != 
+				((node.left.EvaluateAs(iterator, XPathResultType.String) == 
+					node.right.EvaluateAs(iterator, XPathResultType.String))));
 	}
 	return false;
 }

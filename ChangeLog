@@ -1,4 +1,12 @@
 
+2004-10-13  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/Private/SelectNodeList.cs,
+	System.Xml/XPath/Private/XPathEvaluate.tc, 
+	System.Xml/XPath/Private/XPathExpressionBase.cs,
+	System.Xml/XPath/Private/XPathIterators.cs: Implement coercion code
+	and inequality expressions.
+ 
 2004-10-12  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/XmlNode.cs, System.Xml/Private/SelectNodeList.cs, 

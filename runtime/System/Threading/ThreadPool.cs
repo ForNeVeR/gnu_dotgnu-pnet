@@ -297,15 +297,18 @@ sealed class ThreadPool
 				ClrSecurity.SetPermissions(null, 0);
 
 				// Wait for and dispatch work items.
-				WorkItem item;
+				WorkItem item = null;
 				for(;;)
 				{
-					lock (typeof(ThreadPool))
+					while(item == null)
 					{
-						item = ItemToDispatch();
-						if(item == null)
+						lock(typeof(ThreadPool))
 						{
-							Monitor.Wait(typeof(ThreadPool));
+							item = ItemToDispatch();
+							if(item == null)
+							{
+								Monitor.Wait(typeof(ThreadPool));
+							}
 						}
 					}
 									
@@ -316,6 +319,7 @@ sealed class ThreadPool
 					}
 					finally
 					{
+						item = null;
 						Interlocked.Decrement(ref usedWorkerThreads);
 					}
 				}
@@ -334,12 +338,15 @@ sealed class ThreadPool
 				
 				for(;;)
 				{
-					lock (completionWait)
+					while(item == null)
 					{
-						item = CompletionItemToDispatch();
-						if(item == null)
+						lock (completionWait)
 						{
-							Monitor.Wait(completionWait);
+							item = CompletionItemToDispatch();
+							if(item == null)
+							{
+								Monitor.Wait(completionWait);
+							}
 						}
 					}
 					
@@ -350,6 +357,7 @@ sealed class ThreadPool
 					}
 					finally
 					{
+						item = null;
 						Interlocked.Decrement(ref usedCompletionThreads);
 					}
 				}

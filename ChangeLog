@@ -4,6 +4,9 @@
 	* runtime/System/Reflection/IReflect.cs: bug in the signature for
 	"IReflect.GetMember".
 
+	* runtime/System/Runtime/InteropServices/Expando/IExpando.cs:
+	add the "IExpando" class, which is needed for JScript.
+
 2003-01-09  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* runtime/Platform/FileMethods.cs, runtime/System/IO/Directory.cs,

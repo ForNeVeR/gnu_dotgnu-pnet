@@ -22,7 +22,6 @@ namespace System.Xml
 {
 
 using System;
-using System.Globalization;
 using System.Text;
 using System.IO;
 
@@ -408,8 +407,7 @@ internal class XmlStreamReader : TextReader
 
 				// Read data from the input stream into the buffer.
 				int len = 0;
-				int templen;
-				while(count > 0)
+				if(count > 0)
 				{
 					// Re-fill the character buffer if necessary.
 					if(outBufferPosn >= outBufferLen)
@@ -422,17 +420,11 @@ internal class XmlStreamReader : TextReader
 					}
 
 					// Copy data to the result buffer.
-					templen = outBufferLen - outBufferPosn;
-					if(templen > count)
-					{
-						templen = count;
-					}
+					len = outBufferLen - outBufferPosn;
 					Array.Copy(outBuffer, outBufferPosn,
-							   buffer, index, templen);
-					outBufferPosn += templen;
-					index += templen;
-					count -= templen;
-					len += templen;
+							   buffer, index, len);
+					outBufferPosn += len;
+					index += len;
 				}
 				return len;
 			}

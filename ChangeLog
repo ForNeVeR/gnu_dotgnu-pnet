@@ -13,6 +13,9 @@
 	
 	* runtime/System/AppDomain.cs: Fix compiler error for missing 
 	Using statements.
+
+	* runtime/System/Reflection/Emit/ILGenerator.cs: Incorrect type for
+	argument to MarkSequencePoint.
 	
 2003-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -21,6 +21,7 @@
  */
 
 using System;
+using System.Diagnostics.SymbolStore;
 
 #if !ECMA_COMPAT
 
@@ -227,7 +228,8 @@ namespace System.Reflection.Emit
 		}
 
 		[TODO]
-		public virtual void MarkSequencePoint(int document, int startLine, int startColumn, int endLine, int endColumn)
+		public virtual void MarkSequencePoint(ISymbolDocumentWriter document, 
+				int startLine, int startColumn, int endLine, int endColumn)
 		{
 			throw new NotImplementedException("MarkSequencePoint");
 		}

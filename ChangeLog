@@ -9,6 +9,8 @@
 
 * csdoc/csdoc2texi.1, csdoc/Makefile.am: man page for csdoc2texi.
 
+* cscc/cs_modifiers.c: add the "static" modifier to constant attribute types.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

@@ -323,8 +323,8 @@ ILUInt32 CSModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers)
 		attrs |= CS_SPECIALATTR_NEW;
 	}
 
-	/* Add the "literal" attribute */
-	attrs |= IL_META_FIELDDEF_LITERAL;
+	/* Add the "literal" and "static" attributes */
+	attrs |= IL_META_FIELDDEF_LITERAL | IL_META_FIELDDEF_STATIC;
 
 	/* Report errors for the remaining modifiers */
 	BadModifiers(node,

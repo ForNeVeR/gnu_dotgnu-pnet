@@ -6,6 +6,17 @@
 
 2004-05-04  Thong Nguyen <tum@veridicus.com>
 
+	* support/thread.c: Changed ILThreadSleep to return
+	abort/interrupt results.
+	
+	* include/il_thread.h: Documented new return values
+	for ILThreadSleep.
+	
+	* engine/lib_thread.c: Made Thread.Sleep internal call
+	aware of and handle interrupts and aborts.
+	
+2004-05-04  Thong Nguyen <tum@veridicus.com>
+
 	* support/wait_mutex.c: Changed ILWaitMonitorFastClaim to
 	check and respond to thread abort requests.
 	

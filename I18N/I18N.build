@@ -43,6 +43,10 @@
 
 			<resources>
 				<file name="CJK/jis.table"/>
+				<file name="CJK/ksc.table"/>
+				<file name="CJK/johab.table"/>
+				<file name="CJK/big5.table"/>
+				<file name="CJK/gb.table"/>
 			</resources>
 
 			<references>

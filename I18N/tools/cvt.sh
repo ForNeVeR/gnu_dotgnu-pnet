@@ -566,10 +566,6 @@ exit 0
 #  709   Arabic - ASMO 449+, BCON V4
 #  710   Arabic - Transparent Arabic
 #  720   Arabic - Transparent ASMO
-#  936   Chinese Simplified (GB2312)
-#  949   Korean
-#  950   Chinese Traditional (Big5)
-#  1361  Korean (Johab)
 #  10001 MAC - Japanese
 #  10002 MAC - Traditional Chinese (Big5)
 #  10003 MAC - Korean

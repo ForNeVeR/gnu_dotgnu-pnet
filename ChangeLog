@@ -18,6 +18,13 @@
 	* samples/codepage.cs: make the codepage sample a little more
 	robust against odd exception conditions.
 
+	* I18N/I18N.build, I18N/CJK/CP1361.cs, I18N/CJK/CP936.cs,
+	I18N/CJK/CP949.cs, I18N/CJK/CP950.cs, I18N/CJK/MultiByteEncoding.cs,
+	I18N/CJK/big5.table, I18N/CJK/gb.table, I18N/CJK/johab.table,
+	I18N/CJK/ksc.table, I18N/tools/cvt.sh, I18N/tools/mb2tab.c:
+	add conversion tables and code page handlers for KS C 5601,
+	GB2312, BIG5, and Johab.
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/CJK/CP51932.cs, I18N/CJK/CP932.cs: changes to the

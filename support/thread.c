@@ -29,6 +29,7 @@ You normally won't need to modify or replace this file when porting.
 */
 
 #include "thr_defs.h"
+#include "signal.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -170,7 +171,7 @@ void _ILThreadRun(ILThread *thread)
 	{
 		(*(thread->startFunc))(thread->objectArg);
 	}
-	
+
 	_ILMutexLock(&(thread->lock));
 	{
 		/* Mark the thread as stopped */
@@ -272,7 +273,7 @@ int ILThreadStart(ILThread *thread)
 void ILThreadDestroy(ILThread *thread)
 {
 	/* Bail out if this is the current thread or main thread */
-	if(thread == _ILThreadGetSelf() && thread != &mainThread)
+	if(thread == _ILThreadGetSelf() || thread == &mainThread)
 	{
 		return;
 	}

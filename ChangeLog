@@ -1,4 +1,9 @@
 
+2004-11-19  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/PictureBox.cs: Fix Bug #11016: Allow transparent
+	backcolor.
+
 2004-11-18  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/Control.cs: Fix bug #11020. Move down Controls in 

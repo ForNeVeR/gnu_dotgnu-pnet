@@ -85,6 +85,11 @@ int ILGCCollectALittle(void)
 	return GC_collect_a_little();
 }
 
+long ILGCGetHeapSize(void)
+{
+	return (long)GC_get_heap_size();
+}
+
 #ifdef	__cplusplus
 };
 #endif

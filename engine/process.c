@@ -312,6 +312,25 @@ int ILExecProcessEntryType(ILMethod *method)
 	return entryType;
 }
 
+long ILExecProcessGetParam(ILExecProcess *process, int type)
+{
+	switch(type)
+	{
+		case IL_EXEC_PARAM_GC_SIZE:
+		{
+			return ILGCGetHeapSize();
+		}
+		/* Not reached */
+
+		case IL_EXEC_PARAM_MC_SIZE:
+		{
+			return (long)(ILCoderGetCacheSize(process->coder));
+		}
+		/* Not reached */
+	}
+	return -1;
+}
+
 #ifdef	__cplusplus
 };
 #endif

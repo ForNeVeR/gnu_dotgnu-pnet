@@ -155,6 +155,11 @@ ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start,
 							 ILUInt32 offset, int exact);
 
 /*
+ * Get the number of bytes currently in use in the method cache.
+ */
+unsigned long _ILCacheGetSize(ILCache *cache);
+
+/*
  * Convert a return address into a program counter value
  * that can be used with "_ILCacheGetMethod".  Normally
  * return addresses point to the next instruction after
@@ -252,6 +257,7 @@ ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start,
 #define	ILCacheGetNative		_ILCacheGetNative
 #define	ILCacheGetBytecode		_ILCacheGetBytecode
 #define	ILCacheGetMethodList	_ILCacheGetMethodList
+#define	ILCacheGetSize			_ILCacheGetSize
 
 #ifdef	__cplusplus
 };

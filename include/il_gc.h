@@ -85,6 +85,11 @@ void ILGCCollect(void);
  */
 int ILGCCollectALittle(void);
 
+/*
+ * Get the current size of the garbage collector's heap.
+ */
+long ILGCGetHeapSize(void);
+
 #ifdef	__cplusplus
 };
 #endif

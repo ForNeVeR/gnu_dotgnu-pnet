@@ -119,6 +119,12 @@ struct _tagILCoderClass
 	void *(*alloc)(ILCoder *coder, ILUInt32 size);
 
 	/*
+	 * Get the amount of memory that is in use by the coder
+	 * to cache translated methods.
+	 */
+	unsigned long (*getCacheSize)(ILCoder *coder);
+
+	/*
 	 * Set up a coder instance for processing a specific method.
 	 * Returns zero if not possible.  The start of the method is
 	 * returned in "*start".
@@ -676,6 +682,8 @@ struct _tagILCoderClass
 			((*((classInfo)->create))((size)))
 #define	ILCoderAlloc(coder,size)	\
 			((*((coder)->classInfo->alloc))((coder), (size)))
+#define	ILCoderGetCacheSize(coder)	\
+			((*((coder)->classInfo->getCacheSize))((coder)))
 #define	ILCoderSetup(coder,start,method,code) \
 			((*((coder)->classInfo->setup))((coder), (start), (method), (code)))
 #define	ILCoderSetupExtern(coder,start,method,fn,cif,isInternal) \

@@ -36,6 +36,10 @@ static void *Coder_Alloc(ILCoder *coder, ILUInt32 size)
 {
 	return 0;
 }
+static unsigned long Coder_GetCacheSize(ILCoder *coder)
+{
+	return 0;
+}
 static int Coder_Setup(ILCoder *coder, unsigned char **start,
 					   ILMethod *method, ILMethodCode *code)
 {
@@ -365,6 +369,7 @@ static void Coder_MarkEnd(ILCoder *coder)
 ILCoderClass const _ILNullCoderClass = {
 	Coder_Create,
 	Coder_Alloc,
+	Coder_GetCacheSize,
 	Coder_Setup,
 	Coder_SetupExtern,
 	Coder_SetupExternCtor,

@@ -183,6 +183,14 @@ static void *CVMCoder_Alloc(ILCoder *_coder, ILUInt32 size)
 }
 
 /*
+ * Get the size of the method cache.
+ */
+static unsigned long CVMCoder_GetCacheSize(ILCoder *_coder)
+{
+	return ILCacheGetSize(((ILCVMCoder *)_coder)->cache);
+}
+
+/*
  * Destroy a CVM coder instance.
  */
 static void CVMCoder_Destroy(ILCoder *_coder)
@@ -343,6 +351,7 @@ ILCoderClass const _ILCVMCoderClass =
 {
 	CVMCoder_Create,
 	CVMCoder_Alloc,
+	CVMCoder_GetCacheSize,
 	CVMCoder_Setup,
 	CVMCoder_SetupExtern,
 	CVMCoder_SetupExternCtor,

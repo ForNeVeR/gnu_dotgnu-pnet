@@ -160,6 +160,18 @@ ILMethod *ILExecProcessGetEntry(ILExecProcess *process);
 int ILExecProcessEntryType(ILMethod *method);
 
 /*
+ * Type values for "ILExecProcessGetParam".
+ */
+#define	IL_EXEC_PARAM_GC_SIZE	1		/* Size of the GC heap */
+#define	IL_EXEC_PARAM_MC_SIZE	2		/* Size of the method cache */
+
+/*
+ * Get parameter information about a process.  Returns -1 if
+ * the type is invalid.
+ */
+long ILExecProcessGetParam(ILExecProcess *process, int type);
+
+/*
  * Create a new thread and attach it to a process.
  * Returns NULL if out of memory.
  */

@@ -982,6 +982,12 @@ ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start,
 	return IL_MAX_UINT32;
 }
 
+unsigned long _ILCacheGetSize(ILCache *cache)
+{
+	return (cache->numPages * cache->pageSize) -
+		   (cache->freeEnd - cache->freeStart);
+}
+
 /*
 
 Using the cache

@@ -11,6 +11,12 @@
 	* engine/unroll_x86.c, engine/unroll_x86_ptr.c: unroll CVM
 	array access instructions.
 
+	* engine/cvmc.c, engine/ilrun.c, engine/method_cache.c,
+	engine/method_cache.h, engine/null_coder.c, engine/process.c,
+	include/il_coder.h, include/il_engine.h, include/il_gc.h,
+	support/hb_gc.c: add the "-P" option to ilrun to dump the
+	GC heap and method cache sizes on exit.
+
 2002-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_x86.c (ReExecute): fix a bug in the stack height

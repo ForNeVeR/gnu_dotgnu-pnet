@@ -91,6 +91,8 @@ static ILCmdLineOption const options[] = {
 	{"--method-profile", 'M', 0, 0, 0},
 	{"-V", 'V', 0, 0, 0},
 	{"--var-profile", 'V', 0, 0, 0},
+	{"-P", 'P', 0, 0, 0},
+	{"--dump-params", 'P', 0, 0, 0},
 
 	{0, 0, 0, 0, 0}
 };
@@ -120,6 +122,7 @@ int main(int argc, char *argv[])
 	int dumpInsnProfile = 0;
 	int dumpMethodProfile = 0;
 	int dumpVarProfile = 0;
+	int dumpParams = 0;
 
 	/* Initialize the locale routines */
 	ILInitLocale();
@@ -189,6 +192,12 @@ int main(int argc, char *argv[])
 			case 'V':
 			{
 				dumpVarProfile = 1;
+			}
+			break;
+
+			case 'P':
+			{
+				dumpParams = 1;
 			}
 			break;
 
@@ -375,6 +384,13 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "%s: variable profiles are not available\n",
 					progname);
 		}
+	}
+	if(dumpParams)
+	{
+		printf("GC Heap Size      = %ld\n",
+			   ILExecProcessGetParam(process, IL_EXEC_PARAM_GC_SIZE));
+		printf("Method Cache Size = %ld\n",
+			   ILExecProcessGetParam(process, IL_EXEC_PARAM_MC_SIZE));
 	}
 
 	/* Clean up the process and exit */

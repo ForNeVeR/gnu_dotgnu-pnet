@@ -19,6 +19,6 @@ ildb_SOURCES = ildb_cmd.c \
 
 ildb_LDADD   = ../engine/libILEngine.a ../image/libILImage.a \
 			   ../support/libILSupport.a $(FFILIBS) $(GCLIBS) \
-			   $(READLINELIBS)
+			   $(REGEXLIBS) $(READLINELIBS)
 
 AM_CFLAGS = -I$(top_srcdir)/include

@@ -56,12 +56,12 @@ PACKAGE_LIBS = $(FFILIBS) $(GCLIBS)
 ilrun_SOURCES = ilrun.c
 ilrun_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  ../image/libILImage.a ../support/libILSupport.a \
-			  $(PACKAGE_LIBS)
+			  $(PACKAGE_LIBS) $(REGEXLIBS)
 
 ilverify_SOURCES = ilverify.c
 ilverify_LDADD = libILEngine.a ../dumpasm/libILDumpAsm.a \
 			     ../image/libILImage.a ../support/libILSupport.a \
-			  	 $(PACKAGE_LIBS)
+			  	 $(PACKAGE_LIBS) $(REGEXLIBS)
 
 ## We need "-fno-gcse" to stop gcc being overeager when it compiles
 ## the interpreter core in direct threading mode.

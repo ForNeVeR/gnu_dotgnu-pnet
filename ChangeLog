@@ -1,3 +1,8 @@
+2005-04-06  Marc Haisenko   <marc@darkdust.net>
+
+	* configure.in, support/interrupt.h: Add --enable-interrupts for work
+	around on bugs #12552, #11627 (patch #3884 applied by drobosson)
+
 2005-04-02  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_ptr.c: Replace call to ILMemMove with IL_MEMMOVE to avoid

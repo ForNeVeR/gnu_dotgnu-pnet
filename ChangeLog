@@ -11,6 +11,7 @@
 2003-01-16  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs: Fixed '/' bug(2230) reported by gopal.
+	* System.Xml/XmlTextReader.cs: Fixed NodeType setting bug.
 
 2003-01-16  Gopal.V  <gopalv82@symonds.net>
 	

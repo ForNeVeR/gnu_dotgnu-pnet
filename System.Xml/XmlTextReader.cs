@@ -994,6 +994,9 @@ public class XmlTextReader : XmlReader
 							{
 								ch = ReadChar();
 								AnalyzeChar(ch, false);
+								// set back to Element node type
+								// for proper implementation behavior
+								nodeType = XmlNodeType.Element;
 							}
 						}
 						else 
@@ -1003,6 +1006,10 @@ public class XmlTextReader : XmlReader
 							{
 								ch = ReadChar();
 								AnalyzeChar(ch, false);
+								// set back to Element node type
+								// for proper implementation behavior
+								nodeType = XmlNodeType.Element;
+
 							}
 						}
 						return true;

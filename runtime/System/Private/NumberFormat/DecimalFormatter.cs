@@ -41,12 +41,21 @@ internal class DecimalFormatter : Formatter
 		ulong value;
 		string rawnumber;
 		StringBuilder buf;
+		bool willOverflow=false;
+		// willOverflow is set when negation overflows ie 
+		// for Int64.MinValue
 
 		//  Type validation
 		if (IsSignedInt(o) && OToLong(o) < 0)
 		{
 			isNegative = true;
 			value = (ulong) -OToLong(o);
+			if(value==0)
+			{
+				// We somehow overflowed the data
+				// this is definitely Int64.MinValue
+				willOverflow=true;
+			}
 		}
 		else if (IsSignedInt(o) || IsUnsignedInt(o))
 		{
@@ -59,8 +68,16 @@ internal class DecimalFormatter : Formatter
 			throw new FormatException(_("Format_TypeException"));	
 		}
 
-		//  Type conversion
-		rawnumber=(FormatInteger(value));
+		if(!willOverflow)
+		{
+			//  Type conversion
+			rawnumber=(FormatInteger(value));
+		}
+		else
+		{
+			rawnumber="9223372036854775808.";
+		}
+		
 		buf = new StringBuilder(rawnumber.Substring(0, rawnumber.Length-1));
 
 		//  Padding

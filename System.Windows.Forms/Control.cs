@@ -3791,6 +3791,12 @@ public class Control : IWin32Window
 				// Perform layout on this control.
 				PerformLayout(this, "Bounds");
 
+				// Notify parent to perform layout because child has changed size.
+				if (Parent != null)
+				{
+					Parent.PerformLayout();
+				}
+
 				// Invoke the event handler.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.Resize));

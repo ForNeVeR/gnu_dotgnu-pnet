@@ -1,4 +1,17 @@
 
+2003-07-18  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/DecimalFormatter.cs:
+	Add a special case for Int64.MinValue as it cannot be negated
+	to any positive value.
+
+2003-07-18  Simon Guindon <simon@nureality.ca>
+	
+	* System.Windows.Forms/Control.cs: Fixes updating Parent controls 
+	that a child control has resized and PerformLayout. 
+	(Patch #1744, Gopal).
+
 2003-07-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Printing/PreviewPrintController.cs,

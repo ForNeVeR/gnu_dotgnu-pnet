@@ -13,6 +13,10 @@
 
 	* samples/XHello.cs, samples/samples.build: add an Xsharp example.
 
+	* configure.in, Xsharp/Xsharp.build, resources/en_US/Makefile.am,
+	resources/en_US/Xsharp/.cvsignore, resources/en_US/Xsharp/Makefile.am,
+	resources/en_US/Xsharp/Xsharp.txt: add the Xsharp resources.
+
 2003-05-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/EndPoint.cs, System/Net/IPAddress.cs,

@@ -1,1 +1,1 @@
-SUBDIRS = runtime I18N System System.Xml System.Net.IrDA
+SUBDIRS = runtime I18N System System.Xml System.Net.IrDA Xsharp

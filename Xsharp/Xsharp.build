@@ -22,11 +22,9 @@
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
-<!--
 			<resources>
-				<file name="../resources/${pnet.language}/Xsharp/Xsharp.resources"/>
+				<file name="../resources/en_US/Xsharp/Xsharp.resources"/>
 			</resources>
--->
 
 		</compile>
 

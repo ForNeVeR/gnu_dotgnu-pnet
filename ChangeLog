@@ -1,4 +1,10 @@
 
+2002-12-03  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_lvalue.tc: Add missing line numbers to local var.
+
+	* engine/lib_reflect.c: partial implementation of FieldInfo.GetValue()
+	
 2002-12-02  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_arith.tc: Fix the optimize bug to fix the issue of

@@ -1295,7 +1295,63 @@ ILObject *_IL_FieldInfo_GetFieldFromHandle(ILExecThread *thread,
 ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 								ILObject *obj)
 {
-	/* TODO */
+	unsigned long len;
+	ILProgramItem *item;
+	ILField *field;
+	ILConstant *constant;
+	ILInt32 intValue;
+	ILUInt32 uintValue;
+	ILInt64 longValue;
+	ILUInt64 ulongValue;
+	ILFloat floatValue;
+	ILDouble doubleValue;
+	const char* strValue;
+	
+	item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	if(!item)return 0;
+	field = ILProgramItemToField(item);
+	if(!field)return 0;
+	constant = ILConstantGetFromOwner(item);
+		
+	if(!constant)return 0;
+	switch(ILConstantGetElemType(constant))
+	{
+		case IL_META_ELEMTYPE_BOOLEAN:
+		case IL_META_ELEMTYPE_CHAR:
+		case IL_META_ELEMTYPE_I1:
+		case IL_META_ELEMTYPE_I2:	
+		case IL_META_ELEMTYPE_I4:
+			intValue = *((ILInt32*)(ILConstantGetValue(constant,&(len))));
+			return ILExecThreadBox(thread,ILField_Type(field),&(intValue));
+			break;
+		case IL_META_ELEMTYPE_U1:
+		case IL_META_ELEMTYPE_U2:
+		case IL_META_ELEMTYPE_U4:
+			uintValue = *((ILUInt32*)(ILConstantGetValue(constant,&(len))));
+			return ILExecThreadBox(thread,ILField_Type(field),&(uintValue));
+			break;
+		case IL_META_ELEMTYPE_I8:
+			longValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
+			return ILExecThreadBox(thread,ILField_Type(field),&(longValue));
+			break;
+		case IL_META_ELEMTYPE_U8:
+			ulongValue = *((ILInt64*)(ILConstantGetValue(constant,&(len))));
+			return ILExecThreadBox(thread,ILField_Type(field),&(ulongValue));
+			break;
+		case IL_META_ELEMTYPE_R4:
+			floatValue =  *((ILFloat*)(ILConstantGetValue(constant,&(len))));
+			return ILExecThreadBox(thread,ILField_Type(field),&(floatValue));
+			break;
+		case IL_META_ELEMTYPE_R8:	
+			doubleValue =  *((ILDouble*)(ILConstantGetValue(constant,&(len))));
+			return ILExecThreadBox(thread,ILField_Type(field),&(doubleValue));
+			break;
+		case IL_META_ELEMTYPE_STRING:
+			strValue = (const char *)(ILConstantGetValue(constant, &len));
+			return (ILObject*)((System_String*)ILStringCreateLen(thread,
+									strValue,len));
+		/* TODO : implement the object cases for the GetValue */
+	}
 	return 0;
 }
 

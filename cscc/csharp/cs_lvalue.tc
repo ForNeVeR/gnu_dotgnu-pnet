@@ -799,6 +799,8 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			type = ILTypeGetLocal(method->localVarSig, index);
 			CSSemSetLValue(value, type);
 			*parent = ILNode_LocalVar_create(index, ILTypeToMachineType(type));
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
 		}
 		else
 		{

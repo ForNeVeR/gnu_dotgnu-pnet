@@ -208,7 +208,7 @@ static IL_INLINE ILLockWord *GetObjectLockWordPtr(ILExecThread *thread, ILObject
 
 			entry->obj = obj;
 			entry->next = table[x];
-			entry->lockword = 0;
+			entry->lockWord = 0;
 			
 			table[x] = entry;
 

@@ -19,6 +19,8 @@
 	Removed GC allocater calls when threads are created and
 	used malloc/free instead.  Using the GC allocator while
 	creating a thread when using CYGWIN causes deadlocks.
+	
+	* engine/monitor.c: Fix "lockword"/"lockWord" casing error on line 211.
 		
 2004-05-26  Thong Nguyen <tum@veridicus.com>
 

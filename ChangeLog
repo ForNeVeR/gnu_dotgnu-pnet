@@ -4,6 +4,10 @@
 	* csharp/stmt/foreach1.il, csharp/stmt/foreach3.il: minor
 	update to output files - maxstack has changed to be "more correct".
 
+	* c/expr/Makefile.am, c/expr/assign1.3il, c/expr/assign1.c,
+	c/expr/assign1.il, c/expr/binary1.3il, c/expr/binary1.c,
+	c/expr/binary1.il: add operator tests for C.
+
 2002-10-20  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/stmt/switch4.cs,csharp/stmt/switch4.il,csharp/stmt/switch4.jl,

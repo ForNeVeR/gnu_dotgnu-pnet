@@ -411,6 +411,94 @@ public sealed class Strings
 				return str[Index - 1];
 			}
 
+	// Find the index of one string within another.
+	public static int InStr
+				(String String1, String String2,
+				 [Optional][DefaultValue(CompareMethod.Binary)]
+				 		CompareMethod Compare)
+			{
+				return InStr(1, String1, String2, Compare);
+			}
+	public static int InStr
+				(int Start, String String1, String String2,
+				 [Optional][DefaultValue(CompareMethod.Binary)]
+				 		CompareMethod Compare)
+			{
+				if(Start < 1)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidStringIndex"), "Start");
+				}
+				if(String1 == null || String1.Length == 0)
+				{
+					return 0;
+				}
+				if(String2 == null || String2.Length == 0)
+				{
+					return Start;
+				}
+				if(Start >= String1.Length)
+				{
+					return 0;
+				}
+				if(Compare == CompareMethod.Binary)
+				{
+					return (CultureInfo.CurrentCulture.CompareInfo
+						.IndexOf(String1, String2, Start - 1,
+								 CompareOptions.Ordinal) + 1);
+				}
+				else
+				{
+					return (CultureInfo.CurrentCulture.CompareInfo
+						.IndexOf(String1, String2, Start - 1,
+						         CompareOptions.IgnoreWidth |
+								 CompareOptions.IgnoreKanaType |
+								 CompareOptions.IgnoreCase) + 1);
+				}
+			}
+	public static int InStrRev
+				(String StringCheck, String StringMatch,
+				 [Optional][DefaultValue(-1)] int Start,
+				 [Optional][DefaultValue(CompareMethod.Binary)]
+				 		CompareMethod Compare)
+			{
+				if(Start < 1 && Start != -1)
+				{
+					throw new ArgumentException
+						(S._("VB_InvalidStringIndex"), "Start");
+				}
+				if(StringCheck == null || StringCheck.Length == 0)
+				{
+					return 0;
+				}
+				if(Start == -1)
+				{
+					Start = StringCheck.Length;
+				}
+				else if(Start > StringCheck.Length)
+				{
+					return 0;
+				}
+				if(StringMatch == null || StringMatch.Length == 0)
+				{
+					return Start;
+				}
+				if(Compare == CompareMethod.Binary)
+				{
+					return (CultureInfo.CurrentCulture.CompareInfo
+						.LastIndexOf(StringCheck, StringMatch, Start - 1,
+								     CompareOptions.Ordinal) + 1);
+				}
+				else
+				{
+					return (CultureInfo.CurrentCulture.CompareInfo
+						.LastIndexOf(StringCheck, StringMatch, Start - 1,
+						             CompareOptions.IgnoreWidth |
+								     CompareOptions.IgnoreKanaType |
+								     CompareOptions.IgnoreCase) + 1);
+				}
+			}
+
 	// Join an array of strings together.
 	public static String Join(Object[] SourceArray,
 							  [Optional][DefaultValue(" ")] String Delimiter)

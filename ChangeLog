@@ -1,3 +1,8 @@
+
+2004-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Basic/Strings.cs: add the missing "InStr" and "InStrRev" methods.
+
 2004-07-17  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Private/NumberParser.cs: ParseDouble and ParseDecimal

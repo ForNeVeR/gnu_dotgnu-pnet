@@ -1,3 +1,9 @@
+
+2004-08-31  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* runtime/System/Type.cs: Remove recursive loop in Type.GetTypeCode for
+	enums (Bug #10202, Patch #3323, Gopal)
+
 2004-08-31  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Drawing.Xsharp/DrawingFont.cs: add a point size modifier

@@ -1084,7 +1084,7 @@ public abstract class Type
 				}
 				if(type.IsEnum)
 				{
-					return GetTypeCode(type.UnderlyingSystemType);	
+					return GetTypeCode(Enum.GetUnderlyingType(type));
 				}
 				if(type == typeof(DateTime))
 				{

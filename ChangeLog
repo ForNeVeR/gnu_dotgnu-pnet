@@ -1,3 +1,9 @@
+
+2003-12-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Design/Design.build: add the correct dependencies for
+	building without a previous version installed in ${prefix}/lib.
+
 2003-12-28  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* Xsharp/XsharpPCF.c: fix build on systems without X.

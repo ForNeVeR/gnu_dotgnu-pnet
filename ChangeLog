@@ -1,3 +1,8 @@
+2004-03-12  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlTextWriter.cs, tests/System.Xml/TestXmlTextReader.cs:
+	fix a bug in WriteQuotedString which was breaking ReadOuterXml, and add
+	a unit test for it.
 
 2004-03-12  Russell Stuart  <russell@stuart.id.au>
 

@@ -1460,6 +1460,11 @@ public class XmlTextWriter : XmlWriter
 							{
 								break;
 							}
+							if(quoteChar == '\'')
+							{
+								// no need to escape this
+								break;
+							}
 							if(prev < posn)
 							{
 								writer.Write(text.Substring(prev, posn - prev));
@@ -1473,6 +1478,11 @@ public class XmlTextWriter : XmlWriter
 						{
 							if(writeState != System.Xml.WriteState.Attribute)
 							{
+								break;
+							}
+							if(quoteChar == '"')
+							{
+								// no need to escape this
 								break;
 							}
 							if(prev < posn)

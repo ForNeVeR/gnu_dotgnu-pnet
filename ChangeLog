@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_grammar.y: fix the handling of empty initializers
 	for arrays.
 
+	* cscc/csharp/cs_invoke.tc: fix minor bug in CSBestCandidate in
+	selecting between multiple candidates.
+
 2002-12-04  Dawkins, David  <david.dawkins@brooks-pri.com>
 
 	* acconfig.h, configure.in, cscc/c/Makefile.am,

@@ -1544,6 +1544,7 @@ ILProgramItem *CSBestCandidate(ILGenInfo *info, void *group,
 			   a previous one.  However, the previous one involved
 			   "params" and this one doesn't.  So use this one */
 			bestItem = testItem;
+			sawBetter = 1;
 		}
 		else if(better == IL_BETTER_NEITHER && (form1 != 2 && form2 == 2))
 		{

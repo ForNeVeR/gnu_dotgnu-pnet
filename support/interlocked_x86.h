@@ -155,7 +155,7 @@ static IL_INLINE void *ILInterlockedExchangePointers(void **destination, void *v
  */
 static IL_INLINE void ILInterlockedMemoryBarrier()
 {
-#if defined(CONFIG_X86_SSE2)
+#if defined(__SSE2__) || defined(__sse2__)
 	__asm__ __volatile__
 	(
 		"mfence"

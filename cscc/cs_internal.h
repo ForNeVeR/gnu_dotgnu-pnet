@@ -209,6 +209,11 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree);
 void CSValidateDocs(ILNode *docList);
 
 /*
+ * Get the scope to use for access checks in the current context.
+ */
+ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule);
+
+/*
  * Resolve a simple name to a semantic value.
  */
 CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
@@ -219,6 +224,12 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
  */
 CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 							   CSSemValue value, const char *name);
+
+/*
+ * Resolve an instance constructor reference to a semantic value.
+ */
+CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
+								ILType *objectType);
 
 /*
  * Get the n'th member from a method group.

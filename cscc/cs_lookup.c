@@ -181,7 +181,8 @@ static void MemberIterRemove(CSMemberLookupIter *iter)
  */
 static void FindMembers(ILClass *info, const char *name,
 					    ILClass *accessedFrom,
-					    CSMemberLookupInfo *results)
+					    CSMemberLookupInfo *results,
+						int lookInParents)
 {
 	ILImplements *impl;
 	ILMember *member;
@@ -202,7 +203,7 @@ static void FindMembers(ILClass *info, const char *name,
 			while((impl = ILClassNextImplements(info, impl)) != 0)
 			{
 				FindMembers(ILImplementsGetInterface(impl),
-						    name, accessedFrom, results);
+						    name, accessedFrom, results, lookInParents);
 			}
 		}
 
@@ -247,7 +248,7 @@ static void FindMembers(ILClass *info, const char *name,
 		}
 
 		/* Move up to the parent */
-		info = ILClass_ParentRef(info);
+		info = (lookInParents ? ILClass_ParentRef(info) : 0);
 	}
 }
 
@@ -255,7 +256,8 @@ static void FindMembers(ILClass *info, const char *name,
  * Perform a member lookup on a type.
  */
 static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
-				        ILClass *accessedFrom, CSMemberLookupInfo *results)
+				        ILClass *accessedFrom, CSMemberLookupInfo *results,
+						int lookInParents)
 {
 	CSMemberLookupIter iter;
 	CSMemberInfo *firstMember;
@@ -267,7 +269,7 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info, const char *name,
 	/* Collect up all members with the specified name */
 	if(info)
 	{
-		FindMembers(info, name, accessedFrom, results);
+		FindMembers(info, name, accessedFrom, results, lookInParents);
 	}
 
 	/* If the list is empty, then we are done */
@@ -552,6 +554,28 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	return CS_SEMKIND_VOID;
 }
 
+ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule)
+{
+	if(genInfo->currentMethod)
+	{
+		return ILMethod_Owner
+		  (((ILNode_MethodDeclaration *)(genInfo->currentMethod))->methodInfo);
+	}
+	else if(genInfo->currentClass)
+	{
+		return ((ILNode_ClassDefn *)(genInfo->currentClass))->classInfo;
+	}
+	else if(defIsModule)
+	{
+		return ILClassLookup(ILClassGlobalScope(genInfo->image),
+							 "<Module>", (const char *)0);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 							   const char *name)
 {
@@ -564,30 +588,9 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	CSSemValue value;
 	int result;
 
-	/* Find the type to start looking at */
-	if(genInfo->currentMethod)
-	{
-		startType = ILMethod_Owner
-		  (((ILNode_MethodDeclaration *)(genInfo->currentMethod))->methodInfo);
-	}
-	else if(genInfo->currentClass)
-	{
-		startType = ((ILNode_ClassDefn *)(genInfo->currentClass))
-							->classInfo;
-	}
-	else
-	{
-		startType = 0;
-	}
-
-	/* The start type is also the access scope */
-	accessedFrom = startType;
-	if(!accessedFrom)
-	{
-		accessedFrom = ILClassLookup(ILClassGlobalScope(genInfo->image),
-									 "<Module>", (const char *)0);
-	}
-	accessedFrom = ILClassResolve(accessedFrom);
+	/* Find the type to start looking at and the scope to use for accesses */
+	startType = CSGetAccessScope(genInfo, 0);
+	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
 
 	/* Scan the start type and its nested parents */
 	while(startType != 0)
@@ -597,7 +600,7 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 
 		/* Look for members */
 		result = MemberLookup(genInfo, startType, name,
-							  accessedFrom, &results);
+							  accessedFrom, &results, 1);
 		if(result != CS_SEMKIND_VOID)
 		{
 			return LookupToSem(node, name, &results, result);
@@ -858,22 +861,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 	int result;
 
 	/* Find the accessor scope */
-	if(genInfo->currentMethod)
-	{
-		accessedFrom = ILMethod_Owner
-		  (((ILNode_MethodDeclaration *)(genInfo->currentMethod))->methodInfo);
-	}
-	else if(genInfo->currentClass)
-	{
-		accessedFrom = ((ILNode_ClassDefn *)(genInfo->currentClass))
-							->classInfo;
-	}
-	else
-	{
-		accessedFrom = ILClassLookup(ILClassGlobalScope(genInfo->image),
-									 "<Module>", (const char *)0);
-	}
-	accessedFrom = ILClassResolve(accessedFrom);
+	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
 
 	/* Determine how to resolve the member from its semantic kind */
 	switch(value.kind)
@@ -902,7 +890,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		{
 			/* Convert the type into a class and perform a lookup */
 			result = MemberLookup(genInfo, ILTypeToClass(genInfo, value.type),
-								  name, accessedFrom, &results);
+								  name, accessedFrom, &results, 1);
 			if(result != CS_SEMKIND_VOID)
 			{
 				/* Filter the result to only include static definitions */
@@ -923,7 +911,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 		{
 			/* Perform a member lookup based on the expression's type */
 			result = MemberLookup(genInfo, ILTypeToClass(genInfo, value.type),
-								  name, accessedFrom, &results);
+								  name, accessedFrom, &results, 1);
 			if(result != CS_SEMKIND_VOID)
 			{
 				/* Filter the result to remove static definitions */
@@ -950,6 +938,36 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 
 	/* If we get here, then something went wrong */
 	return CSSemValueDefault;
+}
+
+CSSemValue CSResolveConstructor(ILGenInfo *genInfo, ILNode *node,
+								ILType *objectType)
+{
+	CSSemValue value;
+	ILClass *accessedFrom;
+	int result;
+	CSMemberLookupInfo results;
+
+	/* Find the accessor scope */
+	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
+
+	/* Perform a member lookup based on the expression's type */
+	result = MemberLookup(genInfo, ILTypeToClass(genInfo, objectType),
+						  ".ctor", accessedFrom, &results, 0);
+	if(result != CS_SEMKIND_VOID)
+	{
+		/* Filter the result to remove static definitions */
+		result = FilterNonStatic(&results, result);
+	}
+	if(result != CS_SEMKIND_VOID)
+	{
+		return LookupToSem(node, ".ctor", &results, result);
+	}
+
+	/* There are no applicable constructors */
+	value.kind = CS_SEMKIND_VOID;
+	value.type = ILType_Invalid;
+	return value;
 }
 
 ILMethod *CSGetGroupMember(void *group, unsigned long n)

@@ -291,6 +291,19 @@ void ILGenCallByMethod(ILGenInfo *info, ILMethod *method)
 	}
 }
 
+void ILGenCtorByMethod(ILGenInfo *info, ILMethod *method)
+{
+	if(info->asmOutput)
+	{
+		fputs("\tnewobj\t", info->asmOutput);
+		ILDumpMethodType(info->asmOutput, info->image,
+						 ILMethod_Signature(method),
+						 IL_DUMP_QUOTE_NAMES, ILMethod_Owner(method),
+						 ILMethod_Name(method), 0);
+		putc('\n', info->asmOutput);
+	}
+}
+
 void ILGenCallVirtByMethod(ILGenInfo *info, ILMethod *method)
 {
 	if(info->asmOutput)

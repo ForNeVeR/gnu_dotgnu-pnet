@@ -369,6 +369,9 @@ struct _tagILEvalValue
 	ILMachineType machineType;
 }
 
+/*
+ * Object and array construction expressions.
+ */
 %node ILNode_NewExpression ILNode_Expression =
 {
 	ILNode	   *type;
@@ -376,19 +379,25 @@ struct _tagILEvalValue
 	ILNode	   *rank;
 	ILNode	   *arrayInitializer;
 }
-
 %node ILNode_ObjectCreationExpression ILNode_Expression =
 {
 	ILNode	   *type;
 	ILNode	   *argList;
+	%nocreate ILMethod *methodInfo = {0};
+}
+%node ILNode_DefaultConstructor ILNode_Expression =
+{
+	ILType     *type;
 }
 
+/*
+ * Method invocation expressions.
+ */
 %node ILNode_InvocationExpression ILNode_BinaryExpression =
 {
 	%nocreate ILNode   *thisExpr = {0};
 	%nocreate ILMethod *methodInfo = {0};
 }
-
 %node ILNode_BaseInit ILNode_Expression
 %node ILNode_ThisInit ILNode_Expression
 

@@ -119,12 +119,32 @@ ILNode_GetType(ILNode_NewExpression)
 	return ILMachineType_Void;
 }
 
+/*
+ * Get the type of an object or value type constructor call.
+ */
 ILNode_GetType(ILNode_ObjectCreationExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	if(ILClassIsValueType(ILMethod_Owner(node->methodInfo)))
+	{
+		return ILMachineType_ManagedValue;
+	}
+	else
+	{
+		return ILMachineType_ObjectRef;
+	}
 }
 
+/*
+ * Get the type of a default value type constructor call.
+ */
+ILNode_GetType(ILNode_DefaultConstructor)
+{
+	return ILTypeToMachineType(node->type);
+}
+
+/*
+ * Get the type of a method invocation.
+ */
 ILNode_GetType(ILNode_InvocationExpression)
 {
 	if(node->methodInfo)
@@ -747,8 +767,109 @@ ILNode_GenValue(ILNode_NewExpression)
 
 ILNode_GenValue(ILNode_ObjectCreationExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	long saveStack;
+
+	/* Save the current stack height, so we know where to
+	   unwind to when popping the arguments */
+	saveStack = info->stackHeight;
+
+	/* Push the argument expressions */
+	if(node->argList)
+	{
+		ILNode_GenValue(node->argList, info);
+	}
+
+	/* Invoke the constructor */
+	ILGenCtorByMethod(info, node->methodInfo);
+
+	/* Re-adjust the stack to remove the arguments and push the result */
+	info->stackHeight = saveStack + 1;
+	if(info->stackHeight > info->maxStackHeight)
+	{
+		info->maxStackHeight = info->stackHeight;
+	}
+
+	/* The final managed value or object reference is now on the stack */
+	if(ILClassIsValueType(ILMethod_Owner(node->methodInfo)))
+	{
+		return ILMachineType_ManagedValue;
+	}
+	else
+	{
+		return ILMachineType_ObjectRef;
+	}
+}
+
+/*
+ * Generate value code for a default value type constructor call.
+ */
+ILNode_GenValue(ILNode_DefaultConstructor)
+{
+	ILMachineType type = ILTypeToMachineType(node->type);
+	switch(type)
+	{
+		case ILMachineType_Void:
+		{
+			/* Nothing to do here: shouldn't happen anyway */
+		}
+		break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			ILGenSimple(info, IL_OP_LDC_I4_0);
+			ILGenAdjust(info, 1);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			ILGenSimple(info, IL_OP_LDC_I4_0);
+			ILGenSimple(info, IL_OP_CONV_I8);
+			ILGenAdjust(info, 1);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			ILGenSimple(info, IL_OP_LDC_I4_0);
+			ILGenSimple(info, IL_OP_CONV_I);
+			ILGenAdjust(info, 1);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			ILGenLoadFloat32(info, (ILFloat)0.0);
+			ILGenAdjust(info, 1);
+		}
+		break;
+
+		default:
+		{
+			/* Allocate a temporary variable, initialize it, and
+			   then push the initialized value onto the stack */
+			unsigned tempVar = ILGenTempTypedVar(info, node->type);
+			ILGenLoadLocalAddr(info, tempVar);
+			ILGenAdjust(info, 1);
+			ILGenTypeToken(info, IL_PREFIX_OP_INITOBJ + IL_OP_PREFIX,
+						   node->type);
+			ILGenLoadLocal(info, tempVar);
+			ILGenReleaseTempVar(info, tempVar);
+		}
+		break;
+	}
+	return type;
 }
 
 ILNode_GenValue(ILNode_InvocationExpression)

@@ -10,6 +10,11 @@
 	* codegen/jv_const.tc, cscc/cs_misc.tc: convert JVM string constants
 	into C# string objects where necessary.
 
+	* codegen/cg_misc.tc, codegen/cg_nodes.tc, codegen/cg_output.c,
+	codegen/cg_output.h, codegen/jv_misc.tc, cscc/cs_internal.h,
+	cscc/cs_invoke.tc, cscc/cs_lookup.c, cscc/cs_misc.tc: implement
+	the "new" operator for classes and value types.
+
 2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant.c, csdoc/doc_main.c, engine/ilrun.c, engine/ilverify.c,

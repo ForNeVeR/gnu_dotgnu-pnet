@@ -110,6 +110,11 @@ void ILGenCallVirtual(ILGenInfo *info, const char *name);
 void ILGenCallByMethod(ILGenInfo *info, ILMethod *method);
 
 /*
+ * Output a call to a constructor given its description block.
+ */
+void ILGenCtorByMethod(ILGenInfo *info, ILMethod *method);
+
+/*
  * Output a call to a virtual method given its description block.
  */
 void ILGenCallVirtByMethod(ILGenInfo *info, ILMethod *method);

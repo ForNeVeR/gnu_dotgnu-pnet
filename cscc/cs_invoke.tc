@@ -132,7 +132,7 @@ ILNode_SemAnalysis(ILNode_Argument)
  * Report an error message for a failed method signature match,
  * listing the candidates for the call.
  */
-static void MethodCandidateError(ILNode *node, char *methodName,
+static void MethodCandidateError(ILNode *node, char *methodName, int isCtor,
 								 void *group, CSEvalArg *args, int numArgs)
 {
 	unsigned long num;
@@ -169,9 +169,15 @@ static void MethodCandidateError(ILNode *node, char *methodName,
 					  "no matching method for call to `%s'",
 					  str.string);
 	}
+	else if(isCtor)
+	{
+		/* Don't know what the method name is */
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "no matching constructor");
+	}
 	else
 	{
-		/* Don't know what the method name is, so use a generic message */
+		/* Don't know what the method name is */
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "no matching method for call");
 	}
@@ -284,7 +290,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	methodInfo = CSGetGroupMember((void *)(method.type), methodNum);
 	if(!methodInfo)
 	{
-		MethodCandidateError((ILNode *)node, methodName,
+		MethodCandidateError((ILNode *)node, methodName, 0,
 							 (void *)(method.type), args, numArgs);
 		CSEvalFreeArguments(args);
 		return CSSemValueDefault;
@@ -297,7 +303,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 									 args, numArgs);
 		if(!methodInfo)
 		{
-			MethodCandidateError((ILNode *)node, methodName,
+			MethodCandidateError((ILNode *)node, methodName, 0,
 								 (void *)(method.type), args, numArgs);
 			CSEvalFreeArguments(args);
 			return CSSemValueDefault;
@@ -335,6 +341,150 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 }
 
 /*
+ * Perform semantic analysis for an object creation expression.
+ */
+ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
+{
+	CSSemValue value;
+	CSSemValue method;
+	ILMethod *methodInfo;
+	ILType *objectType;
+	ILClass *objectClass;
+	CSEvalArg *args;
+	int numArgs;
+	unsigned long methodNum;
+	int candidateForm;
+
+	/* Perform semantic analysis on the type */
+	objectType = CSSemType(node->type, info, &(node->type));
+
+	/* Set up the default return value */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = objectType;
+
+	/* The type must be a non-abstract class or a value type */
+	if(ILType_IsClass(objectType))
+	{
+		objectClass = ILClassResolve(ILType_ToClass(objectType));
+		if(ILClass_IsInterface(objectClass))
+		{
+			CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			  "cannot instantiate interface `%s' with the `new' operator",
+			  CSTypeToName(objectType));
+			return value;
+		}
+		else if(ILClass_IsAbstract(objectClass))
+		{
+			CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			  "cannot instantiate abstract class `%s' with the `new' operator",
+			  CSTypeToName(objectType));
+			return value;
+		}
+	}
+	else if(ILTypeIsValue(objectType))
+	{
+		/* Check for the default constructor case */
+		if(!(node->argList))
+		{
+			/* Replace this node with a default constructor call */
+			*parent = ILNode_DefaultConstructor_create(objectType);
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+			return value;
+		}
+	}
+	else
+	{
+		CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			  		  "`%s' is not a class or value type",
+					  CSTypeToName(objectType));
+		return value;
+	}
+
+	/* Get the list of accessible constructors for the type */
+	method = CSResolveConstructor(info, node->type, objectType);
+	if(method.kind != CS_SEMKIND_METHOD_GROUP)
+	{
+		CSErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+					  "`%s' does not have an accessible constructor",
+					  CSTypeToName(objectType));
+		return value;
+	}
+
+	/* Evaluate the arguments */
+	numArgs = CSEvalArguments(info, node->argList, &(node->argList), &args);
+	if(numArgs < 0)
+	{
+		return value;
+	}
+
+	/* Find the set of candidate methods */
+	methodNum = 0;
+	while((methodInfo = CSGetGroupMember
+							((void *)(method.type), methodNum)) != 0)
+	{
+		candidateForm = CSMethodIsCandidate(info, methodInfo, args, numArgs);
+		if(candidateForm)
+		{
+			CSSetGroupMemberForm((void *)(method.type), methodNum,
+								 candidateForm);
+			++methodNum;
+		}
+		else
+		{
+			method.type = (ILType *)CSRemoveGroupMember
+								((void *)(method.type), methodNum);
+		}
+	}
+
+	/* If there are no candidates left, then bail out */
+	methodNum = 0;
+	methodInfo = CSGetGroupMember((void *)(method.type), methodNum);
+	if(!methodInfo)
+	{
+		MethodCandidateError((ILNode *)node, 0, 1,
+							 (void *)(method.type), args, numArgs);
+		CSEvalFreeArguments(args);
+		return value;
+	}
+
+	/* There are two or more candidates, then try to find the best one */
+	if(CSGetGroupMember((void *)(method.type), 1) != 0)
+	{
+		methodInfo = CSBestCandidate(info, (void *)(method.type),
+									 args, numArgs);
+		if(!methodInfo)
+		{
+			MethodCandidateError((ILNode *)node, 0, 1,
+								 (void *)(method.type), args, numArgs);
+			CSEvalFreeArguments(args);
+			return value;
+		}
+	}
+
+	/* Import the method into this image, and set it within the node */
+	methodInfo = (ILMethod *)ILMemberImport
+						(info->image, (ILMember *)methodInfo);
+	node->methodInfo = methodInfo;
+
+	/* Coerce the arguments and build the final argument list */
+	CSMethodCoerceArgs(info, methodInfo, args, numArgs, &(node->argList));
+	CSEvalFreeArguments(args);
+
+	/* Return the final semantic value */
+	return value;
+}
+
+/*
+ * Perform semantic analysis for a default constructor call.
+ */
+ILNode_SemAnalysis(ILNode_DefaultConstructor)
+{
+	/* This is a dummy: it won't be called in practice */
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for a reference to a base constructor.
  */
 ILNode_SemAnalysis(ILNode_BaseInit)
@@ -355,10 +505,20 @@ ILNode_SemAnalysis(ILNode_BaseInit)
 		return value;
 	}
 
-	/* Resolve ".ctor" within the base class */
+	/* If the current class is a value type, then bail out.
+	   We don't want to call the base class constructor
+	   in this case */
+	if(ILClassIsValueType(classInfo))
+	{
+		value.kind = CS_SEMKIND_METHOD_GROUP;
+		value.type = (ILType *)0;
+		return value;
+	}
+
+	/* Resolve the constructor within the base class */
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_FromClass(parentInfo);
-	value = CSResolveMemberName(info, (ILNode *)node, value, ".ctor");
+	value = CSResolveConstructor(info, (ILNode *)node, value.type);
 
 	/* Replace the current expression with "this" */
 	*parent = ILNode_This_create();
@@ -373,11 +533,11 @@ ILNode_SemAnalysis(ILNode_ThisInit)
 	CSSemValue value;
 	ILClass *classInfo;
 
-	/* Resolve ".ctor" within the current class */
+	/* Resolve the constructor within the current class */
 	classInfo = ((ILNode_ClassDefn *)(info->currentClass))->classInfo;
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_FromClass(classInfo);
-	value = CSResolveMemberName(info, (ILNode *)node, value, ".ctor");
+	value = CSResolveConstructor(info, (ILNode *)node, value.type);
 
 	/* Replace the current expression with "this" */
 	*parent = ILNode_This_create();

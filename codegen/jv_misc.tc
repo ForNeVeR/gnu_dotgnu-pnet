@@ -1269,10 +1269,121 @@ JavaGenValue(ILNode_NewExpression)
 
 JavaGenValue(ILNode_ObjectCreationExpression)
 {
-	/* TODO */
-	return ILMachineType_Void;
+	long saveStack;
+
+	/* Construct the memory for the object */
+	JavaGenClassRef(info, JAVA_OP_NEW, ILMethod_Owner(node->methodInfo));
+	JavaGenAdjust(info, 1);
+
+	/* Save the current stack height, so we know where to
+	   unwind to when popping the arguments */
+	saveStack = info->stackHeight;
+
+	/* Push the argument expressions */
+	JavaGenSimple(info, JAVA_OP_DUP);
+	JavaGenAdjust(info, 1);
+	if(node->argList)
+	{
+		JavaGenValue(node->argList, info);
+	}
+
+	/* Invoke the constructor */
+	JavaGenCallSpecialByMethod(info, node->methodInfo);
+
+	/* Re-adjust the stack to remove the arguments */
+	info->stackHeight = saveStack;
+	if(info->stackHeight > info->maxStackHeight)
+	{
+		info->maxStackHeight = info->stackHeight;
+	}
+
+	/* The final managed value or object reference is now on the stack */
+	if(ILClassIsValueType(ILMethod_Owner(node->methodInfo)))
+	{
+		return ILMachineType_ManagedValue;
+	}
+	else
+	{
+		return ILMachineType_ObjectRef;
+	}
 }
 
+/*
+ * Generate value code for a default value type constructor call.
+ */
+JavaGenValue(ILNode_DefaultConstructor)
+{
+	ILMachineType type = ILTypeToMachineType(node->type);
+	switch(type)
+	{
+		case ILMachineType_Void:
+		{
+			/* Nothing to do here: shouldn't happen anyway */
+		}
+		break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			JavaGenSimple(info, JAVA_OP_ICONST_0);
+			JavaGenAdjust(info, 1);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			JavaGenSimple(info, JAVA_OP_ICONST_0);
+			JavaGenSimple(info, JAVA_OP_I2L);
+			JavaGenAdjust(info, 2);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			JavaGenSimple(info, JAVA_OP_FCONST_0);
+			JavaGenAdjust(info, 1);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			JavaGenSimple(info, JAVA_OP_DCONST_0);
+			JavaGenAdjust(info, 2);
+		}
+		break;
+
+		default:
+		{
+			/* Create an instance of the value type using
+			   the default constructor */
+			char *name;
+			name = JavaGetClassName(info, ILTypeToClass(info, node->type));
+			JavaGenTypeRef(info, JAVA_OP_NEW, node->type);
+			JavaGenAdjust(info, 1);
+			JavaGenSimple(info, JAVA_OP_DUP);
+			JavaGenAdjust(info, 1);
+			JavaGenCallCtor(info, name, "<init>", "()V");
+			JavaGenAdjust(info, -1);
+			ILFree(name);
+		}
+		break;
+	}
+	return type;
+}
+
+/*
+ * Generate value code for a method invocation expression.
+ */
 JavaGenValue(ILNode_InvocationExpression)
 {
 	ILMachineType resultType;

@@ -306,9 +306,3 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 	/* TODO */
 	return CSSemValueDefault;
 }
-
-ILNode_SemAnalysis(ILNode_ObjectCreationExpression)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}

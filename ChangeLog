@@ -8,6 +8,9 @@
 	* cscc/csharp/cs_attrs.c (ProcessAttr): add a hack to recognise
 	"System.AttributeUsage" and "System.AttributeUsageAttribute".
 
+	* cscc/csharp/cs_lookup.c (AmbiguousError): report ambiguity cases
+	for properties and methods.
+
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MemberRef): report "unresolved external

@@ -791,13 +791,17 @@ static void AmbiguousError(ILNode *node, const char *name,
 
 			case IL_META_MEMBERKIND_METHOD:
 			{
-				/* TODO */
+				typeName = CSItemToName((ILProgramItem *)(member->member));
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				              "  method %s", typeName);
 			}
 			break;
 
 			case IL_META_MEMBERKIND_PROPERTY:
 			{
-				/* TODO */
+				typeName = CSItemToName((ILProgramItem *)(member->member));
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				              "  property %s", typeName);
 			}
 			break;
 

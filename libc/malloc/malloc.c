@@ -52,11 +52,3 @@ __malloc(size_t size)
 }
 
 weak_alias(__malloc, malloc)
-
-/* Temporary hack until weak aliases work: */
-
-void *
-malloc(size_t size)
-{
-  return __malloc(size);
-}

@@ -54,11 +54,3 @@ __calloc(size_t nmemb, size_t size)
 }
 
 weak_alias(__calloc, calloc)
-
-/* Temporary hack until weak aliases work: */
-
-void *
-calloc(size_t nmemb, size_t size)
-{
-  return __calloc(nmemb, size);
-}

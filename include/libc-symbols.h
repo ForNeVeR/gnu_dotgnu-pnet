@@ -26,16 +26,16 @@
 #define _GNU_SOURCE	1
 #define	_REENTRANT	1
 
-#if 0	/* TODO: aliases aren't supported in the compiler yet */
 #define	_strong_alias(name,aliasname)	\
     extern __typeof__ (name) aliasname __attribute__ ((alias (#name)));
 #define	strong_alias(name,aliasname)	_strong_alias(name, aliasname)
+#define	weak_alias(name,aliasname)		_strong_alias(name, aliasname)
+#if 0	/* TODO: aliases aren't supported in the compiler yet */
 #define	_weak_alias(name,aliasname)	\
     extern __typeof__ (name) aliasname __attribute__ ((weak, alias (#name)));
 #define	weak_alias(name,aliasname)	_weak_alias(name, aliasname)
 #else
 #define	strong_alias(name,aliasname)
-#define	weak_alias(name,aliasname)
 #endif
 
 #define internal_function

@@ -68,11 +68,3 @@ __realloc(void *ptr, size_t size)
 }
 
 weak_alias(__realloc, realloc)
-
-/* Temporary hack until weak aliases work: */
-
-void *
-realloc(void *ptr, size_t size)
-{
-  return __realloc(ptr, size);
-}

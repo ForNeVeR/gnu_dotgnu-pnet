@@ -25,19 +25,19 @@
 
 /* See "fake-ids.h" for a description of why these values are fake */
 
-int
+gid_t
 __getegid(void)
 {
   return FAKE_GID;
 }
 
-int
+uid_t
 __geteuid(void)
 {
   return FAKE_UID;
 }
 
-int
+gid_t
 __getgid(void)
 {
   return FAKE_GID;
@@ -70,7 +70,7 @@ __getgroups(int size, gid_t list[])
     }
 }
 
-int
+uid_t
 __getuid(void)
 {
   return FAKE_UID;

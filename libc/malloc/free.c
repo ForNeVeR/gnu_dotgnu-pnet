@@ -33,11 +33,3 @@ __free(void *ptr)
 weak_alias(__free, free)
 weak_alias(__free, __cfree)
 weak_alias(__free, cfree)
-
-/* Temporary hack until weak aliases work: */
-
-void
-free(void *ptr)
-{
-  __free(ptr);
-}

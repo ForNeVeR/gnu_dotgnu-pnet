@@ -1265,8 +1265,15 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 								  name, accessedFrom, &results, 1);
 			if(result != CS_SEMKIND_VOID)
 			{
-				/* Filter the result to remove static definitions */
-				result = FilterNonStatic(&results, result);
+				/* Check for instance accesses to enumerated types.
+				   Sometimes there can be a property with the same
+				   name as an enumerated type, and we pick up the
+				   property when we are really looking for a constant */
+				if(!ILTypeIsEnum(value.type) || !strcmp(name, "value__"))
+				{
+					/* Filter the result to remove static definitions */
+					result = FilterNonStatic(&results, result);
+				}
 			}
 			if(result != CS_SEMKIND_VOID)
 			{

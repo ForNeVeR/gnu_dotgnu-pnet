@@ -1,4 +1,9 @@
 
+2002-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_lookup.c (CSResolveMemberName): special hack
+	for enumerated types that have the same name as instance properties.
+
 2002-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/Makefile.am, codegen/cg_gen.c, codegen/cg_gen.h,

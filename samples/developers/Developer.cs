@@ -8,7 +8,7 @@ using System.Threading;
 namespace ThreadsDemo
 {
 	/// <summary>
-	/// Contains the state of a developer.
+	/// The state of a developer.
 	/// </summary>
 	public enum DeveloperState
 	{
@@ -163,9 +163,9 @@ namespace ThreadsDemo
 		}
 		private int m_CodingDelay;
 
-        /// <summary>
-        /// Gets/Sets the number of milliseconds to a developer spends thinking.
-        /// </summary>
+	        /// <summary>
+        	/// Gets/Sets the number of milliseconds to a developer spends thinking.
+	        /// </summary>
 		public virtual int ThinkingDelay
 		{
 			get

@@ -114,7 +114,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 			}
 	public virtual void Write(char value)
 			{
-				Write(new String(value, 1));
+				// Overridden by subclasses.
 			}
 	public virtual void Write(char[] value)
 			{

@@ -14,6 +14,9 @@
 	engine/unroll_x86_var.c: more bugs in code unroller, which has
 	now been enabled.
 
+	* engine/unroll_x86.c, engine/unroll_x86_arith.c: implement
+	code unrolling for CVM division instructions.
+
 2002-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/cvm_lengths.c, engine/unroll_x86.c,

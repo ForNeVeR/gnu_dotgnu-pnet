@@ -21,6 +21,70 @@
 #ifdef IL_UNROLL_GLOBAL
 
 /*
+ * Perform an integer division or remainder.
+ */
+static void Divide(X86Unroll *unroll, int isSigned, int wantRemainder,
+				   unsigned char *pc, unsigned char *label)
+{
+	unsigned char *patch1, *patch2, *patch3;
+
+	/* Get the arguments into EAX and ECX so we know where they are */
+	if(unroll->pseudoStackSize != 2 ||
+	   unroll->pseudoStack[0] != X86_EAX ||
+	   unroll->pseudoStack[1] != X86_ECX)
+	{
+		FlushRegisterStack(unroll);
+		unroll->stackHeight -= 8;
+		x86_mov_reg_membase(unroll->out, X86_EAX, REG_STACK,
+							unroll->stackHeight, 4);
+		x86_mov_reg_membase(unroll->out, X86_ECX, REG_STACK,
+							unroll->stackHeight + 4, 4);
+		unroll->pseudoStack[0] = X86_EAX;
+		unroll->pseudoStack[1] = X86_ECX;
+		unroll->pseudoStackSize = 2;
+		unroll->regsUsed |= (REG_EAX_MASK | REG_ECX_MASK);
+	}
+
+	/* Check for conditions that may cause an exception */
+	x86_alu_reg_imm(unroll->out, X86_CMP, X86_ECX, 0);
+	patch1 = unroll->out;
+	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
+	x86_alu_reg_imm(unroll->out, X86_CMP, X86_ECX, -1);
+	patch2 = unroll->out;
+	x86_branch8(unroll->out, X86_CC_NE, 0, 0);
+	x86_alu_reg_imm(unroll->out, X86_CMP, X86_EAX, (int)0x80000000);
+	patch3 = unroll->out;
+	x86_branch8(unroll->out, X86_CC_NE, 0, 0);
+	x86_patch(patch1, unroll->out);
+
+	/* Re-execute the division instruction to throw the exception */
+	ReExecute(unroll, pc, label);
+
+	/* Perform the division */
+	x86_patch(patch2, unroll->out);
+	x86_patch(patch3, unroll->out);
+	if(isSigned)
+	{
+		x86_cdq(unroll->out);
+	}
+	else
+	{
+		x86_clear_reg(unroll->out, X86_EDX);
+	}
+	x86_div_reg(unroll->out, X86_ECX, isSigned);
+
+	/* Pop ECX from the pseudo stack */
+	FreeTopRegister(unroll, -1);
+
+	/* If we want the remainder, then replace EAX with EDX on the stack */
+	if(wantRemainder)
+	{
+		unroll->pseudoStack[0] = X86_EDX;
+		unroll->regsUsed = REG_EDX_MASK;
+	}
+}
+
+/*
  * Set a word register based on a condition code.
  */
 static void SetCondRegister(X86Unroll *unroll, int cond)
@@ -90,9 +154,41 @@ case COP_IMUL:
 }
 break;
 
-/* Note: we don't currently unroll IDIV and IREM because they
-   may throw exceptions, which must be handled in the main
-   CVM interpreter core */
+case COP_IDIV:
+{
+	/* Divide integers */
+	UNROLL_START();
+	Divide(&unroll, 1, 0, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IDIV_UN:
+{
+	/* Divide unsigned integers */
+	UNROLL_START();
+	Divide(&unroll, 0, 0, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IREM:
+{
+	/* Remainder integers */
+	UNROLL_START();
+	Divide(&unroll, 1, 1, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+case COP_IREM_UN:
+{
+	/* Remainder unsigned integers */
+	UNROLL_START();
+	Divide(&unroll, 0, 1, pc, (unsigned char *)inst);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
 
 case COP_INEG:
 {

@@ -185,6 +185,65 @@ static void BranchToPC(X86Unroll *unroll, unsigned char *pc)
 }
 
 /*
+ * Re-execute the current instruction in the CVM interpreter,
+ * to process exception conditions.
+ */
+static void ReExecute(X86Unroll *unroll, unsigned char *pc,
+					  unsigned char *label)
+{
+	int index, reg, height;
+
+	/* Flush the register stack, but don't change it as we will
+	   still need it further down the code */
+	height = unroll->stackHeight;
+	for(index = 0; index < unroll->pseudoStackSize; ++index)
+	{
+		reg = unroll->pseudoStack[index];
+		if(reg != REG_FPU)
+		{
+			/* Flush a word register */
+			x86_mov_membase_reg(unroll->out, REG_STACK, height, reg, 4);
+			height += 4;
+		}
+		else
+		{
+			/* Skip an FPU register */
+			height += 12;
+		}
+	}
+	for(index = unroll->pseudoStackSize - 1; index >= 0; --index)
+	{
+		reg = unroll->pseudoStack[index];
+		if(reg != REG_FPU)
+		{
+			/* Skip a word register */
+			height -= 4;
+		}
+		else
+		{
+			/* Flush an FPU register */
+			height -= 12;
+			x86_fst80_membase(unroll->out, REG_STACK, height);
+		}
+	}
+
+	/* Fix up the stack height */
+	FixStackHeight(unroll);
+
+	/* Restore the saved special registers */
+	if((unroll->regsSaved & REG_EBP_MASK) != 0)
+	{
+		x86_pop_reg(unroll->out, X86_EBP);
+	}
+
+	/* Reload PC for the current instruction */
+	x86_mov_reg_imm(unroll->out, REG_PC, (int)pc);
+
+	/* Jump into the CVM interpreter to re-execute the instruction */
+	x86_jump_code(unroll->out, label);
+}
+
+/*
  * Get a register that can be used to store 32-bit word values.
  */
 static int GetWordRegister(X86Unroll *unroll)
@@ -776,6 +835,7 @@ int _ILCVMUnrollPossible(void)
  */
 static void DumpCode(ILMethod *method, unsigned char *start, int len)
 {
+	char cmdline[BUFSIZ];
 	FILE *file = fopen("/tmp/unroll.s", "w");
 	if(!file)
 	{
@@ -794,7 +854,8 @@ static void DumpCode(ILMethod *method, unsigned char *start, int len)
 		--len;
 	}
 	fclose(file);
-	system("as /tmp/unroll.s -o /tmp/unroll.o;objdump -d /tmp/unroll.o");
+	sprintf(cmdline, "as /tmp/unroll.s -o /tmp/unroll.o;objdump --adjust-vma=%ld -d /tmp/unroll.o", (long)start);
+	system(cmdline);
 	unlink("/tmp/unroll.s");
 	unlink("/tmp/unroll.o");
 	putc('\n', stdout);

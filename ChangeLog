@@ -3,6 +3,9 @@
 	
 	* support/dir.c: Similar changes for ILDeleteDir()
 
+	* cscc/csharp/cs_lookup.c, cscc/csharp/cs_gather.c: Fix the nested
+	class ordering bug #1970.
+
 2002-12-20  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	* support/dir.c: Remove the resets for errno and use the return

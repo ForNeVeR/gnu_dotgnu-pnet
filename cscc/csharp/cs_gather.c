@@ -135,8 +135,17 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	/* If this is a nested type, then create its nesting parent first */
 	if(defn->nestedParent)
 	{
-		CreateType(info, globalScope, list,
+		/* this is a backward edge of the class dependency graph,
+		 * since we'll be coming back to this very same class by
+		 * defn->nestedParent as it's nested child or the forward
+		 * edge , let's skip this loop,by returning here */
+		if(defn->nestedParent->classInfo==0)
+		{
+			defn->classInfo=0;
+			CreateType(info, globalScope, list,
 				   systemObjectName, (ILNode *)(defn->nestedParent));
+			return; 
+		}
 		nestedScope = (ILProgramItem *)(defn->nestedParent->classInfo);
 		if(!nestedScope || nestedScope == (ILProgramItem *)1 ||
 		   nestedScope == (ILProgramItem *)1)

@@ -1433,6 +1433,7 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 							   int literalType)
 {
 	CSSemValue retSem;
+	ILNode *typeNode=NULL;
 
 	/* Determine how to resolve the member from its semantic kind */
 	switch(CSSemGetKind(value) & ~CS_SEMKIND_BASE)
@@ -1491,6 +1492,27 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not an instance member of the type `%s'",
 						  name, CSTypeToName(CSSemGetType(value)));
+			}
+		}
+		break;
+	
+		case CS_SEMKIND_TYPE_NODE:
+		{
+			if(genInfo->typeGather)
+			{
+				if((typeNode =FindNestedClass(NULL,
+									CSSemGetTypeNode(value),name)))
+				{
+					CSSemSetTypeNode(retSem,typeNode);
+					return retSem;
+				}
+			}
+			/*  Fall through to not-found processing  */
+			if (!literalType) {
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "`%s' is not a nesteed class or member of `%s'",
+						  name,((ILNode_ClassDefn*)
+								  CSSemGetTypeNode(value))->name);
 			}
 		}
 		break;

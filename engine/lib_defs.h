@@ -83,13 +83,40 @@ int _ILIsSArray(System_Array *array);
 int _ILIsMArray(System_Array *array);
 
 /*
- * Internal structure of "System.RuntimeType".
+ * Internal structure of a reflection object.  Types, methods, fields, etc.
  */
 typedef struct
 {
 	void	   *privateData;
 
-} System_RuntimeType;
+} System_Reflection;
+
+/*
+ * Convert an "ILClass" into a "ClrType" instance.
+ */
+ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo);
+
+/*
+ * Convert an "ILType" into a "ClrType" instance.
+ */
+ILObject *_ILGetClrTypeForILType(ILExecThread *thread, ILType *type);
+
+/*
+ * Get the "ILClass" value associated with a "ClrType" object.
+ */
+ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type);
+
+/*
+ * Convert a non-type program item pointer into a reflection object.
+ * Do not use this for types.  Use "_ILGetClrType" instead.
+ */
+ILObject *_ILClrToObject(ILExecThread *thread, void *item, const char *name);
+
+/*
+ * Convert a reflection object into a non-type program item pointer.
+ * Do not use this for types.  Use "_ILGetClrClass" instead.
+ */
+void *_ILClrFromObject(ILExecThread *thread, ILObject *object);
 
 /*
  * Internal structure of "System.Threading.Thread".

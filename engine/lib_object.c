@@ -35,31 +35,18 @@ static ILObject *System_Object_GetType(ILExecThread *thread, ILObject *_this)
 {
 	ILObject *obj;
 
-	/* Does the class already have a "RuntimeType" instance? */
-	if(IL_CLASS_PRIVATE(GetObjectClass(_this))->runtimeType)
+	/* Does the class already have a "ClrType" instance? */
+	if(IL_CLASS_PRIVATE(GetObjectClass(_this))->clrType)
 	{
-		return IL_CLASS_PRIVATE(GetObjectClass(_this))->runtimeType;
+		return IL_CLASS_PRIVATE(GetObjectClass(_this))->clrType;
 	}
 
-	/* Create a new "RuntimeType" instance */
-	if(!(thread->process->runtimeTypeClass))
-	{
-		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
-								(const char *)0);
-		return 0;
-	}
-	obj = _ILEngineAllocObject(thread, thread->process->runtimeTypeClass);
+	/* Create a new "ClrType" instance for the "ILClass" structure */
+	obj = _ILGetClrType(thread, GetObjectClass(_this));
 	if(!obj)
 	{
 		return 0;
 	}
-
-	/* Fill in the object with the class information */
-	((System_RuntimeType *)obj)->privateData = GetObjectClass(_this);
-
-	/* Attach the object to the class so that it will be returned
-	   for future calls to this method */
-	IL_CLASS_PRIVATE(GetObjectClass(_this))->runtimeType = obj;
 
 	/* Return the object to the caller */
 	return obj;

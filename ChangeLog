@@ -1,4 +1,10 @@
 
+2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/engine.h, engine/internal.c, engine/lib_defs.h, engine/lib_object.c,
+engine/lib_type.c, engine/process.c: modify the runtime engine's reflection
+interface to match the changes to pnetlib.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * samples/mscorlib.dll: new version with many changes to exceptions, I/O,

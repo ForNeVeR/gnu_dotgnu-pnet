@@ -92,7 +92,7 @@ struct _tagILExecProcess
 	/* Useful builtin classes */
 	ILClass        *stringClass;
 	ILClass        *exceptionClass;
-	ILClass        *runtimeTypeClass;
+	ILClass        *clrTypeClass;
 
 	/* The object to throw when the system runs out of memory */
 	ILObject	   *outOfMemoryObject;
@@ -185,7 +185,7 @@ struct _tagILClassPrivate
 	ILUInt32		alignment : 14;		/* Preferred instance alignment */
 	ILUInt32		vtableSize : 16;	/* Size of the vtable */
 	ILMethod      **vtable;				/* Methods within the vtable */
-	ILObject       *runtimeType;		/* Associated runtime type object */
+	ILObject       *clrType;			/* Associated CLR type object */
 	ILObject       *staticData;			/* Static data area object */
 	ILImplPrivate  *implements;			/* Interface implementation records */
 

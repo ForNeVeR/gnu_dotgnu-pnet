@@ -52,7 +52,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->coderGeneration = 0;
 	process->stringClass = 0;
 	process->exceptionClass = 0;
-	process->runtimeTypeClass = 0;
+	process->clrTypeClass = 0;
 	process->outOfMemoryObject = 0;
 	ILGetCurrTime(&(process->startTime));
 	process->internHash = 0;
@@ -183,11 +183,11 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 							        			      "Exception", "System");
 	}
 
-	/* Look for "System.RuntimeType" */
-	if(!(process->runtimeTypeClass))
+	/* Look for "System.Reflection.ClrType" */
+	if(!(process->clrTypeClass))
 	{
-		process->runtimeTypeClass = ILClassLookupGlobal(ILImageToContext(image),
-								        "RuntimeType", "System");
+		process->clrTypeClass = ILClassLookupGlobal(ILImageToContext(image),
+								        "ClrType", "System.Reflection");
 	}
 }
 

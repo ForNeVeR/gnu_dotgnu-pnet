@@ -128,54 +128,70 @@ static void ThrowTypeLoad(ILExecThread *thread, ILString *name)
 							(const char *)0);
 }
 
-/*
- * Convert an "ILClass" into a "RuntimeType" instance.
- */
-static ILObject *GetRuntimeType(ILExecThread *thread, ILClass *classInfo)
+ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 {
 	ILObject *obj;
 
-	/* Does the class already have a "RuntimeType" instance? */
-	if(((ILClassPrivate *)(classInfo->userData))->runtimeType)
+	/* Does the class already have a "ClrType" instance? */
+	if(((ILClassPrivate *)(classInfo->userData))->clrType)
 	{
-		return ((ILClassPrivate *)(classInfo->userData))->runtimeType;
+		return ((ILClassPrivate *)(classInfo->userData))->clrType;
 	}
 
-	/* Create a new "RuntimeType" instance */
-	if(!(thread->process->runtimeTypeClass))
+	/* Create a new "ClrType" instance */
+	if(!(thread->process->clrTypeClass))
 	{
 		ThrowTypeLoad(thread, 0);
 		return 0;
 	}
-	obj = _ILEngineAllocObject(thread, thread->process->runtimeTypeClass);
+	obj = _ILEngineAllocObject(thread, thread->process->clrTypeClass);
 	if(!obj)
 	{
 		return 0;
 	}
 
 	/* Fill in the object with the class information */
-	((System_RuntimeType *)obj)->privateData = classInfo;
+	((System_Reflection *)obj)->privateData = classInfo;
 
 	/* Attach the object to the class so that it will be returned
 	   for future calls to this function */
-	((ILClassPrivate *)(classInfo->userData))->runtimeType = obj;
+	((ILClassPrivate *)(classInfo->userData))->clrType = obj;
 
 	/* Return the object to the caller */
 	return obj;
 }
 
-/*
- * Get the "ILClass" value associated with a "RuntimeType" object.
- */
-static ILClass *GetRuntimeClass(ILExecThread *thread, ILObject *type)
+ILObject *_ILGetClrTypeForILType(ILExecThread *thread, ILType *type)
+{
+	ILClass *classInfo;
+
+	/* Strip custom modifier prefixes from the type */
+	type = ILTypeStripPrefixes(type);
+
+	/* Convert the type into an "ILClass" structure */
+	classInfo = ILClassFromType(ILProgramItem_Image(thread->method),
+								0, type, 0);
+
+	/* Get the "ClrType" object for the "ILClass" structure */
+	if(classInfo)
+	{
+		return _ILGetClrType(thread, classInfo);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type)
 {
 	if(type)
 	{
-		/* Make sure that "type" is an instance of "RuntimeType" */
+		/* Make sure that "type" is an instance of "ClrType" */
 		if(ILClassInheritsFrom(GetObjectClass(type),
-							   thread->process->runtimeTypeClass))
+							   thread->process->clrTypeClass))
 		{
-			return (ILClass *)(((System_RuntimeType *)type)->privateData);
+			return (ILClass *)(((System_Reflection *)type)->privateData);
 		}
 		else
 		{
@@ -186,6 +202,18 @@ static ILClass *GetRuntimeClass(ILExecThread *thread, ILObject *type)
 	{
 		return 0;
 	}
+}
+
+ILObject *_ILClrToObject(ILExecThread *thread, void *item, const char *name)
+{
+	/* TODO */
+	return 0;
+}
+
+void *_ILClrFromObject(ILExecThread *thread, ILObject *object)
+{
+	/* TODO */
+	return 0;
 }
 
 /*
@@ -432,17 +460,49 @@ static ILObject *System_Type_GetType(ILExecThread *thread,
 		return 0;
 	}
 
-	/* Convert the class information block into a "RuntimeType" instance */
-	return GetRuntimeType(thread, classInfo);
+	/* Convert the class information block into a "ClrType" instance */
+	return _ILGetClrType(thread, classInfo);
 }
 
 /*
- * private int InternalGetArrayRank();
+ * public static RuntimeTypeHandle GetTypeHandleFromObject(Object o);
  */
-static ILInt32 System_RuntimeType_InternalGetArrayRank(ILExecThread *thread,
-													   ILObject *_this)
+static void System_Type_GetTypeHandleFromObject
+				(ILExecThread *thread, void *handle, ILObject *obj)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	if(obj)
+	{
+		*((ILClass **)handle) = GetObjectClass(obj);
+	}
+	else
+	{
+		ILExecThreadThrowArgNull(thread, "obj");
+	}
+}
+
+/*
+ * public static Type GetTypeFromHandle(RuntimeTypeHandle handle);
+ */
+static ILObject *System_Type_GetTypeFromHandle
+						(ILExecThread *thread, void *handle)
+{
+	ILClass *classInfo = *((ILClass **)handle);
+	if(classInfo)
+	{
+		return _ILGetClrType(thread, classInfo);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private int GetClrArrayRank();
+ */
+static ILInt32 ClrType_GetClrArrayRank(ILExecThread *thread, ILObject *_this)
+{
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILType *synType = (classInfo ? ILClassGetSynType(classInfo) : 0);
 	if(synType != 0)
 	{
@@ -464,10 +524,10 @@ static ILInt32 System_RuntimeType_InternalGetArrayRank(ILExecThread *thread,
 /*
  * protected override TypeAttributes GetAttributeFlagsImpl();
  */
-static ILInt32 System_RuntimeType_GetAttributeFlagsImpl(ILExecThread *thread,
-														ILObject *_this)
+static ILInt32 ClrType_GetAttributeFlagsImpl(ILExecThread *thread,
+											 ILObject *_this)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	if(classInfo)
 	{
 		return (ILInt32)(ILClassGetAttrs(classInfo));
@@ -479,195 +539,128 @@ static ILInt32 System_RuntimeType_GetAttributeFlagsImpl(ILExecThread *thread,
 }
 
 /*
- * internal static RuntimeTypeHandle InternalGetTypeHandleFromObject(Object o);
+ * public override Type GetElementType();
  */
-static void System_RuntimeType_InternalGetTypeHandleFromObject
-				(ILExecThread *thread, void *handle, ILObject *obj)
+static ILObject *ClrType_GetElementType(ILExecThread *thread, ILObject *_this)
 {
-	if(obj)
-	{
-		*((ILClass **)handle) = GetObjectClass(obj);
-	}
-	else
-	{
-		ILExecThreadThrowArgNull(thread, "obj");
-	}
-}
-
-/*
- * internal static Type GetTypeFromHandleImpl(RuntimeTypeHandle handle);
- */
-static ILObject *System_RuntimeType_GetTypeFromHandleImpl
-						(ILExecThread *thread, void *handle)
-{
-	ILClass *classInfo = *((ILClass **)handle);
-	if(classInfo)
-	{
-		return GetRuntimeType(thread, classInfo);
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
- * protected override bool IsArrayImpl();
- */
-static ILBool System_RuntimeType_IsArrayImpl(ILExecThread *thread,
-											 ILObject *_this)
-{
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILType *synType;
 	if(classInfo)
 	{
+		/* Only interesting for array, pointer, and byref types */
 		synType = ILClassGetSynType(classInfo);
-		if(synType != 0 && ILType_IsComplex(synType) &&
-		   (synType->kind == IL_TYPE_COMPLEX_ARRAY ||
-		    synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+		if(synType != 0 && ILType_IsComplex(synType))
 		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
- * protected override bool IsByRefImpl();
- */
-static ILBool System_RuntimeType_IsByRefImpl(ILExecThread *thread,
-											 ILObject *_this)
-{
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
-	ILType *synType;
-	if(classInfo)
-	{
-		synType = ILClassGetSynType(classInfo);
-		if(synType != 0 && ILType_IsComplex(synType) &&
-		   synType->kind == IL_TYPE_COMPLEX_BYREF)
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
+		   	while(synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+			{
+				synType = synType->un.array.elemType;
+			}
+			if(synType->kind == IL_TYPE_COMPLEX_ARRAY)
+			{
+				return _ILGetClrTypeForILType
+							(thread, synType->un.array.elemType);
+			}
+			else if(synType->kind == IL_TYPE_COMPLEX_BYREF ||
+			        synType->kind == IL_TYPE_COMPLEX_PTR)
+			{
+				return _ILGetClrTypeForILType(thread, synType->un.refType);
+			}
 		}
 	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
- * protected override bool IsCOMObjectImpl();
- */
-static ILBool System_RuntimeType_IsCOMObjectImpl(ILExecThread *thread,
-											     ILObject *_this)
-{
-	/* COM is not supported in our system */
 	return 0;
 }
 
 /*
- * protected override int InternalIsContextful();
+ * Type categories: this must be kept in sync with the
+ * definition of the "System.Reflection.ClrTypeCategory"
+ * enumeration in "pnetlib".
  */
-static ILInt32 System_RuntimeType_InternalIsContextful(ILExecThread *thread,
-											           ILObject *_this)
-{
-	ILClass *classInfo;
-	classInfo = ILExecThreadLookupClass(thread, "System.ContextBoundObject");
-	if(classInfo)
-	{
-		return ILClassInheritsFrom(GetObjectClass(_this), classInfo);
-	}
-	else
-	{
-		return 0;
-	}
-}
+#define	ClrTypeCategory_Primitive		0
+#define	ClrTypeCategory_Class			1
+#define	ClrTypeCategory_ValueType		2
+#define	ClrTypeCategory_Enum			3
+#define	ClrTypeCategory_Array			4
+#define	ClrTypeCategory_ByRef			5
+#define	ClrTypeCategory_Pointer			6
+#define	ClrTypeCategory_Method			7
+#define	ClrTypeCategory_COMObject		8
+#define	ClrTypeCategory_Other			9
 
 /*
- * protected override int InternalIsMarshalByRef();
+ * private ClrTypeCategory GetClrTypeCategory();
  */
-static ILInt32 System_RuntimeType_InternalIsMarshalByRef(ILExecThread *thread,
-											             ILObject *_this)
+static ILInt32 ClrType_GetClrTypeCategory(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo;
-	classInfo = ILExecThreadLookupClass(thread, "System.MarshalByRefObject");
-	if(classInfo)
-	{
-		return ILClassInheritsFrom(GetObjectClass(_this), classInfo);
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
- * protected override bool IsPointerImpl();
- */
-static ILBool System_RuntimeType_IsPointerImpl(ILExecThread *thread,
-											   ILObject *_this)
-{
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILType *synType;
 	if(classInfo)
 	{
 		synType = ILClassGetSynType(classInfo);
-		if(synType != 0 && ILType_IsComplex(synType) &&
-		   synType->kind == IL_TYPE_COMPLEX_PTR)
+		if(synType != 0 && ILType_IsComplex(synType))
 		{
-			return 1;
+			switch(synType->kind & 0xFF)
+			{
+				case IL_TYPE_COMPLEX_ARRAY:
+				case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+						 return ClrTypeCategory_Array;
+
+				case IL_TYPE_COMPLEX_BYREF:
+						 return ClrTypeCategory_ByRef;
+
+				case IL_TYPE_COMPLEX_PTR:
+						 return ClrTypeCategory_Pointer;
+
+				case IL_TYPE_COMPLEX_METHOD:
+				case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
+						 return ClrTypeCategory_Method;
+
+				default: return ClrTypeCategory_Other;
+			}
 		}
-		else
+		if(ILClassIsValueType(classInfo))
 		{
-			return 0;
+			ILType *type = ILClassToType(classInfo);
+			if(ILType_IsPrimitive(type))
+			{
+				switch(ILType_ToElement(type))
+				{
+					case IL_META_ELEMTYPE_BOOLEAN:
+					case IL_META_ELEMTYPE_I1:
+					case IL_META_ELEMTYPE_U1:
+					case IL_META_ELEMTYPE_I2:
+					case IL_META_ELEMTYPE_U2:
+					case IL_META_ELEMTYPE_CHAR:
+					case IL_META_ELEMTYPE_I4:
+					case IL_META_ELEMTYPE_U4:
+					case IL_META_ELEMTYPE_I8:
+					case IL_META_ELEMTYPE_U8:
+					case IL_META_ELEMTYPE_R4:
+					case IL_META_ELEMTYPE_R8:
+						return ClrTypeCategory_Primitive;
+				}
+			}
+			else if(ILTypeGetEnumType(type) != type)
+			{
+				return ClrTypeCategory_Enum;
+			}
+			return ClrTypeCategory_ValueType;
 		}
 	}
-	else
-	{
-		return 0;
-	}
+	return ClrTypeCategory_Class;
 }
 
 /*
- * protected override bool IsPrimitiveImpl();
+ * public override bool IsSubclassOf(Type c);
  */
-static ILBool System_RuntimeType_IsPrimitiveImpl(ILExecThread *thread,
-											     ILObject *_this)
+static ILBool ClrType_IsSubclassOf(ILExecThread *thread,
+								   ILObject *_this,
+								   ILObject *otherType)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
-	if(classInfo)
-	{
-		return ILType_IsPrimitive(ILClassToType(classInfo));
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
- * protected override bool IsSubclassOf(Type c);
- */
-static ILBool System_RuntimeType_IsSubclassOf(ILExecThread *thread,
-											  ILObject *_this,
-											  ILObject *otherType)
-{
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILClass *otherClassInfo;
 	if(otherType)
 	{
-		otherClassInfo = GetRuntimeClass(thread, otherType);
+		otherClassInfo = _ILGetClrClass(thread, otherType);
 		if(classInfo && otherClassInfo)
 		{
 			return ILClassInheritsFrom(classInfo, otherClassInfo);
@@ -685,12 +678,11 @@ static ILBool System_RuntimeType_IsSubclassOf(ILExecThread *thread,
 }
 
 /*
- * private bool IsNestedTypeImpl();
+ * private bool IsClrNestedType();
  */
-static ILBool System_RuntimeType_IsNestedTypeImpl(ILExecThread *thread,
-											      ILObject *_this)
+static ILBool ClrType_IsClrNestedType(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	if(classInfo && ILClass_NestedParent(classInfo) != 0)
 	{
 		return 1;
@@ -702,18 +694,17 @@ static ILBool System_RuntimeType_IsNestedTypeImpl(ILExecThread *thread,
 }
 
 /*
- * private Type InternalGetBaseType();
+ * private Type GetClrBaseType();
  */
-static ILObject *System_RuntimeType_InternalGetBaseType(ILExecThread *thread,
-											      		ILObject *_this)
+static ILObject *ClrType_GetClrBaseType(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	if(classInfo)
 	{
 		ILClass *parent = ILClass_Parent(classInfo);
 		if(parent)
 		{
-			return GetRuntimeType(thread, parent);
+			return _ILGetClrType(thread, parent);
 		}
 		else
 		{
@@ -727,41 +718,43 @@ static ILObject *System_RuntimeType_InternalGetBaseType(ILExecThread *thread,
 }
 
 /*
- * private Assembly InternalGetAssembly();
+ * private Assembly GetClrAssembly();
  */
-static ILObject *System_RuntimeType_InternalGetAssembly(ILExecThread *thread,
-											      		ILObject *_this)
+static ILObject *ClrType_GetClrAssembly(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILImage *image = (classInfo ? ILClassToImage(classInfo) : 0);
+	void *item;
 	if(image)
 	{
-		/* TODO */
-		return 0;
+		item = ILImageTokenInfo(image, (IL_META_TOKEN_ASSEMBLY | 1));
+		if(item)
+		{
+			return _ILClrToObject(thread, item, "System.Reflection.Assembly");
+		}
+		/* TODO: if the image does not have an assembly manifest,
+		   then look for the parent assembly */
 	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 /*
- * private Module InternalGetModule();
+ * private Module GetClrModule();
  */
-static ILObject *System_RuntimeType_InternalGetModule(ILExecThread *thread,
-											          ILObject *_this)
+static ILObject *ClrType_GetClrModule(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILImage *image = (classInfo ? ILClassToImage(classInfo) : 0);
+	void *item;
 	if(image)
 	{
-		/* TODO */
-		return 0;
+		item = ILImageTokenInfo(image, (IL_META_TOKEN_MODULE | 1));
+		if(item)
+		{
+			return _ILClrToObject(thread, item, "System.Reflection.Module");
+		}
 	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 /*
@@ -983,7 +976,7 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 	ILType *synType;
 
 	/* Get the ILClass structure for the runtime type */
-	classInfo = GetRuntimeClass(thread, _this);
+	classInfo = _ILGetClrClass(thread, _this);
 	if(!classInfo)
 	{
 		/* Shouldn't happen, but do something sane anyway */
@@ -1049,20 +1042,18 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 }
 
 /*
- * private String InternalGetFullName();
+ * private String GetClrFullName();
  */
-static ILString *System_RuntimeType_InternalGetFullName(ILExecThread *thread,
-											      		ILObject *_this)
+static ILString *ClrType_GetClrFullName(ILExecThread *thread, ILObject *_this)
 {
 	return GetTypeName(thread, _this, 1);
 }
 
 /*
- * private Guid InternalGetGUID();
+ * private Guid GetClrGUID();
  */
-static void System_RuntimeType_InternalGetGUID(ILExecThread *thread,
-											   void *result,
-											   ILObject *_this)
+static void ClrType_GetClrGUID(ILExecThread *thread,
+							   void *result, ILObject *_this)
 {
 	/* We don't use GUID's in this system, as they are intended for
 	   use with COM, which we don't have.  Besides, they are a stupid
@@ -1071,16 +1062,16 @@ static void System_RuntimeType_InternalGetGUID(ILExecThread *thread,
 }
 
 /*
- * private Type InternalGetNestedDeclaringType();
+ * private Type GetClrNestedDeclaringType();
  */
-static ILObject *System_RuntimeType_InternalGetNestedDeclaringType
+static ILObject *ClrType_GetClrNestedDeclaringType
 					(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILClass *nestedParent = (classInfo ? ILClass_NestedParent(classInfo) : 0);
 	if(nestedParent)
 	{
-		return GetRuntimeType(thread, nestedParent);
+		return _ILGetClrType(thread, nestedParent);
 	}
 	else
 	{
@@ -1089,30 +1080,19 @@ static ILObject *System_RuntimeType_InternalGetNestedDeclaringType
 }
 
 /*
- * private RuntimeTypeHandle InternalGetClassHandle();
+ * private String GetClrName();
  */
-static void System_RuntimeType_InternalGetClassHandle
-					(ILExecThread *thread, void *result, ILObject *_this)
-{
-	*((ILClass **)result) = GetRuntimeClass(thread, _this);
-}
-
-/*
- * private String InternalGetName();
- */
-static ILString *System_RuntimeType_InternalGetName(ILExecThread *thread,
-													ILObject *_this)
+static ILString *ClrType_GetClrName(ILExecThread *thread, ILObject *_this)
 {
 	return GetTypeName(thread, _this, 0);
 }
 
 /*
- * private String InternalGetNamespace();
+ * private String GetClrNamespace();
  */
-static ILString *System_RuntimeType_InternalGetNamespace(ILExecThread *thread,
-													     ILObject *_this)
+static ILString *ClrType_GetClrNamespace(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	ILClass *nestedParent;
 	ILType *synType;
 	const char *namespace;
@@ -1177,78 +1157,60 @@ IL_METHOD_BEGIN(_ILSystemTypeMethods)
 	IL_METHOD("GetType",
 					"(oSystem.String;ZZ)oSystem.Type;",
 					System_Type_GetType)
+	IL_METHOD("GetTypeHandleFromObject",
+					"(oSystem.Object;)vSystem.RuntimeTypeHandle;",
+					System_Type_GetTypeHandleFromObject)
+	IL_METHOD("GetTypeFromHandle",
+					"(vSystem.RuntimeTypeHandle;)oSystem.Type;",
+					System_Type_GetTypeFromHandle)
 IL_METHOD_END
 
 /*
- * Method table for the "System.RuntimeType" class.
+ * Method table for the "System.Reflection.ClrType" class.
  */
-IL_METHOD_BEGIN(_ILSystemRuntimeTypeMethods)
-	IL_METHOD("InternalGetArrayRank",
+IL_METHOD_BEGIN(_ILReflectionClrTypeMethods)
+	IL_METHOD("GetClrArrayRank",
 					"(T)i",
-					System_RuntimeType_InternalGetArrayRank)
+					ClrType_GetClrArrayRank)
 	IL_METHOD("GetAttributeFlagsImpl",
 					"(T)i",
-					System_RuntimeType_GetAttributeFlagsImpl)
-	IL_METHOD("InternalGetTypeHandleFromObject",
-					"(oSystem.Object;)vSystem.RuntimeTypeHandle;",
-					System_RuntimeType_InternalGetTypeHandleFromObject)
-	IL_METHOD("GetTypeFromHandleImpl",
-					"(vSystem.RuntimeTypeHandle;)oSystem.Type;",
-					System_RuntimeType_GetTypeFromHandleImpl)
-	IL_METHOD("IsArrayImpl",
-					"(T)Z",
-					System_RuntimeType_IsArrayImpl)
-	IL_METHOD("IsByRefImpl",
-					"(T)Z",
-					System_RuntimeType_IsByRefImpl)
-	IL_METHOD("IsCOMObjectImpl",
-					"(T)Z",
-					System_RuntimeType_IsCOMObjectImpl)
-	IL_METHOD("InternalIsContextful",
-					"(T)i",
-					System_RuntimeType_InternalIsContextful)
-	IL_METHOD("InternalIsMarshalByRef",
-					"(T)i",
-					System_RuntimeType_InternalIsMarshalByRef)
-	IL_METHOD("IsPointerImpl",
-					"(T)Z",
-					System_RuntimeType_IsPointerImpl)
-	IL_METHOD("IsPrimitiveImpl",
-					"(T)Z",
-					System_RuntimeType_IsPrimitiveImpl)
+					ClrType_GetAttributeFlagsImpl)
+	IL_METHOD("GetElementType",
+					"(T)oSystem.Type;",
+					ClrType_GetElementType)
+	IL_METHOD("GetClrTypeCategory",
+					"(T)vSystem.Reflection.ClrTypeCategory;",
+					ClrType_GetClrTypeCategory)
 	IL_METHOD("IsSubclassOf",
 					"(ToSystem.Type;)Z",
-					System_RuntimeType_IsSubclassOf)
-	IL_METHOD("IsNestedTypeImpl",
+					ClrType_IsSubclassOf)
+	IL_METHOD("IsClrNestedType",
 					"(T)Z",
-					System_RuntimeType_IsNestedTypeImpl)
-	IL_METHOD("InternalGetBaseType",
+					ClrType_IsClrNestedType)
+	IL_METHOD("GetClrBaseType",
 					"(T)oSystem.Type;",
-					System_RuntimeType_InternalGetBaseType)
-	IL_METHOD("InternalGetAssembly",
+					ClrType_GetClrBaseType)
+	IL_METHOD("GetClrAssembly",
 					"(T)oSystem.Reflection.Assembly;",
-					System_RuntimeType_InternalGetAssembly)
-	IL_METHOD("InternalGetModule",
+					ClrType_GetClrAssembly)
+	IL_METHOD("GetClrModule",
 					"(T)oSystem.Reflection.Module;",
-					System_RuntimeType_InternalGetModule)
-	IL_METHOD("InternalGetFullName",
+					ClrType_GetClrModule)
+	IL_METHOD("GetClrFullName",
 					"(T)oSystem.String;",
-					System_RuntimeType_InternalGetFullName)
-	IL_METHOD("InternalGetGUID",
+					ClrType_GetClrFullName)
+	IL_METHOD("GetClrGUID",
 					"(T)vSystem.Guid;",
-					System_RuntimeType_InternalGetGUID)
-	IL_METHOD("InternalGetNestedDeclaringType",
+					ClrType_GetClrGUID)
+	IL_METHOD("GetClrNestedDeclaringType",
 					"(T)oSystem.Type;",
-					System_RuntimeType_InternalGetNestedDeclaringType)
-	IL_METHOD("InternalGetClassHandle",
-					"(T)vSystem.RuntimeTypeHandle;",
-					System_RuntimeType_InternalGetClassHandle)
-	IL_METHOD("InternalGetName",
+					ClrType_GetClrNestedDeclaringType)
+	IL_METHOD("GetClrName",
 					"(T)vSystem.String;",
-					System_RuntimeType_InternalGetName)
-	IL_METHOD("InternalGetNamespace",
+					ClrType_GetClrName)
+	IL_METHOD("GetClrNamespace",
 					"(T)vSystem.String;",
-					System_RuntimeType_InternalGetNamespace)
+					ClrType_GetClrNamespace)
 IL_METHOD_END
 
 #ifdef	__cplusplus

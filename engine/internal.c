@@ -33,7 +33,7 @@ extern ILMethodTableEntry const _ILSystemArrayMethods;
 extern ILMethodTableEntry const _ILSystemDecimalMethods;
 extern ILMethodTableEntry const _ILSystemMathMethods;
 extern ILMethodTableEntry const _ILSystemTypeMethods;
-extern ILMethodTableEntry const _ILSystemRuntimeTypeMethods;
+extern ILMethodTableEntry const _ILReflectionClrTypeMethods;
 extern ILMethodTableEntry const _ILSystemSingleMethods;
 extern ILMethodTableEntry const _ILSystemDoubleMethods;
 extern ILMethodTableEntry const _ILSystemThreadingMonitorMethods;
@@ -60,6 +60,7 @@ typedef struct
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
 	{"Array",		"Array",		&_ILSystemArrayMethods},
+	{"ClrType",		"System.Reflection", &_ILReflectionClrTypeMethods},
 	{"Debugger",	"System.Diagnostics", &_ILDiagnosticsDebuggerMethods},
 	{"Decimal",		"System",		&_ILSystemDecimalMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
@@ -70,7 +71,6 @@ static InternalClassInfo const internalClassTable[] = {
 	{"PtrSizes",	"Platform",		&_ILPlatformPtrSizesMethods},
 	{"RuntimeHelpers", "System.Runtime.CompilerServices",
 			&_ILRuntimeHelpersMethods},
-	{"RuntimeType",	"System",		&_ILSystemRuntimeTypeMethods},
 	{"Single",		"System",		&_ILSystemSingleMethods},
 	{"StackFrame",	"System.Diagnostics", &_ILDiagnosticsStackFrameMethods},
 	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},

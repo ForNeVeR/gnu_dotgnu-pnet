@@ -23,6 +23,8 @@ AC_SUBST(CYG_RESGEN)
 AC_SUBST(CYG_ILGAC)
 AC_SUBST(CYG_CACHE)
 AC_SUBST(INSTALL_AS_DEFAULT)
+AC_SUBST(FRAMEWORK_VERSION)
+AC_SUBST(SECONDARY_VERSION)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -278,6 +280,14 @@ else
 	INSTALL_AS_DEFAULT=false
 fi
 
+dnl Extract the framework and secondary versions for the Makefiles.
+AC_MSG_CHECKING(primary framework version)
+FRAMEWORK_VERSION=`grep 'FRAMEWORK_VERSION" value="' "${srcdir}/profiles/${PROFILE_NAME}" | "$AWK" 'BEGIN{FS="\""}{print $4}' -`
+AC_MSG_RESULT($FRAMEWORK_VERSION)
+AC_MSG_CHECKING(secondary framework version)
+SECONDARY_VERSION=`grep 'SECONDARY_VERSION" value="' "${srcdir}/profiles/${PROFILE_NAME}" | "$AWK" 'BEGIN{FS="\""}{print $4}' -`
+AC_MSG_RESULT($SECONDARY_VERSION)
+
 dnl The --with-types option can be used to specify the sizes of
 dnl the native int and long types for Xsharp.  Set to one of:
 dnl
@@ -494,6 +504,52 @@ AC_SET_CSHARP_TYPE(pid_t, X_pid_t, pid_t, uint)
 AC_SET_UNSIGNED_CSHARP_TYPE(mode_t, X_mode_t, mode_t, uint)
 AC_SET_UNSIGNED_CSHARP_TYPE(dev_t, X_dev_t, dev_t, uint)
 AC_SET_UNSIGNED_CSHARP_TYPE(nlink_t, X_nlink_t, nlink_t, uint)
+
+dnl List of libraries that need .so version mappings.
+so_imports="ICE X11 Xext ssl gnutls jpeg"
+
+dnl Get the full list of library paths to search.
+so_lib_path=`echo "$LD_LIBRARY_PATH" | sed -e '1,$s/:/ /g'`
+so_lib_path="$so_lib_path /lib /usr/lib /usr/local/lib /usr/X11R6/lib"
+if test "x$prefix" != "xNONE" ; then
+	so_lib_path="${prefix}/lib $so_lib_path"
+fi
+if test -e /etc/ld.so.conf ; then
+	so_lib_path="$so_lib_path "`cat /etc/ld.so.conf`
+fi
+
+dnl Find the actual version of various .so files.
+AC_PATH_PROG(OBJDUMP, objdump)
+mappings=""
+if test "x$OBJDUMP" != "x" ; then
+	case "$host" in
+		*-*-mingw*|*-*-cygwin*) ;;
+		*)
+			mappings="XsharpSupport so libXsharpSupport.so.0.0.0"
+			for file in $so_imports ; do
+				AC_MSG_CHECKING(for full name of lib${file}.so)
+				result=""
+				for ldir in $so_lib_path ; do
+					if test -e "${ldir}/lib${file}.so" ; then
+						result=`"$OBJDUMP" -p "${ldir}/lib${file}.so" 2>/dev/null | grep SONAME | awk '{print $2}' -`
+						if test "x$result" != "x" ; then
+							break
+						fi
+					fi
+				done
+				if test "x$result" != "x" ; then
+					AC_MSG_RESULT($result)
+					mappings="$mappings
+${file} so ${result}"
+				else
+					AC_MSG_RESULT(lib${file}.so)
+				fi
+			done
+		;;
+	esac
+fi
+echo 'creating tools/pinvoke.map'
+echo "$mappings" >tools/pinvoke.map
 
 AC_OUTPUT([
 Makefile

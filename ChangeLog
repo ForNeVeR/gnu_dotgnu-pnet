@@ -1,4 +1,10 @@
 
+2004-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, tools/.cvsignore, tools/Makefile.am:
+	detect the real names of shared objects like "libX11.so" and
+	place them into the "pinvoke.map" file (idea due to Andrew Mitchell).
+
 2004-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csupport/Crt0.cs, csupport/Markers.cs: alterations to the

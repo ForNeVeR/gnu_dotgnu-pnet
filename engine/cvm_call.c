@@ -28,8 +28,19 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 	/* TODO: resize the call frame stack */
 	return 0;
 }
+#ifdef IL_DUMP_CVM
+#define	REPORT_METHOD_CALL()	\
+			do { \
+				printf("Entering %s::%s\n", \
+					   methodToCall->member.owner->name, \
+					   methodToCall->member.name); \
+			} while (0)
+#else
+#define	REPORT_METHOD_CALL()
+#endif
 #define	ALLOC_CALL_FRAME()	\
 			do { \
+				REPORT_METHOD_CALL(); \
 				if(thread->numFrames < thread->maxFrames) \
 				{ \
 					callFrame = &(thread->frameStack[(thread->numFrames)++]); \

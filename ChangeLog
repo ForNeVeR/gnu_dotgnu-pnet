@@ -62,6 +62,8 @@ it computes the offset as signed instead of unsigned.
 
 * engine/layout.c: problem with the size of the interface table.
 
+* engine/cvm_call.c: dump the name of a method when it is entered.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

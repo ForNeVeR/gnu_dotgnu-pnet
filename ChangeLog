@@ -1,3 +1,10 @@
+
+2003-07-07  Gopal.V  <gopalv82@symonds.net>
+ 	
+	* System/Text/RegularExpressions/category.cs,
+	System/Text/RegularExpressions/ChangeLog: Synchronize with the 
+	original copies.
+
 2003-07-07  Thong Nguyen <tum@veridicus.com>
 
 	tests/runtime/System/Threading/TestThread.cs: Put spin-locks

@@ -1,5 +1,5 @@
 /*
- * List.cs - Generic doubly-linked list class.
+ * LinkedList.cs - Generic doubly-linked list class.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,7 +27,7 @@ namespace Generics
 
 using System;
 
-public class List<T>
+public class LinkedList<T>
 	: ICollection<T>, IList<T>, IEnumerable<T>, IIterable<T>, ICloneable
 {
 	// Structure of a list node.
@@ -52,7 +52,7 @@ public class List<T>
 	private int     count;
 
 	// Constructor.
-	public List()
+	public LinkedList()
 			{
 				first = null;
 				last = null;
@@ -91,6 +91,42 @@ public class List<T>
 					}
 					return current;
 				}
+			}
+
+	// Remove a node from this list.
+	private void Remove(Node<T> node)
+			{
+				if(node.next != null)
+				{
+					node.next.prev = node.prev;
+				}
+				else
+				{
+					last = node.prev;
+				}
+				if(node.prev != null)
+				{
+					node.prev.next = node.next;
+				}
+				else
+				{
+					first = node.next;
+				}
+				--count;
+			}
+
+	// Insert a data item before a specific node.
+	private void InsertBefore(Node<T> node, T value)
+			{
+				Node<T> newNode = new Node<T>(value);
+				newNode.next = node;
+				newNode.prev = node.prev;
+				node.prev = newNode;
+				if(newNode.prev == null)
+				{
+					first = newNode;
+				}
+				++count;
 			}
 
 	// Implement the ICollection<T> interface.
@@ -225,7 +261,7 @@ public class List<T>
 			{
 				if(index == count)
 				{
-					AddList(value);
+					AddLast(value);
 				}
 				else
 				{
@@ -318,7 +354,7 @@ public class List<T>
 	// Implement the ICloneable interface.
 	public virtual Object Clone()
 			{
-				List<T> clone = new List<T>();
+				LinkedList<T> clone = new LinkedList<T>();
 				IEnumerator<T> e = GetEnumerator();
 				while(e.MoveNext())
 				{
@@ -417,13 +453,39 @@ public class List<T>
 				return RemoveFirst();
 			}
 
+	// Validate that an enumerator belongs to this list and is not reset.
+	private ListEnumerator<T> ValidateEnumerator
+					(IEnumerator<T> e, bool resetOk)
+			{
+				if(e == null)
+				{
+					throw new ArgumentNullException("e");
+				}
+				ListEnumerator<T> le = (e as ListEnumerator<T>);
+				if(le == null || le.list != this ||
+				   (!resetOk && (le.reset || le.posn == null)))
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_Enumerator"));
+				}
+				return le;
+			}
+
 	// Insert a data item just before the current position
 	// that is expressed by an enumerator.  If the enumerator
 	// position is invalid, then this will insert at the
 	// front of the list.
 	public virtual void InsertBefore(IEnumerator<T> e, T data)
 			{
-				// TODO
+				ListEnumerator<T> le = ValidateEnumerator(e, true);
+				if(le != null)
+				{
+					InsertBefore(le.posn, data);
+				}
+				else
+				{
+					AddFirst(data);
+				}
 			}
 
 	// Insert a data item just after the current position
@@ -432,7 +494,15 @@ public class List<T>
 	// end of the list.
 	public virtual void InsertAfter(IEnumerator<T> e, T data)
 			{
-				// TODO
+				ListEnumerator<T> le = ValidateEnumerator(e, true);
+				if(le != null && le.posn.next != null)
+				{
+					InsertBefore(le.posn.next, data);
+				}
+				else
+				{
+					AddLast(data);
+				}
 			}
 
 	// Remove the item at the current position that is expressed
@@ -441,7 +511,11 @@ public class List<T>
 	// there is no next item.
 	public virtual bool Remove(IEnumerator<T> e)
 			{
-				// TODO
+				ListEnumerator<T> le = ValidateEnumerator(e, false);
+				Node<T> node = le.posn;
+				le.posn = node.next;
+				Remove(node);
+				return (le.posn != null);
 			}
 
 	// Remove the item at the current position and move the
@@ -449,11 +523,15 @@ public class List<T>
 	// Returns false if there is no previous item.
 	public virtual bool RemoveAndMoveToPrev(IEnumerator<T> e)
 			{
-				// TODO
+				ListEnumerator<T> le = ValidateEnumerator(e, false);
+				Node<T> node = le.posn;
+				le.posn = node.prev;
+				Remove(node);
+				return (le.posn != null);
 			}
 
 	// Wrap a list to make it synchronized.
-	public static List<T> Synchronized<T>(List<T> list)
+	public static LinkedList<T> Synchronized<T>(LinkedList<T> list)
 			{
 				if(list == null)
 				{
@@ -463,7 +541,7 @@ public class List<T>
 			}
 
 	// Wrap a list to make it read-only.
-	public static List<T> ReadOnly<T>(List<T> list)
+	public static LinkedList<T> ReadOnly<T>(LinkedList<T> list)
 			{
 				if(list == null)
 				{
@@ -475,13 +553,13 @@ public class List<T>
 	// Enumerator and iterator class for lists.
 	private class ListEnumerator<T> : IEnumerator<T>, IIterator<T>
 	{
-		// Internal state, accessible to "List<T>".
-		public List<T> list;
+		// Internal state, accessible to "LinkedList<T>".
+		public LinkedList<T> list;
 		public Node<T> posn;
 		public bool    reset;
 
 		// Constructor.
-		public ListEnumerator(List<T> list)
+		public ListEnumerator(LinkedList<T> list)
 				{
 					this.list = list;
 					this.posn = null;
@@ -558,8 +636,375 @@ public class List<T>
 
 	}; // class ListEnumerator<T>
 
-	// TODO: synchonized and read-only wrappers
+	// Wrapper class for synchronized lists.
+	private sealed class SynchronizedList<T> : IList<T>
+	{
+		// Internal state.
+		private LinkedList<T> list;
 
-}; // class List<T>
+		// Constructor.
+		public SynchronizedList(LinkedList<T> list)
+				{
+					this.list = list;
+				}
+
+		// Override the parent's API, wrapping everything in a lock.
+		public override void CopyTo(T[] array, int index)
+				{
+					lock(SyncRoot)
+					{
+						list.CopyTo(array, index);
+					}
+				}
+		public override int Count
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list.Count;
+						}
+					}
+				}
+		public override bool IsSynchronized
+				{
+					get
+					{
+						return true;
+					}
+				}
+		public override Object SyncRoot
+				{
+					get
+					{
+						return list.SyncRoot;
+					}
+				}
+		public override int Add(T value)
+				{
+					lock(SyncRoot)
+					{
+						return list.Add(value);
+					}
+				}
+		public override void Clear()
+				{
+					lock(SyncRoot)
+					{
+						list.Clear();
+					}
+				}
+		public override bool Contains(T value)
+				{
+					lock(SyncRoot)
+					{
+						return list.Contains(value);
+					}
+				}
+		public override int IndexOf(T value)
+				{
+					lock(SyncRoot)
+					{
+						return list.IndexOf(value);
+					}
+				}
+		public override void Insert(int index, T value)
+				{
+					lock(SyncRoot)
+					{
+						list.Insert(index, value);
+					}
+				}
+		public override void Remove(T value)
+				{
+					lock(SyncRoot)
+					{
+						list.Remove(value);
+					}
+				}
+		public override void RemoveAt(int index)
+				{
+					lock(SyncRoot)
+					{
+						list.RemoveAt(index);
+					}
+				}
+		public override bool IsFixedSize
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list.IsFixedSize;
+						}
+					}
+				}
+		public override bool IsReadOnly
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list.IsReadOnly;
+						}
+					}
+				}
+		public override T this[int index]
+				{
+					get
+					{
+						lock(SyncRoot)
+						{
+							return list[index];
+						}
+					}
+					set
+					{
+						lock(SyncRoot)
+						{
+							list[index] = value;
+						}
+					}
+				}
+		public override IEnumerator<T> GetEnumerator()
+				{
+					lock(SyncRoot)
+					{
+						return new SynchronizedEnumerator<T>
+							(list.GetEnumerator());
+					}
+				}
+		public override IIterator<T> GetIterator()
+				{
+					lock(SyncRoot)
+					{
+						return new SynchronizedIterator<T>
+							(list.GetIterator());
+					}
+				}
+		public override Object Clone()
+				{
+					lock(SyncRoot)
+					{
+						return new SynchronizedList<T>
+							((LinkedList<T>)(list.Clone()));
+					}
+				}
+		public override void AddLast(T data)
+				{
+					lock(SyncRoot)
+					{
+						list.AddLast(data);
+					}
+				}
+		public override void AddFirst(T data)
+				{
+					lock(SyncRoot)
+					{
+						list.AddFirst(data);
+					}
+				}
+		public override T RemoveLast()
+				{
+					lock(SyncRoot)
+					{
+						return list.RemoveLast();
+					}
+				}
+		public override T RemoveFirst()
+				{
+					lock(SyncRoot)
+					{
+						return list.RemoveFirst();
+					}
+				}
+		public override void InsertBefore(IEnumerator<T> e, T data)
+				{
+					lock(SyncRoot)
+					{
+						list.InsertBefore(e, data);
+					}
+				}
+		public override void InsertAfter(IEnumerator<T> e, T data)
+				{
+					lock(SyncRoot)
+					{
+						list.InsertAfter(e, data);
+					}
+				}
+		public override bool Remove(IEnumerator<T> e)
+				{
+					lock(SyncRoot)
+					{
+						return list.Remove(e);
+					}
+				}
+		public override bool RemoveAndMoveToPrev(IEnumerator<T> e)
+				{
+					lock(SyncRoot)
+					{
+						return list.RemoveAndMoveToPrev(e);
+					}
+				}
+
+	}; // class SynchronizedList<T>
+
+	// Wrapper class for read-only lists.
+	private sealed class ReadOnlyList<T> : IList<T>
+	{
+		// Internal state.
+		private LinkedList<T> list;
+
+		// Constructor.
+		public ReadOnlyList(LinkedList<T> list)
+				{
+					this.list = list;
+				}
+
+		// Override the parent's API, stubbing non-read methods.
+		public override void CopyTo(T[] array, int index)
+				{
+					list.CopyTo(array, index);
+				}
+		public override int Count
+				{
+					get
+					{
+						return list.Count;
+					}
+				}
+		public override bool IsSynchronized
+				{
+					get
+					{
+						return list.IsSynchronized;
+					}
+				}
+		public override Object SyncRoot
+				{
+					get
+					{
+						return list.SyncRoot;
+					}
+				}
+		public override int Add(T value)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override void Clear()
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override bool Contains(T value)
+				{
+					return list.Contains(value);
+				}
+		public override int IndexOf(T value)
+				{
+					return list.IndexOf(value);
+				}
+		public override void Insert(int index, T value)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override void Remove(T value)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override void RemoveAt(int index)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override bool IsFixedSize
+				{
+					get
+					{
+						return list.IsFixedSize;
+					}
+				}
+		public override bool IsReadOnly
+				{
+					get
+					{
+						return true;
+					}
+				}
+		public override T this[int index]
+				{
+					get
+					{
+						return list[index];
+					}
+					set
+					{
+						throw new InvalidOperationException
+							(S._("NotSupp_ReadOnly"));
+					}
+				}
+		public override IEnumerator<T> GetEnumerator()
+				{
+					return list.GetEnumerator();
+				}
+		public override IIterator<T> GetIterator()
+				{
+					return new ReadOnlyIterator<T>(list.GetIterator());
+				}
+		public override Object Clone()
+				{
+					lock(SyncRoot)
+					{
+						return new ReadOnlyList<T>
+							((LinkedList<T>)(list.Clone()));
+					}
+				}
+		public override void AddLast(T data)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override void AddFirst(T data)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override T RemoveLast()
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override T RemoveFirst()
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override void InsertBefore(IEnumerator<T> e, T data)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override void InsertAfter(IEnumerator<T> e, T data)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override bool Remove(IEnumerator<T> e)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public override bool RemoveAndMoveToPrev(IEnumerator<T> e)
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+
+	}; // class ReadOnlyList<T>
+
+}; // class LinkedList<T>
 
 }; // namespace Generics

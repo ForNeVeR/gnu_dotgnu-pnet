@@ -26,6 +26,10 @@
 	Generics/SynchronizedEnumerator.cs, Generics/SynchronizedIterator.cs:
 	initial check-in of the generic C# collection library.
 
+	* Generics/ArrayList.cs, Generics/Generics.txt, Generics/LinkedList.cs,
+	Generics/List.cs, Generics/ReadOnlyIterator.cs: read-only iterators;
+	rename List<T> to LinkedList<T>; finish implementing LinkedList<T>.
+
 2003-02-21  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/Version.cs: == and != operator overloading for 

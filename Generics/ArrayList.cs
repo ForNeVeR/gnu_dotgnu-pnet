@@ -2050,6 +2050,17 @@ public class ArrayList<T>
 					}
 				}
 
+		// Get an iterator for this array list.
+		public override IIterator<T> GetIterator()
+				{
+					return new ReadOnlyIterator<T>(list.GetIterator());
+				}
+		public override IIterator<T> GetIterator(int index, int count)
+				{
+					return new ReadOnlyIterator<T>
+						(list.GetIterator(index, count));
+				}
+
 	}; // class ReadOnlyWrapper<T>
 
 	// Adapt an array list to appear to be synchronized

@@ -12,6 +12,9 @@
 * codegen/cg_nodes.tc: add "nameNode", "classInfo", and "varIndex" to
 "ILNode_CatchClause"; move "ILNode_Lock" from "cs_defs.tc".
 
+* codegen/cg_stmt.tc, codegen/jv_stmt.tc: code generation for "try"
+and "lock" statements; alter return type processing for "return".
+
 2001-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc: bug fix in "CSEvalArguments"; make sure "ref" and "out"

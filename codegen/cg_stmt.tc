@@ -22,6 +22,7 @@
  */
 
 #include "cg_nodes.h"
+#include "il_dumpasm.h"
 
 /*
  * Determine if a statement node is empty.
@@ -51,6 +52,31 @@ static void PushLoop(ILGenInfo *info, ILLabel *continueLabel,
 	info->loopStack[info->loopStackSize].continueLabel = continueLabel;
 	info->loopStack[info->loopStackSize].breakLabel = breakLabel;
 	info->loopStack[info->loopStackSize].finallyLabel = 0;
+	++(info->loopStackSize);
+}
+
+/*
+ * Push a new finally entry onto the loop stack.
+ */
+static void PushFinally(ILGenInfo *info, ILLabel *finallyLabel)
+{
+	if(info->loopStackSize >= info->loopStackMax)
+	{
+		/* Increase the size of the loop stack */
+		ILLoopStack *newstack;
+		newstack = (ILLoopStack *)ILRealloc(info->loopStack,
+											sizeof(ILLoopStack) *
+												(info->loopStackMax + 4));
+		if(!newstack)
+		{
+			ILGenOutOfMemory(info);
+		}
+		info->loopStack = newstack;
+		info->loopStackMax += 4;
+	}
+	info->loopStack[info->loopStackSize].continueLabel = 0;
+	info->loopStack[info->loopStackSize].breakLabel = 0;
+	info->loopStack[info->loopStackSize].finallyLabel = finallyLabel;
 	++(info->loopStackSize);
 }
 
@@ -701,11 +727,11 @@ static void GenReturn(ILGenInfo *info)
 		   Store the return value into a temporary local variable and
 		   then "leave" to a block of code at the end of the method
 		   which pushes the local and invokes "ret" */
-		if(info->returnType != ILMachineType_Void)
+		if(info->returnType != ILType_Void)
 		{
 			if(info->returnVar < 0)
 			{
-				info->returnVar = ILGenTempVar(info, info->returnType);
+				info->returnVar = ILGenTempTypedVar(info, info->returnType);
 			}
 			ILGenStoreLocal(info, (unsigned)(info->returnVar));
 		}
@@ -722,9 +748,10 @@ ILNode_GenDiscard(ILNode_Return)
 {
 	/* Push a default value on the stack if the real return
 	   type is not "void" */
-	if(info->returnType != ILMachineType_Void)
+	if(info->returnType != ILType_Void)
 	{
-		ILGenCast(info, ILMachineType_Void, info->returnType);
+		ILGenCast(info, ILMachineType_Void,
+				  ILTypeToMachineType(info->returnType));
 	}
 
 	/* Generate the correct return sequence */
@@ -740,7 +767,7 @@ ILNode_GenDiscard(ILNode_ReturnExpr)
 
 	/* Evaluate the return value and cast it to the correct type */
 	valueType = ILNode_GenValue(node->expr, info);
-	ILGenCast(info, valueType, info->returnType);
+	ILGenCast(info, valueType, ILTypeToMachineType(info->returnType));
 
 	/* Generate the correct return sequence */
 	GenReturn(info);
@@ -1015,17 +1042,180 @@ ILNode_GenDiscard(ILNode_ThrowExpr)
  */
 ILNode_GenDiscard(ILNode_Try)
 {
-	/* TODO */
+	ILLabel label = ILLabel_Undefined;
+
+	/* Push an item onto the loop stack which marks the "try" block */
+	PushFinally(info, 0);
+
+	/* Output the front of the "try" block */
+	if(info->asmOutput)
+	{
+		fputs("\t.try {\n", info->asmOutput);
+	}
+
+	/* Output the body of the "try" block */
+	ILNode_GenDiscard(node->stmt, info);
+
+	/* Jump to the end of the "try" statement */
+	if(!ILNodeEndsInReturn(node->stmt))
+	{
+		ILGenJump(info, IL_OP_LEAVE, &label);
+	}
+
+	/* Terminate the body of the "try" block */
+	if(info->asmOutput)
+	{
+		fputs("\t}\n", info->asmOutput);
+	}
+
+	/* Output the catch clauses */
+	if(node->catchClauses)
+	{
+		ILNode_ListIter iter;
+		ILNode *clause;
+		ILNode_ListIter_Init(&iter, node->catchClauses);
+		while((clause = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_GenDiscard(clause, info);
+			if(!ILNodeEndsInReturn(clause))
+			{
+				ILGenJump(info, IL_OP_LEAVE, &label);
+			}
+			if(info->asmOutput)
+			{
+				fputs("\t}\n", info->asmOutput);
+			}
+		}
+	}
+
+	/* Remove the item from the loop stack which marks the "try" block */
+	PopLoop(info);
+
+	/* Output the finally clause */
+	if(node->finallyClause)
+	{
+		ILNode_GenDiscard(node->finallyClause, info);
+	}
+
+	/* Set the label that marks the end of the "try" statement */
+	ILGenLabel(info, &label);
 }
 
 /*
- * Stub out pseudo-statements that are used by "try" statements.
+ * Generate discard code for a "catch" clause.
  */
-ILNode_GenDiscard(ILNode_CatchClauses),
-ILNode_GenDiscard(ILNode_CatchClause),
+ILNode_GenDiscard(ILNode_CatchClause)
+{
+	/* Output the catch header */
+	if(info->asmOutput)
+	{
+		fputs("\tcatch ", info->asmOutput);
+		ILDumpClassName(info->asmOutput, info->image, node->classInfo,
+						IL_DUMP_QUOTE_NAMES);
+		fputs(" {\n", info->asmOutput);
+	}
+
+	/* There is an extra object on the stack on entry to the catch block */
+	ILGenAdjust(info, 1);
+
+	/* Store the exception object into a local, or pop it if no local */
+	if(node->name)
+	{
+		ILGenStoreLocal(info, (unsigned)(node->varIndex));
+	}
+	else
+	{
+		ILGenSimple(info, IL_OP_POP);
+	}
+	ILGenAdjust(info, -1);
+
+	/* Output the body of the catch block */
+	ILNode_GenDiscard(node->stmt, info);
+
+	/* Note: the end of the catch is output by the "ILNode_Try" logic */
+}
+
+/*
+ * Generate discard code for a "finally" clause.
+ */
 ILNode_GenDiscard(ILNode_FinallyClause)
 {
-	/* Nothing to do here */
+	if(info->asmOutput)
+	{
+		fputs("\tfinally {\n", info->asmOutput);
+	}
+	ILNode_GenDiscard(node->stmt, info);
+	if(info->asmOutput)
+	{
+		if(!ILNodeEndsInReturn(node->stmt))
+		{
+			fputs("\tendfinally\n", info->asmOutput);
+		}
+		fputs("\t}\n", info->asmOutput);
+	}
+}
+
+/*
+ * Generate discard code for the "lock" statement.
+ */
+ILNode_GenDiscard(ILNode_Lock)
+{
+	unsigned tempVar;
+	ILLabel endLabel = ILLabel_Undefined;
+
+	/* Allocate a temporary local variable to hold the lock object */
+	tempVar = ILGenTempVar(info, ILMachineType_ObjectRef);
+
+	/* Evaluate the expression and copy it into the temporary local */
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenStoreLocal(info, tempVar);
+	ILGenAdjust(info, -1);
+
+	/* Enter a monitor on the object */
+	ILGenCallByName(info, "void [.library]System.Threading.Monitor::Enter"
+								"(class [.library]System.Object)");
+	ILGenAdjust(info, -1);
+
+	/* Output the body of the lock statement within a "try" block */
+	PushFinally(info, 0);
+	if(info->asmOutput)
+	{
+		fputs("\t.try {\n", info->asmOutput);
+	}
+	ILNode_GenDiscard(node->stmt, info);
+	if(!ILNodeEndsInReturn(node->stmt))
+	{
+		ILGenJump(info, IL_OP_LEAVE, &endLabel);
+	}
+	if(info->asmOutput)
+	{
+		fputs("\t}\n", info->asmOutput);
+	}
+	PopLoop(info);
+
+	/* Output the "finally" clause which exits the monitor */
+	if(info->asmOutput)
+	{
+		fputs("\tfinally {\n", info->asmOutput);
+	}
+	ILGenLoadLocal(info, tempVar);
+	ILGenCallByName(info, "void [.library]System.Threading.Monitor::Exit"
+								"(class [.library]System.Object)");
+	ILGenExtend(info, 1);
+	if(info->asmOutput)
+	{
+		fputs("\tendfinally\n", info->asmOutput);
+		fputs("\t}\n", info->asmOutput);
+	}
+
+	/* Set the label at the end of the "try" block */
+	ILGenLabel(info, &endLabel);
+
+	/* Free the temporary variable, which we no longer require */
+	ILGenReleaseTempVar(info, tempVar);
 }
 
 /*

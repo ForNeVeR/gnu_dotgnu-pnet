@@ -305,7 +305,10 @@ JavaGenDiscard(ILNode_Break)
 		if(stack[size - 1].continueLabel == 0)
 		{
 			/* Call the "finally" handler for this try block */
-			JavaGenJump(info, JAVA_OP_JSR, stack[size - 1].finallyLabel);
+			if(stack[size - 1].finallyLabel != 0)
+			{
+				JavaGenJump(info, JAVA_OP_JSR, stack[size - 1].finallyLabel);
+			}
 		}
 		--size;
 	}
@@ -356,6 +359,8 @@ static void JavaGenReturn(ILGenInfo *info)
 	int withinTry = 0;
 	ILLoopStack *stack = info->loopStack;
 	long size = info->loopStackSize;
+	ILMachineType returnMachineType = ILTypeToMachineType(info->returnType);
+
 	while(size > 0)
 	{
 		if(stack[size - 1].continueLabel == 0 &&
@@ -369,15 +374,15 @@ static void JavaGenReturn(ILGenInfo *info)
 	if(withinTry)
 	{
 		/* Save the return value into a local variable temporarily */
-		if(info->returnType != ILMachineType_Void)
+		if(info->returnType != ILType_Void)
 		{
 			if(info->returnVar < 0)
 			{
-				info->returnVar = ILGenTempVar(info, info->returnType);
+				info->returnVar = ILGenTempTypedVar(info, info->returnType);
 			}
 			JavaGenStoreLocal(info, (unsigned)(info->returnVar),
-							  info->returnType);
-			JavaGenAdjust(info, -(JavaGenTypeSize(info->returnType)));
+							  returnMachineType);
+			JavaGenAdjust(info, -(JavaGenTypeSize(returnMachineType)));
 		}
 
 		/* Call the "finally" clauses of all active "try" blocks */
@@ -393,17 +398,17 @@ static void JavaGenReturn(ILGenInfo *info)
 		}
 
 		/* Restore the return value to the top of the stack */
-		if(info->returnType != ILMachineType_Void)
+		if(info->returnType != ILType_Void)
 		{
 			JavaGenLoadLocal(info, (unsigned)(info->returnVar),
-							 info->returnType);
-			JavaGenAdjust(info, JavaGenTypeSize(info->returnType));
+							 returnMachineType);
+			JavaGenAdjust(info, JavaGenTypeSize(returnMachineType));
 		}
 	}
 
 	/* Output the correct form of "return" instruction */
-	JavaGenReturnInsn(info, info->returnType);
-	JavaGenAdjust(info, -(JavaGenTypeSize(info->returnType)));
+	JavaGenReturnInsn(info, returnMachineType);
+	JavaGenAdjust(info, -(JavaGenTypeSize(returnMachineType)));
 }
 
 %}
@@ -415,9 +420,10 @@ JavaGenDiscard(ILNode_Return)
 {
 	/* Push a default value on the stack if the real return
 	   type is not "void" */
-	if(info->returnType != ILMachineType_Void)
+	if(info->returnType != ILType_Void)
 	{
-		JavaGenCast(info, ILMachineType_Void, info->returnType);
+		JavaGenCast(info, ILMachineType_Void,
+				    ILTypeToMachineType(info->returnType));
 	}
 
 	/* Generate the correct return sequence */
@@ -433,7 +439,8 @@ JavaGenDiscard(ILNode_ReturnExpr)
 
 	/* Evaluate the return value and cast it to the correct type */
 	valueType = JavaGenValue(node->expr, info);
-	JavaGenCast(info, valueType, info->returnType);
+	JavaGenCast(info, valueType,
+				ILTypeToMachineType(info->returnType));
 
 	/* Generate the correct return sequence */
 	JavaGenReturn(info);
@@ -650,17 +657,276 @@ JavaGenDiscard(ILNode_ThrowExpr)
  */
 JavaGenDiscard(ILNode_Try)
 {
-	/* TODO */
+	ILLabel finallyLabel = ILLabel_Undefined;
+	ILLabel endLabel = ILLabel_Undefined;
+
+	/* Push an item onto the loop stack which marks the "try" block */
+	if(node->finallyClause)
+	{
+		PushFinally(info, &finallyLabel);
+	}
+	else
+	{
+		PushFinally(info, 0);
+	}
+
+	/* Output the front of the "try" block */
+	if(info->asmOutput)
+	{
+		fputs("\t.try {\n", info->asmOutput);
+	}
+
+	/* Output the body of the "try" block */
+	JavaGenDiscard(node->stmt, info);
+
+	/* Jump to the end of the "try" statement */
+	if(!ILNodeEndsInReturn(node->stmt))
+	{
+		if(node->finallyClause)
+		{
+			JavaGenJump(info, JAVA_OP_JSR, &finallyLabel);
+		}
+		JavaGenJump(info, JAVA_OP_GOTO, &endLabel);
+	}
+
+	/* Terminate the body of the "try" block */
+	if(info->asmOutput)
+	{
+		fputs("\t}\n", info->asmOutput);
+	}
+
+	/* Output the catch clauses */
+	if(node->catchClauses)
+	{
+		ILNode_ListIter iter;
+		ILNode *clause;
+		ILNode_ListIter_Init(&iter, node->catchClauses);
+		while((clause = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			JavaGenDiscard(clause, info);
+			if(!ILNodeEndsInReturn(clause))
+			{
+				if(node->finallyClause)
+				{
+					JavaGenJump(info, JAVA_OP_JSR, &finallyLabel);
+				}
+				JavaGenJump(info, JAVA_OP_GOTO, &endLabel);
+			}
+			if(info->asmOutput)
+			{
+				fputs("\t}\n", info->asmOutput);
+			}
+		}
+	}
+
+	/* Add an extra catch block to catch any exception
+	   if the "try" statement has a "finally" clause */
+   	if(node->finallyClause)
+	{
+		/* Create a temporary local to hold the thrown exception.
+		   We never free this variable so that the code generator will
+		   not accidentally reuse the variable for non-exception values */
+		unsigned tempVar = ILGenTempVar(info, ILMachineType_ObjectRef);
+		if(info->asmOutput)
+		{
+			fputs("\tcatch {\n", info->asmOutput);
+		}
+		JavaGenExtend(info, 1);
+		JavaGenStoreLocal(info, tempVar, ILMachineType_ObjectRef);
+		JavaGenJump(info, JAVA_OP_JSR, &finallyLabel);
+		JavaGenLoadLocal(info, tempVar, ILMachineType_ObjectRef);
+		JavaGenSimple(info, JAVA_OP_ATHROW);
+		if(info->asmOutput)
+		{
+			fputs("\t}\n", info->asmOutput);
+		}
+	}
+
+	/* Remove the item from the loop stack which marks the "try" block */
+	PopLoop(info);
+
+	/* Output the finally clause */
+	if(node->finallyClause)
+	{
+		if(info->asmOutput)
+		{
+			fputs("\tfinally {\n", info->asmOutput);
+		}
+		JavaGenLabel(info, &finallyLabel);
+		JavaGenDiscard(node->finallyClause, info);
+		if(info->asmOutput)
+		{
+			fputs("\t}\n", info->asmOutput);
+		}
+	}
+
+	/* Set the label that marks the end of the "try" statement */
+	JavaGenLabel(info, &endLabel);
 }
 
 /*
- * Stub out pseudo-statements that are used by "try" statements.
+ * Generate discard code for "catch" clauses.
  */
-JavaGenDiscard(ILNode_CatchClauses),
-JavaGenDiscard(ILNode_CatchClause),
+JavaGenDiscard(ILNode_CatchClause)
+{
+	/* Output the catch header */
+	if(info->asmOutput)
+	{
+		fputs("\tcatch ", info->asmOutput);
+		ILDumpClassName(info->asmOutput, info->image, node->classInfo,
+						IL_DUMP_QUOTE_NAMES);
+		fputs(" {\n", info->asmOutput);
+	}
+
+	/* There is an extra object on the stack on entry to the catch block */
+	JavaGenAdjust(info, 1);
+
+	/* Determine which local to use to store the throw value.
+	   Bug: if the program modifies a catch variable and then
+	   re-throws an exception with "throw;", then the modified
+	   value will be thrown instead of the original.  This is
+	   not 100% correct according to C# semantics, but is rare
+	   enough that we can probably ignore the problem for now */
+	if(node->name)
+	{
+		info->throwVariable = (long)(node->varIndex);
+	}
+	else
+	{
+		info->throwVariable =
+			ILGenTempTypedVar(info, ILType_FromClass(node->classInfo));
+	}
+
+	/* Store the exception object into the local */
+	JavaGenStoreLocal(info, (unsigned)(info->throwVariable),
+					  ILMachineType_ObjectRef);
+	JavaGenAdjust(info, -1);
+
+	/* Output the body of the catch block */
+	JavaGenDiscard(node->stmt, info);
+
+	/* Release the temporary throw variable */
+	if(!(node->name))
+	{
+		ILGenReleaseTempVar(info, (unsigned)(info->throwVariable));
+	}
+	info->throwVariable = -1;
+
+	/* Note: the end of the catch is output by the "ILNode_Try" logic */
+}
+
+/*
+ * Generate discard code for "finally" clauses.
+ */
 JavaGenDiscard(ILNode_FinallyClause)
 {
-	/* Nothing to do here */
+	unsigned varNum;
+
+	/* Allocate a temporary variable to hold the return address.
+	   We never free this variable so that the code generator will
+	   not accidentally reuse the variable for non-address values */
+	varNum = ILGenTempVar(info, ILMachineType_ObjectRef);
+
+	/* Save the return address into the temporary local variable */
+	JavaGenAdjust(info, 1);
+	JavaGenStoreLocal(info, varNum, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, -1);
+
+	/* Output the code for the clause body */
+	JavaGenDiscard(node->stmt, info);
+
+	/* If the clause falls through, then output a "ret" instruction */
+	if(!ILNodeEndsInReturn(node->stmt))
+	{
+		JavaGenRet(info, varNum);
+	}
+}
+
+/*
+ * Generate Java discard code for the "lock" statement.
+ */
+JavaGenDiscard(ILNode_Lock)
+{
+	unsigned tempVar, tempVar2;
+	ILLabel endLabel = ILLabel_Undefined;
+	ILLabel finallyLabel = ILLabel_Undefined;
+
+	/* Allocate a temporary local variable to hold the lock object */
+	tempVar = ILGenTempVar(info, ILMachineType_ObjectRef);
+
+	/* Evaluate the expression and copy it into the temporary local */
+	JavaGenCast(info, JavaGenValue(node->expr, info), ILMachineType_ObjectRef);
+	JavaGenSimple(info, JAVA_OP_DUP);
+	JavaGenAdjust(info, 1);
+	JavaGenStoreLocal(info, tempVar, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, -1);
+
+	/* Enter a monitor on the object */
+	JavaGenSimple(info, JAVA_OP_MONITORENTER);
+	JavaGenAdjust(info, -1);
+
+	/* Output the body of the lock statement within a "try" block */
+	PushFinally(info, &finallyLabel);
+	if(info->asmOutput)
+	{
+		fputs("\t.try {\n", info->asmOutput);
+	}
+	JavaGenDiscard(node->stmt, info);
+	if(!ILNodeEndsInReturn(node->stmt))
+	{
+		/* We can short-cut the finally processing, by doing the exit here */
+		JavaGenLoadLocal(info, tempVar, ILMachineType_ObjectRef);
+		JavaGenSimple(info, JAVA_OP_MONITOREXIT);
+		JavaGenExtend(info, 1);
+		JavaGenJump(info, JAVA_OP_GOTO, &endLabel);
+	}
+	if(info->asmOutput)
+	{
+		fputs("\t}\n", info->asmOutput);
+	}
+	PopLoop(info);
+
+	/* Output a default "catch" clause that catches all exceptions */
+	tempVar2 = ILGenTempVar(info, ILMachineType_ObjectRef);
+	if(info->asmOutput)
+	{
+		fputs("\tcatch {\n", info->asmOutput);
+	}
+	JavaGenExtend(info, 1);
+	JavaGenStoreLocal(info, tempVar2, ILMachineType_ObjectRef);
+	JavaGenJump(info, JAVA_OP_JSR, &finallyLabel);
+	JavaGenLoadLocal(info, tempVar2, ILMachineType_ObjectRef);
+	JavaGenSimple(info, JAVA_OP_ATHROW);
+	if(info->asmOutput)
+	{
+		fputs("\t}\n", info->asmOutput);
+	}
+
+	/* Output the "finally" clause which exits the monitor
+	   when an exception is caught, or when "break", "continue",
+	   or "return" is used to exit the lock statement */
+	if(info->asmOutput)
+	{
+		fputs("\tfinally {\n", info->asmOutput);
+	}
+	JavaGenLabel(info, &finallyLabel);
+	tempVar2 = ILGenTempVar(info, ILMachineType_ObjectRef);
+	JavaGenStoreLocal(info, tempVar2, ILMachineType_ObjectRef); /* save addr */
+	JavaGenExtend(info, 1);
+	JavaGenLoadLocal(info, tempVar, ILMachineType_ObjectRef);
+	JavaGenSimple(info, JAVA_OP_MONITOREXIT);
+	JavaGenExtend(info, 1);
+	JavaGenRet(info, tempVar2);
+	if(info->asmOutput)
+	{
+		fputs("\t}\n", info->asmOutput);
+	}
+
+	/* Set the label at the end of the "try" block */
+	JavaGenLabel(info, &endLabel);
+
+	/* Free the temporary lock variable, which we no longer require */
+	ILGenReleaseTempVar(info, tempVar);
 }
 
 /*

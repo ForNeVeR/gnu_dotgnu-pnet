@@ -781,6 +781,291 @@ static int IndexerNameAttribute(ILProgramItem *item, ILSerializeReader *reader)
 }
 
 /*
+ * Concatenate two strings.
+ */
+static char *ConcatStrings(char *str1, const char *str2)
+{
+	char *newStr;
+
+	/* Bail out if we ran out of memory last time */
+	if(!str1)
+	{
+		return str1;
+	}
+
+	/* Allocate space for the new string */
+	newStr = (char *)ILRealloc(str1, strlen(str1) + strlen(str2) + 1);
+	if(!newStr)
+	{
+		ILFree(str1);
+		return 0;
+	}
+
+	/* Create the new string */
+	strcpy(newStr, str1);
+	strcat(newStr, str2);
+	return newStr;
+}
+
+/*
+ * Concatenate a name to a string if a particular flag is set.
+ */
+static char *ConcatFlag(ILInt32 flags, ILInt32 flag, char *str,
+						const char *name, int *comma)
+{
+	if((flag && (flags & flag) == flag) || (!flag && !flags))
+	{
+		if(*comma)
+		{
+			str = ConcatStrings(str, ", ");
+		}
+		else
+		{
+			*comma = 1;
+		}
+		str = ConcatStrings(str, name);
+	}
+	return str;
+}
+
+/*
+ * Convert a string from UTF-8 to UTF-16.
+ */
+static void *StringToUTF16(const char *str, unsigned long *len)
+{
+	int slen = strlen(str);
+	int posn = 0;
+	unsigned long ch;
+	unsigned long index;
+	char *utf16;
+
+	/* Determine the length of the UTF-16 string in bytes */
+	*len = 0;
+	while(posn < slen)
+	{
+		ch = ILUTF8ReadChar(str, slen, &posn);
+		*len += (unsigned long)ILUTF16WriteCharAsBytes(0, ch);
+	}
+
+	/* Allocate space for the UTF-16 string */
+	utf16 = (char *)ILMalloc(*len * 2);
+	if(!utf16)
+	{
+		return 0;
+	}
+
+	/* Convert the string from UTF-8 to UTF-16 */
+	index = 0;
+	posn = 0;
+	while(posn < slen)
+	{
+		ch = ILUTF8ReadChar(str, slen, &posn);
+		index += (unsigned long)ILUTF16WriteCharAsBytes(utf16 + index, ch);
+	}
+	return utf16;
+}
+
+/*
+ * Process a security permission.
+ */
+static int SecurityPermissionAttribute(ILProgramItem *item,
+									   ILSerializeReader *reader)
+{
+	int type;
+	ILInt32 action;
+	int numExtra;
+	const char *paramName;
+	int paramNameLen;
+	ILInt32 flags;
+	ILMember *member;
+	char *result;
+	int comma;
+#if 0
+	void *utf16;
+	unsigned long utf16Len;
+	ILDeclSecurity *decl;
+#endif
+
+	/* The item must be a class, method, or assembly */
+	if(!ILProgramItemToClass(item) &&
+	   !ILProgramItemToMethod(item) &&
+	   !ILProgramItemToAssembly(item))
+	{
+		return 0;
+	}
+
+	/* The first and only parameter should be a "SecurityAction" value */
+	type = ILSerializeReaderGetParamType(reader);
+	if(type != IL_META_SERIALTYPE_I4)
+	{
+		return 0;
+	}
+	action = ILSerializeReaderGetInt32(reader, type);
+	if(ILSerializeReaderGetParamType(reader) != 0)
+	{
+		return 0;
+	}
+
+	/* Extract the flags */
+	flags = 0;
+	numExtra = ILSerializeReaderGetNumExtra(reader);
+	if(numExtra < 0)
+	{
+		return 0;
+	}
+	while(numExtra > 0)
+	{
+		type = ILSerializeReaderGetExtra(reader, &member, &paramName,
+										 &paramNameLen);
+		if(type == -1)
+		{
+			return 0;
+		}
+		if(IsParam("Flags", IL_META_SERIALTYPE_I4))
+		{
+			flags |= ILSerializeReaderGetInt32(reader, type);
+		}
+		else if(IsParam("Assertion", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0001;
+		}
+		else if(IsParam("UnmanagedCode", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0002;
+		}
+		else if(IsParam("SkipVerification", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0004;
+		}
+		else if(IsParam("Execution", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0008;
+		}
+		else if(IsParam("ControlThread", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0010;
+		}
+		else if(IsParam("ControlEvidence", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0020;
+		}
+		else if(IsParam("ControlPolicy", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0040;
+		}
+		else if(IsParam("SerializationFormatter", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0080;
+		}
+		else if(IsParam("ControlDomainPolicy", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0100;
+		}
+		else if(IsParam("ControlPrincipal", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0200;
+		}
+		else if(IsParam("ControlAppDomain", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0400;
+		}
+		else if(IsParam("RemotingConfiguration", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x0800;
+		}
+		else if(IsParam("Infrastructure", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x1000;
+		}
+		else if(IsParam("BindingRedirects", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			ILSerializeReaderGetInt32(reader, type);
+			flags |= 0x2000;
+		}
+		else
+		{
+			return 0;
+		}
+		--numExtra;
+	}
+
+	/* Create the permission block */
+	result = ILDupString
+		("<PermissionSet class=\"PermissionSet\"\r\n"
+		 "               version=\"1\">\r\n"
+		 "   <IPermission class=\"System.Security.Permissions."
+		 		"SecurityAttribute, mscorlib\"\r\n"
+		 "                 version=\"1\"\r\n"
+		 "                 Flags=\"");
+	comma = 0;
+	result = ConcatFlag(flags, 0x0000, result, "NoFlags", &comma);
+	result = ConcatFlag(flags, 0x0001, result, "Assertion", &comma);
+	result = ConcatFlag(flags, 0x0002, result, "UnmanagedCode", &comma);
+	result = ConcatFlag(flags, 0x0004, result, "SkipVerification", &comma);
+	result = ConcatFlag(flags, 0x0008, result, "Execution", &comma);
+	result = ConcatFlag(flags, 0x0010, result, "ControlThread", &comma);
+	result = ConcatFlag(flags, 0x0020, result, "ControlEvidence", &comma);
+	result = ConcatFlag(flags, 0x0040, result, "ControlPolicy", &comma);
+	result = ConcatFlag
+		(flags, 0x0080, result, "SerializationFormatter", &comma);
+	result = ConcatFlag(flags, 0x0100, result, "ControlDomainPolicy", &comma);
+	result = ConcatFlag(flags, 0x0200, result, "ControlPrincipal", &comma);
+	result = ConcatFlag(flags, 0x0400, result, "ControlAppDomain", &comma);
+	result = ConcatFlag
+		(flags, 0x0800, result, "RemotingConfiguration", &comma);
+	result = ConcatFlag(flags, 0x1000, result, "Infrastructure", &comma);
+	result = ConcatFlag(flags, 0x2000, result, "BindingRedirects", &comma);
+	result = ConcatStrings(result, "\"/>\r\n</PermissionSet>\r\n");
+	if(!result)
+	{
+		return 0;
+	}
+
+#if 0	/* Commented out for now, until the rest is implemented - TODO */
+	/* Convert the string into UTF-16 */
+	utf16 = StringToUTF16(result, &utf16Len);
+	if(!utf16)
+	{
+		ILFree(result);
+		return 0;
+	}
+	ILFree(result);
+
+	/* Create a security declaration and attach it to the item */
+	decl = ILDeclSecurityCreate(ILProgramItem_Image(item), 0, item, action);
+	if(!decl)
+	{
+		ILFree(utf16);
+		return 0;
+	}
+	if(!ILDeclSecuritySetBlob(decl, utf16, utf16Len))
+	{
+		ILFree(utf16);
+		return 0;
+	}
+	ILFree(utf16);
+
+	/* The attribute has been converted */
+	return 1;
+#endif
+	ILFree(result);
+	return 0;
+}
+
+/*
  * Attribute lookup tables.
  */
 typedef struct
@@ -811,6 +1096,10 @@ static AttrConvertInfo const compilerAttrs[] = {
 };
 static AttrConvertInfo const compilerCSharpAttrs[] = {
 	{"IndexerNameAttribute", IndexerNameAttribute},
+	{0, 0}
+};
+static AttrConvertInfo const securityAttrs[] = {
+	{"SecurityPermissionAttribute", SecurityPermissionAttribute},
 	{0, 0}
 };
 
@@ -855,6 +1144,10 @@ static int ConvertAttribute(ILProgramItem *item, ILAttribute *attr)
 	else if(!strcmp(namespace, "System.Runtime.CompilerServices.CSharp"))
 	{
 		info = compilerCSharpAttrs;
+	}
+	else if(!strcmp(namespace, "System.Security.Permissions"))
+	{
+		info = securityAttrs;
 	}
 	else if(!strcmp(namespace, "System"))
 	{

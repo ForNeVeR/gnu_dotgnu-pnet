@@ -22,9 +22,11 @@
  */
 
 using System;
+using System.Runtime.Serialization;
 
 namespace System.Xml.Schema
 {
+	[Serializable]
 	public class XmlSchemaException: SystemException
 	{
 		[TODO]
@@ -32,6 +34,13 @@ namespace System.Xml.Schema
 		{
 			 HResult = (int)0x80131941;
 			 throw new NotImplementedException(".ctor");
+		}
+		[TODO]
+		protected XmlSchemaException(SerializationInfo info,
+									 StreamingContext context)
+			: base(info, context)
+		{
+			// TODO
 		}
 
 		[TODO]
@@ -78,6 +87,14 @@ namespace System.Xml.Schema
 				throw new NotImplementedException("SourceUri");
 			}
  		}
+
+		[TODO]
+		public override void GetObjectData(SerializationInfo info,
+										   StreamingContext context)
+		{
+			base.GetObjectData(info, context);
+			// TODO
+		}
 
 	}
 }//namespace

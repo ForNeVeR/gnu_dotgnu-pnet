@@ -21,6 +21,11 @@
 namespace System.Xml
 {
 
+using System.Runtime.Serialization;
+
+#if !ECMA_COMPAT
+[Serializable]
+#endif
 public class XmlException : SystemException
 {
 	// Internal state.
@@ -58,6 +63,15 @@ public class XmlException : SystemException
 			this.lineNumber = lineNumber;
 			this.linePosition = linePosition;
 		}
+#if !ECMA_COMPAT
+	protected XmlException(SerializationInfo info, StreamingContext context)
+		: base(info, context)
+		{
+			HResult = (int)0x80131940;
+			lineNumber = info.GetInt32("lineNumber");
+			linePosition = info.GetInt32("linePosition");
+		}
+#endif
 	
 	// Get the default message to use for this exception type.
 	public override String Message
@@ -93,6 +107,19 @@ public class XmlException : SystemException
 					return linePosition;
 				}
 			}
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	public override void GetObjectData(SerializationInfo info,
+									   StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+				info.AddValue("lineNumber", lineNumber);
+				info.AddValue("linePosition", linePosition);
+				info.AddValue("res", String.Empty);		// For compatibility.
+				info.AddValue("args", String.Empty);	// For compatibility.
+			}
+#endif
 
 }; // class XmlException
 

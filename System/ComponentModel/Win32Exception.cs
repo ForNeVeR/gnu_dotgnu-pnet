@@ -1,7 +1,7 @@
 /*
  * Win32Exception.cs - Implementation of "System.ComponentModel.Win32Exception" 
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2002  Free Software Foundation,Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,15 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 namespace System.ComponentModel
 {
 #if !ECMA_COMPAT
 	public class Win32Exception: ExternalException
 	{
+		private int nativeErrorCode;
+
 		[TODO]
 		public Win32Exception() : base()
 		{
@@ -36,12 +39,14 @@ namespace System.ComponentModel
 		[TODO]
 		public Win32Exception(int error) : base()
 		{
+			nativeErrorCode = error;
 			HResult = (int)0x80004005;
 		}
 
 		[TODO]
 		public Win32Exception(int error, String message) : base(message)
 		{
+			nativeErrorCode = error;
 			HResult = (int)0x80004005;
 		}
 
@@ -58,12 +63,26 @@ namespace System.ComponentModel
 			HResult = (int)0x80004005;
 		}
 
+		protected Win32Exception(SerializationInfo info,
+								 StreamingContext context)
+			: base(info, context)
+		{
+			nativeErrorCode = info.GetInt32("NativeErrorCode");
+		}
+
 		public int NativeErrorCode 
 		{
 			get
 			{
-				throw new NotImplementedException("NativeErrorCode");
+				return nativeErrorCode;
 			}
+		}
+
+		public override void GetObjectData(SerializationInfo info,
+										   StreamingContext context)
+		{
+			base.GetObjectData(info, context);
+			info.AddValue("NativeErrorCode", nativeErrorCode);
 		}
 
 	}

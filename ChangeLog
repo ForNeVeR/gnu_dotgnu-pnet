@@ -10,6 +10,14 @@
 	* runtime/*: add serialization support to all of the exception
 	classes in "runtime".
 
+	* System/UriFormatException.cs,
+	System/ComponentModel/Win32Exception.cs,
+	System/Configuration/ConfigurationException.cs,
+	System/Net/WebException.cs, System/Net/Sockets/SocketException.cs,
+	System.Xml/XmlException.cs, System.Xml/Schema/XmlSchemaException.cs:
+	add serialization support to exception classes in "System" and
+	"System.Xml".
+
 2003-04-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/RegexpMethods.cs, runtime/System/IO/Directory.cs,

@@ -1,7 +1,8 @@
 /*
- * UriFormatException.cs - Implementation of the "System.UriFormatException" class.
+ * UriFormatException.cs - Implementation of the
+ *		"System.UriFormatException" class.
  *
- * Copyright (C) 2001  Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003  Free Software Foundation, Inc.
  *
  * Contributed by Stephen Compall <rushing@sigecom.net>
  *
@@ -23,7 +24,12 @@
 namespace System
 {
 
+using System.Runtime.Serialization;
+
 public class UriFormatException : FormatException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 
 	// Constructors.
@@ -58,6 +64,22 @@ public class UriFormatException : FormatException
 					}
 				}
 			}
+
+#if !ECMA_COMPAT
+
+	// De-serialize this object.
+	protected UriFormatException(SerializationInfo info,
+								 StreamingContext context)
+		: base(info, context) {}
+
+	// Get the serialization data for this object.
+	void ISerializable.GetObjectData(SerializationInfo info,
+									 StreamingContext context)
+		{
+			base.GetObjectData(info, context);
+		}
+
+#endif // !ECMA_COMPAT
 
 }; // class UriFormatException
 

@@ -22,8 +22,15 @@ namespace System.Net
 {
 
 using System;
+using System.Runtime.Serialization;
 
+#if !ECMA_COMPAT
+[Serializable]
+#endif
 public class WebException : InvalidOperationException
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 	//Variables
 	private WebResponse myresponse;
@@ -67,6 +74,10 @@ public class WebException : InvalidOperationException
 				myresponse = response;
 				mystatus = status;
 			}
+#if !ECMA_COMPAT
+	protected WebException(SerializationInfo info, StreamingContext context)
+		: base(info, context) {}
+#endif
 	
 	
 	// Get the default message to use for this exception type.
@@ -103,6 +114,15 @@ public class WebException : InvalidOperationException
 				}
 			} 
 		
+
+#if !ECMA_COMPAT
+	// Get the serialization data for this object.
+	void ISerializable.GetObjectData(SerializationInfo info,
+									 StreamingContext context)
+			{
+				base.GetObjectData(info, context);
+			}
+#endif
 
 }; // class WebException
 

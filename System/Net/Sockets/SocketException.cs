@@ -1,7 +1,7 @@
 /*
  * SocketException.cs - Implementation of the "System.Net.Sockets.SocketException" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
 *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,12 @@ namespace System.Net.Sockets
 
 using System;
 using Platform;
-#if !ECMA_COMPAT
-	using System.ComponentModel;
-#endif
+using System.ComponentModel;
+using System.Runtime.Serialization;
 
+#if !ECMA_COMPAT
+[Serializable]
+#endif
 public class SocketException :
 #if !ECMA_COMPAT
 	Win32Exception
@@ -43,6 +45,13 @@ public class SocketException :
 		{
 			errno = Errno.EREMOTEIO;
 		}
+#if !ECMA_COMPAT
+	protected SocketException(SerializationInfo info, StreamingContext context)
+		: base(info, context)
+		{
+			errno = Errno.EREMOTEIO;
+		}
+#endif
 	internal SocketException(String msg)
 		: base(msg)
 		{

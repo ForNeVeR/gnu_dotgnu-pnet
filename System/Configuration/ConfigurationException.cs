@@ -2,7 +2,7 @@
  * ConfigurationException.cs - Implementation of the
  *		"System.Configuration.ConfigurationException" interface.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,20 +65,22 @@ public class ConfigurationException : SystemException
 				this.filename = filename;
 				this.line = line;
 			}
-	[TODO]
 	protected ConfigurationException(SerializationInfo info,
 									 StreamingContext context)
 			: base(info, context)
 			{
-				// TODO
+				HResult = (int)0x80131902;
+				this.filename = info.GetString("filename");
+				this.line = info.GetInt32("line");
 			}
 
 	// Get serialization data.
-	[TODO]
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)
 			{
-				// TODO
+				base.GetObjectData(info, context);
+				info.AddValue("filename", filename);
+				info.AddValue("line", line);
 			}
 
 	// Get the exception message, with line number information attached.

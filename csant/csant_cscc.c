@@ -1067,12 +1067,15 @@ static int BuildAndExecute(CSAntCompileArgs *args,
 	int result;
 
 	/* Check the timestamps on the input and output files */
-	if(!CSAntFileSetNewer(args->sources, args->output) &&
-	   !CSAntFileSetNewer(args->references, args->output) &&
-	   !CSAntFileSetNewer(args->resources, args->output) &&
-	   !CSAntFileSetNewer(args->modules, args->output))
+	if(!CSAntInstallMode && !CSAntUninstallMode)
 	{
-		return 1;
+		if(!CSAntFileSetNewer(args->sources, args->output) &&
+		   !CSAntFileSetNewer(args->references, args->output) &&
+		   !CSAntFileSetNewer(args->resources, args->output) &&
+		   !CSAntFileSetNewer(args->modules, args->output))
+		{
+			return 1;
+		}
 	}
 
 	/* Build the command-line using the supplied function */
@@ -1402,6 +1405,13 @@ int CSAntTask_ResGen(CSAntTask *task)
 		return 0;
 	}
 
+	/* Bail out if none of the input files are newer than the output */
+	if(!CSAntFileSetNewer(inputs, output))
+	{
+		CSAntFileSetDestroy(inputs);
+		return 1;
+	}
+
 	/* Determine if we should use Latin1 conversion */
 	compiler = CSAntGetProperty("csant.compiler", -1);
 	if(compiler && !ILStrICmp(compiler, "cscc"))
@@ -1500,6 +1510,16 @@ int CSAntTask_ResLink(CSAntTask *task)
 		CSAntFileSetDestroy(resources);
 		fprintf(stderr, "%s: no resource files specified\n", task->name);
 		return 0;
+	}
+
+	/* Bail out if none of the input files are newer than the output */
+	if(!CSAntInstallMode && !CSAntUninstallMode)
+	{
+		if(!CSAntFileSetNewer(resources, output))
+		{
+			CSAntFileSetDestroy(resources);
+			return 1;
+		}
 	}
 
 	/* Build the required command-line */

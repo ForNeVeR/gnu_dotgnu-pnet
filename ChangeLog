@@ -15,6 +15,9 @@
 
 	* csant/csant.c: add the "--assembly-cache" option to csant.
 
+	* csant/csant_cscc.c: perform the "newer" check for <resgen>
+	and <reslink>.
+
 2003-11-10  Stephen Compall  <s11@member.fsf.org>
 
 	* support/file.c (ILSysIOLock, ILSysIOUnlock): Exclusive file

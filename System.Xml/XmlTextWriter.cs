@@ -234,6 +234,7 @@ public class XmlTextWriter : XmlWriter
 								throw new InvalidOperationException
 									(S._("Xml_InvalidWriteState"));
 							}
+							writeState = System.Xml.WriteState.Prolog;
 						}
 					}
 					break;
@@ -253,6 +254,65 @@ public class XmlTextWriter : XmlWriter
 				{
 					// Record that we wrote some text to a content field.
 					prevWasText = true;
+				}
+			}
+
+	// Write an xml declaration.
+	private void WriteXmlDeclaration(String text)
+			{
+				// make sure we're in the start state
+				if(writeState != System.Xml.WriteState.Start)
+				{
+					throw new InvalidOperationException
+						(S._("Xml_InvalidWriteState"));
+				}
+
+				// create the reader
+				XmlTextReader r = new XmlTextReader
+					(new StringReader("<?xml "+text+"?>"), nameTable);
+
+				// read the value
+				r.Read();
+
+				// read the version attribute
+				if(r["version"] != "1.0")
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidVersion"), "text");
+				}
+
+			#if !ECMA_COMPAT
+				// make sure the encoding matches
+				String encoding = r["encoding"];
+				if(encoding != null && encoding.Length > 0 &&
+				   writer.Encoding.WebName != encoding)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidEncoding"), "text");
+				}
+			#endif
+
+				// make sure the standalone is valid
+				String standalone = r["standalone"];
+				bool haveStandalone = false;
+				if(standalone != null && standalone.Length > 0)
+				{
+					if(standalone != "yes" && standalone != "no")
+					{
+						throw new ArgumentException
+							(S._("Xml_InvalidEncoding"), "text");
+					}
+					haveStandalone = true;
+				}
+
+				// write the start of the document
+				if(haveStandalone)
+				{
+					WriteStartDocument(standalone == "yes");
+				}
+				else
+				{
+					WriteStartDocument();
 				}
 			}
 
@@ -565,7 +625,8 @@ public class XmlTextWriter : XmlWriter
 				}
 
 				// Synchronize to an area that allows comments.
-				Sync(WriteStateFlag.ContentFlag |
+				Sync(WriteStateFlag.StartFlag |
+				     WriteStateFlag.ContentFlag |
 					 WriteStateFlag.PrologFlag);
 
 				// Write out the comment.
@@ -821,28 +882,39 @@ public class XmlTextWriter : XmlWriter
 
 	// Write a processing instruction. <?name text?>
 	public override void WriteProcessingInstruction(String name, String text)
-			{						
-
-				if((writeState == System.Xml.WriteState.Start) || (name == null)) 
+			{
+				// Make sure we have a name.
+				if(name == null || name.Length == 0)
 				{
 					throw new ArgumentException
 						(S._("Xml_ArgumentException"), "name");
-					
-				}
-				if(writeState == System.Xml.WriteState.Closed)	
-				{
-
-					throw new InvalidOperationException
-						(S._("Xml_InvalidOperation"));
 				}
 
-				Sync(WriteStateFlag.PrologFlag); 
-
-				if (text != null) 
+				// validate and write the xml declaration value
+				if(name == "xml")
 				{
-					writer.WriteLine("<?{0} {1}?>",name, text);
-				} 
-				else 
+					WriteXmlDeclaration(text);
+					return;
+				}
+
+				// Make sure we have valid processing instruction text.
+				if(text != null && text.IndexOf("?>") != -1)
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidXmlWritten"), "text");
+				}
+
+				// Synchronize to an area that allows processing instructions.
+				Sync(WriteStateFlag.StartFlag |
+				     WriteStateFlag.PrologFlag |
+				     WriteStateFlag.ContentFlag);
+
+				// Write out the processing instruction.
+				if(text != null && text.Length != 0)
+				{
+					writer.WriteLine("<?{0} {1}?>", name, text);
+				}
+				else
 				{
 					writer.WriteLine("<?{0}?>",name);
 				}

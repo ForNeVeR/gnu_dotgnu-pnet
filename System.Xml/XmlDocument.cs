@@ -1114,46 +1114,112 @@ class XmlDocument : XmlNode
 				return result;
 			}
 
-	// Save the contents of this document to a writer.
-	// This method uses Save(XMLWriter w) and indents
-	// the writer output.
-	[TODO] // Fix internal XmlTextWriter class
+	// Save the contents of this document to a stream.
 	public virtual void Save(Stream outStream)
 			{
-				XmlTextWriter w = new XmlTextWriter(outStream, null);
-				w.Formatting = Formatting.Indented;
-				Save(w);
+				// check for a root element
+				if(DocumentElement == null)
+				{
+					throw new XmlException
+						(S._("Xml_NoRootElement"));
+				}
+
+				// get the xml declaration
+				XmlDeclaration dec = (XmlDeclaration)GetChildByType
+					(XmlNodeType.XmlDeclaration);
+
+				// determine the encoding
+				Encoding enc = null;
+				if(dec != null)
+				{
+					String encName = dec.Encoding;
+					if(encName != null && encName.Length != 0)
+					{
+						enc = Encoding.GetEncoding(encName);
+					}
+				}
+
+				// create the writer
+				XmlTextWriter w = new XmlTextWriter(outStream, enc);
+
+				// turn on formatting if whitespace preservation is off
+				if(!preserveWhitespace) { w.Formatting = Formatting.Indented; }
+
+				// make sure we have an xml declaration
+				if(dec == null) { w.WriteStartDocument(); }
+
+				// write this document to the writer
+				WriteTo(w);
+
+				// flush the output
+				w.Flush();
 			}
-	
-	// Save the contents of this document to a writer.
-	// This method uses Save(XMLWriter w) and indents
-	// the writer output.
-	[TODO] // Fix internal XmlTextWriter class
+
+	// Save the contents of this document to a file.
 	public virtual void Save(String filename)
 			{
-				XmlTextWriter w = new XmlTextWriter(filename, null);
-				w.Formatting = Formatting.Indented;
-				Save(w);
+				// create a stream for the file
+				FileStream fs = new FileStream
+					(filename, FileMode.Create, FileAccess.Write);
+
+				// save using the stream version of save
+				Save(fs);
+
+				// close the file stream
+				fs.Close();
 			}
-	
+
 	// Save the contents of this document to a writer.
-	// This method uses Save(XMLWriter w) and indents
-	// the writer output.
-	[TODO] // Fix internal XmlTextWriter class
 	public virtual void Save(TextWriter writer)
 			{
+				// create a new xml text writer using the given writer
 				XmlTextWriter w = new XmlTextWriter(writer);
-				w.Formatting = Formatting.Indented;
+
+				// turn on formatting if whitespace preservation is off
+				if(!preserveWhitespace) { w.Formatting = Formatting.Indented; }
+
+				// get the xml declaration
+				XmlDeclaration dec = (XmlDeclaration)GetChildByType
+					(XmlNodeType.XmlDeclaration);
+
+				// reset the declaration's encoding to that of the writer
+				if(dec != null)
+				{
+					Encoding enc = writer.Encoding;
+					String encName = String.Empty;
+					if(enc != null) { encName = enc.WebName; }
+					dec.Encoding = encName;
+				}
+
+				// save using the xml text writer version of save
 				Save(w);
 			}
-			
+
 	// Save the contents of this document to an XML writer.
-	// This method uses WriteTo(XMLWriter w)
-	[TODO] // Fix internal XmlTextWriter class
 	public virtual void Save(XmlWriter w)
 			{
-				WriteTo(w);	
-				w.Close();
+				// check for a root element
+				if(DocumentElement == null)
+				{
+					throw new XmlException
+						(S._("Xml_NoRootElement"));
+				}
+
+				// get the xml declaration
+				XmlDeclaration dec = (XmlDeclaration)GetChildByType
+					(XmlNodeType.XmlDeclaration);
+
+				// handle the encoding and xml declaration stuff
+				if(dec == null)
+				{
+					w.WriteStartDocument();
+				}
+
+				// write this document to the writer
+				WriteTo(w);
+
+				// flush the output
+				w.Flush();
 			}
 
 	// Write the contents of this document to an XML writer.

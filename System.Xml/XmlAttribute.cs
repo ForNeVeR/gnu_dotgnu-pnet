@@ -203,7 +203,7 @@ class XmlAttribute : XmlNode
 	// Determine if the attribute value was explictly specified.
 	public virtual bool Specified
 			{
-				get { return isDefault; }
+				get { return !isDefault; }
 			}
 
 	// Get or set the value associated with this node.

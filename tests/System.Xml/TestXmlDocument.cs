@@ -357,7 +357,7 @@ public class TestXmlDocument : TestCase
 				doc.LoadXml(xml[2]);
 				AssertNotNull("LoadXml (3)", doc.DocumentElement);
 			}
-#if false	
+
 	// Test loading xml.
 	public void TestXmlDocumentSave()
 			{
@@ -367,12 +367,12 @@ public class TestXmlDocument : TestCase
 				doc.PreserveWhitespace = true;
 				doc.LoadXml(xml[1]);
 				doc.Save("Save.xml");
-				
+
 				doc = new XmlDocument();
 				doc.Load("Save.xml");
 				AssertNotNull("SaveXml (1)", doc.DocumentElement);
 			}
-#endif
+
 }; // class TestXmlDocument
 
 #endif // !ECMA_COMPAT

@@ -67,8 +67,8 @@ else
 	rm -f "${BASE}.il"
 fi
 
-# Run the compiler again to determine the JVM output files.
 if test "$CTEST" = "no" ; then
+	# Run the compiler again to determine the JVM output files.
 	if ${CSCC_INVOKE} ${CSCC_FLAGS} -mjvm -o "${BASE}.jl" -S "${FILE}" >"${BASE}.jerr" 2>&1 ; then
 		if test ! -s "${BASE}.jerr" ; then
 			# Test should only produce assembly code.
@@ -77,6 +77,17 @@ if test "$CTEST" = "no" ; then
 	else
 		# Test should only produce errors.
 		rm -f "${BASE}.jl"
+	fi
+else
+	# Run the compiler again to determine the 32-bit C output files.
+	if ${CSCC_INVOKE} ${CSCC_FLAGS} -m32bit-only -o "${BASE}.3il" -S "$FILE" >"${BASE}.3err" 2>&1 ; then
+		if test ! -s "${BASE}.3err" ; then
+			# Test should only produce assembly code.
+			rm -f "${BASE}.3err"
+		fi
+	else
+		# Test should only produce errors.
+		rm -f "${BASE}.3il"
 	fi
 fi
 

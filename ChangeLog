@@ -1,4 +1,10 @@
 
+2002-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* c/decl/type1.3il, c/decl/type1.c, c/decl/type1.il,
+	tools/make_test.sh.in, tools/run_test.sh.in: test type specifiers
+	for basic numeric types; test both 64-bit and 32-bit memory models.
+
 2002-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tools/csccflags.sh, tools/make_test.sh.in, tools/run_test.sh.in:

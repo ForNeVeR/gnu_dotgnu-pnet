@@ -6,6 +6,11 @@
 	c/decl/cdtor2.err, c/decl/typeof1.3il, c/decl/typeof1.il:
 	test cases for constructors and destructors.
 
+	* configure.in, c/Makefile.am, c/stmt/.cvsignore, c/stmt/Makefile.am,
+	c/stmt/switch1.3il, c/stmt/switch1.c, c/stmt/switch1.il,
+	c/stmt/switch2.3err, c/stmt/switch2.c, c/stmt/switch2.err:
+	test cases for "switch" statements.
+
 2002-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/Makefile.am, c/decl/type3.3il, c/decl/type3.il,

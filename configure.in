@@ -58,6 +58,7 @@ csharp/expr/Makefile
 csharp/class/Makefile
 c/Makefile
 c/decl/Makefile
+c/stmt/Makefile
 java/Makefile])
 
 chmod +x ${srcdir}/tools/make_test.sh

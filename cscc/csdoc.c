@@ -1112,7 +1112,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 		fputs("class ", stream);
 	}
 	fputs(ILClass_Name(classInfo), stream);
-	if(parent)
+	if(parent && !ILTypeIsObjectClass(ILClassToType(parent)))
 	{
 		fputs(": ", stream);
 		DumpClassNameOther(stream, parent, classInfo);

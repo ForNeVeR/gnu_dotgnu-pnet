@@ -18,6 +18,9 @@
 	* cscc/csdoc.c: bug fixes to XML output for interfaces and
 	constructors.
 
+	* cscc/csdoc.c: do not output "System.Object" as a base type
+	in the C# signature, because it looks odd.
+
 2002-05-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libgc/misc.c: fix a Win32-ism that is affecting builds on

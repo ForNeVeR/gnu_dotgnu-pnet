@@ -1,3 +1,10 @@
+
+2004-06-21  Gopal V  <gopalv82@yahoo.com>
+
+	* cscc/c/c_lvalue.tc: Return the field type during ILNode_Prepare for
+	Member access because it is used for the Cast during GenDiscard of 
+	Assign expressions.
+
 2004-06-21  Thong Nguyen  <tum@veridicus.com>
 
 	* support/wait_mutex.c: Fixed ownedMutexesCount not being decremented

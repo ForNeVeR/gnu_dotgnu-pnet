@@ -427,7 +427,7 @@ ILNode_Prepare(ILNode_CDerefField)
 	if(CTypeIsComplex(type) || CTypeIsComplex(node->ownerType))
 	{
 		CGenAddress(info, (ILNode *)node);
-		return ILMachineType_UnmanagedPtr;
+		return ILTypeToMachineType(type);
 	}
 	else if(yyisa(node, ILNode_CMemberField))
 	{

@@ -1,4 +1,13 @@
 
+2001-03-16  Gopal.V <gopalv82@yahoo.com>
+
+	* system/il_system.h , support/file.c : Added the file 
+	support functions like ILFileOpen,ILFileRead
+
+	* engine/lib_file.c engine/internal.c engine/Makefile.am:
+	in lib_file.c added the InternalCalls for Platform.FileMethods
+	and included into engine build
+	
 2001-03-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_decls.tc, codegen/cg_gen.c,

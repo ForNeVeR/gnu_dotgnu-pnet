@@ -153,6 +153,18 @@ void *ILDynLibraryOpen(const char *name);
 void  ILDynLibraryClose(void *handle);
 void *ILDynLibraryGetSymbol(void *handle, const char *symbol);
 
+/*gopz's hacks*/
+typedef void* ILFileHandle;
+ILFileHandle ILFileOpen(const char * path, const char * mode);
+ILBool ILFileClose(ILFileHandle handle);
+ILBool ILFileCreate(const char * path);
+int ILFileRead(void *buf,int size,int num,ILFileHandle handle);
+int ILFileWrite(void *buf,int size,int num,ILFileHandle handle);
+int ILFileSeek(ILFileHandle handle, long offset,int from);
+long ILFileTell (ILFileHandle handle);
+int ILFileFlush(ILFileHandle handle);
+int ILFileTruncate(ILFileHandle handle,long value);
+int ILFileHasAsync(ILFileHandle handle);
 #ifdef	__cplusplus
 };
 #endif

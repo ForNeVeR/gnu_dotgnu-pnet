@@ -58,6 +58,7 @@ extern ILMethodTableEntry const _ILPlatformDirMethods;
 extern ILMethodTableEntry const _ILRuntimeHelpersMethods;
 extern ILMethodTableEntry const _ILDiagnosticsDebuggerMethods;
 extern ILMethodTableEntry const _ILDiagnosticsStackFrameMethods;
+extern ILMethodTableEntry const _ILPlatformFileMethods;
 
 /*
  * Table that contains all classes that have "internalcall" methods.
@@ -86,6 +87,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"DirMethods",	"Platform",		&_ILPlatformDirMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
 	{"FieldInfo",	"System.Reflection", &_ILReflectionFieldInfoMethods},
+	{"FileMethods",	"Platform",		&_ILPlatformFileMethods},
 	{"Guid",		"System",		&_ILSystemGuidMethods},
 	{"Interlocked",	"System.Threading", &_ILSystemThreadingInterlockedMethods},
 	{"Math",		"System",		&_ILSystemMathMethods},

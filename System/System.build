@@ -12,6 +12,9 @@
 
 			<sources>
 				<includes name="**/*.cs"/>
+				<excludes if="${ECMA_COMPAT}" 
+							name="Text/RegularExpressions/*.cs"/>
+				<excludes if="${ECMA_COMPAT}" name="Diagnostics/*.cs"/>
 			</sources>
 
 			<references>

@@ -27,7 +27,6 @@ using System.Drawing.Design;
 using System.Drawing.Toolkit;
 using System.Text;
 
-[StructLayout(LayoutKind.Explicit, CharSet=CharSet.Auto)]
 #if !ECMA_COMPAT
 [Serializable]
 [ComVisible(true)]

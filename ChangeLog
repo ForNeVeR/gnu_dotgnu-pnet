@@ -15,6 +15,9 @@
 	System.Windows.Forms/Forms.build: provide a default accessibility
 	implementation for the "Control" class.
 
+	* System.Drawing/Color.cs: remove "StructLayout" because it
+	confuses "csc".
+
 2003-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs , 

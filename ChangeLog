@@ -9,6 +9,12 @@
 	* samples/codepage.cs: add command-line options to assist with
 	dumping the contents of code pages.
 
+	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,
+	samples/I18N.Other.dll, samples/I18N.Rare.dll,
+	samples/I18N.West.dll, samples/I18N.dll,
+	samples/System.Xml.dll, samples/System.dll,
+	samples/mscorlib.dll: new versions of the library assemblies.
+
 2002-04-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_thread.h, support/no_defs.h, support/pt_defs.c,

@@ -7,6 +7,7 @@ RESOURCEFILES = Arg.txt \
 				DivZero.txt \
 				Exception.txt \
 				Format.txt \
+				IO.txt \
 				NotSupp.txt \
 				Overflow.txt
 

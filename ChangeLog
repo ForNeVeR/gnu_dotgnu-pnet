@@ -34,6 +34,11 @@ runtime/System/IO/Stream.cs: implement many of the "System.IO" classes.
 
 * runtime/System/Makefile.am: add the new classes to the build.
 
+* resources/en_US/runtime/Makefile.am,
+resources/en_US/runtime/IO.txt,
+resources/en_US/runtime/Exception.txt: new resource strings for the
+new classes.
+
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for the "0.1.0" release.

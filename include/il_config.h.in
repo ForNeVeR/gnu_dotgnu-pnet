@@ -46,6 +46,13 @@
 #undef GC_SOLARIS_PTHREADS
 #undef GC_SOLARIS_THREADS
 #undef _REENTRANT
+#undef DGUX_THREADS
+#undef GC_DGUX386_THREADS
+#undef GC_FREEBSD_THREADS
+#undef GC_WIN32_THREADS
+#undef PARALLEL_MARK
+#undef THREAD_LOCAL_ALLOC
+#undef _POSIX_C_SOURCE
 
 /* The number of bytes in a double.  */
 #undef SIZEOF_DOUBLE

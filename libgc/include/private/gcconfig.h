@@ -328,7 +328,8 @@
 # endif
 # if defined(__CYGWIN32__) || defined(__CYGWIN__)
 #   define I386
-#   define CYGWIN32
+/*#   define CYGWIN32*/
+#   define MSWIN32
 #   define mach_type_known
 # endif
 # if defined(__MINGW32__)

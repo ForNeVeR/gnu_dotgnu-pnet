@@ -27,7 +27,8 @@ extern	"C" {
 
 void ILGCInit(unsigned long maxSize)
 {
-	GC_INIT();
+	GC_INIT();		/* For shared library initialization on sparc */
+	GC_init();		/* For Cygwin and Win32 threads */
 	GC_set_max_heap_size((size_t)maxSize);
 }
 

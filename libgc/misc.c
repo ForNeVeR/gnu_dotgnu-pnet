@@ -30,7 +30,9 @@
 # define WIN32_LEAN_AND_MEAN
 # define NOSERVICE
 # include <windows.h>
-# include <tchar.h>
+# if !defined(__CYGWIN32__) && !defined(__CYGWIN__)
+#  include <tchar.h>
+# endif
 #endif
 
 # ifdef THREADS

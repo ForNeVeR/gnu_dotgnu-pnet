@@ -11,6 +11,9 @@ most of the node creation functionality to the C# grammar.
 
 * codegen/cg_gen.c (CreateBasicImage): build the correct "blank" image.
 
+* codegen/cg_output.h, codegen/cg_output.c (ILGenModulesAndAssemblies),
+cscc/cs_main.c (main): dump modules assemblies to the assembly stream.
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

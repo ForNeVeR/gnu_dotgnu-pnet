@@ -357,6 +357,76 @@ void ILGenFlush(ILGenInfo *info)
 	/* Peephole optimization not yet implemented */
 }
 
+void ILGenModulesAndAssemblies(ILGenInfo *info)
+{
+	ILModule *module;
+	ILAssembly *assem;
+	const ILUInt16 *version;
+
+	/* Bail out if no assembly code stream */
+	if(!(info->asmOutput))
+	{
+		return;
+	}
+
+	/* Dump module references */
+	module = 0;
+	while((module = (ILModule *)ILImageNextToken
+				(info->image, IL_META_TOKEN_MODULE_REF, module)) != 0)
+	{
+		fputs(".module extern ", info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, ILModule_Name(module), 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
+
+	/* Dump assembly references */
+	assem = 0;
+	while((assem = (ILAssembly *)ILImageNextToken
+				(info->image, IL_META_TOKEN_ASSEMBLY_REF, assem)) != 0)
+	{
+		fputs(".assembly extern ", info->asmOutput);
+		ILDumpFlags(info->asmOutput, ILAssembly_RefAttrs(assem),
+					ILAssemblyRefFlags, 0);
+		ILDumpIdentifier(info->asmOutput, ILAssembly_Name(assem), 0,
+						 IL_DUMP_QUOTE_NAMES);
+		fputs("\n{\n", info->asmOutput);
+		version = ILAssemblyGetVersion(assem);
+		fprintf(info->asmOutput, "\t.ver %lu:%lu:%lu:%lu\n",
+				(unsigned long)(version[0]), (unsigned long)(version[1]),
+				(unsigned long)(version[2]), (unsigned long)(version[3]));
+		fputs("}\n", info->asmOutput);
+	}
+
+	/* Dump assembly definitions */
+	while((assem = (ILAssembly *)ILImageNextToken
+				(info->image, IL_META_TOKEN_ASSEMBLY, assem)) != 0)
+	{
+		fputs(".assembly ", info->asmOutput);
+		ILDumpFlags(info->asmOutput, ILAssembly_Attrs(assem),
+					ILAssemblyFlags, 0);
+		ILDumpIdentifier(info->asmOutput, ILAssembly_Name(assem), 0,
+						 IL_DUMP_QUOTE_NAMES);
+		fputs("\n{\n", info->asmOutput);
+		version = ILAssemblyGetVersion(assem);
+		fprintf(info->asmOutput, "\t.ver %lu:%lu:%lu:%lu\n",
+				(unsigned long)(version[0]), (unsigned long)(version[1]),
+				(unsigned long)(version[2]), (unsigned long)(version[3]));
+		fputs("}\n", info->asmOutput);
+	}
+
+	/* Dump module definitions */
+	module = 0;
+	while((module = (ILModule *)ILImageNextToken
+				(info->image, IL_META_TOKEN_MODULE, module)) != 0)
+	{
+		fputs(".module ", info->asmOutput);
+		ILDumpIdentifier(info->asmOutput, ILModule_Name(module), 0,
+						 IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

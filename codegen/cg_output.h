@@ -125,6 +125,11 @@ void ILGenClassToken(ILGenInfo *info, int opcode, ILClass *classInfo);
  */
 void ILGenFlush(ILGenInfo *info);
 
+/*
+ * Output module and assembly information for the image.
+ */
+void ILGenModulesAndAssemblies(ILGenInfo *info);
+
 #ifdef	__cplusplus
 };
 #endif

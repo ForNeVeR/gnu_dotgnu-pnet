@@ -107,6 +107,7 @@ int main(int argc, char *argv[])
 	ILNode_SemAnalysis(CSParseTree, &CSCodeGen, &CSParseTree);
 
 	/* Generate the code */
+	ILGenModulesAndAssemblies(&CSCodeGen);
 	ILNode_GenDiscard(CSParseTree, &CSCodeGen);
 
 	/* Close the code generator */

@@ -512,10 +512,149 @@ System_Array *_IL_Assembly_GetExportedTypes(ILExecThread *_thread,
 /*
  * public virtual FileStream GetFile(String name);
  */
-ILObject *_IL_Assembly_GetFile(ILExecThread *_thread, ILObject *_this,
+ILObject *_IL_Assembly_GetFile(ILExecThread *thread, ILObject *_this,
 							   ILString *name)
 {
+	/* We don't support manifest files yet */
+	return 0;
+}
+
+/*
+ * public virtual FileStream[] GetFiles(bool getResourceModules);
+ */
+System_Array *_IL_Assembly_GetFiles(ILExecThread *thread,
+									ILObject *_this,
+									ILBool getResourceModules)
+{
+	/* We don't support manifest files yet */
+	return 0;
+}
+
+/*
+ * public virtual ManifestResourceInfo GetManifestResourceInfo
+ *				(String resourceName);
+ */
+ILObject *_IL_Assembly_GetManifestResourceInfo(ILExecThread *thread,
+											   ILObject *_this,
+											   ILString *resourceName)
+{
 	/* TODO */
+	return 0;
+}
+
+/*
+ * public virtual String[] GetManifestResourceNames();
+ */
+System_Array *_IL_Assembly_GetManifestResourceNames(ILExecThread *thread,
+													ILObject *_this)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * Construct a "ClrResourceStream" object for a particular
+ * manifest resource.  Returns NULL if "posn" is invalid
+ * or the system is out of memory.
+ */
+static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
+									  ILUInt32 posn)
+{
+	unsigned char *section;
+	unsigned long sectionLen;
+	unsigned long start;
+	ILUInt32 length;
+
+	/* Find the resource section within the image */
+	if(!ILImageGetSection(image, IL_SECTION_RESOURCES,
+						  (void **)&section, &sectionLen))
+	{
+		return 0;
+	}
+
+	/* Scan through the section until we find the resource we want */
+	start = 0;
+	while(posn > 0)
+	{
+		if(sectionLen < 4)
+		{
+			return 0;
+		}
+		length = IL_READ_UINT32(section);
+		if(((unsigned long)length) > (sectionLen - 4))
+		{
+			return 0;
+		}
+		start += length + 4;
+		section += length + 4;
+		sectionLen -= length + 4;
+		--posn;
+	}
+
+	/* Extract the starting point and length of this resource */
+	start += 4;
+	if(sectionLen < 4)
+	{
+		return 0;
+	}
+	length = IL_READ_UINT32(section);
+	if(((unsigned long)length) > (sectionLen - 4))
+	{
+		return 0;
+	}
+
+	/* Create the "ClrResourceStream" object and return it */
+	return ILExecThreadNew(thread, "System.Reflecton.ClrResourceStream",
+						   "(Tjll)V", (ILNativeInt)image,
+						   (ILInt64)start, (ILInt64)length);
+}
+
+/*
+ * public virtual Stream GetManifestResourceStream(String name);
+ */
+ILObject *_IL_Assembly_GetManifestResourceStream(ILExecThread *thread,
+												 ILObject *_this,
+												 ILString *name)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	char *str = ILStringToUTF8(thread, name);
+	if(image && str)
+	{
+		/* Look for the manifest resource within the image */
+		ILManifestRes *res = 0;
+		ILUInt32 posn = 0;
+		while((res = (ILManifestRes *)ILImageNextToken
+				(image, IL_META_TOKEN_MANIFEST_RESOURCE, (void *)res)) != 0)
+		{
+			if(!strcmp(ILManifestRes_Name(res), str))
+			{
+				/* TODO: handle resources in external files and assemblies */
+				if(ILManifestRes_OwnerFile(res) ||
+				   ILManifestRes_OwnerAssembly(res))
+				{
+					continue;
+				}
+
+				/* If the resource is private, and the caller is not
+				   the same image, then disallow the request */
+				if(!ILManifestRes_IsPublic(res) &&
+				   _ILClrCallerImage(thread) != image)
+				{
+					return 0;
+				}
+
+				/* Find the manifest resource at "posn" within the image */
+				return CreateResourceStream(thread, image, posn);
+			}
+			if(!ILManifestRes_OwnerFile(res) &&
+			   !ILManifestRes_OwnerAssembly(res))
+			{
+				/* Increase the position within the resource section */
+				++posn;
+			}
+		}
+	}
 	return 0;
 }
 
@@ -1292,8 +1431,20 @@ ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread *_thread,
 										   ILInt32 offset,
 										   ILInt32 count)
 {
-	/* TODO */
-	return 0;
+	ILImage *image = (ILImage *)handle;
+	unsigned char *section;
+	unsigned long sectionLen;
+	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
+								  (void **)&section, &sectionLen))
+	{
+		ILMemCpy(((unsigned char *)(ArrayToBuffer(buffer))) + offset,
+				 section + (ILNativeInt)position, count);
+		return count;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*
@@ -1303,8 +1454,18 @@ ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread *_thread,
 											   ILNativeInt handle,
 											   ILInt64 position)
 {
-	/* TODO */
-	return -1;
+	ILImage *image = (ILImage *)handle;
+	unsigned char *section;
+	unsigned long sectionLen;
+	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
+								  (void **)&section, &sectionLen))
+	{
+		return (ILInt32)(section[(ILNativeInt)position]);
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 #ifdef	__cplusplus

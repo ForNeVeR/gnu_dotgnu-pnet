@@ -36,10 +36,7 @@ static ILImage *ResolveAssembly(ILExecThread *thread,
 	return 0;
 }
 
-/*
- * Get the caller's image.
- */
-static ILImage *CallerImage(ILExecThread *thread)
+ILImage *_ILClrCallerImage(ILExecThread *thread)
 {
 	ILImage *systemImage;
 	ILImage *image;
@@ -507,7 +504,7 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 		else
 		{
 			/* Look in the same image as the caller first */
-			scope = ILClassGlobalScope(CallerImage(thread));
+			scope = ILClassGlobalScope(_ILClrCallerImage(thread));
 			if(dot != -1)
 			{
 				classInfo = ILClassLookupUnicode

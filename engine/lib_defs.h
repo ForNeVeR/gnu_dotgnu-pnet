@@ -111,6 +111,11 @@ typedef struct
 } System_Reflection;
 
 /*
+ * Get the caller's image from the call frame stack of a method.
+ */
+ILImage *_ILClrCallerImage(ILExecThread *thread);
+
+/*
  * Check that the caller has permission to access a specific class
  * or member via reflection.  Returns non-zero if access has been granted.
  */

@@ -10,6 +10,10 @@
 
 	* samples/mscorlib.dll: new version with resource and socket changes.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_defs.h,
+	engine/lib_reflect.c, engine/lib_type.c: implement manifest
+	resource stream support in the engine.
+
 2002-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/process.c, ildb/Makefile.am, ildb/ildb_context.c,

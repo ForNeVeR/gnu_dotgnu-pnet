@@ -80,6 +80,24 @@ int ILLinkerAddResource(ILLinker *linker, const char *name,
 	return 1;
 }
 
+int ILLinkerAddWin32Resource(ILLinker *linker, const char *filename)
+{
+	/* TODO */
+	return 1;
+}
+
+int ILLinkerAddWin32Icon(ILLinker *linker, const char *filename)
+{
+	/* TODO */
+	return 1;
+}
+
+int ILLinkerAddWin32Version(ILLinker *linker)
+{
+	/* TODO */
+	return 1;
+}
+
 #ifdef	__cplusplus
 };
 #endif

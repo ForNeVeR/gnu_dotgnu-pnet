@@ -102,6 +102,27 @@ int ILLinkerAddCObject(ILLinker *linker, ILContext *context,
 int ILLinkerAddResource(ILLinker *linker, const char *name,
 						int isPrivate, FILE *stream);
 
+/* Note: only one of "ILLinkerAddWin32Resource", "ILLinkerAddWin32Icon",
+   and "ILLinkerAddWin32Version" should be used */
+
+/*
+ * Add a Win32 resource file to the final image.  Returns zero
+ * if out of memory.
+ */
+int ILLinkerAddWin32Resource(ILLinker *linker, const char *filename);
+
+/*
+ * Add a Win32 icon file to the final image.  Returns zero
+ * if out of memory.
+ */
+int ILLinkerAddWin32Icon(ILLinker *linker, const char *filename);
+
+/*
+ * Add Win32 version information to the final image, based upon the
+ * assembly information.  Returns zero if out of memory.
+ */
+int ILLinkerAddWin32Version(ILLinker *linker);
+
 /*
  * Set the entry point to a particular class or method name.
  * Returns zero if the name could not be located.

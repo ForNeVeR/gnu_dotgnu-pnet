@@ -1,7 +1,7 @@
 /*
  * link_main.c - Link IL images together to form an assembly.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,6 +108,12 @@ static ILCmdLineOption const options[] = {
 	{"-z", 'z', 0,
 		"-fminimize-parameters       or -z",
 		"Minimize the size of the parameter table in the output."},
+	{"-W", 'W', 1,
+		"-fwin32res=file             or -W file",
+		"Specify a Win32 resource file to add to the image."},
+	{"-i", 'i', 1,
+		"-fwin32icon=file            or -i file",
+		"Specify a Win32 icon file to add to the image."},
 	{"-H", 'H', 1,
 		"-fhash-algorithm=name       or -H name",
 		"Specify the algorithm to use to hash files (SHA1 or MD5)"},
@@ -161,8 +167,8 @@ static ILCmdLineOption const options[] = {
 	{"/trade*", '?', 1, 0, 0},		/* "/trademark:text" */
 	{"/t*", 'F', 1, 0, 0},			/* "/target:lib|exe|win" */
 	{"/v*", 'A', 1, 0, 0},			/* "/version:version" */
-	{"/win32icon", '?', 1, 0, 0},	/* "/win32icon:filename" */
-	{"/win32res", '?', 1, 0, 0},	/* "/win32res:filename" */
+	{"/win32icon", 'i', 1, 0, 0},	/* "/win32icon:filename" */
+	{"/win32res", 'W', 1, 0, 0},	/* "/win32res:filename" */
 	{"/?", 'h', 0, 0, 0},			/* "/?" */
 
 	{0, 0, 0, 0, 0}
@@ -217,6 +223,8 @@ int ILLinkerMain(int argc, char *argv[])
 	int privateResources = 0;
 	int defaultIsLib = 0;
 	int linkerFlags = 0;
+	const char *win32Res = 0;
+	const char *win32Icon = 0;
 	int firstFile;
 	int temp, temp2;
 	ILLinker *linker;
@@ -363,6 +371,18 @@ int ILLinkerMain(int argc, char *argv[])
 			case 'E':
 			{
 				entryPoint = param;
+			}
+			break;
+
+			case 'W':
+			{
+				win32Res = param;
+			}
+			break;
+
+			case 'i':
+			{
+				win32Icon = param;
 			}
 			break;
 
@@ -525,6 +545,14 @@ int ILLinkerMain(int argc, char *argv[])
 				{
 					param += 15;
 					goto parseHashAlg;
+				}
+				else if(!strncmp(param, "win32res=", 9))
+				{
+					win32Res = param + 9;
+				}
+				else if(!strncmp(param, "win32icon=", 10))
+				{
+					win32Icon = param + 10;
 				}
 				else if(!strcmp(param, "private-resources"))
 				{
@@ -860,6 +888,20 @@ int ILLinkerMain(int argc, char *argv[])
 		}
 	}
 
+	/* Add Win32 resource, icon, or version information */
+	if(win32Res)
+	{
+		ILLinkerAddWin32Resource(linker, win32Res);
+	}
+	else if(win32Icon)
+	{
+		ILLinkerAddWin32Icon(linker, win32Icon);
+	}
+	else
+	{
+		ILLinkerAddWin32Version(linker);
+	}
+
 	/* Set the default entry point, or report an error about
 	   incorrect entry point specifications */
 	if(!resourcesOnly)
@@ -912,7 +954,7 @@ int ILLinkerMain(int argc, char *argv[])
 static void usage(const char *progname)
 {
 	fprintf(stdout, "ILALINK " VERSION " - IL Assembly Link Utility\n");
-	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "Copyright (c) 2001, 2002, 2003 Southern Storm Software, Pty Ltd.\n");
 	fprintf(stdout, "\n");
 	fprintf(stdout, "Usage: %s [options] input ...\n", progname);
 	fprintf(stdout, "\n");
@@ -923,7 +965,7 @@ static void version(void)
 {
 
 	printf("ILALINK " VERSION " - IL Assembly Link Utility\n");
-	printf("Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	printf("Copyright (c) 2001, 2002, 2003 Southern Storm Software, Pty Ltd.\n");
 	printf("\n");
 	printf("ILALINK comes with ABSOLUTELY NO WARRANTY.  This is free software,\n");
 	printf("and you are welcome to redistribute it under the terms of the\n");

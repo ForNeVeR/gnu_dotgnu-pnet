@@ -164,6 +164,28 @@ void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
 					  const void *info, unsigned long len);
 
 /*
+ * Create a resource section handler for an image, in writing mode.
+ * Returns NULL if out of memory.
+ */
+ILResourceSection *ILResourceSectionCreateWriter(ILImage *image);
+
+/*
+ * Add an entry to a resource section handler.  Returns a cookie
+ * for adding bytes to the entry, or NULL if out of memory.
+ */
+void *ILResourceSectionAddEntry(ILResourceSection *section, const char *name);
+
+/*
+ * Add bytes to a resource section entry.  Returns zero if out of memory.
+ */
+int ILResourceSectionAddBytes(void *entry, const void *buffer, int len);
+
+/*
+ * Flush the contents of a resource section to a writer.
+ */
+void ILResourceSectionFlush(ILResourceSection *section, ILWriter *writer);
+
+/*
  * Initialize the constant pool attached to the given class and
  * adds the first entry
  */

@@ -231,6 +231,36 @@ struct _tagILStringHash
 #define	IL_STRING_HASH_BLOB		((ILUInt32)0x80000000)
 
 /*
+ * Information about a resource entry.
+ */
+typedef struct _tagILResourceEntry ILResourceEntry;
+struct _tagILResourceEntry
+{
+	int					isDirectory : 1;
+	int					isMallocData : 1;
+	int					isNumeric : 1;
+	char			   *name;
+	int					nameLen;
+	ILResourceEntry	   *children;
+	ILResourceEntry	   *next;
+	unsigned char	   *data;
+	unsigned long		length;
+
+};
+
+/*
+ * Information about the resource section.
+ */
+struct _tagILResourceSection
+{
+	ILImage			   *image;
+	unsigned char	   *data;
+	unsigned long		length;
+	ILResourceEntry	   *rootDirectory;
+
+};
+
+/*
  * Subclass of ILImage which is used when building an image in memory.
  */
 typedef struct _tagILImageBuilder
@@ -374,7 +404,7 @@ struct _tagILWriter
 
 };
 
-#endif /* !REDUCED_STDIO */
+#endif /* IL_USE_WRITER */
 
 /*
  * Create a persistent version of a string if necessary.

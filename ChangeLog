@@ -1,3 +1,12 @@
+
+2003-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/link_main.c, ilalink/link_res.c, image/Makefile.am,
+	image/image.h, image/winres_reader.c, image/winres_writer.c,
+	include/il_linker.h, include/il_writer.h: put some of the
+	support code in place for writing win32 resources and icons
+	(not complete yet).
+
 2003-07-08  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/test_thread.c: Made the test GC aware because

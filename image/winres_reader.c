@@ -25,34 +25,6 @@ extern	"C" {
 #endif
 
 /*
- * Information about a resource entry.
- */
-typedef struct _tagILResourceEntry ILResourceEntry;
-struct _tagILResourceEntry
-{
-	int					isDirectory;
-	char			   *name;
-	int					nameLen;
-	ILResourceEntry	   *children;
-	ILResourceEntry	   *next;
-	unsigned char	   *data;
-	unsigned long		length;
-
-};
-
-/*
- * Information about the resource section.
- */
-struct _tagILResourceSection
-{
-	ILImage			   *image;
-	unsigned char	   *data;
-	unsigned long		length;
-	ILResourceEntry	   *rootDirectory;
-
-};
-
-/*
  * Read the name of a resource from the resource section.
  */
 static char *ReadResourceName(ILResourceSection *section, unsigned long offset)
@@ -115,6 +87,10 @@ static void FreeResourceEntry(ILResourceEntry *entry)
 		FreeResourceEntry(current);
 		current = next;
 	}
+	if(entry->isMallocData && entry->data)
+	{
+		ILFree(entry->data);
+	}
 	ILFree(entry);
 }
 
@@ -138,8 +114,10 @@ static ILResourceEntry *ParseResourceEntry
 		return 0;
 	}
 	entry->isDirectory = 0;
+	entry->isMallocData = 0;
+	entry->isNumeric = 0;
 	entry->name = name;
-	entry->nameLen = strlen(name);
+	entry->nameLen = (name ? strlen(name) : 0);
 	entry->children = 0;
 	entry->next = 0;
 	entry->data = 0;
@@ -189,6 +167,8 @@ static ILResourceEntry *ParseResourceDirectory
 		return 0;
 	}
 	dir->isDirectory = 1;
+	dir->isMallocData = 0;
+	dir->isNumeric = 0;
 	dir->name = name;
 	dir->children = 0;
 	dir->next = 0;

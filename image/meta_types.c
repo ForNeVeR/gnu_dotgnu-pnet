@@ -757,7 +757,7 @@ ILType *ILTypeGetEnumType(ILType *type)
 {
 	if(ILType_IsValueType(type))
 	{
-		ILClass *classInfo = ILType_ToValueType(type);
+		ILClass *classInfo = ILClassResolve(ILType_ToValueType(type));
 		ILClass *parent = ILClass_Parent(classInfo);
 		if(parent)
 		{
@@ -1020,7 +1020,7 @@ void *ILTypeGetDelegateMethod(ILType *type)
 {
 	if(ILType_IsClass(type))
 	{
-		ILClass *classInfo = ILType_ToClass(type);
+		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
 		ILClass *parent = ILClass_Parent(classInfo);
 		if(parent)
 		{

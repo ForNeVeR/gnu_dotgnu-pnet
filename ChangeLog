@@ -1,3 +1,24 @@
+2003-09-04  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
+	System.Windows.Forms/PopupControl.cs,
+	System.Windows.Forms/StatusBar.cs, System.Windows.Forms/TextBox.cs,
+	System.Windows.Forms/TextBoxBase.cs, System.Windows.Forms/ToolBar.cs
+	: Control now uses borderStyle so each control doesnt have to
+	implement borders. Change TextBox to work like this. Other minor csc
+	compile fixes.
+
+	* Xsharp/GrabWindow.cs,System.Drawing.Win32/DrawingPopupWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingWindow.cs: popup windows now dispatch mouse
+	and keyboard events to child controls of the windows.
+
+	* System.Drawing/Graphics.cs: client window handling fix.
+
+	* System.Drawing/Bitmap.cs, System.Drawing/Image.cs,
+	System.Drawing/Region.cs,System.Drawing/Imaging/PropertyItem.cs: minor
+	warning fixes.
+
 
 2003-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -2,7 +2,7 @@
  * CspProviderFlags.cs - Implementation of the
  *		"System.Security.Cryptography.CspProviderFlags" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,11 @@ using System;
 [Flags]
 public enum CspProviderFlags
 {
-	UseMachineKeyStore     = 1,
-	UseDefaultKeyContainer = 2
+	UseMachineKeyStore		= 0x0001,
+	UseDefaultKeyContainer	= 0x0002,
+#if CONFIG_FRAMEWORK_1_2
+	UseNonExportableKey		= 0x0004
+#endif
 
 }; // enum CspProviderFlags
 

@@ -1,8 +1,8 @@
 /*
- * PaddingMode.cs - Implementation of the
- *		"System.Security.Cryptography.PaddingMode" class.
+ * KeyNumber.cs - Implementation of the
+ *		"System.Security.Cryptography.KeyNumber" class.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,20 +22,15 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
-public enum PaddingMode
+public enum KeyNumber
 {
-	None  		= 1,
-	PKCS7 		= 2,
-	Zeros 		= 3,
-#if CONFIG_FRAMEWORK_1_2
-	ANSIX923	= 4,
-	ISO10126	= 5
-#endif
+	Exchange	= 0,
+	Signature	= 1
 
-}; // enum PaddingMode
+}; // enum KeyNumber
 
-#endif // CONFIG_CRYPTO
+#endif // CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Security.Cryptography

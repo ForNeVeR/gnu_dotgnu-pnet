@@ -42,6 +42,7 @@ internal sealed class CryptoMethods
 	public const int DSASign    = 9;
 	public const int RSAEncrypt = 10;
 	public const int RSASign    = 11;
+	public const int RIPEMD160  = 12;
 
 	// Determine if a particular algorithm is supported.
 	[MethodImpl(MethodImplOptions.InternalCall)]

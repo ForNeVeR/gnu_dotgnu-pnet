@@ -53,3 +53,5 @@ Crypto_RSAKeyTooShort=The RSA key is too short for decryption operations
 Crypto_RSAInvalidCiphertext=Invalid ciphertext format for RSA decryption
 Crypto_InvalidHashSize=Invalid hash size for digital signature operation
 Crypto_CertNotSupp=Handle-based certificate construction is not supported
+Crypto_MultOf16=Array must be a multiple of 16 bytes in length
+Crypto_SaltSize=Salt must be at least 8 bytes in length

@@ -1,8 +1,8 @@
 /*
- * PaddingMode.cs - Implementation of the
- *		"System.Security.Cryptography.PaddingMode" class.
+ * HMACSHA384.cs - Implementation of the
+ *		"System.Security.Cryptography.HMACSHA384" class.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,20 +22,35 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
-public enum PaddingMode
+using Platform;
+
+public class HMACSHA384 : HMAC
 {
-	None  		= 1,
-	PKCS7 		= 2,
-	Zeros 		= 3,
-#if CONFIG_FRAMEWORK_1_2
-	ANSIX923	= 4,
-	ISO10126	= 5
-#endif
+	// Constructors.
+	public HMACSHA384()
+			{
+				HashName = "SHA384";
+				HashSizeValue = 384;
+				byte[] key = new byte [64];
+				CryptoMethods.GenerateRandom(key, 0, 64);
+			}
+	public HMACSHA384(byte[] rgbKey)
+			{
+				HashName = "SHA384";
+				HashSizeValue = 384;
+				Key = rgbKey;
+			}
 
-}; // enum PaddingMode
+	// Destructor.
+	~HMACSHA384()
+			{
+				Dispose(false);
+			}
 
-#endif // CONFIG_CRYPTO
+}; // class HMACSHA384
+
+#endif // CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Security.Cryptography

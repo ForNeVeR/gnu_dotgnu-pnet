@@ -1,8 +1,8 @@
 /*
- * PaddingMode.cs - Implementation of the
- *		"System.Security.Cryptography.PaddingMode" class.
+ * ICspAsymmetricAlgorithm.cs - Implementation of the
+ *		"System.Security.Cryptography.ICspAsymmetricAlgorithm" interface.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,20 +22,21 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
-public enum PaddingMode
+public interface ICspAsymmetricAlgorithm
 {
-	None  		= 1,
-	PKCS7 		= 2,
-	Zeros 		= 3,
-#if CONFIG_FRAMEWORK_1_2
-	ANSIX923	= 4,
-	ISO10126	= 5
-#endif
+	// Get the key container information.
+	CspKeyContainerInfo CspKeyContainerInfo { get; }
 
-}; // enum PaddingMode
+	// Export the key as a byte blob.
+	byte[] ExportCspBlob(bool includePrivateParameters);
 
-#endif // CONFIG_CRYPTO
+	// Import the key from a byte blob.
+	void ImportCspBlob(byte[] rawData);
+
+}; // interface ICspAsymmetricAlgorithm
+
+#endif // CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Security.Cryptography

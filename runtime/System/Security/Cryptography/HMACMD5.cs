@@ -1,8 +1,8 @@
 /*
- * PaddingMode.cs - Implementation of the
- *		"System.Security.Cryptography.PaddingMode" class.
+ * HMACMD5.cs - Implementation of the
+ *		"System.Security.Cryptography.HMACMD5" class.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,20 +22,35 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
-public enum PaddingMode
+using Platform;
+
+public class HMACMD5 : HMAC
 {
-	None  		= 1,
-	PKCS7 		= 2,
-	Zeros 		= 3,
-#if CONFIG_FRAMEWORK_1_2
-	ANSIX923	= 4,
-	ISO10126	= 5
-#endif
+	// Constructors.
+	public HMACMD5()
+			{
+				HashName = "MD5";
+				HashSizeValue = 128;
+				byte[] key = new byte [64];
+				CryptoMethods.GenerateRandom(key, 0, 64);
+			}
+	public HMACMD5(byte[] rgbKey)
+			{
+				HashName = "MD5";
+				HashSizeValue = 128;
+				Key = rgbKey;
+			}
 
-}; // enum PaddingMode
+	// Destructor.
+	~HMACMD5()
+			{
+				Dispose(false);
+			}
 
-#endif // CONFIG_CRYPTO
+}; // class HMACMD5
+
+#endif // CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Security.Cryptography

@@ -1,8 +1,8 @@
 /*
- * PaddingMode.cs - Implementation of the
- *		"System.Security.Cryptography.PaddingMode" class.
+ * RIPEMD160.cs - Implementation of the
+ *			"System.Security.Cryptography.RIPEMD160" class.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,20 +22,31 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
-public enum PaddingMode
+using System;
+
+public abstract class RIPEMD160 : HashAlgorithm
 {
-	None  		= 1,
-	PKCS7 		= 2,
-	Zeros 		= 3,
-#if CONFIG_FRAMEWORK_1_2
-	ANSIX923	= 4,
-	ISO10126	= 5
-#endif
+	// Constructor.
+	protected RIPEMD160()
+			{
+				HashSizeValue = 128;
+			}
 
-}; // enum PaddingMode
+	// Create a new instance of the "RIPEMD160" class.
+	public new static RIPEMD160 Create()
+			{
+				return (RIPEMD160)(CryptoConfig.CreateFromName
+						(CryptoConfig.RIPEMD160Default, null));
+			}
+	public new static RIPEMD160 Create(String algName)
+			{
+				return (RIPEMD160)(CryptoConfig.CreateFromName(algName, null));
+			}
 
-#endif // CONFIG_CRYPTO
+}; // class RIPEMD160
+
+#endif // CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
 }; // namespace System.Security.Cryptography

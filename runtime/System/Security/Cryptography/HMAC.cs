@@ -1,8 +1,8 @@
 /*
- * HMACSHA1.cs - Implementation of the
- *		"System.Security.Cryptography.HMACSHA1" class.
+ * HMAC.cs - Implementation of the
+ *		"System.Security.Cryptography.HMAC" class.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,44 +22,34 @@
 namespace System.Security.Cryptography
 {
 
-#if CONFIG_CRYPTO
+#if CONFIG_CRYPTO && CONFIG_FRAMEWORK_1_2
 
 using System;
-using Platform;
 
-#if !CONFIG_FRAMEWORK_1_2
-
-public class HMACSHA1 : KeyedHashAlgorithm
+public abstract class HMAC : KeyedHashAlgorithm
 {
 	// Internal state.
-	private SHA1 alg;
+	protected int BlockSizeValue;
+	private HashAlgorithm alg;
 	private String algName;
 
-	// Constructors.
-	public HMACSHA1()
+	// Constructor.
+	protected HMAC()
 			{
-				HashSizeValue = 160;
-				KeyValue = new byte [64];
-				CryptoMethods.GenerateRandom(KeyValue, 0, 64);
-				alg = null;
-				algName = CryptoConfig.SHA1Default;
-			}
-	public HMACSHA1(byte[] rgbKey)
-			{
-				HashSizeValue = 160;
-				if(rgbKey == null)
-				{
-					throw new ArgumentNullException("rgbKey");
-				}
-				SetKey(rgbKey);
-				alg = null;
-				algName = CryptoConfig.SHA1Default;
+				BlockSizeValue = 1;
 			}
 
-	// Destructor.
-	~HMACSHA1()
+	// Create an instance of the default HMAC algorithm.
+	public new static HMAC Create()
 			{
-				Dispose(false);
+				return (HMAC)(CryptoConfig.CreateFromName
+					(CryptoConfig.HMACDefault, null));
+			}
+
+	// Create an instance of a specific HMAC algorithm.
+	public new static HMAC Create(String algName)
+			{
+				return (HMAC)(CryptoConfig.CreateFromName(algName, null));
 			}
 
 	// Dispose this object.
@@ -82,8 +72,7 @@ public class HMACSHA1 : KeyedHashAlgorithm
 				}
 				else
 				{
-					KeyValue = (new SHA1CryptoServiceProvider()).
-						ComputeHash(key);
+					KeyValue = alg.ComputeHash(key);
 				}
 			}
 
@@ -119,6 +108,7 @@ public class HMACSHA1 : KeyedHashAlgorithm
 				set
 				{
 					algName = value;
+					alg = HashAlgorithm.Create(algName);
 				}
 			}
 
@@ -168,36 +158,7 @@ public class HMACSHA1 : KeyedHashAlgorithm
 				return alg.InternalHashFinal();
 			}
 
-}; // class HMACSHA1
-
-#else // CONFIG_FRAMEWORK_1_2
-
-public class HMACSHA1 : HMAC
-{
-	// Constructors.
-	public HMACSHA1()
-			{
-				HashName = "SHA1";
-				HashSizeValue = 160;
-				byte[] key = new byte [64];
-				CryptoMethods.GenerateRandom(key, 0, 64);
-			}
-	public HMACSHA1(byte[] rgbKey)
-			{
-				HashName = "SHA1";
-				HashSizeValue = 160;
-				Key = rgbKey;
-			}
-
-	// Destructor.
-	~HMACSHA1()
-			{
-				Dispose(false);
-			}
-
-}; // class HMACSHA1
-
-#endif // CONFIG_FRAMEWORK_1_2
+}; // class HMAC
 
 #endif // CONFIG_CRYPTO
 

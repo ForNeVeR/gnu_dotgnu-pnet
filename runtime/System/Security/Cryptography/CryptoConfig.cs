@@ -61,6 +61,12 @@ public class CryptoConfig
 			"System.Security.Cryptography.DSA";
 	internal const String RSADefault =
 			"System.Security.Cryptography.RSA";
+#if CONFIG_FRAMEWORK_1_2
+	internal const String HMACDefault =
+		"System.Security.Cryptography.HMAC";
+	internal const String RIPEMD160Default =
+		"System.Security.Cryptography.RIPEMD160";
+#endif
 
 	// Table that maps algorithm names to implementations.
 	private static readonly Object[] algorithms = {
@@ -91,6 +97,15 @@ public class CryptoConfig
 			"System.Security.Cryptography.SHA512",
 								typeof(SHA512Managed),
 
+#if CONFIG_FRAMEWORK_1_2
+
+			"RIPEMD160",		typeof(RIPEMD160Managed),
+			"RIPEMD-160",		typeof(RIPEMD160Managed),
+			"System.Security.Cryptography.RIPEMD160",
+								typeof(RIPEMD160Managed),
+
+#endif // CONFIG_FRAMEWORK_1_2
+
 			"RSA",				typeof(RSACryptoServiceProvider),
 			"System.Security.Cryptography.RSA",
 								typeof(RSACryptoServiceProvider),
@@ -120,6 +135,33 @@ public class CryptoConfig
 			"MACTripleDES",		typeof(MACTripleDES),
 			"System.Security.Cryptography.MACTripleDES",
 								typeof(MACTripleDES),
+
+#if CONFIG_FRAMEWORK_1_2
+
+			"System.Security.Cryptography.HMAC",
+								typeof(HMACSHA1),
+
+			"HMACMD5",			typeof(HMACMD5),
+			"System.Security.Cryptography.HMACMD5",
+								typeof(HMACMD5),
+
+			"HMACSHA256",		typeof(HMACSHA256),
+			"System.Security.Cryptography.HMACSHA256",
+								typeof(HMACSHA256),
+
+			"HMACSHA384",		typeof(HMACSHA384),
+			"System.Security.Cryptography.HMACSHA384",
+								typeof(HMACSHA384),
+
+			"HMACSHA512",		typeof(HMACSHA512),
+			"System.Security.Cryptography.HMACSHA512",
+								typeof(HMACSHA512),
+
+			"HMACRIPEMD160",	typeof(HMACRIPEMD160),
+			"System.Security.Cryptography.HMACRIPEMD160",
+								typeof(HMACRIPEMD160),
+
+#endif // CONFIG_FRAMEWORK_1_2
 
 			"DES",				typeof(DESCryptoServiceProvider),
 			"System.Security.Cryptography.DES",

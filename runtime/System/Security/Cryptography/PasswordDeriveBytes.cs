@@ -33,9 +33,9 @@ public class PasswordDeriveBytes : DeriveBytes
 {
 	// Internal state.
 	private String strPassword;
-	private byte[] rgbSalt;
+	internal byte[] rgbSalt;
 	private String strHashName;
-	private int iterations;
+	internal int iterations;
 	private HashAlgorithm hashAlgorithm;
 	private int blockNum, posn, size;
 	private byte[] block;

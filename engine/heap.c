@@ -43,8 +43,10 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 	   again, to avoid race condition situations */
 	if(!_ILLayoutClass(classInfo))
 	{
-		/* TODO: Throw a "TypeInitializationException" */
+		/* Throw a "TypeInitializationException" */
 		IL_METADATA_UNLOCK(thread);
+		thread->thrownException = _ILSystemException
+			(thread, "System.TypeInitializationException");
 		return 0;
 	}
 

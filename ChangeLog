@@ -1,4 +1,9 @@
 
+2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/heap.c (InitializeClass): throw "TypeInitializationException"
+	if a class could not be initialized by the layout routines.
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

@@ -7,6 +7,9 @@
 	* cscc/csharp/cs_oper.tc: Fix the EqualitySem to correctly lookup
 	op_Equality operations after coercion (and minor typo).
 
+	* engine/lib_enum.c: Fix masking features to use retain the sign
+	of the masked value.
+
 2003-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_arm.c, engine/unroll_arm_arith.c,

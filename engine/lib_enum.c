@@ -224,7 +224,8 @@ static ILField *GetNextEnumField(ILClass *classInfo, ILField *last,
 				{
 					if(constBufLen >= 1)
 					{
-						*value = ((ILInt64)(*((ILInt8 *)constBuf))) & mask;
+						*value = (ILInt64)((*((ILInt8 *)constBuf)) 
+													& (ILInt8) mask);
 						return last;
 					}
 				}
@@ -234,7 +235,8 @@ static ILField *GetNextEnumField(ILClass *classInfo, ILField *last,
 				{
 					if(constBufLen >= 1)
 					{
-						*value = ((ILInt64)(*((ILUInt8 *)constBuf))) & mask;
+						*value = (ILInt64)((*((ILUInt8 *)constBuf)) 
+													& (ILUInt8) mask);
 						return last;
 					}
 				}
@@ -244,7 +246,8 @@ static ILField *GetNextEnumField(ILClass *classInfo, ILField *last,
 				{
 					if(constBufLen >= 2)
 					{
-						*value = ((ILInt64)IL_READ_INT16(constBuf)) & mask;
+						*value = (ILInt64)((IL_READ_INT16(constBuf)) 
+													& (ILInt16) mask);
 						return last;
 					}
 				}
@@ -254,7 +257,8 @@ static ILField *GetNextEnumField(ILClass *classInfo, ILField *last,
 				{
 					if(constBufLen >= 2)
 					{
-						*value = ((ILInt64)IL_READ_UINT16(constBuf)) & mask;
+						*value = (ILInt64)((IL_READ_UINT16(constBuf)) 
+													& (ILUInt16) mask);
 						return last;
 					}
 				}
@@ -264,7 +268,8 @@ static ILField *GetNextEnumField(ILClass *classInfo, ILField *last,
 				{
 					if(constBufLen >= 4)
 					{
-						*value = ((ILInt64)IL_READ_INT32(constBuf)) & mask;
+						*value = (ILInt64)((IL_READ_INT32(constBuf)) 
+													& (ILInt32) mask);
 						return last;
 					}
 				}
@@ -274,7 +279,8 @@ static ILField *GetNextEnumField(ILClass *classInfo, ILField *last,
 				{
 					if(constBufLen >= 4)
 					{
-						*value = ((ILInt64)IL_READ_UINT32(constBuf)) & mask;
+						*value = (ILInt64)((IL_READ_UINT32(constBuf)) 
+													& (ILUInt32) mask);
 						return last;
 					}
 				}

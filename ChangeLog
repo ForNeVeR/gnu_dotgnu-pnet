@@ -9,6 +9,8 @@ methods except "Copy".
 * engine/lib_defs.h, engine/lib_array.c, engine/lib_object.c: implement
 array cloning properly in "Object.MemberwiseClone".
 
+* engine/box.c: add missing file.
+
 2001-12-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/internal.c, engine/lib_array.c, engine/lib_decimal.c,

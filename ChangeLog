@@ -1,4 +1,9 @@
 
+2004-04-19  Gopal V <gopalv82@yahoo.com>
+
+	* System.Drawing.Xsharp/DrawingTextureBrush.cs: Remove image.Dispose()
+	as multiple texture brushes can use the same image.
+
 2004-04-18  Gopal V <gopalv82@yahoo.com>
 
 	* System.Xml/Schema/XmlSchemaObject.cs: Uncomment the Namespaces 

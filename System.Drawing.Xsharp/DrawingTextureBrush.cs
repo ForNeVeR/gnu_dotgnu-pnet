@@ -66,11 +66,7 @@ internal sealed class DrawingTextureBrush : IToolkitBrush
 	// Dispose of this brush.
 	public void Dispose()
 			{
-				if(image != null)
-				{
-					image.Dispose();
-					image = null;
-				}
+				image = null;
 			}
 
 }; // class DrawingTextureBrush

@@ -1,4 +1,13 @@
 
+2001-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* resources/en_US/runtime/Arg.txt, runtime/System/Makefile.am,
+runtime/System/Text/ASCIIEncoding.cs, runtime/System/Text/Decoder.cs,
+runtime/System/Text/DefaultEncoding.cs, runtime/System/Text/Encoder.cs,
+runtime/System/Text/Encoding.cs, runtime/System/Text/UTF7Encoding.cs,
+runtime/System/Text/UTF8Encoding.cs, runtime/System/Text/UnicodeEncoding.cs:
+implement most of the "System.Text" namespace.
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/String.cs, runtime/System/Text/StringBuilder.cs,

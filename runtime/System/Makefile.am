@@ -243,8 +243,15 @@ CSSRC = Activator.cs \
 		Security/Permissions/SecurityAction.cs \
 		Security/Permissions/SecurityPermissionAttribute.cs \
 		Security/Policy/Evidence.cs \
+		Text/ASCIIEncoding.cs \
+		Text/Decoder.cs \
+		Text/DefaultEncoding.cs \
+		Text/Encoder.cs \
 		Text/Encoding.cs \
 		Text/StringBuilder.cs \
+		Text/UnicodeEncoding.cs \
+		Text/UTF7Encoding.cs \
+		Text/UTF8Encoding.cs \
 		Threading/Interlocked.cs \
 		Threading/Monitor.cs \
 		Threading/Mutex.cs \

@@ -57,6 +57,7 @@ Arg_ShortItemsArray=The items array is shorter than the keys array
 Arg_ABMustBeComparable=a or b must implement IComparable
 Arg_CannotReduceCapacity=Cannot reduce the capacity of an array list below its current length
 Arg_NotANumber=Floating-point argument is not a number
+Arg_InsufficientSpace=Insufficient array space for requested operation
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

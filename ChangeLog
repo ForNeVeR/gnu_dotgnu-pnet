@@ -12,6 +12,10 @@ allow "callvirt" to be used to call non-virtual instance methods; handle
 "BYREF" parameters; change "numArgs" into "numLocals" in the handling
 of "stloc".
 
+* engine/verify_ptr.c: replace "ClassTokenToType" with a call to
+"ILClassToType"; fix stack size handling for "ldlen"; fix return type
+for "ldelem.ref".
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

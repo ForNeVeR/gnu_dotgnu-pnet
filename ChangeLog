@@ -1,3 +1,10 @@
+2003-07-23  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* engine/int_proto.h, engine/int_table.c: updates for changes to pnetlib
+	internal calls.
+
+	* engine/lib_emit.c: implement method body output for dynamic
+	assemblies.
 
 2003-07-23  Gopal.V  <gopalv82@symonds.net>
 	

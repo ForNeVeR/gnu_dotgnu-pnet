@@ -375,6 +375,7 @@ extern ILBool _IL_Module_IsResource(ILExecThread * _thread, ILObject * _this);
 
 extern ILNativeInt _IL_AssemblyBuilder_ClrAssemblyCreate(ILExecThread * _thread, ILString * _p1, ILInt32 _p2, ILInt32 _p3, ILInt32 _p4, ILInt32 _p5, ILInt32 _p6, ILNativeInt * writer);
 extern ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, ILString * _p3, ILNativeInt _p4, ILInt32 _p5);
+extern ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread * _thread, ILNativeInt _p1, ILNativeInt _p2, System_Array * _p3);
 extern ILInt32 _IL_AssemblyBuilder_ClrGetItemToken(ILExecThread * _thread, ILNativeInt _p1);
 extern ILNativeInt _IL_AssemblyBuilder_ClrGetItemFromToken(ILExecThread * _thread, ILNativeInt _p1, ILInt32 _p2);
 

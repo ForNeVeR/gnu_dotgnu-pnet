@@ -223,6 +223,30 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	IL_METADATA_UNLOCK(_thread);
 	return (ILBool)1;
 }
+/*
+ * private static int ClrWriteMethod(IntPtr assembly, IntPtr writer, byte[] code);
+ */
+ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
+                                           ILNativeInt _assembly,
+                                           ILNativeInt _writer,
+                                           System_Array *_code)
+{
+	ILInt32 retval;
+	ILWriter *writer;
+	unsigned char *buf;
+	unsigned long len;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	writer = (ILWriter *)_writer;
+	buf = (unsigned char *)ArrayToBuffer(_code);
+	len = (unsigned long)_code->length;
+	retval = (ILInt32)ILWriterGetTextRVA(writer);
+	ILWriterTextWrite(writer, buf, len);
+
+	IL_METADATA_UNLOCK(_thread);
+	return retval;
+}
 
 /*
  * internal static int ClrGetItemToken(IntPtr item);
@@ -939,14 +963,13 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 	{
 		nameSpace = 0;
 	}
-	if(!token && typeName &&
-		((!strcmp("<Module>", typeName) && nameSpace==NULL) 
-		|| (!strcmp("Object", typeName) && nameSpace && 
-					 !strcmp("System", nameSpace)) 
-		|| (attr & IL_META_TYPEDEF_INTERFACE)))	
+	if (!token &&
+	    ((!strcmp("<Module>", typeName) && !nameSpace) ||
+	     (!strcmp("Object", typeName) && nameSpace && !strcmp("System", nameSpace)) ||
+	     (attr & IL_META_TYPEDEF_INTERFACE)))
 	{
-		/* interfaces , <Module> and System.Object */
-		baseClass=NULL;
+		/* interfaces, <Module>, and System.Object */
+		baseClass = NULL;
 	}
 	else if (!(baseClass = ILClass_FromToken(image, token)))
 	{

@@ -559,7 +559,13 @@ static int ResolveTypeRefs(ILImage *image, int loadFlags)
 				{
 					goto moduleImport;
 				}
-				/* TODO: dynamically load the specified module */
+				if(!_ILImageDynamicLinkModule(image, image->filename,
+											  ILModule_Name((ILModule *)scope),
+											  loadFlags, &importImage) &&
+				   importImage != 0)
+				{
+					goto moduleImport;
+				}
 			}
 			break;
 

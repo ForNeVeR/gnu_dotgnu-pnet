@@ -705,6 +705,82 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 	return 0;
 }
 
+int _ILImageDynamicLinkModule(ILImage *image, const char *filename,
+							  const char *moduleName, int flags,
+							  ILImage **newImage)
+{
+	char *pathname;
+	int error;
+	int len, retryLower;
+
+	/* Clear the return image before we start */
+	*newImage = 0;
+
+	/* If we loaded the parent from an insecure source, then bail out
+	   without attempting to load the module files */
+	if((flags & IL_LOADFLAG_INSECURE) != 0 || !filename)
+	{
+		return 0;
+	}
+
+	/* Strip the final component from the filename */
+	len = strlen(filename);
+	while(len > 0 && filename[len - 1] != '/' && filename[len - 1] != '\\')
+	{
+		--len;
+	}
+	if(len > 0)
+	{
+		--len;
+	}
+
+	/* Ignore this module if we already have it */
+	if(ILContextGetFile(image->context, moduleName) != 0)
+	{
+		return 0;
+	}
+
+	/* Ignore this module if its name contains a '/' or '\', because
+	   files in other directories may be a security risk */
+	if(ILMemChr(moduleName, '/', strlen(moduleName)) != 0 ||
+	   ILMemChr(moduleName, '\\', strlen(moduleName)) != 0)
+	{
+		return 0;
+	}
+
+	/* Get the full pathname of the referenced file */
+	retryLower = 0;
+	pathname = TestPathForFile(filename, len,
+							   moduleName, strlen(moduleName),
+							   0, 0, &retryLower, 0);
+	if(!pathname && retryLower)
+	{
+		pathname = TestPathForFile(filename, len,
+								   moduleName, strlen(moduleName),
+								   0, 0, &retryLower, 1);
+	}
+	if(!pathname)
+	{
+	#if IL_DEBUG_META
+		fprintf(stderr, "could not locate the file %s\n", moduleName);
+	#endif
+		return IL_LOADERR_UNRESOLVED;
+	}
+
+	/* Load the image */
+	error = ILImageLoadFromFile(pathname, image->context,
+						        newImage, flags, 0);
+	ILFree(pathname);
+	if(error == -1)
+	{
+		return IL_LOADERR_UNRESOLVED;
+	}
+	else
+	{
+		return error;
+	}
+}
+
 int ILImageLoadAssembly(const char *name, ILContext *context,
 						ILImage *parentImage, ILImage **image)
 {

@@ -504,6 +504,14 @@ int _ILImageTokenAlreadyLoaded(ILImage *image, ILToken token);
 int _ILImageDynamicLink(ILImage *image, const char *filename, int flags);
 
 /*
+ * Perform dynamic linking on a module reference.
+ * Returns a load error
+ */
+int _ILImageDynamicLinkModule(ILImage *image, const char *filename,
+							  const char *moduleName, int flags,
+							  ILImage **newImage);
+
+/*
  * Free the information associated with an image's tokens.
  */
 void _ILImageFreeTokens(ILImage *image);

@@ -2027,6 +2027,44 @@ ILObject *_IL_Array_Get_ai(ILExecThread *thread, ILObject *thisObj,
 }
 
 /*
+ * private Object GetRelative(int index);
+ */
+ILObject *_IL_Array_GetRelative(ILExecThread *thread, ILObject *_this,
+								ILInt32 index)
+{
+	void *buf;
+	ILType *synType;
+	ILType *elemType;
+	ILInt32 size;
+
+	/* Get the base pointer, element type, and the size of the array */
+	if(_ILIsSArray((System_Array *)_this))
+	{
+		buf = ArrayToBuffer(_this);
+		synType = ILClassGetSynType(GetObjectClass(_this));
+		elemType = ILType_ElemType(synType);
+		size = (ILInt32)(ILSizeOfType(elemType));
+	}
+	else
+	{
+		buf = ((System_MArray *)_this)->data;
+		size = ((System_MArray *)_this)->elemSize;
+		elemType = GetArrayElemType((System_Array *)_this);
+	}
+
+	/* Retrieve the value and return it */
+	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	{
+		return ILExecThreadBox
+			(thread, elemType, ((unsigned char *)buf) + index * size);
+	}
+	else
+	{
+		return ((ILObject **)buf)[index];
+	}
+}
+
+/*
  * private void Set(Object value, int index1, int index2, int index3);
  */
 void _IL_Array_Set_Objectiii(ILExecThread *thread, ILObject *thisObj,
@@ -2216,6 +2254,58 @@ void _IL_Array_Set_Objectai(ILExecThread *thread, ILObject *thisObj,
 				     elemType))
 	{
 		*((ILObject **)ptr) = value;
+	}
+	else
+	{
+		ILExecThreadThrowSystem
+				(thread, "System.ArgumentException",
+				 "Arg_ElementTypeMismatch");
+	}
+}
+
+/*
+ * private static void SetRelative(Object value, int index);
+ */
+void _IL_Array_SetRelative(ILExecThread *thread, ILObject *_this,
+						   ILObject *value, ILInt32 index)
+{
+	void *buf;
+	ILType *synType;
+	ILType *elemType;
+	ILInt32 size;
+
+	/* Get the base pointer, element type, and the size of the array */
+	if(_ILIsSArray((System_Array *)_this))
+	{
+		buf = ArrayToBuffer(_this);
+		synType = ILClassGetSynType(GetObjectClass(_this));
+		elemType = ILType_ElemType(synType);
+		size = (ILInt32)(ILSizeOfType(elemType));
+	}
+	else
+	{
+		buf = ((System_MArray *)_this)->data;
+		size = ((System_MArray *)_this)->elemSize;
+		elemType = GetArrayElemType((System_Array *)_this);
+	}
+
+	/* Copy the value into position in the array */
+	if(ILType_IsPrimitive(elemType) || ILType_IsValueType(elemType))
+	{
+		if(!ILExecThreadUnbox(thread, elemType, value,
+							  ((unsigned char *)buf) + index * size))
+		{
+			ILExecThreadThrowSystem
+					(thread, "System.ArgumentException",
+					 "Arg_ElementTypeMismatch");
+		}
+	}
+	else if(ILTypeAssignCompatible
+					(ILProgramItem_Image(thread->method),
+				     (value ? ILClassToType(GetObjectClass(value)) : 0),
+				     elemType))
+	{
+		((ILObject **)buf)[index] = value;
 	}
 	else
 	{

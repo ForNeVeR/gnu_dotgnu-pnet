@@ -22,8 +22,10 @@ extern ILInt32 _IL_Array_GetLowerBound(ILExecThread * _thread, ILObject * _this,
 extern ILInt32 _IL_Array_GetUpperBound(ILExecThread * _thread, ILObject * _this, ILInt32 dimension);
 extern ILObject * _IL_Array_Get_iii(ILExecThread * _thread, ILObject * _this, ILInt32 index1, ILInt32 index2, ILInt32 index3);
 extern ILObject * _IL_Array_Get_ai(ILExecThread * _thread, ILObject * _this, System_Array * indices);
+extern ILObject * _IL_Array_GetRelative(ILExecThread * _thread, ILObject * _this, ILInt32 index);
 extern void _IL_Array_Set_Objectiii(ILExecThread * _thread, ILObject * _this, ILObject * value, ILInt32 index1, ILInt32 index2, ILInt32 index3);
 extern void _IL_Array_Set_Objectai(ILExecThread * _thread, ILObject * _this, ILObject * value, System_Array * indices);
+extern void _IL_Array_SetRelative(ILExecThread * _thread, ILObject * _this, ILObject * value, ILInt32 index);
 extern ILInt32 _IL_Array_GetLength_(ILExecThread * _thread, ILObject * _this);
 extern ILInt32 _IL_Array_GetRank(ILExecThread * _thread, ILObject * _this);
 

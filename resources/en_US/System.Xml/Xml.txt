@@ -57,3 +57,4 @@ Xml_CannotRemove=Cannot remove the specific node
 Xml_ReaderClosed=XML reader has already been closed or does not exist
 Xml_ReaderError=An error was detected in the input XML stream
 Xml_RefNotChild=The reference node is not a child of the specified parent
+Xml_CannotClone=Cannot clone this type of node

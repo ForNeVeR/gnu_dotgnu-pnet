@@ -45,8 +45,13 @@ public class TestXml
 				suite = new TestSuite("Node Tests");
 				suite.AddTests(typeof(TestXmlAttribute));
 				suite.AddTests(typeof(TestXmlCDataSection));
+				suite.AddTests(typeof(TestXmlComment));
 				suite.AddTests(typeof(TestXmlDocument));
+				suite.AddTests(typeof(TestXmlDocumentFragment));
+				suite.AddTests(typeof(TestXmlDocumentType));
+				suite.AddTests(typeof(TestXmlSignificantWhitespace));
 				suite.AddTests(typeof(TestXmlText));
+				suite.AddTests(typeof(TestXmlWhitespace));
 				fullSuite.AddTest(suite);
 			#endif
 

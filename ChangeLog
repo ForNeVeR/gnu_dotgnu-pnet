@@ -1,4 +1,17 @@
 
+2002-12-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/XmlDocument.cs, System.Xml/XmlDocumentFragment.cs,
+	System.Xml/XmlDocumentType.cs, System.Xml/XmlEntity.cs,
+	System.Xml/XmlNotation.cs, System.Xml/XmlTextReader.cs,
+	System.Xml/XmlTextWriter.cs, resources/en_US/System.Xml/Xml.txt,
+	tests/System.Xml/TestXml.cs, tests/System.Xml/TestXmlComment.cs,
+	tests/System.Xml/TestXmlDocumentFragment.cs,
+	tests/System.Xml/TestXmlDocumentType.cs,
+	tests/System.Xml/TestXmlSignificantWhitespace.cs,
+	tests/System.Xml/TestXmlWhitespace.cs: more test cases and bug
+	fixes for System.Xml.
+
 2002-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NameCache.cs, System.Xml/NodeList.cs,

@@ -596,7 +596,11 @@ public class XmlTextReader : XmlReader
 						}
 						else if(ch == '[')
 						{
-							// TODO: CDATA and document type nodes.
+							// TODO: CDATA nodes.
+						}
+						else if(ch == 'D')
+						{
+							// TODO: document type nodes.
 						}
 						else
 						{

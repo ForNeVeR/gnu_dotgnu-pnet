@@ -46,15 +46,10 @@ class XmlDocumentType : XmlLinkedNode
 			: base(parent)
 			{
 				XmlNameTable nt = parent.FindOwnerQuick().NameTable;
-				this.name =
-					((name != null) ? nt.Add(name) : String.Empty);
-				this.publicId =
-					((publicId != null) ? nt.Add(publicId) : String.Empty);
-				this.systemId =
-					((systemId != null) ? nt.Add(systemId) : String.Empty);
-				this.internalSubset =
-					((internalSubset != null) ? nt.Add(internalSubset)
-											  : String.Empty);
+				this.name = name;
+				this.publicId = publicId;
+				this.systemId = systemId;
+				this.internalSubset = internalSubset;
 				entities = new XmlNamedNodeMap(this);
 				notations = new XmlNamedNodeMap(this);
 				attributes = null;

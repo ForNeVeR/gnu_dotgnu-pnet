@@ -22,6 +22,8 @@ namespace System.Xml
 {
 
 using System;
+using System.IO;
+using System.Text;
 
 #if ECMA_COMPAT
 internal
@@ -223,15 +225,13 @@ class XmlDocument : XmlNode
 			}
 
 	// Clone this document node.
-	[TODO]
 	public override XmlNode CloneNode(bool deep)
 			{
 				XmlDocument doc = Implementation.CreateDocument();
 				doc.baseURI = baseURI;
 				if(deep)
 				{
-					// Copy across the children.
-					// TODO
+					doc.CloneChildrenFrom(this, deep);
 				}
 				return doc;
 			}
@@ -590,18 +590,108 @@ class XmlDocument : XmlNode
 					(placeholder, version, encoding, standalone);
 			}
 
-	// Write the contents of this document to an XML writer.
+	// Get an element by identifier.
 	[TODO]
-	public override void WriteContentTo(XmlWriter xw)
+	public virtual XmlElement GetElementById(String elementId)
+			{
+				// TODO
+				return null;
+			}
+
+	// Get a list of elements by tag name.
+	[TODO]
+	public virtual XmlNodeList GetElementsByTagName(String name)
+			{
+				// TODO
+				return null;
+			}
+
+	// Get a list of elements by local name and namespace.
+	[TODO]
+	public virtual XmlNodeList GetElementsByTagName
+				(String name, String namespaceURI)
+			{
+				// TODO
+				return null;
+			}
+
+	// Import a node from another document.
+	[TODO]
+	public virtual XmlNode ImportNode(XmlNode node, bool deep)
+			{
+				// TODO
+				return null;
+			}
+
+	// Load XML into this document.
+	[TODO]
+	public virtual void Load(Stream inStream)
+			{
+				// TODO
+			}
+	[TODO]
+	public virtual void Load(String filename)
+			{
+				// TODO
+			}
+	[TODO]
+	public virtual void Load(TextReader txtReader)
+			{
+				// TODO
+			}
+	[TODO]
+	public virtual void Load(XmlReader reader)
 			{
 				// TODO
 			}
 
-	// Write this document to an XML writer.
+	// Load XML into this document from a string.
 	[TODO]
-	public override void WriteTo(XmlWriter w)
+	public virtual void LoadXml(String xml)
 			{
 				// TODO
+			}
+
+	// Read a node into this document.
+	[TODO]
+	public virtual XmlNode ReadNode(XmlReader reader)
+			{
+				// TODO
+				return null;
+			}
+
+	// Save XML data from this document.
+	[TODO]
+	public virtual void Save(Stream outStream)
+			{
+				// TODO
+			}
+	[TODO]
+	public virtual void Save(String filename)
+			{
+				// TODO
+			}
+	[TODO]
+	public virtual void Save(TextWriter writer)
+			{
+				// TODO
+			}
+	[TODO]
+	public virtual void Save(XmlWriter w)
+			{
+				// TODO
+			}
+
+	// Write the contents of this document to an XML writer.
+	public override void WriteContentTo(XmlWriter xw)
+			{
+				WriteChildrenTo(xw);
+			}
+
+	// Write this document to an XML writer.
+	public override void WriteTo(XmlWriter w)
+			{
+				WriteContentTo(w);
 			}
 
 	// Events.

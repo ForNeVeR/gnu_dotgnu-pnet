@@ -46,8 +46,7 @@ class XmlDocumentFragment : XmlNode
 			{
 				get
 				{
-					// TODO
-					return null;
+					return base.InnerXml;
 				}
 				set
 				{
@@ -120,17 +119,15 @@ class XmlDocumentFragment : XmlNode
 			}
 
 	// Write the contents of this document to an XML writer.
-	[TODO]
-	public override void WriteContentTo(XmlWriter xw)
+	public override void WriteContentTo(XmlWriter w)
 			{
-				// TODO
+				WriteTo(w);
 			}
 
 	// Write this document to an XML writer.
-	[TODO]
 	public override void WriteTo(XmlWriter w)
 			{
-				// TODO
+				WriteChildrenTo(w);
 			}
 
 	// Determine if a particular node type can be inserted as

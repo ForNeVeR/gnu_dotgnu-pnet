@@ -538,10 +538,21 @@ public class XmlTextWriter : XmlWriter
 									  String sysid, String subset)
 			{
 				// We must be in the prolog.
-				if(writeState != System.Xml.WriteState.Prolog)
+				if(autoShiftToContent)
 				{
-					throw new InvalidOperationException
-						(S._("Xml_InvalidWriteState"));
+					if(writeState == System.Xml.WriteState.Closed)
+					{
+						throw new InvalidOperationException
+							(S._("Xml_InvalidWriteState"));
+					}
+				}
+				else
+				{
+					if(writeState != System.Xml.WriteState.Prolog)
+					{
+						throw new InvalidOperationException
+							(S._("Xml_InvalidWriteState"));
+					}
 				}
 
 				// Validate the name.
@@ -554,18 +565,33 @@ public class XmlTextWriter : XmlWriter
 				// Write out the document type information.
 				writer.Write("<!DOCTYPE ");
 				writer.Write(name);
-				writer.Write(" PUBLIC \"");
-				WriteQuotedString(pubid);
-				writer.Write("\" \"");
-				WriteQuotedString(sysid);
-				writer.Write('\"');
-				if(subset != null && subset.Length != 0)
+				writeState = System.Xml.WriteState.Attribute;
+				if(pubid != null)
 				{
-					writer.Write(" \"");
-					WriteQuotedString(subset);
-					writer.Write('\"');
+					writer.Write(" PUBLIC ");
+					writer.Write(quoteChar);
+					WriteQuotedString(pubid);
+					writer.Write(quoteChar);
+					writer.Write(' ');
+					writer.Write(quoteChar);
+					WriteQuotedString(sysid);
+					writer.Write(quoteChar);
 				}
-				writer.WriteLine('>');
+				else if(sysid != null)
+				{
+					writer.Write(" SYSTEM ");
+					writer.Write(quoteChar);
+					WriteQuotedString(sysid);
+					writer.Write(quoteChar);
+				}
+				if(subset != null)
+				{
+					writer.Write(' ');
+					writer.Write('[');
+					writer.Write(subset);
+					writer.Write(']');
+				}
+				writer.Write('>');
 
 				// Return to the prolog.
 				writeState = System.Xml.WriteState.Prolog;
@@ -1146,7 +1172,7 @@ public class XmlTextWriter : XmlWriter
 
 						default:
 						{
-							if(ch < 0x20)
+							if(ch < 0x20 && !Char.IsWhiteSpace(ch))
 							{
 								// Quote a low-ASCII control character.
 								if(prev < posn)

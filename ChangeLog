@@ -19,6 +19,11 @@
 	* engine/cvmc_except.c (CVMCoder_TryHandlerStart): bug in label
 	computation for exception regions.
 
+	* engine/cvmc.c, engine/lib_diag.c, engine/null_coder.c,
+	engine/verify.c, include/il_coder.h: pass line information
+	from the program image through to the diagnostic stack
+	trace internalcall's.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

@@ -624,6 +624,11 @@ struct _tagILCoderClass
 							    ILUInt32 offset, int exact);
 
 	/*
+	 * Mark an offset in the current method with IL offset information.
+	 */
+	void (*markBytecode)(ILCoder *coder, ILUInt32 offset);
+
+	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
 	const char *sentinel;
@@ -844,6 +849,8 @@ struct _tagILCoderClass
 #define	ILCoderGetNativeOffset(coder,start,offset,exact) \
 			((*((coder)->classInfo->getNativeOffset))((coder), (start), \
 												      (offset), (exact)))
+#define	ILCoderMarkBytecode(coder,offset) \
+			((*((coder)->classInfo->markBytecode))((coder), (offset)))
 
 #ifdef	__cplusplus
 };

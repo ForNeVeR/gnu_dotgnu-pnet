@@ -296,6 +296,14 @@ static ILUInt32 CVMCoder_GetNativeOffset(ILCoder *_coder, void *start,
 }
 
 /*
+ * Mark the current position with a bytecode offset.
+ */
+static void CVMCoder_MarkBytecode(ILCoder *_coder, ILUInt32 offset)
+{
+	ILCacheMarkBytecode(&(((ILCVMCoder *)_coder)->codePosn), offset);
+}
+
+/*
  * Include the rest of the CVM conversion routines from other files.
  * We split the implementation to make it easier to maintain the code.
  */
@@ -400,6 +408,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_PCToMethod,
 	CVMCoder_GetILOffset,
 	CVMCoder_GetNativeOffset,
+	CVMCoder_MarkBytecode,
 	"sentinel"
 };
 

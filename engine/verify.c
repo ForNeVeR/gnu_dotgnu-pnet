@@ -22,6 +22,7 @@
 #include "il_coder.h"
 #include "il_opcodes.h"
 #include "il_align.h"
+#include "il_debug.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -481,6 +482,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILException *exceptions;
 	ILException *exception;
 	int hasRethrow;
+	int haveDebug = ILDebugPresent(ILProgramItem_Image(method));
 
 	/* Include local variables that are required by the include files */
 #define IL_VERIFY_LOCALS
@@ -868,6 +870,12 @@ restart:
 
 			/* Reset the coder's notion of the stack to empty */
 			ILCoderStackRefresh(coder, stack, stackSize);
+		}
+
+		/* Mark this offset if the method has debug information */
+		if(haveDebug)
+		{
+			ILCoderMarkBytecode(coder, offset);
 		}
 
 		/* Fetch the instruction information block */

@@ -176,8 +176,8 @@ ILString *_IL_StackFrame_InternalGetDebugInfo
 	const char *filename;
 
 	/* Initialize the return parameters in case of error */
-	*line = 0;
-	*col = 0;
+	*line = -1;
+	*col = -1;
 
 	/* Validate the method handle */
 	method = *((ILMethod **)_method);
@@ -207,6 +207,16 @@ ILString *_IL_StackFrame_InternalGetDebugInfo
 	if(!filename)
 	{
 		return 0;
+	}
+
+	/* Invalid line and column numbers are -1 */
+	if(!(*line))
+	{
+		*line = -1;
+	}
+	if(!(*col))
+	{
+		*col = -1;
 	}
 
 	/* Convert the filename into a string and exit */

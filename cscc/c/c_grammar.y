@@ -152,7 +152,6 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 %token K_INLINE			"`inline'"
 %token K_INT			"`int'"
 %token K_LONG			"`long'"
-%token K_NATIVE			"`__native__'"
 %token K_REGISTER		"`register'"
 %token K_RETURN			"`return'"
 %token K_SHORT			"`short'"
@@ -664,7 +663,7 @@ StructOrUnionSpecifier
 				else
 				{
 					/* We've already seen a definition for this type before */
-					if($1 == C_STKIND_STRUCT || $1 == C_STKIND_STRUCT_NATIVE)
+					if($1 == C_STKIND_STRUCT)
 					{
 						CCError(_("redefinition of `struct %s'"), $2);
 					}
@@ -734,9 +733,7 @@ StructOrUnionSpecifier
 
 StructOrUnion
 	: K_STRUCT					{ $$ = C_STKIND_STRUCT; }
-	| K_STRUCT K_NATIVE			{ $$ = C_STKIND_STRUCT_NATIVE; }
 	| K_UNION					{ $$ = C_STKIND_UNION; }
-	| K_UNION K_NATIVE			{ $$ = C_STKIND_UNION_NATIVE; }
 	;
 
 StructDeclarationList
@@ -927,7 +924,6 @@ Pointer
 TypeQualifier
 	: K_CONST			{ $$ = C_SPEC_CONST; }
 	| K_VOLATILE		{ $$ = C_SPEC_VOLATILE; }
-	| K_NATIVE			{ $$ = C_SPEC_NATIVE; }
 	;
 
 TypeQualifierList
@@ -940,10 +936,6 @@ TypeQualifierList
 				if(($1 & $2 & C_SPEC_VOLATILE) != 0)
 				{
 					CCWarning(_("duplicate `volatile'"));
-				}
-				if(($1 & $2 & C_SPEC_NATIVE) != 0)
-				{
-					CCWarning(_("duplicate `__native__'"));
 				}
 				$$ = ($1 | $2);
 			}

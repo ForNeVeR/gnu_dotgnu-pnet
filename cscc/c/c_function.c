@@ -443,7 +443,7 @@ void CFunctionPredeclare(ILGenInfo *info)
 		ILGenOutOfMemory(info);
 	}
 	ILTypeSetCallConv(signature, IL_META_CALLCONV_VARARG);
-	type = CTypeCreatePointer(info, CTypeAddConst(info, ILType_Int8), 0);
+	type = CTypeCreatePointer(info, CTypeAddConst(info, ILType_Int8));
 	if(!ILTypeAddParam(info->context, signature, type))
 	{
 		ILGenOutOfMemory(info);

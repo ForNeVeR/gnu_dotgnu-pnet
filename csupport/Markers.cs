@@ -27,9 +27,6 @@ using System;
 // A modifier class that is used to mark "const" types.
 public sealed class IsConst {}
 
-// A modifier class that is used to mark native pointer types.
-public sealed class IsNativePointer {}
-
 // An attribute class that is used to mark bit fields.
 [AttributeUsage(AttributeTargets.Field)]
 public sealed class BitFieldAttribute : Attribute

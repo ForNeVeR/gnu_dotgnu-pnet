@@ -7,6 +7,12 @@
 	cscc/c/c_types.c, cscc/c/c_types.h: implement C type coercions
 	and simple binary operators.
 
+	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_function.c,
+	cscc/c/c_grammar.y, cscc/c/c_library.c, cscc/c/c_scanner.l,
+	cscc/c/c_scope.c, cscc/c/c_types.c, cscc/c/c_types.h,
+	csupport/Markers.cs: remove native pointers, structs, and unions
+	from the C compiler, as it makes the system too complex.
+
 2002-08-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, cscc/c/c_crt0.c, cscc/c/c_function.c,

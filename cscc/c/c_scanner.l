@@ -128,7 +128,6 @@ WHITE			[ \t\v\r\f]
 "__inline__"			{ return K_INLINE; }
 "int"					{ return K_INT; }
 "long"					{ return K_LONG; }
-"__native__"			{ return K_NATIVE; }
 "register"				{ return K_REGISTER; }
 "return"				{ return K_RETURN; }
 "short"					{ return K_SHORT; }

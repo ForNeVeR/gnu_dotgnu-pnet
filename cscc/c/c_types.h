@@ -29,9 +29,7 @@ extern	"C" {
  * Kinds of structs or unions that may be encountered by the C parser.
  */
 #define	C_STKIND_STRUCT			0
-#define	C_STKIND_STRUCT_NATIVE	1
-#define	C_STKIND_UNION			2
-#define	C_STKIND_UNION_NATIVE	3
+#define	C_STKIND_UNION			1
 
 /*
  * Create a struct or union type with a specific name.  If the
@@ -56,7 +54,7 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size);
 /*
  * Create a C pointer type.
  */
-ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType, int nativePtr);
+ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType);
 
 /*
  * Create a C type reference for "builtin_va_list".
@@ -182,14 +180,9 @@ int CTypeIsEnum(ILType *type);
 int CTypeIsArray(ILType *type);
 
 /*
- * Determine if a C type is a pointer type (native or regular).
+ * Determine if a C type is a pointer type.
  */
 int CTypeIsPointer(ILType *type);
-
-/*
- * Determine if a C type is a native pointer type.
- */
-int CTypeIsNativePointer(ILType *type);
 
 /*
  * Determine if a C type is a method type.

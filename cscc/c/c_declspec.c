@@ -577,7 +577,6 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_INLINE, "inline");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_CONST, "const");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_VOLATILE, "volatile");
-	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_NATIVE, "__native__");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SIGNED, "signed");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_UNSIGNED, "unsigned");
 	ReportDuplicate(node, spec.dupSpecifiers, C_SPEC_SHORT, "short");
@@ -749,14 +748,12 @@ CDeclarator CDeclCreatePointer(ILGenInfo *info, int qualifiers,
 	/* Create the actual pointer type */
 	if(refType)
 	{
-		type = CTypeCreatePointer(info, refType->type,
-								  ((qualifiers & C_SPEC_NATIVE) != 0));
+		type = CTypeCreatePointer(info, refType->type);
 		result.typeHole = refType->typeHole;
 	}
 	else
 	{
-		type = CTypeCreatePointer(info, ILType_Invalid,
-								  ((qualifiers & C_SPEC_NATIVE) != 0));
+		type = CTypeCreatePointer(info, ILType_Invalid);
 		result.typeHole = &(ILType_Ref(type));
 	}
 

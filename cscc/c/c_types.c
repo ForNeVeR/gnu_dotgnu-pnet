@@ -41,7 +41,7 @@ ILType *CTypeCreateStructOrUnion(ILGenInfo *info, const char *name,
 	char *newName;
 
 	/* Determine which prefix to use */
-	if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+	if(kind == C_STKIND_STRUCT)
 	{
 		prefix = "struct ";
 		prefixLen = 7;
@@ -266,28 +266,12 @@ ILType *CTypeCreateArray(ILGenInfo *info, ILType *elemType, ILUInt32 size)
 	return ILType_FromValueType(classInfo);
 }
 
-ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType, int nativePtr)
+ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType)
 {
 	ILType *type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR, refType);
 	if(!type)
 	{
 		ILGenOutOfMemory(info);
-	}
-	if(nativePtr)
-	{
-		/* Add a modifier to the type to indicate its native status */
-		ILClass *classInfo;
-		ILType *modifiers;
-		classInfo = ILType_ToClass(ILFindNonSystemType
-				(info, "IsNativePointer", "OpenSystem.C"));
-		modifiers = ILTypeCreateModifier(info->context, 0,
-										 IL_TYPE_COMPLEX_CMOD_OPT,
-										 classInfo);
-		if(!modifiers)
-		{
-			ILGenOutOfMemory(info);
-		}
-		type = ILTypeAddModifiers(info->context, modifiers, type);
 	}
 	return type;
 }
@@ -304,7 +288,7 @@ ILType *CTypeCreateVoidPtr(ILGenInfo *info)
 	static ILType *voidPtr = 0;
 	if(!voidPtr)
 	{
-		voidPtr = CTypeCreatePointer(info, ILType_Void, 0);
+		voidPtr = CTypeCreatePointer(info, ILType_Void);
 	}
 	return voidPtr;
 }
@@ -314,7 +298,7 @@ ILType *CTypeCreateCharPtr(ILGenInfo *info)
 	static ILType *charPtr = 0;
 	if(!charPtr)
 	{
-		charPtr = CTypeCreatePointer(info, ILType_Int8, 0);
+		charPtr = CTypeCreatePointer(info, ILType_Int8);
 	}
 	return charPtr;
 }
@@ -382,46 +366,22 @@ int CTypeAlreadyDefined(ILType *type)
 }
 
 /*
- * Set the correct class attributes based on a structure kind.
+ * Set the correct class attributes for a struct or union.
  */
-static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo, int kind)
+static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo)
 {
-	switch(kind)
-	{
-		case C_STKIND_STRUCT:
-		case C_STKIND_UNION:
-		case C_STKIND_UNION | C_STKIND_UNION_NATIVE:
-		{
-			/* Structure or union with explicit layout requirements */
-			ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-							IL_META_TYPEDEF_PUBLIC |
-							IL_META_TYPEDEF_SERIALIZABLE |
-							IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-							IL_META_TYPEDEF_SEALED |
-							IL_META_TYPEDEF_VALUE_TYPE);
-			if(kind != C_STKIND_UNION_NATIVE)
-			{
-				/* The type initially has a packing alignment of 1
-				   and a total size of 0 */
-				if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
-				{
-					ILGenOutOfMemory(info);
-				}
-			}
-		}
-		break;
+	/* Mark the structure as needing explicit layout */
+	ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+					IL_META_TYPEDEF_PUBLIC |
+					IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_EXPLICIT_LAYOUT |
+					IL_META_TYPEDEF_SEALED |
+					IL_META_TYPEDEF_VALUE_TYPE);
 
-		case C_STKIND_STRUCT_NATIVE:
-		{
-			/* Let the runtime engine determine how to lay out the fields */
-			ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-							IL_META_TYPEDEF_PUBLIC |
-							IL_META_TYPEDEF_SERIALIZABLE |
-							IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-							IL_META_TYPEDEF_SEALED |
-							IL_META_TYPEDEF_VALUE_TYPE);
-		}
-		break;
+	/* The type initially has a packing alignment of 1 and a total size of 0 */
+	if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
+	{
+		ILGenOutOfMemory(info);
 	}
 }
 
@@ -448,7 +408,7 @@ ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
 	{
 		ILGenOutOfMemory(info);
 	}
-	SetupStructAttrs(info, classInfo, kind);
+	SetupStructAttrs(info, classInfo);
 
 	/* The type definition is ready to go */
 	return type;
@@ -457,7 +417,6 @@ ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
 ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 							  		 const char *funcName, int kind)
 {
-	int parentKind;
 	long number;
 	ILNestedInfo *nested;
 	ILClass *parentInfo;
@@ -470,21 +429,6 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	/* Get the number to assign to the anonymous type */
 	if(parent)
 	{
-		/* If the parent is native, then the anonymous child should be too */
-		parentKind = CTypeGetStructKind(parent);
-		if(parentKind == C_STKIND_STRUCT_NATIVE ||
-		   parentKind == C_STKIND_UNION_NATIVE)
-		{
-			if(kind == C_STKIND_STRUCT)
-			{
-				kind = C_STKIND_STRUCT_NATIVE;
-			}
-			else if(kind == C_STKIND_UNION)
-			{
-				kind = C_STKIND_UNION_NATIVE;
-			}
-		}
-
 		/* Count the nested types to determine the number */
 		parentInfo = ILType_ToValueType(parent);
 		number = 1;
@@ -515,7 +459,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 		{
 			ILGenOutOfMemory(info);
 		}
-		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+		if(kind == C_STKIND_STRUCT)
 		{
 			newName = AppendThree(info, "struct ", newName, name);
 		}
@@ -527,7 +471,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	else
 	{
 		/* Format the name as "struct (N)" */
-		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
+		if(kind == C_STKIND_STRUCT)
 		{
 			sprintf(name, "struct (%ld)", number);
 		}
@@ -549,7 +493,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	{
 		ILGenOutOfMemory(info);
 	}
-	SetupStructAttrs(info, classInfo, kind);
+	SetupStructAttrs(info, classInfo);
 
 	/* The type definition is ready to go */
 	ILFree(newName);
@@ -839,25 +783,11 @@ int CTypeGetStructKind(ILType *type)
 	{
 		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "struct ", 7))
 		{
-			if(ILClass_IsExplicitLayout(ILType_ToValueType(type)))
-			{
-				return C_STKIND_STRUCT;
-			}
-			else
-			{
-				return C_STKIND_STRUCT_NATIVE;
-			}
+			return C_STKIND_STRUCT;
 		}
 		else if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "union ", 6))
 		{
-			if(ILClassLayoutGetFromOwner(ILType_ToValueType(type)) != 0)
-			{
-				return C_STKIND_UNION;
-			}
-			else
-			{
-				return C_STKIND_UNION_NATIVE;
-			}
+			return C_STKIND_UNION;
 		}
 	}
 	return -1;
@@ -901,11 +831,6 @@ int CTypeIsPointer(ILType *type)
 	{
 		return 0;
 	}
-}
-
-int CTypeIsNativePointer(ILType *type)
-{
-	return CheckForModifier(type, "IsNativePointer", "OpenSystem.C");
 }
 
 int CTypeIsMethod(ILType *type)
@@ -1108,7 +1033,7 @@ ILType *CTypeDecay(ILGenInfo *info, ILType *type)
 	}
 
 	/* Build a pointer type from the array element type */
-	ptrType = CTypeCreatePointer(info, CTypeGetElemType(type), 0);
+	ptrType = CTypeCreatePointer(info, CTypeGetElemType(type));
 
 	/* Add back any "const" or "volatile" prefixes */
 	if(CTypeIsConst(type))
@@ -1291,16 +1216,10 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 			return ILClassLayoutGetClassSize(layout);
 		}
 
-		/* This is a native structure or union: bail out if not forced */
-		if(!force)
-		{
-			*align = 1;
-			return CTYPE_DYNAMIC;
-		}
-
-		/* Add up the sizes of all non-static fields in the class,
-		   and guess its most likely alignment */
-		/* TODO */
+		/* If we don't have explicit information, then this is probably a
+		   foreign value type which has a dynamic size */
+		*align = 1;
+		return CTYPE_DYNAMIC;
 	}
 	else if(type != 0 && ILType_IsComplex(type))
 	{
@@ -1313,21 +1232,15 @@ static ILUInt32 TypeSizeAndAlign(ILType *_type, ILUInt32 *align, int force)
 				*align = ALIGN_PTR32;
 				return SIZE_PTR32;
 			}
-			else if(force || !CheckForModifier(_type, "IsNativePointer",
-										       "OpenSystem.C"))
+			else
 			{
 				*align = ALIGN_PTR64;
 				return SIZE_PTR64;
 			}
-			else
-			{
-				*align = ALIGN_PTR64;
-				return CTYPE_DYNAMIC;
-			}
 		}
 	}
 
-	/* Assume that everything else is the same size as a native pointer */
+	/* Assume that everything else is the same size as a pointer */
 	if(gen_32bit_only)
 	{
 		*align = ALIGN_PTR32;
@@ -1497,7 +1410,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 		else if(ILType_Kind(type) == IL_TYPE_COMPLEX_CMOD_OPT ||
 		        ILType_Kind(type) == IL_TYPE_COMPLEX_CMOD_REQD)
 		{
-			/* Look for "const", "volatile", and "__native__" qualifiers */
+			/* Look for "const" and "volatile" qualifiers */
 			stripped = ILTypeStripPrefixes(type);
 			modFlags = 0;
 			if(CheckForModifier(type, "IsConst",
@@ -1510,18 +1423,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 			{
 				modFlags |= 2;
 			}
-			if(CheckForModifier(type, "IsNativePointer",
-							    "OpenSystem.C") &&
-			   CTypeIsPointer(stripped))
-			{
-				name = AppendThree(info, 0,
-								   CTypeToName(info, ILType_Ref(stripped)),
-								   " __native__ *");
-			}
-			else
-			{
-				name = CTypeToName(info, stripped);
-			}
+			name = CTypeToName(info, stripped);
 			if(modFlags != 0)
 			{
 				if(CTypeIsPointer(stripped) || CTypeIsArray(stripped))

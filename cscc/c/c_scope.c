@@ -34,7 +34,7 @@ static char *StructScopeName(const char *name, int structKind)
 {
 	ILIntString str1;
 	ILIntString str2;
-	if(structKind == C_STKIND_STRUCT || structKind == C_STKIND_STRUCT_NATIVE)
+	if(structKind == C_STKIND_STRUCT)
 	{
 		str1.string = "struct ";
 		str1.len = 7;

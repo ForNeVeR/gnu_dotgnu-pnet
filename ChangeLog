@@ -31,7 +31,7 @@
 
 	* System.Drawing.Xsharp/DrawingPen.cs, Xsharp/Graphics.cs,
 	Xsharp/Xlib.cs.in: implement some of the support code for
-	dashed pens in Xsharp - not 100% working yet.
+	dashed pens in Xsharp.
 
 	* System.Drawing.Xsharp/DrawingPen.cs, samples/FormsHello.cs:
 	dashed pens only work in X with a line width of 0, not 1.
@@ -39,6 +39,9 @@
 	* runtime/Platform/InfoMethods.cs, runtime/System/Environment.cs:
 	add the "InfoMethods.GetPlatformID" internalcall to better detect
 	Win32 vs Unix platform differences.
+
+	* System.Drawing/Toolkit/ToolkitManager.cs: better detection
+	code for Win32 systems.
 
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	

@@ -127,8 +127,12 @@ public sealed class ToolkitManager
 			#if CONFIG_REFLECTION
 				// Determine the name of the toolkit we wish to use.
 				String name;
+			#if !ECMA_COMPAT
+				if(Environment.OSVersion.Platform != PlatformID.Unix)
+			#else
 				if(Path.DirectorySeparatorChar == '\\' ||
 				   Path.AltDirectorySeparatorChar == '\\')
+			#endif
 				{
 					name = "System.Drawing.Win32";
 				}

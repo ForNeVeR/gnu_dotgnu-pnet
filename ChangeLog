@@ -3,3 +3,6 @@
 
 	* doc/ChangeLog-1: move the contents of ChangeLog into the "doc"
 	directory because it was getting quite large.
+
+	* HACKING: update the HACKING file to contain information on how
+	to submit bug reports and patches.

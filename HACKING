@@ -206,24 +206,78 @@ See the Portable.NET FAQ for more information on Copyright assignment:
 
     http://www.southern-storm.com.au/pnet_faq.html
 
-How to submit changes
----------------------
+How to submit changes and bug reports
+-------------------------------------
 
-Changes can be submitted by either e-mailing them to Rhys Weatherley
-(rweather@southern-storm.com.au), or by using the patch manager on
-savannah.gnu.org.  The patch manager makes it easier to track.
+Changes should be submitted through the Patch Manager on Savannah:
+
+    http://savannah.gnu.org/patch/?group_id=353
+
+Bug reports should be submitted through the Tech Support Manager
+on Savannah:
+
+	http://savannah.gnu.org/support/?group_id=353
+
+Alternatively, you can e-mail patches and bug reports to Rhys Weatherley
+(rweather@southern-storm.com.au).  The facilities on Savannah make it
+easier to track issues.
+
+When you submit a bug report, please provide the following information:
+
+    - C# source for a test application that demonstrates the bug.
+    - A description of why you think the behaviour is incorrect.
+    - The platform (OS and CPU) upon which the problem was observed.
+    - The versions of pnetlib and Portable.NET that you tested with.
+    - Patch data for fixes, if applicable.
 
 The preferred patch format is context diff's against the CVS repository.
 Use "cvs diff -c filename" to create such diff's.  To create a context
 diff for a new file that does not exist in the repository, use the
 command "diff -c /dev/null filename" instead.
 
+The "make_patch.sh" script can be used to assist in the process of building
+patch files suitable for use with pnetlib.  The script assumes that you are
+working with the CVS version of the source tree, not the .tar.gz version.
+The simplest way to use the script is to cd to the top-level source directory
+and type:
+
+    ./make_patch.sh
+
+The script will determine which files have changed, ask for you to enter
+a description, and then construct the patch file.  The file will be called
+"USER-DATE.patch" in the current directory unless you specify "-o":
+
+    ./make_patch.sh -o filename
+
+Normally the patch will be calculated for every file that you have changed.
+To submit a patch for a specific set of files, specify them on the command
+line:
+
+    ./make_patch.sh ChangeLog runtime/System/Foo/Bar.cs
+
+It is usually a good idea to do a "cvs update -d" prior to creating a
+patch file using "make_patch.sh".
+
 Please submit patches for:
 
-    Source files that were added or changed.
-    Makefile.am files that incorporate new files into the build.
-    Resource files that contain new strings.
-    ChangeLog entries that describe the changes that were made.
+    - Source files that were added or changed.
+    - Makefile.am files that incorporate new files into the build.
+    - Resource files that contain new strings.
+    - ChangeLog entries that describe the changes that were made.
+
+To summarise, here are the steps for adding a new class to the library:
+
+    - Create and test the new class file.
+    - Modify Makefile.am to incorporate the file into the build.
+    - Modify ChangeLog to describe what you have changed.
+    - Do a "cvs update -d" to get the latest version of the source.
+    - Execute "make_patch.sh" to create a patch file with the changes:
+
+            ./make_patch.sh
+        or  ./make_patch.sh ChangeLog runtime/System/Makefile.am \
+                    runtime/System/Foo/Bar.cs
+
+    - Submit the patch through the Patch Manager on Savannah.
 
 General coding guidelines
 -------------------------

@@ -34,7 +34,7 @@ public class ToolBar : Control
 	private ToolBarAppearance appearance = ToolBarAppearance.Normal;
 	private bool autoSize = true;
 	private BorderStyle borderStyle = BorderStyle.None;
-	internal ToolBarButtonCollection buttons = new ToolBarButtonCollection(this);
+	internal ToolBarButtonCollection buttons;
 	private Size buttonSize = Size.Empty;
 	private Size cachedAutoButtonSize = Size.Empty;
 	private Size establishedTextBounds = Size.Empty;
@@ -45,8 +45,9 @@ public class ToolBar : Control
 	private ToolBarTextAlign textAlign = ToolBarTextAlign.Underneath;
 	private bool wrappable = true;
 	private Size preferredSize = Size.Empty;
-	private Size staticSize = DefaultSize;
+	private Size staticSize;
 	private int[] wrapData = new int[1] { 1 };
+
 	private bool entered = false;
 	private int mouseDownClick = -1;
 	private int mouseDownDrop = -1;
@@ -67,6 +68,8 @@ public class ToolBar : Control
 	{
 		base.Dock = DockStyle.Top;
 		base.TabStop = false;
+		buttons = new ToolBarButtonCollection(this);
+		staticSize = DefaultSize;
 	}
 
 
@@ -474,7 +477,7 @@ public class ToolBar : Control
 	                                                bool partial,
 	                                                bool pushed)
 	{
-		ButtonState state;
+		ButtonState state = 0;
 		if (flat && !hover && !click)
 		{
 			state |= ButtonState.Flat;

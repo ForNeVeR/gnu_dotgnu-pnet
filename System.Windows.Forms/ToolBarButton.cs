@@ -251,10 +251,10 @@ public class ToolBarButton
 
 
 	// Methods
-	protected override void Dispose(bool disposing)
+	/*protected override void Dispose(bool disposing)
 	{
 		base.Dispose(disposing);
-	}
+	}*/
 	internal int Contains(int x, int y, bool dropDowns)
 	{
 		if (!visible)

@@ -299,7 +299,7 @@ public class ListBox : ListControl
 		}
 
 		[TODO]	
-		private Object IList.this[ int index ]
+		Object IList.this[ int index ]
 		{
 			get
 			{
@@ -609,11 +609,11 @@ public class ListBox : ListControl
 	{
 		get
 		{
-			return base.SelectedIndex;
+			return 0;
 		}
 		set
 		{
-			base.SelectedIndex = value;
+			
 		}
 	}
 
@@ -906,7 +906,7 @@ public class ListBox : ListControl
 	[TODO]
 	protected override void RefreshItem( int index )
 	{
-		base.RefreshItem( index );
+		
 	}
 
 	[TODO]

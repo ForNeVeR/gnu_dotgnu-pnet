@@ -1,6 +1,6 @@
 /*
- * Cursor.cs - Implementation of the
- *			"System.Windows.Forms.Cursor" class.
+ * Cursors.cs - Implementation of the
+ *			"System.Windows.Forms.Cursors" class.
  *
  * Copyright (C) 2003 Neil Cawse.
  *
@@ -18,59 +18,46 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 namespace System.Windows.Forms
 {
-	public class Cursor 
+	public class Cursors 
 	{
-		private CursorType type;
-		internal enum CursorType
+		public static Cursor Arrow 
 		{
-			Arrow,
-			WaitCursor,
-			SizeNS,
-			SizeWE,
-			SizeNWSE,
-			SizeNESW,
-			IBeam
+			get { return new Cursor(Cursor.CursorType.Arrow); }
 		}
-		internal Cursor (CursorType type) 
+		public static Cursor WaitCursor 
 		{
-			this.type = type;
+			get { return new Cursor(Cursor.CursorType.WaitCursor); }
 		}
-		public override bool Equals(object obj) 
+		public static Cursor SizeNS 
 		{
-			if (obj == null || obj.GetType() != typeof(Cursor))
-				return false;
-			return (obj as Cursor).type==type;
+			get { return new Cursor(Cursor.CursorType.SizeNS); }
+		}
+		public static Cursor SizeWE 
+		{
+			get { return new Cursor(Cursor.CursorType.SizeWE); }
+		}
+		public static Cursor SizeNWSE 
+		{
+			get { return new Cursor(Cursor.CursorType.SizeNWSE); }
+		}
+		public static Cursor SizeNESW 
+		{
+			get { return new Cursor(Cursor.CursorType.SizeNESW); }
+		}
+		public static Cursor IBeam 
+		{
+			get { return new Cursor(Cursor.CursorType.IBeam); }
 		}
 
-		public override int GetHashCode()
-		{
-			throw new NotImplementedException();
-		}
-
-		//TODO
-		public static Cursor Current
+		public static Cursor Default
 		{
 			get
 			{
-				return null;
+				return Cursors.Arrow;
 			}
-
-			set
-			{
-			}
-		}
-
-		//TODO
-		public static void Hide()
-		{
-		}
-
-		//TODO
-		public static void Show()
-		{
 		}
 	}
+
 }

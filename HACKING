@@ -59,9 +59,8 @@ The most up to date version of pnet is always the version in CVS on
 savannah.gnu.org.  This is the preferred version to use to make changes.
 To check out the sources via anonymous CVS, use the following commands:
 
-    cvs -d:pserver:anoncvs@subversions.gnu.org:/cvsroot/dotgnu-pnet login
-        (the password is empty - just press the Enter key)
-    cvs -z3 -d:pserver:anoncvs@subversions.gnu.org:/cvsroot/dotgnu-pnet
+    export CVS_RSH="ssh"
+    cvs -z3 -d:ext:anoncvs@savannah.gnu.org:/cvsroot/dotgnu-pnet
             co pnet
 
 If you already have a version checked out, then cd to your "pnet"
@@ -71,13 +70,6 @@ working directory and use the following command:
 
 The "-d" is important.  You won't get newly created directories from the
 repository if you omit it.
-
-If CVS is inconvenient, you can get a .tar.gz snapshot of the source
-from the following location:
-
-    http://snapshots.dotgnu.org/dotgnu-pnet/
-
-The snapshots are updated daily.
 
 The most recent release version of the source is on the Portable.NET
 Web site:
@@ -120,8 +112,8 @@ Standards
 The ECMA standards for C# and the Common Language Infrastructure (CLI)
 can be found at the ECMA Web site:
 
-	http://www.ecma.ch/ecma1/STAND/ECMA-334.htm   (C#)
-	http://www.ecma.ch/ecma1/STAND/ECMA-335.htm   (CLI)
+	http://www.ecma-international.org/publications/standards/Ecma-334.htm (C#)
+	http://www.ecma-international.org/publications/standards/Ecma-335.htm (CLI)
 
 Version numbers
 ---------------

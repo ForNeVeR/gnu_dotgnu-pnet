@@ -1,4 +1,9 @@
 
+2003-01-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/rc2.c: work around problems with unsigned short
+	on Alpha compilers.
+
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

@@ -31,6 +31,20 @@ extern	"C" {
 #endif
 
 /*
+ * Some alpha versions of gcc have problems assigning to unsigned short's,
+ * which causes gcc to lock-up.  We work around this using "ILUInt32".
+ * This isn't terribly elegant - any suggestions as to what is really
+ * happening are welcome.
+ */
+#if defined(__alpha__)
+typedef	ILUInt32	RWorkType;
+#define	NORM(x)		((x) &= 0xFFFF)
+#else
+typedef	ILUInt16	RWorkType;
+#define	NORM(x)
+#endif
+
+/*
  * Perform a "mix" operation.
  */
 #define	MIX(rindex,kindex,svalue)	\
@@ -38,8 +52,10 @@ extern	"C" {
 				R[(rindex)] += K[(kindex)] + \
 					(R[((rindex) - 1) & 3] & R[((rindex) - 2) & 3]) + \
 					((~(R[((rindex) - 1) & 3])) & R[((rindex) - 3) & 3]); \
+				NORM(R[(rindex)]); \
 				R[(rindex)] = (R[(rindex)] << (svalue)) | \
 							  (R[(rindex)] >> (16 - (svalue))); \
+				NORM(R[(rindex)]); \
 			} while (0)
 #define	MIXROUND(kindex)	\
 			do { \
@@ -55,6 +71,7 @@ extern	"C" {
 #define	MASH(rindex)	\
 			do { \
 				R[(rindex)] += K[R[((rindex) - 1) & 3] & 63]; \
+				NORM(R[(rindex)]); \
 			} while (0)
 #define	MASHROUND()		\
 			do { \
@@ -71,9 +88,11 @@ extern	"C" {
 			do { \
 				R[(rindex)] = (R[(rindex)] >> (svalue)) | \
 							  (R[(rindex)] << (16 - (svalue))); \
+				NORM(R[(rindex)]); \
 				R[(rindex)] -= K[(kindex)] + \
 					(R[((rindex) - 1) & 3] & R[((rindex) - 2) & 3]) + \
 					((~(R[((rindex) - 1) & 3])) & R[((rindex) - 3) & 3]); \
+				NORM(R[(rindex)]); \
 			} while (0)
 #define	RMIXROUND(kindex)	\
 			do { \
@@ -89,6 +108,7 @@ extern	"C" {
 #define	RMASH(rindex)	\
 			do { \
 				R[(rindex)] -= K[R[((rindex) - 1) & 3] & 63]; \
+				NORM(R[(rindex)]); \
 			} while (0)
 #define	RMASHROUND()		\
 			do { \
@@ -177,7 +197,7 @@ void ILRC2Encrypt(ILRC2Context *rc2, unsigned char *input,
 				  unsigned char *output)
 {
 	register const ILUInt16 *K = rc2->key;
-	ILUInt16 R[4];
+	RWorkType R[4];
 
 	/* Copy the input buffer into the "R" array */
 	R[0] = IL_READ_UINT16(input);
@@ -224,7 +244,7 @@ void ILRC2Decrypt(ILRC2Context *rc2, unsigned char *input,
 				  unsigned char *output)
 {
 	register const ILUInt16 *K = rc2->key;
-	ILUInt16 R[4];
+	RWorkType R[4];
 
 	/* Copy the input buffer into the "R" array */
 	R[0] = IL_READ_UINT16(input);

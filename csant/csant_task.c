@@ -19,6 +19,7 @@
  */
 
 #include "csant_defs.h"
+#include "il_errno.h"
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -250,6 +251,42 @@ static int Task_Delete(CSAntTask *task)
 }
 
 /*
+ * Make a directory, and all parent directories.
+ */
+static int Mkdir_P(const char *base, const char *dir)
+{
+      char *path = CSAntDirCombine(base, dir);
+      char* slashpos = &path[strlen(base)];
+      char* bslashpos;
+      int retval = 0;
+      char save;
+
+      if(!path)
+      {
+		return errno;
+      }
+      while(*slashpos != '\0')
+      {
+		bslashpos = strchr(slashpos + 1, '\\');
+		slashpos = strchr(slashpos + 1, '/');
+		if (slashpos == 0 || (bslashpos != 0 && slashpos > bslashpos))
+		  	slashpos = bslashpos;
+		if (slashpos == 0)
+		  	slashpos = strchr(path, '\0');
+		save = *slashpos;
+		*slashpos = '\0';
+		retval = ILCreateDir(path);
+		*slashpos = save;
+		if (retval != IL_ERRNO_Success && retval != IL_ERRNO_EEXIST)
+		  	break;
+      }
+      if(retval == IL_ERRNO_EEXIST)
+		retval = IL_ERRNO_Success;
+      ILFree(path);
+      return retval;
+}
+
+/*
  * Make a directory.
  */
 static int Task_Mkdir(CSAntTask *task)
@@ -265,15 +302,12 @@ static int Task_Mkdir(CSAntTask *task)
 	dir = CSAntDirCombine(CSAntBaseBuildDir, dirParam);
 	if(!CSAntSilent)
 	{
-		printf("mkdir %s\n", dir);
+		printf("mkdir -p %s\n", dir);
 	}
-#ifdef IL_WIN32_NATIVE
-	retval = mkdir(dir);
-#else
-	retval = mkdir(dir, 0777);
-#endif
-	if(retval && errno != EEXIST)
+	retval = Mkdir_P(CSAntBaseBuildDir, dirParam);
+	if(retval != IL_ERRNO_Success)
 	{
+		ILSysIOSetErrno(retval);
 		perror(dir);
 		ILFree(dir);
 		return 0;
@@ -289,12 +323,17 @@ static int Task_Copy(CSAntTask *task)
 {
 	const char *fromfileParam = CSAntTaskParam(task, "file");
 	const char *tofileParam = CSAntTaskParam(task, "tofile");
+	const char* todirParam = CSAntTaskParam(task, "todir");
 	char *fromfile;
-	char *tofile;
+	char *topath;
+	const char *slashpos;
+	const char *bslashpos;
 	FILE *instream;
 	FILE *outstream;
 	char buffer[BUFSIZ];
 	int len;
+	char *path;
+	int retval;
 
 	/* Validate the parameters */
 	if(!fromfileParam)
@@ -302,9 +341,14 @@ static int Task_Copy(CSAntTask *task)
 		fprintf(stderr, "no source file in <copy>\n");
 		return 0;
 	}
-	if(!tofileParam)
+	if(!tofileParam && !todirParam)
 	{
-		fprintf(stderr, "no destination file in <copy>\n");
+		fprintf(stderr, "no destination in <copy>\n");
+		return 0;
+	}
+	if(tofileParam && todirParam)
+	{
+		fprintf(stderr, "ambigious destination in <copy>\n");
 		return 0;
 	}
 	fromfile = CSAntDirCombine(CSAntBaseBuildDir, fromfileParam);
@@ -312,8 +356,40 @@ static int Task_Copy(CSAntTask *task)
 	{
 	  	return 0;
 	}
-	tofile = CSAntDirCombine(CSAntBaseBuildDir, tofileParam);
-	if (!tofile)
+	if (tofileParam)
+	{
+	  	topath = CSAntDirCombine(CSAntBaseBuildDir, tofileParam);
+	}
+	else
+	{
+	  	path = CSAntDirCombine(CSAntBaseBuildDir, todirParam);
+		if (!path)
+		  	topath = 0;
+	        else
+		{
+			retval = Mkdir_P(CSAntBaseBuildDir, todirParam);
+			if (retval != IL_ERRNO_Success)
+			{
+				ILSysIOSetErrno(retval);
+				perror(path);
+				ILFree(path);
+				ILFree(fromfile);
+				return 0;
+
+			}
+			slashpos = strrchr(fromfileParam, '/');
+			bslashpos = strrchr(fromfileParam, '\\');
+			if (bslashpos > slashpos)
+			  	slashpos = bslashpos;
+			if (slashpos == 0)
+			  	slashpos = fromfileParam;
+			else
+			  	slashpos += 1;
+			topath = CSAntDirCombine(path, slashpos);
+			ILFree(path);
+		}
+	}
+	if (!topath)
 	{
 		ILFree(fromfile);
 	  	return 0;
@@ -322,7 +398,7 @@ static int Task_Copy(CSAntTask *task)
 	/* Report the command that we will be executing */
 	if(!CSAntSilent)
 	{
-		printf("cp %s %s\n", fromfile, tofile);
+		printf("cp %s %s\n", fromfile, topath);
 	}
 
 	/* Attempt to open the source file */
@@ -332,20 +408,20 @@ static int Task_Copy(CSAntTask *task)
 		{
 			perror(fromfile);
 		  	ILFree(fromfile);
-			ILFree(tofile);
+			ILFree(topath);
 			return 0;
 		}
 	}
 
 	/* Attempt to open the destination file */
-	if((outstream = fopen(tofile, "wb")) == NULL)
+	if((outstream = fopen(topath, "wb")) == NULL)
 	{
-		if((outstream = fopen(tofile, "w")) == NULL)
+		if((outstream = fopen(topath, "w")) == NULL)
 		{
-			perror(tofile);
+			perror(topath);
 			fclose(instream);
 		  	ILFree(fromfile);
-			ILFree(tofile);
+			ILFree(topath);
 			return 0;
 		}
 	}
@@ -361,12 +437,12 @@ static int Task_Copy(CSAntTask *task)
 	}
 	if(ferror(outstream))
 	{
-		perror(tofile);
+		perror(topath);
 		fclose(instream);
 		fclose(outstream);
-		ILDeleteFile(tofile);
+		ILDeleteFile(topath);
 		ILFree(fromfile);
-		ILFree(tofile);
+		ILFree(topath);
 		return 0;
 	}
 
@@ -374,7 +450,7 @@ static int Task_Copy(CSAntTask *task)
 	fclose(instream);
 	fclose(outstream);
 	ILFree(fromfile);
-	ILFree(tofile);
+	ILFree(topath);
 	return 1;
 }
 

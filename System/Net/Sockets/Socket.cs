@@ -67,7 +67,7 @@ public class Socket : IDisposable
 				myprotocoltype = protocolType;
 				mysockettype = socketType;	
 				
-				if (!(SocketMethods.Create((int)addressFamily, (int)protocolType, (int)socketType, out myhandle)))
+				if (!(SocketMethods.Create((int)addressFamily, (int)socketType, (int)protocolType, out myhandle)))
 					throw new SocketException(SocketMethods.GetErrno(), "Socket");
 
 			}
@@ -468,25 +468,25 @@ public class Socket : IDisposable
 					
 				// Get Socket Handles from
 				// checkRead, checkWrite, etc.
-				IntPtr[checkRead.Count-1] chkRead;
-				IntPtr[checkWrite.Count-1] chkWrite;
-				IntPtr[checkError.Count-1] chkErr;
+				IntPtr[] chkRead = new IntPtr [checkRead.Count];
+				IntPtr[] chkWrite = new IntPtr [checkWrite.Count];
+				IntPtr[] chkError = new IntPtr [checkError.Count];
 				
 				try
 				{	
-				for(int i = 0; i < checkRead.Count-1; ++i)
+				for(int i = 0; i < checkRead.Count; ++i)
 				{
-					chkRead[i] = checkRead[i].Handle;    
+					chkRead[i] = ((Socket)(checkRead[i])).Handle;    
 				}
 				
-				for(int i = 0; i < checkWrite.Count-1; ++i)
+				for(int i = 0; i < checkWrite.Count; ++i)
 				{
-					chkWrite[i] = checkWrite[i].Handle;    
+					chkWrite[i] = ((Socket)(checkWrite[i])).Handle;    
 				}
 				
-				for(int i = 0; i < checkError.Count-1; ++i)
+				for(int i = 0; i < checkError.Count; ++i)
 				{
-					chkError[i] = checkError[i].Handle;    
+					chkError[i] = ((Socket)(checkError[i])).Handle;    
 				}
 				}
 				catch(Exception e)
@@ -494,8 +494,8 @@ public class Socket : IDisposable
 					throw new SocketException();
 				}
 										
-			       	int r = SocketMethods.Select(chkread, chkWrite,
-	                        chkError, (long)microseconds);
+			       	int r = SocketMethods.Select(chkRead, chkWrite,
+	                        chkError, (long)microSeconds);
 				if (r == -1)
 				{
 					switch(SocketMethods.GetErrno())
@@ -503,20 +503,13 @@ public class Socket : IDisposable
 						// Didn't want to use
 						// FileNotFoundException
 						// for invalid FileHandle
-						case EBADF:
+						case Errno.EBADF:
 							throw new SocketException();
-							break;
-						case EINTR:
+						case Errno.EINTR:
 							throw new SocketException();
-							break;
-						case ENOMEM:
+						case Errno.ENOMEM:
 							throw new OutOfMemoryException();
-							break;
 					}
-				}
-				else
-				{
-					return r;
 				}
 
 	}

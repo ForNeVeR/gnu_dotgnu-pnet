@@ -1,4 +1,10 @@
 
+2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y: change the definition of the
+	"ArrayInitializer" non-terminal to remove a shift/reduce
+	conflict related to the optional comma on the end.
+
 2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,

@@ -813,7 +813,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 17
+%expect 16
 
 %start CompilationUnit
 %%
@@ -1620,7 +1620,8 @@ OptArrayInitializer
 	;
 
 ArrayInitializer
-	: '{' OptVariableInitializerList OptComma '}' { $$ = $2; }
+	: '{' OptVariableInitializerList '}' { $$ = $2; }
+	| '{' VariableInitializerList ',' '}' { $$ = $2; }
 	;
 
 OptVariableInitializerList

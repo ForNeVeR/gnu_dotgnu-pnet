@@ -379,7 +379,7 @@ public class EmbeddedApplication : InputOutputWidget
 	public void Launch()
 			{
 				// Bail out if the application was already launched.
-				if(process != null)
+				if(this.process != null)
 				{
 					return;
 				}

@@ -9,6 +9,15 @@
 	runtime/System/Runtime/Serialization/Formatters/SoapFault.cs:
 	implement some TODO's in "System.Runtime.Serialization".
 
+	* runtime/System/Runtime/Serialization/ObjectIDGenerator.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryElementType.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryMethodFlags.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryPrimitiveTypeCode.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryReturnTypeTag.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryTypeTag.cs:
+	begin implementing the outgoing side of the binary formatter.
+
 2003-08-01  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/StatusBar.cs: Cleaned it up along with 

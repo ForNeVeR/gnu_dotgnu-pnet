@@ -30,12 +30,14 @@ public class ObjectIDGenerator
 {
 	// Internal state.
 	private Hashtable table;
+	private Hashtable typeTable;
 	private long nextId;
 
 	// Constructor.
 	public ObjectIDGenerator()
 			{
 				table = new IdentityHashtable();
+				typeTable = new IdentityHashtable();
 				nextId = 1;
 			}
 
@@ -56,6 +58,7 @@ public class ObjectIDGenerator
 				{
 					firstTime = true;
 					table[obj] = (Object)(nextId);
+					RegisterType(obj.GetType(), nextId);
 					return nextId++;
 				}
 			}
@@ -77,6 +80,31 @@ public class ObjectIDGenerator
 				{
 					firstTime = true;
 					return 0;
+				}
+			}
+
+	// Register a type with a previous object identifier that used the type.
+	private void RegisterType(Type type, long id)
+			{
+				if(typeTable[type] == null)
+				{
+					typeTable[type] = (Object)id;
+				}
+			}
+
+	// Get the object identity of an object of a specific type.
+	// This is used to cache type structure information between objects.
+	// Returns -1 if there was no previous object with the given type.
+	internal long GetIDForType(Type type)
+			{
+				Object obj = typeTable[type];
+				if(obj != null)
+				{
+					return (long)obj;
+				}
+				else
+				{
+					return -1;
 				}
 			}
 

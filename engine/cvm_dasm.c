@@ -513,16 +513,14 @@ static CVMOpcode const prefixOpcodes[80] = {
 	{"ckfinite",		CVM_OPER_NONE},
 
 	/*
-	 * String conversion opcodes.
+	 * Marhsalling conversion opcodes.
 	 */
 	{"str2ansi",		CVM_OPER_NONE},
 	{"str2utf8",		CVM_OPER_NONE},
-
-	/*
-	 * Reserved opcodes.
-	 */
-	{"preserved_3e",	CVM_OPER_NONE},
-	{"preserved_3f",	CVM_OPER_NONE},
+	{"ansi2str",		CVM_OPER_NONE},
+	{"utf82str",		CVM_OPER_NONE},
+	{"delegate2fnptr",	CVM_OPER_NONE},
+	{"array2ptr",		CVM_OPER_NONE},
 
 	/*
 	 * Inline method replacements.
@@ -544,8 +542,6 @@ static CVMOpcode const prefixOpcodes[80] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_49",	CVM_OPER_NONE},
-	{"preserved_4a",	CVM_OPER_NONE},
 	{"preserved_4b",	CVM_OPER_NONE},
 	{"preserved_4c",	CVM_OPER_NONE},
 	{"preserved_4d",	CVM_OPER_NONE},

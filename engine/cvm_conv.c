@@ -1695,7 +1695,7 @@ VMBREAK(COP_PREFIX_F2D_ALIGNED);
  *
  *   <description>The <i>value</i> is popped from the stack as
  *   type <code>string</code>.  The string is converted into a
- *   <i>result</i>.  character buffer using the underlying platform's
+ *   <i>result</i> character buffer using the underlying platform's
  *   current locale settings.  A pointer to the buffer is pushed onto
  *   the stack as type <code>ptr</code>.</description>
  *
@@ -1732,7 +1732,7 @@ VMBREAK(COP_PREFIX_STR2ANSI);
  *
  *   <description>The <i>value</i> is popped from the stack as
  *   type <code>string</code>.  The string is converted into a
- *   <i>result</i>.  character buffer using the UTF-8 encoding.
+ *   <i>result</i> character buffer using the UTF-8 encoding.
  *   A pointer to the buffer is pushed onto the stack as type
  *   <code>ptr</code>.</description>
  *
@@ -1753,6 +1753,149 @@ VMCASE(COP_PREFIX_STR2UTF8):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_STR2UTF8);
+
+/**
+ * <opcode name="ansi2str" group="Conversion operators">
+ *   <operation>Convert <code>ansi char *</code> to <code>string</code>
+ *              </operation>
+ *
+ *   <format>prefix<fsep/>ansi2str</format>
+ *   <dformat>{ansi2str}</dformat>
+ *
+ *   <form name="ansi2str" code="COP_PREFIX_ANSI2STR"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>ptr</code>.  This pointer is interpreted as a
+ *   character buffer that uses the platform's current locale
+ *   settings.  This buffer is converted into a string <i>result</i>,
+ *   which is then pushed onto the stack as type <code>ptr</code>.
+ *   </description>
+ *
+ *   <notes>This instruction is used to convert character buffers into
+ *   C# strings during "PInvoke" marshalling operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_ANSI2STR):
+{
+	/* Convert an "ANSI" character buffer into a string */
+	if(stacktop[-1].ptrValue)
+	{
+		COPY_STATE_TO_THREAD();
+		stacktop[-1].ptrValue = (void *)ILStringCreate
+			(thread, (const char *)(stacktop[-1].ptrValue));
+		RESTORE_STATE_FROM_THREAD();
+	}
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_ANSI2STR);
+
+/**
+ * <opcode name="utf82str" group="Conversion operators">
+ *   <operation>Convert <code>utf8 char *</code> to <code>string</code>
+ *              </operation>
+ *
+ *   <format>prefix<fsep/>utf82str</format>
+ *   <dformat>{utf82str}</dformat>
+ *
+ *   <form name="utf82str" code="COP_PREFIX_UTF82STR"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>string</code>.  The string is converted into a
+ *   <i>result</i>.  character buffer using the UTF-8 encoding.
+ *   A pointer to the buffer is pushed onto the stack as type
+ *   <code>ptr</code>.</description>
+ *
+ *   <notes>This instruction is used to convert C# strings into
+ *   character buffers during "PInvoke" marshalling operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_UTF82STR):
+{
+	/* Convert a UTF-8 character buffer into a string */
+	if(stacktop[-1].ptrValue)
+	{
+		/* TODO: this currently does "ANSI", but it should do "UTF-8" */
+		COPY_STATE_TO_THREAD();
+		stacktop[-1].ptrValue = (void *)ILStringCreate
+			(thread, (const char *)(stacktop[-1].ptrValue));
+		RESTORE_STATE_FROM_THREAD();
+	}
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_UTF82STR);
+
+/**
+ * <opcode name="delegate2fnptr" group="Conversion operators">
+ *   <operation>Convert a delegate into a function pointer</operation>
+ *
+ *   <format>prefix<fsep/>delegate2fnptr</format>
+ *   <dformat>{delegate2fnptr}</dformat>
+ *
+ *   <form name="delegate2fnptr" code="COP_PREFIX_DELEGATE2FNPTR"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>delegate</code>.  The value is wrapped in a native
+ *   closure to make it suitable for use as a C function pointer.
+ *   The wrapped <i>result</i> is pushed onto the stack as type
+ *   <code>ptr</code>.</description>
+ *
+ *   <notes>This instruction is used to convert C# delegates into
+ *   C function pointers during "PInvoke" marshalling operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_DELEGATE2FNPTR):
+{
+	/* Convert a delegate into a function pointer */
+	if(stacktop[-1].ptrValue)
+	{
+		/* TODO */
+	}
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_DELEGATE2FNPTR);
+
+/**
+ * <opcode name="array2ptr" group="Conversion operators">
+ *   <operation>Convert an array into a pointer to its
+ *				first element</operation>
+ *
+ *   <format>prefix<fsep/>array2ptr</format>
+ *   <dformat>{array2ptr}</dformat>
+ *
+ *   <form name="array2ptr" code="COP_PREFIX_ARRAY2PTR"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>ptr</code>.  If <i>value</i> is not <code>null</code>,
+ *   a pointer to the first element in the array is computed as
+ *   <i>result</i>.  The <i>result</i> is pushed onto the stack
+ *   as type <code>ptr</code>.</description>
+ *
+ *   <notes>This instruction is used to convert C# arrays into
+ *   C pointers during "PInvoke" marshalling operations.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_ARRAY2PTR):
+{
+	/* Convert an array into a pointer to its first element */
+	if(stacktop[-1].ptrValue)
+	{
+		stacktop[-1].ptrValue = (void *)(ArrayToBuffer(stacktop[-1].ptrValue));
+	}
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_ARRAY2PTR);
 
 /**
  * <opcode name="fix_i4_i" group="Conversion operators">

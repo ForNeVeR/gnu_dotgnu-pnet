@@ -448,27 +448,31 @@ extern	"C" {
 #define	COP_PREFIX_CKFINITE			0x3B
 
 /*
- * String conversion opcodes.
+ * Marshalling conversion opcodes.
  */
 #define	COP_PREFIX_STR2ANSI			0x3C
 #define	COP_PREFIX_STR2UTF8			0x3D
+#define	COP_PREFIX_ANSI2STR			0x3E
+#define	COP_PREFIX_UTF82STR			0x3F
+#define	COP_PREFIX_DELEGATE2FNPTR	0x40
+#define	COP_PREFIX_ARRAY2PTR		0x41
 
 /*
  * Inline method replacements.
  */
-#define	COP_PREFIX_STRING_CONCAT_2	0x40
-#define	COP_PREFIX_STRING_CONCAT_3	0x41
-#define	COP_PREFIX_STRING_CONCAT_4	0x42
-#define	COP_PREFIX_STRING_EQ		0x43
-#define	COP_PREFIX_STRING_NE		0x44
-#define	COP_PREFIX_STRING_GET_CHAR	0x45
-#define	COP_PREFIX_TYPE_FROM_HANDLE	0x46
+#define	COP_PREFIX_STRING_CONCAT_2	0x42
+#define	COP_PREFIX_STRING_CONCAT_3	0x43
+#define	COP_PREFIX_STRING_CONCAT_4	0x44
+#define	COP_PREFIX_STRING_EQ		0x45
+#define	COP_PREFIX_STRING_NE		0x46
+#define	COP_PREFIX_STRING_GET_CHAR	0x47
+#define	COP_PREFIX_TYPE_FROM_HANDLE	0x48
 
 /*
  * Binary value fixups.
  */
-#define	COP_PREFIX_FIX_I4_I			0x47
-#define	COP_PREFIX_FIX_I4_U			0x48
+#define	COP_PREFIX_FIX_I4_I			0x49
+#define	COP_PREFIX_FIX_I4_U			0x4A
 
 /*
  * Definition of a CVM stack word which can hold

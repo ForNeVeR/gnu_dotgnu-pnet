@@ -7,6 +7,11 @@
 	* engine/cvmc_setup.c, engine/pinvoke.c: pass value types by value
 	to PInvoke methods.
 
+	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,
+	engine/cvmc_setup.c, image/marshal.c, include/il_meta.h,
+	include/il_program.h: implement new marshalling types for
+	PInvoke methods and add new CVM instructions to support them.
+
 2002-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_nodes.tc, codegen/cg_stmt.tc,

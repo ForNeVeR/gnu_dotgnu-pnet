@@ -1452,7 +1452,8 @@ ILPInvoke *ILPInvokeFind(ILMethod *method);
  * Get the marshal conversion type for a method parameter.
  * If "param" is 0, then report about the return type.
  */
-ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, unsigned long param);
+ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
+								 unsigned long param);
 
 /*
  * Resolve the module information for a PInvoke declaration

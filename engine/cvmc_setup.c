@@ -521,24 +521,16 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 	ILUInt32 offset;
 	ILUInt32 size;
 	ILPInvoke *pinv;
-	ILUInt32 pinvAttrs;
+	ILUInt32 marshalType;
 
 	/* Get the PInvoke information */
 	if(!isInternal)
 	{
 		pinv = ILPInvokeFind(method);
-		if(pinv)
-		{
-			pinvAttrs = ILPInvoke_Attrs(pinv);
-		}
-		else
-		{
-			pinvAttrs = 0;
-		}
 	}
 	else
 	{
-		pinvAttrs = 0;
+		pinv = 0;
 	}
 
 	/* Process each of the arguments in turn */
@@ -560,9 +552,10 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 		}
 
 		/* Perform PInvoke expansions on the parameter */
-		if(!isInternal && ILTypeIsStringClass(paramType))
+		if(!isInternal &&
+		   (marshalType = ILPInvokeGetMarshalType(pinv, method, param))
+				!= IL_META_MARSHAL_DIRECT)
 		{
-			/* String value parameter: convert into a "const char *" */
 			offset = coder->argOffsets[param - thisAdjust];
 			if(offset < 4)
 			{
@@ -573,24 +566,29 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 				CVM_OUT_WIDE(COP_PLOAD, offset);
 			}
 			CVM_ADJUST(1);
-			switch(pinvAttrs & IL_META_PINVOKE_CHAR_SET_MASK)
+			switch(marshalType)
 			{
-				case IL_META_PINVOKE_CHAR_SET_NOT_SPEC:
-				{
-					CVMP_OUT_NONE(COP_PREFIX_STR2UTF8);
-				}
-				break;
-
-				case IL_META_PINVOKE_CHAR_SET_ANSI:
-				case IL_META_PINVOKE_CHAR_SET_AUTO:
+				case IL_META_MARSHAL_ANSI_STRING:
 				{
 					CVMP_OUT_NONE(COP_PREFIX_STR2ANSI);
 				}
 				break;
 
-				case IL_META_PINVOKE_CHAR_SET_UNICODE:
+				case IL_META_MARSHAL_UTF8_STRING:
 				{
-					/* TODO: convert the string into "const wchar_t *" */
+					CVMP_OUT_NONE(COP_PREFIX_STR2UTF8);
+				}
+				break;
+
+				case IL_META_MARSHAL_FNPTR:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_DELEGATE2FNPTR);
+				}
+				break;
+
+				case IL_META_MARSHAL_ARRAY:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_ARRAY2PTR);
 				}
 				break;
 			}
@@ -693,7 +691,7 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 			else if(ILType_IsValueType(paramType))
 			{
 				/* Push a pointer to the value type instance.  Note: this
-				   will never be used in the method is PInvoke, because
+				   will never be used if the method is PInvoke, because
 				   PInvoke value types never use the raw call form */
 				CVM_OUT_WIDE(COP_WADDR, offset);
 				CVM_ADJUST(1);
@@ -748,13 +746,14 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
  * Call a native method.
  */
 static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
-							   ILType *signature, void *fn, void *cif,
-							   int useRawCalls, int isInternal,
-							   int isConstructor)
+							   ILMethod *method, ILType *signature,
+							   void *fn, void *cif, int useRawCalls,
+							   int isInternal, int isConstructor)
 {
 	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
 	int hasReturn;
 	ILUInt32 size;
+	ILUInt32 marshalType;
 
 	/* Push the address of the argument array onto the stack */
 	if(useRawCalls)
@@ -972,6 +971,26 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 			}
 			CVM_ADJUST(1);
 		}
+		if(!isInternal)
+		{
+			/* Marshal the PInvoke return value back into a CLR object */
+			marshalType = ILPInvokeGetMarshalType
+				(ILPInvokeFind(method), method, 0);
+			switch(marshalType)
+			{
+				case IL_META_MARSHAL_ANSI_STRING:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_ANSI2STR);
+				}
+				break;
+
+				case IL_META_MARSHAL_UTF8_STRING:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_UTF82STR);
+				}
+				break;
+			}
+		}
 		CVM_OUT_NONE(COP_RETURN_1);
 	}
 }
@@ -1095,7 +1114,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	CVMEntryPushLeadIn(&ctx, coder, signature, useRawCalls, isInternal, 0);
 	CVMEntryPushNativeArgs(&ctx, coder, method, signature,
 						   useRawCalls, isInternal);
-	CVMEntryCallNative(&ctx, coder, signature, fn, cif,
+	CVMEntryCallNative(&ctx, coder, method, signature, fn, cif,
 					   useRawCalls, isInternal, 0);
 	return 1;
 }
@@ -1170,7 +1189,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	CVMEntryPushLeadIn(&ctx, coder, signature, useRawCalls, isInternal, 1);
 	CVMEntryPushNativeArgs(&ctx, coder, method, signature,
 						   useRawCalls, isInternal);
-	CVMEntryCallNative(&ctx, coder, signature, ctorfn,
+	CVMEntryCallNative(&ctx, coder, method, signature, ctorfn,
 					   ctorcif, useRawCalls, isInternal, 1);
 	return 1;
 }

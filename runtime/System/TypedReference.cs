@@ -21,11 +21,96 @@
 namespace System
 {
 
-public struct TypedReference
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+struct TypedReference
 {
 
-// TODO
+	// Internal state.  These fields must be declared in this
+	// order to match the runtime engine's requirements.
+	private RuntimeTypeHandle type;
+	private IntPtr			  value;
 
-}; // class TypedReference
+	// Check typed references for equality.
+	public override bool Equals(Object obj)
+			{
+				throw new NotSupportedException(_("NotSupp_TypedRefEquals"));
+			}
+
+	// Get a hash code for a typed reference.
+	public override int GetHashCode()
+			{
+				if(type.Value != IntPtr.Zero)
+				{
+					return Type.GetTypeFromHandle(type).GetHashCode();
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+	// Get the target type that underlies a typed reference.
+	public static Type GetTargetType(TypedReference value)
+			{
+				return Type.GetTypeFromHandle(value.type);
+			}
+
+	// Make a typed reference.
+	[CLSCompliant(false)]
+	public static TypedReference MakeTypedReference(Object target,
+													FieldInfo[] flds)
+			{
+				if(target == null)
+				{
+					throw new ArgumentNullException("target");
+				}
+				if(flds == null)
+				{
+					throw new ArgumentNullException("flds");
+				}
+				if(flds.Length == 0)
+				{
+					throw new ArgumentException(_("Arg_MakeTypedRef"));
+				}
+				int posn;
+				for(posn = 0; posn < flds.Length; ++posn)
+				{
+					if(!(flds[posn] is ClrField))
+					{
+						throw new ArgumentException
+							(_("Arg_MakeTypedRefFields"));
+					}
+				}
+				return ClrMakeTypedReference(target, flds);
+			}
+
+	// Internal version of "MakeTypedReference".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static TypedReference ClrMakeTypedReference
+				(Object target, FieldInfo[] flds);
+
+	// Set the value within a typed reference.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void SetTypedReference
+				(TypedReference target, Object value);
+
+	// Get the type handle within a typed reference.
+	public static RuntimeTypeHandle TargetTypeToken(TypedReference value)
+			{
+				return value.type;
+			}
+
+	// Convert a typed reference into an object.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Object ToObject(TypedReference value);
+
+}; // struct TypedReference
 
 }; // namespace System

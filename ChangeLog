@@ -49,6 +49,9 @@ is only important to the internal workings of the library.
 * runtime/System/RuntimeArgumentHandle.cs: implement the
 "System.RuntimeArgumentHandle" struct.
 
+* resources/en_US/runtime/Arg.txt, resources/en_US/runtime/NotSupp.txt,
+runtime/System/TypedReference.cs: implement "System.TypedReference".
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

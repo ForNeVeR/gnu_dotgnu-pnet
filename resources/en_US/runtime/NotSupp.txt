@@ -24,3 +24,4 @@ NotSupp_GetValueDirect=FieldInfo.GetValueDirect not supported, use GetValue inst
 NotSupp_SetValueDirect=FieldInfo.SetValueDirect not supported, use SetValue instead
 NotSupp_Remoting=Remoting is not supported
 NotSupp_Multicast=This delegate type does not support multicasting
+NotSupp_TypedRefEquals=Cannot test typed references for equality

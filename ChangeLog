@@ -35,6 +35,8 @@ engine/lib_array.c, engine/lib_defs.h, engine/engine.h: implement the
 * engine/verify_var.c: make "ldarg.0" work when it refers to a "this"
 parameter that is a managed value.
 
+* engine/cvmc_obj.c: incorrect size when storing "long" fields.
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

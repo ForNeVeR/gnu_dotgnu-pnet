@@ -634,7 +634,7 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 				case IL_META_ELEMTYPE_U:
 			#endif
 				{
-					CVM_WIDE(COP_MWRITE, sizeof(ILInt32));
+					CVM_WIDE(COP_MWRITE, sizeof(ILInt64));
 				}
 				break;
 

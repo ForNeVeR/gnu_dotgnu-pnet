@@ -19,7 +19,6 @@
  */
 
 #include "linker.h"
-#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {

@@ -4,6 +4,8 @@
 * ilalink/linker.h: include "il_dumpasm.h" because it is needed in multiple
 source files; declare new conversion functions.
 
+* ilalink/link_create.c: remove "il_dumpasm.h".
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

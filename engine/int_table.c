@@ -2522,6 +2522,8 @@ IL_METHOD_BEGIN(InfoMethods_Methods)
 	IL_METHOD("IsUserInteractive", "()Z", _IL_InfoMethods_IsUserInteractive, marshal_bp)
 	IL_METHOD("GetUserName", "()oSystem.String;", _IL_InfoMethods_GetUserName, marshal_pp)
 	IL_METHOD("GetWorkingSet", "()l", _IL_InfoMethods_GetWorkingSet, marshal_lp)
+	IL_METHOD("GetGlobalConfigDir", "()oSystem.String;", _IL_InfoMethods_GetGlobalConfigDir, marshal_pp)
+	IL_METHOD("GetUserStorageDir", "()oSystem.String;", _IL_InfoMethods_GetUserStorageDir, marshal_pp)
 IL_METHOD_END
 
 #endif

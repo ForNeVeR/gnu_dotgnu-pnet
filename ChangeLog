@@ -1,4 +1,10 @@
 
+2003-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_info.c:
+	new internalcalls in "InfoMethods" for getting the user
+	storage and global configuration directories..
+
 2003-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/engine.h: temporarily disable IMT's because they are

@@ -21,6 +21,7 @@
 #include "engine.h"
 #include "lib_defs.h"
 #include "il_utils.h"
+#include "il_sysio.h"
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -131,12 +132,77 @@ ILInt64 _IL_InfoMethods_GetWorkingSet(ILExecThread *thread)
 }
 
 /*
- * public static String GetSpecialFolder(Environment.SpecialFolder f);
+ * public static String GetGlobalConfigDir();
  */
-ILString *_IL_InfoMethods_GetSpecialFolder(ILExecThread * _thread, ILInt32 f)
+extern ILString *_IL_InfoMethods_GetGlobalConfigDir(ILExecThread *_thread)
 {
-	/* Special folders are security-sensitive, so don't return them */
+#if !defined(__palmos__)
+	char *env;
+	ILString *str;
+
+	/* Try the "CLI_MACHINE_CONFIG_DIR" environment variable first */
+	if((env = getenv("CLI_MACHINE_CONFIG_DIR")) != 0 && *env != '\0')
+	{
+		return ILStringCreate(_thread, env);
+	}
+
+	/* Return a standard path such as "/usr/local/share/cscc/config" */
+	env = ILGetStandardDataPath("cscc/config");
+	if(!env)
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	str = ILStringCreate(_thread, env);
+	ILFree(env);
+	return str;
+#else
 	return 0;
+#endif
+}
+
+/*
+ * public static String GetUserStorageDir();
+ */
+extern ILString *_IL_InfoMethods_GetUserStorageDir(ILExecThread *_thread)
+{
+#if !defined(__palmos__)
+	char *env;
+	char *full;
+	ILString *str;
+
+	/* Try the "CLI_STORAGE_ROOT" environment variable first */
+	if((env = getenv("CLI_STORAGE_ROOT")) != 0 && *env != '\0')
+	{
+		return ILStringCreate(_thread, env);
+	}
+
+	/* Use "$HOME/.cli" instead */
+	env = getenv("HOME");
+	if(env && *env != '\0' && ILGetFileType(env) == ILFileType_DIR)
+	{
+		full = (char *)ILMalloc(strlen(env) + 6);
+		if(!full)
+		{
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+		strcpy(full, env);
+	#ifdef IL_WIN32_NATIVE
+		strcat(full, "\\.cli");
+	#else
+		strcat(full, "/.cli");
+	#endif
+		str = ILStringCreate(_thread, full);
+		ILFree(full);
+		return str;
+	}
+
+	/* We don't know how to get the user storage directory */
+	return 0;
+#else
+	return 0;
+#endif
 }
 
 #ifdef	__cplusplus

@@ -554,6 +554,8 @@ extern ILString * _IL_InfoMethods_GetUserDomainName(ILExecThread * _thread);
 extern ILBool _IL_InfoMethods_IsUserInteractive(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetUserName(ILExecThread * _thread);
 extern ILInt64 _IL_InfoMethods_GetWorkingSet(ILExecThread * _thread);
+extern ILString * _IL_InfoMethods_GetGlobalConfigDir(ILExecThread * _thread);
+extern ILString * _IL_InfoMethods_GetUserStorageDir(ILExecThread * _thread);
 
 extern ILNativeInt _IL_RegexpMethods_CompileWithSyntaxInternal(ILExecThread * _thread, ILString * _p1, ILInt32 _p2);
 extern void _IL_RegexpMethods_FreeInternal(ILExecThread * _thread, ILNativeInt _p1);

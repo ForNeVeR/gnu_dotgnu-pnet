@@ -8,6 +8,9 @@
 	* libc/unistd/Makefile.am, libc/unistd/fcntl.c,
 	libc/unistd/unistd-glue.cs: implement the "fcntl" function.
 
+	* libc/unistd/unistd-glue.cs: move the "fd operations" classes
+	down into OpenSystem.C.
+
 2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/inttypes.h, include/limits.h, include/stdint.h,

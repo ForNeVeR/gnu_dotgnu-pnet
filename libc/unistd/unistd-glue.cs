@@ -416,9 +416,9 @@ public class LibCUnistd
 	public static int __syscall_native_fd(int fd)
 			{
 				Stream stream = FileTable.GetStream(fd);
-				if(stream is LibCFDOperations)
+				if(stream is IFDOperations)
 				{
-					return ((LibCFDOperations)stream).NativeFd;
+					return ((IFDOperations)stream).NativeFd;
 				}
 				else if(stream is FileStream)
 				{
@@ -434,9 +434,9 @@ public class LibCUnistd
 	public static int __syscall_select_fd(int fd)
 			{
 				Stream stream = FileTable.GetStream(fd);
-				if(stream is LibCFDOperations)
+				if(stream is IFDOperations)
 				{
-					return ((LibCFDOperations)stream).SelectFd;
+					return ((IFDOperations)stream).SelectFd;
 				}
 				else if(stream is FileStream &&
 						Environment.OSVersion.Platform == (PlatformID)128)
@@ -454,9 +454,9 @@ public class LibCUnistd
 	public static int __syscall_is_nonblocking(int fd)
 			{
 				Stream stream = FileTable.GetStream(fd);
-				if(stream is LibCFDOperations)
+				if(stream is IFDOperations)
 				{
-					return ((LibCFDOperations)stream).NonBlocking ? 1 : 0;
+					return ((IFDOperations)stream).NonBlocking ? 1 : 0;
 				}
 				else
 				{
@@ -468,9 +468,9 @@ public class LibCUnistd
 	public static void __syscall_set_nonblocking(int fd, int value)
 			{
 				Stream stream = FileTable.GetStream(fd);
-				if(stream is LibCFDOperations)
+				if(stream is IFDOperations)
 				{
-					((LibCFDOperations)stream).NonBlocking =
+					((IFDOperations)stream).NonBlocking =
 						(value != 0 ? true : false);
 				}
 				else
@@ -479,159 +479,6 @@ public class LibCUnistd
 				}
 			}
 
-	// Wrap the stdin, stdout, and stderr file descriptors.
-	public static void __syscall_wrap_stdfds()
-			{
-				Wrap(0);
-				Wrap(1);
-				Wrap(2);
-			}
-	private static void Wrap(int fd)
-			{
-				Stream stream = FileTable.GetStream(fd);
-				if(stream != null && !(stream is LibCStandardStream))
-				{
-					FileTable.SetFileDescriptor
-						(fd, new LibCStandardStream(fd, stream));
-				}
-			}
-
 } // class LibCUnistd
-
-public interface LibCFDOperations
-{
-
-	// Get or set the non-blocking flag.  Throws "NotSupportedException"
-	// if an attempt is made to modify blocking on a descriptor that
-	// cannot support such a modification.
-	bool NonBlocking { get; set; }
-
-	// Get the native operating system file descriptor.  -1 if unknown.
-	int NativeFd { get; }
-
-	// Get the native operating system "select" descriptor.  -1 if unknown.
-	int SelectFd { get; }
-
-} // interface LibCFDOperations
-
-internal class LibCStandardStream : Stream, LibCFDOperations
-{
-	// Internal state.
-	private int fd;
-	private Stream stream;
-
-	// Constructor.
-	public LibCStandardStream(int fd, Stream stream)
-			{
-				this.fd = fd;
-				this.stream = stream;
-			}
-
-	// Implement the LibCFDOperations interface.
-	public bool NonBlocking
-			{
-				get
-				{
-					return false;
-				}
-				set
-				{
-					throw new NotSupportedException();
-				}
-			}
-	public int NativeFd
-			{
-				get
-				{
-					return fd;
-				}
-			}
-	public int SelectFd
-			{
-				get
-				{
-					if(Environment.OSVersion.Platform != (PlatformID)128)
-					{
-						// Win32-style system: cannot select.
-						return -1;
-					}
-					else
-					{
-						// Unix-style system: select with underlying fd.
-						return fd;
-					}
-				}
-			}
-
-	// Implement pass throughs for "Stream" methods.
-	public override void Flush()
-			{
-				stream.Flush();
-			}
-	public override int Read(byte[] buffer, int offset, int count)
-			{
-				return stream.Read(buffer, offset, count);
-			}
-	public override int ReadByte()
-			{
-				return stream.ReadByte();
-			}
-	public override long Seek(long offset, SeekOrigin origin)
-			{
-				return stream.Seek(offset, origin);
-			}
-	public override void SetLength(long value)
-			{
-				stream.SetLength(value);
-			}
-	public override void Write(byte[] buffer, int offset, int count)
-			{
-				stream.Write(buffer, offset, count);
-			}
-	public override void WriteByte(byte value)
-			{
-				stream.WriteByte(value);
-			}
-	public override bool CanRead
-			{
-				get
-				{
-					return stream.CanRead;
-				}
-			}
-	public override bool CanSeek
-			{
-				get
-				{
-					return stream.CanSeek;
-				}
-			}
-	public override bool CanWrite
-			{
-				get
-				{
-					return stream.CanWrite;
-				}
-			}
-	public override long Length
-			{
-				get
-				{
-					return stream.Length;
-				}
-			}
-	public override long Position
-			{
-				get
-				{
-					return stream.Position;
-				}
-				set
-				{
-					stream.Position = value;
-				}
-			}
-
-} // class LibCStandardStream
 
 } // namespace OpenSystem.C

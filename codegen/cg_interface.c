@@ -29,12 +29,23 @@ extern	"C" {
  * Note: Returns non-zero on error.
  */
 static int ImplementsMethod(ILNode *node, ILClass *classInfo, ILMethod *method,
-							ILGenInterfaceErrorFunc error)
+							ILGenInterfaceErrorFunc error,
+							ILGenInterfaceProxyFunc proxy)
 {
 	if(!ILClassGetMethodImpl(classInfo, method))
 	{
-		(*error)(node, classInfo, (ILMember *)method);
-		return 1;
+		ILMethod *proxyMethod;
+		proxyMethod = ILClassGetMethodImplForProxy(classInfo, method);
+		if(!proxyMethod)
+		{
+			(*error)(node, classInfo, (ILMember *)method);
+			return 1;
+		}
+		else
+		{
+			(*proxy)(node, classInfo, method, proxyMethod);
+			return 0;
+		}
 	}
 	else
 	{
@@ -47,10 +58,12 @@ static int ImplementsMethod(ILNode *node, ILClass *classInfo, ILMethod *method,
  * member (property or event).  Note: Returns non-zero on error.
  */
 static int ImplementsMethodSem(ILNode *node, ILClass *classInfo,
-							   ILMember *member, ILGenInterfaceErrorFunc error)
+							   ILMember *member, ILGenInterfaceErrorFunc error,
+							   ILGenInterfaceProxyFunc proxy)
 {
 	ILUInt16 semType;
 	ILMethod *method;
+	ILMethod *proxyMethod;
 
 	/* Scan through all method semantics kinds on the member,
 	   and then check that each method found is implemented */
@@ -60,8 +73,16 @@ static int ImplementsMethodSem(ILNode *node, ILClass *classInfo,
 		method = ILMethodSemGetByType((ILProgramItem *)member, semType);
 		if(method && !ILClassGetMethodImpl(classInfo, method))
 		{
-			(*error)(node, classInfo, member);
-			return 1;
+			proxyMethod = ILClassGetMethodImplForProxy(classInfo, method);
+			if(!proxyMethod)
+			{
+				(*error)(node, classInfo, member);
+				return 1;
+			}
+			else
+			{
+				(*proxy)(node, classInfo, method, proxyMethod);
+			}
 		}
 		semType >>= 1;
 	}
@@ -76,6 +97,7 @@ static int ImplementsMethodSem(ILNode *node, ILClass *classInfo,
 static int ImplementsAllInterfaces(ILNode *node, ILClass *classInfo,
 						           ILClass *refClass,
 								   ILGenInterfaceErrorFunc error,
+								   ILGenInterfaceProxyFunc proxy,
 							       ILClass **visited, int *visitedSize);
 
 /*
@@ -85,6 +107,7 @@ static int ImplementsAllInterfaces(ILNode *node, ILClass *classInfo,
 static int ImplementsInterface(ILNode *node, ILClass *classInfo,
 						       ILClass *interface,
 							   ILGenInterfaceErrorFunc error,
+							   ILGenInterfaceProxyFunc proxy,
 							   ILClass **visited, int *visitedSize)
 {
 	int posn;
@@ -109,17 +132,19 @@ static int ImplementsInterface(ILNode *node, ILClass *classInfo,
 		if(ILMember_IsMethod(member) && !ILMethod_HasSpecialName(member))
 		{
 			sawErrors |= ImplementsMethod(node, classInfo,
-										  (ILMethod *)member, error);
+										  (ILMethod *)member, error, proxy);
 		}
 		else if(ILMember_IsProperty(member) || ILMember_IsEvent(member))
 		{
-			sawErrors |= ImplementsMethodSem(node, classInfo, member, error);
+			sawErrors |= ImplementsMethodSem(node, classInfo, member,
+											 error, proxy);
 		}
 	}
 
 	/* Process all of the parent interfaces */
 	return sawErrors | ImplementsAllInterfaces(node, classInfo, interface,
-											   error, visited, visitedSize);
+											   error, proxy, visited,
+											   visitedSize);
 }
 
 /*
@@ -129,6 +154,7 @@ static int ImplementsInterface(ILNode *node, ILClass *classInfo,
 static int ImplementsAllInterfaces(ILNode *node, ILClass *classInfo,
 						           ILClass *refClass,
 								   ILGenInterfaceErrorFunc error,
+								   ILGenInterfaceProxyFunc proxy,
 							       ILClass **visited, int *visitedSize)
 {
 	ILImplements *impl = 0;
@@ -138,7 +164,7 @@ static int ImplementsAllInterfaces(ILNode *node, ILClass *classInfo,
 		sawErrors |= ImplementsInterface
 				(node, classInfo,
 				 ILClassResolve(ILImplementsGetInterface(impl)),
-				 error, visited, visitedSize);
+				 error, proxy, visited, visitedSize);
 	}
 	return sawErrors;
 }
@@ -159,7 +185,8 @@ static int GetSpanningSize(ILClass *interface)
 
 int ILGenImplementsAllInterfaces(ILGenInfo *info, ILNode *node,
 							     ILClass *classInfo,
-								 ILGenInterfaceErrorFunc error)
+								 ILGenInterfaceErrorFunc error,
+								 ILGenInterfaceProxyFunc proxy)
 {
 	ILClass **visited;
 	int visitedSize;
@@ -178,7 +205,7 @@ int ILGenImplementsAllInterfaces(ILGenInfo *info, ILNode *node,
 
 	/* Recursively visit all interfaces */
 	sawErrors = ImplementsAllInterfaces(node, classInfo, classInfo, error,
-									    visited, &visitedSize);
+									    proxy, visited, &visitedSize);
 
 	/* Clean up and exit */
 	ILFree(visited);

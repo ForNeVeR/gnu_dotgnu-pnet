@@ -780,6 +780,15 @@ void ILClassSetUserData(ILClass *info, void *data);
 ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method);
 
 /*
+ * Get the implementation of a particular interface method
+ * where a regular implementing method is not available, but
+ * we can define a proxy to call through to a non-virtual method
+ * with the same name and signature.  Returns NULL if no such
+ * proxy implementation was found.
+ */
+ILMethod *ILClassGetMethodImplForProxy(ILClass *info, ILMethod *method);
+
+/*
  * Detach a member from its owning class.
  */
 void ILClassDetachMember(ILMember *member);

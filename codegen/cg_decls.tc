@@ -249,6 +249,75 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 }
 
 /*
+ * Generate discard code for an interface proxy replacement method.
+ */
+ILNode_GenDiscard(ILNode_ProxyDeclaration)
+{
+	FILE *outstream = info->asmOutput;
+	char *name;
+	ILType *signature = ILMethod_Signature(node->interfaceMethod);
+	unsigned long numParams;
+	unsigned long param;
+
+	/* Bail out if no assembly output stream */
+	if(!outstream)
+	{
+		return;
+	}
+	
+	/* Create a name for the proxy method */
+	name = ILInternAppendedString
+		(ILInternAppendedString
+			(ILInternString
+				((char *)ILClass_Name(ILMethod_Owner(node->interfaceMethod)),
+				 -1),
+			 ILInternString(".", 1)),
+		 ILInternString((char *)ILMethod_Name(node->interfaceMethod), -1))
+		 		.string;
+
+	/* Dump the method heading */
+	fputs(".method ", outstream);
+	ILDumpFlags(outstream, IL_META_METHODDEF_PRIVATE |
+						   IL_META_METHODDEF_FINAL |
+						   IL_META_METHODDEF_VIRTUAL |
+						   IL_META_METHODDEF_NEW_SLOT,
+				ILMethodDefinitionFlags, 0);
+	ILDumpMethodType(outstream, info->image, signature,
+					 IL_DUMP_QUOTE_NAMES, 0, name,
+					 node->interfaceMethod);
+	fputs(" il managed\n{\n", outstream);
+
+	/* Output the ".override" declaration */
+	fputs("\t.override\t", outstream);
+	ILDumpClassName(outstream, info->image,
+					ILMethod_Owner(node->interfaceMethod),
+					IL_DUMP_QUOTE_NAMES);
+	fputs("::", outstream);
+	ILDumpIdentifier(outstream, ILMethod_Name(node->interfaceMethod), 0,
+					 IL_DUMP_QUOTE_NAMES);
+	putc('\n', outstream);
+
+	/* Push all of the arguments onto the stack, including "this" */
+	numParams = ILTypeNumParams(signature);
+	for(param = 0; param <= numParams; ++param)
+	{
+		ILGenLoadArg(info, (unsigned)param);
+	}
+
+	/* Call the proxy replacement method */
+	ILGenCallMethod(info, node->proxyReplacement);
+
+	/* Return from the proxy method */
+	ILGenSimple(info, IL_OP_RET);
+
+	/* Set the maximum stack height */
+	fprintf(outstream, "\t.maxstack %ld\n", numParams + 1);
+
+	/* Output the method footer */
+	fputs("}\n", outstream);
+}
+
+/*
  * Generate discard code for a scope change.
  */
 ILNode_GenDiscard(ILNode_ScopeChange)

@@ -30,6 +30,14 @@ JavaGenDiscard(ILNode_ClassDefn)
 }
 
 /*
+ * Generate discard code for an interface proxy replacement method.
+ */
+JavaGenDiscard(ILNode_ProxyDeclaration)
+{
+	/* TODO */
+}
+
+/*
  * Generate discard code for a scope change.
  */
 JavaGenDiscard(ILNode_ScopeChange)

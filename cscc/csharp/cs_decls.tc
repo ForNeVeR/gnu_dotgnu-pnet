@@ -32,6 +32,32 @@ static void InterfaceErrorFunc(ILNode *node, ILClass *classInfo,
 				  CSItemToName((ILProgramItem *)missingMember));
 }
 
+/*
+ * Proxy reporting function for "ILGenImplementsAllInterfaces".
+ */
+static void InterfaceProxyFunc(ILNode *node, ILClass *classInfo,
+							   ILMethod *missingMember,
+							   ILMethod *proxyReplacement)
+{
+	ILNode_ClassDefn *defn = (ILNode_ClassDefn *)node;
+	ILNode *proxy = ILNode_ProxyDeclaration_create
+		(missingMember, proxyReplacement);
+	ILNode *body;
+	if(!(defn->body))
+	{
+		body = defn->body = ILNode_List_create();
+	}
+	else
+	{
+		body = defn->body;
+		if(yyisa(body, ILNode_ScopeChange))
+		{
+			body = ((ILNode_ScopeChange *)body)->body;
+		}
+	}
+	ILNode_List_Add(body, proxy);
+}
+
 /*  Since we can't (shouldn't?) inherit list from multiple types, this
  *  operation will iterate over a list of declarations adding to the 
  *  compound constructor */
@@ -244,7 +270,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	{
 		/* Check that the class implements all of its interfaces */
 		ILGenImplementsAllInterfaces(info, (ILNode *)node, node->classInfo,
-									 InterfaceErrorFunc);
+									 InterfaceErrorFunc, InterfaceProxyFunc);
 	}
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
 	{
@@ -276,6 +302,19 @@ ILNode_Declaration_GatherStaticCtor(ILNode_ScopeChange)
 	{
 		CSListGatherStaticCtor((ILNode_List *)node->body, ctor);
 	}
+}
+
+/*
+ * Perform semantic analysis for proxy declarations.
+ */
+ILNode_SemAnalysis(ILNode_ProxyDeclaration)
+{
+	/* Nothing to do here */
+	return CSSemValueDefault;
+}
+ILNode_Declaration_GatherStaticCtor(ILNode_ProxyDeclaration)
+{
+	/* Nothing to do here */
 }
 
 /*

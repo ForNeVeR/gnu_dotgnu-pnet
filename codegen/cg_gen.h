@@ -276,9 +276,13 @@ ILParameterModifier ILGenGetParamInfo(ILMethod *method, ILType *signature,
  */
 typedef void (*ILGenInterfaceErrorFunc)(ILNode *node, ILClass *classInfo,
 										ILMember *missingMember);
+typedef void (*ILGenInterfaceProxyFunc)(ILNode *node, ILClass *classInfo,
+										ILMethod *missingMember,
+										ILMethod *proxyReplacement);
 int ILGenImplementsAllInterfaces(ILGenInfo *info, ILNode *node,
 							     ILClass *classInfo,
-								 ILGenInterfaceErrorFunc error);
+								 ILGenInterfaceErrorFunc error,
+								 ILGenInterfaceProxyFunc proxy);
 
 /*
  * Perform cleanup processing at the end of code generation

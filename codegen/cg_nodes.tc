@@ -851,6 +851,11 @@ struct _tagILSwitchValue
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 	%nocreate ILNode_EventDeclaration *backLink = {0};
 }
+%node ILNode_ProxyDeclaration ILNode_Declaration =
+{
+	ILMethod   *interfaceMethod;
+	ILMethod   *proxyReplacement;
+}
 
 /*
  * Method nodes

@@ -1670,6 +1670,36 @@ done:
 	return result;
 }
 
+ILMethod *ILClassGetMethodImplForProxy(ILClass *info, ILMethod *method)
+{
+	ILClass *parent;
+	ILMethod *method2;
+	ILMethod *result;
+	const char *name;
+	ILType *signature;
+
+	/* Cache the name and signature information for the interface method */
+	name = ILMethod_Name(method);
+	signature = ILMethod_Signature(method);
+
+	/* Start at the parent class and search for any public method that
+	   matches the specified signature */
+	parent = ILClassGetParent(info);
+	result = 0;
+	while(parent != 0)
+	{
+		method2 = (ILMethod *)ILClassNextMemberMatch
+			(parent, 0, IL_META_MEMBERKIND_METHOD, name, signature);
+		if(method2 && ILMethod_IsPublic(method2))
+		{
+			result = method2;
+			break;
+		}
+		parent = ILClassGetParent(parent);
+	}
+	return result;
+}
+
 void ILClassDetachMember(ILMember *member)
 {
 	ILClass *info = member->owner;

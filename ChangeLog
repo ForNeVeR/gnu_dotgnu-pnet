@@ -7,6 +7,9 @@
 	* cscc/csharp/cs_semantics.tc: Use ILNode_SemAnalysisType for the
 	CSSemType operation.
 
+	* codegen/cg_coerce.c: Implement explicit multiple conversions using
+	GetIndirectConvertRules and remove explicit flag from sub-conversions.
+
 2002-11-18  Robert Hwang <hwang_rob@yahoo.ca>
 
 	* image/member.c, image/class.c, include/il_program.h: a patch to allow

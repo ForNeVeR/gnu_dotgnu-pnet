@@ -1,9 +1,17 @@
+2004-07-23  Klaus Treichel  <ktreichel@web.de>
+
+	* class/Makefile.am: exclude Mono.Posix from build
+
+	* tests/Test.build: exclude System.Data.Odbc dir for System.Data tests.
+
+	* tools/run_test.sh.in: remove arg /nologo from nunit call.
+
 2004-06-22  Klaus Treichel  <ktreichel@web.de>
 
 	* class/System.Data.OracleClient/System.Data.OracleClient.build: add reference
 	to System.Drawing.dll because of added DesignerAttribute.
 
-2004-06-13  Klaus Treichel  <ktreichel@webllde>
+2004-06-13  Klaus Treichel  <ktreichel@web.de>
 
 	* class/Mono.Security/Mono.Security.build: remove excludes from build file
 	since they compile now.

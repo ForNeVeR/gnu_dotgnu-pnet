@@ -176,6 +176,7 @@
 				<excludes name="SqlTest.cs"/>
 				<excludes name="System.Xml/XmlDataDocumentTest2.cs"/>
 				<excludes name="System.Data.Common/**.cs"/>
+				<excludes name="System.Data.Odbc/**.cs"/>
 				<excludes name="*.cs"/>
 			</sources>
 

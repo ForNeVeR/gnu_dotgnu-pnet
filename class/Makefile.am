@@ -21,7 +21,6 @@ SUBDIRS = Custommarshalers \
 		  System.Runtime.Remoting \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
-		  Mono.Posix \
 		  Mono.Cairo \
 		  System.Data.SqlXml \
 		  System.Data.ObjectSpaces \
@@ -29,3 +28,5 @@ SUBDIRS = Custommarshalers \
 		  System.DirectoryServices \
 		  Mono.Security.Win32 \
 		  Mono.Http 
+
+#		  Mono.Posix

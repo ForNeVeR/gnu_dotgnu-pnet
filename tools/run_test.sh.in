@@ -58,4 +58,4 @@ exec "$ILRUN" -C 4096 \
 	-L"$TOP_BUILDDIR"/class/Mono.Directory.LDAP \
 	-L. \
 	"$TOP_BUILDDIR/nunit20/nunit-console/nunit-console.exe" $* \
-	/nologo /xmlConsole /transform="$MONO_SOURCE_PATH"/nunit20/core/Summary.xslt
+	/xmlConsole /transform="$MONO_SOURCE_PATH"/nunit20/core/Summary.xslt

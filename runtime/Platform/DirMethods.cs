@@ -44,7 +44,7 @@ internal class DirMethods
 	extern public static Errno GetLastModification(string path, out long last_mod);
 	
 	// Gets Creation Time and Date
-	[MethodImpl(MethodImplOptions.InternallCall)]
+	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno GetCreationTime(string path, out long create_time);
 	
 	[MethodImpl(MethodImplOptions.InternalCall)]

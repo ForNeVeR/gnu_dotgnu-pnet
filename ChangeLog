@@ -1,4 +1,9 @@
 
+2002-01-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/DirMethods.cs: misspelled "InternalCall" in
+	previous version.
+
 2002-01-23  Charlie Carnow <carnow@gmx.net> 
 
 	* runtime/Platform/DirMethods.cs: Added internal methods for

@@ -96,14 +96,19 @@ public class WindowsIdentity
 				this.isAuthenticated = false;
 			}
 #if CONFIG_SERIALIZATION
-	[TODO]
 	public WindowsIdentity(SerializationInfo info, StreamingContext context)
 			{
 				if(info == null)
 				{
 					throw new ArgumentNullException("info");
 				}
-				// TODO
+				userToken = (IntPtr)(info.GetValue
+					("m_userToken", typeof(IntPtr)));
+				name = info.GetString("m_name");
+				type = info.GetString("m_type");
+				acctType = (WindowsAccountType)(info.GetValue
+					("m_acctType", typeof(WindowsAccountType)));
+				isAuthenticated = info.GetBoolean("m_isAuthenticated");
 			}
 #endif
 
@@ -179,11 +184,19 @@ public class WindowsIdentity
 #if CONFIG_SERIALIZATION
 
 	// Implement the ISerializable interface.
-	[TODO]
 	void ISerializable.GetObjectData(SerializationInfo info,
 									 StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				info.AddValue("m_userToken", userToken, typeof(IntPtr));
+				info.AddValue("m_name", name);
+				info.AddValue("m_type", type);
+				info.AddValue("m_acctType", acctType,
+							  typeof(WindowsAccountType));
+				info.AddValue("m_isAuthenticated", isAuthenticated);
 			}
 
 	// Implement the IDeserializationCallback interface.

@@ -41,6 +41,9 @@
 	runtime/System/Security/Policy/ZoneMembershipCondition.cs:
 	implement more missing TODO's in "System.Security.Policy".
 
+	* runtime/System/Security/Principal/WindowsIdentity.cs:
+	serialization support for "System.Security.Principal.WindowsIdentity".
+
 2003-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt, runtime/System/DBNull.cs,

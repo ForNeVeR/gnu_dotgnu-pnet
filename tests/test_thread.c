@@ -1089,9 +1089,10 @@ static void thread_counts(void *arg)
 	{
 		ILUnitFailed("foreground thread count has not returned to 1");
 	}
-	if(numBackground != 0)
+	if(numBackground != 1)
 	{
-		ILUnitFailed("background thread count has not returned to 0");
+		/* Currently there is one background thread (the finalizer thread) */
+		ILUnitFailed("background thread count has not returned to 1");
 	}
 }
 
@@ -1326,6 +1327,11 @@ void ILUnitRegisterTests(void)
 	 * Initialize the thread subsystem.
 	 */
 	ILThreadInit();
+
+	/*
+	 * Initialize the GC system (the GC is used to create threads).
+	 */
+	ILGCInit();	
 
 	/*
 	 * Test the properties of the "main" thread.

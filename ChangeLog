@@ -1,3 +1,8 @@
+2003-07-08  Thong Nguyen  <tum@veridicus.com>
+
+	* tests/test_thread.c: Made the test GC aware because
+	on windows, threads go through the GC.
+	
 2003-07-08  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/common/cc_preproc.c: Modify to ignore escape sequences in

@@ -243,7 +243,13 @@ static int PrivateGCNotifyFinalize(int timeout)
  */
 static void GCNotifyFinalize(void)
 {
-	PrivateGCNotifyFinalize(-1);
+	/*
+	 * This is called by an allocating thread.  We pass in a timeout
+	 * value of 0 because the allocating thread should not be blocked
+	 * by finalizers otherwise finalizers may deadlock waiting for
+	 * any locks that the (blocked) allocating thread might own.
+	 */
+	PrivateGCNotifyFinalize(0);
 }
 
 void ILGCInit(unsigned long maxSize)

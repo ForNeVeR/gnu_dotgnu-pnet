@@ -1,4 +1,21 @@
+2004-06-02  Thong Nguyen  <tum@veridicus.com>
 
+	* support/hb_gc.c: Changed GCNotifyFinalize to not wait for
+	finalizers.  If GCNotifyFinalize is called by the allocator,
+	it should not block the allocating thread while waiting for
+	finalizers as that will cause deadlock if the allocating thread
+	holds locks the finalizer thread requires.
+	
+2004-05-30  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/lib_monitor.c: Removed value type checks for Monitor.Enter.
+	
+	* engine/verify.c: Added checks for synchronized methods and
+	generated appropriate exception code.
+	
+	* engine/verify_call.c, engine/verify_except.c: Generated code
+	for exiting synchronized methods on throw & return.	
+	
 2004-05-30  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/verify_branch.c: Fix compilation for 64bit platforms 

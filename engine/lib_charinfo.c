@@ -47,7 +47,7 @@ ILDouble _IL_SysCharInfo_GetNumericValue(ILExecThread *thread, ILUInt16 ch)
  */
 ILString *_IL_SysCharInfo_GetNewLine(ILExecThread *thread)
 {
-#ifdef IL_NATIVE_WIN32
+#ifdef IL_WIN32_NATIVE
 	return ILStringCreate(thread, "\r\n");
 #else
 	return ILStringCreate(thread, "\n");

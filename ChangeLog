@@ -35,6 +35,15 @@
 	"error", to prevent problems on platforms that define "errno"
 	as a macro.
 
+	* configure.in, csant/csant_defs.h, csant/csant_dir.c,
+	csant/csant_fileset.c, csdoc/doc_html.c, csdoc/doc_stub.c,
+	engine/Makefile.am, engine/lib_charinfo.c, engine/lib_math.c,
+	engine/lib_socket.c, ildb/Makefile.am, image/link.c,
+	include/il_values.h, support/cmdline.c, support/dir.c,
+	support/filemap.c, support/regexp.c, support/socket.c,
+	support/spawn.c, support/test_float.c, support/time.c:
+	apply changes to compile in non-cygwin modes under Win32.
+
 2002-12-12 Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_defs.tc, 

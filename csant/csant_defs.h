@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_sysio.h"
 #include "il_xml.h"
 #include "csant_dir.h"
 

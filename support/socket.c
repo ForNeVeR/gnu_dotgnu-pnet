@@ -45,6 +45,9 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+#ifdef IL_WIN32_NATIVE
+#include <winsock.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -174,8 +177,8 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 	fd_set *readPtr, *writePtr, *exceptPtr;
 	int highest = -1;
 	int fd, result;
-	struct timeval currtime;
-	struct timeval endtime;
+	ILCurrTime currtime;
+	ILCurrTime endtime;
 	struct timeval difftime;
 	ILInt32 index;
 
@@ -252,28 +255,30 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 	if(timeout >= 0)
 	{
 		/* Get the current time of day and determine the end time */
-		gettimeofday(&currtime, 0);
-		endtime.tv_sec = currtime.tv_sec + (long)(timeout / (ILInt64)1000000);
-		endtime.tv_usec = currtime.tv_usec + (long)(timeout % (ILInt64)1000000);
-		if(endtime.tv_usec >= 1000000L)
+		ILGetCurrTime(&currtime);
+		endtime.secs = currtime.secs + (long)(timeout / (ILInt64)1000000);
+		endtime.nsecs = currtime.nsecs +
+			(long)((timeout % (ILInt64)1000000) * (ILInt64)1000);
+		if(endtime.nsecs >= 1000000000L)
 		{
-			++(endtime.tv_sec);
-			endtime.tv_usec -= 1000000L;
+			++(endtime.secs);
+			endtime.nsecs -= 1000000000L;
 		}
 
 		/* Loop while we are interrupted by signals */
 		for(;;)
 		{
 			/* How long until the timeout? */
-			difftime.tv_sec = endtime.tv_sec - currtime.tv_sec;
-			if(endtime.tv_usec >= currtime.tv_usec)
+			difftime.tv_sec = (time_t)(endtime.secs - currtime.secs);
+			if(endtime.nsecs >= currtime.nsecs)
 			{
-				difftime.tv_usec = endtime.tv_usec - currtime.tv_usec;
+				difftime.tv_usec =
+					(long)((endtime.nsecs - currtime.nsecs) / 1000);
 			}
 			else
 			{
-				difftime.tv_usec = endtime.tv_usec + 1000000L -
-								   currtime.tv_usec;
+				difftime.tv_usec =
+					(endtime.nsecs + 1000000000L - currtime.nsecs) / 1000;
 				difftime.tv_sec -= 1;
 			}
 
@@ -289,12 +294,12 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 			   We have to this because many systems do not update
 			   the 5th paramter of "select" to reflect how much time
 			   is left to go */
-			gettimeofday(&currtime, 0);
+			ILGetCurrTime(&currtime);
 
 			/* Are we past the end time? */
-			if(currtime.tv_sec > endtime.tv_sec ||
-			   (currtime.tv_sec == endtime.tv_sec &&
-			    currtime.tv_usec >= endtime.tv_usec))
+			if(currtime.secs > endtime.secs ||
+			   (currtime.secs == endtime.secs &&
+			    currtime.nsecs >= endtime.nsecs))
 			{
 				/* We are, so simulate timeout */
 				result = 0;

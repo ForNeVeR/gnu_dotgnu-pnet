@@ -25,14 +25,10 @@
 extern	"C" {
 #endif
 
-#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
-	#define	IL_WIN32_PLATFORM
-#endif
-
 /*
  * Determine the pathname separator to use on this platform.
  */
-#if defined(IL_WIN32_PLATFORM) && !defined(__CYGWIN__)
+#if defined(IL_WIN32_NATIVE)
 	#define	PATH_SEP			';'
 	#define	PATH_SEP_STRING		";"
 #else

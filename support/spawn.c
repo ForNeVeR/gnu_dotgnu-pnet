@@ -167,7 +167,7 @@ int ILSpawnProcess(char *argv[])
 	}
 
 	/* Spawn the child process and wait for it to exit */
-	status = spawnvp(_P_WAIT, argv[0], (const char * const *)argv);
+	status = spawnvp(_P_WAIT, argv[0], (char * const *)argv);
 
 	/* Delete the temporary option file */
 	if(tempfile)

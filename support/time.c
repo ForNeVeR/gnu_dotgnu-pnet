@@ -32,6 +32,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#ifdef IL_WIN32_PLATFORM
+#include <windows.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -41,10 +44,20 @@ extern	"C" {
  * Magic number that converts a time which is relative to
  * Jan 1, 1970 into a value which is relative to Jan 1, 0001.
  */
-#ifdef 	IL_NATIVE_WIN32
+#ifdef 	IL_WIN32_NATIVE
 #define	EPOCH_ADJUST	((ILInt64)62135596800LL)
 #else
 #define	EPOCH_ADJUST	((ILInt64)62135596800L)
+#endif
+
+/*
+ * Magic number that converts a time which is relative to
+ * Jan 1, 1601 into a value which is relative to Jan 1, 0001.
+ */
+#ifdef 	IL_WIN32_NATIVE
+#define	WIN32_EPOCH_ADJUST	((ILInt64)50491123200LL)
+#else
+#define	WIN32_EPOCH_ADJUST	((ILInt64)50491123200L)
 #endif
 
 void ILGetCurrTime(ILCurrTime *timeValue)
@@ -56,9 +69,20 @@ void ILGetCurrTime(ILCurrTime *timeValue)
 	timeValue->secs = ((ILInt64)(tv.tv_sec)) + EPOCH_ADJUST;
 	timeValue->nsecs = (ILUInt32)(tv.tv_usec * 1000);
 #else
+#ifdef IL_WIN32_PLATFORM
+	/* Get the time using a Win32-specific API */
+	FILETIME filetime;
+	ILInt64 value;
+	GetSystemTimeAsFileTime(&filetime);
+	value = (((ILInt64)(filetime.dwHighDateTime)) << 32) +
+			 ((ILInt64)(filetime.dwLowDateTime));
+	timeValue->secs = (value / (ILInt64)10000000) + WIN32_EPOCH_ADJUST;
+	timeValue->nsecs = (ILUInt32)((value % (ILInt64)10000000) * (ILInt64)100);
+#else
 	/* Use the ANSI routine to get the time in seconds */
 	timeValue->secs = (ILInt64)(time(0)) + EPOCH_ADJUST;
 	timeValue->nsecs = 0;
+#endif
 #endif
 }
 

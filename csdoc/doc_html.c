@@ -214,7 +214,11 @@ static FILE *CreateHTMLStream(const char *filename, const char *directory)
 		if(fullPath[posn] == '/')
 		{
 			fullPath[posn] = '\0';
+		#ifdef IL_WIN32_NATIVE
+			mkdir(fullPath);
+		#else
 			mkdir(fullPath, 0777);
+		#endif
 			fullPath[posn] = '/';
 		}
 		++posn;

@@ -34,6 +34,9 @@
 #ifdef HAVE_NETDB_H
 	#include <netdb.h>
 #endif
+#ifdef IL_WIN32_PLATFORM
+	#include <winsock.h>
+#endif
 
 /*
  * public static bool Create(int af, int st, int pt, out IntPtr handle);

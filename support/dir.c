@@ -38,7 +38,7 @@
 #ifdef HAVE_DIRENT_H
 	#include <dirent.h>
 #endif
-#ifdef _WIN32
+#ifdef IL_WIN32_NATIVE
 	#include <windows.h>
 	#include <io.h>
 #endif
@@ -47,7 +47,11 @@
 #ifdef	__cplusplus
 extern	"C" {
 #endif
-    
+
+#ifdef IL_WIN32_NATIVE
+	#define	USE_WIN32_FIND 1
+#endif
+
 ILInt32 ILDeleteDir(const char *path)
 {
 	if (path == NULL)
@@ -77,6 +81,8 @@ ILInt32 ILChangeDir(const char *path)
 #endif
 
 }
+
+#ifndef USE_WIN32_FIND
 
 #ifdef HAVE_DIRENT_H
 
@@ -114,7 +120,11 @@ static void GetDirEntryType(ILDir *dir, ILDirEnt *entry)
 		strcpy(fullName, dir->pathname);
 		strcat(fullName, "/");
 		strcat(fullName, entry->dptr->d_name);
+	#ifdef HAVE_LSTAT
 		if(lstat(fullName, &st) >= 0)
+	#else
+		if(stat(fullName, &st) >= 0)
+	#endif
 		{
 		#ifdef S_ISFIFO
 			if(S_ISFIFO(st.st_mode))
@@ -283,6 +293,97 @@ int ILDirEntType(ILDirEnt *entry)
 	return ILFileType_Unknown;
 #endif
 }
+
+#else /* USE_WIN32_FIND */
+
+/*
+ * Define the ILDir type.
+ */
+struct _tagILDir
+{
+	long handle;
+	struct _finddata_t fileinfo;
+	int havefirst;
+};
+
+/*
+ * Define the ILDirEnt type.
+ */
+struct _tagILDirEnt
+{
+	unsigned attrib;
+	char name[1];
+};
+
+ILDir *ILOpenDir(char *path)
+{
+	ILDir *dir = (ILDir *)ILMalloc(sizeof(ILDir));
+	if(!dir)
+	{
+		return 0;
+	}
+	dir->handle = _findfirst(path, &(dir->fileinfo));
+	dir->havefirst = 1;
+	if(dir->handle < 0)
+	{
+		int error = errno;
+		ILFree(dir);
+		errno = error;
+		return 0;
+	}
+	return dir;
+}
+
+ILDirEnt *ILReadDir(ILDir *dir)
+{
+	ILDirEnt *entry;
+	if(!(dir->havefirst))
+	{
+		if(_findnext(dir->handle, &(dir->fileinfo)) < 0)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		dir->havefirst = 0;
+	}
+	entry = (ILDirEnt *)ILMalloc(sizeof(ILDirEnt) + strlen(dir->fileinfo.name));
+	if(!entry)
+	{
+		return 0;
+	}
+	entry->attrib = dir->fileinfo.attrib;
+	strcpy(entry->name, dir->fileinfo.name);
+	return entry;
+}
+
+int ILCloseDir(ILDir *dir)
+{
+	_findclose(dir->handle);
+	ILFree(dir);
+	return 0;
+}
+
+const char *ILDirEntName(ILDirEnt *entry)
+{
+	return entry->name;
+}
+
+
+int ILDirEntType(ILDirEnt *entry)
+{
+	if((entry->attrib & _A_SUBDIR) != 0)
+	{
+		return ILFileType_DIR;
+	}
+	else
+	{
+		return ILFileType_REG;
+	}
+}
+
+#endif /* USE_WIN32_FIND */
 
 #ifdef	__cplusplus
 };

@@ -26,7 +26,7 @@
 #ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
 #endif
-#ifdef IL_NATIVE_WIN32
+#ifdef IL_WIN32_NATIVE
 #include <float.h>
 #endif
 

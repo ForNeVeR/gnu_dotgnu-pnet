@@ -25,6 +25,20 @@ if test -z "$TREECC" ; then
     exit 1
 fi
 
+dnl Option to disable cygwin1.dll under Windows.
+AC_SUBST(SOCKETLIBS)
+AC_ARG_ENABLE(cygwin,
+[  --disable-cygwin        Disable cygwin1.dll under Windows],
+[case "${enableval}" in
+  yes) cygwin=true ;;
+  no)  cygwin=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-cygwin) ;;
+esac],[cygwin=true])
+if test x$cygwin = xfalse ; then
+  CC="$CC -mno-cygwin"
+  SOCKETLIBS="-lwsock32"
+fi
+
 dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT
@@ -284,7 +298,7 @@ dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memset memcmp memchr memcpy memmove bcopy bzero bcmp)
 AC_CHECK_FUNCS(isnan isinf finite fmod strtod mmap munmap getpagesize)
-AC_CHECK_FUNCS(stat vfprintf waitpid wait fork execv open gettimeofday)
+AC_CHECK_FUNCS(stat lstat vfprintf waitpid wait fork execv open gettimeofday)
 AC_CHECK_FUNCS(getpid qsort regcomp re_comp unlink remove getcwd getwd)
 AC_CHECK_FUNCS(get_current_dir_name dlopen strerror fcntl ftruncate)
 AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)

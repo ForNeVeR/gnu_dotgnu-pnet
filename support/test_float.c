@@ -25,9 +25,11 @@
 #ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
 #endif
-#ifdef IL_NATIVE_WIN32
+#ifdef IL_WIN32_NATIVE
 #include <float.h>
+#if !defined(isnan)
 #define isnan(value)	_isnan((value))
+#endif
 #define HAVE_ISNAN 1
 #endif
 
@@ -46,7 +48,7 @@ int ILNativeFloatIsNaN(ILNativeFloat value)
 
 int ILNativeFloatIsFinite(ILNativeFloat value)
 {
-#ifdef hpux
+#if defined(hpux) || defined(IL_WIN32_NATIVE)
 	return isfinite(value);
 #else /* !hpux */
 #ifdef HAVE_FINITE

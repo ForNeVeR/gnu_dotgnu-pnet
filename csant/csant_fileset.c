@@ -131,7 +131,7 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 						REGEX_CHAR('(');
 						REGEX_CHAR('.');
 						REGEX_CHAR('*');
-					#ifdef IL_NATIVE_WIN32
+					#ifdef IL_WIN32_NATIVE
 						REGEX_CHAR('\\');
 						REGEX_CHAR('\\');
 					#else
@@ -155,7 +155,7 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 					/* Match anything that doesn't involve a separator */
 					REGEX_CHAR('[');
 					REGEX_CHAR('^');
-				#ifdef IL_NATIVE_WIN32
+				#ifdef IL_WIN32_NATIVE
 					REGEX_CHAR('\\');
 					REGEX_CHAR('\\');
 				#else
@@ -173,7 +173,7 @@ static int BuildIncludeRegex(CSAntTask *node, const char *name,
 				{
 					/* Match a directory separator */
 					recursive = 1;
-				#ifdef IL_NATIVE_WIN32
+				#ifdef IL_WIN32_NATIVE
 					REGEX_CHAR('\\');
 					REGEX_CHAR('\\');
 				#else

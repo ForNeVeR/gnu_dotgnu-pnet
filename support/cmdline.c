@@ -343,7 +343,7 @@ void ILCmdLineHelp(const ILCmdLineOption *options)
 	}
 }
 
-#ifndef IL_NATIVE_WIN32
+#ifndef IL_WIN32_NATIVE
 
 /*
  * Abort due to insufficient memory.
@@ -473,7 +473,7 @@ void ILCmdLineExpand(int *argc, char ***argv)
 	*argv = newArgv;
 }
 
-#else /* IL_NATIVE_WIN32 */
+#else /* IL_WIN32_NATIVE */
 
 void ILCmdLineExpand(int *argc, char ***argv)
 {
@@ -485,13 +485,17 @@ void ILCmdLineExpand(int *argc, char ***argv)
  * command-line argument parser that supports wildcards.
  */
 
+#if !defined(__MINGW32__)
+
 void __cdecl _setargv(void)
 {
 	extern void __cdecl __setargv(void);
 	__setargv();
 }
 
-#endif
+#endif	/* !__MINGW32__ */
+
+#endif	/* IL_WIN32_NATIVE */
 
 #ifdef	__cplusplus
 };

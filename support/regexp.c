@@ -109,7 +109,9 @@ void ILRegexpFree(ILRegexpHandle handle)
 #ifdef HAVE_REGFREE
 	regfree((regex_t*)(handle));
 #else
+#ifdef HAVE_REGEX_H
 	ILFree((regex_t*)(handle)); /* attempt a normal free */
+#endif
 #endif
 }
 

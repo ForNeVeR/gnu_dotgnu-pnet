@@ -151,7 +151,11 @@ void ILDocPrintNS(ILDocNamespace *ns,char *outputPath)
 			if(name[j]=='.')
 			{
 				name[j]='\0';
+			#ifdef IL_WIN32_NATIVE
+				mkdir(name);
+			#else
 				mkdir(name,0777);
+			#endif
 				//create a new dir every time we correct a NS
 				name[j]='/';
 			}
@@ -159,7 +163,11 @@ void ILDocPrintNS(ILDocNamespace *ns,char *outputPath)
 #ifdef CSDOC_STUB_DEBUG
 	printf("Processing %s namespace\n",name);
 #endif
+#ifdef IL_WIN32_NATIVE
+	mkdir(name);
+#else
 	mkdir(name,0777);//make dir if still not made
+#endif
 	for(i=ns->types;i!=NULL;i=i->nextNamespace)
 	{
 		ILDocPrintType(ns,i,name);

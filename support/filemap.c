@@ -75,7 +75,11 @@ static void *mmapPerform(int fd, unsigned long offset,
 	void *mapAddress;
 
 	/* Get the underlying OS handle for the fd */
+#ifdef IL_WIN32_CYGWIN
 	osHandle = (HANDLE)get_osfhandle(fd);
+#else
+	osHandle = (HANDLE)_get_osfhandle(fd);
+#endif
 	if(osHandle == (HANDLE)INVALID_HANDLE_VALUE)
 	{
 		return 0;

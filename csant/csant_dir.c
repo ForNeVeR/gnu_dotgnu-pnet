@@ -39,8 +39,9 @@ extern	"C" {
  */
 struct _tagCSAntDir
 {
-	DIR    *dirInfo;
+	ILDir  *dirInfo;
 	int     useRegex;
+	char   *name;
 #ifdef HAVE_REGCOMP
 	regex_t regexState;
 #endif
@@ -48,7 +49,7 @@ struct _tagCSAntDir
 
 CSAntDir *CSAntDirOpen(const char *pathname, const char *fileRegex)
 {
-	DIR *dirInfo;
+	ILDir *dirInfo;
 	CSAntDir *dir;
 	char *regex;
 	char *out;
@@ -57,7 +58,7 @@ CSAntDir *CSAntDirOpen(const char *pathname, const char *fileRegex)
 
 	/* Attempt to open the directory, after normalizing the path */
 	newPathname = CSAntDirCombine(pathname, 0);
-	dirInfo = opendir(newPathname);
+	dirInfo = ILOpenDir(newPathname);
 	ILFree(newPathname);
 	if(!dirInfo)
 	{
@@ -71,6 +72,7 @@ CSAntDir *CSAntDirOpen(const char *pathname, const char *fileRegex)
 		CSAntOutOfMemory();
 	}
 	dir->dirInfo = dirInfo;
+	dir->name = 0;
 
 	/* Convert the regular expression from file form into grep form */
 	if(fileRegex)
@@ -164,7 +166,11 @@ CSAntDir *CSAntDirOpen(const char *pathname, const char *fileRegex)
 
 void CSAntDirClose(CSAntDir *dir)
 {
-	closedir(dir->dirInfo);
+	ILCloseDir(dir->dirInfo);
+	if(dir->name)
+	{
+		ILFree(dir->name);
+	}
 #ifdef HAVE_REGCOMP
 	if(dir->useRegex)
 	{
@@ -176,19 +182,23 @@ void CSAntDirClose(CSAntDir *dir)
 
 const char *CSAntDirNext(CSAntDir *dir)
 {
-	struct dirent *entry;
+	ILDirEnt *entry;
+	const char *name;
+
 	for(;;)
 	{
 		/* Read the next raw entry from the operating system */
-		entry = readdir(dir->dirInfo);
+		entry = ILReadDir(dir->dirInfo);
 		if(!entry)
 		{
 			break;
 		}
 
 		/* Always ignore "." and ".." */
-		if(!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+		name = ILDirEntName(entry);
+		if(!strcmp(name, ".") || !strcmp(name, ".."))
 		{
+			ILFree(entry);
 			continue;
 		}
 
@@ -196,14 +206,16 @@ const char *CSAntDirNext(CSAntDir *dir)
 		if(dir->useRegex)
 		{
 		#ifdef HAVE_REGCOMP
-			if(regexec(&(dir->regexState), entry->d_name, 0, 0, 0) != 0)
+			if(regexec(&(dir->regexState), name, 0, 0, 0) != 0)
 			{
+				ILFree(entry);
 				continue;
 			}
 		#else
 		#ifdef HAVE_RE_COMP
-			if(!re_exec(entry->d_name))
+			if(!re_exec(name))
 			{
+				ILFree(entry);
 				continue;
 			}
 		#endif
@@ -211,7 +223,13 @@ const char *CSAntDirNext(CSAntDir *dir)
 		}
 
 		/* We have a match */
-		return entry->d_name;
+		if(dir->name)
+		{
+			ILFree(dir->name);
+		}
+		dir->name = ILDupString(name);
+		ILFree(entry);
+		return dir->name;
 	}
 	return 0;
 }
@@ -248,7 +266,7 @@ char *CSAntDirCombine(const char *pathname, const char *filename)
 	{
 		if(*temp == '/' || *temp == '\\')
 		{
-		#ifdef IL_NATIVE_WIN32
+		#ifdef IL_WIN32_NATIVE
 			*temp = '\\';
 		#else
 			*temp = '/';

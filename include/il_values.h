@@ -21,9 +21,17 @@
 #ifndef	_IL_VALUES_H
 #define	_IL_VALUES_H
 
-#if defined(WIN32) && !defined(__CYGWIN__)
-#define	IL_NATIVE_WIN32
+/*
+ * Determine what kind of Win32 system we are running on.
+ */
+#if defined(__CYGWIN__) || defined(__CYGWIN32__)
+#define	IL_WIN32_CYGWIN		1
+#define	IL_WIN32_PLATFORM	1
+#elif defined(_WIN32) || defined(WIN32)
+#define	IL_WIN32_NATIVE		1
+#define	IL_WIN32_PLATFORM	1
 #endif
+
 #include "il_config.h"
 #include "il_profile.h"
 
@@ -72,7 +80,7 @@ typedef ILInt8 						ILBool;
 		#define	IL_HAVE_INT64
 	#endif
 #endif
-#if (!defined(IL_HAVE_INT64)) && defined(IL_NATIVE_WIN32)
+#if (!defined(IL_HAVE_INT64)) && defined(IL_WIN32_NATIVE)
 	typedef __int64					ILInt64;
 	typedef unsigned __int64		ILUInt64;
 	#define IL_HAVE_INT64
@@ -152,7 +160,7 @@ typedef ILInt8 						ILBool;
 #define	IL_MIN_INT32				((ILInt32)0x80000000L)
 #define	IL_MAX_INT32				((ILInt32)0x7FFFFFFFL)
 #define	IL_MAX_UINT32				((ILUInt32)0xFFFFFFFFL)
-#ifndef IL_NATIVE_WIN32
+#ifndef IL_WIN32_NATIVE
 #define	IL_MIN_INT64				((ILInt64)0x8000000000000000LL)
 #define	IL_MAX_INT64				((ILInt64)0x7FFFFFFFFFFFFFFFLL)
 #define	IL_MAX_UINT64				((ILUInt64)0xFFFFFFFFFFFFFFFFLL)

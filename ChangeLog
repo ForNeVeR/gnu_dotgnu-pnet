@@ -20,6 +20,10 @@
 	* System/Configuration/ConfigurationSettings.cs: implement
 	configuration loading.
 
+	* runtime/System/Runtime/CompilerServices/AssemblyAttributesGoHere.cs:
+	add the "AssemblyAttributesGoHere" classes to fake out programs that
+	were built using Microsoft's assembler.
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

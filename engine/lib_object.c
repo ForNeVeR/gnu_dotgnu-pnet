@@ -33,7 +33,6 @@ extern	"C" {
 
 static ILObject *System_Object_GetType(ILExecThread *thread, ILObject *_this)
 {
-	ILClass *classInfo;
 	ILObject *obj;
 
 	/* Does the class already have a "RuntimeType" instance? */
@@ -43,13 +42,13 @@ static ILObject *System_Object_GetType(ILExecThread *thread, ILObject *_this)
 	}
 
 	/* Create a new "RuntimeType" instance */
-	classInfo = ILExecThreadLookupType(thread, "System.RuntimeType");
-	if(!classInfo)
+	if(!(thread->process->runtimeTypeClass))
 	{
-		/* TODO: Throw a "TypeLoadException" */
+		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
+								(const char *)0);
 		return 0;
 	}
-	obj = _ILEngineAllocObject(thread, classInfo);
+	obj = _ILEngineAllocObject(thread, thread->process->runtimeTypeClass);
 	if(!obj)
 	{
 		return 0;

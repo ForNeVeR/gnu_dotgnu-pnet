@@ -79,6 +79,9 @@ struct _tagILExecProcess
 	ILCoder		   *coder;
 	ILUInt32		coderGeneration;
 
+	/* Useful builtin classes */
+	ILClass        *runtimeTypeClass;
+
 	/* The object to throw when the system runs out of memory */
 	ILObject	   *outOfMemoryObject;
 

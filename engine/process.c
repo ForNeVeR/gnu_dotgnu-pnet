@@ -44,6 +44,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->exitStatus = 0;
 	process->coder = 0;
 	process->coderGeneration = 0;
+	process->runtimeTypeClass = 0;
 	process->outOfMemoryObject = 0;
 	ILGetCurrTime(&(process->startTime));
 
@@ -103,19 +104,19 @@ ILExecThread *ILExecProcessGetMain(ILExecProcess *process)
 	return process->mainThread;
 }
 
-int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
+/*
+ * Load standard classes and objects.
+ */
+static void LoadStandard(ILExecProcess *process, ILImage *image)
 {
-	ILImage *image;
-	int loadError;
-	loadError = ILImageLoad(file, 0, process->context, &image,
-					   	    IL_LOADFLAG_FORCE_32BIT);
-	if(loadError == 0 && !(process->outOfMemoryObject))
+	ILClass *classInfo;
+
+	if(!(process->outOfMemoryObject))
 	{
 		/* If this image caused "OutOfMemoryException" to be
 		   loaded, then create an object based upon it.  We must
 		   allocate this object ahead of time because we won't be
 		   able to when the system actually runs out of memory */
-		ILClass *classInfo;
 		classInfo = ILClassLookupGlobal(ILImageToContext(image),
 								        "OutOfMemoryException", "System");
 		if(classInfo)
@@ -123,6 +124,25 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
 			process->outOfMemoryObject =
 				_ILEngineAllocObject(process->mainThread, classInfo);
 		}
+	}
+
+	/* Look for "System.RuntimeType" */
+	if(!(process->runtimeTypeClass))
+	{
+		process->runtimeTypeClass = ILClassLookupGlobal(ILImageToContext(image),
+								        "RuntimeType", "System");
+	}
+}
+
+int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
+{
+	ILImage *image;
+	int loadError;
+	loadError = ILImageLoad(file, 0, process->context, &image,
+					   	    IL_LOADFLAG_FORCE_32BIT);
+	if(loadError == 0)
+	{
+		LoadStandard(process, image);
 	}
 	return loadError;
 }

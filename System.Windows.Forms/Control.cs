@@ -38,6 +38,8 @@ public class Control : IWin32Window
 	// Internal state.
 	internal IToolkitWindow toolkitWindow;
 	private Control parent;
+	// Outside bounds of the control including windows decorations
+	// in the case of forms and non client areas
 	private int left, top, width, height;
 	private int prevParentWidth, prevParentHeight;
 	private String text;
@@ -144,17 +146,23 @@ public class Control : IWin32Window
 				// for all widgets, we are only interested in the
 				// position and size information from "CreateParams".
 				CreateParams cp = CreateParams;
+				// Convert to toolkit coordinates
+				int x = cp.X + ToolkitDrawOrigin.X;
+				int y = cp.Y + ToolkitDrawOrigin.Y;
+				int width = cp.Width - ToolkitDrawSize.Width;
+				int height = cp.Height - ToolkitDrawSize.Height;
+				
 				if(parent != null)
 				{
 					// Use the parent's toolkit to create.
 					return parent.Toolkit.CreateChildWindow
-						(parent, cp.X, cp.Y, cp.Width, cp.Height);
+						(parent, x, y, width, height, this);
 				}
 				else
 				{
 					// Use the default toolkit to create.
 					return ToolkitManager.Toolkit.CreateChildWindow
-						(null, cp.X, cp.Y, cp.Width, cp.Height);
+						(null, x, y, width, height, this);
 				}
 			}
 
@@ -461,23 +469,15 @@ public class Control : IWin32Window
 				{
 					if(contextMenu != null)
 					{
-						if(contextMenu != null)
-						{
-							contextMenu.RemoveFromControl();
-						}
-						if(value != null)
-						{
-							Control control = value.SourceControl;
-							if(control != null)
-							{
-								control.ContextMenu = null;
-							}
-						}
-						contextMenu = value;
-						if(contextMenu != null)
-						{
-							contextMenu.AddToControl(this);
-						}
+						contextMenu.RemoveFromControl();
+					}
+					contextMenu = value;
+					if(contextMenu != null)
+					{
+						Control control = contextMenu.SourceControl;
+						if(control != null)
+							control.ContextMenu = null;
+						contextMenu.AddToControl(this);
 					}
 				}
 			}
@@ -1372,7 +1372,8 @@ public class Control : IWin32Window
 					if(parent != null && toolkitWindow.Parent == null)
 					{
 						toolkitWindow.Reparent
-							(parent.toolkitWindow, left, top);
+							(parent.toolkitWindow, left + ToolkitDrawOrigin.X,
+							 top + ToolkitDrawOrigin.Y);
 					}
 					return;
 				}
@@ -1393,15 +1394,27 @@ public class Control : IWin32Window
 				toolkitWindow.SetBackground(BackColor);
 				// TODO: background images
 
-				// Join the toolkit event handlers to this object.
-				toolkitWindow.SetEventSink(this);
-
 				// Notify subclasses that the handle has been created.
 				OnHandleCreated(EventArgs.Empty);
 			}
 
 	// Create a graphics drawing object for the control.
 	public Graphics CreateGraphics()
+			{
+				CreateControl();
+				if(toolkitWindow != null)
+				{
+					return new Graphics(
+						toolkitWindow.GetGraphics(),
+						new Rectangle( ClientOrigin - new Size(ToolkitDrawOrigin), ClientSize));
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	public Graphics CreateNonClientGraphics()
 			{
 				CreateControl();
 				if(toolkitWindow != null)
@@ -1606,7 +1619,9 @@ public class Control : IWin32Window
 			{
 				if(toolkitWindow != null && Visible)
 				{
-					toolkitWindow.Invalidate(rc.X, rc.Y, rc.Width, rc.Height);
+					toolkitWindow.Invalidate(rc.X + ClientOrigin.X - ToolkitDrawOrigin.X,
+						rc.Y + ClientOrigin.Y - ToolkitDrawOrigin.Y,
+						rc.Width, rc.Height);
 				}
 			}
 	[TODO]
@@ -1623,6 +1638,8 @@ public class Control : IWin32Window
 				for (int i = 0; i < rs.Length; i++)
 				{
 					Rectangle b = Rectangle.Truncate(rs[i]);
+					b.Offset(ClientOrigin.X - ToolkitDrawOrigin.X,
+						ClientOrigin.Y - ToolkitDrawOrigin.Y);
 					Invalidate(Rectangle.Truncate(rs[i]));
 				}
 			}
@@ -1916,15 +1933,27 @@ public class Control : IWin32Window
 	// Convert a screen point into client co-ordinates.
 	public Point PointToClient(Point p)
 			{
-				Size size = ClientToBounds(Size.Empty);
-				return p - new Size(size.Width / 2, size.Height / 2);
+				Point client = ClientOrigin;
+				if (parent != null)
+				{
+					Point pt = parent.PointToClient(p);
+					return new Point(pt.X - left - client.X, pt.Y - top- client.Y);
+				}
+				else
+					return new Point(p.X - left - client.X, p.Y - top - client.Y);
 			}
 
 	// Convert a client point into screen co-ordinates.
 	public Point PointToScreen(Point p)
 			{
-				// TODO
-				return p;
+				Point client = ClientOrigin;
+				if (parent != null)
+				{
+					Point pt = parent.PointToScreen(p); 
+					return new Point(pt.X + left + ClientOrigin.X, pt.Y + top + ClientOrigin.Y);
+				}
+				else
+					return new Point(p.X + left + client.X, p.Y + top + client.Y);
 			}
 
 	// Process a command key.
@@ -2313,25 +2342,30 @@ public class Control : IWin32Window
 				// Move and resize the toolkit version of the control.
 				if(toolkitWindow != null)
 				{
-					if(x != this.left || y != this.top ||
-					   width != this.width || height != this.height)
+					// Convert from outside to toolkit coordinates
+					int xT = x + ToolkitDrawOrigin.X;
+					int yT = y + ToolkitDrawOrigin.Y;
+					int widthT = width - ToolkitDrawSize.Width;
+					int heightT = height - ToolkitDrawSize.Height;
+					if (Parent != null)
 					{
-						toolkitWindow.MoveResize(x, y, width, height);
+						xT += Parent.ClientOrigin.X - Parent.ToolkitDrawOrigin.X;
+						yT += Parent.ClientOrigin.Y - Parent.ToolkitDrawOrigin.Y;
 					}
+					// Controls are located in the client area
+					toolkitWindow.MoveResize( xT, yT, widthT, heightT);
 				}
 
 				// Update the bounds and emit the necessary events.
 				UpdateBounds(x, y, width, height);
 
-				// TODO: layout the child controls, apply docking rules, etc
 			}
 
-	// Inner core of setting the client size.  In the default
-	// implementation, this is identical to "SetBoundsCore".
-	// Overridden by "Form" to add window border adjustments.
+	// Inner core of setting the client size.
 	protected virtual void SetClientSizeCore(int x, int y)
 			{
-				SetBoundsCore(left, top, x, y, BoundsSpecified.Size);
+				Size client = ClientToBounds(new Size(x, y));
+				SetBoundsCore(left, top, client.Width, client.Height, BoundsSpecified.Size);
 			}
 
 	// Set a style bit.
@@ -2363,11 +2397,11 @@ public class Control : IWin32Window
 					visible = value;
 					OnVisibleChanged(EventArgs.Empty);
 
-					// Perform layout on the parent.
+					// Perform layout on the parent or self.
 					if(parent != null)
-					{
 						parent.PerformLayout(this, "Visible");
-					}
+					else
+						PerformLayout(this, "Visible");
 				}
 			}
 
@@ -3613,6 +3647,14 @@ public class Control : IWin32Window
 				{
 					handler(this, e);
 				}
+				if (e.Button == MouseButtons.Right && contextMenu != null)
+				{
+					contextMenu.Show(this, new Point(e.X, e.Y));
+				}
+			}
+	internal void OnMouseDownInternal(MouseEventArgs e)
+			{
+				OnMouseDown(e);
 			}
 	protected virtual void OnMouseEnter(EventArgs e)
 			{
@@ -3977,12 +4019,14 @@ public class Control : IWin32Window
 				{
 					if(newParent == null)
 					{
-						toolkitWindow.Reparent(null, left, top);
+						toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
+							top + ToolkitDrawOrigin.Y);
 					}
 					else
 					{
 						toolkitWindow.Reparent
-							(newParent.toolkitWindow, left, top);
+							(newParent.toolkitWindow, left + ToolkitDrawOrigin.X,
+							top + ToolkitDrawOrigin.Y);
 					}
 					toolkitWindow.Lower();
 				}
@@ -4389,8 +4433,16 @@ public class Control : IWin32Window
 	// Toolkit event that is emitted for an expose on this window.
 	void IToolkitEventSink.ToolkitExpose(Graphics graphics)
 			{
-				PaintEventArgs e = new PaintEventArgs
-					(graphics, Rectangle.Truncate(graphics.ClipBounds));
+				// PaintEventArgs has the client
+				// Graphics and bounds
+				// Use CreateNonClientGraphics for access to the whole
+				// control including border and menus.
+
+				Graphics paintGraphics = new Graphics(graphics,
+					new Rectangle( ClientOrigin - new Size(ToolkitDrawOrigin), ClientSize));
+
+				PaintEventArgs e = new PaintEventArgs(
+					paintGraphics, Rectangle.Truncate(paintGraphics.ClipBounds));
 				OnPaint(e);
 			}
 
@@ -4481,6 +4533,10 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 		 	{
+				// Convert to client coordinates
+				x += ToolkitDrawOrigin.X - ClientOrigin.X;
+				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				
 				currentModifiers = (Keys)modifiers;
 				if (GetStyle(ControlStyles.Selectable) && enabled)
 					Focus();
@@ -4496,6 +4552,10 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				// Convert to client coordinates
+				x += ToolkitDrawOrigin.X - ClientOrigin.X;
+				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				
 				currentModifiers = (Keys)modifiers;
 				OnMouseUp(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
@@ -4506,6 +4566,10 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				// Convert to client coordinates
+				x += ToolkitDrawOrigin.X - ClientOrigin.X;
+				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
+				
 				currentModifiers = (Keys)modifiers;
 				OnMouseHover(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
@@ -4516,6 +4580,9 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				// Convert to client coordinates
+				x += ToolkitDrawOrigin.X - ClientOrigin.X;
+				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				currentModifiers = (Keys)modifiers;
 				OnMouseMove(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
@@ -4526,6 +4593,9 @@ public class Control : IWin32Window
 				(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 				 int clicks, int x, int y, int delta)
 			{
+				// Convert to client coordinates
+				x += ToolkitDrawOrigin.X - ClientOrigin.X;
+				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				currentModifiers = (Keys)modifiers;
 				OnMouseWheel(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
@@ -4535,19 +4605,23 @@ public class Control : IWin32Window
 	// external means (e.g. the user dragging the window).
 	void IToolkitEventSink.ToolkitExternalMove(int x, int y)
 			{
+				// Convert to outside top left
+				x -= ToolkitDrawOrigin.X;
+				y -= ToolkitDrawOrigin.Y;
 				if(x != left || y != top)
-				{
-					Location = new Point(x, y);
-				}
+					Location = new Point(x , y);
 			}
 
 	// Toolkit event that is emitted when the window is resized by
 	// external means (e.g. the user resizing the window).
 	void IToolkitEventSink.ToolkitExternalResize(int width, int height)
 			{
-				if(width != this.width || height != this.height)
+				// Convert to outside width
+				int w = width + ToolkitDrawSize.Width;
+				int h = height + ToolkitDrawSize.Height;
+				if(w != this.width || h != this.height)
 				{
-					Size = new Size(width, height);
+					Size = new Size(w, h);
 				}
 			}
 
@@ -4568,12 +4642,47 @@ public class Control : IWin32Window
 				return new SolidBrush(BackColor);
 			}
 
-	// Convert a client size into a window bounds size.
+	// Override this function if the clientRectangle is smaller than the full control.
 	internal virtual Size ClientToBounds(Size size)
 			{
-				// Overridden by "Form" to handle window borders.
 				return size;
 			}
+	
+	// This is the Client Origin relative to the top left outside of the window.
+	// The Client area is the area in a control excluding main menus
+	// borders or window titlebars.
+	// Override this if the ClientRectangle is different to the bounds of the control.
+	public virtual Point ClientOrigin
+	{
+		get
+		{
+			return Point.Empty;
+		}
+	}
+
+	// This is the offset from the top left of the actual window to
+	// where the toolkit allows us to start drawing. In between are windows
+	// decorations like titlebars but not menus
+	// This is overridden in form
+	protected virtual Point ToolkitDrawOrigin
+	{
+		get
+		{
+			return Point.Empty;
+		}
+	}
+
+	// This is how much the toolkit increases a Windows size because of decorations
+	// This is overridden in Form.
+	protected virtual Size ToolkitDrawSize
+	{
+		get
+		{
+			return Size.Empty;
+		}
+	}
+
+
 
 #if !CONFIG_COMPACT_FORMS
 

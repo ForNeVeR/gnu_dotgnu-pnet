@@ -1531,7 +1531,7 @@ LogicalOrExpression
 
 ConditionalExpression
 	: LogicalOrExpression
-	| LogicalOrExpression '?' LogicalOrExpression ':' ConditionalExpression	{
+	| LogicalOrExpression '?' Expression ':' AssignmentExpression	{
 				$$ = ILNode_Conditional_create
 						(ILNode_ToBool_create($1), $3, $5);
 			}
@@ -1539,37 +1539,37 @@ ConditionalExpression
 
 AssignmentExpression
 	: ConditionalExpression
-	| UnaryExpression '=' AssignmentExpression	{
+	| LogicalOrExpression '=' AssignmentExpression	{
 				$$ = ILNode_Assign_create($1, $3);
 			}
-	| UnaryExpression MUL_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression MUL_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignMul_create(ILNode_Mul_create($1, $3));
 			}
-	| UnaryExpression DIV_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression DIV_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignDiv_create(ILNode_Div_create($1, $3));
 			}
-	| UnaryExpression MOD_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression MOD_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignRem_create(ILNode_Rem_create($1, $3));
 			}
-	| UnaryExpression ADD_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression ADD_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignAdd_create(ILNode_Add_create($1, $3));
 			}
-	| UnaryExpression SUB_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression SUB_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignSub_create(ILNode_Sub_create($1, $3));
 			}
-	| UnaryExpression LEFT_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression LEFT_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignShl_create(ILNode_Shl_create($1, $3));
 			}
-	| UnaryExpression RIGHT_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression RIGHT_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignShr_create(ILNode_Shr_create($1, $3));
 			}
-	| UnaryExpression AND_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression AND_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignAnd_create(ILNode_And_create($1, $3));
 			}
-	| UnaryExpression XOR_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression XOR_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignXor_create(ILNode_Xor_create($1, $3));
 			}
-	| UnaryExpression OR_ASSIGN_OP AssignmentExpression	{
+	| LogicalOrExpression OR_ASSIGN_OP AssignmentExpression	{
 				$$ = ILNode_AssignOr_create(ILNode_Or_create($1, $3));
 			}
 	;

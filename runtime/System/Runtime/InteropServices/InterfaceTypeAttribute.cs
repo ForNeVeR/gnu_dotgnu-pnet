@@ -22,12 +22,26 @@
 namespace System.Runtime.InteropServices
 {
 
-[TODO]
-public class InterfaceTypeAttribute : Attribute
-{
+#ifdef !ECMA_COMPAT
 
-// TODO
+public sealed class InterfaceTypeAttribute : Attribute
+{
+	private ComInterfaceType type;
+
+	public InterfaceTypeAttribute(ComInterfaceType interfaceType)
+	{
+		this.type=interfaceType;
+	}
+
+	public ComInterfaceType Value
+	{
+		get
+		{
+			return this.type;
+		}
+	}
 
 }; // class InterfaceTypeAttribute
+#endif
 
 }; // namespace System.Runtime.InteropServices

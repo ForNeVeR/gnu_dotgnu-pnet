@@ -152,6 +152,16 @@ int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn);
 int ILSysIOHasAsync(void);
 
 /*
+ * Sets the modification time of a specified file.
+ */
+int ILSysIOSetModificationTime(const char *path, ILInt64 time);
+
+/*
+ * Sets the access time of a specified file.
+ */
+int ILSysIOSetAccessTime(const char *path, ILInt64 time);
+
+/*
  * Copies a file from src to dest
  */
 ILInt32 ILCopyFile(const char * src, const char * dest);

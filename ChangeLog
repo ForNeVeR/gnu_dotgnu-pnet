@@ -1,5 +1,12 @@
 
-2002-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-01-04  Aditya P. Bansod <abansod@fullenergy.com>
+	
+	*  configure.in, engine/int_proto.h, engine/int_table.c,
+	engine/lib_file.c, include/il_sysio.h, support/file.c: Add
+	the internal call support for SetLastWriteTime and SetLastAccessTime.
+	(Patch #916,Gopal).
+
+2003-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_method.c, ildasm/ildasm_method.c, image/opdef.c,
 	include/il_opcodes.h: dump the "field" or "method" prefix on
@@ -8,7 +15,7 @@
 	* engine/lib_reflect.c (DeserializeAttribute): the order of
 	parameter extraction was reversed.
 
-2002-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+2003-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* dumpasm/dump_flags.c: change "public_key" to "publickey" so that
 	the output of the disassember is more palatable to the assembler.

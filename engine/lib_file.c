@@ -208,3 +208,35 @@ ILInt32 _IL_FileMethods_Copy(ILExecThread *_thread,
 	}
 	return ILCopyFile(src_ansi, dest_ansi);
 }
+
+/*
+ * public static Errno SetLastWriteTime(String path, long ticks);
+ */
+ILInt32 _IL_FileMethods_SetLastWriteTime(ILExecThread *thread, ILString *path, ILInt64 ticks)
+{
+	char *path_ansi = ILStringToAnsi(thread, path);
+	
+	if(!path_ansi)
+	{
+		ILSysIOSetErrno(IL_ERRNO_ENOMEM);
+		return 0;
+	}
+
+	return ILSysIOSetModificationTime(path_ansi, ticks);
+}
+
+/*
+ * public static Errno SetLastAccessTime(String path, long ticks);
+ */
+ILInt32 _IL_FileMethods_SetLastAccessTime(ILExecThread *thread, ILString *path, ILInt64 ticks)
+{
+	char *path_ansi = ILStringToAnsi(thread, path);
+	
+	if(!path_ansi)
+	{
+		ILSysIOSetErrno(IL_ERRNO_ENOMEM);
+		return 0;
+	}
+
+	return ILSysIOSetAccessTime(path_ansi, ticks);
+}

@@ -41,6 +41,13 @@
 	#include <windows.h>
 	#include <io.h>
 #endif
+#ifdef HAVE_SYS_UTIME_H
+	#include <sys/utime.h>
+#else
+#ifdef HAVE_UTIME_H
+	#include <utime.h>
+#endif
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -441,6 +448,96 @@ int ILSysIOPathGetCreation(const char *path, ILInt64 *time)
 		err = ILSysIOGetErrno();
 	}
 	return err;
+}
+
+int ILSysIOSetModificationTime(const char *path, ILInt64 time)
+{
+#if defined(HAVE_STAT) && defined(HAVE_UTIME)
+	int retVal;
+	ILInt64 unix_time;
+	struct utimbuf utbuf;
+	struct stat statbuf;
+
+	/* Clear errno */
+	errno = 0;
+
+	unix_time = ILCLIToUnixTime(time);
+
+	/* Grab the old time data first */
+	retVal = stat(path, &statbuf);
+
+	if(retVal != 0)
+	{
+		/* Throw out the Errno */
+		return ILSysIOGetErrno();
+	}
+
+	/* Copy over the old atime value */
+	utbuf.actime = statbuf.st_atime;
+	
+	/* Set the new mod time */
+	utbuf.modtime = unix_time;
+
+	/* And write the inode */
+	retVal = utime(path, &utbuf);
+
+	if(retVal != 0)
+	{
+		/* Throw out the errno */
+		return ILSysIOGetErrno();
+	}
+	else
+	{
+		return IL_ERRNO_Success;
+	}
+#else
+	return IL_ERRNO_ENOSYS;
+#endif
+}
+
+int ILSysIOSetAccessTime(const char *path, ILInt64 time)
+{
+#if defined(HAVE_STAT) && defined(HAVE_UTIME)
+	int retVal;
+	ILInt64 unix_time;
+	struct utimbuf utbuf;
+	struct stat statbuf;
+
+	/* Clear errno */
+	errno = 0;
+
+	unix_time = ILCLIToUnixTime(time);
+
+	/* Grab the old time data first */
+	retVal = stat(path, &statbuf);
+
+	if(retVal != 0)
+	{
+		/* Throw out the Errno */
+		return ILSysIOGetErrno();
+	}
+
+	/* Copy over the old mtime value */
+	utbuf.modtime = statbuf.st_mtime;
+	
+	/* Set the new actime time */
+	utbuf.actime = unix_time;
+
+	/* And write the inode */
+	retVal = utime(path, &utbuf);
+
+	if(retVal != 0)
+	{
+		/* Throw out the errno */
+		return ILSysIOGetErrno();
+	}
+	else
+	{
+		return IL_ERRNO_Success;
+	}
+#else
+	return IL_ERRNO_ENOSYS;
+#endif
 }
 
 #ifdef	__cplusplus

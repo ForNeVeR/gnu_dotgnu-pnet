@@ -52,6 +52,9 @@ int _ILCVMCanUseRawCalls(ILMethod *method, int isInternal);
 extern	"C" {
 #endif
 
+#if 0
+/* Blindly freeing return values is extremely dangerous.  Will fix this
+   problem when PInvoke is rewritten from scratch -- Rhys */
 #if defined(IL_WIN32_PLATFORM)
 	/* MS.NET frees native strings using the COM allocator 
 	http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpguide/html/cpconmemorymanagement.asp
@@ -60,6 +63,9 @@ extern	"C" {
 #else
 	/* Use the C allocator for other platforms */
 	#define ILFreeNativeString(str) free(str)
+#endif
+#else
+	#define ILFreeNativeString(str) do { ; } while (0)
 #endif
 
 /*

@@ -358,14 +358,12 @@ ILBool _IL_Enum_IsEnumValue(ILExecThread *thread, ILObject *enumType,
 
 /*
  * private static Object GetEnumValueFromName(Type enumType,
- *											  Object value,
+ *											  String name,
  *											  bool ignoreCase);
- *
- * TODO: "value" should have type "String" and be called "name".
  */
 ILObject *_IL_Enum_GetEnumValueFromName(ILExecThread *thread,
 										ILObject *enumType,
-										ILObject *value,
+										ILString *_name,
 										ILBool ignoreCase)
 {
 	char *name;
@@ -375,7 +373,7 @@ ILObject *_IL_Enum_GetEnumValueFromName(ILExecThread *thread,
 	ILInt64 fieldValue;
 
 	/* Convert the string into a name we can compare */
-	name = ILStringToUTF8(thread, (ILString *)value);
+	name = ILStringToUTF8(thread, _name);
 	if(!name)
 	{
 		return 0;

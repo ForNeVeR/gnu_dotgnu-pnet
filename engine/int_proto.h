@@ -35,7 +35,7 @@ extern ILObject * _IL_Delegate_CreateBlankDelegate(ILExecThread * _thread, ILObj
 extern ILObject * _IL_Enum_GetEnumValue(ILExecThread * _thread, ILObject * _this);
 extern ILString * _IL_Enum_GetEnumName(ILExecThread * _thread, ILObject * enumType, ILObject * value);
 extern ILBool _IL_Enum_IsEnumValue(ILExecThread * _thread, ILObject * enumType, ILObject * value);
-extern ILObject * _IL_Enum_GetEnumValueFromName(ILExecThread * _thread, ILObject * enumType, ILObject * value, ILBool ignoreCase);
+extern ILObject * _IL_Enum_GetEnumValueFromName(ILExecThread * _thread, ILObject * enumType, ILString * name, ILBool ignoreCase);
 extern ILObject * _IL_Enum_EnumValueOr(ILExecThread * _thread, ILObject * value1, ILObject * value2);
 extern ILObject * _IL_Enum_EnumIntToObject(ILExecThread * _thread, ILObject * enumType, ILInt32 value);
 extern ILObject * _IL_Enum_EnumLongToObject(ILExecThread * _thread, ILObject * enumType, ILInt64 value);

@@ -17,6 +17,10 @@
 	* engine/lib_thread.c: implement internalcall methods for
 	"WaitHandle" and "Mutex".
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_enum.c,
+	samples/mscorlib.dll: rationalise parameter naming for
+	"Enum.GetEnumValueFromName".
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/convert.c, engine/cvm_arith.c, engine/cvm_var.c,

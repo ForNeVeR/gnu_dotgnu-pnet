@@ -12,6 +12,9 @@ bother with entry points if the assembly only contains resources.
 * ilalink/link_method.c: make sure that string tokens are properly
 tagged with "IL_META_TOKEN_STRING".
 
+* ilalink/ilalink.c: adjust the help messages for "-c" and "-G" so
+that they make more sense.
+
 2001-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilalink/linker.h: include "il_dumpasm.h" because it is needed in multiple

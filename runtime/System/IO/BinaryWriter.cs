@@ -21,12 +21,15 @@
 namespace System.IO
 {
 
-#if !ECMA_COMPAT
-
 using System;
 using System.Text;
 
-public class BinaryWriter : IDisposable
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class BinaryWriter : IDisposable
 {
 	// The null binary writer.
 	public static readonly BinaryWriter Null = new BinaryWriter(Stream.Null);
@@ -375,9 +378,11 @@ public class BinaryWriter : IDisposable
 				}
 				Write((byte)temp);
 			}
+	internal void Write7BitEncoded(int value)
+			{
+				Write7BitEncodedInt(value);
+			}
 
 }; // class BinaryWriter
-
-#endif // !ECMA_COMPAT
 
 }; // namespace System.IO

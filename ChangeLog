@@ -1,4 +1,10 @@
 
+2003-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/BinaryWriter.cs,
+	runtime/System/Resources/ResourceWriter.cs: finish the implementation
+	of "ResourceWriter".
+
 2003-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/Serialization/FormatterServices.cs:

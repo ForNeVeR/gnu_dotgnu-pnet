@@ -49,6 +49,8 @@ new coder API called "SetupExternCtor".
 
 * engine/throw.c: new file that implements exception-related engine API's.
 
+* engine/process.c: initialize "outOfMemoryObject".
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

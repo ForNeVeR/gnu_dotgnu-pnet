@@ -718,38 +718,6 @@ struct _tagILEvalValue
 	ILNode	   *name;
 }
 
-%node ILNode_OperatorDeclaration ILNode_Declaration =
-{
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
-	ILNode	   *declarator;
-	ILNode	   *body;
-}
-
-%node ILNode_NormalOperatorDeclarator ILNode_Declaration =
-{
-	ILNode	   *returnType;
-	ILUInt16	operator;
-	ILNode	   *paramType1;
-	ILNode	   *paramName1;
-	ILNode	   *paramType2;
-	ILNode	   *paramName2;
-}
-
-%enum ILConversionType =
-{
-	ILConversion_explicit,
-	ILConversion_implicit,
-}
-
-%node ILNode_ConversionOperatorDeclarator ILNode_Declaration =
-{
-	ILConversionType	conversionType;
-	ILNode	   *returnType;
-	ILNode	   *paramType;
-	ILNode	   *paramName;
-}
-
 /*
  * Attributes and sub types
  */

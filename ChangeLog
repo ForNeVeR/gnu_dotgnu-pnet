@@ -35,6 +35,9 @@ into CS_SEMKIND_MEMBER.
 
 * cscc/cs_grammar.y: convert operators into method definitions in the parser.
 
+* codegen/cg_nodes.tc, codegen/cg_decls.tc, codegen/jv_decls.tc,
+cscc/cs_decls.tc: remove obsolete operator declaration nodes.
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

@@ -193,21 +193,6 @@ JavaGenDiscard(ILNode_FormalParameter)
 	/* TODO */
 }
 
-JavaGenDiscard(ILNode_OperatorDeclaration)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_NormalOperatorDeclarator)
-{
-	/* TODO */
-}
-
-JavaGenDiscard(ILNode_ConversionOperatorDeclarator)
-{
-	/* TODO */
-}
-
 JavaGenDiscard(ILNode_Attribute)
 {
 	/* TODO */

@@ -451,21 +451,6 @@ ILNode_GenDiscard(ILNode_FormalParameter)
 	}
 }
 
-ILNode_GenDiscard(ILNode_OperatorDeclaration)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_NormalOperatorDeclarator)
-{
-	/* TODO */
-}
-
-ILNode_GenDiscard(ILNode_ConversionOperatorDeclarator)
-{
-	/* TODO */
-}
-
 ILNode_GenDiscard(ILNode_Attribute)
 {
 	/* TODO */

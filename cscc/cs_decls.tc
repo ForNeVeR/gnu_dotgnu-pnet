@@ -312,24 +312,6 @@ ILNode_SemAnalysis(ILNode_FormalParameter)
 	return CSSemValueDefault;
 }
 
-ILNode_SemAnalysis(ILNode_OperatorDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_NormalOperatorDeclarator)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_ConversionOperatorDeclarator)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
 ILNode_SemAnalysis(ILNode_Attribute)
 {
 	/* TODO */

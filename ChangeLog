@@ -23,6 +23,9 @@ for assemblies and types.
 * runtime/System/Reflection/ClrType.cs: modify the code slightly to
 temporarily work around a bug in cscc's parser.
 
+* runtime/System/Reflection/ClrType.cs: back out the temporary work-around,
+because the compiler is now fixed.
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs,

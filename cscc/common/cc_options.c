@@ -128,23 +128,74 @@ static int DirExists(const char *pathname)
 #endif
 }
 
-void CCAddPathStrings(char ***list, int *num, char *path)
+void CCAddPathStrings(char ***list, int *num, char *path,
+					  char *standard1, char *standard2)
 {
-	int len;
+	int len, separator;
 	char *newstr;
+
+	/* Add the standard paths, derived from the install location */
+	if(standard1)
+	{
+		if(!CCStringListContains(*list, *num, standard1) &&
+		   DirExists(standard1))
+		{
+			AddString(list, num, standard1);
+		}
+	}
+	if(standard2)
+	{
+		if(!CCStringListContains(*list, *num, standard2) &&
+		   DirExists(standard2))
+		{
+			AddString(list, num, standard2);
+		}
+	}
+
+	/* Attempt to discover the correct path separator to use */
+#ifdef IL_WIN32_PLATFORM
+	if(strchr(path, ';') != 0)
+	{
+		/* The path already uses ';', so that is probably the separator */
+		separator = ';';
+	}
+	else
+	{
+		/* Deal with the ambiguity between ':' used as a separator
+		   and ':' used to specify a drive letter */
+		if(((path[0] >= 'A' && path[0] <= 'Z') ||
+		    (path[0] >= 'a' && path[0] <= 'z')) && path[1] == ':')
+		{
+			/* The path is probably one directory, starting
+			   with a drive letter */
+			separator = ';';
+		}
+		else
+		{
+			/* The path is probably Cygwin-like, using ':' to separate */
+			separator = ':';
+		}
+	}
+#else
+	separator = ':';
+#endif
+
+	/* Split the path into separate components */
 	while(*path != '\0')
 	{
-		if(*path == ' ' || *path == ':')
+		if(*path == separator || *path == ' ' || *path == '\t' ||
+		   *path == '\r' || *path == '\n')
 		{
 			++path;
 			continue;
 		}
 		len = 1;
-		while(path[len] != '\0' && path[len] != ':')
+		while(path[len] != '\0' && path[len] != separator)
 		{
 			++len;
 		}
-		while(len > 0 && path[len - 1] == ' ')
+		while(len > 0 && (path[len - 1] == ' ' || path[len - 1] == '\t' ||
+						  path[len - 1] == '\r' || path[len - 1] == '\n'))
 		{
 			--len;
 		}

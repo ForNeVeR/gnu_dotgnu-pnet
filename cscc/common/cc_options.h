@@ -114,7 +114,8 @@ extern int num_imacros_files;
 /*
  * Add a path to a list of strings.
  */
-void CCAddPathStrings(char ***list, int *num, char *path);
+void CCAddPathStrings(char ***list, int *num, char *path,
+					  char *standard1, char *standard2);
 
 /*
  * Command-line parsing modes.

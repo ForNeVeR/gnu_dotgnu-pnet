@@ -26,8 +26,6 @@ Environment variables:
 	CSCC_INCLUDE_CPP_PATH	Where to look for included C++ system files.
 	CSCC_LIB_PATH			Where to look for link libraries.
 	CSCC_PLUGINS_PATH		Where to look for language plug-ins.
-	CSCC_ILASM_PATH			Pathname of the "ilasm" program.
-	CSCC_ILALINK_PATH		Pathname of the "ilalink" program.
 
 */
 
@@ -43,89 +41,35 @@ extern	"C" {
 #endif
 
 /*
- * Define this variable to use the builtin "ilasm" library
- * rather than the external "ilasm" executable.
- */
-#define	USE_BUILTIN_ILASM	1
-
-/*
  * The default system include path.  We look in "lib" first,
  * just in case there is a pre-compiled "dll" for a package.
  */
-#ifdef CSCC_LIB_PREFIX
 #define	INCLUDE_PATH	\
-			CSCC_LIB_PREFIX "/lib:" \
-			CSCC_LIB_PREFIX "/include:" \
 			"/usr/local/lib/cscc/lib:" \
 			"/usr/local/lib/cscc/include:" \
 			"/usr/lib/cscc/lib:" \
 			"/usr/lib/cscc/include"
-#else
-#define	INCLUDE_PATH	\
-			"/usr/local/lib/cscc/lib:" \
-			"/usr/local/lib/cscc/include:" \
-			"/usr/lib/cscc/lib:"
-			"/usr/lib/cscc/include"
-#endif
 
 /*
  * The default system C++ include path.
  */
-#ifdef CSCC_LIB_PREFIX
 #define	INCLUDE_CPP_PATH	\
 			"/usr/local/lib/cscc/include/c++:" \
 			"/usr/lib/cscc/include/c++"
-#else
-#define	INCLUDE_CPP_PATH	\
-			CSCC_LIB_PREFIX "/include/c++:" \
-			"/usr/local/lib/cscc/include/c++:" \
-			"/usr/lib/cscc/include/c++"
-#endif
 
 /*
  * The default system library link path.
  */
-#ifdef CSCC_LIB_PREFIX
-#define	LIB_PATH	\
-			CSCC_LIB_PREFIX "/lib:" \
-			"/usr/local/lib/cscc/lib:" \
-			"/usr/lib/cscc/lib"
-#else
 #define	LIB_PATH	\
 			"/usr/local/lib/cscc/lib:" \
 			"/usr/lib/cscc/lib"
-#endif
 
 /*
  * The default plugins path.
  */
-#ifdef CSCC_LIB_PREFIX
-#define	PLUGINS_PATH	\
-			CSCC_LIB_PREFIX "/plugins:" \
-			"/usr/local/lib/cscc/plugins:" \
-			"/usr/lib/cscc/plugins"
-#else
 #define	PLUGINS_PATH	\
 			"/usr/local/lib/cscc/plugins:" \
 			"/usr/lib/cscc/plugins"
-#endif
-
-/*
- * The default search path for "ilasm" and "ilalink"
- * if not found on the real PATH.
- */
-#ifdef CSCC_BIN_PREFIX
-#define	ILASM_PATH	\
-			CSCC_BIN_PREFIX ":" \
-			"/usr/local/bin:" \
-			"/usr/bin:" \
-			"/bin"
-#else
-#define	ILASM_PATH	\
-			"/usr/local/bin:" \
-			"/usr/bin:" \
-			"/bin"
-#endif
 
 /*
  * File processing types.
@@ -141,7 +85,6 @@ extern	"C" {
 /*
  * Global variables.
  */
-static char *ilasm_program = 0;
 static char *csharp_compiler = 0;
 static char **plugin_list;
 static int *file_proc_types;
@@ -369,28 +312,7 @@ int main(int argc, char *argv[])
 		if(status == 0 && executable_flag)
 		{
 			status = LinkExecutable();
-			if(status == 0 &&
-			   CCStringListContains(extension_flags, num_extension_flags,
-								    "metadata-only"))
-			{
-				fputs("******************** Warning **************************\n", stderr);
-				fputs("The compiler has only done a metadata compile, and\n", stderr);
-				fputs("not a full compile.  Portable.NET is a work in\n", stderr);
-				fputs("progress and full compilation is still to be completed.\n", stderr);
-				fputs("You will need to use Microsoft's compiler to build.\n", stderr);
-				fputs("*******************************************************\n", stderr);
-			}
 		}
-	}
-	else if(CCStringListContains(extension_flags, num_extension_flags,
-							     "syntax-check"))
-	{
-		fputs("****************** Warning ************************\n", stderr);
-		fputs("The compiler has only done a syntax check, and not\n", stderr);
-		fputs("a full compile.  Portable.NET is a work in progress\n", stderr);
-		fputs("and full compilation is still to be completed.  You\n", stderr);
-		fputs("will need to use Microsoft's compiler to build.\n", stderr);
-		fputs("***************************************************\n", stderr);
 	}
 
 	/* Delete temporary files that were created prior to the link */
@@ -457,12 +379,15 @@ static void ParseCommandLine(int argc, char *argv[])
 		env = getenv("CSCC_INCLUDE_PATH");
 		if(env && *env != '\0')
 		{
-			CCAddPathStrings(&sys_include_dirs, &num_sys_include_dirs, env);
+			CCAddPathStrings(&sys_include_dirs, &num_sys_include_dirs,
+							 env, 0, 0);
 		}
 		else
 		{
 			CCAddPathStrings(&sys_include_dirs, &num_sys_include_dirs,
-							 INCLUDE_PATH);
+							 INCLUDE_PATH,
+							 ILGetStandardLibraryPath("cscc/lib"),
+							 ILGetStandardLibraryPath("cscc/include"));
 		}
 	}
 	if(!nostdinc_cpp_flag)
@@ -471,12 +396,13 @@ static void ParseCommandLine(int argc, char *argv[])
 		if(env && *env != '\0')
 		{
 			CCAddPathStrings(&sys_cpp_include_dirs, &num_sys_cpp_include_dirs,
-							 env);
+							 env, 0, 0);
 		}
 		else
 		{
 			CCAddPathStrings(&sys_cpp_include_dirs, &num_sys_cpp_include_dirs,
-							 INCLUDE_CPP_PATH);
+							 INCLUDE_CPP_PATH,
+							 ILGetStandardLibraryPath("cscc/include/c++"), 0);
 		}
 	}
 
@@ -489,11 +415,12 @@ static void ParseCommandLine(int argc, char *argv[])
 		env = getenv("CSCC_LIB_PATH");
 		if(env && *env != '\0')
 		{
-			CCAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, env);
+			CCAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, env, 0, 0);
 		}
 		else
 		{
-			CCAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, LIB_PATH);
+			CCAddPathStrings(&sys_link_dirs, &num_sys_link_dirs, LIB_PATH,
+							 ILGetStandardLibraryPath("cscc/lib"), 0);
 		}
 	}
 
@@ -652,47 +579,44 @@ static char *FilePresent(char *filename)
 /*
  * Search a path list for a particular executable.
  */
-static char *SearchPath(char *path, char *name)
+static char *SearchPath(char *path, char *name,
+						char *standard1, char *standard2)
 {
-	int len;
+	char **list;
+	int num, posn, len;
 	int namelen = strlen(name);
 	char *temppath;
 	char *newpath;
-	if(!path)
+
+	/* Split the path into its components */
+	list = 0;
+	num = 0;
+	CCAddPathStrings(&list, &num, path, standard1, standard2);
+
+	/* Search for the file */
+	for(posn = 0; posn < num; ++posn)
 	{
-		return 0;
-	}
-	while(*path != '\0')
-	{
-		if(*path == ' ' || *path == ':')
-		{
-			++path;
-			continue;
-		}
-		len = 1;
-		while(path[len] != ':' && path[len] != '\0')
-		{
-			++len;
-		}
-		while(len > 0 && path[len - 1] == ' ')
-		{
-			--len;
-		}
+		len = strlen(list[posn]);
 		temppath = (char *)ILMalloc(len + namelen + 2);
 		if(!temppath)
 		{
 			CCOutOfMemory();
 		}
 		strncpy(temppath, path, len);
+	#ifdef IL_WIN32_NATIVE
+		temppath[len] = '\\';
+	#else
 		temppath[len] = '/';
+	#endif
 		strcpy(temppath + len + 1, name);
 		if((newpath = FilePresent(temppath)) != 0)
 		{
 			return newpath;
 		}
 		ILFree(temppath);
-		path += len;
 	}
+
+	/* Could not find the requested file */
 	return 0;
 }
 
@@ -764,7 +688,7 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 	{
 		strcat(name, "-s");
 	}
-	path = SearchPath(getenv("CSCC_PLUGINS_PATH"), name);
+	path = SearchPath(getenv("CSCC_PLUGINS_PATH"), name, 0, 0);
 	if(path)
 	{
 		ILFree(name);
@@ -772,7 +696,8 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 	}
 
 	/* Search the default plugins path */
-	path = SearchPath(PLUGINS_PATH, name);
+	path = SearchPath(PLUGINS_PATH, name,
+					  ILGetStandardLibraryPath("cscc/plugins"), 0);
 	if(path)
 	{
 		ILFree(name);
@@ -780,10 +705,10 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 	}
 
 	/* If argv[0] contains a directory, then look there */
-	if(strchr(progname, '/') != 0)
+	if(strchr(progname, '/') != 0 || strchr(progname, '\\') != 0)
 	{
 		len = strlen(progname);
-		while(len > 0 && progname[len - 1] != '/')
+		while(len > 0 && progname[len - 1] != '/' && progname[len - 1] != '\\')
 		{
 			--len;
 		}
@@ -803,7 +728,7 @@ static char *FindKeyPluginEither(char *key, int lowerCase, int singleFile)
 	}
 
 	/* Search the normal execution PATH */
-	path = SearchPath(getenv("PATH"), name);
+	path = SearchPath(getenv("PATH"), name, ILGetStandardProgramPath(), 0);
 	if(path)
 	{
 		ILFree(name);
@@ -885,63 +810,6 @@ static char *FindLanguagePlugin(char *name, char *ext)
 	/* Could not find a suitable plugin */
 	return 0;
 }
-
-#ifndef USE_BUILTIN_ILASM
-
-/*
- * Find the "ilasm" program.
- */
-static void FindILAsmProgram(void)
-{
-	char *path;
-
-	/* Check for a "-filasm-path" option on the command-line */
-	path = CCStringListGetValue(extension_flags, num_extension_flags,
-								"ilasm-path");
-	if(path)
-	{
-		ilasm_program = path;
-		return;
-	}
-
-	/* Use the CSCC_ILASM_PATH environment variable if present */
-	path = getenv("CSCC_ILASM_PATH");
-	if(path && *path != '\0' && (path = FilePresent(path)) != 0)
-	{
-		ilasm_program = path;
-		return;
-	}
-
-	/* Search the contents of PLUGINS_PATH */
-	path = SearchPath(PLUGINS_PATH, "ilasm");
-	if(path)
-	{
-		ilasm_program = path;
-		return;
-	}
-
-	/* Search the contents of PATH */
-	path = SearchPath(getenv("PATH"), "ilasm");
-	if(path)
-	{
-		ilasm_program = path;
-		return;
-	}
-
-	/* Search the contents of the default path */
-	path = SearchPath(ILASM_PATH, "ilasm");
-	if(path)
-	{
-		ilasm_program = path;
-		return;
-	}
-
-	/* Could not find "ilasm", so bail out of the compiler */
-	fprintf(stderr, _("%s: could not locate the `ilasm' program\n"), progname);
-	exit(1);
-}
-
-#endif /* !USE_BUILTIN_ILASM */
 
 /*
  * Compare two file extensions for equality, while ignoring case.
@@ -1080,12 +948,7 @@ static int ProcessWithAssembler(const char *filename, int jvmMode)
 	/* Build the assembler command-line */
 	cmdline = 0;
 	cmdline_size = 0;
-#ifdef USE_BUILTIN_ILASM
 	AddArgument(&cmdline, &cmdline_size, "ilasm");
-#else
-	FindILAsmProgram();
-	AddArgument(&cmdline, &cmdline_size, ilasm_program);
-#endif
 	if(executable_flag)
 	{
 		obj_output = ChangeExtension((char *)filename, "objtmp");
@@ -1125,12 +988,8 @@ static int ProcessWithAssembler(const char *filename, int jvmMode)
 	AddArgument(&cmdline, &cmdline_size, 0);
 
 	/* Execute the assembler */
-#ifdef USE_BUILTIN_ILASM
 	ILCmdLineSuppressSlash();
 	status = ILAsmMain(cmdline_size - 1, cmdline);
-#else
-	status = ExecChild(cmdline, 0);
-#endif
 	ILFree(cmdline);
 	if(status != 0)
 	{
@@ -1152,17 +1011,6 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	char *asm_output;
 	char *obj_output;
 	int saveAsm;
-
-	/* If we are compiling to ".obj" or an executable, then
-	   get the location of "ilasm" now.  There's no point
-	   invoking the plug-in if we cannot assemble the output
-	   when it terminates */
-	if(compile_flag || executable_flag)
-	{
-	#ifndef USE_BUILTIN_ILASM
-		FindILAsmProgram();
-	#endif
-	}
 
 	/* Build the command-line for the plug-in */
 	cmdline = 0;
@@ -1412,11 +1260,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	/* Build the assembler command-line */
 	cmdline = 0;
 	cmdline_size = 0;
-#ifdef USE_BUILTIN_ILASM
 	AddArgument(&cmdline, &cmdline_size, "ilasm");
-#else
-	AddArgument(&cmdline, &cmdline_size, ilasm_program);
-#endif
 	if(executable_flag)
 	{
 		obj_output = ChangeExtension((char *)filename, "objtmp");
@@ -1453,12 +1297,8 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	/* Execute the assembler */
 	saveAsm = CCStringListContains(extension_flags, num_extension_flags,
 							       "save-asm");
-#ifdef USE_BUILTIN_ILASM
 	ILCmdLineSuppressSlash();
 	status = ILAsmMain(cmdline_size - 1, cmdline);
-#else
-	status = ExecChild(cmdline, 0);
-#endif
 	ILFree(cmdline);
 	if(status != 0)
 	{

@@ -1,4 +1,10 @@
 
+2002-12-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/Makefile.am, cscc/cscc.c, cscc/common/cc_options.c,
+	cscc/common/cc_options.h: look for plugins in install-relative
+	locations.
+
 2002-12-16 Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c: Prevent infinite lookups in conversion

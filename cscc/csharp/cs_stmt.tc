@@ -28,8 +28,9 @@
 /*
  * determine if a type1 implements type2
  */
-#define ILTypeImplements(type1,type2) (ILClassImplements(ILType_ToClass(type1),\
-					ILType_ToClass(type2)))
+#define ILTypeImplements(type1,type2) (type2 && (ILClassImplements(\
+					ILType_ToClass(type1),\
+					ILType_ToClass(type2))))
 /*
  * Obtain the default scope of the class
  */
@@ -328,6 +329,12 @@ ILNode_SemAnalysis(ILNode_Foreach)
 											  node->stmt,
 											  node->varIndex,
 											  node->varType);
+	}
+	else if(!ILFindNonSystemType(info,"IEnumerable","System.Collections"))
+	{
+		//prevent SEGFAULT during -nostdlib compile !
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  "Cannot find System.Collections.IEnumerable");	
 	}
 	else if(ILTypeImplements(node->arrayType,
 	ILFindNonSystemType(info,"IEnumerable","System.Collections")))

@@ -1,3 +1,9 @@
+2004-07-12  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/Form.cs: added missing stub for AllowTransparency.
+
+	* System.Drawing/Drawing2D/GraphicsPath.cs: added missing stub for
+	PointCount.
 
 2004-07-12  Klaus Treichel  <ktreichel@web.de>
 

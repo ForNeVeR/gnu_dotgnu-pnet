@@ -115,6 +115,19 @@ public class Form : ContainerControl
 					}
 				}
 			}
+	[TODO]
+	public bool AllowTransparency
+			{
+				get
+				{
+					// TODO
+					return false;
+				}
+				set
+				{
+					// TODO
+				}
+			}
 	public bool AutoScale
 			{
 				get

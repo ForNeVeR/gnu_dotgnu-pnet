@@ -155,6 +155,17 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				}
 			}
 
+	// get the number of elements in PathPoints or the PathTypes Array
+	[TODO]
+	public int PointCount
+			{
+				get
+				{
+					// TODO
+					return 0;
+				}
+			}
+
 	// Add an object to this path.
 	private void AddPathObject(PathObject obj)
 			{

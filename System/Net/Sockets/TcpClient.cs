@@ -31,8 +31,14 @@ namespace System.Net.Sockets
 
 public class TcpClient
 {
-	static Socket sock;
-	static NetworkStream stream;
+	private static Socket sock;
+	private static NetworkStream stream;
+
+	public void Connect(System.Net.IPEndPoint remoteEP)
+	{
+		sock.Connect(remoteEP);
+	}
+
 	public void Connect(System.Net.IPAddress address, int port)
 	{
 		IPEndPoint remoteEP = new IPEndPoint(address, port);
@@ -43,14 +49,10 @@ public class TcpClient
 	public void Connect(string hostname, int port)
 	{
 		IPHostEntry host = Dns.GetHostByName(hostname);
-		IPEndPoint remoteEP = new IPEndPoint(host.AddressList[0], port);
+		IPEndPoint remoteEP = new IPEndPoint(host.AddressList[0],
+						     port);
 		sock.Connect(remoteEP);
 		stream = new NetworkStream(sock);
-	}
-
-	public void Connect(System.Net.IPEndPoint remoteEP)
-	{
-		sock.Connect(remoteEP);
 	}
 
 	public void Close()
@@ -61,12 +63,8 @@ public class TcpClient
 
 	protected virtual void Dispose(bool disposing)
 	{
-		// TODO: Implement dispose function.
-	}
-
-	~TcpClient()
-	{
-		// TODO: Implement finalize function.
+		if (sock != null)
+			sock.Close();
 	}
 
 	public System.Net.Sockets.NetworkStream GetStream()
@@ -80,7 +78,8 @@ public class TcpClient
 				  SocketType.Stream,
 				  ProtocolType.Tcp);
 		IPHostEntry host = Dns.GetHostByName(hostname);
-		IPEndPoint remoteEP = new IPEndPoint(host.AddressList[0], port);
+		IPEndPoint remoteEP = new IPEndPoint(host.AddressList[0], 
+											 port);
 		sock.Connect(remoteEP);
 		stream = new NetworkStream(sock);
 	}
@@ -99,6 +98,12 @@ public class TcpClient
 				  ProtocolType.Tcp);
 		sock.Bind(localEP);
 	}
+	
+	// TODO: should this be internal?
+	internal TcpClient(System.Net.Sockets.Socket newsock)
+	{
+		sock = newsock;
+	}
 
 	protected bool Active 
 	{
@@ -115,11 +120,97 @@ public class TcpClient
 			return sock;
 		}
 	}
+	
+	public bool LingerState 
+	{
+		get
+		{
+			return (bool)sock.GetSocketOption(SocketOptionLevel.Socket,
+							  SocketOptionName.Linger);
+		}
+		set
+		{
+			sock.SetSocketOption(SocketOptionLevel.Socket,
+					     SocketOptionName.Linger,
+					     value);
+		}
+	}
 
-	// TODO: Implement LingerState, NoDelay, RecieveBufferSize, 
-	// TODO: RecieveTimeout, SendBufferSize, and SendTimeout 
-	// TODO: properties.
+	public System.Net.Sockets.LingerOption NoDelay 
+	{
+		get
+		{
+			return (LingerOption)sock.GetSocketOption(SocketOptionLevel.Socket,
+								  SocketOptionName.NoDelay);
+		}
+		set
+		{
+			sock.SetSocketOption(SocketOptionLevel.Socket,
+					     SocketOptionName.NoDelay,
+					     value);
+		}
+	}
 
+	public int ReceiveBufferSize 
+	{
+		get
+		{
+			return (int)sock.GetSocketOption(SocketOptionLevel.Socket,
+							 SocketOptionName.ReceiveBuffer);
+		}
+		set
+		{
+			sock.SetSocketOption(SocketOptionLevel.Socket, 
+					     SocketOptionName.ReceiveBuffer, 
+					     value);
+		}
+	}
+
+	public int ReceiveTimeout 
+	{
+		get
+		{
+			return (int)sock.GetSocketOption(SocketOptionLevel.Socket, 
+							 SocketOptionName.ReceiveTimeout);
+		}
+		set
+		{
+			sock.SetSocketOption(SocketOptionLevel.Socket, 
+					     SocketOptionName.ReceiveTimeout, 
+					     value);
+		}
+	}
+
+	public int SendBufferSize 
+	{
+		get
+		{
+			return (int)sock.GetSocketOption(SocketOptionLevel.Socket, 
+							 SocketOptionName.SendBuffer);
+		}
+		set
+		{
+			sock.SetSocketOption(SocketOptionLevel.Socket, 
+					     SocketOptionName.SendBuffer, 
+					     value);
+		}
+	}
+
+	public int SendTimeout 
+	{
+		get
+		{
+			return (int)sock.GetSocketOption(SocketOptionLevel.Socket, 
+							 SocketOptionName.SendTimeout);
+		}
+		set
+		{
+			sock.SetSocketOption(SocketOptionLevel.Socket, 
+					     SocketOptionName.SendTimeout, 
+					     value);
+		}
+	}
+	
 }
 
 }

@@ -1937,13 +1937,6 @@ FunctionDefinition
 				CDeclSpec spec;
 				ILMethod *method;
 
-				/* Flush the code for any pending initializers */
-				if(initializers != 0)
-				{
-					CFunctionFlushInits(&CCCodeGen, initializers);
-					initializers = 0;
-				}
-
 				/* The default return type in this case is "int" */
 				CDeclSpecSetType(spec, ILType_Int32);
 
@@ -1979,9 +1972,6 @@ FunctionDefinition
 
 				/* Reset the function name */
 				functionName = "";
-	  		}
-	| DeclarationSpecifiers Declarator OptParamDeclarationList '{'	{
-				ILMethod *method;
 
 				/* Flush the code for any pending initializers */
 				if(initializers != 0)
@@ -1989,6 +1979,9 @@ FunctionDefinition
 					CFunctionFlushInits(&CCCodeGen, initializers);
 					initializers = 0;
 				}
+	  		}
+	| DeclarationSpecifiers Declarator OptParamDeclarationList '{'	{
+				ILMethod *method;
 
 				/* Create the method block from the function header */
 				method = CFunctionCreate
@@ -2022,6 +2015,13 @@ FunctionDefinition
 
 				/* Reset the function name */
 				functionName = "";
+
+				/* Flush the code for any pending initializers */
+				if(initializers != 0)
+				{
+					CFunctionFlushInits(&CCCodeGen, initializers);
+					initializers = 0;
+				}
 	  		}
 	;
 

@@ -7,6 +7,10 @@
 	be used as type specifiers, and to allow static methods in
 	C# classes to be invoked.
 
+	* cscc/c/c_grammar.y: flush initializers after a function,
+	not before, so that they include any initializers that were
+	created during the function's body.
+
 2002-08-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_declspec.c, cscc/c/c_declspec.h, cscc/c/c_grammar.y,

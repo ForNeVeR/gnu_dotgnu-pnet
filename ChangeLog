@@ -9,6 +9,10 @@
 	csharp/class/interface6.il, csharp/class/interface6.jl: add a
 	test case for multiple inclusions of the same interface.
 
+	* csharp/class/Makefile.am, csharp/class/interface7.cs,
+	csharp/class/interface7.il, csharp/class/interface7.jl:
+	test pending interface proxies.
+
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/abstract1.cs,

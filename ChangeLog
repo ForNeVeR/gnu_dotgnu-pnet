@@ -1,3 +1,22 @@
+2004-05-14  Thong Nguyen  <tum@veridicus.com>
+
+	* image/meta_types.c: Added ILTypeGetDelegateBeginInvokeMethod
+	and ILTypeGetDelegateEndInvokeMethod.
+	
+	* include/il_types.h: Added prototypes for
+	ILTypeGetDelegateBeginInvokeMethod and
+	ILTypeGetDelegateEndInvokeMethod.
+	
+	* engine/engine.h: Added prototype for _ILPackVarArgs.
+	
+	* engine/cvm_call.c: Changed PackVarArgs to _ILPackVarArgs
+	and made it accessible from other modules.
+	
+	* engine/lib_delegate.c: Added internal implementation
+	of Delegate.BeginInvoke and Delegate.EndInvoke.  Refactored
+	some code and added InternalFuncs table to reduce code
+	duplication between Delegate.Invoke and Delegate.Begin/EndInvoke.
+	
 2004-05-12  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/thread.c: Change ILThreadExecuteOn so that it

@@ -583,6 +583,18 @@ int ILTypeIsDelegate(ILType *type);
 void *ILTypeGetDelegateMethod(ILType *type);
 
 /*
+ * Get the "BeginInvoke" method associated with a delegate type.
+ * Returns NULL if not a delegate type.
+ */
+void *ILTypeGetDelegateBeginInvokeMethod(ILType *type);
+
+/*
+ * Get the "EndInvoke" method associated with a delegate type.
+ * Returns NULL if not a delegate type.
+ */
+void *ILTypeGetDelegateEndInvokeMethod(ILType *type);
+
+/*
  * Determine if we have a signature match between a delegate
  * type and a particular method.
  */

@@ -181,7 +181,7 @@ static ILUInt32 StackWordsForType(ILExecThread *thread, ILType *type)
  * Returns the number of stack words to pop from the function,
  * and the new array in "*array".
  */
-static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
+ILUInt32 _ILPackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 							ILUInt32 firstParam, ILUInt32 numArgs,
 							ILType *callSiteSig, void **array)
 {
@@ -1755,7 +1755,7 @@ VMCASE(COP_PREFIX_PACK_VARARGS):
 	/* Pack a set of arguments for a vararg method call */
 #ifdef IL_CONFIG_VARARGS
 	COPY_STATE_TO_THREAD();
-	tempNum = PackVarArgs(thread, stacktop, CVMP_ARG_WORD, CVMP_ARG_WORD2,
+	tempNum = _ILPackVarArgs(thread, stacktop, CVMP_ARG_WORD, CVMP_ARG_WORD2,
 						  CVMP_ARG_WORD2_PTR(ILType *), &tempptr);
 	RESTORE_STATE_FROM_THREAD();
 	stacktop -= tempNum;

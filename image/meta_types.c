@@ -1273,6 +1273,64 @@ void *ILTypeGetDelegateMethod(ILType *type)
 	return 0;
 }
 
+void *ILTypeGetDelegateBeginInvokeMethod(ILType *type)
+{
+	if(ILType_IsClass(type))
+	{
+		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
+		ILClass *parent = ILClass_Parent(classInfo);
+		if(parent)
+		{
+			const char *namespace = ILClass_Namespace(parent);
+			if(namespace && !strcmp(namespace, "System") &&
+				!strcmp(ILClass_Name(parent), "MulticastDelegate"))
+			{
+				ILMethod *method = 0;
+				while((method = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)method,
+					IL_META_MEMBERKIND_METHOD)) != 0)
+				{
+					/* TODO: Verify arguments */
+					if(!strcmp(ILMethod_Name(method), "BeginInvoke"))
+					{
+						return method;
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+void *ILTypeGetDelegateEndInvokeMethod(ILType *type)
+{
+	if(ILType_IsClass(type))
+	{
+		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
+		ILClass *parent = ILClass_Parent(classInfo);
+		if(parent)
+		{
+			const char *namespace = ILClass_Namespace(parent);
+			if(namespace && !strcmp(namespace, "System") &&
+				!strcmp(ILClass_Name(parent), "MulticastDelegate"))
+			{
+				ILMethod *method = 0;
+				while((method = (ILMethod *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)method,
+					IL_META_MEMBERKIND_METHOD)) != 0)
+				{
+					/* TODO: Verify arguments */
+					if(!strcmp(ILMethod_Name(method), "EndInvoke"))
+					{
+						return method;
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 int ILTypeDelegateSignatureMatch(ILType *type, void *_method)
 {
 	ILMethod *method = (ILMethod *)_method;

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
+ * Contributions:  Thong Nguyen (tum@veridicus.com)
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -121,6 +123,7 @@ static ILObject *Delegate_ctor(ILExecThread *thread,
 	/* Allocate space for the delegate object */
 	classInfo = ILMethod_Owner(thread->method);
 	_this = _ILEngineAllocObject(thread, classInfo);
+
 	if(!_this)
 	{
 		return 0;
@@ -196,7 +199,6 @@ static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
 			(thread, "System.StackOverflowException");
 		return 1;
 	}
-
 	/* Expand "float" and "double" parameters, because the frame variables
 	   are in "fixed up" form, rather than native float form */
 	numParams = ILTypeNumParams(signature);
@@ -270,9 +272,155 @@ static void Delegate_Invoke(ILExecThread *thread,
 
 	/* Call the method */
 	_ILCallMethod(thread, method,
-				  _ILCallUnpackDirectResult, result,
-				  0, target,
-				  PackDelegateInvokeParams, &params);
+		_ILCallUnpackDirectResult, result,
+		0, target,
+		PackDelegateInvokeParams, &params);
+}
+
+static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
+{
+	int argcount;
+	ILMethod *method, *async_ctor;
+	ILObject *array;
+	ILType *signature;
+	ILClass *classInfo;
+	ILObject *obj;
+	ILObject *result = 0;
+	CVMWord *stackTop = thread->stackTop;
+
+	classInfo = ILExecThreadLookupClass
+		(
+			thread,
+			"System.Runtime.Remoting.Messaging.AsyncResult"
+		);
+
+	async_ctor = ILExecThreadLookupMethod
+		(
+			thread,
+			"System.Runtime.Remoting.Messaging.AsyncResult",
+			".ctor",
+			"(ToSystem.Delegate;[oSystem.Object;oSystem.AsyncCallback;oSystem.Object;)V"
+		);
+
+	method = (ILMethod *)ILTypeGetDelegateBeginInvokeMethod
+		(
+			ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)
+		);
+
+	if(!method)
+	{
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException",
+			(const char *)0);
+
+		return 0;
+	}
+
+	argcount = _ILGetMethodParamCount(thread, method, 1);
+	signature = ILMethod_Signature(method);
+
+	_ILPackVarArgs
+		(
+			thread,
+			thread->stackTop - 4,
+			1 /* 0 is return param */,
+			argcount - 2,
+			signature,
+			(void **)&array
+		); 
+
+	obj = _ILEngineAllocObject(thread, classInfo);
+
+	ILExecThreadCall
+		(
+			thread,
+			async_ctor,
+			&result,
+			obj,
+			(System_Delegate *)_this,
+			array /* Delegate method arguments */,
+			(thread->stackTop - 4)->ptrValue /* AsyncCallback */,
+			(thread->stackTop - 3)->ptrValue /* AsyncState */
+		);
+
+	thread->stackTop = stackTop;
+
+	return obj;
+}
+
+static void Delegate_EndInvoke(ILExecThread *thread,
+							void *result,
+							ILObject *_this)
+{	
+	ILObject *retValue;
+	ILObject *array;
+	ILClass *classInfo;
+	ILType *retType;
+	int i, outparamcount;
+	ILMethod *endInvokeMethodInfo;
+	ILMethod *asyncEndInvokeMethodInfo;	
+	CVMWord *stackTop = thread->stackTop;
+
+	classInfo = GetObjectClass(_this);
+
+	endInvokeMethodInfo = (ILMethod *)ILTypeGetDelegateEndInvokeMethod
+		(
+			ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)
+		);
+
+	
+	/* 
+	 * Number of out params is one less than the number of params in the
+	 * EndInvoke method.  The last param is the AsyncResult reference
+	 */
+	outparamcount = _ILGetMethodParamCount(thread, endInvokeMethodInfo, 1) - 1;
+
+	asyncEndInvokeMethodInfo = ILExecThreadLookupMethod
+		(
+			thread,
+			"System.Runtime.Remoting.Messaging.AsyncResult",
+			"EndInvoke",
+			"(T[oSystem.Object;)oSystem.Object;"
+		);
+
+	array = ILExecThreadNew(thread, "[oSystem.Object;", "(Ti)V",
+		(ILVaUInt)outparamcount);
+
+	if (array == 0)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+	}
+
+	ILExecThreadCall
+		(
+			thread,
+			asyncEndInvokeMethodInfo,
+			&retValue,
+			(thread->stackTop - 3)->ptrValue /* asyncResult */,
+			array			
+		);
+
+	retType = ILClassToType(GetObjectClass(retValue));
+
+	for (i = 0; i < outparamcount; i++)
+	{
+		/*
+		 * TODO: Unpack the "out" values into the argument pointers
+		 * currently on the stack.
+		 */
+	}
+
+	/* I suspect there may be type alignment issues ? :-\ */
+
+	if (ILTypeIsValue(retType))
+	{
+		ILExecThreadUnbox(thread, retType, retValue, result);
+	}
+	else
+	{
+		*((ILObject **)result) = retValue;
+	}
+
+	thread->stackTop = stackTop;
 }
 
 #if !defined(HAVE_LIBFFI)
@@ -346,6 +494,7 @@ static void Delegate_Invoke_uint_marshal
 		            *((ILObject **)(avalue[1])));
 	*((ILNativeUInt *)rvalue) = (ILNativeUInt)result;
 }
+
 #define	Delegate_Invoke_void_marshal			Delegate_Invoke_marshal
 #define	Delegate_Invoke_long_marshal			Delegate_Invoke_marshal
 #define	Delegate_Invoke_ulong_marshal			Delegate_Invoke_marshal
@@ -355,6 +504,74 @@ static void Delegate_Invoke_uint_marshal
 #define	Delegate_Invoke_typedref_marshal		Delegate_Invoke_marshal
 #define	Delegate_Invoke_ref_marshal				Delegate_Invoke_marshal
 #define	Delegate_Invoke_managedValue_marshal	Delegate_Invoke_marshal
+
+/*
+* Marshal a delegate "EndInvoke" method for the various return types.
+*/
+static void Delegate_EndInvoke_marshal
+(void (*fn)(), void *rvalue, void **avalue)
+{
+	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), rvalue,
+		*((ILObject **)(avalue[1])));
+}
+static void Delegate_EndInvoke_sbyte_marshal
+(void (*fn)(), void *rvalue, void **avalue)
+{
+	ILInt8 result;
+	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
+		*((ILObject **)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
+}
+static void Delegate_EndInvoke_byte_marshal
+(void (*fn)(), void *rvalue, void **avalue)
+{
+	ILUInt8 result;
+	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
+		*((ILObject **)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
+}
+static void Delegate_EndInvoke_short_marshal
+(void (*fn)(), void *rvalue, void **avalue)
+{
+	ILInt16 result;
+	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
+		*((ILObject **)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
+}
+static void Delegate_EndInvoke_ushort_marshal
+(void (*fn)(), void *rvalue, void **avalue)
+{
+	ILUInt16 result;
+	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
+		*((ILObject **)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
+}
+static void Delegate_EndInvoke_int_marshal
+(void (*fn)(), void *rvalue, void **avalue)
+{
+	ILInt32 result;
+	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
+		*((ILObject **)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
+}
+static void Delegate_EndInvoke_uint_marshal
+(void (*fn)(), void *rvalue, void **avalue)
+{
+	ILUInt32 result;
+	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
+		*((ILObject **)(avalue[1])));
+	*((ILNativeUInt *)rvalue) = (ILNativeUInt)result;
+}
+
+#define	Delegate_EndInvoke_void_marshal			Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_long_marshal			Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_ulong_marshal			Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_float_marshal			Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_double_marshal			Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_nativeFloat_marshal		Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_typedref_marshal		Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_ref_marshal				Delegate_EndInvoke_marshal
+#define	Delegate_EndInvoke_managedValue_marshal	Delegate_EndInvoke_marshal
 
 /*
  * Point all invoke types at the common function (we'll be
@@ -377,6 +594,23 @@ static void Delegate_Invoke_uint_marshal
 #define	Delegate_Invoke_ref						Delegate_Invoke
 #define	Delegate_Invoke_managedValue			Delegate_Invoke
 
+
+#define	Delegate_EndInvoke_void					Delegate_EndInvoke
+#define	Delegate_EndInvoke_sbyte				Delegate_EndInvoke
+#define	Delegate_EndInvoke_byte					Delegate_EndInvoke
+#define	Delegate_EndInvoke_short				Delegate_EndInvoke
+#define	Delegate_EndInvoke_ushort				Delegate_EndInvoke
+#define	Delegate_EndInvoke_int					Delegate_EndInvoke
+#define	Delegate_EndInvoke_uint					Delegate_EndInvoke
+#define	Delegate_EndInvoke_long					Delegate_EndInvoke
+#define	Delegate_EndInvoke_ulong				Delegate_EndInvoke
+#define	Delegate_EndInvoke_float				Delegate_EndInvoke
+#define	Delegate_EndInvoke_double				Delegate_EndInvoke
+#define	Delegate_EndInvoke_nativeFloat			Delegate_EndInvoke
+#define	Delegate_EndInvoke_typedref				Delegate_EndInvoke
+#define	Delegate_EndInvoke_ref					Delegate_EndInvoke
+#define	Delegate_EndInvoke_managedValue			Delegate_EndInvoke
+
 #else /* HAVE_LIBFFI */
 
 /*
@@ -387,32 +621,32 @@ static void Delegate_Invoke_void(ILExecThread *thread,
 {
 	Delegate_Invoke(thread, (void *)0, _this);
 } 
-#define	Delegate_Invoke_type(iltype,type)	\
-static type Delegate_Invoke_##iltype(ILExecThread *thread, \
+#define	Delegate_X_type(x, iltype,type)	\
+static type Delegate_##x##_##iltype(ILExecThread *thread, \
 									 ILObject *_this) \
 { \
 	type result; \
-	Delegate_Invoke(thread, &result, _this); \
+	Delegate_##x(thread, &result, _this); \
 	return result; \
 } 
-Delegate_Invoke_type(byte, ILUInt8)
-Delegate_Invoke_type(sbyte, ILInt8)
-Delegate_Invoke_type(short, ILInt16)
-Delegate_Invoke_type(ushort, ILUInt16)
-Delegate_Invoke_type(int, ILInt32)
-Delegate_Invoke_type(uint, ILUInt32)
-Delegate_Invoke_type(long, ILInt64)
-Delegate_Invoke_type(ulong, ILUInt64)
-Delegate_Invoke_type(float, ILFloat)
-Delegate_Invoke_type(double, ILDouble)
-Delegate_Invoke_type(nativeFloat, ILNativeFloat)
-Delegate_Invoke_type(typedref, ILTypedRef)
-Delegate_Invoke_type(ref, void *)
+Delegate_X_type(Invoke, byte, ILUInt8)
+Delegate_X_type(Invoke, sbyte, ILInt8)
+Delegate_X_type(Invoke, short, ILInt16)
+Delegate_X_type(Invoke, ushort, ILUInt16)
+Delegate_X_type(Invoke, int, ILInt32)
+Delegate_X_type(Invoke, uint, ILUInt32)
+Delegate_X_type(Invoke, long, ILInt64)
+Delegate_X_type(Invoke, ulong, ILUInt64)
+Delegate_X_type(Invoke, float, ILFloat)
+Delegate_X_type(Invoke, double, ILDouble)
+Delegate_X_type(Invoke, nativeFloat, ILNativeFloat)
+Delegate_X_type(Invoke, typedref, ILTypedRef)
+Delegate_X_type(Invoke, ref, void *)
 #define	Delegate_Invoke_managedValue			Delegate_Invoke
 
 /*
- * Marshalling stubs for libffi (not required).
- */
+* Marshalling stubs for libffi (not required).
+*/
 #define	Delegate_ctor_marshal					0
 #define	Delegate_Invoke_void_marshal			0
 #define	Delegate_Invoke_sbyte_marshal			0
@@ -430,7 +664,269 @@ Delegate_Invoke_type(ref, void *)
 #define	Delegate_Invoke_ref_marshal				0
 #define	Delegate_Invoke_managedValue_marshal	0
 
+/*
+ * "Delegate_EndInvoke" for various return types.
+ */
+static void Delegate_EndInvoke_void(ILExecThread *thread,
+ ILObject *_this)
+{
+	Delegate_EndInvoke(thread, (void *)0, _this);
+} 
+Delegate_X_type(EndInvoke, byte, ILUInt8)
+Delegate_X_type(EndInvoke, sbyte, ILInt8)
+Delegate_X_type(EndInvoke, short, ILInt16)
+Delegate_X_type(EndInvoke, ushort, ILUInt16)
+Delegate_X_type(EndInvoke, int, ILInt32)
+Delegate_X_type(EndInvoke, uint, ILUInt32)
+Delegate_X_type(EndInvoke, long, ILInt64)
+Delegate_X_type(EndInvoke, ulong, ILUInt64)
+Delegate_X_type(EndInvoke, float, ILFloat)
+Delegate_X_type(EndInvoke, double, ILDouble)
+Delegate_X_type(EndInvoke, nativeFloat, ILNativeFloat)
+Delegate_X_type(EndInvoke, typedref, ILTypedRef)
+Delegate_X_type(EndInvoke, ref, void *)
+#define	Delegate_EndInvoke_managedValue			Delegate_EndInvoke
+
+/*
+ * Marshalling stubs for "Delegate_EndInvoke" for libffi (not required).
+ */
+#define	Delegate_ctor_marshal						0
+#define	Delegate_EndInvoke_void_marshal				0
+#define	Delegate_EndInvoke_sbyte_marshal			0
+#define	Delegate_EndInvoke_byte_marshal				0
+#define	Delegate_EndInvoke_short_marshal			0
+#define	Delegate_EndInvoke_ushort_marshal			0
+#define	Delegate_EndInvoke_int_marshal				0
+#define	Delegate_EndInvoke_uint_marshal				0
+#define	Delegate_EndInvoke_long_marshal				0
+#define	Delegate_EndInvoke_ulong_marshal			0
+#define	Delegate_EndInvoke_float_marshal			0
+#define	Delegate_EndInvoke_double_marshal			0
+#define	Delegate_EndInvoke_nativeFloat_marshal		0
+#define	Delegate_EndInvoke_typedref_marshal			0
+#define	Delegate_EndInvoke_ref_marshal				0
+#define	Delegate_EndInvoke_managedValue_marshal		0
+
 #endif /* HAVE_LIBFFI */
+ 
+ /*
+  * Table of functions pointers for each possible return type.
+  */
+typedef struct _tagInternalFuncs
+{
+	void *void_func;
+	void *sbyte_func;
+	void *byte_func;
+	void *short_func;
+	void *ushort_func;
+	void *int_func;
+	void *uint_func;
+	void *long_func;
+	void *ulong_func;
+	void *float_func;
+	void *double_func;
+	void *nativeFloat_func;
+	void *typedref_Func;
+	void *ref_func;
+	void *managedValue_func;
+}
+InternalFuncs;
+
+#define DEFINE_FUNCS_TABLE(prefix)			\
+	static InternalFuncs FuncsFor_Delegate_##prefix =\
+	{										\
+		Delegate_##prefix##_void,					\
+		Delegate_##prefix##_sbyte,					\
+		Delegate_##prefix##_byte,					\
+		Delegate_##prefix##_short,					\
+		Delegate_##prefix##_ushort,					\
+		Delegate_##prefix##_int,						\
+		Delegate_##prefix##_uint,					\
+		Delegate_##prefix##_long,					\
+		Delegate_##prefix##_ulong,					\
+		Delegate_##prefix##_float,					\
+		Delegate_##prefix##_double,					\
+		Delegate_##prefix##_nativeFloat,				\
+		Delegate_##prefix##_typedref,				\
+		Delegate_##prefix##_ref,						\
+		Delegate_##prefix##_managedValue				\
+	};
+
+#define DEFINE_MARSHAL_FUNCS_TABLE(prefix)	\
+	static InternalFuncs MarshalFuncsFor_Delegate_##prefix =\
+	{										\
+		Delegate_##prefix##_void_marshal,			\
+		Delegate_##prefix##_sbyte_marshal,			\
+		Delegate_##prefix##_byte_marshal,			\
+		Delegate_##prefix##_short_marshal,			\
+		Delegate_##prefix##_ushort_marshal,			\
+		Delegate_##prefix##_int_marshal,				\
+		Delegate_##prefix##_uint_marshal,			\
+		Delegate_##prefix##_long_marshal,			\
+		Delegate_##prefix##_ulong_marshal,			\
+		Delegate_##prefix##_float_marshal,			\
+		Delegate_##prefix##_double_marshal,			\
+		Delegate_##prefix##_nativeFloat_marshal,		\
+		Delegate_##prefix##_typedref_marshal,		\
+		Delegate_##prefix##_ref_marshal,				\
+		Delegate_##prefix##_managedValue_marshal		\
+	};
+
+/*
+ * Define function table for each return type for Delegate.Invoke.
+ */
+DEFINE_FUNCS_TABLE(Invoke)
+
+/*
+ * Define marshalling function table for each return type for Delegate.Invoke.
+ */
+DEFINE_MARSHAL_FUNCS_TABLE(Invoke)
+
+/*
+ * Define function table for each return type for Delegate.EndInvoke.
+ */
+DEFINE_FUNCS_TABLE(EndInvoke)
+
+/*
+ * Define marshalling function table for each return type for Delegate.EndInvoke.
+ */
+DEFINE_MARSHAL_FUNCS_TABLE(EndInvoke)
+
+static int _ILGetInternalDelegateFunc(ILInternalInfo *info, ILType *returnType,
+	InternalFuncs *internalFuncs, InternalFuncs *internalMarshalFuncs)
+{
+	ILType *type;
+
+	type = ILTypeGetEnumType(returnType);
+
+	if(ILType_IsPrimitive(type))
+	{
+		/* The delegate returns a primitive type */
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_VOID:
+			{
+				info->func = internalFuncs->void_func;
+				info->marshal = internalMarshalFuncs->void_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			{
+				info->func = internalFuncs->sbyte_func;
+				info->marshal = internalMarshalFuncs->sbyte_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U1:
+			{
+				info->func = internalFuncs->byte_func;
+				info->marshal = internalMarshalFuncs->byte_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I2:
+			{
+				info->func = internalFuncs->short_func;
+				info->marshal = internalMarshalFuncs->short_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+			{
+				info->func = internalFuncs->ushort_func;
+				info->marshal = internalMarshalFuncs->ushort_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_I:
+		#endif
+			{
+				info->func = internalFuncs->int_func;
+				info->marshal = internalMarshalFuncs->int_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_U:
+		#endif
+			{
+				info->func = internalFuncs->uint_func;
+				info->marshal = internalMarshalFuncs->uint_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
+		#endif
+			{
+				info->func = internalFuncs->long_func;
+				info->marshal = internalMarshalFuncs->long_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_U:
+		#endif
+			{
+				info->func = internalFuncs->ulong_func;
+				info->marshal = internalMarshalFuncs->ulong_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+				info->func = internalFuncs->float_func;
+				info->marshal = internalMarshalFuncs->float_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+				info->func = internalFuncs->double_func;
+				info->marshal = internalMarshalFuncs->double_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R:
+			{
+				info->func = internalFuncs->nativeFloat_func;
+				info->marshal = internalMarshalFuncs->nativeFloat_func;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+				info->func = internalFuncs->typedref_Func;
+				info->marshal = internalMarshalFuncs->typedref_Func;
+			}
+			break;
+
+			default:	return 0;
+		}
+	}
+	else if(ILType_IsValueType(type))
+	{
+		/* The delegate returns a managed value */
+		info->func = internalFuncs->managedValue_func;
+		info->marshal = internalMarshalFuncs->managedValue_func;
+	}
+	else
+	{
+		/* Everything else is assumed to be a pointer */
+		info->func = internalFuncs->ref_func;
+		info->marshal = internalMarshalFuncs->ref_func;;
+	}
+
+	return 1;
+}
 
 int _ILGetInternalDelegate(ILMethod *method, int *isCtor,
 						   ILInternalInfo *info)
@@ -468,143 +964,38 @@ int _ILGetInternalDelegate(ILMethod *method, int *isCtor,
 	{
 		/* This is the delegate invocation method */
 		*isCtor = 0;
-		type = ILTypeGetEnumType(ILTypeGetReturn(type));
-		if(ILType_IsPrimitive(type))
-		{
-			/* The delegate returns a primitive type */
-			switch(ILType_ToElement(type))
-			{
-				case IL_META_ELEMTYPE_VOID:
-				{
-					info->func = (void *)Delegate_Invoke_void;
-					info->marshal = (void *)Delegate_Invoke_void_marshal;
-				}
-				break;
 
-				case IL_META_ELEMTYPE_BOOLEAN:
-				case IL_META_ELEMTYPE_I1:
-				{
-					info->func = (void *)Delegate_Invoke_sbyte;
-					info->marshal = (void *)Delegate_Invoke_sbyte_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U1:
-				{
-					info->func = (void *)Delegate_Invoke_byte;
-					info->marshal = (void *)Delegate_Invoke_byte_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I2:
-				{
-					info->func = (void *)Delegate_Invoke_short;
-					info->marshal = (void *)Delegate_Invoke_short_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U2:
-				case IL_META_ELEMTYPE_CHAR:
-				{
-					info->func = (void *)Delegate_Invoke_ushort;
-					info->marshal = (void *)Delegate_Invoke_ushort_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I4:
-			#ifdef IL_NATIVE_INT32
-				case IL_META_ELEMTYPE_I:
-			#endif
-				{
-					info->func = (void *)Delegate_Invoke_int;
-					info->marshal = (void *)Delegate_Invoke_int_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U4:
-			#ifdef IL_NATIVE_INT32
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					info->func = (void *)Delegate_Invoke_uint;
-					info->marshal = (void *)Delegate_Invoke_uint_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_I8:
-			#ifdef IL_NATIVE_INT64
-				case IL_META_ELEMTYPE_I:
-			#endif
-				{
-					info->func = (void *)Delegate_Invoke_long;
-					info->marshal = (void *)Delegate_Invoke_long_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_U8:
-			#ifdef IL_NATIVE_INT64
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					info->func = (void *)Delegate_Invoke_ulong;
-					info->marshal = (void *)Delegate_Invoke_ulong_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R4:
-				{
-					info->func = (void *)Delegate_Invoke_float;
-					info->marshal = (void *)Delegate_Invoke_float_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R8:
-				{
-					info->func = (void *)Delegate_Invoke_double;
-					info->marshal = (void *)Delegate_Invoke_double_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_R:
-				{
-					info->func = (void *)Delegate_Invoke_nativeFloat;
-					info->marshal =
-						(void *)Delegate_Invoke_nativeFloat_marshal;
-				}
-				break;
-
-				case IL_META_ELEMTYPE_TYPEDBYREF:
-				{
-					info->func = (void *)Delegate_Invoke_typedref;
-					info->marshal = (void *)Delegate_Invoke_typedref_marshal;
-				}
-				break;
-
-				default:	return 0;
-			}
-		}
-		else if(ILType_IsValueType(type))
-		{
-			/* The delegate returns a managed value */
-			info->func = (void *)Delegate_Invoke_managedValue;
-			info->marshal = (void *)Delegate_Invoke_managedValue_marshal;
-		}
-		else
-		{
-			/* Everything else is assumed to be a pointer */
-			info->func = (void *)Delegate_Invoke_ref;
-			info->marshal = (void *)Delegate_Invoke_ref_marshal;
-		}
-		return 1;
+		return _ILGetInternalDelegateFunc
+			(
+				info,
+				ILTypeGetReturn(type),
+				&FuncsFor_Delegate_Invoke,
+				&MarshalFuncsFor_Delegate_Invoke
+			);
 	}
 	else if(!strcmp(name, "BeginInvoke"))
 	{
-		/* TODO: asynchronous delegates */
+		*isCtor = 0;
+
+		info->func = (void *)Delegate_BeginInvoke;
+		info->marshal = (void *)0;
+
+		return 1;
 	}
 	else if(!strcmp(name, "EndInvoke"))
 	{
-		/* TODO: asynchronous delegates */
+		/* This is the delegate invocation method */
+		*isCtor = 0;
+		
+		return _ILGetInternalDelegateFunc
+			(
+				info,
+				ILTypeGetReturn(type),
+				&FuncsFor_Delegate_EndInvoke,
+				&MarshalFuncsFor_Delegate_EndInvoke
+			);
 	}
+
 	return 0;
 }
 

@@ -91,17 +91,20 @@ static void TempAllocatorDestroy(TempAllocator *allocator)
 
 /*
  * Number of bytes needed for a bit mask of a specific size.
+ * 3 bits are allocated for each item: "instruction start",
+ * "jump target", and "special jump target".
  */
 #define	BYTES_FOR_MASK(size)	\
-			(((size) + (sizeof(unsigned long) * 8) - 1) / 8)
+			(((size) * 3 + (sizeof(unsigned long) * 8) - 1) / 8)
 
 /*
  * Mark an instruction starting point in a jump mask.
  */
 static IL_INLINE void MarkInsnStart(unsigned long *jumpMask, ILUInt32 offset)
 {
-	jumpMask[offset / (sizeof(unsigned long) * 4)] |=
-		(((unsigned long)1) << ((offset % (sizeof(unsigned long) * 4)) * 2));
+	offset *= 3;
+	jumpMask[offset / (sizeof(unsigned long) * 8)] |=
+		(((unsigned long)1) << (offset % (sizeof(unsigned long) * 8)));
 }
 
 /*
@@ -109,8 +112,20 @@ static IL_INLINE void MarkInsnStart(unsigned long *jumpMask, ILUInt32 offset)
  */
 static IL_INLINE void MarkJumpTarget(unsigned long *jumpMask, ILUInt32 offset)
 {
-	jumpMask[offset / (sizeof(unsigned long) * 4)] |=
-		(((unsigned long)2) << ((offset % (sizeof(unsigned long) * 4)) * 2));
+	offset = offset * 3 + 1;
+	jumpMask[offset / (sizeof(unsigned long) * 8)] |=
+		(((unsigned long)1) << (offset % (sizeof(unsigned long) * 8)));
+}
+
+/*
+ * Mark a special jump target point in a jump mask.
+ */
+static IL_INLINE void MarkSpecialJumpTarget(unsigned long *jumpMask,
+											ILUInt32 offset)
+{
+	offset = offset * 3 + 2;
+	jumpMask[offset / (sizeof(unsigned long) * 8)] |=
+		(((unsigned long)1) << (offset % (sizeof(unsigned long) * 8)));
 }
 
 /*
@@ -118,8 +133,9 @@ static IL_INLINE void MarkJumpTarget(unsigned long *jumpMask, ILUInt32 offset)
  */
 static IL_INLINE int IsInsnStart(unsigned long *jumpMask, ILUInt32 offset)
 {
-	return ((jumpMask[offset / (sizeof(unsigned long) * 4)] &
-		(((unsigned long)1) << ((offset % (sizeof(unsigned long) * 4)) * 2)))
+	offset *= 3;
+	return ((jumpMask[offset / (sizeof(unsigned long) * 8)] &
+		(((unsigned long)1) << (offset % (sizeof(unsigned long) * 8))))
 				!= 0);
 }
 
@@ -128,8 +144,21 @@ static IL_INLINE int IsInsnStart(unsigned long *jumpMask, ILUInt32 offset)
  */
 static IL_INLINE int IsJumpTarget(unsigned long *jumpMask, ILUInt32 offset)
 {
-	return ((jumpMask[offset / (sizeof(unsigned long) * 4)] &
-		(((unsigned long)2) << ((offset % (sizeof(unsigned long) * 4)) * 2)))
+	offset = offset * 3 + 1;
+	return ((jumpMask[offset / (sizeof(unsigned long) * 8)] &
+		(((unsigned long)1) << (offset % (sizeof(unsigned long) * 8))))
+				!= 0);
+}
+
+/*
+ * Determine if a code offset is a special jump target.
+ */
+static IL_INLINE int IsSpecialJumpTarget(unsigned long *jumpMask,
+										 ILUInt32 offset)
+{
+	offset = offset * 3 + 2;
+	return ((jumpMask[offset / (sizeof(unsigned long) * 8)] &
+		(((unsigned long)1) << (offset % (sizeof(unsigned long) * 8))))
 				!= 0);
 }
 
@@ -206,6 +235,32 @@ static ILEngineType TypeToEngineType(ILType *type)
 }
 
 /*
+ * Determine if a type is represented as an object reference.
+ */
+static int IsObjectRef(ILType *type)
+{
+	if(type == 0)
+	{
+		/* This is the "null" type, which is always an object reference */
+		return 1;
+	}
+	else if(ILType_IsClass(type))
+	{
+		return 1;
+	}
+	else if(ILType_IsComplex(type) &&
+	        (type->kind == IL_TYPE_COMPLEX_ARRAY ||
+			 type->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Determine if a stack item is assignment-compatible with
  * a particular memory slot (argument, local, field, etc).
  */
@@ -249,8 +304,8 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 		if(!(item->typeInfo))
 		{
 			/* A "null" constant was pushed, which is
-			   compatible with any class type */
-			return ILType_IsClass(type);
+			   compatible with any object reference type */
+			return IsObjectRef(type);
 		}
 		else if(ILType_IsClass(item->typeInfo) && ILType_IsClass(type))
 		{
@@ -295,7 +350,7 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 /*
  * Bailout routines for various kinds of verification failure.
  */
-/*#define	IL_VERIFY_DEBUG*/
+#define	IL_VERIFY_DEBUG
 #ifdef IL_VERIFY_DEBUG
 #define	VERIFY_REPORT()	\
 			do { \
@@ -314,13 +369,6 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 #define	VERIFY_STACK_ERROR()	VERIFY_REPORT(); goto cleanup
 #define	VERIFY_TYPE_ERROR()		VERIFY_REPORT(); goto cleanup
 #define	VERIFY_MEMORY_ERROR()	VERIFY_REPORT(); goto cleanup
-
-/*
- * Check for certain opcode types.
- */
-#define	IsEqualityBranch(opcode)	\
-			((opcode) == IL_OP_BEQ_S || (opcode) == IL_OP_BNE_UN_S || \
-			 (opcode) == IL_OP_BEQ || (opcode) == IL_OP_BNE_UN)
 
 /*
  * Declare global definitions that are required by the include files.
@@ -360,6 +408,8 @@ int _ILVerify(ILCoder *coder, ILMethod *method,
 	ILUInt32 numLocals;
 	ILType *localVars;
 	int lastWasJump;
+	ILException *exceptions;
+	ILException *exception;
 
 	/* Include local variables that are required by the include files */
 #define IL_VERIFY_LOCALS
@@ -376,15 +426,15 @@ int _ILVerify(ILCoder *coder, ILMethod *method,
 #include "verify_ann.c"
 #undef IL_VERIFY_LOCALS
 
+	/* Get the exception list */
+	if(!ILMethodGetExceptions(method, code, &exceptions))
+	{
+		return 0;
+	}
+
 restart:
 	result = 0;
 	labelList = 0;
-
-	/* Set up the coder to process the method */
-	if(!ILCoderSetup(coder, method, code))
-	{
-		VERIFY_MEMORY_ERROR();
-	}
 
 	/* Initialize the memory allocator that is used for temporary
 	   allocation during bytecode verification */
@@ -392,9 +442,15 @@ restart:
 	allocator.posn = 0;
 	allocator.overflow = 0;
 
+	/* Set up the coder to process the method */
+	if(!ILCoderSetup(coder, method, code))
+	{
+		VERIFY_MEMORY_ERROR();
+	}
+
 	/* Allocate the jump target mask */
 	jumpMask = (unsigned long *)TempAllocate
-					(&allocator, BYTES_FOR_MASK(code->codeLen * 2));
+					(&allocator, BYTES_FOR_MASK(code->codeLen));
 	if(!jumpMask)
 	{
 		VERIFY_MEMORY_ERROR();
@@ -556,6 +612,108 @@ restart:
 		len -= insnSize;
 	}
 
+	/* Mark the start and end of exception blocks as special jump targets */
+	exception = exceptions;
+	while(exception != 0)
+	{
+		/* Mark the start and end of the try region */
+		if(exception->tryOffset >= code->codeLen ||
+		   (exception->tryOffset + exception->tryLength) <
+		   		exception->tryOffset || /* Wrap-around check */
+		   (exception->tryOffset + exception->tryLength) > code->codeLen)
+		{
+			VERIFY_BRANCH_ERROR();
+		}
+		MarkJumpTarget(jumpMask, exception->tryOffset);
+		MarkSpecialJumpTarget(jumpMask, exception->tryOffset);
+		MarkJumpTarget(jumpMask, exception->tryOffset + exception->tryLength);
+		MarkSpecialJumpTarget
+			(jumpMask, exception->tryOffset + exception->tryLength);
+
+		/* What else do we need to do? */
+		if((exception->flags & IL_META_EXCEPTION_FILTER) != 0)
+		{
+			/* This is an exception filter */
+			if(exception->extraArg >= code->codeLen)
+			{
+				VERIFY_BRANCH_ERROR();
+			}
+			MarkJumpTarget(jumpMask, exception->extraArg);
+			MarkSpecialJumpTarget(jumpMask, exception->extraArg);
+
+			/* The filter label will be called with an object on the stack,
+			   so record that in the label list for later */
+			classInfo = ILClassResolveSystem(ILProgramItem_Image(method), 0,
+											 "Object", "System");
+			if(!classInfo)
+			{
+				/* Ran out of memory trying to create "System.Object" */
+				VERIFY_MEMORY_ERROR();
+			}
+			SET_TARGET_STACK(exception->extraArg, classInfo);
+		}
+		else if((exception->flags & IL_META_EXCEPTION_FINALLY) != 0 ||
+		        (exception->flags & IL_META_EXCEPTION_FAULT) != 0)
+		{
+			/* This is a finally or fault clause */
+			if(exception->handlerOffset >= code->codeLen ||
+			   (exception->handlerOffset + exception->handlerLength) <
+			   		exception->handlerOffset || /* Wrap-around check */
+			   (exception->handlerOffset + exception->handlerLength) >
+			   		code->codeLen)
+			{
+				VERIFY_BRANCH_ERROR();
+			}
+			MarkJumpTarget(jumpMask, exception->handlerOffset);
+			MarkSpecialJumpTarget(jumpMask, exception->handlerOffset);
+			MarkJumpTarget
+				(jumpMask, exception->handlerOffset + exception->handlerLength);
+			MarkSpecialJumpTarget
+				(jumpMask, exception->handlerOffset + exception->handlerLength);
+
+			/* The clause will be called with nothing on the stack */
+			SET_TARGET_STACK_EMPTY(exception->handlerOffset);
+		}
+		else
+		{
+			/* This is a catch block */
+			if(exception->handlerOffset >= code->codeLen ||
+			   (exception->handlerOffset + exception->handlerLength) <
+			   		exception->handlerOffset || /* Wrap-around check */
+			   (exception->handlerOffset + exception->handlerLength) >
+			   		code->codeLen)
+			{
+				VERIFY_BRANCH_ERROR();
+			}
+			MarkJumpTarget(jumpMask, exception->handlerOffset);
+			MarkSpecialJumpTarget(jumpMask, exception->handlerOffset);
+			MarkJumpTarget
+				(jumpMask, exception->handlerOffset + exception->handlerLength);
+			MarkSpecialJumpTarget
+				(jumpMask, exception->handlerOffset + exception->handlerLength);
+
+			/* Validate the class token */
+			classInfo = ILProgramItemToClass
+				((ILProgramItem *)ILImageTokenInfo(ILProgramItem_Image(method),
+												   exception->extraArg));
+			if(classInfo &&
+			   ILClassAccessible(classInfo, ILMethod_Owner(method)))
+			{
+				/* The handler label will be called with an object on the
+				   stack, so record that in the label list for later */
+				SET_TARGET_STACK(exception->handlerOffset, classInfo);
+			}
+			else
+			{
+				/* The class token is invalid, or not accessible to us */
+				VERIFY_TYPE_ERROR();
+			}
+		}
+
+		/* Move on to the next exception */
+		exception = exception->next;
+	}
+
 	/* Make sure that all jump targets are instruction starts */
 	len = code->codeLen;
 	while(len > 0)
@@ -699,6 +857,10 @@ restart:
 	/* Clean up and exit */
 cleanup:
 	TempAllocatorDestroy(&allocator);
+	if(exceptions)
+	{
+		ILMethodFreeExceptions(exceptions);
+	}
 	return result;
 }
 

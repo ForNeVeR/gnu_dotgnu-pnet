@@ -4,6 +4,8 @@
 	* Xsharp/XsharpSupport.c: fix the DIB to XImage conversion code
 	for mask bitmaps.
 
+	* Xsharp/XsharpSupport.c: bug in DIB handling for 4bpp images.
+
 2003-10-08  Neil Cawse  <neilcawse@geotab.com>
 
 	* : many small fixes to compile with csc

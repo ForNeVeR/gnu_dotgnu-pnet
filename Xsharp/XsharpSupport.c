@@ -953,7 +953,7 @@ XImage *XSharpCreateImageFromDIB(Screen *screen, int width, int height,
 							  palette[(*temp1 >> 4) & 0x0F]);
 					if((column + 1) < width)
 					{
-						XPutPixel(image, column, line,
+						XPutPixel(image, column + 1, line,
 								  palette[*temp1 & 0x0F]);
 					}
 					++temp1;

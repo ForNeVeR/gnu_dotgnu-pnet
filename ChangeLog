@@ -4,6 +4,10 @@
 	* System.Windows.Forms/TextBox.cs: Fix flicker issue with scrollbars
 	in TextBox.
 
+	* System.Windows.Forms/Menu.cs, System.Drawing/Graphics.cs: Use
+	HotKeyPrefix.Show for all menu items to display the "&" as an
+	underline.
+
 2004-06-06  Thong Nguyen  <tum@veridicus.com>
 
 	* System.Drawing.Xsharp/DrawingGraphics.cs: Added implementation

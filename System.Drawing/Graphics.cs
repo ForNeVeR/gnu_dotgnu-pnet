@@ -1457,10 +1457,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							{
 								startString = s;
 							}
+
+							if(startString.Length != 0)
+							{
 							
-							SelectFont(font);
-							ToolkitGraphics.DrawString(startString, rect[0].X, rect[0].Y, format);
-							if(hotkey.Length != 0 && endString.Length != 0)
+								ToolkitGraphics.DrawString(startString, rect[0].X, rect[0].Y, format);
+							}
+							if(hotkey.Length != 0)
 							{
 								// .Length != 0 is faster than == ""
 								// floating point operations are costly
@@ -1468,13 +1471,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 								Font underlineFont = new Font (font, 
 											font.Style | FontStyle.Underline);
-							
+
 								float startWidth = 
 										MeasureString(startString, font).Width;
 								float hotkeyWidth = 
 										MeasureString(hotkey,underlineFont).Width;
-								
+								SelectFont(font);
 								ToolkitGraphics.DrawString(endString,rect[0].X+(int)(startWidth+hotkeyWidth), rect[0].Y, format);
+							
 								SelectFont(underlineFont);
 								ToolkitGraphics.DrawString(hotkey,rect[0].X+(int)startWidth, rect[0].Y, format);
 							}

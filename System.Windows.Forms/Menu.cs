@@ -25,6 +25,7 @@ namespace System.Windows.Forms
 using System.ComponentModel;
 using System.Collections;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Windows.Forms.Themes;
 
 public abstract class Menu
@@ -50,6 +51,7 @@ public abstract class Menu
 			{
 				format = new StringFormat();
 				format.FormatFlags |= StringFormatFlags.NoWrap;
+				format.HotkeyPrefix = HotkeyPrefix.Show;
 				if(items != null)
 				{
 					this.numItems = items.Length;

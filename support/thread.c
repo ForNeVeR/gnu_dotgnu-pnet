@@ -31,6 +31,13 @@ You normally won't need to modify or replace this file when porting.
 #include "thr_defs.h"
 #include "signal.h"
 
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif

@@ -7,6 +7,9 @@
 	* dumpasm/dump_ident.c (DumpIdentifier): apply the correct quoting
 	to non-identifier characters.
 
+	* dumpasm/dump_ident.c (DumpIdentifier): use octal escape sequences
+	instead of hex, to be compatible with other ilasm implementations.
+
 2003-02-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant.c: wrong option flag for "--mono-corlib".

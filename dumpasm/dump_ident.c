@@ -66,7 +66,7 @@ static void DumpIdentifier(FILE *stream, const char *name, int flags)
 			}
 			else if(*name < 0x20 || *name > 0x7E)
 			{
-				fprintf(stream, "\\x%02X", ((int)(*name)) & 0xFF);
+				fprintf(stream, "\\%03o", ((int)(*name)) & 0xFF);
 			}
 			else
 			{

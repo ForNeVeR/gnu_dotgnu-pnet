@@ -412,6 +412,10 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	char *itemName;
 	ILNode_MethodDeclaration *caller;
 	int isCtor = 0;
+	ILNode_MemberAccess *savedNode = NULL;
+	ILNode *savedChild1 = NULL;
+	ILNode *savedChild2 = NULL;
+	
 
 	/* Get the method name for later error reporting */
 	if(ILIsQualIdent(node->expr1))
@@ -420,6 +424,10 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	}
 	else if(yyisa(node->expr1, ILNode_MemberAccess))
 	{
+		/* wish we could clone the entire node :) */
+		savedNode = (ILNode_MemberAccess*)(node->expr1);
+		savedChild1 = savedNode->expr1;
+		savedChild2 = savedNode->expr2;
 		itemName = ILQualIdentName
 			(((ILNode_MemberAccess *)(node->expr1))->expr2, 0);
 	}
@@ -482,6 +490,40 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	/* If there are no candidates left, then bail out */
 	itemNum = 0;
 	itemInfo = CSGetGroupMember(CSSemGetGroup(method), itemNum);
+	if(!itemInfo && savedNode != NULL)
+	{
+		/* 
+		 * Note: if there are no candidates, and it is a member access
+		 * try checking if it is a static member invocation
+		 */
+		node->expr1 = (ILNode*)savedNode;
+		savedNode->expr1 = savedChild1;
+		savedNode->expr2 = savedChild2;
+
+		info->inSemStatic = 1;
+		method = ILNode_SemAnalysis(node->expr1,info, &(node->expr1)); 
+		info->inSemStatic = 0;
+
+		if(!CSSemIsMethodGroup(method))
+		{
+			CCErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+						  "called object is not a method or delegate");
+			return CSSemValueDefault;
+		}
+		if(CSSemGetGroup(method) == 0)
+		{
+			return CSSemValueDefault;
+		}
+		
+		/* Find the set of candidate methods */
+		ReduceMethodGroup(info, args, numArgs, &method);
+
+		itemInfo = CSGetGroupMember(CSSemGetGroup(method), 0);
+	}
+
+	/* if we get here *again* without an iteminfo,  we're actually
+		missing a method */
+
 	if(!itemInfo)
 	{
 		CSItemCandidateError((ILNode *)node, itemName, isCtor,

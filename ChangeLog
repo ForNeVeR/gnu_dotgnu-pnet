@@ -1,3 +1,11 @@
+
+2004-05-18  Gopal V  <gopalv82@yahoo.com>
+
+	* codegen/cg_gen.h, cscc/csharp/cs_invoke.tc, 
+	cscc/csharp/cs_lvalue.tc: Hack up the instance vs static method 
+	disambiguation where a property with the same name as a type exists,
+	using an ILGenInfo flag. (bug #8629)
+
 2004-05-19  Thong Nguyen <tum@veridicus.com
 
 	* support/def_gc.c: Fixed function def for ILGCCreateTypeDescriptor.

@@ -47,16 +47,9 @@ namespace System.IO
 		
 		public static void Delete(string path, bool recursive)
 		{
-			if(path==null)
-			{
-				throw new ArgumentNullException();
-			}
-			if(path.Length==0 || (path.Trim()).Length==0 || 
-							path.IndexOfAny(Path.InvalidPathChars)!= -1)
-			{
-				throw new ArgumentException();
-			}
-
+			Exception e=ValidatePath(path,"path");
+			if(e != null) throw e;
+	
 			// remove any trailing directory sep characters
 			if(path.GetChar(path.Length-1) == Path.DirectorySeparatorChar)
 				path = path.Substring(0, path.Length - 1);
@@ -113,15 +106,8 @@ namespace System.IO
 
 		public static bool Exists(string path)
 		{
-			if(path.Length==0 || (path.Trim()).Length==0 || 
-						path.IndexOfAny(pathinfo.invalidPathChars)!= -1)
-			{	
-				throw new ArgumentException();
-			}
-			if (path == null)
-			{
-				return false;
-			}	
+			Exception e=ValidatePath(path,"path");
+			if(e != null) throw e;
 			long ac;
 			Errno errno = DirMethods.GetLastAccess(path, out ac);
 			switch(errno)
@@ -147,55 +133,53 @@ namespace System.IO
 			return File.GetCreationTime(path);
 		}
 
-		private static void VerifyDirectoryAccess(String path)
-		{
-			if(path.Length==0 || (path.Trim()).Length==0 || (path.IndexOfAny(pathinfo.invalidPathChars)!= -1))
-			{	
-				throw new ArgumentException();
-			}
-			if (path == null)
-			{
-				throw new ArgumentNullException("path");
-			}	
-			long ac;
-			Errno errno = DirMethods.GetLastAccess(path, out ac);
-			ThrowErrnoExceptions(errno,path);
-		}
-
-		private static void ThrowErrnoExceptions(Errno errno,String path)
+		private static Exception GetErrnoExceptions(Errno errno,String path)
 		{
 			switch(errno)
 			{
-				case Errno.Success:
-					return;
 				case Errno.ENOENT:
-					throw new DirectoryNotFoundException(_("IO_DirNotFound"));
+					return new DirectoryNotFoundException(_("IO_DirNotFound"));
 				case Errno.ENOTDIR:
-					throw new IOException(String.Format(_("IO_IsNotDir"),path));
+					return new IOException(String.Format(_("IO_IsNotDir"),
+											path));
 				case Errno.EACCES:
-					throw new SecurityException(_("IO_PathnameSecurity"));
+					return new SecurityException(_("IO_PathnameSecurity"));
 				case Errno.ENAMETOOLONG:
-					throw new PathTooLongException();
-				default:
-					return;
+					return new PathTooLongException();
 			}
+			return null;
 		}
 
 		public static string GetCurrentDirectory()
 		{
+			// TODO: security ?
 			return DirMethods.GetCurrentDirectory();
 		}
 
 		public static string[] GetDirectories(string path)
 		{
-			return InternalGetDirectoryEntries(path,"*",
+			try
+			{
+				return InternalGetDirectoryEntries(path,"*",
 										FileType.directory);
+			}
+			catch(Exception e)
+			{
+				throw e; // re-source exception to be like ECMA
+			}
 		}
 
 		public static string[] GetDirectories(string path, string searchPattern)
 		{
-			return InternalGetDirectoryEntries(path,searchPattern,
+			try
+			{
+				return InternalGetDirectoryEntries(path,searchPattern,
 										FileType.directory);
+			}
+			catch(Exception e)
+			{
+				throw e;
+			}
 		}
 
 		public static string GetDirectoryRoot(string path)
@@ -207,38 +191,71 @@ namespace System.IO
 
 		public static string[] GetFileSystemEntries(string path)
 		{
-			return InternalGetDirectoryEntries(path,"*",
+			try
+			{
+				return InternalGetDirectoryEntries(path,"*",
 												(FileType)(-1)); // all types
+			}
+			catch(Exception e)
+			{
+				throw e;
+			}
 		}
 
 		public static string[] GetFileSystemEntries(string path, 
 													string searchPattern)
 		{
-			return InternalGetDirectoryEntries(path,searchPattern,
+			try
+			{
+				return InternalGetDirectoryEntries(path,searchPattern,
 														(FileType)(-1));
+			}
+			catch(Exception e)
+			{
+				throw e;
+			}
 		}
 
 
 		public static string[] GetFiles(string path)
 		{
-			return InternalGetDirectoryEntries(path,"*",
+			try
+			{
+				return InternalGetDirectoryEntries(path,"*",
 										FileType.regularFile);
+			}
+			catch(Exception e)
+			{
+				throw e;
+			}
 		}
 
 		public static string[] GetFiles(string path, string searchPattern)
 		{
-			return InternalGetDirectoryEntries(path,searchPattern,
+			try
+			{
+				return InternalGetDirectoryEntries(path,searchPattern,
 										FileType.regularFile);
+			}
+			catch(Exception e)
+			{
+				throw e;
+			}
 		}
 	
 		private static String[] InternalGetDirectoryEntries(String path,
 														String searchPattern,
 														FileType type)
 		{
-			VerifyDirectoryAccess(path);
+			Exception e=ValidatePath(path,"path");
+			if(e != null) throw e;
+
 			InternalFileInfo []dirEnts;
 			Errno errno=DirMethods.GetFilesInDirectory(path,out dirEnts);
-			ThrowErrnoExceptions(errno,path);
+			
+			e=GetErrnoExceptions(errno,path);
+			if(e != null) throw e;
+			
 			GlobMatch fnmatch = new GlobMatch(searchPattern);
 			
 			ArrayList list=new ArrayList(dirEnts.Length);
@@ -267,49 +284,47 @@ namespace System.IO
 
 		public static void Move(string sourceDirName, string destDirName)
 		{
-			if(sourceDirName==null)
-			{
-				throw new ArgumentNullException("sourceDirName");
-			}
-			if(destDirName ==null)
-			{
-				throw new ArgumentNullException("destDirName");
-			}
-			if(sourceDirName.Length==0 || (sourceDirName.Trim()).Length==0 || 
-				sourceDirName.IndexOfAny(Path.InvalidPathChars)!= -1)
-			{
-				throw new ArgumentException("sourceDirName");
-			}
-			if(destDirName.Length==0 || (destDirName.Trim()).Length==0 || 
-				destDirName.IndexOfAny(Path.InvalidPathChars)!= -1)
-			{
-				throw new ArgumentException("destDirName");
-			}
+			Exception e=ValidatePath(sourceDirName,"sourceDirName");
+			if(e != null) throw e;
+
+			e=ValidatePath(destDirName,"destDirName");
+			if(e != null) throw e;
+			
 			Errno errno = DirMethods.Rename(sourceDirName, destDirName);
-			ThrowErrnoExceptions(errno, sourceDirName);
+			e=GetErrnoExceptions(errno, sourceDirName);
+			if(e != null) throw e;
 		}
 
 		[TODO]
 		public static void SetCreationTime(string path, DateTime creationTime)
 		{
+			Exception e=ValidatePath(path,"path");
+			if(e != null) throw e;
 		}
 
 		public static void SetCurrentDirectory(string path)
 		{
-			if(path==null)
-				throw new ArgumentNullException("path");
+			Exception e=ValidatePath(path,"path");
+			if(e != null) throw e;
+			
 			Errno errno=DirMethods.ChangeDirectory(path);
-			ThrowErrnoExceptions(errno,path);
+
+			e=GetErrnoExceptions(errno,path);
+			if(e != null) throw e;
 		}
 
 		[TODO]
 		public static void SetLastAccessTime(string path, DateTime lastAccessTime)
 		{
+			Exception e=ValidatePath(path,"path");
+			if(e != null) throw e;
 		}
 
 		[TODO]
 		public static void SetLastWriteTime(string path, DateTime lastWriteTime)
 		{
+			Exception e=ValidatePath(path,"path");
+			if(e != null) throw e;
 		}
 		
 		/* internal class to convert Glob expression to Regexp */
@@ -395,6 +410,18 @@ namespace System.IO
 
 		} // class GlobMatch
 
-
+		private static Exception ValidatePath(string path,string name)
+		{
+			if (path == null)
+			{
+				return new ArgumentNullException(_("Arg_NotNull"),name);
+			}
+			if ((path.Trim() == "") || !(FileMethods.ValidatePathname(path))
+				|| path.IndexOfAny(Path.InvalidPathChars)!=-1)
+			{
+				return new ArgumentException(_("IO_InvalidPathname"),name);
+			}
+			return null;
+		}
 	} // class Directory 
 } // namespace System.IO

@@ -5,6 +5,9 @@
 	Add an internal call 'Exists()' to check without opening the
 	file.
 
+	* runtime/System/File.cs, runtime/System/Directory.cs: Cleanup
+	the exceptions and rethrow them from the right locations.
+
 2002-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/Encoding.cs: make "InvokeI18N" more robust

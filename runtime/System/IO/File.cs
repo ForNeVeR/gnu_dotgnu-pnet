@@ -40,6 +40,10 @@ namespace System.IO
 
 		public static void Copy(string source, string dest) 
 		{
+			Exception e = ValidatePath(source);
+			if (e != null) { throw e; }
+			e = ValidatePath(dest);
+			if (e != null) { throw e; }
 			Copy(source, dest, false);
 		}
 
@@ -47,24 +51,10 @@ namespace System.IO
 		public static void Copy(string source, string dest, bool overwrite) 
 		{
 			
-			if (source == null) 
-			{
-				throw new ArgumentNullException("source");
-			}
-			if (dest == null)
-			{
-				throw new ArgumentNullException("dest");
-			}
-			
-			if (!FileMethods.ValidatePathname(source)) 
-			{
-				throw new ArgumentException(_("IO_InvalidPathname"), "source");
-			}
-
-			if (!FileMethods.ValidatePathname(dest)) 
-			{
-				throw new ArgumentException(_("IO_InvalidPathname"), "dest");
-			}
+			Exception e = ValidatePath(source);
+			if (e != null) { throw e; }
+			e = ValidatePath(dest);
+			if (e != null) { throw e; }
 
 			Errno err = DirMethods.Copy(source, dest);
 			
@@ -129,15 +119,8 @@ namespace System.IO
 		
 		public static void Delete(string path) 
 		{
-			if (path == null) 
-			{
-				throw new ArgumentNullException("path");
-			}
-		
-			if (!FileMethods.ValidatePathname(path)) 
-			{
-				throw new ArgumentException(_("IO_InvalidPathname"), "path");
-			}
+			Exception e = ValidatePath(path);
+			if (e != null) { throw e; }
 		
 			Errno err = DirMethods.Delete(path);
 			
@@ -171,16 +154,17 @@ namespace System.IO
 
 		public static bool Exists(string path) 
 		{
+			Exception e = ValidatePath(path);
+			if (e != null) { throw e; }
 			return FileMethods.Exists(path);	
 		}
 		
-		[TODO]
 		public static DateTime GetCreationTime(string path)
 		{
 			// platform-enforced security is the only security here right now
 			// afaik, some System.Security stuff needs to be added here - Rich
 
-			Exception e = GetTimeValidatePath(path);
+			Exception e = ValidatePath(path);
 			if (e != null) { throw e; }
 
 			long time;
@@ -190,13 +174,12 @@ namespace System.IO
 			return new DateTime(time);
 		}
 
-		[TODO]
 		public static DateTime GetLastAccessTime(string path)
 		{
 			// platform-enforced security is the only security here right now
 			// afaik, some System.Security stuff needs to be added here - Rich
 
-			Exception e = GetTimeValidatePath(path);
+			Exception e = ValidatePath(path);
 			if (e != null) { throw e; }
 
 			long time;
@@ -206,13 +189,12 @@ namespace System.IO
 			return new DateTime(time);
 		}
 
-		[TODO]
 		public static DateTime GetLastWriteTime(string path)
 		{
 			// platform-enforced security is the only security here right now
 			// afaik, some System.Security stuff needs to be added here - Rich
 
-			Exception e = GetTimeValidatePath(path);
+			Exception e = ValidatePath(path);
 			if (e != null) { throw e; }
 
 			long time;
@@ -224,6 +206,11 @@ namespace System.IO
 
 		public static void Move(string src, string dest)
 		{
+			Exception e = ValidatePath(src);
+			if (e != null) { throw e; }
+			e = ValidatePath(dest);
+			if (e != null) { throw e; }
+
 			DirMethods.Rename(src, dest);
 		}
 		
@@ -302,7 +289,7 @@ namespace System.IO
 				return new IOException(_("Exception_IO"));
 			}
 		}
-		private static Exception GetTimeValidatePath(string path)
+		private static Exception ValidatePath(string path)
 		{
 			if (path == null)
 			{

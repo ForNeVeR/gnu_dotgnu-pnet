@@ -74,6 +74,10 @@ public class BinaryReader : IDisposable
 	// Close this stream.
 	public virtual void Close()
 			{
+				if(input != null)
+				{
+					input.Close();
+				}
 				Dispose(true);
 			}
 
@@ -88,7 +92,6 @@ public class BinaryReader : IDisposable
 			{
 				if(input != null)
 				{
-					input.Close();
 					input = null;
 				}
 				encoding = null;

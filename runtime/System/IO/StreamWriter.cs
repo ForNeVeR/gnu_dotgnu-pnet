@@ -47,6 +47,7 @@ public class StreamWriter : TextWriter
 	private int    		inBufferLen;
 	private byte[] 		outBuffer;
 	private bool   		autoFlush;
+	private bool		streamOwner;
 
 	// Constructors that are based on a stream.
 	public StreamWriter(Stream stream)
@@ -88,6 +89,7 @@ public class StreamWriter : TextWriter
 				this.outBuffer = new byte
 					[encoding.GetMaxByteCount(bufferSize)];
 				this.autoFlush = false;
+				this.streamOwner = false;
 
 				// Write the encoding's preamble.
 				WritePreamble();
@@ -141,6 +143,7 @@ public class StreamWriter : TextWriter
 				this.outBuffer = new byte
 					[encoding.GetMaxByteCount(bufferSize)];
 				this.autoFlush = false;
+				this.streamOwner = true;
 
 				// Write the encoding's preamble.
 				WritePreamble();
@@ -165,6 +168,14 @@ public class StreamWriter : TextWriter
 	// Close this stream writer.
 	public override void Close()
 			{
+				// Explicit close 
+				if(stream != null)
+				{
+					Convert(true);
+					stream.Flush();
+					stream.Close();
+					stream = null;
+				}
 				Dispose(true);
 			}
 
@@ -175,7 +186,11 @@ public class StreamWriter : TextWriter
 				{
 					Convert(true);
 					stream.Flush();
-					stream.Close();
+					// Close only if stream is Owned exclusively
+					if(this.streamOwner)
+					{
+						stream.Close();
+					}
 					stream = null;
 				}
 				inBuffer = null;
@@ -332,6 +347,7 @@ public class StreamWriter : TextWriter
 			{
 				get
 				{
+					this.streamOwner=false;
 					return stream;
 				}
 			}

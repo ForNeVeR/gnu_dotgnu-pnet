@@ -1,4 +1,13 @@
 
+2003-05-10  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/IO/BinaryReader.cs, runtime/System/IO/BinaryWriter.cs:
+	Remove automatic stream closing when the wrapping writer is finalized.
+
+	* runtime/System/IO/StreamReader.cs, runtime/System/IO/StreamWriter.cs:
+	Close the underlying stream only if it is locally constructed and not
+	pased out via BaseStream property.
+
 2003-05-09  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/WebRequest.cs : Move the static initialization code

@@ -85,6 +85,10 @@ public class BinaryWriter : IDisposable
 	// Close this stream.
 	public virtual void Close()
 			{
+				if(OutStream != null)
+				{
+					OutStream.Close();
+				}
 				Dispose(true);
 			}
 
@@ -99,7 +103,6 @@ public class BinaryWriter : IDisposable
 			{
 				if(OutStream != null)
 				{
-					OutStream.Close();
 					OutStream = null;
 				}
 				encoding = null;

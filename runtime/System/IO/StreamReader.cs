@@ -50,6 +50,7 @@ public class StreamReader : TextReader
 	private int    		outBufferPosn;
 	private int    		outBufferLen;
 	private bool   		sawEOF;
+	private bool		streamOwner;
 
 	// Constructors that are based on a stream.
 	public StreamReader(Stream stream)
@@ -101,6 +102,7 @@ public class StreamReader : TextReader
 				this.outBufferPosn = 0;
 				this.outBufferLen = 0;
 				this.sawEOF = false;
+				this.streamOwner = false;
 
 				// Should we change encodings based on a byte order mark?
 				if(detectEncodingFromByteOrderMarks)
@@ -164,6 +166,7 @@ public class StreamReader : TextReader
 				this.outBufferPosn = 0;
 				this.outBufferLen = 0;
 				this.sawEOF = false;
+				this.streamOwner = true;
 
 				// Should we change encodings based on a byte order mark?
 				if(detectEncodingFromByteOrderMarks)
@@ -217,6 +220,10 @@ public class StreamReader : TextReader
 	// Close this stream reader.
 	public override void Close()
 			{
+				if(stream != null)
+				{
+					stream.Close();
+				}
 				Dispose(true);
 			}
 
@@ -241,7 +248,10 @@ public class StreamReader : TextReader
 			{
 				if(stream != null)
 				{
-					stream.Close();
+					if(this.streamOwner)
+					{
+						stream.Close();
+					}
 					stream = null;
 				}
 				inBuffer = null;
@@ -506,6 +516,7 @@ public class StreamReader : TextReader
 			{
 				get
 				{
+					this.streamOwner = false;
 					return stream;
 				}
 			}

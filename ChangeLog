@@ -10,6 +10,12 @@
 	use satellite assemblies for each language; add .cvsignore files
 	to the "resources/de_DE" directories.
 
+	* resources/de_DE/I18N/Makefile.am,
+	resources/de_DE/System/Makefile.am,
+	resources/de_DE/System.Xml/Makefile.am,
+	resources/de_DE/runtime/Makefile.am: build the German resources
+	into satellite assemblies.
+
 2002-12-11  Gopal.V  <gopalv82@symonds.net>
 
 	* resources/de_DE/I18N/Makefile.am, de_DE/runtime/Makefile.am, 

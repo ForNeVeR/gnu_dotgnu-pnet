@@ -1,12 +1,21 @@
 SUFFIXES = .txt .resources
 
-RESOURCENAME = System.Xml.resources
+RESOURCEBASE     = System.Xml
+RESOURCELANGUAGE = de
+RESOURCEPARENT   = System.Xml
+
+RESOURCENAME = $(RESOURCEBASE).$(RESOURCELANGUAGE).resources
+RESOURCEDLL  = $(RESOURCEPARENT).resources.dll
 
 RESOURCEFILES = Xml.txt
 
-noinst_DATA = $(RESOURCENAME)
+resassembliesdir = $(libdir)/cscc/lib/$(RESOURCELANGUAGE)
+resassemblies_DATA = $(RESOURCEDLL)
 
-CLEANFILES = $(RESOURCENAME) tempres.txt
+$(RESOURCEDLL): $(RESOURCENAME)
+	"$(top_srcdir)/tools/csccwrap.sh" -nostdlib -o $(RESOURCEDLL) -fresources=$(RESOURCENAME)
+
+CLEANFILES = $(RESOURCENAME) $(RESOURCEBASE).resources $(RESOURCEDLL) tempres.txt
 
 if PNET_RESGEN
 

@@ -5,6 +5,10 @@
 	internalcall, to handle the creation of value types with the
 	zero-argument constructor.
 
+	* Makefile.am, configure.in, SharpZipLib/*, samples/ilrun.sh.in:
+	add the "SharpZipLib" directory to pnetlib, which is a port of
+	SharpDevelop's compression handling library.
+
 2003-10-07  Neil Cawse  <neilcawse@geotab.com>
 
 	* M System.Drawing.Win32/DrawingGraphics.cs

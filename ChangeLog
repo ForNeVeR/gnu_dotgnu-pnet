@@ -1,4 +1,9 @@
 
+2004-08-08  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Reflection/Emit/UnmanagedMarshal.cs: Fix byte array
+	allocation as suggested by Marcus Urban <mathpup@mylinuxisp.com>.
+
 2004-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update version and news for the 0.6.8 release.

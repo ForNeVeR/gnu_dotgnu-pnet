@@ -171,13 +171,13 @@ public sealed class UnmanagedMarshal
 					{
 						if(elemCount < 0x80)
 						{
-							bytes = new byte [1];
+							bytes = new byte [2];
 							bytes[0] = (byte)type;
 							bytes[1] = (byte)elemCount;
 						}
 						else if(elemCount < 0x4000)
 						{
-							bytes = new byte [2];
+							bytes = new byte [3];
 							bytes[0] = (byte)type;
 							bytes[1] = (byte)((elemCount >> 8) | 0x80);
 							bytes[2] = (byte)(elemCount & 0xFF);

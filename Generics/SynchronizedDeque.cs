@@ -1,5 +1,5 @@
 /*
- * SynchronizedDictIterator.cs - Wrap an iterator to synchronize it.
+ * SynchronizedDeque.cs - Wrap a deque to make it synchronized.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,93 +27,103 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedDictIterator<KeyT, ValueT>
-		: IDictionaryIterator<KeyT, ValueT>
+public class SynchronizedDeque<T> : SynchronizedCollection<T>, IDeque<T>
 {
 	// Internal state.
-	protected Object syncRoot;
-	protected IDictionaryIterator<KeyT, ValueT> iterator;
+	protected IDeque<T> deque;
 
 	// Constructor.
-	public SynchronizedDictIterator
-				(Object syncRoot, IDictionaryIterator<KeyT, ValueT> iterator)
+	public SynchronizedDeque(IDeque<T> deque) : base(deque)
 			{
-				this.syncRoot = syncRoot;
-				this.iterator = iterator;
+				this.deque = deque;
 			}
 
-	// Implement the IIterator<ValueT> interface.
-	public bool MoveNext()
+	// Implement the IDeque<T> interface.
+	public void PushFront(T value)
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					return iterator.MoveNext();
+					deque.PushFront(value);
 				}
 			}
-	public void Reset()
+	public void PushBack(T value)
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					iterator.Reset();
+					deque.PushBack(value);
 				}
 			}
-	public void Remove()
+	public T PopFront()
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					iterator.Remove();
+					return deque.PopFront();
 				}
 			}
-	public DictionaryEntry<KeyT, ValueT> Current
+	public T PopBack()
+			{
+				lock(SyncRoot)
+				{
+					return deque.PopBack();
+				}
+			}
+	public T PeekFront()
+			{
+				lock(SyncRoot)
+				{
+					return deque.PeekFront();
+				}
+			}
+	public T PeekEnd()
+			{
+				lock(SyncRoot)
+				{
+					return deque.PeekEnd();
+				}
+			}
+	public T[] ToArray()
+			{
+				lock(SyncRoot)
+				{
+					return deque.ToArray();
+				}
+			}
+	public bool IsFixedSize
 			{
 				get
 				{
-					lock(syncRoot)
+					lock(SyncRoot)
 					{
-						return iterator.Current;
+						return deque.IsFixedSize;
 					}
 				}
 			}
-
-	// Implement the IDictionaryIterator<KeyT, ValueT> interface.
-	public DictionaryEntry<KeyT, ValueT> Entry
+	public bool IsReadOnly
 			{
 				get
 				{
-					lock(syncRoot)
+					lock(SyncRoot)
 					{
-						return iterator.Entry;
-					}
-				}
-			}
-	public KeyT Key
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return iterator.Key;
-					}
-				}
-			}
-	public ValueT Value
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return iterator.Value;
-					}
-				}
-				set
-				{
-					lock(syncRoot)
-					{
-						iterator.Value = value;
+						return deque.IsReadOnly;
 					}
 				}
 			}
 
-}; // class SynchronizedDictIterator<KeyT, ValueT>
+	// Implement the ICloneable interface.
+	public override Object Clone()
+			{
+				if(deque is ICloneable)
+				{
+					return new SynchronizedDeque<T>
+						((IDeque<T>)(((ICloneable)deque).Clone()));
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_NotCloneable"));
+				}
+			}
+
+}; // class SynchronizedDeque<T>
 
 }; // namespace Generics

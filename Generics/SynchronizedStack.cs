@@ -1,5 +1,5 @@
 /*
- * SynchronizedListIterator.cs - Wrap a list iterator to synchronize it.
+ * SynchronizedStack.cs - Wrap a stack to make it synchronized.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,88 +27,82 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedListIterator<T> : IListIterator<T>
+public class SynchronizedStack<T> : SynchronizedCollection<T>, IStack<T>
 {
 	// Internal state.
-	protected Object       syncRoot;
-	protected IListIterator<T> iterator;
+	protected IStack<T> stack;
 
 	// Constructor.
-	public SynchronizedListIterator(Object syncRoot, IListIterator<T> iterator)
+	public SynchronizedStack(IStack<T> stack) : base(stack)
 			{
-				this.syncRoot = syncRoot;
-				this.iterator = iterator;
+				this.stack = stack;
 			}
 
-	// Implement the IIterator<T> interface.
-	public bool MoveNext()
+	// Implement the IStack<T> interface.
+	public void Push(T value)
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					return iterator.MoveNext();
+					stack.Push(value);
 				}
 			}
-	public void Reset()
+	public T Pop()
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					iterator.Reset();
+					return stack.Pop();
 				}
 			}
-	public void Remove()
+	public T Peek()
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					iterator.Remove();
+					return stack.Peek();
 				}
 			}
-	T IIterator<T>.Current
+	public T[] ToArray()
+			{
+				lock(SyncRoot)
+				{
+					return stack.ToArray();
+				}
+			}
+	public bool IsFixedSize
 			{
 				get
 				{
-					lock(syncRoot)
+					lock(SyncRoot)
 					{
-						return ((IIterator<T>)iterator).Current;
+						return stack.IsFixedSize;
 					}
 				}
 			}
-
-	// Implement the IListIterator<T> interface.
-	public bool MovePrev()
-			{
-				lock(syncRoot)
-				{
-					return iterator.MovePrev();
-				}
-			}
-	public int Position
+	public bool IsReadOnly
 			{
 				get
 				{
-					lock(syncRoot)
+					lock(SyncRoot)
 					{
-						return iterator.Position;
-					}
-				}
-			}
-	public T Current
-			{
-				get
-				{
-					lock(syncRoot)
-					{
-						return iterator.Current;
-					}
-				}
-				set
-				{
-					lock(syncRoot)
-					{
-						iterator.Current = value;
+						return stack.IsReadOnly;
 					}
 				}
 			}
 
-}; // class SynchronizedListIterator<T>
+	// Implement the ICloneable interface.
+	public override Object Clone()
+			{
+				if(stack is ICloneable)
+				{
+					return new SynchronizedStack<T>
+						((IStack<T>)(((ICloneable)stack).Clone()));
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_NotCloneable"));
+				}
+			}
+
+}; // class SynchronizedStack<T>
 
 }; // namespace Generics

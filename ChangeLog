@@ -81,6 +81,16 @@
 	Generics/LinkedList.cs, Generics/ListWrapper.cs,
 	Generics/ReadOnlyList.cs: add "IsRandomAccess" to "IList<T>".
 
+	* Generics/ArrayList.cs, Generics/ArrayQueue.cs,
+	Generics/ArrayStack.cs, Generics/Hashtable.cs,
+	Generics/SynchronizedCollection.cs, Generics/SynchronizedDeque.cs,
+	Generics/SynchronizedDictIterator.cs,
+	Generics/SynchronizedDictionary.cs, Generics/SynchronizedIterator.cs,
+	Generics/SynchronizedList.cs, Generics/SynchronizedListIterator.cs,
+	Generics/SynchronizedQueue.cs, Generics/SynchronizedStack.cs:
+	add synchronized wrapper classes to replace the concrete-specific
+	"Synchronized" methods.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

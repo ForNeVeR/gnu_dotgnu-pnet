@@ -1,5 +1,5 @@
 /*
- * SynchronizedIterator.cs - Wrap an iterator to synchronize it.
+ * SynchronizedQueue.cs - Wrap a queue to make it synchronized.
  *
  * Copyright (c) 2003  Southern Storm Software, Pty Ltd
  *
@@ -27,52 +27,82 @@ namespace Generics
 
 using System;
 
-internal sealed class SynchronizedIterator<T> : IIterator<T>
+public class SynchronizedQueue<T> : SynchronizedCollection<T>, IQueue<T>
 {
 	// Internal state.
-	protected Object       syncRoot;
-	protected IIterator<T> iterator;
+	protected IQueue<T> queue;
 
 	// Constructor.
-	public SynchronizedIterator(Object syncRoot, IIterator<T> iterator)
+	public SynchronizedQueue(IQueue<T> queue) : base(queue)
 			{
-				this.syncRoot = syncRoot;
-				this.iterator = iterator;
+				this.queue = queue;
 			}
 
-	// Implement the IIterator<T> interface.
-	public bool MoveNext()
+	// Implement the IQueue<T> interface.
+	public void Enqueue(T value)
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					return iterator.MoveNext();
+					queue.Enqueue(value);
 				}
 			}
-	public void Reset()
+	public T Dequeue()
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					iterator.Reset();
+					return queue.Dequeue();
 				}
 			}
-	public void Remove()
+	public T Peek()
 			{
-				lock(syncRoot)
+				lock(SyncRoot)
 				{
-					iterator.Remove();
+					return queue.Peek();
 				}
 			}
-	public T Current
+	public T[] ToArray()
+			{
+				lock(SyncRoot)
+				{
+					return queue.ToArray();
+				}
+			}
+	public bool IsFixedSize
 			{
 				get
 				{
-					lock(syncRoot)
+					lock(SyncRoot)
 					{
-						return iterator.Current;
+						return queue.IsFixedSize;
+					}
+				}
+			}
+	public bool IsReadOnly
+			{
+				get
+				{
+					lock(SyncRoot)
+					{
+						return queue.IsReadOnly;
 					}
 				}
 			}
 
-}; // class SynchronizedIterator<T>
+	// Implement the ICloneable interface.
+	public override Object Clone()
+			{
+				if(queue is ICloneable)
+				{
+					return new SynchronizedQueue<T>
+						((IQueue<T>)(((ICloneable)queue).Clone()));
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Invalid_NotCloneable"));
+				}
+			}
+
+}; // class SynchronizedQueue<T>
 
 }; // namespace Generics

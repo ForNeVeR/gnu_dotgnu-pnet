@@ -11,6 +11,9 @@
 	* engine/lib_type.c: Remove overriden methods from the search for 
 	GetMembersImpl (fixes Bug #3520).
 
+	* engine/verify_branch.c: Fix bug when using "null" types which are
+	(ILType*)NULL.
+
 2003-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/lib_attrs.c: begin adding support for converting security

@@ -122,7 +122,10 @@ static BranchLabel *FindLabel(BranchLabel *labelList, ILUInt32 address)
 static ILType* TryCommonType(ILImage* image, ILType * type1, ILType *type2)
 {
 	ILClass *classInfo;
-	
+
+	if(type1==NULL) return type2;
+	if(type2==NULL) return type1;
+
 	/* Note: boxing conversions are not allowed because both
 	 * types have to be reference types.
 	 */ 
@@ -145,20 +148,23 @@ static ILType* TryCommonType(ILImage* image, ILType * type1, ILType *type2)
  * Obtain a common parent for 2 types 
  * TODO: handle interfaces
  */
-static ILType * CommonType(ILImage * image, ILType *type1, ILType *type2)
+static int CommonType(ILImage * image, ILType *type1, ILType *type2,
+						ILType** commonType)
 {
 	ILType *ctype12=TryCommonType(image, type1, type2);
 	ILType *ctype21=TryCommonType(image, type2, type1);
 	
 	if(ILTypeAssignCompatibleNonBoxing(image, ctype12, ctype21))
 	{
-		return ctype12;
+		(*commonType) = ctype12;
+		return 1;
 	}
 	else if(ILTypeAssignCompatibleNonBoxing(image, ctype21, ctype12))
 	{
-		return ctype21;
+		(*commonType) = ctype21;
+		return 1;
 	}
-	return NULL;
+	return 0;
 }
 
 /*
@@ -194,10 +200,8 @@ static int ValidateStack(ILImage *image, BranchLabel *label,
 		}
 		else if(stack[posn].engineType == ILEngineType_O)
 		{
-			commonType=CommonType(image,
-								  stack[posn].typeInfo,
-								  labelStack[posn].typeInfo);
-			if(commonType==NULL)
+			if(!CommonType(image, stack[posn].typeInfo,
+						labelStack[posn].typeInfo, &commonType))
 			{
 				return 0;
 			}

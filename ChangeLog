@@ -5,6 +5,11 @@
 
 	* configure.in: update working version to "0.5.3".
 
+	* ilalink/link_main.c, ilasm/ilasm_main.c, image/image.h,
+	image/pecoff_writer.c, image/writer.c: implement a caching
+	mechanism for back-patching to smooth out filesystem performance,
+	particular on NFS-mounted filesystems.
+
 2003-02-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/ChangeLog, libffi/src/s390/ffi.c: more libffi updates

@@ -680,10 +680,10 @@ int ILLinkerMain(int argc, char *argv[])
 	}
 
 	/* Open the output file */
-	if((outfile = fopen(outputFile, "wb")) == NULL)
+	if((outfile = fopen(outputFile, "w+b")) == NULL)
 	{
 		/* Try again in case libc does not understand "wb" */
-		if((outfile = fopen(outputFile, "w")) == NULL)
+		if((outfile = fopen(outputFile, "w+")) == NULL)
 		{
 			perror(outputFile);
 			return 1;

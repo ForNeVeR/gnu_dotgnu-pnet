@@ -118,6 +118,10 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	writer->numDebugTokens = 0;
 	writer->maxDebugTokens = 0;
 	writer->debugHash = 0;
+	writer->backpatching = 0;
+	writer->backpatchSeek = 0;
+	writer->backpatchLen = 0;
+	writer->backpatchBuf = 0;
 
 	/* Initialize buffer lists */
 	_ILWBufferListInit(&(writer->streamBuffer));
@@ -130,6 +134,14 @@ ILWriter *ILWriterCreate(FILE *stream, int seekable, int type, int flags)
 	ILMemPoolInitType(&(writer->fixups), ILFixup, 0);
 	writer->firstFixup = 0;
 	writer->lastFixup = 0;
+
+	/* Allocate the back-patching buffer.  If we run out of
+	   memory, then disable the back-patch cache */
+	if(seekable)
+	{
+		writer->backpatchBuf = (unsigned char *)ILMalloc
+			(IL_WRITE_BUFFER_SIZE);
+	}
 
 	/* Write the headers to the output stream */
 	if(flags & IL_WRITEFLAG_JVM_MODE)
@@ -622,6 +634,12 @@ int ILWriterDestroy(ILWriter *writer)
 	if(writer->debugHash)
 	{
 		ILHashDestroy(writer->debugHash);
+	}
+
+	/* Free the back-patch buffer */
+	if(writer->backpatchBuf)
+	{
+		ILFree(writer->backpatchBuf);
 	}
 
 	/* Determine the return value */

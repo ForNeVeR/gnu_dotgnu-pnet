@@ -350,6 +350,12 @@ struct _tagILWriter
 	int				outOfMemory;	/* We ran out of memory during the write */
 	int				writeFailed;	/* The write failed at some point */
 
+	/* Back-patch cache */
+	int				backpatching;	/* Non-zero if last write was back-patch */
+	unsigned long	backpatchSeek;	/* Seek position of back-patch cache */
+	unsigned long	backpatchLen;	/* Length of back-patch cache */
+	unsigned char  *backpatchBuf;	/* Buffer containing back-patch data */
+
 };
 
 /*

@@ -26,6 +26,34 @@ extern	"C" {
 #endif
 
 /*
+ * Flush the back-patch cache if necessary.
+ */
+static void FlushBackPatchCache(ILWriter *writer)
+{
+	if(writer->backpatching)
+	{
+		/* Seek to the beginning of the back-patch area */
+		if(fseek(writer->stream, writer->backpatchSeek, 0) < 0)
+		{
+			writer->writeFailed = 1;
+			return;
+		}
+
+		/* Write the modified contents of the back-patch buffer */
+		if(fwrite(writer->backpatchBuf, 1, (unsigned)(writer->backpatchLen),
+				  writer->stream) != (unsigned)(writer->backpatchLen))
+		{
+			writer->writeFailed = 1;
+			return;
+		}
+
+		/* Record the new seek position and exit the back-patching mode */
+		writer->currSeek = writer->backpatchSeek + writer->backpatchLen;
+		writer->backpatching = 0;
+	}
+}
+
+/*
  * Write a block of data to an output image.
  */
 static void WriteToImage(ILWriter *writer, const void *buffer, unsigned size)
@@ -37,6 +65,9 @@ static void WriteToImage(ILWriter *writer, const void *buffer, unsigned size)
 	}
 	if(writer->seekable)
 	{
+		/* Flush the back-patching cache, if present */
+		FlushBackPatchCache(writer);
+
 		/* This is a seekable stream, so write directly to it */
 		if(writer->offset != writer->currSeek)
 		{
@@ -109,6 +140,11 @@ static void WriteFlush(ILWriter *writer)
 			wbuffer = wbuffer->next;
 		}
 	}
+	else
+	{
+		/* Flush the back-patching cache */
+		FlushBackPatchCache(writer);
+	}
 }
 
 /*
@@ -140,6 +176,50 @@ static void WriteBackPatchBytes(ILWriter *writer, unsigned long posn,
 	}
 	if(writer->seekable)
 	{
+		/* Can we add the bytes to the current back-patch cache? */
+		if(writer->backpatching && posn >= writer->backpatchSeek &&
+		   (posn + size) <= (writer->backpatchSeek + writer->backpatchLen))
+		{
+			ILMemCpy(writer->backpatchBuf +
+					 (unsigned)(posn - writer->backpatchSeek), buffer, size);
+			return;
+		}
+
+		/* Flush the current back-patch cache contents */
+		FlushBackPatchCache(writer);
+
+		/* Only do caching for small values (usually 32-bit quantities) */
+		if(size <= 4 && writer->backpatchBuf)
+		{
+			/* Align the back-patch cache for better filesystem performance */
+			writer->backpatchSeek = posn & ~511;
+			writer->backpatchLen = writer->offset - writer->backpatchSeek;
+			if(writer->backpatchLen > IL_WRITE_BUFFER_SIZE)
+			{
+				writer->backpatchLen = IL_WRITE_BUFFER_SIZE;
+			}
+
+			/* Read the block to be patched into memory */
+			if(fseek(writer->stream, writer->backpatchSeek, 0) < 0)
+			{
+				writer->writeFailed = 1;
+				return;
+			}
+			if(fread(writer->backpatchBuf, 1, (unsigned)(writer->backpatchLen),
+					 writer->stream) != (unsigned)(writer->backpatchLen))
+			{
+				writer->writeFailed = 1;
+				return;
+			}
+			writer->currSeek = writer->backpatchSeek + writer->backpatchLen;
+
+			/* Patch the required bytes and return */
+			ILMemCpy(writer->backpatchBuf +
+					 (unsigned)(posn - writer->backpatchSeek), buffer, size);
+			writer->backpatching = 1;
+			return;
+		}
+
 		/* Seek back in the file and write the change */
 		if(posn != writer->currSeek)
 		{

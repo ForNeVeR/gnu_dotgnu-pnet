@@ -446,10 +446,10 @@ int ILAsmMain(int argc, char *argv[])
 	else
 	{
 		ILAsmBuildInit(outputFile);
-		if((outfile = fopen(outputFile, "wb")) == NULL)
+		if((outfile = fopen(outputFile, "w+b")) == NULL)
 		{
 			/* Try again in case the 'b' flag is not understood by libc */
-			if((outfile = fopen(outputFile, "w")) == NULL)
+			if((outfile = fopen(outputFile, "w+")) == NULL)
 			{
 				perror(outputFile);
 				reset();

@@ -89,7 +89,7 @@ public class IPEndPoint : EndPoint
 					value = IPAddress.HostToNetworkOrder(value);
 
 					// Construct the new end point.
-					return new IPEndPoint(new IPAddress(value), port);
+					return new IPEndPoint(new IPAddress((uint)value), port);
 				}
 				else
 				{
@@ -117,7 +117,7 @@ public class IPEndPoint : EndPoint
 					}
 
 					// Construct the new end point.
-					return new IPEndPoint(new IPAddress(buf, value), port);
+					return new IPEndPoint(new IPAddress(buf, (uint)value), port);
 				}
 			}
 

@@ -61,7 +61,7 @@ public class IPAddress
 				if((newAddress < 0) || (newAddress > 0x00000000FFFFFFFF))
 				{
 					throw new ArgumentOutOfRangeException
-						("newAddress", S._("Arg_OutOfRange"));
+						("newAddress", S._("Arg_OutOfRange") + " " + newAddress.ToString("x"));
 				}
 				this.family = AddressFamily.InterNetwork;
 				this.value = newAddress;

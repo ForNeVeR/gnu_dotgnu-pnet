@@ -39,7 +39,7 @@ install-exec-local:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-cs
 	$(INSTALL_PROGRAM) cscc-c-s $(DESTDIR)$(libdir)/cscc/plugins/cscc-c-s
-	$(INSTALL_PROGRAM) cscc-cs $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb
+	$(INSTALL_PROGRAM) cscc-vb $(DESTDIR)$(libdir)/cscc/plugins/cscc-vb
 	$(INSTALL_PROGRAM) cscc $(DESTDIR)$(bindir)/cscc
 	$(INSTALL_PROGRAM) csdoc $(DESTDIR)$(bindir)/csdoc
 	rm -f $(DESTDIR)$(libdir)/cscc/plugins/cscc-csharp

@@ -18,6 +18,3 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 IO_Socket=Waehrend dem Zugriff auf den socket trat ein Fehler auf
-IO_SocketCreating=Beim Erschaffen eines neuen sockets trat ein Fehler auf
-IO_SocketRead=Beim Lesen des sockets trat ein Fehler auf
-IO_SocketWrite=Beim Schreiben des sockets trat ein Fehler auf

@@ -18,14 +18,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 IO_StreamClosed=Stream ist bereits geschlossen
-IO_InvalidHandle=Invalid file handle
 IO_FileAccess=Invalid file access value specified
 IO_FileMode=Invalid file mode value specified
 IO_FileShare=Invalid file share value specified
 IO_InvalidPathname=Ungueltiger Pfad angegeben
 IO_IncorrectAccess=Incorrect access mode specified for file handle
-IO_HandleSecurity=Insufficient security credentials for file handle access
-IO_PathnameSecurity=Nicht genug Sicherheitsbescheinigungen um Pfad zu oeffnen
 IO_WriteFailed=Schreibanfrage fehlgeschlagen
 IO_FlushFailed=flushanfrage fehlgeschlagen
 IO_ReadFailed=Leseanfrage fehlgeschlagen
@@ -42,7 +39,3 @@ IO_PathNotFound=Der angegebene Pfad konnte nicht gefunden werden
 IO_DirNotFound=Der angegebene Ordner konnte nicht gefunden werden
 IO_FileNotFound=Konnte Datei nicht finden "{0}"
 IO_FileLoad=Konnte Datei nicht laden "{0}"
-# For dest argument in File.Copy method
-IO_CopyFileExists=Die Datei "{1}" existiert bereits
-IO_Error=IO Fehler
-IO_IsNotDir= "{0}" ist kein Ordner

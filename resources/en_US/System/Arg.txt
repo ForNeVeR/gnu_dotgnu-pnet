@@ -17,7 +17,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-Arg_SocketCreating=An error occured while creating a new socket;
 Exception_UriFormat=The supplied URI did not have the correct format
 Arg_UriPartial=That is not a valid UriPartial value
 Arg_HexDigit=That is not a valid hexadecimal digit
@@ -25,7 +24,6 @@ Arg_UriScheme=The scheme supplied with the URI was not valid
 Arg_UriPort=The port specified with the URI was nonexistent
 Arg_UriPathAbs=The relative path specified with the URI could not be converted to an absolute path
 Arg_UriHostName=URI host names must be specified in DNS or IPv4 format
-Arg_UriNotEscaped=You told the constructor that the Uri was properly escaped, but it wasn't
 Arg_InvalidIdentifier=Invalid identifier specified
 Arg_InvalidCodeDom=Invalid CodeDom node in this context
 Arg_MaskDone=CreateMask has created all masks

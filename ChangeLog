@@ -43,6 +43,18 @@
 	resources/en_US/Basic/Basic.txt, resources/en_US/Basic/Makefile.am:
 	add missing resources for the "Microsoft.VisualBasic" assembly.
 
+	* resources/de_DE/System/Arg.txt, resources/de_DE/System/Exception.txt,
+	resources/de_DE/System/IO.txt, resources/de_DE/System/Invalid.txt,
+	resources/de_DE/runtime/Arg.txt, resources/de_DE/runtime/Crypto.txt,
+	resources/de_DE/runtime/DivZero.txt, resources/de_DE/runtime/IO.txt,
+	resources/de_DE/runtime/NotSupp.txt, resources/en_US/System/Arg.txt,
+	resources/en_US/System/Exception.txt, resources/en_US/System/IO.txt,
+	resources/en_US/System/Invalid.txt, resources/en_US/System/NotSupp.txt,
+	resources/en_US/runtime/Arg.txt, resources/en_US/runtime/Crypto.txt,
+	resources/en_US/runtime/DivZero.txt, resources/en_US/runtime/Format.txt,
+	resources/en_US/runtime/IO.txt, resources/en_US/runtime/NotSupp.txt
+	runtime/System/Delegate.cs: remove obsolete string resources.
+
 2003-10-12  Neil Cawse  <neilcawse@hotmail.com>
 
 	* System.Windows.Forms/TreeView.cs: fix paint crash when no nodes bug.

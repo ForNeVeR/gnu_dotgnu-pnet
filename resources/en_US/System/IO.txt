@@ -18,9 +18,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 IO_Socket=An error occured while accessing the socket
-IO_SocketCreating=An error occured while creating a new socket
-IO_SocketRead=An error occured while reading from the socket
-IO_SocketWrite=An error occured while writing to the socket
 IO_SocketNotBlocking=The specified socket is not blocking
 IO_SocketNotConnected=The specified socket is not connected
 IO_SocketIncorrectType=The specified socket is not of the correct type

@@ -19,5 +19,4 @@
 #
 Exception_Web=Waehrend einer Internet-bezogenen Operation trat ein Fehler auf
 Exception_Protocol=Protokollfehler aufgetreten
-Exception_Socket=Ein Netzwerkfehler ist aufgetreten
 Exception_Disposed=Diese Instanz wurde abgeschafft

@@ -180,7 +180,7 @@ public abstract class Delegate : ICloneable
 				}
 				if(!type.IsSubclassOf(typeof(Delegate)))
 				{
-					throw new ArgumentException("Arg_NotDelegate");
+					throw new ArgumentException(_("Arg_NotDelegate"));
 				}
 
 				// Look up the method.
@@ -256,7 +256,7 @@ public abstract class Delegate : ICloneable
 				}
 				if(!type.IsSubclassOf(typeof(Delegate)))
 				{
-					throw new ArgumentException("Arg_NotDelegate");
+					throw new ArgumentException(_("Arg_NotDelegate"));
 				}
 
 				// Look up the method.
@@ -299,7 +299,7 @@ public abstract class Delegate : ICloneable
 				}
 				if(!type.IsSubclassOf(typeof(Delegate)))
 				{
-					throw new ArgumentException("Arg_NotDelegate");
+					throw new ArgumentException(_("Arg_NotDelegate"));
 				}
 
 				// The method must be static.

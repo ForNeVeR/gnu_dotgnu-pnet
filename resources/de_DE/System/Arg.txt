@@ -17,7 +17,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-Arg_SocketCreating=Beim Erschaffen eines neuen sockets trat ein Fehler auf;
 Exception_UriFormat=Die angegebene URI hatte nicht die korrekte Form
 Arg_UriPartial=Das ist kein gueltiger UriPartial Wert
 Arg_HexDigit=Das ist keine gueltige hexadezimal Stelle
@@ -25,7 +24,6 @@ Arg_UriScheme=Der Entwurf der mit der URI geliefert wurde war ungueltig
 Arg_UriPort=Der Port der mit der URI angegeben wurde war nicht vorhanden
 Arg_UriPathAbs=Der relative Pfad der mit der URI angegeben wurde konnte nicht in einen absoluten Pfad konvertiert werden
 Arg_UriHostName=URI host Name muessen im DNS oder IPv4 Format angegeben werden
-Arg_UriNotEscaped=Sie haben dem Konstruktor gesagt, dass die URI korrekt escaped wurde, aber sie war es nicht
 Arg_InvalidIdentifier=Ungueltiger identifier angegeben
 Arg_InvalidCodeDom=Ungueltiger CodeDom node in diesem Zusammenhang
 Arg_MaskDone=CreateMask hat alle Masken generiert

@@ -49,30 +49,66 @@ public sealed class Financial
 					pay * ((Math.Pow(1 + rate, period) - 1) / rate));
 			}
 
-	// Calculate depreciation (algorithm from kspread).
+	// Calculate depreciation.
 	public static double DDB(double Cost, double Salvage,
 							 double Life, double Period,
 							 [Optional] [DefaultValue(2.0)] double Factor)
 			{
+				double temp, temp2, temp3, temp4, temp5;
 				if(Cost < 0.0 || Salvage < 0.0 || Life <= 0.0 ||
 				   Period < 0.0 || Factor < 0.0)
 				{
 					throw new ArgumentException(S._("VB_InvalidDDB"));
 				}
-				double total = 0.0;
-				for(double i = 0.0; i < Life; i += 1.0)
+				if(Cost == 0.0)
 				{
-					double periodDep = (Cost - total) * (Factor / Life);
-					if((i + 1.0) >= Period)
+					return 0.0;
+				}
+				if(Life < 2.0)
+				{
+					return Cost - Salvage;
+				}
+				if(Life == 2.0)
+				{
+					if(Period > 1.0)
 					{
-						return periodDep;
+						return 0.0;
 					}
 					else
 					{
-						total += periodDep;
+						return Cost - Salvage;
 					}
 				}
-				return Cost - total - Salvage;
+				if(Period <= 1.0)
+				{
+					temp = Cost * Factor / Life;
+					temp2 = Cost - Salvage;
+					if(temp < temp2)
+					{
+						return temp;
+					}
+					else
+					{
+						return temp2;
+					}
+				}
+				temp2 = (Life - Factor) / Life;
+				temp3 = Period - 1.0;
+				temp = (Cost * Factor / Life) * Math.Pow(temp2, temp3);
+				temp4 = Cost * (1.0 - Math.Pow(temp2, Period));
+				temp5 = temp4 - Cost + Salvage;
+				if(temp5 > 0.0)
+				{
+					temp -= temp5;
+				}
+				if(temp >= 0.0)
+				{
+					return temp;
+				}
+				else
+				{
+					return 0.0;
+				}
 			}
 
 	// Calculate future value.
@@ -213,26 +249,107 @@ public sealed class Financial
 			}
 
 	// Calculate present value.
-	[TODO]
-	public static double PV(double Rate, double NPer, double PV,
+	public static double PV(double Rate, double NPer, double Pmt,
 							[Optional] [DefaultValue(0.0)] double FV,
 							[Optional] [DefaultValue(DueDate.EndOfPeriod)]
 							 		DueDate Due)
 			{
-				// TODO
-				return 0.0;
+				double rate1, endRate, fullRate;
+				if(Rate == 0.0)
+				{
+					return -FV - Pmt * NPer;
+				}
+				rate1 = Rate + 1.0;
+				if(Due == DueDate.EndOfPeriod)
+				{
+					endRate = 1.0;
+				}
+				else
+				{
+					endRate = rate1;
+				}
+				fullRate = Math.Pow(rate1, NPer);
+				return -(FV + Pmt * endRate * ((fullRate - 1.0) / Rate))
+								/ fullRate;
 			}
 
 	// Calculate rate.
-	[TODO]
 	public static double Rate(double NPer, double Pmt, double PV,
 							  [Optional] [DefaultValue(0.0)] double FV,
 							  [Optional] [DefaultValue(DueDate.EndOfPeriod)]
 							 		DueDate Due,
 							  [Optional] [DefaultValue(0.1)] double Guess)
 			{
-				// TODO
-				return 0.0;
+				double rate, rate2, temp, temp2, swap;
+				if(NPer <= 0.0)
+				{
+					throw new ArgumentException(S._("VB_InvalidRate"));
+				}
+				rate = Guess;
+				temp = RateInternal(NPer, Pmt, PV, FV, Due, rate);
+				if(temp > 0.0)
+				{
+					rate2 = rate / 2;
+				}
+				else
+				{
+					rate2 = rate * 2;
+				}
+				temp2 = RateInternal(NPer, Pmt, PV, FV, Due, rate2);
+				for(int iter = 0; iter < 40; ++iter)
+				{
+					if(temp == temp2)
+					{
+						if(rate2 > rate)
+						{
+							rate -= 1.0e-5;
+						}
+						else
+						{
+							rate += 1.0e-5;
+						}
+						temp = RateInternal(NPer, Pmt, PV, FV, Due, rate);
+						if(temp == temp2)
+						{
+							throw new ArgumentException
+								(S._("VB_CouldntCalculateRate"));
+						}
+					}
+					rate = rate2 - ((rate2 - rate) * temp2) / (temp2 - temp);
+					temp = RateInternal(NPer, Pmt, PV, FV, Due, rate);
+					if(Math.Abs(temp) < 1.0e-8)
+					{
+						return rate;
+					}
+					swap = rate;
+					rate = rate2;
+					rate2 = swap;
+					swap = temp;
+					temp = temp2;
+					temp2 = swap;
+				}
+				throw new ArgumentException(S._("VB_CouldntCalculateRate"));
+			}
+	private static double RateInternal(double NPer, double Pmt, double PV,
+							  		   double FV, DueDate Due, double Rate)
+			{
+				double tempRate, rate1, endRate;
+				if(Rate == 0.0)
+				{
+					return PV + Pmt * NPer + FV;
+				}
+				tempRate = Math.Pow(Rate + 1.0, NPer);
+				rate1 = Rate + 1.0;
+				if(Due == DueDate.EndOfPeriod)
+				{
+					endRate = 1.0;
+				}
+				else
+				{
+					endRate = rate1;
+				}
+				return PV * tempRate +
+					   Pmt * endRate * (tempRate - 1.0) / Rate + FV;
 			}
 
 	// Calculate straight-line depreciation (algorithm from kspread).

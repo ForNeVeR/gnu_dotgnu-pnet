@@ -13,6 +13,9 @@
 
 	* Basic/File.cs, Basic/FileSystem.cs: implement some file TODO's.
 
+	* Basic/Financial.cs, resources/en_US/Basic/Basic.txt:
+	implement more of the VB financial functions.
+
 2004-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/Form.cs: added missing stub for AllowTransparency.

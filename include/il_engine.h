@@ -173,6 +173,11 @@ int ILExecProcessEntryType(ILMethod *method);
 long ILExecProcessGetParam(ILExecProcess *process, int type);
 
 /*
+ * Set the command-line argument array.
+ */
+void ILExecProcessSetCommandLine(ILExecProcess *process, ILObject *cmdline);
+
+/*
  * Get the current thread from a PInvoke'd method.  The behaviour
  * is undefined if used anywhere else.
  */

@@ -1,4 +1,10 @@
 
+2004-05-04  Gopal V  <gopalv82@yahoo.com>
+
+	* configure.in: change all 'test -e' in configure.in to 'test -f'
+	for portability to Solaris 2.8 (as suggested by Sebastien BOCQ 
+	<sebastien.bocq@skynet.be>)
+
 2004-05-03  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/TooBar.cs: Check for Parent == null before

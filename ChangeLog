@@ -37,6 +37,9 @@
 	fix the inheritance of dictionaries so that they are collections
 	of entries, not values.
 
+	* Generics/LinkedList: bug fix - advance to the next item in
+	Contains, IndexOf, and Remove.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

@@ -183,6 +183,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 						{
 							return true;
 						}
+						current = current.next;
 					}
 					return false;
 				}
@@ -196,6 +197,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 							{
 								return true;
 							}
+							current = current.next;
 						}
 						return false;
 					}
@@ -207,6 +209,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 							{
 								return true;
 							}
+							current = current.next;
 						}
 						return false;
 					}
@@ -229,6 +232,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 							return index;
 						}
 						++index;
+						current = current.next;
 					}
 					return -1;
 				}
@@ -243,6 +247,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 								return index;
 							}
 							++index;
+							current = current.next;
 						}
 						return -1;
 					}
@@ -255,6 +260,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 								return index;
 							}
 							++index;
+							current = current.next;
 						}
 						return -1;
 					}
@@ -284,6 +290,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 							Remove(current);
 							return;
 						}
+						current = current.next;
 					}
 				}
 				else
@@ -297,6 +304,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 								Remove(current);
 								return;
 							}
+							current = current.next;
 						}
 					}
 					else
@@ -308,6 +316,7 @@ public class LinkedList<T> : ICollection<T>, IList<T>, IIterable<T>, ICloneable
 								Remove(current);
 								return;
 							}
+							current = current.next;
 						}
 					}
 				}

@@ -43,15 +43,16 @@ public abstract class ScrollBar : Control
 	private int barDown = -1;
 	private bool keyDown = false;
 	private Timer timer;
-	private int delay = startDelay;
-	private int mouseX; // TODO: use Control::Cursor
-	private int mouseY; // TODO: use Control::Cursor
+	private int delay = 0;
+	private int mouseX; // TODO: use Control.MousePosition
+	private int mouseY; // TODO: use Control.MousePosition
 	private Timer keyTimer;
 	internal bool vertical;
 
 	private const int startDelay = 3;
 
-
+	private Timer idleTimer;
+	private MouseEventArgs idleMouse;
 
 	// Constructors
 	public ScrollBar() : base()
@@ -61,6 +62,9 @@ public abstract class ScrollBar : Control
 		timer.Interval = 100;
 		keyTimer = new Timer(); // keep key and mouse events from...
 		timer.Interval = 100; // ...stepping on each other's toes
+		idleTimer = new Timer();
+		idleTimer.Tick+=new EventHandler(idleTimer_Tick);
+		idleTimer.Interval = 1;
 	}
 
 
@@ -191,7 +195,7 @@ public abstract class ScrollBar : Control
 			}
 			if (value == maximum) { return; }
 			maximum = value;
-			Redraw();
+			Redraw(true);
 		}
 	}
 
@@ -207,7 +211,7 @@ public abstract class ScrollBar : Control
 			}
 			if (value == minimum) { return; }
 			minimum = value;
-			Redraw();
+			Redraw(true);
 		}
 	}
 
@@ -240,7 +244,17 @@ public abstract class ScrollBar : Control
 				throw new ArgumentOutOfRangeException(/* TODO */);
 			}
 			if (value == this.value) { return; }
-			this.value = value;
+
+			using (Graphics g = CreateGraphics())
+			{
+				Rectangle invalid = bar;
+				this.value = value;
+				SetPositionByValue();
+				// Remove old
+				Draw(g, false, invalid);
+				// Draw bar
+				Draw(g, false, bar);
+			}
 			OnValueChanged(new EventArgs());
 		}
 	}
@@ -265,7 +279,8 @@ public abstract class ScrollBar : Control
 		      tmp : minimum;
 		if (value != tmp)
 		{
-			Value = tmp;
+			value = tmp;
+			OnValueChanged(new EventArgs());
 			OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallDecrement,value));
 			SetPositionByValue();
 		}
@@ -307,47 +322,37 @@ public abstract class ScrollBar : Control
 				}
 			}
 		}
-		Value = tmp;
+		value = tmp;
+		OnValueChanged(new EventArgs());
 		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeDecrement,value));
 		SetPositionByValue();
 		Redraw(false);
 	}
 
-	private void Draw(Graphics g, bool layout)
+	private void Draw(Graphics g, bool layout, Rectangle drawBounds)
 	{
 		if (!Visible || !IsHandleCreated) { return; }
-
-		Size clientSize = ClientSize;
-		int x = 0;
-		int y = 0;
-		int width = clientSize.Width;
-		int height = clientSize.Height;
-
-		Rectangle bounds = new Rectangle(x,y,width,height);
 
 		if (layout)
 		{
 			if (vertical)
 			{
-				LayoutElementsV(x,y,width,height);
+				LayoutElementsV(ClientSize);
 			}
 			else
 			{
-				LayoutElementsH(x,y,width,height);
+				LayoutElementsH(ClientSize);
 			}
 		}
 
-		using (Brush bgBrush = CreateBackgroundBrush())
-		{
-			ThemeManager.MainPainter.DrawScrollBar(g,
-			                                       bounds,
-			                                       ForeColor,BackColor,
-			                                       bgBrush,
-			                                       vertical,Enabled,
-			                                       bar, track,
-			                                       decrement,decDown,
-			                                       increment,incDown);
-		}
+		ThemeManager.MainPainter.DrawScrollBar(g,
+											   ClientRectangle,
+											   drawBounds,
+											   ForeColor,BackColor,
+											   vertical,Enabled,
+											   bar, track,
+											   decrement,decDown,
+											   increment,incDown);
 	}
 
 	private void Increment(Object sender, EventArgs e)
@@ -362,13 +367,14 @@ public abstract class ScrollBar : Control
 			}
 		}
 
-		int tmp = (value+smallChange);
-		int tmp2 = (maximum-largeChange+1);
-		tmp = tmp < tmp2 ?
-		      tmp : tmp2;
-		if (value != tmp)
+		int v = value + smallChange;
+		int v1 = maximum - largeChange + 1;
+		if (v1 < v)
+			v = v1;
+		if (value != v)
 		{
-			Value = tmp;
+			value = v;
+			OnValueChanged(new EventArgs());
 			OnScroll(new ScrollEventArgs(this,ScrollEventType.SmallIncrement,value));
 			SetPositionByValue();
 		}
@@ -412,16 +418,17 @@ public abstract class ScrollBar : Control
 			}
 			
 		}
-		Value = tmp;
+		value = tmp;
+		OnValueChanged(new EventArgs());
 		OnScroll(new ScrollEventArgs(this,ScrollEventType.LargeIncrement,value));
 		SetPositionByValue();
 		Redraw(false);
 	}
 
 	// Sets up the layout rectangles for a HScrollBar's elements
-	private void LayoutElementsH(int x, int y, int width, int height)
+	private void LayoutElementsH(Size s)
 	{
-		LayoutElementsV(y,x,height,width);
+		LayoutElementsV(new Size(s.Height, s.Width));
 		decrement = SwapRectValues(decrement);
 		increment = SwapRectValues(increment);
 		track = SwapRectValues(track);
@@ -436,8 +443,12 @@ public abstract class ScrollBar : Control
 	}
 
 	// Sets up the layout rectangles for a VScrollBar's elements
-	private void LayoutElementsV(int x, int y, int width, int height)
+	private void LayoutElementsV(Size s)
 	{
+		int x = 0;
+		int y = 0;
+		int width = s.Width;
+		int height = s.Height;
 		int guiMax = (1+maximum-largeChange-minimum);
 		int scrolls = (maximum-minimum)/largeChange;
 		int position = (value-minimum) < guiMax ?
@@ -472,7 +483,7 @@ public abstract class ScrollBar : Control
 
 	protected override void OnEnabledChanged(EventArgs e)
 	{
-		Redraw();
+		Redraw(false);
 		base.OnEnabledChanged(e);
 	}
 
@@ -609,6 +620,7 @@ public abstract class ScrollBar : Control
 
 	protected override void OnMouseDown(MouseEventArgs e)
 	{
+		Capture = true;
 		int x = e.X;
 		int y = e.Y;
 
@@ -684,7 +696,20 @@ public abstract class ScrollBar : Control
 		base.OnMouseLeave(e);
 	}
 
+	protected override void OnMouseEnter(EventArgs e)
+	{
+		base.OnMouseEnter (e);
+	}
+
+
 	protected override void OnMouseMove(MouseEventArgs e)
+	{
+		idleMouse = e;
+		// Do the actual event when the events have caught up.
+		idleTimer.Start();
+	}
+
+	private void OnMouseMoveActual(MouseEventArgs e)
 	{
 		int x = e.X;
 		int y = e.Y;
@@ -721,10 +746,24 @@ public abstract class ScrollBar : Control
 				if (newPos != bY)
 				{
 					barDown = y;
+					Rectangle invalid;
+					// What area needs to be drawn with the background?
+					if (newPos > bar.Y)
+						invalid = new Rectangle(bar.X, bar.Y, bar.Width, newPos - bar.Y);
+					else
+						invalid = new Rectangle(bar.X, newPos + bar.Height, bar.Width, bar.Y - newPos);
 					bar.Y = newPos;
-					OnScroll(new ScrollEventArgs(this,ScrollEventType.ThumbTrack,value));
 					SetValueByPosition();
-					Redraw(false);
+					using (Graphics g = CreateGraphics())
+					{
+						// Draw background
+						Draw(g, false, invalid);
+						// Draw bar
+						Draw(g, false, bar);
+					}
+					OnValueChanged(new EventArgs());
+					OnScroll(new ScrollEventArgs(this,ScrollEventType.ThumbTrack,value));
+					
 				}
 				else
 				{
@@ -738,12 +777,11 @@ public abstract class ScrollBar : Control
 			}
 			else
 			{
-				int bX = bar.X;
 				int tX = track.X;
 				int bWidth = bar.Width;
 				int tWidth = track.Width;
 				int guiMax = tX+tWidth-bWidth;
-				int newPos = bX+x-barDown;
+				int newPos = bar.X+x-barDown;
 				if (newPos < tX)
 				{
 					newPos = tX;
@@ -752,13 +790,21 @@ public abstract class ScrollBar : Control
 				{
 					newPos = guiMax;
 				}
-				if (newPos != bX)
+				if (newPos != bar.X)
 				{
 					barDown = x;
+					Rectangle invalid;
+					// What area needs to be drawn with the background?
+					if (newPos > bar.X)
+						invalid = new Rectangle(bar.X, bar.Y, newPos - bar.X, bar.Height);
+					else
+						invalid = new Rectangle(newPos + bar.Width, bar.Y, bar.X - newPos, bar.Height);
 					bar.X = newPos;
-					OnScroll(new ScrollEventArgs(this,ScrollEventType.ThumbTrack,value));
 					SetValueByPosition();
 					Redraw(false);
+					OnValueChanged(new EventArgs());
+					OnScroll(new ScrollEventArgs(this,ScrollEventType.ThumbTrack,value));
+					
 				}
 				else
 				{
@@ -767,7 +813,7 @@ public abstract class ScrollBar : Control
 					// make sure when it comes back that
 					// it's tracked by the center of the
 					// scroll bar
-					barDown = bX+bWidth/2;
+					barDown = bar.X + bWidth/2;
 				}
 			}
 		}
@@ -776,6 +822,7 @@ public abstract class ScrollBar : Control
 
 	protected override void OnMouseUp(MouseEventArgs e)
 	{
+		Capture = false;
 		mouseX = e.X;
 		mouseY = e.Y;
 
@@ -820,7 +867,7 @@ public abstract class ScrollBar : Control
 
 	protected override void OnPaint(PaintEventArgs e)
 	{
-		Draw(e.Graphics,true);
+		Draw(e.Graphics,true, ClientRectangle);
 		base.OnPaint(e);
 	}
 
@@ -844,27 +891,15 @@ public abstract class ScrollBar : Control
 		}
 	}
 
-	// Redraw the scrollbar after a state change.
-	private void Redraw()
-	{
-		// Bail out if the scrollbar is not currently visible.
-		if (!Visible || !IsHandleCreated) { return; }
-
-		// Redraw the scrollbar.
-		using (Graphics graphics = CreateGraphics())
-		{
-			Draw(graphics,true);
-		}
-	}
+	// Redraw the scrollbar after a state change. Relayout if necessary
 	private void Redraw(bool layout)
 	{
 		// Bail out if the scrollbar is not currently visible.
 		if (!Visible || !IsHandleCreated) { return; }
-
 		// Redraw the scrollbar.
 		using (Graphics graphics = CreateGraphics())
 		{
-			Draw(graphics,layout);
+			Draw(graphics,layout, ClientRectangle);
 		}
 	}
 
@@ -952,7 +987,7 @@ public abstract class ScrollBar : Control
 			newValue = guiMax < newValue ?
 			           guiMax : newValue;
 			newValue += minimum;
-			Value = newValue;
+			value = newValue;
 		}
 		else
 		{
@@ -966,7 +1001,7 @@ public abstract class ScrollBar : Control
 				newValue = guiMax-newValue;
 			}
 			newValue += minimum;
-			Value = newValue;
+			value = newValue;
 		}
 	}
 	private static Rectangle SwapRectValues(Rectangle rect)
@@ -974,11 +1009,10 @@ public abstract class ScrollBar : Control
 		return new Rectangle(rect.Y,rect.X,rect.Height,rect.Width);
 	}
 
-	[TODO]
 	public override string ToString()
 	{
-		// not sure if this is right
-		return base.ToString() + ", Value: " + value;
+		return base.ToString() + ", Minimum: " + minimum + ", Maximum: " +
+			maximum + ", Value: " + value;
 	}
 
 	private void TrackPressed(bool pressed, bool plus)
@@ -1026,6 +1060,11 @@ public abstract class ScrollBar : Control
 		remove { RemoveHandler(EventId.ValueChanged,value); }
 	}
 
+	private void idleTimer_Tick(object sender, EventArgs e)
+	{
+		idleTimer.Stop();
+		OnMouseMoveActual(idleMouse);
+	}
 }; // class ScrollBar
 
 }; // namespace System.Windows.Forms

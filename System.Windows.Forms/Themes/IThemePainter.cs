@@ -128,8 +128,8 @@ internal interface IThemePainter
 	// Draw a scroll bar control.
 	void DrawScrollBar
 				(Graphics graphics, Rectangle bounds,
+				 Rectangle drawBounds,
 				 Color foreColor, Color backColor,
-				 Brush backgroundBrush,
 				 bool vertical, bool enabled,
 				 Rectangle bar, Rectangle track,
 				 Rectangle decrement, bool decDown,

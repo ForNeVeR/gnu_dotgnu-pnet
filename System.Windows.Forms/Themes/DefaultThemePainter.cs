@@ -938,11 +938,11 @@ internal class DefaultThemePainter : IThemePainter
 								  int width, int height,
 								  Color color)
 			{
-				Brush brush;
-				Pen pen;
-				brush=new SolidBrush(color);
-				graphics.FillRectangle(brush, x, y, width, height);
-				brush.Dispose();
+				using (Brush brush = new SolidBrush(color))
+				{
+					graphics.FillRectangle(brush, x, y, width, height);
+					brush.Dispose();
+				}
 			}
 
 	// Draw a check box control.
@@ -1414,18 +1414,28 @@ internal class DefaultThemePainter : IThemePainter
 				// TODO
 			}
 
+	private Brush hatchBrush;
+	private Color hatchForeColor = Color.Empty;
+	private Color hatchBackColor = Color.Empty;
+
 	// Draw a scroll bar control.
 	public virtual void DrawScrollBar
 				(Graphics graphics, Rectangle bounds,
+				 Rectangle drawBounds,
 				 Color foreColor, Color backColor,
-				 Brush backgroundBrush,
 				 bool vertical, bool enabled,
 				 Rectangle bar, Rectangle track,
 				 Rectangle decrement, bool decDown,
 				 Rectangle increment, bool incDown)
 			{
 				// fill in the background
-				graphics.FillRectangle(backgroundBrush, bounds);
+				//graphics.FillRectangle(backgroundBrush, bounds);
+				if (hatchBrush != null && (foreColor != hatchForeColor ||
+					backColor != hatchBackColor))
+						hatchBrush.Dispose();
+				if (hatchBrush == null)
+					hatchBrush = new HatchBrush(HatchStyle.Percent50,
+						   backColor, foreColor);
 
 				Color color;
 				if (backColor.GetBrightness() > 0.5f)
@@ -1436,18 +1446,19 @@ internal class DefaultThemePainter : IThemePainter
 				{
 					color = Color.Black;
 				}
-				using (Brush brush = new HatchBrush(HatchStyle.Percent50,
-				                                    backColor, color))
-				{
-					graphics.FillRectangle(brush, track);
-				}
-
+				Region r = new Region(track);
+				r.Intersect(drawBounds);
+				r.Exclude(bar);
+				r.Exclude(increment);
+				r.Exclude(decrement);
+				graphics.FillRegion(hatchBrush, r);
+				
 				// workaround some strange visual bugs with the
 				// hatch... comment these out to see... take a
 				// screen shot and zoom in on decrement and bar
-				graphics.FillRectangle(backgroundBrush, bar);
-				graphics.FillRectangle(backgroundBrush, decrement);
-				graphics.FillRectangle(backgroundBrush, increment);
+				//graphics.FillRectangle(backgroundBrush, bar);
+				//graphics.FillRectangle(backgroundBrush, decrement);
+				//graphics.FillRectangle(backgroundBrush, increment);
 
 				// setup the arrow directions for the scroll buttons
 				ScrollButton decButton;
@@ -1480,14 +1491,17 @@ internal class DefaultThemePainter : IThemePainter
 					           ButtonState.Pushed :
 					           ButtonState.Normal;
 				}
-
-				// draw the scroll buttons
-				DrawScrollButton(graphics,
+				// draw the scroll button
+				if (decrement.IntersectsWith(drawBounds))
+					DrawScrollButton(graphics,
 				                 decrement.X, decrement.Y,
 				                 decrement.Width, decrement.Height,
 				                 decButton, decState,
 				                 foreColor, backColor);
-				DrawScrollButton(graphics,
+				
+				// draw the scroll button
+				if (increment.IntersectsWith(drawBounds))
+					DrawScrollButton(graphics,
 				                 increment.X, increment.Y,
 				                 increment.Width, increment.Height,
 				                 incButton, incState,
@@ -1499,7 +1513,8 @@ internal class DefaultThemePainter : IThemePainter
 				                       ButtonState.Inactive;
 
 				// draw the scroll bar
-				DrawButton(graphics,
+				if (bar.IntersectsWith(drawBounds))
+					DrawButton(graphics,
 				           bar.X, bar.Y,
 				           bar.Width, bar.Height,
 				           barState,
@@ -1602,7 +1617,6 @@ internal class DefaultThemePainter : IThemePainter
 					{
 						throw new ArgumentException("button");
 					}
-					break;
 				}
 				
 				// draw the arrow

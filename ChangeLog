@@ -5,6 +5,9 @@
 	"firstParam" value to the "pack_varargs" instruction - it
 	was previously off by 1.
 
+	* cscc/csharp/cs_invoke.tc (VarArgElemSem): replace the
+	"null" type with "System.Object" in vararg parameter lists.
+
 2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_task.c:

@@ -983,6 +983,7 @@ static int VarArgElemSem(ILNode *node, ILGenInfo *info, ILType *signature)
 	{
 		ILNode_Argument *arg = (ILNode_Argument *)node;
 		CSSemValue value;
+		ILType *argType;
 		if(arg->modifier == ILParamMod_empty)
 		{
 			if(!CSSemExpectValue(arg->expression, info, &(arg->expression),
@@ -992,7 +993,13 @@ static int VarArgElemSem(ILNode *node, ILGenInfo *info, ILType *signature)
 							  "invalid argument used with `__arglist'");
 				return 0;
 			}
-			if(!ILTypeAddParam(info->context, signature, CSSemGetType(value)))
+			argType = CSSemGetType(value);
+			if(argType == ILType_Null)
+			{
+				/* Replace the null type with "System.Object" */
+				argType = ILFindSystemType(info, "Object");
+			}
+			if(!ILTypeAddParam(info->context, signature, argType))
 			{
 				CCOutOfMemory();
 			}

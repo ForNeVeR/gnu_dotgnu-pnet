@@ -31,7 +31,7 @@
 	iadd
 	istore_2
 ?L3:
-	iinc	5, 1
+	iinc	5 1
 ?L1:
 	iload	5
 	iload	6

@@ -6,6 +6,9 @@
 user-defined boolean conversions.  Update the "ILNode_ToBool" code
 generators to use these fields.
 
+* cscc/cs_semantics.tc: Implement the helper functions "CSSemType",
+"CSSemTypeVoid", and "CSSemExpectValue" to help with semantic analysis.
+
 2001-08-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_main.c (main): turn on the "semAnalysis" flag during type

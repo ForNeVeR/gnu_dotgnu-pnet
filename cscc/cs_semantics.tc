@@ -43,6 +43,26 @@ ILType *CSCreateValueType(CSSemContext *sctx, const char *namespace,
 						  const char *name);
 */
 
+/*
+ * Perform semantic analysis on a type.  This is
+ * guaranteed to always return a correct type value.
+ * The "void" type will produce an error, if present.
+ */
+ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent);
+
+/*
+ * Perform semantic analysis on a type that can also
+ * include the "void" type.
+ */
+ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent);
+
+/*
+ * Perform semantic analysis on a node and expect a value.
+ * Returns non-zero if a value, or zero on error.
+ */
+int CSSemExpectValue(ILNode *node, ILGenInfo *info,
+					 ILNode **parent, CSSemValue *value);
+
 %}
 
 %{
@@ -51,5 +71,53 @@ ILType *CSCreateValueType(CSSemContext *sctx, const char *namespace,
  * Default value that is returned from "ILNode_SemAnalysis".
  */
 CSSemValue CSSemValueDefault = {CS_SEMKIND_VOID, 0};
+
+%}
+
+%end %{
+
+ILType *CSSemType(ILNode *type, ILGenInfo *info, ILNode **parent)
+{
+	ILType *resultType = CSSemTypeVoid(type, info, parent);
+	if(resultType == ILType_Void)
+	{
+		CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+					  "`void' type is not allowed in this context");
+		resultType = ILType_Int32;
+	}
+	return resultType;
+}
+
+ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent)
+{
+	CSSemValue value;
+	if(type)
+	{
+		value = ILNode_SemAnalysis(type, info, parent);
+		if(value.kind != CS_SEMKIND_TYPE)
+		{
+			CSErrorOnLine(yygetfilename(type), yygetlinenum(type),
+						  "invalid type specification");
+			return ILType_Int32;
+		}
+		else
+		{
+			return value.type;
+		}
+	}
+	else
+	{
+		/* NULL is used in some places in the grammar to indicate "void" */
+		return ILType_Void;
+	}
+}
+
+int CSSemExpectValue(ILNode *node, ILGenInfo *info,
+					 ILNode **parent, CSSemValue *value)
+{
+	*value = ILNode_SemAnalysis(node, info, parent);
+	return (value->kind == CS_SEMKIND_RVALUE ||
+			value->kind == CS_SEMKIND_LVALUE);
+}
 
 %}

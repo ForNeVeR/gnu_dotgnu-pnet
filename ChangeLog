@@ -18,6 +18,11 @@
 	System.Drawing.Xsharp/DrawingToolkit.cs, Xsharp/Xlib.cs.in:
 	return the complete list of X font families from "Font.Families".
 
+	* Xsharp/Font.cs, Xsharp/XsharpSupport.c, Xsharp/XsharpSupport.h:
+	use a list of font families when searching for the default
+	serif, sans serif, and fixed-width fonts, to deal with systems
+	that don't have the standard X bitmapped fonts installed.
+
 2004-01-05  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Panel.cs,

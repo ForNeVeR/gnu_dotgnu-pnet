@@ -61,6 +61,7 @@
 #define	FontStyle_Italic		2
 #define	FontStyle_Underline		4
 #define	FontStyle_StrikeOut		8
+#define	FontStyle_NoDefault		0x40
 #define	FontStyle_FontStruct	0x80
 
 /*

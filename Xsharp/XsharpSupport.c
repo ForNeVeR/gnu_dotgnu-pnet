@@ -184,10 +184,13 @@ void *XSharpCreateFontSet(Display *dpy, const char *family,
 	}
 
 	/* Remove the family, but keep the style */
-	fontSet = TryCreateFont(dpy, 0, pointSize, style);
-	if(fontSet)
+	if((style & FontStyle_NoDefault) == 0)
 	{
-		return fontSet;
+		fontSet = TryCreateFont(dpy, "fixed", pointSize, style);
+		if(fontSet)
+		{
+			return fontSet;
+		}
 	}
 
 	/* Remove the point size and the style, but keep the family */
@@ -198,7 +201,11 @@ void *XSharpCreateFontSet(Display *dpy, const char *family,
 	}
 
 	/* Remove everything - this will succeed unless X has no fonts at all! */
-	return TryCreateFont(dpy, 0, -1, FontStyle_Normal | structStyle);
+	if((style & FontStyle_NoDefault) != 0)
+	{
+		return 0;
+	}
+	return TryCreateFont(dpy, "fixed", -1, FontStyle_Normal | structStyle);
 }
 
 /*

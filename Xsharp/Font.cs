@@ -778,9 +778,9 @@ public class Font
 				IntPtr fontSet;
 
 				// Create the raw X font set structure.
-				fontSet = Xlib.XSharpCreateFontSet
+				fontSet = CreateFontSetOrStruct
 					(display, family,
-					 NormalizePointSize(pointSize), (int)style);
+					 NormalizePointSize(pointSize), (int)style, false);
 
 				// Get the extent information for the font.
 				Xlib.XSharpFontExtentsSet
@@ -904,6 +904,91 @@ public class Font
 				}
 			}
 
+	// Family lists for searching for useful X fonts.  This is necessary
+	// because some people deliberately uninstall the traditional X fonts,
+	// even though that is a very silly thing to do.  We may need to extend
+	// this list in the future.
+	private static readonly String[] SansSerifFamilies =
+			{"helvetica", "lucida", "luxi sans"};
+	private static readonly String[] SerifFamilies =
+			{"times", "luxi serif"};
+	private static readonly String[] FixedFamilies =
+			{"courier", "lucida console", "lucidatypewriter", "luxi mono"};
+
+	// Create a font set or font struct, with fallback names.
+	private static IntPtr CreateFontSetOrStruct
+				(IntPtr display, String[] families, int pointSize,
+				 int style, bool isFontStruct)
+			{
+				int posn;
+				IntPtr fontSet;
+
+				// Try all of the candidate fonts in order.
+				for(posn = 0; posn < families.Length; ++posn)
+				{
+					if(isFontStruct)
+					{
+						fontSet = Xlib.XSharpCreateFontStruct
+							(display, families[posn], pointSize, style | 0x40);
+					}
+					else
+					{
+						fontSet = Xlib.XSharpCreateFontSet
+							(display, families[posn], pointSize, style | 0x40);
+					}
+					if(fontSet != IntPtr.Zero)
+					{
+						return fontSet;
+					}
+				}
+
+				// Let XsharpSupport choose a default based on the first font.
+				if(isFontStruct)
+				{
+					fontSet = Xlib.XSharpCreateFontStruct
+						(display, families[0], pointSize, style);
+				}
+				else
+				{
+					fontSet = Xlib.XSharpCreateFontSet
+						(display, families[0], pointSize, style);
+				}
+				return fontSet;
+			}
+	private static IntPtr CreateFontSetOrStruct
+				(IntPtr display, String family, int pointSize,
+				 int style, bool isFontStruct)
+			{
+				if(family == SansSerif)
+				{
+					return CreateFontSetOrStruct
+						(display, SansSerifFamilies, pointSize,
+						 style, isFontStruct);
+				}
+				else if(family == Serif)
+				{
+					return CreateFontSetOrStruct
+						(display, SerifFamilies, pointSize,
+						 style, isFontStruct);
+				}
+				else if(family == Fixed)
+				{
+					return CreateFontSetOrStruct
+						(display, FixedFamilies, pointSize,
+						 style, isFontStruct);
+				}
+				else if(isFontStruct)
+				{
+					return Xlib.XSharpCreateFontStruct
+						(display, family, pointSize, style);
+				}
+				else
+				{
+					return Xlib.XSharpCreateFontSet
+						(display, family, pointSize, style);
+				}
+			}
+
 	// Font class that uses XFontStruct values instead of XFontSet values.
 	private class FontStructFont : Font
 	{
@@ -921,9 +1006,9 @@ public class Font
 					IntPtr fontSet;
 
 					// Create the raw X font set structure.
-					fontSet = Xlib.XSharpCreateFontStruct
+					fontSet = CreateFontSetOrStruct
 						(display, family,
-						 NormalizePointSize(pointSize), (int)style);
+						 NormalizePointSize(pointSize), (int)style, true);
 
 					// Get the extent information for the font.
 					Xlib.XSharpFontExtentsStruct

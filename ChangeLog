@@ -16,6 +16,9 @@
 	"Close" handling for top-level forms; implement "DestroyHandle"
 	and "Dispose".
 
+	* System.Windows.Forms/NativeWindow.cs: stub out "NativeWindow"
+	for the public API, although we don't intend to make use of it.
+
 2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: Implemented as much as I could.

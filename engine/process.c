@@ -67,6 +67,8 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->loadedModules = 0;
 	process->gcHandles = 0;
 	process->entryImage = 0;
+	process->internalClassTable = 0;
+	process->internalClassCount = 0;
 #ifdef IL_CONFIG_DEBUG_LINES
 	process->debugHookFunc = 0;
 	process->debugHookData = 0;
@@ -463,6 +465,16 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 
 	/* Return the "Main" arguments to the caller */
 	return mainArgs;
+}
+
+int ILExecProcessSetInternalCallTable(ILExecProcess* process, 
+					ILEngineInternalClassInfo* internalClassTable,
+					int internalClassCount)
+{
+	if(internalClassCount<=0)return 0;
+	process->internalClassTable=internalClassTable;
+	process->internalClassCount=internalClassCount;
+	return 1;
 }
 
 #ifdef	__cplusplus

@@ -86,6 +86,56 @@ typedef union
 } ILExecValue;
 
 /*
+ * Structure of an "internalcall" method table entry.
+ */
+typedef struct
+{
+	const char	   *methodName;
+	const char	   *signature;
+	void           *func;
+#if !defined(HAVE_LIBFFI)
+	void           *marshal;
+#endif
+
+} ILMethodTableEntry;
+
+/*
+ * Structure that keeps track of a process local internalcall
+ * NOTE: Keep in sync with int_table.c declaration
+ */
+typedef struct _tagILEngineInternalClassInfo ILEngineInternalClassInfo;
+struct _tagILEngineInternalClassInfo
+{
+	char *name;
+	char *namespace;
+	ILMethodTableEntry *entry;
+};
+
+
+/*
+ * Helper macros for defining "internalcall" method tables.
+ */
+#define	IL_METHOD_BEGIN(name)	\
+			static ILMethodTableEntry const name[] = {
+#if defined(HAVE_LIBFFI)
+#define	IL_METHOD(name,sig,func,marshal)	\
+			{(name), (sig), (void *)(func)},
+#define	IL_CONSTRUCTOR(name,sig,func,marshal,allocFunc,allocMarshal)	\
+			{(name), (sig), (void *)(func)}, \
+			{(name), 0, (void *)(allocFunc)},
+#define	IL_METHOD_END			\
+			{0, 0, 0}};
+#else
+#define	IL_METHOD(name,sig,func,marshal)	\
+			{(name), (sig), (void *)(func), (void *)(marshal)},
+#define	IL_CONSTRUCTOR(name,sig,func,marshal,allocFunc,allocMarshal)	\
+			{(name), (sig), (void *)(func), (void *)(marshal)}, \
+			{(name), 0, (void *)(allocFunc), (void *)(allocMarshal)},
+#define	IL_METHOD_END			\
+			{0, 0, 0, 0}};
+#endif
+
+/*
  * Function type that is used by debuggers for hooking breakpoints.
  */
 typedef int (*ILExecDebugHookFunc)(void *userData,
@@ -229,6 +279,12 @@ void ILExecProcessUnwatchMethod(ILExecProcess *process, ILMethod *method);
  */
 void ILExecProcessWatchAll(ILExecProcess *process, int flag);
 
+/* 
+ * Add a new set of internal calls to the process's lookup table
+ */
+int ILExecProcessSetInternalCallTable(ILExecProcess* process, 
+					ILEngineInternalClassInfo* internalClassTable,
+					int internalClassCount);
 /*
  * Get the current thread from a PInvoke'd method.  The behaviour
  * is undefined if used anywhere else.

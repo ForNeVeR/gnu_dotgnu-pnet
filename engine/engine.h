@@ -137,6 +137,10 @@ struct _tagILExecProcess
 	/* The image that contains the program entry point */
 	ILImage		   *entryImage;
 
+	/* The custom internal call table which is runtime settable */
+	ILEngineInternalClassInfo* internalClassTable;
+	int 			internalClassCount;
+
 #ifdef IL_CONFIG_DEBUG_LINES
 
 	/* Breakpoint debug information */
@@ -234,43 +238,6 @@ struct _tagILClassPrivate
 	ILImplPrivate  *implements;			/* Interface implementation records */
 
 };
-
-/*
- * Structure of an "internalcall" method table entry.
- */
-typedef struct
-{
-	const char	   *methodName;
-	const char	   *signature;
-	void           *func;
-#if !defined(HAVE_LIBFFI)
-	void           *marshal;
-#endif
-
-} ILMethodTableEntry;
-
-/*
- * Helper macros for defining "internalcall" method tables.
- */
-#define	IL_METHOD_BEGIN(name)	\
-			static ILMethodTableEntry const name[] = {
-#if defined(HAVE_LIBFFI)
-#define	IL_METHOD(name,sig,func,marshal)	\
-			{(name), (sig), (void *)(func)},
-#define	IL_CONSTRUCTOR(name,sig,func,marshal,allocFunc,allocMarshal)	\
-			{(name), (sig), (void *)(func)}, \
-			{(name), 0, (void *)(allocFunc)},
-#define	IL_METHOD_END			\
-			{0, 0, 0}};
-#else
-#define	IL_METHOD(name,sig,func,marshal)	\
-			{(name), (sig), (void *)(func), (void *)(marshal)},
-#define	IL_CONSTRUCTOR(name,sig,func,marshal,allocFunc,allocMarshal)	\
-			{(name), (sig), (void *)(func), (void *)(marshal)}, \
-			{(name), 0, (void *)(allocFunc), (void *)(allocMarshal)},
-#define	IL_METHOD_END			\
-			{0, 0, 0, 0}};
-#endif
 
 /*
  * Class information for the CVM coder.
@@ -426,7 +393,8 @@ typedef struct
  * Find the function for an "internalcall" method.
  * Returns zero if there is no function information.
  */
-int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info);
+int _ILFindInternalCall(ILExecProcess* process, ILMethod *method, 
+						int ctorAlloc, ILInternalInfo *info);
 
 /*
  * Find internalcall information for an array method.
@@ -436,8 +404,7 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info);
 /*
  * Find internalcall information for a delegate method.
  */
-int _ILGetInternalDelegate(ILMethod *method, int *isCtor,
-						   ILInternalInfo *info);
+int _ILGetInternalDelegate(ILMethod *method, int *isCtor,  ILInternalInfo *info);
 
 /*
  * Look up an interface method.  Returns NULL if not found.

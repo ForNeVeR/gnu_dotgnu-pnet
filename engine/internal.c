@@ -84,7 +84,8 @@ extern	"C" {
  */
 #include "int_table.c"
 
-int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info)
+int _ILFindInternalCall(ILExecProcess *process,ILMethod *method, 
+						int ctorAlloc, ILInternalInfo *info)
 {
 	ILImage *image;
 	ILClass *owner;
@@ -170,6 +171,65 @@ int _ILFindInternalCall(ILMethod *method, int ctorAlloc, ILInternalInfo *info)
 			left = middle + 1;
 		}
 	}
+	
+	/* Search for the local internalcall table */
+	left = 0;
+	right = process->internalClassCount - 1;
+	while(left <= right)
+	{
+		middle = (left + right) / 2;
+		cmp = strcmp(name, process->internalClassTable[middle].name);
+		if(!cmp)
+		{
+			if(!strcmp(namespace, 
+							process->internalClassTable[middle].namespace))
+			{
+				/* Search for the method within the class's table */
+				entry = process->internalClassTable[middle].entry;
+				name = ILMethod_Name(method);
+				signature = ILMethod_Signature(method);
+				while(entry->methodName != 0)
+				{
+					if(!strcmp(entry->methodName, name) &&
+					   entry->signature != 0 &&
+					   _ILLookupTypeMatch(signature, entry->signature))
+					{
+						if(ctorAlloc && entry[1].methodName &&
+						   !(entry[1].signature))
+						{
+							info->func = entry[1].func;
+						#if defined(HAVE_LIBFFI)
+							info->marshal = 0;
+						#else
+							info->marshal = entry[1].marshal;
+						#endif
+						}
+						else
+						{
+							info->func = entry->func;
+						#if defined(HAVE_LIBFFI)
+							info->marshal = 0;
+						#else
+							info->marshal = entry->marshal;
+						#endif
+						}
+						return 1;
+					}
+					++entry;
+				}
+			}
+			return 0;
+		}
+		else if(cmp < 0)
+		{
+			right = middle - 1;
+		}
+		else
+		{
+			left = middle + 1;
+		}
+	}
+
 
 	/* Perhaps this is a "runtime" method for an array or delegate? */
 runtimeOnly:

@@ -255,11 +255,13 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				}
 
 				/* Look up the internalcall function details */
-				if(!_ILFindInternalCall(method, 0, &fnInfo))
+				if(!_ILFindInternalCall(ILExecThreadGetProcess(thread),
+										method, 0, &fnInfo))
 				{
 					if(isConstructor)
 					{
-						if(!_ILFindInternalCall(method, 1, &ctorfnInfo))
+						if(!_ILFindInternalCall(ILExecThreadGetProcess(thread),
+												method, 1, &ctorfnInfo))
 						{
 							METADATA_UNLOCK(thread);
 							*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
@@ -275,7 +277,8 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				}
 				else if(isConstructor)
 				{
-					_ILFindInternalCall(method, 1, &ctorfnInfo);
+					_ILFindInternalCall(ILExecThreadGetProcess(thread),
+										method, 1, &ctorfnInfo);
 				}
 			}
 			break;

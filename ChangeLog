@@ -1,4 +1,10 @@
 
+2002-11-17  Gopal.V  <gopalv82@symonds.net>
+	
+	* engine/engine.h, engine/internal.c, engine/process.c, include/il_engine.h
+	,engine/convert.c: Enable addition of external internal calls as process
+	locals.
+
 2002-11-16  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_oper.tc: Correct a minor fix in coercion of the 

@@ -121,6 +121,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						graphics.Dispose();
 						graphics = null;
 					}
+					if (clip != null)
+					{
+						clip.Dispose();
+						clip = null;
+					}
 				}
 			}
 
@@ -1348,9 +1353,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					int charactersFitted, linesFilled;
 					Size size = ToolkitGraphics.MeasureString
 						(s, null, null, out charactersFitted, out linesFilled, false);
+					bool containsNL =  (s.IndexOf('\n') >= 0);
 					// If we need to wrap then do it the hard way.
 					if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
-						size.Width >= deviceLayout.Width )
+						(size.Width >= deviceLayout.Width || containsNL) )
 					{
 						StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(s, this, font, deviceLayout, format);
 						calculator.LayoutByWords();
@@ -2073,6 +2079,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				return Clip.IsVisible(x, y, width, height, this);
 			}
 
+	// First attempt as a way to measure strings and draw strings, taking into account a string format.
+	// The string measuring happens a word at a time.
 	private class StringDrawPositionCalculator
 	{
 		private SplitWord[] words;
@@ -2111,6 +2119,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 		public void LayoutByWords()
 				{
+					// Break the string into "words". Each word has a start pos, end pos and measured size.
+					// Each new line group is treated as a "word" as is each whitespace.
 					wordCount = 0;
 					words = new SplitWord[16];
 					int start = 0;
@@ -2118,24 +2128,38 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					{
 						start = i;
 						char c = text[i];
+						// Look for \r on its own, \n on its own or \r\n.
 						if(c == '\r')
 						{
 							if (i < text.Length-1 && text[i+1]=='\n')
+							{
 								i += 2;
+							}
 							else
-								i++; // Invalid, the \r is on its own
+							{
+								i++;
+							}
 						}
-						else if(c == '\n') // Invalid, the \n is on its own
-							i += 1;
+						else if(c == '\n')
+						{
+							i++;
+						}
 						else
 						{
-							while(i < text.Length && Char.IsWhiteSpace(text[i])) 
+							// Skip over the whitespace.
+							while(i < text.Length && Char.IsWhiteSpace(text[i]))
+							{
 								i++;
+							}
+							// We are at the start of text so skip over the text.
 							if (i == start)
 							{
 								while(i < text.Length && !Char.IsWhiteSpace(text[i]) && text[i] != '\n' && text[i] != '\r')
+								{
 									i++;
+								}
 							}
+							// Dynamically allocate the array if we need more space.
 							if (wordCount >= words.Length)
 							{
 								SplitWord[] newWords = new SplitWord[words.Length * 2];
@@ -2143,6 +2167,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 								words = newWords;
 							}
 						}
+						// Add the word.
 						words[wordCount++] = new SplitWord(start, i - start);
 					}	
 					Layout();
@@ -2192,6 +2217,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 				}
 
+		// Calculate the bounds of the measured strings, the number of characters fitted and the number of lines.
 		public Size GetBounds(out int charactersFitted, out int linesFilled)
 				{
 					linesFilled = 0;
@@ -2202,56 +2228,51 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					}
 					bool noPartialLines = (format.FormatFlags & StringFormatFlags.LineLimit) != 0;
 					int h = words[0].size.Height;
+					// Find number of lines filled.
 					for (int i = 0; i < linePositions.Length; i++)
 					{
 						if (noPartialLines)
 						{
 							if (linePositions[i].Y + h > layout.Height)
+							{
 								break;
+							}
 						}
 						else if (linePositions[i].Y > layout.Height)
+						{
 							break;
+						}
 						linesFilled++;
 					}
-					if (linesFilled == 1)
+
+					int maxWidth = 0;
+					int currentWidth = 0;
+					int currentLine = 0;
+					// Find the maximum width of a line and the number of characters fitted.
+					for(int i=0; i < wordCount; i++)
 					{
-						// Find the width of the single line.
-						int width = 0;
-						for (int i = 0; i < wordCount; i++)
+						SplitWord word = words[i];
+						charactersFitted += word.length;
+						if(word.line == currentLine)
 						{
-							SplitWord word = words[i];
-							if (word.line != -1)
-								break;
-							width += word.size.Width;
-							charactersFitted += word.length;
+							currentWidth += word.size.Width;
 						}
-						return new Size(width, h);
-					}
-					else
-					{
-						// Find the characters fitted.
-						int width = (int)layout.Width;
-						for (int i = 0; i < wordCount; i++)
+						else
 						{
-							SplitWord word = words[i];
-							if (word.line != -1)
-								continue;
-							// if we are on the last line - check the width.
-							if (i == linesFilled - 1)
+							if (currentWidth > maxWidth)
 							{
-								width -= word.size.Width;
-								if (width < 0)
-								{
-									// TODO: This is a guess and might be inaccurate!!
-									// We should measure each character.
-									charactersFitted += ((-width * word.length + word.size.Width/2) / word.size.Width);
-									break;
-								}
+								maxWidth = currentWidth;
 							}
-							charactersFitted += word.length;
+							currentWidth = word.size.Width;
+							currentLine++;
 						}
-						return new Size((int)layout.Width, h * linesFilled);
 					}
+					if (currentWidth > maxWidth)
+					{
+						maxWidth = currentWidth;
+					}
+
+					return new Size(maxWidth, h * linesFilled);
 				}
 		// Use the toolkit to measure all the words and spaces.
 		private void  MeasureStrings() 
@@ -2265,17 +2286,22 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					{
 						SplitWord word = words[i];
 						char c = text[word.start];
-						if (char.IsWhiteSpace(c))
+						if (c != '\n' && c != '\r')
 						{
-							if (spaceSize.Width == -1)
-								spaceSize = graphics.ToolkitGraphics.MeasureString(" ", rect, null, out charactersFitted, out linesFilled, false);
-							word.size = spaceSize;
-							words[i] = word;
-						}
-						else if (c != '\n' && c != '\r')
-						{
-							word.size = graphics.ToolkitGraphics.MeasureString(text.Substring(word.start, word.length), rect, null, out charactersFitted, out linesFilled, false);
-							words[i] = word;
+							if (char.IsWhiteSpace(c))
+							{
+								if (spaceSize.Width == -1)
+								{
+									spaceSize = graphics.ToolkitGraphics.MeasureString(" ", rect, null, out charactersFitted, out linesFilled, false);
+								}
+								word.size = spaceSize;
+								words[i] = word;
+							}
+							else
+							{
+								word.size = graphics.ToolkitGraphics.MeasureString(text.Substring(word.start, word.length), rect, null, out charactersFitted, out linesFilled, false);
+								words[i] = word;
+							}
 						}
 					}
 				}
@@ -2291,10 +2317,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						SplitWord word = words[i];
 						char c = text[word.start];
 						// Wrap when \r\n
-						if (c == '\r' && word.length == 2) 
+						if (c == '\r' || c == '\n') 
 						{
 							currLine++;
 							currSize = 0;
+							continue;
 						}
 						if (Char.IsWhiteSpace(c))
 						{
@@ -2302,7 +2329,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							{
 								// Check that we are not at the end of the line.
 								SplitWord nextWord = words[i+1];
-								if (text[nextWord.start] != '\r' || nextWord.length != 2)
+								char c1 = text[nextWord.start];
+								if (c1 != '\r' && c1 != '\n')
 								{
 									// If we have space for the next word in the line then set the lines.
 									if (currSize + word.size.Width + nextWord.size.Width <= lineSize) 
@@ -2360,9 +2388,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					int yOffset=0;
 					// Set the offset based on the  LineAlignment.
 					if (format.LineAlignment == StringAlignment.Far)
+					{
 						yOffset = (int)layout.Height - numLines * h;
+					}
 					else if (format.LineAlignment == StringAlignment.Center)
+					{
 						yOffset = ((int)layout.Height - numLines * h)/2;
+					}
 
 					for(int line=0; line < numLines; line++)
 					{
@@ -2373,15 +2405,23 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							{
 								SplitWord word = words[i];
 								if(word.line == line)
+								{
 									xOffset += word.size.Width;
+								}
 								if(word.line > line)
+								{
 									break;
+								}
 							}
 							// Set the offset based on the Alignment.
 							if (format.Alignment == StringAlignment.Far)
+							{
 								xOffset = (int)layout.Width - 1 - xOffset;
+							}
 							else if (format.Alignment == StringAlignment.Center)
+							{
 								xOffset = ((int)layout.Width - 1 - xOffset)/2;
+							}
 						}
 
 						linePositions[line].Y=(int)layout.Y + yOffset + line*h;
@@ -2657,11 +2697,13 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				SelectFont(font);
 				Size size = ToolkitGraphics.MeasureString
 					(text, null, null, out charactersFitted, out linesFilled, false);
+				bool containsNL =  (text.IndexOf('\n') >= 0);
+					
 				// If we need to wrap then do it the hard way.
 				if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
-					size.Width >= layoutArea.Width && layoutArea.Width != 0 )
+					(size.Width >= layoutArea.Width && layoutArea.Width != 0 || containsNL) )
 				{
-					Rectangle layout = new Rectangle(0,0, (int)layoutArea.Width - 1, (int)layoutArea.Height - 1);
+					Rectangle layout = new Rectangle(0,0, (int)layoutArea.Width, (int)layoutArea.Height);
 					StringDrawPositionCalculator calculator = new StringDrawPositionCalculator(text, this, font, layout , format);
 					calculator.LayoutByWords();
 					return calculator.GetBounds(out charactersFitted, out linesFilled);
@@ -3034,6 +3076,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				}
 				UpdateClip();
 			}
+
+	internal void SetClipInternal(Region region)
+	{
+		clip = region;
+	}
 
 	// Transform points from one co-ordinate space to another.
 	public void TransformPoints(CoordinateSpace destSpace,

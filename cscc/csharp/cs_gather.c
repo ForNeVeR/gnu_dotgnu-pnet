@@ -461,7 +461,7 @@ static void AddMemberToScope(ILScope *scope, int memberKind,
  * Search for a member with a specific name to do duplicate testing.
  */
 static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
-								  ILClass *scope)
+								  ILClass *scope, ILMember *notThis)
 {
 	ILMember *member;
 	ILImplements *impl;
@@ -472,7 +472,7 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 		while((member = ILClassNextMemberMatch
 				(classInfo, member, 0, name, 0)) != 0)
 		{
-			if(ILMemberAccessible(member, scope))
+			if(ILMemberAccessible(member, scope) && member != notThis)
 			{
 				return member;
 			}
@@ -486,7 +486,7 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 			{
 				member = FindMemberByName
 					(ILClassResolve(ILImplementsGetInterface(impl)),
-					 name, scope);
+					 name, scope, notThis);
 				if(member)
 				{
 					return member;
@@ -654,7 +654,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		name = ILQualIdentName(decl->name, 0);
 
 		/* Look for duplicates */
-		member = FindMemberByName(classInfo, name, classInfo);
+		member = FindMemberByName(classInfo, name, classInfo, 0);
 
 		/* Create the field information block */
 		fieldInfo = ILFieldCreate(classInfo, 0, name,
@@ -1214,6 +1214,27 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			}
 		}
 
+		/* If "-fno-hidebysig" was set on the command-line, and there is
+		   something else in this class with the same name, then we need to
+		   add "hidebysig" to the method (used for VB-style libraries) */
+		if(CSNoHideBySig)
+		{
+			member = FindMemberByName(classInfo, name, classInfo,
+								      (ILMember *)methodInfo);
+			if(member)
+			{
+				ILMemberSetAttrs((ILMember *)methodInfo,
+								 IL_META_METHODDEF_HIDE_BY_SIG,
+								 IL_META_METHODDEF_HIDE_BY_SIG);
+				if(ILMember_IsMethod(member))
+				{
+					ILMemberSetAttrs(member,
+									 IL_META_METHODDEF_HIDE_BY_SIG,
+									 IL_META_METHODDEF_HIDE_BY_SIG);
+				}
+			}
+		}
+
 		/* Look for duplicates and report on them */
 		member = FindMemberBySignature(classInfo, name, signature,
 									   (ILMember *)methodInfo, classInfo,
@@ -1311,7 +1332,7 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* Look for duplicates */
-	member = FindMemberByName(classInfo, name, classInfo);
+	member = FindMemberByName(classInfo, name, classInfo, 0);
 
 	/* Create the field information block */
 	fieldInfo = ILFieldCreate(classInfo, 0, name,
@@ -1658,7 +1679,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	}
 
 	/* Look for duplicates */
-	member = FindMemberByName(classInfo, name, classInfo);
+	member = FindMemberByName(classInfo, name, classInfo, 0);
 
 	/* Create the event information block */
 	eventInfo = ILEventCreate(classInfo, 0, name, 0,

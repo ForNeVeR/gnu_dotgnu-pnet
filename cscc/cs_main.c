@@ -69,6 +69,24 @@ int CCPluginInit(void)
 	{
 		CSLatin1Charset = 1;
 	}
+	if(CCStringListContains(extension_flags, num_extension_flags,
+							"no-hidebysig") ||
+	   CCStringListContains(extension_flags, num_extension_flags,
+							"hidebyname"))
+	{
+		CSNoHideBySig = 1;
+	}
+	else if(CCStringListContains(extension_flags, num_extension_flags,
+							     "hidebysig") ||
+	        CCStringListContains(extension_flags, num_extension_flags,
+							     "no-hidebyname"))
+	{
+		CSNoHideBySig = 0;
+	}
+	else
+	{
+		CSNoHideBySig = 0;
+	}
 	return 1;
 }
 

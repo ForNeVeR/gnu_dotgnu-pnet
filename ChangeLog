@@ -1,4 +1,12 @@
 
+2004-07-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cs_main.c, cscc/cscc.1, cscc/csharp/cs_gather.c,
+	cscc/csharp/cs_internal.h, cscc/csharp/cs_modifiers.c,
+	doc/pnettools.texi: add the "-fhidebysig" and "-fhidebyname"
+	options to cscc; the latter can be used to enable VB-style
+	method attributes in C# code.
+
 2004-07-17  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_grammar.y: Fix bug #9674 , do while statements have to

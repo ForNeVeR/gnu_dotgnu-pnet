@@ -24,6 +24,8 @@
 extern	"C" {
 #endif
 
+int CSNoHideBySig = 0;
+
 /*
  * Report errors for each modifier in a mask.
  */
@@ -639,7 +641,10 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers,
 	}
 
 	/* Methods always need "hide by sig" */
-	attrs |= IL_META_METHODDEF_HIDE_BY_SIG;
+	if(!CSNoHideBySig)
+	{
+		attrs |= IL_META_METHODDEF_HIDE_BY_SIG;
+	}
 
 	/* Done */
 	return attrs;

@@ -405,6 +405,17 @@ semantic analysis, but don't go any further with compilation.
 Permit the use of unsafe C# language constructs in the input
 source file.  If this option is not supplied, all unsafe
 constructs will result in an error.
+
+@cindex -fhidebysig option (cscc)
+@cindex -fhidebyname option (cscc)
+@item -fhidebysig
+@itemx -fhidebyname
+Normally C# methods are marked as "hide by signature" so that
+multiple methods with the same name can be properly distinguished.
+Other languages (e.g. C and VB) use "hide by name", where the signature
+is not relevant when looking for a method.  These options allow the type
+of method resolution to be controlled.  It is mostly of use when
+writing libraries in C# that will be visible to non-C# applications.
 @end table
 
 @c -----------------------------------------------------------------------

@@ -91,6 +91,11 @@ extern int CSNoGenerics;
 extern int CSLatin1Charset;
 
 /*
+ * A flag that is set to use VB-style "hidebysig" processing on methods.
+ */
+extern int CSNoHideBySig;
+
+/*
  * Determine if a type or parameter node contains unsafe types.
  */
 int CSHasUnsafeType(ILNode *node);

@@ -65,6 +65,7 @@ public sealed class Display : IDisposable
 	internal Timer timerQueue;
 	internal IntPtr imlibData;
 	internal Xlib.Window groupLeader;
+	private String[] fontList;
 
 	// Constructor.
 	private Display(IntPtr dpy, String displayName, Application app)
@@ -898,6 +899,82 @@ public sealed class Display : IDisposable
 				finally
 				{
 					Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Get the complete list of XLFD font names on this display.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>Returns the list of XLFD font names.</para>
+	/// </value>
+	public String[] FontList
+			{
+				get
+				{
+					try
+					{
+						IntPtr display = Lock();
+						if(fontList != null)
+						{
+							return fontList;
+						}
+						fontList = Xlib.XListFonts(display, "*");
+						return fontList;
+					}
+					finally
+					{
+						Unlock();
+					}
+				}
+			}
+
+	/// <summary>
+	/// <para>Get the list of font families on this display.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>Returns the list of font families.</para>
+	/// </value>
+	///
+	/// <remarks>
+	/// <para>This is a smaller list than <c>FontList</c>, containing just
+	/// the names that appear in the second XLFD field.  This list is
+	/// suitable for use in showing the names of the fonts on the system
+	/// to a user.</para>
+	/// </remarks>
+	public String[] FontFamilies
+			{
+				get
+				{
+					String[] fonts = FontList;
+					Hashtable checkDups = new Hashtable();
+					ArrayList results = new ArrayList();
+					int index1, index2;
+					String name;
+					foreach(String font in fonts)
+					{
+						if(font.Length > 0 && font[0] == '-')
+						{
+							index1 = font.IndexOf('-', 1);
+							if(index1 != -1)
+							{
+								index2 = font.IndexOf('-', index1 + 1);
+								if(index2 != -1)
+								{
+									name = font.Substring
+										(index1 + 1, index2 - index1 - 1);
+									if(checkDups[name] == null)
+									{
+										checkDups[name] = true;
+										results.Add(name);
+									}
+								}
+							}
+						}
+					}
+					return (String[])(results.ToArray(typeof(String)));
 				}
 			}
 

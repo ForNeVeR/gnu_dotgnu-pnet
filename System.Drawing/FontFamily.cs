@@ -86,7 +86,8 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 				        String.Compare
 							(name, "Microsoft Sans Serif", true) == 0 ||
 				        String.Compare(name, "Arial", true) == 0 ||
-				        String.Compare(name, 0, "Arial ", 0, 6, true) == 0)
+						(name.Length >= 6 &&
+				        	String.Compare(name, 0, "Arial ", 0, 6, true) == 0))
 				{
 					this.genericFamily = GenericFontFamilies.SansSerif;
 				}

@@ -14,6 +14,10 @@
 	period timeouts cause events to be delayed because the event is in
 	the queue but is no longer visible to "select".
 
+	* System.Drawing/FontFamily.cs, Xsharp/Display.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs, Xsharp/Xlib.cs.in:
+	return the complete list of X font families from "Font.Families".
+
 2004-01-05  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Panel.cs,

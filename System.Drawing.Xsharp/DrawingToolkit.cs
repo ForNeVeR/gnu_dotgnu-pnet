@@ -22,6 +22,8 @@ namespace System.Drawing.Toolkit
 {
 
 using System;
+using System.Globalization;
+using System.Collections;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
@@ -41,6 +43,7 @@ public sealed class DrawingToolkit : IToolkit
 	private int foreground;
 	private int textBackground;
 	private int textForeground;
+	private FontFamily[] families;
 
 	// Constructor.
 	public DrawingToolkit()
@@ -499,16 +502,73 @@ public sealed class DrawingToolkit : IToolkit
 										(argb >> 8) & 0xFF, argb & 0xFF);
 			}
 
+	// Utility class for comparing font families.
+	private class FamilyComparer : IComparer
+	{
+		// Implement the IComparer interface.
+		public int Compare(Object x, Object y)
+				{
+					return String.Compare(x.ToString(), y.ToString(), true);
+				}
+
+	}; // class FamilyComparer
+
 	// Get a list of all font families on this system, or all font
 	// families that are compatible with a particular IToolkitGraphics.
 	public FontFamily[] GetFontFamilies(IToolkitGraphics graphics)
 			{
-				// We only support three font families.  Extend later.
-				return new FontFamily [] {
-					new FontFamily("Arial"),
-					new FontFamily("Times New Roman"),
-					new FontFamily("Courier New"),
-				};
+				lock(this)
+				{
+					if(families != null)
+					{
+						return families;
+					}
+					String[] names = app.Display.FontFamilies;
+					int size = names.Length;
+					if(Array.IndexOf(names, "microsoft sans serif") == -1)
+					{
+						++size;
+					}
+					if(Array.IndexOf(names, "arial") == -1)
+					{
+						++size;
+					}
+					if(Array.IndexOf(names, "times new roman") == -1)
+					{
+						++size;
+					}
+					if(Array.IndexOf(names, "courier new") == -1)
+					{
+						++size;
+					}
+					families = new FontFamily [size];
+					size = 0;
+					foreach(String name in names)
+					{
+						families[size++] = new FontFamily
+							(CultureInfo.CurrentCulture.TextInfo.
+								ToTitleCase(name));
+					}
+					if(Array.IndexOf(names, "microsoft sans serif") == -1)
+					{
+						families[size++] = new FontFamily
+							("Microsoft Sans Serif");
+					}
+					if(Array.IndexOf(names, "arial") == -1)
+					{
+						families[size++] = new FontFamily("Arial");
+					}
+					if(Array.IndexOf(names, "times new roman") == -1)
+					{
+						families[size++] = new FontFamily("Times New Roman");
+					}
+					if(Array.IndexOf(names, "courier new") == -1)
+					{
+						families[size++] = new FontFamily("Courier New");
+					}
+					Array.Sort(families, new FamilyComparer());
+					return families;
+				}
 			}
 
 	// Get font family metric information.

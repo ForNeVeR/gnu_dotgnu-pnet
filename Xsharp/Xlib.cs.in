@@ -810,6 +810,60 @@ internal sealed unsafe class Xlib
 			 ref XSecurityAuthorizationAttributes attributes,
 			 out XSecurityAuthorization auth_id_return);
 
+	// Other functions.
+
+	[DllImport("X11")]
+	extern public static IntPtr XListFonts
+			(IntPtr display, String pattern, @X_int@ maxnames,
+			 out @X_int@ actualCountReturn);
+
+	[DllImport("X11")]
+	extern public static @X_int@ XFreeFontNames(IntPtr list);
+
+	// Wrap up the "XListFonts" function and make it friendlier.
+	public static String[] XListFonts(IntPtr display, String pattern)
+			{
+				// Get the full list of fonts.  We may have to use multiple
+				// requests if the maximum is reached on the first request.
+				@X_int@ actualCount;
+				int maxNames = 1000;
+				IntPtr names;
+				for(;;)
+				{
+					names = XListFonts
+						(display, pattern, (@X_int@)maxNames, out actualCount);
+					if(names == IntPtr.Zero)
+					{
+						return new String [0];
+					}
+					if(actualCount < maxNames)
+					{
+						break;
+					}
+					XFreeFontNames(names);
+					maxNames *= 2;
+				}
+
+				// Convert the font list into an array of C# strings.
+				int posn;	
+				int size = IntPtr.Size;
+				String[] result;
+				try
+				{
+					result = new String [(int)actualCount];
+					for(posn = 0; posn < actualCount; ++posn)
+					{
+						result[posn] = Marshal.PtrToStringAnsi
+							(Marshal.ReadIntPtr(names, posn * size));
+					}
+				}
+				finally
+				{
+					XFreeFontNames(names);
+				}
+				return result;
+			}
+
 } // class Xlib
 
 } // namespace Xsharp

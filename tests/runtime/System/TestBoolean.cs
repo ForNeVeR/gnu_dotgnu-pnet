@@ -111,6 +111,15 @@ public class TestBoolean : TestCase
 					   false.GetHashCode() != true.GetHashCode());
 			}
 
+#if !ECMA_COMPAT
+	// Test the GetTypeCode method
+	public void TestBooleanGetTypeCode ()
+			{
+				Boolean boolean = true;
+				AssertEquals("GetTypeCode failed", TypeCode.Boolean, boolean.GetTypeCode());
+			}
+#endif // !ECMA_COMPAT
+	
 	// Test AND operator
 	public void TestANDOperator()
 			{

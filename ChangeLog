@@ -1,4 +1,8 @@
 
+2004-10-14  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/runtime/System/TestBoolean.cs: added test for GetTypeCode.
+
 2004-10-14  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Xml/Private/SelectNodeList.cs,

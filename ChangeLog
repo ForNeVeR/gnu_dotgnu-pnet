@@ -11,6 +11,8 @@
 	* codegen/jv_decls.tc, codegen/jv_lvalue.tc: implement "get" and
 	"set" property accessors for JVM bytecode output.
 
+	* codegen/jv_output.c (JavaGenNewArray): implement missing function.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values

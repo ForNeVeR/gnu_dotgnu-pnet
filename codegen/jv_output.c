@@ -869,7 +869,77 @@ void JavaGenFieldRef(ILGenInfo *info, int opcode, ILField *field)
 
 void JavaGenNewArray(ILGenInfo *info, ILType *elemType)
 {
-	/* TODO */
+	if(!(info->asmOutput))
+	{
+		return;
+	}
+	if(ILType_IsPrimitive(elemType))
+	{
+		switch(ILType_ToElement(elemType))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:
+			{
+				fputs("\tnewarray bool\n", info->asmOutput);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+			{
+				fputs("\tnewarray int8\n", info->asmOutput);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I2:
+			{
+				fputs("\tnewarray int16\n", info->asmOutput);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+			{
+				fputs("\tnewarray char\n", info->asmOutput);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+			{
+				fputs("\tnewarray int32\n", info->asmOutput);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+			{
+				fputs("\tnewarray int64\n", info->asmOutput);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+				fputs("\tnewarray float32\n", info->asmOutput);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			case IL_META_ELEMTYPE_R:
+			{
+				fputs("\tnewarray float64\n", info->asmOutput);
+			}
+			break;
+		}
+	}
+	else
+	{
+		fputs("\tanewarray ", info->asmOutput);
+		ILDumpType(info->asmOutput, info->image, elemType,
+				   IL_DUMP_QUOTE_NAMES);
+		putc('\n', info->asmOutput);
+	}
 }
 
 void JavaGenReturnInsn(ILGenInfo *info, ILMachineType type)

@@ -199,13 +199,15 @@ internal sealed class DrawingTopLevelWindow
 	// Move this window to above one of its siblings.
 	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
 			{
-				// Not used for top-level windows.
+				// Move this window below the sibling widget.
+				MoveToAbove(sibling as Widget);
 			}
 
 	// Move this window to below one of its siblings.
 	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
 			{
-				// Not used for top-level windows.
+				// Move this window below the sibling widget.
+				MoveToBelow(sibling as Widget);
 			}
 
 	// Get the HWND for this window.  IntPtr.Zero if not supported.
@@ -225,7 +227,7 @@ internal sealed class DrawingTopLevelWindow
 			{
 				DrawingToolkit.ValidateWindowPosition(ref x, ref y);
 				DrawingToolkit.ValidateWindowSize(ref width, ref height);
-				Repaint(x, y, width, height);
+				Repaint(x, y, width + 1, height + 1);
 			}
 
 	// Force an update of all invalidated regions.

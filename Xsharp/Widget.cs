@@ -590,7 +590,6 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 							{
 								child = child.nextBelow;
 							}
-							MoveToBelow(child);
 							RepositionBelow(child);
 						}
 						else if(origLayer > value)
@@ -607,74 +606,39 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 							{
 								child = child.nextAbove;
 							}
-							MoveToAbove(child);
 							RepositionAbove(child);
 						}
 					}
 				}
 			}
 
-	// Move this widget to below one of its siblings.
-	private void MoveToBelow(Widget sibling)
-			{
-				// Detach ourselves from the widget tree.
-				if(nextAbove != null)
-				{
-					nextAbove.nextBelow = nextBelow;
-				}
-				else
-				{
-					parent.topChild = nextBelow;
-				}
-				if(nextBelow != null)
-				{
-					nextBelow.nextAbove = nextAbove;
-				}
-
-				// Re-insert at the new position.
-				nextAbove = sibling;
-				nextBelow = sibling.nextBelow;
-				if(nextBelow != null)
-				{
-					nextBelow.nextAbove = this;
-				}
-				sibling.nextBelow = this;
-			}
-
-	// Move this widget to above one of its siblings.
-	private void MoveToAbove(Widget sibling)
-			{
-				// Detach ourselves from the widget tree.
-				if(nextAbove != null)
-				{
-					nextAbove.nextBelow = nextBelow;
-				}
-				else
-				{
-					parent.topChild = nextBelow;
-				}
-				if(nextBelow != null)
-				{
-					nextBelow.nextAbove = nextAbove;
-				}
-
-				// Re-insert at the new position.
-				nextAbove = sibling.nextAbove;
-				nextBelow = sibling;
-				if(nextAbove != null)
-				{
-					nextAbove.nextBelow = this;
-				}
-				else
-				{
-					parent.topChild = this;
-				}
-				sibling.nextAbove = this;
-			}
 
 	// Reposition this widget below one of its siblings.
 	private void RepositionBelow(Widget child)
 			{
+				// Detach ourselves from the widget tree.
+				if(nextAbove != null)
+				{
+					nextAbove.nextBelow = nextBelow;
+				}
+				else
+				{
+					parent.topChild = nextBelow;
+				}
+				if(nextBelow != null)
+				{
+					nextBelow.nextAbove = nextAbove;
+				}
+
+				// Re-insert at the new position.
+				nextAbove = child;
+				nextBelow = child.nextBelow;
+				if(nextBelow != null)
+				{
+					nextBelow.nextAbove = this;
+				}
+				child.nextBelow = this;
+
 				try
 				{
 					IntPtr display = dpy.Lock();
@@ -706,6 +670,33 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	// Reposition this widget above one of its siblings.
 	private void RepositionAbove(Widget child)
 			{
+				// Detach ourselves from the widget tree.
+				if(nextAbove != null)
+				{
+					nextAbove.nextBelow = nextBelow;
+				}
+				else
+				{
+					parent.topChild = nextBelow;
+				}
+				if(nextBelow != null)
+				{
+					nextBelow.nextAbove = nextAbove;
+				}
+
+				// Re-insert at the new position.
+				nextAbove = child.nextAbove;
+				nextBelow = child;
+				if(nextAbove != null)
+				{
+					nextAbove.nextBelow = this;
+				}
+				else
+				{
+					parent.topChild = this;
+				}
+				child.nextAbove = this;
+
 				try
 				{
 					IntPtr display = dpy.Lock();
@@ -799,12 +790,10 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				}
 				if(sibling != null)
 				{
-					MoveToBelow(sibling);
 					RepositionBelow(sibling);
 				}
 				else if(last != this)
 				{
-					MoveToAbove(last);
 					RepositionAbove(last);
 				}
 			}
@@ -823,13 +812,41 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				}
 				if(sibling != null)
 				{
-					MoveToAbove(sibling);
 					RepositionAbove(sibling);
 				}
 				else if(last != this)
 				{
-					MoveToBelow(last);
 					RepositionBelow(last);
+				}
+			}
+
+	/// <summary>
+	/// <para>Move this widget to above one of its siblings.</para>
+	/// </summary>
+	///
+	/// <param name="sibling">
+	/// <para>The sibling to move this widget above.</para>
+	/// </param>
+	public virtual void MoveToAbove(Widget sibling)
+			{
+				if(sibling != null && sibling.layer == layer)
+				{
+					RepositionAbove(sibling);
+				}
+			}
+
+	/// <summary>
+	/// <para>Move this widget to above one of its siblings.</para>
+	/// </summary>
+	///
+	/// <param name="sibling">
+	/// <para>The sibling to move this widget below.</para>
+	/// </param>
+	public virtual void MoveToBelow(Widget sibling)
+			{
+				if(sibling != null && sibling.layer == layer)
+				{
+					RepositionBelow(sibling);
 				}
 			}
 
@@ -1562,27 +1579,27 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			}
 
 	protected void SendBeginInvoke(IntPtr i_gch)
-		{
-			XEvent xevent = new XEvent();
-			xevent.xany.type = (int)(EventType.ClientMessage);
-			xevent.xany.window = GetWidgetHandle();
-			xevent.xclient.format = 32;
-			xevent.xclient.setl(0,(int)i_gch);
+			{
+				XEvent xevent = new XEvent();
+				xevent.xany.type = (int)(EventType.ClientMessage);
+				xevent.xany.window = GetWidgetHandle();
+				xevent.xclient.format = 32;
+				xevent.xclient.setl(0,(int)i_gch);
 
-			try
-			{
-				IntPtr display = dpy.Lock();
-				xevent.xclient.message_type = Xlib.XInternAtom
-						(display, "INTERNAL_BEGIN_INVOKE", XBool.False);
-				Xlib.XSendEvent (display, GetWidgetHandle(),
-						XBool.False, (int)(EventMask.NoEventMask), ref xevent);
-				Xlib.XFlush(display);
+				try
+				{
+					IntPtr display = dpy.Lock();
+					xevent.xclient.message_type = Xlib.XInternAtom
+							(display, "INTERNAL_BEGIN_INVOKE", XBool.False);
+					Xlib.XSendEvent (display, GetWidgetHandle(),
+							XBool.False, (int)(EventMask.NoEventMask), ref xevent);
+					Xlib.XFlush(display);
+				}
+				finally
+				{
+					dpy.Unlock();
+				}
 			}
-			finally
-			{
-				dpy.Unlock();
-			}
-	}
 
 } // class Widget
 

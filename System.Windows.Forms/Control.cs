@@ -66,24 +66,18 @@ public class Control : IWin32Window, IDisposable
 	private Control[] children;
 	private int numChildren;
 	private BindingContext bindingContext;
-	private bool enabled;
+	private ControlFlags flags;
 	internal bool visible;
-	private bool allowDrop;
-	private bool causesValidation;
 	internal Color backColor;
 	internal Color foreColor;
 	private Font font;
 	private Image backgroundImage;
-	private bool layoutInitSuspended;
 	private int prevParentWidth, prevParentHeight;
 	private byte anchorStyles;
 	private byte dockStyle;
 	private byte imeMode;
 	private byte rightToLeft;
 	private int tabIndex;
-	private bool tabStop;
-	private bool disposed;
-	private bool performingLayout;
 	private int layoutSuspended;
 	private Object tag;
 	private CreateParams currentParams;
@@ -100,13 +94,31 @@ public class Control : IWin32Window, IDisposable
 	// The thread that was used to create the control.
 	private Thread createThread;
 	private Cursor cursor;
-	private bool notifyClick = false;
-	private bool notifyDoubleClick = false;
-	private bool validationCancelled = false;
 	private IToolkitWindowBuffer buffer;
 	private ControlBindingsCollection controlBindingsCollection;
 	private Timer hoverTimer;
-	
+
+
+	// Miscellaneous flags for controls.
+	[Flags]
+	private enum ControlFlags
+	{
+		None                = 0x0000,
+		Enabled             = 0x0001,
+		TabStop             = 0x0002,
+		AllowDrop           = 0x0004,
+		CausesValidation    = 0x0008,
+		Disposed            = 0x0010,
+		LayoutInitSuspended = 0x0020,
+		PerformingLayout    = 0x0040,
+		NotifyClick         = 0x0080,
+		NotifyDoubleClick   = 0x0100,
+		ValidationCancelled = 0x0200,
+		NeedReparent        = 0x0400,
+		Default             = (Enabled | CausesValidation | TabStop)
+
+	}; // enum ControlFlags
+
 	//
 	// Implentation of classes and variables for Invoke/BeginInvoke/EndInvoke
 	//
@@ -203,16 +215,13 @@ public class Control : IWin32Window, IDisposable
 	public Control()
 			{
 				this.name = String.Empty;
-				this.enabled = true;
+				this.flags = ControlFlags.Default;
 				this.visible = true;
-				this.layoutInitSuspended = false;
 				this.anchorStyles =
 					(byte)(AnchorStyles.Top | AnchorStyles.Left);
-				this.causesValidation = true;
 				this.imeMode = (byte)DefaultImeMode;
 				this.rightToLeft = (byte)(RightToLeft.Inherit);
 				this.tabIndex = -1;
-				this.tabStop = true;
 				borderStyle = BorderStyle.None;
 				// Create the currentParams
 				currentParams = new CreateParams();
@@ -487,11 +496,11 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					return allowDrop;
+					return GetControlFlag(ControlFlags.AllowDrop);
 				}
 				set
 				{
-					allowDrop = value;
+					SetControlFlag(ControlFlags.AllowDrop, value);
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -676,13 +685,13 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					return causesValidation;
+					return GetControlFlag(ControlFlags.CausesValidation);
 				}
 				set
 				{
-					if(causesValidation != value)
+					if(GetControlFlag(ControlFlags.CausesValidation) != value)
 					{
-						causesValidation = value;
+						SetControlFlag(ControlFlags.CausesValidation, value);
 						OnCausesValidationChanged(EventArgs.Empty);
 					}
 				}
@@ -860,7 +869,7 @@ public class Control : IWin32Window, IDisposable
 					cp.Height = height;
 					cp.ClassStyle = Win32Constants.CS_DBLCLKS;
 					cp.Style = Win32Constants.WS_CLIPCHILDREN;
-					if (GetStyle(ControlStyles.ContainerControl))
+					if(GetStyle(ControlStyles.ContainerControl))
 					{
 						cp.ExStyle = Win32Constants.WS_EX_CONTROLPARENT;
 					}
@@ -869,7 +878,7 @@ public class Control : IWin32Window, IDisposable
 						cp.Style |= Win32Constants.WS_CHILD |
 							Win32Constants.WS_CLIPSIBLINGS;
 					}
-					if(tabStop)
+					if(GetControlFlag(ControlFlags.TabStop))
 					{
 						cp.Style |= Win32Constants.WS_TABSTOP;
 					}
@@ -1066,7 +1075,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					if(!enabled)
+					if(!GetControlFlag(ControlFlags.Enabled))
 					{
 						// There is no point going further up the tree.
 						return false;
@@ -1082,9 +1091,9 @@ public class Control : IWin32Window, IDisposable
 				}
 				set
 				{
-					if(enabled != value)
+					if(GetControlFlag(ControlFlags.Enabled) != value)
 					{
-						enabled = value;
+						SetControlFlag(ControlFlags.Enabled, value);
 						OnEnabledChanged(EventArgs.Empty);
 					}
 				}
@@ -1294,7 +1303,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					return disposed;
+					return GetControlFlag(ControlFlags.Disposed);
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -1687,13 +1696,13 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					return tabStop;
+					return GetControlFlag(ControlFlags.TabStop);
 				}
 				set
 				{
-					if(tabStop != value)
+					if(GetControlFlag(ControlFlags.TabStop) != value)
 					{
-						tabStop = value;
+						SetControlFlag(ControlFlags.TabStop, value);
 						OnTabStopChanged(EventArgs.Empty);
 					}
 				}
@@ -1947,10 +1956,10 @@ public class Control : IWin32Window, IDisposable
 	public void CreateControl()
 			{
 				// Only create if needed
-				if (toolkitWindow != null)
-					return;
+				if(toolkitWindow != null) { return; }
+
 				// Cannot create the control if it has been disposed.
-				if(disposed)
+				if(GetControlFlag(ControlFlags.Disposed))
 				{
 					throw new ObjectDisposedException
 						("control", S._("SWF_ControlDisposed"));
@@ -1965,10 +1974,14 @@ public class Control : IWin32Window, IDisposable
 					control = control.parent;
 				}
 				control.CreateControlInner();
+
 				// If one of the parents of this control is not visible then the control
 				// will not be created. We must ensure that the control is created, even if
 				// its parent isnt.
-				CreateHandle();
+				if(toolkitWindow == null)
+				{
+					CreateHandle();
+				}
 			}
 	private void CreateControlInner()
 			{
@@ -1978,10 +1991,21 @@ public class Control : IWin32Window, IDisposable
 				// Create the child controls.
 				for(int posn = (numChildren - 1); posn >= 0; --posn)
 				{
+					// Get the current child.
 					Control child = children[posn];
+
 					// We only need to create a control if its visible.
-					if (child.visible)
+					if(child.visible)
+					{
+						// Update the windowing system z-order.
+						if(child.toolkitWindow != null)
+						{
+							child.toolkitWindow.Raise();
+						}
+
+						// Create the child control.
 						child.CreateControlInner();
+					}
 				}
 
 				// Map the control to the screen if it is visible.
@@ -2016,7 +2040,7 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void CreateHandle()
 			{
 				// Cannot create the control if it has been disposed.
-				if(disposed)
+				if(GetControlFlag(ControlFlags.Disposed))
 				{
 					throw new ObjectDisposedException
 						("control", S._("SWF_ControlDisposed"));
@@ -2026,7 +2050,8 @@ public class Control : IWin32Window, IDisposable
 				// already exists from some previous incarnation.
 				if(toolkitWindow != null)
 				{
-					if(parent != null && toolkitWindow.Parent != parent.toolkitWindow)
+					if(parent != null &&
+					   toolkitWindow.Parent != parent.toolkitWindow)
 					{
 						Reparent(parent);
 					}
@@ -2037,8 +2062,12 @@ public class Control : IWin32Window, IDisposable
 				if(parent != null)
 				{
 					toolkitWindow = CreateToolkitWindow(parent.toolkitWindow);
-					// Initialize layout for calculating the anchor.
-					InitLayout();
+
+					// Mark this control as requiring a reparent, if needed.
+					if(parent.toolkitWindow == null)
+					{
+						SetControlFlag(ControlFlags.NeedReparent, true);
+					}
 				}
 				else
 				{
@@ -2060,6 +2089,15 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				createThread = Thread.CurrentThread;
+
+				// Reparent the children which require it.
+				for(int i = 0; i < numChildren; ++i)
+				{
+					if(children[i].GetControlFlag(ControlFlags.NeedReparent))
+					{
+						children[i].Reparent(this);
+					}
+				}
 
 				// Notify subclasses that the handle has been created.
 				OnHandleCreated(EventArgs.Empty);
@@ -2159,13 +2197,13 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void Dispose(bool disposing)
 #endif
 			{
-				if (buffer != null)
+				if(buffer != null)
 				{
 					buffer.Dispose();
 					buffer = null;
 				}
 				DestroyHandle();
-				disposed = true;
+				SetControlFlag(ControlFlags.Disposed, true);
 			}
 
 	// Find the form that this control is a member of.
@@ -2249,6 +2287,12 @@ public class Control : IWin32Window, IDisposable
 					current = current.Parent;
 				}
 				return (IContainerControl)current;
+			}
+
+	// Get a control flag.
+	private bool GetControlFlag(ControlFlags mask)
+			{
+				return ((flags & mask) == mask);
 			}
 
 	// Get the next or previous control in the tab order.
@@ -2404,7 +2448,7 @@ public class Control : IWin32Window, IDisposable
 					}
 					else
 					{
-						layoutInitSuspended = true;
+						SetControlFlag(ControlFlags.LayoutInitSuspended, true);
 					}
 				}
 			}
@@ -2610,7 +2654,7 @@ public class Control : IWin32Window, IDisposable
 				}
 
 				// Mark this control as currently being laid out.
-				performingLayout = true;
+				SetControlFlag(ControlFlags.PerformingLayout, true);
 				++layoutSuspended;
 
 				// Lay out this control.  We use a try block to make
@@ -2625,7 +2669,7 @@ public class Control : IWin32Window, IDisposable
 				{
 					// We are finished laying out this control.
 					--layoutSuspended;
-					performingLayout = false;
+					SetControlFlag(ControlFlags.PerformingLayout, false);
 				}
 			}
 
@@ -3064,12 +3108,13 @@ public class Control : IWin32Window, IDisposable
 			{
 				if(layoutSuspended <= 0 || (--layoutSuspended) == 0)
 				{
-					if(layoutInitSuspended)
+					if(GetControlFlag(ControlFlags.LayoutInitSuspended))
 					{
 						InitLayout();
-						layoutInitSuspended = false;
+						SetControlFlag(ControlFlags.LayoutInitSuspended, false);
 					}
-					if(performLayout && !performingLayout)
+					if(performLayout &&
+					   !GetControlFlag(ControlFlags.PerformingLayout))
 					{
 						PerformLayout();
 					}
@@ -3356,6 +3401,19 @@ public class Control : IWin32Window, IDisposable
 			{
 				Size client = ClientToBounds(new Size(x, y));
 				SetBoundsCore(left, top, client.Width, client.Height, BoundsSpecified.Size);
+			}
+
+	// Set a control flag.
+	private void SetControlFlag(ControlFlags mask, bool value)
+			{
+				if(value)
+				{
+					flags |= mask;
+				}
+				else
+				{
+					flags &= ~mask;
+				}
 			}
 
 	// Set a style bit.
@@ -5008,6 +5066,7 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void OnParentEnabledChanged(EventArgs e)
 			{
 				bool parentEnabled = parent.Enabled;
+				bool enabled = GetControlFlag(ControlFlags.Enabled);
 				if((!parentEnabled && enabled) != (parentEnabled && enabled))
 				{
 					OnEnabledChanged(e);
@@ -5249,18 +5308,21 @@ public class Control : IWin32Window, IDisposable
 				if(toolkitWindow != null)
 				{
 					toolkitWindow.IsMapped = visible;
+
 					// May as well release the double buffer resource if its being used.
-					if (!visible && buffer != null)
+					if(!visible && buffer != null)
 					{
 						buffer.Dispose();
 						buffer = null;
 					}
 				}
-				else if(visible && !disposed && (parent == null || parent.IsHandleCreated) )
+				else if(visible && !GetControlFlag(ControlFlags.Disposed) &&
+				        (parent == null || parent.IsHandleCreated))
 				{
 					// Create the toolkit window for the first time.
 					// This will also map the toolkit window to the screen.
 					CreateControl();
+
 					// Force PerformLayout to be called on all the children in the heirarchy.
 					ForceLayout();
 				}
@@ -5293,8 +5355,7 @@ public class Control : IWin32Window, IDisposable
 	// Move a child to below another.  Does not update "children".
 	private static void MoveToBelow(Control after, Control child)
 			{
-				if(after.toolkitWindow != null &&
-					child.toolkitWindow != null)
+				if(after.toolkitWindow != null && child.toolkitWindow != null)
 				{
 					child.toolkitWindow.MoveToBelow(after.toolkitWindow);
 				}
@@ -5303,8 +5364,7 @@ public class Control : IWin32Window, IDisposable
 	// Move a child to above another.  Does not update "children".
 	private static void MoveToAbove(Control before, Control child)
 			{
-				if(before.toolkitWindow != null &&
-					child.toolkitWindow != null)
+				if(before.toolkitWindow != null && child.toolkitWindow != null)
 				{
 					child.toolkitWindow.MoveToAbove(before.toolkitWindow);
 				}
@@ -5325,7 +5385,7 @@ public class Control : IWin32Window, IDisposable
 					toolkitWindow.Reparent(null, left + ToolkitDrawOrigin.X,
 						top + ToolkitDrawOrigin.Y);
 				}
-				else if (newParent.toolkitWindow != null)
+				else if(newParent.toolkitWindow != null)
 				{
 					int xOffset = parent.ClientOrigin.X - parent.ToolkitDrawOrigin.X
 						+ ToolkitDrawOrigin.X;
@@ -5335,6 +5395,10 @@ public class Control : IWin32Window, IDisposable
 						(newParent.toolkitWindow, left + xOffset,
 						top + yOffset);
 					toolkitWindow.Lower();
+				}
+				else
+				{
+					SetControlFlag(ControlFlags.NeedReparent, true);
 				}
 			}
 
@@ -5531,9 +5595,6 @@ public class Control : IWin32Window, IDisposable
 									}
 									value.tabIndex = lastIndex;
 								}
-
-								// Initialize layout within the new context.
-								value.InitLayout();
 							}
 							finally
 							{
@@ -5627,7 +5688,7 @@ public class Control : IWin32Window, IDisposable
 
 					// Find the previous index of the control.
 					int index = IndexOf(child);
-		
+
 					// Move the control.
 					int posn;
 					if(index < newIndex)
@@ -5957,7 +6018,7 @@ public class Control : IWin32Window, IDisposable
 		(ToolkitMouseButtons buttons, ToolkitKeys modifiers,
 		int clicks, int x, int y, int delta)
 			{
-				if (!enabled)
+				if(!GetControlFlag(ControlFlags.Enabled))
 				{
 					return;
 				}
@@ -5976,26 +6037,28 @@ public class Control : IWin32Window, IDisposable
 		int clicks, int x, int y, int delta)
 			{
 				
-				if (GetStyle(ControlStyles.Selectable) && buttons == MouseButtons.Left)
+				if(GetStyle(ControlStyles.Selectable) && buttons == MouseButtons.Left)
 				{
 					Focus();
 				}
+
 				// Walk up the hierarchy and see if we must focus the control
-				if (Enabled)
+				if(Enabled)
 				{
 					OnMouseDown(new MouseEventArgs
 						(buttons, clicks, x, y, delta));
 				}
+
 				// We fire the OnDoubleClick and OnClick events when the mouse button is up/
-				if (GetStyle(ControlStyles.StandardClick))
+				if(GetStyle(ControlStyles.StandardClick))
 				{
-					if (clicks == 2 && GetStyle(ControlStyles.StandardDoubleClick))
+					if(clicks == 2 && GetStyle(ControlStyles.StandardDoubleClick))
 					{
-						notifyDoubleClick = true;
+						SetControlFlag(ControlFlags.NotifyDoubleClick, true);
 					}
 					else
 					{
-						notifyClick = true;
+						SetControlFlag(ControlFlags.NotifyClick, true);
 					}
 				}
 			}
@@ -6010,20 +6073,20 @@ public class Control : IWin32Window, IDisposable
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				mouseButtons = (MouseButtons)buttons;
 				currentModifiers = (Keys)modifiers;
-				if (notifyDoubleClick)
+				if(GetControlFlag(ControlFlags.NotifyDoubleClick))
 				{
 					OnDoubleClick(EventArgs.Empty);
-					notifyDoubleClick = false;
+					SetControlFlag(ControlFlags.NotifyDoubleClick, false);
 				}
-				else if (notifyClick)
+				else if(GetControlFlag(ControlFlags.NotifyClick))
 				{
 					OnClick(EventArgs.Empty);
-					notifyClick = false;
+					SetControlFlag(ControlFlags.NotifyClick, false);
 				}
 				OnMouseUp(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
 				// See if we need to display the context menu.
-				if (mouseButtons == MouseButtons.Right && contextMenu != null)
+				if(mouseButtons == MouseButtons.Right && contextMenu != null)
 				{
 					contextMenu.Show(this, new Point(x, y));
 				}
@@ -6224,7 +6287,7 @@ public class Control : IWin32Window, IDisposable
 
 	internal virtual void DoValidationCancel(bool cancelled)
 	{
-			this.validationCancelled = cancelled;
+			SetControlFlag(ControlFlags.ValidationCancelled, cancelled);
 	}
 
 

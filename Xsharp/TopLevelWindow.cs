@@ -1624,6 +1624,34 @@ public class TopLevelWindow : InputOutputWidget
 				}
 			}
 
+	/// <summary>
+	/// <para>Move this widget to above one of its siblings.</para>
+	/// </summary>
+	///
+	/// <param name="sibling">
+	/// <para>The sibling to move this widget above.</para>
+	/// </param>
+	public override void MoveToAbove(Widget sibling)
+			{
+				// TODO: support this in non-top-level mode
+				throw new XInvalidOperationException
+					(S._("X_NonTopLevelOperation"));
+			}
+
+	/// <summary>
+	/// <para>Move this widget to above one of its siblings.</para>
+	/// </summary>
+	///
+	/// <param name="sibling">
+	/// <para>The sibling to move this widget below.</para>
+	/// </param>
+	public override void MoveToBelow(Widget sibling)
+			{
+				// TODO: support this in non-top-level mode
+				throw new XInvalidOperationException
+					(S._("X_NonTopLevelOperation"));
+			}
+
 	// Detect that this top-level window has gained the primary focus.
 	private void PrimaryFocusIn()
 			{

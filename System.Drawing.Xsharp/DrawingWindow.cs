@@ -37,6 +37,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	private bool hasCapture;
 	private static Xsharp.Cursor[] cursors;
 
+
 	// Constructor.
 	public DrawingWindow(IToolkit toolkit, Widget parent,
 						 int x, int y, int width, int height, IToolkitEventSink sink)
@@ -46,6 +47,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				this.toolkit = toolkit;
 				this.AutoMapChildren = false;
 			}
+
 
 	// Get the toolkit that owns this window.
 	public IToolkit Toolkit
@@ -187,13 +189,15 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	// Move this window to above one of its siblings.
 	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
 			{
-				// TODO
+				// Move this window below the sibling widget.
+				MoveToAbove(sibling as Widget);
 			}
 
 	// Move this window to below one of its siblings.
 	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)
 			{
-				// TODO
+				// Move this window below the sibling widget.
+				MoveToBelow(sibling as Widget);
 			}
 
 	// Get the HWND for this window.  IntPtr.Zero if not supported.
@@ -231,6 +235,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 			{
 				ModifyCursor(this, cursorType, frame);
 			}
+
 
 	// Map an Xsharp key description into a "ToolkitKeys" value.
 	private static ToolkitKeys MapKey(KeyName key)
@@ -601,7 +606,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 					}
 				}
 			}
-	
+
 	// Convert an Xsharp.Region to System.Drawing.Region
 	internal static System.Drawing.Region RegionToDrawingRegion
 				(Xsharp.Region region)
@@ -731,7 +736,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				}
 			}
 
-			void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
+	void IToolkitWindow.SendBeginInvoke(IntPtr i_gch)
 			{
 				base.SendBeginInvoke(i_gch);
 			}

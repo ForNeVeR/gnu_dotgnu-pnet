@@ -1,3 +1,13 @@
+2004-12-30  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/Control.cs: fix a control z-ordering bug, fix
+	a bug in control parenting, and reduce control memory usage.
+
+	* Xsharp/Widget.cs, Xsharp/TopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs: add support for
+	toolkit MoveToBelow and MoveToAbove operations.
+
 2004-12-29  Stephen Compall  <s11@member.fsf.org>
 
 	* System/Uri.cs (LocalPath): Use IsFile.  Unescape the return

@@ -40,73 +40,157 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 
 			case IL_META_ELEMTYPE_BOOLEAN:
 			{
-				fputs("bool", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("bool", stream);
+				}
+				else
+				{
+					fputs("_Bool", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_CHAR:
 			{
-				fputs("char", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("char", stream);
+				}
+				else
+				{
+					fputs("__wchar__", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_I1:
 			{
-				fputs("int8", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("int8", stream);
+				}
+				else
+				{
+					fputs("char", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_U1:
 			{
-				fputs("unsigned int8", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("unsigned int8", stream);
+				}
+				else
+				{
+					fputs("unsigned char", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_I2:
 			{
-				fputs("int16", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("int16", stream);
+				}
+				else
+				{
+					fputs("short", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_U2:
 			{
-				fputs("unsigned int16", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("unsigned int16", stream);
+				}
+				else
+				{
+					fputs("unsigned short", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_I4:
 			{
-				fputs("int32", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("int32", stream);
+				}
+				else
+				{
+					fputs("int", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_U4:
 			{
-				fputs("unsigned int32", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("unsigned int32", stream);
+				}
+				else
+				{
+					fputs("unsigned int", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_I8:
 			{
-				fputs("int64", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("int64", stream);
+				}
+				else
+				{
+					fputs("long long", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_U8:
 			{
-				fputs("unsigned int64", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("unsigned int64", stream);
+				}
+				else
+				{
+					fputs("unsigned long long", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R4:
 			{
-				fputs("float32", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("float32", stream);
+				}
+				else
+				{
+					fputs("float", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R8:
 			{
-				fputs("float64", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("float64", stream);
+				}
+				else
+				{
+					fputs("double", stream);
+				}
 			}
 			break;
 
@@ -118,19 +202,40 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 
 			case IL_META_ELEMTYPE_I:
 			{
-				fputs("native int", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("native int", stream);
+				}
+				else
+				{
+					fputs("__native__ int", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_U:
 			{
-				fputs("native unsigned int", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("native unsigned int", stream);
+				}
+				else
+				{
+					fputs("__native__ unsigned int", stream);
+				}
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R:
 			{
-				fputs("native float", stream);
+				if((flags & IL_DUMP_C_TYPES) == 0)
+				{
+					fputs("native float", stream);
+				}
+				else
+				{
+					fputs("long double", stream);
+				}
 			}
 			break;
 
@@ -154,7 +259,10 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 	}
 	else if(ILType_IsValueType(type))
 	{
-		fputs("valuetype ", stream);
+		if((flags & IL_DUMP_C_TYPES) == 0)
+		{
+			fputs("valuetype ", stream);
+		}
 		ILDumpClassName(stream, image, ILType_ToValueType(type), flags);
 	}
 	else if(type && ILType_IsComplex(type))

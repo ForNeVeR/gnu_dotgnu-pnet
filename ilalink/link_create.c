@@ -139,6 +139,17 @@ static void ReportUnresolved(ILLinker *linker)
 	ILType *signature;
 	ILToken token;
 	ILToken numTokens;
+	int flags;
+
+	/* Set the dump flags to use */
+	if(linker->memoryModel != 0)
+	{
+		flags = IL_DUMP_C_TYPES;
+	}
+	else
+	{
+		flags = 0;
+	}
 
 	/* Scan the TypeRef table for unresolved types */
 	classInfo = 0;
@@ -222,19 +233,23 @@ static void ReportUnresolved(ILLinker *linker)
 			if(ILMember_IsMethod(member))
 			{
 				ILDumpMethodType(stderr, ILProgramItem_Image(classInfo),
-								 ILMethod_Signature((ILMethod *)member), 0,
-								 classInfo, ILMember_Name(member),
-								 (ILMethod *)member);
+								 ILMethod_Signature((ILMethod *)member), flags,
+								 (flags ? 0 : classInfo),
+								 ILMember_Name(member), (ILMethod *)member);
 				fputs(" : unresolved method reference\n", stderr);
 			}
 			else if(ILMember_IsField(member))
 			{
 				ILDumpType(stderr, ILProgramItem_Image(classInfo),
-						   ILFieldGetTypeWithPrefixes((ILField *)member), 0);
-				putc(' ', stderr);
-				ILDumpClassName(stderr, ILProgramItem_Image(classInfo),
-								classInfo, 0);
-				fputs("::", stderr);
+						   ILFieldGetTypeWithPrefixes((ILField *)member),
+						   flags);
+				if(!flags)
+				{
+					putc(' ', stderr);
+					ILDumpClassName(stderr, ILProgramItem_Image(classInfo),
+									classInfo, 0);
+					fputs("::", stderr);
+				}
 				fputs(ILMember_Name(member), stderr);
 				fputs(" : unresolved field reference\n", stderr);
 			}

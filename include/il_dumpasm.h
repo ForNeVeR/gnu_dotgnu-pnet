@@ -35,6 +35,7 @@ extern	"C" {
 #define	IL_DUMP_CLASS_PREFIX		4
 #define	IL_DUMP_GENERIC_PARAMS		8
 #define	IL_DUMP_XML_QUOTING			16
+#define	IL_DUMP_C_TYPES				32
 
 /*
  * Structure of a flag information block.  This is used when

@@ -273,7 +273,7 @@ static int printDependencies(const char *filename, ILContext *context,
 		{
 			fputs(filename, stdout);
 		}
-		printf(" [%d:%d:%d:%d]:\n",
+		printf(" (version=%d.%d.%d.%d):\n",
 			   (int)(version[0]), (int)(version[1]),
 			   (int)(version[2]), (int)(version[3]));
 	}
@@ -288,7 +288,7 @@ static int printDependencies(const char *filename, ILContext *context,
 		name = ILAssembly_Name(assem);
 		version = ILAssemblyGetVersion(assem);
 		fputs(name, stdout);
-		printf("/%d:%d:%d:%d => ",
+		printf("/%d.%d.%d.%d => ",
 			   (int)(version[0]), (int)(version[1]),
 			   (int)(version[2]), (int)(version[3]));
 

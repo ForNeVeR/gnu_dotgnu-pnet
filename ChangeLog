@@ -9,6 +9,9 @@
 	* missing: update the "missing" script so that it is no longer
 	"too old or missing".
 
+	* ildd/ildd.c: use "n.n.n.n" instead of "n:n:n:n" for version
+	numbers, to be consistent with recommended usage for other tools.
+
 2003-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_misc.tc (ILNode_NewExpression): report an error

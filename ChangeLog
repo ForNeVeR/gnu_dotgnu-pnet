@@ -7,6 +7,9 @@
 	* samples/jscript/prototype.js: Add an example of prototype
 	based objects for JScript and demonstrate dynamic members.
 
+	* runtime/System/AppDomain.cs, runtime/System/AppDomainSetup.cs:
+	Implement more fake AppDomain functionality.
+
 2004-09-14  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Collections/Hashtable.cs: Fix a few cases where 

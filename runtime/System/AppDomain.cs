@@ -115,6 +115,7 @@ public sealed class AppDomain
 										 AppDomainSetup info)
 			{
 				// we have only one app domain , fake creation for now
+				CurrentDomain.setup = info;
 				return CurrentDomain;
 				// return new AppDomain(friendlyName, securityInfo, info);
 			}
@@ -125,12 +126,13 @@ public sealed class AppDomain
 										 bool shadowCopyFiles)
 			{
 				// we have only one app domain , fake creation for now
-				return CurrentDomain;
-				/*
 				AppDomainSetup setup = new AppDomainSetup();
 				setup.ApplicationBase = appBasePath;
 				setup.PrivateBinPath = appRelativeSearchPath;
 				setup.ShadowCopyFiles = shadowCopyFiles.ToString();
+				CurrentDomain.setup = setup;
+				return CurrentDomain;
+				/*
 				return new AppDomain(friendlyName, securityInfo, setup);*/
 			}
 #endif

@@ -1,4 +1,8 @@
 
+2005-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_stringbuilder.c: fix gcc 2 vs gcc 3 issues.
+
 2005-02-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_stringbuilder.c: Added internalcalls for StringBuilder class. 

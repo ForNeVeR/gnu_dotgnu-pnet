@@ -66,6 +66,8 @@ static ILObject * Append(ILExecThread * _thread,
 							ILInt32 length)
 {
 	ILInt32 newLength = _this->buildString->length + length;
+	ILInt32 newCapacity;
+	System_String *str;
 	if(newLength > _this->buildString->capacity)
 	{
 		if(newLength > MaxCapacity(_this))
@@ -75,13 +77,13 @@ static ILObject * Append(ILExecThread * _thread,
 									 "ArgRange_StrCapacity");
 			return 0;
 		} 
-		ILInt32 newCapacity = NewCapacity(newLength, _this->buildString->capacity);
+		newCapacity = NewCapacity(newLength, _this->buildString->capacity);
 
 		if(newCapacity > MaxCapacity(_this))
 		{
 			newCapacity = MaxCapacity(_this);
 		}
-		System_String *str = _IL_String_NewBuilder(_thread, _this->buildString, newCapacity);
+		str = _IL_String_NewBuilder(_thread, _this->buildString, newCapacity);
 		if(!str)
 		{
 			return (ILObject *)0;
@@ -181,6 +183,9 @@ ILObject * _IL_StringBuilder_Append_c(ILExecThread * _thread,
 										ILUInt16 value)
 {
 	ILInt32 newLength = BuildString(_this)->length + 1;
+	ILInt32 newCapacity;
+	System_String *str;
+	ILUInt16 *buf;
 
 	if(newLength > BuildString(_this)->capacity)
 	{
@@ -191,15 +196,12 @@ ILObject * _IL_StringBuilder_Append_c(ILExecThread * _thread,
 									 "ArgRange_StrCapacity");
 			return 0;
 		} 
-		ILInt32 newCapacity = NewCapacity(newLength,
-											 BuildString(_this)->capacity);
+		newCapacity = NewCapacity(newLength, BuildString(_this)->capacity);
 		if(newCapacity > MaxCapacity(_this))
 		{
 			newCapacity = MaxCapacity(_this);
 		}
-		System_String * str = _IL_String_NewBuilder(_thread,
-													BuildString(_this),
-													newCapacity);
+		str = _IL_String_NewBuilder(_thread, BuildString(_this), newCapacity);
 		if(!str)
 		{
 			return (ILObject *)0;
@@ -222,7 +224,7 @@ ILObject * _IL_StringBuilder_Append_c(ILExecThread * _thread,
 			NeedsCopy(_this) = (ILBool)0;
 		}
 	}
-	ILUInt16 *buf = StringToBuffer(BuildString(_this)) + BuildString(_this)->length;
+	buf = StringToBuffer(BuildString(_this)) + BuildString(_this)->length;
 	*buf = value;
 	BuildString(_this)->length++;
 
@@ -236,6 +238,9 @@ ILObject * _IL_StringBuilder_Append_ci(ILExecThread * _thread,
 										ILObject * _this,
 										ILUInt16 value, ILInt32 repeatCount)
 {
+	ILInt32 newLength, newCapacity;
+	System_String *str;
+	ILUInt16 *buf;
 	if(repeatCount < 0)
 	{
 		ILExecThreadThrowArgRange(_thread,
@@ -250,7 +255,7 @@ ILObject * _IL_StringBuilder_Append_ci(ILExecThread * _thread,
 			return _this;
 		}
 	}
-	ILInt32 newLength = BuildString(_this)->length + repeatCount;
+	newLength = BuildString(_this)->length + repeatCount;
 
 	if(newLength > BuildString(_this)->capacity)
 	{
@@ -261,15 +266,12 @@ ILObject * _IL_StringBuilder_Append_ci(ILExecThread * _thread,
 									 "ArgRange_StrCapacity");
 			return 0;
 		} 
-		ILInt32 newCapacity = NewCapacity(newLength,
-											 BuildString(_this)->capacity);
+		newCapacity = NewCapacity(newLength, BuildString(_this)->capacity);
 		if(newCapacity > MaxCapacity(_this))
 		{
 			newCapacity = MaxCapacity(_this);
 		}
-		System_String * str = _IL_String_NewBuilder(_thread,
-													BuildString(_this),
-													newCapacity);
+		str = _IL_String_NewBuilder(_thread, BuildString(_this), newCapacity);
 		if(!str)
 		{
 			return (ILObject *)0;
@@ -292,7 +294,7 @@ ILObject * _IL_StringBuilder_Append_ci(ILExecThread * _thread,
 			NeedsCopy(_this) = (ILBool)0;
 		}
 	}
-	ILUInt16 *buf = StringToBuffer(BuildString(_this)) + BuildString(_this)->length;
+	buf = StringToBuffer(BuildString(_this)) + BuildString(_this)->length;
 	while(repeatCount > 0)
 	{
 		*buf++ = value;
@@ -373,6 +375,8 @@ ILInt32 _IL_StringBuilder_EnsureCapacity(ILExecThread * _thread,
 											ILObject * _this,
 											ILInt32 capacity)
 {
+	ILInt32 newCapacity;
+	System_String *str;
 	if(capacity < 0)
 	{
 		ILExecThreadThrowArgRange(_thread,
@@ -391,14 +395,12 @@ ILInt32 _IL_StringBuilder_EnsureCapacity(ILExecThread * _thread,
 	{
 		return BuildString(_this)->capacity;
 	}
-	ILInt32 newCapacity = NewCapacity(capacity, BuildString(_this)->capacity);
+	newCapacity = NewCapacity(capacity, BuildString(_this)->capacity);
 	if(newCapacity > MaxCapacity(_this))
 	{
 		newCapacity = MaxCapacity(_this); 
 	}
-	System_String * str = _IL_String_NewBuilder(_thread,
-												BuildString(_this),
-												newCapacity);
+	str = _IL_String_NewBuilder(_thread, BuildString(_this), newCapacity);
 	if(!str)
 	{
 		return 0;
@@ -418,6 +420,8 @@ static ILObject * Insert(ILExecThread * _thread,
 							ILInt32 index,
 							ILInt32 length)
 {
+	ILInt32 newLength, newCapacity;
+	System_String *str;
 	if(index < 0 || index > _this->buildString->length)
 	{
 		ILExecThreadThrowArgRange(_thread,
@@ -425,7 +429,7 @@ static ILObject * Insert(ILExecThread * _thread,
 									"ArgRange_StringIndex");
 		return (ILObject *)0;
 	}
-	ILInt32 newLength = _this->buildString->length + length;
+	newLength = _this->buildString->length + length;
 	if(newLength > _this->buildString->capacity)
 	{
 		if(newLength > _this->maxCapacity)
@@ -435,15 +439,12 @@ static ILObject * Insert(ILExecThread * _thread,
 									 "ArgRange_StrCapacity");
 			return 0;
 		}
-		ILInt32 newCapacity = NewCapacity(newLength,
-											_this->buildString->capacity);
+		newCapacity = NewCapacity(newLength, _this->buildString->capacity);
 		if(newCapacity > _this->maxCapacity)
 		{
 			newCapacity = _this->maxCapacity;
 		}
-		System_String * str = _IL_String_NewBuilder(_thread,
-													_this->buildString,
-													newCapacity);
+		str = _IL_String_NewBuilder(_thread, _this->buildString, newCapacity);
 		if(!str)
 		{
 			return 0;
@@ -681,6 +682,8 @@ ILObject * _IL_StringBuilder_Replace_cc(ILExecThread * _thread,
 										ILUInt16 oldChar,
 										ILUInt16 newChar)
 {
+	ILInt32 length;
+	ILUInt16 *buf;
 	if(oldChar != newChar)
 	{
 		if(NeedsCopy(_this))
@@ -695,8 +698,8 @@ ILObject * _IL_StringBuilder_Replace_cc(ILExecThread * _thread,
 			BuildString(_this) = str;
 			NeedsCopy(_this) = (ILBool)0;
 		}
-		ILInt32 length = BuildString(_this)->length;
-		ILUInt16 * buf = StringToBuffer(BuildString(_this));
+		length = BuildString(_this)->length;
+		buf = StringToBuffer(BuildString(_this));
 		while(length > 0)
 		{
 			if(*buf == oldChar)
@@ -721,6 +724,7 @@ ILObject * _IL_StringBuilder_Replace_ccii(ILExecThread * _thread,
 											ILInt32 startIndex,
 											ILInt32 count)
 {
+	ILUInt16 *buf;
 	if(startIndex < 0 || startIndex > BuildString(_this)->length)
 	{
 		ILExecThreadThrowArgRange(_thread,
@@ -749,7 +753,7 @@ ILObject * _IL_StringBuilder_Replace_ccii(ILExecThread * _thread,
 			BuildString(_this) = str;
 			NeedsCopy(_this) = (ILBool)0;
 		}
-		ILUInt16 * buf = StringToBuffer(BuildString(_this)) + startIndex;
+		buf = StringToBuffer(BuildString(_this)) + startIndex;
 		while(count > 0)
 		{
 			if(*buf == oldChar)

@@ -35,6 +35,9 @@
 	* engine/verify_obj.c (BoxValue): check for the correct combinations
 	of stack value and boxing types.
 
+	* engine/verify_arith.c (binaryShiftMatrix): wrong inferred type
+	for the combination (I4, I) - should be I4, not I.
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

@@ -75,7 +75,7 @@ static char const binaryShiftMatrix
 			[ILEngineType_ValidTypes][ILEngineType_ValidTypes] =
 {
 		    /* I4    I8    I     F     &     O     *     MV */
-	/* I4: */ {T_I4, T_NO, T_I,  T_NO, T_NO, T_NO, T_NO, T_NO},
+	/* I4: */ {T_I4, T_NO, T_I4, T_NO, T_NO, T_NO, T_NO, T_NO},
 	/* I8: */ {T_I8, T_NO, T_I8, T_NO, T_NO, T_NO, T_NO, T_NO},
 	/* I:  */ {T_I,  T_NO, T_I,  T_NO, T_NO, T_NO, T_NO, T_NO},
 	/* F:  */ {T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO, T_NO},

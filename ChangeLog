@@ -9,6 +9,8 @@ to "thread->thrownException", because it is already there.
 
 * engine/lib_type.c: bug fix in the encoding of type names.
 
+* engine/ilrun.c: print a message if "Main" throws an uncaught exception.
+
 2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * samples/mscorlib.dll: new version with "UtcNow" fix.

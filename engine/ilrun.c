@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 	ILExecThread *thread;
 	ILObject *args;
 	ILString *argString;
+	ILObject *exception;
 
 	/* Allocate space for the library list */
 	libraryDirs = (char **)ILMalloc(sizeof(char *) * argc);
@@ -192,6 +193,25 @@ int main(int argc, char *argv[])
 	{
 		/* An exception was thrown while building the argument array */
 		retval = 1;
+	}
+
+	/* Print the top-level exception that occurred */
+	if(retval != 0)
+	{
+		exception = ILExecThreadGetException(thread);
+		ILExecThreadClearException(thread);
+		argString = ILObjectToString(thread, exception);
+		if(argString != 0 &&
+		   (param = ILStringToAnsi(thread, argString)) != 0)
+		{
+			fputs("Uncaught exception: ", stderr);
+			fputs(param, stderr);
+			putc('\n', stderr);
+		}
+		else
+		{
+			fputs("virtual memory exhausted\n", stderr);
+		}
 	}
 
 	/* Clean up the process and exit */

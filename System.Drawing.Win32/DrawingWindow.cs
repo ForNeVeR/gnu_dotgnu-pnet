@@ -161,9 +161,15 @@ internal abstract class DrawingWindow : IToolkitWindow
 		{
 			//Console.WriteLine("DrawingWindow.Capture, "+ value +", "+ sink);
 			if (value)
+			{
 				toolkit.capturedWindow  = this;
+				Win32.Api.SetCapture(hwnd);
+			}
 			else
+			{
 				toolkit.capturedWindow  = null;
+				Win32.Api.ReleaseCapture();
+			}
 		}
 	}
 
@@ -395,13 +401,15 @@ internal abstract class DrawingWindow : IToolkitWindow
 			found = toolkit.capturedWindow;
 
 		// If this is the first time over a window, set the capture and try again
-		if (toolkit.capturedTopWindow == null && toolkit.capturedWindow == null)
+		if (toolkit.capturedTopWindow == null)
 		{
-			if (toolkit.capturedWindow != null)
-				CaptureTopLevel(toolkit.capturedWindow);
-			else
+			if (toolkit.capturedWindow == null)
+			{
 				CaptureTopLevel(this);
-			MouseMove(msg, wParam, lParam);
+				MouseMove(msg, wParam, lParam);
+			}
+			else
+				CaptureTopLevel(toolkit.capturedWindow);
 			return;
 		}
 

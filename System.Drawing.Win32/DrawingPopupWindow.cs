@@ -53,6 +53,7 @@ namespace System.Drawing.Toolkit
 				menu = false;
 				extendedStyle = Win32.Api.WindowsExtendedStyle.WS_EX_TOOLWINDOW;
 				// We capture the mouse, and we want the client windows to be notified
+				topOfHeirarchy = this;
 			}
 
 		internal override void CreateWindow()

@@ -3,6 +3,7 @@ libILinclude_HEADERS = il_coder.h \
 					   il_config.h \
 					   il_decimal.h \
 					   il_dumpasm.h \
+					   il_gc.h \
 					   il_image.h \
 					   il_jopcodes.h \
 					   il_meta.h \

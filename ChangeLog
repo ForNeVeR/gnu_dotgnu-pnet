@@ -21,6 +21,9 @@ header so that it is aligned on the machine's best alignment boundary.
 * Makefile.am, configure.in, libgc/*: check in the Hans-Boehm garbage
 collection library, version 6.0.
 
+* include/il_gc.h, include/Makefile.am, support/hb_gc.c, support/Makefile.am:
+implement the garbage collection API in terms of the Hans-Boehm collector.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

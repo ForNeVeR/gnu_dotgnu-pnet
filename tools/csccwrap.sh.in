@@ -26,29 +26,49 @@ PNET_PATH="@PNET_PATH@"
 # Find the directory that contains "cscc".
 CSCC_DIR=`dirname "$CSCC"`
 
-# Initialize the flags.
-FLAGS=""
-
 # Locate "ilasm" and add its path to the command-line options.
 if test -x "$CSCC_DIR/ilasm" ; then
-	FLAGS="$FLAGS -filasm-path=\"$CSCC_DIR/ilasm\""
+	ILASM_FLAG="-filasm-path=$CSCC_DIR/ilasm"
 else
 	if test -n "$PNET_PATH" -a -x "$PNET_PATH/ilasm/ilasm" ; then
-		FLAGS="$FLAGS -filasm-path=\"$PNET_PATH/ilasm/ilasm\""
+		ILASM_FLAG="-filasm-path=$PNET_PATH/ilasm/ilasm"
 	else
 		if test -x "$CSCC_DIR/../ilasm/ilasm" ; then
-			FLAGS="$FLAGS -filasm-path=\"$CSCC_DIR/../ilasm/ilasm\""
+			ILASM_FLAG="-filasm-path=$CSCC_DIR/../ilasm/ilasm"
+		else
+			ILASM_FLAG="-fno-ilasm-specified"
+		fi
+	fi
+fi
+
+# Locate "ilalink" and add its path to the command-line options.
+if test -x "$CSCC_DIR/ilalink" ; then
+	ILALINK_FLAG="-filalink-path=$CSCC_DIR/ilalink"
+else
+	if test -n "$PNET_PATH" -a -x "$PNET_PATH/ilalink/ilalink" ; then
+		ILALINK_FLAG="-filalink-path=$PNET_PATH/ilalink/ilalink"
+	else
+		if test -x "$CSCC_DIR/../ilalink/ilalink" ; then
+			ILALINK_FLAG="-filalink-path=$CSCC_DIR/../ilalink/ilalink"
+		else
+			ILALINK_FLAG="-fno-ilalink-specified"
 		fi
 	fi
 fi
 
 # Locate "cscc-cs" and add its path to the command-line options.
 if test -x "$CSCC_DIR/cscc-cs" ; then
-	FLAGS="$FLAGS -fplugin-cs-path=\"$CSCC_DIR/cscc-cs\""
+	CSCC_CS_FLAG="-fplugin-cs-path=$CSCC_DIR/cscc-cs"
+else
+	if test -n "$PNET_PATH" -a -x "$PNET_PATH/cscc/cscc-cs" ; then
+		CSCC_CS_FLAG="-fplugin-cs-path=$PNET_PATH/cscc/cscc-cs"
+	else
+		CSCC_CS_FLAG="-fno-cscc-cs-specified"
+	fi
 fi
 
-# Force syntax checking.
-FLAGS="$FLAGS -fsyntax-check"
+# Add other flags to the command-line.
+OTHER_FLAGS="-fsyntax-check"
 
 # Execute the command line.
-exec "$CSCC" $FLAGS $*
+exec "$CSCC" "$ILASM_FLAG" "$CSCC_CS_FLAG" "$ILALINK_FLAG" $OTHER_FLAGS $*

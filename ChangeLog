@@ -8,6 +8,11 @@
 	* runtime/System/String.cs: improve range checks for negative
 	length values.
 
+	* System/ComponentModel/ITypeDescriptorContext.cs,
+	System/ComponentModel/TypeConverter.cs,
+	System/ComponentModel/TypeConverterAttribute.cs: stub out some
+	classes so that Mono's System.Drawing will load.
+
 2002-06-28  Charlie Carnow   <carnow@gmx.net>
 
 	* System.Xml/XmlReader.cs: Implemented 

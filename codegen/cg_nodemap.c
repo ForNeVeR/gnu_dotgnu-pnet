@@ -192,6 +192,7 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 	context->currentScope = info->currentScope;
 	context->currentClass = info->currentClass;
 	context->currentNamespace = info->currentNamespace;
+	context->overflowInsns = info->overflowInsns;
 
 	/* Bail out if we don't have a node for the program item */
 	node = ILProgramItemToNode(info, item);
@@ -239,6 +240,7 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 	{
 		info->currentScope = globalScope;
 	}
+	info->overflowInsns = info->overflowGlobal;
 
 	/* Ready to go */
 	return node;
@@ -249,6 +251,7 @@ void ILLeaveProgramItemContext(ILGenInfo *info, ILGenItemContext *context)
 	info->currentScope = context->currentScope;
 	info->currentClass = context->currentClass;
 	info->currentNamespace = context->currentNamespace;
+	info->overflowInsns = context->overflowInsns;
 }
 
 #ifdef	__cplusplus

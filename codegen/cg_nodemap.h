@@ -33,6 +33,7 @@ typedef struct
 	ILScope	*currentScope;
 	ILNode	*currentClass;
 	ILNode	*currentNamespace;
+	int		 overflowInsns;
 
 } ILGenItemContext;
 

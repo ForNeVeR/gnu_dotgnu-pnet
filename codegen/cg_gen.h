@@ -97,6 +97,7 @@ struct _tagILGenInfo
 	ILMemPool		scopeDataPool;		/* Memory pool for scope data items */
 	ILLabel			nextLabel;			/* Next temporary label to allocate */
 	int				overflowInsns : 1;	/* Use overflow instructions */
+	int				overflowGlobal : 1;	/* Global versino of "overflowInsns" */
 	int				pedanticArith : 1;	/* Make arithmetic always accurate */
 	int				clsCompliant : 1;	/* Use strict CLS library only */
 	int				semAnalysis : 1;	/* Non-zero during semantic analysis */

@@ -509,6 +509,7 @@ static int InitCodeGen(void)
 	{
 		CCCodeGen.overflowInsns = 0;
 	}
+	CCCodeGen.overflowGlobal = CCCodeGen.overflowInsns;
 
 	/* Switch to JVM mode if necessary */
 	if(CCStringListContains(machine_flags, num_machine_flags, "jvm"))

@@ -1,3 +1,9 @@
+2005-01-04  Marco Bosatta  <mboss@xp-obj.ch>
+
+	* System.Drawing/Drawing2D/Matrix.cs: Determinant and inversion
+	computation fixed. Fixes bugs #11436, #11437. (patch #3613, applied by
+	drobosson)
+
 2005-01-04  Jacob Alberty  <quake@vetmanage.com>
 
 	* System.Windows.Forms/Combobox.cs: Do not allow whitespace clicks for

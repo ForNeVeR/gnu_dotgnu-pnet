@@ -150,7 +150,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 			{
 				get
 				{
-                	return ((m11 * m22 - m21 * m11) != 0.0f);
+                                        return ( Determinant() != 0.0f );
 				}
 			}
 
@@ -207,7 +207,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 				float determinant;
 
 				// Compute the determinant and check it.
-				determinant = this.m11 * this.m22 - this.m21 * this.m11;
+				determinant = Determinant();
 				if(determinant != 0.0f)
 				{
 					// Get the answer into temporary variables.
@@ -215,9 +215,9 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 					m12 = -(this.m12 / determinant);
 					m21 = -(this.m21 / determinant);
 					m22 = this.m11 / determinant;
-					dx  = (this.m12 * this.dy - this.m22 * this.dx)
+					dx  = (this.m21 * this.dy - this.m22 * this.dx)
 								/ determinant;
-					dy  = (this.m21 * this.dx - this.m11 * this.dy)
+					dy  = (this.m12 * this.dx - this.m11 * this.dy)
 								/ determinant;
 
 					// Write the temporary variables back to the matrix.
@@ -579,7 +579,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 				float determinant;
 
 				// Compute the determinant and check it.
-				determinant = this.m11 * this.m22 - this.m21 * this.m11;
+				determinant = Determinant();
 				if(determinant != 0.0f)
 				{
 					// Get the answer into temporary variables.
@@ -599,7 +599,11 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 					oheight = height;
 				}
 			}
-
+        // private helper method to compute the determinant
+        private float Determinant() 
+        {
+                return this.m11 * this.m22 - this.m12 * this.m21;
+        } 
 }; // class Matrix
 
 }; // namespace System.Drawing.Drawing2D

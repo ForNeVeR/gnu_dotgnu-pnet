@@ -19,6 +19,10 @@
 	runtime/System/Private/NumberFormat/PercentFormatter.cs:
 	fix errors and warnings shown up by csc.
 
+	* resources/en_US/runtime/Format.txt, runtime/System/Guid.cs,
+	tests/runtime/Testruntime.cs, tests/runtime/System/TestGuid.cs:
+	test cases and bug fixes for "System.Guid".
+
 2002-11-28  Michael Moore  <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormatter.cs: implement

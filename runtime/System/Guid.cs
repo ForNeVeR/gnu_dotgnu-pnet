@@ -24,7 +24,7 @@ namespace System
 #if !ECMA_COMPAT
 
 using System.Runtime.CompilerServices;
-using System.Private;
+using System.Text;
 
 public struct Guid : IFormattable, IComparable
 {
@@ -40,22 +40,177 @@ public struct Guid : IFormattable, IComparable
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Guid NewGuid();
 
+	// Helper methods for Guid parsing.
+	private static int GetHex(String g, ref int posn, int length, int digits)
+			{
+				int value = 0;
+				char ch;
+				while(digits > 0)
+				{
+					if(posn >= length)
+					{
+						throw new FormatException(_("Format_GuidValue"));
+					}
+					ch = g[posn++];
+					if(ch >= '0' && ch <= '9')
+					{
+						value = value * 16 + (int)(ch - '0');
+					}
+					else if(ch >= 'A' && ch <= 'F')
+					{
+						value = value * 16 + (int)(ch - 'A' + 10);
+					}
+					else if(ch >= 'a' && ch <= 'f')
+					{
+						value = value * 16 + (int)(ch - 'a' + 10);
+					}
+					else
+					{
+						throw new FormatException(_("Format_GuidValue"));
+					}
+					--digits;
+				}
+				return value;
+			}
+	private static int GetVarHex(String g, ref int posn, int length, int digits)
+			{
+				int value = 0;
+				char ch;
+				if((length - posn) <= 2 || g[posn] != '0' ||
+				   (g[posn + 1] != 'x' && g[posn + 1] != 'X'))
+				{
+					throw new FormatException(_("Format_GuidValue"));
+				}
+				posn += 2;
+				for(;;)
+				{
+					if(posn >= length)
+					{
+						break;
+					}
+					ch = g[posn++];
+					if(ch >= '0' && ch <= '9')
+					{
+						value = value * 16 + (int)(ch - '0');
+					}
+					else if(ch >= 'A' && ch <= 'F')
+					{
+						value = value * 16 + (int)(ch - 'A' + 10);
+					}
+					else if(ch >= 'a' && ch <= 'f')
+					{
+						value = value * 16 + (int)(ch - 'a' + 10);
+					}
+					else
+					{
+						--posn;
+						break;
+					}
+					--digits;
+					if(digits < 0)
+					{
+						throw new FormatException(_("Format_GuidValue"));
+					}
+				}
+				return value;
+			}
+	private static void GetChar(String g, ref int posn, int length, char ch)
+			{
+				if(posn >= length || g[posn] != ch)
+				{
+					throw new FormatException(_("Format_GuidValue"));
+				}
+				++posn;
+			}
+
 	// Constructors.
-	[TODO]
 	public Guid(String g)
 			{
-				// TODO
-				a__ = 0;
-				b__ = 0;
-				c__ = 0;
-				d__ = 0;
-				e__ = 0;
-				f__ = 0;
-				g__ = 0;
-				h__ = 0;
-				i__ = 0;
-				j__ = 0;
-				k__ = 0;
+				if(g == null)
+				{
+					throw new ArgumentNullException("g");
+				}
+				int posn = 0;
+				int length = g.Length;
+				if(g[0] == '{')
+				{
+					++posn;
+				}
+				if((length - posn) >= 2 && g[posn] == '0' &&
+					(g[posn + 1] == 'x' || g[posn + 1] == 'X'))
+				{
+					if(posn == 0)
+					{
+						throw new FormatException(_("Format_GuidValue"));
+					}
+					a__ = (int)GetVarHex(g, ref posn, length, 8);
+					GetChar(g, ref posn, length, ',');
+					b__ = (short)GetVarHex(g, ref posn, length, 4);
+					GetChar(g, ref posn, length, ',');
+					c__ = (short)GetVarHex(g, ref posn, length, 4);
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					d__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					e__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					f__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					g__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					h__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					i__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					j__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+					GetChar(g, ref posn, length, ',');
+					GetChar(g, ref posn, length, '{');
+					k__ = (byte)GetVarHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '}');
+				}
+				else
+				{
+					a__ = (int)GetHex(g, ref posn, length, 8);
+					GetChar(g, ref posn, length, '-');
+					b__ = (short)GetHex(g, ref posn, length, 4);
+					GetChar(g, ref posn, length, '-');
+					c__ = (short)GetHex(g, ref posn, length, 4);
+					GetChar(g, ref posn, length, '-');
+					d__ = (byte)GetHex(g, ref posn, length, 2);
+					e__ = (byte)GetHex(g, ref posn, length, 2);
+					GetChar(g, ref posn, length, '-');
+					f__ = (byte)GetHex(g, ref posn, length, 2);
+					g__ = (byte)GetHex(g, ref posn, length, 2);
+					h__ = (byte)GetHex(g, ref posn, length, 2);
+					i__ = (byte)GetHex(g, ref posn, length, 2);
+					j__ = (byte)GetHex(g, ref posn, length, 2);
+					k__ = (byte)GetHex(g, ref posn, length, 2);
+				}
+				if(g[0] == '{')
+				{
+					if(posn >= length || g[posn] != '}')
+					{
+						throw new FormatException(_("Format_GuidValue"));
+					}
+					++posn;
+				}
+				if(posn != length)
+				{
+					throw new FormatException(_("Format_GuidValue"));
+				}
 			}
 	public Guid(byte[] b)
 			{
@@ -224,6 +379,14 @@ public struct Guid : IFormattable, IComparable
 					{
 						return 1;
 					}
+					if(k__ < temp.k__)
+					{
+						return -1;
+					}
+					else if(k__ > temp.k__)
+					{
+						return 1;
+					}
 					return 0;
 				}
 				else
@@ -289,6 +452,25 @@ public struct Guid : IFormattable, IComparable
 				return bytes;
 			}
 
+	// Add the hex representation of an integer to a string builder.
+	private static void AddHex(StringBuilder builder, int value, int digits)
+			{
+				int hexdig;
+				while(digits > 0)
+				{
+					--digits;
+					hexdig = ((value >> (digits * 4)) & 0x0F);
+					if(hexdig < 10)
+					{
+						builder.Append((char)('0' + hexdig));
+					}
+					else
+					{
+						builder.Append((char)('a' + hexdig - 10));
+					}
+				}
+			}
+
 	// Convert this Guid into a string.
 	public override String ToString()
 			{
@@ -301,25 +483,26 @@ public struct Guid : IFormattable, IComparable
 	public String ToString(String format, IFormatProvider provider)
 			{
 				String start, end, sep;
-				if(format == "B")
+				if(format == "B" || format == "b")
 				{
 					start = "{";
 					end = "}";
 					sep = "-";
 				}
-				else if(format == "D")
+				else if(format == null || format == "" ||
+				        format == "D" || format == "d")
 				{
 					start = "";
 					end = "";
 					sep = "-";
 				}
-				else if(format == "N")
+				else if(format == "N" || format == "n")
 				{
 					start = "";
 					end = "";
 					sep = "";
 				}
-				else if(format == "P")
+				else if(format == "P" || format == "p")
 				{
 					start = "(";
 					end = ")";
@@ -329,18 +512,25 @@ public struct Guid : IFormattable, IComparable
 				{
 					throw new FormatException(_("Format_Guid"));
 				}
-				return start + Convert.ToString(a__, 16) +
-					   sep   + Convert.ToString(b__, 16) +
-					   sep   + Convert.ToString(c__, 16) +
-					   sep   + Convert.ToString(d__, 16) + 
-								Convert.ToString(e__, 16) +
-					   sep   + Convert.ToString(f__, 16) +
-								Convert.ToString(g__, 16) +
-								Convert.ToString(h__, 16) +
-								Convert.ToString(i__, 16) +
-								Convert.ToString(j__, 16) +
-								Convert.ToString(k__, 16) +
-					   end;
+				StringBuilder builder = new StringBuilder(38);
+				builder.Append(start);
+				AddHex(builder, a__, 8);
+				builder.Append(sep);
+				AddHex(builder, b__, 4);
+				builder.Append(sep);
+				AddHex(builder, c__, 4);
+				builder.Append(sep);
+				AddHex(builder, d__, 2);
+				AddHex(builder, e__, 2);
+				builder.Append(sep);
+				AddHex(builder, f__, 2);
+				AddHex(builder, g__, 2);
+				AddHex(builder, h__, 2);
+				AddHex(builder, i__, 2);
+				AddHex(builder, j__, 2);
+				AddHex(builder, k__, 2);
+				builder.Append(end);
+				return builder.ToString();
 			}
 
 	// Operators.

@@ -28,6 +28,7 @@ public class Testruntime
 			{
 				TestSuite suite = new TestSuite("Basic Runtime Tests");
 				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestGuid));
 				suite.AddTests(typeof(TestSByte));
 				suite.AddTests(typeof(TestString));
 				suite.AddTests(typeof(TestStringBuilder));

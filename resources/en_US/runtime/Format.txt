@@ -21,6 +21,7 @@ Format_BadBoolean=Bad format for Boolean value
 Format_NeedSingleChar=Input must be a single-character string
 Format_Integer=Value must be formatted as an integer
 Format_Guid=Bad format for Guid value: should be "B", "D", "N", or "P"
+Format_GuidValue=Bad format for Guid value
 Format_Enum=Bad format for enumerated value
 Format_Version=Bad format for Version value
 Format_IP=Bad format for IP address

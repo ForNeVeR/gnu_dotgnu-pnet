@@ -316,6 +316,50 @@ static int ClassNameSame(ILNode *name)
 	   			== 0);
 }
 
+/* A hack to rename the indexer during parsing , damn the C# designers,
+ * they had to make the variable names resolved later using an attribute
+ * public int <name>[int posn] would have been a cleaner design 
+ */
+static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree)
+{
+	ILNode_ListIter iter;
+	ILNode_ListIter iter2;
+	ILNode *temp;
+	ILNode *attr;
+	ILNode_List *args;
+	ILEvalValue evalValue;
+	if(attrTree && attrTree->sections)
+	{
+		ILNode_ListIter_Init(&iter, attrTree->sections);
+		while((temp = ILNode_ListIter_Next(&iter))!=0)
+		{	
+			if(!temp || !((ILNode_AttributeSection*)temp)->attrs)continue;
+			ILNode_ListIter_Init(&iter2, 
+				((ILNode_AttributeSection*)(temp))->attrs);
+			while((attr = ILNode_ListIter_Next(&iter2))!=0)
+			{
+				if(!strcmp(ILQualIdentName(((ILNode_Attribute*)attr)->name,0)
+							,"IndexerName"))
+				{
+					args=(ILNode_List*)((ILNode_AttrArgs*)
+						(((ILNode_Attribute*)attr)->args))->positionalArgs;	
+					if(yyisa(args->item1, ILNode_ToConst))
+					{
+						ILNode_EvalConst(args->item1,info,&evalValue);
+						if(evalValue.valueType==ILMachineType_String)
+						{
+							return ILQualIdentSimple(ILInternString(
+										evalValue.un.strValue.str
+										,evalValue.un.strValue.len).string);
+						}
+					}
+				}
+			}
+		}
+	}
+	/* THE BIG ELSE */
+	return ILQualIdentSimple(ILInternString("Item", 4).string);
+}
 /*
  * Adjust the name of a property to include a "get_" or "set_" prefix.
  */
@@ -2849,9 +2893,10 @@ RemoveAccessorDeclaration
 IndexerDeclaration
 	: OptAttributes OptModifiers IndexerDeclarator
 			StartAccessorBlock AccessorBlock		{
+				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1);
 				ILUInt32 attrs = CSModifiersToPropertyAttrs($3.type, $2);
 				$$ = ILNode_PropertyDeclaration_create($1,
-								   attrs, $3.type, $3.ident, $3.params,
+								   attrs, $3.type, name, $3.params,
 								   $5.item1, $5.item2,
 								   (($5.item1 ? 1 : 0) |
 								    ($5.item2 ? 2 : 0)));
@@ -3420,8 +3465,7 @@ InterfaceIndexerDeclaration
 								 IL_META_METHODDEF_HIDE_BY_SIG |
 								 IL_META_METHODDEF_SPECIAL_NAME |
 								 IL_META_METHODDEF_NEW_SLOT;
-				ILNode *name = ILQualIdentSimple
-									(ILInternString("Item", 4).string);
+				ILNode* name=GetIndexerName(NULL,(ILNode_AttributeTree*)$1);
 				$$ = ILNode_PropertyDeclaration_create
 								($1, attrs, $3, name, $5, 0, 0, $7);
 				CloneLine($$, $3);

@@ -5,6 +5,9 @@
 	Enable base access for properties by adding a baseCall variable to
 	ILNode_MemberProperty
 
+	* cscc/csharp/cs_grammar.y: process IndexerName attribute for indexers
+	before starting the TypeGather phase. (hack)
+
 2002-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/Makefile.am: add missing "queue.c" to Makefile.am.

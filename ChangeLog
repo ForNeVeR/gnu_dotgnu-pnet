@@ -9,6 +9,9 @@
 	put some infrastructure in place to support on-demand loading
 	of TypeRef tokens.
 
+	* image/meta_build.c: remove some unnecessary code; convert
+	MethodSpec tokens to on-demand loading.
+
 2003-09-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/dns.c, support/socket.c: make sure that the socket

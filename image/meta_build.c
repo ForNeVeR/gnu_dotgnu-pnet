@@ -3338,28 +3338,6 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	int error;
 	int needPhase2;
 
-	/* Load information about modules, assemblies, and files */
-#if 0
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MODULE,
-							 Load_Module, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MODULE_REF,
-							 Load_ModuleRef, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_ASSEMBLY,
-							 Load_Assembly, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_ASSEMBLY_REF,
-							 Load_AssemblyRef, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_OS_DEF,
-							 Load_OSDef, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_PROCESSOR_DEF,
-							 Load_ProcessorDef, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_OS_REF,
-							 Load_OSRef, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_PROCESSOR_REF,
-							 Load_ProcessorRef, 0));
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FILE,
-							 Load_File, 0));
-#endif
-
 	/* Load class names from the TypeRef and TypeDef tables */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_TYPE_REF,
 							 Load_TypeRefName, 0));
@@ -3408,12 +3386,6 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_INTERFACE_IMPL,
 							 Load_InterfaceImpl, 0));
 
-#if 0
-	/* Load the PInvoke definitions */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_IMPL_MAP,
-							 Load_PInvoke, 0));
-#endif
-
 	/* Load events and properties for all of the types */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_EVENT_MAP,
 							 Load_EventAssociation, 0));
@@ -3430,57 +3402,9 @@ int _ILImageBuildMetaStructures(ILImage *image, const char *filename,
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_METHOD_IMPL,
 							 Load_Override, 0));
 
-#if 0
-	/* Load the custom attributes for all of the above */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CUSTOM_ATTRIBUTE,
-							 Load_CustomAttr, 0));
-#endif
-
 	/* Load generic type parameters */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_GENERIC_PAR,
 							 Load_GenericPar, 0));
-
-	/* Load generic method specifications */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_METHOD_SPEC,
-							 Load_MethodSpec, 0));
-
-	/* Only do the following if we are pre-validating */
-	if((loadFlags & IL_LOADFLAG_PRE_VALIDATE) != 0)
-	{
-		/* Load the stand-alone signatures */
-		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_STAND_ALONE_SIG,
-								 Load_StandAloneSig, 0));
-
-		/* Load constants */
-		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CONSTANT,
-								 Load_Constant, 0));
-
-		/* Load field RVA declarations */
-		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_RVA,
-								 Load_FieldRVA, 0));
-
-		/* Load field layout declarations */
-		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_LAYOUT,
-								 Load_FieldLayout, 0));
-
-		/* Load field marshal declarations */
-		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_FIELD_MARSHAL,
-								 Load_FieldMarshal, 0));
-
-		/* Load class layout declarations */
-		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_CLASS_LAYOUT,
-								 Load_ClassLayout, 0));
-
-		/* Load manifest resource declarations */
-		EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_MANIFEST_RESOURCE,
-								 Load_ManifestRes, 0));
-	}
-
-#if 0
-	/* Load security declarations */
-	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_DECL_SECURITY,
-							 Load_DeclSecurity, 0));
-#endif
 
 	/* Load exported type declarations */
 	EXIT_IF_ERROR(LoadTokens(image, IL_META_TOKEN_EXPORTED_TYPE,
@@ -3538,7 +3462,7 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	Load_ManifestRes,			/* 28 */
 	0,
 	0,
-	0,
+	Load_MethodSpec,
 	0,
 	0,
 	0,

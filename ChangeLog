@@ -1,4 +1,8 @@
 
+2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* doc/csdoc.dtd: update the DTD for the XML documentation format.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

@@ -46,6 +46,7 @@
 	astore_1
 	aload_2
 	dup
+	instanceof	'Test2'
 	ifne	?L1
 	pop
 	aconst_null
@@ -53,6 +54,7 @@
 	astore_3
 	aload_2
 	dup
+	instanceof	'I'
 	ifne	?L2
 	pop
 	aconst_null

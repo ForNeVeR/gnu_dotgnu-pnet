@@ -29,7 +29,7 @@
 extern	"C" {
 #endif
 
-#if defined(IL_CVM_DIRECT) && defined(CVM_X86) && \
+#if defined(xxxIL_CVM_DIRECT) && defined(CVM_X86) && \
 	defined(__GNUC__) && !defined(IL_NO_ASM)
 
 /*
@@ -155,7 +155,7 @@ static void FlushEndOfBlock(X86Unroll *unroll)
 	else if(unroll->stackHeight < 0)
 	{
 		x86_alu_reg_imm(unroll->out, X86_SUB, REG_STACK,
-						unroll->stackHeight);
+						-(unroll->stackHeight));
 	}
 	unroll->stackHeight = 0;
 
@@ -187,7 +187,8 @@ static void BranchToPC(X86Unroll *unroll, unsigned char *pc)
 /*
  * Perform a conditional branch to one of two program locations.
  * It is assumed that the condition codes have already been set
- * prior to calling this function.
+ * prior to calling this function, and that "cond" refers to the
+ * inverse of the condition that we are really testing.
  */
 static void BranchOnCondition(X86Unroll *unroll,
 							  int cond, int isSigned,
@@ -285,14 +286,15 @@ static int GetCachedWordRegister(X86Unroll *unroll, long local)
 	if(unroll->cachedLocal == local)
 	{
 		/* Push the previous register back onto the stack */
-		unroll->pseudoStack[(unroll->pseudoStackSize)++] = unroll->cachedReg;
-		unroll->regsUsed |= (1 << unroll->cachedReg);
+		int reg = unroll->cachedReg;
+		unroll->pseudoStack[(unroll->pseudoStackSize)++] = reg;
+		unroll->regsUsed |= (1 << reg);
 
 		/* We can only do this once: use a new register if the
 		   variable is loaded again */
 		unroll->cachedLocal = -1;
 		unroll->cachedReg = -1;
-		return -1;
+		return reg;
 	}
 	else
 	{
@@ -803,19 +805,28 @@ int _ILCVMUnrollPossible(void)
 /* Imported from "cvm_lengths.c" */
 extern unsigned char const _ILCVMLengths[512];
 
-void _ILCVMUnrollMethod(unsigned char *pc)
+/* Imported from "cvmc.c" */
+int _ILCVMStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn);
+
+int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc)
 {
 	X86Unroll unroll;
 	int inUnrollBlock;
 	unsigned char *inst;
 	int opcode;
-	unsigned char *bufMax = (unsigned char *)0x7FFFFFFF;	/* TODO */
 	unsigned char *overwritePC;
 	unsigned char *unrollStart;
 	int reg, reg2;
+	ILCachePosn posn;
+
+	/* Find some room in the cache */
+	if(!_ILCVMStartUnrollBlock(coder, 32, &posn))
+	{
+		return 0;
+	}
 
 	/* Initialize the local unroll state */
-	unroll.out = 0;	/* TODO */
+	unroll.out = posn.ptr;
 	unroll.regsUsed = 0;
 	unroll.regsSaved = 0;
 	unroll.pseudoStackSize = 0;
@@ -849,7 +860,7 @@ void _ILCVMUnrollMethod(unsigned char *pc)
 		}
 
 		/* Bail out if we are low on space */
-		if((bufMax - unroll.out) < UNROLL_BUFMIN)
+		if((posn.limit - unroll.out) < UNROLL_BUFMIN)
 		{
 			break;
 		}
@@ -877,6 +888,15 @@ void _ILCVMUnrollMethod(unsigned char *pc)
 					UNROLL_FLUSH();
 				}
 				pc += CVM_LEN_NONE;
+			}
+			break;
+
+			case 0x100 + COP_PREFIX_UNROLL_METHOD:
+			{
+				/* This is usually the first instruction that is
+				   replaced by unrolled code, so optimise it away */
+				UNROLL_START();
+				MODIFY_UNROLL_PC(CVMP_LEN_NONE);
 			}
 			break;
 
@@ -910,6 +930,11 @@ void _ILCVMUnrollMethod(unsigned char *pc)
 		BranchToPC(&unroll, pc);
 		UNROLL_FLUSH();
 	}
+
+	/* Update the method cache to reflect the final position */
+	posn.ptr = unroll.out;
+	ILCacheEndMethod(&posn);
+	return 1;
 }
 
 #else /* !i386 */
@@ -928,8 +953,9 @@ int _ILCVMUnrollPossible(void)
 	return 0;
 }
 
-void _ILCVMUnrollMethod(unsigned char *pc)
+int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc)
 {
+	return 0;
 }
 
 #endif /* !i386 */

@@ -540,9 +540,13 @@ static CVMOpcode const prefixOpcodes[80] = {
 	{"fix_i4_u",		CVM_OPER_NONE},
 
 	/*
+	 * Trigger method unrolling.
+	 */
+	{"unroll_method",	CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_4b",	CVM_OPER_NONE},
 	{"preserved_4c",	CVM_OPER_NONE},
 	{"preserved_4d",	CVM_OPER_NONE},
 	{"preserved_4e",	CVM_OPER_NONE},

@@ -162,6 +162,13 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	   use in code generation for direct threading */
 	_ILCVMInterpreter(0);
 
+	/* Initialize the native code unroller */
+	if(!_ILCVMUnrollInit())
+	{
+		ILCoderDestroy(&(coder->coder));
+		return 0;
+	}
+
 	/* Ready to go */
 	return &(coder->coder);
 }
@@ -220,6 +227,15 @@ static ILUInt32 CVMCoder_GetNativeOffset(ILCoder *_coder, void *start,
 static void CVMCoder_MarkBytecode(ILCoder *_coder, ILUInt32 offset)
 {
 	ILCacheMarkBytecode(&(((ILCVMCoder *)_coder)->codePosn), offset);
+}
+
+/*
+ * Get a block of method cache memory for use in code unrolling.
+ */
+int _ILCVMStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	return (ILCacheStartMethod(coder->cache, posn, align, 0) != 0);
 }
 
 /*
@@ -412,6 +428,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_GetILOffset,
 	CVMCoder_GetNativeOffset,
 	CVMCoder_MarkBytecode,
+	CVMCoder_MarkEnd,
 	"sentinel"
 };
 

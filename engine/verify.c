@@ -941,6 +941,9 @@ restart:
 		VERIFY_INSN_ERROR();
 	}
 
+	/* Mark the end of the method */
+	ILCoderMarkEnd(coder);
+
 	/* Output the exception handler table, if necessary */
 	if(exceptions != 0)
 	{

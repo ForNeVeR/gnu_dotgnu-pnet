@@ -658,6 +658,11 @@ struct _tagILCoderClass
 	void (*markBytecode)(ILCoder *coder, ILUInt32 offset);
 
 	/*
+	 * Mark the end of a method's code, just prior to exception tables.
+	 */
+	void (*markEnd)(ILCoder *coder);
+
+	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
 	const char *sentinel;
@@ -892,6 +897,8 @@ struct _tagILCoderClass
 												      (offset), (exact)))
 #define	ILCoderMarkBytecode(coder,offset) \
 			((*((coder)->classInfo->markBytecode))((coder), (offset)))
+#define	ILCoderMarkEnd(coder) \
+			((*((coder)->classInfo->markEnd))((coder)))
 
 #ifdef	__cplusplus
 };

@@ -586,6 +586,22 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					#include "cvm_inline.c"
 					#undef IL_CVM_PREFIX
 
+					VMCASE(COP_PREFIX_UNROLL_METHOD):
+					{
+						/* Unroll the current method to native code */
+					#ifdef IL_CVM_DIRECT
+						if(_ILCVMUnrollMethod(thread->process->coder, pc))
+						{
+							VMSWITCH(0);
+						}
+						else
+					#endif
+						{
+							MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+						}
+					}
+					VMBREAK(COP_PREFIX_UNROLL_METHOD);
+
 #ifndef IL_CVM_DIRECT
 					VMPREFIXDEFAULT:
 					{

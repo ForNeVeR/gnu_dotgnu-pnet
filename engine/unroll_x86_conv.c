@@ -82,6 +82,8 @@ case COP_I2US:
 }
 break;
 
+#if 0		/* TODO */
+
 case COP_F2F:
 {
 	/* Truncate a floating point value to float32 */
@@ -107,5 +109,7 @@ case COP_F2D:
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
+
+#endif
 
 #endif /* IL_UNROLL_CASES */

@@ -383,6 +383,22 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread);
  */
 void *_ILSystemException(ILExecThread *thread, const char *className);
 
+/*
+ * Initialize the CVM native code unrolling library.  Returns
+ * zero if insufficient memory available.
+ */
+int _ILCVMUnrollInit(void);
+
+/*
+ * Determine if CVM native code unrolling is possible.
+ */
+int _ILCVMUnrollPossible(void);
+
+/*
+ * Unroll a CVM method to native code.
+ */
+int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc);
+
 #ifdef	__cplusplus
 };
 #endif

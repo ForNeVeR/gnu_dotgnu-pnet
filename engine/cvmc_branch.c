@@ -67,6 +67,12 @@ static void CVMCoder_Label(ILCoder *_coder, ILUInt32 offset)
 	   the new stack contents by calling "StackRefresh" */
 	coder->height = coder->minHeight;
 
+	/* If we might be unrolling the code later, then mark the label */
+	if(_ILCVMUnrollPossible())
+	{
+		CVM_OUT_NONE(COP_NOP);
+	}
+
 	/* Search for a label with this address */
 	label = GetLabel(coder, offset);
 	if(!label)

@@ -30,6 +30,8 @@ case COP_BR:
 }
 break;
 
+#if 0	/* TODO */
+
 case COP_BEQ:
 case COP_BR_PEQ:
 {
@@ -39,7 +41,7 @@ case COP_BR_PEQ:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_EQ, 0,
+	BranchOnCondition(&unroll, X86_CC_NE, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -55,7 +57,7 @@ case COP_BR_PNE:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_NE, 0,
+	BranchOnCondition(&unroll, X86_CC_EQ, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -70,7 +72,7 @@ case COP_BLT:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_LT, 1,
+	BranchOnCondition(&unroll, X86_CC_GE, 1,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -85,7 +87,7 @@ case COP_BLT_UN:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_LT, 0,
+	BranchOnCondition(&unroll, X86_CC_GE, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -100,7 +102,7 @@ case COP_BLE:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_LE, 1,
+	BranchOnCondition(&unroll, X86_CC_GT, 1,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -115,7 +117,7 @@ case COP_BLE_UN:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_LE, 0,
+	BranchOnCondition(&unroll, X86_CC_GT, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -130,7 +132,7 @@ case COP_BGT:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_GT, 1,
+	BranchOnCondition(&unroll, X86_CC_LE, 1,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -145,7 +147,7 @@ case COP_BGT_UN:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_GT, 0,
+	BranchOnCondition(&unroll, X86_CC_LE, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -160,7 +162,7 @@ case COP_BGE:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_GE, 1,
+	BranchOnCondition(&unroll, X86_CC_LT, 1,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -175,7 +177,7 @@ case COP_BGE_UN:
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_GE, 0,
+	BranchOnCondition(&unroll, X86_CC_LT, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -190,7 +192,7 @@ case COP_BRNONNULL:
 	reg = GetTopWordRegister(&unroll);
 	x86_alu_reg_reg(unroll.out, X86_OR, reg, reg);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_NE, 0,
+	BranchOnCondition(&unroll, X86_CC_EQ, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
@@ -205,12 +207,14 @@ case COP_BRNULL:
 	reg = GetTopWordRegister(&unroll);
 	x86_alu_reg_reg(unroll.out, X86_OR, reg, reg);
 	FreeTopRegister(&unroll, -1);
-	BranchOnCondition(&unroll, X86_CC_EQ, 0,
+	BranchOnCondition(&unroll, X86_CC_NE, 0,
 					  CVM_ARG_BRANCH_SHORT, pc + CVM_LEN_BRANCH);
 	MODIFY_UNROLL_PC(CVM_LEN_BRANCH);
 	UNROLL_FLUSH();
 }
 break;
+
+#endif
 
 case COP_SWITCH:
 {

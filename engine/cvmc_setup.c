@@ -231,7 +231,7 @@ static ILUInt32 CVMEntryAllocExtraLocal(CVMEntryContext *ctx, ILType *type)
 static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 					   ILMethod *method, ILType *signature,
 					   int isConstructor, int newStart,
-					   unsigned char **start)
+					   unsigned char **start, int ordinaryMethod)
 {
 	unsigned char *pushDown;
 	ILUInt32 numLocals;
@@ -337,6 +337,12 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	   up at the end of the method with the maximum height */
 	coder->stackCheck = CVM_POSN();
 	CVM_OUT_CKHEIGHT();
+
+	/* Mark this method as perhaps needing to be unrolled later */
+	if(ordinaryMethod && _ILCVMUnrollPossible())
+	{
+		CVMP_OUT_NONE(COP_PREFIX_UNROLL_METHOD);
+	}
 
 	/* Output CVM code to allocate space for the local variables */
 	numLocals = ctx->numLocalWords + ctx->extraLocals;
@@ -1022,7 +1028,7 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 
 	/* Generate the entry point code */
 	return CVMEntryGen(&ctx, coder, method, signature,
-					   ILMethod_IsConstructor(method), 1, start);
+					   ILMethod_IsConstructor(method), 1, start, 1);
 }
 
 /*
@@ -1105,7 +1111,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 
 	/* Generate the entry point code */
 	if(!CVMEntryGen(&ctx, coder, method, signature,
-				    ILMethod_IsConstructor(method), 1, start))
+				    ILMethod_IsConstructor(method), 1, start, 0))
 	{
 		return 0;
 	}
@@ -1176,7 +1182,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 						   signature, useRawCalls, isInternal);
 
 	/* Generate the entry point code */
-	if(!CVMEntryGen(&ctx, coder, method, signature, 0, 0, &start2))
+	if(!CVMEntryGen(&ctx, coder, method, signature, 0, 0, &start2, 0))
 	{
 		return 0;
 	}
@@ -1228,6 +1234,20 @@ static int CVMCoder_Finish(ILCoder *_coder)
 
 	/* Ready to go */
 	return result;
+}
+
+/*
+ * Mark the end of a method's bytecode, just prior to the exception tables.
+ */
+static void CVMCoder_MarkEnd(ILCoder *coder)
+{
+	if(_ILCVMUnrollPossible())
+	{
+		/* We use the "prefix" opcode to mark the end of the method
+		   so that the code unroller knows where to stop.  This
+		   instruction will never be executed */
+		CVM_OUT_NONE(COP_PREFIX);
+	}
 }
 
 #endif	/* IL_CVMC_CODE */

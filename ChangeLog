@@ -7,6 +7,14 @@
 	engine/unroll_x86_ptr.c, engine/unroll_x86_var.c,
 	engine/x86_codegen.h: initial check-in of x86 code unroller.
 
+	* engine/cvm.c, engine/cvm.h, engine/cvm_dasm.c, engine/cvm_lengths.c,
+	engine/cvmc.c, engine/cvmc_branch.c, engine/cvmc_setup.c,
+	engine/engine.h, engine/null_coder.c, engine/unroll_x86.c,
+	engine/unroll_x86_branch.c, engine/unroll_x86_conv.c,
+	engine/verify.c, include/il_coder.h: hook the x86 code unroller
+	into the rest of the engine, but don't enable it yet because
+	it still has some bugs.
+
 2002-05-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/engine.h, engine/layout.c: use the image's "secure" bit

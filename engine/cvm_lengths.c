@@ -500,9 +500,13 @@ unsigned char const _ILCVMLengths[512] = {
 	/* fix_i4_u */			CVMP_LEN_NONE,
 
 	/*
+	 * Trigger method unrolling.
+	 */
+	/* unroll_method */		CVMP_LEN_NONE,
+
+	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_4b */		CVMP_LEN_NONE,
 	/* preserved_4c */		CVMP_LEN_NONE,
 	/* preserved_4d */		CVMP_LEN_NONE,
 	/* preserved_4e */		CVMP_LEN_NONE,

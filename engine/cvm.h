@@ -475,6 +475,11 @@ extern	"C" {
 #define	COP_PREFIX_FIX_I4_U			0x4A
 
 /*
+ * Trigger method unrolling.
+ */
+#define	COP_PREFIX_UNROLL_METHOD	0x4B
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

@@ -42,6 +42,9 @@
 	implement the drop-down of file extension types and track changes
 	to the wildcard pattern.
 
+	* samples/forms/ImageViewer.cs: add some more file types to the
+	open dialog's drop-down list.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

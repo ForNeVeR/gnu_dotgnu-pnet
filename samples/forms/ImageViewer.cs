@@ -47,6 +47,16 @@ public class ImageViewer : Form
 	private void OpenClicked(Object sender, EventArgs e)
 	{
 		OpenFileDialog dialog = new OpenFileDialog();
+		dialog.Filter =
+			"All image files (*.bmp, *.jpg, *.png, *.gif, *.ico, *.cur)" +
+			"|*.bmp;*.jpg;*.png;*.gif;*.ico;*.cur" +
+			"|BMP files (*.bmp)|*.bmp" +
+			"|JPEG files (*.jpg)|*.jpg" +
+			"|PNG files (*.png)|*.png" +
+			"|GIF files (*.gif)|*.gif" +
+			"|Icon files (*.ico)|*.ico" +
+			"|Cursor files (*.cur)|*.cur" +
+			"|All files (*.*)|*.*";
 		if(dialog.ShowDialog(this) == DialogResult.OK)
 		{
 			Bitmap image;
@@ -75,6 +85,16 @@ public class ImageViewer : Form
 	private void QuitClicked(Object sender, EventArgs e)
 	{
 		Close();
+	}
+
+	protected override bool ProcessDialogKey(Keys keyData)
+	{
+		if(keyData == (Keys.Control | Keys.O))
+		{
+			OpenClicked(this, EventArgs.Empty);
+			return true;
+		}
+		return base.ProcessDialogKey(keyData);
 	}
 
 	public static void Main(String[] args)

@@ -1,3 +1,32 @@
+2004-01-04  Neil Cawse  <neilcawse@geotab.com>
+
+	* DotGNU.SSL/GNUTLS.cs,
+	System.Drawing.Postscript/PostscriptImage.cs,
+	runtime/System/Runtime/Remoting/Messaging/MethodResponse.cs: small csc
+	compile issues.
+	
+	* System.Drawing.Win32/DrawingWindow.cs: bug in window handling Gopal
+	picked up.
+
+	* System.Windows.Forms/ComboBox.cs: set dropdownWidth when the size
+	is changed.
+	
+	* System.Windows.Forms/Control.cs: do not perform layout when the
+	control has no size, ie. when it is minimized.
+	
+	* System.Windows.Forms/ProgressBar.cs: reduce flicker by only
+	invalidating the area that needs to be drawn.
+
+	* System.Windows.Forms/TabControl.cs: handle SelectedIndex
+	differently. Change handling when adding a new tab. Fixes a number of
+	bugs.
+	
+	* System.Windows.Forms/TextBox.cs: scrollBars not positioning when
+	parent not visible bug fixed. Invalidate when resizing.
+	
+	* System.Windows.Forms/TreeView.cs: Invalidate when resizing.
+	
+	* samples/forms/CustomControl.cs: small improvements.
 
 2004-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 

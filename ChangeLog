@@ -1,4 +1,9 @@
 
+2004-04-28  Jens Kuehner <kuehner75@web.de>
+
+	* System.Drawing/Bitmap.cs: Pick up the left bottom pixel for 
+	transparent color if it's alpha is not 0xFF. (patch #2969, Gopal)
+
 2004-04-28  Gopal V <gopalv82@yahoo.com>
 
 	* DotGNU.Images/Frame.cs: Generate a mask from Alpha information

@@ -211,7 +211,17 @@ public sealed class Bitmap : System.Drawing.Image
 	// Make a particular color transparent within this bitmap.
 	public void MakeTransparent()
 			{
-				MakeTransparent(Color.LightGray);
+				Color transparentColor = Color.LightGray;
+				if(Width > 1 && Height > 1)
+				{
+					transparentColor = GetPixel(0, Height - 1);
+					if(transparentColor.A == 0xFF)
+					{
+						// Use light grey
+						transparentColor = Color.LightGray;
+					}
+				}
+				MakeTransparent(transparentColor);
 			}
 	public void MakeTransparent(Color transparentColor)
 			{

@@ -35,6 +35,7 @@ internal class GrabWindow : OverrideWindow
 	// Internal state.
 	private PopupWindow[] list;
 	private PopupWindow lastEntered;
+	private InputOutputWidget lastChildEntered;
 	private PopupWindow lastButton;
 	private IntPtr keyBuffer;
 
@@ -159,6 +160,12 @@ internal class GrabWindow : OverrideWindow
 
 							// If this was the entered window, then
 							// send it a fake "LeaveNotify" event.
+							if(lastChildEntered != null && 
+								lastChildEntered.Parent == popup)
+							{
+								FakeLeave(lastChildEntered);
+								lastChildEntered = null;
+							}
 							if(lastEntered == popup)
 							{
 								lastEntered = null;
@@ -204,35 +211,38 @@ internal class GrabWindow : OverrideWindow
 				}
 			}
 
-	// Send a fake "EnterNotify" event to a popup window.
-	private static void FakeEnter(PopupWindow popup)
+	// Send a fake "EnterNotify" event to a window.
+	private static void FakeEnter(InputOutputWidget window)
 			{
-				if(popup != null)
+				if(window != null)
 				{
 					XEvent xevent = new XEvent();
 					xevent.xany.type__ =
 						(Xlib.Xint)(int)(EventType.EnterNotify);
-					popup.DispatchEvent(ref xevent);
+					window.DispatchEvent(ref xevent);
 				}
 			}
 
 	// Send a fake "LeaveNotify" event to a popup window.
-	private static void FakeLeave(PopupWindow popup)
+	private static void FakeLeave(InputOutputWidget window)
 			{
-				if(popup != null)
+				if(window != null)
 				{
 					XEvent xevent = new XEvent();
 					xevent.xany.type__ =
 						(Xlib.Xint)(int)(EventType.LeaveNotify);
-					popup.DispatchEvent(ref xevent);
+					window.DispatchEvent(ref xevent);
 				}
 			}
 
-	// Change the "lastEntered" window.
-	private void ChangeEntered(PopupWindow popup)
+	// Change the "lastEntered" and "lastChildEntered" window.
+	// The popup is entered before the child and left after.
+	private void ChangeEntered(PopupWindow popup, InputOutputWidget child)
 			{
 				PopupWindow before = null;
 				PopupWindow after = null;
+				InputOutputWidget childBefore = null;
+				InputOutputWidget childAfter = null;
 				lock(this)
 				{
 					if(lastEntered != popup)
@@ -241,14 +251,24 @@ internal class GrabWindow : OverrideWindow
 						after = popup;
 						lastEntered = popup;
 					}
+					if(lastChildEntered != child)
+					{
+						childBefore = lastChildEntered;
+						childAfter = child;
+						lastChildEntered = child;
+					}
 				}
 				if(before != null)
 				{
+					if (childBefore != null)
+						FakeLeave(childBefore);
 					FakeLeave(before);
 				}
 				if(after != null)
 				{
 					FakeEnter(after);
+					if (childAfter != null)
+						FakeEnter(childAfter);
 				}
 			}
 
@@ -276,11 +296,44 @@ internal class GrabWindow : OverrideWindow
 				}
 			}
 
+	// Find the child window that contains a particular mouse position
+	private InputOutputWidget FindChild(InputOutputWidget parent, int x, int y)
+			{
+				if (parent != null)
+				{
+					foreach(InputOutputWidget child in parent)
+					{
+						if (child.IsMapped &&
+							parent.X >= child.X &&
+							parent.X < (child.X + child.Width) &&
+							parent.Y >= child.y &&
+							parent.Y < (child.Y + child.Height))
+							return child;
+					}
+				}
+				return null;
+			}
+
+	// Find the child window that has the focus
+	private InputOutputWidget FindFocusedChild(InputOutputWidget parent)
+			{
+				if (parent != null)
+				{
+					foreach(InputOutputWidget child in parent)
+					{
+						if (child.Focused)
+							return child;
+					}
+				}
+				return null;
+			}
+
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
 				Xlib.KeySym keysym;
 				PopupWindow popup;
+				InputOutputWidget child = null;
 
 				switch(xevent.type)
 				{
@@ -304,7 +357,10 @@ internal class GrabWindow : OverrideWindow
 							}
 							lastButton = popup;
 						}
-						ChangeEntered(popup);
+						// Find the child window.
+						child = FindChild(popup, xevent.xbutton.x_root,
+							xevent.xbutton.y_root);
+						ChangeEntered(popup, child);
 						if(popup != null)
 						{
 							// Adjust the co-ordinates and re-dispatch.
@@ -313,6 +369,9 @@ internal class GrabWindow : OverrideWindow
 							xevent.xbutton.y__ = 
 								(Xlib.Xint)(xevent.xbutton.y_root - popup.y);
 							popup.DispatchEvent(ref xevent);
+							// Re-dispatch to the child window if necessary.
+							if (child != null)
+								child.DispatchEvent(ref xevent);
 						}
 					}
 					break;
@@ -336,7 +395,10 @@ internal class GrabWindow : OverrideWindow
 								}
 							}
 						}
-						ChangeEntered(popup);
+						// Find the child window.
+						child = FindChild(popup, xevent.xbutton.x_root,
+							xevent.xbutton.y_root);
+						ChangeEntered(popup, child);
 						if(popup != null)
 						{
 							// Adjust the co-ordinates and re-dispatch.
@@ -345,6 +407,9 @@ internal class GrabWindow : OverrideWindow
 							xevent.xbutton.y__ = 
 								(Xlib.Xint)(xevent.xbutton.y_root - popup.y);
 							popup.DispatchEvent(ref xevent);
+							// Re-dispatch to the child window if necessary.
+							if (child != null)
+								child.DispatchEvent(ref xevent);
 						}
 					}
 					break;
@@ -363,7 +428,10 @@ internal class GrabWindow : OverrideWindow
 											 xevent.xmotion.y_root, false);
 							}
 						}
-						ChangeEntered(popup);
+						// Find the child window.
+						child = FindChild(popup, xevent.xbutton.x_root,
+							xevent.xbutton.y_root);
+						ChangeEntered(popup, child);
 						if(popup != null)
 						{
 							// Adjust the co-ordinates and re-dispatch.
@@ -372,6 +440,9 @@ internal class GrabWindow : OverrideWindow
 							xevent.xmotion.y__ = 
 								(Xlib.Xint)(xevent.xmotion.y_root - popup.y);
 							popup.DispatchEvent(ref xevent);
+							// Re-dispatch to the child window if necessary.
+							if (child != null)
+								child.DispatchEvent(ref xevent);
 						}
 					}
 					break;
@@ -411,8 +482,14 @@ internal class GrabWindow : OverrideWindow
 						}
 						if(popup != null)
 						{
-							popup.DispatchKeyEvent
-								((KeyName)keysym, xevent.xkey.state, str);
+							// Find the child window.
+							child = FindFocusedChild(popup);
+							if (child == null)
+								popup.DispatchKeyEvent
+									((KeyName)keysym, xevent.xkey.state, str);
+							else
+								child.DispatchKeyEvent
+									((KeyName)keysym, xevent.xkey.state, str);
 						}
 					}
 					break;
@@ -443,8 +520,14 @@ internal class GrabWindow : OverrideWindow
 						}
 						if(popup != null)
 						{
-							popup.DispatchKeyReleaseEvent
-								((KeyName)keysym, xevent.xkey.state);
+							// Find the child window.
+							child = FindFocusedChild(popup);
+							if (child == null)
+								popup.DispatchKeyReleaseEvent
+									((KeyName)keysym, xevent.xkey.state);
+							else
+								child.DispatchKeyReleaseEvent
+									((KeyName)keysym, xevent.xkey.state);
 						}
 					}
 					break;

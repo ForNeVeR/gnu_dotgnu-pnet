@@ -52,6 +52,8 @@ namespace System.Drawing.Toolkit
 				style = Win32.Api.WindowStyle.WS_POPUP;
 				menu = false;
 				extendedStyle = Win32.Api.WindowsExtendedStyle.WS_EX_TOOLWINDOW;
+				// We capture the mouse, and we want the client windows to be notified
+				postMessageToClient = true;
 			}
 
 		internal override void CreateWindow()
@@ -78,7 +80,5 @@ namespace System.Drawing.Toolkit
 				(this as IToolkitWindow).Capture = value;
 			}
 		}
-
-
 	}
 }

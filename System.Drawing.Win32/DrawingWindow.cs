@@ -28,7 +28,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	protected IToolkitEventSink sink;
 	protected internal IntPtr hwnd;
 	protected IntPtr hdc;
-	protected DrawingWindow parent;
+	protected internal DrawingWindow parent;
 	private Color background;
 	//cached when we create the window
 	private IntPtr backgroundBrush = IntPtr.Zero;
@@ -49,9 +49,12 @@ internal abstract class DrawingWindow : IToolkitWindow
 	protected ToolkitWindowFlags flags = 0;
 
 	//The dimensions before the control has been created
-	protected Rectangle dimensions;
+	protected internal Rectangle dimensions;
 	//Whether the control should be visible once its created
 	protected bool visible;
+
+	//Whether to post messages to any client windows whose parent has the capture
+	protected bool postMessageToClient;
 
 	protected bool suspendExternalMoveResizeNotify;
 	protected DrawingWindow( IToolkit toolkit )
@@ -74,9 +77,8 @@ internal abstract class DrawingWindow : IToolkitWindow
 
 	void IToolkitWindow.Lower()
 	{
-		if (hwnd == IntPtr.Zero)
-			;//Console.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet.");
-		else
+		//if (hwnd == IntPtr.Zero)
+		//	Console.WriteLine("DrawingWindow.Lower ERROR: Cant lower window. Hwnd not created yet.");
 		{
 			Win32.Api.SetWindowPos(hwnd, Win32.Api.SetWindowsPosPosition.HWND_BOTTOM, 0, 0, 0, 0, Win32.Api.SetWindowsPosFlags.SWP_NOMOVE | Win32.Api.SetWindowsPosFlags.SWP_NOSIZE);
 			//Console.WriteLine("DrawingWindow.Lower, hwnd="+hwnd);
@@ -340,7 +342,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	//Called when windows receives WM_MOUSEMOVE
-	internal void MouseMove(int wParam, int lParam) 
+	internal void MouseMove(int msg, int wParam, int lParam) 
 	{
 		if (!trackingMouse) 
 		{
@@ -353,40 +355,63 @@ internal abstract class DrawingWindow : IToolkitWindow
 			trackingMouse = true;
 			sink.ToolkitMouseEnter();
 		}
-
+		// If we have to post the message to the client then do so and exit
+		// else post to parent
+		if (postMessageToClient && PostMessageToClient(msg, wParam, lParam))
+			return;
 		sink.ToolkitMouseMove(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam),0 ,MouseX(lParam) , MouseY(lParam), 0);
 		//Console.WriteLine("DrawingWindow.MouseMove [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam));
 	}
 
 	//Called when windows receives WM_MOUSEWHEEL
-	internal void MouseWheel( int wParam, int lParam)
+	internal void MouseWheel( int msg, int wParam, int lParam)
 	{
 		int wheelDelta = (wParam >> 16)/120;
+		// If we have to post the message to the client then do so and exit
+		// else post to parent
+		if (postMessageToClient && PostMessageToClient(msg, wParam, lParam))
+			return;
 		sink.ToolkitMouseWheel(ToolkitMouseButtons.None, MapMouseToToolkitKeys(wParam), 0, MouseX(lParam) , MouseY(lParam), wheelDelta);
 		//Console.WriteLine("DrawingWindow.MouseWheel [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam) + ", wheel:" + wheelDelta);
 	}
 
-	internal void MouseLeave() 
+	internal void MouseLeave(int msg) 
 	{
 		trackingMouse = false;
+		// If we have to post the message to the client then do so and exit
+		// else post to parent
+		if (postMessageToClient && PostMessageToClient(msg, 0, 0))
+			return;
 		sink.ToolkitMouseLeave();
 		//Console.WriteLine("DrawingWindow.MouseLeave, hwnd="+hwnd);
 	}
 
-	internal void ButtonDown(int wParam, int lParam)
+	protected virtual internal void ButtonDown(int msg, int wParam, int lParam)
 	{
 		//Console.WriteLine("DrawingWindow.ButtonDown [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], hwnd:" + hwnd +", key:" + MapMouseToToolkitKeys(wParam) + ", button:" + MapToToolkitMouseButtons(wParam));
+		// If we have to post the message to the client then do so and exit
+		// else post to parent
+		if (postMessageToClient && PostMessageToClient(msg, wParam, lParam))
+			return;
 		sink.ToolkitMouseDown(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 1 ,MouseX(lParam), MouseY(lParam) ,0);
 	}
 
-	internal void ButtonUp(int wParam, int lParam)
+	internal void ButtonUp(int msg, int wParam, int lParam)
 	{
+		// If we have to post the message to the client then do so and exit
+		// else post to parent
+		if (postMessageToClient && PostMessageToClient(msg, wParam, lParam))
+			return;
 		sink.ToolkitMouseUp(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 1 ,MouseX(lParam), MouseY(lParam),0);
 		//Console.WriteLine("DrawingWindow.ButtonUp [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam) + ", button:" + MapToToolkitMouseButtons(wParam));
 	}
 
-	internal void DoubleClick( int wParam, int lParam)
+	internal void DoubleClick( int msg, int wParam, int lParam)
 	{
+		// If we have to post the message to the client then do so and exit
+		// else post to parent
+		if (postMessageToClient && PostMessageToClient(msg, wParam, lParam))
+			return;
 		sink.ToolkitMouseDown(MapToToolkitMouseButtons(wParam), MapMouseToToolkitKeys(wParam), 2 ,MouseX(lParam), MouseY(lParam),0);
 		//Console.WriteLine("DrawingWindow.DoubleClick [" + (MouseX(lParam)) + "," + (MouseY(lParam)) + "], key:" + MapMouseToToolkitKeys(wParam) + ", button:" + MapToToolkitMouseButtons(wParam));
 	}
@@ -574,6 +599,23 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	abstract internal void CreateWindow();
+
+	private bool PostMessageToClient(int msg, int wParam, int lParam)
+	{
+		Point mouse = new Point(MouseX(lParam), MouseY(lParam));
+		foreach(DrawingWindow w in (toolkit as DrawingToolkit).windows)
+		{
+			if (w.parent == this && w.IsMapped && w.dimensions.Contains(mouse))
+			{
+				// Offset mouse to the client window
+				lParam = mouse.X - w.dimensions.X | (mouse.Y - w.dimensions.Y) << 16;
+				// Send the message to the client window
+				Win32.Api.PostMessageA(w.hwnd, (Win32.Api.WindowsMessages)msg, wParam, lParam);
+				return true;
+			}
+		}
+		return false;
+	}
 
 }
 }

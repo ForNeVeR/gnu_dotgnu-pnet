@@ -32,7 +32,7 @@ using DotGNU.Images;
 public class DrawingToolkit : IToolkit
 {
 	private ArrayList timers = new ArrayList();
-	private ArrayList windows = new ArrayList();
+	internal ArrayList windows = new ArrayList();
 
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
@@ -419,11 +419,8 @@ public class DrawingToolkit : IToolkit
 			style |= Win32.Api.WindowStyle.WS_POPUP | Win32.Api.WindowStyle.WS_DLGFRAME;
 
 		//TODO: Need a hidden window
-		if((flags & ToolkitWindowFlags.ShowInTaskBar)>0)
-			;
-		else
-			;			
-
+		//if((flags & ToolkitWindowFlags.ShowInTaskBar)>0)
+		
 		if((flags & ToolkitWindowFlags.TopMost)>0)
 			extendedStyle |= Win32.Api.WindowsExtendedStyle.WS_EX_TOPMOST;
 
@@ -564,49 +561,49 @@ public class DrawingToolkit : IToolkit
 				break;
 
 			case Win32.Api.WindowsMessages.WM_MOUSEMOVE:
-				DrawingWindow(hwnd).MouseMove( wParam, lParam );
+				DrawingWindow(hwnd).MouseMove( msg, wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_MOUSEWHEEL:
-				DrawingWindow(hwnd).MouseMove( wParam, lParam );
+				DrawingWindow(hwnd).MouseMove( msg, wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_LBUTTONDOWN:
-				DrawingWindow(hwnd).ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				DrawingWindow(hwnd).ButtonDown( msg, wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_RBUTTONDOWN:
-				DrawingWindow(hwnd).ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				DrawingWindow(hwnd).ButtonDown( msg, wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_MBUTTONDOWN:
-				DrawingWindow(hwnd).ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				DrawingWindow(hwnd).ButtonDown( msg, wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_XBUTTONDOWN:
-				DrawingWindow(hwnd).ButtonDown( wParam, lParam );
+				DrawingWindow(hwnd).ButtonDown( msg, wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_LBUTTONUP:
-				DrawingWindow(hwnd).ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				DrawingWindow(hwnd).ButtonUp( msg, wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_RBUTTONUP:
-				DrawingWindow(hwnd).ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				DrawingWindow(hwnd).ButtonUp( msg, wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_MBUTTONUP:
-				DrawingWindow(hwnd).ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				DrawingWindow(hwnd).ButtonUp( msg, wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_XBUTTONUP:
-				DrawingWindow(hwnd).ButtonUp( wParam, lParam );
+				DrawingWindow(hwnd).ButtonUp( msg, wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_LBUTTONDBLCLK:
-				DrawingWindow(hwnd).DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				DrawingWindow(hwnd).DoubleClick( msg, wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_RBUTTONDBLCLK:
-				DrawingWindow(hwnd).DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				DrawingWindow(hwnd).DoubleClick( msg, wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_MBUTTONDBLCLK:
-				DrawingWindow(hwnd).DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				DrawingWindow(hwnd).DoubleClick( msg, wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_XBUTTONDBLCLK:
-				DrawingWindow(hwnd).DoubleClick( wParam, lParam );
+				DrawingWindow(hwnd).DoubleClick( msg, wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_MOUSELEAVE:
-				DrawingWindow(hwnd).MouseLeave();
+				DrawingWindow(hwnd).MouseLeave(msg);
 				break;
 
 			case Win32.Api.WindowsMessages.WM_KEYDOWN:

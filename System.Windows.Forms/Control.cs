@@ -112,46 +112,49 @@ public class Control : IWin32Window, IDisposable
 	internal class InvokeAsyncResult: IAsyncResult
 	{
 		private bool bComplete;
-		private bool bWaiting;
-		private Mutex waitHandle;			// The waithandle for EndInvoke
+		private Mutex waitHandle;		// The waithandle for EndInvoke
 		public Object retObject;
+		public Object asyncStateObject;	// The AsyncState object
 
 		public InvokeAsyncResult()
 		{
-			bComplete = false;						// This event hasn't completed
-			bWaiting = false;							// Nobody waiting for this to complete
-			waitHandle = new Mutex(true);	// Initially locked (i.e. not complete!)
+			bComplete = false;			// This event hasn't completed
+			waitHandle = new Mutex();	// NOT initially locked
 		}
 
 		public void WaitToComplete()
 		{
-			lock(this)										// Lock ourselve for thread safety
+			lock(this)				// Lock ourselve for thread safety
 			{
-				if( bComplete )						// If we have already completed
-					return;										// just blow out of here
-				bWaiting = true;						// Else tell thread 2 we are waiting
+				if(bComplete)		// If we have already completed
+				{
+					return;			// just blow out of here
+				}
 			}
-			waitHandle.WaitOne();					// and do so
+			waitHandle.WaitOne();	// and do so
 		}
 
 		public void SetComplete()
 		{
-			lock(this)										// Lock ourselves for thread safety
+			lock(this)
 			{
-				bComplete = true;						// Mark event as complete
-				if( !bWaiting )							// If nobody is waiting
-					return;										// no point in signalling
+				bComplete = true;
 			}
-			waitHandle.ReleaseMutex();		// else wake up sleeper waiting for us
+			waitHandle.ReleaseMutex();	// else wake up sleeper waiting for us
 		}
 
 		public Object AsyncState
 		{
 			get
 			{
-				return null;
+				return asyncStateObject;
+			}
+			set
+			{
+				asyncStateObject = value;
 			}
 		}
+
 		public WaitHandle AsyncWaitHandle
 		{
 			get
@@ -159,6 +162,7 @@ public class Control : IWin32Window, IDisposable
 				return waitHandle;
 			}
 		}
+		
 		public bool CompletedSynchronously
 		{
 			get
@@ -166,12 +170,15 @@ public class Control : IWin32Window, IDisposable
 				return false;
 			}
 		}
+
 		public bool IsCompleted
 		{
 			get
 			{
-				lock( this )
+				lock(this)
+				{
 					return bComplete;
+				}
 			}
 		}
 	}
@@ -310,6 +317,10 @@ public class Control : IWin32Window, IDisposable
 			{
 				InvokeParameters iParm = new InvokeParameters();
 				InvokeAsyncResult ar = new InvokeAsyncResult();
+				if( args != null )
+				{
+					ar.AsyncState = args[args.Length - 1];
+				}
 				GCHandle gch = GCHandle.Alloc(iParm);
 				IntPtr i_gch = (IntPtr)gch;
 

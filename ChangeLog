@@ -1,3 +1,9 @@
+
+2004-06-19  David Logan  <djlogan2@comcast.net>
+
+	* System.Windows.Forms/Control.cs: Allow the BeginInvoke caller
+	to just wait on the WaitHandle for completion. (patch #3132, Gopal)
+
 2004-06-19  Thong Nguyen  <tum@veridicus.com>
 
 	* resources/ca_ES/runtime/Exception.txt, resources/de_DE/runtime/

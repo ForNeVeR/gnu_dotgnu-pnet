@@ -30,14 +30,6 @@ using System.Windows.Forms;
 
 namespace System.Windows.Forms
 {
-	//[Serializable]
-	//public delegate void StatusBarDrawItemEventHandler(object sender,
-	//StatusBarDrawItemEventArgs sbdevent);
-
-	//[Serializable]
-	//public delegate void StatusBarPanelClickEventHandler(object sender,
-	//StatusBarPanelClickEventArgs e);
-
 	public class StatusBar : Control
 	{
 		public event StatusBarDrawItemEventHandler DrawItem;
@@ -73,8 +65,6 @@ namespace System.Windows.Forms
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			//ControlPaint.DrawBorder3D(e.Graphics, 0, 0, Width, Height, Border3DStyle.SunkenInner, Border3DSide.Top);
-			
 			if (showPanels == false)
 			{
 				DrawSimpleText(e, 0, 0, Width, Height, Text);
@@ -83,26 +73,62 @@ namespace System.Windows.Forms
 			{
 				int left = 0;
 				Border3DStyle style = Border3DStyle.Sunken;
-
-				for (int i=0;i<panels.Count;i++)
+				if (panels.Count <1)
 				{
-					switch (panels[i].BorderStyle)
+					int panelWidth;
+					if (sizingGrip == true)
 					{
-						case StatusBarPanelBorderStyle.None:
-							style = Border3DStyle.Flat;
-							break;
-						case StatusBarPanelBorderStyle.Raised:
-							style = Border3DStyle.Raised;
-							break;
-						case StatusBarPanelBorderStyle.Sunken:
-							style = Border3DStyle.SunkenOuter;
-							break;
+						panelWidth = Width - 16;
 					}
-					ControlPaint.DrawBorder3D(e.Graphics, left, 0, panels[i].Width, Height, style, Border3DSide.All);
-					DrawSimpleText(e, left, 0, panels[i].Width, Height,  panels[i].Text);
-					left += panels[i].Width +2;
+					else
+					{
+						panelWidth = Width;
+					}
+					ControlPaint.DrawBorder3D(e.Graphics, 0, 2, panelWidth, Height - 2, Border3DStyle.SunkenOuter, Border3DSide.All);
 				}
-				
+				else
+				{
+					for (int i=0;i<panels.Count;i++)
+					{
+						switch (panels[i].BorderStyle)
+						{
+							case StatusBarPanelBorderStyle.None:
+								style = Border3DStyle.Flat;
+								break;
+							case StatusBarPanelBorderStyle.Raised:
+								style = Border3DStyle.Raised;
+								break;
+							case StatusBarPanelBorderStyle.Sunken:
+								style = Border3DStyle.SunkenOuter;
+								break;
+						}
+						ControlPaint.DrawBorder3D(e.Graphics, left, 4, panels[i].Width, Height -4, style, Border3DSide.All);
+						if (panels[i].Style == StatusBarPanelStyle.Text)
+						{
+							StringAlignment align;
+							switch (panels[i].Alignment)
+							{
+								case HorizontalAlignment.Center:
+									align = StringAlignment.Center;
+									break;
+								case HorizontalAlignment.Left:
+									align = StringAlignment.Near;
+									break;
+								case HorizontalAlignment.Right:
+									align = StringAlignment.Far;
+									break;
+							}
+							DrawSimpleText(e, left, 4, panels[i].Width, Height,  panels[i].Text, align);
+						}
+						else
+						{
+							// Owner drawn
+							StatusBarDrawItemEventArgs args = new StatusBarDrawItemEventArgs(e.Graphics, this.Font, new Rectangle(0, 0, panels[i].Width, Height), i, DrawItemState.None, panels[i]);
+							OnDrawItem(args);
+						}
+						left += panels[i].Width +2;
+					}
+				}
 			}
 
 			if (sizingGrip == true)
@@ -114,12 +140,17 @@ namespace System.Windows.Forms
 
 		private void DrawSimpleText(PaintEventArgs e, int left, int top, int right, int bottom, string text)
 		{
-			// Draw the text within the label.
+			DrawSimpleText(e, left, top, right, bottom, text, StringAlignment.Near);
+		}
+
+		private void DrawSimpleText(PaintEventArgs e, int left, int top, int right, int bottom, string text, StringAlignment align)
+		{
+			// Draw the text within the statusbar.
 			Font font = Font;
 			RectangleF layout = (RectangleF)Rectangle.FromLTRB(left, top, right, bottom);
 
 			StringFormat format = new StringFormat();
-			format.Alignment = StringAlignment.Near;
+			format.Alignment = align;
 			format.LineAlignment = StringAlignment.Center;
 
 			if(text != null && text != String.Empty)
@@ -132,7 +163,9 @@ namespace System.Windows.Forms
 				}
 				else
 				{
-					ControlPaint.DrawStringDisabled(e.Graphics, text, font, BackColor, layout, format);
+					Brush brush = new SolidBrush(ForeColor);
+					e.Graphics.DrawString(text, font, brush, layout, format);
+					brush.Dispose();
 				}
 			}
 		}
@@ -161,11 +194,10 @@ namespace System.Windows.Forms
 			set { base.Font = value; }
 		}
 
-		//[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
 		public StatusBarPanelCollection Panels 
 		{
 			get { return panels; }
-			//set { statusBarPanelCollection = value; }
 		}
 
 		public bool ShowPanels 
@@ -241,6 +273,23 @@ namespace System.Windows.Forms
 			base.OnLayout(e);
 		}
 
+		protected override void OnMouseUp(MouseEventArgs e)
+		{
+			StatusBarPanel panel;
+			int left = 0;
+
+			for (int i=0;i < panels.Count;i++)
+			{
+				if (e.X >= left && e.X < left + panels[i].Width)
+				{
+					StatusBarPanelClickEventArgs args = new StatusBarPanelClickEventArgs(panels[i], e.Button, e.Clicks, e.X, e.Y);
+					OnPanelClick(args);
+				}
+				left += panels[i].Width + 2;
+			}
+			base.OnMouseUp(e);
+		}
+
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
 			base.OnMouseDown(e);
@@ -268,21 +317,8 @@ namespace System.Windows.Forms
 		}
 		#endif // !CONFIG_COMPACT_FORMS
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 		public class StatusBarPanelCollection : IList, ICollection, IEnumerable	
-		{
+		{	
 			private StatusBar owner;
 			private ArrayList list;
 
@@ -429,29 +465,4 @@ namespace System.Windows.Forms
 			}
 		}
 	}
-	/*
-	public class StatusBarDrawItemEventArgs : DrawItemEventArgs
-	{
-		private StatusBarPanel panel;
-
-		public StatusBarDrawItemEventArgs(Graphics g, Font font, Rectangle r, int itemId, DrawItemState itemState, StatusBarPanel panel) : base(g, font, r, itemId, itemState)
-		{
-			this.panel = panel;
-		}
-		public StatusBarDrawItemEventArgs(Graphics g, Font font, Rectangle r, int itemId, DrawItemState itemState, StatusBarPanel panel, Color foreColor, Color backColor) : base(g, font, r, itemId, itemState, foreColor, backColor)
-		{
-			this.panel = panel;
-		}
-
-	}
-
-	public class StatusBarPanelClickEventArgs : MouseEventArgs
-	{
-		private StatusBarPanel panel;
-
-		public StatusBarPanelClickEventArgs(StatusBarPanel statusBarPanel, MouseButtons button, int clicks, int x, int y) : base(button, clicks, x, y, 0)
-		{
-			panel = statusBarPanel;
-		}
-	}*/
 }

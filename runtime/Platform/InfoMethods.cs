@@ -60,10 +60,6 @@ internal class InfoMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static PlatformID GetPlatformID();
 
-	// Get a special folder directory.  Returns NULL if unknown.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static String GetSpecialFolder(Environment.SpecialFolder f);
-
 #endif // !ECMA_COMPAT
 
 }; // class InfoMethods

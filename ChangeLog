@@ -1,3 +1,20 @@
+2003-08-01  Simon Guindon  <simon@nureality.ca>
+
+	* System.Windows.Forms/StatusBar.cs: Cleaned it up along with 
+	finishing some of the events.
+
+2003-08-01  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* runtime/System/Environment.cs, runtime/Platform/InfoMethods.cs: apply
+	patch #1760, "Win32 implementation of System.Environment.GetFolderPath",
+	from Yannis Bres.
+
+	* System.Windows.Forms/StatusBar.cs: apply patch #1771, "[Winforms]
+	cleans up and finishes events for StatusBar", from Simon Guindon.
+
+	* System.Windows.Forms/Clipboard.cs, System.Windows.Forms/DataObject.cs,
+	System.Windows.Forms/DataFormats.cs: apply patch #1783, "Initial implem.
+	of Clipboard", from Cecilio Pardo.
 
 2003-08-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 

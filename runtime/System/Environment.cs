@@ -25,6 +25,8 @@ using System.Security;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Platform;
 
@@ -303,6 +305,7 @@ public sealed class Environment
 	// Special folder names.
 	public enum SpecialFolder
 	{
+		Desktop               = 0x00,
 		Programs              = 0x02,
 		Personal              = 0x05,
 		Favorites             = 0x06,
@@ -310,7 +313,9 @@ public sealed class Environment
 		Recent                = 0x08,
 		SendTo                = 0x09,
 		StartMenu             = 0x0b,
+		MyMusic               = 0x0d,
 		DesktopDirectory      = 0x10,
+		MyComputer            = 0x11,
 		Templates             = 0x15,
 		ApplicationData	      = 0x1a,
 		LocalApplicationData  = 0x1c,
@@ -320,6 +325,7 @@ public sealed class Environment
 		CommonApplicationData = 0x23,
 		System                = 0x25,
 		ProgramFiles          = 0x26,
+		MyPictures            = 0x27,
 		CommonProgramFiles    = 0x2b
 
 	}; // enum SpecialFolder
@@ -327,18 +333,47 @@ public sealed class Environment
 	// Get a path to a specific system folder.
 	public static String GetFolderPath(SpecialFolder folder)
 			{
-				String path = InfoMethods.GetSpecialFolder(folder);
-				if(path != null)
+				if (Environment.OSVersion.Platform != (PlatformID)128/*PlatformID.Unix*/)
 				{
-					return path;
-				}
-				else if(folder == SpecialFolder.System)
-				{
-					return DirMethods.GetSystemDirectory();
+					// TODO: when auto-selection of ANSI/Unicode version of DLL functions
+					// will be implemented, do not explicitely call the ANSI/Unicode
+					// versions of SHGetFolderPath any more
+					try
+					{
+						// TODO?: should the allocation size be multiplied by 2 because of unicode chars ?
+						IntPtr pathPtr= Marshal.AllocHGlobal(260/*MAX_PATH*/ + 1);
+						SHGetFolderPathW(IntPtr.Zero, (Int32)folder, IntPtr.Zero, 0, pathPtr);
+						String path= Marshal.PtrToStringUni(pathPtr);
+						Marshal.FreeHGlobal(pathPtr);
+						return path;
+					}
+					catch (System.MissingMethodException e)
+					{
+						// SHGetFolderPathW could not be found in the DLL
+						try
+						{
+							IntPtr pathPtr= Marshal.AllocHGlobal(260/*MAX_PATH*/ + 1);
+							SHGetFolderPathA(IntPtr.Zero, (Int32)folder, IntPtr.Zero, 0, pathPtr);
+							String path= Marshal.PtrToStringAnsi(pathPtr);
+							Marshal.FreeHGlobal(pathPtr);
+							return path;
+						}
+						catch (System.MissingMethodException e)
+						{
+							// SHGetFolderPathA could not be found in the DLL
+							return String.Empty;
+						}
+					}
+					catch (System.DllNotFoundException e)
+					{
+						// shell32.dll could not be found
+						return String.Empty;
+					}
 				}
 				else
 				{
-					return null;
+					// TODO?: try to implement something similar for non-Win32 platforms
+					return String.Empty;
 				}
 			}
 
@@ -623,9 +658,21 @@ public sealed class Environment
 						}
 					}
 				}
-
 	};
 
+	// Import the Win32 SHGetFolderPathA function from "shell32.dll"
+	[DllImport("shell32.dll",CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
+	extern private static Int32 SHGetFolderPathA
+		(IntPtr hwndOwner, Int32 nFolder, IntPtr hToken,
+		UInt32 dwFlags, IntPtr path);
+
+	// Import the Win32 SHGetFolderPathW function from "shell32.dll"
+	[DllImport("shell32.dll",CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
+	extern private static Int32 SHGetFolderPathW
+		(IntPtr hwndOwner, Int32 nFolder, IntPtr hToken,
+		UInt32 dwFlags, IntPtr path);
 }; // class Environment
 
 }; // namespace System

@@ -1,4 +1,9 @@
 
+2004-09-18  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Runtime/Remoting/Messaging/CallContext.cs: return 
+	a non null LogicalCallContext.
+
 2004-09-18  Marcus Urban <mathpup@mylinuxisp.com>
 
 	* runtime/System/Reflection/ClrHelpers.cs,

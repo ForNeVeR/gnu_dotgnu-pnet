@@ -38,7 +38,7 @@ public sealed class CallContext
 				get
 				{
 					// TODO
-					return null;
+					return new LogicalCallContext();
 				}
 			}
 

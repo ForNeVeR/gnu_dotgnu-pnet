@@ -238,7 +238,7 @@ case COP_LAND:
 #else
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
 						   MD_REG1_NATIVE | MD_REG2_NATIVE);
-	md_add_reg_reg_word_native(unroll.out, reg, reg2);
+	md_and_reg_reg_word_native(unroll.out, reg, reg2);
 	FreeTopRegister(&unroll, -1);
 #endif
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);

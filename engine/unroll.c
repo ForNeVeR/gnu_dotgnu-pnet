@@ -39,6 +39,8 @@ extern	"C" {
 	#include "md_x86.h"
 #elif defined(CVM_ARM)
 	#include "md_arm.h"
+#elif defined(CVM_IA64)
+	#include "md_ia64.h"
 #else
 	#error "Unknown unroller platform"
 #endif

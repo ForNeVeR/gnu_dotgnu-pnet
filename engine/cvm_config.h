@@ -91,6 +91,9 @@ extern int _ILCVMInsnCount[];
 		defined(__powerpc) || defined(PPC)
 	#define	CVM_PPC
 #endif
+#if defined(__ia64) || defined(__ia64__)
+	#define	CVM_IA64
+#endif
 
 /*
  * Determine the style of interpreter to use, which is one
@@ -185,7 +188,6 @@ extern int _ILCVMInsnCount[];
 	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
 	defined(IL_CONFIG_UNROLL)
-#define	IL_CVM_DIRECT_UNROLLED_X86
 #define	IL_CVM_DIRECT_UNROLLED
 #undef	IL_CVM_FLAVOUR
 #define	IL_CVM_FLAVOUR "Direct Unrolled (x86)"
@@ -195,10 +197,20 @@ extern int _ILCVMInsnCount[];
 	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
 	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
 	defined(IL_CONFIG_UNROLL)
-#define	IL_CVM_DIRECT_UNROLLED_ARM
 #define	IL_CVM_DIRECT_UNROLLED
 #undef	IL_CVM_FLAVOUR
 #define	IL_CVM_FLAVOUR "Direct Unrolled (ARM)"
+#endif
+#if 0	/* remove this once ia64 unroller is finished */
+#if defined(IL_CVM_DIRECT) && defined(CVM_IA64) && \
+	defined(__GNUC__) && !defined(IL_NO_ASM) && \
+	!defined(IL_CVM_PROFILE_CVM_METHODS) && \
+	!defined(IL_CVM_PROFILE_CVM_VAR_USAGE) && \
+	defined(IL_CONFIG_UNROLL)
+#define	IL_CVM_DIRECT_UNROLLED
+#undef	IL_CVM_FLAVOUR
+#define	IL_CVM_FLAVOUR "Direct Unrolled (ia64)"
+#endif
 #endif
 
 /*

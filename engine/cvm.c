@@ -98,6 +98,15 @@ extern	"C" {
     #define IL_MEMZERO(dst,len)             (ILMemZero((dst), (len)))
     #define IL_MEMSET(dst,ch,len)           (ILMemSet((dst), (ch), (len)))
     #define IL_MEMCMP(dst,src,len)          (ILMemCmp((dst), (src), (len)))
+#elif defined(CVM_IA64) && defined(__GNUC__) && !defined(IL_NO_ASM)
+    #define REGISTER_ASM_PC(x)              register x asm ("r4")
+    #define REGISTER_ASM_STACK(x)           register x asm ("r5")
+    #define REGISTER_ASM_FRAME(x)           register x asm ("r6")
+	#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
+	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
+	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
+	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
+	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #else
     #define REGISTER_ASM_PC(x)              x
     #define REGISTER_ASM_STACK(x)           x

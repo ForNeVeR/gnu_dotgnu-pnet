@@ -87,6 +87,14 @@ void ILCacheFlush(void *buf, long length)
 						"r" (0)
 					  : "r0", "r1", "r3" );
 
+#elif (defined(__ia64) || defined(__ia64__)) && defined(linux)
+	void *end = (char*)buf + length;
+	while(buf < end)
+	{
+		asm volatile("fc %0" :: "r"(buf));
+		buf = (char*)buf + 32;
+	}
+	asm volatile(";;sync.i;;srlz.i;;");
 #endif
 #endif /* IL_HAVE_CACHE_FLUSH */
 }

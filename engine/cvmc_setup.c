@@ -19,6 +19,7 @@
  */
 
 #ifdef IL_CVMC_CODE
+/*#define DONT_UNROLL_SYSTEM */
 
 /*
  * Allocate enough space for "n" arguments.
@@ -242,7 +243,6 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	ILUInt32 num;
 	ILType *type;
 
-
 	/* Determine where the new method will start output within the buffer */
 	if(newStart)
 	{
@@ -347,11 +347,22 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 		CVMP_OUT_NONE(COP_PREFIX_PROFILE_COUNT);
 	}
 
-	/* Mark this method as perhaps needing to be unrolled later */
-	if(ordinaryMethod && _ILCVMUnrollPossible() && !(coder->debugEnabled))
+#if defined(DONT_UNROLL_SYSTEM)
+{
+	const char *assemName;
+	assemName = ILImageGetAssemblyName(ILProgramItem_Image(method));
+	if(strcmp(assemName,"mscorlib") != 0 && strcmp(assemName,"I18N") != 0)
 	{
-		CVMP_OUT_NONE(COP_PREFIX_UNROLL_METHOD);
+#endif
+		/* Mark this method as perhaps needing to be unrolled later */
+		if(ordinaryMethod && _ILCVMUnrollPossible() && !(coder->debugEnabled))
+		{
+			CVMP_OUT_NONE(COP_PREFIX_UNROLL_METHOD);
+		}
+#if defined(DONT_UNROLL_SYSTEM)
 	}
+}
+#endif
 
 	/* Output CVM code to allocate space for the local variables */
 	numLocals = ctx->numLocalWords + ctx->extraLocals;

@@ -609,6 +609,59 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 				}
 			}
 
+	// Quickly find the document that owns a node, without recursion.
+	internal XmlDocument FindOwnerQuick()
+			{
+				XmlNode node = this;
+				while(node != null)
+				{
+					if(node is XmlDocument)
+					{
+						return (XmlDocument)node;
+					}
+					node = node.parent;
+				}
+				return null;
+			}
+
+	// Emit an event just before a change.  Returns an argument
+	// block if an after event will also need to be emitted.
+	internal XmlNodeChangedEventArgs EmitBefore
+				(XmlNodeChangedAction action,
+			     XmlNode oldParent, XmlNode newParent)
+			{
+				XmlDocument doc = FindOwnerQuick();
+				if(doc != null)
+				{
+					return doc.EmitBefore(action, this, oldParent, newParent);
+				}
+				else
+				{
+					return null;
+				}
+			}
+	internal XmlNodeChangedEventArgs EmitBefore(XmlNodeChangedAction action)
+			{
+				XmlDocument doc = FindOwnerQuick();
+				if(doc != null)
+				{
+					return doc.EmitBefore(action, this, parent, parent);
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Emit an event just after a change.
+	internal void EmitAfter(XmlNodeChangedEventArgs args)
+			{
+				if(args != null)
+				{
+					FindOwnerQuick().EmitAfter(args);
+				}
+			}
+
 }; // class XmlNode
 
 }; // namespace System.Xml

@@ -56,7 +56,7 @@ class XmlElement : XmlLinkedNode
 					name = localName;
 					prefix = String.Empty;
 				}
-				this.attributes = new XmlAttributeCollection();
+				this.attributes = new XmlAttributeCollection(this);
 				this.isEmpty = true;
 			}
 

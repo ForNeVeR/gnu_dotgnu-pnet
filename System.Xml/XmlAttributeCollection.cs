@@ -23,21 +23,203 @@ namespace System.Xml
 {
 
 using System;
+using System.Collections;
+using System.Runtime.CompilerServices;
 
 #if ECMA_COMPAT
 internal
 #else
 public
 #endif
-class XmlAttributeCollection
+class XmlAttributeCollection : XmlNamedNodeMap, ICollection
 {
-	// TODO
 
-	public int Count { get { return 0; /* TODO */ } }
+	// Constructor.
+	internal XmlAttributeCollection(XmlNode parent) : base(parent) {}
 
-	public XmlAttribute this[int i] { get { return null; } }
-	public XmlAttribute this[String name] { get { return null; } }
-	public XmlAttribute this[String name, String ns] { get { return null; } }
+	// Retrieve items from this attribute collection.
+	[IndexerName("ItemOf")]
+	public virtual XmlAttribute this[int i]
+			{
+				get
+				{
+					return (XmlAttribute)(Item(i));
+				}
+			}
+	[IndexerName("ItemOf")]
+	public virtual XmlAttribute this[String name]
+			{
+				get
+				{
+					return (XmlAttribute)(GetNamedItem(name));
+				}
+			}
+	[IndexerName("ItemOf")]
+	public virtual XmlAttribute this[String name, String ns]
+			{
+				get
+				{
+					return (XmlAttribute)(GetNamedItem(name, ns));
+				}
+			}
+
+	// Append an attribute to this collection.
+	public virtual XmlAttribute Append(XmlAttribute node)
+			{
+				SetOrAppend(node, true);
+				return node;
+			}
+
+	// Copy the attributes in this collection to an array.
+	public void CopyTo(XmlAttribute[] array, int index)
+			{
+				int count = Count;
+				int posn;
+				for(posn = 0; posn < count; ++posn)
+				{
+					array[index++] = (XmlAttribute)(Item(posn));
+				}
+			}
+
+	// Get the position of a reference node within this collection
+	private int GetItemPosition(XmlAttribute refNode)
+			{
+				int count = Count;
+				int posn;
+				for(posn = 0; posn < count; ++posn)
+				{
+					if(Item(posn) == refNode)
+					{
+						return posn;
+					}
+				}
+				throw new ArgumentException
+					(S._("Xml_NotAttrCollectionMember"), "refNode");
+			}
+
+	// Insert a node after another one.
+	public virtual XmlAttribute InsertAfter
+				(XmlAttribute newNode, XmlAttribute refNode)
+			{
+				if(newNode == null)
+				{
+					throw new ArgumentException
+						(S._("Xml_NotSameDocument"), "node");
+				}
+				RemoveNamedItem(newNode.Name);
+				if(refNode == null)
+				{
+					map.Insert(0, newNode);
+				}
+				else
+				{
+					map.Insert(GetItemPosition(refNode) + 1, newNode);
+				}
+				return newNode;
+			}
+
+	// Insert a node before another one.
+	public virtual XmlAttribute InsertBefore
+				(XmlAttribute newNode, XmlAttribute refNode)
+			{
+				if(newNode == null)
+				{
+					throw new ArgumentException
+						(S._("Xml_NotSameDocument"), "node");
+				}
+				RemoveNamedItem(newNode.Name);
+				if(refNode == null)
+				{
+					map.Insert(Count, newNode);
+				}
+				else
+				{
+					map.Insert(GetItemPosition(refNode), newNode);
+				}
+				return newNode;
+			}
+
+	// Prepend a node to this collection.
+	public virtual XmlAttribute Prepend(XmlAttribute node)
+			{
+				return InsertAfter(node, null);
+			}
+
+	// Remove an attribute from this collection.
+	public virtual XmlAttribute Remove(XmlAttribute node)
+			{
+				if(node == null)
+				{
+					return null;
+				}
+				else
+				{
+					return (XmlAttribute)(RemoveNamedItem(node.Name));
+				}
+			}
+
+	// Remove all attributes from this collection.
+	public virtual void RemoveAll()
+			{
+				map.Clear();
+			}
+
+	// Remove the attribute at a particular index.
+	public virtual XmlAttribute RemoveAt(int i)
+			{
+				if(i < 0 || i >= map.Count)
+				{
+					return null;
+				}
+				XmlAttribute attr = (XmlAttribute)(map[i]);
+				map.RemoveAt(i);
+				return attr;
+			}
+
+	// Set a named item into this node map, after making sure
+	// that it is indeed an attribute.
+	public override XmlNode SetNamedItem(XmlNode node)
+			{
+				if(node != null && !(node is XmlAttribute))
+				{
+					throw new ArgumentException
+						(S._("Xml_AttrCollectionWrongNode"), "node");
+				}
+				return SetOrAppend(node, false);
+			}
+
+	// Implement the ICollection interface.
+	void ICollection.CopyTo(Array array, int index)
+			{
+				int count = Count;
+				int posn;
+				for(posn = 0; posn < count; ++posn)
+				{
+					array.SetValue(Item(posn), index);
+					++index;
+				}
+			}
+	int ICollection.Count
+			{
+				get
+				{
+					return Count;
+				}
+			}
+	bool ICollection.IsSynchronized
+			{
+				get
+				{
+					return false;
+				}
+			}
+	Object ICollection.SyncRoot
+			{
+				get
+				{
+					return this;
+				}
+			}
 
 }; // class XmlAttributeCollection
 

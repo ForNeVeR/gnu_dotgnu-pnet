@@ -29,10 +29,134 @@ internal
 #else
 public
 #endif
-abstract class XmlDocumentType : XmlNode
+class XmlDocumentType : XmlLinkedNode
 {
-	// TODO
-	public XmlDocumentType() : base(null) {}
+	// Internal state.
+	private String name;
+	private String publicId;
+	private String systemId;
+	private String internalSubset;
+	private XmlNamedNodeMap entities;
+	private XmlNamedNodeMap notations;
+
+	// Constructor.
+	internal XmlDocumentType(XmlNode parent, String name, String publicId,
+							 String systemId, String internalSubset)
+			: base(parent)
+			{
+				XmlNameTable nt = parent.FindOwnerQuick().NameTable;
+				this.name =
+					((name != null) ? nt.Add(name) : String.Empty);
+				this.publicId =
+					((publicId != null) ? nt.Add(publicId) : String.Empty);
+				this.systemId =
+					((systemId != null) ? nt.Add(systemId) : String.Empty);
+				this.internalSubset =
+					((internalSubset != null) ? nt.Add(internalSubset)
+											  : String.Empty);
+				entities = new XmlNamedNodeMap(this);
+				notations = new XmlNamedNodeMap(this);
+			}
+
+	// Get the entity list for this document type.
+	public XmlNamedNodeMap Entities
+			{
+				get
+				{
+					return entities;
+				}
+			}
+
+	// Get the internal subset information for this document type.
+	public String InternalSubset
+			{
+				get
+				{
+					return internalSubset;
+				}
+			}
+
+	// Determine if this node is read-only.
+	public override bool IsReadOnly
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Get the local name of the document type.
+	public override String LocalName
+			{
+				get
+				{
+					return name;
+				}
+			}
+
+	// Get the qualified name of the document type.
+	public override String Name
+			{
+				get
+				{
+					return name;
+				}
+			}
+
+	// Get the type of this node.
+	public override XmlNodeType NodeType
+			{
+				get
+				{
+					return XmlNodeType.DocumentType;
+				}
+			}
+
+	// Get the notation list for this document type.
+	public XmlNamedNodeMap Notations
+			{
+				get
+				{
+					return notations;
+				}
+			}
+
+	// Get the public identifier for this document type.
+	public String PublicId
+			{
+				get
+				{
+					return publicId;
+				}
+			}
+
+	// Get the system identifier for this document type.
+	public String SystemId
+			{
+				get
+				{
+					return systemId;
+				}
+			}
+
+	// Clone this node.
+	public override XmlNode CloneNode(bool deep)
+			{
+				return OwnerDocument.CreateDocumentType
+					(name, publicId, systemId, internalSubset);
+			}
+
+	// Writes the contents of this node to a specified XmlWriter.
+	public override void WriteContentTo(XmlWriter w)
+			{
+				// Nothing needs to be done here for DTD nodes.
+			}
+
+	// Write this node and all of its contents to a specified XmlWriter.
+	public override void WriteTo(XmlWriter w)
+			{
+				w.WriteDocType(name, publicId, systemId, internalSubset);
+			}
 
 }; // class XmlDocumentType
 

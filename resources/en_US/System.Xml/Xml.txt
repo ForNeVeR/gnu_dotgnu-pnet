@@ -48,3 +48,7 @@ Xml_NotSameDocument=The specified nodes are not in the same document
 Xml_ReadOnly=The specified node is read-only
 Xml_CannotHaveChildren=The specified node cannot have children
 Xml_IsAncestor=Attempt to add an ancestor as a child
+Xml_AttrCollectionWrongNode=Wrong type of node for an attribute collection
+Xml_NotAttrCollectionMember=The reference node is not a member of the collection
+Xml_InvalidStandalone=Invalid standalone attribute value
+Xml_InvalidVersion=Invalid XML version - must be 1.0

@@ -1,0 +1,191 @@
+/*
+ * XmlDeclaration.cs - Implementation of the
+ *		"System.Xml.XmlDeclaration" class.
+ *
+ * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+namespace System.Xml
+{
+
+using System;
+using System.Text;
+
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class XmlDeclaration : XmlLinkedNode
+{
+	// Internal state.
+	private String encoding;
+	private String standalone;
+	private String version;
+
+	// Constructor.
+	internal XmlDeclaration(XmlNode parent, String version,
+							String encoding, String standalone)
+			: base(parent)
+			{
+				Encoding = encoding;
+				Standalone = standalone;
+				if(version != "1.0")
+				{
+					throw new ArgumentException
+						(S._("Xml_InvalidVersion"), "version");
+				}
+				this.version = version;
+			}
+
+	// Get or set the document encoding.
+	public String Encoding
+			{
+				get
+				{
+					return encoding;
+				}
+				set
+				{
+					if(value != null)
+					{
+						encoding = value;
+					}
+					else
+					{
+						encoding = String.Empty;
+					}
+				}
+			}
+
+	// Get or set the inner text.
+	public override String InnerText
+			{
+				get
+				{
+					StringBuilder builder = new StringBuilder();
+					builder.Append("version=\"");
+					builder.Append(Version);
+					builder.Append("\"");
+					if(Encoding != String.Empty)
+					{
+						builder.Append(" encoding=\"");
+						builder.Append(Encoding);
+						builder.Append("\"");
+					}
+					if(Standalone != String.Empty)
+					{
+						builder.Append(" standalone=\"");
+						builder.Append(Standalone);
+						builder.Append("\"");
+					}
+					return builder.ToString();
+				}
+				set
+				{
+					// TODO: parse the declaration and set the values.
+				}
+			}
+
+	// Get the local name of this node.
+	public override String LocalName
+			{
+				get
+				{
+					return "xml";
+				}
+			}
+
+	// Get the qualified name of this node.
+	public override String Name
+			{
+				get
+				{
+					return "xml";
+				}
+			}
+
+	// Get or set the standalone property of the document.
+	public String Standalone
+			{
+				get
+				{
+					return standalone;
+				}
+				set
+				{
+					if(value == null)
+					{
+						standalone = String.Empty;
+					}
+					else if(value == String.Empty || value == "yes" ||
+							value == "no")
+					{
+						standalone = value;
+					}
+					else
+					{
+						throw new ArgumentException
+							(S._("Xml_InvalidStandalone"), "value");
+					}
+				}
+			}
+
+	// Get or set the value of this node.
+	public override String Value
+			{
+				get
+				{
+					return InnerText;
+				}
+				set
+				{
+					InnerText = value;
+				}
+			}
+
+	// Get the XML document version.
+	public String Version
+			{
+				get
+				{
+					return version;
+				}
+			}
+
+	// Clone this node.
+	public override XmlNode CloneNode(bool deep)
+			{
+				return OwnerDocument.CreateXmlDeclaration
+						(version, encoding, standalone);
+			}
+
+	// Writes the contents of this node to a specified XmlWriter.
+	public override void WriteContentTo(XmlWriter w)
+			{
+				// Nothing needs to be done here for text nodes.
+			}
+
+	// Write this node and all of its contents to a specified XmlWriter.
+	public override void WriteTo(XmlWriter w)
+			{
+				w.WriteProcessingInstruction(Name, Value);
+			}
+
+}; // class XmlDeclaration
+
+}; // namespace System.Xml

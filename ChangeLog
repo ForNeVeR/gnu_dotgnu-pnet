@@ -1,4 +1,16 @@
 
+2002-12-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/XmlAttributeCollection.cs, System.Xml/XmlCDataSection.cs,
+	System.Xml/XmlCharacterData.cs, System.Xml/XmlComment.cs,
+	System.Xml/XmlDeclaration.cs, System.Xml/XmlDocument.cs,
+	System.Xml/XmlDocumentType.cs, System.Xml/XmlElement.cs,
+	System.Xml/XmlNamedNodeMap.cs, System.Xml/XmlNode.cs,
+	System.Xml/XmlQualifiedName.cs, System.Xml/XmlSignificantWhitespace.cs,
+	System.Xml/XmlText.cs, System.Xml/XmlWhitespace.cs,
+	resources/en_US/System.Xml/Xml.txt: implement many of the DOM
+	node types in the "System.Xml" namespace.
+
 2002-12-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/Xml.build, System.Xml/XmlNode.cs,

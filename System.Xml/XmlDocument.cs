@@ -268,17 +268,58 @@ class XmlDocument : XmlNode
 				return new XmlAttribute(placeholder, info);
 			}
 
+	// Create a CDATA section.
+	public virtual XmlCDataSection CreateCDataSection(String data)
+			{
+				return new XmlCDataSection(placeholder, data);
+			}
+
+	// Create a comment node.
+	public virtual XmlComment CreateComment(String text)
+			{
+				return new XmlComment(placeholder, text);
+			}
+
 	// Create a document fragment that is attached to this node.
 	public virtual XmlDocumentFragment CreateDocumentFragment()
 			{
 				return new XmlDocumentFragment(this);
 			}
 
-	// Create a text node.
-	public virtual XmlNode/*TODO:XmlText*/ CreateTextNode(String text)
+	// Create a document type that is attached to this node.
+	public virtual XmlDocumentType CreateDocumentType
+				(String name, String publicId,
+				 String systemId, String internalSubset)
 			{
-				// TODO
-				return null;
+				return new XmlDocumentType
+					(placeholder, name, publicId, systemId, internalSubset);
+			}
+
+	// Create a significant whitespace node.
+	public virtual XmlSignificantWhitespace CreateSignificantWhitespace
+				(String text)
+			{
+				return new XmlSignificantWhitespace(placeholder, text);
+			}
+
+	// Create a text node.
+	public virtual XmlText CreateTextNode(String text)
+			{
+				return new XmlText(placeholder, text);
+			}
+
+	// Create a whitespace node.
+	public virtual XmlWhitespace CreateWhitespace(String text)
+			{
+				return new XmlWhitespace(placeholder, text);
+			}
+
+	// Create an XML declaration node.
+	public virtual XmlDeclaration CreateXmlDeclaration
+				(String version, String encoding, String standalone)
+			{
+				return new XmlDeclaration
+					(placeholder, version, encoding, standalone);
 			}
 
 	// Write the contents of this document to an XML writer.
@@ -302,6 +343,100 @@ class XmlDocument : XmlNode
 	public event XmlNodeChangedEventHandler NodeInserting;
 	public event XmlNodeChangedEventHandler NodeRemoved;
 	public event XmlNodeChangedEventHandler NodeRemoving;
+
+	// Emit an event before a particular node change.  Returns an
+	// argument block if "EmitAfter" may be needed, or null if not.
+	internal XmlNodeChangedEventArgs EmitBefore
+					(XmlNodeChangedAction action, XmlNode node,
+				 	 XmlNode oldParent, XmlNode newParent)
+			{
+				XmlNodeChangedEventArgs args = null;
+				switch(action)
+				{
+					case XmlNodeChangedAction.Insert:
+					{
+						if(NodeInserting != null)
+						{
+							args = new XmlNodeChangedEventArgs
+								(action, node, oldParent, newParent);
+							NodeInserting(this, args);
+						}
+						else if(NodeInserted != null)
+						{
+							args = new XmlNodeChangedEventArgs
+								(action, node, oldParent, newParent);
+						}
+					}
+					break;
+
+					case XmlNodeChangedAction.Remove:
+					{
+						if(NodeRemoving != null)
+						{
+							args = new XmlNodeChangedEventArgs
+								(action, node, oldParent, newParent);
+							NodeRemoving(this, args);
+						}
+						else if(NodeRemoved != null)
+						{
+							args = new XmlNodeChangedEventArgs
+								(action, node, oldParent, newParent);
+						}
+					}
+					break;
+
+					case XmlNodeChangedAction.Change:
+					{
+						if(NodeChanging != null)
+						{
+							args = new XmlNodeChangedEventArgs
+								(action, node, oldParent, newParent);
+							NodeChanging(this, args);
+						}
+						else if(NodeChanged != null)
+						{
+							args = new XmlNodeChangedEventArgs
+								(action, node, oldParent, newParent);
+						}
+					}
+					break;
+				}
+				return args;
+			}
+
+	// Emit an event after a particular node change.
+	internal new void EmitAfter(XmlNodeChangedEventArgs args)
+			{
+				switch(args.Action)
+				{
+					case XmlNodeChangedAction.Insert:
+					{
+						if(NodeInserted != null)
+						{
+							NodeInserted(this, args);
+						}
+					}
+					break;
+
+					case XmlNodeChangedAction.Remove:
+					{
+						if(NodeRemoved != null)
+						{
+							NodeRemoved(this, args);
+						}
+					}
+					break;
+
+					case XmlNodeChangedAction.Change:
+					{
+						if(NodeChanged != null)
+						{
+							NodeChanged(this, args);
+						}
+					}
+					break;
+				}
+			}
 
 }; // class XmlDocument
 

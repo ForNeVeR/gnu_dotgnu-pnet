@@ -1,4 +1,11 @@
 
+2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/stmt/Makefile.am, csharp/stmt/foreach6.cs,
+	csharp/stmt/foreach6.il, csharp/stmt/foreach6.jl: add a
+	test case for using "break" inside a "foreach" that needs
+	to perform cleanup.
+
 2003-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/decl/Makefile.am, c/decl/enum1.3il, c/decl/enum1.c,

@@ -6,6 +6,7 @@ TESTS = block1.cs \
 		foreach3.cs \
 		foreach4.cs \
 		foreach5.cs \
+		foreach6.cs \
 		locals1.cs \
 		locals2.cs \
 		locals3.cs \

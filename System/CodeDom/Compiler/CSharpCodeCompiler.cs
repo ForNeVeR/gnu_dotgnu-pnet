@@ -818,7 +818,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 				{
 					OutputAttributeDeclarations(e.CustomAttributes);
 					OutputMemberAccessModifier(e.Attributes);
-					OutputMemberScopeModifier(e.Attributes);
+					OutputFieldScopeModifier(e.Attributes);
 					OutputTypeNamePair(e.Type, e.Name);
 					if(e.InitExpression != null)
 					{
@@ -940,7 +940,7 @@ internal class CSharpCodeCompiler : CodeCompiler
 				{
 					Output.Write("this[");
 					OutputParameters(e.Parameters);
-					Output.Write(")");
+					Output.Write("]");
 				}
 
 				// Output the body of the property.

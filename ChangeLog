@@ -1,4 +1,10 @@
 
+2003-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/CodeDom/Compiler/CSharpCodeCompiler.cs,
+	System/CodeDom/Compiler/VBCodeCompiler.cs: implement the VB
+	code generator for CodeDom; fix some minor bugs in the C# generator.
+
 2003-09-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/BinaryWriter.cs,

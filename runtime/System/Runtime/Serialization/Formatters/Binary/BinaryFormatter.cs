@@ -86,209 +86,35 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 				writer.Write((byte)(BinaryElementType.End));
 			}
 
-	// Write an assembly reference to a stream and return its object ID.
-	private long WriteAssembly(BinaryWriter writer, ObjectIDGenerator gen,
-							   Assembly assembly, String name)
-			{
-				bool firstTime;
-				long objectID = gen.GetId(assembly, out firstTime);
-				if(firstTime)
-				{
-					writer.Write((byte)(BinaryElementType.Assembly));
-					writer.Write(objectID);
-					if(assemblyFormat == FormatterAssemblyStyle.Full)
-					{
-						writer.Write(name);
-					}
-					else
-					{
-						int index = name.IndexOf(',');
-						if(index != -1)
-						{
-							writer.Write(name.Substring(0, index));
-						}
-						else
-						{
-							writer.Write(name);
-						}
-					}
-				}
-				return objectID;
-			}
-
-	// Get the serialization data for an object.
-	private SerializationInfo GetObjectData(Object obj, Type type)
-			{
-				SerializationInfo info;
-				info = new SerializationInfo(type, converter);
-				if(obj is ISerializable)
-				{
-					// Use the type-supplied object data method.
-					((ISerializable)obj).GetObjectData(info, context);
-					return info;
-				}
-				if(surrogateSelector != null)
-				{
-					// Look for a serialization surrogate.
-					ISerializationSurrogate surrogate;
-					ISurrogateSelector selector;
-					surrogate = surrogateSelector.GetSurrogate
-						(type, context, out selector);
-					if(surrogate != null)
-					{
-						surrogate.GetObjectData(obj, info, context);
-						return info;
-					}
-				}
-				if(type.IsSerializable)
-				{
-					// Collect up fields using the default algorithm.
-					// TODO: serialize the properties also
-					FieldInfo[] fields = type.GetFields
-						(BindingFlags.Public |
-						 BindingFlags.NonPublic |
-						 BindingFlags.Instance);
-					foreach(FieldInfo field in fields)
-					{
-						if(!(field.IsNotSerialized))
-						{
-							info.AddValue(field.Name, field.GetValue(obj),
-									 	  field.FieldType);
-						}
-					}
-					return info;
-				}
-				throw new SerializationException
-					(String.Format(_("Serialize_NotSerializable"), type));
-			}
-
-	// Write a type tag.
-	private static void WriteTypeTag(BinaryWriter writer, Type type)
-			{
-				// TODO
-			}
-
-	// Write a type specification.
-	private static void WriteTypeSpec(BinaryWriter writer, Type type)
-			{
-				// TODO
-			}
-
-	// Write the type information to a stream.
-	private static void WriteTypeInfo(BinaryWriter writer,
-									  BinaryElementType elementType,
-									  SerializationInfo info,
-									  long assemID, int objectID, long typeID)
-			{
-				if(typeID != -1)
-				{
-					// Reference a previous object's type information.
-					writer.Write((byte)(BinaryElementType.RefTypeObject));
-					writer.Write(objectID);
-					writer.Write((int)typeID);
-				}
-				else
-				{
-					// Dump type information for the first time.
-					writer.Write((byte)elementType);
-					writer.Write(objectID);
-					writer.Write(info.FullTypeName);
-					writer.Write(info.MemberCount);
-					SerializationInfoEnumerator e = info.GetEnumerator();
-					while(e.MoveNext())
-					{
-						writer.Write(e.Name);
-					}
-					e.Reset();
-					while(e.MoveNext())
-					{
-						WriteTypeTag(writer, e.ObjectType);
-					}
-					e.Reset();
-					while(e.MoveNext())
-					{
-						WriteTypeSpec(writer, e.ObjectType);
-					}
-					if(assemID != -1)
-					{
-						writer.Write((int)assemID);
-					}
-				}
-			}
-
-	// Write the fields of an object.
-	private void WriteObjectInfo(BinaryWriter writer, ObjectIDGenerator gen,
-								 Object value, Type type,
-								 SerializationInfo info)
-			{
-				SerializationInfoEnumerator e = info.GetEnumerator();
-				while(e.MoveNext())
-				{
-					// TODO: write inline field values
-				}
-			}
-
 	// Write an object to a stream.
-	private void WriteObject(BinaryWriter writer, ObjectIDGenerator gen,
-							 Object value)
+	private void WriteObject
+				(BinaryValueWriter.BinaryValueContext context, Object value)
 			{
 				// Handle the null case first.
 				if(value == null)
 				{
-					writer.Write((byte)(BinaryElementType.NullValue));
+					context.writer.Write((byte)(BinaryElementType.NullValue));
 					return;
 				}
 
 				// Get the type of the object and see if we've
 				// processed the type before.
 				Type type = value.GetType();
-				long typeID = gen.GetIDForType(type);
+				long typeID = context.gen.GetIDForType(type);
 
-				// Get an object identifier and check to see if we
-				// already saw this object previously.
+				// Allocate an object identifier.
 				bool firstTime;
-				int objectID = (int)(gen.GetId(value, out firstTime));
-				if(!firstTime)
-				{
-					writer.Write((byte)(BinaryElementType.ObjectReference));
-					writer.Write(objectID);
-					return;
-				}
+				long objectID = context.gen.GetId(value, out firstTime);
 
-				// Handle strings, which are relatively easy.
-				if(value is String)
-				{
-					writer.Write((byte)(BinaryElementType.String));
-					writer.Write(objectID);
-					writer.Write((String)value);
-					return;
-				}
+				// Get a value writer for the type.
+				BinaryValueWriter writer;
+				writer = BinaryValueWriter.GetWriter(context, type);
 
-				// Determine how to serialize the object.
-				SerializationInfo info;
-				if(type.IsArray)
-				{
-					// This is an array object.
-					// TODO
-				}
-				else if(type.Assembly == Assembly.GetExecutingAssembly())
-				{
-					// This is a runtime object.
-					info = GetObjectData(value, type);
-					WriteTypeInfo(writer, BinaryElementType.RuntimeObject,
-								  info, -1, objectID, typeID);
-					WriteObjectInfo(writer, gen, value, type, info);
-				}
-				else
-				{
-					// This is an object within another assembly.
-					info = GetObjectData(value, type);
-					long assemID = WriteAssembly
-						(writer, gen, type.Assembly, info.AssemblyName);
-					WriteTypeInfo(writer, BinaryElementType.ExternalObject,
-								  info, assemID, objectID, typeID);
-					WriteObjectInfo(writer, gen, value, type, info);
-				}
+				// Write the object header.
+				writer.WriteObjectHeader(context, type, objectID, typeID);
+
+				// Write the object internals.
+				writer.WriteObject(context, value, type);
 			}
 
 	// Serialize an object to a stream.
@@ -302,14 +128,18 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 					throw new ArgumentNullException("serializationStream");
 				}
 
-				// We need an object ID generator for serialization.
-				ObjectIDGenerator gen = new ObjectIDGenerator();
-
 				// Wrap the stream in a binary writer.
 				using(BinaryWriter writer =
 						new BinaryWriter(serializationStream))
 				{
+					// Create a binary value writing context.
+					BinaryValueWriter.BinaryValueContext context =
+						new BinaryValueWriter.BinaryValueContext(this, writer);
+
+					// Write the header information.
 					WriteHeader(writer, (headers != null));
+
+					// Write the main object for the message.
 					if(graph is IMethodCallMessage)
 					{
 						// TODO
@@ -320,8 +150,10 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 					}
 					else
 					{
-						WriteObject(writer, gen, graph);
+						WriteObject(context, graph);
 					}
+
+					// Write the footer information.
 					WriteFooter(writer);
 				}
 			}

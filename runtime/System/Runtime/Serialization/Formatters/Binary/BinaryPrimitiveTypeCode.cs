@@ -38,6 +38,7 @@ internal enum BinaryPrimitiveTypeCode
 	Int64		= 9,
 	SByte		= 10,
 	Single		= 11,
+	TimeSpan	= 12,
 	DateTime	= 13,
 	UInt16		= 14,
 	UInt32		= 15,

@@ -1,3 +1,12 @@
+
+2003-08-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryFormatter.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryPrimitiveTypeCode.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	rearrange the outgoing side of binary formatting, to make it more
+	flexible to handle special types.
+
 2003-08-03  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ButtonBase.cs: some improvements for inheritors,

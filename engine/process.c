@@ -134,6 +134,10 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 
 void ILExecProcessDestroy(ILExecProcess *process)
 {
+	/* Run the garbage collector and a finalizer pass */
+	ILGCCollect();
+	ILGCInvokeFinalizers();
+
 	/* Destroy the threads associated with the process */
 	while(process->firstThread != 0)
 	{

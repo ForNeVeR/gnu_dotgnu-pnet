@@ -1,4 +1,9 @@
 
+2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/process.c (ILExecProcessDestroy): run a final garbage
+	collection and finalizer pass just before engine shutdown.
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/cs_main.c , cscc/csharp/cs_scanner.l , cscc/csharp/cs_internal.h:

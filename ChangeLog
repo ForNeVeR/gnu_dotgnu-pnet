@@ -90,6 +90,8 @@
 
 	* support/hb_gc.c: missing return value.
 
+	* engine/lib_defs.h: make the object header access macros 64-bit safe.
+
 2003-06-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_grammar.y: implement global

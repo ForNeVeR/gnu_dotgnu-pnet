@@ -92,13 +92,13 @@ extern	"C" {
 	monitor pointer. */
 
 #define IL_LW_MARKED(raw)	\
-	(((unsigned int)raw & 1) == 1)
+	((((ILNativeUInt)(raw)) & 1) == 1)
 
 #define IL_LW_MARK(raw)	\
-	((ILLockWord)(((int)raw | 1)))
+	((ILLockWord)((((ILNativeUInt)(raw)) | 1)))
 
 #define IL_LW_UNMARK(raw)	\
-	((ILLockWord)(((int)raw & ~1)))
+	((ILLockWord)((((ILNativeUInt)(raw)) & ~((ILNativeUInt)1))))
 
 #define GetObjectMonitor(thread, obj) \
 	((ILExecMonitor *)(IL_LW_UNMARK(GetObjectLockWord(thread, obj))))

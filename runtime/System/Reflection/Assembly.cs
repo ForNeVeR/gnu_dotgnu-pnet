@@ -29,10 +29,19 @@ using System.Globalization;
 using System.Security;
 using System.Security.Policy;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Configuration.Assemblies;
 
-public class Assembly : IClrProgramItem
+#if !ECMA_COMPAT
+[ClassInterface(ClassInterfaceType.AutoDual)]
+#endif
+public class Assembly : IClrProgramItem, IEvidenceFactory
 #if CONFIG_REFLECTION
 	, ICustomAttributeProvider
+#endif
+#if !ECMA_COMPAT
+	, ISerializable
 #endif
 {
 
@@ -104,17 +113,17 @@ public class Assembly : IClrProgramItem
 #if !ECMA_COMPAT
 
 	// Get the custom attributes associated with this assembly.
-	public Object[] GetCustomAttributes(bool inherit)
+	public virtual Object[] GetCustomAttributes(bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, inherit);
 			}
-	public Object[] GetCustomAttributes(Type type, bool inherit)
+	public virtual Object[] GetCustomAttributes(Type type, bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, type, inherit);
 			}
 
 	// Determine if custom attributes are associated with this assembly.
-	public bool IsDefined(Type type, bool inherit)
+	public virtual bool IsDefined(Type type, bool inherit)
 			{
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}
@@ -354,27 +363,107 @@ public class Assembly : IClrProgramItem
 			}
 
 #if !ECMA_COMPAT
-	public static Assembly LoadWithPartialName (string partialName)
+
+	// Load an assembly using evidence (which we dont' use in
+	// this implemantation).
+	public static Assembly Load(String assemblyString,
+								Evidence assemblySecurity)
 			{
-				return LoadWithPartialName (partialName, null);
+				return Load(assemblyString, GetCallingAssembly());
 			}
 
-	[TODO]
-	public static Assembly LoadWithPartialName (string partialName, 
-												Evidence securityEvidence)
+	// Load an assembly given an assembly name.
+	public static Assembly Load(AssemblyName assemblyRef)
 			{
-				return LoadFrom(partialName);
+				if(assemblyRef == null)
+				{
+					throw new ArgumentNullException("assemblyRef");
+				}
+				return Load(assemblyRef.FullName, GetCallingAssembly());
+			}
+	public static Assembly Load(AssemblyName assemblyRef,
+								Evidence assemblySecurity)
+			{
+				if(assemblyRef == null)
+				{
+					throw new ArgumentNullException("assemblyRef");
+				}
+				return Load(assemblyRef.FullName, GetCallingAssembly());
 			}
 
-	[TODO]
-	public virtual AssemblyName GetName()
-	{
-		AssemblyName name=new AssemblyName();
-		name.Name=ClrHelpers.GetName(privateData);
-		name.Version=new Version(0,0,0,0);
-		return name;
-	}
-#endif
+	// Load an assembly from a raw byte image.
+	public static Assembly Load(byte[] rawAssembly)
+			{
+				return AppDomain.CurrentDomain.Load
+					(rawAssembly, null, null, GetCallingAssembly());
+			}
+	public static Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore)
+			{
+				return AppDomain.CurrentDomain.Load
+					(rawAssembly, rawSymbolStore, null,
+					 GetCallingAssembly());
+			}
+	public static Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore,
+								Evidence securityEvidence)
+			{
+				return AppDomain.CurrentDomain.Load
+					(rawAssembly, rawSymbolStore, securityEvidence,
+					 GetCallingAssembly());
+			}
+
+	// Load an assembly from a file.
+	public static Assembly LoadFile(String path)
+			{
+				return LoadFrom(path, GetCallingAssembly());
+			}
+	public static Assembly LoadFile(String path, Evidence securityEvidence)
+			{
+				return LoadFrom(path, GetCallingAssembly());
+			}
+	public static Assembly LoadFrom(String assemblyFile,
+									Evidence securityEvidence)
+			{
+				return LoadFrom(assemblyFile, GetCallingAssembly());
+			}
+	public static Assembly LoadFrom(String assemblyFile,
+									Evidence securityEvidence,
+									byte[] hashValue,
+									AssemblyHashAlgorithm hashAlgorithm)
+			{
+				return LoadFrom(assemblyFile, GetCallingAssembly());
+			}
+
+	// Load an assembly using a partial name.
+	public static Assembly LoadWithPartialName(String partialName)
+			{
+				return LoadWithPartialName(partialName, GetCallingAssembly());
+			}
+	public static Assembly LoadWithPartialName(String partialName, 
+											   Evidence securityEvidence)
+			{
+				return LoadWithPartialName(partialName, GetCallingAssembly());
+			}
+	private static Assembly LoadWithPartialName(String partialName,
+												Assembly caller)
+			{
+				Assembly assembly;
+				int error;
+				if(partialName == null)
+				{
+					throw new ArgumentNullException("partialName");
+				}
+				assembly = LoadFromName(partialName, out error, caller);
+				if(error == LoadError_OK)
+				{
+					return assembly;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+#endif // !ECMA_COMPAT
 
 	// Convert this assembly into a string.
 	public override String ToString()
@@ -404,6 +493,17 @@ public class Assembly : IClrProgramItem
 	// Get the code base associated with this assembly.
 	[TODO]
 	public virtual String CodeBase
+			{
+				get
+				{
+					// TODO
+					return null;
+				}
+			}
+	
+	// Get the escaped code base associated with this assembly.
+	[TODO]
+	public virtual String EscapedCodeBase
 			{
 				get
 				{
@@ -444,6 +544,18 @@ public class Assembly : IClrProgramItem
 				}
 			}
 
+	// Get the runtime version that the assembly was compiled against.
+	[ComVisible(false)]
+	public virtual String ImageRuntimeVersion
+			{
+				get
+				{
+					return GetImageRuntimeVersion();
+				}
+			}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private String GetImageRuntimeVersion();
+
 	// Get the location where this assembly was loaded from.
 	[TODO]
 	public virtual String Location
@@ -482,6 +594,125 @@ public class Assembly : IClrProgramItem
 
 	// Module resolution event.
 	public event ModuleResolveEventHandler ModuleResolve;
+
+	// Serialize this object.
+	[TODO]
+	public virtual void GetObjectData(SerializationInfo info,
+									  StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				// TODO
+			}
+
+	// Get the loaded modules within this assembly.  We make no
+	// distinction between loaded and unloaded in this implementation,
+	// because the runtime engine hides the loading of modules.
+	public Module[] GetLoadedModules()
+			{
+				return GetModules(false);
+			}
+	public Module[] GetLoadedModules(bool getResourceModules)
+			{
+				return GetModules(getResourceModules);
+			}
+
+	// Get a particular module from within this assembly.
+	public Module GetModule(String name)
+			{
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				// TODO
+				return null;
+			}
+
+	// Get the modules within this assembly.
+	public Module[] GetModules()
+			{
+				return GetModules(false);
+			}
+	[TODO]
+	public Module[] GetModules(bool getResourceModules)
+			{
+				// TODO
+				return new Module [0];
+			}
+
+	// Get the name of this assembly.
+	[TODO]
+	public virtual AssemblyName GetName()
+			{
+				AssemblyName name = new AssemblyName();
+				name.Name = FullName;
+				name.Version = new Version(0, 0, 0, 0);	// TODO
+				return name;
+			}
+	public virtual AssemblyName GetName(bool copiedName)
+			{
+				// We don't support shadow copies in this implementation.
+				return GetName();
+			}
+
+	// Get a list of the assemblies that are referenced by this one.
+	[TODO]
+	public AssemblyName[] GetReferencedAssemblies()
+			{
+				// TODO
+				return new AssemblyName [0];
+			}
+
+	// Get a satellite resource assembly.
+	public Assembly GetSatelliteAssembly(CultureInfo culture)
+			{
+				return GetSatelliteAssembly
+					(culture, null, GetCallingAssembly());
+			}
+	public Assembly GetSatelliteAssembly(CultureInfo culture, Version version)
+			{
+				return GetSatelliteAssembly
+					(culture, version, GetCallingAssembly());
+			}
+	private Assembly GetSatelliteAssembly(CultureInfo culture,
+										  Version version,
+										  Assembly caller)
+			{
+				if(culture == null)
+				{
+					throw new ArgumentNullException("culture");
+				}
+				String baseName = culture.Name + Path.DirectorySeparatorChar +
+					 			  FullName + ".resources.dll";
+				String path = GetSatellitePath(baseName);
+				if(path == null)
+				{
+					throw new FileNotFoundException
+						(String.Format
+							(_("Reflection_AssemblyFile"), baseName));
+				}
+				else
+				{
+					return LoadFrom(path, caller);
+				}
+			}
+
+	// Load a raw module and attach it to this assembly.
+	public Module LoadModule(String moduleName, byte[] rawModule)
+			{
+				return LoadModule(moduleName, rawModule, null);
+			}
+	public Module LoadModule(String moduleName, byte[] rawModule,
+							 byte[] rawSymbolStore)
+			{
+				// Raw module loading is not supported in this implementation.
+				// It is too dangerous security-wise.
+				throw new SecurityException
+						(String.Format
+							(_("Reflection_AssemblySecurity"), moduleName));
+			}
 
 #endif // CONFIG_REFLECTION && !ECMA_COMPAT
 

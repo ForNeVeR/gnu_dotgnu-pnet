@@ -609,8 +609,8 @@ public sealed class AppDomain
 				return Load(rawAssembly, rawSymbolStore, assemblySecurity,
 							Assembly.GetCallingAssembly());
 			}
-	private Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore,
-				  		  Evidence assemblySecurity, Assembly caller)
+	internal Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore,
+				  		   Evidence assemblySecurity, Assembly caller)
 			{
 				if(rawAssembly == null)
 				{

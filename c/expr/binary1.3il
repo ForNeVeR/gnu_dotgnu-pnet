@@ -273,7 +273,7 @@
 	stloc.s	26
 	ldloc.s	4
 	ldloc.s	16
-	rem
+	rem.un
 	conv.u8
 	stloc.s	28
 	ldloc.s	4

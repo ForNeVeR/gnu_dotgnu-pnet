@@ -4,6 +4,9 @@
 	* csharp/class/constructor2.err, csharp/class/constructor2.jerr:
 	improved error messages for incorrect base/this constructor references.
 
+	* c/expr/assign1.3il, c/expr/assign1.il, c/expr/binary1.3il,
+	c/expr/binary1.il: replace "rem" with "rem.un" for unsigned modulus.
+
 2002-11-18  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/nested3.cs, csharp/class/nested3.il, 

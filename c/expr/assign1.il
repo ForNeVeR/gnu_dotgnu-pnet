@@ -305,7 +305,7 @@
 	stloc.s	4
 	ldloc.s	4
 	ldloc.s	16
-	rem
+	rem.un
 	stloc.s	4
 	ldloc.s	4
 	conv.i8

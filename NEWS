@@ -1,4 +1,102 @@
 
+0.6.2 (3 January 2004)
+
+	Runtime engine:
+
+	* Fix the addresses in the unroll debug dump (Miroslaw Dobrzanski-Neumann).
+	* Correct StdRead return value (Stephen Compall).
+	* Pass environment variables to child processes.
+	* Fix "WaitForExit" timeouts, to prevent scheduler overload.
+	* Internalcalls for the new console implementation.
+	* Internalcalls for the new serial port classes.
+	* Allow relative paths in PInvoke module names.
+	* Recognise method pointers as type-I values in the verifier (Gopal V).
+	* File locking support (Stephen Compall).
+	* Add the RIPEMD-160 digest algorithm.
+	* Sign-extend 8-bit and 16-bit values during PInvoke, because some
+	  versions of "libffi" set the high bits to garbage.
+	* Proper marshalling of "float" and "double" parameters for delegates.
+	* Internalcalls to support symbolic links.
+	* Handle "*" and "&" in "Type.GetType" (Tony Garnock-Jones).
+	* Implement "StructureToPtrInternal".
+	* Fix endianess issues when converting the "hostent" address fields.
+	* Ignore the target object when invoking a static method (Gopal V).
+
+	C# Compiler:
+
+	* Handle keywords like "get", "add", "where", etc in a different
+	  way to make it easier to add more such keywords in the future.
+	* New syntax for C# 2.0 features (semantics not complete yet).
+	* Fix segv conditions in "GetIndexerName".
+	* Fix fall-through handling for "switch" statements (Gopal V).
+	* Static field accesses in the reflection routines.
+	* InfoMethods.GetProcessorCount internalcall.
+	* Inline IntPtr and pointer operations to avoid unnecessary runtime
+	  calls to explicit operators (speeds up PInvoke-using code).
+	* Report an error if "float[]" or "double[]" is used in a profile
+	  that does not have "System.Single" or "System.Double".
+	* Resolve local constants in attribute arguments.
+	* Increment and decrement operators for pointer operands.
+	* Bug in "sizeof" that caused it to always return a size of 1.
+	* Make line numbers work on versions of yacc that don't define
+	  the YYLTYPE macro (Gopal V).
+	* Fix the grammar's handling of "(X *)y" cast forms.
+	* Fix "a->b" assignment, which was leaving values on the stack
+	  when it should not have been.
+	* Allow explicit casts between IntPtr and pointer types.
+
+	Loader and Metadata:
+
+	* Look for system libraries in CSCC_LIB_PATH before local overrides,
+	  to avoid the need for "pnetlib.here" style hacks.
+	* Look in version-specific subdirectories for assemblies, to allow
+	  multiple versions to exist side by side.
+	* Add some support for object files that have a ".cormeta" section.
+	* Implement recursive assembly loading.
+	* Dynamic loading for modules.
+	* Set an exported type's scope correctly.
+	* Resolve exported type references to files.
+	* Support for Win32 resources.
+
+	Resources:
+
+	* Add the "-l" option to "resgen" to perform Latin1 to UTF-8 conversion.
+	* Add the "/compile" and "-compile" flags for backwards compatibility.
+	* Pad resource sections correctly.
+	* Fix some bugs in the handling of ".po" files in "resgen".
+	* Add the "--extract" option to help with extracting resource files
+	  from an assembly.
+	* Fix some alignment issues in the reading and writing of binary resources.
+
+	Csant:
+
+	* Perform profiles options to have non-boolean values.
+	* Add the <resgen> and <reslink> tags, to support resource building.
+	* Add the "--install" and "--uninstall" options, using "ilgac".
+	* Check the "if" attribute on <file> tags.
+
+	Platform Support:
+
+	* Platform abstractions for consoles and serial ports.
+	* Use the static version of "libz" under Win32 to avoid introducing
+	  an unnecessary dependency upon "mgwz.dll".
+	* Fixes for AIX and strict ANSI C compilers (Miroslaw Dobrzanski-Neumann).
+	* Check for "LC_ALL" before "LANG".
+	* Update the Unicode character tables to match Unicode 4.0.1.
+
+	Other:
+
+	* Dump the assembly version in the detailed output mode of "ilsize".
+	* Add the "ilgac" program to assist with version-specific installs.
+	* Dump versions, file, and resource delcarations from "ildd".
+	* Add the "-r" option to "ildd", to recursively print dependencies.
+	* Modify "clrwrap" so that it can implicitly get the name of the
+	  program to run from "argv[0]", which allows "clrwrap" to be used
+	  without an explicit wrapper script.
+	* Update "missing" so that it is no longer "too old or missing".
+	* Fix unqualified types in the IL examples (Gopal V).
+	* Dump the VS_VERSION_INFO block in "ildasm".
+
 0.6.0 (15 October 2003)
 
 	Runtime engine:

@@ -82,10 +82,13 @@ ILNode_SemAnalysis(ILNode_ScopeChange)
 static void AddConstantValue(ILGenInfo *info, ILField *field,
 							 ILEvalValue *evalValue)
 {
-	unsigned char constBuf[8];
+	unsigned char constBuf[16];
 	int constBufLen;
 	int constElemType;
 	ILConstant *constant;
+	ILType *type;
+	ILMethod *ctor;
+	ILAttribute *attr;
 
 	switch(evalValue->valueType)
 	{
@@ -181,6 +184,51 @@ static void AddConstantValue(ILGenInfo *info, ILField *field,
 			IL_WRITE_DOUBLE(constBuf, evalValue->un.r8Value);
 			constBufLen = 8;
 			constElemType = IL_META_ELEMTYPE_R8;
+		}
+		break;
+
+		case ILMachineType_Decimal:
+		{
+			/* Attach "DecimalConstantAttribute" to the field */
+			static ILType * const decConstArgs[5] =
+				{ILType_UInt8, ILType_UInt8, ILType_UInt32,
+				 ILType_UInt32, ILType_UInt32};
+			type = ILFindNonSystemType(info, "DecimalConstantAttribute",
+									   "System.Runtime.CompilerServices");
+			if(type && ILType_IsClass(type))
+			{
+				ctor = ILResolveConstructor(ILType_ToClass(type),
+											ILField_Owner(field),
+											(ILType **)decConstArgs, 5);
+				if(ctor)
+				{
+					/* Build the attribute value for the constant */
+					constBuf[0] = 0x01;
+					constBuf[1] = 0x00;
+					constBuf[2] = (unsigned char)
+						(evalValue->un.decValue.flags >> 16);
+					constBuf[3] = (unsigned char)
+						((evalValue->un.decValue.flags >> 31) & 0x01);
+					IL_WRITE_UINT32(constBuf + 4, evalValue->un.decValue.high);
+					IL_WRITE_UINT32(constBuf + 8,
+								    evalValue->un.decValue.middle);
+					IL_WRITE_UINT32(constBuf + 12, evalValue->un.decValue.low);
+
+					/* Create and attach the attribute */
+					if((attr = ILAttributeCreate
+							(ILProgramItem_Image(field), 0)) == 0)
+					{
+						CSOutOfMemory();
+					}
+					ILAttributeSetType(attr, ILToProgramItem(ctor));
+					if(!ILAttributeSetValue(attr, constBuf, 16))
+					{
+						CSOutOfMemory();
+					}
+					ILProgramItemAddAttribute(ILToProgramItem(field), attr);
+				}
+			}
+			return;
 		}
 		break;
 
@@ -291,10 +339,24 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 							  "initializer is not constant");
 				continue;
 			}
-			if(evalValue.valueType == ILMachineType_Decimal ||
-			   evalValue.valueType == ILMachineType_String)
+			if(evalValue.valueType == ILMachineType_Decimal)
 			{
-				/* Decimal and string constants must be stored in readonly
+				/* Decimal constants are stored in readonly fields
+				   which are computed at runtime */
+				node->modifiers &= ~IL_META_FIELDDEF_LITERAL;
+				node->modifiers |= IL_META_FIELDDEF_INIT_ONLY;
+				ILMemberSetAttrs((ILMember *)(decl->fieldInfo),
+								 IL_META_FIELDDEF_LITERAL |
+								 		IL_META_FIELDDEF_INIT_ONLY,
+						 		 IL_META_FIELDDEF_INIT_ONLY);
+
+				/* And they are also tagged with "DecimalConstantAttribute"
+				   so the compiler can read back the value later */
+				AddConstantValue(info, decl->fieldInfo, &evalValue);
+			}
+			else if(evalValue.valueType == ILMachineType_String)
+			{
+				/* String constants must be stored in readonly
 				   fields which are computed at runtime */
 				node->modifiers &= ~IL_META_FIELDDEF_LITERAL;
 				node->modifiers |= IL_META_FIELDDEF_INIT_ONLY;

@@ -59,6 +59,7 @@ public class TextBox : TextBoxBase
 	// Position to draw caret
 	private Rectangle caretBounds;
 	private Pen caretPen;
+	private int caretPosition = 0;
 
 	// Maximum possible X/Y for a region
 	private const int maxXY = 4194304;
@@ -111,6 +112,9 @@ public class TextBox : TextBoxBase
 		SetStyle(ControlStyles.Opaque, true);
 		// Switch on double buffering.
 		SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+	
+		// we need this or no text is displayed after first start
+		this.CreateHandle();
 	}
 
 	// Gets or sets a value indicating whether pressing ENTER in a multiline TextBox control creates a new line of text in the control or activates the default button for the form.
@@ -393,6 +397,7 @@ public class TextBox : TextBoxBase
 					cPrevious = c;
 				}
 			}
+			
 			SetTextActual( sb.ToString());
 			// Set the position to the end
 			SelectInternal(Text.Length, 0);
@@ -536,6 +541,9 @@ public class TextBox : TextBoxBase
 	// Process when the control receives the focus
 	protected override void OnEnter(EventArgs e)
 	{
+		// reset the caret position
+		CaretSetPosition(caretPosition);
+		
 		// Perform the regular focus handling.
 		base.OnEnter(e);
 		CaretShow();
@@ -696,16 +704,30 @@ public class TextBox : TextBoxBase
 		}
 
 		bool focused = Focused;
-		if (!Enabled || ReadOnly)
+		
+		if(!Enabled || ReadOnly)
 		{
-			using (Brush disabledBackBrush = new SolidBrush(SystemColors.Control))
+			// if an other color is used for BackColor than SystemColors.Window
+			// use the BackColor to fill, even the control is disabled.
+			Color col;
+			if(BackColor == SystemColors.Window)
+			{
+				col = SystemColors.Control;
+			}
+			else
+			{
+				col = BackColor;
+			}
+			
+			//using (Brush disabledBackBrush = new SolidBrush(SystemColors.Control))
+			using(Brush disabledBackBrush = new SolidBrush(col))
 			{
 				g.FillRegion(disabledBackBrush, g.Clip);
 			}
 		}
 		else
 		{
-			using (Brush backBrush = new SolidBrush(BackColor))
+			using(Brush backBrush = new SolidBrush(BackColor))
 			{
 				g.FillRegion(backBrush, g.Clip);
 			}
@@ -1598,6 +1620,9 @@ public class TextBox : TextBoxBase
 	// Set update region
 	internal override void CaretSetPosition( int position)
 	{
+		// remember Caret position
+		caretPosition = position;
+
 		if (!IsHandleCreated)
 		{
 			return;

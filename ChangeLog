@@ -1,3 +1,8 @@
+2004-02-04  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TextBox.cs: Drawing background and Caret.
+	(patch #3716, drobosson)
+
 2005-02-02  Marc Haisenko <marc@darkdust.net>
 
 	* System.Windows.Forms/TextBox.cs: Fix three problems with TextBox.cs:

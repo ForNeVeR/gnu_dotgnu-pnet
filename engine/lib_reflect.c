@@ -2144,8 +2144,9 @@ ILObject *_IL_ClrMethod_Invoke(ILExecThread *thread,
 				ThrowTargetException(thread);
 				return 0;
 			}
-			method = _ILLookupInterfaceMethod(targetClass, classInfo,
-											  method->index);
+			method = _ILLookupInterfaceMethod
+					(((ILClassPrivate *)(targetClass->userData)),
+					 classInfo, method->index);
 		}
 		else
 		{

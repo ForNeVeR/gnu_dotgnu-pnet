@@ -28,10 +28,16 @@ extern	"C" {
 #endif
 
 /*
+ * Get the ILClassPrivate information that is associated with
+ * a non-null object.
+ */
+#define	GetObjectClassPrivate(obj)	\
+	(*((ILClassPrivate **)(((unsigned char *)(obj)) - IL_BEST_ALIGNMENT)))
+
+/*
  * Get the class that is associated with a non-null object.
  */
-#define	GetObjectClass(obj)	\
-			(*((ILClass **)(((unsigned char *)(obj)) - IL_BEST_ALIGNMENT)))
+#define	GetObjectClass(obj)	((GetObjectClassPrivate((obj)))->classInfo)
 
 /*
  * Internal structure of a string object header.

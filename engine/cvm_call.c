@@ -732,7 +732,7 @@ VMCASE(COP_CALL_VIRTUAL):
 	if(tempptr)
 	{
 		/* Locate the method to be called */
-		methodToCall = ((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
+		methodToCall = (GetObjectClassPrivate(tempptr))
 							->vtable[CVM_ARG_DWIDE2_SMALL];
 
 		/* Has the method already been converted? */
@@ -829,7 +829,7 @@ VMCASE(COP_CALL_INTERFACE):
 	{
 		/* Locate the method to be called */
 		methodToCall = _ILLookupInterfaceMethod
-			(GetObjectClass(tempptr), CVM_ARG_DWIDE_PTR_SMALL(ILClass *),
+			(GetObjectClassPrivate(tempptr), CVM_ARG_DWIDE_PTR_SMALL(ILClass *),
 			 CVM_ARG_DWIDE2_SMALL);
 		if(!methodToCall)
 		{
@@ -1310,7 +1310,7 @@ case COP_CALL_VIRTUAL:
 	if(tempptr)
 	{
 		/* Locate the method to be called */
-		methodToCall = ((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
+		methodToCall = (GetObjectClassPrivate(tempptr))
 							->vtable[CVM_ARG_DWIDE2_LARGE];
 
 		/* Copy the state back into the thread object */
@@ -1354,7 +1354,7 @@ case COP_CALL_INTERFACE:
 	{
 		/* Locate the method to be called */
 		methodToCall = _ILLookupInterfaceMethod
-			(GetObjectClass(tempptr), CVM_ARG_DWIDE_PTR_LARGE(ILClass *),
+			(GetObjectClassPrivate(tempptr), CVM_ARG_DWIDE_PTR_LARGE(ILClass *),
 			 CVM_ARG_DWIDE2_LARGE);
 		if(!methodToCall)
 		{
@@ -1518,8 +1518,7 @@ VMCASE(COP_PREFIX_LDVIRTFTN):
 	if(tempptr)
 	{
 		stacktop[-1].ptrValue =
-			((ILClassPrivate *)(GetObjectClass(tempptr)->userData))
-					->vtable[CVMP_ARG_WORD];
+			(GetObjectClassPrivate(tempptr))->vtable[CVMP_ARG_WORD];
 		MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 	}
 	else
@@ -1559,7 +1558,7 @@ VMCASE(COP_PREFIX_LDINTERFFTN):
 	if(tempptr)
 	{
 		stacktop[-1].ptrValue =
-			_ILLookupInterfaceMethod(GetObjectClass(tempptr),
+			_ILLookupInterfaceMethod(GetObjectClassPrivate(tempptr),
 									 CVMP_ARG_WORD_PTR(ILClass *),
 									 CVMP_ARG_WORD);
 		MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);

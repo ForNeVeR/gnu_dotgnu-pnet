@@ -722,17 +722,17 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	return threwException;
 }
 
-ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
+ILMethod *_ILLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
 								   ILClass *interfaceClass,
 								   ILUInt32 index)
 {
 	ILImplPrivate *implements;
-	ILClass *searchClass = objectClass;
+	ILClassPrivate *searchClass = objectClassPrivate;
 
 	/* Locate the interface table within the class hierarchy for the object */
 	while(searchClass != 0)
 	{
-		implements = ((ILClassPrivate *)(searchClass->userData))->implements;
+		implements = searchClass->implements;
 		while(implements != 0)
 		{
 			if(implements->interface == interfaceClass)
@@ -743,8 +743,7 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 				index = (ILUInt32)((ILImplPrivate_Table(implements))[index]);
 				if(index != (ILUInt32)(ILUInt16)0xFFFF)
 				{
-					return ((ILClassPrivate *)(objectClass->userData))
-									->vtable[index];
+					return objectClassPrivate->vtable[index];
 				}
 				else
 				{
@@ -755,7 +754,8 @@ ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
 			}
 			implements = implements->next;
 		}
-		searchClass = ILClassGetParent(searchClass);
+		searchClass = (ILClassPrivate *)
+			(ILClassGetParent(searchClass->classInfo)->userData);
 	}
 
 	/* The interface implementation was not found */
@@ -803,8 +803,9 @@ static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
 		/* This is an interface method call */
 		if(ILClassImplements(objectClass, classInfo))
 		{
-			method = _ILLookupInterfaceMethod(objectClass, classInfo,
-											  method->index);
+			method = _ILLookupInterfaceMethod
+				(((ILClassPrivate *)(objectClass->userData)),
+				 classInfo, method->index);
 			if(method)
 			{
 				return _ILCallMethod(thread, method,
@@ -869,8 +870,9 @@ static int CallVirtualMethodV(ILExecThread *thread, ILMethod *method,
 		/* This is an interface method call */
 		if(ILClassImplements(objectClass, classInfo))
 		{
-			method = _ILLookupInterfaceMethod(objectClass, classInfo,
-											  method->index);
+			method = _ILLookupInterfaceMethod
+					(((ILClassPrivate *)(objectClass->userData)),
+					 classInfo, method->index);
 			if(method)
 			{
 				return _ILCallMethod(thread, method,

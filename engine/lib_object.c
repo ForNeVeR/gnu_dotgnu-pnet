@@ -25,20 +25,14 @@
 extern	"C" {
 #endif
 
-/*
- * Get the private data attached to a class.
- */
-#define	IL_CLASS_PRIVATE(classInfo)	\
-				((ILClassPrivate *)((classInfo)->userData))
-
 ILObject *_IL_Object_GetType(ILExecThread *thread, ILObject *_this)
 {
 	ILObject *obj;
 
 	/* Does the class already have a "ClrType" instance? */
-	if(IL_CLASS_PRIVATE(GetObjectClass(_this))->clrType)
+	if(GetObjectClassPrivate(_this)->clrType)
 	{
-		return IL_CLASS_PRIVATE(GetObjectClass(_this))->clrType;
+		return GetObjectClassPrivate(_this)->clrType;
 	}
 
 	/* Create a new "ClrType" instance for the "ILClass" structure */
@@ -115,9 +109,9 @@ ILObject *_IL_Object_MemberwiseClone(ILExecThread *thread, ILObject *_this)
 	}
 
 	/* Copy the contents of "this" into the new object */
-	if(IL_CLASS_PRIVATE(GetObjectClass(_this))->size != 0)
+	if(GetObjectClassPrivate(_this)->size != 0)
 	{
-		ILMemCpy(obj, _this, IL_CLASS_PRIVATE(GetObjectClass(_this))->size);
+		ILMemCpy(obj, _this, GetObjectClassPrivate(_this)->size);
 	}
 
 	/* Return the cloned object to the caller */

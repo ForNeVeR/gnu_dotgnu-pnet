@@ -71,7 +71,7 @@ void _ILFinalizeObject(void *block, void *data)
 	object = (ILObject *)(((unsigned char *)block) + IL_BEST_ALIGNMENT);
 
 	/* Get the object's class and locate the "Finalize" method */
-	classInfo = *((ILClass **)block);
+	classInfo = (*((ILClassPrivate **)block))->classInfo;
 	while(classInfo != 0)
 	{
 		method = 0;
@@ -118,7 +118,14 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	}
 
 	/* Set the class into the block */
-	*((ILClass **)ptr) = classInfo;
+	if(classInfo)
+	{
+		*((ILClassPrivate **)ptr) = (ILClassPrivate *)(classInfo->userData);
+	}
+	else
+	{
+		*((ILClassPrivate **)ptr) = 0;
+	}
 
 	/* Attach a finalizer to the object if the class has
 	   a non-trival finalizer method attached to it */
@@ -153,7 +160,14 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 	}
 
 	/* Set the class into the block */
-	*((ILClass **)ptr) = classInfo;
+	if(classInfo)
+	{
+		*((ILClassPrivate **)ptr) = (ILClassPrivate *)(classInfo->userData);
+	}
+	else
+	{
+		*((ILClassPrivate **)ptr) = 0;
+	}
 
 	/* Return a pointer to the data just after the class information */
 	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);

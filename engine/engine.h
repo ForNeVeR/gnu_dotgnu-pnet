@@ -240,6 +240,7 @@ struct _tagILImplPrivate
 typedef struct _tagILClassPrivate ILClassPrivate;
 struct _tagILClassPrivate
 {
+	ILClass		   *classInfo;			/* Back-pointer to the class */
 	ILUInt32		size;				/* Full instance size */
 	ILUInt32		nativeSize;			/* Full native instance size */
 	ILUInt32		staticSize;			/* Size of static data */
@@ -425,7 +426,7 @@ int _ILGetInternalDelegate(ILMethod *method, int *isCtor,  ILInternalInfo *info)
 /*
  * Look up an interface method.  Returns NULL if not found.
  */
-ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
+ILMethod *_ILLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
 								   ILClass *interfaceClass,
 								   ILUInt32 index);
 

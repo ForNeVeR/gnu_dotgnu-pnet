@@ -470,6 +470,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		{
 			return 0;
 		}
+		classPrivate->classInfo = info;
 		info->userData = (void *)classPrivate;
 		classPrivate->inLayout = 1;
 	}

@@ -1,4 +1,13 @@
 
+2003-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/call.c, engine/cvm_call.c, engine/engine.h,
+	engine/heap.c, engine/layout.c, engine/lib_defs.h,
+	engine/lib_object.c, engine/lib_reflect.c: make objects
+	point to the ILClassPrivate structure instead of ILClass,
+	to remove a pointer indirection step in virtual and
+	interface method calls.
+
 2003-06-01  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_grammar.y : Throw errors

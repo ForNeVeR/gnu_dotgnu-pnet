@@ -1124,7 +1124,7 @@ ILNode_GenValue(ILNode_DefaultConstructor)
  * reference, which should be freed with "ILGenFreeThisVar".
  */
 unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
-							       ILClass *classInfo, int isFieldLoad);
+							       ILClass *classInfo, int isLoadOnly);
 
 /*
  * Free the temporary variable used for "this" access.
@@ -1136,7 +1136,7 @@ void ILGenFreeThisVar(ILGenInfo *info, unsigned tempVar);
 %{
 
 unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
-							       ILClass *classInfo, int isFieldLoad)
+							       ILClass *classInfo, int isLoadOnly)
 {
 	ILType *fullType;
 	ILMachineType thisType;
@@ -1198,7 +1198,7 @@ unsigned ILGenPrepareForThisAccess(ILGenInfo *info, ILNode *thisExpr,
 					/* Push the address of the temporary variable */
 					ILGenLoadLocalAddr(info, tempVar);
 					ILGenAdjust(info, 1);
-					if(isFieldLoad)
+					if(isLoadOnly)
 					{
 						ILGenReleaseTempVar(info,tempVar);
 					}

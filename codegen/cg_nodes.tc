@@ -657,6 +657,7 @@ struct _tagILSwitchValue
 	ILNode *doCast;
 	ILNode *expr;
 	ILNode *stmt;
+	ILType *arrayType;
 	unsigned long varIndex ;
 	ILMachineType varType ;
 	ILType *enumeratorType;

@@ -1652,6 +1652,7 @@ ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_UnmanagedPtr),
 ILGenCast(ILMachineType_ManagedPtr, ILMachineType_ManagedPtr),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_TransientPtr),
 ILGenCast(ILMachineType_ManagedValue, ILMachineType_ManagedValue),
+ILGenCast(ILMachineType_ManagedValue, ILMachineType_ObjectRef),
 ILGenCast(ILMachineType_NativeInt, ILMachineType_UnmanagedPtr),
 ILGenCast(ILMachineType_NativeUInt, ILMachineType_UnmanagedPtr)
 {

@@ -920,8 +920,9 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 	disposeVar = ILGenTempTypedVar(info, ILFindSystemType(info, "IDisposable"));
 
 	/* Evaluate the collection expression and get the enumerator */
-	ILGenCast(info, ILNode_GenValue(node->expr, info),
-			  ILMachineType_ObjectRef);
+
+	ILGenPrepareForThisAccess(info,node->expr,ILTypeToClass(info,
+								node->arrayType),1);
 
 	if(ILMethod_IsVirtual(node->getEnumerator))
 	{

@@ -10,6 +10,13 @@
 	* cscc/csharp/cs_gather.c: Rename attribute definitions to force the
 	"Attribute" suffix .
 
+	* codegen/cg_cast.tc: Add a do-nothing case to handle ManagedValues
+	to Objects (Structs -> Objects).
+
+	* codegen/cg_nodes.tc, cscc/csharp/cs_stmt.tc, codegen/cg_stmt.tc,
+	codegen/cg_misc.tc: Replace ILGenCast with ILGenPrepareForThisAccess
+	for GetEnumerator calls.
+
 2002-11-11  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* engine/lib_string.c: Corrected some exception handling to follow ECMA

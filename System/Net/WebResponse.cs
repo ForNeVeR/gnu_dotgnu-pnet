@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
+ * With contributions from Jason Lee <jason.lee@mac.com>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -26,29 +28,68 @@ using System.IO;
 
 public abstract class WebResponse : MarshalByRefObject, IDisposable
 {
-	[TODO]
-	protected WebResponse() {}
+	// Not used for anything. To create a new instance use Create method.
+	protected WebResponse() {
+    }
 	
-	[TODO]
-	public virtual void Close() {}
+	public virtual void Close() {
+		throw new NotSupportedException("Close");
+    }
 	
-	[TODO]
-	public virtual Stream GetResponseStream() { return null; }
+	public virtual Stream GetResponseStream() {
+		throw new NotSupportedException("GetResponseStream");
+    }
 	
-	[TODO]
-	void IDisposable.Dispose() {}
+	void IDisposable.Dispose() {
+        Close();
+    }
 	
-	[TODO]
-	public virtual long ContentLength { get{ return 0; }  set{} }
+	public virtual long ContentLength {
+        get
+        {
+            throw new NotSupportedException("ContentLength");
+        }
+        set
+        {
+            throw new NotSupportedException("ContentLength");
+        }
+	}
+
+	public virtual String ContentType {
+        get
+        {
+            throw new NotSupportedException("ContentType");
+        }
+        set
+        {
+            throw new NotSupportedException("ContentType");
+        }
+        
+    }
+        
+	public virtual WebHeaderCollection Headers {
+        get
+        {
+            throw new NotSupportedException("Headers");
+        }
+        set
+        {
+            throw new NotSupportedException("Headers");
+        }
+        
+    }
 	
-	[TODO]
-	public virtual String ContentType { get{ return null; } set{} }
-	
-	[TODO]
-	public virtual WebHeaderCollection Headers { get{ return null; } }
-	
-	[TODO]
-	public virtual Uri ResponseUri { get{ return null; } }
+	public virtual Uri ResponseUri {
+        get
+        {
+            throw new NotSupportedException("ResponseUri");
+        }
+        set
+        {
+            throw new NotSupportedException("ResponseUri");
+        }
+        
+    }
 	
 }; //class WebResponse
 

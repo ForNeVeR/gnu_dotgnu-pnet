@@ -73,7 +73,7 @@ namespace System.Windows.Forms
 
 		// Margins for the text on a tab
 		private const int tabTextWidthMargin = 5;
-		private const int tabTextHeightMargin = 4;
+		private const int tabTextHeightMargin = 2;
 		private const int minimumTabSize = 45;
 		// Indent of the actual tabs from the side of the control
 		private const int indent = 2;

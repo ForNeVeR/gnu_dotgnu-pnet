@@ -172,9 +172,9 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_Boolean)
 	else
 	{
 	    JavaGenSimple(info, JAVA_OP_ICONST_0);
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 						  "(I)LSystem/Decimal;");
-		JavaGenCallByName(info, "System/Decimal", "op_Equality",
+		JavaGenCallByName(info, "System/Decimal", "op_Equality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenExtend(info, 1);
 	}
@@ -307,13 +307,13 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_Int8)
 	{
 		/* CLS does not have a conversion from Decimal to int8, so
 		   down-convert from int32 instead */
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__Vi",
 						  "(LSystem/Decimal;)I");
 		JavaGenCastOverflow(info, ILMachineType_Int32, ILMachineType_Int8);
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__V",
 						  "(LSystem/Decimal;)B");
 	}
 }
@@ -436,7 +436,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_UInt8)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit__B",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__VB",
 						  "(LSystem/Decimal;)I");
 	}
 }
@@ -450,7 +450,7 @@ JavaGenCast(ILMachineType_String, ILMachineType_UInt8)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Byte", "FromString__B",
+		JavaGenCallByName(info, "System/Byte", "FromString__CB",
 						  "(LSystem/String;)I");
 	}
 }
@@ -572,7 +572,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_Int16)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__V",
 						  "(LSystem/Decimal;)S");
 	}
 }
@@ -700,13 +700,13 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_UInt16)
 	{
 		/* CLS does not have a conversion from Decimal to uint16, so
 		   down-convert from int32 instead */
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__VS",
 						  "(LSystem/Decimal;)I");
 		JavaGenCastOverflow(info, ILMachineType_Int32, ILMachineType_UInt16);
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit__S",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__VS",
 						  "(LSystem/Decimal;)I");
 	}
 }
@@ -719,7 +719,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_Char)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__V",
 						  "(LSystem/Decimal;)C");
 	}
 }
@@ -740,7 +740,7 @@ JavaGenCast(ILMachineType_String, ILMachineType_UInt16)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/UInt16", "FromString__S",
+		JavaGenCallByName(info, "System/UInt16", "FromString__CS",
 						  "(LSystem/String;)I");
 	}
 }
@@ -880,7 +880,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_NativeInt)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__Vi",
 						  "(LSystem/Decimal;)I");
 	}
 }
@@ -1014,15 +1014,15 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_NativeUInt)
 	{
 		/* CLS does not have a conversion from Decimal to uint32, so
 		   down-convert from int64 instead */
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__Vl",
 						  "(LSystem/Decimal;)J");
 		JavaGenAdjust(info, 1);
 		JavaGenCastOverflow(info, ILMachineType_Int64, ILMachineType_UInt32);
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit__L",
-						  "(LSystem/Decimal;)J");
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__VI",
+						  "(LSystem/Decimal;)I");
 	}
 }
 JavaGenCast(ILMachineType_String, ILMachineType_UInt32),
@@ -1045,7 +1045,7 @@ JavaGenCast(ILMachineType_String, ILMachineType_NativeUInt)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/UInt32", "FromString__I",
+		JavaGenCallByName(info, "System/UInt32", "FromString__CI",
 						  "(LSystem/String;)I");
 	}
 }
@@ -1143,7 +1143,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_Int64)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__Vl",
 						  "(LSystem/Decimal;)J");
 		JavaGenAdjust(info, 1);
 	}
@@ -1277,10 +1277,10 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_UInt64)
 		JavaGenAdjust(info, 5);
 		JavaGenNewObj(info, "System/Decimal", "<init>__iiiB", "(IIIZI)V");
 		JavaGenAdjust(info, -4);
-		JavaGenCallByName(info, "System/Decimal", "op_Subtraction",
+		JavaGenCallByName(info, "System/Decimal", "op_Subtraction__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__Vl",
 						  "(LSystem/Decimal;)J");
 		JavaGenAdjust(info, 1);
 		JavaGenInt64(info, IL_MIN_INT64);
@@ -1290,7 +1290,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_UInt64)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit__L",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__VL",
 						  "(LSystem/Decimal;)J");
 		JavaGenAdjust(info, 1);
 	}
@@ -1306,13 +1306,13 @@ JavaGenCast(ILMachineType_String, ILMachineType_UInt64)
 	else if(info->clsCompliant)
 	{
 		/* CLS does not have the UInt64 class, so down-convert from Decimal */
-		JavaGenCallByName(info, "System/Decimal", "FromString",
+		JavaGenCallByName(info, "System/Decimal", "FromString__CV",
 						  "(LSystem/String;)LSystem/Decimal;");
 		JavaGenCast(info, ILMachineType_Decimal, ILMachineType_UInt64);
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/UInt64", "FromString__L",
+		JavaGenCallByName(info, "System/UInt64", "FromString__CL",
 						  "(LSystem/String;)J");
 		JavaGenAdjust(info, 1);
 	}
@@ -1384,7 +1384,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_Float32)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__V",
 						  "(LSystem/Decimal;)F");
 	}
 }
@@ -1484,7 +1484,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_NativeFloat)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__V",
 						  "(LSystem/Decimal;)D");
 		JavaGenAdjust(info, 1);
 	}
@@ -1537,7 +1537,7 @@ JavaGenCast(ILMachineType_Void, ILMachineType_Decimal)
 	else
 	{
 		JavaGenSimple(info, JAVA_OP_ICONST_0);
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 						  "(I)LSystem/Decimal;");
 		JavaGenAdjust(info, 1);
 	}
@@ -1555,12 +1555,12 @@ JavaGenCast(ILMachineType_Int8, ILMachineType_Decimal)
 	else if(info->clsCompliant)
 	{
 		/* CLS cannot convert from int8 to decimal, so use int32 instead */
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 						  "(I)LSystem/Decimal;");
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__V",
 						  "(B)LSystem/Decimal;");
 	}
 }
@@ -1575,7 +1575,7 @@ JavaGenCast(ILMachineType_UInt8, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit__B",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__BV",
 						  "(I)LSystem/Decimal;");
 	}
 }
@@ -1590,7 +1590,7 @@ JavaGenCast(ILMachineType_Int16, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__V",
 						  "(S)LSystem/Decimal;");
 	}
 }
@@ -1607,12 +1607,12 @@ JavaGenCast(ILMachineType_Char, ILMachineType_Decimal)
 	else if(info->clsCompliant)
 	{
 		/* CLS cannot convert from uint16 to decimal, so use int32 instead */
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 						  "(I)LSystem/Decimal;");
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit__S",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__SV",
 						  "(I)LSystem/Decimal;");
 	}
 }
@@ -1628,7 +1628,7 @@ JavaGenCast(ILMachineType_NativeInt, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 						  "(I)LSystem/Decimal;");
 	}
 }
@@ -1646,12 +1646,12 @@ JavaGenCast(ILMachineType_NativeUInt, ILMachineType_Decimal)
 	{
 		/* CLS cannot convert from uint32 to decimal, so use int64 instead */
 		JavaGenCast(info, ILMachineType_UInt32, ILMachineType_Int64);
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__lV",
 						  "(J)LSystem/Decimal;");
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit__I",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__IV",
 						  "(I)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -1666,7 +1666,7 @@ JavaGenCast(ILMachineType_Int64, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__lV",
 						  "(J)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -1688,7 +1688,7 @@ JavaGenCast(ILMachineType_UInt64, ILMachineType_Decimal)
 		JavaGenAdjust(info, 2);
 		JavaGenSimple(info, JAVA_OP_LSUB);
 		JavaGenAdjust(info, -2);
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__lV",
 						  "(J)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 		JavaGenSimple(info, JAVA_OP_ICONST_0);		/* low */
@@ -1699,13 +1699,13 @@ JavaGenCast(ILMachineType_UInt64, ILMachineType_Decimal)
 		JavaGenAdjust(info, 5);
 		JavaGenNewObj(info, "System/Decimal", "<init>__iiiB", "(IIIZI)V");
 		JavaGenAdjust(info, -4);
-		JavaGenCallByName(info, "System/Decimal", "op_Addition",
+		JavaGenCallByName(info, "System/Decimal", "op_Addition__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit__L",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__LV",
 						  "(J)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -1721,7 +1721,7 @@ JavaGenCast(ILMachineType_Float32, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__V",
 						  "(F)LSystem/Decimal;");
 	}
 }
@@ -1735,7 +1735,7 @@ JavaGenCast(ILMachineType_NativeFloat, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Explicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Explicit__V",
 						  "(D)LSystem/Decimal;");
 	}
 }
@@ -1752,7 +1752,7 @@ JavaGenCast(ILMachineType_String, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "FromString",
+		JavaGenCallByName(info, "System/Decimal", "FromString__CV",
 						  "(LSystem/String;)LSystem/Decimal;");
 	}
 }
@@ -1817,7 +1817,7 @@ JavaGenCast(ILMachineType_UInt8, ILMachineType_String)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Byte", "ToString__B",
+		JavaGenCallByName(info, "System/Byte", "ToString__BC",
 						  "(I)LSystem/String;");
 	}
 }
@@ -1849,7 +1849,7 @@ JavaGenCast(ILMachineType_UInt16, ILMachineType_String)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/UInt16", "ToString__S",
+		JavaGenCallByName(info, "System/UInt16", "ToString__SC",
 						  "(I)LSystem/String;");
 	}
 }
@@ -1900,7 +1900,7 @@ JavaGenCast(ILMachineType_NativeUInt, ILMachineType_String)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/UInt32", "ToString__I",
+		JavaGenCallByName(info, "System/UInt32", "ToString__IC",
 						  "(I)LSystem/String;");
 	}
 }
@@ -1929,12 +1929,12 @@ JavaGenCast(ILMachineType_UInt64, ILMachineType_String)
 	{
 		/* CLS does not have the UInt64 class, so convert via Decimal */
 		JavaGenCast(info, ILMachineType_UInt64, ILMachineType_Decimal);
-		JavaGenCallByName(info, "System/Decimal", "ToString",
+		JavaGenCallByName(info, "System/Decimal", "ToString__VC",
 						  "(LSystem/Decimal;)LSystem/String;");
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/UInt64", "ToString__L",
+		JavaGenCallByName(info, "System/UInt64", "ToString__LC",
 						  "(J)LSystem/String;");
 	}
 }
@@ -1974,7 +1974,7 @@ JavaGenCast(ILMachineType_Decimal, ILMachineType_String)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "ToString",
+		JavaGenCallByName(info, "System/Decimal", "ToString__VC",
 						  "(LSystem/Decimal;)LSystem/String;");
 	}
 }

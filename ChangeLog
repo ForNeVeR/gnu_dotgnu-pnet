@@ -36,6 +36,10 @@ obsolete ".io" extension into ".obj".
 * doc/pnettools.texi: update the tools doc with information on
 the name mangling rules that are used when compiling to the JVM.
 
+* codegen/jv_arith.tc, codegen/jv_assign.tc, codegen/jv_cast.tc,
+codegen/jv_const.tc, codegen/jv_nodes.tc, codegen/jv_relop.tc: adjust
+mangled signature names to match the new rules.
+
 2001-08-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: implement a Java class file to IL converter.

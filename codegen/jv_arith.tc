@@ -504,7 +504,7 @@ JavaBinary_ApplyOp(ILNode_Add, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Addition",
+		JavaGenCallByName(info, "System/Decimal", "op_Addition__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -674,7 +674,7 @@ JavaBinary_ApplyOp(ILNode_Sub, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Subtraction",
+		JavaGenCallByName(info, "System/Decimal", "op_Subtraction__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -836,7 +836,7 @@ JavaBinary_ApplyOp(ILNode_Mul, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Multiply",
+		JavaGenCallByName(info, "System/Decimal", "op_Multiply__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -907,7 +907,7 @@ JavaBinary_ApplyOp(ILNode_Div, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Division",
+		JavaGenCallByName(info, "System/Decimal", "op_Division__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -978,7 +978,7 @@ JavaBinary_ApplyOp(ILNode_Rem, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Modulus",
+		JavaGenCallByName(info, "System/Decimal", "op_Modulus__VVV",
 						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
 		JavaGenAdjust(info, -1);
 	}
@@ -1376,8 +1376,8 @@ JavaNegate_ApplyOp(ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_UnaryNegation",
-						  "(LSystem/Decimal;LSystem/Decimal;)LSystem/Decimal;");
+		JavaGenCallByName(info, "System/Decimal", "op_UnaryNegation__VV",
+						  "(LSystem/Decimal;)LSystem/Decimal;");
 	}
 }
 JavaNegate_ApplyOp(ILMachineType_Void),

@@ -517,7 +517,7 @@ JavaInc_ApplyOp(ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Increment",
+		JavaGenCallByName(info, "System/Decimal", "op_Increment__VV",
 						  "(LSystem/Decimal;)LSystem/Decimal;");
 	}
 }
@@ -688,7 +688,7 @@ JavaDec_ApplyOp(ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Decrement",
+		JavaGenCallByName(info, "System/Decimal", "op_Decrement__VV",
 						  "(LSystem/Decimal;)LSystem/Decimal;");
 	}
 }

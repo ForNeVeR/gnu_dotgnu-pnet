@@ -307,7 +307,7 @@ JavaGenValue(ILNode_Decimal)
 		{
 			JavaGenInt32(info, (ILInt32)intValue);
 			JavaGenAdjust(info, 1);
-			JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+			JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 							  "(I)LSystem/Decimal;");
 		}
 		else if(!(info->clsCompliant) && intValue >= 0 &&
@@ -316,14 +316,14 @@ JavaGenValue(ILNode_Decimal)
 			/* Cannot use this if CLS compliance is enabled */
 			JavaGenUInt32(info, (ILUInt32)intValue);
 			JavaGenAdjust(info, 1);
-			JavaGenCallByName(info, "System/Decimal", "op_Implicit__I",
+			JavaGenCallByName(info, "System/Decimal", "op_Implicit__IV",
 							  "(I)LSystem/Decimal;");
 		}
 		else
 		{
 			JavaGenInt64(info, intValue);
 			JavaGenAdjust(info, 2);
-			JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+			JavaGenCallByName(info, "System/Decimal", "op_Implicit__lV",
 							  "(J)LSystem/Decimal;");
 			JavaGenAdjust(info, -1);
 		}

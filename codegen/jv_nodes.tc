@@ -113,9 +113,9 @@ JavaStackThen(ILMachineType_Decimal)
 	else
 	{
 	    JavaGenSimple(info, JAVA_OP_ICONST_0);
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 						  "(I)LSystem/Decimal;");
-		JavaGenCallByName(info, "System/Decimal", "op_Equality",
+		JavaGenCallByName(info, "System/Decimal", "op_Equality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenExtend(info, 1);
 		JavaGenJump(info, JAVA_OP_IFNE, label);
@@ -215,9 +215,9 @@ JavaStackElse(ILMachineType_Decimal)
 	else
 	{
 	    JavaGenSimple(info, JAVA_OP_ICONST_0);
-		JavaGenCallByName(info, "System/Decimal", "op_Implicit",
+		JavaGenCallByName(info, "System/Decimal", "op_Implicit__iV",
 						  "(I)LSystem/Decimal;");
-		JavaGenCallByName(info, "System/Decimal", "op_Equality",
+		JavaGenCallByName(info, "System/Decimal", "op_Equality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenExtend(info, 1);
 		JavaGenJump(info, JAVA_OP_IFEQ, label);

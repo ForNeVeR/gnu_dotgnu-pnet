@@ -222,7 +222,7 @@ JavaRelational_ApplyOp(ILNode_Eq, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Equality",
+		JavaGenCallByName(info, "System/Decimal", "op_Equality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenAdjust(info, -1);
 	}
@@ -332,7 +332,7 @@ JavaRelational_ApplyOp(ILNode_Ne, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Inequality",
+		JavaGenCallByName(info, "System/Decimal", "op_Inequality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenAdjust(info, -1);
 	}
@@ -458,7 +458,7 @@ JavaRelational_ApplyOp(ILNode_Lt, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_LessThan",
+		JavaGenCallByName(info, "System/Decimal", "op_LessThan__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenAdjust(info, -1);
 	}
@@ -584,7 +584,7 @@ JavaRelational_ApplyOp(ILNode_Le, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_LessThanOrEqual",
+		JavaGenCallByName(info, "System/Decimal", "op_LessThanOrEqual__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenAdjust(info, -1);
 	}
@@ -710,7 +710,7 @@ JavaRelational_ApplyOp(ILNode_Gt, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_GreaterThan",
+		JavaGenCallByName(info, "System/Decimal", "op_GreaterThan__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenAdjust(info, -1);
 	}
@@ -836,7 +836,7 @@ JavaRelational_ApplyOp(ILNode_Ge, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_GreaterThanOrEqual",
+		JavaGenCallByName(info, "System/Decimal", "op_GreaterThanOrEqual__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenAdjust(info, -1);
 	}
@@ -904,7 +904,7 @@ JavaRelational_ThenOp(ILNode_Eq, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Equality",
+		JavaGenCallByName(info, "System/Decimal", "op_Equality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFNE, label);
 		JavaGenAdjust(info, -2);
@@ -973,7 +973,7 @@ JavaRelational_ThenOp(ILNode_Ne, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Inequality",
+		JavaGenCallByName(info, "System/Decimal", "op_Inequality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFNE, label);
 		JavaGenAdjust(info, -2);
@@ -1051,7 +1051,7 @@ JavaRelational_ThenOp(ILNode_Lt, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_LessThan",
+		JavaGenCallByName(info, "System/Decimal", "op_LessThan__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFNE, label);
 		JavaGenAdjust(info, -2);
@@ -1129,7 +1129,7 @@ JavaRelational_ThenOp(ILNode_Le, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_LessThanOrEqual",
+		JavaGenCallByName(info, "System/Decimal", "op_LessThanOrEqual__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFNE, label);
 		JavaGenAdjust(info, -2);
@@ -1207,7 +1207,7 @@ JavaRelational_ThenOp(ILNode_Gt, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_GreaterThan",
+		JavaGenCallByName(info, "System/Decimal", "op_GreaterThan__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFNE, label);
 		JavaGenAdjust(info, -2);
@@ -1285,7 +1285,7 @@ JavaRelational_ThenOp(ILNode_Ge, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_GreaterThanOrEqual",
+		JavaGenCallByName(info, "System/Decimal", "op_GreaterThanOrEqual__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFNE, label);
 		JavaGenAdjust(info, -2);
@@ -1354,7 +1354,7 @@ JavaRelational_ElseOp(ILNode_Eq, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Equality",
+		JavaGenCallByName(info, "System/Decimal", "op_Equality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFEQ, label);
 		JavaGenAdjust(info, -2);
@@ -1423,7 +1423,7 @@ JavaRelational_ElseOp(ILNode_Ne, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_Inequality",
+		JavaGenCallByName(info, "System/Decimal", "op_Inequality__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFEQ, label);
 		JavaGenAdjust(info, -2);
@@ -1501,7 +1501,7 @@ JavaRelational_ElseOp(ILNode_Lt, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_LessThan",
+		JavaGenCallByName(info, "System/Decimal", "op_LessThan__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFEQ, label);
 		JavaGenAdjust(info, -2);
@@ -1579,7 +1579,7 @@ JavaRelational_ElseOp(ILNode_Le, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_LessThanOrEqual",
+		JavaGenCallByName(info, "System/Decimal", "op_LessThanOrEqual__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFEQ, label);
 		JavaGenAdjust(info, -2);
@@ -1657,7 +1657,7 @@ JavaRelational_ElseOp(ILNode_Gt, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_GreaterThan",
+		JavaGenCallByName(info, "System/Decimal", "op_GreaterThan__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFEQ, label);
 		JavaGenAdjust(info, -2);
@@ -1735,7 +1735,7 @@ JavaRelational_ElseOp(ILNode_Ge, ILMachineType_Decimal)
 	}
 	else
 	{
-		JavaGenCallByName(info, "System/Decimal", "op_GreaterThanOrEqual",
+		JavaGenCallByName(info, "System/Decimal", "op_GreaterThanOrEqual__VV",
 						  "(LSystem/Decimal;LSystem/Decimal;)Z");
 		JavaGenJump(info, JAVA_OP_IFEQ, label);
 		JavaGenAdjust(info, -2);

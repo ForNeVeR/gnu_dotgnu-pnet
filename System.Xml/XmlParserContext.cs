@@ -108,7 +108,7 @@ public class XmlParserContext
 			}		
 			
 	//Properties
-	public String BaseUri
+	public String BaseURI
 			{
 				get
 				{
@@ -232,8 +232,20 @@ public class XmlParserContext
 					else
 						xmllang = value;
 				}
-			}						
-			
+			}
+
+	public XmlSpace XmlSpace
+			{
+				get
+				{
+					return xmlspace;
+				}
+				set
+				{
+					xmlspace = value;
+				}
+			}
+
 }; //class XmlParserContext
 
 }; //namespace System.Xml

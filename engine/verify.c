@@ -387,7 +387,7 @@ static int AssignCompatible(ILEngineStackItem *item, ILType *type)
 #include "verify_ann.c"
 #undef IL_VERIFY_GLOBALS
 
-int _ILVerify(ILCoder *coder, ILMethod *method,
+int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 			  ILMethodCode *code, int unsafeAllowed)
 {
 	TempAllocator allocator;
@@ -443,7 +443,7 @@ restart:
 	allocator.overflow = 0;
 
 	/* Set up the coder to process the method */
-	if(!ILCoderSetup(coder, method, code))
+	if(!ILCoderSetup(coder, start, method, code))
 	{
 		VERIFY_MEMORY_ERROR();
 	}

@@ -1,3 +1,33 @@
+2003-12-03  Neil Cawse  <neilcawse@geotab.com>
+
+	* DotGNU.Images/Frame.cs, DotGNU.Images/Utils.cs: BitsPerPixel and
+	BytesPerLine properties added.
+
+	* System.Windows.Forms/ComboBox.cs, System.Windows.Forms/Form.cs,
+	System.Windows.Forms/Label.cs: ComboBox optimization, Form.MinimumSize
+	and MaximimumSize must set the size if applicable, Label must have
+	TabStop set to false.
+
+	* Xsharp/Font.cs, Xsharp/TopLevelWindow.cs: csc compile issues.
+
+	* samples/FormsTest.cs: added in tests for Form - icon,
+	maximize/minimize, minimum/maximize size.
+
+	* System.Drawing.Win32/DrawingControlWindow.cs,
+	System.Drawing.Win32/DrawingFont.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingGraphicsImage.cs,
+	System.Drawing.Win32/DrawingHiddenWindow.cs,
+	System.Drawing.Win32/DrawingImage.cs,
+	System.Drawing.Win32/DrawingPopupWindow.cs,
+	System.Drawing.Win32/DrawingRootTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingSolidBrush.cs,
+	System.Drawing.Win32/DrawingTextureBrush.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs, System.Drawing.Win32/Win32.cs:
+	implement maximize, minimize, max and min size, Icons, make formatting
+	consistent, sundry performance optimization.
 
 2003-12-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 

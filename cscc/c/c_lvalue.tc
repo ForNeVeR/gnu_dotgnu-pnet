@@ -2399,53 +2399,8 @@ static void RawToBitField(ILGenInfo *info, ILMachineType type,
 }
 
 /*
- * Duplicate a stack value that corresponds to a raw storage
- * value.  Mask off the bit field bits in the second top value,
- * and convert the top value from raw into a bit field.  This
- * prepares the stack for a later store operation.
- */
-static void BitFieldGetAndPrepare(ILGenInfo *info, ILMachineType type,
-							      ILUInt32 start, ILUInt32 size)
-{
-	unsigned tempVar;
-
-	/* We need a temporary variable */
-	tempVar = ILGenTempVar(info, type);
-
-	/* Save the value in the temporary variable */
-	ILGenSimple(info, IL_OP_DUP);
-	ILGenStoreLocal(info, tempVar);
-	ILGenExtend(info, 1);
-
-	/* Mask off the bit field */
-	if(type == ILMachineType_Int64 || type == ILMachineType_UInt64)
-	{
-		ILGenUInt64(info, ~(((((ILUInt64)1) << size) - 1) << start));
-		ILGenSimple(info, IL_OP_AND);
-		ILGenExtend(info, 1);
-	}
-	else
-	{
-		ILGenUInt32(info, ~(((((ILUInt32)1) << size) - 1) << start));
-		ILGenSimple(info, IL_OP_AND);
-		ILGenExtend(info, 1);
-	}
-
-	/* Reload the original value onto the stack */
-	ILGenLoadLocal(info, tempVar);
-	ILGenAdjust(info, 1);
-
-	/* Convert from raw to final */
-	RawToBitField(info, type, start, size);
-
-	/* Release the temporary variable */
-	ILGenReleaseTempVar(info, tempVar);
-}
-
-/*
- * Convert a bit field value into a raw storage value and OR
- * it with the original masked storage value that is already
- * on the stack.
+ * Convert a bit field value into a raw storage value, ready to
+ * be OR'ed with the original masked value.
  */
 static void BitFieldToRaw(ILGenInfo *info, ILMachineType type,
 						  ILUInt32 start, ILUInt32 size)
@@ -2489,8 +2444,6 @@ static void BitFieldToRaw(ILGenInfo *info, ILMachineType type,
 
 		default: break;
 	}
-	ILGenSimple(info, IL_OP_OR);
-	ILGenAdjust(info, -1);
 }
 
 %}
@@ -2560,32 +2513,11 @@ ILNode_Prepare(ILNode_CBitField)
 		CAddComplexFieldOffset(info, ownerType, node->field);
 	}
 
-	/* Fetch the current value and mask off the bit field */
+	/* Save a copy of the pointer so that we can fetch the other bits later */
+	node->tempPtrVar = ILGenTempVar(info, ILMachineType_NativeInt);
 	ILGenSimple(info, IL_OP_DUP);
-	ILGenAdjust(info, 1);
-	if(CTypeIsComplex(ownerType))
-	{
-		LoadValueFromPointer(info, ILField_Type(node->field));
-	}
-	else
-	{
-		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
-	}
-	if(node->machineType == ILMachineType_Int64 ||
-	   node->machineType == ILMachineType_UInt64)
-	{
-		ILGenUInt64(info, ~(((((ILUInt64)1) << node->bitFieldSize) - 1)
-								<< node->bitFieldStart));
-		ILGenSimple(info, IL_OP_AND);
-		ILGenExtend(info, 1);
-	}
-	else
-	{
-		ILGenUInt32(info, ~(((((ILUInt32)1) << node->bitFieldSize) - 1)
-								<< node->bitFieldStart));
-		ILGenSimple(info, IL_OP_AND);
-		ILGenExtend(info, 1);
-	}
+	ILGenStoreLocal(info, node->tempPtrVar);
+	ILGenExtend(info, 1);
 
 	/* The bit field is prepared */
 	return node->machineType;
@@ -2617,9 +2549,13 @@ ILNode_GetAndPrepare(ILNode_CBitField)
 		CAddComplexFieldOffset(info, ownerType, node->field);
 	}
 
-	/* Fetch the current value of the storage field */
+	/* Save a copy of the pointer so that we can fetch the other bits later */
+	node->tempPtrVar = ILGenTempVar(info, ILMachineType_NativeInt);
 	ILGenSimple(info, IL_OP_DUP);
-	ILGenAdjust(info, 1);
+	ILGenStoreLocal(info, node->tempPtrVar);
+	ILGenExtend(info, 1);
+
+	/* Fetch the current value of the storage field */
 	if(CTypeIsComplex(ownerType))
 	{
 		LoadValueFromPointer(info, ILField_Type(node->field));
@@ -2629,9 +2565,9 @@ ILNode_GetAndPrepare(ILNode_CBitField)
 		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
 	}
 
-	/* Extract the bit field value and prepare the remainder for storing */
-	BitFieldGetAndPrepare(info, node->machineType, node->bitFieldStart,
-						  node->bitFieldSize);
+	/* Extract the bit field value */
+	RawToBitField(info, node->machineType, node->bitFieldStart,
+				  node->bitFieldSize);
 
 	/* Save a copy of the value if we need to leave it on the stack */
 	if(leave)
@@ -2668,9 +2604,39 @@ ILNode_Store(ILNode_CBitField)
 		ILGenExtend(info, 1);
 	}
 
-	/* Combine the value with the other parts of the storage field */
+	/* Shift the bit field into its final position */
 	BitFieldToRaw(info, node->machineType, node->bitFieldStart,
 				  node->bitFieldSize);
+
+	/* Load the other bits and combine them with the new value */
+	ILGenLoadLocal(info, node->tempPtrVar);
+	ILGenAdjust(info, 1);
+	if(CTypeIsComplex(ownerType))
+	{
+		LoadValueFromPointer(info, ILField_Type(node->field));
+	}
+	else
+	{
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	}
+	if(node->machineType == ILMachineType_Int64 ||
+	   node->machineType == ILMachineType_UInt64)
+	{
+		ILGenUInt64(info, ~(((((ILUInt64)1) << node->bitFieldSize) - 1)
+								<< node->bitFieldStart));
+		ILGenSimple(info, IL_OP_AND);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		ILGenUInt32(info, ~(((((ILUInt32)1) << node->bitFieldSize) - 1)
+								<< node->bitFieldStart));
+		ILGenSimple(info, IL_OP_AND);
+		ILGenExtend(info, 1);
+	}
+	ILGenSimple(info, IL_OP_OR);
+	ILGenAdjust(info, -1);
+	ILGenReleaseTempVar(info, node->tempPtrVar);
 
 	/* Store the combined value back into the storage field */
 	if(CTypeIsComplex(ownerType))

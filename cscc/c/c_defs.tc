@@ -486,6 +486,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 	ILUInt32 bitFieldSize;
 	int genExprAsAddr;
 	%nocreate unsigned tempVar = {~((unsigned)0)};
+	%nocreate unsigned tempPtrVar = {~((unsigned)0)};
 }
 %node ILNode_CAttribute ILNode_Dummy =
 {

@@ -1,7 +1,7 @@
 /*
- * IQDataStreamable.cs - Interface for Qt-streamable objects.
+ * DcopException.cs - Base class for DCOP exceptions.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,22 @@ namespace Xsharp.Dcop
 {
 
 using System;
-using System.IO;
 
-public interface IQDataStreamable
+/// <summary>
+/// <para>This is the base class for all exceptions that are thrown
+/// by Dcop.</para>
+/// </summary>
+public class DcopException : SystemException
 {
-	// Read the state of this object from a data stream.
-	Object Read(QDataStream stream);
 
-	// Write this object's state to a data stream.
-	void Write(QDataStream stream);
+	// Constructors.
+	public DcopException()
+		: base("DcopException") {}
+	public DcopException(String msg)
+		: base(msg) {}
+	public DcopException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-}; // interface IQDataStreamable
+} // class XException
 
-}; // namespace Xsharp.Dcop
+} // namespace Xsharp.Dcop

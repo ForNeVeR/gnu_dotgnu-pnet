@@ -28,12 +28,30 @@ using OpenSystem.Platform.X11;
 
 internal sealed unsafe class ICE
 {
+
+	[StructLayout(LayoutKind.Explicit)]
+	public struct IcePoAuthProcIncapsulator
+	{
+		[FieldOffset(0)]
+		IcePoAuthProc cb;
+		public IcePoAuthProcIncapsulator(IcePoAuthProc cb) { this.cb = cb; }
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	public struct IcePoProcessMsgProcIncapsulator
+	{
+		[FieldOffset(0)]
+		IcePoProcessMsgProc cb;
+		public IcePoProcessMsgProcIncapsulator(IcePoProcessMsgProc cb) { this.cb = cb; }
+	}
+
+
 	[DllImport("ICE")]
 	extern public static Xlib.Xint IceRegisterForProtocolSetup
 			(String protocolName, String vendor, String release,
 			 Xlib.Xint versionCount, ref IcePoVersionRec versionRecs,
 			 Xlib.Xint authCount, String[] authNames,
-			 ref IcePoAuthProc authProcs, IceIOErrorProc ioErrorProc);
+			 ref IcePoAuthProcIncapsulator authProcs, IceIOErrorProc ioErrorProc);
 
 	[DllImport("ICE")]
 	extern public static Xlib.Xint IceRegisterForProtocolReply
@@ -121,7 +139,7 @@ internal sealed unsafe class ICE
 
 	[DllImport("ICE")]
 	extern public static Xlib.Xint IceProcessMessages
-			(IceConn *iceConn, IntPtr replyWait, out XBool replyReadyRet);
+			(IceConn *iceConn, ref IceReplyWaitInfo replyWait, ref XBool replyReadyRet);
 
 	[DllImport("ICE")]
 	extern public static XStatus IcePing
@@ -267,77 +285,11 @@ internal sealed unsafe class ICE
 				}
 			}
 
-	// Format and send an ICE message header.  "key" is a DCOP key value,
-	// which is added to the header but isn't included in the length.
-	// Set "key" to -1 to suppress the sending of a DCOP key value.
-	public static void IceSendHeader
-				(IceConn *iceConn, int major, int minor, int length,
-				 int key, byte[] buffer)
-			{
-				uint size = 8;
-				buffer[0] = (byte)major;
-				buffer[1] = (byte)minor;
-				buffer[2] = (byte)0;
-				buffer[3] = (byte)0;
-				if(IsLittleEndian)
-				{
-					buffer[4] = (byte)length;
-					buffer[5] = (byte)(length >> 8);
-					buffer[6] = (byte)(length >> 16);
-					buffer[7] = (byte)(length >> 24);
-					if(key != -1)
-					{
-						buffer[8]  = (byte)key;
-						buffer[9]  = (byte)(key >> 8);
-						buffer[10] = (byte)(key >> 16);
-						buffer[11] = (byte)(key >> 24);
-						size += 4;
-					}
-				}
-				else
-				{
-					buffer[4] = (byte)(length >> 24);
-					buffer[5] = (byte)(length >> 16);
-					buffer[6] = (byte)(length >> 8);
-					buffer[7] = (byte)length;
-					if(key != -1)
-					{
-						buffer[8]  = (byte)(key >> 24);
-						buffer[9]  = (byte)(key >> 16);
-						buffer[10] = (byte)(key >> 8);
-						buffer[11] = (byte)key;
-						size += 4;
-					}
-				}
-				IceFlush(iceConn);
-				_IceWrite(iceConn, (Xlib.Xulong)size, buffer);
-			}
-
 	// Send data over an ICE connection.
 	public static void IceSendData(IceConn *iceConn, int nbytes, byte[] data)
 			{
 				IceFlush(iceConn);
 				_IceWrite(iceConn, (Xlib.Xulong)(uint)nbytes, data);
-			}
-
-	// Read a DCOP key value from an ICE connection.
-	public static int IceReadKey(IceConn *iceConn, byte[] buffer)
-			{
-				if(_IceRead(iceConn, (Xlib.Xulong)4, buffer)
-						== XStatus.Zero)
-				{
-					return -1;
-				}
-				else if(IsLittleEndian)
-				{
-					return buffer[0] | (buffer[1] << 8) |
-						   (buffer[2] << 16) | (buffer[3] << 24);
-				}
-				else
-				{
-					return (buffer[0] << 24) | (buffer[1] << 16) |
-						   (buffer[2] << 8) | buffer[3];
-				}
 			}
 
 	// Read data from an ICE connection.

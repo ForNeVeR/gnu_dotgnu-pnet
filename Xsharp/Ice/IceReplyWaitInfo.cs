@@ -30,7 +30,7 @@ internal struct IceReplyWaitInfo
 	public Xlib.Xulong	sequence_of_request__;
 	public Xlib.Xint	major_opcode_of_request__;
 	public Xlib.Xint	minor_opcode_of_request__;
-	public IntPtr		reply;
+	public Object		reply;
 
 	// Convert odd fields into types that are useful.
 	public uint sequence_of_request

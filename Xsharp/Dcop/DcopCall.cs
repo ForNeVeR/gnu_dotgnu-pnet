@@ -1,7 +1,7 @@
 /*
- * IQDataStreamable.cs - Interface for Qt-streamable objects.
- *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * DcopCallAttribute.cs - used to mark DCOP call stubs.
+ * 
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,23 @@
 namespace Xsharp.Dcop
 {
 
-using System;
-using System.IO;
+// This class is not ECMA-compatible strictly speaking, but it is
+// needed to support thread-static variables in the ECMA engine.
 
-public interface IQDataStreamable
+#if !ECMA_COMPAT
+[Serializable]
+#endif
+[AttributeUsage(AttributeTargets.Method, Inherited=true)]
+public class DcopCallAttribute : Attribute
 {
-	// Read the state of this object from a data stream.
-	Object Read(QDataStream stream);
+	// FIXME: Tell me if this eats up memory, 'cause it's not really used for now
+	DcopFunction function;
+	// Constructor.
+	public DcopCallAttribute(string fun)
+		{
+			function = new DcopFunction(fun);
+		}
 
-	// Write this object's state to a data stream.
-	void Write(QDataStream stream);
-
-}; // interface IQDataStreamable
+}; // class DcopCallAttribute
 
 }; // namespace Xsharp.Dcop

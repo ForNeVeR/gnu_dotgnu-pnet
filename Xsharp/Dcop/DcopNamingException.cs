@@ -1,7 +1,8 @@
 /*
- * IQDataStreamable.cs - Interface for Qt-streamable objects.
+ * DcopNamingException.cs - Exception that is thrown when
+ *		something tried to access bad or nonexistant function).
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +23,18 @@ namespace Xsharp.Dcop
 {
 
 using System;
-using System.IO;
 
-public interface IQDataStreamable
+public sealed class DcopNamingException : DcopException
 {
-	// Read the state of this object from a data stream.
-	Object Read(QDataStream stream);
 
-	// Write this object's state to a data stream.
-	void Write(QDataStream stream);
+	// Constructors.
+	public DcopNamingException()
+		: base("DcopNamingException") {}
+	public DcopNamingException(String msg)
+		: base(msg) {}
+	public DcopNamingException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-}; // interface IQDataStreamable
+} // class DcopNamingException
 
-}; // namespace Xsharp.Dcop
+} // namespace Xsharp.Dcop

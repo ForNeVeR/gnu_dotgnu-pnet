@@ -1,5 +1,5 @@
 /*
- * DcopReply.cs - Encapsulation of a DCOP reply data stream.
+ * DcopReply.cs - Definition of the DCOP reply - ICE user structure.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,19 +22,35 @@ namespace Xsharp.Dcop
 {
 
 using System;
-using System.IO;
-using System.Text;
 
-public class DcopReply : QDataStream
+// [StructLayout(LayoutKind.Sequential)]
+// This is our user structure, we can do whatever with it! Neat, is not it?
+internal class DcopReply
 {
-	// Constructors.
-	public DcopReply(Stream stream) : base(stream)
-			{
-				// TODO
-			}
-	public DcopReply(byte[] buffer, int offset, int count)
-			: this(new MemoryStream(buffer, offset, count, false)) {}
 
-}; // class DcopReply
+	internal enum ReplyStatus
+	{
+		// Just to make them look nice
+		Pending = 0,
+		Ok = 1,
+		Failed = -1
+	}
+	public ReplyStatus status;
+	public string replyType;
+	public int replyId;
+	public int transactionId;
+	public string calledApp;
+	public Object replyObject;
+	public string replySlot;
 
-}; // namespace Xsharp.Dcop
+	public DcopReply(DcopFunction fun, int id)
+	{
+		status = ReplyStatus.Pending;
+		replyId = id;
+		replyType = fun.ReturnValue;
+	}
+
+} // class DcopReply
+
+} // namespace Xsharp.Dcop
+

@@ -1,5 +1,5 @@
 /*
- * IceClient.cs - Client handler for ICE connections.
+ * IceClient.cs - Client handler for ICE iceConns.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -26,7 +26,7 @@ using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Ice.IceClient"/> class manages the client
-/// side of an ICE connection for a specific protocol.</para>
+/// side of an ICE iceConn for a specific protocol.</para>
 /// </summary>
 public abstract unsafe class IceClient
 {
@@ -34,8 +34,12 @@ public abstract unsafe class IceClient
 	private Display dpy;
 	private int majorOpcode;
 	private IceConn *iceConn;
-	private bool hasDcopKey;
 	private byte[] buffer;
+	
+	private bool messageTransaction;
+	private int minorOpcode;
+	private IceReplyWaitInfo waitInfo;
+	private int messageLength = 0;
 
 	/// <summary>
 	/// <para>Construct an ICE client handler to process messages for
@@ -43,7 +47,7 @@ public abstract unsafe class IceClient
 	/// </summary>
 	///
 	/// <param name="dpy">
-	/// <para>The display to attach to the ICE connection's message
+	/// <para>The display to attach to the ICE iceConn's message
 	/// processor.</para>
 	/// </param>
 	///
@@ -80,7 +84,7 @@ public abstract unsafe class IceClient
 	///
 	/// <exception cref="T:Xsharp.XInvalidOperationException">
 	/// <para>Raised if the protocol could not be registered or the
-	/// connection to the ICE server could not be established.</para>
+	/// iceConn to the ICE server could not be established.</para>
 	/// </exception>
 	public IceClient(Display dpy, String protocolName, String vendor,
 					 String release, int majorVersion, int minorVersion,
@@ -115,8 +119,14 @@ public abstract unsafe class IceClient
 				version.process_msg_proc =
 					new IcePoProcessMsgProc(ProcessMessage);
 				String[] authNames = new String[] {"MIT-MAGIC-COOKIE-1"};
-				IcePoAuthProc authProc =
-					new IcePoAuthProc(ICE._IcePoMagicCookie1Proc);
+				ICE.IcePoAuthProcIncapsulator authProc =
+					new ICE.IcePoAuthProcIncapsulator(new IcePoAuthProc(ICE._IcePoMagicCookie1Proc));
+				// FIXME: this is overhead, it should be done if (_IceLastMajorOpcode < 1 ) only
+				// FIXME: This should be called, but this sevgvs. If someone will take care of segv - decomment and delete hack from this::ProcessResponces()
+/*				ICE.IceRegisterForProtocolSetup
+					("DUMMY", "DUMMY", "DUMMY",
+					 (Xlib.Xint)1, ref version,
+					 (Xlib.Xint)1, authNames, ref authProc, null);*/
 				majorOpcode = (int)ICE.IceRegisterForProtocolSetup
 					(protocolName, vendor, release,
 					 (Xlib.Xint)1, ref version,
@@ -126,10 +136,10 @@ public abstract unsafe class IceClient
 					throw new XInvalidOperationException();
 				}
 
-				// Open the ICE connection to the server.
+				// Open the ICE iceConn to the server.
 				byte[] errorBuffer = new byte [1024];
 				iceConn = ICE.IceOpenConnection
-					(serverAddress, IntPtr.Zero, XBool.False,
+					(serverAddress, (IntPtr)this.GetHashCode() /* This is hash code is not it? */, XBool.False,
 					 (Xlib.Xint)majorOpcode, (Xlib.Xint)1024, errorBuffer);
 				if(iceConn == null)
 				{
@@ -139,12 +149,12 @@ public abstract unsafe class IceClient
 				// We don't want shutdown negotiation.
 				ICE.IceSetShutdownNegotiation(iceConn, XBool.False);
 
-				// Perform protocol setup on the connection.
+				// Perform protocol setup on the iceConn.
 				IceProtocolSetupStatus status;
 				Xlib.Xint majorRet, minorRet;
 				IntPtr vendorRet, releaseRet;
 				status = (IceProtocolSetupStatus)ICE.IceProtocolSetup
-					(iceConn, (Xlib.Xint)majorOpcode, IntPtr.Zero,
+					(iceConn, (Xlib.Xint)majorOpcode, IntPtr.Zero, // We use OO language so we do not need to pass any pointers to callback; he already have its object
 					 XBool.False, out majorRet, out minorRet,
 					 out vendorRet, out releaseRet,
 					 (Xlib.Xint)1024, errorBuffer);
@@ -155,7 +165,7 @@ public abstract unsafe class IceClient
 					throw new XInvalidOperationException();
 				}
 
-				// Check the connection status.
+				// Check the iceConn status.
 				if(ICE.IceConnectionStatus(iceConn) !=
 						(Xlib.Xint)(IceConnectStatus.IceConnectAccepted))
 				{
@@ -165,9 +175,9 @@ public abstract unsafe class IceClient
 				}
 
 				// Initialize other state information.
-				this.hasDcopKey = false;
 				this.buffer = errorBuffer;
 				this.dpy = dpy;
+				this.messageTransaction = false;
 
 				// TODO: register IceConnectionNumber(iceConn) with
 				// the select loop.
@@ -188,6 +198,7 @@ public abstract unsafe class IceClient
 	/// <value>
 	/// <para>Returns the major opcode value.</para>
 	/// </value>
+	// FIXME: Should not it be protected or even private?
 	public int MajorOpcode
 			{
 				get
@@ -197,32 +208,7 @@ public abstract unsafe class IceClient
 			}
 
 	/// <summary>
-	/// <para>Determine if this ICE protocol uses DCOP key values.</para>
-	/// </summary>
-	///
-	/// <value>
-	/// <para>Returns <see langword="true"/> if this ICE protocol uses
-	/// DCOP key values.</para>
-	/// </value>
-	///
-	/// <remarks>
-	/// <para>DCOP keys are 32-bit values that are appended to ICE message
-	/// headers to associate requests and replies a single client.</para>
-	/// </remarks>
-	public bool HasDcopKey
-			{
-				get
-				{
-					return hasDcopKey;
-				}
-				set
-				{
-					hasDcopKey = value;
-				}
-			}
-
-	/// <summary>
-	/// <para>Close this ICE client connection.</para>
+	/// <para>Close this ICE client iceConn.</para>
 	/// </summary>
 	public virtual void Close()
 			{
@@ -244,112 +230,175 @@ public abstract unsafe class IceClient
 	/// <para>The minor opcode for the message.</para>
 	/// </param>
 	///
-	/// <param name="key">
-	/// <para>The DCOP key for the message, or -1 if not DCOP.</para>
+	/// <param name="reply">
+	/// <para>Object passed to ProcessResponces().</para>
 	/// </param>
-	///
-	/// <param name="buffer">
-	/// <para>A buffer containing the body of the message.</para>
-	/// </param>
-	///
-	/// <param name="length">
-	/// <para>The length of the data in the message buffer.  The data may
-	/// not occupy the full length of <paramref name="buffer"/>.</para>
-	/// </param>
-	protected abstract void ProcessMessage
-				(int opcode, int key, byte[] buffer, int length);
+	protected abstract bool ProcessMessage
+				(int opcode, Object reply);
+
+	protected abstract bool ProcessMessage
+				(int opcode);
 
 	// Callback from "libICE" to process a message.
 	private void ProcessMessage
 				(IntPtr iceConn, IntPtr clientData, Xlib.Xint opcode,
 				 Xlib.Xulong length, XBool swap,
-				 ref IceReplyWaitInfo replyWait, ref XBool replyReadySet)
+				 ref IceReplyWaitInfo replyWait, ref XBool replyReadyRet)
 			{
-				int key, len;
-
-				// Read the DCOP key, if necessary.
-				if(hasDcopKey)
+				bool haveReply;
+				if(messageTransaction)
 				{
-					key = ICE.IceReadKey(this.iceConn, buffer);
+					throw new XInvalidOperationException("Attempt to process message in the middle of sending another one"); // I always wondered, what will happen if we throw exception from callback? :)
+				}
+
+				this.messageTransaction = true;
+				this.messageLength = (int)length;
+
+				// Process the message.
+				try
+				{
+					replyWait = replyWait;
+					haveReply = true;
+					replyReadyRet = ProcessMessage((int)opcode, replyWait.reply) ? XBool.True:XBool.False; // We omit `swap' here, can one need it? Even theoretrically?..
+				}
+				catch (NullReferenceException nre)
+				{
+					haveReply = false;
+					replyReadyRet = ProcessMessage((int)opcode) ? XBool.True:XBool.False;
+				}
+
+				this.messageTransaction = false;
+			}
+
+	// Process incoming messages on the ICE iceConn.
+	protected void ProcessResponces(Object replyStruct)
+			{
+				XBool readyRet = XBool.False;
+				IceProcessMessagesStatus status;
+				waitInfo.sequence_of_request = (uint)ICE.IceLastSentSequenceNumber(iceConn);
+				waitInfo.major_opcode_of_request = 2; // FIXME: This is a terrible hack, see this::.ctor
+				waitInfo.reply = replyStruct;
+				do
+				{
+					status = (IceProcessMessagesStatus)ICE.IceProcessMessages(iceConn, ref waitInfo, ref readyRet);
+					if(status != IceProcessMessagesStatus.IceProcessMessagesSuccess)
+					{
+						Close();
+						throw new XInvalidOperationException("I/O Error or server gone away?");
+					}
+				}
+				while(readyRet == XBool.False)
+			}
+
+	protected void BeginMessage(int minor)
+		{
+			if(messageTransaction)
+			{
+				throw new XInvalidOperationException("Attempt to initiate new message in the middle of other");
+			}
+
+			this.minorOpcode = minor;
+			this.messageTransaction = true;
+			waitInfo.major_opcode_of_request = majorOpcode;
+			waitInfo.minor_opcode_of_request = minorOpcode;
+		}
+
+	// Form message header, which is ICE's own header + user generated header
+	// Caller is guilty for user header bytesex
+	protected void SendHeader(byte[] header, int length)
+			{
+				if(! messageTransaction)
+				{
+					throw new XInvalidOperationException("Can not send header until not started message");
+				}
+
+				int headerLength = header.Length;
+				int size = 8 + headerLength;
+
+				byte[] buffer = new byte[size];
+				buffer[0] = (byte)majorOpcode;
+				buffer[1] = (byte)minorOpcode;
+				buffer[2] = (byte)0;
+				buffer[3] = (byte)0;
+				if(ICE.IsLittleEndian)
+				{
+					buffer[4] = (byte)length;//(byte)size;
+					buffer[5] = (byte)(length >> 8);
+					buffer[6] = (byte)(length >> 16);
+					buffer[7] = (byte)(length >> 24);
 				}
 				else
 				{
-					key = -1;
+					buffer[4] = (byte)(length >> 24);
+					buffer[5] = (byte)(length >> 16);
+					buffer[6] = (byte)(length >> 8);
+					buffer[7] = (byte)length;
 				}
-
-				// Read the body of the message.
-				len = (int)length;
-				if(len < 0)
-				{
-					len = 0;
-				}
-				if(len > buffer.Length)
-				{
-					buffer = new byte [(len + 1023) & ~1023];
-				}
-				if(!ICE.IceReadData(this.iceConn, len, buffer))
-				{
-					len = 0;
-				}
-
-				// Process the message.
-				ProcessMessage((int)opcode, key, buffer, len);
+				Array.Copy(header, 0, buffer, 8, headerLength);
+				ICE.IceFlush(iceConn);
+				ICE._IceWrite(iceConn, (Xlib.Xulong)size, buffer);
 			}
 
-	// Process incoming messages on the ICE connection.
-	internal void ProcessIncoming()
+	protected void SendData(byte[] data)
 			{
-				if(iceConn != null)
+				if(! messageTransaction)
 				{
-					XBool replyReady;
-					if(ICE.IceProcessMessages
-							(iceConn, IntPtr.Zero, out replyReady)
-						 != (Xlib.Xint)(IceProcessMessagesStatus.
-						 					IceProcessMessagesSuccess))
-					{
-						Close();
-					}
+					throw new XInvalidOperationException("Can not send data until not started message");
+				}
+
+				ICE.IceFlush(iceConn);
+				ICE._IceWrite(iceConn, (Xlib.Xulong)data.Length, data); // If someone want to send part of buffer he should fsck with it himself
+			}
+
+	protected void FinishMessage()
+			{
+				if(! messageTransaction)
+				{
+					throw new XInvalidOperationException("Can not finish message until not started it");
+				}
+
+				ICE.IceFlush(iceConn);
+
+				this.messageTransaction = false;
+				if (ICE.IceConnectionStatus(iceConn) != (Xlib.Xint)IceConnectStatus.IceConnectAccepted)
+				{
+					throw new XInvalidOperationException("Connection not accepted");
 				}
 			}
 
-	/// <summary>
-	/// <para>Send a message to the ICE server.</para>
-	/// </summary>
-	///
-	/// <param name="opcode">
-	/// <para>The minor opcode for the message.</para>
-	/// </param>
-	///
-	/// <param name="key">
-	/// <para>The DCOP key for the message, or -1 if not DCOP.</para>
-	/// </param>
-	///
-	/// <param name="buffer">
-	/// <para>A buffer containing the body of the message.</para>
-	/// </param>
-	///
-	/// <param name="length">
-	/// <para>The length of the data in the message buffer.  The data may
-	/// not occupy the full length of <paramref name="buffer"/>.</para>
-	/// </param>
-	protected void SendMessage(int opcode, int key, byte[] buffer, int length)
+	protected byte[] Receive(int length) // Cheap and Angry
 			{
-				if(iceConn != null)
+				if(! messageTransaction)
 				{
-					if(length > 0)
-					{
-						if(length > buffer.Length)
-						{
-							length = buffer.Length;
-						}
-						ICE.IceSendHeader(iceConn, majorOpcode, opcode,
-										  length, key, buffer);
-						ICE.IceSendData(iceConn, length, buffer);
-						ICE.IceFlush(iceConn);
-					}
+					throw new XInvalidOperationException("Can not read data when not receiving message");
 				}
+			
+				// Client should solve its bytesex himself
+				byte[] outbuf = new byte[length];
+				ICE._IceRead(iceConn, (Xlib.Xulong)length, outbuf);
+				this.messageLength -= length;
+				return outbuf;
+			}
+
+	protected byte[] ReceiveHeader(int length) // Cheap and Angry
+			{
+				if(! messageTransaction)
+				{
+					throw new XInvalidOperationException("Can not read data when not receiving message");
+				}
+			
+				// Client should solve its bytesex himself
+				byte[] outbuf = new byte[length];
+				ICE._IceRead(iceConn, (Xlib.Xulong)length, outbuf);
+				return outbuf;
+			}
+
+	protected byte[] Receive() // Cheap and Angry
+			{
+				return Receive(messageLength);
 			}
 
 } // class IceClient
 
 } // namespace Xsharp.Ice
+

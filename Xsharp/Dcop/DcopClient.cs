@@ -24,6 +24,7 @@ namespace Xsharp.Dcop
 using System;
 using System.IO;
 using System.Diagnostics;
+using System.Text;
 using Xsharp.Ice;
 
 /// <summary>
@@ -34,6 +35,10 @@ public sealed class DcopClient : IceClient
 {
 	// Internal state.
 	private String appId;
+	private byte[] key;
+	private int replyId;
+
+	private static DcopClient mainClient = null;
 
 	/// <summary>
 	/// <para>Construct a DCOP client handler to process DCOP messages.</para>
@@ -44,7 +49,7 @@ public sealed class DcopClient : IceClient
 	/// processor.</para>
 	/// </param>
 	///
-	/// <param name="registerAs">
+	/// <param name="registerName">
 	/// <para>The name of the application to register with DCOP, or
 	/// <see langword="null"/> to register anonymously.</para>
 	/// </param>
@@ -54,20 +59,18 @@ public sealed class DcopClient : IceClient
 	/// the registered name.</para>
 	/// </param>
 	///
-	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <exception cref="T:Xsharp.Dcop.DcopException">
 	/// <para>Raised if the connection to the DCOP server could not be
 	/// established.</para>
 	/// </exception>
-	public DcopClient(Display dpy, String registerAs, bool addPID)
+
+	public DcopClient(Display dpy, String registerName, bool addPID)
 			: base(dpy, "DCOP", "KDE", "2.0", 2, 0, GetDcopServer(dpy))
 			{
-				// This type of ICE client uses DCOP key values.
-				HasDcopKey = true;
-
 				// Construct the full registration name for the DCOP client.
-				if(registerAs == null)
+				if(registerName == null)
 				{
-					registerAs = "anonymous";
+					registerName = "anonymous";
 				}
 			#if CONFIG_EXTENDED_DIAGNOSTICS
 				if(addPID)
@@ -75,23 +78,19 @@ public sealed class DcopClient : IceClient
 					int pid = Process.GetCurrentProcess().Id;
 					if(pid != -1 && pid != 0)
 					{
-						registerAs += "-" + pid.ToString();
+						registerName += "-" + pid.ToString();
 					}
 				}
 			#endif
 
+				replyId = 0;
+				key = new byte[4];
+
 				// Register the name with the DCOP server.
-				DcopReply reply;
-				reply = Call("DCOPServer", "", "registerAs(QCString)",
-				             registerAs);
-				if(reply != null)
-				{
-					appId = reply.ReadString();
-				}
-				else
-				{
-					appId = registerAs;
-				}
+				appId = registerAs(registerName);
+
+				mainClient = this;
+
 			}
 
 	/// <summary>
@@ -109,7 +108,7 @@ public sealed class DcopClient : IceClient
 	/// will be automatically added to the name.</para>
 	/// </param>
 	///
-	/// <exception cref="T:Xsharp.XInvalidOperationException">
+	/// <exception cref="T:Xsharp.DcopException">
 	/// <para>Raised if the connection to the DCOP server could not be
 	/// established.</para>
 	/// </exception>
@@ -142,7 +141,7 @@ public sealed class DcopClient : IceClient
 					String home = Environment.GetEnvironmentVariable("HOME");
 					if(home == null || home.Length == 0)
 					{
-						throw new XInvalidOperationException();
+						throw new DcopConnectionException("Home not found");
 					}
 
 					// Get the name of the display, without the screen number.
@@ -170,7 +169,7 @@ public sealed class DcopClient : IceClient
 				// Bail out if the authority file does not exist.
 				if(!File.Exists(value))
 				{
-					throw new XInvalidOperationException();
+					throw new DcopConnectionException("Authority file does not exist");
 				}
 
 				// Read the first line from the authority file.
@@ -185,12 +184,12 @@ public sealed class DcopClient : IceClient
 					}
 					else
 					{
-						throw new XInvalidOperationException();
+						throw new DcopConnectionException();
 					}
 				}
 				catch(Exception)
 				{
-					throw new XInvalidOperationException();
+					throw new DcopConnectionException("Failed to read from authority file");
 				}
 			}
 
@@ -209,65 +208,189 @@ public sealed class DcopClient : IceClient
 				}
 			}
 
-	/// <summary>
-	/// <para>Process a message that was received by this ICE client.</para>
-	/// </summary>
-	///
-	/// <param name="opcode">
-	/// <para>The minor opcode for the message.</para>
-	/// </param>
-	///
-	/// <param name="key">
-	/// <para>The DCOP key for the message, or -1 if not DCOP.</para>
-	/// </param>
-	///
-	/// <param name="buffer">
-	/// <para>A buffer containing the body of the message.</para>
-	/// </param>
-	///
-	/// <param name="length">
-	/// <para>The length of the data in the message buffer.  The data may
-	/// not occupy the full length of <paramref name="buffer"/>.</para>
-	/// </param>
-	protected override void ProcessMessage
-				(int opcode, int key, byte[] buffer, int length)
+	// Process reply message
+	protected override bool ProcessMessage
+				(int opcode, Object oReply)
 			{
-				// TODO
-			}
-
-	public DcopReply Call(String remoteApp, String remoteObject,
-					      String remoteFunction, params Object[] parameters)
-			{
+				byte[] data;
 				MemoryStream mem;
 				QDataStream ds;
-				byte[] data;
+				string type;
+				DcopReply reply = oReply as DcopReply;
+				key = ReceiveHeader(4); // Read 4-byte DCOP key
 
-				// Pack up the parameters.
-				mem = new MemoryStream();
+				data = Receive(); // Read all data
+				mem = new MemoryStream(data);
 				ds = new QDataStream(mem);
-				if(parameters != null)
+
+				switch((DcopMinorOpcode)opcode)
 				{
-					foreach(Object obj in parameters)
-					{
-						ds.Write(obj);
-					}
+					case DcopMinorOpcode.DcopReply:
+						reply.status = DcopReply.ReplyStatus.Ok;
+						reply.transactionId = 0;
+						reply.calledApp = ds.ReadString();
+						ds.ReadString(); // That's our app.
+						reply.replyType = ds.ReadString();
+						ds.ReadInt32(); // Reply length, throw it!
+						reply.replyObject = ds.ReadObject(reply.replyType);
+						return true;
+					case DcopMinorOpcode.DcopReplyFailed:
+						reply.status = DcopReply.ReplyStatus.Failed;
+						reply.transactionId = 0;
+						return true;
+					// Following are just temporally solution, but for now it's good.
+					case DcopMinorOpcode.DcopReplyWait:
+						reply.status = DcopReply.ReplyStatus.Pending;
+						reply.calledApp = ds.ReadString();
+						ds.ReadString();
+						reply.transactionId = ds.ReadInt32();
+						return true;
+					case DcopMinorOpcode.DcopReplyDelayed:
+						string ca = ds.ReadString();
+						ds.ReadString();
+						int ti = ds.ReadInt32();
+						if( ca != reply.calledApp || ti != reply.transactionId)
+						{
+							return false; // Got not that reply what was looking for
+						}
+						reply.status = DcopReply.ReplyStatus.Ok;
+						reply.transactionId = 0;
+						reply.replyType = ds.ReadString();
+						ds.ReadInt32(); // Reply length, throw it!
+						reply.replyObject = ds.ReadObject(reply.replyType);
+						return true;
+					default:
+						return false; // TODO
 				}
-				data = mem.ToArray();
+			}
 
-				// Pack up the full call details, including the parameters.
+	// Process new message, i.e. external call
+	protected override bool ProcessMessage
+				(int opcode)
+			{
+				// TODO
+				Console.WriteLine("Got opcode {0}", (DcopMinorOpcode)opcode);
+				return true;
+			}
+
+	/// <summary>
+	/// <para>Calls function via this DCOP connection.</para>
+	/// </summary>
+	///
+	/// <param name="remoteApp">
+	/// <para>Remote application that will be called.</para>
+	/// </param>
+	///
+	/// <param name="remoteObject">
+	/// <para>Remote object in application, whose method will be called.</para>
+	/// </param>
+	///
+	/// <param name="remoteFunction">
+	/// <para>Remote function to call. See DcopFunction class for syntax.</para>
+	/// </param>
+	///
+	/// <param name="parameters">
+	/// <para>Parameters to pass to function. Keep them in sync with function definition.</para>
+	/// </param>
+	///
+	/// <value>
+	/// <para>Object, received from remote app. Its type depends on remote app not function name.</para>
+	/// </value>
+	///
+	/// <exception cref="T:Xsharp.DcopException">
+	/// <para>Exception raised if there are problems either with connection or naming.</para>
+	/// </exception>
+	public Object Call(String remoteApp, String remoteObject,
+					      String remoteFunction, params Object[] parameters)
+			{
+				byte[] header;
+				DcopReply reply;
+				QDataStream ds;
+
+				DcopFunction fun = new DcopFunction(remoteFunction);
+				MemoryStream mem = new MemoryStream();
+				try
+				{
+					ds = QDataStream.Marshal(mem, fun, parameters);
+				}
+				catch (Exception e)
+				{
+					throw new DcopNamingException("Failed to marshal parameters");
+				}
+
+				byte[] data = mem.ToArray();
+												
 				mem = new MemoryStream();
 				ds = new QDataStream(mem);
+
 				ds.Write(appId);
 				ds.Write(remoteApp);
 				ds.Write(remoteObject);
-				ds.Write(remoteFunction);
+				ds.Write(fun.Function);
 				ds.Write(data.Length);
-				ds.WriteRaw(data, 0, data.Length);
-				data = mem.ToArray();
 
-				return null;
+				header = mem.ToArray();
+
+				// A *LOT* nicely, isn't?
+				try {
+					BeginMessage((int)DcopMinorOpcode.DcopCall);
+					SendHeader(key, header.Length + data.Length);
+					SendData(header);
+					SendData(data);
+					FinishMessage();
+
+					reply = new DcopReply(fun, replyId++);
+					ProcessResponces(reply);
+					// TODO: This is a hack. Do we need message queues?
+					while(reply.status == DcopReply.ReplyStatus.Pending)
+					{
+						ProcessResponces(reply);
+					}
+				}
+				catch (XException xe)
+				{
+					throw new DcopConnectionException("Failed to send message", xe);
+				}
+
+				if(reply.status == DcopReply.ReplyStatus.Failed)
+				{
+					throw new DcopNamingException("Dcop reply failed, likely that called function does not exists");
+				}
+
+				return reply.replyObject;
+			}
+
+	[DcopCall("QCString registerAs(QCString)")]
+	protected string registerAs(string name)
+	{
+		return (string)Call("DCOPServer", "", "QCString registerAs(QCString)", name);
+	}
+
+	/// <summary>
+	/// <para>Returns list of applications currently registered on DCOP server.</para>
+	/// </summary>
+	[DcopCall("QCStringList registeredApplications()")]
+	public string[] registeredApplications()
+	{
+		return (string[])Call("DCOPServer", "", "QCStringList registeredApplications()");
+	}
+
+	/// <summary>
+	/// <para>Returns or sets current main (i.e. default) client. DcopRefs depend on this.</para>
+	/// </summary>
+	public static DcopClient MainClient
+			{
+				get
+				{
+					return mainClient;
+				}
+				set
+				{
+					mainClient = value;
+				}
 			}
 
 }; // class DcopClient
 
 }; // namespace Xsharp.Dcop
+

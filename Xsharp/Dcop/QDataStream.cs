@@ -49,6 +49,79 @@ public class QDataStream
 				stream = new MemoryStream(buffer, offset, count, false);
 			}
 
+	// Factory
+	public static QDataStream Marshal(Stream stream, DcopFunction fun, Object[] parameters)
+	{
+		QDataStream s = new QDataStream(stream);
+		try
+		{
+			for(int i = 0; i < fun.Length; i++)
+			{
+				switch (fun[i])
+				{
+					case "bool": s.Write((bool)parameters[i]); break;
+					// FIXME: this assumes that sizeof(our int) == sizeof(dcop client int)
+					// ASSUME makes ASS of yoU and ME :(
+					case "int": s.Write((int)parameters[i]); break;
+
+					case "Q_UINT32": s.Write((uint)parameters[i]); break; // Much better here! 32 bit is already 32 bit.
+					case "QString": s.WriteUnicode(parameters[i] as string); break; // FIXME: is this correct?
+					case "QStringList": s.WriteUnicode(parameters[i] as string[]); break;
+					case "QCString": s.Write(parameters[i] as string); break; // FIXME: this again requires testing
+					case "QCStringList": s.Write(parameters[i] as string[]); break;
+//					case "QValueList<QCString>": s.WriteStringList(parameters[i] as string[]); break;
+//					case "QValueList<DCOPRef>": s.WriteDcopRefList(parameters[i] as DcopRef[]); break;
+				}
+			}
+		}
+		catch (InvalidCastException ice)
+		{
+			throw new DcopNamingException("Failed to cast parameters", ice);
+		}
+		return s;
+	}
+
+	public Object ReadObject(string objType)
+	{
+		try
+		{
+			// Simpe types
+			switch(objType)
+			{
+				case "void":
+				case "ASYNC": // FIXME: This is just BS, but for now...
+					return null;
+				case "int":
+					return (int)ReadInt32(); // FIXME: This is just plain wrong
+				case "Q_UINT32":
+					return (uint)ReadUInt32();
+				case "QString":
+					return (string)ReadUnicodeString();
+				case "QStringList":
+					return (string[])ReadUnicodeStringList();
+				case "QCString":
+					return (string)ReadString();
+				case "QCStringList":
+					return (string[])ReadStringList();
+				case "DCOPRef":
+					return (DcopRef)ReadDcopRef();
+				case "serviceResult":
+					return (ServiceResult)ReadServiceResult();
+			}
+			// QSTL
+			if(objType.StartsWith("QValueList<") && objType.EndsWith(">"))
+			{
+				string newType = objType.Substring(objType.IndexOf('<') + 1, objType.Length - (objType.IndexOf('<') + 2));
+				return (Object[])ReadValueList(newType);
+			}
+		}
+		catch(InvalidCastException ice)
+		{ // FIXME: is not it redundant?
+			throw new DcopNamingException("Failed to cast parameters", ice);
+		}
+		return null;
+	}
+
 	// Get the base stream that underlies this data stream.
 	public Stream BaseStream
 			{
@@ -126,7 +199,7 @@ public class QDataStream
 				stream.WriteByte((byte)(value >> 8));
 				stream.WriteByte((byte)value);
 			}
-	public void WriteUnicodeString(String value)
+	public void WriteUnicode(String value)
 			{
 				if(value == null)
 				{
@@ -134,7 +207,7 @@ public class QDataStream
 				}
 				else
 				{
-					Write(value.Length);
+					Write(value.Length * 2);
 					foreach(char ch in value)
 					{
 						stream.WriteByte((byte)(ch >> 8));
@@ -151,7 +224,37 @@ public class QDataStream
 				else
 				{
 					byte[] bytes = Encoding.UTF8.GetBytes(value);
-					Write(bytes, 0, bytes.Length, false);
+					Write(bytes, 0, bytes.Length, true);
+				}
+			}
+	public void Write(string[] value)
+			{
+				if(value == null)
+				{
+					Write((int)0);
+				}
+				else
+				{
+					Write((int)value.Length);
+					for(int i = 0; i < value.Length; i++)
+					{
+						Write(value[i]);
+					}
+				}
+			}
+	public void WriteUnicode(string[] value)
+			{
+				if(value == null)
+				{
+					Write((int)0);
+				}
+				else
+				{
+					Write((int)value.Length);
+					for(int i = 0; i < value.Length; i++)
+					{
+						WriteUnicode(value[i]);
+					}
 				}
 			}
 	public void Write(IQDataStreamable value)
@@ -340,14 +443,34 @@ public class QDataStream
 				{
 					return String.Empty;
 				}
-				byte[] buf = new byte [len];
-				stream.Read(buf, 0, len);
-				return Encoding.UTF8.GetString(buf);
+				byte[] buf = new byte [len - 1];
+				stream.Read(buf, 0, len - 1);
+				stream.ReadByte();
+				return Encoding.UTF8.GetString(buf); // FIXME: will this work for native charsets?
 			}
+	public string[] ReadStringList()
+			{
+				int len = ReadInt32();
+				if(len < 0)
+				{
+					return null;
+				}
+				string[] list = new string[len];
+				for (int i = 0; i < len; i++)
+				{
+					list[i] = ReadString();
+				}
+				return list;
+			}
+
 	public String ReadUnicodeString()
 			{
 				int len = ReadInt32();
 				if(len < 0)
+				{
+					return null;
+				}
+				else if(len == 0xffffffff)
 				{
 					return null;
 				}
@@ -359,12 +482,56 @@ public class QDataStream
 				int posn, b1, b2;
 				for(posn = 0; posn < len; ++posn)
 				{
+					// FIXME: Endianness
 					b1 = stream.ReadByte();
 					b2 = stream.ReadByte();
 					buf[posn] = (char)((b1 << 8) | b2);
 				}
+				stream.ReadByte();
 				return new String(buf);
 			}
+	public string[] ReadUnicodeStringList()
+			{
+				int len = ReadInt32();
+				if(len < 0)
+				{
+					return null;
+				}
+				string[] list = new string[len];
+				for (int i = 0; i < len; i++)
+				{
+					list[i] = ReadUnicodeString();
+				}
+				return list;
+			}
+	public DcopRef ReadDcopRef()
+			{
+				string app = ReadString();
+				string obj = ReadString();
+				string type = ReadString();
+				return new DcopRef(app, obj);
+			}
+
+	public ServiceResult ReadServiceResult()
+			{
+				ServiceResult val = new ServiceResult();
+				val.result = ReadInt32();
+				val.dcopName = ReadString();
+				val.errorMessage = ReadUnicodeString();
+				// Will not touch pid now
+				return val;
+			}
+	public Object[] ReadValueList(string type)
+			{
+				int length = ReadInt32();
+				Object[] res = new Object[length];
+				for(int i = 0; i < length; i++)
+				{
+					res[i] = ReadObject(type);
+				}
+				return res;
+			}
+
 	public void Read(IQDataStreamable obj)
 			{
 				if(obj != null)

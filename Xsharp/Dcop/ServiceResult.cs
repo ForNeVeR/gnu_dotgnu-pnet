@@ -1,7 +1,7 @@
 /*
- * IQDataStreamable.cs - Interface for Qt-streamable objects.
+ * ServiceResult.cs - matches the serviceResult struct returned by klauncher.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,16 @@ namespace Xsharp.Dcop
 {
 
 using System;
-using System.IO;
+using System.Runtime.InteropServices;
 
-public interface IQDataStreamable
+[StructLayout(LayoutKind.Sequential)]
+public struct ServiceResult 
 {
-	// Read the state of this object from a data stream.
-	Object Read(QDataStream stream);
+	public int result;
+	public string dcopName;
+	public string errorMessage;
+	public int pid; // *FIXME*
 
-	// Write this object's state to a data stream.
-	void Write(QDataStream stream);
+}; // struct ServiceResult
 
-}; // interface IQDataStreamable
-
-}; // namespace Xsharp.Dcop
+} // namespace Xsharp.Dcop

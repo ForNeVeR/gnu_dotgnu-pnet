@@ -1,3 +1,18 @@
+
+2004-04-23  Ilyak Kasnacheev <ilyak@online.ru>
+
+	* Xsharp/Dcop/DcopClient.cs, Xsharp/Dcop/DcopReply.cs, 
+	Xsharp/Dcop/IQDataStreamable.cs, Xsharp/Dcop/QDataStream.cs,
+	Xsharp/Dcop/DcopCall.cs, Xsharp/Dcop/DcopConnectionException.cs,
+	Xsharp/Dcop/DcopException.cs, Xsharp/Dcop/DcopFunction.cs,
+	Xsharp/Dcop/DcopMinorOpcode.cs, Xsharp/Dcop/DcopNamingException.cs,
+	Xsharp/Dcop/DcopRef.cs, Xsharp/Dcop/ServiceResult.cs
+	Xsharp/Ice/ICE.cs, Xsharp/Ice/IceClient.cs,
+	Xsharp/Ice/IceReplyWaitInfo.cs: Huge patch to enable DCOP Support 
+	for Xsharp , features deserialization of QData , changes to ICE
+	to fix a segfault. (patch #3087, some bits re-done by Gopal)
+
+
 2004-05-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlAttribute.cs: fix to Specified property.

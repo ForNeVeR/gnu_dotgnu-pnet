@@ -1,7 +1,7 @@
 /*
- * IQDataStreamable.cs - Interface for Qt-streamable objects.
+ * DcopMinorOpcode.cs - Opcodes. In C, these are #define's.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,18 @@ namespace Xsharp.Dcop
 {
 
 using System;
-using System.IO;
 
-public interface IQDataStreamable
+internal enum DcopMinorOpcode
 {
-	// Read the state of this object from a data stream.
-	Object Read(QDataStream stream);
 
-	// Write this object's state to a data stream.
-	void Write(QDataStream stream);
+	DcopSend = 1,
+	DcopCall = 2,
+	DcopReply = 3,
+	DcopReplyFailed = 4,
+	DcopReplyWait = 5,
+	DcopReplyDelayed = 6,
+	DcopFind = 7
 
-}; // interface IQDataStreamable
+}; // enum DcopMinorOpcode
 
-}; // namespace Xsharp.Dcop
+} // namespace Xsharp.Dcop

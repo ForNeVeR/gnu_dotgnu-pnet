@@ -746,7 +746,7 @@ class XmlDocument : XmlNode
 			}
 
 	// Used by the ReadNode method for recursively building a DOM subtree.
-	private XmlNode ReadNodeInternal(XmlReader r)
+	internal XmlNode ReadNodeInternal(XmlReader r)
 			{
 				switch(r.NodeType)
 				{

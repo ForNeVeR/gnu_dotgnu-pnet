@@ -139,7 +139,7 @@ class XmlElement : XmlLinkedNode
 					do
 					{
 						// read the next child node
-						XmlNode child = doc.ReadNode(r);
+						XmlNode child = doc.ReadNodeInternal(r);
 
 						// return if there are no more children
 						if(child == null) { return; }

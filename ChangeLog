@@ -1,3 +1,9 @@
+2004-06-28  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/XmlDocument.cs, System.Xml/XmlElement.cs: change
+	XmlDocument.ReadNodeInternal to internal access and use that
+	for XmlElement.InnerXml instead of ReadNode.
+
 2004-06-25  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlElement.cs: implement the InnerXml property's setter.

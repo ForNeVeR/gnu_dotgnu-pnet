@@ -1000,8 +1000,8 @@ static void checkGetSetValue(void *arg)
 	ILThread *thread = ILThreadSelf();
 
 	/* Check that the argument and thread object are 0xBADBEEF3 */
-	correctFlag1 = (arg == (void *)0xBADBEEF3);
-	correctFlag2 = (ILThreadGetObject(thread) == arg);
+	correctFlag1 = (arg == (void *)0xBADBEEF1);
+	correctFlag2 = (ILThreadGetObject(thread) == 0xBADBEEF3);
 
 	/* Change the object to 0xBADBEEF4 and re-test */
 	ILThreadSetObject(thread, (void *)0xBADBEEF4);
@@ -1025,8 +1025,8 @@ static void thread_other_object(void *arg)
 		ILUnitOutOfMemory();
 	}
 
-	/* Get the current object, which should be 0xBADBEEF1 */
-	correct1 = (ILThreadGetObject(thread) == (void *)0xBADBEEF1);
+	/* Get the current object, which should be 0 */
+	correct1 = (ILThreadGetObject(thread) == 0);
 
 	/* Change the object to 0xBADBEEF2 and check */
 	ILThreadSetObject(thread, (void *)0xBADBEEF2);
@@ -1062,7 +1062,7 @@ static void thread_other_object(void *arg)
 	}
 	if(!correctFlag2)
 	{
-		ILUnitFailed("thread object not the same as thread argument");
+		ILUnitFailed("thread object not set properly");
 	}
 	if(!correctFlag3)
 	{

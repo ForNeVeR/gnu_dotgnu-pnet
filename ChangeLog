@@ -1,5 +1,9 @@
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 
+	* tests/test_thread.c: Changed thread_other_object test
+	to account for new semantics for ILThread objects and
+	start args.
+	
 	* configure.in: Added checks for setjmp.h, setjmp,
 	longjmp, signal, sigaction, abort, exit and _exit.
 

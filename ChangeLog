@@ -8,6 +8,9 @@ caused type mismatches.
 * include/il_linker.h: declare the linker API's "ILLinkerAddLibraryDir",
 "ILLinkerAddSystemDirs", and "ILLinkerResolveLibrary".
 
+* ilalink/ilalink.c: improve the linker command-line syntax and pass
+extra library information down to the linker context.
+
 2001-10-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/lib_array.c: bug fix - set the array length in a newly-allocated

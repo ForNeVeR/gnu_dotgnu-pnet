@@ -18,20 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
-
-Options:
-
-	-ename			Entry point
-	-llibrary		Assembly to link against
-	-Ldir			Directory to search for assemblies within
-	-shared/-static	Adjust link style
-	-m32bit-only	Output a 32-bit only executable
-	-fresources=res	Add a resource file to the output
-	-c				CUI subsystem
-	-G				GUI subsystem
-*/
-
 #include <stdio.h>
 #include "il_system.h"
 #include "il_image.h"
@@ -50,62 +36,72 @@ extern	"C" {
 static ILCmdLineOption const options[] = {
 	{"-o", 'o', 1, 0, 0},
 	{"--output", 'o', 1,
-		"--output file      or -o file",
+		"--output file               or -o file",
 		"Specify the output file to use.  The default name is\n"
 		"based on the name of the first input file."},
 	{"-e", 'e', 0,
-		"--format exe       or -e",
+		"--format exe                or -e",
 		"Set the output format to executable."},
 	{"-d", 'd', 0,
-		"--format dll       or -d",
+		"--format dll                or -d",
 		"Set the output format to dynamic link library."},
 	{"-j", 'j', 0,
-		"--format obj       or -j",
+		"--format obj                or -j",
 		"Set the output format to object file."},
-	{"--format", 'f', 1, 0, 0},
+	{"--format", 'F', 1, 0, 0},
 	{"-l", 'l', 1, 0, 0},
 	{"--library", 'l', 1,
-		"--library name     or -l name",
+		"--library name              or -l name",
 		"Link against the library `name'."},
-	{"-a", 'a', 1, 0, 0},
-	{"--assembly", 'a', 1,
-		"--assembly name    or -a name",
+	{"-L", 'L', 1, 0, 0},
+	{"--library-dir", 'L', 1,
+		"--library-dir name          or -L name",
+		"Look for libraries in the directory `name'."},
+	{"-n", 'n', 0,
+		"--no-stdlib                 or -n",
+		"Do not link against the standard library."},
+	{"-S", 'S', 1,
+		"-fstdlib-name=name          or -S name",
+		"Specify the name of the standard library (default is `mscorlib')."},
+	{"--shared", '1', 0,
+		"--shared",
+		"Link the output as a shared image (default)."},
+	{"--static", '2', 0,
+		"--static",
+		"Link the output as a static image."},
+	{"-a", 'a', 1,
+		"-fassembly-name=name        or -a name",
 		"Specify the name of the assembly to embed in the output."},
-	{"-A", 'A', 1, 0, 0},
-	{"--assembly-version", 'A', 1,
-		"--assembly-version version  or -A version",
+	{"-A", 'A', 1,
+		"-fassembly-version=version  or -A version",
 		"Specify the assembly version to embed in the output."},
 	{"-E", 'E', 1, 0, 0},
 	{"--entry-point", 'E', 1,
-		"--entry-point name or -E name",
+		"--entry-point name          or -E name",
 		"Specify the name of the entry point for the program."},
-	{"-r", 'r', 1, 0, 0},
-	{"--res", 'r', 1,
-		"--res file         or -r file",
+	{"-r", 'r', 1,
+		"-fresources=file            or -r file",
 		"Link the specified resource file with the output."},
 	{"-R", 'R', 0, 0, 0},
 	{"--resources-only", 'R', 0,
-		"--resources-only   or -R",
+		"--resources-only            or -R",
 		"Create an output that only contains resources."},
-	{"-H", 'H', 1, 0, 0},
-	{"--hash-algorithm", 'H', 1,
-		"--hash-algorithm   or -H",
+	{"-H", 'H', 1,
+		"-fhash-algorithm=name       or -H name",
 		"Specify the algorithm to use to hash files (SHA1 or MD5)"},
-	{"-3", '3', 0, 0, 0},
-	{"-c", 'c', 0, 0, 0},
-	{"-G", 'G', 0, 0, 0},
-	{"-m", 'm', 0, 0, 0},
-	{"--32bit-only", '3', 0,
-		"--32bit-only       or -3",
+	{"-3", '3', 0,
+		"-m32bit-only                or -3",
 		"The resulting output file can only be used on 32-bit systems."},
-	{"--cui-subsystem", 'c', 0,
-		"--cui-subsystem    or -c",
+	{"-c", 'c', 0,
+		"-mcui-subsystem             or -c",
 		"Compile for the command-line subsystem (default)."},
-	{"--gui-subsystem", 'G', 0,
-		"--gui-subsystem    or -G",
+	{"-G", 'G', 0,
+		"-mgui-subsystem             or -G",
 		"Compile for the GUI subsystem."},
+	{"-f", 'f', 1, 0, 0},
+	{"-m", 'm', 1, 0, 0},
 	{"--version", 'v', 0,
-		"--version          or -v",
+		"--version                   or -v",
 		"Print the version of the program"},
 	{"--help", 'h', 0,
 		"--help",
@@ -142,14 +138,27 @@ int main(int argc, char *argv[])
 	int len;
 	char **libraries;
 	int numLibraries = 0;
+	char **libraryDirs;
+	int numLibraryDirs = 0;
+	char *stdLibrary = "mscorlib";
 	char **resources;
 	int numResources = 0;
+	int jvmMode = 0;
+	int useStdlib = 1;
+	int isStatic = 0;
 	int temp;
 	ILLinker *linker;
 
 	/* Allocate an array to hold the libraries to link against */
 	libraries = (char **)ILCalloc(argc, sizeof(char *));
 	if(!libraries)
+	{
+		outOfMemory();
+	}
+
+	/* Allocate an array to hold the directories to look for libraries in */
+	libraryDirs = (char **)ILCalloc(argc, sizeof(char *));
+	if(!libraryDirs)
 	{
 		outOfMemory();
 	}
@@ -192,7 +201,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-			case 'f':
+			case 'F':
 			{
 				if(!strcmp(param, "exe"))
 				{
@@ -217,6 +226,18 @@ int main(int argc, char *argv[])
 			case 'l':
 			{
 				libraries[numLibraries++] = param;
+			}
+			break;
+
+			case 'L':
+			{
+				libraryDirs[numLibraryDirs++] = param;
+			}
+			break;
+
+			case 'n':
+			{
+				useStdlib = 0;
 			}
 			break;
 
@@ -256,8 +277,27 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'S':
+			{
+				stdLibrary = param;
+			}
+			break;
+
+			case '1':
+			{
+				isStatic = 0;
+			}
+			break;
+
+			case '2':
+			{
+				isStatic = 1;
+			}
+			break;
+
 			case 'H':
 			{
+			parseHashAlg:
 				if(!ILStrICmp(param, "SHA1") || !ILStrICmp(param, "SHA-1"))
 				{
 					hashAlgorithm = IL_META_HASHALG_SHA1;
@@ -273,6 +313,71 @@ int main(int argc, char *argv[])
 							progname, param);
 					fprintf(stderr, "Valid values are `SHA1' and `MD5'.\n");
 					return 1;
+				}
+			}
+			break;
+
+			case 'f':
+			{
+				/* Parse a flag passed down from the compiler */
+				if(!strncmp(param, "stdlib-name=", 12))
+				{
+					stdLibrary = param + 12;
+				}
+				else if(!strncmp(param, "assembly-name=", 14))
+				{
+					assemblyName = param + 14;
+				}
+				else if(!strncmp(param, "assembly-version=", 17))
+				{
+					if(!parseVersion(assemblyVersion, param + 17))
+					{
+						fprintf(stderr,
+								"%s: `%s' is not a valid assembly version\n",
+								progname, param);
+						return 1;
+					}
+				}
+				else if(!strncmp(param, "resources=", 10))
+				{
+					resources[numResources++] = param + 10;
+				}
+				else if(!strncmp(param, "hash-algorithm=", 15))
+				{
+					param += 15;
+					goto parseHashAlg;
+				}
+				else
+				{
+					/* All other flags are ignored, because they may
+					   be for other parts of the compiler chain */
+				}
+			}
+			break;
+
+			case 'm':
+			{
+				/* Parse a machine flag passed down from the compiler */
+				if(!strcmp(param, "32bit-only"))
+				{
+					flags |= IL_WRITEFLAG_32BIT_ONLY;
+				}
+				else if(!strcmp(param, "cui-subsystem"))
+				{
+					flags &= ~IL_WRITEFLAG_SUBSYS_GUI;
+				}
+				else if(!strcmp(param, "gui-subsystem"))
+				{
+					flags |= IL_WRITEFLAG_SUBSYS_GUI;
+				}
+				else if(!strcmp(param, "jvm"))
+				{
+					jvmMode = 1;
+				}
+				else
+				{
+					/* All other flags are ignored, because they may
+					   be for other parts of the compiler chain */
 				}
 			}
 			break;
@@ -383,8 +488,26 @@ int main(int argc, char *argv[])
 		outOfMemory();
 	}
 
-	/* Add the libraries to the linker context */
-	for(temp = 0; temp < numLibraries; ++temp)
+	/* Add the library directories to the linker context */
+	for(temp = 0; temp < numLibraryDirs; ++temp)
+	{
+		errors |= !ILLinkerAddLibraryDir(linker, libraryDirs[temp]);
+	}
+	if(useStdlib)
+	{
+		if(!ILLinkerAddSystemDirs(linker))
+		{
+			errors = 1;
+		}
+	}
+
+	/* Add the libraries to the linker context, in reverse order
+	   so that resolved externals will be linked correctly */
+	if(useStdlib)
+	{
+		errors |= addLibrary(linker, stdLibrary);
+	}
+	for(temp = numLibraries - 1; temp >= 0; ++temp)
 	{
 		errors |= addLibrary(linker, libraries[temp]);
 	}
@@ -395,7 +518,7 @@ int main(int argc, char *argv[])
 		errors |= addResource(linker, resources[temp]);
 	}
 
-	/* Process the input files */
+	/* Process the input files that aren't libraries */
 	sawStdin = 0;
 	while(argc > 1)
 	{
@@ -527,14 +650,24 @@ static int addLibrary(ILLinker *linker, const char *filename)
 	int loadError;
 	ILImage *image;
 	int errors = 0;
+	char *newFilename;
+
+	/* Resolve the library name */
+	newFilename = ILLinkerResolveLibrary(linker, filename);
+	if(!newFilename)
+	{
+		fprintf(stderr, "%s: library not found\n", filename);
+		return 1;
+	}
 
 	/* Open the library file */
-	if((file = fopen(filename, "rb")) == NULL)
+	if((file = fopen(newFilename, "rb")) == NULL)
 	{
 		/* Try again in case libc does not understand "rb" */
-		if((file = fopen(filename, "r")) == NULL)
+		if((file = fopen(newFilename, "r")) == NULL)
 		{
-			perror(filename);
+			perror(newFilename);
+			ILFree(newFilename);
 			return 1;
 		}
 	}
@@ -545,25 +678,27 @@ static int addLibrary(ILLinker *linker, const char *filename)
 	{
 		outOfMemory();
 	}
-	loadError = ILImageLoad(file, filename, context, &image,
+	loadError = ILImageLoad(file, newFilename, context, &image,
 							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
 	if(loadError)
 	{
-		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
+		fprintf(stderr, "%s: %s\n", newFilename, ILImageLoadError(loadError));
 		ILContextDestroy(context);
 		fclose(file);
+		ILFree(newFilename);
 		return 1;
 	}
 	fclose(file);
 
 	/* Add the library image to the linker context */
-	if(!ILLinkerAddLibrary(linker, image, filename))
+	if(!ILLinkerAddLibrary(linker, image, newFilename))
 	{
 		errors = 1;
 	}
 
 	/* Clean up and exit */
 	ILContextDestroy(context);
+	ILFree(newFilename);
 	return errors;
 }
 

@@ -7,6 +7,10 @@
 	* ilalink/link_class.c: don't bail out with an error on the
 	"<Module>" class when linking two or more object files.
 
+	* cscc/c/c_builtin.tc, csupport/Makefile.am, csupport/NativeFloat.il:
+	unpack "native float" values from variable-argument lists using
+	the "OpenSystem.C.NativeFloat" value type.
+
 2002-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_misc.tc: implement array initializers in "new"

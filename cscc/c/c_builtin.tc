@@ -212,9 +212,12 @@ ILNode_CSemAnalysis(ILNode_VaArg)
 	/* Insert a cast from the natural argument type to the actual type,
 	   which will undo the normalization that we had to apply to pass
 	   the argument to the function in the first place */
-	naturalType = CFunctionNaturalType(info, node->type, 1);
-	CSemSetRValue(value, naturalType);
-	CCastNode(info, (ILNode *)node, parent, value, node->type);
+	if(ILTypeStripPrefixes(node->type) != ILType_Float)
+	{
+		naturalType = CFunctionNaturalType(info, node->type, 1);
+		CSemSetRValue(value, naturalType);
+		CCastNode(info, (ILNode *)node, parent, value, node->type);
+	}
 
 	/* The "va_arg" declaration is an r-value of the specified type */
 	CSemSetRValue(value, node->type);
@@ -245,10 +248,27 @@ ILNode_GenValue(ILNode_VaArg)
 			"[.library]System.ArgIterator::GetNextArg()");
 
 	/* Unpack the typed reference using the natural passing type */
-	naturalType = ILTypeStripPrefixes
-		(CFunctionNaturalType(info, node->type, 1));
-	machineType = ILTypeToMachineType(naturalType);
-	ILGenLoadManaged(info, machineType, naturalType);
+	if(ILTypeStripPrefixes(node->type) != ILType_Float)
+	{
+		naturalType = ILTypeStripPrefixes
+			(CFunctionNaturalType(info, node->type, 1));
+		ILGenClassToken
+			(info, IL_OP_REFANYVAL, ILTypeToClass(info, naturalType));
+		machineType = ILTypeToMachineType(naturalType);
+		ILGenLoadManaged(info, machineType, naturalType);
+	}
+	else
+	{
+		/* Use the "Unpack" method on the "OpenSystem.C.NativeFloat"
+		   type to unpack "native float" arguments */
+		if(info->asmOutput)
+		{
+			fputs("\trefanyval\tOpenSystem.C.NativeFloat\n", info->asmOutput);
+			fputs("\tcall\tinstance native float OpenSystem.C.NativeFloat::"
+						"Unpack()\n", info->asmOutput);
+		}
+		machineType = ILMachineType_NativeFloat;
+	}
 
 	/* Return the natural machine type to the caller, which will take
 	   care of casting it to the final type that was requested */

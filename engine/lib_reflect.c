@@ -2845,12 +2845,8 @@ ILObject *_IL_ClrMethod_Invoke(ILExecThread *thread,
 	}
 	else
 	{
-		/* Static method: we must not have a target object */
-		if(obj)
-		{
-			ThrowTargetException(thread);
-			return 0;
-		}
+		/* Static method: we don't need the target object */
+		obj = 0;
 	}
 
 	/* Invoke the method */

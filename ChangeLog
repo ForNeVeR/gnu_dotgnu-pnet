@@ -1,4 +1,9 @@
 
+2003-12-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_reflect.c (_IL_ClrMethod_Invoke): ignore the target
+	object when invoking a static method (fix suggested by Gopal V).
+
 2003-12-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_socket.c (IPToHostEntry): fix endian-ness issues

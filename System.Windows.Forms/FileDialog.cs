@@ -1624,6 +1624,20 @@ public abstract class FileDialog : CommonDialog
 					if(dir == null || dir.Length == 0)
 					{
 						dir = Directory.GetCurrentDirectory();
+						String filename = fileDialogParent.fileName;
+						if(filename != null && filename.Length > 0)
+						{
+							// Use the previous filename as a starting point.
+							if(IsDirectory(filename) ||
+							   filename == Path.GetPathRoot(filename))
+							{
+								dir = filename;
+							}
+							else
+							{
+								dir = Path.GetDirectoryName(filename);
+							}
+						}
 					}
 					else
 					{
@@ -1997,7 +2011,16 @@ public abstract class FileDialog : CommonDialog
 		// Change the filename in the text box to a new value.
 		public void ChangeFilename(String filename)
 				{
-					// TODO
+					if(IsDirectory(filename) ||
+					   filename == Path.GetPathRoot(filename))
+					{
+						ChangeDirectory(filename);
+					}
+					else
+					{
+						ChangeDirectory(Path.GetDirectoryName(filename));
+						name.Text = Path.GetFileName(filename);
+					}
 				}
 
 		// Determine if a filename is acceptable according to the dialog rules.

@@ -48,6 +48,10 @@
 	* System.Windows.Forms/FileDialog.cs: add the default extension
 	if the user did not specify one.
 
+	* System.Windows.Forms/FileDialog.cs: change the filename in response
+	to dynamic program updates; use the previous filename as the starting
+	point for a new dialog.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

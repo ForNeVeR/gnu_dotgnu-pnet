@@ -665,6 +665,9 @@ extern ILNativeInt _IL_PortMethods_Open(ILExecThread * _thread, ILInt32 type, IL
 extern void _IL_PortMethods_DrainOutBuffer(ILExecThread * _thread, ILNativeInt handle);
 extern ILInt32 _IL_PortMethods_Read(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
 extern void _IL_PortMethods_Write(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
+extern ILInt32 _IL_PortMethods_WaitForPinChange(ILExecThread * _thread, ILNativeInt handle);
+extern ILInt32 _IL_PortMethods_WaitForInput(ILExecThread * _thread, ILNativeInt handle);
+extern void _IL_PortMethods_Interrupt(ILExecThread * _thread, ILObject * thread);
 
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 host);
 extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);

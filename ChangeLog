@@ -10,6 +10,11 @@
 	* support/console.c: recognise metacharacter sequences like ESC-A
 	and convert them into ALT-A.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_serial.c,
+	include/Makefile.am, include/il_serial.h, support/Makefile.am,
+	support/serial.c: add the support routines for serial port I/O
+	and hook up the necessary internalcalls.
+
 2003-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_main.c: enable the "-fgenerics" option by default because

@@ -2873,6 +2873,9 @@ IL_METHOD_BEGIN(PortMethods_Methods)
 	IL_METHOD("DrainOutBuffer", "(j)V", _IL_PortMethods_DrainOutBuffer, marshal_vpj)
 	IL_METHOD("Read", "(j[Bii)i", _IL_PortMethods_Read, marshal_ipjpii)
 	IL_METHOD("Write", "(j[Bii)V", _IL_PortMethods_Write, marshal_vpjpii)
+	IL_METHOD("WaitForPinChange", "(j)i", _IL_PortMethods_WaitForPinChange, marshal_ipj)
+	IL_METHOD("WaitForInput", "(j)i", _IL_PortMethods_WaitForInput, marshal_ipj)
+	IL_METHOD("Interrupt", "(oSystem.Threading.Thread;)V", _IL_PortMethods_Interrupt, marshal_vpp)
 IL_METHOD_END
 
 #endif

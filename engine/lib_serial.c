@@ -20,6 +20,7 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#include "il_serial.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -67,8 +68,7 @@ typedef struct
 ILBool _IL_PortMethods_IsValid
 			(ILExecThread *_thread, ILInt32 type, ILInt32 portNumber)
 {
-	/* TODO */
-	return 0;
+	return (ILSerialIsValid(type, portNumber) != 0);
 }
 
 /*
@@ -77,8 +77,7 @@ ILBool _IL_PortMethods_IsValid
 ILBool _IL_PortMethods_IsAccessible
 			(ILExecThread *_thread, ILInt32 type, ILInt32 portNumber)
 {
-	/* TODO */
-	return 0;
+	return (ILSerialIsAccessible(type, portNumber) != 0);
 }
 
 /*
@@ -88,8 +87,8 @@ ILBool _IL_PortMethods_IsAccessible
 ILNativeInt _IL_PortMethods_Open(ILExecThread *_thread, ILInt32 type,
 								 ILInt32 portNumber, ILObject *parameters)
 {
-	/* TODO */
-	return 0;
+	return (ILNativeInt)ILSerialOpen
+		(type, portNumber, (ILSerialParameters *)parameters);
 }
 
 /*
@@ -97,7 +96,7 @@ ILNativeInt _IL_PortMethods_Open(ILExecThread *_thread, ILInt32 type,
  */
 void _IL_PortMethods_Close(ILExecThread *_thread, ILNativeInt handle)
 {
-	/* TODO */
+	ILSerialClose((ILSerial *)handle);
 }
 
 /*
@@ -106,7 +105,7 @@ void _IL_PortMethods_Close(ILExecThread *_thread, ILNativeInt handle)
 void _IL_PortMethods_Modify(ILExecThread *_thread, ILNativeInt handle,
 						    ILObject *parameters)
 {
-	/* TODO */
+	ILSerialModify((ILSerial *)handle, (ILSerialParameters *)parameters);
 }
 
 /*
@@ -115,8 +114,7 @@ void _IL_PortMethods_Modify(ILExecThread *_thread, ILNativeInt handle,
 ILInt32 _IL_PortMethods_GetBytesToRead(ILExecThread *_thread,
 									   ILNativeInt handle)
 {
-	/* TODO */
-	return 0;
+	return ILSerialGetBytesToRead((ILSerial *)handle);
 }
 
 /*
@@ -125,8 +123,7 @@ ILInt32 _IL_PortMethods_GetBytesToRead(ILExecThread *_thread,
 ILInt32 _IL_PortMethods_GetBytesToWrite(ILExecThread *_thread,
 										ILNativeInt handle)
 {
-	/* TODO */
-	return 0;
+	return ILSerialGetBytesToWrite((ILSerial *)handle);
 }
 
 /*
@@ -134,8 +131,7 @@ ILInt32 _IL_PortMethods_GetBytesToWrite(ILExecThread *_thread,
  */
 ILInt32 _IL_PortMethods_ReadPins(ILExecThread *_thread, ILNativeInt handle)
 {
-	/* TODO */
-	return 0;
+	return ILSerialReadPins((ILSerial *)handle);
 }
 
 /*
@@ -145,7 +141,7 @@ void _IL_PortMethods_WritePins(ILExecThread *_thread,
 							   ILNativeInt handle,
 							   ILInt32 mask, ILInt32 value)
 {
-	/* TODO */
+	ILSerialWritePins((ILSerial *)handle, mask, value);
 }
 
 /*
@@ -157,10 +153,8 @@ void _IL_PortMethods_GetRecommendedBufferSizes
 			(ILExecThread *_thread, ILInt32 *readBufferSize,
 			 ILInt32 *writeBufferSize, ILInt32 *receivedBytesThreshold)
 {
-	/* TODO */
-	*readBufferSize = 1024;
-	*writeBufferSize = 1024;
-	*receivedBytesThreshold = 768;
+	ILSerialGetRecommendedBufferSizes
+		(readBufferSize, writeBufferSize, receivedBytesThreshold);
 }
 
 /*
@@ -168,7 +162,7 @@ void _IL_PortMethods_GetRecommendedBufferSizes
  */
 void _IL_PortMethods_DiscardInBuffer(ILExecThread *_thread, ILNativeInt handle)
 {
-	/* TODO */
+	ILSerialDiscardInBuffer((ILSerial *)handle);
 }
 
 /*
@@ -176,7 +170,7 @@ void _IL_PortMethods_DiscardInBuffer(ILExecThread *_thread, ILNativeInt handle)
  */
 void _IL_PortMethods_DiscardOutBuffer(ILExecThread *_thread, ILNativeInt handle)
 {
-	/* TODO */
+	ILSerialDiscardOutBuffer((ILSerial *)handle);
 }
 
 /*
@@ -184,7 +178,7 @@ void _IL_PortMethods_DiscardOutBuffer(ILExecThread *_thread, ILNativeInt handle)
  */
 void _IL_PortMethods_DrainOutBuffer(ILExecThread * _thread, ILNativeInt handle)
 {
-	/* TODO */
+	ILSerialDrainOutBuffer((ILSerial *)handle);
 }
 
 /*
@@ -194,8 +188,9 @@ ILInt32 _IL_PortMethods_Read(ILExecThread *_thread, ILNativeInt handle,
 							 System_Array *buffer, ILInt32 offset,
 							 ILInt32 count)
 {
-	/* TODO */
-	return 0;
+	return ILSerialRead
+		((ILSerial *)handle,
+		 ((unsigned char *)(ArrayToBuffer(buffer))) + offset, count);
 }
 
 /*
@@ -206,7 +201,34 @@ void _IL_PortMethods_Write(ILExecThread *_thread, ILNativeInt handle,
 						   System_Array *buffer, ILInt32 offset,
 						   ILInt32 count)
 {
-	/* TODO */
+	ILSerialWrite
+		((ILSerial *)handle,
+		 ((const unsigned char *)(ArrayToBuffer(buffer))) + offset, count);
+}
+
+/*
+ * public static int WaitForPinChange(IntPtr handle);
+ */
+ILInt32 _IL_PortMethods_WaitForPinChange(ILExecThread *_thread,
+										 ILNativeInt handle)
+{
+	return ILSerialWaitForPinChange((ILSerial *)handle);
+}
+
+/*
+ * public static int WaitForInput(IntPtr handle);
+ */
+ILInt32 _IL_PortMethods_WaitForInput(ILExecThread *_thread, ILNativeInt handle)
+{
+	return ILSerialWaitForInput((ILSerial *)handle);
+}
+
+/*
+ * public static void Interrupt(Thread thread)
+ */
+void _IL_PortMethods_Interrupt(ILExecThread *_thread, ILObject *thread)
+{
+	ILSerialInterrupt(((System_Thread *)thread)->privateData);
 }
 
 #ifdef	__cplusplus

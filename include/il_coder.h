@@ -224,12 +224,6 @@ struct _tagILCoderClass
 				   ILEngineType type1, ILEngineType type2);
 
 	/*
-	 * Output a branch instruction that involves binary pointer comparisons.
-	 */
-	void (*branchPtr)(ILCoder *coder, int opcode, ILUInt32 dest,
-				      ILEngineType type1, ILEngineType type2);
-
-	/*
 	 * Output the start of a switch statement.
 	 */
 	void (*switchStart)(ILCoder *coder, ILUInt32 numEntries);
@@ -240,16 +234,12 @@ struct _tagILCoderClass
 	void (*switchEntry)(ILCoder *coder, ILUInt32 dest);
 
 	/*
-	 * Output a comparison instruction.
+	 * Output a comparison instruction.  If "invertTest" is
+	 * non-zero, then the result of the test should be inverted.
 	 */
 	void (*compare)(ILCoder *coder, int opcode,
-				    ILEngineType type1, ILEngineType type2);
-
-	/*
-	 * Output a comparison instruction that involves pointers.
-	 */
-	void (*comparePtr)(ILCoder *coder, int opcode,
-				       ILEngineType type1, ILEngineType type2);
+				    ILEngineType type1, ILEngineType type2,
+					int invertTest);
 
 	/*
 	 * Output a conversion instruction.
@@ -548,19 +538,13 @@ struct _tagILCoderClass
 #define	ILCoderBranch(coder,opcode,dest,type1,type2)	\
 			((*((coder)->classInfo->branch))((coder), (opcode), (dest), \
 											 (type1), (type2)))
-#define	ILCoderBranchPtr(coder,opcode,dest,type1,type2)	\
-			((*((coder)->classInfo->branchPtr))((coder), (opcode), (dest), \
-											    (type1), (type2)))
 #define	ILCoderSwitchStart(coder,numEntries) \
 			((*((coder)->classInfo->switchStart))((coder), (numEntries)))
 #define	ILCoderSwitchEntry(coder,dest) \
 			((*((coder)->classInfo->switchEntry))((coder), (dest)))
-#define	ILCoderCompare(coder,opcode,type1,type2)	\
+#define	ILCoderCompare(coder,opcode,type1,type2,invertTest)	\
 			((*((coder)->classInfo->compare))((coder), (opcode), \
-											  (type1), (type2)))
-#define	ILCoderComparePtr(coder,opcode,type1,type2)	\
-			((*((coder)->classInfo->comparePtr))((coder), (opcode), \
-											     (type1), (type2)))
+											  (type1), (type2), (invertTest)))
 #define	ILCoderConv(coder,opcode,type) \
 			((*((coder)->classInfo->conv))((coder), (opcode), (type)))
 #define	ILCoderToPointer(coder,type1,type2) \

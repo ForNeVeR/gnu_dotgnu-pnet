@@ -423,13 +423,7 @@ binaryEquality:
 	{
 		commonType = binaryEqualityMatrix[STK_BINARY_1][STK_BINARY_2];
 	}
-	if(commonType == ILEngineType_M || commonType == ILEngineType_T)
-	{
-		ILCoderBranchPtr(coder, opcode, dest, STK_BINARY_1, STK_BINARY_2);
-		stackSize -= 2;
-		VALIDATE_BRANCH_STACK(dest);
-	}
-	else if(commonType != ILEngineType_Invalid)
+	if(commonType != ILEngineType_Invalid)
 	{
 		ILCoderBranch(coder, opcode, dest, STK_BINARY_1, STK_BINARY_2);
 		stackSize -= 2;
@@ -475,13 +469,7 @@ binaryBranch:
 	{
 		commonType = binaryCompareMatrix[STK_BINARY_1][STK_BINARY_2];
 	}
-	if(commonType == ILEngineType_M || commonType == ILEngineType_T)
-	{
-		ILCoderBranchPtr(coder, opcode, dest, STK_BINARY_1, STK_BINARY_2);
-		stackSize -= 2;
-		VALIDATE_BRANCH_STACK(dest);
-	}
-	else if(commonType != ILEngineType_Invalid)
+	if(commonType != ILEngineType_Invalid)
 	{
 		ILCoderBranch(coder, opcode, dest, STK_BINARY_1, STK_BINARY_2);
 		stackSize -= 2;
@@ -586,15 +574,9 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CEQ:
 	{
 		commonType = binaryEqualityMatrix[STK_BINARY_1][STK_BINARY_2];
 	}
-	if(commonType == ILEngineType_M || commonType == ILEngineType_T)
+	if(commonType != ILEngineType_Invalid)
 	{
-		ILCoderComparePtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
-		STK_BINARY_1 = ILEngineType_I4;
-		--stackSize;
-	}
-	else if(commonType != ILEngineType_Invalid)
-	{
-		ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2);
+		ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2, 0);
 		STK_BINARY_1 = ILEngineType_I4;
 		--stackSize;
 	}
@@ -619,15 +601,32 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CLT_UN:
 	{
 		commonType = binaryCompareMatrix[STK_BINARY_1][STK_BINARY_2];
 	}
-	if(commonType == ILEngineType_M || commonType == ILEngineType_T)
+	if(commonType != ILEngineType_Invalid)
 	{
-		ILCoderComparePtr(coder, opcode, STK_BINARY_1, STK_BINARY_2);
-		STK_BINARY_1 = ILEngineType_I4;
-		--stackSize;
-	}
-	else if(commonType != ILEngineType_Invalid)
-	{
-		ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2);
+		/*
+		 * Note: there is an inconsistency when these comparison
+		 * codes are used with floating point values and are
+		 * followed by a "NOT" to invert the result of the test.
+		 * The test for "not a number" will be inconsistent with
+		 * the test performed by the branch opcodes.  e.g. "clt;not"
+		 * will produce a different behaviour to "bge".  This is a
+		 * deficiency in the IL instruction set itself.  We attempt
+		 * to correct this problem by looking for "ldc.i4.1;xor"
+		 * just after the comparison.  We pass this information to
+		 * the coder so that it can process "not a number" correctly.
+		 * This isn't foolproof, but should catch most cases.
+		 */
+		if(pc[2] == IL_OP_LDC_I4_1 && pc[3] == IL_OP_XOR &&
+		   !IsJumpTarget(jumpMask, offset + 2) &&
+		   !IsJumpTarget(jumpMask, offset + 3))
+		{
+			ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2, 1);
+			insnSize = 4;
+		}
+		else
+		{
+			ILCoderCompare(coder, opcode, STK_BINARY_1, STK_BINARY_2, 0);
+		}
 		STK_BINARY_1 = ILEngineType_I4;
 		--stackSize;
 	}

@@ -256,10 +256,6 @@ static void Coder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				   		 ILEngineType type1, ILEngineType type2)
 {
 }
-static void Coder_BranchPtr(ILCoder *coder, int opcode, ILUInt32 dest,
-				   		    ILEngineType type1, ILEngineType type2)
-{
-}
 static void Coder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 {
 }
@@ -267,11 +263,8 @@ static void Coder_SwitchEntry(ILCoder *coder, ILUInt32 dest)
 {
 }
 static void Coder_Compare(ILCoder *coder, int opcode,
-				   		  ILEngineType type1, ILEngineType type2)
-{
-}
-static void Coder_ComparePtr(ILCoder *coder, int opcode,
-				   		     ILEngineType type1, ILEngineType type2)
+				   		  ILEngineType type1, ILEngineType type2,
+						  int invertTest)
 {
 }
 static void Coder_Conv(ILCoder *coder, int opcode, ILEngineType type)
@@ -438,11 +431,9 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_PtrAccess,
 	Coder_PtrAccessManaged,
 	Coder_Branch,
-	Coder_BranchPtr,
 	Coder_SwitchStart,
 	Coder_SwitchEntry,
 	Coder_Compare,
-	Coder_ComparePtr,
 	Coder_Conv,
 	Coder_ToPointer,
 	Coder_PtrPrefix,

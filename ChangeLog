@@ -3,6 +3,11 @@
 
 * engine/verify.c: mark the stack as empty on entry to a try region.
 
+* include/il_coder.h, engine/ilverify.c, engine/verify_branch.c: remove
+the unnecessary "BranchPtr" and "ComparePtr" coder API's; recognise
+inverted comparisons so that the correct "not a number" behaviour for
+floating point opcodes can be implemented.
+
 2001-10-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_branch.c: verification for "switch" instructions; process

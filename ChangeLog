@@ -24,6 +24,9 @@ in "MatchClassNameInner"; bad length determination in "MatchClassNameInner".
 methods; bug in limit testing when scanning arguments; use the helper
 macro "ILMethod_IsConstructor" to recognise constructors in "SetupExtern".
 
+* engine/cvm_call.c: modify return logic for "extern" methods; argument
+order problems when using "ffi_call" when return values.
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

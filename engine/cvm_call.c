@@ -172,10 +172,13 @@ case COP_CALL_NATIVE:
 {
 	/* Call a native method */
 	tempNum = pc[1];
+	COPY_STATE_TO_THREAD();
 	ffi_call((ffi_cif *)(ReadPointer(pc + 2 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 2)),
-			 (stacktop - tempNum - 1)->ptrValue,
-			 (void **)(stacktop - tempNum));
+	         (void (*)())(ReadPointer(pc + 2)), stacktop[-1].ptrValue,
+			 (void **)(stacktop - tempNum - 1));
+	RESTORE_STATE_FROM_THREAD();
+	pcstart = thread->pcstart;
+	pc = pcstart + thread->pc;
 	MODIFY_PC_AND_STACK(2 + sizeof(void *) * 2, -(ILInt32)(tempNum + 1));
 }
 break;
@@ -183,10 +186,14 @@ break;
 case COP_CALL_NATIVE_VOID:
 {
 	/* Call a native method that has no return value */
+	COPY_STATE_TO_THREAD();
 	tempNum = pc[1];
 	ffi_call((ffi_cif *)(ReadPointer(pc + 2 + sizeof(void *))),
 	         (void (*)())(ReadPointer(pc + 2)), 0,
 			 (void **)(stacktop - tempNum));
+	RESTORE_STATE_FROM_THREAD();
+	pcstart = thread->pcstart;
+	pc = pcstart + thread->pc;
 	MODIFY_PC_AND_STACK(2 + sizeof(void *) * 2, -(ILInt32)tempNum);
 }
 break;
@@ -210,32 +217,30 @@ case COP_RETURN:
 popFrame:
 	callFrame = &(thread->frameStack[--(thread->numFrames)]);
 	methodToCall = callFrame->method;
-	if(callFrame->pc != IL_MAX_UINT32)
+	if(methodToCall)
 	{
-		/* We are returning to a CVM method that called us */
+		/* Returning to within the context of a CVM method */
 		if(methodToCall->userData1 == 0 ||
 		   method->userData2 != methodToCall->userData2)
 		{
 			/* We need to re-convert the method because it has been flushed */
 			/* TODO */
 		}
-
-		/* The CVM code is now valid, so return to the previous level */
 		pcstart = (unsigned char *)(methodToCall->userData1);
-		pc = pcstart + callFrame->pc;
-		frame = stackbottom + callFrame->frame;
-		method = methodToCall;
 	}
 	else
 	{
-		/* We are returning to an external method that called us.
-		   Copy the current state back to the thread object and
-		   then return from the interpreter loop */
-		thread->pcstart = 0;
-		thread->pc = 0;
-		thread->frame = callFrame->frame;
-		thread->stackTop = stacktop;
-		thread->method = methodToCall;
+		/* Returning to the top-most level of the thread */
+		pcstart = 0;
+	}
+	pc = pcstart + callFrame->pc;
+	frame = stackbottom + callFrame->frame;
+	method = methodToCall;
+
+	/* Should we return to an external method? */
+	if(callFrame->pc == IL_MAX_UINT32)
+	{
+		COPY_STATE_TO_THREAD();
 		return 0;
 	}
 }
@@ -308,11 +313,11 @@ case COP_CALL_NATIVE:
 	/* Wide version of "call_native" */
 	tempNum = IL_READ_UINT32(pc + 2);
 	ffi_call((ffi_cif *)(ReadPointer(pc + 6 + sizeof(void *))),
-	         (void (*)())(ReadPointer(pc + 6)),
-			 (stacktop - tempNum - 1)->ptrValue,
-			 (void **)(stacktop - tempNum));
+	         (void (*)())(ReadPointer(pc + 6)), stacktop[-1].ptrValue,
+			 (void **)(stacktop - tempNum - 1));
 	MODIFY_PC_AND_STACK(6 + sizeof(void *) * 2, -(ILInt32)(tempNum + 1));
 }
+break;
 
 case COP_CALL_NATIVE_VOID:
 {

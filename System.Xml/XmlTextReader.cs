@@ -627,20 +627,15 @@ public class XmlTextReader : XmlReader
 							SetName(name);
 							nodeType = XmlNodeType.EndElement;
 							value = String.Empty;
+							--depth;
 						}
 						else
 						{
-							// End element tag.
-							name = ReadIdentifier(-1);
-							SkipWhite();
-							Expect('>');
-							nodeType = XmlNodeType.EndElement;
-							SetName(name);
-							value = String.Empty;
-							attributes = null;
-							attributeIndex = -1;
-							isEmpty = false;
-							--depth;	
+							// This will handle any '/' in Text
+							// Nodes.
+							builder.Append("/");
+							ch = ReadChar();
+							AnalyzeChar(ch, false);
 						}
 						break;
 					case '?':

@@ -1,4 +1,10 @@
 
+2002-09-15  Gopal.V  <gopalv82@symonds.net>
+
+	* csharp/expr/Makefile.am, csharp/expr/invoke2.cs,
+	csharp/expr/invoke2.il, csharp/expr/invoke2.jl: test invoke
+	on valuetype constants
+
 2002-09-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* c/expr/Makefile.am, c/expr/funcptr1.3il, c/expr/funcptr1.c,

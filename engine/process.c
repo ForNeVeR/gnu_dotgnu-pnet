@@ -54,6 +54,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->runtimeTypeClass = 0;
 	process->outOfMemoryObject = 0;
 	ILGetCurrTime(&(process->startTime));
+	process->internHash = 0;
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
@@ -98,6 +99,10 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	{
 		ILContextDestroy(process->context);
 	}
+
+	/* Destroy the main part of the intern'ed hash table.
+	   The rest will be cleaned up by the garbage collector */
+	ILGCFreePersistent(process->internHash);
 
 	/* Free the process block itself */
 	ILGCFreePersistent(process);

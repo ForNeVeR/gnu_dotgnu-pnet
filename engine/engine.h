@@ -87,6 +87,9 @@ struct _tagILExecProcess
 	/* The time when the engine was started */
 	ILCurrTime		startTime;
 
+	/* Hash table that contains all intern'ed strings within the system */
+	void		   *internHash;
+
 };
 
 /*

@@ -644,13 +644,112 @@ static ILBool System_String_EqualRange(ILExecThread *thread,
 }
 
 /*
+ * Size of the intern'ed string hash table.
+ */
+#define	IL_INTERN_HASH_SIZE		512
+
+/*
+ * Structure of a intern'ed string hash table entry.
+ */
+typedef struct _tagILStrHash ILStrHash;
+struct _tagILStrHash
+{
+	System_String	*value;
+	ILStrHash		*next;
+
+};
+
+/*
+ * Look up the intern'ed string hash table for a value.
+ */
+static System_String *InternString(ILExecThread *thread,
+								   System_String *str, int add)
+{
+	ILStrHash *table;
+	ILStrHash *entry;
+	ILUInt32 hash;
+
+	/* Allocate a new hash table, if required */
+	table = (ILStrHash *)(thread->process->internHash);
+	if(!table)
+	{
+		table = (ILStrHash *)ILGCAllocPersistent(sizeof(ILStrHash) *
+												 IL_INTERN_HASH_SIZE);
+		if(!table)
+		{
+			if(add)
+			{
+				ILExecThreadThrowOutOfMemory(thread);
+			}
+			return 0;
+		}
+		thread->process->internHash = (void *)table;
+	}
+
+	/* Compute the hash of the string */
+	hash = ((ILUInt32)(System_String_GetHashCode(thread, str)))
+				% IL_INTERN_HASH_SIZE;
+
+	/* Look for an existing string with the same value */
+	entry = &(table[hash]);
+	while(entry != 0 && entry->value != 0)
+	{
+		if(entry->value->length == str->length &&
+		   (entry->value->length == 0 ||
+		    !ILMemCmp(StringToBuffer(entry->value), StringToBuffer(str),
+					  entry->value->length)))
+		{
+			if(add || entry->value == str)
+			{
+				return entry->value;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		entry = entry->next;
+	}
+	if(!add)
+	{
+		return 0;
+	}
+
+	/* Add a new entry to the intern'ed string hash table */
+	entry = &(table[hash]);
+	if(entry->value == 0)
+	{
+		entry->value = str;
+	}
+	else
+	{
+		entry = (ILStrHash *)ILGCAlloc(sizeof(ILStrHash));
+		if(!entry)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		entry->value = str;
+		entry->next = table[hash].next;
+		table[hash].next = entry;
+	}
+	return str;
+}
+
+/*
  * public static String Intern(String str);
  */
 static System_String *System_String_Intern(ILExecThread *thread,
 							 	    	   System_String *str)
 {
-	/* TODO */
-	return str;
+	if(str)
+	{
+		return InternString(thread, str, 1);
+	}
+	else
+	{
+		return str;
+	}
 }
 
 /*
@@ -659,8 +758,14 @@ static System_String *System_String_Intern(ILExecThread *thread,
 static System_String *System_String_IsInterned(ILExecThread *thread,
 							 	    	       System_String *str)
 {
-	/* TODO */
-	return str;
+	if(str)
+	{
+		return InternString(thread, str, 0);
+	}
+	else
+	{
+		return str;
+	}
 }
 
 /*
@@ -1095,6 +1200,10 @@ int ILStringEquals(ILExecThread *thread, ILString *strA, ILString *strB)
 	{
 		return 0;
 	}
+	else if(strA == strB)
+	{
+		return 1;
+	}
 
 	/* Scan the buffers looking for differences */
 	lenA = ((System_String *)strA)->length;
@@ -1179,7 +1288,45 @@ ILString *ILObjectToString(ILExecThread *thread, ILObject *object)
 
 ILString *ILStringIntern(ILExecThread *thread, ILString *str)
 {
-	return (ILString *)System_String_Intern(thread, (System_String *)str);
+	if(str)
+	{
+		return (ILString *)InternString(thread, (System_String *)str, 1);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Determine if the contents of a string buffer is the
+ * same as a literal string value from an image.
+ */
+static int SameAsImage(ILUInt16 *buf, const char *str, ILInt32 len)
+{
+#if defined(__i386) || defined(__i386__)
+	/* We can take a short-cut on x86 platforms which already
+	   have the string in the correct format */
+	if(len > 0)
+	{
+		return !ILMemCmp(buf, str, len * sizeof(ILUInt16));
+	}
+	else
+	{
+		return 1;
+	}
+#else
+	while(len > 0)
+	{
+		if(*buf++ != IL_READ_UINT16(str))
+		{
+			return 0;
+		}
+		str += 2;
+		--len;
+	}
+	return 1;
+#endif
 }
 
 ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
@@ -1187,7 +1334,12 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
 {
 	const char *str;
 	unsigned long len;
+	unsigned long posn;
 	System_String *newStr;
+	ILStrHash *table;
+	ILStrHash *entry;
+	ILInt32 hashTemp;
+	ILUInt32 hash;
 
 	/* Get the string from the image's "#US" blob */
 	str = ILImageGetUserString(image, token & ~IL_META_TOKEN_MASK, &len);
@@ -1197,7 +1349,42 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
 		len = 0;
 	}
 
-	/* TODO: look up the intern'ed string hash table */
+	/* Allocate a new hash table, if required */
+	table = (ILStrHash *)(thread->process->internHash);
+	if(!table)
+	{
+		table = (ILStrHash *)ILGCAllocPersistent(sizeof(ILStrHash) *
+												 IL_INTERN_HASH_SIZE);
+		if(!table)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		thread->process->internHash = (void *)table;
+	}
+
+	/* Compute the hash of the string */
+	hashTemp = 0;
+	for(posn = 0; posn < len; ++posn)
+	{
+		hashTemp = (hashTemp << 5) + hashTemp +
+				   (ILInt32)(IL_READ_UINT16(str + posn * 2));
+	}
+	hash = ((ILUInt32)hashTemp) % IL_INTERN_HASH_SIZE;
+
+	/* Look for an existing string with the same value */
+	entry = &(table[hash]);
+	while(entry != 0 && entry->value != 0)
+	{
+		if(entry->value->length == (ILInt32)len &&
+		   (entry->value->length == 0 ||
+		    SameAsImage(StringToBuffer(entry->value), str,
+					    entry->value->length)))
+		{
+			return (ILString *)(entry->value);
+		}
+		entry = entry->next;
+	}
 
 	/* Allocate space for the string */
 	newStr = AllocString(thread, (ILInt32)len);
@@ -1209,7 +1396,7 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
 	/* Copy the image data into the string */
 #if defined(__i386) || defined(__i386__)
 	/* We can take a short-cut on x86 platforms which already
-	   has the string in the correct format */
+	   have the string in the correct format */
 	if(len > 0)
 	{
 		ILMemCpy(StringToBuffer(newStr), str, len * sizeof(ILUInt16));
@@ -1225,6 +1412,25 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
 		}
 	}
 #endif
+
+	/* Add a new entry to the intern'ed string hash table */
+	entry = &(table[hash]);
+	if(entry->value == 0)
+	{
+		entry->value = newStr;
+	}
+	else
+	{
+		entry = (ILStrHash *)ILGCAlloc(sizeof(ILStrHash));
+		if(!entry)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		entry->value = newStr;
+		entry->next = table[hash].next;
+		table[hash].next = entry;
+	}
 
 	/* Return the final string to the caller */
 	return (ILString *)newStr;

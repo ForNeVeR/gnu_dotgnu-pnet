@@ -15,8 +15,7 @@ namespace ThreadsDemo
 	/// UI view of an abstract developer.
 	/// </summary>
 	public class DeveloperView : System.Windows.Forms.UserControl
-	{
-		private System.ComponentModel.IContainer components;
+	{		
 		private System.Windows.Forms.Label labelState;
 		private System.Windows.Forms.NumericUpDown updnCodingDelay;
 		private System.Windows.Forms.Label labelCodingDelay;
@@ -75,13 +74,6 @@ namespace ThreadsDemo
 		/// </summary>
 		protected override void Dispose( bool disposing )
 		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
 			base.Dispose( disposing );
 		}
 

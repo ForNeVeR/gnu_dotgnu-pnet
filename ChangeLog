@@ -1,3 +1,10 @@
+
+2003-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Console.cs: use different lock objects for
+	console input and console output so that it is possible to
+	wait for a key in one thread while outputting text in another.
+
 2003-11-03  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingWindow.cs: missed invalidate fix.

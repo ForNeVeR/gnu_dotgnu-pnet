@@ -557,6 +557,7 @@ public sealed class Console
 	private static String title = String.Empty;
 	private static bool specialMode = false;
 	private static bool treatControlCAsInput = false;
+	private static Object readLock = new Object();
 
 	// Enable the "normal" input mode on the console.
 	private static void NormalMode()
@@ -637,6 +638,9 @@ public sealed class Console
 				lock(typeof(Console))
 				{
 					SpecialMode();
+				}
+				lock(readLock)
+				{
 					char ch;
 					int key, modifiers;
 					for(;;)
@@ -746,6 +750,9 @@ public sealed class Console
 					lock(typeof(Console))
 					{
 						SpecialMode();
+					}
+					lock(readLock)
+					{
 						return Stdio.KeyAvailable();
 					}
 				}

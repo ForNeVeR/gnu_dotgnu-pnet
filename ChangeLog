@@ -9,6 +9,9 @@
 
 	* System/Uri.cs: Compile fixes.
 
+	* runtime/System/IO/StringWriter.cs: Changed exceptions to display
+	IO_StreamClosed.
+
 2002-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Format.txt, runtime/System/Boolean.cs,

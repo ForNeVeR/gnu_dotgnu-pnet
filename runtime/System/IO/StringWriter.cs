@@ -102,19 +102,19 @@ public class StringWriter : TextWriter, IDisposable
 
 	public override void Write(String value)
 	{
-		if (this.streamclosed) throw new ObjectDisposedException("this");
+		if (this.streamclosed) throw new ObjectDisposedException(null, _("IO_StreamClosed"));
 		this.buffer.Append(value);
 	}
 
 	public override void Write(char value)
 	{
-		if (this.streamclosed) throw new ObjectDisposedException("this");
+		if (this.streamclosed) throw new ObjectDisposedException(null, _("IO_StreamClosed"));
 		this.buffer.Append(value);
 	}
 
 	public override void Write(char[] buffer, int index, int count)
 	{
-		if (this.streamclosed) throw new ObjectDisposedException("this");
+		if (this.streamclosed) throw new ObjectDisposedException(null, _("IO_StreamClosed"));
 
 		// StringBuilder puts another requirement on this one, but not us!
 		if (buffer == null) throw new ArgumentNullException("buffer");

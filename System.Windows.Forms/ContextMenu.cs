@@ -188,7 +188,10 @@ public class ContextMenu : Menu
 	protected internal override void ItemSelectTimerTick(object sender, EventArgs e)
 	{
 		base.ItemSelectTimerTick (sender, e);
-		ItemSelected(currentMouseItem);
+		if(currentMouseItem != -1)
+		{
+			ItemSelected(currentMouseItem);
+		}
 	}
 
 	private void OnMouseMove(Object s, MouseEventArgs e)

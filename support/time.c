@@ -188,7 +188,7 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 		timeValue->nsecs = 
 			timeValue->nsecs - bootTime.nsecs + 1000000000;
 		timeValue->secs =
-			timeValue->secs - bootTime.secs;
+			timeValue->secs - bootTime.secs - 1;
 	}
 	else
 	{

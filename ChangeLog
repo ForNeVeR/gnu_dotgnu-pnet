@@ -1,7 +1,11 @@
+
+2004-09-13  Gopal V  <gopalv82@yahoo.com>
+
+	* support/time.c: Fix boot time calculations when the current nanoseconds
+	fraction is less than boot time fraction.
+
 2004-09-11  Thong Nguyen  <tum@veridicus.com>
 
-	* Never forget.
-	
 	* engine/thread.c: Updated ILExecThreadCurrent's call to
 	System.Threading.Thread's constructor with the ILThread
 	pointer as an argument.

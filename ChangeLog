@@ -8,6 +8,10 @@
 	and "GenValue" for scopes and compound statements, to support
 	statement expressions in C (bug #4809).
 
+	* codegen/cg_stmt.tc: fix the code generation for C switch
+	statements to stop values being left on the stack during
+	fall-through situations (bug #4822).
+
 2003-08-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c_main.c, cscc/c/c_grammar.y, cscc/c/c_scanner.l:

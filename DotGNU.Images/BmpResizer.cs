@@ -294,25 +294,25 @@ namespace DotGNU.Images
 						// 16 bpp 555 Format.
 						else if (oldFrame.pixelFormat==PixelFormat.Format16bppRgb555)
 						{
-							pixelByte1 = data[currentPixel++];
 							pixelByte2 = data[currentPixel++];
+							pixelByte1 = data[currentPixel++];
 							pixelByte3 = (byte)(pixelByte2 & 0x1F);
 							pixelByte2 = (byte)(pixelByte1 << 3 & 0x18  | pixelByte2 >> 5 & 0x07);
-							pixelByte1 = (byte)(pixelByte1 >> 2 & 0xE0);
+							pixelByte1 = (byte)(pixelByte1 >> 2 & 0x1f);
 							pixelByte1 = (byte)((int)pixelByte1 * 255 / 31);
 							pixelByte2 = (byte)((int)pixelByte2 * 255 / 31);
 							pixelByte3 = (byte)((int)pixelByte3 * 255 / 31);
 						}
 						// 16 bpp 565 Format.
-						else if (oldFrame.pixelFormat==PixelFormat.Format16bppRgb555)
+						else if (oldFrame.pixelFormat==PixelFormat.Format16bppRgb565)
 						{
-							pixelByte1 = data[currentPixel++];
 							pixelByte2 = data[currentPixel++];
+							pixelByte1 = data[currentPixel++];
 							pixelByte3 = (byte)(pixelByte2 & 0x1F);
 							pixelByte2 = (byte)(pixelByte1 << 3 & 0x38  | pixelByte2 >> 5 & 0x07);
-							pixelByte1 = (byte)(pixelByte1 >> 3 & 0xE0);
+							pixelByte1 = (byte)(pixelByte1 >> 3);
 							pixelByte1 = (byte)((int)pixelByte1 * 255 / 31);
-							pixelByte2 = (byte)((int)pixelByte2 * 255 / 31);
+							pixelByte2 = (byte)((int)pixelByte2 * 255 / 63);
 							pixelByte3 = (byte)((int)pixelByte3 * 255 / 31);
 						}
 						// 8 bpp Format.

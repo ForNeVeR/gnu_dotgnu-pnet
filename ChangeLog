@@ -59,6 +59,8 @@
 	* System.Windows.Forms/Control.cs, samples/forms/FormsTest.cs:
 	change Update to update children. small fix to images test.
 
+	* DotGNU.Images/BmpResizer.cs: fix shrinking for 555 and 565 formats.
+
 2004-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing.Xsharp/DrawingWindowBuffer.cs,

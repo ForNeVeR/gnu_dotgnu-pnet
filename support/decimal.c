@@ -228,7 +228,7 @@ static int MulByPowOfTen(ILUInt32 *value, int power, ILUInt32 digit)
 		{
 			product += ((ILUInt64)(value[posn])) * multiplier;
 			prev = temp[posn];
-			if((temp[posn] + (ILUInt32)product) < prev)
+			if((temp[posn] += (ILUInt32)product) < prev)
 			{
 				product = ((product >> 32) + 1);
 			}
@@ -1408,6 +1408,7 @@ int ILDecimalFromFloat(ILDecimal *value, ILFloat floatValue)
 
 int ILDecimalFromDouble(ILDecimal *value, ILDouble floatValue)
 {
+	/* TODO */
 	return 0;
 }
 
@@ -1423,8 +1424,9 @@ int ILDecimalToInt64(const ILDecimal *value, ILInt64 *intValue)
 		{
 			return 0;
 		}
-		return -((ILInt64)((((ILUInt64)(value->middle)) << 32) |
-			                ((ILUInt64)(value->low))));
+		*intValue = -((ILInt64)((((ILUInt64)(value->middle)) << 32) |
+			                     ((ILUInt64)(value->low))));
+		return 1;
 	}
 	else
 	{
@@ -1432,8 +1434,9 @@ int ILDecimalToInt64(const ILDecimal *value, ILInt64 *intValue)
 		{
 			return 0;
 		}
-		return ((ILInt64)((((ILUInt64)(value->middle)) << 32) |
-			               ((ILUInt64)(value->low))));
+		*intValue = ((ILInt64)((((ILUInt64)(value->middle)) << 32) |
+			                    ((ILUInt64)(value->low))));
+		return 1;
 	}
 }
 
@@ -1447,8 +1450,8 @@ int ILDecimalToUInt64(const ILDecimal *value, ILUInt64 *intValue)
 	{
 		return 0;
 	}
-	return (((ILUInt64)(value->middle)) << 32) |
-               ((ILUInt64)(value->low));
+	*intValue = (((ILUInt64)(value->middle)) << 32) | ((ILUInt64)(value->low));
+	return 1;
 }
 
 ILFloat ILDecimalToFloat(const ILDecimal *value)

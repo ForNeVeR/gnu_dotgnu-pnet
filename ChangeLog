@@ -26,7 +26,7 @@ constant coercions
 
 * cscc/cs_oper.tc: better error reporting for incompatible types in
 assignment, coercions, and casts; use ILCanCoerceNode instead of ILCanCoerce
-so that constant coercions work;
+so that constant coercions work.
 
 * cscc/cs_grammar.y: fix a bug in the use of the MakeSystemType macro;
 negate decimal constants in-place.
@@ -39,6 +39,9 @@ support better error messages related to type conversions.
 
 * image/item.c (_ILProgramItemLinkedBackTo): fix a bug that causes the
 function to always miss the back-link on an item.
+
+* support/decimal.c: bug fixes in MulByPowOfTen, ILDecimalToInt64, and
+ILDecimalToUInt64.
 
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 

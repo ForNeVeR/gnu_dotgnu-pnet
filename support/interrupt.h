@@ -72,7 +72,7 @@ struct _tagILInterruptContext
 			longjmp(buf, arg)
 	#endif
 
-	#ifdef IL_WIN32_PLATFORM
+	#if defined(WIN32) && !(defined(__CYGWIN32__) || defined(__CYGWIN))
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
 		#define IL_INTERRUPT_WIN32 1

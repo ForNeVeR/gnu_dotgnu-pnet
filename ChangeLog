@@ -1,3 +1,14 @@
+2004-06-17  Thong Nguyen  <tum@veridicus.com>
+
+	* libgc/win32_threads.c, libgc/include/gc.h: Removed
+	WINAPI/stdcall from GC_CreateThread.
+	
+	* support/interrupt.h: Disabled support for interrupt
+	based illegal memory access handling on CYGWIN builds because
+	SetUnhandledExceptionFilter doesn't work on CYGWIN.
+	Could possibly use sigaction for CYGWIN builds once its fully
+	supported (end of 2004 aparently).
+	
 2004-06-16  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/cvm_ptr.c: Removed null check elimination in COP_CKNULL.

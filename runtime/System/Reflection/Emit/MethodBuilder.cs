@@ -29,6 +29,7 @@ using System.Security;
 using System.Reflection;
 using System.Globalization;
 using System.Security.Permissions;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
 public sealed class MethodBuilder : MethodInfo, IClrProgramItem
@@ -42,6 +43,7 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 	private ILGenerator ilGenerator;
 	private Type returnType;
 	private ParameterBuilder returnBuilder;
+	private SignatureHelper helper;
 	internal int numParams;
 
 	// Constructor.
@@ -76,11 +78,16 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 				this.numParams = (parameterTypes != null
 									? parameterTypes.Length : 0);
 
+				// Create the method signature.
+				helper = SignatureHelper.GetMethodSigHelper
+						(type.module, callingConvention,
+						 (CallingConvention)0,
+						 returnType, parameterTypes);
+
 				// Create the method.
 				this.privateData = ClrMethodCreate
 					(((IClrProgramItem)type).ClrHandle, name,
-					 attributes, callingConvention,
-					 returnType, parameterTypes);
+					 attributes, helper.sig);
 
 				// Add the method to the type for post-processing.
 				type.AddMethod(this);
@@ -443,13 +450,11 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 			}
 
 	// Get the string form of the signature of this method.
-	[TODO]
 	public override String Signature 
 			{
 				get
 				{
-					// TODO
-					return String.Empty;
+					return helper.ToString();
 				}
 			}
 
@@ -482,14 +487,17 @@ public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static IntPtr ClrMethodCreate
 			(IntPtr classInfo, String name,
-			 MethodAttributes attributes,
-			 CallingConventions callingConvention,
-			 Type returnType, Type[] parameterTypes);
+			 MethodAttributes attributes, IntPtr signature);
 
 	// Set the implementation attributes for a method item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static void ClrMethodSetImplAttrs
 			(IntPtr item, MethodImplAttributes attributes);
+
+	// Create a member reference for a vararg method call.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int ClrMethodCreateVarArgRef
+			(IntPtr module, int methodToken, IntPtr signature);
 
 }; // class MethodBuilder
 

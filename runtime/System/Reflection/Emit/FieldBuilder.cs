@@ -41,8 +41,9 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 			{
 				this.type = type;
 				this.privateData = ClrFieldCreate
-					(((IClrProgramItem)type).ClrHandle,
-					 name, fieldType, attributes);
+					(((IClrProgramItem)type).ClrHandle, name,
+					 SignatureHelper.CSToILType(type.module, fieldType),
+					 attributes);
 			}
 
 	// Get the custom attributes associated with this field.
@@ -269,7 +270,7 @@ public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 	// Create a new field and attach it to a particular class.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrFieldCreate
-			(IntPtr classInfo, String name, Type type,
+			(IntPtr classInfo, String name, IntPtr type,
 			 FieldAttributes attributes);
 
 	// Internal version of "SetOffset".

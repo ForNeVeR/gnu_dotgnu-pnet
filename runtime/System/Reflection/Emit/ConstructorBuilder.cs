@@ -29,6 +29,7 @@ using System.Security;
 using System.Reflection;
 using System.Globalization;
 using System.Security.Permissions;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
 public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
@@ -39,6 +40,7 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 	internal int numParams;
 	private ILGenerator ilGenerator;
 	private bool initLocals;
+	private SignatureHelper helper;
 
 	// Constructor.
 	internal ConstructorBuilder(TypeBuilder type, String name,
@@ -53,11 +55,16 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 				this.ilGenerator = null;
 				this.initLocals = true;
 
+				// Create the signature.
+				helper = SignatureHelper.GetMethodSigHelper
+						(type.module, callingConvention,
+						 (CallingConvention)0,
+						 typeof(void), parameterTypes);
+
 				// Create the constructor method.
 				this.privateData = MethodBuilder.ClrMethodCreate
 					(((IClrProgramItem)type).ClrHandle, name,
-					 attributes, callingConvention,
-					 typeof(void), parameterTypes);
+					 attributes, helper.sig);
 
 				// Add the constructor to the type for post-processing.
 				type.AddMethod(this);
@@ -300,13 +307,11 @@ public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 			}
 
 	// Get the signature of this constructor as a string.
-	[TODO]
 	public String Signature 
 			{
 				get
 				{
-					// TODO
-					return String.Empty;
+					return helper.ToString();
 				}
 			}
 

@@ -59,10 +59,15 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 				this.getMethod = null;
 				this.setMethod = null;
 
+				// Create the property signature.
+				SignatureHelper helper =
+					SignatureHelper.GetPropertySigHelper
+						(type.module, returnType, parameterTypes);
+
 				// Create the property.
 				this.privateData = ClrPropertyCreate
 					(((IClrProgramItem)type).ClrHandle, name,
-					 attributes, returnType, parameterTypes);
+					 attributes, helper.sig);
 			}
 
 	// Add an "other" method to this property.
@@ -359,8 +364,7 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrPropertyCreate
 			(IntPtr classInfo, String name,
-			 PropertyAttributes attributes,
-			 Type returnType, Type[] parameterTypes);
+			 PropertyAttributes attributes, IntPtr signature);
 
 	// Add semantic information to this property.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -15,6 +15,18 @@
 	implementation of Reflection.Emit; primarily methods
 	and IL code generation.
 
+	* runtime/System/Reflection/Emit/ConstructorBuilder.cs,
+	runtime/System/Reflection/Emit/EventBuilder.cs,
+	runtime/System/Reflection/Emit/FieldBuilder.cs,
+	runtime/System/Reflection/Emit/ILGenerator.cs,
+	runtime/System/Reflection/Emit/MethodBuilder.cs,
+	runtime/System/Reflection/Emit/PropertyBuilder.cs,
+	runtime/System/Reflection/Emit/SignatureHelper.cs,
+	runtime/System/Reflection/Emit/TypeBuilder.cs: implement
+	signature building routines for Reflection.Emit; modify
+	field, event, method, and property creation to use the
+	signature building routines.
+
 2003-03-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Reflection/ClrField.cs,

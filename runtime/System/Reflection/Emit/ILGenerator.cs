@@ -21,15 +21,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-using System.IO;
-using System.Collections;
-using System.Diagnostics.SymbolStore;
-
 #if !ECMA_COMPAT
 
 namespace System.Reflection.Emit
 {
+
+using System;
+using System.IO;
+using System.Diagnostics.SymbolStore;
+using System.Runtime.InteropServices;
 
 public class ILGenerator
 {
@@ -41,7 +41,8 @@ public class ILGenerator
 	private int maxHeight;
 	private LabelInfo[] labels;
 	private int numLabels;
-	private ArrayList locals;
+	private SignatureHelper locals;
+	private int numLocals;
 	private ExceptionTry exceptionStack;
 	private ExceptionTry exceptionList;
 	private ExceptionTry exceptionListEnd;
@@ -340,11 +341,12 @@ public class ILGenerator
 				}
 				if(locals == null)
 				{
-					locals = new ArrayList();
+					locals = SignatureHelper.GetLocalVarSigHelper(module);
 				}
+				locals.AddArgument(localType);
 				LocalBuilder builder = new LocalBuilder
-						(module, localType, locals.Count);
-				locals.Add(builder);
+						(module, localType, numLocals);
+				++numLocals;
 				return builder;
 			}
 
@@ -892,11 +894,24 @@ public class ILGenerator
 				EmitTokenWithFixup(token.Token);
 			}
 
-	[TODO]
+	// Emit an instruction that takes a signature token as an argument.
 	public virtual void Emit(OpCode opcode, SignatureHelper shelper)
-	{
-		throw new NotImplementedException("Emit");
-	}
+			{
+				// Emit the instruction.
+				SignatureToken token = module.GetSignatureToken(shelper);
+				EmitOpcode(ref opcode);
+				EmitToken(token.Token);
+
+				// Adjust the stack height for the "calli" instruction.
+				if(opcode.stackPop == (int)(StackBehaviour.Varpop))
+				{
+					height -= shelper.numArgs + 1;
+					if(height < 0)
+					{
+						height = 0;
+					}
+				}
+			}
 
 	// Emit an instruction that refers to a type.
 	public virtual void Emit(OpCode opcode, Type type)
@@ -906,17 +921,108 @@ public class ILGenerator
 				EmitTokenWithFixup(token.Token);
 			}
 
-	[TODO]
-	public void EmitCall(OpCode opcode, MethodInfo methodinfo, Type[] optionalParamTypes)
-	{
-		throw new NotImplementedException("EmitCall");
-	}
+	// Emit an instruction to call a method with vararg parameters.
+	public void EmitCall(OpCode opcode, MethodInfo methodInfo,
+						 Type[] optionalParamTypes)
+			{
+				// Call the method call directly if no optional parameters.
+				if(optionalParamTypes == null ||
+				   optionalParamTypes.Length == 0)
+				{
+					Emit(opcode, methodInfo);
+					return;
+				}
 
-	[TODO]
-	public void EmitCalli(OpCode opcode, CallingConventions call_conv, Type returnType, Type[] paramTypes, Type[] optionalParamTypes)
-	{
-		throw new NotImplementedException("EmitCalli");
-	}
+				// Get the method's token, which takes care of importing.
+				MethodToken token = module.GetMethodToken(methodInfo);
+
+				// Make a copy of the method's signature and adjust it.
+				SignatureHelper helper =
+					SignatureHelper.GetMethodSigHelper(module, token);
+				helper.AddSentinel();
+				foreach(Type type in optionalParamTypes)
+				{
+					helper.AddArgument(type);
+				}
+
+				// Create a new token for the vararg member reference.
+				int refToken = MethodBuilder.ClrMethodCreateVarArgRef
+						(module.privateData, token.Token, helper.sig);
+
+				// Emit the raw instruction.
+				EmitRawOpcode(opcode.value);
+				EmitTokenWithFixup(refToken);
+
+				// Adjust the stack to account for the changes.
+				if(opcode.stackPush == (int)(StackBehaviour.Varpush))
+				{
+					if(methodInfo.ReturnType != typeof(void))
+					{
+						++height;
+					}
+				}
+				if(opcode.stackPop == (int)(StackBehaviour.Varpop))
+				{
+					height -= optionalParamTypes.Length;
+					if(methodInfo is MethodBuilder)
+					{
+						height -= ((MethodBuilder)methodInfo).numParams;
+					}
+					else
+					{
+						ParameterInfo[] paramList = methodInfo.GetParameters();
+						if(paramList != null)
+						{
+							height -= paramList.Length;
+						}
+					}
+					if(!methodInfo.IsStatic && opcode.value != 0x73) // "newobj"
+					{
+						--height;
+					}
+				}
+				if(height > maxHeight)
+				{
+					maxHeight = height;
+				}
+				else if(height < 0)
+				{
+					height = 0;
+				}
+			}
+
+	// Emit an indirect call instruction.
+	public void EmitCalli(OpCode opcode, CallingConventions callConv,
+						  Type returnType, Type[] paramTypes,
+						  Type[] optionalParamTypes)
+			{
+				// Check the calling convention.
+				if(optionalParamTypes != null)
+				{
+					if((callConv & CallingConventions.VarArgs) == 0)
+					{
+						throw new InvalidOperationException
+							(_("Emit_VarArgsWithNonVarArgMethod"));
+					}
+				}
+
+				// Build the full signature.
+				SignatureHelper helper =
+					SignatureHelper.GetMethodSigHelper
+						(module, callConv, (CallingConvention)0,
+						 returnType, paramTypes);
+				if(optionalParamTypes != null)
+				{
+					helper.AddSentinel();
+					foreach(Type type in optionalParamTypes)
+					{
+						helper.AddArgument(type);
+					}
+				}
+
+				// Emit the instruction using the constructed signature.
+				Emit(opcode, helper);
+			}
 
 	// Exit a lexical naming scope for debug information.
 	public virtual void EndScope()

@@ -53,7 +53,8 @@ public sealed class EventBuilder : IClrProgramItem
 				this.type = type;
 				this.privateData = ClrEventCreate
 					(((IClrProgramItem)type).ClrHandle, name,
-					 eventType, attributes);
+					 SignatureHelper.CSToILType(type.module, eventType),
+					 attributes);
 			}
 
 	// Add method semantics to this event.
@@ -148,7 +149,7 @@ public sealed class EventBuilder : IClrProgramItem
 	// Create a new event and attach it to a particular class.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrEventCreate
-			(IntPtr classInfo, String name, Type type,
+			(IntPtr classInfo, String name, IntPtr type,
 			 EventAttributes attributes);
 
 	// Add semantic information to this event.

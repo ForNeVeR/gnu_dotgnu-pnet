@@ -1102,6 +1102,13 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				return name;
 			}
 
+	// Determine if this is a generic type.
+	protected override bool IsGenericTypeImpl()
+			{
+				// Cannot make generic types with a builder yet.
+				return false;
+			}
+
 	// Implement the IClrProgramItem interface.
 	IntPtr IClrProgramItem.ClrHandle
 			{

@@ -46,7 +46,7 @@ static int TailEquals(const char *path, int pathlen, const char *tail)
 {
 	int taillen = strlen(tail);
 	int ch1, ch2;
-	if(taillen <= pathlen)
+	if(taillen >= pathlen)
 	{
 		return 0;
 	}

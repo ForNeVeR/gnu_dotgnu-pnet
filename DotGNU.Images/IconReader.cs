@@ -138,15 +138,16 @@ internal sealed class IconReader
 					frame.Palette = palette;
 
 					// Read the main part of the icon or cursor.
-					BmpReader.LoadBitmapData(stream, frame, false);
+					BmpReader.LoadBitmapData(stream, frame, false, true);
 					offset += frame.Height * frame.Stride;
 
 					// Read the mask.
-					BmpReader.LoadBitmapData(stream, frame, true);
+					BmpReader.LoadBitmapData(stream, frame, true, true);
 					offset += frame.Height * frame.MaskStride;
 
 					// Invert the mask, because we want 1 to mean "active".
 					InvertMask(frame);
+					image.LoadFormat = Image.Icon;
 				}
 			}
 

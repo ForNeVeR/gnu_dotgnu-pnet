@@ -166,29 +166,36 @@ internal sealed class Utils
 			{
 				switch(pixelFormat)
 				{
-					case PixelFormat.Format1bppIndexed: 	return 1;
-
-					case PixelFormat.Format4bppIndexed: 	return 4;
-
-					case PixelFormat.Format8bppIndexed: 	return 8;
+					case PixelFormat.Format1bppIndexed:
+						return 1;
+					case PixelFormat.Format4bppIndexed:
+						return 4;
+					case PixelFormat.Format8bppIndexed:
+						return 8;
 
 					case PixelFormat.Format16bppRgb555:
 					case PixelFormat.Format16bppRgb565:
 					case PixelFormat.Format16bppArgb1555:
-					case PixelFormat.Format16bppGrayScale:	return 16;
+					case PixelFormat.Format16bppGrayScale:
+						return 16;
 
-					case PixelFormat.Format24bppRgb:		return 24;
+					case PixelFormat.Format24bppRgb:
+						return 24;
 
 					case PixelFormat.Format32bppRgb:
 					case PixelFormat.Format32bppPArgb:
-					case PixelFormat.Format32bppArgb:		return 32;
+					case PixelFormat.Format32bppArgb:
+						return 32;
 
-					case PixelFormat.Format48bppRgb:		return 48;
+					case PixelFormat.Format48bppRgb:
+						return 48;
 
 					case PixelFormat.Format64bppPArgb:
-					case PixelFormat.Format64bppArgb:		return 64;
+					case PixelFormat.Format64bppArgb:
+						return 64;
 
-					default:								return 32;
+					default:
+						return 32;
 				}
 			}
 
@@ -218,6 +225,35 @@ internal sealed class Utils
 				}
 			}
 
+	// Return the index to a closest matched color in the palette.
+	public static int BestPaletteColor(int[] palette, int r, int g, int b)
+			{
+				int distance = 200000;
+				int j = -1;
+				for( int i = 0; i < palette.Length; i++)
+				{
+					int color = palette[i];
+					int bDist = (byte)color - b;
+					int gDist = (byte)(color >>8) - g;
+					int rDist = (byte)(color>>16) - r;
+					int d = bDist * bDist + gDist * gDist + rDist * rDist;
+					if (d < distance)
+					{
+						distance = d;
+						j = i;
+						if (distance == 0)
+							break;
+					}
+				}
+				return j;
+			}
+
+	// Return the index to a closest matched color in the palette.
+	public static int BestPaletteColor(int[] palette, int color)
+			{
+				return BestPaletteColor(palette, (byte)(color >> 16),
+					(byte)(color >> 8), (byte)color);
+			}
 }; // class Utils
 
 }; // namespace DotGNU.Images

@@ -87,17 +87,17 @@ internal sealed class BmpReader
 				}
 
 				// Perform a sanity check on the header values.
-				if(width < 1 || height < 1 || planes != 1)
+				if(width <= 0 || planes != 1)
 				{
 					throw new FormatException();
 				}
-				if(bitCount != 1 && bitCount != 4 &&
+				if(bitCount != 1 && bitCount != 4 &&  bitCount != 16 &&
 				   bitCount != 8 && bitCount != 24)
 				{
 					// TODO: non-traditional BMP formats.
 					throw new FormatException();
 				}
-				if(compression != 0)
+				if(compression != 0 && compression != 3/*BI_BITFIELDS*/)
 				{
 					// TODO: RLE bitmaps
 					throw new FormatException();
@@ -105,9 +105,28 @@ internal sealed class BmpReader
 
 				// Set the basic image properties.
 				image.Width = width;
-				image.Height = height;
+				image.Height = height < 0 ? -height : height;
 				image.PixelFormat = Utils.BitCountToFormat(bitCount);
 				image.LoadFormat = Image.Bmp;
+
+				// Do the unusual 16 bit formats.
+				if (compression == 3)
+				{
+					if(stream.Read(buffer, 0, 3 * 4) != (3 * 4))
+					{
+						throw new FormatException();
+					}
+					int redMask = Utils.ReadInt32(buffer, 0);
+					int greenMask = Utils.ReadInt32(buffer, 4);
+					int blueMask = Utils.ReadInt32(buffer, 8);
+
+					if (blueMask == 0x001F && redMask == 0x7C00 && greenMask == 0x03E0)
+						image.PixelFormat = PixelFormat.Format16bppRgb555;
+					else if (blueMask == 0x001F && redMask == 0xF800 && greenMask == 0x07E0)
+						image.PixelFormat = PixelFormat.Format16bppRgb565;
+					else
+						throw new FormatException();
+				}
 
 				// Read the palette into memory and set it.
 				if(bitCount <= 8)
@@ -151,11 +170,12 @@ internal sealed class BmpReader
 				Frame frame = image.AddFrame();
 
 				// Load the bitmap data from the stream into the frame.
-				LoadBitmapData(stream, frame, false);
+				LoadBitmapData(stream, frame, false, height > 0);
+
 			}
 
 	// Load bitmap data into a frame.
-	public static void LoadBitmapData(Stream stream, Frame frame, bool mask)
+	public static void LoadBitmapData(Stream stream, Frame frame, bool mask, bool reverse)
 			{
 				byte[] data;
 				int stride;
@@ -174,10 +194,20 @@ internal sealed class BmpReader
 					stride = frame.MaskStride;
 				}
 
-				// BMP images are stored upside down in the stream.
-				for(line = frame.Height - 1; line >= 0; --line)
+				// BMP images are usuallystored upside down in the stream.
+				if (reverse)
 				{
-					stream.Read(data, line * stride, stride);
+					for(line = frame.Height - 1; line >= 0; --line)
+					{
+						stream.Read(data, line * stride, stride);
+					}
+				}
+				else
+				{
+					for(line = 0; line <  frame.Height; line++)
+					{
+						stream.Read(data, line * stride, stride);
+					}
 				}
 			}
 

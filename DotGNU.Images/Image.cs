@@ -57,6 +57,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				this.palette = null;
 				this.transparentPixel = -1;
 			}
+
 	public Image(int width, int height, PixelFormat pixelFormat)
 			{
 				this.width = width;
@@ -68,6 +69,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				this.palette = null;
 				this.transparentPixel = -1;
 			}
+
 	private Image(Image image, Frame thisFrameOnly)
 			{
 				this.width = image.width;
@@ -120,6 +122,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					width = value;
 				}
 			}
+
 	public int Height
 			{
 				get
@@ -131,6 +134,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					height = value;
 				}
 			}
+
 	public int NumFrames
 			{
 				get
@@ -138,6 +142,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					return numFrames;
 				}
 			}
+
 	public PixelFormat PixelFormat
 			{
 				get
@@ -149,6 +154,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					pixelFormat = value;
 				}
 			}
+
 	public String LoadFormat
 			{
 				get
@@ -162,6 +168,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					format = value;
 				}
 			}
+
 	public int[] Palette
 			{
 				get
@@ -174,6 +181,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					palette = value;
 				}
 			}
+
 	public int TransparentPixel
 			{
 				get
@@ -193,11 +201,17 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 			{
 				return AddFrame(width, height, pixelFormat);
 			}
+
 	public Frame AddFrame(int width, int height, PixelFormat pixelFormat)
 			{
 				Frame frame = new Frame(this, width, height, pixelFormat);
 				frame.Palette = palette;
 				frame.TransparentPixel = transparentPixel;
+				return AddFrame(frame);
+			}
+
+	public Frame AddFrame(Frame frame)
+			{
 				if(frames == null)
 				{
 					frames = new Frame[] {frame};
@@ -226,6 +240,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				Dispose(true);
 				GC.SuppressFinalize(this);
 			}
+
 	protected virtual void Dispose(bool disposing)
 			{
 				if(frames != null)
@@ -252,6 +267,15 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				else
 				{
 					return null;
+				}
+			}
+
+	public void SetFrame(int frame, Frame newFrame)
+			{
+				if(frame >= 0 && frame < numFrames && newFrame != null)
+				{
+					newFrame.NewImage(this);
+					frames[frame] = newFrame;
 				}
 			}
 
@@ -286,6 +310,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					stream.Close();
 				}
 			}
+
 	public void Load(Stream stream)
 			{
 				// Read the first 4 bytes from the stream to determine
@@ -329,6 +354,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					stream.Close();
 				}
 			}
+
 	public void Save(String filename, String format)
 			{
 				Stream stream = new FileStream
@@ -342,10 +368,12 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 					stream.Close();
 				}
 			}
+
 	public void Save(Stream stream)
 			{
 				Save(stream, null);
 			}
+
 	public void Save(Stream stream, String format)
 			{
 				// Select a default format for the save.
@@ -376,8 +404,17 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	// Stretch this image to a new size.
 	public Image Stretch(int width, int height)
 			{
-				// TODO: change the size
-				return (Image)(Clone());
+				Width = width;
+				Height = height;
+				Image newImage = null;
+				for (int i = 0; i < frames.Length; i++)
+				{
+					if (i == 0)
+						newImage = new  Image(this, frames[0].Scale(width, height));
+					else
+						newImage.AddFrame(frames[i].Scale(width, height));
+				}
+				return newImage;
 			}
 
 	// Create a new image that contains a copy of one frame from this image.

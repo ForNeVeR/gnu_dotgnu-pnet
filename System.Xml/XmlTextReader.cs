@@ -1519,6 +1519,7 @@ public class XmlTextReader : XmlReader
 				}
 				
 				value = attributes[attributeIndex].Value;
+				nodeType = XmlNodeType.Text;
 				return true;	
 			}
 
@@ -2028,7 +2029,7 @@ public class XmlTextReader : XmlReader
 			{
 				get
 				{
-					if(attributeIndex != -1)
+					if(attributeIndex != -1 && nodeType != XmlNodeType.Text)
 					{
 						return XmlNodeType.Attribute;
 					}

@@ -40,7 +40,7 @@ class XmlElement : XmlLinkedNode
 			: base(parent)
 			{
 				this.name = name;
-				this.attributes = new XmlAttributeCollection(this);
+				this.attributes = null;
 				this.isEmpty = true;
 			}
 
@@ -49,6 +49,10 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
+					if(attributes == null)
+					{
+						attributes = new XmlAttributeCollection(this);
+					}
 					return attributes;
 				}
 			}
@@ -58,22 +62,33 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
-					return (attributes.Count != 0);
+					return (attributes != null && attributes.Count != 0);
 				}
 			}
 
 	// Get the inner text version of this node.
-	[TODO]
 	public override String InnerText
 			{
 				get
 				{
-					// TODO
-					return null;
+					return base.InnerText;
 				}
 				set
 				{
-					// TODO
+					XmlNode child = NodeList.GetFirstChild(this);
+					if(child != null &&
+					   NodeList.GetNextSibling(child) == null &&
+					   child.NodeType == XmlNodeType.Text)
+					{
+						// Special-case the case of a single text child.
+						child.Value = value;
+					}
+					else
+					{
+						// Remove the children and create a new text node.
+						RemoveAll();
+						AppendChild(OwnerDocument.CreateTextNode(value));
+					}
 				}
 			}
 
@@ -83,8 +98,7 @@ class XmlElement : XmlLinkedNode
 			{
 				get
 				{
-					// TODO
-					return null;
+					return base.InnerXml;
 				}
 				set
 				{
@@ -178,77 +192,104 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Clone this node in either shallow or deep mode.
-	[TODO]
 	public override XmlNode CloneNode(bool deep)
 			{
-				// TODO
-				return null;
+				XmlElement clone = OwnerDocument.CreateElement
+					(Prefix, LocalName, NamespaceURI);
+				clone.isEmpty = isEmpty;
+				if(attributes != null)
+				{
+					foreach(XmlAttribute attr in Attributes)
+					{
+						clone.Attributes.Append
+							((XmlAttribute)(attr.CloneNode(true)));
+					}
+				}
+				if(deep)
+				{
+					clone.CloneChildrenFrom(this, deep);
+				}
+				return clone;
 			}
 
 	// Get the value of an attribute with a specific name.
-	[TODO]
 	public virtual String GetAttribute(String name)
 			{
-				// TODO
-				return null;
+				XmlAttribute attr = GetAttributeNode(name);
+				if(attr != null)
+				{
+					return attr.Value;
+				}
+				else
+				{
+					return String.Empty;
+				}
 			}
 
 	// Get the value of an attribute with a specific name and namespace.
-	[TODO]
 	public virtual String GetAttribute(String localName, String namespaceURI)
 			{
-				// TODO
-				return null;
+				XmlAttribute attr = GetAttributeNode(localName, namespaceURI);
+				if(attr != null)
+				{
+					return attr.Value;
+				}
+				else
+				{
+					return String.Empty;
+				}
 			}
 
 	// Get the node of an attribute with a specific name.
-	[TODO]
 	public virtual XmlAttribute GetAttributeNode(String name)
 			{
-				// TODO
-				return null;
+				if(attributes != null)
+				{
+					return attributes[name];
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Get the node of an attribute with a specific name and namespace.
-	[TODO]
 	public virtual XmlAttribute GetAttributeNode
 				(String localName, String namespaceURI)
 			{
-				// TODO
-				return null;
+				if(attributes != null)
+				{
+					return attributes[localName, namespaceURI];
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Get a list of all descendents that match a particular name.
-	[TODO]
 	public virtual XmlNodeList GetElementsByTagName(String name)
 			{
-				// TODO
-				return null;
+				return new ElementList(this, name);
 			}
 
 	// Get a list of all descendents that match a particular name and namespace.
-	[TODO]
 	public virtual XmlNodeList GetElementsByTagName
 				(String localName, String namespaceURI)
 			{
-				// TODO
-				return null;
+				return new ElementList(this, localName, namespaceURI);
 			}
 
 	// Determine if this element has a particular attribute.
-	[TODO]
 	public virtual bool HasAttribute(String name)
 			{
-				// TODO
-				return false;
+				return (GetAttributeNode(name) != null);
 			}
 
 	// Determine if this element has a particular attribute.
-	[TODO]
 	public virtual bool HasAttribute(String localName, String namespaceURI)
 			{
-				// TODO
-				return false;
+				return (GetAttributeNode(localName, namespaceURI) != null);
 			}
 
 	// Remove all children and attributes from this node.
@@ -259,95 +300,161 @@ class XmlElement : XmlLinkedNode
 			}
 
 	// Remove all of the attributes from this node.
-	[TODO]
 	public virtual void RemoveAllAttributes()
 			{
-				// TODO
+				if(attributes != null)
+				{
+					attributes.RemoveAll();
+				}
 			}
 
 	// Remove a specified attribute by name.
-	[TODO]
 	public virtual void RemoveAttribute(String name)
 			{
-				// TODO
+				if(attributes != null)
+				{
+					attributes.RemoveNamedItem(name);
+				}
 			}
 
 	// Remove a specified attribute by name and namespace.
-	[TODO]
 	public virtual void RemoveAttribute(String localName, String namespaceURI)
 			{
-				// TODO
+				if(attributes != null)
+				{
+					attributes.RemoveNamedItem(localName, namespaceURI);
+				}
 			}
 
 	// Remove a specified attribute by index.
-	[TODO]
 	public virtual XmlNode RemoveAttributeAt(int i)
 			{
-				// TODO
-				return null;
+				if(attributes != null)
+				{
+					return attributes.RemoveAt(i);
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Remove a particular attribute node and return the node.
-	[TODO]
 	public virtual XmlAttribute RemoveAttributeNode(XmlAttribute oldAttr)
 			{
-				// TODO
-				return oldAttr;
+				if(attributes != null)
+				{
+					return (XmlAttribute)(attributes.Remove(oldAttr));
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Remove a particular attribute by name and return the node.
-	[TODO]
 	public virtual XmlAttribute RemoveAttributeNode
 				(String localName, String namespaceURI)
 			{
-				// TODO
-				return null;
+				if(attributes != null)
+				{
+					return (XmlAttribute)(attributes.RemoveNamedItem
+								(localName, namespaceURI));
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Set an attribute to a specific value.
-	[TODO]
 	public virtual void SetAttribute(String name, String value)
 			{
-				// TODO
+				XmlAttribute attr = GetAttributeNode(name);
+				if(attr != null)
+				{
+					attr.Value = value;
+				}
+				else
+				{
+					attr = OwnerDocument.CreateAttribute(name);
+					attr.Value = value;
+					Attributes.Append(attr);
+				}
 			}
 
 	// Set an attribute to a specific value.
-	[TODO]
 	public virtual void SetAttribute(String localName, String namespaceURI,
 									 String value)
 			{
-				// TODO
+				XmlAttribute attr = GetAttributeNode(localName, namespaceURI);
+				if(attr != null)
+				{
+					attr.Value = value;
+				}
+				else
+				{
+					attr = OwnerDocument.CreateAttribute
+						(localName, namespaceURI);
+					attr.Value = value;
+					Attributes.Append(attr);
+				}
 			}
 
 	// Set an attribute by node.
-	[TODO]
 	public virtual XmlAttribute SetAttributeNode(XmlAttribute newAttr)
 			{
-				// TODO
-				return null;
+				if(newAttr.OwnerElement == null)
+				{
+					return (XmlAttribute)(Attributes.SetNamedItem(newAttr));
+				}
+				else
+				{
+					throw new InvalidOperationException
+						(S._("Xml_AttrAlreadySet"));
+				}
 			}
 
 	// Create a new attribute node and return it.
-	[TODO]
 	public virtual XmlAttribute SetAttributeNode
 				(String localName, String namespaceURI)
 			{
-				// TODO
-				return null;
+				XmlAttribute attr = GetAttributeNode(localName, namespaceURI);
+				if(attr != null)
+				{
+					attr = OwnerDocument.CreateAttribute
+						(localName, namespaceURI);
+					Attributes.Append(attr);
+				}
+				return attr;
 			}
 
 	// Writes the contents of this node to a specified XmlWriter.
-	[TODO]
 	public override void WriteContentTo(XmlWriter w)
 			{
-				// TODO
+				WriteChildrenTo(w);
 			}
 
 	// Write this node and all of its contents to a specified XmlWriter.
-	[TODO]
 	public override void WriteTo(XmlWriter w)
 			{
-				// TODO
+				w.WriteStartElement(Prefix, LocalName, NamespaceURI);
+				if(attributes != null)
+				{
+					foreach(XmlAttribute attr in attributes)
+					{
+						attr.WriteTo(w);
+					}
+				}
+				if(!isEmpty)
+				{
+					WriteContentTo(w);
+					w.WriteFullEndElement();
+				}
+				else
+				{
+					w.WriteEndElement();
+				}
 			}
 
 	// Determine if a particular node type can be inserted as

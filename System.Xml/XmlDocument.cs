@@ -134,17 +134,15 @@ class XmlDocument : XmlNode
 			}
 
 	// Get the markup that represents the children of this node.
-	[TODO]
 	public override String InnerXml
 			{
 				get
 				{
-					// TODO
-					return null;
+					return base.InnerXml;
 				}
 				set
 				{
-					// TODO
+					LoadXml(value);
 				}
 			}
 

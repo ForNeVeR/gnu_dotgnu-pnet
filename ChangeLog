@@ -13,6 +13,12 @@
 	* compat/CSharpCompiler.cs: implement "cscompmgd" in terms of
 	the definitions in "System.CodeDom.Compiler".
 
+	* System.Xml/ElementList.cs, System.Xml/XmlDocument.cs,
+	System.Xml/XmlElement.cs, System.Xml/XmlNode.cs,
+	System.Xml/XmlProcessingInstruction.cs,
+	resources/en_US/System.Xml/Xml.txt: continue implementing the
+	"System.Xml" namespace.
+
 2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, csunit/Makefile.am,

@@ -45,7 +45,6 @@ class XmlProcessingInstruction : XmlLinkedNode
 			}
 
 	// Get or set the data associated with a processing instruction.
-	[TODO]
 	public String Data
 			{
 				get
@@ -54,23 +53,23 @@ class XmlProcessingInstruction : XmlLinkedNode
 				}
 				set
 				{
-					// TODO: change events
+					XmlNodeChangedEventArgs args;
+					args = EmitBefore(XmlNodeChangedAction.Change);
 					data = value;
+					EmitAfter(args);
 				}
 			}
 
 	// Get or set the inner text associated with this processing instruction.
-	[TODO]
 	public override String InnerText
 			{
 				get
 				{
-					// TODO
-					return null;
+					return Data;
 				}
 				set
 				{
-					// TODO
+					Data = value;
 				}
 			}
 

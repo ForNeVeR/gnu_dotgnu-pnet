@@ -58,3 +58,4 @@ Xml_ReaderClosed=XML reader has already been closed or does not exist
 Xml_ReaderError=An error was detected in the input XML stream
 Xml_RefNotChild=The reference node is not a child of the specified parent
 Xml_CannotClone=Cannot clone this type of node
+Xml_AttrAlreadySet=The specified attribute has already been set on an element

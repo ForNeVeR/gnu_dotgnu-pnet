@@ -809,10 +809,63 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Normalize the text nodes underneath this node.
-	[TODO]
 	public virtual void Normalize()
 			{
-				// TODO
+				XmlNode current = NodeList.GetFirstChild(this);
+				XmlNode next, setNode;
+				StringBuilder builder = null;
+				setNode = null;
+				while(current != null)
+				{
+					next = NodeList.GetNextSibling(this);
+					switch(current.NodeType)
+					{
+						case XmlNodeType.Text:
+						case XmlNodeType.Whitespace:
+						case XmlNodeType.SignificantWhitespace:
+						{
+							if(setNode != null)
+							{
+								builder.Append(current.Value);
+								RemoveChild(current);
+							}
+							else
+							{
+								setNode = current;
+								builder = new StringBuilder(current.Value);
+							}
+						}
+						break;
+
+						case XmlNodeType.Element:
+						{
+							if(setNode != null)
+							{
+								setNode.Value = builder.ToString();
+								setNode = null;
+								builder = null;
+							}
+							current.Normalize();
+						}
+						break;
+
+						default:
+						{
+							if(setNode != null)
+							{
+								setNode.Value = builder.ToString();
+								setNode = null;
+								builder = null;
+							}
+						}
+						break;
+					}
+					current = next;
+				}
+				if(setNode != null)
+				{
+					setNode.Value = builder.ToString();
+				}
 			}
 
 	// Prepend a specific child at the start of this node's child list.
@@ -939,10 +992,11 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 			}
 
 	// Replace a child of this node.
-	[TODO]
 	public virtual XmlNode ReplaceChild(XmlNode newChild, XmlNode oldChild)
 			{
-				// TODO
+				XmlNode next = oldChild.NextSibling;
+				RemoveChild(oldChild);
+				InsertBefore(newChild, next);
 				return oldChild;
 			}
 

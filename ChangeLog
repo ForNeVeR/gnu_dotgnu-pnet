@@ -16,6 +16,9 @@ rename "cvm_interpreter" to "_ILCVMInterpreter"; implement the macro
 
 * engine/cvm_call.c: begin implementing the "call" and "return" instructions.
 
+* engine/engine.h: new format for call frames; method user data; and the
+active thread state.
+
 2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c: mark the stack as empty on entry to a try region.

@@ -26,6 +26,7 @@
 #include "il_program.h"
 #include "il_coder.h"
 #include "heap.h"
+#include "cvm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -44,7 +45,10 @@ extern	"C" {
  * Default values.
  */
 #ifndef	IL_ENGINE_STACK_SIZE
-#define	IL_ENGINE_STACK_SIZE	1024
+#define	IL_ENGINE_STACK_SIZE		1024
+#endif
+#ifndef	IL_ENGINE_FRAME_STACK_SIZE
+#define	IL_ENGINE_FRAME_STACK_SIZE	64
 #endif
 
 /*
@@ -63,6 +67,7 @@ struct _tagILExecProcess
 
 	/* Default stack size for new threads */
 	ILUInt32	  	stackSize;
+	ILUInt32	  	frameStackSize;
 
 	/* Context that holds all images that have been loaded by this process */
 	ILContext 	   *context;
@@ -74,20 +79,30 @@ struct _tagILExecProcess
 
 /*
  * Information that is stored in a stack call frame.
- * Offsets are used to refer to the stack instead of
- * pointers.  This allows the stack to be realloc'ed
- * without having to rearrange the saved frame data.
+ * Offsets are used to refer to the stack and program
+ * instead of pointers.  This allows the stack to be
+ * realloc'ed, or the coder cache re-generated, without
+ * having to rearrange the saved frame data.
  */
 typedef struct _tagILCallFrame
 {
-	unsigned char  *pc;			/* PC to return to */
-	ILUInt32	   	stackTop;	/* Position to unwind the stack to */
-	ILUInt32		args;		/* Argument position for caller */
-	ILUInt32		locals;		/* Local variables for caller */
 	ILMethod       *method;		/* Method being executed in the frame */
-	ILUInt32		parent;		/* Position of the parent frame */
+	ILUInt32		pc;			/* PC to return to in the parent method */
+	ILUInt32	   	frame;		/* Base of the local variable frame */
+	ILUInt32		except;		/* PC to jump to on an exception */
 
 } ILCallFrame;
+
+/*
+ * Information that is attached to a method to hold
+ * runtime engine data.
+ */
+typedef struct _tagILCallInfo
+{
+	ILUInt32		generation;	/* Code conversion generation count */
+	unsigned char  *pcstart;	/* Start of the method's code */
+
+} ILCallInfo;
 
 /*
  * Execution control context for a single thread.
@@ -102,16 +117,23 @@ struct _tagILExecThread
 	ILExecThread   *prevThread;
 
 	/* Extent of the execution stack */
-	ILValue		   *stackBase;
-	ILValue		   *stackLimit;
+	CVMWord		   *stackBase;
+	CVMWord		   *stackLimit;
 
 	/* Current thread state */
-	unsigned char  *pc;
-	ILValue		   *stackTop;
-	ILValue		   *args;
-	ILValue		   *locals;
-	ILMethod       *method;
-	ILCallFrame	   *frame;
+	unsigned char  *pcstart;	/* Start of the CVM code for the method */
+	ILUInt32		pc;			/* Offset to the current position */
+	ILUInt32		frame;		/* Base of the local variable frame */
+	CVMWord        *stackTop;	/* Current stack top */
+	ILMethod       *method;		/* Current method being executed */
+
+	/* Last exception that was thrown */
+	ILObject       *thrownException;
+
+	/* Stack of call frames in use */
+	ILCallFrame	   *frameStack;
+	ILUInt32		numFrames;
+	ILUInt32		maxFrames;
 
 };
 
@@ -130,23 +152,10 @@ struct _tagILClassPrivate
 };
 
 /*
- * Execute the interpreter on a thread.
+ * Execute the CVM interpreter on a thread.  Returns zero for
+ * a regular return, or non-zero if an exception was thrown.
  */
-void _ILInterpreter(ILExecThread *thread);
-
-/*
- * Push a new call frame for a method call.
- * Returns zero if out of memory.
- */
-int _ILExecThreadFramePush(ILExecThread *thread, ILMethod *method);
-
-/*
- * Pop the current call frame and return to the
- * previous call level.  If the method is returning
- * a value, it will be copied to the top of the
- * stack in the previous frame.
- */
-void _ILExecThreadFramePop(ILExecThread *thread);
+int _ILCVMInterpreter(ILExecThread *thread);
 
 /*
  * Lay out a class's fields, virtual methods, and interfaces.

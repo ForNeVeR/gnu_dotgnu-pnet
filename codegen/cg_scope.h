@@ -42,7 +42,8 @@ typedef struct _tagILScopeData ILScopeData;
 #define	IL_SCOPE_PROPERTY		7	/* Item is a property */
 #define	IL_SCOPE_EVENT			8	/* Item is an event */
 #define	IL_SCOPE_LOCAL			9	/* Item is a local variable */
-#define	IL_SCOPE_DUMMY			10	/* Used internally */
+#define	IL_SCOPE_LOCAL_CONST	10	/* Item is a local variable */
+#define	IL_SCOPE_DUMMY			11	/* Used internally */
 
 /*
  * Error codes for scope definitions.
@@ -140,6 +141,12 @@ int ILScopeDeclareMember(ILScope *scope, const char *name,
 int ILScopeDeclareLocal(ILScope *scope, const char *name,
 						unsigned long index, ILNode *node);
 
+/* Declare a local const variable within a particular scope.
+ * Returns a scope error code if already declared.
+ */
+int ILScopeDeclareLocalConst(ILScope *scope, const char *name,
+						ILNode *guarded, ILNode *node);
+
 /*
  * Get the kind value associated with a scope item.
  */
@@ -169,6 +176,11 @@ ILMember *ILScopeDataGetMember(ILScopeData *data);
  * Get the index of a local variable scope item.
  */
 unsigned long ILScopeDataGetIndex(ILScopeData *data);
+
+/*
+ * Get the node of a local const scope item.
+ */
+ILNode* ILScopeDataGetDataNode(ILScopeData *data);
 
 /*
  * Get the parent of a scope.

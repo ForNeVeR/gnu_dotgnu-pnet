@@ -759,6 +759,44 @@ int ILScopeDeclareLocal(ILScope *scope, const char *name,
 	return IL_SCOPE_ERROR_OK;
 }
 
+int ILScopeDeclareLocalConst(ILScope *scope, const char *name,
+						ILNode *guarded, ILNode *node)
+{
+	ILScopeData *data;
+
+	/* Determine if there is a declaration for the name already */
+	data = ILScopeLookup(scope, name, 0);
+	if(data != 0)
+	{
+		if(data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
+		{
+			/* Declaration conflicts with a type the user already declared */
+			return IL_SCOPE_ERROR_REDECLARED;
+		}
+		else if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)
+		{
+			/* There is already a namespace with that name in existence */
+			return IL_SCOPE_ERROR_NAME_IS_NAMESPACE;
+		}
+		else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
+		{
+			/* Conflict with an imported type */
+			return IL_SCOPE_ERROR_IMPORT_CONFLICT;
+		}
+		else
+		{
+			/* Something else is declared here */
+			return IL_SCOPE_ERROR_OTHER;
+		}
+	}
+
+	/* Add the local to the scope */
+	AddToScope(scope, name, IL_SCOPE_LOCAL_CONST, node, (void *)guarded);
+
+	/* Done */
+	return IL_SCOPE_ERROR_OK;
+}
+
 int ILScopeDataGetKind(ILScopeData *data)
 {
 	return data->rbnode.kind;
@@ -799,6 +837,11 @@ ILMember *ILScopeDataGetMember(ILScopeData *data)
 unsigned long ILScopeDataGetIndex(ILScopeData *data)
 {
 	return (unsigned long)(data->data);
+}
+
+ILNode* ILScopeDataGetDataNode(ILScopeData *data)
+{
+	return (ILNode*)(data->data);
 }
 
 ILScope *ILScopeGetParent(ILScope *scope)

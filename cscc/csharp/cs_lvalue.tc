@@ -679,6 +679,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	unsigned long index;
 	ILNode_MethodDeclaration *method;
 	ILParameterModifier paramMod;
+  	ILNode_SemGuard *constVar;
 
 	/* Look for local variables in the current scope */
 	data = ILScopeLookup(info->currentScope, node->name, 1);
@@ -728,6 +729,15 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			}
 		}
 		value.kind = CS_SEMKIND_LVALUE;
+		return value;
+	}
+	else if ( data && ILScopeDataGetKind(data) == IL_SCOPE_LOCAL_CONST)
+	{
+		method = (ILNode_MethodDeclaration *)(info->currentMethod);
+		constVar = (ILNode_SemGuard*)ILScopeDataGetDataNode(data);
+		value = constVar->value; // return type information
+		*parent = constVar->expr; // rewrite node
+		value.kind = CS_SEMKIND_RVALUE;
 		return value;
 	}
 

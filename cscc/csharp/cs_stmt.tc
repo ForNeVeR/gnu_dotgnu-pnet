@@ -1411,6 +1411,106 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 {
 	/* TODO */
+	ILNode_ListIter iterator;
+	ILNode_FieldDeclarator *decl;
+	// since Rhys said that this was a reuse of FieldDecl
+	CSSemValue value;
+	ILEvalValue evalValue;
+	ILType *type = CSSemType(node->type, info, &(node->type));
+	char *name;
+	ILScopeData *data;
+	ILNode_MethodDeclaration *method;
+	ILNode *errorNode;
+
+	/* Locate the method that this local is declared within */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* Perform semantic analysis on the local variable type */
+	type = CSSemType(node->type, info, &(node->type));
+		
+	ILNode_ListIter_Init(&iterator, node->decls);
+	while((decl = (ILNode_FieldDeclarator *)
+						ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		name = ILQualIdentName(decl->name, 0);
+
+		if(!(decl->initializer) || !(decl->name))
+		{
+			CCErrorOnLine(yygetfilename(decl->initializer),
+							  yygetlinenum(decl->initializer),
+							  "no initializer value for const");
+			continue;
+		}
+		/* Perform semantic analysis on the initializer value */
+		value = ILNode_SemAnalysis(decl->initializer, info,
+								   &(decl->initializer));
+		if(!CSIsSemValue(value.kind))
+		{
+			CCErrorOnLine(yygetfilename(decl->initializer),
+						  yygetlinenum(decl->initializer),
+						  "initializer is not a value");
+			continue;
+		}
+
+		/* Make sure that the value is compatible with the field's type */
+		if(!ILCoerce(info, decl->initializer, &(decl->initializer),
+					 value.type,type))
+		{
+			CCErrorOnLine(yygetfilename(decl->initializer),
+						  yygetlinenum(decl->initializer),
+			  			  "incompatible types in initialization: "
+			  					"no conversion from `%s' to `%s'",
+			  			  CSTypeToName(value.type),
+						  CSTypeToName(type));
+			continue;
+		}
+
+		/* Check that the literal value is actually constant */
+		if(!ILNode_EvalConst(decl->initializer, info, &evalValue) ||
+		   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+	                  ILTypeToMachineType(type)))
+		{
+			CCErrorOnLine(yygetfilename(decl->initializer),
+						  yygetlinenum(decl->initializer),
+						  "initializer is not constant");
+			continue;
+		}
+		//guard the node from re-evaluation
+		decl->initializer=ILNode_SemGuard_create(decl->initializer,value);
+		data = ILScopeLookup(info->currentScope, name, 0);
+		if(data)
+		{
+			/* The name is already declared in this scope */
+			CCErrorOnLine(yygetfilename(decl->name), yygetlinenum(decl->name),
+						  "`%s' is already declared in this scope", name);
+			errorNode = ILScopeDataGetNode(data);
+			if(errorNode)
+			{
+				CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+							  "previous declaration here");
+			}
+		}
+		else
+		{
+			/* Add the type to the local variable signature for this method */
+			if(!(method->localVarSig))
+			{
+				method->localVarSig = ILTypeCreateLocalList(info->context);
+				if(!(method->localVarSig))
+				{
+					CCOutOfMemory();
+				}
+			}
+			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
+			{
+				CCOutOfMemory();
+			}
+
+			/* Create a local variable entry in the current scope */
+			ILScopeDeclareLocalConst(info->currentScope, name,
+			decl->initializer,decl->name);
+		}
+	}
 	return CSSemValueDefault;
 }
 

@@ -1,5 +1,6 @@
 /*
- * ContextBoundObject.cs - Implementation of "System.ContextBoundObject".
+ * RemotingException.cs - Implementation of the
+ *		"System.Runtime.Remoting.RemotingException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,20 +19,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Runtime.Remoting
 {
 
-#if ECMA_COMPAT
-internal
-#else
-public
-#endif
-abstract class ContextBoundObject : MarshalByRefObject
+#if !ECMA_COMPAT
+
+using System;
+
+public class RemotingException : SystemException
 {
 
-	// Constructor.
-	protected ContextBoundObject() : base() {}
+	// Constructors.
+	public RemotingException()
+		: base(_("Exception_Remoting")) {}
+	public RemotingException(String msg)
+		: base(msg) {}
+	public RemotingException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-}; // class ContextBoundObject
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return _("Exception_Remoting");
+				}
+			}
+
+}; // class SystemException.Runtime.Remoting
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

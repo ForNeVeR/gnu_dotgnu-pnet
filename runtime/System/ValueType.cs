@@ -21,19 +21,94 @@
 namespace System
 {
 
-public class ValueType : Object
+using System.Reflection;
+
+public abstract class ValueType
 {
-	// Override inherited methods.
-	public override int GetHashCode()
-			{
-				// TO DO: Hash all of the fields in the value type.
-				return 0;
-			}
+	// Constructor.
+	protected ValueType() : base() {}
+
+	// Determine if this value type instance is identical to another.
+	[ClrReflection]
 	public override bool Equals(Object obj)
 			{
-				// TO DO: Perform a member-wise equality test.
-				return false;
+				if(obj == null)
+				{
+					return false;
+				}
+				else
+				{
+					// The types must be identical.
+					Type type = GetType();
+					if(type != obj.GetType())
+					{
+						return false;
+					}
+
+					// All fields must be identical.  Because of
+					// the "ClrReflection" attribute on this method,
+					// the runtime engine will allow us to access
+					// every field, including private fields.
+					FieldInfo[] fields = type.GetFields
+							(BindingFlags.Public |
+							 BindingFlags.NonPublic |
+							 BindingFlags.Instance);
+
+					// Check each of the fields for equality in turn.
+					int posn;
+					Object value1;
+					Object value2;
+					for(posn = 0; posn < fields.Length; ++posn)
+					{
+						value1 = fields[posn].GetValue(this);
+						value2 = fields[posn].GetValue(obj);
+						if(value1 == null)
+						{
+							if(value2 != null)
+							{
+								return false;
+							}
+						}
+						else if(value2 == null)
+						{
+							return false;
+						}
+						else if(!value1.Equals(value2))
+						{
+							return false;
+						}
+					}
+					return true;
+				}
 			}
+
+	// Get a hash code for this instance.
+	[ClrReflection]
+	public override int GetHashCode()
+			{
+				// Use the hash value for the first non-null field.
+				// The "ClrReflection" attribute will allow us to
+				// access the private internals of the value.
+				FieldInfo[] fields = GetType().GetFields
+						(BindingFlags.Public |
+						 BindingFlags.NonPublic |
+						 BindingFlags.Instance);
+				int posn;
+				Object value;
+				for(posn = 0; posn < fields.Length; ++posn)
+				{
+					value = fields[posn].GetValue(this);
+					if(value != null)
+					{
+						return value.GetHashCode();
+					}
+				}
+
+				// There are no non-null fields, so hash the type instead.
+				return GetType().GetHashCode();
+			}
+
+	// Get a string that corresponds to this instance.
 	public override String ToString()
 			{
 				return GetType().FullName;

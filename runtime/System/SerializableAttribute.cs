@@ -22,10 +22,15 @@
 namespace System
 {
 
-public class SerializableAttribute : Attribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class SerializableAttribute : Attribute
 {
 
-// TO DO
+	public SerializableAttribute() : base() {}
 
 }; // class SerializableAttribute
 

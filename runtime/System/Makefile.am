@@ -181,6 +181,7 @@ CSSRC = Activator.cs \
 		Reflection/ClrMethod.cs \
 		Reflection/ClrParameter.cs \
 		Reflection/ClrProperty.cs \
+		Reflection/ClrReflectionAttribute.cs \
 		Reflection/ClrType.cs \
 		Reflection/ClrTypeCategory.cs \
 		Reflection/DefaultMemberAttribute.cs \
@@ -277,6 +278,8 @@ CSSRC = Activator.cs \
 		Runtime/InteropServices/UnmanagedType.cs \
 		Runtime/Remoting/Message.cs \
 		Runtime/Remoting/ObjectHandle.cs \
+		Runtime/Remoting/ObjRef.cs \
+		Runtime/Remoting/RemotingException.cs \
 		Runtime/Serialization/ISerializable.cs \
 		Runtime/Serialization/SerializationInfo.cs \
 		Runtime/Serialization/StreamingContext.cs \

@@ -76,3 +76,4 @@ Exception_ThreadAbort=The thread has been aborted
 Exception_EndOfStream=Attempted to read past the end of the stream
 Exception_PathTooLong=The supplied path is too long
 Exception_Security=A security violation has occurred
+Exception_Remoting=A failure occurred during a remoting operation

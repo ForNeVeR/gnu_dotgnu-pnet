@@ -4,6 +4,24 @@
 * tools/mscsc.sh, runtime/System/Makefile.am, csunit/Makefile.am: disable
 warning messages from Microsoft's C# compiler that don't mean anything useful.
 
+* resources/en_US/runtime/Arg.txt,
+resources/en_US/runtime/Exception.txt,
+resources/en_US/runtime/NotSupp.txt,
+runtime/System/.cvsignore,
+runtime/System/ContextBoundObject.cs,
+runtime/System/Enum.cs,
+runtime/System/IntPtr.cs,
+runtime/System/Makefile.am,
+runtime/System/MarshalByRefObject.cs,
+runtime/System/NonSerializedAttribute.cs,
+runtime/System/SerializableAttribute.cs,
+runtime/System/UIntPtr.cs,
+runtime/System/ValueType.cs,
+runtime/System/Reflection/ClrReflectionAttribute.cs,
+runtime/System/Runtime/Remoting/ObjRef.cs,
+runtime/System/Runtime/Remoting/RemotingException.cs: fill in some of
+the missing gaps in the "System" namespace.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

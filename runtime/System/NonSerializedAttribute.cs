@@ -22,10 +22,16 @@
 namespace System
 {
 
-public class NonSerializedAttribute : Attribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class NonSerializedAttribute : Attribute
 {
 
-// TO DO
+	// Constructor.
+	public NonSerializedAttribute() : base() {}
 
 }; // class NonSerializedAttribute
 

@@ -1,3 +1,5 @@
 Makefile
 Makefile.in
 .deps
+mscorlib.dll
+mscorlib_ecma.dll

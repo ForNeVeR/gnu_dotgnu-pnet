@@ -23,7 +23,6 @@ namespace System
 
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using Platform;
 
 [CLSCompliant(false)]
 public struct UIntPtr
@@ -118,7 +117,10 @@ public struct UIntPtr
 			{
 				get
 				{
-					return Platform.PtrSizes.GetPtrSize();
+					unsafe
+					{
+						return sizeof(UIntPtr);
+					}
 				}
 			}
 

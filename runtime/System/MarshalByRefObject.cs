@@ -21,10 +21,38 @@
 namespace System
 {
 
+using System.Runtime.Remoting;
+
 public abstract class MarshalByRefObject
 {
 
-// ECMA does not specify any members for this type.
+	// Constructor.
+	protected MarshalByRefObject() : base() {}
+
+#if !ECMA_COMPAT
+
+	// Create a marshalable reference for this object.
+	public virtual ObjRef CreateObjRef()
+			{
+				// Remoting is not yet supported by this class library.
+				throw new RemotingException(_("NotSupp_Remoting"));
+			}
+
+	// Get a lifetime service object for this object.
+	public Object GetLifetimeService()
+			{
+				// TODO
+				return null;
+			}
+
+	// Initialize the lifetime service for this object.
+	public virtual Object InitializeLifetimeService()
+			{
+				// TODO
+				return null;
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class MarshalByRefObject
 

@@ -21,11 +21,17 @@
 namespace System
 {
 
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
 public abstract class Enum : ValueType, IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
 #endif
 {
+
+	// Constructor.
+	protected Enum() : base() {}
 
 	// Implement the IComparable interface.
 	public int CompareTo(Object target)
@@ -40,40 +46,8 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				{
 					throw new ArgumentException(_("Arg_MustBeSameEnum"));
 				}
-				if(IsSigned(type))
-				{
-					long value1 = GetSigned(type);
-					long value2 = ((Enum)target).GetSigned(type);
-					if(value1 < value2)
-					{
-						return -1;
-					}
-					else if(value1 > value2)
-					{
-						return 1;
-					}
-					else
-					{
-						return 0;
-					}
-				}
-				else
-				{
-					ulong uvalue1 = GetUnsigned(type);
-					ulong uvalue2 = ((Enum)target).GetUnsigned(type);
-					if(uvalue1 < uvalue2)
-					{
-						return -1;
-					}
-					else if(uvalue1 > uvalue2)
-					{
-						return 1;
-					}
-					else
-					{
-						return 0;
-					}
-				}
+				return ((IComparable)(GetEnumValue())).CompareTo
+							(((Enum)target).GetEnumValue());
 			}
 
 	// Test for equality.
@@ -87,14 +61,8 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 					{
 						return false;
 					}
-					if(IsSigned(type))
-					{
-						return (GetSigned(type) == oenum.GetSigned(type));
-					}
-					else
-					{
-						return (GetUnsigned(type) == oenum.GetUnsigned(type));
-					}
+					return (GetEnumValue()).Equals
+								(((Enum)obj).GetEnumValue());
 				}
 				else
 				{
@@ -112,52 +80,189 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 	// Get the hash code for this enumerated value.
 	public override int GetHashCode()
 			{
-				Type type = GetType();
-				if(IsSigned(type))
-				{
-					long value = GetSigned(type);
-					return unchecked((int)(value ^ (value >> 16)));
-				}
-				else
-				{
-					ulong uvalue = GetUnsigned(type);
-					return unchecked((int)(uvalue ^ (uvalue >> 16)));
-				}
+				return (GetEnumValue()).GetHashCode();
 			}
 
 	// Get the name of an enumerated constant value.
 	public static String GetName(Type enumType, Object value)
 			{
-				// TODO
-				return "";
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				Type type = value.GetType();
+				if(type == enumType)
+				{
+					value = ((Enum)value).GetEnumValue();
+				}
+				else if(type != GetUnderlyingType(enumType))
+				{
+					throw new ArgumentException(_("Arg_InvalidEnumValue"));
+				}
+				return GetEnumName(enumType, value);
 			}
 
 	// Get the names of all enumerated constants in a type.
 	public static String[] GetNames(Type enumType)
 			{
-				// TODO
-				return null;
+				// Validate the parameter.
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				else if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+
+				// Find all public static fields within the type.
+				FieldInfo[] fields = enumType.GetFields(BindingFlags.Public |
+														BindingFlags.Static);
+
+				// Count the number of fields that are "literal" and
+				// have the same type as the enumeration.
+				int numLiterals = 0;
+				int posn;
+				for(posn = 0; posn < fields.Length; ++posn)
+				{
+					if((fields[posn].Attributes &
+							FieldAttributes.Literal) != 0)
+					{
+						++numLiterals;
+					}
+					else
+					{
+						fields[posn] = null;
+					}
+				}
+
+				// Create and fill the name array.
+				String[] names = new String [numLiterals];
+				numLiterals = 0;
+				for(posn = 0; posn < fields.Length; ++posn)
+				{
+					if(fields[posn] != null)
+					{
+						names[numLiterals++] = fields[posn].Name;
+					}
+				}
+				return names;
 			}
 
 	// Get the underlying type for an enumerated type.
 	public static Type GetUnderlyingType(Type enumType)
 			{
-				// TODO
-				return null;
+				// Validate the argument.
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+
+				// Search for a public instance field that has the
+				// "RTSpecialName" attribute associated with it.
+				FieldInfo[] fields = enumType.GetFields(BindingFlags.Public |
+													    BindingFlags.Instance);
+				int posn;
+				for(posn = 0; posn < fields.Length; ++posn)
+				{
+					if((fields[posn].Attributes &
+							FieldAttributes.RTSpecialName) != 0)
+					{
+						return fields[posn].FieldType;
+					}
+				}
+
+				// We have no idea what the type is.  Perhaps
+				// the enumerated type is malformed in some way.
+				throw new ArgumentException(_("Arg_MustBeEnum"));
 			}
 
 	// Get the values of all enumerated constants for an enumerated type.
 	public static Array GetValues(Type enumType)
 			{
-				// TODO
-				return null;
+				// Validate the parameter.
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				else if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+
+				// Find all public static fields within the type.
+				FieldInfo[] fields = enumType.GetFields(BindingFlags.Public |
+														BindingFlags.Static);
+
+				// Count the number of fields that are "literal" and
+				// have the same type as the enumeration.
+				int numLiterals = 0;
+				int posn;
+				for(posn = 0; posn < fields.Length; ++posn)
+				{
+					if((fields[posn].Attributes &
+							FieldAttributes.Literal) != 0)
+					{
+						++numLiterals;
+					}
+					else
+					{
+						fields[posn] = null;
+					}
+				}
+
+				// Create and fill the value array.
+				Array values = Array.CreateInstance(enumType, numLiterals);
+				numLiterals = 0;
+				for(posn = 0; posn < fields.Length; ++posn)
+				{
+					if(fields[posn] != null)
+					{
+						values.SetValue(fields[posn].GetValue(null),
+										numLiterals);
+						++numLiterals;
+					}
+				}
+				return values;
 			}
 
 	// Determine if a specified constant is defined in an enumerated type.
 	public static bool IsDefined(Type enumType, Object value)
 			{
-				// TODO
-				return false;
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+				Type type = value.GetType();
+				if(type == enumType)
+				{
+					value = ((Enum)value).GetEnumValue();
+				}
+				else if(type != GetUnderlyingType(enumType))
+				{
+					throw new ArgumentException(_("Arg_InvalidEnumValue"));
+				}
+				return IsEnumValue(enumType, value);
 			}
 
 	// Parse an enumerated constant specification.
@@ -167,8 +272,90 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			}
 	public static Object Parse(Type enumType, String value, bool ignoreCase)
 			{
-				// TODO
-				return null;
+				// Validate the parameters.
+				if(enumType == null)
+				{
+					throw new ArgumentNullException("enumType");
+				}
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				if(!enumType.IsEnum)
+				{
+					throw new ArgumentException(_("Arg_MustBeEnum"));
+				}
+
+				// Extract the constant names and parse them.
+				int posn, len;
+				char ch;
+				bool sawComma = true;
+				String name;
+				Object finalValue = null;
+				Object newValue;
+				posn = 0;
+				while(posn < value.Length)
+				{
+					// Process white space and commas.
+					ch = value[posn];
+					if(Char.IsWhiteSpace(ch))
+					{
+						++posn;
+						continue;
+					}
+					if(ch == ',')
+					{
+						if(sawComma)
+						{
+							throw new ArgumentException
+								(_("Arg_InvalidEnumName"));
+						}
+						sawComma = true;
+						++posn;
+						continue;
+					}
+
+					// Extract the next constant name.
+					len = 1;
+					while((posn + len) < value.Length)
+					{
+						ch = value[posn + len];
+						if(Char.IsWhiteSpace(ch) || ch == ',')
+						{
+							break;
+						}
+						++len;
+					}
+					name = value.Substring(posn, len);
+					posn += len;
+					sawComma = false;
+
+					// Convert the name into a value.
+					newValue = GetEnumValueFromName(enumType, name, ignoreCase);
+					if(newValue == null)
+					{
+						throw new ArgumentException
+							(_("Arg_InvalidEnumName"));
+					}
+					
+					// Combine the current value with the new one.
+					if(finalValue == null)
+					{
+						finalValue = newValue;
+					}
+					else
+					{
+						finalValue = EnumValueOr(value, newValue);
+					}
+				}
+
+				// If we didn't see any names, then the string is invalid.
+				if(finalValue == null)
+				{
+					throw new ArgumentException
+						(_("Arg_InvalidEnumName"));
+				}
+				return finalValue;
 			}
 
 	// Convert a constant into an enumerated value object.
@@ -177,6 +364,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				// TODO
 				return null;
 			}
+	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, sbyte value)
 			{
 				// TODO
@@ -192,6 +380,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				// TODO
 				return null;
 			}
+	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, ushort value)
 			{
 				// TODO
@@ -202,6 +391,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				// TODO
 				return null;
 			}
+	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, uint value)
 			{
 				// TODO
@@ -212,6 +402,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				// TODO
 				return null;
 			}
+	[CLSCompliant(false)]
 	public static Object ToObject(Type enumType, ulong value)
 			{
 				// TODO
@@ -279,19 +470,19 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
-				return Convert.ToByte(GetValue());
+				return Convert.ToByte(GetEnumValue());
 			}
 	sbyte IConvertible.ToSByte(IFormatProvider provider)
 			{
-				return Convert.ToSByte(GetValue());
+				return Convert.ToSByte(GetEnumValue());
 			}
 	short IConvertible.ToInt16(IFormatProvider provider)
 			{
-				return Convert.ToInt16(GetValue());
+				return Convert.ToInt16(GetEnumValue());
 			}
 	ushort IConvertible.ToUInt16(IFormatProvider provider)
 			{
-				return Convert.ToUInt16(GetValue());
+				return Convert.ToUInt16(GetEnumValue());
 			}
 	char IConvertible.ToChar(IFormatProvider provider)
 			{
@@ -301,19 +492,19 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
-				return Convert.ToInt32(GetValue());
+				return Convert.ToInt32(GetEnumValue());
 			}
 	uint IConvertible.ToUInt32(IFormatProvider provider)
 			{
-				return Convert.ToUInt32(GetValue());
+				return Convert.ToUInt32(GetEnumValue());
 			}
 	long IConvertible.ToInt64(IFormatProvider provider)
 			{
-				return Convert.ToInt64(GetValue());
+				return Convert.ToInt64(GetEnumValue());
 			}
 	ulong IConvertible.ToUInt64(IFormatProvider provider)
 			{
-				return Convert.ToUInt64(GetValue());
+				return Convert.ToUInt64(GetEnumValue());
 			}
 	float IConvertible.ToSingle(IFormatProvider provider)
 			{
@@ -346,67 +537,29 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 
 #endif // !ECMA_COMPAT
 
-	// Determine if an enumerated type is signed.
-	private static bool IsSigned(Type type)
-			{
-				Type utype = GetUnderlyingType(type);
-				return (utype == typeof(System.SByte) ||
-				        utype == typeof(System.Int16) ||
-				        utype == typeof(System.Int32) ||
-				        utype == typeof(System.Int64));
-			}
+	// Get the boxed version of an enumerated value in the underlying type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private Object GetEnumValue();
 
-	// Get the signed value of an enumerated value.
-	private long GetSigned(Type type)
-			{
-				// TODO.
-				return 0;
-			}
+	// Get the name of an underlying enumerated value for a type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String GetEnumName(Type enumType, Object value);
 
-	// Get the unsigned value of an enumerated value.
-	private ulong GetUnsigned(Type type)
-			{
-				// TODO.
-				return 0;
-			}
+	// Determine if a underlying value is a member of an enumerated type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool IsEnumValue(Type enumType, Object value);
 
-	// Get the boxed version of an enumerated value.
-	private Object GetValue()
-			{
-				Type type = GetUnderlyingType(GetType());
-				if(type == typeof(System.SByte))
-				{
-					return unchecked((sbyte)GetSigned(type));
-				}
-				else if(type == typeof(System.Byte))
-				{
-					return unchecked((byte)GetUnsigned(type));
-				}
-				else if(type == typeof(System.Int16))
-				{
-					return unchecked((short)GetSigned(type));
-				}
-				else if(type == typeof(System.UInt16))
-				{
-					return unchecked((ushort)GetUnsigned(type));
-				}
-				else if(type == typeof(System.Int32))
-				{
-					return unchecked((int)GetSigned(type));
-				}
-				else if(type == typeof(System.UInt32))
-				{
-					return unchecked((uint)GetUnsigned(type));
-				}
-				else if(type == typeof(System.Int64))
-				{
-					return GetSigned(type);
-				}
-				else
-				{
-					return GetUnsigned(type);
-				}
-			}
+	// Get an enumerated value by name.  The name may either be
+	// a constant name, or an integer value.  The return type is
+	// either an enumerated value in the specified type, or null
+	// if the name is invalid.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Object GetEnumValueFromName
+				(Type enumType, Object value, bool ignoreCase);
+
+	// Or two enumerated values together to form a new value.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Object EnumValueOr(Object value1, Object value2);
 
 }; // class Enum
 

@@ -22,3 +22,4 @@ NotSupp_ReadOnly=Operation not supported on read-only objects
 NotSupp_NotArrayType=Type is not an array type
 NotSupp_GetValueDirect=FieldInfo.GetValueDirect not supported, use GetValue instead
 NotSupp_SetValueDirect=FieldInfo.SetValueDirect not supported, use SetValue instead
+NotSupp_Remoting=Remoting is not supported

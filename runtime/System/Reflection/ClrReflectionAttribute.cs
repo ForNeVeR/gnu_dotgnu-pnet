@@ -1,5 +1,6 @@
 /*
- * ContextBoundObject.cs - Implementation of "System.ContextBoundObject".
+ * ClrReflectionAttribute.cs - Implementation of the
+ *			"System.Reflection.ClrReflectionAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,20 +19,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Reflection
 {
 
-#if ECMA_COMPAT
-internal
-#else
-public
-#endif
-abstract class ContextBoundObject : MarshalByRefObject
+// This attribute is used to mark methods on the stack that
+// have full access to the private internals of classes
+// when reflection is used.
+[AttributeUsage(AttributeTargets.Method)]
+internal sealed class ClrReflectionAttribute : Attribute
 {
 
 	// Constructor.
-	protected ContextBoundObject() : base() {}
+	public ClrReflectionAttribute() : base() {}
 
-}; // class ContextBoundObject
+}; // class ClrReflectionAttribute
 
-}; // namespace System
+}; // namespace System.Reflection

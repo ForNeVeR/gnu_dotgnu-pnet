@@ -1,5 +1,6 @@
 /*
- * ContextBoundObject.cs - Implementation of "System.ContextBoundObject".
+ * ObjRef.cs - Implementation of the
+ *			"System.Runtime.Remoting.ObjRef" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,20 +19,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Runtime.Remoting
 {
 
-#if ECMA_COMPAT
-internal
-#else
-public
-#endif
-abstract class ContextBoundObject : MarshalByRefObject
+#if !ECMA_COMPAT
+
+public class ObjRef
 {
 
-	// Constructor.
-	protected ContextBoundObject() : base() {}
+	// TODO
 
-}; // class ContextBoundObject
+}; // class ObjRef
 
-}; // namespace System
+#endif // !ECMA_COMPAT
+
+}; // namespace System.Runtime.Remoting

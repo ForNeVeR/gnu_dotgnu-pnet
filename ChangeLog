@@ -16,6 +16,9 @@
 	cscc/bf/bf_scanner.l: A sample frontend for cscc for brainf*ck as a 
 	tutorial for frontend developers.
 
+	* cscc/bf/bf_codegen.tc: allow the method name and classname to be
+	supplied as command line parameters.
+
 2003-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, cscc/Makefile.am, cscc/cscc.c, cscc/vb_main.c,

@@ -36,6 +36,10 @@ ILNode_GenDiscard(ILNode_BFProgram)
 {
 	const char * size= CCStringListGetValue(extension_flags,num_extension_flags,
 		"max-array-size");
+	char * name = CCStringListGetValue(extension_flags, num_extension_flags , "class-name");
+
+	char * method = CCStringListGetValue(extension_flags, num_extension_flags , "method-name");
+
 	if(size)
 	{
 		int value;
@@ -45,14 +49,17 @@ ILNode_GenDiscard(ILNode_BFProgram)
 			maxArraySize = value;
 		}
 	}
+
+	if(!name) name = "brainfck";
+	if(!method) method = "Main";
+	
 	fprintf(info->asmOutput,
-		".class public bf extends [mscorlib] System.Object \n"
+		".class public %s extends [mscorlib] System.Object \n"
 		"{\n"
-		".method static public void main() il managed\n"
+		".method static public void %s() il managed\n"
 		"{\n"
-		"\t.entrypoint\n"
 		"\t.locals (int8[] bfarray, int32 bfarrayloc)\n"
-		"\n");
+		"\n",name,method);
 
 	ILGenWordInsn(info,IL_OP_LDC_I4 , maxArraySize);
 	ILGenAdjust(info,1);

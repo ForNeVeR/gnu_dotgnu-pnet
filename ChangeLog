@@ -1,4 +1,8 @@
 
+2002-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/HACKING: describe more of the engine architecture.
+
 2002-04-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/common/cc_main.c:

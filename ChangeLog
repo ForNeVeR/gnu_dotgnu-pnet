@@ -4,6 +4,11 @@
 	* engine/pinvoke.c (_ILMakeCifForMethod): bug in the generation
 	of ffi types when the return type is a structure.
 
+	* engine/cvm.c, engine/engine.h, engine/unroll_x86.c,
+	engine/unroll_x86_arith.c, engine/unroll_x86_branch.c,
+	engine/unroll_x86_conv.c, engine/unroll_x86_ptr.c: fix various
+	x86 code generation bugs in the code unroller.
+
 2002-05-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/cvm_lengths.c, engine/unroll_x86.c,

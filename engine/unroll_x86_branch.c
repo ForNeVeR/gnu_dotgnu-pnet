@@ -18,7 +18,49 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef IL_UNROLL_CASES
+#ifdef IL_UNROLL_GLOBAL
+
+/*
+ * Perform a conditional branch to one of two program locations.
+ * It is assumed that "cond" refers to the inverse of the condition
+ * that we are really testing.
+ */
+static void BranchOnCondition(X86Unroll *unroll,
+							  int cond, int isSigned,
+						      unsigned char *truePC,
+							  unsigned char *falsePC)
+{
+	unsigned char *patch;
+
+	/* Flush the registers and restore special values.  Because this only
+	   uses "mov" and "pop" operations, it will not affect the flags */
+	FlushRegisterStack(unroll);
+	if((unroll->regsSaved & REG_EBP_MASK) != 0)
+	{
+		x86_pop_reg(unroll->out, X86_EBP);
+	}
+	unroll->regsSaved = 0;
+
+	/* Test the condition in such a way that we branch if false */
+	patch = unroll->out;
+	x86_branch8(unroll->out, cond, 0, isSigned);
+
+	/* Output the jump to the true PC */
+	FixStackHeight(unroll);
+	x86_mov_reg_imm(unroll->out, REG_PC, (int)truePC);
+	x86_jump_membase(unroll->out, REG_PC, 0);
+
+	/* Back-patch the branch instruction to point here */
+	x86_patch(patch, unroll->out);
+
+	/* Output the jump to the false PC */
+	FixStackHeight(unroll);
+	unroll->stackHeight = 0;
+	x86_mov_reg_imm(unroll->out, REG_PC, (int)falsePC);
+	x86_jump_membase(unroll->out, REG_PC, 0);
+}
+
+#elif defined(IL_UNROLL_CASES)
 
 case COP_BR:
 {
@@ -29,8 +71,6 @@ case COP_BR:
 	UNROLL_FLUSH();
 }
 break;
-
-#if 0	/* TODO */
 
 case COP_BEQ:
 case COP_BR_PEQ:
@@ -214,12 +254,10 @@ case COP_BRNULL:
 }
 break;
 
-#endif
-
 case COP_SWITCH:
 {
 	/* Switch statement */
-	char *patch;
+	unsigned char *patch;
 	UNROLL_BRANCH_START();
 	reg = GetTopWordRegister(&unroll);
 	x86_alu_reg_imm(unroll.out, X86_CMP, reg, CVM_ARG_SWITCH_LIMIT);

@@ -24,6 +24,7 @@
 #include "cvm_config.h"
 #include "cvm_format.h"
 #include "x86_codegen.h"
+#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -139,14 +140,10 @@ static void FlushRegisterStack(X86Unroll *unroll)
 }
 
 /*
- * Flush the registers and perform end of block processing.
+ * Fix the height of the CVM stack to match the cached location.
  */
-static void FlushEndOfBlock(X86Unroll *unroll)
+static void FixStackHeight(X86Unroll *unroll)
 {
-	/* Flush the register stack to the CVM stack */
-	FlushRegisterStack(unroll);
-
-	/* Update the REG_STACK register if necessary */
 	if(unroll->stackHeight > 0)
 	{
 		x86_alu_reg_imm(unroll->out, X86_ADD, REG_STACK,
@@ -157,14 +154,6 @@ static void FlushEndOfBlock(X86Unroll *unroll)
 		x86_alu_reg_imm(unroll->out, X86_SUB, REG_STACK,
 						-(unroll->stackHeight));
 	}
-	unroll->stackHeight = 0;
-
-	/* Restore the special registers that we used */
-	if((unroll->regsSaved & REG_EBP_MASK) != 0)
-	{
-		x86_pop_reg(unroll->out, X86_EBP);
-	}
-	unroll->regsSaved = 0;
 }
 
 /*
@@ -174,46 +163,24 @@ static void FlushEndOfBlock(X86Unroll *unroll)
  */
 static void BranchToPC(X86Unroll *unroll, unsigned char *pc)
 {
-	/* Flush the registers and restore special values */
-	FlushEndOfBlock(unroll);
+	/* Flush the register stack to the CVM stack */
+	FlushRegisterStack(unroll);
+
+	/* Update the REG_STACK register if necessary */
+	FixStackHeight(unroll);
+	unroll->stackHeight = 0;
+
+	/* Restore the special registers that we used */
+	if((unroll->regsSaved & REG_EBP_MASK) != 0)
+	{
+		x86_pop_reg(unroll->out, X86_EBP);
+	}
+	unroll->regsSaved = 0;
 
 	/* Reload the CVM interpreter's program counter */
 	x86_mov_reg_imm(unroll->out, REG_PC, (int)pc);
 
 	/* Jump to the instruction at the PC */
-	x86_jump_membase(unroll->out, REG_PC, 0);
-}
-
-/*
- * Perform a conditional branch to one of two program locations.
- * It is assumed that the condition codes have already been set
- * prior to calling this function, and that "cond" refers to the
- * inverse of the condition that we are really testing.
- */
-static void BranchOnCondition(X86Unroll *unroll,
-							  int cond, int isSigned,
-						      unsigned char *truePC,
-							  unsigned char *falsePC)
-{
-	unsigned char *patch;
-
-	/* Flush the registers and restore special values.  Because this only
-	   uses "mov" and "pop" operations, it will not affect the flags */
-	FlushEndOfBlock(unroll);
-
-	/* Test the condition in such a way that we branch if false */
-	patch = unroll->out;
-	x86_branch8(unroll->out, cond, 0, isSigned);
-
-	/* Output the jump to the true PC */
-	x86_mov_reg_imm(unroll->out, REG_PC, (int)truePC);
-	x86_jump_membase(unroll->out, REG_PC, 0);
-
-	/* Back-patch the branch instruction to point here */
-	x86_patch(patch, unroll->out);
-
-	/* Output the jump to the false PC */
-	x86_mov_reg_imm(unroll->out, REG_PC, (int)falsePC);
 	x86_jump_membase(unroll->out, REG_PC, 0);
 }
 
@@ -294,7 +261,9 @@ static int GetCachedWordRegister(X86Unroll *unroll, long local)
 		   variable is loaded again */
 		unroll->cachedLocal = -1;
 		unroll->cachedReg = -1;
-		return reg;
+
+		/* Tell the caller that the top-most register was reused */
+		return -1;
 	}
 	else
 	{
@@ -396,6 +365,7 @@ static void GetTopTwoWordRegisters(X86Unroll *unroll, int *reg1, int *reg2)
 			unroll->stackHeight -= 4;
 			x86_mov_reg_membase(unroll->out, *reg1, REG_STACK,
 								unroll->stackHeight, 4);
+			return;
 		}
 	}
 
@@ -617,8 +587,11 @@ static void FreeTopRegister(X86Unroll *unroll, long local)
 	int reg = unroll->pseudoStack[--(unroll->pseudoStackSize)];
 	unroll->cachedLocal = local;
 	unroll->cachedReg = reg;
-	unroll->regsUsed &= ~(1 << reg);
-	if(reg == REG_FPU)
+	if(reg != REG_FPU)
+	{
+		unroll->regsUsed &= ~(1 << reg);
+	}
+	else
 	{
 		--(unroll->fpStackSize);
 	}
@@ -695,6 +668,7 @@ static void PushRegister(X86Unroll *unroll, int reg)
 			do { \
 				*((void **)overwritePC) = unrollStart; \
 				inUnrollBlock = 0; \
+				unroll.cachedLocal = -1; \
 			} while (0)
 
 /*
@@ -791,6 +765,45 @@ int _ILCVMUnrollPossible(void)
 #define	UNROLL_BUFMIN		256
 
 /*
+ * Define this to enable debugging of translated code.
+ */
+/*#define UNROLL_DEBUG*/
+
+#ifdef UNROLL_DEBUG
+
+/*
+ * Dump translated code to stdout.
+ */
+static void DumpCode(ILMethod *method, unsigned char *start, int len)
+{
+	FILE *file = fopen("/tmp/unroll.s", "w");
+	if(!file)
+	{
+		return;
+	}
+	ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method),
+					 ILMethod_Name(method), method);
+	fputs(" ->\n", stdout);
+	fflush(stdout);
+	while(len > 0)
+	{
+		fprintf(file, ".byte %d\n", (int)(*start));
+		++start;
+		--len;
+	}
+	fclose(file);
+	system("as /tmp/unroll.s -o /tmp/unroll.o;objdump -d /tmp/unroll.o");
+	unlink("/tmp/unroll.s");
+	unlink("/tmp/unroll.o");
+	putc('\n', stdout);
+	fflush(stdout);
+}
+
+#endif /* UNROLL_DEBUG */
+
+/*
  * Include the global definitions needed by the cases.
  */
 #define	IL_UNROLL_GLOBAL
@@ -808,7 +821,7 @@ extern unsigned char const _ILCVMLengths[512];
 /* Imported from "cvmc.c" */
 int _ILCVMStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn);
 
-int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc)
+int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 {
 	X86Unroll unroll;
 	int inUnrollBlock;
@@ -822,6 +835,12 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc)
 	/* Find some room in the cache */
 	if(!_ILCVMStartUnrollBlock(coder, 32, &posn))
 	{
+		return 0;
+	}
+	if((posn.limit - posn.ptr) < UNROLL_BUFMIN)
+	{
+		/* Insufficient space to unroll the method */
+		ILCacheEndMethod(&posn);
 		return 0;
 	}
 
@@ -931,6 +950,11 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc)
 		UNROLL_FLUSH();
 	}
 
+#ifdef UNROLL_DEBUG
+	/* Dump the translated code */
+	DumpCode(method, posn.ptr, (int)(unroll.out - posn.ptr));
+#endif
+
 	/* Update the method cache to reflect the final position */
 	posn.ptr = unroll.out;
 	ILCacheEndMethod(&posn);
@@ -953,7 +977,7 @@ int _ILCVMUnrollPossible(void)
 	return 0;
 }
 
-int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc)
+int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 {
 	return 0;
 }

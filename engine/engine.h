@@ -397,7 +397,7 @@ int _ILCVMUnrollPossible(void);
 /*
  * Unroll a CVM method to native code.
  */
-int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc);
+int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method);
 
 #ifdef	__cplusplus
 };

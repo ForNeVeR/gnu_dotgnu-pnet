@@ -82,13 +82,11 @@ case COP_I2US:
 }
 break;
 
-#if 0		/* TODO */
-
 case COP_F2F:
 {
 	/* Truncate a floating point value to float32 */
 	UNROLL_START();
-	GetFPRegister(&unroll);
+	GetTopFPRegister(&unroll);
 	x86_alu_reg_imm(unroll.out, X86_SUB, X86_ESP, 4);
 	x86_fst_membase(unroll.out, X86_ESP, 0, 0, 1);
 	x86_fld_membase(unroll.out, X86_ESP, 0, 0);
@@ -101,7 +99,7 @@ case COP_F2D:
 {
 	/* Truncate a floating point value to float64 */
 	UNROLL_START();
-	GetFPRegister(&unroll);
+	GetTopFPRegister(&unroll);
 	x86_alu_reg_imm(unroll.out, X86_SUB, X86_ESP, 8);
 	x86_fst_membase(unroll.out, X86_ESP, 0, 1, 1);
 	x86_fld_membase(unroll.out, X86_ESP, 0, 1);
@@ -109,7 +107,5 @@ case COP_F2D:
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
-
-#endif
 
 #endif /* IL_UNROLL_CASES */

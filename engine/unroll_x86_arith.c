@@ -43,7 +43,7 @@ static void SetCondRegister(X86Unroll *unroll, int cond)
 	else
 	{
 		/* The register is not useable as an 8-bit destination */
-		char *patch1, *patch2;
+		unsigned char *patch1, *patch2;
 		patch1 = unroll->out;
 		x86_branch8(unroll->out, cond, 0, 1);
 		x86_clear_reg(unroll->out, reg);
@@ -246,6 +246,7 @@ case COP_ISHR_UN:
 		opc = X86_SHR;
 	}
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
+	x86_alu_reg_imm(unroll.out, X86_AND, reg2, 0x1F);
 	if(reg2 == X86_ECX)
 	{
 		/* The shift value is already in ECX */
@@ -285,7 +286,7 @@ case 0x100 + COP_PREFIX_FCMPL:
 case 0x100 + COP_PREFIX_FCMPG:
 {
 	/* Compare floating point values */
-	char *patch1, *patch2, *patch3;
+	unsigned char *patch1, *patch2, *patch3;
 	UNROLL_START();
 	GetTopTwoFPRegisters(&unroll, 0);
 
@@ -370,7 +371,7 @@ break;
 case 0x100 + COP_PREFIX_PCMP:
 {
 	/* Compare pointer values with -1, 0, or 1 result */
-	char *patch1, *patch2, *patch3;
+	unsigned char *patch1, *patch2, *patch3;
 	UNROLL_START();
 	GetTopTwoWordRegisters(&unroll, &reg, &reg2);
 	x86_alu_reg_reg(unroll.out, X86_CMP, reg, reg2);

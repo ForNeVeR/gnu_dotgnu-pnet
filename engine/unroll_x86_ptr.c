@@ -75,7 +75,7 @@ case COP_FREAD:
 {
 	/* Read a float32 value from a pointer */
 	UNROLL_START();
-	if(unroll.fpStackSize > 8)
+	if(unroll.fpStackSize >= 8)
 	{
 		/* The FP stack is full, so flush and restart */
 		FlushRegisterStack(&unroll);
@@ -92,7 +92,7 @@ case COP_DREAD:
 {
 	/* Read a float64 value from a pointer */
 	UNROLL_START();
-	if(unroll.fpStackSize > 8)
+	if(unroll.fpStackSize >= 8)
 	{
 		/* The FP stack is full, so flush and restart */
 		FlushRegisterStack(&unroll);

@@ -76,11 +76,6 @@ public interface IToolkitWindow
 	// Change the set of supported window decorations and functions.
 	void SetWindowFlags(ToolkitWindowFlags flags);
 
-	// Get the adjustment values for the client area.
-	// On entry, all values are zero.
-	void GetClientAreaAdjust(ref int leftAdjust, ref int topAdjust,
-							 ref int rightAdjust, ref int bottomAdjust);
-
 	// Move this window to above one of its siblings.
 	void MoveToAbove(IToolkitWindow sibling);
 

@@ -413,21 +413,7 @@ public class Control : IWin32Window
 			{
 				get
 				{
-					//CreateControl();
-					int leftAdjust = 0;
-					int topAdjust = 0;
-					int rightAdjust = 0;
-					int bottomAdjust = 0;
-				#if false	// TODO: fix this so that it doesn't need a window
-					if(toolkitWindow != null)
-					{
-						toolkitWindow.GetClientAreaAdjust
-							(ref leftAdjust, ref topAdjust,
-							 ref rightAdjust, ref bottomAdjust);
-					}
-				#endif
-					return new Size(width - leftAdjust - rightAdjust,
-									height - topAdjust - bottomAdjust);
+					return ClientToBounds(new Size(width, height));
 				}
 				set
 				{
@@ -2247,27 +2233,12 @@ public class Control : IWin32Window
 				// TODO: layout the child controls, apply docking rules, etc
 			}
 
-	// Inner core of setting the client size.
+	// Inner core of setting the client size.  In the default
+	// implementation, this is identical to "SetBoundsCore".
+	// Overridden by "Form" to add window border adjustments.
 	protected virtual void SetClientSizeCore(int x, int y)
 			{
-				//CreateControl();
-				int leftAdjust = 0;
-				int topAdjust = 0;
-				int rightAdjust = 0;
-				int bottomAdjust = 0;
-			#if false	// TODO: fix this so that it doesn't need a window
-				if(toolkitWindow != null)
-				{
-					toolkitWindow.GetClientAreaAdjust
-						(ref leftAdjust, ref topAdjust,
-						 ref rightAdjust, ref bottomAdjust);
-				}
-			#endif
-				SetBoundsCore
-					(left, top,
-					 x + leftAdjust + rightAdjust,
-					 y + topAdjust + bottomAdjust,
-					 BoundsSpecified.Size);
+				SetBoundsCore(left, top, x, y, BoundsSpecified.Size);
 			}
 
 	// Set a style bit.
@@ -4417,6 +4388,13 @@ public class Control : IWin32Window
 			{
 				// TODO: background images
 				return new SolidBrush(BackColor);
+			}
+
+	// Convert a client size into a window bounds size.
+	internal virtual Size ClientToBounds(Size size)
+			{
+				// Overridden by "Form" to handle window borders.
+				return size;
 			}
 
 #if !CONFIG_COMPACT_FORMS

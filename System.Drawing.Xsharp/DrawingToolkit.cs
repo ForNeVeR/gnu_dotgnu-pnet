@@ -489,6 +489,22 @@ public sealed class DrawingToolkit : IToolkit
 						(new System.Drawing.Point(0, 0), GetScreenSize());
 			}
 
+	// Get the adjustment values for a top-level window, to convert
+	// between window bounds and client bounds.  Each value should
+	// be >= 0 and indicate the number of pixels to subtract from the
+	// windows bounds to get the client bounds.
+	public void GetWindowAdjust(out int leftAdjust, out int topAdjust,
+						        out int rightAdjust, out int bottomAdjust,
+								ToolkitWindowFlags flags)
+			{
+				// X adds borders separately in the window manager.
+				// They are not counted in the size of the app window.
+				leftAdjust = 0;
+				topAdjust = 0;
+				rightAdjust = 0;
+				bottomAdjust = 0;
+			}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

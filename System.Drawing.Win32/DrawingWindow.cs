@@ -80,13 +80,6 @@ internal abstract class DrawingWindow : IToolkitWindow
 		d.WriteLine("DrawingWindow.Raise, hwnd="+hwnd);
 	}
 
-	// Get the adjustment values for the client area.
-	// On entry, all values are zero.
-	void IToolkitWindow.GetClientAreaAdjust(ref int leftAdjust, ref int topAdjust, ref int rightAdjust, ref int bottomAdjust)
-	{
-		//Nothing to do
-	}
-
 	// Move this window to below one of its siblings.
 	// Is this really useful?
 	void IToolkitWindow.MoveToBelow(IToolkitWindow sibling)

@@ -222,15 +222,6 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				InputType = inputType;
 			}
 
-	// Get the adjustment values for the client area.
-	// On entry, all values are zero.
-	void IToolkitWindow.GetClientAreaAdjust
-				(ref int leftAdjust, ref int topAdjust,
-				 ref int rightAdjust, ref int bottomAdjust)
-			{
-				// Nothing to do in this implementation.
-			}
-
 	// Move this window to above one of its siblings.
 	void IToolkitWindow.MoveToAbove(IToolkitWindow sibling)
 			{

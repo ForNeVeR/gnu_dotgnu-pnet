@@ -573,8 +573,8 @@ public class Form : ContainerControl
 				return ((windowFlags & flag) == flag);
 			}
 
-	// Set the current state of the window decoration flags on a window.
-	private void SetWindowFlags(IToolkitWindow window)
+	// Get the full set of window flags for this window.
+	private ToolkitWindowFlags GetFullFlags()
 			{
 				ToolkitWindowFlags flags = windowFlags;
 				switch(borderStyle)
@@ -617,7 +617,13 @@ public class Form : ContainerControl
 					}
 					break;
 				}
-				window.SetWindowFlags(flags);
+				return flags;
+			}
+
+	// Set the current state of the window decoration flags on a window.
+	private void SetWindowFlags(IToolkitWindow window)
+			{
+				window.SetWindowFlags(GetFullFlags());
 			}
 
 	// Set the current state of a window decoration flag.
@@ -1183,7 +1189,17 @@ public class Form : ContainerControl
 	// Inner core of setting the client size.
 	protected override void SetClientSizeCore(int x, int y)
 			{
-				base.SetClientSizeCore(x, y);
+				// Get the border adjustment values from the toolkit.
+				int leftAdjust = 0;
+				int topAdjust = 0;
+				int rightAdjust = 0;
+				int bottomAdjust = 0;
+				ToolkitManager.Toolkit.GetWindowAdjust
+					(out leftAdjust, out topAdjust,
+					 out rightAdjust, out bottomAdjust, GetFullFlags());
+				base.SetClientSizeCore
+					(x + leftAdjust + rightAdjust,
+					 y + topAdjust + bottomAdjust);
 			}
 
 	// Inner core of setting the visibility state.
@@ -1202,6 +1218,20 @@ public class Form : ContainerControl
 					OnClosed(EventArgs.Empty);
 					DestroyHandle();
 				}
+			}
+
+	// Convert a client size into a window bounds size.
+	internal override Size ClientToBounds(Size size)
+			{
+				int leftAdjust = 0;
+				int topAdjust = 0;
+				int rightAdjust = 0;
+				int bottomAdjust = 0;
+				ToolkitManager.Toolkit.GetWindowAdjust
+					(out leftAdjust, out topAdjust,
+					 out rightAdjust, out bottomAdjust, GetFullFlags());
+				return new Size(size.Width + leftAdjust + rightAdjust,
+								size.Height + topAdjust + bottomAdjust);
 			}
 
 #if !CONFIG_COMPACT_FORMS

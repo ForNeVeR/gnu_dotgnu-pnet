@@ -127,6 +127,14 @@ public interface IToolkit
 	// Get the working area of the screen, excluding task bars, etc.
 	Rectangle GetWorkingArea();
 
+	// Get the adjustment values for a top-level window, to convert
+	// between window bounds and client bounds.  Each value should
+	// be >= 0 and indicate the number of pixels to subtract from the
+	// windows bounds to get the client bounds.
+	void GetWindowAdjust(out int leftAdjust, out int topAdjust,
+						 out int rightAdjust, out int bottomAdjust,
+						 ToolkitWindowFlags flags);
+
 }; // interface IToolkit
 
 }; // namespace System.Drawing.Toolkit

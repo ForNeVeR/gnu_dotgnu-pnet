@@ -1,7 +1,7 @@
 /*
  * MulticastDelegate.cs - Implementation of "System.MulticastDelegate".
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ using System.Runtime.Serialization;
 public abstract class MulticastDelegate : Delegate
 {
 	// Previous delegate on the same invocation list.
-	private MulticastDelegate prev;
+	internal MulticastDelegate prev;
 
 #if CONFIG_REFLECTION
 	// Constructors.
@@ -303,11 +303,14 @@ public abstract class MulticastDelegate : Delegate
 #if CONFIG_SERIALIZATION
 
 	// Get serialization data for this delegate.
-	[TODO]
 	public override void GetObjectData
 				(SerializationInfo info, StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				DelegateSerializationHolder.SerializeMulticast(info, this);
 			}
 
 #endif // CONFIG_SERIALIZATION

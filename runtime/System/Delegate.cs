@@ -509,13 +509,20 @@ public abstract class Delegate : ICloneable
 #endif
 
 #if CONFIG_SERIALIZATION
+
 	// Get the serialization data for this object.
-	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
 			{
-				// TODO
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				DelegateSerializationHolder.Serialize
+					(info, 0, GetType(), target,
+					 MethodBase.GetMethodFromHandle(method));
 			}
+
 #endif
 
 }; // class Delegate

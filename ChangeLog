@@ -9,6 +9,9 @@
 	* runtime/System/AppDomain.cs, runtime/System/Reflection/Assembly.cs:
 	missing functionality in "Assembly".
 
+	* runtime/*: signature-compatibility fixes to a large number
+	of classes.
+
 2003-04-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/ASCIIEncoding.cs,

@@ -37,10 +37,8 @@ public abstract class SecurityAttribute : Attribute
 	private SecurityAction action;
 	private bool unrestricted;
 
-	// Constructors.  The first is specified by ECMA, but isn't present
-	// in any other implementation.  It is probably a bug in the ECMA
-	// specification, but it is relatively harmless to include it.
-	protected SecurityAttribute()
+	// Constructors.
+	internal SecurityAttribute()
 			{
 				action = SecurityAction.Demand;
 				unrestricted = false;

@@ -85,6 +85,12 @@ public class TypeDelegator : Type
 				return typeImpl.IsPrimitive;
 			}
 
+	// Implementation of the "IsValueType" property.
+	protected override bool IsValueTypeImpl()
+			{
+				return typeImpl.IsValueTypeImpl();
+			}
+
 	// General properties.
 	public override String AssemblyQualifiedName
 			{
@@ -174,6 +180,11 @@ public class TypeDelegator : Type
 			{
 				return typeImpl.GetEvents(bindingAttr);
 			}
+	public override EventInfo[] GetEvents()
+			{
+				return typeImpl.GetEvents();
+			}
+
 
 	// Get a field from this type.
 	public override FieldInfo GetField(String name, BindingFlags bindingAttr)
@@ -279,18 +290,6 @@ public class TypeDelegator : Type
 				return typeImpl.IsCOMObject;
 			}
 
-	// Implementation of the "IsContextful" property.
-	protected override bool IsContextfulImpl()
-			{
-				return typeImpl.IsContextful;
-			}
-
-	// Implementation of the "IsMarshalByRef" property.
-	protected override bool IsMarshalByRefImpl()
-			{
-				return typeImpl.IsMarshalByRef;
-			}
-
 	// Implement overridden properties.
 	public override Guid GUID
 			{
@@ -325,20 +324,6 @@ public class TypeDelegator : Type
 				get
 				{
 					return typeImpl.UnderlyingSystemType;
-				}
-			}
-	public override Type DeclaringType
-			{
-				get
-				{
-					return typeImpl.DeclaringType;
-				}
-			}
-	public override Type ReflectedType
-			{
-				get
-				{
-					return typeImpl.ReflectedType;
 				}
 			}
 

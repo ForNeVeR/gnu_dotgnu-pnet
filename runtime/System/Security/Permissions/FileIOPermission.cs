@@ -104,6 +104,38 @@ public sealed class FileIOPermission
 				this.allLocalFiles = allLocalFiles;
 				this.allFiles = allFiles;
 			}
+#if !ECMA_COMPAT
+	public FileIOPermission(FileIOPermissionAccess flag, String[] pathList)
+			{
+				if(pathList == null)
+				{
+					throw new ArgumentNullException("pathList");
+				}
+				if((flag & ~(FileIOPermissionAccess.AllAccess)) != 0)
+				{
+					throw new ArgumentException(_("Arg_FileIOAccess"));
+				}
+				this.state = PermissionState.None;
+				if((flag & FileIOPermissionAccess.Read) != 0)
+				{
+					readList = pathList;
+				}
+				if((flag & FileIOPermissionAccess.Write) != 0)
+				{
+					writeList = pathList;
+				}
+				if((flag & FileIOPermissionAccess.Append) != 0)
+				{
+					appendList = pathList;
+				}
+				if((flag & FileIOPermissionAccess.PathDiscovery) != 0)
+				{
+					discoveryList = pathList;
+				}
+				allLocalFiles = FileIOPermissionAccess.NoAccess;
+				allFiles = FileIOPermissionAccess.NoAccess;
+			}
+#endif
 
 	// Convert an XML value into a permissions value.
 	public override void FromXml(SecurityElement esd)

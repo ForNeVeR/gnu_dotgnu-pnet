@@ -31,7 +31,7 @@ public class WindowsPrincipal : IPrincipal
 	private IIdentity identity;
 
 	// Constructor.
-	public WindowsPrincipal(IIdentity ntIdentity)
+	public WindowsPrincipal(WindowsIdentity ntIdentity)
 			{
 				if(ntIdentity == null)
 				{

@@ -26,6 +26,7 @@ namespace System.Runtime.InteropServices
 
 [Guid("B196B286-BAB4-101A-B69C-00AA00341D07")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 public interface UCOMIConnectionPoint
 {
 	void Advise(Object pUnkSink, out int pdwCookie);

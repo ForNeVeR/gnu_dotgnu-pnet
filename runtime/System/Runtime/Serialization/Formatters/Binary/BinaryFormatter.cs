@@ -26,6 +26,7 @@ namespace System.Runtime.Serialization.Formatters.Binary
 
 using System.IO;
 using System.Runtime.Serialization;
+using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
 
 public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
@@ -36,6 +37,7 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 	private ISurrogateSelector surrogateSelector;
 	private FormatterAssemblyStyle assemblyFormat;
 	private FormatterTypeStyle typeFormat;
+	private TypeFilterLevel filterLevel;
 
 	// Constructor.
 	public BinaryFormatter()
@@ -130,14 +132,46 @@ public sealed class BinaryFormatter : IRemotingFormatter, IFormatter
 					typeFormat = value;
 				}
 			}
+	[ComVisible(false)]
+	public TypeFilterLevel FilterLevel
+			{
+				get
+				{
+					return filterLevel;
+				}
+				set
+				{
+					filterLevel = value;
+				}
+			}
 
 	// Deserialize the response to a method call.
+	[TODO]
 	public Object DeserializeMethodResponse
 				(Stream serializationStream, HeaderHandler handler,
 				 IMethodCallMessage methodCallMessage)
 			{
 				// TODO
 				return null;
+			}
+
+	// Unsafe version of "Deserialize".
+	[ComVisible(false)]
+	public Object UnsafeDeserialize(Stream serializationStream,
+							        HeaderHandler handler)
+			{
+				// We always do things safely.
+				return Deserialize(serializationStream, handler);
+			}
+
+	// Unsafe version of "DeserializeMethodResponse".
+	[ComVisible(false)]
+	public Object UnsafeDeserializeMethodResponse
+				(Stream serializationStream, HeaderHandler handler,
+				 IMethodCallMessage methodCallMessage)
+			{
+				return DeserializeMethodResponse
+					(serializationStream, handler, methodCallMessage);
 			}
 
 }; // class BinaryFormatter

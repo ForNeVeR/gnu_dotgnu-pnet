@@ -36,12 +36,12 @@ using System.Configuration.Assemblies;
 #if !ECMA_COMPAT
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
-public class Assembly : IClrProgramItem, IEvidenceFactory
+public class Assembly : IClrProgramItem
 #if CONFIG_REFLECTION
 	, ICustomAttributeProvider
 #endif
 #if !ECMA_COMPAT
-	, ISerializable
+	, ISerializable, IEvidenceFactory
 #endif
 {
 

@@ -26,6 +26,7 @@ namespace System.Runtime.InteropServices
 
 [Guid("00020401-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 public interface UCOMITypeInfo
 {
 	void AddressOfMember(int memid, INVOKEKIND invKind, out IntPtr ppv);

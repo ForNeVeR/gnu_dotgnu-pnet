@@ -28,13 +28,14 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
 #if ECMA_COMPAT
 internal
 #else
 public
 #endif
-class ResourceSet : IDisposable
+class ResourceSet : IDisposable, IEnumerable
 {
 	// Internal state.
 	protected IResourceReader Reader;
@@ -75,7 +76,7 @@ class ResourceSet : IDisposable
 			}
 
 	// Close this resource set.
-	public void Close()
+	public virtual void Close()
 			{
 				Dispose(true);
 			}
@@ -96,6 +97,21 @@ class ResourceSet : IDisposable
 	public void Dispose()
 			{
 				Dispose(true);
+			}
+
+	// Implement IEnumerable.
+	IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+
+	// Get the dictionary enumerator for this instance.
+#if !ECMA_COMPAT
+	[ComVisible(false)]
+#endif
+	public virtual IDictionaryEnumerator GetEnumerator()
+			{
+				return Table.GetEnumerator();
 			}
 
 	// Get the default reader type for this resource set.
@@ -240,7 +256,7 @@ class ResourceSet : IDisposable
 			}
 
 	// Read all resources into the hash table.
-	public virtual void ReadResources()
+	protected virtual void ReadResources()
 			{
 				IDictionaryEnumerator e = Reader.GetEnumerator();
 				while(e.MoveNext())

@@ -27,6 +27,9 @@ using System;
 
 public class OpCodes
 {
+	// Cannot instantiate this class.
+	private OpCodes() {}
+
 	public static readonly OpCode Nop =
 		 new OpCode("nop", 0x00, FlowControl.Next,
 		 			OpCodeType.Primitive, OperandType.InlineNone,
@@ -1125,7 +1128,7 @@ public class OpCodes
 		 			OpCodeType.Prefix, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Push0);
 
-	public static readonly OpCode Tail =
+	public static readonly OpCode Tailcall =
 		 new OpCode("tail.", 0xFE14, FlowControl.Meta,
 		 			OpCodeType.Prefix, OperandType.InlineNone,
 					StackBehaviour.Pop0, StackBehaviour.Push0);

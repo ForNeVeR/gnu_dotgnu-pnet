@@ -2,7 +2,7 @@
  * AssemblyName.cs - Implementation of the
  *		"System.Reflection.AssemblyName" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,11 @@ namespace System.Reflection
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Configuration.Assemblies;
 
-public class AssemblyName : ICloneable
+public sealed class AssemblyName
+	: ICloneable, ISerializable, IDeserializationCallback
 {
 	// Internal state.
 	private String codeBase;
@@ -45,6 +47,12 @@ public class AssemblyName : ICloneable
 
 	// Constructor.
 	public AssemblyName() {}
+	[TODO]
+	internal AssemblyName(SerializationInfo info,
+						  StreamingContext context)
+			{
+				// TODO
+			}
 
 	// Get the assembly name for a specific file.
 	[TODO]
@@ -55,7 +63,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get or set the code base for the assembly name.
-	public virtual String CodeBase
+	public String CodeBase
 			{
 				get
 				{
@@ -68,7 +76,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get or set the culture associated with the assembly name.
-	public virtual CultureInfo CultureInfo
+	public CultureInfo CultureInfo
 			{
 				get
 				{
@@ -80,8 +88,19 @@ public class AssemblyName : ICloneable
 				}
 			}
 
+	// Get the escaped code base for the assembly name.
+	[TODO]
+	public String EscapedCodeBase
+			{
+				get
+				{
+					// TODO
+					return codeBase;
+				}
+			}
+
 	// Get or set the assembly name flags.
-	public virtual AssemblyNameFlags Flags
+	public AssemblyNameFlags Flags
 			{
 				get
 				{
@@ -95,7 +114,7 @@ public class AssemblyName : ICloneable
 
 	// Get the full name of the assembly.
 	[TODO]
-	public virtual String FullName
+	public String FullName
 			{
 				get
 				{
@@ -105,7 +124,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get or set the hash algorithm for this assembly name.
-	public virtual AssemblyHashAlgorithm HashAlgorithm
+	public AssemblyHashAlgorithm HashAlgorithm
 			{
 				get
 				{
@@ -118,7 +137,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get or set the key pair for this assembly name.
-	public virtual StrongNameKeyPair KeyPair
+	public StrongNameKeyPair KeyPair
 			{
 				get
 				{
@@ -131,7 +150,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get or set the simple name of the assembly name.
-	public virtual String Name
+	public String Name
 			{
 				get
 				{
@@ -144,7 +163,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get or set the version information of the assembly name.
-	public virtual Version Version
+	public Version Version
 			{
 				get
 				{
@@ -157,7 +176,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Get or set the version compatibility value for the assembly name.
-	public virtual AssemblyVersionCompatibility VersionCompatibility
+	public AssemblyVersionCompatibility VersionCompatibility
 			{
 				get
 				{
@@ -170,7 +189,7 @@ public class AssemblyName : ICloneable
 			}
 
 	// Clone this object.
-	public virtual Object Clone()
+	public Object Clone()
 			{
 				return MemberwiseClone();
 			}
@@ -203,6 +222,23 @@ public class AssemblyName : ICloneable
 	public override String ToString()
 			{
 				return FullName;
+			}
+
+	// Get the serialization data for this object.
+	[TODO]
+	public void GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				// TODO
+			}
+
+	// Handle a deserialization callback on this object.
+	public void OnDeserialization(Object sender)
+			{
+				// Nothing to do here.
 			}
 
 }; // class AssemblyName

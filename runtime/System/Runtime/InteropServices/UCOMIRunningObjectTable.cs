@@ -26,6 +26,7 @@ namespace System.Runtime.InteropServices
 
 [Guid("00000010-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 public interface UCOMIRunningObjectTable
 {
 	void EnumRunning(out UCOMIEnumMoniker ppenumMoniker);

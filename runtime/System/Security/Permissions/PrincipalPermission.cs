@@ -335,6 +335,12 @@ public sealed class PrincipalPermission
 				return (state == PermissionState.Unrestricted);
 			}
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ToXml().ToString();
+			}
+
 }; // class PrincipalPermission
 
 #endif // !ECMA_COMPAT

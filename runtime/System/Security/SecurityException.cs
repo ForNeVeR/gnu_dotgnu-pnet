@@ -31,6 +31,8 @@ public class SecurityException : SystemException
 	// Internal state.
 	private String permissionState;
 	private Type permissionType;
+	private String grantedSet;
+	private String refusedSet;
 #endif
 
 	// Constructors.
@@ -46,6 +48,17 @@ public class SecurityException : SystemException
 			: base(info, context)
 			{
 				permissionState = info.GetString("PermissionState");
+			}
+	public SecurityException(String message, Type type)
+			: base(message)
+			{
+				this.permissionType = type;
+			}
+	public SecurityException(String message, Type type, String state)
+			: base(message)
+			{
+				this.permissionType = type;
+				this.permissionState = state;
 			}
 #endif
 
@@ -87,12 +100,36 @@ public class SecurityException : SystemException
 				}
 			}
 
+	// Get the granted permission set.
+	public String GrantedSet
+			{
+				get
+				{
+					return grantedSet;
+				}
+			}
+
+	// Get the refused permission set.
+	public String RefusedSet
+			{
+				get
+				{
+					return refusedSet;
+				}
+			}
+
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)
 			{
 				base.GetObjectData(info, context);
 				info.AddValue("PermissionState", permissionState);
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return base.ToString();
 			}
 
 #endif // !ECMA_COMPAT

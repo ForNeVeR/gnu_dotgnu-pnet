@@ -546,6 +546,7 @@ public class ILGenerator : IDetachItem
 				EmitByte((int)(val >> 48));
 				EmitByte((int)(val >> 56));
 			}
+	[CLSCompliant(false)]
 	public void Emit(OpCode opcode, sbyte val)
 			{
 				EmitOpcode(ref opcode);
@@ -1026,6 +1027,18 @@ public class ILGenerator : IDetachItem
 						helper.AddArgument(type);
 					}
 				}
+
+				// Emit the instruction using the constructed signature.
+				Emit(opcode, helper);
+			}
+	public void EmitCalli(OpCode opcode, CallingConvention unmanagedCallConv,
+						  Type returnType, Type[] paramTypes)
+			{
+				// Build the full signature.
+				SignatureHelper helper =
+					SignatureHelper.GetMethodSigHelper
+						(module, CallingConventions.Standard,
+						 unmanagedCallConv, returnType, paramTypes);
 
 				// Emit the instruction using the constructed signature.
 				Emit(opcode, helper);

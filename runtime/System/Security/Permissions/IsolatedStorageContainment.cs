@@ -31,7 +31,7 @@ public enum IsolatedStorageContainment
 	DomainIsolationByUser           = 0x0010,
 	AssemblyIsolationByUser         = 0x0020,
 	DomainIsolationByRoamingUser    = 0x0050,
-	AssemblyIsolationByRomaingUser  = 0x0060,
+	AssemblyIsolationByRoamingUser  = 0x0060,
 	AdministerIsolatedStorageByUser = 0x0070,
 	UnrestrictedIsolatedStorage     = 0x00F0
 

@@ -158,6 +158,12 @@ public struct OpCode
 				}
 			}
 
+	// Convert the opcode into a string.
+	public override String ToString()
+			{
+				return Name;
+			}
+
 }; // struct OpCode
 
 #endif // !ECMA_COMPAT

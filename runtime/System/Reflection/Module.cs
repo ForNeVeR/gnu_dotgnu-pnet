@@ -24,10 +24,16 @@ namespace System.Reflection
 #if CONFIG_REFLECTION
 
 using System;
+using System.Collections;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+using System.Security.Cryptography.X509Certificates;
 
 public class Module : IClrProgramItem, ICustomAttributeProvider
+#if !ECMA_COMPAT
+	, ISerializable
+#endif
 {
 	// Internal state.
 	internal IntPtr privateData;
@@ -55,6 +61,8 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 			}
 
 	// Get all module type fields that match a specific set of criteria.
+	// Note: the first is required by ECMA, but doesn't exist in the SDK,
+	// so you should avoid using it if at all possible.
 	public FieldInfo[] GetFields(BindingFlags bindingAttr)
 			{
 				return GetModuleType().GetFields(bindingAttr);
@@ -103,6 +111,8 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 			}
 
 	// Get all module type methods that match a specific set of criteria.
+	// Note: the first is required by ECMA, but doesn't exist in the SDK,
+	// so you should avoid using it if at all possible.
 	public MethodInfo[] GetMethods(BindingFlags bindingAttr)
 			{
 				return GetModuleType().GetMethods(bindingAttr);
@@ -150,7 +160,7 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 #if !ECMA_COMPAT
 
 	// Get the scope name for this module.
-	public virtual String ScopeName
+	public String ScopeName
 			{
 				get
 				{
@@ -159,17 +169,17 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 			}
 
 	// Get custom attributes for this module.
-	public Object[] GetCustomAttributes(bool inherit)
+	public virtual Object[] GetCustomAttributes(bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, inherit);
 			}
-	public Object[] GetCustomAttributes(Type type, bool inherit)
+	public virtual Object[] GetCustomAttributes(Type type, bool inherit)
 			{
 				return ClrHelpers.GetCustomAttributes(this, type, inherit);
 			}
 	
 	// Determine if a custom attribute is defined for this module.
-	public bool IsDefined(Type type, bool inherit)
+	public virtual bool IsDefined(Type type, bool inherit)
 			{
 				return ClrHelpers.IsDefined(this, type, inherit);
 			}
@@ -194,6 +204,97 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 	// Determine if this module is a resource.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public bool IsResource();
+
+	// Get the signer certificate for this module.
+	public X509Certificate GetSignerCertificate()
+			{
+				// Not used in this implementation.
+				return null;
+			}
+
+	// Get the serialization data for this module.
+	[TODO]
+	public virtual void GetObjectData(SerializationInfo info,
+							  		  StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				// TODO
+			}
+
+	// A type filter that searches on name.
+	private static bool FilterTypeNameImpl(Type type, Object criteria)
+			{
+				String name = (criteria as String);
+				if(name != null)
+				{
+					if(name.EndsWith("*"))
+					{
+						return type.FullName.StartsWith
+							(name.Substring(0, name.Length - 1));
+					}
+					else
+					{
+						return (type.FullName == name);
+					}
+				}
+				return false;
+			}
+
+	// A type filter that searches on name while ignoring case.
+	private static bool FilterTypeNameIgnoreCaseImpl
+				(Type type, Object criteria)
+			{
+				String name = (criteria as String);
+				if(name != null)
+				{
+					if(name.EndsWith("*"))
+					{
+						name = name.Substring(0, name.Length - 1);
+						String fullName = type.FullName;
+						if(fullName.Length < name.Length)
+						{
+							return false;
+						}
+						return (String.Compare(fullName, 0, name, 0,
+											   name.Length, true) == 0);
+					}
+					else
+					{
+						return (String.Compare(type.FullName, name, true)
+									== 0);
+					}
+				}
+				return false;
+			}
+
+	// Declare the standard type filters.
+	public static readonly TypeFilter FilterTypeName =
+			new TypeFilter(FilterTypeNameImpl);
+	public static readonly TypeFilter FilterTypeNameIgnoreCase =
+			new TypeFilter(FilterTypeNameIgnoreCaseImpl);
+
+	// Find all types that match a specified filter criteria.
+	public virtual Type[] FindTypes(TypeFilter filter,
+									Object filterCriteria)
+			{
+				Type[] types = GetTypes();
+				if(filter == null || types == null)
+				{
+					return types;
+				}
+				ArrayList list = new ArrayList();
+				foreach(Type type in types)
+				{
+					if(filter(type, filterCriteria))
+					{
+						list.Add(type);
+					}
+				}
+				return (Type[])(list.ToArray(typeof(Type)));
+			}
 
 #else // ECMA_COMPAT
 

@@ -28,12 +28,19 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Threading;
+using System.Security;
 
 // This class is not ECMA-compatible, strictly speaking.  But it is
 // usually necessary for any application that uses PInvoke or C.
 
+#if !ECMA_COMPAT
+[SuppressUnmanagedCodeSecurity]
+#endif
 public sealed class Marshal
 {
+	// This class cannot be instantiated.
+	private Marshal() {}
+
 	// Character size information.
 	public static readonly int SystemDefaultCharSize = 1;
 	public static readonly int SystemMaxDBCSCharSize = 6;
@@ -275,6 +282,20 @@ public sealed class Marshal
 				WriteInt16(ObjectToPtr(ptr), ofs, val);
 			}
 
+	// Write a 16-bit integer (as a char) to an unmanaged pointer.
+	public static void WriteInt16(IntPtr ptr, int ofs, char val)
+			{
+				WriteInt16(ptr, ofs, (short)val);
+			}
+	public static void WriteInt16(IntPtr ptr, char val)
+			{
+				WriteInt16(ptr, 0, (short)val);
+			}
+	public static void WriteInt16(Object ptr, int ofs, char val)
+			{
+				WriteInt16(ObjectToPtr(ptr), ofs, (short)val);
+			}
+
 	// Write a 32-bit integer to an unmanaged pointer.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void WriteInt32(IntPtr ptr, int ofs, int val);
@@ -360,7 +381,7 @@ public sealed class Marshal
 				throw new NotImplementedException();
 			}
 #if CONFIG_REFLECTION
-	public static int GetComSlotForMethodInfo(MethodInfo m)
+	public static int GetComSlotForMethodInfo(MemberInfo m)
 			{
 				throw new NotImplementedException();
 			}
@@ -389,6 +410,11 @@ public sealed class Marshal
 			}
 #endif
 	public static Object GetObjectForIUnknown(IntPtr pUnk)
+			{
+				throw new NotImplementedException();
+			}
+	public static Object[] GetObjectsForNativeVariants
+				(IntPtr aSrcNativeVariant, int cVars)
 			{
 				throw new NotImplementedException();
 			}
@@ -567,8 +593,8 @@ public sealed class Marshal
 			}
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void PtrToStructureInternal(IntPtr ptr, 
-					Object structure);
+	extern private static void PtrToStructureInternal
+				(IntPtr ptr, Object structure);
 	public static void PtrToStructure(IntPtr ptr, Object structure)
 	{
 		if(structure.GetType().IsValueType)

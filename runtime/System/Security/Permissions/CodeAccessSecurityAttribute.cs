@@ -33,10 +33,8 @@ using System.Security;
 			 	AllowMultiple=true, Inherited=false)]
 public abstract class CodeAccessSecurityAttribute : SecurityAttribute
 {
-	// Constructors.  The first is specified by ECMA, but isn't present
-	// in any other implementation.  It is probably a bug in the ECMA
-	// specification, but it is relatively harmless to include it.
-	protected CodeAccessSecurityAttribute()
+	// Constructors.
+	internal CodeAccessSecurityAttribute()
 			: base()
 			{
 				// Nothing to do here.

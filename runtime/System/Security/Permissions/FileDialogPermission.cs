@@ -219,6 +219,12 @@ public sealed class FileDialogPermission
 				}
 			}
 
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return ToXml().ToString();
+			}
+
 }; // class FileDialogPermission
 
 #endif // !ECMA_COMPAT

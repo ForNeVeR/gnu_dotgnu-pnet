@@ -26,6 +26,7 @@ namespace System.Runtime.InteropServices
 
 [Guid("B196B285-BAB4-101A-B69C-00AA00341D07")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 public interface UCOMIEnumConnectionPoints
 {
 	void Clone(out UCOMIEnumConnectionPoints ppenum);

@@ -145,7 +145,8 @@ public abstract class CodeGroup
 	public abstract CodeGroup Copy();
 
 	// Create the XML form of this code group.
-	public virtual void CreateXml(SecurityElement element, PolicyLevel level)
+	protected virtual void CreateXml
+				(SecurityElement element, PolicyLevel level)
 			{
 				// Nothing to do in the base class.
 			}
@@ -266,7 +267,8 @@ public abstract class CodeGroup
 			}
 
 	// Parse the XML form of this code group.
-	public virtual void ParseXml(SecurityElement element, PolicyLevel level)
+	protected virtual void ParseXml
+				(SecurityElement element, PolicyLevel level)
 			{
 				// Nothing to do in the base class.
 			}

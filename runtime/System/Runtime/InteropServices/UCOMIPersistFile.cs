@@ -26,6 +26,7 @@ namespace System.Runtime.InteropServices
 
 [Guid("0000010b-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 public interface UCOMIPersistFile
 {
 	void GetClassID(out Guid pClassID);

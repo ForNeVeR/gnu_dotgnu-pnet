@@ -85,7 +85,8 @@ public sealed class FileCodeGroup : CodeGroup
 
 	// Create the XML form of this code group.
 	[TODO]
-	public override void CreateXml(SecurityElement element, PolicyLevel level)
+	protected override void CreateXml
+				(SecurityElement element, PolicyLevel level)
 			{
 				// TODO
 			}
@@ -136,7 +137,8 @@ public sealed class FileCodeGroup : CodeGroup
 
 	// Parse the XML form of this code group.
 	[TODO]
-	public override void ParseXml(SecurityElement element, PolicyLevel level)
+	protected override void ParseXml
+				(SecurityElement element, PolicyLevel level)
 			{
 				// TODO
 			}

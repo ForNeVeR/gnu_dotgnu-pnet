@@ -172,29 +172,32 @@ public sealed class PolicyLevel
 				// TODO
 			}
 	[TODO]
-	public void RevoveFullTrustAssembly(StrongNameMembershipCondition snMC)
+	public void RemoveFullTrustAssembly(StrongNameMembershipCondition snMC)
 			{
 				// TODO
 			}
 
 	// Remove a named permission set.
 	[TODO]
-	public void RemoveNamedPermissionSet(NamedPermissionSet permSet)
+	public NamedPermissionSet RemoveNamedPermissionSet
+					(NamedPermissionSet permSet)
 			{
 				if(permSet == null)
 				{
 					throw new ArgumentNullException("permSet");
 				}
 				// TODO
+				return permSet;
 			}
 	[TODO]
-	public void RemoveNamedPermissionSet(String name)
+	public NamedPermissionSet RemoveNamedPermissionSet(String name)
 			{
 				if(name == null)
 				{
 					throw new ArgumentNullException("name");
 				}
 				// TODO
+				return null;
 			}
 
 	// Reset to the default state.

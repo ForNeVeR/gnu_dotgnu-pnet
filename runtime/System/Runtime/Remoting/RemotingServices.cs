@@ -28,6 +28,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
+using System.Diagnostics;
 
 public sealed class RemotingServices
 {
@@ -178,6 +179,7 @@ public sealed class RemotingServices
 
 	// Set the log remoting stage.
 	[TODO]
+	[Conditional("REMOTING_PERF")]
 	public static void LogRemotingStage(int stage)
 			{
 				// TODO

@@ -29,6 +29,8 @@ using System.Security.Policy;
 
 public sealed class SecurityManager
 {
+	// Cannot instantiate this class.
+	private SecurityManager() {}
 
 	// Determine if a specific permission has been granted.
 	[TODO]
@@ -55,6 +57,14 @@ public sealed class SecurityManager
 	[TODO]
 	public static PolicyLevel LoadPolicyLevelFromString
 				(String str, PolicyLevelType type)
+			{
+				// TODO
+				return null;
+			}
+
+	// Get an enumerator for the policy hierarchy.
+	[TODO]
+	public static IEnumerator PolicyHierarchy()
 			{
 				// TODO
 				return null;
@@ -88,14 +98,6 @@ public sealed class SecurityManager
 	// Resolve policy group information.
 	[TODO]
 	public static IEnumerator ResolvePolicyGroups(Evidence evidence)
-			{
-				// TODO
-				return null;
-			}
-
-	// Get an enumerator for the policy hierarchy.
-	[TODO]
-	public static IEnumerator PolicyHeirarchy()
 			{
 				// TODO
 				return null;
@@ -138,12 +140,14 @@ public sealed class SecurityManager
 				}
 			}
 
-	// Print information about the granted permissions for the
-	// current application domain's assemblies.
+	// Get the zone and origin information
 	[TODO]
-	public static void PrintGrantInfo()
+	public static void GetZoneAndOrigin(out ArrayList zone,
+										out ArrayList origin)
 			{
 				// TODO
+				zone = null;
+				origin = null;
 			}
 
 }; // class SecurityManager

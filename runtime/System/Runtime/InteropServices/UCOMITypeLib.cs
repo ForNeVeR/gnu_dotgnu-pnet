@@ -26,6 +26,7 @@ namespace System.Runtime.InteropServices
 
 [Guid("00020402-0000-0000-C000-000000000046")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 public interface UCOMITypeLib
 {
 	void FindName(String szNameBuf, int lHashVal, UCOMITypeInfo[] ppTInfo,

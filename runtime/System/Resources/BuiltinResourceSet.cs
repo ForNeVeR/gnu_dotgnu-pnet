@@ -178,7 +178,7 @@ internal sealed class BuiltinResourceSet : ResourceSet
 			}
 
 	// Read all resources into the hash table.
-	public override void ReadResources()
+	protected override void ReadResources()
 			{
 				if(!readResourcesCalled)
 				{
@@ -189,6 +189,13 @@ internal sealed class BuiltinResourceSet : ResourceSet
 					}
 					readResourcesCalled = true;
 				}
+			}
+
+	// Get the dictionary enumerator for this instance.
+	public override IDictionaryEnumerator GetEnumerator()
+			{
+				ReadResources();
+				return base.GetEnumerator();
 			}
 
 }; // class BuiltinResourceSet

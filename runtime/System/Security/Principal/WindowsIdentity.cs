@@ -30,7 +30,8 @@ using System.Runtime.Serialization;
 // still need to provide this class for API-compatibility.
 
 [Serializable]
-public class WindowsIdentity : IIdentity, IDeserializationCallback
+public class WindowsIdentity
+	: IIdentity, ISerializable, IDeserializationCallback
 {
 	// Internal state.
 	private IntPtr userToken;
@@ -74,6 +75,37 @@ public class WindowsIdentity : IIdentity, IDeserializationCallback
 				this.type = type;
 				this.acctType = acctType;
 				this.isAuthenticated = isAuthenticated;
+			}
+	public WindowsIdentity(String sUserPrincipalName)
+			{
+				this.userToken = IntPtr.Zero;
+				this.name = sUserPrincipalName;
+				this.type = "NTLM";
+				this.acctType = WindowsAccountType.Normal;
+				this.isAuthenticated = false;
+			}
+	public WindowsIdentity(String sUserPrincipalName, String type)
+			{
+				this.userToken = IntPtr.Zero;
+				this.name = sUserPrincipalName;
+				this.type = type;
+				this.acctType = WindowsAccountType.Normal;
+				this.isAuthenticated = false;
+			}
+	[TODO]
+	public WindowsIdentity(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				// TODO
+			}
+
+	// Destructor.
+	~WindowsIdentity()
+			{
+				// Nothing to do here in this implementation.
 			}
 
 	// Get the type of authentication used.
@@ -137,6 +169,14 @@ public class WindowsIdentity : IIdentity, IDeserializationCallback
 				{
 					return userToken;
 				}
+			}
+
+	// Implement the ISerializable interface.
+	[TODO]
+	void ISerializable.GetObjectData(SerializationInfo info,
+									 StreamingContext context)
+			{
+				// TODO
 			}
 
 	// Implement the IDeserializationCallback interface.

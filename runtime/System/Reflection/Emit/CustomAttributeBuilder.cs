@@ -30,7 +30,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 
 [TODO]
-public sealed class CustomAttributeBuilder
+public class CustomAttributeBuilder
 {
 	[TODO]
 	public CustomAttributeBuilder(ConstructorInfo con, 

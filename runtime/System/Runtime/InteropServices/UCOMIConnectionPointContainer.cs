@@ -26,6 +26,7 @@ namespace System.Runtime.InteropServices
 
 [Guid("B196B284-BAB4-101A-B69C-00AA00341D07")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[ComImport]
 public interface UCOMIConnectionPointContainer
 {
 	void EnumConnectionPoints(out UCOMIEnumConnectionPoints ppEnum);

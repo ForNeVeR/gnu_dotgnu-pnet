@@ -27,11 +27,19 @@ namespace System.Runtime.Serialization
 using System.Reflection;
 using System.Security.Permissions;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization.Formatters;
 
 public sealed class FormatterServices
 {
 	// This class cannot be instantiated.
 	private FormatterServices() {}
+
+	// Check whether a type can be deserialized.
+	[TODO]
+	public static void CheckTypeSecurity(Type t, TypeFilterLevel securityLevel)
+			{
+				// TODO
+			}
 
 	// Extract data from a specified object.
 	[SecurityPermission(SecurityAction.LinkDemand,
@@ -165,6 +173,12 @@ public sealed class FormatterServices
 						(_("Serialize_NotClrType"));
 				}
 				return InternalGetUninitializedObject(type);
+			}
+	[SecurityPermission(SecurityAction.LinkDemand,
+						Flags=SecurityPermissionFlag.SerializationFormatter)]
+	public static Object GetSafeUninitializedObject(Type type)
+			{
+				return GetUninitializedObject(type);
 			}
 
 	// Populate the members of a specific object with given data values.

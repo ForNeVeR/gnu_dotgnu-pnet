@@ -200,6 +200,7 @@ public class AsyncResult : IAsyncResult
 #if CONFIG_REMOTING
 
 	// Implement the IMessageSink interface.
+	[TODO]
 	public IMessageSink NextSink
 			{
 				get
@@ -208,16 +209,33 @@ public class AsyncResult : IAsyncResult
 					return null;
 				}
 			}
+	[TODO]
 	public virtual IMessageCtrl AsyncProcessMessage
 				(IMessage msg, IMessageSink replySink)
 			{
 				// TODO
 				return null;
 			}
+	[TODO]
 	public virtual IMessage SyncProcessMessage(IMessage msg)
 			{
 				// TODO
 				return null;
+			}
+
+	// Get the reply message.
+	[TODO]
+	public IMessage GetReplyMessage()
+			{
+				// TODO
+				return null;
+			}
+
+	// Set the message control information for this result.
+	[TODO]
+	public virtual void SetMessageCtrl(IMessageCtrl mc)
+			{
+				// TODO
 			}
 
 #endif // CONFIG_REMOTING

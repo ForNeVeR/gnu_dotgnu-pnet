@@ -37,7 +37,7 @@ internal sealed class SelectNodeList : XmlNodeList
 	internal XPathNodeIterator iterator;
 	internal XPathNodeIterator current;
 	internal ArrayList cached;
-	private int count = -1;
+	private int count = 0;
 	private bool finished;
 
 	// Create a new node list.

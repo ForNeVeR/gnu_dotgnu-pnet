@@ -1492,8 +1492,8 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 	result.type = ILType_Boolean;
 
 	/* Determine if there is an implicit reference or boxing coercion */
-	if(ILCoerceKind(info, node->expr1, &(node->expr1), value.type, type,
-					IL_CONVERT_REFERENCE | IL_CONVERT_BOXING))
+	if(ILCanCoerceKind(info, value.type, type,
+					   IL_CONVERT_REFERENCE | IL_CONVERT_BOXING))
 	{
 		if(ILTypeIsReference(value.type))
 		{

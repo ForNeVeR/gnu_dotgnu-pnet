@@ -13,6 +13,9 @@
 	cscc/c/c_lvalue.tc, cscc/c/c_oper.tc, cscc/c/c_stubs.tc:
 	implement the "*" and "&" pointer operators.
 
+	* cscc/c/c_grammar.y: bug fix - wrong node type was being used
+	for array access operators.
+
 2002-08-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_misc.tc, cscc/c/c_builtin.tc, cscc/c/c_defs.tc,

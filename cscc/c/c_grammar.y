@@ -925,7 +925,7 @@ StringLiteral
 PostfixExpression
 	: PrimaryExpression
 	| PostfixExpression '[' Expression ']'	{
-				$$ = ILNode_ArrayAccess_create(FixIdentifierNode($1, 0), $3);
+				$$ = ILNode_CArrayAccess_create(FixIdentifierNode($1, 0), $3);
 			}
 	| PostfixExpression '(' ')'	{
 				$$ = ILNode_CInvocationExpression_create

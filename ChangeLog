@@ -44,6 +44,10 @@
 
 	* Xsharp/XsharpPCF.c: fix a reference to a non-existent function.
 
+	* System.Drawing.Xsharp/mssR08.pcf, Xsharp/Font.cs,
+	Xsharp/XsharpPCF.c: fix some metrics issues in "mssR08.pcf" and
+	enable the PCF-based font renderer.
+
 2003-11-30  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/TabControl.cs:

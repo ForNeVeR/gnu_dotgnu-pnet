@@ -264,7 +264,6 @@ public class Font
 				// Determine if we are running in a Latin1 locale.
 				bool latin1 = IsLatin1();
 
-#if false
 				// Do we have a registered font for this name, size, and style?
 				RegisteredFont font;
 				lock(typeof(Font))
@@ -298,7 +297,6 @@ public class Font
 							(family, pointSize, style, font.loadedData);
 					}
 				}
-#endif
 
 				// Re-adjust point sizes for Windows vs X differences.
 				// "Microsoft Sans Serif 8.25" is approx "Helvetica 12".

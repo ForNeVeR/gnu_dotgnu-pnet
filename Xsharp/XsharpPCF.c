@@ -523,7 +523,6 @@ void XSharpDrawStringPCF(Display *dpy, Drawable drawable, GC gc,
 			memset(ximage->data + line * ximage->bytes_per_line, 0, width / 8);
 		}
 
-		printf("%c %d\n", buffer[0], overall_ink.x);
 		/* Render the bitmaps for the characters into the XImage */
 		xposn = -(overall_ink.x);
 		num = posn;
@@ -627,7 +626,7 @@ void XSharpDrawStringPCF(Display *dpy, Drawable drawable, GC gc,
 	/* Draw the underline and strike-out */
 	if(line1 != y || line2 != y)
 	{
-		XSharpTextExtentsStruct(dpy, fontSet, str, origOffset, origLength,
+		XSharpTextExtentsStruct(dpy, &(image->fs), str, origOffset, origLength,
 				 				&overall_ink, &overall_logical);
 		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
 		if(line1 != y)

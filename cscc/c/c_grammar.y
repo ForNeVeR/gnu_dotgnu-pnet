@@ -181,6 +181,7 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 %token K_NINT			"`__nint__'"
 %token K_TRUE			"`__true__'"
 %token K_FALSE			"`__false__'"
+%token K_NATIVE			"`__native__'"
 %token K_FUNCTION		"`__FUNCTION__'"
 %token K_FUNC			"`__func__'"
 
@@ -733,7 +734,9 @@ StructOrUnionSpecifier
 
 StructOrUnion
 	: K_STRUCT					{ $$ = C_STKIND_STRUCT; }
+	| K_STRUCT K_NATIVE			{ $$ = C_STKIND_STRUCT_NATIVE; }
 	| K_UNION					{ $$ = C_STKIND_UNION; }
+	| K_UNION K_NATIVE			{ $$ = C_STKIND_UNION_NATIVE; }
 	;
 
 StructDeclarationList

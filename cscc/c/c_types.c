@@ -40,7 +40,7 @@ ILType *CTypeCreateStructOrUnion(ILGenInfo *info, const char *name,
 	char *newName;
 
 	/* Determine which prefix to use */
-	if(kind == C_STKIND_STRUCT)
+	if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
 	{
 		prefix = "struct ";
 		prefixLen = 7;
@@ -374,20 +374,37 @@ int CTypeAlreadyDefined(ILType *type)
 /*
  * Set the correct class attributes for a struct or union.
  */
-static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo)
+static void SetupStructAttrs(ILGenInfo *info, ILClass *classInfo, int kind)
 {
-	/* Mark the structure as needing explicit layout */
-	ILClassSetAttrs(classInfo, ~((ILUInt32)0),
-					IL_META_TYPEDEF_PUBLIC |
-					IL_META_TYPEDEF_SERIALIZABLE |
-					IL_META_TYPEDEF_EXPLICIT_LAYOUT |
-					IL_META_TYPEDEF_SEALED |
-					IL_META_TYPEDEF_VALUE_TYPE);
-
-	/* The type initially has a packing alignment of 1 and a total size of 0 */
-	if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
+	if(kind != C_STKIND_STRUCT_NATIVE)
 	{
-		ILGenOutOfMemory(info);
+		/* Mark the structure as needing explicit layout */
+		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+						IL_META_TYPEDEF_PUBLIC |
+						IL_META_TYPEDEF_SERIALIZABLE |
+						IL_META_TYPEDEF_EXPLICIT_LAYOUT |
+						IL_META_TYPEDEF_SEALED |
+						IL_META_TYPEDEF_VALUE_TYPE);
+	
+		/* The type initially has a packing alignment
+		   of 1 and a total size of 0 */
+		if(kind != C_STKIND_UNION_NATIVE)
+		{
+			if(!ILClassLayoutCreate(info->image, 0, classInfo, 1, 0))
+			{
+				ILGenOutOfMemory(info);
+			}
+		}
+	}
+	else
+	{
+		/* Mark native structures with sequential layout */
+		ILClassSetAttrs(classInfo, ~((ILUInt32)0),
+						IL_META_TYPEDEF_PUBLIC |
+						IL_META_TYPEDEF_SERIALIZABLE |
+						IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
+						IL_META_TYPEDEF_SEALED |
+						IL_META_TYPEDEF_VALUE_TYPE);
 	}
 }
 
@@ -414,7 +431,7 @@ ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
 	{
 		ILGenOutOfMemory(info);
 	}
-	SetupStructAttrs(info, classInfo);
+	SetupStructAttrs(info, classInfo, kind);
 
 	/* The type definition is ready to go */
 	return type;
@@ -423,6 +440,7 @@ ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
 ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 							  		 const char *funcName, int kind)
 {
+	int parentKind;
 	long number;
 	ILNestedInfo *nested;
 	ILClass *parentInfo;
@@ -435,6 +453,21 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	/* Get the number to assign to the anonymous type */
 	if(parent)
 	{
+		/* If the parent is native, then the child must be too */
+		parentKind = CTypeGetStructKind(parent);
+		if(parentKind == C_STKIND_STRUCT_NATIVE ||
+		   parentKind == C_STKIND_UNION_NATIVE)
+		{
+			if(kind == C_STKIND_STRUCT)
+			{
+				kind = C_STKIND_STRUCT_NATIVE;
+			}
+			else if(kind == C_STKIND_UNION)
+			{
+				kind = C_STKIND_UNION_NATIVE;
+			}
+		}
+
 		/* Count the nested types to determine the number */
 		parentInfo = ILType_ToValueType(parent);
 		number = 1;
@@ -465,7 +498,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 		{
 			ILGenOutOfMemory(info);
 		}
-		if(kind == C_STKIND_STRUCT)
+		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
 		{
 			newName = AppendThree(info, "struct ", newName, name);
 		}
@@ -477,7 +510,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	else
 	{
 		/* Format the name as "struct (N)" */
-		if(kind == C_STKIND_STRUCT)
+		if(kind == C_STKIND_STRUCT || kind == C_STKIND_STRUCT_NATIVE)
 		{
 			sprintf(name, "struct (%ld)", number);
 		}
@@ -499,7 +532,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 	{
 		ILGenOutOfMemory(info);
 	}
-	SetupStructAttrs(info, classInfo);
+	SetupStructAttrs(info, classInfo, kind);
 
 	/* The type definition is ready to go */
 	ILFree(newName);
@@ -632,9 +665,19 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 
 	/* Determine the size and alignment of the new field */
 	size = CTypeSizeAndAlign(fieldType, &align);
-	if(size == CTYPE_DYNAMIC || size == CTYPE_UNKNOWN || !layout)
+	if(layout)
 	{
-		return 0;
+		if(size == CTYPE_DYNAMIC || size == CTYPE_UNKNOWN)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		if(size == CTYPE_UNKNOWN)
+		{
+			return 0;
+		}
 	}
 
 	/* Create the new field */
@@ -642,6 +685,20 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	if(!field)
 	{
 		ILGenOutOfMemory(info);
+	}
+
+	/* Bail out early if this is a native struct or union */
+	if(!layout)
+	{
+		if(isUnion)
+		{
+			/* Unions lay out all of their fields at offset zero */
+			if(!ILFieldLayoutCreate(info->image, 0, field, 0))
+			{
+				ILGenOutOfMemory(info);
+			}
+		}
+		return field;
 	}
 
 	/* Perform explicit layout on the field */
@@ -783,11 +840,25 @@ int CTypeGetStructKind(ILType *type)
 	{
 		if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "struct ", 7))
 		{
-			return C_STKIND_STRUCT;
+			if(ILClass_IsExplicitLayout(ILType_ToValueType(type)))
+			{
+				return C_STKIND_STRUCT;
+			}
+			else
+			{
+				return C_STKIND_STRUCT_NATIVE;
+			}
 		}
 		else if(!strncmp(ILClass_Name(ILType_ToValueType(type)), "union ", 6))
 		{
-			return C_STKIND_UNION;
+			if(ILClassLayoutGetFromOwner(ILType_ToValueType(type)) != 0)
+			{
+				return C_STKIND_UNION;
+			}
+			else
+			{
+				return C_STKIND_UNION_NATIVE;
+			}
 		}
 	}
 	return -1;
@@ -1202,7 +1273,7 @@ ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 		}
 
 		/* If we don't have explicit information, then this is probably a
-		   foreign value type which has a dynamic size */
+		   native structure or foreign value type which has a dynamic size */
 		*align = 1;
 		return CTYPE_DYNAMIC;
 	}

@@ -29,7 +29,9 @@ extern	"C" {
  * Kinds of structs or unions that may be encountered by the C parser.
  */
 #define	C_STKIND_STRUCT			0
-#define	C_STKIND_UNION			1
+#define	C_STKIND_STRUCT_NATIVE	1
+#define	C_STKIND_UNION			2
+#define	C_STKIND_UNION_NATIVE	3
 
 /*
  * Create a struct or union type with a specific name.  If the

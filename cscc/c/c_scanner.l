@@ -162,6 +162,7 @@ WHITE			[ \t\v\r\f]
 "__nint__"				{ return K_NINT; }
 "__true__"				{ return K_TRUE; }
 "__false__"				{ return K_FALSE; }
+"__native__"			{ return K_NATIVE; }
 
 "__FUNCTION__"			{ return K_FUNCTION; }
 "__PRETTY_FUNCTION__"	{ return K_FUNCTION; }

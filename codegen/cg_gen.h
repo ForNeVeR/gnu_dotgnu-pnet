@@ -271,6 +271,22 @@ int ILGenImplementsAllInterfaces(ILGenInfo *info, ILNode *node,
 							     ILClass *classInfo,
 								 ILGenInterfaceErrorFunc error);
 
+/*
+ * Perform cleanup processing at the end of code generation
+ * for a method.
+ */
+void ILGenEndMethod(ILGenInfo *info);
+
+/*
+ * Push a "try" context.
+ */
+void ILGenPushTry(ILGenInfo *info);
+
+/*
+ * Pop a "try" context.
+ */
+void ILGenPopTry(ILGenInfo *info);
+
 #ifdef	__cplusplus
 };
 #endif

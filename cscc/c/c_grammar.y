@@ -91,6 +91,7 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 		ILType		   *type;
 		ILType		   *parent;
 	}					structInfo;
+	ILMethod           *methodInfo;
 
 }
 
@@ -172,7 +173,6 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 %token K_VA_START		"`__builtin_va_start'"
 %token K_VA_ARG			"`__builtin_va_arg'"
 %token K_VA_END			"`__builtin_va_end'"
-%token K_JMP_BUF		"`__builtin_jmp_buf'"
 %token K_SETJMP			"`__builtin_setjmp'"
 %token K_LONGJMP		"`__builtin_longjmp'"
 %token K_ALLOCA			"`__builtin_alloca'"
@@ -628,7 +628,6 @@ TypeSpecifier
 	| K_WCHAR			{ CDeclSpecSetType($$, ILType_Char); }
 	| K_NINT			{ CDeclSpecSetType($$, ILType_Int); }
 	| K_VA_LIST			{ CDeclSpecSetType($$, CTypeCreateVaList(&CCCodeGen)); }
-	| K_JMP_BUF			{ CDeclSpecSetType($$, CTypeCreateJmpBuf(&CCCodeGen)); }
 	| StructOrUnionSpecifier		{ CDeclSpecSetType($$, $1); }
 	| EnumSpecifier					{ CDeclSpecSetType($$, $1); }
 	| K_TYPEOF '(' Expression ')'	{
@@ -1273,14 +1272,25 @@ ExternalDefinition
 
 FunctionDefinition
 	: Declarator OptParamDeclarationList '{'	{
-				/* Create the function */
-				/* TODO */
+				CDeclSpec spec;
+				ILMethod *method;
+
+				/* The default return type in this case is "int" */
+				CDeclSpecSetType(spec, ILType_Int32);
+
+				/* Create the method block from the function header */
+				method = CFunctionCreate
+					(&CCCodeGen, $1.name, $1.node, spec, $1, $2);
 
 				/* Create a new scope to hold the function body */
 				CCurrentScope = ILScopeCreate(&CCCodeGen, CCurrentScope);
 
 				/* Declare the parameters into the new scope */
-				/* TODO */
+				CFunctionDeclareParams(&CCCodeGen, method);
+				$<methodInfo>$ = method;
+
+				/* Set the new function name */
+				functionName = $1.name;
 			}
 	  FunctionBody '}'		{
 	  			/* Wrap the function body in a new scope record */
@@ -1296,17 +1306,27 @@ FunctionDefinition
 				CCurrentScope = ILScopeGetParent(CCurrentScope);
 
 				/* Output the finished function */
-				/* TODO */
+				CFunctionOutput(&CCCodeGen, $<methodInfo>4, body);
+
+				/* Reset the function name */
+				functionName = "";
 	  		}
 	| DeclarationSpecifiers Declarator OptParamDeclarationList '{'	{
-				/* Create the function */
-				/* TODO */
+				ILMethod *method;
+
+				/* Create the method block from the function header */
+				method = CFunctionCreate
+					(&CCCodeGen, $2.name, $2.node, $1, $2, $3);
 
 				/* Create a new scope to hold the function body */
 				CCurrentScope = ILScopeCreate(&CCCodeGen, CCurrentScope);
 
 				/* Declare the parameters into the new scope */
-				/* TODO */
+				CFunctionDeclareParams(&CCCodeGen, method);
+				$<methodInfo>$ = method;
+
+				/* Set the new function name */
+				functionName = $2.name;
 			}
 	  FunctionBody '}'		{
 	  			/* Wrap the function body in a new scope record */
@@ -1322,7 +1342,10 @@ FunctionDefinition
 				CCurrentScope = ILScopeGetParent(CCurrentScope);
 
 				/* Output the finished function */
-				/* TODO */
+				CFunctionOutput(&CCCodeGen, $<methodInfo>5, body);
+
+				/* Reset the function name */
+				functionName = "";
 	  		}
 	;
 

@@ -63,6 +63,21 @@ static char *EnumScopeName(const char *name)
 	return (ILInternAppendedString(str1, str2)).string;
 }
 
+/*
+ * Convert a node into a persistent value that will survive
+ * the treecc scope being flushed with "yynodepop()".
+ */
+static ILNode *PersistNode(ILNode *node)
+{
+	ILNode *newNode = (ILNode *)ILMalloc(sizeof(ILNode));
+	if(!newNode)
+	{
+		CCOutOfMemory();
+	}
+	*newNode = *node;
+	return newNode;
+}
+
 void CScopeGlobalInit()
 {
 	CGlobalScope = CCurrentScope = ILScopeCreate(&CCCodeGen, 0);
@@ -122,7 +137,38 @@ void CScopeAddEnum(const char *name, ILType *type)
 void CScopeAddTypedef(const char *name, ILType *type, ILNode *node)
 {
 	ILScopeDeclareItem(CCurrentScope, name,
-					   C_SCDATA_TYPEDEF, node, 0, type);
+					   C_SCDATA_TYPEDEF, PersistNode(node), 0, type);
+}
+
+void CScopeAddFunction(const char *name, ILNode *node, ILType *signature)
+{
+	ILScopeDeclareItem(CGlobalScope, name,
+					   C_SCDATA_FUNCTION, PersistNode(node), 0, signature);
+}
+
+void CScopeAddInferredFunction(const char *name, ILType *signature)
+{
+	ILScopeDeclareItem(CGlobalScope, name,
+					   C_SCDATA_FUNCTION_INFERRED, 0, 0, signature);
+}
+
+void CScopeUpdateFunction(void *data, ILNode *node, ILType *signature)
+{
+	/* TODO */
+}
+
+void CScopeAddParam(const char *name, unsigned index, ILType *type)
+{
+	ILScopeDeclareItem(CGlobalScope, name,
+					   C_SCDATA_PARAMETER_VAR, 0,
+					   (void *)(ILNativeUInt)index, type);
+}
+
+void CScopeAddLocal(const char *name, unsigned index, ILType *type)
+{
+	ILScopeDeclareItem(CGlobalScope, name,
+					   C_SCDATA_LOCAL_VAR, 0,
+					   (void *)(ILNativeUInt)index, type);
 }
 
 int CScopeGetKind(void *data)

@@ -299,14 +299,6 @@ ILType *CTypeCreateVaList(ILGenInfo *info)
 	return ILFindSystemType(info, "ArgIterator");
 }
 
-ILType *CTypeCreateJmpBuf(ILGenInfo *info)
-{
-	/* The "OpenSystem.Languages.C.JmpBuf" class is the
-	   underlying representation for "__builtin_jmp_buf" */
-	return ILFindNonSystemType(info, "JmpBuf",
-							   "OpenSystem.Languages.C");
-}
-
 ILType *CTypeCreateVoidPtr(ILGenInfo *info)
 {
 	static ILType *voidPtr = 0;
@@ -935,16 +927,6 @@ int CTypeIsForeign(ILType *type)
 				return 0;
 			}
 		}
-		else if(!strcmp(name, "JmpBuf"))
-		{
-			/* The "OpenSystem.Languages.C.JmpBuf" class corresponds
-			   to C's "__builtin_jmp_buf" type */
-			name = ILClass_Namespace(ILType_ToValueType(type));
-			if(name && !strcmp(name, "OpenSystem.Languages.C"))
-			{
-				return 0;
-			}
-		}
 	}
 	else if(ILType_IsPrimitive(type))
 	{
@@ -1450,21 +1432,6 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 			{
 				/* "System.ArgIterator" is known to C as "__builtin_va_list" */
 				name = ILDupString("__builtin_va_list");
-				if(!name)
-				{
-					ILGenOutOfMemory(info);
-				}
-				return name;
-			}
-		}
-		else if(!strcmp(cname, "JmpBuf"))
-		{
-			cname = ILClass_Namespace(ILType_ToValueType(type));
-			if(cname != 0 && !strcmp(cname, "OpenSystem.Languages.C"))
-			{
-				/* "OpenSystem.Languages.C.JmpBuf" is known to
-				   C as "__builtin_jmp_buf" */
-				name = ILDupString("__builtin_jmp_buf");
 				if(!name)
 				{
 					ILGenOutOfMemory(info);

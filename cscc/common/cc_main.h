@@ -66,6 +66,11 @@ extern int const CCPluginJVMSupported;
 extern int const CCPluginSkipCodeGen;
 
 /*
+ * Set to non-zero to generate modules and assemblies earlier.
+ */
+extern int const CCPluginGenModulesEarly;
+
+/*
  * Initialize the plugin after the command-line options have
  * been processed, but before the input files are parsed.
  * Returns zero if the program should abort.

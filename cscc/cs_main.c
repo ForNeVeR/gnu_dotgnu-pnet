@@ -39,6 +39,7 @@ int const CCPluginOptionParseMode = CMDLINE_PARSE_PLUGIN;
 int const CCPluginUsesPreproc = CC_PREPROC_CSHARP;
 int const CCPluginJVMSupported = 1;
 int const CCPluginSkipCodeGen = 0;
+int const CCPluginGenModulesEarly = 0;
 
 int CCPluginInit(void)
 {

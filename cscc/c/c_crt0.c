@@ -185,11 +185,12 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 
 	/* Generate the ".start" crt0 code for the program */
 	fputs(".method public static void '.start'"
-				"([.library]System.String[]) cil managed\n", stream);
+				"(class [.library]System.String[] args) cil managed\n",
+				stream);
 	fputs("{\n\t.entrypoint\n", stream);
 	fputs("\t.maxstack\t3\n", stream);
-	fputs("\t.locals (int32, int8 * *, int8 * *, [.library]System.Object)\n",
-		  stream);
+	fputs("\t.locals (int32, int8 * *, int8 * *, "
+				"class [.library]System.Object)\n", stream);
 
 	/* Wrap the body of the method in a try block */
 	fputs(".try { \n", stream);
@@ -200,7 +201,8 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	fprintf(stream, "\tldc.i4.%d\n", ptrSize);
 	fputs("\tldloca\t0\n", stream);
 	fputs("\tcall\tnative int 'OpenSystem.Languages.C'.'Crt0'::"
-			"GetArgV([.library]System.String[], int32, int32 &)\n", stream);
+			"GetArgV(class [.library]System.String[], int32, int32 &)\n",
+			stream);
 	fputs("\tstloc.1\n", stream);
 	fputs("\tcall\tnative int 'OpenSystem.Languages.C'.'Crt0'::"
 				"GetEnvironment()\n", stream);
@@ -221,7 +223,7 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 
 	/* Perform other system startup tasks */
 	fputs("\tcall\tvoid 'OpenSystem.Languages.C'.'Crt0'::Startup"
-				"([.library]System.String)\n", stream);
+				"(class [.library]System.String)\n", stream);
 
 	/* Invoke the "main" function with the required arguments */
 	if((flags & C_MAIN_ARGC) != 0)
@@ -258,8 +260,9 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	fputs("} catch [.library]System.Object {\n", stream);
 	fputs("\tstloc.3\n", stream);
 	fputs("\tldloc.3\n", stream);
-	fputs("\tcall\t[.library]System.Object 'OpenSystem.Languages.C'.'Crt0'::"
-				"ShutdownWithException([.library]System.Object)\n", stream);
+	fputs("\tcall\tclass [.library]System.Object 'OpenSystem.Languages.C'."
+				"'Crt0'::ShutdownWithException"
+				"(class [.library]System.Object)\n", stream);
 	fputs("\tthrow\n", stream);
 	fputs("}\n", stream);
 	fputs("L1:\n", stream);

@@ -108,6 +108,13 @@ int CCMain(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Generate modules and assemblies now if instructed to do so early */
+	if(CCPluginGenModulesEarly)
+	{
+		CCCodeGen.hasUnsafe = 1;
+		ILGenModulesAndAssemblies(&CCCodeGen);
+	}
+
 	/* Parse all of the input files */
 	saw_stdin = 0;
 	CCParseTree = 0;
@@ -169,7 +176,10 @@ int CCMain(int argc, char *argv[])
 	/* Generate the code if no errors occurred in the previous phases */
 	if(CCHaveErrors == 0 && !CCPluginSkipCodeGen)
 	{
-		ILGenModulesAndAssemblies(&CCCodeGen);
+		if(!CCPluginGenModulesEarly)
+		{
+			ILGenModulesAndAssemblies(&CCCodeGen);
+		}
 		if(CCCodeGen.outputIsJava)
 		{
 			JavaGenDiscard(CCParseTree, &CCCodeGen);

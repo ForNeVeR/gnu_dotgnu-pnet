@@ -26,6 +26,7 @@
 #include <cscc/c/c_lexutils.h>
 #include <cscc/c/c_types.h>
 #include <cscc/c/c_declspec.h>
+#include <cscc/c/c_function.h>
 #include <codegen/cg_scope.h>
 #include <cscc/c/c_scope.h>
 
@@ -53,6 +54,11 @@ void CGenCrt0(ILGenInfo *info, FILE *stream);
  * End the code generation process, flushing remaining definitions.
  */
 void CGenEndCode(ILGenInfo *info);
+
+/*
+ * Output the attributes that are attached to a program item.
+ */
+void CGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item);
 
 #ifdef	__cplusplus
 };

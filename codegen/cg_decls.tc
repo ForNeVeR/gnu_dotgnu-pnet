@@ -497,6 +497,43 @@ static void AllocJLVars(ILGenInfo *info, ILType *signature,
 	}
 }
 
+void ILGenEndMethod(ILGenInfo *info)
+{
+	ILGotoEntry *gotoEntry, *nextGoto;
+
+	/* Flush the static array initialization classes used by the method */
+	if(!(info->outputIsJava))
+	{
+		ILArrayInitFlush(info);
+	}
+
+	/* Clear the stack heights */
+	info->stackHeight = 0;
+	info->maxStackHeight = 0;
+
+	/* Clear the return type information */
+	info->returnType = ILType_Void;
+	info->returnVar = -1;
+	info->returnLabel = ILLabel_Undefined;
+
+	/* Clear the temporary throw variable */
+	info->throwVariable = -1;
+
+	/* Clear the "goto" list */
+	gotoEntry = info->gotoList;
+	while(gotoEntry != 0)
+	{
+		nextGoto = gotoEntry->next;
+		ILFree(gotoEntry);
+		gotoEntry = nextGoto;
+	}
+	info->gotoList = 0;
+
+	/* Clear the list of temporary variables */
+	info->numTempVars = 0;
+	info->tempLocalBase = 0;
+}
+
 /*
  * Generate discard code for a method.
  */
@@ -505,7 +542,6 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 							 ILMethod *method)
 {
 	ILPInvoke *pinvoke;
-	ILGotoEntry *gotoEntry, *nextGoto;
 	int outputLabel;
 	ILParameter *param;
 	ILMachineType returnMachineType;
@@ -704,37 +740,8 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	ILDumpIdentifier(outstream, ILMethod_Name(method), 0, 0);
 	putc('\n', outstream);
 
-	/* Flush the static array initialization classes used by the method */
-	if(!(info->outputIsJava))
-	{
-		ILArrayInitFlush(info);
-	}
-
-	/* Clear the stack heights */
-	info->stackHeight = 0;
-	info->maxStackHeight = 0;
-
-	/* Clear the return type information */
-	info->returnType = ILType_Void;
-	info->returnVar = -1;
-	info->returnLabel = ILLabel_Undefined;
-
-	/* Clear the temporary throw variable */
-	info->throwVariable = -1;
-
-	/* Clear the "goto" list */
-	gotoEntry = info->gotoList;
-	while(gotoEntry != 0)
-	{
-		nextGoto = gotoEntry->next;
-		ILFree(gotoEntry);
-		gotoEntry = nextGoto;
-	}
-	info->gotoList = 0;
-
-	/* Clear the list of temporary variables */
-	info->numTempVars = 0;
-	info->tempLocalBase = 0;
+	/* Clean up values that were used to generate the method code */
+	ILGenEndMethod(info);
 }
 
 %}

@@ -114,10 +114,7 @@ void CTypeMarkForOutput(ILGenInfo *info, ILType *type)
 	}
 }
 
-/*
- * Output the attributes that are attached to a program item.
- */
-static void OutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
+void CGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 {
 	ILAttribute *attr;
 	ILMethod *ctor;
@@ -184,7 +181,7 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 	fputs("\n{\n", stream);
 
 	/* Output the attributes that are attached to the class */
-	OutputAttributes(info, stream, ILToProgramItem(classInfo));
+	CGenOutputAttributes(info, stream, ILToProgramItem(classInfo));
 
 	/* Output the class layout information if it is present */
 	classLayout = ILClassLayoutGetFromOwner(classInfo);
@@ -226,7 +223,7 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 		putc('\n', stream);
 
 		/* Dump the attributes on the field */
-		OutputAttributes(info, stream, ILToProgramItem(field));
+		CGenOutputAttributes(info, stream, ILToProgramItem(field));
 
 		/* Mark the field's type for later output */
 		CTypeMarkForOutput(info, ILField_Type(field));

@@ -29,12 +29,16 @@ extern	"C" {
  * Scope data item kinds.  Must not overlap with the values
  * defined in "codegen/cg_scope.h".
  */
-#define	C_SCDATA_TYPEDEF			100
-#define	C_SCDATA_STRUCT_OR_UNION	101
-#define	C_SCDATA_ENUM				102
-#define	C_SCDATA_LOCAL_VAR			103
-#define	C_SCDATA_GLOBAL_VAR			104
-#define	C_SCDATA_FUNCTION			105
+#define	C_SCDATA_TYPEDEF				100
+#define	C_SCDATA_STRUCT_OR_UNION		101
+#define	C_SCDATA_ENUM					102
+#define	C_SCDATA_LOCAL_VAR				103
+#define	C_SCDATA_PARAMETER_VAR			104
+#define	C_SCDATA_GLOBAL_VAR				105
+#define	C_SCDATA_GLOBAL_VAR_FORWARD		106
+#define	C_SCDATA_FUNCTION				107
+#define	C_SCDATA_FUNCTION_FORWARD		108
+#define	C_SCDATA_FUNCTION_INFERRED		109
 
 /*
  * The current scope.
@@ -99,6 +103,31 @@ void CScopeAddEnum(const char *name, ILType *type);
 void CScopeAddTypedef(const char *name, ILType *type, ILNode *node);
 
 /*
+ * Add a function definition to the global scope.
+ */
+void CScopeAddFunction(const char *name, ILNode *node, ILType *signature);
+
+/*
+ * Add an inferred function definition to the global scope.
+ */
+void CScopeAddInferredFunction(const char *name, ILType *signature);
+
+/*
+ * Update a forward reference to a function with actual information.
+ */
+void CScopeUpdateFunction(void *data, ILNode *node, ILType *signature);
+
+/*
+ * Add information about a parameter to the current scope.
+ */
+void CScopeAddParam(const char *name, unsigned index, ILType *type);
+
+/*
+ * Add information about a non-static local variable to the current scope.
+ */
+void CScopeAddLocal(const char *name, unsigned index, ILType *type);
+
+/*
  * Get the scope data kind.
  */
 int CScopeGetKind(void *data);
@@ -112,6 +141,11 @@ ILType *CScopeGetType(void *data);
  * Get the node information associated with a scope data item.
  */
 ILNode *CScopeGetNode(void *data);
+
+/*
+ * Get the local variable index associated with a scope data item.
+ */
+unsigned CScopeGetIndex(void *data);
 
 #ifdef	__cplusplus
 };

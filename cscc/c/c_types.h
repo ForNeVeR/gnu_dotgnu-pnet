@@ -64,11 +64,6 @@ ILType *CTypeCreatePointer(ILGenInfo *info, ILType *refType, int nativePtr);
 ILType *CTypeCreateVaList(ILGenInfo *info);
 
 /*
- * Create a C type reference for "builtin_jmp_buf".
- */
-ILType *CTypeCreateJmpBuf(ILGenInfo *info);
-
-/*
  * Create a C type reference for "void *".
  */
 ILType *CTypeCreateVoidPtr(ILGenInfo *info);

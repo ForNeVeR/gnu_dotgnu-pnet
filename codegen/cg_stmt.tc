@@ -87,6 +87,16 @@ static void PushFinally(ILGenInfo *info, ILLabel *finallyLabel)
  */
 #define	PopLoop(info)	(--((info)->loopStackSize))
 
+void ILGenPushTry(ILGenInfo *info)
+{
+	PushFinally(info, 0);
+}
+
+void ILGenPopTry(ILGenInfo *info)
+{
+	PopLoop(info);
+}
+
 %}
 
 /*

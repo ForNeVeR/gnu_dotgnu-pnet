@@ -29,7 +29,8 @@ ALL_LINES=`echo '#include <errno.h>' | $* -E - | grep '^# ' | \
 	sed -e '1,$s/^[^"]*"\([^"]*\)".*$/\1/g'`
 for f in $ALL_LINES; do
 	if [ -n "$f" -a -z "$FILE" ]; then
-		if grep -q EINVAL "$f"; then
+		CHKLINE=`grep EINVAL "$f"`
+		if [ -n "$CHKLINE" ]; then
 			FILE="$f"
 		fi
 	fi

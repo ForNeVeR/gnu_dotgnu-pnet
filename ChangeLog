@@ -7,11 +7,14 @@
 	* cscc/csharp/cs_oper.tc: Fix the EqualitySem to correctly lookup
 	op_Equality operations after coercion (and minor typo).
 
-	* engine/lib_enum.c: Fix masking features to use retain the sign
+	* engine/lib_enum.c: Fix masking features to retain the sign
 	of the masked value.
 
 	* engine/lib_enum.c: Use ", " instead of "," for seperating flagged
 	enums.
+
+	* engine/lib_enum.c: Allow enums to be cast to their underlying
+	types and other enums with the same underlying type.
 
 2003-07-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -91,6 +91,14 @@ static int CanCastClass(ILImage *image, ILClass *fromClass, ILClass *toClass)
 	}
 	else
 	{
+		fromType=ILTypeGetEnumType(ILClassToType(fromClass));
+		toType=ILTypeGetEnumType(ILClassToType(toClass));
+		
+		if(ILTypeIdentical(fromType,toType))
+		{
+			return 1;
+		}
+
 	   	return ILClassInheritsFrom(fromClass, toClass);
 	}
 }

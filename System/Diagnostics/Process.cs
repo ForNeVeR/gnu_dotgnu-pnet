@@ -240,7 +240,7 @@ public class Process
 				get
 				{
 					Running();
-					return GetMainWindowHandle(processHandle);
+					return GetMainWindowHandle(processID);
 				}
 			}
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -1073,7 +1073,7 @@ public class Process
 	// Get the main window handle for a process.
 	// Returns IntPtr.Zero if unknown.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static IntPtr GetMainWindowHandle(IntPtr processHandle);
+	extern private static IntPtr GetMainWindowHandle(int processID);
 
 	// Get the title of a main window.  Returns null if unknown.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -1,4 +1,9 @@
 
+2003-07-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Diagnostics/Process.cs: modify GetMainWindowHandle to
+	take the process ID instead of the process handle.
+
 2003-07-20  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Double.cs: Make ECMA compatible by adding some 

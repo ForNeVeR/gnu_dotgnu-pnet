@@ -205,21 +205,6 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 			baseName=0;
 		}
 	
-		if(baseName)
-		{
-			namelen=strlen(baseName);
-			if(namelen >= 9 && strcmp(baseName + namelen - 9, "Attribute") == 0)
-			{
-				namelen=strlen(name);
-				if(namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0)
-				{
-					defn->name = ILInternAppendedString
-									(ILInternString(defn->name, namelen),
-									 ILInternString("Attribute", 9)).string;
-					name=defn->name;
-				}
-			}
-		}
 
 		/* Look in the scope for the base class */
 		if(CSSemBaseType(baseNode, info, &baseNode,
@@ -241,6 +226,19 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 			/* This is not a valid base class specification */
 			CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
 						  "invalid base type");
+		}
+		if(baseList[base] && ILTypeIdentical(ILType_FromClass(baseList[base]),
+								ILFindSystemType(info,"Attribute")))
+		{
+				
+			namelen=strlen(name);
+			if(namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0)
+			{
+				defn->name = ILInternAppendedString
+								(ILInternString(defn->name, namelen),
+								 ILInternString("Attribute", 9)).string;
+				name=defn->name;
+			}
 		}
 	}
 

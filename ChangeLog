@@ -3,6 +3,9 @@
 
 	* ilasm/ilasm_grammar.y: force all constructor references to be 
 	"instance" calls.
+
+	* cscc/csharp/cs_gather.c: fix the inheritance of classes ending
+	with the "Attribute" name , but are not attributes (like XmlAttribute).
 	
 2003-01-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 

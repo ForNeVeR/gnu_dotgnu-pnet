@@ -385,6 +385,20 @@ ILString *ILObjectToString(ILExecThread *thread, ILObject *object);
 ILString *ILStringIntern(ILExecThread *thread, ILString *str);
 
 /*
+ * Convert a string into a NUL-terminated UTF-8 buffer,
+ * allocated within the garbage collected heap.  If "str"
+ * is NULL, then NULL will be returned.
+ */
+char *ILStringToUTF8(ILExecThread *thread, ILString *str);
+
+/*
+ * Convert a string into an "ANSI" string in the local
+ * character set, allocated within the garbage collected heap.
+ * If "str" is NULL, then NULL will be returned.
+ */
+char *ILStringToAnsi(ILExecThread *thread, ILString *str);
+
+/*
  * Get an element of an array.  Returns non-zero if an exception occurred.
  */
 int ILExecThreadGetElem(ILExecThread *thread, void *value,

@@ -11,6 +11,9 @@ problems on platforms with 32-bit pointers, but 64-bit alignment.
 support/Makefile.am, engine/convert.c, engine/engine.h, engine/process.c:
 add support code to load dynamic libraries for PInvoke calls.
 
+* include/il_engine.h, engine/lib_string.c: add the helper functions
+"ILStringToUTF8" and "ILStringToAnsi" to the engine API.
+
 2001-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update for "0.2.4" release.

@@ -147,12 +147,12 @@ static void System_Decimal_Floor(ILExecThread *thread,
 }
 
 /*
- * public static decimal Mod(decimal x, decimal y);
+ * public static decimal Remainder(decimal x, decimal y);
  */
-static void System_Decimal_Mod(ILExecThread *thread,
-							   ILDecimal *result,
-							   ILDecimal *valuea,
-							   ILDecimal *valueb)
+static void System_Decimal_Remainder(ILExecThread *thread,
+							         ILDecimal *result,
+							         ILDecimal *valuea,
+							         ILDecimal *valueb)
 {
 	int divResult;
 	divResult = ILDecimalRem(result, valuea, valueb, DECIMAL_ROUND_MODE);
@@ -250,8 +250,10 @@ IL_METHOD_BEGIN(_ILSystemDecimalMethods)
 					System_Decimal_Divide)
 	IL_METHOD("Floor", "(vSystem.Decimal;)vSystem.Decimal;",
 					System_Decimal_Floor)
+	IL_METHOD("Remainder", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
+					System_Decimal_Remainder)
 	IL_METHOD("Mod", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
-					System_Decimal_Mod)
+					System_Decimal_Remainder)	/* Obsolete name */
 	IL_METHOD("Multiply", "(vSystem.Decimal;vSystem.Decimal;)vSystem.Decimal;",
 					System_Decimal_Multiply)
 	IL_METHOD("Negate", "(vSystem.Decimal;)vSystem.Decimal;",

@@ -310,9 +310,12 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 	ILNode *expr;
 	ILNode **parentNode;
 	ILNode **parentOfExpr;
+	ILEvalValue evalValue;
+	int numDimensions = 0;
+	int dim;
 
 	/* Determine if the array creation is normal or initializer-based */
-	if(!(node->arrayInitializer))
+	if(node->indexes)
 	{
 		/* Build the full type node, by combining the element
 		   type, indexed dimensions, and the rank specifiers */
@@ -339,6 +342,7 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 		parentOfExpr = &(node->indexes);
 		while(yyisa(child, ILNode_ArgList))
 		{
+			++numDimensions;
 			expr = ((ILNode_ArgList *)child)->expr2;
 			parentNode = &(((ILNode_ArgList *)child)->expr2);
 			if(CSSemExpectValue(expr, info, parentNode, &value))
@@ -368,6 +372,7 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 			parentOfExpr = &(((ILNode_ArgList *)child)->expr1);
 			child = *parentOfExpr;
 		}
+		++numDimensions;
 		expr = child;
 		parentNode = parentOfExpr;
 		if(CSSemExpectValue(expr, info, parentNode, &value))
@@ -394,17 +399,90 @@ ILNode_SemAnalysis(ILNode_NewExpression)
 			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
 						  "invalid dimension in array creation expression");
 		}
-
-		/* Done */
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = node->arrayType;
-		return value;
 	}
 	else
 	{
-		/* TODO: initializer-based array creation */
-		return CSSemValueDefault;
+		/* Perform semantic analysis on the array type, which is
+		   assumed to already have rank specifiers */
+		node->arrayType = CSSemType(node->type, info, &(node->type));
+
+		/* Check that the supplied type is actually an array */
+		if(!ILType_IsArray(node->arrayType))
+		{
+			CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+						  "array initializer used with non-array type");
+			value.kind = CS_SEMKIND_RVALUE;
+			value.type = node->arrayType;
+			return value;
+		}
 	}
+
+	/* Handle array initializers */
+	if(node->arrayInitializer)
+	{
+		/* Wrap the initializer in an "ILNode_ArrayInit" node */
+		node->arrayInitializer =
+				ILNode_ArrayInit_create(node->arrayInitializer);
+
+		/* Validate the initializer's shape against the actual type,
+		   and then coerce all of the elements to their final types */
+		if(!ILArrayInitShapeOK(info, node->arrayInitializer, node->arrayType))
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "incorrect pattern of elements in array initializer");
+		}
+		else
+		{
+			CoerceArrayInit(info, node->arrayInitializer,
+							&(node->arrayInitializer),
+						    ILTypeGetElemType(node->arrayType));
+		}
+
+		/* If we have indices, then they must be constant and match
+		   the sizes of the initializer dimensions */
+		if(node->indexes)
+		{
+			dim = numDimensions;
+			child = node->indexes;
+			while(yyisa(child, ILNode_ArgList))
+			{
+				expr = ((ILNode_ArgList *)child)->expr2;
+				if(!ILNode_EvalConst(expr, info, &evalValue) ||
+				   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+								   ILMachineType_Int64) ||
+				   evalValue.un.i8Value !=
+				   		(ILInt64)ILGetArrayInitLength
+							(((ILNode_ArrayInit *)(node->arrayInitializer))
+									->expr, dim - 1))
+				{
+					CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+						  "dimension %d does not match initializer", dim);
+				}
+				child = (((ILNode_ArgList *)child)->expr1);
+				--dim;
+			}
+			expr = child;
+			if(!ILNode_EvalConst(expr, info, &evalValue) ||
+			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
+							   ILMachineType_Int64) ||
+			   evalValue.un.i8Value !=
+			   		(ILInt64)ILGetArrayInitLength
+						(((ILNode_ArrayInit *)(node->arrayInitializer))
+								->expr, dim - 1))
+			{
+				CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+					  "dimension %d does not match initializer", dim);
+			}
+		}
+
+		/* Replace the current node with the initializer node */
+		*parent = node->arrayInitializer;
+	}
+
+	/* Done */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = node->arrayType;
+	return value;
 }
 
 /*

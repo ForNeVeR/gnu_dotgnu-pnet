@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * RequiredAttributeAttribute.cs - Implementation of the
+ *		"System.Runtime.CompilerServices.RequiredAttributeAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct |
+				AttributeTargets.Enum | AttributeTargets.Interface)]
+public sealed class RequiredAttributeAttribute : Attribute
 {
+
+	// Internal state.
+	private Type contract;
 
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public RequiredAttributeAttribute(Type requiredContract)
+			{
+				contract = requiredContract;
+			}
 
-}; // class IndexerNameAttribute
+	// Properties.
+	public Type RequiredContract
+			{
+				get
+				{
+					return contract;
+				}
+			}
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // class RequiredAttributeAttribute
+
+}; // namespace System.Runtime.CompilerServices

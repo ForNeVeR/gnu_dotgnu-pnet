@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * DiscardableAttribute.cs - Implementation of the
+ *		"System.Runtime.CompilerServices.DiscardableAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+public class DiscardableAttribute : Attribute
 {
 
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public DiscardableAttribute() : base() {}
 
-}; // class IndexerNameAttribute
+}; // class DiscardableAttribute
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // namespace System.Runtime.CompilerServices

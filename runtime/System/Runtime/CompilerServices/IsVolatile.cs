@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * IsVolatile.cs - Implementation of the
+ *			"System.Runtime.CompilerServices.IsVolatile" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+public sealed class IsVolatile
 {
+	public IsVolatile() : base() {}
 
-	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+}; // class IsVolatile
 
-}; // class IndexerNameAttribute
-
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // namespace System.Runtime.CompilerServices

@@ -22,15 +22,28 @@
 namespace System.Runtime.CompilerServices
 {
 
-using System.Runtime.InteropServices;
-
-public class RuntimeHelpers
+public sealed class RuntimeHelpers
 {
-	// TODO
-
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void InitializeArray
 				(Array array, RuntimeFieldHandle field);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void RunClassConstructor(RuntimeTypeHandle type);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int InternalOffsetToStringData();
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Object GetObjectValue(Object obj);
+
+	public static int OffsetToStringData
+			{
+				get
+				{
+					return InternalOffsetToStringData();
+				}
+			}
 
 }; // class RuntimeHelpers
 

@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * CustomConstantAttribute.cs - Implementation of the
+ *		"System.Runtime.CompilerServices.CustomConstantAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
+public abstract class CustomConstantAttribute : Attribute
 {
 
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	protected CustomConstantAttribute() : base() {}
 
-}; // class IndexerNameAttribute
+	// Properties.
+	public abstract Object Value { get; }
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // class CustomConstantAttribute
+
+}; // namespace System.Runtime.CompilerServices

@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * DecimalConstantAttribute.cs - Implementation of the
+ *		"System.Runtime.CompilerServices.DecimalConstantAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
+public sealed class DecimalConstantAttribute : Attribute
 {
+
+	// Internal state.
+	private Decimal value;
 
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public DecimalConstantAttribute(byte scale, byte sign,
+									uint hi, uint mid, uint low)
+			{
+				unchecked
+				{
+					value = new Decimal((int)low, (int)mid, (int)hi,
+										(sign != 0), scale);
+				}
+			}
 
-}; // class IndexerNameAttribute
+	// Properties.
+	public Decimal Value
+			{
+				get
+				{
+					return value;
+				}
+			}
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // class DecimalConstantAttribute
+
+}; // namespace System.Runtime.CompilerServices

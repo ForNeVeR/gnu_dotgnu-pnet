@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * AccessedThroughPropertyAttribute.cs - Implementation of the
+ *	"System.Runtime.CompilerServices.AccessedThroughPropertyAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class AccessedThroughPropertyAttribute : Attribute
 {
+
+	// Internal state.
+	private String name;
 
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public AccessedThroughPropertyAttribute(String propertyName)
+			{
+				name = propertyName;
+			}
 
-}; // class IndexerNameAttribute
+	// Properties.
+	public String PropertyName
+			{
+				get
+				{
+					return name;
+				}
+			}
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // class AccessedThroughPropertyAttribute
+
+}; // namespace System.Runtime.CompilerServices

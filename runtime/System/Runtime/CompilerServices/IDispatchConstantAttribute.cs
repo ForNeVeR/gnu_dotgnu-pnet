@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * IDispatchConstantAttribute.cs - Implementation of the
+ *		"System.Runtime.CompilerServices.IDispatchConstantAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
-{
+using System.Runtime.InteropServices;
 
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
+public sealed class IDispatchConstantAttribute : CustomConstantAttribute
+{
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public IDispatchConstantAttribute() : base() {}
 
-}; // class IndexerNameAttribute
+	// Properties.
+	public override Object Value
+			{
+				get
+				{
+					// TODO: return new DispatchWrapper(null);
+					return null;
+				}
+			}
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // class IDispatchConstantAttribute
+
+}; // namespace System.Runtime.CompilerServices

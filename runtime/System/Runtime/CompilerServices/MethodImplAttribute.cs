@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * MethodImplAttribute.cs - Implementation of the
+ *			"System.Runtime.CompilerServices.MethodImplAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+using System;
+
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor,
+				AllowMultiple=false, Inherited=false)]
+public sealed class MethodImplAttribute : Attribute
 {
+
+	// Internal state.
+	private MethodImplOptions options;
 
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public MethodImplAttribute(MethodImplOptions opts)
+			{ options = opts; }
+	public MethodImplAttribute(short opts)
+			{ options = (MethodImplOptions)opts; }
+	public MethodImplAttribute() {}
 
-}; // class IndexerNameAttribute
+	// Properties.
+	public MethodImplOptions Value
+			{
+				get
+				{
+					return options;
+				}
+			}
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // class MethodImplAttribute
+
+}; // namespace System.Runtime.CompilerServices

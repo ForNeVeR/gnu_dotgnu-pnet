@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * CallConvCdecl.cs - Implementation of the
+ *			"System.Runtime.CompilerServices.CallConvCdecl" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+public class CallConvCdecl
 {
 
-	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public CallConvCdecl() : base() {}
 
-}; // class IndexerNameAttribute
+}; // class CallConvCdecl
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // namespace System.Runtime.CompilerServices

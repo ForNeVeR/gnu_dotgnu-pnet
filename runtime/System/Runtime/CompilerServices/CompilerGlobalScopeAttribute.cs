@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * CompilerGlobalScopeAttribute.cs - Implementation of the
+ *		"System.Runtime.CompilerServices.CompilerGlobalScopeAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+[AttributeUsage(AttributeTargets.Class)]
+public class CompilerGlobalScopeAttribute : Attribute
 {
 
 	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+	public CompilerGlobalScopeAttribute() : base() {}
 
-}; // class IndexerNameAttribute
+}; // class CompilerGlobalScopeAttribute
 
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // namespace System.Runtime.CompilerServices

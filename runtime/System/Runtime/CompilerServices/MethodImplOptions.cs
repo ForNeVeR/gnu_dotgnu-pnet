@@ -1,6 +1,6 @@
 /*
- * IndexerNameAttribute.cs - Implementation of the
- *   "System.Runtime.CompilerServices.CSharp.IndexerNameAttribute" class.
+ * MethodImplOptions.cs - Implementation of the
+ *			"System.Runtime.CompilerServices.MethodImplOptions" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -19,16 +19,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.CompilerServices.CSharp
+namespace System.Runtime.CompilerServices
 {
 
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class IndexerNameAttribute : Attribute
+public enum MethodImplOptions
 {
+	Unmanaged       = 0x0004,
+	NoInlining      = 0x0008,
+	ForwardRef      = 0x0010,
+	Synchronized    = 0x0020,
+	PreserveSig     = 0x0080,
+	InternalCall    = 0x1000
 
-	// Constructors.
-	public IndexerNameAttribute(String indexerName) : base() {}
+}; // enum MethodImplOptions
 
-}; // class IndexerNameAttribute
-
-}; // namespace System.Runtime.CompilerServices.CSharp
+}; // namespace System.Runtime.CompilerServices

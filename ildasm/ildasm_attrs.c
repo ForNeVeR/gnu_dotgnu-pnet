@@ -19,10 +19,257 @@
  */
 
 #include "ildasm_internal.h"
+#include "il_serialize.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
+
+/*
+ * Dump a serialized attribute value.
+ */
+static int DumpAttrValue(FILE *outstream, ILSerializeReader *reader, int type)
+{
+	ILInt32 intValue;
+	ILUInt32 uintValue;
+	ILInt64 longValue;
+	ILUInt64 ulongValue;
+	ILFloat floatValue;
+	ILDouble doubleValue;
+	const char *strValue;
+	int strLen;
+
+	switch(type)
+	{
+		case IL_META_SERIALTYPE_BOOLEAN:
+		{
+			intValue = ILSerializeReaderGetInt32(reader, type);
+			if(intValue)
+			{
+				fputs("true", outstream);
+			}
+			else
+			{
+				fputs("false", outstream);
+			}
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I1:
+		case IL_META_SERIALTYPE_U1:
+		{
+			intValue = ILSerializeReaderGetInt32(reader, type);
+			fprintf(outstream, "%ld /*0x%02lX*/",
+					(long)intValue, (long)intValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I2:
+		case IL_META_SERIALTYPE_U2:
+		case IL_META_SERIALTYPE_CHAR:
+		{
+			intValue = ILSerializeReaderGetInt32(reader, type);
+			fprintf(outstream, "%ld /*0x%04lX*/",
+					(long)intValue, (long)intValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I4:
+		{
+			intValue = ILSerializeReaderGetInt32(reader, type);
+			fprintf(outstream, "%ld /*0x%08lX*/",
+					(long)intValue, (long)intValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U4:
+		{
+			uintValue = ILSerializeReaderGetUInt32(reader, type);
+			fprintf(outstream, "%lu /*0x%08lX*/",
+					(unsigned long)uintValue, (unsigned long)uintValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_I8:
+		{
+			longValue = ILSerializeReaderGetInt64(reader);
+			fprintf(outstream, "0x%08lX%08lX",
+					(unsigned long)((longValue >> 32) & IL_MAX_UINT32),
+					(unsigned long)(longValue & IL_MAX_UINT32));
+		}
+		break;
+
+		case IL_META_SERIALTYPE_U8:
+		{
+			ulongValue = ILSerializeReaderGetUInt64(reader);
+			fprintf(outstream, "0x%08lX%08lX",
+					(unsigned long)((ulongValue >> 32) & IL_MAX_UINT32),
+					(unsigned long)(ulongValue & IL_MAX_UINT32));
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R4:
+		{
+			floatValue = ILSerializeReaderGetFloat32(reader);
+			fprintf(outstream, "%.30e", (double)floatValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_R8:
+		{
+			doubleValue = ILSerializeReaderGetFloat64(reader);
+			fprintf(outstream, "%.30e", (double)doubleValue);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_STRING:
+		{
+			strLen = ILSerializeReaderGetString(reader, &strValue);
+			if(strLen == -1)
+			{
+				return 0;
+			}
+			ILDumpStringLen(outstream, strValue, strLen);
+		}
+		break;
+
+		case IL_META_SERIALTYPE_TYPE:
+		{
+			strLen = ILSerializeReaderGetString(reader, &strValue);
+			if(strLen == -1)
+			{
+				return 0;
+			}
+			fputs("typeof(", outstream);
+			fwrite(strValue, 1, strLen, outstream);
+			putc(')', outstream);
+		}
+		break;
+
+		default:
+		{
+			if((type & IL_META_SERIALTYPE_ARRAYOF) != 0)
+			{
+				intValue = ILSerializeReaderGetArrayLen(reader);
+				putc('{', outstream);
+				while(intValue > 0)
+				{
+					if(!DumpAttrValue(outstream, reader,
+									  type & ~IL_META_SERIALTYPE_ARRAYOF))
+					{
+						return 0;
+					}
+					--intValue;
+					if(intValue > 0)
+					{
+						fputs(", ", outstream);
+					}
+				}
+				putc('}', outstream);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		break;
+	}
+	return 1;
+}
+
+/*
+ * Dump the readable form of an attribute blob.
+ */
+static void DumpAttrBlob(FILE *outstream, ILImage *image, ILMethod *method,
+						 const void *blob, unsigned long blobLen)
+{
+	ILClass *classInfo;
+	const char *name;
+	int nameLen;
+	ILSerializeReader *reader;
+	ILUInt32 numParams;
+	int numExtra;
+	int type, needComma;
+	ILMember *member;
+
+	/* Dump the name of the attribute */
+	classInfo = ILMethod_Owner(method);
+	name = ILClass_Name(classInfo);
+	nameLen = strlen(name);
+	if(!strcmp(name + nameLen - 9, "Attribute"))
+	{
+		fwrite(name, 1, nameLen - 9, outstream);
+	}
+	else
+	{
+		fputs(name, outstream);
+	}
+
+	/* Initialize the serialization reader */
+	reader = ILSerializeReaderInit(method, blob, blobLen);
+	if(!reader)
+	{
+		fputs("(?)", outstream);
+		return;
+	}
+
+	/* Dump the parameters */
+	numParams = (ILMethod_Signature(method))->num;
+	needComma = 0;
+	putc('(', outstream);
+	while(numParams > 0)
+	{
+		if(needComma)
+		{
+			fputs(", ", outstream);
+		}
+		else
+		{
+			needComma = 1;
+		}
+		type = ILSerializeReaderGetParamType(reader);
+		if(type != -1)
+		{
+			if(!DumpAttrValue(outstream, reader, type))
+			{
+				ILSerializeReaderDestroy(reader);
+				return;
+			}
+		}
+		else
+		{
+			fputs("?)", outstream);
+			ILSerializeReaderDestroy(reader);
+			return;
+		}
+		--numParams;
+	}
+	putc(')', outstream);
+
+	/* Dump the extra field and property specifications */
+	numExtra = ILSerializeReaderGetNumExtra(reader);
+	while(numExtra > 0)
+	{
+		fputs(", ", outstream);
+		type = ILSerializeReaderGetExtra(reader, &member, &name, &nameLen);
+		if(type == -1)
+		{
+			putc('?', outstream);
+			break;
+		}
+		fwrite(name, 1, nameLen, outstream);
+		putc('=', outstream);
+		if(!DumpAttrValue(outstream, reader, type))
+		{
+			putc('?', outstream);
+			break;
+		}
+		--numExtra;
+	}
+
+	/* Clean up and exit */
+	ILSerializeReaderDestroy(reader);
+}
 
 void ILDAsmDumpCustomAttrs(ILImage *image, FILE *outstream, int flags,
 						   int indent, ILProgramItem *item)
@@ -55,6 +302,7 @@ void ILDAsmDumpCustomAttrs(ILImage *image, FILE *outstream, int flags,
 		}
 
 		/* Output the type */
+		method = 0;
 		if(ILAttributeTypeIsItem(attr))
 		{
 			type = ILAttributeTypeAsItem(attr);
@@ -94,6 +342,22 @@ void ILDAsmDumpCustomAttrs(ILImage *image, FILE *outstream, int flags,
 
 		/* Terminate the line */
 		putc('\n', outstream);
+
+		/* Output a readable version of the value */
+		if(value && method)
+		{
+			if(indent == 1)
+			{
+				fputs("\t", outstream);
+			}
+			else if(indent == 2)
+			{
+				fputs("\t\t", outstream);
+			}
+			fputs("// ", outstream);
+			DumpAttrBlob(outstream, image, method, value, valueLen);
+			putc('\n', outstream);
+		}
 	}
 }
 

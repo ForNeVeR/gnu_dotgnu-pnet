@@ -283,7 +283,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 	return 0;
 }
 
-int ILSerializeGetParamType(ILSerializeReader *reader)
+int ILSerializeReaderGetParamType(ILSerializeReader *reader)
 {
 	int type;
 	if(reader->param < ((ILUInt32)(reader->signature->num)))

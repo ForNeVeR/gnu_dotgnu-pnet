@@ -36,6 +36,18 @@ extern	"C" {
 #define	C_COERCE_NULL_PTR			(1<<5)
 #define	C_COERCE_SIMPLE				(1<<6)
 #define	C_COERCE_C_TO_CS_STRING		(1<<7)
+#define	C_COERCE_CSHARP				(1<<8)
+#define	C_COERCE_CSHARP_EXPLICIT	(1<<9)
+#define	C_COERCE_NULL_REF			(1<<10)
+
+/*
+ * C# conversion rules that we can use within C.  Basically, everything
+ * except numeric and user-defined.
+ */
+#define	IL_CONVERT_C_RULES	(IL_CONVERT_ENUM | \
+							 IL_CONVERT_REFERENCE | \
+							 IL_CONVERT_BOXING | \
+							 IL_CONVERT_CONSTANT)
 
 /*
  * Determine if a primitive type is numeric or boolean.
@@ -344,6 +356,30 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 		return C_COERCE_OK;
 	}
 
+	/* Test for implicit coercion of zero to a C# reference type.
+	   In this case, we replace the zero with "null" */
+	if(ILTypeIsReference(toType))
+	{
+		if(TypeIsInteger(ILType_ToElement(fromType)))
+		{
+			if(constValue != 0 && IsZero(constValue))
+			{
+				/* Implicit conversion of 0 into a NULL reference value */
+				return C_COERCE_NULL_REF;
+			}
+		}
+	}
+
+	/* Determine if we can perform a C# type coercion */
+	if(ILCanCoerceKind(&CCCodeGen, fromType, toType, IL_CONVERT_C_RULES, 0))
+	{
+		return C_COERCE_CSHARP;
+	}
+	if(ILCanCastKind(&CCCodeGen, fromType, toType, IL_CONVERT_C_RULES, 0))
+	{
+		return C_COERCE_CSHARP_EXPLICIT;
+	}
+
 	/* We will get here if we don't have a C type or we have
 	   a completely invalid combination of C types */
 	return C_COERCE_INVALID;
@@ -392,6 +428,39 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 						   CSemGetConstant(fromValue));
 	if(rules == C_COERCE_INVALID)
 	{
+		return fromValue;
+	}
+
+	/* Handle C# coercions and casts */
+	if(rules == C_COERCE_CSHARP_EXPLICIT && !explicit)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  _("cannot cast from `%s' to `%s'"),
+					  CTypeToName(info, CSemGetType(fromValue)),
+					  CTypeToName(info, toType));
+	}
+	if(rules == C_COERCE_CSHARP)
+	{
+		ILEvalValue *constValue = CSemGetConstant(fromValue);
+		if(constValue && constValue->valueType == ILMachineType_ObjectRef &&
+		   constValue->un.oValue == 0)
+		{
+			/* We are coercing null to itself, so preserve the constant */
+			value.valueType = ILMachineType_ObjectRef;
+			value.un.oValue = 0;
+			CSemSetConstant(fromValue, toType, value);
+			return fromValue;
+		}
+		ILCoerceKind(info, node, parent, CSemGetType(fromValue), toType,
+				     IL_CONVERT_C_RULES, 0);
+		CSemSetRValue(fromValue, toType);
+		return fromValue;
+	}
+	if(rules == C_COERCE_CSHARP_EXPLICIT)
+	{
+		ILCastKind(info, node, parent, CSemGetType(fromValue), toType,
+			       IL_CONVERT_C_RULES, 0);
+		CSemSetRValue(fromValue, toType);
 		return fromValue;
 	}
 
@@ -453,10 +522,19 @@ static CSemValue ApplyCoercion(ILGenInfo *info, ILNode *node, ILNode **parent,
 	}
 	else if((rules & C_COERCE_NULL_PTR) != 0)
 	{
-		/* Replace the current node with a constant "null" value */
+		/* Replace the current node with a constant "null" pointer value */
 		*parent = ILNode_NullPtr_create();
 		CGenCloneLine(*parent, node);
 		value.valueType = ILMachineType_UnmanagedPtr;
+		value.un.i4Value = 0;
+		CSemSetConstant(fromValue, toType, value);
+	}
+	else if((rules & C_COERCE_NULL_REF) != 0)
+	{
+		/* Replace the current node with a constant "null" reference value */
+		*parent = ILNode_Null_create();
+		CGenCloneLine(*parent, node);
+		value.valueType = ILMachineType_ObjectRef;
 		value.un.i4Value = 0;
 		CSemSetConstant(fromValue, toType, value);
 	}

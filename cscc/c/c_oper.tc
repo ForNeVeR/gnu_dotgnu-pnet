@@ -1134,7 +1134,15 @@ static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Find a common type to use for the operation */
 	type1 = ILTypeToMachineType(CSemGetType(value1));
+	if(type1 == ILMachineType_String)
+	{
+		type1 = ILMachineType_ObjectRef;
+	}
 	type2 = ILTypeToMachineType(CSemGetType(value2));
+	if(type2 == ILMachineType_String)
+	{
+		type2 = ILMachineType_ObjectRef;
+	}
 	if(IsNumericMachineType(type1) && IsNumericMachineType(type2))
 	{
 		/* Compare numeric values */
@@ -1221,6 +1229,60 @@ static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		{
 			common = ILMachineType_NativeUInt;
 		}
+	}
+	else if(type1 == ILMachineType_ObjectRef &&
+			type2 == ILMachineType_ObjectRef)
+	{
+		/* Compare two object references */
+		if(yyisa(node, ILNode_Eq) || yyisa(node, ILNode_Ne))
+		{
+			return CSemValueBool;
+		}
+		goto invalid;
+	}
+	else if(type1 == ILMachineType_ObjectRef && IsIntegerMachineType(type2))
+	{
+		/* Compare object reference and integer */
+		if(CSemIsZero(value2))
+		{
+			if(yyisa(node, ILNode_Eq))
+			{
+				temp = ILNode_IsNull_create(node->expr1);
+				CGenCloneLine(temp, node->expr1);
+				*parent = temp;
+				return CSemValueBool;
+			}
+			else if(yyisa(node, ILNode_Ne))
+			{
+				temp = ILNode_IsNonNull_create(node->expr1);
+				CGenCloneLine(temp, node->expr1);
+				*parent = temp;
+				return CSemValueBool;
+			}
+		}
+		goto invalid;
+	}
+	else if(IsIntegerMachineType(type1) && type2 == ILMachineType_ObjectRef)
+	{
+		/* Compare integer and object reference */
+		if(CSemIsZero(value1))
+		{
+			if(yyisa(node, ILNode_Eq))
+			{
+				temp = ILNode_IsNull_create(node->expr2);
+				CGenCloneLine(temp, node->expr2);
+				*parent = temp;
+				return CSemValueBool;
+			}
+			else if(yyisa(node, ILNode_Ne))
+			{
+				temp = ILNode_IsNonNull_create(node->expr2);
+				CGenCloneLine(temp, node->expr2);
+				*parent = temp;
+				return CSemValueBool;
+			}
+		}
+		goto invalid;
 	}
 	else
 	{
@@ -2332,6 +2394,11 @@ ILNode_CSemAnalysis(ILNode_ToBool)
 	}
 	else if(CTypeIsPointer(CSemGetType(value)) ||
 	        CTypeIsFunctionPtr(CSemGetType(value)))
+	{
+		*parent = ILNode_IsNonNull_create(node->expr);
+		CGenCloneLine(*parent, node->expr);
+	}
+	else if(ILTypeIsReference(CSemGetType(value)))
 	{
 		*parent = ILNode_IsNonNull_create(node->expr);
 		CGenCloneLine(*parent, node->expr);

@@ -6,7 +6,7 @@
 <h1>Using Portable.NET's C Compiler</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2003/06/30 22:15:31 $<p>
+Last Modified: $Date: 2004/02/17 04:50:29 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -382,7 +382,71 @@ C# application:<p>
 where "<code>c_func</code>" is a function declared in your C code.
 Use "<code>__module.c_func()</code>" to call the function from C#.<p>
 
-<h3>3.7. Weak and strong aliases</h3>
+<h3>3.7. Other C# constructs</h3>
+
+The value zero (0) can be used in any context where a C# reference
+value is expected to represent the C# "<code>null</code>" value.
+For example, the following sets an object to null:<p>
+
+<blockquote><pre>typedef __csharp__ (System.Object) Object;
+
+Object obj = 0;</pre></blockquote><p>
+
+And the following two examples can be used to check to see if
+"<code>obj</code>" is non-null later in the code:<p>
+
+<blockquote><pre>if(obj != 0)          if(obj)
+{                     {
+    ...                  ...
+}                     }</pre></blockquote><p>
+
+Coercions or casts that are allowed between two C# types can also
+be performed between the corresponding C types, including boxing and
+unboxing, but not user-defined conversions.<p>
+
+User-defined C# conversions and arithmetic operators are not supported
+directly.  However, they can be accessed by explicitly calling the
+"<code>op</code>" methods.  For example, to add two
+"<code>Decimal</code>" values:<p>
+
+<blockquote><pre>typedef __csharp__ (System.Decimal) Decimal;
+
+Decimal a, b, c;
+...
+a = Decimal::op_Addition(b, c);</pre></blockquote><p>
+
+The following table lists all of the C operators and the corresponding
+"<code>op</code>" methods:<p>
+
+<blockquote><table border="1">
+<tr><td>Operator</td><td>Method Name</td></tr>
+<tr><td>+</td><td><code>op_Addition</code>, <code>op_UnaryPlus</code></td></tr>
+<tr><td>-</td><td><code>op_Subtraction</code>, <code>op_UnaryNegation</code></td></tr>
+<tr><td>*</td><td><code>op_Multiply</code></td></tr>
+<tr><td>/</td><td><code>op_Division</code></td></tr>
+<tr><td>%</td><td><code>op_Modulus</code></td></tr>
+<tr><td>&amp;</td><td><code>op_BitwiseAnd</code></td></tr>
+<tr><td>|</td><td><code>op_BitwiseOr</code></td></tr>
+<tr><td>^</td><td><code>op_BitwiseXor</code></td></tr>
+<tr><td>&lt;&lt;</td><td><code>op_LeftShift</code></td></tr>
+<tr><td>&gt;&gt;</td><td><code>op_RightShift</code></td></tr>
+<tr><td>==</td><td><code>op_Equality</code></td></tr>
+<tr><td>!=</td><td><code>op_Inequality</code></td></tr>
+<tr><td>&lt;</td><td><code>op_LessThan</code></td></tr>
+<tr><td>&gt;</td><td><code>op_GreaterThan</code></td></tr>
+<tr><td>&lt;=</td><td><code>op_LessThanOrEqual</code></td></tr>
+<tr><td>&gt;=</td><td><code>op_GreaterThanOrEqual</code></td></tr>
+<tr><td>!</td><td><code>op_LogicalNot</code></td></tr>
+<tr><td>~</td><td><code>op_OnesComplement</code></td></tr>
+<tr><td>++</td><td><code>op_Increment</code></td></tr>
+<tr><td>--</td><td><code>op_Decrement</code></td></tr>
+<tr><td>Coerce</td><td><code>op_Implicit</code></td></tr>
+<tr><td>Cast</td><td><code>op_Explicit</code></td></tr>
+<tr><td>Check True</td><td><code>op_True</code></td></tr>
+<tr><td>Check False</td><td><code>op_False</code></td></tr>
+</table></blockquote><p>
+
+<h3>3.8. Weak and strong aliases</h3>
 
 TODO
 

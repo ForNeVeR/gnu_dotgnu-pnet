@@ -1,4 +1,4 @@
-bin_PROGRAMS       = csdoc2texi csdoc2html csdocvalil
+bin_PROGRAMS       = csdoc2texi csdoc2html csdocvalil csdoc2stub
 man_MANS           = csdoc2texi.1 csdoc2html.1
 EXTRA_DIST         = $(man_MANS)
 
@@ -18,6 +18,9 @@ csdoc2html_LDADD   = $(CSDOC_LIBS)
 
 csdocvalil_SOURCES = doc_valil.c $(CSDOC_COMMON)
 csdocvalil_LDADD   = $(CSDOC_LIBS)
+
+csdoc2stub_SOURCES = doc_stub.c $(CSDOC_COMMON)
+csdoc2stub_LDADD   = $(CSDOC_LIBS)
 
 if USINGGCC
 INCLUDES = -Wall

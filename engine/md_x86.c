@@ -120,7 +120,7 @@ md_inst_ptr _md_x86_rem_float
 		x86_push_reg(inst, X86_EAX);
 	}
 	label = inst;
-	x86_fprem1(inst);
+	x86_fprem(inst);
 	x86_fnstsw(inst);
 	x86_alu_reg_imm(inst, X86_AND, X86_EAX, 0x0400);
 	x86_branch(inst, X86_CC_NZ, label, 0);

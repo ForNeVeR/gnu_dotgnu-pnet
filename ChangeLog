@@ -1,4 +1,8 @@
 
+2004-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/md_x86.c: use "fprem" instead of "fprem1", to fix bug #10483.
+
 2004-09-22  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/cpp/Makefile.am: Add rm -f for cli-unknown-cpp man page.

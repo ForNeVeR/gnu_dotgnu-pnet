@@ -1,5 +1,5 @@
 /*
- * XmlResolver.cs - Implementation of the "System.XmlResolver" class.
+ * XmlResolver.cs - Implementation of the "System.Xml.XmlResolver" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -22,12 +22,24 @@ namespace System.Xml
 {
 
 using System;
+using System.Net;
 
-[TODO]
 public abstract class XmlResolver
 {
 
-}; //class XmlResolver
+	// Constructor.
+	protected XmlResolver() {}
 
-}; //namespace System.Xml
+	// Map a URI to the entity it represents.
+	public abstract Object GetEntity(Uri absoluteUri, String role,
+									 Type ofObjectToReturn);
 
+	// Resolve a relative URI.
+	public abstract Uri ResolveUri(Uri baseUri, String relativeUri);
+
+	// Set the credentials to use to resolve Web requests.
+	public abstract ICredentials Credentials { set; }
+
+}; // class XmlResolver
+
+}; // namespace System.Xml

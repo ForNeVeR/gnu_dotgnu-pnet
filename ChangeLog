@@ -49,6 +49,8 @@
 	* System.Xml/Xml.build: add "System.dll" to the references for
 	the "System.Xml.dll" assembly.
 
+	* System.Xml/XmlResolver.cs: implement the XmlResolver class.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

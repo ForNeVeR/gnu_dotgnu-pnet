@@ -217,7 +217,7 @@ ILNode_GenValue(ILNode_RefArgumentVar)
  */
 ILNode_GenValue(ILNode_MemberAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 	return node->machineType;
 }
 
@@ -267,7 +267,8 @@ ILNode_GenValue(ILNode_BaseElement)
  */
 ILNode_GenValue(ILNode_DerefField)
 {
-	/* TODO */
+	ILNode_GenValue(node->expr1, info);
+	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
 	return node->machineType;
 }
 
@@ -427,7 +428,7 @@ ILNode_Prepare(ILNode_RefArgumentVar)
  */
 ILNode_Prepare(ILNode_MemberAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 	return node->machineType;
 }
 
@@ -436,7 +437,7 @@ ILNode_Prepare(ILNode_MemberAccess)
  */
 ILNode_Prepare(ILNode_BaseAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 	return node->machineType;
 }
 
@@ -454,7 +455,7 @@ ILNode_Prepare(ILNode_BaseElement)
  */
 ILNode_Prepare(ILNode_DerefField)
 {
-	/* TODO */
+	ILNode_GenValue(node->expr1, info);
 	return node->machineType;
 }
 
@@ -603,7 +604,7 @@ ILNode_GetAndPrepare(ILNode_RefArgumentVar)
  */
 ILNode_GetAndPrepare(ILNode_MemberAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 	return node->machineType;
 }
 
@@ -612,7 +613,7 @@ ILNode_GetAndPrepare(ILNode_MemberAccess)
  */
 ILNode_GetAndPrepare(ILNode_BaseAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 	return node->machineType;
 }
 
@@ -630,7 +631,32 @@ ILNode_GetAndPrepare(ILNode_BaseElement)
  */
 ILNode_GetAndPrepare(ILNode_DerefField)
 {
-	/* TODO */
+	ILNode_GenValue(node->expr1, info);
+	if(leave)
+	{
+		/* Duplicate the pointer reference and get the current value */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+
+		/* Store the current value into a temporary local */
+		node->tempVar = ILGenTempTypedVar(info, ILField_Type(node->field));
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, node->tempVar);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		/* Duplicate the pointer reference for the later store */
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenAdjust(info, 1);
+
+		/* Load the current value from the field */
+		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+
+		/* We don't need to reload a previous value in "Store" */
+		node->tempVar = IL_MAX_UINT32;
+	}
 	return node->machineType;
 }
 
@@ -1153,7 +1179,7 @@ ILNode_Store(ILNode_RefArgumentVar)
  */
 ILNode_Store(ILNode_MemberAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 }
 
 /*
@@ -1173,14 +1199,6 @@ ILNode_Store(ILNode_BaseElement)
 }
 
 /*
- * Store into a field dereference destination.
- */
-ILNode_Store(ILNode_DerefField)
-{
-	/* TODO */
-}
-
-/*
  * Store into a static field reference.
  */
 ILNode_Store(ILNode_StaticField)
@@ -1197,7 +1215,8 @@ ILNode_Store(ILNode_StaticField)
 /*
  * Store into a member field reference.
  */
-ILNode_Store(ILNode_MemberField)
+ILNode_Store(ILNode_MemberField),
+ILNode_Store(ILNode_DerefField)
 {
 	if(leave)
 	{
@@ -1454,7 +1473,7 @@ ILNode_GenRef(ILNode_MemberField)
  */
 ILNode_GenRef(ILNode_MemberAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 }
 
 /*
@@ -1462,7 +1481,7 @@ ILNode_GenRef(ILNode_MemberAccess)
  */
 ILNode_GenRef(ILNode_BaseAccess)
 {
-	/* TODO */
+	/* Pseudo node - replaced during semantic analysis */
 }
 
 /*
@@ -1478,7 +1497,8 @@ ILNode_GenRef(ILNode_BaseElement)
  */
 ILNode_GenRef(ILNode_DerefField)
 {
-	/* TODO */
+	ILNode_GenValue(node->expr1, info);
+	ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
 }
 
 /*

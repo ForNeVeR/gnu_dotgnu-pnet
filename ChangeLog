@@ -12,6 +12,9 @@
 	* cscc/csharp/cs_types.tc (ILNode_LocalVariableType): apply a
 	fix so that "void *" can be used as the type of a local variable.
 
+	* codegen/cg_lvalue.tc, codegen/cg_nodes.tc, cscc/csharp/cs_lvalue.tc:
+	implement code generation and semantic analysis for ILNode_DerefField.
+
 2003-05-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_nodes.tc, codegen/cg_lvalue.tc, cscc/csharp/cs_lvalue.tc,

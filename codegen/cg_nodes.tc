@@ -547,6 +547,8 @@ struct _tagILSwitchValue
 %node ILNode_DerefField ILNode_LValueBinaryExpr =
 {
 	%nocreate ILMachineType machineType = {ILMachineType_Void};
+	%nocreate ILField *field = {0};
+	%nocreate ILUInt32 tempVar = {0};
 }
 %node ILNode_StaticField ILNode_LValue =
 {

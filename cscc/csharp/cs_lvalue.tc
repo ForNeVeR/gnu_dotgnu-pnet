@@ -1528,10 +1528,61 @@ ILNode_SemAnalysis(ILNode_BaseElement)
  */
 ILNode_SemAnalysis(ILNode_DerefField)
 {
-	/* TODO */
 	CSSemValue value;
+	ILType *type;
+	char *name;
+	ILClass *classInfo;
+	ILField *field;
+
+	/* Emit an "unsafe" message if necessary */
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe field dereference");
-	CSSemSetRValue(value, ILType_Int32);
+
+	/* Perform semantic analysis on the left hand sub-expression */
+	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	if(!CSSemIsValue(value) || !ILType_IsPointer(CSSemGetType(value)))
+	{
+		CCErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+					  "pointer value expected");
+		CSSemSetLValue(value, ILType_Int32);
+		return value;
+	}
+
+	/* Make sure that this is a pointer to a struct value type */
+	type = ILTypeStripPrefixes(ILType_Ref(CSSemGetType(value)));
+	if(!ILType_IsValueType(type) || ILTypeIsEnum(type))
+	{
+		CCErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+					  "`%s' is not a struct type", CSTypeToName(type));
+		CSSemSetLValue(value, ILType_Int32);
+		return value;
+	}
+
+	/* Resolve the field reference */
+	name = ILQualIdentName(node->expr2, 0);
+	classInfo = ILType_ToValueType(type);
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!ILField_IsStatic(field) && !strcmp(ILField_Name(field), name))
+		{
+			break;
+		}
+	}
+	if(!field)
+	{
+		CCErrorOnLine(yygetfilename(node->expr1), yygetlinenum(node->expr1),
+					  "`%s' is not a member of `%s'",
+					  name, CSTypeToName(type));
+		CSSemSetLValue(value, ILType_Int32);
+		return value;
+	}
+
+	/* Set up the node for code generation and return */
+	type = ILField_Type(field);
+	node->field = field;
+	node->machineType = ILTypeToMachineType(type);
+	CSSemSetLValue(value, type);
 	return value;
 }
 

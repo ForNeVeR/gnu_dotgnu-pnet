@@ -399,6 +399,13 @@ static int LoadLibrary(const char *name, int nostdlib_flag)
 	image = 0;
 	while((image = ILContextNextImage(CCCodeGen.context, image)) != 0)
 	{
+		if(image == CCCodeGen.image)
+		{
+			/* Skip the image that we are building, as it may
+			   have the same name as a library if we had to
+			   build the library in two passes (e.g. System.dll) */
+			continue;
+		}
 		assem = ILAssembly_FromToken(image, (IL_META_TOKEN_ASSEMBLY | 1));
 		if(assem)
 		{

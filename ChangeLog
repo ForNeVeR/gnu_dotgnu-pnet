@@ -1,4 +1,9 @@
 
+2003-02-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/common/cc_main.c: allow a library to directly or indirectly
+	depend on itself (needed for two-phase compile of System.dll).
+
 2003-01-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ildasm/ildasm_data.c: deal with a signed vs unsigned lockup bug.

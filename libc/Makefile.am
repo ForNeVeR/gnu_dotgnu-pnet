@@ -7,6 +7,7 @@ SUBDIRS = malloc \
 		  pwd \
 		  stdio \
 		  string \
+		  time \
 		  unistd
 
 libcdir = $(libdir)/cscc/lib
@@ -18,6 +19,7 @@ LIBC_COMPONENTS = malloc/libCMalloc.a \
 				  pwd/libCPwd.a \
 				  stdio/libCStdio.a \
 				  string/libCString.a \
+				  time/libCTime.a \
 				  unistd/libCUnistd.a
 
 libc$(LIBRARY_SUFFIX).dll: $(LIBC_COMPONENTS)

@@ -127,6 +127,7 @@ libc/pthread/Makefile
 libc/pwd/Makefile
 libc/stdio/Makefile
 libc/string/Makefile
+libc/time/Makefile
 libc/unistd/Makefile
 libm/Makefile
 samples/Makefile

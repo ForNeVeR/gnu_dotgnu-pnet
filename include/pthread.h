@@ -24,17 +24,9 @@
 
 #include <features.h>
 #include <sys/types.h>
+#include <time.h>
 
 __BEGIN_DECLS
-
-/*
- * This needs to be moved to <time.h> later.
- */
-struct timespec
-{
-	long tv_sec;
-	long tv_nsec;
-};
 
 /*
  * Mutex types.

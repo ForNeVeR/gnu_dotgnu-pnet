@@ -50,6 +50,7 @@ typedef int32_t             __daddr_t, daddr_t;
 typedef uint32_t            __u_daddr_t, u_daddr_t;
 typedef int64_t             __blkcnt_t, blkcnt_t, __blkcnt64_t, blkcnt64_t;
 typedef long                __clock_t;
+typedef int                 __clockid_t;
 typedef uint32_t            __dev_t, dev_t, udev_t;
 typedef uint64_t            __fsblkcnt_t, fsblkcnt_t;
 typedef uint64_t            __fsblkcnt64_t, fsblkcnt64_t;
@@ -127,6 +128,10 @@ typedef __time_t    time_t;
 #ifndef clock_t
 typedef __clock_t   clock_t;
 #define clock_t     clock_t
+#endif
+#ifndef clockid_t
+typedef __clockid_t clockid_t;
+#define clockid_t   clockid_t
 #endif
 
 #include <sys/sysmacros.h>

@@ -8,6 +8,13 @@
 	* include/pthread.h: define "struct timespec" temporarily in
 	<pthread.h> until we have <time.h>.
 
+	* configure.in, include/Makefile.am, include/pthread.h,
+	include/time.h, include/sys/types.h, libc/Makefile.am,
+	libc/time/.cvsignore, libc/time/Makefile.am, libc/time/clock.c,
+	libc/time/gmtime.c, libc/time/time-defs.h, libc/time/time-glue.cs,
+	libc/time/time-vars.c, libc/time/time.c, libc/time/tzset.c:
+	implement some of the ANSI C time routines.
+
 2003-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for the "0.5.0" release, bringing

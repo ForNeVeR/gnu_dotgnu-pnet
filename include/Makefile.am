@@ -17,6 +17,7 @@ libinclude_HEADERS = alloca.h \
 					 stdio.h \
 					 string.h \
 					 strings.h \
+					 time.h \
 					 unistd.h \
 					 varargs.h
 

@@ -36,6 +36,10 @@ use atomic memory allocation for strings and arrays of non-pointer values
 so that the garbage collector can avoid wasting time scanning them for
 object pointer values.
 
+* engine/engine.h, engine/heap.c, engine/layout.c: detect the presence
+of non-trivial finalizers within classes and register a finalizer with
+any object that meets the conditions.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

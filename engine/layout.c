@@ -19,6 +19,7 @@
  */
 
 #include "engine_private.h"
+#include "il_opcodes.h"
 #include "../libffi/include/ffi.h"
 
 #ifdef	__cplusplus
@@ -35,6 +36,7 @@ typedef struct
 	ILUInt32	vtableSize;
 	ILMethod  **vtable;
 	ILUInt32	staticSize;
+	int			hasFinalizer;
 
 } LayoutInfo;
 
@@ -134,6 +136,7 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 		layout->vtableSize = 0;
 		layout->vtable = 0;
 		layout->staticSize = 0;
+		layout->hasFinalizer = 0;
 		return 1;
 	}
 	else if(ILType_IsValueType(type))
@@ -150,6 +153,7 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 		layout->vtableSize = 0;
 		layout->vtable = 0;
 		layout->staticSize = 0;
+		layout->hasFinalizer = 0;
 		return 1;
 	}
 }
@@ -221,6 +225,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	ILMethod **vtable;
 	ILClass *parent;
 	ILImplements *implements;
+	ILMethodCode code;
 
 	/* Determine if we have already tried to lay out this class */
 	if(info->userData)
@@ -240,6 +245,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			layout->vtableSize = classPrivate->vtableSize;
 			layout->vtable = classPrivate->vtable;
 			layout->staticSize = classPrivate->staticSize;
+			layout->hasFinalizer = classPrivate->hasFinalizer;
 			return 1;
 		}
 	}
@@ -275,6 +281,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 		layout->size = 0;
 		layout->alignment = 1;
 		layout->vtableSize = 0;
+		layout->hasFinalizer = 0;
 	}
 
 	/* Zero the static size, which must be recomputed for each class */
@@ -443,6 +450,21 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			continue;
 		}
 
+		/* Is this the finalize method? */
+		if(method->member.name[0] == 'F' &&
+		   !strcmp(method->member.name + 1, "inalize") &&
+		   method->member.signature->un.method.retType == ILType_Void &&
+		   method->member.signature->num == 0)
+		{
+			/* Determine if the finalizer is non-trivial */
+			if(!ILMethodGetCode(method, &code) ||
+			   code.codeLen != 1 ||
+			   ((unsigned char *)(code.code))[0] != IL_OP_RET)
+			{
+				layout->hasFinalizer = 1;
+			}
+		}
+
 		/* Do we need a new slot for this method? */
 		if((method->member.attributes & IL_META_METHODDEF_NEW_SLOT) != 0)
 		{
@@ -527,6 +549,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 	classPrivate->alignment = layout->alignment;
 	classPrivate->vtableSize = layout->vtableSize;
 	classPrivate->vtable = vtable;
+	classPrivate->hasFinalizer = layout->hasFinalizer;
 	classPrivate->inLayout = 0;
 	layout->vtable = vtable;
 

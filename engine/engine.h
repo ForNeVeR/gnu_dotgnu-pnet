@@ -146,7 +146,8 @@ struct _tagILClassPrivate
 	ILUInt32		size;				/* Full instance size */
 	ILUInt32		staticSize;			/* Size of static data */
 	ILUInt32		inLayout : 1;		/* Non-zero if in layout algorithm */
-	ILUInt32		alignment : 15;		/* Preferred instance alignment */
+	ILUInt32		hasFinalizer : 1;	/* Non-zero if non-trivial finalizer */
+	ILUInt32		alignment : 14;		/* Preferred instance alignment */
 	ILUInt32		vtableSize : 16;	/* Size of the vtable */
 	ILMethod      **vtable;				/* Methods within the vtable */
 	ILObject       *runtimeType;		/* Associated runtime type object */

@@ -40,6 +40,14 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 	return 1;
 }
 
+/*
+ * Finalization callback that is invoked by the garbage collector.
+ */
+static void FinalizeObject(void *block, void *data)
+{
+	/* TODO */
+}
+
 ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 						 ILUInt32 size)
 {
@@ -62,6 +70,13 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 
 	/* Set the class into the block */
 	*((ILClass **)ptr) = classInfo;
+
+	/* Attach a finalizer to the object if the class has
+	   a non-trival finalizer method attached to it */
+	if(((ILClassPrivate *)(classInfo->userData))->hasFinalizer)
+	{
+		ILGCRegisterFinalizer(ptr, FinalizeObject, 0);
+	}
 
 	/* Return a pointer to the data just after the class information */
 	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);

@@ -4,6 +4,10 @@
 	* cscc/c/c_defs.tc, cscc/c/c_oper.tc: constant evaluation
 	for conditional expressions.
 
+	* cscc/c/c_types.c (CTypeDefineField): allow "long double"
+	to be used inside non-native struct's and union's, even though
+	it is a native type.
+
 2003-08-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_types.c (MD5HashType): bug in the value used for

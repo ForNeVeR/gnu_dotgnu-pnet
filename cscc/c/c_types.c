@@ -767,9 +767,22 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	size = CTypeSizeAndAlign(fieldType, &align);
 	if(layout)
 	{
-		if(size == CTYPE_DYNAMIC || size == CTYPE_UNKNOWN)
+		if(size == CTYPE_UNKNOWN)
 		{
 			return 0;
+		}
+		if(size == CTYPE_DYNAMIC)
+		{
+			/* Special case: allow "long double" to be used inside
+			   struct's and union's, even though it is a dynamic type */
+			if(ILTypeStripPrefixes(fieldType) == ILType_Float)
+			{
+				size = align;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 	}
 	else

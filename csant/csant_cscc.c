@@ -815,6 +815,15 @@ static int BuildAndExecute(CSAntCompileArgs *args,
 	int argc;
 	int result;
 
+	/* Check the timestamps on the input and output files */
+	if(!CSAntFileSetNewer(args->sources, args->output) &&
+	   !CSAntFileSetNewer(args->references, args->output) &&
+	   !CSAntFileSetNewer(args->resources, args->output) &&
+	   !CSAntFileSetNewer(args->modules, args->output))
+	{
+		return 1;
+	}
+
 	/* Build the command-line using the supplied function */
 	argv = (*func)(args);
 

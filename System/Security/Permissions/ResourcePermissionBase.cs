@@ -36,6 +36,10 @@ public abstract class ResourcePermissionBase
 	private String[] tagNames;
 	private ArrayList permissions;
 
+	// Special resource values.
+	public const String Any = "*";
+	public const String Local = ".";
+
 	// Constructors.
 	protected ResourcePermissionBase()
 			{

@@ -30,6 +30,9 @@
 	System/IO/InternalBufferOverflowException.cs: signature-compatibility
 	fixes for "System.IO".
 
+	* System/Security/Permissions/ResourcePermissionBase.cs: missing
+	fields.
+
 2003-05-25  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Implement this non-ecma class partially for

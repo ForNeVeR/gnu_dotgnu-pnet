@@ -1915,20 +1915,6 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 		}
 		else
 		{
-			/* Add the type to the local variable signature for this method */
-			if(!(method->localVarSig))
-			{
-				method->localVarSig = ILTypeCreateLocalList(info->context);
-				if(!(method->localVarSig))
-				{
-					CCOutOfMemory();
-				}
-			}
-			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
-			{
-				CCOutOfMemory();
-			}
-
 			/* Create a local variable entry in the current scope */
 			ILScopeDeclareLocalConst(info->currentScope, name,
 			decl->initializer,decl->name);

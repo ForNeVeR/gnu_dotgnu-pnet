@@ -500,10 +500,13 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 {
 	ILContext *context = ILImageToContext(image);
 	ILAssembly *assem;
+	ILFileDecl *file;
 	char *pathname;
 	int error;
 	ILImage *newImage;
 	int sameDir;
+	int loadFlags;
+	int len, retryLower;
 
 	/* Scan the AssemblyRef table for the assemblies that we require */
 	assem = 0;
@@ -537,7 +540,90 @@ int _ILImageDynamicLink(ILImage *image, const char *filename, int flags)
 		   can assume that it is being loaded from a secure location */
 		if(!sameDir)
 		{
-			flags &= ~IL_LOADFLAG_INSECURE;
+			loadFlags = flags & ~IL_LOADFLAG_INSECURE;
+		}
+		else
+		{
+			loadFlags = flags;
+		}
+
+		/* Load the image */
+		error = ILImageLoadFromFile(pathname, image->context,
+							        &newImage, flags, 0);
+		ILFree(pathname);
+		if(error != 0)
+		{
+			if(error == -1)
+			{
+				return IL_LOADERR_UNRESOLVED;
+			}
+			else
+			{
+				return error;
+			}
+		}
+	}
+
+	/* If we loaded the parent from an insecure source, then bail out
+	   without attempting to load the module files */
+	if((flags & IL_LOADFLAG_INSECURE) != 0 || !filename)
+	{
+		return 0;
+	}
+
+	/* Strip the final component from the filename */
+	len = strlen(filename);
+	while(len > 0 && filename[len - 1] != '/' && filename[len - 1] != '\\')
+	{
+		--len;
+	}
+	if(len > 0)
+	{
+		--len;
+	}
+
+	/* Scan the File table for the external module files that we require */
+	file = 0;
+	while((file = (ILFileDecl *)ILImageNextToken
+				(image, IL_META_TOKEN_FILE, file)) != 0)
+	{
+		/* Ignore this file if it does not contain metadata */
+		if(!ILFileDecl_HasMetaData(file))
+		{
+			continue;
+		}
+
+		/* Ignore this file if we already have it */
+		if(ILContextGetFile(image->context, file->name) != 0)
+		{
+			continue;
+		}
+
+		/* Ignore this file if its name contains a '/' or '\', because
+		   files in other directories may be a security risk */
+		if(ILMemChr(file->name, '/', strlen(file->name)) != 0 ||
+		   ILMemChr(file->name, '\\', strlen(file->name)) != 0)
+		{
+			continue;
+		}
+
+		/* Get the full pathname of the referenced file */
+		retryLower = 0;
+		pathname = TestPathForFile(filename, len,
+								   file->name, strlen(file->name),
+								   0, 0, &retryLower, 0);
+		if(!pathname && retryLower)
+		{
+			pathname = TestPathForFile(filename, len,
+									   file->name, strlen(file->name),
+									   0, 0, &retryLower, 1);
+		}
+		if(!pathname)
+		{
+		#if IL_DEBUG_META
+			fprintf(stderr, "could not locate the file %s\n", file->name);
+		#endif
+			return IL_LOADERR_UNRESOLVED;
 		}
 
 		/* Load the image */

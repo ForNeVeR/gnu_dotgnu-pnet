@@ -118,6 +118,12 @@ ILImage *ILContextGetModule(ILContext *context, const char *name);
 ILImage *ILContextGetAssembly(ILContext *context, const char *name);
 
 /*
+ * Get an image from a context that has a particular file name.
+ * Returns NULL if no such image.
+ */
+ILImage *ILContextGetFile(ILContext *context, const char *name);
+
+/*
  * Iterate through the images that are associated with a context.
  */
 ILImage *ILContextNextImage(ILContext *context, ILImage *image);

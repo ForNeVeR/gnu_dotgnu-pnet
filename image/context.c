@@ -358,6 +358,33 @@ ILImage *ILContextGetAssembly(ILContext *context, const char *name)
 	return image;
 }
 
+ILImage *ILContextGetFile(ILContext *context, const char *name)
+{
+	ILImage *image;
+	const char *filename;
+	int len;
+	image = context->firstImage;
+	while(image != 0)
+	{
+		filename = image->filename;
+		if(filename)
+		{
+			len = strlen(filename);
+			while(len > 0 && filename[len - 1] != '/' &&
+				  filename[len - 1] != '\\')
+			{
+				--len;
+			}
+			if(!ILStrICmp(filename + len, name))
+			{
+				return image;
+			}
+		}
+		image = image->nextImage;
+	}
+	return 0;
+}
+
 ILImage *ILContextNextImage(ILContext *context, ILImage *image)
 {
 	if(image)

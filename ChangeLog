@@ -40,6 +40,9 @@
 	* image/meta_build.c: load manifest resource tokens on demand;
 	load the file table earlier.
 
+	* image/context.c, image/link.c, include/il_image.h: load the
+	modules specified in the File table during dynamic linking.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

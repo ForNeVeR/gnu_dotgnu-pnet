@@ -344,6 +344,11 @@ ILUInt32 ILFieldRVAGetRVA(ILFieldRVA *rva)
 	return rva->rva;
 }
 
+void ILFieldRVASetRVA(ILFieldRVA *rva, ILUInt32 value)
+{
+	rva->rva = value;
+}
+
 ILFieldRVA *ILFieldRVAGetFromOwner(ILField *owner)
 {
 	if((owner->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
@@ -392,6 +397,11 @@ ILField *ILFieldLayoutGetOwner(ILFieldLayout *layout)
 ILUInt32 ILFieldLayoutGetOffset(ILFieldLayout *layout)
 {
 	return layout->offset;
+}
+
+void ILFieldLayoutSetOffset(ILFieldLayout *layout, ILUInt32 offset)
+{
+	layout->offset = offset;
 }
 
 ILFieldLayout *ILFieldLayoutGetFromOwner(ILField *owner)

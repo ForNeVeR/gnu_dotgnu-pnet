@@ -1910,6 +1910,11 @@ ILField *ILFieldRVAGetOwner(ILFieldRVA *rva);
 ILUInt32 ILFieldRVAGetRVA(ILFieldRVA *rva);
 
 /*
+ * Set the RVA associated with a field RVA record.
+ */
+void ILFieldRVASetRVA(ILFieldRVA *rva, ILUInt32 value);
+
+/*
  * Get the field RVA that is associated with a field.
  * Returns NULL if no such field RVA.
  */
@@ -1939,6 +1944,11 @@ ILField *ILFieldLayoutGetOwner(ILFieldLayout *layout);
  * Get the offset associated with a field layout record.
  */
 ILUInt32 ILFieldLayoutGetOffset(ILFieldLayout *layout);
+
+/*
+ * Set the offset associated with a field layout record.
+ */
+void ILFieldLayoutSetOffset(ILFieldLayout *layout, ILUInt32 offset);
 
 /*
  * Get the field layout that is associated with a field.

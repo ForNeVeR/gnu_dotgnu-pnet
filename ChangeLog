@@ -1,4 +1,9 @@
 
+2003-06-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_emit.c, image/misc_token.c, include/il_program.h:
+	implement some of the Reflection.Emit internalcalls.
+
 2003-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/cvm_call.c, engine/engine.h,

@@ -1,4 +1,10 @@
 
+2003-02-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, Makefile.am: automatically add "-fno-inline-functions"
+	to the gcc command-line inside the "engine" directory so that -O3
+	won't cause register spill errors on i386.
+
 2003-02-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csant/csant.c (defaultBuildFile): look for *.csant files

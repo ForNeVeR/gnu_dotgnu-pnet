@@ -297,6 +297,23 @@ else
 	NO_GCSE=""
 fi
 
+dnl Check to see whether cc accepts "-fno-inline-functions" or not.
+AC_SUBST(NO_INLINE_FUNCTIONS)
+AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-inline-functions, ac_cv_prog_cc_no_inline_functions,
+[echo 'void f(){}' > conftest.c
+if test -z "`${CC-cc} -fno-inline-functions -c conftest.c 2>&1`"; then
+  ac_cv_prog_cc_no_inline_functions=yes
+else
+  ac_cv_prog_cc_no_inline_functions=no
+fi
+rm -f conftest*
+])
+if test $ac_cv_prog_cc_no_inline_functions = yes ; then
+	NO_INLINE_FUNCTIONS="-fno-inline-functions"
+else
+	NO_INLINE_FUNCTIONS=""
+fi
+
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memset memcmp memchr memcpy memmove bcopy bzero bcmp)

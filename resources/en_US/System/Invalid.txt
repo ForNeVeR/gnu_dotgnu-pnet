@@ -20,3 +20,5 @@
 Invalid_AsyncAndBlocking=An asyncronous call is pending and a blocking method has been called.
 Invalid_CGWriterExists=This code generator already has a different text writer
 Invalid_ServerNotCreated=Listening TCP server has not been created
+Invalid_SendToOnConnected=Attempting to use SendTo on a connected datagram socket
+Invalid_SendOnNonConnected=Attempting to use Send on an unconnected datagram socket

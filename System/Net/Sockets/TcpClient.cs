@@ -301,7 +301,7 @@ public class TcpClient : IDisposable
 
 	// Perform a lookup on a hostname and port number to
 	// get a remote end-point.
-	private static IPEndPoint Lookup(String hostname, int port)
+	internal static IPEndPoint Lookup(String hostname, int port)
 			{
 				if(hostname == null)
 				{

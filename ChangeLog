@@ -1,4 +1,9 @@
 
+2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/verify.c, engine/verify_var.c: detect unsafe pointer types
+in arguments and locals and bail out of the verifier if found.
+
 2001-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_image, image/pecoff_loader.c (ILImageLoadFromFile): new function.

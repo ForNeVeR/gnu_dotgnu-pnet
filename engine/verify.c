@@ -267,6 +267,25 @@ static int IsObjectRef(ILType *type)
 }
 
 /*
+ * Determine if a type contains unsafe pointers.
+ */
+static IL_INLINE int IsUnsafeType(ILType *type)
+{
+	if(!type || !ILType_IsComplex(type))
+	{
+		return 0;
+	}
+	else if(type->kind == IL_TYPE_COMPLEX_PTR)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
  * Determine if a stack item is assignment-compatible with
  * a particular memory slot (argument, local, field, etc).
  */

@@ -115,9 +115,13 @@ checkLDArg:
 		stack[stackSize].typeInfo = stack[stackSize].typeInfo->un.refType;
 		ILCoderLoadArg(coder, argNum, stack[stackSize].typeInfo);
 	}
-	else
+	else if(!IsUnsafeType(stack[stackSize].typeInfo) || unsafeAllowed)
 	{
 		ILCoderLoadArg(coder, argNum, stack[stackSize].typeInfo);
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
 	}
 	++stackSize;
 }
@@ -190,8 +194,15 @@ checkLDLoc:
 			ILTypeGetLocal(localVars, argNum);
 	stack[stackSize].engineType =
 			TypeToEngineType(stack[stackSize].typeInfo);
-	ILCoderLoadLocal(coder, argNum, stack[stackSize].typeInfo);
-	++stackSize;
+	if(!IsUnsafeType(stack[stackSize].typeInfo) || unsafeAllowed)
+	{
+		ILCoderLoadLocal(coder, argNum, stack[stackSize].typeInfo);
+		++stackSize;
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
 }
 break;
 

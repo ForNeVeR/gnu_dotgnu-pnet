@@ -38,6 +38,14 @@
 					STK_UNARY = resultType; \
 					STK_UNARY_TYPEINFO = 0; \
 				} \
+				else if(unsafeAllowed && \
+						(STK_UNARY == ILEngineType_M || \
+						 STK_UNARY == ILEngineType_T)) \
+				{ \
+					ILCoderConv(coder, opcode, ILEngineType_I); \
+					STK_UNARY = resultType; \
+					STK_UNARY_TYPEINFO = 0; \
+				} \
 				else \
 				{ \
 					VERIFY_TYPE_ERROR(); \

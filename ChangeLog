@@ -7,6 +7,10 @@
 	* csharp/stmt/return1.cs: bug in C# test case - cannot use
 	"abstract" and "virtual" together.
 
+	* csharp/class/Makefile.am, csharp/class/property2.cs,
+	csharp/class/property2.il, csharp/class/property2.jl:
+	test abstract property accessors.
+
 2001-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Initial check-in of the test suite.

@@ -11,7 +11,8 @@ TESTS = const1.cs \
 		method4.cs \
 		method5.cs \
 		method6.cs \
-		property1.cs
+		property1.cs \
+		property2.cs
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tools/run_test.sh
 

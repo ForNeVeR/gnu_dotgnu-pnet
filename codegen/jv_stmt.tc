@@ -672,6 +672,14 @@ JavaGenDiscard(ILNode_LocalVarDeclaration)
 }
 
 /*
+ * Generate discard code for local constant declarations.
+ */
+JavaGenDiscard(ILNode_LocalConstDeclaration)
+{
+	/* Nothing to do here: semantic analysis expands constants in-line */
+}
+
+/*
  * Generate discard code for line number information nodes.
  */
 JavaGenDiscard(ILNode_LineInfo)

@@ -655,6 +655,15 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 }
 
 /*
+ * Perform semantic analysis for local constant declarations.
+ */
+ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for line number information blocks.
  */
 ILNode_SemAnalysis(ILNode_LineInfo)

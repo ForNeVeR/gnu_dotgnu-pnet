@@ -18,6 +18,9 @@ constant values associated with a field; declare ILNode_LocalConstDeclaration.
 * cscc/cs_grammar.y: convert constant declarations into fields; construct
 local constants as ILNode_LocalConstDeclaration nodes.
 
+* codegen/cg_stmt.tc, codegen/jv_stmt.tc, cscc/cs_stmt.tc: implement
+local constant declaration operations.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

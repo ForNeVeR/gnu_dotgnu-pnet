@@ -1037,6 +1037,14 @@ ILNode_GenDiscard(ILNode_LocalVarDeclaration)
 }
 
 /*
+ * Generate discard code for local constant declarations.
+ */
+ILNode_GenDiscard(ILNode_LocalConstDeclaration)
+{
+	/* Nothing to do here: semantic analysis expands constants in-line */
+}
+
+/*
  * Generate discard code for line number information nodes.
  */
 ILNode_GenDiscard(ILNode_LineInfo)

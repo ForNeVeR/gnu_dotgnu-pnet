@@ -6,6 +6,10 @@
 	c/expr/ptr2.3il, c/expr/ptr2.c, c/expr/ptr2.err, c/expr/ptr2.il:
 	test warnings for pointer comparisons.
 
+	* c/decl/Makefile.am, c/decl/proto1.3il, c/decl/proto1.c,
+	c/decl/proto1.il: check function prototypes to make sure that
+	they don't default to "int".
+
 2002-09-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/enum3.cs, csharp/expr/enum3.il,

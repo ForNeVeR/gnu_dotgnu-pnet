@@ -1,5 +1,6 @@
 
-TESTS = ptr1.c
+TESTS = ptr1.c \
+	    ptr2.c
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tools/run_test.sh
 

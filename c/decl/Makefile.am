@@ -1,6 +1,7 @@
 
 TESTS = cdtor1.c \
 		cdtor2.c \
+		proto1.c \
 		type1.c \
 		type2.c \
 		type3.c \

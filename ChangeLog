@@ -5,6 +5,39 @@
 	runtime/System/Runtime/Serialization/SerializationInfo.cs: Add some
 	stub methods to allow the loading of external assemblies.
 
+	* System/Diagnostics/Debug.cs: Add Debug class and stub implementations
+	of the various logging functions available in this class.
+
+	* System/Text/RegularExpressions/ChangeLog,
+	System/Text/RegularExpressions/arch.cs,
+	System/Text/RegularExpressions/cache.cs,
+	System/Text/RegularExpressions/category.cs,
+	System/Text/RegularExpressions/collections.cs,
+	System/Text/RegularExpressions/compiler.cs,
+	System/Text/RegularExpressions/debug.cs,
+	System/Text/RegularExpressions/interpreter.cs,
+	System/Text/RegularExpressions/interval.cs,
+	System/Text/RegularExpressions/match.cs,
+	System/Text/RegularExpressions/notes.txt,
+	System/Text/RegularExpressions/parser.cs,
+	System/Text/RegularExpressions/quicksearch.cs,
+	System/Text/RegularExpressions/regex.cs,
+	System/Text/RegularExpressions/replace.cs,
+	System/Text/RegularExpressions/syntax.cs,
+	System/Text/RegularExpressions/RegexRunner.cs,
+	System/Text/RegularExpressions/RegexRunnerFactory.cs: Import the 
+	System.Text.RegularExpressions namespace from Mono's class libs.
+
+	* System/Text/RegularExpressions/README: Provide the source and 
+	and licensing details about this directory.
+
+	* System/Text/RegularExpressions/RegexRunnerFactory.cs,
+	System/Text/RegexRunnerFactory/RegexRunner.cs: Change the error 
+	messages to introduce project independent error messages.
+
+	* System/Text/RegularExpressions/interval.cs: Remove compile time 
+	warning in code.
+
 2002-12-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Collections/ArrayList.cs,

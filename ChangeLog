@@ -5,6 +5,9 @@
 
 	* tests/test_crypt.c: regression tests for Triple-DES.
 
+	* support/bignum.c, tests/test_crypt.c: big number regression tests
+	and bug fixes.
+
 2002-07-14  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_html.c, csdoc/doc_texi.c : fix the table bug

@@ -158,6 +158,7 @@ ILBigNum *ILBigNumFromBytes(unsigned char *bytes, ILInt32 numBytes)
 		                   (((ILUInt32)(bytes[1])) << 16) |
 		                   (((ILUInt32)(bytes[2])) << 8) |
 							((ILUInt32)(bytes[3]));
+		bytes += 4;
 	}
 
 	/* Normalize and return */
@@ -805,8 +806,9 @@ static int DivRem(ILBigNum *numx, ILBigNum *numy,
 		{
 			divtemp = (ILUInt32)(temp / ((ILUInt64)topy));
 		}
-		while((((ILUInt64)topy2) * divtemp) >
-			  (((temp - ((ILUInt64)divtemp) * ((ILUInt64)topy)) << 32) + topx3))
+		while((((ILUInt64)topy2) * ((ILUInt64)divtemp)) >
+			  (((temp - ((ILUInt64)divtemp) * ((ILUInt64)topy)) << 32)
+			  		+ (ILUInt64)topx3))
 		{
 			--divtemp;
 		}
@@ -817,22 +819,23 @@ static int DivRem(ILBigNum *numx, ILBigNum *numy,
 		for(size = 0; size < normy->size; ++size)
 		{
 			/* Put the next word of "normy * divtemp" into "topx" */
-			temp += normy->words[size] * divtemp;
+			temp += ((ILUInt64)(normy->words[size])) * (ILUInt64)divtemp;
 			topx = (ILUInt32)temp;
 			temp >>= 32;
 
 			/* Subtract "topx" from the corresponding word in "normx" */
 			jadjust = normx->size - 1 - (j + normy->size - size);
+			topx2 = normx->words[jadjust];
 			if(carry)
 			{
-				if((normx->words[jadjust] -= topx + 1) < topx)
+				if((normx->words[jadjust] -= topx + 1) < topx2)
 				{
 					carry = 0;
 				}
 			}
 			else
 			{
-				if((normx->words[jadjust] -= topx) > topx)
+				if((normx->words[jadjust] -= topx) > topx2)
 				{
 					carry = 1;
 				}
@@ -840,16 +843,17 @@ static int DivRem(ILBigNum *numx, ILBigNum *numy,
 		}
 		jadjust = normx->size - 1 - j;
 		topx = (ILUInt32)temp;
+		topx2 = normx->words[jadjust];
 		if(carry)
 		{
-			if((normx->words[jadjust] -= topx + 1) < topx)
+			if((normx->words[jadjust] -= topx + 1) < topx2)
 			{
 				carry = 0;
 			}
 		}
 		else
 		{
-			if((normx->words[jadjust] -= topx) > topx)
+			if((normx->words[jadjust] -= topx) > topx2)
 			{
 				carry = 1;
 			}

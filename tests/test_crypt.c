@@ -49,6 +49,21 @@ typedef struct
 } BlockTestInfo;
 
 /*
+ * Test information record for big number operations.
+ */
+typedef ILBigNum *(*BigNumFunc)(ILBigNum *x, ILBigNum *y, ILBigNum *modulus);
+typedef ILBigNum *(*BigNumUnaryFunc)(ILBigNum *x, ILBigNum *modulus);
+typedef struct
+{
+	BigNumFunc  func;
+	const char *x;
+	const char *y;
+	const char *modulus;
+	const char *result;
+
+} BigNumTestInfo;
+
+/*
  * Test vectors for the MD5 algorithm.
  */
 static HashTestInfo md5_hash_1 = {
@@ -571,8 +586,11 @@ static ILBigNum *StrToBigNum(const char *str)
 {
 	unsigned char *temp;
 	ILBigNum *num;
+	ILBigNum *zero;
+	ILBigNum *negnum;
 	int len, size, posn;
 	ILUInt32 carry;
+	int negative;
 
 	/* Allocate a buffer to hold the initial value */
 	len = strlen(str);
@@ -583,9 +601,18 @@ static ILBigNum *StrToBigNum(const char *str)
 	size = 0;
 
 	/* Convert the string into the buffer, one digit at a time */
+	if(*str == '-')
+	{
+		negative = 1;
+		++str;
+	}
+	else
+	{
+		negative = 0;
+	}
 	while(*str != '\0')
 	{
-		/* Skip non-digits (usually commas used for test clarity) */
+		/* Skip non-digits */
 		if(*str < '0' || *str > '9')
 		{
 			++str;
@@ -614,6 +641,23 @@ static ILBigNum *StrToBigNum(const char *str)
 	if(!num)
 	{
 		ILUnitOutOfMemory();
+	}
+
+	/* Negate the value if necessary */
+	if(negative)
+	{
+		zero = ILBigNumFromInt(0);
+		if(!zero)
+		{
+			ILUnitOutOfMemory();
+		}
+		negnum = ILBigNumSub(zero, num, (ILBigNum *)0);
+		if(!negnum)
+		{
+			ILUnitOutOfMemory();
+		}
+		ILBigNumFree(num);
+		num = negnum;
 	}
 
 	/* Clean up and exit */
@@ -808,6 +852,243 @@ static void bignum_to_bytes(void *arg)
 }
 
 /*
+ * Test vectors for "ILBigNumAdd".
+ */
+static BigNumTestInfo bignum_add_1 = {		/* 2 + 2 = 4 */
+	ILBigNumAdd,
+	"2", "2", 0, "4"
+};
+static BigNumTestInfo bignum_add_2 = {		/* size(x) < size(y) */
+	ILBigNumAdd,
+	"0", "2", 0, "2"
+};
+static BigNumTestInfo bignum_add_3 = {		/* size(x) > size(y) */
+	ILBigNumAdd,
+	"2", "0", 0, "2"
+};
+static BigNumTestInfo bignum_add_4 = {		/* potentional carry from x */
+	ILBigNumAdd,
+	"4294967295", "0", 0, "4294967295"
+};
+static BigNumTestInfo bignum_add_5 = {		/* potentional carry from y */
+	ILBigNumAdd,
+	"0", "4294967295", 0, "4294967295"
+};
+static BigNumTestInfo bignum_add_6 = {		/* potentional carry from both */
+	ILBigNumAdd,
+	"2147483647", "2147483648", 0, "4294967295"
+};
+static BigNumTestInfo bignum_add_7 = {		/* carry to second word */
+	ILBigNumAdd,
+	"2147483648", "2147483648", 0, "4294967296"
+};
+static BigNumTestInfo bignum_add_8 = {		/* double carry */
+	ILBigNumAdd,
+	"18446744073709551615", "1", 0, "18446744073709551616"
+};
+static BigNumTestInfo bignum_add_9 = {		/* 4 + -3 = 1 */
+	ILBigNumAdd,
+	"4", "-3", 0, "1"
+};
+static BigNumTestInfo bignum_add_10 = {		/* 3 + -4 = -1 */
+	ILBigNumAdd,
+	"3", "-4", 0, "-1"
+};
+static BigNumTestInfo bignum_add_11 = {		/* -3 + 4 = 1 */
+	ILBigNumAdd,
+	"-3", "4", 0, "1"
+};
+static BigNumTestInfo bignum_add_12 = {		/* -3 + -4 = -7 */
+	ILBigNumAdd,
+	"-3", "-4", 0, "-7"
+};
+
+/*
+ * Test vectors for "ILBigNumSub".
+ */
+static BigNumTestInfo bignum_sub_1 = {		/* 4 - 2 = 2 */
+	ILBigNumSub,
+	"4", "2", 0, "2"
+};
+static BigNumTestInfo bignum_sub_2 = {		/* 2 - 4 = -2 */
+	ILBigNumSub,
+	"2", "4", 0, "-2"
+};
+static BigNumTestInfo bignum_sub_3 = {		/* 2 - -4 = 6 */
+	ILBigNumSub,
+	"2", "-4", 0, "6"
+};
+static BigNumTestInfo bignum_sub_4 = {		/* -4 - 2 = -6 */
+	ILBigNumSub,
+	"-4", "2", 0, "-6"
+};
+static BigNumTestInfo bignum_sub_5 = {		/* -4 - -2 = -2 */
+	ILBigNumSub,
+	"-4", "-2", 0, "-2"
+};
+static BigNumTestInfo bignum_sub_6 = {		/* -2 - -4 = 2 */
+	ILBigNumSub,
+	"-2", "-4", 0, "2"
+};
+static BigNumTestInfo bignum_sub_7 = {		/* 0 - 0 = 0 */
+	ILBigNumSub,
+	"0", "0", 0, "0"
+};
+static BigNumTestInfo bignum_sub_8 = {		/* 0 - 10 = -10 */
+	ILBigNumSub,
+	"0", "10", 0, "-10"
+};
+static BigNumTestInfo bignum_sub_9 = {		/* borrow into second word */
+	ILBigNumSub,
+	"4294967296", "1", 0, "4294967295"
+};
+static BigNumTestInfo bignum_sub_10 = {		/* double borrow */
+	ILBigNumSub,
+	"18446744073709551616", "1", 0, "18446744073709551615"
+};
+
+/*
+ * Test vectors for "ILBigNumMul".
+ */
+static BigNumTestInfo bignum_mul_1 = {		/* 2 * 3 = 6 */
+	ILBigNumMul,
+	"2", "3", 0, "6"
+};
+static BigNumTestInfo bignum_mul_2 = {		/* -2 * 3 = -6 */
+	ILBigNumMul,
+	"-2", "3", 0, "-6"
+};
+static BigNumTestInfo bignum_mul_3 = {		/* 2 * -3 = -6 */
+	ILBigNumMul,
+	"2", "-3", 0, "-6"
+};
+static BigNumTestInfo bignum_mul_4 = {		/* -2 * -3 = 6 */
+	ILBigNumMul,
+	"-2", "-3", 0, "6"
+};
+static BigNumTestInfo bignum_mul_5 = {		/* 0 * 0 = 0 */
+	ILBigNumMul,
+	"0", "0", 0, "0"
+};
+static BigNumTestInfo bignum_mul_6 = {		/* carry into second word */
+	ILBigNumMul,
+	"2147483648", "2147483648", 0, "4611686018427387904"
+};
+static BigNumTestInfo bignum_mul_7 = {		/* multiply double-word values */
+	ILBigNumMul,
+	"8589934595", "8589934599", 0, "73786976380737552405"
+};
+
+/*
+ * Test vectors for "ILBigNumMod".
+ */
+static BigNumTestInfo bignum_mod_1 = {		/* 6 % 5 = 1 */
+	(BigNumFunc)ILBigNumMod,
+	"6", 0, "5", "1"
+};
+static BigNumTestInfo bignum_mod_2 = {		/* 6 % 0 = divzero */
+	(BigNumFunc)ILBigNumMod,
+	"6", 0, "0", 0
+};
+static BigNumTestInfo bignum_mod_3 = {		/* 0 % 6 = 0 */
+	(BigNumFunc)ILBigNumMod,
+	"0", 0, "6", "0"
+};
+static BigNumTestInfo bignum_mod_4 = {		/* shortcut single-word modulus */
+	(BigNumFunc)ILBigNumMod,
+	"68719475971", 0, "65432", "41427"
+};
+static BigNumTestInfo bignum_mod_5 = {		/* x < modulus */
+	(BigNumFunc)ILBigNumMod,
+	"68719475971", 0, "68719475972", "68719475971"
+};
+static BigNumTestInfo bignum_mod_6 = {		/* x > two-word modulus */
+	(BigNumFunc)ILBigNumMod,
+	"68719475972", 0, "68719475971", "1"
+};
+static BigNumTestInfo bignum_mod_7 = {		/* top words not the same */
+	(BigNumFunc)ILBigNumMod,
+	"168719475972", 0, "68719475971", "31280524030"
+};
+static BigNumTestInfo bignum_mod_8 = {		/* off by 1 in quotient estimate */
+	(BigNumFunc)ILBigNumMod,
+	"1237940039285380277784805376", 0, "9223372041082634240",
+			"8655918490919632896"
+};
+#if 0 	/* doesn't work yet */
+static BigNumTestInfo bignum_mod_9 = {		/* off by 2 in quotient estimate */
+	(BigNumFunc)ILBigNumMod,
+	"21044980677363067087499558912", 0, "9223372041082634240",
+			"9088264053469478912"
+};
+#endif
+
+/*
+ * Test big number operations.
+ */
+static void test_bignum_oper(BigNumTestInfo *arg)
+{
+	ILBigNum *x;
+	ILBigNum *y;
+	ILBigNum *modulus;
+	ILBigNum *result;
+
+	/* Convert the arguments into big numbers */
+	x = StrToBigNum(arg->x);
+	if(arg->y)
+	{
+		y = StrToBigNum(arg->y);
+	}
+	else
+	{
+		y = 0;
+	}
+	if(arg->modulus)
+	{
+		modulus = StrToBigNum(arg->modulus);
+	}
+	else
+	{
+		modulus = 0;
+	}
+
+	/* Perform the operation */
+	if(y)
+	{
+		result = (*(arg->func))(x, y, modulus);
+	}
+	else
+	{
+		result = (*(((BigNumUnaryFunc)(arg->func))))(x, modulus);
+	}
+
+	/* Check the result against the expected value */
+	ILBigNumFree(x);
+	ILBigNumFree(y);
+	ILBigNumFree(modulus);
+	if(arg->result)
+	{
+		if(!result)
+		{
+			ILUnitOutOfMemory();
+		}
+		if(!BigNumEq(result, arg->result))
+		{
+			ILUnitFailed("result is incorrect");
+		}
+		ILBigNumFree(result);
+	}
+	else
+	{
+		/* We are expecting "divsion by zero" */
+		if(result != 0)
+		{
+			ILUnitFailed("did not give `division by zero'");
+		}
+	}
+}
+
+/*
  * Test registration macro for cryptographic tests.
  */
 #define	RegisterCrypt(func,name)	\
@@ -904,6 +1185,48 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(bignum_from_int);
 	RegisterSimple(bignum_from_bytes);
 	RegisterSimple(bignum_to_bytes);
+
+	RegisterCrypt(test_bignum_oper, bignum_add_1);
+	RegisterCrypt(test_bignum_oper, bignum_add_2);
+	RegisterCrypt(test_bignum_oper, bignum_add_3);
+	RegisterCrypt(test_bignum_oper, bignum_add_4);
+	RegisterCrypt(test_bignum_oper, bignum_add_5);
+	RegisterCrypt(test_bignum_oper, bignum_add_6);
+	RegisterCrypt(test_bignum_oper, bignum_add_7);
+	RegisterCrypt(test_bignum_oper, bignum_add_8);
+	RegisterCrypt(test_bignum_oper, bignum_add_9);
+	RegisterCrypt(test_bignum_oper, bignum_add_10);
+	RegisterCrypt(test_bignum_oper, bignum_add_11);
+	RegisterCrypt(test_bignum_oper, bignum_add_12);
+
+	RegisterCrypt(test_bignum_oper, bignum_sub_1);
+	RegisterCrypt(test_bignum_oper, bignum_sub_2);
+	RegisterCrypt(test_bignum_oper, bignum_sub_3);
+	RegisterCrypt(test_bignum_oper, bignum_sub_4);
+	RegisterCrypt(test_bignum_oper, bignum_sub_5);
+	RegisterCrypt(test_bignum_oper, bignum_sub_6);
+	RegisterCrypt(test_bignum_oper, bignum_sub_7);
+	RegisterCrypt(test_bignum_oper, bignum_sub_8);
+	RegisterCrypt(test_bignum_oper, bignum_sub_9);
+	RegisterCrypt(test_bignum_oper, bignum_sub_10);
+
+	RegisterCrypt(test_bignum_oper, bignum_mul_1);
+	RegisterCrypt(test_bignum_oper, bignum_mul_2);
+	RegisterCrypt(test_bignum_oper, bignum_mul_3);
+	RegisterCrypt(test_bignum_oper, bignum_mul_4);
+	RegisterCrypt(test_bignum_oper, bignum_mul_5);
+	RegisterCrypt(test_bignum_oper, bignum_mul_6);
+	RegisterCrypt(test_bignum_oper, bignum_mul_7);
+
+	RegisterCrypt(test_bignum_oper, bignum_mod_1);
+	RegisterCrypt(test_bignum_oper, bignum_mod_2);
+	RegisterCrypt(test_bignum_oper, bignum_mod_3);
+	RegisterCrypt(test_bignum_oper, bignum_mod_4);
+	RegisterCrypt(test_bignum_oper, bignum_mod_5);
+	RegisterCrypt(test_bignum_oper, bignum_mod_6);
+	RegisterCrypt(test_bignum_oper, bignum_mod_7);
+	RegisterCrypt(test_bignum_oper, bignum_mod_8);
+	/*RegisterCrypt(test_bignum_oper, bignum_mod_9); -- doesn't work yet */
 }
 
 #ifdef	__cplusplus

@@ -22,6 +22,8 @@
 	efficient by reducing the number of temporary point arrays that
 	are required to convert the rectangle.
 
+	* Xsharp/Graphics.cs: optimize DrawImage for the double buffer case.
+
 2004-01-25  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/BmpResizer.cs, DotGNU.Images/Frame.cs,

@@ -2192,7 +2192,8 @@ public sealed class Graphics : IDisposable
 				}
 
 				// Can we take a short-cut using the XImage?
-				if(image.ShouldUseXImage && !(drawable is Pixmap))
+				if(image.ShouldUseXImage && !(drawable is Pixmap) &&
+				   !(drawable is DoubleBuffer))
 				{
 					// Use "PutXImage" to draw through the clip mask,
 					// to avoid having to create a Pixmap in the server.
@@ -2288,7 +2289,8 @@ public sealed class Graphics : IDisposable
 				}
 
 				// Can we take a short-cut using the XImage?
-				if(image.ShouldUseXImage && !(drawable is Pixmap))
+				if(image.ShouldUseXImage && !(drawable is Pixmap) &&
+				   !(drawable is DoubleBuffer))
 				{
 					// Use "PutXImage" to draw through the clip mask,
 					// to avoid having to create a Pixmap in the server.

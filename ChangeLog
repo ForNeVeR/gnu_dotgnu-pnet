@@ -32,6 +32,11 @@
 	* System.Windows.Forms/FileDialog.cs: recognise "~" and "~/xyzzy"
 	as home directory references in the file dialog.
 
+	* System.Windows.Forms/FileDialog.cs,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
+	pop up dialog boxes when files don't exist, overwriting existing
+	files, etc; move all translatable strings into the Forms resources.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

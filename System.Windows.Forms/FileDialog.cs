@@ -323,6 +323,14 @@ public abstract class FileDialog : CommonDialog
 				}
 			}
 
+	// Determine if the current file is ok when the user clicks Open or Save.
+	private bool IsFileOk()
+			{
+				CancelEventArgs e = new CancelEventArgs();
+				OnFileOk(e);
+				return !(e.Cancel);
+			}
+
 	// Internal version of "Reset".
 	internal virtual void ResetInternal()
 			{
@@ -1411,7 +1419,8 @@ public abstract class FileDialog : CommonDialog
 
 					// Add the third line (file name entry fields).
 					nameLabel = new Label();
-					nameLabel.Text = "File name:";	// TODO: translate.
+					nameLabel.Text = S._("SWF_FileDialog_FileName",
+										 "File name:");
 					name = new TextBox();
 					okButton = new Button();
 					okButton.Text = fileDialogParent.OkButtonName;
@@ -1421,7 +1430,8 @@ public abstract class FileDialog : CommonDialog
 
 					// Add the fourth line (file type entry fields).
 					typeLabel = new Label();
-					typeLabel.Text = "Files of type:";	// TODO: translate.
+					typeLabel.Text = S._("SWF_FileDialog_FilesOfType",
+										 "Files of type:");
 					type = new ComboBox();
 					cancelButton = new Button();
 					cancelButton.Text = S._("SWF_MessageBox_Cancel", "Cancel");
@@ -1433,7 +1443,8 @@ public abstract class FileDialog : CommonDialog
 					if(fileDialogParent is OpenFileDialog)
 					{
 						readOnly = new CheckBox();
-						readOnly.Text = "Open as read-only"; // TODO: translate.
+						readOnly.Text = S._("SWF_FileDialog_ReadOnly",
+											"Open as read-only");
 						readOnly.Checked =
 							((OpenFileDialog)fileDialogParent).ReadOnlyChecked;
 						readOnly.Visible =
@@ -1789,7 +1800,10 @@ public abstract class FileDialog : CommonDialog
 							// We finally have a result, so exit the dialog.
 							fileDialogParent.fileName = filename;
 							fileDialogParent.fileNames = null;
-							DialogResult = DialogResult.OK;
+							if(fileDialogParent.IsFileOk())
+							{
+								DialogResult = DialogResult.OK;
+							}
 						}
 					}
 				}
@@ -1818,7 +1832,79 @@ public abstract class FileDialog : CommonDialog
 		// The filename may be modified to include a default extension.
 		private bool FilenameAcceptable(ref String filename)
 				{
-					// TODO
+					// TODO: default extension handling.
+
+					// Check for file and path existence.
+					if(fileDialogParent.CheckFileExists)
+					{
+						if(!File.Exists(filename))
+						{
+							MessageBox.Show
+								(String.Format
+									(S._("SWF_FileDialog_FileNotFound"),
+									 filename),
+								 fileDialogParent.Title,
+								 MessageBoxButtons.OK,
+								 MessageBoxIcon.Exclamation);
+							return false;
+						}
+					}
+					else if(fileDialogParent.CheckPathExists)
+					{
+						if(!IsDirectory(Path.GetDirectoryName(filename)))
+						{
+							MessageBox.Show
+								(String.Format
+									(S._("SWF_FileDialog_PathNotFound"),
+									 filename),
+								 fileDialogParent.Title,
+								 MessageBoxButtons.OK,
+								 MessageBoxIcon.Exclamation);
+							return false;
+						}
+					}
+
+					// Check for create and overwrite.
+					if(fileDialogParent is SaveFileDialog)
+					{
+						if(((SaveFileDialog)fileDialogParent).OverwritePrompt)
+						{
+							if(File.Exists(filename))
+							{
+								if(MessageBox.Show
+									(String.Format
+										(S._("SWF_FileDialog_Overwrite"),
+										 filename),
+									 fileDialogParent.Title,
+									 MessageBoxButtons.YesNo,
+									 MessageBoxIcon.Question,
+									 MessageBoxDefaultButton.Button2)
+									 		!= DialogResult.Yes)
+								{
+									return false;
+								}
+							}
+						}
+						if(((SaveFileDialog)fileDialogParent).CreatePrompt)
+						{
+							if(!File.Exists(filename))
+							{
+								if(MessageBox.Show
+									(String.Format
+										(S._("SWF_FileDialog_Create"),
+										 filename),
+									 fileDialogParent.Title,
+									 MessageBoxButtons.YesNo,
+									 MessageBoxIcon.Question)
+									 		!= DialogResult.Yes)
+								{
+									return false;
+								}
+							}
+						}
+					}
+
+					// If we get here, then the filename is acceptable.
 					return true;
 				}
 

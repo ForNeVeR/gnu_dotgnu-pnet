@@ -1,0 +1,174 @@
+<!--
+
+csdoc.dtd - DTD for the "C# Documentation" document type.
+
+Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+-->
+<!DOCTYPE Libraries [
+	<!ELEMENT Libraries (Types)*>
+
+	<!-- Older versions of the format use "Packages" instead of "Libraries" -->
+
+	<!ELEMENT Packages (Types)*>
+
+	<!-- List of types within a library -->
+
+	<!ELEMENT Types (Type)*>
+	<!ATTLIST Types
+	          Library CDATA #IMPLIED
+	          package CDATA #IMPLIED>
+		<!-- "package" is the older way of specifying the library name -->
+
+	<!-- Excluded information -->
+
+	<!ENTITY % excluded
+			  "Excluded
+			 | ExcludedTypeName
+			 | ExcludedLibraryName
+			 | ExcludedBucketName">
+
+	<!ELEMENT Excluded (#PCDATA)>
+	<!ELEMENT ExcludedTypeName (#PCDATA)>
+	<!ELEMENT ExcludedLibraryName (#PCDATA)>
+	<!ELEMENT ExcludedBucketName (#PCDATA)>
+
+	<!ELEMENT TypeExcluded (#PCDATA)>
+
+	<!-- Information about a specific type -->
+
+	<!ENTITY % typeMembers
+	           "TypeSignature
+			  | MemberOfPackage
+			  | AssemblyInfo
+			  | ThreadingSafetyStatement
+			  | TypeKind
+			  | Docs
+			  | Base
+			  | Interfaces
+			  | Attributes
+			  | Members
+			  | TypeExcluded">
+
+	<!ELEMENT Type (typeMembers)*>
+	<!ATTLIST Type
+	          Name       CDATA #REQUIRED
+			  FullName   CDATA #REQUIRED
+			  FullNameSP CDATA #IMPLIED>
+
+	<!ELEMENT TypeKind (#PCDATA)>
+		<!-- TypeKind contains the metadata typedef flags as
+		     either a decimal value, or a comma-separated list
+			 of flag names: Private, Public, NestedPublic, NestedPrivate,
+			 NestedFamily, NestedAssembly, NestedFamAndAssem,
+			 NestedFamOrAssem, AutoLayout, SequentialLayout,
+			 ExplicitLayout, Class, ValueType, UnmanagedValueType,
+			 Abstract, Sealed, Enum, SpecialName, Import, Serializable,
+			 AnsiClass, UnicodeClass, AutoClass, LateInit, BeforeFieldInit,
+			 RTSpecialName -->
+
+	<!-- Type signature information -->
+
+	<!ELEMENT TypeSignature EMPTY>
+	<!ATTLIST TypeSignature
+	          Language   (ILASM|C#) #REQUIRED
+			  Value      CDATA      #REQUIRED>
+
+	<!-- Assembly information for types -->
+
+	<!ELEMENT AssemblyInfo (AssemblyName | AssemblyPublicKey |
+	                        AssemblyVersion | AssemblyCulture |
+							Attributes)>
+	<!ELEMENT AssemblyName (#PCDATA)>
+	<!ELEMENT AssemblyPublicKey (#PCDATA)>
+	<!ELEMENT AssemblyVersion (#PCDATA)>
+	<!ELEMENT AssemblyCulture (#PCDATA)>
+
+	<!-- Information about inherited types -->
+
+	<!ELEMENT Base (BaseTypeName | %excluded;)*>
+	<!ELEMENT BaseTypeName (#PCDATA)>
+
+	<!ELEMENT Interfaces (Interface)*>
+	<!ELEMENT Interface (InterfaceName | %excluded;)>
+	<!ELEMENT InterfaceName (#PCDATA)>
+
+	<!-- Type attributes -->
+
+	<!ELEMENT Attributes (Attribute)*>
+	<!ELEMENT Attribute (AttributeName | %excluded;)*>
+	<!ELEMENT AttributeName (#PCDATA)>
+
+	<!-- Type members -->
+
+	<!ELEMENT Members (Member|Type)*>
+
+	<!ENTITY % memberInfo
+	          "MemberSignature
+			 | MemberType
+			 | MemberValue
+			 | ReturnValue
+			 | Parameters
+			 | Docs
+			 | %excluded;">
+
+	<!ELEMENT Member (%memberInfo;)*>
+	<!ATTLIST Member
+	          MemberName CDATA #REQUIRED>
+
+	<!ELEMENT MemberSignature (#PCDATA)>
+	<!ATTLIST MemberSignature
+	          Language   (ILASM|C#) ""
+			  Value      CDATA      #IMPLIED>
+		<!-- Member signatures may either be specified by language
+		     and value, or by contents.  The contents version is
+			 the older format, and mixes ILASM and C# styles -->
+
+	<!ELEMENT MemberType (#PCDATA)>
+	    <!-- "Field", "Method", "Property", "Event", "Constructor" -->
+
+	<!ELEMENT MemberValue (#PCDATA)>
+
+	<!ELEMENT ReturnValue (ReturnType)*>
+	<!ELEMENT ReturnType  (#PCDATA)>
+
+	<!ELEMENT Parameters  (Parameter)*>
+
+	<!ELEMENT Parameter   EMPTY>
+	<!ATTLIST Parameter
+	          Name        CDATA #REQUIRED
+	          Type        CDATA #REQUIRED>
+
+	<!-- Misc information about types -->
+
+	<!ELEMENT MemberOfPackage (#PCDATA)>
+	<!ELEMENT ThreadingSafetyStatement (#PCDATA)>
+
+	<!-- Textual documentation section -->
+
+	<!ENTITY % docElement
+	           "summary
+			  | para
+			  | remarks
+			  | block
+			  | see
+			  | seealso
+			  | param
+			  | paramref">
+
+	<!ELEMENT Docs (#PCDATA | %docElement;)*>
+]>

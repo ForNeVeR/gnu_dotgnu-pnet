@@ -54,14 +54,14 @@ public class StringWriter : TextWriter, IDisposable
 
 	public StringWriter(StringBuilder sb)
 	{
-		if (value == null) throw new ArgumentNullException("sb");
+		if (sb == null) throw new ArgumentNullException("sb");
 		this.buffer = sb;
 	}
 
 	public StringWriter(StringBuilder sb, IFormatProvider formatProvider) :
 		base(formatProvider)
 	{
-		if (value == null) throw new ArgumentNullException("sb");
+		if (sb == null) throw new ArgumentNullException("sb");
 		this.buffer = sb;
 	}
 
@@ -102,22 +102,19 @@ public class StringWriter : TextWriter, IDisposable
 
 	public override void Write(String value)
 	{
-		// TODO: add some sort of message to the exception
-		if (this.streamclosed) throw new ObjectDisposedException();
+		if (this.streamclosed) throw new ObjectDisposedException("this");
 		this.buffer.Append(value);
 	}
 
 	public override void Write(char value)
 	{
-		// TODO: see Write(String).
-		if (this.streamclosed) throw new ObjectDisposedException();
+		if (this.streamclosed) throw new ObjectDisposedException("this");
 		this.buffer.Append(value);
 	}
 
 	public override void Write(char[] buffer, int index, int count)
 	{
-		// TODO: see Write(String).
-		if (this.streamclosed) throw new ObjectDisposedException();
+		if (this.streamclosed) throw new ObjectDisposedException("this");
 
 		// StringBuilder puts another requirement on this one, but not us!
 		if (buffer == null) throw new ArgumentNullException("buffer");

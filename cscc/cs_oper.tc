@@ -130,7 +130,8 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 
 	/* Could not find a suitable operator */
 error:
-	CSError("invalid operands to binary `%s'", errorName);
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to binary `%s'", errorName);
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Int32;
 	return value1;
@@ -220,7 +221,8 @@ static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
 
 	/* Could not find a suitable operator */
 error:
-	CSError("invalid operands to unary `%s'", errorName);
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to unary `%s'", errorName);
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;
@@ -305,13 +307,13 @@ ILNode_SemAnalysis(ILNode_Add)
 		{
 			/* Convert the first argument into "ObjectRef" */
 			ILCast(info, node->expr1, &(node->expr1), value1.type,
-				   ILValueTypeToType(info, IL_TYPE_OBJECT_REF));
+				   ILFindSystemType(info, "Object"));
 		}
 		if(!IsString(value2.type))
 		{
 			/* Convert the second argument into "ObjectRef" */
 			ILCast(info, node->expr2, &(node->expr2), value2.type,
-				   ILValueTypeToType(info, IL_TYPE_OBJECT_REF));
+				   ILFindSystemType(info, "Object"));
 		}
 		*parent = ILNode_Concat_create(node->expr1, node->expr2);
 		yysetfilename(*parent, yygetfilename(node));
@@ -323,7 +325,8 @@ ILNode_SemAnalysis(ILNode_Add)
 
 	/* Could not find a suitable operator */
 error:
-	CSError("invalid operands to binary `+'");
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to binary `+'");
 	value1.kind = CS_SEMKIND_RVALUE;
 	value1.type = ILType_Int32;
 	return value1;
@@ -453,21 +456,144 @@ ILNode_SemAnalysis(ILNode_UShr)
  */
 ILNode_SemAnalysis(ILNode_Assign)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	CSSemValue value1;
+	CSSemValue value2;
+
+	/* Perform semantic analysis on the lvalue */
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	if(value1.kind != CS_SEMKIND_LVALUE)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid lvalue in assignment");
+		if(value1.kind == CS_SEMKIND_LVALUE)
+		{
+			value1.kind = CS_SEMKIND_RVALUE;
+		}
+		else
+		{
+			value1.kind = CS_SEMKIND_RVALUE;
+			value1.type = ILType_Int32;
+		}
+		return value1;
+	}
+
+	/* Perform semantic analysis on the rvalue */
+	if(!CSSemExpectValue(node->expr2, info, &(node->expr2), &value2) ||
+	   !ILCanCoerce(info->context, value2.type, value1.type))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "incompatible types in assignment");
+		value1.kind = CS_SEMKIND_RVALUE;
+		return value1;
+	}
+
+	/* Insert coercion nodes to convert the rvalue appropriately */
+	ILCoerce(info, node->expr2, &(node->expr2), value2.type, value1.type);
+
+	/* Convert value1 into an rvalue and return its type */
+	value1.kind = CS_SEMKIND_RVALUE;
+	return value1;
 }
+
+%{
+
+/*
+ * Common semantic analysis for operation-based assignment operators.
+ */
+static CSSemValue AssignSem(ILGenInfo *info, ILNode_BinaryExpression *node,
+					        ILNode **parent, const ILOperator *table,
+					        const char *name, const char *errorName)
+{
+	const ILOperator *oper;
+	ILMethod *method;
+	ILType *returnType;
+	CSSemValue value1;
+	CSSemValue value2;
+
+	/* Perform semantic analysis on the arguments */
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* The first argument must be an lvalue */
+	if(value1.kind != CS_SEMKIND_LVALUE)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid lvalue in assignment");
+		if(value1.kind == CS_SEMKIND_LVALUE)
+		{
+			value1.kind = CS_SEMKIND_RVALUE;
+		}
+		else
+		{
+			value1.kind = CS_SEMKIND_RVALUE;
+			value1.type = ILType_Int32;
+		}
+		return value1;
+	}
+
+	/* The second argument must be a value */
+	if(!CSIsSemValue(value2.kind))
+	{
+		goto error;
+	}
+
+	/* Look for a builtin operator */
+	oper = ILFindBinaryOperator(table, value1.type, value2.type);
+	if(oper)
+	{
+		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
+		value1.kind = CS_SEMKIND_RVALUE;
+		if(oper->outtype->type)
+		{
+			value1.type = oper->outtype->type;
+		}
+		else
+		{
+			value1.type = ILFindSystemType(info, "Decimal");
+		}
+		return value1;
+	}
+
+	/* Look for a user-specified operator */
+	method = FindUserBinaryOperator(name, value1.type, value2.type);
+	if(method)
+	{
+		returnType = ILMethod_Signature(method)->un.method.retType;
+		*parent = ILNode_UserBinaryOp_create
+						(node->expr1, node->expr2,
+						 ILTypeToValueType(returnType), method);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = returnType;
+		return value1;
+	}
+
+	/* Could not find a suitable operator */
+error:
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to binary `%s'", errorName);
+	if(value1.kind == CS_SEMKIND_LVALUE)
+	{
+		value1.kind = CS_SEMKIND_RVALUE;
+	}
+	else
+	{
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = ILType_Int32;
+	}
+	return value1;
+}
+
+%}
 
 /*
  * Perform semantic analysis for the addition assignment operator.
  */
 ILNode_SemAnalysis(ILNode_AssignAdd)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Add, "op_Addition", "+");
 }
 
 /*
@@ -475,10 +601,8 @@ ILNode_SemAnalysis(ILNode_AssignAdd)
  */
 ILNode_SemAnalysis(ILNode_AssignSub)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Sub, "op_Subtraction", "-");
 }
 
 /*
@@ -486,10 +610,8 @@ ILNode_SemAnalysis(ILNode_AssignSub)
  */
 ILNode_SemAnalysis(ILNode_AssignMul)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Mul, "op_Multiply", "*");
 }
 
 /*
@@ -497,10 +619,8 @@ ILNode_SemAnalysis(ILNode_AssignMul)
  */
 ILNode_SemAnalysis(ILNode_AssignDiv)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Div, "op_Division", "/");
 }
 
 /*
@@ -508,10 +628,8 @@ ILNode_SemAnalysis(ILNode_AssignDiv)
  */
 ILNode_SemAnalysis(ILNode_AssignRem)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Rem, "op_Modulus", "%");
 }
 
 /*
@@ -519,10 +637,8 @@ ILNode_SemAnalysis(ILNode_AssignRem)
  */
 ILNode_SemAnalysis(ILNode_AssignAnd)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_And, "op_BitwiseAnd", "&");
 }
 
 /*
@@ -530,10 +646,8 @@ ILNode_SemAnalysis(ILNode_AssignAnd)
  */
 ILNode_SemAnalysis(ILNode_AssignXor)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Xor, "op_ExclusiveOr", "^");
 }
 
 /*
@@ -541,10 +655,8 @@ ILNode_SemAnalysis(ILNode_AssignXor)
  */
 ILNode_SemAnalysis(ILNode_AssignOr)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Or, "op_BitwiseOr", "|");
 }
 
 /*
@@ -552,10 +664,8 @@ ILNode_SemAnalysis(ILNode_AssignOr)
  */
 ILNode_SemAnalysis(ILNode_AssignShl)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Shl, "op_LeftShift", "<<");
 }
 
 /*
@@ -563,10 +673,8 @@ ILNode_SemAnalysis(ILNode_AssignShl)
  */
 ILNode_SemAnalysis(ILNode_AssignShr)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Shr, "op_RightShift", ">>");
 }
 
 /*
@@ -574,10 +682,9 @@ ILNode_SemAnalysis(ILNode_AssignShr)
  */
 ILNode_SemAnalysis(ILNode_AssignUShr)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	/* C# does not have an unsigned right shift, so use the signed version */
+	return AssignSem(info, (ILNode_BinaryExpression *)(node->assign),
+					 &(node->assign), ILOp_Shr, "op_RightShift", ">>");
 }
 
 /*
@@ -720,8 +827,44 @@ ILNode_SemAnalysis(ILNode_ToConst)
 ILNode_SemAnalysis(ILNode_LogicalNot)
 {
 	CSSemValue value;
+	ILMethod *method;
+	ILType *returnType;
+
+	/* Perform semantic analysis on the argument value */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
+	{
+	error:
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid operand to unary `!'");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Boolean;
+		return value;
+	}
+
+	/* If the type is not boolean, we need to look for an operator */
+	if(value.type != ILType_Boolean)
+	{
+		method = FindUserUnaryOperator("op_LogicalNot", value.type);
+		if(method)
+		{
+			returnType = ILMethod_Signature(method)->un.method.retType;
+			*parent = ILNode_UserUnaryOp_create
+						(node->expr, ILTypeToValueType(returnType), method);
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+			value.kind = CS_SEMKIND_RVALUE;
+			value.type = returnType;
+			return value;
+		}
+		else
+		{
+			goto error;
+		}
+	}
+
+	/* Builtin "!" operator: the result is always boolean */
 	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
+	value.type = ILType_Boolean;
 	return value;
 }
 
@@ -730,10 +873,66 @@ ILNode_SemAnalysis(ILNode_LogicalNot)
  */
 ILNode_SemAnalysis(ILNode_LogicalAnd)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	CSSemValue value1;
+	CSSemValue value2;
+	ILMethod *method1;
+	ILMethod *method2;
+	ILMethod *method3;
+
+	/* Perform semantic analysis on the arguments */
+	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value1) ||
+	   !CSSemExpectValue(node->expr2, info, &(node->expr2), &value2))
+	{
+		goto error;
+	}
+
+	/* Find a user-defined operator, if any */
+	if(value1.type == value2.type &&
+	   (ILType_IsValueType(value1.type) || ILType_IsClass(value1.type)))
+	{
+		method1 = FindUserBinaryOperator
+					("op_BitwiseAnd", value1.type, value1.type);
+		method2 = ILResolveConversionOperator
+					(ILType_ToClass(value1.type), "op_True", value1.type,
+					 ILType_Boolean);
+		method3 = ILResolveConversionOperator
+					(ILType_ToClass(value1.type), "op_False", value1.type,
+					 ILType_Boolean);
+		if(method1 && (method2 || method3))
+		{
+			*parent = ILNode_UserLogicalAnd_create
+						(node->expr1, node->expr2, method1, method2, method3);
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+			value1.kind = CS_SEMKIND_RVALUE;
+			value1.type = ILType_Boolean;
+			return value1;
+		}
+	}
+
+	/* We must have boolean arguments at this point */
+	if(!ILCanCoerce(info->context, value1.type, ILType_Boolean) ||
+	   !ILCanCoerce(info->context, value2.type, ILType_Boolean))
+	{
+		goto error;
+	}
+
+	/* Coerce the two arguments to `bool' */
+	ILCoerce(info, node->expr1, &(node->expr1), value1.type, ILType_Boolean);
+	ILCoerce(info, node->expr2, &(node->expr2), value2.type, ILType_Boolean);
+
+	/* The result is boolean */
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Boolean;
+	return value1;
+
+	/* Report an argument error */
+error:
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to binary `&&'");
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Boolean;
+	return value1;
 }
 
 /*
@@ -741,10 +940,66 @@ ILNode_SemAnalysis(ILNode_LogicalAnd)
  */
 ILNode_SemAnalysis(ILNode_LogicalOr)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	CSSemValue value1;
+	CSSemValue value2;
+	ILMethod *method1;
+	ILMethod *method2;
+	ILMethod *method3;
+
+	/* Perform semantic analysis on the arguments */
+	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value1) ||
+	   !CSSemExpectValue(node->expr2, info, &(node->expr2), &value2))
+	{
+		goto error;
+	}
+
+	/* Find a user-defined operator, if any */
+	if(value1.type == value2.type &&
+	   (ILType_IsValueType(value1.type) || ILType_IsClass(value1.type)))
+	{
+		method1 = FindUserBinaryOperator
+					("op_BitwiseOr", value1.type, value1.type);
+		method2 = ILResolveConversionOperator
+					(ILType_ToClass(value1.type), "op_True", value1.type,
+					 ILType_Boolean);
+		method3 = ILResolveConversionOperator
+					(ILType_ToClass(value1.type), "op_False", value1.type,
+					 ILType_Boolean);
+		if(method1 && (method2 || method3))
+		{
+			*parent = ILNode_UserLogicalOr_create
+						(node->expr1, node->expr2, method1, method2, method3);
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+			value1.kind = CS_SEMKIND_RVALUE;
+			value1.type = ILType_Boolean;
+			return value1;
+		}
+	}
+
+	/* We must have boolean arguments at this point */
+	if(!ILCanCoerce(info->context, value1.type, ILType_Boolean) ||
+	   !ILCanCoerce(info->context, value2.type, ILType_Boolean))
+	{
+		goto error;
+	}
+
+	/* Coerce the two arguments to `bool' */
+	ILCoerce(info, node->expr1, &(node->expr1), value1.type, ILType_Boolean);
+	ILCoerce(info, node->expr2, &(node->expr2), value2.type, ILType_Boolean);
+
+	/* The result is boolean */
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Boolean;
+	return value1;
+
+	/* Report an argument error */
+error:
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to binary `||'");
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Boolean;
+	return value1;
 }
 
 /*
@@ -992,10 +1247,7 @@ ILNode_SemAnalysis(ILNode_NoPedantic)
  */
 ILNode_SemAnalysis(ILNode_Concat)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILFindSystemType(info, "String");
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1003,10 +1255,7 @@ ILNode_SemAnalysis(ILNode_Concat)
  */
 ILNode_SemAnalysis(ILNode_UserBinaryOp)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1014,10 +1263,7 @@ ILNode_SemAnalysis(ILNode_UserBinaryOp)
  */
 ILNode_SemAnalysis(ILNode_UserUnaryOp)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1025,10 +1271,7 @@ ILNode_SemAnalysis(ILNode_UserUnaryOp)
  */
 ILNode_SemAnalysis(ILNode_UserConversion)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1036,10 +1279,7 @@ ILNode_SemAnalysis(ILNode_UserConversion)
  */
 ILNode_SemAnalysis(ILNode_Box)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1047,10 +1287,7 @@ ILNode_SemAnalysis(ILNode_Box)
  */
 ILNode_SemAnalysis(ILNode_Unbox)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return CSSemValueDefault;
 }
 
 /*
@@ -1058,8 +1295,21 @@ ILNode_SemAnalysis(ILNode_Unbox)
  */
 ILNode_SemAnalysis(ILNode_Cast)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILValueTypeToType(info, node->machineType);
-	return value;
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the user-defined logical AND operator.
+ */
+ILNode_SemAnalysis(ILNode_UserLogicalAnd)
+{
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for the user-defined logical OR operator.
+ */
+ILNode_SemAnalysis(ILNode_UserLogicalOr)
+{
+	return CSSemValueDefault;
 }

@@ -8,6 +8,8 @@ floating-point constants.
 
 * codegen/cg_misc.tc, codegen/jv_misc.tc: GenDiscard for ILNode_Is.
 
+* cscc/cs_oper.tc: semantic analysis for many of the C# operators.
+
 2001-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_scope.h, codegen/cg_scope.c: add node information to all

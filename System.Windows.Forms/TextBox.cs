@@ -1409,7 +1409,7 @@ public class TextBox : TextBoxBase
 							}
 							else
 							{
-								ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
+								ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, bounds.Width, bounds.Height), StringFormat.GenericDefault);
 							}
 						}
 						lineStart = i;
@@ -1440,7 +1440,7 @@ public class TextBox : TextBoxBase
 				}
 				else
 				{
-					ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, int.MaxValue, int.MaxValue), StringFormat.GenericDefault);
+					ControlPaint.DrawStringDisabled(g, lineText, font, BackColor, new Rectangle(x, y, Bounds.Width, Bounds.Height), StringFormat.GenericDefault);
 				}
 			}
 		}

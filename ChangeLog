@@ -1,7 +1,13 @@
 
+2004-12-12  Erich Kitzmuller  <ammoq@ammoq.com>
+
+	* System.Windows.Forms/TextBox.cs: avoids an integer overflow in 
+	Rectangle.IntersectsWith() by providing valid values for the 
+	bounds parameters (patch #3508, Gopal).
+
 2004-12-12  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
-	*	runtime/System/Runtime/Serialization/Formatters/Binary/
+	* runtime/System/Runtime/Serialization/Formatters/Binary/
 	BinaryValueWriter.cs: Fix serialization of ISerializable
 	types (patch #3531, Gopal).
 

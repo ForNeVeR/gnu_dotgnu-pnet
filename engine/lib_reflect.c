@@ -224,7 +224,6 @@ static ILObject *DeserializeObject(ILExecThread *thread,
 						}
 						case IL_META_SERIALTYPE_ENUM:
 						{
-							int i;
 							strLen = ILSerializeReaderGetString(reader,
 															&strValue);
 							if(strLen == -1) 

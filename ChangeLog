@@ -8,6 +8,8 @@
 	engine/unroll_arm_var.c, engine/unroll_x86.c: add the ARM
 	unroller to the engine (2-3 times improvement in performance).
 
+	* engine/lib_reflect.c: remove unused variable warning.
+
 2003-05-05  Gopal.V  <gopalv82@symonds.net>
 
 	* image/ser_parse.c , cscc/csharp/cs_attrs.c: Tagged objects in

@@ -194,10 +194,9 @@ public sealed class PrincipalPermission
 
 	// Throw an exception if the caller does not have
 	// the specified permissions.
-	[TODO]
 	public void Demand()
 			{
-				// TODO
+				// We don't use principals for security purposes here.
 			}
 
 	// Implement the IPermission interface.

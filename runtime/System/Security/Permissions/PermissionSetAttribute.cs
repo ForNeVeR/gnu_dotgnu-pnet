@@ -25,6 +25,7 @@ namespace System.Security.Permissions
 #if !ECMA_COMPAT
 
 using System;
+using System.IO;
 using System.Security;
 
 [AttributeUsage(AttributeTargets.Assembly |
@@ -107,12 +108,111 @@ public sealed class PermissionSetAttribute : CodeAccessSecurityAttribute
 				return null;
 			}
 
+	// Create a builtin permission set by name.
+	private static PermissionSet CreateBuiltinPermissionSet(String name)
+			{
+				NamedPermissionSet set = null;
+				switch(name)
+				{
+					case "Execution":
+					{
+						set = new NamedPermissionSet
+							("Execution", PermissionState.None);
+						set.Description = _("Arg_PermissionsExecution");
+						set.AddPermission(new SecurityPermission
+								(SecurityPermissionFlag.Execution));
+					}
+					break;
+
+					case "FullTrust":
+					{
+						set = new NamedPermissionSet
+							("FullTrust", PermissionState.Unrestricted);
+						set.Description = _("Arg_PermissionsFullTrust");
+					}
+					break;
+
+					case "Internet":
+					{
+						set = new NamedPermissionSet
+							("Internet", PermissionState.None);
+						set.Description = _("Arg_PermissionsInternet");
+					}
+					break;
+
+					case "LocalIntranet":
+					{
+						set = new NamedPermissionSet
+							("LocalIntranet", PermissionState.None);
+						set.Description = _("Arg_PermissionsLocalIntranet");
+					}
+					break;
+
+					case "Nothing":
+					{
+						set = new NamedPermissionSet
+							("Nothing", PermissionState.None);
+						set.Description = _("Arg_PermissionsNothing");
+					}
+					break;
+
+					case "SkipVerification":
+					{
+						set = new NamedPermissionSet
+							("SkipVerification", PermissionState.None);
+						set.Description = _("Arg_PermissionsSkipVerification");
+						set.AddPermission(new SecurityPermission
+								(SecurityPermissionFlag.SkipVerification));
+					}
+					break;
+				}
+				return set;
+			}
+
 	// Create a permission set object.
-	[TODO]
 	public PermissionSet CreatePermissionSet()
 			{
-				// TODO
-				return null;
+				PermissionSet set;
+				SecurityElement element;
+				StreamReader reader;
+				String buf;
+
+				if(Unrestricted)
+				{
+					set = new PermissionSet(PermissionState.Unrestricted);
+				}
+				else if(name != null)
+				{
+					set = CreateBuiltinPermissionSet(name);
+				}
+				else if(file != null)
+				{
+					// Parse the contents of a file.
+					reader = new StreamReader(file);
+					buf = reader.ReadToEnd();
+					reader.Close();
+					set = new PermissionSet(PermissionState.None);
+					element = SecurityElement.Parse(buf);
+					if(element != null)
+					{
+						set.FromXml(element);
+					}
+				}
+				else if(xml != null)
+				{
+					// Parse the contents of a string.
+					set = new PermissionSet(PermissionState.None);
+					element = SecurityElement.Parse(xml);
+					if(element != null)
+					{
+						set.FromXml(element);
+					}
+				}
+				else
+				{
+					set = new PermissionSet(PermissionState.None);
+				}
+				return set;
 			}
 
 }; // class PermissionSetAttribute

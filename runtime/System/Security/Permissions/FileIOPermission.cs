@@ -228,7 +228,8 @@ public sealed class FileIOPermission
 				if(target == null)
 				{
 					return (state == PermissionState.None &&
-							readList == null && writeList == null);
+							readList == null && writeList == null &&
+							appendList == null && discoveryList == null);
 				}
 				else if(!(target is FileIOPermission))
 				{

@@ -1,3 +1,24 @@
+
+2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Security/Permissions/FileIOPermission.cs,
+	runtime/System/Security/Permissions/PermissionSetAttribute.cs,
+	runtime/System/Security/Permissions/PrincipalPermission.cs,
+	runtime/System/Security/Permissions/PublisherIdentityPermission.cs,
+	runtime/System/Security/Permissions/PublisherIdentityPermissionAttribute.cs,
+	runtime/System/Security/Permissions/RegistryPermission.cs,
+	runtime/System/Security/Permissions/RegistryPermissionAccess.cs,
+	runtime/System/Security/Permissions/RegistryPermissionAttribute.cs,
+	runtime/System/Security/Permissions/StrongNameIdentityPermission.cs,
+	runtime/System/Security/Permissions/StrongNameIdentityPermissionAttribute.cs,
+	runtime/System/Security/Permissions/StrongNamePublicKeyBlob.cs,
+	runtime/System/Security/Permissions/UIPermission.cs,
+	runtime/System/Security/Permissions/UIPermissionAttribute.cs,
+	runtime/System/Security/Permissions/UIPermissionClipboard.cs,
+	runtime/System/Security/Permissions/UIPermissionWindow.cs:
+	implement the remainder of the non-ECMA permission classes.
+
 2003-03-31  Adam Ballai  <minddog@cannibutter.com>
 
 	* System.Xml/XmlTextReader.cs,

@@ -725,12 +725,16 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 	{
 		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
+	if((modifiers & CS_MODIFIER_EXTERN) != 0)
+	{
+		attrs |= CS_SPECIALATTR_EXTERN;
+	}
 
 	/* Properties always need the "specialname" attribute */
 	attrs |= IL_META_METHODDEF_SPECIAL_NAME;
 
 	/* Report errors for the remaining modifiers */
-	BadModifiers(node, modifiers & (CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE));
+	BadModifiers(node, modifiers & (CS_MODIFIER_VOLATILE));
 
 	/* Done */
 	return attrs;

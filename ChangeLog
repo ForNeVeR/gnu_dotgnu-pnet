@@ -1,4 +1,9 @@
 
+2004-12-07  Erich Kitzmuller  <ammoq@ammoq.com>
+
+	* System.Drawing/Graphics.cs: Work around the one-off bug in DrawString.
+	(patch #3512, Gopal)
+
 2004-12-07  Erik Pfeifle <erik.pfeifle@de.trumpf-laser.com>
 	
 	* System.Drawing/Drawing2D/Matrix.cs: Add a Clone() method to 

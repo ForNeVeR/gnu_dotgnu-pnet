@@ -1500,8 +1500,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// create a layout rectangle from the device coordinates
 				Rectangle deviceLayout = new Rectangle
 					(rect[0].X, rect[0].Y,
-					 (rect[1].X - rect[0].X),
-					 (rect[2].Y - rect[0].Y));
+					 (rect[1].X - rect[0].X + 1),
+					 (rect[2].Y - rect[0].Y + 1));
 
 				// bail out now if there's nothing to draw
 				if(clip != null &&

@@ -277,12 +277,62 @@ ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
 %{
 
 /*
- * Generate discard code for the body of a method.
+ * Generate discard code for a method.
  */
-static void MethodGenDiscard(ILGenInfo *info, ILMethod *method,
-							 ILNode *initCode, ILNode *body)
+static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
+							 ILMethod *method, ILNode *initCode,
+							 ILNode *body)
 {
+	ILPInvoke *pinvoke;
 	ILGotoEntry *gotoEntry, *nextGoto;
+
+	/* Does the method have PInvoke information associated with it? */
+	if(ILMethod_HasPInvokeImpl(method))
+	{
+		pinvoke = ILPInvokeFind(method);
+		if(pinvoke)
+		{
+			/* Declare the external module containing the function */
+			fputs(".module extern ", outstream);
+			ILDumpIdentifier(outstream,
+					ILModule_Name(ILPInvoke_Module(pinvoke)), 0,
+					IL_DUMP_QUOTE_NAMES);
+		}
+	}
+	else
+	{
+		pinvoke = 0;
+	}
+
+	/* Dump the method heading */
+	fputs(".method ", outstream);
+	ILDumpFlags(outstream, ILMethod_Attrs(method),
+				ILMethodDefinitionFlags, 0);
+	if(pinvoke)
+	{
+		/* Dump PInvoke information for the method */
+		fputs("pinvokeimpl(", info->asmOutput);
+		ILDumpString(outstream,
+					 ILModule_Name(ILPInvoke_Module(pinvoke)));
+		putc(' ', outstream);
+		if(strcmp(ILPInvoke_Alias(pinvoke), ILMethod_Name(method)) != 0)
+		{
+			fputs("as ", outstream);
+			ILDumpString(outstream, ILPInvoke_Alias(pinvoke));
+			putc(' ', outstream);
+		}
+		ILDumpFlags(outstream, ILPInvoke_Attrs(pinvoke),
+					ILPInvokeImplementationFlags, 0);
+		fputs(") ", outstream);
+	}
+	ILDumpMethodType(outstream, info->image,
+					 ILMethod_Signature(method),
+					 IL_DUMP_QUOTE_NAMES, 0,
+					 ILMethod_Name(method), method);
+	putc(' ', outstream);
+	ILDumpFlags(outstream, ILMethod_ImplAttrs(method),
+				ILMethodImplementationFlags, 0);
+	fputs("\n{\n", outstream);
 
 	/* Set up the return type so that "return" statements
 	   know what to cast the return value to upon exit */
@@ -299,22 +349,31 @@ static void MethodGenDiscard(ILGenInfo *info, ILMethod *method,
 		ILNode_GenDiscard(body, info);
 	}
 
-	/* Add an explicit return instruction if the body didn't */
-	if(!body || !ILNodeEndsInReturn(body))
+	/* Don't both with return logic or stack sizes if abstract or extern */
+	if(!ILMethod_IsAbstract(method) && ILMethod_IsIL(method))
 	{
-		ILGenCast(info, ILMachineType_Void, info->returnType);
-		ILGenSimple(info, IL_OP_RET);
-		if(info->returnType != ILMachineType_Void)
+		/* Add an explicit return instruction if the body didn't */
+		if(!body || !ILNodeEndsInReturn(body))
 		{
-			ILGenAdjust(info, -1);
+			ILGenCast(info, ILMachineType_Void, info->returnType);
+			ILGenSimple(info, IL_OP_RET);
+			if(info->returnType != ILMachineType_Void)
+			{
+				ILGenAdjust(info, -1);
+			}
+		}
+
+		/* Output the maximum stack height to the method */
+		if(info->asmOutput)
+		{
+			fprintf(outstream, "\t.maxstack %ld\n", info->maxStackHeight);
 		}
 	}
 
-	/* Output the maximum stack height to the method */
-	if(info->asmOutput)
-	{
-		fprintf(info->asmOutput, "\t.maxstack %ld\n", info->maxStackHeight);
-	}
+	/* Dump the method terminator */
+	fputs ("} // method ", outstream);
+	ILDumpIdentifier(outstream, ILMethod_Name(method), 0, 0);
+	putc('\n', outstream);
 
 	/* Clear the stack heights */
 	info->stackHeight = 0;
@@ -351,92 +410,89 @@ ILNode_GenDiscard(ILNode_MethodDeclaration)
 {
 	if(info->asmOutput && node->methodInfo)
 	{
-		FILE *outstream = info->asmOutput;
-		ILMethod *method;
-		ILPInvoke *pinvoke;
-
-		/* Get the method information block to be dumped */
-		method = node->methodInfo;
-
-		/* Does the method have PInvoke information associated with it? */
-		if(ILMethod_HasPInvokeImpl(method))
-		{
-			pinvoke = ILPInvokeFind(method);
-			if(pinvoke)
-			{
-				/* Declare the external module containing the function */
-				fputs(".module extern ", outstream);
-				ILDumpIdentifier(outstream,
-						ILModule_Name(ILPInvoke_Module(pinvoke)), 0,
-						IL_DUMP_QUOTE_NAMES);
-			}
-		}
-		else
-		{
-			pinvoke = 0;
-		}
-
-		/* Dump the method heading */
-		fputs(".method ", outstream);
-		ILDumpFlags(outstream, ILMethod_Attrs(method),
-					ILMethodDefinitionFlags, 0);
-		if(pinvoke)
-		{
-			/* Dump PInvoke information for the method */
-			fputs("pinvokeimpl(", info->asmOutput);
-			ILDumpString(outstream,
-						 ILModule_Name(ILPInvoke_Module(pinvoke)));
-			putc(' ', outstream);
-			if(strcmp(ILPInvoke_Alias(pinvoke), ILMethod_Name(method)) != 0)
-			{
-				fputs("as ", outstream);
-				ILDumpString(outstream, ILPInvoke_Alias(pinvoke));
-				putc(' ', outstream);
-			}
-			ILDumpFlags(outstream, ILPInvoke_Attrs(pinvoke),
-						ILPInvokeImplementationFlags, 0);
-			fputs(") ", outstream);
-		}
-		ILDumpMethodType(outstream, info->image,
-						 ILMethod_Signature(method),
-						 IL_DUMP_QUOTE_NAMES, 0,
-						 ILMethod_Name(method), method);
-		putc(' ', outstream);
-		ILDumpFlags(outstream, ILMethod_ImplAttrs(method),
-					ILMethodImplementationFlags, 0);
-		fputs("\n{\n", outstream);
-
-		/* Dump the code within the body of the method */
-		MethodGenDiscard(info, method, node->initCode, node->body);
-
-		/* Dump the method terminator */
-		fputs ("} // method ", outstream);
-		ILDumpIdentifier(outstream, ILMethod_Name(method), 0, 0);
-		putc('\n', outstream);
+		MethodGenDiscard(info, info->asmOutput, node->methodInfo,
+						 node->initCode, node->body);
 	}
 }
 
 /*
- * Generate discard for property declaration
+ * Generate discard code for property declarations.
  */
 ILNode_GenDiscard(ILNode_PropertyDeclaration)
 {
-#if 0
-	/* FIXME: just pass it down? */
-	if (node->attributes)
+	ILNode *body;
+	FILE *outstream = info->asmOutput;
+
+	if(outstream && node->propertyInfo)
 	{
-		ILNode_GenDiscard(node->attributes, info);
+		/* Generate the code for the get method */
+		if(node->getMethodInfo)
+		{
+			if(node->getAccessor)
+			{
+				 body = ((ILNode_AccessorDeclaration *)(node->getAccessor))
+				 			->body;
+			}
+			else
+			{
+				body = 0;
+			}
+			MethodGenDiscard
+				(info, info->asmOutput, node->getMethodInfo, 0, body);
+		}
+
+		/* Generate the code for the set method */
+		if(node->setMethodInfo)
+		{
+			if(node->setAccessor)
+			{
+				 body = ((ILNode_AccessorDeclaration *)(node->setAccessor))
+				 			->body;
+			}
+			else
+			{
+				body = 0;
+			}
+			MethodGenDiscard
+				(info, info->asmOutput, node->setMethodInfo, 0, body);
+		}
+
+		/* Output the property declaration */
+		fputs(".property ", outstream);
+		ILDumpFlags(outstream, ILProperty_Attrs(node->propertyInfo),
+					ILPropertyDefinitionFlags, 0);
+		ILDumpMethodType(outstream, info->image,
+					     ILProperty_Signature(node->propertyInfo),
+					     IL_DUMP_QUOTE_NAMES, 0,
+						 ILProperty_Name(node->propertyInfo), 0);
+		fputs("\n{\n", outstream);
+		if(node->getMethodInfo)
+		{
+			fputs("\t.get ", outstream);
+			ILDumpMethodType(outstream, info->image,
+						     ILMethod_Signature(node->getMethodInfo),
+						     IL_DUMP_QUOTE_NAMES, 0,
+							 ILMethod_Name(node->getMethodInfo), 0);
+			putc('\n', outstream);
+		}
+		if(node->setMethodInfo)
+		{
+			fputs("\t.set ", outstream);
+			ILDumpMethodType(outstream, info->image,
+						     ILMethod_Signature(node->setMethodInfo),
+						     IL_DUMP_QUOTE_NAMES, 0,
+							 ILMethod_Name(node->setMethodInfo), 0);
+			putc('\n', outstream);
+		}
+		fputs("} // property ", outstream);
+		ILDumpIdentifier(outstream, ILProperty_Name(node->propertyInfo), 0, 0);
+		putc('\n', outstream);
 	}
-	DumpTypeName(info->asmOutput, node->type);
-	ILNode_GenDiscard(node->name, info);
-	ILNode_GenDiscard(node->getAccessor, info);
-	ILNode_GenDiscard(node->setAccessor, info);
-#endif
 }
 
 ILNode_GenDiscard(ILNode_AccessorDeclaration)
 {
-	/* TODO */
+	/* Nothing to do here: this is just a place-holder */
 }
 
 ILNode_GenDiscard(ILNode_EnumDeclaration)

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2003  Free Software Foundation, Inc.
+ * 
+ * Contributions from Simon Guindon (simon@nureality.ca)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,428 +23,474 @@
 
 namespace System.Windows.Forms
 {
+	using System.Drawing;
+	using System.Drawing.Imaging;
+	using System.Windows.Forms;
 
-using System.Drawing;
-
-[TODO]
-public class PictureBox : Control
-{
-	[TODO]
-	public PictureBox()
+	public class PictureBox : Control
 	{
-	}
+		private Image image;
+		private PictureBoxSizeMode sizeMode;
 
-	[TODO]
-	public override bool AllowDrop
-	{
-		get
+		public PictureBox()
 		{
-			throw new NotImplementedException("AllowDrop");
+			sizeMode = PictureBoxSizeMode.Normal;
+			TabStop = false;
 		}
-		set
-		{
-			throw new NotImplementedException("AllowDrop");
-		}
-	}
 
-	[TODO]
-	public BorderStyle BorderStyle
-	{
-		get
+		public override bool AllowDrop
 		{
-			throw new NotImplementedException("BorderStyle");
+			get
+			{
+				return base.AllowDrop;
+			}
+			set
+			{
+				base.AllowDrop = value;
+			}
 		}
-		set
-		{
-			throw new NotImplementedException("BorderStyle");
-		}
-	}
 
-	[TODO]
-	public new bool CausesValidation
-	{
-		get
+		public BorderStyle BorderStyle
 		{
-			throw new NotImplementedException("CausesValidation");
+			get
+			{
+				return BorderStyleInternal;
+			}
+			set
+			{
+				if (value == BorderStyleInternal)
+					return;
+				BorderStyleInternal = value;
+				if (IsHandleCreated)
+				{
+					using(Graphics g = CreateGraphics())
+						Draw(g);
+				}
+			}
 		}
-		set
-		{
-			throw new NotImplementedException("CausesValidation");
-		}
-	}
 
-	protected override CreateParams CreateParams
-	{
-		get
+		public new bool CausesValidation
 		{
-			return base.CreateParams;
+			get
+			{
+				return base.CausesValidation;
+			}
+			set
+			{
+				base.CausesValidation = value;
+			}
 		}
-	}
 
-	protected override ImeMode DefaultImeMode
-	{
-		get
+		protected override CreateParams CreateParams
 		{
-			return base.DefaultImeMode;
+			get
+			{
+				return base.CreateParams;
+			}
 		}
-	}
 
-	protected override Size DefaultSize
-	{
-		get
+		protected override ImeMode DefaultImeMode
 		{
-			return base.DefaultSize;
+			get
+			{
+				return base.DefaultImeMode;
+			}
 		}
-	}
 
-	public override Font Font
-	{
-		get
+		protected override Size DefaultSize
 		{
-			return base.Font;
+			get
+			{
+				return new Size(100, 50);
+			}
 		}
-		set
-		{
-			base.Font = value;
-		}
-	}
 
-	[TODO]
-	public override Color ForeColor
-	{
-		get
+		public override Font Font
 		{
-			throw new NotImplementedException("ForeColor");
+			get
+			{
+				return base.Font;
+			}
+			set
+			{
+				base.Font = value;
+			}
 		}
-		set
-		{
-			throw new NotImplementedException("ForeColor");
-		}
-	}
 
-	[TODO]
-	public Image Image
-	{
-		get
+		public override Color ForeColor
 		{
-			throw new NotImplementedException("Image");
+			get
+			{
+				return base.ForeColor;
+			}
+			set
+			{
+				base.ForeColor = value;
+			}
 		}
-		set
-		{
-			throw new NotImplementedException("Image");
-		}
-	}
 
-	[TODO]
-	public new ImeMode ImeMode
-	{
-		get
+		public Image Image
 		{
-			throw new NotImplementedException("ImeMode");
+			get
+			{
+				return image;
+			}
+			set
+			{
+				image = value;
+				if (sizeMode == PictureBoxSizeMode.AutoSize)
+					SetSize();
+				if (IsHandleCreated)
+				{
+					using(Graphics g = CreateGraphics())
+						Draw(g);
+				}
+			}
 		}
-		set
-		{
-			throw new NotImplementedException("ImeMode");
-		}
-	}
 
-	public override RightToLeft RightToLeft
-	{
-		get
+		private void SetSize()
 		{
-			return base.RightToLeft;
+				if (image != null)
+					ClientSize = image.Size; 
 		}
-		set
-		{
-			base.RightToLeft = value;
-		}
-	}
 
-	[TODO]
-	public PictureBoxSizeMode SizeMode
-	{
-		get
+		public new ImeMode ImeMode
 		{
-			throw new NotImplementedException("SizeMode");
+			get
+			{
+				return base.ImeMode;
+			}
+			set
+			{
+				base.ImeMode = value;
+			}
 		}
-		set
-		{
-			throw new NotImplementedException("SizeMode");
-		}
-	}
 
-	public new int TabIndex
-	{
-		get
+		public override RightToLeft RightToLeft
 		{
-			return base.TabIndex;
+			get
+			{
+				return base.RightToLeft;
+			}
+			set
+			{
+				base.RightToLeft = value;
+			}
 		}
-		set
-		{
-			base.TabIndex = value;
-		}
-	}
 
-	public new bool TabStop
-	{
-		get
+		public PictureBoxSizeMode SizeMode
 		{
-			return base.TabStop;
+			get
+			{
+				return sizeMode;
+			}
+			set
+			{
+				sizeMode = value;
+				if (sizeMode == PictureBoxSizeMode.AutoSize)
+					SetSize();
+				if (IsHandleCreated)
+				{
+					using(Graphics g= CreateGraphics())
+						Draw(g);
+				}
+			}
 		}
-		set
-		{
-			base.TabStop = value;
-		}
-	}
 
-	[TODO]
-	public override string Text
-	{
-		get
+		public new int TabIndex
 		{
-			throw new NotImplementedException("Text");
+			get
+			{
+				return base.TabIndex;
+			}
+			set
+			{
+				base.TabIndex = value;
+			}
 		}
-		set
-		{
-			throw new NotImplementedException("Text");
-		}
-	}
 
-	[TODO]
-	protected override void Dispose(bool disposing)
-	{
-		throw new NotImplementedException("Dispose");
-	}
+		public new bool TabStop
+		{
+			get
+			{
+				return base.TabStop;
+			}
+			set
+			{
+				base.TabStop = value;
+			}
+		}
 
-	[TODO]
-	protected override void OnEnabledChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnEnabledChanged");
-	}
+		public override string Text
+		{
+			get
+			{
+				return base.Text;
+			}
+			set
+			{
+				base.Text = value;
+			}
+		}
 
-	[TODO]
-	protected override void OnPaint(PaintEventArgs e)
-	{
-		throw new NotImplementedException("OnPaint");
-	}
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+		}
 
-	[TODO]
-	protected override void OnParentChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnParentChanged");
-	}
+		protected override void OnEnabledChanged(EventArgs e)
+		{
+			base.OnEnabledChanged(e);
+		}
 
-	[TODO]
-	protected override void OnResize(EventArgs e)
-	{
-		base.OnResize(e);
-	}
+		protected override void OnPaint(PaintEventArgs e)
+		{
+			base.OnPaint(e);
+			Draw(e.Graphics);
+		}
 
-	[TODO]
-	protected virtual void OnSizeModeChanged(EventArgs e)
-	{
-		throw new NotImplementedException("OnSizeModeChanged");
-	}
+		private void Draw(Graphics g)
+		{
+			if (image != null)
+			{
+				int imageX = 0;
+				int imageY = 0;
+				int imageWidth = image.Width;
+				int imageHeight = image.Height;
+				if (sizeMode == PictureBoxSizeMode.CenterImage )
+				{
+					Size client = base.ClientSize;
+					imageX = (client.Width - imageWidth) / 2;
+					imageY = (client.Height - imageHeight) / 2;
+				}
+				else if (sizeMode == PictureBoxSizeMode.StretchImage)
+				{
+					Size client = ClientSize;
+					imageWidth = client.Width;
+					imageHeight = client.Height;
+				}			
+				g.DrawImage(image, imageX, imageY, imageWidth, imageHeight);
+			}
+		}
+	
+		protected override void OnParentChanged(EventArgs e)
+		{
+			base.OnParentChanged(e);
+		}
 
-	[TODO]
-	protected override void OnVisibleChanged(EventArgs e)
-	{
-		base.OnVisibleChanged(e);
-	}
+		protected override void OnResize(EventArgs e)
+		{
+			base.OnResize(e);
+			if (!IsHandleCreated)
+				return;
+			if (sizeMode == PictureBoxSizeMode.StretchImage || sizeMode == PictureBoxSizeMode.CenterImage)
+				using (Graphics g = CreateGraphics())
+					Draw(g);
+		}
 
-	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
-	{
-		base.SetBoundsCore(x, y, width, height, specified);
-	}
+		protected virtual void OnSizeModeChanged(EventArgs e)
+		{
+			EventHandler handler = (EventHandler)GetHandler(EventId.SizeModeChanged);
+			if (handler != null)
+				handler(this,e);
+		}
 
-	[TODO]
-	public override string ToString()
-	{
-		throw new NotImplementedException("ToString");
-	}
+		protected override void OnVisibleChanged(EventArgs e)
+		{
+			base.OnVisibleChanged(e);
+		}
 
-	[TODO]
-	public new event EventHandler CausesValidationChanged
-	{
-		add
+		protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 		{
-			throw new NotImplementedException("CausesValidationChanged");
+			if (sizeMode == PictureBoxSizeMode.AutoSize)
+			{
+				if (image == null)
+				{
+					width = base.Width;
+					height = base.Height;
+				}
+				else
+				{
+					width = image.Width;
+					height = image.Height;
+				}
+			}
+			base.SetBoundsCore(x, y, width, height, specified);
 		}
-		remove
-		{
-			throw new NotImplementedException("CausesValidationChanged");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler Enter
-	{
-		add
+		public override string ToString()
 		{
-			throw new NotImplementedException("Enter");
+			return base.ToString() + ", SizeMode:" + sizeMode.ToString("G");
 		}
-		remove
-		{
-			throw new NotImplementedException("Enter");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler FontChanged
-	{
-		add
+		public new event EventHandler CausesValidationChanged
 		{
-			throw new NotImplementedException("FontChanged");
+			add
+			{
+				base.CausesValidationChanged += value;
+			}
+			remove
+			{
+				base.CausesValidationChanged -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("FontChanged");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler ForeColorChanged
-	{
-		add
+		public new event EventHandler Enter
 		{
-			throw new NotImplementedException("ForeColorChanged");
+			add
+			{
+				base.Enter += value;
+			}
+			remove
+			{
+				base.Enter -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("ForeColorChanged");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler ImeModeChanged
-	{
-		add
+		public new event EventHandler FontChanged
 		{
-			throw new NotImplementedException("ImeModeChanged");
+			add
+			{
+				base.FontChanged += value;
+			}
+			remove
+			{
+				base.FontChanged -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("ImeModeChanged");
-		}
-	}
 
-	[TODO]
-	public new event KeyEventHandler KeyDown
-	{
-		add
+		public new event EventHandler ForeColorChanged
 		{
-			throw new NotImplementedException("KeyDown");
+			add
+			{
+				base.ForeColorChanged += value;
+			}
+			remove
+			{
+				base.ForeColorChanged -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("KeyDown");
-		}
-	}
 
-	[TODO]
-	public new event KeyPressEventHandler KeyPress
-	{
-		add
+		public new event EventHandler ImeModeChanged
 		{
-			throw new NotImplementedException("KeyPress");
+			add
+			{
+				base.ImeModeChanged += value;
+			}
+			remove
+			{
+				base.ImeModeChanged -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("KeyPress");
-		}
-	}
 
-	[TODO]
-	public new event KeyEventHandler KeyUp
-	{
-		add
+		public new event KeyEventHandler KeyDown
 		{
-			throw new NotImplementedException("KeyUp");
+			add
+			{
+				base.KeyDown += value;
+			}
+			remove
+			{
+				base.KeyDown -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("KeyUp");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler Leave
-	{
-		add
+		public new event KeyPressEventHandler KeyPress
 		{
-			throw new NotImplementedException("Leave");
+			add
+			{
+				base.KeyPress += value;
+			}
+			remove
+			{
+				base.KeyPress -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("Leave");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler RightToLeftChanged
-	{
-		add
+		public new event KeyEventHandler KeyUp
 		{
-			throw new NotImplementedException("RightToLeftChanged");
+			add
+			{
+				base.KeyUp += value;
+			}
+			remove
+			{
+				base.KeyUp -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("RightToLeftChanged");
-		}
-	}
 
-	[TODO]
-	public event EventHandler SizeModeChanged
-	{
-		add
+		public new event EventHandler Leave
 		{
-			throw new NotImplementedException("SizeModeChanged");
+			add
+			{
+				base.Leave += value;
+			}
+			remove
+			{
+				base.Leave -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("SizeModeChanged");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler TabIndexChanged
-	{
-		add
+		public new event EventHandler RightToLeftChanged
 		{
-			throw new NotImplementedException("TabIndexChanged");
+			add
+			{
+				base.RightToLeftChanged += value;
+			}
+			remove
+			{
+				base.RightToLeftChanged -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("TabIndexChanged");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler TabStopChanged
-	{
-		add
+		public event EventHandler SizeModeChanged
 		{
-			throw new NotImplementedException("TabStopChanged");
+			add
+			{
+				AddHandler(EventId.BackColorChanged, value);
+			}
+			remove
+			{
+				RemoveHandler(EventId.BackColorChanged, value);
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("TabStopChanged");
-		}
-	}
 
-	[TODO]
-	public new event EventHandler TextChanged
-	{
-		add
+		public new event EventHandler TabIndexChanged
 		{
-			throw new NotImplementedException("TextChanged");
+			add
+			{
+				base.TabIndexChanged += value;
+			}
+			remove
+			{
+				base.TabIndexChanged -= value;
+			}
 		}
-		remove
-		{
-			throw new NotImplementedException("TextChanged");
-		}
-	}
 
-}; // class PictureBox
+		public new event EventHandler TabStopChanged
+		{
+			add
+			{
+				base.TabStopChanged += value;
+			}
+			remove
+			{
+				base.TabStopChanged -= value;
+			}
+		}
+
+		public new event EventHandler TextChanged
+		{
+			add
+			{
+				base.TextChanged += value;
+			}
+			remove
+			{
+				base.TextChanged -= value;
+			}
+		}
+
+	}; // class PictureBox
 
 }; // namespace System.Windows.Forms

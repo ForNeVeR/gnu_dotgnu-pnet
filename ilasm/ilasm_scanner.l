@@ -683,6 +683,10 @@ SIGN			[+-]
 						  return I_FLOAT; }
 "ldc.r8"				{ yylval.opcode = IL_OP_LDC_R8;
 						  return I_FLOAT; }
+"unaligned."			{ yylval.opcode = 0xFE00 | IL_PREFIX_OP_UNALIGNED;
+						  return I_INT; }
+"unaligned"				{ yylval.opcode = 0xFE00 | IL_PREFIX_OP_UNALIGNED;
+						  return I_INT; }	/* Alias */
 
 "ann.data"				{ OPCODE_BRANCH_P(ANN_DATA); } /* Branch opcodes */
 "ann.data.s"			{ OPCODE_BRANCH(ANN_DATA_S); }

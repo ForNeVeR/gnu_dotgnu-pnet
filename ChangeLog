@@ -17,6 +17,9 @@ new files to round out the bytecode verifier's instruction coverage.
 
 * image/opcodes.c: fix the instruction size and arguments for "unaligned".
 
+* ilasm/ilasm_scanner.l, ilasm/ilasm_output.c: update the assembler to
+handle "unaligned" properly.
+
 2001-10-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc: add "ILNode_ForeachCollection" and add extra

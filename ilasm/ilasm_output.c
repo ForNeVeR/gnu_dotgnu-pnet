@@ -456,6 +456,12 @@ void ILAsmOutInt(ILInt32 opcode, ILInt64 value)
 			OUT_BYTE(value >> 56);
 		}
 	}
+	else if(opcode == (0xFE00 | IL_PREFIX_OP_UNALIGNED))
+	{
+		OUT_BYTE(IL_OP_PREFIX);
+		OUT_BYTE(IL_PREFIX_OP_UNALIGNED);
+		OUT_BYTE(value);
+	}
 }
 
 void ILAsmOutFloat(unsigned char *bytes)

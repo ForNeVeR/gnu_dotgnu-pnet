@@ -248,7 +248,7 @@ static int EndsIn(const char *filename, const char *extension)
  */
 typedef struct
 {
-	const char	   *output;
+	char		   *output;
 	const char	   *target;
 	int				debug;
 	int				checked;
@@ -272,6 +272,10 @@ typedef struct
  */
 static void FreeCompileArgs(CSAntCompileArgs *args)
 {
+	if(args->output)
+	{
+		ILFree(args->output);
+	}
 	CSAntFileSetDestroy(args->sources);
 	CSAntFileSetDestroy(args->references);
 	CSAntFileSetDestroy(args->resources);
@@ -292,7 +296,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 	CSAntTask *node;
 
 	/* Initialize the arguments */
-	args->output = CSAntTaskParam(task, "output");
+	args->output = (char *)CSAntTaskParam(task, "output");
 	args->target = CSAntTaskParam(task, "target");
 	args->debug = COMP_FLAG_NOT_SET;
 	args->checked = COMP_FLAG_NOT_SET;
@@ -316,6 +320,7 @@ static int ParseCompileArgs(CSAntTask *task, CSAntCompileArgs *args,
 		FreeCompileArgs(args);
 		return 0;
 	}
+	args->output = CSAntDirCombine(CSAntBaseDir, args->output);
 	if(!(args->target))
 	{
 		if(isCsc)

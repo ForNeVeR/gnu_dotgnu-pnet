@@ -978,7 +978,10 @@ ILParameter *ILParameterCreate(ILMethod *method, ILToken token,
 
 	/* Convert the parameter name into a persistent string */
 	param->name = _ILContextPersistString(image, name);
-	if(!(param->name))
+
+	/* Check persistent string only if name is not NULL and paramNum is
+	 * not Zero (retval) */
+	if(name && paramNum && !(param->name))
 	{
 		return 0;
 	}

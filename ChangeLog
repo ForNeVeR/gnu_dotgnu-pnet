@@ -4,6 +4,9 @@
 	* cscc/csharp/cs_invoke.tc: allow a delegate variable to be used as
 	the parameter of a delegate creation expression.
 
+	* image/member.c: allow parameters without names to be created with
+	ILParameterCreate().
+
 2003-05-08  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc : Use the info->inSemType to streamline

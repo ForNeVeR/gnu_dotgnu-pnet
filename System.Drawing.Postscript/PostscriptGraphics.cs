@@ -205,7 +205,6 @@ internal class PostscriptGraphics : ToolkitGraphicsBase
 				// TODO
 			}
 
-
 }; // class PostscriptGraphics
 
 }; // namespace System.Drawing.Toolkit

@@ -67,9 +67,9 @@ public sealed class Thread
 #endif
 
 	// Private constructor only called by the engine
-	private Thread()
+	private Thread(IntPtr privateData)
 	{
-		InitializeManaged(null);
+		InitializeManaged(null, privateData);
 	}
 	
 	// Constructor.
@@ -82,7 +82,7 @@ public sealed class Thread
 
 				this.createdFromManagedCode = true;
 				
-				InitializeManaged(start);
+				InitializeManaged(start, IntPtr.Zero);
 
 				InitializeThread();
 			}
@@ -93,10 +93,10 @@ public sealed class Thread
 				FinalizeThread();
 			}
 
-	private void InitializeManaged(ThreadStart start)
+	private void InitializeManaged(ThreadStart start, IntPtr privateData)
 			{
-				privateData = new IntPtr(0);
 				this.start = start;
+				this.privateData = privateData;
 
 #if CONFIG_POLICY_OBJECTS
 				principal = new GenericPrincipal(new GenericIdentity(""), null);

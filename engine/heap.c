@@ -23,8 +23,7 @@
  * A lot of tuning will be required in the future.
  */
 
-#include "il_system.h"
-#include "heap.h"
+#include "engine_private.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -267,6 +266,59 @@ void _ILHeapFree(ILHeap *heap, void *block, ILUInt32 size)
 
 	/* Unlock the heap */
 	HEAP_UNLOCK(heap);
+}
+
+/*
+ * Initialize a class.
+ */
+static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
+{
+	/* Lay out the class's fields */
+	if(!_ILLayoutClass(thread, classInfo))
+	{
+		/* TODO: Throw a "TypeInitializationException" */
+		return 0;
+	}
+
+	/* The class has been initialized */
+	return 1;
+}
+
+ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
+						 ILUInt32 size)
+{
+	void *ptr;
+
+	/* Make sure the class has been initialized before we start */
+	if(classInfo != 0 && !InitializeClass(thread, classInfo))
+	{
+		return 0;
+	}
+
+	/* Allocate memory from the heap */
+	ptr = _ILHeapAlloc(&(thread->process->heap), size + sizeof(ILClass *));
+	if(!ptr)
+	{
+		/* Throw an "OutOfMemoryException" */
+		thread->thrownException = thread->process->outOfMemoryObject;
+		return 0;
+	}
+
+	/* Set the class into the block */
+	*((ILClass **)ptr) = classInfo;
+
+	/* Return a pointer to the data just after the class information */
+	return (void *)(((ILClass **)ptr) + 1);
+}
+
+ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)
+{
+	if(!InitializeClass(thread, classInfo))
+	{
+		return 0;
+	}
+	return _ILEngineAlloc(thread, classInfo,
+						  ((ILClassPrivate *)(classInfo->userData))->size);
 }
 
 #ifdef	__cplusplus

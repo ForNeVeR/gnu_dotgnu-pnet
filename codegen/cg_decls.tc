@@ -146,26 +146,19 @@ ILNode_GenDiscard(ILNode_ConstDeclarator)
 }
 
 /*
- * Generate discard code for local variable declaration 
- */
-ILNode_GenDiscard(ILNode_VarDeclaration)
-{
-	/* TODO */
-}
-
-/*
  * Generate discard code for a field declaration .
  */
 ILNode_GenDiscard(ILNode_FieldDeclaration)
 {
 	ILNode_ListIter	iter;
-	ILNode_VarDeclarator *decl;
+	ILNode_FieldDeclarator *decl;
 	ILField *field;
 
 	if(node->fieldDeclarators && info->asmOutput)
 	{
 		ILNode_ListIter_Init(&iter, node->fieldDeclarators);
-		while((decl = (ILNode_VarDeclarator *)ILNode_ListIter_Next(&iter)) != 0)
+		while((decl = (ILNode_FieldDeclarator *)
+							ILNode_ListIter_Next(&iter)) != 0)
 		{
 			field = decl->fieldInfo;
 			if(field)
@@ -190,54 +183,11 @@ ILNode_GenDiscard(ILNode_FieldDeclaration)
 }
 
 /*
- * Generate discard code for a variable declarator.
+ * Generate discard code for a field declarator.
  */
-ILNode_GenDiscard(ILNode_VarDeclarator)
+ILNode_GenDiscard(ILNode_FieldDeclarator)
 {
-#if 0
-	if (info->asmOutput)
-	{
-		fputs (ILQualIdentName (node->name, 1), info->asmOutput);
-		if (node->initializer)
-		{
-			ILEvalValue evalue;
-			fputs (" = ", info->asmOutput);
-			if (ILNode_EvalConst(node->initializer, info, &evalue))
-			{
-				switch (evalue.valueType)
-				{
-				case ILMachineType_Float64:
-					fprintf (info->asmOutput, "float64 (%f)", 
-							 evalue.un.r8Value);
-					break;
-				case ILMachineType_Float32:
-					fprintf (info->asmOutput, "float64 (%f)", 
-						   (double)evalue.un.r4Value);
-					break;
-				case ILMachineType_Int64:
-					fprintf (info->asmOutput, "int64 (%lld)",
-							 evalue.un.i8Value);
-					break;
-				case ILMachineType_UInt64:
-					fprintf (info->asmOutput, "uint64 (%llu)",
-							 (ILUInt64) evalue.un.i8Value);
-					break;
-				case ILMachineType_Int32:
-					fprintf (info->asmOutput, "int32 (%d)",
-							 evalue.un.i4Value);
-					break;
-				case ILMachineType_UInt32:
-					fprintf (info->asmOutput, "uint32 (%u)",
-							 (ILUInt32)evalue.un.i4Value);
-					break;
-					/* TODO, unfinished */
-				default:
-					break;
-				}
-			}
-		}
-	}
-#endif
+	/* Nothing to do here: handled by ILNode_FieldDeclaration */
 }
 
 /*
@@ -280,11 +230,12 @@ ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
  * Generate discard code for a method.
  */
 static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
-							 ILMethod *method, ILNode *initCode,
-							 ILNode *body)
+							 ILNode_MethodDeclaration *node,
+							 ILMethod *method)
 {
 	ILPInvoke *pinvoke;
 	ILGotoEntry *gotoEntry, *nextGoto;
+	int outputLabel;
 
 	/* Does the method have PInvoke information associated with it? */
 	if(ILMethod_HasPInvokeImpl(method))
@@ -339,28 +290,72 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	info->returnType =
 		ILTypeToMachineType(ILMethod_Signature(method)->un.method.retType);
 
-	/* Dump the code within the body of the method */
-	if(initCode)
+	/* Dump the local variable signature, and set the
+	   base for temporary local variable allocation */
+	if(node->localVarSig)
 	{
-		ILNode_GenDiscard(initCode, info);
+		unsigned long num = ILTypeNumLocals(node->localVarSig);
+		unsigned long index;
+		fputs("\t.locals\t(", outstream);
+		for(index = 0; index < num; ++index)
+		{
+			if(index != 0)
+			{
+				fputs(", ", outstream);
+			}
+			ILDumpType(outstream, info->image,
+					   ILTypeGetLocal(node->localVarSig, index),
+					   IL_DUMP_QUOTE_NAMES);
+		}
+		fputs(")\n", outstream);
+		info->tempLocalBase = num;
 	}
-	if(body)
+	else
 	{
-		ILNode_GenDiscard(body, info);
+		info->tempLocalBase = 0;
 	}
 
-	/* Don't both with return logic or stack sizes if abstract or extern */
+	/* Dump the code within the body of the method */
+	if(node->body)
+	{
+		ILNode_GenDiscard(node->body, info);
+	}
+
+	/* Don't bother with return logic or stack sizes if abstract or extern */
 	if(!ILMethod_IsAbstract(method) && ILMethod_IsIL(method))
 	{
 		/* Add an explicit return instruction if the body didn't */
-		if(!body || !ILNodeEndsInReturn(body))
+		outputLabel = 0;
+		if(!(node->body) || !ILNodeEndsInReturn(node->body))
 		{
+			if(info->returnLabel != ILLabel_Undefined &&
+			   info->returnType == ILMachineType_Void)
+			{
+				/* Use this point in the code for return labels
+				   to prevent outputting two "ret"'s in a row */
+				ILGenLabel(info, &(info->returnLabel));
+				outputLabel = 1;
+			}
 			ILGenCast(info, ILMachineType_Void, info->returnType);
 			ILGenSimple(info, IL_OP_RET);
 			if(info->returnType != ILMachineType_Void)
 			{
 				ILGenAdjust(info, -1);
 			}
+		}
+
+		/* If we have a return label, we need to output some final
+		   code to return the contents of a temporary local variable.
+		   This is used when returning from inside a "try" block */
+		if(!outputLabel && info->returnLabel != ILLabel_Undefined)
+		{
+			ILGenLabel(info, &(info->returnLabel));
+			if(info->returnType != ILMachineType_Void)
+			{
+				ILGenLoadLocal(info, info->returnVar);
+				ILGenExtend(info, 1);
+			}
+			ILGenSimple(info, IL_OP_RET);
 		}
 
 		/* Output the maximum stack height to the method */
@@ -397,8 +392,9 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	}
 	info->gotoList = 0;
 
-	/* Clear the list of local variables */
-	info->numLocalVars = 0;
+	/* Clear the list of temporary variables */
+	info->numTempVars = 0;
+	info->tempLocalBase = 0;
 }
 
 %}
@@ -410,8 +406,7 @@ ILNode_GenDiscard(ILNode_MethodDeclaration)
 {
 	if(info->asmOutput && node->methodInfo)
 	{
-		MethodGenDiscard(info, info->asmOutput, node->methodInfo,
-						 node->initCode, node->body);
+		MethodGenDiscard(info, info->asmOutput, node, node->methodInfo);
 	}
 }
 
@@ -425,6 +420,7 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 
 	if(outstream && node->propertyInfo)
 	{
+#if 0
 		/* Generate the code for the get method */
 		if(node->getMethodInfo)
 		{
@@ -456,6 +452,7 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 			MethodGenDiscard
 				(info, info->asmOutput, node->setMethodInfo, 0, body);
 		}
+#endif
 
 		/* Output the property declaration */
 		fputs(".property ", outstream);

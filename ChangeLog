@@ -12,6 +12,9 @@ to "ILGenInfo", convert local variables into temporary variables.
 * codegen/cg_stmt.tc, codegen/jv_stmt.tc: code generation for local
 variables, plus a minor bug in "ILNode_Compound_CreateFrom".
 
+* codegen/cg_decls.tc: change VarDeclarator to FieldDeclarator, rearrange
+method code generator, output local variables.
+
 2001-08-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_nodes.tc, codegen/cg_misc.tc, codegen/jv_misc.tc: add the

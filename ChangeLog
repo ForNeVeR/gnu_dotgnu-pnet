@@ -1,4 +1,10 @@
 
+2002-12-01  Gopal.V  <gopalv82@symonds.net>
+	
+	* configure.in, include/il_config.h.in, support/dir.c ,
+	include/il_sysio.h, engine/lib_dir.c ,engine/int_table.c, 
+	engine/int_proto.h: Add the ChangeDirectory methods
+
 2002-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_ptr.c:

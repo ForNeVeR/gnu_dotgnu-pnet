@@ -595,7 +595,7 @@ static void DumpParamType(FILE *stream, ILImage *image,
 			if(type)
 			{
 				fputs(" marshal(", stream);
-				ILDumpNativeType(stream, type, typeLen);
+				ILDumpNativeType(stream, type, typeLen, flags);
 				putc(')', stream);
 			}
 		}

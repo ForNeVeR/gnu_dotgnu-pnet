@@ -164,7 +164,14 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 			case IL_TYPE_COMPLEX_BYREF:
 			{
 				ILDumpType(stream, image, ILType_Ref(type), flags);
-				fputs(" &", stream);
+				if((flags & IL_DUMP_XML_QUOTING) != 0)
+				{
+					fputs(" &amp;", stream);
+				}
+				else
+				{
+					fputs(" &", stream);
+				}
 			}
 			break;
 
@@ -393,7 +400,7 @@ static void DumpParamType(FILE *stream, ILImage *image,
 			if(type)
 			{
 				fputs(" marshal(", stream);
-				ILDumpNativeType(stream, type, typeLen);
+				ILDumpNativeType(stream, type, typeLen, flags);
 				putc(')', stream);
 			}
 		}
@@ -646,7 +653,7 @@ void ILDumpMethodSpec(FILE *stream, ILImage *image,
 /*
  * Dump a variant type.
  */
-static void DumpVariantType(FILE *stream, ILUInt32 type)
+static void DumpVariantType(FILE *stream, ILUInt32 type, int flags)
 {
 	switch(type & IL_META_VARIANTTYPE_BASE_TYPE_MASK)
 	{
@@ -912,14 +919,21 @@ static void DumpVariantType(FILE *stream, ILUInt32 type)
 	}
 	if((type & IL_META_VARIANTTYPE_BYREF) != 0)
 	{
-		fputs(" &", stream);
+		if((flags & IL_DUMP_XML_QUOTING) != 0)
+		{
+			fputs(" &amp;", stream);
+		}
+		else
+		{
+			fputs(" &", stream);
+		}
 	}
 }
 
 /*
  * Inner version of "ILDumpNativeType".
  */
-static void DumpNativeType(FILE *stream, ILMetaDataRead *reader)
+static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 {
 	unsigned long value;
 	unsigned long value2;
@@ -1023,7 +1037,7 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader)
 
 		case IL_META_NATIVETYPE_PTR:
 		{
-			DumpNativeType(stream, reader);
+			DumpNativeType(stream, reader, flags);
 			fputs(" *", stream);
 		}
 		break;
@@ -1106,7 +1120,7 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader)
 		{
 			fputs("safearray ", stream);
 			value = ILMetaUncompressData(reader);
-			DumpVariantType(stream, (ILUInt32)value);
+			DumpVariantType(stream, (ILUInt32)value, flags);
 		}
 		break;
 
@@ -1123,7 +1137,7 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader)
 			if(reader->len)
 			{
 				fputs("fixed array ", stream);
-				DumpNativeType(stream, reader);
+				DumpNativeType(stream, reader, flags);
 				fprintf(stream, "[%lu]", value);
 			}
 			else
@@ -1201,7 +1215,7 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader)
 
 		case IL_META_NATIVETYPE_ARRAY:
 		{
-			DumpNativeType(stream, reader);
+			DumpNativeType(stream, reader, flags);
 			putc('[', stream);
 			value = ILMetaUncompressData(reader);
 			if(value)
@@ -1322,13 +1336,14 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader)
 	}
 }
 
-void ILDumpNativeType(FILE *stream, const void *type, unsigned long len)
+void ILDumpNativeType(FILE *stream, const void *type,
+					  unsigned long len, int flags)
 {
 	ILMetaDataRead reader;
 	reader.data = (const unsigned char *)type;
 	reader.len = len;
 	reader.error = 0;
-	DumpNativeType(stream, &reader);
+	DumpNativeType(stream, &reader, flags);
 }
 
 #ifdef	__cplusplus

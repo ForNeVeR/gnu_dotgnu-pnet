@@ -171,7 +171,7 @@ static void Dump_FieldDef(ILImage *image, FILE *outstream, int flags,
 			if(type)
 			{
 				fputs("marshal(", outstream);
-				ILDumpNativeType(outstream, type, typeLen);
+				ILDumpNativeType(outstream, type, typeLen, flags);
 				fputs(") ", outstream);
 			}
 		}

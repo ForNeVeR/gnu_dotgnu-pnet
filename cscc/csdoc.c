@@ -144,6 +144,84 @@ static void Indent(FILE *stream, int indent)
 }
 
 /*
+ * Dump a string, with XML quoting.
+ */
+static void DumpString(const char *str, FILE *stream)
+{
+	int ch;
+	if(!str)
+	{
+		return;
+	}
+	while((ch = *str++) != '\0')
+	{
+		if(ch == '<')
+		{
+			fputs("&lt;", stream);
+		}
+		else if(ch == '>')
+		{
+			fputs("&gt;", stream);
+		}
+		else if(ch == '&')
+		{
+			fputs("&amp;", stream);
+		}
+		else if(ch == '"')
+		{
+			fputs("&quot;", stream);
+		}
+		else if(ch == '\'')
+		{
+			fputs("&apos;", stream);
+		}
+		else
+		{
+			putc(ch, stream);
+		}
+	}
+}
+
+/*
+ * Dump a length-delimited string, with XML quoting.
+ */
+static void DumpStringN(const char *str, int len, FILE *stream)
+{
+	int ch;
+	if(!str)
+	{
+		return;
+	}
+	while(len-- > 0 && (ch = *str++) != '\0')
+	{
+		if(ch == '<')
+		{
+			fputs("&lt;", stream);
+		}
+		else if(ch == '>')
+		{
+			fputs("&gt;", stream);
+		}
+		else if(ch == '&')
+		{
+			fputs("&amp;", stream);
+		}
+		else if(ch == '"')
+		{
+			fputs("&quot;", stream);
+		}
+		else if(ch == '\'')
+		{
+			fputs("&apos;", stream);
+		}
+		else
+		{
+			putc(ch, stream);
+		}
+	}
+}
+
+/*
  * Dump a class name to a stream.
  */
 static void DumpClassName(FILE *stream, ILClass *classInfo)
@@ -152,10 +230,10 @@ static void DumpClassName(FILE *stream, ILClass *classInfo)
 	const char *namespace = ILClass_Namespace(classInfo);
 	if(namespace)
 	{
-		fputs(namespace, stream);
+		DumpString(namespace, stream);
 		putc('.', stream);
 	}
-	fputs(name, stream);
+	DumpString(name, stream);
 }
 
 /*
@@ -171,11 +249,11 @@ static void DumpClassNameOther(FILE *stream, ILClass *classInfo, ILClass *other)
 	{
 		if(!namespace2 || strcmp(namespace, namespace2) != 0)
 		{
-			fputs(namespace, stream);
+			DumpString(namespace, stream);
 			putc('.', stream);
 		}
 	}
-	fputs(name, stream);
+	DumpString(name, stream);
 }
 
 /*
@@ -202,7 +280,7 @@ static void DumpClassNameSP(FILE *stream, ILClass *classInfo)
 		}
 		putc('_', stream);
 	}
-	fputs(name, stream);
+	DumpString(name, stream);
 }
 
 /*
@@ -466,7 +544,7 @@ static void GenerateDocsForField(FILE *stream, ILNode_FieldDeclaration *decl,
 		/* Output the member header */
 		Indent(stream, indent);
 		fputs("<Member MemberName=\"", stream);
-		fputs(ILField_Name(field), stream);
+		DumpString(ILField_Name(field), stream);
 		fputs("\">\n", stream);
 
 		/* Output the signature in ILASM form */
@@ -474,18 +552,18 @@ static void GenerateDocsForField(FILE *stream, ILNode_FieldDeclaration *decl,
 		fputs("<MemberSignature Language=\"ILASM\" Value=\".field ", stream);
 		ILDumpFlags(stream, ILField_Attrs(field), ILFieldDefinitionFlags, 0);
 		ILDumpType(stream, ILProgramItem_Image(field),
-				   ILField_Type(field), 0);
+				   ILField_Type(field), IL_DUMP_XML_QUOTING);
 		putc(' ', stream);
-		fputs(ILField_Name(field), stream);
+		DumpString(ILField_Name(field), stream);
 		fputs("\"/>\n", stream);
 
 		/* Output the signature in C# form */
 		Indent(stream, indent + 2);
 		fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
 		ILDumpFlags(stream, decl->modifiers, CSharpFieldFlags, 0);
-		fputs(CSTypeToName(ILField_Type(field)), stream);
+		DumpString(CSTypeToName(ILField_Type(field)), stream);
 		putc(' ', stream);
-		fputs(ILField_Name(field), stream);
+		DumpString(ILField_Name(field), stream);
 		if(ILField_IsLiteral(field))
 		{
 			/* TODO: dump the constant value */
@@ -503,8 +581,9 @@ static void GenerateDocsForField(FILE *stream, ILNode_FieldDeclaration *decl,
 		Indent(stream, indent + 2);
 		fputs("<ReturnValue>\n", stream);
 		Indent(stream, indent + 4);
-		fprintf(stream, "<ReturnType>%s</ReturnType>\n",
-				CSTypeToName(ILField_Type(field)));
+		fputs("<ReturnType>", stream);
+		DumpString(CSTypeToName(ILField_Type(field)), stream);
+		fputs("</ReturnType>\n", stream);
 		Indent(stream, indent + 2);
 		fputs("</ReturnValue>\n", stream);
 
@@ -545,7 +624,7 @@ static void GenerateDocsForEnum(FILE *stream,
 	/* Output the member header */
 	Indent(stream, indent);
 	fputs("<Member MemberName=\"", stream);
-	fputs(ILField_Name(field), stream);
+	DumpString(ILField_Name(field), stream);
 	fputs("\">\n", stream);
 
 	/* Output the signature in ILASM form */
@@ -553,17 +632,18 @@ static void GenerateDocsForEnum(FILE *stream,
 	fputs("<MemberSignature Language=\"ILASM\" Value=\".field ", stream);
 	ILDumpFlags(stream, ILField_Attrs(field), ILFieldDefinitionFlags, 0);
 	ILDumpType(stream, ILProgramItem_Image(field),
-			   ILField_Type(field), 0);
+			   ILField_Type(field), IL_DUMP_XML_QUOTING);
 	putc(' ', stream);
-	fputs(ILField_Name(field), stream);
+	DumpString(ILField_Name(field), stream);
 	fputs("\"/>\n", stream);
 
 	/* Output the signature in C# form */
 	Indent(stream, indent + 2);
 	fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
-	fputs(ILField_Name(field), stream);
+	DumpString(ILField_Name(field), stream);
 	if(ILField_IsLiteral(field))
 	{
+		/* TODO */
 	}
 	fputs("\"/>\n", stream);
 
@@ -578,8 +658,9 @@ static void GenerateDocsForEnum(FILE *stream,
 	Indent(stream, indent + 2);
 	fputs("<ReturnValue>\n", stream);
 	Indent(stream, indent + 4);
-	fprintf(stream, "<ReturnType>%s</ReturnType>\n",
-			CSTypeToName(ILField_Type(field)));
+	fputs("<ReturnType>", stream);
+	DumpString(CSTypeToName(ILField_Type(field)), stream);
+	fputs("</ReturnType>\n", stream);
 	Indent(stream, indent + 2);
 	fputs("</ReturnValue>\n", stream);
 
@@ -758,7 +839,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	/* Output the member header */
 	Indent(stream, indent);
 	fputs("<Member MemberName=\"", stream);
-	fputs(ILMethod_Name(method), stream);
+	DumpString(ILMethod_Name(method), stream);
 	fputs("\">\n", stream);
 
 	/* Is this method a constructor? */
@@ -775,7 +856,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	ILDumpFlags(stream, ILMethod_Attrs(method), ILMethodDefinitionFlags, 0);
 	signature = ILMethod_Signature(method);
 	ILDumpMethodType(stream, ILProgramItem_Image(method), signature,
-			         0, 0, ILMethod_Name(method), method);
+			         IL_DUMP_XML_QUOTING, 0, ILMethod_Name(method), method);
 	putc(' ', stream);
 	ILDumpFlags(stream, ILMethod_ImplAttrs(method),
 				ILMethodImplementationFlags, 0);
@@ -787,7 +868,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
 	if(!isConstructor)
 	{
-		fputs(CSTypeToName(ILTypeGetReturn(signature)), stream);
+		DumpString(CSTypeToName(ILTypeGetReturn(signature)), stream);
 		putc(' ', stream);
 	}
 	if(isConstructor)
@@ -798,7 +879,7 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	{
 		methodName = ConvertOperatorNames(method);
 	}
-	fputs(methodName, stream);
+	DumpString(methodName, stream);
 	putc('(', stream);
 	num = ILTypeNumParams(signature);
 	for(param = 1; param <= num; ++param)
@@ -807,12 +888,12 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 		{
 			fputs(", ", stream);
 		}
-		fputs(CSTypeToName(ILTypeGetParam(signature, param)), stream);
+		DumpString(CSTypeToName(ILTypeGetParam(signature, param)), stream);
 		paramInfo = FindMethodParam(method, param);
 		if(paramInfo)
 		{
 			putc(' ', stream);
-			fputs(ILParameter_Name(paramInfo), stream);
+			DumpString(ILParameter_Name(paramInfo), stream);
 		}
 	}
 	putc(')', stream);
@@ -839,8 +920,9 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 	{
 		fputs("<ReturnValue>\n", stream);
 		Indent(stream, indent + 4);
-		fprintf(stream, "<ReturnType>%s</ReturnType>\n",
-				CSTypeToName(returnType));
+		fputs("<ReturnType>", stream);
+		DumpString(CSTypeToName(returnType), stream);
+		fputs("</ReturnType>\n", stream);
 		Indent(stream, indent + 2);
 		fputs("</ReturnValue>\n", stream);
 	}
@@ -862,11 +944,11 @@ static void GenerateDocsForMethod(FILE *stream, ILNode_MethodDeclaration *decl,
 			if(paramInfo)
 			{
 				fputs("Name=\"", stream);
-				fputs(ILParameter_Name(paramInfo), stream);
+				DumpString(ILParameter_Name(paramInfo), stream);
 				fputs("\" ", stream);
 			}
 			fputs("Type=\"", stream);
-			fputs(CSTypeToName(ILTypeGetParam(signature, param)), stream);
+			DumpString(CSTypeToName(ILTypeGetParam(signature, param)), stream);
 			fputs("\"/>\n", stream);
 		}
 		Indent(stream, indent + 2);
@@ -925,7 +1007,7 @@ static void GenerateDocsForProperty(FILE *stream,
 	/* Output the member header */
 	Indent(stream, indent);
 	fputs("<Member MemberName=\"", stream);
-	fputs(ILProperty_Name(property), stream);
+	DumpString(ILProperty_Name(property), stream);
 	fputs("\">\n", stream);
 
 	/* Is this property an indexer? */
@@ -943,7 +1025,7 @@ static void GenerateDocsForProperty(FILE *stream,
 	ILDumpFlags(stream, ILProperty_Attrs(property),
 				ILPropertyDefinitionFlags, 0);
 	ILDumpMethodType(stream, ILProgramItem_Image(property), signature,
-			         0, 0, ILProperty_Name(property), getter);
+			         IL_DUMP_XML_QUOTING, 0, ILProperty_Name(property), getter);
 	fputs(" { ", stream);
 	if(getter)
 	{
@@ -951,7 +1033,7 @@ static void GenerateDocsForProperty(FILE *stream,
 		ILDumpFlags(stream, ILMethod_Attrs(getter), ILMethodDefinitionFlags, 0);
 		methodSig = ILMethod_Signature(getter);
 		ILDumpMethodType(stream, ILProgramItem_Image(getter), signature,
-				         0, 0, ILMethod_Name(getter), getter);
+				         IL_DUMP_XML_QUOTING, 0, ILMethod_Name(getter), getter);
 		putc(' ', stream);
 		ILDumpFlags(stream, ILMethod_ImplAttrs(getter),
 					ILMethodImplementationFlags, 0);
@@ -962,7 +1044,7 @@ static void GenerateDocsForProperty(FILE *stream,
 		ILDumpFlags(stream, ILMethod_Attrs(setter), ILMethodDefinitionFlags, 0);
 		methodSig = ILMethod_Signature(setter);
 		ILDumpMethodType(stream, ILProgramItem_Image(setter), signature,
-				         0, 0, ILMethod_Name(setter), setter);
+				         IL_DUMP_XML_QUOTING, 0, ILMethod_Name(setter), setter);
 		putc(' ', stream);
 		ILDumpFlags(stream, ILMethod_ImplAttrs(setter),
 					ILMethodImplementationFlags, 0);
@@ -973,7 +1055,7 @@ static void GenerateDocsForProperty(FILE *stream,
 	Indent(stream, indent + 2);
 	fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
 	ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
-	fputs(CSTypeToName(ILTypeGetReturn(signature)), stream);
+	DumpString(CSTypeToName(ILTypeGetReturn(signature)), stream);
 	putc(' ', stream);
 	propertyName = ILProperty_Name(property);
 	if(isIndexer)
@@ -988,18 +1070,18 @@ static void GenerateDocsForProperty(FILE *stream,
 			int len = strlen(propertyName);
 			if(len > 5 && !strcmp(propertyName + len - 5, ".Item"))
 			{
-				fwrite(propertyName, 1, len - 4, stream);
+				DumpStringN(propertyName, len - 4, stream);
 				fputs("this", stream);
 			}
 			else
 			{
-				fputs(propertyName, stream);
+				DumpString(propertyName, stream);
 			}
 		}
 	}
 	else
 	{
-		fputs(propertyName, stream);
+		DumpString(propertyName, stream);
 	}
 	num = ILTypeNumParams(signature);
 	if(isIndexer)
@@ -1011,14 +1093,14 @@ static void GenerateDocsForProperty(FILE *stream,
 			{
 				fputs(", ", stream);
 			}
-			fputs(CSTypeToName(ILTypeGetParam(signature, param)), stream);
+			DumpString(CSTypeToName(ILTypeGetParam(signature, param)), stream);
 			if(getter || setter)
 			{
 				paramInfo = FindMethodParam((getter ? getter : setter), param);
 				if(paramInfo)
 				{
 					putc(' ', stream);
-					fputs(ILParameter_Name(paramInfo), stream);
+					DumpString(ILParameter_Name(paramInfo), stream);
 				}
 			}
 		}
@@ -1049,8 +1131,9 @@ static void GenerateDocsForProperty(FILE *stream,
 	{
 		fputs("<ReturnValue>\n", stream);
 		Indent(stream, indent + 4);
-		fprintf(stream, "<ReturnType>%s</ReturnType>\n",
-				CSTypeToName(returnType));
+		fputs("<ReturnType>", stream);
+		DumpString(CSTypeToName(returnType), stream);
+		fputs("</ReturnType>\n", stream);
 		Indent(stream, indent + 2);
 		fputs("</ReturnValue>\n", stream);
 	}
@@ -1074,12 +1157,12 @@ static void GenerateDocsForProperty(FILE *stream,
 				if(paramInfo)
 				{
 					fputs("Name=\"", stream);
-					fputs(ILParameter_Name(paramInfo), stream);
+					DumpString(ILParameter_Name(paramInfo), stream);
 					fputs("\" ", stream);
 				}
 			}
 			fputs("Type=\"", stream);
-			fputs(CSTypeToName(ILTypeGetParam(signature, param)), stream);
+			DumpString(CSTypeToName(ILTypeGetParam(signature, param)), stream);
 			fputs("\"/>\n", stream);
 		}
 		Indent(stream, indent + 2);
@@ -1135,7 +1218,7 @@ static void GenerateDocsForEvent(FILE *stream, ILNode_EventDeclaration *decl,
 		/* Output the member header */
 		Indent(stream, indent);
 		fputs("<Member MemberName=\"", stream);
-		fputs(ILEvent_Name(event), stream);
+		DumpString(ILEvent_Name(event), stream);
 		fputs("\">\n", stream);
 
 		/* Output the signature in ILASM form */
@@ -1143,7 +1226,7 @@ static void GenerateDocsForEvent(FILE *stream, ILNode_EventDeclaration *decl,
 		fputs("<MemberSignature Language=\"ILASM\" Value=\".event ", stream);
 		ILDumpFlags(stream, decl->modifiers, ILMethodDefinitionFlags, 0);
 		fputs("event ", stream);
-		fputs(ILEvent_Name(event), stream);
+		DumpString(ILEvent_Name(event), stream);
 		/* TODO: add/remove methods */
 		fputs("\"/>\n", stream);
 
@@ -1151,9 +1234,9 @@ static void GenerateDocsForEvent(FILE *stream, ILNode_EventDeclaration *decl,
 		Indent(stream, indent + 2);
 		fputs("<MemberSignature Language=\"C#\" Value=\"", stream);
 		ILDumpFlags(stream, decl->modifiers, CSharpMethodFlags, 0);
-		fputs(CSTypeToName(ILEvent_Type(event)), stream);
+		DumpString(CSTypeToName(ILEvent_Type(event)), stream);
 		putc(' ', stream);
-		fputs(ILEvent_Name(event), stream);
+		DumpString(ILEvent_Name(event), stream);
 		/* TODO: add/remove methods */
 		fputs("\"/>\n", stream);
 
@@ -1216,7 +1299,9 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 
 	/* Output the type header */
 	Indent(stream, indent);
-	fprintf(stream, "<Type Name=\"%s\" FullName=\"", defn->name);
+	fputs("<Type Name=\"", stream);
+	DumpString(defn->name, stream);
+	fputs("\" FullName=\"", stream);
 	DumpClassName(stream, classInfo);
 	fputs("\" FullNameSP=\"", stream);
 	DumpClassNameSP(stream, classInfo);
@@ -1227,7 +1312,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	Indent(stream, indent);
 	fputs("<TypeSignature Language=\"ILASM\" Value=\".class ", stream);
 	ILDumpFlags(stream, ILClass_Attrs(classInfo), ILTypeDefinitionFlags, 0);
-	fputs(defn->name, stream);
+	DumpString(defn->name, stream);
 	parent = ILClass_Parent(classInfo);
 	if(parent)
 	{
@@ -1288,7 +1373,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	{
 		fputs("class ", stream);
 	}
-	fputs(ILClass_Name(classInfo), stream);
+	DumpString(ILClass_Name(classInfo), stream);
 	if(!isEnum && parent && !ILTypeIsObjectClass(ILClassToType(parent)))
 	{
 		fputs(": ", stream);

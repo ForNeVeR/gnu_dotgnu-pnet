@@ -13,6 +13,11 @@
 	* engine/cvmc.c, engine/cvmc_conv.c, engine/gen_marshal.tc,
 	engine/null_coder.c, include/il_coder.h: parameter marshalling.
 
+	* cscc/csdoc.c, csdoc/il2doc.c, dumpasm/dump_type.c,
+	ildasm/ildasm_class.c, include/il_dumpasm.h: fix the quoting
+	of '&' characters in csdoc output, and other places where
+	types may be dumped in XML form.
+
 2003-07-27  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_type.c: Avoid boxing conversions when dealing with

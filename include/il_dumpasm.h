@@ -34,6 +34,7 @@ extern	"C" {
 #define	IL_DUMP_QUOTE_NAMES			2
 #define	IL_DUMP_CLASS_PREFIX		4
 #define	IL_DUMP_GENERIC_PARAMS		8
+#define	IL_DUMP_XML_QUOTING			16
 
 /*
  * Structure of a flag information block.  This is used when
@@ -141,7 +142,8 @@ void ILDumpMethodSpec(FILE *stream, ILImage *image,
 /*
  * Dump a native type to an output stream.
  */
-void ILDumpNativeType(FILE *stream, const void *type, unsigned long len);
+void ILDumpNativeType(FILE *stream, const void *type,
+					  unsigned long len, int flags);
 
 /*
  * Dump the constant value associated with a program item.

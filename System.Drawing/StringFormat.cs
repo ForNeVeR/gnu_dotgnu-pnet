@@ -35,7 +35,7 @@ public sealed class StringFormat
 	private HotkeyPrefix hotkeyPrefix;
 	private StringAlignment lineAlignment;
 	private StringTrimming trimming;
-	private CharacterRange[] ranges;
+	internal CharacterRange[] ranges;
 	private float firstTabOffset;
 	private float[] tabStops;
 	private static StringFormat genericDefault = new StringFormat();

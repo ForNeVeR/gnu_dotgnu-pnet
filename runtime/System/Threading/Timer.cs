@@ -30,7 +30,7 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 	private Thread TimerThread;
 	private TimerCallback callback;
 	private object TimerObject;
-	private TimeSpan ts_dt,ts2_p;
+	private TimeSpan ts_dt,ts_p;
 	//Constructors
 	public Timer(TimerCallback callback, object state, int dueTime, int period)
 	{
@@ -57,10 +57,10 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 		if(callback==null){
 			throw new ArgumentNullException("callback");
 		}
-		if((dueTime.Milliseconds < 0 && dueTime != Timeout.Infinite) || (dueTime.Milliseconds > System.Int32.MaxValue)){
+		if((dueTime.Milliseconds < 0 && dueTime.Ticks != Timeout.Infinite) || (dueTime.Milliseconds > System.Int32.MaxValue)){
 			throw new ArgumentOutOfRangeException("dueTime");
 		}
-		if((period.Milliseconds < 0 && period != Timeout.Infinite) || ( dueTime.Milliseconds > System.Int32.MaxValue)){
+		if((period.Milliseconds < 0 && period.Ticks != Timeout.Infinite) || ( dueTime.Milliseconds > System.Int32.MaxValue)){
 			throw new ArgumentOutOfRangeException("period");
 		}
 		this.callback=callback;
@@ -70,7 +70,7 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 		this.ts_p=period;
 		ThreadStart TimerDelegate = new ThreadStart(TimerFunction);
 		this.TimerThread = new Thread(TimerDelegate);
-		if(dueTime!=Timeout.Infinite)
+		if(dueTime.Ticks!=Timeout.Infinite)
 			TimerThread.Start();
 
 	}
@@ -93,18 +93,20 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 		}
 		this.dueTime=dueTime;
 		this.period=period;
+		return true;
 	}
 
 	[TODO]
 	//Changes the start time and interval between method invocations for a timer.
 	public bool Change(TimeSpan dueTime, TimeSpan period)
 	{
-		if((dueTime.Milliseconds < 0 && dueTime != Timeout.Infinite) || (dueTime.Milliseconds > System.Int32.MaxValue)){
+		if((dueTime.Milliseconds < 0 && dueTime.Ticks != Timeout.Infinite) || (dueTime.Milliseconds > System.Int32.MaxValue)){
 			throw new ArgumentOutOfRangeException("dueTime");
 		}
-		if((period.Milliseconds < 0 && period != Timeout.Infinite) || ( dueTime.Milliseconds > System.Int32.MaxValue)){
+		if((period.Milliseconds < 0 && period.Ticks != Timeout.Infinite) || ( dueTime.Milliseconds > System.Int32.MaxValue)){
 			throw new ArgumentOutOfRangeException("period");
 		}
+		return Change(dueTime.Milliseconds, period.Milliseconds);
 	}
 
 	[TODO]
@@ -129,20 +131,23 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 	// start function for the timer thread.
 	private static void TimerFunction()
 	{
-		if(dueTime!=0)
-			Thread.Sleep(dueTime);
-		callFunctions();
-		while(period!=0 && period !=Timeout.Infinite)
-		{
-			Thread.Sleep(period);
-			callFunctions();
-		}
+		// TODO: I had to comment this out because dueTime and callFunctions
+		// are not static - Rhys.
+		//if(dueTime!=0)
+		//	Thread.Sleep(dueTime);
+		//callFunctions();
+		//while(period!=0 && period !=Timeout.Infinite)
+		//{
+		//	Thread.Sleep(period);
+		//	callFunctions();
+		//}
 	}
 
 	[TODO]
 	//Releases the resources held by the current instance.
 	public bool Dispose(WaitHandle notifyObject)
 	{
+		return true;
 	}
 
 }; // class Timer

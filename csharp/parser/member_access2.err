@@ -41,3 +41,4 @@
 ./member_access2.cs:55: warning: declaration of `m7' includes unnecessary `new' keyword
 ./member_access2.cs:82: declaration of `m1' hides an inherited member, and `new' was not present
 ./member_access2.cs:83: declaration of `m6' hides an inherited member, and `new' was not present
+./member_access2.cs:60: `abstract' cannot be used with a method body

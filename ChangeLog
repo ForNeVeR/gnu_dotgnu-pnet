@@ -6,6 +6,12 @@
 	use of identifiers as both types and non-types in the
 	same class.
 
+	* csharp/class/Makefile.am, csharp/class/method9.cs,
+	csharp/class/method9.err, csharp/class/method9.jerr,
+	csharp/parser/member_access2.err, csharp/parser/member_access2.jerr:
+	test cases for correct and incorrect uses of abstract/extern
+	with method bodies.
+
 2002-03-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/interface1.il,

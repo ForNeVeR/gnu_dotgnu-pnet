@@ -565,7 +565,9 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 /*
  * Bailout routines for various kinds of verification failure.
  */
-/*#define	IL_VERIFY_DEBUG*/
+#ifndef IL_CONFIG_REDUCE_CODE
+#define	IL_VERIFY_DEBUG
+#endif
 #ifdef IL_VERIFY_DEBUG
 #define	VERIFY_REPORT()	\
 			do { \
@@ -574,7 +576,7 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 						ILMethod_Name(method), \
 						(unsigned long)(offset + ILMethod_RVA(method) + \
 										code->headerSize), \
-						insn->name, __FILE__, __LINE__); \
+						(insn ? insn->name : "none"), __FILE__, __LINE__); \
 			} while (0)
 #else
 #define	VERIFY_REPORT()	do {} while (0)
@@ -614,15 +616,15 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	unsigned opcode;
 	ILUInt32 insnSize;
 	int insnType;
-	ILUInt32 offset;
+	ILUInt32 offset = 0;
 	ILEngineStackItem *stack;
 	ILUInt32 stackSize;
 #ifdef IL_VERIFY_DEBUG
-	const ILOpcodeInfo *insn;
+	const ILOpcodeInfo *insn = 0;
 	#define	MAIN_OPCODE_TABLE	ILMainOpcodeTable
 	#define	PREFIX_OPCODE_TABLE	ILPrefixOpcodeTable
 #else
-	const ILOpcodeSmallInfo *insn;
+	const ILOpcodeSmallInfo *insn = 0;
 	#define	MAIN_OPCODE_TABLE	ILMainOpcodeSmallTable
 	#define	PREFIX_OPCODE_TABLE	ILPrefixOpcodeSmallTable
 #endif
@@ -1118,7 +1120,8 @@ restart:
 	{
 		ILMethodCode code;
 		ILMethodGetCode(method,&code);
-		fprintf(stderr, "%s::%s - method is too big (%d%s bytes)\n",
+		fprintf(stderr,
+			"%s::%s - method is too big to be converted (%d%s bytes)\n",
 							ILClass_Name(ILMethod_Owner(method)),
 							ILMethod_Name(method),
 							code.codeLen,

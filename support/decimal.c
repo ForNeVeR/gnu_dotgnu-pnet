@@ -666,14 +666,14 @@ static void ShiftLeft(ILUInt32 *value, int size, int shift)
 		--size;
 		carry |= (((ILUInt64)(value[size])) << shift);
 		value[size] = (ILUInt32)carry;
-		carry >>= (32 - shift);
+		carry >>= 32;
 	}
 }
 
 /*
  * Compute "valuea -= valueb * valuec".  Returns non-zero
  * if the result went negative.  We assume that sizeb is
- * less than or equal to sizea.
+ * greater than 0 and less than sizea.
  */
 static int MulAndSub(ILUInt32 *valuea, int sizea,
 					 ILUInt32 *valueb, int sizeb,
@@ -683,63 +683,56 @@ static int MulAndSub(ILUInt32 *valuea, int sizea,
 	ILUInt64 carry = 0;
 	ILUInt64 valuec64 = (ILUInt64)valuec;
 	ILUInt32 temp;
-	for(posn = 0; posn < sizeb; ++posn)
+	for(posn = sizeb; posn > 0; --posn)
 	{
-		carry += ((ILUInt64)(valueb[sizeb - 1 - posn])) * valuec64;
-		temp = valuea[sizea - 1 - posn] - (ILUInt32)carry;
-		if(temp > valuea[sizea - 1 - posn])
-		{
-			valuea[sizea - 1 - posn] = temp;
-			carry = ((carry >> 32) + 1);
-		}
-		else
-		{
-			valuea[sizea - 1 - posn] = temp;
-			carry >>= 32;
-		}
-	}
-	for(posn = sizea - sizeb - 1; posn >= 0; --posn)
-	{
+		carry += ((ILUInt64)(valueb[posn - 1])) * valuec64;
 		temp = valuea[posn] - (ILUInt32)carry;
 		if(temp > valuea[posn])
 		{
-			valuea[posn] = temp;
 			carry = ((carry >> 32) + 1);
 		}
 		else
 		{
-			valuea[posn] = temp;
 			carry >>= 32;
 		}
+		valuea[posn] = temp;
 	}
+	/* process word 0 */
+	temp = valuea[0] - (ILUInt32)carry;
+	if(temp > valuea[0])
+	{
+		carry = ((carry >> 32) + 1);
+	}
+	else
+	{
+		carry >>= 32;
+	}
+	valuea[0] = temp;
 	return (carry != 0);
 }
 
 /*
  * Compute "valuea += valueb".  Returns non-zero if
  * the result is still negative.  We assume that sizeb
- * is less than or equal to sizea.
+ * is greater than 0 and less than sizea.
  */
 static int AddBack(ILUInt32 *valuea, int sizea,
 				   ILUInt32 *valueb, int sizeb)
 {
 	int posn;
 	ILUInt64 carry = 0;
-	for(posn = 0; posn < sizeb; ++posn)
+	for(posn = sizeb; posn > 0; --posn)
 	{
-		carry += (((ILUInt64)(valuea[sizea - 1 - posn])) +
-				  ((ILUInt64)(valueb[sizeb - 1 - posn])));
-		valuea[sizea - 1 - posn] = (ILUInt32)carry;
+		carry += (((ILUInt64)(valuea[posn])) +
+				  ((ILUInt64)(valueb[posn - 1])));
+		valuea[posn] = (ILUInt32)carry;
 		carry >>= 32;
 	}
-	posn = sizea - sizeb - 1;
-	while(posn >= 0 && carry != 0)
-	{
-		++(valuea[posn]);
-		carry = (valuea[posn] == 0);
-		--posn;
-	}
-	return (carry == 0);
+	/* process word 0 */
+	carry += (ILUInt64)valuea[0];
+	valuea[0] = (ILUInt32)carry;
+	carry >>= 32;
+	return (carry != 0);
 }
 
 /*
@@ -810,7 +803,7 @@ static int Divide(ILUInt32 *quotient, const ILDecimal *valuea,
 	for(posn = 0; posn < limit; ++posn)
 	{
 		/* Get the test quotient for the current word */
-		if(tempa[posn] == tempb[0])
+		if(tempa[posn] >= tempb[0])
 		{
 			testquot = (ILUInt32)0xFFFFFFFF;
 		}

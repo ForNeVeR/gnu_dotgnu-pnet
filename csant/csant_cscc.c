@@ -906,6 +906,12 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 		AddArg(&argv, &argc, "--checked");
 	}
 
+	/* Set the unsafe compilation state */
+	if(args->unsafe == COMP_FLAG_TRUE)
+	{
+		AddArg(&argv, &argc, "--unsafe");
+	}
+
 	/* Disable the standard library if necessary */
 	if(args->noStdLib == COMP_FLAG_TRUE)
 	{

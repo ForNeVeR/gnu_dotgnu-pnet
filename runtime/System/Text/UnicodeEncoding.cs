@@ -2,7 +2,7 @@
  * UnicodeEncoding.cs - Implementation of the
  *		"System.Text.UnicodeEncoding" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,11 @@ public class UnicodeEncoding : Encoding
 	// Magic numbers used by Windows for Unicode.
 	internal const int UNICODE_CODE_PAGE     = 1200;
 	internal const int BIG_UNICODE_CODE_PAGE = 1201;
+
+#if !ECMA_COMPAT
+	// Size of characters in this encoding.
+	public const int CharSize = 2;
+#endif
 
 	// Internal state.
 	private bool bigEndian;
@@ -78,7 +83,6 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the bytes that result from encoding a character buffer.
-	[TODO]
 	public override int GetBytes(char[] chars, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -122,7 +126,6 @@ public class UnicodeEncoding : Encoding
 					}
 					while(charCount-- > 0)
 					{
-						// TODO: handle surrogates.
 						ch = chars[charIndex++];
 						bytes[posn++] = (byte)(ch >> 8);
 						bytes[posn++] = (byte)ch;
@@ -137,7 +140,6 @@ public class UnicodeEncoding : Encoding
 					}
 					while(charCount-- > 0)
 					{
-						// TODO: handle surrogates.
 						ch = chars[charIndex++];
 						bytes[posn++] = (byte)ch;
 						bytes[posn++] = (byte)(ch >> 8);
@@ -147,7 +149,6 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Convenience wrappers for "GetBytes".
-	[TODO]
 	public override int GetBytes(String s, int charIndex, int charCount,
 								 byte[] bytes, int byteIndex)
 			{
@@ -191,7 +192,6 @@ public class UnicodeEncoding : Encoding
 					}
 					while(charCount-- > 0)
 					{
-						// TODO: handle surrogates.
 						ch = s[charIndex++];
 						bytes[posn++] = (byte)(ch >> 8);
 						bytes[posn++] = (byte)ch;
@@ -206,7 +206,6 @@ public class UnicodeEncoding : Encoding
 					}
 					while(charCount-- > 0)
 					{
-						// TODO: handle surrogates.
 						ch = s[charIndex++];
 						bytes[posn++] = (byte)ch;
 						bytes[posn++] = (byte)(ch >> 8);
@@ -244,7 +243,6 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get the characters that result from decoding a byte buffer.
-	[TODO]
 	public override int GetChars(byte[] bytes, int byteIndex, int byteCount,
 								 char[] chars, int charIndex)
 			{
@@ -306,12 +304,11 @@ public class UnicodeEncoding : Encoding
 				}
 
 				// Convert the characters.
-				int posn = 0;
+				int posn = charIndex;
 				if(isBigEndian)
 				{
 					while(byteCount >= 2)
 					{
-						// TODO: handle surrogates.
 						chars[posn++] =
 							((char)((((int)(bytes[byteIndex])) << 8) |
 									 ((int)(bytes[byteIndex + 1]))));
@@ -323,7 +320,6 @@ public class UnicodeEncoding : Encoding
 				{
 					while(byteCount >= 2)
 					{
-						// TODO: handle surrogates.
 						chars[posn++] =
 							((char)((((int)(bytes[byteIndex + 1])) << 8) |
 									 ((int)(bytes[byteIndex]))));
@@ -331,7 +327,7 @@ public class UnicodeEncoding : Encoding
 						byteCount -= 2;
 					}
 				}
-				return posn;
+				return posn - charIndex;
 			}
 
 	// Get the maximum number of bytes needed to encode a
@@ -359,11 +355,9 @@ public class UnicodeEncoding : Encoding
 			}
 
 	// Get a Unicode-specific decoder that is attached to this instance.
-	[TODO]
 	public override Decoder GetDecoder()
 			{
-				// TODO
-				return base.GetDecoder();
+				return new UnicodeDecoder(bigEndian);
 			}
 
 	// Get the Unicode preamble.
@@ -382,6 +376,168 @@ public class UnicodeEncoding : Encoding
 				}
 				return preamble;
 			}
+
+	// Determine if this object is equal to another.
+	public override bool Equals(Object value)
+			{
+				UnicodeEncoding enc = (value as UnicodeEncoding);
+				if(enc != null)
+				{
+					return (codePage == enc.codePage &&
+							bigEndian == enc.bigEndian &&
+							byteOrderMark == enc.byteOrderMark);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this object.
+	public override int GetHashCode()
+			{
+				return base.GetHashCode();
+			}
+
+	// Unicode decoder implementation.
+	private sealed class UnicodeDecoder : Decoder
+	{
+		private bool bigEndian;
+		private int leftOverByte;
+
+		// Constructor.
+		public UnicodeDecoder(bool bigEndian)
+				{
+					this.bigEndian = bigEndian;
+					leftOverByte = -1;
+				}
+
+		// Override inherited methods.
+		public override int GetCharCount(byte[] bytes, int index, int count)
+				{
+					if(bytes == null)
+					{
+						throw new ArgumentNullException("bytes");
+					}
+					if(index < 0 || index > bytes.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("index", _("ArgRange_Array"));
+					}
+					if(count < 0 || count > (bytes.Length - index))
+					{
+						throw new ArgumentOutOfRangeException
+							("count", _("ArgRange_Array"));
+					}
+					if(leftOverByte != -1)
+					{
+						return (count + 1) / 2;
+					}
+					else
+					{
+						return count / 2;
+					}
+				}
+		public override int GetChars(byte[] bytes, int byteIndex,
+									 int byteCount, char[] chars,
+									 int charIndex)
+				{
+					if(bytes == null)
+					{
+						throw new ArgumentNullException("bytes");
+					}
+					if(chars == null)
+					{
+						throw new ArgumentNullException("chars");
+					}
+					if(byteIndex < 0 || byteIndex > bytes.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("byteIndex", _("ArgRange_Array"));
+					}
+					if(byteCount < 0 || byteCount > (bytes.Length - byteIndex))
+					{
+						throw new ArgumentOutOfRangeException
+							("byteCount", _("ArgRange_Array"));
+					}
+					if(charIndex < 0 || charIndex > chars.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("charIndex", _("ArgRange_Array"));
+					}
+	
+					// Convert the characters.
+					int posn = charIndex;
+					bool isBigEndian = bigEndian;
+					int leftOver = leftOverByte;
+					int length = chars.Length;
+					char ch;
+					while(byteCount > 0)
+					{
+						if(leftOver != -1)
+						{
+							if(isBigEndian)
+							{
+								ch = ((char)((leftOver << 8) |
+										    ((int)(bytes[byteIndex]))));
+							}
+							else
+							{
+								ch = ((char)(leftOver |
+									    	 (((int)(bytes[byteIndex])) << 8)));
+							}
+							leftOver = -1;
+							++byteIndex;
+							--byteCount;
+						}
+						else if(byteCount > 1)
+						{
+							if(isBigEndian)
+							{
+								ch = ((char)((((int)(bytes[byteIndex])) << 8) |
+											  ((int)(bytes[byteIndex + 1]))));
+							}
+							else
+							{
+								ch = ((char)((((int)(bytes[byteIndex + 1]))
+													<< 8) |
+										      ((int)(bytes[byteIndex]))));
+							}
+							byteIndex += 2;
+							byteCount -= 2;
+						}
+						else
+						{
+							leftOver = (int)(bytes[byteIndex]);
+							break;
+						}
+						if(ch == '\uFFFE')
+						{
+							// Switch byte orders.
+							bigEndian = !bigEndian;
+						}
+						else if(ch != '\uFEFF')
+						{
+							// Ordinary character.
+							if(posn < length)
+							{
+								chars[posn++] = ch;
+							}
+							else
+							{
+								throw new ArgumentException
+									(_("Arg_InsufficientSpace"));
+							}
+						}
+					}
+					leftOverByte = leftOver;
+					bigEndian = isBigEndian;
+
+					// Finished - return the converted length.
+					return posn - charIndex;
+				}
+
+	} // class UnicodeDecoder
 
 }; // class UnicodeEncoding
 

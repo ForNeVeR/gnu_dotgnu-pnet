@@ -1,5 +1,13 @@
 
-2002-04-13	Gopal.V  <gopalv82@yahoo.com>
+2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Text/Encoding.cs,
+	runtime/System/Text/UTF8Encoding.cs,
+	runtime/System/Text/UnicodeEncoding.cs: complete the implementations
+	of "UTF8Encoding" and "UnicodeEncoding".
+
+2002-04-13  Gopal.V  <gopalv82@yahoo.com>
 
 	* doc/csunit_howto.html : added a doc on how to write tests
 	using csunit

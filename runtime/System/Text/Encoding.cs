@@ -1,7 +1,7 @@
 /*
  * Encoding.cs - Implementation of the "System.Text.Encoding" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ using System.Reflection;
 public abstract class Encoding
 {
 	// Code page used by this encoding.
-	private int codePage;
+	internal int codePage;
 
 	// Constructor.
 	protected Encoding()
@@ -107,7 +107,7 @@ public abstract class Encoding
 				Encoding enc = (obj as Encoding);
 				if(enc != null)
 				{
-					return (this == enc);
+					return (codePage == enc.codePage);
 				}
 				else
 				{
@@ -457,13 +457,13 @@ public abstract class Encoding
 				}
 		public override int GetChars(byte[] bytes, int byteIndex,
 									 int byteCount, char[] chars,
-									 int charCount)
+									 int charIndex)
 				{
 					return encoding.GetChars(bytes, byteIndex, byteCount,
-											 chars, charCount);
+											 chars, charIndex);
 				}
 
-	} // ForwardingDecoder
+	} // class ForwardingDecoder
 
 	// Forwarding encoder implementation.
 	private sealed class ForwardingEncoder : Encoder
@@ -490,7 +490,7 @@ public abstract class Encoding
 											 bytes, byteCount);
 				}
 
-	} // ForwardingEncoder
+	} // class ForwardingEncoder
 
 }; // class Encoding
 

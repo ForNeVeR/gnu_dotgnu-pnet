@@ -102,6 +102,7 @@ Arg_DuplicateXMLAttr=There already exists an XML attribute with the specified na
 Arg_PermissionState=Invalid security permission state value
 Arg_SecurityAction=Invalid security action value
 Arg_PermissionVersion=Incorrect version for permission object
+Arg_InvalidUTF8=Invalid UTF8 byte sequence
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

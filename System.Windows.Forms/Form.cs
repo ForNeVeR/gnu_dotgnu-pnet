@@ -437,7 +437,7 @@ public class Form : ContainerControl
 					sizeGripStyle = value;
 				}
 			}
-	public FormStartPosition FormStartPosition
+	public FormStartPosition StartPosition
 			{
 				get
 				{

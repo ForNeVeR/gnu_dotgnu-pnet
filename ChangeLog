@@ -9,6 +9,9 @@
 	position to account for the border; fill with the background
 	color if "RenderTransparent" is not set.
 
+	* System.Windows.Forms/Form.cs: the "FormStartPosition" property
+	should be called "StartPosition".
+
 2003-06-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Graphics.cs,

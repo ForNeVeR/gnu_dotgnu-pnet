@@ -153,7 +153,6 @@ Makefile
 class/Makefile
 class/Custommarshalers/Makefile
 class/System.EnterpriseServices/Makefile
-class/System.Configuration.Install/Makefile
 class/System.Management/Makefile
 class/System.Messaging/Makefile
 class/System.ServiceProcess/Makefile

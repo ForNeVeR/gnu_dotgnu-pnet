@@ -4,6 +4,12 @@
 	* class/System.ServiceProcess/System.ServiceProcess.build:
 	add "System.dll" to the dependencies for "System.ServiceProcess.dll".
 
+	* configure.in, class/Makefile.am,
+	class/System.Configuration.Install/Makefile.am,
+	class/System.Configuration.Install/System.Configuration.Install.build:
+	remove "System.Configuration.Install" from ml-pnet because pnetlib
+	now has its own implementation.
+
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, copy-mcs.sh: look for "build/library.make" in

@@ -1,4 +1,8 @@
 
+2002-07-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* support/des.c: fix bugs in the structure of Triple-DES.
+
 2002-07-14  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_html.c, csdoc/doc_texi.c : fix the table bug

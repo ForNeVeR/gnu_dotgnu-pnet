@@ -457,9 +457,18 @@ void ILDES3Init(ILDES3Context *des3, unsigned char *key,
 {
 	if(keyBits == 192)
 	{
-		CreateDESSchedule(&(des3->k1), key, decrypt);
-		CreateDESSchedule(&(des3->k2), key + 8, !decrypt);
-		CreateDESSchedule(&(des3->k3), key + 16, decrypt);
+		if(decrypt)
+		{
+			CreateDESSchedule(&(des3->k1), key + 16, 1);
+			CreateDESSchedule(&(des3->k2), key + 8, 0);
+			CreateDESSchedule(&(des3->k3), key, 1);
+		}
+		else
+		{
+			CreateDESSchedule(&(des3->k1), key, 0);
+			CreateDESSchedule(&(des3->k2), key + 8, 1);
+			CreateDESSchedule(&(des3->k3), key + 16, 0);
+		}
 	}
 	else
 	{
@@ -473,8 +482,8 @@ void ILDES3Process(ILDES3Context *des3, unsigned char *input,
 				   unsigned char *output)
 {
 	ProcessDESBlock(des3->k1.ks, input, output);
-	ProcessDESBlock(des3->k2.ks, input, output);
-	ProcessDESBlock(des3->k3.ks, input, output);
+	ProcessDESBlock(des3->k2.ks, output, output);
+	ProcessDESBlock(des3->k3.ks, output, output);
 }
 
 void ILDES3Finalize(ILDES3Context *des3)

@@ -2242,7 +2242,13 @@ EventDeclaration
 MethodReference
 	: CallingConventions Type TypeSpecification COLON_COLON
 			MethodName '(' OptSignatureArguments ')'	{
-				ILType *sig = CreateMethodSig($1, $2, $7.paramFirst, 1);
+				ILType *sig;
+				if(!strcmp($5.string,".ctor"))
+				{
+					/* Note: constructors are always instance methods */
+					$1 = $1 | IL_META_CALLCONV_HASTHIS;
+				}
+				sig = CreateMethodSig($1, $2, $7.paramFirst, 1);
 				$$ = ILAsmResolveMember($3.item, $5.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
 			}

@@ -82,6 +82,16 @@ ILInt32 ILGetTimeZoneAdjust(void)
 	return (ILInt32)(timezone + (isdst ? 3600 : 0));
 }
 
+time_t ILCLIToUnixTime(ILInt64 time)
+{
+	return ((time_t) ((time / 10000000) - EPOCH_ADJUST));
+}
+
+ILInt64 ILUnixToCLITime(time_t time)
+{
+	return (((ILInt64) time) + EPOCH_ADJUST) * 10000000;
+}
+
 #ifdef	__cplusplus
 };
 #endif

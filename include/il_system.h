@@ -134,6 +134,12 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue);
 /* Get the number of seconds West of GMT for the local timezone */
 ILInt32 ILGetTimeZoneAdjust(void);
 
+/* Convert a DateTime time to a time_t time */
+time_t ILCLIToUnixTime(ILInt64 time);
+
+/* Convert a time_t time to a DateTime time */
+ILInt64 ILUnixToCLITime(time_t time);
+
 /* Get platform directory pathname information */
 typedef struct
 {

@@ -2,6 +2,7 @@
  * lib_dir.c - Internalcall methods for the "Platform.DirMethods" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Richard Baumann
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,8 +84,12 @@ ILString *_IL_DirMethods_GetSystemDirectory(ILExecThread *thread)
 ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread *_thread,
 									 ILString *path, ILInt64 *lastac)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	char *cpath;
+	if (!(cpath = ILStringToAnsi(_thread, path)))
+	{
+		return IL_ERRNO_ENOMEM;
+	}
+	return ILSysIOPathGetLastAccess(cpath, lastac);
 }
 
 /*
@@ -93,8 +98,12 @@ ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread *_thread,
 ILInt32 _IL_DirMethods_GetLastModification(ILExecThread *_thread,
 										   ILString *path, ILInt64 *last_mod)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	char *cpath;
+	if (!(cpath = ILStringToAnsi(_thread, path)))
+	{
+		return IL_ERRNO_ENOMEM;
+	}
+	return ILSysIOPathGetLastModification(cpath, last_mod);
 }
 
 /*
@@ -103,8 +112,12 @@ ILInt32 _IL_DirMethods_GetLastModification(ILExecThread *_thread,
 ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread *_thread,
 									   ILString *path, ILInt64 *create_time)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	char *cpath;
+	if (!(cpath = ILStringToAnsi(_thread, path)))
+	{
+		return IL_ERRNO_ENOMEM;
+	}
+	return ILSysIOPathGetCreation(cpath, create_time);
 }
 
 /*

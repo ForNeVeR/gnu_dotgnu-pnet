@@ -245,6 +245,25 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 /* dns.c */
 struct hostent* ILGetHostByName(const char *name);
 struct hostent* ILGetHostByAddr(const void *addr, unsigned int len, int type);
+	
+/*
+ * Obtains the last access time of 'path' and stores that information in 'time'.
+ * Returns 0 on success, errno otherwise.
+ */
+int ILSysIOPathGetLastAccess(const char *path, ILInt64 *time);
+
+/*
+ * Obtains the last modification time of 'path' and stores that information in 'time'.
+ * Returns 0 on success, errno otherwise.
+ */
+int ILSysIOPathGetLastModification(const char *path, ILInt64 *time);
+
+/*
+ * Obtains the creation time of 'path' and stores that information in 'time'.
+ * Returns 0 on success, errno otherwise.
+ */
+int ILSysIOPathGetCreation(const char *path, ILInt64 *time);
+
 
 /* dir.c */
 #ifdef HAVE_DIRENT_H

@@ -1,4 +1,9 @@
 
+2002-10-26  Richard Baumann <biochem333@nyc.rr.com>
+
+	* support/file.c, support/time.c, engine/lib_dir.c, include/il_sysio.h,
+	include/il_system.h: implemented the file/dir get*time icalls.
+
 2002-10-26  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* codegen/cg_misc.tc, cscc/csharp/cs_invoke.tc: Use argument expression

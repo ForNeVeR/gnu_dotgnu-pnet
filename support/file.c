@@ -2,6 +2,8 @@
  * file.c - File-related functions.
  *
  * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Free Software Foundation, Inc.
+ * Copyright (C) 2002  Richard Baumann
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +21,10 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include "il_system.h"
 #include "il_sysio.h"
+#include "il_errno.h"
 #ifdef HAVE_SYS_STAT_H
 	#include <sys/stat.h>
 #endif
@@ -37,7 +41,6 @@
 	#include <windows.h>
 	#include <io.h>
 #endif
-#include <errno.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -358,6 +361,51 @@ int ILSysIOHasAsync(void)
 {
 	/* TODO: asynchronous I/O is not yet supported */
 	return 0;
+}
+
+int ILSysIOPathGetLastAccess(const char *path, ILInt64 *time)
+{
+	int err;
+	struct stat buf;
+	if (!(err = stat(path,&buf)))
+	{
+		*time = ILUnixToCLITime(buf.st_atime);
+	}
+	else
+	{
+		err = ILSysIOGetErrno();
+	}
+	return err;
+}
+
+int ILSysIOPathGetLastModification(const char *path, ILInt64 *time)
+{
+	int err;
+	struct stat buf;
+	if (!(err = stat(path,&buf)))
+	{
+		*time = ILUnixToCLITime(buf.st_mtime);
+	}
+	else
+	{
+		err = ILSysIOGetErrno();
+	}
+	return err;
+}
+
+int ILSysIOPathGetCreation(const char *path, ILInt64 *time)
+{
+	int err;
+	struct stat buf;
+	if (!(err = stat(path,&buf)))
+	{
+		*time = ILUnixToCLITime(buf.st_ctime);
+	}
+	else
+	{
+		err = ILSysIOGetErrno();
+	}
+	return err;
 }
 
 #ifdef	__cplusplus

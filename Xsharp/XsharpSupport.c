@@ -105,7 +105,7 @@ static XFontSet TryCreateFont(Display *dpy, const char *family,
 	char *defStringReturn;
 
 	/* Create a buffer big enough to hold the base XLFD */
-	name = (char *)malloc(strlen(family) + 128);
+	name = (char *)malloc((family ? strlen(family) : 1) + 128);
 	if(!name)
 	{
 		return 0;

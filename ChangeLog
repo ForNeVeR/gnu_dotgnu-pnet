@@ -38,6 +38,9 @@
 
 	* System.Windows.Forms/ControlPaint.cs: Implement the DrawBorder3D
 	method in ControlPaint.
+	
+	* Xsharp/XsharpSupport.c: Fix minor segfault when X fonts are missing
+	families.
 
 2003-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -1,0 +1,132 @@
+#
+# Arg.txt - Resources for argument errors.
+#
+# Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+Arg_MustBeBoolean=Objekt muss vom Typ Boolean sein
+Arg_MustBeByte=Objekt muss vom Typ Byte sein
+Arg_MustBeSByte=Objekt muss vom Typ SByte sein
+Arg_MustBeChar=Objekt muss vom Typ Char sein
+Arg_MustBeInt16=Objekt muss vom Typ Int16 sein
+Arg_MustBeUInt16=Objekt muss vom Typ UInt16 sein
+Arg_MustBeInt32=Objekt muss vom Typ Int32 sein
+Arg_MustBeUInt32=Objekt muss vom Typ UInt32 sein
+Arg_MustBeInt64=Objekt muss vom Typ Int64 sein
+Arg_MustBeUInt64=Objekt muss vom Typ UInt64 sein
+Arg_MustBeDecimal=Objekt muss vom Typ Decimal sein
+Arg_MustBeSingle=Objekt muss vom Typ Single sein
+Arg_MustBeDouble=Objekt muss vom Typ Double sein
+Arg_MustBeCurrency=Objekt muss vom Typ Currency sein
+Arg_MustBeDateTime=Objekt muss vom Typ DateTime sein
+Arg_MustBeTimeSpan=Objekt muss vom Typ TimeSpan sein
+Arg_MustBeString=Objekt muss vom Typ String sein
+Arg_MustBeSameEnum=Enumerated objekte muessen vom selben Typ sein
+Arg_MustBeEnum=Muss vom Typ enumerated sein
+Arg_InvalidEnumValue=Ungueltiger enumerated Wert fuer diesen Typ
+Arg_InvalidEnumName=Ungueltiger enumerated String fuer diesen Typ
+Arg_MustBeResourceSet=Objekt muss vom Typ ResourceSet sein
+Arg_MustBeVersion=Objekt muss vom Typ Version sein
+Arg_MustBeGuid=Objekt muss vom Typ Guid sein
+Arg_InvalidBase=Base muss 2, 8, 10, oder 16 sein
+Arg_UnknownTypeCode=Unbekannter type code
+Arg_InvalidHexStyle=Ungueltiger hexadecimal Nummern Style
+Arg_DecBitCtor=Invalid bit array supplied to Decimal constructor
+Arg_NotNull=Argument kann nicht null sein
+Arg_OutOfRange=Argument ist ausserhalb des Gueltigkeitsbereiches
+Arg_OutOfRangeValue=Argument Wert: {0}
+Arg_DateTimeRange=DateTime Wert ist ausserhalb des Gueltigkeitsbereiches
+Arg_SearchCompare=Werte konnten waehrend des suchens nicht verglichen werden
+Arg_RankMustBe1=Array rank muss 1 sein
+Arg_RankMustBe2=Array rank muss 2 sein
+Arg_RankMustBe3=Array rank muss 3 sein
+Arg_InvalidArrayRange=Array range ist ungueltig
+Arg_MustBeType=Angegebener Wert muss ein gueltiger runtime Typ sein
+Arg_MustHaveOneElement=Array muss mindestens 1 Element haben
+Arg_MistBeSameSize=Die zwei Arrays muessen die selbe Groesse haben
+Arg_MistBeSameRank=Die zwei Arrays muessen die selbe Anzahl Dimensionen haben
+Arg_InvalidArrayIndex=Array index ist ungueltig
+Arg_LowBoundsMustMatch=The lower bounds of the two arrays must match
+Arg_ShortItemsArray=The items array is shorter than the keys array
+Arg_ABMustBeComparable=a or b must implement IComparable
+Arg_CannotReduceCapacity=Kann Array Kapazitaet nicht unter ihre aktuelle Laenge reduzieren
+Arg_NotANumber=Floating-point argument is not a number
+Arg_InsufficientSpace=Ungenuegend Array Speicher fuer Operation
+Arg_EndsWithResources=Der angegebene base name darf nicht in ".resources" enden
+Arg_VersionFields=The specified version field count is invalid
+Arg_GuidArray8=Der Guid byte buffer sollte 8 Elemente haben
+Arg_GuidArray16=Der Guid byte buffer sollte 16 Elemente haben
+Arg_NonPrimitiveArray=Der angegebene Array enthaelt keine primitiven Elemente
+Arg_DelegateMethod=Missing method for delegate creation
+Arg_DelegateMismatch=The specified delegates are not of the same type
+Arg_NotDelegate=The specified type is not a delegate type
+Arg_DelegateSignature=The delegate and method do not have the same signature
+Arg_DelegateAccess=The caller does not have permission to access the delegate method
+Arg_MakeTypedRef=A non-zero list of fields is required to make a typed reference
+Arg_MakeTypedRefFields=The fields for a typed reference must be runtime fields
+Arg_InvalidDimension=Ungueltige Array Dimension
+Arg_ElementTypeMismatch=Array element type mismatch
+Arg_InvalidEra=Invalid era value for calendar method
+Arg_ExistingEntry=Es gibt bereits einen Eintrag mit dem angegebenen Schluessel
+Arg_BitArrayLengths=Die Laenge der zwei bit Arrays sind nicht identisch
+Arg_NotFound=Der angegebene Wert wurde nicht gefunden
+Arg_Value0To99=Der angegebene Wert muss zwischen 0 und 99 inklusive sein
+Arg_Value0To3=Der angegebene Wert muss zwischen 0 und 3 inklusive sein
+Arg_Value0To15=Der angegebene Wert muss zwischen 0 und 15 inklusive sein
+Arg_Value0To4=Der angegebene Wert muss zwischen 0 und 4 inklusive sein
+Arg_Value0To2=Der angegebene Wert muss zwischen 0 und 2 inklusive sein
+Arg_Value0To9=Der angegebene Wert muss zwischen 0 und 9 inklusive sein
+Arg_Value1To9=Der angegebene Wert muss zwischen 1 und 9 inklusive sein
+Arg_Array7Elems=Das angegebene Array muss 7 Elemente haben
+Arg_Array13Elems=Das angegebene Array muss 13 Elemente haben
+Arg_InvalidCalendar=Invalid calendar for the current culture
+Arg_CalendarWeekRule=Invalid calendar week rule value
+Arg_DayOfWeek=Ungueltiger Wochentag Wert
+Arg_InvalidXMLTag=Invalid XML element tag name
+Arg_InvalidXMLText=Invalid XML element text
+Arg_InvalidXMLAttrName=Invalid XML attribute name
+Arg_InvalidXMLAttrValue=Invalid XML attribute value
+Arg_DuplicateXMLAttr=There already exists an XML attribute with the specified name
+Arg_PermissionState=Invalid security permission state value
+Arg_SecurityAction=Invalid security action value
+Arg_PermissionVersion=Incorrect version for permission object
+Arg_InvalidUTF8=Ungueltige UTF8 byte Sequenz
+Arg_WeakRefCollected=Weak reference has already been garbage collected
+Arg_MustBeCoreLib=The specified assembly must be the core library
+Arg_InvalidCulture=Invalid culture name or identifier
+Arg_InvalidRegion=Invalid region name or identifier
+ArgRange_DecimalScale=Dezimal scale Faktor muss zwischen 0 und 28, inklusive sein
+ArgRange_YMD=Jahr, Monat, Tag Angabe ist ausserhalb des gueltigen Bereiches
+ArgRange_HMS=Stunde, Minute, Sekunde Angabe ist ausserhalb des gueltigen Bereiches
+ArgRange_DateTimeTicks=Ticks Wert fuer DateTime ist ausserhalb des gueltigen Bereiches
+ArgRange_TimeSpan=TimeSpan Wert ist ausserhalb des gueltigen Bereiches
+ArgRange_Array=Array Position oder Laenge ist ausserhalb des gueltigen Bereiches
+ArgRange_NonNegative=Wert darf nicht negativ sein
+ArgRange_NonNegOrNegOne=Wert muss positiv sein, 0, oder -1
+ArgRange_StringIndex=String index ist ausserhalb des gueltigen Bereiches
+ArgRange_StringRange=String range ist ausserhalb des gueltigen Bereiches
+ArgRange_RoundDigits=Rounding digit count must be between 0 and 15, inclusive
+ArgRange_MinValueGtMaxValue=minValue ist groesser als maxValue
+ArgRange_StringNonEmpty=String Wert darf nicht leer sein
+ArgRange_MaxStrCapacity=Maximale String Kapazitaet muss 1 oder groesser sein
+ArgRange_StrCapacity=Ungueltige String Kapazitaet
+ArgRange_StrBuilderLength=Invalid string builder length
+ArgRange_Year=Wert fuer Jahr ist ausserhalb des gueltigen Bereiches
+ArgRange_Month=Wert fuer Monat ist ausserhalb des gueltigen Bereiches
+ArgRange_Day=Wert fuer Tag ist ausserhalb des gueltigen Bereiches
+ArgRange_HashLoadFactor=Invalid hash table load factor
+ArgRange_QueueGrowFactor=Invalid growth factor for queues
+ArgRange_GCGeneration=GC Generation ist ausserhalb des gueltigen Bereiches

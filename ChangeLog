@@ -1,4 +1,26 @@
 
+2002-12-11  Gopal.V  <gopalv82@symonds.net>
+
+	* resources/de_DE/I18N/Makefile.am, de_DE/runtime/Makefile.am, 
+	de_DE/Makefile.am,resources/de_DE/System.Xml/Makefile.am, 
+	de_DE/System/Makefile.am: Makefiles for	the German translations 
+	of pnetlib resources.
+
+	* resources/Makefile.am: add the de_DE dir to resource build
+
+2002-12-11  Rainer Groesslinger <rainer.groesslinger@gmx.net>
+
+	* resources/de_DE/I18N/I18NRes.txt, resources/de_DE/runtime/Arg.txt,
+	resources/de_DE/runtime/Cast.txt, resources/de_DE/runtime/Crypto.txt,
+	resources/de_DE/runtime/DivZero.txt, resources/de_DE/runtime/Exception.txt,
+	resources/de_DE/runtime/Format.txt,	resources/de_DE/runtime/Invalid.txt,
+	resources/de_DE/runtime/IO.txt,	resources/de_DE/runtime/Reflection.txt,
+	resources/de_DE/runtime/Overflow.txt, resources/de_DE/runtime/NotSupp.txt,
+	resources/de_DE/runtime/Serialize.txt, resources/de_DE/System/Arg.txt,
+	resources/de_DE/System/Exception.txt, resources/de_DE/System/Invalid.txt,
+	resources/de_DE/System/IO.txt, resources/de_DE/System.Xml/Xml.txt:
+	Partial translation of resources for pnetlib in German (Gopal).
+	
 2002-12-08  Craig Altenburg (Qeygh) <craiga@qonos.org>
 	
 	* System/IO/Path.cs: Update to System.IO.Path (Patch ID: 784),

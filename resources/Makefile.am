@@ -1,1 +1,1 @@
-SUBDIRS = en_US
+SUBDIRS = en_US de_DE

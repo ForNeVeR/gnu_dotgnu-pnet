@@ -499,12 +499,33 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				if(sink != null)
 				{
 					DrawingGraphics g = new DrawingGraphics(toolkit, graphics);
-					System.Drawing.Graphics gr =
-						ToolkitManager.CreateGraphics(g);
-					sink.ToolkitExpose(gr);
-					gr.Dispose();
+					using ( System.Drawing.Graphics gr = ToolkitManager.CreateGraphics(g))
+					{
+						using (Xsharp.Region region = graphics.ExposeRegion)
+						{
+							gr.SetClip( RegionToDrawingRegion(region), CombineMode.Replace);
+						}
+						sink.ToolkitExpose(gr);
+					}
 				}
 			}
+
+	
+	// Convert an Xsharp.Region to System.Drawig.Region
+	private System.Drawing.Region RegionToDrawingRegion( Xsharp.Region region)
+	{
+		Xsharp.Rectangle[] rectangles = region.GetRectangles();
+		System.Drawing.Region newRegion = new System.Drawing.Region();
+		newRegion.MakeEmpty();
+		for (int i = 0; i < rectangles.Length; i++)
+		{
+			Xsharp.Rectangle rect = rectangles[i];
+			newRegion.Union( new System.Drawing.Rectangle(rect.x,
+				rect.y, rect.width, rect.height));
+		}
+		return newRegion;
+	}
+
 
 }; // class DrawingWindow
 

@@ -457,7 +457,7 @@ static void CVMCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 	CVM_WORD(numEntries);
 
 	/* Output the offset of the default case */
-	defCase = 5 + numEntries * 4;
+	defCase = 9 + numEntries * 4;
 	CVM_WORD(defCase);
 }
 

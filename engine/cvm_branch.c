@@ -565,7 +565,7 @@ case COP_SWITCH:
 	if(stacktop[-1].uintValue < IL_READ_UINT32(pc + 1))
 	{
 		/* Jump to a specific case */
-		tempNum = 5 + stacktop[-1].uintValue * 4;
+		tempNum = 9 + stacktop[-1].uintValue * 4;
 		pc += IL_READ_INT32(pc + tempNum);
 	}
 	else

@@ -709,7 +709,7 @@ int ILTypeIsStringClass(ILType *type)
 	if(ILType_IsClass(type))
 	{
 		/* Check the name against "System.String" */
-		info = ILType_ToClass(type);
+		info = ILClassResolve(ILType_ToClass(type));
 		if(!strcmp(info->name, "String") &&
 		   info->namespace && !strcmp(info->namespace, "System"))
 		{
@@ -734,7 +734,7 @@ int ILTypeIsObjectClass(ILType *type)
 	if(ILType_IsClass(type))
 	{
 		/* Check the name against "System.String" */
-		info = ILType_ToClass(type);
+		info = ILClassResolve(ILType_ToClass(type));
 		if(!strcmp(info->name, "Object") &&
 		   info->namespace && !strcmp(info->namespace, "System"))
 		{

@@ -16,6 +16,10 @@
 	* codegen/cg_cast.tc, codegen/jv_cast.tc: implement the "String"
 	to "Object" cast as a NOP.
 
+	* image/types.c (ILTypeIsStringClass, ILTypeIsObjectClass):
+	resolve the class type before testing it, to handle cross-image
+	links correctly.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values

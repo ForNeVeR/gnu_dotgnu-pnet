@@ -229,9 +229,11 @@ fi
 AC_OUTPUT([
 Makefile
 include/Makefile
+include/arpa/Makefile
 include/assembly/Makefile
 include/bits/Makefile
 include/gnu/Makefile
+include/netinet/Makefile
 include/sys/Makefile
 libc/Makefile
 libc/ctype/Makefile
@@ -242,6 +244,7 @@ libc/misc/Makefile
 libc/pthread/Makefile
 libc/pwd/Makefile
 libc/signal/Makefile
+libc/socket/Makefile
 libc/stdio/Makefile
 libc/stdlib/Makefile
 libc/string/Makefile

@@ -15,6 +15,18 @@
 	System.dll and DotGNU.SSL.dll to the compiler command-lines,
 	so that we can import the C# socket classes.
 
+	* configure.in, include/Makefile.am, include/arpa/.cvsignore,
+	include/arpa/Makefile.am, include/arpa/inet.h,
+	include/bits/Makefile.am, include/bits/in.h,
+	include/bits/sockaddr.h, include/bits/socket.h,
+	include/bits/uio.h, include/netinet/.cvsignore,
+	include/netinet/Makefile.am, include/netinet/in.h,
+	include/sys/Makefile.am, include/sys/socket.h,
+	include/sys/types.h, include/sys/uio.h, libc/Makefile.am,
+	libc/socket/.cvsignore, libc/socket/Makefile.am, libc/socket/ntoh.c,
+	libc/socket/socket-glue.cs, libc/socket/socket.c:
+	add headers and scaffolding for the socket functions.
+
 2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/inttypes.h, include/limits.h, include/stdint.h,

@@ -71,6 +71,7 @@ typedef int                 register_t;
 typedef quad_t              __rlim_t, rlim_t, __rlim64_t;
 typedef quad_t              __segsz_t, segsz_t;
 typedef unsigned int        __size_t;
+typedef unsigned int		__socklen_t;
 typedef int                 __ssize_t;
 typedef long                __swblk_t, swblk_t;
 typedef long                __time_t;

@@ -1,5 +1,5 @@
 
-SUBDIRS = . assembly bits gnu sys
+SUBDIRS = . arpa assembly bits gnu netinet sys
 
 libincludedir      = $(datadir)/cscc/include
 libinclude_HEADERS = \

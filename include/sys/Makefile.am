@@ -5,7 +5,9 @@ libinclude_HEADERS = cdefs.h \
 					 mman.h \
 					 param.h \
 					 select.h \
+					 socket.h \
 					 stat.h \
 					 sysmacros.h \
 					 time.h \
-					 types.h
+					 types.h \
+					 uio.h

@@ -7,6 +7,7 @@ SUBDIRS = ctype \
 		  pthread \
 		  pwd \
 		  signal \
+		  socket \
 		  stdio \
 		  stdlib \
 		  string \
@@ -23,6 +24,7 @@ LIBC_COMPONENTS = ctype/libCType.a \
 				  pthread/libCPthread.a \
 				  pwd/libCPwd.a \
 				  signal/libCSignal.a \
+				  socket/libCSocket.a \
 				  stdio/libCStdio.a \
 				  stdlib/libCStdlib.a \
 				  string/libCString.a \
@@ -30,7 +32,7 @@ LIBC_COMPONENTS = ctype/libCType.a \
 				  unistd/libCUnistd.a
 
 libc.dll: $(LIBC_COMPONENTS)
-	$(LINK) $(LIBC_COMPONENTS)
+	$(LINK) $(LIBC_COMPONENTS) -lSystem
 
 CLEANFILES = libc.dll
 

@@ -9,6 +9,10 @@
 	convert Win32 paths using Cygwin functions, to ensure that the
 	correct filenames are passed to "csc".
 
+	* codegen/cg_resolve.c, cscc/csharp/cs_stmt.tc: scan the parents
+	of interface classes in "foreach"; make "foreach" robust against
+	failure of property/method resolution.
+
 2002-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc (ILNode_EndsInReturnImpl): flow control issue

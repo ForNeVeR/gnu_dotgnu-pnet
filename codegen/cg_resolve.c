@@ -126,7 +126,27 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 		}
 
 		/* Move up to the parent class */
-		classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
+		if(ILClass_IsInterface(classInfo) && !dontInherit)
+		{
+			/* Scan the parents of this interface */
+			ILImplements *impl = 0;
+			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+			{
+				method = ResolveMethod(info, ILImplementsGetInterface(impl),
+									   callScope, name, args, numArgs,
+									   returnType, attrs, normalOrVirtual,
+									   dontInherit);
+				if(method)
+				{
+					return method;
+				}
+			}
+			classInfo = 0;
+		}
+		else
+		{
+			classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
+		}
 	}
 
 	/* Return the closest match if we didn't find an exact match */
@@ -209,8 +229,9 @@ ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
 					     IL_META_METHODDEF_SPECIAL_NAME, 0, 0);
 }
 
-#define  PROPERTY_TYPE_ATTRS (IL_META_PROPDEF_SPECIAL_NAME \
-				| IL_META_PROPDEF_RT_SPECIAL_NAME)
+#define  PROPERTY_TYPE_ATTRS (IL_META_PROPDEF_SPECIAL_NAME | \
+							  IL_META_PROPDEF_RT_SPECIAL_NAME)
+
 /*
  * Internal worker function for locating Properties.
  */
@@ -255,7 +276,26 @@ static ILProperty *ResolveProperty(ILGenInfo *info, ILClass *classInfo,
 			return property;
 		}
 		/* Move up to the parent class */
-		classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
+		if(ILClass_IsInterface(classInfo) && !dontInherit)
+		{
+			/* Scan the parents of this interface */
+			ILImplements *impl = 0;
+			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+			{
+				property = ResolveProperty(info, ILImplementsGetInterface(impl),
+										   callScope, name, type, attrs,
+										   dontInherit);
+				if(property)
+				{
+					return property;
+				}
+			}
+			classInfo = 0;
+		}
+		else
+		{
+			classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
+		}
 	}
 
 	/* Error !, not found*/

@@ -233,6 +233,7 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	ILType *type;
 //ForeachCollection
 	ILMethod *getEnumerator=NULL;
+	ILProperty *property=NULL;
 	ILMethod *getCurrent=NULL;
 	ILMethod *moveNext=NULL;
 	ILType * const args[1]={ILType_Void};
@@ -348,12 +349,11 @@ ILNode_SemAnalysis(ILNode_Foreach)
 		else
 		{
 			enumerator=ILTypeGetReturn(ILMethod_Signature(getEnumerator));
-			getCurrent=ILProperty_Getter(
-						ILResolveProperty(info,
+			property=ILResolveProperty(info,
 							ILType_ToClass(enumerator),
 							GetDefaultScope(info),
-							"Current")
-						);
+							"Current");
+			getCurrent=(property ? ILProperty_Getter(property) : 0);
 			moveNext=ILResolveInstanceMethod(info,
 						ILType_ToClass(enumerator),
 						GetDefaultScope(info),
@@ -371,6 +371,11 @@ ILNode_SemAnalysis(ILNode_Foreach)
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "Cannot locate MoveNext() in '%s'",
 					  CSTypeToName(enumerator));
+			}
+			if(!getCurrent || !moveNext)
+			{
+				/* Bail out if we have insufficient interface support */
+				return CSSemValueDefault;
 			}
 			
 			retType=ILTypeGetReturn(ILMethod_Signature(getCurrent));

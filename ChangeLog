@@ -11,6 +11,9 @@
 
 	* I18N/*: make the DateTime patterns accessible to ECMA builds.
 
+	* maintain.xml: remove maintain.xml because it is hopelessly
+	out of date and no longer actively used.
+
 2003-06-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlConvert.cs: implement "ToGuid" and "ToString(Guid)"

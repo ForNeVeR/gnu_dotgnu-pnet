@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 internal class TimeMethods
 {
 
-	// Get the time in microseconds since 12:00am 1 Jan 0001.
+	// Get the time in tenths of a microsecond since 12:00am 1 Jan 0001.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static long GetCurrentTime();
 

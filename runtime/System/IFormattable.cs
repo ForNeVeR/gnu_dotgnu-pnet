@@ -24,7 +24,7 @@ namespace System
 public interface IFormattable
 {
 
-	String Format(String format, IServiceObjectProvider isop);
+	String ToString(String format, IFormatProvider provider);
 
 }; // interface IFormattable
 

@@ -40,6 +40,22 @@ internal class TaskMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String[] GetCommandLineArgs();
 
+	// Get the value of an environment variable.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetEnvironmentVariable(String variable);
+
+	// Get the number of environment variables.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int GetEnvironmentCount();
+
+	// Get the key for a numbered environment variable.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetEnvironmentKey(int posn);
+
+	// Get the value for a numbered environment variable.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetEnvironmentValue(int posn);
+
 }; // class TaskMethods
 
 }; // namespace Platform

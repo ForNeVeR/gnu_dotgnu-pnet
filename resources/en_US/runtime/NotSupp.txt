@@ -19,3 +19,4 @@
 #
 NotSupp_FixedSizeCollection=Operation not supported on fixed sized objects
 NotSupp_ReadOnly=Operation not supported on read-only objects
+NotSupp_NotArrayType=Type is not an array type

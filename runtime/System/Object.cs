@@ -51,6 +51,12 @@ public class Object
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern protected Object MemberwiseClone();
 
+	// Determine if two object references are equal.
+	public static bool ReferenceEquals(Object objA, Object objB)
+			{
+				return (objA == objB);
+			}
+
 	// Helper methods that are used in runtime engine callbacks.
 	private void FieldSetter(FieldInfo field, Object obj)
 	{

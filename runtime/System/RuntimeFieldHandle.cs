@@ -22,8 +22,20 @@
 namespace System
 {
 
-public struct RuntimeFieldHandle /*: ISerializable*/
+public struct RuntimeFieldHandle
 {
+	// Internal state.
+	private IntPtr value__;
+
+	// Properties.
+	public IntPtr Value
+			{
+				get
+				{
+					return value__;
+				}
+			}
+
 }; // class RuntimeFieldHandle
 
 }; // namespace System

@@ -30,7 +30,6 @@ public struct SByte : IComparable, IFormattable, IConvertible
 
 	public const sbyte MaxValue = 127;
 	public const sbyte MinValue = -128;
-	public const sbyte Empty    = 0;
 
 	// Override inherited methods.
 	public override int GetHashCode()
@@ -51,55 +50,47 @@ public struct SByte : IComparable, IFormattable, IConvertible
 
 	// String conversion.
 	public override String ToString()
-			{ return Format(value__, null, NumberFormatInfo.InvariantInfo); }
-	public static String ToString(sbyte value)
-			{ return Format(value, null, NumberFormatInfo.InvariantInfo); }
-
-	// Formatting methods.
-	public static String Format(sbyte value, String format,
-								NumberFormatInfo nfi)
+			{
+				return ToString(null, null);
+			}
+	public String ToString(String format)
+			{
+				return ToString(format, null);
+			}
+	public String ToString(String format, IFormatProvider provider)
 			{
 				unchecked
 				{
-					if(value >= 0)
+					if(value__ >= 0)
 					{
 						return NumberFormatter.FormatFixedPoint
-									((ulong)value, 0, 0, false, format, nfi);
+									((ulong)value__, 0, 0, false, format,
+									 NumberFormatInfo.GetInstance(provider));
 					}
 					else
 					{
 						return NumberFormatter.FormatFixedPoint
-									((ulong)(-((int)value)), 0, 0,
-									 true, format, nfi);
+									((ulong)(-value__), 0, 0, true, format,
+									 NumberFormatInfo.GetInstance(provider));
 					}
 				}
 			}
-	public String Format(String format, IServiceObjectProvider isop)
-			{
-				return Format(value__, format,
-							  NumberFormatInfo.GetInstance(isop));
-			}
-	public static String Format(sbyte value, String format)
-			{
-				return Format(value, format, null);
-			}
 
 	// Parsing methods.
-	public static sbyte FromString(String s)
-			{
-				return Parse(s, NumberStyles.Integer,
-							 NumberFormatInfo.InvariantInfo);
-			}
 	public static sbyte Parse(String s, NumberStyles style,
-							  NumberFormatInfo nfi)
+							  IFormatProvider provider)
 			{
 				NumberParser.ValidateIntegerStyle(style);
 				return Convert.ToSByte(NumberParser.ParseInt32
-										(s, style, nfi, 128));
+					(s, style, NumberFormatInfo.GetInstance(provider), 128));
 			}
 	public static sbyte Parse(String s)
 			{
 				return Parse(s, NumberStyles.Integer, null);
+			}
+	public static sbyte Parse(String s, IFormatProvider provider)
+			{
+				return Parse(s, NumberStyles.Integer, provider);
 			}
 	public static sbyte Parse(String s, NumberStyles style)
 			{
@@ -124,28 +115,77 @@ public struct SByte : IComparable, IFormattable, IConvertible
 				}
 			}
 
-	// Implementation of IConvertible interface.
-	public TypeCode GetTypeCode() { return TypeCode.SByte; }
-	public Object ToType(Type ct) { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()     { return Convert.ToBoolean(value__); }
-	public Byte ToByte()           { return Convert.ToByte(value__); }
-	public SByte ToSByte()         { return value__; }
-	public Int16 ToInt16()         { return Convert.ToInt16(value__); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(value__); }
-	public Int32 ToInt32()         { return Convert.ToInt32(value__); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(value__); }
-	public Int64 ToInt64()         { return Convert.ToInt64(value__); }
-	public UInt64 ToUInt64()       { return Convert.ToUInt64(value__); }
-	public Char ToChar()           { return Convert.ToChar(value__); }
-	public Single ToSingle()       { return Convert.ToSingle(value__); }
-	public Double ToDouble()       { return Convert.ToDouble(value__); }
-	public Decimal ToDecimal()     { return Convert.ToDecimal(value__); }
-	public DateTime ToDateTime()
+	// Implementation of the IConvertible interface.
+	public TypeCode GetTypeCode()
+			{
+				return TypeCode.SByte;
+			}
+	bool IConvertible.ToBoolean(IFormatProvider provider)
+			{
+				return Convert.ToBoolean(value__);
+			}
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(value__);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return value__;
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(value__);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(value__);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
+			{
+				return Convert.ToChar(value__);
+			}
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(value__);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(value__);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(value__);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(value__);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
+			{
+				return Convert.ToSingle(value__);
+			}
+	double IConvertible.ToDouble(IFormatProvider provider)
+			{
+				return Convert.ToDouble(value__);
+			}
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
+			{
+				return Convert.ToDecimal(value__);
+			}
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 		 			     "SByte", "DateTime"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
 			}
 
 }; // class SByte

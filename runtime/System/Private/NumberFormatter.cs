@@ -188,7 +188,7 @@ internal sealed class NumberFormatter
 	public static String FormatFixedPoint(ulong value, ulong decimals,
 									      int numDecimals, bool isneg,
 									      String format,
-									      IServiceObjectProvider isop)
+									      NumberFormatInfo nfi)
 	{
 		// Sanity check the format value.
 		if(format == null || format.Equals(""))
@@ -197,7 +197,7 @@ internal sealed class NumberFormatter
 		}
 
 		// Get the basic number formatting information.
-		NumberFormatInfo nfi = NumberFormatInfo.GetInstance(isop);
+		nfi = NumberFormatInfo.GetInstance(nfi);
 		int decimalDigits;
 		String decimalSeparator;
 		int[] groupSize;
@@ -278,7 +278,7 @@ internal sealed class NumberFormatter
 	}
 
 	// Format an integer in base 10.
-	public static String FormatBase10(ulong value, bool isneg)
+	private static String FormatBase10(ulong value, bool isneg)
 	{
 		String basic;
 		if(value == 0)
@@ -290,7 +290,7 @@ internal sealed class NumberFormatter
 			basic = "";
 			while(value != 0)
 			{
-				basic = ((char)((value % 10) + 48)) + basic;
+				basic = ((char)((value % 10) + (int)'0')) + basic;
 				value /= 10;
 			}
 		}
@@ -323,6 +323,90 @@ internal sealed class NumberFormatter
 									  NumberFormatInfo nfi)
 	{
 		return "";
+	}
+
+	// Format a number in a specific base.
+	public static String FormatInBase(long value, int toBase, int numBits)
+	{
+		char[] buf;
+		int posn;
+		int digit;
+		if(toBase == 2)
+		{
+			buf = new char[numBits];
+			posn = numBits - 1;
+			while(posn >= 0)
+			{
+				if((value & 1) != 0)
+				{
+					buf[posn--] = '1';
+				}
+				else
+				{
+					buf[posn--] = '0';
+				}
+				value >>= 1;
+			}
+		}
+		else if(toBase == 8)
+		{
+			buf = new char[(numBits + 2) / 3];
+			posn = ((numBits + 2) / 3) - 1;
+			while(posn >= 0)
+			{
+				buf[posn--] = unchecked((char)((value % 8) + (long)'0'));
+				value >>= 3;
+			}
+		}
+		else if(toBase == 10)
+		{
+			if(value < 0)
+			{
+				return FormatBase10(unchecked((ulong)(-value)), true);
+			}
+			else
+			{
+				return FormatBase10(unchecked((ulong)value), false);
+			}
+		}
+		else if(toBase == 16)
+		{
+			buf = new char[numBits / 4];
+			posn = (numBits / 4) - 1;
+			while(posn >= 0)
+			{
+				digit = unchecked((int)(value % 16));
+				if(digit < 10)
+				{
+					buf[posn--] = unchecked((char)(digit + (int)'0'));
+				}
+				else
+				{
+					buf[posn--] = unchecked((char)(digit - 10 + (int)'A'));
+				}
+				value >>= 4;
+			}
+		}
+		else
+		{
+			throw new ArgumentException
+				(Environment.GetResourceString("Arg_InvalidBase"));
+		}
+		return new String(buf);
+	}
+
+	// Format an unsigned number in a specific base.
+	public static String FormatInBaseUnsigned(ulong value, int toBase,
+											  int numBits)
+	{
+		if(toBase != 10)
+		{
+			return FormatInBase(unchecked((long)value), toBase, numBits);
+		}
+		else
+		{
+			return FormatBase10(value, false);
+		}
 	}
 
 }; // class NumberFormatter

@@ -66,9 +66,21 @@ public struct Single : IComparable, IFormattable, IConvertible
 					return false;
 				}
 			}
+
+	// String conversion.
 	public override String ToString()
 			{
-				return Format(value__, null, NumberFormatInfo.InvariantInfo);
+				return ToString(null, null);
+			}
+	public String ToString(String format)
+			{
+				return ToString(format, null);
+			}
+	public String ToString(String format, IFormatProvider provider)
+			{
+				return NumberFormatter.FormatSingle
+						(value__, format,
+						 NumberFormatInfo.GetInstance(provider));
 			}
 
 	// Value testing methods.
@@ -82,16 +94,10 @@ public struct Single : IComparable, IFormattable, IConvertible
 				{ return (IsInfinity(f) && f < 0.0); }
 
 	// Parsing methods.
-	public static float FromString(String s)
-			{ return Parse(s, NumberStyles.Float,
-						   NumberFormatInfo.InvariantInfo); }
 	public static float Parse(String s, NumberStyles style,
-							  NumberFormatInfo nfi)
+							  IFormatProvider provider)
 			{
-				if(nfi == null)
-				{
-					nfi = NumberFormatInfo.CurrentInfo;
-				}
+				NumberFormatInfo nfi = NumberFormatInfo.GetInstance(provider);
 				try
 				{
 					return NumberParser.ParseSingle(s, style, nfi);
@@ -115,10 +121,19 @@ public struct Single : IComparable, IFormattable, IConvertible
 				}
 			}
 	public static float Parse(String s)
-			{ return Parse(s, NumberStyles.Float |
-							  NumberStyles.AllowThousands, null); }
+			{
+				return Parse(s, NumberStyles.Float |
+							 NumberStyles.AllowThousands, null);
+		 	}
+	public static float Parse(String s, IFormatProvider provider)
+			{
+				return Parse(s, NumberStyles.Float |
+							 NumberStyles.AllowThousands, provider);
+		 	}
 	public static float Parse(String s, NumberStyles style)
-			{ return Parse(s, style, null); }
+			{
+				return Parse(s, style, null);
+			}
 
 	// Implementation of the IComparable interface.
 	public int CompareTo(Object value)
@@ -169,54 +184,80 @@ public struct Single : IComparable, IFormattable, IConvertible
 				}
 			}
 
-	// Implementation of the IFormattable interface.
-	public String Format(String format, IServiceObjectProvider isop)
+	// Implementation of the IConvertible interface.
+	public TypeCode GetTypeCode()
 			{
-				return NumberFormatter.FormatSingle
-						(value__, format,
-						 NumberFormatInfo.GetInstance(isop));
+				return TypeCode.Single;
 			}
-
-	// Other formatting methods.
-	public static String ToString(float value)
-			{ return Format(value, null, NumberFormatInfo.InvariantInfo); }
-	public static String Format(float value, String format)
-			{ return Format(value, format, null); }
-	public static String Format(float value, String format,
-								NumberFormatInfo nfi)
+	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				return NumberFormatter.FormatSingle
-						(value, format, NumberFormatInfo.GetInstance(nfi));
+				return Convert.ToBoolean(value__);
 			}
-
-	// Implementation of IConvertible interface.
-	public TypeCode GetTypeCode() { return TypeCode.Single; }
-	public Object ToType(Type ct) { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()     { return Convert.ToBoolean(value__); }
-	public Byte ToByte()           { return Convert.ToByte(value__); }
-	public SByte ToSByte()         { return Convert.ToSByte(value__); }
-	public Int16 ToInt16()         { return Convert.ToInt16(value__); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(value__); }
-	public Int32 ToInt32()         { return Convert.ToInt32(value__); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(value__); }
-	public Int64 ToInt64()         { return Convert.ToInt64(value__); }
-	public UInt64 ToUInt64()       { return Convert.ToUInt64(value__); }
-	public Char ToChar()
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(value__);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return Convert.ToSByte(value__);
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(value__);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(value__);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 		 			     "Single", "Char"));
 			}
-	public Single ToSingle()       { return value__; }
-	public Double ToDouble()       { return Convert.ToDouble(value__); }
-	public Decimal ToDecimal()     { return Convert.ToDecimal(value__); }
-	public DateTime ToDateTime()
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(value__);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(value__);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(value__);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(value__);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
+			{
+				return value__;
+			}
+	double IConvertible.ToDouble(IFormatProvider provider)
+			{
+				return Convert.ToDouble(value__);
+			}
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
+			{
+				return Convert.ToDecimal(value__);
+			}
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 		 			     "Single", "DateTime"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
 			}
 
 }; // class Single

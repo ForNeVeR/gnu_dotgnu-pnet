@@ -22,10 +22,35 @@
 namespace System
 {
 
+[AttributeUsage(AttributeTargets.All)]
 public class ObsoleteAttribute : Attribute
 {
 
-// TO DO
+	// Internal state.
+	private String message;
+	private bool   isError;
+
+	// Constructors.
+	public ObsoleteAttribute() { message = null; isError = false; }
+	public ObsoleteAttribute(String msg) { message = msg; isError = false; }
+	public ObsoleteAttribute(String msg, bool err)
+			{ message = msg; isError = err; }
+
+	// Properties.
+	public bool IsError
+			{
+				get
+				{
+					return isError;
+				}
+			}
+	public String Message
+			{
+				get
+				{
+					return message;
+				}
+			}
 
 }; // class ObsoleteAttribute
 

@@ -21,7 +21,7 @@
 namespace System.Globalization
 {
 
-public class CultureInfo : IServiceObjectProvider
+public class CultureInfo : IFormatProvider
 {
 
 // TODO
@@ -53,10 +53,10 @@ public class CultureInfo : IServiceObjectProvider
 				}
 			}
 
-	// Implementation of the IServiceObjectProvider interface.
-	public Object GetServiceObject(Type service)
+	// Implementation of the IFormatProvider interface.
+	public Object GetFormat(Type formatType)
 	{
-		if(service == typeof(System.Globalization.CultureInfo))
+		if(formatType == typeof(System.Globalization.CultureInfo))
 		{
 			return this;
 		}

@@ -34,6 +34,7 @@ Arg_MustBeCurrency=Object must be of type Currency
 Arg_MustBeDateTime=Object must be of type DateTime
 Arg_MustBeTimeSpan=Object must be of type TimeSpan
 Arg_MustBeString=Object must be of type String
+Arg_MustBeSameEnum=Enumerated objects must be of the same type
 Arg_InvalidBase=Base must be 2, 8, 10, or 16
 Arg_UnknownTypeCode=Unknown type code
 Arg_InvalidHexStyle=Invalid hexadecimal number style

@@ -289,10 +289,9 @@ internal sealed class NumberParser
 
 	// Parse integer values using localized number format information.
 	private static bool ParseNumber(String s, NumberStyles style,
-									IServiceObjectProvider isop,
+									NumberFormatInfo nfi,
 									out ulong result, out bool sign)
 	{
-		NumberFormatInfo nfi;
 		int posn, len;
 		char ch;
 		uint digit, low, high;
@@ -306,7 +305,7 @@ internal sealed class NumberParser
 		}
 
 		// Get the number format information to use.
-		nfi = NumberFormatInfo.GetInstance(isop);
+		nfi = NumberFormatInfo.GetInstance(nfi);
 		String posSign = nfi.PositiveSign;
 		String negSign = nfi.NegativeSign;
 		String currency = nfi.CurrencySymbol;
@@ -582,14 +581,14 @@ internal sealed class NumberParser
 	}
 
 	public static int ParseInt32(String s, NumberStyles style,
-								 IServiceObjectProvider isop,
+								 NumberFormatInfo nfi,
 								 int ovfValue)
 	{
 		ulong result;
 		bool sign;
 
 		// Parse the number.
-		if(ParseNumber(s, style, isop, out result, out sign))
+		if(ParseNumber(s, style, nfi, out result, out sign))
 		{
 			if(!sign)
 			{
@@ -622,14 +621,14 @@ internal sealed class NumberParser
 	}
 
 	public static uint ParseUInt32(String s, NumberStyles style,
-								   IServiceObjectProvider isop,
+								   NumberFormatInfo nfi,
 								   uint ovfValue)
 	{
 		ulong result;
 		bool sign;
 
 		// Parse the number.
-		if(ParseNumber(s, style, isop, out result, out sign))
+		if(ParseNumber(s, style, nfi, out result, out sign))
 		{
 			if(!sign)
 			{
@@ -655,13 +654,13 @@ internal sealed class NumberParser
 	}
 
 	public static long ParseInt64(String s, NumberStyles style,
-								  IServiceObjectProvider isop)
+								  NumberFormatInfo nfi)
 	{
 		ulong result;
 		bool sign;
 
 		// Parse the number.
-		if(ParseNumber(s, style, isop, out result, out sign))
+		if(ParseNumber(s, style, nfi, out result, out sign))
 		{
 			if(!sign)
 			{
@@ -685,14 +684,14 @@ internal sealed class NumberParser
 	}
 
 	public static ulong ParseUInt64(String s, NumberStyles style,
-								    IServiceObjectProvider isop,
+								    NumberFormatInfo nfi,
 								    ulong ovfValue)
 	{
 		ulong result;
 		bool sign;
 
 		// Parse the number.
-		if(ParseNumber(s, style, isop, out result, out sign))
+		if(ParseNumber(s, style, nfi, out result, out sign))
 		{
 			if(!sign)
 			{
@@ -706,19 +705,19 @@ internal sealed class NumberParser
 	}
 
 	public static Decimal ParseDecimal(String s, NumberStyles style,
-								       IServiceObjectProvider isop)
+								       NumberFormatInfo nfi)
 	{
 		return 0.0m;
 	}
 
 	public static float ParseSingle(String s, NumberStyles style,
-								    IServiceObjectProvider isop)
+								    NumberFormatInfo nfi)
 	{
 		return 0.0f;
 	}
 
 	public static double ParseDouble(String s, NumberStyles style,
-								     IServiceObjectProvider isop)
+								     NumberFormatInfo nfi)
 	{
 		return 0.0d;
 	}

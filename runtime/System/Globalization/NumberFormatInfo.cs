@@ -24,7 +24,7 @@ namespace System.Globalization
 
 using System;
 
-public class NumberFormatInfo : Object, ICloneable, IServiceObjectProvider
+public class NumberFormatInfo : Object, ICloneable, IFormatProvider
 {
 	// Internal state.
 	private static NumberFormatInfo invariantInfo;
@@ -768,10 +768,10 @@ public class NumberFormatInfo : Object, ICloneable, IServiceObjectProvider
 	// Implementation of the ICloneable interface.
 	public Object Clone() { return MemberwiseClone(); }
 
-	// Implementation of the IServiceObjectProvider interface.
-	public Object GetServiceObject(Type service)
+	// Implementation of the IFormatProvider interface.
+	public Object GetFormat(Type formatType)
 	{
-		if(service == typeof(System.Globalization.NumberFormatInfo))
+		if(formatType == typeof(System.Globalization.NumberFormatInfo))
 		{
 			return this;
 		}
@@ -781,12 +781,13 @@ public class NumberFormatInfo : Object, ICloneable, IServiceObjectProvider
 		}
 	}
 
-	// Get the number format information associated with "isop".
-	public static NumberFormatInfo GetInstance(IServiceObjectProvider isop)
+	// Get the number format information associated with "provider".
+	public static NumberFormatInfo GetInstance(IFormatProvider provider)
 	{
-		if(isop != null)
+		if(provider != null)
 		{
-			Object obj = isop.GetServiceObject(typeof(System.Globalization.NumberFormatInfo));
+			Object obj = provider.GetFormat
+					(typeof(System.Globalization.NumberFormatInfo));
 			if(obj != null)
 			{
 				return (NumberFormatInfo)obj;

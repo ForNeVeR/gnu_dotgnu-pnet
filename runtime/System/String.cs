@@ -1039,23 +1039,75 @@ public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable
 				}
 			}
 
-	// Implementation of IConvertible interface.
-	public TypeCode GetTypeCode()  { return TypeCode.String; }
-	public Object ToType(Type ct)  { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()     { return Convert.ToBoolean(this); }
-	public Byte ToByte()           { return Convert.ToByte(this); }
-	public SByte ToSByte()         { return Convert.ToSByte(this); }
-	public Int16 ToInt16()         { return Convert.ToInt16(this); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(this); }
-	public Int32 ToInt32()         { return Convert.ToInt32(this); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(this); }
-	public Int64 ToInt64()         { return Convert.ToInt64(this); }
-	public UInt64 ToUInt64()       { return Convert.ToUInt64(this); }
-	public Char ToChar()           { return Convert.ToChar(this); }
-	public Single ToSingle()       { return Convert.ToSingle(this); }
-	public Double ToDouble()       { return Convert.ToDouble(this); }
-	public Decimal ToDecimal()     { return Convert.ToDecimal(this); }
-	public DateTime ToDateTime()   { return Convert.ToDateTime(this); }
+	// Implementation of the IConvertible interface.
+	public TypeCode GetTypeCode()
+			{
+				return TypeCode.String;
+			}
+	bool IConvertible.ToBoolean(IFormatProvider provider)
+			{
+				return Convert.ToBoolean(this);
+			}
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(this);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return Convert.ToSByte(this);
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(this);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(this);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
+			{
+				return Convert.ToChar(this);
+			}
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(this);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(this);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(this);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(this);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
+			{
+				return Convert.ToSingle(this);
+			}
+	double IConvertible.ToDouble(IFormatProvider provider)
+			{
+				return Convert.ToDouble(this);
+			}
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
+			{
+				return Convert.ToDecimal(this);
+			}
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
+			{
+				return Convert.ToDateTime(this);
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString();
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
+			}
 
 }; // class String
 

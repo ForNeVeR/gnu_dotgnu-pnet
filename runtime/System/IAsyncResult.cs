@@ -26,7 +26,6 @@ using System.Threading;
 public interface IAsyncResult
 {
 
-	Object AsyncObject { get; }
 	Object AsyncState { get; }
 	WaitHandle AsyncWaitHandle { get; }
 	bool CompletedSynchronously { get; }

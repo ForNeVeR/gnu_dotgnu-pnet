@@ -21,12 +21,19 @@
 namespace System
 {
 
-using System.Runtime.Serialization;
-
-public struct RuntimeTypeHandle /*: ISerializable*/
+public struct RuntimeTypeHandle
 {
+	// Internal state.
+	private IntPtr value__;
 
-// TODO
+	// Properties.
+	public IntPtr Value
+			{
+				get
+				{
+					return value__;
+				}
+			}
 
 }; // class RuntimeTypeHandle
 

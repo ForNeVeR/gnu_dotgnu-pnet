@@ -21,10 +21,10 @@
 namespace System
 {
 
-public class MarshalByRefObject
+public abstract class MarshalByRefObject
 {
 
-// TO DO
+// ECMA does not specify any members for this type.
 
 }; // class MarshalByRefObject
 

@@ -21,10 +21,13 @@
 namespace System.Reflection
 {
 
-public class MemberInfo
+public abstract class MemberInfo
 {
+// TODO
 
-// TO DO
+	public abstract Type DeclaringType { get; }
+	public abstract Type ReflectedType { get; }
+	public abstract String Name { get; }
 
 }; // class MemberInfo
 

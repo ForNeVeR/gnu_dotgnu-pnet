@@ -27,18 +27,37 @@ using Platform;
 
 public struct IntPtr
 {
+	// Public constants.
+	public static readonly IntPtr Zero = new IntPtr(0);
+
+	// Internal state.
 	unsafe private void *value__;
 
 	// Constructors.
 	unsafe public IntPtr(int value)
-			{ value__ = (void *)value; }
+			{
+				value__ = (void *)value;
+			}
 	unsafe public IntPtr(long value)
-			{ value__ = (void *)value; }
+			{
+				if(Size == 4 &&
+				   (value < ((long)(Int32.MinValue)) ||
+				    value > ((long)(Int32.MaxValue))))
+				{
+					throw new OverflowException
+						(Environment.GetResourceString("Overflow_Pointer"));
+				}
+				value__ = (void *)value;
+			}
+	unsafe public IntPtr(void *value)
+			{
+				value__ = value;
+			}
 
 	// Override inherited methods.
 	unsafe public override int GetHashCode()
 			{
-				return unchecked(((int)value__) & 0x7FFFFFFF);
+				return unchecked((int)value__);
 			}
 	unsafe public override bool Equals(Object value)
 			{
@@ -52,15 +71,47 @@ public struct IntPtr
 				}
 			}
 
+	// Numeric conversion.
+	unsafe public int ToInt32()
+			{
+				long ptr = (long)value__;
+				if(ptr >= (long)(Int32.MinValue) &&
+				   ptr <= (long)(Int32.MaxValue))
+				{
+					return unchecked((int)ptr);
+				}
+				else
+				{
+					throw new OverflowException
+						(Environment.GetResourceString("Overflow_Pointer"));
+				}
+			}
+	unsafe public long ToInt64()
+			{
+				return (long)value__;
+			}
+
+	// Get the pointer within this object.
+	unsafe public void *ToPointer()
+			{
+				return value__;
+			}
+
 	// String conversion.
 	unsafe public override String ToString()
 			{
-				return Int32.Format((int)value__, null,
-									NumberFormatInfo.InvariantInfo);
+				if(Size == 4)
+				{
+					return ((int)value__).ToString();
+				}
+				else
+				{
+					return ((long)value__).ToString();
+				}
 			}
 
 	// Properties.
-	public int Size
+	public static int Size
 			{
 				get
 				{
@@ -70,18 +121,38 @@ public struct IntPtr
 
 	// Operators.
 	unsafe public static bool operator==(IntPtr x, IntPtr y)
-				{ return (x.value__ == y.value__); }
+			{
+				return (x.value__ == y.value__);
+			}
 	unsafe public static bool operator!=(IntPtr x, IntPtr y)
-				{ return (x.value__ != y.value__); }
+			{
+				return (x.value__ != y.value__);
+			}
 	unsafe public static explicit operator IntPtr(int x)
-				{ return new IntPtr(x); }
+			{
+				return new IntPtr(x);
+			}
 	unsafe public static explicit operator IntPtr(long x)
-				{ return new IntPtr(x); }
+			{
+				return new IntPtr(x);
+			}
+	unsafe public static explicit operator IntPtr(void *x)
+			{
+				return new IntPtr(x);
+			}
 	unsafe public static explicit operator int(IntPtr x)
-				{ return (int)(x.value__); }
+			{
+				return x.ToInt32();
+			}
 	unsafe public static explicit operator long(IntPtr x)
-				{ return (long)(x.value__); }
+			{
+				return x.ToInt64();
+			}
+	unsafe public static explicit operator void *(IntPtr x)
+			{
+				return x.ToPointer();
+			}
 
-}; // class IntPtr
+}; // struct IntPtr
 
 }; // namespace System

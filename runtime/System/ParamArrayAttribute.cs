@@ -22,10 +22,13 @@
 namespace System
 {
 
-public class ParamArrayAttribute : Attribute
+[AttributeUsage(AttributeTargets.Parameter,
+				Inherited=true, AllowMultiple=false)]
+public sealed class ParamArrayAttribute : Attribute
 {
 
-// TO DO
+	// Constructors.
+	public ParamArrayAttribute() : base() {}
 
 }; // class ParamArrayAttribute
 

@@ -26,6 +26,10 @@ public class FieldInfo : MemberInfo
 
 // TO DO
 
+	public override Type DeclaringType { get { return null; } }
+	public override Type ReflectedType { get { return null; } }
+	public override String Name { get { return null; } }
+
 	public Type FieldType { get { return null; } }
 	public Object GetValue(Object obj) { return null; }
 	public void SetValue(Object obj, Object value) {}

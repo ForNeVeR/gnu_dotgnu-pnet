@@ -14,14 +14,17 @@ CSSRC = Activator.cs \
 		ArgumentOutOfRangeException.cs \
 		ArithmeticException.cs \
 		ArrayTypeMismatchException.cs \
+		AssemblyLoadEventArgs.cs \
 		AsyncCallback.cs \
 		Array.cs \
 		Attribute.cs \
 		AttributeTargets.cs \
 		AttributeUsageAttribute.cs \
+		BadImageFormatException.cs \
 		Boolean.cs \
 		Byte.cs \
 		CLSCompliantAttribute.cs \
+		CannotUnloadAppDomainException.cs \
 		Char.cs \
 		CharEnumerator.cs \
 		Console.cs \
@@ -31,16 +34,24 @@ CSSRC = Activator.cs \
 		DBNull.cs \
 		DateTime.cs \
 		Decimal.cs \
+		DefaultBinder.cs \
 		Delegate.cs \
+		DivideByZeroException.cs \
 		Double.cs \
+		DuplicateWaitObjectException.cs \
 		Empty.cs \
+		EntryPointNotFoundException.cs \
 		Enum.cs \
 		Environment.cs \
 		EventArgs.cs \
 		EventHandler.cs \
 		Exception.cs \
+		ExecutionEngineException.cs \
+		FieldAccessException.cs \
 		FlagsAttribute.cs \
 		FormatException.cs \
+		GC.cs \
+		Guid.cs \
 		IAsyncResult.cs \
 		ICloneable.cs \
 		IComparable.cs \
@@ -48,45 +59,62 @@ CSSRC = Activator.cs \
 		IDisposable.cs \
 		IFormattable.cs \
 		IFormatProvider.cs \
-		IServiceObjectProvider.cs \
+		IndexOutOfRangeException.cs \
 		Int16.cs \
 		Int32.cs \
 		Int64.cs \
 		IntPtr.cs \
 		InvalidCastException.cs \
 		InvalidOperationException.cs \
+		InvalidProgramException.cs \
 		LoaderOptimization.cs \
 		LogLevel.cs \
 		MarshalByRefObject.cs \
 		Math.cs \
+		MemberAccessException.cs \
+		MethodAccessException.cs \
+		MissingFieldException.cs \
+		MissingMemberException.cs \
+		MissingMethodException.cs \
 		MulticastDelegate.cs \
+		MulticastNotSupportedException.cs \
 		NonSerializedAttribute.cs \
+		NotFiniteNumberException.cs \
 		NotSupportedException.cs \
+		NullReferenceException.cs \
 		Object.cs \
+		ObjectDisposedException.cs \
 		ObsoleteAttribute.cs \
+		OutOfMemoryException.cs \
 		OverflowException.cs \
 		ParamArrayAttribute.cs \
 		PlatformID.cs \
 		Random.cs \
 		RankException.cs \
 		RuntimeArgumentHandle.cs \
+		RuntimeFieldHandle.cs \
+		RuntimeMethodHandle.cs \
 		RuntimeType.cs \
 		RuntimeTypeHandle.cs \
-		RuntimeFieldHandle.cs \
 		SByte.cs \
 		SerializableAttribute.cs \
 		Single.cs \
+		StackOverflowException.cs \
 		String.cs \
 		SystemException.cs \
 		TimeSpan.cs \
 		Type.cs \
 		TypeCode.cs \
+		TypeInitializationException.cs \
 		TypeLoadException.cs \
 		TypedReference.cs \
+		TypeUnloadedException.cs \
 		UInt16.cs \
 		UInt32.cs \
 		UInt64.cs \
 		UIntPtr.cs \
+		UnauthorizedAccessException.cs \
+		UnhandledExceptionEventArgs.cs \
 		ValueType.cs \
 		Variant.cs \
 		Void.cs \
@@ -103,7 +131,6 @@ CSSRC = Activator.cs \
 		Collections/IList.cs \
 		Diagnostics/ConditionalAttribute.cs \
 		Diagnostics/DebuggableAttribute.cs \
-		Globalization/CharacterInfo.cs \
 		Globalization/CultureInfo.cs \
 		Globalization/NumberFormatInfo.cs \
 		Globalization/NumberStyles.cs \
@@ -120,13 +147,21 @@ CSSRC = Activator.cs \
 		Reflection/Assembly.cs \
 		Reflection/Binder.cs \
 		Reflection/BindingFlags.cs \
+		Reflection/CallingConventions.cs \
+		Reflection/ConstructorInfo.cs \
 		Reflection/DefaultMemberAttribute.cs \
+		Reflection/EventInfo.cs \
 		Reflection/FieldInfo.cs \
+		Reflection/IReflect.cs \
 		Reflection/MemberInfo.cs \
 		Reflection/MethodBase.cs \
+		Reflection/MethodInfo.cs \
 		Reflection/Missing.cs \
 		Reflection/Module.cs \
 		Reflection/ParameterInfo.cs \
+		Reflection/ParameterModifier.cs \
+		Reflection/PropertyInfo.cs \
+		Reflection/TypeAttributes.cs \
 		Runtime/CompilerServices/RuntimeHelpers.cs \
 		Runtime/CompilerServices/CSharp/DecimalConstantAttribute.cs \
 		Runtime/CompilerServices/CSharp/IndexerNameAttribute.cs \

@@ -30,7 +30,6 @@ public struct UInt64 : IComparable, IFormattable, IConvertible
 
 	public const ulong MaxValue = 0xFFFFFFFFFFFFFFFF;
 	public const ulong MinValue = 0;
-	public const ulong Empty    = 0;
 
 	// Override inherited methods.
 	public override int GetHashCode()
@@ -52,43 +51,40 @@ public struct UInt64 : IComparable, IFormattable, IConvertible
 
 	// String conversion.
 	public override String ToString()
-			{ return Format(value__, null, NumberFormatInfo.InvariantInfo); }
-	public static String ToString(ulong value)
-			{ return Format(value, null, NumberFormatInfo.InvariantInfo); }
+			{
+				return NumberFormatter.FormatFixedPoint
+							((ulong)value__, 0, 0, false, null,
+							 NumberFormatInfo.CurrentInfo);
+			}
+	public String ToString(String format)
+			{
+				return NumberFormatter.FormatFixedPoint
+							((ulong)value__, 0, 0, false, format,
+							 NumberFormatInfo.CurrentInfo);
+			}
+	public String ToString(String format, IFormatProvider provider)
+			{
+				return NumberFormatter.FormatFixedPoint
+							((ulong)value__, 0, 0, false, format,
+							 NumberFormatInfo.GetInstance(provider));
+			}
 
-	// Formatting methods.
-	public static String Format(ulong value, String format,
-								NumberFormatInfo nfi)
-			{
-				return NumberFormatter.FormatFixedPoint((ulong)value, 0, 0,
-														false, format, nfi);
-			}
-	public String Format(String format, IServiceObjectProvider isop)
-			{
-				return NumberFormatter.FormatFixedPoint((ulong)value__, 0, 0,
-														false, format, isop);
-			}
-	public static String Format(ulong value, String format)
-			{
-				return NumberFormatter.FormatFixedPoint((ulong)value, 0, 0,
-														false, format, null);
-			}
 
 	// Parsing methods.
-	public static ulong FromString(String s)
-			{
-				return Parse(s, NumberStyles.Integer,
-							 NumberFormatInfo.InvariantInfo);
-			}
 	public static ulong Parse(String s, NumberStyles style,
-							  NumberFormatInfo nfi)
+							  IFormatProvider provider)
 			{
 				NumberParser.ValidateIntegerStyle(style);
-				return NumberParser.ParseUInt64(s, style, nfi, 0);
+				return NumberParser.ParseUInt64
+					(s, style, NumberFormatInfo.GetInstance(provider), 0);
 			}
 	public static ulong Parse(String s)
 			{
 				return Parse(s, NumberStyles.Integer, null);
+			}
+	public static ulong Parse(String s, IFormatProvider provider)
+			{
+				return Parse(s, NumberStyles.Integer, provider);
 			}
 	public static ulong Parse(String s, NumberStyles style)
 			{
@@ -125,28 +121,77 @@ public struct UInt64 : IComparable, IFormattable, IConvertible
 				}
 			}
 
-	// Implementation of IConvertible interface.
-	public TypeCode GetTypeCode() { return TypeCode.UInt64; }
-	public Object ToType(Type ct) { return Convert.DefaultToType(this, ct); }
-	public Boolean ToBoolean()     { return Convert.ToBoolean(value__); }
-	public Byte ToByte()           { return Convert.ToByte(value__); }
-	public SByte ToSByte()         { return Convert.ToSByte(value__); }
-	public Int16 ToInt16()         { return Convert.ToInt16(value__); }
-	public UInt16 ToUInt16()	   { return Convert.ToUInt16(value__); }
-	public Int32 ToInt32()         { return Convert.ToInt32(value__); }
-	public UInt32 ToUInt32()       { return Convert.ToUInt32(value__); }
-	public Int64 ToInt64()         { return Convert.ToInt64(value__); }
-	public UInt64 ToUInt64()       { return value__; }
-	public Char ToChar()           { return Convert.ToChar(value__); }
-	public Single ToSingle()       { return Convert.ToSingle(value__); }
-	public Double ToDouble()       { return Convert.ToDouble(value__); }
-	public Decimal ToDecimal()     { return Convert.ToDecimal(value__); }
-	public DateTime ToDateTime()
+	// Implementation of the IConvertible interface.
+	public TypeCode GetTypeCode()
+			{
+				return TypeCode.UInt64;
+			}
+	bool IConvertible.ToBoolean(IFormatProvider provider)
+			{
+				return Convert.ToBoolean(value__);
+			}
+	byte IConvertible.ToByte(IFormatProvider provider)
+			{
+				return Convert.ToByte(value__);
+			}
+	sbyte IConvertible.ToSByte(IFormatProvider provider)
+			{
+				return Convert.ToSByte(value__);
+			}
+	short IConvertible.ToInt16(IFormatProvider provider)
+			{
+				return Convert.ToInt16(value__);
+			}
+	ushort IConvertible.ToUInt16(IFormatProvider provider)
+			{
+				return Convert.ToUInt16(value__);
+			}
+	char IConvertible.ToChar(IFormatProvider provider)
+			{
+				return Convert.ToChar(value__);
+			}
+	int IConvertible.ToInt32(IFormatProvider provider)
+			{
+				return Convert.ToInt32(value__);
+			}
+	uint IConvertible.ToUInt32(IFormatProvider provider)
+			{
+				return Convert.ToUInt32(value__);
+			}
+	long IConvertible.ToInt64(IFormatProvider provider)
+			{
+				return Convert.ToInt64(value__);
+			}
+	ulong IConvertible.ToUInt64(IFormatProvider provider)
+			{
+				return Convert.ToUInt64(value__);
+			}
+	float IConvertible.ToSingle(IFormatProvider provider)
+			{
+				return Convert.ToSingle(value__);
+			}
+	double IConvertible.ToDouble(IFormatProvider provider)
+			{
+				return Convert.ToDouble(value__);
+			}
+	Decimal IConvertible.ToDecimal(IFormatProvider provider)
+			{
+				return Convert.ToDecimal(value__);
+			}
+	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{
 				throw new InvalidCastException
 					(String.Format
 						(Environment.GetResourceString("InvalidCast_FromTo"),
 		 			     "UInt64", "DateTime"));
+			}
+	public String ToString(IFormatProvider provider)
+			{
+				return ToString(null, provider);
+			}
+	Object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+			{
+				return Convert.DefaultToType(this, conversionType, provider);
 			}
 
 }; // class UInt64

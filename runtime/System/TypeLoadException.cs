@@ -24,6 +24,10 @@ namespace System
 
 public class TypeLoadException : SystemException
 {
+	// Internal state.
+	private String className;
+	private String assemblyName;
+	private int resourceID;
 
 	// Constructors.
 	public TypeLoadException()
@@ -32,6 +36,39 @@ public class TypeLoadException : SystemException
 		: base(msg) {}
 	public TypeLoadException(String msg, Exception inner)
 		: base(msg, inner) {}
+	private TypeLoadException(String className, String assemblyName,
+							  String msg, int resourceID)
+		: base(msg, null)
+		{
+			this.className = className;
+			this.assemblyName = assemblyName;
+			this.resourceID = resourceID;
+		}
+
+	// Properties.
+	public String TypeName
+			{
+				get
+				{
+					return className;
+				}
+			}
+	public override String Message
+			{
+				get
+				{
+					String result = String.Empty;
+					if(assemblyName != null)
+					{
+						result = result + "[" + assemblyName + "]";
+					}
+					if(className != null)
+					{
+						result = result + className + ":";
+					}
+					return result + base.Message;
+				}
+			}
 
 }; // class TypeLoadException
 

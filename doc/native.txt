@@ -74,7 +74,7 @@ System.Decimal:
 	public static int Compare(decimal x, decimal y);
 	public static decimal Divide(decimal x, decimal y);
 	public static decimal Floor(decimal x);
-	public static decimal Mod(decimal x, decimal y);
+	public static decimal Remainder(decimal x, decimal y);
 	public static decimal Multiply(decimal x, decimal y);
 	public static decimal Negate(decimal x);
 	public static decimal Round(decimal x, int decimals);
@@ -97,6 +97,30 @@ System.ArgIterator:
 	public TypedReference GetNextArg();
 	public TypedReference GetNextArg(RuntimeTypeHandle);
 	public RuntimeTypeHandle GetNextArgType();
+
+System.GC:
+
+	public static void KeepAlive(Object obj);
+
+		Keep an object reference alive.
+
+	public static void ReRegisterForFinalize(Object obj);
+	
+		Re-register an object for finalization.
+
+	public static void SuppressFinalize(Object obj);
+	
+		Suppress finalization for an object.
+
+	public static void WaitForPendingFinalizers();
+
+		Wait for all pending finalizers to be run.
+
+System.RuntimeMethodHandle
+
+	private static IntPtr InternalGetFunctionPointer(IntPtr method);
+
+		Get the function pointer that corresponds to a method handle.
 
 Natives in Platform namespaces:
 ------------------------------
@@ -142,6 +166,16 @@ Platform.SysCharInfo:
 		Making this native gives the runtime engine maximum flexibility
 		as to how this is implemented, and what trade-offs may apply.
 
+	public static double GetNumericValue(char ch);
+
+		Get the numeric value associated with a Unicode character.
+		e.g. the "1/4" character ('\u00BC') returns "0.25".
+
+		This is also usually implemented with a lookup table.
+
+		The method must return -1.0 if there is no numeric value
+		associated with the character.
+
 	public static String GetNewLine();
 
 		Get the newline string to be used on this platform.  This
@@ -170,6 +204,27 @@ Platform.TaskMethods
 		Returns null if the platform does not support command-line
 		arguments.  The first returned argument is the name of
 		the executable.
+
+	public static String GetEnvironmentVariable(String variable);
+
+		Get the value of a named environment variable.  Returns null
+		if the variable is not present.
+
+	public static int GetEnvironmentCount();
+
+		Get the number of environment variables that are associated
+		with the current task.  Returns zero if the environment is empty,
+		or not accessible to the program.
+
+	public static String GetEnvironmentKey(int posn);
+
+		Get the key (or variable name) associated with the environment
+		variable at a specific index.  Returns null if the index is invalid.
+
+	public static String GetEnvironmentValue(int posn);
+
+		Get the value associated with the environment variable at a
+		specific index.  Returns null if the index is invalid.
 
 Platform.TimeMethods
 

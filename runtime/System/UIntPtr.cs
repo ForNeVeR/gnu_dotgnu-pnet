@@ -22,22 +22,41 @@ namespace System
 {
 
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Platform;
 
 public struct UIntPtr
 {
+	// Public constants.
+	public static readonly UIntPtr Zero = new UIntPtr(0);
+
+	// Internal state.
 	unsafe private void *value__;
 
 	// Constructors.
 	unsafe public UIntPtr(uint value)
-			{ value__ = (void *)value; }
+			{
+				value__ = (void *)value;
+			}
 	unsafe public UIntPtr(ulong value)
-			{ value__ = (void *)value; }
+			{
+				if(Size == 4 &&
+				   value > ((ulong)(UInt32.MaxValue)))
+				{
+					throw new OverflowException
+						(Environment.GetResourceString("Overflow_Pointer"));
+				}
+				value__ = (void *)value;
+			}
+	unsafe public UIntPtr(void *value)
+			{
+				value__ = value;
+			}
 
 	// Override inherited methods.
 	unsafe public override int GetHashCode()
 			{
-				return unchecked(((int)value__) & 0x7FFFFFFF);
+				return unchecked((int)value__);
 			}
 	unsafe public override bool Equals(Object value)
 			{
@@ -51,15 +70,46 @@ public struct UIntPtr
 				}
 			}
 
+	// Numeric conversion.
+	unsafe public uint ToUInt32()
+			{
+				ulong ptr = (ulong)value__;
+				if(ptr <= (ulong)(UInt32.MaxValue))
+				{
+					return unchecked((uint)ptr);
+				}
+				else
+				{
+					throw new OverflowException
+						(Environment.GetResourceString("Overflow_Pointer"));
+				}
+			}
+	unsafe public ulong ToUInt64()
+			{
+				return (ulong)value__;
+			}
+
+	// Get the pointer within this object.
+	unsafe public void *ToPointer()
+			{
+				return value__;
+			}
+
 	// String conversion.
 	unsafe public override String ToString()
 			{
-				return UInt32.Format((uint)value__, null,
-									 NumberFormatInfo.InvariantInfo);
+				if(Size == 4)
+				{
+					return ((uint)value__).ToString();
+				}
+				else
+				{
+					return ((ulong)value__).ToString();
+				}
 			}
 
 	// Properties.
-	public int Size
+	public static int Size
 			{
 				get
 				{
@@ -69,18 +119,38 @@ public struct UIntPtr
 
 	// Operators.
 	unsafe public static bool operator==(UIntPtr x, UIntPtr y)
-				{ return (x.value__ == y.value__); }
+			{
+				return (x.value__ == y.value__);
+			}
 	unsafe public static bool operator!=(UIntPtr x, UIntPtr y)
-				{ return (x.value__ != y.value__); }
+			{
+				return (x.value__ != y.value__);
+			}
 	unsafe public static explicit operator UIntPtr(uint x)
-				{ return new UIntPtr(x); }
+			{
+				return new UIntPtr(x);
+			}
 	unsafe public static explicit operator UIntPtr(ulong x)
-				{ return new UIntPtr(x); }
+			{
+				return new UIntPtr(x);
+			}
+	unsafe public static explicit operator UIntPtr(void *x)
+			{
+				return new UIntPtr(x);
+			}
 	unsafe public static explicit operator uint(UIntPtr x)
-				{ return (uint)(x.value__); }
+			{
+				return x.ToUInt32();
+			}
 	unsafe public static explicit operator ulong(UIntPtr x)
-				{ return (ulong)(x.value__); }
+			{
+				return x.ToUInt64();
+			}
+	unsafe public static explicit operator void *(UIntPtr x)
+			{
+				return x.ToPointer();
+			}
 
-}; // class UIntPtr
+}; // struct UIntPtr
 
 }; // namespace System

@@ -233,13 +233,13 @@ const char *_ILContextPersistMalloc(ILImage *image, char *str)
 }
 
 static ILImage *GetImageByName(ILContext *context, const char *name,
-							   unsigned long tokenType, int offset)
+							   unsigned long tokenType)
 {
 	ILImage *image;
-	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
 	unsigned long numTokens;
 	unsigned long token;
 	const char *imageName;
+	void *data;
 
 	image = context->firstImage;
 	while(image != 0)
@@ -247,9 +247,17 @@ static ILImage *GetImageByName(ILContext *context, const char *name,
 		numTokens = ILImageNumTokens(image, tokenType);
 		for(token = 1; token <= numTokens; ++token)
 		{
-			if(_ILImageRawTokenData(image, tokenType | token, values))
+			data = ILImageTokenInfo(image, tokenType | token);
+			if(data)
 			{
-				imageName = ILImageGetString(image, values[offset]);
+				if(tokenType == IL_META_TOKEN_MODULE)
+				{
+					imageName = ((ILModule *)data)->name;
+				}
+				else
+				{
+					imageName = ((ILAssembly *)data)->name;
+				}
 				if(imageName && !ILStrICmp(imageName, name))
 				{
 					return image;
@@ -264,14 +272,12 @@ static ILImage *GetImageByName(ILContext *context, const char *name,
 
 ILImage *ILContextGetModule(ILContext *context, const char *name)
 {
-	return GetImageByName(context, name, IL_META_TOKEN_MODULE,
-						  IL_OFFSET_MODULE_NAME);
+	return GetImageByName(context, name, IL_META_TOKEN_MODULE);
 }
 
 ILImage *ILContextGetAssembly(ILContext *context, const char *name)
 {
-	return GetImageByName(context, name, IL_META_TOKEN_ASSEMBLY,
-						  IL_OFFSET_ASSEMBLY_NAME);
+	return GetImageByName(context, name, IL_META_TOKEN_ASSEMBLY);
 }
 
 ILImage *ILContextNextImage(ILContext *context, ILImage *image)

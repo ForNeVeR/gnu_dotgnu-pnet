@@ -36,6 +36,12 @@
 	runtime/System/Globalization/_I18NTextInfo.cs: implement the
 	TextInfo culture support routines.
 
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Globalization/RegionInfo.cs,
+	runtime/System/Private/RegionName.cs,
+	runtime/System/Private/RegionNameTable.cs: implement the
+	System.Globalization.RegionInfo class and its dependencies.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1

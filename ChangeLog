@@ -1,4 +1,12 @@
 
+2001-03-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, engine/lib_file.c, include/Makefile.am,
+	include/il_config.h.in, include/il_errno.h, include/il_sysio.h,
+	include/il_system.h, support/.cvsignore, support/Makefile.am,
+	support/file.c, support/gen_errno.sh: rearrange the system I/O
+	routines for files and implement errno handling.
+
 2001-03-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: handle interface overrides for properties.

@@ -6,6 +6,7 @@ libILSupport_a_SOURCES = alloc.c \
 						 convert.c \
 						 decimal.c \
 						 dynlib.c \
+						 errno_map.c \
 						 file.c \
 						 filemap.c \
 						 guid.c \
@@ -38,3 +39,8 @@ mknumber_SOURCES = mknumber.c
 if USINGGCC
 INCLUDES = -Wall
 endif
+
+CLEANFILES = errno_map.c
+
+errno_map.c: gen_errno.sh
+	$(SHELL) gen_errno.sh ${top_srcdir}/include/il_errno.h $(COMPILE) >errno_map.c

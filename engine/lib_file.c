@@ -1,9 +1,10 @@
 /*
  * lib_file.c - Internalcall methods for "System.IO" and subclasses
  *
- * Copyright (C) 2002  FSF INDIA
+ * Copyright (C) 2002  FSF INDIA and Southern Storm Software, Pty Ltd.
  *
- * Author : Gopal.V
+ * Authors: Gopal.V
+ *          Rhys Weatherley
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,270 +20,210 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 #include "engine.h"
 #include "lib_defs.h"
+#include "il_sysio.h"
+#include "il_errno.h"
 
-#define ILFileMode_CreateNew	1
-#define ILFileMode_Create		2
-#define	ILFileMode_Open			3
-#define ILFileMode_OpenOrCreate	4
-#define ILFileMode_Truncate		5
-#define ILFileMode_Append		6
-
-#define ILFileAccess_Read 0x01
-#define ILFileAccess_Write 0x02
-#define ILFileAccess_ReadWrite (ILFileAccess_Read | ILFileAccess_Write)
-
+/*
+ * public static IntPtr GetInvalidHandle();
+ */
 static ILNativeInt Platform_FileMethods_GetInvalidHandle(ILExecThread *thread)
 {
-	return (ILNativeInt)NULL;//that's it ?
-}
-static ILBool Platform_FileMethods_ValidatePathname(ILExecThread *thread
-				,ILString *path)
-{
-	/* TODO */
-	return 1;
-}
-static ILBool Platform_FileMethods_Open (ILExecThread *thread, 
-				ILString * path, 
-				ILUInt32 mode,
-				ILUInt32 access, ILUInt32 share,
-				ILNativeInt * handle)
-{
-	char * cpath = ILStringToAnsi(thread,path);
-	if(cpath==NULL)return 0;
-	switch (mode)
-	{
-		case ILFileMode_CreateNew:
-			if(ILFileExists(cpath,NULL))
-			{
-				return 0;//exists -- exception
-			}
-			else if(ILFileCreate(cpath))
-			{
-				if(access==ILFileAccess_Read)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"r");
-					return (*handle & 1);
-				}
-				else if(access==ILFileAccess_Write)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"w");
-					return (*handle & 1);
-				}
-				else if(access==ILFileAccess_ReadWrite)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"w+");//create
-					return (*handle & 1);
-				}
-				else return 0;
-			}
-			else return 0;
-			break;
-		case ILFileMode_Create:
-			if(ILFileCreate(cpath))
-			{
-				if(access==ILFileAccess_Read)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"r");
-					return (*handle & 1);
-				}
-				else if(access==ILFileAccess_Write)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"w");
-					return (*handle & 1);
-				}
-				else if(access==ILFileAccess_ReadWrite)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"w+");//create
-					return (*handle & 1);
-				}
-				else return 0;
-			}
-			else return 0;
-			
-	  		break;
-		case ILFileMode_Open:
-			if(!ILFileExists(cpath,NULL))
-			{
-				return 0;
-			}
-			if(access==ILFileAccess_Read)
-			{
-				*handle=(ILNativeInt)ILFileOpen(cpath,"r");
-				return (*handle & 1);
-			}
-			else if(access==ILFileAccess_Write)
-			{
-				*handle=(ILNativeInt)ILFileOpen(cpath,"w");
-				return (*handle & 1);
-			}
-			else if(access==ILFileAccess_ReadWrite)
-			{
-				*handle=(ILNativeInt)ILFileOpen(cpath,"r+");//no create 
-				return (*handle & 1);
-			}
-			else return 0;
-	  		break;
-		case ILFileMode_OpenOrCreate:
-			if(!ILFileExists(cpath,NULL))
-			{
-				ILFileCreate(cpath);//create if not exist
-			}
-			if(ILFileExists(cpath,NULL))
-			{
-				if(access==ILFileAccess_Read)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"r");
-					return (*handle & 1);
-				}
-				else if(access==ILFileAccess_Write)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"w");
-					return (*handle & 1);
-				}
-				else if(access==ILFileAccess_ReadWrite)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"w+");//create
-					return (*handle & 1);
-				}
-				else return 0;
-			}
-			else return 0;
-	  		break;
-		case ILFileMode_Truncate:
-			if(ILFileExists(cpath,NULL))
-			{
-				if(access==ILFileAccess_Write)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"w");
-					return (*handle & 1);
-				}
-				else return 0;//illegal mode
-			}
-			else return 0;
-			break;
-		case ILFileMode_Append:
-			if(ILFileExists(cpath,NULL))
-			{
-				if(access==ILFileAccess_Write)
-				{
-					*handle=(ILNativeInt)ILFileOpen(cpath,"a");
-					return (*handle & 1);
-				}
-				else return 0;//illegal mode
-			}
-			else return 0;
-			break;
-		default:
-			return 0;
-	}
-	return 0;
+	return (ILNativeInt)ILSysIOHandle_Invalid;
 }
 
+/*
+ * public static bool ValidatePathname(String path);
+ */
+static ILBool Platform_FileMethods_ValidatePathname
+							(ILExecThread *thread, ILString *path)
+{
+	char *cpath = ILStringToAnsi(thread, path);
+	if(cpath)
+	{
+		return (ILBool)(ILSysIOValidatePathname(cpath));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static bool Open(String path, FileMode mode,
+ *						   FileAccess access, FileShare share,
+ *						   out IntPtr handle);
+ */
+static ILBool Platform_FileMethods_Open(ILExecThread *thread, 
+										ILString *path, 
+										ILUInt32 mode,
+										ILUInt32 access, ILUInt32 share,
+										ILNativeInt *handle)
+{
+	char *cpath = ILStringToAnsi(thread, path);
+	if(!cpath)
+	{
+		ILSysIOSetErrno(IL_ERRNO_ENOMEM);
+		return 0;
+	}
+	*handle = (ILNativeInt)ILSysIOOpenFile(cpath, mode, access, share);
+	return (*handle != (ILNativeInt)ILSysIOHandle_Invalid);
+}
+
+/*
+ * public static bool Write(IntPtr handle, byte[] buffer,
+ *                          int offset, int count);
+ */
 static ILBool Platform_FileMethods_Write(ILExecThread *thread,
-				ILNativeInt handle ,System_Array *array,ILInt32 offset,
-				ILInt32 count)
+										 ILNativeInt handle,
+										 System_Array *array,
+										 ILInt32 offset,
+										 ILInt32 count)
 {
-	ILFileHandle fh=(ILFileHandle)handle;
-	ILUInt8 *buf=(ILUInt8*)(ArrayToBuffer(array));
-	if(fh==NULL)return 0;	
-	if((offset+count) > (sizeof(buf)/sizeof(ILUInt8)))return 0;
-	//offset out of bounds
-	if(ILFileWrite(&(buf[offset]),sizeof(ILUInt8),count,fh))
-	{
-		return 1;
-	}
-	return 0;
+	ILUInt8 *buf = (ILUInt8 *)(ArrayToBuffer(array));
+	return (ILSysIOWrite((ILSysIOHandle)handle, buf + offset, count) == count);
 }
-static ILBool Platform_FileMethods_Read(ILExecThread *thread,
-				ILNativeInt handle, System_Array *array, ILInt32 offset,
-				ILInt32 count)
+
+/*
+ * public static int Read(IntPtr handle, byte[] buffer,
+ *                        int offset, int count);
+ */
+static ILInt32 Platform_FileMethods_Read(ILExecThread *thread,
+										 ILNativeInt handle,
+										 System_Array *array,
+										 ILInt32 offset,
+										 ILInt32 count)
 {
-	ILFileHandle fh=(ILFileHandle)handle;
-	ILUInt8 *buf=(ILUInt8*)(ArrayToBuffer(array));
-	if((offset+count) > (sizeof(buf)/sizeof(ILUInt8)))return 0;
-	//offset out of bounds
-	if(ILFileRead(&(buf[offset]),sizeof(ILUInt8),count,fh))
-	{
-		return 1;
-	}
-	return 0;
+	ILUInt8 *buf = (ILUInt8 *)(ArrayToBuffer(array));
+	return ILSysIORead((ILSysIOHandle)handle, buf + offset, count);
 }
+
+/*
+ * public static bool HasAsync();
+ */
 static ILBool Platform_FileMethods_HasAsync(ILExecThread *thread)
 {
-	/* TODO */
-	return 0;
-}
-static ILBool Platform_FileMethods_CanSeek(ILExecThread *thread,
-				ILNativeInt handle)
-{
-	/* TODO */
-	ILFileHandle fh=(ILFileHandle)handle;
-	if(handle == 0)return 0;//NULL
-//	stdin/out/err ?
-	return (1+ILFileSeek(fh,0,SEEK_SET));
-}
-static ILBool Platform_FileMethods_CheckHandleAccess(ILExecThread *thread,
-				ILNativeInt handle,ILUInt32 access)
-{
-  ILFileHandle fh = (ILFileHandle)handle;
-  return ILFileCheckHandleAccess(fh, access);
-}
-static ILInt64 Platform_FileMethods_Seek(ILExecThread *thread, 
-				ILNativeInt handle,ILInt64 offset,ILUInt32 origin)
-{
-	ILFileHandle fh=(ILFileHandle)handle;
-	if(fh==NULL)return -1;
-	if(origin>2)return -1;
-	if(ILFileSeek(fh,offset,origin)>=0)return -1;
-	return (ILInt64)(ILFileTell(fh));
+	return ILSysIOHasAsync();
 }
 
-
-
-static ILBool Platform_FileMethods_Close(ILExecThread *thread, 
-				ILNativeInt handle)
-{
-	ILFileHandle fh=(ILFileHandle)handle;
-	if(fh==NULL)return 0;//SEGFAULT_PROTECT 
-    return ILFileClose(fh);
-}
-static ILBool Platform_FileMethods_FlushWrite(ILExecThread * thread,
-				ILNativeInt handle)
-{
-	ILFileHandle fh=(ILFileHandle)handle;
-	if(fh==NULL)return 0;//SEGFAULT_PROTECT 
-	return (1+ILFileFlush(fh));
-}
-static ILBool Platform_FileMethods_SetLength(ILExecThread * thread,
-				ILNativeInt handle, ILInt64 value)
-{
-	ILFileHandle fh=(ILFileHandle)handle;
-	if(fh==NULL)return 0;//SEGFAULT_PROTECT 
-	return (1+ILFileTruncate(fh,value));
-}
 /*
- * Export table
+ * public static bool CanSeek(IntPtr handle);
+ */
+static ILBool Platform_FileMethods_CanSeek(ILExecThread *thread,
+										   ILNativeInt handle)
+{
+	/* Try seeking to the current position, which will fail
+	   on non-seekable streams like pipes and sockets */
+	return (ILSysIOSeek((ILSysIOHandle)handle, (ILInt64)0, 1) != (ILInt64)(-1));
+}
+
+/*
+ * public static bool CheckHandleAccess(IntPtr handle, FileAccess access);
+ */
+static ILBool Platform_FileMethods_CheckHandleAccess(ILExecThread *thread,
+													 ILNativeInt handle,
+													 ILUInt32 access)
+{
+	return (ILBool)(ILSysIOCheckHandleAccess((ILSysIOHandle)handle, access));
+}
+
+/*
+ * public static long Seek(IntPtr handle, long offset, SeekOrigin origin);
+ */
+static ILInt64 Platform_FileMethods_Seek(ILExecThread *thread, 
+										 ILNativeInt handle,
+										 ILInt64 offset,
+										 ILUInt32 origin)
+{
+	return ILSysIOSeek((ILSysIOHandle)handle, offset, origin);
+}
+
+/*
+ * public static bool Close(IntPtr handle);
+ */
+static ILBool Platform_FileMethods_Close(ILExecThread *thread, 
+										 ILNativeInt handle)
+{
+	return (ILBool)(ILSysIOClose((ILSysIOHandle)handle));
+}
+
+/*
+ * public static bool FlushWrite(IntPtr handle);
+ */
+static ILBool Platform_FileMethods_FlushWrite(ILExecThread *thread,
+											  ILNativeInt handle)
+{
+	return (ILBool)(ILSysIOFlushWrite((ILSysIOHandle)handle));
+}
+
+/*
+ * public static bool SetLength(IntPtr handle, long value);
+ */
+static ILBool Platform_FileMethods_SetLength(ILExecThread *thread,
+											 ILNativeInt handle,
+											 ILInt64 value)
+{
+	return (ILBool)(ILSysIOTruncate((ILSysIOHandle)handle, value));
+}
+
+/*
+ * public static Errno GetErrno();
+ */
+static ILInt32 Platform_FileMethods_GetErrno(ILExecThread *thread)
+{
+	return ILSysIOGetErrno();
+}
+
+/*
+ * public static String GetErrnoMessage(Errno error);
+ */
+static ILString *Platform_FileMethods_GetErrnoMessage(ILExecThread *thread,
+													  ILInt32 error)
+{
+	const char *msg = ILSysIOGetErrnoMessage(error);
+	if(msg)
+	{
+		return ILStringCreate(thread, msg);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Method table for the "Platform.FileMethods" class.
  */
 IL_METHOD_BEGIN(_ILPlatformFileMethods)
-     IL_METHOD("GetInvalidHandle","()j",
+     IL_METHOD("GetInvalidHandle", "()j",
 					 Platform_FileMethods_GetInvalidHandle)
-	 IL_METHOD("Open","(oSystem_String;iii&j)Z",
+     IL_METHOD("ValidatePathname", "(oSystem.String;)Z",
+					 Platform_FileMethods_ValidatePathname)
+	 IL_METHOD("Open", "(oSystem_String;vSystem.IO.FileMode;"
+	 				   "vSystem.IO.FileAccess;vSystem.IO.FileShare;&j)Z",
 					 Platform_FileMethods_Open)
-	 IL_METHOD("CanSeek","(j)Z",
+     IL_METHOD("HasAsync", "()Z",
+					 Platform_FileMethods_HasAsync)
+	 IL_METHOD("CanSeek", "(j)Z",
 					 Platform_FileMethods_CanSeek)
-     IL_METHOD("CheckHandleAccess", "(ji)Z", Platform_FileMethods_CheckHandleAccess)
-	 IL_METHOD("Seek","(jli)l",
+     IL_METHOD("CheckHandleAccess", "(jvSystem.IO.FileAccess;)Z",
+	 				 Platform_FileMethods_CheckHandleAccess)
+	 IL_METHOD("Seek", "(jlvSystem.IO.SeekOrigin;)l",
 					 Platform_FileMethods_Seek)
-	 IL_METHOD("Write","(j[Bii)Z",
+	 IL_METHOD("Write", "(j[Bii)Z",
 					 Platform_FileMethods_Write)
-	 IL_METHOD("Read","(j[Bii)Z",
+	 IL_METHOD("Read", "(j[Bii)Z",
 					 Platform_FileMethods_Read)
      IL_METHOD("Close", "(j)Z",
-               Platform_FileMethods_Close)
-	 IL_METHOD("FlushWrite","(jl)Z",
+               		 Platform_FileMethods_Close)
+	 IL_METHOD("FlushWrite", "(j)Z",
 					 Platform_FileMethods_FlushWrite)
-	 IL_METHOD("SetLength","(jl)Z",
+	 IL_METHOD("SetLength", "(jl)Z",
 					 Platform_FileMethods_SetLength)
+	 IL_METHOD("GetErrno", "()vPlatform.Errno;",
+					 Platform_FileMethods_GetErrno)
+	 IL_METHOD("GetErrnoMessage","(vPlatform.Errno;)oSystem.String;",
+					 Platform_FileMethods_GetErrnoMessage)
 IL_METHOD_END

@@ -1,7 +1,7 @@
 /*
  * file.c - File-related functions.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include "il_system.h"
+#include "il_sysio.h"
 #ifdef HAVE_SYS_STAT_H
 	#include <sys/stat.h>
 #endif
@@ -36,10 +37,7 @@
 	#include <windows.h>
 	#include <io.h>
 #endif
-
-#define ILFileAccess_Read 0x01
-#define ILFileAccess_Write 0x02
-#define ILFileAccess_ReadWrite (ILFileAccess_Read | ILFileAccess_Write) 
+#include <errno.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -110,115 +108,241 @@ int ILFileExists(const char *filename, char **newExePath)
 
 	return 0;
 }
-/*
- * Gopal's hacks
- * 
- * need to put in the Automake checks for fopen,fclose,fread etc..
- * and take care of portability issues if any. Also inline it if 
- * GCC supports it in all platforms
- */
-ILFileHandle ILFileOpen(const char * path, const char * mode)
-{		
-	ILFileHandle retval;
-	if(!path || !mode)return NULL;
-	retval=(ILFileHandle)fopen(path,mode);
-	return retval;
-}
-ILBool ILFileClose(ILFileHandle handle)
-{
-	if(!handle)return 0;
-	return fclose((FILE*)handle);
-}
-ILBool ILFileCreate(const char * path)
-{
-	FILE *fp=NULL;
-	if(!path)return 0;
-	fp=fopen(path,"w");
-	if(fp)
-	{
-		fclose(fp);
-		return 1;
-	}
-	else return 0;	
-}
-int ILFileRead(void *buf,int size,int num,ILFileHandle handle)
-{
-	FILE *fp=(FILE*)handle;	
-	return(fread(buf,size,num,fp));
-}
-int ILFileWrite(void *buf,int size,int num,ILFileHandle handle)
-{
-	FILE *fp=(FILE*)handle;
-	return(fread(buf,size,num,fp));
-}
-ILBool ILFileCheckHandleAccess(ILFileHandle handle, ILUInt32 access)
-{
-#ifdef HAVE_FCNTL
-  int fd = ( *(int *) handle);
-  int flags = fcntl(fd, F_GETFL, 0);
-  if (flags != -1)
-    {
-      switch(access)
-	{
-	case ILFileAccess_Read:
-	  if (flags & O_RDONLY)
-	    {
-	      return 1;
-	    }
-	  break;
-        case ILFileAccess_Write:
-	  if (flags & O_WRONLY) 
-	    {
-	      return 1;
-	    }
-	  break;
-        case ILFileAccess_ReadWrite:
-	  if (flags & O_RDWR) 
-	    {
-	      return 1;
-	    } 
-	  break;
-	default:
-	  return 0;
-	  
-	}
-    }
-      /* The access is not on the handle */
-      return 0;
-#else
-      /* TODO */
-      return 0;
-#endif
-}     
 
-int ILFileSeek(ILFileHandle handle, long offset,int from)
+/* TODO: I haven't implemented the Windows/Cygwin parts yet - coming soon */
+
+int ILSysIOGetErrno(void)
 {
-	FILE *fp=(FILE*)handle;
-	return(fseek(fp,offset,from));
+	return ILSysIOConvertErrno(errno);
 }
-long ILFileTell (ILFileHandle handle)
+
+void ILSysIOSetErrno(int code)
 {
-	FILE *fp=(FILE*)handle;
-	return (ftell(fp));
+	code = ILSysIOConvertFromErrno(code);
+	if(code != -1)
+	{
+		errno = code;
+	}
+	else
+	{
+		errno = EPERM;
+	}
 }
-int ILFileFlush(ILFileHandle handle)
+
+const char *ILSysIOGetErrnoMessage(int code)
 {
-	FILE *fp=(FILE*)handle;
-	return(fflush(fp));
-}
-int ILFileTruncate(ILFileHandle handle,long value)
-{
-	FILE *fp=(FILE*)handle;
-	return(ftruncate(fileno(fp),value));//this will need porting 
-}
-int ILFileHasAsync(ILFileHandle handle)
-{
-	/* TODO */
-#ifdef _POSIX_ASYNC_IO
-	return 1;
+#ifdef HAVE_STRERROR
+	code = ILSysIOConvertFromErrno(code);
+	if(code != -1)
+	{
+		return strerror(code);
+	}
+	else
+	{
+		return 0;
+	}
 #else
 	return 0;
 #endif
+}
+
+int ILSysIOValidatePathname(const char *path)
+{
+	/* TODO */
+	return 1;
+}
+
+ILSysIOHandle ILSysIOOpenFile(const char *path, ILUInt32 mode,
+						      ILUInt32 access, ILUInt32 share)
+{
+	int result;
+	int newAccess = (((access & ILFileAccess_Read) ? O_RDONLY : 0) |
+	                 ((access & ILFileAccess_Write) ? O_WRONLY : 0));
+
+	switch(mode)
+	{
+		case ILFileMode_CreateNew:
+		{
+			/* Create a file only if it doesn't already exist */
+			result = open(path, newAccess | O_CREAT | O_EXCL, 0666);
+		}
+		break;
+
+		case ILFileMode_Create:
+		{
+			/* Open in create/truncate mode */
+			result = open(path, newAccess | O_CREAT | O_TRUNC, 0666);
+		}
+		break;
+
+		case ILFileMode_Open:
+		{
+			/* Open the file in the regular mode */
+			result = open(path, newAccess, 0666);
+		}
+		break;
+
+		case ILFileMode_OpenOrCreate:
+		{
+			/* Open an existing file or create a new one */
+			result = open(path, newAccess | O_CREAT, 0666);
+		}
+		break;
+
+		case ILFileMode_Truncate:
+		{
+			/* Truncate an existing file */
+			result = open(path, newAccess | O_TRUNC, 0666);
+		}
+		break;
+
+		case ILFileMode_Append:
+		{
+			/* Open in append mode */
+			result = open(path, newAccess | O_CREAT | O_APPEND, 0666);
+		}
+		break;
+
+		default:
+		{
+			/* We have no idea what this mode is */
+			result = -1;
+			errno = EACCES;
+		}
+		break;
+	}
+
+	/* TODO: sharing modes */
+
+	return (ILSysIOHandle)result;
+}
+
+int ILSysIOCheckHandleAccess(ILSysIOHandle handle, ILUInt32 access)
+{
+#if defined(HAVE_FCNTL) && defined(F_GETFL)
+	int flags = fcntl((int)handle, F_GETFL, 0);
+  	if(flags != -1)
+    {
+		switch(access)
+		{
+			case ILFileAccess_Read:		return ((flags & O_RDONLY) != 0);
+			case ILFileAccess_Write:	return ((flags & O_WRONLY) != 0);
+			case ILFileAccess_ReadWrite:
+					return ((flags & O_RDWR) == O_RDWR);
+		}
+	}
+	return 0;
+#else
+	return 0;
+#endif
+}
+
+int ILSysIOClose(ILSysIOHandle handle)
+{
+	int result;
+	while((result = close((int)handle)) < 0)
+	{
+		/* Retry if the system call was interrupted */
+		if(errno != EINTR)
+		{
+			break;
+		}
+	}
+	return (result == 0);
+}
+
+ILInt32 ILSysIORead(ILSysIOHandle handle, void *buf, ILInt32 size)
+{
+	int result;
+	while((result = read((int)handle, buf, (unsigned int)size)) < 0)
+	{
+		/* Retry if the system call was interrupted */
+		if(errno != EINTR)
+		{
+			break;
+		}
+	}
+	return (ILInt32)result;
+}
+
+ILInt32 ILSysIOWrite(ILSysIOHandle handle, const void *buf, ILInt32 size)
+{
+	int written = 0;
+	int result = 0;
+	while(size > 0)
+	{
+		/* Write as much as we can, and retry if system call was interrupted */
+		result = write((int)handle, buf, (unsigned int)size);
+		if(result >= 0)
+		{
+			written += result;
+			size -= result;
+		}
+		else if(errno != EINTR)
+		{
+			break;
+		}
+	}
+	if(written > 0)
+	{
+		return written;
+	}
+	else
+	{
+		return ((result < 0) ? -1 : 0);
+	}
+}
+
+ILInt64 ILSysIOSeek(ILSysIOHandle handle, ILInt64 offset, int whence)
+{
+	ILInt64 result;
+	while((result = (ILInt64)(lseek((int)handle, (off_t)offset, whence)))
+				== (ILInt64)(-1))
+	{
+		/* Retry if the system call was interrupted */
+		if(errno != EINTR)
+		{
+			break;
+		}
+	}
+	return result;
+}
+
+int ILSysIOFlushRead(ILSysIOHandle handle)
+{
+	/* TODO: mostly of use for tty devices, not files or sockets */
+	return 1;
+}
+
+int ILSysIOFlushWrite(ILSysIOHandle handle)
+{
+	/* TODO: mostly of use for tty devices, not files or sockets */
+	return 1;
+}
+
+int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)
+{
+#ifdef HAVE_FTRUNCATE
+	int result;
+	while((result = ftruncate((int)handle, (off_t)posn)) < 0)
+	{
+		/* Retry if the system call was interrupted */
+		if(errno != EINTR)
+		{
+			break;
+		}
+	}
+	return (result == 0);
+#else
+	errno = EINVAL;
+	return 0;
+#endif
+}
+
+int ILSysIOHasAsync(void)
+{
+	/* TODO: asynchronous I/O is not yet supported */
+	return 0;
 }
 
 #ifdef	__cplusplus

@@ -129,7 +129,7 @@ AC_CHECK_FUNCS(memset memcmp memchr memcpy memmove bcopy bzero bcmp)
 AC_CHECK_FUNCS(isnan isinf finite fmod strtod mmap munmap getpagesize)
 AC_CHECK_FUNCS(stat vfprintf waitpid wait fork execv open gettimeofday)
 AC_CHECK_FUNCS(getpid qsort regcomp re_comp unlink remove getcwd getwd)
-AC_CHECK_FUNCS(get_current_dir_name dlopen)
+AC_CHECK_FUNCS(get_current_dir_name dlopen strerror fcntl ftruncate)
 AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
 AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
 AC_FUNC_ALLOCA

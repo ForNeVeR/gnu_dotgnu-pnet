@@ -107,6 +107,9 @@
 /* Define if you have the exp function.  */
 #undef HAVE_EXP
 
+/* Define if you have the fcntl function.  */
+#undef HAVE_FCNTL
+
 /* Define if you have the finite function.  */
 #undef HAVE_FINITE
 
@@ -118,6 +121,9 @@
 
 /* Define if you have the fork function.  */
 #undef HAVE_FORK
+
+/* Define if you have the ftruncate function.  */
+#undef HAVE_FTRUNCATE
 
 /* Define if you have the get_current_dir_name function.  */
 #undef HAVE_GET_CURRENT_DIR_NAME
@@ -205,6 +211,9 @@
 
 /* Define if you have the stat function.  */
 #undef HAVE_STAT
+
+/* Define if you have the strerror function.  */
+#undef HAVE_STRERROR
 
 /* Define if you have the strtod function.  */
 #undef HAVE_STRTOD

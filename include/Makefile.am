@@ -4,6 +4,7 @@ libILinclude_HEADERS = il_coder.h \
 					   il_crypt.h \
 					   il_decimal.h \
 					   il_dumpasm.h \
+					   il_errno.h \
 					   il_gc.h \
 					   il_image.h \
 					   il_jopcodes.h \
@@ -11,6 +12,7 @@ libILinclude_HEADERS = il_coder.h \
 					   il_opcodes.h \
 					   il_program.h \
 					   il_serialize.h \
+					   il_sysio.h \
 					   il_system.h \
 					   il_types.h \
 					   il_utils.h \

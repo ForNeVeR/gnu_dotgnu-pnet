@@ -22,7 +22,9 @@
 namespace System.Windows.Forms
 {
 
+using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Design;
 using System.Windows.Forms.Themes;
 
 public abstract class ButtonBase : Control
@@ -56,6 +58,8 @@ public abstract class ButtonBase : Control
 			}
 
 	// Get or set this control's properties.
+	[Localizable(true)]
+	[DefaultValue(FlatStyle.Standard)]
 	public FlatStyle FlatStyle
 			{
 				get
@@ -71,6 +75,7 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+	[Localizable(true)]
 	public Image Image
 			{
 				get
@@ -86,6 +91,8 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+	[Localizable(true)]
+	[DefaultValue(ContentAlignment.MiddleCenter)]
 	public ContentAlignment ImageAlign
 			{
 				get
@@ -101,6 +108,12 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+	[Localizable(true)]
+	[DefaultValue(-1)]
+#if !CONFIG_COMPACT_FORMS
+	[TypeConverter(typeof(ImageIndexConverter))]
+#endif // !CONFIG_COMPACT_FORMS
+	[Editor("System.Windows.Forms.Design.ImageIndexEditor, System.Design", typeof(UITypeEditor))]
 	public int ImageIndex
 			{
 				get
@@ -131,6 +144,7 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+	[Browsable(false)]
 	public new ImeMode ImeMode
 			{
 				get
@@ -142,6 +156,8 @@ public abstract class ButtonBase : Control
 					base.ImeMode = value;
 				}
 			}
+	[Localizable(true)]
+	[DefaultValue(ContentAlignment.MiddleCenter)]
 #if !CONFIG_COMPACT_FORMS
 	public
 #else

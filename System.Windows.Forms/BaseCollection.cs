@@ -23,6 +23,7 @@ namespace System.Windows.Forms
 {
 
 using System.Collections;
+using System.ComponentModel;
 
 public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 {
@@ -34,6 +35,8 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 			{
 				List.CopyTo(array, index);
 			}
+	[Browsable(false)]
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public virtual int Count
 			{
 				get
@@ -41,6 +44,8 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 					return List.Count;
 				}
 			}
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+	[Browsable(false)]
 	public bool IsSynchronized
 			{
 				get
@@ -48,6 +53,8 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 					return false;
 				}
 			}
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+	[Browsable(false)]
 	public Object SyncRoot
 			{
 				get
@@ -63,6 +70,8 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 			}
 
 	// Determine if the collection is read-only.
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+	[Browsable(false)]
 	public bool IsReadOnly
 			{
 				get

@@ -22,7 +22,10 @@
 namespace System.Windows.Forms
 {
 
+using System.ComponentModel;
+
 [Flags]
+[Editor("System.Windows.Forms.Design.AnchorEditor, System.Design", typeof(System.Drawing.Design.UITypeEditor))]
 public enum AnchorStyles
 {
 	None	= 0x0000,

@@ -22,6 +22,11 @@
 namespace System.Windows.Forms
 {
 
+using System.ComponentModel;
+
+#if !CONFIG_COMPACT_FORMS
+[TypeConverter(typeof(ListBindingConverter))]
+#endif // !CONFIG_COMPACT_FORMS
 public class Binding
 {
 	// Internal state.
@@ -76,6 +81,7 @@ public class Binding
 					return isBinding;
 				}
 			}
+	[DefaultValue("")]
 	public String PropertyName
 			{
 				get

@@ -8,6 +8,9 @@
 	runtime/System/IO/Stream.cs, runtime/System/Threading/ThreadPool.cs:
 	re-implement "NetworkStream" and "Socket".
 
+	* System/Net/Sockets/Socket.cs: wrong return types for
+	"EndSend" and "EndSendTo".
+
 2003-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Threading/AutoResetEvent.cs,

@@ -262,13 +262,14 @@ public class Socket : IDisposable
 
 							case AsyncOperation.Send:
 							{
-								socket.Send(buffer, offset, count, flags);
+								result = socket.Send
+									(buffer, offset, count, flags);
 							}
 							break;
 
 							case AsyncOperation.SendTo:
 							{
-								socket.SendTo
+								result = socket.SendTo
 									(buffer, offset, count, flags, remoteEP);
 							}
 							break;
@@ -545,7 +546,7 @@ public class Socket : IDisposable
 			}
 
 	// End an asynchronous send operation.
-	public void EndSend(IAsyncResult asyncResult)
+	public int EndSend(IAsyncResult asyncResult)
 			{
 				if(asyncResult == null)
 				{
@@ -557,8 +558,9 @@ public class Socket : IDisposable
 				}
 				else
 				{
-					((AsyncControl)asyncResult).Wait
-						(this, AsyncOperation.Send);
+					AsyncControl async = (AsyncControl)asyncResult;
+					async.Wait(this, AsyncOperation.Send);
+					return async.result;
 				}
 			}
 
@@ -592,7 +594,7 @@ public class Socket : IDisposable
 			}
 
 	// End an asynchronous send to operation.
-	public void EndSendTo(IAsyncResult asyncResult)
+	public int EndSendTo(IAsyncResult asyncResult)
 			{
 				if(asyncResult == null)
 				{
@@ -604,8 +606,9 @@ public class Socket : IDisposable
 				}
 				else
 				{
-					((AsyncControl)asyncResult).Wait
-						(this, AsyncOperation.SendTo);
+					AsyncControl async = (AsyncControl)asyncResult;
+					async.Wait(this, AsyncOperation.SendTo);
+					return async.result;
 				}
 			}
 

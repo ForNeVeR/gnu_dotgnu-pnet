@@ -21,7 +21,7 @@
 namespace System.Reflection
 {
 
-public class MethodBase
+public abstract class MethodBase : MemberInfo
 {
 
 // TO DO

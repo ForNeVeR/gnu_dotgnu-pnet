@@ -22,14 +22,22 @@
 namespace System.Reflection
 {
 
-public class ConstructorInfo : MemberInfo
+public abstract class ConstructorInfo : MethodBase
 {
 
-// TO DO
+// TODO
 
-	public override Type DeclaringType { get { return null; } }
-	public override Type ReflectedType { get { return null; } }
-	public override String Name { get { return null; } }
+	// Constructor.
+	protected ConstructorInfo() : base() {}
+
+	// Get the member type for this item.
+	public override MemberTypes MemberType
+			{
+				get
+				{
+					return MemberTypes.Constructor;
+				}
+			}
 
 }; // class ConstructorInfo
 

@@ -21,12 +21,20 @@
 namespace System.Reflection
 {
 
-public class MethodInfo : MemberInfo
+public abstract class MethodInfo : MemberInfo
 {
 
-	public override Type DeclaringType { get { return null; } }
-	public override Type ReflectedType { get { return null; } }
-	public override String Name { get { return null; } }
+	// Constructor.
+	protected MethodInfo() : base() {}
+
+	// Get the member type for this method.
+	public override MemberTypes MemberType
+			{
+				get
+				{
+					return MemberTypes.Method;
+				}
+			}
 
 }; // class MethodInfo
 

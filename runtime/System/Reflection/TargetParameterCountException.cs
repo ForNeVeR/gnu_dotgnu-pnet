@@ -1,5 +1,6 @@
 /*
- * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
+ * TargetParameterCountException.cs - Implementation of the
+ *			"System.Reflection.TargetParameterCountException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,19 @@
 namespace System.Reflection
 {
 
-public abstract class EventInfo : MemberInfo
+using System;
+
+public sealed class TargetParameterCountException : ApplicationException
 {
 
-	// Constructor.
-	protected EventInfo() : base() {}
+	// Constructors.
+	public TargetParameterCountException()
+		: base(Environment.GetResourceString("Exception_TargetParam")) {}
+	public TargetParameterCountException(String msg)
+		: base(msg) {}
+	public TargetParameterCountException(String msg, Exception inner)
+		: base(msg, inner) {}
 
-// TODO
-
-	// Get the member type.
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					return MemberTypes.Event;
-				}
-			}
-
-}; // class EventInfo
+}; // class TargetParameterCountException
 
 }; // namespace System.Reflection

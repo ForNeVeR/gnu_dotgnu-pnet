@@ -21,14 +21,22 @@
 namespace System.Reflection
 {
 
-public class FieldInfo : MemberInfo
+public abstract class FieldInfo : MemberInfo
 {
 
 // TO DO
 
-	public override Type DeclaringType { get { return null; } }
-	public override Type ReflectedType { get { return null; } }
-	public override String Name { get { return null; } }
+	// Constructor.
+	protected FieldInfo() : base() {}
+
+	// Get the member type for this object.
+	public override MemberTypes MemberType
+			{
+				get
+				{
+					return MemberTypes.Field;
+				}
+			}
 
 	public Type FieldType { get { return null; } }
 	public Object GetValue(Object obj) { return null; }

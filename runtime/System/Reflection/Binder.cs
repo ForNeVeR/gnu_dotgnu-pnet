@@ -21,10 +21,50 @@
 namespace System.Reflection
 {
 
-public class Binder
+using System;
+using System.Globalization;
+
+public abstract class Binder
 {
 
-// TODO
+	// Constructor.
+	protected Binder() {}
+
+	// Bind a value to a field.
+	public abstract FieldInfo BindToField(BindingFlags bindingAttr,
+										  FieldInfo[] match,
+										  Object value,
+										  CultureInfo culture);
+
+	// Bind a set of arguments to a method.
+	public abstract MethodBase BindToMethod(BindingFlags bindingAttr,
+											MethodBase[] match,
+											ref Object[] args,
+											ParameterModifier[] modifiers,
+											CultureInfo culture,
+											String[] names,
+											ref Object state);
+
+	// Convert an object from one type into another.
+	public abstract Object ChangeType(Object value, Type type,
+									  CultureInfo culture);
+
+	// Re-order the argument array for a method call.
+	public abstract void ReorderArgumentArray(ref Object[] args,
+											  Object state);
+
+	// Select a method based on argument types.
+	public abstract MethodBase SelectMethod(BindingFlags bindingAttr,
+											MethodBase[] match,
+											Type[] types,
+											ParameterModifier[] modifiers);
+
+	// Select a property based on specified type criteria.
+	public abstract PropertyInfo SelectProperty(BindingFlags bindingAttr,
+												PropertyInfo[] match,
+												Type returnType,
+												Type[] indexes,
+												ParameterModifier[] modifiers);
 
 }; // class Binder
 

@@ -1,5 +1,6 @@
 /*
- * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
+ * MethodSemanticsAttributes.cs - Implementation of the
+ *			"System.Reflection.MethodSemanticsAttributes" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,15 @@
 namespace System.Reflection
 {
 
-public abstract class EventInfo : MemberInfo
+public enum MethodSemanticsAttributes
 {
+	Setter			= 0x0001,
+	Getter			= 0x0002,
+	Other			= 0x0004,
+	AddOn			= 0x0008,
+	RemoveOn		= 0x0010,
+	Fire			= 0x0020
 
-	// Constructor.
-	protected EventInfo() : base() {}
-
-// TODO
-
-	// Get the member type.
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					return MemberTypes.Event;
-				}
-			}
-
-}; // class EventInfo
+}; // enum MethodSemanticsAttributes
 
 }; // namespace System.Reflection

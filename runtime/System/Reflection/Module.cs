@@ -26,6 +26,14 @@ public class Module
 
 // TO DO
 
+	public virtual System.Reflection.Assembly Assembly
+			{
+				get
+				{
+					return null;
+				}
+			}
+
 }; // class Module
 
 }; // namespace System.Reflection

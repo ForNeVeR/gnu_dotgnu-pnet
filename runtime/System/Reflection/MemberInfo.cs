@@ -23,11 +23,28 @@ namespace System.Reflection
 
 public abstract class MemberInfo
 {
-// TODO
 
+	// Constructor.
+	protected MemberInfo() : base() {}
+
+	// Get the type that declares this member.
 	public abstract Type DeclaringType { get; }
-	public abstract Type ReflectedType { get; }
+
+	// Get the type of member that this is.
+	public abstract MemberTypes MemberType { get; }
+
+	// Get the name of this member.
 	public abstract String Name { get; }
+
+	// Get the reflected type that was used to locate this member.
+	public abstract Type ReflectedType { get; }
+
+	// Get the custom attributes that are associated with this member.
+	public abstract Object[] GetCustomAttributes(bool inherit);
+	public abstract Object[] GetCustomAttributes(Type type, bool inherit);
+
+	// Determine if custom attributes are defined for this member.
+	public abstract bool IsDefined(Type type, bool inherit);
 
 }; // class MemberInfo
 

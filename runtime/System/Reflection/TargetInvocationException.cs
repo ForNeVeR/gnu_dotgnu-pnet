@@ -1,5 +1,6 @@
 /*
- * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
+ * TargetInvocationException.cs - Implementation of the
+ *			"System.Reflection.TargetInvocationException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,22 @@
 namespace System.Reflection
 {
 
-public abstract class EventInfo : MemberInfo
+using System;
+
+public sealed class TargetInvocationException : ApplicationException
 {
 
-	// Constructor.
-	protected EventInfo() : base() {}
+	// Constructors.
+	private TargetInvocationException()
+		: base(Environment.GetResourceString("Exception_TargetInvoke")) {}
+	private TargetInvocationException(String msg)
+		: base(msg) {}
+	public TargetInvocationException(String msg, Exception inner)
+		: base(msg, inner) {}
+	public TargetInvocationException(Exception inner)
+		: base(Environment.GetResourceString("Exception_TargetInvoke"), inner)
+		{}
 
-// TODO
-
-	// Get the member type.
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					return MemberTypes.Event;
-				}
-			}
-
-}; // class EventInfo
+}; // class TargetInvocationException
 
 }; // namespace System.Reflection

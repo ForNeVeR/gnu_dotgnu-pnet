@@ -1,5 +1,6 @@
 /*
- * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
+ * ParameterAttributes.cs - Implementation of the
+ *		"System.Reflection.ParameterAttributes" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,20 @@
 namespace System.Reflection
 {
 
-public abstract class EventInfo : MemberInfo
+[Flags]
+public enum ParameterAttributes
 {
+	None				= 0x0000,
+	In					= 0x0001,
+	Out					= 0x0002,
+	Optional			= 0x0004,
+	Retval				= 0x0008,
+	ReservedMask		= 0xF000,
+	HasDefault			= 0x1000,
+	HasFieldMarshal		= 0x2000,
+	Reserved3			= 0x4000,
+	Reserved4			= 0x8000
 
-	// Constructor.
-	protected EventInfo() : base() {}
-
-// TODO
-
-	// Get the member type.
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					return MemberTypes.Event;
-				}
-			}
-
-}; // class EventInfo
+}; // enum ParameterAttributes
 
 }; // namespace System.Reflection

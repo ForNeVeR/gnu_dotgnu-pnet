@@ -1,5 +1,6 @@
 /*
- * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
+ * ResourceLocation.cs - Implementation of the
+ *			"System.Reflection.ResourceLocation" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,13 @@
 namespace System.Reflection
 {
 
-public abstract class EventInfo : MemberInfo
+[Flags]
+public enum ResourceLocation
 {
+	Embedded					= 0x0001,
+	ContainedInAnotherAssembly	= 0x0002,
+	ContainedInManifestFile		= 0x0004
 
-	// Constructor.
-	protected EventInfo() : base() {}
-
-// TODO
-
-	// Get the member type.
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					return MemberTypes.Event;
-				}
-			}
-
-}; // class EventInfo
+}; // enum ResourceLocation
 
 }; // namespace System.Reflection

@@ -1,4 +1,8 @@
 
+2001-10-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/Reflection/*.cs: many new reflection classes.
+
 2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs: Use "InternalGetFullName" for the "ToString"

@@ -1,5 +1,6 @@
 /*
- * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
+ * ResourceAttributes.cs - Implementation of the
+ *			"System.Reflection.ResourceAttributes" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,12 @@
 namespace System.Reflection
 {
 
-public abstract class EventInfo : MemberInfo
+[Flags]
+public enum ResourceAttributes
 {
+	Public			= 0x0001,
+	Private			= 0x0002
 
-	// Constructor.
-	protected EventInfo() : base() {}
-
-// TODO
-
-	// Get the member type.
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					return MemberTypes.Event;
-				}
-			}
-
-}; // class EventInfo
+}; // enum ResourceAttributes
 
 }; // namespace System.Reflection

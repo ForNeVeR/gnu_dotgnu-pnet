@@ -1,5 +1,6 @@
 /*
- * EventInfo.cs - Implementation of the "System.Reflection.EventInfo" class.
+ * PropertyAttributes.cs - Implementation of the
+ *			"System.Reflection.PropertyAttributes" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,17 @@
 namespace System.Reflection
 {
 
-public abstract class EventInfo : MemberInfo
+public enum PropertyAttributes
 {
+	None					= 0x0000,
+	SpecialName				= 0x0200,
+	ReservedMask			= 0xF400,
+	RTSpecialName			= 0x0400,
+	HasDefault				= 0x1000,
+	Reserved2				= 0x2000,
+	Reserved3				= 0x4000,
+	Reserved4				= 0x8000
 
-	// Constructor.
-	protected EventInfo() : base() {}
-
-// TODO
-
-	// Get the member type.
-	public override MemberTypes MemberType
-			{
-				get
-				{
-					return MemberTypes.Event;
-				}
-			}
-
-}; // class EventInfo
+}; // enum PropertyAttributes
 
 }; // namespace System.Reflection

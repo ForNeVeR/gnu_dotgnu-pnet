@@ -2038,7 +2038,7 @@ ILNode_CSemAnalysis(ILNode_AddressOf)
 
 	/* Perform semantic analysis on the argument */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
-	if(!CSemIsLValue(value))
+	if(!CSemIsLValue(value) || CSemIsNoRef(value))
 	{
 		if(!CSemIsError(value))
 		{

@@ -5,6 +5,10 @@
 	cscc/c/c_types.h, doc/c_language_abi.html: add bit field definitions
 	to the C compiler.
 
+	* cscc/c/c_defs.tc, cscc/c/c_lvalue.tc, cscc/c/c_oper.tc,
+	cscc/c/c_stubs.tc, cscc/c/c_types.c, cscc/c/c_types.h: implement
+	semantic analysis and code generation for bit fields.
+
 2002-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_coerce.c, cscc/c/c_grammar.y, cscc/c/c_scanner.l,

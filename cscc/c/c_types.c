@@ -1102,6 +1102,119 @@ void CTypeEndStruct(ILGenInfo *info, ILType *structType)
 	}
 }
 
+ILField *CTypeLookupField(ILGenInfo *info, ILType *structType,
+						  const char *fieldName, ILUInt32 *bitFieldStart,
+						  ILUInt32 *bitFieldSize)
+{
+	ILClass *classInfo = ILType_ToValueType(ILTypeStripPrefixes(structType));
+	ILField *field;
+	ILMethod *ctor;
+	ILAttribute *attr;
+	const void *blob;
+	unsigned long blobLen;
+	ILSerializeReader *reader;
+	const char *str;
+	int slen;
+
+	/* Search for the field by name */
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if(!ILField_IsStatic(field) && !strcmp(ILField_Name(field), fieldName))
+		{
+			*bitFieldStart = 0;
+			*bitFieldSize = 0;
+			return field;
+		}
+	}
+
+	/* Search for a bit field definition with the name */
+	ctor = BitFieldCtor(info);
+	attr = 0;
+	while((attr = ILProgramItemNextAttribute
+				(ILToProgramItem(classInfo), attr)) != 0)
+	{
+		/* Skip this attribute if it is not "BitFieldAttribute" */
+		if(ILAttributeTypeAsItem(attr) != ILToProgramItem(ctor))
+		{
+			continue;
+		}
+
+		/* Does this attribute value belong to the specified field? */
+		blob = ILAttributeGetValue(attr, &blobLen);
+		if(!blob)
+		{
+			continue;
+		}
+		reader = ILSerializeReaderInit(ctor, blob, blobLen);
+		if(!reader)
+		{
+			continue;
+		}
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_STRING)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if((slen = ILSerializeReaderGetString(reader, &str)) < 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if(slen != strlen(fieldName) || strncmp(fieldName, str, slen) != 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_STRING)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		if((slen = ILSerializeReaderGetString(reader, &str)) < 0)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+
+		/* Extract the start and size values for the bit field */
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_I4)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		*bitFieldStart = (ILUInt32)(ILSerializeReaderGetInt32
+			(reader, IL_META_SERIALTYPE_I4));
+		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_I4)
+		{
+			ILSerializeReaderDestroy(reader);
+			continue;
+		}
+		*bitFieldSize = (ILUInt32)(ILSerializeReaderGetInt32
+			(reader, IL_META_SERIALTYPE_I4));
+		ILSerializeReaderDestroy(reader);
+
+		/* Find the underlying field */
+		field = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+					(classInfo, (ILMember *)field,
+					 IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!ILField_IsStatic(field) &&
+			   slen == strlen(ILField_Name(field)) &&
+			   !strncmp(ILField_Name(field), str, slen))
+			{
+				return field;
+			}
+		}
+
+		/* If we get here, then the bit field definition is invalid */
+		break;
+	}
+	return 0;
+}
+
 ILType *CTypeWithoutQuals(ILType *type)
 {
 	/* Qualifiers are stored in the IL type as custom modifiers */

@@ -152,6 +152,15 @@ int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
 void CTypeEndStruct(ILGenInfo *info, ILType *structType);
 
 /*
+ * Look up a field name within a "struct" or "union" type.
+ * "*bitFieldSize" will be zero for a non bit field.  Returns
+ * NULL if the field could not be found.
+ */
+ILField *CTypeLookupField(ILGenInfo *info, ILType *structType,
+						  const char *fieldName, ILUInt32 *bitFieldStart,
+						  ILUInt32 *bitFieldSize);
+
+/*
  * Remove qualifiers from a C type.
  */
 ILType *CTypeWithoutQuals(ILType *type);

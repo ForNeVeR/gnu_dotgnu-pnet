@@ -36,8 +36,9 @@ ILNode_CSemAnalysis(ILNode_CMemberField)
 	CSemValue value;
 	ILType *type;
 	ILType *fieldType;
-	ILClass *classInfo;
 	ILField *field;
+	ILUInt32 bitFieldStart;
+	ILUInt32 bitFieldSize;
 
 	/* Perform semantic analysis on the primary expression */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -58,18 +59,8 @@ ILNode_CSemAnalysis(ILNode_CMemberField)
 	}
 
 	/* Search for the field within the type */
-	classInfo = ILTypeToClass(info, ILTypeStripPrefixes(type));
-	field = 0;
-	while((field = (ILField *)ILClassNextMemberByKind
-				(classInfo, (ILMember *)field,
-				 IL_META_MEMBERKIND_FIELD)) != 0)
-	{
-		if(!strcmp(ILField_Name(field), node->name) &&
-		   !ILField_IsStatic(field))
-		{
-			break;
-		}
-	}
+	field = CTypeLookupField(info, type, node->name,
+							 &bitFieldStart, &bitFieldSize);
 	if(!field)
 	{
 		if(CTypeIsStruct(type))
@@ -102,7 +93,26 @@ ILNode_CSemAnalysis(ILNode_CMemberField)
 		/* Add back the "volatile" modifier from the struct type */
 		fieldType = CTypeAddVolatile(info, fieldType);
 	}
-	if(CTypeIsArray(fieldType))
+	if(bitFieldSize != 0)
+	{
+		/* Replace this node with a bit field access node */
+		if(CSemIsLValue(value))
+		{
+			*parent = ILNode_CBitField_create(node->expr, field,
+											  ILTypeToMachineType(fieldType),
+											  bitFieldStart, bitFieldSize, 1);
+			CSemSetLValueNoRef(value, fieldType);
+		}
+		else
+		{
+			*parent = ILNode_CBitField_create(node->expr, field,
+											  ILTypeToMachineType(fieldType),
+											  bitFieldStart, bitFieldSize, 0);
+			CSemSetRValue(value, fieldType);
+		}
+		CGenCloneLine(*parent, (ILNode *)node);
+	}
+	else if(CTypeIsArray(fieldType))
 	{
 		if(!CSemIsLValue(value))
 		{
@@ -304,8 +314,9 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 	ILType *type;
 	ILType *structType;
 	ILType *fieldType;
-	ILClass *classInfo;
 	ILField *field;
+	ILUInt32 bitFieldStart;
+	ILUInt32 bitFieldSize;
 
 	/* Perform semantic analysis on the primary expression */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -331,18 +342,8 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 	}
 
 	/* Search for the field within the type */
-	classInfo = ILTypeToClass(info, ILTypeStripPrefixes(structType));
-	field = 0;
-	while((field = (ILField *)ILClassNextMemberByKind
-				(classInfo, (ILMember *)field,
-				 IL_META_MEMBERKIND_FIELD)) != 0)
-	{
-		if(!strcmp(ILField_Name(field), node->name) &&
-		   !ILField_IsStatic(field))
-		{
-			break;
-		}
-	}
+	field = CTypeLookupField(info, type, node->name,
+							 &bitFieldStart, &bitFieldSize);
 	if(!field)
 	{
 		if(CTypeIsStruct(type))
@@ -375,7 +376,16 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 		/* Add back the "volatile" modifier from the struct type */
 		fieldType = CTypeAddVolatile(info, fieldType);
 	}
-	if(CTypeIsArray(fieldType))
+	if(bitFieldSize != 0)
+	{
+		/* Replace this node with a bit field access node */
+		*parent = ILNode_CBitField_create(node->expr, field,
+										  ILTypeToMachineType(fieldType),
+										  bitFieldStart, bitFieldSize, 0);
+		CGenCloneLine(*parent, (ILNode *)node);
+		CSemSetLValueNoRef(value, fieldType);
+	}
+	else if(CTypeIsArray(fieldType))
 	{
 		CSemSetRValue(value, CTypeDecay(info, fieldType));
 	}
@@ -1420,4 +1430,409 @@ ILNode_CGenAddress(ILNode_CDeref)
 	addr.ptrOnStack = 1;
 	addr.offset = 0;
 	return addr;
+}
+
+/*
+ * Get the machine type for a bit field access node.
+ */
+ILNode_GetType(ILNode_CBitField)
+{
+	return node->machineType;
+}
+
+%output "c_nodes.c"
+
+%{
+
+/*
+ * Convert a raw storage value into a bit field value.
+ */
+static void RawToBitField(ILGenInfo *info, ILMachineType type,
+						  ILUInt32 start, ILUInt32 size)
+{
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_Int16:
+		case ILMachineType_Int32:
+		{
+			/* Handle signed fields of 32 bits or less in size */
+			if(size == 8)
+			{
+				if(start == (32 - 8))
+				{
+					ILGenUIntNative(info, start);
+					ILGenSimple(info, IL_OP_SHR);
+					ILGenExtend(info, 1);
+				}
+				else if(start != 0)
+				{
+					ILGenUIntNative(info, start);
+					ILGenSimple(info, IL_OP_SHR);
+					ILGenSimple(info, IL_OP_CONV_I1);
+					ILGenExtend(info, 1);
+				}
+				else
+				{
+					ILGenSimple(info, IL_OP_CONV_I1);
+				}
+			}
+			else if(size == 16)
+			{
+				if(start == (32 - 16))
+				{
+					ILGenUIntNative(info, start);
+					ILGenSimple(info, IL_OP_SHR);
+					ILGenExtend(info, 1);
+				}
+				else if(start != 0)
+				{
+					ILGenUIntNative(info, start);
+					ILGenSimple(info, IL_OP_SHR);
+					ILGenSimple(info, IL_OP_CONV_I2);
+					ILGenExtend(info, 1);
+				}
+				else
+				{
+					ILGenSimple(info, IL_OP_CONV_I2);
+				}
+			}
+			else
+			{
+				if((start + size) < 32)
+				{
+					ILGenUIntNative(info, 32 - (start + size));
+					ILGenSimple(info, IL_OP_SHL);
+					ILGenExtend(info, 1);
+				}
+				ILGenUIntNative(info, 32 - size);
+				ILGenSimple(info, IL_OP_SHR);
+				ILGenExtend(info, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_UInt8:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_UInt32:
+		{
+			/* Handle unsigned fields of 32 bits or less in size */
+			if(start != 0)
+			{
+				ILGenUIntNative(info, start);
+				ILGenSimple(info, IL_OP_SHR_UN);
+				ILGenExtend(info, 1);
+			}
+			if(size == 8)
+			{
+				ILGenSimple(info, IL_OP_CONV_U1);
+			}
+			else if(size == 16)
+			{
+				ILGenSimple(info, IL_OP_CONV_U2);
+			}
+			else
+			{
+				ILGenUInt32(info, (((ILUInt32)1) << size) - 1);
+				ILGenSimple(info, IL_OP_AND);
+				ILGenExtend(info, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			/* Handle 64-bit signed fields */
+			if((start + size) < 64)
+			{
+				ILGenUIntNative(info, 64 - (start + size));
+				ILGenSimple(info, IL_OP_SHL);
+				ILGenExtend(info, 1);
+			}
+			ILGenUIntNative(info, 64 - size);
+			ILGenSimple(info, IL_OP_SHR);
+			ILGenExtend(info, 1);
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			/* Handle 64-bit unsigned fields */
+			if(start != 0)
+			{
+				ILGenUIntNative(info, start);
+				ILGenSimple(info, IL_OP_SHR_UN);
+				ILGenExtend(info, 1);
+			}
+			ILGenUInt64(info, (((ILUInt64)1) << size) - 1);
+			ILGenSimple(info, IL_OP_AND);
+			ILGenExtend(info, 1);
+		}
+		break;
+
+		default: break;
+	}
+}
+
+/*
+ * Duplicate a stack value that corresponds to a raw storage
+ * value.  Mask off the bit field bits in the second top value,
+ * and convert the top value from raw into a bit field.  This
+ * prepares the stack for a later store operation.
+ */
+static void BitFieldGetAndPrepare(ILGenInfo *info, ILMachineType type,
+							      ILUInt32 start, ILUInt32 size)
+{
+	unsigned tempVar;
+
+	/* We need a temporary variable */
+	tempVar = ILGenTempVar(info, type);
+
+	/* Save the value in the temporary variable */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenStoreLocal(info, tempVar);
+	ILGenExtend(info, 1);
+
+	/* Mask off the bit field */
+	if(type == ILMachineType_Int64 || type == ILMachineType_UInt64)
+	{
+		ILGenUInt64(info, ~(((((ILUInt64)1) << size) - 1) << start));
+		ILGenSimple(info, IL_OP_AND);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		ILGenUInt32(info, ~(((((ILUInt32)1) << size) - 1) << start));
+		ILGenSimple(info, IL_OP_AND);
+		ILGenExtend(info, 1);
+	}
+
+	/* Reload the original value onto the stack */
+	ILGenLoadLocal(info, tempVar);
+	ILGenAdjust(info, 1);
+
+	/* Convert from raw to final */
+	RawToBitField(info, type, start, size);
+
+	/* Release the temporary variable */
+	ILGenReleaseTempVar(info, tempVar);
+}
+
+/*
+ * Convert a bit field value into a raw storage value and OR
+ * it with the original masked storage value that is already
+ * on the stack.
+ */
+static void BitFieldToRaw(ILGenInfo *info, ILMachineType type,
+						  ILUInt32 start, ILUInt32 size)
+{
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		{
+			ILGenUInt32(info, (((ILUInt32)1) << size) - 1);
+			ILGenSimple(info, IL_OP_AND);
+			ILGenExtend(info, 1);
+			if(start != 0)
+			{
+				ILGenUIntNative(info, start);
+				ILGenSimple(info, IL_OP_SHL);
+				ILGenExtend(info, 1);
+			}
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			ILGenUInt64(info, (((ILUInt64)1) << size) - 1);
+			ILGenSimple(info, IL_OP_AND);
+			ILGenExtend(info, 1);
+			if(start != 0)
+			{
+				ILGenUIntNative(info, start);
+				ILGenSimple(info, IL_OP_SHL);
+				ILGenExtend(info, 1);
+			}
+		}
+		break;
+
+		default: break;
+	}
+	ILGenSimple(info, IL_OP_OR);
+	ILGenAdjust(info, -1);
+}
+
+%}
+
+%output "c_semantics.c"
+
+/*
+ * Generate value code for a bit field access node.
+ */
+ILNode_GenValue(ILNode_CBitField)
+{
+	/* Push the address or value onto the stack */
+	if(node->genExprAsAddr)
+	{
+		ILNode_GenRef((ILNode_LValue *)(node->expr), info);
+	}
+	else
+	{
+		ILNode_GenValue(node->expr, info);
+	}
+
+	/* Load the contents of the storage field */
+	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+
+	/* Mask off unnecessary bits, shift down, and sign-extend */
+	RawToBitField(info, node->machineType, node->bitFieldStart,
+				  node->bitFieldSize);
+
+	/* Done */
+	return node->machineType;
+}
+JavaGenValue(ILNode_CBitField)
+{
+	/* Never called: nothing to do here */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a bit field access node.
+ */
+ILNode_Prepare(ILNode_CBitField)
+{
+	/* Push the address of the structure onto the stack */
+	if(node->genExprAsAddr)
+	{
+		ILNode_GenRef((ILNode_LValue *)(node->expr), info);
+	}
+	else
+	{
+		ILNode_GenValue(node->expr, info);
+	}
+
+	/* Fetch the current value and mask off the bit field */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	ILGenAdjust(info, 1);
+	if(node->machineType == ILMachineType_Int64 ||
+	   node->machineType == ILMachineType_UInt64)
+	{
+		ILGenUInt64(info, ~(((((ILUInt64)1) << node->bitFieldSize) - 1)
+								<< node->bitFieldStart));
+		ILGenSimple(info, IL_OP_AND);
+		ILGenExtend(info, 1);
+	}
+	else
+	{
+		ILGenUInt32(info, ~(((((ILUInt32)1) << node->bitFieldSize) - 1)
+								<< node->bitFieldStart));
+		ILGenSimple(info, IL_OP_AND);
+		ILGenExtend(info, 1);
+	}
+
+	/* The bit field is prepared */
+	return node->machineType;
+}
+JavaPrepare(ILNode_CBitField)
+{
+	/* Never called: nothing to do here */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a bit field access node.
+ */
+ILNode_GetAndPrepare(ILNode_CBitField)
+{
+	/* Push the address of the structure onto the stack */
+	if(node->genExprAsAddr)
+	{
+		ILNode_GenRef((ILNode_LValue *)(node->expr), info);
+	}
+	else
+	{
+		ILNode_GenValue(node->expr, info);
+	}
+
+	/* Fetch the current value of the storage field */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
+	ILGenAdjust(info, 1);
+
+	/* Extract the bit field value and prepare the remainder for storing */
+	BitFieldGetAndPrepare(info, node->machineType, node->bitFieldStart,
+						  node->bitFieldSize);
+
+	/* Save a copy of the value if we need to leave it on the stack */
+	if(leave)
+	{
+		node->tempVar = ILGenTempVar(info, node->machineType);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, node->tempVar);
+		ILGenExtend(info, 1);
+	}
+
+	/* The bit field is prepared */
+	return node->machineType;
+}
+JavaGetAndPrepare(ILNode_CBitField)
+{
+	/* Never called: nothing to do here */
+	return node->machineType;
+}
+
+/*
+ * Store into a bit field access node.
+ */
+ILNode_Store(ILNode_CBitField)
+{
+	unsigned tempVar = ~((unsigned)0);
+
+	/* Save the value in a temporary variable if we need to leave it */
+	if(leave)
+	{
+		tempVar = ILGenTempVar(info, node->machineType);
+		ILGenSimple(info, IL_OP_DUP);
+		ILGenStoreLocal(info, tempVar);
+		ILGenExtend(info, 1);
+	}
+
+	/* Combine the value with the other parts of the storage field */
+	BitFieldToRaw(info, node->machineType, node->bitFieldStart,
+				  node->bitFieldSize);
+
+	/* Store the combined value back into the storage field */
+	ILGenFieldRef(info, IL_OP_STFLD, node->field);
+	ILGenAdjust(info, -2);
+
+	/* Reload the value onto the stack if necessary */
+	if(leave)
+	{
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, tempVar);
+	}
+
+	/* Did we have a "left" value from the "GetAndPrepare" call? */
+	if(node->tempVar != ~((unsigned)0))
+	{
+		ILGenLoadLocal(info, node->tempVar);
+		ILGenAdjust(info, 1);
+		ILGenReleaseTempVar(info, node->tempVar);
+		node->tempVar = ~((unsigned)0);
+	}
+}
+JavaStore(ILNode_CBitField)
+{
+	/* Never called: nothing to do here */
 }

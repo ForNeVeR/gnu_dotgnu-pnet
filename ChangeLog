@@ -18,6 +18,10 @@ cscc/cs_main.c (main): dump modules assemblies to the assembly stream.
 arguments for library lookups, and import library classes into the
 main image properly.
 
+* codegen/cg_decls.tc (GenDiscard-ClassDefn): specify the image pointer
+when dumping class names for parents and interfaces so that the correct
+scope information is output.
+
 2001-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * pnet.spec: applied patch submitted by mdaniel to create RPM spec file.

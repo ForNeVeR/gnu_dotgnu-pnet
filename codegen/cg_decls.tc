@@ -95,7 +95,8 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 		if(ILClass_Parent(classInfo) != 0)
 		{
 			fputs(" extends ", info->asmOutput);
-			ILDumpClassName(info->asmOutput, 0, ILClass_Parent(classInfo),
+			ILDumpClassName(info->asmOutput, info->image,
+							ILClass_Parent(classInfo),
 							IL_DUMP_QUOTE_NAMES);
 		}
 
@@ -114,7 +115,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 			{
 				fputs(", ", info->asmOutput);
 			}
-			ILDumpClassName(info->asmOutput, 0, interface,
+			ILDumpClassName(info->asmOutput, info->image, interface,
 							IL_DUMP_QUOTE_NAMES);
 		}
 

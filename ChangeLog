@@ -1,3 +1,8 @@
+2003-07-09  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/thread.c, engine/process.c: Fix bug that caused the
+	finalizer to destroy the main thread even though if
+	ILProcessDestroy has already destroyed it.
 
 2003-07-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -19,6 +19,7 @@
  */
 
 #include "engine.h"
+#include "lib_defs.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -180,9 +181,23 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		}
 		else
 		{
-			/* The thread isn't a finalizer thread so destroy it */
+			/* The thread isn't a finalizer thread so destroy it to free up its stack space
+			    so the finalizer can reclaim everything 
+				Note: This is threadsafe.  There's no way the finalizer could run on the
+				CLR thread while we still hold a reference to it */
 
+			if (thread->clrThread)
+			{
+				/* Null out the privateData field so the thread doesn't try to destroy
+				    the ILThread twice when it finalizes */
+
+				((System_Thread *)thread->clrThread)->privateData = 0;
+			}
+
+			/* Destroy the support thread */
 			ILThreadDestroy(thread->supportThread);
+
+			/* Destroy the engine thread */
 			_ILExecThreadDestroy(thread);
 		}
 
@@ -193,9 +208,11 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	process->firstThread = firstFinalizerThread;
 
 	/* Tell the GC we're history */	
-	/* This performs a final collect and finalizer run */
+	/* This performs a final collect and finalizer run and also destroy any finalizer threads */
 	ILGCDeinit();
-	
+
+	/* All threads should be destroyed now */
+
 	/* Destroy the CVM coder instance */
 	ILCoderDestroy(process->coder);
 

@@ -136,6 +136,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 	thread->clrThread = 0;	
 	thread->freeMonitor = 0;	
 	thread->pc = 0;
+	thread->isFinalizerThread = 0;
 	thread->frame = thread->stackBase;
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;

@@ -1,15 +1,12 @@
 
 2004-05-24  Klaus Treichel  <ktreichel@web.de>
 
- 	* System.Windows.Forms/UpDownBase.cs
- 	fix mouse problem on Windows
- 	change mouse handling to simulate behavior on MS .Net
+	* System.Windows.Forms/UpDownBase.cs: fix mouse problem on 
+	Windows change mouse handling to simulate behavior on MS .Net
 	set focus to textbox if user clicks on any updown button.
- 
- 	* tests/runtime/System/TestBoolean.cs
- 	added tests for AND, OR and XOR operators
 
-	(patch #3082 plus minor changes) 
+	* tests/runtime/System/TestBoolean.cs: added tests for AND, 
+	OR and XOR operators. (patch #3082 plus minor changes) 
 	
 2004-05-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 

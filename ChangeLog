@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update for "0.3.0" release.
 
+	* configure.in: update the working version to "0.3.1".
+
 2001-02-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: add a "Standards" section with links to the ECMA

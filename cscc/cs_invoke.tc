@@ -56,6 +56,13 @@ int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
 					    CSEvalArg *args, int numArgs);
 
 /*
+ * Determine the best method candidate in a group.
+ * Returns NULL if none of the methods are "best".
+ */
+ILMethod *CSBestCandidate(ILGenInfo *info, void *group,
+						  CSEvalArg *args, int numArgs);
+
+/*
  * Coerce the arguments and set up the final argument list.
  * Returns the method's return type.
  */
@@ -250,23 +257,45 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 		return CSSemValueDefault;
 	}
 
-	/* Find a candidate method (TODO: handle multiple candidates) */
+	/* Find the set of candidate methods */
 	methodNum = 0;
 	while((methodInfo = CSGetGroupMember
 							((void *)(method.type), methodNum)) != 0)
 	{
 		if(CSMethodIsCandidate(info, methodInfo, args, numArgs))
 		{
-			break;
+			++methodNum;
 		}
-		++methodNum;
+		else
+		{
+			method.type = (ILType *)CSRemoveGroupMember
+								((void *)(method.type), methodNum);
+		}
 	}
+
+	/* If there are no candidates left, then bail out */
+	methodNum = 0;
+	methodInfo = CSGetGroupMember((void *)(method.type), methodNum);
 	if(!methodInfo)
 	{
 		MethodCandidateError((ILNode *)node, methodName,
 							 (void *)(method.type), args, numArgs);
 		CSEvalFreeArguments(args);
 		return CSSemValueDefault;
+	}
+
+	/* There are two or more candidates, then try to find the best one */
+	if(CSGetGroupMember((void *)(method.type), 1) != 0)
+	{
+		methodInfo = CSBestCandidate(info, (void *)(method.type),
+									 args, numArgs);
+		if(!methodInfo)
+		{
+			MethodCandidateError((ILNode *)node, methodName,
+								 (void *)(method.type), args, numArgs);
+			CSEvalFreeArguments(args);
+			return CSSemValueDefault;
+		}
 	}
 
 	/* Import the method into this image, and set it within the node */
@@ -568,16 +597,17 @@ void CSEvalFreeArguments(CSEvalArg *args)
 	}
 }
 
-int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
-						CSEvalArg *args, int numArgs)
+/*
+ * Get the type and modifier information associated with
+ * a method parameter.  The first parameter is 0.  Returns
+ * ILType_Invalid if the parameter index is invalid.
+ */
+static ILType *GetMethodParamType(ILMethod *method, ILType *signature,
+								  int paramNum, ILParameterModifier *paramMod)
 {
-	ILType *signature = ILMethod_Signature(method);
 	int numParams = signature->num;
 	int firstParam;
-	int haveParamArray;
-	int argNum;
 	ILType *paramType;
-	ILParameterModifier paramMod;
 
 	/* If we have an "explicit this" method, then we need to
 	   adjust for the first parameter, which is always "this" */
@@ -592,94 +622,157 @@ int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
 		firstParam = 1;
 	}
 
-	/* Does this method have a "params" array at the end? */
-	haveParamArray =
-		(numParams > 0 &&
-		 ILGenGetParamInfo(method, signature, numParams, &paramType)
-		 		== ILParamMod_params);
-
-	/* Perform parameter matching */
-	if(!haveParamArray)
+	/* Bail out if the parameter number is out of range */
+	if(paramNum > (numParams - firstParam))
 	{
-		/* We must have exactly "numParams" arguments */
-		if(numArgs != (numParams - firstParam + 1))
-		{
-			return 0;
-		}
+		return ILType_Invalid;
+	}
 
-		/* Check for implicit coercions on all arguments */
-		for(argNum = 0; argNum < numArgs; ++argNum)
-		{
-			paramMod = ILGenGetParamInfo(method, signature,
-										 argNum + firstParam,
-										 &paramType);
-			if(paramMod != args[argNum].modifier)
-			{
-				return 0;
-			}
-			if(paramMod == ILParamMod_empty)
-			{
-				if(!ILCanCoerce(info->context, args[argNum].type, paramType))
-				{
-					return 0;
-				}
-			}
-			else if(!ILTypeIdentical(args[argNum].type, paramType))
-			{
-				return 0;
-			}
-		}
+	/* Get the parameter type information and return it */
+	*paramMod = ILGenGetParamInfo(method, signature, paramNum + firstParam,
+								  &paramType);
+	return paramType;
+}
+
+/*
+ * Get the element type of a single-dimensional array,
+ * or return ILType_Invalid if not such as array.
+ */
+static ILType *GetArrayElemType(ILType *type)
+{
+	if(type != 0 && ILType_IsComplex(type) &&
+	   type->kind == IL_TYPE_COMPLEX_ARRAY)
+	{
+		return type->un.array.elemType;
 	}
 	else
 	{
-		/* We must have at least "numParams - 1" arguments */
-		if(numArgs < (numParams - firstParam))
+		return ILType_Invalid;
+	}
+}
+
+int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
+						CSEvalArg *args, int numArgs)
+{
+	ILType *signature = ILMethod_Signature(method);
+	int argNum, paramNum;
+	ILParameterModifier paramMod;
+	ILType *paramType;
+	ILType *elemType;
+	int matchParams;
+
+	/* Scan through the parameters looking for a match */
+	paramNum = 0;
+	matchParams = 0;
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+		if(paramType == ILType_Invalid)
 		{
+			/* Too many arguments were supplied */
 			return 0;
 		}
-
-		/* Check for implicit coercions on all fixed arguments */
-		for(argNum = 0; argNum < (numParams - firstParam); ++argNum)
-		{
-			paramMod = ILGenGetParamInfo(method, signature,
-										 argNum + firstParam,
-										 &paramType);
-			if(paramMod != args[argNum].modifier)
-			{
-				return 0;
-			}
-			if(paramMod == ILParamMod_empty)
-			{
-				if(!ILCanCoerce(info->context, args[argNum].type, paramType))
-				{
-					return 0;
-				}
-			}
-			else if(!ILTypeIdentical(args[argNum].type, paramType))
-			{
-				return 0;
-			}
-		}
-
-		/* Get the parameter array element type */
-		ILGenGetParamInfo(method, signature, numParams, &paramType);
-
-		/* Check that all remaining arguments can be coerced to "paramType" */
-		for(argNum = (numParams - firstParam); argNum < numArgs; ++argNum)
+		else if(paramMod == ILParamMod_params)
 		{
 			if(args[argNum].modifier != ILParamMod_empty)
 			{
 				return 0;
 			}
+			if(matchParams)
+			{
+				/* We already started matching as an element type,
+				   so we must keep matching as an element type */
+				if(!ILCanCoerce(info->context, args[argNum].type, paramType))
+				{
+					return 0;
+				}
+			}
+			else
+			{
+				/* The match can either be as an array, or as an element type */
+				elemType = GetArrayElemType(args[argNum].type);
+				if(elemType != ILType_Invalid &&
+				   ILCanCoerce(info->context, elemType, paramType))
+				{
+					/* Matched as an array */
+					++paramNum;
+				}
+				else if(!ILCanCoerce(info->context, args[argNum].type,
+									 paramType))
+				{
+					/* Could not match as an array or as an element */
+					return 0;
+				}
+				else
+				{
+					/* Match everything else as an element */
+					matchParams = 1;
+				}
+			}
+		}
+		else if(paramMod != args[argNum].modifier)
+		{
+			/* Incorrect modifiers */
+			return 0;
+		}
+		else if(paramMod == ILParamMod_empty)
+		{
+			/* Match anything that can coerce to the parameter type */
 			if(!ILCanCoerce(info->context, args[argNum].type, paramType))
 			{
 				return 0;
 			}
+			++paramNum;
+		}
+		else
+		{
+			/* The type match must be exact for "ref" and "out" parameters */
+			if(!ILTypeIdentical(args[argNum].type, paramType))
+			{
+				return 0;
+			}
+			++paramNum;
 		}
 	}
 
-	/* If we get here, then we have a match */
-	return 1;
+	/* Get the next parameter type, which must either be
+	   a "params" array, or the end of the parameter list */
+	paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+	return (paramType == ILType_Invalid || paramMod == ILParamMod_params);
+}
+
+/*
+ * Determine which of two methods is better than the other one.
+ * Returns IL_BETTER_T1 if "method1" is better, or IL_BETTER_T2
+ * if "method2" is better, or IL_BETTER_NEITHER if neither is better.
+ */
+static int BetterMethod(ILGenInfo *info, ILMethod *method1, ILMethod *method2,
+						CSEvalArg *args, int numArgs)
+{
+	return IL_BETTER_NEITHER;
+}
+
+ILMethod *CSBestCandidate(ILGenInfo *info, void *group,
+						  CSEvalArg *args, int numArgs)
+{
+	unsigned long methodNum = 1;
+	ILMethod *bestMethod = (ILMethod *)CSGetGroupMember(group, 0);
+	ILMethod *testMethod;
+	int better;
+	while((testMethod = (ILMethod *)CSGetGroupMember(group, methodNum)) != 0)
+	{
+		better = BetterMethod(info, bestMethod, testMethod, args, numArgs);
+		if(better == IL_BETTER_NEITHER)
+		{
+			return 0;
+		}
+		else if(better == IL_BETTER_T2)
+		{
+			bestMethod = testMethod;
+		}
+		++methodNum;
+	}
+	return bestMethod;
 }
 
 ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
@@ -687,120 +780,107 @@ ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
 						   ILNode **argListParent)
 {
 	ILType *signature = ILMethod_Signature(method);
-	int numParams = signature->num;
-	int firstParam;
-	int haveParamArray;
-	int argNum;
+	int argNum, argNum2, paramNum;
+	ILParameterModifier paramMod;
 	ILType *paramType;
+	ILType *elemType;
 	ILNode *argList;
 	ILNode *argArray;
-	ILParameterModifier paramMod;
 
-	/* If we have an "explicit this" method, then we need to
-	   adjust for the first parameter, which is always "this" */
-	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
-	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) != 0 &&
-	   numParams > 0)
+	/* Coerce the fixed parameters */
+	paramNum = 0;
+	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
-		firstParam = 2;
-	}
-	else
-	{
-		firstParam = 1;
-	}
-
-	/* Does this method have a "params" array at the end? */
-	haveParamArray =
-		(numParams > 0 &&
-		 ILGenGetParamInfo(method, signature, numParams, &paramType)
-		 		== ILParamMod_params);
-
-	/* Perform parameter matching */
-	if(!haveParamArray)
-	{
-		/* Coerce all arguments */
-		for(argNum = 0; argNum < numArgs; ++argNum)
+		paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+		if(paramMod == ILParamMod_params)
 		{
-			paramMod = ILGenGetParamInfo(method, signature,
-										 argNum + firstParam,
-										 &paramType);
-			if(paramMod != ILParamMod_ref && paramMod != ILParamMod_out)
-			{
-				ILCoerce(info, args[argNum].node,
-						 args[argNum].parent, args[argNum].type, paramType);
-			}
+			break;
 		}
-	}
-	else
-	{
-		/* Coerce the fixed arguments */
-		for(argNum = 0; argNum < (numParams - firstParam); ++argNum)
-		{
-			paramMod = ILGenGetParamInfo(method, signature,
-										 argNum + firstParam,
-										 &paramType);
-			if(paramMod != ILParamMod_ref && paramMod != ILParamMod_out)
-			{
-				ILCoerce(info, args[argNum].node,
-						 args[argNum].parent, args[argNum].type, paramType);
-			}
-		}
-
-		/* Get the parameter array element type */
-		ILGenGetParamInfo(method, signature, numParams, &paramType);
-
-		/* Coerce the remaining arguments to the element type */
-		for(argNum = (numParams - firstParam); argNum < numArgs; ++argNum)
+		else if(paramMod != ILParamMod_ref && paramMod != ILParamMod_out)
 		{
 			ILCoerce(info, args[argNum].node,
-					 args[argNum].parent, args[argNum].type,
-					 paramType);
+					 args[argNum].parent, args[argNum].type, paramType);
 		}
+		++paramNum;
+	}
 
-		/* Build a new argument list for the fixed arguments */
-		argList = 0;
-		for(argNum = 0; argNum < (numParams - firstParam); ++argNum)
+	/* Coerce the remaining "params" parameters */
+	paramType = GetMethodParamType(method, signature, paramNum, &paramMod);
+	if(paramType != ILType_Invalid && paramMod == ILParamMod_params)
+	{
+		/* Determine how to repack the arguments */
+		if(argNum < numArgs)
 		{
-			if(argList)
+			elemType = GetArrayElemType(args[argNum].type);
+			if(elemType != ILType_Invalid &&
+			   ILCanCoerce(info->context, elemType, paramType))
 			{
-				argList = ILNode_ArgList_create
-								(argList, *(args[argNum].parent));
+				/* Pass the argument as an array */
+				paramType = ILTypeGetParam(signature, signature->num);
+				ILCoerce(info, args[argNum].node,
+						 args[argNum].parent, args[argNum].type, paramType);
+				argArray = 0;
 			}
 			else
 			{
-				argList = *(args[argNum].parent);
-			}
-		}
+				/* Coerce the remaining arguments to the element type */
+				for(argNum2 = argNum; argNum2 < numArgs; ++argNum2)
+				{
+					ILCoerce(info, args[argNum2].node,
+							 args[argNum2].parent, args[argNum2].type,
+							 paramType);
+				}
 
-		/* Build an array containing the remaining arguments */
-		argArray = 0;
-		for(argNum = (numParams - firstParam); argNum < numArgs; ++argNum)
-		{
-			if(argArray)
-			{
-				argArray = ILNode_ArgList_create
-								(argArray, *(args[argNum].parent));
+				/* Build an array that contains the remaining arguments */
+				argArray = 0;
+				for(argNum2 = argNum; argNum2 < numArgs; ++argNum2)
+				{
+					if(argArray)
+					{
+						argArray = ILNode_ArgList_create
+										(argArray, *(args[argNum2].parent));
+					}
+					else
+					{
+						argArray = *(args[argNum2].parent);
+					}
+				}
+				argArray = ILNode_ArgArray_create
+								(paramType, numArgs - argNum, argArray);
 			}
-			else
-			{
-				argArray = *(args[argNum].parent);
-			}
-		}
-		argArray = ILNode_ArgArray_create
-					(paramType, numArgs - (numParams - firstParam), argArray);
-
-		/* Add the argument array to the full argument list */
-		if(argList)
-		{
-			argList = ILNode_ArgList_create(argList, argArray);
 		}
 		else
 		{
-			argList = argArray;
+			/* No extra arguments, so create an empty array */
+			argArray = ILNode_ArgArray_create(paramType, 0, 0);
 		}
 
-		/* Set the argument list in the parent node */
-		*argListParent = argList;
+		/* Build a new argument list if necessary */
+		if(argArray)
+		{
+			argList = 0;
+			for(argNum2 = 0; argNum2 < argNum; ++argNum2)
+			{
+				if(argList)
+				{
+					argList = ILNode_ArgList_create
+									(argList, *(args[argNum2].parent));
+				}
+				else
+				{
+					argList = *(args[argNum2].parent);
+				}
+			}
+			if(argList)
+			{
+				argList = ILNode_ArgList_create(argList, argArray);
+			}
+			else
+			{
+				argList = argArray;
+			}
+			*argListParent = argList;
+		}
 	}
 
 	/* Return the method's return type to the caller */

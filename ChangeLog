@@ -10,6 +10,9 @@ it to use the wrong pointer for the method.
 * cscc/cs_grammar.y: make sure that the "System" namespace is always
 included at the global level of every source file.
 
+* cscc/cs_internal.h, cscc/cs_invoke.tc, cscc/cs_lookup.c: improve the
+method candidate testing so that it handles multiple candidates better.
+
 2001-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/sig_writer.c (WriteType): modify the representation of multi-

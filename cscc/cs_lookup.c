@@ -965,6 +965,34 @@ ILMethod *CSGetGroupMember(void *group, unsigned long n)
 	return 0;
 }
 
+void *CSRemoveGroupMember(void *group, unsigned long n)
+{
+	CSMemberInfo *member = (CSMemberInfo *)group;
+	CSMemberInfo *last = 0;
+	while(member != 0)
+	{
+		if(n <= 0)
+		{
+			if(last)
+			{
+				last->next = member->next;
+				ILFree(member);
+				return group;
+			}
+			else
+			{
+				last = member->next;
+				ILFree(member);
+				return (void *)last;
+			}
+		}
+		--n;
+		last = member;
+		member = member->next;
+	}
+	return group;
+}
+
 #ifdef	__cplusplus
 };
 #endif

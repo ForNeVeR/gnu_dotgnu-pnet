@@ -224,6 +224,12 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
  */
 ILMethod *CSGetGroupMember(void *group, unsigned long n);
 
+/*
+ * Remove the n'th member from a method group.
+ * Returns the new group.
+ */
+void *CSRemoveGroupMember(void *group, unsigned long n);
+
 #ifdef	__cplusplus
 };
 #endif

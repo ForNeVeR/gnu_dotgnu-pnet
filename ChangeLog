@@ -19,6 +19,8 @@ and "lock" statements; alter return type processing for "return".
 type instead of a machine type; add the "context stack"; remove obsolete
 "numLoops" and "numSwitches".
 
+* codegen/cg_decls.tc: alter return type processing for methods.
+
 2001-10-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_invoke.tc: bug fix in "CSEvalArguments"; make sure "ref" and "out"

@@ -388,6 +388,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	ILGotoEntry *gotoEntry, *nextGoto;
 	int outputLabel;
 	ILParameter *param;
+	ILMachineType returnMachineType;
 
 	/* Does the method have PInvoke information associated with it? */
 	if(ILMethod_HasPInvokeImpl(method))
@@ -460,8 +461,8 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 
 	/* Set up the return type so that "return" statements
 	   know what to cast the return value to upon exit */
-	info->returnType =
-		ILTypeToMachineType(ILMethod_Signature(method)->un.method.retType);
+	info->returnType = ILMethod_Signature(method)->un.method.retType;
+	returnMachineType = ILTypeToMachineType(info->returnType);
 
 	/* The local variable frame is created differently in IL and JL */
 	if(info->outputIsJava)
@@ -496,16 +497,16 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 			if(!ILNodeEndsInReturn(node->body))
 			{
 				if(info->returnLabel != ILLabel_Undefined &&
-				   info->returnType == ILMachineType_Void)
+				   info->returnType == ILType_Void)
 				{
 					/* Use this point in the code for return labels
 					   to prevent outputting two "ret"'s in a row */
 					ILGenLabel(info, &(info->returnLabel));
 					outputLabel = 1;
 				}
-				ILGenCast(info, ILMachineType_Void, info->returnType);
+				ILGenCast(info, ILMachineType_Void, returnMachineType);
 				ILGenSimple(info, IL_OP_RET);
-				if(info->returnType != ILMachineType_Void)
+				if(info->returnType != ILType_Void)
 				{
 					ILGenAdjust(info, -1);
 				}
@@ -517,7 +518,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 			if(!outputLabel && info->returnLabel != ILLabel_Undefined)
 			{
 				ILGenLabel(info, &(info->returnLabel));
-				if(info->returnType != ILMachineType_Void)
+				if(info->returnType != ILType_Void)
 				{
 					ILGenLoadLocal(info, info->returnVar);
 					ILGenExtend(info, 1);
@@ -532,18 +533,18 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 			if(!ILNodeEndsInReturn(node->body))
 			{
 				if(info->returnLabel != ILLabel_Undefined &&
-				   info->returnType == ILMachineType_Void)
+				   info->returnType == ILType_Void)
 				{
 					/* Use this point in the code for return labels
 					   to prevent outputting two "ret"'s in a row */
 					JavaGenLabel(info, &(info->returnLabel));
 					outputLabel = 1;
 				}
-				JavaGenCast(info, ILMachineType_Void, info->returnType);
-				JavaGenReturnInsn(info, info->returnType);
+				JavaGenCast(info, ILMachineType_Void, returnMachineType);
+				JavaGenReturnInsn(info, returnMachineType);
 				if(info->returnType != ILMachineType_Void)
 				{
-					JavaGenAdjust(info, -JavaGenTypeSize(info->returnType));
+					JavaGenAdjust(info, -JavaGenTypeSize(returnMachineType));
 				}
 			}
 
@@ -553,12 +554,12 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 			if(!outputLabel && info->returnLabel != ILLabel_Undefined)
 			{
 				JavaGenLabel(info, &(info->returnLabel));
-				if(info->returnType != ILMachineType_Void)
+				if(info->returnType != ILType_Void)
 				{
-					JavaGenLoadLocal(info, info->returnVar, info->returnType);
-					JavaGenExtend(info, JavaGenTypeSize(info->returnType));
+					JavaGenLoadLocal(info, info->returnVar, returnMachineType);
+					JavaGenExtend(info, JavaGenTypeSize(returnMachineType));
 				}
-				JavaGenReturnInsn(info, info->returnType);
+				JavaGenReturnInsn(info, returnMachineType);
 			}
 
 			/* Output the number of local variables to the method */
@@ -579,7 +580,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	info->maxStackHeight = 0;
 
 	/* Clear the return type information */
-	info->returnType = ILMachineType_Void;
+	info->returnType = ILType_Void;
 	info->returnVar = -1;
 	info->returnLabel = ILLabel_Undefined;
 

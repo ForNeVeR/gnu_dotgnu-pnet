@@ -22,8 +22,6 @@
 namespace Platform
 {
 using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 
 public class SocketMethods

@@ -1,3 +1,10 @@
+
+2002-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/Platform/SocketMethods.cs: remove "using" declarations
+	for "System.Net*" because they cause compile problems with
+	"csc /noconfig".
+
 2002-04-20  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Compile fixes.

@@ -70,91 +70,85 @@ public class SocketAddress
 		switch(this.family) 
 		{	
 			case AddressFamily.AppleTalk:
-				str += "AppleTalk:";
+				str = "AppleTalk:";
 				break;
 			case AddressFamily.Atm:
-				str += "Atm:";
+				str = "Atm:";
 				break;
 			case AddressFamily.Banyan:
-				str += "Banyan:";
+				str = "Banyan:";
 				break;
 			case AddressFamily.Ccitt:
-				str += "Ccit:";
+				str = "Ccit:";
 				break;
 			case AddressFamily.Chaos:
-				str += "Chaos:";
+				str = "Chaos:";
 				break;
 			case AddressFamily.Cluster:
-				str += "Cluster:";
+				str = "Cluster:";
 				break;
 			case AddressFamily.DataKit:
-				str += "DataKit:";
+				str = "DataKit:";
 				break;
 			case AddressFamily.DataLink:
-				str += "DataLink:";
+				str = "DataLink:";
 				break;
 			case AddressFamily.DecNet:
-				str += "DecNet:";
+				str = "DecNet:";
 				break;
 			case AddressFamily.Ecma:
-				str += "Ecma:";
+				str = "Ecma:";
 				break;
 			case AddressFamily.FireFox:
-				str += "FireFox:";
+				str = "FireFox:";
 				break;
 			case AddressFamily.HyperChannel:
-				str += "HyperChannel:";
+				str = "HyperChannel:";
 				break;
-			case AddressFamily.Ieee1284:
-				str += "Ieee1284:";
+			case AddressFamily.Ieee12844:
+				str = "Ieee12844:";
 				break;
 			case AddressFamily.ImpLink:
-				str += "ImpLink:";
+				str = "ImpLink:";
 				break;		
 			case AddressFamily.InterNetwork:
-				str += "InterNetwork:";
+				str = "InterNetwork:";
 				break;
 			case AddressFamily.InterNetworkV6:
-				str += "InterNetworkV6:";
+				str = "InterNetworkV6:";
 				break;
 			case AddressFamily.Ipx:
-				str += "Ipx:";
+				str = "Ipx:";
 				break;
 			case AddressFamily.Irda:
-				str += "Irda:";
+				str = "Irda:";
 				break;
 			case AddressFamily.Iso:
-				str += "Iso:";
-				break;
-			case AddressFamily.NS:
-				str += "NS:";
+				str = "Iso:";
 				break;
 			case AddressFamily.NetBios:
-				str += "NetBios:";
+				str = "NetBios:";
 				break;
 			case AddressFamily.NetworkDesigners:
-				str += "NetworkDesigners:";
+				str = "NetworkDesigners:";
 				break;
-			case AddressFamily.Osi:
-				str += "Osi:";
-				break;	
 			case AddressFamily.Pup:
-				str += "Pup:";
+				str = "Pup:";
 				break;
 			case AddressFamily.Sna:
-				str += "Sna:";
+				str = "Sna:";
 				break;
 			case AddressFamily.Unix:
-				str += "Unix:";
+				str = "Unix:";
 				break;
 			case AddressFamily.Unknown:
-				str += "Unknown:";
+				str = "Unknown:";
 				break;
-			case AddressFamiy.Unspecified:
-				str += "Unspecified:";
+			case AddressFamily.Unspecified:
+				str = "Unspecified:";
 				break;
 			case AddressFamily.VoiceView:
-				str += "VoiceView:";
+				str = "VoiceView:";
 				break;
 			default:
 				return null;
@@ -162,7 +156,7 @@ public class SocketAddress
 		str += myarray.Count.ToString();
 		str += ':';
 		str += '{';
-		string tmp;
+		string tmp = String.Empty;
 		foreach(byte x in myarray) 
 		{
 			tmp += x.ToString();

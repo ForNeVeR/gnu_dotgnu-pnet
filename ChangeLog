@@ -1,4 +1,8 @@
 
+2002-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/SocketAddress.cs: fix semantic compile errors.
+
 2002-06-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/SocketAddress.cs: fix some syntax errors.

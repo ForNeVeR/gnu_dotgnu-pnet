@@ -219,6 +219,9 @@ public class MessageBox
 		private Button button1;
 		private Button button2;
 		private Button button3;
+		private VBoxLayout vbox;
+		private HBoxLayout hbox;
+		private HBoxLayout buttonBox;
 		private bool hasCancel;
 
 		// Constructor.
@@ -238,17 +241,32 @@ public class MessageBox
 					Text = String.Empty;
 				}
 
+				// Make the borders suitable for a dialog box.
+				FormBorderStyle = FormBorderStyle.FixedDialog;
+
+				// Create the layout areas.
+				vbox = new VBoxLayout();
+				hbox = new HBoxLayout();
+				buttonBox = new HBoxLayout();
+				vbox.Controls.Add(hbox);
+				vbox.Controls.Add(buttonBox);
+				vbox.StretchControl = hbox;
+				buttonBox.UniformSize = true;
+				vbox.Dock = DockStyle.Fill;
+				Controls.Add(vbox);
+
 				// Create a control to display the message box icon.
 				this.icon = LoadIcon(icon);
 				if(this.icon != null)
 				{
 					iconControl = new Control();
 					iconControl.ClientSize = this.icon.Size;
-					Controls.Add(iconControl);
+					hbox.Controls.Add(iconControl);
 				}
 
 				// Create the label containing the message text.
 				textLabel = new Label();
+				textLabel.TextAlign = ContentAlignment.MiddleLeft;
 				if(text != null)
 				{
 					textLabel.Text = text;
@@ -257,7 +275,7 @@ public class MessageBox
 				{
 					textLabel.Text = String.Empty;
 				}
-				Controls.Add(textLabel);
+				hbox.Controls.Add(textLabel);
 
 				// Determine the number and names of the message box buttons.
 				this.buttons = buttons;
@@ -332,14 +350,14 @@ public class MessageBox
 				}
 
 				// Add the buttons to the control.
-				Controls.Add(button1);
+				buttonBox.Controls.Add(button1);
 				if(button2 != null)
 				{
-					Controls.Add(button2);
+					buttonBox.Controls.Add(button2);
 				}
 				if(button3 != null)
 				{
-					Controls.Add(button3);
+					buttonBox.Controls.Add(button3);
 				}
 
 				// Set the "Accept" and "Cancel" buttons.
@@ -411,7 +429,8 @@ public class MessageBox
 					iconControl.Paint += new PaintEventHandler(PaintIcon);
 				}
 
-				// TODO: perform dialog box layout and sizing
+				// Set the initial message box size to the vbox's recommended.
+				ClientSize = vbox.RecommendedSize;
 			}
 
 		// Detect when button 1 is clicked.

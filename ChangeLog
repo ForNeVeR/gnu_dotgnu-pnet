@@ -9,6 +9,12 @@
 	* runtime/System/Reflection/ClrField.cs: make sure that the class
 	constructor is run before a static field is accessed.
 
+	* System.Windows.Forms/HBoxLayout.cs,
+	System.Windows.Forms/MessageBox.cs,
+	System.Windows.Forms/VBoxLayout.cs: make the "MessageBox" class
+	work in a basic fashion; add "HBoxLayout" and "VBoxLayout"
+	helper classes to do the hard work of automatic dialog box layout.
+
 2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

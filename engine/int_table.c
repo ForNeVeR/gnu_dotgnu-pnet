@@ -1938,7 +1938,7 @@ IL_METHOD_BEGIN(DirMethods_Methods)
 	IL_METHOD("Delete", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Delete, marshal_ipp)
 	IL_METHOD("Rename", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Rename, marshal_ippp)
 	IL_METHOD("GetCurrentDirectory", "()oSystem.String;", _IL_DirMethods_GetCurrentDirectory, marshal_pp)
-	IL_METHOD("GetFilesInDirectory", "(oSystem.String;&oSystem.String;)vPlatform.Errno;", _IL_DirMethods_GetFilesInDirectory, marshal_ippp)
+	IL_METHOD("GetFilesInDirectory", "(oSystem.String;&[vPlatform.FileInfo;)vPlatform.Errno;", _IL_DirMethods_GetFilesInDirectory, marshal_ippp)
 IL_METHOD_END
 
 #endif
@@ -2246,37 +2246,6 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_lpl(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILInt64))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_sps(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt16 (*)(void *, ILInt16))fn)(*((void * *)(avalue[0])), *((ILInt16 *)(avalue[1])));
-}
-
-#endif
-
-#ifndef _IL_IPAddress_suppressed
-
-IL_METHOD_BEGIN(IPAddress_Methods)
-	IL_METHOD("HostToNetworkOrder", "(l)l", _IL_IPAddress_HostToNetworkOrder_l, marshal_lpl)
-	IL_METHOD("HostToNetworkOrder", "(i)i", _IL_IPAddress_HostToNetworkOrder_i, marshal_ipi)
-	IL_METHOD("HostToNetworkOrder", "(s)s", _IL_IPAddress_HostToNetworkOrder_s, marshal_sps)
-	IL_METHOD("NetworkToHostOrder", "(l)l", _IL_IPAddress_NetworkToHostOrder_l, marshal_lpl)
-	IL_METHOD("NetworkToHostOrder", "(i)i", _IL_IPAddress_NetworkToHostOrder_i, marshal_ipi)
-	IL_METHOD("NetworkToHostOrder", "(s)s", _IL_IPAddress_NetworkToHostOrder_s, marshal_sps)
-IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_bppppp(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
@@ -2302,10 +2271,33 @@ IL_METHOD_END
 
 #endif
 
-#ifndef _IL_CodeTable_suppressed
+#if !defined(HAVE_LIBFFI)
 
-IL_METHOD_BEGIN(CodeTable_Methods)
-	IL_METHOD("GetAddress", "(oSystem.IO.Stream;l)*B", _IL_CodeTable_GetAddress, marshal_pppl)
+static void marshal_lpl(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILInt64 *)rvalue) = (*(ILInt64 (*)(void *, ILInt64))fn)(*((void * *)(avalue[0])), *((ILInt64 *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_sps(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt16 (*)(void *, ILInt16))fn)(*((void * *)(avalue[0])), *((ILInt16 *)(avalue[1])));
+}
+
+#endif
+
+#ifndef _IL_IPAddress_suppressed
+
+IL_METHOD_BEGIN(IPAddress_Methods)
+	IL_METHOD("HostToNetworkOrder", "(l)l", _IL_IPAddress_HostToNetworkOrder_l, marshal_lpl)
+	IL_METHOD("HostToNetworkOrder", "(i)i", _IL_IPAddress_HostToNetworkOrder_i, marshal_ipi)
+	IL_METHOD("HostToNetworkOrder", "(s)s", _IL_IPAddress_HostToNetworkOrder_s, marshal_sps)
+	IL_METHOD("NetworkToHostOrder", "(l)l", _IL_IPAddress_NetworkToHostOrder_l, marshal_lpl)
+	IL_METHOD("NetworkToHostOrder", "(i)i", _IL_IPAddress_NetworkToHostOrder_i, marshal_ipi)
+	IL_METHOD("NetworkToHostOrder", "(s)s", _IL_IPAddress_NetworkToHostOrder_s, marshal_sps)
 IL_METHOD_END
 
 #endif
@@ -2365,9 +2357,6 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_CodeAccessPermission_suppressed
 	{"CodeAccessPermission", "System.Security", CodeAccessPermission_Methods},
-#endif
-#ifndef _IL_CodeTable_suppressed
-	{"CodeTable", "I18N.CJK", CodeTable_Methods},
 #endif
 #ifndef _IL_CryptoMethods_suppressed
 	{"CryptoMethods", "Platform", CryptoMethods_Methods},

@@ -405,7 +405,7 @@ extern ILInt32 _IL_DirMethods_Copy(ILExecThread * _thread, ILString * src, ILStr
 extern ILInt32 _IL_DirMethods_Delete(ILExecThread * _thread, ILString * path);
 extern ILInt32 _IL_DirMethods_Rename(ILExecThread * _thread, ILString * old_name, ILString * new_name);
 extern ILString * _IL_DirMethods_GetCurrentDirectory(ILExecThread * _thread);
-extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread, ILString * path, ILString * * Files);
+extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread, ILString * path, System_Array * * files);
 
 extern ILNativeInt _IL_FileMethods_GetInvalidHandle(ILExecThread * _thread);
 extern ILBool _IL_FileMethods_ValidatePathname(ILExecThread * _thread, ILString * path);
@@ -471,15 +471,13 @@ extern ILInt64 _IL_TimeMethods_GetCurrentUtcTime(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetTimeZoneAdjust(ILExecThread * _thread);
 extern ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread * _thread);
 
+extern ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, ILString * host, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
+extern ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
+
 extern ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread * _thread, ILInt64 host);
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 host);
 extern ILInt16 _IL_IPAddress_HostToNetworkOrder_s(ILExecThread * _thread, ILInt16 host);
 extern ILInt64 _IL_IPAddress_NetworkToHostOrder_l(ILExecThread * _thread, ILInt64 network);
 extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);
 extern ILInt16 _IL_IPAddress_NetworkToHostOrder_s(ILExecThread * _thread, ILInt16 network);
-
-extern ILBool _IL_Dns_InternalGetHostByName(ILExecThread * _thread, ILString * host, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
-extern ILBool _IL_Dns_InternalGetHostByAddr(ILExecThread * _thread, ILInt64 address, ILString * * h_name, System_Array * * h_aliases, System_Array * * h_addr_list);
-
-extern ILUInt8 * _IL_CodeTable_GetAddress(ILExecThread * _thread, ILObject * stream, ILInt64 position);
 

@@ -16,6 +16,9 @@
 	* engine/verify_call.c (SameSignature): reversed tests when
 	checking "calli" signatures.
 
+	* engine/cvm_call.c (COP_CALLI): do not increment the pc
+	after entering the new method.
+
 2002-09-15  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): set the rvalues 

@@ -32,42 +32,49 @@ extern	"C" {
 #endif
 
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
-#include "ucontext.h"
+	#if defined(linux) || defined(__linux) || defined(__linux__)
+		#define __USE_GNU
+	#endif
+
+	#include <sys/ucontext.h>
 #endif
 
 #if defined(HAVE_SIGACTION)
 
-static void __sigaction_handler(int signo, siginfo_t *info, void *context);
+static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 {
 	ILThread *thread;
 	ILInterruptContext context;
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
 	ucontext_t *uc;
-	uc = (ucontext_t *)context;
+	uc = (ucontext_t *)ctx;
 #endif
+	
+	if (signo == SIGSEGV || signo == SIGBUS)
+	{
+		thread = ILThreadSelf();
 
-	thread = ILThreadSelf();
+		context.address = info->si_addr;
 
-	context.address = 0;
+		#if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
 
-#if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
-	/* Integer registers */
-	context.Edi = uc->uc_mcontext.gregs[REG_EDI];
-	context.Esi = uc->uc_mcontext.gregs[REG_ESI];
-	context.Ebx = uc->uc_mcontext.gregs[REG_EBX];
-	context.Edx = uc->uc_mcontext.gregs[REG_EDX];
-	context.Ecx = uc->uc_mcontext.gregs[REG_ECX];
-	context.Eax = uc->uc_mcontext.gregs[REG_EAX];
+		/* Integer registers */
+		context.Edi = uc->uc_mcontext.gregs[REG_EDI];
+		context.Esi = uc->uc_mcontext.gregs[REG_ESI];
+		context.Ebx = uc->uc_mcontext.gregs[REG_EBX];
+		context.Edx = uc->uc_mcontext.gregs[REG_EDX];
+		context.Ecx = uc->uc_mcontext.gregs[REG_ECX];
+		context.Eax = uc->uc_mcontext.gregs[REG_EAX];
 
-	/* Control registers */
-	context.Ebp = uc->uc_mcontext.gregs[REG_EBP];
-	context.Eip = uc->uc_mcontext.gregs[REG_EIP];
-	context.Esp = uc->uc_mcontext.gregs[REG_ESP];
+		/* Control registers */
+		context.Ebp = uc->uc_mcontext.gregs[REG_EBP];
+		context.Eip = uc->uc_mcontext.gregs[REG_EIP];
+		context.Esp = uc->uc_mcontext.gregs[REG_ESP];
 
-	context.address = context.Ebx;
-#endif
+		#endif
 
-	thread->illegalMemoryAccessHandler(&context);
+		thread->illegalMemoryAccessHandler(&context);
+	}
 }
 
 #elif defined(HAVE_SIGNAL)
@@ -92,8 +99,8 @@ void _ILInterruptInit()
 	#if defined(HAVE_SIGACTION)
 		struct sigaction sa;
 
-		sa.sa_handler = __sigaction_handler;
-		sa.sa_mask = 0;
+		sa.sa_sigaction = __sigaction_handler;
+		sigemptyset(&sa.sa_mask);
 		sa.sa_flags = SA_SIGINFO;
 		
 		sigaction(SIGSEGV, &sa, 0);

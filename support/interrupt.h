@@ -26,7 +26,7 @@
 #include "il_config.h"
 #include "il_values.h"
 
-#if defined(__i386) || defined(__i386__) || defined(__x86_64__)
+#if defined(__i386) || defined(__i386__)
 struct _tagILInterruptContext
 {
 	void *address;
@@ -58,17 +58,25 @@ struct _tagILInterruptContext
 
 	#define IL_JMP_BUFFER jmp_buf
 
-	#define IL_SETJMP(buf) \
-		setjmp(buf)
+	#if defined(HAVE_SIGSETJMP) && defined(HAVE_SIGLONGJMP)
+		#define IL_SETJMP(buf) \
+			sigsetjmp(buf)
 
-	#define IL_LONGJMP(buf, arg) \
-		longjmp(buf, arg)
+		#define IL_LONGJMP(buf, arg) \
+			siglongjmp(buf, arg)
+	#else
+		#define IL_SETJMP(buf) \
+			setjmp(buf)
+
+		#define IL_LONGJMP(buf, arg) \
+			longjmp(buf, arg)
+	#endif
 
 	#ifdef IL_WIN32_PLATFORM
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
 		#define IL_INTERRUPT_WIN32 1
-		#if defined(__i386) || defined(__i386__) || defined(__x86_64__)
+		#if defined(__i386) || defined(__i386__)
 			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
 		#endif
 	#elif defined(linux) || defined(__linux) || defined(__linux__) \
@@ -76,8 +84,9 @@ struct _tagILInterruptContext
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
 		#define IL_INTERRUPT_POSIX 1
-		#if (defined(__i386) || defined(__i386__)) || defined(__x86_64__) \
-			&& defined(HAVE_SIGACTION) && defined(HAVE_UCONTEXT_H) \
+
+		#if (defined(__i386) || defined(__i386__)) \
+			&& defined(HAVE_SIGACTION) && defined(HAVE_SYS_UCONTEXT_H)
 			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
 		#endif
 	#endif

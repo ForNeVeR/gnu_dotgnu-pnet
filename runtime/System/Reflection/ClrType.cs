@@ -285,8 +285,10 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private String GetClrFullName();
 
+#if !ECMA_COMPAT
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private Guid GetClrGUID();
+#endif
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private System.Reflection.Module GetClrModule();
@@ -329,6 +331,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					return GetClrFullName();
 				}
 			}
+#if !ECMA_COMPAT
 	public override Guid GUID
 			{
 				get
@@ -336,6 +339,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 					return GetClrGUID();
 				}
 			}
+#endif
 	public override System.Reflection.Module Module
 			{
 				get

@@ -488,6 +488,7 @@ public abstract class Type : MemberInfo
 				return types;
 			}
 
+#if !ECMA_COMPAT
 	// Get a type from a class identifier.
 	//
 	// This functionality is not supported, as it is
@@ -509,6 +510,7 @@ public abstract class Type : MemberInfo
 			{
 				return GetTypeFromCLSID(clsid, server, false);
 			}
+#endif // !ECMA_COMPAT
 
 	// Get a type from a program identifier.
 	//
@@ -647,7 +649,9 @@ public abstract class Type : MemberInfo
 	public abstract String AssemblyQualifiedName { get; }
 	public abstract Type BaseType { get; }
 	public abstract String FullName { get; }
+#if !ECMA_COMPAT
 	public abstract Guid GUID { get; }
+#endif
 	public abstract System.Reflection.Module Module { get; }
 	public abstract String Namespace { get; }
 	public abstract Type UnderlyingSystemType { get; }

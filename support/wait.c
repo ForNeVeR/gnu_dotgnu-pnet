@@ -192,7 +192,7 @@ int ILWaitAny(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
 				handle = handles[index2];
 				(*(handle->unregisterFunc))(handle, wakeup, 1);
 			}
-			return LeaveWaitHandle(thread, handles[index], 0);
+			return LeaveWaitHandle(thread, handles[index], index);
 		}
 		else if(result == IL_WAITREG_FAILED)
 		{
@@ -298,9 +298,18 @@ int ILWaitAll(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
 
 	/* Adjust the wait limit to reflect handles we already acquired */
 	_ILWakeupAdjustLimit(wakeup, limit);
-
-	/* Wait until we are signalled, timed out, or interrupted */
-	result = _ILWakeupWait(wakeup, timeout, 0);
+	
+	if (limit == 0)
+	{
+		/* No need to wait since we managed to aquire every handle immediately. */
+		
+		result = 1;
+	}
+	else
+	{
+		/* Wait until we are signalled, timed out, or interrupted */
+		result = _ILWakeupWait(wakeup, timeout, 0);
+	}
 
 	/* Unregister the thread from the wait handles */
 	for(index = 0; index < numHandles; ++index)

@@ -55,6 +55,7 @@ libILSupport_a_SOURCES = aes.c \
 						 w32_defs.c \
 						 wait.c \
 						 wait_mutex.c \
+						 wait_event.c \
 						 wakeup.c \
 						 write_float.c \
 						 xml.c

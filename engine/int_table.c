@@ -1150,6 +1150,34 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_jpbb(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *, ILInt8, ILInt8))fn)(*((void * *)(avalue[0])), *((ILInt8 *)(avalue[1])), *((ILInt8 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpj(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
+}
+
+#endif
+
+#ifndef _IL_WaitEvent_suppressed
+
+IL_METHOD_BEGIN(WaitEvent_Methods)
+	IL_METHOD("InternalCreateEvent", "(ZZ)j", _IL_WaitEvent_InternalCreateEvent, marshal_jpbb)
+	IL_METHOD("InternalSetEvent", "(j)Z", _IL_WaitEvent_InternalSetEvent, marshal_bpj)
+	IL_METHOD("InternalResetEvent", "(j)Z", _IL_WaitEvent_InternalResetEvent, marshal_bpj)
+IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_ip(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *))fn)(*((void * *)(avalue[0])));
@@ -1576,15 +1604,6 @@ IL_METHOD_BEGIN(ClrField_Methods)
 	IL_METHOD("GetValueDirect", "(Tr)oSystem.Object;", _IL_ClrField_GetValueDirect, marshal_pppr)
 	IL_METHOD("SetValueDirect", "(TroSystem.Object;)V", _IL_ClrField_SetValueDirect, marshal_vpprp)
 IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpj(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
-}
 
 #endif
 
@@ -2529,6 +2548,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_TypedReference_suppressed
 	{"TypedReference", "System", TypedReference_Methods},
+#endif
+#ifndef _IL_WaitEvent_suppressed
+	{"WaitEvent", "System.Threading", WaitEvent_Methods},
 #endif
 #ifndef _IL_WaitHandle_suppressed
 	{"WaitHandle", "System.Threading", WaitHandle_Methods},

@@ -117,6 +117,7 @@ struct _tagILThread
 #define	IL_WAIT_MUTEX			0x1000
 #define	IL_WAIT_NAMED_MUTEX		0x1001
 #define	IL_WAIT_MONITOR			0x1002
+#define	IL_WAIT_EVENT			0x1003
 
 /*
  * Close function for a wait handle.
@@ -164,6 +165,22 @@ struct _tagILWaitHandle
 	ILWaitUnregisterFunc volatile unregisterFunc;
 
 };
+
+/*
+ * Internal structure of a wait event handle.
+ */
+typedef struct
+{
+	ILWaitHandle			parent;	
+	/* Bit 0 = Set Flag */
+	/* Bit 1 = ManualReset Flag */
+	int volatile			data;
+	_ILWakeupQueue			queue;
+
+} ILWaitEvent;
+
+#define EVENT_SET_MASK (1)
+#define EVENT_MANUALRESET_MASK (2)
 
 /*
  * Internal structure of a wait mutex handle.

@@ -1,4 +1,25 @@
 
+2002-12-06 Nguyen, Thong <tum@veridicus.com>
+
+	* engine/lib_thread.c, engine/int_proto.h, engine/int_table.c: 
+	Added implementation of internal functions for wait events.  Fixed 
+	values returned from InternalWaitAny.
+
+	* include/il_thread.h: Added prototypes for wait event methods.
+
+	* support/Makefile.am: Added wait_event.c to build list.
+
+	* support/thr_defs.h: Added structs and other definitions to
+	support wait events.
+
+	* support/wait.c: Fixed bugs in WaitAny and WaitAll. WaitAny would 
+	not return the correct index value if any handle could be acquired 
+	immediately.WaitAll would block indefinitely if all handles could be
+	aquired immediately.
+
+	* support/wait_event.c: Support functions for waitable events.
+	(Patch ID: 781, Gopal)
+
 2002-12-06  Dawkins, David  <david.dawkins@brooks-pri.com>
 
 	* .cvsignore: Add confdefs.h to cvsignore list (Gopal)

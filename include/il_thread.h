@@ -332,6 +332,27 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
  */
 int ILWaitMutexRelease(ILWaitHandle *handle);
 
+/*
+ * Wait Event definitions
+ *
+ * 12-DEC-2002  Thong Nguyen (tum@veridicus.com)
+ */
+
+/*
+ * Create a wait event.
+ */
+ILWaitHandle *ILWaitEventCreate(int manualReset, int initialState);
+
+/*
+ * Set the event.
+ */
+int ILWaitEventSet(ILWaitHandle *event);
+
+/*
+ * Reset the event.
+ */
+int ILWaitEventReset(ILWaitHandle *event);
+
 #ifdef	__cplusplus 
 };
 #endif

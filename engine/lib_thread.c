@@ -25,6 +25,8 @@
 extern	"C" {
 #endif
 
+#define WIN32_WAIT_TIMEOUT (258L)
+
 /*
  * public static void Enter(Object obj);
  */
@@ -805,7 +807,20 @@ ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
 	/* Perform the wait */
 	result = ILWaitAny(handles, (ILUInt32)(waitHandles->length), timeout);
 	HandleWaitResult(_thread, result);
-	return (result == 0);
+	/*return (result == 0);*/
+	
+	/* Now returns index of the handle that was set and proper timeout value */
+
+	if (result == IL_WAIT_TIMEOUT)
+	{
+		result = WIN32_WAIT_TIMEOUT;
+	}
+	else if (result < 0)
+	{
+		/* TODO: FIXME: Docs don't state how to report an error! */
+	}
+
+	return result;
 }
 
 /*
@@ -876,6 +891,43 @@ void _IL_Mutex_InternalReleaseMutex(ILExecThread *_thread, ILNativeInt mutex)
 	{
 		ILWaitMutexRelease((ILWaitHandle *)mutex);
 	}
+}
+
+/*
+ * Internal WaitEvent methods.
+ */
+
+/*
+ * internal static extern IntPtr InternalCreateEvent(bool manualReset, bool initialState);
+ */
+ILNativeInt _IL_WaitEvent_InternalCreateEvent(ILExecThread *_thread, ILBool manualReset, ILBool initialState)
+{
+	ILWaitHandle *event;
+
+	event = ILWaitEventCreate((int)manualReset, (int)initialState);
+
+	if (event == 0)
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+	}
+
+	return (ILNativeInt)event;
+}
+
+/*
+ * internal static extern bool InternalSetEvent(IntPtr handle);
+ */
+ILBool _IL_WaitEvent_InternalResetEvent(ILExecThread *_thread, ILNativeInt event)
+{
+	return (ILBool)ILWaitEventReset((ILWaitHandle *)event);
+}
+
+/*
+ * internal static extern bool InternalResetEvent(IntPtr handle);
+ */
+ILBool _IL_WaitEvent_InternalSetEvent(ILExecThread *_thread, ILNativeInt event)
+{
+	return (ILBool)ILWaitEventSet((ILWaitHandle *)event);
 }
 
 #ifdef	__cplusplus

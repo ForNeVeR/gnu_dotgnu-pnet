@@ -215,6 +215,10 @@ extern void _IL_Thread_InternalSetBackground(ILExecThread * _thread, ILObject * 
 extern ILInt32 _IL_Thread_InternalGetPriority(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Thread_InternalSetPriority(ILExecThread * _thread, ILObject * _this, ILInt32 value);
 
+extern ILNativeInt _IL_WaitEvent_InternalCreateEvent(ILExecThread * _thread, ILBool manualReset, ILBool initialState);
+extern ILBool _IL_WaitEvent_InternalSetEvent(ILExecThread * _thread, ILNativeInt handle);
+extern ILBool _IL_WaitEvent_InternalResetEvent(ILExecThread * _thread, ILNativeInt handle);
+
 extern ILInt32 _IL_DefaultEncoding_InternalCodePage(ILExecThread * _thread);
 extern ILInt32 _IL_DefaultEncoding_InternalGetByteCount_acii(ILExecThread * _thread, System_Array * chars, ILInt32 index, ILInt32 count);
 extern ILInt32 _IL_DefaultEncoding_InternalGetByteCount_Stringii(ILExecThread * _thread, ILString * s, ILInt32 index, ILInt32 count);

@@ -127,6 +127,9 @@ public interface IToolkit
 	// Get the screen size, in pixels.
 	Size GetScreenSize();
 
+	// Get the working area of the screen, excluding task bars, etc.
+	Rectangle GetWorkingArea();
+
 }; // interface IToolkit
 
 }; // namespace System.Drawing.Toolkit

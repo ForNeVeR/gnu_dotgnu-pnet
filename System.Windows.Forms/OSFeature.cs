@@ -1,6 +1,6 @@
 /*
- * IFeatureSupport.cs - Implementation of the
- *			"System.Windows.Forms.IFeatureSupport" class.
+ * OSFeature.cs - Implementation of the
+ *			"System.Windows.Forms.OSFeature" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,16 +24,35 @@ namespace System.Windows.Forms
 
 #if !CONFIG_COMPACT_FORMS
 
-public interface IFeatureSupport
+public class OSFeature : FeatureSupport
 {
+	// Internal state.
+	private static OSFeature feature = new OSFeature();
+
+	// Standard feature names.
+	public static readonly Object LayeredWindows = new Object();
+	public static readonly Object Themes = new Object();
+
+	// Constructor.
+	private OSFeature () {}
+
 	// Get the version of a specific feature which is present.
-	Version GetVersionPresent(Object feature);
+	public override Version GetVersionPresent(Object feature)
+			{
+				// We don't support any special features yet.
+				return null;
+			}
 
-	// Determine if a feature is present.
-	bool IsPresent(Object feature);
-	bool IsPresent(Object feature, Version minimumVersion);
+	// Get the main OS feature object.
+	public static OSFeature Feature
+			{
+				get
+				{
+					return feature;
+				}
+			}
 
-}; // interface IFeatureSupport
+}; // class OSFeature
 
 #endif // !CONFIG_COMPACT_FORMS
 

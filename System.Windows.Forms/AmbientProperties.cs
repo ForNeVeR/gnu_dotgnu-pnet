@@ -1,6 +1,6 @@
 /*
- * IFeatureSupport.cs - Implementation of the
- *			"System.Windows.Forms.IFeatureSupport" class.
+ * AmbientProperties.cs - Implementation of the
+ *			"System.Windows.Forms.AmbientProperties" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,19 +22,65 @@
 namespace System.Windows.Forms
 {
 
-#if !CONFIG_COMPACT_FORMS
+using System.Drawing;
 
-public interface IFeatureSupport
+public sealed class AmbientProperties
 {
-	// Get the version of a specific feature which is present.
-	Version GetVersionPresent(Object feature);
+	// Internal state.
+	private Color backColor;
+	private Cursor cursor;
+	private Font font;
+	private Color foreColor;
 
-	// Determine if a feature is present.
-	bool IsPresent(Object feature);
-	bool IsPresent(Object feature, Version minimumVersion);
+	// Constructor.
+	public AmbientProperties() {}
 
-}; // interface IFeatureSupport
+	// Get or set this object's properties.
+	public Color BackColor
+			{
+				get
+				{
+					return backColor;
+				}
+				set
+				{
+					backColor = value;
+				}
+			}
+	public Cursor Cursor
+			{
+				get
+				{
+					return cursor;
+				}
+				set
+				{
+					cursor = value;
+				}
+			}
+	public Font Font
+			{
+				get
+				{
+					return font;
+				}
+				set
+				{
+					font = value;
+				}
+			}
+	public Color ForeColor
+			{
+				get
+				{
+					return foreColor;
+				}
+				set
+				{
+					foreColor = value;
+				}
+			}
 
-#endif // !CONFIG_COMPACT_FORMS
+}; // class AmbientProperties
 
 }; // namespace System.Windows.Forms

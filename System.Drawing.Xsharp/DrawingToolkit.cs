@@ -358,6 +358,15 @@ public sealed class DrawingToolkit : IToolkit
 				return new Size(screen.Width, screen.Height);
 			}
 
+	// Get the working area of the screen, excluding task bars, etc.
+	public System.Drawing.Rectangle GetWorkingArea()
+			{
+				// There's no straight-forward way to get the working
+				// area under X, so we return the full screen size.
+				return new System.Drawing.Rectangle
+						(new System.Drawing.Point(0, 0), GetScreenSize());
+			}
+
 }; // class DrawingToolkit
 
 }; // namespace System.Drawing.Toolkit

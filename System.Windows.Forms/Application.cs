@@ -304,10 +304,34 @@ public sealed class Application
 				}
 			}
 
+	// Exit from the current thread when the main form closes.
+	private static void ContextExit(Object sender, EventArgs e)
+			{
+			#if !CONFIG_COMPACT_FORMS
+				ExitThread();
+			#else
+				Exit();
+			#endif
+			}
+
 	// Inner version of "Run".  In this implementation we only allow a
 	// message loop to be running on one of the threads.
-	private static void RunMessageLoop()
+	private static void RunMessageLoop(ApplicationContext context)
 			{
+				Form mainForm = context.MainForm;
+				EventHandler handler;
+
+				// Connect the context's ThreadExit event to our "ExitThread".
+				handler = new EventHandler(ContextExit);
+				context.ThreadExit += handler;
+
+				// Show the main form on-screen.
+				if(mainForm != null)
+				{
+					mainForm.Show();
+					Form.activeForm = mainForm;
+				}
+
 				// Make sure that we are the only message loop.
 				lock(typeof(Application))
 				{
@@ -354,6 +378,10 @@ public sealed class Application
 					}
 				}
 
+				// Disconnect from the context's "ThreadExit" event.
+				context.ThreadExit -= handler;
+				Form.activeForm = null;
+
 			#if !CONFIG_COMPACT_FORMS
 
 				// Raise the "ThreadExit" event.
@@ -373,16 +401,9 @@ public sealed class Application
 
 	// Make the specified form visible and run the main loop.
 	// The loop will exit when "Exit" is called.
-	[TODO]
 	public static void Run(Form mainForm)
 			{
-				// TODO
-				if(mainForm != null)
-				{
-					mainForm.Show();
-					Form.activeForm = mainForm;
-				}
-				RunMessageLoop();
+				RunMessageLoop(new ApplicationContext(mainForm));
 			}
 
 #if !CONFIG_COMPACT_FORMS
@@ -390,15 +411,17 @@ public sealed class Application
 	// Run the main message loop on this thread.
 	public static void Run()
 			{
-				RunMessageLoop();
+				RunMessageLoop(new ApplicationContext());
 			}
 
 	// Run the main message loop for an application context.
-	[TODO]
 	public static void Run(ApplicationContext context)
 			{
-				// TODO
-				RunMessageLoop();
+				if(context == null)
+				{
+					context = new ApplicationContext();
+				}
+				RunMessageLoop(context);
 			}
 
 #endif // !CONFIG_COMPACT_FORMS

@@ -1,4 +1,8 @@
 
+2004-10-13  Gopal V  <gopalv82@yahoo.com>
+
+	* ilasm/ilasm_grammar.y: Add missing intialization and fix segfault.
+
 2004-10-12  Gopal V  <gopalv82@yahoo.com>
 
 	* ilasm/ilasm_grammar.y, ilasm/ilasm_data.c, ilasm/ilasm_data.c: Implement

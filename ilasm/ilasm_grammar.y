@@ -607,6 +607,8 @@ static void RegisterFieldRvaLabel(char * name, ILField * field)
 		{
 			ILAsmOutOfMemory();
 		}
+		unresolvedFieldList->first = 0;
+		unresolvedFieldList->last = 0;
 	}
 
 	entry = (FieldDataEntry*) ILMalloc(sizeof(FieldDataEntry));

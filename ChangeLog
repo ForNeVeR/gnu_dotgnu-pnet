@@ -1,4 +1,9 @@
 
+2004-12-22  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/unroll_ptr.c: Implement 2D array operations for 
+	PPC.
+
 2004-12-21  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/md_ppc.h, engine/ppc_codegen.h, engine/unroll_arith.c:

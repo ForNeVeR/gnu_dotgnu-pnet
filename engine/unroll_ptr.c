@@ -20,6 +20,21 @@
 
 #ifdef IL_UNROLL_GLOBAL
 
+#ifdef HAVE_STDDEF_H
+#include <stddef.h>
+#endif
+/* 
+This should work in case offsetof is not available, but I fear
+the segfaults. 
+
+#ifndef offsetof
+#define offsetof(type, field) \
+	   		((unsigned int)(&(((type *)(NULL))->field)))
+#endif
+*/
+
+#include <lib_defs.h>
+
 /*
  * Check the contents of a register for NULL and re-execute
  * the current instruction in the interpreter if it is.
@@ -259,6 +274,112 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 }
 
 #endif /* CVM_ARM */
+
+#ifdef CVM_PPC
+
+#define	MD_HAS_2D_ARRAYS	1
+
+static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
+							   unsigned char *pc, unsigned char *label)
+{
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
+	md_inst_ptr patch1;
+#endif
+	md_inst_ptr patch2;
+	md_inst_ptr patch3;
+
+	/* redefinitions to make it a lot clearer for me to debug */
+	int array  = reg;
+	int i = reg2;
+	int j = reg3;
+	/* only PPC dependent code here, beware of clobbering */
+	int work = PPC_WORK; 
+
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
+	md_reg_is_null(unroll->out, reg);
+	patch1 = unroll->out;
+	md_branch_eq(unroll->out);
+#endif
+
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds) 
+									+ offsetof(MArrayBounds, lower));
+	md_sub_reg_reg_word_32(unroll->out, i, work); 
+	
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds)
+									+ offsetof(MArrayBounds, size));
+
+	md_cmp_cc_reg_reg_word_32(unroll->out, MD_CC_GE_UN, i, work);
+
+	patch2 = unroll->out;
+	md_branch_ge_un(unroll->out);
+
+	
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds)
+									+ sizeof(MArrayBounds)
+									+ offsetof(MArrayBounds, lower));
+									
+	md_sub_reg_reg_word_32(unroll->out, j, work); 
+	
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds)
+									+ sizeof(MArrayBounds)
+									+ offsetof(MArrayBounds, size));
+
+	md_cmp_cc_reg_reg_word_32(unroll->out, MD_CC_GE_UN, j, work);
+
+	patch3 = unroll->out;
+	md_branch_lt_un(unroll->out);
+
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds)
+									+ sizeof(MArrayBounds)
+									+ offsetof(MArrayBounds, lower));
+									
+	md_add_reg_reg_word_32(unroll->out, j, work); 
+	
+	md_patch(patch2, unroll->out);	
+
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds)
+									+ offsetof(MArrayBounds, lower));
+									
+	md_add_reg_reg_word_32(unroll->out, i, work); 
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
+	md_patch(patch1, unroll->out);	
+#endif
+	ReExecute(unroll, pc, label);
+
+	/* calculate address */
+	md_patch(patch3, unroll->out);	
+	
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds)
+									+ offsetof(MArrayBounds, multiplier));
+	md_mul_reg_reg_word_32(unroll->out, i, work);
+
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, bounds)
+									+ sizeof(MArrayBounds)
+									+ offsetof(MArrayBounds, multiplier));
+	md_mul_reg_reg_word_32(unroll->out, j, work);
+
+	md_load_membase_word_32(unroll->out, work, array, 
+									offsetof(System_MArray, elemSize));
+
+	md_add_reg_reg_word_32(unroll->out, i, j);
+	md_mul_reg_reg_word_32(unroll->out, i, work);
+	
+	md_load_membase_word_native(unroll->out, reg, array, 
+									offsetof(System_MArray,	data));
+
+	md_reg_to_word_native(unroll->out, i);
+	md_add_reg_reg_word_native(unroll->out, reg, i); /* reg == array */
+}
+
+#endif
 
 #elif defined(IL_UNROLL_CASES)
 

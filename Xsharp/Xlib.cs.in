@@ -477,6 +477,10 @@ internal sealed unsafe class Xlib
 			(IntPtr display, Window w, ref XSizeHints hints);
 
 	[DllImport("X11")]
+	extern public static void XSetWMHints
+			(IntPtr display, Window w, ref XWMHints hints);
+
+	[DllImport("X11")]
 	extern public static @X_int@ XKillClient(IntPtr display, XID resource);
 
 	// Declare color-related external functions.

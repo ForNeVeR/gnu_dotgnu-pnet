@@ -49,6 +49,14 @@
 	* System/Diagnostics/Process.cs: order of evaluation bug when
 	initializing the current process object.
 
+	* System.Drawing/Icon.cs, System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	Xsharp/TopLevelWindow.cs, Xsharp/Xlib.cs.in,
+	Xsharp/Types/WMHintsMask.cs, Xsharp/Types/WindowState.cs,
+	Xsharp/Types/XWMHints.cs, samples/FormsTest.cs,
+	samples/FormsTest.dotgnu.ico: add the window icon hint to Xsharp;
+	set an icon on FormsTest's main window.
+
 2003-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Font.cs: remove a public constructor that is no longer

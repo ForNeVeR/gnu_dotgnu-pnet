@@ -48,7 +48,7 @@ public sealed class Icon : MarshalByRefObject, ICloneable, IDisposable
 {
 	// Internal state.
 	private DotGNU.Images.Image image;
-	private DotGNU.Images.Frame frame;
+	internal DotGNU.Images.Frame frame;
 	private int frameNum;
 	private IToolkitImage toolkitImage;
 

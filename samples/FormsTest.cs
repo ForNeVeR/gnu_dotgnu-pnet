@@ -309,6 +309,7 @@ namespace FormsTest
 			Text = "System.Windows.Forms Tests";
 			HelpButton = true;
 			HelpRequested += new HelpEventHandler(ShowHelp);
+			Icon = new Icon(typeof(FormsTest), "dotgnu.ico");
 			
 			SuspendLayout();
 			tabControl1 = new TabControl();

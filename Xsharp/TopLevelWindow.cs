@@ -51,7 +51,7 @@ public class TopLevelWindow : InputOutputWidget
 	private int expectedWidth, expectedHeight;
 	private int minWidth, minHeight;
 	private int maxWidth, maxHeight;
-	private bool hasHelpButton;
+	private Image icon;
 
 	/// <summary>
 	/// <para>Constructs a new <see cref="T:Xsharp.TopLevelWindow"/>
@@ -135,7 +135,6 @@ public class TopLevelWindow : InputOutputWidget
 				this.resizeTimer = null;
 				this.expectedWidth = -1;
 				this.expectedHeight = -1;
-				this.hasHelpButton = false;
 
 				// Set the initial WM properties.
 				try
@@ -149,6 +148,9 @@ public class TopLevelWindow : InputOutputWidget
 
 					// Ask for "WM_DELETE_WINDOW" and "WM_TAKE_FOCUS".
 					SetProtocols(display, handle);
+
+					// Set the window hints.
+					SetWMHints(display, handle);
 
 					// Top-level widgets receive all key and focus events.
 					SelectInput(EventMask.KeyPressMask |
@@ -231,6 +233,32 @@ public class TopLevelWindow : InputOutputWidget
 				Xlib.XChangeProperty
 					(display, handle, wmIconName, utf8String,
 					 8, 0 /* PropModeReplace */, bytes, bytes.Length);
+			}
+
+	// Set the XWMHints structure on this window.
+	private void SetWMHints(IntPtr display, Xlib.Window handle)
+			{
+				XWMHints hints = new XWMHints();
+				hints.flags = WMHintsMask.InputHint;
+				hints.input = true;
+				if(icon != null)
+				{
+					Pixmap pixmap = icon.Pixmap;
+					Bitmap mask = icon.Mask;
+					if(mask != null)
+					{
+						hints.flags |= WMHintsMask.IconPixmapHint |
+									   WMHintsMask.IconMaskHint;
+						hints.icon_pixmap = pixmap.GetPixmapHandle();
+						hints.icon_mask = mask.GetPixmapHandle();
+					}
+					else
+					{
+						hints.flags |= WMHintsMask.IconPixmapHint;
+						hints.icon_pixmap = pixmap.GetPixmapHandle();
+					}
+				}
+				Xlib.XSetWMHints(display, handle, ref hints);
 			}
 
 	// Construct the XSizeHints structure for this window.
@@ -1042,6 +1070,39 @@ public class TopLevelWindow : InputOutputWidget
 				finally
 				{
 					dpy.Unlock();
+				}
+			}
+
+	/// <summary>
+	/// <para>Get or set the icon associated with this window.</para>
+	/// </summary>
+	///
+	/// <value>
+	/// <para>The icon image, or <see langword="null"/> if there is
+	/// no icon to be displayed.</para>
+	/// </value>
+	public Image Icon
+			{
+				get
+				{
+					return icon;
+				}
+				set
+				{
+					if(icon != value)
+					{
+						icon = value;
+						try
+						{
+							IntPtr display = dpy.Lock();
+							Xlib.Window handle = GetWidgetHandle();
+							SetWMHints(display, handle);
+						}
+						finally
+						{
+							dpy.Unlock();
+						}
+					}
 				}
 			}
 

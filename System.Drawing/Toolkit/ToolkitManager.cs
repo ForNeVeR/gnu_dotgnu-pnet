@@ -25,6 +25,7 @@ namespace System.Drawing.Toolkit
 using System.Drawing.Printing;
 using System.Reflection;
 using System.IO;
+using DotGNU.Images;
 
 [NonStandardExtra]
 public sealed class ToolkitManager
@@ -153,6 +154,23 @@ public sealed class ToolkitManager
 								 Color color)
 			{
 				graphics.DrawGlyph(x, y, bits, bitsWidth, bitsHeight, color);
+			}
+
+	// Get the raw frame data for an "Image" or "Icon" object.
+	public static DotGNU.Images.Frame GetImageFrame(Object image)
+			{
+				if(image is System.Drawing.Image)
+				{
+					return ((System.Drawing.Image)image).dgImage.GetFrame(0);
+				}
+				else if(image is System.Drawing.Icon)
+				{
+					return ((System.Drawing.Icon)image).frame;
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Get the override toolkit name.

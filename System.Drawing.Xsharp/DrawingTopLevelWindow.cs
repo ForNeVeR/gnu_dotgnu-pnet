@@ -25,6 +25,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
+using DotGNU.Images;
 using Xsharp;
 
 internal sealed class DrawingTopLevelWindow
@@ -240,7 +241,20 @@ internal sealed class DrawingTopLevelWindow
 	// Set this window's icon.
 	void IToolkitTopLevelWindow.SetIcon(Icon icon)
 			{
-				// TODO
+				DotGNU.Images.Frame frame = ToolkitManager.GetImageFrame(icon);
+				Xsharp.Image origIcon = Icon;
+				if(frame != null)
+				{
+					Icon = new Xsharp.Image(Screen, frame);
+				}
+				else
+				{
+					Icon = null;
+				}
+				if(origIcon != null)
+				{
+					origIcon.Dispose();
+				}
 			}
 
 	// Set this window's maximum size.

@@ -1,4 +1,99 @@
 
+0.4.6 (5 November 2002)
+
+	Runtime engine:
+
+	* Reversed test in "ComputeInterfaceTable".
+	* Internalcalls for DNS lookup (Gopal V).
+	* Fix verification of "calli" signatures.
+	* Use the correct PC when entering a method using "calli".
+	* Suppress GC finalization during "ConvertMethod", because it can
+	  cause dead locks if garbage collection happens during method
+	  conversion.
+    * Use explicit field layout information even if the class is
+	  not marked for layout.
+	* Truncation bug in "String.Replace" internalcall (Gopal V).
+	* Deserialize attributes when accessed via reflection (Gopal V).
+	* Handle out of memory in the memory cache a bit better.
+	* DirMethods.GetFilesInDirectory (Charles Schuller).
+	* File/directory time internalcalls (Richard Baumann).
+	* Number formatting internalcalls for floating-point (Richard Baumann).
+
+	Compiler:
+
+	* Redesign the representation of "CSSemValue" to make it easier to
+	  change to meet new requirements in the future.
+	* Look for parameter blocks on the actual method, not the reference.
+	* Implicitly coerce zero to enumerated types in binary operators.
+	* Fixes to type handling in the C compiler.
+	* Compile attributes to their serialized form properly.
+	* Make sure that "this" is included when accessing value type members.
+	* Normalize delegates to use the "native int" type in their signatures.
+	* Convert "out" parameters into l-values, not s-values, to be
+	  consistent with other C# compilers.
+	* Better flow analysis to detect when a block ends in "return",
+	  "break", "continue", etc.
+	* Rearrange how "base.X" is compiled, to fix long-standing bugs.
+	* Name and coercion bugs related to "IntPtr" and "UIntPtr".
+	* Fix semantic analysis for string and object comparisons.
+	* Scan interface parents when looking for the iterator methods used
+	  by "foreach".
+	* Use the array form of a "params" parameter inside a method,
+	  not the element form.
+	* Allow casting amongst unmanaged pointers and integer types
+	  within unsafe blocks (Jonathan Springer).
+	* Equality and inequality operators for unmanaged pointers
+	  (Jonathan Springer).
+	* Use "Exception" on default type-less "catch" clauses (Gopal V).
+	* Change "new" errors for duplicates into warnings (Gopal V).
+	* Operation assignment fixes for small integer types (Jonathan Springer).
+	* Builtin << and >> operators for enums (Gopal V).
+	* "goto case" and "goto default" (Gopal V).
+	* Some early ideas for Parrot code generation.
+	* Fix constant coercion in arguments and expressions (Jonathan Springer
+	  and Gopal V).
+	* Recognise identifiers as types when appropriate (Jonathan Springer).
+	* Treat Object as an implicit parent of interfaces when searching
+	  for members (Gopal V).
+	* Introduce the "ILNode_SemAnalysisType" node operation to deal
+	  with modes that only look for types (Jonathan Springer).
+	* Save and restore the current method when doing "jump" semantic
+	  analysis on the members of an enum type (Robert Hwang).
+	* Fixes to unboxing (Gopal V).
+	* Fix lexical analysis for UTF-8 characters in strings.
+	* Don't generate overflow instructions for floating point (Gopal V).
+	* base.X handling for properties (Gopal V).
+	* IndexerName attribute (Gopal V).
+	* Fix floating-point casts (Robert Hwang).
+	* Work around order of compilation issues for "ParamArrayAttribute".
+
+	Assembler:
+
+	* Fix jump target squashing in the presence of "switch" instructions.
+	* JVM assembler output improved (Sylvain Pasche).
+	* Fixes for multiple exception handlers associated with a block.
+
+	Loader and Metadata:
+
+	* Serialization write support.
+	* Move forward-referenced fields to the end of the class when they
+	  are defined, to ensure that the source field order is preserved.
+
+	Platform Support:
+
+	* Bug in the conversion of C# file access modes into POSIX "O_" flags.
+	* Correct daylight savings adjustments (Richard Baumann).
+
+	Other:
+
+	* Add the "ilheader" utility, which can generate .h files for
+	  importing C# assemblies into cscc-compiled C applications.
+	* Dump stand-alone signatures correctly in "dumpasm".
+	* Add full method signatures to "ilverify" output (Jonathan Springer).
+	* Use the cygwin path functions to generate the correct Win32 paths
+	  to pass to "csc" from "csant".
+	* Bison 1.5 and 1.75 compatibility fixes (Sasa Jovanic, Jonathan Springer).
+
 0.4.4 (2 September 2002)
 
 	Runtime engine:

@@ -35,6 +35,11 @@
 	use the logical extents for text drawing/measuring, not the
 	ink extents.
 
+	* .cvsignore, auto_gen.sh, libtool.m4, ltcf-c.sh, ltconfig,
+	ltmain.sh: remove the libtool files and replace with a call
+	to libtoolize in auto_gen.sh instead; hopefully this will
+	pick up the right versions from the user's system.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

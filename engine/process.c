@@ -62,7 +62,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	}
 
 	/* Initialize the CVM coder */
-	process->coder = (*(_ILCVMCoderClass.create))(process->mainThread, 100000);
+	process->coder = ILCoderCreate(&_ILCVMCoderClass, 100000);
 	if(!(process->coder))
 	{
 		ILExecProcessDestroy(process);

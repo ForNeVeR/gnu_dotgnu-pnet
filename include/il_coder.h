@@ -78,7 +78,6 @@ typedef struct
 struct _tagILCoder
 {
 	const ILCoderClass *classInfo;
-	ILExecThread       *thread;
 
 };
 
@@ -90,7 +89,7 @@ struct _tagILCoderClass
 	/*
 	 * Create a coder instance.  Returns NULL if not possible.
 	 */
-	ILCoder *(*create)(ILExecThread *thread, ILUInt32 size);
+	ILCoder *(*create)(ILUInt32 size);
 	
 	/*
 	 * Get the current generation count for this coder instance.
@@ -525,8 +524,8 @@ struct _tagILCoderClass
 /*
  * Helper macros for calling coder methods.
  */
-#define	ILCoderCreate(classInfo,thread)	\
-			((*((classInfo)->create))((thread)))
+#define	ILCoderCreate(classInfo,size)	\
+			((*((classInfo)->create))((size)))
 #define	ILCoderGeneration(coder)	\
 			((*((coder)->classInfo->generation))((coder)))
 #define	ILCoderAlloc(coder,size)	\

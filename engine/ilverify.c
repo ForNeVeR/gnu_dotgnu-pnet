@@ -171,7 +171,7 @@ static void version(void)
 /*
  * Stubs for coder functions.
  */
-static ILCoder *Coder_Create(ILExecThread *thread, ILUInt32 size)
+static ILCoder *Coder_Create(ILUInt32 size)
 {
 	return 0;
 }

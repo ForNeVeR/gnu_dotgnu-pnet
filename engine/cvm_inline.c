@@ -61,6 +61,7 @@ static IL_INLINE int StringEquals(System_String *str1,
  *   <operation>Concatenate two strings</operation>
  *
  *   <format>prefix<fsep/>string_concat_2</format>
+ *   <dformat>{string_concat_2}</dformat>
  *
  *   <form name="string_concat_2" code="COP_PREFIX_STRING_CONCAT_2"/>
  *
@@ -95,6 +96,7 @@ VMBREAK(COP_PREFIX_STRING_CONCAT_2);
  *   <operation>Concatenate three strings</operation>
  *
  *   <format>prefix<fsep/>string_concat_3</format>
+ *   <dformat>{string_concat_3}</dformat>
  *
  *   <form name="string_concat_3" code="COP_PREFIX_STRING_CONCAT_3"/>
  *
@@ -130,6 +132,7 @@ VMBREAK(COP_PREFIX_STRING_CONCAT_3);
  *   <operation>Concatenate four strings</operation>
  *
  *   <format>prefix<fsep/>string_concat_4</format>
+ *   <dformat>{string_concat_4}</dformat>
  *
  *   <form name="string_concat_4" code="COP_PREFIX_STRING_CONCAT_4"/>
  *
@@ -166,6 +169,7 @@ VMBREAK(COP_PREFIX_STRING_CONCAT_4);
  *   <operation>Test two strings for equality</operation>
  *
  *   <format>prefix<fsep/>string_eq</format>
+ *   <dformat>{string_eq}</dformat>
  *
  *   <form name="string_eq" code="COP_PREFIX_STRING_EQ"/>
  *
@@ -198,6 +202,7 @@ VMBREAK(COP_PREFIX_STRING_EQ);
  *   <operation>Test two strings for inequality</operation>
  *
  *   <format>prefix<fsep/>string_ne</format>
+ *   <dformat>{string_ne}</dformat>
  *
  *   <form name="string_ne" code="COP_PREFIX_STRING_NE"/>
  *
@@ -230,6 +235,7 @@ VMBREAK(COP_PREFIX_STRING_NE);
  *   <operation>Get a particular character from a string</operation>
  *
  *   <format>prefix<fsep/>string_get_char</format>
+ *   <dformat>{string_get_char}</dformat>
  *
  *   <form name="string_get_char" code="COP_PREFIX_STRING_GET_CHAR"/>
  *
@@ -286,6 +292,7 @@ VMBREAK(COP_PREFIX_STRING_GET_CHAR);
  *   <operation>Get a type object from its runtime handle</operation>
  *
  *   <format>prefix<fsep/>type_from_handle</format>
+ *   <dformat>{type_from_handle}</dformat>
  *
  *   <form name="type_from_handle" code="COP_PREFIX_TYPE_FROM_HANDLE"/>
  *

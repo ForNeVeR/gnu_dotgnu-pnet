@@ -98,6 +98,7 @@ void *_ILSystemException(ILExecThread *thread, const char *className)
  *   <format>jsr<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>jsr
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{jsr}<fsep/>dest</dformat>
  *
  *   <form name="jsr" code="COP_JSR"/>
  *
@@ -126,6 +127,7 @@ VMBREAK(COP_JSR);
  *   <operation>Return from local subroutine</operation>
  *
  *   <format>ret_jsr</format>
+ *   <dformat>{ret_jsr}</dformat>
  *
  *   <form name="ret_jsr" code="COP_RET_JSR"/>
  *
@@ -155,6 +157,7 @@ VMBREAK(COP_RET_JSR);
  *				current method</operation>
  *
  *   <format>prefix<fsep/>enter_try</format>
+ *   <dformat>{enter_try}</dformat>
  *
  *   <form name="enter_try" code="COP_PREFIX_ENTER_TRY"/>
  *
@@ -190,6 +193,7 @@ throwException:
  *   <operation>Throw an exception</operation>
  *
  *   <format>prefix<fsep/>throw</format>
+ *   <dformat>{throw}</dformat>
  *
  *   <form name="throw" code="COP_PREFIX_THROW"/>
  *
@@ -238,6 +242,7 @@ VMBREAK(COP_PREFIX_THROW);
  *   <operation>Throw an exception to the caller of this method</operation>
  *
  *   <format>prefix<fsep/>throw_caller</format>
+ *   <dformat>{throw_caller}</dformat>
  *
  *   <form name="throw_caller" code="COP_PREFIX_THROW_CALLER"/>
  *

@@ -337,6 +337,7 @@ ILCallFrame *callFrame;
  *   <operation>Call a method</operation>
  *
  *   <format>call<fsep/>mptr</format>
+ *   <dformat>{call}<fsep/>mptr</dformat>
  *
  *   <form name="call" code="COP_CALL"/>
  *
@@ -430,6 +431,7 @@ VMBREAK(COP_CALL);
  *   <operation>Call a constructor</operation>
  *
  *   <format>call_ctor<fsep/>mptr</format>
+ *   <dformat>{call_ctor}<fsep/>mptr</dformat>
  *
  *   <form name="call_ctor" code="COP_CALL_CTOR"/>
  *
@@ -516,6 +518,7 @@ VMBREAK(COP_CALL_CTOR);
  *   <operation>Call a native function that has a return value</operation>
  *
  *   <format>call_native<fsep/>function<fsep/>cif</format>
+ *   <dformat>{call_native}<fsep/>function<fsep/>cif</dformat>
  *
  *   <form name="call_native" code="COP_CALL_NATIVE"/>
  *
@@ -558,6 +561,7 @@ VMBREAK(COP_CALL_NATIVE);
  *   <operation>Call a native function with no return value</operation>
  *
  *   <format>call_native_void<fsep/>function<fsep/>cif</format>
+ *   <dformat>{call_native_void}<fsep/>function<fsep/>cif</dformat>
  *
  *   <form name="call_native_void" code="COP_CALL_NATIVE_VOID"/>
  *
@@ -583,6 +587,7 @@ VMBREAK(COP_CALL_NATIVE_VOID);
  *
  *   <format>call_virtual<fsep/>N[1]<fsep/>M[1]</format>
  *   <format>wide<fsep/>call_virtual<fsep/>N[4]<fsep/>M[4]</format>
+ *   <dformat>{call_virtual}<fsep/>N<fsep/>M</dformat>
  *
  *   <form name="call_virtual" code="COP_CALL_VIRTUAL"/>
  *
@@ -655,6 +660,7 @@ VMBREAK(COP_CALL_VIRTUAL);
  *
  *   <format>call_interface<fsep/>N[1]<fsep/>M[1]<fsep/>cptr</format>
  *   <format>wide<fsep/>call_interface<fsep/>N[4]<fsep/>M[4]<fsep/>cptr</format>
+ *   <dformat>{call_interface}<fsep/>N<fsep/>M<fsep/>cptr</dformat>
  *
  *   <form name="call_interface" code="COP_CALL_INTERFACE"/>
  *
@@ -736,6 +742,7 @@ VMBREAK(COP_CALL_INTERFACE);
  *              more than once</operation>
  *
  *   <format>cctor_once</format>
+ *   <dformat>{cctor_once}</dformat>
  *
  *   <form name="cctor_once" code="COP_CCTOR_ONCE"/>
  *
@@ -770,6 +777,7 @@ VMCASE(COP_CCTOR_ONCE):
  *   <operation>Return from the current method with no return value</operation>
  *
  *   <format>return</format>
+ *   <dformat>{return}</dformat>
  *
  *   <form name="return" code="COP_RETURN"/>
  *
@@ -824,6 +832,7 @@ VMBREAK(COP_RETURN);
  *              word as a return value</operation>
  *
  *   <format>return_1</format>
+ *   <dformat>{return_1}</dformat>
  *
  *   <form name="return_1" code="COP_RETURN_1"/>
  *
@@ -861,6 +870,7 @@ VMCASE(COP_RETURN_1):
  *              words as the return value</operation>
  *
  *   <format>return_2</format>
+ *   <dformat>{return_2}</dformat>
  *
  *   <form name="return_2" code="COP_RETURN_2"/>
  *
@@ -899,8 +909,9 @@ VMCASE(COP_RETURN_2):
  *              words as the return value</operation>
  *
  *   <format>return_n<fsep/>N[4]</format>
+ *   <dformat>{return_n}<fsep/>N</dformat>
  *
- *   <form name="return_2" code="COP_RETURN_N"/>
+ *   <form name="return_n" code="COP_RETURN_N"/>
  *
  *   <description>Return control to the method that called the current
  *   method, as follows:
@@ -937,6 +948,7 @@ VMCASE(COP_RETURN_N):
  *              argument stack</operation>
  *
  *   <format>push_thread</format>
+ *   <dformat>{push_thread}</dformat>
  *
  *   <form name="push_thread" code="COP_PUSH_THREAD"/>
  *
@@ -960,6 +972,7 @@ VMBREAK(COP_PUSH_THREAD);
  *              stack down and duplicate it twice</operation>
  *
  *   <format>pushdown<fsep/>N[4]</format>
+ *   <dformat>{pushdown}<fsep/>N</dformat>
  *
  *   <form name="pushdown" code="COP_PUSHDOWN"/>
  *
@@ -1016,6 +1029,7 @@ VMBREAK(COP_WADDR_NATIVE_##name)
  *
  *   <format>waddr_native_&lt;n&gt;<fsep/>V[1]</format>
  *   <format>wide<fsep/>waddr_native_&lt;n&gt;<fsep/>V[4]</format>
+ *   <dformat>{waddr_native_&lt;n&gt;}<fsep/>V</dformat>
  *
  *   <form name="waddr_native_m1" code="COP_WADDR_NATIVE_M1"/>
  *   <form name="waddr_native_0" code="COP_WADDR_NATIVE_0"/>
@@ -1233,6 +1247,7 @@ COP_WADDR_NATIVE_WIDE(7, 7);
  *   <operation>Call a method using tail call semantics</operation>
  *
  *   <format>prefix<fsep/>tail_call<fsep/>mptr</format>
+ *   <dformat>{tail_call}<fsep/>mptr</dformat>
  *
  *   <form name="tail_call" code="COP_PREFIX_TAIL_CALL"/>
  *
@@ -1285,6 +1300,7 @@ VMBREAK(COP_PREFIX_TAIL_CALL);
  *   <operation>Load the address of a function method onto the stack</operation>
  *
  *   <format>prefix<fsep/>ldftn<fsep/>method</format>
+ *   <dformat>{ltftn}<fsep/>method</dformat>
  *
  *   <form name="ldftn" code="COP_PREFIX_LDFTN"/>
  *
@@ -1312,6 +1328,7 @@ VMBREAK(COP_PREFIX_LDFTN);
  *				onto the stack</operation>
  *
  *   <format>prefix<fsep/>ldvirtftn<fsep/>index[4]</format>
+ *   <dformat>{ltvirtftn}<fsep/>index</dformat>
  *
  *   <form name="ldvirtftn" code="COP_PREFIX_LDVIRTFTN"/>
  *
@@ -1348,6 +1365,7 @@ VMBREAK(COP_PREFIX_LDVIRTFTN);
  *				onto the stack</operation>
  *
  *   <format>prefix<fsep/>ldinterfftn<fsep/>index[4]<fsep/>class</format>
+ *   <dformat>{ltinterfftn}<fsep/>index<fsep/>class</dformat>
  *
  *   <form name="ldinterfftn" code="COP_PREFIX_LDINTERFFTN"/>
  *
@@ -1389,6 +1407,7 @@ VMBREAK(COP_PREFIX_LDINTERFFTN);
  *
  *   <format>prefix<fsep/>pack_varargs<fsep/>first[4]
  *           <fsep/>num[4]<fsep/>signature</format>
+ *   <dformat>{pack_varargs}<fsep/>first<fsep/>num<fsep/>signature</dformat>
  *
  *   <form name="pack_varargs" code="COP_PREFIX_PACK_VARARGS"/>
  *

@@ -78,6 +78,7 @@ VMBREAK(COP_PLOAD_##n)
  *              onto the stack</operation>
  *
  *   <format>iload_&lt;n&gt;</format>
+ *   <dformat>{iload_&lt;n&gt;}</dformat>
  *
  *   <form name="iload_0" code="COP_ILOAD_0"/>
  *   <form name="iload_1" code="COP_ILOAD_1"/>
@@ -101,6 +102,7 @@ VMBREAK(COP_PLOAD_##n)
  *              onto the stack</operation>
  *
  *   <format>pload_&lt;n&gt;</format>
+ *   <dformat>{pload_&lt;n&gt;}</dformat>
  *
  *   <form name="pload_0" code="COP_PLOAD_0"/>
  *   <form name="pload_1" code="COP_PLOAD_1"/>
@@ -134,6 +136,7 @@ COP_LOAD_N(3);
  *
  *   <format>iload<fsep/>N[1]</format>
  *   <format>wide<fsep/>iload<fsep/>N[4]</format>
+ *   <dformat>{iload}<fsep/>N</dformat>
  *
  *   <form name="iload" code="COP_ILOAD"/>
  *
@@ -164,6 +167,7 @@ VMBREAK(COP_ILOAD);
  *
  *   <format>pload<fsep/>N[1]</format>
  *   <format>wide<fsep/>pload<fsep/>N[4]</format>
+ *   <dformat>{pload}<fsep/>N</dformat>
  *
  *   <form name="pload" code="COP_PLOAD"/>
  *
@@ -211,6 +215,7 @@ VMBREAK(COP_PSTORE_##n)
  *              variable <i>n</i></operation>
  *
  *   <format>istore_&lt;n&gt;</format>
+ *   <dformat>{istore_&lt;n&gt;}</dformat>
  *
  *   <form name="istore_0" code="COP_ISTORE_0"/>
  *   <form name="istore_1" code="COP_ISTORE_1"/>
@@ -234,6 +239,7 @@ VMBREAK(COP_PSTORE_##n)
  *              variable <i>n</i></operation>
  *
  *   <format>pstore_&lt;n&gt;</format>
+ *   <dformat>{pstore_&lt;n&gt;}</dformat>
  *
  *   <form name="pstore_0" code="COP_PSTORE_0"/>
  *   <form name="pstore_1" code="COP_PSTORE_1"/>
@@ -267,6 +273,7 @@ COP_STORE_N(3);
  *
  *   <format>istore<fsep/>N[1]</format>
  *   <format>wide<fsep/>istore<fsep/>N[4]</format>
+ *   <dformat>{istore}<fsep/>N</dformat>
  *
  *   <form name="istore" code="COP_ISTORE"/>
  *
@@ -297,6 +304,7 @@ VMBREAK(COP_ISTORE);
  *
  *   <format>pstore<fsep/>N[1]</format>
  *   <format>wide<fsep/>pstore<fsep/>N[4]</format>
+ *   <dformat>{pstore}<fsep/>N</dformat>
  *
  *   <form name="pstore" code="COP_PSTORE"/>
  *
@@ -329,6 +337,7 @@ VMBREAK(COP_PSTORE);
  *
  *   <format>mload<fsep/>N[1]<fsep/>M[1]</format>
  *   <format>wide<fsep/>mload<fsep/>N[4]<fsep/>M[4]</format>
+ *   <dformat>{mload}<fsep/>N<fsep/>M</dformat>
  *
  *   <form name="mload" code="COP_MLOAD"/>
  *
@@ -357,6 +366,7 @@ VMBREAK(COP_MLOAD);
  *
  *   <format>mstore<fsep/>N[1]<fsep/>M[1]</format>
  *   <format>wide<fsep/>mstore<fsep/>N[4]<fsep/>M[4]</format>
+ *   <dformat>{mstore}<fsep/>N<fsep/>M</dformat>
  *
  *   <form name="mstore" code="COP_MSTORE"/>
  *
@@ -385,6 +395,7 @@ VMBREAK(COP_MSTORE);
  *
  *   <format>waddr<fsep/>N[1]</format>
  *   <format>wide<fsep/>waddr<fsep/>N[4]</format>
+ *   <dformat>{waddr}<fsep/>N</dformat>
  *
  *   <form name="waddr" code="COP_WADDR"/>
  *
@@ -411,6 +422,7 @@ VMBREAK(COP_WADDR);
  *
  *   <format>maddr<fsep/>N[1]</format>
  *   <format>wide<fsep/>maddr<fsep/>N[4]</format>
+ *   <dformat>{maddr}<fsep/>N</dformat>
  *
  *   <form name="maddr" code="COP_MADDR"/>
  *
@@ -442,6 +454,7 @@ VMBREAK(COP_MADDR);
  *              onto the stack</operation>
  *
  *   <format>bload<fsep/>N[1]</format>
+ *   <dformat>{bload}<fsep/>N</dformat>
  *
  *   <form name="bload" code="COP_BLOAD"/>
  *
@@ -474,6 +487,7 @@ VMBREAK(COP_BLOAD);
  *              variable</operation>
  *
  *   <format>bstore<fsep/>N[1]</format>
+ *   <dformat>{bstore}<fsep/>N</dformat>
  *
  *   <form name="bstore" code="COP_BSTORE"/>
  *
@@ -507,6 +521,7 @@ VMBREAK(COP_BSTORE);
  *
  *   <format>bfixup<fsep/>N[1]</format>
  *   <format>wide<fsep/>bfixup<fsep/>N[4]</format>
+ *   <dformat>{bfixup}<fsep/>N</dformat>
  *
  *   <form name="bfixup" code="COP_BFIXUP"/>
  *
@@ -551,6 +566,7 @@ VMBREAK(COP_BFIXUP);
  *
  *   <format>sfixup<fsep/>N[1]</format>
  *   <format>wide<fsep/>sfixup<fsep/>N[4]</format>
+ *   <dformat>{sfixup}<fsep/>N</dformat>
  *
  *   <form name="sfixup" code="COP_SFIXUP"/>
  *
@@ -591,6 +607,7 @@ VMBREAK(COP_SFIXUP);
  *
  *   <format>ffixup<fsep/>N[1]</format>
  *   <format>wide<fsep/>ffixup<fsep/>N[4]</format>
+ *   <dformat>{ffixup}<fsep/>N</dformat>
  *
  *   <form name="ffixup" code="COP_FFIXUP"/>
  *
@@ -631,6 +648,7 @@ VMBREAK(COP_FFIXUP);
  *
  *   <format>dfixup<fsep/>N[1]</format>
  *   <format>wide<fsep/>dfixup<fsep/>N[4]</format>
+ *   <dformat>{dfixup}<fsep/>N</dformat>
  *
  *   <form name="dfixup" code="COP_DFIXUP"/>
  *
@@ -670,6 +688,7 @@ VMBREAK(COP_DFIXUP);
  *   <operation>Make one local variable slot</operation>
  *
  *   <format>mk_local_1</format>
+ *   <dformat>{mk_local_1}</dformat>
  *
  *   <form name="mk_local_1" code="COP_MK_LOCAL_1"/>
  *
@@ -699,6 +718,7 @@ VMBREAK(COP_MK_LOCAL_1);
  *   <operation>Make two local variable slots</operation>
  *
  *   <format>mk_local_2</format>
+ *   <dformat>{mk_local_2}</dformat>
  *
  *   <form name="mk_local_2" code="COP_MK_LOCAL_2"/>
  *
@@ -729,6 +749,7 @@ VMBREAK(COP_MK_LOCAL_2);
  *   <operation>Make three local variable slots</operation>
  *
  *   <format>mk_local_3</format>
+ *   <dformat>{mk_local_3}</dformat>
  *
  *   <form name="mk_local_3" code="COP_MK_LOCAL_3"/>
  *
@@ -761,6 +782,7 @@ VMBREAK(COP_MK_LOCAL_3);
  *
  *   <format>mk_local_n<fsep/>N[1]</format>
  *   <format>wide<fsep/>mk_local_n<fsep/>N[4]</format>
+ *   <dformat>{mk_local_n}<fsep/>N</dformat>
  *
  *   <form name="mk_local_n" code="COP_MK_LOCAL_N"/>
  *

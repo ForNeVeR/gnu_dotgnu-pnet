@@ -33,6 +33,7 @@
  *   <operation>Load <code>null</code> onto the stack</operation>
  *
  *   <format>ldnull</format>
+ *   <dformat>{ldnull}</dformat>
  *
  *   <form name="ldnull" code="COP_LDNULL"/>
  *
@@ -69,6 +70,7 @@ VMBREAK(COP_LDC_I4_##name) \
  *   <operation>Load <i>n</i> onto the stack</operation>
  *
  *   <format>ldc_i4_&lt;n&gt;</format>
+ *   <dformat>{ldc_i4_&lt;n&gt;}</dformat>
  *
  *   <form name="ldc_i4_m1" code="COP_LDC_I4_M1"/>
  *   <form name="ldc_i4_0" code="COP_LDC_I4_0"/>
@@ -109,6 +111,7 @@ COP_LDC_I4_VALUE(8, 8);
  *				onto the stack</operation>
  *
  *   <format>ldc_i4_s<fsep/>n</format>
+ *   <dformat>{ldc_i4_s}<fsep/>n</dformat>
  *
  *   <form name="ldc_i4_s" code="COP_LDC_I4_S"/>
  *
@@ -135,6 +138,7 @@ VMBREAK(COP_LDC_I4_S);
  *   <operation>Load <code>int32</code> constant onto the stack</operation>
  *
  *   <format>ldc_i4<fsep/>n[4]</format>
+ *   <dformat>{ldc_i4}<fsep/>n</dformat>
  *
  *   <form name="ldc_i4" code="COP_LDC_I4"/>
  *
@@ -161,6 +165,7 @@ VMBREAK(COP_LDC_I4);
  *   <operation>Load <code>int64</code> constant onto the stack</operation>
  *
  *   <format>ldc_i8<fsep/>n[8]</format>
+ *   <dformat>{ldc_i8}<fsep/>n[8]</dformat>
  *
  *   <form name="ldc_i8" code="COP_LDC_I8"/>
  *
@@ -187,6 +192,7 @@ VMBREAK(COP_LDC_I8);
  *   <operation>Load 32-bit floating point constant onto the stack</operation>
  *
  *   <format>ldc_r4<fsep/>n[4]</format>
+ *   <dformat>{ldc_r4}<fsep/>n[4]</dformat>
  *
  *   <form name="ldc_r4" code="COP_LDC_R4"/>
  *
@@ -213,6 +219,7 @@ VMBREAK(COP_LDC_R4);
  *   <format>ldc_r8<fsep/>n[8]</format>
  *
  *   <form name="ldc_r8" code="COP_LDC_R8"/>
+ *   <dformat>{ldc_r8}<fsep/>n[8]</dformat>
  *
  *   <before>...</before>
  *   <after>..., value</after>

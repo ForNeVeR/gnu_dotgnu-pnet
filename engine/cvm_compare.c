@@ -98,6 +98,7 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
  *   <operation>Compare <code>int32</code></operation>
  *
  *   <format>prefix<fsep/>icmp</format>
+ *   <dformat>{icmp}</dformat>
  *
  *   <form name="icmp" code="COP_PREFIX_ICMP"/>
  *
@@ -141,6 +142,7 @@ VMBREAK(COP_PREFIX_ICMP);
  *   <operation>Compare <code>uint32</code></operation>
  *
  *   <format>prefix<fsep/>icmp_un</format>
+ *   <dformat>{icmp_un}</dformat>
  *
  *   <form name="icmp_un" code="COP_PREFIX_ICMP_UN"/>
  *
@@ -184,6 +186,7 @@ VMBREAK(COP_PREFIX_ICMP_UN);
  *   <operation>Compare <code>int64</code></operation>
  *
  *   <format>prefix<fsep/>lcmp</format>
+ *   <dformat>{lcmp}</dformat>
  *
  *   <form name="lcmp" code="COP_PREFIX_LCMP"/>
  *
@@ -218,6 +221,7 @@ VMBREAK(COP_PREFIX_LCMP);
  *   <operation>Compare <code>uint64</code></operation>
  *
  *   <format>prefix<fsep/>lcmp_un</format>
+ *   <dformat>{lcmp_un}</dformat>
  *
  *   <form name="lcmp_un" code="COP_PREFIX_LCMP_UN"/>
  *
@@ -252,6 +256,7 @@ VMBREAK(COP_PREFIX_LCMP_UN);
  *   <operation>Compare <code>native float</code> with lower result</operation>
  *
  *   <format>prefix<fsep/>fcmpl</format>
+ *   <dformat>{fcmpl}</dformat>
  *
  *   <form name="fcmpl" code="COP_PREFIX_FCMPL"/>
  *
@@ -290,6 +295,7 @@ VMBREAK(COP_PREFIX_FCMPL);
  *              greater result</operation>
  *
  *   <format>prefix<fsep/>fcmpg</format>
+ *   <dformat>{fcmpg}</dformat>
  *
  *   <form name="fcmpg" code="COP_PREFIX_FCMPG"/>
  *
@@ -327,6 +333,7 @@ VMBREAK(COP_PREFIX_FCMPG);
  *   <operation>Compare <code>ptr</code></operation>
  *
  *   <format>prefix<fsep/>pcmp</format>
+ *   <dformat>{pcmp}</dformat>
  *
  *   <form name="pcmp" code="COP_PREFIX_PCMP"/>
  *
@@ -370,6 +377,7 @@ VMBREAK(COP_PREFIX_PCMP);
  *   <operation>Set if equal to zero</operation>
  *
  *   <format>prefix<fsep/>seteq</format>
+ *   <dformat>{seteq}</dformat>
  *
  *   <form name="seteq" code="COP_PREFIX_SETEQ"/>
  *
@@ -401,6 +409,7 @@ VMBREAK(COP_PREFIX_SETEQ);
  *   <operation>Set if not equal to zero</operation>
  *
  *   <format>prefix<fsep/>setne</format>
+ *   <dformat>{setne}</dformat>
  *
  *   <form name="setne" code="COP_PREFIX_SETNE"/>
  *
@@ -432,6 +441,7 @@ VMBREAK(COP_PREFIX_SETNE);
  *   <operation>Set if less than zero</operation>
  *
  *   <format>prefix<fsep/>setlt</format>
+ *   <dformat>{setlt}</dformat>
  *
  *   <form name="setlt" code="COP_PREFIX_SETLT"/>
  *
@@ -462,7 +472,8 @@ VMBREAK(COP_PREFIX_SETLT);
  * <opcode name="setle" group="Comparison operators">
  *   <operation>Set if less than or equal to zero</operation>
  *
- *   <format>prefix<fsep/>setlt</format>
+ *   <format>prefix<fsep/>setle</format>
+ *   <dformat>{setle}</dformat>
  *
  *   <form name="setle" code="COP_PREFIX_SETLE"/>
  *
@@ -494,6 +505,7 @@ VMBREAK(COP_PREFIX_SETLE);
  *   <operation>Set if greater than zero</operation>
  *
  *   <format>prefix<fsep/>setgt</format>
+ *   <dformat>{setgt}</dformat>
  *
  *   <form name="setgt" code="COP_PREFIX_SETGT"/>
  *
@@ -525,6 +537,7 @@ VMBREAK(COP_PREFIX_SETGT);
  *   <operation>Set if greater than or equal to zero</operation>
  *
  *   <format>prefix<fsep/>setge</format>
+ *   <dformat>{setge}</dformat>
  *
  *   <form name="setge" code="COP_PREFIX_SETGE"/>
  *

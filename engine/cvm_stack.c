@@ -33,6 +33,7 @@
  *   <operation>Duplicate the top of stack</operation>
  *
  *   <format>dup</format>
+ *   <dformat>{dup}</dformat>
  *
  *   <form name="dup" code="COP_DUP"/>
  *
@@ -56,6 +57,7 @@ VMBREAK(COP_DUP);
  *   <operation>Duplicate the top two stack words</operation>
  *
  *   <format>dup2</format>
+ *   <dformat>{dup2}</dformat>
  *
  *   <form name="dup2" code="COP_DUP2"/>
  *
@@ -81,6 +83,7 @@ VMBREAK(COP_DUP2);
  *
  *   <format>dup_n<fsep/>N[1]</format>
  *   <format>wide<fsep/>dup_n<fsep/>N[4]</format>
+ *   <dformat>{dup_n}<fsep/>N</dformat>
  *
  *   <form name="dup_n" code="COP_DUP_N"/>
  *
@@ -111,6 +114,7 @@ VMBREAK(COP_DUP_N);
  *
  *   <format>dup_word_n<fsep/>N[1]</format>
  *   <format>wide<fsep/>dup_word_n<fsep/>N[4]</format>
+ *   <dformat>{dup_word_n}<fsep/>N</dformat>
  *
  *   <form name="dup_word_n" code="COP_DUP_WORD_N"/>
  *
@@ -134,6 +138,7 @@ VMBREAK(COP_DUP_WORD_N);
  *   <operation>Pop the top-most word from the stack</operation>
  *
  *   <format>pop</format>
+ *   <dformat>{pop}</dformat>
  *
  *   <form name="pop" code="COP_POP"/>
  *
@@ -156,6 +161,7 @@ VMBREAK(COP_POP);
  *   <operation>Pop the top two words from the stack</operation>
  *
  *   <format>pop2</format>
+ *   <dformat>{pop2}</dformat>
  *
  *   <form name="pop2" code="COP_POP2"/>
  *
@@ -179,6 +185,7 @@ VMBREAK(COP_POP2);
  *
  *   <format>pop_n<fsep/>N[1]</format>
  *   <format>wide<fsep/>pop_n<fsep/>N[4]</format>
+ *   <dformat>{pop_n}<fsep/>N</dformat>
  *
  *   <form name="pop_n" code="COP_POP_N"/>
  *
@@ -203,6 +210,7 @@ VMBREAK(COP_POP_N);
  *
  *   <format>squash<fsep/>N[1]<fsep/>M[1]</format>
  *   <format>wide<fsep/>squash<fsep/>N[4]<fsep/>M[4]</format>
+ *   <dformat>{squash}<fsep/>N<fsep/>M</dformat>
  *
  *   <form name="squash" code="COP_SQUASH"/>
  *
@@ -230,6 +238,7 @@ VMBREAK(COP_SQUASH);
  *   <operation>Check the height of the stack</operation>
  *
  *   <format>ckheight<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
+ *   <dformat>{ckheight}<fsep/>0</dformat>
  *
  *   <form name="ckheight" code="COP_CKHEIGHT"/>
  *
@@ -275,6 +284,7 @@ VMBREAK(COP_CKHEIGHT);
  *              words of available space</operation>
  *
  *   <format>ckheight_n<fsep/>N[4]</format>
+ *   <dformat>{ckheight_n}<fsep/>N</dformat>
  *
  *   <form name="ckheight_n" code="COP_CKHEIGHT_N"/>
  *
@@ -313,6 +323,7 @@ VMBREAK(COP_CKHEIGHT_N);
  *
  *   <format>set_num_args<fsep/>N[1]</format>
  *   <format>wide<fsep/>set_num_args<fsep/>N[4]</format>
+ *   <dformat>{set_num_args}<fsep/>N</dformat>
  *
  *   <form name="set_num_args" code="COP_SET_NUM_ARGS"/>
  *

@@ -27,6 +27,8 @@ class opcode:
 			self.read_operation()
 		if(_haschild(self.node,"format")):
 			self.read_formats()
+		if(_haschild(self.node,"dformat")):
+			self.read_dformats()
 		if(_haschild(self.node,"form")):
 			self.read_forms()
 		if(_haschild(self.node,"before")):
@@ -55,6 +57,16 @@ class opcode:
 				ftext=ftext+each2.toxml()
 			ftext=string.replace(ftext,"<fsep/>","</i></td></tr><tr><td align=\"center\" width=\"100\"><i>")
 			self.formats.append(ftext)
+
+	def read_dformats(self):
+		self.dformats=[]
+		dformats=self.node.getElementsByTagName("dformat")
+		for each in dformats:
+			ftext=""
+			for each2 in each.childNodes:
+				ftext=ftext+each2.toxml()
+			ftext=string.replace(ftext,"<fsep/>","</i></td></tr><tr><td align=\"center\" width=\"100\"><i>")
+			self.dformats.append(ftext)
 
 	def read_forms(self):
 		self.forms=[]
@@ -117,6 +129,8 @@ class opcode:
 			self.write_operation(fp)
 		if(_haschild(self.node,"format")):
 			self.write_formats(fp)
+		if(_haschild(self.node,"dformat")):
+			self.write_dformats(fp)
 		if(_haschild(self.node,"form")):
 			self.write_forms_text(fp,codes)
 		if(_haschild(self.node,"before")):
@@ -144,6 +158,16 @@ class opcode:
 		fp.write("""<table border="0" bordercolor="#AAAAAA" cellpadding="6" 
 			cellspacing="0"><tr>""")
 		for each in self.formats:
+			fp.write ("<td><table border=\"1\" cellpadding=\"6\" cellspacing=\"0\"><tr><td align=\"center\" width=\"100\"><i>"+each+"</i></td></tr></table></td>")
+		fp.write("</tr></table>")
+		fp.write("</td></tr>")
+	
+	def write_dformats(self,fp):
+		fp.write("""<tr border="0"><td border="0">&nbsp;&nbsp;&middot;&nbsp;
+		<b>Direct Format </b></td><td border="0">""")
+		fp.write("""<table border="0" bordercolor="#AAAAAA" cellpadding="6" 
+			cellspacing="0"><tr>""")
+		for each in self.dformats:
 			fp.write ("<td><table border=\"1\" cellpadding=\"6\" cellspacing=\"0\"><tr><td align=\"center\" width=\"100\"><i>"+each+"</i></td></tr></table></td>")
 		fp.write("</tr></table>")
 		fp.write("</td></tr>")

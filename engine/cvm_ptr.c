@@ -78,6 +78,7 @@ ILUInt32 tempSize;
  *   <operation>Read <code>int8</code> from pointer</operation>
  *
  *   <format>bread</format>
+ *   <dformat>{bread}</dformat>
  *
  *   <form name="bread" code="COP_BREAD"/>
  *
@@ -103,6 +104,7 @@ VMBREAK(COP_BREAD);
  *   <operation>Read <code>uint8</code> from pointer</operation>
  *
  *   <format>ubread</format>
+ *   <dformat>{ubread}</dformat>
  *
  *   <form name="ubread" code="COP_UBREAD"/>
  *
@@ -128,6 +130,7 @@ VMBREAK(COP_UBREAD);
  *   <operation>Read <code>int16</code> from pointer</operation>
  *
  *   <format>sread</format>
+ *   <dformat>{sread}</dformat>
  *
  *   <form name="sread" code="COP_SREAD"/>
  *
@@ -153,6 +156,7 @@ VMBREAK(COP_SREAD);
  *   <operation>Read <code>uint16</code> from pointer</operation>
  *
  *   <format>usread</format>
+ *   <dformat>{usread}</dformat>
  *
  *   <form name="usread" code="COP_USREAD"/>
  *
@@ -178,6 +182,7 @@ VMBREAK(COP_USREAD);
  *   <operation>Read <code>int32</code> from pointer</operation>
  *
  *   <format>iread</format>
+ *   <dformat>{iread}</dformat>
  *
  *   <form name="iread" code="COP_IREAD"/>
  *
@@ -205,6 +210,7 @@ VMBREAK(COP_IREAD);
  *   <operation>Read <code>float32</code> from pointer</operation>
  *
  *   <format>fread</format>
+ *   <dformat>{fread}</dformat>
  *
  *   <form name="fread" code="COP_FREAD"/>
  *
@@ -232,6 +238,7 @@ VMBREAK(COP_FREAD);
  *   <operation>Read <code>float64</code> from pointer</operation>
  *
  *   <format>dread</format>
+ *   <dformat>{dread}</dformat>
  *
  *   <form name="dread" code="COP_DREAD"/>
  *
@@ -259,6 +266,7 @@ VMBREAK(COP_DREAD);
  *   <operation>Read <code>ptr</code> from pointer</operation>
  *
  *   <format>pread</format>
+ *   <dformat>{pread}</dformat>
  *
  *   <form name="pread" code="COP_PREAD"/>
  *
@@ -289,6 +297,7 @@ VMBREAK(COP_PREAD);
  *
  *   <format>mread<fsep/>N[1]</format>
  *   <format>wide<fsep/>mread<fsep/>N[4]</format>
+ *   <dformat>{mread}<fsep/>N</dformat>
  *
  *   <form name="mread" code="COP_MREAD"/>
  *
@@ -319,6 +328,7 @@ VMBREAK(COP_MREAD);
  *   <operation>Write <code>int8</code> to pointer</operation>
  *
  *   <format>bwrite</format>
+ *   <dformat>{bwrite}</dformat>
  *
  *   <form name="bwrite" code="COP_BWRITE"/>
  *
@@ -347,6 +357,7 @@ VMBREAK(COP_BWRITE);
  *   <operation>Write <code>int16</code> to pointer</operation>
  *
  *   <format>swrite</format>
+ *   <dformat>{swrite}</dformat>
  *
  *   <form name="swrite" code="COP_SWRITE"/>
  *
@@ -375,6 +386,7 @@ VMBREAK(COP_SWRITE);
  *   <operation>Write <code>int32</code> to pointer</operation>
  *
  *   <format>iwrite</format>
+ *   <dformat>{iwrite}</dformat>
  *
  *   <form name="iwrite" code="COP_IWRITE"/>
  *
@@ -402,6 +414,7 @@ VMBREAK(COP_IWRITE);
  *   <operation>Write <code>float32</code> to pointer</operation>
  *
  *   <format>fwrite</format>
+ *   <dformat>{fwrite}</dformat>
  *
  *   <form name="fwrite" code="COP_FWRITE"/>
  *
@@ -428,6 +441,7 @@ VMBREAK(COP_FWRITE);
  *   <operation>Write <code>float64</code> to pointer</operation>
  *
  *   <format>dwrite</format>
+ *   <dformat>{dwrite}</dformat>
  *
  *   <form name="dwrite" code="COP_DWRITE"/>
  *
@@ -456,6 +470,7 @@ VMBREAK(COP_DWRITE);
  *   <operation>Write <code>ptr</code> to pointer</operation>
  *
  *   <format>pwrite</format>
+ *   <dformat>{pwrite}</dformat>
  *
  *   <form name="pwrite" code="COP_PWRITE"/>
  *
@@ -486,6 +501,7 @@ VMBREAK(COP_PWRITE);
  *
  *   <format>mwrite<fsep/>N[1]</format>
  *   <format>wide<fsep/>mwrite<fsep/>N[4]</format>
+ *   <dformat>{mwrite}<fsep/>N</dformat>
  *
  *   <form name="mwrite" code="COP_MWRITE"/>
  *
@@ -514,6 +530,7 @@ VMBREAK(COP_MWRITE);
  *				arguments</operation>
  *
  *   <format>bwrite_r</format>
+ *   <dformat>{bwrite_r}</dformat>
  *
  *   <form name="bwrite_r" code="COP_BWRITE_R"/>
  *
@@ -543,6 +560,7 @@ VMBREAK(COP_BWRITE_R);
  *				arguments</operation>
  *
  *   <format>swrite_r</format>
+ *   <dformat>{swrite_r}</dformat>
  *
  *   <form name="swrite_r" code="COP_SWRITE_R"/>
  *
@@ -572,6 +590,7 @@ VMBREAK(COP_SWRITE_R);
  *				arguments</operation>
  *
  *   <format>iwrite_r</format>
+ *   <dformat>{iwrite_r}</dformat>
  *
  *   <form name="iwrite_r" code="COP_IWRITE_R"/>
  *
@@ -600,6 +619,7 @@ VMBREAK(COP_IWRITE_R);
  *				arguments</operation>
  *
  *   <format>fwrite_r</format>
+ *   <dformat>{fwrite_r}</dformat>
  *
  *   <form name="fwrite_r" code="COP_FWRITE_R"/>
  *
@@ -628,6 +648,7 @@ VMBREAK(COP_FWRITE_R);
  *				arguments</operation>
  *
  *   <format>dwrite_r</format>
+ *   <dformat>{dwrite_r}</dformat>
  *
  *   <form name="dwrite_r" code="COP_DWRITE_R"/>
  *
@@ -657,6 +678,7 @@ VMBREAK(COP_DWRITE_R);
  *				arguments</operation>
  *
  *   <format>pwrite_r</format>
+ *   <dformat>{pwrite_r}</dformat>
  *
  *   <form name="pwrite_r" code="COP_PWRITE_R"/>
  *
@@ -688,6 +710,7 @@ VMBREAK(COP_PWRITE_R);
  *
  *   <format>mwrite_r<fsep/>N[1]</format>
  *   <format>wide<fsep/>mwrite_r<fsep/>N[4]</format>
+ *   <dformat>{mwrite_r}<fsep/>N</dformat>
  *
  *   <form name="mwrite_r" code="COP_MWRITE_R"/>
  *
@@ -716,6 +739,7 @@ VMBREAK(COP_MWRITE_R);
  *   <operation>Add a literal byte offset to a pointer</operation>
  *
  *   <format>padd_offset<fsep/>N[1]</format>
+ *   <dformat>{padd_offset}<fsep/>N</dformat>
  *
  *   <form name="padd_offset" code="COP_PADD_OFFSET"/>
  *
@@ -744,6 +768,7 @@ VMBREAK(COP_PADD_OFFSET);
  *
  *   <format>padd_offset_n<fsep/>N[1]<fsep/>M[1]</format>
  *   <format>wide<fsep/>padd_offset_n<fsep/>N[4]<fsep/>M[4]</format>
+ *   <dformat>{padd_offset_n}<fsep/>N<fsep/>M</dformat>
  *
  *   <form name="padd_offset_n" code="COP_PADD_OFFSET_N"/>
  *
@@ -776,6 +801,7 @@ VMBREAK(COP_PADD_OFFSET_N);
  *   <operation>Add <code>int32</code> value to pointer</operation>
  *
  *   <format>padd_i4</format>
+ *   <dformat>{padd_i4}</dformat>
  *
  *   <form name="padd_i4" code="COP_PADD_I4"/>
  *
@@ -807,6 +833,7 @@ VMBREAK(COP_PADD_I4);
  *				reversed arguments</operation>
  *
  *   <format>padd_i4_r</format>
+ *   <dformat>{padd_i4_r}</dformat>
  *
  *   <form name="padd_i4_r" code="COP_PADD_I4_R"/>
  *
@@ -834,6 +861,7 @@ VMBREAK(COP_PADD_I4_R);
  *   <operation>Add <code>int64</code> value to pointer</operation>
  *
  *   <format>padd_i8</format>
+ *   <dformat>{padd_i8}</dformat>
  *
  *   <form name="padd_i8" code="COP_PADD_I8"/>
  *
@@ -874,9 +902,10 @@ VMBREAK(COP_PADD_I8);
  *   <operation>Add <code>int64</code> value to pointer with
  *				reversed arguments</operation>
  *
- *   <format>padd_i8</format>
+ *   <format>padd_i8_r</format>
+ *   <dformat>{padd_i8_r}</dformat>
  *
- *   <form name="padd_i8" code="COP_PADD_I8"/>
+ *   <form name="padd_i8_r" code="COP_PADD_I8_R"/>
  *
  *   <before>..., value, pointer</before>
  *   <after>..., newpointer</after>
@@ -913,6 +942,7 @@ VMBREAK(COP_PADD_I8_R);
  *   <operation>Subtract pointer values</operation>
  *
  *   <format>psub</format>
+ *   <dformat>{psub}</dformat>
  *
  *   <form name="psub" code="COP_PSUB"/>
  *
@@ -947,6 +977,7 @@ VMBREAK(COP_PSUB);
  *   <operation>Subtract <code>int32</code> from pointer</operation>
  *
  *   <format>psub_i4</format>
+ *   <dformat>{psub_i4}</dformat>
  *
  *   <form name="psub_i4" code="COP_PSUB_I4"/>
  *
@@ -974,6 +1005,7 @@ VMBREAK(COP_PSUB_I4);
  *   <operation>Subtract <code>int64</code> from pointer</operation>
  *
  *   <format>psub_i8</format>
+ *   <dformat>{psub_i8}</dformat>
  *
  *   <form name="psub_i8" code="COP_PSUB_I8"/>
  *
@@ -1014,6 +1046,7 @@ VMBREAK(COP_PSUB_I8);
  *   <operation>Check pointer for <code>null</code></operation>
  *
  *   <format>cknull</format>
+ *   <dformat>{cknull}</dformat>
  *
  *   <form name="cknull" code="COP_CKNULL"/>
  *
@@ -1045,6 +1078,7 @@ VMBREAK(COP_CKNULL);
  *
  *   <format>cknull_n<fsep/>N[1]</format>
  *   <format>wide<fsep/>cknull_n<fsep/>N[4]</format>
+ *   <dformat>{cknull_n}<fsep/>N</dformat>
  *
  *   <form name="cknull_n" code="COP_CKNULL_N"/>
  *
@@ -1114,6 +1148,7 @@ VMBREAK(COP_##name)
  *   <operation>Read <code>int8</code> value from array</operation>
  *
  *   <format>bread_elem</format>
+ *   <dformat>{bread_elem}</dformat>
  *
  *   <form name="bread_elem" code="COP_BREAD_ELEM"/>
  *
@@ -1141,6 +1176,7 @@ SIMPLE_READ_ELEM(BREAD_ELEM,  ILInt8);
  *   <operation>Read <code>uint8</code> value from array</operation>
  *
  *   <format>ubread_elem</format>
+ *   <dformat>{ubread_elem}</dformat>
  *
  *   <form name="ubread_elem" code="COP_UBREAD_ELEM"/>
  *
@@ -1168,6 +1204,7 @@ SIMPLE_READ_ELEM(UBREAD_ELEM, ILUInt8);
  *   <operation>Read <code>int16</code> value from array</operation>
  *
  *   <format>sread_elem</format>
+ *   <dformat>{sread_elem}</dformat>
  *
  *   <form name="sread_elem" code="COP_SREAD_ELEM"/>
  *
@@ -1195,6 +1232,7 @@ SIMPLE_READ_ELEM(SREAD_ELEM,  ILInt16);
  *   <operation>Read <code>uint16</code> value from array</operation>
  *
  *   <format>usread_elem</format>
+ *   <dformat>{usread_elem}</dformat>
  *
  *   <form name="usread_elem" code="COP_USREAD_ELEM"/>
  *
@@ -1222,6 +1260,7 @@ SIMPLE_READ_ELEM(USREAD_ELEM, ILUInt16);
  *   <operation>Read <code>int32</code> value from array</operation>
  *
  *   <format>iread_elem</format>
+ *   <dformat>{iread_elem}</dformat>
  *
  *   <form name="iread_elem" code="COP_IREAD_ELEM"/>
  *
@@ -1251,6 +1290,7 @@ SIMPLE_READ_ELEM(IREAD_ELEM,  ILInt32);
  *   <operation>Read <code>ptr</code> value from array</operation>
  *
  *   <format>pread_elem</format>
+ *   <dformat>{pread_elem}</dformat>
  *
  *   <form name="pread_elem" code="COP_PREAD_ELEM"/>
  *
@@ -1329,6 +1369,7 @@ VMBREAK(COP_##name)
  *   <operation>Write <code>int8</code> value to array</operation>
  *
  *   <format>bwrite_elem</format>
+ *   <dformat>{bwrite_elem}</dformat>
  *
  *   <form name="bwrite_elem" code="COP_BWRITE_ELEM"/>
  *
@@ -1356,6 +1397,7 @@ SIMPLE_WRITE_ELEM(BWRITE_ELEM, ILInt8);
  *   <operation>Write <code>int16</code> value to array</operation>
  *
  *   <format>swrite_elem</format>
+ *   <dformat>{swrite_elem}</dformat>
  *
  *   <form name="swrite_elem" code="COP_SWRITE_ELEM"/>
  *
@@ -1383,6 +1425,7 @@ SIMPLE_WRITE_ELEM(SWRITE_ELEM, ILInt16);
  *   <operation>Write <code>int32</code> value to array</operation>
  *
  *   <format>iwrite_elem</format>
+ *   <dformat>{iwrite_elem}</dformat>
  *
  *   <form name="iwrite_elem" code="COP_IWRITE_ELEM"/>
  *
@@ -1410,6 +1453,7 @@ SIMPLE_WRITE_ELEM(IWRITE_ELEM, ILInt32);
  *   <operation>Write <code>ptr</code> value to array</operation>
  *
  *   <format>pwrite_elem</format>
+ *   <dformat>{pwrite_elem}</dformat>
  *
  *   <form name="pwrite_elem" code="COP_PWRITE_ELEM"/>
  *
@@ -1465,6 +1509,7 @@ VMBREAK(COP_PWRITE_ELEM);
  *				index</operation>
  *
  *   <format>ckarray_load_i4</format>
+ *   <dformat>{ckarray_load_i4}</dformat>
  *
  *   <form name="ckarray_load_i4" code="COP_CKARRAY_LOAD_I4"/>
  *
@@ -1525,6 +1570,7 @@ VMBREAK(COP_CKARRAY_LOAD_I4);
  *				index</operation>
  *
  *   <format>ckarray_load_i8</format>
+ *   <dformat>{ckarray_load_i8}</dformat>
  *
  *   <form name="ckarray_load_i8" code="COP_CKARRAY_LOAD_I8"/>
  *
@@ -1585,6 +1631,7 @@ VMBREAK(COP_CKARRAY_LOAD_I8);
  *				index</operation>
  *
  *   <format>ckarray_store_i8<fsep/>N[1]<fsep/>M[1]</format>
+ *   <dformat>{ckarray_store_i8}<fsep/>N<fsep/>M</dformat>
  *
  *   <form name="ckarray_store_i8" code="COP_CKARRAY_STORE_I8"/>
  *
@@ -1642,6 +1689,7 @@ VMBREAK(COP_CKARRAY_STORE_I8);
  *   <operation>Get the length of an array</operation>
  *
  *   <format>array_len</format>
+ *   <dformat>{array_len}</dformat>
  *
  *   <form name="array_len" code="COP_ARRAY_LEN"/>
  *
@@ -1689,6 +1737,7 @@ VMBREAK(COP_ARRAY_LEN);
  *   <operation>Read <code>int8</code> field</operation>
  *
  *   <format>bread_field<fsep/>N[1]</format>
+ *   <dformat>{bread_field}<fsep/>N</dformat>
  *
  *   <form name="bread_field" code="COP_BREAD_FIELD"/>
  *
@@ -1728,6 +1777,7 @@ VMBREAK(COP_BREAD_FIELD);
  *   <operation>Read <code>uint8</code> field</operation>
  *
  *   <format>ubread_field<fsep/>N[1]</format>
+ *   <dformat>{ubread_field}<fsep/>N</dformat>
  *
  *   <form name="ubread_field" code="COP_UBREAD_FIELD"/>
  *
@@ -1767,6 +1817,7 @@ VMBREAK(COP_UBREAD_FIELD);
  *   <operation>Read <code>int16</code> field</operation>
  *
  *   <format>sread_field<fsep/>N[1]</format>
+ *   <dformat>{sread_field}<fsep/>N</dformat>
  *
  *   <form name="sread_field" code="COP_SREAD_FIELD"/>
  *
@@ -1806,6 +1857,7 @@ VMBREAK(COP_SREAD_FIELD);
  *   <operation>Read <code>uint16</code> field</operation>
  *
  *   <format>usread_field<fsep/>N[1]</format>
+ *   <dformat>{usread_field}<fsep/>N</dformat>
  *
  *   <form name="usread_field" code="COP_USREAD_FIELD"/>
  *
@@ -1845,6 +1897,7 @@ VMBREAK(COP_USREAD_FIELD);
  *   <operation>Read <code>int32</code> field</operation>
  *
  *   <format>iread_field<fsep/>N[1]</format>
+ *   <dformat>{iread_field}<fsep/>N</dformat>
  *
  *   <form name="iread_field" code="COP_IREAD_FIELD"/>
  *
@@ -1884,6 +1937,7 @@ VMBREAK(COP_IREAD_FIELD);
  *   <operation>Read <code>ptr</code> field</operation>
  *
  *   <format>pread_field<fsep/>N[1]</format>
+ *   <dformat>{pread_field}<fsep/>N</dformat>
  *
  *   <form name="pread_field" code="COP_PREAD_FIELD"/>
  *
@@ -1928,6 +1982,7 @@ VMBREAK(COP_PREAD_FIELD);
  *   <operation>Write <code>int8</code> field</operation>
  *
  *   <format>bwrite_field<fsep/>N[1]</format>
+ *   <dformat>{bwrite_field}<fsep/>N</dformat>
  *
  *   <form name="bwrite_field" code="COP_BWRITE_FIELD"/>
  *
@@ -1970,7 +2025,8 @@ VMBREAK(COP_BWRITE_FIELD);
  * <opcode name="swrite_field" group="Object handling">
  *   <operation>Write <code>int16</code> field</operation>
  *
- *   <format>pwrite_field<fsep/>N[1]</format>
+ *   <format>swrite_field<fsep/>N[1]</format>
+ *   <dformat>{swrite_field}<fsep/>N</dformat>
  *
  *   <form name="swrite_field" code="COP_SWRITE_FIELD"/>
  *
@@ -2014,6 +2070,7 @@ VMBREAK(COP_SWRITE_FIELD);
  *   <operation>Write <code>int32</code> field</operation>
  *
  *   <format>iwrite_field<fsep/>N[1]</format>
+ *   <dformat>{iwrite_field}<fsep/>N</dformat>
  *
  *   <form name="iwrite_field" code="COP_IWRITE_FIELD"/>
  *
@@ -2056,6 +2113,7 @@ VMBREAK(COP_IWRITE_FIELD);
  *   <operation>Write <code>int32</code> field</operation>
  *
  *   <format>pwrite_field<fsep/>N[1]</format>
+ *   <dformat>{pwrite_field}<fsep/>N</dformat>
  *
  *   <form name="pwrite_field" code="COP_PWRITE_FIELD"/>
  *
@@ -2103,6 +2161,7 @@ VMBREAK(COP_PWRITE_FIELD);
  *   <operation>Read <code>ptr</code> field from <code>this</code></operation>
  *
  *   <format>pread_this<fsep/>N[1]</format>
+ *   <dformat>{pread_this}<fsep/>N</dformat>
  *
  *   <form name="pread_this" code="COP_PREAD_THIS"/>
  *
@@ -2144,6 +2203,7 @@ VMBREAK(COP_PREAD_THIS);
  *				<code>this</code></operation>
  *
  *   <format>iread_this<fsep/>N[1]</format>
+ *   <dformat>{iread_this}<fsep/>N</dformat>
  *
  *   <form name="iread_this" code="COP_IREAD_THIS"/>
  *
@@ -2184,6 +2244,7 @@ VMBREAK(COP_IREAD_THIS);
  *   <operation>Cast an object to a new class</operation>
  *
  *   <format>castclass<fsep/>class</format>
+ *   <dformat>{castclass}<fsep/>class</dformat>
  *
  *   <form name="castclass" code="COP_CASTCLASS"/>
  *
@@ -2229,6 +2290,7 @@ VMBREAK(COP_CASTCLASS);
  *   <operation>Determine if an object is an instance of a class</operation>
  *
  *   <format>isinst<fsep/>class</format>
+ *   <dformat>{isinst}<fsep/>class</dformat>
  *
  *   <form name="isinst" code="COP_ISINST"/>
  *
@@ -2267,6 +2329,7 @@ VMBREAK(COP_ISINST);
  *   <operation>Cast an object to a new interface</operation>
  *
  *   <format>castinterface<fsep/>interface</format>
+ *   <dformat>{castinterface}<fsep/>interface</dformat>
  *
  *   <form name="castinterface" code="COP_CASTINTERFACE"/>
  *
@@ -2313,6 +2376,7 @@ VMBREAK(COP_CASTINTERFACE);
  *              an interface</operation>
  *
  *   <format>isinterface<fsep/>interface</format>
+ *   <dformat>{isinterface}<fsep/>interface</dformat>
  *
  *   <form name="isinterface" code="COP_ISINTERFACE"/>
  *
@@ -2351,6 +2415,7 @@ VMBREAK(COP_ISINTERFACE);
  *   <operation>Get a pointer to the static data area of a class</operation>
  *
  *   <format>get_static<fsep/>class</format>
+ *   <dformat>{get_static}<fsep/>class</dformat>
  *
  *   <form name="get_static" code="COP_GET_STATIC"/>
  *
@@ -2403,6 +2468,7 @@ VMBREAK(COP_GET_STATIC);
  *   <operation>Allocate an instance of the current class</operation>
  *
  *   <format>new</format>
+ *   <dformat>{new}</dformat>
  *
  *   <form name="new" code="COP_NEW"/>
  *
@@ -2451,6 +2517,7 @@ VMBREAK(COP_NEW);
  *
  *   <format>new_value<fsep/>N[1]<fsep/>M[1]</format>
  *   <format>wide<fsep/>new_value<fsep/>N[4]<fsep/>M[4]</format>
+ *   <dformat>{new_value}<fsep/>N<fsep/>M</dformat>
  *
  *   <form name="new_value" code="COP_NEW_VALUE"/>
  *
@@ -2486,6 +2553,7 @@ VMBREAK(COP_NEW_VALUE);
  *   <operation>Load a string constant onto the stack</operation>
  *
  *   <format>ldstr<fsep/>token[4]</format>
+ *   <dformat>{ldstr}<fsep/>token</dformat>
  *
  *   <form name="ldstr" code="COP_LDSTR"/>
  *
@@ -2518,7 +2586,8 @@ VMBREAK(COP_LDSTR);
  * <opcode name="ldtoken" group="Miscellaneous instructions">
  *   <operation>Load a token pointer onto the stack</operation>
  *
- *   <format>ldstr<fsep/>pointer</format>
+ *   <format>ldtoken<fsep/>pointer</format>
+ *   <dformat>{ldtoken}<fsep/>pointer</dformat>
  *
  *   <form name="ldtoken" code="COP_LDTOKEN"/>
  *
@@ -2549,6 +2618,7 @@ VMBREAK(COP_LDTOKEN);
  *
  *   <format>box<fsep/>N[1]<fsep/>class</format>
  *   <format>wide<fsep/>box<fsep/>N[4]<fsep/>class</format>
+ *   <dformat>{box}<fsep/>N<fsep/>class</dformat>
  *
  *   <form name="box" code="COP_BOX"/>
  *
@@ -2593,6 +2663,7 @@ VMBREAK(COP_BOX);
  *
  *   <format>box_ptr<fsep/>N[1]<fsep/>class</format>
  *   <format>wide<fsep/>box_ptr<fsep/>N[4]<fsep/>class</format>
+ *   <dformat>{box_ptr}<fsep/>N<fsep/>class</dformat>
  *
  *   <form name="box_ptr" code="COP_BOX_PTR"/>
  *
@@ -2632,6 +2703,7 @@ VMBREAK(COP_BOX_PTR);
  *
  *   <format>memcpy<fsep/>N[1]</format>
  *   <format>wide<fsep/>memcpy<fsep/>N[4]</format>
+ *   <dformat>{memcpy}<fsep/>N</dformat>
  *
  *   <form name="memcpy" code="COP_MEMCPY"/>
  *
@@ -2665,6 +2737,7 @@ VMBREAK(COP_MEMCPY);
  *   <operation>Move a block of memory</operation>
  *
  *   <format>memmove</format>
+ *   <dformat>{memmove}</dformat>
  *
  *   <form name="memmove" code="COP_MEMMOVE"/>
  *
@@ -2695,6 +2768,7 @@ VMBREAK(COP_MEMMOVE);
  *
  *   <format>memzero<fsep/>N[1]</format>
  *   <format>wide<fsep/>memzero<fsep/>N[4]</format>
+ *   <dformat>{memzero}<fsep/>N</dformat>
  *
  *   <form name="memzero" code="COP_MEMZERO"/>
  *
@@ -2725,6 +2799,7 @@ VMBREAK(COP_MEMZERO);
  *   <operation>Fill a block of memory with a byte value</operation>
  *
  *   <format>memset</format>
+ *   <dformat>{memset}</dformat>
  *
  *   <form name="memset" code="COP_MEMSET"/>
  *
@@ -2896,6 +2971,7 @@ VMBREAK(COP_##name)
  *   <operation>Read <code>int64</code> value from array</operation>
  *
  *   <format>prefix<fsep/>lread_elem</format>
+ *   <dformat>{lread_elem}</dformat>
  *
  *   <form name="lread_elem" code="COP_PREFIX_LREAD_ELEM"/>
  *
@@ -2926,6 +3002,7 @@ LARGE_READ_ELEM(PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
  *   <operation>Read <code>float32</code> value from array</operation>
  *
  *   <format>prefix<fsep/>fread_elem</format>
+ *   <dformat>{fread_elem}</dformat>
  *
  *   <form name="fread_elem" code="COP_PREFIX_FREAD_ELEM"/>
  *
@@ -2954,6 +3031,7 @@ LARGE_READ_ELEM(PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  *   <operation>Read <code>float64</code> value from array</operation>
  *
  *   <format>prefix<fsep/>dread_elem</format>
+ *   <dformat>{dread_elem}</dformat>
  *
  *   <form name="dread_elem" code="COP_PREFIX_DREAD_ELEM"/>
  *
@@ -3008,6 +3086,7 @@ VMBREAK(COP_##name)
  *   <operation>Write <code>int64</code> value to array</operation>
  *
  *   <format>prefix<fsep/>lwrite_elem</format>
+ *   <dformat>{lwrite_elem}</dformat>
  *
  *   <form name="lwrite_elem" code="COP_PREFIX_LWRITE_ELEM"/>
  *
@@ -3039,6 +3118,7 @@ LARGE_WRITE_ELEM(PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
  *   <operation>Write <code>float32</code> value to array</operation>
  *
  *   <format>prefix<fsep/>fwrite_elem</format>
+ *   <dformat>{fwrite_elem}</dformat>
  *
  *   <form name="fwrite_elem" code="COP_PREFIX_FWRITE_ELEM"/>
  *
@@ -3067,6 +3147,7 @@ LARGE_WRITE_ELEM(PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  *   <operation>Write <code>float64</code> value to array</operation>
  *
  *   <format>prefix<fsep/>dwrite_elem</format>
+ *   <dformat>{dwrite_elem}</dformat>
  *
  *   <form name="dwrite_elem" code="COP_PREFIX_DWRITE_ELEM"/>
  *
@@ -3095,6 +3176,7 @@ LARGE_WRITE_ELEM(PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
  *   <operation>Make a <code>typedref</code></operation>
  *
  *   <format>prefix<fsep/>mkrefany<fsep/>class</format>
+ *   <dformat>{mkrefany}<fsep/>class</dformat>
  *
  *   <form name="mkrefany" code="COP_PREFIX_MKREFANY"/>
  *
@@ -3124,6 +3206,7 @@ VMBREAK(COP_PREFIX_MKREFANY);
  *   <operation>Extract the value from a <code>typedref</code></operation>
  *
  *   <format>prefix<fsep/>refanyval<fsep/>class</format>
+ *   <dformat>{refanyval}<fsep/>class</dformat>
  *
  *   <form name="refanyval" code="COP_PREFIX_REFANYVAL"/>
  *
@@ -3168,6 +3251,7 @@ VMBREAK(COP_PREFIX_REFANYVAL);
  *   <operation>Extract the type from a <code>typedref</code></operation>
  *
  *   <format>prefix<fsep/>refanytype</format>
+ *   <dformat>{refanytype}</dformat>
  *
  *   <form name="refanytype" code="COP_PREFIX_REFANYTYPE"/>
  *

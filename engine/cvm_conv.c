@@ -193,6 +193,7 @@ ILInt32 position;
  *   <operation>Convert <code>int32</code> to <code>int8</code></operation>
  *
  *   <format>i2b</format>
+ *   <dformat>{i2b}</dformat>
  *
  *   <form name="i2b" code="COP_I2B"/>
  *
@@ -219,6 +220,7 @@ VMBREAK(COP_I2B);
  *   <operation>Convert <code>int32</code> to <code>uint8</code></operation>
  *
  *   <format>i2ub</format>
+ *   <dformat>{i2ub}</dformat>
  *
  *   <form name="i2ub" code="COP_I2UB"/>
  *
@@ -245,6 +247,7 @@ VMBREAK(COP_I2UB);
  *   <operation>Convert <code>int32</code> to <code>int16</code></operation>
  *
  *   <format>i2s</format>
+ *   <dformat>{i2s}</dformat>
  *
  *   <form name="i2s" code="COP_I2S"/>
  *
@@ -271,6 +274,7 @@ VMBREAK(COP_I2S);
  *   <operation>Convert <code>int32</code> to <code>uint16</code></operation>
  *
  *   <format>i2us</format>
+ *   <dformat>{i2us}</dformat>
  *
  *   <form name="i2us" code="COP_I2US"/>
  *
@@ -297,6 +301,7 @@ VMBREAK(COP_I2US);
  *   <operation>Convert <code>int32</code> to <code>int64</code></operation>
  *
  *   <format>i2l</format>
+ *   <dformat>{i2l}</dformat>
  *
  *   <form name="i2l" code="COP_I2L"/>
  *
@@ -322,6 +327,7 @@ VMBREAK(COP_I2L);
  *   <operation>Convert <code>uint32</code> to <code>int64</code></operation>
  *
  *   <format>iu2l</format>
+ *   <dformat>{iu2l}</dformat>
  *
  *   <form name="iu2l" code="COP_IU2L"/>
  *
@@ -348,6 +354,7 @@ VMBREAK(COP_IU2L);
  *				<code>native float</code></operation>
  *
  *   <format>i2f</format>
+ *   <dformat>{i2f}</dformat>
  *
  *   <form name="i2f" code="COP_I2F"/>
  *
@@ -373,6 +380,7 @@ VMBREAK(COP_I2F);
  *				<code>native float</code></operation>
  *
  *   <format>iu2f</format>
+ *   <dformat>{iu2f}</dformat>
  *
  *   <form name="iu2f" code="COP_IU2F"/>
  *
@@ -397,6 +405,7 @@ VMBREAK(COP_IU2F);
  *   <operation>Convert <code>int64</code> to <code>int32</code></operation>
  *
  *   <format>l2i</format>
+ *   <dformat>{l2i}</dformat>
  *
  *   <form name="l2i" code="COP_L2I"/>
  *
@@ -424,6 +433,7 @@ VMBREAK(COP_L2I);
  *				<code>native float</code></operation>
  *
  *   <format>l2f</format>
+ *   <dformat>{l2f}</dformat>
  *
  *   <form name="l2f" code="COP_L2F"/>
  *
@@ -457,6 +467,7 @@ VMBREAK(COP_L2F);
  *				<code>native float</code></operation>
  *
  *   <format>lu2f</format>
+ *   <dformat>{lu2f}</dformat>
  *
  *   <form name="lu2f" code="COP_LU2F"/>
  *
@@ -490,6 +501,7 @@ VMBREAK(COP_LU2F);
  *				<code>int32</code></operation>
  *
  *   <format>f2i</format>
+ *   <dformat>{f2i}</dformat>
  *
  *   <form name="f2i" code="COP_F2I"/>
  *
@@ -516,6 +528,7 @@ VMBREAK(COP_F2I);
  *				<code>uint32</code></operation>
  *
  *   <format>f2iu</format>
+ *   <dformat>{f2iu}</dformat>
  *
  *   <form name="f2iu" code="COP_F2IU"/>
  *
@@ -542,6 +555,7 @@ VMBREAK(COP_F2IU);
  *				<code>int64</code></operation>
  *
  *   <format>f2l</format>
+ *   <dformat>{f2l}</dformat>
  *
  *   <form name="f2l" code="COP_F2L"/>
  *
@@ -569,6 +583,7 @@ VMBREAK(COP_F2L);
  *				<code>uint64</code></operation>
  *
  *   <format>f2lu</format>
+ *   <dformat>{f2lu}</dformat>
  *
  *   <form name="f2lu" code="COP_F2LU"/>
  *
@@ -596,6 +611,7 @@ VMBREAK(COP_F2LU);
  *				<code>float32</code></operation>
  *
  *   <format>f2f</format>
+ *   <dformat>{f2f}</dformat>
  *
  *   <form name="f2f" code="COP_F2F"/>
  *
@@ -624,6 +640,7 @@ VMBREAK(COP_F2F);
  *				<code>float64</code></operation>
  *
  *   <format>f2d</format>
+ *   <dformat>{f2d}</dformat>
  *
  *   <form name="f2d" code="COP_F2D"/>
  *
@@ -653,6 +670,7 @@ VMBREAK(COP_F2D);
  *
  *   <format>i2p_lower<fsep/>N[1]</format>
  *   <format>wide<fsep/>i2p_lower<fsep/>N[4]</format>
+ *   <dformat>{i2p_lower}<fsep/>N</dformat>
  *
  *   <form name="f2d" code="COP_F2D"/>
  *
@@ -684,6 +702,7 @@ VMBREAK(COP_I2P_LOWER);
  *   of values into <code>native int</code>/<code>native int</code></operation>
  *
  *   <format>fix_i4_i</format>
+ *   <dformat>{fix_i4_i}</dformat>
  *
  *   <form name="fix_i4_i" code="COP_FIX_I4_I"/>
  *
@@ -728,6 +747,7 @@ VMBREAK(COP_FIX_I4_I);
  *   values into <code>native uint</code>/<code>native uint</code></operation>
  *
  *   <format>fix_i4_u</format>
+ *   <dformat>{fix_i4_u}</dformat>
  *
  *   <form name="fix_i4_u" code="COP_FIX_I4_U"/>
  *
@@ -786,6 +806,7 @@ VMBREAKNOEND;
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>i2b_ovf</format>
+ *   <dformat>{i2b_ovf}</dformat>
  *
  *   <form name="i2b_ovf" code="COP_PREFIX_I2B_OVF"/>
  *
@@ -826,6 +847,7 @@ VMBREAK(COP_PREFIX_I2B_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>i2ub_ovf</format>
+ *   <dformat>{i2ub_ovf}</dformat>
  *
  *   <form name="i2ub_ovf" code="COP_PREFIX_I2UB_OVF"/>
  *
@@ -866,6 +888,7 @@ VMBREAK(COP_PREFIX_I2UB_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>iu2b_ovf</format>
+ *   <dformat>{iu2b_ovf}</dformat>
  *
  *   <form name="iu2b_ovf" code="COP_PREFIX_IU2B_OVF"/>
  *
@@ -904,6 +927,7 @@ VMBREAK(COP_PREFIX_IU2B_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>iu2ub_ovf</format>
+ *   <dformat>{iu2ub_ovf}</dformat>
  *
  *   <form name="iu2ub_ovf" code="COP_PREFIX_IU2UB_OVF"/>
  *
@@ -942,6 +966,7 @@ VMBREAK(COP_PREFIX_IU2UB_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>i2s_ovf</format>
+ *   <dformat>{i2s_ovf}</dformat>
  *
  *   <form name="i2s_ovf" code="COP_PREFIX_I2S_OVF"/>
  *
@@ -982,6 +1007,7 @@ VMBREAK(COP_PREFIX_I2S_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>i2us_ovf</format>
+ *   <dformat>{i2us_ovf}</dformat>
  *
  *   <form name="i2us_ovf" code="COP_PREFIX_I2US_OVF"/>
  *
@@ -1022,6 +1048,7 @@ VMBREAK(COP_PREFIX_I2US_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>iu2s_ovf</format>
+ *   <dformat>{iu2s_ovf}</dformat>
  *
  *   <form name="iu2s_ovf" code="COP_PREFIX_IU2S_OVF"/>
  *
@@ -1060,6 +1087,7 @@ VMBREAK(COP_PREFIX_IU2S_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>iu2us_ovf</format>
+ *   <dformat>{iu2us_ovf}</dformat>
  *
  *   <form name="iu2us_ovf" code="COP_PREFIX_IU2US_OVF"/>
  *
@@ -1098,6 +1126,7 @@ VMBREAK(COP_PREFIX_IU2US_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>i2iu_ovf</format>
+ *   <dformat>{i2iu_ovf}</dformat>
  *
  *   <form name="i2iu_ovf" code="COP_PREFIX_I2IU_OVF"/>
  *
@@ -1136,6 +1165,7 @@ VMBREAK(COP_PREFIX_I2IU_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>iu2i_ovf</format>
+ *   <dformat>{iu2i_ovf}</dformat>
  *
  *   <form name="iu2i_ovf" code="COP_PREFIX_IU2I_OVF"/>
  *
@@ -1174,6 +1204,7 @@ VMBREAK(COP_PREFIX_IU2I_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>i2ul_ovf</format>
+ *   <dformat>{i2ul_ovf}</dformat>
  *
  *   <form name="i2ul_ovf" code="COP_PREFIX_I2UL_OVF"/>
  *
@@ -1213,6 +1244,7 @@ VMBREAK(COP_PREFIX_I2UL_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>l2i_ovf</format>
+ *   <dformat>{l2i_ovf}</dformat>
  *
  *   <form name="l2i_ovf" code="COP_PREFIX_L2I_OVF"/>
  *
@@ -1251,6 +1283,7 @@ VMBREAK(COP_PREFIX_L2I_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>l2ui_ovf</format>
+ *   <dformat>{l2ui_ovf}</dformat>
  *
  *   <form name="l2ui_ovf" code="COP_PREFIX_L2UI_OVF"/>
  *
@@ -1289,6 +1322,7 @@ VMBREAK(COP_PREFIX_L2UI_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>lu2i_ovf</format>
+ *   <dformat>{lu2i_ovf}</dformat>
  *
  *   <form name="lu2i_ovf" code="COP_PREFIX_LU2I_OVF"/>
  *
@@ -1327,6 +1361,7 @@ VMBREAK(COP_PREFIX_LU2I_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>lu2iu_ovf</format>
+ *   <dformat>{lu2iu_ovf}</dformat>
  *
  *   <form name="lu2iu_ovf" code="COP_PREFIX_LU2IU_OVF"/>
  *
@@ -1365,6 +1400,7 @@ VMBREAK(COP_PREFIX_LU2IU_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>l2ul_ovf</format>
+ *   <dformat>{l2ul_ovf}</dformat>
  *
  *   <form name="l2ul_ovf" code="COP_PREFIX_L2UL_OVF"/>
  *
@@ -1403,6 +1439,7 @@ VMBREAK(COP_PREFIX_L2UL_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>lu2l_ovf</format>
+ *   <dformat>{lu2l_ovf}</dformat>
  *
  *   <form name="lu2l_ovf" code="COP_PREFIX_LU2L_OVF"/>
  *
@@ -1441,6 +1478,7 @@ VMBREAK(COP_PREFIX_LU2L_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>f2i_ovf</format>
+ *   <dformat>{f2i_ovf}</dformat>
  *
  *   <form name="f2i_ovf" code="COP_PREFIX_F2I_OVF"/>
  *
@@ -1480,6 +1518,7 @@ VMBREAK(COP_PREFIX_F2I_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>f2iu_ovf</format>
+ *   <dformat>{f2iu_ovf}</dformat>
  *
  *   <form name="f2iu_ovf" code="COP_PREFIX_F2IU_OVF"/>
  *
@@ -1519,6 +1558,7 @@ VMBREAK(COP_PREFIX_F2IU_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>f2l_ovf</format>
+ *   <dformat>{f2l_ovf}</dformat>
  *
  *   <form name="f2l_ovf" code="COP_PREFIX_F2L_OVF"/>
  *
@@ -1559,6 +1599,7 @@ VMBREAK(COP_PREFIX_F2L_OVF);
  *              with overflow detection</operation>
  *
  *   <format>prefix<fsep/>f2lu_ovf</format>
+ *   <dformat>{f2lu_ovf}</dformat>
  *
  *   <form name="f2lu_ovf" code="COP_PREFIX_F2LU_OVF"/>
  *
@@ -1599,6 +1640,7 @@ VMBREAK(COP_PREFIX_F2LU_OVF);
  *              on a stack word boundary</operation>
  *
  *   <format>i2b_aligned</format>
+ *   <dformat>{i2b_aligned}</dformat>
  *
  *   <form name="i2b_aligned" code="COP_PREFIX_I2B_ALIGNED"/>
  *
@@ -1629,6 +1671,7 @@ VMBREAK(COP_PREFIX_I2B_ALIGNED);
  *              on a stack word boundary</operation>
  *
  *   <format>prefix<fsep/>i2s_aligned</format>
+ *   <dformat>{i2s_aligned}</dformat>
  *
  *   <form name="i2s_aligned" code="COP_PREFIX_I2S_ALIGNED"/>
  *
@@ -1659,6 +1702,7 @@ VMBREAK(COP_PREFIX_I2S_ALIGNED);
  *              aligned on a stack word boundary</operation>
  *
  *   <format>prefix<fsep/>f2f_aligned</format>
+ *   <dformat>{f2f_aligned}</dformat>
  *
  *   <form name="f2f_aligned" code="COP_PREFIX_F2F_ALIGNED"/>
  *
@@ -1695,6 +1739,7 @@ VMBREAK(COP_PREFIX_F2F_ALIGNED);
  *              aligned on a stack word boundary</operation>
  *
  *   <format>prefix<fsep/>f2d_aligned</format>
+ *   <dformat>{f2d_aligned}</dformat>
  *
  *   <form name="f2d_aligned" code="COP_PREFIX_F2D_ALIGNED"/>
  *
@@ -1731,6 +1776,7 @@ VMBREAK(COP_PREFIX_F2D_ALIGNED);
  *              </operation>
  *
  *   <format>prefix<fsep/>str2ansi</format>
+ *   <dformat>{str2ansi}</dformat>
  *
  *   <form name="str2ansi" code="COP_PREFIX_STR2ANSI"/>
  *
@@ -1767,6 +1813,7 @@ VMBREAK(COP_PREFIX_STR2ANSI);
  *              </operation>
  *
  *   <format>prefix<fsep/>str2utf8</format>
+ *   <dformat>{str2utf8}</dformat>
  *
  *   <form name="str2utf8" code="COP_PREFIX_STR2UTF8"/>
  *

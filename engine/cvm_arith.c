@@ -356,6 +356,7 @@ static IL_INLINE ILNativeFloat FRem(ILNativeFloat a, ILNativeFloat b)
  *   <operation>Add <code>int32</code></operation>
  *
  *   <format>iadd</format>
+ *   <dformat>{iadd}</dformat>
  *
  *   <form name="iadd" code="COP_IADD"/>
  *
@@ -390,6 +391,7 @@ VMBREAK(COP_IADD);
  *   <operation>Add <code>int32</code> with overflow detection</operation>
  *
  *   <format>iadd_ovf</format>
+ *   <dformat>{iadd_ovf}</dformat>
  *
  *   <form name="iadd_ovf" code="COP_IADD_OVF"/>
  *
@@ -433,6 +435,7 @@ VMBREAK(COP_IADD_OVF);
  *   <operation>Add <code>uint32</code> with overflow detection</operation>
  *
  *   <format>iadd_ovf_un</format>
+ *   <dformat>{iadd_ovf_un}</dformat>
  *
  *   <form name="iadd_ovf_un" code="COP_IADD_OVF_UN"/>
  *
@@ -476,6 +479,7 @@ VMBREAK(COP_IADD_OVF_UN);
  *   <operation>Subtract <code>int32</code></operation>
  *
  *   <format>isub</format>
+ *   <dformat>{isub}</dformat>
  *
  *   <form name="isub" code="COP_ISUB"/>
  *
@@ -510,6 +514,7 @@ VMBREAK(COP_ISUB);
  *   <operation>Subtract <code>int32</code> with overflow detection</operation>
  *
  *   <format>isub_ovf</format>
+ *   <dformat>{isub_ovf}</dformat>
  *
  *   <form name="isub_ovf" code="COP_ISUB_OVF"/>
  *
@@ -553,6 +558,7 @@ VMBREAK(COP_ISUB_OVF);
  *   <operation>Subtract <code>uint32</code> with overflow detection</operation>
  *
  *   <format>isub_ovf_un</format>
+ *   <dformat>{isub_ovf_un}</dformat>
  *
  *   <form name="isub_ovf_un" code="COP_ISUB_OVF_UN"/>
  *
@@ -598,6 +604,7 @@ VMBREAK(COP_ISUB_OVF_UN);
  *   <format>imul</format>
  *
  *   <form name="imul" code="COP_IMUL"/>
+ *   <dformat>{imul}</dformat>
  *
  *   <before>..., value1, value2</before>
  *   <after>..., result</after>
@@ -630,6 +637,7 @@ VMBREAK(COP_IMUL);
  *   <operation>Multiply <code>int32</code> with overflow detection</operation>
  *
  *   <format>imul_ovf</format>
+ *   <dformat>{imul_ovf}</dformat>
  *
  *   <form name="imul_ovf" code="COP_IMUL_OVF"/>
  *
@@ -673,6 +681,7 @@ VMBREAK(COP_IMUL_OVF);
  *   <operation>Multiply <code>uint32</code> with overflow detection</operation>
  *
  *   <format>imul_ovf_un</format>
+ *   <dformat>{imul_ovf_un}</dformat>
  *
  *   <form name="imul_ovf_un" code="COP_IMUL_OVF_UN"/>
  *
@@ -716,6 +725,7 @@ VMBREAK(COP_IMUL_OVF_UN);
  *   <operation>Divide <code>int32</code></operation>
  *
  *   <format>idiv</format>
+ *   <dformat>{idiv}</dformat>
  *
  *   <form name="idiv" code="COP_IDIV"/>
  *
@@ -763,6 +773,7 @@ VMBREAK(COP_IDIV);
  *   <operation>Divide <code>uint32</code></operation>
  *
  *   <format>idiv_un</format>
+ *   <dformat>{idiv_un}</dformat>
  *
  *   <form name="idiv_un" code="COP_IDIV_UN"/>
  *
@@ -800,6 +811,7 @@ VMBREAK(COP_IDIV_UN);
  *   <operation>Remainder <code>int32</code></operation>
  *
  *   <format>irem</format>
+ *   <dformat>{irem}</dformat>
  *
  *   <form name="irem" code="COP_IREM"/>
  *
@@ -847,6 +859,7 @@ VMBREAK(COP_IREM);
  *   <operation>Remainder <code>uint32</code></operation>
  *
  *   <format>irem_un</format>
+ *   <dformat>{irem_un}</dformat>
  *
  *   <form name="irem_un" code="COP_IREM_UN"/>
  *
@@ -884,6 +897,7 @@ VMBREAK(COP_IREM_UN);
  *   <operation>Negate <code>int32</code></operation>
  *
  *   <format>ineg</format>
+ *   <dformat>{ineg}</dformat>
  *
  *   <form name="ineg" code="COP_INEG"/>
  *
@@ -915,6 +929,7 @@ VMBREAK(COP_INEG);
  *   <format>ladd</format>
  *
  *   <form name="ladd" code="COP_LADD"/>
+ *   <dformat>{ladd}</dformat>
  *
  *   <before>..., value1, value2</before>
  *   <after>..., result</after>
@@ -956,6 +971,7 @@ VMBREAK(COP_LADD);
  *   <operation>Add <code>int64</code> with overflow detection</operation>
  *
  *   <format>ladd_ovf</format>
+ *   <dformat>{ladd_ovf}</dformat>
  *
  *   <form name="ladd_ovf" code="COP_LADD_OVF"/>
  *
@@ -999,6 +1015,7 @@ VMBREAK(COP_LADD_OVF);
  *   <operation>Add <code>uint64</code> with overflow detection</operation>
  *
  *   <format>ladd_ovf_un</format>
+ *   <dformat>{ladd_ovf_un}</dformat>
  *
  *   <form name="ladd_ovf_un" code="COP_LADD_OVF_UN"/>
  *
@@ -1042,6 +1059,7 @@ VMBREAK(COP_LADD_OVF_UN);
  *   <operation>Subtract <code>int64</code></operation>
  *
  *   <format>lsub</format>
+ *   <dformat>{lsub}</dformat>
  *
  *   <form name="lsub" code="COP_LSUB"/>
  *
@@ -1078,6 +1096,7 @@ VMBREAK(COP_LSUB);
  *   <operation>Subtract <code>int64</code> with overflow detection</operation>
  *
  *   <format>lsub_ovf</format>
+ *   <dformat>{lsub_ovf}</dformat>
  *
  *   <form name="lsub_ovf" code="COP_LSUB_OVF"/>
  *
@@ -1121,6 +1140,7 @@ VMBREAK(COP_LSUB_OVF);
  *   <operation>Subtract <code>uint64</code> with overflow detection</operation>
  *
  *   <format>lsub_ovf_un</format>
+ *   <dformat>{lsub_ovf_un}</dformat>
  *
  *   <form name="lsub_ovf_un" code="COP_LSUB_OVF_UN"/>
  *
@@ -1164,6 +1184,7 @@ VMBREAK(COP_LSUB_OVF_UN);
  *   <operation>Multiply <code>int64</code></operation>
  *
  *   <format>lmul</format>
+ *   <dformat>{lmul}</dformat>
  *
  *   <form name="lmul" code="COP_LMUL"/>
  *
@@ -1202,6 +1223,7 @@ VMBREAK(COP_LMUL);
  *   <format>lmul_ovf</format>
  *
  *   <form name="lmul_ovf" code="COP_LMUL_OVF"/>
+ *   <dformat>{lmul_ovf}</dformat>
  *
  *   <before>..., value1, value2</before>
  *   <after>..., result</after>
@@ -1245,6 +1267,7 @@ VMBREAK(COP_LMUL_OVF);
  *   <format>lmul_ovf_un</format>
  *
  *   <form name="lmul_ovf_un" code="COP_LMUL_OVF_UN"/>
+ *   <dformat>{lmul_ovf_un}</dformat>
  *
  *   <before>..., value1, value2</before>
  *   <after>..., result</after>
@@ -1286,6 +1309,7 @@ VMBREAK(COP_LMUL_OVF_UN);
  *   <operation>Divide <code>int64</code></operation>
  *
  *   <format>ldiv</format>
+ *   <dformat>{ldiv}</dformat>
  *
  *   <form name="ldiv" code="COP_LDIV"/>
  *
@@ -1331,6 +1355,7 @@ VMBREAK(COP_LDIV);
  *   <operation>Divide <code>uint64</code></operation>
  *
  *   <format>ldiv_un</format>
+ *   <dformat>{ldiv_un}</dformat>
  *
  *   <form name="ldiv_un" code="COP_LDIV_UN"/>
  *
@@ -1368,6 +1393,7 @@ VMBREAK(COP_LDIV_UN);
  *   <operation>Remainder <code>int64</code></operation>
  *
  *   <format>lrem</format>
+ *   <dformat>{lrem}</dformat>
  *
  *   <form name="lrem" code="COP_LREM"/>
  *
@@ -1413,6 +1439,7 @@ VMBREAK(COP_LREM);
  *   <operation>Remainder <code>uint64</code></operation>
  *
  *   <format>lrem_un</format>
+ *   <dformat>{lrem_un}</dformat>
  *
  *   <form name="lrem_un" code="COP_LREM_UN"/>
  *
@@ -1450,6 +1477,7 @@ VMBREAK(COP_LREM_UN);
  *   <operation>Negate <code>int64</code></operation>
  *
  *   <format>lneg</format>
+ *   <dformat>{lneg}</dformat>
  *
  *   <form name="lneg" code="COP_LNEG"/>
  *
@@ -1490,6 +1518,7 @@ VMBREAK(COP_##name)
  *   <operation>Add <code>native float</code></operation>
  *
  *   <format>fadd</format>
+ *   <dformat>{fadd}</dformat>
  *
  *   <form name="fadd" code="COP_FADD"/>
  *
@@ -1521,6 +1550,7 @@ COP_FLOAT_OP(FADD, +);
  *   <operation>Subtract <code>native float</code></operation>
  *
  *   <format>fsub</format>
+ *   <dformat>{fsub}</dformat>
  *
  *   <form name="fsub" code="COP_FSUB"/>
  *
@@ -1540,6 +1570,7 @@ COP_FLOAT_OP(FSUB, -);
  *   <operation>Multiply <code>native float</code></operation>
  *
  *   <format>fmul</format>
+ *   <dformat>{fmul}</dformat>
  *
  *   <form name="fmul" code="COP_FMUL"/>
  *
@@ -1559,6 +1590,7 @@ COP_FLOAT_OP(FMUL, *);
  *   <operation>Divide <code>native float</code></operation>
  *
  *   <format>fdiv</format>
+ *   <dformat>{fdiv}</dformat>
  *
  *   <form name="fdiv" code="COP_FDIV"/>
  *
@@ -1578,6 +1610,7 @@ COP_FLOAT_OP(FDIV, /);
  *   <operation>Remainder <code>native float</code></operation>
  *
  *   <format>frem</format>
+ *   <dformat>{frem}</dformat>
  *
  *   <form name="frem" code="COP_FREM"/>
  *
@@ -1609,6 +1642,7 @@ VMBREAK(COP_FREM);
  *   <operation>Negate <code>native float</code></operation>
  *
  *   <format>fneg</format>
+ *   <dformat>{fneg}</dformat>
  *
  *   <form name="fneg" code="COP_FNEG"/>
  *
@@ -1635,6 +1669,7 @@ VMBREAK(COP_FNEG);
  *   <operation>Bitwise AND <code>int32</code></operation>
  *
  *   <format>iand</format>
+ *   <dformat>{iand}</dformat>
  *
  *   <form name="iand" code="COP_IAND"/>
  *
@@ -1663,6 +1698,7 @@ VMBREAK(COP_IAND);
  *   <operation>Bitwise OR <code>int32</code></operation>
  *
  *   <format>ior</format>
+ *   <dformat>{ior}</dformat>
  *
  *   <form name="ior" code="COP_IOR"/>
  *
@@ -1691,6 +1727,7 @@ VMBREAK(COP_IOR);
  *   <operation>Bitwise XOR <code>int32</code></operation>
  *
  *   <format>ixor</format>
+ *   <dformat>{ixor}</dformat>
  *
  *   <form name="ixor" code="COP_IXOR"/>
  *
@@ -1719,6 +1756,7 @@ VMBREAK(COP_IXOR);
  *   <operation>Bitwise NOT <code>int32</code></operation>
  *
  *   <format>inot</format>
+ *   <dformat>{inot}</dformat>
  *
  *   <form name="inot" code="COP_INOT"/>
  *
@@ -1747,6 +1785,7 @@ VMBREAK(COP_INOT);
  *   <operation>Left shift <code>int32</code></operation>
  *
  *   <format>ishl</format>
+ *   <dformat>{ishl}</dformat>
  *
  *   <form name="ishl" code="COP_ISHL"/>
  *
@@ -1777,6 +1816,7 @@ VMBREAK(COP_ISHL);
  *   <operation>Right arithmetic shift <code>int32</code></operation>
  *
  *   <format>ishr</format>
+ *   <dformat>{ishr}</dformat>
  *
  *   <form name="ishr" code="COP_ISHR"/>
  *
@@ -1807,6 +1847,7 @@ VMBREAK(COP_ISHR);
  *   <format>ishr_un</format>
  *
  *   <form name="ishr_un" code="COP_ISHR_UN"/>
+ *   <dformat>{ishr_un}</dformat>
  *
  *   <before>..., value1, value2</before>
  *   <after>..., result</after>
@@ -1832,6 +1873,7 @@ VMBREAK(COP_ISHR_UN);
  *   <operation>Bitwise AND <code>int64</code></operation>
  *
  *   <format>land</format>
+ *   <dformat>{land}</dformat>
  *
  *   <form name="land" code="COP_LAND"/>
  *
@@ -1862,6 +1904,7 @@ VMBREAK(COP_LAND);
  *   <operation>Bitwise OR <code>int64</code></operation>
  *
  *   <format>lor</format>
+ *   <dformat>{lor}</dformat>
  *
  *   <form name="lor" code="COP_LOR"/>
  *
@@ -1894,6 +1937,7 @@ VMBREAK(COP_LOR);
  *   <format>lxor</format>
  *
  *   <form name="lxor" code="COP_LXOR"/>
+ *   <dformat>{lxor}</dformat>
  *
  *   <before>..., value1, value2</before>
  *   <after>..., result</after>
@@ -1922,6 +1966,7 @@ VMBREAK(COP_LXOR);
  *   <operation>Bitwise NOT <code>int64</code></operation>
  *
  *   <format>lnot</format>
+ *   <dformat>{lnot}</dformat>
  *
  *   <form name="lnot" code="COP_LNOT"/>
  *
@@ -1951,6 +1996,7 @@ VMBREAK(COP_LNOT);
  *   <operation>Left shift <code>int64</code></operation>
  *
  *   <format>lshl</format>
+ *   <dformat>{lshl}</dformat>
  *
  *   <form name="lshl" code="COP_LSHL"/>
  *
@@ -1983,6 +2029,7 @@ VMBREAK(COP_LSHL);
  *   <operation>Right arithmetic shift <code>int64</code></operation>
  *
  *   <format>lshr</format>
+ *   <dformat>{lshr}</dformat>
  *
  *   <form name="lshr" code="COP_LSHR"/>
  *
@@ -2013,6 +2060,7 @@ VMBREAK(COP_LSHR);
  *   <operation>Right unsigned shift <code>uint64</code></operation>
  *
  *   <format>lshr_un</format>
+ *   <dformat>{lshr_un}</dformat>
  *
  *   <form name="lshr_un" code="COP_LSHR_UN"/>
  *
@@ -2044,6 +2092,7 @@ VMBREAK(COP_LSHR_UN);
  *   <operation>Check <code>native float</code> for finite</operation>
  *
  *   <format>prefix<fsep/>ckfinite</format>
+ *   <dformat>{ckfinite}</dformat>
  *
  *   <form name="ckfinite" code="COP_PREFIX_CKFINITE"/>
  *

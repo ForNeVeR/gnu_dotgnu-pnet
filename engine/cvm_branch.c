@@ -35,6 +35,7 @@
  *   <format>br<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>br
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{br}<fsep/>dest</dformat>
  *
  *   <form name="br" code="COP_BR"/>
  *
@@ -75,6 +76,7 @@ VMBREAK(COP_BR);
  *   <format>beq<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>beq
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{beq}<fsep/>dest</dformat>
  *
  *   <form name="beq" code="COP_BEQ"/>
  *
@@ -115,6 +117,7 @@ VMBREAK(COP_BEQ);
  *   <format>bne<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>bne
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{bne}<fsep/>dest</dformat>
  *
  *   <form name="bne" code="COP_BNE"/>
  *
@@ -155,6 +158,7 @@ VMBREAK(COP_BNE);
  *   <format>blt<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>blt
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{blt}<fsep/>dest</dformat>
  *
  *   <form name="blt" code="COP_BLT"/>
  *
@@ -190,6 +194,7 @@ VMBREAK(COP_BLT);
  *   <format>blt_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>blt_un
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{blt_un}<fsep/>dest</dformat>
  *
  *   <form name="blt_un" code="COP_BLT_UN"/>
  *
@@ -225,6 +230,7 @@ VMBREAK(COP_BLT_UN);
  *   <format>ble<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>ble
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{ble}<fsep/>dest</dformat>
  *
  *   <form name="ble" code="COP_BLE"/>
  *
@@ -261,6 +267,7 @@ VMBREAK(COP_BLE);
  *   <format>ble_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>ble_un
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{ble_un}<fsep/>dest</dformat>
  *
  *   <form name="ble_un" code="COP_BLE_UN"/>
  *
@@ -298,6 +305,7 @@ VMBREAK(COP_BLE_UN);
  *   <format>bgt<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>bgt
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{bgt}<fsep/>dest</dformat>
  *
  *   <form name="bgt" code="COP_BGT"/>
  *
@@ -333,6 +341,7 @@ VMBREAK(COP_BGT);
  *   <format>bgt_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>bgt_un
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{bgt_un}<fsep/>dest</dformat>
  *
  *   <form name="bgt_un" code="COP_BGT_UN"/>
  *
@@ -368,6 +377,7 @@ VMBREAK(COP_BGT_UN);
  *   <format>bge<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>bge
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{bge}<fsep/>dest</dformat>
  *
  *   <form name="bge" code="COP_BGE"/>
  *
@@ -404,6 +414,7 @@ VMBREAK(COP_BGE);
  *   <format>bge_un<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>bge_un
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{bge_un}<fsep/>dest</dformat>
  *
  *   <form name="bge_un" code="COP_BGE_UN"/>
  *
@@ -441,6 +452,7 @@ VMBREAK(COP_BGE_UN);
  *   <format>brtrue<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>brtrue
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{brtrue}<fsep/>dest</dformat>
  *
  *   <form name="brtrue" code="COP_BRTRUE"/>
  *
@@ -481,6 +493,7 @@ VMBREAK(COP_BRTRUE);
  *   <format>brfalse<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>brfalse
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{brfalse}<fsep/>dest</dformat>
  *
  *   <form name="brfalse" code="COP_BRFALSE"/>
  *
@@ -521,6 +534,7 @@ VMBREAK(COP_BRFALSE);
  *   <format>brnull<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>brnull
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{brnull}<fsep/>dest</dformat>
  *
  *   <form name="brnull" code="COP_BRNULL"/>
  *
@@ -561,6 +575,7 @@ VMBREAK(COP_BRNULL);
  *   <format>brnonnull<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>brnonnull
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{brnonnull}<fsep/>dest</dformat>
  *
  *   <form name="brnonnull" code="COP_BRNONNULL"/>
  *
@@ -601,6 +616,7 @@ VMBREAK(COP_BRNONNULL);
  *   <format>br_peq<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>br_peq
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{br_peq}<fsep/>dest</dformat>
  *
  *   <form name="br_peq" code="COP_BR_PEQ"/>
  *
@@ -641,6 +657,7 @@ VMBREAK(COP_BR_PEQ);
  *   <format>br_pne<fsep/>offset<fsep/>0<fsep/>0<fsep/>0<fsep/>0</format>
  *   <format>br_long<fsep/>br_pne
  *       <fsep/>offset1<fsep/>offset2<fsep/>offset3<fsep/>offset4</format>
+ *   <dformat>{br_pne}<fsep/>dest</dformat>
  *
  *   <form name="br_pne" code="COP_BR_PNE"/>
  *
@@ -685,7 +702,10 @@ VMBREAK(COP_BR_PNE);
  *   instruction to take longer operands.</description>
  *
  *   <notes>The documentation for other branch instructions includes
- *   information on their long forms.</notes>
+ *   information on their long forms.<p/>
+ *
+ *   There is no direct format for this instruction, because <i>br_long</i>
+ *   is not required for the direct encoding.</notes>
  * </opcode>
  */
 #ifndef IL_CVM_DIRECT
@@ -973,6 +993,7 @@ VMBREAK(COP_BR_LONG);
  *   <operation>Switch on <code>uint32</code> value</operation>
  *
  *   <format>switch<fsep/>max<fsep/>defoffset<fsep/>...</format>
+ *   <dformat>{switch}<fsep/>max<fsep/>defaddr<fsep/>...</dformat>
  *
  *   <form name="switch" code="COP_SWITCH"/>
  *

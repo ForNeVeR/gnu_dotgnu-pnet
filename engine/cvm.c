@@ -444,6 +444,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 *   <operation>Do nothing</operation>
 			 *
 			 *   <format>nop</format>
+			 *   <dformat>{nop}</dformat>
 			 *
 			 *   <form name="nop" code="COP_NOP"/>
 			 *
@@ -485,7 +486,11 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 *   operands depends upon the <i>opcode</i>.</description>
 			 *
 			 *   <notes>The documentation for other instructions includes
-			 *   information on their wide forms where appropriate.</notes>
+			 *   information on their wide forms where appropriate.<p/>
+			 *
+			 *   There is no direct format for this instruction,
+			 *   because <i>wide</i> is not required for the direct
+			 *   encoding.</notes>
 			 * </opcode>
 			 */
 #ifndef IL_CVM_DIRECT
@@ -540,6 +545,10 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			 *   set.  The alternative instruction is <i>opcode</i>.
 			 *   Prefixing is necessary because the VM has more than
 			 *   256 distinct instructions.</description>
+			 *
+			 *   <notes>There is no direct format for this instruction,
+			 *   because <i>prefix</i> is not required for the direct
+			 *   encoding.</notes>
 			 * </opcode>
 			 */
 			VMCASE(COP_PREFIX):

@@ -4,6 +4,16 @@
 
 	* System.Xml/Serialization/IXmlSerializable.cs: fix for ECMA_COMPAT.
 
+	* System.Xml/Schema/XmlSchemaForm.cs: correct None value.
+
+	* System.Xml/Serialization/*Attribute.cs: implement all the xml
+	serialization attribute classes.
+
+	* runtime/System/AppDomain.cs: change GetAssemblies to an internal call.
+
+	* runtime/System/Reflection/Assembly.cs: implement Location property and
+	add supporting internal call.
+
 2003-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* JScript/Jsc/BitwiseBinary.cs, JScript/Jsc/Instanceof.cs,

@@ -577,7 +577,9 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 	unsigned long adjust;
 	unsigned long sectSize;
 	unsigned long posn;
+	unsigned long index;
 	int kind, isTiny;
+	ILClass *classInfo;
 
 	/* Initialize the exception list */
 	*exceptions = 0;
@@ -588,128 +590,192 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 	rva = method->rva + code->headerSize + code->codeLen;
 	len = code->remaining;
 
-	/* Read all of the method's sections.  A truncated section
-	   is treated as the end of the list */
-	moreSections = code->moreSections;
-	while(moreSections)
+	/* Is this a Java method or an IL method? */
+	if((method->implementAttrs & IL_META_METHODIMPL_JAVA) != 0)
 	{
-		/* Align the section on the next DWORD boundary */
-		if((rva & 3) != 0)
+		/* Read the number of Java exception blocks */
+		if(len < 2)
 		{
-			adjust = 4 - (rva & 3);
-			if(adjust > len)
+			return 0;
+		}
+		posn = (unsigned long)(IL_BREAD_UINT16(addr));
+		addr += 2;
+		len -= 2;
+
+		/* Read all of the Java method's exception blocks.  A truncated
+		   block is treated as the end of the list */
+		while(posn > 0 && len >= 8)
+		{
+			newException = (ILException *)ILMalloc(sizeof(ILException));
+			if(!newException)
+			{
+				ILMethodFreeExceptions(*exceptions);
+				return 0;
+			}
+			index = (unsigned long)(IL_BREAD_UINT16(addr + 6));
+			newException->flags = (index != 0 ? IL_META_EXCEPTION_CATCH
+											  : IL_META_EXCEPTION_FINALLY);
+			newException->tryOffset = (ILUInt32)(IL_BREAD_UINT16(addr));
+			newException->tryLength =
+				((ILUInt32)(IL_BREAD_UINT16(addr + 2))) -
+				newException->tryOffset;
+			newException->handlerOffset =
+				(ILUInt32)(IL_BREAD_UINT16(addr + 4));
+			newException->handlerLength = 0;
+			newException->extraArg = 0;
+			if(index != 0)
+			{
+				classInfo = ILJavaGetClass(ILMethod_Owner(method), index, 1);
+				if(classInfo)
+				{
+					newException->extraArg = ILClass_Token(classInfo);
+				}
+			}
+			newException->userData = 0;
+			newException->next = 0;
+			if(lastException)
+			{
+				lastException->next = newException;
+			}
+			else
+			{
+				*exceptions = newException;
+			}
+			lastException = newException;
+			addr += 8;
+			len -= 8;
+			--posn;
+		}
+	}
+	else
+	{
+		/* Read all of the IL method's sections.  A truncated section
+		   is treated as the end of the list */
+		moreSections = code->moreSections;
+		while(moreSections)
+		{
+			/* Align the section on the next DWORD boundary */
+			if((rva & 3) != 0)
+			{
+				adjust = 4 - (rva & 3);
+				if(adjust > len)
+				{
+					break;
+				}
+				addr += adjust;
+				len -= adjust;
+				rva += adjust;
+			}
+	
+			/* Read the section header.  Note: early versions of the
+			   ECMA specs say that "sectSize" does not include the size
+			   of the section header.  This is incorrect. */
+			if(len < 4)
 			{
 				break;
 			}
-			addr += adjust;
-			len -= adjust;
-			rva += adjust;
-		}
-
-		/* Read the section header.  Note: early versions of the
-		   ECMA specs say that "sectSize" does not include the size
-		   of the section header.  This is incorrect. */
-		if(len < 4)
-		{
-			break;
-		}
-		kind = *addr;
-		moreSections = ((kind & 0x80) != 0);
-		if((kind & 0x40) == 0)
-		{
-			/* Tiny format section header */
-			sectSize = (((unsigned long)(addr[1])) & 0xFF);
-			isTiny = 1;
-		}
-		else
-		{
-			/* Fat format section header */
-			sectSize = (((unsigned long)(addr[1])) & 0xFF) |
-			          ((((unsigned long)(addr[2])) & 0xFF) << 8) |
-			          ((((unsigned long)(addr[3])) & 0xFF) << 16);
-			isTiny = 0;
-		}
-		if(sectSize < 4 || len < sectSize)
-		{
-			break;
-		}
-		kind &= 0x3F;
-		addr += 4;
-		len -= 4;
-		rva += 4;
-		sectSize -= 4;
-
-		/* Parse any exception clauses within the section */
-		if(kind == 0x01 && isTiny)
-		{
-			/* Tiny format exception clauses */
-			for(posn = 0; (posn + 12) <= sectSize; posn += 12)
+			kind = *addr;
+			moreSections = ((kind & 0x80) != 0);
+			if((kind & 0x40) == 0)
 			{
-				newException = (ILException *)ILMalloc(sizeof(ILException));
-				if(!newException)
-				{
-					ILMethodFreeExceptions(*exceptions);
-					return 0;
-				}
-				newException->flags =
-					(ILUInt32)(IL_READ_UINT16(addr + posn));
-				newException->tryOffset =
-					(ILUInt32)(IL_READ_UINT16(addr + posn + 2));
-				newException->tryLength =
-					(((ILUInt32)(addr[posn + 4])) & (ILUInt32)0xFF);
-				newException->handlerOffset =
-					(ILUInt32)(IL_READ_UINT16(addr + posn + 5));
-				newException->handlerLength =
-					(((ILUInt32)(addr[posn + 7])) & (ILUInt32)0xFF);
-				newException->extraArg = IL_READ_UINT32(addr + posn + 8);
-				newException->userData = 0;
-				newException->next = 0;
-				if(lastException)
-				{
-					lastException->next = newException;
-				}
-				else
-				{
-					*exceptions = newException;
-				}
-				lastException = newException;
+				/* Tiny format section header */
+				sectSize = (((unsigned long)(addr[1])) & 0xFF);
+				isTiny = 1;
 			}
-		}
-		else if(kind == 0x01 && !isTiny)
-		{
-			/* Fat format exception clauses */
-			for(posn = 0; (posn + 24) <= sectSize; posn += 24)
+			else
 			{
-				newException = (ILException *)ILMalloc(sizeof(ILException));
-				if(!newException)
-				{
-					ILMethodFreeExceptions(*exceptions);
-					return 0;
-				}
-				newException->flags = IL_READ_UINT32(addr + posn);
-				newException->tryOffset = IL_READ_UINT32(addr + posn + 4);
-				newException->tryLength = IL_READ_UINT32(addr + posn + 8);
-				newException->handlerOffset = IL_READ_UINT32(addr + posn + 12);
-				newException->handlerLength = IL_READ_UINT32(addr + posn + 16);
-				newException->extraArg = IL_READ_UINT32(addr + posn + 20);
-				newException->userData = 0;
-				newException->next = 0;
-				if(lastException)
-				{
-					lastException->next = newException;
-				}
-				else
-				{
-					*exceptions = newException;
-				}
-				lastException = newException;
+				/* Fat format section header */
+				sectSize = (((unsigned long)(addr[1])) & 0xFF) |
+				          ((((unsigned long)(addr[2])) & 0xFF) << 8) |
+				          ((((unsigned long)(addr[3])) & 0xFF) << 16);
+				isTiny = 0;
 			}
-		}
+			if(sectSize < 4 || len < sectSize)
+			{
+				break;
+			}
+			kind &= 0x3F;
+			addr += 4;
+			len -= 4;
+			rva += 4;
+			sectSize -= 4;
 
-		/* Advance to the next section */
-		addr += sectSize;
-		len -= sectSize;
-		rva += sectSize;
+			/* Parse any exception clauses within the section */
+			if(kind == 0x01 && isTiny)
+			{
+				/* Tiny format exception clauses */
+				for(posn = 0; (posn + 12) <= sectSize; posn += 12)
+				{
+					newException =
+						(ILException *)ILMalloc(sizeof(ILException));
+					if(!newException)
+					{
+						ILMethodFreeExceptions(*exceptions);
+						return 0;
+					}
+					newException->flags =
+						(ILUInt32)(IL_READ_UINT16(addr + posn));
+					newException->tryOffset =
+						(ILUInt32)(IL_READ_UINT16(addr + posn + 2));
+					newException->tryLength =
+						(((ILUInt32)(addr[posn + 4])) & (ILUInt32)0xFF);
+					newException->handlerOffset =
+						(ILUInt32)(IL_READ_UINT16(addr + posn + 5));
+					newException->handlerLength =
+						(((ILUInt32)(addr[posn + 7])) & (ILUInt32)0xFF);
+					newException->extraArg = IL_READ_UINT32(addr + posn + 8);
+					newException->userData = 0;
+					newException->next = 0;
+					if(lastException)
+					{
+						lastException->next = newException;
+					}
+					else
+					{
+						*exceptions = newException;
+					}
+					lastException = newException;
+				}
+			}
+			else if(kind == 0x01 && !isTiny)
+			{
+				/* Fat format exception clauses */
+				for(posn = 0; (posn + 24) <= sectSize; posn += 24)
+				{
+					newException =
+						(ILException *)ILMalloc(sizeof(ILException));
+					if(!newException)
+					{
+						ILMethodFreeExceptions(*exceptions);
+						return 0;
+					}
+					newException->flags = IL_READ_UINT32(addr + posn);
+					newException->tryOffset = IL_READ_UINT32(addr + posn + 4);
+					newException->tryLength = IL_READ_UINT32(addr + posn + 8);
+					newException->handlerOffset =
+						IL_READ_UINT32(addr + posn + 12);
+					newException->handlerLength =
+						IL_READ_UINT32(addr + posn + 16);
+					newException->extraArg = IL_READ_UINT32(addr + posn + 20);
+					newException->userData = 0;
+					newException->next = 0;
+					if(lastException)
+					{
+						lastException->next = newException;
+					}
+					else
+					{
+						*exceptions = newException;
+					}
+					lastException = newException;
+				}
+			}
+	
+			/* Advance to the next section */
+			addr += sectSize;
+			len -= sectSize;
+			rva += sectSize;
+		}
 	}
 
 	/* Done */

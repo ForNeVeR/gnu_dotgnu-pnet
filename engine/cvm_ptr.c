@@ -44,6 +44,8 @@ static IL_INLINE int CkArrayStoreI8(CVMWord *posn, void *tempptr,
 	}
 }
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /*
  * Write a 32-bit float value to a memory location.
  */
@@ -51,6 +53,8 @@ static IL_INLINE void WriteFloat32(CVMWord *ptr, ILFloat value)
 {
 	*((ILFloat *)ptr) = value;
 }
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /*
  * Write a long value to an unaligned pointer, but don't inline it.
@@ -205,6 +209,8 @@ VMCASE(COP_IREAD):
 }
 VMBREAK(COP_IREAD);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="fread" group="Pointer handling">
  *   <operation>Read <code>float32</code> from pointer</operation>
@@ -260,6 +266,8 @@ VMCASE(COP_DREAD):
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_NATIVE_FLOAT - 1);
 }
 VMBREAK(COP_DREAD);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="pread" group="Pointer handling">
@@ -409,6 +417,8 @@ VMCASE(COP_IWRITE):
 }
 VMBREAK(COP_IWRITE);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="fwrite" group="Pointer handling">
  *   <operation>Write <code>float32</code> to pointer</operation>
@@ -464,6 +474,8 @@ VMCASE(COP_DWRITE):
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
 VMBREAK(COP_DWRITE);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="pwrite" group="Pointer handling">
@@ -613,6 +625,8 @@ VMCASE(COP_IWRITE_R):
 }
 VMBREAK(COP_IWRITE_R);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="fwrite_r" group="Pointer handling">
  *   <operation>Write <code>float32</code> to pointer with reversed
@@ -671,6 +685,8 @@ VMCASE(COP_DWRITE_R):
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 }
 VMBREAK(COP_DWRITE_R);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="pwrite_r" group="Pointer handling">
@@ -2997,6 +3013,8 @@ VMBREAK(COP_##name)
 LARGE_READ_ELEM(PREFIX_LREAD_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				ReadLong, WriteLong);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="fread_elem" group="Array handling">
  *   <operation>Read <code>float32</code> value from array</operation>
@@ -3054,6 +3072,8 @@ LARGE_READ_ELEM(PREFIX_FREAD_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  */
 LARGE_READ_ELEM(PREFIX_DREAD_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 				ReadDouble, WriteFloat);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /* Write a large value to an array element */
 #define	LARGE_WRITE_ELEM(name,type,size,read,write) \
@@ -3113,6 +3133,8 @@ VMBREAK(COP_##name)
 LARGE_WRITE_ELEM(PREFIX_LWRITE_ELEM, ILInt64, CVM_WORDS_PER_LONG,
 				 ReadLong, WriteHardLong);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="fwrite_elem" group="Array handling">
  *   <operation>Write <code>float32</code> value to array</operation>
@@ -3170,6 +3192,8 @@ LARGE_WRITE_ELEM(PREFIX_FWRITE_ELEM, ILFloat, CVM_WORDS_PER_NATIVE_FLOAT,
  */
 LARGE_WRITE_ELEM(PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 				 ReadFloat, WriteDouble);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="mkrefany" group="Object handling">

@@ -186,8 +186,12 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 	ILType *enumType;
 	ILInt8 boxByte;
 	ILInt16 boxShort;
+#ifdef IL_CONFIG_FP_SUPPORTED
 	ILFloat boxFloat;
 	ILDouble boxDouble;
+#else
+	void *boxPtr;
+#endif
 	void *ptr;
 
 	/* Allocate an array to hold all of the arguments */
@@ -235,6 +239,7 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 				}
 				break;
 
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				case IL_META_ELEMTYPE_R4:
 				{
 					boxFloat = (ILFloat)(ReadFloat(stacktop));
@@ -249,6 +254,17 @@ static ILUInt32 PackVarArgs(ILExecThread *thread, CVMWord *stacktop,
 					ptr = &boxDouble;
 				}
 				break;
+			#else
+				case IL_META_ELEMTYPE_R4:
+				case IL_META_ELEMTYPE_R8:
+				case IL_META_ELEMTYPE_R:
+				{
+					/* No FP support, so pass a "null" instead */
+					boxPtr = 0;
+					ptr = &boxPtr;
+				}
+				break;
+			#endif
 
 				default:
 				{

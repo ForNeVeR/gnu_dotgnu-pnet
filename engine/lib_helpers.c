@@ -222,6 +222,7 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 		}
 		break;
 
+	#ifdef IL_CONFIG_FP_SUPPORTED
 		case (unsigned long)ILType_Float32:
 		{
 			ILFloat *dest = (ILFloat *)buffer;
@@ -250,6 +251,7 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 			}
 		}
 		break;
+	#endif /* IL_CONFIG_FP_SUPPORTED */
 	}
 }
 

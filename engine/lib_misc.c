@@ -59,6 +59,7 @@ ILBool _IL_BitConverter_GetLittleEndian(ILExecThread *thread)
 ILInt64 _IL_BitConverter_DoubleToInt64Bits(ILExecThread *thread,
 										   ILDouble value)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	union
 	{
 		ILDouble input;
@@ -67,6 +68,10 @@ ILInt64 _IL_BitConverter_DoubleToInt64Bits(ILExecThread *thread,
 	} convert;
 	convert.input = value;
 	return convert.output;
+#else
+	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	return 0;
+#endif
 }
 
 /*
@@ -75,6 +80,7 @@ ILInt64 _IL_BitConverter_DoubleToInt64Bits(ILExecThread *thread,
 ILDouble _IL_BitConverter_Int64BitsToDouble(ILExecThread *thread,
 											ILInt64 value)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	union
 	{
 		ILInt64  input;
@@ -83,6 +89,10 @@ ILDouble _IL_BitConverter_Int64BitsToDouble(ILExecThread *thread,
 	} convert;
 	convert.input = value;
 	return convert.output;
+#else
+	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	return 0;
+#endif
 }
 
 /*
@@ -91,6 +101,7 @@ ILDouble _IL_BitConverter_Int64BitsToDouble(ILExecThread *thread,
 ILInt32 _IL_BitConverter_FloatToInt32Bits(ILExecThread *thread,
 										  ILFloat value)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	union
 	{
 		ILFloat input;
@@ -99,6 +110,10 @@ ILInt32 _IL_BitConverter_FloatToInt32Bits(ILExecThread *thread,
 	} convert;
 	convert.input = value;
 	return convert.output;
+#else
+	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	return 0;
+#endif
 }
 
 /*
@@ -107,6 +122,7 @@ ILInt32 _IL_BitConverter_FloatToInt32Bits(ILExecThread *thread,
 ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
 										  ILInt32 value)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	union
 	{
 		ILInt32 input;
@@ -115,6 +131,10 @@ ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
 	} convert;
 	convert.input = value;
 	return convert.output;
+#else
+	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 0);
+	return 0;
+#endif
 }
 
 /*

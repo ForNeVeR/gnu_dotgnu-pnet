@@ -246,6 +246,8 @@ int _ILCVMStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
 	return (ILCacheStartMethod(coder->cache, posn, align, 0) != 0);
 }
 
+#ifndef IL_CONFIG_REDUCE_CODE
+
 /*
  * Dump method profile information.
  */
@@ -325,6 +327,8 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 	ILFree(list);
 	return haveCounts;
 }
+
+#endif /* !IL_CONFIG_REDUCE_CODE */
 
 /*
  * Include the rest of the CVM conversion routines from other files.

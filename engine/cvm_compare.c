@@ -62,6 +62,8 @@ static IL_INLINE ILInt32 LUCmp(CVMWord *a, CVMWord *b)
 	}
 }
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /*
  * Compare two native float values.
  */
@@ -86,6 +88,8 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
 		return 0;
 	}
 }
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 #elif defined(IL_CVM_LOCALS)
 
@@ -251,6 +255,8 @@ VMCASE(COP_PREFIX_LCMP_UN):
 }
 VMBREAK(COP_PREFIX_LCMP_UN);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="fcmpl" group="Comparison operators">
  *   <operation>Compare <code>native float</code> with lower result</operation>
@@ -327,6 +333,8 @@ VMCASE(COP_PREFIX_FCMPG):
 		(CVMP_LEN_NONE, -(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 }
 VMBREAK(COP_PREFIX_FCMPG);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="pcmp" group="Comparison operators">

@@ -337,14 +337,6 @@ static IL_INLINE int LURem(CVMWord *a, CVMWord *b)
 	}
 }
 
-/*
- * Remainder two "native float" values.
- */
-static IL_INLINE ILNativeFloat FRem(ILNativeFloat a, ILNativeFloat b)
-{
-	return ILNativeFloatRem(a, b);
-}
-
 #elif defined(IL_CVM_LOCALS)
 
 /* No locals required */
@@ -1503,6 +1495,8 @@ VMCASE(COP_LNEG):
 }
 VMBREAK(COP_LNEG);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 #define	COP_FLOAT_OP(name,op)	\
 VMCASE(COP_##name): \
 { \
@@ -1630,7 +1624,7 @@ VMCASE(COP_FREM):
 {
 	/* Floating point remainder */
 	WriteFloat(&(stacktop[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)]),
-	  FRem(ReadFloat(&(stacktop
+	  ILNativeFloatRem(ReadFloat(&(stacktop
 	  					[-(CVM_WORDS_PER_NATIVE_FLOAT * 2)])),
 		   ReadFloat(&(stacktop[-CVM_WORDS_PER_NATIVE_FLOAT]))));
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -CVM_WORDS_PER_NATIVE_FLOAT);
@@ -1663,6 +1657,48 @@ VMCASE(COP_FNEG):
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_FNEG);
+
+#else /* !IL_CONFIG_FP_SUPPORTED */
+
+/*
+ * Stub out floating-point instructions.
+ */
+VMCASE(COP_FADD):
+VMCASE(COP_FSUB):
+VMCASE(COP_FMUL):
+VMCASE(COP_FDIV):
+VMCASE(COP_FREM):
+VMCASE(COP_FNEG):
+VMCASE(COP_LDC_R4):
+VMCASE(COP_LDC_R8):
+VMCASE(COP_I2F):
+VMCASE(COP_IU2F):
+VMCASE(COP_L2F):
+VMCASE(COP_LU2F):
+VMCASE(COP_F2I):
+VMCASE(COP_F2IU):
+VMCASE(COP_F2L):
+VMCASE(COP_F2LU):
+VMCASE(COP_F2F):
+VMCASE(COP_F2D):
+VMCASE(COP_FREAD):
+VMCASE(COP_DREAD):
+VMCASE(COP_FWRITE):
+VMCASE(COP_DWRITE):
+VMCASE(COP_FWRITE_R):
+VMCASE(COP_DWRITE_R):
+VMCASE(COP_FFIXUP):
+VMCASE(COP_DFIXUP):
+{
+	COPY_STATE_TO_THREAD();
+	stacktop[0].ptrValue =
+		_ILSystemException(thread, "System.NotSupportedException");
+	stacktop += 1;
+	goto throwException;
+}
+/* Not reached */
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="iand" group="Bitwise operators">
@@ -2087,6 +2123,8 @@ VMBREAK(COP_LSHR_UN);
 
 #elif defined(IL_CVM_PREFIX)
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="ckfinite" group="Arithmetic operators">
  *   <operation>Check <code>native float</code> for finite</operation>
@@ -2123,5 +2161,34 @@ VMCASE(COP_PREFIX_CKFINITE):
 	}
 }
 VMBREAK(COP_PREFIX_CKFINITE);
+
+#else /* !IL_CONFIG_FP_SUPPORTED */
+
+/*
+ * Stub out prefixed floating-point instructions.
+ */
+VMCASE(COP_PREFIX_CKFINITE):
+VMCASE(COP_PREFIX_FCMPL):
+VMCASE(COP_PREFIX_FCMPG):
+VMCASE(COP_PREFIX_F2I_OVF):
+VMCASE(COP_PREFIX_F2IU_OVF):
+VMCASE(COP_PREFIX_F2L_OVF):
+VMCASE(COP_PREFIX_F2LU_OVF):
+VMCASE(COP_PREFIX_F2F_ALIGNED):
+VMCASE(COP_PREFIX_F2D_ALIGNED):
+VMCASE(COP_PREFIX_FREAD_ELEM):
+VMCASE(COP_PREFIX_DREAD_ELEM):
+VMCASE(COP_PREFIX_FWRITE_ELEM):
+VMCASE(COP_PREFIX_DWRITE_ELEM):
+{
+	COPY_STATE_TO_THREAD();
+	stacktop[0].ptrValue =
+		_ILSystemException(thread, "System.NotSupportedException");
+	stacktop += 1;
+	goto throwException;
+}
+/* Not reached */
+
+#endif /* !IL_CONFIG_FP_SUPPORTED */
 
 #endif /* IL_CVM_PREFIX */

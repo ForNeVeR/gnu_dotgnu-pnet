@@ -601,6 +601,8 @@ VMCASE(COP_SFIXUP):
 }
 VMBREAK(COP_SFIXUP);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="ffixup" group="Local variable handling">
  *   <operation>Fix up <code>float32</code> variable</operation>
@@ -682,6 +684,8 @@ VMCASE(COP_DFIXUP):
 	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_DFIXUP);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="mk_local_1" group="Local variable handling">
@@ -892,6 +896,8 @@ case COP_SFIXUP:
 }
 VMBREAKNOEND;
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 case COP_FFIXUP:
 {
 	/* Wide version of "ffixup" */
@@ -909,6 +915,21 @@ case COP_DFIXUP:
 	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;
+
+#else /* !IL_CONFIG_FP_SUPPORTED */
+
+case COP_FFIXUP:
+case COP_DFIXUP:
+{
+	COPY_STATE_TO_THREAD();
+	stacktop[0].ptrValue =
+		_ILSystemException(thread, "System.NotSupportedException");
+	stacktop += 1;
+	goto throwException;
+}
+/* Not reached */
+
+#endif /* !IL_CONFIG_FP_SUPPORTED */
 
 case COP_MK_LOCAL_N:
 {

@@ -26,6 +26,7 @@
 #if defined(HAVE_LIBFFI)
 #include "ffi.h"
 #endif
+#ifdef IL_CONFIG_FP_SUPPORTED
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif
@@ -37,6 +38,7 @@
 #define isnan(value)	_isnan((value))
 #define HAVE_ISNAN 1
 #endif
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -289,6 +291,8 @@ static IL_INLINE void WriteULong(CVMWord *stack, ILUInt64 value)
 #endif
 }
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /*
  * Read a native float value from a stack position.
  */
@@ -340,6 +344,8 @@ static IL_INLINE void WriteDouble(CVMWord *stack, ILDouble value)
 	ILMemCpy(stack, &value, sizeof(ILDouble));
 #endif
 }
+
+#endif /* !IL_CONFIG_FP_SUPPORTED */
 
 /*
  * Read a pointer value from a program position.

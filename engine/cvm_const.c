@@ -187,6 +187,8 @@ VMCASE(COP_LDC_I8):
 }
 VMBREAK(COP_LDC_I8);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="ldc_r4" group="Constant loading">
  *   <operation>Load 32-bit floating point constant onto the stack</operation>
@@ -236,5 +238,7 @@ VMCASE(COP_LDC_R8):
 	MODIFY_PC_AND_STACK(CVM_LEN_DOUBLE, CVM_WORDS_PER_NATIVE_FLOAT);
 }
 VMBREAK(COP_LDC_R8);
+
+#endif /* !IL_CONFIG_FP_SUPPORTED */
 
 #endif /* IL_CVM_MAIN */

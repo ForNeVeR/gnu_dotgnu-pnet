@@ -20,6 +20,8 @@
 
 #if defined(IL_CVM_GLOBALS)
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /*
  * Convert "ulong" into "native float".
  *
@@ -41,6 +43,8 @@ static IL_INLINE ILUInt64 F2LU(ILNativeFloat value)
 {
 	return ILFloatToUInt64(value);
 }
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /*
  * Convert "long" into "int" with overflow testing.
@@ -112,6 +116,8 @@ static IL_INLINE int LU2UIOvf(CVMWord *posn)
 	}
 }
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /*
  * Convert "native float" into "int" with overflow testing.
  */
@@ -181,6 +187,8 @@ static IL_INLINE int F2LUOvf(CVMWord *posn)
 		return 0;
 	}
 }
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 #elif defined(IL_CVM_LOCALS)
 
@@ -348,6 +356,8 @@ VMCASE(COP_IU2L):
 }
 VMBREAK(COP_IU2L);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="i2f" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to
@@ -400,6 +410,8 @@ VMCASE(COP_IU2F):
 }
 VMBREAK(COP_IU2F);
 
+#endif /* IL_CONFIG_FP_SUPPORTED */
+
 /**
  * <opcode name="l2i" group="Conversion operators">
  *   <operation>Convert <code>int64</code> to <code>int32</code></operation>
@@ -426,6 +438,8 @@ VMCASE(COP_L2I):
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, -(CVM_WORDS_PER_LONG - 1));
 }
 VMBREAK(COP_L2I);
+
+#ifdef IL_CONFIG_FP_SUPPORTED
 
 /**
  * <opcode name="l2f" group="Conversion operators">
@@ -662,6 +676,8 @@ VMCASE(COP_F2D):
 	MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 }
 VMBREAK(COP_F2D);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 /**
  * <opcode name="i2p_lower" group="Conversion operators">
@@ -1382,6 +1398,8 @@ VMCASE(COP_PREFIX_LU2L_OVF):
 }
 VMBREAK(COP_PREFIX_LU2L_OVF);
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 /**
  * <opcode name="f2i_ovf" group="Conversion operators">
  *   <operation>Convert <code>native float</code> to <code>int32</code>
@@ -1544,6 +1562,8 @@ VMCASE(COP_PREFIX_F2LU_OVF):
 }
 VMBREAK(COP_PREFIX_F2LU_OVF);
 
+#endif /* IL_CONFIG_FP_SUPPORTED */
+
 /**
  * <opcode name="i2b_aligned" group="Conversion operators">
  *   <operation>Convert <code>int32</code> to <code>int8</code>, aligned
@@ -1605,6 +1625,8 @@ VMCASE(COP_PREFIX_I2S_ALIGNED):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_I2S_ALIGNED);
+
+#ifdef IL_CONFIG_FP_SUPPORTED
 
 /**
  * <opcode name="f2f_aligned" group="Conversion operators">
@@ -1679,6 +1701,8 @@ VMCASE(COP_PREFIX_F2D_ALIGNED):
 					    CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
 }
 VMBREAK(COP_PREFIX_F2D_ALIGNED);
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 #ifdef IL_CONFIG_PINVOKE
 

@@ -1,4 +1,9 @@
 
+2003-05-16  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/Sockets/Socket.cs: Check for waitHandle state before 
+	setting it.
+
 2003-05-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Add this non-ECMA class , implemented

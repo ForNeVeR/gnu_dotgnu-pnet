@@ -285,11 +285,14 @@ public class Socket : IDisposable
 					{
 						callback(this);
 					}
+					if(waitHandle != null)
+					{
 				#if ECMA_COMPAT
-					SocketMethods.WaitHandleSet(waitHandle);
+						SocketMethods.WaitHandleSet(waitHandle);
 				#else
-					((ManualResetEvent)waitHandle).Set();
+						((ManualResetEvent)waitHandle).Set();
 				#endif
+					}
 				}
 
 		// Start the async thread, or perform the operation synchronously.

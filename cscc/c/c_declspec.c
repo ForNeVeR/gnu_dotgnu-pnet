@@ -132,7 +132,25 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 			{
 				case IL_META_ELEMTYPE_I1:
 				{
-					/* Look for "unsigned" to change int8 into uint8 */
+					/* Look for "unsigned" and "signed" */
+					if(((spec1.specifiers | spec2.specifiers)
+							& C_SPEC_UNSIGNED) != 0)
+					{
+						result.baseType = ILType_UInt8;
+						okSpecifiers = C_SPEC_UNSIGNED;
+					}
+					else if(((spec1.specifiers | spec2.specifiers)
+								& C_SPEC_SIGNED) != 0)
+					{
+						result.baseType = ILType_Int8;
+						okSpecifiers = C_SPEC_SIGNED;
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U1:
+				{
+					/* Look for "unsigned" */
 					if(((spec1.specifiers | spec2.specifiers)
 							& C_SPEC_UNSIGNED) != 0)
 					{
@@ -144,7 +162,25 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 
 				case IL_META_ELEMTYPE_I2:
 				{
-					/* Look for "unsigned" to change int16 into uint16 */
+					/* Look for "unsigned" and "signed" */
+					if(((spec1.specifiers | spec2.specifiers)
+							& C_SPEC_UNSIGNED) != 0)
+					{
+						result.baseType = ILType_UInt16;
+						okSpecifiers = C_SPEC_UNSIGNED;
+					}
+					else if(((spec1.specifiers | spec2.specifiers)
+								& C_SPEC_SIGNED) != 0)
+					{
+						result.baseType = ILType_Int16;
+						okSpecifiers = C_SPEC_SIGNED;
+					}
+				}
+				break;
+
+				case IL_META_ELEMTYPE_U2:
+				{
+					/* Look for "unsigned" */
 					if(((spec1.specifiers | spec2.specifiers)
 							& C_SPEC_UNSIGNED) != 0)
 					{
@@ -156,8 +192,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 
 				case IL_META_ELEMTYPE_I4:
 				{
-					/* Look for "signed", "unsigned", "short",
-					   "long", or "long long" */
+					/* Look for all legal modifier combinations */
 					switch((spec1.specifiers | spec2.specifiers)
 							& (C_SPEC_SIGNED | C_SPEC_UNSIGNED |
 							   C_SPEC_SHORT | C_SPEC_LONG |
@@ -174,6 +209,13 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						{
 							result.baseType = ILType_UInt32;
 							okSpecifiers = C_SPEC_UNSIGNED;
+						}
+						break;
+
+						case C_SPEC_NATIVE:
+						{
+							result.baseType = ILType_Int;
+							okSpecifiers = C_SPEC_NATIVE;
 						}
 						break;
 
@@ -268,14 +310,14 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						case C_SPEC_SHORT:
 						{
 							result.baseType = ILType_UInt16;
-							okSpecifiers = C_SPEC_SHORT;
+							okSpecifiers = C_SPEC_SHORT | C_SPEC_UNSIGNED;
 						}
 						break;
 
 						case C_SPEC_NATIVE:
 						{
 							result.baseType = ILType_UInt;
-							okSpecifiers = C_SPEC_NATIVE;
+							okSpecifiers = C_SPEC_NATIVE | C_SPEC_UNSIGNED;
 						}
 						break;
 
@@ -289,7 +331,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							{
 								result.baseType = ILType_UInt64;
 							}
-							okSpecifiers = C_SPEC_LONG;
+							okSpecifiers = C_SPEC_LONG | C_SPEC_UNSIGNED;
 						}
 						break;
 
@@ -297,7 +339,8 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						case C_SPEC_LONG | C_SPEC_LONG_LONG:
 						{
 							result.baseType = ILType_UInt64;
-							okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG;
+							okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG |
+										   C_SPEC_UNSIGNED;
 						}
 						break;
 					}
@@ -311,13 +354,19 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt64;
-						okSpecifiers = C_SPEC_UNSIGNED;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_LONG |
+									   C_SPEC_LONG_LONG;
 					}
 					else if(((spec1.specifiers | spec2.specifiers)
 								& C_SPEC_SIGNED) != 0)
 					{
 						result.baseType = ILType_Int64;
-						okSpecifiers = C_SPEC_SIGNED;
+						okSpecifiers = C_SPEC_SIGNED | C_SPEC_LONG |
+									   C_SPEC_LONG_LONG;
+					}
+					else
+					{
+						okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG;
 					}
 				}
 				break;
@@ -329,7 +378,12 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt64;
-						okSpecifiers = C_SPEC_UNSIGNED;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_LONG |
+									   C_SPEC_LONG_LONG;
+					}
+					else
+					{
+						okSpecifiers = C_SPEC_LONG | C_SPEC_LONG_LONG;
 					}
 				}
 				break;
@@ -341,13 +395,13 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt;
-						okSpecifiers = C_SPEC_UNSIGNED;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_NATIVE;
 					}
 					else if(((spec1.specifiers | spec2.specifiers)
 								& C_SPEC_SIGNED) != 0)
 					{
 						result.baseType = ILType_Int;
-						okSpecifiers = C_SPEC_SIGNED;
+						okSpecifiers = C_SPEC_SIGNED | C_SPEC_NATIVE;
 					}
 				}
 				break;
@@ -359,7 +413,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 							& C_SPEC_UNSIGNED) != 0)
 					{
 						result.baseType = ILType_UInt;
-						okSpecifiers = C_SPEC_UNSIGNED;
+						okSpecifiers = C_SPEC_UNSIGNED | C_SPEC_NATIVE;
 					}
 				}
 				break;
@@ -378,7 +432,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 									& C_SPEC_LONG) != 0)
 					{
 						/* "long float" == "double" */
-						result.baseType = ILType_Float32;
+						result.baseType = ILType_Float64;
 						okSpecifiers = C_SPEC_LONG;
 					}
 				}
@@ -410,7 +464,8 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 				break;
 			}
 		}
-		result.specifiers |= okSpecifiers;
+		result.specifiers |=
+			okSpecifiers & (spec1.specifiers | spec2.specifiers);
 		if(((spec1.specifiers | spec2.specifiers) &
 				(C_SPEC_TYPE_CHANGE & ~okSpecifiers)) != 0)
 		{
@@ -439,7 +494,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 
 	/* Check for duplicate "signed", "unsigned", "short", and "__native__"
 	   but don't worry about "long" as we max out the sizes above */
-	result.dupSpecifiers |= ((spec1.specifiers | spec2.specifiers) &
+	result.dupSpecifiers |= (spec1.specifiers & spec2.specifiers &
 								(C_SPEC_SIGNED | C_SPEC_UNSIGNED |
 								 C_SPEC_SHORT | C_SPEC_NATIVE));
 
@@ -628,8 +683,8 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			== C_SPEC_INVALID_COMBO)
 	{
 		ReportError(node, name,
-					_("long, short, signed, or unsigned invalid for `%s'"),
-					_("long, short, signed, or unsigned invalid here"));
+			_("long, short, signed, unsigned or __native__ invalid for `%s'"),
+			_("long, short, signed, unsigned or __native__ invalid here"));
 	}
 
 	/* Copy the common type qualifiers to "result.specifiers" */
@@ -647,6 +702,17 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 			else
 			{
 				result.baseType = ILType_Int16;
+			}
+		}
+		else if((spec.specifiers & C_SPEC_LONG_LONG) != 0 && gen_32bit_only)
+		{
+			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
+			{
+				result.baseType = ILType_UInt64;
+			}
+			else
+			{
+				result.baseType = ILType_Int64;
 			}
 		}
 		else if((spec.specifiers & C_SPEC_LONG) != 0 && gen_32bit_only)
@@ -685,6 +751,10 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 		else if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
 		{
 			result.baseType = ILType_UInt32;
+		}
+		else if((spec.specifiers & C_SPEC_SIGNED) != 0)
+		{
+			result.baseType = ILType_Int32;
 		}
 		else
 		{

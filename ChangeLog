@@ -29,6 +29,10 @@
 	runtime/System/Reflection/MemberInfoSerializationHolder.cs:
 	de-serialization support for member reflection classes.
 
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Globalization/HijriCalendar.cs: implement the
+	missing HijriCalendar class.
+
 2003-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

@@ -166,3 +166,5 @@ ArgRange_Day=Day value is out of range
 ArgRange_HashLoadFactor=Invalid hash table load factor
 ArgRange_QueueGrowFactor=Invalid growth factor for queues
 ArgRange_GCGeneration=GC generation is out of range
+ArgRange_HijriAdjustment=Hijri adjustment values must be between -2 and 2
+ArgRange_HijriDate=Date value is out of range for the Hijri calendar

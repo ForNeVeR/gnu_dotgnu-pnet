@@ -322,6 +322,14 @@ ILNode_SemAnalysis(ILNode_Continue)
 ILNode_SemAnalysis(ILNode_Return)
 {
 	/* Emit an error if the return type is not "void" */
+	ILType *returnType = ILMethod_Signature
+		(((ILNode_MethodDeclaration *)(info->currentMethod))->methodInfo)
+				->un.method.retType;
+	if(returnType != ILType_Void)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "`return' with no value, in method returning non-void");
+	}
 	return CSSemValueDefault;
 }
 
@@ -348,12 +356,18 @@ ILNode_SemAnalysis(ILNode_ReturnExpr)
 	if(returnType == ILType_Void)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "return with a value in a method returning `void'");
-		return CSSemValueDefault;
+					  "`return' with a value, in method returning void");
 	}
 	else
 	{
-		/* TODO: cast to the return type */
+		/* Coerce to the return type */
+		if(!ILCoerce(info, node->expr, &(node->expr), value.type, returnType))
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  		  "incompatible types in return: "
+						  		"no conversion from `%s' to `%s'",
+						  CSTypeToName(value.type), CSTypeToName(returnType));
+		}
 	}
 
 	/* Done */

@@ -489,7 +489,7 @@ public class VsaEngine : BaseVsaEngine, IRedirectOutput
 			}
 
 	// Pop an object from the script object stack.
-	public void PopScriptObject()
+	public ScriptObject PopScriptObject()
 			{
 				// Never pop the global object.
 				if(scopeStackSize > 1)
@@ -497,6 +497,7 @@ public class VsaEngine : BaseVsaEngine, IRedirectOutput
 					--scopeStackSize;
 					currentScope = scopeStack[scopeStackSize - 1];
 				}
+				return (ScriptObject)currentScope;
 			}
 
 	// Get the object at the top of the script object stack.

@@ -36,9 +36,9 @@ public class BlockScope : ActivationObject
 
 	// Create a new field within this scope.
 	protected override JSVariableField CreateField
-				(String name, Object value, FieldAttributes attributes)
+				(String name, FieldAttributes attributes, Object value)
 			{
-				return base.CreateField(name, value, attributes);
+				return base.CreateField(name, attributes, value);
 			}
 
 }; // class BlockScope

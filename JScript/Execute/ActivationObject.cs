@@ -31,6 +31,8 @@ public abstract class ActivationObject : ScriptObject, IActivationObject,
 	// Internal state.
 	private ScriptObject storage;
 
+	protected ArrayList field_table;
+
 	// Constructor.
 	internal ActivationObject(ScriptObject parent, ScriptObject storage)
 			: base(parent)
@@ -77,7 +79,7 @@ public abstract class ActivationObject : ScriptObject, IActivationObject,
 
 	// Create a new field within this activation object.
 	protected virtual JSVariableField CreateField
-				(String name, Object value, FieldAttributes attributes)
+				(String name, FieldAttributes attributes, Object value)
 			{
 				// TODO
 				return null;

@@ -1,4 +1,10 @@
 
+2004-10-26  Carl-Adam Brengesjo <ca.brengesjo@telia.com>
+
+	* JScript/Execute/ActivationObject.cs, JScript/Execute/BlockScope.cs,
+	JScript/Execute/GlobalScope.cs, JScript/Vsa/VsaEngine.cs: Fixed
+	compability.
+
 2004-10-25  Gopal V  <gopalv82@yahoo.com>
 
 	* System.Windows.Forms/TextBox.cs: Fix Lines[] to return the proper

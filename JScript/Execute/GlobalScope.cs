@@ -38,6 +38,13 @@ public class GlobalScope : ActivationObject
 			{
 				// Nothing else to do here.
 			}
+	
+	public GlobalScope(GlobalScope parent, VsaEngine engine)
+			: base(parent, (parent == null && engine != null ?
+					engine.LenientGlobalObject.globalObject : null))
+			{
+				// Nothing else to do here.
+			}
 
 	// Override methods in the IActivationObject interface.
 	public override Object GetDefaultThisObject()
@@ -92,7 +99,7 @@ public class GlobalScope : ActivationObject
 	// Implement the IExpando interface.
 	public FieldInfo AddField(String name)
 			{
-				return CreateField(name, null, FieldAttributes.Public);
+				return CreateField(name, FieldAttributes.Public, null);
 			}
 #if !ECMA_COMPAT
 	MethodInfo IExpando.AddMethod(String name, Delegate method)

@@ -24,7 +24,7 @@ namespace System.Reflection
 
 #if CONFIG_REFLECTION
 
-public enum MethodSemanticsAttributes
+internal enum MethodSemanticsAttributes
 {
 	Setter			= 0x0001,
 	Getter			= 0x0002,

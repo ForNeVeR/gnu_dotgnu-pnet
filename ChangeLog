@@ -11,6 +11,14 @@
 	tests/runtime/System/Globalization/TestJulianCalendar.cs:
 	test cases and bug fixes for some calendar methods.
 
+	* runtime/System/LogLevel.cs,
+	runtime/System/Globalization/CharacterInfo.cs,
+	runtime/System/Reflection/MethodSemanticsAttributes.cs,
+	runtime/System/Runtime/Remoting/Message.cs,
+	runtime/System/Security/Cryptography/RijndaelManagedTransformMode.cs:
+	remove or hide obsolete classes that are no longer part of
+	the public API for "runtime".
+
 2003-04-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/AttributeCollection.cs,

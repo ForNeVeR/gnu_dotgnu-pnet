@@ -6,6 +6,9 @@
 	doc/pnettools.texi: add pre-processor dependency options such
 	as "-M", "-MD", etc to the C compiler.
 
+	* cscc/common/cc_main.c: use "-MD file" instead of "-M -MF file";
+	the GNU cpp documentation is wrong!
+
 2004-03-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, ilranlib/Makefile.am, ilsize/Makefile.am,

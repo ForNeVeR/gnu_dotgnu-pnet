@@ -894,22 +894,13 @@ static void ParseFile(const char *filename, int is_stdin)
 		if(dependency_level != 0)
 		{
 			/* Generate dependencies while pre-processing */
-			if(dependency_level == DEP_LEVEL_M ||
-			   dependency_level == DEP_LEVEL_MD)
-			{
-				CCStringListAdd(&argv, &argc, "-M");
-			}
-			else if(dependency_level == DEP_LEVEL_MM ||
-			        dependency_level == DEP_LEVEL_MMD)
-			{
-				CCStringListAdd(&argv, &argc, "-MM");
-			}
+			static char * const depLevels[] = {0, "-M", "-MD", "-MM", "-MMD"};
+			CCStringListAdd(&argv, &argc, depLevels[dependency_level]);
 			if(dependency_level == DEP_LEVEL_MD ||
 		       dependency_level == DEP_LEVEL_MMD)
 			{
 				if(dependency_file != 0)
 				{
-					CCStringListAdd(&argv, &argc, "-MF");
 					CCStringListAdd(&argv, &argc, dependency_file);
 				}
 			}

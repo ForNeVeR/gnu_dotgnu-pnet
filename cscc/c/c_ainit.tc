@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+%output "c_semantics.c"
+
 %{
 
 /*
@@ -222,6 +224,7 @@ ILNode_CSemAnalysis(ILNode_CAssignArray)
 		}
 		return CSemValueError;
 	}
+	node->type = CSemGetType(value1);
 
 	/* Determine the type of assignment based on the r-value */
 	if(yyisa(node->expr2, ILNode_CString))
@@ -269,12 +272,65 @@ ILNode_CSemAnalysis(ILNode_CAssignStruct)
 	return CSemValueError;
 }
 
+%output "c_nodes.c"
+
+%{
+
+/*
+ * Write an initializer into memory at a specific pointer location,
+ * where the pointer is on the stack.
+ */
+static void WriteInitializer(ILGenInfo *info, ILType *type, ILNode *node)
+{
+	ILUInt32 size;
+
+	if(yyisa(node, ILNode_CString))
+	{
+		/* Write the contents of a string to a location */
+		if(CTypeIsArray(type))
+		{
+			/* Populate an array by copying a string into it */
+			ILNode_GenValue(node, info);
+			size = CTypeGetNumElems(type);
+			if(size > (((ILNode_CString *)node)->len + 1))
+			{
+				size = ((ILNode_CString *)node)->len + 1;
+			}
+			ILGenUInt32(info, size);
+			ILGenAdjust(info, 1);
+			ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+			ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+			ILGenAdjust(info, -3);
+		}
+		else
+		{
+			/* Store the string directly as a pointer */
+			ILNode_GenValue(node, info);
+			ILGenSimple(info, IL_OP_STIND_I);
+			ILGenAdjust(info, -2);
+		}
+	}
+	else
+	{
+		/* Write the contents of an array or structure to a location */
+		/* TODO */
+		ILGenSimple(info, IL_OP_POP);
+		ILGenAdjust(info, -1);
+	}
+}
+
+%}
+
 /*
  * Generate discard code for an array assignment statement.
  */
 ILNode_GenDiscard(ILNode_CAssignArray)
 {
-	/* TODO */
+	/* Get the address of the array */
+	CGenAddress(info, node->expr1);
+
+	/* Write the initializer value into the array */
+	WriteInitializer(info, node->type, node->expr2);
 }
 JavaGenDiscard(ILNode_CAssignArray)
 {

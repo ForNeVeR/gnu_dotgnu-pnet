@@ -1,3 +1,16 @@
+2004-01-26  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs, System.Drawing/Region.cs,
+	System.Drawing/Drawing2D/GraphicsContainer.cs: optimization.
+
+	* System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingImage.cs,
+	System.Drawing.Win32/DrawingTextureBrush.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/Win32.cs: redo images to improve speed.
+
+	* System.Windows.Forms/TabControl.cs: remove double buffering.
+
 2004-01-26  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/MulticastDelegate.cs: fix loop bug in

@@ -312,6 +312,52 @@ static void AddMemberToScope(ILScope *scope, int memberKind,
 }
 
 /*
+ * Search for a member with a specific name to do duplicate testing.
+ */
+static ILMember *FindMemberByName(ILClass *classInfo, const char *name)
+{
+	ILClass *scope = classInfo;
+	ILMember *member;
+	while(classInfo != 0)
+	{
+		member = 0;
+		while((member = ILClassNextMember(classInfo, member)) != 0)
+		{
+			if(!strcmp(ILMember_Name(member), name) &&
+			   ILMemberAccessible(member, scope))
+			{
+				return member;
+			}
+		}
+		classInfo = ILClass_Parent(classInfo);
+	}
+	return 0;
+}
+
+/*
+ * Report duplicate definitions.
+ */
+static void ReportDuplicates(ILNode *node, ILMember *newMember,
+							 ILMember *existingMember, ILClass *classInfo,
+							 ILUInt32 modifiers)
+{
+	/* TODO: we need better error messages here */
+
+	if(ILMember_Owner(existingMember) == classInfo)
+	{
+		/* The duplicate is in the same class */
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  			  "declaration conflicts with an existing member");
+	}
+	else if((modifiers & CS_SPECIALATTR_NEW) == 0)
+	{
+		/* The duplicate is in a parent class, and "new" wasn't specified */
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+		  "declaration hides an inherited member, and `new' was not present");
+	}
+}
+
+/*
  * Create a field definition.
  */
 static void CreateField(ILGenInfo *info, ILClass *classInfo,
@@ -323,6 +369,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 	char *name;
 	ILType *tempType;
 	ILType *modifier;
+	ILMember *member;
 
 	/* Get the field's type */
 	tempType = CSSemType(field->type, info, &(field->type));
@@ -353,6 +400,9 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		/* Get the name of the field */
 		name = ILQualIdentName(decl->name, 0);
 
+		/* Look for duplicates */
+		member = FindMemberByName(classInfo, name);
+
 		/* Create the field information block */
 		fieldInfo = ILFieldCreate(classInfo, 0, name,
 								  (field->modifiers & 0xFFFF));
@@ -362,6 +412,13 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		}
 		decl->fieldInfo = fieldInfo;
 		ILMemberSetSignature((ILMember *)fieldInfo, tempType);
+
+		/* Report on duplicates */
+		if(member)
+		{
+			ReportDuplicates((ILNode *)decl, (ILMember *)fieldInfo,
+							 member, classInfo, field->modifiers);
+		}
 
 		/* Add the field to the current scope */
 		AddMemberToScope(info->currentScope, IL_SCOPE_FIELD,
@@ -493,12 +550,24 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 	ILField *fieldInfo;
 	char *name;
 	ILType *tempType;
+	ILMember *member;
 
 	/* Get the field's type, which is the same as its enclosing class */
 	tempType = ILType_FromValueType(classInfo);
 
 	/* Get the name of the field */
 	name = ILQualIdentName(enumMember->name, 0);
+
+	/* Check for the reserved field name "value__" */
+	if(!strcmp(name, "value__"))
+	{
+		CSErrorOnLine(yygetfilename(enumMember), yygetlinenum(enumMember),
+			  "the identifier `value__' is reserved in enumerated types");
+		return;
+	}
+
+	/* Look for duplicates */
+	member = FindMemberByName(classInfo, name);
 
 	/* Create the field information block */
 	fieldInfo = ILFieldCreate(classInfo, 0, name,
@@ -511,6 +580,13 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 	}
 	enumMember->fieldInfo = fieldInfo;
 	ILMemberSetSignature((ILMember *)fieldInfo, tempType);
+
+	/* Report on duplicates within this class only */
+	if(member && ILMember_Owner(member) == classInfo)
+	{
+		ReportDuplicates((ILNode *)enumMember, (ILMember *)fieldInfo,
+						 member, classInfo, 0);
+	}
 }
 
 /*
@@ -528,6 +604,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	ILNode *param;
 	ILNode_FormalParameter *fparam;
 	ILUInt32 paramNum;
+	ILMember *member;
 	
 	/* Create the get and set methods */
 	if(property->getAccessor)
@@ -553,6 +630,9 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		   interface property (TODO) */
 		name = ILQualIdentName(property->name, 0);
 	}
+
+	/* Look for duplicates */
+	member = FindMemberByName(classInfo, name);
 
 	/* Get the property type */
 	propType = CSSemType(property->type, info, &(property->type));
@@ -615,6 +695,13 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 		{
 			CSOutOfMemory();
 		}
+	}
+
+	/* Report on duplicates */
+	if(member)
+	{
+		ReportDuplicates((ILNode *)property, (ILMember *)propertyInfo,
+						 member, classInfo, property->modifiers);
 	}
 
 	/* Add the property to the current scope */

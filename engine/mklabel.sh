@@ -43,14 +43,51 @@ echo '#if defined(PIC) && defined(HAVE_PIC_COMPUTED_GOTO)'
 echo ''
 
 # Output a table of PIC labels, based on an incoming stream
-# of #define's for opcodes.
+# of #define's for opcodes.  Some awks don't support hex
+# string to number conversion, which is why we have to convert
+# the opcode value the hard way.
 pic_table()
 {
 	"$1" 'BEGIN{
 		      nextval=0
 		  }
 		  {
-		      currval=$3+0
+		      currval=0;
+			  ch=substr($3,3,1);
+		  	  if(ch == "0") currval=currval+0; else
+		  	  if(ch == "1") currval=currval+1; else
+		  	  if(ch == "2") currval=currval+2; else
+		  	  if(ch == "3") currval=currval+3; else
+		  	  if(ch == "4") currval=currval+4; else
+		  	  if(ch == "5") currval=currval+5; else
+		  	  if(ch == "6") currval=currval+6; else
+		  	  if(ch == "7") currval=currval+7; else
+		  	  if(ch == "8") currval=currval+8; else
+		  	  if(ch == "9") currval=currval+9; else
+		  	  if(ch == "A") currval=currval+10; else
+		  	  if(ch == "B") currval=currval+11; else
+		  	  if(ch == "C") currval=currval+12; else
+		  	  if(ch == "D") currval=currval+13; else
+		  	  if(ch == "E") currval=currval+14; else
+		  	  if(ch == "F") currval=currval+15;
+			  currval=currval*16;
+			  ch=substr($3,4,1);
+		  	  if(ch == "0") currval=currval+0; else
+		  	  if(ch == "1") currval=currval+1; else
+		  	  if(ch == "2") currval=currval+2; else
+		  	  if(ch == "3") currval=currval+3; else
+		  	  if(ch == "4") currval=currval+4; else
+		  	  if(ch == "5") currval=currval+5; else
+		  	  if(ch == "6") currval=currval+6; else
+		  	  if(ch == "7") currval=currval+7; else
+		  	  if(ch == "8") currval=currval+8; else
+		  	  if(ch == "9") currval=currval+9; else
+		  	  if(ch == "A") currval=currval+10; else
+		  	  if(ch == "B") currval=currval+11; else
+		  	  if(ch == "C") currval=currval+12; else
+		  	  if(ch == "D") currval=currval+13; else
+		  	  if(ch == "E") currval=currval+14; else
+		  	  if(ch == "F") currval=currval+15;
 		      while(nextval < currval)
 			  {
 			      print "	&&'"$2"' - &&COP_NOP_label,"
@@ -100,14 +137,51 @@ echo '#else /* !PIC */'
 echo ''
 
 # Output a table of non-PIC labels, based on an incoming stream
-# of #define's for opcodes.
+# of #define's for opcodes.  Some awks don't support hex
+# string to number conversion, which is why we have to convert
+# the opcode value the hard way.
 non_pic_table()
 {
 	"$1" 'BEGIN{
 		      nextval=0
 		  }
 		  {
-		      currval=$3+0
+		      currval=0;
+			  ch=substr($3,3,1);
+		  	  if(ch == "0") currval=currval+0; else
+		  	  if(ch == "1") currval=currval+1; else
+		  	  if(ch == "2") currval=currval+2; else
+		  	  if(ch == "3") currval=currval+3; else
+		  	  if(ch == "4") currval=currval+4; else
+		  	  if(ch == "5") currval=currval+5; else
+		  	  if(ch == "6") currval=currval+6; else
+		  	  if(ch == "7") currval=currval+7; else
+		  	  if(ch == "8") currval=currval+8; else
+		  	  if(ch == "9") currval=currval+9; else
+		  	  if(ch == "A") currval=currval+10; else
+		  	  if(ch == "B") currval=currval+11; else
+		  	  if(ch == "C") currval=currval+12; else
+		  	  if(ch == "D") currval=currval+13; else
+		  	  if(ch == "E") currval=currval+14; else
+		  	  if(ch == "F") currval=currval+15;
+			  currval=currval*16;
+			  ch=substr($3,4,1);
+		  	  if(ch == "0") currval=currval+0; else
+		  	  if(ch == "1") currval=currval+1; else
+		  	  if(ch == "2") currval=currval+2; else
+		  	  if(ch == "3") currval=currval+3; else
+		  	  if(ch == "4") currval=currval+4; else
+		  	  if(ch == "5") currval=currval+5; else
+		  	  if(ch == "6") currval=currval+6; else
+		  	  if(ch == "7") currval=currval+7; else
+		  	  if(ch == "8") currval=currval+8; else
+		  	  if(ch == "9") currval=currval+9; else
+		  	  if(ch == "A") currval=currval+10; else
+		  	  if(ch == "B") currval=currval+11; else
+		  	  if(ch == "C") currval=currval+12; else
+		  	  if(ch == "D") currval=currval+13; else
+		  	  if(ch == "E") currval=currval+14; else
+		  	  if(ch == "F") currval=currval+15;
 		      while(nextval < currval)
 			  {
 			      print "	&&'"$2"',"

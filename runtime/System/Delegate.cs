@@ -26,16 +26,14 @@ using System.Runtime.CompilerServices;
 
 public abstract class Delegate : ICloneable
 {
-	// Internal state.  These two fields must be present here
+	// Internal state.  These three fields must be present here
 	// and in this order so that the runtime engine can create
 	// delegates from function pointers correctly.
 	internal Object     target;
 	internal MethodInfo method;
+	internal IntPtr		closure;
 
 	// Constructors.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected Delegate(Object target, String method)
 			{
 				if(target == null)
@@ -58,9 +56,6 @@ public abstract class Delegate : ICloneable
 						(_("Arg_DelegateMethod"));
 				}
 			}
-#if ECMA_COMPAT
-	internal
-#endif
 	protected Delegate(Type target, String method)
 			{
 				if(target == null)
@@ -383,9 +378,6 @@ public abstract class Delegate : ICloneable
 
 	// Implementation of delegate combination.  The real work
 	// is done in the MulticastDelegate class.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected virtual Delegate CombineImpl(Delegate d)
 			{
 				throw new NotSupportedException(_("NotSupp_Multicast"));
@@ -393,9 +385,6 @@ public abstract class Delegate : ICloneable
 
 	// Implementation of dynamic invocation.  This handles
 	// the unicast case.  MulticastDelegate handles multicast.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected virtual Object DynamicInvokeImpl(Object[] args)
 			{
 				return method.Invoke(target, args);
@@ -404,9 +393,6 @@ public abstract class Delegate : ICloneable
 	// Implementation of delegate removal.  The real work
 	// is done in the MulticastDelegate class.  This handles
 	// the unicast delegate case only.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected virtual Delegate RemoveImpl(Delegate d)
 			{
 				if(target == d.target && method.Equals(d.method))
@@ -422,18 +408,12 @@ public abstract class Delegate : ICloneable
 	// Implementation of delegate "all" removal.  The real work
 	// is done in the MulticastDelegate class.  This handles
 	// the unicast delegate case only.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected virtual Delegate RemoveAllImpl(Delegate d)
 			{
 				return RemoveImpl(d);
 			}
 
 	// Get the method implementation for this delegate.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected virtual MethodInfo GetMethodImpl()
 			{
 				return Method;

@@ -33,17 +33,11 @@ public abstract class MulticastDelegate : Delegate
 	private MulticastDelegate prev;
 
 	// Constructors.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected MulticastDelegate(Object target, String method)
 			: base(target, method)
 			{
 				prev = null;
 			}
-#if ECMA_COMPAT
-	internal
-#endif
 	protected MulticastDelegate(Type target, String method)
 			: base(target, method)
 			{
@@ -116,9 +110,6 @@ public abstract class MulticastDelegate : Delegate
 			}
 
 	// Implementation of delegate combination.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected override Delegate CombineImpl(Delegate d)
 			{
 				MulticastDelegate list;
@@ -137,9 +128,6 @@ public abstract class MulticastDelegate : Delegate
 			}
 
 	// Implementation of dynamic invocation.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected override Object DynamicInvokeImpl(Object[] args)
 			{
 				if(!ReferenceEquals(prev, null))
@@ -196,9 +184,6 @@ public abstract class MulticastDelegate : Delegate
 			}
 
 	// Implementation of delegate removal.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected override Delegate RemoveImpl(Delegate d)
 			{
 				MulticastDelegate current, list;
@@ -250,9 +235,6 @@ public abstract class MulticastDelegate : Delegate
 			}
 
 	// Implementation of delegate "all" removal.
-#if ECMA_COMPAT
-	internal
-#endif
 	protected override Delegate RemoveAllImpl(Delegate d)
 			{
 				MulticastDelegate current, list;

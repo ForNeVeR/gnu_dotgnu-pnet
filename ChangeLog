@@ -17,6 +17,10 @@
 	"TypedReference.SetTypedReference" so that most of the casting
 	work happens in the C# part of the code.
 
+	* runtime/System/Delegate.cs, runtime/System/MulticastDelegate.cs:
+	use the delegate classes in all profiles (don't #if out for ECMA);
+	add the "closure" field to "Delegate".
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/NotImplementedException.cs: add the exception

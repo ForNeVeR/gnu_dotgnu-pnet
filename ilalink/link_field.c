@@ -74,6 +74,10 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 				return 1;
 			}
 
+			/* Set the type to the new value, just in case the previous
+			   reference did not involve modifiers */
+			ILMemberSetSignature((ILMember *)newField, type);
+
 			/* Allocate a new token for the field */
 			if(!ILFieldNewToken(newField))
 			{

@@ -215,7 +215,7 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 					(unsigned long)(ILFieldLayoutGetOffset(fieldLayout)));
 		}
 		ILDumpFlags(stream, ILField_Attrs(field), ILFieldDefinitionFlags, 0);
-		ILDumpType(stream, info->image, ILField_Type(field),
+		ILDumpType(stream, info->image, ILMember_Signature(field),
 				   IL_DUMP_QUOTE_NAMES);
 		putc(' ', stream);
 		ILDumpIdentifier(stream, ILField_Name(field), 0, IL_DUMP_QUOTE_NAMES);
@@ -226,7 +226,7 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 		CGenOutputAttributes(info, stream, ILToProgramItem(field));
 
 		/* Mark the field's type for later output */
-		CTypeMarkForOutput(info, ILField_Type(field));
+		CTypeMarkForOutput(info, ILMember_Signature(field));
 	}
 
 	/* Output the class footer */

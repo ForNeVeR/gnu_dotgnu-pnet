@@ -832,6 +832,7 @@ ILField *ILAsmFieldCreate(ILClass *classInfo, const char *name,
 			else
 			{
 				/* Convert the MemberRef into a FieldDef */
+				ILMemberSetSignature((ILMember *)field, sig);
 				ILMemberSetAttrs((ILMember *)field,
 								 ~((ILUInt32)0), attributes);
 				if((ILField_Token(field) & IL_META_TOKEN_MASK)

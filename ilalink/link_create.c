@@ -217,7 +217,7 @@ static void ReportUnresolved(ILLinker *linker)
 			else if(ILMember_IsField(member))
 			{
 				ILDumpType(stderr, ILProgramItem_Image(classInfo),
-						   ILField_Type((ILField *)member), 0);
+						   ILFieldGetTypeWithPrefixes((ILField *)member), 0);
 				putc(' ', stderr);
 				ILDumpClassName(stderr, ILProgramItem_Image(classInfo),
 								classInfo, 0);

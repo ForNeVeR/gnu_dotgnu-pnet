@@ -82,7 +82,7 @@ ILNode_CSemAnalysis(ILNode_CMemberField)
 	node->field = field;
 
 	/* Determine if the result is an l-value or an r-value */
-	fieldType = ILField_Type(field);
+	fieldType = ILMember_Signature(field);
 	if(CTypeIsConst(type))
 	{
 		/* Add back the "const" modifier from the struct type */
@@ -365,7 +365,7 @@ ILNode_CSemAnalysis(ILNode_CDerefField)
 	node->field = field;
 
 	/* Determine if the result is an l-value or an r-value */
-	fieldType = ILField_Type(field);
+	fieldType = ILMember_Signature(field);
 	if(CTypeIsConst(structType))
 	{
 		/* Add back the "const" modifier from the struct type */

@@ -971,7 +971,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 				(owner, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
 		{
 			if(!strcmp(ILField_Name(field), name) &&
-			   ILTypeIdentical(ILField_Type(field), signature))
+			   ILTypeIdentical(ILFieldGetTypeWithPrefixes(field), signature))
 			{
 				if(newName)
 				{

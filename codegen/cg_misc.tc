@@ -2695,7 +2695,7 @@ ILNode_EndsInReturnImpl(ILNode_NoPedantic)
 {
 	if(node->expr)
 	{
-		return ILNode_EndsInReturnImpl(node->expr);
+		return ILNode_EndsInReturnImpl(node->expr,info);
 	}
 	else
 	{

@@ -700,7 +700,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 		{
 			/* Add an explicit return instruction if the body didn't */
 			outputLabel = 0;
-			if(!ILNodeEndsInFlowChange(node->body))
+			if(!ILNodeEndsInFlowChange(node->body,info))
 			{
 				if(info->returnLabel != ILLabel_Undefined &&
 				   info->returnType == ILType_Void)
@@ -736,7 +736,7 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 		{
 			/* Add an explicit return instruction if the body didn't */
 			outputLabel = 0;
-			if(!ILNodeEndsInFlowChange(node->body))
+			if(!ILNodeEndsInFlowChange(node->body,info))
 			{
 				if(info->returnLabel != ILLabel_Undefined &&
 				   info->returnType == ILType_Void)

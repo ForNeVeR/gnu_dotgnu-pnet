@@ -486,7 +486,7 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 	{
 		/* Generate a fake return statement to force the function to jump
 		   to the end of the method if control reaches here */
-		if(!ILNodeEndsInFlowChange(body))
+		if(!ILNodeEndsInFlowChange(body,info))
 		{
 			ILNode *node = ILNode_Return_create();
 			ILNode_GenDiscard(node, info);
@@ -537,7 +537,7 @@ void CFunctionOutput(ILGenInfo *info, ILMethod *method, ILNode *body)
 
 	/* Add an explicit return instruction if the body didn't */
 	outputLabel = 0;
-	if(!ILNodeEndsInFlowChange(body))
+	if(!ILNodeEndsInFlowChange(body,info))
 	{
 		if(info->returnLabel != ILLabel_Undefined &&
 		   info->returnType == ILType_Void)

@@ -161,7 +161,7 @@ ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right);
 /*
  * Determine if a statement list ends in a flow control change statement.
  */
-int ILNodeEndsInFlowChange(ILNode *stmt);
+int ILNodeEndsInFlowChange(ILNode *stmt,ILGenInfo *genInfo);
 
 /*
  * Add a break/continue label to a loop or switch statement.
@@ -322,11 +322,11 @@ ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right)
 	}
 }
 
-int ILNodeEndsInFlowChange(ILNode *stmt)
+int ILNodeEndsInFlowChange(ILNode *stmt,ILGenInfo *genInfo)
 {
 	if(stmt)
 	{
-		int flags = ILNode_EndsInReturnImpl(stmt);
+		int flags = ILNode_EndsInReturnImpl(stmt,genInfo);
 		if((flags & (IL_ENDS_IN_RETURN |
 					 IL_ENDS_IN_BREAK |
 					 IL_ENDS_IN_CONTINUE |
@@ -394,7 +394,7 @@ ILNode_EndsInReturnImpl(ILNode_List)
 	ILNode_ListIter_Init(&iter, node);
 	while((child = ILNode_ListIter_Next(&iter)) != 0)
 	{
-		flags2 = ILNode_EndsInReturnImpl(child);
+		flags2 = ILNode_EndsInReturnImpl(child,info);
 		if((flags2 & IL_ENDS_IN_EMPTY) == 0)
 		{
 			flags1 = (flags1 & IL_ENDS_IN_CONTAINED_MASK) | flags2;
@@ -449,7 +449,7 @@ ILNode_GenDiscard(ILNode_If)
 		/* Generate the full case of the "if" */
 		ILNode_GenElse(node->expr, info, &label1);
 		ILNode_GenDiscard(node->thenClause, info);
-		if(!ILNodeEndsInFlowChange(node->thenClause))
+		if(!ILNodeEndsInFlowChange(node->thenClause,info))
 		{
 			ILGenJump(info, IL_OP_BR, &label2);
 		}
@@ -467,7 +467,7 @@ ILNode_EndsInReturnImpl(ILNode_If)
 	int flags1, flags2;
 	if(node->thenClause)
 	{
-		flags1 = ILNode_EndsInReturnImpl(node->thenClause);
+		flags1 = ILNode_EndsInReturnImpl(node->thenClause,info);
 	}
 	else
 	{
@@ -475,7 +475,7 @@ ILNode_EndsInReturnImpl(ILNode_If)
 	}
 	if(node->elseClause)
 	{
-		flags2 = ILNode_EndsInReturnImpl(node->elseClause);
+		flags2 = ILNode_EndsInReturnImpl(node->elseClause,info);
 	}
 	else
 	{
@@ -558,7 +558,7 @@ ILNode_EndsInReturnImpl(ILNode_For)
 		/* This may be an infinite loop: check for a contained "break" */
 		if(node->stmt)
 		{
-			flags = ILNode_EndsInReturnImpl(node->stmt);
+			flags = ILNode_EndsInReturnImpl(node->stmt,info);
 			if((flags & IL_ENDS_IN_CONTAINED_BREAK) != 0)
 			{
 				return 0;
@@ -1533,7 +1533,7 @@ ILNode_EndsInReturnImpl(ILNode_NewScope)
 {
 	if(node->stmt)
 	{
-		return ILNode_EndsInReturnImpl(node->stmt);
+		return ILNode_EndsInReturnImpl(node->stmt,info);
 	}
 	else
 	{
@@ -1865,7 +1865,7 @@ ILNode_EndsInReturnImpl(ILNode_Switch)
 	/* Check that all switch cases end in return statements */
 	if(node->body)
 	{
-		flags = ILNode_EndsInReturnImpl(node->body);
+		flags = ILNode_EndsInReturnImpl(node->body,info);
 	}
 	else
 	{
@@ -1876,7 +1876,7 @@ ILNode_EndsInReturnImpl(ILNode_Switch)
 		{
 			if(section->stmt)
 			{
-				sflags = ILNode_EndsInReturnImpl(section->stmt);
+				sflags = ILNode_EndsInReturnImpl(section->stmt,info);
 			}
 			else
 			{
@@ -2004,7 +2004,7 @@ ILNode_GenDiscard(ILNode_Try)
 	ILNode_GenDiscard(node->stmt, info);
 
 	/* Jump to the end of the "try" statement */
-	if(!ILNodeEndsInFlowChange(node->stmt))
+	if(!ILNodeEndsInFlowChange(node->stmt,info))
 	{
 		ILGenJump(info, IL_OP_LEAVE, &label);
 	}
@@ -2024,7 +2024,7 @@ ILNode_GenDiscard(ILNode_Try)
 		while((clause = ILNode_ListIter_Next(&iter)) != 0)
 		{
 			ILNode_GenDiscard(clause, info);
-			if(!ILNodeEndsInFlowChange(clause))
+			if(!ILNodeEndsInFlowChange(clause,info))
 			{
 				ILGenJump(info, IL_OP_LEAVE, &label);
 			}
@@ -2065,7 +2065,7 @@ ILNode_EndsInReturnImpl(ILNode_Try)
 	/* Check the body of the "try" */
 	if(node->stmt)
 	{
-		flags = ILNode_EndsInReturnImpl(node->stmt);
+		flags = ILNode_EndsInReturnImpl(node->stmt,info);
 	}
 	else
 	{
@@ -2080,7 +2080,7 @@ ILNode_EndsInReturnImpl(ILNode_Try)
 		ILNode_ListIter_Init(&iter, node->catchClauses);
 		while((clause = ILNode_ListIter_Next(&iter)) != 0)
 		{
-			cflags = ILNode_EndsInReturnImpl(clause);
+			cflags = ILNode_EndsInReturnImpl(clause,info);
 			if((cflags & (IL_ENDS_IN_RETURN |
 						  IL_ENDS_IN_BREAK |
 						  IL_ENDS_IN_CONTINUE |
@@ -2152,7 +2152,7 @@ ILNode_EndsInReturnImpl(ILNode_CatchClause)
 {
 	if(node->stmt)
 	{
-		return ILNode_EndsInReturnImpl(node->stmt);
+		return ILNode_EndsInReturnImpl(node->stmt,info);
 	}
 	else
 	{
@@ -2172,7 +2172,7 @@ ILNode_GenDiscard(ILNode_FinallyClause)
 	ILNode_GenDiscard(node->stmt, info);
 	if(info->asmOutput)
 	{
-		if(!ILNodeEndsInFlowChange(node->stmt))
+		if(!ILNodeEndsInFlowChange(node->stmt,info))
 		{
 			ILGenSimple(info, IL_OP_ENDFINALLY);
 		}
@@ -2187,7 +2187,7 @@ ILNode_EndsInReturnImpl(ILNode_FinallyClause)
 {
 	if(node->stmt)
 	{
-		return ILNode_EndsInReturnImpl(node->stmt);
+		return ILNode_EndsInReturnImpl(node->stmt,info);
 	}
 	else
 	{
@@ -2226,7 +2226,7 @@ ILNode_GenDiscard(ILNode_Lock)
 		fputs("\t.try {\n", info->asmOutput);
 	}
 	ILNode_GenDiscard(node->stmt, info);
-	if(!ILNodeEndsInFlowChange(node->stmt))
+	if(!ILNodeEndsInFlowChange(node->stmt,info))
 	{
 		ILGenJump(info, IL_OP_LEAVE, &endLabel);
 	}
@@ -2265,7 +2265,7 @@ ILNode_EndsInReturnImpl(ILNode_Lock)
 {
 	if(node->stmt)
 	{
-		return ILNode_EndsInReturnImpl(node->stmt);
+		return ILNode_EndsInReturnImpl(node->stmt,info);
 	}
 	else
 	{
@@ -2312,7 +2312,7 @@ ILNode_EndsInReturnImpl(ILNode_LineInfo)
 {
 	if(node->stmt)
 	{
-		return ILNode_EndsInReturnImpl(node->stmt);
+		return ILNode_EndsInReturnImpl(node->stmt,info);
 	}
 	else
 	{

@@ -1,4 +1,11 @@
 
+2002-12-28  Gopal.V  <gopalv82@symonds.net>
+	
+	* codegen/cg_decls.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,
+	codegen/cg_stmt.tc, codegen/jv_stmt.tc, cscc/c/c_function.c,
+	cscc/csharp/cs_decls.tc, cscc/csharp/cs_stmt.tc: Add the ILGenInfo
+	parameter to the ILNode_EndsInReturnImpl operation.
+
 2002-12-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/unroll_x86_ptr.c: unroll the "get2d" and "get3d" CVM

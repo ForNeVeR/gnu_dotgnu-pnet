@@ -748,7 +748,8 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 		}
 
 		/* The body must end in some kind of return or jump statement */
-		if(!ILNodeEndsInFlowChange(((ILNode_SwitchSection *)section)->stmt))
+		if(!ILNodeEndsInFlowChange(((ILNode_SwitchSection *)section)->stmt
+									,info))
 		{
 			CCErrorOnLine(yygetfilename(section), yygetlinenum(section),
 						  "`switch' section falls through");
@@ -1594,7 +1595,7 @@ JavaGenDiscard(ILNode_Using)
  */
 ILNode_EndsInReturnImpl(ILNode_Using)
 {
-	return ILNode_EndsInReturnImpl(node->stmt);
+	return ILNode_EndsInReturnImpl(node->stmt,info);
 }
 
 /*
@@ -1629,7 +1630,7 @@ JavaGenDiscard(ILNode_Unsafe)
  */
 ILNode_EndsInReturnImpl(ILNode_Unsafe)
 {
-	return ILNode_EndsInReturnImpl(node->stmt);
+	return ILNode_EndsInReturnImpl(node->stmt,info);
 }
 
 /*
@@ -1735,7 +1736,7 @@ JavaGenDiscard(ILNode_Fixed)
  */
 ILNode_EndsInReturnImpl(ILNode_Fixed)
 {
-	return ILNode_EndsInReturnImpl(node->stmt);
+	return ILNode_EndsInReturnImpl(node->stmt,info);
 }
 
 /*

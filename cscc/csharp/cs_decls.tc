@@ -971,7 +971,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		if(!ILMethod_IsAbstract(node->methodInfo) &&
 		   ILMethod_IsIL(node->methodInfo))
 		{
-			if(!ILNodeEndsInFlowChange(node->body) && !CSMetadataOnly)
+			if(!ILNodeEndsInFlowChange(node->body,info) && !CSMetadataOnly)
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "control reaches end of non-void method");

@@ -137,10 +137,10 @@
 ?L26:
 	ldarg.0
 	stloc.1
-	dup
+	ldloc.1
 	ldc.i4	900
 	bge	?L27
-	dup
+	ldloc.1
 	ldc.i4	500
 	bge	?L28
 	ldloc.1
@@ -171,7 +171,7 @@
 	beq	?L37
 	br	?L33
 ?L27:
-	dup
+	ldloc.1
 	ldc.i4	1300
 	bge	?L38
 	ldloc.1
@@ -313,7 +313,7 @@
 ?L53:
 	ldarg.0
 	stloc.1
-	dup
+	ldloc.1
 	ldc.i4.4
 	conv.i8
 	bge	?L54

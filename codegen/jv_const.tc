@@ -256,14 +256,14 @@ JavaGenValue(ILNode_Float)
 /*
  * Generate "then" or "else" code for floating point constants.
  */
-JavaGenThen(ILNode_Float)
+JavaGenThen(ILNode_Real)
 {
 	if(node->value != (ILDouble)0.0)
 	{
 		JavaGenJump(info, JAVA_OP_GOTO, label);
 	}
 }
-JavaGenElse(ILNode_Float)
+JavaGenElse(ILNode_Real)
 {
 	if(node->value == (ILDouble)0.0)
 	{

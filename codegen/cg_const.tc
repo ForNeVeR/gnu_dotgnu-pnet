@@ -490,14 +490,14 @@ ILNode_GenValue(ILNode_Float)
 /*
  * Generate "then" or "else" code for floating point constants.
  */
-ILNode_GenThen(ILNode_Float)
+ILNode_GenThen(ILNode_Real)
 {
 	if(node->value != (ILDouble)0.0)
 	{
 		ILGenJump(info, IL_OP_BR, label);
 	}
 }
-ILNode_GenElse(ILNode_Float)
+ILNode_GenElse(ILNode_Real)
 {
 	if(node->value == (ILDouble)0.0)
 	{

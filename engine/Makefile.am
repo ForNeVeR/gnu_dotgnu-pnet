@@ -6,11 +6,18 @@ libILEngine_a_SOURCES = call.c \
 						cvm.c \
 						cvmc.c \
 						heap.c \
+						internal.c \
 						layout.c \
+						lib_array.c \
+						lib_decimal.c \
+						lib_object.c \
+						lib_string.c \
 						lookup.c \
 						pinvoke.c \
 						process.c \
+						strapi.c \
 						thread.c \
+						throw.c \
 						verify.c
 
 ilrun_SOURCES = ilrun.c

@@ -41,6 +41,10 @@
 	* runtime/System/Globalization/CompareInfo.cs: implement the
 	"CompareInfo.GetSortKey" method for the invariant culture.
 
+	* I18N/CJK/*, I18N/Common/*, I18N/MidEast/*, I18N/Other/*,
+	I18N/West/*, I18N/tools/cvtcul.sh, I18N/tools/loc2cul.c:
+	add the TextInfo properties to the I18N culture classes.
+
 2003-08-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/Image.cs, System.Drawing/Bitmap.cs,

@@ -153,6 +153,56 @@ public class CID0022 : RootCulture
 		return base.ResolveCountry(name);
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int ANSICodePage
+		{
+			get
+			{
+				return 1251;
+			}
+		}
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+		public override int MacCodePage
+		{
+			get
+			{
+				return 10017;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 866;
+			}
+		}
+		public override String ListSeparator
+		{
+			get
+			{
+				return ";";
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0022
 
 public class CNuk : CID0022

@@ -103,6 +103,49 @@ public class CID0c04 : CID0004
 		}
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int ANSICodePage
+		{
+			get
+			{
+				return 950;
+			}
+		}
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+		public override int MacCodePage
+		{
+			get
+			{
+				return 10002;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 950;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0c04
 
 public class CNzh_hk : CID0c04

@@ -100,6 +100,28 @@ public class CID3009 : CID0009
 		}
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID3009
 
 public class CNen_zw : CID3009

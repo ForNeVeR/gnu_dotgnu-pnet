@@ -87,6 +87,28 @@ public class CID0041 : RootCulture
 		return base.ResolveLanguage(name);
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0041
 
 public class CNsw : CID0041

@@ -276,6 +276,42 @@ public class CID0016 : RootCulture
 		return base.ResolveCountry(name);
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 850;
+			}
+		}
+		public override String ListSeparator
+		{
+			get
+			{
+				return ";";
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0016
 
 public class CNpt : CID0016

@@ -100,6 +100,28 @@ public class CID1009 : CID0009
 		}
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 850;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID1009
 
 public class CNen_ca : CID1009

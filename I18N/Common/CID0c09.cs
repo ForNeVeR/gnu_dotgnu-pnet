@@ -100,6 +100,35 @@ public class CID0c09 : CID0009
 		}
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 850;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0c09
 
 public class CNen_au : CID0c09

@@ -31,6 +31,11 @@ Usage: loc2cul [options] file
 	--iso2 str				Two-letter ISO name
 	--iso3 str				Three-letter ISO name
 	--windows str			Three-letter Windows name
+	--ansi num				ANSI code page number
+	--ebcdic num			EBCDIC code page number
+	--mac num				Mac code page number
+	--oem num				OEM code page number
+	--separator str			List separator
 
 */
 
@@ -49,6 +54,11 @@ static char *iso2 = 0;
 static char *iso3 = 0;
 static char *windows = 0;
 static const char *filename = 0;
+static int ansiCP = 1252;
+static int ebcdicCP = 37;
+static int macCP = 10000;
+static int oemCP = 437;
+static const char *separator = ",";
 
 /*
  * Forward declarations.
@@ -114,6 +124,36 @@ int main(int argc, char *argv[])
 		else if(!strcmp(argv[1], "--root"))
 		{
 			isRoot = 1;
+		}
+		else if(!strcmp(argv[1], "--ansi") && argc > 2)
+		{
+			ansiCP = strtol(argv[2], NULL, 0);
+			++argv;
+			--argc;
+		}
+		else if(!strcmp(argv[1], "--ebcdic") && argc > 2)
+		{
+			ebcdicCP = strtol(argv[2], NULL, 0);
+			++argv;
+			--argc;
+		}
+		else if(!strcmp(argv[1], "--mac") && argc > 2)
+		{
+			macCP = strtol(argv[2], NULL, 0);
+			++argv;
+			--argc;
+		}
+		else if(!strcmp(argv[1], "--oem") && argc > 2)
+		{
+			oemCP = strtol(argv[2], NULL, 0);
+			++argv;
+			--argc;
+		}
+		else if(!strcmp(argv[1], "--separator") && argc > 2)
+		{
+			separator = argv[2];
+			++argv;
+			--argc;
 		}
 		++argv;
 		--argc;
@@ -1294,6 +1334,84 @@ static void printLanguageResolvers(void)
 }
 
 /*
+ * Print the TextInfo object.
+ */
+static void printTextInfo()
+{
+	/* If none of the TextInfo property values are different, then bail out */
+	if(ansiCP == 1252 && ebcdicCP == 37 && macCP == 10000 &&
+	   oemCP == 437 && !strcmp(separator, ","))
+	{
+		return;
+	}
+
+	/* Output the definition of the private TextInfo class */
+	printf("\tprivate class PrivateTextInfo : _I18NTextInfo\n");
+	printf("\t{\n");
+	printf("\t\tpublic PrivateTextInfo(int culture) : base(culture) {}\n\n");
+	if(ansiCP != 1252)
+	{
+		printf("\t\tpublic override int ANSICodePage\n");
+		printf("\t\t{\n");
+		printf("\t\t\tget\n");
+		printf("\t\t\t{\n");
+		printf("\t\t\t\treturn %d;\n", ansiCP);
+		printf("\t\t\t}\n");
+		printf("\t\t}\n");
+	}
+	if(ebcdicCP != 37)
+	{
+		printf("\t\tpublic override int EBCDICCodePage\n");
+		printf("\t\t{\n");
+		printf("\t\t\tget\n");
+		printf("\t\t\t{\n");
+		printf("\t\t\t\treturn %d;\n", ebcdicCP);
+		printf("\t\t\t}\n");
+		printf("\t\t}\n");
+	}
+	if(macCP != 10000)
+	{
+		printf("\t\tpublic override int MacCodePage\n");
+		printf("\t\t{\n");
+		printf("\t\t\tget\n");
+		printf("\t\t\t{\n");
+		printf("\t\t\t\treturn %d;\n", macCP);
+		printf("\t\t\t}\n");
+		printf("\t\t}\n");
+	}
+	if(oemCP != 437)
+	{
+		printf("\t\tpublic override int OEMCodePage\n");
+		printf("\t\t{\n");
+		printf("\t\t\tget\n");
+		printf("\t\t\t{\n");
+		printf("\t\t\t\treturn %d;\n", oemCP);
+		printf("\t\t\t}\n");
+		printf("\t\t}\n");
+	}
+	if(strcmp(separator, ",") != 0)
+	{
+		printf("\t\tpublic override String ListSeparator\n");
+		printf("\t\t{\n");
+		printf("\t\t\tget\n");
+		printf("\t\t\t{\n");
+		printf("\t\t\t\treturn \"%s\";\n", separator);
+		printf("\t\t\t}\n");
+		printf("\t\t}\n");
+	}
+	printf("\n\t}; // class PrivateTextInfo\n\n");
+
+	/* Output the definition of the "TextInfo" property */
+	printf("\tpublic override TextInfo TextInfo\n");
+	printf("\t{\n");
+	printf("\t\tget\n");
+	printf("\t\t{\n");
+	printf("\t\t\treturn new PrivateTextInfo(LCID);\n");
+	printf("\t\t}\n");
+	printf("\t}\n\n");
+}
+
+/*
  * Print the definition of the culture, using the loaded locale rules.
  */
 static void printDefinition(void)
@@ -1301,4 +1419,5 @@ static void printDefinition(void)
 	printDateTimeFormat();
 	printNumberFormat();
 	printLanguageResolvers();
+	printTextInfo();
 }

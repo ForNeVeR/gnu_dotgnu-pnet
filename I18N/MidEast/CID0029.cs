@@ -115,6 +115,56 @@ public class CID0029 : RootCulture
 		}
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int ANSICodePage
+		{
+			get
+			{
+				return 1256;
+			}
+		}
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 20420;
+			}
+		}
+		public override int MacCodePage
+		{
+			get
+			{
+				return 10004;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 720;
+			}
+		}
+		public override String ListSeparator
+		{
+			get
+			{
+				return ";";
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0029
 
 public class CNfa : CID0029

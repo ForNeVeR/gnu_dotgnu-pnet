@@ -153,6 +153,42 @@ public class CID002a : RootCulture
 		return base.ResolveCountry(name);
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int ANSICodePage
+		{
+			get
+			{
+				return 1258;
+			}
+		}
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 1258;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID002a
 
 public class CNvi : CID002a

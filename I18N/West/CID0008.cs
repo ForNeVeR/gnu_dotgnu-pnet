@@ -228,6 +228,56 @@ public class CID0008 : RootCulture
 		return base.ResolveCountry(name);
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int ANSICodePage
+		{
+			get
+			{
+				return 1253;
+			}
+		}
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 20273;
+			}
+		}
+		public override int MacCodePage
+		{
+			get
+			{
+				return 10006;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 737;
+			}
+		}
+		public override String ListSeparator
+		{
+			get
+			{
+				return ";";
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0008
 
 public class CNel : CID0008

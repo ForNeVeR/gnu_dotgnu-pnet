@@ -40,6 +40,7 @@ ${LOC2CUL} --region Common --root --name root \
 
 ${LOC2CUL} --region Other --id 0x0036 --name af \
 	--iso2 af --iso3 afr --windows AFK \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ',' \
 	Other/af.txt >Other/CID0036.cs
 
 ${LOC2CUL} --region Other --id 0x0436 --name af-ZA \
@@ -49,6 +50,7 @@ ${LOC2CUL} --region Other --id 0x0436 --name af-ZA \
 
 ${LOC2CUL} --region MidEast --id 0x0001 --name ar \
 	--iso2 ar --iso3 ara --windows ARA \
+	--ansi 1256 --ebcdic 20420 --mac 10004 --oem 720 --separator ';' \
 	MidEast/ar.txt >MidEast/CID0001.cs
 
 ${LOC2CUL} --region MidEast --id 0x3801 --name ar-AE \
@@ -118,6 +120,7 @@ ${LOC2CUL} --region MidEast --id 0x3801 --name ar-YE \
 
 ${LOC2CUL} --region Other --id 0x0023 --name be \
 	--iso2 be --iso3 bel --windows BEL \
+	--ansi 1251 --ebcdic 500 --mac 10007 --oem 866 --separator ';' \
 	Other/be.txt >Other/CID0023.cs
 
 ${LOC2CUL} --region Other --id 0x0423 --name be-BY \
@@ -127,6 +130,7 @@ ${LOC2CUL} --region Other --id 0x0423 --name be-BY \
 
 ${LOC2CUL} --region West --id 0x0002 --name bg \
 	--iso2 bg --iso3 bul --windows BGR \
+	--ansi 1251 --ebcdic 20420 --mac 10007 --oem 866 --separator ';' \
 	West/bg.txt >West/CID0002.cs
 
 ${LOC2CUL} --region West --id 0x0402 --name bg-BG \
@@ -136,6 +140,7 @@ ${LOC2CUL} --region West --id 0x0402 --name bg-BG \
 
 ${LOC2CUL} --region West --id 0x0003 --name ca \
 	--iso2 ca --iso3 cat --windows CAT \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ';' \
 	West/ca.txt >West/CID0003.cs
 
 ${LOC2CUL} --region West --id 0x0403 --name ca-ES \
@@ -145,6 +150,7 @@ ${LOC2CUL} --region West --id 0x0403 --name ca-ES \
 
 ${LOC2CUL} --region West --id 0x0005 --name cs \
 	--iso2 cs --iso3 ces --windows CSY \
+	--ansi 1250 --ebcdic 500 --mac 10029 --oem 852 --separator ';' \
 	West/cs.txt >West/CID0005.cs
 
 ${LOC2CUL} --region West --id 0x0405 --name cs-CZ \
@@ -154,6 +160,7 @@ ${LOC2CUL} --region West --id 0x0405 --name cs-CZ \
 
 ${LOC2CUL} --region West --id 0x0006 --name da \
 	--iso2 da --iso3 dan --windows DAN \
+	--ansi 1252 --ebcdic 20277 --mac 10000 --oem 850 --separator ';' \
 	West/da.txt >West/CID0006.cs
 
 ${LOC2CUL} --region West --id 0x0406 --name da-DK \
@@ -163,6 +170,7 @@ ${LOC2CUL} --region West --id 0x0406 --name da-DK \
 
 ${LOC2CUL} --region West --id 0x0007 --name de \
 	--iso2 de --iso3 deu --windows DEU \
+	--ansi 1252 --ebcdic 20273 --mac 10000 --oem 850 --separator ';' \
 	West/de.txt >West/CID0007.cs
 
 ${LOC2CUL} --region West --id 0x0C07 --name de-AT \
@@ -184,6 +192,7 @@ ${LOC2CUL} --region West --id 0x1007 --name de-LU \
 
 ${LOC2CUL} --region West --id 0x0008 --name el \
 	--iso2 el --iso3 ell --windows ELL \
+	--ansi 1253 --ebcdic 20273 --mac 10006 --oem 737 --separator ';' \
 	West/el.txt >West/CID0008.cs
 
 ${LOC2CUL} --region West --id 0x0408 --name el-GR \
@@ -193,30 +202,37 @@ ${LOC2CUL} --region West --id 0x0408 --name el-GR \
 
 ${LOC2CUL} --region Common --id 0x0009 --name en \
 	--iso2 en --iso3 eng --windows ENU \
+	--ansi 1252 --ebcdic 37 --mac 10000 --oem 437 --separator ',' \
 	Common/en.txt >Common/CID0009.cs
 
 ${LOC2CUL} --region Common --id 0x0C09 --name en-AU \
 	--windows ENA \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ',' \
 	Common/en_AU.txt >Common/CID0c09.cs
 
 ${LOC2CUL} --region Common --id 0x1009 --name en-CA \
 	--windows ENC \
+	--ansi 1252 --ebcdic 37 --mac 10000 --oem 850 --separator ',' \
 	Common/en_CA.txt >Common/CID1009.cs
 
 ${LOC2CUL} --region Common --id 0x0809 --name en-GB \
 	--windows ENG \
+	--ansi 1252 --ebcdic 20285 --mac 10000 --oem 850 --separator ',' \
 	Common/en_GB.txt >Common/CID0809.cs
 
 ${LOC2CUL} --region Common --id 0x1809 --name en-IE \
 	--windows ENI \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ',' \
 	Common/en_IE.txt >Common/CID1809.cs
 
 ${LOC2CUL} --region Common --id 0x1409 --name en-NZ \
 	--windows ENZ \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ',' \
 	Common/en_NZ.txt >Common/CID1409.cs
 
 ${LOC2CUL} --region Common --id 0x3409 --name en-PH \
 	--windows ENP \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 437 --separator ',' \
 	Common/en_PH.txt >Common/CID3409.cs
 
 ${LOC2CUL} --region Common --id 0x0409 --name en-US \
@@ -224,98 +240,121 @@ ${LOC2CUL} --region Common --id 0x0409 --name en-US \
 
 ${LOC2CUL} --region Common --id 0x1C09 --name en-ZA \
 	--windows ENS \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 437 --separator ',' \
 	Common/en_ZA.txt >Common/CID1c09.cs
 
 ${LOC2CUL} --region Common --id 0x3009 --name en-ZW \
 	--windows ENW \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 437 --separator ',' \
 	Common/en_ZW.txt >Common/CID3009.cs
 
 # Spanish
 
 ${LOC2CUL} --region West --id 0x000A --name es \
 	--iso2 es --iso3 spa --windows ESP \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ';' \
 	West/es.txt >West/CID000a.cs
 
 ${LOC2CUL} --region West --id 0x2C0A --name es-AR \
 	--windows ESS \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_AR.txt >West/CID2c0a.cs
 
 ${LOC2CUL} --region West --id 0x400A --name es-BO \
 	--windows ESB \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_BO.txt >West/CID400a.cs
 
 ${LOC2CUL} --region West --id 0x340A --name es-CL \
 	--windows ESL \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_CL.txt >West/CID340a.cs
 
 ${LOC2CUL} --region West --id 0x240A --name es-CO \
 	--windows ESO \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_CO.txt >West/CID240a.cs
 
 ${LOC2CUL} --region West --id 0x140A --name es-CR \
 	--windows ESC \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_CR.txt >West/CID140a.cs
 
 ${LOC2CUL} --region West --id 0x1C0A --name es-DO \
 	--windows ESD \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_DO.txt >West/CID1c0a.cs
 
 ${LOC2CUL} --region West --id 0x300A --name es-EC \
 	--windows ESF \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_EC.txt >West/CID300a.cs
 
 ${LOC2CUL} --region West --id 0x0C0A --name es-ES \
 	--windows ESN \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ';' \
 	West/es_ES.txt >West/CID0c0a.cs
 
 ${LOC2CUL} --region West --id 0x100A --name es-GT \
 	--windows ESG \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_GT.txt >West/CID100a.cs
 
 ${LOC2CUL} --region West --id 0x480A --name es-HN \
 	--windows ESH \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_HN.txt >West/CID480a.cs
 
 ${LOC2CUL} --region West --id 0x080A --name es-MX \
 	--windows ESM \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_MX.txt >West/CID080a.cs
 
 ${LOC2CUL} --region West --id 0x4C0A --name es-NI \
 	--windows ESI \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_NI.txt >West/CID4c0a.cs
 
 ${LOC2CUL} --region West --id 0x180A --name es-PA \
 	--windows ESA \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_PA.txt >West/CID180a.cs
 
 ${LOC2CUL} --region West --id 0x280A --name es-PE \
 	--windows ESR \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_PE.txt >West/CID280a.cs
 
 ${LOC2CUL} --region West --id 0x500A --name es-PR \
 	--windows ESU \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_PR.txt >West/CID500a.cs
 
 ${LOC2CUL} --region West --id 0x3C0A --name es-PY \
 	--windows ESZ \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_PY.txt >West/CID3c0a.cs
 
 ${LOC2CUL} --region West --id 0x440A --name es-SV \
 	--windows ESE \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_SV.txt >West/CID440a.cs
 
 ${LOC2CUL} --region West --id 0x380A --name es-UY \
 	--windows ESY \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_UY.txt >West/CID380a.cs
 
 ${LOC2CUL} --region West --id 0x200A --name es-VE \
 	--windows ESV \
+	--ansi 1252 --ebcdic 20284 --mac 10000 --oem 850 --separator ',' \
 	West/es_VE.txt >West/CID200a.cs
 
 # Estonian
 
 ${LOC2CUL} --region Other --id 0x0025 --name et \
 	--iso2 et --iso3 est --windows ETI \
+	--ansi 1257 --ebcdic 500 --mac 10029 --oem 775 --separator ';' \
 	Other/et.txt >Other/CID0025.cs
 
 ${LOC2CUL} --region Other --id 0x0425 --name et-EE \
@@ -325,6 +364,7 @@ ${LOC2CUL} --region Other --id 0x0425 --name et-EE \
 
 ${LOC2CUL} --region West --id 0x002D --name eu \
 	--iso2 eu --iso3 eus --windows EUQ \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ';' \
 	West/eu.txt >West/CID002D.cs
 
 ${LOC2CUL} --region West --id 0x042D --name eu-ES \
@@ -334,6 +374,7 @@ ${LOC2CUL} --region West --id 0x042D --name eu-ES \
 
 ${LOC2CUL} --region MidEast --id 0x0029 --name fa \
 	--iso2 fa --iso3 fas --windows FAR \
+	--ansi 1256 --ebcdic 20420 --mac 10004 --oem 720 --separator ';' \
 	MidEast/fa.txt >MidEast/CID0029.cs
 
 ${LOC2CUL} --region MidEast --id 0x0429 --name fa-IR \
@@ -343,6 +384,7 @@ ${LOC2CUL} --region MidEast --id 0x0429 --name fa-IR \
 
 ${LOC2CUL} --region West --id 0x000B --name fi \
 	--iso2 fi --iso3 fin --windows FIN \
+	--ansi 1252 --ebcdic 20278 --mac 10000 --oem 850 --separator ';' \
 	West/fi.txt >West/CID000b.cs
 
 ${LOC2CUL} --region West --id 0x040B --name fi-FI \
@@ -352,6 +394,7 @@ ${LOC2CUL} --region West --id 0x040B --name fi-FI \
 
 ${LOC2CUL} --region Other --id 0x0038 --name fo \
 	--iso2 fo --iso3 fao --windows FOS \
+	--ansi 1252 --ebcdic 20277 --mac 10079 --oem 850 --separator ';' \
 	Other/fo.txt >Other/CID0038.cs
 
 ${LOC2CUL} --region Other --id 0x0438 --name fo-FO \
@@ -361,6 +404,7 @@ ${LOC2CUL} --region Other --id 0x0438 --name fo-FO \
 
 ${LOC2CUL} --region West --id 0x000C --name fr \
 	--iso2 fr --iso3 fra --windows FRA \
+	--ansi 1252 --ebcdic 20297 --mac 10000 --oem 850 --separator ';' \
 	West/fr.txt >West/CID000c.cs
 
 ${LOC2CUL} --region West --id 0x080C --name fr-BE \
@@ -386,6 +430,7 @@ ${LOC2CUL} --region West --id 0x140C --name fr-LU \
 
 ${LOC2CUL} --region West --id 0x0056 --name gl \
 	--iso2 gl --iso3 glg --windows GLC \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ',' \
 	West/gl.txt >West/CID0056.cs
 
 ${LOC2CUL} --region West --id 0x0456 --name gl-ES \
@@ -395,6 +440,7 @@ ${LOC2CUL} --region West --id 0x0456 --name gl-ES \
 
 ${LOC2CUL} --region Other --id 0x0047 --name gu \
 	--iso2 gu --iso3 guj --windows GUJ \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/gu.txt >Other/CID0047.cs
 
 ${LOC2CUL} --region Other --id 0x0447 --name gu-IN \
@@ -404,6 +450,7 @@ ${LOC2CUL} --region Other --id 0x0447 --name gu-IN \
 
 ${LOC2CUL} --region MidEast --id 0x000D --name he \
 	--iso2 he --iso3 heb --windows HEB \
+	--ansi 1255 --ebcdic 500 --mac 10005 --oem 862 --separator ',' \
 	MidEast/he.txt >MidEast/CID000d.cs
 
 ${LOC2CUL} --region MidEast --id 0x040D --name he-IL \
@@ -413,6 +460,7 @@ ${LOC2CUL} --region MidEast --id 0x040D --name he-IL \
 
 ${LOC2CUL} --region Other --id 0x0039 --name hi \
 	--iso2 hi --iso3 hin --windows HIN \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/hi.txt >Other/CID0039.cs
 
 ${LOC2CUL} --region Other --id 0x0439 --name hi-IN \
@@ -422,6 +470,7 @@ ${LOC2CUL} --region Other --id 0x0439 --name hi-IN \
 
 ${LOC2CUL} --region Other --id 0x001A --name hr \
 	--iso2 hr --iso3 hrv --windows HRV \
+	--ansi 1250 --ebcdic 500 --mac 10082 --oem 852 --separator ';' \
 	Other/hr.txt >Other/CID001a.cs
 
 ${LOC2CUL} --region Other --id 0x041A --name hr-HR \
@@ -431,6 +480,7 @@ ${LOC2CUL} --region Other --id 0x041A --name hr-HR \
 
 ${LOC2CUL} --region West --id 0x000E --name hu \
 	--iso2 hu --iso3 hun --windows HUN \
+	--ansi 1250 --ebcdic 500 --mac 10029 --oem 852 --separator ';' \
 	West/hu.txt >West/CID000e.cs
 
 ${LOC2CUL} --region West --id 0x040E --name hu-HU \
@@ -440,6 +490,7 @@ ${LOC2CUL} --region West --id 0x040E --name hu-HU \
 
 ${LOC2CUL} --region Other --id 0x002B --name hy \
 	--iso2 hy --iso3 hye --windows HYE \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/hy.txt >Other/CID002b.cs
 
 ${LOC2CUL} --region Other --id 0x042B --name hy-AM \
@@ -449,6 +500,7 @@ ${LOC2CUL} --region Other --id 0x042B --name hy-AM \
 
 ${LOC2CUL} --region Other --id 0x0021 --name id \
 	--iso2 id --iso3 ind --windows IND \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ';' \
 	Other/id.txt >Other/CID0021.cs
 
 ${LOC2CUL} --region Other --id 0x0421 --name id-ID \
@@ -458,6 +510,7 @@ ${LOC2CUL} --region Other --id 0x0421 --name id-ID \
 
 ${LOC2CUL} --region West --id 0x000F --name is \
 	--iso2 is --iso3 isl --windows ISL \
+	--ansi 1252 --ebcdic 20871 --mac 10079 --oem 850 --separator ';' \
 	West/is.txt >West/CID000f.cs
 
 ${LOC2CUL} --region West --id 0x040F --name is-IS \
@@ -467,10 +520,12 @@ ${LOC2CUL} --region West --id 0x040F --name is-IS \
 
 ${LOC2CUL} --region West --id 0x0010 --name it \
 	--iso2 it --iso3 ita --windows ITA \
+	--ansi 1252 --ebcdic 20280 --mac 10000 --oem 850 --separator ';' \
 	West/it.txt >West/CID0010.cs
 
 ${LOC2CUL} --region West --id 0x0810 --name it-CH \
 	--windows ITS \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ';' \
 	West/it_CH.txt >West/CID0810.cs
 
 ${LOC2CUL} --region West --id 0x0410 --name it-IT \
@@ -480,6 +535,7 @@ ${LOC2CUL} --region West --id 0x0410 --name it-IT \
 
 ${LOC2CUL} --region CJK --id 0x0011 --name ja \
 	--iso2 ja --iso3 jpn --windows JPN \
+	--ansi 932 --ebcdic 20290 --mac 10001 --oem 932 --separator ',' \
 	CJK/ja.txt >CJK/CID0011.cs
 
 ${LOC2CUL} --region CJK --id 0x0411 --name ja-JP \
@@ -489,6 +545,7 @@ ${LOC2CUL} --region CJK --id 0x0411 --name ja-JP \
 
 ${LOC2CUL} --region Other --id 0x004B --name kn \
 	--iso2 kn --iso3 kan --windows KAN \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/kn.txt >Other/CID004b.cs
 
 ${LOC2CUL} --region Other --id 0x044B --name kn-IN \
@@ -498,6 +555,7 @@ ${LOC2CUL} --region Other --id 0x044B --name kn-IN \
 
 ${LOC2CUL} --region Other --id 0x0057 --name kok \
 	--iso2 kok --iso3 kok --windows KNK \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/kok.txt >Other/CID0057.cs
 
 ${LOC2CUL} --region Other --id 0x0457 --name kok-IN \
@@ -507,6 +565,7 @@ ${LOC2CUL} --region Other --id 0x0457 --name kok-IN \
 
 ${LOC2CUL} --region CJK --id 0x0012 --name ko \
 	--iso2 ko --iso3 kor --windows KOR \
+	--ansi 949 --ebcdic 20833 --mac 10003 --oem 949 --separator ',' \
 	CJK/ko.txt >CJK/CID0012.cs
 
 ${LOC2CUL} --region CJK --id 0x0412 --name ko-KR \
@@ -516,6 +575,7 @@ ${LOC2CUL} --region CJK --id 0x0412 --name ko-KR \
 
 ${LOC2CUL} --region Other --id 0x0027 --name lt \
 	--iso2 lt --iso3 lit --windows LTH \
+	--ansi 1257 --ebcdic 500 --mac 10029 --oem 775 --separator ';' \
 	Other/lt.txt >Other/CID0027.cs
 
 ${LOC2CUL} --region Other --id 0x0427 --name lt-LT \
@@ -525,6 +585,7 @@ ${LOC2CUL} --region Other --id 0x0427 --name lt-LT \
 
 ${LOC2CUL} --region Other --id 0x0026 --name lv \
 	--iso2 lv --iso3 lav --windows LVI \
+	--ansi 1257 --ebcdic 500 --mac 10029 --oem 775 --separator ';' \
 	Other/lv.txt >Other/CID0026.cs
 
 ${LOC2CUL} --region Other --id 0x0426 --name lv-LV \
@@ -534,6 +595,7 @@ ${LOC2CUL} --region Other --id 0x0426 --name lv-LV \
 
 ${LOC2CUL} --region Other --id 0x002F --name mk \
 	--iso2 mk --iso3 mkd --windows MKI \
+	--ansi 1251 --ebcdic 500 --mac 10007 --oem 866 --separator ';' \
 	Other/mk.txt >Other/CID002f.cs
 
 ${LOC2CUL} --region Other --id 0x042F --name mk-MK \
@@ -543,6 +605,7 @@ ${LOC2CUL} --region Other --id 0x042F --name mk-MK \
 
 ${LOC2CUL} --region Other --id 0x004e --name mr \
 	--iso2 mr --iso3 mar --windows MAR \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/mr.txt >Other/CID004e.cs
 
 ${LOC2CUL} --region Other --id 0x044E --name mr-IN \
@@ -552,6 +615,7 @@ ${LOC2CUL} --region Other --id 0x044E --name mr-IN \
 
 ${LOC2CUL} --region West --id 0x0014 --name no --alias no-NO \
 	--iso2 no --iso3 nor --windows NOR \
+	--ansi 1252 --ebcdic 20277 --mac 10000 --oem 850 --separator ';' \
 	West/no.txt >West/CID0014.cs
 
 ${LOC2CUL} --region West --id 0x0414 --name nb-NO --alias nb \
@@ -566,6 +630,7 @@ ${LOC2CUL} --region West --id 0x0814 --name nn-NO --alias nn \
 
 ${LOC2CUL} --region West --id 0x0013 --name nl \
 	--iso2 nl --iso3 nld --windows NLD \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ';' \
 	West/nl.txt >West/CID0013.cs
 
 ${LOC2CUL} --region West --id 0x0813 --name nl-BE \
@@ -579,6 +644,7 @@ ${LOC2CUL} --region West --id 0x0413 --name nl-NL \
 
 ${LOC2CUL} --region West --id 0x0015 --name pl \
 	--iso2 pl --iso3 pol --windows PLK \
+	--ansi 1250 --ebcdic 20880 --mac 10029 --oem 852 --separator ';' \
 	West/pl.txt >West/CID0015.cs
 
 ${LOC2CUL} --region West --id 0x0415 --name pl-PL \
@@ -588,6 +654,7 @@ ${LOC2CUL} --region West --id 0x0415 --name pl-PL \
 
 ${LOC2CUL} --region West --id 0x0016 --name pt \
 	--iso2 pt --iso3 por --windows PTB \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 850 --separator ';' \
 	West/pt.txt >West/CID0016.cs
 
 ${LOC2CUL} --region West --id 0x0416 --name pt-BR \
@@ -601,6 +668,7 @@ ${LOC2CUL} --region West --id 0x0816 --name pt-PT \
 
 ${LOC2CUL} --region West --id 0x0018 --name ro \
 	--iso2 ro --iso3 ron --windows ROM \
+	--ansi 1250 --ebcdic 20880 --mac 10029 --oem 852 --separator ';' \
 	West/ro.txt >West/CID0018.cs
 
 ${LOC2CUL} --region West --id 0x0418 --name ro-RO \
@@ -610,6 +678,7 @@ ${LOC2CUL} --region West --id 0x0418 --name ro-RO \
 
 ${LOC2CUL} --region Other --id 0x0019 --name ru \
 	--iso2 ru --iso3 rus --windows RUS \
+	--ansi 1251 --ebcdic 20880 --mac 10007 --oem 866 --separator ';' \
 	Other/ru.txt >Other/CID0019.cs
 
 ${LOC2CUL} --region Other --id 0x0419 --name ru-RU \
@@ -619,6 +688,7 @@ ${LOC2CUL} --region Other --id 0x0419 --name ru-RU \
 
 ${LOC2CUL} --region West --id 0x001B --name sk \
 	--iso2 sk --iso3 slk --windows SKY \
+	--ansi 1250 --ebcdic 20880 --mac 10029 --oem 852 --separator ';' \
 	West/sk.txt >West/CID001b.cs
 
 ${LOC2CUL} --region West --id 0x041B --name sk-SK \
@@ -628,6 +698,7 @@ ${LOC2CUL} --region West --id 0x041B --name sk-SK \
 
 ${LOC2CUL} --region Other --id 0x0024 --name sl \
 	--iso2 sl --iso3 slv --windows SLV \
+	--ansi 1250 --ebcdic 20880 --mac 10029 --oem 852 --separator ';' \
 	Other/sl.txt >Other/CID0024.cs
 
 ${LOC2CUL} --region Other --id 0x0424 --name sl-SI \
@@ -637,6 +708,7 @@ ${LOC2CUL} --region Other --id 0x0424 --name sl-SI \
 
 ${LOC2CUL} --region Other --id 0x001C --name sq \
 	--iso2 sq --iso3 sqi --windows SQI \
+	--ansi 1250 --ebcdic 20880 --mac 10029 --oem 852 --separator ';' \
 	Other/sq.txt >Other/CID001c.cs
 
 ${LOC2CUL} --region Other --id 0x041C --name sq-AL \
@@ -646,6 +718,7 @@ ${LOC2CUL} --region Other --id 0x041C --name sq-AL \
 
 ${LOC2CUL} --region West --id 0x001D --name sv \
 	--iso2 sv --iso3 swe --windows SVE \
+	--ansi 1252 --ebcdic 20278 --mac 10000 --oem 850 --separator ';' \
 	West/sv.txt >West/CID001d.cs
 
 ${LOC2CUL} --region West --id 0x041D --name sv-SE \
@@ -659,6 +732,7 @@ ${LOC2CUL} --region West --id 0x081D --name sv-FI \
 
 ${LOC2CUL} --region Other --id 0x0041 --name sw \
 	--iso2 sw --iso3 swa --windows SWK \
+	--ansi 1252 --ebcdic 500 --mac 10000 --oem 437 --separator ',' \
 	Other/sw.txt >Other/CID0041.cs
 
 ${LOC2CUL} --region Other --id 0x0441 --name sw-KE \
@@ -668,6 +742,7 @@ ${LOC2CUL} --region Other --id 0x0441 --name sw-KE \
 
 ${LOC2CUL} --region Other --id 0x0049 --name ta \
 	--iso2 ta --iso3 tam --windows TAM \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/ta.txt >Other/CID0049.cs
 
 ${LOC2CUL} --region Other --id 0x0449 --name ta-IN \
@@ -677,6 +752,7 @@ ${LOC2CUL} --region Other --id 0x0449 --name ta-IN \
 
 ${LOC2CUL} --region Other --id 0x004A --name te \
 	--iso2 te --iso3 tel --windows TEL \
+	--ansi 0 --ebcdic 500 --mac 2 --oem 1 --separator ',' \
 	Other/te.txt >Other/CID004a.cs
 
 ${LOC2CUL} --region Other --id 0x044A --name te-IN \
@@ -686,6 +762,7 @@ ${LOC2CUL} --region Other --id 0x044A --name te-IN \
 
 ${LOC2CUL} --region Other --id 0x001E --name th \
 	--iso2 th --iso3 tha --windows THA \
+	--ansi 874 --ebcdic 20838 --mac 10021 --oem 874 --separator ',' \
 	Other/th.txt >Other/CID001e.cs
 
 ${LOC2CUL} --region Other --id 0x041E --name th-TH \
@@ -695,6 +772,7 @@ ${LOC2CUL} --region Other --id 0x041E --name th-TH \
 
 ${LOC2CUL} --region MidEast --id 0x001F --name tr \
 	--iso2 tr --iso3 tur --windows TRK \
+	--ansi 1254 --ebcdic 20905 --mac 10081 --oem 857 --separator ';' \
 	MidEast/tr.txt >MidEast/CID001f.cs
 
 ${LOC2CUL} --region MidEast --id 0x041F --name tr-TR \
@@ -704,6 +782,7 @@ ${LOC2CUL} --region MidEast --id 0x041F --name tr-TR \
 
 ${LOC2CUL} --region Other --id 0x0022 --name uk \
 	--iso2 uk --iso3 ukr --windows UKR \
+	--ansi 1251 --ebcdic 500 --mac 10017 --oem 866 --separator ';' \
 	Other/uk.txt >Other/CID0022.cs
 
 ${LOC2CUL} --region Other --id 0x0422 --name uk-UA \
@@ -713,6 +792,7 @@ ${LOC2CUL} --region Other --id 0x0422 --name uk-UA \
 
 ${LOC2CUL} --region Other --id 0x002A --name vi \
 	--iso2 vi --iso3 vie --windows VIT \
+	--ansi 1258 --ebcdic 500 --mac 10000 --oem 1258 --separator ',' \
 	Other/vi.txt >Other/CID002a.cs
 
 ${LOC2CUL} --region Other --id 0x042A --name vi-VN \
@@ -722,25 +802,31 @@ ${LOC2CUL} --region Other --id 0x042A --name vi-VN \
 
 ${LOC2CUL} --region CJK --id 0x0004 --name zh --alias zh-CHS \
 	--iso2 zh --iso3 zho --windows CHS \
+	--ansi 936 --ebcdic 500 --mac 10008 --oem 936 --separator ',' \
 	CJK/zh.txt >CJK/CID0004.cs
 
 ${LOC2CUL} --region CJK --id 0x0804 --name zh-CN \
+	--ansi 936 --ebcdic 500 --mac 10008 --oem 936 --separator ',' \
 	CJK/zh_CN.txt >CJK/CID0804.cs
 
 ${LOC2CUL} --region CJK --id 0x0C04 --name zh-HK \
 	--windows ZHH \
+	--ansi 950 --ebcdic 500 --mac 10002 --oem 950 --separator ',' \
 	CJK/zh_HK.txt >CJK/CID0c04.cs
 
 ${LOC2CUL} --region CJK --id 0x1404 --name zh-MO \
 	--windows ZHM \
+	--ansi 950 --ebcdic 500 --mac 10002 --oem 950 --separator ',' \
 	CJK/zh_MO.txt >CJK/CID1404.cs
 
 ${LOC2CUL} --region CJK --id 0x1004 --name zh-SG \
 	--windows ZHI \
+	--ansi 936 --ebcdic 500 --mac 10008 --oem 936 --separator ',' \
 	CJK/zh_SG.txt >CJK/CID1004.cs
 
 ${LOC2CUL} --region CJK --id 0x0404 --name zh-TW --alias zh-CHT \
 	--windows CHT \
+	--ansi 950 --ebcdic 500 --mac 10002 --oem 950 --separator ',' \
 	CJK/zh_TW.txt >CJK/CID0404.cs
 
 exit 0

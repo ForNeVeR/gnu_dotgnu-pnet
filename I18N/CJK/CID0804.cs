@@ -105,6 +105,49 @@ public class CID0804 : CID0004
 		return base.ResolveCountry(name);
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int ANSICodePage
+		{
+			get
+			{
+				return 936;
+			}
+		}
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 500;
+			}
+		}
+		public override int MacCodePage
+		{
+			get
+			{
+				return 10008;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 936;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0804
 
 public class CNzh_cn : CID0804

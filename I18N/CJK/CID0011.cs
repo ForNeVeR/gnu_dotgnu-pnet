@@ -468,6 +468,49 @@ public class CID0011 : RootCulture
 		return base.ResolveCountry(name);
 	}
 
+	private class PrivateTextInfo : _I18NTextInfo
+	{
+		public PrivateTextInfo(int culture) : base(culture) {}
+
+		public override int ANSICodePage
+		{
+			get
+			{
+				return 932;
+			}
+		}
+		public override int EBCDICCodePage
+		{
+			get
+			{
+				return 20290;
+			}
+		}
+		public override int MacCodePage
+		{
+			get
+			{
+				return 10001;
+			}
+		}
+		public override int OEMCodePage
+		{
+			get
+			{
+				return 932;
+			}
+		}
+
+	}; // class PrivateTextInfo
+
+	public override TextInfo TextInfo
+	{
+		get
+		{
+			return new PrivateTextInfo(LCID);
+		}
+	}
+
 }; // class CID0011
 
 public class CNja : CID0011

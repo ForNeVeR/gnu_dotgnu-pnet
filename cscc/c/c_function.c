@@ -781,6 +781,7 @@ void CFunctionWeakAlias(ILGenInfo *info, const char *name, ILNode *node,
 	ILDumpMethodType(stream, info->image, signature,
 					 IL_DUMP_QUOTE_NAMES, 0, 0, 0);
 	fprintf(stream, " '%s-alias'\n", name);
+	fputs("\ttail.\n", stream);
 	fputs("\tcalli\t", stream);
 	ILDumpMethodType(stream, info->image, signature,
 					 IL_DUMP_QUOTE_NAMES, 0, "", 0);
@@ -855,6 +856,7 @@ void CFunctionStrongAlias(ILGenInfo *info, const char *name, ILNode *node,
 	{
 		fprintf(stream, "\tldarg\t%lu\n", paramNum);
 	}
+	fputs("\ttail.\n", stream);
 	fputs("\tcall\t", stream);
 	ILDumpMethodType(stream, info->image, signature,
 					 IL_DUMP_QUOTE_NAMES, 0, aliasFor, 0);

@@ -556,7 +556,7 @@ case IL_OP_NEWARR:
 	if(classType != 0 &&
 	   (STK_UNARY == ILEngineType_I || STK_UNARY == ILEngineType_I4))
 	{
-		classType = ILTypeCreateArray
+		classType = ILTypeFindOrCreateArray
 				(ILImageToContext(ILProgramItem_Image(method)), 1, classType);
 		if(!classType)
 		{

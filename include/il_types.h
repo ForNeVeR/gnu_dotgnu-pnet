@@ -295,6 +295,15 @@ ILType *ILTypeCreateArray(ILContext *context, unsigned long rank,
 						  ILType *elem);
 
 /*
+ * Create an array type after first checking for a matching synthetic
+ * class.  This is more memory efficient than "ILTypeCreateArray",
+ * but can only be used when "elem" won't change.  Returns NULL if
+ * out of memory.
+ */
+ILType *ILTypeFindOrCreateArray(ILContext *context, unsigned long rank,
+						        ILType *elem);
+
+/*
  * Set the size for a particular array dimension.
  */
 void ILTypeSetSize(ILType *array, unsigned long dimension, long value);

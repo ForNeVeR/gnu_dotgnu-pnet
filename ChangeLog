@@ -1,4 +1,13 @@
 
+2003-07-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_array.c, engine/lookup.c, engine/verify_ptr.c,
+	image/meta_types.c, include/il_types.h: add the function
+	"ILTypeFindOrCreateArray", which will attempt to locate an
+	array type in the synthetic hash before creating a new one;
+	this is used to prevent unlimited memory growth in loop bodies
+	that allocate arrays.
+
 2003-07-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.c: disable the PPC register assignment temporarily.

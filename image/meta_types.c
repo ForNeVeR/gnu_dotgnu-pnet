@@ -49,6 +49,10 @@ ILType *ILTypeCreateArray(ILContext *context, unsigned long rank,
 		{
 			elem = type;
 			type = ILMemPoolCalloc(&(context->typePool), ILType);
+			if(!type)
+			{
+				return 0;
+			}
 			type->kind__ = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
 			type->un.array__.elemType__ = elem;
 			type->un.array__.size__ = 0;
@@ -57,6 +61,46 @@ ILType *ILTypeCreateArray(ILContext *context, unsigned long rank,
 		}
 	}
 	return type;
+}
+
+ILType *ILTypeFindOrCreateArray(ILContext *context, unsigned long rank,
+						        ILType *elem)
+{
+	ILType *type;
+	ILType dims[8];
+	unsigned long index;
+	ILClass *info;
+
+	/* Bail out if too many dimensions to be worth checking */
+	if(rank > 8)
+	{
+		return ILTypeCreateArray(context, rank, elem);
+	}
+
+	/* Create a pseudo type on the stack, for performing hash lookups */
+	ILMemZero(dims, sizeof(ILType) * rank);
+	for(index = 0; index < (rank - 1); ++index)
+	{
+		dims[index].kind__ = IL_TYPE_COMPLEX_ARRAY_CONTINUE;
+		dims[index].un.array__.elemType__ = &(dims[index + 1]);
+		dims[index].un.array__.size__ = 0;
+		dims[index].un.array__.lowBound__ = 0;
+	}
+	dims[index].kind__ = IL_TYPE_COMPLEX_ARRAY;
+	dims[index].un.array__.elemType__ = elem;
+	dims[index].un.array__.size__ = 0;
+	dims[index].un.array__.lowBound__ = 0;
+	type = &(dims[0]);
+
+	/* Look for the type in the synthetic hash */
+	info = ILHashFindType(context->syntheticHash, type, ILClass);
+	if(info)
+	{
+		return info->synthetic;
+	}
+
+	/* Create the type for the first time */
+	return ILTypeCreateArray(context, rank, elem);
 }
 
 void ILTypeSetSize(ILType *array, unsigned long dimension, long value)

@@ -2396,8 +2396,8 @@ ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
 
 	/* Create the array type and class structures */
 	elemType = ILClassToType((ILClass *)elementType);
-	type = ILTypeCreateArray(thread->process->context, (unsigned long)rank,
-							 elemType);
+	type = ILTypeFindOrCreateArray
+				(thread->process->context, (unsigned long)rank, elemType);
 	if(!type)
 	{
 		ILExecThreadThrowOutOfMemory(thread);
@@ -2614,8 +2614,16 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 	/* Create the array type and class structures */
 	rank = lengths->length;
 	elemType = ILClassToType((ILClass *)elementType);
-	type = ILTypeCreateArray(thread->process->context, (unsigned long)rank,
-							 elemType);
+	if(lowerBounds)
+	{
+		type = ILTypeCreateArray
+				(thread->process->context, (unsigned long)rank, elemType);
+	}
+	else
+	{
+		type = ILTypeFindOrCreateArray
+				(thread->process->context, (unsigned long)rank, elemType);
+	}
 	if(!type)
 	{
 		ILExecThreadThrowOutOfMemory(thread);

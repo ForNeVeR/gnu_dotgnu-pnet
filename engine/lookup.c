@@ -290,7 +290,8 @@ ILType *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 			type = ILExecThreadLookupType(thread, typeName);
 			if(type != ILType_Invalid)
 			{
-				return ILTypeCreateArray(thread->process->context, 1, type);
+				return ILTypeFindOrCreateArray
+					(thread->process->context, 1, type);
 			}
 		}
 		break;
@@ -310,7 +311,8 @@ ILType *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 			type = ILExecThreadLookupType(thread, typeName + 1);
 			if(type != ILType_Invalid)
 			{
-				return ILTypeCreateArray(thread->process->context, len, type);
+				return ILTypeFindOrCreateArray
+					(thread->process->context, len, type);
 			}
 		}
 		break;

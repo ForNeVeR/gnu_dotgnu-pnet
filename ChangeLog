@@ -1,4 +1,13 @@
 
+2004-11-25  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/runtime/System/TestString.cs: Fix tests comparing upper and lower
+	case chars.
+
+	* tests/runtime/System/Globalization/SuiteGlobalization.cs,
+	tests/runtime/System/Globalization/TestCompareInfo.cs: Add tests for
+	CompareInfo class.
+
 2004-11-24  Neil Cawse  <neilcawse@geotab.com>
 
 	* Basic/File.cs, Basic/Information.cs, Basic/S.cs, Basic/Strings.cs,

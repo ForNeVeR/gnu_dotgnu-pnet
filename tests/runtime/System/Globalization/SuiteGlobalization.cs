@@ -30,6 +30,7 @@ public class SuiteGlobalization
 				suite.AddTests(typeof(TestGregorianCalendar));
 				suite.AddTests(typeof(TestHebrewCalendar));
 				//suite.AddTests(typeof(TestJulianCalendar)); -- TODO
+				suite.AddTests(typeof(TestCompareInfo));
 				return suite;
 			}
 

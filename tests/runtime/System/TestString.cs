@@ -85,8 +85,8 @@ public class TestString : TestCase
 		Assert("String.Compare(\"abc\",\"ABC\",false)",
 			String.Compare("abc","ABC",false) != 0);
 
-		Assert("String.Compare(\"a\",\"A\")",String.Compare("a","A") > 0);
-		Assert("String.Compare(\"A\",\"a\")",String.Compare("A","a") < 0);
+		Assert("String.Compare(\"a\",\"A\")",String.Compare("a","A") < 0);
+		Assert("String.Compare(\"A\",\"a\")",String.Compare("A","a") > 0);
 	
 		AssertEquals("String.Compare(\"\",\"\")",String.Compare("",""),0);
 

@@ -1,4 +1,11 @@
-2003-07-06  Thong Nguyhen <tum@veridicus.com>
+2003-07-07  Thong Nguyen <tum@veridicus.com>
+	
+	* support/wakeup.c: Prevent ILWakeupWait from waiting on the
+	condvar if the wakeup object is already at its limit to fix
+	a race condition that can occur if wakeup objects are registered
+	& subsequently signalled before ILWakeupWait is called.
+		
+2003-07-06  Thong Nguyen <tum@veridicus.com>
 
 	* engine/lib_thread.c: Fixed monitor locking mismatch bug under
 	Linux.

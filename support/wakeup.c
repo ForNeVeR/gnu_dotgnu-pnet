@@ -95,7 +95,14 @@ int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms, void **object)
 	if(!(wakeup->interrupted))
 	{
 		/* Give up the lock and wait for someone to signal us */
-		if(_ILCondVarTimedWait(&(wakeup->condition), &(wakeup->lock), ms))
+
+		/* But first make sure someone hasn't already signalled us
+		   between the time we registered the wakeup and the time
+		   we called ILWakeupWait (if a signal was sent we would
+		   have missed it). */
+		   
+		if(wakeup->count >= wakeup->limit
+			|| _ILCondVarTimedWait(&(wakeup->condition), &(wakeup->lock), ms))
 		{
 			if(wakeup->interrupted)
 			{

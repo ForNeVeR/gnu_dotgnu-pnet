@@ -146,7 +146,6 @@ ILObject *_ILGetClrTypeForILType(ILExecThread *thread, ILType *type)
 	/* Convert the type into an "ILClass" structure */
 	classInfo = ILClassFromType(ILProgramItem_Image(thread->method),
 								0, type, 0);
-	
 	classInfo = ILClassResolve(classInfo);
 
 	/* Get the "ClrType" object for the "ILClass" structure */
@@ -1272,6 +1271,7 @@ static ILString *GetTypeName(ILExecThread *thread, ILObject *_this,
 			ILExecThreadThrowOutOfMemory(thread);
 			return 0;
 		}
+		elemInfo = ILClassResolve(elemInfo);
 	}
 
 	/* Compute the size of the full name */
@@ -1399,6 +1399,7 @@ ILString *_IL_ClrType_GetClrNamespace(ILExecThread *thread, ILObject *_this)
 				ILExecThreadThrowOutOfMemory(thread);
 				return 0;
 			}
+			classInfo = ILClassResolve(classInfo);
 		}
 
 		/* Find the outermost type in the nesting levels, to

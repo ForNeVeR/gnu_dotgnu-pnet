@@ -8,6 +8,11 @@
 	* cscc/csharp/cs_invoke.tc (VarArgElemSem): replace the
 	"null" type with "System.Object" in vararg parameter lists.
 
+	* engine/box.c, engine/lib_array.c, engine/lib_misc.c,
+	engine/lib_type.c, engine/verify_ptr.c: call ILClassResolve
+	after ILClassFromType to ensure that class pointers point
+	at the real definition, and not a reference.
+
 2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_task.c:

@@ -2409,6 +2409,7 @@ ILObject *_IL_Array_CreateArray_jiiii(ILExecThread *thread,
 		ILExecThreadThrowOutOfMemory(thread);
 		return 0;
 	}
+	classInfo = ILClassResolve(classInfo);
 
 	/* Compute the element size */
 	elemSize = ILSizeOfType(thread, elemType);
@@ -2626,6 +2627,7 @@ ILObject *_IL_Array_CreateArray_jaiai(ILExecThread *thread,
 		ILExecThreadThrowOutOfMemory(thread);
 		return 0;
 	}
+	classInfo = ILClassResolve(classInfo);
 
 	/* Compute the element size */
 	elemSize = ILSizeOfType(thread, elemType);

@@ -568,6 +568,7 @@ case IL_OP_NEWARR:
 		{
 			VERIFY_MEMORY_ERROR();
 		}
+		classInfo = ILClassResolve(classInfo);
 		ILCoderNewArray(coder, classType, classInfo, STK_UNARY);
 		stack[stackSize - 1].engineType = ILEngineType_O;
 		stack[stackSize - 1].typeInfo = classType;

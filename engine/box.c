@@ -40,6 +40,7 @@ ILObject *ILExecThreadBox(ILExecThread *thread, ILType *type, void *ptr)
 			ILExecThreadThrowOutOfMemory(thread);
 			return 0;
 		}
+		classInfo = ILClassResolve(classInfo);
 		typeSize = ILSizeOfType(thread, type);
 		object = (ILObject *)_ILEngineAlloc(thread, classInfo, typeSize);
 		if(object)
@@ -69,6 +70,7 @@ ILObject *ILExecThreadBoxFloat(ILExecThread *thread, ILType *type, void *ptr)
 			ILExecThreadThrowOutOfMemory(thread);
 			return 0;
 		}
+		classInfo = ILClassResolve(classInfo);
 		typeSize = ILSizeOfType(thread, type);
 		object = (ILObject *)_ILEngineAlloc(thread, classInfo, typeSize);
 		if(object)

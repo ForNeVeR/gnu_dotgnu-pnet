@@ -400,6 +400,7 @@ ILTypedRef _IL_TypedReference_ClrMakeTypedReference(ILExecThread *_thread,
 		classInfo = ILClassFromType
 			(ILContextNextImage(_thread->process->context, 0),
 			 0, ILField_Type(field), 0);
+		classInfo = ILClassResolve(classInfo);
 		if(!classInfo ||
 		   (index < (flds->length - 1) && !ILClassIsValueType(classInfo)))
 		{

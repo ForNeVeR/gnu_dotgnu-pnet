@@ -1,0 +1,28 @@
+Name: pnetlib
+Version: @VERSION@
+Release: custom
+Source: http://www.southern-storm.com.au/download/%{name}-%{version}.tar.gz
+License: GPL
+Vendor: DotGNU
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
+Group: System/Emulators
+BuildRequires: pnet-interpreter
+Summary: The DotGNU Portable.NET library
+BuildArch: noarch
+%description
+This is the standard library of the Portable.Net platform . It is 
+built according to the ECMA specification for BCL . (Ecma-334).
+
+%prep
+%setup -q
+%build
+%configure
+make
+%install
+make DESTDIR=${RPM_BUILD_ROOT} install
+%clean
+if test "/" != "${RPM_BUILD_ROOT}"; then rm -rf ${RPM_BUILD_ROOT}; fi
+
+%files
+%doc AUTHORS COPYING ChangeLog INSTALL NEWS README
+/usr/lib/cscc/lib/*

@@ -227,6 +227,7 @@ resources/en_US/I18N/Makefile
 resources/en_US/System/Makefile
 resources/en_US/System.Xml/Makefile
 tools/run_test.sh
-tools/csccwrap.sh])
+tools/csccwrap.sh
+pnetlib.spec])
 
 chmod +x "${srcdir}/tools/csccwrap.sh"

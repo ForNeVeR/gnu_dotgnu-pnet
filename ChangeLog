@@ -1,4 +1,8 @@
 
+2002-11-24  Gopal.V  <gopalv82@symonds.net>
+
+	* pnetlib.spec.in, configure.in : RPM builds for pnetlib
+
 2002-11-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/mklist.sh: remove "-" from the "sed" command lines because

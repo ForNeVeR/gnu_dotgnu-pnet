@@ -14,6 +14,11 @@
 	* csant/csant_task.c: adjust the pathnames for <delete>, <mkdir>,
 	and <copy> to include the base directory.
 
+	* cscc/csharp/cs_lookup.c (AddMember): check to see if a member
+	is already in a lookup results list before adding it again, to
+	avoid problems when the same interface is included along multiple
+	paths.
+
 2003-02-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MemberRef): report "unresolved external

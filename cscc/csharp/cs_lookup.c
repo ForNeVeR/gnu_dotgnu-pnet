@@ -81,7 +81,23 @@ static void AddMember(CSMemberLookupInfo *results,
 					  ILProgramItem *member, ILClass *owner,
 					  int kind)
 {
-	CSMemberInfo *info = (CSMemberInfo *)ILMalloc(sizeof(CSMemberInfo));
+	CSMemberInfo *info;
+
+	/* Check to make sure that the member isn't already in the list.
+	   This can happen when the same member is located along different
+	   paths in an interface inheritance hierarchy */
+	info = results->members;
+	while(info != 0)
+	{
+		if(info->member == member)
+		{
+			return;
+		}
+		info = info->next;
+	}
+
+	/* Add the new member to the list */
+	info = (CSMemberInfo *)ILMalloc(sizeof(CSMemberInfo));
 	if(!info)
 	{
 		CCOutOfMemory();

@@ -55,6 +55,7 @@ extern	"C" {
 #define	IL_LOADFLAG_NO_RESOLVE		8	/* Don't resolve external references */
 #define	IL_LOADFLAG_INSECURE		16	/* Loaded from an insecure source */
 #define	IL_LOADFLAG_NO_MAP			32	/* Don't use mmap to load image */
+#define	IL_LOADFLAG_IN_PLACE		64	/* Memory load: execute in place */
 
 /*
  * Image types.
@@ -191,6 +192,18 @@ int ILImageLoad(FILE *file, const char *filename, ILContext *context,
  */
 int ILImageLoadFromFile(const char *filename, ILContext *context,
 						ILImage **image, int flags, int printErrors);
+
+/*
+ * Load an IL image from a memory buffer.  Returns a load error.
+ * IL_LOADFLAG_IN_PLACE can be used to execute directly from the
+ * supplied buffer, without making a copy first.  The caller is
+ * responsible for ensuring that the buffer persists for the
+ * lifetime of the image.  "filename" is optional: it is used
+ * for error reporting and to indicate the load directory.
+ */
+int ILImageLoadFromMemory(const void *buffer, unsigned long bufLen,
+						  ILContext *context, ILImage **image,
+						  int flags, const char *filename);
 
 /*
  * Load an assembly by name into an existing context, relative

@@ -25,12 +25,50 @@ extern	"C" {
 #endif
 
 /*
+ * Input context.
+ */
+typedef struct _tagILInputContext ILInputContext;
+struct _tagILInputContext
+{
+	FILE		   *stream;
+	const char	   *buffer;
+	unsigned long	bufLen;
+	int (*readFunc)(ILInputContext *ctx, void *buf, unsigned len);
+};
+
+/*
+ * Stdio-based read operation.
+ */
+static int StdioRead(ILInputContext *ctx, void *buf, unsigned len)
+{
+	return (int)fread(buf, 1, len, ctx->stream);
+}
+
+/*
+ * Memory-based read operation.
+ */
+static int MemoryRead(ILInputContext *ctx, void *buf, unsigned len)
+{
+	if(len < ctx->bufLen)
+	{
+		len = (unsigned)(ctx->bufLen);
+	}
+	if(len > 0)
+	{
+		ILMemCpy(buf, ctx->buffer, len);
+		ctx->buffer += len;
+		ctx->bufLen -= len;
+	}
+	return (int)len;
+}
+
+/*
  * Seek to a particular offset within a stream by reading
  * and discarding data.  This is designed to work on streams
  * that may not necessarily be file-based.  Returns zero if
  * the seek failed.
  */
-static int SeekWithinStream(FILE *file, char *buffer,
+static int SeekWithinStream(ILInputContext *ctx, char *buffer,
 							unsigned long currentOffset,
 							unsigned long destOffset)
 {
@@ -45,7 +83,7 @@ static int SeekWithinStream(FILE *file, char *buffer,
 		{
 			size = (unsigned)(destOffset - currentOffset);
 		}
-		if(fread(buffer, 1, size, file) != size)
+		if((*(ctx->readFunc))(ctx, buffer, size) != (int)size)
 		{
 			return 0;
 		}
@@ -112,14 +150,14 @@ void _ILImageFreeMemory(ILImage *image)
 	{
 		ILUnmapFileFromMemory(image->mapAddress, image->mapLength);
 	}
-	else if(image->data)
+	else if(image->data && !(image->inPlace))
 	{
 		ILFree(image->data);
 	}
 }
 
-int ILImageLoad(FILE *file, const char *filename,
-				ILContext *context, ILImage **image, int flags)
+static int ImageLoad(ILInputContext *ctx, const char *filename,
+					 ILContext *context, ILImage **image, int flags)
 {
 	char buffer[1024];
 	int isDLL;
@@ -147,6 +185,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	char *data;
 	unsigned char *runtimeHdr;
 	int isMapped;
+	int isInPlace;
 	void *mapAddress;
 	unsigned long mapLength;
 	int error;
@@ -154,14 +193,14 @@ int ILImageLoad(FILE *file, const char *filename,
 	/* Read the first 2 bytes and look for either an MS-DOS
 	   stub (executables and DLL's), or the beginning of a
 	   PE/COFF header (object files) */
-	if(fread(buffer, 1, 2, file) != 2)
+	if((*(ctx->readFunc))(ctx, buffer, 2) != 2)
 	{
 		return IL_LOADERR_TRUNCATED;
 	}
 	if(buffer[0] == 'M' && buffer[1] == 'Z')
 	{
 		/* Read the MS-DOS stub and find the start of the PE header */
-		if(fread(buffer + 2, 1, 62, file) != 62)
+		if((*(ctx->readFunc))(ctx, buffer + 2, 62) != 62)
 		{
 			return IL_LOADERR_TRUNCATED;
 		}
@@ -171,12 +210,12 @@ int ILImageLoad(FILE *file, const char *filename,
 		{
 			return IL_LOADERR_BACKWARDS;
 		}
-		if(!SeekWithinStream(file, buffer, offset, base))
+		if(!SeekWithinStream(ctx, buffer, offset, base))
 		{
 			return IL_LOADERR_TRUNCATED;
 		}
 		offset = base;
-		if(fread(buffer, 1, 4, file) != 4)
+		if((*(ctx->readFunc))(ctx, buffer, 4) != 4)
 		{
 			return IL_LOADERR_TRUNCATED;
 		}
@@ -186,7 +225,7 @@ int ILImageLoad(FILE *file, const char *filename,
 		{
 			return IL_LOADERR_NOT_PE;
 		}
-		if(fread(buffer, 1, 20, file) != 20)
+		if((*(ctx->readFunc))(ctx, buffer, 20) != 20)
 		{
 			return IL_LOADERR_TRUNCATED;
 		}
@@ -195,7 +234,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	else if(buffer[0] == (char)0x4C && buffer[1] == (char)0x01)
 	{
 		/* This is an i386 PE/COFF object file: read the rest of the header */
-		if(fread(buffer + 2, 1, 18, file) != 18)
+		if((*(ctx->readFunc))(ctx, buffer + 2, 18) != 18)
 		{
 			return IL_LOADERR_TRUNCATED;
 		}
@@ -208,13 +247,21 @@ int ILImageLoad(FILE *file, const char *filename,
 	{
 		/* This looks like a Java ".class" or ".jar" file, which
 		   we need to pass off to "_ILImageJavaLoad" to handle */
-		return _ILImageJavaLoad(file, filename, context, image, flags, buffer);
+		if(ctx->stream)
+		{
+			return _ILImageJavaLoad(ctx->stream, filename, context,
+									image, flags, buffer);
+		}
+		else
+		{
+			return IL_LOADERR_NOT_PE;
+		}
 	}
 #endif
 	else if(buffer[0] == '!' && buffer[1] == '<')
 	{
 		/* This may be an "ar" archive file: read the rest of the header */
-		if(fread(buffer, 1, 6, file) != 6)
+		if((*(ctx->readFunc))(ctx, buffer, 6) != 6)
 		{
 			return IL_LOADERR_NOT_PE;
 		}
@@ -248,7 +295,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	   the data directory information for the IL runtime header */
 	if(headerSize != 0)
 	{
-		if(fread(buffer, 1, headerSize, file) != headerSize)
+		if((*(ctx->readFunc))(ctx, buffer, headerSize) != headerSize)
 		{
 			return IL_LOADERR_TRUNCATED;
 		}
@@ -290,7 +337,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	tlsSize = 0;
 	while(numSections > 0)
 	{
-		if(fread(buffer, 1, 40, file) != 40)
+		if((*(ctx->readFunc))(ctx, buffer, 40) != 40)
 		{
 			_ILFreeSectionMap(map);
 			return IL_LOADERR_TRUNCATED;
@@ -389,7 +436,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	}
 
 	/* Seek to the beginning of the first section */
-	if(!SeekWithinStream(file, buffer, offset, minAddress))
+	if(!SeekWithinStream(ctx, buffer, offset, minAddress))
 	{
 		_ILFreeSectionMap(map);
 		return IL_LOADERR_TRUNCATED;
@@ -400,10 +447,20 @@ int ILImageLoad(FILE *file, const char *filename,
 	   there is too much variation in how compilers lay out binaries.
 	   In particular, the IL bytecode can be pretty much anywhere */
 	if((flags & IL_LOADFLAG_NO_MAP) == 0 &&
-	   ILMapFileToMemory(fileno(file), minAddress, maxAddress,
+	   ILMapFileToMemory(fileno(ctx->stream), minAddress, maxAddress,
 					     &mapAddress, &mapLength, &data))
 	{
 		isMapped = 1;
+		isInPlace = 0;
+	}
+	else if(!(ctx->stream) && (flags & IL_LOADFLAG_IN_PLACE) != 0)
+	{
+		/* Execute directly from the supplied buffer */
+		data = (char *)(ctx->buffer);
+		isMapped = 0;
+		mapAddress = 0;
+		mapLength = 0;
+		isInPlace = 1;
 	}
 	else
 	{
@@ -413,7 +470,7 @@ int ILImageLoad(FILE *file, const char *filename,
 			_ILFreeSectionMap(map);
 			return IL_LOADERR_MEMORY;
 		}
-		if(fread(data, 1, maxAddress - minAddress, file) !=
+		if((*(ctx->readFunc))(ctx, data, maxAddress - minAddress) !=
 					(maxAddress - minAddress))
 		{
 			ILFree(data);
@@ -423,6 +480,7 @@ int ILImageLoad(FILE *file, const char *filename,
 		isMapped = 0;
 		mapAddress = 0;
 		mapLength = 0;
+		isInPlace = 0;
 	}
 
 	/* Adjust the section map to account for the new location of the program */
@@ -510,7 +568,7 @@ int ILImageLoad(FILE *file, const char *filename,
 		{
 			ILUnmapFileFromMemory(mapAddress, mapLength);
 		}
-		else
+		else if(!isInPlace)
 		{
 			ILFree(data);
 		}
@@ -527,7 +585,7 @@ int ILImageLoad(FILE *file, const char *filename,
 			{
 				ILUnmapFileFromMemory(mapAddress, mapLength);
 			}
-			else
+			else if(!isInPlace)
 			{
 				ILFree(data);
 			}
@@ -541,6 +599,7 @@ int ILImageLoad(FILE *file, const char *filename,
 	(*image)->hadNative = hadNative;
 	(*image)->only32Bit = only32Bit;
 	(*image)->mapped = isMapped;
+	(*image)->inPlace = isInPlace;
 	(*image)->map = map;
 	(*image)->data = data;
 	(*image)->len = (maxAddress - minAddress);
@@ -568,6 +627,17 @@ int ILImageLoad(FILE *file, const char *filename,
 
 	/* The image is loaded and ready to go */
 	return 0;
+}
+
+int ILImageLoad(FILE *file, const char *filename,
+				ILContext *context, ILImage **image, int flags)
+{
+	ILInputContext ctx;
+	ctx.stream = file;
+	ctx.buffer = 0;
+	ctx.bufLen = 0;
+	ctx.readFunc = StdioRead;
+	return ImageLoad(&ctx, filename, context, image, flags);
 }
 
 int ILImageLoadFromFile(const char *filename, ILContext *context,
@@ -617,6 +687,19 @@ int ILImageLoadFromFile(const char *filename, ILContext *context,
 
 	/* Done */
 	return loadError;
+}
+
+int ILImageLoadFromMemory(const void *buffer, unsigned long bufLen,
+						  ILContext *context, ILImage **image,
+						  int flags, const char *filename)
+{
+	ILInputContext ctx;
+	ctx.stream = 0;
+	ctx.buffer = (const char *)buffer;
+	ctx.bufLen = bufLen;
+	ctx.readFunc = MemoryRead;
+	return ImageLoad(&ctx, filename, context,
+					 image, flags | IL_LOADFLAG_NO_MAP);
 }
 
 void *ILImageMapAddress(ILImage *image, unsigned long address)

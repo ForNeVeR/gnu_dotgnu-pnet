@@ -153,6 +153,7 @@ struct _tagILImage
 	int				hadNative : 1;	/* Non-zero if image had native code */
 	int				only32Bit : 1;	/* Non-zero if image is 32-bit only */
 	int				mapped : 1;		/* Non-zero if mmap used to load image */
+	int				inPlace : 1;	/* Non-zero if in-place execution */
 	int				strRefBig : 1;	/* Non-zero if STRREF's are 32-bit */
 	int				blobRefBig : 1;	/* Non-zero if BLOBREF's are 32-bit */
 	int				guidRefBig : 1;	/* Non-zero if GUIDREF's are 32-bit */

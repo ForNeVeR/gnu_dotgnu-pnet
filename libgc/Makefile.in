@@ -157,7 +157,7 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 MAKEOVERRIDES = 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/$gc_basedir/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/$(gc_basedir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 

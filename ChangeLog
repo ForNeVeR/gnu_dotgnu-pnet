@@ -1,4 +1,9 @@
 
+2002-12-28  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/STAThreadAttribute.cs: Add this attribute for 
+	compatibility reasons.
+
 2002-12-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Exception.cs, runtime/System/SystemException.cs:

@@ -1290,9 +1290,6 @@ void ILApplyUnaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 	ILNode_UnaryExpression *unary = (ILNode_UnaryExpression *)node;
 	InsertPrimitive(info, unary->expr, &(unary->expr),
 					oper->intype1->valueType);
-
-	/* Insert a primitive type cast to adjust the result */
-	InsertPrimitive(info, node, parent, oper->outtype->valueType);
 }
 
 const ILOperator *ILFindBinaryOperator(const ILOperator *table,
@@ -1617,9 +1614,6 @@ void ILApplyBinaryOperator(ILGenInfo *info, ILNode *node, ILNode **parent,
 					oper->intype1->valueType);
 	InsertPrimitive(info, binary->expr2, &(binary->expr2),
 					oper->intype2->valueType);
-
-	/* Insert a primitive type cast to adjust the result */
-	InsertPrimitive(info, node, parent, oper->outtype->valueType);
 }
 
 int ILIsBuiltinNumeric(ILType *type)

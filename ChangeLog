@@ -3,6 +3,9 @@
 
 	* support/spawn.c: report signals from spawned child processes.
 
+	* codegen/cg_optable.c: do not insert primitive type coercions
+	into the result of an operator, as the type is already final.
+
 2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_ainit.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

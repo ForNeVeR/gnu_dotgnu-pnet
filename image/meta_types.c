@@ -1111,6 +1111,35 @@ int ILTypeDelegateSignatureMatch(ILType *type, void *_method)
 	return 1;
 }
 
+int ILTypeIsDelegateSubClass(ILType *type)
+{
+	if(ILType_IsClass(type))
+	{
+		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
+		const char *namespace;
+		ILImage *systemImage;
+		while(classInfo != 0)
+		{
+			namespace = ILClass_Namespace(classInfo);
+			if(namespace && !strcmp(namespace, "System") &&
+			   !strcmp(ILClass_Name(classInfo), "Delegate"))
+			{
+				/* Check that it is within the system image, to prevent
+				   applications from fooling us into believing that their
+				   own class is the system's Delegate class */
+				systemImage = classInfo->programItem.image
+						->context->systemImage;
+				if(!systemImage || systemImage == classInfo->programItem.image)
+				{
+					return 1;
+				}
+			}
+			classInfo = ILClass_Parent(classInfo);
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

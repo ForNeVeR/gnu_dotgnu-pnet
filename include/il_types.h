@@ -512,7 +512,7 @@ int ILTypeIsEnum(ILType *type);
 int ILTypeIsValue(ILType *type);
 
 /*
- * Determine if a type is a delegate.
+ * Determine if a type is a delegate class with an "Invoke" method.
  */
 int ILTypeIsDelegate(ILType *type);
 
@@ -527,6 +527,11 @@ void *ILTypeGetDelegateMethod(ILType *type);
  * type and a particular method.
  */
 int ILTypeDelegateSignatureMatch(ILType *type, void *method);
+
+/*
+ * Determine if a type is "System.Delegate" or a subclass.
+ */
+int ILTypeIsDelegateSubClass(ILType *type);
 
 #ifdef	__cplusplus
 };

@@ -13,6 +13,10 @@
 
 	* csupport/Markers.cs: define the "StrongAliasFor" attribute class.
 
+	* image/marshal.c, image/meta_types.c, include/il_types.h:
+	detect PInvoke'd delegates correctly even if a supertype like
+	"Delegate" or "MulticastDelegate" is supplied as the parameter.
+
 2002-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_misc.tc: implement array initializers in "new"

@@ -113,7 +113,7 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 		/* Value string type */
 		return StringCharSet(pinvoke, method);
 	}
-	else if(ILTypeIsDelegate(type))
+	else if(ILTypeIsDelegateSubClass(type))
 	{
 		/* Delegate type */
 		return IL_META_MARSHAL_FNPTR;

@@ -575,7 +575,7 @@ public class Control : IWin32Window
 						{
 							defaultFont = new Font
 								(new FontFamily
-									(GenericFontFamilies.SansSerif), 12.0f);
+									(GenericFontFamilies.SansSerif), 9.0f);
 						}
 						return defaultFont;
 					}
@@ -4464,11 +4464,7 @@ public class Control : IWin32Window
 
 	// Toolkit event that is emitted for a key character event.
 	bool IToolkitEventSink.ToolkitKeyChar(char charCode)
-			{
-				// MS Doesnt pass Delete through keypress
-				if(charCode == (char)127)
-					return true;
-							
+			{			
 				// Create a fake key character message and dispatch it.
 				Message m = Message.CreateKeyMessage
 					(Win32Constants.WM_CHAR, (Keys)(int)charCode);
@@ -4486,7 +4482,7 @@ public class Control : IWin32Window
 				 int clicks, int x, int y, int delta)
 		 	{
 				currentModifiers = (Keys)modifiers;
-				if (GetStyle(ControlStyles.Selectable))
+				if (GetStyle(ControlStyles.Selectable) && enabled)
 					Focus();
 				if (Enabled)
 					OnMouseDown(new MouseEventArgs

@@ -239,7 +239,7 @@ ILString *_IL_SocketMethods_GetErrnoMessage(ILExecThread *thread, ILInt32 error)
  */
 ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread *thread, ILInt64 host)
 {
-	unsigned char value[8];
+	unsigned char volatile value[8];
 	value[0] = (unsigned char)(host >> 56);
 	value[1] = (unsigned char)(host >> 48);
 	value[2] = (unsigned char)(host >> 40);
@@ -256,7 +256,7 @@ ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread *thread, ILInt64 host)
  */
 ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread *thread, ILInt32 host)
 {
-	unsigned char value[4];
+	unsigned char volatile value[4];
 	value[0] = (unsigned char)(host >> 24);
 	value[1] = (unsigned char)(host >> 16);
 	value[2] = (unsigned char)(host >> 8);
@@ -269,7 +269,7 @@ ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread *thread, ILInt32 host)
  */
 ILInt16 _IL_IPAddress_HostToNetworkOrder_s(ILExecThread *thread, ILInt16 host)
 {
-	unsigned char value[2];
+	unsigned char volatile value[2];
 	value[0] = (unsigned char)(host >> 8);
 	value[1] = (unsigned char)host;
 	return *((ILInt16 *)value);

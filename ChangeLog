@@ -7,6 +7,10 @@
 	* libffi/src/types.c: add type size and alignment information
 	for the IA64 architecture.
 
+	* engine/lib_socket.c: add the "volatile" keyword to chosen places
+	in the "HostToNetworkOrder" functions to prevent gcc optimizing away
+	important code that is needed for the conversion.
+
 2002-11-22  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/lib_regexp.c, support/regexp.c, support/Makefile.am,

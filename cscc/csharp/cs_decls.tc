@@ -51,6 +51,28 @@ static void CSListGatherStaticCtor(ILNode_List *node, ILNode_List *ctor)
 	}
 }
 
+/* 
+ * append entries in the oldList to the collectedList to order
+ * the user specified static ctors after the ones from field decl
+ */
+static void AppendStaticCtor(ILNode_List *collectedList, 
+							 ILNode_List *oldList)
+{
+	ILNode_ListIter iter;
+	ILNode *curr;
+
+	if(!oldList)return;
+
+	if (yyisa(oldList, ILNode_List))
+	{
+		ILNode_ListIter_Init(&iter,oldList);
+		while((curr = ILNode_ListIter_Next(&iter)))
+		{
+			ILNode_List_Add(collectedList,curr);
+		}
+	}
+}
+
 %}
 
 %operation void ILNode_Declaration_GatherStaticCtor
@@ -65,6 +87,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	ILNode *savedClass;
 	ILNode *savedNamespace;
 	ILNode *savedMethod;
+	ILNode *staticCtorList=NULL;
 	int hadStaticCtorsBefore;
 	int target;
 
@@ -143,15 +166,24 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 							   &(node->initCtorsMethod));
 		}
 
-		/*  Create static constructor method if necessary  */
-		if (!node->staticCtors)
+		/*  save the explicit static constructors before gathering  */
+		if (node->staticCtors)
 		{
-			node->staticCtors = ILNode_List_create();
+			staticCtorList=node->staticCtors;
 		}
+
+		node->staticCtors=ILNode_List_create();
 
 		ILNode_Declaration_GatherStaticCtor
 								(   (ILNode_Declaration *)node->body, 
 									(ILNode_List *)node->staticCtors);
+
+		/* append the explicit static constructors to the end of the 
+		   gathered list */
+		AppendStaticCtor((ILNode_List*)node->staticCtors,
+						  (ILNode_List*) staticCtorList);
+
+		staticCtorList=NULL; /* do not use it again or segfault :-) */
 
 		if (ILNode_List_Length(node->staticCtors) == 0)
 		{

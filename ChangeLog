@@ -1,4 +1,10 @@
 
+2003-02-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_decls.tc: Re-order the static constructors so
+	that the explicit cctors are placed last in the list. Fixes
+	Bug #2544 .
+	
 2003-02-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (Load_MethodDef): use "LoadTokenRange" to

@@ -11,6 +11,9 @@
 	declaration in empty "struct" types to match C# requirements
 	that a value type can never be zero-sized.
 
+	* image/pecoff_writer.c (_ILWriteFinal): back-patch the correct
+	address for the ".reloc" section in the optional PE/COFF header.
+
 2002-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/context.c (ILContextGetAssembly): if "mscorlib" is not

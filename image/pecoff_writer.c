@@ -550,6 +550,7 @@ void _ILWriteFinal(ILWriter *writer)
 	unsigned char entry[20];
 	unsigned long dataSection;
 	unsigned long tlsSection;
+	unsigned long relocSection;
 
 	/* Set the entry point token code */
 	if(writer->entryPoint)
@@ -747,6 +748,7 @@ void _ILWriteFinal(ILWriter *writer)
 	numSections = 1;
 	dataSection = 0;
 	tlsSection = 0;
+	relocSection = 0;
 	while(section != 0)
 	{
 		if(!strcmp(section->name, ".sdata"))
@@ -756,6 +758,10 @@ void _ILWriteFinal(ILWriter *writer)
 		else if(!strcmp(section->name, ".tls"))
 		{
 			tlsSection = imageSize;
+		}
+		else if(!strcmp(section->name, ".reloc"))
+		{
+			relocSection = imageSize;
 		}
 		WriteSection(writer, table, section->name,
 					 imageSize, offset, section->length, section->flags);
@@ -797,8 +803,7 @@ void _ILWriteFinal(ILWriter *writer)
 	/* Back-patch the position of the relocation table */
 	if(writer->type != IL_IMAGETYPE_OBJ)
 	{
-		WriteBackPatch32(writer, writer->optOffset + 136,
-						 0x2000 + ((textLength + 8191) & ~8191));
+		WriteBackPatch32(writer, writer->optOffset + 136, relocSection);
 		WriteBackPatch32(writer, writer->optOffset + 140, 12);
 	}
 

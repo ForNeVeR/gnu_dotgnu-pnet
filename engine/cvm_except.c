@@ -162,7 +162,7 @@ VMBREAK;
  *   is set to the current height of the stack.</description>
  *
  *   <notes>This must be in the prolog of any method that includes
- *   <code>try</code> blocks.  It makes the "base height" of the stack
+ *   <code>try</code> blocks.  It sets the "base height" of the stack
  *   so that <i>throw</i> instructions know where to unwind the stack
  *   to when an exception is thrown.</notes>
  * </opcode>
@@ -170,7 +170,7 @@ VMBREAK;
 VMCASE(COP_PREFIX_ENTER_TRY):
 {
 	/* Enter a try context for this method */
-	thread->exceptHeight = (ILUInt32)(stacktop - frame);
+	thread->exceptHeight = stacktop;
 	MODIFY_PC_AND_STACK(2, 0);
 }
 VMBREAK;
@@ -214,8 +214,8 @@ throwException:
 VMCASE(COP_PREFIX_THROW):
 {
 	/* Move the exception object down the stack to just above the locals */
-	frame[thread->exceptHeight].ptrValue = stacktop[-1].ptrValue;
-	stacktop = frame + thread->exceptHeight + 1;
+	thread->exceptHeight->ptrValue = stacktop[-1].ptrValue;
+	stacktop = thread->exceptHeight + 1;
 
 	/* Search the exception handler table for an applicable handler */
 searchForHandler:
@@ -302,7 +302,7 @@ throwCaller:
 	while(!ILCoderPCToHandler(thread->process->coder, pc, 1));
 
 	/* Copy the exception object into place */
-	stacktop = frame + thread->exceptHeight;
+	stacktop = thread->exceptHeight;
 	stacktop[0].ptrValue = tempptr;
 	++stacktop;
 

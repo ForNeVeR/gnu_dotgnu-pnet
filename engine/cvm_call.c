@@ -1067,7 +1067,6 @@ VMCASE(COP_PREFIX_TAIL):
 		/*  Transfer control  */
 		REPORT_METHOD_CALL();
 		pc = (unsigned char *)tempptr;
-		thread->exceptHeight = 0;
 		method = methodToCall;
 #ifdef IL_PROFILE_CVM_METHODS
 		++(method->count);

@@ -125,7 +125,7 @@ typedef struct _tagILCallFrame
 	ILMethod       *method;			/* Method being executed in the frame */
 	unsigned char  *pc;				/* PC to return to in the parent method */
 	CVMWord		   *frame;			/* Base of the local variable frame */
-	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
+	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
 
 } ILCallFrame;
 #define	IL_INVALID_PC		((unsigned char *)(ILNativeInt)(-1))
@@ -148,7 +148,7 @@ struct _tagILExecThread
 
 	/* Current thread state */
 	unsigned char  *pc;				/* Current program position */
-	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
+	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
 	CVMWord		   *frame;			/* Base of the local variable frame */
 	CVMWord        *stackTop;		/* Current stack top */
 	ILMethod       *method;			/* Current method being executed */

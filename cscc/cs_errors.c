@@ -46,7 +46,6 @@ extern	"C" {
 
 int CSHaveErrors = 0;
 int CSHaveWarnings = 0;
-int CSUnsafeLevel = 0;
 
 /*
  * Print an error or warning message to stderr.
@@ -206,18 +205,18 @@ void CSTypedWarningOnLine(char *filename, unsigned long linenum,
 	}
 }
 
-void CSUnsafeMessage(const char *format, ...)
+void CSUnsafeMessage(ILGenInfo *info, ILNode *node, const char *format, ...)
 {
 	char newformat[BUFSIZ];
 	if(CSStringListContains(extension_flags, num_extension_flags, "unsafe"))
 	{
-		if(CSUnsafeLevel == 0)
+		if(info->unsafeLevel == 0)
 		{
 			/* Unsafe construct used outside an unsafe context */
 			VA_START;
 			strcpy(newformat, format);
 			strcat(newformat, " used outside an unsafe context");
-			PrintMessage(CSCurrentFilename(), CSCurrentLine(), 0,
+			PrintMessage(yygetfilename(node), yygetlinenum(node), 0,
 						 newformat, VA_GET_LIST);
 			VA_END;
 			CSHaveErrors = 1;
@@ -228,7 +227,7 @@ void CSUnsafeMessage(const char *format, ...)
 			if(WarningEnabled("unsafe"))
 			{
 				VA_START;
-				PrintMessage(CSCurrentFilename(), CSCurrentLine(), 1,
+				PrintMessage(yygetfilename(node), yygetlinenum(node), 1,
 							 format, VA_GET_LIST);
 				VA_END;
 				CSHaveWarnings = 1;
@@ -245,19 +244,19 @@ void CSUnsafeMessage(const char *format, ...)
 		VA_START;
 		strcpy(newformat, format);
 		strcat(newformat, " not permitted unless -funsafe specified");
-		PrintMessage(CSCurrentFilename(), CSCurrentLine(), 0,
+		PrintMessage(yygetfilename(node), yygetlinenum(node), 0,
 					 newformat, VA_GET_LIST);
 		VA_END;
 		CSHaveErrors = 1;
 	}
 }
 
-void CSUnsafeTypeMessage()
+void CSUnsafeTypeMessage(ILGenInfo *info, ILNode *node)
 {
-	CSUnsafeMessage("unsafe pointer type");
+	CSUnsafeMessage(info, node, "unsafe pointer type");
 }
 
-void CSUnsafeEnter(const char *format, ...)
+void CSUnsafeEnter(ILGenInfo *info, ILNode *node, const char *format, ...)
 {
 	char newformat[BUFSIZ];
 	if(CSStringListContains(extension_flags, num_extension_flags, "unsafe"))
@@ -266,7 +265,7 @@ void CSUnsafeEnter(const char *format, ...)
 		if(WarningEnabled("unsafe"))
 		{
 			VA_START;
-			PrintMessage(CSCurrentFilename(), CSCurrentLine(), 1,
+			PrintMessage(yygetfilename(node), yygetlinenum(node), 1,
 						 format, VA_GET_LIST);
 			VA_END;
 			CSHaveWarnings = 1;
@@ -282,17 +281,17 @@ void CSUnsafeEnter(const char *format, ...)
 		VA_START;
 		strcpy(newformat, format);
 		strcat(newformat, " not permitted unless -funsafe specified");
-		PrintMessage(CSCurrentFilename(), CSCurrentLine(), 0,
+		PrintMessage(yygetfilename(node), yygetlinenum(node), 0,
 					 newformat, VA_GET_LIST);
 		VA_END;
 		CSHaveErrors = 1;
 	}
-	++CSUnsafeLevel;
+	++(info->unsafeLevel);
 }
 
-void CSUnsafeLeave(void)
+void CSUnsafeLeave(ILGenInfo *info)
 {
-	--CSUnsafeLevel;
+	--(info->unsafeLevel);
 }
 
 #ifdef	__cplusplus

@@ -23,13 +23,22 @@
  */
 ILNode_SemAnalysis(ILNode_ClassDefn)
 {
-	if (node->body)
+	CSSemValue value;
+	if(node->body)
 	{
-		return ILNode_SemAnalysis(node->body, info, &(node->body));
+		if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+		{
+			CSUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
+		}
+		value = ILNode_SemAnalysis(node->body, info, &(node->body));
+		if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+		{
+			CSUnsafeLeave(info);
+		}
+		return value;
 	}
 	else
 	{
-		CSSemValue value;
 		value.kind = CS_SEMKIND_RVALUE;
 		value.type = ILType_Int32;
 		return value;
@@ -66,6 +75,18 @@ ILNode_SemAnalysis(ILNode_ConstDeclaration)
 	ILNode_ListIter iter;
 	ILNode *child;
 
+	/* Enter an unsafe context for the constant if necessary */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeEnter(info, (ILNode *)node, "unsafe constant declaration");
+	}
+
+	/* Warn if declaring the constant with an unsafe type */
+	if(CSHasUnsafeType(node->type))
+	{
+		CSUnsafeTypeMessage(info, (ILNode *)node);
+	}
+
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
@@ -78,6 +99,13 @@ ILNode_SemAnalysis(ILNode_ConstDeclaration)
 		 * consistent with the type declaration of the constant
 		 */
 	}
+
+	/* Leave the unsafe context for the constant */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeLeave(info);
+	}
+
 	return value;
 }
 
@@ -123,6 +151,18 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 	ILNode_ListIter iter;
 	ILNode *child;
 
+	/* Enter an unsafe context for the field if necessary */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeEnter(info, (ILNode *)node, "unsafe field declaration");
+	}
+
+	/* Warn if declaring the field with an unsafe type */
+	if(CSHasUnsafeType(node->type))
+	{
+		CSUnsafeTypeMessage(info, (ILNode *)node);
+	}
+
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
@@ -135,6 +175,13 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		 * of the fields are consistent with the type declaration
 		 */
 	}
+
+	/* Leave the unsafe context for the field */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeLeave(info);
+	}
+
 	return value;
 }
 
@@ -162,6 +209,18 @@ ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
 	ILNode_ListIter iter;
 	ILNode *child;
 
+	/* Enter an unsafe context for the event field if necessary */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeEnter(info, (ILNode *)node, "unsafe event field declaration");
+	}
+
+	/* Warn if declaring the event field with an unsafe type */
+	if(CSHasUnsafeType(node->type))
+	{
+		CSUnsafeTypeMessage(info, (ILNode *)node);
+	}
+
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
@@ -174,6 +233,13 @@ ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
 		 * of the fields are consistent with the type declaration
 		 */
 	}
+
+	/* Leave the unsafe context for the event field */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeLeave(info);
+	}
+
 	return value;
 }
 
@@ -181,12 +247,32 @@ ILNode_SemAnalysis(ILNode_EventPropertyDeclaration)
 {
 	CSSemValue value;
 
+	/* Enter an unsafe context for the event property if necessary */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeEnter(info, (ILNode *)node,
+					  "unsafe event property declaration");
+	}
+
+	/* Warn if declaring the event property with an unsafe type */
+	if(CSHasUnsafeType(node->type))
+	{
+		CSUnsafeTypeMessage(info, (ILNode *)node);
+	}
+
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
 	/* FIXME: qualifiedIdentifier */
 	value = ILNode_SemAnalysis(node->addAccessor, info, &(node->addAccessor));
 	value = ILNode_SemAnalysis(node->removeAccessor, info, &(node->removeAccessor));
+
+	/* Leave the unsafe context for the event property */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeLeave(info);
+	}
+
 	return value;
 }
 
@@ -200,12 +286,31 @@ ILNode_SemAnalysis(ILNode_MethodHeader)
 {
 	CSSemValue value;
 
+	/* Enter an unsafe context for the method if necessary */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeEnter(info, (ILNode *)node, "unsafe method declaration");
+	}
+
+	/* Warn if declaring the method with unsafe return or parameter types */
+	if(CSHasUnsafeType(node->type) || CSHasUnsafeType(node->params))
+	{
+		CSUnsafeTypeMessage(info, (ILNode *)node);
+	}
+
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
 	/* FIXME: name, do we need to do anything */
 	/* FIXME: I don't think we'll need to iterate over params here */
 	value = ILNode_SemAnalysis(node->params, info, &(node->params));
+
+	/* Leave the unsafe context for the method */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeLeave(info);
+	}
+
 	return value;
 }
 
@@ -213,12 +318,31 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 {
 	CSSemValue value;
 
+	/* Enter an unsafe context for the property if necessary */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeEnter(info, (ILNode *)node, "unsafe property declaration");
+	}
+
+	/* Warn if declaring the property with an unsafe type */
+	if(CSHasUnsafeType(node->type))
+	{
+		CSUnsafeTypeMessage(info, (ILNode *)node);
+	}
+
 	/* FIXME: optional attributes ? */
 	/* modifier already done in parser */
 	value = ILNode_SemAnalysis(node->type, info, &(node->type));
 	/* FIXME: name, do we need to do anything */
 	value = ILNode_SemAnalysis(node->getAccessor, info, &(node->getAccessor));
 	value = ILNode_SemAnalysis(node->setAccessor, info, &(node->setAccessor));
+
+	/* Leave the unsafe context for the property */
+	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	{
+		CSUnsafeLeave(info);
+	}
+
 	return value;
 }
 

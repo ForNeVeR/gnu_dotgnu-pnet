@@ -765,6 +765,7 @@ ILNode_SemAnalysis(ILNode_Ge)
 ILNode_SemAnalysis(ILNode_Deref)
 {
 	CSSemValue value;
+	CSUnsafeMessage(info, (ILNode *)node, "unsafe pointer dereference");
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;
@@ -776,6 +777,7 @@ ILNode_SemAnalysis(ILNode_Deref)
 ILNode_SemAnalysis(ILNode_AddressOf)
 {
 	CSSemValue value;
+	CSUnsafeMessage(info, (ILNode *)node, "unsafe address operator");
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;

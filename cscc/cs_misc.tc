@@ -242,6 +242,9 @@ ILNode_SemAnalysis(ILNode_StackAlloc)
 	CSSemValue value1;
 	CSSemValue value2;
 
+	/* Print an error or warning for this construct if necessary */
+	CSUnsafeMessage(info, (ILNode *)node, "unsafe `stackalloc' operator");
+
 	/* Perform semantic analysis on the sub-expressions */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
 	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));

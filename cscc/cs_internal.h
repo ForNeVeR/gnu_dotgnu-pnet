@@ -72,7 +72,6 @@ extern int CSGetSetKeywords;
  */
 extern int CSHaveErrors;
 extern int CSHaveWarnings;
-extern int CSUnsafeLevel;
 
 /*
  * Code generator control object.
@@ -133,23 +132,23 @@ void CSTypedWarningOnLine(char *filename, unsigned long linenum,
 /*
  * Report either a warning or an error about unsafe constructs.
  */
-void CSUnsafeMessage(const char *format, ...);
+void CSUnsafeMessage(ILGenInfo *info, ILNode *node, const char *format, ...);
 
 /*
  * Report either a warning or an error about unsafe types.
  */
-void CSUnsafeTypeMessage();
+void CSUnsafeTypeMessage(ILGenInfo *info, ILNode *node);
 
 /*
  * Enter an unsafe context, reporting a warning or error
  * about the context as necessary.
  */
-void CSUnsafeEnter(const char *format, ...);
+void CSUnsafeEnter(ILGenInfo *info, ILNode *node, const char *format, ...);
 
 /*
  * Leave an unsafe context.
  */
-void CSUnsafeLeave(void);
+void CSUnsafeLeave(ILGenInfo *info);
 
 /*
  * Determine if a type or parameter node contains unsafe types.

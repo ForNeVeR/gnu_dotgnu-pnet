@@ -179,6 +179,7 @@ ILNode_SemAnalysis(ILNode_BaseElement)
 ILNode_SemAnalysis(ILNode_DerefField)
 {
 	CSSemValue value;
+	CSUnsafeMessage(info, (ILNode *)node, "unsafe field dereference");
 	value.kind = CS_SEMKIND_RVALUE;
 	value.type = ILType_Int32;
 	return value;

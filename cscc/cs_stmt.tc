@@ -163,6 +163,10 @@ ILNode_SemAnalysis(ILNode_For)
 ILNode_SemAnalysis(ILNode_Foreach)
 {
 	CSSemValue value;
+	if(CSHasUnsafeType(node->type))
+	{
+		CSUnsafeTypeMessage(info, (ILNode *)node);
+	}
 	value.kind = CS_SEMKIND_VOID;
 	value.type = 0;
 	return value;
@@ -458,6 +462,7 @@ JavaGenDiscard(ILNode_Using)
 ILNode_SemAnalysis(ILNode_Fixed)
 {
 	CSSemValue value;
+	CSUnsafeMessage(info, (ILNode *)node, "unsafe `fixed' statement");
 	if(info->outputIsJava)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),

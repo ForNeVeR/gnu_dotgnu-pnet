@@ -839,17 +839,9 @@ PrimaryExpression
 	| CHECKED '(' Expression ')'	{ MakeUnary(Overflow, $3); }
 	| UNCHECKED '(' Expression ')'	{ MakeUnary(NoOverflow, $3); }
 	| PrimaryExpression PTR_OP Identifier	{
-				/*
-				 * This is an unsafe operator, so warn the user about it.
-				 */
-				CSUnsafeMessage("unsafe field dereference");
 				MakeBinary(DerefField, $1, $3);
 			}
 	| STACKALLOC Type '[' Expression ']'	{
-				/*
-				 * This is an unsafe operator, so warn the user about it.
-				 */
-				CSUnsafeMessage("unsafe `stackalloc' operator");
 				MakeBinary(StackAlloc, $2, $4);
 			}
 	| BUILTIN_CONSTANT '(' STRING_LITERAL ')'	{
@@ -1039,20 +1031,8 @@ PrefixedUnaryExpression
 			}
 	| INC_OP PrefixedUnaryExpression	{ MakeUnary(PreInc, $2); }
 	| DEC_OP PrefixedUnaryExpression	{ MakeUnary(PreDec, $2); }
-	| '*' PrefixedUnaryExpression			{
-				/*
-				 * This is an unsafe operator, so warn the user about it.
-				 */
-				CSUnsafeMessage("unsafe pointer dereference");
-				MakeUnary(Deref, $2);
-			}
-	| '&' PrefixedUnaryExpression			{
-				/*
-				 * This is an unsafe operator, so warn the user about it.
-				 */
-				CSUnsafeMessage("unsafe address operator");
-				MakeUnary(AddressOf, $2);
-			}
+	| '*' PrefixedUnaryExpression		{ MakeUnary(Deref, $2); }
+	| '&' PrefixedUnaryExpression		{ MakeUnary(AddressOf, $2); }
 	;
 
 MultiplicativeExpression
@@ -1338,10 +1318,6 @@ VariableDeclarator
 LocalConstantDeclaration
 	: CONST Type ConstantDeclarators		{
 				$$ = ILNode_ConstDeclaration_create(0, 0, $2, $3);
-				if(CSHasUnsafeType($2))
-				{
-					CSUnsafeTypeMessage();
-				}
 			}
 	;
 
@@ -1450,10 +1426,6 @@ IterationStatement
 				MakeQuaternary(For, $3, ILNode_ToBool_create($4), $5, $6);
 			}
 	| FOREACH '(' Type Identifier IN ForeachExpression EmbeddedStatement	{
-				if(CSHasUnsafeType($3))
-				{
-					CSUnsafeTypeMessage();
-				}
 				MakeQuaternary(Foreach, $3, ILQualIdentName($4, 0), $6, $7);
 			}
 	;
@@ -1635,10 +1607,6 @@ ResourceAcquisition
 /* unsafe code */
 FixedStatement
 	: FIXED '(' Type FixedPointerDeclarators ')' EmbeddedStatement	{
-				/*
-				 * Warn the user about the unsafe statement.
-				 */
-				CSUnsafeMessage("unsafe `fixed' statement");
 				MakeTernary(Fixed, $3, $4, $6);
 			}
 	;
@@ -1824,36 +1792,21 @@ Modifier
 
 ClassDeclaration
 	: OptAttributes OptModifiers CLASS Identifier ClassBase {
+				/* Enter a new nesting level */
+				++NestingLevel;
+			}
+			ClassBody OptSemiColon	{
 				/* Validate the modifiers */
 				ILUInt32 attrs =
 					CSModifiersToTypeAttrs($2, (NestingLevel > 0));
 
-				/* Enter a new nesting level */
-				++NestingLevel;
-
-				/* Enter an unsafe context if necessary */
-				if(($2 & CS_MODIFIER_UNSAFE) != 0)
-				{
-					CSUnsafeEnter("unsafe class declaration");
-				}
-
-				/* Save the converted modifiers for later */
-				$2 = attrs;
-			}
-			ClassBody OptSemiColon	{
 				/* Exit the current nesting level */
 				--NestingLevel;
-
-				/* Leave the unsafe context if necessary */
-				if(($2 & CS_SPECIALATTR_UNSAFE) != 0)
-				{
-					CSUnsafeLeave();
-				}
 
 				/* Create the class definition */
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
-							 $2,					/* OptModifiers */
+							 attrs,					/* OptModifiers */
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 $5,					/* ClassBase */
@@ -1944,10 +1897,6 @@ ConstantDeclarator
 FieldDeclaration
 	: OptAttributes OptModifiers Type VariableDeclarators ';'	{
 				ILUInt32 attrs = CSModifiersToFieldAttrs($2);
-				if(CSHasUnsafeType($3) && ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 				$$ = ILNode_FieldDeclaration_create($1, attrs, $3, $4);
 			}
 	;
@@ -1964,20 +1913,11 @@ MethodHeader
 	: OptAttributes OptModifiers Type QualifiedIdentifier
 			'(' OptFormalParameterList ')'	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
-				if((CSHasUnsafeType($3) || CSHasUnsafeType($6)) &&
-				   ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 				$$ = ILNode_MethodHeader_create ($1, attrs, $3, $4, $6);
 			}
 	| OptAttributes OptModifiers VOID QualifiedIdentifier
 			'(' OptFormalParameterList ')'	{
 				ILUInt32 attrs = CSModifiersToMethodAttrs($2);
-				if(CSHasUnsafeType($6) && ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 				$$ = ILNode_MethodHeader_create ($1, attrs, 0, $4, $6);
 			}
 	;
@@ -2026,19 +1966,12 @@ ParameterModifier
  */
 
 PropertyDeclaration
-	: OptAttributes OptModifiers Type QualifiedIdentifier	{
+	: OptAttributes OptModifiers Type QualifiedIdentifier
+			StartAccessorBlock AccessorBlock	{
 				ILUInt32 attrs = CSModifiersToPropertyAttrs($2);
-				$2 = attrs;
-				if(CSHasUnsafeType($3) && ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
-			}
-			StartAccessorBlock AccessorBlock				{
 				$$ = ILNode_PropertyDeclaration_create($1,
-								   $2, $3, $4, $7.item1, $7.item2);
+								   attrs, $3, $4, $6.item1, $6.item2);
 			}
-
 	;
 
 StartAccessorBlock
@@ -2118,26 +2051,16 @@ EventDeclaration
 EventFieldDeclaration
 	: OptAttributes OptModifiers EVENT Type VariableDeclarators ';'	{
 				ILUInt32 attrs = CSModifiersToEventAttrs($2);
-				if(CSHasUnsafeType($4) && ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 				$$ = ILNode_EventFieldDeclaration_create($1, attrs, $4, $5);
 			}
 	;
 
 EventPropertyDeclaration
-	: OptAttributes OptModifiers EVENT Type QualifiedIdentifier	{
+	: OptAttributes OptModifiers EVENT Type QualifiedIdentifier
+			StartAccessorBlock EventAccessorBlock	{
 				ILUInt32 attrs = CSModifiersToEventAttrs($2);
-				if(CSHasUnsafeType($4) && ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
-				$2 = attrs;
-			}
-			StartAccessorBlock EventAccessorBlock				{
 				$$ = ILNode_EventPropertyDeclaration_create($1, 
-									$2, $4, $5, $8.item1, $8.item2);
+									attrs, $4, $5, $7.item1, $7.item2);
 			}
 	;
 
@@ -2168,8 +2091,8 @@ EventAccessorDeclarations
 	;
 
 OptAddAccessorDeclaration
-	: /* empty */				{ MakeSimple(Empty);}
-	| AddAccessorDeclaration	{ $$ = $1;}
+	: /* empty */				{ MakeSimple(Empty); }
+	| AddAccessorDeclaration	{ $$ = $1; }
 	;
 
 AddAccessorDeclaration
@@ -2179,8 +2102,8 @@ AddAccessorDeclaration
 	;
 
 OptRemoveAccessorDeclaration
-	: /* empty */				{ MakeSimple(Empty);}
-	| RemoveAccessorDeclaration	{ $$ = $1;}
+	: /* empty */				{ MakeSimple(Empty); }
+	| RemoveAccessorDeclaration	{ $$ = $1; }
 	;
 
 RemoveAccessorDeclaration
@@ -2268,11 +2191,6 @@ NormalOperatorDeclarator
 
 				/* Get the operator attributes */
 				attrs = CSModifiersToOperatorAttrs($2);
-				if((CSHasUnsafeType($3) || CSHasUnsafeType($7)) &&
-				   ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2299,11 +2217,6 @@ NormalOperatorDeclarator
 
 				/* Get the operator attributes */
 				attrs = CSModifiersToOperatorAttrs($2);
-				if((CSHasUnsafeType($3) || CSHasUnsafeType($7)) &&
-				   ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2356,11 +2269,6 @@ ConversionOperatorDeclarator
 
 				/* Get the operator attributes */
 				attrs = CSModifiersToOperatorAttrs($2);
-				if((CSHasUnsafeType($5) || CSHasUnsafeType($7)) &&
-				   ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2381,11 +2289,6 @@ ConversionOperatorDeclarator
 
 				/* Get the operator attributes */
 				attrs = CSModifiersToOperatorAttrs($2);
-				if((CSHasUnsafeType($5) || CSHasUnsafeType($7)) &&
-				   ($2 & CS_MODIFIER_UNSAFE) == 0)
-				{
-					CSUnsafeTypeMessage();
-				}
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -2446,18 +2349,15 @@ DestructorDeclaration
 
 StructDeclaration
 	: OptAttributes OptModifiers STRUCT Identifier StructInterfaces	{
-				/* Validate the modifiers */
-				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($2, (NestingLevel > 0));
-
 				/* Enter a new nesting level */
 				++NestingLevel;
+			}
+			StructBody OptSemiColon	{
+				ILNode *baseList;
+				ILUInt32 attrs;
 
-				/* Enter an unsafe context if necessary */
-				if(($2 & CS_MODIFIER_UNSAFE) != 0)
-				{
-					CSUnsafeEnter("unsafe struct declaration");
-				}
+				/* Validate the modifiers */
+				attrs = CSModifiersToTypeAttrs($2, (NestingLevel > 0));
 
 				/* Add extra attributes that structs need */
 				attrs |= IL_META_TYPEDEF_VALUE_TYPE |
@@ -2465,20 +2365,8 @@ StructDeclaration
 						 IL_META_TYPEDEF_SERIALIZABLE |
 						 IL_META_TYPEDEF_SEALED;
 
-				/* Save the converted modifiers for later */
-				$2 = attrs;
-			}
-			StructBody OptSemiColon	{
-				ILNode *baseList;
-
 				/* Exit the current nesting level */
 				--NestingLevel;
-
-				/* Leave the unsafe context if necessary */
-				if(($2 & CS_SPECIALATTR_UNSAFE) != 0)
-				{
-					CSUnsafeLeave();
-				}
 
 				/* Make sure that we have "ValueType" in the base list */
 				baseList = MakeSystemType("ValueType");
@@ -2490,7 +2378,7 @@ StructDeclaration
 				/* Create the class definition */
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
-							 $2,					/* OptModifiers */
+							 attrs,					/* OptModifiers */
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 baseList,				/* ClassBase */

@@ -1011,6 +1011,10 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Get the last index of a specific character within the string.
 	public int LastIndexOf(char value)
 			{
+				if(length==0)
+				{
+					return -1;
+				}
 				return LastIndexOf(value, length - 1, length);
 			}
 	public int LastIndexOf(char value, int startIndex)

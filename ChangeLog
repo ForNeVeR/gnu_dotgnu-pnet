@@ -1,4 +1,10 @@
 
+2001-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvmc_setup.c, engine/internal.c, engine/lib_platform.c,
+	engine/pinvoke.c: implement native methods for "Platform.TaskMethods"
+	and "Platform.DirMethods".
+
 2001-01-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_lvalue.tc, codegen/cg_misc.tc, codegen/cg_nodes.tc,

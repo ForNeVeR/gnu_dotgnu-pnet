@@ -53,6 +53,8 @@ extern ILMethodTableEntry const _ILReflectionMethodBaseMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
 extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
 extern ILMethodTableEntry const _ILPlatformTimeMethods;
+extern ILMethodTableEntry const _ILPlatformTaskMethods;
+extern ILMethodTableEntry const _ILPlatformDirMethods;
 extern ILMethodTableEntry const _ILRuntimeHelpersMethods;
 extern ILMethodTableEntry const _ILDiagnosticsDebuggerMethods;
 extern ILMethodTableEntry const _ILDiagnosticsStackFrameMethods;
@@ -81,6 +83,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"ClrType",		"System.Reflection", &_ILReflectionClrTypeMethods},
 	{"Debugger",	"System.Diagnostics", &_ILDiagnosticsDebuggerMethods},
 	{"Decimal",		"System",		&_ILSystemDecimalMethods},
+	{"DirMethods",	"Platform",		&_ILPlatformDirMethods},
 	{"Double",		"System",		&_ILSystemDoubleMethods},
 	{"FieldInfo",	"System.Reflection", &_ILReflectionFieldInfoMethods},
 	{"Guid",		"System",		&_ILSystemGuidMethods},
@@ -96,6 +99,7 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},
 	{"String",		"System",		&_ILSystemStringMethods},
 	{"SysCharInfo",	"Platform",		&_ILPlatformSysCharInfoMethods},
+	{"TaskMethods",	"Platform",		&_ILPlatformTaskMethods},
 	{"Thread",		"System.Threading", &_ILSystemThreadingThreadMethods},
 	{"TimeMethods",	"Platform",		&_ILPlatformTimeMethods},
 	{"Type",		"System",		&_ILSystemTypeMethods},

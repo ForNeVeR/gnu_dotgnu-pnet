@@ -151,6 +151,197 @@ IL_METHOD_BEGIN(_ILPlatformTimeMethods)
 	IL_METHOD("GetUpTime", "()i", Platform_TimeMethods_GetUpTime)
 IL_METHOD_END
 
+/*
+ * public static void Exit(int exitCode);
+ */
+static void Platform_TaskMethods_Exit(ILExecThread *thread, ILInt32 exitCode)
+{
+	exit((int)(exitCode & 0xFF));
+}
+
+/*
+ * public static void SetExitCode(int exitCode);
+ */
+static void Platform_TaskMethods_SetExitCode(ILExecThread *thread,
+											 ILInt32 exitCode)
+{
+	thread->process->exitStatus = exitCode;
+}
+
+/*
+ * public static String[] GetCommandLineArgs();
+ */
+static ILObject *Platform_TaskMethods_GetCommandLineArgs(ILExecThread *thread)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static String GetEnvironmentVariable(String name);
+ */
+static ILString *Platform_TaskMethods_GetEnvironmentVariable
+			(ILExecThread *thread, ILString *name)
+{
+	char *nameAnsi = ILStringToAnsi(thread, name);
+	char *env;
+	if(nameAnsi)
+	{
+		env = getenv(nameAnsi);
+		if(env)
+		{
+			return ILStringCreate(thread, env);
+		}
+	}
+	return 0;
+}
+
+/*
+ * Import the "environ" variable, so that we can walk the environment.
+ */
+extern char **environ;
+
+/*
+ * public static int GetEnvironmentCount();
+ */
+static ILInt32 Platform_TaskMethods_GetEnvironmentCount(ILExecThread *thread)
+{
+	ILInt32 count = 0;
+	char **env = environ;
+	while(env && *env != 0)
+	{
+		++count;
+		++env;
+	}
+	return count;
+}
+
+/*
+ * public static String GetEnvironmentKey(int posn);
+ */
+static ILString *Platform_TaskMethods_GetEnvironmentKey
+			(ILExecThread *thread, ILInt32 posn)
+{
+	ILInt32 count = Platform_TaskMethods_GetEnvironmentCount(thread);
+	char *env;
+	int len;
+	if(posn >= 0 && posn < count)
+	{
+		env = environ[posn];
+		len = 0;
+		while(env[len] != '\0' && env[len] != '=')
+		{
+			++len;
+		}
+		return ILStringCreateLen(thread, env, len);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static String GetEnvironmentValue(int posn);
+ */
+static ILString *Platform_TaskMethods_GetEnvironmentValue
+			(ILExecThread *thread, ILInt32 posn)
+{
+	ILInt32 count = Platform_TaskMethods_GetEnvironmentCount(thread);
+	char *env;
+	int len;
+	if(posn >= 0 && posn < count)
+	{
+		env = environ[posn];
+		len = 0;
+		while(env[len] != '\0' && env[len] != '=')
+		{
+			++len;
+		}
+		if(env[len] == '=')
+		{
+			++len;
+		}
+		return ILStringCreate(thread, env + len);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Method table for the "Platform.TaskMethods" class.
+ */
+IL_METHOD_BEGIN(_ILPlatformTaskMethods)
+	IL_METHOD("Exit", "(i)V", Platform_TaskMethods_Exit)
+	IL_METHOD("SetExitCode", "(i)V", Platform_TaskMethods_SetExitCode)
+	IL_METHOD("GetCommandLineArgs", "()[oSystem.String;",
+			  Platform_TaskMethods_GetCommandLineArgs)
+	IL_METHOD("GetEnvironmentVariable", "(oSystem.String;)oSystem.String;",
+			  Platform_TaskMethods_GetEnvironmentVariable)
+	IL_METHOD("GetEnvironmentCount", "()i",
+			  Platform_TaskMethods_GetEnvironmentCount)
+	IL_METHOD("GetEnvironmentKey", "(i)oSystem.String;",
+			  Platform_TaskMethods_GetEnvironmentKey)
+	IL_METHOD("GetEnvironmentValue", "(i)oSystem.String;",
+			  Platform_TaskMethods_GetEnvironmentValue)
+IL_METHOD_END
+
+/*
+ * Structure of the "Platform.PathInfo" class.
+ */
+typedef struct
+{
+	ILUInt16	dirSeparator;
+	ILUInt16	altDirSeparator;
+	ILUInt16	volumeSeparator;
+	ILUInt16	pathSeparator;
+	ILObject   *invalidPathChars;
+
+} Platform_PathInfo;
+
+/*
+ * public static PathInfo GetPathInfo();
+ */
+static void Platform_DirMethods_GetPathInfo(ILExecThread *thread,
+											void *result)
+{
+	Platform_PathInfo *info = (Platform_PathInfo *)result;
+#if defined(_WIN32) || defined(WIN32)
+	info->dirSeparator = '\\';
+	info->altDirSeparator = '/';
+	info->volumeSeparator = ':';
+	info->pathSeparator = ';';
+	info->invalidPathChars = 0;
+#else
+	info->dirSeparator = '/';
+	info->altDirSeparator = 0;
+	info->volumeSeparator = 0;
+	info->pathSeparator = ':';
+	info->invalidPathChars = 0;
+#endif
+}
+
+/*
+ * public static String GetSystemDirectory();
+ */
+static ILString *Platform_DirMethods_GetSystemDirectory(ILExecThread *thread)
+{
+	/* We don't support system directories on this platform */
+	return 0;
+}
+
+/*
+ * Method table for the "Platform.DirMethods" class.
+ */
+IL_METHOD_BEGIN(_ILPlatformDirMethods)
+	IL_METHOD("GetPathInfo", "()vPlatform.PathInfo;",
+			  Platform_DirMethods_GetPathInfo)
+	IL_METHOD("GetSystemDirectory", "()oSystem.String;",
+			  Platform_DirMethods_GetSystemDirectory)
+IL_METHOD_END
+
 #ifdef	__cplusplus
 };
 #endif

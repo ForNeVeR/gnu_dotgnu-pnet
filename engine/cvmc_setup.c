@@ -161,6 +161,13 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	}
 	maxArgOffset = offset;
 
+	/* We need an extra local to pass return value types
+	   by pointer to native methods */
+	if(returnType && ILType_IsValueType(returnType))
+	{
+		++extraLocals;
+	}
+
 	/* Set the number of arguments, which initialize's the method's frame */
 	CVM_WIDE(COP_SET_NUM_ARGS, offset);
 
@@ -484,10 +491,15 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	if(ILType_IsValueType(returnType))
 	{
 		/* Value type return pointers are pushed just after the thread */
-		CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs, coder->localOffsets[0]);
+		CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+		CVM_ADJUST(1);
+		CVM_WIDE(COP_PSTORE, coder->localOffsets[1]);
+		CVM_ADJUST(-1);
+		CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs, coder->localOffsets[1]);
+		extraLocals = 2;
 		++numArgs;
 	}
-	if(returnType != ILType_Void)
+	else if(returnType != ILType_Void)
 	{
 		++extraLocals;
 	}

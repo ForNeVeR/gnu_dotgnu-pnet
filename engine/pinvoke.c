@@ -160,6 +160,7 @@ void *_ILMakeCifForMethod(ILCoder *coder, ILMethod *method, int isInternal)
 	{
 		/* Pointer argument for value type returns */
 		args[arg++] = &ffi_type_pointer;
+		rtype = &ffi_type_void;
 	}
 	if(ILType_HasThis(signature))
 	{

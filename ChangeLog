@@ -1,4 +1,10 @@
 
+2003-01-02  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Text/Encoding.cs: Disable UTF8 preambles when used
+	with Encoding.UTF8 to prevent the Console streams from using it.
+	(Bug #2118)
+
 2003-01-02  Jason Lee <jason.lee@mac.com>
 	
 	* System/Net/DnsPermission.cs, System/Net/DnsPermissionAttribute.cs,

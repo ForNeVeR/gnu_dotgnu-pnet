@@ -29,6 +29,12 @@ public class AuthenticationManager
 	// Internal state.
 	private static ArrayList modules;
 
+	static AuthenticationManager()
+	{
+		/* register the standard modules */
+		Register(new BasicClient());	
+	}
+
 	// Cannot instantiate this class.
 	private AuthenticationManager() {}
 
@@ -105,7 +111,6 @@ public class AuthenticationManager
 			}
 
 	// Pre-authenticate a request.
-	[TODO]
 	public static Authorization PreAuthenticate
 				(WebRequest request, ICredentials credentials)
 			{
@@ -117,7 +122,19 @@ public class AuthenticationManager
 				{
 					return null;
 				}
-				// TODO
+				lock(typeof(AuthenticationManager))
+				{
+					Authorization auth;
+					foreach(IAuthenticationModule module in ModuleList)
+					{
+						auth = module.PreAuthenticate
+							(request, credentials);
+						if(auth != null)
+						{
+							return auth;
+						}
+					}
+				}
 				return null;
 			}
 

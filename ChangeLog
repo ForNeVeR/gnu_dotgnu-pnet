@@ -1,4 +1,11 @@
 
+2003-11-14  Gopal.V  <gopalv82@symonds.net>
+
+	* System/Net/AuthenticationManager.cs,
+	System/Net/BasicAuthenticationModule.cs, System/Net/BasicClient.cs,
+	System/Net/HttpWebRequest.cs: implement basic HTTP authentication
+	(patch applied by Rhys).
+
 2003-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in: adjust the computation of CYG_CACHE in configure.in.

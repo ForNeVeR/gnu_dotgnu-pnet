@@ -68,7 +68,9 @@ public class HttpWebRequest : WebRequest
 	// so that it is accessible to the nested classes
 	private Stream outStream=null;
 	private WebResponse response=null;
-	private const String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//HTTP
+	private const String format="ddd, dd MMM yyyy HH:mm:ss 'GMT'zz";//HTTP
+
+	private HttpController controller=null;
 
 	internal HttpWebRequest(Uri uri)
 	{
@@ -78,6 +80,7 @@ public class HttpWebRequest : WebRequest
 		this.method="GET";
 		this.headers.SetInternal ("Host", uri.Authority);
 		this.headers.SetInternal ("Date", DateTime.Now.ToUniversalTime().ToString(format));
+		this.headers.SetInternal ("User-Agent","DotGNU Portable.net");
 	}
 
 	[TODO]
@@ -167,6 +170,7 @@ public class HttpWebRequest : WebRequest
 			throw new WebException(" not allowed for " + this.Method);
 		if(outStream==null)
 		{
+			if(preAuthenticate) AddHttpAuthHeaders(null);
 			outStream=new HttpStream(this);
 		}
 		return outStream;
@@ -175,18 +179,31 @@ public class HttpWebRequest : WebRequest
 	//need some doubts cleared
 	public override WebResponse GetResponse()
 	{
+		HttpWebResponse httpResponse;
+		WebRequest newRequest;
+
 		if(response!=null) return response;
+		
 		if(outStream==null)
 		{
+			if(preAuthenticate) AddHttpAuthHeaders(null);
 			outStream=new HttpStream(this);
 			outStream.Flush();
 			// which is the response stream as well 
 		}
-		if(this.response==null)
-		{
-			this.response=new HttpWebResponse(this,this.outStream);
-			this.haveResponse=true; // I hope this is correct
-		}
+
+		httpResponse=new HttpWebResponse(this,this.outStream);
+		this.response=httpResponse;
+
+		/* here it always is a HttpWebResponse , need to use a Factory actually 
+		 * When that happens, change the design */
+		
+		newRequest=Controller.Recurse(this, httpResponse);
+		
+		/* this is the tricky recursion thing */ 
+		this.response=newRequest.GetResponse(); 
+		
+		this.haveResponse=true; // I hope this is correct
 		(outStream as HttpStream).ContentLength=response.ContentLength;
 		return this.response; 
 	}
@@ -459,7 +476,7 @@ public class HttpWebRequest : WebRequest
 		}
 	}
 
-	public override bool PreAuthenticate 
+	public override bool PreAuthenticate
 	{
 		get
 		{
@@ -616,6 +633,117 @@ public class HttpWebRequest : WebRequest
 		return false;
 	}
 
+	internal bool AddHttpAuthHeaders(String challenge)
+	{
+		ICredentials cred;
+		String challengeType="Basic"; /* default */
+		Authorization auth;
+		
+		if(credentials==null) return false;
+		if(challenge==null && !preAuthenticate) 
+		{
+			return false; /* TODO : throw an exception here ? */
+		}
+		else if (challenge!=null)
+		{
+			int len=challenge.IndexOf(' ');
+			challengeType=( len==-1) ? challenge : 
+						challenge.Substring(0,len);
+		}
+		cred=credentials.GetCredential(this.Address,challengeType);
+		if(cred==null)
+		{
+			return false; /* TODO : throw an exception here ? */
+		}
+
+		if(preAuthenticate)
+		{
+			auth=AuthenticationManager.PreAuthenticate(this, 
+							cred);
+		}
+		else
+		{
+			auth=AuthenticationManager.Authenticate(challenge,
+							this, cred);
+		}
+
+		if(auth==null)
+		{
+			return false; /* TODO : throw an exception here ? */
+		}
+		this.Headers["Authorization"]=auth.Message;
+		return true;
+	}
+
+	internal bool AddProxyAuthHeaders(String challenge)
+	{
+		ICredentials cred;
+		String challengeType="Basic"; /* default */
+		Authorization auth;
+		
+		if(proxy==null) return false;
+		
+		if(proxy.Credentials==null) return false;
+
+		if(challenge==null)
+		{
+			throw new ArgumentNullException("challenge");
+		}
+		else
+		{
+			int len=challenge.IndexOf(' ');
+			challengeType=( len==-1) ? challenge : 
+						challenge.Substring(0,len);
+		}
+
+		cred=proxy.Credentials.GetCredential(this.Address,challengeType);
+		
+		if(cred==null)
+		{
+			return false; /* TODO : throw an exception here ? */
+		}
+
+		/* I would have added a PreAuthenticate option for this as well 
+		 * But MS or ECMA doesn't . So I won't -- Gopal */
+
+		auth=AuthenticationManager.Authenticate(challenge,
+							this, cred);
+		if(auth==null)
+		{
+			return false; /* TODO : throw an exception here ? */
+		}
+
+		this.Headers["Proxy-Authorization"]=auth.Message;
+		return true;
+	}
+
+	/* Re-use an HTTP Webrequest 
+	 * Note: use with great care ,might be buggy -- Gopal 
+	 * The basic assumption is that this WebRequest and the stream is of no further
+	 * use. So beware , content will be lost for the last call .
+	 * However the response will be retained if it is an incomplete Reset*/
+	internal void ResetRequest() 
+	{
+		if(outStream!=null) 
+		{
+			/* theoretically I should use the same KeepAlive stream for subsequent requests
+			 * but the HttpStream needs a bit of hacking in that case */
+			outStream.Close();
+		}
+		headerSent=false;
+		response=null;
+		outStream=null;
+	}
+
+	private HttpController Controller
+	{
+			get
+			{
+					if(controller==null) controller=new HttpController(this);
+					return this.controller;
+			}
+	}
+
 	private class HttpStream : Stream
 	{	
 		private HttpWebRequest request;
@@ -650,6 +778,7 @@ public class HttpWebRequest : WebRequest
 		
 		public override int ReadByte() 
 		{
+			if(contentLength<=0) return -1;
 			int retval = underlying.ReadByte();
 			contentLength-=1;
 			return retval;
@@ -673,6 +802,11 @@ public class HttpWebRequest : WebRequest
 		public override void WriteByte(byte value) 
 		{
 			underlying.WriteByte(value);
+		}
+
+		public override void Close()
+		{
+			underlying.Close();
 		}
 
 		public override bool CanRead 
@@ -754,6 +888,7 @@ public class HttpWebRequest : WebRequest
 					Socket(ip.AddressFamily, SocketType.Stream,
 							ProtocolType.Tcp);
 			server.Connect(ep);
+			/* TODO: Tunnel via Proxy before starting SSL */
 			return server;
 		}
 
@@ -763,8 +898,8 @@ public class HttpWebRequest : WebRequest
 			if(req.isSecured)
 			{
 #if CONFIG_SSL
-				/* TODO: Tunnel via Proxy before starting SSL */
 				SecureConnection secured=new SecureConnection();
+				/*TODO: suspected memory hold for SecureConnection */
 				Stream retval=secured.OpenStream(sock);
 				return retval;
 #else
@@ -835,6 +970,117 @@ public class HttpWebRequest : WebRequest
 		}
 	}
 #endif
+
+	/* this class forms the controller of the http life cycle
+	 * of OK,Forbiddens and redirects */
+	private class HttpController
+	{
+		/* I know it's a bad practice to have seperate states for each thing
+		 * but I'll fix it later :-) */
+		private enum HttpAuthState
+		{
+			NoAuth,
+			Trying,
+			OK,
+			Failed
+		}
+		
+		private HttpAuthState proxy;
+		private HttpAuthState http;
+
+		public HttpController(HttpWebRequest request)
+		{
+			if(request.PreAuthenticate)
+			{
+				this.http=HttpAuthState.Trying;
+			}
+			else
+			{
+				this.http=HttpAuthState.NoAuth;
+			}
+			this.proxy=HttpAuthState.NoAuth;
+		}
+		/* returns this WebRequest or a new one.
+		 * If nothing can be done, it will return the same 'ol 
+		 * request.
+		 * Note: will change substantially soon*/
+		public WebRequest Recurse(HttpWebRequest request,HttpWebResponse response)
+		{
+			HttpStatusCode code=response.StatusCode;
+			switch(code)
+			{
+				case HttpStatusCode.OK:
+				{
+					if(http==HttpAuthState.Trying) http=HttpAuthState.OK;
+					if(proxy==HttpAuthState.Trying) proxy=HttpAuthState.OK;
+					return request;
+				}
+				break; /* never reached */
+				
+				case HttpStatusCode.ProxyAuthenticationRequired:
+				{
+						String challenge=null;
+
+						if(proxy==HttpAuthState.Trying || proxy==HttpAuthState.Failed) 
+						{
+							proxy=HttpAuthState.Failed;
+							return request;
+						}
+						challenge=response.Headers["Proxy-Authenticate"];
+						request.ResetRequest();
+						if(request.AddProxyAuthHeaders(challenge))
+						{
+							proxy=HttpAuthState.OK;
+							return request;
+						}
+						else
+						{
+							proxy=HttpAuthState.Failed;
+							return request;
+						}
+				}
+				break;
+
+				case HttpStatusCode.Forbidden:
+				{
+						String challenge=null;
+
+						if(http==HttpAuthState.Trying || http==HttpAuthState.Failed) 
+						{
+							http=HttpAuthState.Failed;
+							return request;
+						}
+						challenge=response.Headers["WWW-Authenticate"];
+						request.ResetRequest();
+						if(request.AddHttpAuthHeaders(challenge))
+						{
+							http=HttpAuthState.OK;
+							return request;
+						}
+						else
+						{
+							http=HttpAuthState.Failed;
+							return request;
+						}
+				}
+				break;
+
+				case HttpStatusCode.Redirect:
+				{
+						/* TODO */
+				}
+				break;
+
+			}
+			
+			return request;
+		}
+
+		public override String ToString()
+		{
+				return "(Proxy="+proxy.ToString()+",Http="+http.ToString()+")";
+		}
+	}
 }//class
 
 }//namespace

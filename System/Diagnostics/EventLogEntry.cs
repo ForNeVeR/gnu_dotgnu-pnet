@@ -30,7 +30,10 @@ using System.Runtime.Serialization;
 [Serializable]
 [DesignTimeVisible(false)]
 [ToolboxItem(false)]
-public sealed class EventLogEntry : Component, ISerializable
+public sealed class EventLogEntry : Component
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 	// Internal state.
 	internal String category;
@@ -49,12 +52,14 @@ public sealed class EventLogEntry : Component, ISerializable
 
 	// Constructor.
 	internal EventLogEntry() {}
+#if CONFIG_SERIALIZATION
 	internal EventLogEntry(SerializationInfo info, StreamingContext context)
 			{
 				// The serialization uses a binary format which
 				// we don't yet know the details of.
 				throw new NotImplementedException();
 			}
+#endif
 
 	// Event log properties.
 	[MonitoringDescription("LogEntryCategory")]
@@ -270,6 +275,7 @@ public sealed class EventLogEntry : Component, ISerializable
 				return true;
 			}
 
+#if CONFIG_SERIALIZATION
 	// Implement the ISerializable interface.
 	void ISerializable.GetObjectData(SerializationInfo info,
 									 StreamingContext context)
@@ -278,6 +284,7 @@ public sealed class EventLogEntry : Component, ISerializable
 				// we don't yet know the details of.
 				throw new NotImplementedException();
 			}
+#endif
 
 }; // class EventLogEntry
 

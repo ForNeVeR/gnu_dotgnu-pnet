@@ -34,7 +34,7 @@ internal
 #endif
 abstract class NameObjectCollectionBase
 			: ICollection, IEnumerable
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 			, ISerializable, IDeserializationCallback
 #endif
 {
@@ -82,7 +82,7 @@ abstract class NameObjectCollectionBase
 				entries = new ArrayList(capacity);
 				readOnly = false;
 			}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected NameObjectCollectionBase(SerializationInfo info,
 									   StreamingContext context)
 			: this(0, null, null)
@@ -148,7 +148,7 @@ abstract class NameObjectCollectionBase
 				return new KeysEnumerator(this);
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 	// Implement the ISerializable interface.
 	public virtual void GetObjectData(SerializationInfo info,
@@ -163,7 +163,7 @@ abstract class NameObjectCollectionBase
 				// TODO: serialization support.
 			}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 	// Get the hash value for a string, restricted to the table size.
 	private int GetHash(String name)

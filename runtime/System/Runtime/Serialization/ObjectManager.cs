@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 using System.Collections;
 using System.Reflection;
@@ -475,6 +475,6 @@ public class ObjectManager
 
 }; // class ObjectManager
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

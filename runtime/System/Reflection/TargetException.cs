@@ -37,7 +37,7 @@ public class TargetException : ApplicationException
 		: base(msg) {}
 	public TargetException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected TargetException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {}
 #endif

@@ -34,7 +34,7 @@ public sealed class StackOverflowException : SystemException
 		: base(msg) {}
 	public StackOverflowException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal StackOverflowException(SerializationInfo info,
 									StreamingContext context)
 		: base(info, context) {}

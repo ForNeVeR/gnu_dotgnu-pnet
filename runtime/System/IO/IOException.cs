@@ -53,6 +53,8 @@ public class IOException : SystemException
 			errno = Errno.EIO;
 			HResult = hresult;
 		}
+#endif
+#if CONFIG_SERIALIZATION
 	protected IOException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {}
 #endif

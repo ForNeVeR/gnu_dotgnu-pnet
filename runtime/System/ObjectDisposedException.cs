@@ -35,7 +35,7 @@ public class ObjectDisposedException : InvalidOperationException
 		{ this.objectName = objectName; }
 	public ObjectDisposedException(String objectName, String msg)
 		: base(msg) { this.objectName = objectName; }
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ObjectDisposedException(SerializationInfo info,
 									  StreamingContext context)
 		: base(info, context)
@@ -85,7 +85,7 @@ public class ObjectDisposedException : InvalidOperationException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)

@@ -27,7 +27,7 @@ namespace System
 using System.Runtime.Serialization;
 
 public class MissingFieldException : MissingMemberException
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
@@ -42,6 +42,8 @@ public class MissingFieldException : MissingMemberException
 #if !ECMA_COMPAT
 	public MissingFieldException(String className, String fieldName)
 			: base(className, fieldName) {}
+#endif
+#if CONFIG_SERIALIZATION
 	protected MissingFieldException(SerializationInfo info,
 									StreamingContext context)
 			: base(info, context) {}

@@ -65,6 +65,7 @@ public class ConfigurationException : SystemException
 				this.filename = filename;
 				this.line = line;
 			}
+#if CONFIG_SERIALIZATION
 	protected ConfigurationException(SerializationInfo info,
 									 StreamingContext context)
 			: base(info, context)
@@ -82,6 +83,7 @@ public class ConfigurationException : SystemException
 				info.AddValue("filename", filename);
 				info.AddValue("line", line);
 			}
+#endif // CONFIG_SERIALIZATION
 
 	// Get the exception message, with line number information attached.
 	public override String Message

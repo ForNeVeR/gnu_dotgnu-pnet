@@ -26,7 +26,10 @@ namespace System
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-public class WeakReference : ISerializable
+public class WeakReference
+#if CONFIG_SERIALIZATION
+	: ISerializable
+#endif
 {
 
 	// Internal state.
@@ -50,6 +53,7 @@ public class WeakReference : ISerializable
 					this.handle = GCHandle.Alloc(obj, GCHandleType.Weak);
 				}
 			}
+#if CONFIG_SERIALIZATION
 	protected WeakReference(SerializationInfo info, StreamingContext context)
 			{
 				if(info == null)
@@ -72,6 +76,7 @@ public class WeakReference : ISerializable
 					this.handle = GCHandle.Alloc(obj, GCHandleType.Weak);
 				}
 			}
+#endif // CONFIG_SERIALIZATION
 
 	// Destructor.
 	~WeakReference()
@@ -111,6 +116,8 @@ public class WeakReference : ISerializable
 				}
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Get the serialization data for this object.
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
@@ -122,6 +129,8 @@ public class WeakReference : ISerializable
 				info.AddValue("TrackedObject", Target, typeof(Object));
 				info.AddValue("TrackResurrection", TrackResurrection);
 			}
+
+#endif // CONFIG_SERIALIZATION
 
 }; // class WeakReference
 

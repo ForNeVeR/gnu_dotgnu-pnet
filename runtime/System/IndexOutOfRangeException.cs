@@ -33,7 +33,7 @@ public sealed class IndexOutOfRangeException : SystemException
 		: base(msg) {}
 	public IndexOutOfRangeException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal IndexOutOfRangeException(SerializationInfo info,
 									  StreamingContext context)
 		: base(info, context) {}

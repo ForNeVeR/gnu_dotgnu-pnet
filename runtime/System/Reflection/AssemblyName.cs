@@ -31,7 +31,10 @@ using System.Runtime.Serialization;
 using System.Configuration.Assemblies;
 
 public sealed class AssemblyName
-	: ICloneable, ISerializable, IDeserializationCallback
+	: ICloneable
+#if CONFIG_SERIALIZATION
+	, ISerializable, IDeserializationCallback
+#endif
 {
 	// Internal state.
 	private String codeBase;
@@ -47,12 +50,14 @@ public sealed class AssemblyName
 
 	// Constructor.
 	public AssemblyName() {}
+#if CONFIG_SERIALIZATION
 	[TODO]
 	internal AssemblyName(SerializationInfo info,
 						  StreamingContext context)
 			{
 				// TODO
 			}
+#endif
 
 	// Get the assembly name for a specific file.
 	[TODO]
@@ -224,6 +229,8 @@ public sealed class AssemblyName
 				return FullName;
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Get the serialization data for this object.
 	[TODO]
 	public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -240,6 +247,8 @@ public sealed class AssemblyName
 			{
 				// Nothing to do here.
 			}
+
+#endif // CONFIG_SERIALIZATION
 
 }; // class AssemblyName
 

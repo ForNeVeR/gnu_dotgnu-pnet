@@ -38,9 +38,11 @@ public class RemotingTimeoutException : RemotingException
 		: base(msg) {}
 	public RemotingTimeoutException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if CONFIG_SERIALIZATION
 	internal RemotingTimeoutException(SerializationInfo info,
 									  StreamingContext context)
 		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

@@ -37,8 +37,10 @@ public class SEHException : ExternalException
 			: base(msg) {}
 	public SEHException(String msg, Exception inner)
 			: base(msg, inner) {}
+#if CONFIG_SERIALIZATION
 	protected SEHException(SerializationInfo info, StreamingContext context)
 			: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

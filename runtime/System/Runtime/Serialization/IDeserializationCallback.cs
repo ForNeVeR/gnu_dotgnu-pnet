@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 public
 #else
 internal

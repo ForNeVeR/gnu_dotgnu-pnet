@@ -34,7 +34,7 @@ public sealed class InvalidProgramException : SystemException
 		: base(msg) {}
 	public InvalidProgramException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal InvalidProgramException(SerializationInfo info,
 									 StreamingContext context)
 		: base(info, context) {}

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 public struct SerializationEntry
 {
@@ -68,6 +68,6 @@ public struct SerializationEntry
 
 }; // struct SerializationEntry
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

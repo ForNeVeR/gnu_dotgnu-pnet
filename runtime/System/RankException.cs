@@ -33,7 +33,7 @@ public class RankException : SystemException
 		: base(msg) {}
 	public RankException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected RankException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {}
 #endif

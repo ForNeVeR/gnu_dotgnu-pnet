@@ -41,9 +41,11 @@ public sealed class XmlSyntaxException : SystemException
 	public XmlSyntaxException(int lineNumber, String message)
 			: base(String.Format(_("Exception_XmlSyntaxLineMsg"),
 								 lineNumber, message)) {}
+#if CONFIG_SERIALIZATION
 	internal XmlSyntaxException(SerializationInfo info,
 								StreamingContext context)
 			: base(info, context) {}
+#endif
 
 	// Get the default HResult value for this type of exception.
 	internal override uint HResultDefault

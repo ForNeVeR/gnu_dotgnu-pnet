@@ -28,7 +28,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
 public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable, IDeserializationCallback
 #endif
 {
@@ -385,13 +385,18 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 						("loadFactor", _("ArgRange_HashLoadFactor"));
 				}
 			}
+
+#endif // !ECMA_COMPAT
+
+#if CONFIG_SERIALIZATION
+
 	[TODO]
 	protected Hashtable(SerializationInfo info, StreamingContext context)
 			{
 				// TODO
 			}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 	// Add the contents of a dictionary to this hash table.
 	private void AddDictionaryContents(IDictionary d)
@@ -839,7 +844,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this object.
 	[TODO]
@@ -856,7 +861,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				// TODO
 			}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 	// Determine if an item is equal to a key value.
 	protected virtual bool KeyEquals(Object item, Object key)
@@ -946,7 +951,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				{
 					this.table = table;
 				}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 		[TODO]
 		internal SynchronizedHashtable(SerializationInfo info,
 									   StreamingContext context)
@@ -1140,7 +1145,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					return table.KeyEquals(item, key);
 				}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 		// Get the serialization data for this object.
 		[TODO]
@@ -1156,7 +1161,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					// Nothing to do here for synchronized hash tables.
 				}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 	}; // SynchronizedHashtable
 

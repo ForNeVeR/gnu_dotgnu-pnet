@@ -34,7 +34,7 @@ public class SystemException : Exception
 		: base(msg) {}
 	public SystemException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected SystemException(SerializationInfo info, StreamingContext ctxt)
 		: base(info, ctxt) {}
 #endif

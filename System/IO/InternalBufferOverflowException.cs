@@ -36,9 +36,11 @@ public class InternalBufferOverflowException : SystemException
 		: base(msg) {}
 	public InternalBufferOverflowException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if CONFIG_SERIALIZATION
 	protected InternalBufferOverflowException(SerializationInfo info,
 											  StreamingContext context)
 		: base(info, context) {}
+#endif
 
 }; // class InternalBufferOverflowException
 

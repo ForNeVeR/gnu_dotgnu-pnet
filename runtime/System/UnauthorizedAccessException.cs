@@ -34,7 +34,7 @@ public class UnauthorizedAccessException : SystemException
 		: base(msg) {}
 	public UnauthorizedAccessException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected UnauthorizedAccessException(SerializationInfo info,
 										  StreamingContext context)
 		: base(info, context) {}

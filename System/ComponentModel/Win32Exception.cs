@@ -53,12 +53,14 @@ namespace System.ComponentModel
 		{
 			HResult = (int)0x80004005;
 		}
+#if CONFIG_SERIALIZATION
 		protected Win32Exception(SerializationInfo info,
 								 StreamingContext context)
 			: base(info, context)
 		{
 			nativeErrorCode = info.GetInt32("NativeErrorCode");
 		}
+#endif
 
 		public int NativeErrorCode 
 		{
@@ -68,12 +70,14 @@ namespace System.ComponentModel
 			}
 		}
 
+#if CONFIG_SERIALIZATION
 		public override void GetObjectData(SerializationInfo info,
 										   StreamingContext context)
 		{
 			base.GetObjectData(info, context);
 			info.AddValue("NativeErrorCode", nativeErrorCode);
 		}
+#endif
 
 	}
 #endif	

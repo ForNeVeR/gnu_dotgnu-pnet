@@ -46,7 +46,7 @@ public class BadImageFormatException : SystemException
 		: base(msg, inner) { this.fileName = fileName; }
 	public BadImageFormatException(String msg, String fileName)
 		: base(msg) { this.fileName = fileName; }
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected BadImageFormatException(SerializationInfo info,
 									  StreamingContext context)
 		: base(info, context)
@@ -128,7 +128,7 @@ public class BadImageFormatException : SystemException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)

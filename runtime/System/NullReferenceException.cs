@@ -34,7 +34,7 @@ public class NullReferenceException : SystemException
 		: base(msg) {}
 	public NullReferenceException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected NullReferenceException(SerializationInfo info,
 									 StreamingContext context)
 		: base(info, context) {}

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 using System.IO;
 using System.Collections;
@@ -113,6 +113,6 @@ public abstract class Formatter : IFormatter
 
 }; // class Formatter
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

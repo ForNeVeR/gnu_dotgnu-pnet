@@ -31,7 +31,7 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 
 public class Module : IClrProgramItem, ICustomAttributeProvider
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
@@ -212,6 +212,8 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 				return null;
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Get the serialization data for this module.
 	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
@@ -223,6 +225,8 @@ public class Module : IClrProgramItem, ICustomAttributeProvider
 				}
 				// TODO
 			}
+
+#endif // CONFIG_SERIALIZATION
 
 	// A type filter that searches on name.
 	private static bool FilterTypeNameImpl(Type type, Object criteria)

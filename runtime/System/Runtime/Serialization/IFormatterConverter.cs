@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 [CLSCompliant(false)]
 public interface IFormatterConverter
@@ -51,6 +51,6 @@ public interface IFormatterConverter
 
 }; // interface IFormatterConverter
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

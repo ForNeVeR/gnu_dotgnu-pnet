@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 using System.Runtime.Serialization;
 
@@ -35,9 +35,11 @@ public class SerializationException : SystemException
 		: base(msg) {}
 	public SerializationException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if CONFIG_SERIALIZATION
 	protected SerializationException(SerializationInfo info,
 									 StreamingContext context)
 		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault
@@ -59,6 +61,6 @@ public class SerializationException : SystemException
 
 }; // class SerializationException
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

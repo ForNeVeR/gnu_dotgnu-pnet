@@ -25,7 +25,7 @@ namespace System
 using System.Runtime.Serialization;
 
 public class ArgumentOutOfRangeException : ArgumentException
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
@@ -45,7 +45,7 @@ public class ArgumentOutOfRangeException : ArgumentException
 	public ArgumentOutOfRangeException(String paramName,
 									   Object _actualValue, String msg)
 			: base(msg, paramName) { actualValue = _actualValue; }
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ArgumentOutOfRangeException(SerializationInfo info,
 										  StreamingContext context)
 			: base(info, context)
@@ -101,7 +101,7 @@ public class ArgumentOutOfRangeException : ArgumentException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)

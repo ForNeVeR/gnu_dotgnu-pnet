@@ -44,11 +44,13 @@ public sealed class DirectoryInfo : FileSystemInfo
 				OriginalPath = path;
 				FullPath = Path.GetFullPath(path);
 			}
+#if CONFIG_SERIALIZATION
 	internal DirectoryInfo(SerializationInfo info, StreamingContext context)
 			: base(info, context)
 			{
 				// Nothing to do here.
 			}
+#endif
 
 	// Properties.
 	public DirectoryInfo Parent

@@ -29,7 +29,10 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 
 [Serializable]
-public sealed class Hash : ISerializable
+public sealed class Hash
+#if CONFIG_SERIALIZATION
+	: ISerializable
+#endif
 {
 	// Internal state.
 	private Assembly assembly;
@@ -46,11 +49,13 @@ public sealed class Hash : ISerializable
 				}
 				this.assembly = assembly;
 			}
+#if CONFIG_SERIALIZATION
 	[TODO]
 	internal Hash(SerializationInfo info, StreamingContext context)
 			{
 				// TODO
 			}
+#endif
 
 	// Get the MD5 hash value for the assembly.
 	public byte[] MD5
@@ -94,12 +99,16 @@ public sealed class Hash : ISerializable
 				return hashAlg.ComputeHash(dataToHash);
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Implement the ISerialization interface.
 	[TODO]
 	public void GetObjectData(SerializationInfo info, StreamingContext context)
 			{
 				// TODO
 			}
+
+#endif
 
 	// Convert this object into a string.
 	[TODO]

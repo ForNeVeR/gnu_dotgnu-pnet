@@ -34,7 +34,7 @@ public class InvalidCastException : SystemException
 		: base(msg) {}
 	public InvalidCastException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected InvalidCastException(SerializationInfo info,
 								   StreamingContext context)
 		: base(info, context) {}

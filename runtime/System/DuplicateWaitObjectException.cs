@@ -34,7 +34,7 @@ public class DuplicateWaitObjectException : ArgumentException
 			   paramName) {}
 	public DuplicateWaitObjectException(String paramName, String msg)
 		: base(msg, paramName) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected DuplicateWaitObjectException(SerializationInfo info,
 										   StreamingContext context)
 		: base(info, context) {}

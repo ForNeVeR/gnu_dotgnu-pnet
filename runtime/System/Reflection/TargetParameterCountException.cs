@@ -37,7 +37,7 @@ public sealed class TargetParameterCountException : ApplicationException
 		: base(msg) {}
 	public TargetParameterCountException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal TargetParameterCountException(SerializationInfo info,
 										   StreamingContext context)
 		: base(info, context) {}

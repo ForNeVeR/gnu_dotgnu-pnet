@@ -34,7 +34,7 @@ public class SynchronizationLockException : SystemException
 		: base(msg) {}
 	public SynchronizationLockException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected SynchronizationLockException(SerializationInfo info,
 										   StreamingContext context)
 		: base(info, context) {}

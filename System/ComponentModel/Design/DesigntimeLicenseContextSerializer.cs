@@ -22,7 +22,7 @@
 namespace System.ComponentModel.Design
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -43,6 +43,6 @@ public class DesigntimeLicenseContextSerializer
 
 }; // class DesigntimeLicenseContextSerializer
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.ComponentModel.Design

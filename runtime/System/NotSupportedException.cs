@@ -34,7 +34,7 @@ public class NotSupportedException : SystemException
 		: base(msg) {}
 	public NotSupportedException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected NotSupportedException(SerializationInfo info,
 									StreamingContext context)
 		: base(info, context) {}

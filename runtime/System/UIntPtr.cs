@@ -27,7 +27,7 @@ using System.Runtime.Serialization;
 
 [CLSCompliant(false)]
 public struct UIntPtr
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	: ISerializable
 #endif
 {
@@ -165,6 +165,10 @@ public struct UIntPtr
 				return x.ToPointer();
 			}
 
+#endif // !ECMA_COMPAT
+
+#if CONFIG_SERIALIZATION
+
 	// De-serialize an "UIntPtr" value.
 	internal unsafe UIntPtr(SerializationInfo info, StreamingContext context)
 			{
@@ -194,7 +198,7 @@ public struct UIntPtr
 				info.AddValue("value", ToUInt64());
 			}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // struct UIntPtr
 

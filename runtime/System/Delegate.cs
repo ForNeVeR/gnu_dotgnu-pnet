@@ -30,7 +30,7 @@ using System.Runtime.Serialization;
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
 public abstract class Delegate : ICloneable
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
@@ -508,7 +508,7 @@ public abstract class Delegate : ICloneable
 			}
 #endif
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,

@@ -69,7 +69,7 @@ public class JScriptException : ApplicationException, IVsaError
 				this.context = null;
 				this.message = null;
 			}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected JScriptException(SerializationInfo info,
 							   StreamingContext context)
 			{

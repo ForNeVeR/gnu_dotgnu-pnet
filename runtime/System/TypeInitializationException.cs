@@ -41,7 +41,7 @@ public sealed class TypeInitializationException : SystemException
 	TypeInitializationException(String typeName, Exception inner)
 		: base(null, inner)
 		{ this.typeName = typeName; }
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal TypeInitializationException(SerializationInfo info,
 										 StreamingContext context)
 		: base(info, context)
@@ -92,7 +92,7 @@ public sealed class TypeInitializationException : SystemException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)

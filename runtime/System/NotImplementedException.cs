@@ -38,7 +38,7 @@ public class NotImplementedException : SystemException
 		: base(msg) {}
 	public NotImplementedException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected NotImplementedException(SerializationInfo info,
 									  StreamingContext context)
 		: base(info, context) {}

@@ -39,7 +39,7 @@ public sealed class TargetInvocationException : ApplicationException
 		: base(msg, inner) {}
 	public TargetInvocationException(Exception inner)
 		: base(_("Exception_TargetInvoke"), inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal TargetInvocationException(SerializationInfo info,
 									   StreamingContext context)
 		: base(info, context) {}

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 public interface ISurrogateSelector
 {
@@ -39,6 +39,6 @@ public interface ISurrogateSelector
 
 }; // interface ISurrogateSelector
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

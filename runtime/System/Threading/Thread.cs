@@ -454,6 +454,8 @@ public sealed class Thread
 				}
 			}
 
+#if CONFIG_REMOTING
+
 	// Get the remoting context for the current thread.
 	[TODO]
 	public static Context CurrentContext
@@ -464,6 +466,8 @@ public sealed class Thread
 					return null;
 				}
 			}
+
+#endif // CONFIG_REMOTING
 
 	// Get or set the current culture for the thread.
 	public CultureInfo CurrentCulture

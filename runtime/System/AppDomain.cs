@@ -251,6 +251,10 @@ public sealed class AppDomain
 				setup.ShadowCopyDirectories = String.Empty;
 			}
 
+#endif // !ECMA_COMPAT
+
+#if CONFIG_REMOTING
+
 	// Create a COM object instance using the local activator logic.
 	public ObjectHandle CreateComInstanceFrom
 				(String assemblyName, String typeName)
@@ -265,10 +269,6 @@ public sealed class AppDomain
 				return Activator.CreateComInstanceFrom
 					(assemblyName, typeName, hashValue, hashAlgorithm);
 			}
-
-#endif // !ECMA_COMPAT
-
-#if CONFIG_REMOTING
 
 	// Create an instance of an assembly and unwrap its handle.
 	public Object CreateInstanceAndUnwrap(String assemblyName, String typeName)

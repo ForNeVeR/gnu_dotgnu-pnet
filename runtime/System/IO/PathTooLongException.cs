@@ -35,7 +35,7 @@ public class PathTooLongException : IOException
 			: base(Errno.ENAMETOOLONG, msg) {}
 	public PathTooLongException(String msg, Exception inner)
 			: base(Errno.ENAMETOOLONG, msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected PathTooLongException(SerializationInfo info,
 								   StreamingContext context)
 		: base(info, context) {}

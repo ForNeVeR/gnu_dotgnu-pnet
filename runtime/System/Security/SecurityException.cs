@@ -42,13 +42,15 @@ public class SecurityException : SystemException
 			: base(msg) {}
 	public SecurityException(String msg, Exception inner)
 			: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected SecurityException(SerializationInfo info,
 								StreamingContext context)
 			: base(info, context)
 			{
 				permissionState = info.GetString("PermissionState");
 			}
+#endif
+#if !ECMA_COMPAT
 	public SecurityException(String message, Type type)
 			: base(message)
 			{
@@ -118,6 +120,8 @@ public class SecurityException : SystemException
 				}
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)
@@ -125,6 +129,8 @@ public class SecurityException : SystemException
 				base.GetObjectData(info, context);
 				info.AddValue("PermissionState", permissionState);
 			}
+
+#endif
 
 	// Convert this object into a string.
 	public override String ToString()

@@ -37,9 +37,11 @@ public class PlatformNotSupportedException : NotSupportedException
 		: base(msg) {}
 	public PlatformNotSupportedException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if CONFIG_SERIALIZATION
 	protected PlatformNotSupportedException(SerializationInfo info,
 											StreamingContext context)
 		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

@@ -34,7 +34,7 @@ public class EndOfStreamException : IOException
 			: base(msg) {}
 	public EndOfStreamException(String msg, Exception inner)
 			: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected EndOfStreamException(SerializationInfo info,
 								   StreamingContext context)
 			: base(info, context) {}

@@ -37,9 +37,11 @@ public class SafeArrayRankMismatchException : SystemException
 			: base(msg) {}
 	public SafeArrayRankMismatchException(String msg, Exception inner)
 			: base(msg, inner) {}
+#if CONFIG_SERIALIZATION
 	protected SafeArrayRankMismatchException(SerializationInfo info,
 										     StreamingContext context)
 			: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

@@ -34,7 +34,7 @@ public sealed class MulticastNotSupportedException : SystemException
 		: base(msg) {}
 	public MulticastNotSupportedException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal MulticastNotSupportedException(SerializationInfo info,
 										    StreamingContext context)
 		: base(info, context) {}

@@ -34,7 +34,7 @@ public class ThreadStateException : SystemException
 		: base(msg) {}
 	public ThreadStateException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ThreadStateException(SerializationInfo info,
 								   StreamingContext context)
 		: base(info, context) {}

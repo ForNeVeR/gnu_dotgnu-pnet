@@ -27,7 +27,7 @@ namespace System
 using System.Runtime.Serialization;
 
 public class UriFormatException : FormatException
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
@@ -65,7 +65,7 @@ public class UriFormatException : FormatException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 	// De-serialize this object.
 	protected UriFormatException(SerializationInfo info,
@@ -79,7 +79,7 @@ public class UriFormatException : FormatException
 			base.GetObjectData(info, context);
 		}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // class UriFormatException
 

@@ -37,7 +37,7 @@ public sealed class AmbiguousMatchException : SystemException
 		: base(msg) {}
 	public AmbiguousMatchException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal AmbiguousMatchException(SerializationInfo info,
 									 StreamingContext context)
 		: base(info, context) {}

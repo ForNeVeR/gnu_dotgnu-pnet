@@ -28,7 +28,10 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 [Serializable]
-public abstract class FileSystemInfo : MarshalByRefObject, ISerializable
+public abstract class FileSystemInfo : MarshalByRefObject
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 	// Internal state.
 	protected String FullPath;
@@ -40,6 +43,7 @@ public abstract class FileSystemInfo : MarshalByRefObject, ISerializable
 				FullPath = null;
 				OriginalPath = null;
 			}
+#if CONFIG_SERIALIZATION
 	protected FileSystemInfo(SerializationInfo info, StreamingContext context)
 			{
 				if(info == null)
@@ -49,6 +53,7 @@ public abstract class FileSystemInfo : MarshalByRefObject, ISerializable
 				OriginalPath = info.GetString("OriginalPath");
 				FullPath = info.GetString("FullPath");
 			}
+#endif
 
 	// Properties.
 	public FileAttributes Attributes
@@ -157,6 +162,8 @@ public abstract class FileSystemInfo : MarshalByRefObject, ISerializable
 				// Nothing to do here - we don't cache values.
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Get the serialization data for this instance.
 	[ComVisible(false)]
 	public virtual void GetObjectData(SerializationInfo info,
@@ -169,6 +176,8 @@ public abstract class FileSystemInfo : MarshalByRefObject, ISerializable
 				info.AddValue("OriginalPath", OriginalPath);
 				info.AddValue("FullPath", FullPath);
 			}
+
+#endif
 
 }; // class FileSystemInfo
 

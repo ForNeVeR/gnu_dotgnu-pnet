@@ -34,7 +34,7 @@ public class ThreadInterruptedException : SystemException
 		: base(msg) {}
 	public ThreadInterruptedException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ThreadInterruptedException(SerializationInfo info,
 										 StreamingContext context)
 		: base(info, context) {}

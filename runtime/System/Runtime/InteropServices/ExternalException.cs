@@ -43,9 +43,11 @@ public class ExternalException : SystemException
 			{
 				this.errorCode = errorCode;
 			}
+#if CONFIG_SERIALIZATION
 	protected ExternalException(SerializationInfo info,
 								StreamingContext context)
 			: base(info, context) {}
+#endif
 
 	public virtual int ErrorCode
 	{

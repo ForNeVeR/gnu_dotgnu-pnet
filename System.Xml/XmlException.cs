@@ -63,7 +63,7 @@ public class XmlException : SystemException
 			this.lineNumber = lineNumber;
 			this.linePosition = linePosition;
 		}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected XmlException(SerializationInfo info, StreamingContext context)
 		: base(info, context)
 		{
@@ -108,7 +108,7 @@ public class XmlException : SystemException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)

@@ -25,7 +25,7 @@ namespace System
 using System.Runtime.Serialization;
 
 public class ArgumentException : SystemException
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
@@ -44,7 +44,7 @@ public class ArgumentException : SystemException
 			: base(msg, inner) { paramName = param; }
 	public ArgumentException(String msg, String param)
 			: base(msg) { paramName = param; }
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ArgumentException(SerializationInfo info,
 								StreamingContext context)
 			: base(info, context)
@@ -106,7 +106,7 @@ public class ArgumentException : SystemException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 [Flags]
 public enum StreamingContextStates
@@ -40,6 +40,6 @@ public enum StreamingContextStates
 
 }; // enum StreamingContextStates
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

@@ -28,7 +28,7 @@ using System.Runtime.Serialization;
 [Serializable]
 #endif
 public class WebException : InvalidOperationException
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
@@ -74,7 +74,7 @@ public class WebException : InvalidOperationException
 				myresponse = response;
 				mystatus = status;
 			}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected WebException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {}
 #endif
@@ -115,7 +115,7 @@ public class WebException : InvalidOperationException
 			} 
 		
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	void ISerializable.GetObjectData(SerializationInfo info,
 									 StreamingContext context)

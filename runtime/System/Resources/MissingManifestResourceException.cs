@@ -42,7 +42,7 @@ class MissingManifestResourceException : SystemException
 		: base(msg) {}
 	public MissingManifestResourceException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected MissingManifestResourceException(SerializationInfo info,
 										       StreamingContext context)
 		: base(info, context) {}

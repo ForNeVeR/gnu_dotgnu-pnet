@@ -36,7 +36,7 @@ public class ArgumentNullException : ArgumentException
 		: base(preloadedMessage, paramName) {}
 	public ArgumentNullException(String paramName, String msg)
 		: base(msg, paramName) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ArgumentNullException(SerializationInfo info,
 									StreamingContext context)
 		: base(info, context) {}

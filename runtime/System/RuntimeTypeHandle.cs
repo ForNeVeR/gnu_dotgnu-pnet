@@ -24,7 +24,7 @@ namespace System
 using System.Runtime.Serialization;
 
 public struct RuntimeTypeHandle
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	: ISerializable
 #endif
 {
@@ -46,7 +46,7 @@ public struct RuntimeTypeHandle
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 	// De-serialize this object.
 	[TODO]
@@ -65,7 +65,7 @@ public struct RuntimeTypeHandle
 				// TODO
 			}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // class RuntimeTypeHandle
 

@@ -41,8 +41,10 @@ public class COMException : ExternalException
 			: base(msg, inner) {}
 	public COMException(String msg, int errorCode)
 			: base(msg, errorCode) {}
+#if CONFIG_SERIALIZATION
 	protected COMException(SerializationInfo info, StreamingContext context)
 			: base(info, context) {}
+#endif
 
 	// Convert this object into a string.
 	public override String ToString()

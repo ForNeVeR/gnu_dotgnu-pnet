@@ -20,4 +20,7 @@
 <!-- Use remoting facilities -->
 <define name="CONFIG_REMOTING" value="false"/>
 
+<!-- Use serialization facilities -->
+<define name="CONFIG_SERIALIZATION" value="false"/>
+
 </profile>

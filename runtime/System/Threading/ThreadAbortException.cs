@@ -35,7 +35,7 @@ public sealed class ThreadAbortException : SystemException
 			{
 				this.stateInfo = stateInfo;
 			}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal ThreadAbortException(SerializationInfo info,
 								  StreamingContext context)
 			: base(info, context) {}

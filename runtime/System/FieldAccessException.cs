@@ -36,7 +36,7 @@ public class FieldAccessException : MemberAccessException
 		: base(msg) {}
 	public FieldAccessException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected FieldAccessException(SerializationInfo info,
 								   StreamingContext context)
 		: base(info, context) {}

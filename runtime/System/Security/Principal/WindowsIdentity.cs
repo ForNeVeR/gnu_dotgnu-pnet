@@ -31,7 +31,10 @@ using System.Runtime.Serialization;
 
 [Serializable]
 public class WindowsIdentity
-	: IIdentity, ISerializable, IDeserializationCallback
+	: IIdentity
+#if CONFIG_SERIALIZATION
+	, ISerializable, IDeserializationCallback
+#endif
 {
 	// Internal state.
 	private IntPtr userToken;
@@ -92,6 +95,7 @@ public class WindowsIdentity
 				this.acctType = WindowsAccountType.Normal;
 				this.isAuthenticated = false;
 			}
+#if CONFIG_SERIALIZATION
 	[TODO]
 	public WindowsIdentity(SerializationInfo info, StreamingContext context)
 			{
@@ -101,6 +105,7 @@ public class WindowsIdentity
 				}
 				// TODO
 			}
+#endif
 
 	// Destructor.
 	~WindowsIdentity()
@@ -171,6 +176,8 @@ public class WindowsIdentity
 				}
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Implement the ISerializable interface.
 	[TODO]
 	void ISerializable.GetObjectData(SerializationInfo info,
@@ -184,6 +191,8 @@ public class WindowsIdentity
 			{
 				// Nothing to do here in this implementation.
 			}
+
+#endif // CONFIG_SERIALIZATION
 
 	// Get the anonymous Windows identity object.
 	public static WindowsIdentity GetAnonymous()

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 using System.Reflection;
 using System.Security.Permissions;
@@ -232,6 +232,6 @@ public sealed class FormatterServices
 
 }; // class FormatterServices
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 public class FormatterConverter : IFormatterConverter
 {
@@ -107,6 +107,6 @@ public class FormatterConverter : IFormatterConverter
 
 }; // class FormatterConverter
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

@@ -22,7 +22,7 @@
 namespace System.Runtime.Serialization
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 public interface ISerializationSurrogate
 {
@@ -38,6 +38,6 @@ public interface ISerializationSurrogate
 
 }; // interface ISerializationSurrogate
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // namespace System.Runtime.Serialization

@@ -34,7 +34,7 @@ public class OutOfMemoryException : SystemException
 		: base(msg) {}
 	public OutOfMemoryException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected OutOfMemoryException(SerializationInfo info,
 								   StreamingContext context)
 		: base(info, context) {}

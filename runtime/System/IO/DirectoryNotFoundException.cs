@@ -35,7 +35,7 @@ public class DirectoryNotFoundException : IOException
 			: base(Errno.ENOTDIR, msg) {}
 	public DirectoryNotFoundException(String msg, Exception inner)
 			: base(Errno.ENOTDIR, msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected DirectoryNotFoundException(SerializationInfo info,
 										 StreamingContext context)
 			: base(info, context) {}

@@ -36,7 +36,7 @@ public class TypeUnloadedException : SystemException
 		: base(msg) {}
 	public TypeUnloadedException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected TypeUnloadedException(SerializationInfo info,
 									StreamingContext context)
 		: base(info, context) {}

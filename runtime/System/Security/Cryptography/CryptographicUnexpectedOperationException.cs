@@ -42,9 +42,11 @@ public class CryptographicUnexpectedOperationException : CryptographicException
 	public CryptographicUnexpectedOperationException
 				(String format, String insert)
 		: base(String.Format(format, insert)) {}
+#if CONFIG_SERIALIZATION
 	protected CryptographicUnexpectedOperationException
 				(SerializationInfo info, StreamingContext context)
 		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

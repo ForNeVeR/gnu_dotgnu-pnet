@@ -275,7 +275,7 @@ public class VsaException : Exception
 			}
 
 	// Serialization support.
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	public VsaException(SerializationInfo info, StreamingContext context)
 			{
 				// TODO

@@ -40,8 +40,11 @@ public class Assembly : IClrProgramItem
 #if CONFIG_REFLECTION
 	, ICustomAttributeProvider
 #endif
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 #if !ECMA_COMPAT
-	, ISerializable, IEvidenceFactory
+	, IEvidenceFactory
 #endif
 {
 
@@ -595,6 +598,8 @@ public class Assembly : IClrProgramItem
 	// Module resolution event.
 	public event ModuleResolveEventHandler ModuleResolve;
 
+#if CONFIG_SERIALIZATION
+
 	// Serialize this object.
 	[TODO]
 	public virtual void GetObjectData(SerializationInfo info,
@@ -606,6 +611,8 @@ public class Assembly : IClrProgramItem
 				}
 				// TODO
 			}
+
+#endif // CONFIG_SERIALIZATION
 
 	// Get the loaded modules within this assembly.  We make no
 	// distinction between loaded and unloaded in this implementation,

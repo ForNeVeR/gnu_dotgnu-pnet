@@ -36,7 +36,7 @@ public class MemberAccessException : SystemException
 			: base(msg) {}
 	public MemberAccessException(String msg, Exception inner)
 			: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected MemberAccessException(SerializationInfo info,
 									StreamingContext context)
 			: base(info, context) {}

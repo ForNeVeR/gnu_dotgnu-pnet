@@ -36,7 +36,7 @@ public class EntryPointNotFoundException : TypeLoadException
 		: base(msg) {}
 	public EntryPointNotFoundException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected EntryPointNotFoundException(SerializationInfo info,
 										  StreamingContext context)
 		: base(info, context) {}

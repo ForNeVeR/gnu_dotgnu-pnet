@@ -56,7 +56,7 @@ applications that didn't expect them to be present.
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
 public class Exception
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	: ISerializable
 #endif
 {
@@ -84,7 +84,7 @@ public class Exception
 			message = msg;
 			innerException = inner;
 		}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected Exception(SerializationInfo info, StreamingContext context)
 		{
 			if(info == null)
@@ -345,7 +345,7 @@ public class Exception
 			}
 		}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 	// Get the serialization data for this exception object.
 	public virtual void GetObjectData(SerializationInfo info, 
@@ -368,7 +368,7 @@ public class Exception
 			info.AddValue("HResult", HResult);
 		}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // class Exception
 

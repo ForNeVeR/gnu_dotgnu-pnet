@@ -33,7 +33,7 @@ public class FormatException : SystemException
 		: base(msg) {}
 	public FormatException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected FormatException(SerializationInfo info, StreamingContext context)
 		: base(info, context) {}
 #endif

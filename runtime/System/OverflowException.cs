@@ -34,7 +34,7 @@ public class OverflowException : ArithmeticException
 		: base(msg) {}
 	public OverflowException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected OverflowException(SerializationInfo info,
 								StreamingContext context)
 		: base(info, context) {}

@@ -66,7 +66,7 @@ public class NameValueCollection : NameObjectCollectionBase
 			{
 				// Nothing to do here.
 			}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected NameValueCollection(SerializationInfo info,
 								  StreamingContext context)
 			: base(info, context)

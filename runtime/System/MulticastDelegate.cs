@@ -300,7 +300,7 @@ public abstract class MulticastDelegate : Delegate
 				return list;
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 
 	// Get serialization data for this delegate.
 	[TODO]
@@ -310,7 +310,7 @@ public abstract class MulticastDelegate : Delegate
 				// TODO
 			}
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_SERIALIZATION
 
 }; // class MulticastDelegate
 

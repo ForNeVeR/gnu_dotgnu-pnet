@@ -35,6 +35,7 @@ namespace System.Xml.Schema
 			 HResult = (int)0x80131941;
 			 throw new NotImplementedException(".ctor");
 		}
+#if CONFIG_SERIALIZATION
 		[TODO]
 		protected XmlSchemaException(SerializationInfo info,
 									 StreamingContext context)
@@ -42,6 +43,7 @@ namespace System.Xml.Schema
 		{
 			// TODO
 		}
+#endif
 
 		[TODO]
 		public int LineNumber 
@@ -88,6 +90,7 @@ namespace System.Xml.Schema
 			}
  		}
 
+#if CONFIG_SERIALIZATION
 		[TODO]
 		public override void GetObjectData(SerializationInfo info,
 										   StreamingContext context)
@@ -95,6 +98,7 @@ namespace System.Xml.Schema
 			base.GetObjectData(info, context);
 			// TODO
 		}
+#endif
 
 	}
 }//namespace

@@ -45,7 +45,7 @@ public class SocketException :
 		{
 			errno = Errno.EREMOTEIO;
 		}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected SocketException(SerializationInfo info, StreamingContext context)
 		: base(info, context)
 		{

@@ -34,7 +34,7 @@ public class ArithmeticException : SystemException
 		: base(msg) {}
 	public ArithmeticException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ArithmeticException(SerializationInfo info,
 								  StreamingContext context)
 		: base(info, context) {}

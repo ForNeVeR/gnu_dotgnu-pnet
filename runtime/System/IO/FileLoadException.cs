@@ -60,7 +60,7 @@ public class FileLoadException : IOException
 			{
 				this.fileName = fileName;
 			}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected FileLoadException(SerializationInfo info,
 								StreamingContext context)
 			: base(info, context)
@@ -152,7 +152,7 @@ public class FileLoadException : IOException
 				}
 			}
 
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	// Get the serialization data for this object.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)

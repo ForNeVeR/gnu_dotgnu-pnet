@@ -27,7 +27,10 @@ using System;
 using System.Runtime.Serialization;
 
 [CLSCompliant(false)]
-public unsafe sealed class Pointer : ISerializable
+public unsafe sealed class Pointer
+#if CONFIG_SERIALIZATION
+	: ISerializable
+#endif
 {
 	// Internal state.
 	private void *ptr;
@@ -67,6 +70,8 @@ public unsafe sealed class Pointer : ISerializable
 				return ((Pointer)ptr).ptr;
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Implement the ISerializable interface.
 	void ISerializable.GetObjectData(SerializationInfo info,
 									 StreamingContext context)
@@ -74,6 +79,8 @@ public unsafe sealed class Pointer : ISerializable
 				throw new NotSupportedException
 					(_("NotSupp_SerializePointer"));
 			}
+
+#endif
 
 }; // class Pointer
 

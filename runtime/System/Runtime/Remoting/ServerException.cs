@@ -38,9 +38,11 @@ public class ServerException : SystemException
 		: base(msg) {}
 	public ServerException(String msg, Exception inner)
 		: base(msg, inner) {}
+#if CONFIG_SERIALIZATION
 	internal ServerException(SerializationInfo info,
 							 StreamingContext context)
 		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

@@ -34,7 +34,7 @@ public sealed class ExecutionEngineException : SystemException
 		: base(msg) {}
 	public ExecutionEngineException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	internal ExecutionEngineException(SerializationInfo info,
 									  StreamingContext context)
 		: base(info, context) {}

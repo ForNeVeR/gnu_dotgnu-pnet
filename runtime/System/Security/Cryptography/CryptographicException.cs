@@ -41,9 +41,11 @@ public class CryptographicException : SystemException
 		: base(String.Format(format, insert)) {}
 	public CryptographicException(int hr)
 		: base(_("Crypto_Exception")) {}
+#if CONFIG_SERIALIZATION
 	protected CryptographicException(SerializationInfo info,
 									 StreamingContext context)
 		: base(info, context) {}
+#endif
 
 	// Get the default message to use for this exception type.
 	internal override String MessageDefault

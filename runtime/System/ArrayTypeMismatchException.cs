@@ -34,7 +34,7 @@ public class ArrayTypeMismatchException : SystemException
 		: base(msg) {}
 	public ArrayTypeMismatchException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected ArrayTypeMismatchException(SerializationInfo info,
 										 StreamingContext context)
 		: base(info, context) {}

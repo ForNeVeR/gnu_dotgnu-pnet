@@ -34,7 +34,7 @@ public class DivideByZeroException : ArithmeticException
 		: base(msg) {}
 	public DivideByZeroException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected DivideByZeroException(SerializationInfo info,
 									StreamingContext context)
 		: base(info, context) {}

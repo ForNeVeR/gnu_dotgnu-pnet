@@ -28,8 +28,10 @@ using System;
 using System.Runtime.Serialization;
 
 [Serializable]
-public sealed class ReflectionTypeLoadException
-	: SystemException, ISerializable
+public sealed class ReflectionTypeLoadException : SystemException
+#if CONFIG_SERIALIZATION
+	, ISerializable
+#endif
 {
 	// Internal state.
 	private Type[] classes;
@@ -45,9 +47,11 @@ public sealed class ReflectionTypeLoadException
 				this.classes = classes;
 				this.exceptions = exceptions;
 			}
+#if CONFIG_SERIALIZATION
 	internal ReflectionTypeLoadException(SerializationInfo info,
 										 StreamingContext context)
 			: base(info, context) {}
+#endif
 
 	// Exception properties.
 	public Type[] Types
@@ -83,6 +87,8 @@ public sealed class ReflectionTypeLoadException
 				}
 			}
 
+#if CONFIG_SERIALIZATION
+
 	// Implement the ISerializable interface.
 	public override void GetObjectData(SerializationInfo info,
 									   StreamingContext context)
@@ -91,6 +97,8 @@ public sealed class ReflectionTypeLoadException
 				info.AddValue("Types", classes, typeof(Type[]));
 				info.AddValue("Exceptions", exceptions, typeof(Exception[]));
 			}
+
+#endif
 
 }; // class ReflectionTypeLoadException
 

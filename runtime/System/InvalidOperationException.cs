@@ -34,7 +34,7 @@ public class InvalidOperationException : SystemException
 		: base(msg) {}
 	public InvalidOperationException(String msg, Exception inner)
 		: base(msg, inner) {}
-#if !ECMA_COMPAT
+#if CONFIG_SERIALIZATION
 	protected InvalidOperationException(SerializationInfo info,
 										StreamingContext context)
 		: base(info, context) {}

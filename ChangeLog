@@ -11,6 +11,9 @@
 	* doc/pnettools.texi, ildd/ildd.1, ildd/ildd.c: add the "-r"
 	option to "ildd", to recursively print dependencies.
 
+	* csant/csant_cscc.c (CSAntTask_ResLink): spelling mistake - should
+	be "installasdefault", not "install".
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (ResolveTypeRefs): if a TypeRef to a foreign

@@ -1494,7 +1494,7 @@ int CSAntTask_ResLink(CSAntTask *task)
 	resources = CSAntFileSetLoad(task, "resources", CSAntBaseBuildDir);
 	temp = (char *)CSAntTaskParam(task, "install");
 	install = (temp && !ILStrICmp(temp, "true"));
-	temp = (char *)CSAntTaskParam(task, "install");
+	temp = (char *)CSAntTaskParam(task, "installasdefault");
 	if(temp)
 	{
 		installAsDefault = !ILStrICmp(temp, "true");

@@ -1958,7 +1958,15 @@ ILType *CTypeGetElemType(ILType *type)
 	field = FindArrayElemField(classInfo);
 	if(field)
 	{
-		return ILField_Type(field);
+		type = ILFieldGetTypeWithPrefixes(field);
+		if(CTypeIsFunctionPtr(type))
+		{
+			return type;
+		}
+		else
+		{
+			return ILField_Type(field);
+		}
 	}
 	else
 	{

@@ -20,6 +20,9 @@
 	* cscc/c/c_grammar.y: permit "register" to be used in a
 	formal parameter list.
 
+	* cscc/c/c_types.c (CTypeGetElemType): preserve function pointer
+	modifiers when dereferencing an array of function pointers.
+
 2003-06-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/java/.cvsignore, cscc/bf/.cvsignore : add generated

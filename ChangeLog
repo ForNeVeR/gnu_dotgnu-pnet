@@ -6,6 +6,9 @@
 	cscc/c/c_typesize.h: remove reference to the definitions in
 	"c_typesize.h" because it is now obsolete.
 
+	* cscc/c/c_lvalue.tc: move some ILGenAdjust calls in the bit field
+	code that were in the wrong position.
+
 2004-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.1, cscc/cscc.c, cscc/common/cc_main.c,

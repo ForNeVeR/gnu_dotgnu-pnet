@@ -2562,6 +2562,7 @@ ILNode_Prepare(ILNode_CBitField)
 
 	/* Fetch the current value and mask off the bit field */
 	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
 	if(CTypeIsComplex(ownerType))
 	{
 		LoadValueFromPointer(info, ILField_Type(node->field));
@@ -2570,7 +2571,6 @@ ILNode_Prepare(ILNode_CBitField)
 	{
 		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
 	}
-	ILGenAdjust(info, 1);
 	if(node->machineType == ILMachineType_Int64 ||
 	   node->machineType == ILMachineType_UInt64)
 	{
@@ -2619,6 +2619,7 @@ ILNode_GetAndPrepare(ILNode_CBitField)
 
 	/* Fetch the current value of the storage field */
 	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
 	if(CTypeIsComplex(ownerType))
 	{
 		LoadValueFromPointer(info, ILField_Type(node->field));
@@ -2627,7 +2628,6 @@ ILNode_GetAndPrepare(ILNode_CBitField)
 	{
 		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
 	}
-	ILGenAdjust(info, 1);
 
 	/* Extract the bit field value and prepare the remainder for storing */
 	BitFieldGetAndPrepare(info, node->machineType, node->bitFieldStart,

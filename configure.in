@@ -1,0 +1,104 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(include/stdarg.h)
+
+dnl Determine the build, host, and target system types.
+AC_CANONICAL_SYSTEM
+
+dnl Initialize automake.
+AM_INIT_AUTOMAKE(pnetC, 0.0.1)
+AM_MAINTAINER_MODE
+
+dnl The --with-pnet option can be used to specify the location of
+dnl Portable.NET, so that we know where to get the C compiler, etc.
+dnl The default location is assumed to be "../pnet".
+AC_SUBST(PNET_PATH)
+AC_ARG_WITH(pnet,
+[  --with-pnet=DIR         specify the location of Portable.NET],
+[
+	if test -n "$withval"; then
+		case "$withval" in
+		  ../*) PNET_PATH="`pwd`/$withval" ;;
+		     *) PNET_PATH="$withval" ;;
+		esac
+	else
+		PNET_PATH="`pwd`/../pnet"
+	fi
+],
+[
+	PNET_PATH="`pwd`/../pnet"
+])
+
+dnl The --with-32bit option can be used to force a 32-bit only build.
+AC_SUBST(LIBRARY_SUFFIX)
+AC_ARG_WITH(32bit,
+[  --with-32bit            specify a 32-bit only build],
+[
+	EXTRA_CFLAGS="-m32bit-only"
+	LIBRARY_SUFFIX="32"
+],
+[
+	EXTRA_CFLAGS=""
+	LIBRARY_SUFFIX="64"
+])
+
+dnl Find the location of the "cscc" compiler.
+AC_PATH_PROG(CSCC, cscc,, ${PNET_PATH}/cscc:${prefix}/bin:$PATH)
+if test -z "$CSCC" ; then
+	AC_MSG_ERROR([Portable.NET's C compiler, cscc, is required to build.])
+fi
+
+dnl Find the location of the "ilrun" runtime engine.
+AC_PATH_PROG(ILRUN, ilrun,, ${PNET_PATH}/engine:${prefix}/bin:$PATH)
+
+dnl Determine additional flags that we need to force "cscc" to act sane.
+CFLAGS="-x c $EXTRA_CFLAGS"
+if test -x "$PNET_PATH/ilasm/ilasm" ; then
+	CFLAGS="$CFLAGS -filasm-path=$PNET_PATH/ilasm/ilasm"
+fi
+if test -x "$PNET_PATH/cscc/cscc-c-s" ; then
+	CFLAGS="$CFLAGS -fplugin-c-path=$PNET_PATH/cscc/cscc-c-s"
+fi
+if test -f "$PNET_PATH/csupport/OpenSystem.C.dll" ; then
+	CFLAGS="$CFLAGS -L$PNET_PATH/csupport"
+fi
+if test -f "$PNET_PATH/samples/mscorlib.dll" ; then
+	CFLAGS="$CFLAGS -L$PNET_PATH/samples"
+fi
+
+dnl Modify the environment to force autoconf/automake to use "cscc"
+dnl instead of the system's default C compiler.  We use the flag
+dnl "-fcross-compile-check" to force cscc to generate a program that
+dnl will compile successfully, but won't run.  This fools configure
+dnl into believing that cscc is a cross-compiler, which it is.
+CC="$CSCC"
+CPPFLAGS="-nostdinc"
+LDFLAGS="-fcross-compile-check -nostdlib -lmscorlib"
+
+dnl Checks for programs.
+AC_PROG_AWK
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+
+dnl Remove the "-fcross-compile-check" flag from "LDFLAGS".
+LDFLAGS="-nostdlib -lmscorlib"
+
+dnl Check for file extensions.
+AC_EXEEXT
+AC_OBJEXT
+
+AC_OUTPUT([
+Makefile
+include/Makefile
+include/sys/Makefile
+libc/Makefile
+libc/malloc/Makefile
+libc/misc/Makefile
+libc/stdio/Makefile
+libm/Makefile
+samples/Makefile
+samples/ilrun.sh])
+
+chmod +x "${srcdir}/samples/ilrun.sh"

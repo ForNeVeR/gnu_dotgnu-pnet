@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# ilrun.sh - Helper script for launching "ilrun" on the sample programs.
+#
+# Copyright (c) 2002  Southern Storm Software, Pty Ltd.
+#
+
+PNET_PATH="@PNET_PATH@"
+ILRUN="@ILRUN@"
+
+ILRUN_FLAGS=""
+if test -f "$PNET_PATH/csupport/OpenSystem.C.dll" ; then
+	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNET_PATH/csupport"
+fi
+if test -f "$PNET_PATH/samples/mscorlib.dll" ; then
+	ILRUN_FLAGS="$ILRUN_FLAGS -L$PNET_PATH/samples"
+fi
+
+if ! test -f "../libc/libc@LIBRARY_SUFFIX@.dll" ; then
+	echo "$0: could not find libc@LIBRARY_SUFFIX@.dll" 1>&2
+	exit 1
+fi
+
+exec "$ILRUN" $ILRUN_FLAGS -L../libc -L../libm $*

@@ -23,6 +23,43 @@
 /*
  * Check the contents of a register for NULL and re-execute
  * the current instruction in the interpreter if it is.
+ * This function generates a null check even if null check 
+ * elimination is enabled.
+ */
+static void ForceCheckForNull(MDUnroll *unroll, int reg, unsigned char *pc,
+						 unsigned char *label, int popReg)
+{
+	md_inst_ptr patch;
+
+	/* Check the register's contents against NULL */
+	md_reg_is_null(unroll->out, reg);
+	patch = unroll->out;
+#ifdef CVM_X86
+	x86_branch8(unroll->out, X86_CC_NE, 0, 0);
+#else
+	md_branch_ne(unroll->out);
+#endif
+
+	/* Re-execute the current instruction in the interpreter */
+	if(popReg)
+	{
+		--(unroll->pseudoStackSize);
+		ReExecute(unroll, pc, label);
+		++(unroll->pseudoStackSize);
+	}
+	else
+	{
+		ReExecute(unroll, pc, label);
+	}
+
+	/* Continue with real execution here */
+	md_patch(patch, unroll->out);
+}
+
+/*
+ * Check the contents of a register for NULL and re-execute
+ * the current instruction in the interpreter if it is.
+ * If null check elmination is enabled, this function does nothing.
  */
 static void CheckForNull(MDUnroll *unroll, int reg, unsigned char *pc,
 						 unsigned char *label, int popReg)
@@ -224,6 +261,16 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 #endif /* CVM_ARM */
 
 #elif defined(IL_UNROLL_CASES)
+
+case COP_CKNULL:
+{
+	/* Check the stack top for null and throw an exception if it is */
+	UNROLL_START();
+	reg = GetTopWordRegister(&unroll, MD_REG1_NATIVE);
+	ForceCheckForNull(&unroll, reg, pc, (unsigned char *)inst, 0);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
 
 case COP_BREAD:
 {

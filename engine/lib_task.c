@@ -21,6 +21,42 @@
 #include "engine.h"
 #include "lib_defs.h"
 #include "il_utils.h"
+#include "il_sysio.h"
+#include "il_thread.h"
+#ifdef IL_WIN32_PLATFORM
+	#include <windows.h>
+#else
+	#ifdef HAVE_SYS_TYPES_H
+		#include <sys/types.h>
+	#endif
+	#ifdef HAVE_UNISTD_H
+		#include <unistd.h>
+	#endif
+	#ifdef HAVE_SYS_WAIT_H
+		#include <sys/wait.h>
+	#endif
+	#ifndef WEXITSTATUS
+		#define	WEXITSTATUS(status)		((unsigned)(status) >> 8)
+	#endif
+	#ifndef WIFEXITED
+		#define	WIFEXITED(status)		(((status) & 255) == 0)
+	#endif
+	#ifndef WTERMSIG
+		#define	WTERMSIG(status)		(((unsigned)(status)) & 0x7F)
+	#endif
+	#ifndef WIFSIGNALLED
+		#define	WIFSIGNALLED(status)	(((status) & 255) != 0)
+	#endif
+	#ifndef WCOREDUMP
+		#define	WCOREDUMP(status)		(((status) & 0x80) != 0)
+	#endif
+	#ifdef HAVE_FCNTL
+		#include <fcntl.h>
+	#endif
+	#include <signal.h>
+	#include <stdlib.h>
+	#include <errno.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -152,18 +188,64 @@ ILString *_IL_TaskMethods_GetEnvironmentValue(ILExecThread *thread,
 ILInt32 _IL_Process_GetHandleCount(ILExecThread *_thread,
 								   ILNativeInt processHandle)
 {
+#ifdef IL_WIN32_PLATFORM
 	/* TODO */
 	return -1;
+#else
+	/* Returning -1 tells the caller to assume that there
+	   are 3 handles for stdin, stdout, and stderr */
+	return -1;
+#endif
 }
 
+#ifdef IL_WIN32_PLATFORM
+
 /*
- * private static IntPtr GetMainWindowHandle(IntPtr processHandle);
+ * User data for "EnumCallback".
+ */
+typedef struct
+{
+	DWORD	processId;
+	HWND	found;
+
+} EnumCallbackData;
+
+/*
+ * Callback for "EnumWindows".
+ */
+static BOOL EnumCallback(HWND hWnd, LPARAM lParam)
+{
+	EnumCallbackData *data = (EnumCallbackData *)lParam;
+	DWORD processID = 0;
+	GetWindowThreadProcessId(hWnd, &processID);
+	if(data->processID == processID &&
+	   GetWindow(hWnd, GW_OWNER) == NULL &&
+	   IsWindowVisible(hWnd))
+	{
+		data->found = hWnd;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+#endif /* IL_WIN32_PLATFORM */
+
+/*
+ * private static IntPtr GetMainWindowHandle(int processID);
  */
 ILNativeInt _IL_Process_GetMainWindowHandle(ILExecThread *_thread,
-											ILNativeInt processHandle)
+											ILInt32 processID)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+	EnumCallbackData data;
+	data.process = (DWORD)processID;
+	data.found = NULL;
+	EnumWindows(EnumCallback, (LPARAM)&data);
+	return (ILNativeInt)(data.found);
+#else
+	/* Non-Win32 platforms don't have a notion of "main window" */
 	return 0;
+#endif
 }
 
 /*
@@ -172,8 +254,27 @@ ILNativeInt _IL_Process_GetMainWindowHandle(ILExecThread *_thread,
 ILString *_IL_Process_GetMainWindowTitle(ILExecThread * _thread,
 										 ILNativeInt windowHandle)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+	int len = GetWindowTextLength((HWnd)windowHandle);
+	char *buf;
+	ILString *str;
+	if(len <= 0)
+	{
+		return 0;
+	}
+	buf = (char *)ILMalloc(len + 1);
+	if(!buf)
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	str = ILStringCreate(_thread, buf);
+	ILFree(buf);
+	return str;
+#else
+	/* Non-Win32 platforms don't have a notion of "main window" */
 	return 0;
+#endif
 }
 
 /*
@@ -182,8 +283,23 @@ ILString *_IL_Process_GetMainWindowTitle(ILExecThread * _thread,
 ILInt32 _IL_Process_GetProcessorAffinity(ILExecThread *_thread,
 										 ILNativeInt processHandle)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+	DWORD processAffinity, systemAffinity;
+	if(GetProcessAffinityMask((HANDLE)processHandle,
+							  &processAffinity, &systemAffinity))
+	{
+		return (ILInt32)processAffinity;
+	}
+	else
+	{
+		/* Something went wrong - assume execution on CPU #1 */
+		return 1;
+	}
+#else
+	/* We have no way to get the affinity on non-Win32 systems,
+	   so just assume that the process is always on CPU #1 */
 	return 1;
+#endif
 }
 
 /*
@@ -192,8 +308,24 @@ ILInt32 _IL_Process_GetProcessorAffinity(ILExecThread *_thread,
 ILBool _IL_Process_MainWindowIsResponding(ILExecThread *_thread,
 										  ILNativeInt windowHandle)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+	/* Send message zero to the window, to ping it.  If we don't get a
+	   response, then assume that the window is no longer responding */
+	LRESULT result = 0;
+	if(SendMessageTimeout((HWND)windowHandle, 0, 0, 0,
+						  SMTO_ABORTIFHUNG, 5000, &result) != 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+#else
+	/* Non-Win32 platforms don't have main windows, so just pretend
+	   that the application's "main window" is responding */
 	return 1;
+#endif
 }
 
 /*
@@ -203,7 +335,9 @@ void _IL_Process_CloseProcess(ILExecThread *_thread,
 							  ILNativeInt processHandle,
 							  ILInt32 processID)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+	CloseHandle((HANDLE)processHandle);
+#endif
 }
 
 /*
@@ -212,8 +346,18 @@ void _IL_Process_CloseProcess(ILExecThread *_thread,
 ILBool _IL_Process_CloseMainWindow(ILExecThread * _thread,
 								   ILNativeInt windowHandle)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+	/* Don't close if the window is currently disabled */
+	if((GetWindowLong((HWND)windowHandle, GWL_STYLE) & WS_DISABLED) == 0)
+	{
+		PostMessage((HWND)windowHandle, WM_CLOSE, 0, 0);
+		return 1;
+	}
 	return 0;
+#else
+	/* Non-Win32 platforms don't have a notion of "main window" */
+	return 0;
+#endif
 }
 
 /*
@@ -224,8 +368,16 @@ void _IL_Process_GetCurrentProcessInfo(ILExecThread *_thread,
 									   ILInt32 *processID,
 									   ILNativeInt *handle)
 {
+#ifdef IL_WIN32_PLATFORM
+	*processID = (ILInt32)(GetCurrentProcessId());
+	*handle = (ILNativeInt)(GetCurrentProcess());
+#elif defined(HAVE_GETPID)
+	*processID = (ILInt32)(getpid());
+	*handle = 0;
+#else
 	*processID = 0;
 	*handle = 0;
+#endif
 }
 
 /*
@@ -234,8 +386,23 @@ void _IL_Process_GetCurrentProcessInfo(ILExecThread *_thread,
 void _IL_Process_KillProcess(ILExecThread *_thread,
 							 ILNativeInt processHandle, ILInt32 processID)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+	TerminateProcess((HANDLE)processHandle, (UINT)(-1));
+#elif defined(SIGKILL)
+	kill((int)processID, SIGKILL);
+#endif
 }
+
+/*
+ * Process start flags.
+ */
+#define	ProcessStart_CreateNoWindow		0x0001
+#define	ProcessStart_ErrorDialog		0x0002
+#define	ProcessStart_RedirectStdin		0x0004
+#define	ProcessStart_RedirectStdout		0x0008
+#define	ProcessStart_RedirectStderr		0x0010
+#define	ProcessStart_UseShellExecute	0x0020
+#define	ProcessStart_ExecOverTop		0x0040
 
 /*
  * private static bool StartProcess(String filename, String arguments,
@@ -263,8 +430,315 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 								ILNativeInt *stdoutHandle,
 								ILNativeInt *stderrHandle)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+
+	const char *fname;
+	const char *args;
+	STARTUPINFO startupInfo;
+	PROCESS_INFORMATION processInfo;
+	char *env = 0;
+	ILBool result;
+	HANDLE readSide, writeSide;
+	HANDLE cleanups[8];
+	int numCleanups = 0;
+	HANDLE closeAfterFork[8];
+	int numCloseAfterFork = 0;
+	int index;
+
+	/* Convert the parameters into something that the OS can understand */
+	fname = ILStringToAnsi(_thread, filename);
+	if(!fname)
+	{
+		return 0;
+	}
+	args = ILStringToAnsi(_thread, arguments);
+	if(!args)
+	{
+		return 0;
+	}
+	ILMemZero(&startupInfo, sizeof(startupInfo));
+	startupInfo.cb = sizeof(STARTUPINFO);
+	startupInfo.dwFlags = STARTF_USESHOWWINDOW;
+	startupInfo.wShowWindow = (WORD)windowStyle;
+
+	/* Redirect stdin, stdout, and stderr if necessary */
+	*stdinHandle = (ILNativeInt)(IL_SysIOHandle_Invalid);
+	*stdoutHandle = (ILNativeInt)(IL_SysIOHandle_Invalid);
+	*stderrHandle = (ILNativeInt)(IL_SysIOHandle_Invalid);
+	if((flags & (ProcessStart_RedirectStdin |
+				 ProcessStart_RedirectStdout |
+				 ProcessStart_RedirectStderr)) != 0)
+	{
+		startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+		if((flags & ProcesStart_RedirectStdin) != 0)
+		{
+			CreatePipe(&readSide, &writeSide, NULL, 0);
+			*stdinHandle = (ILNativeInt)writeSide;
+			SetHandleInformation(readSide, HANDLE_FLAG_INHERIT,
+								 HANDLE_FLAG_INHERIT);
+			startupInfo.hStdInput = readSide;
+			cleanups[numCleanups++] = readSide;
+			cleanups[numCleanups++] = writeSide;
+			closeAfterFork[numCloseAfterFork++] = readSide;
+		}
+		else
+		{
+			startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+		}
+		if((flags & ProcesStart_RedirectStdout) != 0)
+		{
+			CreatePipe(&readSide, &writeSide, NULL, 0);
+			*stdoutHandle = (ILNativeInt)readSide;
+			SetHandleInformation(writeSide, HANDLE_FLAG_INHERIT,
+								 HANDLE_FLAG_INHERIT);
+			startupInfo.hStdOutput = writeSide;
+			cleanups[numCleanups++] = readSide;
+			cleanups[numCleanups++] = writeSide;
+			closeAfterFork[numCloseAfterFork++] = writeSide;
+		}
+		else
+		{
+			startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+		}
+		if((flags & ProcesStart_RedirectStderr) != 0)
+		{
+			CreatePipe(&readSide, &writeSide, NULL, 0);
+			*stderrHandle = (ILNativeInt)readSide;
+			SetHandleInformation(writeSide, HANDLE_FLAG_INHERIT,
+								 HANDLE_FLAG_INHERIT);
+			startupInfo.hStdError = writeSide;
+			cleanups[numCleanups++] = readSide;
+			cleanups[numCleanups++] = writeSide;
+			closeAfterFork[numCloseAfterFork++] = writeSide;
+		}
+		else
+		{
+			startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+		}
+	}
+
+	/* TODO: shell execution, environment variables, and ExecOverTop */
+
+	/* Launch the process */
+	*processID = -1;
+	*processHandle = 0;
+	result = 0;
+	if(CreateProcess(fname, args, NULL, NULL, TRUE, 0, env, NULL,
+					 &startupInfo, &processInfo))
+	{
+		*processHandle = (ILNativeInt)(processInfo.hProcess);
+		*processID = (ILInt32)(processInfo.dwProcessId);
+		result = 1;
+	}
+
+	/* Clean up and exit */
+	if(env)
+	{
+		ILFree(env);
+	}
+	if(result)
+	{
+		for(index = 0; index < numCloseAfterFork; ++index)
+		{
+			CloseHandle(closeAfterFork[index]);
+		}
+	}
+	else
+	{
+		for(index = 0; index < numCleanups; ++index)
+		{
+			CloseHandle(cleanups[index]);
+		}
+	}
+	return result;
+
+#elif defined(HAVE_FORK) && defined(HAVE_EXECV) && (defined(HAVE_WAITPID) || defined(HAVE_WAIT))
+#define	IL_USING_FORK	1
+
+	const char *fname;
+	char **args;
+	int stdinFds[2] = {-1, -1};
+	int stdoutFds[2] = {-1, -1};
+	int stderrFds[2] = {-1, -1};
+	ILBool result = 0;
+	int pid;
+	ILInt32 argc;
+	const char *ansi;
+
+	/* Convert the parameters into something that the OS can understand */
+	fname = ILStringToAnsi(_thread, filename);
+	if(!fname)
+	{
+		return 0;
+	}
+	args = (char **)ILCalloc(argv->length + 1, sizeof(char *));
+	if(!args)
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	argc = 0;
+	while(argc < argv->length)
+	{
+		ansi = ILStringToAnsi
+			(_thread, ((ILString **)ArrayToBuffer(argv))[argc]);
+		if(!ansi)
+		{
+			while(argc > 0)
+			{
+				--argc;
+				ILFree(args[argc]);
+			}
+			ILFree(args);
+			return 0;
+		}
+		args[argc] = (char *)ILMalloc(strlen(ansi) + 1);
+		if(!(args[argc]))
+		{
+			while(argc > 0)
+			{
+				--argc;
+				ILFree(args[argc]);
+			}
+			ILFree(args);
+			return 0;
+		}
+		strcpy(args[argc], ansi);
+		++argc;
+	}
+	args[argc] = 0;
+
+	/* TODO: convert the environment */
+
+	/* Redirect stdin, stdout, and stderr as necessary */
+	*stdinHandle = (ILNativeInt)(ILSysIOHandle_Invalid);
+	*stdoutHandle = (ILNativeInt)(ILSysIOHandle_Invalid);
+	*stderrHandle = (ILNativeInt)(ILSysIOHandle_Invalid);
+	if((flags & ProcessStart_RedirectStdin) != 0)
+	{
+		if(pipe(stdinFds) < 0)
+		{
+			return 0;
+		}
+	#if HAVE_FCNTL
+		fcntl(stdinFds[1], F_SETFD, 1);
+	#endif
+		*stdinHandle = (ILNativeInt)(stdinFds[1]);
+	}
+	if((flags & ProcessStart_RedirectStdout) != 0)
+	{
+		if(pipe(stdoutFds) < 0)
+		{
+			if((flags & ProcessStart_RedirectStdin) != 0)
+			{
+				close(stdinFds[0]);
+				close(stdinFds[1]);
+			}
+			return 0;
+		}
+	#if HAVE_FCNTL
+		fcntl(stdoutFds[0], F_SETFD, 1);
+	#endif
+		*stdoutHandle = (ILNativeInt)(stdoutFds[0]);
+	}
+	if((flags & ProcessStart_RedirectStderr) != 0)
+	{
+		if(pipe(stderrFds) < 0)
+		{
+			if((flags & ProcessStart_RedirectStdin) != 0)
+			{
+				close(stdinFds[0]);
+				close(stdinFds[1]);
+			}
+			if((flags & ProcessStart_RedirectStdout) != 0)
+			{
+				close(stdoutFds[0]);
+				close(stdoutFds[1]);
+			}
+			return 0;
+		}
+	#if HAVE_FCNTL
+		fcntl(stderrFds[0], F_SETFD, 1);
+	#endif
+		*stderrHandle = (ILNativeInt)(stderrFds[0]);
+	}
+
+	/* Fork and execute the process */
+	*processID = -1;
+	*processHandle = 0;
+	pid = fork();
+	if(pid == 0)
+	{
+		/* We are in the child process */
+		if((flags & ProcessStart_RedirectStdin) != 0)
+		{
+			dup2(stdinFds[0], 0);
+			close(stdinFds[0]);
+		}
+		if((flags & ProcessStart_RedirectStdout) != 0)
+		{
+			dup2(stdoutFds[1], 1);
+			close(stdoutFds[1]);
+		}
+		if((flags & ProcessStart_RedirectStderr) != 0)
+		{
+			dup2(stderrFds[1], 2);
+			close(stderrFds[1]);
+		}
+		execvp(fname, args);
+		exit(1);
+	}
+	else if(pid > 0)
+	{
+		/* We are in the parent process */
+		if((flags & ProcessStart_RedirectStdin) != 0)
+		{
+			close(stdinFds[0]);
+		}
+		if((flags & ProcessStart_RedirectStdout) != 0)
+		{
+			close(stdoutFds[1]);
+		}
+		if((flags & ProcessStart_RedirectStderr) != 0)
+		{
+			close(stderrFds[1]);
+		}
+		*processID = (ILInt32)pid;
+		result = 1;
+	}
+	else
+	{
+		/* An error occurred during the fork */
+		if((flags & ProcessStart_RedirectStdin) != 0)
+		{
+			close(stdinFds[0]);
+			close(stdinFds[1]);
+		}
+		if((flags & ProcessStart_RedirectStdout) != 0)
+		{
+			close(stdoutFds[0]);
+			close(stdoutFds[1]);
+		}
+		if((flags & ProcessStart_RedirectStderr) != 0)
+		{
+			close(stderrFds[0]);
+			close(stderrFds[1]);
+		}
+	}
+
+	/* Clean up and exit */
+	while(argc > 0)
+	{
+		--argc;
+		ILFree(args[argc]);
+	}
+	ILFree(args);
+	return result;
+
+#else
+	/* Don't know how to spawn processes on this platform */
 	return 0;
+#endif
 }
 
 /*
@@ -276,8 +750,98 @@ ILBool _IL_Process_WaitForExit(ILExecThread *_thread,
 							   ILInt32 processID, ILInt32 milliseconds,
 							   ILInt32 *exitCode)
 {
-	/* TODO */
+#ifdef IL_WIN32_PLATFORM
+
+	DWORD result;
+	result = WaitForSingleObject((HANDLE)processHandle, (DWORD)milliseconds);
+	if(result == WAIT_OBJECT_0)
+	{
+		if(GetExitCodeProcess((HANDLE)processHandle, &result))
+		{
+			*exitCode = (ILInt32)result;
+			return 1;
+		}
+		else
+		{
+			*exitCode = 1;
+			return 1;
+		}
+	}
+	else
+	{
+		*exitCode = 0;
+		return 0;
+	}
+
+#elif defined(IL_USING_FORK)
+
+	int status, result;
+	status = 1;
+	if(milliseconds < 0 || milliseconds == (ILInt32)0x7FFFFFFF)
+	{
+		/* Wait indefinitely for the process to exit */
+		while((result = (int)waitpid((int)processID, &status, 0)) !=
+				(int)processID)
+		{
+			if(result == -1)
+			{
+				if(errno != EINTR)
+				{
+					return 0;
+				}
+			}
+		}
+	}
+	else if(milliseconds == 0)
+	{
+		/* Test and return immediately */
+		result = (int)waitpid((int)processID, &status, WNOHANG);
+		if(result != (int)processID)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		/* Wait for a specified timeout period */
+		do
+		{
+			result = (int)waitpid((int)processID, &status, WNOHANG);
+			if(result == (int)processID)
+			{
+				break;
+			}
+			else if(result == -1)
+			{
+				if(errno != EINTR)
+				{
+					return 0;
+				}
+			}
+			ILThreadSleep(1);
+			--milliseconds;
+		}
+		while(milliseconds > 0);
+		if(milliseconds <= 0)
+		{
+			return 0;
+		}
+	}
+	if(WIFEXITED(status))
+	{
+		*exitCode = (ILInt32)(WEXITSTATUS(status));
+	}
+	else
+	{
+		/* Exited because of a signal */
+		*exitCode = 127;
+	}
+	return 1;
+
+#else
+	/* Don't know how to wait for processes on this platform */
 	return 0;
+#endif
 }
 
 /*
@@ -289,8 +853,13 @@ ILBool _IL_Process_WaitForInputIdle(ILExecThread *_thread,
 									ILInt32 processID,
 									ILInt32 milliseconds)
 {
-	/* TODO */
-	return 0;
+#ifdef IL_WIN32_PLATFORM
+	return WaitForInputIdle((HANDLE)processHandle, (DWORD)milliseconds);
+#else
+	/* "Idle" has no meaning on non-Win32 platforms so just pretend
+	   that the process is fully initialized and ready to go */
+	return 1;
+#endif
 }
 
 #ifdef	__cplusplus

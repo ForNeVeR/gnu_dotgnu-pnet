@@ -342,6 +342,7 @@ csunit/Makefile
 csunit/TestVersion.cs
 csupport/Makefile
 compat/Makefile
+System.Configuration.Install/Makefile
 JScript/Makefile
 Basic/Makefile
 DotGNU.Images/Makefile

@@ -1,4 +1,28 @@
 
+2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, System.Configuration.Install/.cvsignore,
+	System.Configuration.Install/AssemblyInstaller.cs,
+	System.Configuration.Install/ComponentInstaller.cs,
+	System.Configuration.Install/EventLogInstaller.cs,
+	System.Configuration.Install/IManagedInstaller.cs,
+	System.Configuration.Install/InstallContext.cs,
+	System.Configuration.Install/InstallEventArgs.cs,
+	System.Configuration.Install/InstallEventHandler.cs,
+	System.Configuration.Install/InstallException.cs,
+	System.Configuration.Install/InstallUtil.cs,
+	System.Configuration.Install/Installer.cs,
+	System.Configuration.Install/InstallerCollection.cs,
+	System.Configuration.Install/Makefile.am,
+	System.Configuration.Install/ManagedInstallerClass.cs,
+	System.Configuration.Install/PerformanceCounterInstaller.cs,
+	System.Configuration.Install/S.cs,
+	System.Configuration.Install/System.Configuration.Install.build,
+	System.Configuration.Install/TransactedInstaller.cs,
+	System.Configuration.Install/UninstallAction.cs,
+	System.Configuration.Install/ilinstall-run.sh: check in the
+	"System.Configuration.Install" implementation.
+
 2003-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/BaseNumberConverter.cs,

@@ -22,12 +22,12 @@
 #include <unistd.h>
 #include <errno.h>
 
-extern int __syscall_write (int fd, __native__ int buf, unsigned int count);
+extern int __syscall_write (int fd, long buf, unsigned int count);
 
 ssize_t
 __libc_write (int fd, const void *buf, size_t count)
 {
-  int result = __syscall_write (fd, (__native__ int)buf, count);
+  int result = __syscall_write (fd, (long)buf, count);
   if (result >= 0)
     {
       return result;

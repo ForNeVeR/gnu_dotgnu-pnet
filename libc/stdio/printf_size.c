@@ -110,7 +110,7 @@ printf_size (FILE *fp, const struct printf_info *info, const void *const *args)
   int divisor = isupper (info->spec) ? 1000 : 1024;
 
   /* The floating-point value to output.  */
-  union __native__
+  union
     {
       union ieee754_double dbl;
       union ieee854_long_double ldbl;

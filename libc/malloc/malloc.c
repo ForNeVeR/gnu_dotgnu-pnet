@@ -42,7 +42,7 @@ __malloc(size_t size)
     }
 
   /* Allocate memory from the runtime engine */
-  ptr = (void *)Marshal::AllocHGlobal((__native__ int)size);
+  ptr = (void *)Marshal::AllocHGlobal((long)size);
   if(ptr != 0)
     {
       return ptr;

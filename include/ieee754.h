@@ -38,7 +38,7 @@ union ieee754_double
     double d;
   };
 
-union __native__ ieee854_long_double
+union ieee854_long_double
   {
     long double d;
   };

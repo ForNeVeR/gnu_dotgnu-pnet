@@ -36,7 +36,7 @@
 #define	FileAccess_Write	2
 #define	FileAccess_ReadWrite	3
 
-extern int __syscall_open (__native__ int path, int mode, int access);
+extern int __syscall_open (long path, int mode, int access);
 
 int
 __libc_open (const char *path, int flags, ...)
@@ -102,7 +102,7 @@ __libc_open (const char *path, int flags, ...)
     }
 
   /* Perform the open operation */
-  result = __syscall_open ((__native__ int)path, mode, access);
+  result = __syscall_open ((long)path, mode, access);
   if (result >= 0)
     {
       return result;
@@ -123,8 +123,7 @@ __creat (const char *path, mode_t mode)
       errno = EFAULT;
       return -1;
     }
-  result = __syscall_open ((__native__ int)path,
-  			   FileMode_Create, FileAccess_Write);
+  result = __syscall_open ((long)path, FileMode_Create, FileAccess_Write);
   if (result >= 0)
     {
       return result;

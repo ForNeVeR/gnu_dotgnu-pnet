@@ -22,12 +22,12 @@
 #include <unistd.h>
 #include <errno.h>
 
-extern int __syscall_read (int fd, __native__ int buf, unsigned int count);
+extern int __syscall_read (int fd, long buf, unsigned int count);
 
 ssize_t
 __libc_read (int fd, void *buf, size_t count)
 {
-  int result = __syscall_read (fd, (__native__ int)buf, count);
+  int result = __syscall_read (fd, (long)buf, count);
   if (result >= 0)
     {
       return result;

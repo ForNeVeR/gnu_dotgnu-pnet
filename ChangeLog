@@ -1,4 +1,15 @@
 
+2004-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/ieee754.h, libc/dirent/readdir.c, libc/dirent/readdir_r.c,
+	libc/malloc/calloc.c, libc/malloc/free.c, libc/malloc/malloc.c,
+	libc/malloc/realloc.c, libc/stdio/printf-parse.h,
+	libc/stdio/printf_fp.c, libc/stdio/printf_size.c, libc/stdlib/atof.c,
+	libc/time/gmtime.c, libc/time/time-defs.h, libc/unistd/open.c,
+	libc/unistd/pread.c, libc/unistd/pwrite.c, libc/unistd/read.c,
+	libc/unistd/write.c: remove references to "__native__", which is
+	no longer in the C compiler ("long" is now used for that purpose).
+
 2004-03-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/csharp.h: add the "delete" keyword to csharp.h.

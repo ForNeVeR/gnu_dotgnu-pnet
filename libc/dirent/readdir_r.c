@@ -58,7 +58,7 @@ __readdir_r (DIR *dirp, struct dirent *entry, struct dirent **result)
   strncpy (entry->d_name, str, len);
   entry->d_name[len] = '\0';
   entry->d_ino = 0;
-  (void)Marshal::FreeHGlobal((__native__ int)str);
+  (void)Marshal::FreeHGlobal((long)str);
   *result = entry;
 
   return err;

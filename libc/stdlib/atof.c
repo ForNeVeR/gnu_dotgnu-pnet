@@ -81,7 +81,7 @@ strtod_internal (const char *nptr, char **endptr, int report_errors)
 
   /* Use the C# library to convert the value into a double */
   value = Double::Parse
-    (Marshal::PtrToStringAnsi ((__native__ int)start, (int)(current - start)));
+    (Marshal::PtrToStringAnsi ((long)start, (int)(current - start)));
   if (report_errors && Double::IsInfinity (value))
     errno = ERANGE;
   return value;

@@ -144,7 +144,7 @@ __printf_fp (FILE *fp,
 	     const void *const *args)
 {
   /* The floating-point value to output.  */
-  union __native__
+  union
     {
       double dbl;
       __long_double_t ldbl;

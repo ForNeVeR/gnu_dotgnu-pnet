@@ -24,8 +24,7 @@
 
 extern long long __syscall_utc_time (void);
 extern long long __syscall_local_time (void);
-extern void __syscall_unpack_time (long long ticks, __native__ int tm,
-                                   _Bool is_local);
+extern void __syscall_unpack_time (long long ticks, long tm, _Bool is_local);
 extern void __syscall_sleep_ticks (long long ticks);
 
 #define	EPOCH_ADJUST        62135596800LL

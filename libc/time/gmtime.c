@@ -28,7 +28,7 @@ static struct tm __declspec(thread) locbuf;
 struct tm *
 gmtime (time_t *timer)
 {
-  __syscall_unpack_time (TIME_TO_TICKS (*timer), (__native__ int)&gmbuf,
+  __syscall_unpack_time (TIME_TO_TICKS (*timer), (long)&gmbuf,
                          (_Bool)0);
   return &gmbuf;
 }
@@ -36,7 +36,7 @@ gmtime (time_t *timer)
 struct tm *
 gmtime_r (time_t * __restrict timer, struct tm * __restrict tp)
 {
-  __syscall_unpack_time (TIME_TO_TICKS (*timer), (__native__ int)tp,
+  __syscall_unpack_time (TIME_TO_TICKS (*timer), (long)tp,
                          (_Bool)0);
   return tp;
 }
@@ -46,7 +46,7 @@ localtime (time_t *timer)
 {
   if (!__tz_is_set)
     tzset ();
-  __syscall_unpack_time (TIME_TO_TICKS (*timer), (__native__ int)&locbuf,
+  __syscall_unpack_time (TIME_TO_TICKS (*timer), (long)&locbuf,
                          (_Bool)1);
   return &locbuf;
 }
@@ -56,7 +56,7 @@ localtime_r (time_t * __restrict timer, struct tm * __restrict tp)
 {
   if (!__tz_is_set)
     tzset ();
-  __syscall_unpack_time (TIME_TO_TICKS (*timer), (__native__ int)tp,
+  __syscall_unpack_time (TIME_TO_TICKS (*timer), (long)tp,
                          (_Bool)1);
   return tp;
 }

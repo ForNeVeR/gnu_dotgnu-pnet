@@ -49,7 +49,7 @@ struct printf_spec
 
 
 /* The various kinds off arguments that can be passed to printf.  */
-union __native__ printf_arg
+union printf_arg
   {
     unsigned char pa_char;
     wchar_t pa_wchar;

@@ -22,13 +22,13 @@
 #include <unistd.h>
 #include <errno.h>
 
-extern int __syscall_pwrite (int fd, __native__ int buf,
+extern int __syscall_pwrite (int fd, long buf,
                              unsigned int count, long long offset);
 
 ssize_t
 __libc_pwrite (int fd, const void *buf, size_t count, off_t offset)
 {
-  int result = __syscall_pwrite (fd, (__native__ int)buf, count, offset);
+  int result = __syscall_pwrite (fd, (long)buf, count, offset);
   if (result >= 0)
     {
       return result;

@@ -56,7 +56,7 @@ __readdir (DIR *dirp)
   strncpy (dirp->current.d_name, str, len);
   dirp->current.d_name[len] = '\0';
   dirp->current.d_ino = 0;
-  (void)Marshal::FreeHGlobal((__native__ int)str);
+  (void)Marshal::FreeHGlobal((long)str);
 
   return &(dirp->current);
 }

@@ -1,4 +1,10 @@
-2001-01-14 Stephen Compall <rushing@earthling.net>
+
+2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/IO/Path.cs: remove "System." from the start
+	of the class name, because it confuses the compiler.
+
+2001-01-14  Stephen Compall  <rushing@earthling.net>
 
 	* runtime/System/IO/StringWriter.cs: added implementation.
 

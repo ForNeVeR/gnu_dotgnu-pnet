@@ -25,7 +25,7 @@ namespace System.IO
 {
 	using System;
 	using Platform;
-	public class System.Path 
+	public class Path 
 	{
 		// I know of the existence of System.Enviornment
 		// But I'm opting to just get the seperators

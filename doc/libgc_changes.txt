@@ -20,6 +20,9 @@ win32_threads.c:
 	All checks for CYGWIN32 are changed to checks for
 	CYGWIN32 && !defined(GC_DISABLE_CYGWIN_PTHREADS).
 	
+	GC_CreateThread needs to return a duplicate handle
+	rather than the original handle.
+	
 include/gc.h:
 
 	GC_PTHREADS is defined if GC_WIN32_THREADS and 

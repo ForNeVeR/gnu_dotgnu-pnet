@@ -56,13 +56,18 @@ public sealed class SaveFileDialog : FileDialog
 					overwritePrompt = value;
 				}
 			}
-	[TODO]
 	internal override String DefaultTitle
 			{
 				get
 				{
-					// TODO: make this translatable.
-					return "Save As";
+					return S._("SWF_FileDialog_SaveAsTitle", "Save As");
+				}
+			}
+	internal override String OkButtonName
+			{
+				get
+				{
+					return S._("SWF_MessageBox_SaveButton", "Save");
 				}
 			}
 

@@ -81,13 +81,11 @@ public sealed class OpenFileDialog : FileDialog
 					showReadOnly = value;
 				}
 			}
-	[TODO]
 	internal override String DefaultTitle
 			{
 				get
 				{
-					// TODO: make this translatable.
-					return "Open";
+					return S._("SWF_FileDialog_OpenTitle", "Open");
 				}
 			}
 

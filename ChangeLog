@@ -21,6 +21,11 @@
 	System.Windows.Forms/SaveFileDialog.cs: flesh out some of the
 	file dialog classes (not finished yet).
 
+	* System.Windows.Forms/FileDialog.cs,
+	System.Windows.Forms/OpenFileDialog.cs,
+	System.Windows.Forms/SaveFileDialog.cs: build the basic widget
+	structure for file dialogs, but with no behaviour as yet.
+
 2003-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

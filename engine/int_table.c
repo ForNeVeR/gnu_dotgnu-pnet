@@ -943,8 +943,8 @@ static void marshal_bpji(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(WaitHandle_Methods)
 	IL_METHOD("InternalClose", "(j)V", _IL_WaitHandle_InternalClose, marshal_vpj)
-	IL_METHOD("InternalWaitAll", "([oSystem.Threading.WaitHandle;iZ)Z", _IL_WaitHandle_InternalWaitAll, marshal_bppib)
-	IL_METHOD("InternalWaitAny", "([oSystem.Threading.WaitHandle;iZ)i", _IL_WaitHandle_InternalWaitAny, marshal_ippib)
+	IL_METHOD("InternalWaitAll", "([jiZ)Z", _IL_WaitHandle_InternalWaitAll, marshal_bppib)
+	IL_METHOD("InternalWaitAny", "([jiZ)i", _IL_WaitHandle_InternalWaitAny, marshal_ippib)
 	IL_METHOD("InternalWaitOne", "(ji)Z", _IL_WaitHandle_InternalWaitOne, marshal_bpji)
 IL_METHOD_END
 

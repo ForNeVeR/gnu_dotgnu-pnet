@@ -1669,41 +1669,6 @@ void _ILHandleWaitResult(ILExecThread *thread, int result)
 }
 
 /*
- * Convert a C# array of wait handles into a C array.
- * Returns zero if something is wrong.
- */
-static int ConvertWaitHandleArray(ILExecThread *_thread,
-								  System_Array *waitHandles,
-								  ILWaitHandle **handles)
-{
-	ILInt32 index;
-
-	/* Validate the length of the incoming array */
-	if(waitHandles->length > IL_MAX_WAIT_HANDLES)
-	{
-		ILExecThreadThrowSystem
-			(_thread, "System.NotSupportedException",
-			 (const char *)0);
-		return 0;
-	}
-
-	/* Convert the WaitHandle objects into system wait handles */
-	for(index = 0; index < waitHandles->length; ++index)
-	{
-		handles[index] = *((ILWaitHandle **)
-			(((ILObject **)(ArrayToBuffer(waitHandles)))[index]));
-		if(handles[index] == 0)
-		{
-			ILExecThreadThrowArgNull(_thread, "waitHandles");
-			return 0;
-		}
-	}
-
-	/* Ready to go */
-	return 1;
-}
-
-/*
  * private static bool InternalWaitAll(WaitHandle[] waitHandles,
  *									   int timeout, bool exitContext);
  */
@@ -1712,7 +1677,7 @@ ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
 									  ILInt32 timeout,
 									  ILBool exitContext)
 {
-	ILWaitHandle *handles[IL_MAX_WAIT_HANDLES];
+	ILWaitHandle **handles;
 	int result;
 
 	/* Return immediately if there are no handles */
@@ -1722,10 +1687,7 @@ ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
 	}
 
 	/* Convert the WaitHandle objects into system wait handles */
-	if(!ConvertWaitHandleArray(_thread, waitHandles, handles))
-	{
-		return 0;
-	}
+	handles = (ILWaitHandle **)ArrayToBuffer(waitHandles);
 
 	/* Perform the wait */
 	result = ILWaitAll(handles, (ILUInt32)(waitHandles->length), timeout);
@@ -1754,7 +1716,7 @@ ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
 									   System_Array *waitHandles,
 									   ILInt32 timeout, ILBool exitContext)
 {
-	ILWaitHandle *handles[IL_MAX_WAIT_HANDLES];
+	ILWaitHandle **handles;
 	int result;
 
 	/* Return immediately if there are no handles */
@@ -1764,10 +1726,7 @@ ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
 	}
 
 	/* Convert the WaitHandle objects into system wait handles */
-	if(!ConvertWaitHandleArray(_thread, waitHandles, handles))
-	{
-		return 0;
-	}
+	handles = (ILWaitHandle **)ArrayToBuffer(waitHandles);
 
 	/* Perform the wait */
 	result = ILWaitAny(handles, (ILUInt32)(waitHandles->length), timeout);

@@ -8,6 +8,10 @@
 	semantic value to the caller so that expression statements are
 	handled correctly.
 
+	* engine/int_table.c, engine/lib_thread.c: modify the
+	"InternalWaitAll" and "InternalWaitAny" internalcalls to take
+	"IntPtr[]" parameters rather than "WaitHandle[]" parameters.
+
 2004-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

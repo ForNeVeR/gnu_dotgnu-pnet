@@ -35,19 +35,18 @@ public abstract class ListControl : Control
 	internal object dataSource;
 	internal string displayMember;
 	internal string valueMember;
-	private BorderStyle borderStyle = BorderStyle.Fixed3D;
 
 	public BorderStyle BorderStyle
 	{
 		get
 		{
-			return borderStyle;
+			return BorderStyleInternal;
 		}
 		set
 		{
-			if(borderStyle != value)
+			if(BorderStyleInternal != value)
 			{
-				borderStyle = value;
+				BorderStyleInternal = value;
 				OnBorderStyleChanged(EventArgs.Empty);
 			}
 		}

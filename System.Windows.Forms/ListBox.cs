@@ -119,7 +119,8 @@ public class ListBox : ListControl
 
 		int TextWidth(object value)
 		{
-			return((int) this.owner.nonClientGraphics.MeasureString(value.ToString(), owner.Font).Width);
+			using (Graphics g = owner.CreateGraphics())
+				return((int) g.MeasureString(value.ToString(), owner.Font).Width);
 		}
 
  		// Get the array list that underlies this collection
@@ -1202,14 +1203,12 @@ public class ListBox : ListControl
 #endif // !CONFIG_COMPACT_FORMS
 
 	// Internal instance variables.
-	private Graphics nonClientGraphics;
 	private VScrollBar vertScrollbar;
 	private HScrollBar horizScrollbar;
 	private ObjectCollection internalDataSource;
 	private SolidBrush backgroundBrush;
 	private SolidBrush disabledBrush;
 	private int focusedItem = 0;
-	private Timer vScrollTimer;
 	internal bool suppressEvents = false;
 	private bool suppressDraw = false;
 	private ArrayList pendingDrawItems = new ArrayList();
@@ -1243,7 +1242,6 @@ public class ListBox : ListControl
 		this.Controls.Add(this.horizScrollbar);
 
 		this.BackColor          = SystemColors.Window;
-		this.nonClientGraphics  = this.CreateNonClientGraphics();
 		this.internalDataSource = this.CreateItemCollection();
 		base.dataSource         = this.internalDataSource;
 
@@ -1256,11 +1254,6 @@ public class ListBox : ListControl
 		this.PositionControls();
 		this.CalculateScrollbars();
 		
-		this.vScrollTimer = new Timer();
-		this.vScrollTimer.Tick += new EventHandler(this.VScrollTick);
-		this.vScrollTimer.Interval = 1;
-		this.vScrollTimer.Stop();
-
 		this.vertScrollbar.Scroll 
 			+= new ScrollEventHandler(this.OnVScroll);
 		this.vertScrollbar.ValueChanged 
@@ -1269,19 +1262,13 @@ public class ListBox : ListControl
 			+= new ScrollEventHandler(this.OnHScroll);
 		this.horizScrollbar.ValueChanged 
 			+= new EventHandler(this.OnHValueChanged);
+		BorderStyle = BorderStyle.Fixed3D;
 	}
 	
 	private void PositionControls()
 	{
-		this.vertScrollbar.Top = this.BorderWidth;
-		this.vertScrollbar.Left = this.Width - 
-		                          this.vertScrollbar.Width -
-								  this.BorderWidth;
-
-		this.horizScrollbar.Top = this.DrawnHeight - 
-		                          this.horizScrollbar.Height - 
-		                          this.BorderWidth;
-		this.horizScrollbar.Left = this.BorderWidth;
+		this.vertScrollbar.Location = new Point(this.Width - this.vertScrollbar.Width, 0);
+		this.horizScrollbar.Location = new Point(0, this.DrawnHeight - this.horizScrollbar.Height);
 	}
 
 	private int FocusedItem
@@ -1387,8 +1374,8 @@ public class ListBox : ListControl
 	// and with each other.
 	private void SizeScrollbars()
 	{
-		int vertHeight = this.DrawnHeight - 2 * this.BorderWidth,
-		    horizWidth = this.Width - 2 * this.BorderWidth;
+		int vertHeight = this.DrawnHeight,
+		    horizWidth = this.Width;
 			
 		if(this.horizScrollbar.Visible && this.vertScrollbar.Visible)
 		{
@@ -1399,24 +1386,20 @@ public class ListBox : ListControl
 		this.vertScrollbar.Height = vertHeight;
 		this.horizScrollbar.Width = horizWidth;
 	}
-	
-	private int BorderWidth
-	{
-		get
-		{
-			return(ThemeManager.MainPainter.GetBorderWidth(this.BorderStyle));	
-		}
-	}
 
 	// Handle "Paint" events for the list box.
 	protected override void OnPaint(PaintEventArgs e)
 	{
-		Redraw(this.nonClientGraphics);
+		using (Graphics g = CreateGraphics())
+			Redraw(g);
 	}
 
 	private void Redraw()
 	{
-		Redraw(this.nonClientGraphics);
+		if (!IsHandleCreated)
+			return;
+		using (Graphics g = CreateGraphics())
+			Redraw(g);
 	}
 
 	// Redraw the entire ListBox.
@@ -1428,7 +1411,6 @@ public class ListBox : ListControl
 	
 		ThemeManager.MainPainter.DrawListBox(
 			/*     Graphics */ g,
-			/*  BorderStyle */ this.BorderStyle,
 			/*            x */ 0,
 			/*            y */ 0,
 			/*        width */ this.Width,
@@ -1461,8 +1443,11 @@ public class ListBox : ListControl
 			{
 				// Normal data sources must be grokked to find
 				// the longest string, unfortunately.
-				foreach(object value in (IList) base.dataSource)
-					maxWidth = Math_Max(maxWidth, (int) this.nonClientGraphics.MeasureString(value.ToString(), this.Font).Width);
+				using (Graphics g = CreateGraphics())
+				{
+					foreach(object value in (IList) base.dataSource)
+						maxWidth = Math_Max(maxWidth, (int) g.MeasureString(value.ToString(), this.Font).Width);
+				}
 			}
 			
 			return maxWidth;
@@ -1471,7 +1456,8 @@ public class ListBox : ListControl
 
 	internal void RedrawList()
 	{
-		this.RedrawList(this.nonClientGraphics);
+		using (Graphics g = CreateGraphics())
+			this.RedrawList(g);
 	}
 
 	private void RedrawList(Graphics g)
@@ -1495,19 +1481,21 @@ public class ListBox : ListControl
 		else
 		{
 			this.vertScrollbar.Maximum = data.Count;
-			this.vertScrollbar.LargeChange = NumItemsVisible;
+			this.vertScrollbar.LargeChange = Math_Max(1, NumItemsVisible);
 		}
 		
 		// Set up the horizontal scrollbar
 		if(this.multiColumn)
 		{
-			this.horizScrollbar.Maximum = this.NumDataColumns;
-			this.horizScrollbar.LargeChange = this.NumDisplayColumns;
+			this.horizScrollbar.Maximum = this.NumDataColumns * 2;
+			this.horizScrollbar.LargeChange = Math_Max(1, this.NumDisplayColumns * 2);
+			this.horizScrollbar.SmallChange = 2;
 		}
 		else
 		{
 			this.horizScrollbar.Maximum = this.LongestItemWidth;
-			this.horizScrollbar.LargeChange = listArea.Width;
+			this.horizScrollbar.LargeChange = Math_Max(1, listArea.Width);
+			this.horizScrollbar.SmallChange = 1;
 		}
 	}
 	
@@ -1552,7 +1540,7 @@ public class ListBox : ListControl
 			int vscrollWidth = 0;
 			if(this.vertScrollbar.Visible)
 				vscrollWidth = this.vertScrollbar.Width;
-			return 1 + (this.Width - 2 * this.BorderWidth - vscrollWidth) / this.columnWidth;
+			return 1 + (this.Width - vscrollWidth) / this.columnWidth;
 		}
 	}
 		
@@ -1578,10 +1566,10 @@ public class ListBox : ListControl
 		get
 		{
 			Rectangle listArea = new Rectangle(
-				this.BorderWidth,
-				this.BorderWidth,
-				this.Width - 2 * this.BorderWidth,
-				this.DrawnHeight - 2 * this.BorderWidth);
+				0,
+				0,
+				this.Width,
+				this.DrawnHeight);
 				
 			if(this.vertScrollbar.Visible)
 				listArea.Width -= this.vertScrollbar.Width;
@@ -1596,7 +1584,7 @@ public class ListBox : ListControl
 	{
 		get
 		{
-			return (this.Height - 2 * this.BorderWidth) / this.ItemHeight;
+			return (this.Height) / this.ItemHeight;
 		}
 	}
 	
@@ -1641,14 +1629,17 @@ public class ListBox : ListControl
 	
 	internal void PaintItem(int ind)
 	{
-		this.PaintItem(this.nonClientGraphics, ind);
+		using (Graphics g = CreateGraphics())
+			this.PaintItem(g, ind);
 	}
 	
+	// Begin caching PaintItem requests.
 	private void DelayPaint()
 	{
 		this.paintDelayed++;
 	}
 	
+	// Perform any cached PaintItem requests.
 	private void FlushPaint()
 	{
 		this.paintDelayed--;
@@ -1754,59 +1745,50 @@ public class ListBox : ListControl
 		}
 	}
 	
-	private void OnVScroll(object sender, ScrollEventArgs e)
-	{
-		if(this.topIndex != this.vertScrollbar.Value)
-		{
-			if(!this.vScrollTimer.Enabled)
-				this.vScrollTimer.Start();
-		}
-	}
-	
-	private void VScrollTick(object sender, EventArgs e)
+	private void UpdateVScroll()
 	{
 		this.topIndex = this.vertScrollbar.Value;
-		RedrawList(this.nonClientGraphics);
-		this.vScrollTimer.Stop();
+		RedrawList();
+	}
+
+	private void OnVScroll(object sender, ScrollEventArgs e)
+	{
+		this.UpdateVScroll();
 	}
 	
 	private void OnVValueChanged(object sender, EventArgs e)
 	{
-		if(this.topIndex != this.vertScrollbar.Value)
+		this.UpdateVScroll();
+	}
+	
+	private int LeftColumnFromScrollPos(int HScrollPos)
+	{
+		return Math_Min((HScrollPos + 1) / 2, this.NumDataColumns - this.NumDisplayColumns);
+	}
+	
+	private void UpdateHScroll()
+	{
+		if(this.multiColumn)
 		{
-			if(!this.vScrollTimer.Enabled)
-				this.vScrollTimer.Start();
+			int newTop = this.NumItemsPerColumn * this.LeftColumnFromScrollPos(this.horizScrollbar.Value);
+			if(this.topIndex != newTop)
+			{
+				this.topIndex = newTop;
+				RedrawList();
+			}
 		}
+		else
+			RedrawList();
 	}
 	
 	private void OnHScroll(object sender, ScrollEventArgs e)
 	{
-		if(this.multiColumn)
-		{
-			int newTop = this.NumItemsPerColumn * this.horizScrollbar.Value;
-			if(this.topIndex != newTop)
-			{
-				this.topIndex = newTop;
-				RedrawList(this.nonClientGraphics);
-			}
-		}
-		else
-			RedrawList(this.nonClientGraphics);
+		this.UpdateHScroll();
 	}
 	
 	private void OnHValueChanged(object sender, EventArgs e)
 	{
-		if(this.multiColumn)
-		{
-			int newTop = this.NumItemsPerColumn * this.horizScrollbar.Value;
-			if(this.topIndex != newTop)
-			{
-				this.topIndex = newTop;
-				RedrawList(this.nonClientGraphics);
-			}
-		}
-		else
-			RedrawList(this.nonClientGraphics);
+		this.UpdateHScroll();
 	}
 	
 	private void ToggleSelected(int dataInd)
@@ -2067,16 +2049,33 @@ public class ListBox : ListControl
 		if(!IsItemVisible(this.FocusedItem))
 		{
 			int oldIndex = this.topIndex;
+			int col = 0;
 
-			if(this.FocusedItem < this.topIndex)
-				this.topIndex = this.FocusedItem;
-			else if(this.FocusedItem >= this.topIndex + this.NumItemsVisible)
-				this.topIndex = this.FocusedItem - this.NumItemsVisible + 1;
+			// In a multi-column listbox, only scroll by entire columns.
+			if(this.multiColumn)
+			{
+				col = this.FocusedItem / this.NumItemsPerColumn;
+			
+				if(this.FocusedItem >= this.topIndex + this.NumItemsVisible)
+					col -= (this.NumDisplayColumns - 1);
 				
+				this.topIndex = col * this.NumItemsPerColumn;
+			}
+			else
+			{
+				if(this.FocusedItem < this.topIndex)
+					this.topIndex = this.FocusedItem;
+				else if(this.FocusedItem >= this.topIndex + this.NumItemsVisible)
+					this.topIndex = this.FocusedItem - this.NumItemsVisible + 1;
+			}
+
 			if(this.topIndex != oldIndex)
 			{
 				RedrawList();
-				this.vertScrollbar.Value = this.topIndex;
+				if(this.multiColumn)
+					this.horizScrollbar.Value = 2 * col;
+				else
+					this.vertScrollbar.Value = this.topIndex;
 			}
 		}
 	}
@@ -2256,12 +2255,21 @@ public class ListBox : ListControl
 		{
 			if(this.integralHeight)
 			{
-				return this.NumItemsVisible * this.ItemHeight +
-				       2 * this.BorderWidth;
+				return this.NumItemsVisible * this.ItemHeight;
 			}
 			else
 				return this.Height;
 		}
+	}
+	
+	protected override void OnMouseUp(MouseEventArgs e)
+	{
+		if(this.ListArea.Contains(e.X, e.Y))
+		{
+			this.OnClick(new EventArgs());
+		}
+	
+		base.OnMouseUp(e);
 	}
 
 }; // class ListBox

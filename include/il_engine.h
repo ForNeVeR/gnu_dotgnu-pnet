@@ -378,6 +378,18 @@ ILString *ILObjectToString(ILExecThread *thread, ILObject *object);
  */
 ILString *ILStringIntern(ILExecThread *thread, ILString *str);
 
+/*
+ * Get an element of an array.  Returns non-zero if an exception occurred.
+ */
+int ILExecThreadGetElem(ILExecThread *thread, void *value,
+						ILObject *array, ILInt32 index);
+
+/*
+ * Set an element of an array.  Returns non-zero if an exception occurred.
+ */
+int ILExecThreadSetElem(ILExecThread *thread, ILObject *array,
+						ILInt32 index, ...);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -7,6 +7,9 @@
 * engine/cvmc_branch.c: bug - "CVMCoder_Label" wasn't handling multiple
 references for the same label properly.
 
+* include/il_engine.h, engine/lib_array.c: "ILExecThreadGetElem" and
+"ILExecThreadSetElem".
+
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/call.c: implement an alternative call API

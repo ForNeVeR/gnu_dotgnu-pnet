@@ -20,6 +20,29 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#ifdef HAVE_STDARG_H
+#include <stdarg.h>
+#define	VA_LIST				va_list
+#define	VA_START(arg)		va_list va; va_start(va, arg)
+#define	VA_END				va_end(va)
+#define	VA_ARG(va,type)		va_arg(va, type)
+#define	VA_GET_LIST			va
+#else
+#ifdef HAVE_VARARGS_H
+#include <varargs.h>
+#define	VA_LIST				va_list
+#define	VA_START(arg)		va_list va; va_start(va)
+#define	VA_END				va_end(va)
+#define	VA_ARG(va,type)		va_arg(va, type)
+#define	VA_GET_LIST			va
+#else
+#define	VA_LIST				int
+#define	VA_START
+#define	VA_END
+#define	VA_ARG(va,type)		((type)0)
+#define	VA_GET_LIST			0
+#endif
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -1284,6 +1307,169 @@ IL_METHOD_BEGIN(_ILSystemArrayMethods)
 	IL_METHOD("GetLengthNative", "(T)i",  System_Array_GetLengthNative)
 	IL_METHOD("GetLength",		 "(Ti)i", System_Array_GetLength)
 IL_METHOD_END
+
+int ILExecThreadGetElem(ILExecThread *thread, void *value,
+						ILObject *_array, ILInt32 index)
+{
+	if(IsSArray((System_Array *)_array))
+	{
+		/* Validate the index */
+		System_Array *array = (System_Array *)_array;
+		ILType *type;
+		ILInt32 elemSize;
+		if(index >= 0 && index < array->length)
+		{
+			/* Get the element size */
+			type = ILClassGetSynType(GetObjectClass(array));
+			elemSize = (ILInt32)(ILSizeOfType(type->un.array.elemType));
+
+			/* Copy the element to the "value" buffer */
+			ILMemCpy(value, ((unsigned char *)(ArrayToBuffer(_array))) +
+							elemSize * index, elemSize);
+			return 0;
+		}
+		else
+		{
+			/* The array index is out of range */
+			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+									"Arg_InvalidArrayIndex");
+			return 1;
+		}
+	}
+	else
+	{
+		/* Not a single-dimensional array */
+		ILExecThreadThrowSystem(thread, "System.ArrayTypeMismatchException",
+							    (const char *)0);
+		return 1;
+	}
+}
+
+#define	ArrayElem(type)		\
+			(*((type *)(((unsigned char *)(ArrayToBuffer(array))) + \
+						elemSize * index)))
+
+int ILExecThreadSetElem(ILExecThread *thread, ILObject *_array,
+						ILInt32 index, ...)
+{
+	if(IsSArray((System_Array *)_array))
+	{
+		/* Validate the index */
+		System_Array *array = (System_Array *)_array;
+		ILType *type;
+		ILInt32 elemSize;
+		if(index >= 0 && index < array->length)
+		{
+			/* Get the element size */
+			type = ILClassGetSynType(GetObjectClass(array));
+			type = ILTypeGetEnumType(type->un.array.elemType);
+			elemSize = (ILInt32)(ILSizeOfType(type));
+
+			/* Copy the value to the element */
+			{
+				VA_START(index);
+				if(ILType_IsPrimitive(type))
+				{
+					/* Primitive type */
+					switch(ILType_ToElement(type))
+					{
+						case IL_META_ELEMTYPE_BOOLEAN:
+						case IL_META_ELEMTYPE_I1:
+						case IL_META_ELEMTYPE_U1:
+						{
+							ArrayElem(ILInt8) = (ILInt8)(VA_ARG(va, ILVaInt));
+						}
+						break;
+
+						case IL_META_ELEMTYPE_I2:
+						case IL_META_ELEMTYPE_U2:
+						case IL_META_ELEMTYPE_CHAR:
+						{
+							ArrayElem(ILInt16) = (ILInt16)(VA_ARG(va, ILVaInt));
+						}
+						break;
+
+						case IL_META_ELEMTYPE_I4:
+						case IL_META_ELEMTYPE_U4:
+					#ifdef IL_NATIVE_INT32
+						case IL_META_ELEMTYPE_I:
+						case IL_META_ELEMTYPE_U:
+					#endif
+						{
+							ArrayElem(ILInt32) = (ILInt32)(VA_ARG(va, ILVaInt));
+						}
+						break;
+
+						case IL_META_ELEMTYPE_I8:
+						case IL_META_ELEMTYPE_U8:
+					#ifdef IL_NATIVE_INT64
+						case IL_META_ELEMTYPE_I:
+						case IL_META_ELEMTYPE_U:
+					#endif
+						{
+							ILInt64 int64Value = VA_ARG(va, ILInt64);
+							ILMemCpy(&(ArrayElem(ILInt64)), &int64Value,
+									 sizeof(ILInt64));
+						}
+						break;
+
+						case IL_META_ELEMTYPE_R4:
+						{
+							ArrayElem(ILFloat) =
+									(ILFloat)(VA_ARG(va, ILVaDouble));
+						}
+						break;
+
+						case IL_META_ELEMTYPE_R8:
+						{
+							ILDouble fValue =
+								(ILDouble)(VA_ARG(va, ILVaDouble));
+							ILMemCpy(&(ArrayElem(ILDouble)), &fValue,
+									 sizeof(fValue));
+						}
+						break;
+
+						case IL_META_ELEMTYPE_R:
+						{
+							ILNativeFloat fValue =
+								(ILNativeFloat)(VA_ARG(va, ILVaDouble));
+							ILMemCpy(&(ArrayElem(ILNativeFloat)), &fValue,
+									 sizeof(fValue));
+						}
+						break;
+					}
+				}
+				else if(ILType_IsValueType(type))
+				{
+					/* Value type: the caller has passed us a pointer */
+					ILMemCpy(&(ArrayElem(ILInt8)),
+							 VA_ARG(va, void *), elemSize);
+				}
+				else
+				{
+					/* Everything else is a pointer */
+					ArrayElem(void *) = VA_ARG(va, void *);
+				}
+				VA_END;
+			}
+			return 0;
+		}
+		else
+		{
+			/* The array index is out of range */
+			ILExecThreadThrowSystem(thread, "System.IndexOutOfRangeException",
+									"Arg_InvalidArrayIndex");
+			return 1;
+		}
+	}
+	else
+	{
+		/* Not a single-dimensional array */
+		ILExecThreadThrowSystem(thread, "System.ArrayTypeMismatchException",
+							    (const char *)0);
+		return 1;
+	}
+}
 
 #ifdef	__cplusplus
 };

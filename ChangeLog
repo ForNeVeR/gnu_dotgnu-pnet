@@ -27,6 +27,8 @@ that use a Java-style syntax for naming signatures.
 
 * engine/call.c: implement the method call API for the engine.
 
+* include/il_engine.h: declare the lookup and method call API's.
+
 2001-10-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify.c: mark the stack as empty on entry to a try region.

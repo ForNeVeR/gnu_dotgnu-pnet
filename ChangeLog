@@ -1,3 +1,7 @@
+2003-07-28  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* engine/lib_type.c: change the GetMemberImpl internal call to check for an
+	exact match first when inexact matches are permitted.
 
 2003-07-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 

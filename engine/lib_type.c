@@ -1980,10 +1980,12 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 	ILClass *classInfo;
 	char *nameUtf8;
 	ILMember *member;
-	ILMember *otherMember;
+	ILMember *other;
 	ILProgramItem *foundItem;
+	ILProgramItem *foundExact;
 	ILNestedInfo *nested;
 	ILClass *child;
+	int inexactIsAmbig;
 
 	/* Validate the parameters */
 	if(!name)
@@ -2021,6 +2023,8 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 
 	/* Scan the class hierarchy looking for a member match */
 	foundItem = 0;
+	foundExact = 0;
+	inexactIsAmbig = 0;
 	do
 	{
 		member = classInfo->firstMember;
@@ -2031,80 +2035,110 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 			{
 				if(strcmp(member->name, nameUtf8) != 0)
 				{
-					member = member->nextMember;
-					continue;
+					goto advance;
 				}
 			}
 			else
 			{
 				if(ILStrICmp(member->name, nameUtf8) != 0)
 				{
-					member = member->nextMember;
-					continue;
+					goto advance;
 				}
 			}
 	
 			/* Filter based on the member type */
 			if(!MemberTypeMatch(member, memberTypes))
 			{
-				member = member->nextMember;
-				continue;
+				goto advance;
 			}
 	
 			/* Filter based on the binding attributes and calling conventions */
 			if(!BindingAttrMatch(member, bindingAttrs, callConv))
 			{
-				member = member->nextMember;
-				continue;
+				goto advance;
 			}
-	
-			/* Filter based on the parameter types */
-			if(types != 0)
-			{
-				if(member->kind == IL_META_MEMBERKIND_METHOD ||
-				   member->kind == IL_META_MEMBERKIND_PROPERTY)
-				{
-					if(!ParameterTypeMatch
-							(thread, member->programItem.image,
-						     member->signature, (System_Array *)types,
-						     (bindingAttrs & BF_ExactBinding) != 0))
-					{
-						member = member->nextMember;
-						continue;
-					}
-				}
-			}
-	
+
 			/* Check that we have reflection access for this member */
 			if(!_ILClrCheckAccess(thread, (ILClass *)0, member))
 			{
-				member = member->nextMember;
-				continue;
+				goto advance;
 			}
-	
-			/* This is a candidate member */
-			if(foundItem)
+
+			/* Filter based on the parameter types */
+			if(types &&
+			   (member->kind == IL_META_MEMBERKIND_METHOD ||
+			    member->kind == IL_META_MEMBERKIND_PROPERTY))
 			{
-				otherMember=ILProgramItemToMember(foundItem);
-					
-				if(ILMemberGetKind(member) == ILMemberGetKind(otherMember) &&
-				  (otherMember=CheckMemberOverride(otherMember, member))!=NULL)
+				/* Check for an exact match */
+				if(!ParameterTypeMatch(thread, member->programItem.image,
+				                       member->signature, types, 1))
 				{
-					foundItem = &(otherMember->programItem);
-					member = member->nextMember;
-					continue;					
+					/* Check for an inexact match if neccessary */
+					if(!foundExact && (bindingAttrs & BF_ExactBinding) == 0)
+					{
+						if(!ParameterTypeMatch(thread,
+						                       member->programItem.image,
+						                       member->signature, types, 0))
+						{
+							goto advance;
+						}
+					}
+					else
+					{
+						goto advance;
+					}
+				}
+				else
+				{
+					/* This is a candidate member */
+					if(foundExact)
+					{
+						other = ILProgramItemToMember(foundExact);
+						if(member->kind == other->kind &&
+						   (other = CheckMemberOverride(other, member)))
+						{
+							foundExact = &(other->programItem);
+							goto advance;
+						}
+						/* The member match is ambiguous */
+						goto ambiguous;
+					}
+					foundExact = &(member->programItem);
+				}
+			}
+			/* This is a candidate member */
+			if(!foundExact && foundItem)
+			{
+				other = ILProgramItemToMember(foundItem);
+
+				if(member->kind == other->kind &&
+				   (other = CheckMemberOverride(other, member)))
+				{
+					foundItem = &(other->programItem);
+					goto advance;
 				}
 				/* The member match is ambiguous */
-			ambiguous:
-				ILExecThreadThrowSystem
-						(thread, "System.Reflection.AmbiguousMatchException",
-						 (const char *)0);
-				return 0;
+				inexactIsAmbig = 1;
 			}
 			foundItem = &(member->programItem);
-	
+
+		advance:
 			/* Advance to the next member */
 			member = member->nextMember;
+
+			/* Final ambiguouity check */
+			if(!member && !foundExact && inexactIsAmbig)
+			{
+				goto ambiguous;
+			}
+			continue;
+
+		ambiguous:
+			/* The member match is ambiguous */
+			ILExecThreadThrowSystem
+					(thread, "System.Reflection.AmbiguousMatchException",
+					 (const char *)0);
+			return 0;
 		}
 
 		/* Scan the nested types also */
@@ -2162,7 +2196,11 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 	      (bindingAttrs & (ILInt32)BF_DeclaredOnly) == 0);
 
 	/* Return the item that was found to the caller */
-	if(foundItem)
+	if(foundExact)
+	{
+		return ItemToClrObject(thread, foundExact);
+	}
+	else if(foundItem)
 	{
 		return ItemToClrObject(thread, foundItem);
 	}

@@ -89,6 +89,16 @@ void ILGCInvokeFinalizers(void);
  */
 long ILGCGetHeapSize(void);
 
+/*
+ * Register a pointer to a weak reference.
+ */
+void ILGCRegisterWeak(void *ptr);
+
+/*
+ * Unregister a pointer to a weak reference.
+ */
+void ILGCUnregisterWeak(void *ptr);
+
 #ifdef	__cplusplus
 };
 #endif

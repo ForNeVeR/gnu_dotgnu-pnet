@@ -65,6 +65,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->internHash = 0;
 	process->reflectionHash = 0;
 	process->loadedModules = 0;
+	process->gcHandles = 0;
 	process->entryImage = 0;
 
 	/* Initialize the image loading context */
@@ -158,6 +159,15 @@ void ILExecProcessDestroy(ILExecProcess *process)
 			ILFree(loaded);
 			loaded = nextLoaded;
 		}
+	}
+#endif
+
+#ifdef IL_CONFIG_RUNTIME_INFRA
+	/* Destroy the GC handle table */
+	{
+		extern void _ILGCHandleTableFree(struct _tagILGCHandleTable *table);
+		_ILGCHandleTableFree(process->gcHandles);
+		process->gcHandles = 0;
 	}
 #endif
 

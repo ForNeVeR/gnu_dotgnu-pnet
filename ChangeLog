@@ -6,6 +6,11 @@
 	include/il_gc.h, samples/mscorlib.dll, support/def_gc.c,
 	support/hb_gc.c: implement internalcall methods for "System.GC".
 
+	* engine/engine.h, engine/int_proto.h, engine/int_table.c,
+	engine/lib_gc.c, engine/process.c, include/il_gc.h,
+	samples/mscorlib.dll, support/def_gc.c, support/hb_gc.c:
+	implement GC handles and weak references.
+
 2002-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/convert.c, engine/cvm_arith.c, engine/cvm_var.c,

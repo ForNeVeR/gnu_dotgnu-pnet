@@ -182,6 +182,16 @@ long ILGCGetHeapSize(void)
 	return (long)heapSize;
 }
 
+void ILGCRegisterWeak(void *ptr)
+{
+	/* Nothing to do here because we don't do finalization */
+}
+
+void ILGCUnregisterWeak(void *ptr)
+{
+	/* Nothing to do here because we don't do finalization */
+}
+
 #ifdef	__cplusplus
 };
 #endif

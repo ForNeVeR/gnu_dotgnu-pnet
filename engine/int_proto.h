@@ -242,7 +242,7 @@ extern ILInt32 _IL_GCHandle_GCAlloc(ILExecThread * _thread, ILObject * value, IL
 extern void _IL_GCHandle_GCFree(ILExecThread * _thread, ILInt32 handle);
 extern ILBool _IL_GCHandle_GCValidate(ILExecThread * _thread, ILInt32 handle);
 extern ILObject * _IL_GCHandle_GCGetTarget(ILExecThread * _thread, ILInt32 handle);
-extern void _IL_GCHandle_GCSetTarget(ILExecThread * _thread, ILInt32 handle, ILObject * value, ILBool isPinned);
+extern void _IL_GCHandle_GCSetTarget(ILExecThread * _thread, ILInt32 handle, ILObject * value);
 
 extern void _IL_RuntimeHelpers_InitializeArray(ILExecThread * _thread, ILObject * array, void * field);
 extern void _IL_RuntimeHelpers_RunClassConstructor(ILExecThread * _thread, void * type);

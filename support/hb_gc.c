@@ -108,6 +108,16 @@ long ILGCGetHeapSize(void)
 	return (long)GC_get_heap_size();
 }
 
+void ILGCRegisterWeak(void *ptr)
+{
+	GC_register_disappearing_link(ptr);
+}
+
+void ILGCUnregisterWeak(void *ptr)
+{
+	GC_unregister_disappearing_link(ptr);
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -119,6 +119,9 @@ struct _tagILExecProcess
 	/* List of loaded modules for PInvoke methods */
 	ILLoadedModule *loadedModules;
 
+	/* List of GC handles */
+	struct _tagILGCHandleTable *gcHandles;
+
 	/* The image that contains the program entry point */
 	ILImage		   *entryImage;
 

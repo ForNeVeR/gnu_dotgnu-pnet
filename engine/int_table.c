@@ -1235,9 +1235,9 @@ static void marshal_bpi(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vpipb(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_vpip(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*(void (*)(void *, ILInt32, void *, ILInt8))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt8 *)(avalue[3])));
+	(*(void (*)(void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif
@@ -1250,7 +1250,7 @@ IL_METHOD_BEGIN(GCHandle_Methods)
 	IL_METHOD("GCFree", "(i)V", _IL_GCHandle_GCFree, marshal_vpi)
 	IL_METHOD("GCValidate", "(i)Z", _IL_GCHandle_GCValidate, marshal_bpi)
 	IL_METHOD("GCGetTarget", "(i)oSystem.Object;", _IL_GCHandle_GCGetTarget, marshal_ppi)
-	IL_METHOD("GCSetTarget", "(ioSystem.Object;Z)V", _IL_GCHandle_GCSetTarget, marshal_vpipb)
+	IL_METHOD("GCSetTarget", "(ioSystem.Object;)V", _IL_GCHandle_GCSetTarget, marshal_vpip)
 IL_METHOD_END
 
 #endif
@@ -1920,15 +1920,6 @@ static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
 static void marshal_vpipii(void (*fn)(), void *rvalue, void **avalue)
 {
 	(*(void (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpip(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILInt32, void *))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif

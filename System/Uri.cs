@@ -68,12 +68,12 @@ public class Uri : MarshalByRefObject
 
 	// authority = userinfo+host+port
 	// userinfo = username:password
-	private String username;
-	private String password;
+	private String userinfo;
 	private String host;
 	private int port;
 
 	// technically optional, but they want a path :)
+	// contains the slash
 	private String path;
 
 	// doesn't contain the ? mark
@@ -182,14 +182,29 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	protected virtual void Escape()
 	{
+		this.abspath = EscapeString(this.abspath);
 	}
 
-	[TODO]
 	protected static String EscapeString(String str)
 	{
+		if (this.abspath == null || str.Length == 0)
+			return String.Empty;
+		// assume that all characters are OK for escaping
+		// must change code for editable URI
+		// also, does not see if string already escaped
+		char chk;
+		StringBuilder ret = new StringBuilder(str.Length);
+		for (int i = 0; ++i < str.Length;)
+		{
+			chk = str[i];
+			if (IsExcludedCharacter(chk) || IsReservedCharacter(chk))
+				ret.Append(HexEscape(chk));
+			else
+				ret.Append(chk);
+		}
+		return ret.ToString();
 	}
 
 	public static int FromHex(char digit)
@@ -299,11 +314,11 @@ public class Uri : MarshalByRefObject
 	}
 
 	// properties
-	[TODO]
 	public String AbsolutePath
 	{
 		get
 		{
+			return this.path;
 		}
 	}
 
@@ -315,11 +330,17 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	public String Authority
 	{
 		get
 		{
+			StringBuilder authret = new StringBuilder();
+			if (this.userinfo.Length > 0)
+				authret.Append(this.userinfo).Append('@');
+			authret.Append(host);
+			if (!this.IsDefaultPort)
+				authret.Append(':').Append(this.port);
+			return authret.ToString();
 		}
 	}
 
@@ -356,7 +377,7 @@ public class Uri : MarshalByRefObject
 		{
 			try
 			{
-				return (this.port == Uri.DefaultPortForScheme(this.scheme));
+				return (this.port == -1 || this.port == Uri.DefaultPortForScheme(this.scheme));
 			}
 			catch (ArgumentException ae)
 			{
@@ -396,11 +417,13 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	public String PathAndQuery
 	{
 		get
 		{
+			String qpath = this.AbsolutePath;
+			String pquery = this.Query;
+			return new StringBuilder(qpath.Length+pquery.Length).Append(qpath).Append(pquery).ToString();
 		}
 	}
 
@@ -452,11 +475,11 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	public string UserInfo
 	{
 		get
 		{
+			return this.userinfo;
 		}
 	}
 

@@ -20,9 +20,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
-{
-
 /*
 Some implementation details.
 
@@ -66,6 +63,7 @@ public class UriBuilder
 	private int port;
 
 	// technically optional, but they want a path :)
+	// contains the slash
 	private String path;
 
 	// doesn't contain the ? mark
@@ -343,14 +341,16 @@ public class UriBuilder
 	{
 		get
 		{
-			if (this.path == String.Empty)
-				return UriBuilder.SLASH;
-			else
-				return this.path;
+			return this.path;
 		}
 		set
 		{
-			this.path = value;
+			if (value.Length == 0)
+				this.path = SLASH;
+			else if (value[0] == '/')
+				this.path = value;
+			else
+				this.path = new StringBuilder(value.Length+1).Append('/').Append(value).ToString();
 		}
 	}
 

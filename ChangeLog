@@ -1,3 +1,12 @@
+2002-03-13  Stephen Compall  <rushing@sigecom.net>
+
+	* System/Uri.cs: Added more high-level properties and methods,
+	including AbsolutePath, Authority, and Escape-ing stuff. Plus,
+	more intelligent interpretation of hidden data methods.
+
+	* System/UriBuilder.cs: Fixed namespace problem, changed Path to
+	match Uri.AbsolutePath changes.
+	
 2002-03-12  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Made the code less kludgy with Strings, added a
@@ -205,4 +214,3 @@
 
 	* make_patch.sh: add a script that assists with making patch
 	files for users.
-

@@ -128,9 +128,6 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 							  ILMetaDataRead *reader, int *kind,
 							  int depth);
 
-/* synthetic.c */
-ILClass *_ILCreateSystemType(ILImage *image, const char *name);
-
 /*
  * Parse an element type.  "depth" is used to control the
  * recursion depth so that malicious parties cannot cause
@@ -213,7 +210,7 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 		case IL_META_ELEMTYPE_STRING:
 		{
 			/* Return a reference to the built-in "System.String" class */
-			info = _ILCreateSystemType(image, "String");
+			info = ILClassResolveSystem(image, 0, "String", "System");
 			if(info)
 			{
 				type = ILType_FromClass(info);
@@ -344,7 +341,7 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 		case IL_META_ELEMTYPE_OBJECT:
 		{
 			/* Return a reference to the built-in "System.Object" class */
-			info = _ILCreateSystemType(image, "Object");
+			info = ILClassResolveSystem(image, 0, "Object", "System");
 			if(info)
 			{
 				type = ILType_FromClass(info);

@@ -6,6 +6,9 @@
 * image/class.c, image/synthetic.c: continue the implementation of
 "ILClassFromType" to properly implement synthetic types for arrays.
 
+* image/sig_parse.c: use "ILClassResolveSystem" instead of
+"_ILCreateSystemType".
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

@@ -30,6 +30,8 @@ extern	"C" {
 extern ILMethodTableEntry const _ILSystemObjectMethods;
 extern ILMethodTableEntry const _ILSystemStringMethods;
 extern ILMethodTableEntry const _ILSystemArrayMethods;
+extern ILMethodTableEntry const _ILSystemBitConverterMethods;
+extern ILMethodTableEntry const _ILSystemBufferMethods;
 extern ILMethodTableEntry const _ILSystemDecimalMethods;
 extern ILMethodTableEntry const _ILSystemGuidMethods;
 extern ILMethodTableEntry const _ILSystemMathMethods;
@@ -61,7 +63,9 @@ typedef struct
 
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
-	{"Array",		"Array",		&_ILSystemArrayMethods},
+	{"Array",		"System",		&_ILSystemArrayMethods},
+	{"BitConverter", "System",		&_ILSystemBitConverterMethods},
+	{"Buffer",		"System",		&_ILSystemBufferMethods},
 	{"ClrHelpers",	"System.Reflection", &_ILReflectionClrHelpersMethods},
 	{"ClrType",		"System.Reflection", &_ILReflectionClrTypeMethods},
 	{"Debugger",	"System.Diagnostics", &_ILDiagnosticsDebuggerMethods},

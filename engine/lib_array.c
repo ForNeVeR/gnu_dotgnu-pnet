@@ -1294,9 +1294,129 @@ static ILInt32 System_Array_GetLength(ILExecThread *thread,
  */
 IL_METHOD_BEGIN(_ILSystemArrayMethods)
 	IL_METHOD("GetRankNative",	 "(T)i",  System_Array_GetRankNative)
-	IL_METHOD("GetRank",	 	 "(T)i",  System_Array_GetRankNative) /* Mono */
 	IL_METHOD("GetLengthNative", "(T)i",  System_Array_GetLengthNative)
 	IL_METHOD("GetLength",		 "(Ti)i", System_Array_GetLength)
+IL_METHOD_END
+
+/*
+ * private static void Buffer.Copy(Array src, int srcOffset,
+ *								   Array dst, int dstOffset,
+ *								   int count);
+ */
+static void System_Buffer_Copy(ILExecThread *thread,
+							   System_Array *src, ILInt32 srcOffset,
+							   System_Array *dst, ILInt32 dstOffset,
+							   int count)
+{
+	unsigned char *srcBuffer;
+	unsigned char *dstBuffer;
+	if(_ILIsSArray(src))
+	{
+		srcBuffer = ((unsigned char *)(ArrayToBuffer(src))) + srcOffset;
+	}
+	else if(_ILIsMArray(src))
+	{
+		srcBuffer = ((unsigned char *)(((System_MArray *)src)->data)) +
+					srcOffset;
+	}
+	else
+	{
+		return;
+	}
+	if(_ILIsSArray(dst))
+	{
+		dstBuffer = ((unsigned char *)(ArrayToBuffer(dst))) + dstOffset;
+	}
+	else if(_ILIsMArray(dst))
+	{
+		dstBuffer = ((unsigned char *)(((System_MArray *)dst)->data)) +
+					dstOffset;
+	}
+	else
+	{
+		return;
+	}
+	if(count > 0)
+	{
+		/* Use "memmove", because the caller may be trying to move
+		   an overlapping range of data within the same array */
+		ILMemMove(dstBuffer, srcBuffer, count);
+	}
+}
+
+/*
+ * private static int Buffer.GetLength(Array array);
+ */
+static ILInt32 System_Buffer_GetLength(ILExecThread *thread,
+									   System_Array *array)
+{
+	if(_ILIsSArray(array))
+	{
+		ILType *synType = ILClassGetSynType(GetObjectClass(array));
+		return array->length * ILSizeOfType(synType->un.array.elemType);
+	}
+	else if(_ILIsMArray(array))
+	{
+		return System_Array_GetLengthNative(thread, array) *
+			   ((System_MArray *)array)->elemSize;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private static byte Buffer.GetElement(Array array, int index);
+ */
+static ILUInt8 System_Buffer_GetElement(ILExecThread *thread,
+									    System_Array *array,
+										ILInt32 index)
+{
+	if(_ILIsSArray(array))
+	{
+		return ((unsigned char *)(ArrayToBuffer(array)))[index];
+	}
+	else if(_ILIsMArray(array))
+	{
+		return ((unsigned char *)(((System_MArray *)array)->data))[index];
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private static void Buffer.SetElement(Array array, int index, byte value);
+ */
+static void System_Buffer_SetElement(ILExecThread *thread,
+									 System_Array *array,
+									 ILInt32 index,
+									 ILUInt8 value)
+{
+	if(_ILIsSArray(array))
+	{
+		((unsigned char *)(ArrayToBuffer(array)))[index] = value;
+	}
+	else if(_ILIsMArray(array))
+	{
+		((unsigned char *)(((System_MArray *)array)->data))[index] = value;
+	}
+}
+
+/*
+ * Method table for the "System.Buffer" class.
+ */
+IL_METHOD_BEGIN(_ILSystemBufferMethods)
+	IL_METHOD("Copy",	 	"(oSystem.Array;ioSystem.Array;ii)V",
+					System_Buffer_Copy)
+	IL_METHOD("GetLength",	 	"(oSystem.Array;)i",
+					System_Buffer_GetLength)
+	IL_METHOD("GetElement",	 	"(oSystem.Array;i)B",
+					System_Buffer_GetElement)
+	IL_METHOD("SetElement",	 	"(oSystem.Array;iB)V",
+					System_Buffer_SetElement)
 IL_METHOD_END
 
 int ILExecThreadGetElem(ILExecThread *thread, void *value,

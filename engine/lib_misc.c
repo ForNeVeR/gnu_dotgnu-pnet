@@ -41,6 +41,111 @@ IL_METHOD_BEGIN(_ILSystemGuidMethods)
 	IL_METHOD("NewGuid", "()vSystem.Guid;", Guid_NewGuid)
 IL_METHOD_END
 
+/*
+ * Determine the endian-ness of the platform we are executing on.
+ */
+#if defined(__i386) || defined(__i386__)
+#define	IsLittleEndian()	1
+#else
+static ILBool IsLittleEndian(void)
+{
+}
+#endif
+
+/*
+ * private static bool GetLittleEndian();
+ */
+static ILBool BitConverter_GetLittleEndian(ILExecThread *thread)
+{
+#if defined(__i386) || defined(__i386__)
+	return 1;
+#else
+	union
+	{
+		unsigned char bytes[4];
+		ILUInt32      value;
+
+	} convert;
+	convert.value = (ILUInt32)0x01020304;
+	return (convert.bytes[0] == (unsigned char)0x04);
+#endif
+}
+
+/*
+ * public static long DoubleToInt64Bits(double value);
+ */
+static ILInt64 BitConverter_DoubleToInt64Bits(ILExecThread *thread,
+											  ILDouble value)
+{
+	union
+	{
+		ILDouble input;
+		ILInt64  output;
+
+	} convert;
+	convert.input = value;
+	return convert.output;
+}
+
+/*
+ * public static double Int64BitsToDouble(long value);
+ */
+static ILDouble BitConverter_Int64BitsToDouble(ILExecThread *thread,
+											   ILInt64 value)
+{
+	union
+	{
+		ILInt64  input;
+		ILDouble output;
+
+	} convert;
+	convert.input = value;
+	return convert.output;
+}
+
+/*
+ * public static int FloatToInt32Bits(float value);
+ */
+static ILInt32 BitConverter_FloatToInt32Bits(ILExecThread *thread,
+											 ILFloat value)
+{
+	union
+	{
+		ILFloat input;
+		ILInt32 output;
+
+	} convert;
+	convert.input = value;
+	return convert.output;
+}
+
+/*
+ * public static float Int32BitsToFloat(int value);
+ */
+static ILDouble BitConverter_Int32BitsToFloat(ILExecThread *thread,
+											  ILInt32 value)
+{
+	union
+	{
+		ILInt32 input;
+		ILFloat output;
+
+	} convert;
+	convert.input = value;
+	return convert.output;
+}
+
+/*
+ * Method table for the "System.BitConverter" class.
+ */
+IL_METHOD_BEGIN(_ILSystemBitConverterMethods)
+	IL_METHOD("GetLittleEndian",   "()Z",  BitConverter_GetLittleEndian)
+	IL_METHOD("DoubleToInt64Bits", "(d)l", BitConverter_DoubleToInt64Bits)
+	IL_METHOD("Int64BitsToDouble", "(l)d", BitConverter_Int64BitsToDouble)
+	IL_METHOD("FloatToInt32Bits",  "(f)l", BitConverter_FloatToInt32Bits)
+	IL_METHOD("Int32BitsToFloat",  "(l)f", BitConverter_Int32BitsToFloat)
+IL_METHOD_END
+
 #ifdef	__cplusplus
 };
 #endif

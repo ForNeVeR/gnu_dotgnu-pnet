@@ -1,4 +1,9 @@
 
+2001-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* engine/lib_misc.c, engine/lib_array.c, engine/internal.c: implement the
+"internalcall" methods for "System.BitConverter" and "System.Buffer".
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h, engine/internal.c, engine/lib_defs.h, engine/lib_object.c,

@@ -5,6 +5,23 @@
 	for "System.Net*" because they cause compile problems with
 	"csc /noconfig".
 
+	* System/S.cs, System/Uri.cs, System/UriBuilder.cs,
+	System/UriFormatException.cs,
+	System/Collections/Specialized/NameValueCollection.cs,
+	System/Net/Authorization.cs, System/Net/Dns.cs,
+	System/Net/EndPoint.cs, System/Net/HttpVersion.cs,
+	System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs,
+	System/Net/IPAddress.cs, System/Net/IPEndPoint.cs,
+	System/Net/IPHostEntry.cs, System/Net/NetworkCredential.cs,
+	System/Net/ServicePoint.cs, System/Net/SocketAddress.cs,
+	System/Net/WebException.cs, System/Net/WebExceptionStatus.cs,
+	System/Net/WebHeaderCollection.cs, System/Net/WebRequest.cs,
+	System/Net/WebResponse.cs, System/Net/Sockets/MulticastOption.cs,
+	System/Net/Sockets/NetworkStream.cs, System/Net/Sockets/Socket.cs,
+	System/Net/Sockets/SocketException.cs, resources/en_US/System/Arg.txt:
+	lots of small changes here and there to make "System" compile
+	using csc.
+
 2002-04-20  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Compile fixes.

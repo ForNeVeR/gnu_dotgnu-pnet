@@ -28,11 +28,11 @@ using Platform;
 public class SocketException : SystemException
 {
 	// Internal state.
-/*	private Errno errno;
+	private Errno errno;
 
 	// Constructors.
 	public SocketException()
-		: base(_("IO_Socket"))
+		: base(S._("IO_Socket"))
 		{
 			errno = Errno.EREMOTEIO;
 		}
@@ -76,33 +76,30 @@ public class SocketException : SystemException
 	// Get the message that corresponds to a platform error number.
 	internal static String GetErrnoMessage(Errno errno)
 			{
-				// See if the resource file has provided an override.
-				String resource = "errno_" + errno.ToString();
-				String str = _(resource);
-				if(str != null)
-				{
-					return str;
-				}
-
 				// Try getting a message from the underlying platform.
-				str = SocketMethods.GetErrnoMessage(errno);
+				String str = SocketMethods.GetErrnoMessage(errno);
 				if(str != null)
 				{
 					return str;
 				}
 
 				// Use the default Socket exception string.
-				return _("IO_Socket");
+				return S._("IO_Socket");
 			}
 
-	// Get the default message to use for Socket exceptions.
-	protected internal override String MessageDefault
+	// Get the default message to use for this exception type.
+	public override String Message
 			{
 				get
 				{
-					if(errno == Errno.EREMOTEIO)
+					String parentMsg = base.Message;
+					if(parentMsg != null)
 					{
-						return _("IO_Socket");
+						return parentMsg;
+					}
+					else if(errno == Errno.EREMOTEIO)
+					{
+						return S._("IO_Socket");
 					}
 					else
 					{
@@ -111,7 +108,6 @@ public class SocketException : SystemException
 				}
 			}
 
-*/						
 }; // class SocketException
 
 }; // namespace System.Net.Sockets

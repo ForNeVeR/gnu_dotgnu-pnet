@@ -24,6 +24,7 @@ namespace System.Net
 {
 
 using System;
+using System.Net.Sockets;
 
 public class IPAddress
 {
@@ -34,10 +35,10 @@ public class IPAddress
 	// and I don't know if all hosts are little word, little endian ;)
 	private long value__;
 
-	IPAddress(long newAddress)
+	public IPAddress(long newAddress)
 			{
 				if ((newAddress < 0) || (newAddress > 0x00000000FFFFFFFF))
-					throw new ArgumentOutOfRangeException("newAddress",_("Arg_OutOfRange"));
+					throw new ArgumentOutOfRangeException("newAddress",S._("Arg_OutOfRange"));
 				this.value__ = newAddress;
 
 				// Any, Broadcast, Loopback, and None are static
@@ -58,9 +59,9 @@ public class IPAddress
 	public override int GetHashCode() 
 			{
 				return unchecked(((int)(value__ ^ (value__ >> 32)))
-										& 0xFFFFFFFF);
+										& (int)0x7FFFFFFF);
 			}
-	// I think the next three will have to be InternalCalls
+	// I think the next three will have to be InternalCalls
 	[TODO]
 	public static long HostToNetworkOrder(long host)
 			{
@@ -82,7 +83,7 @@ public class IPAddress
 				// only LSByte value matters
 				return ((address.value__ & 0x00000000000000FF) == 0x000000000000007F);
 			}
-	// I think the next three will have to be InternalCalls
+	// I think the next three will have to be InternalCalls
 	[TODO]
 	public static long NetworkToHostOrder(long network)
 			{
@@ -100,66 +101,50 @@ public class IPAddress
 			}
 	public static IPAddress Parse(String ipString)
 			{
-				IPAddress parsed;
+				long parsed;
 				String[]  tokenizedString;
-				ulong quadA;
-				ulong quadB;
-				ulong quadC;
-				ulong quadD;
+				long quadA;
+				long quadB;
+				long quadC;
+				long quadD;
 				bool  numbersign;
 
 				if (ipString == null)
 				{
-					throw new ArgumentNullException("ipString",_("Arg_NotNull"));
+					throw new ArgumentNullException("ipString",S._("Arg_NotNull"));
 				}
 
 				char[] point = {'.'};
 				// this only takes char[]. not String
-				tokenizedString = String.Split(point, 4);
+				tokenizedString = ipString.Split(point, 4);
 				
 				if (tokenizedString.Length < 4)
 				{
-					throw new FormatException("ipString", _("Format_IP"));
+					throw new FormatException(S._("Format_IP"));
 				}
 
-				// this might be easier to understand were it implemented
-				// in terms of System.Byte.Parse(String)
-				if ((!NumberParser.StringToNumber(tokenizedString[0], 10, quadA,
- numbersign)) ||
-					(!NumberParser.StringToNumber(tokenizedString[1], 10, quadB, numbersign))
- ||
-					(!NumberParser.StringToNumber(tokenizedString[2], 10, quadC, numbersign))
- ||
-					(!NumberParser.StringToNumber(tokenizedString[3], 10, quadD, numbersign)))
+				try
 				{
-					throw new FormatException("ipString", _("Format_IP"));
+					quadA = Byte.Parse(tokenizedString[0]);
+					quadB = Byte.Parse(tokenizedString[1]);
+					quadC = Byte.Parse(tokenizedString[2]);
+					quadD = Byte.Parse(tokenizedString[3]);
+				}
+				catch(OverflowException)
+				{
+					throw new FormatException(S._("Format_IP"));
 				}
 
-				parsed = (quadA + (quadB << 2) + (quadC << 4) + (quadD << 6));
+				parsed = (quadD + (quadC << 2) + (quadB << 4) + (quadA << 6));
 
-				return parsed;
+				return new IPAddress(parsed);
 			}	
 	public override string ToString()
 			{
-				string ip;
-
-				ip = NumberFormatter.FormatFixedPoint((ulong)value__ & 0x00000000000000FF,
- 0, 0, false, null, 
-										 NumberFormatInfo.GetInstance(provider)) +
-					"." + 
-					NumberFormatter.FormatFixedPoint((ulong)value__ & 0x000000000000FF, 0, 0,
- false, null, 
-										 NumberFormatInfo.GetInstance(provider)) +
-					"." + 
-					NumberFormatter.FormatFixedPoint((ulong)value__ & 0x0000000000FF, 0, 0,
- false, null, 
-										 NumberFormatInfo.GetInstance(provider)) +
-					"." + 
-					NumberFormatter.FormatFixedPoint((ulong)value__ & 0x00000000FF, 0, 0,
- false, null, 
-										 NumberFormatInfo.GetInstance(provider));
-
-				return ip;
+				return ((value__ >> 24) & 0xFF).ToString() + "." +
+					   ((value__ >> 16) & 0xFF).ToString() + "." +
+					   ((value__ >> 8) & 0xFF).ToString() + "." +
+					   (value__ & 0xFF).ToString();
 			}
 
 	public static readonly IPAddress Any = new IPAddress(0x0000000000000000);
@@ -176,7 +161,7 @@ public class IPAddress
 				set
 				{
 					if ((value < 0) || (value > 0x00000000FFFFFFFF))
-						throw new ArgumentOutOfRangeException("newAddress",_("Arg_OutOfRange"));
+						throw new ArgumentOutOfRangeException("newAddress",S._("Arg_OutOfRange"));
 					value__ = value;
 				}
 			}

@@ -24,7 +24,7 @@ namespace System.Net
 using System;
 using System.Net.Sockets;
 
-public abstract class IPEndPoint : EndPoint
+public class IPEndPoint : EndPoint
 {
 	public const int MinPort = 0;
 	public const int MaxPort = 65535;
@@ -35,7 +35,7 @@ public abstract class IPEndPoint : EndPoint
 	public IPEndPoint(long address, int port) 
 			{
 				if (address < 0)
-					throw new ArgumentOutOfRangeException("address", _("ArgRange_NonNegative"));
+					throw new ArgumentOutOfRangeException("address", S._("ArgRange_NonNegative"));
 	
 				if (port < MinPort || port > MaxPort)
 					throw new ArgumentOutOfRangeException("port");
@@ -47,7 +47,7 @@ public abstract class IPEndPoint : EndPoint
 
 	public IPEndPoint(IPAddress address, int port)
 			{
-				if (address == 0)
+				if (address == null)
 					throw new ArgumentNullException("address");
 				
 				if (port < MinPort || port > MaxPort)
@@ -58,14 +58,16 @@ public abstract class IPEndPoint : EndPoint
 			}
 
 	//Create the right IPEndPoint
-	public override IPEndPoint Create(SocketAddress socketAddress) 
+	public override EndPoint Create(SocketAddress socketAddress) 
 			{
+				// TODO: needs help
+			#if false
 				byte[] addrarray;
 				byte[] portarray;
 				String addrstring;
 				String portstring;
 								
-				if (socketAddress.AddressFamily != AddressFamliy.InterNetwork)
+				if (socketAddress.Family != AddressFamily.InterNetwork)
 					throw new ArgumentException("socketAddress");
 
 				//Bytes 3,4,5,6 are the address, 7,8 the port
@@ -83,22 +85,32 @@ public abstract class IPEndPoint : EndPoint
 				portstring = new String(portarray);				
 				
 				return new IPEndPoint(long.Parse(addrstring), int.Parse(portstring));
+			#endif
+				return null;
 			}
 	
 	public override bool Equals(object comparand)
 			{
-				if (typeof(comparand) != System.Net.IPEndPoint)	
+				if(comparand == null)
+					return false;
+
+				if (!(comparand is System.Net.IPEndPoint))
 					return false;
 					
-				if (!(comparand.Address == myaddress && 
-					comparand.Port == myport))
+				IPEndPoint point = (IPEndPoint)comparand;
+
+				if (!(point.myaddress == myaddress && 
+					point.myport == myport))
 					return false;
 				
 				return true;			
 			}
 			
 	[TODO]		
-	public override int GetHashCode() {}
+	public override int GetHashCode()
+			{
+				return myaddress.GetHashCode() + myport.GetHashCode();
+			}
 	
 	public override String ToString()
 			{
@@ -134,7 +146,7 @@ public abstract class IPEndPoint : EndPoint
 				}
 				set
 				{	
-					if (port < MinPort || port > MaxPort)
+					if (value < MinPort || value > MaxPort)
 						throw new ArgumentOutOfRangeException("port");
 	
 					myport = value;				

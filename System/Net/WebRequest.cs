@@ -48,24 +48,26 @@ public class WebRequest : MarshalByRefObject
 		method = "";
 		preAuthenticate = false;
 		proxy = null;
-		requestUri = "";
+		requestUri = null;
 		timeout = 0;
 		prefixes.Clear();
 	}
 
+	// TODO: need proper translatable strings for the exceptions below.
+
 	public virtual void Abort()
 	{
-		throw new NotSupportedException("Abort", _("Exception_NotSupported"));
+		throw new NotSupportedException("Abort");
 	}
 
 	public virtual IAsyncResult BeginGetRequestStream(AsyncCallback callback, object state)
 	{
-		throw new NotSupportedException("BeginGetRequestStream", _("Exception_NotSupported"));
+		throw new NotSupportedException("BeginGetRequestStream");
 	}
 
 	public virtual IAsyncResult BeginGetResponse(AsyncCallback callback, object state)
 	{
-		throw new NotSupportedException("BeginGetResponse", _("Exception_NotSupported"));
+		throw new NotSupportedException("BeginGetResponse");
 	}
 
 	[ TODO ]
@@ -73,7 +75,7 @@ public class WebRequest : MarshalByRefObject
 	{
 		if (requestUriString == null)
 		{
-			throw new ArgumentNullException("Create", _("Arg_NotNull"));
+			throw new ArgumentNullException("requestUriString", S._("Arg_NotNull"));
 		}
 
 		Uri requestUri = new Uri(requestUriString);		
@@ -86,14 +88,16 @@ public class WebRequest : MarshalByRefObject
 	{
 		// TODO: Match Uri against complete Uri and scheme and find out
 		// if it is supported, otherwise throw up an error
-		// throw new NotSupportedException("Create", _("Exception_NotSupported"));
+		// throw new NotSupportedException("Create");
 
 		// TODO: the URI format is invalid
-		// throw new UriFormatException("requestUriString", _(""));
+		// throw new UriFormatException("requestUriString");
 
 		// TODO: this client does not have the permission to connect to the URI or
 		// the URI that the request is redirected to.
-		// throw new SecurityException("requestUriString", _(""));
+		// throw new SecurityException("requestUriString");
+
+		return null;
 	}
 
 	[ TODO ]
@@ -102,34 +106,36 @@ public class WebRequest : MarshalByRefObject
 		// TODO: Find out if just scheme is supported, otherwise throw up an error
 		// do not check for the complete Uri (in the case of longer Uri's passed).
 		// see spec
-		// throw new NotSupportedException("CreateDefault", _("Exception_NotSupported"));
+		// throw new NotSupportedException("CreateDefault");
 
 		// TODO: the URI format is invalid
-		// throw new UriFormatException("requestUriString", _(""));
+		// throw new UriFormatException("requestUriString");
 
 		// TODO: this client does not have the permission to connect to the URI or
 		// the URI that the request is redirected to.
-		// throw new SecurityException("requestUriString", _(""));
+		// throw new SecurityException("requestUriString");
+
+		return null;
 	}
 
 	public virtual Stream EndGetRequestStream(IAsyncResult asyncResult)
 	{
-		throw new NotSupportedException("EndGetRequestStream", _("Exception_NotSupported"));
+		throw new NotSupportedException("EndGetRequestStream");
 	}
 
 	public virtual WebResponse EndGetResponse(IAsyncResult asyncResult)
 	{
-		throw new NotSupportedException("EndGetResponse", _("Exception_NotSupported"));
+		throw new NotSupportedException("EndGetResponse");
 	}
 
 	public virtual Stream GetRequestStream()	
 	{
-		throw new NotSupportedException("GetRequestStream", _("Exception_NotSupported"));
+		throw new NotSupportedException("GetRequestStream");
 	}
 
 	public virtual WebResponse GetResponse()
 	{
-		throw new NotSupportedException("GetResponse", _("Exception_NotSupported"));
+		throw new NotSupportedException("GetResponse");
 	}
 
 	[ TODO ]
@@ -137,27 +143,29 @@ public class WebRequest : MarshalByRefObject
 	{
 		if (prefix== null)
 		{
-			throw new ArgumentNullException("prefix", _("Arg_NotNull"));
+			throw new ArgumentNullException("prefix", S._("Arg_NotNull"));
 		}
 
 		if (creator== null)
 		{
-			throw new ArgumentNullException("creator", _("Arg_NotNull"));
+			throw new ArgumentNullException("creator", S._("Arg_NotNull"));
 		}
 
 		// TODO: further implementation...
+
+		return false;
 	}
 
 	public virtual string ConnectionGroupName 
 	{ 
 		get
 		{
-			throw new NotSupportedException("ConnectionGroupName ", _("Exception_NotSupported"));
+			throw new NotSupportedException("ConnectionGroupName ");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("ConnectionGroupName ", _("Exception_NotSupported"));
+			throw new NotSupportedException("ConnectionGroupName ");
 		} 
 	}
 
@@ -165,12 +173,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("ContentLength", _("Exception_NotSupported"));
+			throw new NotSupportedException("ContentLength");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("ContentLength", _("Exception_NotSupported"));
+			throw new NotSupportedException("ContentLength");
 		}
 	}
 
@@ -178,12 +186,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("ContentType", _("Exception_NotSupported"));
+			throw new NotSupportedException("ContentType");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("ContentType", _("Exception_NotSupported"));
+			throw new NotSupportedException("ContentType");
 		}
 	}
 
@@ -191,12 +199,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("Credentials", _("Exception_NotSupported"));
+			throw new NotSupportedException("Credentials");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("Credentials", _("Exception_NotSupported"));
+			throw new NotSupportedException("Credentials");
 		}
 	}
 
@@ -204,12 +212,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("Headers", _("Exception_NotSupported"));
+			throw new NotSupportedException("Headers");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("Headers", _("Exception_NotSupported"));
+			throw new NotSupportedException("Headers");
 		}
 	}
 
@@ -217,12 +225,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("Method", _("Exception_NotSupported"));
+			throw new NotSupportedException("Method");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("Method", _("Exception_NotSupported"));
+			throw new NotSupportedException("Method");
 		}
 	}
 
@@ -230,12 +238,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("PreAuthenticate", _("Exception_NotSupported"));
+			throw new NotSupportedException("PreAuthenticate");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("PreAuthenticate", _("Exception_NotSupported"));
+			throw new NotSupportedException("PreAuthenticate");
 		} 
 	}
 
@@ -243,12 +251,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("Proxy", _("Exception_NotSupported"));
+			throw new NotSupportedException("Proxy");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("Proxy", _("Exception_NotSupported"));
+			throw new NotSupportedException("Proxy");
 		}
 	}
 
@@ -256,12 +264,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("RequestUri", _("Exception_NotSupported"));
+			throw new NotSupportedException("RequestUri");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("RequestUri", _("Exception_NotSupported"));
+			throw new NotSupportedException("RequestUri");
 		}
 	}
 
@@ -269,12 +277,12 @@ public class WebRequest : MarshalByRefObject
 	{
 		get
 		{
-			throw new NotSupportedException("Timeout", _("Exception_NotSupported"));
+			throw new NotSupportedException("Timeout");
 		}
 		
 		set
 		{
-			throw new NotSupportedException("Timeout", _("Exception_NotSupported"));
+			throw new NotSupportedException("Timeout");
 		} 
 	}
 	

@@ -23,3 +23,4 @@ Arg_HexDigit=That is not a valid hexadecimal digit
 Arg_UriScheme=The scheme supplied with the URI was not valid
 Arg_UriPort=The port specified with the URI was nonexistent
 Arg_UriHostName=URI host names must be specified in DNS or IPv4 format
+ArgRange_NonNegative=Value must not be negative

@@ -46,19 +46,19 @@ public class SocketAddress
 	[TODO]
 	public override bool Equals(object comparand)
 			{
-		
+				return false;
 			}		
 	
 	[TODO]
 	public override int GetHashCode()
 			{
-	
+				return 0;
 			}
 	
 	[TODO]
 	public override String ToString()
 			{
-				return 0;
+				return null;
 			}
 	
 	[TODO]
@@ -79,7 +79,7 @@ public class SocketAddress
 				}
 				set
 				{
-					if (offset < 0 || offset > this.Size())
+					if (offset < 0 || offset > this.Size)
 						throw new ArgumentOutOfRangeException("item");
 					myarray[offset] = value;
 				}

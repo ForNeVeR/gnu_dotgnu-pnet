@@ -34,16 +34,16 @@ public class Authorization
 	public Authorization(string token, bool finished, string connectionGroupId) {}
 	
 	[TODO]
-	public bool Complete { get{} }
+	public bool Complete { get{ return false; } }
 	
 	[TODO]
-	public String ConnectionGroupId { get{} }
+	public String ConnectionGroupId { get{ return null; } }
 	
 	[TODO]
-	public String Message { get{} }
+	public String Message { get{ return null; } }
 	
 	[TODO]
-	public String[] ProtectionRealm { get{} set{} }
+	public String[] ProtectionRealm { get{ return null; } set{} }
 	
 }; //class Authorization
 

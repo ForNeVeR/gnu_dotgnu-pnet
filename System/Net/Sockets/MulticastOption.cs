@@ -31,18 +31,18 @@ public class MulticastOption
 
 	public MulticastOption(IPAddress group, IPAddress mcint)
 			{
-				if (group == 0) 
-					throw new ArgumentNullException("group", _("Arg_NotNull"));
-				if (mcint == 0)
-					throw new ArgumentNullException("mcint", _("Arg_NotNull"));
+				if (group == null) 
+					throw new ArgumentNullException("group", S._("Arg_NotNull"));
+				if (mcint == null)
+					throw new ArgumentNullException("mcint", S._("Arg_NotNull"));
 					
 				mygroup = group;
 				mylocaladdress = mcint;			
 			}		
 	public MulticastOption(IPAddress group)
 			{
-				if (group == 0) 
-					throw new ArgumentNullException("group", _("Arg_NotNull"));
+				if (group == null) 
+					throw new ArgumentNullException("group", S._("Arg_NotNull"));
 				
 				mygroup = group;
 				mylocaladdress = IPAddress.Any;

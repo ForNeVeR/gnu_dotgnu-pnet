@@ -28,19 +28,27 @@ public class UriFormatException : FormatException
 
 	// Constructors.
 	public UriFormatException()
-		: base(_("Exception_UriFormat")) {}
+		: base(S._("Exception_UriFormat")) {}
 	public UriFormatException(String msg)
 		: base(msg) {}
 
 	// Get the default message to use for this exception type.
-	protected internal override String MessageDefault
+	public override String Message
 			{
 				get
 				{
-					return _("Exception_UriFormat");
+					String parentMsg = base.Message;
+					if(parentMsg != null)
+					{
+						return parentMsg;
+					}
+					else
+					{
+						return S._("Exception_UriFormat");
+					}
 				}
 			}
 
-}; // class FormatException
+}; // class UriFormatException
 
 }; // namespace System

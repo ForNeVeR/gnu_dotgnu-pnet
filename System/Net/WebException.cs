@@ -31,7 +31,7 @@ public class WebException : InvalidOperationException
 	
 	// Constructors.
 	public WebException()
-		: base(_("Exception_Web")) {}
+		: base(S._("Exception_Web")) {}
 	public WebException(String msg)
 		: base(msg) {}
 	public WebException(String msg, Exception inner)
@@ -52,11 +52,19 @@ public class WebException : InvalidOperationException
 	
 	
 	// Get the default message to use for this exception type.
-	protected internal override String MessageDefault
+	public override String Message
 			{
 				get
 				{
-					return _("Exception_Web");
+					String parentMsg = base.Message;
+					if(parentMsg != null)
+					{
+						return parentMsg;
+					}
+					else
+					{
+						return S._("Exception_Web");
+					}
 				}
 			}
 

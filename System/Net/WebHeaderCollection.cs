@@ -22,10 +22,9 @@ namespace System.Net
 {
 
 using System;
-//using System.Collections.Specialized; Add when it exists
+using System.Collections.Specialized;
 
-//Add the NameValueCollection base when NameValueCollection is operating
-public class WebHeaderCollection /* : NameValueCollection */
+public class WebHeaderCollection : NameValueCollection
 {
 	[TODO]
 	public WebHeaderCollection() {}
@@ -40,10 +39,10 @@ public class WebHeaderCollection /* : NameValueCollection */
 	protected void AddWithoutValidate(string headerName, string headerValue) {}
 	
 	[TODO]
-	public override String[] GetValues(string header) {}
+	public override String[] GetValues(string header) { return null; }
 	
 	[TODO]
-	public static bool IsRestricted(string headerName){}
+	public static bool IsRestricted(string headerName){ return false; }
 
 	[TODO]
 	public override void Remove(string name) {}	

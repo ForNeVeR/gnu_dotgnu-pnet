@@ -21,7 +21,8 @@
 namespace System.Net
 {
 
-class NetworkCredential : ICredentials
+[TODO]
+public class NetworkCredential : ICredentials
 {
 	public NetworkCredential() {}
 	
@@ -29,13 +30,14 @@ class NetworkCredential : ICredentials
 	
 	public NetworkCredential(String userName, String password, String domain) {}
 	
-	public NetworkCredential GetCredential(Uri uri, String authType) {}
+	public NetworkCredential GetCredential(Uri uri, String authType)
+		{ return null; }
 	
-	public String Domain { get{} set{} }
+	public String Domain { get{ return null; } set{} }
 	
-	public String Password { get{} set{} }
+	public String Password { get{ return null; } set{} }
 	
-	public String UserName { get{} set{} }
+	public String UserName { get{ return null; } set{} }
 }; //class NetworkCredential
 
 }; //namespace System.Net

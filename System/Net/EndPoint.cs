@@ -32,7 +32,7 @@ public abstract class EndPoint
 	[TODO]
 	public virtual EndPoint Create(SocketAddress socketAddress) 
 			{
-				return 0;
+				return null;
 			}
 	
 	[TODO]

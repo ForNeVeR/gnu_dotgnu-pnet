@@ -33,22 +33,22 @@ public abstract class WebResponse : MarshalByRefObject, IDisposable
 	public virtual void Close() {}
 	
 	[TODO]
-	public virtual Stream GetResponseStream() {}
-	
-/*	[TODO] //Compiler gives an error when this thing is on
-	void IDisposable.Dispose() {} */
+	public virtual Stream GetResponseStream() { return null; }
 	
 	[TODO]
-	public virtual long ContentLength { get{}  set{} }
+	void IDisposable.Dispose() {}
 	
 	[TODO]
-	public virtual String ContentType { get{} set{} }
+	public virtual long ContentLength { get{ return 0; }  set{} }
 	
 	[TODO]
-	public virtual WebHeaderCollection Headers { get{} }
+	public virtual String ContentType { get{ return null; } set{} }
 	
 	[TODO]
-	public virtual Uri ResponseUri { get{} }
+	public virtual WebHeaderCollection Headers { get{ return null; } }
+	
+	[TODO]
+	public virtual Uri ResponseUri { get{ return null; } }
 	
 }; //class WebResponse
 

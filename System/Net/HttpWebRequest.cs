@@ -29,57 +29,66 @@ namespace System.Net
 {
 
 using System;
+using System.IO;
+using System.Text;
 using System.Net.Sockets;
 
 public class HttpWebRequest : WebRequest
 {
 
+	// Write a UTF-8 string to a stream.  This needs to be
+	// made a lot more efficient using real buffering.
+	private static void Write(Stream stream, String str)
+	{
+		byte[] bytes = Encoding.UTF8.GetBytes(str);
+		stream.Write(bytes, 0, bytes.Length);
+	}
 
 	//Call some sort of constructor from 
 	//System.Net.WebRequest.CreateDefault()
-	private override void Connect(Uri address)
+	private void Connect(Uri address)
 	{
-		this.Address=address;
+		this.address=address;
 		
-		IPAddress ip=Dns.Resolve(Address.Host);
+		IPAddress ip=Dns.Resolve(Address.Host).AddressList[0];
 		IPEndPoint ep = new IPEndPoint(ip,Address.Port);
 		server=new Socket(AddressFamily.InterNetwork,SocketType.Stream,
-							Protocoltype.TCP);
+							ProtocolType.Tcp);
 		server.Connect(ep);
-		out=new StreamWriter(this.GetRequestStream());
+		outStream=this.GetRequestStream();
 		HttpWebResponse retval=new HttpWebResponse();
-		out.write(this.Method+" "+this.Address.PathAndQuery+" HTTP/"+
-					this.Version.Major+""+this.Version.Minor+"\r\n");
+		Write(outStream, this.Method+" "+this.Address.PathAndQuery+" HTTP/"+
+					this.protocolVersion.Major+"."+this.protocolVersion.Minor+"\r\n");
 		
 		/* Accept */
 		if(this.Accept!=null)
-			out.write("Accept: "+this.Accept+"\r\n");
+			Write(outStream, "Accept: "+this.Accept+"\r\n");
 		else
-			out.write("Accept: */*\r\n");
+			Write(outStream, "Accept: */*\r\n");
 	
 		/* Connection */
 		if(this.Connection!=null && this.KeepAlive)
-			out.write("Connection: "+this.Connection + " Keep-alive \r\n");
+			Write(outStream, "Connection: "+this.Connection + " Keep-alive \r\n");
 		else if (this.KeepAlive)
-			out.write("Connection: Keep-alive\r\n");
+			Write(outStream, "Connection: Keep-alive\r\n");
 		else
-			out.write("Connection: Close\r\n");
+			Write(outStream, "Connection: Close\r\n");
 	
 		/* Content-Length */	
 		if(this.ContentLength!=-1)
-			out.write("Content-Length: "+this.ContentLength+"\r\n");
+			Write(outStream, "Content-Length: "+this.ContentLength+"\r\n");
 			
 		/* Content-Type */
 		if(this.ContentType!=null)
-			out.write("Content-Type: "+this.ContentType+"\r\n");
+			Write(outStream, "Content-Type: "+this.ContentType+"\r\n");
 
 		if(this.Expect!=null)
-			out.write("Expect: "+this.Expect+"\r\n");
+			Write(outStream, "Expect: "+this.Expect+"\r\n");
 
-		if(this.IfModifiedSince!=null)
+		if(this.IfModifiedSince!=DateTime.MinValue)
 		{
 			String format="ddd, dd MMM yyyy HH*:mm:ss GMTzz";//convert to GMT
-			out.write("If-Modified-Since: "+this.IfModifiedSince.toString
+			Write(outStream, "If-Modified-Since: "+this.IfModifiedSince.ToString
 			(format)+"\r\n");			
 		}
 		
@@ -87,17 +96,17 @@ public class HttpWebRequest : WebRequest
 		/* use PreAuthenticate & ICredentials to do the job */
 		
 		if(this.Referer!=null)
-			out.write("Referer: "+this.Referer+"\r\n");
+			Write(outStream, "Referer: "+this.Referer+"\r\n");
 
 		if(this.TransferEncoding!=null)
-			out.write("Transfer-Encoding: "+this.TransferEncoding+"\r\n");
+			Write(outStream, "Transfer-Encoding: "+this.TransferEncoding+"\r\n");
 
 		/* User Agent */
 		if(this.UserAgent!=null)
-			out.write("User-Agent: "+this.UserAgent+"\r\n");
+			Write(outStream, "User-Agent: "+this.UserAgent+"\r\n");
 
 		headerSent=true;
-		out.flush();
+		outStream.Flush();
 	}
 	
 	[TODO]
@@ -120,24 +129,24 @@ public class HttpWebRequest : WebRequest
 	public void AddRange(string rangeSpecifier,int from,int to)
 	{
 		if(from <0) 
-			throw new ArgumentOutOfRangeException("from",_("Arg_OutOfRange"));
+			throw new ArgumentOutOfRangeException("from",S._("Arg_OutOfRange"));
 		if(from > to)
 			throw new ArgumentOutOfRangeException("from > to ",
-				_("Arg_OutOfRange"));
+				S._("Arg_OutOfRange"));
 		if(rangeSpecifier == null)
-			throw new ArgumentNullException("rangeSpecifier",_("Arg_Null"));
+			throw new ArgumentNullException("rangeSpecifier",S._("Arg_Null"));
 
 		if(this.Method != null && ! this.Method.Equals("GET"))
 			throw new InvalidOperationException("Invalid Method");
 		this.Headers.Set("Range",rangeSpecifier+"="+from+"-"+to);
 	}
 
-	public void Addrange(string rangeSpecifier, int from)
+	public void AddRange(string rangeSpecifier, int from)
 	{
-		if(range <0) 
-			throw new ArgumentOutOfRangeException("from",_("Arg_OutOfRange"));
+		if(from <0) 
+			throw new ArgumentOutOfRangeException("from",S._("Arg_OutOfRange"));
 		if(rangeSpecifier == null)
-			throw new ArgumentNullException("rangeSpecifier",_("Arg_Null"));
+			throw new ArgumentNullException("rangeSpecifier",S._("Arg_Null"));
 		if(this.Method != null && ! this.Method.Equals("GET"))
 			throw new InvalidOperationException("Invalid Method");
 		this.Headers.Set("Range",rangeSpecifier+"="+from+"-");
@@ -145,9 +154,10 @@ public class HttpWebRequest : WebRequest
 	
 	[TODO]
 	//unclear about how to go about this
-	public override IAsyncResult BeginGetRequestStream(AsyncCallBack callback,
+	public override IAsyncResult BeginGetRequestStream(AsyncCallback callback,
 													   object state)
 	{
+		return null;
 	}
 
 	[TODO]
@@ -155,6 +165,7 @@ public class HttpWebRequest : WebRequest
 	public override IAsyncResult BeginGetResponse(AsyncCallback callback,
 												  object state)
 	{
+		return null;
 	}
 	
 	[TODO]
@@ -162,12 +173,14 @@ public class HttpWebRequest : WebRequest
 	public override Stream EndGetRequestStream(IAsyncResult asyncResult)
 	{
 		object state=asyncResult.AsyncState;	
+		return null;
 	}
 	
 	[TODO]
 	public override WebResponse EndGetResponse(IAsyncResult asyncResult)
 	{
 		object state=asyncResult.AsyncState;
+		return null;
 	}
 
 	[TODO]
@@ -181,10 +194,10 @@ public class HttpWebRequest : WebRequest
 	// and proxy support 
 	public override Stream GetRequestStream()
 	{
-		if(out==null)throw new WebException("not connected");
+		if(outStream==null)throw new WebException("not connected");
 		if(!canGetRequestStream())
 			throw new WebException(" not allowed for " + this.Method);
-		return out;
+		return outStream;
 	}
 	
 	[TODO]
@@ -192,6 +205,7 @@ public class HttpWebRequest : WebRequest
 	//really need some doubts cleared
 	public override WebResponse GetResponse()
 	{
+		return null;
 	}
 /*
  * Implement the Checks for Setting values
@@ -307,7 +321,7 @@ public class HttpWebRequest : WebRequest
 		}
 		set
 		{
-			this.continueDelegate=false;
+			this.continueDelegate=value;
 		}
 	}
 
@@ -456,7 +470,7 @@ public class HttpWebRequest : WebRequest
 		{
 			if(value.Major==1 && (value.Minor==0 || value.Minor==1))
 			{
-				this.=value;
+				this.protocolVersion=value;
 			}
 			else 
 				throw new ArgumentException("Wrong args");
@@ -529,7 +543,7 @@ public class HttpWebRequest : WebRequest
 		} 
 		set
 		{
-			if(this.timeout<0 && this.timeout!=\
+			if(this.timeout<0 && this.timeout!=
 			System.Threading.Timeout.Infinite)
 				throw new ArgumentOutOfRangeException("timeout < 0");
 			this.timeout=value;
@@ -546,7 +560,7 @@ public class HttpWebRequest : WebRequest
 		{
 			if(!this.sendChunked)throw new 
 				InvalidOperationException(" send chunked set");
-			if(String.Compare("Chunked",value,1))
+			if(String.Compare("Chunked",value,true) == 0)
 				throw new ArgumentException(" cannot chunk it");
 			this.transferEncoding=value;
 		}
@@ -570,13 +584,13 @@ public class HttpWebRequest : WebRequest
 
 	private String accept="*/*";
 	private Uri address=null;
-	private boolean allowAutoRedirect=true;
-	private boolean allowWriteStreamBuffering=true;
+	private bool allowAutoRedirect=true;
+	private bool allowWriteStreamBuffering=true;
 	private String connection=null;
 	private String connectionGroupName=null;
 	private long contentLength=-1;
 	private string contentType=null;
-	private HttpContinueDelegate ContinueDelegate=null;
+	private HttpContinueDelegate continueDelegate=null;
 	private ICredentials credentials=null;
 	private string expect=null;
 	private bool haveResponse=false;
@@ -596,19 +610,21 @@ public class HttpWebRequest : WebRequest
 /*look manual*/	private int timeout;
 	private string transferEncoding=null;
 	private string userAgent=null;
+	private string mediaType=null;
 
 // my special vars & methods
-	private headerSent=false;
-	private Stream out=null;
-	private Stream in=null;
+	private bool headerSent=false;
+	private Stream outStream=null;
+	private Stream inStream=null;
+	private Socket server;
 	
-	private boolean canGetRequestStream()
+	private bool canGetRequestStream()
 	{
-		if((this.method.equals("PUT")) || (this.method.equals("POST")))
+		if((this.method.Equals("PUT")) || (this.method.Equals("POST")))
 			return true;
 		return false;
 	}
-	private boolean isHTTPMethod(String val)
+	private bool isHTTPMethod(String val)
 	{
 		if(val==null)return false;
 		if(val=="GET" || val=="HEAD" || val=="POST" || val=="PUT" ||

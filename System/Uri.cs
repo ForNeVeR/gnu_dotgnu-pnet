@@ -21,9 +21,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// global TODO:
-// find where the Trim(String) function is
-
 namespace System
 {
 
@@ -107,7 +104,7 @@ public class Uri : MarshalByRefObject
 		}
 
 		userEscaped = dontEscape;
-		this.absoluteUri = Trim(uriString);
+		this.absoluteUri = uriString.Trim();
 
 		this.Parse();
 		this.Canonicalize();
@@ -126,9 +123,9 @@ public class Uri : MarshalByRefObject
 		throw new ArgumentNullException("relativeUri");
 
 	// Making local copies that we use for modification
-	String myBaseUri = Trim(baseUri.AbsoluteUri);
-	String myRelativeUri = Trim(relativeUri);
-	UserEscaped = dontEscape;
+	String myBaseUri = baseUri.AbsoluteUri.Trim();
+	String myRelativeUri = relativeUri.Trim();
+	userEscaped = dontEscape;
 
 	int newlastchar;
 	for (newlastchar = myBaseUri.Length; myBaseUri[--newlastchar] == '/';)
@@ -139,7 +136,7 @@ public class Uri : MarshalByRefObject
 		; // empty body
 	myRelativeUri = myRelativeUri.Substring(newlastchar);
 
-	this.AbsoluteUri = String.Concat(myBaseUri, "/", myRelativeUri);
+	this.absoluteUri = String.Concat(myBaseUri, "/", myRelativeUri);
 
 	this.Parse();
 	this.Canonicalize();
@@ -149,8 +146,6 @@ public class Uri : MarshalByRefObject
 	[TODO]
 	protected virtual void Canonicalize()
 	{
-		int pos = 0;
-
 		if (String.Equals(this.Scheme, "file"))
 		{
 			// TODO: convert file to platform based file reference
@@ -163,10 +158,11 @@ public class Uri : MarshalByRefObject
 	[TODO]
 	public static UriHostNameType CheckHostName(String name)
 	{
-		if (schemeName == null || schemeName.Length == 0)
-			return UriHostTypeName.Unknown;
+		if (name == null || name.Length == 0)
+			return UriHostNameType.Unknown;
 
 		// TODO: the other detections
+		return UriHostNameType.Unknown;
 	}
 
 	public static bool CheckSchemeName(String schemeName)
@@ -208,7 +204,7 @@ public class Uri : MarshalByRefObject
 	public override bool Equals(Object comparand)
 	{
 		Uri rurib;
-		if (comparand == null || (!comparand is String && !comparand is Uri))
+		if (comparand == null || (!(comparand is String) && !(comparand is Uri)))
 			return false;
 		else if (comparand is String)
 			rurib = new Uri((String)comparand);
@@ -219,9 +215,9 @@ public class Uri : MarshalByRefObject
 
 		// do not check query and fragment
 		// this makes the boolean
-		return (String.Equals(this.Host, myUri.Host) &&
-			  String.Equals(this.AbsolutePath, myUri.AbsolutePath) &&
-			  String.Equals(this.Scheme, myUri.Scheme));
+		return (String.Equals(this.Host, rurib.Host) &&
+			  String.Equals(this.AbsolutePath, rurib.AbsolutePath) &&
+			  String.Equals(this.Scheme, rurib.Scheme));
 	}
 
 	protected virtual void Escape()
@@ -242,7 +238,7 @@ public class Uri : MarshalByRefObject
 		for (int i = 0; i < str.Length; i++)
 		{
 			chk = str[i];
-			if (IsExcludedCharacter(chk) || IsReservedCharacter(chk))
+			if (IsExcludedCharacter(chk) || IsReserved(chk))
 				ret.Append(HexEscape(chk));
 			else
 				ret.Append(chk);
@@ -259,7 +255,7 @@ public class Uri : MarshalByRefObject
 		else if (digit >= 'a' && digit <= 'f')
 			return digit - 87;
 		else
-			throw new ArgumentException(_("Arg_HexDigit"), "digit");
+			throw new ArgumentException(S._("Arg_HexDigit"), "digit");
 	}
 
 	public override int GetHashCode()
@@ -282,6 +278,8 @@ public class Uri : MarshalByRefObject
 
 		else if (part == UriPartial.Scheme)
 			return String.Concat(this.scheme, this.schemeDelim());
+		else
+			return null;	// TODO
 	}
 
 	// gets proper delimiter for current scheme
@@ -306,12 +304,12 @@ public class Uri : MarshalByRefObject
 	}
 
 	// support for above method, no error checking
-	private static char HexForIndex(char index)
+	private static char HexForIndex(int index)
 	{
 		if (index <= 9)
-			return index + '0';
+			return (char)(index + '0');
 		else
-			return index + 55;
+			return (char)(index + 55);
 	}
 
 	public static char HexUnescape(String pattern, ref int index)
@@ -326,30 +324,30 @@ public class Uri : MarshalByRefObject
 		{
 			if (pattern[index+1] >= 0x41)
 			{
-				mychar = pattern[index+1] - 0x41 + 10;
+				mychar = (char)(pattern[index+1] - 0x41 + 10);
 			}
 			else if (pattern[index+1] >= 0x61)
 			{
-				mychar = pattern[index+1] - 0x61 + 10;
+				mychar = (char)(pattern[index+1] - 0x61 + 10);
 			}
 			else
 			{
-				mychar = pattern[index+1] - 0x30;
+				mychar = (char)(pattern[index+1] - 0x30);
 			}
 
-			mychar = mychar << 4;
+			mychar = (char)(mychar << 4);
 
 			if (pattern[index+2] >= 0x41)
 			{
-				mychar = mychar +pattern[index+2] - 0x41 + 10;
+				mychar = (char)(mychar +pattern[index+2] - 0x41 + 10);
 			}
 			else if (pattern[index+1] >= 0x61)
 			{
-				mychar = mychar + pattern[index+2] - 0x61 + 10;
+				mychar = (char)(mychar + pattern[index+2] - 0x61 + 10);
 			}
 			else
 			{
-				mychar = mychar + pattern[index+2] - 0x30;
+				mychar = (char)(mychar + pattern[index+2] - 0x30);
 			}
 
 			return mychar;
@@ -392,9 +390,18 @@ public class Uri : MarshalByRefObject
 			return false;
 	}
 
-	protected virtual bool IsReservedCharacter(char character)
+	// ECMA specifies that "IsReservedCharacter" is virtual,
+	// even though it doesn't make much sense.  We need the
+	// method in some static contexts, so we define this
+	// private version also.
+	private static bool IsReserved(char character)
 	{
 		return (";/:@&=+$,".IndexOf(character) >= 0);
+	}
+
+	protected virtual bool IsReservedCharacter(char character)
+	{
+		return IsReserved(character);
 	}
 
 	[TODO]
@@ -458,7 +465,7 @@ public class Uri : MarshalByRefObject
 			this.scheme = absoluteUri.Substring(0, curpos).ToLower();
 
 			if (!CheckSchemeName(this.scheme))
-				throw new UriFormatException(_("Arg_UriScheme"));
+				throw new UriFormatException(S._("Arg_UriScheme"));
 
 			// some Uris don't use the // after scheme:
 			if (String.Compare(AbsoluteUri, curpos, SchemeDelimiter, 0, 3) == 0)
@@ -540,17 +547,17 @@ public class Uri : MarshalByRefObject
 			catch (FormatException fe) { this.port = -1; }
 			catch (OverflowException oe)
 			{
-				throw new UriFormatException(_("Arg_UriPort"));
+				throw new UriFormatException(S._("Arg_UriPort"));
 			}
 		}
 		else // no port
 			host = authority.Substring(interimpos2);
 
 		// now test host, standard says must be IPv4 or DNS
-		this.hostNameType = CheckHostNameType(host);
+		this.hostNameType = CheckHostName(host);
 		if (this.hostNameType != UriHostNameType.Dns &&
 			this.hostNameType != UriHostNameType.IPv4)
-			throw new UriFormatException(_("Arg_UriHostName"));
+			throw new UriFormatException(S._("Arg_UriHostName"));
 	}
 
 	private static bool needsEscaping(String instr)
@@ -559,7 +566,7 @@ public class Uri : MarshalByRefObject
 		for (int i = 0; i < instr.Length; i++)
 		{
 			c = instr[i];
-			if (IsExcludedCharacter(c) || IsReservedCharacter(c))
+			if (IsExcludedCharacter(c) || IsReserved(c))
 				return true;
 		}
 		return false;
@@ -611,11 +618,12 @@ public class Uri : MarshalByRefObject
 			// append string up to % sign
 			retStr.Append(path, afterPrevPcntSignIndex, lastPcntSignIndex-afterPrevPcntSignIndex);
 			// get the hex character, or just %, and append
-			retStr.Append(HexUnescapeWithUTF8(path, lastPcntSignIndex));
+			retStr.Append(HexUnescapeWithUTF8(path, ref lastPcntSignIndex));
 			afterPrevPcntSignIndex = lastPcntSignIndex;
 		}
 		// then push on the rest of the string
-		return retStr.Append(path, afterPrevPcntSignIndex).ToString();
+		return retStr.Append(path, afterPrevPcntSignIndex,
+							 path.Length - afterPrevPcntSignIndex).ToString();
 		// and return it
 	}
 
@@ -623,7 +631,7 @@ public class Uri : MarshalByRefObject
 	{
 		if (IsHexEncoding(path, pcntSignIndex))
 		{
-			char c1 = HexUnescape(path, pcntSignIndex); // changes pcntSignIndex
+			char c1 = HexUnescape(path, ref pcntSignIndex); // changes pcntSignIndex
 
 			switch (UTF8SizeFor1stByte(c1))
 			{
@@ -631,11 +639,11 @@ public class Uri : MarshalByRefObject
 				if (IsHexEncoding(path, pcntSignIndex)) // 2nd byte is Hex encoding
 				{
 					int psiCopy = pcntSignIndex; // save in case not 2-byte UTF8
-					char c2 = HexUnescape(path, psiCopy);
+					char c2 = HexUnescape(path, ref psiCopy);
 					if ((c2 & 0xC0) == 0x80) // is UTF8 2-byte?
 					{
 						pcntSignIndex = psiCopy;
-						return ((c1 & 0x1F) << 6) | (c2 & 0x3F); // build
+						return (char)(((c1 & 0x1F) << 6) | (c2 & 0x3F)); // build
 					}
 				}
 				// else all
@@ -646,12 +654,12 @@ public class Uri : MarshalByRefObject
 				{
 					int psiCopy = pcntSignIndex; // save again
 					// psiCopy will change to compensate
-					char c2 = HexUnescape(path, psiCopy), c3 = HexUnescape(path, psiCopy);
+					char c2 = HexUnescape(path, ref psiCopy), c3 = HexUnescape(path, ref psiCopy);
 					if ((c2 & 0xC0) == 0x80 && (c3 & 0xC0) == 0x80) // is UTF8 3-byte?
 					{
 						pcntSignIndex = psiCopy;
-						return ((c1 & 0x0F) << 12) | ((c2 & 0x3F) << 6)
-							| (c3 & 0x3F); // build
+						return (char)(((c1 & 0x0F) << 12) | ((c2 & 0x3F) << 6)
+							| (c3 & 0x3F)); // build
 					}
 				}
 				// else all
@@ -779,6 +787,8 @@ public class Uri : MarshalByRefObject
 			if (String.Equals(this.scheme, Uri.UriSchemeFile))
 			{
 				// aieee! platform-dependent. Internal?
+				// TODO
+				return null;
 			}
 			else
 				return this.AbsolutePath;
@@ -809,7 +819,7 @@ public class Uri : MarshalByRefObject
 			{
 				try
 				{
-					int retport = Uri.DefaultPortForScheme(this.scheme);
+					return Uri.DefaultPortForScheme(this.scheme);
 				}
 				catch (ArgumentException ae)
 				{
@@ -864,21 +874,26 @@ public class Uri : MarshalByRefObject
 	// just use a switch/case or something in implementation
 	internal static int DefaultPortForScheme(String scheme)
 	{
-		// since, according to ECMA-334, return and throw are both jump
-		// statements, if this doesn't compile, it is a bug in the compiler,
-		// not in this code
-		switch (scheme)
-		{
-			case Uri.UriSchemeFile: return -1;
-			case Uri.UriSchemeFtp: return 21;
-			case Uri.UriSchemeGopher: return 70;
-			case Uri.UriSchemeHttp: return 80;
-			case Uri.UriSchemeHttps: return 43;
-			case Uri.UriSchemeMailto: return 25;
-			case Uri.UriSchemeNews: return 119;
-			case Uri.UriSchemeNntp: return 119;
-			default: throw new ArgumentException();
-		}
+		// We have to do this with if statements because switch
+		// cannot use "readonly" fields as case labels.
+		if(scheme == Uri.UriSchemeFile)
+			return -1;
+		else if(scheme == Uri.UriSchemeFtp)
+			return 21;
+		else if(scheme == Uri.UriSchemeGopher)
+			return 70;
+		else if(scheme == Uri.UriSchemeHttp)
+			return 80;
+		else if(scheme == Uri.UriSchemeHttps)
+			return 443;
+		else if(scheme == Uri.UriSchemeMailto)
+			return 25;
+		else if(scheme == Uri.UriSchemeNews)
+			return 119;
+		else if(scheme == Uri.UriSchemeNntp)
+			return 119;
+		else
+			throw new ArgumentException();
 	}
 
 	// for use by comparators, which want none of this

@@ -125,8 +125,8 @@ public class UriBuilder
 		else if (extraValue[0] == '#')
 			this.fragment = extraValue.Substring(1, extraValue.Length-1);
 		else if (extraValue != null && extraValue.Length != 0)
-			throw new ArgumentException(_("Exception_Argument"),
-				"extraValue");
+			throw new ArgumentException
+				(S._("Exception_Argument"), "extraValue");
 		this.username = "";
 		this.password = "";
 	}
@@ -252,14 +252,50 @@ public class UriBuilder
 			this.fragment = "";
 	}
 
-	private static String ValidateScheme(String scheme, bool escaped)
-	{
-		
-	}
-
-	// must still add: Validate[Username, Password, Host, Path, Query, Fragment]
 	// all validation methods should throw if bad, return the valid string otherwise
 	// and they should be static
+
+	private static String ValidateScheme(String scheme, bool escaped)
+	{
+		// TODO
+		return scheme;
+	}
+
+	private static String ValidateUsername(String username, bool escaped)
+	{
+		// TODO
+		return username;
+	}
+
+	private static String ValidatePassword(String password, bool escaped)
+	{
+		// TODO
+		return password;
+	}
+
+	private static String ValidateHost(String host)
+	{
+		// TODO
+		return host;
+	}
+
+	private static String ValidatePath(String path, bool escaped)
+	{
+		// TODO
+		return path;
+	}
+
+	private static String ValidateQuery(String query, bool escaped)
+	{
+		// TODO
+		return query;
+	}
+
+	private static String ValidateFragment(String fragment, bool escaped)
+	{
+		// TODO
+		return fragment;
+	}
 
 	public override bool Equals(Object rparam)
 	{
@@ -279,6 +315,8 @@ public class UriBuilder
 	[TODO]
 	public override String ToString()
 	{
+		// TODO
+		return null;
 	}
 
 	// Properties.
@@ -417,6 +455,8 @@ public class UriBuilder
 	{
 		get
 		{
+			// TODO
+			return null;
 		}
 	}
 

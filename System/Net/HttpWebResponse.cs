@@ -1,5 +1,6 @@
 /*
- * ServicePoint.cs - Implementation of the "System.Net.ServicePoint" class.
+ * HttpWebResponse.cs - Implementation of the
+ *		"System.Net.HttpWebResponse" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -21,27 +22,14 @@
 namespace System.Net
 {
 
+using System;
 
 [TODO]
-public class ServicePoint
+public class HttpWebResponse : WebResponse
 {
-	public override int GetHashCode() { return 0; }
-	
-	public Uri Address { get{ return null; } }
-	
-	public int ConnectionLimit { get{ return 0; } set{} }
-	
-	public String ConnectionName { get{ return null; } }
-	
-	public int CurrentConnections { get{ return 0; } }
-	
-	public DateTime IdleSince { get{ return DateTime.MinValue; } }
-	
-	public int MaxIdleTime { get{ return 0; } set{} }
-	
-	public virtual Version ProtocolVersion { get{ return new Version(0, 0); } }
-	
-	public bool SupportsPipelining { get{ return false; } }
-}; //class ServicePoint
+
+	// TODO
+
+}; // class HttpWebResponse
 
 }; //namespace System.Net

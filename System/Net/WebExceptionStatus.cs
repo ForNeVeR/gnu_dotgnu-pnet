@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Net.Sockets
+namespace System.Net
 {
 
 public enum WebExceptionStatus
@@ -41,5 +41,5 @@ public enum WebExceptionStatus
 	TrustFailure = 9
 }; // enum WebExceptionStatus
 
-}; // namespace System.Net.Sockets
+}; // namespace System.Net
 

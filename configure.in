@@ -395,9 +395,9 @@ if test "x$no_recursion" != "xyes"; then
 			--sbindir="${sbindir}" --libexecdir="${libexecdir}" \
 			--datadir="${datadir}" --sysconfdir="${sysconfdir}" \
 			--sharedstatedir="${sharedstatedir}" \
-			--localstatedir="${localstatedir}" --libdir="${libdir}" \
-			--includedir="${includedir}" \
-			--oldincludedir="${oldincludedir}" --infodir="${infodir}" \
+			--localstatedir="${localstatedir}" --libdir="${libdir}/pnet" \
+			--includedir="${includedir}/pnet" \
+			--oldincludedir="${oldincludedir}/pnet" --infodir="${infodir}" \
 			--mandir="${mandir}" --srcdir="${ffisrcdir}" || exit 1
 		cd ..
 	fi
@@ -414,8 +414,9 @@ if test "x$no_recursion" != "xyes"; then
 			--sbindir="${sbindir}" --libexecdir="${libexecdir}" \
 			--datadir="${datadir}" --sysconfdir="${sysconfdir}" \
 			--sharedstatedir="${sharedstatedir}" \
-			--localstatedir="${localstatedir}" --libdir="${libdir}" \
-			--includedir="${includedir}" --oldincludedir="${oldincludedir}" \
+			--localstatedir="${localstatedir}" --libdir="${libdir}/pnet" \
+			--includedir="${includedir}/pnet" \
+			--oldincludedir="${oldincludedir}/pnet" \
 			--infodir="${infodir}" --mandir="${mandir}" \
 			--srcdir="${gcsrcdir}" || exit 1
 	fi

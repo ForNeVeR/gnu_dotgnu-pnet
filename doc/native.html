@@ -6,7 +6,7 @@
 <h1>Internalcall methods for pnetlib</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/11/20 04:27:40 $<p>
+Last Modified: $Date: 2001/12/02 09:31:27 $<p>
 
 Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -189,6 +189,107 @@ that use the library.<p>
 		<li><a href="#System_String_TrimHelper">TrimHelper</a></li>
 		<li><a href="#System_String_InternalGetChar">InternalGetChar</a></li>
 	</ul>
+<li><a href="#Reflection">System.Reflection</a></li>
+<ul>
+<li><a href="#Reflection_Assembly">System.Reflection.Assembly</a></li>
+	<ul>
+		<li><a href="#Reflection_Assembly_GetCallingAssembly">GetCallingAssembly</a></li>
+		<li><a href="#Reflection_Assembly_GetExecutingAssembly">GetExecutingAssembly</a></li>
+		<li><a href="#Reflection_Assembly_GetEntryAssembly">GetEntryAssembly</a></li>
+		<li><a href="#Reflection_Assembly_GetExportedTypes">GetExportedTypes</a></li>
+		<li><a href="#Reflection_Assembly_GetFile">GetFile</a></li>
+		<li><a href="#Reflection_Assembly_GetType">GetType</a></li>
+		<li><a href="#Reflection_Assembly_GetTypes">GetTypes</a></li>
+		<li><a href="#Reflection_Assembly_LoadFromName">LoadFromName</a></li>
+		<li><a href="#Reflection_Assembly_LoadFromFile">LoadFromFile</a></li>
+	</ul>
+<li><a href="#Reflection_ClrConstructor">System.Reflection.ClrConstructor</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrConstructor_Invoke">Invoke</a></li>
+	</ul>
+<li><a href="#Reflection_ClrEvent">System.Reflection.ClrEvent</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrEvent_GetEventType">GetEventType</a></li>
+	</ul>
+<li><a href="#Reflection_ClrField">System.Reflection.ClrField</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrField_GetValue">GetValue</a></li>
+		<li><a href="#Reflection_ClrField_SetValue">SetValue</a></li>
+		<li><a href="#Reflection_ClrField_GetFieldType">GetFieldType</a></li>
+		<li><a href="#Reflection_ClrField_GetValueDirect">GetValueDirect</a></li>
+		<li><a href="#Reflection_ClrField_SetValueDirect">SetValueDirect</a></li>
+	</ul>
+<li><a href="#Reflection_ClrHelpers">System.Reflection.ClrHelpers</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrHelpers_GetCustomAttributes">GetCustomAttributes</a></li>
+		<li><a href="#Reflection_ClrHelpers_IsDefined">IsDefined</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetDeclaringType">GetDeclaringType</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetReflectedType">GetReflectedType</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetName">GetName</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetParameter">GetParameter</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetParameterType">GetParameterType</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetNumParameters">GetNumParameters</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetMemberAttrs">GetMemberAttrs</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetCallConv">GetCallConv</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetImplAttrs">GetImplAttrs</a></li>
+		<li><a href="#Reflection_ClrHelpers_GetSemantics">GetSemantics</a></li>
+		<li><a href="#Reflection_ClrHelpers_HasSemantics">HasSemantics</a></li>
+	</ul>
+<li><a href="#Reflection_ClrMethod">System.Reflection.ClrMethod</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrMethod_Invoke">Invoke</a></li>
+		<li><a href="#Reflection_ClrMethod_GetBaseDefinition">GetBaseDefinition</a></li>
+	</ul>
+<li><a href="#Reflection_ClrParameter">System.Reflection.ClrParameter</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrParameter_GetParamAttrs">GetParamAttrs</a></li>
+		<li><a href="#Reflection_ClrParameter_GetParamName">GetParamName</a></li>
+		<li><a href="#Reflection_ClrParameter_GetDefault">GetDefault</a></li>
+	</ul>
+<li><a href="#Reflection_ClrProperty">System.Reflection.ClrProperty</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrProperty_GetPropertyType">GetPropertyType</a></li>
+	</ul>
+<li><a href="#Reflection_ClrType">System.Reflection.ClrType</a></li>
+	<ul>
+		<li><a href="#Reflection_ClrType_GetClrArrayRank">GetClrArrayRank</a></li>
+		<li><a href="#Reflection_ClrType_GetAttributeFlagsImpl">GetAttributeFlagsImpl</a></li>
+		<li><a href="#Reflection_ClrType_GetElementType">GetElementType</a></li>
+		<li><a href="#Reflection_ClrType_GetInterface">GetInterface</a></li>
+		<li><a href="#Reflection_ClrType_GetInterfaces">GetInterfaces</a></li>
+		<li><a href="#Reflection_ClrType_GetMemberImpl">GetMemberImpl</a></li>
+		<li><a href="#Reflection_ClrType_GetMembersImpl">GetMembersImpl</a></li>
+		<li><a href="#Reflection_ClrType_GetClrTypeCategory">GetClrTypeCategory</a></li>
+		<li><a href="#Reflection_ClrType_IsSubclassOf">IsSubclassOf</a></li>
+		<li><a href="#Reflection_ClrType_IsClrNestedType">IsClrNestedType</a></li>
+		<li><a href="#Reflection_ClrType_GetClrAssembly">GetClrAssembly</a></li>
+		<li><a href="#Reflection_ClrType_GetClrBaseType">GetClrBaseType</a></li>
+		<li><a href="#Reflection_ClrType_GetClrFullName">GetClrFullName</a></li>
+		<li><a href="#Reflection_ClrType_GetClrGUID">GetClrGUID</a></li>
+		<li><a href="#Reflection_ClrType_GetClrModule">GetClrModule</a></li>
+		<li><a href="#Reflection_ClrType_GetClrNestedDeclaringType">GetClrNestedDeclaringType</a></li>
+		<li><a href="#Reflection_ClrType_GetClrName">GetClrName</a></li>
+		<li><a href="#Reflection_ClrType_GetClrNamespace">GetClrNamespace</a></li>
+	</ul>
+<li><a href="#Reflection_FieldInfo">System.Reflection.FieldInfo</a></li>
+	<ul>
+		<li><a href="#Reflection_FieldInfo_GetFieldFromHandle">GetFieldFromHandle</a></li>
+	</ul>
+<li><a href="#Reflection_MethodBase">System.Reflection.MethodBase</a></li>
+	<ul>
+		<li><a href="#Reflection_MethodBase_GetMethodFromHandle">GetMethodFromHandle</a></li>
+		<li><a href="#Reflection_MethodBase_GetCurrentMethod">GetCurrentMethod</a></li>
+	</ul>
+<li><a href="#Reflection_Module">System.Reflection.Module</a></li>
+	<ul>
+		<li><a href="#Reflection_Module_GetType">GetType</a></li>
+		<li><a href="#Reflection_Module_GetTypes">GetTypes</a></li>
+		<li><a href="#Reflection_Module_IsResource">IsResource</a></li>
+		<li><a href="#Reflection_Module_GetModuleType">GetModuleType</a></li>
+		<li><a href="#Reflection_Module_GetAssembly">GetAssembly</a></li>
+		<li><a href="#Reflection_Module_GetFullName">GetFullName</a></li>
+	</ul>
+</ul>
 <li><a href="#Platform_DirMethods">Platform.DirMethods</a></li>
 	<ul>
 		<li><a href="#Platform_DirMethods_GetPathInfo">GetPathInfo</a></li>
@@ -1044,6 +1145,623 @@ characters should be trimmed from: 0 for the front of the string,
 Gets the character at <code>posn</code> within the string.  Throws
 an <code>IndexOutOfRangeException</code> if <code>posn</code> is
 invalid.
+</blockquote>
+
+<a name="Reflection"><h3>System.Reflection</h3>
+
+The following sections describe the internalcall methods that must be
+supplied by the runtime engine to implement reflection.  In many cases,
+the runtime engine is expected to construct an object that represents
+an underlying program construct.  e.g. an assembly, method, type, etc.<p>
+
+The runtime engine can assume that all of the reflection classes that
+it needs to instantiate have the following representation:<p>
+
+<blockquote><pre>class Name
+{
+    private IntPtr privateData;
+}
+</pre></blockquote>
+
+That is, the objects contain a single pointer field.  The runtime engine
+is responsible for filling in this field with an appropriate value that
+can be subsequently used to perform other reflection operations.<p>
+
+The engine must return the same object for multiple requests for the same
+program construct.  Therefore, it must implement a cache that maps objects
+to and from the underlying pointer values.<p>
+
+The engine is also responsible for checking the permissions of the caller
+against the access levels of the program constructs.  For example, an
+application cannot access a <code>private</code> member unless it is
+in the application's assembly or the application has
+<code>ReflectionPermission</code>.<p>
+
+<a name="Reflection_Assembly"><h3>System.Reflection.Assembly</h3>
+
+<a name="Reflection_Assembly_GetCallingAssembly">
+<pre>public static Assembly GetCallingAssembly();</pre>
+
+<blockquote>
+Get the assembly object that contains the method that called the method
+that called <code>GetCallingAssembly</code>.
+</blockquote>
+
+<a name="Reflection_Assembly_GetExecutingAssembly">
+<pre>public static Assembly GetExecutingAssembly();</pre>
+
+<blockquote>
+Get the assembly object that contains the method that called
+<code>GetExecutingAssembly</code>.
+</blockquote>
+
+<a name="Reflection_Assembly_GetEntryAssembly">
+<pre>public static Assembly GetEntryAssembly();</pre>
+
+<blockquote>
+Get the assembly object that contains the entry point method
+for the application.
+</blockquote>
+
+<a name="Reflection_Assembly_GetExportedTypes">
+<pre>public virtual Type[] GetExportedTypes();</pre>
+
+<blockquote>
+Return an array of all types that have been exported from the assembly.
+</blockquote>
+
+<a name="Reflection_Assembly_GetFile">
+<pre>public virtual FileStream GetFile(String name);</pre>
+
+<blockquote>
+Description TBD.
+</blockquote>
+
+<a name="Reflection_Assembly_GetType">
+<pre>public virtual Type GetType(String name, bool throwOnError, bool ignoreCase);</pre>
+
+<blockquote>
+Locate a specific type within the assembly and return it to the caller.
+If <code>throwOnError</code> is <code>true</code>, then an exception should
+be thrown if the type does not exist.  If <code>ignoreCase</code> is
+<code>true</code>, then the name match is case-insensitive.<p>
+
+Note: Microsoft's .NET framework requires that names of 128 or more
+characters will cause <code>ignoreCase</code> to be ignored, and a
+case-sensitive search to be performed regardless.
+</blockquote>
+
+<a name="Reflection_Assembly_GetTypes">
+<pre>public virtual Type[] GetTypes();</pre>
+
+<blockquote>
+Get an array of all types within the assembly.  Note: the array will not
+include types that the caller cannot access.
+</blockquote>
+
+<a name="Reflection_Assembly_LoadFromName">
+<pre>private static Assembly LoadFromName(String name, out int error);</pre>
+
+<blockquote>
+Load an assembly given its base name.  e.g. "<code>System</code>".  The
+exact file resolution algorithm used is system-dependent.  This method
+returns <code>null</code> if an error occurs, with the reason for the
+error returned in <code>error</code>:<p>
+<ul>
+	<li><code>LoadError_InvalidName</code>: the name string was invalid.
+		The caller will have already checked for <code>null</code>, so
+		it isn't necessary for the engine to handle this case.</li>
+	<li><code>LoadError_FileNotFound</code>: the file containing the
+		assembly could not be located.</li>
+	<li><code>LoadError_BadImage</code>: there was something wrong with
+		the assembly image.</li>
+	<li><code>LoadError_Security</code>: the caller has insufficient
+		security credentials to load the assembly.</li>
+</ul>
+</blockquote>
+
+<a name="Reflection_Assembly_LoadFromFile">
+<pre>private static Assembly LoadFromFile(String name, out int error);</pre>
+
+<blockquote>
+Load an assembly given its actual filename.  Unlike <code>LoadFromName</code>,
+this will not perform name resolution.
+</blockquote>
+
+<a name="Reflection_ClrConstructor"><h3>System.Reflection.ClrConstructor</h3>
+
+<a name="Reflection_ClrConstructor_Invoke">
+<pre>public override Object Invoke(BindingFlags invokeAttr, Binder binder,
+                              Object[] parameters, CultureInfo culture);</pre>
+
+<blockquote>
+Invoke this constructor with the specified parameters and return the
+new object.
+</blockquote>
+
+<a name="Reflection_ClrEvent"><h3>System.Reflection.ClrEvent</h3>
+
+<a name="Reflection_ClrEvent_GetEventType">
+<pre>private static Type GetEventType(IntPtr item);</pre>
+
+<blockquote>
+Get the type of an event program item.  The <code>item</code> value will
+be the same as the <code>privateData</code> member within the
+<code>ClrEvent</code> class.
+</blockquote>
+
+<a name="Reflection_ClrField"><h3>System.Reflection.ClrField</h3>
+
+<a name="Reflection_ClrField_GetValue">
+<pre>public override Object GetValue(Object obj);</pre>
+
+<blockquote>
+Get the value of a field within a specified object.  The object will
+be <code>null</code> for a static field.
+</blockquote>
+
+<a name="Reflection_ClrField_SetValue">
+<pre>public override void SetValue(Object obj, Object value);</pre>
+
+<blockquote>
+Set the value of a field within a specified object.  The object will
+be <code>null</code> for a static field.
+</blockquote>
+
+<a name="Reflection_ClrField_GetFieldType">
+<pre>private static Type GetFieldType(IntPtr item);</pre>
+
+<blockquote>
+Get the type of a field program item.  The <code>item</code> value will
+be the same as the <code>privateData</code> member within the
+<code>ClrField</code> class.
+</blockquote>
+
+<a name="Reflection_ClrField_GetValueDirect">
+<pre>public override Object GetValueDirect(TypedReference obj);</pre>
+
+<blockquote>
+Get the value of a field within a specified object that is represented
+as a typed reference.
+</blockquote>
+
+<a name="Reflection_ClrField_SetValueDirect">
+<pre>public override void SetValueDirect(TypedReference obj, Object value);</pre>
+
+<blockquote>
+Set the value of a field within a specified object that is represented
+as a typed reference.
+</blockquote>
+
+<a name="Reflection_ClrHelpers"><h3>System.Reflection.ClrHelpers</h3>
+
+The <code>ClrHelpers</code> class contains a number of common methods
+that are used across multiple program construct kinds.  These methods
+take an <code>IntPtr</code> argument which corresponds to the
+<code>privateData</code> field in the program construct's object.<p>
+
+<a name="Reflection_ClrHelpers_GetCustomAttributes">
+<pre>public static Object[] GetCustomAttributes(IntPtr item, IntPtr type, bool inherit);</pre>
+
+<blockquote>
+Get an array of all custom attributes on the specified <code>item</code>
+that match the given <code>type</code>.  If <code>type</code> is zero,
+then get all custom attributes irrespective of type.  If <code>inherit</code>
+is <code>true</code>, then inspect ancestor classes in the inheritance
+hierarchy for additional attributes.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetCustomAttributes">
+<pre>public static bool IsDefined(IntPtr item, IntPtr type, bool inherit);</pre>
+
+<blockquote>
+Determine if attributes of a specified type are defined on the program item.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetDeclaringType">
+<pre>public static IntPtr GetDeclaringType(IntPtr item);</pre>
+
+<blockquote>
+Get the <code>privateData</code> value for the type in which the
+specified item member is declared.  The return value will be turned
+into a <code>RuntimeTypeHandle</code> value, and then into a
+<code>Type</code>.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetReflectedType">
+<pre>public static IntPtr GetReflectedType(IntPtr item);</pre>
+
+<blockquote>
+Returns the same value as <code>GetDeclaringType</code> at the moment.
+TBD: determine what the difference between the two is and then document
+the behaviour.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetName">
+<pre>public static String GetName(IntPtr item);</pre>
+
+<blockquote>
+Get the name that is associated with a particular program item.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetParameter">
+<pre>public static IntPtr GetParameter(IntPtr item, int num);</pre>
+
+<blockquote>
+Get a parameter information block for a specific parameter on the
+given method or property <code>item</code>.  The value <code>num</code>
+will be zero to get information about the return type, and 1 for the
+first parameter.  If there is no parameter information associated
+with the parameter, this method should return zero.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetParameterType">
+<pre>public static Type GetParameterType(IntPtr item, int num);</pre>
+
+<blockquote>
+Get a parameter type for a specific parameter on the given method or
+property <code>item</code>.  The value <code>num</code> will be zero
+to get information about the return type, or 1 for the first parameter.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetNumParameters">
+<pre>public static int GetNumParameters(IntPtr item);</pre>
+
+<blockquote>
+Get the number of parameters that are declared for the specified
+method or property <code>item</code>.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetMemberAttrs">
+<pre>public static int GetMemberAttrs(IntPtr item);</pre>
+
+<blockquote>
+Get the attribute flags that are associated with a specific type member
+item (field, method, event, or property).
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetCallConv">
+<pre>public static CallingConventions GetCallConv(IntPtr item);</pre>
+
+<blockquote>
+Get the calling conventions for a specified method <code>item</code>.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetImplAttrs">
+<pre>public static MethodImplAttributes GetImplAttrs(IntPtr item);</pre>
+
+<blockquote>
+Get the method implementation attributes that are associated with
+a specific method <code>item</code>.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_GetSemantics">
+<pre>public static MethodInfo GetSemantics
+           (IntPtr item, MethodSemanticsAttributes type, bool nonPublic);</pre>
+
+<blockquote>
+Get the method that corresponds to a particular semantics <code>type</code>
+and on event or property <code>item</code>.  The return value will typically
+be an instance of <code>ClrMethod</code>.  If <code>nonPublic</code> is
+<code>false</code>, then only return public semantics methods.<p>
+
+Note: this method may return <code>null</code> if the method is not
+accessible to the caller due to permissions issues.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_HasSemantics">
+<pre>public static bool HasSemantics
+           (IntPtr item, MethodSemanticsAttributes type, bool nonPublic);</pre>
+
+<blockquote>
+Determine if the event or property <code>item</code> has the specified
+method semantics <code>type</code>.  If <code>nonPublic</code> is
+<code>false</code>, then only return public semantics methods.
+</blockquote>
+
+<a name="Reflection_ClrMethod"><h3>System.Reflection.ClrMethod</h3>
+
+<a name="Reflection_ClrMethod_Invoke">
+<pre>public override Object Invoke(Object obj, BindingFlags invokeAttr, Binder binder,
+                              Object[] parameters, CultureInfo culture);</pre>
+
+<blockquote>
+Invoke this method with the specified parameters and return the result.
+</blockquote>
+
+<a name="Reflection_ClrMethod_GetBaseDefinition">
+<pre>private static MethodInfo GetBaseDefinition(IntPtr handle);</pre>
+
+<blockquote>
+If the specified method is virtual, then find the base definition in
+the parent class or in an ancestor class.  Returns <code>null</code>
+if no suitable method found.
+</blockquote>
+
+<a name="Reflection_ClrParameter"><h3>System.Reflection.ClrParameter</h3>
+
+<a name="Reflection_ClrParameter_GetParamAttrs">
+<pre>private static ParameterAttributes GetParamAttrs(IntPtr item);</pre>
+
+<blockquote>
+Get the attributes for a specified parameter <code>item</code>.  This
+value is from a previous call to <code>ClrHelpers.GetParameter</code>.
+</blockquote>
+
+<a name="Reflection_ClrParameter_GetParamType">
+<pre>private static String GetParamName(IntPtr item);</pre>
+
+<blockquote>
+Get the name that is associated with a specified parameter <code>item</code>.
+Returns <code>null</code> if the parameter does not have a name.
+</blockquote>
+
+<a name="Reflection_ClrParameter_GetDefault">
+<pre>private static Object GetDefault(IntPtr item);</pre>
+
+<blockquote>
+Get the default value that is associated with a specified parameter
+<code>item</code>.  Returns <code>null</code> if the parameter does
+not have a default value.
+</blockquote>
+
+<a name="Reflection_ClrProperty"><h3>System.Reflection.ClrProperty</h3>
+
+<a name="Reflection_ClrEvent_GetPropertyType">
+<pre>private static Type GetPropertyType(IntPtr item);</pre>
+
+<blockquote>
+Get the type of a property program item.  The <code>item</code> value will
+be the same as the <code>privateData</code> member within the
+<code>ClrProperty</code> class.
+</blockquote>
+
+<a name="Reflection_ClrType"><h3>System.Reflection.ClrType</h3>
+
+<a name="Reflection_ClrType_GetClrArrayRank">
+<pre>private int GetClrArrayRank();</pre>
+
+<blockquote>
+Get the rank of this array type.  If the type is not an array, this
+should return zero.
+</blockquote>
+
+<a name="Reflection_ClrType_GetAttributeFlagsImpl">
+<pre>protected override TypeAttributes GetAttributeFlagsImpl();</pre>
+
+<blockquote>
+Get the attribute flags for this type.
+</blockquote>
+
+<a name="Reflection_ClrType_GetElementType">
+<pre>public override Type GetElementType();</pre>
+
+<blockquote>
+Get the element type if this type is an array, pointer, or byref.
+Returns <code>null</code> otherwise.
+</blockquote>
+
+<a name="Reflection_ClrType_GetInterface">
+<pre>public override Type GetInterface(String name, bool ignoreCase);</pre>
+
+<blockquote>
+Get a particular interface that this type implements.  Returns
+<code>null</code> if the type does not implement the interface,
+or the interface is inaccessible due to permission issues.<p>
+
+If the name is 128 or more characters in length, then
+<code>ignoreCase</code> is itself ignored.  This is a requirement
+of Microsoft's .NET Framework.
+</blockquote>
+
+<a name="Reflection_ClrType_GetInterfaces">
+<pre>public override Type[] GetInterfaces();</pre>
+
+<blockquote>
+Get an array of all interfaces that this type implements.  The runtime
+engine will exclude interfaces that are not accessible to the caller
+due to permission issues.
+</blockquote>
+
+<a name="Reflection_ClrType_GetMemberImpl">
+<pre>private MemberInfo GetMemberImpl(String name, MemberTypes memberTypes,
+                                 BindingFlags bindingAttr, Binder binder,
+                                 CallingConventions callingConventions,
+                                 Type[] types, ParameterModifier[] modifiers);</pre>
+
+<blockquote>
+Search the type for a member that matches the specified conditions.
+This method is called for any kind of type member: methods, constructors,
+fields, events, properties, or nested types.  The <code>memberTypes</code>
+parameter is a bitmask that specifies the kinds of members that should
+be inspected.  The other parameters provide information to further narrow
+the search.<p>
+
+This method returns the member, <code>null</code>, or throws an
+<code>AmbiguousMatchException</code> if there is more than one member
+that matches the specified conditions.  The returned member will usually be
+an instance of <code>ClrMethod</code>, <code>ClrConstructor</code>,
+<code>ClrField</code>, <code>ClrEvent</code>, <code>ClrProperty</code>,
+or <code>ClrType</code>.
+</blockquote>
+
+<a name="Reflection_ClrType_GetMembersImpl">
+<pre>private Object GetMembersImpl(MemberTypes memberTypes,
+                              BindingFlags bindingAttr,
+                              Type arrayType);</pre>
+
+<blockquote>
+Get an array of all members that match the specified conditions.
+The <code>memberTypes</code> parameter indicates the kind of members
+that should be returned.  The <code>arrayType</code> parameter
+indicates the type of the array to be created.  This is normally one
+of <code>MemberInfo[]</code>, <code>MethodInfo[]</code>,
+<code>ConstructorInfo[]</code>, <code>FieldInfo[]</code>,
+<code>EventInfo[]</code>, <code>PropertyInfo[]</code>,
+or <code>Type[]</code>, depending upon the type of lookup that is
+being performed.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrTypeCategory">
+<pre>private ClrTypeCategory GetClrTypeCategory();</pre>
+
+<blockquote>
+Get the category value for this type.  Array, pointer, etc.  See the
+<code>ClrTypeCategory</code> enumeration for a list of values.
+</blockquote>
+
+<a name="Reflection_ClrType_IsSubclassOf">
+<pre>private bool IsSubclassOf(Type c);</pre>
+
+<blockquote>
+Determine if this type is a subclass of <code>c</code>.
+</blockquote>
+
+<a name="Reflection_ClrType_IsClrNestedType">
+<pre>private bool IsClrNestedType();</pre>
+
+<blockquote>
+Determine if this type is nested within another type.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrAssembly">
+<pre>private Assembly GetClrAssembly();</pre>
+
+<blockquote>
+Get the assembly that this type is a member of.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrBaseType">
+<pre>private Type GetClrBaseType();</pre>
+
+<blockquote>
+Get the base type for this type, or <code>null</code> if it has no
+base type (i.e. <code>System.Object</code>).
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrFullName">
+<pre>private String GetClrFullName();</pre>
+
+<blockquote>
+Get the full name of this type, including name, namespace, and suffixes
+that indicate arrays, pointers, etc.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrGUID">
+<pre>private Guid GetClrGUID();</pre>
+
+<blockquote>
+Get the GUID value for this type.  If the runtime engine does not
+support GUID's, then it should return a value that is cleared to
+all-zeroes.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrModule">
+<pre>private Module GetClrModule();</pre>
+
+<blockquote>
+Get the module that this type is a member of.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrNestedDeclaringType">
+<pre>private Type GetClrNestedDeclaringType();</pre>
+
+<blockquote>
+Get the declaring type that contains this type if it is nested.
+Returns <code>null</code> if the type is not nested.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrName">
+<pre>private String GetClrName();</pre>
+
+<blockquote>
+Get this type's name.
+</blockquote>
+
+<a name="Reflection_ClrType_GetClrNamespace">
+<pre>private String GetClrNamespace();</pre>
+
+<blockquote>
+Get this type's namespace.
+</blockquote>
+
+<a name="Reflection_FieldInfo"><h3>System.Reflection.FieldInfo</h3>
+
+<a name="Reflection_FieldInfo_GetFieldFromHandle">
+<pre>public static FieldInfo GetFieldFromHandle(RuntimeFieldHandle handle);</pre>
+
+<blockquote>
+Get a field object given its handle.  This will typically return an
+instance of <code>ClrField</code>.
+</blockquote>
+
+<a name="Reflection_MethodBase"><h3>System.Reflection.MethodBase</h3>
+
+<a name="Reflection_MethodBase_GetMethodFromHandle">
+<pre>public static MethodBase GetMethodFromHandle(RuntimeMethodHandle handle);</pre>
+
+<blockquote>
+Get a method object given its handle.  This will typically return an
+instance of either <code>ClrMethod</code> or <code>ClrConstructor</code>.
+</blockquote>
+
+<a name="Reflection_MethodBase_GetCurrentMethod">
+<pre>public static MethodBase CurrentMethod();</pre>
+
+<blockquote>
+Get the current method that called <code>GetCurrentMethod</code>.
+</blockquote>
+
+<a name="Reflection_Module"><h3>System.Reflection.Module</h3>
+
+<a name="Reflection_Module_GetType">
+<pre>public virtual Type GetType(String name, bool throwOnError, bool ignoreCase);</pre>
+
+<blockquote>
+Locate a specific type within the module and return it to the caller.
+If <code>throwOnError</code> is <code>true</code>, then an exception should
+be thrown if the type does not exist.  If <code>ignoreCase</code> is
+<code>true</code>, then the name match is case-insensitive.<p>
+
+Note: Microsoft's .NET framework requires that names of 128 or more
+characters will cause <code>ignoreCase</code> to be ignored, and a
+case-sensitive search to be performed regardless.
+</blockquote>
+
+<a name="Reflection_Module_GetTypes">
+<pre>public virtual Type[] GetTypes();</pre>
+
+<blockquote>
+Get an array of all types in this module.
+</blockquote>
+
+<a name="Reflection_Module_IsResource">
+<pre>public bool IsResource();</pre>
+
+<blockquote>
+Determine if this module only contains resources.
+</blockquote>
+
+<a name="Reflection_Module_GetModuleType">
+<pre>internal virtual Type GetModuleType();</pre>
+
+<blockquote>
+Get the type information object for the global "<code>&lt;Module&gt;</code>"
+type within the module.
+</blockquote>
+
+<a name="Reflection_Module_GetAssembly">
+<pre>private Assembly GetAssembly();</pre>
+
+<blockquote>
+Get the assembly that this module resides in.
+</blockquote>
+
+<a name="Reflection_Module_GetAssembly">
+<pre>private String GetFullName();</pre>
+
+<blockquote>
+Get the full name of the module.
 </blockquote>
 
 <h2>Internalcall methods in the Platform namespace</h2>

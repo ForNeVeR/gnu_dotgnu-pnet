@@ -34,6 +34,8 @@ runtime/System/Reflection/PropertyInfo.cs,
 runtime/System/Reflection/StrongNameKeyPair.cs: implement most of the
 remaining ECMA functionality in "System.Reflection".
 
+* doc/native.html: document the internalcall methods for "System.Reflection".
+
 2001-12-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/Makefile.am,

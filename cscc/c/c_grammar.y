@@ -2211,6 +2211,10 @@ Attribute
 	| AnyIdentifier '(' AttributeArgs ')'		{
 				$$ = ILNode_CAttribute_create($1, $3);
 			}
+	| K_CONST		{
+				$$ = ILNode_CAttribute_create
+						(ILInternString("__const__", -1).string, 0);
+			}
 	;
 
 ConstantAttributeExpression

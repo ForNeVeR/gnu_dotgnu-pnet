@@ -9,6 +9,9 @@
 	GC'able fields, to prevent the GC from scanning the large static
 	data areas in C applications, which rarely include managed types.
 
+	* cscc/c/c_grammar.y: recognise "__const__" as an attribute name,
+	to compile code that uses glibc headers.
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

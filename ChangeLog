@@ -5,6 +5,8 @@
 	full compile and link because a compile on its own confuses
 	IBM's AIX C compiler, xlc.
 
+	* libgc/dyn_load.c: fixes for IBM's AIX compiler.
+
 2003-11-12  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_stmt.tc: fix switch statement fall-through

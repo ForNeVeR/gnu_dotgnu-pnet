@@ -439,7 +439,7 @@ static char *parse_map_entry(char *buf_ptr, word *start, word *end,
     memcpy(prot_buf, buf_ptr+OFFSET_MAP_PROT, 4); // do the protections first
     prot_buf[4] = '\0';
 
-    if (prot_buf[1] == 'w') { // we can skip all of this if it's not writable
+    if (prot_buf[1] == 'w') { // we can skip all of this if it is not writable
 
         tok = buf_ptr;
         buf_ptr[OFFSET_MAP_START+ADDR_WIDTH] = '\0';
@@ -1069,8 +1069,8 @@ void GC_register_dynamic_libraries()
 		len = ldi->ldinfo_next;
 		GC_add_roots_inner(
 				ldi->ldinfo_dataorg,
-				(unsigned long)ldi->ldinfo_dataorg
-			        + ldi->ldinfo_datasize,
+				(ptr_t)((unsigned long)ldi->ldinfo_dataorg
+			        + ldi->ldinfo_datasize),
 				TRUE);
 		ldi = len ? (struct ld_info *)((char *)ldi + len) : 0;
 	}

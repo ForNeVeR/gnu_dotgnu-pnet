@@ -10,6 +10,9 @@
 	re-implement the "Array.Copy" method, with only the simple cases
 	handled in the engine.
 
+	* runtime/System/IO/IOException.cs (GetErrnoMessage): don't bother
+	with string resources - go direct to the underlying platform.
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

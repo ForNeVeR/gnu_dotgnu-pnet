@@ -75,16 +75,8 @@ public class IOException : SystemException
 	// Get the message that corresponds to a platform error number.
 	internal static String GetErrnoMessage(Errno errno)
 			{
-				// See if the resource file has provided an override.
-				String resource = "errno_" + errno.ToString();
-				String str = _(resource);
-				if(str != null)
-				{
-					return str;
-				}
-
 				// Try getting a message from the underlying platform.
-				str = FileMethods.GetErrnoMessage(errno);
+				String str = FileMethods.GetErrnoMessage(errno);
 				if(str != null)
 				{
 					return str;

@@ -36,6 +36,7 @@ public class Form : ContainerControl
 	private bool isMdiContainer;
 	private bool keyPreview;
 	private bool topLevel;
+	internal bool dialogResultIsSet;
 	private Size autoScaleBaseSize;
 	private DialogResult dialogResult;
 	private FormBorderStyle borderStyle;
@@ -211,6 +212,7 @@ public class Form : ContainerControl
 				set
 				{
 					dialogResult = value;
+					dialogResultIsSet = true;
 				}
 			}
 	public FormBorderStyle FormBorderStyle
@@ -741,11 +743,39 @@ public class Form : ContainerControl
 #endif // !CONFIG_COMPACT_FORMS
 
 	// Show this form as a modal dialog.
-	[TODO]
 	private DialogResult ShowDialog(Form owner)
 			{
-				// TODO
-				return DialogResult.None;
+				// Bail out if this dialog is already displayed modally.
+				if(Modal)
+				{
+					return DialogResult.None;
+				}
+
+				// Reset the dialog result.
+				dialogResult = DialogResult.None;
+				dialogResultIsSet = false;
+
+				// Mark this form as modal.
+				SetWindowFlag(ToolkitWindowFlags.Modal, true);
+				try
+				{
+					// Make the form visible.
+					Visible = true;
+
+					// Enter a message loop until the dialog result is set.
+					Application.InnerMessageLoop(this);
+				}
+				finally
+				{
+					// Make sure that the form is not visible.
+					Visible = false;
+
+					// The form is no longer modal.
+					SetWindowFlag(ToolkitWindowFlags.Modal, false);
+				}
+
+				// Return the dialog result.
+				return dialogResult;
 			}
 	public DialogResult ShowDialog()
 			{

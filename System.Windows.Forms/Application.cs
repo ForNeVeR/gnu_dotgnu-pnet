@@ -439,6 +439,97 @@ public sealed class Application
 			#endif
 			}
 
+	// Run an inner message loop until the dialog result is set on a form.
+	internal static void InnerMessageLoop(Form form)
+			{
+				Request request;
+				Thread thread = Thread.CurrentThread;
+				bool isMainThread;
+				bool resetMainThread;
+
+				// Determine if we are running on the main thread or not.
+				lock(typeof(Application))
+				{
+					if(mainThread == null)
+					{
+						// The main message loop hasn't started yet.
+						// This might happen with MessageBox dialogs.
+						mainThread = thread;
+						isMainThread = true;
+						resetMainThread = true;
+					}
+					else
+					{
+						isMainThread = (mainThread == thread);
+						resetMainThread = false;
+					}
+				}
+
+				// Run the main message processing loop.
+				if(isMainThread)
+				{
+					IToolkit toolkit = ToolkitManager.Toolkit;
+					try
+					{
+						while(!(form.dialogResultIsSet) && form.Visible)
+						{
+							// Process events in the queue.
+							if(!toolkit.ProcessEvents(false))
+							{
+							#if !CONFIG_COMPACT_FORMS
+								// There were no events, so raise "Idle".
+								if(Idle != null)
+								{
+									Idle(null, EventArgs.Empty);
+								}
+							#endif
+	
+								// Block until an event, or quit, arrives.
+								if(!toolkit.ProcessEvents(true))
+								{
+									break;
+								}
+							}
+	
+							// Process requests sent via "SendRequest".
+							while((request = NextRequest(thread, false))
+										!= null)
+							{
+								request.Execute();
+							}
+						}
+					}
+					finally
+					{
+						// Reset the "mainThread" variable because there
+						// is no message loop any more.
+						lock(typeof(Application))
+						{
+							if(resetMainThread)
+							{
+								mainThread = null;
+							}
+						}
+					}
+				}
+				else
+				{
+					// This is not the main thread, so only process
+					// requests that were sent via "SendRequest".
+					while(!(form.dialogResultIsSet) && form.Visible)
+					{
+						if((request = NextRequest(thread, true)) != null)
+						{
+							request.Execute();
+						}
+						else
+						{
+							break;
+						}
+					}
+				}
+			}
+
 	// Make the specified form visible and run the main loop.
 	// The loop will exit when "Exit" is called.
 	public static void Run(Form mainForm)

@@ -56,26 +56,32 @@ abstract class XPathNavigator : ICloneable
 	[TODO]
 	public virtual XPathExpression Compile(String xpath)
 			{
-				 throw new NotImplementedException("Compile");
+				XPathParser parser = new XPathParser();
+				return parser.Parse(xpath);
 			}
 
 	[TODO]
 	public virtual Object Evaluate(XPathExpression expr)
 			{
-				 throw new NotImplementedException("Evaluate");
+				return Evaluate(expr, new XPathSelfIterator(this,null));
 			}
 
 	[TODO]
 	public virtual Object Evaluate(XPathExpression expr, 
 									XPathNodeIterator context)
 			{
-				 throw new NotImplementedException("Evaluate");
+				if(expr is XPathExpressionBase)
+				{
+					return ((XPathExpressionBase)expr).Evaluate(context);
+				}
+				return null;
 			}
 
 	[TODO]
 	public virtual Object Evaluate(String xpath)
 			{
-				 throw new NotImplementedException("Evaluate");
+				XPathExpression expr = Compile(xpath);
+				return Evaluate(expr);
 			}
 
 	public abstract String GetAttribute(String localName, String namespaceURI);
@@ -143,32 +149,14 @@ abstract class XPathNavigator : ICloneable
 
 	public abstract void MoveToRoot();
 
-	[TODO]
 	public virtual XPathNodeIterator Select(XPathExpression expr)
 			{
-				XPathExpressionBase compiledexpr = (expr as XPathExpressionBase);
-				if(compiledexpr != null)
-				{
-					XPathBaseIterator iter = new XPathSelfIterator(this, null);
-					Object result = compiledexpr.Evaluate(iter);
-					return (result as XPathNodeIterator);
-				}
-				return null;
+				return (Evaluate(expr) as XPathNodeIterator);
 			}
 
-	[TODO]
 	public virtual XPathNodeIterator Select(String xpath)
 			{
-				XPathParser parser = new XPathParser();
-				
-				XPathExpressionBase compiledexpr = (parser.Parse(xpath) as XPathExpressionBase);
-				if(compiledexpr != null)
-				{
-					XPathBaseIterator iter = new XPathSelfIterator(this, null);
-					Object result = compiledexpr.Evaluate(iter);
-					return (result as XPathNodeIterator);
-				}
-				return null;
+				return (Evaluate(xpath) as XPathNodeIterator);
 			}
 
 	[TODO]

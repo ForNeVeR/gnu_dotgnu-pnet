@@ -510,11 +510,13 @@ namespace System.Xml.XPath.Private
 		public bool advance()
 		{
 			currToken = GetNext();
+#if XPATH_DEBUG			
 			Debug.Write(XPathParser.yyname(Token) + " ");
 			if(Token == Token.EOF)
 			{
 				Debug.Write("\n");
 			}
+#endif			
 			return (currToken != Token.EOF);
 		}
 

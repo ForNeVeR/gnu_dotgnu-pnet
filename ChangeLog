@@ -14,6 +14,13 @@
 
 	* System.Xml/XPathNavigator.cs: Make XPath implementation available.
 
+	* System.Xml/XPath/Private/XPathEvaluate.tc, 
+	System.Xml/XPath/Private/XPathIterators.cs, 
+	System.Xml/XPath/Private/XPathParser.cs, 
+	System.Xml/XPath/Private/XPathTokenizer.cs,
+	System.Xml/XPath/XPathNavigator.cs : Implement Evaluate, Select and 
+	Compile() operations.
+
 2004-10-07  Klaus Treichel  <ktreichel@web.de>
 
 	* samples/developers/MainForm.cs,

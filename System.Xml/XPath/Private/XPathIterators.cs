@@ -182,6 +182,37 @@ namespace System.Xml.XPath.Private
 		}
 	}
 
+	internal class XPathParentIterator : XPathSimpleIterator
+	{
+		public XPathParentIterator (XPathBaseIterator iterator) : base (iterator)
+		{
+		}
+
+		public XPathParentIterator(XPathParentIterator copy) : base (copy)
+		{
+		}
+
+		public override XPathNodeIterator Clone()
+		{
+			return new XPathParentIterator(this);
+		}
+
+		public override bool MoveNext()
+		{
+			if(pos == 0)
+			{
+				if(navigator.MoveToParent())
+				{
+					pos++;
+					current = navigator.Clone();
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
 	internal class XPathAxisIterator : XPathBaseIterator
 	{
 		protected XPathSimpleIterator iterator;

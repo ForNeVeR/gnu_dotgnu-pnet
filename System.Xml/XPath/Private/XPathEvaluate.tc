@@ -39,16 +39,23 @@ EvaluateInternal(NodeTest)
 	
 	switch(node.axis)
 	{
+		case XPathAxis.Self:
+		{
+			axis = new XPathSelfIterator(
+									(XPathBaseIterator)iterator);
+		}
+		break;
+		
 		case XPathAxis.Child:
 		{
 			axis = new XPathChildIterator(
 									(XPathBaseIterator)iterator);
 		}
 		break;
-
-		case XPathAxis.Self:
+		
+		case XPathAxis.Parent:
 		{
-			axis = new XPathSelfIterator(
+			axis = new XPathParentIterator(
 									(XPathBaseIterator)iterator);
 		}
 		break;
@@ -62,7 +69,7 @@ EvaluateInternal(NodeTest)
 		
 		default:
 		{
-			Console.WriteLine(node.axis);
+			throw new NotImplementedException(node.axis + " is not implemented");
 		}
 		break;
 	}

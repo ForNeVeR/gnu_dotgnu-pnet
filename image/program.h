@@ -179,7 +179,8 @@ struct _tagILClass
  */
 #define	IL_META_TYPEDEF_REFERENCE		0x80000000	/* Not yet really defined */
 #define	IL_META_TYPEDEF_COMPLETE		0x40000000	/* Definition is complete */
-#define	IL_META_TYPEDEF_SYSTEM_MASK		0xC0000000	/* System flags */
+#define	IL_META_TYPEDEF_CCTOR_ONCE		0x20000000	/* .cctor already done */
+#define	IL_META_TYPEDEF_SYSTEM_MASK		0xE0000000	/* System flags */
 
 /*
  * Information about an "implements" clause for a class.

@@ -23,6 +23,7 @@ namespace System.Windows.Forms
 {
 
 using System.Drawing;
+using System.Windows.Forms.Themes;
 
 public abstract class ButtonBase : Control
 {
@@ -332,7 +333,7 @@ public abstract class ButtonBase : Control
 				int height = clientSize.Height;
 
 				// Draw the border and background.
-				ControlPaint.DrawButton
+				ThemeManager.MainPainter.DrawButton
 					(graphics, x, y, width, height, state,
 					 ForeColor, BackColor, isDefault);
 

@@ -114,10 +114,21 @@ internal interface IThemePainter
 	// Draw a reversible line.
 	void DrawReversibleLine(Point start, Point end, Color backColor);
 
+	// Draw a scroll bar control.
+	void DrawScrollBar
+				(Graphics graphics, Rectangle bounds,
+				 Color foreColor, Color backColor,
+				 Brush backgroundBrush,
+				 bool vertical, bool enabled,
+				 Rectangle bar,
+				 Rectangle decrement, bool decDown,
+				 Rectangle increment, bool incDown);
+
 	// Draw a scroll button control.
 	void DrawScrollButton
 				(Graphics graphics, int x, int y, int width, int height,
-				 ScrollButton button, ButtonState state);
+				 ScrollButton button, ButtonState state,
+				 Color foreColor, Color backColor);
 
 	// Draw a selection frame.
 	void DrawSelectionFrame

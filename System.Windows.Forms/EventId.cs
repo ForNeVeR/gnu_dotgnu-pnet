@@ -124,6 +124,10 @@ internal enum EventId
 	ButtonClick,
 	ButtonDropDown,
 
+	// "ScrollBar" events.
+	Scroll,
+	ValueChanged,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

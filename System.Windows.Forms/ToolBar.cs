@@ -26,6 +26,7 @@ namespace System.Windows.Forms
 using System;
 using System.Drawing;
 using System.Collections;
+using System.Windows.Forms.Themes;
 
 public class ToolBar : Control
 {
@@ -46,7 +47,6 @@ public class ToolBar : Control
 	private Size preferredSize = Size.Empty;
 	private Size staticSize = DefaultSize;
 	private int[] wrapData = new int[1] { 1 };
-	private EventHandler imageListHandler = new EventHandler(ImageListHandler);
 	private bool entered = false;
 	private int mouseDownClick = -1;
 	private int mouseDownDrop = -1;
@@ -289,7 +289,7 @@ public class ToolBar : Control
 
 			if (imageList != null)
 			{
-				imageList.RecreateHandle -= imageListHandler;
+				imageList.RecreateHandle -= new EventHandler(ImageListHandler);
 			}
 
 			Size oldImageSize = ImageSize;
@@ -298,7 +298,7 @@ public class ToolBar : Control
 
 			if (imageList != null)
 			{
-				imageList.RecreateHandle += imageListHandler;
+				imageList.RecreateHandle += new EventHandler(ImageListHandler);
 			}
 
 			// if the button size isn't auto-adjusted or the image
@@ -475,7 +475,7 @@ public class ToolBar : Control
 	                                                bool pushed)
 	{
 		ButtonState state;
-		if (flat && !hover)
+		if (flat && !hover && !click)
 		{
 			state |= ButtonState.Flat;
 		}
@@ -732,7 +732,7 @@ public class ToolBar : Control
 	}
 	private void Draw(Graphics g)
 	{
-		if(!Visible || !IsHandleCreated) { return; }
+		if (!Visible || !IsHandleCreated) { return; }
 
 		Size clientSize = ClientSize;
 		int x = 0;
@@ -864,8 +864,11 @@ public class ToolBar : Control
 
 		ButtonState state = CalculateButtonState(flat,viewClick,viewHover,
 		                                         partial,pushed);
-		ControlPaint.DrawButton(g,viewX,viewY,viewWidth,viewHeight,state,
-		                        ForeColor,BackColor,false);
+		ThemeManager.MainPainter.DrawButton(g,
+		                                    viewX, viewY,
+		                                    viewWidth, viewHeight,
+		                                    state,
+		                                    ForeColor, BackColor, false);
 		// adjust bounds to exclude button border
 		viewX += 2;
 		viewY += 2;
@@ -875,8 +878,11 @@ public class ToolBar : Control
 		{
 			state = CalculateButtonState(flat,dropClick,dropHover,
 			                             false,false);
-			ControlPaint.DrawButton(g,dropX,dropY,dropWidth,dropHeight,
-			                        state,ForeColor,BackColor,false);
+			ThemeManager.MainPainter.DrawScrollButton(g,
+			                                          dropX, dropY,
+			                                          dropWidth, dropHeight,
+			                                          ScrollButton.Down, state,
+			                                          ForeColor, BackColor);
 			// adjust bounds to exclude button border
 			dropX += 2;
 			dropY += 2;
@@ -1210,6 +1216,26 @@ public class ToolBar : Control
 			{
 				int tmp = mouseDownDrop;
 				mouseDownDrop = -1;
+				RedrawButton(tmp);
+			}
+		}
+		else if (mouseHoverClick != -1)
+		{
+			ToolBarButton b = buttons[mouseHoverClick];
+			if (b.Contains(x,y,dropDownArrows) != 1)
+			{
+				int tmp = mouseHoverClick;
+				mouseHoverClick = -1;
+				RedrawButton(tmp);
+			}
+		}
+		else if (mouseHoverDrop != -1)
+		{
+			ToolBarButton b = buttons[mouseHoverDrop];
+			if (b.Contains(x,y,dropDownArrows) != 2)
+			{
+				int tmp = mouseHoverDrop;
+				mouseHoverDrop = -1;
 				RedrawButton(tmp);
 			}
 		}

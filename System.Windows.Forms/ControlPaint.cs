@@ -258,48 +258,30 @@ public sealed class ControlPaint
 									Border3DStyle style,
 									Border3DSide sides)
 			{
-				DrawBorder3D(graphics, x, y, width, height, 
-							 SystemColors.InactiveBorder,
-							 SystemColors.Control,
-							 style, sides);
-
-			}
-	internal static void DrawBorder3D(Graphics graphics, int x, int y,
-									  int width, int height,
-									  Color foreColor,
-									  Color backColor,
-									  Border3DStyle style,
-									  Border3DSide sides)
-			{
 				ThemeManager.MainPainter.DrawBorder3D
 					(graphics, x, y, width, height,
-					 foreColor, backColor, style, sides);
+					 SystemColors.InactiveBorder,
+					 SystemColors.Control,
+					 style, sides);
 			}
 
 	// Draw a button control.
 	public static void DrawButton(Graphics graphics, Rectangle rectangle,
 								  ButtonState state)
 			{
-				DrawButton(graphics, rectangle.X, rectangle.Y,
-						   rectangle.Width, rectangle.Height, state,
-						   SystemColors.ControlText,
-						   SystemColors.Control, false);
+				ThemeManager.MainPainter.DrawButton
+					(graphics, rectangle.X, rectangle.Y,
+					 rectangle.Width, rectangle.Height, state,
+					 SystemColors.ControlText,
+					 SystemColors.Control, false);
 			}
 	public static void DrawButton(Graphics graphics, int x, int y,
 								  int width, int height, ButtonState state)
 			{
-				DrawButton(graphics, x, y, width, height, state,
-						   SystemColors.ControlText,
-						   SystemColors.Control, false);
-			}
-	internal static void DrawButton
-				(Graphics graphics, int x, int y, int width, int height,
-				 ButtonState state, Color foreColor, Color backColor,
-				 bool isDefault)
-			{
 				ThemeManager.MainPainter.DrawButton
 					(graphics, x, y, width, height, state,
-					 foreColor, backColor, isDefault);
+					 SystemColors.ControlText,
+					 SystemColors.Control, false);
 			}
 
 	// Draw a caption button control.
@@ -317,26 +299,6 @@ public sealed class ControlPaint
 			{
 				ThemeManager.MainPainter.DrawCaptionButton
 					(graphics, x, y, width, height, button, state);
-			}
-
-	// Draw a progress bar control.
-	internal static void DrawProgressBar(Graphics graphics, int x, int y,
-										int width, int height, 
-										int steps, int step,
-										int value, bool enabled)
-			{
-				ThemeManager.MainPainter.DrawProgressBar
-					(graphics, x, y, width, height,
-					 steps, step, value, enabled);
-			}
-
-	// Draw a progress bar block.
-	internal static void DrawBlock(Graphics graphics, int x, int y,
-									int width, int height,
-									Color color)
-			{
-				ThemeManager.MainPainter.DrawBlock
-					(graphics, x, y, width, height, color);
 			}
 
 	// Draw a check box control.
@@ -492,16 +454,24 @@ public sealed class ControlPaint
 				(Graphics graphics, Rectangle rectangle,
 				 ScrollButton button, ButtonState state)
 			{
-				DrawScrollButton(graphics, rectangle.X, rectangle.Y,
-						     	 rectangle.Width, rectangle.Height,
-								 button, state);
+				ThemeManager.MainPainter.DrawScrollButton
+					(graphics,
+					 rectangle.X, rectangle.Y,
+					 rectangle.Width, rectangle.Height,
+					 button, state,
+					 SystemColors.ControlText,
+					 SystemColors.Control);
 			}
 	public static void DrawScrollButton
 				(Graphics graphics, int x, int y, int width, int height,
 				 ScrollButton button, ButtonState state)
 			{
 				ThemeManager.MainPainter.DrawScrollButton
-					(graphics, x, y, width, height, button, state);
+					(graphics,
+					 x, y, width, height,
+					 button, state,
+					 SystemColors.ControlText,
+					 SystemColors.Control);
 			}
 
 	// Draw a selection frame.
@@ -531,7 +501,7 @@ public sealed class ControlPaint
 	// Draw a disabled string.
 	public static void DrawStringDisabled
 				(Graphics graphics, String s, Font font,
-			     Color color, RectangleF layoutRectangle,
+				 Color color, RectangleF layoutRectangle,
 				 StringFormat format)
 			{
 				ThemeManager.MainPainter.DrawStringDisabled

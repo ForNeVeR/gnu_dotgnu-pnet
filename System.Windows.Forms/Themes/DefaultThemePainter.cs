@@ -3,6 +3,7 @@
  *			"System.Windows.Forms.Themes.DefaultThemePainter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -910,11 +911,11 @@ internal class DefaultThemePainter : IThemePainter
 				{
 					if((i*step) < value)
 					{
-						ControlPaint.DrawBlock(graphics, x, y+ySpacing, 
-											blockWidth,
-											blockHeight,
-											enabled ? SystemColors.Highlight
-													: SystemColors.ControlDark);
+						DrawBlock(graphics, x, y+ySpacing, 
+						          blockWidth,
+						          blockHeight,
+						          enabled ? SystemColors.Highlight
+						                  : SystemColors.ControlDark);
 					}
 					x+=blockWidth+xSpacing;
 				}
@@ -1130,13 +1131,235 @@ internal class DefaultThemePainter : IThemePainter
 				// TODO
 			}
 
+	// Draw a scroll bar control.
+	public virtual void DrawScrollBar
+				(Graphics graphics, Rectangle bounds,
+				 Color foreColor, Color backColor,
+				 Brush backgroundBrush,
+				 bool vertical, bool enabled,
+				 Rectangle bar,
+				 Rectangle decrement, bool decDown,
+				 Rectangle increment, bool incDown)
+			{
+				int x = bounds.X;
+				int y = bounds.Y;
+				int width = bounds.Width;
+				int height = bounds.Height;
+
+				// fill in the background
+				graphics.FillRectangle(backgroundBrush,
+				                       x, y, width, height);
+
+				// add the border
+				DrawBorder3D(graphics,
+				             x, y, width, height,
+					     foreColor, backColor,
+				             Border3DStyle.SunkenInner,
+				             Border3DSide.Left | Border3DSide.Top |
+				             Border3DSide.Right | Border3DSide.Bottom);
+
+				// setup the arrow directions for the scroll buttons
+				ScrollButton decButton;
+				ScrollButton incButton;
+				if (vertical)
+				{
+					decButton = ScrollButton.Up;
+					incButton = ScrollButton.Down;
+				}
+				else
+				{
+					decButton = ScrollButton.Left;
+					incButton = ScrollButton.Right;
+				}
+
+				// setup the states for the scroll buttons
+				ButtonState decState;
+				ButtonState incState;
+				if (!enabled)
+				{
+					decState = ButtonState.Inactive;
+					incState = ButtonState.Inactive;
+				}
+				else
+				{
+					decState = decDown ?
+					           ButtonState.Pushed :
+					           ButtonState.Normal;
+					incState = incDown ?
+					           ButtonState.Pushed :
+					           ButtonState.Normal;
+				}
+
+				// draw the scroll buttons
+				DrawScrollButton(graphics,
+				                 decrement.X, decrement.Y,
+				                 decrement.Width, decrement.Height,
+				                 decButton, decState,
+				                 foreColor, backColor);
+				DrawScrollButton(graphics,
+				                 increment.X, increment.Y,
+				                 increment.Width, increment.Height,
+				                 incButton, incState,
+				                 foreColor, backColor);
+
+				// calculate the state for the scroll bar
+				ButtonState barState = enabled ?
+				                       ButtonState.Normal :
+				                       ButtonState.Inactive;
+
+				// draw the scroll bar
+				DrawButton(graphics,
+				           bar.X, bar.Y,
+				           bar.Width, bar.Height,
+				           barState,
+				           foreColor, backColor,
+				           false);
+			}
+
 	// Draw a scroll button control.
 	[TODO]
 	public virtual void DrawScrollButton
 				(Graphics graphics, int x, int y, int width, int height,
-				 ScrollButton button, ButtonState state)
+				 ScrollButton button, ButtonState state,
+				 Color foreColor, Color backColor)
 			{
-				// TODO
+				// draw the button border
+				DrawButton(graphics,
+				           x, y, width, height,
+				           state,
+				           foreColor, backColor,
+				           false);
+				x += 2; // skip border
+				y += 2; // skip border
+				width -= 4; // skip border
+				height -= 4; // skip border
+				if ((state & ButtonState.Pushed) != 0)
+				{
+					x += 1;
+					y += 1;
+				}
+
+				// setup the glyph shape
+				PointF[] glyph = null;
+				float gBounds = width < height ?
+				                width : height;
+				gBounds *= 0.8f;
+				float gX = x+((width-gBounds)/2.0f);
+				float gY = y+((height-gBounds)/2.0f);
+				float gWidth = 0;//back_compat
+				float gHeight = 0;//back_compat
+				switch (button)
+				{
+					case ScrollButton.Up:
+					{
+						float scale = gBounds/7.0f;
+						float pX = gX;
+						float pY = gY+((gBounds-4)/2.0f);
+						float scale3 = (3*scale);
+						float scale6 = (6*scale);
+						glyph = new PointF[4];
+						glyph[0] = new PointF(gX+scale3,
+						                      gY);
+						glyph[1] = new PointF(gX+scale6,
+						                      gY+scale3);
+						glyph[2] = new PointF(gX,
+						                      gY+scale3);
+						glyph[3] = glyph[0];
+					}
+					break;
+
+					case ScrollButton.Down:
+					{
+					#if false
+						// this is the XP style arrow...
+						// the shape is wider than it is
+						// tall so scale it based on the
+						// width and then offset the y
+						float scale = gBounds/9.0f;
+						float pX = gX;
+						float pY = gY+((gBounds-6)/2.0f);
+						glyph = new PointF[7];
+						glyph[0] = new PointF(gX,
+						                      gY+(scale));
+						glyph[1] = new PointF(gX+(scale),
+						                      gY);
+						glyph[2] = new PointF(gX+(4*scale),
+						                      gY+(3*scale));
+						glyph[3] = new PointF(gX+(7*scale),
+						                      gY);
+						glyph[4] = new PointF(gX+(8*scale),
+						                      gY+(1*scale));
+						glyph[5] = new PointF(gX+(4*scale),
+						                      gY+(5*scale));
+						glyph[6] = glyph[0];
+					#endif
+						float scale = gBounds/7.0f;
+						float pX = gX;
+						float pY = gY+((gBounds-4)/2.0f);
+						float scale3 = (3*scale);
+						float scale6 = (6*scale);
+						glyph = new PointF[4];
+						glyph[0] = new PointF(gX,
+						                      gY);
+						glyph[1] = new PointF(gX+scale6,
+						                      gY);
+						glyph[2] = new PointF(gX+scale3,
+						                      gY+scale3);
+						glyph[3] = glyph[0];
+					}
+					break;
+
+					case ScrollButton.Left:
+					{
+						float scale = gBounds/7.0f;
+						float pX = gX+((gBounds-4)/2.0f);
+						float pY = gY;
+						float scale3 = (3*scale);
+						float scale6 = (6*scale);
+						glyph = new PointF[4];
+						glyph[0] = new PointF(gX,
+						                      gY+scale3);
+						glyph[1] = new PointF(gX+scale3,
+						                      gY);
+						glyph[2] = new PointF(gX+scale3,
+						                      gY+scale6);
+						glyph[3] = glyph[0];
+					}
+					break;
+
+					default: // ScrollButton.Right
+					{
+						float scale = gBounds/7.0f;
+						float pX = gX+((gBounds-4)/2.0f);
+						float pY = gY;
+						float scale3 = (3*scale);
+						float scale6 = (6*scale);
+						glyph = new PointF[4];
+						glyph[0] = new PointF(gX,
+						                      gY+scale3);
+						glyph[1] = new PointF(gX+scale3,
+						                      gY);
+						glyph[2] = new PointF(gX+scale3,
+						                      gY+scale6);
+						glyph[3] = glyph[0];
+					}
+					break;
+				}
+
+				// draw the glyph
+				Color color = foreColor;
+				if ((state & ButtonState.Inactive) != 0)
+				{
+					color = ControlPaint.Light(foreColor);
+				}
+				using (Brush brush = new SolidBrush(Color.Blue))
+				{
+					graphics.FillPolygon(brush,glyph);
+				}
+				using (Pen pen = new Pen(Color.Green))
+				{
+					graphics.DrawPolygon(pen,glyph);
+				}
 			}
 
 	// Draw a selection frame.

@@ -23,6 +23,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms.Themes;
 
 namespace System.Windows.Forms
 {
@@ -56,11 +57,12 @@ namespace System.Windows.Forms
 					graphics.FillRectangle(brush,x,y,width,height);
 				}
 				
-				ControlPaint.DrawProgressBar(graphics, x, y, 
-											clientSize.Width,
-											clientSize.Height, 
-											steps, step,
-											value, this.Enabled);
+				ThemeManager.MainPainter.DrawProgressBar(graphics,
+				                                         x, y,
+				                                         clientSize.Width,
+				                                         clientSize.Height, 
+				                                         steps, step,
+				                                         value, this.Enabled);
 			}
 
 

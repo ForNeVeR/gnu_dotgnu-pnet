@@ -1,3 +1,15 @@
+2003-07-08  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ButtonBase.cs,
+	System.Windows.Forms/ControlPaint.cs,
+	System.Windows.Forms/ProgressBar.cs, System.Windows.Forms/ToolBar.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/IThemePainter.cs: Move internal methods in
+	ControlPaint to DefaultThemePainter, and add drawing code for scrollbars
+	and scrollbuttons.
+
+	* System.Windows.Forms/EventId.cs: Add event ids for Scrollbar events.
+
 2003-07-08  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/Threading/TestMonitor.cs: Fix some tests

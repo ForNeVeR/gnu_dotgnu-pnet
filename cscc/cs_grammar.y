@@ -3206,7 +3206,8 @@ InterfaceDeclaration
 					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
 
 				/* Add extra attributes that interfaces need */
-				attrs |= IL_META_TYPEDEF_INTERFACE;
+				attrs |= IL_META_TYPEDEF_INTERFACE |
+						 IL_META_TYPEDEF_ABSTRACT;
 
 				/* Exit from the current nesting level */
 				--NestingLevel;

@@ -15,6 +15,7 @@
 
 			<resources>
 				<file name="../resources/en_US/runtime/runtime.resources"/>
+				<file name="System/Text/jis.table"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>
@@ -40,6 +41,7 @@
 
 			<resources>
 				<file name="../resources/en_US/runtime/runtime.resources"/>
+				<file name="System/Text/jis.table"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

@@ -89,7 +89,7 @@ internal unsafe class CP932 : Encoding
 						// Greek subset characters.
 						++length;
 					}
-					else if(ch >= 0x2010 && ch <= 0x9FA0)
+					else if(ch >= 0x2010 && ch <= 0x9FA5)
 					{
 						// This range contains the bulk of the CJK set.
 						value = (ch - 0x2010) * 2;
@@ -260,7 +260,7 @@ internal unsafe class CP932 : Encoding
 						value = ((int)(greekToJis[value])) |
 								(((int)(greekToJis[value + 1])) << 8);
 					}
-					else if(ch >= 0x2010 && ch <= 0x9FA0)
+					else if(ch >= 0x2010 && ch <= 0x9FA5)
 					{
 						// This range contains the bulk of the CJK set.
 						value = (ch - 0x2010) * 2;

@@ -7,6 +7,10 @@
 	runtime/System/Text/cvt.sh,
 	runtime/System/Text/koi8-u.ucm: add the 21866 (KOI8-U) code page.
 
+	* runtime/System/Text/.cvsignore, runtime/System/Text/CP932.cs,
+	runtime/System/Text/jis.table, runtime/System/Text/uni2tab.c,
+	runtime/runtime.build: add the JIS conversion table to "mscorlib.dll".
+
 2002-04-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/NotSupp.txt,

@@ -477,21 +477,17 @@ public class ToolBar : Control
 	                                                bool pushed)
 	{
 		ButtonState state = 0;
-		if (flat && !hover && !click)
+		if (flat && !hover && !click && !pushed)
 		{
 			state |= ButtonState.Flat;
 		}
-		if (click)
+		if (click || pushed)
 		{
 			state |= ButtonState.Pushed;
 		}
 		if (partial)
 		{
 			state |= ButtonState.Inactive;
-		}
-		if (pushed)
-		{
-			state |= ButtonState.Checked;
 		}
 		return state;
 	}
@@ -730,6 +726,18 @@ public class ToolBar : Control
 #endif
 	protected override void Dispose(bool disposing)
 	{
+		if (disposing)
+		{
+			if (imageList != null)
+			{
+				imageList.RecreateHandle -= new EventHandler(ImageListHandler);
+#if CONFIG_COMPONENT_MODEL
+				imageList.Dispose();
+#else
+				imageList.Dispose(disposing);
+#endif
+			}
+		}
 		base.Dispose(disposing);
 	}
 	private void Draw(Graphics g)

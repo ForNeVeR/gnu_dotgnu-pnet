@@ -20,6 +20,8 @@ out into separate files.
 
 * resgen/resgen.1: update resgen man page to include .po-related options.
 
+* doc/pnettools.texi: documentation updates for resgen and csdoc2html.
+
 2001-09-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/Makefile.am: implement the "csdoc2html" program.

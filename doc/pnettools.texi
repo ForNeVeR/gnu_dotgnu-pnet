@@ -51,6 +51,15 @@ and manipulate applications for the Portable.NET platform.
 @table @code
 @item cscc
 The C# compiler.  @xref{C# Compiler}, for more information.
+@item csdoc
+The C# documentation conversion utility.  @xref{Documentation}, for
+more information.
+@item csdoc2html
+Used to convert C# XML documentation into HTML.  @xref{csdoc2html invocation},
+for more information.
+@item csdoc2texi
+Used to convert C# XML documentation into texinfo.
+@xref{csdoc2texi invocation}, for more information.
 @item ilasm
 The Intermediate Language (IL) assembler.  @xref{Assembler},
 for more information.
@@ -1110,15 +1119,18 @@ extract the program structure and documentation comments.  The
 output is an XML file.
 
 This XML file is then fed into another program to produce the
-desired output format.  One such program, @code{csdoc2texi},
-converts the XML file into texinfo, from which online or
-printed manuals can be derived.
+desired output format.  One such program, @code{csdoc2html},
+converts the XML file into a collection of HTML files which
+can be viewed using a standard Web browser.  Another such program,
+@code{csdoc2texi}, converts the XML file into texinfo, from
+which online or printed manuals can be derived.
 
 @menu
 * Documentation Sections::  XML tags used for documentation sections
 * Documentation Markup::    XML tags used for marking up text
 * Cross-References::        Specifying cross-references in XML tags
 * csdoc invocation::        Invoking csdoc
+* csdoc2html invocation::   Invoking csdoc2html
 * csdoc2texi invocation::   Invoking csdoc2texi
 @end menu
 
@@ -1322,7 +1334,7 @@ the cross-reference could not be resolved.
 
 @c -----------------------------------------------------------------------
 
-@node csdoc invocation, csdoc2texi invocation, Cross-References, Documentation
+@node csdoc invocation, csdoc2html invocation, Cross-References, Documentation
 @section Invoking csdoc
 @cindex csdoc invocation
 
@@ -1374,7 +1386,135 @@ is being compiled by cscc, or converted into documentation using csdoc.
 
 @c -----------------------------------------------------------------------
 
-@node csdoc2texi invocation, Assembler, csdoc invocation, Documentation
+@node csdoc2html invocation, csdoc2texi invocation, csdoc invocation, Documentation
+@section Invoking csdoc2html
+@cindex csdoc2html invocation
+
+The general form of the csdoc2html syntax is as follows:
+
+@example
+csdoc2html [OPTIONS] INPUT.xml ...
+@end example
+
+Csdoc2html reads the supplied XML input files, and converts them into
+a collection of HTML files.  This collection can be viewed
+using a standard Web browser.
+
+Specifying multiple input files is exactly the same as specifying
+one input file which is the concatenation of all of the files.
+Only one output collection is created.  Csdoc2html must be invoked
+multiple times to convert multiple input files into multiple output
+collections.
+
+@table @code
+@cindex -o option (csdoc2html)
+@cindex --output option (csdoc2html)
+@item -o PATH
+@itemx --output PATH
+In multi-file mode, this option specifies the name of the directory
+to write the HTML output to.  The default is the current directory.
+
+In single-file mode, this option specifies the name of the file to write
+the HTML output to.  The default is @code{INPUT.html}.  If there are
+multiple input files, then the name of the output file is based on
+the name of the first input file.  If the first input file is @code{-},
+then the output is written to standard output.  If @code{PATH} is
+@code{-}, then the output is written to standard output.
+
+@cindex -fsingle-file option (csdoc2html)
+@item -fsingle-file
+Write all HTML data to a single output file, rather than splitting
+the data across multiple files.
+
+@cindex -fmulti-file option (csdoc2html)
+@item -fmulti-file
+Split the HTML data across multiple output files.  The file
+@code{index.html} in the output directory is the main entry point
+to browse the collection.  This is the default.
+
+@cindex -fframes option (csdoc2html)
+@item -fframes
+Use HTML frames when writing the output data in multi-file mode.
+This is the default.
+
+@cindex -fno-frames option (csdoc2html)
+@item -fno-frames
+Do not use HTML frames when writing the output data in multi-file mode.
+
+@cindex -fcombine-members option (csdoc2html)
+@item -fcombine-members
+Combine the documentation for type members into the same output
+file as the type itself.  This is the default.
+
+@cindex -fseparate-members option (csdoc2html)
+@item -fseparate-members
+Separate the documentation for type members into distinct output files.
+
+@cindex -fnamespace-directories option (csdoc2html)
+@item -fnamespace-directories
+Write the contents of each namespace into a separate sub-directory.
+This is the default.
+
+@cindex -fno-namespace-directories option (csdoc2html)
+@item -fno-namespace-directories
+Write the contents of all namespaces into the primary output
+directory, and do not create any sub-directories.
+
+@cindex -ftitle option (csdoc2html)
+@item -ftitle=TITLE
+Specify the title to use for the collection.  The default is
+the same as the first input filename.
+
+@cindex -fpage-color option (csdoc2html)
+@item -fpage-color=COLOR
+Specify the HTML color value to use for the background of pages.
+The default is @code{#FFFFFF}.
+
+@cindex -fdefn-color option (csdoc2html)
+@item -fdefn-color=COLOR
+Specify the HTML color value to use for the background of
+type and member definitions.  The default is @code{#C0C0C0}.
+
+@cindex -fheader-color option (csdoc2html)
+@item -fheader-color=COLOR
+Specify the HTML color value to use for the background of
+table headers.  The default is @code{#C0C0C0}.
+
+@cindex --help option (csdoc2html)
+@item --help
+Print a usage message for the csdoc2html program.
+
+@cindex -v option (csdoc2html)
+@cindex --version option (csdoc2html)
+@item -v
+@itemx --version
+Print the version of the csdoc2html program.
+
+@item --
+Marks the end of the command-line options, and the beginning of
+the input filenames.  You may need to use this if your filename
+begins with @code{-}.  e.g. @code{csdoc2html -- -input.xml}.  This is
+not needed if the input is stdin: @code{csdoc2html -} is perfectly valid.
+@end table
+
+The exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.
+
+The simplest way to use this program is as follows:
+
+@example
+csdoc -o program.xml program.cs
+mkdir temp
+csdoc2html -o temp program.xml
+@end example
+
+This will write a collection of HTML files to the @code{temp} directory
+that describes all of the types and members in the @code{program.cs}
+source file.
+
+@c -----------------------------------------------------------------------
+
+@node csdoc2texi invocation, Assembler, csdoc2html invocation, Documentation
 @section Invoking csdoc2texi
 @cindex csdoc2texi invocation
 
@@ -1504,8 +1644,22 @@ online HTML documentation, by way of csdoc2texi:
 @example
 csdoc -o program.xml program.cs
 csdoc2texi program.xml
-texi2html -split_chapter program.texi
+texi2html -split_node program.texi
 @end example
+
+This produces a different output than csdoc2html, which may be useful
+in some circumstances.  A better example is converting C# source
+code into PDF documentation:
+
+@example
+csdoc -o program.xml program.cs
+csdoc2texi program.xml
+texi2dvi --pdf program.texi
+@end example
+
+This assumes that you have @code{texi2dvi} and @code{pdftex}
+installed on your system.  The resulting file, @code{program.pdf},
+can be viewed or printed with the usual PDF tools.
 
 @c -----------------------------------------------------------------------
 
@@ -2074,9 +2228,9 @@ support POSIX regular expressions natively.
 
 Resgen converts strings between a number of resource formats that are used
 within the Portable.NET platform.  It is typically used to convert
-text resources (@code{.txt}) or XML resources (@code{.resx}) into binary
-resources (@code{.resources}) that can be attached to an IL executable
-or dynamic link library.
+text resources (@code{.txt}), XML resources (@code{.resx}), or GNU gettext
+resources (.po) into binary resources (@code{.resources}) that can be
+attached to an IL executable or dynamic link library.
 
 @menu
 * resgen invocation::       Invoking resgen
@@ -2112,6 +2266,9 @@ Binary resources.
 @item .resx
 @itemx .xml
 XML resources.
+
+@item .po
+GNU gettext resources.
 
 @item .exe
 @itemx .dll
@@ -2154,6 +2311,12 @@ dynamic link libraries, or object files).
 @itemx --xml-input
 The input files are all assumed to be in XML resource format.
 
+@cindex -p option (resgen)
+@cindex --po-input option (resgen)
+@item -p
+@itemx --po-input
+The input files are all assumed to be in GNU gettext .po resource format.
+
 @cindex -T option (resgen)
 @cindex --text-output option (resgen)
 @item -T
@@ -2171,6 +2334,12 @@ The output format is set to binary resources.
 @item -X
 @itemx --xml-output
 The output format is set to XML resources.
+
+@cindex -P option (resgen)
+@cindex --po-output option (resgen)
+@item -P
+@itemx --po-output
+The output format is set to GNU gettext .po resources.
 
 @cindex -s option (resgen)
 @cindex --sort-names option (resgen)

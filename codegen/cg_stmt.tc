@@ -33,7 +33,7 @@
  * Push a new entry onto the loop stack.
  */
 static void PushLoop(ILGenInfo *info, ILLabel *continueLabel,
-					 ILLabel *breakLabel)
+					 ILLabel *breakLabel, char *name)
 {
 	if(info->loopStackSize >= info->loopStackMax)
 	{
@@ -49,6 +49,7 @@ static void PushLoop(ILGenInfo *info, ILLabel *continueLabel,
 		info->loopStack = newstack;
 		info->loopStackMax += 4;
 	}
+	info->loopStack[info->loopStackSize].name = name;
 	info->loopStack[info->loopStackSize].continueLabel = continueLabel;
 	info->loopStack[info->loopStackSize].breakLabel = breakLabel;
 	info->loopStack[info->loopStackSize].finallyLabel = 0;
@@ -74,6 +75,7 @@ static void PushFinally(ILGenInfo *info, ILLabel *finallyLabel)
 		info->loopStack = newstack;
 		info->loopStackMax += 4;
 	}
+	info->loopStack[info->loopStackSize].name = 0;
 	info->loopStack[info->loopStackSize].continueLabel = 0;
 	info->loopStack[info->loopStackSize].breakLabel = 0;
 	info->loopStack[info->loopStackSize].finallyLabel = finallyLabel;
@@ -131,6 +133,11 @@ ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right);
  * Determine if a statement list ends in a return statement.
  */
 int ILNodeEndsInReturn(ILNode *stmt);
+
+/*
+ * Add a break/continue label to a loop or switch statement.
+ */
+void ILNodeAddLabel(ILNode *stmt, char *name);
 
 %}
 
@@ -315,7 +322,9 @@ static int EndsInReturn(ILNode *stmt)
 	else if(yykind(stmt) == yykindof(ILNode_Return) ||
 			yykind(stmt) == yykindof(ILNode_ReturnExpr) ||
 			yykind(stmt) == yykindof(ILNode_Break) ||
+			yykind(stmt) == yykindof(ILNode_LabelledBreak) ||
 			yykind(stmt) == yykindof(ILNode_Continue) ||
+			yykind(stmt) == yykindof(ILNode_LabelledContinue) ||
 			yykind(stmt) == yykindof(ILNode_Throw) ||
 			yykind(stmt) == yykindof(ILNode_Goto) ||
 			yykind(stmt) == yykindof(ILNode_GotoCase) ||
@@ -358,6 +367,14 @@ static int EndsInReturn(ILNode *stmt)
 int ILNodeEndsInReturn(ILNode *stmt)
 {
 	return ((EndsInReturn(stmt) & 1) != 0);
+}
+
+void ILNodeAddLabel(ILNode *stmt, char *name)
+{
+	if(stmt && yyisa(stmt, ILNode_LabelledStatement))
+	{
+		((ILNode_LabelledStatement *)stmt)->name = name;
+	}
 }
 
 %}
@@ -456,7 +473,7 @@ ILNode_GenDiscard(ILNode_While)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label1, &label2);
+			PushLoop(info, &label1, &label2, node->name);
 			ILGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -476,7 +493,7 @@ ILNode_GenDiscard(ILNode_While)
 	else
 	{
 		/* Generate the full case of the "while" loop */
-		PushLoop(info, &label2, &label3);
+		PushLoop(info, &label2, &label3, node->name);
 		ILGenJump(info, IL_OP_BR, &label2);
 		ILGenLabel(info, &label1);
 		ILNode_GenDiscard(node->stmt, info);
@@ -504,7 +521,7 @@ ILNode_GenDiscard(ILNode_Do)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label1, &label2);
+			PushLoop(info, &label1, &label2, node->name);
 			ILGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -517,7 +534,7 @@ ILNode_GenDiscard(ILNode_Do)
 		else
 		{
 			/* Generate code for a single execution of the loop body */
-			PushLoop(info, &label1, &label1);
+			PushLoop(info, &label1, &label1, node->name);
 			ILNode_GenDiscard(node->stmt, info);
 			ILGenLabel(info, &label1);
 			PopLoop(info);
@@ -532,7 +549,7 @@ ILNode_GenDiscard(ILNode_Do)
 	else
 	{
 		/* Generate the full case of the "do" loop */
-		PushLoop(info, &label2, &label3);
+		PushLoop(info, &label2, &label3, node->name);
 		ILGenLabel(info, &label1);
 		ILNode_GenDiscard(node->stmt, info);
 		ILGenLabel(info, &label2);
@@ -580,7 +597,7 @@ ILNode_GenDiscard(ILNode_For)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label2, &label3);
+			PushLoop(info, &label2, &label3, node->name);
 			ILGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -606,7 +623,7 @@ ILNode_GenDiscard(ILNode_For)
 	else
 	{
 		/* Generate the full case of the "for" loop */
-		PushLoop(info, &label2, &label4);
+		PushLoop(info, &label2, &label4, node->name);
 		ILGenJump(info, IL_OP_BR, &label3);
 		ILGenLabel(info, &label1);
 		if(node->stmt)
@@ -659,7 +676,7 @@ ILNode_GenDiscard(ILNode_Foreach)
 	ILGenJump(info, IL_OP_BR, &label3);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label4);
+	PushLoop(info, &label2, &label4, node->name);
 
 	/* Fetch the next array element and put it into the variable */
 	ILGenLabel(info, &label1);
@@ -751,7 +768,7 @@ ILNode_GenDiscard(ILNode_ForeachCollection)
 	ILGenJump(info, IL_OP_BR, &label2);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label3);
+	PushLoop(info, &label2, &label3, node->name);
 
 	/* Fetch the next collection element and put it into the variable */
 	ILGenLoadLocal(info, enumVar);
@@ -861,6 +878,41 @@ ILNode_GenDiscard(ILNode_Break)
 }
 
 /*
+ * Generate discard code for "labelled break" statements.
+ */
+ILNode_GenDiscard(ILNode_LabelledBreak)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+	int sawTryBlock;
+
+	/* Look for the next outer loop or switch to break to */
+	sawTryBlock = 0;
+	while(size > 0 && stack[size - 1].name != node->name)
+	{
+		if(stack[size - 1].breakLabel == 0)
+		{
+			sawTryBlock = 1;
+		}
+		--size;
+	}
+	if(!size || !(stack[size - 1].breakLabel))
+	{
+		return;
+	}
+
+	/* Jump to the break label */
+	if(sawTryBlock)
+	{
+		ILGenJump(info, IL_OP_LEAVE, stack[size - 1].breakLabel);
+	}
+	else
+	{
+		ILGenJump(info, IL_OP_BR, stack[size - 1].breakLabel);
+	}
+}
+
+/*
  * Generate discard code for "continue" statements.
  */
 ILNode_GenDiscard(ILNode_Continue)
@@ -880,6 +932,41 @@ ILNode_GenDiscard(ILNode_Continue)
 		--size;
 	}
 	if(!size)
+	{
+		return;
+	}
+
+	/* Jump to the continue label */
+	if(sawTryBlock)
+	{
+		ILGenJump(info, IL_OP_LEAVE, stack[size - 1].continueLabel);
+	}
+	else
+	{
+		ILGenJump(info, IL_OP_BR, stack[size - 1].continueLabel);
+	}
+}
+
+/*
+ * Generate discard code for "labelled continue" statements.
+ */
+ILNode_GenDiscard(ILNode_LabelledContinue)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+	int sawTryBlock;
+
+	/* Look for the next outer loop to continue from */
+	sawTryBlock = 0;
+	while(size > 0 && stack[size - 1].name != node->name)
+	{
+		if(stack[size - 1].breakLabel == 0)
+		{
+			sawTryBlock = 1;
+		}
+		--size;
+	}
+	if(!size || !(stack[size - 1].continueLabel))
 	{
 		return;
 	}
@@ -1385,7 +1472,7 @@ ILNode_GenDiscard(ILNode_Switch)
 	}
 
 	/* Push the switch context information for "break" statements */
-	PushLoop(info, (ILLabel *)0, &breakLabel);
+	PushLoop(info, (ILLabel *)0, &breakLabel, node->name);
 
 	/* Get the value table */
 	values = node->switchValues;

@@ -32,6 +32,7 @@ extern	"C" {
  */
 typedef struct
 {
+	char		   *name;
 	ILLabel		   *continueLabel;
 	ILLabel		   *breakLabel;
 	ILLabel		   *finallyLabel;

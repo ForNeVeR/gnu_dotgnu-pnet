@@ -523,24 +523,28 @@ struct _tagILSwitchValue
 	ILNode *thenClause;
 	ILNode *elseClause;
 }
-%node ILNode_While ILNode_Statement =
+%node ILNode_LabelledStatement ILNode_Statement %abstract =
+{
+	%nocreate char *name = {0};
+}
+%node ILNode_While ILNode_LabelledStatement =
 {
 	ILNode *cond;
 	ILNode *stmt;
 }
-%node ILNode_Do ILNode_Statement =
+%node ILNode_Do ILNode_LabelledStatement =
 {
 	ILNode *stmt;
 	ILNode *cond;
 }
-%node ILNode_For ILNode_Statement =
+%node ILNode_For ILNode_LabelledStatement =
 {
 	ILNode *init;
 	ILNode *cond;
 	ILNode *incr;
 	ILNode *stmt;
 }
-%node ILNode_Foreach ILNode_Statement =
+%node ILNode_Foreach ILNode_LabelledStatement =
 {
 	ILNode *type;
 	char   *varName;
@@ -551,7 +555,7 @@ struct _tagILSwitchValue
 	%nocreate ILType *arrayType = {0};
 	%nocreate ILType *elemType = {0};
 }
-%node ILNode_ForeachCollection ILNode_Statement =
+%node ILNode_ForeachCollection ILNode_LabelledStatement =
 {
 	ILNode *doCast;
 	ILNode *expr;
@@ -564,7 +568,15 @@ struct _tagILSwitchValue
 	%nocreate ILMethod *getCurrent = {0};
 }
 %node ILNode_Break ILNode_Statement
+%node ILNode_LabelledBreak ILNode_Statement =
+{
+	char *name;
+}
 %node ILNode_Continue ILNode_Statement
+%node ILNode_LabelledContinue ILNode_Statement =
+{
+	char *name;
+}
 %node ILNode_Return ILNode_Statement
 %node ILNode_ReturnExpr ILNode_Statement =
 {
@@ -588,7 +600,7 @@ struct _tagILSwitchValue
 	ILNode *stmt;
 	%nocreate ILScope *scope = {0};
 }
-%node ILNode_Switch ILNode_Statement =
+%node ILNode_Switch ILNode_LabelledStatement =
 {
 	ILNode *expr;
 	ILNode *sections;

@@ -114,7 +114,7 @@ JavaGenDiscard(ILNode_While)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label1, &label2);
+			PushLoop(info, &label1, &label2, node->name);
 			JavaGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -134,7 +134,7 @@ JavaGenDiscard(ILNode_While)
 	else
 	{
 		/* Generate the full case of the "while" loop */
-		PushLoop(info, &label2, &label3);
+		PushLoop(info, &label2, &label3, node->name);
 		JavaGenJump(info, JAVA_OP_GOTO, &label2);
 		JavaGenLabel(info, &label1);
 		JavaGenDiscard(node->stmt, info);
@@ -162,7 +162,7 @@ JavaGenDiscard(ILNode_Do)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label1, &label2);
+			PushLoop(info, &label1, &label2, node->name);
 			JavaGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -175,7 +175,7 @@ JavaGenDiscard(ILNode_Do)
 		else
 		{
 			/* Generate code for a single execution of the loop body */
-			PushLoop(info, &label1, &label1);
+			PushLoop(info, &label1, &label1, node->name);
 			JavaGenDiscard(node->stmt, info);
 			JavaGenLabel(info, &label1);
 			PopLoop(info);
@@ -190,7 +190,7 @@ JavaGenDiscard(ILNode_Do)
 	else
 	{
 		/* Generate the full case of the "do" loop */
-		PushLoop(info, &label2, &label3);
+		PushLoop(info, &label2, &label3, node->name);
 		JavaGenLabel(info, &label1);
 		JavaGenDiscard(node->stmt, info);
 		JavaGenLabel(info, &label2);
@@ -238,7 +238,7 @@ JavaGenDiscard(ILNode_For)
 		if(value.un.i4Value)
 		{
 			/* Generate code for an infinite loop */
-			PushLoop(info, &label2, &label3);
+			PushLoop(info, &label2, &label3, node->name);
 			JavaGenLabel(info, &label1);
 			if(node->stmt)
 			{
@@ -264,7 +264,7 @@ JavaGenDiscard(ILNode_For)
 	else
 	{
 		/* Generate the full case of the "for" loop */
-		PushLoop(info, &label2, &label4);
+		PushLoop(info, &label2, &label4, node->name);
 		JavaGenJump(info, JAVA_OP_GOTO, &label3);
 		JavaGenLabel(info, &label1);
 		if(node->stmt)
@@ -317,7 +317,7 @@ JavaGenDiscard(ILNode_Foreach)
 	JavaGenJump(info, JAVA_OP_GOTO, &label3);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label4);
+	PushLoop(info, &label2, &label4, node->name);
 
 	/* Fetch the next array element and put it into the variable */
 	JavaGenLabel(info, &label1);
@@ -408,7 +408,7 @@ JavaGenDiscard(ILNode_ForeachCollection)
 	JavaGenJump(info, JAVA_OP_GOTO, &label2);
 
 	/* Push the loop label information */
-	PushLoop(info, &label2, &label3);
+	PushLoop(info, &label2, &label3, node->name);
 
 	/* Fetch the next collection element and put it into the variable */
 	saveStack = info->stackHeight;
@@ -530,6 +530,36 @@ JavaGenDiscard(ILNode_Break)
 }
 
 /*
+ * Generate discard code for "labelled break" statements.
+ */
+JavaGenDiscard(ILNode_LabelledBreak)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+
+	/* Look for the next outer loop or switch to break to */
+	while(size > 0 && stack[size - 1].name != node->name)
+	{
+		if(stack[size - 1].breakLabel == 0)
+		{
+			/* Call the "finally" handler for this try block */
+			if(stack[size - 1].finallyLabel != 0)
+			{
+				JavaGenJump(info, JAVA_OP_JSR, stack[size - 1].finallyLabel);
+			}
+		}
+		--size;
+	}
+	if(!size || !(stack[size - 1].breakLabel))
+	{
+		return;
+	}
+
+	/* Jump to the break label */
+	JavaGenJump(info, JAVA_OP_GOTO, stack[size - 1].breakLabel);
+}
+
+/*
  * Generate discard code for "continue" statements.
  */
 JavaGenDiscard(ILNode_Continue)
@@ -548,6 +578,33 @@ JavaGenDiscard(ILNode_Continue)
 		--size;
 	}
 	if(!size)
+	{
+		return;
+	}
+
+	/* Jump to the continue label */
+	JavaGenJump(info, JAVA_OP_GOTO, stack[size - 1].continueLabel);
+}
+
+/*
+ * Generate discard code for "labelled continue" statements.
+ */
+JavaGenDiscard(ILNode_LabelledContinue)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+
+	/* Look for the next outer loop to continue from */
+	while(size > 0 && stack[size - 1].name != node->name)
+	{
+		if(stack[size - 1].breakLabel == 0)
+		{
+			/* Call the "finally" handler for this try block */
+			JavaGenJump(info, JAVA_OP_JSR, stack[size - 1].finallyLabel);
+		}
+		--size;
+	}
+	if(!size || !(stack[size - 1].continueLabel))
 	{
 		return;
 	}
@@ -1058,7 +1115,7 @@ JavaGenDiscard(ILNode_Switch)
 	}
 
 	/* Push the switch context information for "break" statements */
-	PushLoop(info, (ILLabel *)0, &breakLabel);
+	PushLoop(info, (ILLabel *)0, &breakLabel, node->name);
 
 	/* Get the value table */
 	values = node->switchValues;

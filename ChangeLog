@@ -1,4 +1,10 @@
 
+2001-03-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_gen.h, codegen/cg_nodes.tc, codegen/cg_stmt.tc,
+	codegen/jv_stmt.tc, cscc/csharp/cs_stmt.tc: implement Java-style
+	labelled loops, switch's, break's, and continue's.
+
 2001-03-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, cscc/cc_errors.c, cscc/cc_errors.h,

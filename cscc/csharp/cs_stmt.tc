@@ -815,7 +815,8 @@ ILNode_SemAnalysis(ILNode_GotoDefault)
 /*
  * Perform semantic analysis for the "break" statement.
  */
-ILNode_SemAnalysis(ILNode_Break)
+ILNode_SemAnalysis(ILNode_Break),
+ILNode_SemAnalysis(ILNode_LabelledBreak)	/* TODO */
 {
 	CSSemValue value;
 	PushStmtContext(info, CS_STMT_SWITCH);
@@ -841,7 +842,8 @@ ILNode_SemAnalysis(ILNode_Break)
 /*
  * Perform semantic analysis for the "continue" statement.
  */
-ILNode_SemAnalysis(ILNode_Continue)
+ILNode_SemAnalysis(ILNode_Continue),
+ILNode_SemAnalysis(ILNode_LabelledContinue)	/* TODO */
 {
 	CSSemValue value;
 	if(!StmtContextOK(info, CS_STMT_LOOP, CS_STMT_FINALLY))

@@ -223,6 +223,11 @@ public class TestXmlTextReader : TestCase
 				AssertEquals("ReadOuterXml (3)", true, xr.Read());
 				AssertEquals("ReadOuterXml (4)", xml[1], xr.ReadOuterXml());
 
+				Reset(new StringReader("<outer><inner></inner></outer>"));
+				AssertEquals("ReadOuterXml (5)", true, xr.Read());
+				AssertEquals("ReadOuterXml (6)", true, xr.Read());
+				AssertEquals("ReadOuterXml (7)", "<inner></inner>", xr.ReadOuterXml());
+
 				Clear();
 			}
 

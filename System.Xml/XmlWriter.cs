@@ -223,7 +223,7 @@ public abstract class XmlWriter
 				}
 
 				// Loop until we have finished with the current node.
-				uint level = 1;
+				uint level = 0;
 				do
 				{
 					switch(reader.NodeType)
@@ -300,7 +300,7 @@ public abstract class XmlWriter
 
 						case XmlNodeType.EndElement:
 						{
-							WriteEndElement();
+							WriteFullEndElement();
 							--level;
 						}
 						break;

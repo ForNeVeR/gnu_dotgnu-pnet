@@ -1,4 +1,9 @@
 
+2003-05-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/WebClient.cs: Add this non-ECMA class , implemented
+	partially for downstream access.
+
 2003-05-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Net/Dns.cs: add "using Platform" to fix an ECMA_COMPAT bug.

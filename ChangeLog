@@ -78,6 +78,9 @@ runtime/System/Threading/Thread.cs,
 runtime/System/Threading/WaitHandle.cs: fine-tune the internalcall interface
 of the library while documenting it.
 
+* doc/native.html: document all of the internalcall methods in the library,
+as it currently stands.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

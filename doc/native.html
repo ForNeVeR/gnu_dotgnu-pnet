@@ -6,7 +6,7 @@
 <h1>Internalcall methods for pnetlib</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/12/02 09:31:27 $<p>
+Last Modified: $Date: 2001/12/03 11:19:11 $<p>
 
 Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
@@ -70,28 +70,27 @@ that use the library.<p>
 <h2>Cross reference</h2>
 
 <ul>
+<li><a href="#System">System</a></li>
+<ul>
 <li><a href="#System_ArgIterator">System.ArgIterator</a></li>
 	<ul>
 		<li><a href="#System_ArgIterator_ctor">constructor</a></li>
 		<li><a href="#System_ArgIterator_GetNextArg">GetNextArg</a></li>
 		<li><a href="#System_ArgIterator_GetNextArgType">GetNextArgType</a></li>
+		<li><a href="#System_ArgIterator_GetRemainingCount">GetRemainingCount</a></li>
 	</ul>
 <li><a href="#System_Array">System.Array</a></li>
 	<ul>
-		<li><a href="#System_Array_InternalClear">InternalClear</a></li>
+		<li><a href="#System_Array_Clear">Clear</a></li>
 		<li><a href="#System_Array_Initialize">Initialize</a></li>
 		<li><a href="#System_Array_Copy">Copy</a></li>
-		<li><a href="#System_Array_InternalCreate">InternalCreate</a></li>
-		<li><a href="#System_Array_InternalCreateEx">InternalCreateEx</a></li>
+		<li><a href="#System_Array_CreateArray">CreateArray</a></li>
 		<li><a href="#System_Array_GetLength">GetLength</a></li>
 		<li><a href="#System_Array_GetLowerBound">GetLowerBound</a></li>
 		<li><a href="#System_Array_GetUpperBound">GetUpperBound</a></li>
-		<li><a href="#System_Array_InternalGetValue">InternalGetValue</a></li>
-		<li><a href="#System_Array_InternalGetValueEx">InternalGetValueEx</a></li>
-		<li><a href="#System_Array_InternalSetValue">InternalSetValue</a></li>
-		<li><a href="#System_Array_InternalSetValueEx">InternalSetValueEx</a></li>
-		<li><a href="#System_Array_GetLengthNative">GetLengthNative</a></li>
-		<li><a href="#System_Array_GetRankNative">GetRankNative</a></li>
+		<li><a href="#System_Array_GetRank">GetRank</a></li>
+		<li><a href="#System_Array_Get">Get</a></li>
+		<li><a href="#System_Array_Set">Set</a></li>
 	</ul>
 <li><a href="#System_Decimal">System.Decimal</a></li>
 	<ul>
@@ -109,10 +108,25 @@ that use the library.<p>
 		<li><a href="#System_Decimal_Subtract">Subtract</a></li>
 		<li><a href="#System_Decimal_Truncate">Truncate</a></li>
 	</ul>
+<li><a href="#System_Delegate">System.Delegate</a></li>
+	<ul>
+		<li><a href="#System_Delegate_CreateBlankDelegate">CreateBlankDelegate</a></li>
+	</ul>
 <li><a href="#System_Double">System.Double</a></li>
 	<ul>
 		<li><a href="#System_Double_IsNaN">IsNaN</a></li>
-		<li><a href="#System_Double_IsInfinity">IsInfinity</a></li>
+		<li><a href="#System_Double_TestInfinity">TestInfinity</a></li>
+	</ul>
+<li><a href="#System_Enum">System.Enum</a></li>
+	<ul>
+		<li><a href="#System_Enum_GetEnumValue">GetEnumValue</a></li>
+		<li><a href="#System_Enum_GetEnumName">GetEnumName</a></li>
+		<li><a href="#System_Enum_IsEnumValue">IsEnumValue</a></li>
+		<li><a href="#System_Enum_GetEnumValueFromName">GetEnumValueFromName</a></li>
+		<li><a href="#System_Enum_EnumValueOr">EnumValueOr</a></li>
+		<li><a href="#System_Enum_EnumIntToObject">EnumIntToObject</a></li>
+		<li><a href="#System_Enum_EnumLongToObject">EnumLongToObject</a></li>
+		<li><a href="#System_Enum_FormatEnumWithFlags">FormatEnumWithFlags</a></li>
 	</ul>
 <li><a href="#System_GC">System.GC</a></li>
 	<ul>
@@ -120,6 +134,10 @@ that use the library.<p>
 		<li><a href="#System_GC_ReRegisterForFinalize">ReRegisterForFinalize</a></li>
 		<li><a href="#System_GC_SuppressFinalize">SuppressFinalize</a></li>
 		<li><a href="#System_GC_WaitForPendingFinalizers">WaitForPendingFinalizers</a></li>
+	</ul>
+<li><a href="#System_Guid">System.Guid</a></li>
+	<ul>
+		<li><a href="#System_Guid_NewGuid">NewGuid</a></li>
 	</ul>
 <li><a href="#System_Math">System.Math</a></li>
 	<ul>
@@ -141,7 +159,7 @@ that use the library.<p>
 		<li><a href="#System_Math_Log">Log</a></li>
 		<li><a href="#System_Math_Log10">Log10</a></li>
 		<li><a href="#System_Math_Round">Round</a></li>
-		<li><a href="#System_Math_InternalRound">InternalRound</a></li>
+		<li><a href="#System_Math_RoundDouble">RoundDouble</a></li>
 		<li><a href="#System_Math_Sqrt">Sqrt</a></li>
 	</ul>
 <li><a href="#System_Object">System.Object</a></li>
@@ -154,13 +172,13 @@ that use the library.<p>
 <li><a href="#System_RuntimeFieldHandle">System.RuntimeFieldHandle</a></li>
 <li><a href="#System_RuntimeMethodHandle">System.RuntimeMethodHandle</a></li>
 	<ul>
-		<li><a href="#System_RuntimeMethodHandle_InternalGetFunctionPointer">InternalGetFunctionPointer</a></li>
+		<li><a href="#System_RuntimeMethodHandle_GetFunctionPointer">GetFunctionPointer</a></li>
 	</ul>
 <li><a href="#System_RuntimeTypeHandle">System.RuntimeTypeHandle</a></li>
 <li><a href="#System_Single">System.Single</a></li>
 	<ul>
 		<li><a href="#System_Single_IsNaN">IsNaN</a></li>
-		<li><a href="#System_Single_IsInfinity">IsInfinity</a></li>
+		<li><a href="#System_Single_TestInfinity">TestInfinity</a></li>
 	</ul>
 <li><a href="#System_String">System.String</a></li>
 	<ul>
@@ -168,13 +186,12 @@ that use the library.<p>
 		<li><a href="#System_String_Compare">Compare</a></li>
 		<li><a href="#System_String_InternalCompare">InternalCompare</a></li>
 		<li><a href="#System_String_InternalOrdinal">InternalOrdinal</a></li>
-		<li><a href="#System_String_FastAllocateString">FastAllocateString</a></li>
-		<li><a href="#System_String_FastAllocateBuilder">FastAllocateBuilder</a></li>
-		<li><a href="#System_String_FillString">FillString</a></li>
-		<li><a href="#System_String_FillSubstring">FillSubstring</a></li>
+		<li><a href="#System_String_NewString">NewString</a></li>
+		<li><a href="#System_String_NewBuilder">NewBuilder</a></li>
+		<li><a href="#System_String_Copy">Copy</a></li>
 		<li><a href="#System_String_FinalizeBuilder">FillSubstring</a></li>
 		<li><a href="#System_String_Concat">Concat</a></li>
-		<li><a href="#System_String_InternalCopyTo">InternalCopyTo</a></li>
+		<li><a href="#System_String_CopyToChecked">CopyToChecked</a></li>
 		<li><a href="#System_String_Equals">Equals</a></li>
 		<li><a href="#System_String_EqualRange">EqualRange</a></li>
 		<li><a href="#System_String_GetHashCode">GetHashCode</a></li>
@@ -184,11 +201,45 @@ that use the library.<p>
 		<li><a href="#System_String_LastIndexOfAny">LastIndexOfAny</a></li>
 		<li><a href="#System_String_Intern">Intern</a></li>
 		<li><a href="#System_String_IsInterned">IsInterned</a></li>
-		<li><a href="#System_String_FillChar">FillChar</a></li>
+		<li><a href="#System_String_CharFill">CharFill</a></li>
 		<li><a href="#System_String_Replace">Replace</a></li>
-		<li><a href="#System_String_TrimHelper">TrimHelper</a></li>
-		<li><a href="#System_String_InternalGetChar">InternalGetChar</a></li>
+		<li><a href="#System_String_Trim">Trim</a></li>
+		<li><a href="#System_String_GetChar">GetChar</a></li>
+		<li><a href="#System_String_SetChar">SetChar</a></li>
 	</ul>
+<li><a href="#System_Type">System.Type</a></li>
+	<ul>
+		<li><a href="#System_Type_GetType">GetType</a></li>
+		<li><a href="#System_Type_GetTypeHandle">GetTypeHandle</a></li>
+		<li><a href="#System_Type_GetTypeFromHandle">GetTypeFromHandle</a></li>
+	</ul>
+<li><a href="#System_TypedReference">System.TypedReference</a></li>
+	<ul>
+		<li><a href="#System_TypedReference_ClrMakeTypedReference">ClrMakeTypedReference</a></li>
+		<li><a href="#System_TypedReference_SetTypedReference">SetTypedReference</a></li>
+		<li><a href="#System_TypedReference_ToObject">ToObject</a></li>
+	</ul>
+</ul>
+<li><a href="#System_Diagnostics">System.Diagnostics</a></li>
+<ul>
+<li><a href="#System_Diagnostics_Debugger">System.Diagnostics.Debugger</a></li>
+	<ul>
+		<li><a href="#System_Diagnostics_Debugger_InternalIsAttached">InternalIsAttached</a></li>
+		<li><a href="#System_Diagnostics_Debugger_Break">Break</a></li>
+		<li><a href="#System_Diagnostics_Debugger_IsLogging">IsLogging</a></li>
+		<li><a href="#System_Diagnostics_Debugger_InternalLaunch">InternalLaunch</a></li>
+		<li><a href="#System_Diagnostics_Debugger_Log">Log</a></li>
+	</ul>
+<li><a href="#System_Diagnostics_StackFrame">System.Diagnostics.StackFrame</a></li>
+	<ul>
+		<li><a href="#System_Diagnostics_StackFrame_InternalGetTotalFrames">InternalGetTotalFrames</a></li>
+		<li><a href="#System_Diagnostics_StackFrame_InternalGetMethod">InternalGetMethod</a></li>
+		<li><a href="#System_Diagnostics_StackFrame_InternalGetILOffset">InternalGetILOffset</a></li>
+		<li><a href="#System_Diagnostics_StackFrame_InternalGetNativeOffset">InternalGetNativeOffset</a></li>
+		<li><a href="#System_Diagnostics_StackFrame_InternalGetDebugInfo">InternalGetDebugInfo</a></li>
+		<li><a href="#System_Diagnostics_StackFrame_GetExceptionStackTrace">GetExceptionStackTrace</a></li>
+	</ul>
+</ul>
 <li><a href="#Reflection">System.Reflection</a></li>
 <ul>
 <li><a href="#Reflection_Assembly">System.Reflection.Assembly</a></li>
@@ -224,7 +275,6 @@ that use the library.<p>
 		<li><a href="#Reflection_ClrHelpers_GetCustomAttributes">GetCustomAttributes</a></li>
 		<li><a href="#Reflection_ClrHelpers_IsDefined">IsDefined</a></li>
 		<li><a href="#Reflection_ClrHelpers_GetDeclaringType">GetDeclaringType</a></li>
-		<li><a href="#Reflection_ClrHelpers_GetReflectedType">GetReflectedType</a></li>
 		<li><a href="#Reflection_ClrHelpers_GetName">GetName</a></li>
 		<li><a href="#Reflection_ClrHelpers_GetParameter">GetParameter</a></li>
 		<li><a href="#Reflection_ClrHelpers_GetParameterType">GetParameterType</a></li>
@@ -234,6 +284,7 @@ that use the library.<p>
 		<li><a href="#Reflection_ClrHelpers_GetImplAttrs">GetImplAttrs</a></li>
 		<li><a href="#Reflection_ClrHelpers_GetSemantics">GetSemantics</a></li>
 		<li><a href="#Reflection_ClrHelpers_HasSemantics">HasSemantics</a></li>
+		<li><a href="#Reflection_ClrHelpers_CanAccess">CanAccess</a></li>
 	</ul>
 <li><a href="#Reflection_ClrMethod">System.Reflection.ClrMethod</a></li>
 	<ul>
@@ -290,15 +341,111 @@ that use the library.<p>
 		<li><a href="#Reflection_Module_GetFullName">GetFullName</a></li>
 	</ul>
 </ul>
+<li><a href="#System_Runtime">System.Runtime</a></li>
+<ul>
+<li><a href="#CompilerServices_RuntimeHelpers">System.Runtime.CompilerServices.RuntimeHelpers</a></li>
+	<ul>
+		<li><a href="#CompilerServices_RuntimeHelpers_InitializeArray">InitializeArray</a></li>
+		<li><a href="#CompilerServices_RuntimeHelpers_RunClassConstructor">RunClassConstructor</a></li>
+		<li><a href="#CompilerServices_RuntimeHelpers_InternalOffsetToStringValue">InternalOffsetToStringValue</a></li>
+		<li><a href="#CompilerServices_RuntimeHelpers_GetObjectValue">GetObjectValue</a></li>
+	</ul>
+<li><a href="#InteropServices_GCHandle">System.Runtime.InteropServices.GCHandle</a></li>
+	<ul>
+		<li><a href="#InteropServices_GCHandle_GCAddrOfPinnedObject">GCAddrOfPinnedObject</a></li>
+		<li><a href="#InteropServices_GCHandle_GCAlloc">GCAlloc</a></li>
+		<li><a href="#InteropServices_GCHandle_GCFree">GCFree</a></li>
+		<li><a href="#InteropServices_GCHandle_GCValidate">GCValidate</a></li>
+		<li><a href="#InteropServices_GCHandle_GCGetTarget">GCGetTarget</a></li>
+		<li><a href="#InteropServices_GCHandle_GCSetTarget">GCSetTarget</a></li>
+	</ul>
+</ul>
+<li><a href="#System_Text">System.Text</a></li>
+<ul>
+<li><a href="#System_Text_DefaultEncoding">System.Text.DefaultEncoding</a></li>
+	<ul>
+		<li><a href="#System_Text_DefaultEncoding_InternalGetByteCount">InternalGetByteCount</a></li>
+		<li><a href="#System_Text_DefaultEncoding_InternalGetBytes">InternalGetBytes</a></li>
+		<li><a href="#System_Text_DefaultEncoding_InternalGetCharCount">InternalGetCharCount</a></li>
+		<li><a href="#System_Text_DefaultEncoding_InternalGetChars">InternalGetChars</a></li>
+		<li><a href="#System_Text_DefaultEncoding_InternalGetMaxByteCount">InternalGetMaxByteCount</a></li>
+		<li><a href="#System_Text_DefaultEncoding_InternalGetMaxCharCount">InternalGetMaxCharCount</a></li>
+		<li><a href="#System_Text_DefaultEncoding_InternalGetString">InternalGetString</a></li>
+	</ul>
+</ul>
+<li><a href="#System_Threading">System.Threading</a></li>
+<ul>
+<li><a href="#Threading_Interlocked">System.Threading.Interlocked</a></li>
+	<ul>
+		<li><a href="#Threading_Interlocked_CompareExchange">CompareExchange</a></li>
+		<li><a href="#Threading_Interlocked_Decrement">Decrement</a></li>
+		<li><a href="#Threading_Interlocked_Exchange">Exchange</a></li>
+		<li><a href="#Threading_Interlocked_Increment">Increment</a></li>
+	</ul>
+<li><a href="#Threading_Monitor">System.Threading.Monitor</a></li>
+	<ul>
+		<li><a href="#Threading_Monitor_Enter">Enter</a></li>
+		<li><a href="#Threading_Monitor_InternalTryEnter">InternalTryEnter</a></li>
+		<li><a href="#Threading_Monitor_Exit">Exit</a></li>
+		<li><a href="#Threading_Monitor_InternalWait">InternalWait</a></li>
+		<li><a href="#Threading_Monitor_Pulse">Pulse</a></li>
+		<li><a href="#Threading_Monitor_PulseAll">PulseAll</a></li>
+	</ul>
+<li><a href="#Threading_Mutex">System.Threading.Mutex</a></li>
+	<ul>
+		<li><a href="#Threading_Mutex_InternalCreateMutex">InternalCreateMutex</a></li>
+		<li><a href="#Threading_Mutex_InternalReleaseMutex">InternalReleaseMutex</a></li>
+	</ul>
+<li><a href="#Threading_Mutex">System.Threading.Thread</a></li>
+	<ul>
+		<li><a href="#Threading_Thread_FinalizeThread">FinalizeThread</a></li>
+		<li><a href="#Threading_Thread_Abort">Abort</a></li>
+		<li><a href="#Threading_Thread_InternalJoin">InternalJoin</a></li>
+		<li><a href="#Threading_Thread_MemoryBarrier">MemoryBarrier</a></li>
+		<li><a href="#Threading_Thread_ResetAbort">ResetAbort</a></li>
+		<li><a href="#Threading_Thread_InternalSleep">InternalSleep</a></li>
+		<li><a href="#Threading_Thread_Start">Start</a></li>
+		<li><a href="#Threading_Thread_VolatileRead">VolatileRead</a></li>
+		<li><a href="#Threading_Thread_VolatileWrite">VolatileWrite</a></li>
+		<li><a href="#Threading_Thread_InternalCurrentThread">InternalCurrentThread</a></li>
+		<li><a href="#Threading_Thread_InternalSetBackground">InternalSetBackground</a></li>
+		<li><a href="#Threading_Thread_InternalGetPriority">InternalGetPriority</a></li>
+		<li><a href="#Threading_Thread_InternalSetPriority">InternalSetPriority</a></li>
+		<li><a href="#Threading_Thread_InternalGetState">InternalGetState</a></li>
+	</ul>
+<li><a href="#Threading_WaitHandle">System.Threading.WaitHandle</a></li>
+	<ul>
+		<li><a href="#Threading_WaitHandle_InternalClose">InternalClose</a></li>
+		<li><a href="#Threading_WaitHandle_InternalWaitAll">InternalWaitAll</a></li>
+		<li><a href="#Threading_WaitHandle_InternalWaitAny">InternalWaitAny</a></li>
+		<li><a href="#Threading_WaitHandle_InternalWaitOne">InternalWaitOne</a></li>
+	</ul>
+</ul>
+<li><a href="#Platform">Platform</a></li>
+<ul>
 <li><a href="#Platform_DirMethods">Platform.DirMethods</a></li>
 	<ul>
 		<li><a href="#Platform_DirMethods_GetPathInfo">GetPathInfo</a></li>
 		<li><a href="#Platform_DirMethods_GetSystemDirectory">GetSystemDirectory</a></li>
 	</ul>
-<li><a href="#Platform_PtrSizes">Platform.PtrSizes</a></li>
+<li><a href="#Platform_FileMethods">Platform.FileMethods</a></li>
 	<ul>
-		<li><a href="#Platform_PtrSizes_GetPtrSize">GetPtrSize</a></li>
+		<li><a href="#Platform_FileMethods_GetInvalidHandle">GetInvalidHandle</a></li>
+		<li><a href="#Platform_FileMethods_ValidatePathname">ValidatePathname</a></li>
+		<li><a href="#Platform_FileMethods_Open">Open</a></li>
+		<li><a href="#Platform_FileMethods_HasAsync">HasAsync</a></li>
+		<li><a href="#Platform_FileMethods_CanSeek">CanSeek</a></li>
+		<li><a href="#Platform_FileMethods_CheckHandleAccess">CheckHandleAccess</a></li>
+		<li><a href="#Platform_FileMethods_Seek">Seek</a></li>
+		<li><a href="#Platform_FileMethods_Write">Write</a></li>
+		<li><a href="#Platform_FileMethods_Read">Read</a></li>
+		<li><a href="#Platform_FileMethods_Close">Close</a></li>
+		<li><a href="#Platform_FileMethods_FlushWrite">FlushWrite</a></li>
+		<li><a href="#Platform_FileMethods_SetLength">SetLength</a></li>
+		<li><a href="#Platform_FileMethods_GetErrno">GetErrno</a></li>
+		<li><a href="#Platform_FileMethods_GetErrnoMessage">GetErrnoMessage</a></li>
 	</ul>
+<li><a href="#Platform_Errno">Platform.Errno</a></li>
 <li><a href="#Platform_Stdio">Platform.Stdio</a></li>
 	<ul>
 		<li><a href="#Platform_Stdio_StdClose">StdClose</a></li>
@@ -331,8 +478,9 @@ that use the library.<p>
 		<li><a href="#Platform_TimeMethods_GetUpTime">GetUpTime</a></li>
 	</ul>
 </ul>
+</ul>
 
-<h2>Internalcall methods in the System namespace</h2>
+<a name="System"><h2>System</h2>
 
 <a name="System_ArgIterator"><h3>System.ArgIterator</h3>
 
@@ -370,13 +518,13 @@ Get the number of arguments that remain to be processed by the iterator.
 
 <a name="System_Array"><h3>System.Array</h3>
 
-<a name="System_Array_InternalClear">
-<pre>private static void InternalClear(Array array, int index, int length);</pre>
+<a name="System_Array_Clear">
+<pre>public static void Clear(Array array, int index, int length);</pre>
 
 <blockquote>
 Clear the contents of an array sub-range to all-zeroes, or all-nulls,
-depending upon the element type.  The CLR can assume that all arguments
-have been validated, and that no exceptions need to be thrown.
+depending upon the element type.  The CLR is responsible for checking
+the arguments and throwing exceptions where necessary.
 </blockquote>
 
 <a name="System_Array_Initialize">
@@ -400,10 +548,10 @@ type.  See the ECMA specifications for further information on the behaviour
 of this method, and the exceptions that it may throw.
 </blockquote>
 
-<a name="System_Array_InternalCreate">
-<pre>private static Array InternalCreate(RuntimeType elementType,
-                                    int rank, int length1,
-                                    int length2, int length3);</pre>
+<a name="System_Array_CreateArray">
+<pre>private static Array CreateArray(RuntimeType elementType,
+                                 int rank, int length1,
+                                 int length2, int length3);</pre>
 
 <blockquote>
 Create an array of elements.  This may be called for single, two,
@@ -412,9 +560,9 @@ of <code>length</code> arguments to use is specified by <code>rank</code>.
 The CLR can assume that all arguments have been validated.
 </blockquote>
 
-<a name="System_Array_InternalCreateEx">
-<pre>private static Array InternalCreateEx(RuntimeType elementType,
-                                      int[] lengths, int lowerBounds[]);</pre>
+<a name="System_Array_CreateArray_2">
+<pre>private static Array CreateArray(RuntimeType elementType,
+                                 int[] lengths, int lowerBounds[]);</pre>
 
 <blockquote>
 Create an array of elements.  This is called for creating arbitrarily-sized
@@ -422,6 +570,16 @@ arrays.  The CLR can assume that all arguments have been validated.
 </blockquote>
 
 <a name="System_Array_GetLength">
+<pre>private int GetLength();</pre>
+
+<blockquote>
+Get the length of the array.  If the array is single-dimensional,
+this will be the same as calling <code>GetLength(0)</code>.  If
+the array is multi-dimensional, this will be the product of the
+length of all dimensions.
+</blockquote>
+
+<a name="System_Array_GetLength_2">
 <pre>public int GetLength(int dimension);</pre>
 
 <blockquote>
@@ -442,57 +600,49 @@ Get the lower bound of a specific array dimension.
 Get the upper bound of a specific array dimension.
 </blockquote>
 
-<a name="System_Array_InternalGetValue">
-<pre>private Object InternalGetValue(int index1, int index2, int index3);</pre>
-
-<blockquote>
-Get the value at a specific position within the array.  Throws
-<code>IndexOutOfRangeException</code> if any of the indices are
-out of range.
-</blockquote>
-
-<a name="System_Array_InternalGetValueEx">
-<pre>private Object InternalGetValueEx(int[] indices);</pre>
-
-<blockquote>
-Get the value at a specific position within the array.  Throws
-<code>IndexOutOfRangeException</code> if any of the indices are
-out of range.
-</blockquote>
-
-<a name="System_Array_InternalSetValue">
-<pre>private void InternalSetValue(Object value, int index1, int index2, int index3);</pre>
-
-<blockquote>
-Set the value at a specific position within the array.  Throws
-<code>IndexOutOfRangeException</code> if any of the indices are
-out of range.
-</blockquote>
-
-<a name="System_Array_InternalSetValueEx">
-<pre>private void InternalSetValueEx(Object value, int[] indices);</pre>
-
-<blockquote>
-Set the value at a specific position within the array.  Throws
-<code>IndexOutOfRangeException</code> if any of the indices are
-out of range.
-</blockquote>
-
-<a name="System_Array_InternalSetValueEx">
-<pre>private int GetLengthNative();</pre>
-
-<blockquote>
-Get the length of the array.  If the array is single-dimensional,
-this will be the same as calling <code>GetLength(0)</code>.  If
-the array is multi-dimensional, it is the product of the length
-of all dimensions.
-</blockquote>
-
-<a name="System_Array_GetRankNative">
-<pre>private int GetRankNative();</pre>
+<a name="System_Array_GetRank">
+<pre>private int GetRank();</pre>
 
 <blockquote>
 Get the rank of the array.
+</blockquote>
+
+<a name="System_Array_Get">
+<pre>private Object Get(int index1, int index2, int index3);</pre>
+
+<blockquote>
+Get the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.  This method is called for arrays with 1, 2, and 3
+dimensions.  The CLR should ignore extraneous arguments.
+</blockquote>
+
+<a name="System_Array_Get_2">
+<pre>private Object Get(int[] indices);</pre>
+
+<blockquote>
+Get the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.
+</blockquote>
+
+<a name="System_Array_Set">
+<pre>private void Set(Object value, int index1, int index2, int index3);</pre>
+
+<blockquote>
+Set the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.  This method is called for arrays with 1, 2, and 3
+dimensions.  The CLR should ignore extraneous arguments.
+</blockquote>
+
+<a name="System_Array_Set_2">
+<pre>private void Set(Object value, int[] indices);</pre>
+
+<blockquote>
+Set the value at a specific position within the array.  Throws
+<code>IndexOutOfRangeException</code> if any of the indices are
+out of range.
 </blockquote>
 
 <a name="System_Decimal"><h3>System.Decimal</h3>
@@ -634,6 +784,64 @@ Subtract two <code>Decimal</code> values, throwing an exception on overflow.
 Truncate a <code>Decimal</code> value to an integer, towards zero.
 </blockquote>
 
+<a name="System_Delegate"><h3>System.Delegate</h3>
+
+The CLR can assume that the <code>System.Delegate</code> and
+<code>System.MulticastDelegate</code> classes have the
+following field definitions:<p>
+
+<blockquote><pre>public abstract class Delegate
+{
+    internal Object     target;
+    internal MethodInfo method;
+}
+
+public abstract class MulticastDelegate : Delegate
+{
+    private MulticastDelegate prev;
+}</pre></blockquote>
+
+The CLR will use these structures when creating delegates from function
+pointers.  The correct delegate creation algorithm is as follows:
+
+<ul>
+	<li>Create an instance of the required delegate class.</li>
+	<li>Populate the <code>target</code> and <code>method</code>
+		fields with the correct values based on the function pointer
+		data.</li>
+	<li>If the delegate is multicast, then initialize <code>prev</code>
+		to <code>null</code>.</li>
+	<li>Initialize all other fields to zero.</li>
+</ul>
+
+The <code>prev</code> field can be used by the runtime engine to optimise
+the invocation of multicast delegates.  If it is <code>null</code>, then
+the delegate's invocation list consists of a single entry defined
+by <code>target</code> and <code>method</code>.  Otherwise, the
+delegate should be invoked by doing a recursive call on <code>prev</code>,
+and then invoking the main entry defined by <code>target</code>
+and <code>method</code>.<p>
+
+<a name="System_Delegate_CreateBlankDelegate">
+<pre>private static Delegate CreateBlankDelegate(Type type, ClrMethod method);</pre>
+
+<blockquote>
+Creates an object which is an instance of the specified <code>type</code>,
+but does not call the constructor or otherwise initialize the object fields.
+This is used by <code>Delegate.CreateDelegate</code> to construct an
+object that it will fill in with method details later.<p>
+
+The <code>method</code> parameter is used to validate the delegate's
+signature.  If the delegate's <code>Invoke</code> method does not
+have the same signature as <code>method</code>, then
+<code>CreateBlankDelegate</code> should return <code>null</code>.<p>
+
+The <code>method</code> parameter will be <code>null</code> if the
+method is not a runtime engine method.  In this case,
+<code>CreateBlankDelegate</code> should return a new delegate only if
+the delegate type has no signature (i.e., no <code>Invoke</code> method).
+</blockquote>
+
 <a name="System_Double"><h3>System.Double</h3>
 
 <a name="System_Double_IsNaN">
@@ -643,12 +851,85 @@ Truncate a <code>Decimal</code> value to an integer, towards zero.
 Returns <code>true</code> if <code>d</code> is not a number.
 </blockquote>
 
-<a name="System_Double_IsInfinity">
-<pre>public static bool IsInfinity(double d);</pre>
+<a name="System_Double_TestInfinity">
+<pre>private static int TestInfinity(double d);</pre>
 
 <blockquote>
-Returns <code>true</code> if <code>d</code> is positive or negative
-infinity.
+Returns -1 if <code>d</code> is negative infinity, 1 if <code>d</code>
+is positive infinity, and 0 otherwise.
+</blockquote>
+
+<a name="System_Enum"><h3>System.Enum</h3>
+
+<a name="System_Enum_GetEnumValue">
+<pre>private Object GetEnumValue();</pre>
+
+<blockquote>
+Get the value of this enumerated type instance as a boxed object.
+The type of the returned value will be one of <code>System.Byte</code>,
+<code>System.SByte</code>, <code>System.Int16</code>,
+<code>System.UInt16</code>, <code>System.Int32</code>,
+<code>System.UInt32</code>, <code>System.Int64</code>,
+and <code>System.UInt64</code>, depending upon the enumerated type's
+underlying type.
+</blockquote>
+
+<a name="System_Enum_GetEnumName">
+<pre>private static String GetEnumName(Type enumType, Object value);</pre>
+
+<blockquote>
+Get the name of an enumerated constant given a value in the
+underlying type of the specified enumerated type.  Returns <code>null</code>
+if the value does not correspond to an enumerated constant in the type.
+</blockquote>
+
+<a name="System_Enum_IsEnumValue">
+<pre>private static bool IsEnumValue(Type enumType, Object value);</pre>
+
+<blockquote>
+Determine if <code>value</code> is a legitimate value for the specified
+enumerated type.  The value will be a member of the enumerated type's
+underlying type.
+</blockquote>
+
+<a name="System_Enum_GetEnumValueFromName">
+<pre>private static Object GetEnumValueFromName
+               (Type enumType, Object value, bool ignoreCase);</pre>
+
+<blockquote>
+Get an enumerated value by name.  The name may either be a constant name,
+or an integer value.  The return type is either an enumerated value in
+the specified type, or <code>null</code> if the name is invalid.
+</blockquote>
+
+<a name="System_Enum_EnumValueOr">
+<pre>private static Object EnumValueOr(Object value1, Object value2);</pre>
+
+<blockquote>
+Form the OR of two enumerated values to produce a new enumerated value
+of the same type.
+</blockquote>
+
+<a name="System_Enum_EnumIntToObject">
+<pre>private static Object EnumIntToObject(Type enumType, int value);</pre>
+
+<blockquote>
+Convert an integer value into a boxed enumerated value of the specified type.
+</blockquote>
+
+<a name="System_Enum_EnumLongToObject">
+<pre>private static Object EnumLongToObject(Type enumType, int value);</pre>
+
+<blockquote>
+Convert a long integer value into a boxed enumerated value of
+the specified type.
+</blockquote>
+
+<a name="System_Enum_FormatEnumWithFlags">
+<pre>private static String FormatEnumWithFlags(Type enumType, Object value);</pre>
+
+<blockquote>
+Format an enumerated value that may involve flag bits.
 </blockquote>
 
 <a name="System_GC"><h3>System.GC</h3>
@@ -682,6 +963,18 @@ and the CLR may choose to ignore the call.
 
 <blockquote>
 Wait for all pending object finalizers to be run.
+</blockquote>
+
+<a name="System_Guid"><h3>System.Guid</h3>
+
+<a name="System_Guid_NewGuid">
+<pre>public static Guid NewGuid();</pre>
+
+<blockquote>
+Create a new, random, GUID value and return it.  Note: it is recommended
+that this be the output of a secure random number generator, and not be
+based on host-specific or user-specific information.  GUID's based on
+host or user information can be a threat to the user's privacy.
 </blockquote>
 
 <a name="System_Math"><h3>System.Math</h3>
@@ -767,8 +1060,8 @@ Compute the logarithm, in base 10, of a <code>double</code> value.
 Round a <code>double</code> value to the nearest integer.
 </blockquote>
 
-<a name="System_Math_InternalRound">
-<pre>private static double InternalRound(double d, int digits);</pre>
+<a name="System_Math_RoundDouble">
+<pre>private static double RoundDouble(double d, int digits);</pre>
 
 <blockquote>
 Round a <code>double</code> value to a certain number of decimal
@@ -791,7 +1084,8 @@ Compute the square root of a <code>double</code> value.
 <blockquote>
 Get the type associated with the object.  The same value must be
 returned for multiple calls on the same object, and for two objects
-with identical types.
+with identical types.  The returned value will typically be an
+instance of <code>ClrType</code>, which subclasses <code>Type</code>.
 </blockquote>
 
 <a name="System_Object_GetHashCode">
@@ -837,13 +1131,13 @@ data.  The class library does not attempt to interpret this value any
 further, but it will pass it to various <code>internalcall</code> API's
 that deal with method reflection.<p>
 
-<a name="System_RuntimeMethodHandle_InternalGetFunctionPointer">
-<pre>private static IntPtr InternalGetFunctionPointer(IntPtr method);</pre>
+<a name="System_RuntimeMethodHandle_GetFunctionPointer">
+<pre>public IntPtr GetFunctionPointer();</pre>
 
 <blockquote>
 Get the function pointer that corresponds to a method handle.  The
 returned value may be a native function pointer value, or it may simply
-be <code>method</code>.  The behaviour is CLR-specific.
+be the method handle as a pointer.  The behaviour is CLR-specific.
 </blockquote>
 
 <a name="System_RuntimeTypeHandle"><h3>System.RuntimeTypeHandle</h3>
@@ -864,12 +1158,12 @@ that deal with type reflection.<p>
 Returns <code>true</code> if <code>f</code> is not a number.
 </blockquote>
 
-<a name="System_Single_IsInfinity">
-<pre>public static bool IsInfinity(float f);</pre>
+<a name="System_Single_TestInfinity">
+<pre>private static int TestInfinity(float f);</pre>
 
 <blockquote>
-Returns <code>true</code> if <code>f</code> is positive or negative
-infinity.
+Returns -1 if <code>f</code> is negative infinity, 1 if <code>f</code>
+is positive infinity, and 0 otherwise.
 </blockquote>
 
 <a name="System_String"><h3>System.String</h3>
@@ -880,15 +1174,15 @@ the class library is as follows:
 
 <blockquote><pre>class String
 {
-	private int arrayLength;
+	private int capacity;
 	private int length;
 	private char firstChar;
 
 }</pre></blockquote>
 
 The length of the string is <code>length</code>, and the first character
-starts at the address of <code>firstChar</code> in memory.  The
-<code>arrayLength</code> field will typically be equal to or greater
+starts at the address of <code>capacity</code> in memory.  The
+<code>capacity</code> field will typically be equal to or greater
 than <code>length</code>, and indicates how many characters of space
 are available in the string.  This is used by the <code>StringBuilder</code>
 class to insert additional characters into a string while it is being
@@ -953,8 +1247,8 @@ identical to the first <code>lengthA</code> characters of <code>strB</code>,
 then <code>strA</code> is less than <code>strB</code>.
 </blockquote>
 
-<a name="System_String_FastAllocateString">
-<pre>internal static String FastAllocateString(int length);</pre>
+<a name="System_String_NewString">
+<pre>internal static String NewString(int length);</pre>
 
 <blockquote>
 Allocate a string of the specified <code>length</code>, and populate
@@ -964,38 +1258,37 @@ with new characters.  The CLR can assume that the <code>length</code>
 argument is valid.
 </blockquote>
 
-<a name="System_String_FastAllocateBuilder">
-<pre>internal static String FastAllocateBuilder(int capacity);</pre>
+<a name="System_String_NewBuilder">
+<pre>internal static String NewBuilder(int capacity);</pre>
 
 <blockquote>
-Allocate a string object with <code>arrayLength</code> initialized
+Allocate a string object with its capacity initialized
 to <code>capacity</code>, and its <code>length</code> initialized
 to zero.  This is used by the <code>StringBuilder</code> class
 to assist in the process of building strings.
 </blockquote>
 
-<a name="System_String_FillString">
-<pre>internal static void FillString(String dest, int destPos, String src);</pre>
+<a name="System_String_Copy">
+<pre>internal static void Copy(String dest, int destPos, String src);</pre>
 
 <blockquote>
-Fill the contents of <code>dest</code>, starting at <code>destPos</code>,
-with the entire contents of the string <code>src</code>.  The CLR can
-assume that all arguments are valid.<p>
+Copy the entire contents of <code>src</code> to <code>dest</code>,
+starting at <code>destPos</code>.  The CLR can assume that all
+arguments are valid.<p>
 
 It is possible for <code>destPos</code> to be greater than or equal to
 the length of <code>dest</code> if the string object is being constructed
 by a <code>StringBuilder</code>.  The CLR should not range-check this value.
 </blockquote>
 
-<a name="System_String_FillSubstring">
-<pre>internal static void FillSubstring(String dest, int destPos,
-                                   String src, int srcPos, int length);</pre>
+<a name="System_String_Copy_2">
+<pre>internal static void Copy(String dest, int destPos,
+                          String src, int srcPos, int length);</pre>
 
 <blockquote>
-Fill the contents of <code>dest</code>, starting at <code>destPost</code>,
-with <code>length</code> characters from the contents of the string
-<code>src</code>, starting at <code>srcPos</code>.  The CLR can assume
-that all arguments are valid.<p>
+Copy <code>length</code> characters from the contents of the string
+<code>src</code>, starting at <code>srcPos</code>, to the contents of
+<code>dest</code> The CLR can assume that all arguments are valid.<p>
 
 It is possible for <code>destPos</code> to be greater than or equal to
 the length of <code>dest</code> if the string object is being constructed
@@ -1021,13 +1314,13 @@ Concatenate two (or three) strings together.  These are specified as
 an efficient mechanism to concatenate strings.
 </blockquote>
 
-<a name="System_String_InternalCopyTo">
-<pre>private void InternalCopyTo(int sourceIndex, char[] dest,
-                            int destIndex, int count);</pre>
+<a name="System_String_CopyToChecked">
+<pre>private void CopyToChecked(int sourceIndex, char[] dest,
+                           int destIndex, int count);</pre>
 
 <blockquote>
 Copy the contents of a string into a destination array.  The CLR can
-assume that the arguments are valid.
+assume that the arguments have already been checked for validity.
 </blockquote>
 
 <a name="System_String_Equals">
@@ -1103,12 +1396,20 @@ Determine if <code>str</code> is intern'ed.  If it is, then return
 <code>str</code>.  Otherwise return <code>null</code>.
 </blockquote>
 
-<a name="System_String_FillChar">
-<pre>private static void FillChar(String str, int start, int count, char ch);</pre>
+<a name="System_String_CharFill">
+<pre>private static void CharFill(String str, int start, int count, char ch);</pre>
 
 <blockquote>
 Fill a sub-range within a string with a specified character.  The CLR
 can assume that the arguments are valid.
+</blockquote>
+
+<a name="System_String_CharFill_2">
+<pre>private static void CharFill(String str, int start, char[] chars,
+                             int count, char ch);</pre>
+
+<blockquote>
+Fill a sub-range within a string with a range of characters from an array.
 </blockquote>
 
 <a name="System_String_Replace">
@@ -1128,18 +1429,19 @@ Replace all occurrences of <code>oldValue</code> in the string with
 replacements.
 </blockquote>
 
-<a name="System_String_TrimHelper">
-<pre>private String TrimHelper(char[] trimChars, int trimType);</pre>
+<a name="System_String_Trim">
+<pre>private String Trim(char[] trimChars, int trimFlags);</pre>
 
 <blockquote>
 Trim any characters that are contained in the specified array from
-the string.  The <code>trimType</code> argument specifies where the
-characters should be trimmed from: 0 for the front of the string,
-1 for the end of the string, and 2 for both.
+the string.  The <code>trimFlags</code> argument specifies where the
+characters should be trimmed from: the bit <code>TrimFlag_Front</code> (1)
+indicates the front, and the bit <code>TrimFlag_End</code> (2)
+indicates the end.  Setting both bits will trim both ends of the string.
 </blockquote>
 
-<a name="System_String_InternalGetChar">
-<pre>private char InternalGetChar(int posn);</pre>
+<a name="System_String_GetChar">
+<pre>private char GetChar(int posn);</pre>
 
 <blockquote>
 Gets the character at <code>posn</code> within the string.  Throws
@@ -1147,7 +1449,212 @@ an <code>IndexOutOfRangeException</code> if <code>posn</code> is
 invalid.
 </blockquote>
 
-<a name="Reflection"><h3>System.Reflection</h3>
+<a name="System_String_SetChar">
+<pre>private void SetChar(int posn, char ch);</pre>
+
+<blockquote>
+Sets the character at <code>posn</code> within the string to <code>ch</code>.
+Throws an <code>IndexOutOfRangeException</code> if <code>posn</code> is
+invalid.
+</blockquote>
+
+<a name="System_Type"><h3>System.Type</h3>
+
+<a name="System_Type_GetType">
+<pre>public static Type GetType(String name, bool throwOnError, bool ignoreCase);</pre>
+
+<blockquote>
+Get a type by name from the executing image.  If <code>throwOnError</code>
+is <code>true</code>, then throw a <code>TypeLoadException</code> if the
+type cannot be found.  Otherwise return <code>null</code>.  If
+<code>ignoreCase</code> is true, then ignore case when comparing names.<p>
+
+Note: the Microsoft .NET Framework ignores the <code>ignoreCase</code> value
+if the name is 128 or more characters in length, and performs a
+case-sensitive search regardless.
+</blockquote>
+
+<a name="System_Type_GetTypeHandle">
+<pre>public static RuntimeTypeHandle GetTypeHandle(Object obj);</pre>
+
+
+<blockquote>
+Get the type handle associated with the type of the specified object.
+</blockquote>
+
+<a name="System_Type_GetTypeFromHandle">
+<pre>public static Type GetTypeFromHandle(RuntimeTypeHandle handle);</pre>
+
+<blockquote>
+Get the type that corresponds to the specified <code>handle</code>.
+The returned value will typically be an instance of <code>ClrType</code>,
+which subclasses <code>Type</code>.  The CLR is required to return the
+same object for multiple calls to this method with the same handle.
+</blockquote>
+
+<a name="System_TypedReference"><h3>System.TypedReference</h3>
+
+<a name="System_TypedReference_ClrMakeTypedReference">
+<pre>private static TypedReference ClrMakeTypedReference(Object target, FieldInfo[] flds);</pre>
+
+<blockquote>
+Make a typed reference from a target and a set of fields.  The fields are
+guaranteed to be non-null and members of the <code>ClrField</code> class.
+This method may throw an exception if the fields are not valid for the object.
+</blockquote>
+
+<a name="System_TypedReference_SetTypedReference">
+<pre>public static void SetTypedReference(TypedReference target, Object value);</pre>
+
+<blockquote>
+Set the value within a typed reference.
+</blockquote>
+
+<a name="System_TypedReference_ToObject">
+<pre>public static Object ToObject(TypedReference value);</pre>
+
+<blockquote>
+Convert a typed reference into an object.
+</blockquote>
+
+<a name="System_Diagnostics"><h2>System.Diagnostics</h2>
+
+<a name="System_Diagnostics_Debugger"><h3>System.Diagnostics.Debugger</h3>
+
+<a name="System_Diagnostics_Debugger_InternalIsAttached">
+<pre>private static bool InternalIsAttached();</pre>
+
+<blockquote>
+Determine if a debugger is currently attached to the executing process.
+If the CLR does not support debugging, this will always return
+<code>false</code>.
+</blockquote>
+
+<a name="System_Diagnostics_Debugger_Break">
+<pre>public static void Break();</pre>
+
+<blockquote>
+Cause an explicit breakpoint to occur within the attached debugger.
+If the CLR does not support debugging, or there is no debugger attached,
+calls to this method are ignored.
+</blockquote>
+
+<a name="System_Diagnostics_Debugger_IsLogging">
+<pre>public static bool IsLogging();</pre>
+
+<blockquote>
+Determine if the attached debugger is currently logging messages.
+If the CLR does not support debugging, or log message during debugging,
+this method will always return <code>false</code>.
+</blockquote>
+
+<a name="System_Diagnostics_Debugger_InternalLaunch">
+<pre>private static bool InternalLaunch();</pre>
+
+<blockquote>
+Launch the debugger and attach it to this process if it is not already
+attached.  If the CLR does not support debugging, or attaching a debugger
+to a running process, then this method will always return <code>false</code>.
+If the debugger is already attached, this method will simply return
+<code>true</code>.
+</blockquote>
+
+<a name="System_Diagnostics_Debugger_Log">
+<pre>public static void Log(int level, String category, String message);</pre>
+
+<blockquote>
+Log a message with the debugger's logging facility.  If the CLR does
+not support debug logging, or it is currently disabled, then calls
+to this method will be ignored.
+</blockquote>
+
+<a name="System_Diagnostics_StackFrame"><h3>System.Diagnostics.StackFrame</h3>
+
+<a name="System_Diagnostics_StackFrame_InternalGetTotalFrames">
+<pre>private static int InternalGetTotalFrames();</pre>
+
+<blockquote>
+Get the total number of stack frames that are on the stack in the
+current thread, excluding the frame that was set up to call
+<code>InternalGetTotalFrames</code>.
+</blockquote>
+
+<a name="System_Diagnostics_StackFrame_InternalGetMethod">
+<pre>private static RuntimeMethodHandle InternalGetMethod(int skipFrames);</pre>
+
+<blockquote>
+Get the method handle from a stack frame that is <code>skipFrames</code>
+items up the stack.  The value 0 indicates the method that called
+<code>InternalGetMethod</code>.
+</blockquote>
+
+<a name="System_Diagnostics_StackFrame_InternalGetILOffset">
+<pre>private static int InternalGetILOffset(int skipFrames);</pre>
+
+<blockquote>
+Get the offset within the Intermediate Language (IL) bytecode of
+the current execution position within the method that is
+<code>skipFrames</code> items up the stack.  If the offset cannot
+be determined, this method should return -1.
+</blockquote>
+
+<a name="System_Diagnostics_StackFrame_InternalGetNativeOffset">
+<pre>private static int InternalGetNativeOffset(int skipFrames);</pre>
+
+<blockquote>
+Get the offset within the native code of the current execution position 
+within the method that is <code>skipFrames</code> items up the stack.
+If the offset cannot be determined, this method should return -1.
+</blockquote>
+
+<a name="System_Diagnostics_StackFrame_InternalGetDebugInfo">
+<pre>private static String InternalGetDebugInfo(RuntimeMethodHandle method, int offset,
+                                           out int line, out int column);</pre>
+
+<blockquote>
+Get debug line number information about a specific IL offset within
+the specified method.  The line number is returned in <code>line</code>
+(0 if the line number cannot be determined).  The column number is returned
+in <code>column</code> (0 if the column number cannot be determined).
+The filename is returned from the method (<code>null</code> if the filename
+cannot be determined).
+</blockquote>
+
+<a name="System_Diagnostics_StackFrame_GetExceptionStackTrace">
+<pre>private static PackedStackFrame[] GetExceptionStackTrace();</pre>
+
+<blockquote>
+Get the stack trace for the current position in the program in response
+to an exception object being created.  The CLR must skip over any method
+frames that correspond to exception constructor calls, and then begin
+collecting information.  The data is returned in an array of
+<code>PackedStackFrame</code> structures.  The first element in this
+array corresponds to the stack frame that threw the exception.
+The <code>PackedStackFrame</code> structure has the following definition:
+
+<blockquote><pre>internal struct PackedStackFrame
+{
+    public RuntimeMethodHandle  method;
+    public int                  offset;
+    public int                  nativeOffset;
+}</pre></blockquote>
+
+This information can usually be collected very quickly, without having
+to consult the reflection system to resolve method objects.  The exception
+object caches this information until it is needed.<p>
+
+Exception constructor calls can be recognised on the stack by looking
+for methods called "<code>.ctor</code>" in a class that inherits from
+<code>System.Exception</code>.  Because exception constructors normally
+do not throw exceptions, this should be sufficient in most cases.<p>
+
+If an exception constructor did throw an exception, it will appear to
+have come from the method that threw the original exception.  The impact
+of this is not serious, because stack frames are typically only used for
+debug string output.
+</blockquote>
+
+<a name="Reflection"><h2>System.Reflection</h2>
 
 The following sections describe the internalcall methods that must be
 supplied by the runtime engine to implement reflection.  In many cases,
@@ -1165,17 +1672,37 @@ it needs to instantiate have the following representation:<p>
 
 That is, the objects contain a single pointer field.  The runtime engine
 is responsible for filling in this field with an appropriate value that
-can be subsequently used to perform other reflection operations.<p>
-
-The engine must return the same object for multiple requests for the same
-program construct.  Therefore, it must implement a cache that maps objects
-to and from the underlying pointer values.<p>
+can be used to perform other reflection operations.  The engine must return
+the same object for multiple requests for the same program construct.<p>
 
 The engine is also responsible for checking the permissions of the caller
 against the access levels of the program constructs.  For example, an
 application cannot access a <code>private</code> member unless it is
 in the application's assembly or the application has
 <code>ReflectionPermission</code>.<p>
+
+Permission checking proceeds as follows:
+
+<ul>
+	<li>The runtime engine searches up the call stack for a method
+		that does not appear within the library assembly.  This is
+		the "accessing method".</li>
+	<li>If the accessing method does not have permission to access
+		the reflected object, and the method does not have
+		<code>ReflectionPermission</code>, then access is denied.</li>
+	<li>If all of the methods on the call stack are within the
+		system library assembly, then access is allowed.</li>
+</ul>
+
+Sometimes it is necessary for the system library to get private
+access to the internals of an object even if the caller does not
+have the necessary permissions.  The <code>ValueType</code> class
+is one such example.<p>
+
+The convention that we have adopted is that a method that needs
+private access will have the <code>ClrReflection</code> attribute.
+This attribute can only be used on methods within the system library
+assembly.  It will be ignored on methods in other assemblies.<p>
 
 <a name="Reflection_Assembly"><h3>System.Reflection.Assembly</h3>
 
@@ -1297,7 +1824,8 @@ be the same as the <code>privateData</code> member within the
 
 <blockquote>
 Get the value of a field within a specified object.  The object will
-be <code>null</code> for a static field.
+be <code>null</code> for a static field.  If the field has an associated
+literal, then this will return the value of the literal.
 </blockquote>
 
 <a name="Reflection_ClrField_SetValue">
@@ -1351,7 +1879,7 @@ is <code>true</code>, then inspect ancestor classes in the inheritance
 hierarchy for additional attributes.
 </blockquote>
 
-<a name="Reflection_ClrHelpers_GetCustomAttributes">
+<a name="Reflection_ClrHelpers_IsDefined">
 <pre>public static bool IsDefined(IntPtr item, IntPtr type, bool inherit);</pre>
 
 <blockquote>
@@ -1366,15 +1894,6 @@ Get the <code>privateData</code> value for the type in which the
 specified item member is declared.  The return value will be turned
 into a <code>RuntimeTypeHandle</code> value, and then into a
 <code>Type</code>.
-</blockquote>
-
-<a name="Reflection_ClrHelpers_GetReflectedType">
-<pre>public static IntPtr GetReflectedType(IntPtr item);</pre>
-
-<blockquote>
-Returns the same value as <code>GetDeclaringType</code> at the moment.
-TBD: determine what the difference between the two is and then document
-the behaviour.
 </blockquote>
 
 <a name="Reflection_ClrHelpers_GetName">
@@ -1457,6 +1976,17 @@ accessible to the caller due to permissions issues.
 Determine if the event or property <code>item</code> has the specified
 method semantics <code>type</code>.  If <code>nonPublic</code> is
 <code>false</code>, then only return public semantics methods.
+</blockquote>
+
+<a name="Reflection_ClrHelpers_CanAccess">
+<pre>public static bool CanAccess(IntPtr item);</pre>
+
+<blockquote>
+Determine if the caller has sufficient permissions to access the
+specified program item (type, field, constructor, method, event,
+or property).  This is used by the library to check an item that
+was obtained previously and cached, but which may not be accessible
+in the context in which it is now used.
 </blockquote>
 
 <a name="Reflection_ClrMethod"><h3>System.Reflection.ClrMethod</h3>
@@ -1764,7 +2294,544 @@ Get the assembly that this module resides in.
 Get the full name of the module.
 </blockquote>
 
-<h2>Internalcall methods in the Platform namespace</h2>
+<a name="System_Runtime"><h2>System.Runtime</h2>
+
+<a name="CompilerServices_RuntimeHelpers"><h3>System.Runtime.CompilerServices.RuntimeHelpers</h3>
+
+<a name="CompilerServices_RuntimeHelpers_InitializeArray">
+<pre>public static void InitializeArray(Array array, RuntimeFieldHandle field);</pre>
+
+<blockquote>
+Initialize the contents of a primitive array from the contents of an
+RVA-based field.
+</blockquote>
+
+<a name="CompilerServices_RuntimeHelpers_RunClassConstructor">
+<pre>public static void RunClassConstructor(RuntimeTypeHandle type);</pre>
+
+<blockquote>
+Run the static class constructor for a specified type.  The CLR may provide
+a facility to mark a class constructor once it has been executed so that
+subsequent calls to this method will do nothing.
+</blockquote>
+
+<a name="CompilerServices_RuntimeHelpers_InternalOffsetToStringData">
+<pre>public static int InternalOffsetToStringData();</pre>
+
+<blockquote>
+Returns the offset from the start of an object of the
+<code>String.firstChar</code> field on the current platform.  This is
+provided as an internalcall method because different systems may
+layout the <code>System.String</code> class differently.
+</blockquote>
+
+<a name="CompilerServices_RuntimeHelpers_GetObjectValue">
+<pre>public static Object GetObjectValue(Object value);</pre>
+
+<blockquote>
+Box the specified <code>value</code> and return it as an object.
+If the object is already boxed, return <code>value</code>.<p>
+
+Note: in the current system, it is impossible to construct an object
+that isn't already boxed, so it is unclear what this is supposed to
+achieve other than always returning <code>value</code>.  It is provided
+for compatibility with the Microsoft .NET Framework.
+</blockquote>
+
+<a name="InteropServices_GCHandle"><h3>System.Runtime.InteropServices.GCHandle</h3>
+
+<a name="InteropServices_GCHandle_GCAddrOfPinnedObject">
+<pre>private static IntPtr GCAddrOfPinnedObject(int handle);</pre>
+
+<blockquote>
+Get the physical address that is associated with a pinned GC object handle.
+</blockquote>
+
+<a name="InteropServices_GCHandle_GCAlloc">
+<pre>private static int GCAlloc(Object value, GCHandleType type);</pre>
+
+<blockquote>
+Allocate a new GC object handle for the specified value and type.
+</blockquote>
+
+<a name="InteropServices_GCHandle_GCAlloc">
+<pre>private static void GCFree(int handle);</pre>
+
+<blockquote>
+Free a GC object handle that is no longer required.
+</blockquote>
+
+<a name="InteropServices_GCHandle_GCValidate">
+<pre>private static bool GCValidate(int handle);</pre>
+
+<blockquote>
+Validate a GC object handle.  Returns <code>false</code> if the handle
+has been free'd or it was never allocated as a GC object.
+</blockquote>
+
+<a name="InteropServices_GCHandle_GCGetTarget">
+<pre>private static Object GCGetTarget(int handle);</pre>
+
+<blockquote>
+Get the target object that is associated with a GC object handle.
+</blockquote>
+
+<a name="InteropServices_GCHandle_GCSetTarget">
+<pre>private static void GCGetTarget(int handle, Object value, bool isPinned);</pre>
+
+<blockquote>
+Set the target that is associated with a GC object handle and
+optionally pin it.
+</blockquote>
+
+<a name="System_Text"><h2>System.Text</h2>
+
+<a name="System_Text_DefaultEncoding"><h3>System.Text.DefaultEncoding</h3>
+
+The <code>System.Text.DefaultEncoding</code> class implements the default
+character set encoding on the underlying platform.  The CLR is responsible
+for converting between the default encoding and Unicode by providing
+the facilities in this class.  The CLR can assume that the arguments to
+the following methods have been fully validated.<p>
+
+<a name="System_Text_DefaultEncoding_InternalGetByteCount">
+<pre>private static int InternalGetByteCount(char[] chars, int index, int count);</pre>
+
+<blockquote>
+Get the number of bytes in the default encoding that are required to encode
+the characters in the specified range of the <code>chars</code> array.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetByteCount">
+<pre>private static int InternalGetByteCount(String s, int index, int count);</pre>
+
+<blockquote>
+Get the number of bytes in the default encoding that are required to encode
+the characters in the specified range of the <code>s</code> string.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetBytes">
+<pre>private static int InternalGetBytes(char[] chars, int charIndex, int charCount,
+                                    byte[] bytes, int byteIndex);</pre>
+
+<blockquote>
+Get the bytes in the default encoding that correspond to the characters
+in the specified range of the <code>chars</code> array.  The bytes
+are written to the array <code>bytes</code>, starting at
+<code>byteIndex</code>.  The number of bytes written is returned
+from the method.  If insufficient space is available in the <code>bytes</code>
+array for the bytes, then this method should return -1.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetBytes_2">
+<pre>private static int InternalGetBytes(String s, int charIndex, int charCount,
+                                    byte[] bytes, int byteIndex);</pre>
+
+<blockquote>
+Get the bytes in the default encoding that correspond to the characters
+in the specified range of the <code>s</code> string.  The bytes
+are written to the array <code>bytes</code>, starting at
+<code>byteIndex</code>.  The number of bytes written is returned
+from the method.  If insufficient space is available in the <code>bytes</code>
+array for the bytes, then this method should return -1.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetCharCount">
+<pre>private static int InternalGetCharCount(byte[] bytes, int index, int count);</pre>
+
+<blockquote>
+Get the number of characters that are required to decode the specified
+range of bytes from the <code>bytes</code> array.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetChars">
+<pre>private static int InternalGetChars(byte[] bytes, int byteIndex, int byteCount,
+                                    char[] chars, int charIndex);</pre>
+
+<blockquote>
+Convert the characters in the default encoding into Unicode characters
+from the specified range of the <code>bytes</code> array.  The characters
+are written to the array <code>chars</code>, starting at
+<code>charIndex</code>.  The number of characters written is returned
+from the method.  If insufficient space is available in the <code>chars</code>
+array for the characters, then this method should return -1.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetMaxByteCount">
+<pre>private static int InternalGetMaxByteCount(int charCount);</pre>
+
+<blockquote>
+Get the maximum number of bytes of buffer space that may be required
+to convert <code>charCount</code> characters into the default encoding.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetMaxCharCount">
+<pre>private static int InternalGetMaxCharCount(int byteCount);</pre>
+
+<blockquote>
+Get the maximum number of characters of buffer space that may be required
+to convert <code>byteCount</code> bytes from the default encoding.
+</blockquote>
+
+<a name="System_Text_DefaultEncoding_InternalGetString">
+<pre>private static String InternalGetString(byte[] bytes, int index, int count);</pre>
+
+<blockquote>
+Convert the specified range of bytes within the <code>bytes</code> array
+into a string.
+</blockquote>
+
+<a name="System_Threading"><h2>System.Threading</h2>
+
+<a name="Threading_Interlocked"><h3>System.Threading.Interlocked</h3>
+
+The <code>System.Threading.Interlocked</code> class provides a number
+of methods for performing atomic operations in a multi-threaded environment.
+The CLR must perform these operations in an atomic manner.
+
+<a name="Threading_Interlocked_CompareExchange">
+<pre>public static int CompareExchange(ref int location1, int value, int comparand);
+public static float CompareExchange(ref float location1, float value, float comparand);
+public static Object CompareExchange(ref Object location1, Object value, Object comparand);</pre>
+
+<blockquote>
+Compare the contents of <code>location1</code> with <code>comparand</code>.
+If they are the same, then write <code>value</code> to that location and
+return the original value of <code>location1</code> from the method.
+Otherwise return the value of <code>location1</code>.
+</blockquote>
+
+<a name="Threading_Interlocked_Decrement">
+<pre>public static int Decrement(ref int location);
+public static long Decrement(ref long location);</pre>
+
+<blockquote>
+Decrement the contents of <code>location</code> and return its new value.
+</blockquote>
+
+<a name="Threading_Interlocked_Exchange">
+<pre>public static int Exchange(ref int location1, int value);
+public static float Exchange(ref float location1, float value);
+public static Object Exchange(ref Object location1, Object value);</pre>
+
+<blockquote>
+Exchange the contents of <code>location1</code> with <code>value</code>
+and return the original value of <code>location1</code>.
+</blockquote>
+
+<a name="Threading_Interlocked_Increment">
+<pre>public static int Increment(ref int location);
+public static long Increment(ref long location);</pre>
+
+<blockquote>
+Increment the contents of <code>location</code> and return its new value.
+</blockquote>
+
+<a name="Threading_Monitor"><h3>System.Threading.Monitor</h3>
+
+<a name="Threading_Monitor_Enter">
+<pre>public static void Enter(Object obj);</pre>
+
+<blockquote>
+Enter a monitor on an object.  If the system is single-threaded,
+this does nothing because there are no other threads to block
+the operation.
+</blockquote>
+
+<a name="Threading_Monitor_InternalTryEnter">
+<pre>public static bool InternalTryEnter(Object obj, int timeout);</pre>
+
+<blockquote>
+Try to enter a monitor, with a specified timeout in milliseconds.
+A timeout value of -1 means "wait indefinitely", and a value of 0
+means "test and return immediately".  Returns <code>true</code>
+if the monitor was successfully entered.  If the system is
+single-threaded, this always returns <code>true</code> because
+there are no other threads to block the operation.
+</blockquote>
+
+<a name="Threading_Monitor_Exit">
+<pre>public static void Exit(Object obj);</pre>
+
+<blockquote>
+Exit from a monitor on an object.  If the system is single-threaded,
+this does nothing.
+</blockquote>
+
+<a name="Threading_Monitor_InternalWait">
+<pre>public static bool InternalWait(Object obj, int timeout);</pre>
+
+<blockquote>
+Release the monitor lock on an object and wait for a pulse to
+reawaken the current thread.  A timeout value of -1 means
+"wait indefinitely", and a value of 0 means "test and return
+immediately".  Returns <code>false</code> if the timeout expired.
+The timeout is in milliseconds.<p>
+
+If the system is single-threaded, this method will always return
+<code>false</code>.  Using <code>Wait</code>, <code>Pulse</code>,
+and <code>PulseAll</code> in a single-threaded environment is
+not recommended.
+</blockquote>
+
+<a name="Threading_Monitor_Pulse">
+<pre>public static void Pulse(Object obj);</pre>
+
+<blockquote>
+Notify the next waiting thread on a monitor that it can wake up and
+reacquire the monitor lock.  If the system is single-threaded, then
+this method does nothing.
+</blockquote>
+
+<a name="Threading_Monitor_PulseAll">
+<pre>public static void PulseAll(Object obj);</pre>
+
+<blockquote>
+Notify all waiting threads on a monitor that they can wake up and
+reacquire the monitor lock.  If the system is single-threaded, then
+this method does nothing.
+</blockquote>
+
+<a name="Threading_Mutex"><h3>System.Threading.Mutex</h3>
+
+<a name="Threading_Mutex_InternalCreateMutex">
+<pre>private static IntPtr InternalCreateMutex(bool initiallyOwned, String name, out bool gotOwnership);</pre>
+
+<blockquote>
+Create a CLR mutex object and return a handle for it.
+If <code>initiallyOwned</code> is <code>true</code>, then
+acquire the ownership of the mutex for the current thread.
+If <code>name</code> is not <code>null</code>, then the
+mutex is attached to the specified name.  The <code>gotOwnership</code>
+parameter will be set to <code>true</code> if ownership of the
+mutex could be initially acquired.  The returned value must be
+usable as a <code>WaitHandle</code>.
+</blockquote>
+
+<a name="Threading_Mutex_InternalReleaseMutex">
+<pre>private static void InternalReleaseMutex(IntPtr mutex);</pre>
+
+<blockquote>
+Release a mutex that was previously acquired with a <code>Wait</code>
+operation.
+</blockquote>
+
+<a name="Threading_Thread"><h3>System.Threading.Thread</h3>
+
+The CLR can assume that the <code>Thread</code> class starts with the
+following fields:
+
+<blockquote><pre>public sealed class Thread
+{
+    private IntPtr privateData;
+    private Object stateInfo;
+    private ThreadStart start;
+    private String name;
+}</pre></blockquote>
+
+There may be other fields besides these, but these will always be present
+at the start of the object in the specified order.<p>
+
+<a name="Threading_Thread_FinalizeThread">
+<pre>private void FinalizeThread();</pre>
+
+<blockquote>
+This method is called when the <code>Thread</code> object is collected
+by the garbage collector.  If the thread is still active, it should
+be shut down.
+</blockquote>
+
+<a name="Threading_Thread_Abort">
+<pre>public void Abort();</pre>
+
+<blockquote>
+Abort this thread.
+</blockquote>
+
+<a name="Threading_Thread_InternalJoin">
+<pre>public void InternalJoin(int timeout);</pre>
+
+<blockquote>
+Attempt to join the executing thread with the thread represented
+by this thread object.  A timeout value of -1 indicates "wait
+indefinitely" and a timeout value of 0 indicates "test and return
+immediately".  The timeout value is in milliseconds.
+</blockquote>
+
+<a name="Threading_Thread_MemoryBarrier">
+<pre>public static void MemoryBarrier();</pre>
+
+<blockquote>
+Insert a memory barrier at this point in thread execution, to ensure
+that all pending memory loads and stores will be flushed.
+</blockquote>
+
+<a name="Threading_Thread_ResetAbort">
+<pre>public static void ResetAbort();</pre>
+
+<blockquote>
+Reset the pending abort on the current thread.
+</blockquote>
+
+<a name="Threading_Thread_InternalSleep">
+<pre>public static void InternalSleep(int timeout);</pre>
+
+<blockquote>
+Put the current thread to sleep for a certain period of time.
+A timeout value of -1 indicates that the thread should be put
+to sleep forever (or at least until it is aborted).  A timeout
+value of 0 indicates that control should return the thread
+immediately, perhaps after yielding a timeslice.
+</blockquote>
+
+<a name="Threading_Thread_Start">
+<pre>public void Start();</pre>
+
+<blockquote>
+Start execution of the thread represented by <code>this</code>.
+</blockquote>
+
+<a name="Threading_Thread_VolatileRead">
+<pre>public static byte VolatileRead(ref byte address);
+public static sbyte VolatileRead(ref sbyte address);
+public static short VolatileRead(ref short address);
+public static ushort VolatileRead(ref ushort address);
+public static int VolatileRead(ref int address);
+public static uint VolatileRead(ref uint address);
+public static long VolatileRead(ref long address);
+public static ulong VolatileRead(ref ulong address);
+public static IntPtr VolatileRead(ref IntPtr address);
+public static UIntPtr VolatileRead(ref UIntPtr address);
+public static float VolatileRead(ref float address);
+public static double VolatileRead(ref double address);
+public static Object VolatileRead(ref Object address);</pre>
+
+<blockquote>
+Read a value from a specific address in such a way that the value
+will be treated as volatile.  This method will ensure that the
+operation is performed atomically with respect to volatile writes
+to the same address.
+</blockquote>
+
+<a name="Threading_Thread_VolatileWrite">
+<pre>public static void VolatileWrite(ref byte address, byte value);
+public static void VolatileWrite(ref sbyte address, sbyte value);
+public static void VolatileWrite(ref short address, short value);
+public static void VolatileWrite(ref ushort address, ushort value);
+public static void VolatileWrite(ref int address, int value);
+public static void VolatileWrite(ref uint address, uint value);
+public static void VolatileWrite(ref long address, long value);
+public static void VolatileWrite(ref ulong address, ulong value);
+public static void VolatileWrite(ref IntPtr address, IntPtr value);
+public static void VolatileWrite(ref UIntPtr address, UIntPtr value);
+public static void VolatileWrite(ref float address, float value);
+public static void VolatileWrite(ref double address, double value);
+public static void VolatileWrite(ref Object address, Object value);</pre>
+
+<blockquote>
+Read a value to a specific address in such a way that the value
+will be treated as volatile.  This method will ensure that the
+operation is performed atomically with respect to volatile reads
+from the same address.
+</blockquote>
+
+<a name="Threading_Thread_InternalCurrentThread">
+<pre>private static Thread InternalCurrentThread();</pre>
+
+<blockquote>
+Get the object that represents the currently executing thread.
+</blockquote>
+
+<a name="Threading_Thread_InternalSetBackground">
+<pre>private void InternalSetBackground(bool value);</pre>
+
+<blockquote>
+Set the background state of the thread.  The program will exit when
+all non-background threads have terminated.  Setting a thread to
+background prevents it from keeping the program alive when the
+"main" thread exits.
+</blockquote>
+
+<a name="Threading_Thread_InternalGetPriority">
+<pre>private ThreadPriority InternalGetPriority();</pre>
+
+<blockquote>
+Get the priority of the thread.
+</blockquote>
+
+<a name="Threading_Thread_InternalSetPriority">
+<pre>private void InternalSetPriority(ThreadPriority value);</pre>
+
+<blockquote>
+Set the priority of the thread to <code>value</code>.
+</blockquote>
+
+<a name="Threading_Thread_InternalGetState">
+<pre>private ThreadState InternalGetState();</pre>
+
+<blockquote>
+Get the current state of the thread.  i.e. Running, Stopped, Waiting,
+Background, etc.
+</blockquote>
+
+<a name="Threading_WaitHandle"><h3>System.Threading.WaitHandle</h3>
+
+The <code>WaitHandle</code> class is the base for a number of different
+"waiting objects" within the library, including <code>Mutex</code>.
+The CLR can assume that the field definition of this class is as follows:
+
+<blockquote><pre>public abstract class WaitHandle
+{
+    private IntPtr privateData;
+}</pre></blockquote>
+
+The <code>privateData</code> field holds a pointer to a CLR-specific
+handle that represents the wait object.<p>
+
+<a name="Threading_WaitHandle_InternalClose">
+<pre>private static void InternalClose(IntPtr privateData);</pre>
+
+<blockquote>
+Close a CLR wait object.
+</blockquote>
+
+<a name="Threading_WaitHandle_InternalWaitAll">
+<pre>private static bool InternalWaitAll(WaitHandle[] waitHandles, int timeout,
+                                    bool exitContext);</pre>
+
+<blockquote>
+Wait until all handles in an array become active.  The CLR can assume
+that the parameters have been validated.  A timeout value of -1 indicates
+"wait indefinitely" and a timeout value of 0 indicates "test and return
+immediately".  Returns <code>true</code> if any of the handles have
+become active, or <code>false</code> if a timeout occurred.  The timeout
+is in milliseconds.
+</blockquote>
+
+<a name="Threading_WaitHandle_InternalWaitAny">
+<pre>private static int InternalWaitAny(WaitHandle[] waitHandles, int timeout,
+                                   bool exitContext);</pre>
+
+<blockquote>
+Wait until any handle in an array become active.  The CLR can assume
+that the parameters have been validated.  A timeout value of -1 indicates
+"wait indefinitely" and a timeout value of 0 indicates "test and return
+immediately".  Returns the index of the handle that became active,
+or -1 if a timeout occurred.  The timeout is in milliseconds.
+</blockquote>
+
+<a name="Threading_WaitHandle_InternalWaitOne">
+<pre>private static bool InternalWaitOne(IntPtr privateData, int timeout);</pre>
+
+<blockquote>
+Wait until a particular handle becomes active.  A timeout value of -1
+indicates "wait indefinitely" and a timeout value of 0 indicates
+"test and return immediately".  Returns <code>true</code> if the handle
+became active, or <code>false</code> if a timeout occurred.  The timeout
+is in milliseconds.
+</blockquote>
+
+<a name="Platform"><h2>Platform</h2>
 
 <a name="Platform_DirMethods"><h3>Platform.DirMethods</h3>
 
@@ -1831,15 +2898,148 @@ This is highly Windows-specific.  If the platform does not have
 such a directory, this method should return <code>null</code>.
 </blockquote>
 
-<a name="Platform_PtrSizes"><h3>Platform.PtrSizes</h3>
+<a name="Platform_FileMethods"><h3>Platform.FileMethods</h3>
 
-<a name="Platform_PtrSizes_GetPtrSize">
-<pre>public static int GetPtrSize();</pre>
+The <code>FileMethods</code> class provides a number of primitive methods
+for accessing raw binary file streams within the underlying operating
+system's filespace.<p>
+
+<a name="Platform_FileMethods_GetInvalidHandle">
+<pre>public static IntPtr GetInvalidHandle();</pre>
 
 <blockquote>
-Get the size in bytes of a pointer on the runtime platform.
-This will typically return either 4 or 8.
+Get a value that represents an invalid operating system file handle.
+Usually this is some sentinel value such as 0 or -1, coerced to
+<code>IntPtr</code>.  It can be any value, as long as it is not
+possible to encounter a legitimate file handle with this value.
 </blockquote>
+
+<a name="Platform_FileMethods_ValidatePathname">
+<pre>public static bool ValidatePathname(String path);</pre>
+
+<blockquote>
+Validate that the supplied pathname is legitimate according to
+the underlying filesystem's pathname rules.
+</blockquote>
+
+<a name="Platform_FileMethods_Open">
+<pre>public static bool Open(String path, FileMode mode, FileAccess access,
+                        FileShare share, out IntPtr handle);</pre>
+
+<blockquote>
+Attempt to open a file with the specified mode, access, and sharing flags.
+If the file could be opened, a handle is returned in <code>handle</code>,
+and the method returns <code>true</code>.  If the file could not be
+opened, the method returns <code>false</code>, and <code>GetErrno</code>
+should be consulted to determine the reason for the failure.
+</blockquote>
+
+<a name="Platform_FileMethods_HasAsync">
+<pre>public static bool HasAsync();</pre>
+
+<blockquote>
+Determine if the system has support for asynchronous file handle operations.
+</blockquote>
+
+<a name="Platform_FileMethods_CanSeek">
+<pre>public static bool CanSeek(IntPtr handle);</pre>
+
+<blockquote>
+Determine if it is possible to seek on the specified file handle.
+This method must leave the current file position unchanged.
+</blockquote>
+
+<a name="Platform_FileMethods_CheckHandleAccess">
+<pre>public static bool CheckHandleAccess(IntPtr handle, FileAccess access);</pre>
+
+<blockquote>
+Check to see if an existing file handle was opened for the specified access.
+</blockquote>
+
+<a name="Platform_FileMethods_Seek">
+<pre>public static long Seek(IntPtr handle, long offset, SeekOrigin origin);</pre>
+
+<blockquote>
+Seek to a particular position on a file handle.  Returns -1 if the offset
+is out of range, or an error occurred.  Consult <code>GetErrno</code>
+for the reason for the error.
+</blockquote>
+
+<a name="Platform_FileMethods_Write">
+<pre>public static bool Write(IntPtr handle, byte[] buffer, int offset, int count);</pre>
+
+<blockquote>
+Write the contents of a buffer to a file handle.  Returns false if
+an I/O error occurred.  Consult <code>GetErrno</code> for the reason for
+an I/O error.
+</blockquote>
+
+<a name="Platform_FileMethods_Read">
+<pre>public static int Read(IntPtr handle, byte[] buffer, int offset, int count);</pre>
+
+<blockquote>
+Read data from a file handle into a supplied buffer.  Returns -1 in
+an I/O error occurred, 0 at end of file, or the number of bytes
+read otherwise.  Console <code>GetErrno</code> for the reason for
+an I/O error.
+</blockquote>
+
+<a name="Platform_FileMethods_Close">
+<pre>public static bool Close(IntPtr handle);</pre>
+
+<blockquote>
+Close a particular file handle.  Returns <code>false</code> if an
+I/O error occurred.  Consult <code>GetErrno</code> for the reason
+for an I/O error.
+</blockquote>
+
+<a name="Platform_FileMethods_FlushWrite">
+<pre>public static bool FlushWrite(IntPtr handle);</pre>
+
+<blockquote>
+Flush all data that was previously written to a file handle,
+in response to a user-level "Flush" request.  Normally thi will
+do nothing unless the platform provides its own buffering.
+Returns <code>false</code> if an I/O error occurred.
+Consult <code>GetErrno</code> for the reason for an I/O error.
+</blockquote>
+
+<a name="Platform_FileMethods_SetLength">
+<pre>public static bool SetLength(IntPtr handle, long value);</pre>
+
+<blockquote>
+Set the length of a file to a new value.  Returns <code>false</code>
+if an I/O error occurred.  Consult <code>GetErrno</code> for the
+reason for an I/O error.
+</blockquote>
+
+<a name="Platform_FileMethods_GetErrno">
+<pre>public static Errno GetErrno();</pre>
+
+<blockquote>
+Get the last-occurring system error code for the currently
+executing thread.
+</blockquote>
+
+<a name="Platform_FileMethods_GetErrnoMessage">
+<pre>public static String GetErrnoMessage(Errno errno);</pre>
+
+<blockquote>
+Get a descriptive message for the error code <code>errno</code> from
+the underlying system.  If the system does not have an appropriate
+message, this method will return <code>null</code>.
+</blockquote>
+
+<a name="Platform_Errno"><h3>Platform.Errno</h3>
+
+The <code>Errno</code> enumerated type defines a large number of
+Posix-style error codes that may be returned for failed operating
+system calls.<p>
+
+Every system has its own error numbering system.  It is the responsibility
+of the CLR to convert the system error numbers into the constants from
+the <code>Errno</code> type so that the C# library has a consistent set
+of values to use, regardless of the underlying platform.<p>
 
 <a name="Platform_Stdio"><h3>Platform.Stdio</h3>
 
@@ -1847,11 +3047,13 @@ The <code>Stdio</code> class provides a number of primitive methods
 for manipulating <code>stdin</code>, <code>stdout</code>, and
 </code>stderr</code> from the <code>System.Console</code> class.
 It can only be used to access these three streams, and only for
-character-based data.  Files and binary streams are handled elsewhere.<p>
+character-based data.  Binary file streams are handled by
+<code>Platform.FileMethods</code>.<p>
 
 Note: it is usually possible to access these standard streams as
-file descriptors 0, 1, and 2 through regular filesystem operations,
-but that usage is not portable between systems.<p>
+file descriptors 0, 1, and 2 through regular filesystem operations
+such as those in <code>Platform.FileMethods</code>, but that usage
+is not portable between systems.<p>
 
 Some operating systems, particularly for embedded systems, may not
 have standard input and output streams in the same sense as desktop

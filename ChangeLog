@@ -1,3 +1,7 @@
+2003-01-13  Adam Ballai  <minddog@cannibutter.com>
+
+	* System.Xml/XmlTextWriter.cs: Implemented CDATA, ProcessInstructions,
+	and fixed some minor bugs in Read.
 
 2003-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 

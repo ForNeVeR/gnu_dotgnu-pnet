@@ -209,7 +209,7 @@ sealed class ResourceWriter : IDisposable, IResourceWriter
 						++posn;
 
 						// Write out the name and value index.
-						namesWriter.Write((String)(e.Key));
+						WriteKey(namesWriter, (String)(e.Key));
 						namesWriter.Write((int)(values.Position));
 
 						// Write the type table index to the value section.
@@ -243,6 +243,7 @@ sealed class ResourceWriter : IDisposable, IResourceWriter
 					while((bw.BaseStream.Position & 7) != 0)
 					{
 						bw.Write((byte)0);
+						bw.Flush();
 					}
 
 					// Sort the name hash and write it out.
@@ -251,7 +252,7 @@ sealed class ResourceWriter : IDisposable, IResourceWriter
 					{
 						bw.Write(hash);
 					}
-					foreach(int pos in nameHash)
+					foreach(int pos in namePosition)
 					{
 						bw.Write(pos);
 					}
@@ -355,6 +356,16 @@ sealed class ResourceWriter : IDisposable, IResourceWriter
 								 StreamingContextStates.Persistence));
 					formatter.Serialize(stream, value);
 				#endif
+				}
+			}
+
+	// Write a key value.
+	private static void WriteKey(BinaryWriter writer, String key)
+			{
+				writer.Write7BitEncoded(key.Length * 2);
+				foreach(char ch in key)
+				{
+					writer.Write((ushort)ch);
 				}
 			}
 

@@ -4,6 +4,10 @@
 	* runtime/System/Resources/ResourceWriter.cs: use "FileMode.Create"
 	instead of "FileMode.CreateNew" when creating a new resource file.
 
+	* runtime/System/Resources/ResourceReader.cs,
+	runtime/System/Resources/ResourceWriter.cs: fix some bugs in the
+	processing of binary resources.
+
 2003-12-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Design/Design.build: add the correct dependencies for

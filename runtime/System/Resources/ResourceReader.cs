@@ -302,6 +302,13 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 					--numTypes;
 				}
 
+				// Align on an 8-byte boundary.
+				long current = stream.Position - start;
+				if((current % 8) != 0)
+				{
+					stream.Seek(8 - (current % 8), SeekOrigin.Current);
+				}
+
 				// Read the name hash table into memory.
 				nameHash = new int [numStrings];
 				for(posn = 0; posn < numStrings; ++posn)

@@ -42,7 +42,6 @@ internal sealed class StdStream : Stream
 				this.fd = fd;
 			}
 
-#if ECMA_COMPAT
 	// Close this stream.
 	public override void Close()
 			{
@@ -52,17 +51,6 @@ internal sealed class StdStream : Stream
 					fd = -1;
 				}
 			}
-#else
-	// Dispose this stream.
-	protected override void Dispose(bool disposing)
-			{
-				if(fd != -1)
-				{
-					Stdio.StdClose(fd);
-					fd = -1;
-				}
-			}
-#endif
 
 	// Flush this stream.
 	public override void Flush()

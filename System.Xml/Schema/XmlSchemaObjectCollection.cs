@@ -59,7 +59,7 @@ namespace System.Xml.Schema
 		}
 
 		[TODO]
-		public override XmlSchemaObjectEnumerator GetEnumerator()
+		public new XmlSchemaObjectEnumerator GetEnumerator()
 		{
 			 throw new NotImplementedException("GetEnumerator");
 		}

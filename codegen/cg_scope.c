@@ -476,7 +476,7 @@ void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace)
 
 int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 					   const char *namespace, ILScope **resultScope,
-					   ILNode **origDefn)
+					   ILNode **origDefn, ILScope *attachScope)
 {
 	ILScope *namespaceScope;
 	ILScopeData *data;
@@ -530,6 +530,12 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 	usingScope = ILScopeCreate(scope->info, scope);
 	usingScope->using = scope->using;
 	usingScope->lookup = UsingScope_Lookup;
+	
+	if(attachScope)
+	{
+		attachScope->parent=usingScope;
+		usingScope=attachScope; /* insert the scope under usingScope */
+	}
 
 	/* Create a scope to hold the type itself */
 	typeScope = ILScopeCreate(scope->info, usingScope);

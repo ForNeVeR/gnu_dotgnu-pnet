@@ -5,8 +5,12 @@
 	argument parameters.
 
 	* codegen/cg_coerce.c, codegen/cg_coerce.h, codegen/cg_resolve.c, 
-	cscc/csharp/cs_gather.tc, cscc/csharp/cs_oper.tc, cscc/csharp/cs_stmt.tc:
+	cscc/csharp/cs_gather.c, cscc/csharp/cs_oper.tc, cscc/csharp/cs_stmt.tc:
 	Allow for multiple step coercions with user defined operators.
+
+	* cscc/csharp/cs_gather.c, codegen/cg_scope.c, codegen/cg_scope.h:
+	Fix the scope of aliases so that cscctest gives the correct error
+	messages.
 	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>
 

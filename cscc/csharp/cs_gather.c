@@ -1753,14 +1753,11 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 				namespace = 0;
 			}
 			
-			/* NOTE: this is sure to be a subscope of globalscope 
-			 *       and yet can contain the type correctly.*/
 			aliasScope=((ILNode_Namespace*)(defn->namespaceNode))->localScope;
-			if(!aliasScope)aliasScope=parentScope; /* making sure */
 			
-			error = ILScopeDeclareType(aliasScope, child,
+			error = ILScopeDeclareType(parentScope, child,
 								   	   name, namespace, &scope,
-								   	   &origDefn);
+								   	   &origDefn,aliasScope);
 
 			if(error != IL_SCOPE_ERROR_OK)
 			{

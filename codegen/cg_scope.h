@@ -120,11 +120,13 @@ void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace);
  * Declare a type within a particular scope.  If the name
  * already exists, then an "IL_SCOPE_ERROR_xxx" code is
  * returned.  If there is a declaration for the type already,
- * then the node will be returned in "origDefn".
+ * then the node will be returned in "origDefn". The attach
+ * scope is added between the scope and resultScope scopes.
+ * scope->..attachScope->resultScope
  */
 int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 					   const char *namespace, ILScope **resultScope,
-					   ILNode **origDefn);
+					   ILNode **origDefn, ILScope *attachScope);
 
 /*
  * Resolve a type identifier to an "ILClass *" record or to

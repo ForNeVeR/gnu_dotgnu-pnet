@@ -1,4 +1,12 @@
 
+2003-05-08  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_lvalue.tc : Use the info->inSemType to streamline
+	type lookups to avoid local variables.
+	
+	* cscc/csharp/cs_oper.tc : fix info->inAttrArg to be cleared up for
+	all cases of the semantic analysis.
+
 2003-05-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* HACKING: replace the reference to the "Tech Support Manager" with

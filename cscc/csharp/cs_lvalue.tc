@@ -807,16 +807,19 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 ILNode_SemAnalysis(ILNode_Identifier)
 {
 	CSSemValue value;
-	ILScopeData *data;
+	ILScopeData *data=NULL;
 	unsigned long index;
 	ILNode_MethodDeclaration *method;
 	ILParameterModifier paramMod;
   	ILNode_SemGuard *constVar;
 	ILNode_UsingAlias *alias;
 	ILType *type;
-
-	/* Look for local variables in the current scope */
-	data = ILScopeLookup(info->currentScope, node->name, 1);
+	
+	if(!info->inSemType)
+	{
+		/* Look for local variables in the current scope */
+		data = ILScopeLookup(info->currentScope, node->name, 1);
+	}
 	if(data && ILScopeDataGetKind(data) == IL_SCOPE_LOCAL)
 	{
 		index = ILScopeDataGetIndex(data);
@@ -945,9 +948,12 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 	CSSemValue value;
 	ILNode_UsingAlias *alias;
 	ILScopeData *data;
+	int savedState=info->inSemType;
 
+	info->inSemType=1;
 	/* Resolve the simple name */
 	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, node->name, 1);
+	info->inSemType=savedState;
 
 	if (CSSemGetKind(value) == CS_SEMKIND_TYPE)
 	{
@@ -977,7 +983,10 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 						  "using aliases may not refer to other aliases");
 		}
 		info->resolvingAlias = 1;
+		savedState=info->inSemType;
+		info->inSemType=1;
 		value = ILNode_SemAnalysis(*parent,info,parent);
+		info->inSemType=savedState;
 		info->resolvingAlias = 0;
 		alias->visited=ILVisitMode_Done;
 		return value;
@@ -1015,13 +1024,19 @@ ILNode_SemAnalysisType(ILNode_QualIdent)
 	CSSemValue value;
 	CSSemValue value2;
 	char *name;
-	
+	int savedState = info->inSemType;
+
+	/* Restrict lookups for types only (ie namespaces , types, nested types */
+	info->inSemType = 1;
+
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysis(node->left, info, &(node->left));
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->right, 0);
 	value2 = CSResolveMemberName(info, (ILNode *)node, value, name, 1);
+	
+	info->inSemType = savedState;
 
 	if (CSSemGetKind(value2) != CS_SEMKIND_TYPE)
 	{

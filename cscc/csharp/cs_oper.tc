@@ -1383,6 +1383,7 @@ ILNode_SemAnalysis(ILNode_ToAttrConst)
 {
 	CSSemValue value;
 	ILNode_TypeOf *typeofNode;
+	int savedState=info->inAttrArg;
 
 	info->inAttrArg=1;
 
@@ -1414,7 +1415,7 @@ ILNode_SemAnalysis(ILNode_ToAttrConst)
 			typeofNode->type = ILFindSystemType(info, "Int32");
 		}
 		CSSemSetType(value, typeofNode->type);
-		return value;
+		goto cleanup;
 	}
 
 	/* Perform semantic analysis on the sub-expression */
@@ -1423,7 +1424,7 @@ ILNode_SemAnalysis(ILNode_ToAttrConst)
 	/* Types can be used as constants in attributes */
 	if(CSSemIsType(value))
 	{
-		return value;
+		goto cleanup;
 	}
 
 	/* Determine if the sub-expression evaluates to a constant */
@@ -1441,7 +1442,8 @@ ILNode_SemAnalysis(ILNode_ToAttrConst)
 		}
 	}
 
-	info->inAttrArg=0;
+cleanup:
+	info->inAttrArg=savedState;
 
 	/* Return the semantic information to the caller */
 	return value;

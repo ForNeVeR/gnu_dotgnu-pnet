@@ -101,7 +101,7 @@ class Test
 		// ok
 	}
 
-	abstract void m8(); // ok
+	public abstract void m8(); // ok
 
 	extern static int m9(); // ok
 

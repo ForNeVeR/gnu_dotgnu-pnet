@@ -1,4 +1,9 @@
 
+2002-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/stmt/return1.cs: add "public" to an "abstract" method
+	to prevent an unnecessary error.
+
 2002-11-01  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/stmt/foreach1.jl, csharp/stmt/foreach3.il: minor update

@@ -95,6 +95,7 @@ typedef struct
 	ILProgramItem  *scope;
 	ILImage		   *image;
 	int				wantGlobal;
+	int				ignoreCase;
 
 } ILClassKeyInfo;
 

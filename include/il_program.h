@@ -569,6 +569,15 @@ ILClass *ILClassLookupLen(ILProgramItem *scope,
 						  const char *namespace, int namespaceLen);
 
 /*
+ * Look up a class using its name within a specified scope,
+ * using Unicode-based length-delimited names.
+ */
+ILClass *ILClassLookupUnicode(ILProgramItem *scope,
+					          const ILUInt16 *name, int nameLen,
+						  	  const ILUInt16 *namespace, int namespaceLen,
+							  int ignoreCase);
+
+/*
  * Look up a global class within any image in a context.
  * Returns NULL if not found.
  */
@@ -582,6 +591,15 @@ ILClass *ILClassLookupGlobal(ILContext *context,
 ILClass *ILClassLookupGlobalLen(ILContext *context,
 							    const char *name, int nameLen,
 								const char *namespace, int namespaceLen);
+
+/*
+ * Look up a global class within any image in a context,
+ * using Unicode-based length-delimited names.
+ */
+ILClass *ILClassLookupGlobalUnicode(ILContext *context,
+					                const ILUInt16 *name, int nameLen,
+						  	        const ILUInt16 *namespace, int namespaceLen,
+							        int ignoreCase);
 
 /*
  * Add an implements clause to a class.  Returns NULL if out of memory.

@@ -25,6 +25,30 @@ extern	"C" {
 #endif
 
 /*
+ * Hash a string, while ignoring case.
+ */
+static unsigned long HashIgnoreCase(unsigned long start,
+									const char *str, int len)
+{
+	unsigned long hash = start;
+	int ch;
+	while(len > 0)
+	{
+		ch = (*str++ & 0xFF);
+		if(ch >= 'A' && ch <= 'Z')
+		{
+			hash = (hash << 5) + hash + (unsigned long)(ch - 'A' + 'a');
+		}
+		else
+		{
+			hash = (hash << 5) + hash + (unsigned long)ch;
+		}
+		--len;
+	}
+	return hash;
+}
+
+/*
  * Compute the hash value for a class.
  */
 static unsigned long ClassHash_Compute(const ILClass *classInfo)
@@ -32,15 +56,15 @@ static unsigned long ClassHash_Compute(const ILClass *classInfo)
 	unsigned long hash;
 	if(classInfo->namespace)
 	{
-		hash = ILHashString(0, classInfo->namespace,
-							strlen(classInfo->namespace));
-		hash = ILHashString(hash, ".", 1);
+		hash = HashIgnoreCase(0, classInfo->namespace,
+							  strlen(classInfo->namespace));
+		hash = HashIgnoreCase(hash, ".", 1);
 	}
 	else
 	{
 		hash = 0;
 	}
-	return ILHashString(hash, classInfo->name, strlen(classInfo->name));
+	return HashIgnoreCase(hash, classInfo->name, strlen(classInfo->name));
 }
 
 /*
@@ -51,14 +75,14 @@ static unsigned long ClassHash_KeyCompute(const ILClassKeyInfo *key)
 	unsigned long hash;
 	if(key->namespace)
 	{
-		hash = ILHashString(0, key->namespace, key->namespaceLen);
-		hash = ILHashString(hash, ".", 1);
+		hash = HashIgnoreCase(0, key->namespace, key->namespaceLen);
+		hash = HashIgnoreCase(hash, ".", 1);
 	}
 	else
 	{
 		hash = 0;
 	}
-	return ILHashString(hash, key->name, key->nameLen);
+	return HashIgnoreCase(hash, key->name, key->nameLen);
 }
 
 /*

@@ -7,6 +7,9 @@ function "ILIsWhitespaceUnicode.
 * include/il_utils.h, support/hashtab.c: implement "ILHashFindAlt",
 for indexing a hash table using alternative keys.
 
+* include/il_program.h, image/class.c, image/context.c, image/image.h:
+implement "ILClassLookupUnicode" and "ILClassLookupGlobalUnicode".
+
 2001-10-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_scanner.l: fixed a bug in the assembler's lexer that

@@ -509,6 +509,7 @@ ILClass *ILClassLookup(ILProgramItem *scope,
 	key.scope = scope;
 	key.image = 0;
 	key.wantGlobal = 0;
+	key.ignoreCase = 0;
 	return ILHashFindType(scope->image->context->classHash, &key, ILClass);
 }
 
@@ -524,7 +525,164 @@ ILClass *ILClassLookupLen(ILProgramItem *scope,
 	key.scope = scope;
 	key.image = 0;
 	key.wantGlobal = 0;
+	key.ignoreCase = 0;
 	return ILHashFindType(scope->image->context->classHash, &key, ILClass);
+}
+
+/*
+ * Hash a unicode string, while ignoring case.
+ */
+static unsigned long HashUnicode(unsigned long start,
+								 const ILUInt16 *str, int len)
+{
+	unsigned long hash = start;
+	unsigned ch;
+	while(len > 0)
+	{
+		ch = *str++;
+		if(ch >= 'A' && ch <= 'Z')
+		{
+			hash = (hash << 5) + hash + (unsigned long)(ch - 'A' + 'a');
+		}
+		else
+		{
+			hash = (hash << 5) + hash + (unsigned long)ch;
+		}
+		--len;
+	}
+	return hash;
+}
+
+/*
+ * Compute the hash value for a class key.
+ */
+static unsigned long UnicodeHashKey(const ILClassKeyInfo *key)
+{
+	unsigned long hash;
+	if(key->namespace)
+	{
+		hash = HashUnicode(0, (const ILUInt16 *)key->namespace,
+						   key->namespaceLen);
+		hash = (hash << 5) + hash + (ILUInt16)'.';
+	}
+	else
+	{
+		hash = 0;
+	}
+	return HashUnicode(hash, (const ILUInt16 *)key->name,
+					   key->nameLen);
+}
+
+/*
+ * Compare a regular string against a Unicode string.
+ */
+static int CompareUnicode(const char *str,
+						  const ILUInt16 *str2,
+						  int str2Len, int ignoreCase)
+{
+	int ch;
+	if(ignoreCase)
+	{
+		while(*str != '\0' && str2Len > 0)
+		{
+			ch = (*str++ & 0xFF);
+			if(ch >= 'A' && ch <= 'Z')
+			{
+				ch = ch - 'A' + 'a';
+			}
+			if(ch != (int)(*str2++))
+			{
+				return 0;
+			}
+			--str2Len;
+		}
+		return (*str == '\0' && str2Len == 0);
+	}
+	else
+	{
+		while(*str != '\0' && str2Len > 0)
+		{
+			ch = (*str++ & 0xFF);
+			if(ch != (int)(*str2++))
+			{
+				return 0;
+			}
+			--str2Len;
+		}
+		return (*str == '\0' && str2Len == 0);
+	}
+}
+
+/*
+ * Match a hash table element against a supplied key.
+ */
+static int UnicodeMatch(const ILClass *classInfo, const ILClassKeyInfo *key)
+{
+	/* Match the namespace */
+	if(classInfo->namespace)
+	{
+		if(!(key->namespace))
+		{
+			return 0;
+		}
+		if(!CompareUnicode(classInfo->namespace,
+						   (const ILUInt16 *)(key->namespace),
+						   key->namespaceLen, key->ignoreCase))
+		{
+			return 0;
+		}
+	}
+
+	/* Match the name */
+	if(!CompareUnicode(classInfo->name, (const ILUInt16 *)(key->name),
+					   key->nameLen, key->ignoreCase))
+	{
+		return 0;
+	}
+
+	/* Match the scope */
+	if(key->scope && key->scope != classInfo->scope)
+	{
+		return 0;
+	}
+
+	/* Match the image */
+	if(key->image && key->image != classInfo->programItem.image)
+	{
+		return 0;
+	}
+
+	/* Do we only want types at the global level? */
+	if(key->wantGlobal)
+	{
+		if((classInfo->scope->token & IL_META_TOKEN_MASK) !=
+					IL_META_TOKEN_MODULE)
+		{
+			return 0;
+		}
+	}
+
+	/* We have a match */
+	return 1;
+}
+
+ILClass *ILClassLookupUnicode(ILProgramItem *scope,
+					          const ILUInt16 *name, int nameLen,
+						  	  const ILUInt16 *namespace, int namespaceLen,
+							  int ignoreCase)
+{
+	ILClassKeyInfo key;
+	key.name = (const char *)name;
+	key.nameLen = nameLen;
+	key.namespace = (const char *)namespace;
+	key.namespaceLen = namespaceLen;
+	key.scope = scope;
+	key.image = 0;
+	key.wantGlobal = 0;
+	key.ignoreCase = ignoreCase;
+	return ILHashFindAltType(scope->image->context->classHash, &key, ILClass,
+							 (ILHashKeyComputeFunc)UnicodeHashKey,
+							 (ILHashMatchFunc)UnicodeMatch);
 }
 
 ILClass *ILClassLookupGlobal(ILContext *context,
@@ -538,6 +696,7 @@ ILClass *ILClassLookupGlobal(ILContext *context,
 	key.scope = 0;
 	key.image = 0;
 	key.wantGlobal = 1;
+	key.ignoreCase = 0;
 	return ILHashFindType(context->classHash, &key, ILClass);
 }
 
@@ -553,7 +712,27 @@ ILClass *ILClassLookupGlobalLen(ILContext *context,
 	key.scope = 0;
 	key.image = 0;
 	key.wantGlobal = 1;
+	key.ignoreCase = 0;
 	return ILHashFindType(context->classHash, &key, ILClass);
+}
+
+ILClass *ILClassLookupGlobalUnicode(ILContext *context,
+					                const ILUInt16 *name, int nameLen,
+						  	        const ILUInt16 *namespace, int namespaceLen,
+							        int ignoreCase)
+{
+	ILClassKeyInfo key;
+	key.name = (const char *)name;
+	key.nameLen = nameLen;
+	key.namespace = (const char *)namespace;
+	key.namespaceLen = namespaceLen;
+	key.scope = 0;
+	key.image = 0;
+	key.wantGlobal = 1;
+	key.ignoreCase = ignoreCase;
+	return ILHashFindAltType(context->classHash, &key, ILClass,
+							 (ILHashKeyComputeFunc)UnicodeHashKey,
+							 (ILHashMatchFunc)UnicodeMatch);
 }
 
 ILImplements *ILClassAddImplements(ILClass *info, ILClass *interface,

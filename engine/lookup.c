@@ -74,8 +74,10 @@ extern	"C" {
 ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 {
 	int len, dot;
-	char *name;
-	char *namespace;
+	const char *name;
+	int nameLen;
+	const char *namespace;
+	int namespaceLen;
 	ILClass *classInfo;
 
 	/* Sanity-check the arguments */
@@ -99,44 +101,22 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 	/* Break the global type into namespace and name components */
 	if(dot != -1)
 	{
-		namespace = (char *)ILMalloc(dot + 1);
-		if(!namespace)
-		{
-			return 0;
-		}
-		ILMemCpy(namespace, typeName, dot);
-		namespace[dot] = '\0';
-		name = (char *)ILMalloc(len - dot);
-		if(!name)
-		{
-			if(namespace)
-			{
-				ILFree(namespace);
-			}
-			return 0;
-		}
-		ILMemCpy(name, typeName + dot + 1, len - dot - 1);
-		name[len - dot - 1] = '\0';
+		name = typeName + dot + 1;
+		nameLen = len - dot - 1;
+		namespace = typeName;
+		namespaceLen = dot;
 	}
 	else
 	{
+		name = typeName;
+		nameLen = len;
 		namespace = 0;
-		name = (char *)ILMalloc(len + 1);
-		if(!name)
-		{
-			return 0;
-		}
-		ILMemCpy(name, typeName, len);
-		name[len] = '\0';
+		namespaceLen = 0;
 	}
 
 	/* Look for the global type within the process's context */
-	classInfo = ILClassLookupGlobal(thread->process->context, name, namespace);
-	ILFree(name);
-	if(namespace)
-	{
-		ILFree(namespace);
-	}
+	classInfo = ILClassLookupGlobalLen(thread->process->context,
+									   name, nameLen, namespace, namespaceLen);
 
 	/* Resolve nested type names */
 	while(classInfo != 0 && typeName[len] == '/')
@@ -147,15 +127,10 @@ ILClass *ILExecThreadLookupType(ILExecThread *thread, const char *typeName)
 		{
 			++len;
 		}
-		name = (char *)ILMalloc(len - dot + 1);
-		if(!name)
-		{
-			return 0;
-		}
-		ILMemCpy(name, typeName + len, len - dot);
-		name[len - dot] = '\0';
-		classInfo = ILClassLookup(ILToProgramItem(classInfo), name, 0);
-		ILFree(name);
+		name = typeName + dot;
+		nameLen = len - dot;
+		classInfo = ILClassLookupLen(ILToProgramItem(classInfo),
+									 name, nameLen, 0, 0);
 	}
 
 	/* Return the final class structure to the caller */

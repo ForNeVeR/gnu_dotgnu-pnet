@@ -895,7 +895,7 @@ int _IL_String_LastIndexOf(ILExecThread *thread,
 	ILUInt16 *buf;
 
 	/* Validate the parameters */
-	if(startIndex < 0 || startIndex >= _this->length)
+	if(startIndex < 0)
 	{
 		ILExecThreadThrowArgRange(thread, "startIndex",
 								  "ArgRange_StringIndex");
@@ -906,6 +906,13 @@ int _IL_String_LastIndexOf(ILExecThread *thread,
 		ILExecThreadThrowArgRange(thread, "count",
 								  "ArgRange_StringRange");
 		return -1;
+	}
+
+	/* Adjust for overflow */
+	if (startIndex >= _this->length)
+	{
+		count -= startIndex - (_this->length - 1);
+		startIndex = _this->length - 1;
 	}
 
 	/* Search for the value */
@@ -942,7 +949,7 @@ int _IL_String_LastIndexOfAny(ILExecThread *thread,
 		ILExecThreadThrowArgNull(thread, "anyOf");
 		return -1;
 	}
-	if(startIndex < 0 || startIndex >= _this->length)
+	if(startIndex < 0)
 	{
 		ILExecThreadThrowArgRange(thread, "startIndex",
 								  "ArgRange_StringIndex");
@@ -962,6 +969,13 @@ int _IL_String_LastIndexOfAny(ILExecThread *thread,
 	{
 		/* Bail out because there is nothing to find */
 		return -1;
+	}
+
+	/* Adjust for overflow */
+	if (startIndex >= _this->length)
+	{
+		count -= startIndex - (_this->length - 1);
+		startIndex = _this->length - 1;
 	}
 
 	/* Search for the value */
@@ -1127,7 +1141,8 @@ System_String *_IL_String_Intern(ILExecThread *thread, System_String *str)
 	}
 	else
 	{
-		return str;
+		ILExecThreadThrowArgNull(thread, "str");
+		return 0;
 	}
 }
 
@@ -1142,7 +1157,8 @@ System_String *_IL_String_IsInterned(ILExecThread *thread, System_String *str)
 	}
 	else
 	{
-		return str;
+		ILExecThreadThrowArgNull(thread, "str");
+		return 0;
 	}
 }
 

@@ -1,3 +1,8 @@
+2005-01-27  Marc Haisenco  <haisenko@webport.de>
+
+	* class/System.ServiceProcess/System.ServiceProcess.build: Add missing
+	reference to System.Configuration.Install.dll. (patch #3683, Klaus)
+
 2005-01-23  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* Updated build-depian-packages.sh for new release.

@@ -803,13 +803,11 @@ static void ParseFile(const char *filename, int is_stdin)
 		}
 		for(posn = 0; posn < num_include_dirs; ++posn)
 		{
-			CCStringListAdd(&argv, &argc, "-I");
-			CCStringListAdd(&argv, &argc, include_dirs[posn]);
+			CCStringListAddOption(&argv, &argc, "-I", include_dirs[posn]);
 		}
 		for(posn = 0; posn < num_sys_include_dirs; ++posn)
 		{
-			CCStringListAdd(&argv, &argc, "-I");
-			CCStringListAdd(&argv, &argc, sys_include_dirs[posn]);
+			CCStringListAddOption(&argv, &argc, "-I", sys_include_dirs[posn]);
 		}
 		for(posn = 0; posn < num_imacros_files; ++posn)
 		{
@@ -832,24 +830,20 @@ static void ParseFile(const char *filename, int is_stdin)
 									 num_user_defined_symbols,
 									 ILCppUndefines[posn]))
 			{
-				CCStringListAdd(&argv, &argc, "-U");
-				CCStringListAdd(&argv, &argc, ILCppUndefines[posn]);
+				CCStringListAddOption(&argv, &argc, "-U", ILCppUndefines[posn]);
 			}
 		}
 		for(posn = 0; posn < num_pre_defined_symbols; ++posn)
 		{
-			CCStringListAdd(&argv, &argc, "-D");
-			CCStringListAdd(&argv, &argc, pre_defined_symbols[posn]);
+			CCStringListAddOption(&argv, &argc, "-D", pre_defined_symbols[posn]);
 		}
 		for(posn = 0; posn < num_user_defined_symbols; ++posn)
 		{
-			CCStringListAdd(&argv, &argc, "-D");
-			CCStringListAdd(&argv, &argc, user_defined_symbols[posn]);
+			CCStringListAddOption(&argv, &argc, "-D", user_defined_symbols[posn]);
 		}
 		for(posn = 0; posn < num_undefined_symbols; ++posn)
 		{
-			CCStringListAdd(&argv, &argc, "-U");
-			CCStringListAdd(&argv, &argc, undefined_symbols[posn]);
+			CCStringListAddOption(&argv, &argc, "-U", undefined_symbols[posn]);
 		}
 		if(is_stdin)
 		{

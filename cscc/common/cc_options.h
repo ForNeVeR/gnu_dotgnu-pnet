@@ -165,6 +165,11 @@ void CCAddLinkFile(char *filename, int isTemp);
  */
 void CCStringListAdd(char ***list, int *num, char *str);
 
+/*
+ * Add an option/string concatenation to a list of strings.
+ */
+void CCStringListAddOption(char ***list, int *num, char *option, char *str);
+
 #ifdef	__cplusplus
 };
 #endif

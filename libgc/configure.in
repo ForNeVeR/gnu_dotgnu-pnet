@@ -318,8 +318,6 @@ if false; then
   AC_EXEEXT
 fi
 
-AC_MSG_CHECKING([for threads package to use])
-
 dnl As of 4.13a2, the collector will not properly work on Solaris when
 dnl built with gcc and -O.  So we remove -O in the appropriate case.
 case "$host" in

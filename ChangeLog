@@ -1,4 +1,15 @@
 
+2003-02-17  Jonathan Springer  <jonathan.springer@verizon.net>
+
+	* configure.in, libgc/configure.in: MacOS X Darwin adjustments.
+
+	* libffi/src/powerpc/darwin.S, libffi/src/powerpc/darwin_closer.S: Hack
+	to enable assembly of Darwin ffi modules.
+
+	* cscc/common/cc_main.c, cscc/common/cc_options.c, 
+	cscc/common/cc_options.h: change pre-processor argument construction for
+	C compilation to work with the Darwin cpp.  (Tested OK against Linux.)
+
 2003-02-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/ilrun.c: minor change to allow ilrun.c to build with VC++

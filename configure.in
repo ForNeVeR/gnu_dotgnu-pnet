@@ -439,6 +439,7 @@ if test "x$no_recursion" != "xyes"; then
 			--oldincludedir="${oldincludedir}/pnet" \
 			--infodir="${infodir}" --mandir="${mandir}" \
 			--srcdir="${gcsrcdir}" || exit 1
+		cd ..
 	fi
 fi
 

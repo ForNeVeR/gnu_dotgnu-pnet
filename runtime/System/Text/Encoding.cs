@@ -24,6 +24,7 @@ namespace System.Text
 using System;
 using System.Reflection;
 using System.Globalization;
+using System.Security;
 
 public abstract class Encoding
 {
@@ -226,6 +227,86 @@ public abstract class Encoding
 				return new ForwardingEncoder(this);
 			}
 
+	// Loaded copy of the "I18N" assembly.  We need to move
+	// this into a class in "System.Private" eventually.
+	private static Assembly i18nAssembly;
+
+	// Invoke a specific method on the "I18N" manager object.
+	// Returns NULL if the method failed.
+	private static Object InvokeI18N(String name, params Object[] args)
+			{
+				lock(typeof(Encoding))
+				{
+					// Find or load the "I18N" assembly.
+					if(i18nAssembly == null)
+					{
+						try
+						{
+							i18nAssembly = Assembly.Load("I18N");
+							if(i18nAssembly == null)
+							{
+								return null;
+							}
+						}
+						catch(SystemException)
+						{
+							return null;
+						}
+					}
+
+					// Find the "I18N.Common.Manager" class.
+					Type managerClass =
+						i18nAssembly.GetType("I18N.Common.Manager");
+					if(managerClass == null)
+					{
+						return null;
+					}
+
+					// Get the value of the "PrimaryManager" property.
+					Object manager;
+					try
+					{
+						manager = managerClass.InvokeMember
+								("PrimaryManager",
+								 BindingFlags.GetProperty |
+								 	BindingFlags.Static |
+									BindingFlags.Public,
+								 null, null, null, null, null, null);
+						if(manager == null)
+						{
+							return null;
+						}
+					}
+					catch(MissingMethodException)
+					{
+						return null;
+					}
+					catch(SecurityException)
+					{
+						return null;
+					}
+
+					// Invoke the requested method on the manager.
+					try
+					{
+						return managerClass.InvokeMember
+								(name,
+								 BindingFlags.InvokeMethod |
+								 	BindingFlags.Instance |
+									BindingFlags.Public,
+								 null, manager, args, null, null, null);
+					}
+					catch(MissingMethodException)
+					{
+						return null;
+					}
+					catch(SecurityException)
+					{
+						return null;
+					}
+				}
+			}
+
 	// Get an encoder for a specific code page.
 #if ECMA_COMPAT
 	private
@@ -260,6 +341,14 @@ public abstract class Encoding
 					default: break;
 				}
 
+				// Try to obtain a code page handler from the I18N handler.
+				Encoding enc = (Encoding)(InvokeI18N("GetEncoding", codePage));
+				if(enc != null)
+				{
+					return enc;
+				}
+
+#if false
 				// Build a code page class name.
 				String cpName = "System.Text.CP" + codePage.ToString();
 
@@ -278,6 +367,7 @@ public abstract class Encoding
 				{
 					return (Encoding)(Activator.CreateInstance(type));
 				}
+#endif
 
 				// We have no idea how to handle this code page.
 				throw new NotSupportedException
@@ -319,6 +409,14 @@ public abstract class Encoding
 					}
 				}
 
+				// Try to obtain a web encoding handler from the I18N handler.
+				Encoding enc = (Encoding)(InvokeI18N("GetEncoding", name));
+				if(enc != null)
+				{
+					return enc;
+				}
+
+#if false
 				// Build a web encoding class name.
 				String encName = "System.Text.ENC" +
 								 name.ToLower(CultureInfo.InvariantCulture)
@@ -339,6 +437,7 @@ public abstract class Encoding
 				{
 					return (Encoding)(Activator.CreateInstance(type));
 				}
+#endif
 
 				// We have no idea how to handle this encoding name.
 				throw new NotSupportedException

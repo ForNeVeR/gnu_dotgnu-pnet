@@ -17,6 +17,9 @@
 	to "LoadFromName" and "LoadFromFile" to establish the correct search
 	and security contexts.
 
+	* runtime/System/Text/*: remove obselete files that have since
+	been moved to the I18N directory.
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

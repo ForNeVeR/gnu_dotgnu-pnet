@@ -91,23 +91,26 @@ ILDir *ILOpenDir(char *path)
 
 ILDirEnt *ILReadDir(ILDir *directory)
 {
-	ILDirEnt *ILDirEnt_ptr;
-	 /* Threadsafe version of readdir() */
-#ifdef HAVE_READDIR_R
+	ILDirEnt *result;
+	/* Threadsafe version of readdir() 
+	 * FIXME: this causes a mysterious segfault 
+	 * so #if 0'd out.*/
+//#ifdef HAVE_READDIR_R
+#if 0
 	  /*  Fetch a directory entry  */
-		if(readdir_r(directory, ILDirEnt_ptr, &ILDirEnt_ptr) != 0)
+	if(readdir_r(directory, result, &result) != 0)
 	{
 		return NULL;
 	}
-	return ILDirEnt_ptr;
+	return result;
 #else
 #ifdef HAVE_READDIR
 	/*  Not Threadsafe, so maby if systems need it, we should rewrite it.  */
-	if((ILDirEnt_ptr = readdir(directory)) == NULL)
+	if((result = readdir(directory)) == NULL)
 	{
 		return NULL;
 	}
-	return ILDirEnt_ptr;
+	return result;
 #else
 	return NULL; // fallback mode
 #endif

@@ -11,6 +11,7 @@ libILSupport_a_SOURCES = aes.c \
 						 decimal.c \
 						 def_gc.c \
 						 des.c \
+						 dir.c \
 						 dns.c \
 						 dynlib.c \
 						 errno_map.c \

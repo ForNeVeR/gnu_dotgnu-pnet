@@ -247,14 +247,6 @@ struct hostent* ILGetHostByName(const char *name);
 struct hostent* ILGetHostByAddr(const void *addr, unsigned int len, int type);
 
 /* dir.c */
-#define ILFT_REG_FILE 0
-#define ILFT_DIRECTORY 0
-#define ILFT_FIFO_SPEC 0
-#define ILFT_SOCKET 0
-#define ILFT_CHAR_SPEC 0
-#define ILFT_BLOCK_SPEC 0
-#define ILFT_UNKNOWN 0
-
 #ifdef HAVE_DIRENT_H
 typedef DIR ILDir;
 #else

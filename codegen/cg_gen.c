@@ -182,7 +182,15 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 	if(scope)
 	{
 		classInfo = ILClassLookup(scope, name, "System");
-		return ILType_FromClass(classInfo);
+		classInfo = ILClassImport(info->image, classInfo);
+		if(classInfo)
+		{
+			return ILType_FromClass(classInfo);
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	else
 	{

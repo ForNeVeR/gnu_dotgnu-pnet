@@ -240,23 +240,6 @@ error:
 	return value;
 }
 
-/*
- * Determine if a type is "System.String".
- */
-static int IsString(ILType *type)
-{
-	if(ILType_IsClass(type))
-	{
-		ILClass *info = ILType_ToClass(type);
-		if(info && ILClass_Namespace(info))
-		{
-			return (!strcmp(ILClass_Name(info), "String") &&
-					!strcmp(ILClass_Namespace(info), "System"));
-		}
-	}
-	return 0;
-}
-
 %}
 
 /*
@@ -314,15 +297,15 @@ ILNode_SemAnalysis(ILNode_Add)
 	}
 
 	/* If one of the arguments is a string, then perform concatenation */
-	if(IsString(value1.type) || IsString(value2.type))
+	if(ILTypeIsStringClass(value1.type) || ILTypeIsStringClass(value2.type))
 	{
-		if(!IsString(value1.type))
+		if(!ILTypeIsStringClass(value1.type))
 		{
 			/* Convert the first argument into "ObjectRef" */
 			ILCast(info, node->expr1, &(node->expr1), value1.type,
 				   ILFindSystemType(info, "Object"));
 		}
-		if(!IsString(value2.type))
+		if(!ILTypeIsStringClass(value2.type))
 		{
 			/* Convert the second argument into "ObjectRef" */
 			ILCast(info, node->expr2, &(node->expr2), value2.type,
@@ -1186,9 +1169,17 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		return value1;
 	}
 
-	/* If both of the arguments are strings, then the
-	   code generator knows how to handle the operation */
-	if(IsString(value1.type) && IsString(value2.type))
+	/* If both of the arguments are strings, or one is a string
+	   and the other is null, then the code generator knows how
+	   to handle the operation */
+	if(ILTypeIsStringClass(value1.type) &&
+	   (ILTypeIsStringClass(value2.type) || value2.type == ILType_Null))
+	{
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = ILType_Boolean;
+		return value1;
+	}
+	else if(value1.type == ILType_Null && ILTypeIsStringClass(value2.type))
 	{
 		value1.kind = CS_SEMKIND_RVALUE;
 		value1.type = ILType_Boolean;

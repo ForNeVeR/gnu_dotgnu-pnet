@@ -1,0 +1,1825 @@
+\input texinfo	@c -*-texinfo-*-
+@c %** start of header
+@setfilename pnetimg.info
+@settitle Portable.NET Binary Image Library
+@setchapternewpage off
+@c %** end of header
+
+@ifinfo
+The Portable.NET binary image library supports reading and
+writing of .NET binaries.
+development.
+
+Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
+@end ifinfo
+
+@titlepage
+@sp 10
+@center @titlefont{Portable.NET Binary Image Library}
+
+@vskip 0pt plus 1fill
+@center{Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd}
+@end titlepage
+
+@c -----------------------------------------------------------------------
+
+@node Top, Overview, , (dir)
+@menu
+* Overview::                The library in brief
+* Images::                  Manipulating whole images
+* Metadata::                Manipulating metadata structures
+* Writing::                 Writing binary images
+* Types::                   Types used within the library
+* Index::                   Index of concepts and facilities
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Overview, Images, Top, Top
+@chapter Overview
+@cindex Overview
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Images, Metadata, Overview, Top
+@chapter Manipulating whole images
+@cindex Image loading
+
+Before loading an image, it is necessary to create an @code{ILContext}.
+Contexts group one or more images together and automatically take care
+of resolving linkages between them.  Contexts are completely separate:
+it is not possible to link an executable image in one against a library
+image in another.
+
+Contexts are manipulated using the following functions:
+
+@deftypefun {ILContext *} ILContextCreate (void)
+@cindex ILContextCreate function
+Create an IL context into which multiple images can be loaded.
+Returns @code{NULL} if out of memory.
+@end deftypefun
+
+@deftypefun void ILContextDestroy (ILContext *context)
+@cindex ILContextDestroy function
+Destroy an IL context, and any remaining images associated with it.
+@end deftypefun
+
+@deftypefun {ILImage *} ILContextGetModule (ILContext *context, const char *name)
+@cindex ILContextGetModule function
+Get an image from a context that has a particular module name.
+Returns @code{NULL} if no such image.
+@end deftypefun
+
+@deftypefun {ILImage *} ILContextGetAssembly (ILContext *context, const char *name)
+@cindex ILContextGetAssembly function
+Get an image from a context that has a particular assembly name.
+Returns @code{NULL} if no such image.
+@end deftypefun
+
+The following functions are used to load and manipulate images.
+
+@deftypefun int ILImageLoad (FILE *file, const char *filename, ILContext *context, ILImage **image, int flags)
+@cindex ILImageLoad function
+Load an IL image into memory.  The specified @code{file} can
+be a non-seekable stream.  The file is assumed to be positioned
+at the beginning of the stream.  Returns 0 if OK (with an
+image descriptor in @code{*image}), or an error code otherwise.
+If @code{filename} is non-@code{NULL}, it is used to locate the
+directory from which the image is loaded for linking purposes.
+
+When this function returns successfully, the caller can close
+@code{file}.  Any information that the binary image library
+requires will have already been loaded into main memory.
+
+The @code{flags} parameter can be a combination of any of the
+following values:
+
+@table @code
+@item IL_LOADFLAG_FORCE_32BIT
+@cindex IL_LOADFLAG_FORCE_32BIT constant
+Force images that are marked as `32-bit only' to loaded even if the
+host system is 64-bit.
+
+@item IL_LOADFLAG_NO_METADATA
+@cindex IL_LOADFLAG_NO_METADATA constant
+Don't parse the metadata after loading the image.  This can be useful
+if you wish to obtain information about an image's sections, but aren't
+interested in the contents of the metadata section.
+
+@item IL_LOADFLAG_PRE_VALIDATE
+@cindex IL_LOADFLAG_PRE_VALIDATE constant
+Pre-validate the token metadata.  In the future, the binary image library
+may load token data on demand rather than all at once.  In that case, it
+may be possible for an invalid metadata section to be accepted until such
+time as a particular invalid token is accessed.  This flag can be used to
+force the metadata tokens to be validated by @code{ILImageLoad} even if
+on demand loading is used.  Currently, metadatais always validated
+at load time.
+
+@item IL_LOADFLAG_NO_RESOLVE
+@cindex IL_LOADFLAG_NO_RESOLVE constant
+Don't resolve external references in the image.  This is used by tools
+such as @code{ildasm} and @code{ilsize} to load a single image without
+loading all of the libraries it depends upon.  If this flag is not
+supplied, @code{ILImageLoad} will attempt to load additional libraries
+to resolve external references.
+@end table
+
+The @code{ILImageLoad} function may return one of the following error
+values:
+
+@table @code
+@item IL_LOADERR_TRUNCATED
+@cindex IL_LOADERR_TRUNCATED constant
+The supplied file was truncated and could not be fully interpreted
+as a valid image.
+
+@item IL_LOADERR_NOT_PE
+@cindex IL_LOADERR_NOT_PE constant
+The supplied file was not a valid PE/COFF executable file.
+
+@item IL_LOADERR_NOT_IL
+@cindex IL_LOADERR_NOT_IL constant
+The supplied file was a valid PE/COFF executable file, but it did not
+contain valid IL (Intermediate Language) image data.
+
+@item IL_LOADERR_VERSION
+@cindex IL_LOADERR_VERSION constant
+The supplied file contained valid IL image data, but the version was
+incorrect.
+
+@item IL_LOADERR_32BIT_ONLY
+@cindex IL_LOADERR_32BIT_ONLY constant
+The supplied file was marked as `32-bit only', but an attempt was made
+to load it on a 64-bit system without the @code{IL_LOADFLAG_FORCE_32BIT}
+flag.
+
+@item IL_LOADERR_BACKWARDS
+@cindex IL_LOADERR_BACKWARDS constant
+Required program sections were in reverse order.
+
+@item IL_LOADERR_MEMORY
+@cindex IL_LOADERR_MEMORY constant
+Not enough memory was available to load the image.
+
+@item IL_LOADERR_BAD_ADDR
+@cindex IL_LOADERR_BAD_ADDR constant
+A bad address was found in the PE/COFF file.  This typically indicates
+a corrupted image.
+
+@item IL_LOADERR_BAD_META
+@cindex IL_LOADERR_BAD_META constant
+The metadata section contained invalid information.  This typically indicates
+a corrupted image.
+
+@item IL_LOADERR_UNDOC_META
+@cindex IL_LOADERR_UNDOC_META constant
+The metadata section uses an undocumented feature that cannot be safely
+ignored.
+
+@item IL_LOADERR_UNRESOLVED
+@cindex IL_LOADERR_UNRESOLVED constant
+During linking, there were some libraries or symbols that
+could not be resolved.
+@end table
+
+@end deftypefun
+
+@deftypefun {ILImage *} ILImageCreate (ILContext *context)
+@cindex ILImageCreate function
+Create an IL image.  This is typically used by compilers
+when building an image in-memory in preparation for writing
+it to an object file or executable.  Loaders should use
+@code{ILImageLoad} instead.  Returns @code{NULL} if out of memory.
+@end deftypefun
+
+@deftypefun void ILImageDestroy (ILImage *image)
+@cindex ILImageDestroy function
+Destroy an IL image and all memory associated with it.  If the image
+is linked to other images in the same context, then the links will be
+broken.
+
+This function will be called automatically for all remaining images
+when @code{ILContextDestroy} is called on the context.
+@end deftypefun
+
+@deftypefun {ILContext *} ILImageToContext (ILImage *image)
+@cindex ILImageToContext function
+Get the context associated with an IL image.
+@end deftypefun
+
+@deftypefun int ILImageType (ILImage *image)
+@cindex ILImageType function
+Get a loaded image's type, which may be one of the following values:
+
+@table @code
+@item IL_IMAGETYPE_DLL
+@cindex IL_IMAGETYPE_DLL constant
+The image is a dynamic link library.
+
+@item IL_IMAGETYPE_EXE
+@cindex IL_IMAGETYPE_EXE constant
+The image is a program executable.
+
+@item IL_IMAGETYPE_OBJ
+@cindex IL_IMAGETYPE_OBJ constant
+The image is an object file.
+
+@item IL_IMAGETYPE_BUILDING
+@cindex IL_IMAGETYPE_BUILDING constant
+The image was created by @code{ILImageCreate} and is in the process
+of being built.
+@end table
+
+@end deftypefun
+
+@deftypefun int ILImageHadNative (ILImage *image)
+@cindex ILImageHadNative function
+Determine if the loaded image had non-stub native code associated with it,
+which was stripped during loading.
+@end deftypefun
+
+@deftypefun int ILImageIs32Bit (ILImage *image)
+@cindex ILImageIs32Bit function
+Determine if the loaded image was 32-bit only, but the image
+was forced to load anyway.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageLength (ILImage *image)
+@cindex ILImageLength function
+Get the length of an IL image.  This is an indication only, useful for
+utilities such as @code{ilsize}.
+@end deftypefun
+
+@deftypefun {void *} ILImageMapAddress (ILImage *image, unsigned long address)
+@cindex ILImageMapAddress function
+Map a virtual address to a real address within a loaded image.
+Returns @code{NULL} if the virtual address is invalid for the image.
+@end deftypefun
+
+@deftypefun {void *} ILImageMapRVA (ILImage *image, unsigned long rva, unsigned long *len)
+@cindex ILImageMapRVA function
+Map a method or data RVA to an address and a maximum
+length.  The method or data begins at the return value
+and can occupy up to @code{*len} bytes within the image.
+Returns NULL if the RVA is invalid.  This function works
+even if @code{ILImageGetSection} cannot find the code section.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageRealOffset (ILImage *image, unsigned long address)
+@cindex ILImageRealOffset function
+Get the real file seek offset that corresponds to a virtual
+address within a loaded image.  Returns 0 if the virtual
+address is invalid for the image.
+
+This function is useful for debugging problems with images as
+file seek offsets are easier to locate using manual inspection
+than virtual addresses.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageGetSectionAddr (ILImage *image, int section)
+@cindex ILImageGetSectionAddr function
+Get the virtual address of the start of a particular section, or 0
+if the section is not present.  The @code{section} parameter must be
+one of the following values:
+
+@table @code
+@item IL_SECTION_HEADER
+@cindex IL_SECTION_HEADER constant
+The raw contents of the IL runtime header.
+
+@item IL_SECTION_CODE
+@cindex IL_SECTION_CODE constant
+The section that contains the IL bytecode.  Note: IL binaries do not have
+an explicit field that describes where the code section can be found.
+The library attempts to guess the most likely position, and will normally
+get it right.  The code section is normally accessed using
+@code{ILImageMapRVA}, which does not have to guess.  The lack of
+precision about the code section should only affect debug utilities
+such as @code{ildasm -d}.
+
+@item IL_SECTION_METADATA
+@cindex IL_SECTION_METADATA constant
+The raw contents of the metadata section.
+
+@item IL_SECTION_RESOURCES
+@cindex IL_SECTION_RESOURCES constant
+The section that contains strings and other manifest resources.
+
+@item IL_SECTION_STRONG_NAMES
+@cindex IL_SECTION_STRONG_NAMES constant
+The strong names section.
+
+@item IL_SECTION_CODE_MANAGER
+@cindex IL_SECTION_CODE_MANAGER constant
+The code manager table section.
+
+@item IL_SECTION_DEBUG
+@cindex IL_SECTION_DEBUG constant
+The debug information section.
+
+@end table
+
+@end deftypefun
+
+@deftypefun int ILImageGetSection (ILImage *image, int section, void **address, unsigned long *size)
+@cindex ILImageGetSection function
+Get the starting address and size of a particular image section.
+Returns zero if the section was not found.
+@end deftypefun
+
+@deftypefun ILToken ILImageGetEntryPoint(ILImage *image)
+@cindex ILImageGetEntryPoint function
+Get the entry point token for the image.  Returns zero if
+there is no entry point token.
+@end deftypefun
+
+@deftypefun {void *} ILImageGetMetaEntry (ILImage *image, const char *name, unsigned long *size)
+@cindex ILImageGetMetaEntry function
+Get a specific entry from the directory that is stored
+in the metadata section of an IL image.  Returns the address
+of the entry, or @code{NULL} if the entry is not present.  The size
+of the entry is returned in @code{*size} if the entry is found.
+
+The most common metadata entry names are @code{"#~"}, @code{"#Strings"},
+@code{"#Blob"}, @code{"#US"}, and @code{"#GUID"}.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageNumMetaEntries (ILImage *image)
+@cindex ILImageNumMetaEntries function
+Get the number of entries in the directory that is stored
+in the metadata section of an IL image.
+@end deftypefun
+
+@deftypefun {void *} ILImageMetaEntryInfo (ILImage *image, unsigned long entry, char **name, unsigned long *virtAddr, unsigned long *size)
+@cindex ILImageMetaEntryInfo function
+Get information about a numbered entry in the directory that is
+stored in the metadata section of an IL image.  The address of
+the data is returned, or @code{NULL} if the entry number is invalid.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageMetaHeaderSize (ILImage *image)
+@cindex ILImageMetaHeaderSize function
+Get the size in bytes of the directory header that is stored in
+the metadata section of an IL image.
+@end deftypefun
+
+@deftypefun int ILImageMetaIsOld (ILImage *image)
+@cindex ILImageMetaIsOld function
+Determine if the metadata is in the older Beta 1 or earlier format.
+Some of the token codes were different in the older format.
+
+Note: support for old metadata formats may be removed in a future
+version of the library.
+@end deftypefun
+
+@deftypefun {const char *} ILImageGetString (ILImage *image, unsigned long offset)
+@cindex ILImageGetString function
+Get a string from the string pool.  Returns @code{NULL} if @code{offset}
+is invalid.  The return pointer is guaranteed to be fixed for the
+lifetime of the image.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageAddString (ILImage *image, const char *str)
+@cindex ILImageAddString function
+Add a string to the string pool.  This can only be used if
+the image is being built.  Returns the offset, or zero if
+the string is empty or we are out of memory.
+@end deftypefun
+
+@deftypefun {const void *} ILImageGetBlob (ILImage *image, unsigned long offset, unsigned long *len)
+@cindex ILImageGetBlob function
+Get a blob from the blob pool.  Returns @code{NULL} if @code{offset}
+is invalid.  The return pointer is guaranteed to be fixed for the lifetime
+of the image.  The length of the blob is returned in @code{*len}.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageAddBlob (ILImage *image, const void *blob, unsigned long len)
+@cindex ILImageAddBlob function
+Add a blob to the blob pool.  This can only be used if
+the image is being built.  Returns the offset, or zero if
+we are out of memory.
+@end deftypefun
+
+@deftypefun {const char *} ILImageGetUserString (ILImage *image, unsigned long offset, unsigned long *len)
+@cindex ILImageGetUserString function
+Get a Unicode string from the user string pool.  Returns @code{NULL} if
+@code{offset} is invalid.  The return pointer is guaranteed to be
+fixed for the lifetime of the image.  The number of characters in
+the string is returned in @code{*len}.  The characters themselves are
+stored in little-endian order beginning at the return pointer.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageAddUserString (ILImage *image, const char *str, int len)
+@cindex ILImageAddUserString function
+Add a UTF-8 string to the user string pool.  This can only be
+used if the image is being built.  Returns the offset, or zero
+if we are out of memory.
+@end deftypefun
+
+@deftypefun {const char *} ILImageGetModuleName (ILImage *image)
+@cindex ILImageGetModuleName function
+Get the module name from an image.  Returns @code{NULL} if
+no such name.  If there are multiple module names, this
+returns the first.
+@end deftypefun
+
+@deftypefun {const char *} ILImageGetAssemblyName (ILImage *image)
+@cindex ILImageGetAssemblyName function
+Get the assembly name from an image.  Returns @code{NULL} if no such name.
+If there are multiple assembly names, this returns the first.
+@end deftypefun
+
+@deftypefun {unsigned long} ILImageNumTokens (ILImage *image, ILToken tokenType)
+@cindex ILImageNumTokens function
+Get the number of tokens of a particular type.  The @code{tokenType}
+parameter should be one of the constants defined below.  Each constant
+is listed with the program item type that results from calling
+@code{ILImageTokenInfo}.
+
+@multitable {IL_META_TOKEN_CUSTOM_ATTRIBUTE} {XXXXXXXXXXXXXXXX}
+@item @code{IL_META_TOKEN_MODULE} @tab @code{ILModule}
+@cindex IL_META_TOKEN_MODULE constant
+@item @code{IL_META_TOKEN_TYPE_REF} @tab @code{ILClass}
+@cindex IL_META_TOKEN_TYPE_REF constant
+@item @code{IL_META_TOKEN_TYPE_DEF} @tab @code{ILClass}
+@cindex IL_META_TOKEN_TYPE_DEF constant
+@item @code{IL_META_TOKEN_FIELD_DEF} @tab @code{ILField}
+@cindex IL_META_TOKEN_FIELD_DEF constant
+@item @code{IL_META_TOKEN_METHOD_DEF} @tab @code{ILMethod}
+@cindex IL_META_TOKEN_METHOD_DEF constant
+@item @code{IL_META_TOKEN_PARAM_DEF} @tab @code{ILParameter}
+@cindex IL_META_TOKEN_PARAM_DEF constant
+@item @code{IL_META_TOKEN_INTERFACE_IMPL} @tab @code{ILImplements}
+@cindex IL_META_TOKEN_INTERFACE_IMPL constant
+@item @code{IL_META_TOKEN_MEMBER_REF} @tab @code{ILMember}
+@cindex IL_META_TOKEN_MEMBER_REF constant
+@item @code{IL_META_TOKEN_CONSTANT} @tab @code{ILConstant}
+@cindex IL_META_TOKEN_CONSTANT constant
+@item @code{IL_META_TOKEN_CUSTOM_ATTRIBUTE} @tab @code{ILAttribute}
+@cindex IL_META_TOKEN_CUSTOM_ATTRIBUTE constant
+@item @code{IL_META_TOKEN_FIELD_MARSHAL} @tab @code{ILFieldMarshal}
+@cindex IL_META_TOKEN_FIELD_MARSHAL constant
+@item @code{IL_META_TOKEN_DECL_SECURITY} @tab @code{ILDeclSecurity}
+@cindex IL_META_TOKEN_DECL_SECURITY constant
+@item @code{IL_META_TOKEN_CLASS_LAYOUT} @tab @code{ILClassLayout}
+@cindex IL_META_TOKEN_CLASS_LAYOUT constant
+@item @code{IL_META_TOKEN_FIELD_LAYOUT} @tab @code{ILFieldLayout}
+@cindex IL_META_TOKEN_FIELD_LAYOUT constant
+@item @code{IL_META_TOKEN_STAND_ALONE_SIG} @tab @code{ILStandAloneSig}
+@cindex IL_META_TOKEN_STAND_ALONE_SIG constant
+@item @code{IL_META_TOKEN_EVENT_MAP} @tab @code{ILEventMap}
+@cindex IL_META_TOKEN_EVENT_MAP constant
+@item @code{IL_META_TOKEN_EVENT} @tab @code{ILEvent}
+@cindex IL_META_TOKEN_EVENT constant
+@item @code{IL_META_TOKEN_PROPERTY_MAP} @tab @code{ILPropertyMap}
+@cindex IL_META_TOKEN_PROPERTY_MAP constant
+@item @code{IL_META_TOKEN_PROPERTY} @tab @code{ILProperty}
+@cindex IL_META_TOKEN_PROPERTY constant
+@item @code{IL_META_TOKEN_METHOD_SEMANTICS} @tab @code{ILMethodSem}
+@cindex IL_META_TOKEN_METHOD_SEMANTICS constant
+@item @code{IL_META_TOKEN_METHOD_IMPL} @tab @code{ILOverride}
+@cindex IL_META_TOKEN_METHOD_IMPL constant
+@item @code{IL_META_TOKEN_MODULE_REF} @tab @code{ILModule}
+@cindex IL_META_TOKEN_MODULE_REF constant
+@item @code{IL_META_TOKEN_TYPE_SPEC} @tab @code{ILTypeSpec}
+@cindex IL_META_TOKEN_TYPE_SPEC constant
+@item @code{IL_META_TOKEN_IMPL_MAP} @tab @code{ILPInvoke}
+@cindex IL_META_TOKEN_IMPL_MAP constant
+@item @code{IL_META_TOKEN_FIELD_RVA} @tab @code{ILFieldRVA}
+@cindex IL_META_TOKEN_FIELD_RVA constant
+@item @code{IL_META_TOKEN_ASSEMBLY} @tab @code{ILAssembly}
+@cindex IL_META_TOKEN_ASSEMBLY constant
+@item @code{IL_META_TOKEN_PROCESSOR_DEF} @tab @code{ILProcessorInfo}
+@cindex IL_META_TOKEN_PROCESSOR_DEF constant
+@item @code{IL_META_TOKEN_OS_DEF} @tab @code{ILOSInfo}
+@cindex IL_META_TOKEN_OS_DEF constant
+@item @code{IL_META_TOKEN_ASSEMBLY_REF} @tab @code{ILAssembly}
+@cindex IL_META_TOKEN_ASSEMBLY_REF constant
+@item @code{IL_META_TOKEN_PROCESSOR_REF} @tab @code{ILProcessorInfo}
+@cindex IL_META_TOKEN_PROCESSOR_REF constant
+@item @code{IL_META_TOKEN_OS_REF} @tab @code{ILOSInfo}
+@cindex IL_META_TOKEN_OS_REF constant
+@item @code{IL_META_TOKEN_FILE} @tab @code{ILFileDecl}
+@cindex IL_META_TOKEN_FILE constant
+@item @code{IL_META_TOKEN_EXPORTED_TYPE} @tab @code{ILExportedType}
+@cindex IL_META_TOKEN_EXPORTED_TYPE constant
+@item @code{IL_META_TOKEN_MANIFEST_RESOURCE} @tab @code{ILManifestRes}
+@cindex IL_META_TOKEN_MANIFEST_RESOURCE constant
+@item @code{IL_META_TOKEN_NESTED_CLASS} @tab @code{ILNestedInfo}
+@cindex IL_META_TOKEN_NESTED_CLASS constant
+@end multitable
+
+If @code{ILImageMetaIsOld} returns a non-zero value, then
+@code{IL_META_TOKEN_OLD_NESTED_CLASS} must be used instead of
+@code{IL_META_TOKEN_NESTED_CLASS}.
+@end deftypefun
+
+@deftypefun {void *} ILImageTokenInfo (ILImage *image, ILToken token)
+@cindex ILImageTokenInfo function
+Get the information block associated with a token.
+Returns the block, or @code{NULL} if the token is invalid.
+
+Normally you would use one of the @code{XXX_FromToken} macros in
+@code{il_program.h} to obtain a token information block that has
+been converted into the correct type.  These macros are described
+in later sections.
+@end deftypefun
+
+@deftypefun {void *} ILImageNextToken (ILImage *image, ILToken tokenType, void *prev)
+@cindex ILImageNextToken function
+Iterate through the tokens in a specific token table.  Upon the first
+call, @code{prev} should be set to @code{NULL}.  On each subsequent
+call, the previous return value should be supplied.  This function
+returns @code{NULL} when it reaches the end of the specified token table.
+@end deftypefun
+
+@deftypefun {void *} ILImageSearchForToken (ILImage *image, ILToken tokenType, ILImageCompareFunc compareFunc, void *userData)
+@cindex ILImageSearchForToken function
+Search through the tokens in a specific token table for a match.
+Returns the information block, or @code{NULL} if no match.
+
+Using this function will usually be more efficient than iterating
+through an entire token table with @code{ILImageNextToken} and checking
+for the search condition.  This is because some token tables are
+sorted into a more efficient order that this function can take
+advantage of.
+
+The @code{ILImageCompareFunc} type is defined as follows:
+
+@example
+typedef int (*ILImageCompareFunc)(void *item, void *userData)
+@end example
+
+The function should return -1, 1, or 0 depending upon whether the
+token information block @code{item} is less than, greater than, or
+equal to the @code{userData} value.
+
+Functions such as @code{ILConstantGetFromOwner} provide wrappers
+for the search facility for specific kinds of searches, and should
+be used in preference to calling this function directly.
+@end deftypefun
+
+@deftypefun {const char *} ILImageLoadError (int error)
+@cindex ILImageLoadError function
+Get an error message string for an @code{IL_LOADERR_*} value.
+Returns a default message if the value is invalid.  This function
+is typically used to display error messages that result from
+calling @code{ILImageLoad}.
+@end deftypefun
+
+@c -----------------------------------------------------------------------
+
+@node Metadata, Program Items, Images, Top
+@chapter Manipulating metadata structures
+@cindex Metadata
+
+The following sections define all of the metadata item types and the
+operations upon them.
+
+Each item type has a @code{XCreate} function associated with it to
+create that type of item.  It is not necessary to call these functions
+if you are loading an image using @code{ILImageLoad}, as the loader
+creates the metadata items for you.  However, if you are building an image
+within a compiler, then you must create the items yourself.
+
+Items have two sets of API's for querying property values.
+Functions typically have names of the form @code{XGetY} to get
+property @code{Y} for the item type @code{X}.  Macros typically have names
+of the form @code{X_Y} to get property @code{Y} for the item type @code{X}.
+Additional macros are provided to test for specific attributes
+(e.g. @code{ILClass_IsPublic}) or to provide alternative names for
+base type properties (e.g. @code{ILClass_Token}).
+
+@menu
+* Program Items::         Operations on program items
+* Attributes::            Operations on attributes
+* Modules::               Operations on modules
+* Assemblies::            Operations on assemblies
+* OS Information::        Operations on OS information
+* Processor Information:: Operations on processor information
+* Classes::               Operations on classes
+* Members::               Operations on class members
+* Methods::               Operations on methods
+* Parameters::            Operations on method parameters
+* Fields::                Operations on fields
+* Events::                Operations on events
+* Event Maps::            Operations on event mappings
+* Properties::            Operations on properties
+* Property Maps::         Operations on property mappings
+* Method Semantics::      Operations on method semantics
+* PInvokes::              Operations on PInvoke declarations
+* Overrides::             Operations on method overrides
+* Type Specifications::   Operations on type specifications
+* Signatures::            Operations on stand alone signatures
+* Constants::             Operations on constants
+* Field RVAs::            Operations on field RVAs
+* Field Layouts::         Operations on field layouts
+* Field Marshaling::      Operations on field marshaling
+* Class Layouts::         Operations on class layouts
+* Security Declarations:: Operations on security declarations
+* File Declarations::     Operations on file declarations
+* Manifest Resources::    Operations on manifest resources
+* Exported Types::        Operations on exported types
+@end menu
+
+@c -----------------------------------------------------------------------
+
+@node Program Items, Attributes, Metadata, Metadata
+@section Operations on program items
+@cindex Program items
+
+@deftypefun {ILAttribute *} ILProgramItemNextAttribute (ILProgramItem *item, ILAttribute *attr)
+@cindex ILProgramItemNextAttribute function
+Iterate over the list of attributes that are associated
+with a program item.  If @code{attr} is @code{NULL}, then return the
+first attribute in the list.  Otherwise return the next
+attribute in the list after @code{attr}.  Returns @code{NULL}
+at the end of the list.
+@end deftypefun
+
+@deftypefun void ILProgramItemAddAttribute (ILProgramItem *item, ILAttribute *attr)
+@cindex ILProgramItemAddAttribute function
+Add an attribute to the list associated with a program item.
+@end deftypefun
+
+@deftypefun {unsigned long} ILProgramItemNumAttributes (ILProgramItem *item)
+@cindex ILProgramItemNumAttributes
+Get the number of attributes associated with a program item.
+@end deftypefun
+
+@deftypefun {ILImage *} ILProgramItemGetImage (ILProgramItem *item)
+@cindex ILProgramItemGetImage function
+Get the image with which a program item is associated.
+@end deftypefun
+
+@deftypefun ILToken ILProgramItemGetToken (ILProgramItem *item)
+@cindex ILProgramItemGetToken function
+Get the token code associated with a program item.
+@end deftypefun
+
+@defmac ILToProgramItem (item)
+@cindex ILToProgramItem macro
+Convert a pointer to a subclass into @code{ILProgramItem}.  This should be
+used on item handles to convert them into a form suitable for
+passing to one of the functions above.
+@end defmac
+
+@defmac ILProgramItem_FromToken (image, token)
+@cindex ILProgramItem_FromToken macro
+Converts a token within a specific image into an
+@code{ILProgramItem} handle.
+@end defmac
+
+@defmac ILProgramItem_Image (item)
+@cindex ILProgramItem_Image macro
+Get the image with which a program item is associated.  This convenience
+macro converts @code{item} into @code{ILProgramItem *} prior to passing
+it to @code{ILProgramItemGetImage}, thus avoiding the need for the programmer
+to explicitly invoke @code{ILToProgramItem}.
+@end defmac
+
+@defmac ILProgramItem_Token (item)
+@cindex ILProgramItem_Token macro
+Get the token code associated with a program item.  This convenience
+macro converts @code{item} into @code{ILProgramItem *} prior to
+passing it to @code{ILProgramItemGetToken}, thus avoiding the need for the
+programmer to explicitly invoke @code{ILToProgramItem}.
+@end defmac
+
+@defmac ILProgramItem_HasAttrs (item)
+@cindex ILProgramItem_HasAttrs macro
+Determine if a program item has custom attributes attached to it.
+This convenience macro converts @code{item} into @code{ILProgramItem *} prior
+to passing it to @code{ILProgramItemNextAttribute}, thus avoiding the
+need for the programmer to explicitly invoke @code{ILToProgramItem}.
+@end defmac
+
+@c -----------------------------------------------------------------------
+
+@node Attributes, Modules, Program Items, Metadata
+@section Operations on attributes
+@cindex Attributes
+
+@deftypefun {ILAttribute *} ILProgramItemToAttribute (ILProgramItem *item)
+@cindex ILProgramItemToAttribute function
+Convert a program item into an attribute.  This function is safer
+than directly casting @code{item} to @code{ILAttribute *}.
+If @code{item} is @code{NULL}, or is not actually an attribute item,
+then @code{NULL} will be returned.
+@end deftypefun
+
+@deftypefun {ILAttribute *} ILAttributeCreate (ILImage *image, ILToken token)
+@cindex ILAttributeCreate function
+Create a custom attribute within a specific image.
+Returns @code{NULL} if out of memory.
+@end deftypefun
+
+@deftypefun void ILAttributeSetType (ILAttribute *attr, ILProgramItem *type)
+@cindex ILAttributeSetType function
+Set the type of a custom attribute to a program item.  This will normally
+be a method indicating the constructor to use to create the attribute
+at runtime.  It can also be a class, but this usage is deprecated.
+@end deftypefun
+
+@deftypefun void ILAttributeSetString (ILAttribute *attr)
+@cindex ILAttributeSetString function
+Set the type of a custom attribute to string.  This usage is deprecated.
+@end deftypefun
+
+@deftypefun {ILProgramItem *} ILAttributeGetOwner (ILAttribute *attr)
+@cindex ILAttributeGetOwner function
+Get the owner of a custom attribute.  @code{NULL} if not yet assigned.
+Use the @code{ILProgramItemAddAttribute} function to assign an owner
+to an attribute.
+@end deftypefun
+
+@deftypefun int ILAttributeTypeIsString (ILAttribute *attr)
+@cindex ILAttributeTypeIsString function
+Determine if an attribute's type is a string.
+@end deftypefun
+
+@deftypefun int ILAttributeTypeIsItem (ILAttribute *attr)
+@cindex ILAttributeTypeIsItem function
+Determine if an attribute's type is a program item.
+@end deftypefun
+
+@deftypefun {ILProgramItem *} ILAttributeTypeAsItem (ILAttribute *attr)
+@cindex ILAttributeTypeAsItem function
+Convert an attribute's type into an item.  Returns @code{NULL} if
+the type is not an item.
+@end deftypefun
+
+@deftypefun int ILAttributeSetValue (ILAttribute *attr, const void *blob, unsigned long len)
+@cindex ILAttributeSetValue function
+Set the value of an attribute to a specific blob.
+Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const void *} ILAttributeGetValue (ILAttribute *attr, unsigned long *len)
+@cindex ILAttributeGetValue function
+Get the value associated with an attribute.  Returns the length of
+the value in @code{*len}.  If there is no value associated with the
+attribute, then this function returns @code{NULL}.
+@end deftypefun
+
+@defmac ILAttribute_FromToken (image, token)
+@cindex ILAttribute_FromToken macro
+Converts a token within a specific image into an
+@code{ILAttribute} handle.
+@end defmac
+
+@defmac ILAttribute_Token (attr)
+@cindex ILAttribute_Token macro
+Get the token code associated with an attribute.
+@end defmac
+
+@defmac ILAttribute_Owner (attr)
+@cindex ILAttribute_Owner macro
+Get the owner of a custom attribute.
+@end defmac
+
+@defmac ILAttribute_TypeIsString (attr)
+@cindex ILAttribute_TypeIsString macro
+Determine if an attribute's type is a string.
+@end defmac
+
+@defmac ILAttribute_TypeIsItem (attr)
+@cindex ILAttribute_TypeIsItem macro
+Determine if an attribute's type is a program item.
+@end defmac
+
+@defmac ILAttribute_TypeAsItem (attr)
+@cindex ILAttribute_TypeAsItem macro
+Convert an attribute's type into an item.
+@end defmac
+
+@c -----------------------------------------------------------------------
+
+@node Modules, Assemblies, Attributes, Metadata
+@section Operations on modules
+@cindex Modules
+
+@deftypefun {ILModule *} ILProgramItemToModule (ILProgramItem *item)
+@cindex ILProgramItemToModule function
+Convert a program item into a module.  This function is safer
+than directly casting @code{item} to @code{ILModule *}.
+If @code{item} is @code{NULL}, or is not actually a module item,
+then @code{NULL} will be returned.
+@end deftypefun
+
+@deftypefun {ILModule *} ILModuleCreate (ILImage *image, ILToken token, const char *name, const unsigned char *mvid)
+@cindex ILModuleCreate function
+Create a module structure and attach it to an image.
+Returns @code{NULL} if out of memory.
+
+This function is used to create a definition for the current module.
+@code{ILModuleRefCreate} and @code{ILModuleRefCreateUnique} should
+be used to create references to foreign modules.
+@end deftypefun
+
+@deftypefun {ILModule *} ILModuleRefCreate (ILImage *image, ILToken token, const char *name)
+@cindex ILModuleRefCreate function
+Create a module reference structure and attach it
+to an image.  Returns @code{NULL} if out of memory.
+@end deftypefun
+
+@deftypefun {ILModule *} ILModuleRefCreateUnique (ILImage *image, const char *name)
+@cindex ILModuleRefCreateUnique function
+Create a module reference with a given name if one
+doesn't already exist with that name.  If one already
+exists, then return that.  This should only be used
+when building images.
+@end deftypefun
+
+@deftypefun int ILModuleSetName (ILModule *module, const char *name)
+@cindex ILModuleSetName function
+Set the name of a module to a new value.  Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const char *} ILModuleGetName (ILModule *module)
+@cindex ILModuleGetName function
+Get the name of a module.
+@end deftypefun
+
+@deftypefun void ILModuleSetMVID (ILModule *module, const unsigned char *mvid)
+@cindex ILModuleSetMVID function
+Set the MVID of a module to a new value.  The buffer at @code{mvid}
+must be at least 16 bytes in length.  If @code{mvid} is
+@code{NULL}, then generate a random MVID.
+@end deftypefun
+
+@deftypefun {const unsigned char *} ILModuleGetMVID (ILModule *module)
+@cindex ILModuleGetMVID function
+Get the MVID of a module.  Returns @code{NULL} if @code{module} is
+a reference.
+@end deftypefun
+
+@deftypefun int ILModuleSetGeneration (ILModule *module, ILUInt32 generation)
+@cindex ILModuleSetGeneration function
+Set the Edit & Continue generation for a module.
+Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun ILUInt32 ILModuleGetGeneration (ILModule *module)
+@cindex ILModuleGetGeneration function
+Get the Edit & Continue generation for a module.
+@end deftypefun
+
+@deftypefun int ILModuleSetEncId (ILModule *module, const unsigned char *id)
+@cindex ILModuleSetEncId function
+Set the Edit & Continue identifier of a module to a new value.
+Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const unsigned char *} ILModuleGetEncId (ILModule *module)
+@cindex ILModuleGetEncId function
+Get the Edit & Continue identifier of a module.
+Returns @code{NULL} if no such identifier is registered.
+@end deftypefun
+
+@deftypefun int ILModuleSetEncBaseId (ILModule *module, const unsigned char *id)
+@cindex ILModuleSetEncBaseId function
+Set the Edit & Continue base identifier of a module to a new value.
+Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const unsigned char *} ILModuleGetEncBaseId (ILModule *module)
+@cindex ILModuleGetEncBaseId function
+Get the Edit & Continue base identifier of a module.
+Returns @code{NULL} if no such identifier is registered.
+@end deftypefun
+
+@deftypefun int ILModuleIsRef (ILModule *module)
+@cindex ILModuleIsRef function
+Determine if a module is a reference.
+@end deftypefun
+
+@deftypefun {ILImage *} ILModuleToImage (ILModule *module)
+@cindex ILModuleToImage function
+Convert a module into a fully resolved image.
+Returns @code{NULL} if insufficient linkages available.
+@end deftypefun
+
+@defmac ILModule_FromToken (image, token)
+@cindex ILModule_FromToken macro
+Converts a token within a specific image into an
+@code{ILModule} handle.
+@end defmac
+
+@defmac ILModule_Token (module)
+@cindex ILModule_Token macro
+Get the token code associated with a module.
+@end defmac
+
+@defmac ILModule_Generation (module)
+@cindex ILModule_Generation macro
+Get the Edit & Continue generation for a module.
+@end defmac
+
+@defmac ILModule_Name (module)
+@cindex ILModule_Name macro
+Get the name associated with a module.
+@end defmac
+
+@defmac ILModule_MVID (module)
+@cindex ILModule_MVID macro
+Get the MVID associated with a module.
+@end defmac
+
+@defmac ILModule_EncId (module)
+@cindex ILModule_EncId macro
+Get the Edit & Continue identifier associated with a module.
+@end defmac
+
+@defmac ILModule_EncBaseId (module)
+@cindex ILModule_EncBaseId macro
+Get the Edit & Continue base identifier associated with a module.
+@end defmac
+
+@c -----------------------------------------------------------------------
+
+@node Assemblies, OS Information, Modules, Metadata
+@section Operations on assemblies
+@cindex Assemblies
+
+@deftypefun {ILAssembly *} ILProgramItemToAssembly (ILProgramItem *item)
+@cindex ILProgramItemToAssembly function
+Convert a program item into an assembly.  This function is safer
+than directly casting @code{item} to @code{ILAssembly *}.
+If @code{item} is @code{NULL}, or is not actually an assembly item,
+then @code{NULL} will be returned.
+@end deftypefun
+
+@deftypefun {ILAssembly *} ILAssemblyCreate (ILImage *image, ILToken token, const char *name, int isRef)
+@cindex ILAssemblyCreate function
+Create an assembly structure and attach it to an image.  This creates
+an assembly definition if @code{isRef} is zero, or a reference to a
+foreign assembly if @code{isRef} is non-zero.  Returns @code{NULL} if
+out of memory.
+@end deftypefun
+
+@deftypefun int ILAssemblyIsRef (ILAssembly *assem)
+@cindex ILAssemblyIsRef function
+Determine if an assembly structure is a reference.
+@end deftypefun
+
+@deftypefun {ILAssembly *} ILAssemblyCreateImport (ILImage *image, ILImage *fromImage)
+@cindex ILAssemblyCreateImport function
+Create an assembly reference within @code{image} for the
+image @code{fromImage}.  Returns @code{NULL} if out of memory.
+
+This function is typically used by compilers to assist with importing types
+from libraries.  The first step of the import is to create an assembly
+reference to the library so that it will be automatically loaded at runtime.
+@end deftypefun
+
+@deftypefun {ILImage *} ILAssemblyToImage (ILAssembly *assem)
+@cindex ILAssemblyToImage function
+Convert an assembly into a fully resolved image, by searching all
+of the images within the assembly's context.  Returns @code{NULL}
+if there are insufficient linkages available.
+
+This is typically used to link across to a referenced assembly to
+obtain foreign definitions.
+@end deftypefun
+
+@deftypefun void ILAssemblySetHashAlgorithm (ILAssembly *assem, ILUInt32 hashAlg)
+@cindex ILAssemblySetHashAlgorithm function
+Set the hash algorithm code for an assembly.  This will typically be one
+of the following values:
+
+@table @code
+@item IL_META_HASHALG_NONE
+@cindex IL_META_HASHALG_NONE constant
+No hash algorithm specified.
+
+@item IL_META_HASHALG_MD5
+@cindex IL_META_HASHALG_MD5 constant
+Use the MD5 message digest algorithm.
+
+@item IL_META_HASHALG_SHA1
+@cindex IL_META_HASHALG_SHA1 constant
+Use the SHA-1 message digest algorithm.
+@end table
+@end deftypefun
+
+@deftypefun ILUInt32 ILAssemblyGetHashAlgorithm (ILAssembly *assem)
+@cindex ILAssemblyGetHashAlgorithm function
+Get the hash algorithm code for an assembly.
+@end deftypefun
+
+@deftypefun void ILAssemblySetVersion (ILAssembly *assem, const ILUInt16 *version)
+@cindex ILAssemblySetVersion function
+Set the version number for an assembly.  The @code{version} buffer must
+contain at least 4 values.
+@end deftypefun
+
+@deftypefun void ILAssemblySetVersionSplit (ILAssembly *assem, ILUInt32 ver1, ILUInt32 ver2, ILUInt32 ver3, ILUInt32 ver4)
+@cindex ILAssemblySetVersionSplit function
+Set the version number for an assembly, with the components split apart.
+@end deftypefun
+
+@deftypefun {const ILUInt16 *} ILAssemblyGetVersion (ILAssembly *assem)
+@cindex ILAssemblyGetVersion function
+Get the version number for an assembly.
+@end deftypefun
+
+@deftypefun void ILAssemblySetAttrs (ILAssembly *assem, ILUInt32 mask, ILUInt32 values)
+@cindex ILAssemblySetAttrs function
+Set or reset specific assembly definition attributes.  This function AND's the
+current attributes with @code{~mask} and then OR's the result with
+@code{values}.  i.e. attributes that aren't specified by @code{mask}
+are left unmodified.  The following attributes can be used on assembly
+definitions:
+
+@table @code
+@item IL_META_ASSEM_PUBLIC_KEY
+@cindex IL_META_ASSEM_PUBLIC_KEY constant
+If this attribute is set, then the originator is the full unhashed public key.
+
+@item IL_META_ASSEM_COMPATIBILITY_MASK
+@cindex IL_META_ASSEM_COMPATIBILITY_MASK constant
+The mask to use when defining the compatibility mode with one of
+the following four constants.
+
+@item IL_META_ASSEM_SIDE_BY_SIDE_COMPATIBLE
+@cindex IL_META_ASSEM_SIDE_BY_SIDE_COMPATIBLE constant
+The assembly is side by side compatible.
+
+@item IL_META_ASSEM_NON_SIDE_BY_SIDE_APP_DOMAIN
+@cindex IL_META_ASSEM_NON_SIDE_BY_SIDE_APP_DOMAIN constant
+The assembly cannot execute with other versions if they are executing
+in the same application domain.
+
+@item IL_META_ASSEM_NON_SIDE_BY_SIDE_PROCESS
+@cindex IL_META_ASSEM_NON_SIDE_BY_SIDE_PROCESS constant
+The assembly cannot execute with other versions if they are
+executing in the same process.
+
+@item IL_META_ASSEM_NON_SIDE_BY_SIDE_MACHINE
+@cindex IL_META_ASSEM_NON_SIDE_BY_SIDE_MACHINE constant
+The assembly cannot execute with other versions if they are
+executing on the same machine.
+
+@item IL_META_ASSEM_ENABLE_JIT_TRACKING
+@cindex IL_META_ASSEM_ENABLE_JIT_TRACKING constant
+The JIT should generate an IL-to-native code debugging map.
+
+@item IL_META_ASSEM_DISABLE_JIT_OPTIMIZER
+@cindex IL_META_ASSEM_DISABLE_JIT_OPTIMIZER constant
+The JIT should not attempt to generate optimized code.
+@end table
+
+If @code{assem} is a reference, then setting these attributes will have
+no long term effect.  Use @code{ILAssemblySetRefAttrs} instead.
+@end deftypefun
+
+@deftypefun void ILAssemblySetRefAttrs (ILAssembly *assem, ILUInt32 mask, ILUInt32 values)
+@cindex ILAssemblySetRefAttrs constant
+Set or reset specific assembly reference attributes.  This function AND's the
+current attributes with @code{~mask} and then OR's the result with
+@code{values}.  i.e. attributes that aren't specified by @code{mask}
+are left unmodified.  The following attributes can be used on assembly
+references:
+
+@table @code
+@item IL_META_ASSEMREF_FULL_ORIGINATOR
+@cindex IL_META_ASSEMREF_FULL_ORIGINATOR constant
+If this attribute is set, then the originator is a full public key instead
+of just a key name.
+@end table
+
+If @code{assem} is a definition, then setting these attributes will have
+no long term effect.  Use @code{ILAssemblySetAttrs} instead.
+@end deftypefun
+
+@deftypefun ILUInt32 ILAssemblyGetAttrs (ILAssembly *assem)
+@cindex ILAssemblyGetAttrs function
+Get the attributes associated with an assembly definition.
+@end deftypefun
+
+@deftypefun ILUInt32 ILAssemblyGetRefAttrs (ILAssembly *assem)
+@cindex ILAssemblyRefGetAttrs function
+Get the reference attributes associated with an assembly.
+@end deftypefun
+
+@deftypefun int ILAssemblySetOriginator (ILAssembly *assem, const void *key, unsigned long len)
+@cindex ILAssemblySetOriginator function
+Set the value of an assembly's originator key to
+a specific value.  Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const void *} ILAssemblyGetOriginator (ILAssembly *assem, unsigned long *len)
+@cindex ILAssemblyGetOriginator function
+Get the originator key associated with an assembly.  The length of the
+key is returned in @code{*len}, and a pointer to the data is returned
+from the function.  Returns @code{NULL} if there is no originator key
+associated with the assembly.
+@end deftypefun
+
+@deftypefun int ILAssemblySetName (ILAssembly *assem, const char *name)
+@cindex ILAssemblySetName function
+Change the name for an assembly.  Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const char *} ILAssemblyGetName (ILAssembly *assem)
+@cindex ILAssemblyGetName function
+Get the name for an assembly.
+@end deftypefun
+
+@deftypefun int ILAssemblySetLocale (ILAssembly *assem, const char *locale)
+@cindex ILAssemblySetLocale function
+Set the locale name for an assembly.  Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const char *} ILAssemblyGetLocale (ILAssembly *assem)
+@cindex ILAssemblyGetLocale function
+Get the locale name for an assembly.  Returns @code{NULL} if there is
+no locale name associated with the assembly at present.
+@end deftypefun
+
+@deftypefun int ILAssemblySetConfig (ILAssembly *assem, const char *config)
+@cindex ILAssemblySetConfig function
+Set the configuration string for an assembly.
+Returns zero if out of memory.  This function is deprecated.
+@end deftypefun
+
+@deftypefun {const char *} ILAssemblyGetConfig (ILAssembly *assem)
+@cindex ILAssemblyGetConfig function
+Get the configuration string for an assembly.  Returns @code{NULL}
+if the assembly does not have a configuration string associated with
+it.  This function is deprecated.
+@end deftypefun
+
+@deftypefun int ILAssemblySetTitle (ILAssembly *assem, const char *title)
+@cindex ILAssemblySetTitle function
+Set the title string for an assembly.
+Returns zero if out of memory.  This function is deprecated.
+@end deftypefun
+
+@deftypefun {const char *} ILAssemblyGetTitle (ILAssembly *assem)
+@cindex ILAssemblyGetTitle function
+Get the title string for an assembly.  Returns @code{NULL}
+if the assembly does not have a title string associated with
+it.  This function is deprecated.
+@end deftypefun
+
+@deftypefun int ILAssemblySetDescription (ILAssembly *assem, const char *description)
+@cindex ILAssemblySetDescription function
+Set the description string for an assembly.
+Returns zero if out of memory.  This function is deprecated.
+@end deftypefun
+
+@deftypefun {const char *} ILAssemblyGetDescription (ILAssembly *assem)
+@cindex ILAssemblyGetDescription function
+Get the description string for an assembly.  Returns @code{NULL}
+if the assembly does not have a description string associated with
+it.  This function is deprecated.
+@end deftypefun
+
+@deftypefun int ILAssemblySetAltName (ILAssembly *assem, const char *altName)
+@cindex ILAssemblySetAltName function
+Set the alternative name for an assembly.
+Returns zero if out of memory.  This function is deprecated.
+@end deftypefun
+
+@deftypefun {const char *} ILAssemblyGetAltName (ILAssembly *assem)
+@cindex ILAssemblyGetAltName function
+Get the alternative name for an assembly.  Returns @code{NULL}
+if the assembly does not have an alternative name associated
+with it.  This function is deprecated.
+@end deftypefun
+
+@deftypefun int ILAssemblySetHash (ILAssembly *assem, const void *hash, unsigned long len)
+@cindex ILAssemblySetHash function
+Set the value of an assembly's hash value to a specific value.
+Returns zero if out of memory.
+@end deftypefun
+
+@deftypefun {const void *} ILAssemblyGetHash (ILAssembly *assem, unsigned long *len)
+@cindex ILAssemblyGetHash function
+Get the hash value associated with an assembly.  The length of
+the value is returned in @code{*len}, and a pointer to the
+value is returned from the function.  Returns @code{NULL} if
+there is no hash value associated with the assembly.
+@end deftypefun
+
+@defmac ILAssembly_FromToken (image, token)
+@cindex ILAssembly_FromToken macro
+Converts a token within a specific image into an
+@code{ILAssembly} handle.
+@end defmac
+
+@defmac ILAssembly_Token (assem)
+@cindex ILAssembly_Token macro
+Get the token code associated with an assembly.
+@end defmac
+
+@defmac ILAssembly_Name (assem)
+@cindex ILAssembly_Name macro
+Get the name associated with an assembly.
+@end defmac
+
+@defmac ILAssembly_HashAlg (assem)
+@cindex ILAssembly_HashAlg macro
+Get the hash algorithm associated with an assembly.
+@end defmac
+
+@defmac ILAssembly_Locale (assem)
+@cindex ILAssembly_Locale macro
+Get the locale string associated with an assembly.
+@end defmac
+
+@defmac ILAssembly_Config (assem)
+@cindex ILAssembly_Config macro
+Get the configuration string associated with an assembly.
+This macro is deprecated.
+@end defmac
+
+@defmac ILAssembly_Title (assem)
+@cindex ILAssembly_Title macro
+Get the title string associated with an assembly.
+This macro is deprecated.
+@end defmac
+
+@defmac ILAssembly_Description (assem)
+@cindex ILAssembly_Description macro
+Get the description string associated with an assembly.
+This macro is deprecated.
+@end defmac
+
+@defmac ILAssembly_AltName (assem)
+@cindex ILAssembly_AltName macro
+Get the alternative name associated with an assembly.
+This macro is deprecated.
+@end defmac
+
+@defmac ILAssembly_Attrs (assem)
+@cindex ILAssembly_Attrs macro
+Get the attributes associated with an assembly definition.
+@end defmac
+
+@defmac ILAssembly_RefAttrs (assem)
+@cindex ILAssembly_RefAttrs macro
+Get the attributes associated with an assembly reference.
+@end defmac
+
+@defmac ILAssembly_HasPublicKey (assem)
+@cindex ILAssembly_HasPublicKey macro
+Determine if an assembly definition has a full public key associated
+with it, rather than just the hash of a public key.
+@end defmac
+
+@defmac ILAssembly_IsSideBySideCompatible (assem)
+@cindex ILAssembly_IsSideBySideCompatible macro
+Determine if an assembly definition is side by side compatible.
+@end defmac
+
+@defmac ILAssembly_IsNotAppDomainCompatible (assem)
+@cindex ILAssembly_IsNotAppDomainCompatible macro
+Determine if an assembly definition cannot execute with other versions if
+they are executing in the same application domain.
+@end defmac
+
+@defmac ILAssembly_IsNotProcessCompatible (assem)
+@cindex ILAssembly_IsNotProcessCompatible macro
+Determine if an assembly assembly definition cannot execute
+with other versions if they are executing in the same process.
+@end defmac
+
+@defmac ILAssembly_IsNotMachineCompatible (assem)
+@cindex ILAssembly_IsNotMachineCompatible macro
+Determine if an assembly definition cannot execute with other
+versions if they are executing on the same machine.
+@end defmac
+
+@defmac ILAssembly_EnableJITTracking (assem)
+@cindex ILAssembly_EnableJITTracking macro
+Determine if the JIT should generate an IL-to-native code debugging map
+for an assembly definition.
+@end defmac
+
+@defmac ILAssembly_DisableJITOptimizer (assem)
+@cindex ILAssembly_DisableJITOptimizer macro
+Determine if the JIT should not attempt to generate optimized code
+for an assembly definition.
+@end defmac
+
+@defmac ILAssembly_HasFullOriginator (assem)
+@cindex ILAssembly_HasFullOriginator macro
+Determine if the originator on an assembly reference is a full
+public key instead of just a key name.
+@end defmac
+
+@c -----------------------------------------------------------------------
+
+@node OS Information, Processor Information, Assemblies, Metadata
+@section Operations on OS information
+@cindex OS information
+
+@deftypefun {ILOSInfo *} ILProgramItemToOSInfo (ILProgramItem *item)
+@cindex ILProgramItemToOSInfo function
+Convert a program item into an OS information block.  This function is safer
+than directly casting @code{item} to @code{ILOSInfo *}.
+If @code{item} is @code{NULL}, or is not actually an OS information
+block item, then @code{NULL} will be returned.
+@end deftypefun
+
+@deftypefun {ILOSInfo *} ILOSInfoCreate (ILImage *image, ILToken token, ILUInt32 identifier, ILUInt32 major, ILUInt32 minor, ILAssembly *assem)
+@cindex ILOSInfoCreate function
+Create a new OS information block and attach it to an assembly definition
+or reference.  Returns @code{NULL} if out of memory.
+
+OS information blocks are not very useful in practice, since they bind the
+image to a particular operating system and version.  Hence, compilers
+should avoid using this function.
+
+Multiple OS information blocks can be attached to the same assembly if
+multiple operating systems are relevant.
+@end deftypefun
+
+@deftypefun void ILOSInfoSetInfo (ILOSInfo *osinfo, ILUInt32 identifier, ILUInt32 major, ILUInt32 minor)
+@cindex ILOSInfoSetInfo function
+Set the information associated with an OS information block.
+@end deftypefun
+
+@deftypefun ILUInt32 ILOSInfoGetIdentifier (ILOSInfo *osinfo)
+@cindex ILOSInfoGetIdentifier function
+Get the operating system identifier associated with an OS information block.
+@end deftypefun
+
+@deftypefun ILUInt32 ILOSInfoGetMajor (ILOSInfo *osinfo)
+@cindex ILOSInfoGetMajor function
+Get the operating system major version associated with an OS information block.
+@end deftypefun
+
+@deftypefun ILUInt32 ILOSInfoGetMinor (ILOSInfo *osinfo)
+@cindex ILOSInfoGetMinor function
+Get the operating system minor version associated with an OS information block.
+@end deftypefun
+
+@deftypefun {ILAssembly *} ILOSInfoGetAssembly (ILOSInfo *osinfo)
+@cindex ILOSInfoGetAssembly function
+Get the assembly definition or reference that an OS information block
+is attached to.
+@end deftypefun
+
+@deftypefun {ILOSInfo *} ILOSInfoNext (ILAssembly *assem, ILOSInfo *osinfo)
+@cindex ILOSInfoNext function
+Iterate over all OS information blocks associated with an assembly.
+On the first call, @code{osinfo} should be @code{NULL}.  Each subsequent
+call supplies the previous return value.  The function returns @code{NULL}
+when the end of the list is reached.
+@end deftypefun
+
+@defmac ILOSInfo_FromToken (image, token)
+@cindex ILOSInfo_FromToken macro
+Converts a token within a specific image into an
+@code{ILOSInfo} handle.
+@end defmac
+
+@defmac ILOSInfo_Token (osinfo)
+@cindex ILOSInfo_Token macro
+Get the token code associated with an OS information block.
+@end defmac
+
+@defmac ILOSInfo_Identifier (osinfo)
+@cindex ILOSInfo_Identifier macro
+Get the operating system identifier associated with an OS information block.
+@end defmac
+
+@defmac ILOSInfo_Major (osinfo)
+@cindex ILOSInfo_Major macro
+Get the operating system major version associated with an OS information block.
+@end defmac
+
+@defmac ILOSInfo_Minor (osinfo)
+@cindex ILOSInfo_Minor macro
+Get the operating system minor version associated with an OS information block.
+@end defmac
+
+@defmac ILOSInfo_Assembly (osinfo)
+@cindex ILOSInfo_Assembly
+Get the assembly definition or reference that an OS information block
+is attached to.
+@end defmac
+
+@c -----------------------------------------------------------------------
+
+@node Processor Information, Classes, OS Information, Metadata
+@section Operations on processor information
+@cindex Processor information
+
+@deftypefun {ILProcessorInfo *} ILProgramItemToProcessorInfo (ILProgramItem *item)
+@cindex ILProgramItemToProcessorInfo function
+Convert a program item into an OS information block.  This function is safer
+than directly casting @code{item} to @code{ILProcessorInfo *}.
+If @code{item} is @code{NULL}, or is not actually a processor information
+block item, then @code{NULL} will be returned.
+@end deftypefun
+
+@deftypefun {ILProcessorInfo *} ILProcessorInfoCreate (ILImage *image, ILToken token, ILUInt32 number, ILAssembly *assem)
+Create a new processor information block and attach it to an assembly
+definition or reference.  Returns @code{NULL} if out of memory.
+
+Processor information blocks are not very useful in practice, since they
+bind the image to a particular processor.  Hence, compilers should avoid
+using this function.
+
+Multiple processor information blocks can be attached to the same assembly
+if multiple processors are relevant.
+@end deftypefun
+
+@deftypefun void ILProcessorInfoSetNumber (ILProcessorInfo *procinfo, ILUInt32 number)
+@cindex ILProcessorInfoSetNumber function
+Set the processor number within a processor information block.
+@end deftypefun
+
+@deftypefun ILUInt32 ILProcessorInfoGetNumber (ILProcessorInfo *procinfo)
+@cindex ILProcessorInfoGetNumber function
+Get the processor number associated with a processor information block.
+@end deftypefun
+
+@deftypefun {ILAssembly *} ILProcessorInfoGetAssembly (ILProcessorInfo *procinfo)
+@cindex ILProcessorInfoGetAssembly function
+Get the assembly definition or reference that a processor information block
+is attached to.
+@end deftypefun
+
+@deftypefun {ILProcessorInfo *} ILProcessorInfoNext (ILAssembly *assem, ILProcessorInfo *procinfo)
+@cindex ILProcessorInfoNext function
+Iterate over all processor information blocks associated with an assembly.
+On the first call, @code{procinfo} should be @code{NULL}.  Each subsequent
+call supplies the previous return value.  The function returns @code{NULL}
+when the end of the list is reached.
+@end deftypefun
+
+@defmac ILProcessorInfo_FromToken (image, token)
+@cindex ILProcessorInfo_FromToken macro
+Converts a token within a specific image into an
+@code{ILProcessorInfo} handle.
+@end defmac
+
+@defmac ILProcessorInfo_Token (procinfo)
+@cindex ILProcessorInfo_Token macro
+Get the token code associated with a processor information block.
+@end defmac
+
+@defmac ILProcessorInfo_Number (procinfo)
+@cindex ILProcessorInfo_Number macro
+Get the processor number associated with a processor information block.
+@end defmac
+
+@defmac ILProcessorInfo_Assembly (procinfo)
+@cindex ILProcessorInfo_Assembly macro
+Get the assembly definition or reference that a processor information block
+is attached to.
+@end defmac
+
+@c -----------------------------------------------------------------------
+
+@node Classes, Members, Processor Information, Metadata
+@section Operations on classes
+@cindex Classes
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Members, Methods, Classes, Metadata
+@section Operations on class members
+@cindex Members
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Methods, Parameters, Members, Metadata
+@section Operations on methods
+@cindex Methods
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Parameters, Fields, Methods, Metadata
+@section Operations on method parameters
+@cindex Parameters
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Fields, Events, Parameters, Metadata
+@section Operations on fields
+@cindex Fields
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Events, Event Maps, Fields, Metadata
+@section Operations on events
+@cindex Events
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Event Maps, Properties, Events, Metadata
+@section Operations on event mappings
+@cindex Event maps
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Properties, Property Maps, Event Maps, Metadata
+@section Operations on properties
+@cindex Properties
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Property Maps, Method Semantics, Properties, Metadata
+@section Operations on property mappings
+@cindex Property Maps
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Method Semantics, PInvokes, Property Maps, Metadata
+@section Operations on method semantics
+@cindex Method semantics
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node PInvokes, Overrides, Method Semantics, Metadata
+@section Operations on PInvoke declarations
+@cindex PInvokes
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Overrides, Type Specifications, PInvokes, Metadata
+@section Operations on method overrides
+@cindex Overrides
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Type Specifications, Signatures, Overrides, Metadata
+@section Operations on type specifications
+@cindex Type specifications
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Signatures, Constants, Type Specifications, Metadata
+@section Operations on stand alone signatures
+@cindex Signatures
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Constants, Field RVAs, Signatures, Metadata
+@section Operations on constants
+@cindex Constants
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Field RVAs, Field Layouts, Constants, Metadata
+@section Operations on field RVAs
+@cindex Field RVAs
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Field Layouts, Field Marshaling, Field RVAs, Metadata
+@section Operations on field layouts
+@cindex Field layouts
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Field Marshaling, Class Layouts, Field Layouts, Metadata
+@section Operations on field marshaling
+@cindex Field marshaling
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Class Layouts, Security Declarations, Field Marshaling, Metadata
+@section Operations on class layouts
+@cindex Class layouts
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Security Declarations, File Declarations, Class Layouts, Metadata
+@section Operations on security declarations
+@cindex Security declarations
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node File Declarations, Manifest Resources, Security Declarations, Metadata
+@section Operations on file declarations
+@cindex File declarations
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Manifest Resources, Exported Types, File Declarations, Metadata
+@section Operations on manifest resources
+@cindex Manifest resources
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Exported Types, Writing, Manifest Resources, Metadata
+@section Operations on exported types
+@cindex Exported types
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Writing, Types, Exported Types, Top
+@chapter Writing binary images
+@cindex Writing
+
+TO DO
+
+@c -----------------------------------------------------------------------
+
+@node Types, Index, Writing, Top
+@chapter Types used within the library
+@cindex Types
+
+@deftp {Type} ILContext*
+@cindex ILContext type
+Images that are loaded by the library may depend upon other images
+to resolve external symbols.  The library uses the @code{ILContext}
+type to collect multiple images for the purposes of linking.
+@xref{Images}, for more information.
+@end deftp
+
+@deftp {Type} ILImage*
+@cindex ILImage type
+When an image is loaded by the library, an @code{ILImage} object is
+created to represent it.  Images that are being built by a compiler
+are also represented by an @code{ILImage} object.  @xref{Images},
+for more information.
+@end deftp
+
+@deftp {Type} ILToken
+@cindex ILToken type
+Metadata tokens within images are represented by 32-bit values.
+This type can be used to declare variables of the correct size
+to hold a token.
+@end deftp
+
+@deftp {Type} ILProgramItem*
+@cindex ILProgramItem type
+When an image is loaded by the library, the tokens within the metadata
+are converted into program items that can be queried and updated by
+the programmer.  The @code{ILProgramItem} type is the base of the
+item hierarchy.  @xref{Program Items}, for more information.
+@end deftp
+
+@deftp {Type} ILAttribute*
+@cindex ILAttribute type
+Custom attribute tokens within an image are associated with an
+@code{ILAttribute} object.  @xref{Attributes}, for more information.
+@end deftp
+
+@deftp {Type} ILModule*
+@cindex ILModule type
+Module definition and reference tokens within an image are associated with an
+@code{ILModule} object.  @xref{Modules}, for more information.
+@end deftp
+
+@deftp {Type} ILAssembly*
+@cindex ILAssembly type
+Assembly definition and reference tokens within an image are associated with
+an @code{ILAssembly} object.  @xref{Assemblies}, for more information.
+@end deftp
+
+@deftp {Type} ILOSInfo*
+@cindex ILOSInfo type
+OS information tokens within an image are associated with
+an @code{ILOSInfo} object.  @xref{OS Information}, for more information.
+@end deftp
+
+@deftp {Type} ILProcessorInfo*
+@cindex ILProcessorInfo type
+Processor information tokens within an image are associated with
+an @code{ILProcessorInfo} object.  @xref{Processor Information},
+for more information.
+@end deftp
+
+@deftp {Type} ILClass*
+@cindex ILClass type
+Class definition and reference tokens within an image are associated with
+an @code{ILClass} object.  @xref{Classes}, for more information.
+@end deftp
+
+@deftp {Type} ILMember*
+@cindex ILMember type
+Class members within an image are associated with an @code{ILMember} object.
+Normally, @code{ILMember} objects are not created directly.  Instead,
+objects of type @code{ILMethod}, @code{ILField}, etc, are created.  Any
+of these can be cast to @code{ILMember *} to use with member-related
+operations.  @xref{Members}, for more information.
+@end deftp
+
+@deftp {Type} ILMethod*
+@cindex ILMethod type
+Method definition tokens within an image are associated with
+an @code{ILMethod} object.  @xref{Methods}, for more information.
+@end deftp
+
+@deftp {Type} ILParameter*
+@cindex ILParameter type
+Method parameter tokens within an image are associated with
+an @code{ILParameter} object.  @xref{Parameters}, for more information.
+@end deftp
+
+@deftp {Type} ILField*
+@cindex ILField type
+Field definition tokens within an image are associated with
+an @code{ILField} object.  @xref{Fields}, for more information.
+@end deftp
+
+@deftp {Type} ILEvent*
+@cindex ILEvent type
+Event definition tokens within an image are associated with
+an @code{ILEvent} object.  @xref{Events}, for more information.
+@end deftp
+
+@deftp {Type} ILEventMap*
+@cindex ILEventMap type
+Event mapping tokens within an image are associated with
+an @code{ILEventMap} object.  @xref{Event Maps}, for more information.
+@end deftp
+
+@deftp {Type} ILProperty*
+@cindex ILProperty type
+Property definition tokens within an image are associated with
+an @code{ILProperty} object.  @xref{Events}, for more information.
+@end deftp
+
+@deftp {Type} ILPropertyMap*
+@cindex ILPropertyMap type
+Property mapping tokens within an image are associated with
+an @code{ILPropertyMap} object.  @xref{Property Maps}, for more information.
+@end deftp
+
+@deftp {Type} ILMethodSem*
+@cindex ILMethodSem type
+Method semantics tokens within an image are associated with
+an @code{ILMethodSem} object.  @xref{Method Semantics}, for more information.
+@end deftp
+
+@deftp {Type} ILPInvoke*
+@cindex ILPInvoke type
+PInvoke definition tokens within an image are associated with
+an @code{ILPInvoke} object.  @xref{PInvokes}, for more information.
+@end deftp
+
+@deftp {Type} ILOverride*
+@cindex ILOverride type
+Method override definition tokens within an image are associated with
+an @code{ILOverride} object.  @xref{Overrides}, for more information.
+@end deftp
+
+@c -----------------------------------------------------------------------
+
+@node Index, , Types, Top
+@unnumbered Index
+
+@printindex cp
+
+@contents
+@bye

@@ -1,0 +1,77 @@
+Portable.NET
+------------
+
+The goal of this project is to build a suite of open source tools
+to build and execute .NET applications, including a C# compiler,
+assembler, disassembler, and runtime engine.  The initial target
+platform is Linux, with other platforms to follow in the future.
+
+The product is available under the terms of the GNU General Public
+License.  The latest version of the product can be downloaded
+from the following Web site:
+
+    http://www.southern-storm.com.au/portable_net.html
+
+When you have downloaded a version of the product, it can be unpacked
+and built in the usual manner:
+
+    $ gunzip pnet-VERSION.tar.gz | tar xvf -
+    $ cd pnet-VERSION
+    $ ./configure
+    $ make<
+
+You will need flex and bison to build Portable.NET.  Other versions
+of lex or yacc may not work with this version of the source.  We use
+flex 2.5.4 and bison 1.28.
+
+You will also need to download, build, and install the treecc program.
+From version 0.0.6 of Portable.NET onwards, the C# compiler depends
+upon treecc to build.  It can be obtained from the following Web site:
+
+    http://www.southern-storm.com.au/treecc.html
+
+Since version 0.0.5, the C# system library has been split into a
+separate distribution because it may be useful to other .NET efforts
+as a common library.  The library Web page is as follows:
+
+    http://www.southern-storm.com.au/portable_net_lib.html
+
+The Portable.NET FAQ can be found on our Web site, or in the "doc"
+subdirectory of this distribution.
+
+We welcome feedback on this product.  E-mail your comments to
+"rweather@southern-storm.com.au".
+
+We have set up a mailing list at "pnetdiscuss@southern-storm.com.au"
+to discuss Portable.NET, or any technical details related to
+the .NET platform.  To subscribe, send an empty e-mail message to
+the address "pnetdiscuss-subscribe@southern-storm.com.au".
+To unsubscribe, send an empty e-mail message to the address
+"pnetdiscuss-unsubscribe@southern-storm.com.au".
+
+Roadmap
+-------
+
+The directories contain the following:
+
+    codegen    Backend code generation routines for the C# compiler.
+    cscc       Front-end for the C# compiler (cscc == "C Sharp Code Compiler").
+    doc        Assorted documentation, FAQ's, and notes.
+    dumpasm    Utilities for dumping programs in IL assembly code.
+    engine     The interpreter engine core.
+    ilasm      The source code for the assembler.
+    ildasm     The source code for the disassembler.
+	ilfind     The source code for the IL name find utility.
+    ilnative   The source code for the native method display utilitiy.
+    ilsize     The source code for the IL binary size utility.
+    image      Routines for manipulating IL binary images.
+    include    Include files for the public API.
+    samples    Sample *.il files for testing purposes.
+    support    Support routines for basic system functionality.
+    tools      Some useful scripts used for building releases, etc.
+
+The programs "ildasm", "ilnative", "ilfind", and "ilsize" are more or less
+functional.  Everything else is a work in progress.  The assembler understands
+IL syntax, but doesn't do anything with it.  The "codegen" and "cscc"
+directories are the beginnings of a core for a C# compiler, but they have
+a VERY long way to go.

@@ -1,0 +1,233 @@
+/*
+ * cs_const.tc - Semantic analysis for C# constant node types.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Perform semantic analysis for the "null" constant.
+ */
+ILNode_SemAnalysis(ILNode_Null)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILFindSystemType(info, "Object");
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "true" and "false" constants.
+ */
+ILNode_SemAnalysis(ILNode_True),
+ILNode_SemAnalysis(ILNode_False)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Boolean;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for integer constants.
+ */
+ILNode_SemAnalysis(ILNode_Int8)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int8;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_UInt8)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_UInt8;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_Int16)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int16;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_UInt16)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_UInt16;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_Char)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Char;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_Int32)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_UInt32)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_UInt32;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_Int)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	if(ILNode_GetType(node, info) == ILMachineType_Int64)
+	{
+		value.type = ILType_Int64;
+	}
+	else
+	{
+		value.type = ILType_Int;
+	}
+	return value;
+}
+ILNode_SemAnalysis(ILNode_UInt)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	if(ILNode_GetType(node, info) == ILMachineType_UInt64)
+	{
+		value.type = ILType_UInt64;
+	}
+	else
+	{
+		value.type = ILType_UInt;
+	}
+	return value;
+}
+ILNode_SemAnalysis(ILNode_Int64)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int64;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_UInt64)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_UInt64;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for floating point constants.
+ */
+ILNode_SemAnalysis(ILNode_Float32)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Float32;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_Float64)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Float64;
+	return value;
+}
+ILNode_SemAnalysis(ILNode_Float)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Float;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for decimal constants.
+ */
+ILNode_SemAnalysis(ILNode_Decimal)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILFindSystemType(info, "Decimal");
+	return value;
+}
+
+/*
+ * Perform semantic analysis for string constants.
+ */
+ILNode_SemAnalysis(ILNode_String)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILFindSystemType(info, "String");
+	return value;
+}
+
+%end %{
+
+ILNode *CSBuiltinConstant(char *name)
+{
+	if(!strcmp(name, "float_min"))
+	{
+		static unsigned char const minFloat[4] =
+			{0xFF, 0xFF, 0x7F, 0xFF};
+		return ILNode_Float32_create(IL_READ_FLOAT(minFloat));
+	}
+	else if(!strcmp(name, "float_max"))
+	{
+		static unsigned char const maxFloat[4] =
+			{0xFF, 0xFF, 0x7F, 0x7F};
+		return ILNode_Float32_create(IL_READ_FLOAT(maxFloat));
+	}
+	else if(!strcmp(name, "float_epsilon"))
+	{
+		static unsigned char const epsFloat[4] =
+			{0x01, 0x00, 0x00, 0x00};
+		return ILNode_Float32_create(IL_READ_FLOAT(epsFloat));
+	}
+	else if(!strcmp(name, "double_min"))
+	{
+		static unsigned char const minDouble[8] =
+			{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0xFF};
+		return ILNode_Float64_create(IL_READ_DOUBLE(minDouble));
+	}
+	else if(!strcmp(name, "double_max"))
+	{
+		static unsigned char const maxDouble[8] =
+			{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEF, 0x7F};
+		return ILNode_Float64_create(IL_READ_DOUBLE(maxDouble));
+	}
+	else if(!strcmp(name, "double_epsilon"))
+	{
+		static unsigned char const epsDouble[8] =
+			{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+		return ILNode_Float64_create(IL_READ_DOUBLE(epsDouble));
+	}
+	else
+	{
+		CSError("unknown builtin constant `%s'", name);
+		return ILNode_Null_create();
+	}
+}
+
+%}

@@ -1,0 +1,5 @@
+Makefile
+Makefile.in
+.deps
+il_config.h
+stamp-h

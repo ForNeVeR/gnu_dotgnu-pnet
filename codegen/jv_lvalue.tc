@@ -1,0 +1,203 @@
+/*
+ * jv_lvalue.tc - Identifier and l-value code generator for Java.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Stub out identifier operations.  Identifier nodes must
+ * be replaced with real l-value nodes prior to code generation.
+ */
+JavaGenValue(ILNode_Identifier),
+JavaGenValue(ILNode_QualIdent)
+{
+	return ILMachineType_Void;
+}
+JavaGenDiscard(ILNode_Identifier),
+JavaGenDiscard(ILNode_QualIdent),
+JavaGenThen(ILNode_Identifier),
+JavaGenThen(ILNode_QualIdent),
+JavaGenElse(ILNode_Identifier),
+JavaGenElse(ILNode_QualIdent)
+{
+}
+
+/*
+ * Generate discard code for a member access operator.
+ */
+JavaGenDiscard(ILNode_MemberAccess)
+{
+	/* Evaluate the object expression for its side-effects */
+	JavaGenDiscard(node->expr1, info);
+}
+
+/*
+ * Generate discard code for a base access operator.
+ */
+JavaGenDiscard(ILNode_BaseAccess)
+{
+	/* Nothing needs to be done here */
+}
+
+/*
+ * Generate discard code for a field dereference operator.
+ */
+JavaGenDiscard(ILNode_DerefField)
+{
+	/* Evaluate the object expression for its side-effects */
+	JavaGenDiscard(node->expr1, info);
+}
+
+/*
+ * Generate value code for a member access operator.
+ */
+JavaGenValue(ILNode_MemberAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a base access operator.
+ */
+JavaGenValue(ILNode_BaseAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a base element operator.
+ */
+JavaGenValue(ILNode_BaseElement)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a field dereference operator.
+ */
+JavaGenValue(ILNode_DerefField)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a member access destination.
+ */
+JavaPrepare(ILNode_MemberAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a base access destination.
+ */
+JavaPrepare(ILNode_BaseAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a base element destination.
+ */
+JavaPrepare(ILNode_BaseElement)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a field dereference destination.
+ */
+JavaPrepare(ILNode_DerefField)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a member access destination.
+ */
+JavaGetAndPrepare(ILNode_MemberAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a base access destination.
+ */
+JavaGetAndPrepare(ILNode_BaseAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a base element destination.
+ */
+JavaGetAndPrepare(ILNode_BaseElement)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a field dereference destination.
+ */
+JavaGetAndPrepare(ILNode_DerefField)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Store into a member access destination.
+ */
+JavaStore(ILNode_MemberAccess)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a base access destination.
+ */
+JavaStore(ILNode_BaseAccess)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a base element destination.
+ */
+JavaStore(ILNode_BaseElement)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a field dereference destination.
+ */
+JavaStore(ILNode_DerefField)
+{
+	/* TODO */
+}

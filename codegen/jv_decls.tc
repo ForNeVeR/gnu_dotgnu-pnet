@@ -1,0 +1,219 @@
+/*
+ * jv_decls.tc - Declaration nodes for Java.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Generate discard code for a class definition.
+ */
+JavaGenDiscard(ILNode_ClassDefn)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for a scope change.
+ */
+JavaGenDiscard(ILNode_ScopeChange)
+{
+	if(node->body)
+	{
+		ILScope *oldScope = info->currentScope;
+		info->currentScope = node->scope;
+		JavaGenDiscard(node->body, info);
+		info->currentScope = oldScope;
+	}
+}
+
+/*
+ * Generate discard code for a constant declaration.
+ */
+JavaGenDiscard(ILNode_ConstDeclaration)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for a constant declarator.
+ */
+JavaGenDiscard(ILNode_ConstDeclarator)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for a local variable declaration.
+ */
+JavaGenDiscard(ILNode_VarDeclaration)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for a field declaration.
+ */
+JavaGenDiscard(ILNode_FieldDeclaration)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for a variable declarator.
+ */
+JavaGenDiscard(ILNode_VarDeclarator)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for an event field declaration.
+ */
+JavaGenDiscard(ILNode_EventFieldDeclaration)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for an event property declaration.
+ */
+JavaGenDiscard(ILNode_EventPropertyDeclaration)
+{
+	/* TODO */
+}
+
+/* 
+ * Generate discard code for MethodDeclaration
+ */
+JavaGenDiscard(ILNode_MethodDeclaration)
+{
+	JavaGenDiscard(node->methodHeader, info);
+	JavaGenDiscard(node->methodBody, info);
+}
+
+/*
+ * Generate discard code for MethodHeader
+ */
+JavaGenDiscard(ILNode_MethodHeader)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_PropertyDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_AccessorDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_IndexerDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_IndexerDeclarator)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_InterfaceDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_InterfacePropertyDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_InterfaceMethodDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_InterfaceEventDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_InterfaceIndexerDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_EnumDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_EnumMemberDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_DelegateDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_ConstructorDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_ConstructorDeclarator)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_DestructorDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_FormalParameter)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_OperatorDeclaration)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_NormalOperatorDeclarator)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_ConversionOperatorDeclarator)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_TypeSuffix)
+{
+	/* TODO */
+}
+
+JavaGenDiscard(ILNode_LocalVariableType)
+{
+	/* TODO */
+}

@@ -1,0 +1,712 @@
+%output "cg_stmt.c"
+
+/*
+ * jv_stmt.tc - Statement nodes.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Generate discard code for empty statements.
+ */
+JavaGenDiscard(ILNode_Empty)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for compound statements.
+ */
+JavaGenDiscard(ILNode_Compound),
+JavaGenDiscard(ILNode_List)
+{
+	ILNode_ListIter iter;
+	ILNode *current;
+
+	ILNode_ListIter_Init(&iter, node);
+	while((current = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		JavaGenDiscard(current, info);
+	}
+}
+
+/*
+ * Generate discard code for "if" statements.
+ */
+JavaGenDiscard(ILNode_If)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+
+	if(ILNode_EvalConst(node->expr, info, &value) &&
+	   ILGenCastConst(info, &value, value.valueType, ILMachineType_Boolean))
+	{
+		/* The condition is constant, so output either "then" or "else" */
+		if(value.un.i4Value)
+		{
+			JavaGenDiscard(node->thenClause, info);
+		}
+		else
+		{
+			JavaGenDiscard(node->elseClause, info);
+		}
+	}
+	else if(IsEmpty(node->thenClause) && IsEmpty(node->elseClause))
+	{
+		/* No clauses, so evaluate the expression for its side-effects */
+		JavaGenDiscard(node->expr, info);
+	}
+	else if(IsEmpty(node->thenClause))
+	{
+		/* No "then" clause */
+		JavaGenThen(node->expr, info, &label1);
+		JavaGenDiscard(node->elseClause, info);
+		JavaGenLabel(info, &label1);
+	}
+	else if(IsEmpty(node->elseClause))
+	{
+		/* No "else" clause */
+		JavaGenElse(node->expr, info, &label1);
+		JavaGenDiscard(node->thenClause, info);
+		JavaGenLabel(info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "if" */
+		JavaGenElse(node->expr, info, &label1);
+		JavaGenDiscard(node->thenClause, info);
+		JavaGenJump(info, JAVA_OP_GOTO, &label2);
+		JavaGenLabel(info, &label1);
+		JavaGenDiscard(node->elseClause, info);
+		JavaGenLabel(info, &label2);
+	}
+}
+
+/*
+ * Generate discard code for "while" statements.
+ */
+JavaGenDiscard(ILNode_While)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+
+	if(ILNode_EvalConst(node->cond, info, &value) &&
+	   ILGenCastConst(info, &value, value.valueType, ILMachineType_Boolean))
+	{
+		/* The condition is constant */
+		if(value.un.i4Value)
+		{
+			/* Generate code for an infinite loop */
+			PushLoop(info, &label1, &label2);
+			JavaGenLabel(info, &label1);
+			if(node->stmt)
+			{
+				JavaGenDiscard(node->stmt, info);
+			}
+			JavaGenJump(info, JAVA_OP_GOTO, &label1);
+			JavaGenLabel(info, &label2);
+			PopLoop(info);
+		}
+	}
+	else if(IsEmpty(node->stmt))
+	{
+		/* The loop body is empty, so loop on the condition's side-effects */
+		JavaGenLabel(info, &label1);
+		JavaGenThen(node->cond, info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "while" loop */
+		PushLoop(info, &label2, &label3);
+		JavaGenJump(info, JAVA_OP_GOTO, &label2);
+		JavaGenLabel(info, &label1);
+		JavaGenDiscard(node->stmt, info);
+		JavaGenLabel(info, &label2);
+		JavaGenThen(node->cond, info, &label1);
+		JavaGenLabel(info, &label3);
+		PopLoop(info);
+	}
+}
+
+/*
+ * Generate discard code for "do" statements.
+ */
+JavaGenDiscard(ILNode_Do)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+
+	if(ILNode_EvalConst(node->cond, info, &value) &&
+	   ILGenCastConst(info, &value, value.valueType, ILMachineType_Boolean))
+	{
+		/* The condition is constant */
+		if(value.un.i4Value)
+		{
+			/* Generate code for an infinite loop */
+			PushLoop(info, &label1, &label2);
+			JavaGenLabel(info, &label1);
+			if(node->stmt)
+			{
+				JavaGenDiscard(node->stmt, info);
+			}
+			JavaGenJump(info, JAVA_OP_GOTO, &label1);
+			JavaGenLabel(info, &label2);
+			PopLoop(info);
+		}
+		else
+		{
+			/* Generate code for a single execution of the loop body */
+			PushLoop(info, &label1, &label1);
+			JavaGenDiscard(node->stmt, info);
+			JavaGenLabel(info, &label1);
+			PopLoop(info);
+		}
+	}
+	else if(IsEmpty(node->stmt))
+	{
+		/* The loop body is empty, so loop on the condition's side-effects */
+		JavaGenLabel(info, &label1);
+		JavaGenThen(node->cond, info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "do" loop */
+		PushLoop(info, &label2, &label3);
+		JavaGenLabel(info, &label1);
+		JavaGenDiscard(node->stmt, info);
+		JavaGenLabel(info, &label2);
+		JavaGenThen(node->cond, info, &label1);
+		JavaGenLabel(info, &label3);
+		PopLoop(info);
+	}
+}
+
+/*
+ * Generate discard code for "for" statements.
+ */
+JavaGenDiscard(ILNode_For)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+	ILLabel label4 = ILLabel_Undefined;
+	int isConst;
+
+	/* Generate the initialisation code */
+	if(node->init)
+	{
+		JavaGenDiscard(node->init, info);
+	}
+
+	/* Evaluate the condition */
+	if(node->cond)
+	{
+		isConst = (ILNode_EvalConst(node->cond, info, &value) &&
+	   			   ILGenCastConst(info, &value, value.valueType,
+				   				  ILMachineType_Boolean));
+	}
+	else
+	{
+		value.un.i4Value = 1;
+		isConst = 1;
+	}
+
+	/* Generate the main part of the loop */
+	if(isConst)
+	{
+		/* The condition is constant */
+		if(value.un.i4Value)
+		{
+			/* Generate code for an infinite loop */
+			PushLoop(info, &label2, &label3);
+			JavaGenLabel(info, &label1);
+			if(node->stmt)
+			{
+				JavaGenDiscard(node->stmt, info);
+			}
+			JavaGenLabel(info, &label2);
+			if(node->incr)
+			{
+				JavaGenDiscard(node->incr, info);
+			}
+			JavaGenJump(info, JAVA_OP_GOTO, &label1);
+			JavaGenLabel(info, &label3);
+			PopLoop(info);
+		}
+	}
+	else if(IsEmpty(node->stmt) && !(node->incr))
+	{
+		/* The loop body and increment expressions are empty,
+		   so loop on the condition's side-effects */
+		JavaGenLabel(info, &label1);
+		JavaGenThen(node->cond, info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "for" loop */
+		PushLoop(info, &label2, &label4);
+		JavaGenJump(info, JAVA_OP_GOTO, &label3);
+		JavaGenLabel(info, &label1);
+		if(node->stmt)
+		{
+			JavaGenDiscard(node->stmt, info);
+		}
+		JavaGenLabel(info, &label2);
+		if(node->incr)
+		{
+			JavaGenDiscard(node->incr, info);
+		}
+		JavaGenLabel(info, &label3);
+		JavaGenThen(node->cond, info, &label1);
+		JavaGenLabel(info, &label4);
+		PopLoop(info);
+	}
+}
+
+/*
+ * Generate discard code for "foreach" statements.
+ */
+JavaGenDiscard(ILNode_Foreach)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for "break" statements.
+ */
+JavaGenDiscard(ILNode_Break)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+
+	/* Look for the next outer loop or switch to break to */
+	while(size > 0 && stack[size - 1].breakLabel == 0)
+	{
+		if(stack[size - 1].continueLabel == 0)
+		{
+			/* Call the "finally" handler for this try block */
+			JavaGenJump(info, JAVA_OP_JSR, stack[size - 1].finallyLabel);
+		}
+		--size;
+	}
+	if(!size)
+	{
+		return;
+	}
+
+	/* Jump to the break label */
+	JavaGenJump(info, JAVA_OP_GOTO, stack[size - 1].breakLabel);
+}
+
+/*
+ * Generate discard code for "continue" statements.
+ */
+JavaGenDiscard(ILNode_Continue)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+
+	/* Look for the next outer loop to continue from */
+	while(size > 0 && stack[size - 1].continueLabel == 0)
+	{
+		if(stack[size - 1].breakLabel == 0)
+		{
+			/* Call the "finally" handler for this try block */
+			JavaGenJump(info, JAVA_OP_JSR, stack[size - 1].finallyLabel);
+		}
+		--size;
+	}
+	if(!size)
+	{
+		return;
+	}
+
+	/* Jump to the continue label */
+	JavaGenJump(info, JAVA_OP_GOTO, stack[size - 1].continueLabel);
+}
+
+%{
+
+/*
+ * Generate return code for the current method, given a correctly
+ * typed value on the top of the stack.
+ */
+static void JavaGenReturn(ILGenInfo *info)
+{
+	int withinTry = 0;
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+	while(size > 0)
+	{
+		if(stack[size - 1].continueLabel == 0 &&
+		   stack[size - 1].breakLabel == 0)
+		{
+			withinTry = 1;
+			break;
+		}
+		--size;
+	}
+	if(withinTry)
+	{
+		/* Save the return value into a local variable temporarily */
+		if(info->returnType != ILMachineType_Void)
+		{
+			if(info->returnVar < 0)
+			{
+				info->returnVar = ILGenTempVar(info, info->returnType);
+			}
+			JavaGenStoreLocal(info, (unsigned)(info->returnVar),
+							  info->returnType);
+			JavaGenAdjust(info, -(JavaGenTypeSize(info->returnType)));
+		}
+
+		/* Call the "finally" clauses of all active "try" blocks */
+		size = info->loopStackSize;
+		while(size > 0)
+		{
+			if(stack[size - 1].continueLabel == 0 &&
+			   stack[size - 1].breakLabel == 0)
+			{
+				JavaGenJump(info, JAVA_OP_JSR, stack[size - 1].finallyLabel);
+			}
+			--size;
+		}
+
+		/* Restore the return value to the top of the stack */
+		if(info->returnType != ILMachineType_Void)
+		{
+			JavaGenLoadLocal(info, (unsigned)(info->returnVar),
+							 info->returnType);
+			JavaGenAdjust(info, JavaGenTypeSize(info->returnType));
+		}
+	}
+
+	/* Output the correct form of "return" instruction */
+	switch(info->returnType)
+	{
+		case ILMachineType_Void:
+		{
+			JavaGenSimple(info, JAVA_OP_RETURN);
+		}
+		break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			JavaGenSimple(info, JAVA_OP_IRETURN);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			JavaGenSimple(info, JAVA_OP_LRETURN);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			JavaGenSimple(info, JAVA_OP_FRETURN);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			JavaGenSimple(info, JAVA_OP_DRETURN);
+		}
+		break;
+
+		default:
+		{
+			JavaGenSimple(info, JAVA_OP_ARETURN);
+		}
+		break;
+	}
+	JavaGenAdjust(info, -(JavaGenTypeSize(info->returnType)));
+}
+
+%}
+
+/*
+ * Generate discard code for "return" statements with no expression.
+ */
+JavaGenDiscard(ILNode_Return)
+{
+	/* Push a default value on the stack if the real return
+	   type is not "void" */
+	if(info->returnType != ILMachineType_Void)
+	{
+		JavaGenCast(info, ILMachineType_Void, info->returnType);
+	}
+
+	/* Generate the correct return sequence */
+	JavaGenReturn(info);
+}
+
+/*
+ * Generate discard code for "return" statements with expressions.
+ */
+JavaGenDiscard(ILNode_ReturnExpr)
+{
+	ILMachineType valueType;
+
+	/* Evaluate the return value and cast it to the correct type */
+	valueType = JavaGenValue(node->expr, info);
+	JavaGenCast(info, valueType, info->returnType);
+
+	/* Generate the correct return sequence */
+	JavaGenReturn(info);
+}
+
+/*
+ * Generate discard code for "goto" statements.
+ *
+ * Note: mixing "goto"'s and "try"'s in Java code is fraught
+ * with danger.  The following code will not generate the
+ * correct calls to "finally" clauses if a "goto" crosses
+ * a "try" block boundary.
+ */
+JavaGenDiscard(ILNode_Goto)
+{
+	ILGotoEntry *entry;
+	ILLoopStack *stack;
+	long size;
+
+	/* Search the goto list for a matching name */
+	entry = info->gotoList;
+	while(entry != 0)
+	{
+		if(entry->name == node->name)
+		{
+			break;
+		}
+		entry = entry->next;
+	}
+	if(!entry)
+	{
+		/* Create a new entry */
+		entry = (ILGotoEntry *)ILMalloc(sizeof(ILGotoEntry));
+		if(!entry)
+		{
+			ILGenOutOfMemory(info);
+		}
+		entry->name = node->name;
+		entry->defined = 0;
+		entry->crossedTry = 0;
+		entry->loopStackSize = info->loopStackSize;
+		entry->scopeLevel = info->scopeLevel;
+		entry->label = ILLabel_Undefined;
+		entry->next = info->gotoList;
+		info->gotoList = entry;
+	}
+
+	/* Find the location of the next outer "try" */
+	stack = info->loopStack;
+	size = info->loopStackSize;
+	while(size > 0)
+	{
+		if(stack[size - 1].continueLabel == 0 &&
+		   stack[size - 1].breakLabel == 0)
+		{
+			break;
+		}
+		--size;
+	}
+
+	/* Determine what type of branch to use */
+	if(entry->defined)
+	{
+		/* We have already seen this label, and we may be
+		   crossing a try boundary */
+		JavaGenJump(info, JAVA_OP_GOTO, &(entry->label));
+	}
+	else if(!size)
+	{
+		/* There are no try blocks in force, so everything is OK */
+		entry->scopeLevel = info->scopeLevel;
+		JavaGenJump(info, JAVA_OP_GOTO, &(entry->label));
+	}
+	else
+	{
+		/* The label is not yet defined and there is a "try"
+		   block in force.  Hopefully the programmer has put
+		   the label inside this try block */
+		entry->scopeLevel = info->scopeLevel;
+		JavaGenJump(info, JAVA_OP_GOTO, &(entry->label));
+	}
+}
+
+/*
+ * Generate discard code for the "goto label" statement.
+ */
+JavaGenDiscard(ILNode_GotoLabel)
+{
+	ILGotoEntry *entry;
+
+	/* Search the goto list for a matching name */
+	entry = info->gotoList;
+	while(entry != 0)
+	{
+		if(entry->name == node->name)
+		{
+			break;
+		}
+		entry = entry->next;
+	}
+	if(!entry || (entry->defined && entry->scopeLevel < info->scopeLevel))
+	{
+		/* Create a new entry */
+		entry = (ILGotoEntry *)ILMalloc(sizeof(ILGotoEntry));
+		if(!entry)
+		{
+			ILGenOutOfMemory(info);
+		}
+		entry->name = node->name;
+		entry->defined = 1;
+		entry->crossedTry = 0;
+		entry->loopStackSize = info->loopStackSize;
+		entry->scopeLevel = info->scopeLevel;
+		entry->label = ILLabel_Undefined;
+		entry->next = info->gotoList;
+		info->gotoList = entry;
+	}
+	else if(!(entry->defined))
+	{
+		/* Update the scope information for the label */
+		entry->loopStackSize = info->loopStackSize;
+		entry->scopeLevel = info->scopeLevel;
+	}
+	else
+	{
+		/* The label is already defined at the same scope */
+		return;
+	}
+
+	/* Output the label */
+	JavaGenLabel(info, &(entry->label));
+}
+
+/*
+ * Generate discard code for the "goto case" statement.
+ */
+JavaGenDiscard(ILNode_GotoCase)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for the "goto default" statement.
+ */
+JavaGenDiscard(ILNode_GotoDefault)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for the "new scope" statement.
+ */
+JavaGenDiscard(ILNode_NewScope)
+{
+	/* Enter a new scope */
+	++(info->scopeLevel);
+
+	/* Generate the code within the scope */
+	JavaGenDiscard(node->stmt, info);
+
+	/* Exit from the scope */
+	--(info->scopeLevel);
+
+	/* Trim goto labels that were defined within the scope */
+	TrimGotoList(info, 0);
+}
+
+/*
+ * Generate discard code for the "switch" statement.
+ */
+JavaGenDiscard(ILNode_Switch)
+{
+	/* TODO */
+}
+
+/*
+ * Stub out pseudo-statements that are used by "switch" statements.
+ */
+JavaGenDiscard(ILNode_SwitchSectList),
+JavaGenDiscard(ILNode_SwitchSection),
+JavaGenDiscard(ILNode_CaseList),
+JavaGenDiscard(ILNode_CaseLabel),
+JavaGenDiscard(ILNode_DefaultLabel)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for the "throw" statement.
+ */
+JavaGenDiscard(ILNode_Throw)
+{
+	/* Push the contents of the current throw variable onto
+	   the stack and then re-throw it */
+	JavaGenLoadLocal(info, info->throwVariable, ILMachineType_ObjectRef);
+	JavaGenAdjust(info, 1);
+	JavaGenSimple(info, JAVA_OP_ATHROW);
+	JavaGenAdjust(info, -1);
+}
+
+/*
+ * Generate discard code for the "throw expression" statement.
+ */
+JavaGenDiscard(ILNode_ThrowExpr)
+{
+	JavaGenCast(info, JavaGenValue(node->expr, info),
+			    ILMachineType_ObjectRef);
+	JavaGenSimple(info, JAVA_OP_ATHROW);
+	JavaGenAdjust(info, -1);
+}
+
+/*
+ * Generate discard code for the "try" statement.
+ */
+JavaGenDiscard(ILNode_Try)
+{
+	/* TODO */
+}
+
+/*
+ * Stub out pseudo-statements that are used by "try" statements.
+ */
+JavaGenDiscard(ILNode_CatchClauses),
+JavaGenDiscard(ILNode_CatchClause),
+JavaGenDiscard(ILNode_FinallyClause)
+{
+	/* Nothing to do here */
+}

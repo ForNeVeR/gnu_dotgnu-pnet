@@ -1,0 +1,1622 @@
+%output "cg_misc.c"
+
+%{
+/*
+ * cg_misc.tc - Miscellaneous operator nodes.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "cg_nodes.h"
+%}
+
+/*
+ * Get the type of a comma expression.
+ */
+ILNode_GetType(ILNode_Comma)
+{
+	return ILNode_GetType(node->expr2, info);
+}
+
+/*
+ * Get the type of an "as is" expression.
+ */
+ILNode_GetType(ILNode_AsIs),
+ILNode_GetType(ILNode_ToConst)
+{
+	return ILNode_GetType(node->expr, info);
+}
+
+/*
+ * Get the type of an "overflow" expression.
+ */
+ILNode_GetType(ILNode_Overflow)
+{
+	ILMachineType type;
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 1;
+	type = ILNode_GetType(node->expr, info);
+	info->overflowInsns = oldOverflow;
+	return type;
+}
+
+/*
+ * Get the type of a "no overflow" expression.
+ */
+ILNode_GetType(ILNode_NoOverflow)
+{
+	ILMachineType type;
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 0;
+	type = ILNode_GetType(node->expr, info);
+	info->overflowInsns = oldOverflow;
+	return type;
+}
+
+/*
+ * Get the type of a "pedantic" expression.
+ */
+ILNode_GetType(ILNode_Pedantic)
+{
+	ILMachineType type;
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 1;
+	type = ILNode_GetType(node->expr, info);
+	info->pedanticArith = oldPedantic;
+	return type;
+}
+
+/*
+ * Get the type of a "no pedantic" expression.
+ */
+ILNode_GetType(ILNode_NoPedantic)
+{
+	ILMachineType type;
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 0;
+	type = ILNode_GetType(node->expr, info);
+	info->pedanticArith = oldPedantic;
+	return type;
+}
+
+/*
+ * Get the type of a cast expression.
+ */
+ILNode_GetType(ILNode_Cast)
+{
+	return node->machineType;
+}
+
+/*
+ * Get the type associated with a user-defined conversion.
+ */
+ILNode_GetType(ILNode_UserConversion)
+{
+	return node->machineType;
+}
+
+%{
+
+/*
+ * Determine the common type to use for a conditional expression.
+ */
+static ILMachineType Conditional_Type(ILNode_Conditional *node,
+									  ILGenInfo *info,
+									  ILMachineType *type1,
+									  ILMachineType *type2)
+{
+	*type1 = ILNode_GetType(node->expr2, info);
+	*type2 = ILNode_GetType(node->expr3, info);
+	if(*type1 == *type2)
+	{
+		return *type1;
+	}
+	else if(*type1 == ILMachineType_ObjectRef ||
+		    *type2 == ILMachineType_ObjectRef)
+	{
+		return ILMachineType_ObjectRef;
+	}
+	else
+	{
+		return ILCommonType(*type1, *type2, 0, info->pedanticArith);
+	}
+}
+
+%}
+
+/*
+ * Get the type of a conditional expression.
+ */
+ILNode_GetType(ILNode_Conditional)
+{
+	ILMachineType type1, type2;
+	return Conditional_Type(node, info, &type1, &type2);
+}
+
+/*
+ * Get the type of a "to bool" expression.
+ */
+ILNode_GetType(ILNode_ToBool)
+{
+	return ILMachineType_Boolean;
+}
+
+/*
+ * Get the type of a "this" expression.
+ */
+ILNode_GetType(ILNode_This)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Get the type of an argument list expression.
+ */
+ILNode_GetType(ILNode_ArgList)
+{
+	/* This will never be called, but we have to return something */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get the type of an "as" expression.
+ */
+ILNode_GetType(ILNode_As)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Get the type of an "is" expression.
+ */
+ILNode_GetType(ILNode_Is)
+{
+	return ILMachineType_Boolean;
+}
+
+/*
+ * Get the type of a dereference expression.
+ */
+ILNode_GetType(ILNode_Deref)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get the type of an "address of" expression.
+ */
+ILNode_GetType(ILNode_AddressOf)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get the type of an "error" expression.
+ */
+ILNode_GetType(ILNode_Error)
+{
+	/* This will never be called, but we have to return something */
+	return ILMachineType_Void;
+}
+
+/*
+ * Get the type of a "box" expression.
+ */
+ILNode_GetType(ILNode_Box)
+{
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Get the type of an "unbox" expression.
+ */
+ILNode_GetType(ILNode_Unbox)
+{
+	return node->machineType;
+}
+
+/*
+ * Generate discard code for a comma expression.
+ */
+ILNode_GenDiscard(ILNode_Comma)
+{
+	ILNode_GenDiscard(node->expr1, info);
+	ILNode_GenDiscard(node->expr2, info);
+}
+
+/*
+ * Generate discard code for an "overflow" expression.
+ */
+ILNode_GenDiscard(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 1;
+	ILNode_GenDiscard(node->expr, info);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Generate discard code for a "no overflow" expression.
+ */
+ILNode_GenDiscard(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 0;
+	ILNode_GenDiscard(node->expr, info);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Generate discard code for a "pedantic" expression.
+ */
+ILNode_GenDiscard(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 1;
+	ILNode_GenDiscard(node->expr, info);
+	info->pedanticArith = oldPedantic;
+}
+
+/*
+ * Generate discard code for a "no pedantic" expression.
+ */
+ILNode_GenDiscard(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 0;
+	ILNode_GenDiscard(node->expr, info);
+	info->pedanticArith = oldPedantic;
+}
+
+/*
+ * Generate discard code for a conditional expression.
+ */
+ILNode_GenDiscard(ILNode_Conditional)
+{
+	ILMachineType type1;
+	ILMachineType type2;
+	ILMachineType commonType;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILEvalValue value;
+
+	/* Determine the common type to use for the cases */
+	commonType = Conditional_Type(node, info, &type1, &type2);
+
+	/* Generate the discard code.  We must generate as value if the
+	   final type is different because an exception might occur during
+	   the type conversion.  If we optimize away the conversion, then
+	   the final code might have different behaviour */
+	if(ILNode_EvalConst(node->expr1, info, &value) &&
+	   ILGenConstToBoolean(info, &value))
+	{
+		/* The condition is constant, so generate only the case we need */
+		if(value.un.i4Value)
+		{
+			if(type1 == commonType)
+			{
+				ILNode_GenDiscard(node->expr2, info);
+			}
+			else
+			{
+				ILNode_GenValue(node->expr2, info);
+				ILGenCast(info, type1, commonType);
+				ILGenCast(info, commonType, ILMachineType_Void);
+			}
+		}
+		else
+		{
+			if(type2 == commonType)
+			{
+				ILNode_GenDiscard(node->expr3, info);
+			}
+			else
+			{
+				ILNode_GenValue(node->expr3, info);
+				ILGenCast(info, type2, commonType);
+				ILGenCast(info, commonType, ILMachineType_Void);
+			}
+		}
+	}
+	else
+	{
+		/* We need the general case of the conditional */
+		ILNode_GenElse(node->expr1, info, &label1);
+		if(type1 == commonType)
+		{
+			ILNode_GenDiscard(node->expr2, info);
+		}
+		else
+		{
+			ILNode_GenValue(node->expr2, info);
+			ILGenCast(info, type1, commonType);
+			ILGenCast(info, commonType, ILMachineType_Void);
+		}
+		ILGenJump(info, IL_OP_BR, &label2);
+		ILGenLabel(info, &label1);
+		if(type2 == commonType)
+		{
+			ILNode_GenDiscard(node->expr3, info);
+		}
+		else
+		{
+			ILNode_GenValue(node->expr3, info);
+			ILGenCast(info, type2, commonType);
+			ILGenCast(info, commonType, ILMachineType_Void);
+		}
+		ILGenLabel(info, &label2);
+	}
+}
+
+/*
+ * Generate discard code for a "this" expression.
+ */
+ILNode_GenDiscard(ILNode_This)
+{
+	/* Nothing needs to be done here */
+}
+
+/*
+ * Generate discard code for an "as" expression.
+ */
+ILNode_GenDiscard(ILNode_As)
+{
+	/* Evaluate the expression for its side effects only */
+	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate discard code for a dereference expression.
+ */
+ILNode_GenDiscard(ILNode_Deref)
+{
+	/* Evaluate the sub-expression for side effects */
+	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate discard code for an "address of" expression.
+ */
+ILNode_GenDiscard(ILNode_AddressOf)
+{
+	/* Evaluate the sub-expression for side effects */
+	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate value code for a comma expression.
+ */
+ILNode_GenValue(ILNode_Comma)
+{
+	ILNode_GenDiscard(node->expr1, info);
+	return ILNode_GenValue(node->expr2, info);
+}
+
+/*
+ * Generate value code for an "as is" expression.
+ */
+ILNode_GenValue(ILNode_AsIs),
+ILNode_GenValue(ILNode_ToConst)
+{
+	return ILNode_GenValue(node->expr, info);
+}
+
+/*
+ * Generate value code for an "overflow" expression.
+ */
+ILNode_GenValue(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	ILMachineType valueType;
+	info->overflowInsns = 1;
+	valueType = ILNode_GenValue(node->expr, info);
+	info->overflowInsns = oldOverflow;
+	return valueType;
+}
+
+/*
+ * Generate value code for a "no overflow" expression.
+ */
+ILNode_GenValue(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	ILMachineType valueType;
+	info->overflowInsns = 0;
+	valueType = ILNode_GenValue(node->expr, info);
+	info->overflowInsns = oldOverflow;
+	return valueType;
+}
+
+/*
+ * Generate value code for a "pedantic" expression.
+ */
+ILNode_GenValue(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	ILMachineType valueType;
+	info->pedanticArith = 1;
+	valueType = ILNode_GenValue(node->expr, info);
+	info->pedanticArith = oldPedantic;
+	return valueType;
+}
+
+/*
+ * Generate value code for a "no pedantic" expression.
+ */
+ILNode_GenValue(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	ILMachineType valueType;
+	info->pedanticArith = 0;
+	valueType = ILNode_GenValue(node->expr, info);
+	info->overflowInsns = oldPedantic;
+	return valueType;
+}
+
+/*
+ * Generate value code for a cast expression.
+ */
+ILNode_GenValue(ILNode_Cast)
+{
+	ILMachineType type = ILNode_GenValue(node->expr, info);
+	ILGenCast(info, type, node->machineType);
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a user conversion expression.
+ */
+ILNode_GenValue(ILNode_UserConversion)
+{
+	ILNode_GenValue(node->expr, info);
+	ILGenCallByMethod(info, node->method);
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a conditional expression.
+ */
+ILNode_GenValue(ILNode_Conditional)
+{
+	ILMachineType type1;
+	ILMachineType type2;
+	ILMachineType commonType;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILEvalValue value;
+
+	/* Determine the common type to use for the cases */
+	commonType = Conditional_Type(node, info, &type1, &type2);
+
+	/* If the condition is constant, then only generate the case we need */
+	if(ILNode_EvalConst(node->expr1, info, &value) &&
+	   ILGenConstToBoolean(info, &value))
+	{
+		if(value.un.i4Value)
+		{
+			ILNode_GenValue(node->expr2, info);
+			ILGenCast(info, type1, commonType);
+		}
+		else
+		{
+			ILNode_GenValue(node->expr3, info);
+			ILGenCast(info, type2, commonType);
+		}
+	}
+	else
+	{
+		/* Generate the full case of the conditional */
+		int height;
+		ILNode_GenElse(node->expr1, info, &label1);
+		height = info->stackHeight;
+		ILGenCast(info, ILNode_GenValue(node->expr2, info), commonType);
+		info->stackHeight = height;
+		ILGenJump(info, IL_OP_BR, &label2);
+		ILGenLabel(info, &label1);
+		ILGenCast(info, ILNode_GenValue(node->expr3, info), commonType);
+		ILGenLabel(info, &label2);
+	}
+
+	/* The common type is the final type */
+	return commonType;
+}
+
+/*
+ * Generate value code for a "to bool" expression.
+ */
+ILNode_GenValue(ILNode_ToBool)
+{
+	ILGenCast(info, ILNode_GenValue(node->expr, info), ILMachineType_Boolean);
+	return ILMachineType_Boolean;
+}
+
+/*
+ * Generate value code for a "this" expression.
+ */
+ILNode_GenValue(ILNode_This)
+{
+	/* We assume that "this" is in argument 0 */
+	ILGenSimple(info, IL_OP_LDARG_0);
+	ILGenAdjust(info, 1);
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for an argument list expression.
+ */
+ILNode_GenValue(ILNode_ArgList)
+{
+	ILNode_GenValue(node->expr1, info);
+	return ILNode_GenValue(node->expr2, info);
+}
+
+%{
+
+/*
+ * Generate value code for an "as" expression, which may
+ * be nested inside some other kind of expression.
+ */
+static void As_GenValue(ILNode_As *node, ILGenInfo *info)
+{
+	/* Evaluate the sub-expression and cast to an object reference */
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+
+	/* Test the object using the "isinst" instruction */
+	ILGenClassToken(info, IL_OP_ISINST, node->classInfo);
+}
+
+%}
+
+/*
+ * Generate value code for an "as" expression.
+ */
+ILNode_GenValue(ILNode_As)
+{
+	As_GenValue(node, info);
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for an "is" expression.
+ */
+ILNode_GenValue(ILNode_Is)
+{
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+
+	/* Compute the "as" version of the expression */
+	As_GenValue((ILNode_As *)node, info);
+
+	/* Compare the result against "null" to get the result */
+	ILGenJump(info, IL_OP_BRFALSE, &label1);
+	ILGenSimple(info, IL_OP_LDC_I4_1);
+	ILGenJump(info, IL_OP_BR, &label2);
+	ILGenLabel(info, &label1);
+	ILGenSimple(info, IL_OP_LDC_I4_0);
+	ILGenLabel(info, &label2);
+	return ILMachineType_Boolean;
+}
+
+/*
+ * Generate value code for a dereference expression.
+ */
+ILNode_GenValue(ILNode_Deref)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate value code for an "address of" expression.
+ */
+ILNode_GenValue(ILNode_AddressOf)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate value code for an "error" expression.
+ */
+ILNode_GenValue(ILNode_Error)
+{
+	return ILMachineType_Void;
+}
+
+/*
+ * Generate value code for a "box" expression.
+ */
+ILNode_GenValue(ILNode_Box)
+{
+	ILMachineType type = ILNode_GenValue(node->expr, info);
+
+	switch(type)
+	{
+		case ILMachineType_Void:
+		{
+			/* Shouldn't happen */
+		}
+		break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt32:
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		case ILMachineType_Float32:
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			/* We need a temporary local to do the conversion */
+			unsigned tempVar = ILGenTempVar(info, type);
+			ILGenStoreLocal(info, tempVar);
+			ILGenAdjust(info, -1);
+			ILGenLoadLocalAddr(info, tempVar);
+			ILGenAdjust(info, 1);
+			ILGenClassToken(info, IL_OP_BOX, node->classInfo);
+			ILGenReleaseTempVar(info, tempVar);
+		}
+		break;
+
+		case ILMachineType_ObjectRef:
+		case ILMachineType_String:
+		{
+			/* The value is already a boxed object */
+		}
+		break;
+
+		case ILMachineType_ManagedPtr:
+		{
+			/* We have a managed pointer, so box it directly */
+			ILGenClassToken(info, IL_OP_BOX, node->classInfo);
+		}
+		break;
+
+		case ILMachineType_ManagedValue:
+		case ILMachineType_Decimal:
+		{
+			/* We need a temporary local to do the conversion */
+			unsigned tempVar = ILGenTempTypedVar
+					(info, ILType_FromValueType(node->classInfo));
+			ILGenStoreLocal(info, tempVar);
+			ILGenAdjust(info, -1);
+			ILGenLoadLocalAddr(info, tempVar);
+			ILGenAdjust(info, 1);
+			ILGenClassToken(info, IL_OP_BOX, node->classInfo);
+			ILGenReleaseTempVar(info, tempVar);
+		}
+		break;
+	}
+
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for an "unbox" expression.
+ */
+ILNode_GenValue(ILNode_Unbox)
+{
+	ILMachineType subExprType;
+	ILMachineType type;
+
+	/* Evaluate the sub-expression to get the object pointer */
+	subExprType = ILNode_GenValue(node->expr, info);
+
+	/* Determine the destination type for the unbox operation */
+	type = node->machineType;
+	if(subExprType == type ||
+	   (subExprType != ILMachineType_ObjectRef &&
+	    subExprType != ILMachineType_ManagedPtr))
+	{
+		/* The sub-expression is already in the unboxed form */
+		return subExprType;
+	}
+
+	/* At this point, we have either an object reference or
+	   a managed pointer, which we must unbox into a value */
+	switch(type)
+	{
+		case ILMachineType_Void:
+		{
+			/* Just pop the value because we won't need it after this */
+			ILGenCast(info, subExprType, ILMachineType_Void);
+		}
+		break;
+
+		case ILMachineType_Boolean:
+		case ILMachineType_Int8:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I1);
+		}
+		break;
+
+		case ILMachineType_UInt8:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_U1);
+		}
+		break;
+
+		case ILMachineType_Int16:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I2);
+		}
+		break;
+
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_U2);
+		}
+		break;
+
+		case ILMachineType_Int32:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I4);
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I4);
+		}
+		break;
+
+		case ILMachineType_NativeInt:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I);
+		}
+		break;
+
+		case ILMachineType_NativeUInt:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I8);
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_I8);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_R4);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenSimple(info, IL_OP_LDIND_R8);
+		}
+		break;
+
+		case ILMachineType_ObjectRef:
+		case ILMachineType_String:
+		{
+			/* The unboxed form of an object is also an object.
+			   We just do a cast to ensure it has the right type */
+			ILGenClassToken(info, IL_OP_CASTCLASS, node->classInfo);
+		}
+		break;
+
+		case ILMachineType_ManagedPtr:
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_TransientPtr:
+		{
+			/* Unbox to a managed pointer */
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+		}
+		break;
+
+		case ILMachineType_ManagedValue:
+		case ILMachineType_Decimal:
+		{
+			/* Unbox to a managed value */
+			if(subExprType == ILMachineType_ObjectRef)
+			{
+				ILGenClassToken(info, IL_OP_UNBOX, node->classInfo);
+			}
+			ILGenClassToken(info, IL_OP_LDOBJ, node->classInfo);
+		}
+		break;
+	}
+
+	return type;
+}
+
+/*
+ * Generate the "then" branch for a comma expression.
+ */
+ILNode_GenThen(ILNode_Comma)
+{
+	ILNode_GenDiscard(node->expr1, info);
+	ILNode_GenThen(node->expr2, info, label);
+}
+
+/*
+ * Generate the "else" branch for a comma expression.
+ */
+ILNode_GenElse(ILNode_Comma)
+{
+	ILNode_GenDiscard(node->expr1, info);
+	ILNode_GenElse(node->expr2, info, label);
+}
+
+/*
+ * Generate the "then" branch for an "as is" expression.
+ */
+ILNode_GenThen(ILNode_AsIs),
+ILNode_GenThen(ILNode_ToConst)
+{
+	ILNode_GenThen(node->expr, info, label);
+}
+
+/*
+ * Generate the "else" branch for an "as is" expression.
+ */
+ILNode_GenElse(ILNode_AsIs),
+ILNode_GenElse(ILNode_ToConst)
+{
+	ILNode_GenElse(node->expr, info, label);
+}
+
+/*
+ * Generate the "then" branch for an "overflow" expression.
+ */
+ILNode_GenThen(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 1;
+	ILNode_GenThen(node->expr, info, label);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Generate the "else" branch for an "overflow" expression.
+ */
+ILNode_GenElse(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 1;
+	ILNode_GenElse(node->expr, info, label);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Generate the "then" branch for a "no overflow" expression.
+ */
+ILNode_GenThen(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 0;
+	ILNode_GenThen(node->expr, info, label);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Generate the "else" branch for a "no overflow" expression.
+ */
+ILNode_GenElse(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 0;
+	ILNode_GenElse(node->expr, info, label);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Generate the "then" branch for a "pedantic" expression.
+ */
+ILNode_GenThen(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 1;
+	ILNode_GenThen(node->expr, info, label);
+	info->pedanticArith = oldPedantic;
+}
+
+/*
+ * Generate the "else" branch for a "pedantic" expression.
+ */
+ILNode_GenElse(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 1;
+	ILNode_GenElse(node->expr, info, label);
+	info->pedanticArith = oldPedantic;
+}
+
+/*
+ * Generate the "then" branch for a "no pedantic" expression.
+ */
+ILNode_GenThen(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 0;
+	ILNode_GenThen(node->expr, info, label);
+	info->pedanticArith = oldPedantic;
+}
+
+/*
+ * Generate the "else" branch for a "no pedantic" expression.
+ */
+ILNode_GenElse(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 0;
+	ILNode_GenElse(node->expr, info, label);
+	info->pedanticArith = oldPedantic;
+}
+
+%{
+
+/*
+ * Generate a branch for a conditional expression.
+ */
+static void ConditionalBranch(ILNode_Conditional *node, ILGenInfo *info,
+							  ILLabel *label, int thenCase)
+{
+	ILMachineType type1;
+	ILMachineType type2;
+	ILMachineType commonType;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILEvalValue value;
+
+	/* Determine the common type to use for the cases */
+	commonType = Conditional_Type(node, info, &type1, &type2);
+
+	/* If the condition is constant, then only generate the case we need */
+	if(ILNode_EvalConst(node->expr1, info, &value) &&
+	   ILGenConstToBoolean(info, &value))
+	{
+		if(value.un.i4Value)
+		{
+			/* The condition is always true */
+			if(type1 == commonType)
+			{
+				if(thenCase)
+				{
+					ILNode_GenThen(node->expr2, info, label);
+				}
+				else
+				{
+					ILNode_GenElse(node->expr2, info, label);
+				}
+			}
+			else
+			{
+				ILNode_GenValue(node->expr2, info);
+				ILGenCast(info, type1, commonType);
+				if(thenCase)
+				{
+					ILNodeStackThen(info, label, commonType);
+				}
+				else
+				{
+					ILNodeStackElse(info, label, commonType);
+				}
+			}
+		}
+		else
+		{
+			/* The condition is always false */
+			if(type2 == commonType)
+			{
+				if(thenCase)
+				{
+					ILNode_GenThen(node->expr3, info, label);
+				}
+				else
+				{
+					ILNode_GenElse(node->expr3, info, label);
+				}
+			}
+			else
+			{
+				ILNode_GenValue(node->expr3, info);
+				ILGenCast(info, type2, commonType);
+				if(thenCase)
+				{
+					ILNodeStackThen(info, label, commonType);
+				}
+				else
+				{
+					ILNodeStackElse(info, label, commonType);
+				}
+			}
+		}
+	}
+	else
+	{
+		/* Generate the full case of the conditional.  Use value testing
+		   if the type is different in case the conversion might generate
+		   a conversion exception.  Optimizing the convert away will change
+		   the behaviour of the expression */
+		ILNode_GenElse(node->expr1, info, &label1);
+		if(type1 == commonType)
+		{
+			if(thenCase)
+			{
+				ILNode_GenThen(node->expr2, info, label);
+			}
+			else
+			{
+				ILNode_GenElse(node->expr3, info, label);
+			}
+		}
+		else
+		{
+			ILNode_GenValue(node->expr2, info);
+			ILGenCast(info, type1, commonType);
+			if(thenCase)
+			{
+				ILNodeStackThen(info, label, commonType);
+			}
+			else
+			{
+				ILNodeStackElse(info, label, commonType);
+			}
+		}
+		ILGenJump(info, IL_OP_BR, &label2);
+		ILGenLabel(info, &label1);
+		if(type2 == commonType)
+		{
+			if(thenCase)
+			{
+				ILNode_GenThen(node->expr3, info, label);
+			}
+			else
+			{
+				ILNode_GenElse(node->expr3, info, label);
+			}
+		}
+		else
+		{
+			ILNode_GenValue(node->expr3, info);
+			ILGenCast(info, type2, commonType);
+			if(thenCase)
+			{
+				ILNodeStackThen(info, label, commonType);
+			}
+			else
+			{
+				ILNodeStackElse(info, label, commonType);
+			}
+		}
+		ILGenLabel(info, &label2);
+	}
+}
+
+%}
+
+/*
+ * Generate the "then" branch for a conditional expression.
+ */
+ILNode_GenThen(ILNode_Conditional)
+{
+	ConditionalBranch(node, info, label, 1);
+}
+
+/*
+ * Generate the "else" branch for a conditional expression.
+ */
+ILNode_GenElse(ILNode_Conditional)
+{
+	ConditionalBranch(node, info, label, 0);
+}
+
+/*
+ * Generate the "then" branch for a "to bool" expression.
+ */
+ILNode_GenThen(ILNode_ToBool)
+{
+	ILNode_GenThen(node->expr, info, label);
+}
+
+/*
+ * Generate the "else" branch for a "to bool" expression.
+ */
+ILNode_GenElse(ILNode_ToBool)
+{
+	ILNode_GenElse(node->expr, info, label);
+}
+
+/*
+ * Generate the "then" branch for an "as" or "is" expression.
+ */
+ILNode_GenThen(ILNode_As),
+ILNode_GenThen(ILNode_Is)
+{
+	As_GenValue((ILNode_As *)node, info);
+	ILGenJump(info, IL_OP_BRTRUE, label);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Generate the "else" branch for an "as" or "is" expression.
+ */
+ILNode_GenElse(ILNode_As),
+ILNode_GenElse(ILNode_Is)
+{
+	As_GenValue((ILNode_As *)node, info);
+	ILGenJump(info, IL_OP_BRFALSE, label);
+	ILGenAdjust(info, -1);
+}
+
+%{
+
+/*
+ * Prepare a sub-expression for storage.
+ */
+static ILMachineType Prepare_SubExpr(ILNode_LValueUnaryExpr *node,
+									 ILGenInfo *info, void **data1,
+									 void **data2)
+{
+	if(yyisa(node->expr, ILNode_LValue))
+	{
+		return ILNode_Prepare((ILNode_LValue *)(node->expr),
+							  info, data1, data2);
+	}
+	else
+	{
+		return ILMachineType_Void;
+	}
+}
+
+%}
+
+/*
+ * Prepare for storage for an "as is" operator.
+ */
+ILNode_Prepare(ILNode_AsIs)
+{
+	return Prepare_SubExpr((ILNode_LValueUnaryExpr *)node, info, data1, data2);
+}
+
+/*
+ * Prepare for storage for an "overflow" operator.
+ */
+ILNode_Prepare(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	ILMachineType valueType;
+	info->overflowInsns = 1;
+	valueType = Prepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								info, data1, data2);
+	info->overflowInsns = oldOverflow;
+	return valueType;
+}
+
+/*
+ * Prepare for storage for a "no overflow" operator.
+ */
+ILNode_Prepare(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	ILMachineType valueType;
+	info->overflowInsns = 0;
+	valueType = Prepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								info, data1, data2);
+	info->overflowInsns = oldOverflow;
+	return valueType;
+}
+
+/*
+ * Prepare for storage for a "pedantic" operator.
+ */
+ILNode_Prepare(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	ILMachineType valueType;
+	info->pedanticArith = 1;
+	valueType = Prepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								info, data1, data2);
+	info->pedanticArith = oldPedantic;
+	return valueType;
+}
+
+/*
+ * Prepare for storage for a "no pedantic" operator.
+ */
+ILNode_Prepare(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	ILMachineType valueType;
+	info->pedanticArith = 0;
+	valueType = Prepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								info, data1, data2);
+	info->pedanticArith = oldPedantic;
+	return valueType;
+}
+
+/*
+ * Prepare for storage for a dereference operator.
+ */
+ILNode_Prepare(ILNode_Deref)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+%{
+
+/*
+ * Get and prepare a sub-expression for storage.
+ */
+static ILMachineType GetAndPrepare_SubExpr(ILNode_LValueUnaryExpr *node,
+									       ILGenInfo *info, int leave,
+										   void **data1, void **data2)
+{
+	if(yyisa(node->expr, ILNode_LValue))
+	{
+		return ILNode_GetAndPrepare((ILNode_LValue *)(node->expr),
+							        info, leave, data1, data2);
+	}
+	else
+	{
+		return ILMachineType_Void;
+	}
+}
+
+%}
+
+/*
+ * Get and prepare for storage for an "as is" operator.
+ */
+ILNode_GetAndPrepare(ILNode_AsIs)
+{
+	return GetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								 info, leave, data1, data2);
+}
+
+/*
+ * Get and prepare for storage for an "overflow" operator.
+ */
+ILNode_GetAndPrepare(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	ILMachineType valueType;
+	info->overflowInsns = 1;
+	valueType = GetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								      info, leave, data1, data2);
+	info->overflowInsns = oldOverflow;
+	return valueType;
+}
+
+/*
+ * Get and prepare for storage for a "no overflow" operator.
+ */
+ILNode_GetAndPrepare(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	ILMachineType valueType;
+	info->overflowInsns = 0;
+	valueType = GetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								      info, leave, data1, data2);
+	info->overflowInsns = oldOverflow;
+	return valueType;
+}
+
+/*
+ * Get and prepare for storage for a "pedantic" operator.
+ */
+ILNode_GetAndPrepare(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	ILMachineType valueType;
+	info->pedanticArith = 1;
+	valueType = GetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								      info, leave, data1, data2);
+	info->pedanticArith = oldPedantic;
+	return valueType;
+}
+
+/*
+ * Get and prepare for storage for a "no pedantic" operator.
+ */
+ILNode_GetAndPrepare(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	ILMachineType valueType;
+	info->pedanticArith = 0;
+	valueType = GetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
+								      info, leave, data1, data2);
+	info->pedanticArith = oldPedantic;
+	return valueType;
+}
+
+/*
+ * Get and prepare for storage for a dereference operator.
+ */
+ILNode_GetAndPrepare(ILNode_Deref)
+{
+	/* TODO */
+	return ILMachineType_Void;
+}
+
+%{
+
+/*
+ * Store a sub-expression.
+ */
+static void Store_SubExpr(ILNode_LValueUnaryExpr *node,
+					      ILGenInfo *info, int leave,
+						  void **data1, void **data2)
+{
+	if(yyisa(node->expr, ILNode_LValue))
+	{
+		ILNode_Store((ILNode_LValue *)(node->expr), info, leave, data1, data2);
+	}
+}
+
+%}
+
+/*
+ * Store for an "as is" operator.
+ */
+ILNode_Store(ILNode_AsIs)
+{
+	Store_SubExpr((ILNode_LValueUnaryExpr *)node, info, leave, data1, data2);
+}
+
+/*
+ * Store for an "overflow" operator.
+ */
+ILNode_Store(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 1;
+	Store_SubExpr((ILNode_LValueUnaryExpr *)node, info, leave, data1, data2);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Store for a "no overflow" operator.
+ */
+ILNode_Store(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	info->overflowInsns = 0;
+	Store_SubExpr((ILNode_LValueUnaryExpr *)node, info, leave, data1, data2);
+	info->overflowInsns = oldOverflow;
+}
+
+/*
+ * Store for a "pedantic" operator.
+ */
+ILNode_Store(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 1;
+	Store_SubExpr((ILNode_LValueUnaryExpr *)node, info, leave, data1, data2);
+	info->pedanticArith = oldPedantic;
+}
+
+/*
+ * Store for a "no pedantic" operator.
+ */
+ILNode_Store(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	info->pedanticArith = 0;
+	Store_SubExpr((ILNode_LValueUnaryExpr *)node, info, leave, data1, data2);
+	info->pedanticArith = oldPedantic;
+}
+
+/*
+ * Store for a dereference operator.
+ */
+ILNode_Store(ILNode_Deref)
+{
+	/* TODO */
+}
+
+/*
+ * Evaluate the constant value of a comma expression.
+ */
+ILNode_EvalConst(ILNode_Comma)
+{
+	/* The first sub-expression must be constant,
+	   but we don't care about its value */
+	if(!ILNode_EvalConst(node->expr1, info, value))
+	{
+		return 0;
+	}
+
+	/* Evaluate the value of the second sub-expression */
+	return ILNode_EvalConst(node->expr2, info, value);
+}
+
+/*
+ * Evaluate the constant value of an "as is" expression.
+ */
+ILNode_EvalConst(ILNode_AsIs)
+{
+	return ILNode_EvalConst(node->expr, info, value);
+}
+
+/*
+ * Evaluate the constant value of an "overflow" expression.
+ */
+ILNode_EvalConst(ILNode_Overflow)
+{
+	int oldOverflow = info->overflowInsns;
+	int result;
+	info->overflowInsns = 1;
+	result = ILNode_EvalConst(node->expr, info, value);
+	info->overflowInsns = oldOverflow;
+	return result;
+}
+
+/*
+ * Evaluate the constant value of a "no overflow" expression.
+ */
+ILNode_EvalConst(ILNode_NoOverflow)
+{
+	int oldOverflow = info->overflowInsns;
+	int result;
+	info->overflowInsns = 0;
+	result = ILNode_EvalConst(node->expr, info, value);
+	info->overflowInsns = oldOverflow;
+	return result;
+}
+
+/*
+ * Evaluate the constant value of a "pedantic" expression.
+ */
+ILNode_EvalConst(ILNode_Pedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	int result;
+	info->pedanticArith = 1;
+	result = ILNode_EvalConst(node->expr, info, value);
+	info->pedanticArith = oldPedantic;
+	return result;
+}
+
+/*
+ * Evaluate the constant value of a "no pedantic" expression.
+ */
+ILNode_EvalConst(ILNode_NoPedantic)
+{
+	int oldPedantic = info->pedanticArith;
+	int result;
+	info->pedanticArith = 0;
+	result = ILNode_EvalConst(node->expr, info, value);
+	info->pedanticArith = oldPedantic;
+	return result;
+}
+
+/*
+ * Evaluate the constant value of a cast expression.
+ */
+ILNode_EvalConst(ILNode_Cast)
+{
+	return (ILNode_EvalConst(node->expr, info, value) &&
+		    ILGenCastConst(info, value, value->valueType, node->machineType));
+}
+
+/*
+ * Evaluate the constant value of a conditional expression.
+ */
+ILNode_EvalConst(ILNode_Conditional)
+{
+	ILMachineType type1;
+	ILMachineType type2;
+	ILMachineType commonType;
+
+	/* Determine the common type to use for the cases */
+	commonType = Conditional_Type(node, info, &type1, &type2);
+
+	/* Evaluate the constant value of the node */
+	if(!ILNode_EvalConst(node->expr1, info, value) ||
+	   !ILGenConstToBoolean(info, value))
+	{
+		return 0;
+	}
+	if(value->un.i4Value)
+	{
+		return (ILNode_EvalConst(node->expr2, info, value) &&
+				ILGenCastConst(info, value, value->valueType, commonType));
+	}
+	else
+	{
+		return (ILNode_EvalConst(node->expr3, info, value) &&
+				ILGenCastConst(info, value, value->valueType, commonType));
+	}
+}
+
+/*
+ * Evaluate the constant value of a "to bool" expression.
+ */
+ILNode_EvalConst(ILNode_ToBool)
+{
+	return (ILNode_EvalConst(node->expr, info, value) &&
+	        ILGenConstToBoolean(info, value));
+}

@@ -1,0 +1,11 @@
+config.cache
+Makefile
+stamp-h
+config.status
+libtool
+fficonfig.h
+config.log
+*.la
+*.lo
+.libs
+.deps

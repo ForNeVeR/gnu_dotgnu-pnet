@@ -1,0 +1,1963 @@
+/*
+ * meta_index.c - Handle metadata index parsing for an image.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "program.h"
+#include <stdio.h>
+
+#ifdef	__cplusplus
+extern	"C" {
+#endif
+
+/*
+ * Special token that marks the end of a mixed reference description table.
+ */
+#define	END_DESC		((ILUInt32)0xFFFFFFFF)
+
+/*
+ * Mixed reference type descriptions.  The first entry in each
+ * table is the number of bits occupied by the token type code.
+ */
+static ILUInt32 const ScopeRef_Desc[] =
+	{2,
+	 IL_META_TOKEN_MODULE,
+	 IL_META_TOKEN_MODULE_REF,
+	 IL_META_TOKEN_ASSEMBLY_REF,
+	 IL_META_TOKEN_TYPE_REF,
+	 END_DESC};
+
+static ILUInt32 const TypeDefOrRef_Desc[] =
+	{1,
+	 IL_META_TOKEN_TYPE_DEF,
+	 IL_META_TOKEN_TYPE_REF,
+	 END_DESC};
+
+static ILUInt32 const TypeDefRefOrSpec_Desc[] =
+	{2,
+	 IL_META_TOKEN_TYPE_DEF,
+	 IL_META_TOKEN_TYPE_REF,
+	 IL_META_TOKEN_TYPE_SPEC,
+	 1,
+	 END_DESC};
+
+static ILUInt32 const MemberRefParent_Desc[] =
+	{3,
+	 IL_META_TOKEN_TYPE_DEF,
+	 IL_META_TOKEN_TYPE_REF,
+	 IL_META_TOKEN_MODULE_REF,
+	 IL_META_TOKEN_METHOD_DEF,
+	 IL_META_TOKEN_TYPE_SPEC,
+	 1,
+	 1,
+	 1,
+	 END_DESC};
+
+static ILUInt32 const ConstantRef_Desc[] =
+	{2,
+	 IL_META_TOKEN_FIELD_DEF,
+	 IL_META_TOKEN_PARAM_DEF,
+	 IL_META_TOKEN_PROPERTY,
+	 1,
+	 END_DESC};
+
+static ILUInt32 const CustomOwner_Desc[] =
+	{5,
+	 IL_META_TOKEN_METHOD_DEF,
+	 IL_META_TOKEN_FIELD_DEF,
+	 IL_META_TOKEN_TYPE_REF,
+	 IL_META_TOKEN_TYPE_DEF,
+	 IL_META_TOKEN_PARAM_DEF,
+	 IL_META_TOKEN_INTERFACE_IMPL,
+	 IL_META_TOKEN_MEMBER_REF,
+	 IL_META_TOKEN_MODULE,
+	 IL_META_TOKEN_DECL_SECURITY,
+	 IL_META_TOKEN_PROPERTY,
+	 IL_META_TOKEN_EVENT,
+	 IL_META_TOKEN_STAND_ALONE_SIG,
+	 IL_META_TOKEN_MODULE_REF,
+	 IL_META_TOKEN_TYPE_SPEC,
+	 IL_META_TOKEN_ASSEMBLY,
+	 IL_META_TOKEN_ASSEMBLY_REF,
+	 IL_META_TOKEN_FILE,
+	 IL_META_TOKEN_EXPORTED_TYPE,
+	 IL_META_TOKEN_MANIFEST_RESOURCE,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 1,
+	 END_DESC};
+
+static ILUInt32 const CustomName_Desc[] =
+	{3,
+	 IL_META_TOKEN_TYPE_REF,
+	 IL_META_TOKEN_TYPE_DEF,
+	 IL_META_TOKEN_METHOD_DEF,
+	 IL_META_TOKEN_MEMBER_REF,
+	 2,
+	 1,
+	 1,
+	 1,
+	 END_DESC};
+
+static ILUInt32 const MarshalDef_Desc[] =
+	{1,
+	 IL_META_TOKEN_FIELD_DEF,
+	 IL_META_TOKEN_PARAM_DEF,
+	 END_DESC};
+
+static ILUInt32 const HasDeclSecurity_Desc[] =
+	{2,
+	 IL_META_TOKEN_TYPE_DEF,
+	 IL_META_TOKEN_METHOD_DEF,
+	 IL_META_TOKEN_ASSEMBLY,
+	 1,
+	 END_DESC};
+
+static ILUInt32 const EventOrProperty_Desc[] =
+	{1,
+	 IL_META_TOKEN_EVENT,
+	 IL_META_TOKEN_PROPERTY,
+	 END_DESC};
+
+static ILUInt32 const MethodDefOrRef_Desc[] =
+	{1,
+	 IL_META_TOKEN_METHOD_DEF,
+	 IL_META_TOKEN_MEMBER_REF,
+	 END_DESC};
+
+static ILUInt32 const FieldOrMethod_Desc[] =
+	{1,
+	 IL_META_TOKEN_FIELD_DEF,
+	 IL_META_TOKEN_METHOD_DEF,
+	 END_DESC};
+
+static ILUInt32 const ExportedType_Desc[] =
+	{2,
+	 IL_META_TOKEN_FILE,
+	 IL_META_TOKEN_ASSEMBLY_REF,
+	 IL_META_TOKEN_EXPORTED_TYPE,
+	 1,
+	 END_DESC};
+
+/*
+ * Special field types.
+ */
+#define	STRREF_FIELD		((ILUInt32 *)0x0001)
+#define	BLOBREF_FIELD		((ILUInt32 *)0x0003)
+#define	GUIDREF_FIELD		((ILUInt32 *)0x0005)
+#define	UINT16_FIELD		((ILUInt32 *)0x0007)
+#define	UINT32_FIELD		((ILUInt32 *)0x0009)
+#define	FIELD_FIELD			((ILUInt32 *)0x000B)
+#define	METHOD_FIELD		((ILUInt32 *)0x000D)
+#define	PARAM_FIELD			((ILUInt32 *)0x000F)
+#define	SKIP_FIELD			((ILUInt32 *)0x0011)
+#define	SKIPGUID_FIELD		((ILUInt32 *)0x0013)
+#define	END_FIELD			((ILUInt32 *)0)
+#define	TKREF_FIELD(name)	((ILUInt32 *)(IL_META_TOKEN_##name | 0x00001001))
+#define	SET_OFFSET(offset)	((ILUInt32 *)(((offset) << 1) | 0x00002001))
+
+/*
+ * Field description tables.
+ */
+static const ILUInt32 * const Fields_Module[] =
+	{UINT16_FIELD, STRREF_FIELD, GUIDREF_FIELD,
+	 GUIDREF_FIELD, GUIDREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_Module_Old[] =
+	{SET_OFFSET(1), STRREF_FIELD, SET_OFFSET(0), UINT16_FIELD,
+	 SET_OFFSET(2), GUIDREF_FIELD, SKIPGUID_FIELD, SKIPGUID_FIELD,
+	 END_FIELD};
+
+static const ILUInt32 * const Fields_TypeRef[] =
+	{ScopeRef_Desc, STRREF_FIELD, STRREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_TypeDef[] =
+	{UINT32_FIELD, SKIP_FIELD, SKIP_FIELD,
+	 STRREF_FIELD, STRREF_FIELD, SKIP_FIELD,
+	 TypeDefRefOrSpec_Desc, FIELD_FIELD, METHOD_FIELD,
+	 END_FIELD};
+
+static const ILUInt32 * const Fields_TypeDef_Old[] =
+	{UINT32_FIELD, UINT32_FIELD, UINT32_FIELD,
+	 STRREF_FIELD, STRREF_FIELD, UINT16_FIELD,
+	 TypeDefOrRef_Desc, FIELD_FIELD, METHOD_FIELD,
+	 END_FIELD};
+
+static const ILUInt32 * const Fields_FieldPtr[] =
+	{TKREF_FIELD(FIELD_DEF), END_FIELD};
+
+static const ILUInt32 * const Fields_FieldDef[] =
+	{UINT16_FIELD, STRREF_FIELD, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_MethodPtr[] =
+	{TKREF_FIELD(METHOD_DEF), END_FIELD};
+
+static const ILUInt32 * const Fields_MethodDef[] =
+	{UINT32_FIELD, UINT16_FIELD, UINT16_FIELD,
+	 STRREF_FIELD, BLOBREF_FIELD, PARAM_FIELD,
+	 END_FIELD};
+
+static const ILUInt32 * const Fields_ParamPtr[] =
+	{TKREF_FIELD(PARAM_DEF), END_FIELD};
+
+static const ILUInt32 * const Fields_ParamDef[] =
+	{UINT16_FIELD, UINT16_FIELD, STRREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_InterfaceImpl[] =
+	{TKREF_FIELD(TYPE_DEF), TypeDefRefOrSpec_Desc, END_FIELD};
+
+static const ILUInt32 * const Fields_InterfaceImpl_Old[] =
+	{TKREF_FIELD(TYPE_DEF), TypeDefOrRef_Desc, END_FIELD};
+
+static const ILUInt32 * const Fields_MemberRef[] =
+	{MemberRefParent_Desc, STRREF_FIELD, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_Constant[] =
+	{UINT16_FIELD, ConstantRef_Desc, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_CustomAttr[] =
+	{CustomOwner_Desc, CustomName_Desc, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_FieldMarshal[] =
+	{MarshalDef_Desc, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_DeclSecurity[] =
+	{UINT16_FIELD, HasDeclSecurity_Desc, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ClassLayout[] =
+	{UINT16_FIELD, UINT32_FIELD, TKREF_FIELD(TYPE_DEF),
+	 SKIP_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ClassLayout_Old[] =
+	{UINT16_FIELD, UINT32_FIELD, TKREF_FIELD(TYPE_DEF),
+	 UINT16_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_FieldLayout[] =
+	{UINT32_FIELD, TKREF_FIELD(FIELD_DEF), END_FIELD};
+
+static const ILUInt32 * const Fields_StandAloneSig[] =
+	{BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_EventMap[] =
+	{TKREF_FIELD(TYPE_DEF), TKREF_FIELD(EVENT), END_FIELD};
+
+static const ILUInt32 * const Fields_EventPtr[] =
+	{TKREF_FIELD(EVENT), END_FIELD};
+
+static const ILUInt32 * const Fields_Event[] =
+	{UINT16_FIELD, STRREF_FIELD, TypeDefRefOrSpec_Desc, END_FIELD};
+
+static const ILUInt32 * const Fields_Event_Old[] =
+	{UINT16_FIELD, STRREF_FIELD, TypeDefOrRef_Desc, END_FIELD};
+
+static const ILUInt32 * const Fields_PropertyMap[] =
+	{TKREF_FIELD(TYPE_DEF), TKREF_FIELD(PROPERTY), END_FIELD};
+
+static const ILUInt32 * const Fields_PropertyPtr[] =
+	{TKREF_FIELD(PROPERTY), END_FIELD};
+
+static const ILUInt32 * const Fields_Property[] =
+	{UINT16_FIELD, STRREF_FIELD, BLOBREF_FIELD,
+	 SKIP_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_Property_Old[] =
+	{UINT16_FIELD, STRREF_FIELD, BLOBREF_FIELD,
+	 UINT16_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_MethodSemantics[] =
+	{UINT16_FIELD, TKREF_FIELD(METHOD_DEF),
+	 EventOrProperty_Desc, END_FIELD};
+
+static const ILUInt32 * const Fields_MethodImpl[] =
+	{TKREF_FIELD(TYPE_DEF), MethodDefOrRef_Desc,
+	 MethodDefOrRef_Desc, END_FIELD};
+
+static const ILUInt32 * const Fields_ModuleRef[] =
+	{STRREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_TypeSpec[] =
+	{BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ImplMap[] =
+	{UINT16_FIELD, FieldOrMethod_Desc,
+	 STRREF_FIELD, TKREF_FIELD(MODULE_REF),
+	 END_FIELD};
+
+static const ILUInt32 * const Fields_FieldRVA[] =
+	{UINT32_FIELD, TKREF_FIELD(FIELD_DEF), END_FIELD};
+
+static const ILUInt32 * const Fields_EncLog[] =
+	{UINT32_FIELD, UINT32_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_EncAssociation[] =
+	{UINT32_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_Assembly[] =
+	{UINT32_FIELD, UINT16_FIELD, UINT16_FIELD,
+	 UINT16_FIELD, UINT16_FIELD, UINT32_FIELD,
+	 BLOBREF_FIELD, STRREF_FIELD, STRREF_FIELD,
+	 SKIP_FIELD, SKIP_FIELD, SKIP_FIELD,
+	 SKIP_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_Assembly_Old[] =
+	{UINT32_FIELD, UINT16_FIELD, UINT16_FIELD,
+	 UINT16_FIELD, UINT16_FIELD, UINT32_FIELD,
+	 BLOBREF_FIELD, STRREF_FIELD, STRREF_FIELD,
+	 STRREF_FIELD, STRREF_FIELD, STRREF_FIELD,
+	 STRREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ProcessorDef[] =
+	{UINT32_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_OSDef[] =
+	{UINT32_FIELD, UINT32_FIELD, UINT32_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_AssemblyRef[] =
+	{UINT16_FIELD, UINT16_FIELD, UINT16_FIELD,
+	 UINT16_FIELD, UINT32_FIELD, BLOBREF_FIELD,
+	 STRREF_FIELD, STRREF_FIELD, SKIP_FIELD,
+	 BLOBREF_FIELD, SKIP_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_AssemblyRef_Old[] =
+	{UINT16_FIELD, UINT16_FIELD, UINT16_FIELD,
+	 UINT16_FIELD, UINT32_FIELD, BLOBREF_FIELD,
+	 STRREF_FIELD, STRREF_FIELD, STRREF_FIELD,
+	 BLOBREF_FIELD, UINT16_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ProcessorRef[] =
+	{UINT32_FIELD, TKREF_FIELD(ASSEMBLY_REF), END_FIELD};
+
+static const ILUInt32 * const Fields_OSRef[] =
+	{UINT32_FIELD, UINT32_FIELD, UINT32_FIELD,
+	 TKREF_FIELD(ASSEMBLY_REF), END_FIELD};
+
+static const ILUInt32 * const Fields_File[] =
+	{UINT32_FIELD, STRREF_FIELD, BLOBREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ExportedType[] =
+	{UINT32_FIELD, UINT32_FIELD, STRREF_FIELD,
+	 STRREF_FIELD, SKIP_FIELD, ExportedType_Desc,
+	 SKIP_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ExportedType_Old[] =
+	{UINT32_FIELD, UINT32_FIELD, STRREF_FIELD,
+	 STRREF_FIELD, STRREF_FIELD, ExportedType_Desc,
+	 UINT16_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ManifestResource[] =
+	{UINT32_FIELD, UINT32_FIELD, SKIP_FIELD,
+	 STRREF_FIELD, SKIP_FIELD, ExportedType_Desc,
+	 SKIP_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ManifestResource_Old[] =
+	{UINT32_FIELD, UINT32_FIELD, STRREF_FIELD,
+	 STRREF_FIELD, STRREF_FIELD, ExportedType_Desc,
+	 STRREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_ExeLocation[] =
+	{UINT32_FIELD, STRREF_FIELD, STRREF_FIELD,
+	 STRREF_FIELD, END_FIELD};
+
+static const ILUInt32 * const Fields_NestedClass[] =
+	{TKREF_FIELD(TYPE_DEF), TKREF_FIELD(TYPE_DEF), END_FIELD};
+
+/*
+ * Table of all field description types for Beta 1 or earlier releases.
+ */
+static const ILUInt32 * const * const FieldDescriptionsOld[] = {
+	Fields_Module_Old,			/* 00 */
+	Fields_TypeRef,
+	Fields_TypeDef_Old,
+	Fields_FieldPtr,
+	Fields_FieldDef,
+	Fields_MethodPtr,
+	Fields_MethodDef,
+	Fields_ParamPtr,
+	Fields_ParamDef,			/* 08 */
+	Fields_InterfaceImpl_Old,
+	Fields_MemberRef,
+	Fields_Constant,
+	Fields_CustomAttr,
+	Fields_FieldMarshal,
+	Fields_DeclSecurity,
+	Fields_ClassLayout_Old,
+	Fields_FieldLayout,			/* 10 */
+	Fields_StandAloneSig,
+	Fields_EventMap,
+	Fields_EventPtr,
+	Fields_Event_Old,
+	Fields_PropertyMap,
+	Fields_PropertyPtr,
+	Fields_Property_Old,
+	Fields_MethodSemantics,		/* 18 */
+	Fields_MethodImpl,
+	Fields_ModuleRef,
+	Fields_TypeSpec,
+	Fields_ImplMap,
+	Fields_FieldRVA,
+	Fields_EncLog,
+	Fields_EncAssociation,
+	Fields_Assembly_Old,		/* 20 */
+	Fields_ProcessorDef,
+	Fields_OSDef,
+	Fields_AssemblyRef_Old,
+	Fields_ProcessorRef,
+	Fields_OSRef,
+	Fields_File,
+	Fields_ExportedType_Old,
+	Fields_ManifestResource_Old,/* 28 */
+	Fields_ExeLocation,
+	0,
+	0,
+	0,
+	0,
+	Fields_NestedClass,
+	0,
+	0,							/* 30 */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,							/* 38 */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+};
+
+/*
+ * Table of all field description types.
+ */
+static const ILUInt32 * const * const FieldDescriptions[] = {
+	Fields_Module,				/* 00 */
+	Fields_TypeRef,
+	Fields_TypeDef,
+	Fields_FieldPtr,
+	Fields_FieldDef,
+	Fields_MethodPtr,
+	Fields_MethodDef,
+	Fields_ParamPtr,
+	Fields_ParamDef,			/* 08 */
+	Fields_InterfaceImpl,
+	Fields_MemberRef,
+	Fields_Constant,
+	Fields_CustomAttr,
+	Fields_FieldMarshal,
+	Fields_DeclSecurity,
+	Fields_ClassLayout,
+	Fields_FieldLayout,			/* 10 */
+	Fields_StandAloneSig,
+	Fields_EventMap,
+	Fields_EventPtr,
+	Fields_Event,
+	Fields_PropertyMap,
+	Fields_PropertyPtr,
+	Fields_Property,
+	Fields_MethodSemantics,		/* 18 */
+	Fields_MethodImpl,
+	Fields_ModuleRef,
+	Fields_TypeSpec,
+	Fields_ImplMap,
+	Fields_FieldRVA,
+	Fields_EncLog,
+	Fields_EncAssociation,
+	Fields_Assembly,			/* 20 */
+	Fields_ProcessorDef,
+	Fields_OSDef,
+	Fields_AssemblyRef,
+	Fields_ProcessorRef,
+	Fields_OSRef,
+	Fields_File,
+	Fields_ExportedType,
+	Fields_ManifestResource,	/* 28 */
+	Fields_NestedClass,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,							/* 30 */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,							/* 38 */
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+};
+
+#if IL_DEBUG_META
+
+/*
+ * Names of the token types.
+ */
+static const char * const tokenNames[64] = {
+	"Module",					/* 00 */
+	"TypeRef",
+	"TypeDef",
+	"FieldPtr",
+	"FieldDef",
+	"MethodPtr",
+	"MethodDef",
+	"ParamPtr",
+	"ParamDef",					/* 08 */
+	"InterfaceImpl",
+	"MemberRef",
+	"Constant",
+	"CustomAttr",
+	"FieldMarshal",
+	"DeclSecurity",
+	"ClassLayout",
+	"FieldLayout",				/* 10 */
+	"StandAloneSig",
+	"EventMap",
+	"EventPtr",
+	"Event",
+	"PropertyAssociation",
+	"PropertyPtr",
+	"Property",
+	"MethodSemantics",			/* 18 */
+	"MethodImpl",
+	"ModuleRef",
+	"TypeSpec",
+	"ImplMap",
+	"FieldRVA",
+	"EncLog",
+	"EncAssociation",
+	"Assembly",					/* 20 */
+	"ProcessorDef",
+	"OSDef",
+	"AssemblyRef",
+	"ProcessorRef",
+	"OSRef",
+	"File",
+	"ExportedType",
+	"ManifestResource,"			/* 28 */
+	"ExeLocation",
+	"Token_2A",
+	"Token_2B",
+	"Token_2C",
+	"Token_2D",
+	"NestedClass",
+	"Token_2F",
+	"Token_30",					/* 30 */
+	"Token_31",
+	"Token_32",
+	"Token_33",
+	"Token_34",
+	"Token_35",
+	"Token_36",
+	"Token_37",
+	"Token_38",					/* 38 */
+	"Token_39",
+	"Token_3A",
+	"Token_3B",
+	"Token_3C",
+	"Token_3D",
+	"Token_3E",
+	"Token_3F",
+};
+
+#endif
+
+/*
+ * Determine the size of a token type's metadata index records.
+ * Returns zero if the token size information is unknown.
+ */
+static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
+					 int guidRefSize, const ILUInt32 * const *desc)
+{
+	int size = 0;
+	const ILUInt32 *type;
+	unsigned long limit;
+	ILUInt32 token;
+	if(desc)
+	{
+		while((type = *desc++) != END_FIELD)
+		{
+			if((((ILUInt32)type) & 1) != 0)
+			{
+				/* Simple type, or direct token table index */
+				switch((ILUInt32)type)
+				{
+					case (ILUInt32)STRREF_FIELD:
+					{
+						size += strRefSize;
+					}
+					break;
+
+					case (ILUInt32)BLOBREF_FIELD:
+					{
+						size += blobRefSize;
+					}
+					break;
+
+					case (ILUInt32)GUIDREF_FIELD:
+					{
+						size += guidRefSize;
+					}
+					break;
+
+					case (ILUInt32)UINT16_FIELD:
+					{
+						size += 2;
+					}
+					break;
+
+					case (ILUInt32)UINT32_FIELD:
+					{
+						size += 4;
+					}
+					break;
+
+					case (ILUInt32)FIELD_FIELD:
+					{
+						if(image->tokenCount
+								[IL_META_TOKEN_FIELD_DEF >> 24]
+									> (unsigned long)0xFFFE)
+						{
+							size += 4;
+						}
+						else
+						{
+							size += 2;
+						}
+					}
+					break;
+
+					case (ILUInt32)METHOD_FIELD:
+					{
+						if(image->tokenCount
+								[IL_META_TOKEN_METHOD_DEF >> 24]
+									> (unsigned long)0xFFFE)
+						{
+							size += 4;
+						}
+						else
+						{
+							size += 2;
+						}
+					}
+					break;
+
+					case (ILUInt32)PARAM_FIELD:
+					{
+						if(image->tokenCount
+								[IL_META_TOKEN_PARAM_DEF >> 24]
+									> (unsigned long)0xFFFE)
+						{
+							size += 4;
+						}
+						else
+						{
+							size += 2;
+						}
+					}
+					break;
+
+					case (ILUInt32)SKIP_FIELD:
+					case (ILUInt32)SKIPGUID_FIELD:
+					{
+						/* Field that isn't relevant to this metadata version */
+					}
+					break;
+
+					default:
+					{
+						/* Ignore "SET_OFFSET(n)" commands */
+						if((((ILUInt32)type) & 0xFF000000) != 0)
+						{
+							if(image->tokenCount[((ILUInt32)type) >> 24]
+										> (unsigned long)0xFFFF)
+							{
+								size += 4;
+							}
+							else
+							{
+								size += 2;
+							}
+						}
+					}
+					break;
+				}
+			}
+			else
+			{
+				/* Mixed reference type */
+				limit = (((unsigned long)0xFFFF) >> *type++);
+				size += 2;
+				while((token = *type++) != END_DESC)
+				{
+					if(token != 1 && token != 2 &&
+					   image->tokenCount[token >> 24] > limit)
+					{
+						size += 2;
+						break;
+					}
+				}
+			}
+		}
+	}
+	return size;
+}
+
+/*
+ * Parse a token type's metadata index record.  Returns a load
+ * error, or zero if OK.
+ */
+static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
+					  int guidRefSize, const ILUInt32 * const *desc,
+					  unsigned char *item, ILUInt32 *values,
+					  unsigned long token)
+{
+	unsigned char *ptr = item;
+	int index = 0;
+	const ILUInt32 *type;
+	const ILUInt32 *start;
+	unsigned long limit;
+	ILUInt32 temp;
+	ILMetaDataRead reader;
+	if(desc)
+	{
+		while((type = *desc++) != END_FIELD)
+		{
+			if((((ILUInt32)type) & 1) != 0)
+			{
+				/* Simple type, or direct token table index */
+				switch((ILUInt32)type)
+				{
+					case (ILUInt32)STRREF_FIELD:
+					{
+						/* Read a string index and validate it */
+						if(strRefSize == 2)
+						{
+							temp = values[index++] = IL_READ_UINT16(ptr);
+						}
+						else
+						{
+							temp = values[index++] = IL_READ_UINT32(ptr);
+						}
+						if(temp >= image->stringPoolSize)
+						{
+							META_VAL_ERROR("bad string index");
+							return IL_LOADERR_BAD_META;
+						}
+						ptr += strRefSize;
+					}
+					break;
+
+					case (ILUInt32)BLOBREF_FIELD:
+					{
+						/* Read a blob index and validate it.  This
+						   results in three fields in the output array */
+						if(blobRefSize == 2)
+						{
+							temp = values[index++] = IL_READ_UINT16(ptr);
+						}
+						else
+						{
+							temp = values[index++] = IL_READ_UINT32(ptr);
+						}
+						if(temp != 0 && temp >= image->blobPoolSize)
+						{
+							META_VAL_ERROR("bad blob index");
+							return IL_LOADERR_BAD_META;
+						}
+						values[index] = values[index - 1];
+						++index;
+						if(temp != 0)
+						{
+							reader.data =
+								(unsigned char *)(image->blobPool + temp);
+							reader.len = image->blobPoolSize - temp;
+							reader.error = 0;
+							temp = values[index++] =
+								(ILUInt32)(ILMetaUncompressData(&reader));
+							if(temp > reader.len || reader.error)
+							{
+								META_VAL_ERROR("invalid blob length");
+								return IL_LOADERR_BAD_META;
+							}
+							values[index - 2] =
+								(ILUInt32)(image->blobPoolSize - reader.len);
+						}
+						else
+						{
+							/* Zero is always a valid blob index and
+							   indicates "no value" */
+							values[index++] = 0;
+						}
+						ptr += blobRefSize;
+					}
+					break;
+
+					case (ILUInt32)GUIDREF_FIELD:
+					{
+						/* Read an index into the "#GUID" entry */
+						unsigned long size;
+						if(guidRefSize == 2)
+						{
+							temp = IL_READ_UINT16(ptr);
+							ptr += 2;
+						}
+						else
+						{
+							temp = IL_READ_UINT32(ptr);
+							ptr += 4;
+						}
+						if(temp != 0)
+						{
+							if(temp >= (ILUInt32)0x10000000 ||
+							   !ILImageGetMetaEntry(image, "#GUID", &size) ||
+							   size < 16 || (temp * 16) > (ILUInt32)size)
+							{
+								META_VAL_ERROR("bad GUID index");
+								return IL_LOADERR_BAD_META;
+							}
+							else
+							{
+								values[index] = (temp - 1) * 16;
+							}
+						}
+						else
+						{
+							/* The GUID value is unspecified */
+							values[index] = IL_MAX_UINT32;
+						}
+						++index;
+					}
+					break;
+
+					case (ILUInt32)UINT16_FIELD:
+					{
+						values[index++] = IL_READ_UINT16(ptr);
+						ptr += 2;
+					}
+					break;
+
+					case (ILUInt32)UINT32_FIELD:
+					{
+						values[index++] = IL_READ_UINT32(ptr);
+						ptr += 4;
+					}
+					break;
+
+					case (ILUInt32)FIELD_FIELD:
+					{
+						/* Read a field index.  If the value is the
+						   size of the field table + 1, then it
+						   indicates a type with no fields */
+						limit = image->tokenCount
+									[IL_META_TOKEN_FIELD_DEF >> 24];
+						if(limit > (unsigned long)0xFFFE)
+						{
+							temp = IL_READ_UINT32(ptr);
+							ptr += 4;
+						}
+						else
+						{
+							temp = IL_READ_UINT16(ptr);
+							ptr += 2;
+						}
+						if(temp == (limit + 1))
+						{
+							values[index++] = 0;
+						}
+						else if(temp > 0 && temp <= (ILUInt32)limit)
+						{
+							values[index++] = IL_META_TOKEN_FIELD_DEF | temp;
+						}
+						else
+						{
+							META_INDEX_ERROR("FieldDef");
+							return IL_LOADERR_BAD_META;
+						}
+					}
+					break;
+
+					case (ILUInt32)METHOD_FIELD:
+					{
+						/* Read a method index.  If the value is the
+						   size of the method table + 1, then it
+						   indicates a type with no method */
+						limit = image->tokenCount
+									[IL_META_TOKEN_METHOD_DEF >> 24];
+						if(limit > (unsigned long)0xFFFE)
+						{
+							temp = IL_READ_UINT32(ptr);
+							ptr += 4;
+						}
+						else
+						{
+							temp = IL_READ_UINT16(ptr);
+							ptr += 2;
+						}
+						if(temp == (limit + 1))
+						{
+							values[index++] = 0;
+						}
+						else if(temp > 0 && temp <= (ILUInt32)limit)
+						{
+							values[index++] = IL_META_TOKEN_METHOD_DEF | temp;
+						}
+						else
+						{
+							META_INDEX_ERROR("MethodDef");
+							return IL_LOADERR_BAD_META;
+						}
+					}
+					break;
+
+					case (ILUInt32)PARAM_FIELD:
+					{
+						/* Read a parameter index.  If the value is the
+						   size of the parameter table + 1, then it
+						   indicates a method with no parameters */
+						limit = image->tokenCount
+									[IL_META_TOKEN_PARAM_DEF >> 24];
+						if(limit > (unsigned long)0xFFFE)
+						{
+							temp = IL_READ_UINT32(ptr);
+							ptr += 4;
+						}
+						else
+						{
+							temp = IL_READ_UINT16(ptr);
+							ptr += 2;
+						}
+						if(temp == (limit + 1))
+						{
+							values[index++] = 0;
+						}
+						else if(temp > 0 && temp <= (ILUInt32)limit)
+						{
+							values[index++] = IL_META_TOKEN_PARAM_DEF | temp;
+						}
+						else
+						{
+							META_INDEX_ERROR("ParamDef");
+							return IL_LOADERR_BAD_META;
+						}
+					}
+					break;
+
+					case (ILUInt32)SKIP_FIELD:
+					{
+						/* Field that isn't relevant to this metadata version */
+						values[index++] = 0;
+					}
+					break;
+
+					case (ILUInt32)SKIPGUID_FIELD:
+					{
+						/* Field that isn't relevant to this metadata version */
+						values[index++] = IL_MAX_UINT32;
+					}
+					break;
+
+					default:
+					{
+						if((((ILUInt32)type) & 0xFF000000) == 0)
+						{
+							/* "SET_OFFSET(n)" command */
+							index = (int)((((ILUInt32)type) & 0xFFE) >> 1);
+						}
+						else
+						{
+							/* Read a normal token table index */
+							limit = image->tokenCount[((ILUInt32)type) >> 24];
+							if(limit <= (unsigned long)0xFFFF)
+							{
+								temp = IL_READ_UINT16(ptr);
+								ptr += 2;
+							}
+							else
+							{
+								temp = IL_READ_UINT32(ptr);
+								ptr += 4;
+							}
+							if(temp > 0 && temp <= (ILUInt32)limit)
+							{
+								values[index++] =
+									((((ILUInt32)type) & 0xFF000000) | temp);
+							}
+							else
+							{
+								META_INDEX_ERROR
+									(tokenNames[((ILUInt32)type) >> 24]);
+								return IL_LOADERR_BAD_META;
+							}
+						}
+					}
+					break;
+				}
+			}
+			else
+			{
+				/* Mixed reference type */
+				start = type;
+				limit = (((unsigned long)0xFFFF) >> *type++);
+				while((temp = *type++) != END_DESC)
+				{
+					if(temp != 1 && temp != 2 &&
+					   image->tokenCount[temp >> 24] > limit)
+					{
+						break;
+					}
+				}
+				if(temp == END_DESC)
+				{
+					/* The reference is 2 bytes in size */
+					temp = IL_READ_UINT16(ptr);
+					ptr += 2;
+				}
+				else
+				{
+					/* The reference is 4 bytes in size */
+					temp = IL_READ_UINT32(ptr);
+					ptr += 4;
+				}
+				values[index] = (temp >> *start);
+				temp = (temp & ((((ILUInt32)1) << *start) - 1));
+				temp = start[temp + 1];
+				if(temp != 1 && temp != 2)
+				{
+					if(values[index] == 0)
+					{
+						/* There are some files that seem to use
+						   index 0 as a "not specified" value */
+						values[index++] = 0;
+					}
+					else if(values[index] <= image->tokenCount[temp >> 24])
+					{
+						values[index++] |= temp;
+					}
+					else
+					{
+						META_INDEX_ERROR
+							(tokenNames[((ILUInt32)temp) >> 24]);
+						return IL_LOADERR_BAD_META;
+					}
+				}
+				else if(temp != 2)
+				{
+					/* The low bits are an invalid type indicator */
+					META_VAL_ERROR("invalid token reference");
+					return IL_LOADERR_BAD_META;
+				}
+				else
+				{
+					/* Custom attribute name that is represented as a string */
+					values[index++] = IL_META_TOKEN_STRING;
+				}
+			}
+		}
+		return 0;
+	}
+	else
+	{
+		META_VAL_ERROR("undocumented token type");
+		return IL_LOADERR_UNDOC_META;
+	}
+}
+
+/*
+ * Parse the metadata index blob to determine the number
+ * and size of each of the token record types, and
+ * their positions within the index blob.
+ */
+static int ParseMetaIndex(ILImage *image, int loadFlags)
+{
+	unsigned char *index;
+	unsigned long size;
+	unsigned long len;
+	ILUInt8 sizeBits;
+	ILUInt64 typesPresent;
+	int type;
+	int strRefSize;
+	int blobRefSize;
+	int guidRefSize;
+	unsigned char *item;
+	int error;
+	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
+	unsigned long tokenBase;
+	unsigned long token;
+	const ILUInt32 * const * const *fieldDesc;
+	int isOldFormat;
+	int knownLimit;
+
+	/* Are we parsing the old Beta 1 or the new ECMA/Beta 2 format? */
+	image->oldMeta = isOldFormat = ILImageMetaIsOld(image);
+
+	/* Extract the "#~" blob from the metadata */
+	index = ILImageGetMetaEntry(image, "#~", &size);
+	if(!index)
+	{
+		META_ERROR("index is missing");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Pull apart the index header */
+	if(size < 24)
+	{
+		META_ERROR("index header is truncated");
+		return IL_LOADERR_BAD_META;
+	}
+	sizeBits = index[6];
+	typesPresent = IL_READ_UINT64(index + 8);
+	image->sorted = IL_READ_UINT64(index + 16);
+	index += 24;
+	size -= 24;
+
+	/* Parse the token count table just after the header */
+	for(type = 0; type < 64; ++type)
+	{
+		if((typesPresent & (((ILUInt64)1) << type)) == 0)
+		{
+			/* This type is not in the table, so skip it */
+			continue;
+		}
+		if(size < 4)
+		{
+			META_ERROR("token count table is truncated");
+			return IL_LOADERR_BAD_META;
+		}
+		image->tokenCount[type] = IL_READ_UINT32(index);
+		if(image->tokenCount[type] >= (unsigned long)0x00FFFFFF)
+		{
+			META_ERROR("too many tokens");
+			return IL_LOADERR_BAD_META;
+		}
+		index += 4;
+		size -= 4;
+	}
+
+	/* Determine which field description table to use */
+	if(isOldFormat)
+	{
+		fieldDesc = FieldDescriptionsOld;
+		knownLimit = (IL_META_TOKEN_OLD_NESTED_CLASS >> 24);
+	}
+	else
+	{
+		fieldDesc = FieldDescriptions;
+		knownLimit = (IL_META_TOKEN_NESTED_CLASS >> 24);
+	}
+
+	/* Determine the size of each of the token structures */
+	if((sizeBits & IL_META_SIZE_FLAG_STRREF) != 0)
+	{
+		strRefSize = 4;
+	}
+	else
+	{
+		strRefSize = 2;
+	}
+	if((sizeBits & IL_META_SIZE_FLAG_GUIDREF) != 0)
+	{
+		guidRefSize = 4;
+	}
+	else
+	{
+		guidRefSize = 2;
+	}
+	if((sizeBits & IL_META_SIZE_FLAG_BLOBREF) != 0)
+	{
+		blobRefSize = 4;
+	}
+	else
+	{
+		blobRefSize = 2;
+	}
+	for(type = 0; type < 64; ++type)
+	{
+		if((typesPresent & (((ILUInt64)1) << type)) != 0)
+		{
+			image->tokenSize[type] =
+					TokenSize(image, strRefSize, blobRefSize,
+						      guidRefSize, fieldDesc[type]);
+		   	if(image->tokenSize[type] == 0)
+			{
+				if(type <= knownLimit)
+				{
+					/* This is a type that we probably need to know about,
+					   so we have no choice but to abort */
+				#if IL_DEBUG_META
+					/* Report errors for the remaining undocumented types */
+					while(type < 64)
+					{
+						if((typesPresent & (((ILUInt64)1) << type)) != 0 &&
+						   fieldDesc[type] == 0)
+						{
+							fprintf(stderr, "metadata error: uses %ld "
+											"instances of undocumented "
+											"token type 0x%08lX\n",
+									image->tokenCount[type],
+								    (((unsigned long)type) << 24));
+						}
+						++type;
+					}
+				#endif
+					return IL_LOADERR_UNDOC_META;
+				}
+				else
+				{
+					/* Types above "nested class" are not strictly necessary
+					   to the understanding of the file.  We will assume that
+					   they provide debug and other information that we don't
+					   care about at present.  We clear the token counts and
+					   sizes of anything else in the table.  This will
+					   hopefully make our implementation robust in the face
+					   of future additions by Microsoft */
+					while(type < 64)
+					{
+					#if IL_DEBUG_META
+						if((typesPresent & (((ILUInt64)1) << type)) != 0 &&
+						   fieldDesc[type] == 0)
+						{
+							fprintf(stderr, "metadata warning: uses %ld "
+											"instances of undocumented token "
+											"type 0x%08lX - continuing\n",
+									image->tokenCount[type],
+								    (((unsigned long)type) << 24));
+						}
+					#endif
+						image->tokenCount[type] = 0;
+						image->tokenSize[type] = 0;
+						typesPresent &= ~(((ILUInt64)1) << type);
+						++type;
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	/* Calculate the starting positions of each table */
+	for(type = 0; type < 64; ++type)
+	{
+		if((typesPresent & (((ILUInt64)1) << type)) != 0)
+		{
+			if((size / (unsigned long)(image->tokenSize[type]))
+					< image->tokenCount[type])
+			{
+				META_ERROR("index is truncated");
+				return IL_LOADERR_BAD_META;
+			}
+			image->tokenStart[type] = index;
+			len = ((unsigned long)(image->tokenSize[type])) *
+						image->tokenCount[type];
+			index += len;
+			size -= len;
+		}
+	}
+
+	/* If the "pre-validate" flag is set, then validate the token
+	   index information now.  This checks that all of the references
+	   are in range, and that all of the fields have legal values.
+	   If there are errors, we report as many of them as possible.
+	   If the flag is not set, we validate only when tokens are used */
+	if((loadFlags & IL_LOADFLAG_PRE_VALIDATE) != 0)
+	{
+		error = 0;
+		for(type = 0; type < 64; ++type)
+		{
+			len = image->tokenCount[type];
+			size = (unsigned long)(image->tokenSize[type]);
+			tokenBase = (((unsigned long)type) << 24);
+			for(token = 0; token < len; ++token)
+			{
+				item = image->tokenStart[type] + (token * size);
+				if(error != 0)
+				{
+					/* We've already seen an error, so ignore the return */
+					ParseToken(image, strRefSize, blobRefSize, guidRefSize,
+							   fieldDesc[type], item, values,
+							   tokenBase + token + 1);
+				}
+				else
+				{
+					error = ParseToken(image, strRefSize, blobRefSize,
+									   guidRefSize, fieldDesc[type],
+									   item, values, tokenBase + token + 1);
+				}
+			}
+		}
+		if(error != 0)
+		{
+			return error;
+		}
+	}
+
+	/* Record the size of STRREF's and BLOBREF's for later */
+	image->strRefBig = (strRefSize == 4);
+	image->blobRefBig = (blobRefSize == 4);
+	image->guidRefBig = (guidRefSize == 4);
+
+	/* The index has been successfully parsed */
+	return 0;
+}
+
+int _ILImageParseMeta(ILImage *image, const char *filename, int flags)
+{
+	int error;
+
+	/* Load the string pool information */
+	image->stringPool = ILImageGetMetaEntry(image, "#Strings",
+											&(image->stringPoolSize));
+	if(!(image->stringPool))
+	{
+		image->stringPoolSize = 0;
+	}
+	else if(image->stringPoolSize > 0 &&
+	        (image->stringPool)[image->stringPoolSize - 1] != 0)
+	{
+		META_ERROR("string pool does not end with a NUL");
+		return IL_LOADERR_BAD_META;
+	}
+
+	/* Load the blob pool information */
+	image->blobPool = ILImageGetMetaEntry(image, "#Blob",
+										  &(image->blobPoolSize));
+	if(!(image->blobPool))
+	{
+		image->blobPoolSize = 0;
+	}
+
+	/* Load the user string pool information */
+	image->userStringPool = ILImageGetMetaEntry(image, "#US",
+										        &(image->userStringPoolSize));
+	if(!(image->userStringPool))
+	{
+		image->userStringPoolSize = 0;
+	}
+
+	/* Parse the metadata index */
+	error = ParseMetaIndex(image, flags);
+	if(error != 0)
+	{
+		return error;
+	}
+
+	/* Build all of the metadata structures */
+	error = _ILImageBuildMetaStructures(image, filename, flags);
+	if(error != 0)
+	{
+		return error;
+	}
+
+	/* Ready to go */
+	return 0;
+}
+
+int _ILImageRawTokenData(ILImage *image, ILToken token,
+						 ILUInt32 *values)
+{
+	if(token < (unsigned long)0x40000000)
+	{
+		ILToken tokenId = (token & (unsigned long)0x00FFFFFF);
+		ILToken tokenType = (token >> 24);
+		if(tokenId >= 1 && tokenId <= image->tokenCount[tokenType])
+		{
+			if(!(image->oldMeta))
+			{
+				return (ParseToken(image, (image->strRefBig ? 4 : 2),
+							   (image->blobRefBig ? 4 : 2),
+							   (image->guidRefBig ? 4 : 2),
+							   FieldDescriptions[tokenType],
+							   image->tokenStart[tokenType] + (tokenId - 1) *
+								 ((unsigned long)(image->tokenSize[tokenType])),
+							   values, token) == 0);
+			}
+			else
+			{
+				return (ParseToken(image, (image->strRefBig ? 4 : 2),
+							   (image->blobRefBig ? 4 : 2),
+							   (image->guidRefBig ? 4 : 2),
+							   FieldDescriptionsOld[tokenType],
+							   image->tokenStart[tokenType] + (tokenId - 1) *
+								 ((unsigned long)(image->tokenSize[tokenType])),
+							   values, token) == 0);
+			}
+		}
+	}
+	return 0;
+}
+
+unsigned long ILImageNumTokens(ILImage *image, ILToken tokenType)
+{
+	if(tokenType < (unsigned long)0x40000000)
+	{
+		return image->tokenCount[tokenType >> 24];
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void *ILImageTokenInfo(ILImage *image, ILToken token)
+{
+	void **data;
+	if(token < (unsigned long)0x40000000)
+	{
+		ILToken tokenId = (token & (unsigned long)0x00FFFFFF);
+		ILToken tokenType = (token >> 24);
+		if(tokenId >= 1 && tokenId <= image->tokenCount[tokenType])
+		{
+			data = image->tokenData[tokenType];
+			if(data)
+			{
+				return data[tokenId - 1];
+			}
+		}
+	}
+	return 0;
+}
+
+void *ILImageNextToken(ILImage *image, ILToken tokenType, void *prev)
+{
+	ILToken token = (prev ? (((ILProgramItem *)prev)->token + 1)
+						  : (tokenType | 1));
+	return ILImageTokenInfo(image, token);
+}
+
+void *ILImageSearchForToken(ILImage *image, ILToken tokenType,
+							ILImageCompareFunc compareFunc,
+							void *userData)
+{
+	ILToken maxToken;
+	ILToken token;
+	ILToken left, right;
+	void **data;
+	void *item;
+	int cmp;
+
+	/* Find the table in question */
+	maxToken = (tokenType | image->tokenCount[tokenType >> 24]);
+	data = image->tokenData[tokenType >> 24];
+
+	/* Is the table sorted? */
+	if((image->sorted & (((ILUInt64)1) << (tokenType >> 24))) != 0)
+	{
+		/* The table is sorted, so use a binary search */
+		left = (tokenType | 1);
+		right = maxToken;
+		while(left <= right)
+		{
+			token = ((left + right) / 2);
+			item = data[(token & ~IL_META_TOKEN_MASK) - 1];
+			if(!item)
+			{
+				/* There is a gap in the table: revert to linear search */
+				goto linearSearch;
+			}
+			cmp = (*compareFunc)(item, userData);
+			if(!cmp)
+			{
+				return item;
+			}
+			else if(cmp < 0)
+			{
+				left = token + 1;
+			}
+			else
+			{
+				right = token - 1;
+			}
+		}
+	}
+	else
+	{
+		/* The table is unsorted, so search linearly */
+	linearSearch:
+		for(token = (tokenType | 1); token <= maxToken; ++token)
+		{
+			item = data[(token & ~IL_META_TOKEN_MASK) - 1];
+			if(item && (*compareFunc)(item, userData) == 0)
+			{
+				return item;
+			}
+		}
+	}
+
+	/* If we get here, then the item could not be found */
+	return 0;
+}
+
+void _ILImageFreeTokens(ILImage *image)
+{
+	int tokenType;
+	for(tokenType = 0; tokenType < 64; ++tokenType)
+	{
+		if(image->tokenData[tokenType])
+		{
+			ILFree(image->tokenData[tokenType]);
+		}
+	}
+}
+
+int _ILImageSetToken(ILImage *image, ILProgramItem *item,
+					 unsigned long token, unsigned long tokenKind)
+{
+	void **data;
+	unsigned long tokenId;
+	unsigned long tokenType;
+	unsigned long count;
+
+	/* Bail out if no image (i.e. the item is attached to the context) */
+	if(!image)
+	{
+		return 1;
+	}
+
+	/* Are we loading or building the image? */
+	if(image->type != IL_IMAGETYPE_BUILDING)
+	{
+		/* We are loading an image, so use the supplied token */
+		item->token = (ILUInt32)token;
+		if(token < (unsigned long)0x40000000)
+		{
+			tokenId = (token & (unsigned long)0x00FFFFFF);
+			tokenType = (token >> 24);
+			if(tokenId >= 1 && tokenId <= image->tokenCount[tokenType])
+			{
+				data = image->tokenData[tokenType];
+				if(data)
+				{
+					data[tokenId - 1] = (void *)item;
+					return 1;
+				}
+				if((data = (void **)ILCalloc(image->tokenCount[tokenType],
+											 sizeof(void *))) != 0)
+				{
+					image->tokenData[tokenType] = data;
+					data[tokenId - 1] = (void *)item;
+					return 1;
+				}
+			}
+		}
+	}
+	else
+	{
+		/* We are building an image, so allocate a new token */
+		tokenType = (tokenKind >> 24);
+		count = image->tokenCount[tokenType];
+		token = tokenKind | (count + 1);
+		item->token = (ILUInt32)token;
+		if((count & (unsigned long)0x3F) == 0)
+		{
+			/* We need to make the token table bigger */
+			data = (void **)ILRealloc(image->tokenData[tokenType],
+									  sizeof(void *) * (count + 64));
+			if(!data)
+			{
+				return 0;
+			}
+			image->tokenData[tokenType] = data;
+		}
+		image->tokenData[tokenType][count] = (void *)item;
+		++(image->tokenCount[tokenType]);
+		return 1;
+	}
+	return 0;
+}
+
+void _ILImageComputeTokenSizes(ILImage *image, int useOldMetadata)
+{
+	int strRefSize, blobRefSize, guidRefSize;
+	ILModule *module;
+	unsigned long numGUIDs;
+	int type;
+
+	/* Compute the size of STRREF, BLOBREF, and GUIDREF values */
+	if(image->stringPoolSize > (unsigned long)0xFFFF)
+	{
+		strRefSize = 4;
+	}
+	else
+	{
+		strRefSize = 2;
+	}
+	if(image->blobPoolSize > (unsigned long)0xFFFF)
+	{
+		blobRefSize = 4;
+	}
+	else
+	{
+		blobRefSize = 2;
+	}
+	module = 0;
+	numGUIDs = 0;
+	while((module = (ILModule *)ILImageNextToken
+				(image, IL_META_TOKEN_MODULE, module)) != 0)
+	{
+		if(ILModule_MVID(module) != 0)
+		{
+			++numGUIDs;
+		}
+		if(ILModule_EncId(module) != 0)
+		{
+			++numGUIDs;
+		}
+		if(ILModule_EncBaseId(module) != 0)
+		{
+			++numGUIDs;
+		}
+	}
+	if(numGUIDs > (unsigned long)0xFFFF)
+	{
+		guidRefSize = 4;
+	}
+	else
+	{
+		guidRefSize = 2;
+	}
+	image->strRefBig = (strRefSize == 4);
+	image->blobRefBig = (blobRefSize == 4);
+	image->guidRefBig = (guidRefSize == 4);
+
+	/* Compute the size of all of the token types */
+	for(type = 0; type < 64; ++type)
+	{
+		if(useOldMetadata)
+		{
+			image->tokenSize[type] =
+					TokenSize(image, strRefSize, blobRefSize,
+						      guidRefSize, FieldDescriptionsOld[type]);
+		}
+		else
+		{
+			image->tokenSize[type] =
+					TokenSize(image, strRefSize, blobRefSize,
+						      guidRefSize, FieldDescriptions[type]);
+		}
+	}
+}
+
+/*
+ * Write a 16-bit little-endian value to a buffer.
+ */
+#define	WRITE16(buf,value)	\
+			do { \
+				(buf)[0] = (unsigned char)(value); \
+				(buf)[1] = (unsigned char)((value) >> 8); \
+			} while (0)
+
+/*
+ * Write a 32-bit little-endian value to a buffer.
+ */
+#define	WRITE32(buf,value)	\
+			do { \
+				(buf)[0] = (unsigned char)(value); \
+				(buf)[1] = (unsigned char)((value) >> 8); \
+				(buf)[2] = (unsigned char)((value) >> 16); \
+				(buf)[3] = (unsigned char)((value) >> 24); \
+			} while (0)
+
+void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
+							ILToken token, ILUInt32 *values,
+							int useOldMetadata)
+{
+	const ILUInt32 * const *desc;
+	int strRefBig = image->strRefBig;
+	int blobRefBig = image->blobRefBig;
+	int guidRefBig = image->guidRefBig;
+	const ILUInt32 *type;
+	const ILUInt32 *start;
+	int index;
+	ILUInt32 val;
+	ILUInt32 val2;
+	ILUInt32 temp;
+	unsigned long limit;
+	int bigToken;
+
+	/* Get the descriptor to use to pack the data */
+	if(useOldMetadata)
+	{
+		desc = FieldDescriptionsOld[token >> 24];
+	}
+	else
+	{
+		desc = FieldDescriptions[token >> 24];
+	}
+	if(!desc)
+	{
+	 	return;
+	}
+
+	/* Pack the data into the buffer */
+	index = 0;
+	while((type = *desc++) != END_FIELD)
+	{
+		if((((ILUInt32)type) & 1) != 0)
+		{
+			/* Simple type, or direct token table index */
+			switch((ILUInt32)type)
+			{
+				case (ILUInt32)STRREF_FIELD:
+				{
+					/* Write a string index */
+					if(strRefBig)
+					{
+						WRITE32(ptr, values[index]);
+						ptr += 4;
+					}
+					else
+					{
+						WRITE16(ptr, values[index]);
+						ptr += 2;
+					}
+					++index;
+				}
+				break;
+
+				case (ILUInt32)BLOBREF_FIELD:
+				{
+					/* Write a blob index */
+					if(blobRefBig)
+					{
+						WRITE32(ptr, values[index]);
+						ptr += 4;
+					}
+					else
+					{
+						WRITE16(ptr, values[index]);
+						ptr += 2;
+					}
+					index += 3;	/* Raw, value, and len */
+				}
+				break;
+
+				case (ILUInt32)GUIDREF_FIELD:
+				{
+					/* Write a GUID reference */
+					if(values[index] == IL_MAX_UINT32)
+					{
+						val = 0;
+					}
+					else
+					{
+						val = (values[index] / 16) + 1;
+					}
+					if(guidRefBig)
+					{
+						WRITE32(ptr, val);
+						ptr += 4;
+					}
+					else
+					{
+						WRITE16(ptr, val);
+						ptr += 2;
+					}
+					++index;
+				}
+				break;
+
+				case (ILUInt32)UINT16_FIELD:
+				{
+					WRITE16(ptr, values[index]);
+					++index;
+					ptr += 2;
+				}
+				break;
+
+				case (ILUInt32)UINT32_FIELD:
+				{
+					WRITE32(ptr, values[index]);
+					++index;
+					ptr += 4;
+				}
+				break;
+
+				case (ILUInt32)FIELD_FIELD:
+				{
+					/* Write a field index */
+					limit = image->tokenCount
+								[IL_META_TOKEN_FIELD_DEF >> 24];
+					val = values[index++];
+					if(!val)
+					{
+						val = IL_META_TOKEN_FIELD_DEF | limit;
+					}
+					if(limit > (unsigned long)0xFFFE)
+					{
+						WRITE32(ptr, val);
+						ptr += 4;
+					}
+					else
+					{
+						WRITE16(ptr, val);
+						ptr += 2;
+					}
+				}
+				break;
+
+				case (ILUInt32)METHOD_FIELD:
+				{
+					/* Write a method index */
+					limit = image->tokenCount
+								[IL_META_TOKEN_METHOD_DEF >> 24];
+					val = values[index++];
+					if(!val)
+					{
+						val = IL_META_TOKEN_METHOD_DEF | limit;
+					}
+					if(limit > (unsigned long)0xFFFE)
+					{
+						WRITE32(ptr, val);
+						ptr += 4;
+					}
+					else
+					{
+						WRITE16(ptr, val);
+						ptr += 2;
+					}
+				}
+				break;
+
+				case (ILUInt32)PARAM_FIELD:
+				{
+					/* Write a parameter index */
+					limit = image->tokenCount
+								[IL_META_TOKEN_PARAM_DEF >> 24];
+					val = values[index++];
+					if(!val)
+					{
+						val = IL_META_TOKEN_PARAM_DEF | limit;
+					}
+					if(limit > (unsigned long)0xFFFE)
+					{
+						WRITE32(ptr, val);
+						ptr += 4;
+					}
+					else
+					{
+						WRITE16(ptr, val);
+						ptr += 2;
+					}
+				}
+				break;
+
+				case (ILUInt32)SKIP_FIELD:
+				case (ILUInt32)SKIPGUID_FIELD:
+				{
+					/* Field that isn't relevant to this metadata version */
+					++index;
+				}
+				break;
+
+				default:
+				{
+					if((((ILUInt32)type) & 0xFF000000) == 0)
+					{
+						/* "SET_OFFSET(n)" command */
+						index = (int)((((ILUInt32)type) & 0xFFE) >> 1);
+					}
+					else
+					{
+						/* Write a normal token table index */
+						limit = image->tokenCount[((ILUInt32)type) >> 24];
+						val = values[index++];
+						if(limit <= (unsigned long)0xFFFF)
+						{
+							WRITE16(ptr, val);
+							ptr += 2;
+						}
+						else
+						{
+							WRITE32(ptr, val);
+							ptr += 4;
+						}
+					}
+				}
+				break;
+			}
+		}
+		else
+		{
+			/* Mixed reference type */
+			start = type;
+			limit = (((unsigned long)0xFFFF) >> *type++);
+			bigToken = 0;
+			val = 0;
+			val2 = 0;
+			while((temp = *type++) != END_DESC)
+			{
+				if(temp != 1 && temp != 2 &&
+				   image->tokenCount[temp >> 24] > limit)
+				{
+					bigToken = 1;
+				}
+				if(temp == (values[index] & IL_META_TOKEN_MASK))
+				{
+					val = val2;
+				}
+				if(temp == 2 &&
+				   (values[index] & IL_META_TOKEN_MASK) ==
+				   			IL_META_TOKEN_STRING)
+				{
+					val = val2;
+				}
+				++val2;
+			}
+			val |= ((values[index++] & ~IL_META_TOKEN_MASK) << *start);
+			if(bigToken)
+			{
+				/* The reference is 4 bytes in size */
+				WRITE32(ptr, val);
+				ptr += 4;
+			}
+			else
+			{
+				/* The reference is 2 bytes in size */
+				WRITE16(ptr, val);
+				ptr += 2;
+			}
+		}
+	}
+}
+
+#ifdef	__cplusplus
+};
+#endif

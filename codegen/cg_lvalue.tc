@@ -1,0 +1,360 @@
+%output "cg_lvalue.c"
+
+%{
+/*
+ * cg_lvalue.tc - Identifier and l-value nodes.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "cg_nodes.h"
+
+%}
+
+/*
+ * Stub out identifier operations.  Identifier nodes must
+ * be replaced with real l-value nodes prior to code generation.
+ */
+ILNode_GetType(ILNode_Identifier),
+ILNode_GetType(ILNode_QualIdent),
+ILNode_GenValue(ILNode_Identifier),
+ILNode_GenValue(ILNode_QualIdent)
+{
+	return ILMachineType_Void;
+}
+ILNode_GenDiscard(ILNode_Identifier),
+ILNode_GenDiscard(ILNode_QualIdent),
+ILNode_GenThen(ILNode_Identifier),
+ILNode_GenThen(ILNode_QualIdent),
+ILNode_GenElse(ILNode_Identifier),
+ILNode_GenElse(ILNode_QualIdent)
+{
+}
+ILNode_EvalConst(ILNode_Identifier),
+ILNode_EvalConst(ILNode_QualIdent)
+{
+	return 0;
+}
+
+/*
+ * Get the type of a field access operator.
+ */
+ILNode_GetType(ILNode_MemberAccess),
+ILNode_GetType(ILNode_BaseAccess),
+ILNode_GetType(ILNode_BaseElement),
+ILNode_GetType(ILNode_DerefField)
+{
+	return node->machineType;
+}
+
+/*
+ * Generate discard code for a member access operator.
+ */
+ILNode_GenDiscard(ILNode_MemberAccess)
+{
+	/* Evaluate the object expression for its side-effects */
+	ILNode_GenDiscard(node->expr1, info);
+}
+
+/*
+ * Generate discard code for a base access operator.
+ */
+ILNode_GenDiscard(ILNode_BaseAccess)
+{
+	/* Nothing needs to be done here */
+}
+
+/*
+ * Generate discard code for a field dereference operator.
+ */
+ILNode_GenDiscard(ILNode_DerefField)
+{
+	/* Evaluate the object expression for its side-effects */
+	ILNode_GenDiscard(node->expr1, info);
+}
+
+/*
+ * Generate value code for a member access operator.
+ */
+ILNode_GenValue(ILNode_MemberAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a base access operator.
+ */
+ILNode_GenValue(ILNode_BaseAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a base element operator.
+ */
+ILNode_GenValue(ILNode_BaseElement)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Generate value code for a field dereference operator.
+ */
+ILNode_GenValue(ILNode_DerefField)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a member access destination.
+ */
+ILNode_Prepare(ILNode_MemberAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a base access destination.
+ */
+ILNode_Prepare(ILNode_BaseAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a base element destination.
+ */
+ILNode_Prepare(ILNode_BaseElement)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Prepare to store into a field dereference destination.
+ */
+ILNode_Prepare(ILNode_DerefField)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a member access destination.
+ */
+ILNode_GetAndPrepare(ILNode_MemberAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a base access destination.
+ */
+ILNode_GetAndPrepare(ILNode_BaseAccess)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a base element destination.
+ */
+ILNode_GetAndPrepare(ILNode_BaseElement)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Get and prepare to store into a field dereference destination.
+ */
+ILNode_GetAndPrepare(ILNode_DerefField)
+{
+	/* TODO */
+	return node->machineType;
+}
+
+/*
+ * Store into a member access destination.
+ */
+ILNode_Store(ILNode_MemberAccess)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a base access destination.
+ */
+ILNode_Store(ILNode_BaseAccess)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a base element destination.
+ */
+ILNode_Store(ILNode_BaseElement)
+{
+	/* TODO */
+}
+
+/*
+ * Store into a field dereference destination.
+ */
+ILNode_Store(ILNode_DerefField)
+{
+	/* TODO */
+}
+
+/*
+ * Declare operations that can be used to manage identifiers.
+ */
+%decls %end %{
+
+/*
+ * Create a simple identifier node.  "name" must be intern'ed.
+ */
+ILNode *ILQualIdentSimple(char *name);
+
+/*
+ * Create a two-name identifier node.  The names do not need
+ * to be intern'ed.
+ */
+ILNode *ILQualIdentTwo(const char *name1, const char *name2);
+
+/*
+ * Convert a qualified identifier node into a full string name,
+ * and intern the string.  Returns NULL if not an identifier node.
+ * If "asmForm" is non-zero, then quote the name to put it into
+ * a form suitable for assembly code.
+ */
+char *ILQualIdentName(ILNode *node, int asmForm);
+
+/*
+ * Append two qualified identifier strings, with '.' between them.
+ */
+char *ILQualIdentAppend(char *name1, char *name2);
+
+/*
+ * Determine if a node is a qualified identifier.
+ */
+int ILIsQualIdent(ILNode *node);
+
+%}
+
+/*
+ * Implement the identifier operations.
+ */
+%end %{
+
+ILNode *ILQualIdentSimple(char *name)
+{
+	return ILNode_Identifier_create(name);
+}
+
+ILNode *ILQualIdentTwo(const char *name1, const char *name2)
+{
+	char *intern1 = ILInternString((char *)name1, -1).string;
+	char *intern2 = ILInternString((char *)name2, -1).string;
+	return ILNode_QualIdent_create(ILNode_Identifier_create(intern1),
+								   ILNode_Identifier_create(intern2));
+}
+
+char *ILQualIdentName(ILNode *node, int asmForm)
+{
+	if(!node)
+	{
+		return 0;
+	}
+	else if(yykind(node) == yykindof(ILNode_Identifier))
+	{
+		/* Simple name */
+		ILNode_Identifier *ident = (ILNode_Identifier *)node;
+		if(asmForm && ident->name[0] >= 'a' && ident->name[0] <= 'z')
+		{
+			/* The name might clash with an assembler keyword
+			   or instruction name, so we must quote it */
+			ILIntString quote = ILInternString("'", 1);
+			ILIntString name;
+			name.string = ident->name;
+			name.len = strlen(ident->name);
+			return (ILInternAppendedString
+						(quote, ILInternAppendedString(name, quote))).string;
+		}
+		return ident->name;
+	}
+	else if(yykind(node) == yykindof(ILNode_QualIdent))
+	{
+		/* Qualified name */
+		ILNode_QualIdent *qident = (ILNode_QualIdent *)node;
+		return ILQualIdentAppend(ILQualIdentName(qident->left, asmForm),
+								 ILQualIdentName(qident->right, asmForm));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+char *ILQualIdentAppend(char *name1, char *name2)
+{
+	ILIntString str1;
+	ILIntString str2;
+	ILIntString str3;
+	if(!name1 || *name1 == '\0' || !name2 || *name2 == '\0')
+	{
+		return 0;
+	}
+	str1.string = name1;
+	str1.len = strlen(name1);
+	str2.string = ".";
+	str2.len = 1;
+	str3.string = name2;
+	str3.len = strlen(name2);
+	return (ILInternAppendedString
+				(str1, ILInternAppendedString(str2, str3))).string;
+}
+
+int ILIsQualIdent(ILNode *node)
+{
+	if(!node)
+	{
+		return 0;
+	}
+	if(yykind(node) == yykindof(ILNode_Identifier))
+	{
+		return 1;
+	}
+	else if(yykind(node) == yykindof(ILNode_QualIdent))
+	{
+		return ILIsQualIdent(((ILNode_QualIdent *)node)->left) &&
+		       ILIsQualIdent(((ILNode_QualIdent *)node)->right);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+%}

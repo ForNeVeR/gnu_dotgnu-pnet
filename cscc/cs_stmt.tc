@@ -1,0 +1,518 @@
+/*
+ * cs_stmt.tc - Semantic analysis for C# statement node types.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Perform semantic analysis for the empty statement.
+ */
+ILNode_SemAnalysis(ILNode_Empty)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+%{
+
+/*
+ * Determine if a tree node corresponds to the empty statement.
+ */
+#define	IsEmpty(node) ((node) == 0 || yykind((node)) == yykindof(ILNode_Empty))
+
+/*
+ * Perform semantic analysis on a sub-statement.
+ */
+static void StmtSem(ILNode *node, ILGenInfo *info, ILNode **parent)
+{
+	CSSemValue value;
+	if(node)
+	{
+		value = ILNode_SemAnalysis(node, info, parent);
+		if(value.kind == CS_SEMKIND_TYPE)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "type used as a statement");
+		}
+	}
+}
+
+%}
+
+/*
+ * Perform semantic analysis for the compound statement.
+ */
+ILNode_SemAnalysis(ILNode_Compound),
+ILNode_SemAnalysis(ILNode_List)
+{
+	ILNode_ListIter iter;
+	ILNode *child;
+	ILNode *replace;
+	CSSemValue value;
+	ILNode_ListIter_Init(&iter, node);
+	while((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		replace = child;
+		StmtSem(child, info, &replace);
+		if(replace != child)
+		{
+			*(iter.last) = replace;
+		}
+	}
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "if" statement.
+ *
+ * Note: we assume that the condition has been wrapped in
+ * a "ToBool" node to take care of the semantic analysis
+ * for the boolean cast.
+ */
+ILNode_SemAnalysis(ILNode_If)
+{
+	CSSemValue value;
+	ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	StmtSem(node->thenClause, info, &(node->thenClause));
+	StmtSem(node->elseClause, info, &(node->elseClause));
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "while" statement.
+ *
+ * Note: we assume that the condition has been wrapped in
+ * a "ToBool" node to take care of the semantic analysis
+ * for the boolean cast.
+ */
+ILNode_SemAnalysis(ILNode_While)
+{
+	CSSemValue value;
+	ILNode_SemAnalysis(node->cond, info, &(node->cond));
+	++(info->numLoops);
+	StmtSem(node->stmt, info, &(node->stmt));
+	--(info->numLoops);
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "do" statement.
+ *
+ * Note: we assume that the condition has been wrapped in
+ * a "ToBool" node to take care of the semantic analysis
+ * for the boolean cast.
+ */
+ILNode_SemAnalysis(ILNode_Do)
+{
+	CSSemValue value;
+	++(info->numLoops);
+	StmtSem(node->stmt, info, &(node->stmt));
+	--(info->numLoops);
+	ILNode_SemAnalysis(node->cond, info, &(node->cond));
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "for" statement.
+ *
+ * Note: we assume that the condition has been wrapped in
+ * a "ToBool" node to take care of the semantic analysis
+ * for the boolean cast.
+ */
+ILNode_SemAnalysis(ILNode_For)
+{
+	CSSemValue value;
+	StmtSem(node->init, info, &(node->init));
+	ILNode_SemAnalysis(node->cond, info, &(node->cond));
+	StmtSem(node->incr, info, &(node->incr));
+	++(info->numLoops);
+	StmtSem(node->stmt, info, &(node->stmt));
+	--(info->numLoops);
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "foreach" statement.
+ */
+ILNode_SemAnalysis(ILNode_Foreach)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "switch" statement.
+ */
+ILNode_SemAnalysis(ILNode_Switch)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "switch section list" statement.
+ */
+ILNode_SemAnalysis(ILNode_SwitchSectList)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "switch section" statement.
+ */
+ILNode_SemAnalysis(ILNode_SwitchSection)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "switch case list" statement.
+ */
+ILNode_SemAnalysis(ILNode_CaseList)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "case label" statement.
+ */
+ILNode_SemAnalysis(ILNode_CaseLabel)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "default label" statement.
+ */
+ILNode_SemAnalysis(ILNode_DefaultLabel)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "goto" statement.
+ */
+ILNode_SemAnalysis(ILNode_Goto)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "goto label" statement.
+ */
+ILNode_SemAnalysis(ILNode_GotoLabel)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "goto case" statement.
+ */
+ILNode_SemAnalysis(ILNode_GotoCase)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "goto default" statement.
+ */
+ILNode_SemAnalysis(ILNode_GotoDefault)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "break" statement.
+ */
+ILNode_SemAnalysis(ILNode_Break)
+{
+	CSSemValue value;
+	if(!(info->numLoops) && !(info->numSwitches))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "break used outside loop or switch");
+	}
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "continue" statement.
+ */
+ILNode_SemAnalysis(ILNode_Continue)
+{
+	CSSemValue value;
+	if(!(info->numLoops))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "continue used outside loop");
+	}
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "return" statement.
+ */
+ILNode_SemAnalysis(ILNode_Return)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "return expression" statement.
+ */
+ILNode_SemAnalysis(ILNode_ReturnExpr)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "throw" statement.
+ */
+ILNode_SemAnalysis(ILNode_Throw)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "throw expression" statement.
+ */
+ILNode_SemAnalysis(ILNode_ThrowExpr)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "try" statement.
+ */
+ILNode_SemAnalysis(ILNode_Try)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "catch clauses" statement.
+ */
+ILNode_SemAnalysis(ILNode_CatchClauses)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "catch clause" statement.
+ */
+ILNode_SemAnalysis(ILNode_CatchClause)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "finally clause" statement.
+ */
+ILNode_SemAnalysis(ILNode_FinallyClause)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "lock" statement.
+ */
+ILNode_SemAnalysis(ILNode_Lock)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Generate discard code for the "lock" statement.
+ */
+ILNode_GenDiscard(ILNode_Lock)
+{
+	/* TODO */
+}
+
+/*
+ * Generate Java discard code for the "lock" statement.
+ */
+JavaGenDiscard(ILNode_Lock)
+{
+	/* TODO */
+}
+
+/*
+ * Perform semantic analysis for the "using" statement.
+ */
+ILNode_SemAnalysis(ILNode_Using)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Generate discard code for the "using" statement.
+ */
+ILNode_GenDiscard(ILNode_Using)
+{
+	/* TODO */
+}
+
+/*
+ * Generate Java discard code for the "using" statement.
+ */
+JavaGenDiscard(ILNode_Using)
+{
+	/* TODO */
+}
+
+/*
+ * Perform semantic analysis for the "fixed" statement.
+ */
+ILNode_SemAnalysis(ILNode_Fixed)
+{
+	CSSemValue value;
+	if(info->outputIsJava)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`fixed' disallowed when compiling to Java bytecode");
+	}
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Generate discard code for the "fixed" statement.
+ */
+ILNode_GenDiscard(ILNode_Fixed)
+{
+	/* TODO */
+}
+
+/*
+ * Generate Java discard code for the "fixed" statement.
+ */
+JavaGenDiscard(ILNode_Fixed)
+{
+	/* Nothing to do here: `fixed' is illegal for Java code */
+}
+
+/*
+ * Perform semantic analysis for "fixed declarator" lists.
+ */
+ILNode_SemAnalysis(ILNode_FixedDeclList)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "fix address" node.
+ */
+ILNode_SemAnalysis(ILNode_FixAddress)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "fix expression" node.
+ */
+ILNode_SemAnalysis(ILNode_FixExpr)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_VOID;
+	value.type = 0;
+	return value;
+}

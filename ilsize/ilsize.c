@@ -1,0 +1,430 @@
+/*
+ * ilsize.c - Print information about section sizes for IL binaries.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include <stdio.h>
+#include "il_system.h"
+#include "il_image.h"
+#include "il_program.h"
+#include "il_utils.h"
+
+#ifdef	__cplusplus
+extern	"C" {
+#endif
+
+/*
+ * Table of command-line options.
+ */
+static ILCmdLineOption const options[] = {
+	{"-d", 'd', 0,
+		"-d",
+		"Set the output radix to decimal (10)."},
+	{"-o", 'o', 0,
+		"-o",
+		"Set the output radix to octal (8)."},
+	{"-x", 'x', 0,
+		"-x",
+		"Set the output radix to hexadecimal (16)."},
+	{"-D", 'D', 0, 0, 0},
+	{"-v", 'v', 0, 0, 0},
+	{"-V", 'v', 0, 0, 0},
+	{"--radix", 'r', 1,
+		"--radix num",
+		"Define the output radix.  The default is 10."},
+	{"--detailed", 'D', 0,
+		"--detailed or -D",
+		"Use a more detailed form of output."},
+	{"--version", 'v', 0,
+		"--version or -v or -V",
+		"Print the version of the program"},
+	{"--help", 'h', 0,
+		"--help",
+		"Print this help message."},
+	{0, 0, 0, 0, 0}
+};
+
+static void usage(const char *progname);
+static void version(void);
+static int printSizes(const char *filename, FILE *stream, int closeStream,
+					  ILContext *context, int radix);
+static int printDetailed(const char *filename, FILE *stream, int closeStream,
+					     ILContext *context, int radix);
+
+int main(int argc, char *argv[])
+{
+	char *progname = argv[0];
+	int radix = 10;
+	int detailed = 0;
+	int sawStdin;
+	int state, opt;
+	char *param;
+	FILE *infile;
+	int errors;
+	ILContext *context;
+
+	/* Parse the command-line arguments */
+	state = 0;
+	while((opt = ILCmdLineNextOption(&argc, &argv, &state,
+									 options, &param)) != 0)
+	{
+		switch(opt)
+		{
+			case 'r':
+			{
+				radix = atoi(param);
+				if(radix != 8 && radix != 10 && radix != 16)
+				{
+					fprintf(stderr, "%s: invalid radix `%s'\n",
+							progname, param);
+					return 1;
+				}
+			}
+			break;
+
+			case 'd':
+			{
+				radix = 10;
+			}
+			break;
+
+			case 'o':
+			{
+				radix = 8;
+			}
+			break;
+
+			case 'x':
+			{
+				radix = 16;
+			}
+			break;
+
+			case 'D':
+			{
+				detailed = 1;
+			}
+			break;
+
+			case 'v':
+			{
+				version();
+				return 0;
+			}
+			/* Not reached */
+
+			default:
+			{
+				usage(progname);
+				return 1;
+			}
+			/* Not reached */
+		}
+	}
+
+	/* We need at least one input file argument */
+	if(argc <= 1)
+	{
+		usage(progname);
+		return 1;
+	}
+
+	/* Create a context to use for image loading */
+	context = ILContextCreate();
+	if(!context)
+	{
+		fprintf(stderr, "%s: out of memory\n", progname);
+		return 1;
+	}
+
+	/* Print the headers */
+	if(!detailed)
+	{
+		printf("   code    meta     res   other     %s     %s filename\n",
+			   (radix == 8 ? "oct" : (radix == 10 ? "dec" : "hex")),
+			   (radix == 16 ? "dec" : "hex"));
+	}
+
+	/* Load and print information about the input files */
+	sawStdin = 0;
+	errors = 0;
+	while(argc > 1)
+	{
+		if(!strcmp(argv[1], "-"))
+		{
+			/* Dump the contents of stdin, but only once */
+			if(!sawStdin)
+			{
+				if(detailed)
+				{
+					errors |= printDetailed("stdin", stdin, 0, context, radix);
+				}
+				else
+				{
+					errors |= printSizes("stdin", stdin, 0, context, radix);
+				}
+				sawStdin = 1;
+			}
+		}
+		else
+		{
+			/* Dump the contents of a regular file */
+			if((infile = fopen(argv[1], "rb")) == NULL)
+			{
+				/* Try again in case libc did not understand the 'b' */
+				if((infile = fopen(argv[1], "r")) == NULL)
+				{
+					perror(argv[1]);
+					errors = 1;
+					++argv;
+					--argc;
+					continue;
+				}
+			}
+			if(detailed)
+			{
+				errors |= printDetailed(argv[1], infile, 1, context, radix);
+			}
+			else
+			{
+				errors |= printSizes(argv[1], infile, 1, context, radix);
+			}
+		}
+		++argv;
+		--argc;
+	}
+
+	/* Destroy the context */
+	ILContextDestroy(context);
+	
+	/* Done */
+	return errors;
+}
+
+static void usage(const char *progname)
+{
+	fprintf(stderr, "ILSIZE " VERSION " - IL Image Size Utility\n");
+	fprintf(stderr, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Usage: %s [options] input ...\n", progname);
+	fprintf(stderr, "\n");
+	ILCmdLineHelp(options);
+}
+
+static void version(void)
+{
+
+	printf("ILSIZE " VERSION " - IL Image Size Utility\n");
+	printf("Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	printf("\n");
+	printf("ILSIZE comes with ABSOLUTELY NO WARRANTY.  This is free software,\n");
+	printf("and you are welcome to redistribute it under the terms of the\n");
+	printf("GNU General Public License.  See the file COPYING for further details.\n");
+	printf("\n");
+	printf("Use the `--help' option to get help on the command-line options.\n");
+}
+
+/*
+ * Load an IL image and get general size information.
+ */
+static ILImage *loadImage(const char *filename, FILE *stream, int closeStream,
+						  ILContext *context, int flags, unsigned long *total,
+						  unsigned long *code, unsigned long *meta,
+						  unsigned long *res, unsigned long *other)
+{
+	int loadError;
+	ILImage *image;
+	void *addr;
+
+	/* Attempt to load the image into memory */
+	loadError = ILImageLoad(stream, filename, context, &image, flags);
+	if(closeStream)
+	{
+		fclose(stream);
+	}
+	if(loadError != 0)
+	{
+		fprintf(stderr, "%s: %s\n", filename, ILImageLoadError(loadError));
+		return 0;
+	}
+
+	/* Collect sizes of important sections */
+	*total = ILImageLength(image);
+	if(!ILImageGetSection(image, IL_SECTION_CODE, &addr, code))
+	{
+		*code = 0;
+	}
+	if(!ILImageGetSection(image, IL_SECTION_METADATA, &addr, meta))
+	{
+		*meta = 0;
+	}
+	if(!ILImageGetSection(image, IL_SECTION_RESOURCES, &addr, res))
+	{
+		*res = 0;
+	}
+	*other = *total - *code - *meta - *res;
+
+	/* Loaded and ready to go */
+	return image;
+}
+
+/*
+ * Load an IL image from an input stream and print its size information.
+ */
+static int printSizes(const char *filename, FILE *stream, int closeStream,
+					  ILContext *context, int radix)
+{
+	ILImage *image;
+	unsigned long total;
+	unsigned long code;
+	unsigned long meta;
+	unsigned long res;
+	unsigned long other;
+
+	/* Attempt to load the image into memory */
+	image = loadImage(filename, stream, closeStream, context,
+					  IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_METADATA,
+					  &total, &code, &meta, &res, &other);
+	if(!image)
+	{
+		return 1;
+	}
+
+	/* Print the size details to stdout */
+	if(radix == 10)
+	{
+		printf("%7lu %7lu %7lu %7lu %7lu %7lx %s\n",
+			   code, meta, res, other, total, total, filename);
+	}
+	else if(radix == 8)
+	{
+		printf("%7lo %7lo %7lo %7lo %7lo %7lx %s\n",
+			   code, meta, res, other, total, total, filename);
+	}
+	else
+	{
+		printf("%7lx %7lx %7lx %7lx %7lx %7lu %s\n",
+			   code, meta, res, other, total, total, filename);
+	}
+
+	/* Clean up and exit */
+	ILImageDestroy(image);
+	return 0;
+}
+
+/*
+ * Print a line of detailed output.
+ */
+static void print(const char *name, int radix, unsigned long value)
+{
+	if(radix == 10)
+	{
+		printf("%-16s %7lu\n", name, value);
+	}
+	else if(radix == 16)
+	{
+		printf("%-16s %#10lx\n", name, value);
+	}
+	else
+	{
+		printf("%-16s %#10lo\n", name, value);
+	}
+}
+
+/*
+ * Count the number of nested types in an image.
+ */
+static unsigned long numNestedTypes(ILImage *image)
+{
+	ILClass *info = 0;
+	unsigned long num = 0;
+	while((info = (ILClass *)ILImageNextToken
+				(image, IL_META_TOKEN_TYPE_DEF, info)) != 0)
+	{
+		if(ILClassGetNestedParent(info) != 0)
+		{
+			++num;
+		}
+	}
+	return num;
+}
+
+/*
+ * Load an IL image from an input stream and print detailed information.
+ */
+static int printDetailed(const char *filename, FILE *stream, int closeStream,
+					     ILContext *context, int radix)
+{
+	ILImage *image;
+	unsigned long total;
+	unsigned long code;
+	unsigned long meta;
+	unsigned long res;
+	unsigned long other;
+
+	/* Attempt to load the image into memory */
+	image = loadImage(filename, stream, closeStream, context,
+					  IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE,
+					  &total, &code, &meta, &res, &other);
+	if(!image)
+	{
+		return 1;
+	}
+
+	/* Print the general information on the file */
+	printf("%s  :\n", filename);
+	print("code", radix, code);
+	print("meta", radix, meta);
+	print("res", radix, res);
+	print("other", radix, other);
+	print("total", radix, total);
+
+	/* Print count information for the various token types */
+	print("types", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_TYPE_DEF));
+	print("fields", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_FIELD_DEF));
+	print("methods", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_METHOD_DEF));
+	print("events", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_EVENT));
+	print("properties", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_PROPERTY));
+	print("parameters", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_PARAM_DEF));
+	print("attributes", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_CUSTOM_ATTRIBUTE));
+	print("pinvoke", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_IMPL_MAP));
+	print("module refs", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_MODULE_REF));
+	print("assembly refs", radix,
+		  ILImageNumTokens(image, IL_META_TOKEN_ASSEMBLY_REF));
+	print("nested types", radix, numNestedTypes(image));
+
+	/* Add some space between multiple files */
+	printf("\n\n");
+
+	/* Clean up and exit */
+	ILImageDestroy(image);
+	return 0;
+}
+
+#ifdef	__cplusplus
+};
+#endif

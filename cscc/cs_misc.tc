@@ -1,0 +1,261 @@
+/*
+ * cs_misc.tc - Semantic analysis and codegen for C# miscellaneous node types.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Perform semantic analysis for the "typeof" operator.
+ */
+ILNode_SemAnalysis(ILNode_TypeOf)
+{
+	CSSemValue value;
+
+	/* Get the semantic value for the sub-expression */
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+
+	/* Check that the argument is of the correct kind */
+	if(!CSIsSemValue(value.kind))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid argument to `typeof' operator");
+		value.kind = CS_SEMKIND_TYPE;
+		value.type = ILType_Int32;
+	}
+	else
+	{
+		value.kind = CS_SEMKIND_TYPE;
+	}
+
+	/* Return the type information to the caller */
+	return value;
+}
+
+%output "cs_semantics.c"
+
+%{
+
+/*
+ * Get the size of a type, returning -1 if it is not possible
+ * to get the size.  Returns zero if the size of the type must
+ * be determined dynamically.
+ */
+static int SizeOfType(ILType *type)
+{
+	if(ILType_IsPrimitive(type))
+	{
+		/* Get the size of a primitive type */
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:		return 1;
+
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:		return 2;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+			case IL_META_ELEMTYPE_R4:		return 4;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+			case IL_META_ELEMTYPE_R8:		return 8;
+
+			default:						break;
+		}
+	}
+	else if(ILType_IsValueType(type))
+	{
+		/* Check for the value type versions of primitive types */
+		ILClass *classInfo = ILType_ToValueType(type);
+		const char *name = ILClass_Name(classInfo);
+		const char *namespace = ILClass_Name(classInfo);
+		if(namespace && !strcmp(namespace, "System"))
+		{
+			if(!strcmp(name, "Boolean") ||
+			   !strcmp(name, "SByte") ||
+			   !strcmp(name, "Byte"))
+			{
+				return 1;
+			}
+			if(!strcmp(name, "Char") ||
+			   !strcmp(name, "Int16") ||
+			   !strcmp(name, "UInt16"))
+			{
+				return 2;
+			}
+			if(!strcmp(name, "Int32") ||
+			   !strcmp(name, "UInt32") ||
+			   !strcmp(name, "Single"))
+			{
+				return 4;
+			}
+			if(!strcmp(name, "Int64") ||
+			   !strcmp(name, "UInt64") ||
+			   !strcmp(name, "Double"))
+			{
+				return 8;
+			}
+		}
+
+		/* Determine the size at runtime */
+		return 0;
+	}
+	return -1;
+}
+
+%}
+
+/*
+ * Get the machine type for the "sizeof" operator.
+ */
+ILNode_GetType(ILNode_SizeOf)
+{
+	return ILMachineType_Int32;
+}
+
+/*
+ * Generate value code for the "sizeof" operator.
+ */
+ILNode_GenValue(ILNode_SizeOf)
+{
+	if(ILType_IsValueType(node->type))
+	{
+		ILGenClassToken(info, IL_OP_PREFIX + IL_PREFIX_OP_SIZEOF,
+						ILType_ToValueType(node->type));
+	}
+	else
+	{
+		ILGenSimple(info, IL_OP_LDC_I4_1);
+	}
+	ILGenAdjust(info, 1);
+	return ILMachineType_Int32;
+}
+
+/*
+ * Generate Java value code for the "sizeof" operator.
+ */
+JavaGenValue(ILNode_SizeOf)
+{
+	/* Will never be called, because semantic analysis doesn't
+	   allow sizeof for non-primitive types in Java */
+	return ILMachineType_Int32;
+}
+
+/*
+ * Perform semantic analysis for the "sizeof" operator.
+ */
+ILNode_SemAnalysis(ILNode_SizeOf)
+{
+	CSSemValue value;
+	int size;
+
+	/* Get the semantic value for the sub-expression */
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+
+	/* Get the size of the type for later code generation */
+	size = (value.type ? SizeOfType(value.type) : -1);
+
+	/* Check that the argument is of the correct kind */
+	if(value.kind != CS_SEMKIND_TYPE || size == -1)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid argument to `sizeof' operator");
+		node->type = 0;
+	}
+	else
+	{
+		node->type = value.type;
+	}
+
+	/* Replace this node with a constant node if the size is known */
+	if(size > 0)
+	{
+		*parent = ILNode_Int32_create((ILUInt64)size, 0, 1);
+	}
+	else if(info->outputIsJava)
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`sizeof' disallowed when compiling to Java bytecode");
+	}
+
+	/* Return the type information to the caller */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Get the machine type for the "stackalloc" operator.
+ */
+ILNode_GetType(ILNode_StackAlloc)
+{
+	if(info->outputIsJava)
+	{
+		return ILMachineType_ObjectRef;
+	}
+	else
+	{
+		return ILMachineType_UnmanagedPtr;
+	}
+}
+
+/*
+ * Generate value code for the "stackalloc" operator.
+ */
+ILNode_GenValue(ILNode_StackAlloc)
+{
+	/* TODO */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Generate Java value code for the "stackalloc" operator.
+ */
+JavaGenValue(ILNode_StackAlloc)
+{
+	/* TODO */
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Perform semantic analysis for the "stackalloc" operator.
+ */
+ILNode_SemAnalysis(ILNode_StackAlloc)
+{
+	CSSemValue value1;
+	CSSemValue value2;
+
+	/* Perform semantic analysis on the sub-expressions */
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* The first must be a value type */
+	if(value1.kind != CS_SEMKIND_TYPE)
+	{
+	}
+
+	/* The second must be an "int" */
+	/* TODO */
+
+	/* The result has the type "pointer to value1.type" */
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Int32;			/* TODO */
+	return value1;
+}

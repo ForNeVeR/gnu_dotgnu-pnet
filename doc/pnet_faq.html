@@ -1,0 +1,273 @@
+<html>
+<head>
+<title>DotGNU Portable.NET FAQ</title>
+</head>
+<body bgcolor="#ffffff">
+<h1>DotGNU Portable.Net FAQ</h1>
+
+Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
+Last Modified: $Date: 2001/08/13 05:22:08 $<p>
+
+Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Permission to distribute unmodified copies of this work is hereby granted.<p>
+
+<h2>1. What is DotGNU Portable.NET?</h2>
+
+DotGNU Portable.NET is a project under the
+<a href="http://www.dotgnu.org">DotGNU</a> meta-project.  Its goal is
+to build a suite of free software tools to build and execute Common
+Language Infrastructure (CLI) applications.  The initial target platform
+is GNU/Linux, with other platforms to follow in the future.<p>
+
+DotGNU Portable.NET is a GNU project, built in accordance with the
+requirements of the <a href="http://www.gnu.org">Free Software Foundation</a>
+and <a href="http://www.freedevelopers.net">FreeDevelopers</a>.<p>
+
+DotGNU Portable.NET is focused on compatibility with the ECMA
+specifications for CLI.  There are other projects under the DotGNU
+meta-project to build other necessary pieces of infrastructure, and
+to explore non-CLI approaches to virtual machine implementation.<p>
+
+<h2>2. Why not write the compiler tools in C#?</h2>
+
+The main reason is the "chicken and egg" problem.  We wouldn't be
+able to run the compiler until the runtime engine and the
+full C# system library is written, and they are still a work
+in progress.<p>
+
+While it is possible to bootstrap off Microsoft's engine and
+compiler, there is an open legal question in doing this.  We want
+to avoid any "booby traps" that may exist in Microsoft licenses
+that prevent the free development of DotGNU Portable.NET.  It is
+safer to avoid dependence upon Microsoft tools.<p>
+
+Writing the C# compiler in C means we are bootstrapping from gcc,
+and not Microsoft's compiler, which should avoid any legal problems.<p>
+
+The second reason for writing the compiler in C is security.
+Independent third parties can inspect the C# compiler source
+for security problems, and then compile the code with their
+(hopefully) trusted version of gcc to get a trusted C# compiler.<p>
+
+Writing the compiler in C# would introduce a tough trust problem:
+you must trust that the bootstrapped binary version of the compiler
+does not have any back doors.  Inspecting the source code is not
+sufficient to perform a full security audit.<p>
+
+<h2>3. If the compiler was written in C#, wouldn't reuse be easier?</h2>
+
+Theoretically, yes.  Reuse is the stated reason for why the
+<a href="http://www.go-mono.com/">Mono</a> project is writing all of
+their tools in C#.<p>
+
+Should the Mono project succeed at this goal, then their components
+should be directly reusable by anyone running DotGNU Portable.NET.<p>
+
+However, nothing in DotGNU Portable.NET's cscc compiler would prevent
+its reuse in other compilers.  As long as those compilers are themselves
+written in C.<p>
+
+Cscc is architected so that new languages can be easily added as
+plug-ins.  The plug-in converts source code into IL assembly code,
+which cscc processes to produce the final executable.  Plug-ins
+can either do this conversion their own way, or reuse the "codegen"
+facilities to do most of the hard work for them.<p>
+
+<h2>4. I've heard that you can compile C# to the JVM.  Is that correct?</h2>
+
+Yes.  The cscc compiler is architected so that it can compile to either
+IL or JVM bytecode.  Adding other bytecode formats would be quite easy.<p>
+
+<h2>5. What is treecc?</h2>
+
+Treecc is a tool that we wrote to assist in the development of cscc.
+It complements flex and bison by providing support for abstract syntax
+tree creation and manipulation.<p>
+
+Treecc performs most of the housekeeping within the core of the compiler,
+allowing the programmer to concentrate on the specifics of language
+implementation.  A fuller account of how treecc works can be found
+at its <a href="http://www.southern-storm.com.au/treecc.html">Web site</a>.<p>
+
+<h2>6. Using gcc as a compiler</h2>
+
+A common question that arises is why we aren't using gcc to compile
+C# code to IL.  Strategically, we would like to be able to reuse all
+of the good work that has gone into gcc.  The DotGNU Project currently
+has an <a href="http://www.dotgnu.org/helpwanted/gcc.htm">open request</a>
+for someone to volunteer to modify gcc to generate IL bytecode.<p>
+
+However it isn't quite as easy as it looks.  The following sections
+provide a blow by blow account of why this is so hard.<p>
+
+<h3>6.1. Why don't you add C# to the list of languages gcc supports?</h3>
+
+Because it won't solve the problem that we need to solve.<p>
+
+Initially we need a C# compiler that can generate IL bytecode for
+the .NET platform.  Later, we may need a C# compiler that can
+generate native code as well, but that is optional.<p>
+
+Putting a C# parser on the front of gcc would give us a native
+compiler, but it won't give us an IL bytecode compiler.<p>
+
+<h3>6.2. So what?  Add an IL bytecode backend to gcc, and you'll solve your
+problem, and also be able to compile C, C++, Fortran, etc, to .NET.</h3>
+
+This is not as easy as it looks.  Gcc is divided into a number of
+phases: parsing, semantic analysis, tree-to-RTL conversion, RTL
+handling (including optimization), and final native code generation.<p>
+
+The hard part is RTL (Register Transfer Language).  This part of
+gcc is hard-wired to generate code for register-based CPU's such
+as i386, PPC, Sparc, etc.  RTL is not designed for generating code
+for stack-based abstract machines such as IL.<p>
+
+Also, RTL loses a lot of the type and code structure information
+that IL needs in the final output file.  By the time RTL gets the
+code, information about whether a value is an integer or an object
+reference is mostly lost.  Information about the class structure
+of the code is lost.  This information is critical for correct
+compilation of C# to IL.<p>
+
+<h3>6.3. But hang on a second!  Gcj, the Java back-end for gcc, does stack
+machines!  Why not do something like that?</h3>
+
+Err ... no it doesn't.  The Java bytecode stuff in gcj is not
+organised as an RTL back-end.<p>
+
+When gcj compiles Java, it performs parsing and semantic analysis
+in the front-end, like the other supported languages.  Then the
+parse tree is sent in one of two different directions.<p>
+
+If gcj is compiling to native, the parse tree is handed to the RTL
+core of the compiler, and it takes over.<p>
+
+If gcj is compiling to bytecode, the parse tree is handed to a
+completely separate code generator that knows about Java bytecode.<p>
+
+Because gcj does NOT implement a bytecode RTL back-end for gcc, it
+cannot compile C, C++, etc down to bytecode.  Java bytecode is a
+special case that only works for the Java front-end.<p>
+
+<h3>6.4. But what about egcs-jvm?  Doesn't it compile C to
+Java bytecode?</h3>
+
+It's a hack.  The code that it generates is horrible, and does not
+conform to the usual conventions that the JVM requires.  If one
+compiled Java code using this back-end, it wouldn't work with
+normal Java code due to the differences in calling conventions
+and what-not.<p>
+
+The biggest problem that the author of egcs-jvm he had was
+trying to work around the register machine assumptions in the code.
+The result wasn't pretty.  He has said that it would be easier to
+throw the JVM away and invent a register-based abstract machine
+than try to make gcc generate efficient stack machine code.<p>
+
+<h3>6.5. Isn't there a gcc port to the Transputer, which is stack-based?</h3>
+
+Yes there is, for an older version of gcc (2.7.2).  The source can
+be found <a href="http://wotug.ukc.ac.uk/parallel/transputer/software/compilers/gcc/pereslavl">here</a>.<p>
+
+It appears to compile the code to a pseudo-register machine, and then
+fixes up the code to be stack based afterwards.  It takes advantage of
+some register stack features in gcc that egcs-jvm didn't use.<p>
+
+The Transputer is still a traditional CPU despite being stack-based.
+The gcc port puts pointer values into integer pseudo-registers, which would
+violate the security requirements of IL.<p>
+
+The i386 gcc port uses a regular set of registers for integer/pointer
+values, and a register stack for floating point values.  The Transputer
+port uses two register stacks: one for integer/pointer values, and
+the other for floating point values.  It may be possible to use three
+register stacks for IL: one for integer values, another for pointer values,
+and a third for floating point values.<p>
+
+However, this still may not give a useful result.  This fixes the security
+problems for the pseudo-registers, but it doesn't fix the security problems
+for memory.  RTL assumes that main memory is a flat, untyped, address space,
+where any kind of value can be stored in any word.  Partitioning main memory
+into separate types may not be possible without a rewrite of RTL.<p>
+
+<h3>6.6. OK, so do something similar to gcj for C#.  Use two code generators.
+That would work right?</h3>
+
+Yes it would, except for one small catch.<p>
+
+Because there are so many people who don't understand how gcc works,
+they will assume that they can compile C and C++ to IL bytecode after
+we release the C# patches.<p>
+
+Then they will discover that this isn't the case and will get
+extremely angry that we didn't build what they thought we were
+building.  *sigh*<p>
+
+Now matter how we attack the problem, we will end up having to
+write an IL bytecode backend for RTL, which is extremely difficult
+because of the various assumptions in the code.<p>
+
+Realistically, someone with a great deal of gcc knowledge needs to
+go into the gcc core, rip RTL completely out, throw it away, and
+replace it with something that knows about both register machines
+and stack machines.<p>
+
+Alternatively, someone could create a STL (Stack Transfer Language),
+that passes all languages through a separate code generator that
+knows about stack machines.  Then we can write STL back-ends for
+IL and JVM bytecode.  Both gcj and DotGNU would benefit from this.<p>
+
+<h3>6.7. We're not buying it.  It's not as hard as you think.</h3>
+
+Fine.  Prove us wrong.  Download the gcc sources and have at it.
+The Transputer port may be a good place to start to get ideas,
+or it may not.<p>
+
+<h2>7. Other .NET Efforts</h2>
+
+<h3>7.1. Mono</h3>
+
+The <a href="http://www.go-mono.com">Mono</a> project that is
+run by <a href="http://www.ximian.com">Ximian</a> has many of
+the same goals as DotGNU Portable.NET.  See their Web site
+for further details.<p>
+
+<h3>7.2. Why not co-operate with Mono?</h3>
+
+We have suggested dividing up the work to prevent duplication,
+but Mono seems determined to do things their own way.<p>
+
+Therefore, we will treat Mono like any other GPL-using project:
+if they have something useful that we can use, we will use it.
+Otherwise we will continue developing DotGNU Portable.NET
+as we see fit.<p>
+
+We are interested in co-operating with anyone interested in
+co-operating with us.<p>
+
+<h3>7.3. What other free software and open source .NET efforts are there?</h3>
+
+We are not aware of any other projects that are tackling the
+entire .NET platform at present, but there are some that are tackling
+tools such as decompilers, IDE's, etc.  Mono's FAQ contains an up
+to date list.<p>
+
+<h2>8. How can I help?</h2>
+
+The biggest area that needs to be tackled is the C# library,
+<a href="http://www.southern-storm.com.au/portable_net_lib.html">pnetlib</a>.
+Pick a class, any class, implement it, and send us the changes.<p>
+
+We could also use some assistance with documentation of the API's
+within the current code base.  Mostly this involves converting
+the contents of the ".h" files in the "include" directory into
+Texinfo-compatible documentation and examples.<p>
+
+Other than that, if you find an interesting problem to work on
+in the DotGNU Portable.NET codebase, then work on it for a bit, and
+send us the patches.  If it is the kind of code we're looking for,
+we'll discuss further collaboration.<p>
+
+</body>
+</html>

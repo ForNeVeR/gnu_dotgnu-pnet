@@ -1,0 +1,1009 @@
+/*
+ * cs_oper.tc - Semantic analysis for C# operators.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+%{
+
+/*
+ * Look for a user-specified binary operator of a particular name.
+ */
+static ILMethod *FindUserBinaryOperator(const char *name,
+										ILType *arg1Type,
+										ILType *arg2Type)
+{
+	ILMethod *method;
+
+	/* Try looking in the first type */
+	if(ILType_IsClass(arg1Type))
+	{
+		method = ILResolveBinaryOperator(ILType_ToClass(arg1Type),
+										 name, arg1Type, arg2Type);
+		if(method)
+		{
+			return method;
+		}
+	}
+	else if(ILType_IsValueType(arg1Type))
+	{
+		method = ILResolveBinaryOperator(ILType_ToValueType(arg1Type),
+										 name, arg1Type, arg2Type);
+		if(method)
+		{
+			return method;
+		}
+	}
+
+	/* Try looking in the second type */
+	if(ILType_IsClass(arg2Type))
+	{
+		method = ILResolveBinaryOperator(ILType_ToClass(arg2Type),
+										 name, arg1Type, arg2Type);
+		if(method)
+		{
+			return method;
+		}
+	}
+	else if(ILType_IsValueType(arg2Type))
+	{
+		method = ILResolveBinaryOperator(ILType_ToValueType(arg2Type),
+										 name, arg1Type, arg2Type);
+		if(method)
+		{
+			return method;
+		}
+	}
+
+	/* The operator does not exist */
+	return 0;
+}
+
+/*
+ * Common semantic analysis function for binary arithmetic operators.
+ */
+static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
+					        ILNode **parent, const ILOperator *table,
+					        const char *name, const char *errorName)
+{
+	const ILOperator *oper;
+	ILMethod *method;
+	ILType *returnType;
+	CSSemValue value1;
+	CSSemValue value2;
+
+	/* Perform semantic analysis on the arguments */
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* The two arguments must be values */
+	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	{
+		goto error;
+	}
+
+	/* Look for a builtin operator */
+	oper = ILFindBinaryOperator(table, value1.type, value2.type);
+	if(oper)
+	{
+		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
+		value1.kind = CS_SEMKIND_RVALUE;
+		if(oper->outtype->type)
+		{
+			value1.type = oper->outtype->type;
+		}
+		else
+		{
+			value1.type = ILFindSystemType(info, "Decimal");
+		}
+		return value1;
+	}
+
+	/* Look for a user-specified operator */
+	method = FindUserBinaryOperator(name, value1.type, value2.type);
+	if(method)
+	{
+		returnType = ILMethod_Signature(method)->un.method.retType;
+		*parent = ILNode_UserBinaryOp_create
+						(node->expr1, node->expr2,
+						 ILTypeToValueType(returnType), method);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = returnType;
+		return value1;
+	}
+
+	/* Could not find a suitable operator */
+error:
+	CSError("invalid operands to binary `%s'", errorName);
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Int32;
+	return value1;
+}
+
+/*
+ * Look for a user-specified unary operator of a particular name.
+ */
+static ILMethod *FindUserUnaryOperator(const char *name, ILType *argType)
+{
+	ILMethod *method;
+
+	if(ILType_IsClass(argType))
+	{
+		method = ILResolveUnaryOperator(ILType_ToClass(argType),
+										name, argType);
+		if(method)
+		{
+			return method;
+		}
+	}
+	else if(ILType_IsValueType(argType))
+	{
+		method = ILResolveUnaryOperator(ILType_ToValueType(argType),
+										name, argType);
+		if(method)
+		{
+			return method;
+		}
+	}
+
+	/* The operator does not exist */
+	return 0;
+}
+
+/*
+ * Common semantic analysis function for unary arithmetic operators.
+ */
+static CSSemValue UnarySem(ILGenInfo *info, ILNode_UnaryExpression *node,
+					 	   ILNode **parent, const ILOperator *table,
+						   const char *name, const char *errorName)
+{
+	const ILOperator *oper;
+	ILMethod *method;
+	ILType *returnType;
+	CSSemValue value;
+
+	/* Perform semantic analysis on the argument */
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+
+	/* The argument must be a value */
+	if(!CSIsSemValue(value.kind))
+	{
+		goto error;
+	}
+
+	/* Look for a builtin operator */
+	oper = ILFindUnaryOperator(table, value.type);
+	if(oper)
+	{
+		ILApplyUnaryOperator(info, (ILNode *)node, parent, oper);
+		value.kind = CS_SEMKIND_RVALUE;
+		if(oper->outtype->type)
+		{
+			value.type = oper->outtype->type;
+		}
+		else
+		{
+			value.type = ILFindSystemType(info, "Decimal");
+		}
+		return value;
+	}
+
+	/* Look for a user-specified operator */
+	method = FindUserUnaryOperator(name, value.type);
+	if(method)
+	{
+		returnType = ILMethod_Signature(method)->un.method.retType;
+		*parent = ILNode_UserUnaryOp_create
+						(node->expr, ILTypeToValueType(returnType), method);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = returnType;
+		return value;
+	}
+
+	/* Could not find a suitable operator */
+error:
+	CSError("invalid operands to unary `%s'", errorName);
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Determine if a type is "System.String".
+ */
+static int IsString(ILType *type)
+{
+	if(ILType_IsClass(type))
+	{
+		ILClass *info = ILType_ToClass(type);
+		if(info && ILClass_Namespace(info))
+		{
+			return (!strcmp(ILClass_Name(info), "String") &&
+					!strcmp(ILClass_Namespace(info), "System"));
+		}
+	}
+	return 0;
+}
+
+%}
+
+/*
+ * Perform semantic analysis for the addition operator.
+ */
+ILNode_SemAnalysis(ILNode_Add)
+{
+	const ILOperator *oper;
+	ILMethod *method;
+	ILType *returnType;
+	CSSemValue value1;
+	CSSemValue value2;
+
+	/* Perform semantic analysis on the arguments */
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* The two arguments must be values */
+	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	{
+		goto error;
+	}
+
+	/* Look for a builtin operator */
+	oper = ILFindBinaryOperator(ILOp_Add, value1.type, value2.type);
+	if(oper)
+	{
+		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
+		value1.kind = CS_SEMKIND_RVALUE;
+		if(oper->outtype->type)
+		{
+			value1.type = oper->outtype->type;
+		}
+		else
+		{
+			value1.type = ILFindSystemType(info, "Decimal");
+		}
+		return value1;
+	}
+
+	/* Look for a user-specified operator */
+	method = FindUserBinaryOperator("op_Addition", value1.type, value2.type);
+	if(method)
+	{
+		returnType = ILMethod_Signature(method)->un.method.retType;
+		*parent = ILNode_UserBinaryOp_create
+						(node->expr1, node->expr2,
+						 ILTypeToValueType(returnType), method);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = returnType;
+		return value1;
+	}
+
+	/* If one of the arguments is a string, then perform concatenation */
+	if(IsString(value1.type) || IsString(value2.type))
+	{
+		if(!IsString(value1.type))
+		{
+			/* Convert the first argument into "ObjectRef" */
+			ILCast(info, node->expr1, &(node->expr1), value1.type,
+				   ILValueTypeToType(info, IL_TYPE_OBJECT_REF));
+		}
+		if(!IsString(value2.type))
+		{
+			/* Convert the second argument into "ObjectRef" */
+			ILCast(info, node->expr2, &(node->expr2), value2.type,
+				   ILValueTypeToType(info, IL_TYPE_OBJECT_REF));
+		}
+		*parent = ILNode_Concat_create(node->expr1, node->expr2);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		value1.kind = CS_SEMKIND_RVALUE;
+		value2.type = ILFindSystemType(info, "String");
+		return value1;
+	}
+
+	/* Could not find a suitable operator */
+error:
+	CSError("invalid operands to binary `+'");
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Int32;
+	return value1;
+}
+
+/*
+ * Perform semantic analysis for the subtraction operator.
+ */
+ILNode_SemAnalysis(ILNode_Sub)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Sub, "op_Subtraction", "-");
+}
+
+/*
+ * Perform semantic analysis for the multiplication operator.
+ */
+ILNode_SemAnalysis(ILNode_Mul)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Mul, "op_Multiply", "*");
+}
+
+/*
+ * Perform semantic analysis for the division operator.
+ */
+ILNode_SemAnalysis(ILNode_Div)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Div, "op_Division", "/");
+}
+
+/*
+ * Perform semantic analysis for the remainder operator.
+ */
+ILNode_SemAnalysis(ILNode_Rem)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Rem, "op_Modulus", "%");
+}
+
+/*
+ * Perform semantic analysis for the negation operator.
+ */
+ILNode_SemAnalysis(ILNode_Neg)
+{
+	return UnarySem(info, (ILNode_UnaryExpression *)node,
+					parent, ILOp_Neg, "op_UnaryNegation", "-");
+}
+
+/*
+ * Perform semantic analysis for the "unary +" operator.
+ */
+ILNode_SemAnalysis(ILNode_UnaryPlus)
+{
+	return UnarySem(info, (ILNode_UnaryExpression *)node,
+				  	parent, ILOp_UnaryPlus, "op_UnaryPlus", "+");
+}
+
+/*
+ * Perform semantic analysis for the bitwise AND operator.
+ */
+ILNode_SemAnalysis(ILNode_And)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_And, "op_BitwiseAnd", "&");
+}
+
+/*
+ * Perform semantic analysis for the bitwise XOR operator.
+ */
+ILNode_SemAnalysis(ILNode_Xor)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Xor, "op_ExclusiveOr", "^");
+}
+
+/*
+ * Perform semantic analysis for the bitwise OR operator.
+ */
+ILNode_SemAnalysis(ILNode_Or)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Or, "op_BitwiseOr", "|");
+}
+
+/*
+ * Perform semantic analysis for the bitwise NOT operator.
+ */
+ILNode_SemAnalysis(ILNode_Not)
+{
+	return UnarySem(info, (ILNode_UnaryExpression *)node, parent, ILOp_Not,
+					"op_OnesComplement", "~");
+}
+
+/*
+ * Perform semantic analysis for the left shift operator.
+ */
+ILNode_SemAnalysis(ILNode_Shl)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Shl, "op_LeftShift", "<<");
+}
+
+/*
+ * Perform semantic analysis for the right shift operator.
+ */
+ILNode_SemAnalysis(ILNode_Shr)
+{
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Shr, "op_RightShift", ">>");
+}
+
+/*
+ * Perform semantic analysis for the unsigned right shift operator.
+ */
+ILNode_SemAnalysis(ILNode_UShr)
+{
+	/* C# doesn't actually have an unsigned right shift, but we
+	   still need to include this case for completeness sake */
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Shr, "op_RightShift", ">>");
+}
+
+/*
+ * Perform semantic analysis for the assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_Assign)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the addition assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignAdd)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the subtraction assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignSub)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the multiplication assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignMul)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the division assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignDiv)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the remainder assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignRem)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the bitwise AND assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignAnd)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the bitwise XOR assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignXor)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the bitwise OR assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignOr)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the left shift assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignShl)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the right shift assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignShr)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the unsigned right shift assignment operator.
+ */
+ILNode_SemAnalysis(ILNode_AssignUShr)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the pre-increment operator.
+ */
+ILNode_SemAnalysis(ILNode_PreInc)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the pre-decrement operator.
+ */
+ILNode_SemAnalysis(ILNode_PreDec)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the post-increment operator.
+ */
+ILNode_SemAnalysis(ILNode_PostInc)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the post-decrement operator.
+ */
+ILNode_SemAnalysis(ILNode_PostDec)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "ToBool" operator.
+ */
+ILNode_SemAnalysis(ILNode_ToBool)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "ToConst" operator.
+ */
+ILNode_SemAnalysis(ILNode_ToConst)
+{
+	CSSemValue value;
+	ILEvalValue evalue;
+
+	/* Perform semantic analysis on the sub-expression */
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+
+	/* Determine if the sub-expression evaluates to a constant */
+	if(!CSIsSemValue(value.kind) ||
+	   !ILNode_EvalConst(node->expr, info, &evalue))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "constant value required");
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Int32;
+	}
+
+	/* Return the semantic information to the caller */
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the logical NOT operator.
+ */
+ILNode_SemAnalysis(ILNode_LogicalNot)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the logical AND operator.
+ */
+ILNode_SemAnalysis(ILNode_LogicalAnd)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the logical OR operator.
+ */
+ILNode_SemAnalysis(ILNode_LogicalOr)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the equality operator.
+ */
+ILNode_SemAnalysis(ILNode_Eq)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the inequality operator.
+ */
+ILNode_SemAnalysis(ILNode_Ne)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the less than operator.
+ */
+ILNode_SemAnalysis(ILNode_Lt)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the less than or equal to operator.
+ */
+ILNode_SemAnalysis(ILNode_Le)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the greater than operator.
+ */
+ILNode_SemAnalysis(ILNode_Gt)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the greater than or equal to operator.
+ */
+ILNode_SemAnalysis(ILNode_Ge)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the pointer dereference operator.
+ */
+ILNode_SemAnalysis(ILNode_Deref)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "address of" operator.
+ */
+ILNode_SemAnalysis(ILNode_AddressOf)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the conditional operator.
+ */
+ILNode_SemAnalysis(ILNode_Conditional)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "as is" operator.
+ */
+ILNode_SemAnalysis(ILNode_AsIs)
+{
+	return ILNode_SemAnalysis(node->expr, info, &(node->expr));
+}
+
+/*
+ * Perform semantic analysis for the comma operator.
+ */
+ILNode_SemAnalysis(ILNode_Comma),
+ILNode_SemAnalysis(ILNode_ArgList)
+{
+	CSSemValue value1;
+	CSSemValue value2;
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	{
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid operands to binary `,'");
+	}
+	return value2;
+}
+
+/*
+ * Perform semantic analysis for the "as" operator.
+ */
+ILNode_SemAnalysis(ILNode_As)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "as untyped" operator.
+ */
+ILNode_SemAnalysis(ILNode_AsUntyped)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "is" operator.
+ */
+ILNode_SemAnalysis(ILNode_Is)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "is untyped" operator.
+ */
+ILNode_SemAnalysis(ILNode_IsUntyped)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "error" node.
+ */
+ILNode_SemAnalysis(ILNode_Error)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "overflow" operator.
+ */
+ILNode_SemAnalysis(ILNode_Overflow)
+{
+	CSSemValue value;
+	int overflow = info->overflowInsns;
+	info->overflowInsns = 1;
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	info->overflowInsns = overflow;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "no overflow" operator.
+ */
+ILNode_SemAnalysis(ILNode_NoOverflow)
+{
+	CSSemValue value;
+	int overflow = info->overflowInsns;
+	info->overflowInsns = 0;
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	info->overflowInsns = overflow;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "pedantic" operator.
+ */
+ILNode_SemAnalysis(ILNode_Pedantic)
+{
+	CSSemValue value;
+	int pedantic = info->pedanticArith;
+	info->pedanticArith = 1;
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	info->pedanticArith = pedantic;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "no pedantic" operator.
+ */
+ILNode_SemAnalysis(ILNode_NoPedantic)
+{
+	CSSemValue value;
+	int pedantic = info->pedanticArith;
+	info->pedanticArith = 0;
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	info->pedanticArith = pedantic;
+	return value;
+}
+
+/*
+ * The following nodes are inserted into the tree during
+ * semantic analysis to handle special code generation cases.
+ * Their semantic analysis routines won't actually be called.
+ */
+
+/*
+ * Perform semantic analysis for the concatenation operator.
+ */
+ILNode_SemAnalysis(ILNode_Concat)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILFindSystemType(info, "String");
+	return value;
+}
+
+/*
+ * Perform semantic analysis for user-defined binary operators.
+ */
+ILNode_SemAnalysis(ILNode_UserBinaryOp)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for user-defined unary operators.
+ */
+ILNode_SemAnalysis(ILNode_UserUnaryOp)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for user-defined conversion operators.
+ */
+ILNode_SemAnalysis(ILNode_UserConversion)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "box" operator.
+ */
+ILNode_SemAnalysis(ILNode_Box)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the "unbox" operator.
+ */
+ILNode_SemAnalysis(ILNode_Unbox)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_Int32;
+	return value;
+}
+
+/*
+ * Perform semantic analysis for the low-level cast operator.
+ */
+ILNode_SemAnalysis(ILNode_Cast)
+{
+	CSSemValue value;
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILValueTypeToType(info, node->machineType);
+	return value;
+}

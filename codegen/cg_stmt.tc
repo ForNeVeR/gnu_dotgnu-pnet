@@ -1,0 +1,943 @@
+%output "cg_stmt.c"
+
+%{
+/*
+ * cg_stmt.tc - Statement nodes.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "cg_nodes.h"
+
+/*
+ * Determine if a statement node is empty.
+ */
+#define	IsEmpty(node)	(!(node) || yykind((node)) == yykindof(ILNode_Empty))
+
+/*
+ * Push a new entry onto the loop stack.
+ */
+static void PushLoop(ILGenInfo *info, ILLabel *continueLabel,
+					 ILLabel *breakLabel)
+{
+	if(info->loopStackSize >= info->loopStackMax)
+	{
+		/* Increase the size of the loop stack */
+		ILLoopStack *newstack;
+		newstack = (ILLoopStack *)ILRealloc(info->loopStack,
+											sizeof(ILLoopStack) *
+												(info->loopStackMax + 4));
+		if(!newstack)
+		{
+			ILGenOutOfMemory(info);
+		}
+		info->loopStack = newstack;
+		info->loopStackMax += 4;
+	}
+	info->loopStack[info->loopStackSize].continueLabel = continueLabel;
+	info->loopStack[info->loopStackSize].breakLabel = breakLabel;
+	info->loopStack[info->loopStackSize].finallyLabel = 0;
+	++(info->loopStackSize);
+}
+
+/*
+ * Pop an entry from the loop stack.
+ */
+#define	PopLoop(info)	(--((info)->loopStackSize))
+
+%}
+
+/*
+ * Declare the ILNode_List building and iterator logic.
+ */
+%decls %end %{
+
+/*
+ * Add a node to a list.
+ */
+void _ILNode_List_Add(ILNode *list, ILNode *node);
+#define	ILNode_List_Add(list,node)	\
+			(_ILNode_List_Add((ILNode *)(list), (ILNode *)(node)))
+
+/*
+ * Control structure for iterators.
+ */
+typedef struct
+{
+	ILNode_List *list;
+	int		     posn;
+	ILNode     **last;
+
+} ILNode_ListIter;
+
+/*
+ * Initialize a list iterator.
+ */
+void _ILNode_ListIter_Init(ILNode_ListIter *iter, ILNode *node);
+#define	ILNode_ListIter_Init(iter,node)	\
+				(_ILNode_ListIter_Init((iter), (ILNode *)(node)))
+
+/*
+ * Get the next node from a list iterator.  Returns NULL if no more nodes.
+ */
+ILNode *ILNode_ListIter_Next(ILNode_ListIter *iter);
+
+/*
+ * Create a compound statement node from two other nodes.
+ */
+ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right);
+
+%}
+
+/*
+ * Implement the ILNode_List building and iterator logic.
+ */
+%{
+
+void _ILNode_List_Add(ILNode *list, ILNode *node)
+{
+	if(list && node && yyisa(list, ILNode_List))
+	{
+		ILNode_List *temp = (ILNode_List *)list;
+		while(temp->rest != 0)
+		{
+			temp = temp->rest;
+		}
+		if(temp->item1 == 0)
+		{
+			temp->item1 = node;
+		}
+		else if(temp->item2 == 0)
+		{
+			temp->item2 = node;
+		}
+		else if(temp->item3 == 0)
+		{
+			temp->item3 = node;
+		}
+		else if(temp->item4 == 0)
+		{
+			temp->item4 = node;
+		}
+		else
+		{
+			temp->rest = (ILNode_List *)(ILNode_List_create());
+			if(temp->rest)
+			{
+				temp->rest->item1 = node;
+			}
+		}
+	}
+}
+
+void _ILNode_ListIter_Init(ILNode_ListIter *iter, ILNode *node)
+{
+	if(node != 0 && yyisa(node, ILNode_List))
+	{
+		iter->list = (ILNode_List *)node;
+		iter->posn = 0;
+		iter->last = 0;
+	}
+	else
+	{
+		iter->list = 0;
+		iter->posn = 0;
+		iter->last = 0;
+	}
+}
+
+ILNode *ILNode_ListIter_Next(ILNode_ListIter *iter)
+{
+	if(iter->list)
+	{
+		ILNode *node;
+		switch(iter->posn)
+		{
+			case 0:
+			{
+				node = iter->list->item1;
+				iter->last = &(iter->list->item1);
+			}
+			break;
+
+			case 1:
+			{
+				node = iter->list->item2;
+				iter->last = &(iter->list->item2);
+			}
+			break;
+
+			case 2:
+			{
+				node = iter->list->item3;
+				iter->last = &(iter->list->item3);
+			}
+			break;
+
+			default:
+			{
+				node = iter->list->item4;
+				iter->last = &(iter->list->item4);
+			}
+			break;
+		}
+		++(iter->posn);
+		if(!node)
+		{
+			iter->list = 0;
+			iter->posn = 0;
+			iter->last = 0;
+		}
+		else if(iter->posn >= 4)
+		{
+			iter->list = iter->list->rest;
+			iter->posn = 0;
+		}
+		return node;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILNode *ILNode_Compound_CreateFrom(ILNode *left, ILNode *right)
+{
+	if(left && yyisa(left, ILNode_Compound))
+	{
+		ILNode_List_Add(left, right);
+		return left;
+	}
+	else if(!left)
+	{
+		return right;
+	}
+	else if(!right)
+	{
+		return left;
+	}
+	else
+	{
+		ILNode *list = ILNode_List_create();
+		ILNode_List_Add(list, left);
+		ILNode_List_Add(list, right);
+		return list;
+	}
+}
+
+%}
+
+/*
+ * Generate discard code for empty statements.
+ */
+ILNode_GenDiscard(ILNode_Empty)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for compound statements.
+ */
+ILNode_GenDiscard(ILNode_Compound),
+ILNode_GenDiscard(ILNode_List)
+{
+	ILNode_ListIter iter;
+	ILNode *current;
+
+	ILNode_ListIter_Init(&iter, node);
+	while((current = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		ILNode_GenDiscard(current, info);
+	}
+}
+
+/*
+ * Generate discard code for "if" statements.
+ */
+ILNode_GenDiscard(ILNode_If)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+
+	if(ILNode_EvalConst(node->expr, info, &value) &&
+	   ILGenCastConst(info, &value, value.valueType, ILMachineType_Boolean))
+	{
+		/* The condition is constant, so output either "then" or "else" */
+		if(value.un.i4Value)
+		{
+			ILNode_GenDiscard(node->thenClause, info);
+		}
+		else
+		{
+			ILNode_GenDiscard(node->elseClause, info);
+		}
+	}
+	else if(IsEmpty(node->thenClause) && IsEmpty(node->elseClause))
+	{
+		/* No clauses, so evaluate the expression for its side-effects */
+		ILNode_GenDiscard(node->expr, info);
+	}
+	else if(IsEmpty(node->thenClause))
+	{
+		/* No "then" clause */
+		ILNode_GenThen(node->expr, info, &label1);
+		ILNode_GenDiscard(node->elseClause, info);
+		ILGenLabel(info, &label1);
+	}
+	else if(IsEmpty(node->elseClause))
+	{
+		/* No "else" clause */
+		ILNode_GenElse(node->expr, info, &label1);
+		ILNode_GenDiscard(node->thenClause, info);
+		ILGenLabel(info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "if" */
+		ILNode_GenElse(node->expr, info, &label1);
+		ILNode_GenDiscard(node->thenClause, info);
+		ILGenJump(info, IL_OP_BR, &label2);
+		ILGenLabel(info, &label1);
+		ILNode_GenDiscard(node->elseClause, info);
+		ILGenLabel(info, &label2);
+	}
+}
+
+/*
+ * Generate discard code for "while" statements.
+ */
+ILNode_GenDiscard(ILNode_While)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+
+	if(ILNode_EvalConst(node->cond, info, &value) &&
+	   ILGenCastConst(info, &value, value.valueType, ILMachineType_Boolean))
+	{
+		/* The condition is constant */
+		if(value.un.i4Value)
+		{
+			/* Generate code for an infinite loop */
+			PushLoop(info, &label1, &label2);
+			ILGenLabel(info, &label1);
+			if(node->stmt)
+			{
+				ILNode_GenDiscard(node->stmt, info);
+			}
+			ILGenJump(info, IL_OP_BR, &label1);
+			ILGenLabel(info, &label2);
+			PopLoop(info);
+		}
+	}
+	else if(IsEmpty(node->stmt))
+	{
+		/* The loop body is empty, so loop on the condition's side-effects */
+		ILGenLabel(info, &label1);
+		ILNode_GenThen(node->cond, info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "while" loop */
+		PushLoop(info, &label2, &label3);
+		ILGenJump(info, IL_OP_BR, &label2);
+		ILGenLabel(info, &label1);
+		ILNode_GenDiscard(node->stmt, info);
+		ILGenLabel(info, &label2);
+		ILNode_GenThen(node->cond, info, &label1);
+		ILGenLabel(info, &label3);
+		PopLoop(info);
+	}
+}
+
+/*
+ * Generate discard code for "do" statements.
+ */
+ILNode_GenDiscard(ILNode_Do)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+
+	if(ILNode_EvalConst(node->cond, info, &value) &&
+	   ILGenCastConst(info, &value, value.valueType, ILMachineType_Boolean))
+	{
+		/* The condition is constant */
+		if(value.un.i4Value)
+		{
+			/* Generate code for an infinite loop */
+			PushLoop(info, &label1, &label2);
+			ILGenLabel(info, &label1);
+			if(node->stmt)
+			{
+				ILNode_GenDiscard(node->stmt, info);
+			}
+			ILGenJump(info, IL_OP_BR, &label1);
+			ILGenLabel(info, &label2);
+			PopLoop(info);
+		}
+		else
+		{
+			/* Generate code for a single execution of the loop body */
+			PushLoop(info, &label1, &label1);
+			ILNode_GenDiscard(node->stmt, info);
+			ILGenLabel(info, &label1);
+			PopLoop(info);
+		}
+	}
+	else if(IsEmpty(node->stmt))
+	{
+		/* The loop body is empty, so loop on the condition's side-effects */
+		ILGenLabel(info, &label1);
+		ILNode_GenThen(node->cond, info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "do" loop */
+		PushLoop(info, &label2, &label3);
+		ILGenLabel(info, &label1);
+		ILNode_GenDiscard(node->stmt, info);
+		ILGenLabel(info, &label2);
+		ILNode_GenThen(node->cond, info, &label1);
+		ILGenLabel(info, &label3);
+		PopLoop(info);
+	}
+}
+
+/*
+ * Generate discard code for "for" statements.
+ */
+ILNode_GenDiscard(ILNode_For)
+{
+	ILEvalValue value;
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	ILLabel label3 = ILLabel_Undefined;
+	ILLabel label4 = ILLabel_Undefined;
+	int isConst;
+
+	/* Generate the initialisation code */
+	if(node->init)
+	{
+		ILNode_GenDiscard(node->init, info);
+	}
+
+	/* Evaluate the condition */
+	if(node->cond)
+	{
+		isConst = (ILNode_EvalConst(node->cond, info, &value) &&
+	   			   ILGenCastConst(info, &value, value.valueType,
+				   				  ILMachineType_Boolean));
+	}
+	else
+	{
+		value.un.i4Value = 1;
+		isConst = 1;
+	}
+
+	/* Generate the main part of the loop */
+	if(isConst)
+	{
+		/* The condition is constant */
+		if(value.un.i4Value)
+		{
+			/* Generate code for an infinite loop */
+			PushLoop(info, &label2, &label3);
+			ILGenLabel(info, &label1);
+			if(node->stmt)
+			{
+				ILNode_GenDiscard(node->stmt, info);
+			}
+			ILGenLabel(info, &label2);
+			if(node->incr)
+			{
+				ILNode_GenDiscard(node->incr, info);
+			}
+			ILGenJump(info, IL_OP_BR, &label1);
+			ILGenLabel(info, &label3);
+			PopLoop(info);
+		}
+	}
+	else if(IsEmpty(node->stmt) && !(node->incr))
+	{
+		/* The loop body and increment expressions are empty,
+		   so loop on the condition's side-effects */
+		ILGenLabel(info, &label1);
+		ILNode_GenThen(node->cond, info, &label1);
+	}
+	else
+	{
+		/* Generate the full case of the "for" loop */
+		PushLoop(info, &label2, &label4);
+		ILGenJump(info, IL_OP_BR, &label3);
+		ILGenLabel(info, &label1);
+		if(node->stmt)
+		{
+			ILNode_GenDiscard(node->stmt, info);
+		}
+		ILGenLabel(info, &label2);
+		if(node->incr)
+		{
+			ILNode_GenDiscard(node->incr, info);
+		}
+		ILGenLabel(info, &label3);
+		ILNode_GenThen(node->cond, info, &label1);
+		ILGenLabel(info, &label4);
+		PopLoop(info);
+	}
+}
+
+/*
+ * Generate discard code for "foreach" statements.
+ */
+ILNode_GenDiscard(ILNode_Foreach)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for "break" statements.
+ */
+ILNode_GenDiscard(ILNode_Break)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+	int sawTryBlock;
+
+	/* Look for the next outer loop or switch to break to */
+	sawTryBlock = 0;
+	while(size > 0 && stack[size - 1].breakLabel == 0)
+	{
+		if(stack[size - 1].continueLabel == 0)
+		{
+			sawTryBlock = 1;
+		}
+		--size;
+	}
+	if(!size)
+	{
+		return;
+	}
+
+	/* Jump to the break label */
+	if(sawTryBlock)
+	{
+		ILGenJump(info, IL_OP_LEAVE, stack[size - 1].breakLabel);
+	}
+	else
+	{
+		ILGenJump(info, IL_OP_BR, stack[size - 1].breakLabel);
+	}
+}
+
+/*
+ * Generate discard code for "continue" statements.
+ */
+ILNode_GenDiscard(ILNode_Continue)
+{
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+	int sawTryBlock;
+
+	/* Look for the next outer loop to continue from */
+	sawTryBlock = 0;
+	while(size > 0 && stack[size - 1].continueLabel == 0)
+	{
+		if(stack[size - 1].breakLabel == 0)
+		{
+			sawTryBlock = 1;
+		}
+		--size;
+	}
+	if(!size)
+	{
+		return;
+	}
+
+	/* Jump to the continue label */
+	if(sawTryBlock)
+	{
+		ILGenJump(info, IL_OP_LEAVE, stack[size - 1].continueLabel);
+	}
+	else
+	{
+		ILGenJump(info, IL_OP_BR, stack[size - 1].continueLabel);
+	}
+}
+
+%{
+
+/*
+ * Generate return code for the current method, given a correctly
+ * typed value on the top of the stack.
+ */
+static void GenReturn(ILGenInfo *info)
+{
+	int withinTry = 0;
+	ILLoopStack *stack = info->loopStack;
+	long size = info->loopStackSize;
+	while(size > 0)
+	{
+		if(stack[size - 1].continueLabel == 0 &&
+		   stack[size - 1].breakLabel == 0)
+		{
+			withinTry = 1;
+			break;
+		}
+		--size;
+	}
+	if(!withinTry)
+	{
+		/* Return from the method using a "ret" instruction */
+		ILGenSimple(info, IL_OP_RET);
+		ILGenAdjust(info, -1);
+	}
+	else
+	{
+		/* We are within a "try" block, so we cannot use "ret" directly.
+		   Store the return value into a temporary local variable and
+		   then "leave" to a block of code at the end of the method
+		   which pushes the local and invokes "ret" */
+		if(info->returnType != ILMachineType_Void)
+		{
+			if(info->returnVar < 0)
+			{
+				info->returnVar = ILGenTempVar(info, info->returnType);
+			}
+			ILGenStoreLocal(info, (unsigned)(info->returnVar));
+		}
+		ILGenJump(info, IL_OP_LEAVE, &(info->returnLabel));
+	}
+}
+
+%}
+
+/*
+ * Generate discard code for "return" statements with no expression.
+ */
+ILNode_GenDiscard(ILNode_Return)
+{
+	/* Push a default value on the stack if the real return
+	   type is not "void" */
+	if(info->returnType != ILMachineType_Void)
+	{
+		ILGenCast(info, ILMachineType_Void, info->returnType);
+	}
+
+	/* Generate the correct return sequence */
+	GenReturn(info);
+}
+
+/*
+ * Generate discard code for "return" statements with expressions.
+ */
+ILNode_GenDiscard(ILNode_ReturnExpr)
+{
+	ILMachineType valueType;
+
+	/* Evaluate the return value and cast it to the correct type */
+	valueType = ILNode_GenValue(node->expr, info);
+	ILGenCast(info, valueType, info->returnType);
+
+	/* Generate the correct return sequence */
+	GenReturn(info);
+}
+
+/*
+ * Generate discard code for "goto" statements.
+ */
+ILNode_GenDiscard(ILNode_Goto)
+{
+	ILGotoEntry *entry;
+	ILLoopStack *stack;
+	long size;
+
+	/* Search the goto list for a matching name */
+	entry = info->gotoList;
+	while(entry != 0)
+	{
+		if(entry->name == node->name)
+		{
+			break;
+		}
+		entry = entry->next;
+	}
+	if(!entry)
+	{
+		/* Create a new entry */
+		entry = (ILGotoEntry *)ILMalloc(sizeof(ILGotoEntry));
+		if(!entry)
+		{
+			ILGenOutOfMemory(info);
+		}
+		entry->name = node->name;
+		entry->defined = 0;
+		entry->crossedTry = 0;
+		entry->loopStackSize = info->loopStackSize;
+		entry->scopeLevel = info->scopeLevel;
+		entry->label = ILLabel_Undefined;
+		entry->next = info->gotoList;
+		info->gotoList = entry;
+	}
+
+	/* Find the location of the next outer "try" */
+	stack = info->loopStack;
+	size = info->loopStackSize;
+	while(size > 0)
+	{
+		if(stack[size - 1].continueLabel == 0 &&
+		   stack[size - 1].breakLabel == 0)
+		{
+			break;
+		}
+		--size;
+	}
+
+	/* Determine what type of branch to use */
+	if(entry->defined)
+	{
+		/* We have already seen this label */
+		if(size > entry->loopStackSize)
+		{
+			/* The label is outside the current "try" block */
+			ILGenJump(info, IL_OP_LEAVE, &(entry->label));
+		}
+		else
+		{
+			/* The label is inside the current "try" block */
+			ILGenJump(info, IL_OP_BR, &(entry->label));
+		}
+	}
+	else if(!size)
+	{
+		/* There are no try blocks in force, so we can use "br" */
+		entry->scopeLevel = info->scopeLevel;
+		ILGenJump(info, IL_OP_BR, &(entry->label));
+	}
+	else
+	{
+		/* The label is not yet defined and there is a "try"
+		   block in force.  We must use a pseudo-instruction
+		   called "br_or_leave" which will be fixed up by the
+		   assembler once we know if we are crossing a "try"
+		   block boundary or not */
+		entry->scopeLevel = info->scopeLevel;
+		ILGenBrOrLeaveJump(info, &(entry->label));
+	}
+}
+
+/*
+ * Generate discard code for the "goto label" statement.
+ */
+ILNode_GenDiscard(ILNode_GotoLabel)
+{
+	ILGotoEntry *entry;
+
+	/* Search the goto list for a matching name */
+	entry = info->gotoList;
+	while(entry != 0)
+	{
+		if(entry->name == node->name)
+		{
+			break;
+		}
+		entry = entry->next;
+	}
+	if(!entry || (entry->defined && entry->scopeLevel < info->scopeLevel))
+	{
+		/* Create a new entry */
+		entry = (ILGotoEntry *)ILMalloc(sizeof(ILGotoEntry));
+		if(!entry)
+		{
+			ILGenOutOfMemory(info);
+		}
+		entry->name = node->name;
+		entry->defined = 1;
+		entry->crossedTry = 0;
+		entry->loopStackSize = info->loopStackSize;
+		entry->scopeLevel = info->scopeLevel;
+		entry->label = ILLabel_Undefined;
+		entry->next = info->gotoList;
+		info->gotoList = entry;
+	}
+	else if(!(entry->defined))
+	{
+		/* Update the scope information for the label */
+		entry->loopStackSize = info->loopStackSize;
+		entry->scopeLevel = info->scopeLevel;
+	}
+	else
+	{
+		/* The label is already defined at the same scope */
+		return;
+	}
+
+	/* Output the label */
+	if(entry->crossedTry)
+	{
+		/* We must use a "leave label" because there is a
+		   goto that jumps to this point that was inside the
+		   scope of a "try" block */
+		ILGenLeaveLabel(info, &(entry->label));
+	}
+	else
+	{
+		/* We can use a normal label */
+		ILGenLabel(info, &(entry->label));
+	}
+}
+
+/*
+ * Generate discard code for the "goto case" statement.
+ */
+ILNode_GenDiscard(ILNode_GotoCase)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for the "goto default" statement.
+ */
+ILNode_GenDiscard(ILNode_GotoDefault)
+{
+	/* TODO */
+}
+
+%{
+
+/*
+ * Trim the goto list to remove defined labels from inner scopes.
+ */
+static void TrimGotoList(ILGenInfo *info, int tryScope)
+{
+	ILGotoEntry *entry;
+	ILGotoEntry *next;
+	ILGotoEntry *prev;
+	entry = info->gotoList;
+	prev = 0;
+	while(entry != 0)
+	{
+		if(entry->defined && entry->scopeLevel > info->scopeLevel)
+		{
+			/* Defined label from an inner scope */
+			next = entry->next;
+			ILFree(entry);
+			entry = next;
+			if(prev)
+				prev->next = next;
+			else
+				info->gotoList = next;
+		}
+		else if(!(entry->defined) && entry->scopeLevel > info->scopeLevel)
+		{
+			/* Undefined label reference that is crossing a scope boundary */
+			if(tryScope)
+			{
+				entry->crossedTry = 1;
+			}
+			entry->scopeLevel = info->scopeLevel;
+			prev = entry;
+			entry = entry->next;
+		}
+		else
+		{
+			/* Normal label reference or definition */
+			prev = entry;
+			entry = entry->next;
+		}
+	}
+}
+
+%}
+
+/*
+ * Generate discard code for the "new scope" statement.
+ */
+ILNode_GenDiscard(ILNode_NewScope)
+{
+	/* Enter a new scope */
+	++(info->scopeLevel);
+
+	/* Generate the code within the scope */
+	ILNode_GenDiscard(node->stmt, info);
+
+	/* Exit from the scope */
+	--(info->scopeLevel);
+
+	/* Trim goto labels that were defined within the scope */
+	TrimGotoList(info, 0);
+}
+
+/*
+ * Generate discard code for the "switch" statement.
+ */
+ILNode_GenDiscard(ILNode_Switch)
+{
+	/* TODO */
+}
+
+/*
+ * Stub out pseudo-statements that are used by "switch" statements.
+ */
+ILNode_GenDiscard(ILNode_SwitchSectList),
+ILNode_GenDiscard(ILNode_SwitchSection),
+ILNode_GenDiscard(ILNode_CaseList),
+ILNode_GenDiscard(ILNode_CaseLabel),
+ILNode_GenDiscard(ILNode_DefaultLabel)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Generate discard code for the "throw" statement.
+ */
+ILNode_GenDiscard(ILNode_Throw)
+{
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_RETHROW);
+}
+
+/*
+ * Generate discard code for the "throw expression" statement.
+ */
+ILNode_GenDiscard(ILNode_ThrowExpr)
+{
+	ILGenCast(info, ILNode_GenValue(node->expr, info),
+			  ILMachineType_ObjectRef);
+	ILGenSimple(info, IL_OP_THROW);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Generate discard code for the "try" statement.
+ */
+ILNode_GenDiscard(ILNode_Try)
+{
+	/* TODO */
+}
+
+/*
+ * Stub out pseudo-statements that are used by "try" statements.
+ */
+ILNode_GenDiscard(ILNode_CatchClauses),
+ILNode_GenDiscard(ILNode_CatchClause),
+ILNode_GenDiscard(ILNode_FinallyClause)
+{
+	/* Nothing to do here */
+}

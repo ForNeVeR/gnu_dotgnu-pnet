@@ -1,0 +1,343 @@
+/*
+ * cs_decls.tc - Semantic analysis for C# class and type declarations.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ * Perform semantic analysis for class definitions.
+ */
+ILNode_SemAnalysis(ILNode_ClassDefn)
+{
+	if (node->body)
+	{
+		return ILNode_SemAnalysis(node->body, info, &(node->body));
+	}
+	else
+	{
+		CSSemValue value;
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Int32;
+		return value;
+	}
+}
+
+/*
+ * Perform semantic analysis for declaration scope changes.
+ */
+ILNode_SemAnalysis(ILNode_ScopeChange)
+{
+	CSSemValue value;
+	if (node->body)
+	{
+		ILScope *oldscope = info->currentScope;
+		info->currentScope = node->scope;
+		value = ILNode_SemAnalysis(node->body, info, &(node->body));
+		info->currentScope = oldscope;
+	}
+	else
+	{
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Int32;
+	}
+	return value;
+}
+
+/*
+ * Perform semantic analysis for constant declaration.
+ */
+ILNode_SemAnalysis(ILNode_ConstDeclaration)
+{
+	CSSemValue value, valueChild;
+	ILNode_ListIter iter;
+	ILNode *child;
+
+	/* FIXME: optional attributes ? */
+	/* modifier already done in parser */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	ILNode_ListIter_Init(&iter, node->constDeclarators);
+	while ((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		valueChild = ILNode_SemAnalysis(child, info, &(child));
+		/*
+		 * FIXME: need to verify that the constant expression type is
+		 * consistent with the type declaration of the constant
+		 */
+	}
+	return value;
+}
+
+ILNode_SemAnalysis(ILNode_ConstDeclarator)
+{
+	/* name is guaranteed to be an identifier by the parser */
+	/* TODO: check that the constant hasn't been declared previously */
+
+	/* expr should be a constant expression */
+	return ILNode_SemAnalysis(node->expr, info, &(node->expr));
+}
+
+/*
+ * Perform semantic analysis for local variable declaration.
+ */
+ILNode_SemAnalysis(ILNode_VarDeclaration)
+{
+	CSSemValue value, valueChild;
+	ILNode_ListIter iter;
+	ILNode *child;
+
+	/* FIXME: optional attributes ? */
+	/* modifier already done in parser */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	ILNode_ListIter_Init(&iter, node->varDeclarators);
+	while ((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		valueChild = ILNode_SemAnalysis(child, info, &(child));
+		/*
+		 * FIXME: need to verify that the optional initializers 
+		 * of the fields are consistent with the type declaration
+		 */
+	}
+	return value;
+}
+
+/*
+ * Perform semantic analysis for field declaration.
+ */
+ILNode_SemAnalysis(ILNode_FieldDeclaration)
+{
+	CSSemValue value, valueChild;
+	ILNode_ListIter iter;
+	ILNode *child;
+
+	/* FIXME: optional attributes ? */
+	/* modifier already done in parser */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	ILNode_ListIter_Init(&iter, node->fieldDeclarators);
+	while ((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		valueChild = ILNode_SemAnalysis(child, info, &(child));
+		/*
+		 * FIXME: need to verify that the optional initializers 
+		 * of the fields are consistent with the type declaration
+		 */
+	}
+	return value;
+}
+
+ILNode_SemAnalysis(ILNode_VarDeclarator)
+{
+	/* name is guaranteed to be an identifier by the parser */
+	/* TODO: check that the name hasn't been declared previously */
+
+	if (node->initializer)
+	{
+		return ILNode_SemAnalysis(node->initializer, info, &(node->initializer));
+	}
+	else
+	{
+		CSSemValue value;
+		value.kind = CS_SEMKIND_RVALUE;
+		value.type = ILType_Int32;
+		return value;
+	}
+}
+
+ILNode_SemAnalysis(ILNode_EventFieldDeclaration)
+{
+	CSSemValue value, valueChild;
+	ILNode_ListIter iter;
+	ILNode *child;
+
+	/* FIXME: optional attributes ? */
+	/* modifier already done in parser */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	ILNode_ListIter_Init(&iter, node->varDeclarators);
+	while ((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		valueChild = ILNode_SemAnalysis(child, info, &(child));
+		/*
+		 * FIXME: need to verify that the optional initializers 
+		 * of the fields are consistent with the type declaration
+		 */
+	}
+	return value;
+}
+
+ILNode_SemAnalysis(ILNode_EventPropertyDeclaration)
+{
+	CSSemValue value;
+
+	/* FIXME: optional attributes ? */
+	/* modifier already done in parser */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	/* FIXME: qualifiedIdentifier */
+	value = ILNode_SemAnalysis(node->addAccessor, info, &(node->addAccessor));
+	value = ILNode_SemAnalysis(node->removeAccessor, info, &(node->removeAccessor));
+	return value;
+}
+
+ILNode_SemAnalysis(ILNode_MethodDeclaration)
+{
+	ILNode_SemAnalysis(node->methodHeader, info, &(node->methodHeader));
+	return ILNode_SemAnalysis(node->methodBody, info, &(node->methodBody));
+}
+
+ILNode_SemAnalysis(ILNode_MethodHeader)
+{
+	CSSemValue value;
+
+	/* FIXME: optional attributes ? */
+	/* modifier already done in parser */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	/* FIXME: name, do we need to do anything */
+	/* FIXME: I don't think we'll need to iterate over params here */
+	value = ILNode_SemAnalysis(node->params, info, &(node->params));
+	return value;
+}
+
+ILNode_SemAnalysis(ILNode_PropertyDeclaration)
+{
+	CSSemValue value;
+
+	/* FIXME: optional attributes ? */
+	/* modifier already done in parser */
+	value = ILNode_SemAnalysis(node->type, info, &(node->type));
+	/* FIXME: name, do we need to do anything */
+	value = ILNode_SemAnalysis(node->getAccessor, info, &(node->getAccessor));
+	value = ILNode_SemAnalysis(node->setAccessor, info, &(node->setAccessor));
+	return value;
+}
+
+ILNode_SemAnalysis(ILNode_AccessorDeclaration)
+{
+	/* FIXME: optional attributes ? */
+	return ILNode_SemAnalysis(node->body, info, &(node->body));
+}
+
+ILNode_SemAnalysis(ILNode_IndexerDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_IndexerDeclarator)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_InterfaceDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_InterfaceMethodDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_InterfacePropertyDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_InterfaceEventDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_InterfaceIndexerDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_EnumDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_DelegateDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_ConstructorDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_ConstructorDeclarator)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_DestructorDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_FormalParameter)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_OperatorDeclaration)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_NormalOperatorDeclarator)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_ConversionOperatorDeclarator)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_TypeSuffix)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_LocalVariableType)
+{
+	/* TODO */
+	return CSSemValueDefault;
+}

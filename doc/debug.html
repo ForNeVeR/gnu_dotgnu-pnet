@@ -1,0 +1,234 @@
+<html>
+<head>
+<title>Storing debug information in IL binaries</title>
+</head>
+<body bgcolor="#ffffff">
+<h1>Storing debug information in IL binaries</h1>
+
+Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
+Last Modified: $Date: 2001/08/13 05:21:59 $<p>
+
+Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Permission to distribute unmodified copies of this work is hereby granted.<p>
+
+<h2>1. Introduction</h2>
+
+The assembler syntax defined in the ECMA Partition II specification
+allows for line number and local variable name information to be inserted
+into the assembly code stream.  This information is typically used by
+source-level debuggers.<p>
+
+However, ECMA does not specify a standard way to represent this
+debug information in the final IL image file.  Instead it leaves it
+to the specific implementations.  Microsoft's implementation stores
+the debug information in the <code>*.PDB</code> file that is built
+by their tools.  This file format is not portable to other platforms.<p>
+
+This document describes a format for representing debug information
+within the IL image file itself, rather than in a separate file.<p>
+
+<h2>2. Requirements</h2>
+
+The following requirements must be satisfied by the debug format:
+
+<ul>
+	<li>It must be easy to strip from an image file.</li>
+	<li>It should not impact runtime engines and tools that are
+		unaware of how to handle the debug information.</li>
+	<li>It must be extensible to new debug data in the future,
+		while retaining forwards and backwards compatibility.</li>
+	<li>It should be efficient to locate all debug information
+		that is relevant to a metadata token.</li>
+</ul>
+
+<h2>3. The <code>.ildebug</code> section</h2>
+
+All debug information for an IL image is placed into a read-only,
+discardable, data section called <code>.ildebug</code>.<p>
+
+The contents of <code>.ildebug</code> should be the last section within
+the PE/COFF image file.  This allows the debug information to be easily
+stripped by truncating the image, removing the <code>.ildebug</code>
+entry from the PE/COFF section table, and reducing the total image size
+in the PE/COFF headers.<p>
+
+The section begins with a header consisting of the following fields:<p>
+
+<table border="1">
+	<tr><td>Magic</td>
+		<td>4-byte magic number string "<code>ILDB</code>".</td></tr>
+	<tr><td>Version</td>
+		<td>32-bit value indicating the version.  This must be 1.</td></tr>
+	<tr><td>IndexOffset</td>
+		<td>32-bit offset from the start of this header to the beginning
+			of the token index.</td></tr>
+	<tr><td>NumIndexEntries</td>
+		<td>32-bit value that indicates the number of entries in the
+			token index.</td></tr>
+	<tr><td>StringOffset</td>
+		<td>32-bit offset from the start of this header to the beginning
+			of the string table.</td></tr>
+	<tr><td>StringLength</td>
+		<td>32-bit value that indicates the length of the string
+			table.</td></tr>
+</table><p>
+
+Unless otherwise stated, all numeric quantities will be assumed to be
+in little-endian order.<p>
+
+<h2>4. Token index</h2>
+
+The token index consists of 8-byte entries of the following form:<p>
+
+<table border="1">
+	<tr><td>Token</td>
+		<td>32-bit token value.</td></tr>
+	<tr><td>Offset</td>
+		<td>32-bit offset from the start of the debug section to
+			a block of debug information that is associated with
+			the token.</td></tr>
+</table><p>
+
+The token index must be sorted into ascending order of "Token",
+and should be aligned on a 4-byte boundary.  There may be multiple
+entries in the index for the same token.  Use the following algorithm
+to locate all debug information for a token:<p>
+
+<ul>
+	<li>Perform a binary search within the index for the token.</li>
+	<li>Scan backwards in the index until the first entry for the
+		token is found.</li>
+	<li>Scan forwards in the index until the last entry for the
+		token is found.</li>
+</ul>
+
+Because the token index is sorted, multiple debug information blocks
+for the same token could be in any order.  Tools should not rely upon
+the blocks being in any particular order, and are free to change the
+order when modifying the debug section.<p>
+
+All of the debug information in this document refers to a specific
+metadata token.  However, in the future it may be possible for
+debug information to pertain to the entire image, or to objects
+other than metadata tokens.  To store debug information for non-tokens,
+it is first necessary to construct a pseudo-token using the following
+algorithm:<p>
+
+<ul>
+	<li>Pick a unique 4-character string for the item.
+		e.g. "<code>ABCD</code>".  The last character must
+		be 7-bit ASCII.</li>
+	<li>Convert the string into a little-endian value, where the
+		first character is assumed to be the least significant
+		byte.  e.g. "<code>0x44434241</code>".</li>
+	<li>Set the high bit of the value to 1.
+		e.g. "<code>0xC4434241</code>".</li>
+</ul>
+
+The result is the pseudo-token value.  Because regular metadata
+tokens cannot have their high bit set, this will result in a value
+that won't conflict with regular tokens.<p>
+
+As an additional requirement, standard pseudo-tokens will use
+upper case characters in their names.  e.g. "<code>ABCD</code>".
+Private pseudo-tokens will use lower case characters.
+e.g. "<code>abcd</code>".  There are no standard pseudo-tokens
+at present.<p>
+
+<h2>5. String table</h2>
+
+The string table stores NUL-terminated strings that are referenced
+by the debug information.  In the current version of this document,
+the strings will typically be filenames and local variable names.<p>
+
+Strings are referenced by their index, which is an offset from the
+beginning of the string table.  The string value begins at that offset
+and continues until the next zero byte is encountered.  The last byte
+in the string table must be zero, which means that the string table
+can never be empty.<p>
+
+This document does not specify any particular character set for
+the strings.<p>
+
+<h2>6. Debug information blocks</h2>
+
+Each entry in the token index contains an offset of the debug
+information that is associated with that entry.  This debug
+information begins with the following header:<p>
+
+<table border="1">
+	<tr><td>Type</td>
+		<td>The type of debug information.</td></tr>
+	<tr><td>Length</td>
+		<td>The number of bytes of debug information that
+			follow this header.</td></tr>
+</table><p>
+
+The "Type" and "Length" values are encoded with the multi-byte format
+used in metadata to encode unsigned 32-bit values.  See the ECMA Partition
+II specification for details on this format.  In the sections below,
+the contents of debug blocks are also encoded in this manner.<p>
+
+The following debug types are supported, which are further
+described in the following sections:<p>
+
+<table border="1">
+	<tr><td>1</td>
+		<td>Line number block.</td></tr>
+	<tr><td>2</td>
+		<td>Line number and offsets block.</td></tr>
+	<tr><td>3</td>
+		<td>Local variables block.</td></tr>
+	<tr><td>4</td>
+		<td>Local variables and offsets block.</td></tr>
+</table><p>
+
+If a debug block type is not understood, it should be silently ignored.
+This allows future versions of this specification to extend the set
+of debug block types without affecting existing implementations.<p>
+
+<h2>6.1. Line number block</h2>
+
+This block begins with an index into the string table that indicates
+the name of the file.  The rest of the block consists of line number
+values.<p>
+
+This block type is typically used for metadata tokens, other than methods,
+to indicate the line in the source file where the token was declared.<p>
+
+<h2>6.2. Line number and offsets block</h2>
+
+This block begins with an index into the string table that indicates
+the name of the file.  The rest of the block consists of pairs
+of line number and offset values.<p>
+
+This block type is typically used for method tokens, to indicate which
+source file line corresponds to which offset within the method's code.<p>
+
+<h2>6.3. Local variables block</h2>
+
+This block consists of pairs of name and index values.  The name value
+is an offset into the string table and indicates the name of the local
+variable.  The index is the number assigned to the local variable with
+the method's code.<p>
+
+This block type is typically used for method tokens whose local variables
+extend for the entire scope of the method's body.<p>
+
+<h2>6.4. Local variables and offsets block</h2>
+
+This block begins with two offset values, indicating the start and end
+of a region of code.  The rest of the block consists of pairs of name
+and index values for the local variables.<p>
+
+This block is typically used for method tokens where some of the local
+variables have a scope that does not extend for the entire length of the
+method's body.  Thus, it is possible for the same local variable name
+to refer to different indices at different points within the code.<p>
+
+Multiple local variable blocks for a method do not need to be ordered in
+any particular way.  Debug tools may need to sort the blocks so that names
+in inner scopes override those in outer scopes.<p>
+
+</body>
+</html>

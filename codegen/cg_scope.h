@@ -1,0 +1,115 @@
+/*
+ * cg_scope.h - Scope handling declarations.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#ifndef	_CODEGEN_CG_SCOPE_H
+#define	_CODEGEN_CG_SCOPE_H
+
+#ifdef	__cplusplus
+extern	"C" {
+#endif
+
+/*
+ * Opaque types used by the scope routines.
+ */
+typedef struct _tagILScopeData ILScopeData;
+
+/*
+ * Kinds of items that may appear in a scope attached to a name.
+ */
+#define	IL_SCOPE_SUBSCOPE		1	/* Named sub-scope */
+#define	IL_SCOPE_LINKED_SCOPE	2	/* Sub-scope linked with "using" */
+#define	IL_SCOPE_IMPORTED_TYPE	3	/* Scope is an imported type */
+#define	IL_SCOPE_DECLARED_TYPE	4	/* Scope is a declared type */
+
+/*
+ * Error codes for scope definitions.
+ */
+#define	IL_SCOPE_ERROR_OK						0
+#define	IL_SCOPE_ERROR_IMPORT_CONFLICT			1
+#define	IL_SCOPE_ERROR_REDECLARED				2
+#define	IL_SCOPE_ERROR_CANT_CREATE_NAMESPACE	3
+#define	IL_SCOPE_ERROR_NAME_IS_NAMESPACE		4
+#define	IL_SCOPE_ERROR_OTHER					5
+
+/*
+ * Initialize the memory pools used by the scope routines.
+ */
+void ILScopeInit(ILGenInfo *info);
+
+/*
+ * Create a new scope underneath a specific parent scope.
+ * If "parent" is NULL, then create a global scope.
+ */
+ILScope *ILScopeCreate(ILGenInfo *info, ILScope *parent);
+
+/*
+ * Import the contents of an IL binary image into a scope.
+ */
+void ILScopeImport(ILScope *scope, ILImage *image);
+
+/*
+ * Add a "using" declaration to a specific scope.  Returns zero
+ * if there is something already declared at the identifier which
+ * is not a namespace.
+ */
+int ILScopeUsing(ILScope *scope, const char *identifier, const char *alias);
+
+/*
+ * Clear the "using" declarations from a specific scope.
+ */
+void ILScopeClearUsing(ILScope *scope);
+
+/*
+ * Look up an identifier within a specific scope.
+ * If "up" is non-zero, then go up to the parent
+ * scope if not in the current scope.  Returns
+ * NULL if there is no such identifier in use.
+ */
+ILScopeData *ILScopeLookup(ILScope *scope, const char *identifier, int up);
+
+/*
+ * Get the next item associated with a name within a scope.
+ * Returns NULL if no more items with the same name.
+ */
+ILScopeData *ILScopeNextItem(ILScopeData *data);
+
+/*
+ * Declare a type within a particular scope.  If the name
+ * already exists, then an "IL_SCOPE_ERROR_xxx" code is
+ * returned.  If there is a declaration for the type already,
+ * then the node will be returned in "origDefn".
+ */
+int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
+					   const char *namespace, ILScope **resultScope,
+					   ILNode **origDefn);
+
+/*
+ * Resolve a type identifier to an "ILClass *" record or to
+ * an "ILNode *" parse tree node.  Returns zero if not found.
+ */
+int ILScopeResolveType(ILScope *scope, ILNode *identifier,
+					   const char *namespace, ILClass **classInfo,
+					   ILNode **nodeInfo);
+
+#ifdef	__cplusplus
+};
+#endif
+
+#endif	/* _CODEGEN_CG_SCOPE_H */

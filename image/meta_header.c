@@ -1,0 +1,335 @@
+/*
+ * meta_header.c - Routines for walking the header of the metadata section.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "image.h"
+
+#ifdef	__cplusplus
+extern	"C" {
+#endif
+
+/*
+ * Get the metadata section and validate it.  Returns
+ * the number of entries, or 0xFFFFFFFF if invalid.
+ */
+static unsigned long GetMetadata(ILImage *image, unsigned char **addr,
+								 unsigned long *len, unsigned long *headerLen)
+{
+	void *address;
+	unsigned long versionLen;
+
+	/* Find the metadata section in the IL image */
+	if(!ILImageGetSection(image, IL_SECTION_METADATA, &address, len))
+	{
+		return (unsigned long)0xFFFFFFFF;
+	}
+
+	/* Is this really a metadata directory header? */
+	*addr = (unsigned char *)address;
+	if(*len >= 12 &&
+	   (*addr)[0] == (unsigned char)'C' &&
+	   (*addr)[1] == (unsigned char)'O' &&
+	   (*addr)[2] == (unsigned char)'M' &&
+	   (*addr)[3] == (unsigned char)'+')
+	{
+		/* This is a metadata header from Beta 1 or earlier */
+		*headerLen = 12;
+		return (unsigned long)(IL_READ_UINT16(*addr + 10));
+	}
+	else if(*len >= 16 &&
+	        (*addr)[0] == (unsigned char)'B' &&
+	        (*addr)[1] == (unsigned char)'S' &&
+	        (*addr)[2] == (unsigned char)'J' &&
+	        (*addr)[3] == (unsigned char)'B')
+	{
+		/* This is a metadata header from Beta 2 or later */
+		if(IL_READ_UINT32(*addr + 4) != 0x00010001)
+		{
+			/* Incorrect version */
+			return (unsigned long)0xFFFFFFFF;
+		}
+		versionLen = IL_READ_UINT32(*addr + 12);
+		if((versionLen % 4) != 0)
+		{
+			versionLen += 4 - (versionLen % 4);
+		}
+		if(versionLen > (*len - 16))
+		{
+			return (unsigned long)0xFFFFFFFF;
+		}
+		if((*len - 16 - versionLen) < 4)
+		{
+			return (unsigned long)0xFFFFFFFF;
+		}
+		*headerLen = 16 + versionLen + 4;
+		return IL_READ_UINT16(*addr + 16 + versionLen + 2);
+	}
+	else
+	{
+		/* Invalid metadata header */
+		return (unsigned long)0xFFFFFFFF;
+	}
+}
+
+/*
+ * Get the next entry from a metadata directory.
+ * Returns non-zero if a new entry has been found.
+ */
+static int GetNextEntry(unsigned char **addrRef, unsigned long *lenLeftRef,
+						unsigned long *offsetRef, unsigned long *numEntries,
+						unsigned long totalLen, unsigned long *entryOffset,
+						unsigned long *entrySize, char **entryName)
+{
+	unsigned char *addr = *addrRef;
+	unsigned long lenLeft = *lenLeftRef;
+	unsigned long offset = *offsetRef;
+	unsigned long extOffset;
+	unsigned long extSize;
+
+	/* Bail out if the directory has been exhausted */
+	if(!(*numEntries))
+	{
+		return 0;
+	}
+
+	/* Check for truncation of the table */
+	if(lenLeft < 9)
+	{
+		return 0;
+	}
+
+	/* Extract the information from the entry */
+	extOffset = (unsigned long)(IL_READ_UINT32(addr));
+	extSize   = (unsigned long)(IL_READ_UINT32(addr + 4));
+	if(extOffset >= totalLen || !extSize ||
+	   (extOffset + extSize) > totalLen ||
+	   (extOffset + extSize) < extOffset)	/* Wrap-around check */
+	{
+		/* The index information is invalid */
+		return 0;
+	}
+	if(entryOffset)
+	{
+		*entryOffset = (unsigned long)(IL_READ_UINT32(addr));
+	}
+	if(entrySize)
+	{
+		*entrySize = (unsigned long)(IL_READ_UINT32(addr + 4));
+	}
+	if(entryName)
+	{
+		*entryName = (char *)(addr + 8);
+	}
+
+	/* Skip to the next entry in the table */
+	addr += 8;
+	offset += 8;
+	lenLeft -= 8;
+	while(lenLeft > 0 && addr[0] != 0)
+	{
+		/* Skip the name of the entry */
+		++addr;
+		++offset;
+		--lenLeft;
+	}
+	if(lenLeft > 0)
+	{
+		/* Skip the zero byte at the end of the name */
+		++addr;
+		++offset;
+		--lenLeft;
+	}
+	else
+	{
+		/* Badly formatted name */
+		return 0;
+	}
+	while(lenLeft > 0 && (offset & 3) != 0)
+	{
+		/* Skip bytes until we are DWORD-aligned again */
+		++addr;
+		++offset;
+		--lenLeft;
+	}
+	*addrRef = addr;
+	*lenLeftRef = lenLeft;
+	*offsetRef = offset;
+	--(*numEntries);
+	return 1;
+}
+
+void *ILImageGetMetaEntry(ILImage *image, const char *name,
+						  unsigned long *size)
+{
+	unsigned char *address;
+	unsigned char *addr;
+	unsigned long len;
+	unsigned long headerLen;
+	unsigned long lenLeft;
+	unsigned long numEntries;
+	unsigned long offset;
+	unsigned long entryOffset;
+	unsigned long entrySize;
+	char *entryName;
+
+	/* Find the metadata section and validate it */
+	numEntries = GetMetadata(image, &address, &len, &headerLen);
+	if(numEntries == (unsigned long)0xFFFFFFFF)
+	{
+		return 0;
+	}
+
+	/* Scan the entry table for the name */
+	addr = address + headerLen;
+	lenLeft = len - headerLen;
+	offset = headerLen;
+	while(GetNextEntry(&addr, &lenLeft, &offset, &numEntries, len,
+					   &entryOffset, &entrySize, &entryName))
+	{
+		/* Is this the entry we are looking for? */
+		if(!strcmp(entryName, name))
+		{
+			*size = entrySize;
+			return (void *)(address + entryOffset);
+		}
+	}
+
+	/* We could not find the entry */
+	return 0;
+}
+
+unsigned long ILImageNumMetaEntries(ILImage *image)
+{
+	unsigned char *addr;
+	unsigned long len;
+	unsigned long headerLen;
+	unsigned long numEntries = GetMetadata(image, &addr, &len, &headerLen);
+	if(numEntries != (unsigned long)0xFFFFFFFF)
+	{
+		return numEntries;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void *ILImageMetaEntryInfo(ILImage *image, unsigned long entry,
+						   char **name, unsigned long *virtAddr,
+						   unsigned long *size)
+{
+	unsigned char *address;
+	unsigned char *addr;
+	unsigned long len;
+	unsigned long headerLen;
+	unsigned long lenLeft;
+	unsigned long numEntries;
+	unsigned long offset;
+	unsigned long entryOffset;
+	unsigned long entrySize;
+	char *entryName;
+
+	/* Find the metadata section and validate it */
+	numEntries = GetMetadata(image, &address, &len, &headerLen);
+	if(numEntries == (unsigned long)0xFFFFFFFF)
+	{
+		return 0;
+	}
+
+	/* Scan the entry table for one we are looking for */
+	addr = address + headerLen;
+	lenLeft = len - headerLen;
+	offset = headerLen;
+	while(GetNextEntry(&addr, &lenLeft, &offset, &numEntries, len,
+					   &entryOffset, &entrySize, &entryName))
+	{
+		/* Is this the entry we are looking for? */
+		if(entry == 0)
+		{
+			if(name)
+			{
+				*name = entryName;
+			}
+			if(size)
+			{
+				*size = entrySize;
+			}
+			if(virtAddr)
+			{
+				*virtAddr = ILImageGetSectionAddr(image, IL_SECTION_METADATA) +
+							entryOffset;
+			}
+			return (void *)(address + entryOffset);
+		}
+		--entry;
+	}
+
+	/* We could not find the entry */
+	return 0;
+}
+
+unsigned long ILImageMetaHeaderSize(ILImage *image)
+{
+	unsigned char *addr;
+	unsigned long len;
+	unsigned long headerLen;
+	unsigned long lenLeft;
+	unsigned long numEntries;
+	unsigned long offset;
+
+	/* Find the metadata section and validate it */
+	numEntries = GetMetadata(image, &addr, &len, &headerLen);
+	if(numEntries == (unsigned long)0xFFFFFFFF)
+	{
+		return 0;
+	}
+
+	/* Scan the entry table to find the end */
+	addr += headerLen;
+	lenLeft = len - headerLen;
+	offset = headerLen;
+	while(GetNextEntry(&addr, &lenLeft, &offset, &numEntries, len, 0, 0, 0))
+	{
+		/* Nothing to do here: we are just calculating the final offset */
+	}
+
+	/* The offset is the header's size */
+	return offset;
+}
+
+int ILImageMetaIsOld(ILImage *image)
+{
+	unsigned char *addr;
+	unsigned long len;
+	unsigned long headerLen;
+
+	/* We can determine the metadata format from the size of the header */
+	if(GetMetadata(image, &addr, &len, &headerLen) != (unsigned long)0xFFFFFFFF)
+	{
+		return (headerLen == 12);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+#ifdef	__cplusplus
+};
+#endif

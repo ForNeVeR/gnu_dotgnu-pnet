@@ -1,0 +1,11 @@
+lib_LIBRARIES = libILDumpAsm.a
+
+libILDumpAsm_a_SOURCES = dump_flags.c \
+						 dump_guid.c \
+						 dump_ident.c \
+						 dump_string.c \
+						 dump_type.c
+
+if USINGGCC
+INCLUDES = -Wall
+endif

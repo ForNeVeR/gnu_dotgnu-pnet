@@ -1,0 +1,55 @@
+%output "cs_semantics.c"
+
+%{
+/*
+ * cs_semantics.tc - Semantic analysis routines for C#.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "cs_internal.h"
+%}
+
+/*
+ * Semantic analysis operation.  "parent" points to the location
+ * that should be overwritten if the node is being replaced.
+ */
+%operation CSSemValue ILNode_SemAnalysis([ILNode *node], ILGenInfo *info,
+									     ILNode **parent) = {CSSemValueDefault}
+
+%decls %end %{
+
+/*
+ * Create a type for a built-in class or value type.
+ */
+/*
+ILType *CSCreateClassType(CSSemContext *sctx, const char *namespace,
+						  const char *name);
+ILType *CSCreateValueType(CSSemContext *sctx, const char *namespace,
+						  const char *name);
+*/
+
+%}
+
+%{
+
+/*
+ * Default value that is returned from "ILNode_SemAnalysis".
+ */
+CSSemValue CSSemValueDefault = {CS_SEMKIND_VOID, 0};
+
+%}

@@ -1,0 +1,661 @@
+.\" Copyright (c) 2001 Southern Storm Software, Pty Ltd.
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.TH cscc 1 "8 April 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.SH NAME
+cscc \- the C-Sharp code compiler
+.SH SYNOPSIS
+.ll +8
+.B cscc
+[ options ]
+.I input
+\&...
+.SH DESCRIPTION
+.B Cscc
+compiles input source files, typically in the C# (pronounced C-Sharp)
+programming language.
+.SH OPTIONS
+The command-line syntax of \fBcscc\fR has been deliberately designed
+to match that of C compilers such as \fBgcc\fR(1), to shorten the learning
+curve for new users.
+.TP
+.hy 0
+.na
+.B Overall Options
+\-c
+\-S
+\-E
+\-o \fIfile\fR
+\-pipe
+\-v
+\-vv
+\-x \fIlanguage\fR
+.TP
+.B Language Options
+\-flatin1\-charset
+\-foctal\-constants
+\-fdecimal\-constants
+\-fchecked
+\-funchecked
+\-fsyntax-check
+\-funsafe
+.TP
+.B Warning Options
+\-Wall
+\-Werror
+\-w
+\-W
+\-Woctal\-chars
+\-Woctal\-constants
+\-Wunknown\-escapes
+\-Winvalid\-utf8
+\-Wlarge\-unicode\-chars
+\-Wmulti\-char\-constant
+\-Wunsafe
+\-Wempty-input
+.TP
+.B Debugging Options
+\-g
+.TP
+.B Optimization Options
+\-O
+\-O2
+\-O3
+\-O0
+\-fno-peephole
+.TP
+.B Preprocessor Options
+\-C
+\-P
+\-D\fIsymbol\fR
+\-U\fIsymbol\fR
+\-undef
+\-dM
+\-dN
+.TP
+.B Assembler Options
+\-fno\-short\-insns
+\-filasm\-path=\fIpathname\fR
+.TP
+.B Directory Options
+\-I\fIdir\fR
+\-nostdinc
+\-nostdinc++
+.TP
+.B Linker Options
+\-e \fIentrypoint\fR
+\-L\fIdir\fR
+\-nostdlib
+\-l\fIlibrary\fR
+\-shared
+\-static
+\-m32bit\-only
+\-fresources=\fIresfile\fR
+.TP
+.B Other Options
+\-dumpversion
+\-\-help
+\-fplugin-\fIkey\fR-path=\fIpathname\fR
+.ad b
+.hy 1
+.SH "OVERALL OPTIONS"
+.TP
+.B \-c
+Compile or assemble the input source files to object files,
+but do not link.  The object file corresponding to the input
+file `\fBfile.ext\fR' will be called `\fBfile.obj\fR' unless the
+`\fB\-o\fR' option is supplied.
+
+If the language compiles multiple input source files at a time,
+then there will be a single output file.  The name of the output
+file will be based on the name of the first input file unless
+the `\fB\-o\fR' option is supplied.
+.TP
+.B \-S
+Compile the input source files to produce assembly language in
+the Intermediate Language format.  The assembly file corresponding
+to the input file `\fBfile.ext\fR' will be called `\fBfile.il\fR'
+unless the `\fB\-o\fR' option is supplied.
+
+If the language compiles multiple input source files at a time,
+then there will be a single output file.  The name of the output
+file will be based on the name of the first input file unless
+the `\fB\-o\fR' option is supplied.
+.TP
+.B \-E
+Preprocess the input files and write the preprocessed source
+to the output file.  If no output file is supplied, then
+the preprocessed source is written to standard output.
+.TP
+.B \-o FILE
+Specify the name of the file to write the output to.  The default
+depends upon how \fBcscc\fR is invoked.  Specifying FILE as `-'
+indicates that the output should be set to standard output.
+Standard output can only be used for pre-processing.
+
+If none of `\fB\-c\fB', `\fB\-S\fR', or `\fB\-E\fR' are supplied,
+then the default output file is `\fBa.exe\fR' or `\fBa.dll\fR'.
+The latter is used when the `\fB\-shared\fR' option is supplied.
+.TP
+.B \-pipe
+Not used at present.  Provided for compatibility with \fBgcc\fR(1).
+.TP
+.B \-v
+Print verbose debugging information about the files that are
+being compiled.
+.TP
+.B \-vv
+Print the names of the command-lines that are executed by
+\fBcscc\fR to invoke external programs such as language plug-ins
+and the assembler, \fBilasm\fR(1).
+.TP
+.B \-x language
+Specify the source language to use to compile all input files.
+This is typically not needed, because \fBcscc\fR can guess the
+language from the input file's extension.
+
+The options `\fB\-x cs\fR' and `\fB\-x csharp\fR' specify
+that the language is C#.
+
+See the section "LANGUAGE PLUGINS" below for more information
+on this option.
+.PP
+Default file extensions typically follow the Windows conventions
+of `\fB.obj\fR', `\fB.exe\fR', and `\fB.dll\fR' rather than the
+Unix conventions of `\fB.o\fR', no extension, and `\fB.so\fR'
+respectively.  This is due to the Windows nature of IL binaries,
+and to prevent confusion with native Unix binaries.  The `\fB\-o\fR'
+option can be used to override the defaults.
+.SH "LANGUAGE OPTIONS"
+Every language supported by \fBcscc\fR has its own set of language,
+warning, and other options.  This manpage describes the options
+for C# only.
+.TP
+.B \-flatin1\-charset
+The input source file's character set is Latin-1, instead of
+the UTF-8 default.
+
+If the source is in a character set other than Latin-1 or UTF-8,
+the programmer must arrange for it to be converted into UTF-8
+prior to invoking the compiler.
+.TP
+.B \-foctal\-constants
+The C# language standard does not support octal integer constants
+by default.  Selecting this option will enable them.
+
+If this option is not present, sequences such as `033' will be
+parsed as decimal, and a warning will be displayed.  The
+`\fB\-Wno\-octal\-constants\fR' or `\fB\-fdecimal\-constants\fR' options
+will disable the warning.
+.TP
+.B \-fdecimal\-constants
+Parse character sequences that look like octal integers as
+decimal and suppress the warning.  If both `\fB\-foctal\-constants\fR'
+and `\fB\-fdecimal\-constants\fR' are supplied, then the former
+takes precedence.
+.TP
+.B \-fchecked, \-funchecked
+Compile arithmetic expressions so that overflow exceptions will
+or will not be thrown, respectively.  The default is `\fB\-fchecked\fR'.
+The `\fBchecked\fR' and `\fBunchecked\fR' keywords can be used in
+source files to override this setting.
+.TP
+.B \-fsyntax\-check
+Parse the input source file to check its syntax, but don't
+go any further with compilation.
+.TP
+.B \-funsafe
+Permit the use of unsafe C# language constructs in the input
+source file.  If this option is not supplied, all unsafe
+constructs will result in an error.
+.SH "WARNING OPTIONS"
+.TP
+.B \-Wall, \-W
+Enable all warnings that are supported by the compiler.
+Individual warnings can be disabled with `\fB\-Wno\-XXX\fR' options.
+For example, `\fB\-Wall \-Wno\-empty\-input\fR' will enable
+all warnings except the "empty input file" warning.
+.TP
+.B \-Werror
+Convert all warnings into errors.
+.TP
+.B \-w
+Suppress all warnings.
+.TP
+.B \-Woctal\-chars
+Warn if the programmer uses the octal form of a character.
+The C# language standard only supports `\fB\\0\fR', but this
+compiler also supports sequences such as `\fB\\033\fR'.
+.TP
+.B \-Woctal\-constants
+Warn if the programmer uses a sequence that looks like an
+octal integer constant, but which is being parsed as decimal
+in accordance with the C# language standard.
+.TP
+.B \-Wunknown\-escapes
+Warn if an unknown escape sequence is used in a string or
+character constant.
+.TP
+.B \-Winvalid\-utf8
+Warn if an invalid UTF-8 sequence is encountered in the
+input source file.
+.TP
+.B \-Wlarge\-unicode\-chars
+Warn if a character constant uses a Unicode character with
+a codepoint value greater than 65535.
+.TP
+.B \-Wmulti\-char\-constant
+Warn if a character constant contains more than one character.
+.TP
+.B \-Wunsafe
+Warn when an unsafe construct is used in the program.
+.TP
+.B \-Wempty\-input
+Warn if the input source file does not contain any declarations.
+.SH "DEBUGGING OPTIONS"
+.TP
+.B \-g
+Enable the generation of debug symbol information in the output file.
+.SH "OPTIMIZATION OPTIONS"
+.TP
+.B \-O, \-O2, \-O3
+Enable various levels of optimization.
+.TP
+.B \-O0
+Disable all optimizations.
+.TP
+.B \-fno-peephole
+Disable peephole optimization of the code.
+.SH "PREPROCESSOR OPTIONS"
+.TP
+.B \-C
+Include comments in pre-processor output.  This option is not yet
+supported.
+.TP
+.B \-P
+Don't use `\fB#line\fR' directives in pre-processor output.
+.TP
+.B \-D\fIsymbol\fR
+Define the macro `\fIsymbol\fR' prior to pre-processing the input.
+
+C# does not support macros with values.  Supplying a command-line
+option of `\fB\-Dsymbol=value\fR' will result in a macro called
+`\fBsymbol=value\fR', which cannot be tested effectively in C#
+source code.
+.TP
+.B \-U\fIsymbol\fR
+Undefine the macro `\fIsymbol\fR' prior to pre-processing the input.
+.TP
+.B \-undef
+Undefine all standard macros prior to pre-processing the input.
+.TP
+.B \-dM
+Dump the macros that were defined in the input source instead of
+dumping the pre-processor output.  This can only be used with the
+`\fB\-E\fR' option.
+.TP
+.B \-dN
+Dump both the pre-processor output and the macros that were defined.
+This can only be used with the `\fB\-E\fR' option.
+.PP
+The standard macro `\fB__CSCC__\fR' is defined to indicate that
+\fBcscc\fR is being used to compile the source code.
+
+The standard macros `\fBDEBUG\fR' or `\fBRELEASE\fR' will be defined
+to indicate if a debug (`\fB\-g\fR') or release version is being built.
+.SH "ASSEMBLER OPTIONS"
+.TP
+.B \-fno\-short\-insns
+Causes the `\-no\-short\-insns' command-line option to be
+passed to the \fBilasm\fR(1) assembler.
+
+This alters how the assembler generates the final object code.
+You typically don't need to use this option.
+.TP
+.B \-filasm\-path=\fIpathname\fR
+Specifies the full pathname of the \fBilasm\fR(1) assembler.  By default,
+\fBcscc\fR searches for \fBilasm\fR along the PATH.
+.SH "DIRECTORY OPTIONS"
+.TP
+.B \-I\fIdir\fR
+Specify the name of a directory in which the compiler should search
+for included files.
+.TP
+.B \-fnostdinc
+Don't use standard include directories.
+.TP
+.B \-fnostdinc++
+Don't use standard C++ include directories.
+.PP
+These options are not currently used by the C# compiler.  They are
+provided for future language plug-ins that may use include files.
+.SH "LINKER OPTIONS"
+.TP
+.B \-e \fIentrypoint\fR
+Specify the name of the entry point for the program.  This may
+either be a class name (e.g. `\fBMainClass\fR') or a method
+name (e.g. `\fBMainClass.Main\fR').  If this option is not supplied,
+the linker will search for any class with a static method called
+`\fBMain\fR'.
+.TP
+.B \-L\fIdir\fR
+Specify the name of a directory in which the compiler should search
+for libraries that the program will be linked against.
+.TP
+.B \-nostdlib
+Don't use standard library directories and libraries.
+.TP
+.B \-l\fIlibrary\fR
+Link against the specified library.  For example, specifying
+`\fB\-lSystem.XML\fR' will search for the library `\fBSystem.XML.dll\fR'
+along the library search path.
+
+Unless `\fB\-nostdlib\fR' is supplied, the library `\fBmscorlib\fR'
+is implicitly assumed to always be linked against.
+
+Libraries can also be specified by listing their filenames explicitly
+on the command-line.  For example: `\fB/usr/local/lib/cscc/System.XML.dll\fR'
+would have the same effect as `\fB\-lSystem.XML\fR'.
+.TP
+.B \-shared
+Create a shared library (.dll) instead of an executable (.exe).
+.TP
+.B \-static
+Link statically against the supplied libraries.  This will incorporate
+the object file data for the libraries into the program being built.
+
+You normally will not need to use this option, unless you are concerned
+that a foreign host may not have all of the libraries that are required
+to execute the program.
+
+This option will never statically link against a library that has
+native, internalcall, or PInvoke methods.  In particular, `\fBmscorlib.dll\fR'
+will never be linked statically.
+.TP
+.B \-m32bit\-only
+Mark the final output file as only suitable to be executed on 32-bit
+platforms.  Use of this option is severely discouraged as it makes
+the resultant program less portable.
+.TP
+.B \-fresources=\fIresfile\fR
+Specify the name of a resource file to be linked with the final
+library or executable.  Multiple `\fB\-fresources\fR' options
+may be used to specify multiple resource files.
+.SH "OTHER OPTIONS"
+.TP
+.B \-dumpversion
+Dump the version of \fBcscc\fR to standard error and then exit.
+.TP
+.B \-\-help
+Print a usage message about the supported options and then exit.
+.TP
+.B \-fplugin-\fIkey\fB-path=\fIpathname\fR
+Specify the \fIpathname\fR of a language plug-in to be used to compile
+the language identified by \fIkey\fR.
+
+See the section "LANGUAGE PLUGINS" for more information on plug-ins.
+.SH "LANGUAGE PLUGINS"
+The compiler can support plug-ins for other programming languages, allowing
+the same front-end to be used to service multiple language back-ends.
+Using a plug-in allows you to avoid most of the work involved in building
+a compiler.  The minimum you must provide is a translator between the
+source language and IL assembly code.  The \fBcscc\fR front-end takes care of
+assembly and linking for you.
+
+A plug-in must be a regular Unix executable with the name \fBcscc\-key\fR or
+\fBcscc\-key\-s\fR where "\fBkey\fR" is either the file extension or a
+language name.  e.g. to create a plug-in for a hypothetical "superc"
+language, that uses ".sc" as its primary file extension, create an
+executable called "\fBcscc\-superc\fR", and a symbolic link called
+"\fBcscc\-sc\fR" that points at the executable.
+
+When \fBcscc\fR searches for an extension, it will first look for an exact case
+match.  If that doesn't succeed, it will normalize the extension to lower
+case and try again.  Thus, the "\fBcscc\-sc\fR" plug-in will be passed any file
+with an extension of ".sc", ".Sc", ".sC", or ".SC".  If ".SC" is a different
+language, then a separate plug-in must be supplied.
+
+A language name may be specified using the -x option.  For example:
+
+	cscc \-x superc \-o hello.obj \-c hello.c
+
+Use this when the extension is not the same as the primary extension for
+the language type.  Note: "\-x sc" could also have been used.
+
+The C# compiler is itself implemented as a plug-in called \fBcscc\-cs\fR,
+with a symbolic link to it called \fBcscc\-csharp\fR.
+
+If the name of the executable ends in \fB\-s\fR, then it indicates a
+"single file" language, rather than the default "multiple file" language.
+
+Single file languages are those that must be compiled one file at a time.
+C is an example of such a language: each source file is logically
+independent.  The plugin is executed once for each source file on
+the \fBcscc\fR command-line.
+
+Multiple file languages are those that must be compiled multiple files
+at a time because each file may depend on definitions in the others.
+C# is such a language.  All files with a matching extension are passed
+to a single execution of the plugin.  The plugin will output a
+single assembly stream that contains the compiled versions of all
+of the files.
+
+The executable is located as follows:
+.TP
+1.
+Look for a "\-fplugin\-key\-path=xxx" command-line option.  If it is
+present, then "xxx" is used as the plug-in executable.  For example,
+"\-fplugin\-cs\-path=../../cscc/cscc\-cs" is used in the compilation of
+the system library to ensure that the current version of the compiler
+is used, even if a previous version is already installed.
+.TP
+2.
+Look in the directories specified by the "CSCC_PLUGINS_PATH"
+environment variable for a file called "cscc\-key".
+.TP
+3.
+Look in the installation "plugins" directory, which is normally
+something like "/usr/local/lib/cscc/plugins" or "/usr/lib/cscc/plugins".
+.TP
+4.
+Look in the same directory from which "cscc" was loaded, by
+inspecting the argv[0] value.
+.TP
+5.
+Search the PATH for the name.
+.PP
+The \fBcscc\fR front-end passes the following options down to the plug-in:
+.TP
+.B \-E
+Preprocess instead of compiling.  If the plug-in's language does not support
+preprocessing, then it should print an error message to standard error
+and exit with a status of 1.
+.TP
+.B \-pipe
+If the plug-in invokes other tools during compilation, then attempt to
+use pipes rather than temporary files.  If it is difficult for the plug-in
+to conform with this option, then it can be safely ignored.
+.TP
+.B \-o \fIname\fR
+Specify the name of the output file.  The default is standard output.
+
+The plug-in should write preprocessed data to the output file if `\-E' is
+supplied, or IL assembly code otherwise.
+.TP
+.B \-g
+Output debug information.
+.TP
+.B \-O, \-O2, \-O3, \O0
+Set the optimization level to 1, 2, 3, and 0 respectively.
+.TP
+.B \-D\fIsymbol\fB, \-D\fIsymbol\fB=\fIvalue\fB
+Define a symbol within the plug-in language's preprocessor.  The second
+form can be used if the language supports values for preprocessor symbols.
+C# itself does not support values for preprocessor symbols.
+.TP
+.B \-U\fIsymbol\fB
+Undefine a symbol within the plug-in language's preprocess.
+.TP
+.B \-undef
+Undefine all pre-defined preprocessor symbols that the language may support.
+
+The \fBcscc\fR front-end will always pass down pre-defined
+symbols such as "__CSCC__" and "DEBUG", unless \-undef was supplied on
+its command-line.
+.TP
+.B \-I\fIdir\fB
+Specify an include directory that originated on the \fBcscc\fR command-line.
+.TP
+.B \-J\fIdir\fB, \-K\fIdir\fB
+Specify a system include directory, or a C++ system include directory.
+The front-end adds `\-J' options for each of the system include directories
+that it knows about.  The front-end adds `\-K' options for each of the
+C++ system include directories that it knows about.
+
+Plug-ins can use this information, or ignore it and use their own notion
+of system include directories.
+
+The `\-J' options will not appear if the `\-nostdinc' option is present.
+The `\-K' options will not appear if the `\-nostdincpp' option is present.
+.TP
+.B \-nostdinc, \-nostdincpp
+Don't use any system include directories, or C++ system include directories,
+that the plug-in is aware of.
+.TP
+.B \-L\fIdir\fB
+Specify a library directory that originated on the \fBcscc\fR command-line.
+.TP
+.B \-M\fIdir\fB
+Specify a system library directory.  The front-end adds `\-M' options
+for each of the system library directories that it knows about.  This
+option will not appear if the `\-nostdlib' option is present.
+.TP
+.B \-l\fIlibrary\fB
+Specify the name of a library that is being linked against.
+
+The last three options are provided for informational purposes only.
+The plug-in is responsible for compiling and not linking.  However, some
+languages (e.g. C#) require information from system libraries to be able to
+compile successfully.  These options are supplied to help such compilers.
+
+It is unlikely that `-l' options will be seen by the plug-in unless the
+program is being compiled and linked in one step.  e.g.
+
+	cscc \-o testing.exe testing.sc \-lSystem
+.TP
+.B \-Wall
+Enable all warnings.
+.TP
+.B \-w
+Suppress the display of all warnings.
+.TP
+.B \-Werrror
+Treat warning messages as errors.
+.TP
+.B \-W\fIname\fB, \-Wno-\fIname\fB
+Enable or disable the warning called \fIname\fR.
+.TP
+.B \-f\fIname\fB
+Activate or deactive that compiler extension feature called \fIname\fR.
+.TP
+.B \-m\fIname\fB
+Activate or deactive that machine extension feature called \fIname\fR.
+
+In \fBgcc\fR(1), the `\-m' options are used to control machine-dependent
+features.  Since IL is a platform-independent language, these options
+will rarely be required by plug-ins.
+
+Plug-ins can choose to ignore `\-m' options, or can treat them as a
+separate set of compiler extension flags that complement the `\-f' options.
+
+The \fBcscc\fR front-end does support some `\-m' options for controlling
+the output of the assembler.  For example, `\-m32bit-only' is used to
+force the generation of IL binaries that can only run on 32-bit systems.
+.TP
+.B \-dM, \-dN
+Debugging flags used with languages that support preprocessing.
+.TP
+.B \-P
+Don't output "#line" directives in preprocessor output.
+.TP
+.B \-C
+Include comments in the preprocessor output.
+.TP
+.B \-v
+Provide verbose messages for debugging purposes.  This can be safely
+ignored if the plug-in does not have a verbose mode.
+.PP
+The options are followed by the name of the input file, which may be
+"\-" for stdin.  Standard input is only used for preprocessing.
+Multiple file languages may have more than one input file supplied
+on the command-line.
+
+Any options that are not understood by the plug-in should be ignored.
+In particular, \-W, \-f, and \-m options may not always be understood by
+the plug-in, because they are intended for a different language plug-in,
+\fBcscc\fR itself, or \fBilasm\fR.  If the option is understood, but it has
+an incorrect value, then the plug-in should print a message to standard
+error and exit with a status of 1.
+
+The plug-in is only used for compilation and pre-processing tasks.
+It is not used for assembling or linking.  It is expected that the
+output is an IL assembly code stream suitable for input to \fBilasm\fR.
+The plug-in does not need to be concerned with generating IL bytecode
+directly, or with calling \fBilasm\fR itself: \fBcscc\fR takes care
+of the rest.
+
+The following is an example of invoking \fBcscc\fR for a plug-in language,
+and the plug-in command-line that results:
+
+.hy 0
+	cscc \-fno\-short\-insns \-O2 \-g \-I../include \\
+.br
+		\-o hello.obj \-c hello.sc
+.br
+	cscc\-sc \-f no\-short\-insns \-O2 \-g \-I ../include \\
+.br
+		\-J /usr/local/lib/cscc/include \\
+.br
+		\-K /usr/local/lib/cscc/cpp-include \\
+.br
+		\-D __CSCC__ \-D DEBUG \-o hello.il hello.sc
+.hy 1
+
+This is followed by a call to \fBilasm\fR:
+
+.hy 0
+	ilasm \-\-debug \-\-no\-short\-insns \\
+.br
+		\-\-format obj \-o hello.obj hello.il
+.hy 1
+
+Note: in this case, the "\-fno\-short\-insns" flag is intended for the
+assembler, rather than the plug-in.  The plug-in silently ignores any
+`\-f' options that it doesn't understand.  It may also ignore options
+like `\-O2' if it does not support code optimization.
+
+Any non-zero status return from the plug-in will cause \fBcscc\fR to exit
+with the same status code.  If the plug-in exits with a signal, then
+\fBcscc\fR will exit with a status code of 1 after reporting the signal
+to standard error.
+.SH "AUTHOR"
+Written by Southern Storm Software, Pty Ltd.
+
+http://www.southern-storm.com.au/
+.SH "SEE ALSO"
+ilasm(1), ildasm(1), gcc(1)
+.SH "DIAGNOSTICS"
+Exit status is 1 if an error occurred while processing the input.
+Otherwise the exit status is 0.

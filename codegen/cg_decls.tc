@@ -1,0 +1,476 @@
+%output "cg_decls.c"
+
+%{
+/*
+ * cg_decls.tc - Declaration nodes.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "cg_nodes.h"
+#include "il_dumpasm.h"
+
+/*FIXME: where should this really go */
+static void DumpTypeName(FILE *stream, ILNode *node)
+{
+	if (stream && node)
+	{
+		if (yykind(node) == yykindof(ILNode_QualIdent))
+		{
+			/* FIXME. Is this the correct name? */
+			fputs (ILQualIdentName (node, 1), stream);
+		}
+#if 0
+		else if (yykind(node) == yykindof(ILNode_ArrayType))
+		{
+			/*FIXME*/
+		}
+		else if (yykind(node) == yykindof(ILNode_PtrType))
+		{
+			ILNode_PtrType *n = (ILNode_PtrType)node;
+			DumpTypeName(stream, n->type);
+			fputs (" *", stream);
+		}
+		else if (yykind(node) == yykindof(ILNode_VoidPtrType))
+		{
+			fputs ("void *", stream);
+		}
+#endif
+	}
+}
+
+%}
+
+/*
+ * Generate discard code for a class definition.
+ */
+ILNode_GenDiscard(ILNode_ClassDefn)
+{
+	ILClass *classInfo;
+	ILImplements *impl;
+	ILClass *interface;
+	int first;
+
+	/* Get the class information structure */
+	classInfo = node->classInfo;
+	if(!classInfo || classInfo == ((ILClass *)1))
+	{
+		return;
+	}
+
+	/* Output the class heading */
+	if(info->asmOutput)
+	{
+		/* Output the namespace information */
+		if(ILClass_Namespace(classInfo) && ILClass_NestedParent(classInfo) == 0)
+		{
+			fputs(".namespace ", info->asmOutput);
+			ILDumpIdentifier(info->asmOutput, ILClass_Namespace(classInfo), 0,
+							 IL_DUMP_QUOTE_NAMES);
+			fputs("\n{\n", info->asmOutput);
+		}
+
+		/* Output the class flags and name */
+		fputs(".class ", info->asmOutput);
+		ILDumpFlags(info->asmOutput, (unsigned long)(node->modifiers),
+					ILTypeDefinitionFlags, 0);
+		ILDumpIdentifier(info->asmOutput, ILClass_Name(classInfo), 0,
+						 IL_DUMP_QUOTE_NAMES);
+
+		/* Output the name of the parent class */
+		if(ILClass_Parent(classInfo) != 0)
+		{
+			fputs(" extends ", info->asmOutput);
+			ILDumpClassName(info->asmOutput, 0, ILClass_Parent(classInfo),
+							IL_DUMP_QUOTE_NAMES);
+		}
+
+		/* Output the names of the implemented interfaces */
+		impl = 0;
+		first = 1;
+		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
+		{
+			interface = ILImplementsGetInterface(impl);
+			if(first)
+			{
+				fputs(" implements ", info->asmOutput);
+				first = 0;
+			}
+			else
+			{
+				fputs(", ", info->asmOutput);
+			}
+			ILDumpClassName(info->asmOutput, 0, interface,
+							IL_DUMP_QUOTE_NAMES);
+		}
+
+		/* Done with the header */
+		fputs("\n{\n", info->asmOutput);
+	}
+
+	/* Output the class members */
+	ILNode_GenDiscard(node->body, info);
+
+	/* Output the class footer */
+	if(info->asmOutput)
+	{
+		fprintf(info->asmOutput, "} // class %s\n", ILClass_Name(classInfo));
+		if(ILClass_Namespace(classInfo) && ILClass_NestedParent(classInfo) == 0)
+		{
+			fprintf(info->asmOutput, "} // namespace %s\n",
+					ILClass_Namespace(classInfo));
+		}
+	}
+}
+
+/*
+ * Generate discard code for a scope change.
+ */
+ILNode_GenDiscard(ILNode_ScopeChange)
+{
+	if(node->body)
+	{
+		ILScope *oldScope = info->currentScope;
+		info->currentScope = node->scope;
+		ILNode_GenDiscard(node->body, info);
+		info->currentScope = oldScope;
+	}
+}
+
+/*
+ * Generate discard code for a constant declaration.
+ */
+ILNode_GenDiscard(ILNode_ConstDeclaration)
+{
+	/* FIXME: just pass it down? */
+	if (node->attributes != NULL)
+	{
+		ILNode_GenDiscard(node->attributes, info);
+	}
+	ILNode_GenDiscard(node->type, info);
+	ILNode_GenDiscard(node->constDeclarators, info);
+}
+
+/*
+ * Generate discard code for a constant declarator.
+ */
+ILNode_GenDiscard(ILNode_ConstDeclarator)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for local variable declaration 
+ */
+ILNode_GenDiscard(ILNode_VarDeclaration)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for field declaration 
+ */
+
+ILNode_GenDiscard(ILNode_FieldDeclaration)
+{
+	ILNode_ListIter	iter;
+	ILNode *child;
+
+	if (node->fieldDeclarators)
+	{
+		if (info->asmOutput)
+		{
+			ILNode_ListIter_Init (&iter, node->fieldDeclarators);
+			while ((child = ILNode_ListIter_Next(&iter)) != 0)
+			{
+				fputs (".field ", info->asmOutput);
+				ILDumpFlags (info->asmOutput, (unsigned long)(node->modifiers),
+							 ILFieldDefinitionFlags, 0);
+				DumpTypeName(info->asmOutput, node->type);
+				fputc (' ', info->asmOutput);
+				/* FIXME: is this unchanged for all VarDeclarators */
+				ILNode_GenDiscard (child, info);
+				fputs("\n", info->asmOutput);
+			}
+		}
+	}
+}
+
+/*
+ * Generate discard code for a variable declarator.
+ */
+ILNode_GenDiscard(ILNode_VarDeclarator)
+{
+	if (info->asmOutput)
+	{
+		fputs (ILQualIdentName (node->name, 1), info->asmOutput);
+		if (node->initializer)
+		{
+			ILEvalValue evalue;
+			fputs (" = ", info->asmOutput);
+			if (ILNode_EvalConst(node->initializer, info, &evalue))
+			{
+				switch (evalue.valueType)
+				{
+				case ILMachineType_Float64:
+					fprintf (info->asmOutput, "float64 (%f)", 
+							 evalue.un.r8Value);
+					break;
+				case ILMachineType_Float32:
+					fprintf (info->asmOutput, "float64 (%f)", 
+						   (double)evalue.un.r4Value);
+					break;
+				case ILMachineType_Int64:
+					fprintf (info->asmOutput, "int64 (%lld)",
+							 evalue.un.i8Value);
+					break;
+				case ILMachineType_UInt64:
+					fprintf (info->asmOutput, "uint64 (%llu)",
+							 (ILUInt64) evalue.un.i8Value);
+					break;
+				case ILMachineType_Int32:
+					fprintf (info->asmOutput, "int32 (%d)",
+							 evalue.un.i4Value);
+					break;
+				case ILMachineType_UInt32:
+					fprintf (info->asmOutput, "uint32 (%u)",
+							 (ILUInt32)evalue.un.i4Value);
+					break;
+					/* TODO, unfinished */
+				default:
+					break;
+				}
+			}
+		}
+	}
+}
+
+/*
+ * Generate discard code for event field declaration
+ */
+ILNode_GenDiscard(ILNode_EventFieldDeclaration)
+{
+	/* FIXME: just pass it down? */
+	if (node->attributes)
+	{
+		ILNode_GenDiscard(node->attributes, info);
+	}
+	DumpTypeName(info->asmOutput, node->type);
+	ILNode_GenDiscard(node->varDeclarators, info);
+}
+
+/*
+ * Generate discard code for event property declaration
+ */
+ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
+{
+	/* FIXME: just pass it down? */
+	if (node->attributes)
+	{
+		ILNode_GenDiscard(node->attributes, info);
+	}
+	DumpTypeName(info->asmOutput, node->type);
+	ILNode_GenDiscard(node->name, info);
+	ILNode_GenDiscard(node->addAccessor, info);
+	ILNode_GenDiscard(node->removeAccessor, info);
+}
+
+/*
+ * Generate discard code for method declaration 
+ */
+ILNode_GenDiscard(ILNode_MethodDeclaration)
+{
+	ILNode_GenDiscard(node->methodHeader, info);
+	if (node->methodBody && info->asmOutput)
+	{
+		fputs ("{\n", info->asmOutput);
+		ILNode_GenDiscard(node->methodBody, info);
+		fputs ("}\n", info->asmOutput);
+	}
+}
+
+/* 
+ * Generate discard code for method header
+ */
+ILNode_GenDiscard(ILNode_MethodHeader)
+{
+	if (info->asmOutput)
+	{
+		fputs (".method ", info->asmOutput);
+		ILDumpFlags (info->asmOutput, (unsigned long)(node->modifiers),
+					 ILMethodDefinitionFlags, 0);
+		/* FIXME calling convention */
+		/* FIXME parameter attributes */
+		if (node->type)
+		{
+			DumpTypeName(info->asmOutput, node->type);
+		}
+		else
+		{
+			fputs("void", info->asmOutput);
+		}
+		fputc (' ', info->asmOutput);
+		fputs (ILQualIdentName (node->name, 1), info->asmOutput);
+		fputc ('(', info->asmOutput);
+		if (node->params)
+		{
+			ILNode_ListIter	iter;
+			ILNode *child;
+			int first = 1;
+
+			ILNode_ListIter_Init (&iter, node->params);
+			while ((child = ILNode_ListIter_Next(&iter)) != 0)
+			{
+				if (first)
+				{
+					first = 0;
+				}
+				else
+				{
+					fputs (", ", info->asmOutput);
+				}
+				ILNode_GenDiscard(child, info);
+			}
+		}
+		fputc (')', info->asmOutput);
+		/* FIXME implementation attributes */
+		fputc ('\n', info->asmOutput);
+	}
+}
+
+/*
+ * Generate discard for property declaration
+ */
+ILNode_GenDiscard(ILNode_PropertyDeclaration)
+{
+	/* FIXME: just pass it down? */
+	if (node->attributes)
+	{
+		ILNode_GenDiscard(node->attributes, info);
+	}
+	DumpTypeName(info->asmOutput, node->type);
+	ILNode_GenDiscard(node->name, info);
+	ILNode_GenDiscard(node->getAccessor, info);
+	ILNode_GenDiscard(node->setAccessor, info);
+}
+
+ILNode_GenDiscard(ILNode_AccessorDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_IndexerDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_IndexerDeclarator)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_InterfaceDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_InterfaceMethodDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_InterfacePropertyDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_InterfaceEventDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_InterfaceIndexerDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_EnumDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_EnumMemberDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_DelegateDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_ConstructorDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_ConstructorDeclarator)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_DestructorDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_FormalParameter)
+{
+	if (info->asmOutput)
+	{
+		/*FIXME attributes, parameter modifier */
+		DumpTypeName(info->asmOutput, node->type);
+		ILNode_GenDiscard(node->type, info);
+		fputc(' ', info->asmOutput);
+		fputs (ILQualIdentName (node->name, 1), info->asmOutput);
+	}
+}
+
+ILNode_GenDiscard(ILNode_OperatorDeclaration)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_NormalOperatorDeclarator)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_ConversionOperatorDeclarator)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_TypeSuffix)
+{
+	/* TODO */
+}
+
+ILNode_GenDiscard(ILNode_LocalVariableType)
+{
+	/* TODO */
+}

@@ -73,11 +73,11 @@ AC_PATH_PROG(ILRUN, ilrun,, ${PNET_PATH}/engine:${prefix}/bin:$PATH)
 
 dnl Determine additional flags that we need to force "cscc" to act sane.
 CFLAGS="-x c $EXTRA_CFLAGS"
-if test -x "$PNET_PATH/ilasm/ilasm" ; then
-	CFLAGS="$CFLAGS -filasm-path=$PNET_PATH/ilasm/ilasm"
-fi
 if test -x "$PNET_PATH/cscc/cscc-c-s" ; then
 	CFLAGS="$CFLAGS -fplugin-c-path=$PNET_PATH/cscc/cscc-c-s"
+fi
+if test -x "$PNET_PATH/cscc/cscc-cs" ; then
+	CFLAGS="$CFLAGS -fplugin-cs-path=$PNET_PATH/cscc/cscc-cs"
 fi
 if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
 	CFLAGS="$CFLAGS -L$PNETLIB_PATH/csupport"

@@ -1281,6 +1281,9 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	ILMember *member;
 	int interfaceOverride;
 	
+	/* Set the back link for use by code generation */
+	eventDecl->backLink = event;
+
 	/* Create the add and remove methods */
 	if(eventDecl->addAccessor)
 	{

@@ -21,6 +21,10 @@
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_grammar.y: implement
 	type gathering for events.
 
+	* codegen/cg_decls.tc, codegen/cg_nodes.tc, cscc/csharp/cs_decls.tc,
+	cscc/csharp/cs_gather.c: semantic analysis and code generation
+	for events.
+
 2002-06-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* libffi/configure, libffi/configure.in: add host detection

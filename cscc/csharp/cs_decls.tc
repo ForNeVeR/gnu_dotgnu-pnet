@@ -668,9 +668,7 @@ done:
 
 ILNode_SemAnalysis(ILNode_EventDeclaration)
 {
-	CSSemValue value = CSSemValueDefault; /*, valueChild; */
-	/*ILNode_ListIter iter;*/
-	/*ILNode *child;*/
+	CSSemValue value = CSSemValueDefault;
 
 	/* Enter an unsafe context for the event field if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -684,22 +682,11 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
 
-	/* TODO */
+	/* TODO: event attributes */
 
-#if 0
-	/* FIXME: optional attributes ? */
-	/* modifier already done in parser */
-	value = ILNode_SemAnalysis(node->type, info, &(node->type));
-	ILNode_ListIter_Init(&iter, node->varDeclarators);
-	while ((child = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		valueChild = ILNode_SemAnalysis(child, info, &(child));
-		/*
-		 * FIXME: need to verify that the optional initializers 
-		 * of the fields are consistent with the type declaration
-		 */
-	}
-#endif
+	/* Perform semantic analysis on each of the event declarators */
+	ILNode_SemAnalysis(node->eventDeclarators, info,
+					   &(node->eventDeclarators));
 
 	/* Leave the unsafe context for the event field */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -712,7 +699,15 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 
 ILNode_SemAnalysis(ILNode_EventDeclarator)
 {
-	/* Place-holder only: the real processing is done elsewhere */
+	/* Perform semantic analysis on the "add" and "remove" methods */
+	if(node->addAccessor)
+	{
+		ILNode_SemAnalysis(node->addAccessor, info, &(node->addAccessor));
+	}
+	if(node->removeAccessor)
+	{
+		ILNode_SemAnalysis(node->removeAccessor, info, &(node->removeAccessor));
+	}
 	return CSSemValueDefault;
 }
 

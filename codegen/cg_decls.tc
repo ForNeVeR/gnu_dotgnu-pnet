@@ -273,7 +273,23 @@ ILNode_GenDiscard(ILNode_FieldDeclarator)
  */
 ILNode_GenDiscard(ILNode_EventDeclaration)
 {
-	/* TODO */
+	ILNode_ListIter iter;
+	ILNode *decl;
+
+	if(yyisa(node->eventDeclarators, ILNode_EventDeclarator))
+	{
+		/* Create the singleton event */
+		ILNode_GenDiscard(node->eventDeclarators, info);
+	}
+	else
+	{
+		/* Scan the list and create the events that we require */
+		ILNode_ListIter_Init(&iter, node->eventDeclarators);
+		while((decl = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_GenDiscard(decl, info);
+		}
+	}
 }
 
 /*
@@ -281,7 +297,96 @@ ILNode_GenDiscard(ILNode_EventDeclaration)
  */
 ILNode_GenDiscard(ILNode_EventDeclarator)
 {
-	/* Nothing to do here: handled by ILNode_EventDeclaration */
+	FILE *outstream = info->asmOutput;
+	ILMethod *methodInfo;
+
+	if(outstream && node->eventInfo)
+	{
+		/* Generate the code for the add method */
+		if(node->addAccessor)
+		{
+			ILNode_GenDiscard(node->addAccessor, info);
+		}
+
+		/* Generate the code for the remove method */
+		if(node->removeAccessor)
+		{
+			ILNode_GenDiscard(node->removeAccessor, info);
+		}
+
+		/* Output the hidden field that holds the event data */
+		if(node->backLink->needFields)
+		{
+			fputs(".field private ", outstream);
+			if(node->addAccessor)
+			{
+				methodInfo = ((ILNode_MethodDeclaration *)(node->addAccessor))
+								->methodInfo;
+				if(ILMethod_IsStatic(methodInfo))
+				{
+					fputs("static ", outstream);
+				}
+			}
+			else if(node->removeAccessor)
+			{
+				methodInfo =
+					((ILNode_MethodDeclaration *)(node->removeAccessor))
+						->methodInfo;
+				if(ILMethod_IsStatic(methodInfo))
+				{
+					fputs("static ", outstream);
+				}
+			}
+			ILDumpType(outstream, info->image,
+					   ILEvent_Type(node->eventInfo),
+					   IL_DUMP_QUOTE_NAMES);
+			putc(' ', outstream);
+			ILDumpIdentifier(outstream, ILEvent_Name(node->eventInfo),
+							 0, IL_DUMP_QUOTE_NAMES);
+			putc('\n', outstream);
+		}
+
+		/* Output the event declaration */
+		fputs(".event ", outstream);
+		ILDumpFlags(outstream, ILEvent_Attrs(node->eventInfo),
+					ILEventDefinitionFlags, 0);
+		ILDumpClassName(outstream, info->image,
+					    ILType_ToClass(ILEvent_Type(node->eventInfo)),
+					    IL_DUMP_QUOTE_NAMES);
+		fputs("\n{\n", outstream);
+		if(info->debugFlag && info->asmOutput)
+		{
+			fprintf(info->asmOutput, ".line %ld \"%s\"\n",
+					yygetlinenum(node), yygetfilename(node));
+		}
+		OutputAttributes(info, outstream,
+						 (ILProgramItem *)(node->eventInfo));
+		if(node->addAccessor)
+		{
+			methodInfo = ((ILNode_MethodDeclaration *)(node->addAccessor))
+								->methodInfo;
+			fputs("\taddt ", outstream);
+			ILDumpMethodType(outstream, info->image,
+						     ILMethod_Signature(methodInfo),
+						     IL_DUMP_QUOTE_NAMES, 0,
+							 ILMethod_Name(methodInfo), 0);
+			putc('\n', outstream);
+		}
+		if(node->removeAccessor)
+		{
+			methodInfo = ((ILNode_MethodDeclaration *)(node->removeAccessor))
+								->methodInfo;
+			fputs("\t.remove ", outstream);
+			ILDumpMethodType(outstream, info->image,
+						     ILMethod_Signature(methodInfo),
+						     IL_DUMP_QUOTE_NAMES, 0,
+							 ILMethod_Name(methodInfo), 0);
+			putc('\n', outstream);
+		}
+		fputs("} // event ", outstream);
+		ILDumpIdentifier(outstream, ILEvent_Name(node->eventInfo), 0, 0);
+		putc('\n', outstream);
+	}
 }
 
 %{

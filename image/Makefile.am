@@ -13,6 +13,7 @@ libILImage_a_SOURCES = assembly.c \
 					   image.c \
 					   item.c \
 					   java_loader.c \
+					   jopcodes.c \
 					   link.c \
 					   member.c \
 					   meta_build.c \

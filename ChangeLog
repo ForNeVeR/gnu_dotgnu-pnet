@@ -13,6 +13,9 @@
 	* codegen/cg_library.c: add IAsyncResult and AsyncCallback
 	to the builtin library.
 
+	* cscc/csharp/cs_grammar.y: check for duplicates in the formal
+	type parameters to a class.
+
 2003-02-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_gather.c: Generate compiler controlled asynchronous 

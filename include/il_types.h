@@ -119,6 +119,13 @@ typedef struct _tagILClass     ILClass;
 				((((unsigned long)(type)) & 0x03) == 0x00)
 
 /*
+ * Determine if a method type has a non-explicit "this" argument.
+ */
+#define	ILType_HasThis(type)	\
+				(((type)->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 && \
+				 ((type)->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+
+/*
  * Kinds of complex types.
  */
 #define	IL_TYPE_COMPLEX_BYREF					1

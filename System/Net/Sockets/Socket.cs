@@ -457,7 +457,7 @@ public class Socket : IDisposable
 				return ReceiveFrom(buffer, 0, buffer.Length, System.Net.Sockets.SocketFlags.None, ref remoteEP);			
 			}
 	
-	[TODO]
+	
 	public static void Select(IList checkRead, IList checkWrite, IList checkError, int microSeconds)
 			{
 				if (checkRead == null && checkWrite == null && checkError == null)
@@ -466,15 +466,60 @@ public class Socket : IDisposable
 				if (checkRead.Count == 0 && checkWrite.Count == 0 && checkError.Count == 0)
 					throw new ArgumentNullException("checkRead, checkWrite and checkError", S._("Arg_NotNull"));	
 					
+				// Get Socket Handles from
+				// checkRead, checkWrite, etc.
+				IntPtr[checkRead.Count-1] chkRead;
+				IntPtr[checkWrite.Count-1] chkWrite;
+				IntPtr[checkError.Count-1] chkErr;
+				
 				try
+				{	
+				for(int i = 0; i < checkRead.Count-1; ++i)
 				{
-					//Call select intercall
-				}	
+					chkRead[i] = checkRead[i].Handle;    
+				}
+				
+				for(int i = 0; i < checkWrite.Count-1; ++i)
+				{
+					chkWrite[i] = checkWrite[i].Handle;    
+				}
+				
+				for(int i = 0; i < checkError.Count-1; ++i)
+				{
+					chkError[i] = checkError[i].Handle;    
+				}
+				}
 				catch(Exception e)
 				{
 					throw new SocketException();
 				}
-			}
+										
+			       	int r = SocketMethods.Select(chkread, chkWrite,
+	                        chkError, (long)microseconds);
+				if (r == -1)
+				{
+					switch(SocketMethods.GetErrno())
+					{
+						// Didn't want to use
+						// FileNotFoundException
+						// for invalid FileHandle
+						case EBADF:
+							throw new SocketException();
+							break;
+						case EINTR:
+							throw new SocketException();
+							break;
+						case ENOMEM:
+							throw new OutOfMemoryException();
+							break;
+					}
+				}
+				else
+				{
+					return r;
+				}
+
+	}
 
 	public int Send(byte[] buffer, int size, SocketFlags socketFlags)		
 			{

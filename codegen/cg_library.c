@@ -88,6 +88,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *stringClass;
 	ILClass *typeClass;
 	ILClass *valueTypeClass;
+	ILClass *enumClass;
 	ILClass *voidClass;
 	ILClass *intPtrClass;
 	ILClass *uintPtrClass;
@@ -131,6 +132,16 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SERIALIZABLE);
 	ABORT_IF(constructorOK, AddDefaultConstructor(valueTypeClass));
+
+	/* Create the "System.Enum" class */
+	ABORT_IF(enumClass,
+			 ILClassCreate(scope, 0, "Enum", "System", valueTypeClass));
+	ILClassSetAttrs(enumClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+					IL_META_TYPEDEF_ABSTRACT |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_SERIALIZABLE);
+	ABORT_IF(constructorOK, AddDefaultConstructor(enumClass));
 
 	/* Create the "System.Void" class */
 	ABORT_IF(voidClass,

@@ -8,7 +8,10 @@
 	tests/runtime/System/Security/Cryptography/TestRNG.cs: implement
 	cryptography tests and fixes that involve random number generation.
 
-	* System/Net/IPAddress.cs: semantic bug shown up by latest MS compiler.
+	* System/Net/IPAddress.cs,
+	tests/runtime/System/Security/Cryptography/TestRNG.cs.
+	tests/runtime/System/Security/Cryptography/TestTripleDES.cs:
+	semantic bugs shown up by latest MS compiler.
 
 2002-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

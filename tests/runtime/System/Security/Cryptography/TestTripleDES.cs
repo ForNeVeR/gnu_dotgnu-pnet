@@ -138,7 +138,7 @@ public class TestTripleDES : CryptoTestCase
 			}
 
 	// Test the TripleDES implementation.
-	public void TestTripleDES()
+	public void TestTripleDES1()
 			{
 				CheckTripleDES(TripleDES.Create(), des3Key1, des3Plaintext1);
 				CheckTripleDES(TripleDES.Create(), des3Key1, des3Plaintext2);

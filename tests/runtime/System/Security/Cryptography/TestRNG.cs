@@ -166,7 +166,8 @@ public class TestRNG : TestCase
 				int[] counts1 = new int [6];
 				int bit;
 				int prev = -1;
-				int value, count;
+				int value = 0;
+				int count;
 				count = 0;
 				for(bit = 0; bit < 20000; ++bit)
 				{

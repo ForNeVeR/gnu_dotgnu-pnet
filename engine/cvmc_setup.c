@@ -61,35 +61,184 @@
 			} while (0)
 
 /*
- * Output the entry point code to fix up the arguments
- * and allocate the local variables.
+ * Context structure for outputting entry point code.
  */
-static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
-						 ILMethod *method, ILStandAloneSig *localVarSig,
-						 ILType *returnType, int isConstructor,
-						 int isExtern, int suppressThis, int newStart)
+typedef struct _tagCVMEntryContext
 {
-	ILUInt32 offset;
-	ILUInt32 maxArgOffset;
+	ILUInt32	thisAdjust;			/* Value to adjust for "this" words */
+	ILUInt32	numArgWords;		/* Number of argument words */
+	ILUInt32	numLocals;			/* Number of declared local variables */
+	ILUInt32	numLocalWords;		/* Number of declared local words */
+	ILUInt32	extraLocals;		/* Extra locals for special purposes */
+	ILUInt32	extraOffset;		/* Allocation offset for extra locals */
+	int			firstExtraIsTop;	/* First extra is top-most on stack */
+	int			nativeArg;			/* Current native argument */
+	ILUInt32	nativeArgWords;		/* Number of native arguments on stack */
+	ILUInt32	returnOffset;		/* Offset of native return value */
+
+} CVMEntryContext;
+
+/*
+ * Initialize an entry context.
+ */
+static void CVMEntryInit(CVMEntryContext *ctx)
+{
+	ctx->thisAdjust = 0;
+	ctx->numArgWords = 0;
+	ctx->numLocals = 0;
+	ctx->numLocalWords = 0;
+	ctx->extraLocals = 0;
+	ctx->extraOffset = 0;
+	ctx->firstExtraIsTop = 0;
+	ctx->nativeArg = -1;
+	ctx->nativeArgWords = 0;
+	ctx->returnOffset = 0;
+}
+
+/*
+ * Allocate slots for the method arguments in an entry context.
+ * Returns zero if out of memory.
+ */
+static int CVMEntryAllocArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
+							 ILType *signature, int suppressThis)
+{
 	ILUInt32 num;
-	ILUInt32 total;
 	ILUInt32 current;
+	ILUInt32 total;
 	ILUInt32 argIndex;
-	ILUInt32 extraLocals;
+	ILUInt32 offset;
+	ILType *type;
+
+	/* Handle the "this" parameter as necessary */
+	num = ILTypeNumParams(signature);
+	if(ILType_HasThis(signature) && !suppressThis)
+	{
+		/* Allocate an argument slot for the "this" parameter */
+		total = num + 1;
+		ALLOC_ARGS(total);
+		coder->argOffsets[0] = 0;
+		argIndex = 1;
+		offset = 1;
+	}
+	else
+	{
+		/* No "this" parameter, or it is explicitly provided in the
+		   signature, or this is an allocating constructor which must
+		   create its own "this" parameter during execution */
+		total = num;
+		ALLOC_ARGS(total);
+		argIndex = 0;
+		offset = 0;
+	}
+	ctx->thisAdjust = argIndex;
+
+	/* Allocate slots for the regular arguments */
+	for(current = 1; current <= num; ++current)
+	{
+		type = ILTypeGetEnumType(ILTypeGetParam(signature, current));
+		coder->argOffsets[argIndex++] = offset;
+		if(type == ILType_Float32 || type == ILType_Float64)
+		{
+			offset += CVM_WORDS_PER_NATIVE_FLOAT;
+		}
+		else
+		{
+			offset += GetTypeSize(type);
+		}
+	}
+
+	/* Vararg methods have an extra parameter to pass the variable
+	   arguments within an "Object[]" array */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		ALLOC_ARGS(total + 1);
+		coder->varargIndex = argIndex;
+		coder->argOffsets[argIndex++] = offset;
+		++offset;
+	}
+
+	/* Set the argument word count and return */
+	ctx->numArgWords = offset;
+	return 1;
+}
+
+/*
+ * Allocate slots for the declared local variables in an entry context.
+ * Returns zero if out of memory.
+ */
+static int CVMEntryAllocLocals(CVMEntryContext *ctx, ILCVMCoder *coder,
+							   ILStandAloneSig *localVarSig)
+{
 	ILType *signature;
 	ILType *type;
+	ILUInt32 num;
+	ILUInt32 current;
+	ILUInt32 offset;
+
+	if(localVarSig)
+	{
+		/* Determine the number of locals to allocate */
+		signature = ILStandAloneSigGetType(localVarSig);
+		ctx->numLocals = num = ILTypeNumLocals(signature);
+		offset = ctx->numArgWords;
+
+		/* Allocate the "localOffsets" array for the variables */
+		ALLOC_LOCALS(num);
+
+		/* Set the offsets for each of the local variables */
+		for(current = 0; current < num; ++current)
+		{
+			type = ILTypeGetLocal(signature, current);
+			coder->localOffsets[current] = offset;
+			offset += GetTypeSize(type);
+		}
+
+		/* Record the number of words used for local variables */
+		ctx->numLocalWords = offset - ctx->numArgWords;
+	}
+
+	return 1;
+}
+
+/*
+ * Make space for an extra local.  If "type" is NULL, then allocate
+ * a single word for a pointer argument.
+ */
+static void CVMEntryNeedExtraLocal(CVMEntryContext *ctx, ILType *type)
+{
+	ctx->extraLocals += (type ? GetTypeSize(type) : 1);
+}
+
+/*
+ * Allocate an extra local variable and return its offset.
+ * If "type" is NULL, then allocate a single word for a
+ * pointer argument.
+ */
+static ILUInt32 CVMEntryAllocExtraLocal(CVMEntryContext *ctx, ILType *type)
+{
+	ILUInt32 size = (type ? GetTypeSize(type) : 1);
+	ILUInt32 offset = ctx->extraOffset;
+	ctx->firstExtraIsTop = (offset == 0 && ctx->extraLocals == size);
+	ctx->extraOffset += size;
+	return offset + ctx->numArgWords + ctx->numLocalWords;
+}
+
+/*
+ * Generate the main entry point code for a method, based on
+ * the information in an entry context.
+ */
+static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
+					   ILMethod *method, ILType *signature,
+					   int isConstructor, int newStart,
+					   unsigned char **start)
+{
 	unsigned char *pushDown;
-
-	/* Set the current method */
-	coder->currentMethod = method;
-
-	/* Clear the label pool */
-	ILMemPoolClear(&(coder->labelPool));
-	coder->labelList = 0;
-	coder->labelOutOfMemory = 0;
-
-	/* Reset the tail call flag for the new method */
-	coder->tailCallFlag = 0;
+	ILUInt32 numLocals;
+	ILUInt32 offset;
+	ILUInt32 current;
+	ILUInt32 num;
+	ILType *type;
 
 	/* Determine where the new method will start output within the buffer */
 	if(newStart)
@@ -123,70 +272,8 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	/* Return the start of the method code to the caller */
 	*start = coder->start;
 
-	/* Allocate offsets for the arguments */
-	signature = ILMethod_Signature(method);
-	num = ILTypeNumParams(signature);
-	if(ILType_HasThis(signature) && !suppressThis)
-	{
-		/* Allocate an argument slot for the "this" parameter */
-		total = num + 1;
-		ALLOC_ARGS(total);
-		coder->argOffsets[0] = 0;
-		argIndex = 1;
-		offset = 1;
-	}
-	else
-	{
-		/* No "this" parameter, or it is explicitly provided in the
-		   signature, or this is an allocating constructor which must
-		   create its own "this" parameter during execution */
-		total = num;
-		ALLOC_ARGS(total);
-		argIndex = 0;
-		offset = 0;
-	}
-	extraLocals = 0;
-	for(current = 1; current <= num; ++current)
-	{
-		type = ILTypeGetEnumType(ILTypeGetParam(signature, current));
-		coder->argOffsets[argIndex++] = offset;
-		if(type == ILType_Float32 || type == ILType_Float64)
-		{
-			offset += CVM_WORDS_PER_NATIVE_FLOAT;
-		}
-		else
-		{
-			offset += GetTypeSize(type);
-
-			/* We need an extra local to pass value types
-			   by pointer to native methods */
-			if(ILType_IsValueType(type))
-			{
-				++extraLocals;
-			}
-		}
-	}
-	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
-			IL_META_CALLCONV_VARARG)
-	{
-		/* Vararg methods have an extra parameter to pass the variable
-		   arguments within an "Object[]" array */
-		ALLOC_ARGS(total + 1);
-		coder->varargIndex = argIndex;
-		coder->argOffsets[argIndex++] = offset;
-		++offset;
-	}
-	maxArgOffset = offset;
-
-	/* We need an extra local to pass return value types
-	   by pointer to native methods */
-	if(returnType && ILType_IsValueType(returnType))
-	{
-		++extraLocals;
-	}
-
 	/* Set the number of arguments, which initialize's the method's frame */
-	CVM_OUT_WIDE(COP_SET_NUM_ARGS, offset);
+	CVM_OUT_WIDE(COP_SET_NUM_ARGS, ctx->numArgWords);
 
 	/* Is this a static constructor? */
 	if(ILMethod_IsStaticConstructor(method))
@@ -200,26 +287,15 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	   which is one less than the number of argument words */
 	if(isConstructor)
 	{
-		--offset;
-		CVM_BACKPATCH_PUSHDOWN(pushDown, offset);
-		++offset;
+		CVM_BACKPATCH_PUSHDOWN(pushDown, ctx->numArgWords - 1);
 	}
 
 	/* Fix up any arguments that are larger than their true types */
-	if(ILType_HasThis(signature) && !suppressThis)
+	num = ILTypeNumParams(signature);
+	for(current = 0; current < num; ++current)
 	{
-		/* Allocate an argument slot for the "this" parameter */
-		argIndex = 1;
-	}
-	else
-	{
-		/* No "this" parameter, or it is explicitly provided in the signature */
-		argIndex = 0;
-	}
-	for(current = 1; current <= num; ++current)
-	{
-		type = ILTypeGetEnumType(ILTypeGetParam(signature, current));
-		offset = coder->argOffsets[argIndex++];
+		type = ILTypeGetEnumType(ILTypeGetParam(signature, current + 1));
+		offset = coder->argOffsets[current + ctx->thisAdjust];
 		switch((unsigned long)type)
 		{
 			/* Not needed for little-endian machines */
@@ -257,176 +333,197 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 		}
 	}
 
-	/* Allocate offsets for the local variables */
-	offset = maxArgOffset;
-	if(localVarSig)
-	{
-		signature = ILStandAloneSigGetType(localVarSig);
-		num = ILTypeNumLocals(signature);
-		ALLOC_LOCALS(num);
-		for(current = 0; current < num; ++current)
-		{
-			type = ILTypeGetLocal(signature, current);
-			coder->localOffsets[current] = offset;
-			offset += GetTypeSize(type);
-		}
-	}
-	else if(isExtern)
-	{
-		/* Allocate locals for external native methods */
-		if(returnType)
-		{
-			/* We need a temporary local for the return value,
-			   plus temporary locals for the value type arguments */
-			ALLOC_LOCALS(1 + extraLocals);
-			coder->localOffsets[0] = offset;
-			offset += GetTypeSize(returnType);
-			for(current = 0; current < extraLocals; ++current)
-			{
-				coder->localOffsets[current + 1] = offset;
-				++offset;
-			}
-		}
-		else
-		{
-			/* We need temporary locals for the value type arguments */
-			ALLOC_LOCALS(extraLocals);
-			for(current = 0; current < extraLocals; ++current)
-			{
-				coder->localOffsets[current] = offset;
-				++offset;
-			}
-		}
-	}
-
 	/* Output the stack height check instruction, which is fixed
 	   up at the end of the method with the maximum height */
 	coder->stackCheck = CVM_POSN();
 	CVM_OUT_CKHEIGHT();
 
 	/* Output CVM code to allocate space for the local variables */
-	offset -= maxArgOffset;
-	if(offset == 1)
+	numLocals = ctx->numLocalWords + ctx->extraLocals;
+	if(numLocals == 1)
 	{
 		CVM_OUT_NONE(COP_MK_LOCAL_1);
 	}
-	else if(offset == 2)
+	else if(numLocals == 2)
 	{
 		CVM_OUT_NONE(COP_MK_LOCAL_2);
 	}
-	else if(offset == 3)
+	else if(numLocals == 3)
 	{
 		CVM_OUT_NONE(COP_MK_LOCAL_3);
 	}
-	else if(offset != 0)
+	else if(numLocals != 0)
 	{
-		CVM_OUT_WIDE(COP_MK_LOCAL_N, offset);
+		CVM_OUT_WIDE(COP_MK_LOCAL_N, numLocals);
 	}
 
 	/* Set the current stack height */
-	coder->height = (long)offset;
-	coder->minHeight = (long)offset;
-	coder->maxHeight = (long)offset;
+	coder->height = (long)(ctx->numArgWords + numLocals);
+	coder->minHeight = coder->height;
+	coder->maxHeight = coder->height;
 
 	/* Done */
 	return 1;
 }
 
 /*
- * Set up a CVM coder instance to process a specific method.
+ * Push the "lead-in" values for a native method call.  These
+ * include the thread argument and the return value pointer.
+ * If "coder" is NULL, then calculate the number of extra locals
+ * that are required.
  */
-static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
-						  ILMethod *method, ILMethodCode *code)
+static void CVMEntryPushLeadIn(CVMEntryContext *ctx, ILCVMCoder *coder,
+							   ILType *signature, int useRawCalls,
+							   int isInternal, int isConstructor)
 {
-	return CVMEntryPoint((ILCVMCoder *)_coder, start, method,
-						 code->localVarSig, 0,
-						 ILMethod_IsConstructor(method), 0, 0, 1);
-}
+	ILType *returnType;
+	ILUInt32 offset;
 
-/*
- * Determine if a type looks like "System.String".
- */
-static int IsStringType(ILType *type)
-{
-	ILClass *classInfo;
-	const char *namespace;
-	ILImage *image;
-	ILImage *systemImage;
-	if(ILType_IsClass(type))
+	/* We need the thread argument for "internalcall" methods */
+	if(isInternal && coder)
 	{
-		classInfo = ILClassResolve(ILType_ToClass(type));
-		if(!strcmp(ILClass_Name(classInfo), "String"))
+		if(useRawCalls)
 		{
-			namespace = ILClass_Namespace(classInfo);
-			if(namespace && !strcmp(namespace, "System"))
+			CVM_OUT_NONE(COP_PUSH_THREAD_RAW);
+			CVM_ADJUST(1);
+			++(ctx->nativeArgWords);
+		}
+		else
+		{
+			CVM_OUT_NONE(COP_PUSH_THREAD);
+			++(ctx->nativeArg);
+		}
+	}
+
+	/* Process value type return values */
+	returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+	if(ILType_IsValueType(returnType))
+	{
+		/* Value types are passed by reference to the method */
+		if(coder)
+		{
+			/* Allocate space for the return value */
+			offset = CVMEntryAllocExtraLocal(ctx, returnType);
+			ctx->returnOffset = offset;
+
+			/* Pass the pointer to the native method */
+			if(useRawCalls)
 			{
-				image = ILClassToImage(classInfo);
-				systemImage = ILContextGetSystem(ILImageToContext(image));
-				if(!systemImage || image == systemImage)
+				CVM_OUT_WIDE(COP_WADDR, offset);
+				CVM_ADJUST(1);
+				++(ctx->nativeArgWords);
+			}
+			else
+			{
+				CVM_OUT_WIDE(COP_WADDR, offset);
+				CVM_ADJUST(1);
+				offset = CVMEntryAllocExtraLocal(ctx, 0);
+				if(offset < 4)
 				{
-					return 1;
+					CVM_OUT_NONE(COP_PSTORE_0 + offset);
 				}
+				else
+				{
+					CVM_OUT_WIDE(COP_PSTORE, offset);
+				}
+				CVM_ADJUST(-1);
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg, offset);
+				++(ctx->nativeArg);
+			}
+		}
+		else
+		{
+			/* Inform the context that we need space for the return value */
+			CVMEntryNeedExtraLocal(ctx, returnType);
+			if(!useRawCalls)
+			{
+				/* We also need space for the pointer to the value */
+				CVMEntryNeedExtraLocal(ctx, 0);
 			}
 		}
 	}
-	return 0;
-}
-
-/*
- * Determine if a type looks like a reference to "System.String".
- */
-static int IsStringRefType(ILType *type)
-{
-	if(type != ILType_Invalid && ILType_IsComplex(type))
+	else if(returnType != ILType_Void)
 	{
-		if(ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
+		/* Allocate space for the return value */
+		if(coder)
 		{
-			return IsStringType(ILType_Ref(type));
+			ctx->returnOffset = CVMEntryAllocExtraLocal(ctx, returnType);
+		}
+		else
+		{
+			CVMEntryNeedExtraLocal(ctx, returnType);
 		}
 	}
-	return 0;
+	else if(isConstructor)
+	{
+		/* We need space to return the object pointer */
+		if(coder)
+		{
+			ctx->returnOffset = CVMEntryAllocExtraLocal(ctx, 0);
+		}
+		else
+		{
+			CVMEntryNeedExtraLocal(ctx, 0);
+		}
+	}
+
+	/* Push the "this" value onto the stack */
+	if(ILType_HasThis(signature) && !isConstructor && coder)
+	{
+		if(isInternal)
+		{
+			/* Check the "this" value for NULL first, so that the
+			   engine "internalcalls" don't have to */
+			CVM_OUT_NONE(COP_PLOAD_0);
+			CVM_ADJUST(1);
+			CVM_OUT_NONE(COP_CKNULL);
+			if(useRawCalls)
+			{
+				++(ctx->nativeArgWords);
+			}
+			else
+			{
+				CVM_OUT_NONE(COP_POP);
+				CVM_ADJUST(-1);
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg, 0);
+				++(ctx->nativeArg);
+			}
+		}
+		else if(useRawCalls)
+		{
+			/* Push the "this" value onto the stack directly */
+			CVM_OUT_NONE(COP_PLOAD_0);
+			CVM_ADJUST(1);
+			++(ctx->nativeArgWords);
+		}
+		else
+		{
+			/* Push the address of the "this" value onto the native
+			   argument stack */
+			CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg, 0);
+			++(ctx->nativeArg);
+		}
+	}
 }
 
 /*
- * Set up a CVM coder instance to process a specific external method.
+ * Push native arguments onto the stack.  If "coder" is NULL
+ * then determine the number of extra locals that we need only.
  */
-static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
-								ILMethod *method, void *fn, void *cif,
-								int isInternal)
+static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
+								   ILMethod *method, ILType *signature,
+								   int useRawCalls, int isInternal)
 {
-	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	ILType *signature = ILMethod_Signature(method);
-	ILType *returnType = ILTypeGetReturn(signature);
-	int numArgs;
-	ILUInt32 param;
-	ILUInt32 numParams;
-	ILUInt32 extraLocals;
-	int returnIsTop;
-	ILType *tempType;
+	unsigned long num;
+	unsigned long param;
+	ILType *paramType;
+	unsigned long thisAdjust;
+	ILUInt32 offset;
+	ILUInt32 size;
 	ILPInvoke *pinv;
 	ILUInt32 pinvAttrs;
 
-	/* Output the entry point code */
-	returnType = ILTypeGetEnumType(returnType);
-	if(returnType == ILType_Void)
-	{
-		if(!CVMEntryPoint(coder, start, method, 0, (ILType *)0,
-						  ILMethod_IsConstructor(method), 1, 0, 1))
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		if(!CVMEntryPoint(coder, start, method, 0, returnType,
-						  ILMethod_IsConstructor(method), 1, 0, 1))
-		{
-			return 0;
-		}
-	}
-
-	/* If this is a PInvoke call, then scan for string parameters
-	   and convert them into "char *" buffers of some description */
+	/* Get the PInvoke information */
 	if(!isInternal)
 	{
 		pinv = ILPInvokeFind(method);
@@ -438,196 +535,336 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 		{
 			pinvAttrs = 0;
 		}
-		numParams = ILTypeNumParams(signature);
-		for(param = 1; param <= numParams; ++param)
+	}
+	else
+	{
+		pinvAttrs = 0;
+	}
+
+	/* Process each of the arguments in turn */
+	num = ILTypeNumParams(signature);
+	thisAdjust = 1 - ctx->thisAdjust;
+	for(param = 1; param <= num; ++param)
+	{
+		/* Get the parameter and then check if we are in codegen mode or not */
+		paramType = ILTypeGetEnumType(ILTypeGetParam(signature, param));
+		if(!coder)
 		{
-			if(ILType_HasThis(signature))
+			/* We need extra locals for value type parameters when
+			   we use the non-raw version of function invocation */
+			if(!useRawCalls && ILType_IsValueType(paramType))
 			{
-				extraLocals = param;
+				CVMEntryNeedExtraLocal(ctx, 0);
+			}
+			continue;
+		}
+
+		/* Perform PInvoke expansions on the parameter */
+		if(!isInternal && ILTypeIsStringClass(paramType))
+		{
+			/* String value parameter: convert into a "const char *" */
+			offset = coder->argOffsets[param - thisAdjust];
+			if(offset < 4)
+			{
+				CVM_OUT_NONE(COP_PLOAD_0 + offset);
 			}
 			else
 			{
-				extraLocals = param - 1;
+				CVM_OUT_WIDE(COP_PLOAD, offset);
 			}
-			tempType = ILTypeGetParam(signature, param);
-			if(IsStringType(tempType))
+			CVM_ADJUST(1);
+			switch(pinvAttrs & IL_META_PINVOKE_CHAR_SET_MASK)
 			{
-				/* String value parameter: convert into a "const char *" */
-				CVM_OUT_WIDE(COP_PLOAD, coder->argOffsets[extraLocals]);
-				CVM_ADJUST(1);
-				switch(pinvAttrs & IL_META_PINVOKE_CHAR_SET_MASK)
+				case IL_META_PINVOKE_CHAR_SET_NOT_SPEC:
 				{
-					case IL_META_PINVOKE_CHAR_SET_NOT_SPEC:
+					CVMP_OUT_NONE(COP_PREFIX_STR2UTF8);
+				}
+				break;
+
+				case IL_META_PINVOKE_CHAR_SET_ANSI:
+				case IL_META_PINVOKE_CHAR_SET_AUTO:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_STR2ANSI);
+				}
+				break;
+
+				case IL_META_PINVOKE_CHAR_SET_UNICODE:
+				{
+					/* TODO: convert the string into "const wchar_t *" */
+				}
+				break;
+			}
+			if(offset < 4)
+			{
+				CVM_OUT_NONE(COP_PSTORE_0 + offset);
+			}
+			else
+			{
+				CVM_OUT_WIDE(COP_PSTORE, offset);
+			}
+			CVM_ADJUST(-1);
+		}
+
+		/* Generate the code for the parameter */
+		if(useRawCalls)
+		{
+			/* Push the parameter value onto the stack directly */
+			offset = coder->argOffsets[param - thisAdjust];
+			if(ILType_IsPrimitive(paramType))
+			{
+				/* Push a primitive value in its best "raw" form */
+				switch(ILType_ToElement(paramType))
+				{
+					case IL_META_ELEMTYPE_BOOLEAN:
+					case IL_META_ELEMTYPE_I1:
 					{
-						CVMP_OUT_NONE(COP_PREFIX_STR2UTF8);
+						if(offset < 256)
+						{
+							CVM_OUT_BYTE(COP_BLOAD, offset);
+						}
+						else
+						{
+							CVM_OUT_WIDE(COP_WADDR, offset);
+							CVM_OUT_NONE(COP_BREAD);
+						}
+						CVM_ADJUST(1);
+						++(ctx->nativeArgWords);
 					}
 					break;
 
-					case IL_META_PINVOKE_CHAR_SET_ANSI:
-					case IL_META_PINVOKE_CHAR_SET_AUTO:
+					case IL_META_ELEMTYPE_U1:
 					{
-						CVMP_OUT_NONE(COP_PREFIX_STR2ANSI);
+						CVM_OUT_WIDE(COP_WADDR, offset);
+						CVM_OUT_NONE(COP_UBREAD);
+						CVM_ADJUST(1);
+						++(ctx->nativeArgWords);
 					}
 					break;
 
-					case IL_META_PINVOKE_CHAR_SET_UNICODE:
+					case IL_META_ELEMTYPE_I2:
 					{
-						/* TODO: convert into a "const wchar_t *" value */
+						CVM_OUT_WIDE(COP_WADDR, offset);
+						CVM_OUT_NONE(COP_SREAD);
+						CVM_ADJUST(1);
+						++(ctx->nativeArgWords);
+					}
+					break;
+
+					case IL_META_ELEMTYPE_U2:
+					case IL_META_ELEMTYPE_CHAR:
+					{
+						CVM_OUT_WIDE(COP_WADDR, offset);
+						CVM_OUT_NONE(COP_USREAD);
+						CVM_ADJUST(1);
+						++(ctx->nativeArgWords);
+					}
+					break;
+
+					case IL_META_ELEMTYPE_I4:
+					case IL_META_ELEMTYPE_U4:
+				#ifdef IL_NATIVE_INT32
+					case IL_META_ELEMTYPE_I:
+					case IL_META_ELEMTYPE_U:
+				#endif
+					{
+						if(offset < 4)
+						{
+							CVM_OUT_NONE(COP_ILOAD_0 + offset);
+						}
+						else
+						{
+							CVM_OUT_WIDE(COP_ILOAD, offset);
+						}
+						CVM_ADJUST(1);
+						++(ctx->nativeArgWords);
+					}
+					break;
+
+					default:
+					{
+						size = GetTypeSize(paramType);
+						CVM_OUT_DWIDE(COP_MLOAD, offset, size);
+						CVM_ADJUST(size);
+						ctx->nativeArgWords += size;
 					}
 					break;
 				}
-				CVM_OUT_WIDE(COP_PSTORE, coder->argOffsets[extraLocals]);
-				CVM_ADJUST(-1);
 			}
-			else if(IsStringRefType(tempType))
+			else if(ILType_IsValueType(paramType))
 			{
-				/* String reference parameter: convert into a blank buffer */
-				/* TODO */
+				/* Push a pointer to the value type instance */
+				CVM_OUT_WIDE(COP_WADDR, offset);
+				CVM_ADJUST(1);
+				++(ctx->nativeArgWords);
+			}
+			else
+			{
+				/* Assume that everything else is a pointer */
+				if(offset < 4)
+				{
+					CVM_OUT_NONE(COP_PLOAD_0 + offset);
+				}
+				else
+				{
+					CVM_OUT_WIDE(COP_PLOAD, offset);
+				}
+				CVM_ADJUST(1);
+				++(ctx->nativeArgWords);
 			}
 		}
+		else if(ctx->nativeArg < CVM_MAX_NATIVE_ARGS)
+		{
+			if(ILType_IsValueType(paramType))
+			{
+				/* Push a pointer to the value type onto the native stack */
+				CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param - thisAdjust]);
+				CVM_ADJUST(1);
+				offset = CVMEntryAllocExtraLocal(ctx, 0);
+				if(offset < 4)
+				{
+					CVM_OUT_NONE(COP_PSTORE_0 + offset);
+				}
+				else
+				{
+					CVM_OUT_WIDE(COP_PSTORE, offset);
+				}
+				CVM_ADJUST(-1);
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg, offset);
+			}
+			else
+			{
+				/* Push a pointer to the actual arg onto the native stack */
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + ctx->nativeArg,
+							 coder->argOffsets[param - thisAdjust]);
+			}
+			++(ctx->nativeArg);
+		}
+	}
+}
+
+/*
+ * Call a native method.
+ */
+static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
+							   ILType *signature, void *fn, void *cif,
+							   int useRawCalls, int isConstructor)
+{
+	ILType *returnType = ILTypeGetEnumType(ILTypeGetReturn(signature));
+	int hasReturn;
+	ILUInt32 size;
+
+	/* Push the address of the argument array onto the stack */
+	if(useRawCalls)
+	{
+		CVM_OUT_WIDE(COP_MADDR, ctx->nativeArgWords);
+		CVM_ADJUST(1);
 	}
 
-	/* Push the arguments for the call onto the stack */
-	numArgs = -1;
-	if(isInternal)
+	/* Push the address of the return value onto the stack */
+	if(returnType != ILType_Void || isConstructor)
 	{
-		/* Push a pointer to the thread value */
-		CVM_OUT_NONE(COP_PUSH_THREAD);
-		++numArgs;
-	}
-	extraLocals = 0;
-	returnIsTop = 1;
-	if(ILType_IsValueType(returnType))
-	{
-		/* Value type return pointers are pushed just after the thread */
-		CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
+		CVM_OUT_WIDE(COP_WADDR, ctx->returnOffset);
 		CVM_ADJUST(1);
-		CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[1]);
-		CVM_ADJUST(-1);
-		CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs, coder->localOffsets[1]);
-		extraLocals = 2;
-		++numArgs;
+		hasReturn = 1;
 	}
-	else if(returnType != ILType_Void)
+	else
 	{
-		++extraLocals;
+		hasReturn = 0;
 	}
-	if(ILType_HasThis(signature))
+
+	/* Make the call */
+	if(useRawCalls)
 	{
-		if(!ILMethod_IsVirtual(method))
+		if(hasReturn)
 		{
-			/* This is a non-virtual instance method.  We need to check the
-			   "this" argument for null before we push the pointer args.
-			   This takes the burden off the underlying code to check for
-			   null.  Virtual method calls check for null elsewhere */
-			CVM_OUT_NONE(COP_PLOAD_0);
-			CVM_ADJUST(1);
-			CVM_OUT_NONE(COP_CKNULL);
-			CVM_OUT_NONE(COP_POP);
+			CVM_OUT_PTR2(COP_CALL_NATIVE_RAW, fn, cif);
+			CVM_ADJUST(-2);
+		}
+		else
+		{
+			CVM_OUT_PTR2(COP_CALL_NATIVE_VOID_RAW, fn, cif);
 			CVM_ADJUST(-1);
 		}
-		numParams = ILTypeNumParams(signature);
-		for(param = 0; param <= numParams; ++param)
-		{
-			if(param > 0 &&
-			   ILType_IsValueType(ILTypeGetEnumType
-			   		(ILTypeGetParam(signature, param))))
-			{
-				CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param]);
-				CVM_ADJUST(1);
-				CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
-				CVM_ADJUST(-1);
-				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						     coder->localOffsets[extraLocals]);
-				++extraLocals;
-				returnIsTop = 0;
-			}
-			else
-			{
-				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						     coder->argOffsets[param]);
-			}
-			++numArgs;
-		}
 	}
 	else
 	{
-		/* This method does not have a "this" pointer */
-		numParams = ILTypeNumParams(signature);
-		for(param = 0; param < numParams; ++param)
+		if(hasReturn)
 		{
-			if(ILType_IsValueType(ILTypeGetEnumType
-			   		(ILTypeGetParam(signature, param + 1))))
-			{
-				CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param]);
-				CVM_ADJUST(1);
-				CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
-				CVM_ADJUST(-1);
-				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						     coder->localOffsets[extraLocals]);
-				++extraLocals;
-				returnIsTop = 0;
-			}
-			else
-			{
-				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						     coder->argOffsets[param]);
-			}
-			++numArgs;
+			CVM_OUT_PTR2(COP_CALL_NATIVE, fn, cif);
+			CVM_ADJUST(-1);
+		}
+		else
+		{
+			CVM_OUT_PTR2(COP_CALL_NATIVE_VOID, fn, cif);
 		}
 	}
 
-	/* If "numArgs" has overflowed, then abort */
-	if(numArgs > CVM_MAX_NATIVE_ARGS)
+	/* Return the native value to the caller */
+	if(useRawCalls && ctx->nativeArgWords != 0)
 	{
-		fputs("Native argument stack has overflowed.  Aborting.", stderr);
-		exit(1);
+		/* We still have the native argument values on the stack */
+		ctx->firstExtraIsTop = 0;
 	}
-
-	/* Output the call to the external method */
-	if(returnType != ILType_Void && !ILType_IsValueType(returnType))
+	if(returnType == ILType_Void)
 	{
-		/* Push a pointer to the local containing the return value */
-		CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
-		CVM_ADJUST(1);
-
-		/* Call the native method */
-		CVM_OUT_PTR2(COP_CALL_NATIVE, fn, cif);
-		CVM_ADJUST(-1);
-	}
-	else
-	{
-		/* Call the native method, with no return value */
-		CVM_OUT_PTR2(COP_CALL_NATIVE_VOID, fn, cif);
-	}
-
-	/* Push the return value onto the stack and exit the method.
-	   We can usually take a short-cut and assume that the top
-	   of the stack is the local containing the return value,
-	   and that a simple return will do the right thing */
-	if(returnType != ILType_Void)
-	{
-		switch((unsigned long)returnType)
+		/* Handle "void" or constructor returns */
+		if(isConstructor)
 		{
-			case (unsigned long)ILType_Boolean:
-			case (unsigned long)ILType_Int8:
-			case (unsigned long)ILType_UInt8:
-			case (unsigned long)ILType_Int16:
-			case (unsigned long)ILType_UInt16:
-			case (unsigned long)ILType_Char:
-			case (unsigned long)ILType_Int32:
-			case (unsigned long)ILType_UInt32:
+			if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
 			{
-				/* Return values of int or less are returned as
-				   native integer values by libffi */
+				if(ctx->returnOffset < 4)
+				{
+					CVM_OUT_NONE(COP_PLOAD_0 + ctx->returnOffset);
+				}
+				else
+				{
+					CVM_OUT_WIDE(COP_PLOAD, ctx->returnOffset);
+				}
+				CVM_ADJUST(1);
+			}
+			CVM_OUT_NONE(COP_RETURN_1);
+		}
+		else
+		{
+			CVM_OUT_NONE(COP_RETURN);
+		}
+	}
+	else if(ILType_IsPrimitive(returnType))
+	{
+		/* Handle primitive type returns */
+		switch(ILType_ToElement(returnType))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
+			{
+				/* Return values of "int" or less in size are returned
+				   to us as native integers by libffi */
 			#ifdef IL_NATIVE_INT32
-				CVM_OUT_WIDE(COP_ILOAD, coder->localOffsets[0]);
-				CVM_ADJUST(1);
+				if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
+				{
+					if(ctx->returnOffset < 4)
+					{
+						CVM_OUT_NONE(COP_ILOAD_0 + ctx->returnOffset);
+					}
+					else
+					{
+						CVM_OUT_WIDE(COP_ILOAD, ctx->returnOffset);
+					}
+					CVM_ADJUST(1);
+				}
 				CVM_OUT_NONE(COP_RETURN_1);
-				CVM_ADJUST(-1);
 			#else
-				CVM_OUT_DWIDE(COP_MLOAD, coder->localOffsets[0],
-							  CVM_WORDS_PER_LONG);
+				CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, CVM_WORDS_PER_LONG);
 				CVM_ADJUST(CVM_WORDS_PER_LONG);
 				CVM_OUT_NONE(CVM_L2I);
 				CVM_OUT_NONE(COP_RETURN_1);
@@ -636,51 +873,213 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			}
 			break;
 
-			case (unsigned long)ILType_Float32:
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
 			{
-				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
-				CVM_OUT_NONE(COP_FREAD);
-				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
-				CVM_OUT_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
-				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
+				if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
+				{
+					CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset,
+								  CVM_WORDS_PER_LONG);
+					CVM_ADJUST(CVM_WORDS_PER_LONG);
+				}
+				CVM_OUT_RETURN(CVM_WORDS_PER_LONG);
 			}
 			break;
 
-			case (unsigned long)ILType_Float64:
+			case IL_META_ELEMTYPE_R4:
 			{
-				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
-				CVM_OUT_NONE(COP_DREAD);
-				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
+				CVM_OUT_WIDE(COP_WADDR, ctx->returnOffset);
+				CVM_ADJUST(1);
+				CVM_OUT_NONE(COP_FREAD);
+				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 				CVM_OUT_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
-				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+				CVM_OUT_WIDE(COP_WADDR, ctx->returnOffset);
+				CVM_ADJUST(1);
+				CVM_OUT_NONE(COP_DREAD);
+				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
+				CVM_OUT_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R:
+			{
+				if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
+				{
+					CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset,
+								  CVM_WORDS_PER_NATIVE_FLOAT);
+					CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
+				}
+				CVM_OUT_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 			break;
 
 			default:
 			{
-				if(returnIsTop)
+				size = GetTypeSize(returnType);
+				if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
 				{
-					param = GetTypeSize(returnType);
-					CVM_OUT_RETURN(param);
+					CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, size);
+					CVM_ADJUST(size);
 				}
-				else
-				{
-					param = GetTypeSize(returnType);
-					CVM_OUT_DWIDE(COP_MLOAD, coder->localOffsets[0], param);
-					CVM_ADJUST(param);
-					CVM_OUT_RETURN(param);
-					CVM_ADJUST(-((ILInt32)param));
-				}
+				CVM_OUT_RETURN(size);
 			}
 			break;
 		}
 	}
+	else if(ILType_IsValueType(returnType))
+	{
+		/* Load the value type onto the stack and return */
+		size = GetTypeSize(returnType);
+		if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
+		{
+			CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, size);
+			CVM_ADJUST(size);
+		}
+		CVM_OUT_RETURN(size);
+	}
 	else
 	{
-		CVM_OUT_NONE(COP_RETURN);
+		/* Assume that everything else is a pointer */
+		if(ctx->returnOffset != 0 || !(ctx->firstExtraIsTop))
+		{
+			if(ctx->returnOffset < 4)
+			{
+				CVM_OUT_NONE(COP_PLOAD_0 + ctx->returnOffset);
+			}
+			else
+			{
+				CVM_OUT_WIDE(COP_PLOAD, ctx->returnOffset);
+			}
+			CVM_ADJUST(1);
+		}
+		CVM_OUT_NONE(COP_RETURN_1);
+	}
+}
+
+/*
+ * Set up a CVM coder instance to process a specific method.
+ */
+static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
+						  ILMethod *method, ILMethodCode *code)
+{
+	ILCVMCoder *coder = ((ILCVMCoder *)_coder);
+	ILType *signature = ILMethod_Signature(method);
+	CVMEntryContext ctx;
+
+	/* Initialize the entry point context */
+	CVMEntryInit(&ctx);
+
+	/* Allocate the arguments */
+	if(!CVMEntryAllocArgs(&ctx, coder, signature, 0))
+	{
+		return 0;
 	}
 
-	/* Done */
+	/* Allocate the local variables */
+	if(!CVMEntryAllocLocals(&ctx, coder, code->localVarSig))
+	{
+		return 0;
+	}
+
+	/* Generate the entry point code */
+	return CVMEntryGen(&ctx, coder, method, signature,
+					   ILMethod_IsConstructor(method), 1, start);
+}
+
+/*
+ * Determine if we can use raw libffi calls for a particular method.
+ */
+int _ILCVMCanUseRawCalls(ILMethod *method)
+{
+#if defined(HAVE_LIBFFI)
+	#if !FFI_NO_RAW_API && FFI_NATIVE_RAW_API
+		ILType *signature;
+		unsigned long num;
+		unsigned long param;
+
+		/* Check the size of the stack word against libffi's expectations */
+		if(sizeof(CVMWord) != sizeof(ffi_raw))
+		{
+			return 0;
+		}
+
+		/* The method's signature must not include ILType_TypedRef,
+		   because raw mode doesn't support structures very well */
+		signature = ILMethod_Signature(method);
+		if(ILTypeGetReturn(signature) == ILType_TypedRef)
+		{
+			return 0;
+		}
+		num = ILTypeNumParams(signature);
+		for(param = 1; param <= num; ++param)
+		{
+			if(ILTypeGetParam(signature, param) == ILType_TypedRef)
+			{
+				return 0;
+			}
+		}
+
+		/* If we get here, then we can use raw calls */
+		return 1;
+	#else
+		return 0;
+	#endif
+#else
+	return 0;
+#endif
+}
+
+/*
+ * Set up a CVM coder instance to process a specific external method.
+ */
+static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
+								ILMethod *method, void *fn, void *cif,
+								int isInternal)
+{
+	ILCVMCoder *coder = ((ILCVMCoder *)_coder);
+	ILType *signature = ILMethod_Signature(method);
+	CVMEntryContext ctx;
+	int useRawCalls;
+
+	/* Initialize the entry point context */
+	CVMEntryInit(&ctx);
+
+	/* Allocate the arguments */
+	if(!CVMEntryAllocArgs(&ctx, coder, signature, 0))
+	{
+		return 0;
+	}
+
+	/* Determine if we can use raw libffi calls */
+	useRawCalls = _ILCVMCanUseRawCalls(method);
+
+	/* Compute the number of extra locals that we need */
+	CVMEntryPushLeadIn(&ctx, (ILCVMCoder *)0, signature, useRawCalls,
+					   isInternal, 0);
+	CVMEntryPushNativeArgs(&ctx, (ILCVMCoder *)0, method,
+						   signature, useRawCalls, isInternal);
+
+	/* Generate the entry point code */
+	if(!CVMEntryGen(&ctx, coder, method, signature,
+				    ILMethod_IsConstructor(method), 1, start))
+	{
+		return 0;
+	}
+
+	/* Output the body of the method */
+	CVMEntryPushLeadIn(&ctx, coder, signature, useRawCalls, isInternal, 0);
+	CVMEntryPushNativeArgs(&ctx, coder, method, signature,
+						   useRawCalls, isInternal);
+	CVMEntryCallNative(&ctx, coder, signature, fn, cif, useRawCalls, 0);
 	return 1;
 }
 
@@ -694,13 +1093,10 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	ILType *signature = ILMethod_Signature(method);
-	int numArgs;
-	ILUInt32 param;
-	ILUInt32 numParams;
-	ILUInt32 extraLocals;
-	int returnIsTop;
 	ILInt32 dest;
 	unsigned char *start2;
+	CVMEntryContext ctx;
+	int useRawCalls;
 
 	/* Output the code for the main method entry point, which will
 	   include the prefix code for allocating fixed-sized objects */
@@ -722,9 +1118,29 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 		return 1;
 	}
 
-	/* Output the entry point code for the allocating constructor */
-	if(!CVMEntryPoint(coder, &start2, method, 0,
-					  ILType_FromClass(ILMethod_Owner(method)), 0, 1, 1, 0))
+	/* Back-patch the CKHEIGHT instruction in the main method */
+	CVM_BACKPATCH_CKHEIGHT(coder->stackCheck, coder->maxHeight);
+
+	/* Initialize the entry point context for the allocating constructor */
+	CVMEntryInit(&ctx);
+
+	/* Allocate the arguments */
+	if(!CVMEntryAllocArgs(&ctx, coder, signature, 1))
+	{
+		return 0;
+	}
+
+	/* Determine if we can use raw libffi calls */
+	useRawCalls = _ILCVMCanUseRawCalls(method);
+
+	/* Compute the number of extra locals that we need */
+	CVMEntryPushLeadIn(&ctx, (ILCVMCoder *)0, signature, useRawCalls,
+					   isInternal, 1);
+	CVMEntryPushNativeArgs(&ctx, (ILCVMCoder *)0, method,
+						   signature, useRawCalls, isInternal);
+
+	/* Generate the entry point code */
+	if(!CVMEntryGen(&ctx, coder, method, signature, 0, 0, &start2))
 	{
 		return 0;
 	}
@@ -733,59 +1149,12 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	dest = (ILInt32)(start2 - (*start - CVM_CTOR_OFFSET));
 	CVM_OUT_JUMPOVER(*start - CVM_CTOR_OFFSET, dest);
 
-	/* Push the arguments for the call onto the stack */
-	numArgs = -1;
-	returnIsTop = 1;
-	extraLocals = 1;
-	if(isInternal)
-	{
-		/* Push a pointer to the thread value */
-		CVM_OUT_NONE(COP_PUSH_THREAD);
-		++numArgs;
-	}
-	numParams = ILTypeNumParams(signature);
-	for(param = 0; param < numParams; ++param)
-	{
-		if(ILType_IsValueType(ILTypeGetEnumType
-		   		(ILTypeGetParam(signature, param + 1))))
-		{
-			CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param]);
-			CVM_ADJUST(1);
-			CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
-			CVM_ADJUST(-1);
-			CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-					     coder->localOffsets[extraLocals]);
-			++extraLocals;
-			returnIsTop = 0;
-		}
-		else
-		{
-			CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-					     coder->argOffsets[param]);
-		}
-		++numArgs;
-	}
-	CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
-	CVM_ADJUST(1);
-
-	/* Output the call to the external method */
-	CVM_OUT_PTR2(COP_CALL_NATIVE, ctorfn, ctorcif);
-	CVM_ADJUST(-1);
-
-	/* Return the contents of the local, which is the allocated object */
-	if(returnIsTop)
-	{
-		CVM_OUT_RETURN(1);
-	}
-	else
-	{
-		CVM_OUT_WIDE(COP_PLOAD, coder->localOffsets[0]);
-		CVM_ADJUST(1);
-		CVM_OUT_RETURN(1);
-		CVM_ADJUST(-1);
-	}
-
-	/* Done */
+	/* Output the body of the constructor */
+	CVMEntryPushLeadIn(&ctx, coder, signature, useRawCalls, isInternal, 1);
+	CVMEntryPushNativeArgs(&ctx, coder, method, signature,
+						   useRawCalls, isInternal);
+	CVMEntryCallNative(&ctx, coder, signature, ctorfn,
+					   ctorcif, useRawCalls, 1);
 	return 1;
 }
 
@@ -811,7 +1180,7 @@ static int CVMCoder_Finish(ILCoder *_coder)
 
 	/* Clear the label pool */
 	ILMemPoolClear(&(coder->labelPool));
-	coder->labelList =0;
+	coder->labelList = 0;
 	if(coder->labelOutOfMemory)
 	{
 		/* We ran out of memory trying to allocate labels */

@@ -24,6 +24,9 @@
 
 #include "ffi.h"
 
+/* Imported from "cvmc_setup.c" */
+int _ILCVMCanUseRawCalls(ILMethod *method);
+
 /*
  * The hard work is done using "libffi", which is a generic library
  * for packing up the arguments for an arbitrary function call,
@@ -175,6 +178,12 @@ void *_ILMakeCifForMethod(ILMethod *method, int isInternal)
 									(ILTypeGetParam(signature, param)));
 	}
 
+	/* Limit the number of arguments if we cannot use raw mode */
+	if(!_ILCVMCanUseRawCalls(method) && numArgs > (CVM_MAX_NATIVE_ARGS + 1))
+	{
+		numArgs = CVM_MAX_NATIVE_ARGS + 1;
+	}
+
 	/* Prepare the "ffi_cif" structure for the call */
 	ffi_prep_cif(cif, FFI_DEFAULT_ABI, numArgs, rtype, args);
 
@@ -226,6 +235,12 @@ void *_ILMakeCifForConstructor(ILMethod *method, int isInternal)
 	{
 		args[arg++] = TypeToFFI(ILTypeGetEnumType
 									(ILTypeGetParam(signature, param)));
+	}
+
+	/* Limit the number of arguments if we cannot use raw mode */
+	if(!_ILCVMCanUseRawCalls(method) && numArgs > (CVM_MAX_NATIVE_ARGS + 1))
+	{
+		numArgs = CVM_MAX_NATIVE_ARGS + 1;
 	}
 
 	/* Prepare the "ffi_cif" structure for the call */

@@ -57,7 +57,8 @@ public class DictionarySectionHandler : IConfigurationSectionHandler
 #if SECOND_PASS
 
 	// Create a configuration object for a section.
-	public Object Create(Object parent, Object configContext, XmlNode section)
+	public virtual Object Create
+				(Object parent, Object configContext, XmlNode section)
 			{
 				Hashtable coll;
 				String key, value;

@@ -1,4 +1,13 @@
 
+2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Configuration/DictionarySectionHandler.cs,
+	System/Configuration/IgnoreSectionHandler.cs,
+	System/Configuration/SingleTagSectionHandler.cs,
+	System/Diagnostics/DiagnosticsConfigurationHandler.cs:
+	signature-compatibility fixes; begin implementating the
+	diagnostics configuration handler.
+
 2003-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Private/DateTimeFormat/DateTimeParser.cs:

@@ -38,7 +38,8 @@ public class SingleTagSectionHandler : IConfigurationSectionHandler
 #if SECOND_PASS
 
 	// Create a configuration object for a section.
-	public Object Create(Object parent, Object configContext, XmlNode section)
+	public virtual Object Create
+				(Object parent, Object configContext, XmlNode section)
 			{
 				// The section must not have child nodes.
 				if(section.HasChildNodes)

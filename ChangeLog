@@ -1,4 +1,9 @@
 
+2003-06-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_grammar.y: disable "GenericReference" because it
+	is causing problems parsing regular C# code.
+
 2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_arith.c: move some long shift's out of line to

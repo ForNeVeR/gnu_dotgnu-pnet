@@ -897,7 +897,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		ParenBooleanExpression LiteralExpression
 %type <node>		InvocationExpression ExpressionList
 %type <node>		ObjectCreationExpression OptArgumentList ArgumentList
-%type <node>		Argument PrefixedUnaryExpression GenericReference
+%type <node>		Argument PrefixedUnaryExpression /*GenericReference*/
 
 %type <node>		Statement EmbeddedStatement Block OptStatementList
 %type <node>		StatementList ExpressionStatement SelectionStatement
@@ -963,7 +963,8 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 25
+/*%expect 25*/
+%expect 21
 
 %start CompilationUnit
 %%
@@ -1727,14 +1728,17 @@ RelationalExpression
 	| RelationalExpression AS Type					{
 				MakeBinary(AsUntyped, $1, $3);
 			}
+/*
 	| GenericReference								{
 				$$ = $1;
 			}
 	| GenericReference '(' OptArgumentList ')'		{
 				$$ = CSInsertMethodInvocation($1, $3);
 			}
+*/
 	;
 
+/*
 GenericReference
 	: RelationalExpression '<' ShiftExpression '>'		{
 				$$ = CSInsertGenericReference($1, $3);
@@ -1763,6 +1767,7 @@ GenericReference
 						(ILNode_LocalVariableType_create($3, $4), $6));
 			}
 	;
+*/
 
 EqualityExpression
 	: RelationalExpression			{ $$ = $1; }

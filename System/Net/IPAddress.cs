@@ -128,7 +128,7 @@ public class IPAddress
 				parsed=	((quadD)) ;
 				parsed|=((quadC << 8)  & 0xFF00);
 				parsed|=((quadB << 16) & 0xFF0000);
-				parsed|=((quadA << 24) & 0xFF000000);
+				parsed|=((quadA << 24) & unchecked((int)0xFF000000));
 
 				return new IPAddress((long)(uint)HostToNetworkOrder(parsed));
 			}	

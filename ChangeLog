@@ -13,6 +13,9 @@ little for clarity.
 
 * cscc/cs_types.tc: semantic analysis for type nodes.
 
+* cscc/cs_decls.tc: remove ILNode_TypeSuffix and ILode_LocalVariableType,
+which are now in "cs_types.tc".
+
 2001-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h: add the IL_INLINE helper macro.

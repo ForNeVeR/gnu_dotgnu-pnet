@@ -3,6 +3,9 @@
 
 	* cscc/c/c_lvalue.tc: Allow array access to happen on Managed
 	arrays. (bug #8638)
+	
+	* engine/verify_branch.c: Treat I stack values the same as I4 or 
+	I8 values depending on the native int size.
 
 2004-04-22  Gopal V <gopalv82@yahoo.com>
 

@@ -202,6 +202,29 @@ static int ValidateStack(ILImage *image, BranchLabel *label,
 	labelStack = (ILEngineStackItem *)(label + 1);
 	for(posn = 0; posn < stackSize; ++posn)
 	{
+#ifdef IL_NATIVE_INT32
+		if(stack[posn].engineType == ILEngineType_I4 ||
+			stack[posn].engineType == ILEngineType_I)
+		{
+			if(labelStack[posn].engineType == ILEngineType_I4 ||
+				labelStack[posn].engineType == ILEngineType_I)
+			{
+				continue;
+			}
+		}
+#else
+	#ifdef IL_NATIVE_INT64
+		if(stack[posn].engineType == ILEngineType_I8 ||
+			stack[posn].engineType == ILEngineType_I)
+		{
+			if(labelStack[posn].engineType == ILEngineType_I8 ||
+				labelStack[posn].engineType = ILEngineType_I)
+			{
+				continue;
+			}
+		}
+	#endif
+#endif
 		if(stack[posn].engineType != labelStack[posn].engineType)
 		{
 			return 0;

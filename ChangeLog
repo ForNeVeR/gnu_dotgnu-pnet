@@ -6,7 +6,9 @@
 
 	* cscc/csharp/cs_oper.tc: Coercion of constants for equality
 	and inequality expressions.
-	
+
+	* cscc/csharp/cs_oper.tc: Fix last commit as they broke cscctest.
+
 2002-10-26  Richard Baumann <biochem333@nyc.rr.com>
 
 	* support/file.c, support/time.c, engine/lib_dir.c, include/il_sysio.h,

@@ -1,3 +1,9 @@
+2002-04-23  Gopal.V <gopalv82@symonds.net>
+
+	* tests/System/TestString.cs : added a lot of 
+	tests to make it useful to some extent. Still
+	some TODO left for anyone to pick up. 
+	
 2002-04-21  Stephen Compall  <rushing@sigecom.net>
 
 	* runtime/System/IO/StringReader.cs: added implementation.

@@ -33,7 +33,7 @@ static ILType *GetParamType(ILType *signature, ILMethod *method, ILUInt32 num)
 		if(!num)
 		{
 			owner = ILMethod_Owner(method);
-			if(!ILMethod_IsVirtual(method) && ILClassIsValueType(owner))
+			if(ILClassIsValueType(owner))
 			{
 				/* The "this" parameter is a value type, which is
 				   being passed as a managed pointer.  Return
@@ -100,14 +100,13 @@ checkLDArg:
 	if(stack[stackSize].typeInfo == ILType_Invalid)
 	{
 		/* The "this" parameter is being passed as a managed pointer */
+		classInfo = ILMethod_Owner(method);
 		stack[stackSize].engineType = ILEngineType_M;
-		stack[stackSize].typeInfo =
-			ILType_FromValueType(ILMethod_Owner(method));
+		stack[stackSize].typeInfo = ILClassToType(classInfo);
 
 		/* Fool the coder into thinking that the parameter is a pointer
 		   so that it doesn't try to load an entire managed value */
-		ILCoderLoadArg(coder, argNum,
-			ILType_FromClass(ILType_ToValueType(stack[stackSize].typeInfo)));
+		ILCoderLoadArg(coder, argNum, ILType_FromClass(classInfo));
 	}
 	else if((stack[stackSize].engineType =
 				TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)

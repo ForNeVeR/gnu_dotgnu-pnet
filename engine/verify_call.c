@@ -123,12 +123,12 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 			/* Call site signatures need "explicit this" */
 			return -1;
 		}
-		if(ILClassIsValueType(owner) && !ILMethod_IsVirtual(method))
+		if(ILClassIsValueType(owner))
 		{
 			/* The "this" parameter is a value type, which must be
 			   passed as either a managed or transient pointer */
 			isValueThis = 1;
-			thisType = ILType_FromValueType(owner);
+			thisType = ILClassToType(owner);
 		}
 		else
 		{
@@ -172,7 +172,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				if(isValueThis)
 				{
 					/* The "this" parameter must be a pointer */
-					paramType = ILType_FromValueType(owner);
+					paramType = ILClassToType(owner);
 					if(item->engineType == ILEngineType_T ||
 					   item->engineType == ILEngineType_M)
 					{

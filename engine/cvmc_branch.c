@@ -192,7 +192,8 @@ static void OutputCondBranch(ILCoder *coder, int iopcode, int lopcode,
 		CVM_ADJUST(1);
 		OutputBranch(coder, cmpopcode, dest);
 	}
-	else if(type == ILEngineType_M)
+	else if(type == ILEngineType_M || type == ILEngineType_T ||
+	        type == ILEngineType_O)
 	{
 		if(cmpopcode == COP_BEQ)
 		{
@@ -523,7 +524,8 @@ static void OutputCondCompare(ILCoder *coder, int iopcode, int lopcode,
 		}
 		CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 	}
-	else if(type == ILEngineType_M)
+	else if(type == ILEngineType_M || type == ILEngineType_T ||
+			type == ILEngineType_O)
 	{
 		CVMP_OUT_NONE(COP_PREFIX_PCMP);
 		CVM_ADJUST(-1);

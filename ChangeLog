@@ -7,6 +7,9 @@
 	the "System" assembly, because the version in "runtime" is
 	inaccessible due to being "internal".
 
+	* System/System.build, runtime/runtime.build: add the correct
+	"resources" and "references" tags to the csant build scripts.
+
 2002-03-22  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Began to integrate changes from chiraz's patch

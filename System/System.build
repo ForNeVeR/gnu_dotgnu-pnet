@@ -14,12 +14,11 @@
 			</sources>
 
 			<references>
-				<includes name="../runtime/mscorlib.dll"/>
+				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
 			<resources>
-				<includes
-					name="../resources/en_US/System/System.resources"/>
+				<file name="../resources/en_US/System/System.resources"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>
@@ -44,12 +43,11 @@
 			</sources>
 
 			<references>
-				<includes name="../runtime/mscorlib_ecma.dll"/>
+				<file name="../runtime/mscorlib_ecma.dll"/>
 			</references>
 
 			<resources>
-				<includes
-					name="../resources/en_US/System/System.resources"/>
+				<file name="../resources/en_US/System/System.resources"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

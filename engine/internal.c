@@ -74,6 +74,9 @@ extern	"C" {
 	#define _IL_FileMethods_suppressed
 	#define _IL_DirMethods_suppressed
 #endif
+#if !defined(IL_CONFIG_PINVOKE)
+	#define _IL_Marshal_suppressed
+#endif
 
 /*
  * Import the method tables of all internal classes.

@@ -9,6 +9,9 @@
 	* image/link.c: search a default module path if LD_LIBRARY_PATH
 	is not defined.
 
+	* engine/internal.c: don't include the "Marshal" class if PInvoke
+	has been disabled.
+
 2002-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

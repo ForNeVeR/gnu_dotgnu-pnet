@@ -130,6 +130,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	//Destroy window
 	public virtual void Destroy()
 	{
+		//Call will ignore if hwnd = IntPtr.Zero
 		Win32.Api.DestroyWindow(hwnd);
 		d.WriteLine("DrawingWindow.Destroy, hwnd="+hwnd);
 	}
@@ -476,20 +477,38 @@ internal abstract class DrawingWindow : IToolkitWindow
 				MouseMove( wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_LBUTTONDOWN:
+				ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_RBUTTONDOWN:
+				ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_MBUTTONDOWN:
+				ButtonDown( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_XBUTTONDOWN:
 				ButtonDown( wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_LBUTTONUP:
+				ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_RBUTTONUP:
+				ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_MBUTTONUP:
+				ButtonUp( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_XBUTTONUP:
 				ButtonUp( wParam, lParam );
 				break;
 			case Win32.Api.WindowsMessages.WM_LBUTTONDBLCLK:
+				DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_LBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_RBUTTONDBLCLK:
+				DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_RBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_MBUTTONDBLCLK:
+				DoubleClick( wParam | (int)Win32.Api.MouseKeyState.MK_MBUTTON, lParam );
+				break;
 			case Win32.Api.WindowsMessages.WM_XBUTTONDBLCLK:
 				DoubleClick( wParam, lParam );
 				break;

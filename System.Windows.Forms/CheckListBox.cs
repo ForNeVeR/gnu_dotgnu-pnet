@@ -23,6 +23,9 @@ namespace System.Windows.Forms
 {
 using System;
 using System.Collections;
+using System.ComponentModel;
+using System.Drawing.Design;
+
 
 	[TODO]
 	public class CheckedListBox : ListBox
@@ -39,6 +42,9 @@ using System.Collections;
 			lastSelected = -1;
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(false)]
+#endif
 		public bool CheckOnClick
 		{
 			get
@@ -52,6 +58,10 @@ using System.Collections;
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
 		public CheckedIndexCollection CheckedIndices
 		{
 			get
@@ -62,6 +72,10 @@ using System.Collections;
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
 		public CheckedItemCollection CheckedItems
 		{
 			get
@@ -75,6 +89,10 @@ using System.Collections;
 		}
 
 		[TODO]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Browsable(false)]
+#endif
 		public override object DataSource
 		{
 			get
@@ -89,6 +107,10 @@ using System.Collections;
 		}
 
 		[TODO]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Browsable(false)]
+#endif
 		public override string DisplayMember
 		{
 			get
@@ -103,6 +125,11 @@ using System.Collections;
 		}
 
 		[TODO]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Browsable(false)]
+#endif
 		public override DrawMode DrawMode
 		{
 			get
@@ -116,6 +143,9 @@ using System.Collections;
 		}
 
 		[TODO]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(false)]
+#endif
 		public bool ThreeDCheckBoxes 
 		{
 			get
@@ -139,6 +169,11 @@ using System.Collections;
 		}
 
 		[TODO]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Browsable(false)]
+#endif
 		public override int ItemHeight
 		{
 			get
@@ -152,6 +187,11 @@ using System.Collections;
 		}
 
 		[TODO]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[Editor("ListControlStringCollectionEditor, System.Design", typeof(UITypeEditor))]
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+		[Localizable(true)]
+#endif
 		public new ObjectCollection Items
 		{
 			get

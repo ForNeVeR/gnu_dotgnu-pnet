@@ -77,6 +77,7 @@ namespace System.Windows.Forms
 {
 
 using System.Drawing;
+using System.ComponentModel;
 
 public class ContainerControl : ScrollableControl, IContainerControl
 {
@@ -92,6 +93,9 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		SetStyle(ControlStyles.AllPaintingInWmPaint, false);
 	}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	public override BindingContext BindingContext
 	{
 		get
@@ -119,6 +123,10 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		}
 	}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	public virtual Control ActiveControl
 	{
 		get
@@ -175,6 +183,10 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		}
 	}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	public Form ParentForm
 	{
 		get
@@ -237,6 +249,9 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		return activated;
 	}
 
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif // CONFIG_COMPONENT_MODEL
 	protected override void AdjustFormScrollbars(bool displayScrollbars)
 	{
 		AdjustFormScrollbars(displayScrollbars);
@@ -402,6 +417,9 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		OnBindingContextChanged(EventArgs.Empty);
 	}
 
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif // CONFIG_COMPONENT_MODEL
 	protected override void OnControlRemoved(ControlEventArgs e)
 	{
 		Control control = e.Control;
@@ -417,6 +435,9 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		base.OnControlRemoved(e);
 	}
 
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif // CONFIG_COMPONENT_MODEL
 	protected override bool ProcessDialogChar(char charCode)
 	{
 		if (GetTopLevel())
@@ -764,6 +785,9 @@ public class ContainerControl : ScrollableControl, IContainerControl
 #if !CONFIG_COMPACT_FORMS
 
 	// Process a message.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif // CONFIG_COMPONENT_MODEL
 	protected override void WndProc(ref Message m)
 	{
 		base.WndProc(ref m);

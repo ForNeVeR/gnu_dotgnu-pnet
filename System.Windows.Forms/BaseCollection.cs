@@ -35,8 +35,12 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 			{
 				List.CopyTo(array, index);
 			}
+#if CONFIG_COMPONENT_MODEL
 	[Browsable(false)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public virtual int Count
 			{
 				get
@@ -44,8 +48,12 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 					return List.Count;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[Browsable(false)]
+#endif
 	public bool IsSynchronized
 			{
 				get
@@ -53,8 +61,12 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 					return false;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[Browsable(false)]
+#endif
 	public Object SyncRoot
 			{
 				get
@@ -70,8 +82,12 @@ public class BaseCollection : MarshalByRefObject, ICollection, IEnumerable
 			}
 
 	// Determine if the collection is read-only.
+#if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[Browsable(false)]
+#endif
 	public bool IsReadOnly
 			{
 				get

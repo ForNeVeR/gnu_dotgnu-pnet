@@ -22,6 +22,8 @@
 namespace System.Windows.Forms
 {
 
+#if !CONFIG_COMPACT_FORMS
+
 using System.ComponentModel;
 using System.Globalization;
 
@@ -80,5 +82,7 @@ public class ImageIndexConverter : Int32Converter
 	}
 
 }; // class ImageIndexConverter
+
+#endif // !CONFIG_COMPACT_FORMS
 
 }; // namespace System.Windows.Forms

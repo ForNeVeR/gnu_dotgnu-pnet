@@ -28,9 +28,15 @@ namespace System.Windows.Forms
 	using System.Collections;
 	using System.ComponentModel;
 	using System.Drawing;
+	using System.Drawing.Design;
 	using System.Text;
 
  
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Designer("System.Windows.Forms.Design.ComboBoxDesigner, System.Design")]
+	[DefaultProperty("Items")]
+	[DefaultEvent("SelectedIndexChanged")] 
+#endif
 	public class ComboBox : ListControl
 	{
 		private DrawMode drawMode;
@@ -142,6 +148,12 @@ namespace System.Windows.Forms
 			ControlPaint.DrawComboButton(g, ClientSize.Width - ButtonSize.Width, 0, ButtonSize.Width, ButtonSize.Height, buttonState);
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(DrawMode.Normal)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[RefreshProperties(RefreshProperties.Repaint)]
+#endif
 		public DrawMode DrawMode 
 		{
 			get
@@ -156,6 +168,12 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(ComboBoxStyle.DropDown)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[RefreshProperties(RefreshProperties.Repaint)]
+#endif
 		public ComboBoxStyle DropDownStyle 
 		{
 			get
@@ -189,6 +207,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[Browsable(false)]
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 		public bool DroppedDown
 		{
 			get
@@ -255,6 +277,12 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+#endif
 		public bool IntegralHeight 
 		{
 			get
@@ -268,6 +296,9 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+#endif
 		public int ItemHeight 
 		{
 			get
@@ -304,6 +335,13 @@ namespace System.Windows.Forms
 				itemHeights = null;
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[Editor("System.Windows.Forms.Design.ListControlStringCollectionEditor, System.Design", typeof(UITypeEditor))]
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+#endif
 		public ObjectCollection Items 
 		{
 			get
@@ -314,12 +352,24 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(8)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+#endif
 		public int MaxDropDownItems 
 		{
 			get { return maxDropDownItems; }
 			set { maxDropDownItems = value; }
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(0)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+#endif
 		public int MaxLength 
 		{
 			get
@@ -332,6 +382,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
 		public int PreferredHeight 
 		{
 			get
@@ -342,6 +396,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
 		public override int SelectedIndex 
 		{
 			get
@@ -373,6 +431,13 @@ namespace System.Windows.Forms
 				textEntry.Text = GetItemText(Items[selectedIndex]);
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[Bindable(true)]
+#endif
 		public object SelectedItem 
 		{
 			get
@@ -385,6 +450,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
 		public string SelectedText 
 		{
 			get
@@ -399,6 +468,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
 		public int SelectionLength 
 		{
 			get
@@ -411,6 +484,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		[Browsable(false)]
+#endif
 		public int SelectionStart
 		{
 			get
@@ -423,6 +500,9 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[DefaultValue(false)]
+#endif
 		public bool Sorted 
 		{
 			get
@@ -439,6 +519,10 @@ namespace System.Windows.Forms
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+		[Bindable(true)]
+#endif
 		public override string Text 
 		{
 			get
@@ -798,6 +882,12 @@ namespace System.Windows.Forms
 			return base.ToString () + ", Items.Count: " + ((Items == null) ? 0 : Items.Count).ToString();
 		}
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+		[Browsable(false)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 		public override Image BackgroundImage
 		{
 			get

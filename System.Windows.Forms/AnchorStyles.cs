@@ -25,7 +25,9 @@ namespace System.Windows.Forms
 using System.ComponentModel;
 
 [Flags]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 [Editor("System.Windows.Forms.Design.AnchorEditor, System.Design", typeof(System.Drawing.Design.UITypeEditor))]
+#endif
 public enum AnchorStyles
 {
 	None	= 0x0000,

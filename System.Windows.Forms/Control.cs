@@ -24,6 +24,7 @@ namespace System.Windows.Forms
 {
 
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Drawing;
 using System.Drawing.Toolkit;
 using System.Drawing.Text;
@@ -31,8 +32,19 @@ using System.Collections;
 using System.Threading;
 using System.Reflection;
 using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+[Designer("System.Windows.Forms.Design.ContolDesigner, System.Design")]
+[DefaultProperty("Text")]
+[DefaultEvent("Click")]
+#endif
+#if CONFIG_COMPONENT_MODEL_DESIGN
+[DesignerSerializer("System.Windows.Forms.Design.ControlCodeDomSerializer, System.Design",
+			 "System.ComponentModel.Design.Serialization.CodeDomSerializer, System.Design")]
+#endif
 #if CONFIG_COMPONENT_MODEL
+[ToolboxItemFilter("System.Windows.Forms")]
 public class Control : Component, ISynchronizeInvoke, IWin32Window
 #else
 public class Control : IWin32Window, IDisposable
@@ -189,16 +201,19 @@ public class Control : IWin32Window, IDisposable
 
 	// Implement the ISynchronizeInvoke interface.
 	[TODO]
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public IAsyncResult BeginInvoke(Delegate method, Object[] args)
 			{
 				// TODO
 				return null;
 			}
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public IAsyncResult BeginInvoke(Delegate method)
 			{
 				return BeginInvoke(method, null);
 			}
 	[TODO]
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public Object EndInvoke(IAsyncResult result)
 			{
 				// TODO
@@ -210,6 +225,13 @@ public class Control : IWin32Window, IDisposable
 				// TODO
 				return null;
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool InvokeRequired
 			{
 				get
@@ -222,6 +244,13 @@ public class Control : IWin32Window, IDisposable
 
 	// Get or set the control's properties.
 #if !CONFIG_COMPACT_FORMS
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public AccessibleObject AccessibilityObject
 			{
 				get
@@ -233,6 +262,13 @@ public class Control : IWin32Window, IDisposable
 					return accessibilityObject;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public String AccessibleDefaultActionDescription
 			{
 				get
@@ -244,6 +280,12 @@ public class Control : IWin32Window, IDisposable
 					AccessibilityObject.defaultAction = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue("")]
+#endif
 	public String AccessibleDescription
 			{
 				get
@@ -255,6 +297,12 @@ public class Control : IWin32Window, IDisposable
 					AccessibilityObject.description = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue("")]
+#endif
 	public String AccessibleName
 			{
 				get
@@ -266,6 +314,9 @@ public class Control : IWin32Window, IDisposable
 					AccessibilityObject.name = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(AccessibleRole.Default)]
+#endif
 	public AccessibleRole AccessibleRole
 			{
 				get
@@ -278,6 +329,9 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+#endif
 	public virtual bool AllowDrop
 			{
 				get
@@ -289,6 +343,13 @@ public class Control : IWin32Window, IDisposable
 					allowDrop = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+	[RefreshProperties(RefreshProperties.Repaint)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(AnchorStyles.Top | AnchorStyles.Left)]
+#endif
 	public virtual AnchorStyles Anchor
 			{
 				get
@@ -300,6 +361,9 @@ public class Control : IWin32Window, IDisposable
 					anchorStyles = (byte)value;
 				}
 			}
+#if !ECMA_COMPAT
+	[DispId(-501)]
+#endif
 	public virtual Color BackColor
 			{
 				get
@@ -326,6 +390,12 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(null)]
+#endif
 	public virtual Image BackgroundImage
 			{
 				get
@@ -341,6 +411,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public virtual BindingContext BindingContext
 			{
 				get
@@ -367,6 +444,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public int Bottom
 			{
 				get
@@ -374,6 +458,13 @@ public class Control : IWin32Window, IDisposable
 					return top + height;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public Rectangle Bounds
 			{
 				get
@@ -387,6 +478,13 @@ public class Control : IWin32Window, IDisposable
 							value.Height, BoundsSpecified.All);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool CanFocus
 			{
 				get
@@ -394,6 +492,13 @@ public class Control : IWin32Window, IDisposable
 					return (Visible && Enabled && GetStyle(ControlStyles.Selectable));
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool CanSelect
 			{
 				get
@@ -408,6 +513,9 @@ public class Control : IWin32Window, IDisposable
 					return true;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(true)]
+#endif
 	public bool CausesValidation
 			{
 				get
@@ -423,6 +531,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool Capture
 			{
 				get
@@ -444,6 +559,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public Rectangle ClientRectangle
 			{
 				get
@@ -452,6 +574,13 @@ public class Control : IWin32Window, IDisposable
 					return new Rectangle(0, 0, size.Width, size.Height);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public Size ClientSize
 			{
 				get
@@ -465,6 +594,13 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public String CompanyName
 			{
 				get
@@ -479,6 +615,14 @@ public class Control : IWin32Window, IDisposable
 					return assembly.GetName().Name;
 				}
 			}
+#endif // !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Description("ControlCompanyNameDescr")]
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 #endif
 	public bool ContainsFocus
 			{
@@ -498,6 +642,9 @@ public class Control : IWin32Window, IDisposable
 					return false;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(null)]
+#endif
 	public virtual ContextMenu ContextMenu
 			{
 				get
@@ -520,6 +667,10 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+#endif
 	public ControlCollection Controls
 			{
 				get
@@ -527,6 +678,13 @@ public class Control : IWin32Window, IDisposable
 					return CreateControlsInstance();
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool Created
 			{
 				get
@@ -576,6 +734,9 @@ public class Control : IWin32Window, IDisposable
 					return cp;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(null)]
+#endif
 	public virtual Cursor Cursor
 			{
 				get
@@ -615,6 +776,13 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 	[TODO]
+#if CONFIG_COMPONENT_MODEL 
+	[ParenthesizePropertyName(true)]
+	[RefreshProperties(RefreshProperties.All)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+#endif
 	public ControlBindingsCollection DataBindings
 			{
 				get
@@ -679,6 +847,13 @@ public class Control : IWin32Window, IDisposable
 					// cache font height values, we have nothing to do here.
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public virtual Rectangle DisplayRectangle
 			{
 				get
@@ -687,6 +862,13 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool Disposing
 			{
 				get
@@ -695,6 +877,13 @@ public class Control : IWin32Window, IDisposable
 					return false;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+	[RefreshProperties(RefreshProperties.Repaint)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(DockStyle.None)]
+#endif
 	public virtual DockStyle Dock
 			{
 				get
@@ -710,6 +899,12 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if !ECMA_COMPAT
+	[DispId(-514)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
 	public bool Enabled
 			{
 				get
@@ -737,6 +932,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public virtual bool Focused
 			{
 				get
@@ -751,6 +953,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if !ECMA_COMPAT
+	[DispId(-512)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[AmbientValue(null)]
+	[Localizable(true)]
+#endif
 	public virtual Font Font
 			{
 				get
@@ -781,6 +990,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if !ECMA_COMPAT
+	[DispId(-513)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public virtual Color ForeColor
 			{
 				get
@@ -807,6 +1023,9 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if !ECMA_COMPAT
+	[DispId(-515)]
+#endif
 	public IntPtr Handle
 			{
 				get
@@ -821,6 +1040,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool HasChildren
 			{
 				get
@@ -828,6 +1054,13 @@ public class Control : IWin32Window, IDisposable
 					return (numChildren > 0);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Always)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public int Height
 			{
 				get
@@ -840,11 +1073,30 @@ public class Control : IWin32Window, IDisposable
 						BoundsSpecified.Height);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[AmbientValue(ImeMode.Inherit)]
+	[Localizable(true)]
+#endif
 	public ImeMode ImeMode
 			{
 				get
 				{
-					return (ImeMode)imeMode;
+					if ((ImeMode)imeMode == ImeMode.Inherit)
+					{
+						if (parent != null)
+						{
+							return parent.ImeMode;
+						}
+						else
+						{
+							// return disabled = default
+							return ImeMode.Disable;
+						}
+					}
+					else
+					{
+						return (ImeMode)imeMode;
+					}
 				}
 				set
 				{
@@ -855,6 +1107,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool IsAccessible
 			{
 				get
@@ -867,6 +1126,13 @@ public class Control : IWin32Window, IDisposable
 					// Not used in this implementation.
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool IsDisposed
 			{
 				get
@@ -874,6 +1140,13 @@ public class Control : IWin32Window, IDisposable
 					return disposed;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool IsHandleCreated
 			{
 				get
@@ -881,6 +1154,13 @@ public class Control : IWin32Window, IDisposable
 					return (toolkitWindow != null);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Always)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public int Left
 			{
 				get
@@ -893,6 +1173,9 @@ public class Control : IWin32Window, IDisposable
 						BoundsSpecified.X);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
 	public Point Location
 			{
 				get
@@ -905,6 +1188,9 @@ public class Control : IWin32Window, IDisposable
 						BoundsSpecified.Location);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public String Name
 			{
 				get
@@ -916,6 +1202,10 @@ public class Control : IWin32Window, IDisposable
 					name = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public Control Parent
 			{
 				get
@@ -1003,6 +1293,13 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #if !ECMA_COMPAT
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public String ProductName
 			{
 				get
@@ -1017,6 +1314,13 @@ public class Control : IWin32Window, IDisposable
 					return assembly.GetName().Name;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public String ProductVersion
 			{
 				get
@@ -1033,6 +1337,13 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #endif
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public bool RecreatingHandle
 			{
 				get
@@ -1042,6 +1353,13 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public Region Region
 			{
 				get
@@ -1061,6 +1379,13 @@ public class Control : IWin32Window, IDisposable
 					SetStyle(ControlStyles.ResizeRedraw, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public int Right
 			{
 				get
@@ -1068,6 +1393,10 @@ public class Control : IWin32Window, IDisposable
 					return left + width;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[AmbientValue(RightToLeft.Inherit)]
+	[Localizable(true)]
+#endif
 	public virtual RightToLeft RightToLeft
 			{
 				get
@@ -1094,6 +1423,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	protected virtual bool ShowFocusCues
 			{
 				get
@@ -1108,6 +1444,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	protected virtual bool ShowKeyboardCues
 			{
 				get
@@ -1123,6 +1466,7 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 	public override ISite Site
 			{
 				get
@@ -1134,6 +1478,9 @@ public class Control : IWin32Window, IDisposable
 					base.Site = value;
 				}
 			}
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
 #endif
 	public Size Size
 			{
@@ -1147,6 +1494,10 @@ public class Control : IWin32Window, IDisposable
 						BoundsSpecified.Size);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+	[MergableProperty(false)]
+#endif
 	public int TabIndex
 			{
 				get
@@ -1164,6 +1515,12 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if !ECMA_COMPAT
+	[DispId(-516)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(true)]
+#endif
 	public bool TabStop
 			{
 				get
@@ -1179,6 +1536,14 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(false)]
+	[Bindable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[TypeConverter(typeof(StringConverter))]
+	[DefaultValue(null)]
+#endif
 	public Object Tag
 			{
 				get
@@ -1190,6 +1555,12 @@ public class Control : IWin32Window, IDisposable
 					tag = value;
 				}
 			}
+#if !ECMA_COMPAT
+	[DispId(-517)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
 	public virtual String Text
 			{
 				get
@@ -1205,6 +1576,13 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public int Top
 			{
 				get
@@ -1217,6 +1595,13 @@ public class Control : IWin32Window, IDisposable
 						BoundsSpecified.Y);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public Control TopLevelControl
 			{
 				get
@@ -1230,6 +1615,9 @@ public class Control : IWin32Window, IDisposable
 					return ctrl;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
 	public bool Visible
 			{
 				get
@@ -1253,6 +1641,13 @@ public class Control : IWin32Window, IDisposable
 					SetVisibleCore(value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Always)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public int Width
 			{
 				get
@@ -1327,6 +1722,9 @@ public class Control : IWin32Window, IDisposable
 #if !CONFIG_COMPACT_FORMS
 
 	// Notify client applications of accessibility events.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void AccessibilityNotifyClients
 		(AccessibleEvents accEvent, int childID)
 			{
@@ -1334,6 +1732,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Create the accessibility object for this control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual AccessibleObject CreateAccessibilityInstance()
 			{
 				return new AccessibleObject(this);
@@ -1439,12 +1840,18 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Create a new control collection for this instance.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual ControlCollection CreateControlsInstance()
 			{
 				return new ControlCollection(this);
 			}
 
 	// Create the handle for this control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void CreateHandle()
 			{
 				// Cannot create the control if it has been disposed.
@@ -1528,6 +1935,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Destroy the handle associated with the control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void DestroyHandle()
 			{
 				// Bail out if we don't have a handle.
@@ -1626,6 +2036,9 @@ public class Control : IWin32Window, IDisposable
 
 	// Convert a child HWND into the corresponding Control object.
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public static Control FromChildHandle(IntPtr handle)
 			{
 				// TODO
@@ -1634,6 +2047,9 @@ public class Control : IWin32Window, IDisposable
 
 	// Convert a HWND into the corresponding Control object.
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public static Control FromHandle(IntPtr handle)
 		{
 			// TODO
@@ -1810,6 +2226,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Initialize layout as this control has just been added to a container.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void InitLayout()
 			{
 				if(parent != null && Dock == DockStyle.None)
@@ -1924,18 +2343,27 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Invoke the "GotFocus" event on a particular control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void InvokeGotFocus(Control toInvoke, EventArgs e)
 			{
 				toInvoke.OnGotFocus(e);
 			}
 
 	// Invoke the "LostFocus" event on a particular control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void InvokeLostFocus(Control toInvoke, EventArgs e)
 			{
 				toInvoke.OnLostFocus(e);
 			}
 
 	// Invoke the "Click" event on a particular control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void InvokeOnClick(Control toInvoke, EventArgs e)
 			{
 				toInvoke.OnClick(e);
@@ -1990,10 +2418,16 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Force the child to perform layout.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public void PerformLayout()
 			{
 				PerformLayout(null, null);
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	public void PerformLayout
 		(Control affectedControl, String affectedProperty)
 			{
@@ -2329,6 +2763,9 @@ public class Control : IWin32Window, IDisposable
 
 	// Force the handle to be recreated.
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void RecreateHandle()
 			{
 				// TODO
@@ -2347,6 +2784,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Reflect a message to the correct control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected static bool ReflectMessage(IntPtr hWnd, ref Message m)
 			{
 				// We don't use this method in this implementation.
@@ -2364,6 +2804,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Reset the background color to its default value.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public virtual void ResetBackColor()
 			{
 				BackColor = Color.Empty;
@@ -2371,36 +2814,54 @@ public class Control : IWin32Window, IDisposable
 
 	// Reset the data bindings to its default value.
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public void ResetBindings()
 			{
 				// TODO
 			}
 
 	// Reset the cursor to its default value.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public virtual void ResetCursor()
 			{
 				Cursor = null;
 			}
 
 	// Reset the foreground color to its default value.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public virtual void ResetForeColor()
 			{
 				ForeColor = Color.Empty;
 			}
 
 	// Reset the font to its default value.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public virtual void ResetFont()
 			{
 				Font = null;
 			}
 
 	// Reset the input method mode to its default value.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public void ResetImeMode()
 			{
 				ImeMode = DefaultImeMode;
 			}
 
 	// Reset the right to left property to its default value.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Never)]
+#endif
 	public virtual void ResetRightToLeft()
 			{
 				RightToLeft = RightToLeft.Inherit;
@@ -2429,6 +2890,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Translate an alignment value for right-to-left text.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected ContentAlignment RtlTranslateAlignment(ContentAlignment align)
 			{
 				if(RightToLeft == RightToLeft.No)
@@ -2456,6 +2920,9 @@ public class Control : IWin32Window, IDisposable
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected HorizontalAlignment RtlTranslateAlignment
 		(HorizontalAlignment align)
 			{
@@ -2476,6 +2943,9 @@ public class Control : IWin32Window, IDisposable
 					return align;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected LeftRightAlignment RtlTranslateAlignment
 		(LeftRightAlignment align)
 			{
@@ -2492,15 +2962,24 @@ public class Control : IWin32Window, IDisposable
 					return LeftRightAlignment.Left;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected ContentAlignment RtlTranslateContent(ContentAlignment align)
 			{
 				return RtlTranslateAlignment(align);
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected HorizontalAlignment RtlTranslateHorizontal
 		(HorizontalAlignment align)
 			{
 				return RtlTranslateAlignment(align);
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected LeftRightAlignment RtlTranslateLeftRight
 		(LeftRightAlignment align)
 			{
@@ -2518,6 +2997,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Inner core of "Scale".
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void ScaleCore(float dx, float dy)
 			{
 				layoutSuspended++;
@@ -2624,6 +3106,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Inner core of "SetBounds".
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void SetBoundsCore
 		(int x, int y, int width, int height,
 		BoundsSpecified specified)
@@ -2675,6 +3160,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Inner core of setting the client size.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void SetClientSizeCore(int x, int y)
 			{
 				Size client = ClientToBounds(new Size(x, y));
@@ -2682,6 +3170,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Set a style bit.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void SetStyle(ControlStyles flag, bool value)
 			{
 				if(value)
@@ -2760,10 +3251,16 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Update the bounds of the control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void UpdateBounds()
 			{
 				UpdateBounds(left, top, width, height);
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void UpdateBounds(int x, int y, int width, int height)
 			{
 				bool moved;
@@ -2783,6 +3280,9 @@ public class Control : IWin32Window, IDisposable
 					OnSizeChanged(EventArgs.Empty);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void UpdateBounds(int x, int y, int width, int height,
 		int clientWidth, int clientHeight)
 			{
@@ -2792,6 +3292,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Apply the changed styles to the control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void UpdateStyles()
 			{
 				currentParams = CreateParams;
@@ -2799,6 +3302,9 @@ public class Control : IWin32Window, IDisposable
 			}
 
 	// Update the Z-order of a control.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected void UpdateZOrder()
 			{
 				// We don't use this - the child collection updates
@@ -2835,6 +3341,9 @@ public class Control : IWin32Window, IDisposable
 #if !CONFIG_COMPACT_FORMS
 
 	// Default window procedure for this control class.
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void DefWndProc(ref Message msg)
 			{
 				// Window procedures are not used in this implementation.
@@ -3014,6 +3523,12 @@ public class Control : IWin32Window, IDisposable
 					RemoveHandler(EventId.ContextMenuChanged, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event ControlEventHandler ControlAdded
 			{
 				add
@@ -3025,6 +3540,12 @@ public class Control : IWin32Window, IDisposable
 					RemoveHandler(EventId.ControlAdded, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event ControlEventHandler ControlRemoved
 			{
 				add
@@ -3172,6 +3693,12 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #endif
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event EventHandler GotFocus
 			{
 				add
@@ -3183,6 +3710,12 @@ public class Control : IWin32Window, IDisposable
 					RemoveHandler(EventId.GotFocus, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event EventHandler HandleCreated
 			{
 				add
@@ -3194,6 +3727,12 @@ public class Control : IWin32Window, IDisposable
 					RemoveHandler(EventId.HandleCreated, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event EventHandler HandleDestroyed
 			{
 				add
@@ -3227,6 +3766,12 @@ public class Control : IWin32Window, IDisposable
 					RemoveHandler(EventId.ImeModeChanged, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event InvalidateEventHandler Invalidated
 			{
 				add
@@ -3304,6 +3849,12 @@ public class Control : IWin32Window, IDisposable
 					RemoveHandler(EventId.LocationChanged, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event EventHandler LostFocus
 			{
 				add
@@ -3381,6 +3932,12 @@ public class Control : IWin32Window, IDisposable
 					RemoveHandler(EventId.MouseUp, value);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+#endif
 	public event MouseEventHandler MouseWheel
 			{
 				add
@@ -3598,6 +4155,9 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 	[TODO]
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnBackgroundImageChanged(EventArgs e)
 			{
 				// TODO: set the background image on the toolkit window.
@@ -3621,6 +4181,9 @@ public class Control : IWin32Window, IDisposable
 					children[posn].OnParentBackgroundImageChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnBindingContextChanged(EventArgs e)
 			{
 				// Invoke the event handler.
@@ -3639,6 +4202,9 @@ public class Control : IWin32Window, IDisposable
 					children[posn].OnParentBindingContextChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnCausesValidationChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -3649,6 +4215,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnChangeUICues(UICuesEventArgs e)
 			{
 				UICuesEventHandler handler;
@@ -3659,6 +4228,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnClick(EventArgs e)
 			{
 				EventHandler handler;
@@ -3668,6 +4240,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnContextMenuChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -3678,6 +4253,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnControlAdded(ControlEventArgs e)
 			{
 				ControlEventHandler handler;
@@ -3688,6 +4266,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnControlRemoved(ControlEventArgs e)
 			{
 				ControlEventHandler handler;
@@ -3698,10 +4279,16 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnCreateControl()
 			{
 				// Nothing to do in the base class.
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnCursorChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -3711,6 +4298,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnDockChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -3720,6 +4310,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnDoubleClick(EventArgs e)
 			{
 				EventHandler handler;
@@ -3730,6 +4323,9 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #if !CONFIG_COMPACT_FORMS
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnDragDrop(DragEventArgs e)
 			{
 				DragEventHandler handler;
@@ -3739,6 +4335,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnDragEnter(DragEventArgs e)
 			{
 				DragEventHandler handler;
@@ -3748,6 +4347,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnDragLeave(EventArgs e)
 			{
 				EventHandler handler;
@@ -3757,6 +4359,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnDragOver(DragEventArgs e)
 			{
 				DragEventHandler handler;
@@ -3766,6 +4371,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 #endif
 	protected virtual void OnEnabledChanged(EventArgs e)
 			{
@@ -3788,6 +4396,9 @@ public class Control : IWin32Window, IDisposable
 					children[posn].OnParentEnabledChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnEnter(EventArgs e)
 			{
 				EventHandler handler;
@@ -3797,6 +4408,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnFontChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -3806,6 +4420,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnForeColorChanged(EventArgs e)
 			{
 				// Set the foreground color on the toolkit window.
@@ -3832,6 +4449,9 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #if !CONFIG_COMPACT_FORMS
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnGiveFeedback(GiveFeedbackEventArgs e)
 			{
 				GiveFeedbackEventHandler handler;
@@ -3843,6 +4463,9 @@ public class Control : IWin32Window, IDisposable
 				}
 			}
 #endif
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnGotFocus(EventArgs e)
 			{
 				EventHandler handler;
@@ -3852,6 +4475,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnHandleCreated(EventArgs e)
 			{
 				EventHandler handler;
@@ -3861,6 +4487,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnHandleDestroyed(EventArgs e)
 			{
 				EventHandler handler;
@@ -3870,6 +4499,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnHelpRequested(HelpEventArgs e)
 			{
 				HelpEventHandler handler;
@@ -3889,6 +4521,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnInvalidated(InvalidateEventArgs e)
 			{
 				InvalidateEventHandler handler;
@@ -3899,6 +4534,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnKeyDown(KeyEventArgs e)
 			{
 				KeyEventHandler handler;
@@ -3908,6 +4546,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnKeyPress(KeyPressEventArgs e)
 			{
 				KeyPressEventHandler handler;
@@ -3917,6 +4558,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnKeyUp(KeyEventArgs e)
 			{
 				KeyEventHandler handler;
@@ -3926,6 +4570,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnLayout(LayoutEventArgs e)
 			{
 				// Invoke the event handler.
@@ -3939,6 +4586,9 @@ public class Control : IWin32Window, IDisposable
 				// Perform layout on this control's contents.
 				PerformActualLayout();
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnLeave(EventArgs e)
 			{
 				EventHandler handler;
@@ -3948,6 +4598,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnLocationChanged(EventArgs e)
 			{
 				// Raise the "Move" event first.
@@ -3961,6 +4614,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnLostFocus(EventArgs e)
 			{
 				EventHandler handler;
@@ -3970,6 +4626,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMouseDown(MouseEventArgs e)
 			{
 				MouseEventHandler handler;
@@ -3983,6 +4642,9 @@ public class Control : IWin32Window, IDisposable
 			{
 				OnMouseDown(e);
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMouseEnter(EventArgs e)
 			{
 				EventHandler handler;
@@ -3992,6 +4654,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMouseHover(EventArgs e)
 			{
 				EventHandler handler;
@@ -4001,6 +4666,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMouseLeave(EventArgs e)
 			{
 				EventHandler handler;
@@ -4010,6 +4678,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMouseMove(MouseEventArgs e)
 			{
 				MouseEventHandler handler;
@@ -4019,6 +4690,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMouseUp(MouseEventArgs e)
 			{
 				MouseEventHandler handler;
@@ -4032,6 +4706,9 @@ public class Control : IWin32Window, IDisposable
 	{
 		OnMouseUp(e);
 	}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMouseWheel(MouseEventArgs e)
 			{
 				MouseEventHandler handler;
@@ -4041,6 +4718,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnMove(EventArgs e)
 			{
 				// Raise the "Move" event.
@@ -4057,6 +4737,9 @@ public class Control : IWin32Window, IDisposable
 					Invalidate();
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnPaint(PaintEventArgs e)
 			{
 				PaintEventHandler handler;
@@ -4066,10 +4749,16 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnPaintBackground(PaintEventArgs e)
 			{
 				// Nothing to do here in this implementation.
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentBackColorChanged(EventArgs e)
 			{
 				if(backColor.IsEmpty && backgroundImage == null)
@@ -4077,6 +4766,9 @@ public class Control : IWin32Window, IDisposable
 					OnBackColorChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentBackgroundImageChanged(EventArgs e)
 			{
 				if(backColor.IsEmpty && backgroundImage == null)
@@ -4084,6 +4776,9 @@ public class Control : IWin32Window, IDisposable
 					OnBackgroundImageChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentBindingContextChanged(EventArgs e)
 			{
 				if(bindingContext == null)
@@ -4091,6 +4786,9 @@ public class Control : IWin32Window, IDisposable
 					OnBindingContextChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -4100,6 +4798,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentEnabledChanged(EventArgs e)
 			{
 				bool parentEnabled = parent.Enabled;
@@ -4108,6 +4809,9 @@ public class Control : IWin32Window, IDisposable
 					OnEnabledChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentFontChanged(EventArgs e)
 			{
 				if(font == null)
@@ -4115,6 +4819,9 @@ public class Control : IWin32Window, IDisposable
 					OnFontChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentForeColorChanged(EventArgs e)
 			{
 				if(foreColor.IsEmpty)
@@ -4122,6 +4829,9 @@ public class Control : IWin32Window, IDisposable
 					OnForeColorChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentRightToLeftChanged(EventArgs e)
 			{
 				if(rightToLeft == (byte)(RightToLeft.Inherit))
@@ -4129,6 +4839,9 @@ public class Control : IWin32Window, IDisposable
 					OnRightToLeftChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnParentVisibleChanged(EventArgs e)
 			{
 				bool parentVisible = parent.Visible;
@@ -4157,6 +4870,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnQueryContinueDrag
 		(QueryContinueDragEventArgs e)
 			{
@@ -4168,6 +4884,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
 #endif
 	protected virtual void OnResize(EventArgs e)
 			{
@@ -4194,6 +4913,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnRightToLeftChanged(EventArgs e)
 			{
 				// Invoke the event handler.
@@ -4212,6 +4934,9 @@ public class Control : IWin32Window, IDisposable
 					children[posn].OnParentRightToLeftChanged(e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnSizeChanged(EventArgs e)
 			{
 				// Raise the "Resize" event first.
@@ -4225,6 +4950,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnStyleChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -4234,6 +4962,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnSystemColorsChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -4244,6 +4975,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnTabIndexChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -4254,6 +4988,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnTabStopChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -4264,6 +5001,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnTextChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -4273,6 +5013,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnValidated(EventArgs e)
 			{
 				EventHandler handler;
@@ -4282,6 +5025,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnValidating(CancelEventArgs e)
 			{
 				CancelEventHandler handler;
@@ -4291,6 +5037,9 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[EditorBrowsable(EditorBrowsableState.Advanced)]
+#endif
 	protected virtual void OnVisibleChanged(EventArgs e)
 			{
 				// Map or unmap the toolkit window.

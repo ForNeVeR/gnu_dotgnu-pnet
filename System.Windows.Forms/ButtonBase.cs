@@ -58,8 +58,12 @@ public abstract class ButtonBase : Control
 			}
 
 	// Get or set this control's properties.
+#if CONFIG_COMPONENT_MODEL
 	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[DefaultValue(FlatStyle.Standard)]
+#endif
 	public FlatStyle FlatStyle
 			{
 				get
@@ -75,7 +79,9 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[Localizable(true)]
+#endif
 	public Image Image
 			{
 				get
@@ -91,8 +97,12 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[DefaultValue(ContentAlignment.MiddleCenter)]
+#endif
 	public ContentAlignment ImageAlign
 			{
 				get
@@ -108,12 +118,16 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[DefaultValue(-1)]
-#if !CONFIG_COMPACT_FORMS
-	[TypeConverter(typeof(ImageIndexConverter))]
-#endif // !CONFIG_COMPACT_FORMS
 	[Editor("System.Windows.Forms.Design.ImageIndexEditor, System.Design", typeof(UITypeEditor))]
+#endif
+#if !CONFIG_COMPACT_FORMS || CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[TypeConverter(typeof(ImageIndexConverter))]
+#endif
 	public int ImageIndex
 			{
 				get
@@ -144,7 +158,9 @@ public abstract class ButtonBase : Control
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[Browsable(false)]
+#endif
 	public new ImeMode ImeMode
 			{
 				get
@@ -156,8 +172,12 @@ public abstract class ButtonBase : Control
 					base.ImeMode = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
 	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	[DefaultValue(ContentAlignment.MiddleCenter)]
+#endif
 #if !CONFIG_COMPACT_FORMS
 	public
 #else

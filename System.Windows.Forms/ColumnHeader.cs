@@ -27,9 +27,12 @@ using System.Reflection;
 using System.ComponentModel;
 
 #if CONFIG_COMPONENT_MODEL
+	[DefaultProperty("Text")]
+	[DesignTimeVisible(false)]
+	[ToolboxItem(false)]
 	public class ColumnHeader : Component, ICloneable
 #else
-	public class ColumnHeader : ICloneable
+	public class ColumnHeader : ICloneable, IDisposable
 #endif
 	{
 		internal ListView listView;
@@ -45,6 +48,17 @@ using System.ComponentModel;
 			index = -1;
 		}
 
+#if !CONFIG_COMPONENT_MODEL
+		// Destuctor.
+		~ColumnHeader()
+		{
+			Dispose(false);
+		}
+#endif
+
+#if CONFIG_COMPONENT_MODEL
+		[Browsable(false)]
+#endif
 		public ListView ListView
 		{
 			get
@@ -53,6 +67,9 @@ using System.ComponentModel;
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL
+		[Browsable(false)]
+#endif
 		public int Index
 		{
 			get
@@ -61,6 +78,10 @@ using System.ComponentModel;
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+		[DefaultValue(HorizontalAlignment.Left)]
+#endif
 		public HorizontalAlignment TextAlign
 		{
 			get
@@ -90,6 +111,10 @@ using System.ComponentModel;
 			}
 		}
 
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+		[DefaultValue(60)]
+#endif
 		public int Width
 		{
 			get
@@ -139,6 +164,9 @@ using System.ComponentModel;
 			return columnHeader;
 		}
 
+#if CONFIG_COMPONENT_MODEL
+		[Localizable(true)]
+#endif
 		public string Text
 		{
 			get
@@ -180,7 +208,22 @@ using System.ComponentModel;
 			return "ColumnHeader: Text: " + Text;
 		}
 
-		protected override void Dispose(bool disposing)
+#if !CONFIG_COMPONENT_MODEL
+		// Implement the IDisposable interface.
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+#endif
+
+		protected 
+#if CONFIG_COMPONENT_MODEL
+		override 
+#else
+		virtual
+#endif
+		void Dispose(bool disposing)
 		{
 			if (disposing && listView != null)
 			{
@@ -190,7 +233,9 @@ using System.ComponentModel;
 				}
 				listView = null;
 			}
+#if CONFIG_COMPONENT_MODEL
 			base.Dispose(disposing);
+#endif
 		}
 
 	}

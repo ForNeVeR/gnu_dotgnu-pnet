@@ -24,9 +24,9 @@ namespace System.Windows.Forms
 
 using System.ComponentModel;
 
-#if !CONFIG_COMPACT_FORMS
+#if !CONFIG_COMPACT_FORMS || CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 [TypeConverter(typeof(ListBindingConverter))]
-#endif // !CONFIG_COMPACT_FORMS
+#endif // !CONFIG_COMPACT_FORMS || CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 public class Binding
 {
 	// Internal state.

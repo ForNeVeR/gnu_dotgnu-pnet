@@ -24,6 +24,9 @@ namespace System.Windows.Forms
 
 using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL
+[ToolboxItemFilter("System.Windows.Forms")]
+#endif
 public abstract class CommonDialog
 #if CONFIG_COMPONENT_MODEL
 	: Component

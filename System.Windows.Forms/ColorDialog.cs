@@ -26,6 +26,10 @@ using System.IO;
 using System.Drawing;
 using System.ComponentModel;
 
+[TODO]
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+[DefaultProperty("Color")]
+#endif
 public class ColorDialog : CommonDialog
 {
 	// Internal state.
@@ -46,6 +50,9 @@ public class ColorDialog : CommonDialog
 			}
 
 	// Get or set this object's properties.
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(true)]
+#endif
 	public virtual bool AllowFullOpen
 			{
 				get
@@ -57,6 +64,9 @@ public class ColorDialog : CommonDialog
 					allowFullOpen = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+#endif
 	public virtual bool AnyColor
 			{
 				get
@@ -86,6 +96,10 @@ public class ColorDialog : CommonDialog
 					}
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
 	public int[] CustomColors
 			{
 				get
@@ -97,6 +111,9 @@ public class ColorDialog : CommonDialog
 					customColors = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+#endif
 	public virtual bool FullOpen
 			{
 				get
@@ -108,6 +125,9 @@ public class ColorDialog : CommonDialog
 					fullOpen = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+#endif
 	public virtual bool ShowHelp
 			{
 				get
@@ -119,6 +139,9 @@ public class ColorDialog : CommonDialog
 					showHelp = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+#endif
 	public virtual bool SolidColorOnly
 			{
 				get

@@ -30,6 +30,10 @@ using System.Windows.Forms;
 namespace System.Windows.Forms
 {
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+[DefaultProperty("Checked")]
+[DefaultEvent("CheckedChanged")]
+#endif
 public class CheckBox : ButtonBase
 {
 	// Internal result.
@@ -277,6 +281,12 @@ public class CheckBox : ButtonBase
 			}
 
 	// Gets or sets the check box appearance.
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(Appearance.Normal)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
 	public Appearance Appearance 
 			{
 				get
@@ -295,6 +305,9 @@ public class CheckBox : ButtonBase
 			}
 
 	// Get or set the "auto check" style for this check box.
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(true)]
+#endif
 	public bool AutoCheck
 			{
 				get
@@ -308,6 +321,12 @@ public class CheckBox : ButtonBase
 			}
 
 	// Gets or set alignment of a check box on a check box control.
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(ContentAlignment.MiddleLeft)]
+#endif
 	public ContentAlignment CheckAlign 
 			{
 				get
@@ -325,6 +344,13 @@ public class CheckBox : ButtonBase
 			}
 
 	// Get or set the checked state as a simple boolean value.
+#if CONFIG_COMPONENT_MODEL 
+	[Bindable(true)]
+	[RefreshProperties(RefreshProperties.All)]
+#endif
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+#endif
 	public bool Checked
 			{
 				get
@@ -345,6 +371,13 @@ public class CheckBox : ButtonBase
 			}
 
 	// Get or set the check box state.
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(CheckState.Unchecked)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+	[RefreshProperties(RefreshProperties.All)]
+	[Bindable(true)]
+#endif
 	public CheckState CheckState
 			{
 				get
@@ -384,6 +417,12 @@ public class CheckBox : ButtonBase
 #endif
 
 	// Gets or sets the alignment of the text on the checkbox control.
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(ContentAlignment.MiddleLeft)]
+#endif
+#if CONFIG_COMPONENT_MODEL 
+	[Localizable(true)]
+#endif
 	public override ContentAlignment TextAlign 
 			{
 				get
@@ -398,6 +437,9 @@ public class CheckBox : ButtonBase
 			}
 
 	// Get or set the "three state" style for this check box.
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[DefaultValue(false)]
+#endif
 	public bool ThreeState
 			{
 				get

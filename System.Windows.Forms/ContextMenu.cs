@@ -24,7 +24,11 @@ namespace System.Windows.Forms
 
 using System.Drawing;
 using System.Windows.Forms.Themes;
+using System.ComponentModel;
 
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+[DefaultEvent("Popup")]
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 public class ContextMenu : Menu
 {
 	// Internal state.
@@ -49,6 +53,9 @@ public class ContextMenu : Menu
 	}
 
 	// Get or set the right-to-left property.
+#if CONFIG_COMPONENT_MODEL
+	[Localizable(true)]
+#endif // CONFIG_COMPONENT_MODEL
 	public virtual RightToLeft RightToLeft
 	{
 		get
@@ -78,6 +85,10 @@ public class ContextMenu : Menu
 	}
 
 	// Get the control that owns this context menu.
+#if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	public Control SourceControl
 	{
 		get

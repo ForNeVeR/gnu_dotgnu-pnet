@@ -62,8 +62,11 @@ public class XmlParserContext
 		String docTypeName, String pubId, String sysId, String internalSubset, 
 		String baseURI, String xmlLang, XmlSpace xmlSpace, Encoding enc)
 			{
-				if (!((nsMgr.NameTable == nt) || (nt == null)))
-					throw new XmlException(S._("Xml_WrongNameTable"));
+				if (nsMgr != null && nt != null)
+				{
+					if (nsMgr.NameTable != nt)
+						throw new XmlException(S._("Xml_WrongNameTable"));
+				}
 				
 				if (nt == null)
 					nametable = nsMgr.NameTable;

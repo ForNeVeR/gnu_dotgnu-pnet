@@ -38,6 +38,9 @@
 	resources/en_US/System.Xml/Xml.txt: re-implement the
 	XmlNamespaceManager class with the correct scope data structure.
 
+	* System.Xml/XmlParserContext.cs: make the namespace manager test
+	a little clearer to understand.
+
 2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.6" release.

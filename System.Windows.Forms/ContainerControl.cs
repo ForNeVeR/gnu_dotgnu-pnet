@@ -130,10 +130,35 @@ public class ContainerControl : ScrollableControl, IContainerControl
 			}
 
 	// Process a dialog key.
-	[TODO]
 	protected override bool ProcessDialogKey(Keys keyData)
 			{
-				// TODO
+				if ((keyData & (Keys.Alt | Keys.Control)) == 0)
+				{
+					Keys key = keyData & Keys.KeyCode;
+					if (key != Keys.Tab)
+					{
+						switch (key)
+						{
+							case Keys.Left:
+							case Keys.Up:
+							case Keys.Right:
+							case Keys.Down:
+								Control control;
+								if (activeControl != null)
+									control = activeControl.Parent;
+								else
+									control = this;
+								bool forward = (key == Keys.Right || key == Keys.Down);
+								if (control.SelectNextControl(activeControl, forward , false, false, true))
+									return true;
+								break;
+						}
+						return base.ProcessDialogKey(keyData);
+
+					}
+					else if (ProcessTabKey((keyData & Keys.Shift) == 0))
+						return true;
+				}
 				return base.ProcessDialogKey(keyData);
 			}
 
@@ -146,11 +171,9 @@ public class ContainerControl : ScrollableControl, IContainerControl
 			}
 
 	// Process the tab key.
-	[TODO]
 	protected virtual bool ProcessTabKey(bool forward)
 			{
-				// TODO
-				return false;
+				return SelectNextControl(activeControl, forward, true, true, false);
 			}
 
 	// Select this control.

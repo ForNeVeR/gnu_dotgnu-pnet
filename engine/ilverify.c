@@ -228,6 +228,9 @@ static void Coder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
 static void Coder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 {
 }
+static void Coder_StringConstant(ILCoder *coder, ILToken token)
+{
+}
 static void Coder_Binary(ILCoder *coder, int opcode, ILEngineType type1,
 				   	     ILEngineType type2)
 {
@@ -449,6 +452,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_Label,
 	Coder_StackRefresh,
 	Coder_Constant,
+	Coder_StringConstant,
 	Coder_Binary,
 	Coder_BinaryPtr,
 	Coder_Shift,

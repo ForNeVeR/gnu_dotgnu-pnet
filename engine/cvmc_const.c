@@ -21,7 +21,7 @@
 #ifdef IL_CVMC_CODE
 
 /*
- * Handle a constant opcode.
+ * Handle a numeric constant opcode.
  */
 static void CVMCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 {
@@ -70,10 +70,16 @@ static void CVMCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 		CVM_BYTE(arg[7]);
 		CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 	}
-	else if(opcode == IL_OP_LDSTR)
-	{
-		/* TODO */
-	}
+}
+
+/*
+ * Handle a string constant opcode.
+ */
+static void CVMCoder_StringConstant(ILCoder *coder, ILToken token)
+{
+	CVM_BYTE(COP_LDSTR);
+	CVM_WORD(token);
+	CVM_ADJUST(1);
 }
 
 #endif	/* IL_CVMC_CODE */

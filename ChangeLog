@@ -4,6 +4,9 @@
 * engine/internal.c, engine/lib_stdio.c, engine/Makefile.am: add
 "Platform.Stdio" to the set of builtin "internalcall" classes.
 
+* include/il_coder.h, engine/ilverify.c, engine/cvmc.c, engine/cvmc_const.c:
+add the "StringConstant" coder API.
+
 2001-10-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvmc_setup.c: check the "this" parameter of instance methods

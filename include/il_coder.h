@@ -170,9 +170,14 @@ struct _tagILCoderClass
 						 ILUInt32 stackSize);
 
 	/*
-	 * Handle a constant value.
+	 * Handle a numeric constant value.
 	 */
 	void (*constant)(ILCoder *coder, int opcode, unsigned char *arg);
+
+	/*
+	 * Handle a string constant value.
+	 */
+	void (*stringConstant)(ILCoder *coder, ILToken token);
 
 	/*
 	 * Handle a binary operator.
@@ -553,6 +558,8 @@ struct _tagILCoderClass
 												   (stackSize)))
 #define	ILCoderConstant(coder,opcode,arg) \
 			((*((coder)->classInfo->constant))((coder), (opcode), (arg)))
+#define	ILCoderStringConstant(coder,token) \
+			((*((coder)->classInfo->stringConstant))((coder), (token)))
 #define	ILCoderBinary(coder,opcode,type1,type2) \
 			((*((coder)->classInfo->binary))((coder), (opcode), (type1), \
 											 (type2)))

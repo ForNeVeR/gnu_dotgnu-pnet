@@ -358,6 +358,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_Label,
 	CVMCoder_StackRefresh,
 	CVMCoder_Constant,
+	CVMCoder_StringConstant,
 	CVMCoder_Binary,
 	CVMCoder_BinaryPtr,
 	CVMCoder_Shift,

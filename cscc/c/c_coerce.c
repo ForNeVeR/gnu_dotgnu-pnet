@@ -164,6 +164,57 @@ static int IsUnsigned(ILType *type)
 }
 
 /*
+ * Determine if two function signatures have the same "shape".
+ * This is needed to handle cases like "qsort", where the prototype
+ * of the comparison function may not be identical to that of the
+ * parameter prototype, but it is compatible enough to use in an
+ * indirect function call.
+ */
+static int SameShape(ILType *type1, ILType *type2)
+{
+	unsigned long numParams;
+	unsigned long param;
+	type1 = ILTypeStripPrefixes(type1);
+	type2 = ILTypeStripPrefixes(type2);
+	if(type1 && type2 && ILType_IsComplex(type1) && ILType_IsComplex(type2) &&
+	   ILType_Kind(type1) == ILType_Kind(type2))
+	{
+		if(ILType_Kind(type1) == IL_TYPE_COMPLEX_PTR)
+		{
+			/* Pointer types always have the same shape */
+			return 1;
+		}
+		else if((ILType_Kind(type1) & IL_TYPE_COMPLEX_METHOD) != 0)
+		{
+			/* Check the return type and parameters in method signatures */
+			if(!SameShape(ILTypeGetReturn(type1), ILTypeGetReturn(type2)))
+			{
+				return 0;
+			}
+			if(ILType_CallConv(type1) != ILType_CallConv(type2))
+			{
+				return 0;
+			}
+			numParams = ILTypeNumParams(type1);
+			if(ILTypeNumParams(type2) != numParams)
+			{
+				return 0;
+			}
+			for(param = 1; param <= numParams; ++param)
+			{
+				if(!SameShape(ILTypeGetParam(type1, param),
+							  ILTypeGetParam(type2, param)))
+				{
+					return 0;
+				}
+			}
+			return 1;
+		}
+	}
+	return ILTypeIdentical(type1, type2);
+}
+
+/*
  * Determine the coercion rules for coercing "fromType" to "toType".
  */
 static int GetCoerceRules(ILType *fromType, ILType *toType,
@@ -266,6 +317,13 @@ static int GetCoerceRules(ILType *fromType, ILType *toType,
 		if(CTypeIsIdentical(fromType, ILTypeStripPrefixes(toType)))
 		{
 			return C_COERCE_OK;
+		}
+
+		/* We can coerce with a warning if the two function pointers
+		   have identical "shape" */
+		if(SameShape(fromType, toType))
+		{
+			return C_COERCE_OK | C_COERCE_PTR_TO_PTR;
 		}
 	}
 

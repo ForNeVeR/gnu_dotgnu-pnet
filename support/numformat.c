@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "il_config.h"
 #include "il_utils.h"
 
 #ifdef	__cplusplus

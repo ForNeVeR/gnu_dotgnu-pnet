@@ -17,6 +17,9 @@
 	* engine/int_proto.h, engine/int_table.c: update the internalcall
 	tables from the latest mscorlib.dll.
 
+	* support/numformat.c: make sure that "il_config.h" is included
+	to define HAVE_SNPRINTF.
+
 2002-11-03  Richard Baumann <biochem333@nyc.rr.com>
 	
 	* support/numformat.c, support/Makefile.am, include/il_utils.h: Add an

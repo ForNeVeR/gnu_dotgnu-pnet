@@ -1,4 +1,10 @@
 
+2001-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/Makefile.am, csharp/expr/indexer1.cs,
+	csharp/expr/indexer1.il, csharp/expr/indexer1.jl: add tests
+	for indexers.
+
 2001-01-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/cast6.il, csharp/expr/cast6.jl: new output files,

@@ -18,6 +18,7 @@ TESTS = array1.cs \
 		const1.cs \
 		incdec1.cs \
 		incdec2.cs \
+		indexer1.cs \
 		is1.cs \
 		is2.cs \
 		new1.cs \

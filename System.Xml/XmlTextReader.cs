@@ -489,13 +489,10 @@ public class XmlTextReader : XmlReader
 				{
 					builder.Append((char)ch);
 					linePosition++;
-					if((char)reader.Peek() == '>' )
+					if((char)ch == '/')
 					{
-						nodeType = XmlNodeType.Element;
-						return builder.ToString();
-					}
-					else if((char)reader.Peek() == '/')
-					{
+						SkipWhite();
+						Expect('>');
 						nodeType = XmlNodeType.EndElement;
 						isEmpty = true;
 						return builder.ToString();
@@ -503,7 +500,6 @@ public class XmlTextReader : XmlReader
 					else if((char)ch == '>')
 					{
 						nodeType = XmlNodeType.Element;
-						ungetch = ch;
 						return builder.ToString(0, builder.Length -1);
 					}
 					else if(Char.IsWhiteSpace((char)ch))
@@ -594,12 +590,14 @@ public class XmlTextReader : XmlReader
 						break;
 					case '/':
 						// Check for correct structure 
-						if(structFlag != true)
+						if(structFlag == true)
 						{
+							ClearNodeInfo();
 							SkipWhite();
-							Expect('>');
+							name = ReadIdentifier(-1);
+							SetName(name);
 							nodeType = XmlNodeType.EndElement;
-							isEmpty = true;
+							value = String.Empty;
 						}
 						else
 						{
@@ -759,18 +757,17 @@ public class XmlTextReader : XmlReader
 								
 								// reset buffer
 								builder = new StringBuilder();
-								
-								if((char)reader.Peek() == '/')
+								ch = ReadChar();
+								if((char)ch == '/')
 								{
-									ReadChar();
-									SkipWhite();
 									Expect('>');
+									break;
 								}
-								else if ((char)reader.Peek() == '>')
+								else if ((char)ch == '>')
 								{
-									ReadChar();
+									break;
 								}
-								
+								ungetch = ch;
 								break;
 							}
 							
@@ -792,11 +789,22 @@ public class XmlTextReader : XmlReader
 							builder = new StringBuilder();
 							break;
 						}
-						
-						nodeType = XmlNodeType.Text;
-						ch = ReadChar();
-						value = builder.ToString();
-						AnalyzeChar(ch, false);
+						else
+						{
+							nodeType = XmlNodeType.Text;
+							value += (char)ch;
+							
+							ch = ReadChar(); 
+							if((char)ch != '<')
+							{
+								AnalyzeChar(ch, false);
+								break;
+							}
+							else
+							{
+								ungetch = ch;
+							}
+						}
 						break;
 					
 				}// end switch(ch)

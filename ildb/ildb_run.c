@@ -214,26 +214,14 @@ static void RunCmd(ILDb *db, char *argv[])
 		argc = 0;
 	}
 	thread = ILExecProcessGetMain(db->process);
-	args = ILExecThreadNew(thread, "[oSystem.String;", "(Ti)V", (ILVaInt)argc);
-	if(args && !ILExecThreadHasException(thread))
-	{
-		for(argNum = 0; argNum < argc; ++argNum)
-		{
-			argString = ILStringCreate(thread, db->args[argNum]);
-			if(!argString)
-			{
-				break;
-			}
-			ILExecThreadSetElem(thread, args, (ILInt32)argNum, argString);
-		}
-	}
+	args = ILExecProcessSetCommandLine
+				(db->process, db->debugProgram, db->args);
 
 	/* Call the "Main" method.  This will return back through the
 	   debug hook when it reaches a breakpoint */
 	sawException = 0;
-	if(!ILExecThreadHasException(thread))
+	if(args != 0 && !ILExecThreadHasException(thread))
 	{
-		ILExecProcessSetCommandLine(db->process, args);
 		retval = 0;
 		if(ILExecThreadCall(thread, db->entryPoint, &retval, args))
 		{

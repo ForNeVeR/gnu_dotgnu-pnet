@@ -196,9 +196,11 @@ int ILExecProcessEntryType(ILMethod *method);
 long ILExecProcessGetParam(ILExecProcess *process, int type);
 
 /*
- * Set the command-line argument array.
+ * Set the command-line arguments.  Returns the parameter
+ * that should be passed to "Main".
  */
-void ILExecProcessSetCommandLine(ILExecProcess *process, ILObject *cmdline);
+ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
+									  const char *progName, char *args[]);
 
 /*
  * Register a debug hook with a process.  This should be called just

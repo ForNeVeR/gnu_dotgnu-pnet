@@ -314,26 +314,12 @@ int main(int argc, char *argv[])
 
 	/* Convert the arguments into an array of strings */
 	thread = ILExecProcessGetMain(process);
-	args = ILExecThreadNew(thread, "[oSystem.String;",
-						   "(Ti)V", (ILVaInt)(argc - 2));
-	if(args && !ILExecThreadHasException(thread))
-	{
-		for(opt = 0; opt < (argc - 2); ++opt)
-		{
-			argString = ILStringCreate(thread, argv[opt + 2]);
-			if(!argString)
-			{
-				break;
-			}
-			ILExecThreadSetElem(thread, args, (ILInt32)opt, argString);
-		}
-	}
+	args = ILExecProcessSetCommandLine(process, argv[1], argv + 2);
 
 	/* Call the entry point */
 	sawException = 0;
-	if(!ILExecThreadHasException(thread))
+	if(args != 0 && !ILExecThreadHasException(thread))
 	{
-		ILExecProcessSetCommandLine(process, args);
 		retval = 0;
 		if(ILExecThreadCall(thread, method, &retval, args))
 		{

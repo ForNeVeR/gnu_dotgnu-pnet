@@ -406,9 +406,63 @@ long ILExecProcessGetParam(ILExecProcess *process, int type)
 	return -1;
 }
 
-void ILExecProcessSetCommandLine(ILExecProcess *process, ILObject *cmdline)
+ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
+									  const char *progName, char *args[])
 {
-	process->commandLineObject = cmdline;
+	ILExecThread *thread;
+	ILObject *mainArgs;
+	ILObject *allArgs;
+	ILString *argString;
+	int opt;
+	int argc;
+
+	/* Cound the number of arguments in the "args" array */
+	argc = 0;
+	while(args != 0 && args[argc] != 0)
+	{
+		++argc;
+	}
+
+	/* Create two arrays: one for "Main" and the other for
+	   "TaskMethods.GetCommandLineArgs".  The former does
+	   not include "argv[0]", but the latter does */
+	thread = ILExecProcessGetMain(process);
+	mainArgs = ILExecThreadNew(thread, "[oSystem.String;",
+						       "(Ti)V", (ILVaInt)argc);
+	if(!mainArgs || ILExecThreadHasException(thread))
+	{
+		return 0;
+	}
+	allArgs = ILExecThreadNew(thread, "[oSystem.String;",
+						      "(Ti)V", (ILVaInt)(argc + 1));
+	if(!allArgs || ILExecThreadHasException(thread))
+	{
+		return 0;
+	}
+
+	/* Populate the argument arrays */
+	argString = ILStringCreate(thread, progName);
+	if(!argString || ILExecThreadHasException(thread))
+	{
+		return 0;
+	}
+	ILExecThreadSetElem(thread, allArgs, (ILInt32)0, argString);
+	for(opt = 0; opt < argc; ++opt)
+	{
+		argString = ILStringCreate(thread, args[opt]);
+		if(!argString || ILExecThreadHasException(thread))
+		{
+			return 0;
+		}
+		ILExecThreadSetElem(thread, mainArgs, (ILInt32)opt, argString);
+		ILExecThreadSetElem(thread, allArgs, (ILInt32)(opt + 1), argString);
+	}
+
+	/* Set the value for "TaskMethods.GetCommandLineArgs" */
+	process->commandLineObject = allArgs;
+
+	/* Return the "Main" arguments to the caller */
+	return mainArgs;
 }
 
 #ifdef	__cplusplus

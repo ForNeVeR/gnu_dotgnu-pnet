@@ -52,6 +52,8 @@ public sealed class Font
 	private bool gdiVerticalFont;
 	private float size;
 	private GraphicsUnit unit;
+	// Cached height of the font in pixels.
+	private int pixelHeight;
 
 	// Constructors.
 	public Font(Font prototype, FontStyle newStyle)
@@ -424,20 +426,21 @@ public sealed class Font
 				{
 					throw new ArgumentNullException("graphics");
 				}
-
+				
 				// Get the font size in raw pixels.
-				int pixels = graphics.GetLineSpacing(this);
+				if (pixelHeight == 0)
+					pixelHeight = graphics.GetLineSpacing(this);
 
 				// If the graphics object uses pixels (the most common case),
 				// then return the pixel value directly.
 				if(graphics.IsPixelUnits())
 				{
-					return (float)pixels;
+					return (float)pixelHeight;
 				}
 
 				// Convert the pixel value back into points.
 				float points =
-					((float)pixels) / (Graphics.DefaultScreenDpi / 72.0f);
+					((float)pixelHeight) / (Graphics.DefaultScreenDpi / 72.0f);
 
 				// Convert the points into the graphics object's unit.
 				switch(graphics.PageUnit)

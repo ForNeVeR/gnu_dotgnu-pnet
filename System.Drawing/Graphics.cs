@@ -40,6 +40,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	private GraphicsUnit pageUnit;
 	internal GraphicsContainer stackTop;
 	internal static Graphics defaultGraphics;
+	// the window this graphics represents overlying the IToolkitGraphics
+	private Rectangle baseWindow;
 
 	// Default DPI for the screen.
 	internal const float DefaultScreenDpi = 96.0f;
@@ -53,7 +55,33 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				this.pageScale = 1.0f;
 				this.pageUnit = GraphicsUnit.World;
 				this.stackTop = null;
+				this.baseWindow = Rectangle.Empty;
 			}
+
+	// Window Constructor. Copies the existing Graphics and creates a new
+	// Graphics that has an origin of baseWindow.Location and is always clipped
+	// to baseWindow
+
+	public Graphics(IToolkitGraphics graphics, Rectangle baseWindow)
+		: this(graphics)
+			{
+				this.baseWindow = baseWindow;
+			}
+
+	public Graphics(Graphics graphics, Rectangle baseWindow)
+			{
+				this.graphics = graphics.graphics;
+				if (graphics.clip != null)
+					this.clip = graphics.clip.Clone();
+				if (graphics.transform != null)
+					this.transform = new Matrix(graphics.transform);
+				this.pageScale = graphics.pageScale;
+				this.pageUnit = graphics.pageUnit;
+				this.stackTop = null;
+				this.baseWindow = baseWindow;
+			
+			}
+
 
 	// Destructor.
 	~Graphics()
@@ -2593,6 +2621,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					newY *= pageScale;
 				}
 
+				// Apply baseWindow adjustment.
+				newX += baseWindow.Left;
+				newY += baseWindow.Top;
+
 				// Apply the page unit to get device co-ordinates.
 				switch(pageUnit)
 				{
@@ -2668,6 +2700,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					newY *= pageScale;
 				}
 
+				// Apply baseWindow adjustment.
+				newX += baseWindow.Left;
+				newY += baseWindow.Top;
+
 				// Apply the page unit to get device co-ordinates.
 				switch(pageUnit)
 				{
@@ -2736,17 +2772,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 							(S._("Arg_NeedsAtLeastNPoints"), minPoints));
 				}
 		
-				// If we are using the identity transformation,
-				// then bail out early using the "points" array.
-				if((pageUnit == GraphicsUnit.World && transform == null) ||
-					pageUnit == GraphicsUnit.Pixel)
-				{
-					if(pageScale == 1.0f)
-					{
-						return points;
-					}
-				}
-
 				// Convert the "points" array.
 				Point[] newPoints = new Point [points.Length];
 				int x, y;
@@ -2977,6 +3002,20 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 	// Update the clipping region within the IToolkitGraphics object.
 	private void UpdateClip()
+			{
+				if (baseWindow == Rectangle.Empty)
+					UpdateClipActual(clip);
+				else
+				{
+					Region clipRegion = clip.Clone();
+					clipRegion.Translate(baseWindow.Left, baseWindow.Top);
+					clipRegion.Intersect(baseWindow);
+					UpdateClipActual(clipRegion);
+				}
+			}
+
+	// Update the actual IToolkit clipping
+	private void UpdateClipActual(Region clip)
 			{
 				RectangleF[] rectsF = clip.GetRegionScans(new Matrix());
 				Rectangle[] rects = new Rectangle[rectsF.Length];

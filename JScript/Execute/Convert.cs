@@ -623,6 +623,90 @@ public sealed class Convert
 				}
 			}
 
+	// Convert an object into a primitive value.
+	public static Object ToPrimitive(Object value, DefaultValueHint hint)
+			{
+				if(value is ScriptObject)
+				{
+					// Let the object handle conversion for JScript objects.
+					return ((ScriptObject)value).DefaultValue(hint);
+				}
+				else
+				{
+					// Handle non-JScript objects.
+					switch(hint)
+					{
+						case DefaultValueHint.None:
+						{
+							switch(Support.TypeCodeForObject(value))
+							{
+								case TypeCode.SByte:
+								case TypeCode.Byte:
+								case TypeCode.Int16:
+								case TypeCode.UInt16:
+								case TypeCode.Int32:
+								case TypeCode.UInt32:
+								case TypeCode.Int64:
+								case TypeCode.UInt64:
+								case TypeCode.Single:
+								case TypeCode.Double:
+								case TypeCode.Decimal:
+								{
+									value = ToNumber(value);
+								}
+								break;
+
+								default:
+								{
+									value = ToString(value);
+								}
+								break;
+							}
+						}
+						break;
+
+						case DefaultValueHint.Number:
+						{
+							value = ToNumber(value);
+						}
+						break;
+
+						case DefaultValueHint.String:
+						case DefaultValueHint.LocaleString:
+						{
+							value = ToString(value);
+						}
+						break;
+					}
+					return value;
+				}
+			}
+
+	// Normalize a value down to primitive, but don't apply hard conversions.
+	internal static Object NormalizePrimitive(Object value)
+			{
+				switch(Support.TypeCodeForObject(value))
+				{
+					case TypeCode.Char:
+						return Convert.ToString(value);
+
+					case TypeCode.SByte:
+					case TypeCode.Byte:
+					case TypeCode.Int16:
+					case TypeCode.UInt16:
+					case TypeCode.Int32:
+					case TypeCode.UInt32:
+					case TypeCode.Int64:
+					case TypeCode.UInt64:
+					case TypeCode.Single:
+					case TypeCode.Double:
+						return Convert.ToNumber(value);
+
+					default: break;
+				}
+				return value;
+			}
+
 }; // class Convert
 
 }; // namespace Microsoft.JScript

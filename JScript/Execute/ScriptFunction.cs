@@ -161,6 +161,13 @@ public abstract class ScriptFunction : JSObject
 				}
 			}
 
+	// Determine if an object is an instance of this class.
+	internal virtual bool HasInstance(Object obj)
+			{
+				// TODO
+				return false;
+			}
+
 	// Get the internal "[[Class]]" property for this object.
 	internal override String Class
 			{

@@ -24,7 +24,8 @@ namespace Microsoft.JScript
 using System;
 using System.Reflection;
 
-internal sealed class WithScope : ScriptObject, IActivationObject
+internal sealed class WithScope : ScriptObject, IActivationObject,
+								  IVariableAccess
 {
 	// Internal state.
 	private Object withObject;
@@ -73,6 +74,32 @@ internal sealed class WithScope : ScriptObject, IActivationObject
 			{
 				// TODO
 				return null;
+			}
+
+	// Implement the internal "IVariableAccess" interface.
+	bool IVariableAccess.HasVariable(String name)
+			{
+				return ((ScriptObject)withObject).HasProperty(name);
+			}
+	Object IVariableAccess.GetVariable(String name)
+			{
+				if(((ScriptObject)withObject).HasProperty(name))
+				{
+					return ((ScriptObject)withObject).Get(name);
+				}
+				else
+				{
+					((ScriptObject)withObject).Put(name, null);
+					return null;
+				}
+			}
+	void IVariableAccess.SetVariable(String name, Object value)
+			{
+				((ScriptObject)withObject).Put(name, value);
+			}
+	IVariableAccess IVariableAccess.GetParentScope()
+			{
+				return (parent as IVariableAccess);
 			}
 
 }; // class WithScope

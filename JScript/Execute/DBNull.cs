@@ -41,6 +41,12 @@ public sealed class DBNull
 	// Override inherited methods.
 	public override String ToString() { return String.Empty; }
 
+	// Determine if a value is DBNull.
+	internal static bool IsDBNull(Object value)
+			{
+				return (value == Value);
+			}
+
 }; // class DBNull
 
 }; // namespace Microsoft.JScript

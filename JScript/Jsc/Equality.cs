@@ -38,14 +38,75 @@ public sealed class Equality : BinaryOp
 	// Evaluate an equality operator on two values.
 	public bool EvaluateEquality(Object v1, Object v2)
 			{
-				// TODO
-				return false;
+				return JScriptEquals(v1, v2);
 			}
 
 	// Determine if two JScript objects are equal.
 	public static bool JScriptEquals(Object v1, Object v2)
 			{
-				// TODO
+				// Handle the simple cases first.
+				if(v1 is String && v2 is String)
+				{
+					return ((String)v1) == ((String)v2);
+				}
+				else if(v1 is double && v2 is double)
+				{
+					return ((double)v1) == ((double)v2);
+				}
+				else if(v1 is int && v2 is int)
+				{
+					return ((int)v1) == ((int)v2);
+				}
+				else if(v1 is bool && v2 is bool)
+				{
+					return ((bool)v1) == ((bool)v2);
+				}
+				else if(v1 == v2)
+				{
+					return true;
+				}
+
+				// Is one of the values null?
+				if(v1 == null || DBNull.IsDBNull(v1) || v1 is Missing ||
+				   v1 is System.Reflection.Missing)
+				{
+					return (v2 == null || DBNull.IsDBNull(v2) ||
+							v2 is Missing || v2 is System.Reflection.Missing);
+				}
+				else if(v2 == null || DBNull.IsDBNull(v2) || v2 is Missing ||
+				   		v2 is System.Reflection.Missing)
+				{
+					return false;
+				}
+
+				// Convert into primitive values and compare.
+				v1 = Convert.ToPrimitive(v1, DefaultValueHint.None);
+				if(v1 is bool)
+				{
+					v1 = Convert.ToNumber(v1);
+				}
+				v2 = Convert.ToPrimitive(v2, DefaultValueHint.None);
+				if(v2 is bool)
+				{
+					v2 = Convert.ToNumber(v2);
+				}
+				if(v1 is String)
+				{
+					if(v2 is String)
+					{
+						return ((String)v1) == ((String)v2);
+					}
+					else
+					{
+						return Convert.ToNumber(v1) == Convert.ToNumber(v2);
+					}
+				}
+				else if(v1 is double)
+				{
+					return ((double)v1) == Convert.ToNumber(v2);
+				}
+
+				// Don't know how to compare the objects.
 				return false;
 			}
 

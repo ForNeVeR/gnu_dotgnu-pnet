@@ -281,6 +281,60 @@ internal sealed class Support
 				list.last = elem;
 			}
 
+	// Get the length of an expression list.
+	public static int ExprListLength(JExprList list)
+			{
+				JExprListElem elem = list.first;
+				int len = 0;
+				while(elem != null)
+				{
+					++len;
+					elem = elem.next;
+				}
+				return len;
+			}
+
+	// Evaluate an argument list.
+	private static int EvalArgs(Object[] args, int posn, JNode node,
+								VsaEngine engine)
+			{
+				if(node == null)
+				{
+					return posn;
+				}
+				else if(!(node is JArgList))
+				{
+					args[posn] = node.Eval(engine);
+					return posn + 1;
+				}
+				else
+				{
+					posn = EvalArgs(args, posn, ((JArgList)node).expr1, engine);
+					args[posn] = (((JArgList)node).expr2).Eval(engine);
+					return posn + 1;
+				}
+			}
+	public static Object[] EvalArgList(JNode node, VsaEngine engine)
+			{
+				int len;
+				if(node == null)
+				{
+					len = 0;
+				}
+				else
+				{
+					len = 1;
+					while(node is JArgList)
+					{
+						++len;
+						node = ((JArgList)node).expr1;
+					}
+				}
+				Object[] args = new Object [len];
+				EvalArgs(args, 0, node, engine);
+				return args;
+			}
+
 	// Evaluate and print an expression tree.
 	public static void Print(VsaEngine engine, JNode expr)
 			{

@@ -1,5 +1,5 @@
 /*
- * IVariableAccess.cs - Short-cut for variable declaration access.
+ * FunctionObject.cs - Class that represents "Function" objects.
  *
  * Copyright (C) 2003 Southern Storm Software, Pty Ltd.
  *
@@ -23,21 +23,37 @@ namespace Microsoft.JScript
 
 using System;
 using System.Reflection;
+using System.Globalization;
+using Microsoft.JScript.Vsa;
 
-internal interface IVariableAccess
+public sealed class FunctionObject : ScriptFunction
 {
-	// Determine if this scope has a specific variable.
-	bool HasVariable(String name);
+	// Internal state.
+	private JFunction defn;
+	private ScriptObject declaringScope;
 
-	// Declare a specific variable in this scope and get its value.
-	Object GetVariable(String name);
+	// Constructor.
+	internal FunctionObject(FunctionPrototype parent, JFunction defn,
+							ScriptObject declaringScope)
+			: base(parent, defn.name, Support.ExprListLength(defn.fparams))
+			{
+				this.defn = defn;
+				this.declaringScope = declaringScope;
+			}
 
-	// Declare a specific variable in this scope and set its value.
-	void SetVariable(String name, Object value);
+	// Convert this function object into a string.
+	public override String ToString()
+			{
+				return defn.context.GetCode();
+			}
 
-	// Get the parent variable scope.
-	IVariableAccess GetParentScope();
+	// Perform a call on this object.
+	internal override Object Call(Object thisob, Object[] args)
+			{
+				// TODO
+				return null;
+			}
 
-}; // interface IVariableAccess
+}; // class FunctionObject
 
 }; // namespace Microsoft.JScript

@@ -21,6 +21,7 @@
 
 using Microsoft.JScript.Vsa;
 using System.Reflection;
+using System.Collections;
 
 %}
  
@@ -285,7 +286,12 @@ Store(JNode)
 // Evaluate script blocks.
 Eval(JScriptBlock)
 {
-	// TODO: declare the functions into the global scope.
+	// Declare the functions into the global scope.  We do this by
+	// evaluating them - JFunction.Eval does the rest.
+	if(functions != null)
+	{
+		functions.Eval(engine);
+	}
 
 	// Execute the global statements within the block.
 	if(statements != null)
@@ -314,8 +320,19 @@ Eval(JBlock)
 // Evaluate a function definition.
 Eval(JFunction)
 {
-	// TODO
-	return null;
+	// Get the scope to declare the function within.
+	ScriptObject scope = engine.ScriptObjectStackTop();
+
+	// Create a function object to wrap up this function.
+	FunctionObject obj = new FunctionObject
+		(EngineInstance.GetEngineInstance(engine).GetFunctionPrototype(),
+		 this, scope);
+
+	// Add the function to the scope.
+	scope.Put(name, obj);
+
+	// Nothing else to do.
+	return Empty.Value;
 }
 
 // Evaluate a formal parameter list.

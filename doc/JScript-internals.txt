@@ -253,7 +253,7 @@ we implement as follows:
 		to be called.
 
 	[[HasInstance]]
-		"ScriptObject.HasInstance()" is used for testing function instances.
+		"ScriptFunction.HasInstance()" is used for testing function instances.
 
 	[[Scope]]
 		???

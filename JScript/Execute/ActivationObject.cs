@@ -118,6 +118,10 @@ public abstract class ActivationObject : ScriptObject, IActivationObject,
 			{
 				storage.Put(name, value);
 			}
+	IVariableAccess IVariableAccess.GetParentScope()
+			{
+				return (parent as IVariableAccess);
+			}
 
 }; // class ActivationObject
 

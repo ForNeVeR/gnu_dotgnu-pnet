@@ -1,3 +1,10 @@
+
+2004-01-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/FontDialog.cs,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
+	add the skeleton of the font dialog (not fully implemented yet).
+
 2004-01-15  Neil Cawse  <neilcawse@geotab.com>
 
 	* DotGNU.Images/GifWriter.cs, DotGNU.Images/PngReader.cs,

@@ -1,3 +1,9 @@
+
+2004-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in: detect the path for "cscc-cpp" correctly
+	(fixes bug #9757).
+
 2004-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* doc/HACKING: updated instructions to get current cvs version and removed

@@ -99,6 +99,9 @@ AC_PATH_PROG(ILGAC, ilgac,, ${PNET_PATH}/ilgac:${prefix}/bin:$PATH)
 dnl Find the location of the "ildd" program.
 AC_PATH_PROG(ILDD, ildd,, ${PNET_PATH}/ildd:${prefix}/bin:$PATH)
 
+dnl Find the location of the "cscc-cpp" program.
+AC_PATH_PROG(CSCC_CPP, cscc-cpp,, ${PNET_PATH}/cscc/cpp:${prefix}/bin:$PATH)
+
 dnl Find the location of the "cygpath" program.
 AC_PATH_PROG(CYGPATH, cygpath)
 
@@ -200,6 +203,8 @@ if test -x "$PNET_PATH/cscc/cscc-cs" ; then
 fi
 if test -x "$PNET_PATH/cscc/cpp/cscc-cpp" ; then
 	CFLAGS="$CFLAGS \"-fcpp-path=$PNET_PATH/cscc/cpp/cscc-cpp\""
+else
+	CFLAGS="$CFLAGS \"-fcpp-path=$CSCC_CPP\""
 fi
 if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
 	CFLAGS="$CFLAGS \"-L$PNETLIB_PATH/csupport\""

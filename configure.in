@@ -25,6 +25,15 @@ AC_SUBST(REGEXLIBS)
 AC_CHECK_LIB(m, sin)
 AC_CHECK_LIB(regex, regcomp, [REGEXLIBS=-lregex], [])
 
+dnl Collect up the libraries that we need for GNU readline.
+AC_SUBST(READLINELIBS)
+READLINELIBS=""
+AC_CHECK_LIB(termcap, tgoto, [READLINELIBS="$READLINELIBS -ltermcap"], [])
+AC_CHECK_LIB(readline, readline, [AC_DEFINE(HAVE_LIBREADLINE)
+READLINELIBS="-lreadline $READLINELIBS"], [], $READLINELIBS)
+AC_CHECK_LIB(history, add_history, [AC_DEFINE(HAVE_LIBHISTORY)
+READLINELIBS="-lhistory $READLINELIBS"], [])
+
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
@@ -32,6 +41,7 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS(string.h strings.h memory.h stdlib.h math.h fcntl.h)
 AC_CHECK_HEADERS(stdarg.h varargs.h sys/mman.h unistd.h sys/stat.h)
 AC_CHECK_HEADERS(sys/time.h sys/types.h regex.h)
+AC_CHECK_HEADERS(readline/readline.h readline/history.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -50,7 +60,8 @@ AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memset memcmp memchr memcpy memmove bcopy bzero bcmp)
 AC_CHECK_FUNCS(isnan isinf finite fmod strtod mmap munmap getpagesize)
 AC_CHECK_FUNCS(stat vfprintf waitpid wait fork execv open gettimeofday)
-AC_CHECK_FUNCS(getpid qsort regcomp re_comp unlink remove)
+AC_CHECK_FUNCS(getpid qsort regcomp re_comp unlink remove getcwd getwd)
+AC_CHECK_FUNCS(get_current_dir_name)
 AC_FUNC_ALLOCA
 
 dnl Configure libffi
@@ -72,5 +83,6 @@ ilfind/Makefile
 codegen/Makefile
 cscc/Makefile
 resgen/Makefile
+ildb/Makefile
 samples/Makefile
 doc/Makefile])

@@ -1,0 +1,11 @@
+#!/bin/sh
+if test -x "./ildb" ; then
+	exec xxgdb -db_name ./ildb -db_prompt '(ildb) ' $*
+else
+	DIRNAME=`dirname $0`
+	if test -x "$DIRNAME/ildb" ; then
+		exec xxgdb -db_name "$DIRNAME/ildb" -db_prompt '(ildb) ' $*
+	else
+		exec xxgdb -db_name ildb $*
+	fi
+fi

@@ -172,6 +172,12 @@ int ILExecProcessEntryType(ILMethod *method);
 long ILExecProcessGetParam(ILExecProcess *process, int type);
 
 /*
+ * Get the current thread from a PInvoke'd method.  The behaviour
+ * is undefined if used anywhere else.
+ */
+ILExecThread *ILExecThreadCurrent(void);
+
+/*
  * Create a new thread and attach it to a process.
  * Returns NULL if out of memory.
  */

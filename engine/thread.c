@@ -24,6 +24,11 @@
 extern	"C" {
 #endif
 
+ILExecThread *ILExecThreadCurrent(void)
+{
+	return (ILExecThread *)(ILThreadGetObject(ILThreadSelf()));
+}
+
 ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 {
 	ILExecThread *thread;

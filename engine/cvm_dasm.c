@@ -54,6 +54,7 @@ extern	"C" {
 #define	CVM_OPER_PREFIX				23
 #define	CVM_OPER_METHOD				24
 #define	CVM_OPER_LD_INTERFACE		25
+#define	CVM_OPER_TAIL				27
 #define	CVM_OPER_PACK_VARARGS		26
 
 /*
@@ -455,7 +456,7 @@ static CVMOpcode const prefixOpcodes[80] = {
 	/*
 	 * Prefixed call management opcodes.
 	 */
-	{"tail",			CVM_OPER_NONE},
+	{"tail",			CVM_OPER_TAIL},
 	{"ldftn",			CVM_OPER_METHOD},
 	{"ldvirtftn",		CVM_OPER_UINT32},
 	{"ldinterfftn",		CVM_OPER_LD_INTERFACE},
@@ -594,6 +595,7 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 	const ILMethodTableEntry *methodEntry;
 
 	/* Dump the address of the instruction */
+dumpOpcode:
 	fprintf(stream, "0x%08lX:  ", (unsigned long)pc);
 
 	/* Dump the name of the instruction if it is not a prefix */
@@ -917,6 +919,14 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 					size = 6 + sizeof(void *);
 				}
 				break;
+
+				case CVM_OPER_TAIL:
+				{
+					putc('\n', stream);
+					pc += 2;
+					goto dumpOpcode;
+				}
+				/* Not reached */
 
 				case CVM_OPER_PACK_VARARGS:
 				{

@@ -9,6 +9,9 @@
 	samples/I18N.West.dll, samples/I18N.dll,
 	samples/mscorlib.dll: latest pnetlib updates.
 
+	* configure.in, aclocal.m4: enable maintainer mode support in the
+	autoconf system.
+
 2002-04-19  Gopal.V  <gopalv82@symonds.net>
 	
 	* csdoc/doc_stub.c : Implement the -fclass , -fnamespace

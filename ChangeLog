@@ -1,6 +1,8 @@
 2003-01-20  Adam Ballai <minddog@cannibutter.com>
 	
 	* System.Xml/XmlTextReader.cs: Fix bug #2250.
+	* tests/System.Xml/TestXmlTextReader.cs: Fix Read test case up for
+	accuracy.
 
 2003-01-19  Gopal.V  <gopalv82@symonds.net>
 	

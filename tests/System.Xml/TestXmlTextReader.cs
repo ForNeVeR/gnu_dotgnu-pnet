@@ -137,11 +137,13 @@ public class TestXmlTextReader : TestCase
 				ret = xmlReader.Read();
 				AssertEquals("Read (4)", true, ret);
 			
+				Check("Read (5)", "size", ReturnType.Name);
+				Check("Read (6)", "size", ReturnType.LocalName);
+
 				ret = xmlReader.Read();
-				AssertEquals("Read (6)", true, ret);
-			
-				Check("Read (7)", "size", ReturnType.Name);
-				Check("Read (8)", "size", ReturnType.LocalName);
+				AssertEquals("Read (7)", true, ret);
+
+				Check("Read (8)", "medium", ReturnType.Value);
 
 				
 			}

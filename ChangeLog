@@ -8,6 +8,9 @@
 	System.Drawing.Postscript/PostscriptToolkit.cs: implement simple
 	line drawing primitives in the Postscript driver.
 
+	* samples/ilrun.sh.in: add "System.Drawing.Postscript" to the
+	list of directories to run samples from the tree.
+
 2003-07-19  Gopal.V  <gopalv82@symonds.net>
  
 	* runtime/System/Private/NumberFormat/Formatter.cs:

@@ -92,48 +92,84 @@ unsigned long ILUTF16ReadCharAsBytes(const void *_str, int len, int *posn)
 
 int ILUTF16WriteChar(unsigned short *buf, unsigned long ch)
 {
-	if(ch < (unsigned long)0x10000)
+	if(buf)
 	{
-		*buf = (unsigned short)ch;
-		return 1;
-	}
-	else if(ch < (unsigned long)0x110000)
-	{
-		ch -= 0x10000;
-		buf[0] = (unsigned short)((ch >> 10) + 0xD800);
-		buf[1] = (unsigned short)((ch & 0x03FF) + 0xDC00);
-		return 2;
+		if(ch < (unsigned long)0x10000)
+		{
+			*buf = (unsigned short)ch;
+			return 1;
+		}
+		else if(ch < (unsigned long)0x110000)
+		{
+			ch -= 0x10000;
+			buf[0] = (unsigned short)((ch >> 10) + 0xD800);
+			buf[1] = (unsigned short)((ch & 0x03FF) + 0xDC00);
+			return 2;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	else
 	{
-		return 0;
+		if(ch < (unsigned long)0x10000)
+		{
+			return 1;
+		}
+		else if(ch < (unsigned long)0x110000)
+		{
+			return 2;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 }
 
 int ILUTF16WriteCharAsBytes(void *_buf, unsigned long ch)
 {
-	unsigned char *buf = (unsigned char *)_buf;
-	if(ch < (unsigned long)0x10000)
+	if(_buf)
 	{
-		buf[0] = (unsigned char)ch;
-		buf[1] = (unsigned char)(ch >> 8);
-		return 2;
-	}
-	else if(ch < (unsigned long)0x110000)
-	{
-		unsigned tempch;
-		ch -= 0x10000;
-		tempch = (unsigned)((ch >> 10) + 0xD800);
-		buf[0] = (unsigned char)tempch;
-		buf[1] = (unsigned char)(tempch >> 8);
-		tempch = (unsigned)((ch & 0x03FF) + 0xDC00);
-		buf[2] = (unsigned char)tempch;
-		buf[3] = (unsigned char)(tempch >> 8);
-		return 4;
+		unsigned char *buf = (unsigned char *)_buf;
+		if(ch < (unsigned long)0x10000)
+		{
+			buf[0] = (unsigned char)ch;
+			buf[1] = (unsigned char)(ch >> 8);
+			return 2;
+		}
+		else if(ch < (unsigned long)0x110000)
+		{
+			unsigned tempch;
+			ch -= 0x10000;
+			tempch = (unsigned)((ch >> 10) + 0xD800);
+			buf[0] = (unsigned char)tempch;
+			buf[1] = (unsigned char)(tempch >> 8);
+			tempch = (unsigned)((ch & 0x03FF) + 0xDC00);
+			buf[2] = (unsigned char)tempch;
+			buf[3] = (unsigned char)(tempch >> 8);
+			return 4;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	else
 	{
-		return 0;
+		if(ch < (unsigned long)0x10000)
+		{
+			return 2;
+		}
+		else if(ch < (unsigned long)0x110000)
+		{
+			return 4;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 }
 

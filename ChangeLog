@@ -41,6 +41,9 @@
 	support/utf16.c: implement more helper functions for the
 	UTF-8 and UTF-16 encodings.
 
+	* include/il_utils.h, support/utf16.c: only return the length
+	if NULL is supplied to the write functions.
+
 2001-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.2.8" release.

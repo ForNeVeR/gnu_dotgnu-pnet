@@ -194,7 +194,8 @@ unsigned long ILUTF16ReadCharAsBytes(const void *str, int len, int *posn);
 /*
  * Convert a 32-bit Unicode character into UTF-16.  Returns the
  * number of 16-bit characters required (1 or 2), or zero if
- * the character cannot be represented using UTF-16.
+ * the character cannot be represented using UTF-16.  If "buf"
+ * is NULL, then return the number of characters required.
  */
 int ILUTF16WriteChar(unsigned short *buf, unsigned long ch);
 
@@ -202,6 +203,7 @@ int ILUTF16WriteChar(unsigned short *buf, unsigned long ch);
  * Convert a 32-bit Unicode character into UTF-16, and store it
  * using little-endian bytes at "buf".  Returns the number of
  * bytes (2 or 4), or zero if the character cannot be represented.
+ * If "buf" is NULL, then return the number of bytes required.
  */
 int ILUTF16WriteCharAsBytes(void *buf, unsigned long ch);
 

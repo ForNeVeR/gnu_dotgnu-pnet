@@ -151,6 +151,39 @@ JavaGenValue(ILNode_SizeOf)
 	return ILMachineType_Int32;
 }
 
+%{
+
+/*
+ * Get the size of a type if it is static.  Returns zero if it isn't.
+ */
+static ILUInt32 GetPrimitiveTypeSize(ILType *type)
+{
+	if(ILType_IsPrimitive(type))
+	{
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:		return 1;
+
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:		return 2;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+			case IL_META_ELEMTYPE_R4:		return 4;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+			case IL_META_ELEMTYPE_R8:		return 8;
+		}
+	}
+	return 0;
+}
+
+%}
+
 /*
  * Perform semantic analysis for the "sizeof" operator.
  */
@@ -215,28 +248,10 @@ ILNode_SemAnalysis(ILNode_SizeOf)
 	}
 
 	/* Pre-compute the size if this is a primitive type */
-	if(ILType_IsPrimitive(node->type))
+	node->size = GetPrimitiveTypeSize(node->type);
+	if(!(node->size))
 	{
-		switch(ILType_ToElement(node->type))
-		{
-			case IL_META_ELEMTYPE_BOOLEAN:
-			case IL_META_ELEMTYPE_I1:
-			case IL_META_ELEMTYPE_U1:		node->size = 1; break;
-
-			case IL_META_ELEMTYPE_CHAR:
-			case IL_META_ELEMTYPE_I2:
-			case IL_META_ELEMTYPE_U2:		node->size = 2; break;
-
-			case IL_META_ELEMTYPE_I4:
-			case IL_META_ELEMTYPE_U4:
-			case IL_META_ELEMTYPE_R4:		node->size = 4; break;
-
-			case IL_META_ELEMTYPE_I8:
-			case IL_META_ELEMTYPE_U8:
-			case IL_META_ELEMTYPE_R8:		node->size = 8; break;
-
-			default:						node->size = 1; break;
-		}
+		node->size = 1;
 	}
 
 	/* Return the type information to the caller */

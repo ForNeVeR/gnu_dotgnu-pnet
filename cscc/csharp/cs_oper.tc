@@ -1159,7 +1159,10 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 							  const char *errorName,
 							  ILNode *(*createFunc)
 							  		(ILNode *expr, ILMethod *method,
-									 ILMachineType type))
+									 ILMachineType type),
+							  ILNode *(*createPtrFunc)
+							  		(ILNode *expr, ILUInt32 size,
+									 ILClass *classInfo))
 {
 	ILMethod *method;
 	CSSemValue value;
@@ -1204,6 +1207,27 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 		}
 		/* Not reached */
 
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		case ILMachineType_UnmanagedPtr:
+		{
+			/* Check for pointer types */
+			if(ILType_IsPointer(CSSemGetType(value)))
+			{
+				ILType *elemType =
+					ILTypeStripPrefixes(ILType_Ref(CSSemGetType(value)));
+				ILClass *classInfo = ILTypeToClass(info, elemType);
+				if(elemType != ILType_Void && classInfo)
+				{
+					*parent = (*createPtrFunc)
+						(node->expr, GetPrimitiveTypeSize(elemType),
+						 classInfo);
+					return value;
+				}
+			}
+		}
+		break;
+
 		default: break;
 	}
 
@@ -1231,7 +1255,8 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 ILNode_SemAnalysis(ILNode_PreInc)
 {
 	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
-					   "op_Increment", "++", ILNode_UserPreInc_create);
+					   "op_Increment", "++", ILNode_UserPreInc_create,
+					   ILNode_PreIncPtr_create);
 }
 
 /*
@@ -1240,7 +1265,8 @@ ILNode_SemAnalysis(ILNode_PreInc)
 ILNode_SemAnalysis(ILNode_PreDec)
 {
 	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
-					   "op_Decrement", "--", ILNode_UserPreDec_create);
+					   "op_Decrement", "--", ILNode_UserPreDec_create,
+					   ILNode_PreDecPtr_create);
 }
 
 /*
@@ -1249,7 +1275,8 @@ ILNode_SemAnalysis(ILNode_PreDec)
 ILNode_SemAnalysis(ILNode_PostInc)
 {
 	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
-					   "op_Increment", "++", ILNode_UserPostInc_create);
+					   "op_Increment", "++", ILNode_UserPostInc_create,
+					   ILNode_PostIncPtr_create);
 }
 
 /*
@@ -1258,7 +1285,8 @@ ILNode_SemAnalysis(ILNode_PostInc)
 ILNode_SemAnalysis(ILNode_PostDec)
 {
 	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
-					   "op_Decrement", "--", ILNode_UserPostDec_create);
+					   "op_Decrement", "--", ILNode_UserPostDec_create,
+					   ILNode_PostIncPtr_create);
 }
 
 /*

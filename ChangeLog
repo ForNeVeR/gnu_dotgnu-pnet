@@ -1,3 +1,7 @@
+2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ImageList.cs: fix a couple of minor mistakes with
+	handling transparency, and implement the Draw methods.
 
 2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -91,10 +91,13 @@ public sealed class ImageList : Component
 	{
 		Draw(g,pt.X,pt.Y,index);
 	}
-	public void Draw(Graphics g, int x, int y, int index) { /* TODO */ }
+	public void Draw(Graphics g, int x, int y, int index)
+	{
+		g.DrawImage(images[index],x,y,imageSize.Width,imageSize.Height);
+	}
 	public void Draw(Graphics g, int x, int y, int width, int height, int index)
 	{
-		// TODO
+		g.DrawImage(images[index],x,y,width,height);
 	}
 #endif
 	public override string ToString()
@@ -169,6 +172,7 @@ public sealed class ImageList : Component
 				{
 					throw new ArgumentNullException(/* TODO */);
 				}
+				((Bitmap) value).MakeTransparent(owner.TransparentColor);
 				images[index] = value;
 			}
 		}
@@ -188,6 +192,9 @@ public sealed class ImageList : Component
 			{
 				throw new ArgumentException(/* TODO */);
 			}
+		#if !CONFIG_COMPACT_FORMS
+			((Bitmap) image).MakeTransparent(owner.TransparentColor);
+		#endif
 			images.Add(image);
 		}
 #endif
@@ -201,6 +208,9 @@ public sealed class ImageList : Component
 			{
 				throw new ArgumentException(/* TODO */);
 			}
+		#if !CONFIG_COMPACT_FORMS
+			((Bitmap) image).MakeTransparent(owner.TransparentColor);
+		#endif
 			images.Add(image);
 		}
 	#if !CONFIG_COMPACT_FORMS
@@ -214,10 +224,7 @@ public sealed class ImageList : Component
 			{
 				throw new ArgumentException(/* TODO */);
 			}
-			//if (The attempt to add the image failed.)
-			//	throw new Exception("TODO");
-			//	return -1; // lol
-			owner.TransparentColor = transparentColor;
+			((Bitmap) image).MakeTransparent(transparentColor);
 			return images.Add(image);
 		}
 		public int AddStrip(Image image)

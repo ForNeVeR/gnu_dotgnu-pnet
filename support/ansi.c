@@ -48,6 +48,16 @@ extern	"C" {
 #endif
 #endif
 
+#if !defined(HAVE_MBSTATE_T) && defined(HAVE_WCHAR_H)
+#ifdef __BEOS__
+typedef struct 
+{
+	int 	__count;
+	wint_t	__value;
+}mbstate_t;
+#endif
+#endif
+
 #ifndef	MB_LEN_MAX
 #define	MB_LEN_MAX	6
 #endif

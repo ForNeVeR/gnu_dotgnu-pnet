@@ -217,7 +217,7 @@ struct _tagILDir
  * Determine if the "struct dirent" definition is broken.
  * Broken means that "d_name" is declared with a size of 1.
  */
-#if defined(__sun__)
+#if defined(__sun__) || defined(__BEOS__)
 #define	BROKEN_DIRENT	1
 #endif
 

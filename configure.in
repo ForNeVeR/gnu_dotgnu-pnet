@@ -352,6 +352,14 @@ AC_COMPILE_CHECK_SIZEOF(double, 8)
 AC_COMPILE_CHECK_SIZEOF(long double, 12)
 AC_COMPILE_CHECK_SIZEOF(void *, 4)
 
+dnl BeOS is one unicode enabled system which doesn't define mbstate_t
+AC_CHECK_TYPE([mbstate_t], [AC_DEFINE([HAVE_MBSTATE_T], 1 , 
+			  		[Defines to 'HAVE_MBSTATE_T' if mbstate_t is missing])], ,
+[
+#ifdef HAVE_WCHAR_H
+#include <wchar.h>
+#endif
+])
 dnl Check for computed goto support in the compiler.
 AC_MSG_CHECKING(for computed goto support)
 AC_TRY_COMPILE([], [

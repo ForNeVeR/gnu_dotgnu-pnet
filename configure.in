@@ -28,7 +28,7 @@ dnl Determine the build, host, and target system types.
 AC_CANONICAL_SYSTEM
 
 dnl Initialize automake.
-AM_INIT_AUTOMAKE(pnetC, 0.5.12)
+AM_INIT_AUTOMAKE(pnetC, 0.5.13)
 AM_MAINTAINER_MODE
 
 dnl The --with-pnet option can be used to specify the location of

@@ -1,3 +1,32 @@
+2003-11-16  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/PointConverter.cs,
+	System.Drawing/RectangleConverter.cs, System.Drawing/Region.cs,
+	System.Drawing/SizeConverter.cs: GetRegionScans takes into account
+	transforms but not shear. Implement ConvertTo and GetProperties.
+
+	* DotGNU.Images/Frame.cs, DotGNU.Images/Image.cs: 
+	Copying of the mask and other mask fixes.
+
+	* System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingToolkit.cs, 
+	System.Drawing.Win32/DrawingWindow.cs: More accurate ellipse and arc
+	drawing thanks to H.Jones <inzanekaoz@yahoo.com>. Dont erase
+	background - done in Control.
+
+	* System.Windows.Forms/ContainerControl.cs,
+	System.Windows.Forms/ContextMenu.cs, System.Windows.Forms/Control.cs,
+	System.Windows.Forms/EventId.cs, System.Windows.Forms/Form.cs, 
+	System.Windows.Forms/ImageList.cs, 
+	System.Windows.Forms/TextBoxBase.cs, System.Windows.Forms/ToolBar.cs: 
+	Implement ProcessTabKey and ProcessDialogKey. Use ContextMenu.OnPaint
+	to implement drawing rather. Implement Control.ContainsFocus, control
+	styles wrong. Invalidate fixed when handling child controls. Docked
+	controls being layed out the wrong way. Implement Control.Refresh.
+	Handle opaque style. Implement Form.ProcessDialogKey and fix create
+	layout bug. Implement ImageList.Dispose(). Toolbar UI bug fix and
+	implement Dispose(). Implement TextControlBase.ProcessDialogKey.
+
 2003-11-14  Adam Ballai <adam@thefrontnetworks.net>
 
 	* System.Xml/XmlTextReader.cs: bug fix for #4215.
@@ -7,7 +36,8 @@
 2003-11-14  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs: improvements to MeasureString and
-	DrawString. Fixed ResetTransform and transforms as they relate to clips.
+	DrawString. Fixed ResetTransform and transforms as they relate to
+	clips.
 
 2003-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 

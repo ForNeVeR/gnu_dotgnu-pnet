@@ -27,11 +27,10 @@ using System.Reflection;
 using System.ComponentModel;
 
 #if CONFIG_COMPONENT_MODEL
-	public class ColumnHeader : Component
+	public class ColumnHeader : Component, ICloneable
 #else
-	public class ColumnHeader
+	public class ColumnHeader : ICloneable
 #endif
-		, ICloneable
 	{
 		internal ListView listView;
 		internal int width;

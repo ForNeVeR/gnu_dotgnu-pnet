@@ -370,6 +370,10 @@ fi
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save ibm-1025.ucm >CP21025.cs
 
+./ucm2cp --page 21866 --wpage 1251 --name 'Ukrainian (KOI8-U)' \
+	--webname koi8-u --bodyname koi8-u \
+	--headername koi8-u koi8-u.ucm >CP21866.cs
+
 ./ucm2cp --page 28592 --wpage 1250 --name 'Central European (ISO)' \
 	--webname iso-8859-2 --bodyname iso-8859-2 \
 	--headername iso-8859-2 ibm-912.ucm >CP28592.cs

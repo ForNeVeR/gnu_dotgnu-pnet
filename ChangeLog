@@ -32,6 +32,10 @@
 	add non-ECMA permission classes; handle "Unrestricted" on attributes
 	properly during "CreatePermission".
 
+	* runtime/System/Security/Permissions/PrincipalPermission.cs,
+	runtime/System/Security/Permissions/PrincipalPermissionAttribute.cs:
+	add princpal permission classes.
+
 2003-03-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/UTF8Encoding.cs,

@@ -4,6 +4,9 @@
 	* HACKING: replace the reference to the "Tech Support Manager" with
 	a reference to the "Bug Tracking" system.
 
+	* configure.in: implement a better sizeof check that should work
+	more smoothly in cross-compile environments.
+
 2003-05-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/spawn.c: use the Win32 version of ILSpawnProcess under

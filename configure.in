@@ -229,15 +229,41 @@ AC_CHECK_HEADERS(readline/readline.h readline/history.h wchar.h)
 AC_CHECK_HEADERS(sys/socket.h netinet/in.h langinfo.h locale.h sys/ioctl.h)
 AC_CHECK_HEADERS(sys/select.h netdb.h sys/cygwin.h dirent.h sys/utime.h utime.h)
 
+dnl A macro that helps detect the size of types in a cross-compile environment.
+AC_DEFUN([AC_COMPILE_CHECK_SIZEOF],
+[changequote(<<, >>)dnl
+dnl The name to #define.
+define(<<AC_TYPE_NAME>>, translit(sizeof_$1, [a-z *], [A-Z_P]))dnl
+dnl The cache variable name.
+define(<<AC_CV_NAME>>, translit(ac_cv_sizeof_$1, [ *], [_p]))dnl
+changequote([, ])dnl
+AC_MSG_CHECKING(size of $1)
+AC_CACHE_VAL(AC_CV_NAME,
+[for ac_size in 4 8 1 2 12 16 $2 ; do # List sizes in rough order of prevalence.
+  AC_TRY_COMPILE([#include "confdefs.h"
+#include <sys/types.h>
+], [switch (0) case 0: case (sizeof ($1) == $ac_size):;], AC_CV_NAME=$ac_size)
+  if test x$AC_CV_NAME != x ; then break; fi
+done
+])
+if test x$AC_CV_NAME = x ; then
+  AC_CV_NAME=0
+fi
+AC_MSG_RESULT($AC_CV_NAME)
+AC_DEFINE_UNQUOTED(AC_TYPE_NAME, $AC_CV_NAME, [The number of bytes in type $1])
+undefine([AC_TYPE_NAME])dnl
+undefine([AC_CV_NAME])dnl
+])
+
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
-AC_CHECK_SIZEOF(int, 4)
-AC_CHECK_SIZEOF(long, 4)
-AC_CHECK_SIZEOF(long long, 8)
-AC_CHECK_SIZEOF(float, 4)
-AC_CHECK_SIZEOF(double, 8)
-AC_CHECK_SIZEOF(long double, 12)
-AC_CHECK_SIZEOF(void *, 4)
+AC_COMPILE_CHECK_SIZEOF(int, 4)
+AC_COMPILE_CHECK_SIZEOF(long, 4)
+AC_COMPILE_CHECK_SIZEOF(long long, 8)
+AC_COMPILE_CHECK_SIZEOF(float, 4)
+AC_COMPILE_CHECK_SIZEOF(double, 8)
+AC_COMPILE_CHECK_SIZEOF(long double, 12)
+AC_COMPILE_CHECK_SIZEOF(void *, 4)
 
 dnl Check for computed goto support in the compiler.
 AC_MSG_CHECKING(for computed goto support)

@@ -884,8 +884,44 @@ ILObject *_IL_Assembly_GetExecutingAssembly(ILExecThread *thread)
 System_Array *_IL_Assembly_GetExportedTypes(ILExecThread *_thread,
 											ILObject *_this)
 {
-	/* TODO */
-	return 0;
+	/* TODO: Figure out exactly what is an exported type , right now
+	         this method returns all types in the assembly
+	*/
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	System_Array *array=NULL; 
+	ILObject **buffer=NULL;   
+	ILUInt32 num=0; 
+	ILClass *classInfo=NULL;
+
+	if(item && _ILClrCheckItemAccess(_thread, item)) 
+	{
+		num = ILImageNumTokens (image, IL_META_TOKEN_TYPE_DEF);
+		array = (System_Array *)ILExecThreadNew(_thread, "[oSystem.Object;",
+												"(Ti)V", (ILVaInt)num);
+		if(!array)
+		{
+			return 0;
+		}
+		buffer = (ILObject **)(ArrayToBuffer(array));
+  		while ((classInfo = (ILClass *) ILImageNextToken 
+							(image, IL_META_TOKEN_TYPE_DEF,classInfo)) != 0)
+		{
+			if (classInfo)
+			{
+				*buffer = _ILGetClrType(_thread,classInfo);
+				if(!(*buffer)) //error getting type
+				{
+					return 0;
+				}
+				++buffer;
+			}
+		}
+		return array;
+	}
+	/* Invalid item, or insufficient access: return a zero-element array */
+	return (System_Array *)ILExecThreadNew
+				(_thread, "[oSystem.Object;", "(Ti)V", (ILVaInt)0);
 }
 
 /*

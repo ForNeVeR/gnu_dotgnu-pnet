@@ -393,6 +393,123 @@ static void test_des_block(BlockTestInfo *arg)
 }
 
 /*
+ * Define test vectors for the Triple-DES algorithm.
+ */
+static BlockTestInfo des3_block_1 = {
+	{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+	 0xef, 0xcd, 0xab, 0x89, 0x67, 0x54, 0x32, 0x10},
+	128,
+	{0x4e, 0x6f, 0x77, 0x20, 0x69, 0x73, 0x20, 0x74},
+	{0x00}
+};
+static BlockTestInfo des3_block_2 = {
+	{0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+	 0xef, 0xcd, 0xab, 0x89, 0x67, 0x54, 0x32, 0x10,
+	 0x11, 0x33, 0x66, 0x99, 0xCC, 0xFF, 0x22, 0x44},
+	192,
+	{0x4e, 0x6f, 0x77, 0x20, 0x69, 0x73, 0x20, 0x74},
+	{0x00}
+};
+
+/*
+ * Test the Triple-DES block cipher algorithm.
+ */
+static void test_des3_block(BlockTestInfo *arg)
+{
+	ILDES3Context des3;
+	unsigned char ciphertext1[8];
+	unsigned char ciphertext2[8];
+	unsigned char reverse1[8];
+	unsigned char reverse2[8];
+
+	/* Verify that the Triple-DES implementation is consistent
+	   with manual application of DES three times.  This checks
+	   that the structure of the Triple-DES code is correct */
+	if(arg->keyBits == 192)
+	{
+		/* Encrypt using three applications of DES */
+		ILDESInit(&(des3.k1), arg->key, 0);
+		ILDESInit(&(des3.k2), arg->key + 8, 1);
+		ILDESInit(&(des3.k3), arg->key + 16, 0);
+		ILDESProcess(&(des3.k1), arg->plaintext, ciphertext1);
+		ILDESProcess(&(des3.k2), ciphertext1, ciphertext1);
+		ILDESProcess(&(des3.k3), ciphertext1, ciphertext1);
+		ILDESFinalize(&(des3.k1));
+		ILDESFinalize(&(des3.k2));
+		ILDESFinalize(&(des3.k3));
+
+		/* Encrypt using 1 application of Triple-DES */
+		ILDES3Init(&des3, arg->key, arg->keyBits, 0);
+		ILDES3Process(&des3, arg->plaintext, ciphertext2);
+		ILDES3Finalize(&des3);
+
+		/* Decrypt using three applications of DES */
+		ILDESInit(&(des3.k1), arg->key, 1);
+		ILDESInit(&(des3.k2), arg->key + 8, 0);
+		ILDESInit(&(des3.k3), arg->key + 16, 1);
+		ILDESProcess(&(des3.k3), ciphertext1, reverse1);
+		ILDESProcess(&(des3.k2), reverse1, reverse1);
+		ILDESProcess(&(des3.k1), reverse1, reverse1);
+		ILDESFinalize(&(des3.k1));
+		ILDESFinalize(&(des3.k2));
+		ILDESFinalize(&(des3.k3));
+
+		/* Decrypt using 1 application of Triple-DES */
+		ILDES3Init(&des3, arg->key, arg->keyBits, 1);
+		ILDES3Process(&des3, ciphertext2, reverse2);
+		ILDES3Finalize(&des3);
+	}
+	else
+	{
+		/* Encrypt using three applications of DES */
+		ILDESInit(&(des3.k1), arg->key, 0);
+		ILDESInit(&(des3.k2), arg->key + 8, 1);
+		ILDESInit(&(des3.k3), arg->key, 0);
+		ILDESProcess(&(des3.k1), arg->plaintext, ciphertext1);
+		ILDESProcess(&(des3.k2), ciphertext1, ciphertext1);
+		ILDESProcess(&(des3.k3), ciphertext1, ciphertext1);
+		ILDESFinalize(&(des3.k1));
+		ILDESFinalize(&(des3.k2));
+		ILDESFinalize(&(des3.k3));
+
+		/* Encrypt using 1 application of Triple-DES */
+		ILDES3Init(&des3, arg->key, arg->keyBits, 0);
+		ILDES3Process(&des3, arg->plaintext, ciphertext2);
+		ILDES3Finalize(&des3);
+
+		/* Decrypt using three applications of DES */
+		ILDESInit(&(des3.k1), arg->key, 1);
+		ILDESInit(&(des3.k2), arg->key + 8, 0);
+		ILDESInit(&(des3.k3), arg->key, 1);
+		ILDESProcess(&(des3.k3), ciphertext1, reverse1);
+		ILDESProcess(&(des3.k2), reverse1, reverse1);
+		ILDESProcess(&(des3.k1), reverse1, reverse1);
+		ILDESFinalize(&(des3.k1));
+		ILDESFinalize(&(des3.k2));
+		ILDESFinalize(&(des3.k3));
+
+		/* Decrypt using 1 application of Triple-DES */
+		ILDES3Init(&des3, arg->key, arg->keyBits, 1);
+		ILDES3Process(&des3, ciphertext2, reverse2);
+		ILDES3Finalize(&des3);
+	}
+
+	/* Compare the DES and Triple-DES outputs */
+	if(ILMemCmp(ciphertext1, ciphertext2, 8) != 0)
+	{
+		ILUnitFailed("ciphertexts don't match");
+	}
+	if(ILMemCmp(reverse1, reverse2, 8) != 0)
+	{
+		ILUnitFailed("plaintexts don't match");
+	}
+	if(ILMemCmp(reverse2, arg->plaintext, 8) != 0)
+	{
+		ILUnitFailed("did not return to original plaintext");
+	}
+}
+
+/*
  * Define test vectors for the RC2 algorithm.
  */
 static BlockTestInfo rc2_block_1 = {
@@ -448,10 +565,258 @@ static void test_rc2_block(BlockTestInfo *arg)
 }
 
 /*
+ * Convert a decimal string into a big number value.
+ */
+static ILBigNum *StrToBigNum(const char *str)
+{
+	unsigned char *temp;
+	ILBigNum *num;
+	int len, size, posn;
+	ILUInt32 carry;
+
+	/* Allocate a buffer to hold the initial value */
+	len = strlen(str);
+	if((temp = (unsigned char *)ILMalloc(len)) == 0)
+	{
+		ILUnitOutOfMemory();
+	}
+	size = 0;
+
+	/* Convert the string into the buffer, one digit at a time */
+	while(*str != '\0')
+	{
+		/* Skip non-digits (usually commas used for test clarity) */
+		if(*str < '0' || *str > '9')
+		{
+			++str;
+			continue;
+		}
+
+		/* Multiply "temp" by 10 and add the new digit */
+		carry = (ILUInt32)(*str++ - '0');
+		posn = 0;
+		while(posn < size)
+		{
+			carry += 10 * (ILUInt32)(temp[len - 1 - posn]);
+			temp[len - 1 - posn] = (unsigned char)carry;
+			carry >>= 8;
+			++posn;
+		}
+		if(carry != 0)
+		{
+			temp[len - 1 - posn] = (unsigned char)carry;
+			++size;
+		}
+	}
+
+	/* Convert the buffer into a big number */
+	num = ILBigNumFromBytes(temp + len - size, size);
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Clean up and exit */
+	ILFree(temp);
+	return num;
+}
+
+/*
+ * Determine if a big number is equal to a specified string's value.
+ */
+static int BigNumEq(ILBigNum *num, const char *str)
+{
+	ILBigNum *num2 = StrToBigNum(str);
+	int cmp = ILBigNumCompare(num, num2);
+	ILBigNumFree(num2);
+	return (cmp == 0);
+}
+
+/*
+ * Test big number creation via "ILBigNumFromInt".
+ */
+static void bignum_from_int(void *arg)
+{
+	ILBigNum *num;
+
+	num = ILBigNumFromInt(0);
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "0"))
+	{
+		ILUnitFailed("num != 0");
+	}
+	if(BigNumEq(num, "1"))
+	{
+		/* Shouldn't happen - checks for bad "ILBigNumCompare" */
+		ILUnitFailed("num == 1");
+	}
+	ILBigNumFree(num);
+
+	num = ILBigNumFromInt(1);
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "1"))
+	{
+		ILUnitFailed("num != 1");
+	}
+	ILBigNumFree(num);
+
+	num = ILBigNumFromInt(2147483647);
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "2147483647"))
+	{
+		ILUnitFailed("num != 2147483647");
+	}
+	ILBigNumFree(num);
+
+	num = ILBigNumFromInt(IL_MAX_UINT32);
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "4294967295"))
+	{
+		ILUnitFailed("num != 4294967295");
+	}
+	ILBigNumFree(num);
+}
+
+/*
+ * Useful byte arrays for big number testing.
+ */
+static unsigned char num1bytes[] = {0x00};
+static unsigned char num2bytes[] = {0x00, 0x00, 0x00, 0x00, 0x10, 0x00};
+static unsigned char num2bytes_trimmed[] = {0x10, 0x00};
+static unsigned char num3bytes[] = {0x7F, 0xFF, 0xFF, 0xFF};
+static unsigned char num4bytes[] = {0x03, 0x7F, 0xFF, 0xFF, 0xFF};
+
+/*
+ * Test big number creation via "ILBigNumFromBytes".
+ */
+static void bignum_from_bytes(void *arg)
+{
+	ILBigNum *num;
+
+	num = ILBigNumFromBytes(num1bytes, sizeof(num1bytes));
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "0"))
+	{
+		ILUnitFailed("num != 0");
+	}
+	ILBigNumFree(num);
+
+	num = ILBigNumFromBytes(num2bytes, sizeof(num2bytes));
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "4096"))
+	{
+		ILUnitFailed("num != 4096");
+	}
+	ILBigNumFree(num);
+
+	num = ILBigNumFromBytes(num3bytes, sizeof(num3bytes));
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "2147483647"))
+	{
+		ILUnitFailed("num != 2147483647");
+	}
+	ILBigNumFree(num);
+
+	num = ILBigNumFromBytes(num4bytes, sizeof(num4bytes));
+	if(!num)
+	{
+		ILUnitOutOfMemory();
+	}
+	if(!BigNumEq(num, "15032385535"))
+	{
+		ILUnitFailed("num != 15032385535");
+	}
+	ILBigNumFree(num);
+}
+
+/*
+ * Test big number output via "ILBigNumToBytes".
+ */
+static void bignum_to_bytes(void *arg)
+{
+	ILBigNum *num;
+	unsigned char buf[32];
+
+	num = StrToBigNum("0");
+	if(ILBigNumByteCount(num) != sizeof(num1bytes))
+	{
+		ILUnitFailed("num1 byte count incorrect");
+	}
+	ILBigNumToBytes(num, buf);
+	if(ILMemCmp(buf, num1bytes, sizeof(num1bytes)) != 0)
+	{
+		ILUnitFailed("num1 byte representation incorrect");
+	}
+	ILBigNumFree(num);
+
+	num = StrToBigNum("4096");
+	if(ILBigNumByteCount(num) != sizeof(num2bytes_trimmed))
+	{
+		ILUnitFailed("num2 byte count incorrect");
+	}
+	ILBigNumToBytes(num, buf);
+	if(ILMemCmp(buf, num2bytes_trimmed, sizeof(num2bytes_trimmed)) != 0)
+	{
+		ILUnitFailed("num2 byte representation incorrect");
+	}
+	ILBigNumFree(num);
+
+	num = StrToBigNum("2147483647");
+	if(ILBigNumByteCount(num) != sizeof(num3bytes))
+	{
+		ILUnitFailed("num3 byte count incorrect");
+	}
+	ILBigNumToBytes(num, buf);
+	if(ILMemCmp(buf, num3bytes, sizeof(num3bytes)) != 0)
+	{
+		ILUnitFailed("num3 byte representation incorrect");
+	}
+	ILBigNumFree(num);
+
+	num = StrToBigNum("15032385535");
+	if(ILBigNumByteCount(num) != sizeof(num4bytes))
+	{
+		ILUnitFailed("num4 byte count incorrect");
+	}
+	ILBigNumToBytes(num, buf);
+	if(ILMemCmp(buf, num4bytes, sizeof(num4bytes)) != 0)
+	{
+		ILUnitFailed("num4 byte representation incorrect");
+	}
+	ILBigNumFree(num);
+}
+
+/*
  * Test registration macro for cryptographic tests.
  */
 #define	RegisterCrypt(func,name)	\
 	(ILUnitRegister(#name, (ILUnitTestFunc)func, &name))
+
+/*
+ * Simple test registration macro.
+ */
+#define	RegisterSimple(name)	(ILUnitRegister(#name, name, 0))
 
 /*
  * Register all unit tests.
@@ -517,6 +882,13 @@ void ILUnitRegisterTests(void)
 	RegisterCrypt(test_des_block, des_block_5);
 
 	/*
+	 * Test the properties of the Triple-DES algorithm.
+	 */
+	ILUnitRegisterSuite("Triple-DES");
+	RegisterCrypt(test_des3_block, des3_block_1);
+	RegisterCrypt(test_des3_block, des3_block_2);
+
+	/*
 	 * Test the properties of the RC2 algorithm.
 	 */
 	ILUnitRegisterSuite("RC2");
@@ -524,6 +896,14 @@ void ILUnitRegisterTests(void)
 	RegisterCrypt(test_rc2_block, rc2_block_2);
 	RegisterCrypt(test_rc2_block, rc2_block_3);
 	RegisterCrypt(test_rc2_block, rc2_block_4);
+
+	/*
+	 * Test the big number arithmetic routines.
+	 */
+	ILUnitRegisterSuite("BigNum");
+	RegisterSimple(bignum_from_int);
+	RegisterSimple(bignum_from_bytes);
+	RegisterSimple(bignum_to_bytes);
 }
 
 #ifdef	__cplusplus

@@ -3,6 +3,8 @@
 
 	* support/des.c: fix bugs in the structure of Triple-DES.
 
+	* tests/test_crypt.c: regression tests for Triple-DES.
+
 2002-07-14  Gopal.V  <gopalv82@symonds.net>
 
 	* csdoc/doc_html.c, csdoc/doc_texi.c : fix the table bug

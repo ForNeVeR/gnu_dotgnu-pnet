@@ -371,6 +371,24 @@ public class Assembly : IClrProgramItem
 				}
 				int error;
 				Assembly assembly;
+
+				if(assemblyFile.Length >= 7 &&
+				   String.Compare(assemblyFile, 0, "file://", 0, 7, true)
+				   		== 0)
+				{
+					if(assemblyFile.Length >= 10 &&
+					   assemblyFile[7] == '/' &&
+					   assemblyFile[9] == ':')
+					{
+						// Specification of the form "file:///X:...".
+						assemblyFile = assemblyFile.Substring(8);
+					}
+					else
+					{
+						// Some other type of file specification.
+						assemblyFile = assemblyFile.Substring(7);
+					}
+				}
 				
 				if(assemblyFile.EndsWith(".dll") || 
 					assemblyFile.EndsWith(".DLL") ||

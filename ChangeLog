@@ -1,3 +1,9 @@
+
+2004-05-26  Gopal V  <gopalv82@yahoo.com>
+
+	* runtime/System/Reflection/Assembly.cs: Fix LoadFrom to accept 
+	file:// URLS.
+
 2004-05-26  Thong Nguyen  <tum@veridicus.com>
 
 	* runtime/System/Threading/Thread.cs: Added 

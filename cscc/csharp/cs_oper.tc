@@ -1767,6 +1767,43 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 		return value1;
 	}
 
+	/* If one of the arguments is a pointer and the other is null,
+	   then the code generator knows how to handle the operation */
+	if(ILType_IsPointer(CSSemGetType(value1)))
+	{
+		if(CSSemGetType(value2) == ILType_Null)
+		{
+			if(table == ILOp_Eq)
+			{
+				*parent = ILNode_IsNull_create(node->expr1);
+			}
+			else
+			{
+				*parent = ILNode_IsNonNull_create(node->expr1);
+			}
+			yysetfilename(*parent, yygetfilename(node));
+			yysetlinenum(*parent, yygetlinenum(node));
+			CSSemSetRValue(value1, ILType_Boolean);
+			return value1;
+		}
+	}
+	else if(CSSemGetType(value1) == ILType_Null &&
+			ILType_IsPointer(CSSemGetType(value2)))
+	{
+		if(table == ILOp_Eq)
+		{
+			*parent = ILNode_IsNull_create(node->expr2);
+		}
+		else
+		{
+			*parent = ILNode_IsNonNull_create(node->expr2);
+		}
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		CSSemSetRValue(value1, ILType_Boolean);
+		return value1;
+	}
+
 	/* Look for a user-specified operator */
 	method = FindUserBinaryOperator(info, name, &(value1), node->expr1,
 									&(value2), node->expr2);

@@ -6,6 +6,9 @@
 	that optionally end in "Attribute" better by pushing the
 	X / XAttribute check further down into semantic analysis.
 
+	* cscc/csharp/cs_oper.tc (EqualitySem): pointer comparisons
+	against null.
+
 2003-05-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_nodes.tc, codegen/cg_lvalue.tc, cscc/csharp/cs_lvalue.tc,

@@ -105,6 +105,8 @@ static void ApplyUserBinaryOperator(ILGenInfo *info, ILMethod *method,
 						(((ILNode_BinaryExpression*)(node))->expr1, 
 						((ILNode_BinaryExpression*)(node))->expr2,
 						 ILTypeToMachineType(returnType), method);
+	yysetfilename(*parent, yygetfilename(node));
+	yysetlinenum(*parent, yygetlinenum(node));
 	CSSemSetRValue(*value1, returnType);
 }
 
@@ -905,11 +907,15 @@ static CSSemValue AssignSem(ILGenInfo *info,
 		{
 			*assignParent = ILNode_EventAddOrRemove_create
 					(0, node->expr2, method);
+			yysetfilename(*assignParent, yygetfilename(node));
+			yysetlinenum(*assignParent, yygetlinenum(node));
 		}
 		else
 		{
 			*assignParent = ILNode_EventAddOrRemove_create
 					(node->expr1, node->expr2, method);
+			yysetfilename(*assignParent, yygetfilename(node));
+			yysetlinenum(*assignParent, yygetlinenum(node));
 		}
 
 		/* When an event is used with assignment, the whole assignment
@@ -2002,6 +2008,8 @@ ILNode_SemAnalysis(ILNode_AsUntyped)
 	if(classInfo != 0)
 	{
 		*parent = ILNode_As_create(node->expr1, classInfo, 0);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
 		return result;
 	}
 
@@ -2053,6 +2061,8 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 						    "`is' expression is always true");
 			*parent = ILNode_Comma_create(node->expr1, ILNode_True_create());
 		}
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
 		return result;
 	}
 
@@ -2062,6 +2072,8 @@ ILNode_SemAnalysis(ILNode_IsUntyped)
 	if(classInfo != 0)
 	{
 		*parent = ILNode_Is_create(node->expr1, classInfo, 0);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
 		return result;
 	}
 

@@ -1,4 +1,10 @@
 
+2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);
+namespace nodes; flags that indicate nodes that need full qualification;
+declare ILDocTreeSort.
+
 2001-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_defs.tc, cscc/cs_oper.tc: ILNode_GlobalNamespace, new semantic

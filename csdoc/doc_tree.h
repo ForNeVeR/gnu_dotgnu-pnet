@@ -32,6 +32,7 @@ extern	"C" {
  */
 typedef struct _tagILDocTree		ILDocTree;
 typedef struct _tagILDocLibrary		ILDocLibrary;
+typedef struct _tagILDocNamespace	ILDocNamespace;
 typedef struct _tagILDocType		ILDocType;
 typedef struct _tagILDocInterface	ILDocInterface;
 typedef struct _tagILDocAttribute	ILDocAttribute;
@@ -46,6 +47,7 @@ struct _tagILDocTree
 {
 	ILDocLibrary   *libraries;		/* Libraries within the tree */
 	ILDocLibrary   *lastLibrary;	/* Last library within the tree */
+	ILDocNamespace *namespaces;		/* Namespaces within the tree */
 
 };
 
@@ -54,12 +56,37 @@ struct _tagILDocTree
  */
 struct _tagILDocLibrary
 {
-	ILDocTree	   *tree;			/* Tree that this type belongs to */
+	ILDocTree	   *tree;			/* Tree that this library belongs to */
 	char		   *name;			/* Name of the library, or NULL if none */
 	ILDocType	   *types;			/* List of types in the library */
 	ILDocLibrary   *next;			/* Next library within the tree */
 
 };
+
+/*
+ * Information that is stored about a namespace.
+ */
+struct _tagILDocNamespace
+{
+	ILDocTree	   *tree;			/* Tree that this namespace belongs to */
+	char		   *name;			/* Name of the namespace ("" if none) */
+	ILDocType      *types;			/* Sorted list of types in the namespace */
+	ILDocNamespace *next;			/* Next namespace within the tree */
+
+};
+
+/*
+ * Type kinds.
+ */
+typedef enum
+{
+	ILDocTypeKind_Class,
+	ILDocTypeKind_Interface,
+	ILDocTypeKind_Struct,
+	ILDocTypeKind_Enum,
+	ILDocTypeKind_Delegate,
+
+} ILDocTypeKind;
 
 /*
  * Information that is stored about a type.
@@ -68,8 +95,11 @@ struct _tagILDocType
 {
 	ILDocTree	   *tree;			/* Tree that this type belongs to */
 	ILDocLibrary   *library;		/* Library that this type belongs to */
+	ILDocNamespace *namespace;		/* Namespace that this type belongs to */
+	ILDocTypeKind	kind;			/* Kind of type */
 	char		   *name;			/* Name, without the namespace qualifier */
 	char		   *fullName;		/* Full name of the type */
+	int				fullyQualify;	/* Non-zero if name qualify recommended */
 	char		   *ilasmSignature;	/* ILASM signature for the type */
 	char		   *csSignature;	/* C# signature for the type */
 	char		   *baseType;		/* Full name of the base type */
@@ -78,6 +108,7 @@ struct _tagILDocType
 	ILDocText      *doc;			/* Text of the type's documentation */
 	ILDocMember    *members;		/* List of type members */
 	ILDocType	   *next;			/* Next type in the same library */
+	ILDocType	   *nextNamespace;	/* Next type in the same namespace */
 
 };
 
@@ -106,9 +137,9 @@ struct _tagILDocAttribute
  */
 typedef enum
 {
-	ILDocMemberType_Field,
-	ILDocMemberType_Method,
 	ILDocMemberType_Constructor,
+	ILDocMemberType_Method,
+	ILDocMemberType_Field,
 	ILDocMemberType_Property,
 	ILDocMemberType_Event,
 	ILDocMemberType_Unknown,
@@ -124,6 +155,7 @@ struct _tagILDocMember
 	ILDocType	   *type;			/* Type that this member belongs to */
 	char		   *name;			/* Name of the member */
 	ILDocMemberType	memberType;		/* Type of member */
+	int				fullyQualify;	/* Non-zero if needs full qualification */
 	char		   *ilasmSignature;	/* ILASM signature for the type */
 	char		   *csSignature;	/* C# signature for the type */
 	char		   *returnType;		/* Return type (NULL for "void") */
@@ -169,6 +201,12 @@ ILDocTree *ILDocTreeCreate(void);
  * Returns zero if out of memory.
  */
 int ILDocTreeLoad(ILDocTree *tree, ILXMLReader *reader);
+
+/*
+ * Sort the contents of a documentation tree and collect
+ * all of the namespaces.  Returns zero if out of memory.
+ */
+int ILDocTreeSort(ILDocTree *tree);
 
 /*
  * Destroy a documentation tree.

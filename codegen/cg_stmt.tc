@@ -1824,6 +1824,83 @@ ILNode_GenDiscard(ILNode_Switch)
 }
 
 /*
+ * Determine if a "switch" statement ends in a return statement.
+ */
+ILNode_EndsInReturnImpl(ILNode_Switch)
+{
+	int flags, sflags;
+	ILNode_ListIter iter;
+	ILNode_SwitchSection *section;
+
+	/* Check that all switch cases end in return statements */
+	if(node->body)
+	{
+		flags = ILNode_EndsInReturnImpl(node->body);
+	}
+	else
+	{
+		flags = IL_ENDS_IN_EMPTY;
+		ILNode_ListIter_Init(&iter, node->sections);
+		while((section = (ILNode_SwitchSection *)
+					ILNode_ListIter_Next(&iter)) != 0)
+		{
+			if(section->stmt)
+			{
+				sflags = ILNode_EndsInReturnImpl(section->stmt);
+			}
+			else
+			{
+				sflags = IL_ENDS_IN_EMPTY;
+			}
+			if((flags & IL_ENDS_IN_EMPTY) != 0)
+			{
+				flags = sflags;
+			}
+			else if((sflags & (IL_ENDS_IN_RETURN |
+							   IL_ENDS_IN_BREAK |
+							   IL_ENDS_IN_CONTINUE |
+							   IL_ENDS_IN_GOTO |
+							   IL_ENDS_IN_THROW)) != 0)
+			{
+				if((flags & (IL_ENDS_IN_RETURN |
+							 IL_ENDS_IN_BREAK |
+							 IL_ENDS_IN_CONTINUE |
+							 IL_ENDS_IN_GOTO |
+							 IL_ENDS_IN_THROW)) != 0)
+				{
+					flags = IL_ENDS_IN_RETURN |
+							((flags | sflags) & IL_ENDS_IN_CONTAINED_MASK);
+				}
+				else
+				{
+					flags = ((flags | sflags) & IL_ENDS_IN_CONTAINED_MASK);
+				}
+			}
+			else
+			{
+				flags = ((flags | sflags) & IL_ENDS_IN_CONTAINED_MASK);
+			}
+		}
+	}
+
+	/* If there is no default case, then we fall through */
+	if(!(node->defaultSection))
+	{
+		flags &= IL_ENDS_IN_CONTAINED_MASK;
+	}
+
+	/* If there is a "break" or "continue", then we fall through */
+	if((flags & IL_ENDS_IN_CONTAINED_BREAK) != 0 ||
+	   (flags & IL_ENDS_IN_CONTAINED_CONTINUE) != 0)
+	{
+		flags &= IL_ENDS_IN_CONTAINED_CONTINUE;
+	}
+
+	/* Return the final flags to the caller */
+	return flags;
+}
+
+/*
  * Stub out pseudo-statements that are used by "switch" statements.
  */
 ILNode_GenDiscard(ILNode_SwitchSectList),

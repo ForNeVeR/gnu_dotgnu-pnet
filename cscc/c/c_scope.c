@@ -172,7 +172,7 @@ void CScopeAddParam(const char *name, unsigned index, ILType *type)
 void CScopeAddLocal(const char *name, ILNode *node,
 					unsigned index, ILType *type)
 {
-	ILScopeDeclareItem(CGlobalScope, name,
+	ILScopeDeclareItem(CCurrentScope, name,
 					   C_SCDATA_LOCAL_VAR, PersistNode(node),
 					   (void *)(ILNativeUInt)index, type);
 }

@@ -1,4 +1,9 @@
 
+2004-09-28  Gopal V  <gopalv82@yahoo.com>
+
+	* System/Net/Sockets/NetworkStream.cs: Use different lock objects
+	for NetworkStream read and write operations.
+
 2004-09-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/InputOutputWidget.cs (FlushInvalidates): don't perform a

@@ -32,6 +32,7 @@ public class NetworkStream : Stream
 	private Socket socket;
 	private FileAccess access;
 	private bool ownsSocket;
+	private Object readLock;
 
 	// Constructors.
 	public NetworkStream(Socket socket)
@@ -73,6 +74,7 @@ public class NetworkStream : Stream
 				this.socket = socket;
 				this.access = access;
 				this.ownsSocket = ownsSocket;
+				this.readLock = new Object();
 			}
 
 	// Destructor.
@@ -138,7 +140,7 @@ public class NetworkStream : Stream
 	// Read data from this stream.
 	public override int Read(byte[] buffer, int offset, int count)
 			{
-				lock(this)
+				lock(readLock)
 				{
 					// Validate the stream state first.
 					if(socket == null)
@@ -277,7 +279,7 @@ public class NetworkStream : Stream
 			{
 				get
 				{
-					lock(this)
+					lock(readLock)
 					{
 						if(socket == null)
 						{

@@ -21,6 +21,8 @@
 	rewrite the DateTimeFormatter to be culture-sensitive and
 	more efficient.
 
+	* runtime/System/Globalization/Calendar.cs: implement "GetWeekOfYear".
+
 2003-05-31  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebRequest.cs, System/Net/HttpWebRequest.cs,

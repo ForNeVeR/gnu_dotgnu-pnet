@@ -180,13 +180,92 @@ public abstract class Calendar
 	public abstract int GetMonthsInYear(int year, int era);
 
 	// Get the week of the year that a particular date falls within.
-	[TODO]
 	public virtual int GetWeekOfYear(DateTime time,
 									 CalendarWeekRule rule,
 									 DayOfWeek firstDayOfWeek)
 			{
-				// TODO
-				return 0;
+				if(((int)firstDayOfWeek) < ((int)(DayOfWeek.Sunday)) ||
+				   ((int)firstDayOfWeek) > ((int)(DayOfWeek.Saturday)))
+				{
+					throw new ArgumentOutOfRangeException
+						("firstDayOfWeek", _("Arg_DayOfWeek"));
+				}
+				// Find out when Jan 1 occurs in this year.
+				DayOfWeek jan1;
+				jan1 = GetDayOfWeek(ToDateTime(GetYear(time), 1, 1,
+											   0, 0, 0, 0, CurrentEra));
+
+				// Compute the week value.
+				int temp, inc;
+				switch(rule)
+				{
+					case CalendarWeekRule.FirstDay:
+					{
+						// Determine how many days to increase by.
+						inc = ((int)jan1) - ((int)firstDayOfWeek);
+						if(inc < 0)
+						{
+							inc += 7;
+						}
+
+						// Compute the week value.
+						return ((GetDayOfYear(time) + inc) / 7) + 1;
+					}
+					// Not reached.
+
+					case CalendarWeekRule.FirstFullWeek:
+					case CalendarWeekRule.FirstFourDayWeek:
+					{
+						// Calculate the number of days until the
+						// start of the first week in the year.
+						inc = ((int)firstDayOfWeek) - ((int)jan1);
+						if(inc != 0)
+						{
+							if(inc < 0)
+							{
+								inc += 7;
+							}
+							if(rule == CalendarWeekRule.FirstFourDayWeek)
+							{
+								if(inc >= 4)
+								{
+									inc -= 7;
+								}
+							}
+							else
+							{
+								if(inc >= 7)
+								{
+									inc -= 7;
+								}
+							}
+						}
+
+						// Compute the week value.
+						temp = GetDayOfYear(time) - inc;
+						if(temp > 0)
+						{
+							return ((temp - 1) / 7) + 1;
+						}
+
+						// The week is actually the last week of the
+						// previous year, so restart the process.
+						temp = GetYear(time) - 1;
+						inc = GetMonthsInYear(temp);
+						return GetWeekOfYear
+							(ToDateTime(temp, inc, GetDaysInMonth(temp, inc),
+										0, 0, 0, 0, CurrentEra),
+							 rule, firstDayOfWeek);
+					}
+					// Not reached.
+
+					default:
+					{
+						throw new ArgumentOutOfRangeException
+							("rule", _("Arg_CalendarWeekRule"));
+					}
+					// Not reached.
+				}
 			}
 
 	// Determine if a particular day is a leap day.

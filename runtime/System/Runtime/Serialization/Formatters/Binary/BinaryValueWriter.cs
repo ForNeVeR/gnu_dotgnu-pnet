@@ -314,18 +314,24 @@ internal abstract class BinaryValueWriter
 			}
 
 	// if a member-name is used in the current class and in a base class, then the name has to be prefixed by <class>+
-	private static String GetMemberName(MemberInfo[] allMembers, MemberInfo member) {
+	private static String GetMemberName(MemberInfo[] allMembers, MemberInfo member)
+	{
 		bool prefix = false;
-		foreach(MemberInfo mi in allMembers) {
-			if(mi.Name == member.Name && mi.DeclaringType != member.DeclaringType) {
+		foreach(MemberInfo mi in allMembers)
+		{
+			if(mi.Name == member.Name && mi.DeclaringType != member.DeclaringType)
+			{
 				prefix = true;
 				break;
 			}
 		}
 
-		if(prefix) {
+		if(prefix)
+		{
 			return member.DeclaringType.FullName+"+"+member.Name;
-		} else {
+		}
+		else
+		{
 			return member.Name;
 		}
 	}
@@ -1552,32 +1558,116 @@ internal abstract class BinaryValueWriter
 		public override void WriteObject(BinaryValueContext context,
 										 Object value, Type type)
 				{
-					Array ar = (Array) value;
-					int length = ar.GetLength(0);
-					for(int i = 0; i < length; i++) 
+				    Type elementType = type.GetElementType();
+
+			        if(elementType == typeof(Boolean)) 
 					{
-						object o = ar.GetValue(i);
-						if(o == null)
+						foreach(bool elem in (bool[])value)
 						{
-							// Write a null value.
-							context.writer.Write
-								((byte)(BinaryElementType.NullValue));
+							context.writer.Write(elem);
 						}
-						else
+			        } 
+					else if(elementType == typeof(Byte)) 
+					{
+				        context.writer.Write((byte[]) value);
+			        }
+					else if(elementType == typeof(SByte)) 
+					{
+						/* wish we had macros */
+						foreach(sbyte elem in (sbyte[])value)
 						{
-							BinaryValueWriter writer = GetWriter(context, type.GetElementType());
-							if(writer != null)
-							{
-								writer.WriteInline(context, o, o.GetType(), type);
-							}
-							else
-							{
-								throw new SerializationException
-									(String.Format
-										(_("Serialize_CannotSerialize"), type));
-							}
+				        	context.writer.Write(elem);
+						}
+			        }
+					else if(elementType == typeof(Char)) 
+					{
+						foreach(char elem in (char[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+			        }
+					else if(elementType == typeof(Int16)) 
+					{
+						foreach(short elem in (short[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+			        }
+					else if(elementType == typeof(UInt16))
+					{
+						foreach(ushort elem in (ushort[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+			        } 
+					else if(elementType == typeof(Int32)) 
+					{
+						foreach(int elem in (int[])value)
+						{
+				        	context.writer.Write(elem);
 						}
 					}
+					else if(elementType == typeof(UInt32)) 
+					{
+						foreach(uint elem in (uint[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+			        }
+					else if(elementType == typeof(Int64)) 
+					{
+						foreach(long elem in (long[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+			        }
+					else if(elementType == typeof(UInt64))
+					{
+						foreach(ulong elem in (ulong[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+			        }
+					else if(elementType == typeof(Single))
+					{
+						foreach(float elem in (float[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+			        }
+					else if(elementType == typeof(Double)) 
+					{
+						foreach(double elem in (double[])value)
+						{
+				        	context.writer.Write(elem);
+						}
+				    }
+					else 
+					{
+				        // other arrays are treated with more respect
+    					Array ar = (Array) value;
+						BinaryValueWriter writer = GetWriter(context, elementType);
+						if(writer == null)
+						{
+							throw new SerializationException
+								(String.Format
+									(_("Serialize_CannotSerialize"), type));
+						}
+    					for(int i = 0; i < ar.GetLength(0); i++) 
+    					{
+    						object o = ar.GetValue(i);
+    						if(o == null)
+    						{
+    							// Write a null value.
+    							context.writer.Write
+    								((byte)(BinaryElementType.NullValue));
+    						}
+    						else
+    						{
+								writer.WriteInline(context, o, o.GetType(), type);
+    						}
+    					}
+				    }
 				}
 	}; // class ArrayWriter
 

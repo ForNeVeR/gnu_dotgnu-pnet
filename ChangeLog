@@ -1,4 +1,9 @@
 
+2004-08-18  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	Improve bulk array serialization for primitive types.
+
 2004-09-18  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Builtins/MathObject.cs: Hooked-up the rest of the constants

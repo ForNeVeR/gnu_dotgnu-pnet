@@ -326,6 +326,7 @@ static int EndsInReturn(ILNode *stmt)
 			yykind(stmt) == yykindof(ILNode_Continue) ||
 			yykind(stmt) == yykindof(ILNode_LabelledContinue) ||
 			yykind(stmt) == yykindof(ILNode_Throw) ||
+			yykind(stmt) == yykindof(ILNode_ThrowExpr) ||
 			yykind(stmt) == yykindof(ILNode_Goto) ||
 			yykind(stmt) == yykindof(ILNode_GotoCase) ||
 			yykind(stmt) == yykindof(ILNode_GotoDefault))

@@ -1,9 +1,12 @@
 
-2002-06-14	Gopal.V	<gopalv82@symonds.net>
+2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/Makefile.am: add mising .h files to the install.
+
+2002-06-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_stmt.tc: fix SEGFAULT during -nostdlib
 	compile for "foreach" collection expression
-
 
 2002-06-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -1,14 +1,17 @@
 libILincludedir = $(includedir)/pnet
-libILinclude_HEADERS = il_coder.h \
+libILinclude_HEADERS = il_align.h \
+					   il_coder.h \
 					   il_config.h \
 					   il_crypt.h \
 					   il_debug.h \
 					   il_decimal.h \
 					   il_dumpasm.h \
+					   il_engine.h \
 					   il_errno.h \
 					   il_gc.h \
 					   il_image.h \
 					   il_jopcodes.h \
+					   il_linker.h \
 					   il_meta.h \
 					   il_opcodes.h \
 					   il_profile.h \

@@ -8,6 +8,9 @@
 	tests/runtime/System/TestArgIterator.cs: test cases for the
 	"ArgIterator" class.
 
+	* tests/runtime/System/TestArgIterator.cs: test cases for static
+	vararg methods.
+
 2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/System.build,

@@ -175,6 +175,92 @@ public class TestArgIterator : TestCase
 						  __arglist(1, "hello", null, TypeCode.DBNull));
 			}
 
+	// Helper method for "TestArgIteratorGetValueStatic".
+	private static void TestValuesStatic
+				(String testNum, Object[] values, __arglist)
+			{
+				Object expected, actual;
+				ArgIterator iter = new ArgIterator(__arglist);
+				int count = iter.GetRemainingCount();
+				AssertEquals("Length " + testNum, values.Length, count);
+				while(count > 0)
+				{
+					expected = values[values.Length - count];
+					actual = TypedReference.ToObject(iter.GetNextArg());
+					if(expected == null)
+					{
+						AssertNull("ValueCheck " + testNum, actual);
+					}
+					else
+					{
+						Assert("ValueCheck " + testNum,
+							   expected.Equals(actual));
+					}
+					--count;
+					AssertEquals("Remaining " + testNum,
+								 count, iter.GetRemainingCount());
+				}
+				try
+				{
+					iter.GetNextArg();
+					Fail("EndCheck " + testNum);
+				}
+				catch(InvalidOperationException)
+				{
+					// We expect this exception at the end of the list.
+				}
+				AssertEquals("Remaining " + testNum, 0,
+							 iter.GetRemainingCount());
+
+				// Restart and run the test again to make sure that
+				// the first iteration did not modify the vararg values.
+				iter = new ArgIterator(__arglist);
+				count = iter.GetRemainingCount();
+				AssertEquals("Length " + testNum, values.Length, count);
+				while(count > 0)
+				{
+					expected = values[values.Length - count];
+					actual = TypedReference.ToObject(iter.GetNextArg());
+					if(expected == null)
+					{
+						AssertNull("ValueCheck " + testNum, actual);
+					}
+					else
+					{
+						Assert("ValueCheck " + testNum,
+							   expected.Equals(actual));
+					}
+					--count;
+					AssertEquals("Remaining " + testNum,
+								 count, iter.GetRemainingCount());
+				}
+				try
+				{
+					iter.GetNextArg();
+					Fail("EndCheck " + testNum);
+				}
+				catch(InvalidOperationException)
+				{
+					// We expect this exception at the end of the list.
+				}
+				AssertEquals("Remaining " + testNum, 0,
+							 iter.GetRemainingCount());
+			}
+
+	// Test getting the values of the arguments to a vararg method.
+	public void TestArgIteratorGetValueStatic()
+			{
+				TestValuesStatic("(0)", new Object [0], __arglist());
+				TestValuesStatic("(1)", new Object [] {1}, __arglist(1));
+				TestValuesStatic("(2)", new Object [] {1, "hello"},
+						  __arglist(1, "hello"));
+				TestValuesStatic("(3)", new Object [] {1, "hello", null},
+						  __arglist(1, "hello", null));
+				TestValuesStatic("(4)", new Object []
+								{1, "hello", null, TypeCode.DBNull},
+						  __arglist(1, "hello", null, TypeCode.DBNull));
+			}
+
 	// Helper method for "TestArgIteratorGetValueByType".
 	private void TestByType(String testNum, Type[] types, __arglist)
 			{
@@ -265,7 +351,7 @@ public class TestArgIterator : TestCase
 
 	// Check that we cannot do anything with an uninitialized ArgIterator.
 	private ArgIterator emptyIterator;
-	public void TestArgIteratorUninit()
+	public void TestArgIteratorUninitialized()
 			{
 				AssertEquals("Remaining", 0,
 							 emptyIterator.GetRemainingCount());

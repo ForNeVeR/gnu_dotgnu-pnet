@@ -11,6 +11,8 @@
 	* csant/csant_cscc.c (BuildMcsCommandLine): pass missing options
 	like "-optimize" to "mcs" (Bug #5830).
 
+	* doc/pnet_faq.html: update the FAQ.
+
 2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_object.c:

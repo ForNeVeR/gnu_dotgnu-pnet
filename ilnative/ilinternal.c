@@ -1166,6 +1166,8 @@ static void dumpClassInternals(FILE *outfile, const char *prefix,
 	/* Scan the class and declare the method table */
 	if((modes & OUT_MODE_TABLES) != 0)
 	{
+		fprintf(outfile, "#ifndef _IL_%s_suppressed\n\n",
+				ILClass_Name(classInfo));
 		fputs("IL_METHOD_BEGIN(", outfile);
 		dumpMangledClass(outfile, classInfo);
 		fputs("_Methods)\n", outfile);
@@ -1221,7 +1223,7 @@ static void dumpClassInternals(FILE *outfile, const char *prefix,
 				}
 			}
 		}
-		fputs("IL_METHOD_END\n\n", outfile);
+		fputs("IL_METHOD_END\n\n#endif\n\n", outfile);
 	}
 }
 
@@ -1351,6 +1353,8 @@ static void dumpClassTable(FILE *outfile)
 	fputs("static InternalClassInfo const internalClassTable[] = {\n", outfile);
 	for(index = 0; index < classTableSize; ++index)
 	{
+		fprintf(outfile, "#ifndef _IL_%s_suppressed\n",
+				classTable[index].name);
 		fputs("\t{\"", outfile);
 		fputs(classTable[index].name, outfile);
 		fputs("\", \"", outfile);
@@ -1361,7 +1365,7 @@ static void dumpClassTable(FILE *outfile)
 		fputs("\", ", outfile);
 		dumpMangledClassName(outfile, classTable[index].name,
 							 classTable[index].namespace);
-		fputs("_Methods},\n", outfile);
+		fputs("_Methods},\n#endif\n", outfile);
 	}
 	fputs("};\n", outfile);
 	fputs("#define numInternalClasses (sizeof(internalClassTable) / sizeof(InternalClassInfo))\n", outfile);

@@ -346,6 +346,37 @@ ILInt32 _IL_DirMethods_Rename(ILExecThread *_thread,
 	return IL_ERRNO_EPERM;
 }
 
+/*
+ * public static String GetCurrentDirectory();
+ */
+ILString *_IL_DirMethods_GetCurrentDirectory(ILExecThread *_thread)
+{
+	char *dir = ILGetCwd();
+	ILString *str;
+	if(dir)
+	{
+		str = ILStringCreate(_thread, dir);
+		ILFree(dir);
+		return str;
+	}
+	else
+	{
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+}
+
+/*
+ * public static Errno GetFilesInDirectory(String path, out String files);
+ */
+ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread *_thread,
+										   ILString *path,
+										   ILString **files)
+{
+	/* TODO */
+	return IL_ERRNO_EPERM;
+}
+
 #ifdef	__cplusplus
 };
 #endif

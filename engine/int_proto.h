@@ -353,6 +353,8 @@ extern ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread * _thread, ILString *
 extern ILInt32 _IL_DirMethods_Copy(ILExecThread * _thread, ILString * src, ILString * dest);
 extern ILInt32 _IL_DirMethods_Delete(ILExecThread * _thread, ILString * path);
 extern ILInt32 _IL_DirMethods_Rename(ILExecThread * _thread, ILString * old_name, ILString * new_name);
+extern ILString * _IL_DirMethods_GetCurrentDirectory(ILExecThread * _thread);
+extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread, ILString * path, ILString * * Files);
 
 extern ILNativeInt _IL_FileMethods_GetInvalidHandle(ILExecThread * _thread);
 extern ILBool _IL_FileMethods_ValidatePathname(ILExecThread * _thread, ILString * path);

@@ -26,6 +26,16 @@ extern	"C" {
 #endif
 
 /*
+ * Suppress internal classes based on the configuration profile.
+ */
+#if !defined(IL_CONFIG_FP_SUPPORTED) || !defined(IL_CONFIG_EXTENDED_NUMERICS)
+	#define	_IL_Math_suppressed
+	#define	_IL_Single_suppressed
+	#define	_IL_Double_suppressed
+	#define	_IL_Decimal_suppressed
+#endif
+
+/*
  * Import the method tables of all internal classes.
  */
 #include "int_table.c"

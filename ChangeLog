@@ -25,6 +25,11 @@
 	* image/ser_parse.c: #ifdef out parsing of float/double attribute
 	values if disabled by the profile.
 
+	* engine/int_proto.h, engine/int_table.c, engine/internal.c,
+	engine/lib_platform.c, ilnative/ilinternal.c: disable the "Math",
+	"Single", "Double", and "Decimal" classes if specified by the
+	profile; stub out new "DirMethods" internalcalls.
+
 2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_config_win.h, include/il_values.h: remove the out

@@ -536,6 +536,7 @@ extern int re_exec _RE_ARGS ((const char *));
 # endif
 #endif
 
+#if 0
 /* GCC 2.95 and later have "__restrict"; C99 compilers have
    "restrict", and "configure" may have defined "restrict".  */
 #ifndef __restrict
@@ -551,15 +552,16 @@ extern int re_exec _RE_ARGS ((const char *));
    Ideally we would have a test for the compiler which allows defining
    it to restrict.  */
 #define __restrict_arr
+#endif
 
 /* POSIX compatibility.  */
-extern int regcomp _RE_ARGS ((regex_t *__restrict __preg,
-			      const char *__restrict __pattern,
+extern int regcomp _RE_ARGS ((regex_t *__preg,
+			      const char *__pattern,
 			      int __cflags));
 
-extern int regexec _RE_ARGS ((const regex_t *__restrict __preg,
-			      const char *__restrict __string, size_t __nmatch,
-			      regmatch_t __pmatch[__restrict_arr],
+extern int regexec _RE_ARGS ((const regex_t *__preg,
+			      const char *__string, size_t __nmatch,
+			      regmatch_t __pmatch[],
 			      int __eflags));
 
 extern size_t regerror _RE_ARGS ((int __errcode, const regex_t *__preg,

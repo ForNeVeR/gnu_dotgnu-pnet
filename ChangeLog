@@ -1,4 +1,9 @@
 
+2002-12-21  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_regex.h: remove references to "__restrict" because
+	they interfere with more recent versions of glibc.
+
 2002-12-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* include/il_system.h, support/file.c, csant/csant_task.c: Add a

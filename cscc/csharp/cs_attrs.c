@@ -295,8 +295,12 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	   circularities in the semantic analysis network */
 	if(!IsAttributeUsage(classInfo))
 	{
-		/* Perform semantic analysis on the attribute type */
-		CSSemProgramItem(info, ILToProgramItem(classInfo));
+		/* Perform semantic analysis on the attribute type, but only
+		   if we aren't trying to apply the attribute to itself */
+		if(ILToProgramItem(classInfo) != item)
+		{
+			CSSemProgramItem(info, ILToProgramItem(classInfo));
+		}
 
 		/* Get the usage information for the attribute */
 		allowMultiple = 1;

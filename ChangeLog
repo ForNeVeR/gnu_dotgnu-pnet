@@ -27,6 +27,10 @@
 	character recognition so that "ILGetUnicodeCategory" is only
 	called for non-ASCII Unicode characters.
 
+	* cscc/csharp/cs_attrs.c (ProcessAttr): don't call CSSemProgramItem
+	if trying to apply an attribute to itself, because it will cause
+	a circurlarity.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

@@ -29,6 +29,9 @@
 	* codegen/cg_scope.c: Fix circularity bug in resolving namespaces by
 	merging the using namespace and using alias scopes into a single scope.
 	
+	* codegen/cg_scope.c: Correct the last checkin , the circularity bug
+	was not actually fixed for all cases.
+	
 2002-11-15  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_lvalue.tc, codegen/cg_scope.c, codegen/cg_scope.h,

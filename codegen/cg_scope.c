@@ -532,7 +532,6 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 	if(attachScope)
 	{
 		usingScope=attachScope; /* reuse the attachScope for ->using */
-		usingScope->parent=scope; /* attatch the attatchScope under scope */
 	}
 	else
 	{

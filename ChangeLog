@@ -5,6 +5,10 @@
 	locales to use XFontStruct-based fonts rather than XFontSet-based
 	fonts.  This should give better performance on some X systems.
 
+	* Xsharp/Display.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c:
+	detect when XsharpSupport has been compiled incorrectly and
+	complain louder about it.
+
 2003-11-28  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingGraphics.cs: Background mode not being

@@ -527,6 +527,9 @@ internal sealed unsafe class Xlib
 	// Helper functions from "libXsharpSupport.so".
 
 	[DllImport("XsharpSupport")]
+	extern public static @X_int@ XSharpSupportPresent();
+
+	[DllImport("XsharpSupport")]
 	extern public static @X_int@ XNextEventWithTimeout
 			(IntPtr display, out XEvent xevent, @X_int@ timeout);
 

@@ -149,6 +149,18 @@ public sealed class Display : IDisposable
 			{
 				try
 				{
+					if(Xlib.XSharpSupportPresent() == 0)
+					{
+						Console.WriteLine();
+						Console.WriteLine
+							("The XsharpSupport library appears to have " +
+							 "been built without X support.");
+						Console.WriteLine
+							("Please rebuild pnetlib to rectify this problem.");
+						Console.WriteLine();
+						throw new XCannotConnectException
+							(S._("X_LibraryNotPresent"));
+					}
 					try
 					{
 						// Initialize Xlib thread support.

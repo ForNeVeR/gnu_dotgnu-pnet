@@ -52,6 +52,11 @@
 #include <stdio.h>
 #include <string.h>
 
+int XSharpSupportPresent(void)
+{
+	return 1;
+}
+
 int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 {
 	int fd = ConnectionNumber(dpy);
@@ -1371,6 +1376,11 @@ void XSharpSendWakeup(Display *dpy, Window window)
 }
 
 #else /* X_DISPLAY_MISSING || !HAVE_SELECT */
+
+int XSharpSupportPresent(void)
+{
+	return 0;
+}
 
 int XNextEventWithTimeout(void *dpy, void *event, int timeout)
 {

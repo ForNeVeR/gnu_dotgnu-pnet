@@ -136,7 +136,8 @@ int CScopeHasEnum(const char *name)
 
 void CScopeAddEnum(const char *name, ILType *type)
 {
-	ILScopeDeclareItem(CCurrentScope, name, C_SCDATA_ENUM, 0, 0, type);
+	ILScopeDeclareItem(CCurrentScope, EnumScopeName(name), C_SCDATA_ENUM,
+					   0, 0, type);
 }
 
 void CScopeAddEnumConst(const char *name, ILNode *node,

@@ -1458,7 +1458,8 @@ Declaration
 
 				/* Check for useless declarations */
 				if((!CTypeIsStruct(spec.baseType) &&
-				    !CTypeIsUnion(spec.baseType)) ||
+				    !CTypeIsUnion(spec.baseType) &&
+					!CTypeIsEnum(spec.baseType)) ||
 				    (spec.specifiers & C_SPEC_STORAGE) != 0)
 				{
 					CCWarning(_("useless keyword or type name "

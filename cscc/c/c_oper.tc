@@ -802,6 +802,7 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	if(ILNode_EvalConst(*parent, info, &evalValue))
 	{
 		*parent = CreateConstantNode((ILNode *)node, *parent, &evalValue);
+		CSemSetConstant(value1, finalType, evalValue);
 	}
 
 	/* Return the type of the entire expression */
@@ -1200,6 +1201,8 @@ static CSemValue RelationalSem(ILGenInfo *info, ILNode_BinaryExpression *node,
 	{
 		*parent = CreateConstantNode
 			((ILNode *)node, (ILNode *)node, &evalValue);
+		CSemSetConstant(value1, ILType_Boolean, evalValue);
+		return value1;
 	}
 
 	/* Return the type of the entire expression */
@@ -1268,6 +1271,7 @@ ILNode_CSemAnalysis(ILNode_Neg)
 	ILMachineType type;
 	ILMachineType common;
 	ILNode *temp;
+	ILEvalValue evalValue;
 
 	/* Perform semantic analysis on the argument */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -1328,7 +1332,7 @@ ILNode_CSemAnalysis(ILNode_Neg)
 		default: goto invalid;
 	}
 
-	/* Cast the argument to its final type and return */
+	/* Cast the argument to its final type */
 	if(common != type)
 	{
 		temp = ILNode_CastSimple_create(node->expr, common);
@@ -1336,6 +1340,15 @@ ILNode_CSemAnalysis(ILNode_Neg)
 		node->expr = temp;
 	}
 	CSemSetRValue(value, ILValueTypeToType(info, common));
+
+	/* Attempt to perform constant evaluation on the entire expression */
+	if(ILNode_EvalConst(*parent, info, &evalValue))
+	{
+		*parent = CreateConstantNode((ILNode *)node, *parent, &evalValue);
+		CSemSetConstant(value, CSemGetType(value), evalValue);
+	}
+
+	/* Return the final semantic value */
 	return value;
 
 	/* Report an invalid operands error and bail out */
@@ -1354,6 +1367,7 @@ ILNode_CSemAnalysis(ILNode_UnaryPlus)
 	ILMachineType type;
 	ILMachineType common;
 	ILNode *temp;
+	ILEvalValue evalValue;
 
 	/* Perform semantic analysis on the argument */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -1414,7 +1428,7 @@ ILNode_CSemAnalysis(ILNode_UnaryPlus)
 		default: goto invalid;
 	}
 
-	/* Cast the argument to its final type and return */
+	/* Cast the argument to its final type */
 	if(common != type)
 	{
 		temp = ILNode_CastSimple_create(node->expr, common);
@@ -1423,6 +1437,15 @@ ILNode_CSemAnalysis(ILNode_UnaryPlus)
 	}
 	*parent = node->expr;
 	CSemSetRValue(value, ILValueTypeToType(info, common));
+
+	/* Attempt to perform constant evaluation on the entire expression */
+	if(ILNode_EvalConst(*parent, info, &evalValue))
+	{
+		*parent = CreateConstantNode((ILNode *)node, *parent, &evalValue);
+		CSemSetConstant(value, CSemGetType(value), evalValue);
+	}
+
+	/* Return the final semantic value */
 	return value;
 
 	/* Report an invalid operands error and bail out */
@@ -1468,6 +1491,7 @@ ILNode_CSemAnalysis(ILNode_Not)
 	ILMachineType type;
 	ILMachineType common;
 	ILNode *temp;
+	ILEvalValue evalValue;
 
 	/* Perform semantic analysis on the argument */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -1530,7 +1554,7 @@ ILNode_CSemAnalysis(ILNode_Not)
 		default: goto invalid;
 	}
 
-	/* Cast the argument to its final type and return */
+	/* Cast the argument to its final type */
 	if(common != type)
 	{
 		temp = ILNode_CastSimple_create(node->expr, common);
@@ -1538,6 +1562,15 @@ ILNode_CSemAnalysis(ILNode_Not)
 		node->expr = temp;
 	}
 	CSemSetRValue(value, ILValueTypeToType(info, common));
+
+	/* Attempt to perform constant evaluation on the entire expression */
+	if(ILNode_EvalConst(*parent, info, &evalValue))
+	{
+		*parent = CreateConstantNode((ILNode *)node, *parent, &evalValue);
+		CSemSetConstant(value, CSemGetType(value), evalValue);
+	}
+
+	/* Return the final semantic value */
 	return value;
 
 	/* Report an invalid operands error and bail out */
@@ -1842,11 +1875,21 @@ ILNode_CSemAnalysis(ILNode_Comma)
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  _("invalid operands to binary `,'"));
 		}
-		value2 = CSemValueError;
+		return CSemValueError;
 	}
-	else if(CSemIsLValue(value2))
+	if(CSemIsLValue(value2))
 	{
 		/* Turn l-values into r-values */
+		CSemSetRValue(value2, CSemGetType(value2));
+	}
+	if(CSemIsConstant(value1) && CSemIsConstant(value2))
+	{
+		/* The whole expression evaluates to its constant second argument */
+		*parent = node->expr2;
+	}
+	else if(!CSemIsConstant(value1) && CSemIsConstant(value2))
+	{
+		/* Both must be constants for the whole expression to be constant */
 		CSemSetRValue(value2, CSemGetType(value2));
 	}
 
@@ -1927,7 +1970,7 @@ ILNode_CSemAnalysis(ILNode_CastType)
 		return value;
 	}
 
-	/* Perform the cast and return the new semantic value.  We also copy the
+	/* Perform the cast and get the new semantic value.  We also copy the
 	   expression node up one level to eliminate the ILNode_CastType node */
 	*parent = node->expr;
 	return CCastNode(info, node->expr, parent, value, node->type);

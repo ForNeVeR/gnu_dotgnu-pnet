@@ -16,6 +16,8 @@ types.
 a type if necessary; handle value types correctly when imported from
 the system library.
 
+* codegen/cg_output.h, codegen/cg_output.c (ILGenTypeToken): new function.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

@@ -110,8 +110,9 @@ internal sealed class ECBEncrypt
 
 					// Encrypt the block.
 					CryptoMethods.Encrypt(state, outputBuffer,
-										  offset + index, outputBuffer,
-										  offset + index);
+										  offset + index - blockSize,
+										  outputBuffer,
+										  offset + index - blockSize);
 				}
 				else if(inputCount > 0)
 				{
@@ -129,8 +130,9 @@ internal sealed class ECBEncrypt
 
 					// Encrypt the block.
 					CryptoMethods.Encrypt(state, outputBuffer,
-										  offset + index, outputBuffer,
-										  offset + index);
+										  offset + index - blockSize,
+										  outputBuffer,
+										  offset + index - blockSize);
 				}
 
 				// Finished.

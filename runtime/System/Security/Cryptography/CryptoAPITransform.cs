@@ -316,6 +316,11 @@ public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 					throw new ArgumentOutOfRangeException
 						("outputOffset", _("ArgRange_Array"));
 				}
+				if(state == IntPtr.Zero)
+				{
+					throw new ObjectDisposedException
+						(null, _("Crypto_MissingKey"));
+				}
 
 				// Process the input.
 				return processBlock(this, inputBuffer, inputOffset,
@@ -343,6 +348,11 @@ public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 				        inputCount > (inputBuffer.Length - inputOffset))
 				{
 					throw new ArgumentException(_("Arg_InvalidArrayRange"));
+				}
+				if(state == IntPtr.Zero)
+				{
+					throw new ObjectDisposedException
+						(null, _("Crypto_MissingKey"));
 				}
 
 				// Process the input.

@@ -109,6 +109,10 @@ public class CryptoTestCase : TestCase
 				{
 					Fail("did not encrypt to the expected output");
 				}
+				if(encryptor is IDisposable)
+				{
+					((IDisposable)encryptor).Dispose();
+				}
 
 				// Create a decryptor and run the test backwards.
 				ICryptoTransform decryptor = alg.CreateDecryptor(key, null);
@@ -125,6 +129,10 @@ public class CryptoTestCase : TestCase
 								   plaintext.Length))
 				{
 					Fail("did not decrypt to the original plaintext");
+				}
+				if(decryptor is IDisposable)
+				{
+					((IDisposable)decryptor).Dispose();
 				}
 			}
 	protected void RunSymmetric(String name, byte[] key,
@@ -330,6 +338,320 @@ public class CryptoTestCase : TestCase
 				{
 					// Success
 				}
+			}
+
+	// Perform a primitive ECB encryption on a block.
+	private void ECBBlock(byte[] buf, int index,
+						  SymmetricAlgorithm alg, byte[] key)
+			{
+				ICryptoTransform encryptor;
+				encryptor = alg.CreateEncryptor(key, null);
+				encryptor.TransformBlock(buf, index, alg.BlockSize / 8,
+										 buf, index);
+				if(encryptor is IDisposable)
+				{
+					((IDisposable)encryptor).Dispose();
+				}
+			}
+
+	// XOR two blocks.
+	private void XorBlock(byte[] buf1, int index1, byte[] buf2,
+					      int index2, SymmetricAlgorithm alg)
+			{
+				int length = alg.BlockSize / 8;
+				while(length-- > 0)
+				{
+					buf1[index1++] ^= buf2[index2++];
+				}
+			}
+
+	// Copy one block to another.
+	private void CopyBlock(byte[] src, int srcIndex,
+						   byte[] dest, int destIndex,
+						   SymmetricAlgorithm alg)
+			{
+				int length = alg.BlockSize / 8;
+				while(length-- > 0)
+				{
+					dest[destIndex++] = src[srcIndex++];
+				}
+			}
+
+	// Convert a string into a byte array, with padding applied.
+	private byte[] StringToBytes(String str, SymmetricAlgorithm alg)
+			{
+				PaddingMode padding = alg.Padding;
+				CipherMode cipher = alg.Mode;
+				int size = alg.BlockSize / 8;
+				int len, pad;
+				byte[] input = Encoding.ASCII.GetBytes(str);
+				byte[] padded;
+				if(cipher == CipherMode.ECB || cipher == CipherMode.CBC)
+				{
+					// Block cipher mode - zero or PKCS7 padding only.
+					if(padding == PaddingMode.None)
+					{
+						padding = PaddingMode.Zeros;
+					}
+				}
+				else
+				{
+					// Stream cipher mode - padding is never required.
+					padding = PaddingMode.None;
+				}
+				switch(padding)
+				{
+					case PaddingMode.None: break;
+
+					case PaddingMode.PKCS7:
+					{
+						len = input.Length;
+						len += size - (len % size);
+						pad = len - input.Length;
+						padded = new byte [len];
+						Array.Copy(input, 0, padded, 0, input.Length);
+						len = input.Length;
+						while(len < padded.Length)
+						{
+							padded[len++] = (byte)pad;
+						}
+						input = padded;
+					}
+					break;
+
+					case PaddingMode.Zeros:
+					{
+						len = input.Length;
+						if((len % size) != 0)
+						{
+							len += size - (len % size);
+						}
+						padded = new byte [len];
+						Array.Copy(input, 0, padded, 0, input.Length);
+						input = padded;
+					}
+					break;
+				}
+				return input;
+			}
+
+	// Create a test key for a specific algorihtm.
+	private byte[] CreateKey(SymmetricAlgorithm alg)
+			{
+				byte[] key = new byte [alg.KeySize / 8];
+				int posn;
+				for(posn = 0; posn < key.Length; ++posn)
+				{
+					key[posn] = (byte)posn;
+				}
+				return key;
+			}
+
+	// Create a test IV for a specific algorithm.
+	private byte[] CreateIV(SymmetricAlgorithm alg)
+			{
+				if(alg.Mode == CipherMode.ECB)
+				{
+					// ECB modes don't need an IV.
+					return null;
+				}
+				else
+				{
+					// All other modes do need an IV.
+					byte[] iv = new byte [alg.BlockSize / 8];
+					int posn;
+					for(posn = 0; posn < iv.Length; ++posn)
+					{
+						iv[posn] = (byte)(iv.Length - posn);
+					}
+					return iv;
+				}
+			}
+
+	// ECB-encrypt a buffer.
+	private byte[] DoECB(byte[] input, SymmetricAlgorithm alg, byte[] key)
+			{
+				byte[] output = new byte [input.Length];
+				int size = alg.BlockSize / 8;
+				Array.Copy(input, 0, output, 0, input.Length);
+				int index = 0;
+				while(index < input.Length)
+				{
+					ECBBlock(output, index, alg, key);
+					index += size;
+				}
+				return output;
+			}
+
+	// CBC-encrypt a buffer.
+	private byte[] DoCBC(byte[] input, SymmetricAlgorithm alg,
+						 byte[] key, byte[] _iv)
+			{
+				byte[] iv = new byte [_iv.Length];
+				Array.Copy(_iv, 0, iv, 0, _iv.Length);
+				byte[] output = new byte [input.Length];
+				int size = alg.BlockSize / 8;
+				Array.Copy(input, 0, output, 0, input.Length);
+				int index = 0;
+				while(index < input.Length)
+				{
+					XorBlock(output, index, iv, 0, alg);
+					ECBBlock(output, index, alg, key);
+					CopyBlock(output, index, iv, 0, alg);
+					index += size;
+				}
+				return output;
+			}
+
+	// OFB-encrypt a buffer.
+	private byte[] DoOFB(byte[] input, SymmetricAlgorithm alg,
+						 byte[] key, byte[] _iv)
+			{
+				// TODO
+				return input;
+			}
+
+	// CFB-encrypt a buffer.
+	private byte[] DoCFB(byte[] input, SymmetricAlgorithm alg,
+						 byte[] key, byte[] _iv)
+			{
+				// TODO
+				return input;
+			}
+
+	// CTS-encrypt a buffer.
+	private byte[] DoCTS(byte[] input, SymmetricAlgorithm alg,
+						 byte[] key, byte[] _iv)
+			{
+				// TODO
+				return input;
+			}
+
+	// Run a cipher mode test.
+	private void RunModeTest(SymmetricAlgorithm alg, CipherMode mode,
+							 PaddingMode padding, String input)
+			{
+				// Set the algorithm modes.
+				alg.Mode = mode;
+				alg.Padding = padding;
+
+				// Get the raw and padded versions of the input.
+				byte[] rawInput = Encoding.ASCII.GetBytes(input);
+				byte[] paddedInput = StringToBytes(input, alg);
+
+				// Generate key and IV values.
+				byte[] key = CreateKey(alg);
+				byte[] iv = CreateIV(alg);
+
+				// Encrypt the raw input in the selected mode.
+				int size = alg.BlockSize / 8;
+				int cutoff = rawInput.Length - rawInput.Length % size;
+				ICryptoTransform encryptor;
+				encryptor = alg.CreateEncryptor(key, iv);
+				byte[] rawOutput = new byte [rawInput.Length + 256];
+				int len = encryptor.TransformBlock
+					(rawInput, 0, cutoff, rawOutput, 0);
+				byte[] rawTail = encryptor.TransformFinalBlock
+					(rawInput, cutoff, rawInput.Length - cutoff);
+				Array.Copy(rawTail, 0, rawOutput, len, rawTail.Length);
+				len += rawTail.Length;
+				((IDisposable)encryptor).Dispose();
+
+				// Reverse the ciphertext back to the original.
+				cutoff = len - len % size;
+				ICryptoTransform decryptor;
+				decryptor = alg.CreateDecryptor(key, iv);
+				byte[] rawReverse = new byte [rawInput.Length + 256];
+				int rlen = decryptor.TransformBlock
+					(rawOutput, 0, cutoff, rawReverse, 0);
+				rawTail = decryptor.TransformFinalBlock
+					(rawOutput, cutoff, len - cutoff);
+				Array.Copy(rawTail, 0, rawReverse, rlen, rawTail.Length);
+				rlen += rawTail.Length;
+				((IDisposable)decryptor).Dispose();
+
+				// Compare the reversed plaintext with the original.
+				if(padding != PaddingMode.None)
+				{
+					AssertEquals("reversed plaintext has incorrect length",
+								 rawInput.Length, rlen);
+					if(!IdenticalBlock(rawInput, 0, rawReverse, 0, rlen))
+					{
+						Fail("reversed plaintext is not the same as original");
+					}
+				}
+				else
+				{
+					if(rawInput.Length > rlen)
+					{
+						Fail("reversed plaintext has incorrect length");
+					}
+					if(!IdenticalBlock(rawInput, 0, rawReverse, 0,
+									   rawInput.Length))
+					{
+						Fail("reversed plaintext is not the same as original");
+					}
+				}
+
+				// Encrypt the padded plaintext using a primitive
+				// algorithm simulation to verify the expected output.
+				byte[] paddedOutput;
+				switch(mode)
+				{
+					case CipherMode.ECB:
+					{
+						paddedOutput = DoECB(paddedInput, alg, key);
+					}
+					break;
+
+					case CipherMode.CBC:
+					{
+						paddedOutput = DoCBC(paddedInput, alg, key, iv);
+					}
+					break;
+
+					case CipherMode.OFB:
+					{
+						paddedOutput = DoOFB(paddedInput, alg, key, iv);
+					}
+					break;
+
+					case CipherMode.CFB:
+					{
+						paddedOutput = DoCFB(paddedInput, alg, key, iv);
+					}
+					break;
+
+					case CipherMode.CTS:
+					default:
+					{
+						paddedOutput = DoCTS(paddedInput, alg, key, iv);
+					}
+					break;
+				}
+
+				// Compare the actual output with the expected output.
+				AssertEquals("ciphertext has incorrect length",
+							 paddedOutput.Length, len);
+				if(!IdenticalBlock(paddedOutput, 0, rawOutput, 0, len))
+				{
+					Fail("ciphertext was not the expected value");
+				}
+			}
+
+	// Run a mode test using a number of different inputs.
+	protected void RunModeTest(SymmetricAlgorithm alg, CipherMode mode,
+							   PaddingMode padding)
+			{
+				RunModeTest(alg, mode, padding, "");
+				RunModeTest(alg, mode, padding, "abc");
+			#if false
+				RunModeTest(alg, mode, padding, "abcdefgh");
+				RunModeTest(alg, mode, padding, "abcdefghijk");
+				RunModeTest(alg, mode, padding, "abcdefghijklmno");
+				RunModeTest(alg, mode, padding,
+							"The time has come the walrus said.");
+			#endif
 			}
 
 }; // CryptoTestCase

@@ -4,6 +4,13 @@
 	* runtime/runtime.build: turn on debug mode for "mscorlib.dll",
 	to aid the development of test cases.
 
+	* runtime/System/Security/Cryptography/CryptoAPITransform.cs,
+	runtime/System/Security/Cryptography/ECBDecrypt.cs,
+	runtime/System/Security/Cryptography/ECBEncrypt.cs,
+	tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,
+	tests/runtime/System/Security/Cryptography/TestDES.cs:
+	fix some ECB mode bugs; add test case support for testing cipher modes.
+
 2002-11-27  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberFormat/CurrencyFormatter.cs,

@@ -34,7 +34,7 @@ internal sealed class ECBDecrypt
 	// Initialize a "CryptoAPITransform" object for ECB decryption.
 	public static void Initialize(CryptoAPITransform transform)
 			{
-				transform.tempBuffer = new byte [transform.blockSize];
+				transform.tempBuffer = new byte [transform.blockSize * 2];
 				transform.tempSize = 0;
 			}
 

@@ -38,8 +38,7 @@ public class FormsHello : Form
 		SetStyle(ControlStyles.ResizeRedraw, true);
 
 		// Set some initial form properties.
-		Width = 400;
-		Height = 270;
+		Size = new Size(400, 270);
 		Text = "Forms Hello";
 
 		// Create a button control on the form.

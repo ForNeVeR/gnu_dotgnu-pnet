@@ -23,6 +23,9 @@
 	widgets before calling "OnResize", to prevent event queue backups
 	on window managers that use opaque resizes.
 
+	* samples/FormsTest.cs: set both the width and height at once
+	when setting the initial window size.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
 	ILObject *args;
 	ILString *argString;
 	ILObject *exception;
+	int sawException;
 
 	/* Allocate space for the library list */
 	libraryDirs = (char **)ILMalloc(sizeof(char *) * argc);
@@ -180,12 +181,14 @@ int main(int argc, char *argv[])
 	}
 
 	/* Call the entry point */
+	sawException = 0;
 	if(!ILExecThreadHasException(thread))
 	{
 		retval = 0;
 		if(ILExecThreadCall(thread, method, &retval, args))
 		{
 			/* An exception was thrown while executing the program */
+			sawException = 1;
 			retval = 1;
 		}
 	}
@@ -196,7 +199,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* Print the top-level exception that occurred */
-	if(retval != 0)
+	if(sawException)
 	{
 		exception = ILExecThreadGetException(thread);
 		ILExecThreadClearException(thread);

@@ -1283,6 +1283,8 @@ ILNode_CSemAnalysis(ILNode_ArrayInit)
 ILNode_CSemAnalysis(ILNode_CDeref)
 {
 	CSemValue value;
+	ILType *type;
+	ILType *decayed;
 
 	/* Perform semantic analysis on the pointer value */
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
@@ -1302,12 +1304,20 @@ ILNode_CSemAnalysis(ILNode_CDeref)
 		return CSemValueError;
 	}
 
-	/* Get the type of the pointed-to value */
-	node->type = CTypeGetPtrRef(CSemGetType(value));
-	node->machineType = ILTypeToMachineType(node->type);
-
-	/* Return an l-value that corresponds to the pointed-to value */
-	CSemSetLValue(value, node->type);
+	/* Get the type of the pointed-to value, decaying array types if needed */
+	type = CTypeGetPtrRef(CSemGetType(value));
+	if(CTypeIsArray(type))
+	{
+		decayed = CTypeDecay(info, type);
+		CSemSetDecayedRValue(value, decayed, type);
+		type = decayed;
+	}
+	else
+	{
+		CSemSetLValue(value, type);
+	}
+	node->type = type;
+	node->machineType = ILTypeToMachineType(type);
 	return value;
 }
 

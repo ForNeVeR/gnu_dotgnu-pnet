@@ -39,6 +39,9 @@
 
 	* support/cmdline.c: sort the results of a wildcard match.
 
+	* engine/ilrun.c: automatically append ".exe" to the name
+	of the IL application if it was omitted.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

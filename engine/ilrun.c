@@ -121,6 +121,8 @@ int main(int argc, char *argv[])
 	ILObject *exception;
 	int sawException;
 	int registerMode = 0;
+	char *ilprogram;
+	int ilprogramLen;
 #ifndef IL_CONFIG_REDUCE_CODE
 	int dumpInsnProfile = 0;
 	int dumpMethodProfile = 0;
@@ -264,17 +266,37 @@ int main(int argc, char *argv[])
 		ILExecProcessSetLibraryDirs(process, libraryDirs, numLibraryDirs);
 	}
 
+	/* Get the name of the IL program, appending ".exe" if necessary */
+	ilprogram = argv[1];
+	ilprogramLen = strlen(ilprogram);
+	if(!ILFileExists(ilprogram, (char **)0) &&
+	   (ilprogramLen < 4 ||
+	    ILStrICmp(ilprogram + ilprogramLen - 4, ".exe") != 0))
+	{
+		ilprogram = (char *)ILMalloc(ilprogramLen + 5);
+		if(ilprogram)
+		{
+			strcpy(ilprogram, argv[1]);
+			strcat(ilprogram, ".exe");
+		}
+		else
+		{
+			ilprogram = argv[1];
+		}
+	}
+
 	/* Attempt to load the program into the process */
-	error = ILExecProcessLoadFile(process, argv[1]);
+	error = ILExecProcessLoadFile(process, ilprogram);
 	if(error < 0)
 	{
-		perror(argv[1]);
+		perror(ilprogram);
 		return 1;
 	}
 	else if(error == IL_LOADERR_NOT_IL)
 	{
 		/* This is a regular Windows executable */
-	#ifndef _WIN32
+		argv[1] = ilprogram;
+	#ifndef IL_WIN32_PLATFORM
 		/* Hand the program off to Wine for execution */
 		argv[0] = getenv("WINE");
 		if(!(argv[0]))
@@ -291,7 +313,7 @@ int main(int argc, char *argv[])
 	}
 	else if(error > 0)
 	{
-		fprintf(stderr, "%s: %s\n", argv[1], ILImageLoadError(error));
+		fprintf(stderr, "%s: %s\n", ilprogram, ILImageLoadError(error));
 		return 1;
 	}
 
@@ -299,7 +321,7 @@ int main(int argc, char *argv[])
 	method = ILExecProcessGetEntry(process);
 	if(!method)
 	{
-		fprintf(stderr, "%s: no program entry point\n", argv[1]);
+		fprintf(stderr, "%s: no program entry point\n", ilprogram);
 		ILExecProcessDestroy(process);
 		return 1;
 	}
@@ -307,14 +329,14 @@ int main(int argc, char *argv[])
 	/* Validate the entry point */
 	if(ILExecProcessEntryType(method) == IL_ENTRY_INVALID)
 	{
-		fprintf(stderr, "%s: invalid entry point\n", argv[1]);
+		fprintf(stderr, "%s: invalid entry point\n", ilprogram);
 		ILExecProcessDestroy(process);
 		return 1;
 	}
 
 	/* Convert the arguments into an array of strings */
 	thread = ILExecProcessGetMain(process);
-	args = ILExecProcessSetCommandLine(process, argv[1], argv + 2);
+	args = ILExecProcessSetCommandLine(process, ilprogram, argv + 2);
 
 	/* Call the entry point */
 	sawException = 0;

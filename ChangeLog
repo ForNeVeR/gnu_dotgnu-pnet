@@ -1,4 +1,8 @@
 
+2004-10-29  Klaus Treichel  <ktreichel@web.de>
+
+	* nunit20/core/nunit.core.build: exclude WarningSuite.cs from build.
+
 2004-10-18  Klaus Treichel  <ktreichel@web.de>
 
 	* copy-mcs.sh: Copy the tests for corlib, System and System.XML too.

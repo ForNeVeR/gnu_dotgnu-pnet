@@ -11,6 +11,7 @@
 
 			<sources basedir="${mono.sources}/nunit20/core/">
 				<includes name="**/*.cs"/> 
+				<excludes name="WarningSuite.cs"/>
 			</sources>
 
 			<references>

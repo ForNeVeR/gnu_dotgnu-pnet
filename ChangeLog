@@ -1,4 +1,10 @@
 
+2003-02-15  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/Net/Sockets/SocketException.cs,
+	System/ComponentModel/Win32Exception.cs : inherit SocketException
+	from Win32Exception if in non-ECMA build else inherit ExternalException.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Text/RegularExpressions/ChangeLog,

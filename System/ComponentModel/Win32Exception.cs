@@ -28,21 +28,29 @@ namespace System.ComponentModel
 	public class Win32Exception: ExternalException
 	{
 		[TODO]
-		public Win32Exception()
+		public Win32Exception() : base()
 		{
-			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public Win32Exception(int error)
+		public Win32Exception(int error) : base()
 		{
-			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]
-		public Win32Exception(int error, String message)
+		public Win32Exception(int error, String message) : base(message)
 		{
-			throw new NotImplementedException(".ctor");
+		}
+
+		[TODO]
+		internal Win32Exception(String message) : base (message)
+		{
+		}
+
+		[TODO]
+		internal Win32Exception(String message,Exception inner) 
+			: base (message,inner)
+		{
 		}
 
 		public int NativeErrorCode 

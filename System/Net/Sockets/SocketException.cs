@@ -23,9 +23,16 @@ namespace System.Net.Sockets
 
 using System;
 using Platform;
+#if !ECMA_COMPAT
+	using System.ComponentModel;
+#endif
 
-
-public class SocketException : SystemException
+public class SocketException :
+#if !ECMA_COMPAT
+	Win32Exception
+#else
+	SystemException
+#endif
 {
 	// Internal state.
 	private Errno errno;

@@ -1,4 +1,9 @@
 
+2004-05-12  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/TextBox.cs: Ignore KeyPress events
+	which are already handled.
+
 2004-05-09  Andre Seidelt <pnet-devel01@foobarquarium.de>
 
 	* runtime/System/Collections/Hashtable.cs: Enable proper

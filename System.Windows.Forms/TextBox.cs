@@ -544,7 +544,7 @@ public class TextBox : TextBoxBase
 	// Handle "KeyPress" events for the text box.
 	private void HandleKeyPress(Object sender, KeyPressEventArgs e)
 	{
-		if (ReadOnly)
+		if (ReadOnly || e.Handled)
 		{
 			return;
 		}

@@ -1048,7 +1048,7 @@ abstract class XmlNode : ICloneable, IEnumerable
 					expr.SetContext(nsmgr);
 				}
 				SelectNodeList list = new SelectNodeList(nav.Select(expr));
-				return list[0];
+				return (list.Count == 0 ? null : list[0]);
 			}
 
 #endif /* CONFIG_XPATH */

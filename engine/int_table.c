@@ -1758,8 +1758,8 @@ static void marshal_vpprp(void (*fn)(), void *rvalue, void **avalue)
 
 IL_METHOD_BEGIN(ClrField_Methods)
 	IL_METHOD("GetFieldType", "(j)oSystem.Type;", _IL_ClrField_GetFieldType, marshal_ppj)
-	IL_METHOD("GetValue", "(ToSystem.Object;)oSystem.Object;", _IL_ClrField_GetValue, marshal_pppp)
-	IL_METHOD("SetValue", "(ToSystem.Object;oSystem.Object;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;oSystem.Globalization.CultureInfo;)V", _IL_ClrField_SetValue, marshal_vppppipp)
+	IL_METHOD("GetValueInternal", "(ToSystem.Object;)oSystem.Object;", _IL_ClrField_GetValueInternal, marshal_pppp)
+	IL_METHOD("SetValueInternal", "(ToSystem.Object;oSystem.Object;vSystem.Reflection.BindingFlags;oSystem.Reflection.Binder;oSystem.Globalization.CultureInfo;)V", _IL_ClrField_SetValueInternal, marshal_vppppipp)
 	IL_METHOD("GetValueDirect", "(Tr)oSystem.Object;", _IL_ClrField_GetValueDirect, marshal_pppr)
 	IL_METHOD("SetValueDirect", "(TroSystem.Object;)V", _IL_ClrField_SetValueDirect, marshal_vpprp)
 IL_METHOD_END

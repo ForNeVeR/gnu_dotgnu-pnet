@@ -360,8 +360,8 @@ extern ILInt32 _IL_AssemblyName_FillAssemblyNameFromFile(ILExecThread * _thread,
 extern ILObject * _IL_ClrConstructor_Invoke(ILExecThread * _thread, ILObject * _this, ILInt32 invokeAttr, ILObject * binder, System_Array * parameters, ILObject * culture);
 
 extern ILObject * _IL_ClrField_GetFieldType(ILExecThread * _thread, ILNativeInt item);
-extern ILObject * _IL_ClrField_GetValue(ILExecThread * _thread, ILObject * _this, ILObject * obj);
-extern void _IL_ClrField_SetValue(ILExecThread * _thread, ILObject * _this, ILObject * obj, ILObject * value, ILInt32 invokeAttr, ILObject * binder, ILObject * culture);
+extern ILObject * _IL_ClrField_GetValueInternal(ILExecThread * _thread, ILObject * _this, ILObject * obj);
+extern void _IL_ClrField_SetValueInternal(ILExecThread * _thread, ILObject * _this, ILObject * obj, ILObject * value, ILInt32 invokeAttr, ILObject * binder, ILObject * culture);
 extern ILObject * _IL_ClrField_GetValueDirect(ILExecThread * _thread, ILObject * _this, ILTypedRef obj);
 extern void _IL_ClrField_SetValueDirect(ILExecThread * _thread, ILObject * _this, ILTypedRef obj, ILObject * value);
 

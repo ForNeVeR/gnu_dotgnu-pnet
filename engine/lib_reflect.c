@@ -2205,10 +2205,10 @@ ILObject* UnpackConstant(ILExecThread *thread,ILConstant* constant,
 }
 
 /*
- * public override Object GetValue(Object obj);
+ * internal Object GetValueInternal(Object obj);
  */
-ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
-								ILObject *obj)
+ILObject *_IL_ClrField_GetValueInternal(ILExecThread *thread, ILObject *_this,
+										ILObject *obj)
 {
 	ILField *field;
 	ILType *type;
@@ -2256,8 +2256,17 @@ ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 	}
 	else if(ILField_IsStatic(field))
 	{
-		/* TODO */
-		return 0;
+		/* Get the field's type and a pointer to it */
+		type = ILField_Type(field);
+		ptr = ((ILClassPrivate *)(GetObjectClass(obj)->userData))->staticData;
+		if(ptr)
+		{
+			ptr = (void *)(((unsigned char *)ptr) + field->offset);
+		}
+		else
+		{
+			return 0;
+		}
 	}
 	else
 	{
@@ -2285,14 +2294,14 @@ ILObject *_IL_ClrField_GetValue(ILExecThread *thread, ILObject *_this,
 }
 
 /*
- * public override void SetValue(Object obj, Object value,
- *                               BindingFlags invokeAttr,
- *                               Binder binder, CultureInfo culture);
+ * internal void SetValueInternal(Object obj, Object value,
+ *                                BindingFlags invokeAttr,
+ *                                Binder binder, CultureInfo culture);
  */
-void _IL_ClrField_SetValue(ILExecThread *thread, ILObject *_this,
-						   ILObject *obj, ILObject *value,
-						   ILInt32 invokeAttr, ILObject *binder,
-						   ILObject *culture)
+void _IL_ClrField_SetValueInternal(ILExecThread *thread, ILObject *_this,
+						   		   ILObject *obj, ILObject *value,
+						   		   ILInt32 invokeAttr, ILObject *binder,
+						   		   ILObject *culture)
 {
 	ILField *field;
 	ILType *type;
@@ -2321,8 +2330,17 @@ void _IL_ClrField_SetValue(ILExecThread *thread, ILObject *_this,
 	}
 	else if(ILField_IsStatic(field))
 	{
-		/* TODO */
-		return;
+		/* Get the field's type and a pointer to it */
+		type = ILField_Type(field);
+		ptr = ((ILClassPrivate *)(GetObjectClass(obj)->userData))->staticData;
+		if(ptr)
+		{
+			ptr = (void *)(((unsigned char *)ptr) + field->offset);
+		}
+		else
+		{
+			return;
+		}
 	}
 	else
 	{

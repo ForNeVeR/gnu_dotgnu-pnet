@@ -40,6 +40,11 @@
 	* configure.in, profiles/tiny: add the "tiny" profile, which turns
 	off "RuntimeInfrastructure" - only "BCL" is left.
 
+	* profiles/compact, profiles/compact-fp, profiles/ecma,
+	profiles/full, profiles/kernel, profiles/kernel-fp,
+	profiles/tiny, profiles/tiny-fp: clean up the profile files and
+	add some additional profiles for floating-point variants.
+
 2003-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Array.cs, runtime/System/Convert.cs,

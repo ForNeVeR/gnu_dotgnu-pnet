@@ -22,6 +22,12 @@ Tag: format
              more than one format tag if there are multiple versions.
              e.g. "normal" and "wide".
 
+Tag: dformat
+    Parent: opcode
+    Meaning: List of values, separated by "<fsep/>", that describes
+             the words that make up the instruction when a direct
+             threaded interpreter is being used.
+
 Tag: form
     Parent: opcode
     Meaning: Defines the canonical name and COP_* number for the opcode.

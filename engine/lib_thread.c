@@ -1026,7 +1026,18 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
  */
 void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
 {
-	ILThreadSleep((ILUInt32)timeout);
+	int result;
+	
+	if (timeout < -1)
+	{
+		ILExecThreadThrowSystem(thread,
+			"System.ArgumentOutOfRangeException", (const char *)0);
+
+	}
+	
+	result = ILThreadSleep((ILUInt32)timeout);
+	
+	_ILHandleWaitResult(thread, result);
 }
 
 /*

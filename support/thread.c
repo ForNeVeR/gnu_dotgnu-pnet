@@ -793,11 +793,21 @@ int ILThreadSleep(ILUInt32 ms)
 	/* Lock down the thread */
 	_ILMutexLock(&(thread->lock));
 
-	/* Bail out if the current thread is aborted */
-	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	/* Bail out if the current thread is aborted or interrupted */
+
+	if (thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED))
 	{
 		_ILMutexUnlock(&(thread->lock));
-		return -1;
+		
+		return IL_WAIT_ABORTED;
+	}
+	else if (thread->state & IL_TS_INTERRUPTED)
+	{
+		thread->state &= ~(IL_TS_INTERRUPTED);
+		
+		_ILMutexUnlock(&(thread->lock));
+
+		return IL_WAIT_INTERRUPTED;
 	}
 
 	/* Put the thread into the "wait/sleep/join" state */
@@ -811,21 +821,28 @@ int ILThreadSleep(ILUInt32 ms)
 	if(_ILWakeupSetLimit(&(thread->wakeup), 1))
 	{
 		result = (_ILWakeupWait(&(thread->wakeup), ms, (void **)0) >= 0);
+		
+		if (result == 0)
+		{
+			result = IL_WAIT_TIMEOUT;
+		}
 	}
 	else
 	{
-		result = -1;
+		
+		result = IL_WAIT_TIMEOUT;
 	}
 
 	/* Lock down the thread again */
 	_ILMutexLock(&(thread->lock));
 
-	/* Determine if the interrupt on the wakeup object was a user-level
-	   interrupt or an abort request */
-	if(!result && (thread->state & IL_TS_INTERRUPTED) == 0)
+	if (thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED))
 	{
-		/* It was an abort request */
-		result = -1;
+		result = IL_WAIT_ABORTED;
+	}
+	else if (thread->state & IL_TS_INTERRUPTED)
+	{
+		result = IL_WAIT_INTERRUPTED;
 	}
 
 	/* Exit from the "wait/sleep/join" and "interrupted" states */

@@ -247,8 +247,8 @@ void ILThreadGetCounts(unsigned long *numForeground,
  * Put a thread to sleep for a given number of milliseconds.
  * Specifying "ms == 0" is the same as yielding the thread.
  * Specifying "ms == IL_MAX_UINT32" will sleep forever.
- * Returns zero if the sleep was interrupted, -1 if the
- * thread was aborted, and 1 if the sleep completed.
+ * Returns 1 on sucess and IL_WAIT_TIMEOUT, IL_WAIT_ABORTED
+ * or IL_WAIT_INTERRUPTED.
  */
 int ILThreadSleep(ILUInt32 ms);
 

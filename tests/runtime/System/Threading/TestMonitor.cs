@@ -222,12 +222,16 @@ public class TestMonitor
 		
 		thread1 = new Thread(new ThreadStart(Run1));
 		thread2 = new Thread(new ThreadStart(Run2));
-		
+
+		state = 0;
+		failed = false;
+		stop = false;
+
+		Console.Write("Thrashing will take 4 seconds ... ");
+				
 		thread1.Start();
 		thread2.Start();
 		
-		Console.Write("Thrashing will take 4 seconds ... ");
-
 		/* Testing shows 4 seconds is *usually* enough to cause
 			a failure if monitors aren't working */
 					
@@ -237,6 +241,53 @@ public class TestMonitor
 
 		thread1.Join();
 		thread2.Join();
+		
+		AssertEquals("Monitor locking", failed, false);
+	}
+
+	public void TestMonitorExtremeMultiThreadedThrash()
+	{
+		Thread[] threads;
+		
+		if (!TestThread.IsThreadingSupported)
+		{
+			return;
+		}
+
+		state = 0;
+		failed = false;
+		stop = false;		
+
+		threads = new Thread[10];
+
+		Console.Write("Thrashing will take 4 seconds ... ");
+				
+		for (int i = 0; i < 10; i++)
+		{
+			if (i % 2 == 0)
+			{
+				threads[i] = new Thread(new ThreadStart(Run1));
+			}
+			else
+			{
+				threads[i] = new Thread(new ThreadStart(Run2));
+			}
+			
+			threads[i].Start();
+		}
+
+
+		/* Testing shows 4 seconds is *usually* enough to cause
+			a failure if monitors aren't working */
+					
+		Thread.Sleep(4000);
+		
+		stop = true;
+
+		for (int i = 0; i < 10; i++)
+		{
+			threads[i].Join();
+		}
 		
 		AssertEquals("Monitor locking", failed, false);
 	}

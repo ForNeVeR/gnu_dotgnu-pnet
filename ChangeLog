@@ -33,6 +33,9 @@ pointer arguments.
 * tests/test_verify.c: implement verification test cases for arithmetic,
 conversion, comparison, and illegal opcodes.
 
+* ilasm/ilasm_main.c: re-enable short instruction squashing; it got disabled
+at some point in the past, and it should not have been.
+
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,

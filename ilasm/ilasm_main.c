@@ -107,7 +107,7 @@ extern int   ILAsmParseHexBytes;
 /*
  * Code generation flags.
  */
-int ILAsmShortInsns = 0;
+int ILAsmShortInsns = 1;
 
 static void usage(const char *progname);
 static void version(void);

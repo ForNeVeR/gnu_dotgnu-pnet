@@ -27,3 +27,5 @@
 ./type_access.cs:77: `sealed' specified multiple times
 ./type_access.cs:78: `sealed' specified multiple times
 ./type_access.cs:78: `sealed' specified multiple times
+./type_access.cs:81: warning: unsafe class declaration
+./type_access.cs:84: warning: unsafe class declaration

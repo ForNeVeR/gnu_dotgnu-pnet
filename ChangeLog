@@ -1,4 +1,15 @@
 
+2002-03-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/class/Makefile.am, csharp/class/nested1.cs,
+	csharp/class/nested1.il,, csharp/class/nested1.jl,
+	csharp/parser/error3.err, csharp/parser/error3.jerr,
+	csharp/parser/member_access1.err, csharp/parser/member_access1.jerr,
+	csharp/parser/member_access2.cs, csharp/parser/member_access2.err,
+	csharp/parser/member_access2.jerr, csharp/parser/type_access.err,
+	csharp/parser/type_access.jerr: new test cases after integrating
+	nested type gathering and method duplicate checks into the compiler.
+
 2002-03-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/enum2.err,

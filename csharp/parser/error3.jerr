@@ -9,5 +9,5 @@
 ./error3.cs:39: `W' is already declared
 ./error3.cs:40: parse error, expecting `.' or `;', at or near `Y'
 ./error3.cs:41: parse error, expecting an identifier, at or near `='
-./error3.cs:32: `C' cannot be declared as a type
-./error3.cs:32: because it is already declared as namespace
+./error3.cs:30: `C' cannot be declared as a type
+./error3.cs:30: because it is already declared as namespace

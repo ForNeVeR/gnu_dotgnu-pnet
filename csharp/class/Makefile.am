@@ -20,6 +20,7 @@ TESTS = ainit1.cs \
 		method6.cs \
 		method7.cs \
 		method8.cs \
+		nested1.cs \
 		property1.cs \
 		property2.cs \
 		property3.cs

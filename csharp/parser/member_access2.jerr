@@ -37,3 +37,7 @@
 ./member_access2.cs:73: operators must have `static' access
 ./member_access2.cs:74: `new' cannot be used in this context
 ./member_access2.cs:75: `sealed' cannot be used in this context
+./member_access2.cs:52: warning: declaration of `m4' includes unnecessary `new' keyword
+./member_access2.cs:55: warning: declaration of `m7' includes unnecessary `new' keyword
+./member_access2.cs:82: declaration of `m1' hides an inherited member, and `new' was not present
+./member_access2.cs:83: declaration of `m6' hides an inherited member, and `new' was not present

@@ -58,7 +58,7 @@ public abstract class Test
 	public sealed void m10() {}
 	public static sealed void m11() {}
 	public abstract sealed void m12() {}
-	public virtual sealed void m12() {}
+	public virtual sealed void m13() {}
 
 	// Event modifiers.
 	public extern event int e1;

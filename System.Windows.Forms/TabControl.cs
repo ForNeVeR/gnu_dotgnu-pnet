@@ -338,7 +338,15 @@ namespace System.Windows.Forms
 				this.tabOwner = owner;
 			}
 
-			public override void Add(Control control)
+			public new TabPage this[int idx]
+			{
+				get
+				{
+					return (TabPage) base[idx];
+				}
+			}
+
+			public void Add(TabPage control)
 			{
 				control.Visible = false;
 				base.Add(control);

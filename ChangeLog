@@ -1,9 +1,15 @@
 2002-05-27 Stephen Compall  <rushing@sigecom.net>
 
-	* System/Uri.cs: Some changes for compatibility with
-	UriBuilder.
+	* System/Uri.cs: Some changes for compatibility with UriBuilder.
 
 	* System/UriBuilder.cs: Completed implementation.
+
+	* runtime/System/IO/MemoryStream.cs: WriteTo(Stream).
+
+2002-05-27 Haran Shivanan  <ch99057@che.iitm.ac.in>
+
+	* runtime/System/IO/MemoryStream.cs: Fix on Read(byte[],int,int)
+	and implemented Write and WriteByte methods.
 
 2002-05-26 Stephen Compall  <rushing@sigecom.net>
 
@@ -40,7 +46,7 @@
 
 	* runtime/Platform/DirMethods.cs: Added 2 icalls viz
 	GetCurrentDirectory() and GetFilesInDirectory() stubs
-	
+
 2002-05-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.2.0" release.

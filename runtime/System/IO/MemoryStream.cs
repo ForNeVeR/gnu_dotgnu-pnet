@@ -21,9 +21,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// TODO:
-// some longs returned by posn, length, etc. will have to be cast
-
 // Stephen says:
 // I had a great deal of trouble with the problem of Position indexing,
 // and had to rewrite portions of the class twice because of this
@@ -183,7 +180,7 @@ public class MemoryStream : Stream
 		if (count > Length - Position) // Copy will throw
 			count = (int)(Length - Position); // fixed
 
-		Array.Copy(impl_buffer, (int)(Position + bottomLimit), buffer, offset, count);
+		Array.Copy(src_buffer, (int)(Position + bottomLimit), buffer, offset, count);
 		forcePositionChange(count);
 		return count;
 	}
@@ -289,19 +286,62 @@ public class MemoryStream : Stream
 		}
 	}
 
-	[TODO]
 	public override void Write(byte[] buffer, int offset, int count)
 	{
+		// Get all the exceptions out of the way
+		if (buffer == null)
+			throw new ArgumentNullException("buffer");
+		if (!CanWrite)
+			throw new NotSupportedException(_("IO_NotSupp_Write"));
+		if ( offset<0 || count<0)
+				throw new ArgumentOutOfRangeException("value", _("Arg_InvalidArrayIndex"));
+		if (offset+count > buffer.Length)
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
+		if (streamclosed)
+			throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+
+
+		// Check if we need to expand the stream
+		if (count > Length-Position)
+		{
+			// Is the stream resizable?
+			if (!resizable)
+				throw new NotSupportedException(_("IO_NotSupp_Write"));
+			else
+				growStream(Position+count);
+		}
+
+		// Copy buffer to impl_buffer using forceGetBuffer() and update
+		// the position,
+		Array.Copy(buffer,offset,forceGetBuffer(),(int)(Position+bottomLimit),count);
+		forcePositionChange(count);
 	}
 
-	[TODO]
 	public override void WriteByte(byte value)
 	{
+		if (streamclosed)
+			throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+		if (!CanWrite)
+			throw new NotSupportedException(_("IO_NotSupp_Write"));
+		if (Length-Position < 1)
+		{
+			if (!resizable)
+				throw new NotSupportedException(_("IO_NotSupp_Wrte"));
+			else
+				growStream(Position+1);
+		}
+		forceGetBuffer()[Position+bottomLimit] = value;
+		forcePositionChange(1);
 	}
 
-	[TODO]
 	public virtual void WriteTo(Stream stream)
 	{
+		if (stream == null)
+			throw new ArgumentNullException("buffer");
+		if (streamclosed)
+			throw new ObjectDisposedException(null, _("IO_StreamClosed"));
+
+		stream.Write(impl_buffer, bottomLimit, topLimit-bottomLimit);
 	}
 
 	// properties. beware, all can be overridden, so use whenever possible

@@ -1,4 +1,9 @@
 
+2002-11-14  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/Array.cs: Fix minor bug in ArrayEnumerator1
+	which was breaking Foreach_Collection on it.
+	
 2002-11-13  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Globalization/TextInfo.cs, 

@@ -468,7 +468,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		public ArrayEnumerator1(Array array)
 				{
 					this.array = array;
-					this.lower = array.GetUpperBound(0);
+					this.lower = array.GetLowerBound(0);
 					this.upper = array.GetUpperBound(0);
 					this.posn  = this.lower - 1;
 				}

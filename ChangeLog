@@ -21,6 +21,11 @@
 	* ilalink/link_main.c: strip multiple "/" characters from the end
 	of "ar" entry names because some archives have a "//" entry.
 
+	* cscc/c/c_ainit.tc, cscc/c/c_const.tc, cscc/c/c_defs.tc,
+	cscc/c/c_grammar.y, cscc/c/c_lexutils.c, cscc/c/c_scanner.l,
+	cscc/c/c_types.c, cscc/c/c_types.h: add support for wide character
+	and wide string constants.
+
 2003-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, cscc/csharp/cs_internal.h,

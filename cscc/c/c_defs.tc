@@ -298,6 +298,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
  * Define extra node types that are required by C.
  */
 %node ILNode_CString ILNode_String
+%node ILNode_CWString ILNode_String
 %node ILNode_SizeOfExpr ILNode_UnaryExpression =
 {
 	%nocreate ILType *type = {0};

@@ -317,6 +317,10 @@ static ILNode *BuildAssignInit(ILNode *var, ILNode *init, ILType *type)
 	{
 		stmt = ILNode_CAssignArray_create(var, init);
 	}
+	else if(CTypeIsArray(type) && yyisa(init, ILNode_CWString))
+	{
+		stmt = ILNode_CAssignArray_create(var, init);
+	}
 	else
 	{
 		stmt = ILNode_Assign_create(var, init);
@@ -564,10 +568,16 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
  */
 static ILUInt32 ArrayInitializerSize(ILType *type, ILNode *init)
 {
-	/* Handle the string case first */
+	/* Handle the string cases first */
 	if(yyisa(init, ILNode_CString))
 	{
 		return (ILUInt32)(((ILNode_CString *)init)->len) + 1;
+	}
+	else if(yyisa(init, ILNode_CWString))
+	{
+		return CGenWStringLength
+				((((ILNode_CWString *)init)->str),
+				 (((ILNode_CWString *)init)->len)) + 1;
 	}
 
 	/* If this isn't an array initializer, then bail out */
@@ -977,6 +987,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %token FLOAT_CONSTANT	"a floating point value"
 %token IMAG_CONSTANT	"an imaginary value"
 %token STRING_LITERAL	"a string literal"
+%token WSTRING_LITERAL	"a wide string literal"
 %token TYPE_NAME		"a type identifier"
 
 /*
@@ -1064,7 +1075,8 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 %type <name>		IDENTIFIER TYPE_NAME
 %type <integer>		INTEGER_CONSTANT
 %type <real>		FLOAT_CONSTANT IMAG_CONSTANT
-%type <string>		STRING_LITERAL StringLiteral
+%type <string>		STRING_LITERAL WSTRING_LITERAL StringLiteral
+%type <string>		WStringLiteral
 
 %type <name>		AnyIdentifier Identifier
 
@@ -1295,6 +1307,9 @@ PrimaryExpression
 	| StringLiteral			{
 				$$ = ILNode_CString_create($1.string, $1.len);
 			}
+	| WStringLiteral			{
+				$$ = ILNode_CWString_create($1.string, $1.len);
+			}
 	| K_FUNC				{
 				/* Create a reference to the local "__func__" array.
 				   In this implementation, we create a reference to
@@ -1319,6 +1334,13 @@ StringLiteral
 	| StringLiteral K_FUNCTION		{
 				$$ = ILInternAppendedString
 					($1, ILInternString(functionName, strlen(functionName)));
+			}
+	;
+
+WStringLiteral
+	: WSTRING_LITERAL	{ $$ = $1; }
+	| WStringLiteral WSTRING_LITERAL	{
+				$$ = ILInternAppendedString($1, $2);
 			}
 	;
 

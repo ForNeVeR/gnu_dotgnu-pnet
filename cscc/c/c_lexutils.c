@@ -428,6 +428,10 @@ void CLexParseChar(const char *text, CLexIntConst *value)
 	int isUnicode;
 
 	/* Skip the leading "'" */
+	if(*text == 'L' || *text == 'l')
+	{
+		++text;
+	}
 	++text;
 
 	/* Parse the character */
@@ -490,6 +494,10 @@ void CLexParseString(char *text, ILIntString *value)
 	unsigned ch2;
 
 	/* Initialize the value to be returned */
+	if(*text == 'L' || *text == 'l')
+	{
+		++text;
+	}
 	++text;
 	value->string = text;
 	value->len = 0;

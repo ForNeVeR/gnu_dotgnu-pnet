@@ -26,6 +26,16 @@
 ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len);
 
 /*
+ * Get the length of a wide character string.
+ */
+ILUInt32 CGenWStringLength(const char *str, int len);
+
+/*
+ * Get the index of a particular wide string within the string constant pool.
+ */
+ILUInt32 CGenWStringIndex(ILGenInfo *info, const char *str, int len);
+
+/*
  * Dump the contents of the string constant pool.
  */
 void CGenStringPool(ILGenInfo *info);
@@ -402,6 +412,52 @@ ILNode_EvalConst(ILNode_CString)
 	return 0;
 }
 
+/*
+ * Semantic analysis for "C wide string" constants.
+ */
+ILNode_CSemAnalysis(ILNode_CWString)
+{
+	CSemValue value;
+	CSemSetDynConstant(value, CTypeCreateWCharPtr(info));
+	return value;
+}
+
+/*
+ * Generate value code for a "C wide string" constant.
+ */
+ILNode_GenValue(ILNode_CWString)
+{
+	ILUInt32 len;
+	ILUInt32 index;
+
+	/* Look for this string in the string pool */
+	index = CGenWStringIndex(info, node->str, node->len);
+
+	/* Get the address of the string in the pool */
+	if(info->asmOutput)
+	{
+		len = CGenWStringLength(node->str, node->len);
+		fprintf(info->asmOutput,
+		        "\tldsflda\tvaluetype '$strings'/'wtype%lu' "
+					"'$strings'::'wstr%lu'\n",
+				(unsigned long)(len + 1), (unsigned long)index);
+	}
+	ILGenAdjust(info, 1);
+
+	/* Strings are passed on the stack as unmanaged pointers (type I) */
+	return ILMachineType_UnmanagedPtr;
+}
+
+/*
+ * Evaluate a "C wide string" constant.
+ */
+ILNode_EvalConst(ILNode_CWString)
+{
+	/* C wide string constants must be evaluated at runtime because
+	   we don't know what the address is yet */
+	return 0;
+}
+
 %end %{
 
 /*
@@ -420,6 +476,7 @@ typedef struct
 {
 	const char *str;
 	int len;
+	int isWide;
 	ILUInt32 index;
 
 } StringHashEntry;
@@ -447,10 +504,15 @@ static int PoolHash_Match(const StringHashEntry *elem,
 	{
 		return 0;
 	}
+	if(elem->isWide != key->isWide)
+	{
+		return 0;
+	}
 	return (elem->len == 0 || !ILMemCmp(elem->str, key->str, elem->len));
 }
 
-ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len)
+static ILUInt32 GenStringIndex(ILGenInfo *info, const char *str,
+							   int len, int isWide)
 {
 	StringHashEntry *entry;
 	StringHashEntry key;
@@ -462,6 +524,7 @@ ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len)
 	{
 		key.str = str;
 		key.len = len;
+		key.isWide = isWide;
 		entry = ILHashFindType(poolHash, &key, StringHashEntry);
 		if(entry)
 		{
@@ -520,6 +583,7 @@ ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len)
 	}
 	entry->str = str;
 	entry->len = len;
+	entry->isWide = isWide;
 	entry->index = poolIndex;
 	if(!ILHashAdd(poolHash, entry))
 	{
@@ -528,6 +592,36 @@ ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len)
 
 	/* Return the index to the caller */
 	return poolIndex++;
+}
+
+ILUInt32 CGenStringIndex(ILGenInfo *info, const char *str, int len)
+{
+	return GenStringIndex(info, str, len, 0);
+}
+
+ILUInt32 CGenWStringLength(const char *str, int len)
+{
+	unsigned long ch;
+	ILUInt32 slen = 0;
+	int posn = 0;
+	while(posn < len)
+	{
+		ch = ILUTF8ReadChar(str, len, &posn);
+		if(ch < 0x10000)
+		{
+			++slen;
+		}
+		else
+		{
+			slen += 2;
+		}
+	}
+	return slen;
+}
+
+ILUInt32 CGenWStringIndex(ILGenInfo *info, const char *str, int len)
+{
+	return GenStringIndex(info, str, len, 1);
 }
 
 #if HAVE_QSORT
@@ -559,7 +653,9 @@ void CGenStringPool(ILGenInfo *info)
 	ILHashIter iter;
 	StringHashEntry *entry;
 	int *lengths;
+	int *wideLengths;
 	int numLengths;
+	int numWideLengths;
 
 	/* Bail out if no assembly output stream or string pool */
 	if(!stream || !poolSize)
@@ -578,14 +674,29 @@ void CGenStringPool(ILGenInfo *info)
 	{
 		ILGenOutOfMemory(info);
 	}
+	wideLengths = (int *)ILMalloc(sizeof(int) * poolIndex);
+	if(!wideLengths)
+	{
+		ILGenOutOfMemory(info);
+	}
 	numLengths = 0;
+	numWideLengths = 0;
 	ILHashIterInit(&iter, poolHash);
 	while((entry = ILHashIterNextType(&iter, StringHashEntry)) != 0)
 	{
-		lengths[numLengths++] = entry->len + 1;
+		if(!(entry->isWide))
+		{
+			lengths[numLengths++] = entry->len + 1;
+		}
+		else
+		{
+			wideLengths[numWideLengths++] =
+				(int)(CGenWStringLength(entry->str, entry->len) + 1);
+		}
 	}
 #if HAVE_QSORT
 	qsort(lengths, numLengths, sizeof(int), IntCompare);
+	qsort(wideLengths, numWideLengths, sizeof(int), IntCompare);
 #else
 	{
 		int x, y;
@@ -598,6 +709,18 @@ void CGenStringPool(ILGenInfo *info)
 					len = lengths[x];
 					lengths[x] = lengths[y];
 					lengths[y] = len;
+				}
+			}
+		}
+		for(x = 0; x < (numWideLengths - 1); ++x)
+		{
+			for(y = x + 1; y < numWideLengths; ++y)
+			{
+				if(wideLengths[x] > wideLengths[y])
+				{
+					len = wideLengths[x];
+					wideLengths[x] = wideLengths[y];
+					wideLengths[y] = len;
 				}
 			}
 		}
@@ -616,11 +739,32 @@ void CGenStringPool(ILGenInfo *info)
 				lengths[len]);
 		fprintf(stream, "{\n\t.pack 1\n\t.size %d\n}\n", lengths[len]);
 	}
+	for(len = 0; len < numWideLengths; ++len)
+	{
+		if(len < (numWideLengths - 1) &&
+		   wideLengths[len] == wideLengths[len + 1])
+		{
+			continue;
+		}
+		fprintf(stream, ".class nested public sealed explicit "
+						"'wtype%d' extends [.library]System.ValueType\n",
+				wideLengths[len]);
+		fprintf(stream, "{\n\t.pack 2\n\t.size %d\n}\n",
+		        wideLengths[len] * 2);
+	}
 
-	/* Dump the contents of all strings to the ".sdata" section */
+	/* Dump the contents of all "char *" strings to the ".sdata" section */
 	ILHashIterInit(&iter, poolHash);
 	while((entry = ILHashIterNextType(&iter, StringHashEntry)) != 0)
 	{
+		if(entry->isWide)
+		{
+			fprintf(stream, ".field public static valuetype "
+							"'$strings'/'wtype%d' wstr%lu\n",
+					CGenWStringLength(entry->str, entry->len) + 1,
+				    (unsigned long)(entry->index));
+			continue;
+		}
 		fprintf(stream, ".data StrData%lu = bytearray(\n",
 				(unsigned long)(entry->index));
 		column = 0;
@@ -648,8 +792,40 @@ void CGenStringPool(ILGenInfo *info)
 	/* Output the end of the "$strings" type */
 	fputs("}\n", stream);
 
+	/* Dump the contents of all "wchar *" strings to an initializer method */
+	if(numWideLengths > 0)
+	{
+		fputs(".method private static specialname void '.init-wstrings'() "
+					"cil managed\n", stream);
+		fputs("{\n", stream);
+		fputs(".custom instance void OpenSystem.C.InitializerAttribute::.ctor()"
+				" = (01 00 00 00)\n", stream);
+		fputs(".custom instance void OpenSystem.C.InitializerOrderAttribute"
+			  	"::.ctor(int32) = (01 00 FF FF FF FF 00 00)\n", stream);
+		fputs("\t.maxstack 2\n", stream);
+		ILHashIterInit(&iter, poolHash);
+		while((entry = ILHashIterNextType(&iter, StringHashEntry)) != 0)
+		{
+			if(!(entry->isWide))
+			{
+				continue;
+			}
+			fprintf(stream, "\tldsflda valuetype '$strings'/'wtype%d' "
+							"'$strings'::wstr%lu\n",
+				    (int)(CGenWStringLength(entry->str, entry->len) + 1),
+					(unsigned long)(entry->index));
+			ILGenLoadString(info, entry->str, entry->len);
+			fputs("\tcall void [OpenSystem.C]OpenSystem.C.Crt0::"
+				  "SetWideString(char *, class [.library]System.String)\n",
+				  stream);
+		}
+		fputs("\tret\n", stream);
+		fputs("}\n", stream);
+	}
+
 	/* Done */
 	ILFree(lengths);
+	ILFree(wideLengths);
 }
 
 %}

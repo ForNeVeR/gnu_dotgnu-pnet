@@ -83,6 +83,11 @@ ILType *CTypeCreateVoidPtr(ILGenInfo *info);
 ILType *CTypeCreateCharPtr(ILGenInfo *info);
 
 /*
+ * Create a C type reference for "wchar_t *".
+ */
+ILType *CTypeCreateWCharPtr(ILGenInfo *info);
+
+/*
  * Mark a C type with a "const" qualifier.
  */
 ILType *CTypeAddConst(ILGenInfo *info, ILType *type);

@@ -192,6 +192,22 @@ static void InitializerSemAnalysis(ILGenInfo *info, ILType *type,
 			  	    _("initializer-string for array of chars is too long"));
 			}
 		}
+		else if(node && yyisa(node, ILNode_CWString) &&
+		        (ILTypeIdentical(elemType, ILType_Int16) ||
+		         ILTypeIdentical(elemType, ILType_UInt16) ||
+		         ILTypeIdentical(elemType, ILType_Char)))
+		{
+			/* Assign a string to a "wchar" array */
+			node = ILNode_ListIter_Next(iter);
+			size = CGenWStringLength
+					 (((ILNode_CWString *)node)->str,
+					  ((ILNode_CWString *)node)->len);
+			if(size > numElems)
+			{
+				CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+		  	      _("initializer-string for array of wide chars is too long"));
+			}
+		}
 		else
 		{
 			/* Assign to an ordinary array */
@@ -385,6 +401,27 @@ ILNode_CSemAnalysis(ILNode_CAssignArray)
 			  	    _("initializer-string for array of chars is too long"));
 		}
 	}
+	else if(yyisa(node->expr2, ILNode_CWString))
+	{
+		/* Assign the contents of a wide string */
+		elemType = CTypeWithoutQuals(CTypeGetElemType(CSemGetType(value1)));
+		if(elemType != ILType_Int16 && elemType != ILType_UInt16 &&
+		   elemType != ILType_Char)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  	  _("invalid initializer"));
+			return CSemValueError;
+		}
+		arraySize = CTypeGetNumElems(CSemGetType(value1));
+		initSize = CGenWStringLength
+					 (((ILNode_CWString *)(node->expr2))->str,
+					  ((ILNode_CWString *)(node->expr2))->len);
+		if(initSize > arraySize)
+		{
+			CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
+		  	    _("initializer-string for array of wide chars is too long"));
+		}
+	}
 	else if(yyisa(node->expr2, ILNode_CArrayInit))
 	{
 		/* Assign the contents of an array initializer to an array */
@@ -477,6 +514,7 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 	ILUInt32 size;
 	ILUInt32 numElems;
 	ILUInt32 index;
+	ILUInt32 wsize;
 	ILType *elemType;
 	ILClass *classInfo;
 	ILField *nextField;
@@ -507,6 +545,32 @@ static void WriteInitializer(ILGenInfo *info, ILType *type,
 			ILGenUInt32(info, size);
 			ILGenAdjust(info, 1);
 			ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+			ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+			ILGenAdjust(info, -3);
+		}
+		else if(node && yyisa(node, ILNode_CWString) &&
+		        (ILTypeIdentical(elemType, ILType_Int16) ||
+		         ILTypeIdentical(elemType, ILType_UInt16) ||
+		         ILTypeIdentical(elemType, ILType_Char)))
+		{
+			/* Populate a "wchar" array by copying a wide string into it */
+			if(field)
+			{
+				ILGenFieldRef(info, IL_OP_LDFLDA, field);
+			}
+			node = ILNode_ListIter_Next(iter);
+			ILNode_GenValue(node, info);
+			size = CTypeGetNumElems(type);
+			wsize = CGenWStringLength
+					 (((ILNode_CWString *)node)->str,
+					  ((ILNode_CWString *)node)->len);
+			if(size > (wsize + 1))
+			{
+				size = wsize + 1;
+			}
+			ILGenUInt32(info, size * 2);
+			ILGenAdjust(info, 1);
+			ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 2);
 			ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
 			ILGenAdjust(info, -3);
 		}
@@ -659,6 +723,7 @@ ILNode_GenDiscard(ILNode_CAssignArray)
 {
 	ILNode_ListIter iter;
 	ILUInt32 size;
+	ILUInt32 wsize;
 
 	/* Get the address of the array */
 	CGenAddress(info, node->expr1);
@@ -675,6 +740,23 @@ ILNode_GenDiscard(ILNode_CAssignArray)
 		ILGenUInt32(info, size);
 		ILGenAdjust(info, 1);
 		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 1);
+		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+		ILGenAdjust(info, -3);
+	}
+	else if(yyisa(node->expr2, ILNode_CWString))
+	{
+		ILNode_GenValue(node->expr2, info);
+		size = CTypeGetNumElems(node->type);
+		wsize = CGenWStringLength
+				 (((ILNode_CWString *)(node->expr2))->str,
+				  ((ILNode_CWString *)(node->expr2))->len);
+		if(size > (wsize + 1))
+		{
+			size = wsize + 1;
+		}
+		ILGenUInt32(info, size * 2);
+		ILGenAdjust(info, 1);
+		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED, 2);
 		ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
 		ILGenAdjust(info, -3);
 	}

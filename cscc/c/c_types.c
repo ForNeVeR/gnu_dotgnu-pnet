@@ -357,6 +357,16 @@ ILType *CTypeCreateCharPtr(ILGenInfo *info)
 	return charPtr;
 }
 
+ILType *CTypeCreateWCharPtr(ILGenInfo *info)
+{
+	static ILType *wcharPtr = 0;
+	if(!wcharPtr)
+	{
+		wcharPtr = CTypeCreatePointer(info, ILType_Char);
+	}
+	return wcharPtr;
+}
+
 ILType *CTypeAddConst(ILGenInfo *info, ILType *type)
 {
 	ILClass *classInfo;

@@ -167,6 +167,24 @@ WHITE			[ \t\v\r\f]
 "__PRETTY_FUNCTION__"	{ return K_FUNCTION; }
 "__func__"				{ return K_FUNC; }
 
+\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
+								  RETURNTOK(STRING_LITERAL); }
+
+L\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
+								  RETURNTOK(WSTRING_LITERAL); }
+
+l\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
+								  RETURNTOK(WSTRING_LITERAL); }
+
+'(\\.|[^\\'])+'					{ CLexParseChar(yytext, &(yylval.integer));
+								  RETURNTOK(INTEGER_CONSTANT); }
+
+L'(\\.|[^\\'])+'				{ CLexParseChar(yytext, &(yylval.integer));
+								  RETURNTOK(INTEGER_CONSTANT); }
+
+l'(\\.|[^\\'])+'				{ CLexParseChar(yytext, &(yylval.integer));
+								  RETURNTOK(INTEGER_CONSTANT); }
+
 {IDALPHA}({DIGIT}|{IDALPHA})*	{
 			/* Use the scope to determine if this is a typedef'ed name */
 			yylval.name = ILInternString(yytext, strlen(yytext)).string;
@@ -208,11 +226,6 @@ WHITE			[ \t\v\r\f]
 								  RETURNTOK(INTEGER_CONSTANT); }
 {DIGIT}+{ITYPE}?				{ CLexParseInt(yytext, &(yylval.integer));
 								  RETURNTOK(INTEGER_CONSTANT); }
-'(\\.|[^\\'])+'					{ CLexParseChar(yytext, &(yylval.integer));
-								  RETURNTOK(INTEGER_CONSTANT); }
-
-\"(\\.|[^\\"])*\"				{ CLexParseString(yytext, &(yylval.string));
-								  RETURNTOK(STRING_LITERAL); }
 
 {WHITE}+						;
 

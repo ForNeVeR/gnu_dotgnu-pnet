@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<project name="System.Web" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="System.Web.dll"
+				 debug="${debug.flag}"
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
+
+			<define name="NET_1_1" value="true"/>
+
+			<sources basedir="${mono.sources}/class/System.Web/">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+			<references>
+				<file name="System.dll"/>
+				<file name="System.Xml.dll"/>
+				<file name="System.EnterpriseServices.dll"/>
+				<file name="System.Drawing.dll"/>
+				<file name="../Mono.Security/Mono.Security.dll"/>
+				<file name="../Mono.Data.Tds/Mono.Data.Tds.dll"/>
+				<file name="../System.Data/System.Data.dll"/>
+			</references>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=neutral"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
+
+		</compile>
+	</target>
+</project>

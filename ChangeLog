@@ -9,6 +9,9 @@
 	* class/System.Data/Makefile.am , class/System.Data/System.Data.build:
 	Generate Parser.cs locally using jay and let it compile System.Data
 	out of the box.
+
+	* class/System.Web/System.Web.build , class/System.Web/Makefile.am,
+	class/Makefile.am , configure.in : Add System.Web to ml-pnet.
 	
 2004-04-30  Klaus Treichel  <ktreichel@web.de>
 

@@ -16,6 +16,7 @@ SUBDIRS = Custommarshalers \
 		  Mono.Data.SybaseClient \
 		  Mono.Data.TdsClient \
 		  System.Data.OracleClient \
+		  System.Web \
 		  Mono.Directory.LDAP \
 		  Mono.GetOptions \
 		  Mono.Posix \

@@ -21,6 +21,7 @@ AC_PROG_AWK
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PROG_CC
 AC_PATH_PROG(CYGPATH, cygpath)
 
 dnl The --with-pnet option can be used to specify the location of
@@ -277,11 +278,13 @@ class/System.Data.SqlXml/Makefile
 class/System.Data.ObjectSpaces/Makefile
 class/Novell.Directory.Ldap/Makefile
 class/System.DirectoryServices/Makefile
+class/System.Web/Makefile
 class/Mono.Security/Makefile
 class/Mono.Security.Win32/Makefile
 class/System.Security/Makefile
 tools/Makefile
 tools/SqlSharp/Makefile
+jay/Makefile
 ])
 
 dnl class/Npgsql/Makefile

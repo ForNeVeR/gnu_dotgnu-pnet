@@ -44,7 +44,7 @@ echo ''
 
 # Output a table of PIC labels, based on an incoming stream
 # of #define's for opcodes.
-function pic_table()
+pic_table()
 {
 	"$1" 'BEGIN{
 		      nextval=0
@@ -99,7 +99,7 @@ echo ''
 
 # Output a table of non-PIC labels, based on an incoming stream
 # of #define's for opcodes.
-function non_pic_table()
+non_pic_table()
 {
 	"$1" 'BEGIN{
 		      nextval=0

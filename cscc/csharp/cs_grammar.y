@@ -1777,17 +1777,23 @@ LocalConstantDeclaration
 
 Block
 	: '{' OptStatementList '}'		{
+				ILNode *temp;
 			#ifdef YYBISON
 				if(yykind($2) == yykindof(ILNode_Empty) && debug_flag)
 				{
-					$$ = ILNode_LineInfo_create($2);
-					yysetlinenum($$, @1.first_line);
+					temp = ILNode_LineInfo_create($2);
+					yysetlinenum(temp, @1.first_line);
 				}
 				else
 			#endif
 				{
-					$$ = $2;
+					temp = $2;
 				}
+
+				/* Wrap the block in a new local variable scope */
+				$$ = ILNode_NewScope_create(temp);
+				yysetfilename($$, yygetfilename(temp));
+				yysetlinenum($$, yygetlinenum(temp));
 			}
 	| '{' error '}'		{
 				/*
@@ -1924,9 +1930,11 @@ IterationStatement
 			}
 	| FOR '(' ForInitializer ForCondition ForIterator EmbeddedStatement	{
 				MakeQuaternary(For, $3, ILNode_ToBool_create($4), $5, $6);
+				$$ = ILNode_NewScope_create($$);
 			}
 	| FOREACH '(' Type Identifier IN ForeachExpression EmbeddedStatement	{
 				MakeQuaternary(Foreach, $3, ILQualIdentName($4, 0), $6, $7);
+				$$ = ILNode_NewScope_create($$);
 			}
 	;
 

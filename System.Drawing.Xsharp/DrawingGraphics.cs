@@ -125,9 +125,11 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				 float startAngle, float sweepAngle)
 			{
 				// Slight bug: this won't work for rotated arcs.
-				int width = RestrictWH(rect[1].X - rect[0].X);
-				int height = RestrictWH(rect[2].Y - rect[0].Y);
-				graphics.DrawArc(RestrictXY(rect[0].X), RestrictXY(rect[0].Y), width, height,
+				int x = RestrictXY(rect[0].X);
+				int y = RestrictXY(rect[0].Y);
+				int width = RestrictXY(rect[1].X) - x;
+				int height = RestrictXY(rect[2].Y) - y;
+				graphics.DrawArc(x, y, width, height,
 								 startAngle, sweepAngle);
 			}
 
@@ -137,9 +139,11 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				 float startAngle, float sweepAngle)
 			{
 				// Slight bug: this won't work for rotated arcs.
-				int width = RestrictWH(rect[1].X - rect[0].X);
-				int height = RestrictWH(rect[2].Y - rect[0].Y);
-				graphics.DrawPie(RestrictXY(rect[0].X), RestrictXY(rect[0].Y), width, height,
+				int x = RestrictXY(rect[0].X);
+				int y = RestrictXY(rect[0].Y);
+				int width = RestrictXY(rect[1].X) - x;
+				int height = RestrictXY(rect[2].Y) - y;
+				graphics.DrawPie(x, y, width, height,
 								 startAngle, sweepAngle);
 			}
 
@@ -149,10 +153,12 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				 float startAngle, float sweepAngle)
 			{
 				// Slight bug: this won't work for rotated arcs.
-				int width = RestrictWH(rect[1].X - rect[0].X);
-				int height = RestrictWH(rect[2].Y - rect[0].Y);
+				int x = RestrictXY(rect[0].X);
+				int y = RestrictXY(rect[0].Y);
+				int width = RestrictXY(rect[1].X) - x;
+				int height = RestrictXY(rect[2].Y) - y;
 				graphics.ArcMode = ArcMode.ArcPieSlice;
-				graphics.FillArc(RestrictXY(rect[0].X), RestrictXY(rect[0].Y), width, height,
+				graphics.FillArc(x, y, width, height,
 								 startAngle, sweepAngle);
 			}
 
@@ -271,31 +277,23 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 				// This implementation has a region size restriction.
 				int left = RestrictXY(rect.Left);
 				int top = RestrictXY(rect.Top);
-				int width = RestrictWH(rect.Width);
-				int height = RestrictXY(rect.Height);
-				newRegion.Union( left, top, width, height);
+				int right = RestrictXY(rect.Right);
+				int bottom = RestrictXY(rect.Bottom);
+				newRegion.Union( left, top, right - left, bottom - top);
 			}
 			return newRegion;
 		}
 
-
-	// Make sure a width or height fits within the x drawing size restriction
-	private static int RestrictWH(int value)
-	{
-		if (value < ushort.MinValue)
-			value = ushort.MinValue;
-		else if (value > ushort.MaxValue)
-			value = ushort.MaxValue;
-		return value;
-	}
-
-	// Make sure a x or y fits within the x drawing position restriction
+	// Make sure a x or y fits within the X drawing position restriction
+	// Because internally coordinates are represented by shorts, the x, y
+	// position plus the window coordinates cant exceed this. So we make
+	// the |min|, |max| doesnt exceed short/2.
 	private static int RestrictXY(int value)
 	{
-		if (value < short.MinValue)
-			value = short.MinValue;
-		else if (value > short.MaxValue)
-			value = short.MaxValue;
+		if (value < short.MinValue/2)
+			value = short.MinValue/2;
+		else if (value > short.MaxValue/2)
+			value = short.MaxValue/2;
 		return value;
 	}
 

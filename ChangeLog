@@ -7,6 +7,12 @@
 	implement "parent-less" widgets using a placeholder window;
 	add support for widget reparenting.
 
+	* .cvsignore, config.guess, config.sub, configure.in, libtool.m4,
+	ltcf-c.sh, ltconfig, ltmain.sh, Xsharp/.cvsignore, Xsharp/Makefile.am,
+	Xsharp/Makefile.in, Xsharp/XsharpSupport.c: add the shared library
+	"libXsharpSupport.so" to provide C support routines to Xsharp
+	which cannot be easily implemented in C#.
+
 2003-06-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/Application.cs, Xsharp/Graphics.cs, Xsharp/Xlib.cs.in:

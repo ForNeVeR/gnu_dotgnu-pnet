@@ -8,3 +8,4 @@ config.status
 confdefs.h
 aclocal.m4
 pnetlib.spec
+libtool

@@ -57,6 +57,9 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+AS = @AS@
 ASSEMBLY_LINKER = @ASSEMBLY_LINKER@
 AWK = @AWK@
 CC = @CC@
@@ -67,16 +70,20 @@ CSHARP_COMPILER = @CSHARP_COMPILER@
 CSHARP_COMPILER_CYGWIN = @CSHARP_COMPILER_CYGWIN@
 CSHARP_PLUGIN = @CSHARP_PLUGIN@
 CYGPATH = @CYGPATH@
+DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 ILFIND = @ILFIND@
 ILRUN = @ILRUN@
+LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PNET_PATH = @PNET_PATH@
 PROFILE_NAME = @PROFILE_NAME@
+RANLIB = @RANLIB@
 RESGEN = @RESGEN@
 RESGEN_FLAGS = @RESGEN_FLAGS@
 TREECC = @TREECC@
@@ -86,6 +93,14 @@ X_long = @X_long@
 X_uint = @X_uint@
 X_ulong = @X_ulong@
 
+xsupportdir = $(libdir)/cscc/lib
+xsupport_LTLIBRARIES = libXsharpSupport.la
+
+libXsharpSupport_la_SOURCES = XsharpSupport.c
+libXsharpSupport_la_LDFLAGS = $(X_LIBS) $(X_PRE_LIBS) -lX11 $(X_EXTRA_LIBS)
+
+AM_CFLAGS = $(X_CFLAGS)
+
 CLEANFILES = Xsharp.dll
 DISTCLEANFILES = Xlib.cs
 
@@ -93,6 +108,24 @@ pnetassembliesdir = $(libdir)/cscc/lib
 pnetassemblies_DATA = Xsharp.dll
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =  Xlib.cs
+LTLIBRARIES =  $(xsupport_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) 
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+X_CFLAGS = @X_CFLAGS@
+X_LIBS = @X_LIBS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
+libXsharpSupport_la_LIBADD = 
+libXsharpSupport_la_OBJECTS =  XsharpSupport.lo
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(pnetassemblies_DATA)
 
 DIST_COMMON =  Makefile.am Makefile.in Xlib.cs.in
@@ -102,8 +135,13 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
+DEP_FILES =  .deps/XsharpSupport.P
+SOURCES = $(libXsharpSupport_la_SOURCES)
+OBJECTS = $(libXsharpSupport_la_OBJECTS)
+
 all: all-redirect
 .SUFFIXES:
+.SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu Xsharp/Makefile
 
@@ -113,6 +151,72 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 
 Xlib.cs: $(top_builddir)/config.status Xlib.cs.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+mostlyclean-xsupportLTLIBRARIES:
+
+clean-xsupportLTLIBRARIES:
+	-test -z "$(xsupport_LTLIBRARIES)" || rm -f $(xsupport_LTLIBRARIES)
+
+distclean-xsupportLTLIBRARIES:
+
+maintainer-clean-xsupportLTLIBRARIES:
+
+install-xsupportLTLIBRARIES: $(xsupport_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(xsupportdir)
+	@list='$(xsupport_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(xsupportdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(xsupportdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-xsupportLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(xsupport_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(xsupportdir)/$$p; \
+	done
+
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libXsharpSupport.la: $(libXsharpSupport_la_OBJECTS) $(libXsharpSupport_la_DEPENDENCIES)
+	$(LINK) -rpath $(xsupportdir) $(libXsharpSupport_la_LDFLAGS) $(libXsharpSupport_la_OBJECTS) $(libXsharpSupport_la_LIBADD) $(LIBS)
 
 install-pnetassembliesDATA: $(pnetassemblies_DATA)
 	@$(NORMAL_INSTALL)
@@ -132,9 +236,35 @@ uninstall-pnetassembliesDATA:
 	list='$(pnetassemblies_DATA)'; for p in $$list; do \
 	  rm -f $(DESTDIR)$(pnetassembliesdir)/$$p; \
 	done
-tags: TAGS
-TAGS:
 
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
@@ -156,6 +286,38 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
@@ -167,20 +329,21 @@ installcheck: installcheck-am
 install-exec-am:
 install-exec: install-exec-am
 
-install-data-am: install-pnetassembliesDATA
+install-data-am: install-xsupportLTLIBRARIES install-pnetassembliesDATA
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-pnetassembliesDATA
+uninstall-am: uninstall-xsupportLTLIBRARIES uninstall-pnetassembliesDATA
 uninstall: uninstall-am
-all-am: Makefile $(DATA) all-local
+all-am: Makefile $(LTLIBRARIES) $(DATA) all-local
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(pnetassembliesdir)
+	$(mkinstalldirs)  $(DESTDIR)$(xsupportdir) \
+		$(DESTDIR)$(pnetassembliesdir)
 
 
 mostlyclean-generic:
@@ -194,29 +357,46 @@ distclean-generic:
 	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-generic
+mostlyclean-am:  mostlyclean-xsupportLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-tags mostlyclean-depend \
+		mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-generic mostlyclean-am
+clean-am:  clean-xsupportLTLIBRARIES clean-compile clean-libtool \
+		clean-tags clean-depend clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-generic clean-am
+distclean-am:  distclean-xsupportLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-tags distclean-depend \
+		distclean-generic clean-am
+	-rm -f libtool
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-generic distclean-am
+maintainer-clean-am:  maintainer-clean-xsupportLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: uninstall-pnetassembliesDATA install-pnetassembliesDATA tags \
-distdir info-am info dvi-am dvi check check-am installcheck-am \
-installcheck install-exec-am install-exec install-data-am install-data \
-install-am install uninstall-am uninstall all-local all-redirect all-am \
-all installdirs mostlyclean-generic distclean-generic clean-generic \
+.PHONY: mostlyclean-xsupportLTLIBRARIES distclean-xsupportLTLIBRARIES \
+clean-xsupportLTLIBRARIES maintainer-clean-xsupportLTLIBRARIES \
+uninstall-xsupportLTLIBRARIES install-xsupportLTLIBRARIES \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-libtool distclean-libtool \
+clean-libtool maintainer-clean-libtool uninstall-pnetassembliesDATA \
+install-pnetassembliesDATA tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-local all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 

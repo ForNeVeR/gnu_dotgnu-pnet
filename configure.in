@@ -23,6 +23,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AM_PROG_LIBTOOL
 AC_PATH_PROG(CYGPATH, cygpath)
 AC_PATH_PROG(TREECC, treecc,, ${prefix}/bin:$PATH)
 if test -z "$TREECC" ; then
@@ -34,6 +35,12 @@ fi
 dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT
+
+dnl Find X and related definitions, for building "libXsharpSupport.so".
+AC_PATH_XTRA
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_CHECK_HEADERS(time.h sys/time.h sys/types.h sys/select.h unistd.h)
 
 dnl The --with-pnet option can be used to specify the location of
 dnl Portable.NET, so that we know where to get the C# compiler, etc.

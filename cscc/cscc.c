@@ -1044,6 +1044,22 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	int pipePid = 0;
 	int canPipe;
 	char **pluginCmdline = 0;
+	static char * const depLevels[] = {0, "-M", "-MD", "-MM", "-MMD"};
+
+	/* Get the default dependency filename, if necessary */
+	if(!preprocess_flag && !dependency_file &&
+	   (dependency_level == DEP_LEVEL_MD ||
+	    dependency_level == DEP_LEVEL_MMD))
+	{
+		if((compile_flag || assemble_flag) && output_filename)
+		{
+			dependency_file = ChangeExtension(output_filename, "d");
+		}
+		else
+		{
+			dependency_file = ChangeExtension((char *)filename, "d");
+		}
+	}
 
 	/* Build the command-line for the plug-in */
 	cmdline = 0;
@@ -1060,6 +1076,14 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		{
 			AddArgument(&cmdline, &cmdline_size, "-C");
 		}
+		if(dependency_level != 0)
+		{
+			AddArgument(&cmdline, &cmdline_size, depLevels[dependency_level]);
+			if(dependency_gen_flag)
+			{
+				AddArgument(&cmdline, &cmdline_size, "-MG");
+			}
+		}
 		if(dump_output_format == DUMP_MACROS_ONLY)
 		{
 			AddArgument(&cmdline, &cmdline_size, "-dM");
@@ -1068,6 +1092,24 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		{
 			AddArgument(&cmdline, &cmdline_size, "-dD");
 		}
+	}
+	else if(dependency_level != 0)
+	{
+		/* Probably -MD or -MMD, which implies normal compilation */
+		AddArgument(&cmdline, &cmdline_size, depLevels[dependency_level]);
+		if(dependency_gen_flag)
+		{
+			AddArgument(&cmdline, &cmdline_size, "-MG");
+		}
+		if(dependency_file)
+		{
+			AddArgument(&cmdline, &cmdline_size, "-MF");
+			AddArgument(&cmdline, &cmdline_size, dependency_file);
+		}
+	}
+	if(preproc_show_headers)
+	{
+		AddArgument(&cmdline, &cmdline_size, "-H");
 	}
 	if(debug_flag)
 	{
@@ -1147,7 +1189,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	}
 	for(posn = 0; posn < num_sys_link_dirs; ++posn)
 	{
-		AddArgument(&cmdline, &cmdline_size, "-M");
+		AddArgument(&cmdline, &cmdline_size, "-N");
 		AddArgument(&cmdline, &cmdline_size, sys_link_dirs[posn]);
 	}
 	for(posn = 0; posn < num_libraries; ++posn)

@@ -887,6 +887,37 @@ static void ParseFile(const char *filename, int is_stdin)
 		{
 			CCStringListAdd(&argv, &argc, "-undef");
 		}
+		if(preproc_show_headers)
+		{
+			CCStringListAdd(&argv, &argc, "-H");
+		}
+		if(dependency_level != 0)
+		{
+			/* Generate dependencies while pre-processing */
+			if(dependency_level == DEP_LEVEL_M ||
+			   dependency_level == DEP_LEVEL_MD)
+			{
+				CCStringListAdd(&argv, &argc, "-M");
+			}
+			else if(dependency_level == DEP_LEVEL_MM ||
+			        dependency_level == DEP_LEVEL_MMD)
+			{
+				CCStringListAdd(&argv, &argc, "-MM");
+			}
+			if(dependency_level == DEP_LEVEL_MD ||
+		       dependency_level == DEP_LEVEL_MMD)
+			{
+				if(dependency_file != 0)
+				{
+					CCStringListAdd(&argv, &argc, "-MF");
+					CCStringListAdd(&argv, &argc, dependency_file);
+				}
+			}
+			if(dependency_gen_flag)
+			{
+				CCStringListAdd(&argv, &argc, "-MG");
+			}
+		}
 		if(dump_output_format == DUMP_MACROS_ONLY)
 		{
 			CCStringListAdd(&argv, &argc, "-dM");

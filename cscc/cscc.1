@@ -86,6 +86,11 @@ curve for new users.
 \-undef
 \-dM
 \-dN
+\-M
+\-MD
+\-MG
+\-MM
+\-MMD
 .TP
 .B Assembler Options
 \-fno\-short\-insns
@@ -332,6 +337,9 @@ dumping the pre-processor output.  This can only be used with the
 .B \-dN
 Dump both the pre-processor output and the macros that were defined.
 This can only be used with the `\fB\-E\fR' option.
+.TP
+.B \-M, \-MD, \-MG, \-MM, \-MMD
+Generate dependency information from the pre-processor (C language only).
 .PP
 The standard macro `\fB__CSCC__\fR' is defined to indicate that
 \fBcscc\fR is being used to compile the source code.

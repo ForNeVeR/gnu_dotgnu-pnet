@@ -1,4 +1,11 @@
 
+2004-03-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cscc.1, cscc/cscc.c, cscc/common/cc_main.c,
+	cscc/common/cc_options.c, cscc/common/cc_options.h,
+	doc/pnettools.texi: add pre-processor dependency options such
+	as "-M", "-MD", etc to the C compiler.
+
 2004-03-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/Makefile.am, ilranlib/Makefile.am, ilsize/Makefile.am,

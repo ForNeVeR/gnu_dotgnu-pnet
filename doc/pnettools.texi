@@ -220,7 +220,7 @@ Otherwise the exit status is 0.
 @item Preprocessor Options
 @ref{Preprocessor Options}
 @example
--C -P -DSYMBOL -USYMBOL -undef -dM -dN
+-C -P -DSYMBOL -USYMBOL -undef -dM -dN -M -MD -MG -MM -MMD
 @end example
 
 @item Assembler Options
@@ -550,6 +550,18 @@ dumping the pre-processor output.  This can only be used with the
 @item -dN
 Dump both the pre-processor output and the macros that were defined.
 This can only be used with the @code{-E} option.
+
+@cindex -M option (cscc)
+@cindex -MD option (cscc)
+@cindex -MG option (cscc)
+@cindex -MM option (cscc)
+@cindex -MMD option (cscc)
+@item -M
+@itemx -MD
+@itemx -MG
+@itemx -MM
+@itemx -MMD
+Generate dependency information from the pre-processor (C language only).
 @end table
 
 The standard macro @code{__CSCC__} is defined to indicate that
@@ -901,9 +913,9 @@ that the plug-in is aware of.
 @item -LDIR
 Specify a library directory that originated on the cscc command-line.
 
-@cindex -M option (cscc plug-in)
-@item -MDIR
-Specify a system library directory.  The front-end adds @code{-M} options
+@cindex -N option (cscc plug-in)
+@item -NDIR
+Specify a system library directory.  The front-end adds @code{-N} options
 for each of the system library directories that it knows about.  This
 option will not appear if the @code{-nostdlib} option is present.
 
@@ -977,6 +989,23 @@ Don't output @code{#line} directives in preprocessor output.
 @cindex -C option (cscc plug-in)
 @item -C
 Include comments in the preprocessor output.
+
+@cindex -M option (cscc plug-in)
+@cindex -MD option (cscc plug-in)
+@cindex -MG option (cscc plug-in)
+@cindex -MM option (cscc plug-in)
+@cindex -MMD option (cscc plug-in)
+@cindex -MF option (cscc plug-in)
+@item -M
+@itemx -MD
+@itemx -MG
+@itemx -MM
+@itemx -MMD
+@itemx -MF FILE
+Generate dependency information from the pre-processor if possible.
+Ignored if the pre-processor does not support dependency generation.
+The @code{-MF} option specifies the destination file for @code{-MD}
+and @code{-MMD}.
 
 @cindex -v option (cscc plug-in)
 @item -v

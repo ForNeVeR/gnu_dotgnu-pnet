@@ -95,6 +95,10 @@ int *files_to_link_temp = 0;
 int num_files_to_link = 0;
 char **imacros_files = 0;
 int num_imacros_files = 0;
+int dependency_level = DEP_LEVEL_NONE;
+int dependency_gen_flag = 0;
+char *dependency_file = 0;
+int preproc_show_headers = 0;
 
 /*
  * Add a string to a list of strings.
@@ -457,6 +461,32 @@ static void O0Option(char *arg)
 }
 
 /*
+ * Process a -Wp,-MD option.
+ */
+static void mdOption(char *arg)
+{
+	dependency_level = DEP_LEVEL_MD;
+	dependency_file = arg;
+}
+
+/*
+ * Process a -Wp,-MMD option.
+ */
+static void mmdOption(char *arg)
+{
+	dependency_level = DEP_LEVEL_MMD;
+	dependency_file = arg;
+}
+
+/*
+ * Process a -MF option.
+ */
+static void mfOption(char *arg)
+{
+	dependency_file = arg;
+}
+
+/*
  * Process a -v option (this is only used if "-v" is the only option).
  * The "-dumpversion" option can also be used for this.
  */
@@ -517,6 +547,8 @@ static CmdLineOpt const options[] = {
 			"-Wall", N_("Enable all compiler warning messages")},
 	{"-Werror",		0,	&warnings_as_errors,	1,	0,
 			"-Werror", N_("Treat compiler warning messages as errors")},
+	{"-Wp,-MD,",	8,	0,						0,	mdOption, 0, 0},
+	{"-Wp,-MMD,",	9,	0,						0,	mmdOption, 0, 0},
 	{"-W",			2,	0,						0,	WOption, 0},
 	{"-e",			2,	0,						0,	eOption,
 			N_("-e<name>"),
@@ -536,6 +568,15 @@ static CmdLineOpt const options[] = {
 			"-P", N_("Don't use #line directives in preprocessor output")},
 	{"-C",			0,	&preproc_comments_flag,	1,	0,
 			"-C", N_("Include comments in preprocessor output")},
+	{"-H",			0,	&preproc_show_headers,	1,	0,
+			"-H", N_("Show headers as they are preprocessed")},
+	{"-M",			0,	&dependency_level,		DEP_LEVEL_M, 0,
+			"-M, -MD, -MG, -MM, -MMD", N_("Generate dependency information")},
+	{"-MD",			0,	&dependency_level,		DEP_LEVEL_MD, 0, 0, 0},
+	{"-MG",			0,	&dependency_gen_flag,	1,	0, 0, 0},
+	{"-MM",			0,	&dependency_level,		DEP_LEVEL_MM, 0, 0, 0},
+	{"-MMD",		0,	&dependency_level,		DEP_LEVEL_MMD, 0, 0, 0},
+	{"-MF",			3,	0,						0,	mfOption, 0, 0},
 	{"-g",			0,	&debug_flag,			1,	0,
 			"-g", N_("Enable debug symbol information in the output")},
 	{"-nostdinc",	0,	&nostdinc_flag,			1,	0,
@@ -682,7 +723,7 @@ void CCParseCommandLine(int argc, char *argv[], int mode, char *versname)
 			/* Process system include options that are specific to plugins */
 			if(!strncmp(argv[1], "-J", 2) ||
 			   !strncmp(argv[1], "-K", 2) ||
-			   !strncmp(argv[1], "-M", 2) ||
+			   !strncmp(argv[1], "-N", 2) ||
 			   !strncmp(argv[1], "-F", 2) ||
 			   !strcmp(argv[1], "-W"))
 			{
@@ -725,7 +766,7 @@ void CCParseCommandLine(int argc, char *argv[], int mode, char *versname)
 					++argv;
 					continue;
 				}
-				else if(!strncmp(optname, "-M", 2))
+				else if(!strncmp(optname, "-N", 2))
 				{
 					if(!nostdlib_flag && !nostdlib_mode)
 					{
@@ -822,6 +863,12 @@ done_compat:
 			AddString(&pre_defined_symbols, &num_pre_defined_symbols,
 					  "RELEASE");
 		}
+	}
+
+	/* Turn on -E if -M or -MM is supplied */
+	if(dependency_level == DEP_LEVEL_M || dependency_level == DEP_LEVEL_MM)
+	{
+		preprocess_flag = 1;
 	}
 
 	/* Do we have any input files? */

@@ -53,6 +53,15 @@ extern	"C" {
 #define	VERBOSE_CMDLINES		2
 
 /*
+ * Pre-processor dependency levels.
+ */
+#define	DEP_LEVEL_NONE			0
+#define	DEP_LEVEL_M				1
+#define	DEP_LEVEL_MD			2
+#define	DEP_LEVEL_MM			3
+#define	DEP_LEVEL_MMD			4
+
+/*
  * Command-line option values.
  */
 extern char *progname;
@@ -113,6 +122,10 @@ extern int *files_to_link_temp;
 extern int num_files_to_link;
 extern char **imacros_files;
 extern int num_imacros_files;
+extern int dependency_level;
+extern int dependency_gen_flag;
+extern char *dependency_file;
+extern int preproc_show_headers;
 
 /*
  * Add a path to a list of strings.

@@ -217,7 +217,7 @@ public sealed class Version : ICloneable, IComparable
 	public int CompareTo(Object version)
 			{
 				Version vers = (version as Version);
-				if(vers != null)
+				if((Object)vers != null) // optimise to a brfalse
 				{
 					if(major > vers.major)
 					{
@@ -267,7 +267,7 @@ public sealed class Version : ICloneable, IComparable
 	public override bool Equals(Object obj)
 			{
 				Version version = (obj as Version);
-				if(version != null)
+				if((Object)version != null)
 				{
 					return (major == version.major &&
 							minor == version.minor &&
@@ -334,11 +334,14 @@ public sealed class Version : ICloneable, IComparable
 	// Relational operators.
 	public static bool operator==(Version v1, Version v2)
 			{
-				return v1.Equals(v2);
+				if ((Object)v1 == null)
+					return ((Object)v2 == null);
+				else
+					return v1.Equals(v2);
 			}
 	public static bool operator!=(Version v1, Version v2)
 			{
-				return !v1.Equals(v2);
+				return !(v1 == v2);
 			}
 	public static bool operator<(Version v1, Version v2)
 			{

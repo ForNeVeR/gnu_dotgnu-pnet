@@ -1425,6 +1425,7 @@ public class Control : IWin32Window, IDisposable
 							value.children = newChildren;
 						}
 						value.children[(value.numChildren)++] = this;
+						value.OnControlAdded(new ControlEventArgs(this));
 					}
 
 					// Reparent the control within the windowing system.

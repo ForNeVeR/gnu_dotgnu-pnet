@@ -665,6 +665,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token IS					"`is'"
 %token LOCK					"`lock'"
 %token LONG					"`long'"
+%token LONG_DOUBLE			"`__long_double'"
 %token MAKEREF				"`__makeref'"
 %token MODULE               "`__module'"
 %token NAMESPACE			"`namespace'"
@@ -1196,6 +1197,7 @@ BuiltinType
 	| CHAR			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_CHAR); }
 	| FLOAT			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R4); }
 	| DOUBLE		{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R8); }
+	| LONG_DOUBLE	{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_R); }
 	| DECIMAL		{ MakeSimple(DecimalType); }
 	| OBJECT		{ MakeSimple(ObjectType); }
 	| STRING		{ MakeSimple(StringType); }

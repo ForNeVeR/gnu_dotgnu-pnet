@@ -1019,6 +1019,7 @@ WHITE			[ \t\r\f\v\032]
 "is"					{ RETURNTOK(IS); }
 "lock"					{ RETURNTOK(LOCK); }
 "long"					{ RETURNTOK(LONG); }
+"__long_double"			{ RETURNTOK(LONG_DOUBLE); }
 "__makeref"				{ RETURNTOK(MAKEREF); }
 "__module"				{ RETURNTOK(MODULE); }
 "namespace"				{ RETURNTOK(NAMESPACE); }

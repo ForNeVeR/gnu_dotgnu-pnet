@@ -1,7 +1,7 @@
 /*
- * TestSystem.cs - Tests for the "System" namespace.
+ * TestBoolean.cs - Tests for the "Boolean" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,16 +21,33 @@
 using CSUnit;
 using System;
 
-public class TestSystem
+public class TestString : TestCase
 {
-
-	public static TestSuite Suite()
+	// Constructor.
+	public TestString(String name)
+			: base(name)
 			{
-				TestSuite suite = new TestSuite("System Tests");
-				suite.AddTests(typeof(TestBoolean));
-				suite.AddTests(typeof(TestUri));
-				suite.AddTests(typeof(TestString));
-				return suite;
+				// Nothing to do here.
 			}
 
-}; // class TestSystem
+	// Set up for the tests.
+	protected override void Setup()
+			{
+				// Nothing to do here.
+			}
+
+	// Clean up after the tests.
+	protected override void Cleanup()
+			{
+				// Nothing to do here.
+			}
+
+	public void TestIndexOfAcceptsLength()
+	{
+		try
+			"x".IndexOf(a, 1);
+		catch (ArgumentOutOfRangeException aoore)
+			Fail("IndexOf(char, int) should not throw when passed Length as the int");
+	}
+
+}; // class TestBoolean

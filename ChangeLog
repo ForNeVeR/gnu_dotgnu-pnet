@@ -1,3 +1,13 @@
+2002-04-18  Stephen Compall <rushing@sigecom.net>
+
+	* System/Uri.cs: Wiped out some TODOs, including Parse().
+
+	* resources/en_US/System/Arg.txt: new string.
+
+	* tests/System/TestSystem.cs, tests/System/TestString.cs: added a new
+	String test to deal with a ECMA idiosyncracy I am relying on.
+
+	* tests/System/Makefile.am: added TestUri and TestString to the build.
 
 2002-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 

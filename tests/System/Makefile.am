@@ -2,6 +2,8 @@
 noinst_DATA = TestSystem.dll
 
 CSSRC = TestBoolean.cs \
+		TestUri.cs \
+		TestString.cs \
 		TestSystem.cs
 
 CSCC_WARNINGS = -Wno-silly-warnings

@@ -23,7 +23,6 @@
 
 // global TODO:
 // find where the Trim(String) function is
-// go through the comparison code, do not assume escaping (possibly parse always)
 
 namespace System
 {
@@ -66,7 +65,8 @@ public class Uri : MarshalByRefObject
 	// however, if the user did escape it, but didn't tell the constructor, it
 	// is up to the system to detect whether or not it was escaped.
 	private bool		userEscaped;
-	// authority, hostnametype, isdefaultport, isloopback,
+	private UriHostNameType hostNameType;
+	// authority, isdefaultport, isloopback
 
 	// Holds the scheme information. (search 0->:)
 	// doesn't contain ://
@@ -166,7 +166,7 @@ public class Uri : MarshalByRefObject
 		if (schemeName == null || schemeName.Length == 0)
 			return UriHostTypeName.Unknown;
 
-		// TODO: more stuff here
+		// TODO: the other detections
 	}
 
 	public static bool CheckSchemeName(String schemeName)
@@ -178,7 +178,7 @@ public class Uri : MarshalByRefObject
 		if (charloc < 'a' && charloc > 'z' &&
 		    charloc < 'A' && charloc > 'Z')
 			return false;
-		for (int i = 1; ++i < schemeName.Length;)
+		for (int i = 0; ++i < schemeName.Length;) // starts with 1
 		{
 			if (!Uri.isValidSchemeChar(schemeName[i]))
 				return false;
@@ -239,7 +239,7 @@ public class Uri : MarshalByRefObject
 		// also, does not see if string already escaped
 		char chk;
 		StringBuilder ret = new StringBuilder(str.Length);
-		for (int i = 0; ++i < str.Length;)
+		for (int i = 0; i < str.Length; i++)
 		{
 			chk = str[i];
 			if (IsExcludedCharacter(chk) || IsReservedCharacter(chk))
@@ -272,14 +272,25 @@ public class Uri : MarshalByRefObject
 			return full.Substring(0, hash).GetHashCode();
 	}
 
-	[TODO]
 	public String GetLeftPart(UriPartial part)
 	{
 		if (part == UriPartial.Path)
 			return this.ToStringNoFragQuery();
 
-		// TODO: other UriPartials
+		else if (part == UriPartial.Authority)
+			return String.Concat(this.scheme, this.schemeDelim(), this.Authority);
+
+		else if (part == UriPartial.Scheme)
+			return String.Concat(this.scheme, this.schemeDelim());
 	}
+
+	// gets proper delimiter for current scheme
+	private String schemeDelim()
+	{
+		if (String.Equals(this.scheme, "mailto"))
+			return ":";
+		else
+			return "://"
 
 	public static String HexEscape(char character)
 	{
@@ -423,9 +434,7 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	protected virtual void Parse()
-	// TODO: fix for current private property behavior
 	{
 		int curpos = absoluteUri.IndexOf(':');
 		int nextpos = 0;
@@ -500,8 +509,6 @@ public class Uri : MarshalByRefObject
 				if (needsEscaping(fragment))
 					fragment = EscapeString(fragment)
 			}
-
-			// now, do verification of fields
 		}
 	}
 
@@ -511,35 +518,41 @@ public class Uri : MarshalByRefObject
 		int interimpos1=0, interimpos2=0;
 
 		interimpos1 = authority.IndexOf('@');
-		if (interimpos1 > 0)
+		if (interimpos1 > 0) // there is userinfo
 		{
 			userinfo = authority.Substring(0, interimpos1 - 1);
 			interimpos2 = interimpos1 + 1;
 		}
 
 		interimpos1 = authority.IndexOf(':', interimpos2);
-		if (interimpos1 > 0)
+		if (interimpos1 > 0) // there is a port
 		{
-			this.host = Authority.Substring(interimpos2, interimpos1 - interimpos2);
+			this.host = authority.Substring(interimpos2, interimpos1 - interimpos2);
 			try
 			{
 				// technically, ports are 16 bit, but...
 				this.port = Int32.Parse(authority.Substring(interimpos1 + 1));
 			}
-			catch (FormatException fe) { this.Port = -1; }
+			catch (FormatException fe) { this.port = -1; }
 			catch (OverflowException oe)
 			{
 				throw new UriFormatException(_("Arg_UriPort"));
 			}
 		}
-		else
+		else // no port
 			host = authority.Substring(interimpos2);
+
+		// now test host, standard says must be IPv4 or DNS
+		this.hostNameType = CheckHostNameType(host);
+		if (this.hostNameType != UriHostNameType.Dns &&
+			this.hostNameType != UriHostNameType.IPv4)
+			throw new UriFormatException(_("Arg_UriHostName"));
 	}
 
 	private static bool needsEscaping(String instr)
 	{
 		char c;
-		for (int i = 0; ++i < instr.Length;)
+		for (int i = 0; i < instr.Length; i++)
 		{
 			c = instr[i];
 			if (IsExcludedCharacter(c) || IsReservedCharacter(c))
@@ -548,55 +561,63 @@ public class Uri : MarshalByRefObject
 		return false;
 	}
 
-	[TODO]
 	public override String ToString()
 	{
-		StringBuilder myStringBuilder = new StringBuilder();
+		StringBuilder myStringBuilder = new StringBuilder(absoluteUri.Length);
 
-		myStringBuilder.Append(this.Scheme);
-		if (String.Compare(this.Scheme.UriSchemeMailto) != 0)
-		{
-			myStringBuilder.Append(this.SchemeDelimiter);
-		}
-		else
-		{
-			myStringBuilder.Append(':');
-		}
+		myStringBuilder.Append(this.scheme);
 
-		if (this.UserInfo.Length > 0)
+		myStringBuilder.Append(this.schemeDelim());
+
+		if (this.userinfo.Length > 0)
 		{
-			myStringBuilder.Append(this.UserInfo);
+			myStringBuilder.Append(this.userinfo);
 			myStringBuilder.Append('@');
 		}
 
-		myStringBuilder.Append(Host);
+		myStringBuilder.Append(host);
 
 		if (this.Port >= 0)
 		{
 			myStringBuilder.Append(':');
-			myStringBuilder.Append(this.UserInfo);
+			myStringBuilder.Append(this.userinfo);
 		}
 
 		myStringBuilder.Append(AbsolutePath);
 
-		if (this.Query.Length > 0)
+		if (this.query.Length > 0)
 		{
 			myStringBuilder.Append('?');
-			myStringBuilder.Append(this.Query);
+			myStringBuilder.Append(this.query);
 		}
 
-		if (this.Fragment.Length) > 0)
+		if (this.fragment.Length) > 0)
 		{
 			myStringBuilder.Append('#');
-			myStringBuilder.Append(this.Fragment);
+			myStringBuilder.Append(this.fragment);
 		}
 
 		return Unescape(myStringBuilder.ToString());
 	}
 
 	[TODO]
-	protected virtual String Unescape(String path)
+	protected virtual String Unescape(String path) // beware, explicitly do this.path
 	{
+		StringBuilder retStr = new StringBuilder(path.Length);
+		StringBuilder tryutf8;
+
+		for (int lastPcntSignIndex = path.IndexOf('%'); lastPcntSignIndex >= 0;
+			// String.IndexOf allows up to String.Length to be the startIndex
+			// so if this throws, it is an error
+			lastPcntSignIndex = path.IndexOf('%', lastPcntSignIndex+1))
+		{
+			// TODO: try StringUnescape, and test w/ IsReservedCharacter()
+			// if not, and valid UTF8, push on tryutf8
+			// if neither, don't unescape it
+			// recycle the utf8 holder, BTW
+		}
+		// then push on the rest of the string
+		// and return it
 	}
 
 	// properties
@@ -637,10 +658,10 @@ public class Uri : MarshalByRefObject
 	{
 		get
 		{
-			if (this.fragment == "")
+			if (this.fragment.Length == 0)
 				return this.fragment;
 			else
-				return new StringBuilder(this.fragment.Length+1).Append('#').Append(this.fragment).ToString();
+				return String.Concat("#", this.fragment);
 		}
 	}
 
@@ -652,12 +673,11 @@ public class Uri : MarshalByRefObject
 		}
 	}
 
-	[TODO]
 	public UriHostNameType HostNameType
 	{
 		get
 		{
-			// decipher the information from this.host
+			return this.hostNameType;
 		}
 	}
 

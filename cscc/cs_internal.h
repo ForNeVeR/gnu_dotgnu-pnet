@@ -230,6 +230,16 @@ ILMethod *CSGetGroupMember(void *group, unsigned long n);
  */
 void *CSRemoveGroupMember(void *group, unsigned long n);
 
+/*
+ * Set the candidate form for the n'th member of a method group.
+ */
+void CSSetGroupMemberForm(void *group, unsigned long n, int form);
+
+/*
+ * Get the candidate form for the n'th member of a method group.
+ */
+int CSGetGroupMemberForm(void *group, unsigned long n);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -39,7 +39,8 @@ struct _tagCSMemberInfo
 {
 	ILProgramItem *member;
 	ILClass       *owner;
-	int			   kind;
+	short		   kind;
+	short		   form;
 	CSMemberInfo  *next;
 };
 #define	CS_MEMBER_LOOKUP_MAX	4
@@ -88,6 +89,7 @@ static void AddMember(CSMemberLookupInfo *results,
 	info->member = member;
 	info->owner = owner;
 	info->kind = kind;
+	info->form = 0;
 	info->next = 0;
 	if(results->lastMember)
 	{
@@ -991,6 +993,36 @@ void *CSRemoveGroupMember(void *group, unsigned long n)
 		member = member->next;
 	}
 	return group;
+}
+
+void CSSetGroupMemberForm(void *group, unsigned long n, int form)
+{
+	CSMemberInfo *member = (CSMemberInfo *)group;
+	while(member != 0)
+	{
+		if(n <= 0)
+		{
+			member->form = (short)form;
+			return;
+		}
+		--n;
+		member = member->next;
+	}
+}
+
+int CSGetGroupMemberForm(void *group, unsigned long n)
+{
+	CSMemberInfo *member = (CSMemberInfo *)group;
+	while(member != 0)
+	{
+		if(n <= 0)
+		{
+			return member->form;
+		}
+		--n;
+		member = member->next;
+	}
+	return 0;
 }
 
 #ifdef	__cplusplus

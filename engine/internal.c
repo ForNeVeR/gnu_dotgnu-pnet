@@ -32,6 +32,8 @@ extern ILMethodTableEntry const _ILSystemStringMethods;
 extern ILMethodTableEntry const _ILSystemArrayMethods;
 extern ILMethodTableEntry const _ILSystemDecimalMethods;
 extern ILMethodTableEntry const _ILSystemMathMethods;
+extern ILMethodTableEntry const _ILSystemTypeMethods;
+extern ILMethodTableEntry const _ILSystemRuntimeTypeMethods;
 extern ILMethodTableEntry const _ILSystemSingleMethods;
 extern ILMethodTableEntry const _ILSystemDoubleMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
@@ -57,11 +59,13 @@ static InternalClassInfo const internalClassTable[] = {
 	{"Math",		"System",		&_ILSystemMathMethods},
 	{"Object",		"System",		&_ILSystemObjectMethods},
 	{"PtrSizes",	"Platform",		&_ILPlatformPtrSizesMethods},
+	{"RuntimeType",	"System",		&_ILSystemRuntimeTypeMethods},
 	{"Single",		"System",		&_ILSystemSingleMethods},
 	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},
 	{"String",		"System",		&_ILSystemStringMethods},
 	{"SysCharInfo",	"Platform",		&_ILPlatformSysCharInfoMethods},
 	{"TimeMethods",	"Platform",		&_ILPlatformTimeMethods},
+	{"Type",		"System",		&_ILSystemTypeMethods},
 };
 #define	numInternalClasses	(sizeof(internalClassTable) / \
 							 sizeof(InternalClassInfo))

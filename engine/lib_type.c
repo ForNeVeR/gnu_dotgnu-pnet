@@ -1,0 +1,839 @@
+/*
+ * lib_type.c - Internalcall methods for "Type" and related classes.
+ *
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "engine_private.h"
+#include "lib_defs.h"
+
+#ifdef	__cplusplus
+extern	"C" {
+#endif
+
+/*
+ * Resolve an assembly name to an image.  Returns NULL if the
+ * assembly could not be located.
+ */
+static ILImage *ResolveAssembly(ILExecThread *thread,
+								ILUInt16 *name, ILInt32 len)
+{
+	return 0;
+}
+
+/*
+ * Get the caller's image.
+ */
+static ILImage *CallerImage(ILExecThread *thread)
+{
+	ILImage *systemImage;
+	ILImage *image;
+	ILMethod *method;
+	unsigned long num;
+
+	/* We scan up the stack looking for a method that is
+	   not within the system library image.  That method
+	   is designated as the caller */
+	systemImage = ILContextGetSystem(thread->process->context);
+	if(!systemImage)
+	{
+		systemImage = ILProgramItem_Image(ILExecThreadStackMethod(thread, 0));
+	}
+	num = 0;
+	while((method = ILExecThreadStackMethod(thread, num)) != 0)
+	{
+		if((image = ILProgramItem_Image(method)) != systemImage)
+		{
+			return image;
+		}
+		++num;
+	}
+
+	/* All methods are in the system image, so let that be the caller */
+	return systemImage;
+}
+
+/*
+ * Check that the caller has permission to access a specific class or member.
+ * Returns non-zero if access has been granted.
+ */
+static int CheckAccess(ILExecThread *thread, ILClass *classInfo,
+					   ILMember *member)
+{
+	ILImage *systemImage;
+	ILMethod *method;
+	ILClass *methodClass;
+	unsigned long num;
+
+	/* We scan up the stack looking for a method that is
+	   not within the system library image.  That method
+	   is used to perform the security check */
+	systemImage = ILContextGetSystem(thread->process->context);
+	if(!systemImage)
+	{
+		systemImage = ILProgramItem_Image(ILExecThreadStackMethod(thread, 0));
+	}
+	num = 0;
+	while((method = ILExecThreadStackMethod(thread, num)) != 0)
+	{
+		if(ILProgramItem_Image(method) != systemImage)
+		{
+			break;
+		}
+		++num;
+	}
+	if(!method)
+	{
+		/* All methods are within the system image, so all accesses are OK.
+		   We assume that the system library always has ReflectionPermission */
+		return 1;
+	}
+
+	/* Check for direct accessibility */
+	methodClass = ILMethod_Owner(method);
+	if(classInfo != 0 && ILClassAccessible(classInfo, methodClass))
+	{
+		return 1;
+	}
+	else if(member != 0 && ILMemberAccessible(member, methodClass))
+	{
+		return 1;
+	}
+
+	/* Check that the caller has "ReflectionPermission" */
+	/* TODO */
+	return 1;
+}
+
+/*
+ * Throw a "TypeLoadException" when a type lookup has failed.
+ */
+static void ThrowTypeLoad(ILExecThread *thread, ILString *name)
+{
+	ILExecThreadThrowSystem(thread, "System.TypeLoadException",
+							(const char *)0);
+}
+
+/*
+ * Convert an "ILClass" into a "RuntimeType" instance.
+ */
+static ILObject *GetRuntimeType(ILExecThread *thread, ILClass *classInfo)
+{
+	ILObject *obj;
+
+	/* Does the class already have a "RuntimeType" instance? */
+	if(((ILClassPrivate *)(classInfo->userData))->runtimeType)
+	{
+		return ((ILClassPrivate *)(classInfo->userData))->runtimeType;
+	}
+
+	/* Create a new "RuntimeType" instance */
+	if(!(thread->process->runtimeTypeClass))
+	{
+		ThrowTypeLoad(thread, 0);
+		return 0;
+	}
+	obj = _ILEngineAllocObject(thread, thread->process->runtimeTypeClass);
+	if(!obj)
+	{
+		return 0;
+	}
+
+	/* Fill in the object with the class information */
+	((System_RuntimeType *)obj)->privateData = classInfo;
+
+	/* Attach the object to the class so that it will be returned
+	   for future calls to this function */
+	((ILClassPrivate *)(classInfo->userData))->runtimeType = obj;
+
+	/* Return the object to the caller */
+	return obj;
+}
+
+/*
+ * Get the "ILClass" value associated with a "RuntimeType" object.
+ */
+static ILClass *GetRuntimeClass(ILExecThread *thread, ILObject *type)
+{
+	if(type)
+	{
+		/* Make sure that "type" is an instance of "RuntimeType" */
+		if(ILClassInheritsFrom(GetObjectClass(type),
+							   thread->process->runtimeTypeClass))
+		{
+			return (ILClass *)(((System_RuntimeType *)type)->privateData);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static Type GetType(String name, bool throwOnError, bool ignoreCase);
+ */
+static ILObject *System_Type_GetType(ILExecThread *thread,
+									 ILString *name,
+									 ILBool throwOnError,
+									 ILBool ignoreCase)
+{
+	ILInt32 length;
+	ILUInt16 *buf;
+	ILInt32 posn;
+	ILInt32 dot;
+	ILInt32 nameStart;
+	ILInt32 nameEnd;
+	ILInt32 nameSpecial;
+	int brackets;
+	ILImage *assemblyImage = 0;
+	ILProgramItem *scope;
+	ILClass *classInfo;
+
+	/* Validate the parameters */
+	if(!name)
+	{
+		ILExecThreadThrowArgNull(thread, "name");
+		return 0;
+	}
+
+	/* Extract the buffer portion of the name string */
+	length = _ILStringToBuffer(thread, name, &buf);
+
+	/* Turn off "ignoreCase" if the length is greater than 128.
+	   Provided for consistency with ECMA, even though we can
+	   check for case-insensitive type names of any length */
+	if(length > 128)
+	{
+		ignoreCase = 0;
+	}
+
+	/* Check for an assembly suffix, to determine where to
+	   start looking for the type */
+	posn = 0;
+	nameStart = 0;
+	nameSpecial = -1;
+	brackets = 0;
+	while(posn < length && (buf[posn] != (ILUInt16)',' || brackets))
+	{
+		if(buf[posn] == '\\')
+		{
+			++posn;
+			if(posn >= length)
+			{
+				/* Invalid escape, so this cannot be a valid type name */
+				if(throwOnError)
+				{
+					ThrowTypeLoad(thread, name);
+				}
+				return 0;
+			}
+		}
+		else if(buf[posn] == '[')
+		{
+			if(nameSpecial == -1)
+			{
+				nameSpecial = posn;
+			}
+			++brackets;
+		}
+		else if(buf[posn] == ']')
+		{
+			if(brackets > 0)
+			{
+				--brackets;
+			}
+		}
+		else if(buf[posn] == '*' || buf[posn] == '&')
+		{
+			if(nameSpecial == -1)
+			{
+				nameSpecial = posn;
+			}
+		}
+		++posn;
+	}
+	if(nameSpecial == -1)
+	{
+		nameSpecial = posn;
+	}
+	nameEnd = posn;
+	if(posn < length)
+	{
+		++posn;
+		assemblyImage = ResolveAssembly(thread, buf + posn, length - posn);
+		if(!assemblyImage)
+		{
+			if(throwOnError)
+			{
+				ThrowTypeLoad(thread, name);
+			}
+			return 0;
+		}
+	}
+	if(nameStart >= nameSpecial)
+	{
+		/* Empty type name means no type */
+		if(throwOnError)
+		{
+			ThrowTypeLoad(thread, name);
+		}
+		return 0;
+	}
+
+	/* Find the initial lookup scope */
+	if(assemblyImage)
+	{
+		scope = ILClassGlobalScope(assemblyImage);
+	}
+	else
+	{
+		scope = 0;
+	}
+
+	/* Locate the type */
+	classInfo = 0;
+	posn = nameStart;
+	while(posn < nameSpecial)
+	{
+		/* Find the next '+', which is used to separate nested types.
+		   Also find the last dot that indicates the namespace */
+		dot = -1;
+		while(posn < nameSpecial && buf[posn] != '+')
+		{
+			if(buf[posn] == '\\')
+			{
+				++posn;
+			}
+			else if(buf[posn] == '.')
+			{
+				dot = posn;
+			}
+			++posn;
+		}
+		if(classInfo != 0)
+		{
+			/* Dots in nested type names are not namespace delimiters */
+			dot = -1;
+		}
+
+		/* Look for the class within the current scope */
+		if(scope != 0)
+		{
+			if(dot != -1)
+			{
+				classInfo = ILClassLookupUnicode
+					(scope, buf + dot + 1, posn - (dot + 1),
+					 buf + nameStart, dot - nameStart, ignoreCase);
+			}
+			else
+			{
+				classInfo = ILClassLookupUnicode
+					(scope, buf + nameStart, posn - nameStart,
+					 0, 0, ignoreCase);
+			}
+		}
+		else
+		{
+			/* Look in the same image as the caller first */
+			scope = ILClassGlobalScope(CallerImage(thread));
+			if(dot != -1)
+			{
+				classInfo = ILClassLookupUnicode
+					(scope, buf + dot + 1, posn - (dot + 1),
+					 buf + nameStart, dot - nameStart, ignoreCase);
+			}
+			else
+			{
+				classInfo = ILClassLookupUnicode
+					(scope, buf + nameStart, posn - nameStart,
+					 0, 0, ignoreCase);
+			}
+
+			/* Look in the global scope if not in the caller's image */
+			if(!classInfo)
+			{
+				if(dot != -1)
+				{
+					classInfo = ILClassLookupGlobalUnicode
+						(thread->process->context,
+						 buf + dot + 1, posn - (dot + 1),
+						 buf + nameStart, dot - nameStart, ignoreCase);
+				}
+				else
+				{
+					classInfo = ILClassLookupGlobalUnicode
+						(thread->process->context,
+						 buf + nameStart, posn - nameStart,
+						 0, 0, ignoreCase);
+				}
+			}
+		}
+		if(!classInfo)
+		{
+			/* Could not find the class */
+			if(throwOnError)
+			{
+				ThrowTypeLoad(thread, name);
+			}
+			return 0;
+		}
+		scope = (ILProgramItem *)classInfo;
+
+		/* Advance to the next nested type name */
+		if(posn < nameSpecial)
+		{
+			++posn;
+			nameStart = posn;
+			if(posn >= nameSpecial)
+			{
+				/* Empty nested type name */
+				if(throwOnError)
+				{
+					ThrowTypeLoad(thread, name);
+				}
+				return 0;
+			}
+		}
+	}
+
+	/* Check that we have permission to reflect the type */
+	if(!CheckAccess(thread, classInfo, 0))
+	{
+		return 0;
+	}
+
+	/* Resolve special suffixes for array and pointer designations */
+	if(nameSpecial < nameEnd)
+	{
+		/* TODO */
+		if(throwOnError)
+		{
+			ThrowTypeLoad(thread, name);
+		}
+		return 0;
+	}
+
+	/* Convert the class information block into a "RuntimeType" instance */
+	return GetRuntimeType(thread, classInfo);
+}
+
+/*
+ * Method table for the "System.Type" class.
+ */
+IL_METHOD_BEGIN(_ILSystemTypeMethods)
+	IL_METHOD("GetType", "(oSystem.String;ZZ)oSystem.Type;",
+					System_Type_GetType)
+IL_METHOD_END
+
+/*
+ * private int InternalGetArrayRank();
+ */
+static ILInt32 System_RuntimeType_InternalGetArrayRank(ILExecThread *thread,
+													   ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILType *synType = (classInfo ? ILClassGetSynType(classInfo) : 0);
+	if(synType != 0)
+	{
+		ILInt32 rank = 1;
+		while(synType != 0 && ILType_IsComplex(synType) &&
+		      synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		{
+			++rank;
+			synType = synType->un.array.elemType;
+		}
+		return rank;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override TypeAttributes GetAttributeFlagsImpl();
+ */
+static ILInt32 System_RuntimeType_GetAttributeFlagsImpl(ILExecThread *thread,
+														ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	if(classInfo)
+	{
+		return (ILInt32)(ILClassGetAttrs(classInfo));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * internal static RuntimeTypeHandle InternalGetTypeHandleFromObject(Object o);
+ */
+static void System_RuntimeType_InternalGetTypeHandleFromObject
+				(ILExecThread *thread, void *handle, ILObject *obj)
+{
+	if(obj)
+	{
+		*((ILClass **)handle) = GetObjectClass(obj);
+	}
+	else
+	{
+		ILExecThreadThrowArgNull(thread, "obj");
+	}
+}
+
+/*
+ * internal static Type GetTypeFromHandleImpl(RuntimeTypeHandle handle);
+ */
+static ILObject *System_RuntimeType_GetTypeFromHandleImpl
+						(ILExecThread *thread, void *handle)
+{
+	ILClass *classInfo = *((ILClass **)handle);
+	if(classInfo)
+	{
+		return GetRuntimeType(thread, classInfo);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override bool IsArrayImpl();
+ */
+static ILBool System_RuntimeType_IsArrayImpl(ILExecThread *thread,
+											 ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILType *synType;
+	if(classInfo)
+	{
+		synType = ILClassGetSynType(classInfo);
+		if(synType != 0 && ILType_IsComplex(synType) &&
+		   (synType->kind == IL_TYPE_COMPLEX_ARRAY ||
+		    synType->kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override bool IsByRefImpl();
+ */
+static ILBool System_RuntimeType_IsByRefImpl(ILExecThread *thread,
+											 ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILType *synType;
+	if(classInfo)
+	{
+		synType = ILClassGetSynType(classInfo);
+		if(synType != 0 && ILType_IsComplex(synType) &&
+		   synType->kind == IL_TYPE_COMPLEX_BYREF)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override bool IsCOMObjectImpl();
+ */
+static ILBool System_RuntimeType_IsCOMObjectImpl(ILExecThread *thread,
+											     ILObject *_this)
+{
+	/* COM is not supported in our system */
+	return 0;
+}
+
+/*
+ * protected override int InternalIsContextful();
+ */
+static ILInt32 System_RuntimeType_InternalIsContextful(ILExecThread *thread,
+											           ILObject *_this)
+{
+	ILClass *classInfo;
+	classInfo = ILExecThreadLookupType(thread, "System.ContextBoundObject");
+	if(classInfo)
+	{
+		return ILClassInheritsFrom(GetObjectClass(_this), classInfo);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override int InternalIsMarshalByRef();
+ */
+static ILInt32 System_RuntimeType_InternalIsMarshalByRef(ILExecThread *thread,
+											             ILObject *_this)
+{
+	ILClass *classInfo;
+	classInfo = ILExecThreadLookupType(thread, "System.MarshalByRefObject");
+	if(classInfo)
+	{
+		return ILClassInheritsFrom(GetObjectClass(_this), classInfo);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override bool IsPointerImpl();
+ */
+static ILBool System_RuntimeType_IsPointerImpl(ILExecThread *thread,
+											   ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILType *synType;
+	if(classInfo)
+	{
+		synType = ILClassGetSynType(classInfo);
+		if(synType != 0 && ILType_IsComplex(synType) &&
+		   synType->kind == IL_TYPE_COMPLEX_PTR)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override bool IsPrimitiveImpl();
+ */
+static ILBool System_RuntimeType_IsPrimitiveImpl(ILExecThread *thread,
+											     ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	if(classInfo)
+	{
+		return ILType_IsPrimitive(ILClassToType(classInfo));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * protected override bool IsSubclassOf(Type c);
+ */
+static ILBool System_RuntimeType_IsSubclassOf(ILExecThread *thread,
+											  ILObject *_this,
+											  ILObject *otherType)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILClass *otherClassInfo;
+	if(otherType)
+	{
+		otherClassInfo = GetRuntimeClass(thread, otherType);
+		if(classInfo && otherClassInfo)
+		{
+			return ILClassInheritsFrom(classInfo, otherClassInfo);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		ILExecThreadThrowArgNull(thread, "c");
+		return 0;
+	}
+}
+
+/*
+ * private bool IsNestedTypeImpl();
+ */
+static ILBool System_RuntimeType_IsNestedTypeImpl(ILExecThread *thread,
+											      ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	if(classInfo && ILClass_NestedParent(classInfo) != 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private Type InternalGetBaseType();
+ */
+static ILObject *System_RuntimeType_InternalGetBaseType(ILExecThread *thread,
+											      		ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	if(classInfo)
+	{
+		ILClass *parent = ILClass_Parent(classInfo);
+		if(parent)
+		{
+			return GetRuntimeType(thread, parent);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private Type InternalGetAssembly();
+ */
+static ILObject *System_RuntimeType_InternalGetAssembly(ILExecThread *thread,
+											      		ILObject *_this)
+{
+	ILClass *classInfo = GetRuntimeClass(thread, _this);
+	ILImage *image = (classInfo ? ILClassToImage(classInfo) : 0);
+	if(image)
+	{
+		/* TODO */
+		return 0;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private String InternalGetFullName();
+ */
+static ILString *System_RuntimeType_InternalGetFullName(ILExecThread *thread,
+											      		ILObject *_this)
+{
+	/*ILClass *classInfo = GetRuntimeClass(thread, _this);*/
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private String InternalGetAssemblyQualifiedName();
+ */
+static ILString *System_RuntimeType_InternalGetAssemblyQualifiedName
+					(ILExecThread *thread, ILObject *_this)
+{
+	/*ILClass *classInfo = GetRuntimeClass(thread, _this);*/
+	/* TODO */
+	return 0;
+}
+
+/*
+ * private Guid InternalGetGUID();
+ */
+static void System_RuntimeType_InternalGetGUID(ILExecThread *thread,
+											   void *result,
+											   ILObject *_this)
+{
+	/* We don't use GUID's in this system, as they are intended for
+	   use with COM, which we don't have.  Besides, they are a stupid
+	   way to refer to globally-unique values.  URI's are much better */
+	ILMemZero(result, 16);
+}
+
+/*
+ * Method table for the "System.RuntimeType" class.
+ */
+IL_METHOD_BEGIN(_ILSystemRuntimeTypeMethods)
+	IL_METHOD("InternalGetArrayRank", "(T)i",
+					System_RuntimeType_InternalGetArrayRank)
+	IL_METHOD("GetAttributeFlagsImpl", "(T)i",
+					System_RuntimeType_GetAttributeFlagsImpl)
+	IL_METHOD("InternalGetTypeHandleFromObject",
+					"(oSystem.Object;)vSystem.RuntimeTypeHandle;",
+					System_RuntimeType_InternalGetTypeHandleFromObject)
+	IL_METHOD("GetTypeFromHandleImpl",
+					"(vSystem.RuntimeTypeHandle;)oSystem.Type;",
+					System_RuntimeType_GetTypeFromHandleImpl)
+	IL_METHOD("IsArrayImpl", "(T)Z", System_RuntimeType_IsArrayImpl)
+	IL_METHOD("IsByRefImpl", "(T)Z", System_RuntimeType_IsByRefImpl)
+	IL_METHOD("IsCOMObjectImpl", "(T)Z", System_RuntimeType_IsCOMObjectImpl)
+	IL_METHOD("InternalIsContextful", "(T)i",
+					System_RuntimeType_InternalIsContextful)
+	IL_METHOD("InternalIsMarshalByRef", "(T)i",
+					System_RuntimeType_InternalIsMarshalByRef)
+	IL_METHOD("IsPointerImpl", "(T)Z", System_RuntimeType_IsPointerImpl)
+	IL_METHOD("IsPrimitiveImpl", "(T)Z", System_RuntimeType_IsPrimitiveImpl)
+	IL_METHOD("IsSubclassOf", "(ToSystem.Type;)Z",
+					System_RuntimeType_IsSubclassOf)
+	IL_METHOD("IsNestedTypeImpl", "(T)Z", System_RuntimeType_IsNestedTypeImpl)
+	IL_METHOD("InternalGetBaseType",
+					"(T)oSystem.Type;",
+					System_RuntimeType_InternalGetBaseType)
+	IL_METHOD("InternalGetAssembly",
+					"(T)oSystem.Reflection.Assembly;",
+					System_RuntimeType_InternalGetAssembly)
+	IL_METHOD("InternalGetPropertyQualifiedName",  /* Alias */
+					"(T)oSystem.String;",
+					System_RuntimeType_InternalGetFullName)
+	IL_METHOD("InternalGetFullName",
+					"(T)oSystem.String;",
+					System_RuntimeType_InternalGetFullName)
+	IL_METHOD("InternalGetAssemblyQualifiedName",
+					"(T)oSystem.String;",
+					System_RuntimeType_InternalGetAssemblyQualifiedName)
+	IL_METHOD("InternalGetGUID",
+					"(T)vSystem.Guid;",
+					System_RuntimeType_InternalGetGUID)
+IL_METHOD_END
+
+#ifdef	__cplusplus
+};
+#endif

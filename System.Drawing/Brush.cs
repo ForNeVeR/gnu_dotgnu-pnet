@@ -26,8 +26,8 @@ using System.Drawing.Toolkit;
 public abstract class Brush : MarshalByRefObject, ICloneable, IDisposable
 {
 	// Internal state.
-	private IToolkit toolkit;
-	private IToolkitBrush toolkitBrush;
+	internal IToolkit toolkit;
+	internal IToolkitBrush toolkitBrush;
 
 	// Constructor.
 	internal Brush()

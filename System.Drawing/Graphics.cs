@@ -37,6 +37,10 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	private float pageScale;
 	private GraphicsUnit pageUnit;
 	internal GraphicsContainer stackTop;
+	internal static Graphics defaultGraphics;
+
+	// Default DPI for the screen.
+	internal const float DefaultScreenDpi = 96.0f;
 
 	// Constructor.
 	internal Graphics(IToolkitGraphics graphics)
@@ -162,7 +166,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						}
 						else
 						{
-							return 75.0f;
+							return DefaultScreenDpi;
 						}
 					}
 				}
@@ -179,7 +183,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						}
 						else
 						{
-							return 75.0f;
+							return DefaultScreenDpi;
 						}
 					}
 				}
@@ -1139,39 +1143,56 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Draw a string.
-	[TODO]
 	public void DrawString(String s, Font font, Brush brush, PointF point)
 			{
-				// TODO
+				DrawString(s, font, brush, point.X, point.Y, null);
 			}
-	[TODO]
 	public void DrawString(String s, Font font, Brush brush,
 						   RectangleF layoutRectangle)
 			{
-				// TODO
+				DrawString(s, font, brush, layoutRectangle, null);
 			}
-	[TODO]
 	public void DrawString(String s, Font font, Brush brush,
 						   PointF point, StringFormat format)
 			{
-				// TODO
+				DrawString(s, font, brush, point.X, point.Y, format);
 			}
-	[TODO]
 	public void DrawString(String s, Font font, Brush brush,
 						   RectangleF layoutRectangle, StringFormat format)
 			{
-				// TODO
+				if(s == null || s.Length == 0)
+				{
+					return;
+				}
+				Point[] rect = ConvertRectangle
+					(layoutRectangle.X, layoutRectangle.Y,
+					 layoutRectangle.Width, layoutRectangle.Height);
+				lock(this)
+				{
+					SelectFont(font);
+					SelectBrush(brush);
+					ToolkitGraphics.DrawString(s, rect, format);
+				}
 			}
-	[TODO]
 	public void DrawString(String s, Font font, Brush brush, float x, float y)
 			{
-				// TODO
+				DrawString(s, font, brush, x, y, null);
 			}
-	[TODO]
 	public void DrawString(String s, Font font, Brush brush,
 						   float x, float y, StringFormat format)
 			{
-				// TODO
+				if(s == null || s.Length == 0)
+				{
+					return;
+				}
+				int dx, dy;
+				ConvertPoint(x, y, out dx, out dy);
+				lock(this)
+				{
+					SelectFont(font);
+					SelectBrush(brush);
+					ToolkitGraphics.DrawString(s, dx, dy, format);
+				}
 			}
 
 	// Reset the graphics state back to a previous container level.
@@ -1826,53 +1847,59 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			}
 
 	// Measure the size of a string.
-	[TODO]
 	public SizeF MeasureString(String text, Font font)
 			{
-				// TODO
-				return SizeF.Empty;
+				return MeasureString(text, font, new SizeF(0.0f, 0.0f), null);
 			}
-	[TODO]
 	public SizeF MeasureString(String text, Font font, int width)
 			{
-				// TODO
-				return SizeF.Empty;
+				return MeasureString
+					(text, font, new SizeF(width, 999999.0f), null);
 			}
-	[TODO]
 	public SizeF MeasureString(String text, Font font, SizeF layoutArea)
 			{
-				// TODO
-				return SizeF.Empty;
+				return MeasureString(text, font, layoutArea, null);
 			}
-	[TODO]
 	public SizeF MeasureString(String text, Font font,
 							   int width, StringFormat format)
 			{
-				// TODO
-				return SizeF.Empty;
+				return MeasureString
+					(text, font, new SizeF(width, 999999.0f), format);
 			}
-	[TODO]
 	public SizeF MeasureString(String text, Font font,
 							   PointF origin, StringFormat format)
 			{
-				// TODO
-				return SizeF.Empty;
+				return MeasureString
+					(text, font, new SizeF(0.0f, 0.0f), format);
 			}
-	[TODO]
 	public SizeF MeasureString(String text, Font font,
 							   SizeF layoutArea, StringFormat format)
 			{
-				// TODO
-				return SizeF.Empty;
+				int charactersFitted, linesFilled;
+				return MeasureString(text, font, layoutArea, format,
+									 out charactersFitted, out linesFilled);
 			}
-	[TODO]
 	public SizeF MeasureString(String text, Font font,
 							   SizeF layoutArea, StringFormat format,
 							   out int charactersFitted,
 							   out int linesFilled)
 			{
-				// TODO
-				return SizeF.Empty;
+				if(text == null || text == String.Empty)
+				{
+					charactersFitted = 0;
+					linesFilled = 0;
+					return new SizeF(0.0f, 0.0f);
+				}
+				Point[] rect = ConvertRectangle
+						(0.0f, 0.0f, layoutArea.Width, layoutArea.Height);
+				lock(this)
+				{
+					SelectFont(font);
+					Size size = ToolkitGraphics.MeasureString
+						(text, rect, format,
+						 out charactersFitted, out linesFilled);
+					return new SizeF(ConvertSizeBack(size.Width, size.Height));
+				}
 			}
 
 	// Multiply the transformation matrix by a specific amount.
@@ -2371,8 +2398,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 					case GraphicsUnit.Millimeter:
 					{
-						adjustX = DpiX / 24.5f;
-						adjustY = DpiY / 24.5f;
+						adjustX = DpiX / 25.4f;
+						adjustY = DpiY / 25.4f;
 					}
 					break;
 				}
@@ -2446,8 +2473,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 					case GraphicsUnit.Millimeter:
 					{
-						adjustX = DpiX / 24.5f;
-						adjustY = DpiY / 24.5f;
+						adjustX = DpiX / 25.4f;
+						adjustY = DpiY / 25.4f;
 					}
 					break;
 				}
@@ -2542,8 +2569,91 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				return ConvertPoints(points, 4);
 			}
 
+	// Convert a size value from device co-ordinates to graphics units.
+	private SizeF ConvertSizeBack(int width, int height)
+			{
+				float newX, newY, adjustX, adjustY;
+
+				// Bail out early if the context is using pixel units.
+				if(IsPixelUnits())
+				{
+					return new SizeF((float)width, (float)height);
+				}
+
+				// Apply the page unit to get page co-ordinates.
+				newX = (float)width;
+				newY = (float)height;
+				switch(pageUnit)
+				{
+					case GraphicsUnit.World:
+					case GraphicsUnit.Pixel:
+					default:
+					{
+						adjustX = 1.0f;
+						adjustY = 1.0f;
+					}
+					break;
+
+					case GraphicsUnit.Display:
+					{
+						adjustX = DpiX / 75.0f;
+						adjustY = DpiY / 75.0f;
+					}
+					break;
+
+					case GraphicsUnit.Point:
+					{
+						adjustX = DpiX / 72.0f;
+						adjustY = DpiY / 72.0f;
+					}
+					break;
+
+					case GraphicsUnit.Inch:
+					{
+						adjustX = DpiX;
+						adjustY = DpiY;
+					}
+					break;
+
+					case GraphicsUnit.Document:
+					{
+						adjustX = DpiX / 300.0f;
+						adjustY = DpiY / 300.0f;
+					}
+					break;
+
+					case GraphicsUnit.Millimeter:
+					{
+						adjustX = DpiX / 25.4f;
+						adjustY = DpiY / 25.4f;
+					}
+					break;
+				}
+				newX /= adjustX;
+				newY /= adjustY;
+
+				// Apply the inverse of the page scale factor.
+				if(pageScale != 1.0f)
+				{
+					newX /= pageScale;
+					newY /= pageScale;
+				}
+
+				// Apply the inverse of the world transform.
+				if(transform != null)
+				{
+					transform.TransformSizeBack
+						(newX, newY, out adjustX, out adjustY);
+					return new SizeF(adjustX, adjustY);
+				}
+				else
+				{
+					return new SizeF(newX, newY);
+				}
+			}
+
 	// Get the toolkit graphics object underlying this object.
-	private IToolkitGraphics ToolkitGraphics
+	internal IToolkitGraphics ToolkitGraphics
 			{
 				get
 				{
@@ -2552,6 +2662,24 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						return graphics;
 					}
 					throw new ObjectDisposedException("graphics");
+				}
+			}
+
+	// Get the default graphics object for the current toolkit.
+	internal static Graphics DefaultGraphics
+			{
+				get
+				{
+					lock(typeof(Graphics))
+					{
+						if(defaultGraphics == null)
+						{
+							defaultGraphics = new Graphics
+								(ToolkitManager.Toolkit.GetDefaultGraphics());
+							defaultGraphics.PageUnit = GraphicsUnit.Pixel;
+						}
+						return defaultGraphics;
+					}
 				}
 			}
 
@@ -2566,7 +2694,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					throw new ObjectDisposedException("graphics");
 				}
-				IToolkit toolkit = graphics.Toolkit;
 				IToolkitPen tpen = pen.GetPen(graphics.Toolkit);
 				tpen.Select(graphics);
 			}
@@ -2586,10 +2713,47 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				tbrush.Select(graphics);
 			}
 
+	// Select a font into the toolkit graphics object.
+	private void SelectFont(Font font)
+			{
+				if(font == null)
+				{
+					throw new ArgumentNullException("font");
+				}
+				if(graphics == null)
+				{
+					throw new ObjectDisposedException("graphics");
+				}
+				IToolkitFont tfont = font.GetFont(graphics.Toolkit);
+				tfont.Select(graphics);
+			}
+
 	// Update the clipping region within the IToolkitGraphics object.
 	private void UpdateClip()
 			{
 				// TODO
+			}
+
+	// Determine if this graphics object is using 1-to-1 pixel mappings.
+	internal bool IsPixelUnits()
+			{
+				if((pageUnit == GraphicsUnit.Pixel ||
+				    pageUnit == GraphicsUnit.World) &&
+				   transform == null && pageScale == 1.0f)
+				{
+					return true;
+				}
+				return false;
+			}
+
+	// Get the line spacing of a font, in pixels.
+	internal int GetLineSpacing(Font font)
+			{
+				lock(this)
+				{
+					SelectFont(font);
+					return ToolkitGraphics.GetLineSpacing();
+				}
 			}
 
 }; // class Graphics

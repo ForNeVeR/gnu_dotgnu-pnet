@@ -56,6 +56,15 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 				this.dx  = dx;
 				this.dy  = dy;
 			}
+	internal Matrix(Matrix matrix)
+			{
+				this.m11 = matrix.m11;
+				this.m12 = matrix.m12;
+				this.m21 = matrix.m21;
+				this.m22 = matrix.m22;
+				this.dx  = matrix.dx;
+				this.dy  = matrix.dy;
+			}
 
 	// Destructor.
 	~Matrix()
@@ -501,6 +510,35 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 			{
 				ox = x * m11 + y * m21 + dx;
 				oy = x * m12 + y * m22 + dy;
+			}
+
+	// Transform a size value according to the inverse transformation.
+	internal void TransformSizeBack(float width, float height,
+									out float owidth, out float oheight)
+			{
+				float m11, m12, m21, m22;
+				float determinant;
+
+				// Compute the determinant and check it.
+				determinant = this.m11 * this.m22 - this.m21 * this.m11;
+				if(determinant != 0.0f)
+				{
+					// Get the answer into temporary variables.
+					// We ignore dx and dy because we don't need them.
+					m11 = this.m22 / determinant;
+					m12 = -(this.m12 / determinant);
+					m21 = -(this.m21 / determinant);
+					m22 = this.m11 / determinant;
+
+					// Compute the final values.
+					owidth  = width * m11 + height * m21;
+					oheight = width * m12 + height * m22;
+				}
+				else
+				{
+					owidth = width;
+					oheight = height;
+				}
 			}
 
 }; // class Matrix

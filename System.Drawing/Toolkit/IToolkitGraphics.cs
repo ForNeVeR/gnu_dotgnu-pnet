@@ -79,6 +79,18 @@ public interface IToolkitGraphics : IDisposable
 	void DrawCurve(Point[] points, int offset,
 				   int numberOfSegments, float tension);
 
+	// Draw a string using the current font and brush.
+	void DrawString(String s, int x, int y, StringFormat format);
+
+	// Draw a string using the current font and brush within a
+	// layout rectangle that is defined by four points.
+	void DrawString(String s, Point[] layoutRectangle, StringFormat format);
+
+	// Measure a string using the current font and a given layout rectangle.
+	Size MeasureString(String s, Point[] layoutRectangle,
+					   StringFormat format, out int charactersFitted,
+					   out int linesFilled);
+
 	// Flush the graphics subsystem
 	void Flush(FlushIntention intention);
 
@@ -108,6 +120,9 @@ public interface IToolkitGraphics : IDisposable
 
 	// Set the clipping region to a complex mask.  TODO
 	void SetClipMask(Object mask, int topx, int topy);
+
+	// Get the line spacing for the font selected into this graphics object.
+	int GetLineSpacing();
 
 }; // interface IToolkitGraphics
 

@@ -1,4 +1,27 @@
 
+2003-06-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/Brush.cs, System.Drawing/Brushes.cs,
+	System.Drawing/ColorConverter.cs, System.Drawing/Font.cs,
+	System.Drawing/FontFamily.cs, System.Drawing/Graphics.cs,
+	System.Drawing/Pens.cs, System.Drawing/PointConverter.cs,
+	System.Drawing/RectangleConverter.cs, System.Drawing/SizeConverter.cs,
+	System.Drawing/StringFormat.cs, System.Drawing/SystemBrushes.cs,
+	System.Drawing/SystemPens.cs, System.Drawing/TextureBrush.cs,
+	System.Drawing/ToolboxBitmapAttribute.cs,
+	System.Drawing/Drawing2D/Matrix.cs,
+	System.Drawing/Printing/PrinterUnitConvert.cs,
+	System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/IToolkitFont.cs,
+	System.Drawing/Toolkit/IToolkitGraphics.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs,
+	System.Drawing.Xsharp/DrawingFont.cs,
+	System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing.Xsharp/DrawingTextureBrush.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs,
+	Xsharp/FontStyle.cs, Xsharp/XsharpSupport.c: font management;
+	texture brushes; some type converters; system brushes and pens.
+
 2003-06-08  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Xml/Xsl/IXsltContextFunction.cs, System.Xml/Xsl/XslTransform.cs,

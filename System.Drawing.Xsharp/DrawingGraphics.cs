@@ -31,12 +31,14 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 {
 	// Internal state.
 	internal Xsharp.Graphics graphics;
+	internal Xsharp.Font font;
 
 	// Constructor.
 	public DrawingGraphics(IToolkit toolkit, Xsharp.Graphics graphics)
 			: base(toolkit)
 			{
 				this.graphics = graphics;
+				this.font = null;
 			}
 
 	// Dispose of this object.
@@ -152,6 +154,27 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 								 startAngle, sweepAngle);
 			}
 
+	// Draw a string using the current font and brush.
+	public override void DrawString
+				(String s, int x, int y, StringFormat format)
+			{
+				FontExtents extents = graphics.GetFontExtents(font);
+				graphics.DrawString(x, y + extents.Ascent - 1, s, font);
+			}
+
+	// Measure a string using the current font and a given layout rectangle.
+	public override Size MeasureString
+				(String s, System.Drawing.Point[] layoutRectangle,
+				 StringFormat format, out int charactersFitted,
+				 out int linesFilled)
+			{
+				// TODO: line wrapping, etc
+				int width, ascent, descent;
+				graphics.MeasureString
+					(s, font, out width, out ascent, out descent);
+				return new Size(width, ascent + descent);
+			}
+
 	// Flush the graphics subsystem
 	public override void Flush(FlushIntention intention)
 			{
@@ -206,6 +229,13 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 	public override void SetClipMask(Object mask, int topx, int topy)
 			{
 				// TODO
+			}
+
+	// Get the line spacing for the font selected into this graphics object.
+	public override int GetLineSpacing()
+			{
+				FontExtents extents = graphics.GetFontExtents(font);
+				return extents.Ascent + extents.Descent;
 			}
 
 }; // class DrawingGraphics

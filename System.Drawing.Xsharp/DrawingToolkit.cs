@@ -25,6 +25,8 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
+using System.Drawing.Text;
+using System.Drawing.Imaging;
 using Xsharp;
 
 public sealed class DrawingToolkit : IToolkit
@@ -108,6 +110,14 @@ public sealed class DrawingToolkit : IToolkit
 				return null;
 			}
 
+	// Create a texture brush.
+	public IToolkitBrush CreateTextureBrush
+				(TextureBrush properties, RectangleF dstRect,
+				 ImageAttributes imageAttr)
+			{
+				return new DrawingTextureBrush(properties, dstRect, imageAttr);
+			}
+
 	// Create a toolkit pen from the properties in the specified object.
 	// If the toolkit does not support the precise combination of pen
 	// properties, it will return the closest matching pen.
@@ -119,8 +129,7 @@ public sealed class DrawingToolkit : IToolkit
 	// Create a toolkit font from the properties in the specified object.
 	public IToolkitFont CreateFont(System.Drawing.Font font)
 			{
-				// TODO
-				return null;
+				return new DrawingFont(font);
 			}
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
@@ -198,6 +207,90 @@ public sealed class DrawingToolkit : IToolkit
 				int argb = color.ToArgb();
 				return new Xsharp.Color((argb >> 16) & 0xFF,
 										(argb >> 8) & 0xFF, argb & 0xFF);
+			}
+
+	// Get a list of all font families on this system, or all font
+	// families that are compatible with a particular IToolkitGraphics.
+	public FontFamily[] GetFontFamilies(IToolkitGraphics graphics)
+			{
+				// We only support three font families.  Extend later.
+				return new FontFamily [] {
+					new FontFamily("Arial"),
+					new FontFamily("Times New Roman"),
+					new FontFamily("Courier New"),
+				};
+			}
+
+	// Get font family metric information.
+	public void GetFontFamilyMetrics(GenericFontFamilies genericFamily,
+							  		 String name,
+									 System.Drawing.FontStyle style,
+							  		 out int ascent, out int descent,
+							  		 out int emHeight, out int lineSpacing)
+			{
+				// X doesn't have family metric information, so return
+				// dummy information based on the generic font family.
+				switch(genericFamily)
+				{
+					case GenericFontFamilies.SansSerif:
+					default:
+					{
+						// Metrics for "Arial".
+						ascent = 1854;
+						descent = 434;
+						emHeight = 2048;
+						lineSpacing = 2355;
+					}
+					break;
+
+					case GenericFontFamilies.Serif:
+					{
+						// Metrics for "Times New Roman".
+						ascent = 1825;
+						descent = 443;
+						emHeight = 2048;
+						lineSpacing = 2355;
+					}
+					break;
+
+					case GenericFontFamilies.Monospace:
+					{
+						// Metrics for "Courier New".
+						ascent = 1705;
+						descent = 615;
+						emHeight = 2048;
+						lineSpacing = 2320;
+					}
+					break;
+				}
+			}
+
+	// Get the IToolkitFont that corresponds to a hdc's current font.
+	// Returns null if there is no way to obtain the information.
+	public IToolkitFont GetFontFromHdc(IntPtr hdc)
+			{
+				return null;
+			}
+
+	// Get the IToolkitFont that corresponds to a native font object.
+	// Returns null if there is no way to obtain the information.
+	public IToolkitFont GetFontFromHfont(IntPtr hfont)
+			{
+				return null;
+			}
+
+	// Get the IToolkitFont that corresponds to LOGFONT information.
+	// Returns null if there is no way to obtain the information.
+	public IToolkitFont GetFontFromLogFont(Object lf, IntPtr hdc)
+			{
+				return null;
+			}
+
+	// Get the default IToolkitGraphics object to measure screen sizes.
+	public IToolkitGraphics GetDefaultGraphics()
+			{
+				return new DrawingGraphics
+					(this, new Xsharp.Graphics(placeholder));
 			}
 
 }; // class DrawingToolkit

@@ -22,6 +22,8 @@ namespace System.Drawing.Toolkit
 {
 
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
 
 public interface IToolkit
 {
@@ -58,6 +60,11 @@ public interface IToolkit
 			(RectangleF rect, Color color1, Color color2,
 			 float angle, bool isAngleScaleable);
 
+	// Create a texture brush.
+	IToolkitBrush CreateTextureBrush
+				(TextureBrush properties, RectangleF dstRect,
+				 ImageAttributes imageAttr);
+
 	// Create a toolkit pen from the properties in the specified object.
 	// If the toolkit does not support the precise combination of pen
 	// properties, it will return the closest matching pen.
@@ -84,6 +91,31 @@ public interface IToolkit
 	// does not yet have a "real" parent - it will be reparented later.
 	IToolkitWindow CreateChildWindow(IToolkitWindow parent,
 									 int x, int y, int width, int height);
+
+	// Get a list of all font families on this system, or all font
+	// families that are compatible with a particular IToolkitGraphics.
+	FontFamily[] GetFontFamilies(IToolkitGraphics graphics);
+
+	// Get font family metric information.
+	void GetFontFamilyMetrics(GenericFontFamilies genericFamily,
+							  String name, FontStyle style,
+							  out int ascent, out int descent,
+							  out int emHeight, out int lineSpacing);
+
+	// Get the IToolkitFont that corresponds to a hdc's current font.
+	// Returns null if there is no way to obtain the information.
+	IToolkitFont GetFontFromHdc(IntPtr hdc);
+
+	// Get the IToolkitFont that corresponds to a native font object.
+	// Returns null if there is no way to obtain the information.
+	IToolkitFont GetFontFromHfont(IntPtr hfont);
+
+	// Get the IToolkitFont that corresponds to LOGFONT information.
+	// Returns null if there is no way to obtain the information.
+	IToolkitFont GetFontFromLogFont(Object lf, IntPtr hdc);
+
+	// Get the default IToolkitGraphics object to measure screen sizes.
+	IToolkitGraphics GetDefaultGraphics();
 
 }; // interface IToolkit
 

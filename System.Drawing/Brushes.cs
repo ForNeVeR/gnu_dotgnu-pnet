@@ -23,995 +23,1019 @@ namespace System.Drawing
 
 public sealed class Brushes
 {
-	// Cannot instantiate this class.
+	// Internal state.
+	private static Brush[] standardBrushes;
+
+	// This class cannot be instantiated.
 	private Brushes() {}
+
+	// Get or create a standard brush.
+	private static Brush GetOrCreateBrush(KnownColor color)
+			{
+				lock(typeof(Brushes))
+				{
+					if(standardBrushes == null)
+					{
+						standardBrushes = new Brush
+							[((int)(KnownColor.YellowGreen)) -
+							 ((int)(KnownColor.Transparent)) + 1];
+					}
+					int index = ((int)color) - ((int)(KnownColor.Transparent));
+					if(standardBrushes[index] == null)
+					{
+						standardBrushes[index]
+							= new SolidBrush(new Color(color));
+					}
+					return standardBrushes[index];
+				}
+			}
 
 	// Standard brush objects.
 	public static Brush Transparent
 			{
 				get
 				{
-					return new SolidBrush(Color.Transparent);
+					return GetOrCreateBrush(KnownColor.Transparent);
 				}
 			}
 	public static Brush AliceBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.AliceBlue);
+					return GetOrCreateBrush(KnownColor.AliceBlue);
 				}
 			}
 	public static Brush AntiqueWhite
 			{
 				get
 				{
-					return new SolidBrush(Color.AntiqueWhite);
+					return GetOrCreateBrush(KnownColor.AntiqueWhite);
 				}
 			}
 	public static Brush Aqua
 			{
 				get
 				{
-					return new SolidBrush(Color.Aqua);
+					return GetOrCreateBrush(KnownColor.Aqua);
 				}
 			}
 	public static Brush Aquamarine
 			{
 				get
 				{
-					return new SolidBrush(Color.Aquamarine);
+					return GetOrCreateBrush(KnownColor.Aquamarine);
 				}
 			}
 	public static Brush Azure
 			{
 				get
 				{
-					return new SolidBrush(Color.Azure);
+					return GetOrCreateBrush(KnownColor.Azure);
 				}
 			}
 	public static Brush Beige
 			{
 				get
 				{
-					return new SolidBrush(Color.Beige);
+					return GetOrCreateBrush(KnownColor.Beige);
 				}
 			}
 	public static Brush Bisque
 			{
 				get
 				{
-					return new SolidBrush(Color.Bisque);
+					return GetOrCreateBrush(KnownColor.Bisque);
 				}
 			}
 	public static Brush Black
 			{
 				get
 				{
-					return new SolidBrush(Color.Black);
+					return GetOrCreateBrush(KnownColor.Black);
 				}
 			}
 	public static Brush BlanchedAlmond
 			{
 				get
 				{
-					return new SolidBrush(Color.BlanchedAlmond);
+					return GetOrCreateBrush(KnownColor.BlanchedAlmond);
 				}
 			}
 	public static Brush Blue
 			{
 				get
 				{
-					return new SolidBrush(Color.Blue);
+					return GetOrCreateBrush(KnownColor.Blue);
 				}
 			}
 	public static Brush BlueViolet
 			{
 				get
 				{
-					return new SolidBrush(Color.BlueViolet);
+					return GetOrCreateBrush(KnownColor.BlueViolet);
 				}
 			}
 	public static Brush Brown
 			{
 				get
 				{
-					return new SolidBrush(Color.Brown);
+					return GetOrCreateBrush(KnownColor.Brown);
 				}
 			}
 	public static Brush BurlyWood
 			{
 				get
 				{
-					return new SolidBrush(Color.BurlyWood);
+					return GetOrCreateBrush(KnownColor.BurlyWood);
 				}
 			}
 	public static Brush CadetBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.CadetBlue);
+					return GetOrCreateBrush(KnownColor.CadetBlue);
 				}
 			}
 	public static Brush Chartreuse
 			{
 				get
 				{
-					return new SolidBrush(Color.Chartreuse);
+					return GetOrCreateBrush(KnownColor.Chartreuse);
 				}
 			}
 	public static Brush Chocolate
 			{
 				get
 				{
-					return new SolidBrush(Color.Chocolate);
+					return GetOrCreateBrush(KnownColor.Chocolate);
 				}
 			}
 	public static Brush Coral
 			{
 				get
 				{
-					return new SolidBrush(Color.Coral);
+					return GetOrCreateBrush(KnownColor.Coral);
 				}
 			}
 	public static Brush CornflowerBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.CornflowerBlue);
+					return GetOrCreateBrush(KnownColor.CornflowerBlue);
 				}
 			}
 	public static Brush Cornsilk
 			{
 				get
 				{
-					return new SolidBrush(Color.Cornsilk);
+					return GetOrCreateBrush(KnownColor.Cornsilk);
 				}
 			}
 	public static Brush Crimson
 			{
 				get
 				{
-					return new SolidBrush(Color.Crimson);
+					return GetOrCreateBrush(KnownColor.Crimson);
 				}
 			}
 	public static Brush Cyan
 			{
 				get
 				{
-					return new SolidBrush(Color.Cyan);
+					return GetOrCreateBrush(KnownColor.Cyan);
 				}
 			}
 	public static Brush DarkBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkBlue);
+					return GetOrCreateBrush(KnownColor.DarkBlue);
 				}
 			}
 	public static Brush DarkCyan
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkCyan);
+					return GetOrCreateBrush(KnownColor.DarkCyan);
 				}
 			}
 	public static Brush DarkGoldenrod
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkGoldenrod);
+					return GetOrCreateBrush(KnownColor.DarkGoldenrod);
 				}
 			}
 	public static Brush DarkGray
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkGray);
+					return GetOrCreateBrush(KnownColor.DarkGray);
 				}
 			}
 	public static Brush DarkGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkGreen);
+					return GetOrCreateBrush(KnownColor.DarkGreen);
 				}
 			}
 	public static Brush DarkKhaki
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkKhaki);
+					return GetOrCreateBrush(KnownColor.DarkKhaki);
 				}
 			}
 	public static Brush DarkMagenta
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkMagenta);
+					return GetOrCreateBrush(KnownColor.DarkMagenta);
 				}
 			}
 	public static Brush DarkOliveGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkOliveGreen);
+					return GetOrCreateBrush(KnownColor.DarkOliveGreen);
 				}
 			}
 	public static Brush DarkOrange
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkOrange);
+					return GetOrCreateBrush(KnownColor.DarkOrange);
 				}
 			}
 	public static Brush DarkOrchid
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkOrchid);
+					return GetOrCreateBrush(KnownColor.DarkOrchid);
 				}
 			}
 	public static Brush DarkRed
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkRed);
+					return GetOrCreateBrush(KnownColor.DarkRed);
 				}
 			}
 	public static Brush DarkSalmon
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkSalmon);
+					return GetOrCreateBrush(KnownColor.DarkSalmon);
 				}
 			}
 	public static Brush DarkSeaGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkSeaGreen);
+					return GetOrCreateBrush(KnownColor.DarkSeaGreen);
 				}
 			}
 	public static Brush DarkSlateBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkSlateBlue);
+					return GetOrCreateBrush(KnownColor.DarkSlateBlue);
 				}
 			}
 	public static Brush DarkSlateGray
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkSlateGray);
+					return GetOrCreateBrush(KnownColor.DarkSlateGray);
 				}
 			}
 	public static Brush DarkTurquoise
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkTurquoise);
+					return GetOrCreateBrush(KnownColor.DarkTurquoise);
 				}
 			}
 	public static Brush DarkViolet
 			{
 				get
 				{
-					return new SolidBrush(Color.DarkViolet);
+					return GetOrCreateBrush(KnownColor.DarkViolet);
 				}
 			}
 	public static Brush DeepPink
 			{
 				get
 				{
-					return new SolidBrush(Color.DeepPink);
+					return GetOrCreateBrush(KnownColor.DeepPink);
 				}
 			}
 	public static Brush DeepSkyBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.DeepSkyBlue);
+					return GetOrCreateBrush(KnownColor.DeepSkyBlue);
 				}
 			}
 	public static Brush DimGray
 			{
 				get
 				{
-					return new SolidBrush(Color.DimGray);
+					return GetOrCreateBrush(KnownColor.DimGray);
 				}
 			}
 	public static Brush DodgerBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.DodgerBlue);
+					return GetOrCreateBrush(KnownColor.DodgerBlue);
 				}
 			}
 	public static Brush Firebrick
 			{
 				get
 				{
-					return new SolidBrush(Color.Firebrick);
+					return GetOrCreateBrush(KnownColor.Firebrick);
 				}
 			}
 	public static Brush FloralWhite
 			{
 				get
 				{
-					return new SolidBrush(Color.FloralWhite);
+					return GetOrCreateBrush(KnownColor.FloralWhite);
 				}
 			}
 	public static Brush ForestGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.ForestGreen);
+					return GetOrCreateBrush(KnownColor.ForestGreen);
 				}
 			}
 	public static Brush Fuchsia
 			{
 				get
 				{
-					return new SolidBrush(Color.Fuchsia);
+					return GetOrCreateBrush(KnownColor.Fuchsia);
 				}
 			}
 	public static Brush Gainsboro
 			{
 				get
 				{
-					return new SolidBrush(Color.Gainsboro);
+					return GetOrCreateBrush(KnownColor.Gainsboro);
 				}
 			}
 	public static Brush GhostWhite
 			{
 				get
 				{
-					return new SolidBrush(Color.GhostWhite);
+					return GetOrCreateBrush(KnownColor.GhostWhite);
 				}
 			}
 	public static Brush Gold
 			{
 				get
 				{
-					return new SolidBrush(Color.Gold);
+					return GetOrCreateBrush(KnownColor.Gold);
 				}
 			}
 	public static Brush Goldenrod
 			{
 				get
 				{
-					return new SolidBrush(Color.Goldenrod);
+					return GetOrCreateBrush(KnownColor.Goldenrod);
 				}
 			}
 	public static Brush Gray
 			{
 				get
 				{
-					return new SolidBrush(Color.Gray);
+					return GetOrCreateBrush(KnownColor.Gray);
 				}
 			}
 	public static Brush Green
 			{
 				get
 				{
-					return new SolidBrush(Color.Green);
+					return GetOrCreateBrush(KnownColor.Green);
 				}
 			}
 	public static Brush GreenYellow
 			{
 				get
 				{
-					return new SolidBrush(Color.GreenYellow);
+					return GetOrCreateBrush(KnownColor.GreenYellow);
 				}
 			}
 	public static Brush Honeydew
 			{
 				get
 				{
-					return new SolidBrush(Color.Honeydew);
+					return GetOrCreateBrush(KnownColor.Honeydew);
 				}
 			}
 	public static Brush HotPink
 			{
 				get
 				{
-					return new SolidBrush(Color.HotPink);
+					return GetOrCreateBrush(KnownColor.HotPink);
 				}
 			}
 	public static Brush IndianRed
 			{
 				get
 				{
-					return new SolidBrush(Color.IndianRed);
+					return GetOrCreateBrush(KnownColor.IndianRed);
 				}
 			}
 	public static Brush Indigo
 			{
 				get
 				{
-					return new SolidBrush(Color.Indigo);
+					return GetOrCreateBrush(KnownColor.Indigo);
 				}
 			}
 	public static Brush Ivory
 			{
 				get
 				{
-					return new SolidBrush(Color.Ivory);
+					return GetOrCreateBrush(KnownColor.Ivory);
 				}
 			}
 	public static Brush Khaki
 			{
 				get
 				{
-					return new SolidBrush(Color.Khaki);
+					return GetOrCreateBrush(KnownColor.Khaki);
 				}
 			}
 	public static Brush Lavender
 			{
 				get
 				{
-					return new SolidBrush(Color.Lavender);
+					return GetOrCreateBrush(KnownColor.Lavender);
 				}
 			}
 	public static Brush LavenderBlush
 			{
 				get
 				{
-					return new SolidBrush(Color.LavenderBlush);
+					return GetOrCreateBrush(KnownColor.LavenderBlush);
 				}
 			}
 	public static Brush LawnGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.LawnGreen);
+					return GetOrCreateBrush(KnownColor.LawnGreen);
 				}
 			}
 	public static Brush LemonChiffon
 			{
 				get
 				{
-					return new SolidBrush(Color.LemonChiffon);
+					return GetOrCreateBrush(KnownColor.LemonChiffon);
 				}
 			}
 	public static Brush LightBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.LightBlue);
+					return GetOrCreateBrush(KnownColor.LightBlue);
 				}
 			}
 	public static Brush LightCoral
 			{
 				get
 				{
-					return new SolidBrush(Color.LightCoral);
+					return GetOrCreateBrush(KnownColor.LightCoral);
 				}
 			}
 	public static Brush LightCyan
 			{
 				get
 				{
-					return new SolidBrush(Color.LightCyan);
+					return GetOrCreateBrush(KnownColor.LightCyan);
 				}
 			}
 	public static Brush LightGoldenrodYellow
 			{
 				get
 				{
-					return new SolidBrush(Color.LightGoldenrodYellow);
+					return GetOrCreateBrush(KnownColor.LightGoldenrodYellow);
 				}
 			}
 	public static Brush LightGray
 			{
 				get
 				{
-					return new SolidBrush(Color.LightGray);
+					return GetOrCreateBrush(KnownColor.LightGray);
 				}
 			}
 	public static Brush LightGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.LightGreen);
+					return GetOrCreateBrush(KnownColor.LightGreen);
 				}
 			}
 	public static Brush LightPink
 			{
 				get
 				{
-					return new SolidBrush(Color.LightPink);
+					return GetOrCreateBrush(KnownColor.LightPink);
 				}
 			}
 	public static Brush LightSalmon
 			{
 				get
 				{
-					return new SolidBrush(Color.LightSalmon);
+					return GetOrCreateBrush(KnownColor.LightSalmon);
 				}
 			}
 	public static Brush LightSeaGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.LightSeaGreen);
+					return GetOrCreateBrush(KnownColor.LightSeaGreen);
 				}
 			}
 	public static Brush LightSkyBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.LightSkyBlue);
+					return GetOrCreateBrush(KnownColor.LightSkyBlue);
 				}
 			}
 	public static Brush LightSlateGray
 			{
 				get
 				{
-					return new SolidBrush(Color.LightSlateGray);
+					return GetOrCreateBrush(KnownColor.LightSlateGray);
 				}
 			}
 	public static Brush LightSteelBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.LightSteelBlue);
+					return GetOrCreateBrush(KnownColor.LightSteelBlue);
 				}
 			}
 	public static Brush LightYellow
 			{
 				get
 				{
-					return new SolidBrush(Color.LightYellow);
+					return GetOrCreateBrush(KnownColor.LightYellow);
 				}
 			}
 	public static Brush Lime
 			{
 				get
 				{
-					return new SolidBrush(Color.Lime);
+					return GetOrCreateBrush(KnownColor.Lime);
 				}
 			}
 	public static Brush LimeGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.LimeGreen);
+					return GetOrCreateBrush(KnownColor.LimeGreen);
 				}
 			}
 	public static Brush Linen
 			{
 				get
 				{
-					return new SolidBrush(Color.Linen);
+					return GetOrCreateBrush(KnownColor.Linen);
 				}
 			}
 	public static Brush Magenta
 			{
 				get
 				{
-					return new SolidBrush(Color.Magenta);
+					return GetOrCreateBrush(KnownColor.Magenta);
 				}
 			}
 	public static Brush Maroon
 			{
 				get
 				{
-					return new SolidBrush(Color.Maroon);
+					return GetOrCreateBrush(KnownColor.Maroon);
 				}
 			}
 	public static Brush MediumAquamarine
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumAquamarine);
+					return GetOrCreateBrush(KnownColor.MediumAquamarine);
 				}
 			}
 	public static Brush MediumBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumBlue);
+					return GetOrCreateBrush(KnownColor.MediumBlue);
 				}
 			}
 	public static Brush MediumOrchid
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumOrchid);
+					return GetOrCreateBrush(KnownColor.MediumOrchid);
 				}
 			}
 	public static Brush MediumPurple
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumPurple);
+					return GetOrCreateBrush(KnownColor.MediumPurple);
 				}
 			}
 	public static Brush MediumSeaGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumSeaGreen);
+					return GetOrCreateBrush(KnownColor.MediumSeaGreen);
 				}
 			}
 	public static Brush MediumSlateBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumSlateBlue);
+					return GetOrCreateBrush(KnownColor.MediumSlateBlue);
 				}
 			}
 	public static Brush MediumSpringGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumSpringGreen);
+					return GetOrCreateBrush(KnownColor.MediumSpringGreen);
 				}
 			}
 	public static Brush MediumTurquoise
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumTurquoise);
+					return GetOrCreateBrush(KnownColor.MediumTurquoise);
 				}
 			}
 	public static Brush MediumVioletRed
 			{
 				get
 				{
-					return new SolidBrush(Color.MediumVioletRed);
+					return GetOrCreateBrush(KnownColor.MediumVioletRed);
 				}
 			}
 	public static Brush MidnightBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.MidnightBlue);
+					return GetOrCreateBrush(KnownColor.MidnightBlue);
 				}
 			}
 	public static Brush MintCream
 			{
 				get
 				{
-					return new SolidBrush(Color.MintCream);
+					return GetOrCreateBrush(KnownColor.MintCream);
 				}
 			}
 	public static Brush MistyRose
 			{
 				get
 				{
-					return new SolidBrush(Color.MistyRose);
+					return GetOrCreateBrush(KnownColor.MistyRose);
 				}
 			}
 	public static Brush Moccasin
 			{
 				get
 				{
-					return new SolidBrush(Color.Moccasin);
+					return GetOrCreateBrush(KnownColor.Moccasin);
 				}
 			}
 	public static Brush NavajoWhite
 			{
 				get
 				{
-					return new SolidBrush(Color.NavajoWhite);
+					return GetOrCreateBrush(KnownColor.NavajoWhite);
 				}
 			}
 	public static Brush Navy
 			{
 				get
 				{
-					return new SolidBrush(Color.Navy);
+					return GetOrCreateBrush(KnownColor.Navy);
 				}
 			}
 	public static Brush OldLace
 			{
 				get
 				{
-					return new SolidBrush(Color.OldLace);
+					return GetOrCreateBrush(KnownColor.OldLace);
 				}
 			}
 	public static Brush Olive
 			{
 				get
 				{
-					return new SolidBrush(Color.Olive);
+					return GetOrCreateBrush(KnownColor.Olive);
 				}
 			}
 	public static Brush OliveDrab
 			{
 				get
 				{
-					return new SolidBrush(Color.OliveDrab);
+					return GetOrCreateBrush(KnownColor.OliveDrab);
 				}
 			}
 	public static Brush Orange
 			{
 				get
 				{
-					return new SolidBrush(Color.Orange);
+					return GetOrCreateBrush(KnownColor.Orange);
 				}
 			}
 	public static Brush OrangeRed
 			{
 				get
 				{
-					return new SolidBrush(Color.OrangeRed);
+					return GetOrCreateBrush(KnownColor.OrangeRed);
 				}
 			}
 	public static Brush Orchid
 			{
 				get
 				{
-					return new SolidBrush(Color.Orchid);
+					return GetOrCreateBrush(KnownColor.Orchid);
 				}
 			}
 	public static Brush PaleGoldenrod
 			{
 				get
 				{
-					return new SolidBrush(Color.PaleGoldenrod);
+					return GetOrCreateBrush(KnownColor.PaleGoldenrod);
 				}
 			}
 	public static Brush PaleGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.PaleGreen);
+					return GetOrCreateBrush(KnownColor.PaleGreen);
 				}
 			}
 	public static Brush PaleTurquoise
 			{
 				get
 				{
-					return new SolidBrush(Color.PaleTurquoise);
+					return GetOrCreateBrush(KnownColor.PaleTurquoise);
 				}
 			}
 	public static Brush PaleVioletRed
 			{
 				get
 				{
-					return new SolidBrush(Color.PaleVioletRed);
+					return GetOrCreateBrush(KnownColor.PaleVioletRed);
 				}
 			}
 	public static Brush PapayaWhip
 			{
 				get
 				{
-					return new SolidBrush(Color.PapayaWhip);
+					return GetOrCreateBrush(KnownColor.PapayaWhip);
 				}
 			}
 	public static Brush PeachPuff
 			{
 				get
 				{
-					return new SolidBrush(Color.PeachPuff);
+					return GetOrCreateBrush(KnownColor.PeachPuff);
 				}
 			}
 	public static Brush Peru
 			{
 				get
 				{
-					return new SolidBrush(Color.Peru);
+					return GetOrCreateBrush(KnownColor.Peru);
 				}
 			}
 	public static Brush Pink
 			{
 				get
 				{
-					return new SolidBrush(Color.Pink);
+					return GetOrCreateBrush(KnownColor.Pink);
 				}
 			}
 	public static Brush Plum
 			{
 				get
 				{
-					return new SolidBrush(Color.Plum);
+					return GetOrCreateBrush(KnownColor.Plum);
 				}
 			}
 	public static Brush PowderBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.PowderBlue);
+					return GetOrCreateBrush(KnownColor.PowderBlue);
 				}
 			}
 	public static Brush Purple
 			{
 				get
 				{
-					return new SolidBrush(Color.Purple);
+					return GetOrCreateBrush(KnownColor.Purple);
 				}
 			}
 	public static Brush Red
 			{
 				get
 				{
-					return new SolidBrush(Color.Red);
+					return GetOrCreateBrush(KnownColor.Red);
 				}
 			}
 	public static Brush RosyBrown
 			{
 				get
 				{
-					return new SolidBrush(Color.RosyBrown);
+					return GetOrCreateBrush(KnownColor.RosyBrown);
 				}
 			}
 	public static Brush RoyalBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.RoyalBlue);
+					return GetOrCreateBrush(KnownColor.RoyalBlue);
 				}
 			}
 	public static Brush SaddleBrown
 			{
 				get
 				{
-					return new SolidBrush(Color.SaddleBrown);
+					return GetOrCreateBrush(KnownColor.SaddleBrown);
 				}
 			}
 	public static Brush Salmon
 			{
 				get
 				{
-					return new SolidBrush(Color.Salmon);
+					return GetOrCreateBrush(KnownColor.Salmon);
 				}
 			}
 	public static Brush SandyBrown
 			{
 				get
 				{
-					return new SolidBrush(Color.SandyBrown);
+					return GetOrCreateBrush(KnownColor.SandyBrown);
 				}
 			}
 	public static Brush SeaGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.SeaGreen);
+					return GetOrCreateBrush(KnownColor.SeaGreen);
 				}
 			}
 	public static Brush SeaShell
 			{
 				get
 				{
-					return new SolidBrush(Color.SeaShell);
+					return GetOrCreateBrush(KnownColor.SeaShell);
 				}
 			}
 	public static Brush Sienna
 			{
 				get
 				{
-					return new SolidBrush(Color.Sienna);
+					return GetOrCreateBrush(KnownColor.Sienna);
 				}
 			}
 	public static Brush Silver
 			{
 				get
 				{
-					return new SolidBrush(Color.Silver);
+					return GetOrCreateBrush(KnownColor.Silver);
 				}
 			}
 	public static Brush SkyBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.SkyBlue);
+					return GetOrCreateBrush(KnownColor.SkyBlue);
 				}
 			}
 	public static Brush SlateBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.SlateBlue);
+					return GetOrCreateBrush(KnownColor.SlateBlue);
 				}
 			}
 	public static Brush SlateGray
 			{
 				get
 				{
-					return new SolidBrush(Color.SlateGray);
+					return GetOrCreateBrush(KnownColor.SlateGray);
 				}
 			}
 	public static Brush Snow
 			{
 				get
 				{
-					return new SolidBrush(Color.Snow);
+					return GetOrCreateBrush(KnownColor.Snow);
 				}
 			}
 	public static Brush SpringGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.SpringGreen);
+					return GetOrCreateBrush(KnownColor.SpringGreen);
 				}
 			}
 	public static Brush SteelBlue
 			{
 				get
 				{
-					return new SolidBrush(Color.SteelBlue);
+					return GetOrCreateBrush(KnownColor.SteelBlue);
 				}
 			}
 	public static Brush Tan
 			{
 				get
 				{
-					return new SolidBrush(Color.Tan);
+					return GetOrCreateBrush(KnownColor.Tan);
 				}
 			}
 	public static Brush Teal
 			{
 				get
 				{
-					return new SolidBrush(Color.Teal);
+					return GetOrCreateBrush(KnownColor.Teal);
 				}
 			}
 	public static Brush Thistle
 			{
 				get
 				{
-					return new SolidBrush(Color.Thistle);
+					return GetOrCreateBrush(KnownColor.Thistle);
 				}
 			}
 	public static Brush Tomato
 			{
 				get
 				{
-					return new SolidBrush(Color.Tomato);
+					return GetOrCreateBrush(KnownColor.Tomato);
 				}
 			}
 	public static Brush Turquoise
 			{
 				get
 				{
-					return new SolidBrush(Color.Turquoise);
+					return GetOrCreateBrush(KnownColor.Turquoise);
 				}
 			}
 	public static Brush Violet
 			{
 				get
 				{
-					return new SolidBrush(Color.Violet);
+					return GetOrCreateBrush(KnownColor.Violet);
 				}
 			}
 	public static Brush Wheat
 			{
 				get
 				{
-					return new SolidBrush(Color.Wheat);
+					return GetOrCreateBrush(KnownColor.Wheat);
 				}
 			}
 	public static Brush White
 			{
 				get
 				{
-					return new SolidBrush(Color.White);
+					return GetOrCreateBrush(KnownColor.White);
 				}
 			}
 	public static Brush WhiteSmoke
 			{
 				get
 				{
-					return new SolidBrush(Color.WhiteSmoke);
+					return GetOrCreateBrush(KnownColor.WhiteSmoke);
 				}
 			}
 	public static Brush Yellow
 			{
 				get
 				{
-					return new SolidBrush(Color.Yellow);
+					return GetOrCreateBrush(KnownColor.Yellow);
 				}
 			}
 	public static Brush YellowGreen
 			{
 				get
 				{
-					return new SolidBrush(Color.YellowGreen);
+					return GetOrCreateBrush(KnownColor.YellowGreen);
 				}
 			}
 

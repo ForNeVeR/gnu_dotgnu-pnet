@@ -24,6 +24,12 @@ namespace System.Drawing.Toolkit
 
 public interface IToolkitFont : IToolkitSelectObject
 {
+	// Get the raw HFONT for this toolkit font.  IntPtr.Zero if none.
+	IntPtr GetHfont();
+
+	// Get the LOGFONT information for this toolkit font.
+	void ToLogFont(Object lf, IToolkitGraphics graphics);
+
 }; // interface IToolkitFont
 
 }; // namespace System.Drawing.Toolkit

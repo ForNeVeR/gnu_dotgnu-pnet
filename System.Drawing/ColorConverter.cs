@@ -23,6 +23,7 @@ namespace System.Drawing
 {
 
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Globalization;
 using System.Collections;
 
@@ -46,22 +47,159 @@ public class ColorConverter : TypeConverter
 			}
 
 	// Determine if we can convert to a given type from "Color".
-	[TODO]
 	public override bool CanConvertTo
 				(ITypeDescriptorContext context, Type destinationType)
 			{
-				// TODO
-				return base.CanConvertTo(context, destinationType);
+				if(destinationType == typeof(InstanceDescriptor))
+				{
+					return true;
+				}
+				else
+				{
+					return base.CanConvertTo(context, destinationType);
+				}
+			}
+
+	// Parse a number from a string.
+	private static int ParseNumber(String str, ref int posn,
+								   bool needComma, int invalid)
+			{
+				int value;
+				char ch;
+
+				// Process the comma between components if necessary.
+				if(needComma)
+				{
+					while(posn < str.Length && Char.IsWhiteSpace(str[posn]))
+					{
+						++posn;
+					}
+					if(posn >= str.Length)
+					{
+						// There are no more components in the string.
+						return -1;
+					}
+					if(str[posn] != ',')
+					{
+						return invalid;
+					}
+					while(posn < str.Length && Char.IsWhiteSpace(str[posn]))
+					{
+						++posn;
+					}
+					if(posn >= str.Length)
+					{
+						return invalid;
+					}
+				}
+
+				// Extract the number and parse it.
+				if(posn < (str.Length - 1) && str[posn] == '0' &&
+				   (str[posn + 1] == 'x' || str[posn + 1] == 'X'))
+				{
+					// Parse a hexadecimal constant.
+					posn += 2;
+					if(posn >= str.Length)
+					{
+						return invalid;
+					}
+					value = 0;
+					while(posn < str.Length)
+					{
+						ch = str[posn];
+						if(ch >= '0' && ch <= '9')
+						{
+							value = value * 16 + (int)(ch - '0');
+						}
+						else if(ch >= 'A' && ch <= 'F')
+						{
+							value = value * 16 + (int)(ch - 'A' + 10);
+						}
+						else if(ch >= 'a' && ch <= 'f')
+						{
+							value = value * 16 + (int)(ch - 'a' + 10);
+						}
+						else
+						{
+							break;
+						}
+						++posn;
+					}
+					return value;
+				}
+				else if(posn < str.Length &&
+						str[posn] >= '0' && str[posn] <= '9')
+				{
+					// Parse a decimal constant.
+					value = (int)(str[posn] - '0');
+					++posn;
+					while(posn < str.Length &&
+						  str[posn] >= '0' && str[posn] <= '9')
+					{
+						value = value * 10 + (int)(str[posn] - '0');
+						++posn;
+					}
+					return value;
+				}
+				else
+				{
+					// Don't know what this is.
+					return invalid;
+				}
 			}
 
 	// Convert from a source type to "Color".
-	[TODO]
 	public override Object ConvertFrom
 				(ITypeDescriptorContext context,
 				 CultureInfo culture, Object value)
 			{
-				// TODO
-				return null;
+				// Pass control to the base class if we weren't given a string.
+				if(!(value is String))
+				{
+					return base.ConvertFrom(context, culture, value);
+				}
+
+				// Extract the string and trim it.
+				String str = ((String)value).Trim();
+				if(str == String.Empty)
+				{
+					return Color.Empty;
+				}
+
+				// Try parsing as a named color.
+				Color color = Color.FromName(str);
+				if(!(color.IsEmpty))
+				{
+					return color;
+				}
+
+				// Parse "[A,] R, G, B" components from the string.
+				int[] numbers = new int [4];
+				int posn = 0;
+				numbers[0] = ParseNumber(str, ref posn, false, 256);
+				numbers[1] = ParseNumber(str, ref posn, true, 256);
+				numbers[2] = ParseNumber(str, ref posn, true, 256);
+				numbers[3] = ParseNumber(str, ref posn, true, 256);
+				if(numbers[0] == -1 || numbers[1] == -1 || numbers[2] == -1 ||
+				   numbers[0] >= 256 || numbers[1] >= 256 ||
+				   numbers[2] >= 256 || numbers[3] >= 256 ||
+				   posn < str.Length)
+				{
+					throw new ArgumentException(S._("Arg_InvalidColor"));
+				}
+				if(numbers[3] == -1)
+				{
+					return Color.FromArgb((byte)(numbers[0]),
+										  (byte)(numbers[1]),
+										  (byte)(numbers[2]));
+				}
+				else
+				{
+					return Color.FromArgb((byte)(numbers[0]),
+										  (byte)(numbers[1]),
+										  (byte)(numbers[2]),
+										  (byte)(numbers[3]));
+				}
 			}
 
 	// Convert from "Color" to a destination type.
@@ -71,8 +209,39 @@ public class ColorConverter : TypeConverter
 				 CultureInfo culture, Object value,
 				 Type destinationType)
 			{
-				// TODO
-				return null;
+				Color color = (Color)value;
+				if(destinationType == typeof(String))
+				{
+					if(color.IsKnownColor)
+					{
+						return color.ToKnownColor().ToString();
+					}
+					else if(color.A == 0xFF)
+					{
+						return String.Format("{0}, {1}, {2}",
+											 (int)(color.R),
+											 (int)(color.G),
+											 (int)(color.B));
+					}
+					else
+					{
+						return String.Format("{0}, {1}, {2}, {3}",
+											 (int)(color.A),
+											 (int)(color.R),
+											 (int)(color.G),
+											 (int)(color.B));
+					}
+				}
+				else if(destinationType == typeof(InstanceDescriptor))
+				{
+					// TODO
+					return null;
+				}
+				else
+				{
+					return base.ConvertTo
+						(context, culture, value, destinationType);
+				}
 			}
 
 	// Return a collection of standard values for this data type.

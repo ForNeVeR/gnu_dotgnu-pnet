@@ -34,7 +34,8 @@ public enum FontStyle
 	Normal		= 0,
 	Bold		= (1<<0),
 	Italic		= (1<<1),
-	Underlined	= (1<<2)
+	Underlined	= (1<<2),
+	StrikeOut	= (1<<3),
 
 } // enum FontStyle
 

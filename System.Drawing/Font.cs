@@ -116,6 +116,12 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 				gdiCharSet = 1;
 				gdiVerticalFont = false;
 			}
+	private Font(IToolkitFont font)
+			{
+				this.toolkit = toolkit;
+				this.toolkitFont = font;
+				// TODO: load the font information from the IToolkitFont
+			}
 
 	// Destructor.
 	~Font()
@@ -171,8 +177,7 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 			{
 				get
 				{
-					// TODO: convert "Size" into the expected value.
-					return 0;
+					return (int)(Math.Ceiling(GetHeight()));
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -195,8 +200,7 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 			{
 				get
 				{
-					// TODO: get from fontFamily object.
-					return null;
+					return fontFamily.Name;
 				}
 			}
 	public float Size
@@ -213,8 +217,47 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 			{
 				get
 				{
-					// TODO: convert "Size" into the expected value.
-					return 0.0f;
+					float adjust;
+					switch(unit)
+					{
+						case GraphicsUnit.World:
+						case GraphicsUnit.Pixel:
+						{
+							adjust = 72.0f / Graphics.DefaultScreenDpi;
+						}
+						break;
+
+						case GraphicsUnit.Display:
+						{
+							adjust = 72.0f / 75.0f;
+						}
+						break;
+
+						case GraphicsUnit.Point:
+						{
+							return size;
+						}
+						// Not reached.
+
+						case GraphicsUnit.Inch:
+						{
+							adjust = 72.0f;
+						}
+						break;
+
+						case GraphicsUnit.Document:
+						{
+							adjust = 72.0f / 300.0f;
+						}
+						break;
+
+						case GraphicsUnit.Millimeter:
+						{
+							adjust = 72.0f / (75.0f / 25.4f);
+						}
+						break;
+					}
+					return size * adjust;
 				}
 			}
 #if CONFIG_COMPONENT_MODEL
@@ -310,19 +353,33 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 			}
 
 	// Extract the active font from a native device context.
-	[TODO]
 	public static Font FromHdc(IntPtr hdc)
 			{
-				// TODO
-				return null;
+				IToolkitFont font;
+				font = ToolkitManager.Toolkit.GetFontFromHdc(hdc);
+				if(font != null)
+				{
+					return new Font(font);
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Convert a native font handle into a font object.
-	[TODO]
 	public static Font FromHfont(IntPtr hfont)
 			{
-				// TODO
-				return null;
+				IToolkitFont font;
+				font = ToolkitManager.Toolkit.GetFontFromHfont(hfont);
+				if(font != null)
+				{
+					return new Font(font);
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Convert a native logical font descriptor into a font object.
@@ -330,39 +387,105 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 			{
 				return FromLogFont(lf, IntPtr.Zero);
 			}
-	[TODO]
 	public static Font FromLogFont(Object lf, IntPtr hdc)
 			{
-				// TODO
-				return null;
+				IToolkitFont font;
+				font = ToolkitManager.Toolkit.GetFontFromLogFont(lf, hdc);
+				if(font != null)
+				{
+					return new Font(font);
+				}
+				else
+				{
+					return null;
+				}
 			}
 
 	// Get the height of this font.
-	[TODO]
 	public float GetHeight()
 			{
-				// TODO
-				return 0.0f;
+				return GetHeight(Graphics.DefaultGraphics);
 			}
-	[TODO]
 	public float GetHeight(Graphics graphics)
 			{
-				// TODO
-				return 0.0f;
+				if(graphics == null)
+				{
+					throw new ArgumentNullException("graphics");
+				}
+
+				// Get the font size in raw pixels.
+				int pixels = graphics.GetLineSpacing(this);
+
+				// If the graphics object uses pixels (the most common case),
+				// then return the pixel value directly.
+				if(graphics.IsPixelUnits())
+				{
+					return (float)pixels;
+				}
+
+				// Convert the pixel value back into points.
+				float points =
+					((float)pixels) / (Graphics.DefaultScreenDpi / 72.0f);
+
+				// Convert the points into the graphics object's unit.
+				switch(graphics.PageUnit)
+				{
+					case GraphicsUnit.World:
+					case GraphicsUnit.Pixel:
+					{
+						points *= (Graphics.DefaultScreenDpi / 72.0f);
+					}
+					break;
+
+					case GraphicsUnit.Display:
+					{
+						points *= (75.0f / 72.0f);
+					}
+					break;
+
+					case GraphicsUnit.Point: break;
+
+					case GraphicsUnit.Inch:
+					{
+						points /= 72.0f;
+					}
+					break;
+
+					case GraphicsUnit.Document:
+					{
+						points *= (300.0f / 72.0f);
+					}
+					break;
+
+					case GraphicsUnit.Millimeter:
+					{
+						points *= (25.4f / 72.0f);
+					}
+					break;
+				}
+				return points;
 			}
-	[TODO]
 	public float GetHeight(float dpi)
 			{
-				// TODO
-				return 0.0f;
+				if(unit == GraphicsUnit.World || unit == GraphicsUnit.Pixel)
+				{
+					return GetHeight(Graphics.DefaultGraphics);
+				}
+				else
+				{
+					return fontFamily.GetLineSpacing(fontStyle) *
+							(size / fontFamily.GetEmHeight(fontStyle)) * dpi;
+				}
 			}
 
 	// Convert this object into a native font handle.
-	[TODO]
 	public IntPtr ToHfont()
 			{
-				// TODO
-				return IntPtr.Zero;
+				if(toolkitFont == null)
+				{
+					GetFont(ToolkitManager.Toolkit);
+				}
+				return toolkitFont.GetHfont();
 			}
 
 	// Fill in a native font information structure with info about this font.
@@ -370,10 +493,32 @@ public sealed class Font : MarshalByRefObject, ISerializable,
 			{
 				ToLogFont(lf, null);
 			}
-	[TODO]
 	public void ToLogFont(Object lf, Graphics graphics)
 			{
-				// TODO
+				IToolkitGraphics g;
+				if(graphics != null)
+				{
+					g = graphics.ToolkitGraphics;
+				}
+				else
+				{
+					g = null;
+				}
+				lock(this)
+				{
+					if(toolkitFont == null)
+					{
+						if(g != null)
+						{
+							GetFont(g.Toolkit);
+						}
+						else
+						{
+							GetFont(ToolkitManager.Toolkit);
+						}
+					}
+					toolkitFont.ToLogFont(lf, g);
+				}
 			}
 
 	// Convert this object into a string.

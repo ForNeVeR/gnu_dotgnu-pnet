@@ -117,16 +117,14 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 			{
 				get
 				{
-					// Assume a display with a default DPI of 75.
-					return 75.0f;
+					return Graphics.DefaultScreenDpi;
 				}
 			}
 	public virtual float DpiY
 			{
 				get
 				{
-					// Assume a display with a default DPI of 75.
-					return 75.0f;
+					return Graphics.DefaultScreenDpi;
 				}
 			}
 	public virtual InterpolationMode InterpolationMode
@@ -316,6 +314,25 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 				// for systems that don't have their own.
 			}
 
+	// Draw a string using the current font and brush.
+	public abstract void DrawString
+				(String s, int x, int y, StringFormat format);
+
+	// Draw a string using the current font and brush within a
+	// layout rectangle that is defined by four points.
+	public virtual void DrawString
+				(String s, Point[] layoutRectangle, StringFormat format)
+			{
+				// TODO: implement a default string draw, laying out
+				// the text within the specified rectangle.
+			}
+
+	// Measure a string using the current font and a given layout rectangle.
+	public abstract Size MeasureString
+				(String s, Point[] layoutRectangle,
+				 StringFormat format, out int charactersFitted,
+				 out int linesFilled);
+
 	// Flush the graphics subsystem
 	public virtual void Flush(FlushIntention intention)
 			{
@@ -362,6 +379,9 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 
 	// Set the clipping region to a complex mask.
 	public abstract void SetClipMask(Object mask, int topx, int topy);
+
+	// Get the line spacing for the font selected into this graphics object.
+	public abstract int GetLineSpacing();
 
 }; // class ToolkitGraphicsBase
 

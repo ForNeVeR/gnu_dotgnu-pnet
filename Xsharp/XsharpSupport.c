@@ -87,6 +87,7 @@ int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 #define	FontStyle_Bold			1
 #define	FontStyle_Italic		2
 #define	FontStyle_Underline		4
+#define	FontStyle_StrikeOut		8
 
 /*
  * Try to create a font with specific parameters.
@@ -204,17 +205,57 @@ void XSharpDrawString(Display *dpy, Drawable drawable, GC gc,
 					  XFontSet fontSet, int x, int y,
 					  const char *str, int style)
 {
+	XRectangle overall_ink_return;
+	XRectangle overall_logical_return;
+	XFontSetExtents *extents;
+	int line1, line2;
+
+	/* Draw the string itself */
 	XmbDrawString(dpy, drawable, fontSet, gc, x, y,
 				  str, strlen(str));
+
+	/* Calculate the positions of the underline and strike-out */
 	if((style & FontStyle_Underline) != 0)
 	{
-		XRectangle overall_ink_return;
-		XRectangle overall_logical_return;
+		line1 = y + 2;
+	}
+	else
+	{
+		line1 = y;
+	}
+	if((style & FontStyle_StrikeOut) != 0)
+	{
+		extents = XExtentsOfFontSet(fontSet);
+		if(extents)
+		{
+			line2 = y + (extents->max_logical_extent.y / 2);
+		}
+		else
+		{
+			line2 = y;
+		}
+	}
+	else
+	{
+		line2 = y;
+	}
+
+	/* Draw the underline and strike-out */
+	if(line1 != y || line2 != y)
+	{
 		XmbTextExtents(fontSet, str, strlen(str),
 				 	   &overall_ink_return, &overall_logical_return);
 		XSetLineAttributes(dpy, gc, 1, LineSolid, CapNotLast, JoinMiter);
-		XDrawLine(dpy, drawable, gc, x, y + 2,
-				  x + overall_logical_return.width, y + 2);
+		if(line1 != y)
+		{
+			XDrawLine(dpy, drawable, gc, x, line1,
+					  x + overall_logical_return.width, line1);
+		}
+		if(line2 != y)
+		{
+			XDrawLine(dpy, drawable, gc, x, line2,
+					  x + overall_logical_return.width, line2);
+		}
 	}
 }
 

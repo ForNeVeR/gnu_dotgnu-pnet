@@ -47,13 +47,13 @@ public sealed class PrinterUnitConvert
 
 							case PrinterUnit.HundredthsOfAMillimeter:
 							{
-								value *= 0.00245;
+								value *= 0.00254;
 							}
 							break;
 
 							case PrinterUnit.TenthsOfAMillimeter:
 							{
-								value *= 0.0245;
+								value *= 0.0254;
 							}
 							break;
 						}
@@ -74,13 +74,13 @@ public sealed class PrinterUnitConvert
 
 							case PrinterUnit.HundredthsOfAMillimeter:
 							{
-								value *= 0.000245;
+								value *= 0.000254;
 							}
 							break;
 
 							case PrinterUnit.TenthsOfAMillimeter:
 							{
-								value *= 0.00245;
+								value *= 0.00254;
 							}
 							break;
 						}
@@ -93,13 +93,13 @@ public sealed class PrinterUnitConvert
 						{
 							case PrinterUnit.Display:
 							{
-								value /= 0.00245;
+								value /= 0.00254;
 							}
 							break;
 
 							case PrinterUnit.ThousandthsOfAnInch:
 							{
-								value /= 0.000245;
+								value /= 0.000254;
 							}
 							break;
 
@@ -120,13 +120,13 @@ public sealed class PrinterUnitConvert
 						{
 							case PrinterUnit.Display:
 							{
-								value = value / 0.0245;
+								value = value / 0.0254;
 							}
 							break;
 
 							case PrinterUnit.ThousandthsOfAnInch:
 							{
-								value = value / 0.00245;
+								value = value / 0.00254;
 							}
 							break;
 

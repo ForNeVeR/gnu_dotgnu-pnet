@@ -24,13 +24,44 @@ namespace System.Drawing
 
 public sealed class SystemBrushes
 {
+	// Internal state.
+	private static Brush[] systemBrushes;
+
 	// Cannot instantiate this class.
 	private SystemBrushes() {}
 
 	// Get a brush for a system color.
 	public static Brush FromSystemColor(Color c)
 			{
-				return new SolidBrush(c);
+				if(c.IsSystemColor)
+				{
+					return GetOrCreateBrush(c.ToKnownColor());
+				}
+				else
+				{
+					throw new ArgumentException(S._("Arg_NotSystemColor"));
+				}
+			}
+
+	// Get or create a system brush.
+	private static Brush GetOrCreateBrush(KnownColor color)
+			{
+				lock(typeof(SystemBrushes))
+				{
+					if(systemBrushes == null)
+					{
+						systemBrushes = new Brush
+							[((int)(KnownColor.WindowText)) -
+							 ((int)(KnownColor.ActiveBorder)) + 1];
+					}
+					int index = ((int)color) - ((int)(KnownColor.ActiveBorder));
+					if(systemBrushes[index] == null)
+					{
+						systemBrushes[index]
+							= new SolidBrush(new Color(color));
+					}
+					return systemBrushes[index];
+				}
 			}
 
 	// Standard system brush objects.
@@ -38,182 +69,182 @@ public sealed class SystemBrushes
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ActiveBorder);
+					return GetOrCreateBrush(KnownColor.ActiveBorder);
 				}
 			}
 	public static Brush ActiveCaption
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ActiveCaption);
+					return GetOrCreateBrush(KnownColor.ActiveCaption);
 				}
 			}
 	public static Brush ActiveCaptionText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ActiveCaptionText);
+					return GetOrCreateBrush(KnownColor.ActiveCaptionText);
 				}
 			}
 	public static Brush AppWorkspace
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.AppWorkspace);
+					return GetOrCreateBrush(KnownColor.AppWorkspace);
 				}
 			}
 	public static Brush Control
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.Control);
+					return GetOrCreateBrush(KnownColor.Control);
 				}
 			}
 	public static Brush ControlDark
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ControlDark);
+					return GetOrCreateBrush(KnownColor.ControlDark);
 				}
 			}
 	public static Brush ControlDarkDark
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ControlDarkDark);
+					return GetOrCreateBrush(KnownColor.ControlDarkDark);
 				}
 			}
 	public static Brush ControlLight
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ControlLight);
+					return GetOrCreateBrush(KnownColor.ControlLight);
 				}
 			}
 	public static Brush ControlLightLight
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ControlLightLight);
+					return GetOrCreateBrush(KnownColor.ControlLightLight);
 				}
 			}
 	public static Brush ControlText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ControlText);
+					return GetOrCreateBrush(KnownColor.ControlText);
 				}
 			}
 	public static Brush Desktop
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.Desktop);
+					return GetOrCreateBrush(KnownColor.Desktop);
 				}
 			}
 	public static Brush GrayText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.GrayText);
+					return GetOrCreateBrush(KnownColor.GrayText);
 				}
 			}
 	public static Brush Highlight
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.Highlight);
+					return GetOrCreateBrush(KnownColor.Highlight);
 				}
 			}
 	public static Brush HighlightText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.HighlightText);
+					return GetOrCreateBrush(KnownColor.HighlightText);
 				}
 			}
 	public static Brush HotTrack
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.HotTrack);
+					return GetOrCreateBrush(KnownColor.HotTrack);
 				}
 			}
 	public static Brush InactiveBorder
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.InactiveBorder);
+					return GetOrCreateBrush(KnownColor.InactiveBorder);
 				}
 			}
 	public static Brush InactiveCaption
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.InactiveCaption);
+					return GetOrCreateBrush(KnownColor.InactiveCaption);
 				}
 			}
 	public static Brush InactiveCaptionText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.InactiveCaptionText);
+					return GetOrCreateBrush(KnownColor.InactiveCaptionText);
 				}
 			}
 	public static Brush Info
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.Info);
+					return GetOrCreateBrush(KnownColor.Info);
 				}
 			}
 	public static Brush InfoText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.InfoText);
+					return GetOrCreateBrush(KnownColor.InfoText);
 				}
 			}
 	public static Brush Menu
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.Menu);
+					return GetOrCreateBrush(KnownColor.Menu);
 				}
 			}
 	public static Brush MenuText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.MenuText);
+					return GetOrCreateBrush(KnownColor.MenuText);
 				}
 			}
 	public static Brush ScrollBar
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.ScrollBar);
+					return GetOrCreateBrush(KnownColor.ScrollBar);
 				}
 			}
 	public static Brush Window
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.Window);
+					return GetOrCreateBrush(KnownColor.Window);
 				}
 			}
 	public static Brush WindowFrame
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.WindowFrame);
+					return GetOrCreateBrush(KnownColor.WindowFrame);
 				}
 			}
 	public static Brush WindowText
 			{
 				get
 				{
-					return new SolidBrush(SystemColors.WindowText);
+					return GetOrCreateBrush(KnownColor.WindowText);
 				}
 			}
 

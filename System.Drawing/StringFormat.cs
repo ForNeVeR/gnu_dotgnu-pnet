@@ -22,10 +22,204 @@ namespace System.Drawing
 {
 
 using System.Drawing.Toolkit;
+using System.Drawing.Text;
 
-public class StringFormat
+public sealed class StringFormat
+	: MarshalByRefObject, ICloneable, IDisposable
 {
-	// TODO
+	// Internal state.
+	private StringFormatFlags options;
+	private int language;
+	private StringAlignment alignment;
+	private StringDigitSubstitute digitMethod;
+	private HotkeyPrefix hotkeyPrefix;
+	private StringAlignment lineAlignment;
+	private StringTrimming trimming;
+	private CharacterRange[] ranges;
+	private float firstTabOffset;
+	private float[] tabStops;
+	private static StringFormat genericDefault = new StringFormat();
+	private static StringFormat genericTypographic = new StringFormat();
+
+	// Constructors.
+	public StringFormat() {}
+	public StringFormat(StringFormat format)
+			{
+				if(format == null)
+				{
+					throw new ArgumentNullException("format");
+				}
+				this.options = format.options;
+				this.language = format.language;
+				this.alignment = format.alignment;
+				this.digitMethod = format.digitMethod;
+				this.hotkeyPrefix = format.hotkeyPrefix;
+				this.lineAlignment = format.lineAlignment;
+				this.trimming = format.trimming;
+				this.ranges = ranges;
+				this.firstTabOffset = format.firstTabOffset;
+				this.tabStops = tabStops;
+			}
+	public StringFormat(StringFormatFlags options)
+			{
+				this.options = options;
+			}
+	public StringFormat(StringFormatFlags options, int language)
+			{
+				this.options = options;
+				this.language = language;
+			}
+
+	// Destructor.
+	~StringFormat()
+			{
+				// Nothing to do here in this implementation.
+			}
+
+	// Get or set this object's properties.
+	public StringAlignment Alignment
+			{
+				get
+				{
+					return alignment;
+				}
+				set
+				{
+					alignment = value;
+				}
+			}
+	public int DigitSubstitutionLanguage
+			{
+				get
+				{
+					return language;
+				}
+			}
+	public StringDigitSubstitute DigitSubstitutionMethod
+			{
+				get
+				{
+					return digitMethod;
+				}
+				set
+				{
+					digitMethod = value;
+				}
+			}
+	public StringFormatFlags FormatFlags
+			{
+				get
+				{
+					return options;
+				}
+				set
+				{
+					options = value;
+				}
+			}
+	public HotkeyPrefix HotkeyPrefix
+			{
+				get
+				{
+					return hotkeyPrefix;
+				}
+				set
+				{
+					hotkeyPrefix = value;
+				}
+			}
+	public StringAlignment LineAlignment
+			{
+				get
+				{
+					return lineAlignment;
+				}
+				set
+				{
+					lineAlignment = value;
+				}
+			}
+	public StringTrimming Trimming
+			{
+				get
+				{
+					return trimming;
+				}
+				set
+				{
+					trimming = value;
+				}
+			}
+
+	// Get the generic default string format.
+	public static StringFormat GenericDefault
+			{
+				get
+				{
+					return genericDefault;
+				}
+			}
+
+	// Get the generic typographic string format.
+	public static StringFormat GenericTypographic
+			{
+				get
+				{
+					return genericTypographic;
+				}
+			}
+
+	// Clone this object.
+	public Object Clone()
+			{
+				return new StringFormat(this);
+			}
+
+	// Dispose of this object.
+	public void Dispose()
+			{
+				// Nothing to do here in this implementation.
+			}
+
+	// Get tab stop information for this format.
+	public float[] GetTopStops(out float firstTabOffset)
+			{
+				if(this.tabStops == null)
+				{
+					this.firstTabOffset = 8.0f;
+					this.tabStops = new float [] {8.0f};
+				}
+				firstTabOffset = this.firstTabOffset;
+				return this.tabStops;
+			}
+
+	// Set the digit substitution properties.
+	public void SetDigitSubstitution
+				(int language, StringDigitSubstitute substitute)
+			{
+				this.language = language;
+				this.digitMethod = digitMethod;
+			}
+
+	// Set the measurable character ranges.
+	public void SetMeasurableCharacterRanges(CharacterRange[] ranges)
+			{
+				this.ranges = ranges;
+			}
+
+	// Set the tab stops for this format.
+	public void SetTabStops(float firstTabOffset, float[] tabStops)
+			{
+				this.firstTabOffset = firstTabOffset;
+				this.tabStops = tabStops;
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return "[StringFormat, FormatFlags=" +
+					   options.ToString() + "]";
+			}
 
 }; // class StringFormat
 

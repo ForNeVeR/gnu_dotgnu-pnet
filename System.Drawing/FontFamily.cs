@@ -22,6 +22,7 @@ namespace System.Drawing
 {
 
 using System.Drawing.Text;
+using System.Drawing.Toolkit;
 
 public sealed class FontFamily : MarshalByRefObject, IDisposable
 {
@@ -29,12 +30,18 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 	private GenericFontFamilies genericFamily;
 	private String name;
 	private FontCollection fontCollection;
+	private FontStyle metricsStyle;
+	private int ascent;
+	private int descent;
+	private int emHeight;
+	private int lineSpacing;
 
 	// Constructors.
 	public FontFamily(GenericFontFamilies genericFamily)
 			{
 				this.genericFamily = genericFamily;
 				this.fontCollection = null;
+				this.metricsStyle = (FontStyle)(-1);
 				switch(genericFamily)
 				{
 					case GenericFontFamilies.Serif:
@@ -66,6 +73,7 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 				}
 				this.name = name;
 				this.fontCollection = fontCollection;
+				this.metricsStyle = (FontStyle)(-1);
 
 				// Intuit the generic family based on common font names.
 				if(String.Compare(name, "Times", true) == 0 ||
@@ -164,36 +172,52 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 				}
 			}
 
+	// Get the font family metrics.
+	private void GetMetrics(FontStyle style)
+			{
+				if(style != metricsStyle)
+				{
+					ToolkitManager.Toolkit.GetFontFamilyMetrics
+						(genericFamily, name, style,
+						 out ascent, out descent,
+						 out emHeight, out lineSpacing);
+					metricsStyle = style;
+				}
+			}
+
 	// Get the cell ascent for a particular style.
-	[TODO]
 	public int GetCellAscent(FontStyle style)
 			{
-				// TODO
-				return 0;
+				GetMetrics(style);
+				return ascent;
 			}
 
 	// Get the cell descent for a particular style.
-	[TODO]
 	public int GetCellDescent(FontStyle style)
 			{
-				// TODO
-				return 0;
+				GetMetrics(style);
+				return descent;
 			}
 
 	// Get the em height for a particular style.
-	[TODO]
 	public int GetEmHeight(FontStyle style)
 			{
-				// TODO
-				return 0;
+				GetMetrics(style);
+				return emHeight;
 			}
 
 	// Get a list of all font families with a specified graphics context.
-	[TODO]
 	public static FontFamily[] GetFamilies(Graphics graphics)
 			{
-				// TODO
-				return null;
+				if(graphics != null)
+				{
+					return ToolkitManager.Toolkit.GetFontFamilies
+						(graphics.ToolkitGraphics);
+				}
+				else
+				{
+					return ToolkitManager.Toolkit.GetFontFamilies(null);
+				}
 			}
 
 	// Get a hash code for this object.
@@ -203,11 +227,10 @@ public sealed class FontFamily : MarshalByRefObject, IDisposable
 			}
 
 	// Get the line spacing for a particular style.
-	[TODO]
 	public int GetLineSpacing(FontStyle style)
 			{
-				// TODO
-				return 0;
+				GetMetrics(style);
+				return lineSpacing;
 			}
 
 	// Get the name of this font in a specified language.

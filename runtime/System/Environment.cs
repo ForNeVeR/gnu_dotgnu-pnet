@@ -42,15 +42,35 @@ public sealed class Environment
 	static Environment()
 			{
 				// Get the newline string.
-				newLine = SysCharInfo.GetNewLine();
+				try
+				{
+					newLine = SysCharInfo.GetNewLine();
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not have "SysCharInfo".
+					newLine = "\n";
+				}
 
 				// Get the path character information.
-				PathInfo pathInfo = DirMethods.GetPathInfo();
-				DirectorySeparatorChar = pathInfo.dirSeparator;
-				AltDirectorySeparatorChar = pathInfo.altDirSeparator;
-				VolumeSeparatorChar = pathInfo.volumeSeparator;
-				PathSeparatorChar = pathInfo.pathSeparator;
-				InvalidPathChars = pathInfo.invalidPathChars;
+				try
+				{
+					PathInfo pathInfo = DirMethods.GetPathInfo();
+					DirectorySeparatorChar = pathInfo.dirSeparator;
+					AltDirectorySeparatorChar = pathInfo.altDirSeparator;
+					VolumeSeparatorChar = pathInfo.volumeSeparator;
+					PathSeparatorChar = pathInfo.pathSeparator;
+					InvalidPathChars = pathInfo.invalidPathChars;
+				}
+				catch(NotSupportedException)
+				{
+					// The runtime engine does not have directory support.
+					DirectorySeparatorChar = '/';
+					AltDirectorySeparatorChar = '\0';
+					VolumeSeparatorChar = '\0';
+					PathSeparatorChar = ':';
+					InvalidPathChars = null;
+				}
 			}
 
 	// Get the platform-specific newline string.

@@ -7,6 +7,8 @@
 * include/il_config.h.in, acconfig.h: changes to support the
 inclusion of the readline and history libraries.
 
+* include/il_types.h, image/types.c (ILTypeGetEnumType): new function.
+
 2001-09-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resgen/resgen.c: update to understand Beta 2 resource formats, and

@@ -689,6 +689,35 @@ char *ILTypeToName(ILType *type)
 	}
 }
 
+ILType *ILTypeGetEnumType(ILType *type)
+{
+	if(ILType_IsValueType(type))
+	{
+		ILClass *classInfo = ILType_ToValueType(type);
+		ILClass *parent = ILClass_Parent(classInfo);
+		if(parent)
+		{
+			const char *namespace = ILClass_Namespace(parent);
+			if(namespace && !strcmp(namespace, "System") &&
+			   !strcmp(ILClass_Name(parent), "Enum"))
+			{
+				ILField *field = 0;
+				while((field = (ILField *)ILClassNextMemberByKind
+							(classInfo, (ILMember *)field,
+							 IL_META_MEMBERKIND_FIELD)) != 0)
+				{
+					if(!ILField_IsStatic(field) &&
+					   ILField_HasRTSpecialName(field))
+					{
+						return ILField_Type(field);
+					}
+				}
+			}
+		}
+	}
+	return type;
+}
+
 #ifdef	__cplusplus
 };
 #endif

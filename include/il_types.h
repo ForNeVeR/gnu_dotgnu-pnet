@@ -324,6 +324,12 @@ ILValueType ILTypeToValueType(ILType *type);
 char *ILTypeToName(ILType *type);
 
 /*
+ * Get the underlying type for an enumerated type.
+ * If the type is not enumerated, then return as-is.
+ */
+ILType *ILTypeGetEnumType(ILType *type);
+
+/*
  * Convert a type into a blob offset for the encoded form
  * of a method signature.  Returns zero if out of memory.
  */

@@ -4,6 +4,9 @@
 * cscc/cs_defs.tc, cscc/cs_oper.tc: ILNode_GlobalNamespace, new semantic
 kind for s-values.
 
+* cscc/cs_grammar.y: use MemberAccess instead of QualIdent in expressions;
+ILNode_GlobalNamespace; fix the signature for property "set" methods.
+
 2001-09-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_lookup.c: new routines for looking up names in scopes, according

@@ -279,9 +279,10 @@ void yynodefailed(void)
 	} while (0)
 
 /*
- * Make a system type name node and put it into $$.
+ * Make a system type name node.
  */
-#define	MakeSystemType(name)	(ILQualIdentTwo("System", #name))
+#define	MakeSystemType(name)	\
+			(ILNode_GlobalNamespace_create(ILQualIdentTwo("System", #name)))
 
 /*
  * Add a node to the top-level parse tree.
@@ -469,14 +470,13 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 			/* Abstract interface definition */
 			decl = (ILNode_MethodDeclaration *)
 				ILNode_MethodDeclaration_create
-						(0, property->modifiers, property->type,
-						 name, params, 0);
+						(0, property->modifiers, 0, name, params, 0);
 		}
 		else
 		{
 			/* Regular class definition */
 			decl->modifiers = property->modifiers;
-			decl->type = property->type;
+			decl->type = 0;
 			decl->name = name;
 			decl->params = params;
 		}
@@ -1096,17 +1096,8 @@ PrimaryExpression
 	: LiteralExpression				{ $$ = $1; }
 	| Identifier					{ $$ = $1; }
 	| '(' Expression ')'			{ $$ = $2; }
-	| PrimaryExpression '.' Identifier	{
-				if(ILIsQualIdent($1))
-				{
-					MakeBinary(QualIdent, $1, $3);
-				}
-				else
-				{
-					MakeBinary(MemberAccess, $1, $3);
-				}
-			}
-	| BuiltinType '.' Identifier	{ MakeBinary(QualIdent, $1, $3); }
+	| PrimaryExpression '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
+	| BuiltinType '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
 	| InvocationExpression			{ $$ = $1; }
 	| PrimaryExpression '[' ExpressionList ']'	{ /* safe and unsafe */ }
 	| THIS							{ MakeSimple(This); }

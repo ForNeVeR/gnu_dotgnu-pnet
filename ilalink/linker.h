@@ -105,7 +105,6 @@ struct _tagILLinker
 	ILLibrary      *lastLibrary;	/* Last library being used by the linker */
 	char          **libraryDirs;	/* List of library directories */
 	int				numLibraryDirs;	/* Number of library directories */
-	int				useStdDirs;		/* Use the standard system directories */
 	int				outOfMemory;	/* Set to non-zero when out of memory */
 	int				error;			/* Some other error occurred */
 	unsigned long	resourceRVA;	/* RVA of resource section start */

@@ -129,7 +129,7 @@ static void usage(const char *progname);
 static void version(void);
 static void outOfMemory(void);
 static int parseVersion(ILUInt16 *version, const char *str);
-static int addLibrary(ILLinker *linker, const char *filename, int needStd);
+static int addLibrary(ILLinker *linker, const char *filename);
 static int addResource(ILLinker *linker, const char *filename,
 					   FILE *stream, int privateResources, int isStdin);
 static int processFile(ILLinker *linker, const char *filename,
@@ -582,19 +582,15 @@ int ILLinkerMain(int argc, char *argv[])
 	{
 		errors |= !ILLinkerAddLibraryDir(linker, libraryDirs[temp]);
 	}
-	if(useStdlib)
-	{
-		ILLinkerAddSystemDirs(linker);
-	}
 
 	/* Add the libraries to the linker context */
 	for(temp = 0; temp < numLibraries; ++temp)
 	{
-		errors |= addLibrary(linker, libraries[temp], 0);
+		errors |= addLibrary(linker, libraries[temp]);
 	}
 	if(useStdlib)
 	{
-		errors |= addLibrary(linker, stdLibrary, 0);
+		errors |= addLibrary(linker, stdLibrary);
 	}
 
 	/* Process the input files that aren't libraries */
@@ -809,7 +805,7 @@ static int parseVersion(ILUInt16 *version, const char *str)
 /*
  * Add a library to a linker context.  Returns non-zero on error.
  */
-static int addLibrary(ILLinker *linker, const char *filename, int needStd)
+static int addLibrary(ILLinker *linker, const char *filename)
 {
 	FILE *file;
 	ILContext *context;
@@ -819,14 +815,7 @@ static int addLibrary(ILLinker *linker, const char *filename, int needStd)
 	char *newFilename;
 
 	/* Resolve the library name */
-	if(needStd)
-	{
-		newFilename = ILLinkerResolveLibraryStd(linker, filename);
-	}
-	else
-	{
-		newFilename = ILLinkerResolveLibrary(linker, filename);
-	}
+	newFilename = ILLinkerResolveLibrary(linker, filename);
 	if(!newFilename)
 	{
 		fprintf(stderr, "%s: library not found\n", filename);
@@ -933,14 +922,14 @@ static int processImage(ILLinker *linker, const char *filename,
 			   the user specified "--nostdlib" */
 			if(!ILLinkerHasLibrary(linker, stdLibrary))
 			{
-				errors |= addLibrary(linker, stdLibrary, 1);
+				errors |= addLibrary(linker, stdLibrary);
 			}
 
 			/* Make sure that we have the "OpenSystem.C" assembly */
 			if(!ILLinkerHasLibrary(linker, "OpenSystem.C"))
 			{
 				/* Load "OpenSystem.C" */
-				errors |= addLibrary(linker, "OpenSystem.C", 1);
+				errors |= addLibrary(linker, "OpenSystem.C");
 			}
 
 			/* Make sure that we have the "libc" library */
@@ -953,7 +942,7 @@ static int processImage(ILLinker *linker, const char *filename,
 				}
 				if(!ILLinkerHasLibrary(linker, stdCLibrary))
 				{
-					errors |= addLibrary(linker, stdCLibrary, 0);
+					errors |= addLibrary(linker, stdCLibrary);
 				}
 			}
 		}

@@ -64,7 +64,6 @@ ILLinker *ILLinkerCreate(FILE *stream, int seekable, int type, int flags)
 	linker->lastLibrary = 0;
 	linker->libraryDirs = 0;
 	linker->numLibraryDirs = 0;
-	linker->useStdDirs = 0;
 	linker->outOfMemory = 0;
 	linker->error = 0;
 	linker->resourceRVA = 0;

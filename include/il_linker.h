@@ -63,21 +63,10 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 int ILLinkerAddLibraryDir(ILLinker *linker, const char *pathname);
 
 /*
- * Add all system library directories to a linker context.
- */
-void ILLinkerAddSystemDirs(ILLinker *linker);
-
-/*
  * Resolve a library name into a full pathname.  Returns an
  * ILMalloc'ed copy of the full pathname, or NULL if not found.
  */
 char *ILLinkerResolveLibrary(ILLinker *linker, const char *name);
-
-/*
- * Resolve a library name, and use standard directories, even
- * if they were disabled with "--nostdlib".
- */
-char *ILLinkerResolveLibraryStd(ILLinker *linker, const char *name);
 
 /*
  * Add an image to a linker context as a library.

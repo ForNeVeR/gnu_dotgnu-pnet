@@ -434,7 +434,7 @@ static int LoadLibrary(const char *name, int nostdlib_flag)
 	/* Search the library link path for the name */
 	path = ILImageSearchPath(name, 0, 0,
 							 (const char **)link_dirs, num_link_dirs,
-							 0, 0, nostdlib_flag, 0);
+							 0, 0, 0, 0);
 	if(path)
 	{
 		return LoadLibraryFromPath(path, 1);

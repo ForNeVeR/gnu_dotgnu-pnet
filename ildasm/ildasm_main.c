@@ -31,6 +31,7 @@ static ILCmdLineOption const options[] = {
 	{"-o", 'o', 1, 0, 0},
 	{"-d", 'd', 0, 0, 0},
 	{"-r", 'r', 0, 0, 0},
+	{"-R", 'R',	0, 0, 0},
 	{"-t", 't', 0, 0, 0},
 	{"-q", 'q', 0, 0, 0},
 	{"-w", 'w', 0, 0, 0},
@@ -46,6 +47,9 @@ static ILCmdLineOption const options[] = {
 	{"--real-offsets", 'r', 0,
 		"--real-offsets   or    -r",
 		"Display real file offsets instead of virtual addresses."},
+	{"--resolve-all", 'R', 0,
+		"--resolve-all    or    -R",
+		"Resolve all dependencies during loading."},
 	{"--show-tokens", 't', 0,
 		"--show-tokens    or    -t",
 		"Show token codes in output."},
@@ -98,7 +102,7 @@ static void usage(const char *progname);
 static void version(void);
 static int dumpFile(const char *filename, FILE *stream,
 					int closeStream, ILContext *context,
-					int dumpSections, int realOffsets);
+					int dumpSections, int flags);
 static void dumpWholeFile(const char *filename, FILE *stream);
 
 int main(int argc, char *argv[])
@@ -167,6 +171,12 @@ int main(int argc, char *argv[])
 			case 'n':
 			{
 				flags |= ILDASM_NO_IL;
+			}
+			break;
+
+			case 'R':
+			{
+				flags |= ILDASM_RESOLVE_ALL;
 			}
 			break;
 
@@ -479,7 +489,8 @@ static int dumpFile(const char *filename, FILE *stream,
 	loadError = ILImageLoad(stream, filename, context, &image,
 							IL_LOADFLAG_FORCE_32BIT |
 							IL_LOADFLAG_PRE_VALIDATE |
-							IL_LOADFLAG_NO_RESOLVE |
+							((flags & ILDASM_RESOLVE_ALL)
+								? 0 : IL_LOADFLAG_NO_RESOLVE) |
 							(dumpSections ? IL_LOADFLAG_NO_METADATA : 0));
 	if(loadError != 0)
 	{

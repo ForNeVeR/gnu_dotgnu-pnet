@@ -50,6 +50,11 @@ names of labels within methods.  The `\fB-r\fR' option informs \fBildasm\fR
 to use real file offsets instead.  This may assist in locating data within
 the file with separate tools.
 .TP
+.B \-R, --resolve-all
+\fBildasm\fR does not resolve image data by default, which may cause
+problems with valuetype markers. The `\fB-R\fR` option enables resolution
+while loading.
+.TP
 .B \-t, --show-tokens
 Show the token codes of program elements within the disassembly output.
 .TP

@@ -40,6 +40,7 @@ extern	"C" {
 #define	ILDASM_SUPPRESS_PREFIX		(1 << 9)
 #define	ILDASM_NO_IL				(1 << 10)
 #define	ILDASM_INSTRUCTION_BYTES	(1 << 11)
+#define ILDASM_RESOLVE_ALL			(1 << 12)
 
 /*
  * Dump a binary blob to an output stream.

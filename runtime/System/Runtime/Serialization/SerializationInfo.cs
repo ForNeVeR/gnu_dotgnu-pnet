@@ -110,6 +110,7 @@ public sealed class SerializationInfo
 			{
 				AddValue(name, (Object)value, typeof(Byte));
 			}
+	[CLSCompliant(false)]
 	public void AddValue(String name, sbyte value)
 			{
 				AddValue(name, (Object)value, typeof(SByte));
@@ -118,6 +119,7 @@ public sealed class SerializationInfo
 			{
 				AddValue(name, (Object)value, typeof(Int16));
 			}
+	[CLSCompliant(false)]
 	public void AddValue(String name, ushort value)
 			{
 				AddValue(name, (Object)value, typeof(UInt16));
@@ -130,6 +132,7 @@ public sealed class SerializationInfo
 			{
 				AddValue(name, (Object)value, typeof(Int32));
 			}
+	[CLSCompliant(false)]
 	public void AddValue(String name, uint value)
 			{
 				AddValue(name, (Object)value, typeof(UInt32));
@@ -138,6 +141,7 @@ public sealed class SerializationInfo
 			{
 				AddValue(name, (Object)value, typeof(Int64));
 			}
+	[CLSCompliant(false)]
 	public void AddValue(String name, ulong value)
 			{
 				AddValue(name, (Object)value, typeof(UInt64));
@@ -201,6 +205,7 @@ public sealed class SerializationInfo
 			{
 				return (byte)GetValue(name, typeof(Byte));
 			}
+	[CLSCompliant(false)]
 	public sbyte GetSByte(String name)
 			{
 				return (sbyte)GetValue(name, typeof(SByte));
@@ -209,6 +214,7 @@ public sealed class SerializationInfo
 			{
 				return (short)GetValue(name, typeof(Int16));
 			}
+	[CLSCompliant(false)]
 	public ushort GetUInt16(String name)
 			{
 				return (ushort)GetValue(name, typeof(UInt16));
@@ -221,6 +227,7 @@ public sealed class SerializationInfo
 			{
 				return (int)GetValue(name, typeof(Int32));
 			}
+	[CLSCompliant(false)]
 	public uint GetUInt32(String name)
 			{
 				return (uint)GetValue(name, typeof(UInt32));
@@ -229,6 +236,7 @@ public sealed class SerializationInfo
 			{
 				return (long)GetValue(name, typeof(Int64));
 			}
+	[CLSCompliant(false)]
 	public ulong GetUInt64(String name)
 			{
 				return (ulong)GetValue(name, typeof(UInt64));

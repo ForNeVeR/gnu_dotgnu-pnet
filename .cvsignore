@@ -11,3 +11,4 @@ pnetlib.spec
 libtool
 ltconfig
 ltmain.sh
+autom4te.cache

@@ -1,7 +1,7 @@
 /*
  * Drawable.cs - Base class for widgets and pixmaps.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,6 +144,11 @@ public abstract class Drawable : IDisposable
 				{
 					throw new XInvalidOperationException
 						(S._("X_PixmapDestroyed"));
+				}
+				else if(kind == DrawableKind.DoubleBuffer)
+				{
+					throw new XInvalidOperationException
+						(S._("X_DoubleBufferDestroyed"));
 				}
 				else
 				{

@@ -26,7 +26,7 @@ using System;
 /// <summary>
 /// <para>The <see cref="T:Xsharp.DrawableKind"/> enumeration specifies
 /// the kinds of drawable that may be present in the system (one of
-/// "widget", "input-only widget", or "pixmap").</para>
+/// "widget", "input-only widget", "pixmap", or "double buffer").</para>
 /// </summary>
 public enum DrawableKind
 {
@@ -34,7 +34,8 @@ public enum DrawableKind
 	Widget          = 0,
 	InputOnlyWidget = 1,
 	Pixmap          = 2,
-	Bitmap          = 2
+	Bitmap          = 2,
+	DoubleBuffer	= 3
 
 } // enum DrawableKind
 

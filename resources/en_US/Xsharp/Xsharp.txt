@@ -1,7 +1,7 @@
 #
 # Xsharp.txt - Default English resources for the Xsharp.dll library.
 #
-# Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2002, 2003, 2004  Southern Storm Software, Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ X_ConnectionLost=Connection to X server has been lost
 X_WidgetDestroyed=The widget has been destroyed
 X_PixmapDestroyed=The pixmap has been destroyed
 X_BitmapDestroyed=The bitmap has been destroyed
+X_DoubleBufferDestroyed=The bitmap has been destroyed
 X_GraphicsDestroyed=The graphics object has been destroyed
 X_InvalidOperation=An invalid X operation occurred
 X_BellPercent=X server bell percentage must be between -100 and 100

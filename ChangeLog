@@ -1,3 +1,13 @@
+
+2004-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing.Xsharp/DrawingWindowBuffer.cs,
+	Xsharp/DoubleBuffer.cs, Xsharp/Drawable.cs, Xsharp/DrawableKind.cs,
+	Xsharp/Graphics.cs, Xsharp/Xlib.cs.in,
+	resources/en_US/Xsharp/Xsharp.txt: add support for the Xdbe
+	(DOUBLE-BUFFER) extension to Xsharp, with fallbacks to pixmap
+	based buffering.
+
 2004-01-23  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListViewItemConverter.cs,

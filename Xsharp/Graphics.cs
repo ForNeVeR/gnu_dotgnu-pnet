@@ -1,7 +1,7 @@
 /*
  * Graphics.cs - Graphic drawing objects.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003, 2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,11 +108,17 @@ public sealed class Graphics : IDisposable
 				this.drawable = drawable;
 				XGCValues gcValues = new XGCValues();
 				InputOutputWidget widget = (drawable as InputOutputWidget);
+				DoubleBuffer buffer = (drawable as DoubleBuffer);
 				Bitmap bitmap = (drawable as Bitmap);
 				if(widget != null)
 				{
 					foreground = widget.Foreground;
 					background = widget.Background;
+				}
+				else if(buffer != null)
+				{
+					foreground = buffer.Widget.Foreground;
+					background = buffer.Widget.Background;
 				}
 				else if(bitmap != null)
 				{
@@ -126,6 +132,10 @@ public sealed class Graphics : IDisposable
 				}
 				gcValues.foreground = drawable.ToPixel(foreground);
 				gcValues.background = drawable.ToPixel(background);
+				if(drawable is DoubleBuffer)
+				{
+					((DoubleBuffer)drawable).Start(this);
+				}
 				try
 				{
 					IntPtr display = dpy.Lock();
@@ -195,6 +205,10 @@ public sealed class Graphics : IDisposable
 				{
 					dpy.Unlock();
 				}
+				if(drawable is DoubleBuffer)
+				{
+					((DoubleBuffer)drawable).ClearAtStart(this);
+				}
 			}
 
 	/// <summary>
@@ -212,6 +226,12 @@ public sealed class Graphics : IDisposable
 					IntPtr display = dpy.Lock();
 					if(gc != IntPtr.Zero)
 					{
+						// Flush the double buffer if necessary.
+						if(drawable is DoubleBuffer)
+						{
+							((DoubleBuffer)drawable).End(this);
+						}
+
 						// Release the GC back to the screen's cache so
 						// that we can reuse it the next time we need a GC.
 						drawable.screen.ReleaseGC(gc, (drawable is Bitmap));
@@ -1234,7 +1254,15 @@ public sealed class Graphics : IDisposable
 				}
 
 				// Determine the background pattern to clear with.
-				if((widget = (drawable as InputOutputWidget)) != null)
+				if(drawable is DoubleBuffer)
+				{
+					widget = ((DoubleBuffer)drawable).Widget;
+				}
+				else
+				{
+					widget = (drawable as InputOutputWidget);
+				}
+				if(widget != null)
 				{
 					widget.GetBackgroundInfo(out bg, out pixmap,
 											 out tx, out ty);

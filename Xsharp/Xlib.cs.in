@@ -817,6 +817,41 @@ internal sealed unsafe class Xlib
 			 ref XSecurityAuthorizationAttributes attributes,
 			 out XSecurityAuthorization auth_id_return);
 
+	// Helper functions for double buffer handling.
+
+	public enum XdbeSwapAction : byte
+	{
+		Undefined		= 0,
+		Background		= 1,
+		Untouched		= 2,
+		Copied			= 3
+
+	}; // enum XdbeSwapAction
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct XdbeSwapInfo
+	{
+		public Window 			swap_window;
+		public XdbeSwapAction	swap_action;
+
+	}; // struct XdbeSwapInfo
+
+	[DllImport("Xext")]
+	extern public static Status XdbeQueryExtension
+			(IntPtr display, out Xint major, out Xint minor);
+
+	[DllImport("Xext")]
+	extern public static Drawable XdbeAllocateBackBufferName
+			(IntPtr display, Window window, XdbeSwapAction swap_action);
+
+	[DllImport("Xext")]
+	extern public static Status XdbeDeallocateBackBufferName
+			(IntPtr display, Drawable buffer);
+
+	[DllImport("Xext")]
+	extern public static Status XdbeSwapBuffers
+			(IntPtr display, ref XdbeSwapInfo swap_info, @X_int@ num_windows);
+
 	// Other functions.
 
 	[DllImport("X11")]

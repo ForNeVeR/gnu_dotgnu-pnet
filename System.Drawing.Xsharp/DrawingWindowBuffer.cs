@@ -27,16 +27,16 @@ internal class DrawingWindowBuffer : IToolkitWindowBuffer, IDisposable
 {
 	// Internal state.
 	private IToolkit toolkit;
-	private Widget widget;
-	private Pixmap pixmap;
+	private InputOutputWidget widget;
+	private DoubleBuffer buffer;
 	private DrawingGraphics graphics;
 
 	// Constructor.
 	public DrawingWindowBuffer(IToolkitWindow windowToBuffer)
 			{
 				toolkit = windowToBuffer.Toolkit;
-				widget = windowToBuffer as Widget;
-				pixmap = null;
+				widget = windowToBuffer as InputOutputWidget;
+				buffer = null;
 				graphics = null;
 			}
 
@@ -44,39 +44,37 @@ internal class DrawingWindowBuffer : IToolkitWindowBuffer, IDisposable
 	private void CreateBuffer(int width, int height)
 			{
 				DeleteBuffer();
-				pixmap = new Pixmap(widget.Screen, width, height);
+				buffer = new DoubleBuffer(widget);
 			}
 
 	// Delete the buffer object.
 	private void DeleteBuffer()
 			{
 				// Make sure that we dispose of the X graphics object
-				// before we dispose of the X pixmap.
+				// before we dispose of the buffer.
 				if(graphics != null)
 				{
 					graphics.graphics.Dispose();
 				}
-				if(pixmap != null)
+				if(buffer != null)
 				{
-					pixmap.Dispose();
-					pixmap = null;
+					buffer.Dispose();
+					buffer = null;
 				}
 			}
 
 	// Begin a double buffer operation.
 	public IToolkitGraphics BeginDoubleBuffer()
 			{
-				// Re-create the buffer if the size has changed.
-				if(pixmap == null || graphics != null ||
-				   pixmap.Width != widget.Width ||
-				   pixmap.Height != widget.Height)
+				// Create the double buffer if necessary.
+				if(buffer == null)
 				{
 					CreateBuffer(widget.Width, widget.Height);
 				}
 
-				// Create a graphics object for the pixmap and return it.
+				// Create a graphics object for the buffer and return it.
 				graphics = new DrawingGraphics
-					(toolkit, new Xsharp.Graphics(pixmap));
+					(toolkit, new Xsharp.Graphics(buffer));
 				return graphics;
 			}
 
@@ -85,14 +83,11 @@ internal class DrawingWindowBuffer : IToolkitWindowBuffer, IDisposable
 			{
 				if(graphics != null)
 				{
-					// Dispose of the IToolkitGraphics object.
+					// Dispose of the IToolkitGraphics object and
+					// the underlying double-buffered "Xsharp.Graphics"
+					// object.  Dispose that will update the screen.
 					graphics.Dispose();
 					graphics = null;
-
-					// Copy the pixmap contents to the widget.
-					Xsharp.Graphics gr = new Xsharp.Graphics(widget);
-					gr.BitBlt(0, 0, pixmap);
-					gr.Dispose();
 				}
 			}
 

@@ -1,4 +1,11 @@
 
+2002-07-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/Makefile.am, csharp/expr/delegate1.cs,
+	csharp/expr/delegate1.il, csharp/expr/delegate1.jerr,
+	csharp/expr/delegate2.cs, csharp/expr/delegate2.err,
+	csharp/expr/delegate2.jerr: test cases for delegate creation.
+
 2002-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/Makefile.am, csharp/class/field5.cs,

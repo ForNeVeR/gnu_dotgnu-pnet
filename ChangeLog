@@ -1,743 +1,793 @@
 
 2001-12-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* acconfig.h, configure.in, include/il_config.h.in: update the autoconf
-scripts to detect the thread model that will be used by "libgc" so that
-other parts of the system can adapt to the same thread model.
+	* acconfig.h, configure.in, include/il_config.h.in: update the
+	autoconf scripts to detect the thread model that will be used
+	by "libgc" so that other parts of the system can adapt to
+	the same thread model.
 
-* engine/engine.h, engine/lib_type.c, engine/process.c: implement
-"_ILClrToObject" and "_ILClrFromObject" to handle reflecting image
-program items to and from CLR objects.
+	* engine/engine.h, engine/lib_type.c, engine/process.c: implement
+	"_ILClrToObject" and "_ILClrFromObject" to handle reflecting image
+	program items to and from CLR objects.
+
+	* ChangeLog: change the format to be consistent with what
+	GNU Emacs expects.
 
 2001-12-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* csdoc/doc_valil.c: validate custom attributes.
+	* csdoc/doc_valil.c: validate custom attributes.
 
-* engine/lib_type.c: "ClrType.IsSubclassOf" should return false when
-the types are identical; "ClrType.GetMembersImpl" has a new parameter
-for the name.
+	* engine/lib_type.c: "ClrType.IsSubclassOf" should return false when
+	the types are identical; "ClrType.GetMembersImpl" has a new parameter
+	for the name.
 
 2001-12-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* csdoc/Makefile.am, csdoc/doc_load.c, csdoc/doc_tree.h, csdoc/doc_valil.c:
-implement ECMA validation for fields, methods, constructors, properties,
-and events.
+	* csdoc/Makefile.am, csdoc/doc_load.c, csdoc/doc_tree.h,
+	csdoc/doc_valil.c: implement ECMA validation for fields, methods,
+	constructors, properties, and events.
 
-* samples/mscorlib.dll: new version with ECMA compliance updates.
+	* samples/mscorlib.dll: new version with ECMA compliance updates.
 
 2001-12-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/Makefile.am, engine/lib_array.c, engine/lib_defs.h,
-engine/lib_helpers.c, engine/throw.c, image/types.c, include/il_engine.h,
-include/il_types.h: implement all of the "System.Array" internalcall
-methods except "Copy".
+	* engine/Makefile.am, engine/lib_array.c, engine/lib_defs.h,
+	engine/lib_helpers.c, engine/throw.c, image/types.c,
+	include/il_engine.h, include/il_types.h: implement all of
+	the "System.Array" internalcall methods except "Copy".
 
-* engine/lib_defs.h, engine/lib_array.c, engine/lib_object.c: implement
-array cloning properly in "Object.MemberwiseClone".
+	* engine/lib_defs.h, engine/lib_array.c, engine/lib_object.c:
+	implement array cloning properly in "Object.MemberwiseClone".
 
-* engine/box.c: add missing file.
+	* engine/box.c: add missing file.
 
-* csdoc/doc_destroy.c, csdoc/doc_load.c, csdoc/doc_html.c, csdoc/doc_tree.h:
-parse and format excluded base types in the ECMA's XML specification file.
+	* csdoc/doc_destroy.c, csdoc/doc_load.c, csdoc/doc_html.c,
+	csdoc/doc_tree.h: parse and format excluded base types in
+	the ECMA's XML specification file.
 
 2001-12-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/internal.c, engine/lib_array.c, engine/lib_decimal.c,
-engine/lib_math.c, engine/lib_platform.c, engine/lib_string.c: modify the
-names of internalcall methods to match the latest pnetlib requirements.
+	* engine/internal.c, engine/lib_array.c, engine/lib_decimal.c,
+	engine/lib_math.c, engine/lib_platform.c, engine/lib_string.c:
+	modify the names of internalcall methods to match the latest
+	pnetlib requirements.
 
-* samples/mscorlib.dll: new version with all of the latest pnetlib changes.
+	* samples/mscorlib.dll: new version with all of the latest
+	pnetlib changes.
 
-* lib_decimal.c, lib_object.c, lib_reflect.c, lib_thread.c, lib_type.c:
-more internalcall updates to match the latest pnetlib requirements.
+	* lib_decimal.c, lib_object.c, lib_reflect.c, lib_thread.c,
+	lib_type.c: more internalcall updates to match the latest pnetlib
+	requirements.
 
-* include/il_crypt.h, include/Makefile.am, support/Makefile.am,
-support/sha1.c: implement the SHA1 hash algorithm.
+	* include/il_crypt.h, include/Makefile.am, support/Makefile.am,
+	support/sha1.c: implement the SHA1 hash algorithm.
 
-* support/guid.c: re-distribute the entropy in the GUID buffer using SHA1.
+	* support/guid.c: re-distribute the entropy in the GUID buffer
+	using SHA1.
 
-* include/il_crypt.h, support/Makefile.am, support/md5.c: implement
-the MD5 hash algorithm.
+	* include/il_crypt.h, support/Makefile.am, support/md5.c: implement
+	the MD5 hash algorithm.
 
-* ildb/ildb_input.c: turn off HAVE_CONFIG_H prior to including the
-readline headers, because it confuses them on some systems.
+	* ildb/ildb_input.c: turn off HAVE_CONFIG_H prior to including the
+	readline headers, because it confuses them on some systems.
 
 2001-12-03  Bradley M. Kuhn  <bkuhn@ebb.org>
 
-* README, pnet.spec (Summary): Minor terminology changes.
+	* README, pnet.spec (Summary): Minor terminology changes.
 
 2001-11-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/lib_misc.c, engine/lib_array.c, engine/internal.c: implement the
-"internalcall" methods for "System.BitConverter" and "System.Buffer".
+	* engine/lib_misc.c, engine/lib_array.c, engine/internal.c:
+	implement the "internalcall" methods for "System.BitConverter"
+	and "System.Buffer".
 
-* engine/engine.h, engine/internal.c, engine/lib_defs.h, engine/lib_reflect.c,
-engine/lib_type.c, engine/process.c: implement "internalcall" methods for
-assembly and type reflection.
+	* engine/engine.h, engine/internal.c, engine/lib_defs.h,
+	engine/lib_reflect.c, engine/lib_type.c, engine/process.c:
+	implement "internalcall" methods for assembly and type reflection.
 
-* cscc/cs_grammar.y: fix a shift/reduce conflict in the grammar which
-caused it to complain about casts to array types.  e.g. "(A[]) expr".
+	* cscc/cs_grammar.y: fix a shift/reduce conflict in the grammar which
+	caused it to complain about casts to array types.  e.g. "(A[]) expr".
 
-* samples/mscorlib.dll: new version that matches the engine changes for
-reflection.
+	* samples/mscorlib.dll: new version that matches the engine changes
+	for reflection.
 
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/engine.h, engine/internal.c, engine/lib_defs.h, engine/lib_object.c,
-engine/lib_type.c, engine/process.c: modify the runtime engine's reflection
-interface to match the changes to pnetlib.
+	* engine/engine.h, engine/internal.c, engine/lib_defs.h,
+	engine/lib_object.c, engine/lib_type.c, engine/process.c:
+	modify the runtime engine's reflection interface to match the
+	changes to pnetlib.
 
-* samples/mscorlib.dll: new version with the changed reflection interface.
+	* samples/mscorlib.dll: new version with the changed reflection
+	interface.
 
-* engine/Makefile.am, engine/internal.c, engine/lib_defs.h,
-engine/lib_reflect.c, engine/lib_type.c: implement the internalcall methods
-for "System.Reflection.ClrHelpers".
+	* engine/Makefile.am, engine/internal.c, engine/lib_defs.h,
+	engine/lib_reflect.c, engine/lib_type.c: implement the internalcall
+	methods for "System.Reflection.ClrHelpers".
 
-* engine/lib_misc.c, engine/internal.c, engine/Makefile.am: implement
-the internalcall methods for "System.Guid".
+	* engine/lib_misc.c, engine/internal.c, engine/Makefile.am: implement
+	the internalcall methods for "System.Guid".
 
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* samples/mscorlib.dll: new version with many changes to exceptions, I/O,
-resources, etc.
+	* samples/mscorlib.dll: new version with many changes to exceptions,
+	I/O, resources, etc.
 
 2001-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/verify.c, engine/verify_var.c: detect unsafe pointer types
-in arguments and locals and bail out of the verifier if found.
+	* engine/verify.c, engine/verify_var.c: detect unsafe pointer types
+	in arguments and locals and bail out of the verifier if found.
 
-* engine/verify_var.c: handle "byref" local variables correctly in "ldloc".
+	* engine/verify_var.c: handle "byref" local variables correctly
+	in "ldloc".
 
-* tests/test_vlocal.c, tests/test_verify.h, tests/test_verify.c,
-tests/ilunit.c, tests/Makefile.am: implement some unit tests for local
-variable and argument opcodes.
+	* tests/test_vlocal.c, tests/test_verify.h, tests/test_verify.c,
+	tests/ilunit.c, tests/Makefile.am: implement some unit tests for
+	local variable and argument opcodes.
 
-* image/context.c (GetImageByName): use the token data blocks rather
-than the raw values, because the synthetic image doesn't have raw values.
+	* image/context.c (GetImageByName): use the token data blocks
+	rather than the raw values, because the synthetic image doesn't
+	have raw values.
 
-* image/link.c (ILPInvokeResolveModule): fix a bug that caused two '/'
-characters to be inserted into pathnames; improve the #ifdef's that detect
-if we are compiling on a Win32 platform.
+	* image/link.c (ILPInvokeResolveModule): fix a bug that caused two '/'
+	characters to be inserted into pathnames; improve the #ifdef's that
+	detect if we are compiling on a Win32 platform.
 
-* cscc/cs_main.c (LoadLibraryFromPath): minor status check bug that was
-introduced when the source was updated to use "ILImageLoadFromFile".
+	* cscc/cs_main.c (LoadLibraryFromPath): minor status check bug
+	that was introduced when the source was updated to use
+	"ILImageLoadFromFile".
 
-* configure.in, NEWS: update for "0.2.6" release.
+	* configure.in, NEWS: update for "0.2.6" release.
 
-* configure.in: update the working version to "0.2.7".
+	* configure.in: update the working version to "0.2.7".
 
 2001-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* include/il_image, image/pecoff_loader.c (ILImageLoadFromFile): new function.
+	* include/il_image, image/pecoff_loader.c (ILImageLoadFromFile):
+	new function.
 
-* cscc/cs_main.c, csdoc/doc_valil.c, engine/ilverify.c, engine/process.c,
-ilfind/ilfind.c, ilnative/ilnative.c, ilsize/ilsize.c, image/link.c:
-modify to use the simpler "ILImageLoadFromFile" API.
+	* cscc/cs_main.c, csdoc/doc_valil.c, engine/ilverify.c,
+	engine/process.c, ilfind/ilfind.c, ilnative/ilnative.c,
+	ilsize/ilsize.c, image/link.c: modify to use the simpler
+	"ILImageLoadFromFile" API.
 
-* doc/pnet_faq.html: update the FAQ.
+	* doc/pnet_faq.html: update the FAQ.
 
-* engine/verify.c, engine/verify_call.c, engine/verify_obj.c,
-engine/verify_ptr.c, engine/verify_var.c: handle unsafe pointer types
-correctly in "AssignCompatible"; pass the unsafe mode flag to
-"AssignCompatible" every time it is called.
+	* engine/verify.c, engine/verify_call.c, engine/verify_obj.c,
+	engine/verify_ptr.c, engine/verify_var.c: handle unsafe pointer types
+	correctly in "AssignCompatible"; pass the unsafe mode flag to
+	"AssignCompatible" every time it is called.
 
-* image/member.c: nested classes can access private members within
-their nesting parents.
+	* image/member.c: nested classes can access private members within
+	their nesting parents.
 
-* engine/asmfix.c: replace "incl %esi" with "addl $1, %esi", because
-Intel's performance guidelines suggest that increment instructions
-should be avoided.  This does produce a slight improvement in engine
-performance.
+	* engine/asmfix.c: replace "incl %esi" with "addl $1, %esi", because
+	Intel's performance guidelines suggest that increment instructions
+	should be avoided.  This does produce a slight improvement in engine
+	performance.
 
-* ilasm/ilasm_output.c: bug in "ILAsmOutVar", which caused it to
-output "ldarg" instead of "ldloc" in some cases.
+	* ilasm/ilasm_output.c: bug in "ILAsmOutVar", which caused it to
+	output "ldarg" instead of "ldloc" in some cases.
 
 2001-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* tests/Makefile.am, tests/ilunit.c, tests/test_varith.c,
-tests/test_vbranch.c, tests/test_vcompare.c, tests/test_vconst.c,
-tests/test_vconv.c, tests/test_verify.c, tests/test_verify.h:
-implement many tests for arithmetic, conversion, branch, constant,
-and comparison instructions in the verifier; rearrange the test code
-a little to make it easier to maintain.
+	* tests/Makefile.am, tests/ilunit.c, tests/test_varith.c,
+	tests/test_vbranch.c, tests/test_vcompare.c, tests/test_vconst.c,
+	tests/test_vconv.c, tests/test_verify.c, tests/test_verify.h:
+	implement many tests for arithmetic, conversion, branch, constant,
+	and comparison instructions in the verifier; rearrange the test code
+	a little to make it easier to maintain.
 
-* engine/verify.c: validate the target stack as empty just after
-an unconditional jump, even if the location does not have a label.
+	* engine/verify.c: validate the target stack as empty just after
+	an unconditional jump, even if the location does not have a label.
 
-* engine/verify_arith.c: set the correct result type for "add" and "sub"
-operations on pointers.
+	* engine/verify_arith.c: set the correct result type for "add"
+	and "sub" operations on pointers.
 
-* csdoc/doc_destroy.c, csdoc/doc_html.c, csdoc/doc_load.c, csdoc/doc_texi.c,
-csdoc/doc_tree.h: keep track of the assembly name for a type when the
-XML file is loaded; report the assembly name in generated documentation.
+	* csdoc/doc_destroy.c, csdoc/doc_html.c, csdoc/doc_load.c,
+	csdoc/doc_texi.c, csdoc/doc_tree.h: keep track of the assembly name
+	for a type when the XML file is loaded; report the assembly name
+	in generated documentation.
 
-* csdoc/doc_valil.c, csdoc/Makefile.am: begin writing "csdocvalil", which
-can be used to validate IL binaries such as "mscorlib.dll" against the
-ECMA-supplied XML documentation file.
+	* csdoc/doc_valil.c, csdoc/Makefile.am: begin writing "csdocvalil",
+	which can be used to validate IL binaries such as "mscorlib.dll"
+	against the ECMA-supplied XML documentation file.
 
-* samples/mscorlib.dll: new version with "System.Text" namespace.
+	* samples/mscorlib.dll: new version with "System.Text" namespace.
 
 2001-11-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* support/filemap.c: modify the #ifdef's according to suggestions from
-Volker Hahn <Volker.Hahn@bytesteps.net> so as to detect cygwin better.
+	* support/filemap.c: modify the #ifdef's according to suggestions from
+	Volker Hahn <Volker.Hahn@bytesteps.net> so as to detect cygwin better.
 
-* engine/cvm.c, engine/cvm.h, engine/cvm_dasm.c, engine/cvm_inline.c,
-engine/cvmc.c, engine/cvmc_call.c, engine/ilverify.c, engine/lib_string.c,
-engine/verify_call.c, include/il_coder.h, include/il_engine.h: detect
-commonly-used methods in "System.String" and "System.Threading.Monitor"
-and inline them with CVM replacement opcodes.
+	* engine/cvm.c, engine/cvm.h, engine/cvm_dasm.c, engine/cvm_inline.c,
+	engine/cvmc.c, engine/cvmc_call.c, engine/ilverify.c,
+	engine/lib_string.c, engine/verify_call.c, include/il_coder.h,
+	include/il_engine.h: detect commonly-used methods in "System.String"
+	and "System.Threading.Monitor" and inline them with CVM replacement
+	opcodes.
 
-* tests/empty1.cs, tests/empty2.cs, tests/runcscc.sh, tests/type_access.cs:
-remove some obsolete files.
+	* tests/empty1.cs, tests/empty2.cs, tests/runcscc.sh,
+	tests/type_access.cs: remove some obsolete files.
 
-* engine/Makefile.am, engine/null_coder.c, engine/ilverify.c: split the
-null coder into a separate source file so it can be reused by other programs.
+	* engine/Makefile.am, engine/null_coder.c, engine/ilverify.c: split
+	the null coder into a separate source file so it can be reused by
+	other programs.
 
-* Makefile.am, configure.in, tests/.cvsignore, tests/Makefile.am,
-tests/ilunit.c, tests/ilunit.h, tests/test_verify.c: implement an
-XUnit-style testing framework to assist with testing the system;
-begin writing a test harness for the bytecode verifier.
+	* Makefile.am, configure.in, tests/.cvsignore, tests/Makefile.am,
+	tests/ilunit.c, tests/ilunit.h, tests/test_verify.c: implement an
+	XUnit-style testing framework to assist with testing the system;
+	begin writing a test harness for the bytecode verifier.
 
-* engine/verify_var.c: fix the code that fetches 16-bit variable numbers
-in some of the prefixed opcodes.
+	* engine/verify_var.c: fix the code that fetches 16-bit variable
+	numbers in some of the prefixed opcodes.
 
-* engine/verify_arith.c: use "subUnsafeMatrix" instead of "addUnsafeMatrix"
-for verifying "sub" and "sub.ovf.un".
+	* engine/verify_arith.c: use "subUnsafeMatrix" instead of
+	"addUnsafeMatrix" for verifying "sub" and "sub.ovf.un".
 
-* engine/verify_branch.c: "clt", "clt.un", and "cgt" are not valid on
-pointer arguments.
+	* engine/verify_branch.c: "clt", "clt.un", and "cgt" are not valid on
+	pointer arguments.
 
-* tests/test_verify.c: implement verification test cases for arithmetic,
-conversion, comparison, and illegal opcodes.
+	* tests/test_verify.c: implement verification test cases for
+	arithmetic, conversion, comparison, and illegal opcodes.
 
-* ilasm/ilasm_main.c: re-enable short instruction squashing; it got disabled
-at some point in the past, and it should not have been.
+	* ilasm/ilasm_main.c: re-enable short instruction squashing;
+	it got disabled at some point in the past, and it should not have been.
 
 2001-11-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,
-engine/cvm_except.c: implement exception handling opcodes in CVM.
+	* engine/call.c, engine/engine.h, engine/cvm.c, engine/cvm_call.c,
+	engine/cvm_except.c: implement exception handling opcodes in CVM.
 
-* engine/call.c (CallMethod): don't copy the exception from the stack
-to "thread->thrownException", because it is already there.
+	* engine/call.c (CallMethod): don't copy the exception from the stack
+	to "thread->thrownException", because it is already there.
 
-* engine/lib_type.c: bug fix in the encoding of type names.
+	* engine/lib_type.c: bug fix in the encoding of type names.
 
-* engine/ilrun.c: print a message if "Main" throws an uncaught exception.
+	* engine/ilrun.c: print a message if "Main" throws an uncaught
+	exception.
 
-* engine/verify_except.c, engine/cvmc_except.c: fix the generation
-of the handler table for methods with try blocks.
+	* engine/verify_except.c, engine/cvmc_except.c: fix the generation
+	of the handler table for methods with try blocks.
 
-* engine/lib_string.c, engine/lib_defs.h: implement the "internalcall"
-methods that are needed to support "System.Text.StringBuilder".
+	* engine/lib_string.c, engine/lib_defs.h: implement the "internalcall"
+	methods that are needed to support "System.Text.StringBuilder".
 
-* samples/mscorlib.dll: new version with "System.Text.StringBuilder".
+	* samples/mscorlib.dll: new version with "System.Text.StringBuilder".
 
 2001-11-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* samples/mscorlib.dll: new version with "UtcNow" fix.
+	* samples/mscorlib.dll: new version with "UtcNow" fix.
 
-* include/il_coder.h, engine/cvmc.c, engine/cvmc_branch.c, engine/ilverify.c:
-implement the "Throw", "Jsr", and "RetFromJsr" coder API's.
+	* include/il_coder.h, engine/cvmc.c, engine/cvmc_branch.c,
+	engine/ilverify.c: implement the "Throw", "Jsr", and "RetFromJsr"
+	coder API's.
 
-* engine/call.c, engine/cvm.h, engine/cvm_branch.c, engine/cvm_call.c,
-engine/cvm_dasm.c, engine/cvm_except.c, engine/cvmc.c, engine/cvmc_branch.c,
-engine/cvmc_except.c, engine/engine.h, engine/ilverify.c, engine/thread.c,
-engine/verify.c, engine/verify_except.c, image/member.c, include/il_coder.h,
-include/il_program.h: add most of the verification and code generation
-logic for exceptions.
+	* engine/call.c, engine/cvm.h, engine/cvm_branch.c, engine/cvm_call.c,
+	engine/cvm_dasm.c, engine/cvm_except.c, engine/cvmc.c,
+	engine/cvmc_branch.c, engine/cvmc_except.c, engine/engine.h,
+	engine/ilverify.c, engine/thread.c, engine/verify.c,
+	engine/verify_except.c, image/member.c, include/il_coder.h,
+	include/il_program.h: add most of the verification and code
+	generation logic for exceptions.
 
 2001-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c: allow the CVM
-dump stream to be adjusted.
+	* engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c: allow the CVM
+	dump stream to be adjusted.
 
-* engine/verify_call.c: bug in the verification of "newobj" - "ILClassToType"
-should be used instead of "ILType_FromValueType" to ensure that primitive
-value types are converted properly.
+	* engine/verify_call.c: bug in the verification of "newobj" -
+	"ILClassToType" should be used instead of "ILType_FromValueType" to
+	ensure that primitive value types are converted properly.
 
-* engine/ilrun.c, engine/process.c, image/context.c, image/image.h,
-image/link.c, include/il_engine.h, include/il_image.h: add user-specified
-library search paths to the runtime engine and the image library.
+	* engine/ilrun.c, engine/process.c, image/context.c, image/image.h,
+	image/link.c, include/il_engine.h, include/il_image.h: add
+	user-specified library search paths to the runtime engine and the
+	image library.
 
-* engine/lib_platform.c, include/il_system.h, support/time.c: add new
-functions to support UTC vs local time zone differences.
+	* engine/lib_platform.c, include/il_system.h, support/time.c: add new
+	functions to support UTC vs local time zone differences.
 
-* samples/mscorlib.dll: new version with timezone fixes.
+	* samples/mscorlib.dll: new version with timezone fixes.
 
 2001-11-19  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* image/Makefile.am, image/marshal.c, image/types.c, include/il_meta.h,
-include/il_program.h, include/il_types.h: implement "ILPInvokeGetMarshalType",
-which determines how a parameter should be marshalled to a PInvoke method.
+	* image/Makefile.am, image/marshal.c, image/types.c,
+	include/il_meta.h, include/il_program.h, include/il_types.h:
+	implement "ILPInvokeGetMarshalType", which determines how a
+	parameter should be marshalled to a PInvoke method.
 
-* cscc/cscc.c: print a warning message if "-fsyntax-check" is supplied to
-let users know that the C# compiler is still a work in progress.  Hopefully
-this will stop the newbies asking "why doesn't it compile?" all the time.
+	* cscc/cscc.c: print a warning message if "-fsyntax-check" is
+	supplied to let users know that the C# compiler is still a work
+	in progress.  Hopefully this will stop the newbies asking
+	"why doesn't it compile?" all the time.
 
-* image/link.c: bug fix - don't search the parent assembly directory during
-dynamic linking if the filename is NULL.
+	* image/link.c: bug fix - don't search the parent assembly
+	directory during dynamic linking if the filename is NULL.
 
-* image/marshal.c: the name of the attribute should end in "Attribute".
+	* image/marshal.c: the name of the attribute should end in "Attribute".
 
-* configure.in, image/Makefile.am, image/image.c, image/image.h,
-image/link.c, image/pecoff_loader.c, image/types.c, include/il_image.h,
-include/il_program.h: implement a new path lookup algorithm, for
-both assemblies and PInvoke-based libraries.
+	* configure.in, image/Makefile.am, image/image.c, image/image.h,
+	image/link.c, image/pecoff_loader.c, image/types.c, include/il_image.h,
+	include/il_program.h: implement a new path lookup algorithm, for
+	both assemblies and PInvoke-based libraries.
 
-* config.guess, config.sub: new files to support "AC_CANONICAL_SYSTEM"
-in the configure.in file.
+	* config.guess, config.sub: new files to support "AC_CANONICAL_SYSTEM"
+	in the configure.in file.
 
-* engine/asmfix.c: changes to accomodate assembler issues that are
-specific to cygwin.
+	* engine/asmfix.c: changes to accomodate assembler issues that are
+	specific to cygwin.
 
-* support/dynlib.c: simplify the pathname handling - we will handle
-the ugliness of prefixes and suffixes elsewhere.
+	* support/dynlib.c: simplify the pathname handling - we will handle
+	the ugliness of prefixes and suffixes elsewhere.
 
-* engine/convert.c, image/link.c: change the PInvoke module loading so
-that it uses the "ILPInvokeResolveModule" function.
+	* engine/convert.c, image/link.c: change the PInvoke module loading so
+	that it uses the "ILPInvokeResolveModule" function.
 
 2001-11-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,
-engine/cvmc_setup.c: modify the argument packing for "ffi_call" so
-that arguments are pushed onto a "native argument stack" instead of
-the normal stack.  This is a little faster, and also avoids alignment
-problems on platforms with 32-bit pointers, but 64-bit alignment.
+	* engine/cvm.h, engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c,
+	engine/cvmc_setup.c: modify the argument packing for "ffi_call" so
+	that arguments are pushed onto a "native argument stack" instead of
+	the normal stack.  This is a little faster, and also avoids alignment
+	problems on platforms with 32-bit pointers, but 64-bit alignment.
 
-* configure.in, include/il_system.h, include/il_config.h.in, support/dynlib.c,
-support/Makefile.am, engine/convert.c, engine/engine.h, engine/process.c:
-add support code to load dynamic libraries for PInvoke calls.
+	* configure.in, include/il_system.h, include/il_config.h.in,
+	support/dynlib.c, support/Makefile.am, engine/convert.c,
+	engine/engine.h, engine/process.c: add support code to load
+	dynamic libraries for PInvoke calls.
 
-* include/il_engine.h, engine/lib_string.c: add the helper functions
-"ILStringToUTF8" and "ILStringToAnsi" to the engine API.
+	* include/il_engine.h, engine/lib_string.c: add the helper functions
+	"ILStringToUTF8" and "ILStringToAnsi" to the engine API.
 
-* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c, engine/cvmc_setup.c:
-recognise string parameters to PInvoke functions and convert them into
-"char *" strings automatically.
+	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,
+	engine/cvmc_setup.c: recognise string parameters to PInvoke
+	functions and convert them into "char *" strings automatically.
 
 2001-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* configure.in, NEWS: update for "0.2.4" release.
+	* configure.in, NEWS: update for "0.2.4" release.
 
-* configure.in: change the working version to "0.2.5".
+	* configure.in: change the working version to "0.2.5".
 
-* engine/Makefile.am, engine/engine.h, engine/internal.c, engine/lib_diag.c,
-engine/process.c, engine/thread.c: implement the "internalcall" methods
-for "System.Diagnostics".
+	* engine/Makefile.am, engine/engine.h, engine/internal.c,
+	engine/lib_diag.c, engine/process.c, engine/thread.c: implement
+	the "internalcall" methods for "System.Diagnostics".
 
-* samples/mscorlib.dll: new version with "System.Diagnostics" support.
+	* samples/mscorlib.dll: new version with "System.Diagnostics" support.
 
-* engine/Makefile.am, engine/asmfix.c: fix a bug in the pass-through
-code in "asmfix" that caused it to output the same assembly code twice;
-recognise another form of loop top that gcc sometimes uses.
+	* engine/Makefile.am, engine/asmfix.c: fix a bug in the pass-through
+	code in "asmfix" that caused it to output the same assembly code twice;
+	recognise another form of loop top that gcc sometimes uses.
 
-* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_ptr.c, engine/cvmc_obj.c:
-modify the handling of "ILTypedRef" structures so that they are aligned
-and used properly on 64-bit platforms.
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_ptr.c, engine/cvmc_obj.c:
+	modify the handling of "ILTypedRef" structures so that they are aligned
+	and used properly on 64-bit platforms.
 
 2001-11-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* cscc/cs_invoke.tc, cscc/cs_internal.h, cscc/cs_lookup.c: add code to
-determine the "best" candidate method from amongst a group of candidates.
+	* cscc/cs_invoke.tc, cscc/cs_internal.h, cscc/cs_lookup.c: add code
+	to determine the "best" candidate method from amongst a group of
+	candidates.
 
-* codegen/cg_gen.c: make "ILFindNonSystemType" look in the global scope
-before falling back to the library image.
+	* codegen/cg_gen.c: make "ILFindNonSystemType" look in the global
+	scope before falling back to the library image.
 
-* codegen/cg_gen.h, codegen/cg_gen.c, cscc/cs_main.c, cscc/csdoc.c:
-don't create the builtin library image if "mscorlib" is being loaded.
+	* codegen/cg_gen.h, codegen/cg_gen.c, cscc/cs_main.c, cscc/csdoc.c:
+	don't create the builtin library image if "mscorlib" is being loaded.
 
-* dumpasm/dump_ident.c: try to print the assembly name rather than the
-module name when dumping class names.
+	* dumpasm/dump_ident.c: try to print the assembly name rather than the
+	module name when dumping class names.
 
-* cscc/cs_invoke.tc: favour non-"params" candidates over "params" candidates.
+	* cscc/cs_invoke.tc: favour non-"params" candidates over "params"
+	candidates.
 
-* codegen/cg_output.c, codegen/jv_output.c: pass "info->image" to
-"ILDumpMethodType", "ILDumpType", and "ILDumpClassName", to ensure
-that the correct module/assembly qualifications are output.
+	* codegen/cg_output.c, codegen/jv_output.c: pass "info->image" to
+	"ILDumpMethodType", "ILDumpType", and "ILDumpClassName", to ensure
+	that the correct module/assembly qualifications are output.
 
-* cscc/cs_invoke.tc: slight bug with non-"params" favouring code - it didn't
-work if the first candidate was "params".
+	* cscc/cs_invoke.tc: slight bug with non-"params" favouring code -
+	it didn't work if the first candidate was "params".
 
-* cscc/cscc.c, cscc/cs_options.h, cscc/cs_options.c: call the linker
-if we are building a final executable or library.
+	* cscc/cscc.c, cscc/cs_options.h, cscc/cs_options.c: call the linker
+	if we are building a final executable or library.
 
-* cscc/cs_options.c (CSAddLinkFile): the wrong array element in
-"files_to_link_temp" was being set.
+	* cscc/cs_options.c (CSAddLinkFile): the wrong array element in
+	"files_to_link_temp" was being set.
 
-* cscc/cscc.c: add "-L ." to the end of the linker command-line to make
-it use the same library resolution code as "cscc-cs".
+	* cscc/cscc.c: add "-L ." to the end of the linker command-line to
+	make it use the same library resolution code as "cscc-cs".
 
-* samples/fib.cs, samples/Makefile.am, samples/.cvsignore: modify the
-Fibonacci example program so that it is compiled all the way to an
-executable file.
+	* samples/fib.cs, samples/Makefile.am, samples/.cvsignore: modify the
+	Fibonacci example program so that it is compiled all the way to an
+	executable file.
 
-* image/member.c: bail out from "ILMethodGetCode" if the method has an
-RVA, but the code is native rather than IL.
+	* image/member.c: bail out from "ILMethodGetCode" if the method has an
+	RVA, but the code is native rather than IL.
 
-* image/meta_build.c: remember the original call site signature when
-a MemberRef points at a method.
+	* image/meta_build.c: remember the original call site signature when
+	a MemberRef points at a method.
 
-* dumpasm/dump_type.c: print "..." for sentinels.
+	* dumpasm/dump_type.c: print "..." for sentinels.
 
-* ildasm/ildasm_method.c: dump the proper call site signature for
-"vararg" calls; print a message when native code is encountered.
+	* ildasm/ildasm_method.c: dump the proper call site signature for
+	"vararg" calls; print a message when native code is encountered.
 
-* engine/cvm.h: temporarily disable CVMWord structure alignment under cygwin
-because it gives the wrong value and causes problems with "libffi".
+	* engine/cvm.h: temporarily disable CVMWord structure alignment under
+	cygwin because it gives the wrong value and causes problems with
+	"libffi".
 
-* include/il_utils.h, support/cmdline.c, cscc/cs_options.c: implement and
-use the "ILCmdLineExpand" function to handle "@"-specified response files.
+	* include/il_utils.h, support/cmdline.c, cscc/cs_options.c: implement
+	and use the "ILCmdLineExpand" function to handle "@"-specified
+	response files.
 
-* cscc/cscc.c: disable the final link if we are only performing a syntax
-or semantic check.
+	* cscc/cscc.c: disable the final link if we are only performing a
+	syntax or semantic check.
 
 2001-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* cscc/cs_main.c: load library images into the C# compiler to assist
-with the resolution of library definitions.
+	* cscc/cs_main.c: load library images into the C# compiler to assist
+	with the resolution of library definitions.
 
-* cscc/cs_lookup.c: bug in "FilterStatic" and "FilterNonStatic" that caused
-it to use the wrong pointer for the method.
+	* cscc/cs_lookup.c: bug in "FilterStatic" and "FilterNonStatic"
+	that caused it to use the wrong pointer for the method.
 
-* cscc/cs_grammar.y: make sure that the "System" namespace is always
-included at the global level of every source file.
+	* cscc/cs_grammar.y: make sure that the "System" namespace is always
+	included at the global level of every source file.
 
-* cscc/cs_internal.h, cscc/cs_invoke.tc, cscc/cs_lookup.c: improve the
-method candidate testing so that it handles multiple candidates better.
+	* cscc/cs_internal.h, cscc/cs_invoke.tc, cscc/cs_lookup.c: improve the
+	method candidate testing so that it handles multiple candidates better.
 
-* ilnative/ilnative.c: don't report "runtime" methods as native, because
-they are usually delegate methods that aren't strictly native in the
-same way as "internalcall"'s are.
+	* ilnative/ilnative.c: don't report "runtime" methods as native,
+	because they are usually delegate methods that aren't strictly native
+	in the same way as "internalcall"'s are.
 
 2001-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* image/sig_writer.c (WriteType): modify the representation of multi-
-dimensional arrays to match the recent change to "sig_parse.c".
+	* image/sig_writer.c (WriteType): modify the representation of multi-
+	dimensional arrays to match the recent change to "sig_parse.c".
 
-* image/misc.c: check for null in "ILTypeSpecGetClassRef".
+	* image/misc.c: check for null in "ILTypeSpecGetClassRef".
 
-* image/assembly.c (ILAssemblyCreate): don't assign a real token if
-we are loading an image and the supplied token code is zero.  This is
-used to create pseudo assembly imports for synthetic types.
+	* image/assembly.c (ILAssemblyCreate): don't assign a real token if
+	we are loading an image and the supplied token code is zero.  This is
+	used to create pseudo assembly imports for synthetic types.
 
-* image/assembly.c: bug in previous check-in; we need to be careful
-not to create a real AssemblyRef for "$Synthetic" when images are built.
+	* image/assembly.c: bug in previous check-in; we need to be careful
+	not to create a real AssemblyRef for "$Synthetic" when images are
+	built.
 
-* engine/cvmc_stack.c: adjust the stack height properly for "dup" and "pop".
+	* engine/cvmc_stack.c: adjust the stack height properly for
+	"dup" and "pop".
 
-* engine/cvm_stack.c, engine/cvm_var.c: fix a bug in the usage of
-"MODIFY_PC_AND_STACK" where the stack is being adjusted by a value
-read from the instruction's arguments.  Previously, the program counter
-was being incremented before fetching the argument, when it should
-have been incremented *after* fetching the argument.
+	* engine/cvm_stack.c, engine/cvm_var.c: fix a bug in the usage of
+	"MODIFY_PC_AND_STACK" where the stack is being adjusted by a value
+	read from the instruction's arguments.  Previously, the program counter
+	was being incremented before fetching the argument, when it should
+	have been incremented *after* fetching the argument.
 
-* engine/cvm_call.c: add some extra debug code to dump the top 16 items
-on the stack on entry and exit to every method.
+	* engine/cvm_call.c: add some extra debug code to dump the top 16
+	items on the stack on entry and exit to every method.
 
-* engine/engine.h: increase the stack size so that we can run more
-involved examples.
+	* engine/engine.h: increase the stack size so that we can run more
+	involved examples.
 
-* engine/Makefile.am, engine/asmfix.c, engine/.cvsignore: check in an
-experimental program that can optimize the CVM interpreter on x86 platforms
-better than gcc can.
+	* engine/Makefile.am, engine/asmfix.c, engine/.cvsignore: check in an
+	experimental program that can optimize the CVM interpreter on x86
+	platforms better than gcc can.
 
-* image/meta_build.c: use "ILTypeSpecGetClassRef" to resolve TypeSpec
-MemberRef's instead of the original "ILTypeSpecGetClass".
+	* image/meta_build.c: use "ILTypeSpecGetClassRef" to resolve TypeSpec
+	MemberRef's instead of the original "ILTypeSpecGetClass".
 
-* engine/Makefile.am: temporarily disable the optimized runtime engine
-because it is messing up some people's builds.
+	* engine/Makefile.am: temporarily disable the optimized runtime engine
+	because it is messing up some people's builds.
 
-* samples/mscorlib.dll: new version with lots of new classes.
+	* samples/mscorlib.dll: new version with lots of new classes.
 
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/verify_var.c, engine/verify_call.c: handle value type "this"
-parameters better.
+	* engine/verify_var.c, engine/verify_call.c: handle value type "this"
+	parameters better.
 
-* engine/cvm_call.c, engine/cvm_dasm.c: flush stdout after dumping
-CVM instruction data.
+	* engine/cvm_call.c, engine/cvm_dasm.c: flush stdout after dumping
+	CVM instruction data.
 
-* engine/cvmc_obj.c: bug in "CVMCoder_BoxSmaller" - the wrong constants
-were being used in the switch cases.
+	* engine/cvmc_obj.c: bug in "CVMCoder_BoxSmaller" - the wrong constants
+	were being used in the switch cases.
 
-* engine/verify.c: compute the size of the jump target mask better,
-and make sure that we clear temporary memory blocks when they are
-allocated.
+	* engine/verify.c: compute the size of the jump target mask better,
+	and make sure that we clear temporary memory blocks when they are
+	allocated.
 
-* engine/verify.c: modify the debug code so that it reports an accurate
-offset for failed instructions.
+	* engine/verify.c: modify the debug code so that it reports an accurate
+	offset for failed instructions.
 
-* engine/verify_branch.c: reduce the stack size for "switch" instructions
-prior to validating stack heights.
+	* engine/verify_branch.c: reduce the stack size for "switch"
+	instructions prior to validating stack heights.
 
-* engine/lib_string.c, engine/strapi.c: move the external string API's
-out of "strapi.c" and into "lib_string.c"; then implement them efficiently
-in terms of the existing "internalcall" representation.
+	* engine/lib_string.c, engine/strapi.c: move the external string API's
+	out of "strapi.c" and into "lib_string.c"; then implement them
+	efficiently in terms of the existing "internalcall" representation.
 
-* engine/engine.h, engine/Makefile.am, engine/process.c, engine/lib_string.c:
-get the string class from the process, not from the executing method,
-because the string API's may not be running in the context of a method.
+	* engine/engine.h, engine/Makefile.am, engine/process.c,
+	engine/lib_string.c: get the string class from the process,
+	not from the executing method, because the string API's may
+	not be running in the context of a method.
 
-* engine/engine.h, engine/process.c, engine/lib_string.c: implement
-string intern'ing.
+	* engine/engine.h, engine/process.c, engine/lib_string.c: implement
+	string intern'ing.
 
-* engine/lib_string.c: implement new "internalcall" methods for
-string comparisons.
+	* engine/lib_string.c: implement new "internalcall" methods for
+	string comparisons.
 
-* samples/mscorlib.dll: new version with updated "String" class.
+	* samples/mscorlib.dll: new version with updated "String" class.
 
-* image/sig_parse.c: bug in the parsing of sizes and lower bounds for
-multi-dimensional arrays.
+	* image/sig_parse.c: bug in the parsing of sizes and lower bounds for
+	multi-dimensional arrays.
 
 2001-11-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/cvm_dasm.c: dump the correct signature for constructors when
-"call_native" is used.
+	* engine/cvm_dasm.c: dump the correct signature for constructors when
+	"call_native" is used.
 
-* engine/cvmc_branch.c: bug - "CVMCoder_Label" wasn't handling multiple
-references for the same label properly.
+	* engine/cvmc_branch.c: bug - "CVMCoder_Label" wasn't handling multiple
+	references for the same label properly.
 
-* include/il_engine.h, engine/lib_array.c: "ILExecThreadGetElem" and
-"ILExecThreadSetElem".
+	* include/il_engine.h, engine/lib_array.c: "ILExecThreadGetElem" and
+	"ILExecThreadSetElem".
 
-* include/il_engine.h, engine/lookup.c, engine/lib_type.c: rename
-"ILExecThreadLookupType" to "ILExecThreadLookupClass", and then implement
-a new "ILExecThreadLookupType" that returns "ILType" instead of "ILClass".
+	* include/il_engine.h, engine/lookup.c, engine/lib_type.c: rename
+	"ILExecThreadLookupType" to "ILExecThreadLookupClass", and then
+	implement a new "ILExecThreadLookupType" that returns "ILType"
+	instead of "ILClass".
 
-* engine/ilrun.c: construct an array with the command-line parameters,
-and pass it to the program's entry point.
+	* engine/ilrun.c: construct an array with the command-line parameters,
+	and pass it to the program's entry point.
 
-* engine/layout.c: record the interface properly in "ComputeInterfaceTable".
+	* engine/layout.c: record the interface properly in
+	"ComputeInterfaceTable".
 
-* engine/verify_call.c: bug - "callvirt" was checking the wrong class to
-see if it is an interface.
+	* engine/verify_call.c: bug - "callvirt" was checking the wrong
+	class to see if it is an interface.
 
-* engine/layout.c: lay out the static fields after the full object size
-has been computed, to get around circularity problems in value type classes.
+	* engine/layout.c: lay out the static fields after the full object
+	size has been computed, to get around circularity problems in value
+	type classes.
 
-* engine/verify_obj.c: use "AssignCompatible" to test type-compatibility
-for stores into value type fields.
+	* engine/verify_obj.c: use "AssignCompatible" to test
+	type-compatibility for stores into value type fields.
 
-* engine/lib_helpers.c, engine/Makefile.am, engine/internal.c,
-engine/lib_array.c, engine/lib_defs.h, engine/engine.h: implement the
-"InitializeArray" runtime helper method.
+	* engine/lib_helpers.c, engine/Makefile.am, engine/internal.c,
+	engine/lib_array.c, engine/lib_defs.h, engine/engine.h: implement the
+	"InitializeArray" runtime helper method.
 
-* engine/verify_var.c: make "ldarg.0" work when it refers to a "this"
-parameter that is a managed value.
+	* engine/verify_var.c: make "ldarg.0" work when it refers to a "this"
+	parameter that is a managed value.
 
-* engine/cvmc_obj.c: incorrect size when storing "long" fields.
+	* engine/cvmc_obj.c: incorrect size when storing "long" fields.
 
-* engine/cvm_dasm.c: missing instruction in the prefixed opcode table,
-which caused the disassembler to report the wrong instruction sometimes.
+	* engine/cvm_dasm.c: missing instruction in the prefixed opcode table,
+	which caused the disassembler to report the wrong instruction
+	sometimes.
 
-* engine/layout.c: make sure that we resolve value type references
-in "LayoutType" before re-entering "LayoutClass".
+	* engine/layout.c: make sure that we resolve value type references
+	in "LayoutType" before re-entering "LayoutClass".
 
-* engine/cvm_call.c: if we are dumping CVM instructions, then also
-dump the method we are returning to for a "return" instruction.
+	* engine/cvm_call.c: if we are dumping CVM instructions, then also
+	dump the method we are returning to for a "return" instruction.
 
-* engine/cvm_dasm.c, engine/cvm_ptr.c, engine/cvmc_obj.c: modify the
-behaviour of the "padd_offset_n" instruction and fix some bugs with it.
+	* engine/cvm_dasm.c, engine/cvm_ptr.c, engine/cvmc_obj.c: modify the
+	behaviour of the "padd_offset_n" instruction and fix some bugs with it.
 
-* engine/cvmc_obj.c: optimization - don't add an offset of 0 when loading
-value fields in "CVMLoadValueField".
+	* engine/cvmc_obj.c: optimization - don't add an offset of 0 when
+	loading value fields in "CVMLoadValueField".
 
-* engine/verify_obj.c: bug fix - "ldfld" was verifying fields within
-value types incorrectly.
+	* engine/verify_obj.c: bug fix - "ldfld" was verifying fields within
+	value types incorrectly.
 
-* samples/mscorlib.dll: new version with "DateTime" operator fix.
+	* samples/mscorlib.dll: new version with "DateTime" operator fix.
 
-* engine/verify_branch.c: fix the definition of "GET_SHORT_DEST" so that
-it computes the offset as signed instead of unsigned.
+	* engine/verify_branch.c: fix the definition of "GET_SHORT_DEST" so
+	that it computes the offset as signed instead of unsigned.
 
-* engine/layout.c: problem with the size of the interface table.
+	* engine/layout.c: problem with the size of the interface table.
 
-* engine/cvm_call.c: dump the name of a method when it is entered.
+	* engine/cvm_call.c: dump the name of a method when it is entered.
 
-* samples/mscorlib.dll: new version with "TextWriter" fix.
+	* samples/mscorlib.dll: new version with "TextWriter" fix.
 
 2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* include/il_engine.h, engine/call.c: implement an alternative call API
-that uses structures instead of varargs.
+	* include/il_engine.h, engine/call.c: implement an alternative call
+	API that uses structures instead of varargs.
 
-* engine/internal.c, engine/lib_defs.h, engine/lib_thread.c: implement
-more of the thread-related "internalcall" methods.
+	* engine/internal.c, engine/lib_defs.h, engine/lib_thread.c: implement
+	more of the thread-related "internalcall" methods.
 
-* samples/mscorlib.dll: new version of "mscorlib" that contains the
-new resource and thread classes.
+	* samples/mscorlib.dll: new version of "mscorlib" that contains the
+	new resource and thread classes.
 
-* engine/layout.c: temporary disable "ComputeInterfaceTable" because
-it is causing "Hello World" to fail.
+	* engine/layout.c: temporary disable "ComputeInterfaceTable" because
+	it is causing "Hello World" to fail.
 
-* image/class.c: fix the implementation of "ILClassImplements" so that
-it recursively scans all interface parents that an interface has.
+	* image/class.c: fix the implementation of "ILClassImplements" so that
+	it recursively scans all interface parents that an interface has.
 
-* image/program.h, engine/engine.h, engine/call.c, engine/layout.c:
-change the representation of interface tables; compute interfaces that
-inherit from other interfaces properly; this also makes "Hello World"
-work again.
+	* image/program.h, engine/engine.h, engine/call.c, engine/layout.c:
+	change the representation of interface tables; compute interfaces that
+	inherit from other interfaces properly; this also makes "Hello World"
+	work again.
 
 2001-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/layout.c: compute the interface lookup tables for the class.
+	* engine/layout.c: compute the interface lookup tables for the class.
 
-* engine/call.c: resolve interface references during interface lookup;
-recognise 0xFFFF as an abstract interface slot.
+	* engine/call.c: resolve interface references during interface lookup;
+	recognise 0xFFFF as an abstract interface slot.
 
-* engine/cvm_call.c: throw a "MissingMethodException" if interface
-method lookup fails.
+	* engine/cvm_call.c: throw a "MissingMethodException" if interface
+	method lookup fails.
 
-* engine/layout.c: modify the override detection logic to search on
-declaration, not body.
+	* engine/layout.c: modify the override detection logic to search on
+	declaration, not body.
 
-* include/il_serialize.h, include/Makefile.am, image/ser_parse.c,
-image/Makefile.am: routines for parsing serialized attribute values.
+	* include/il_serialize.h, include/Makefile.am, image/ser_parse.c,
+	image/Makefile.am: routines for parsing serialized attribute values.
 
-* ildasm/ildasm_attrs.c, image/ser_parse.c: dump a readable version
-of custom attribute values after the binary blob.
+	* ildasm/ildasm_attrs.c, image/ser_parse.c: dump a readable version
+	of custom attribute values after the binary blob.
 
-* engine/lib_string.c, engine/strapi.c: make sure that integer values
-are cast to "ILVaInt" before being passed to "ILExecThreadNew".
+	* engine/lib_string.c, engine/strapi.c: make sure that integer values
+	are cast to "ILVaInt" before being passed to "ILExecThreadNew".
 
-* ildasm/ildasm_utils.c: dump the text version of the XML within
-security blobs.
+	* ildasm/ildasm_utils.c: dump the text version of the XML within
+	security blobs.
 
 2001-11-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* include/il_values.h, support/test_float.c, support/convert.c,
-support/Makefile.am: add "ILNativeFloatIsNaN" and "ILNativeFloatIsFinite".
+	* include/il_values.h, support/test_float.c, support/convert.c,
+	support/Makefile.am: add "ILNativeFloatIsNaN" and
+	"ILNativeFloatIsFinite".
 
-* codegen/cg_cast.tc: check for overflow during constant casts.
+	* codegen/cg_cast.tc: check for overflow during constant casts.
 
-* support/value.c: remove obsolete file.
+	* support/value.c: remove obsolete file.
 
-* configure.in, include/il_config.h.in, include/il_values.h: make native
-integers the same size as native pointers, to be consistent with the ECMA
-requirements.
+	* configure.in, include/il_config.h.in, include/il_values.h: make
+	native integers the same size as native pointers, to be consistent
+	with the ECMA requirements.
 
-* engine/cvm.h, engine/engine.h: pad CVM stack words to a multiple of
-the best alignment so that 64-bit platforms always have an aligned stack.
+	* engine/cvm.h, engine/engine.h: pad CVM stack words to a multiple of
+	the best alignment so that 64-bit platforms always have an aligned
+	stack.
 
-* engine/lib_defs.h, engine/heap.c: change the definition of the object
-header so that it is aligned on the machine's best alignment boundary.
+	* engine/lib_defs.h, engine/heap.c: change the definition of the object
+	header so that it is aligned on the machine's best alignment boundary.
 
-* Makefile.am, configure.in, libgc/*: check in the Hans-Boehm garbage
-collection library, version 6.0.
+	* Makefile.am, configure.in, libgc/*: check in the Hans-Boehm garbage
+	collection library, version 6.0.
 
-* include/il_gc.h, include/Makefile.am, support/hb_gc.c, support/Makefile.am:
-implement the garbage collection API in terms of the Hans-Boehm collector.
+	* include/il_gc.h, include/Makefile.am, support/hb_gc.c,
+	support/Makefile.am: implement the garbage collection API in terms
+	of the Hans-Boehm collector.
 
-* include/il_engine.h, engine/engine.h, engine/heap.h, engine/heap.c,
-engine/process.c, engine/Makefile.am: modify the engine to use the garbage
-collector instead of the dummy heap implementation.
+	* include/il_engine.h, engine/engine.h, engine/heap.h, engine/heap.c,
+	engine/process.c, engine/Makefile.am: modify the engine to use the
+	garbage collector instead of the dummy heap implementation.
 
-* engine/ilrun.c: add the `-H' (heap size) option to the engine, and
-initialize the engine using "ILExecInit".
+	* engine/ilrun.c: add the `-H' (heap size) option to the engine, and
+	initialize the engine using "ILExecInit".
 
-* engine/engine.h, engine/heap.c, engine/lib_string.c, engine/lib_array.c:
-use atomic memory allocation for strings and arrays of non-pointer values
-so that the garbage collector can avoid wasting time scanning them for
-object pointer values.
+	* engine/engine.h, engine/heap.c, engine/lib_string.c,
+	engine/lib_array.c: use atomic memory allocation for strings and
+	arrays of non-pointer values so that the garbage collector can
+	avoid wasting time scanning them for object pointer values.
 
-* engine/engine.h, engine/heap.c, engine/layout.c: detect the presence
-of non-trivial finalizers within classes and register a finalizer with
-any object that meets the conditions.
+	* engine/engine.h, engine/heap.c, engine/layout.c: detect the presence
+	of non-trivial finalizers within classes and register a finalizer with
+	any object that meets the conditions.
 
-* include/il_gc.h, support/hb_gc.c: implement "persistent" memory allocation
-within the garbage collector.
+	* include/il_gc.h, support/hb_gc.c: implement "persistent" memory
+	allocation within the garbage collector.
 
-* engine/Makefile.am, engine/ilverify.c, engine/layout.c, engine/process.c,
-engine/thread.c: use persistent memory allocation for all engine blocks
-that may contain object pointers that need to seen by the garbage collector.
+	* engine/Makefile.am, engine/ilverify.c, engine/layout.c,
+	engine/process.c, engine/thread.c: use persistent memory
+	allocation for all engine blocks that may contain object pointers
+	that need to seen by the garbage collector.
 
-* engine/heap.c: bug - handle NULL class descriptors when checking for
-finalizers.
+	* engine/heap.c: bug - handle NULL class descriptors when checking
+	for finalizers.
 
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,
-csant/csant.c, csant/csant_build.c, csant/csant_cscc.c, csant/csant_defs.h,
-csant/csant_task.c: implement "<compile>" and related elements.
+	* csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,
+	csant/csant.c, csant/csant_build.c, csant/csant_cscc.c,
+	csant/csant_defs.h, csant/csant_task.c: implement "<compile>"
+	and related elements.
 
-* csant/csant_build.c: length error in memory allocation.
+	* csant/csant_build.c: length error in memory allocation.
 
-* csant/csant_fileset.c: introduce some robustness into the fileset API's.
+	* csant/csant_fileset.c: introduce some robustness into the
+	fileset API's.
 
-* csant/csant_fileset.c: fix the regular expression handling for filesets.
+	* csant/csant_fileset.c: fix the regular expression handling
+	for filesets.
 
-* csant/csant_cscc.c: return the correct return code when the arguments
-have been parsed successfully.
+	* csant/csant_cscc.c: return the correct return code when the
+	arguments have been parsed successfully.
 
-* csant/csant_cscc.c: check the input sources to see if they are newer
-than the output before building the output file.
+	* csant/csant_cscc.c: check the input sources to see if they are newer
+	than the output before building the output file.
 
-* csant/csant_cscc.c: adjust the output filename with respect to
-the base directory.
+	* csant/csant_cscc.c: adjust the output filename with respect to
+	the base directory.
 
-* include/il_values.h, include/il_types.h, image/types.c, codegen/cg_arith.tc,
-codegen/cg_coerce.c, engine/verify_arith.c, cscc/cs_internal.h,
-cscc/cs_grammar.y, cscc/cs_scanner.l, cscc/cs_oper.tc, support/Makefile.am:
-remove all references to "ILValue" and "ILValueType" from the code, because
-they are now obsolete.
+	* include/il_values.h, include/il_types.h, image/types.c,
+	codegen/cg_arith.tc, codegen/cg_coerce.c, engine/verify_arith.c,
+	cscc/cs_internal.h, cscc/cs_grammar.y, cscc/cs_scanner.l,
+	cscc/cs_oper.tc, support/Makefile.am: remove all references to
+	"ILValue" and "ILValueType" from the code, because they are
+	now obsolete.
 
-* include/il_values.h, image/image.h: move the "IL_WRITE_*" macros from
-"image.h" to "il_values.h" so that they can be reused elsewhere in the code.
+	* include/il_values.h, image/image.h: move the "IL_WRITE_*" macros
+	from "image.h" to "il_values.h" so that they can be reused elsewhere
+	in the code.
 
-* include/il_values.h, support/Makefile.am, support/mul_long.c,
-support/rem_float.c, codegen/cg_arith.tc, engine/cvm_arith.c: implement
-the and use helper functions "ILInt64MulOvf", "ILUInt64MulOvf", and
-"ILNativeFloatRem".
+	* include/il_values.h, support/Makefile.am, support/mul_long.c,
+	support/rem_float.c, codegen/cg_arith.tc, engine/cvm_arith.c: implement
+	the and use helper functions "ILInt64MulOvf", "ILUInt64MulOvf", and
+	"ILNativeFloatRem".
 
-* include/il_values.h, support/Makefile.am, support/convert.c,
-engine/cvm_conv.c, codegen/cg_cast.tc: implement helper functions
-for difficult numeric conversions in "support".
+	* include/il_values.h, support/Makefile.am, support/convert.c,
+	engine/cvm_conv.c, codegen/cg_cast.tc: implement helper functions
+	for difficult numeric conversions in "support".
 
-* include/il_align.h, support/mempool.c, support/memstack.c, engine/verify.c:
-detect the target platform's alignment better and then use it within various
-memory allocators in the code.
+	* include/il_align.h, support/mempool.c, support/memstack.c,
+	engine/verify.c: detect the target platform's alignment better and
+	then use it within various memory allocators in the code.
 
 2001-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* doc/l10n.html: check in a proposal for a new resource system for C#.
+	* doc/l10n.html: check in a proposal for a new resource system for C#.
 
 2001-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* ilasm/ilasm_build.h, ilasm/ilasm_build.c, ilasm/ilasm_grammar.y:
-use a different nested class separator than '/' because Mercury wants
-to use that within its identifiers.
+	* ilasm/ilasm_build.h, ilasm/ilasm_build.c, ilasm/ilasm_grammar.y:
+	use a different nested class separator than '/' because Mercury wants
+	to use that within its identifiers.
 
-* csant/Makefile.am, csant/.cvsignore, csant/csant.c, csant/csant_dir.c,
-csant/csant_dir.h, csant/csant_cscc.c, csant/csant_defs.h, csant/csant_build.c,
-csant/csant_parse.c, csant/csant_prop.c, csant/csant_task.c, configure.in,
-Makefile.am: add the "csant" program to the build tree.
+	* csant/Makefile.am, csant/.cvsignore, csant/csant.c,
+	csant/csant_dir.c, csant/csant_dir.h, csant/csant_cscc.c,
+	csant/csant_defs.h, csant/csant_build.c, csant/csant_parse.c,
+	csant/csant_prop.c, csant/csant_task.c, configure.in, Makefile.am:
+	add the "csant" program to the build tree.
 
 2001-11-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* engine/verify_arith.c, engine/verify_const.c, engine/verify_ptr.c,
-engine/verify_branch.c, engine/verify_conv.c: make sure that the
-"typeInfo" part of a stack item is zeroed after arithmetic instructions.
-This is needed to prevent confusion between "I" used as numeric,
-pointer, and delegate types.
+	* engine/verify_arith.c, engine/verify_const.c, engine/verify_ptr.c,
+	engine/verify_branch.c, engine/verify_conv.c: make sure that the
+	"typeInfo" part of a stack item is zeroed after arithmetic
+	instructions.  This is needed to prevent confusion between "I" used
+	as numeric, pointer, and delegate types.
 
-* engine/verify.c: modify "TypeToEngineType" and "AssignCompatible"
-to pass method pointers around the system as type "I".
+	* engine/verify.c: modify "TypeToEngineType" and "AssignCompatible"
+	to pass method pointers around the system as type "I".
 
-* include/il_coder.h, engine/ilverify.c, engine/verify_call.c,
-engine/cvmc.c, engine/cvmc_call.c: verification for "ldftn" and "ldvirtfn".
+	* include/il_coder.h, engine/ilverify.c, engine/verify_call.c,
+	engine/cvmc.c, engine/cvmc_call.c: verification for "ldftn" and
+	"ldvirtfn".
 
-* engine/verify.c: modify some comments.  The latest ECMA spec does
-allow verifiable method pointers after all.
+	* engine/verify.c: modify some comments.  The latest ECMA spec does
+	allow verifiable method pointers after all.
 
-* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_call.c, engine/cvmc_call.c:
-implement the CVM parts of "ldftn", "ldvirtfn", and "ldinterfftn".
+	* engine/cvm.h, engine/cvm_dasm.c, engine/cvm_call.c,
+	engine/cvmc_call.c: implement the CVM parts of "ldftn",
+	"ldvirtfn", and "ldinterfftn".
 
-* libffi/x86/win32.S: include <ffi_private.h> to define constants such
-as "FFI_TYPE_FLOAT", etc.
+	* libffi/x86/win32.S: include <ffi_private.h> to define constants
+	such as "FFI_TYPE_FLOAT", etc.
 
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-* ChangeLog, doc/ChangeLog-1: move the contents of "ChangeLog" to
-"doc/ChangeLog-1", because it was starting to get too big to manage.
+	* ChangeLog, doc/ChangeLog-1: move the contents of "ChangeLog" to
+	"doc/ChangeLog-1", because it was starting to get too big to manage.

@@ -12,6 +12,8 @@
 	* engine/ilrun.c (main): fix a bug that made ilrun think that an
 	exception had been thrown if "Main" returned a non-zero value.
 
+	* samples/mscorlib.dll: new version with the recent pnetlib changes.
+
 2001-12-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/internal.c, engine/lib_reflect.c: continue implementing

@@ -2,3 +2,8 @@ Makefile
 Makefile.in
 .deps
 ilrun
+ilrun_opt
+ilverify
+asmfix
+cvm_opt.s
+cvm_opt.s.tmp

@@ -27,6 +27,10 @@ on the stack on entry and exit to every method.
 * engine/engine.h: increase the stack size so that we can run more
 involved examples.
 
+* engine/Makefile.am, engine/asmfix.c, engine/.cvsignore: check in an
+experimental program that can optimize the CVM interpreter on x86 platforms
+better than gcc can.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_var.c, engine/verify_call.c: handle value type "this"

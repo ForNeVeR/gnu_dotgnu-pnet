@@ -5,6 +5,18 @@
 	to convert, instead of in pnet/samples, since the pre-compiled
 	assemblies in pnet/samples will be going away soon.
 
+	* Makefile.am, configure.in, csunit/Makefile.am,
+	csunit/NUnitEmulation.cs, csunit/README, csunit/Test.cs,
+	csunit/TestArray.cs, csunit/TestAssertFailed.cs, csunit/TestCase.cs,
+	csunit/TestException.cs, csunit/TestFailure.cs, csunit/TestMain.cs,
+	csunit/TestResult.cs, csunit/TestStop.cs, csunit/TestSuite.cs,
+	csunit/TestVersion.cs.in, csunit/TestWriterResult.cs,
+	csunit/csunit-run.sh, csupport/Complex.cs, csupport/Crt0.cs,
+	csupport/FileTable.cs, csupport/LongDouble.cs, csupport/LongJmp.cs,
+	csupport/Makefile.am, csupport/Markers.cs, csupport/README:
+	remove the contents of "csunit" and "csupport", because they
+	are now a part of "pnetlib".
+
 2002-12-08  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h,cscc/common/cc_main.c: add noStdlibFlag and 

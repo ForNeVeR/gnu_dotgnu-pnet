@@ -829,6 +829,11 @@ ILMember *ILMemberCreateRef(ILMember *member, ILToken token);
 ILMember *ILMemberResolveRef(ILMember *member);
 
 /*
+ * Resolve all links associated with a member.
+ */
+ILMember *ILMemberResolve(ILMember *member);
+
+/*
  * Get the class that a member resides within.
  */
 ILClass *ILMemberGetOwner(ILMember *member);

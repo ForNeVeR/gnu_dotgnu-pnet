@@ -327,6 +327,11 @@ ILMember *ILMemberResolveRef(ILMember *member)
 	}
 }
 
+ILMember *ILMemberResolve(ILMember *member)
+{
+	return (ILMember *)_ILProgramItemResolve(&(member->programItem));
+}
+
 void _ILMemberSetSignatureIndex(ILMember *member, ILUInt32 index)
 {
 	member->signatureBlob = index;

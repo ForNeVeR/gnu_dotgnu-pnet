@@ -113,6 +113,7 @@ struct _tagILGenInfo
 	long			unsafeLevel;		/* Number of unsafe contexts */
 	ILNode         *currentClass;		/* Current class being processed */
 	ILNode		   *currentMethod;		/* Current method being processed */
+	ILNode         *currentNamespace;	/* Current namespace being processed */
 
 };
 

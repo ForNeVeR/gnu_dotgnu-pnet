@@ -112,6 +112,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	info->unsafeLevel = 0;
 	info->currentClass = 0;
 	info->currentMethod = 0;
+	info->currentNamespace = 0;
 	ILGenMakeLibrary(info);
 }
 

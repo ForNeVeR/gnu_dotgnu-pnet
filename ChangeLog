@@ -4,6 +4,8 @@
 * cscc/cs_lookup.c: new routines for looking up names in scopes, according
 to the C# rules for "simple-name" and "member-access".
 
+* codegen/cg_gen.h, codegen/cg_gen.c: add "currentNamespace" to ILGenInfo.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

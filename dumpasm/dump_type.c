@@ -580,7 +580,7 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 				}
 				++genericNum;
 				genPar = ILGenericParGetFromOwner
-					(ILToProgramItem(info), genericNum);
+					(ILToProgramItem(methodInfo), genericNum);
 			}
 			while(genPar != 0);
 			putc('>', stream);

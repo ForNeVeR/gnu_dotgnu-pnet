@@ -10,6 +10,9 @@
 	* include/il_types.h, image/meta_types.c: recognise "with"
 	types correctly in certain type handling functions.
 
+	* dumpasm/dump_type.c (ILDumpMethodType): wrong item used in
+	call to ILGenericParGetFromOwner.
+
 2003-02-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c : fix build breaking on Mingw32 

@@ -30,10 +30,11 @@ extern	"C" {
  */
 #define	IL_CONVERT_OK				0
 #define	IL_CONVERT_VERIFY_FAILED	1
-#define	IL_CONVERT_MISSING_METHOD	2
+#define	IL_CONVERT_ENTRY_POINT		2
 #define	IL_CONVERT_NOT_IMPLEMENTED	3
 #define	IL_CONVERT_OUT_OF_MEMORY	4
 #define	IL_CONVERT_TYPE_INIT		5
+#define	IL_CONVERT_DLL_NOT_FOUND	6
 
 #ifdef IL_CONFIG_PINVOKE
 
@@ -197,7 +198,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				if(!pinv)
 				{
 					METADATA_UNLOCK(thread);
-					*errorCode = IL_CONVERT_MISSING_METHOD;
+					*errorCode = IL_CONVERT_ENTRY_POINT;
 					return 0;
 				}
 
@@ -207,14 +208,14 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				if(!module)
 				{
 					METADATA_UNLOCK(thread);
-					*errorCode = IL_CONVERT_MISSING_METHOD;
+					*errorCode = IL_CONVERT_ENTRY_POINT;
 					return 0;
 				}
 				name = ILModule_Name(module);
 				if(!name || *name == '\0')
 				{
 					METADATA_UNLOCK(thread);
-					*errorCode = IL_CONVERT_MISSING_METHOD;
+					*errorCode = IL_CONVERT_ENTRY_POINT;
 					return 0;
 				}
 				moduleHandle = LocateExternalModule
@@ -222,7 +223,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				if(!moduleHandle)
 				{
 					METADATA_UNLOCK(thread);
-					*errorCode = IL_CONVERT_MISSING_METHOD;
+					*errorCode = IL_CONVERT_DLL_NOT_FOUND;
 					return 0;
 				}
 
@@ -299,7 +300,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		{
 			METADATA_UNLOCK(thread);
 			if(pinv)
-				*errorCode = IL_CONVERT_MISSING_METHOD;
+				*errorCode = IL_CONVERT_ENTRY_POINT;
 			else
 				*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 			return 0;
@@ -433,11 +434,11 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 			}
 			break;
 
-			case IL_CONVERT_MISSING_METHOD:
+			case IL_CONVERT_ENTRY_POINT:
 			{
 				ILExecThreadSetException
 					(thread, _ILSystemException(thread, 
-						"System.MissingMethodException"));
+						"System.EntryPointNotFoundException"));
 			}
 			break;
 
@@ -460,6 +461,14 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 				ILExecThreadSetException
 					(thread, _ILSystemException(thread, 
 						"System.TypeInitializationException"));
+			}
+			break;
+
+			case IL_CONVERT_DLL_NOT_FOUND:
+			{
+				ILExecThreadSetException
+					(thread, _ILSystemException(thread, 
+						"System.DllNotFoundException"));
 			}
 			break;
 		}

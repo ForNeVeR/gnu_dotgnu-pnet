@@ -18,6 +18,10 @@
 	of '&' characters in csdoc output, and other places where
 	types may be dumped in XML form.
 
+	* engine/convert.c, support/dynlib.c: use DllNotFoundException
+	and EntryPointNotFoundException instead of MissingMethodException
+	during PInvoke operations.
+
 2003-07-27  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_type.c: Avoid boxing conversions when dealing with

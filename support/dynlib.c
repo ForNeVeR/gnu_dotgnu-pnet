@@ -33,6 +33,11 @@
 #endif
 #endif
 
+/*
+ * Define this for additional debug messages.
+ */
+/*#define IL_DYNLIB_DEBUG 1*/
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -77,7 +82,9 @@ void *ILDynLibraryOpen(const char *name)
 			default:
 				msg = ""; break;
 		}
+	#ifdef IL_DYNLIB_DEBUG
 		fprintf(stderr, "%s: could not load dynamic library%s\n", name, msg);
+	#endif
 		return 0;
 	}
 
@@ -156,7 +163,9 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 		}
 		ILFree(newName);
 	}
+#ifdef IL_DYNLIB_DEBUG
 	fprintf(stderr, "%s: could not find the specified symbol\n", symbol);
+#endif
 	return 0;
 }
 
@@ -189,8 +198,10 @@ void *ILDynLibraryOpen(const char *name)
 	libHandle = (void *)LoadLibrary((newName ? newName : name));
 	if(libHandle == 0)
 	{
+	#ifdef IL_DYNLIB_DEBUG
 		fprintf(stderr, "%s: could not load dynamic library\n",
 				(newName ? newName : name));
+	#endif
 		if(newName)
 		{
 			ILFree(newName);
@@ -215,7 +226,9 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 	procAddr = (void *)GetProcAddress((HINSTANCE)handle, symbol);
 	if(procAddr == 0)
 	{
+	#ifdef IL_DYNLIB_DEBUG
 		fprintf(stderr, "%s: could not resolve symbol", symbol);
+	#endif
 		return 0;
 	}
 	return procAddr;
@@ -261,9 +274,11 @@ void *ILDynLibraryOpen(const char *name)
 		}
 
 		/* Report the error */
+	#ifdef IL_DYNLIB_DEBUG
 		error = dlerror();
 		fprintf(stderr, "%s: %s\n", name,
 				(error ? error : "could not load dynamic library"));
+	#endif
 		return 0;
 	}
 	else
@@ -302,7 +317,9 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 		}
 		ILFree(newName);
 	}
+#ifdef IL_DYNLIB_DEBUG
 	fprintf(stderr, "%s: %s\n", symbol, error);
+#endif
 	return 0;
 }
 
@@ -311,7 +328,9 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 void *ILDynLibraryOpen(const char *name)
 {
 #ifndef REDUCED_STDIO
+#ifdef IL_DYNLIB_DEBUG
 	fprintf(stderr, "%s: dynamic libraries are not available\n", name);
+#endif
 #endif
 	return 0;
 }

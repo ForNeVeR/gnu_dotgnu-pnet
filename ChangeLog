@@ -5,6 +5,9 @@
 	"ArrayInitializer" non-terminal to remove a shift/reduce
 	conflict related to the optional comma on the end.
 
+	* engine/int_proto.h, engine/int_table.c, engine/lib_encoding.c:
+	add the internalcall "DefaultEncoding.InternalCodePage".
+
 2002-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_socket.c,

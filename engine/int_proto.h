@@ -219,6 +219,7 @@ extern ILInt32 _IL_DefaultEncoding_InternalGetChars(ILExecThread * _thread, Syst
 extern ILInt32 _IL_DefaultEncoding_InternalGetMaxByteCount(ILExecThread * _thread, ILInt32 charCount);
 extern ILInt32 _IL_DefaultEncoding_InternalGetMaxCharCount(ILExecThread * _thread, ILInt32 byteCount);
 extern ILString * _IL_DefaultEncoding_InternalGetString(ILExecThread * _thread, System_Array * bytes, ILInt32 index, ILInt32 count);
+extern ILInt32 _IL_DefaultEncoding_InternalCodePage(ILExecThread * _thread);
 
 extern ILBool _IL_ClrSecurity_Assert(ILExecThread * _thread, ILObject * perm, ILInt32 skipFrames);
 extern ILBool _IL_ClrSecurity_Demand(ILExecThread * _thread, ILObject * perm, ILInt32 skipFrames);

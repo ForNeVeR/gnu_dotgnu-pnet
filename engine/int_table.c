@@ -264,6 +264,7 @@ IL_METHOD_BEGIN(DefaultEncoding_Methods)
 	IL_METHOD("InternalGetMaxByteCount", "(i)i", _IL_DefaultEncoding_InternalGetMaxByteCount)
 	IL_METHOD("InternalGetMaxCharCount", "(i)i", _IL_DefaultEncoding_InternalGetMaxCharCount)
 	IL_METHOD("InternalGetString", "([Bii)oSystem.String;", _IL_DefaultEncoding_InternalGetString)
+	IL_METHOD("InternalCodePage", "()i", _IL_DefaultEncoding_InternalCodePage)
 IL_METHOD_END
 
 IL_METHOD_BEGIN(ClrSecurity_Methods)

@@ -514,6 +514,23 @@ ILString *_IL_DefaultEncoding_InternalGetString
 	return (ILString *)str;
 }
 
+/*
+ * internal static int InternalCodePage();
+ */
+ILInt32 _IL_DefaultEncoding_InternalCodePage(ILExecThread *_thread)
+{
+#ifdef IL_USE_LATIN1
+	/* We know that the default encoding is Latin-1, so return
+	   the magic Windows code page number for it */
+	return 28591;
+#else
+	/* We have no idea what the code page is, so force the
+	   "System.Text.Encoding.Default" property to allocate an
+	   instance of the "System.Text.DefaultEncoding" class */
+	return 0;
+#endif
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -25,6 +25,9 @@
 	* cscc/cs_decls.tc (AddConstantValue): boolean constants were
 	being created incorrectly.
 
+	* codegen/cg_resolve.c (ResolveMethod): bug fix - the wrong element
+	from the "args" array was being indexed during signature checking.
+
 2001-01-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.2.8" release.

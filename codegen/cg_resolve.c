@@ -91,10 +91,10 @@ static ILMethod *ResolveMethod(ILClass *info, ILClass *callScope,
 			for(arg = 1; arg <= numArgs; ++arg)
 			{
 				argType = ILTypeGetParam(signature, arg);
-				if(!ILTypeIdentical(argType, args[arg]))
+				if(!ILTypeIdentical(argType, args[arg - 1]))
 				{
 					if(!ILCanCoerce(ILClassToContext(info),
-									argType, args[arg]))
+									argType, args[arg - 1]))
 					{
 						break;
 					}

@@ -51,6 +51,8 @@ new coder API called "SetupExternCtor".
 
 * engine/process.c: initialize "outOfMemoryObject".
 
+* engine/strapi.c: new file that implements string-related engine API's.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

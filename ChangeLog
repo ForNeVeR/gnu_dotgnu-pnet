@@ -33,6 +33,8 @@ correctly during member resolution.
 * include/il_program.h: remove the declaration of "ILArgument", which
 is obsolete.
 
+* ilalink/link_attrs.c: convert attributes and security declarations.
+
 2001-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_build.c (ILAsmSystemClass): bug - the "object" and "string"

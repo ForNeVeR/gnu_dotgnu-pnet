@@ -27,14 +27,95 @@ extern	"C" {
 int _ILLinkerConvertAttrs(ILLinker *linker, ILProgramItem *oldItem,
 						  ILProgramItem *newItem)
 {
-	/* TODO */
+	ILAttribute *attr;
+	ILAttribute *newAttr;
+	ILProgramItem *item;
+	ILMethod *method;
+	const void *blob;
+	unsigned long blobLen;
+
+	/* Scan through the attributes on the old item */
+	attr = 0;
+	while((attr = ILProgramItemNextAttribute(oldItem, attr)) != 0)
+	{
+		/* Create the new attribute block */
+		newAttr = ILAttributeCreate(linker->image, 0);
+		if(!newAttr)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+
+		/* Determine how to convert the attribute's type */
+		item = ILAttributeTypeAsItem(attr);
+		if(item)
+		{
+			method = ILProgramItemToMethod(item);
+			if(method)
+			{
+				method = (ILMethod *)_ILLinkerConvertMemberRef
+							(linker, (ILMember *)method);
+				if(!method)
+				{
+					_ILLinkerOutOfMemory(linker);
+					return 0;
+				}
+				ILAttributeSetType(newAttr, (ILProgramItem *)method);
+			}
+		}
+
+		/* Copy the attribute's value */
+		blob = ILAttributeGetValue(attr, &blobLen);
+		if(blob)
+		{
+			if(!ILAttributeSetValue(newAttr, blob, blobLen))
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+		}
+	}
+
+	/* Done */
 	return 1;
 }
 
 int _ILLinkerConvertSecurity(ILLinker *linker, ILProgramItem *oldItem,
 						     ILProgramItem *newItem)
 {
-	/* TODO */
+	ILDeclSecurity *decl;
+	ILDeclSecurity *newDecl;
+	const void *blob;
+	unsigned long blobLen;
+
+	/* Get the security declaration from the old item */
+	decl = ILDeclSecurityGetFromOwner(oldItem);
+	if(!decl)
+	{
+		return 1;
+	}
+
+	/* Create a security declaration on the new item */
+	newDecl = ILDeclSecurityCreate(linker->image, 0, newItem,
+								   ILDeclSecurity_Type(decl));
+	if(!newDecl)
+	{
+		_ILLinkerOutOfMemory(linker);
+		return 0;
+	}
+
+	/* Copy the security blob */
+	blob = ILDeclSecurityGetBlob(decl, &blobLen);
+	if(blob)
+	{
+		if(!ILDeclSecuritySetBlob(newDecl, blob, blobLen))
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+	}
+
+	/* Done */
 	return 1;
 }
 

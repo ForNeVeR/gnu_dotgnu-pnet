@@ -1,4 +1,9 @@
 
+2004-05-04  Gopal V  <gopalv82@yahoo.com>
+
+	* libc/unistd/lseek.c: Fix signature of the extern definition
+	of __syscall_lseek to match the C# version.
+
 2004-05-02  Gopal V  <gopalv82@yahoo.com>
 
 	* libpthread/pthread_glue.cs: Fix the signature of the extern

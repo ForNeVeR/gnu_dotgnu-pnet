@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-extern long __syscall_lseek (int fd, long long offset, int whence);
+extern long long __syscall_lseek (int fd, long long offset, int whence);
 
 off_t
 __libc_lseek (int fd, off_t offset, int whence)

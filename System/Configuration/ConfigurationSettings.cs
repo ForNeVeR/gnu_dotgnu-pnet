@@ -44,8 +44,7 @@ Layout of the configuration file for data accessible by this API:
 			</sectionGroup>
 
 			<section name="NAME" type="TYPE" [allowLocation="?"]
-					 [allowDefinition="?"]>
-			</section>
+					 [allowDefinition="?"] />
 
 			<remove name="NAME"/>
 
@@ -81,7 +80,7 @@ from machine to machine.
 public sealed class ConfigurationSettings
 {
 	// Internal state.
-	private static IConfigurationSystem configSystem;
+	private static BuiltinConfigurationSystem configSystem;
 	private static Exception configError;
 
 	// Constructor - cannot be created by external entities.
@@ -90,8 +89,17 @@ public sealed class ConfigurationSettings
 	// Get a configuration object for a specific section.
 	public static Object GetConfig(String sectionName)
 			{
+				return GetConfig(sectionName, null);
+			}
+
+	// Get a configuration object, using a particular handler.
+	// This is for internal use, to provide a fallback handler
+	// if the section is not mentioned in "machine.default".
+	internal static Object GetConfig
+				(String sectionName, IConfigurationSectionHandler handler)
+			{
 				// Make sure that the configuration system is initialized.
-				IConfigurationSystem system;
+				BuiltinConfigurationSystem system;
 				lock(typeof(ConfigurationSettings))
 				{
 					if(configSystem != null)
@@ -118,7 +126,7 @@ public sealed class ConfigurationSettings
 				}
 
 				// Look up the specified configuration item.
-				return system.GetConfig(sectionName);
+				return system.GetConfig(sectionName, handler);
 			}
 
 	// Get the application settings.
@@ -128,7 +136,8 @@ public sealed class ConfigurationSettings
 				{
 					ReadOnlyNameValueCollection settings;
 					settings = (ReadOnlyNameValueCollection)
-							(GetConfig("appSettings"));
+							(GetConfig("appSettings",
+									   new NameValueFileSectionHandler()));
 					if(settings == null)
 					{
 						settings = new ReadOnlyNameValueCollection();
@@ -143,11 +152,23 @@ public sealed class ConfigurationSettings
 	{
 		// Internal state.
 		private bool initialized;
+	#if SECOND_PASS
+		private XmlDocument[] documents;
+		private int numDocuments;
+		private Hashtable sectionSchema;
+		private Hashtable cachedInfo;
+	#endif
 
 		// Constructor.
 		public BuiltinConfigurationSystem()
 				{
 					initialized = false;
+				#if SECOND_PASS
+					documents = new XmlDocument [8];
+					numDocuments = 0;
+					sectionSchema = new Hashtable();
+					cachedInfo = new Hashtable();
+				#endif
 				}
 
 		// Check for a machine default file's existence in a directory.
@@ -186,10 +207,147 @@ public sealed class ConfigurationSettings
 					return pathname;
 				}
 
+	#if SECOND_PASS
+
+		// Object that is used to mark a group in the "sectionSchema" table.
+		private static readonly Object groupMarker = new Object();
+
+		// Get an attribute value from an XML node.
+		private static String GetAttribute(XmlNode node, String name)
+				{
+					XmlAttribute attr = (XmlAttribute)(node.Attributes[name]);
+					if(attr != null && attr.Value.Length > 0)
+					{
+						return attr.Value;
+					}
+					else
+					{
+						return null;
+					}
+				}
+
+		// Get a section name from an attribute value.
+		private static String GetSectionName
+					(XmlNode node, String parentName, String name)
+				{
+					XmlAttribute attr = (XmlAttribute)(node.Attributes[name]);
+					if(attr != null && attr.Value.Length > 0)
+					{
+						if(parentName != null)
+						{
+							return parentName + "/" + attr.Value;
+						}
+						else
+						{
+							return attr.Value;
+						}
+					}
+					else
+					{
+						return null;
+					}
+				}
+
+		// Load section information from "configSections" or "sectionGroup".
+		private void LoadSectionInfo(XmlNode parent, String parentName)
+				{
+					String name, type;
+					foreach(XmlNode node in parent.ChildNodes)
+					{
+						if(node.NodeType != XmlNodeType.Element)
+						{
+							continue;
+						}
+						switch(node.Name)
+						{
+							case "sectionGroup":
+							{
+								// Define a group of sections.
+								name = GetSectionName(node, parentName, "name");
+								sectionSchema[name] = groupMarker;
+								LoadSectionInfo(node, name);
+							}
+							break;
+
+							case "section":
+							{
+								// Define a single section schema.
+								name = GetSectionName(node, parentName, "name");
+								type = GetAttribute(node, "type");
+								if(name != null && type != null)
+								{
+									sectionSchema[name] = type;
+								}
+							}
+							break;
+
+							case "remove":
+							{
+								// Remove a section from the schema.
+								name = GetSectionName(node, parentName, "name");
+								if(name != null)
+								{
+									sectionSchema.Remove(name);
+								}
+							}
+							break;
+
+							case "clear":
+							{
+								// Clear all schema definitions.
+								sectionSchema.Clear();
+							}
+							break;
+						}
+					}
+				}
+
+		// Find the XML node corresponding to a section name.
+		private static XmlNode FindSectionByName(XmlNode parent, String name)
+				{
+					int index = name.IndexOf('/');
+					if(index != -1)
+					{
+						parent = FindSectionByName
+							(parent, name.Substring(0, index));
+						name = name.Substring(index + 1);
+					}
+					if(parent != null)
+					{
+						foreach(XmlNode node in parent.ChildNodes)
+						{
+							if(node.NodeType == XmlNodeType.Element &&
+							   node.Name == name)
+							{
+								return node;
+							}
+						}
+					}
+					return null;
+				}
+
+	#endif // SECOND_PASS
+
 		// Load a configuration file and merge it with the current settings.
 		private void Load(String filename)
 				{
-					// TODO
+				#if SECOND_PASS
+					// Load the contents of the file as XML.
+					ConfigXmlDocument doc = new ConfigXmlDocument();
+					doc.Load(filename);
+					documents[numDocuments++] = doc;
+
+					// Process the "configSections" element in the document.
+					foreach(XmlNode node in doc.DocumentElement.ChildNodes)
+					{
+						if(node.NodeType == XmlNodeType.Element &&
+						   node.Name == "configSections")
+						{
+							LoadSectionInfo(node, null);
+							break;
+						}
+					}
+				#endif
 				}
 
 		// Initialize the configuration system.
@@ -253,8 +411,82 @@ public sealed class ConfigurationSettings
 		// Get the object for a specific configuration key.
 		public Object GetConfig(String configKey)
 				{
-					// TODO
+					return GetConfig(configKey, null);
+				}
+
+		// Get the object for a specific configuration key and handler.
+		public Object GetConfig
+					(String configKey, IConfigurationSectionHandler handler)
+				{
+				#if SECOND_PASS
+					// Bail out if the configuration key is invalid.
+					if(configKey == null || configKey.Length == 0)
+					{
+						return null;
+					}
+
+					// See if we have cached information from last time.
+					if(cachedInfo.Contains(configKey))
+					{
+						return cachedInfo[configKey];
+					}
+
+					// Get the section handler, if necessary.
+					if(handler == null)
+					{
+						Object schema = sectionSchema[configKey];
+						if(schema == null)
+						{
+							// We don't know how to handle the section.
+							cachedInfo[configKey] = null;
+							return null;
+						}
+						else if(schema == groupMarker)
+						{
+							// This section is a group.
+							cachedInfo[configKey] = null;
+							return null;
+						}
+						else
+						{
+							// Create an instance of the specified handler.
+							Type handlerType = Type.GetType((String)schema);
+							if(handlerType == null)
+							{
+								cachedInfo[configKey] = null;
+								return null;
+							}
+							handler = Activator.CreateInstance(handlerType)
+										as IConfigurationSectionHandler;
+							if(handler == null)
+							{
+								cachedInfo[configKey] = null;
+								return null;
+							}
+						}
+					}
+
+					// Scan all documents, and collect up the data.
+					Object data = null;
+					int posn;
+					XmlNode section;
+					for(posn = 0; posn < numDocuments; ++posn)
+					{
+						section = FindSectionByName
+							(documents[posn].DocumentElement, configKey);
+						if(section != null)
+						{
+							data = handler.Create(data, null, section);
+						}
+					}
+
+					// Cache the data for next time and then return it.
+					cachedInfo[configKey] = data;
+					return data;
+				#else
+					// Configuration data is not available, so bail out.
 					return null;
+				#endif
 				}
 
 	}; // class BuiltinConfigurationSystem

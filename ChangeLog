@@ -17,6 +17,9 @@
 	implement the search algorithm for "machine.config" files; install
 	system-independent fallback defaults in "machine.default".
 
+	* System/Configuration/ConfigurationSettings.cs: implement
+	configuration loading.
+
 2003-11-24  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/GlobalProxySelection.cs, System/Net/HttpWebRequest.cs:

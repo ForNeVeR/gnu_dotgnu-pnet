@@ -1,3 +1,18 @@
+2003-08-26  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/Control.cs, System.Windows.Forms/ScrollBar.cs:
+	apply patch #1805, "Control.ContextMenu shold be virtual. Fix
+	ScrollBar.OnScroll", from Cecilio Pardo.
+
+	* System.Windows.Forms/Themes/DefaultThemePainter.cs,
+	System.Windows.Forms/Themes/IThemePainter.cs: add and implement group
+	box drawing code.
+
+	* System.Windows.Forms/GroupBox.cs: apply patch #1797, "SWF.GroupBox
+	class", from Cecilio Pardo, after cleaning it up a bit.
+
+	* samples/radiobuttons.cs: add group box examples and refactor existing
+	example code.
 
 2003-08-25  Neil Cawse  <neilcawse@geotab.com>
 

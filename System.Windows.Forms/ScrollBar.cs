@@ -713,8 +713,8 @@ public abstract class ScrollBar : Control
 
 	protected virtual void OnScroll(ScrollEventArgs e)
 	{
-		EventHandler handler;
-		handler = (EventHandler)(GetHandler(EventId.Scroll));
+		ScrollEventHandler handler;
+		handler = (ScrollEventHandler)(GetHandler(EventId.Scroll));
 		if (handler != null)
 		{
 			handler(this,e);

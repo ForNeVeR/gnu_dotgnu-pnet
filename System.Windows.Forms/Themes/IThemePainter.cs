@@ -84,6 +84,12 @@ internal interface IThemePainter
 	void DrawGrabHandle(Graphics graphics, Rectangle rectangle,
 				 		bool primary, bool enabled);
 
+	// Draw a group box.
+	void DrawGroupBox(Graphics graphics, Rectangle bounds, Color foreColor,
+	                  Color backColor, Brush backgroundBrush, bool enabled,
+	                  bool entered, FlatStyle style, String text, Font font,
+	                  StringFormat format);
+
 	// Draw a grid of dots.
 	void DrawGrid(Graphics graphics, Rectangle area,
 				  Size pixelsBetweenDots, Color backColor);

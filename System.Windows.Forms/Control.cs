@@ -459,7 +459,7 @@ public class Control : IWin32Window
 					return false;
 				}
 			}
-	public ContextMenu ContextMenu
+	public virtual ContextMenu ContextMenu
 			{
 				get
 				{

@@ -1075,6 +1075,150 @@ internal class DefaultThemePainter : IThemePainter
 				graphics.DrawRectangle(border, rectangle);
 			}
 
+	// Draw a group box.
+	public virtual void DrawGroupBox
+				(Graphics graphics, Rectangle bounds, Color foreColor,
+				 Color backColor, Brush backgroundBrush, bool enabled,
+				 bool entered, FlatStyle style, String text, Font font,
+				 StringFormat format)
+			{
+				int x = bounds.X;
+				int y = bounds.Y;
+				int width = bounds.Width;
+				int height = bounds.Height;
+				int textOffset = 8;
+				bool flat = (style == FlatStyle.Flat) ||
+				            (!entered && style == FlatStyle.Popup);
+				bool rtl = (format.FormatFlags &
+				            StringFormatFlags.DirectionRightToLeft) != 0;
+
+				// fill in the background
+				graphics.FillRectangle(backgroundBrush, x, y, width, height);
+
+				// prepare bounds for use as text border
+				bounds.X = x + textOffset;
+				bounds.Width = width - textOffset*2;
+
+				// simplifies things
+				if(text == null) { text = ""; }
+
+				// measure text
+				Size textSize = Size.Ceiling(graphics.MeasureString(text, font,
+				                                                    bounds.Width,
+				                                                    format));
+
+				// draw text
+				if(enabled)
+				{
+					using(Brush brush = new SolidBrush(foreColor))
+					{
+						graphics.DrawString(text, font, brush,
+						                    (RectangleF)bounds, format);
+					}
+				}
+				else
+				{
+					DrawStringDisabled(graphics, text, font, backColor,
+					                   (RectangleF)bounds, format);
+				}
+
+				// setup for drawing the box
+				int left = x;
+				int right = x + width - 1;
+				int top = y + font.Height/2 - 1;
+				int bottom = y + height - 1;
+				int textLeft;
+				int textRight;
+				if(text == "")
+				{
+					textLeft = textRight = left;
+				}
+				else if(rtl)
+				{
+					textRight = right - textOffset + 1;
+					textLeft = textRight - textSize.Width - 1;
+				}
+				else
+				{
+					textLeft = left + textOffset - 1;
+					textRight = textLeft + textSize.Width + 1;
+				}
+
+				// draw the box
+				if(flat)
+				{
+					Color color;
+					if(enabled)
+					{
+						color = ControlPaint.Light(foreColor);
+					}
+					else
+					{
+						color = ControlPaint.LightLight(foreColor);
+					}
+					using(Pen pen = new Pen(color))
+					{
+						// draw left side of box
+						graphics.DrawLine(pen, left, top, left, bottom);
+						++left;
+
+						// draw right side of box
+						graphics.DrawLine(pen, right, top, right, bottom);
+						--right;
+
+						// draw bottom of box
+						graphics.DrawLine(pen, left, bottom, right, bottom);
+
+						// draw top of box, left of text
+						graphics.DrawLine(pen, left, top, textLeft, top);
+
+						// draw top of box, right of text
+						graphics.DrawLine(pen, textRight, top, right, top);
+					}
+				}
+				else
+				{
+					Pen dark;
+					Pen light;
+
+					// create pens for drawing the box
+					if(enabled)
+					{
+						dark = new Pen(ControlPaint.DarkDark(backColor));
+						light = new Pen(ControlPaint.LightLight(backColor));
+					}
+					else
+					{
+						dark = new Pen(ControlPaint.Dark(backColor));
+						light = new Pen(ControlPaint.Light(backColor));
+					}
+
+					// draw left side of box
+					graphics.DrawLine(dark, left, top, left, bottom);
+					graphics.DrawLine(light, left+1, top+1, left+1, bottom-1);
+
+					// draw right side of box
+					graphics.DrawLine(dark, right-1, top+2, right-1, bottom-2);
+					graphics.DrawLine(light, right, top+2, right, bottom-1);
+
+					// draw bottom of box
+					graphics.DrawLine(dark, left+2, bottom-1, right-1, bottom-1);
+					graphics.DrawLine(light, left+1, bottom, right, bottom);
+
+					// draw top of box, left of text
+					graphics.DrawLine(dark, left+1, top, textLeft, top);
+					graphics.DrawLine(light, left+2, top+1, textLeft, top+1);
+
+					// draw top of box, right of text
+					graphics.DrawLine(dark, textRight, top, right, top);
+					graphics.DrawLine(light, textRight, top+1, right, top+1);
+
+					// cleanup
+					dark.Dispose();
+					light.Dispose();
+				}
+			}
+
 	// Draw a grid of dots.
 	public virtual void DrawGrid
 				(Graphics graphics, Rectangle area,

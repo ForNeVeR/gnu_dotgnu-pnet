@@ -1,4 +1,9 @@
 
+2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating
+	over a node list when encountering a null "XmlNode.list".
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

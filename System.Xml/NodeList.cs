@@ -247,7 +247,14 @@ internal sealed class NodeList : XmlNodeList
 							return true;
 						}
 					}
-					current = current.list.nextSibling;
+					if(current.list != null)
+					{
+						current = current.list.nextSibling;
+					}
+					else
+					{
+						current = null;
+					}
 					if(current != null)
 					{
 						return true;

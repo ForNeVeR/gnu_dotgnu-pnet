@@ -1054,7 +1054,7 @@ void _IL_Thread_SpinWait(ILExecThread *_thread, ILInt32 iterations)
 	#ifdef HAVE_USLEEP
 		usleep((unsigned long)(long)iterations);
 	#else
-		ILThreadSleep((ILUInt32)(ms / 1000));
+		ILThreadSleep((ILUInt32)(iterations / 1000));
 	#endif
 	}
 }

@@ -31,6 +31,13 @@ int _ILLinkerConvertAttrs(ILLinker *linker, ILProgramItem *oldItem,
 	return 1;
 }
 
+int _ILLinkerConvertSecurity(ILLinker *linker, ILProgramItem *oldItem,
+						     ILProgramItem *newItem)
+{
+	/* TODO */
+	return 1;
+}
+
 #ifdef	__cplusplus
 };
 #endif

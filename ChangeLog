@@ -9,6 +9,8 @@
 	utility program for extracting XML documentation from C
 	source files.
 
+	* engine/cvm_doc.txt: document the XML tags for opcode doc.
+
 2002-04-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/method_cache.c, engine/method_cache.h:

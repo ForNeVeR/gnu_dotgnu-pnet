@@ -173,7 +173,6 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 %token K_VA_ARG			"`__builtin_va_arg'"
 %token K_VA_END			"`__builtin_va_end'"
 %token K_SETJMP			"`__builtin_setjmp'"
-%token K_LONGJMP		"`__builtin_longjmp'"
 %token K_ALLOCA			"`__builtin_alloca'"
 %token K_ATTRIBUTE		"`__attribute__'"
 %token K_BOOL			"`__bool__'"
@@ -208,6 +207,7 @@ static void CopyParamDecls(ILNode *dest, ILNode *src)
 %type <node>		OptDeclarationList DeclarationList Declaration
 %type <node>		OptStatementList StatementList ExpressionStatement
 %type <node>		SelectionStatement IterationStatement JumpStatement
+%type <node>		AsmStatement
 
 %type <node>		ParameterIdentifierList IdentifierList ParameterList
 %type <node>		ParameterTypeList ParameterDeclaration ParamDeclaration
@@ -362,32 +362,22 @@ PostfixExpression2
 				$$ = ILNode_PostDec_create($1);
 			}
 	| K_VA_ARG '(' UnaryExpression ',' TypeName ')'	{
-				/* TODO */
-				$$ = ILNode_Error_create();
+				$$ = ILNode_VaArg_create($3, $5);
 			}
 	| K_VA_START '(' UnaryExpression ',' Identifier ')'	{
-				/* TODO */
-				$$ = ILNode_Error_create();
+				$$ = ILNode_VaStart_create($3, $5);
 			}
 	| K_VA_START '(' UnaryExpression ')'	{
-				/* TODO */
-				$$ = ILNode_Error_create();
+				$$ = ILNode_VaStart_create($3, 0);
 			}
 	| K_VA_END '(' UnaryExpression ')'	{
-				/* TODO */
-				$$ = ILNode_Error_create();
+				$$ = ILNode_VaEnd_create($3);
 			}
 	| K_SETJMP '(' UnaryExpression ')'	{
-				/* TODO */
-				$$ = ILNode_Error_create();
-			}
-	| K_LONGJMP '(' AssignmentExpression ',' AssignmentExpression ')'	{
-				/* TODO */
-				$$ = ILNode_Error_create();
+				$$ = ILNode_SetJmp_create($3);
 			}
 	| K_ALLOCA '(' AssignmentExpression ')'	{
-				/* TODO */
-				$$ = ILNode_Error_create();
+				$$ = ILNode_AllocA_create($3);
 			}
 	;
 
@@ -1108,6 +1098,7 @@ Statement2
 	| SelectionStatement
 	| IterationStatement
 	| JumpStatement
+	| AsmStatement
 	;
 
 LabeledStatement
@@ -1244,6 +1235,16 @@ JumpStatement
 	| K_BREAK ';'				{ $$ = ILNode_Break_create(); }
 	| K_RETURN ';'				{ $$ = ILNode_Return_create(); }
 	| K_RETURN Expression ';'	{ $$ = ILNode_ReturnExpr_create($2); }
+	;
+
+/* We currently only support simple __asm__ code forms as statements */
+AsmStatement
+	: K_ASM '(' StringLiteral ':' ':' ':' ')'	{
+				$$ = ILNode_AsmStmt_create($3.string);
+			}
+	| K_ASM K_VOLATILE '(' StringLiteral ':' ':' ':' ')'	{
+				$$ = ILNode_AsmStmt_create($4.string);
+			}
 	;
 
 File

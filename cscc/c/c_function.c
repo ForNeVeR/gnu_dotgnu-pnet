@@ -507,7 +507,8 @@ ILType *CFunctionNaturalType(ILGenInfo *info, ILType *type, int vararg)
 			}
 			/* Not reached */
 
-			case IL_META_ELEMTYPE_R4:		return ILType_Float64;
+			case IL_META_ELEMTYPE_R4:
+			case IL_META_ELEMTYPE_R:		return ILType_Float64;
 		}
 	}
 	else if(type != 0 && ILType_IsComplex(type))

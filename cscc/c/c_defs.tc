@@ -252,6 +252,26 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 {
 	CDeclarator decl;
 }
+%node ILNode_VaStart ILNode_Expression =
+{
+	ILNode *vaList;
+	char *name;
+}
+%node ILNode_VaEnd ILNode_Expression =
+{
+	ILNode *vaList;
+}
+%node ILNode_VaArg ILNode_Expression =
+{
+	ILNode *vaList;
+	ILType *type;
+}
+%node ILNode_SetJmp ILNode_UnaryExpression
+%node ILNode_AllocA ILNode_UnaryExpression
+%node ILNode_AsmStmt ILNode_Statement =
+{
+	char *code;
+}
 
 %output "c_semantics.c"
 
@@ -273,6 +293,7 @@ CSemValue CSemInlineAnalysis(ILGenInfo *info, ILNode *node, ILScope *scope);
 /*
  * Include C-specific definitions.
  */
+%include "c_builtin.tc"
 %include "c_const.tc"
 %include "c_lvalue.tc"
 %include "c_invoke.tc"

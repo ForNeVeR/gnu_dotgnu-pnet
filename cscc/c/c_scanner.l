@@ -153,7 +153,6 @@ WHITE			[ \t\v\r\f]
 "__builtin_va_arg"		{ return K_VA_ARG; }
 "__builtin_va_end"		{ return K_VA_END; }
 "__builtin_setjmp"		{ return K_SETJMP; }
-"__builtin_longjmp"		{ return K_LONGJMP; }
 "__builtin_alloca"		{ return K_ALLOCA; }
 "__attribute__"			{ return K_ATTRIBUTE; }
 

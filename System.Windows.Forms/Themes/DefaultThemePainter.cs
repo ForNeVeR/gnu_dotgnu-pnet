@@ -934,11 +934,27 @@ internal class DefaultThemePainter : IThemePainter
 			}
 
 	// Draw a check box control.
-	[TODO]
+	// TODO: antialiased checkmark 
 	public virtual void DrawCheckBox(Graphics graphics, int x, int y,
 								     int width, int height, ButtonState state)
 			{
-				// TODO
+				Brush brush = new SolidBrush(Color.White);
+				ControlPaint.DrawBorder3D(graphics, x, y, width, height, Border3DStyle.Sunken, Border3DSide.All);
+				graphics.FillRectangle(brush, x + 2, y + 2, width - 2, height - 2);
+				brush.Dispose();
+				
+				if (state == ButtonState.Checked)
+				{
+					Brush brush = new SolidBrush(Color.Black);
+					Pen pen = new Pen(brush, 2);
+
+					GraphicsPath path = new GraphicsPath();
+					path.AddLine(x + 3, y + 5, x + 4, y + 7);
+					path.AddLine(x + 5, y + 8, x + 9, y + 3);
+					graphics.DrawPath(pen, path);
+					brush.Dispose();
+					pen.Dispose();
+				}
 			}
 
 	// Draw a combo box's drop down button control.

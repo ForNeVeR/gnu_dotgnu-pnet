@@ -30,6 +30,7 @@ public class FormsHello : Form
 	private int msgNum;
 	private ToolBar toolbar;
 	private ScrollBar scrollbar;
+	private CheckBox checkbox;
 	
 	private FormsHello()
 	{
@@ -49,7 +50,7 @@ public class FormsHello : Form
 		
 		// Create a progress bar control
 		progress = new ProgressBar();
-		progress.Location = new Point(30, 200);
+		progress.Location = new Point(30, 175);
 		progress.Anchor = AnchorStyles.Top |
 						  AnchorStyles.Left |
 						  AnchorStyles.Right;
@@ -80,11 +81,16 @@ public class FormsHello : Form
 
 		// Create a scrollbar control.
 		scrollbar = new HScrollBar();
-		scrollbar.Dock = DockStyle.Bottom;
 		Controls.Add(scrollbar);
 		scrollbar = new VScrollBar();
-		scrollbar.Dock = DockStyle.Right;
 		Controls.Add(scrollbar);
+
+		checkbox=new CheckBox();
+		checkbox.Location=new Point(70,95);
+		checkbox.Text="Any Good ?";
+		checkbox.Checked=true;
+		checkbox.CheckStateChanged += new EventHandler(HandleCheck);
+		Controls.Add(checkbox);
 	}
 
 	private void HandlePaint(Object sender, PaintEventArgs e)
@@ -134,6 +140,14 @@ public class FormsHello : Form
 		Console.WriteLine(Messages[msgNum]);
 		msgNum = (msgNum + 1) % Messages.Length;
 		progress.PerformStep();
+	}
+
+	private void HandleCheck(Object sender, EventArgs e)
+	{
+		bool check=(sender as CheckBox).Checked;
+		Console.WriteLine(check ? "You changed your mind ? , Good.." :
+								"Naaw , didn't think so..");
+					
 	}
 
 	public static void Main(String[] args)

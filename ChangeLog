@@ -1,3 +1,16 @@
+
+2003-07-11  Gopal.V  <gopalv82@symonds.net>
+	
+	* samples/FormsHello.cs: Add a checkbox example.
+	
+2003-07-10  Simon Guindon <simon@nureality.ca>
+
+	* System.Windows.Forms/CheckBox.cs, 
+	System.Windows.Forms/Themes/DefaultThemePainter.cs:
+	added implementation for CheckBox as well as the DrawCheckBox 
+	implementation to draw the control in DefaultThemePainter.
+	(Gopal)
+
 2003-07-10  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ScrollBar.cs,

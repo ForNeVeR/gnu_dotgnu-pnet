@@ -76,7 +76,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname, FILE *asmOutput)
 	{
 		ILGenOutOfMemory(info);
 	}
-	if((info->libImage = CreateBasicImage(info->context, "mscorlib")) == 0)
+	if((info->libImage = CreateBasicImage(info->context, ".library")) == 0)
 	{
 		ILGenOutOfMemory(info);
 	}

@@ -18,6 +18,8 @@ codegen/cg_relop.tc, codegen/cg_nodes.tc, codegen/cg_const.tc:
 convert "value class" into "valuetype" and prefix all standard library
 classes with "[.library]".
 
+* codegen/cg_gen.c: change the name of "libImage" to ".library".
+
 2001-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_types.h: mark array ranks explicitly with "ARRAY_CONTINUE",

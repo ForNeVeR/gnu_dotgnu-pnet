@@ -1,4 +1,10 @@
 
+2004-08-08  Deryk Robosson <deryk@0x0a.com>
+
+	* System.Windows.Forms/TreeView.cs: Remove remaining conversions to
+	EventHandler for most events and cast to appropriate handler.
+	(fixes bug #9835, patch #3260, Gopal)
+
 2004-08-08  Marcus Urban <mathpup@mylinuxisp.com>
 
 	* System/Collections/Specialized/StringDictionary.cs: All keys are 

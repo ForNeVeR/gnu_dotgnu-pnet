@@ -1098,7 +1098,7 @@ namespace System.Windows.Forms
 
 		protected internal virtual void OnBeforeCheck(TreeViewCancelEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.BeforeCheck) as EventHandler;
+			TreeViewCancelEventHandler handler = (TreeViewCancelEventHandler)GetHandler(EventId.BeforeCheck);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1107,7 +1107,7 @@ namespace System.Windows.Forms
 
 		protected internal virtual void OnBeforeCollapse(TreeViewCancelEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.BeforeCollapse) as EventHandler;
+			TreeViewCancelEventHandler handler = (TreeViewCancelEventHandler)GetHandler(EventId.BeforeCollapse);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1116,7 +1116,7 @@ namespace System.Windows.Forms
 
 		protected virtual void OnBeforeExpand(TreeViewCancelEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.BeforeExpand) as EventHandler;
+			TreeViewCancelEventHandler handler = (TreeViewCancelEventHandler)GetHandler(EventId.BeforeExpand);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1125,7 +1125,7 @@ namespace System.Windows.Forms
 
 		protected virtual void OnBeforeLabelEdit(NodeLabelEditEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.BeforeLabelEdit) as EventHandler;
+			NodeLabelEditEventHandler handler = (NodeLabelEditEventHandler)GetHandler(EventId.BeforeLabelEdit);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1134,7 +1134,7 @@ namespace System.Windows.Forms
 
 		protected virtual void OnBeforeSelect(TreeViewCancelEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.BeforeSelect) as EventHandler;
+			TreeViewCancelEventHandler handler = (TreeViewCancelEventHandler)GetHandler(EventId.BeforeSelect);
 			if (handler != null)
 			{
 				handler(this,e);
@@ -1162,7 +1162,7 @@ namespace System.Windows.Forms
 
 		protected virtual void OnItemDrag(ItemDragEventArgs e)
 		{
-			EventHandler handler = GetHandler(EventId.ItemDrag) as EventHandler;
+			ItemDragEventHandler handler = (ItemDragEventHandler)GetHandler(EventId.ItemDrag);
 			if (handler != null)
 			{
 				handler(this,e);

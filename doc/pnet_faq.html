@@ -6,9 +6,9 @@
 <h1>DotGNU Portable.Net FAQ</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2003/10/13 07:13:36 $<p>
+Last Modified: $Date: 2004/08/05 06:18:13 $<p>
 
-Copyright &copy; 2001, 2002, 2003 Southern Storm Software, Pty Ltd.<br>
+Copyright &copy; 2001, 2002, 2003, 2004 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
 
 <h2>Index</h2>
@@ -42,6 +42,7 @@ Permission to distribute unmodified copies of this work is hereby granted.<p>
 &nbsp;&nbsp;&nbsp;&nbsp;4.7. <a href="#q4_7">Why don't you use gcc as the basis for your C# compiler?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.8. <a href="#q4_8">What does "cscc" stand for?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;4.9. <a href="#q4_9">What other languages are supported by "cscc"?</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;4.10. <a href="#q4_10">Can I compile for .NET Framework 1.1?</a><br>
 5. <a href="#q5">System.Windows.Forms</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;5.1. <a href="#q5_1">Can I use System.Windows.Forms with DotGNU Portable.NET?</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;5.2. <a href="#q5_2">How is the System.Windows.Forms implementation structured?</a><br>
@@ -429,36 +430,21 @@ including pre-processor and linker options.<p>
 
 The C compiler generates pure IL bytecode, with no dependencies upon
 external native libraries.  The ABI (Application Binary Interface)
-appears to be a 64-bit CPU: "<code>int</code>" is 32-bits,
-"<code>long</code>" and pointers are 64-bit.<p>
-
-The 64-bit output binaries will run on both 32-bit and 64-bit versions
-of "<code>ilrun</code>" without needing recompilation.  But there is some
-extra memory overhead involved in using a 64-bit ABI.  If you really want
-to use a 32-bit ABI, you can supply the option "<code>-m32bit-only</code>".
-The resulting IL binary will run fine on 32-bit versions of
-"<code>ilrun</code>", but won't work on 64-bit engines.<p>
-
-Compiled programs are linked against either "<code>libc64.dll</code>"
-or "<code>libc32.dll</code>" depending upon the compiler output mode.
-When you specify a link option (e.g. "<code>-lm</code>"), the linker
-will first look for "<code>libmNN.dll</code>", where "<code>NN</code>"
-is either 64 or 32.  If that is not found, it will look for
-"<code>libm.dll</code>".  This way, you can have both 64-bit and
-32-bit environments installed on your machine.<p>
+adapts itself to the particulars of the runtime engine that
+executes the program.  You must have <code>pnetC</code> installed
+to compile and run C programs.<p>
 
 More information on the ABI and the C environment can be found in
 the "<code>pnet/doc</code>" directory of the source.<p>
 
 <a name="q4_3"><h3>4.3. Why not write the compiler tools in C#?</h3>
 
-The main reason is the "chicken and egg" problem.  We wouldn't be
+The main reason is the "chicken and egg" problem.  We wouldn't have been
 able to run the compiler until the runtime engine and the
-full C# system library is written, and they are still a work
-in progress.<p>
+full C# system library were fully written.<p>
 
-While it is possible to bootstrap off Microsoft's engine and
-compiler, there is an open legal question in doing this.  We want
+While it might have been possible to bootstrap off Microsoft's engine and
+compiler, there was an open legal question in doing this.  We wanted
 to avoid any "booby traps" that may exist in Microsoft licenses
 that prevent the free development of DotGNU Portable.NET.  It is
 safer to avoid dependence upon Microsoft tools.<p>
@@ -666,11 +652,51 @@ There are currently early versions of compiler plug-ins for Java and
 Visual Basic .NET, as well as some support for Generic C#.  Volunteers
 are welcome to help us finish these languages.<p>
 
+<a name="q4_10"><h3>4.10. Can I compile for .NET Framework 1.1?</h3>
+
+When <code>pnetlib</code> is installed, it will normally be configured
+to build and run applications for the most recent version of the .NET
+Framework SDK (beta or final).  If you compile applications against
+this version, they may not run on older versions of the .NET Framework.<p>
+
+This is a problem with the way that Microsoft's CLR loads assemblies.
+If the assembly version numbers do not match exactly, their CLR will refuse
+to load an application.  DotGNU Portable.NET uses a different approach:
+if the exact version is not available, it will fall back to the default
+assembly of the same name.  We believe that our approach is better
+because it backs off gracefully rather than exploding in the face
+of unknown version numbers.<p>
+
+If you wish to build applications for users who have an older version
+of Microsoft's .NET Framework installed, you can reconfigure
+<code>pnetlib</code> with a different profile.  For example:<p>
+
+<blockquote><code>./configure --with-profile=default1.1</code></blockquote><p>
+
+Any applications that you compile thereafter will be appropriately
+versioned to run on the .NET Framework 1.1.<p>
+
+You can also install multiple versions of <code>pnetlib</code> side by
+side, so that applications will always run against the correct version
+of the library:<p>
+
+<blockquote><code>./configure<br>
+make<br>
+make install<br>
+make distclean<br>
+./configure --with-profile=framework1.1<br>
+make<br>
+make install</code></blockquote><p>
+
+This will install the full version as the default, and the 1.1 compatible
+version as an auxillary installation.  See section <a href="#q10_3">10.3</a>
+for a list of available profiles.<p>
+
 <a name="q5"><h2>5. System.Windows.Forms</h2>
 
 <a name="q5_1"><h3>5.1. Can I use System.Windows.Forms with DotGNU Portable.NET?</h3>
 
-Yes, since version 0.5.8 of DotGNU Portable.NET.<p>
+Yes, since version 0.5.8 of DotGNU Portable.NET in mid-2003.<p>
 
 An advantage of our implementation of System.Windows.Forms is that we don't
 try to wrap up third party widget sets like Gtk, Qt, Wine, etc.
@@ -686,9 +712,10 @@ MacOS X.  See the <a href="http://www.dotgnu.org/">DotGNU web site</a>
 for current screenshots.<p>
 
 However, there are likely to be some strange Windows quirks that can
-only be provided by a Wine-based approach.  The Mono project is taking
-this route, and it is likely that their implementation will eventually
-work with DotGNU Portable.NET also.<p>
+theoretically only be provided by a Wine-based approach.  Until recently
+(mid-2004), the Mono project was taking this route, and it ended up being
+very difficult to maintain.  They have since switched to a pure managed C#
+approach like DotGNU Portable.NET.<p>
 
 Needless to say, we encourage programmers to write C# code in a portable
 fashion, avoiding quirky features of particular platforms.<p>
@@ -1160,6 +1187,15 @@ features of the system.  The following profiles are currently supported:
 <dt><code>full</code></dt>
 <dd>The full version, with all features enabled.</code>
 
+<dt><code>framework1.1</code>, <code>framework1.2</code>, etc</dt>
+<dd>Builds the full version in such a way that it is compatible
+with a specific version of the .NET Framework SDK.  When installed,
+the library can co-exist with <code>full</code>.</dd>
+
+<dt><code>default1.1</code>, <code>default1.2</code>, etc</dt>
+<dd>Same as <code>framework1.1</code>, <code>framework1.2</code>, etc
+but the library is installed as the default.</dd>
+
 <dt><code>ecma</code></dt>
 <dd>A strictly ECMA-compatible profile.</dd>
 
@@ -1181,6 +1217,10 @@ features of the system.  The following profiles are currently supported:
 
 <dt><code>tiny-fp</code></dt>
 <dd>The smallest possible profile, with the addition of floating point.</dd>
+
+<dt><code>mscompact</code></dt>
+<dd>A configuration that endeavours to be compatible with the Compact .NET
+Framework SDK.</dd>
 </dl>
 
 Other profiles may be defined in the future.  Check the source directory
@@ -1325,6 +1365,9 @@ features, then you can recompile it using the C language front-end for
 "<code>cscc</code>".  The resulting binary is likely to be more portable
 than that produced by Visual Studio.NET.<p>
 
+Update: more recent versions of Visual Studio.NET apparently generate
+IL that is more pure.  Your mileage may still vary though.<p>
+
 <a name="q12_4"><h3>12.4. Why don't you just use Java?</h3>
 
 This question is usually asked by Java-philes who are suspicious of
@@ -1349,7 +1392,7 @@ community would be very boring if everyone did everything the same way.<p>
 
 <hr>
 
-Copyright &copy; 2001, 2002, 2003 Southern Storm Software, Pty Ltd.<br>
+Copyright &copy; 2001, 2002, 2003, 2004 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.
 
 </body>

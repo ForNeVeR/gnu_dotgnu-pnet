@@ -1567,8 +1567,13 @@ EnumSpecifier
 	;
 
 EnumeratorList
+	: EnumeratorListNoComma
+	| EnumeratorListNoComma ','
+	;
+
+EnumeratorListNoComma
 	: Enumerator
-	| EnumeratorList ',' Enumerator
+	| EnumeratorListNoComma ',' Enumerator
 	;
 
 Enumerator

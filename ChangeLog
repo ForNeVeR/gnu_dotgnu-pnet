@@ -1,4 +1,10 @@
 
+2003-02-17  Aditya P. Bansod <abansod@fullenergy.com>
+	
+	* runtime/System/IO/Directory.cs, runtime/Platform/DirMethods.cs:
+	Implement the CreateDirectory() method for compatibility.
+	(Gopal,fixes Bug #2518)
+
 2003-02-17  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Threading/WaitHandle.cs: Fix WaitOne() overloaded

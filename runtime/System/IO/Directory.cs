@@ -40,6 +40,20 @@ namespace System.IO
 			// private constructor... do nothing
 		}
 
+#if !ECMA_COMPAT	
+		public static DirectoryInfo CreateDirectory(String path)
+		{
+			Exception e=ValidatePath(path, "path");
+			if(e != null) throw e;
+		
+			Errno err = DirMethods.CreateDirectory(path);
+			e=GetErrnoExceptions(err,path);
+			if(e != null) throw e;
+
+			return new DirectoryInfo(path);
+		}
+#endif
+
 		public static void Delete(string path)
 		{
 			Delete(path,false);	

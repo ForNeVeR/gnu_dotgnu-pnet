@@ -70,6 +70,10 @@ internal class DirMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String[] GetLogicalDrives();
 
+	// Create a Directory
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno CreateDirectory(string path);
+
 }; // class DirMethods
 
 }; // namespace Platform

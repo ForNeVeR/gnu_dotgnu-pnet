@@ -37,6 +37,12 @@ public class TreeViewEventArgs : EventArgs
 				this.action = action;
 			}
 
+	public TreeViewEventArgs(TreeNode node)
+			{
+				this.node = node;
+				this.action = TreeViewAction.Unknown;
+			}
+
 	// Get the action that caused the event.
 	public TreeViewAction Action
 			{

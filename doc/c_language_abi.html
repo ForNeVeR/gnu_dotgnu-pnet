@@ -6,7 +6,7 @@
 <h1>Application Binary Interface for C within CLI</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2002/08/18 23:59:35 $<p>
+Last Modified: $Date: 2002/08/19 23:56:28 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -1075,14 +1075,13 @@ for a variable that it output a strong alias instead.<p>
 <h3>5.5. Initializers and finalizers</h3>
 
 Initializers are compiled into static methods that have the
-"<code>private</code>" and "<code>specialname</code>" flags,
-have no parameters or return values, and are marked with the
-"<code>Initializer</code>" attribute.<p>
+"<code>specialname</code>" flag, have no parameters or return
+values, and are marked with the "<code>Initializer</code>"
+attribute.<p>
 
 Finalizers are compiled into static methods that have the
-"<code>private</code>" and "<code>specialname</code>" flags,
-have no parameters or return values, and are marked with the
-"<code>Finalizer</code>" attribute.<p>
+"<code>specialname</code>" flag, have no parameters or return
+values, and are marked with the "<code>Finalizer</code>" attribute.<p>
 
 The linker collects up all initializers and finalizers in a program
 or library and does the following:
@@ -1129,8 +1128,8 @@ call, and the body of the "<code>.fini</code>" method will only be
 executed upon the last call.  Appendix A contains some sample code
 that demonstrates this.<p>
 
-Because the locally-defined initializers and finalizers are declared
-"<code>private</code>", the renaming logic described in a previous
+Usually, locally-defined initializers and finalizers are declared
+"<code>private</code>".  The renaming logic described in a previous
 section will take care of resolving ambiguities in naming.<p>
 
 <h2>6. The crt0 code</h2>

@@ -131,6 +131,72 @@ static int SameSignature(ILType *sig1, ILType *sig2, int forwardKind)
 	}
 }
 
+/*
+ * Add initializer or finalizer attributes to a program item.
+ */
+static void AddInitOrFini(ILGenInfo *info, ILProgramItem *item,
+						  const char *initName, const char *orderName,
+						  ILInt32 order)
+{
+	ILClass *classInfo;
+	ILClass *scope;
+	ILMethod *ctor;
+	ILAttribute *attr;
+	unsigned char value[8];
+	static ILType *orderArgs[1] = {ILType_Int32};
+
+	/* Create the "Initializer" or "Finalizer" attribute */
+	classInfo = ILTypeToClass(info, ILFindNonSystemType
+			(info, initName, "OpenSystem.C"));
+	scope = ILClassLookup(ILClassGlobalScope(info->image), "<Module>", 0);
+	ctor = ILResolveConstructor(info, classInfo, scope, 0, 0);
+	attr = ILAttributeCreate(info->image, 0);
+	if(!attr)
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILAttributeSetType(attr, ILToProgramItem(ctor));
+	value[0] = 0x01;
+	value[1] = 0x00;
+	value[2] = 0x00;
+	value[3] = 0x00;
+	if(!ILAttributeSetValue(attr, value, 4))
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILProgramItemAddAttribute(item, attr);
+
+	/* Bail out if the "order" value is the default of zero */
+	if(!order)
+	{
+		return;
+	}
+
+	/* Create the "InitializerOrder" or "FinalizerOrder" attribute */
+	classInfo = ILTypeToClass(info, ILFindNonSystemType
+			(info, orderName, "OpenSystem.C"));
+	ctor = ILResolveConstructor(info, classInfo, scope, orderArgs, 1);
+	attr = ILAttributeCreate(info->image, 0);
+	if(!attr)
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILAttributeSetType(attr, ILToProgramItem(ctor));
+	value[0] = 0x01;
+	value[1] = 0x00;
+	value[2] = (unsigned char)(order);
+	value[3] = (unsigned char)(order >> 8);
+	value[4] = (unsigned char)(order >> 16);
+	value[5] = (unsigned char)(order >> 24);
+	value[6] = 0x00;
+	value[7] = 0x00;
+	if(!ILAttributeSetValue(attr, value, 8))
+	{
+		ILGenOutOfMemory(info);
+	}
+	ILProgramItemAddAttribute(item, attr);
+}
+
 ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 						  CDeclSpec spec, CDeclarator decl,
 						  ILNode *declaredParams)
@@ -143,6 +209,7 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 	ILType *checkForward = 0;
 	int forwardKind = 0;
 	ILUInt32 attrs = IL_META_METHODDEF_STATIC | IL_META_METHODDEF_PUBLIC;
+	ILInt32 order;
 
 	/* Set the "extern" vs "static" attributes for the method */
 	attrs = IL_META_METHODDEF_STATIC;
@@ -238,6 +305,40 @@ ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
 	{
 		/* Add a new entry to the scope */
 		CScopeAddFunction(name, node, signature);
+	}
+
+	/* Process the function attributes */
+	if(CAttrPresent(decl.attrs, "constructor", "__constructor__"))
+	{
+		order = CAttrGetInt(decl.attrs, "corder", "__corder__", 1);
+		AddInitOrFini(info, ILToProgramItem(method),
+					  "InitializerAttribute", "InitializerOrderAttribute",
+					  order);
+		ILMemberSetAttrs((ILMember *)method,
+					     IL_META_METHODDEF_SPECIAL_NAME,
+					     IL_META_METHODDEF_SPECIAL_NAME);
+	}
+	if(CAttrPresent(decl.attrs, "destructor", "__destructor__"))
+	{
+		order = CAttrGetInt(decl.attrs, "dorder", "__dorder__", 1);
+		AddInitOrFini(info, ILToProgramItem(method),
+					  "FinalizerAttribute", "FinalizerOrderAttribute",
+					  order);
+		ILMemberSetAttrs((ILMember *)method,
+					     IL_META_METHODDEF_SPECIAL_NAME,
+					     IL_META_METHODDEF_SPECIAL_NAME);
+	}
+	if(ILMethod_HasSpecialName(method))
+	{
+		/* Check that the constructor/destructor signature is correct */
+		if(ILTypeGetReturn(signature) != ILType_Void ||
+		   (ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+		   		IL_META_CALLCONV_VARARG ||
+		   ILTypeNumParams(signature) > 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  _("incorrect signature for constructor or destructor"));
+		}
 	}
 
 	/* Clear the local variable signature, ready for allocation */
@@ -747,9 +848,9 @@ void CFunctionWeakAlias(ILGenInfo *info, const char *name, ILNode *node,
 
 	/* Declare the "name-alias" field, which contains the method pointer */
 	if(isPrivate)
-		fputs(".field private static ", stream);
+		fputs(".field private static specialname ", stream);
 	else
-		fputs(".field public static ", stream);
+		fputs(".field public static specialname ", stream);
 	ILDumpMethodType(stream, info->image, signature,
 					 IL_DUMP_QUOTE_NAMES, 0, 0, 0);
 	fprintf(stream, " '%s-alias'\n", name);
@@ -938,6 +1039,33 @@ const char *CAttrGetString(ILNode *attrs, const char *name,
 		}
 	}
 	return 0;
+}
+
+ILInt32 CAttrGetInt(ILNode *attrs, const char *name,
+					const char *altName, ILInt32 defValue)
+{
+	ILNode_ListIter iter;
+	ILNode_CAttribute *arg;
+	ILEvalValue *value;
+	ILNode_ListIter_Init(&iter, attrs);
+	while((arg = (ILNode_CAttribute *)ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if((!strcmp(arg->name, name) || !strcmp(arg->name, altName)) &&
+		   yyisa(arg->args, ILNode_CAttributeValue))
+		{
+			value = &(((ILNode_CAttributeValue *)(arg->args))->value);
+			if(value->valueType == ILMachineType_Int8 ||
+			   value->valueType == ILMachineType_UInt8 ||
+			   value->valueType == ILMachineType_Int16 ||
+			   value->valueType == ILMachineType_UInt16 ||
+			   value->valueType == ILMachineType_Int32 ||
+			   value->valueType == ILMachineType_UInt32)
+			{
+				return value->un.i4Value;
+			}
+		}
+	}
+	return defValue;
 }
 
 #ifdef	__cplusplus

@@ -111,6 +111,12 @@ int CAttrPresent(ILNode *attrs, const char *name, const char *altName);
 const char *CAttrGetString(ILNode *attrs, const char *name,
 						   const char *altName);
 
+/*
+ * Get the value of an integer attribute from a list.
+ */
+ILInt32 CAttrGetInt(ILNode *attrs, const char *name,
+					const char *altName, ILInt32 defValue);
+
 #ifdef	__cplusplus
 };
 #endif

@@ -64,7 +64,12 @@ public struct Double : IComparable, IFormattable
 			{
 				if(value is Double)
 				{
-					return (value_ == ((Double)value).value_);
+					/* Note: ECMA spec says that "NaN!=NaN" but *
+					 * NaN.Equals(NaN)==true , strange but true */
+
+					double dvalue=((Double)value).value_;
+					return ((value_ == dvalue) || 
+							(IsNaN(value_) && IsNaN(dvalue)));
 				}
 				else
 				{
@@ -182,15 +187,14 @@ public struct Double : IComparable, IFormattable
 					{
 						double val1 = value_;
 			  			double val2 = ((Double)value).value_;
-						if(val1 < val2)
-						{
-							return -1;
-						}
-						else if(val1 > val2)
-						{
-							return 1;
-						}
-						else if(val1 == val2)
+
+						/* Note: the order of these if statements are
+						 * important as cscc often uses bge.s to simplify
+						 * less than if statements. But because NaN < NaN
+						 * and NaN > NaN are both false, this runs into some
+						 * queer issues */
+
+						if(val1 == val2)
 						{
 							return 0;
 						}
@@ -204,6 +208,14 @@ public struct Double : IComparable, IFormattable
 							{
 								return -1;
 							}
+						}
+						else if(val1 < val2)
+						{
+							return -1;
+						}
+						else if(val1 > val2)
+						{
+							return 1;
 						}
 						else
 						{

@@ -8,6 +8,9 @@
 	samples/mscorlib.dll: check in new assemblies with string
 	formatting and cryptography fixes.
 
+	* ildasm/ildasm_method.c: bug in the dumping of "ldc.i8" arguments,
+	which caused the words to be reversed in the output.
+
 2002-11-27  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_varusage.h , codegen/cg_varusage.c, codegen/cg_gen.h,

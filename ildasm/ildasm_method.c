@@ -552,8 +552,8 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 			case IL_OPCODE_ARGS_INT64:
 			{
 				fprintf(outstream, "0x%08lx%08lX",
-				        (unsigned long)(IL_READ_UINT32(temp + args)),
-						(unsigned long)(IL_READ_UINT32(temp + args + 4)));
+				        (unsigned long)(IL_READ_UINT32(temp + args + 4)),
+						(unsigned long)(IL_READ_UINT32(temp + args)));
 			}
 			break;
 

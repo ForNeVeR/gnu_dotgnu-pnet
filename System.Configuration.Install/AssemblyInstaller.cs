@@ -309,7 +309,9 @@ public class AssemblyInstaller : Installer
 							}
 						}
 						throw new InvalidOperationException
-							(S._("Installer_CouldNotLoadAssembly"), e);
+							(String.Format
+								(S._("Installer_CouldNotLoadAssembly"),
+								 filename), e);
 					}
 				}
 			}

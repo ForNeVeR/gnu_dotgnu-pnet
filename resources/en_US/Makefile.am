@@ -1,1 +1,2 @@
-SUBDIRS = runtime I18N System System.Xml System.Net.IrDA Xsharp
+SUBDIRS = runtime I18N System System.Xml System.Net.IrDA Xsharp \
+		  System.Configuration.Install

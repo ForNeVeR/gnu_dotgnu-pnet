@@ -36,10 +36,8 @@ internal sealed class S
 	// Cached copy of the resources for this assembly and mscorlib.
 #if ECMA_COMPAT
 	private static ECMAResourceManager ourResources = null;
-	private static ECMAResourceManager runtimeResources = null;
 #else
 	private static ResourceManager ourResources = null;
-	private static ResourceManager runtimeResources = null;
 #endif
 
 	// Helper for obtaining string resources for this assembly.
@@ -48,8 +46,6 @@ internal sealed class S
 				lock(typeof(S))
 				{
 					String value;
-
-					// Try the resources in this assembly first.
 					if(ourResources == null)
 					{
 					#if ECMA_COMPAT
@@ -60,24 +56,7 @@ internal sealed class S
 							("System.Configuration.Install", (typeof(S)).Assembly);
 					#endif
 					}
-					value = ourResources.GetString(tag, null);
-					if(value != null)
-					{
-						return value;
-					}
-
-					// Try the fallbacks in the runtime library.
-					if(runtimeResources == null)
-					{
-					#if ECMA_COMPAT
-						runtimeResources = new ECMAResourceManager
-							("runtime", (typeof(String)).Assembly);
-					#else
-						runtimeResources = new ResourceManager
-							("runtime", (typeof(String)).Assembly);
-					#endif
-					}
-					return runtimeResources.GetString(tag, null);
+					return ourResources.GetString(tag, null);
 				}
 			}
 

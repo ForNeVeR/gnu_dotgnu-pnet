@@ -23,6 +23,15 @@
 	System.Configuration.Install/ilinstall-run.sh: check in the
 	"System.Configuration.Install" implementation.
 
+	* configure.in, resources/en_US/Makefile.am,
+	System.Configuration.Install/AssemblyInstaller.cs,
+	System.Configuration.Install/S.cs,
+	System.Configuration.Install/System.Configuration.Install.build,
+	resources/en_US/System.Configuration.Install/.cvsignore,
+	resources/en_US/System.Configuration.Install/Installer.txt,
+	resources/en_US/System.Configuration.Install/Makefile.am:
+	add the string resources for "System.Configuration.Install".
+
 2003-08-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/BaseNumberConverter.cs,

@@ -8,6 +8,9 @@
 	directly using ILFindNonSystemType and make sure all types are 
 	resolved properly during type gather.
 
+	* cscc/csharp/cs_semantics.tc, cscc/csharp/cs_lvalue.tc: Resolve
+	aliases for fully qualified namespaces as well. (bug #5806)
+
 2004-04-18  Gopal V <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Call ILNode_SemanalysisType for 

@@ -815,6 +815,52 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 	return value;
 }
 
+static CSSemValue GetFullyQualifiedType(ILGenInfo *info, char * ns, char * name)
+{
+	CSSemValue value;
+	ILScopeData * data = NULL;
+	ILNode *usingNode;
+
+	if(name && ns)
+	{
+		ILType * type = ILFindNonSystemType(info, name, ns);
+		if(type != NULL)
+		{
+			// Note: had to do this to match the 'System.Intptr' type properly
+			type = ILClassToType(ILClassResolve(ILType_ToClass(type)));
+			CSSemSetType(value, type);
+			return value;
+		}
+		
+		// check if "ns" is really an alias for something
+		if(info->currentNamespace && ((ILNode_Namespace*)info->currentNamespace)->localScope)
+		{
+			data = ILScopeLookup(((ILNode_Namespace*)info->currentNamespace)->localScope, ns, 1);
+		}
+
+		if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS)
+		{
+			usingNode = ILScopeDataGetData1(data);
+			ns = ILQualIdentName(usingNode, 0);
+		}
+		
+		if(ns)
+		{
+			ILType * type = ILFindNonSystemType(info, name, ns);
+			if(type != NULL)
+			{
+				// Note: had to do this to match the 'System.Intptr' type properly
+				type = ILClassToType(ILClassResolve(ILType_ToClass(type)));
+				CSSemSetType(value, type);
+				return value;
+			}
+		}
+	}
+
+	
+	return CSSemValueDefault;
+}
+
 %}
 
 /*
@@ -830,7 +876,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
   	ILNode_SemGuard *constVar;
 	ILNode_UsingAlias *alias;
 	ILType *type;
-	
+
 	if(!info->inSemType)
 	{
 		/* Look for local variables in the current scope */
@@ -971,14 +1017,14 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, node->name, 1);
 	info->inSemType=savedState;
 
-	if (CSSemGetKind(value) == CS_SEMKIND_TYPE || CSSemGetKind(value) == CS_SEMKIND_NAMESPACE)
+	if (CSSemGetKind(value) == CS_SEMKIND_TYPE || CSSemGetKind(value) == CS_SEMKIND_NAMESPACE || CSSemGetKind(value) == CS_SEMKIND_TYPE_NODE)
 	{
 		/* Convert the result into an l-value or r-value and return it */
 		return SemToLRValue((ILNode *)node, info, parent, 
 							value, node->name, 0, 0);
 	}
 
-	data = ILScopeLookup(info->currentScope, node->name, 1);
+	data = ILScopeLookup(((ILNode_Namespace*)info->currentNamespace)->localScope, node->name, 1);
 	
 	if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS &&
 	   !(info->resolvingAlias))
@@ -1119,16 +1165,12 @@ ILNode_SemAnalysisType(ILNode_QualIdent)
 	
 	ns = ILQualIdentName(node->left, 0);
 	name = ILQualIdentName(node->right, 0);
+	
+	value = GetFullyQualifiedType(info, ns, name);
 
-	if(name && ns)
+	if(CSSemGetKind(value) == CS_SEMKIND_TYPE)
 	{
-		ILType * type = ILFindNonSystemType(info, name, ns);
-		if(type != NULL)
-		{
-			type = ILClassToType(ILType_ToClass(type));
-			CSSemSetType(value, type);
-			return value;
-		}
+		return value;
 	}
 
 	/* Restrict lookups for types only (ie namespaces , types, nested types */
@@ -1142,7 +1184,7 @@ ILNode_SemAnalysisType(ILNode_QualIdent)
 	
 	info->inSemType = savedState;
 
-	if (CSSemGetKind(value2) == CS_SEMKIND_TYPE || CSSemGetKind(value2) == CS_SEMKIND_NAMESPACE)
+	if (CSSemGetKind(value2) == CS_SEMKIND_TYPE || CSSemGetKind(value2) == CS_SEMKIND_NAMESPACE || CSSemGetKind(value2) == CS_SEMKIND_TYPE_NODE)
 	{
 		/* Convert the result into an l-value or r-value and return it */
 		return SemToLRValue((ILNode *)node, info, parent, value2,
@@ -1333,17 +1375,11 @@ ILNode_SemAnalysisType(ILNode_MemberAccess)
 	/* Convert the second subexpression into a name */
 	name = ILQualIdentName(node->expr2, 0);
 
-	// try a raw resolution
-	if(name && ns)
+	value = GetFullyQualifiedType(info, ns, name);
+
+	if(CSSemGetKind(value) == CS_SEMKIND_TYPE)
 	{
-		ILType * type = ILFindNonSystemType(info, name, ns);
-		if(type != NULL)
-		{
-			// Note: had to do this to match the 'System.Intptr' type properly
-			type = ILClassToType(ILType_ToClass(type));
-			CSSemSetType(value, type);
-			return value;
-		}
+		return value;
 	}
 	
 	info->inSemType=1;

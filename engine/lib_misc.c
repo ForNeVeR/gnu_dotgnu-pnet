@@ -287,30 +287,127 @@ ILTypedRef _IL_ArgIterator_GetNextArg_(ILExecThread *_thread, void *_this)
 }
 
 /*
+ * Convert a type into its primitive form, ignoring slight differences
+ * in type that don't matter because we can blindly cast between the
+ * equivalents without losing type-safety.
+ */
+static int ArgTypeToPrimitive(ILType *type)
+{
+	if(ILType_IsPrimitive(type))
+	{
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+				return IL_META_ELEMTYPE_I1;
+
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+			case IL_META_ELEMTYPE_CHAR:
+				return IL_META_ELEMTYPE_I2;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
+				return IL_META_ELEMTYPE_I4;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif
+				return IL_META_ELEMTYPE_I8;
+
+			case IL_META_ELEMTYPE_R4:
+				return IL_META_ELEMTYPE_R4;
+
+			case IL_META_ELEMTYPE_R8:
+			case IL_META_ELEMTYPE_R:
+				return IL_META_ELEMTYPE_R8;
+
+			default: break;
+		}
+		return IL_META_ELEMTYPE_END;
+	}
+	else if(ILType_IsValueType(type))
+	{
+		if(ILTypeIsEnum(type))
+		{
+			return ArgTypeToPrimitive(ILTypeGetEnumType(type));
+		}
+		else
+		{
+			return IL_META_ELEMTYPE_VALUETYPE;
+		}
+	}
+	else if(ILType_IsPointer(type))
+	{
+	#ifdef IL_NATIVE_INT32
+		return IL_META_ELEMTYPE_I4;
+	#else
+		return IL_META_ELEMTYPE_I8;
+	#endif
+	}
+	else
+	{
+		return IL_META_ELEMTYPE_END;
+	}
+}
+
+/*
  * public TypedReference GetNextArg(RuntimeTypeHandle type);
+ *
+ * Note: this version is typically used by unmanaged C++ code, where
+ * it is expected that the next argument is of a particular type.
+ * We check the type and return the value.  This is a little stricter
+ * than other implementations, but it is also a lot safer.
  */
 ILTypedRef _IL_ArgIterator_GetNextArg_RuntimeTypeHandle(ILExecThread *_thread,
 														void *_this,
 														void *type)
 {
 	void *actualType = *((void **)type);
+	int actualTypePrim;
 	ILTypedRef ref;
-	for(;;)
-	{
-		/* Get the next reference from the argument list */
-		ref = _IL_ArgIterator_GetNextArg_(_thread, _this);
-		if(!(ref.type))
-		{
-			/* An exception was thrown at the end of the list */
-			break;
-		}
 
-		/* Is this the type that we are looking for? */
-		if(ref.type == actualType)
-		{
-			break;
-		}
+	/* Convert the actual type into its primitive form */
+	actualTypePrim = ArgTypeToPrimitive
+		(ILClassToType((ILClass *)actualType));
+
+	/* Get the next reference from the argument list */
+	ref = _IL_ArgIterator_GetNextArg_(_thread, _this);
+	if(!(ref.type))
+	{
+		/* An exception was thrown at the end of the list */
+		return ref;
 	}
+
+	/* Convert the argument type into its primitive form and compare */
+	if(ArgTypeToPrimitive(ILClassToType((ILClass *)(ref.type)))
+			!= actualTypePrim || actualTypePrim == IL_META_ELEMTYPE_END)
+	{
+		ILExecThreadThrowSystem(_thread, "System.InvalidOperationException",
+								"Invalid_BadEnumeratorPosition");
+		ref.type = 0;
+		ref.value = 0;
+		return ref;
+	}
+	if(actualTypePrim == IL_META_ELEMTYPE_VALUETYPE && ref.type != actualType)
+	{
+		ILExecThreadThrowSystem(_thread, "System.InvalidOperationException",
+								"Invalid_BadEnumeratorPosition");
+		ref.type = 0;
+		ref.value = 0;
+		return ref;
+	}
+
+	/* Convert the typed reference into the requested type and return it */
+	ref.type = actualType;
 	return ref;
 }
 

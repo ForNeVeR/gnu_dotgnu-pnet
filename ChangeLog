@@ -1,5 +1,14 @@
 
-2002-12-18 Gopal.V  <gopalv82@symonds.net>
+2002-12-20  Gopal.V  <gopalv82@symonds.net>
+	
+	* support/dir.c: Similar changes for ILDeleteDir()
+
+2002-12-20  Aditya P. Bansod <abansod@fullenergy.com>
+	
+	* support/dir.c: Remove the resets for errno and use the return
+	value checks.
+
+2002-12-18  Gopal.V  <gopalv82@symonds.net>
 	
 	* support/dir.c: reset errno inside ILDeleteDir().
 

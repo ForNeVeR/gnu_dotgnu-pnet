@@ -1,4 +1,12 @@
 
+2001-01-09  Charlie Carnow  <carnow@gmx.net>
+
+	* runtime/System/IO/Path.cs: added Partial Implementations of
+	ChangeExtension, GetFileNameWithoutExtension, HasExtension.
+
+	* runtime/System/IO/Path.cs: added Implentations of Combine and
+	GetTempFilename.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* doc/ChangeLog-1: move the contents of ChangeLog into the "doc"

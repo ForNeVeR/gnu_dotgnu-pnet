@@ -38,21 +38,61 @@ namespace System.IO
 		public static readonly char[] InvalidPathChars = p.invalidPathChars;
 		private static readonly char[] PathSeperatorChars = { DirectorySeperatorChar, AltDirectorySeperatorChar, VolumeSeperatorChar};
 		
-		private int counter; 
+		/* counter is for the MkTempFile function; its static
+		 * so that the only time the MkTempFile function has 
+                 * to go through the loop more than once is when
+		 * its called for the first time
+		 */
+		private static int counter; 
 		
 				
 
 		[TODO]
 		public static String ChangeExtension(String path, String extension)
-		{	
-			return null;
+		{
+			/* TODO: Figure out how to get the System-Dependant
+                         * Extension Seperator instead of just assuming it's
+			 * a '.'; Mail to the DotGnu Developers mailing
+			 * list or me (Charlie Carnow <carnow@gmx.net> 
+			 * and the DotGnu Mailing list
+                         * on this topic would be nice
+                         */	
+			string[] patharray = path.split('.');
+			string ext = extension;
+			return String.Concat(patharray[0], '.', extension);
 		}
 		
-		[TODO]
+		
 		public static String Combine(String path1, String path2)
 		{
-			return null;
-		}
+
+			if (path1.Length == 0) 
+			{
+				return path2;
+			}
+			else if (path2.Length == 0)
+			{
+				return path1;
+			}
+			if (path1 == null || path2 == null)
+			{
+				throw new ArgumentNullException();
+			}
+			
+			/* TODO:Check for implementation-defined invalid
+			 * chars
+			 */
+			
+			if (path1.EndsWith(DirectorySeperatorChar) == false 
+			    && path2.EndsWith(AltDirectorySeperatorChar)
+				== false) 
+			{
+				 // Insert at starting at last element
+				 path1 = path1.Insert(path1.Length, DirectorySeperatorChar);
+		        }
+
+	return String.Concat(path1, path2);
+}
 		
 		[TODO]
 		public static String GetDirectoryName(String path)
@@ -75,7 +115,19 @@ namespace System.IO
 		[TODO]
 		public static String GetFileNameWithoutExtension(String path)
 		{
-			return null;
+			/* TODO: See TODO note at ChangeExtension */
+			/* Split at the dot..The first element
+                         * of filename should now have the filename without
+		         * the extension */
+			try 
+			{
+				string filename[] = GetFileName(path).split('.');
+			}
+			catch (ArgumentException e) 
+			{	
+				throw new ArgumentException(e.Message, e);
+			}
+			return filename[0];
 		}
 		
 		[TODO]
@@ -96,7 +148,7 @@ namespace System.IO
 		}
 		
 		/* Based on tempfile.py function mktemp */
-		[TODO]
+		
 		public static String GetTempFilename()
 		{
 			// Assume prefix tmp- I don't know a way to
@@ -106,6 +158,7 @@ namespace System.IO
 			string file;
 			while(true)
 			{	
+				/* Counter is a
 				counter += 1;
 				/* cat the strings together */
 				file = dir + pre + NumToString(counter);
@@ -134,7 +187,8 @@ namespace System.IO
 		[TODO]
 		public static bool HasExtension(String path)
 		{
-			return false;
+			/* TODO: See Note at ChangeExtension */ 
+			return (path.split('.').Length > 1);		
 		}
 		
 		
@@ -146,3 +200,4 @@ namespace System.IO
 	}
 
 }
+

@@ -15,6 +15,11 @@ program, for performing unit tests on the library.
 * csunit/TestMain.cs: use "Load" instead of "LoadFrom", because "LoadFrom"
 is not ECMA-compliant.
 
+* resources/en_US/runtime/Reflection.txt,
+runtime/System/Reflection/Assembly.cs,
+runtime/System/Reflection/ClrType.cs: improve the "internalcall" interface
+for assemblies and types.
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/RuntimeType.cs,

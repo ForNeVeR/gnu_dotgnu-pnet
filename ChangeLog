@@ -1,4 +1,10 @@
 
+2003-03-12  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_grammar.y, cscc/c/c_types.c: break circularities
+	in the computation of struct hashes; always rename anonymous
+	structures, even if they are within a surrounding struct (Bug #2778).
+
 2003-03-11  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_attr.c: Fix circularity bug when encountering 

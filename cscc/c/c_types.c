@@ -1144,8 +1144,6 @@ static void MD5HashType(ILMD5Context *md5, ILType *type)
 			/* Hash a struct or union type */
 			MD5HashAddChar(md5, structKind + 100);
 			MD5HashAddName(md5, ILType_ToValueType(type));
-			MD5HashFields(md5, ILType_ToValueType(type));
-			MD5HashAddChar(md5, IL_META_ELEMTYPE_END);
 		}
 		else if(CTypeIsOpenArray(type))
 		{

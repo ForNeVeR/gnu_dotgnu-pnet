@@ -1746,8 +1746,7 @@ StructOrUnionSpecifier
 				currentStruct = $<structInfo>3.parent;
 
 				/* Terminate the structure definition */
-				$$ = CTypeEndStruct(&CCCodeGen, $<structInfo>3.type,
-							        (currentStruct == 0));
+				$$ = CTypeEndStruct(&CCCodeGen, $<structInfo>3.type, 1);
 	  		}
 	| StructOrUnion AnyIdentifier	{
 				/* Look for an existing definition for this type */

@@ -20,6 +20,8 @@ of qualified identifiers.
 
 * NEWS, configure.in: update to version 0.1.6 prior to release.
 
+* configure.in: change to version 0.1.7 after tagging the tree.
+
 2001-09-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_xml.h, include/Makefile.am, support/xml.c, support/Makefile.am:

@@ -1281,6 +1281,12 @@ PrefixedUnaryExpression
 							-(((ILNode_Real *)($2))->value);
 					$$ = $2;
 				}
+				else if(yyisa($2, ILNode_Decimal))
+				{
+					ILDecimalNeg(&(((ILNode_Decimal *)($2))->value),
+								 &(((ILNode_Decimal *)($2))->value));
+					$$ = $2;
+				}
 				else
 				{
 					MakeUnary(Neg, $2);
@@ -2840,7 +2846,7 @@ StructDeclaration
 				--NestingLevel;
 
 				/* Make sure that we have "ValueType" in the base list */
-				baseList = MakeSystemType("ValueType");
+				baseList = MakeSystemType(ValueType);
 				if($5 != 0)
 				{
 					baseList = ILNode_ArgList_create($5, baseList);

@@ -40,7 +40,7 @@ extern	"C"	{
  */
 #include <stdio.h>
 #include <stddef.h>
-#include <wchar.h>
+/*#include <wchar.h> -- not present on all platforms (TODO - fix later) */
 
 /*
  * Include Windows error codes.
@@ -155,7 +155,7 @@ typedef int				BOOL, *PBOOL, *LPBOOL;
 typedef char			CHAR, CCHAR, *PCHAR, *LPCHAR, *PCH, *LPCH;
 typedef unsigned char	BYTE, *PBYTE, *LPBYTE;
 typedef unsigned char	UCHAR, *PUCHAR, *LPUCHAR;
-typedef wchar_t			WCHAR, *PWCHAR, *LPWCHAR, *PWCH, *LPWCH;
+typedef unsigned short	WCHAR, *PWCHAR, *LPWCHAR, *PWCH, *LPWCH;
 #ifdef UNICODE
 typedef WCHAR			TCHAR, _TCHAR;
 #else

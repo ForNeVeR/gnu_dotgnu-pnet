@@ -25,6 +25,7 @@ using System;
 using System.Collections;
 using Xsharp.Types;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Widget"/> class manages widget
@@ -128,15 +129,15 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 	// server has been lost.
 	internal virtual void Disassociate()
 			{
-				if(handle != Xlib.Drawable.Zero)
+				if(handle != XDrawable.Zero)
 				{
-					dpy.handleMap.Remove((Xlib.Window)handle);
+					dpy.handleMap.Remove((XWindow)handle);
 				}
 				if(this is InputOutputWidget)
 				{
 					((InputOutputWidget)this).RemovePendingExpose();
 				}
-				handle = Xlib.Drawable.Zero;
+				handle = XDrawable.Zero;
 				Widget child = topChild;
 				while(child != null)
 				{
@@ -153,11 +154,11 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				try
 				{
 					IntPtr d = dpy.Lock();
-					if(handle != Xlib.Drawable.Zero)
+					if(handle != XDrawable.Zero)
 					{
-						Xlib.Drawable tempHandle = handle;
+						XDrawable tempHandle = handle;
 						Disassociate();
-						Xlib.XDestroyWindow(d, (Xlib.Window)tempHandle);
+						Xlib.XDestroyWindow(d, (XWindow)tempHandle);
 					}
 				}
 				finally
@@ -180,7 +181,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			{
 				// Just clear the handle: the X server will clean
 				// up the window object for us at shutdown.
-				handle = Xlib.Drawable.Zero;
+				handle = XDrawable.Zero;
 			}
 
 	/// <summary>
@@ -295,7 +296,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 					try
 					{
 						IntPtr display = dpy.Lock();
-						if(handle != Xlib.Drawable.Zero && cursor != value)
+						if(handle != XDrawable.Zero && cursor != value)
 						{
 							cursor = value;
 							if(value == null)
@@ -1172,8 +1173,8 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window widget = GetWidgetHandle();
-					Xlib.Window pwidget = newParent.GetWidgetHandle();
+					XWindow widget = GetWidgetHandle();
+					XWindow pwidget = newParent.GetWidgetHandle();
 					Xlib.XReparentWindow(display, widget, pwidget, x, y);
 					this.x = x;
 					this.y = y;
@@ -1440,7 +1441,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				{
 					IntPtr display = dpy.Lock();
 					EventMask newMask = (eventMask | mask);
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					if(newMask != eventMask)
 					{
 						eventMask = newMask;
@@ -1460,7 +1461,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				{
 					IntPtr display = dpy.Lock();
 					EventMask newMask = (eventMask & ~mask);
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					if(newMask != eventMask)
 					{
 						eventMask = newMask;

@@ -25,6 +25,7 @@ using System;
 using System.Collections;
 using System.Threading;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Display"/> class manages connections
@@ -46,25 +47,25 @@ public sealed class Display : IDisposable
 	private bool pendingExposes;
 	private InputOutputWidget exposeList;
 	private InputOutputWidget invalidateList;
-	private Xlib.Cursor[] cursors;
-	internal Xlib.Time knownEventTime;
+	private XCursor[] cursors;
+	internal XTime knownEventTime;
 	internal HandleMap handleMap;
 	private static bool threadsInited;
-	internal Xlib.Atom wmProtocols;
-	internal Xlib.Atom wmDeleteWindow;
-	internal Xlib.Atom wmTakeFocus;
-	internal Xlib.Atom wmMwmHints;
-	internal Xlib.Atom wmContextHelp;
-	internal Xlib.Atom wmState;
-	internal Xlib.Atom wmNetState;
-	internal Xlib.Atom wmPing;
+	internal XAtom wmProtocols;
+	internal XAtom wmDeleteWindow;
+	internal XAtom wmTakeFocus;
+	internal XAtom wmMwmHints;
+	internal XAtom wmContextHelp;
+	internal XAtom wmState;
+	internal XAtom wmNetState;
+	internal XAtom wmPing;
 	internal ButtonName selectButton;
 	internal ButtonName menuButton;
 	internal Hashtable fonts;
 	internal BuiltinBitmaps bitmaps;
 	internal Timer timerQueue;
 	internal IntPtr imlibData;
-	internal Xlib.Window groupLeader;
+	internal XWindow groupLeader;
 	private String[] fontList;
 
 	// Constructor.
@@ -88,10 +89,10 @@ public sealed class Display : IDisposable
 				defaultScreen = (int)(Xlib.XDefaultScreen(dpy));
 
 				// Create an array to hold the standard cursors.
-				cursors = new Xlib.Cursor [(int)(CursorType.XC_num_glyphs)];
+				cursors = new XCursor [(int)(CursorType.XC_num_glyphs)];
 
 				// Reset the time of the last known event.
-				knownEventTime = Xlib.Time.CurrentTime;
+				knownEventTime = XTime.CurrentTime;
 
 				// Construct the window handle map if not already present.
 				if(handleMap == null)
@@ -101,21 +102,21 @@ public sealed class Display : IDisposable
 
 				// Initialize the standard window manager atoms that we use.
 				wmProtocols = Xlib.XInternAtom
-					(dpy, "WM_PROTOCOLS", Xlib.Bool.False);
+					(dpy, "WM_PROTOCOLS", XBool.False);
 				wmDeleteWindow = Xlib.XInternAtom
-					(dpy, "WM_DELETE_WINDOW", Xlib.Bool.False);
+					(dpy, "WM_DELETE_WINDOW", XBool.False);
 				wmTakeFocus = Xlib.XInternAtom
-					(dpy, "WM_TAKE_FOCUS", Xlib.Bool.False);
+					(dpy, "WM_TAKE_FOCUS", XBool.False);
 				wmMwmHints = Xlib.XInternAtom
-					(dpy, "_MOTIF_WM_HINTS", Xlib.Bool.False);
+					(dpy, "_MOTIF_WM_HINTS", XBool.False);
 				wmContextHelp = Xlib.XInternAtom
-					(dpy, "_NET_WM_CONTEXT_HELP", Xlib.Bool.False);
+					(dpy, "_NET_WM_CONTEXT_HELP", XBool.False);
 				wmState = Xlib.XInternAtom
-					(dpy, "WM_STATE", Xlib.Bool.False);
+					(dpy, "WM_STATE", XBool.False);
 				wmNetState = Xlib.XInternAtom
-					(dpy, "_NET_WM_STATE", Xlib.Bool.False);
+					(dpy, "_NET_WM_STATE", XBool.False);
 				wmPing = Xlib.XInternAtom
-					(dpy, "_NET_WM_PING", Xlib.Bool.False);
+					(dpy, "_NET_WM_PING", XBool.False);
 
 				// Which buttons should we use for "Select" and "Menu"?
 				byte[] buttons = new byte [5];
@@ -201,7 +202,7 @@ public sealed class Display : IDisposable
 						// We have opened the display successfully.
 						if(sync)
 						{
-							Xlib.XSynchronize(dpy, Xlib.Bool.True);
+							Xlib.XSynchronize(dpy, XBool.True);
 						}
 						return new Display(dpy, displayName, app);
 					}
@@ -460,7 +461,7 @@ public sealed class Display : IDisposable
 			{
 				try
 				{
-					Xlib.XSync(Lock(), Xlib.Bool.False);
+					Xlib.XSync(Lock(), XBool.False);
 				}
 				finally
 				{
@@ -773,7 +774,7 @@ public sealed class Display : IDisposable
 					default:
 					{
 						// We don't have a time value for this event.
-						knownEventTime = Xlib.Time.CurrentTime;
+						knownEventTime = XTime.CurrentTime;
 					}
 					break;
 				}
@@ -794,15 +795,15 @@ public sealed class Display : IDisposable
 			}
 
 	// Retrieve or create a standard cursor.  Call with the display lock.
-	internal Xlib.Cursor GetCursor(CursorType type)
+	internal XCursor GetCursor(CursorType type)
 			{
 				uint shape = (uint)type;
 				if(shape >= (uint)(CursorType.XC_num_glyphs))
 				{
 					shape = (uint)(CursorType.XC_X_cursor);
 				}
-				Xlib.Cursor cursor = cursors[(int)shape];
-				if(cursor != Xlib.Cursor.Zero)
+				XCursor cursor = cursors[(int)shape];
+				if(cursor != XCursor.Zero)
 				{
 					return cursor;
 				}

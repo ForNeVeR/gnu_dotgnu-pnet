@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 // This class is a lot more efficient than "Hashtable" when it comes
 // to mapping window handles to widget objects.
@@ -39,7 +40,7 @@ internal class HandleMap
 	// Information about a handle in the main part of the table.
 	private struct HandleInfo
 	{
-		public Xlib.Window window;
+		public XWindow window;
 		public Widget widget;
 		public HandleOverflowInfo overflow;
 
@@ -48,7 +49,7 @@ internal class HandleMap
 	// Information about a handle in the overflow part of the table.
 	private class HandleOverflowInfo
 	{
-		public Xlib.Window window;
+		public XWindow window;
 		public Widget widget;
 		public HandleOverflowInfo overflow;
 
@@ -61,7 +62,7 @@ internal class HandleMap
 			}
 
 	// Get or set a member within this handle map.
-	public Widget this[Xlib.Window window]
+	public Widget this[XWindow window]
 			{
 				get
 				{
@@ -109,7 +110,7 @@ internal class HandleMap
 					}
 
 					// Add to the main part of the table if it is empty.
-					if(handles[hash].window == Xlib.Window.Zero)
+					if(handles[hash].window == XWindow.Zero)
 					{
 						handles[hash].window = window;
 						handles[hash].widget = value;
@@ -126,13 +127,13 @@ internal class HandleMap
 			}
 
 	// Remove an element from this handle map.
-	public void Remove(Xlib.Window window)
+	public void Remove(XWindow window)
 			{
 				// Look in the main part of the table.
 				int hash = (((int)window) & (HashSize - 1));
 				if(handles[hash].window == window)
 				{
-					handles[hash].window = Xlib.Window.Zero;
+					handles[hash].window = XWindow.Zero;
 					handles[hash].widget = null;
 					return;
 				}
@@ -143,7 +144,7 @@ internal class HandleMap
 				{
 					if(info.window == window)
 					{
-						info.window = Xlib.Window.Zero;
+						info.window = XWindow.Zero;
 						info.widget = null;
 						return;
 					}

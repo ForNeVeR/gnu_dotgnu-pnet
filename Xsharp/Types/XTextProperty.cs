@@ -23,6 +23,8 @@ namespace Xsharp.Types
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Window manager hint structure.
 [StructLayout(LayoutKind.Sequential)]
@@ -31,7 +33,7 @@ internal struct XTextProperty
 
 	// Structure fields.
 	public IntPtr			value__;
-	public Xlib.Atom		encoding__;
+	public XAtom			encoding__;
 	public Xlib.Xint		format__;
 	public Xlib.Xulong		nitems__;
 
@@ -48,7 +50,7 @@ internal struct XTextProperty
 					return false;
 				}
 				if(Xlib.XStringListToTextProperty(ref str, 1, ref this)
-						== Xlib.Status.Zero)
+						== XStatus.Zero)
 				{
 					Marshal.FreeHGlobal(str);
 					return false;
@@ -80,7 +82,7 @@ internal struct XTextProperty
 
 				// Convert the string list into a text property.
 				bool result = (Xlib.XStringListToTextProperty
-					(strings, value.Length, ref this) != Xlib.Status.Zero);
+					(strings, value.Length, ref this) != XStatus.Zero);
 
 				// Free the strings, which we no longer require.
 				for(posn = 0; posn < value.Length; ++posn)

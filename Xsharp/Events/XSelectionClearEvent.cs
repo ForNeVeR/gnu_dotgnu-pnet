@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Selection clear event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,15 +32,15 @@ internal struct XSelectionClearEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Atom	selection;
-	public Xlib.Time	time;
+	public XAtom    	selection;
+	public XTime		time;
 
 	// Access parent class fields.
 	public int type           { get { return common__.type; } }
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window window { get { return common__.window; } }
+	public XWindow     window { get { return common__.window; } }
 
 	// Convert this object into a string.
 	public override String ToString()

@@ -22,10 +22,12 @@ namespace Xsharp.Ice
 {
 
 using System;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 internal delegate Xlib.Xint IcePaAuthProc
 		(IntPtr iceConn, IntPtr authStatePtr,
-		 Xlib.Bool swap, Xlib.Xint authDataLen, IntPtr authData,
+		 XBool swap, Xlib.Xint authDataLen, IntPtr authData,
 		 ref Xlib.Xint replyDataLenRet, ref IntPtr replyDataRet,
 		 ref IntPtr errorStringRet);
 

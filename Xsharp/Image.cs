@@ -23,6 +23,7 @@ namespace Xsharp
 
 using System;
 using DotGNU.Images;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Image"/> class manages an image
@@ -172,9 +173,9 @@ public sealed class Image : IDisposable
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Drawable drawable = (Xlib.Drawable)
+					XDrawable drawable = (XDrawable)
 						Xlib.XRootWindowOfScreen(screen.screen);
-					Xlib.Pixmap pixmap = Xlib.XCreateBitmapFromData
+					XPixmap pixmap = Xlib.XCreateBitmapFromData
 						(display, drawable, image, (uint)width, (uint)height);
 					this.pixmap = new Pixmap(dpy, screen, pixmap);
 				}

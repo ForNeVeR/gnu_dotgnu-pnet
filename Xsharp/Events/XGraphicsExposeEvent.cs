@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Graphics expose event.
 [StructLayout(LayoutKind.Sequential)]
@@ -43,8 +45,8 @@ internal struct XGraphicsExposeEvent
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Drawable drawable
-			{ get { return (Xlib.Drawable)common__.window; } }
+	public XDrawable drawable
+			{ get { return (XDrawable)common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public int x              { get { return (int)x__; } }

@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Button event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,23 +32,23 @@ internal struct XButtonEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Window	root;
-	public Xlib.Window	subwindow;
-	public Xlib.Time	time;
+	public XWindow    	root;
+	public XWindow    	subwindow;
+	public XTime		time;
 	public Xlib.Xint	x__;
 	public Xlib.Xint	y__;
 	public Xlib.Xint	x_root__;
 	public Xlib.Xint	y_root__;
 	public Xlib.Xuint	state__;
 	public Xlib.Xuint	button__;
-	public Xlib.Bool	same_screen__;
+	public XBool		same_screen__;
 
 	// Access parent class fields.
 	public int type           { get { return common__.type; } }
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window window { get { return common__.window; } }
+	public XWindow     window { get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public int x              { get { return (int)x__; } }
@@ -56,7 +58,7 @@ internal struct XButtonEvent
 	public ModifierMask state { get { return (ModifierMask)(uint)state__; } }
 	public ButtonName button  { get { return (ButtonName)(uint)button__; } }
 	public bool same_screen
-		{ get { return (same_screen__ != Xlib.Bool.False); } }
+		{ get { return (same_screen__ != XBool.False); } }
 
 	// Convert this object into a string.
 	public override String ToString()

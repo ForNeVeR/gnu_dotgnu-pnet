@@ -24,6 +24,7 @@ namespace Xsharp
 using System;
 using System.Collections;
 using Xsharp.Types;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Colormap"/> class manages colormaps
@@ -34,12 +35,12 @@ public sealed class Colormap
 	// Internal state.
 	private Display dpy;
 	private Screen screen;
-	private Xlib.Colormap colormap;
+	private XColormap colormap;
 	private Hashtable cachedPixels;
-	private Xlib.Pixel[] standardPalette;
+	private XPixel[] standardPalette;
 
 	// Constructor that is called from the "Screen" class.
-	internal Colormap(Display dpy, Screen screen, Xlib.Colormap colormap)
+	internal Colormap(Display dpy, Screen screen, XColormap colormap)
 			{
 				this.dpy = dpy;
 				this.screen = screen;
@@ -49,7 +50,7 @@ public sealed class Colormap
 
 	// Convert an RGB color value into a pixel using this colormap.
 	// This assumes that standard colors have already been expanded.
-	internal Xlib.Pixel RGBToPixel(Color color)
+	internal XPixel RGBToPixel(Color color)
 			{
 				try
 				{
@@ -60,7 +61,7 @@ public sealed class Colormap
 					Object cached = cachedPixels[color];
 					if(cached != null)
 					{
-						return (Xlib.Pixel)(cached);
+						return (XPixel)(cached);
 					}
 
 					// Try to allocate the color from the X display server.
@@ -68,7 +69,7 @@ public sealed class Colormap
 					int red = color.Red;
 					int green = color.Green;
 					int blue = color.Blue;
-					xcolor.pixel = Xlib.Pixel.Zero;
+					xcolor.pixel = XPixel.Zero;
 					xcolor.red = (ushort)(red << 8);
 					xcolor.green = (ushort)(green << 8);
 					xcolor.blue = (ushort)(blue << 8);
@@ -104,13 +105,13 @@ public sealed class Colormap
 
 	// Get a standard 216-entry palette for mapping RGB images
 	// to indexed display hardware.
-	internal Xlib.Pixel[] GetStandardPalette()
+	internal XPixel[] GetStandardPalette()
 			{
 				if(standardPalette != null)
 				{
 					return standardPalette;
 				}
-				standardPalette = new Xlib.Pixel [216];
+				standardPalette = new XPixel [216];
 				int red, green, blue, index;
 				index = 0;
 				for(red = 0x00; red <= 0xFF; red += 0x33)

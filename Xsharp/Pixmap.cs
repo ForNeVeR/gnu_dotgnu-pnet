@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Pixmap"/> class manages off-screen
@@ -61,7 +62,7 @@ public sealed class Pixmap : Drawable
 				{
 					IntPtr display = dpy.Lock();
 					SetPixmapHandle(Xlib.XCreatePixmap
-						(display, (Xlib.Drawable)
+						(display, (XDrawable)
 							Xlib.XRootWindowOfScreen(screen.screen),
 						 (uint)width, (uint)height,
 						 (uint)Xlib.XDefaultDepthOfScreen(screen.screen)));
@@ -113,7 +114,7 @@ public sealed class Pixmap : Drawable
 				{
 					IntPtr display = dpy.Lock();
 					SetPixmapHandle(Xlib.XCreatePixmap
-						(display, (Xlib.Drawable)
+						(display, (XDrawable)
 							Xlib.XRootWindowOfScreen(screen.screen),
 						 (uint)width, (uint)height,
 						 (uint)Xlib.XDefaultDepthOfScreen(screen.screen)));
@@ -127,7 +128,7 @@ public sealed class Pixmap : Drawable
 			}
 
 	// Internal constructor that wraps a pixmap XID.
-	internal Pixmap(Display dpy, Screen screen, Xlib.Pixmap pixmap)
+	internal Pixmap(Display dpy, Screen screen, XPixmap pixmap)
 			: base(dpy, screen, DrawableKind.Bitmap)
 			{
 				SetPixmapHandle(pixmap);
@@ -135,7 +136,7 @@ public sealed class Pixmap : Drawable
 				{
 					// Get the geometry of the pixmap from the X server.
 					IntPtr display = dpy.Lock();
-					Xlib.Window root_return;
+					XWindow root_return;
 					Xlib.Xint x_return, y_return;
 					Xlib.Xuint width_return, height_return;
 					Xlib.Xuint border_width_return, depth_return;
@@ -171,10 +172,10 @@ public sealed class Pixmap : Drawable
 				try
 				{
 					IntPtr d = dpy.Lock();
-					if(handle != Xlib.Drawable.Zero)
+					if(handle != XDrawable.Zero)
 					{
-						Xlib.XFreePixmap(d, (Xlib.Pixmap)handle);
-						handle = Xlib.Drawable.Zero;
+						Xlib.XFreePixmap(d, (XPixmap)handle);
+						handle = XDrawable.Zero;
 					}
 				}
 				finally
@@ -197,7 +198,7 @@ public sealed class Pixmap : Drawable
 			{
 				// Just clear the handle: the X server will clean
 				// up the pixmap object for us at shutdown.
-				handle = Xlib.Drawable.Zero;
+				handle = XDrawable.Zero;
 			}
 
 } // class Pixmap

@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Structure that is used to pad an XEvent to its maximum size.
 [StructLayout(LayoutKind.Sequential)]

@@ -23,6 +23,7 @@ namespace Xsharp.Types
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform.X11;
 
 [StructLayout(LayoutKind.Sequential)]
 internal struct XSecurityAuthorizationAttributes
@@ -31,7 +32,7 @@ internal struct XSecurityAuthorizationAttributes
 	// Structure fields.
 	public Xlib.Xuint		timeout__;
 	public Xlib.Xuint		trust_level__;
-	public Xlib.XID			group;
+	public XID				group;
 	public Xlib.Xlong		event_mask__;
 
 	// Convert odd fields into types that are useful.

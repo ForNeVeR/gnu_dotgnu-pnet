@@ -23,12 +23,13 @@ namespace Xsharp.Types
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform.X11;
 
 // X color structure.
 [StructLayout(LayoutKind.Sequential)]
 internal struct XColor
 {
-	public Xlib.Pixel	pixel;
+	public XPixel		pixel;
 	public ushort		red, green, blue;
 	public sbyte		flags;
 	public sbyte		pad;

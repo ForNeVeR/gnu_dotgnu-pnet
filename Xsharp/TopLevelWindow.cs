@@ -28,6 +28,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using Xsharp.Types;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.TopLevelWindow"/> class manages
@@ -174,11 +175,11 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					// Lock down the display and get the window handle.
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 
 					// Make this the group leader if we don't have one yet.
 					bool isFirst = false;
-					if(dpy.groupLeader == Xlib.Window.Zero)
+					if(dpy.groupLeader == XWindow.Zero)
 					{
 						dpy.groupLeader = handle;
 						isFirst = true;
@@ -252,9 +253,9 @@ public class TopLevelWindow : InputOutputWidget
 						Xlib.XChangeProperty
 							(display, handle,
 							 Xlib.XInternAtom(display, "_NET_WM_PID",
-							 				  Xlib.Bool.False),
+							 				  XBool.False),
 							 Xlib.XInternAtom(display, "CARDINAL",
-							 				  Xlib.Bool.False),
+							 				  XBool.False),
 							 32, 0 /* PropModeReplace */,
 							 new Xlib.Xlong [] {(Xlib.Xlong)(pid)}, 1);
 					}
@@ -294,9 +295,9 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	// Set the WM protocols for this window.
-	private void SetProtocols(IntPtr display, Xlib.Window handle)
+	private void SetProtocols(IntPtr display, XWindow handle)
 			{
-				Xlib.Atom[] protocols = new Xlib.Atom [4];
+				XAtom[] protocols = new XAtom [4];
 				int numProtocols = 0;
 				protocols[numProtocols++] = dpy.wmDeleteWindow;
 				protocols[numProtocols++] = dpy.wmTakeFocus;
@@ -309,7 +310,7 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	// Set the window name hints.
-	private void SetWindowName(IntPtr display, Xlib.Window handle, String name)
+	private void SetWindowName(IntPtr display, XWindow handle, String name)
 			{
 				// Set the ICCCM name hints.
 				Xlib.XStoreName(display, handle, name);
@@ -317,12 +318,12 @@ public class TopLevelWindow : InputOutputWidget
 
 				// Set the new-style name hints, in UTF-8.  These are more
 				// likely to be rendered properly by newer window managers.
-				Xlib.Atom utf8String = Xlib.XInternAtom
-					(display, "UTF8_STRING", Xlib.Bool.False);
-				Xlib.Atom wmName = Xlib.XInternAtom
-					(display, "_NET_WM_NAME", Xlib.Bool.False);
-				Xlib.Atom wmIconName = Xlib.XInternAtom
-					(display, "_NET_WM_ICON_NAME", Xlib.Bool.False);
+				XAtom utf8String = Xlib.XInternAtom
+					(display, "UTF8_STRING", XBool.False);
+				XAtom wmName = Xlib.XInternAtom
+					(display, "_NET_WM_NAME", XBool.False);
+				XAtom wmIconName = Xlib.XInternAtom
+					(display, "_NET_WM_ICON_NAME", XBool.False);
 				byte[] bytes = Encoding.UTF8.GetBytes(name);
 				Xlib.XChangeProperty
 					(display, handle, wmName, utf8String,
@@ -333,7 +334,7 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	// Set the XWMHints structure on this window.
-	private void SetWMHints(IntPtr display, Xlib.Window handle)
+	private void SetWMHints(IntPtr display, XWindow handle)
 			{
 				XWMHints hints = new XWMHints();
 				hints.flags = WMHintsMask.InputHint |
@@ -342,7 +343,7 @@ public class TopLevelWindow : InputOutputWidget
 				hints.input = true;
 				hints.initial_state = (iconic ? WindowState.IconicState
 											  : WindowState.NormalState);
-				hints.window_group = (Xlib.XID)(dpy.groupLeader);
+				hints.window_group = (XID)(dpy.groupLeader);
 				if(icon != null)
 				{
 					Pixmap pixmap = icon.Pixmap;
@@ -364,7 +365,7 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	// Set a text property hint on this window.
-	private void SetTextProperty(IntPtr display, Xlib.Window handle,
+	private void SetTextProperty(IntPtr display, XWindow handle,
 								 String property, String value)
 			{
 				XTextProperty textprop = new XTextProperty();
@@ -372,11 +373,11 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					Xlib.XSetTextProperty
 						(display, handle, ref textprop,
-						 Xlib.XInternAtom(display, property, Xlib.Bool.False));
+						 Xlib.XInternAtom(display, property, XBool.False));
 					textprop.Free();
 				}
 			}
-	private void SetTextProperty(IntPtr display, Xlib.Window handle,
+	private void SetTextProperty(IntPtr display, XWindow handle,
 								 String property, String[] value)
 			{
 				XTextProperty textprop = new XTextProperty();
@@ -384,13 +385,13 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					Xlib.XSetTextProperty
 						(display, handle, ref textprop,
-						 Xlib.XInternAtom(display, property, Xlib.Bool.False));
+						 Xlib.XInternAtom(display, property, XBool.False));
 					textprop.Free();
 				}
 			}
 
 	// Set the "_NET_WM_STATE" property, to include extended state requests.
-	private void SetNetState(IntPtr display, Xlib.Window handle)
+	private void SetNetState(IntPtr display, XWindow handle)
 			{
 				Xlib.Xlong[] atoms = new Xlib.Xlong [8];
 				int numAtoms = 0;
@@ -401,7 +402,7 @@ public class TopLevelWindow : InputOutputWidget
 					atoms[numAtoms++] =
 						(Xlib.Xlong)Xlib.XInternAtom
 							(display, "_NET_WM_STATE_SKIP_TASKBAR",
-							 Xlib.Bool.False);
+							 XBool.False);
 				}
 
 				// Determine if the window should be made top-most on-screen.
@@ -410,7 +411,7 @@ public class TopLevelWindow : InputOutputWidget
 					atoms[numAtoms++] =
 						(Xlib.Xlong)Xlib.XInternAtom
 							(display, "_NET_WM_STATE_ABOVE",
-						     Xlib.Bool.False);
+						     XBool.False);
 				}
 
 				// Determine if the window should be maximized by default.
@@ -419,16 +420,16 @@ public class TopLevelWindow : InputOutputWidget
 					atoms[numAtoms++] =
 						(Xlib.Xlong)Xlib.XInternAtom
 							(display, "_NET_WM_STATE_MAXIMIZED_VERT",
-						     Xlib.Bool.False);
+						     XBool.False);
 					atoms[numAtoms++] =
 						(Xlib.Xlong)Xlib.XInternAtom
 							(display, "_NET_WM_STATE_MAXIMIZED_HORZ",
-						     Xlib.Bool.False);
+						     XBool.False);
 				}
 
 				// Update the "_NET_WM_STATE" property as appropriate.
-				Xlib.Atom type = Xlib.XInternAtom
-					(display, "ATOM", Xlib.Bool.False);
+				XAtom type = Xlib.XInternAtom
+					(display, "ATOM", XBool.False);
 				if(numAtoms > 0)
 				{
 					Xlib.XChangeProperty
@@ -492,7 +493,7 @@ public class TopLevelWindow : InputOutputWidget
 					return;
 				}
 
-				Xlib.Window handle = GetWidgetHandle();
+				XWindow handle = GetWidgetHandle();
 				XWindowChanges changes = new XWindowChanges();
 				ConfigureWindowMask mask = (ConfigureWindowMask)0;
 
@@ -772,13 +773,13 @@ public class TopLevelWindow : InputOutputWidget
 
 	// Send a maximize or restore message to the window manager.
 	private void SendMaximizeMessage
-				(IntPtr display, Xlib.Window handle, bool maximize)
+				(IntPtr display, XWindow handle, bool maximize)
 			{
 				XEvent xevent = new XEvent();
 				xevent.xany.type = (int)(EventType.ClientMessage);
 				xevent.xany.window = handle;
 				xevent.xclient.message_type = Xlib.XInternAtom
-					(display, "_NET_WM_STATE", Xlib.Bool.False);
+					(display, "_NET_WM_STATE", XBool.False);
 				xevent.xclient.format = 32;
 				if(maximize)
 				{
@@ -788,15 +789,15 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					xevent.xclient.setl(0, 0 /* _NET_WM_STATE_REMOVE */ );
 				}
-				Xlib.Atom atom1 = Xlib.XInternAtom
-					(display, "_NET_WM_STATE_MAXIMIZED_VERT", Xlib.Bool.False);
-				Xlib.Atom atom2 = Xlib.XInternAtom
-					(display, "_NET_WM_STATE_MAXIMIZED_HORZ", Xlib.Bool.False);
+				XAtom atom1 = Xlib.XInternAtom
+					(display, "_NET_WM_STATE_MAXIMIZED_VERT", XBool.False);
+				XAtom atom2 = Xlib.XInternAtom
+					(display, "_NET_WM_STATE_MAXIMIZED_HORZ", XBool.False);
 				xevent.xclient.setl(1, (int)atom1);
 				xevent.xclient.setl(2, (int)atom2);
 				Xlib.XSendEvent
 					(display, screen.RootWindow.GetWidgetHandle(),
-					 Xlib.Bool.False, (int)(EventMask.NoEventMask),
+					 XBool.False, (int)(EventMask.NoEventMask),
 					 ref xevent);
 			}
 
@@ -915,7 +916,7 @@ public class TopLevelWindow : InputOutputWidget
 	public virtual bool Close()
 			{
 				// Bail out if the window has already been destroyed.
-				if(handle == Xlib.Drawable.Zero)
+				if(handle == XDrawable.Zero)
 				{
 					return true;
 				}
@@ -942,7 +943,7 @@ public class TopLevelWindow : InputOutputWidget
 						if(tchild != null)
 						{
 							if(tchild.mapped &&
-							   tchild.handle != Xlib.Drawable.Zero)
+							   tchild.handle != XDrawable.Zero)
 							{
 								sawActive = true;
 								break;
@@ -988,7 +989,7 @@ public class TopLevelWindow : InputOutputWidget
 						{
 							// Lock down the display and get the window handle.
 							IntPtr display = dpy.Lock();
-							Xlib.Window handle = GetWidgetHandle();
+							XWindow handle = GetWidgetHandle();
 
 							// Set the title bar and icon names.
 							SetWindowName(display, handle, name);
@@ -1047,7 +1048,7 @@ public class TopLevelWindow : InputOutputWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					Xlib.XChangeProperty
 						(display, handle, dpy.wmMwmHints, dpy.wmMwmHints,
 						 32, 0 /* PropModeReplace */, hint, 4);
@@ -1161,7 +1162,7 @@ public class TopLevelWindow : InputOutputWidget
 						try
 						{
 							IntPtr display = dpy.Lock();
-							Xlib.Window handle = GetWidgetHandle();
+							XWindow handle = GetWidgetHandle();
 
 							// Change the state of the help button.
 							if((prev & OtherHints.HelpButton) !=
@@ -1171,33 +1172,33 @@ public class TopLevelWindow : InputOutputWidget
 							}
 
 							// Set the window type.
-							Xlib.Atom type;
+							XAtom type;
 							if((value & OtherHints.ToolWindow) != 0)
 							{
 								type = Xlib.XInternAtom
 									(display,
 									 "_NET_WM_WINDOW_TYPE_UTILITY",
-									 Xlib.Bool.False);
+									 XBool.False);
 							}
 							else if((value & OtherHints.Dialog) != 0)
 							{
 								type = Xlib.XInternAtom
 									(display,
 									 "_NET_WM_WINDOW_TYPE_DIALOG",
-									 Xlib.Bool.False);
+									 XBool.False);
 							}
 							else
 							{
 								type = Xlib.XInternAtom
 									(display,
 									 "_NET_WM_WINDOW_TYPE_NORMAL",
-									 Xlib.Bool.False);
+									 XBool.False);
 							}
-							Xlib.Atom wmType = Xlib.XInternAtom
+							XAtom wmType = Xlib.XInternAtom
 								(display, "_NET_WM_WINDOW_TYPE",
-								 Xlib.Bool.False);
-							Xlib.Atom wmAtom = Xlib.XInternAtom
-								(display, "ATOM", Xlib.Bool.False);
+								 XBool.False);
+							XAtom wmAtom = Xlib.XInternAtom
+								(display, "ATOM", XBool.False);
 							Xlib.Xlong[] data = new Xlib.Xlong [2];
 							data[0] = (Xlib.Xlong)type;
 							Xlib.XChangeProperty
@@ -1253,8 +1254,8 @@ public class TopLevelWindow : InputOutputWidget
 						{
 							// Lock down the display and get the handles.
 							IntPtr display = dpy.Lock();
-							Xlib.Window handle = GetWidgetHandle();
-							Xlib.Window thandle;
+							XWindow handle = GetWidgetHandle();
+							XWindow thandle;
 							if(value != null)
 							{
 								thandle = value.GetWidgetHandle();
@@ -1301,12 +1302,12 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					// Lock down the display and get the handle.
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 
 					// Remove the "transient for" hint.
 					Xlib.XDeleteProperty
 						(display, handle, Xlib.XInternAtom
-							(display, "WM_TRANSIENT_FOR", Xlib.Bool.False));
+							(display, "WM_TRANSIENT_FOR", XBool.False));
 
 					// We no longer have a transient parent for this window.
 					transientFor = null;
@@ -1385,7 +1386,7 @@ public class TopLevelWindow : InputOutputWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					if(width != minWidth || height != minHeight)
 					{
 						minWidth = width;
@@ -1433,7 +1434,7 @@ public class TopLevelWindow : InputOutputWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					if(width != maxWidth || height != maxHeight)
 					{
 						maxWidth = width;
@@ -1475,7 +1476,7 @@ public class TopLevelWindow : InputOutputWidget
 							try
 							{
 								IntPtr display = dpy.Lock();
-								Xlib.Window handle = GetWidgetHandle();
+								XWindow handle = GetWidgetHandle();
 								SetWMHints(display, handle);
 							}
 							finally
@@ -1565,7 +1566,7 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					// Send a message to the window manager to restack us.
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					XWindowChanges changes = new XWindowChanges();
 					changes.stack_mode = 0;		/* Above */
 					Xlib.XReconfigureWMWindow
@@ -1593,7 +1594,7 @@ public class TopLevelWindow : InputOutputWidget
 				{
 					// Send a message to the window manager to restack us.
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					XWindowChanges changes = new XWindowChanges();
 					changes.stack_mode = 1;		/* Below */
 					Xlib.XReconfigureWMWindow
@@ -1671,16 +1672,16 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	// Get the contents of a 32-bit window property.
-	private Xlib.Xlong[] GetWindowProperty(Xlib.Atom name)
+	private Xlib.Xlong[] GetWindowProperty(XAtom name)
 			{
 				try
 				{
 					// Lock down the display and get the window handle.
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 
 					// Fetch the value of the property.
-					Xlib.Atom actualTypeReturn;
+					XAtom actualTypeReturn;
 					Xlib.Xint actualFormatReturn;
 					Xlib.Xulong nitemsReturn;
 					Xlib.Xulong bytesAfterReturn;
@@ -1688,10 +1689,10 @@ public class TopLevelWindow : InputOutputWidget
 					nitemsReturn = Xlib.Xulong.Zero;
 					if(Xlib.XGetWindowProperty
 							(display, handle, name, 0, 256,
-							 Xlib.Bool.False, Xlib.Atom.Zero,
+							 XBool.False, XAtom.Zero,
 							 out actualTypeReturn, out actualFormatReturn,
 							 out nitemsReturn, out bytesAfterReturn,
-							 out propReturn) == Xlib.Status.Zero)
+							 out propReturn) == XStatus.Zero)
 					{
 						if(((uint)bytesAfterReturn) > 0)
 						{
@@ -1705,11 +1706,11 @@ public class TopLevelWindow : InputOutputWidget
 							nitemsReturn = Xlib.Xulong.Zero;
 							if(Xlib.XGetWindowProperty
 									(display, handle, name, 0, length,
-									 Xlib.Bool.False, Xlib.Atom.Zero,
+									 XBool.False, XAtom.Zero,
 									 out actualTypeReturn,
 									 out actualFormatReturn,
 									 out nitemsReturn, out bytesAfterReturn,
-									 out propReturn) != Xlib.Status.Zero)
+									 out propReturn) != XStatus.Zero)
 							{
 								propReturn = IntPtr.Zero;
 								nitemsReturn = Xlib.Xulong.Zero;
@@ -1764,16 +1765,16 @@ public class TopLevelWindow : InputOutputWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Atom atom1 = Xlib.XInternAtom
+					XAtom atom1 = Xlib.XInternAtom
 						(display, "_NET_WM_STATE_MAXIMIZED_VERT",
-						 Xlib.Bool.False);
-					Xlib.Atom atom2 = Xlib.XInternAtom
+						 XBool.False);
+					XAtom atom2 = Xlib.XInternAtom
 						(display, "_NET_WM_STATE_MAXIMIZED_HORZ",
-						 Xlib.Bool.False);
+						 XBool.False);
 					foreach(Xlib.Xlong value in list)
 					{
-						if(atom1 == (Xlib.Atom)value ||
-						   atom2 == (Xlib.Atom)value)
+						if(atom1 == (XAtom)value ||
+						   atom2 == (XAtom)value)
 						{
 							return true;
 						}
@@ -1789,7 +1790,7 @@ public class TopLevelWindow : InputOutputWidget
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
-				Xlib.KeySym keysym;
+				XKeySym keysym;
 				Widget widget;
 				InputOnlyWidget io;
 				Xlib.Xlong[] data;
@@ -1831,7 +1832,7 @@ public class TopLevelWindow : InputOutputWidget
 										screen.RootWindow.GetWidgetHandle();
 									Xlib.XSendEvent
 										(display, xevent.xany.window,
-										 Xlib.Bool.False,
+										 XBool.False,
 										 (int)(EventMask.NoEventMask),
 										 ref xevent);
 								}
@@ -2111,13 +2112,13 @@ public class TopLevelWindow : InputOutputWidget
 					case EventType.ReparentNotify:
 					{
 						// We may have been reparented by the window manager.
-						if(xevent.xreparent.window != (Xlib.Window)handle)
+						if(xevent.xreparent.window != (XWindow)handle)
 						{
 							// SubstructureNotify - not interesting to us.
 							break;
 						}
 						if(xevent.xreparent.parent !=
-								(Xlib.Window)(screen.RootWindow.handle))
+								(XWindow)(screen.RootWindow.handle))
 						{
 							// Reparented by the window manager.
 							reparented = true;

@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Map window event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,20 +32,20 @@ internal struct XMapEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Window	window;
-	public Xlib.Bool	override_redirect__;
+	public XWindow    	window;
+	public XBool		override_redirect__;
 
 	// Access parent class fields.
 	public int type           { get { return common__.type; } }
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window event_window
+	public XWindow     event_window
 			{ get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public bool override_redirect
-			{ get { return (override_redirect__ != Xlib.Bool.False); } }
+			{ get { return (override_redirect__ != XBool.False); } }
 
 	// Convert this object into a string.
 	public override String ToString()

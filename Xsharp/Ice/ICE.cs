@@ -23,6 +23,8 @@ namespace Xsharp.Ice
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 internal sealed unsafe class ICE
 {
@@ -47,19 +49,19 @@ internal sealed unsafe class ICE
 	[DllImport("ICE")]
 	extern public static IceConn *IceOpenConnection
 			(String networkIdsList, IntPtr context,
-			 Xlib.Bool mustAuthenticate, Xlib.Xint majorOpcodeCheck,
+			 XBool mustAuthenticate, Xlib.Xint majorOpcodeCheck,
 			 Xlib.Xint errorLength, byte[] errorStringRet);
 
 	[DllImport("ICE")]
 	extern public static IntPtr IceGetConnectionContext(IceConn *iceConn);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status IceListenForConnections
+	extern public static XStatus IceListenForConnections
 			(ref Xlib.Xint countRet, ref IntPtr listenObjsRet,
 			 Xlib.Xint errorLength, byte[] errorStringRet);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status IceListenForWellKnownConnections
+	extern public static XStatus IceListenForWellKnownConnections
 			(String port, ref Xlib.Xint countRet, ref IntPtr listenObjsRet,
 			 Xlib.Xint errorLength, byte[] errorStringRet);
 
@@ -89,40 +91,40 @@ internal sealed unsafe class ICE
 
 	[DllImport("ICE")]
 	extern public static void IceSetShutdownNegotiation
-			(IceConn *iceConn, Xlib.Bool negotiate);
+			(IceConn *iceConn, XBool negotiate);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Bool IceCheckShutdownNegotiation(IceConn *iceConn);
+	extern public static XBool IceCheckShutdownNegotiation(IceConn *iceConn);
 
 	[DllImport("ICE")]
 	extern public static Xlib.Xint IceCloseConnection(IceConn *iceConn);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status IceAddConnectionWatch
+	extern public static XStatus IceAddConnectionWatch
 			(IceWatchProc watchProc, IntPtr clientData);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status IceRemoveConnectionWatch
+	extern public static XStatus IceRemoveConnectionWatch
 			(IceWatchProc watchProc, IntPtr clientData);
 
 	[DllImport("ICE")]
 	extern public static Xlib.Xint IceProtocolSetup
 			(IceConn *iceConn, Xlib.Xint myOpcode, IntPtr clientData,
-			 Xlib.Bool mustAuthenticate, out Xlib.Xint majorVersionRet,
+			 XBool mustAuthenticate, out Xlib.Xint majorVersionRet,
 			 out Xlib.Xint minorVersionRet, out IntPtr vendorRet,
 			 out IntPtr releaseRet, Xlib.Xint errorLength,
 			 byte[] errorStringRet);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status IceProtocolShutdown
+	extern public static XStatus IceProtocolShutdown
 			(IceConn *iceConn, Xlib.Xint majorOpcode);
 
 	[DllImport("ICE")]
 	extern public static Xlib.Xint IceProcessMessages
-			(IceConn *iceConn, IntPtr replyWait, out Xlib.Bool replyReadyRet);
+			(IceConn *iceConn, IntPtr replyWait, out XBool replyReadyRet);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status IcePing
+	extern public static XStatus IcePing
 			(IceConn *iceConn, IcePingReplyProc pingReplyProc,
 			 IntPtr clientData);
 
@@ -168,7 +170,7 @@ internal sealed unsafe class ICE
 			(IceConn *iceConn);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Bool IceSwapping(IceConn *iceConn);
+	extern public static XBool IceSwapping(IceConn *iceConn);
 
 	[DllImport("ICE")]
 	extern public static IntPtr IceSetErrorHandler(IceErrorHandler handler);
@@ -183,7 +185,7 @@ internal sealed unsafe class ICE
 	extern public static IntPtr IceSetIOErrorHandler(IntPtr handler);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status IceInitThreads();
+	extern public static XStatus IceInitThreads();
 
 	[DllImport("ICE")]
 	extern public static void IceAppLockConn(IceConn *iceConn);
@@ -193,20 +195,20 @@ internal sealed unsafe class ICE
 
 	[DllImport("ICE")]
 	extern public static Xlib.Xint _IcePoMagicCookie1Proc
-			(IntPtr iceConn, IntPtr authStatePtr, Xlib.Bool cleanUp,
-			 Xlib.Bool swap, Xlib.Xint authDataLen, IntPtr authData,
+			(IntPtr iceConn, IntPtr authStatePtr, XBool cleanUp,
+			 XBool swap, Xlib.Xint authDataLen, IntPtr authData,
 			 ref Xlib.Xint replyDataLenRet, ref IntPtr replyDataRet,
 			 ref IntPtr errorStringRet);
 
 	[DllImport("ICE")]
 	extern public static Xlib.Xint _IcePaMagicCookie1Proc
 			(IntPtr iceConn, IntPtr authStatePtr,
-			 Xlib.Bool swap, Xlib.Xint authDataLen, IntPtr authData,
+			 XBool swap, Xlib.Xint authDataLen, IntPtr authData,
 			 ref Xlib.Xint replyDataLenRet, ref IntPtr replyDataRet,
 			 ref IntPtr errorStringRet);
 
 	[DllImport("ICE")]
-	extern public static Xlib.Status _IceRead
+	extern public static XStatus _IceRead
 			(IceConn *iceConn, Xlib.Xulong nbytes, byte[] ptr);
 
 	[DllImport("ICE")]
@@ -322,7 +324,7 @@ internal sealed unsafe class ICE
 	public static int IceReadKey(IceConn *iceConn, byte[] buffer)
 			{
 				if(_IceRead(iceConn, (Xlib.Xulong)4, buffer)
-						== Xlib.Status.Zero)
+						== XStatus.Zero)
 				{
 					return -1;
 				}
@@ -342,7 +344,7 @@ internal sealed unsafe class ICE
 	public static bool IceReadData(IceConn *iceConn, int nbytes, byte[] data)
 			{
 				return (_IceRead(iceConn, (Xlib.Xulong)(uint)nbytes, data)
-							!= Xlib.Status.Zero);
+							!= XStatus.Zero);
 			}
 
 } // class ICE

@@ -25,6 +25,7 @@ using Xsharp.Events;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.RootWindow"/> class manages the
@@ -36,15 +37,15 @@ using System.Runtime.InteropServices;
 public sealed class RootWindow : Widget
 {
 	// Internal state.
-	private Xlib.Atom resourceManager;
+	private XAtom resourceManager;
 	private String resources;
 
 	// Constructor.  Called from the "Screen" class.
-	internal RootWindow(Display dpy, Screen screen, Xlib.Window handle)
+	internal RootWindow(Display dpy, Screen screen, XWindow handle)
 			: base(dpy, screen, DrawableKind.Widget, null)
 			{
 				// Set this window's handle and add it to the handle map.
-				this.handle = (Xlib.Drawable)handle;
+				this.handle = (XDrawable)handle;
 				if(dpy.handleMap == null)
 				{
 					dpy.handleMap = new HandleMap();
@@ -60,7 +61,7 @@ public sealed class RootWindow : Widget
 				// Get the current state of the RESOURCE_MANAGER property.
 				// We extract color theme information from it.
 				resourceManager = Xlib.XInternAtom
-					(dpy.dpy, "RESOURCE_MANAGER", Xlib.Bool.False);
+					(dpy.dpy, "RESOURCE_MANAGER", XBool.False);
 				IntPtr resptr = Xlib.XSharpGetResources(dpy.dpy, handle);
 				if(resptr != IntPtr.Zero)
 				{

@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Gravity change event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,7 +32,7 @@ internal struct XGravityEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Window	window;
+	public XWindow    	window;
 	public Xlib.Xint	x__;
 	public Xlib.Xint	y__;
 
@@ -39,7 +41,7 @@ internal struct XGravityEvent
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window event_window
+	public XWindow     event_window
 			{ get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.

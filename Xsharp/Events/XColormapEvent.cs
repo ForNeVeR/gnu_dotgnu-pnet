@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Colormap change event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,8 +32,8 @@ internal struct XColormapEvent
 {
 	// Structure fields.
 	XAnyEvent			 common__;
-	public Xlib.Colormap colormap;
-	public Xlib.Bool	 c_new__;
+	public XColormap 	 colormap;
+	public XBool	 	c_new__;
 	public Xlib.Xint	 state__;
 
 	// Access parent class fields.
@@ -39,11 +41,11 @@ internal struct XColormapEvent
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window window { get { return common__.window; } }
+	public XWindow     window { get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public bool c_new
-			{ get { return (c_new__ != Xlib.Bool.False); } }
+			{ get { return (c_new__ != XBool.False); } }
 	public int state          { get { return (int)state__; } }
 
 	// Convert this object into a string.

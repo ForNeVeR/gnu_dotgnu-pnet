@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Map request event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,14 +32,14 @@ internal struct XMapRequestEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Window	window;
+	public XWindow    	window;
 
 	// Access parent class fields.
 	public int type           { get { return common__.type; } }
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window parent { get { return common__.window; } }
+	public XWindow     parent { get { return common__.window; } }
 
 	// Convert this object into a string.
 	public override String ToString()

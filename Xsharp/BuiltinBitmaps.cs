@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 internal sealed class BuiltinBitmaps
 {
@@ -92,23 +93,23 @@ internal sealed class BuiltinBitmaps
 		 0x00, 0x30, 0x00, 0x00, 0x00, 0x30, 0x00, 0x30, 0x00};
 
 	// Pre-loaded bitmaps for the current object's display.
-	public Xlib.Pixmap RadioBottom;
-	public Xlib.Pixmap RadioBottomEnhanced;
-	public Xlib.Pixmap RadioTop;
-	public Xlib.Pixmap RadioTopEnhanced;
-	public Xlib.Pixmap RadioBackground;
-	public Xlib.Pixmap RadioForeground;
-	public Xlib.Pixmap Close;
-	public Xlib.Pixmap Minimize;
-	public Xlib.Pixmap Maximize;
-	public Xlib.Pixmap Restore;
-	public Xlib.Pixmap Help;
+	public XPixmap RadioBottom;
+	public XPixmap RadioBottomEnhanced;
+	public XPixmap RadioTop;
+	public XPixmap RadioTopEnhanced;
+	public XPixmap RadioBackground;
+	public XPixmap RadioForeground;
+	public XPixmap Close;
+	public XPixmap Minimize;
+	public XPixmap Maximize;
+	public XPixmap Restore;
+	public XPixmap Help;
 
 	// Load builtin bitmaps for a particular display.
 	public BuiltinBitmaps(Display display)
 			{
 				IntPtr dpy = display.dpy;
-				Xlib.Drawable drawable = display.DefaultRootWindow.handle;
+				XDrawable drawable = display.DefaultRootWindow.handle;
 				RadioBottom = Xlib.XCreateBitmapFromData
 					(dpy, drawable, radio_b_bits, (uint)12, (uint)12);
 				RadioBottomEnhanced = Xlib.XCreateBitmapFromData

@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.DoubleBuffer"/> class manages a
@@ -69,7 +70,7 @@ public class DoubleBuffer : Drawable
 						Xlib.Xint major, minor;
 						if(Xlib.XdbeQueryExtension
 							(display, out major, out minor)
-								!= Xlib.Status.Zero)
+								!= XStatus.Zero)
 						{
 							usesXdbe = true;
 						}
@@ -93,9 +94,9 @@ public class DoubleBuffer : Drawable
 					}
 					else
 					{
-						handle = (Xlib.Drawable)
+						handle = (XDrawable)
 							Xlib.XCreatePixmap
-								(display, (Xlib.Drawable)
+								(display, (XDrawable)
 								   Xlib.XRootWindowOfScreen(screen.screen),
 								 (uint)width, (uint)height,
 								 (uint)Xlib.XDefaultDepthOfScreen
@@ -134,7 +135,7 @@ public class DoubleBuffer : Drawable
 				try
 				{
 					IntPtr display = dpy.Lock();
-					if(handle != Xlib.Drawable.Zero)
+					if(handle != XDrawable.Zero)
 					{
 						if(usesXdbe)
 						{
@@ -142,9 +143,9 @@ public class DoubleBuffer : Drawable
 						}
 						else
 						{
-							Xlib.XFreePixmap(display, (Xlib.Pixmap)handle);
+							Xlib.XFreePixmap(display, (XPixmap)handle);
 						}
-						handle = Xlib.Drawable.Zero;
+						handle = XDrawable.Zero;
 					}
 				}
 				finally
@@ -167,7 +168,7 @@ public class DoubleBuffer : Drawable
 			{
 				// Just clear the handle: the X server will clean
 				// up the buffer object for us at shutdown.
-				handle = Xlib.Drawable.Zero;
+				handle = XDrawable.Zero;
 			}
 
 	/// <summary>
@@ -196,13 +197,13 @@ public class DoubleBuffer : Drawable
 						try
 						{
 							IntPtr display = dpy.Lock();
-							if(handle != Xlib.Drawable.Zero)
+							if(handle != XDrawable.Zero)
 							{
-								Xlib.XFreePixmap(display, (Xlib.Pixmap)handle);
+								Xlib.XFreePixmap(display, (XPixmap)handle);
 							}
-							handle = (Xlib.Drawable)
+							handle = (XDrawable)
 								Xlib.XCreatePixmap
-									(display, (Xlib.Drawable)
+									(display, (XDrawable)
 									   Xlib.XRootWindowOfScreen(screen.screen),
 									 (uint)(widget.Width),
 									 (uint)(widget.Height),
@@ -240,7 +241,7 @@ public class DoubleBuffer : Drawable
 				try
 				{
 					IntPtr display = dpy.Lock();
-					if(handle != Xlib.Drawable.Zero)
+					if(handle != XDrawable.Zero)
 					{
 						if(usesXdbe)
 						{

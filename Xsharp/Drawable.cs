@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Drawable"/> class manages widget
@@ -39,7 +40,7 @@ public abstract class Drawable : IDisposable
 	internal Display dpy;
 	internal Screen screen;
 	internal DrawableKind kind;
-	internal Xlib.Drawable handle;
+	internal XDrawable handle;
 	internal int width, height;
 
 	// Constructor.
@@ -59,12 +60,12 @@ public abstract class Drawable : IDisposable
 			}
 
 	// Set the handle for this drawable, assuming it is a widget.
-	internal void SetWidgetHandle(Xlib.Window handle)
+	internal void SetWidgetHandle(XWindow handle)
 			{
 				try
 				{
 					dpy.Lock();
-					this.handle = (Xlib.Drawable)handle;
+					this.handle = (XDrawable)handle;
 					dpy.handleMap[handle] = (Widget)this;
 				}
 				finally
@@ -74,12 +75,12 @@ public abstract class Drawable : IDisposable
 			}
 
 	// Set the handle for this drawable, assuming it is a pixmap.
-	internal void SetPixmapHandle(Xlib.Pixmap handle)
+	internal void SetPixmapHandle(XPixmap handle)
 			{
 				try
 				{
 					dpy.Lock();
-					this.handle = (Xlib.Drawable)handle;
+					this.handle = (XDrawable)handle;
 				}
 				finally
 				{
@@ -89,11 +90,11 @@ public abstract class Drawable : IDisposable
 
 	// Get the handle for drawable, assuming that it is
 	// a widget.  Should be called with the display lock.
-	internal Xlib.Window GetWidgetHandle()
+	internal XWindow GetWidgetHandle()
 			{
-				if(handle != Xlib.Drawable.Zero)
+				if(handle != XDrawable.Zero)
 				{
-					return (Xlib.Window)handle;
+					return (XWindow)handle;
 				}
 				else
 				{
@@ -104,11 +105,11 @@ public abstract class Drawable : IDisposable
 
 	// Get the handle for drawable, assuming that it is
 	// a pixmap.  Should be called with the display lock.
-	internal Xlib.Pixmap GetPixmapHandle()
+	internal XPixmap GetPixmapHandle()
 			{
-				if(handle != Xlib.Drawable.Zero)
+				if(handle != XDrawable.Zero)
 				{
-					return (Xlib.Pixmap)handle;
+					return (XPixmap)handle;
 				}
 				else if(kind == DrawableKind.Pixmap)
 				{
@@ -124,14 +125,14 @@ public abstract class Drawable : IDisposable
 
 	// Get the handle for drawable, for use in a graphics object.
 	// Should be called with the display lock.
-	internal Xlib.Drawable GetGCHandle()
+	internal XDrawable GetGCHandle()
 			{
 				if(kind == DrawableKind.InputOnlyWidget)
 				{
 					throw new XInvalidOperationException
 						(S._("X_GraphicsIsOutputOnly"));
 				}
-				else if(handle != Xlib.Drawable.Zero)
+				else if(handle != XDrawable.Zero)
 				{
 					return handle;
 				}
@@ -284,7 +285,7 @@ public abstract class Drawable : IDisposable
 			}
 
 	// Convert a color into a pixel value, relative to this drawable.
-	internal virtual Xlib.Pixel ToPixel(Color color)
+	internal virtual XPixel ToPixel(Color color)
 			{
 				// Expand standard color indices.
 				if(color.Index != StandardColor.RGB)

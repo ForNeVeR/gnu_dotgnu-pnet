@@ -24,6 +24,7 @@ namespace Xsharp
 using System;
 using System.Runtime.InteropServices;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 // When a "PopupWindow" instance is displayed on-screen, all mouse
 // and keyboard events are routed to the grab window.  From there,
@@ -67,18 +68,18 @@ internal class GrabWindow : OverrideWindow
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					Xlib.XGrabKeyboard
-						(display, handle, Xlib.Bool.False,
+						(display, handle, XBool.False,
 						 1 /* GrabModeAsync */, 1 /* GrabModeAsync */,
 						 dpy.knownEventTime);
 					Xlib.XGrabPointer
-						(display, handle, Xlib.Bool.False,
+						(display, handle, XBool.False,
 						 (uint)(EventMask.ButtonPressMask |
 						 		EventMask.ButtonReleaseMask |
 								EventMask.PointerMotionMask),
 						 1 /* GrabModeAsync */, 1 /* GrabModeAsync */,
-						 Xlib.Window.Zero,
+						 XWindow.Zero,
 						 dpy.GetCursor(CursorType.XC_left_ptr),
 						 dpy.knownEventTime);
 					Xlib.XFlush(display);
@@ -331,7 +332,7 @@ internal class GrabWindow : OverrideWindow
 	// Dispatch an event to this widget.
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
-				Xlib.KeySym keysym;
+				XKeySym keysym;
 				PopupWindow popup;
 				InputOutputWidget child = null;
 				switch((EventType)(xevent.xany.type__))

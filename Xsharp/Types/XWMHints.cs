@@ -23,6 +23,7 @@ namespace Xsharp.Types
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform.X11;
 
 // Window manager hint structure.
 [StructLayout(LayoutKind.Sequential)]
@@ -31,22 +32,22 @@ internal struct XWMHints
 
 	// Structure fields.
 	public Xlib.Xlong		flags__;
-	public Xlib.Bool		input__;
+	public XBool			input__;
 	public Xlib.Xint		initial_state__;
-	public Xlib.Pixmap		icon_pixmap;
-	public Xlib.Window		icon_window;
+	public XPixmap			icon_pixmap;
+	public XWindow    		icon_window;
 	public Xlib.Xint		icon_x__;
 	public Xlib.Xint		icon_y__;
-	public Xlib.Pixmap		icon_mask;
-	public Xlib.XID			window_group;
+	public XPixmap			icon_mask;
+	public XID      	 	window_group;
 
 	// Convert odd fields into types that are useful.
 	public WMHintsMask flags
 			{ get { return (WMHintsMask)(long)flags__; }
 			  set { flags__ = (Xlib.Xlong)(long)value; } }
 	public bool input
-			{ get { return (input__ != Xlib.Bool.False); }
-			  set { input__ = (value ? Xlib.Bool.True : Xlib.Bool.False); } }
+			{ get { return (input__ != XBool.False); }
+			  set { input__ = (value ? XBool.True : XBool.False); } }
 	public WindowState initial_state
 			{ get { return (WindowState)initial_state__; }
 			  set { initial_state__ = (Xlib.Xint)value; } }

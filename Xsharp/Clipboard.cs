@@ -25,6 +25,7 @@ using System;
 using System.Text;
 using Xsharp.Types;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Clipboard"/> class manages clipboards
@@ -33,8 +34,8 @@ using Xsharp.Events;
 public class Clipboard : InputOutputWidget
 {
 	// Internal state.
-	private Xlib.Atom name;
-	private Xlib.Atom targets;
+	private XAtom name;
+	private XAtom targets;
 	private String[] formats;
 	private byte[][] values;
 
@@ -69,9 +70,9 @@ public class Clipboard : InputOutputWidget
 				{
 					IntPtr display = dpy.Lock();
 					this.name = Xlib.XInternAtom
-						(display, name, Xlib.Bool.False);
+						(display, name, XBool.False);
 					this.targets = Xlib.XInternAtom
-						(display, "TARGETS", Xlib.Bool.False);
+						(display, "TARGETS", XBool.False);
 				}
 				finally
 				{
@@ -94,7 +95,7 @@ public class Clipboard : InputOutputWidget
 					try
 					{
 						IntPtr display = dpy.Lock();
-						Xlib.Window handle = GetWidgetHandle();
+						XWindow handle = GetWidgetHandle();
 						if(Xlib.XGetSelectionOwner (display, name) == handle)
 						{
 							return true;
@@ -293,7 +294,7 @@ public class Clipboard : InputOutputWidget
 							xevent.xselectionrequest.selection;
 						response.xselection.target =
 							xevent.xselectionrequest.target;
-						response.xselection.property = Xlib.Atom.Zero;
+						response.xselection.property = XAtom.Zero;
 						response.xselection.time =
 							xevent.xselectionrequest.time;
 
@@ -306,7 +307,7 @@ public class Clipboard : InputOutputWidget
 							Xlib.XSendEvent
 								(display,
 								 xevent.xselectionrequest.requestor,
-								 Xlib.Bool.False,
+								 XBool.False,
 								 (int)(EventMask.NoEventMask),
 								 ref response);
 						}

@@ -25,6 +25,7 @@ using System;
 using System.Runtime.InteropServices;
 using Xsharp.Types;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.InputOnlyWidget"/> class manages widgets
@@ -35,7 +36,7 @@ public class InputOnlyWidget : Widget
 {
 	// Internal state.
 	private bool focusable;
-	internal Xlib.Time lastClickTime;
+	internal XTime lastClickTime;
 	internal ButtonName lastClickButton;
 
 	/// <summary>
@@ -111,8 +112,8 @@ public class InputOnlyWidget : Widget
 					try
 					{
 						IntPtr display = dpy.Lock();
-						Xlib.Window pwindow = parent.GetWidgetHandle();
-						Xlib.Window window = Xlib.XCreateWindow
+						XWindow pwindow = parent.GetWidgetHandle();
+						XWindow window = Xlib.XCreateWindow
 								(display, pwindow,
 								 x, y, (uint)width, (uint)height, (uint)0,
 								 0 /* depth */, 2 /* InputOnly */,
@@ -187,10 +188,10 @@ public class InputOnlyWidget : Widget
 					try
 					{
 						IntPtr display = dpy.Lock();
-						Xlib.Window pwindow = parent.GetWidgetHandle();
+						XWindow pwindow = parent.GetWidgetHandle();
 						XSetWindowAttributes attrs = new XSetWindowAttributes();
 						attrs.override_redirect = overrideRedirect;
-						Xlib.Window window = Xlib.XCreateWindow
+						XWindow window = Xlib.XCreateWindow
 								(display, pwindow,
 								 x, y, (uint)width, (uint)height, (uint)0,
 								 screen.DefaultDepth, 1 /* InputOutput */,
@@ -201,7 +202,7 @@ public class InputOnlyWidget : Widget
 						if(background.Index == StandardColor.Inherit)
 						{
 							Xlib.XSetWindowBackgroundPixmap
-								(display, window, Xlib.Pixmap.ParentRelative);
+								(display, window, XPixmap.ParentRelative);
 						}
 						else
 						{
@@ -619,7 +620,7 @@ public class InputOnlyWidget : Widget
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
 				ButtonName button;
-				Xlib.Time time;
+				XTime time;
 	
 				switch((EventType)(xevent.xany.type__))
 				{
@@ -629,13 +630,13 @@ public class InputOnlyWidget : Widget
 						button = xevent.xbutton.button;
 						time = xevent.xbutton.time;
 						if(lastClickButton == button &&
-						   lastClickTime != Xlib.Time.CurrentTime &&
+						   lastClickTime != XTime.CurrentTime &&
 						   (time - lastClickTime) < 500)
 						{
 							OnButtonDoubleClick(xevent.xbutton.x,
 								        		xevent.xbutton.y, button,
 								        		xevent.xbutton.state);
-							time = Xlib.Time.CurrentTime;
+							time = XTime.CurrentTime;
 						}
 						else
 						{

@@ -23,6 +23,8 @@ namespace Xsharp.Types
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Window configuration change structure.
 [StructLayout(LayoutKind.Sequential)]
@@ -35,7 +37,7 @@ internal struct XWindowChanges
 	public Xlib.Xint		width__;
 	public Xlib.Xint		height__;
 	public Xlib.Xint		border_width__;
-	public Xlib.Window		sibling;
+	public XWindow			sibling;
 	public Xlib.Xint		stack_mode__;
 
 	// Convert odd fields into types that are useful.

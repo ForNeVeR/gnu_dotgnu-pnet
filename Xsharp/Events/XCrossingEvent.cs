@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Border crossing event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,17 +32,17 @@ internal struct XCrossingEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Window	root;
-	public Xlib.Window	subwindow;
-	public Xlib.Time	time;
+	public XWindow    	root;
+	public XWindow    	subwindow;
+	public XTime		time;
 	public Xlib.Xint	x__;
 	public Xlib.Xint	y__;
 	public Xlib.Xint	x_root__;
 	public Xlib.Xint	y_root__;
 	public Xlib.Xint	mode__;
 	public Xlib.Xint	detail__;
-	public Xlib.Bool	same_screen__;
-	public Xlib.Bool	focus__;
+	public XBool		same_screen__;
+	public XBool		focus__;
 	public Xlib.Xuint	state__;
 
 	// Access parent class fields.
@@ -48,7 +50,7 @@ internal struct XCrossingEvent
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window window { get { return common__.window; } }
+	public XWindow     window { get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public int x              { get { return (int)x__; } }
@@ -59,9 +61,9 @@ internal struct XCrossingEvent
 	public CrossingDetail detail
 		{ get { return (CrossingDetail)(int)detail__; } }
 	public bool same_screen
-		{ get { return (same_screen__ != Xlib.Bool.False); } }
+		{ get { return (same_screen__ != XBool.False); } }
 	public bool focus
-		{ get { return (focus__ != Xlib.Bool.False); } }
+		{ get { return (focus__ != XBool.False); } }
 	public ModifierMask state { get { return (ModifierMask)(uint)state__; } }
 
 	// Convert this object into a string.

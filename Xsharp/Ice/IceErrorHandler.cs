@@ -22,9 +22,11 @@ namespace Xsharp.Ice
 {
 
 using System;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 internal delegate void IceErrorHandler
-		(IntPtr iceConn, Xlib.Bool swap, Xlib.Xint offendingMinorOpcode,
+		(IntPtr iceConn, XBool swap, Xlib.Xint offendingMinorOpcode,
 		 Xlib.Xulong offendingSequence, Xlib.Xint errorClass,
 		 Xlib.Xint severity, IntPtr values);
 

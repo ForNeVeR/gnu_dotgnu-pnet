@@ -23,6 +23,7 @@ namespace Xsharp
 
 using System;
 using Xsharp.Types;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Graphics"/> class manages a graphic
@@ -58,7 +59,7 @@ public sealed class Graphics : IDisposable
 	// Internal state.
 	internal Display dpy;
 	private Drawable drawable;
-	internal Xlib.Drawable drawableHandle;
+	internal XDrawable drawableHandle;
 	internal IntPtr gc;
 	private Color foreground;
 	private Color background;
@@ -159,7 +160,7 @@ public sealed class Graphics : IDisposable
 						// Xlib will take care of stripping the list down
 						// to just the changes that need to be applied.
 						gcValues.function = Xsharp.Function.GXcopy;
-						gcValues.plane_mask = ~((Xlib.Pixel)0);
+						gcValues.plane_mask = ~((XPixel)0);
 						gcValues.line_width = 0;
 						gcValues.line_style = Xsharp.LineStyle.LineSolid;
 						gcValues.cap_style = Xsharp.CapStyle.CapButt;
@@ -174,7 +175,7 @@ public sealed class Graphics : IDisposable
 						gcValues.graphics_exposures = true;
 						gcValues.clip_x_origin = 0;
 						gcValues.clip_y_origin = 0;
-						gcValues.clip_mask = Xlib.Pixmap.Zero;
+						gcValues.clip_mask = XPixmap.Zero;
 						gcValues.dash_offset = 0;
 						gcValues.dashes = (sbyte)4;
 						Xlib.XChangeGC(display, gc,
@@ -254,7 +255,7 @@ public sealed class Graphics : IDisposable
 	private IntPtr Lock()
 			{
 				IntPtr display = dpy.Lock();
-				if(drawable.handle != Xlib.Drawable.Zero && gc != IntPtr.Zero)
+				if(drawable.handle != XDrawable.Zero && gc != IntPtr.Zero)
 				{
 					// All of the relevant handles are still valid.
 					return display;
@@ -1177,7 +1178,7 @@ public sealed class Graphics : IDisposable
 					}
 					else
 					{
-						Xlib.XSetClipMask(display, gc, Xlib.Pixmap.Zero);
+						Xlib.XSetClipMask(display, gc, XPixmap.Zero);
 					}
 				}
 				finally
@@ -1229,7 +1230,7 @@ public sealed class Graphics : IDisposable
 					}
 					else
 					{
-						Xlib.XSetClipMask(display, gc, Xlib.Pixmap.Zero);
+						Xlib.XSetClipMask(display, gc, XPixmap.Zero);
 					}
 				}
 				finally
@@ -2552,12 +2553,12 @@ public sealed class Graphics : IDisposable
 	// Draw a radio button.
 	private void DrawRadio(IntPtr display,
 						   int x, int y, int width, int height,
-						   Xlib.Pixel topShadow,
-						   Xlib.Pixel topShadowEnhanced,
-						   Xlib.Pixel bottomShadow,
-						   Xlib.Pixel bottomShadowEnhanced,
-						   Xlib.Pixel foreground,
-						   Xlib.Pixel background)
+						   XPixel topShadow,
+						   XPixel topShadowEnhanced,
+						   XPixel bottomShadow,
+						   XPixel bottomShadowEnhanced,
+						   XPixel foreground,
+						   XPixel background)
 			{
 				// Adjust the top-left position of the radio button.
 				x += (width - BuiltinBitmaps.RadioWidth) / 2;
@@ -2608,7 +2609,7 @@ public sealed class Graphics : IDisposable
 
 	// Draw a simple bitmap.
 	internal void DrawBitmap(int x, int y, int width, int height,
-							 Xlib.Pixmap bitmap)
+							 XPixmap bitmap)
 			{
 				try
 				{
@@ -2674,12 +2675,12 @@ public sealed class Graphics : IDisposable
 					IntPtr display = Lock();
 
 					// Get the colors that we need to draw the effect.
-					Xlib.Pixel topShadow;
-					Xlib.Pixel topShadowEnhance;
-					Xlib.Pixel bottomShadow;
-					Xlib.Pixel bottomShadowEnhance;
-					Xlib.Pixel background;
-					Xlib.Pixel trim;
+					XPixel topShadow;
+					XPixel topShadowEnhance;
+					XPixel bottomShadow;
+					XPixel bottomShadowEnhance;
+					XPixel background;
+					XPixel trim;
 					if((effect & Effect.ContentColors) != 0)
 					{
 						topShadow = drawable.ToPixel

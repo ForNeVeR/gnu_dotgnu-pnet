@@ -33,6 +33,10 @@
 	use "OpenSystem.Platform" to provide platform-specific
 	types for "DotGNU.Images".
 
+	* OpenSystem.Platform/Types.cs.in, Xsharp/*.cs: convert a
+	bunch of X-related types to use "OpenSystem.Platform" instead
+	(still more left to be converted).
+
 2004-02-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Drawing/Font.cs: Add the style to the output of

@@ -22,8 +22,10 @@ namespace Xsharp.Ice
 {
 
 using System;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
-internal delegate Xlib.Status IceProtocolSetupProc
+internal delegate XStatus IceProtocolSetupProc
 		(IntPtr iceConn, Xlib.Xint majorVersion, Xlib.Xint minorVersion,
 		 String vendor, String release, ref IntPtr clientDataRet,
 		 ref IntPtr failureReasonRet);

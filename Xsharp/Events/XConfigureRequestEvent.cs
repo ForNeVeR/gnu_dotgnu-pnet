@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Configure request event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,13 +32,13 @@ internal struct XConfigureRequestEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Window	window;
+	public XWindow    	window;
 	public Xlib.Xint	x__;
 	public Xlib.Xint	y__;
 	public Xlib.Xint	width__;
 	public Xlib.Xint	height__;
 	public Xlib.Xint	border_width__;
-	public Xlib.Window	above;
+	public XWindow    	above;
 	public Xlib.Xint	detail__;
 	public Xlib.Xulong	value_mask__;
 
@@ -45,7 +47,7 @@ internal struct XConfigureRequestEvent
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window parent { get { return common__.window; } }
+	public XWindow     parent { get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public int x              { get { return (int)x__; } }

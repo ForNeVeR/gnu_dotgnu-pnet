@@ -24,6 +24,7 @@ namespace Xsharp
 using System;
 using Xsharp.Types;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.InputOutputWidget"/> class manages widgets
@@ -219,7 +220,7 @@ public class InputOutputWidget : InputOnlyWidget
 						try
 						{
 							IntPtr display = dpy.Lock();
-							Xlib.Window window = GetWidgetHandle();
+							XWindow window = GetWidgetHandle();
 							background = value;
 							backgroundPixmap = null;
 							Xlib.XSetWindowBackground
@@ -228,7 +229,7 @@ public class InputOutputWidget : InputOnlyWidget
 							{
 								Xlib.XClearArea(display, window,
 												0, 0, (uint)0, (uint)0,
-												Xlib.Bool.True);
+												XBool.True);
 							}
 						}
 						finally
@@ -278,13 +279,13 @@ public class InputOutputWidget : InputOnlyWidget
 					try
 					{
 						IntPtr display = dpy.Lock();
-						Xlib.Window window = GetWidgetHandle();
+						XWindow window = GetWidgetHandle();
 						if(value == null)
 						{
 							background = new Color(StandardColor.Inherit);
 							backgroundPixmap = null;
 							Xlib.XSetWindowBackgroundPixmap
-								(display, window, Xlib.Pixmap.ParentRelative);
+								(display, window, XPixmap.ParentRelative);
 						}
 						else
 						{
@@ -297,7 +298,7 @@ public class InputOutputWidget : InputOnlyWidget
 						{
 							Xlib.XClearArea(display, window,
 											0, 0, (uint)0, (uint)0,
-											Xlib.Bool.True);
+											XBool.True);
 						}
 					}
 					finally
@@ -379,7 +380,7 @@ public class InputOutputWidget : InputOnlyWidget
 			}
 
 	// Clear a region to the background and optionally queue expose events.
-	private bool ClearRegion(Region region, Xlib.Bool exposures)
+	private bool ClearRegion(Region region, XBool exposures)
 			{
 				// Intersect the region with the widget boundaries.
 				region.Intersect(0, 0, width, height);
@@ -406,7 +407,7 @@ public class InputOutputWidget : InputOnlyWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window handle = GetWidgetHandle();
+					XWindow handle = GetWidgetHandle();
 					IntPtr xregion = region.GetRegion();
 					XRectangle xrect;
 					int size, index;
@@ -446,7 +447,7 @@ public class InputOutputWidget : InputOnlyWidget
 					// No point redrawing if we are unmapped or the
 					// region to be drawn is empty.
 					if(mapped && AncestorsMapped && (!clear ||
-					   ClearRegion(region, Xlib.Bool.False)))
+					   ClearRegion(region, XBool.False)))
 					{
 						// Paint the region as if we got a regular expose.
 						Graphics graphics = new Graphics(this);
@@ -477,7 +478,7 @@ public class InputOutputWidget : InputOnlyWidget
 					// No point redrawing if we are unmapped.
 					if(mapped && AncestorsMapped)
 					{
-						ClearRegion(region, Xlib.Bool.True);
+						ClearRegion(region, XBool.True);
 					}
 
 					// Dispose the region that we no longer require.
@@ -498,7 +499,7 @@ public class InputOutputWidget : InputOnlyWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window window = GetWidgetHandle();
+					XWindow window = GetWidgetHandle();
 					StandardColor sc = background.Index;
 					if(sc != StandardColor.Inherit &&
 					   sc != StandardColor.Pixmap &&
@@ -511,7 +512,7 @@ public class InputOutputWidget : InputOnlyWidget
 					{
 						Xlib.XClearArea(display, window,
 										0, 0, (uint)0, (uint)0,
-										Xlib.Bool.True);
+										XBool.True);
 					}
 				}
 				finally

@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Selection event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,17 +32,17 @@ internal struct XSelectionEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Atom	selection;
-	public Xlib.Atom	target;
-	public Xlib.Atom	property;
-	public Xlib.Time	time;
+	public XAtom    	selection;
+	public XAtom    	target;
+	public XAtom    	property;
+	public XTime		time;
 
 	// Access parent class fields.
 	public int type           { get { return common__.type; } }
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window requestor
+	public XWindow     requestor
 			{ get { return common__.window; }
 			  set { common__.window = requestor; } }
 

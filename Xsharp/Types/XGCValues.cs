@@ -23,6 +23,7 @@ namespace Xsharp.Types
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform.X11;
 
 // X graphic context values structure.
 [StructLayout(LayoutKind.Sequential)]
@@ -31,9 +32,9 @@ internal struct XGCValues
 
 	// Structure fields.
 	public Xlib.Xint	function__;
-	public Xlib.Pixel	plane_mask;
-	public Xlib.Pixel	foreground;
-	public Xlib.Pixel	background;
+	public XPixel    	plane_mask;
+	public XPixel    	foreground;
+	public XPixel    	background;
 	public Xlib.Xint	line_width__;
 	public Xlib.Xint	line_style__;
 	public Xlib.Xint	cap_style__;
@@ -41,16 +42,16 @@ internal struct XGCValues
 	public Xlib.Xint	fill_style__;
 	public Xlib.Xint	fill_rule__;
 	public Xlib.Xint	arc_mode__;
-	public Xlib.Pixmap	tile;
-	public Xlib.Pixmap	stipple;
+	public XPixmap    	tile;
+	public XPixmap    	stipple;
 	public Xlib.Xint	ts_x_origin__;
 	public Xlib.Xint	ts_y_origin__;
-	public Xlib.Font	font;
+	public XFont		font;
 	public Xlib.Xint	subwindow_mode__;
-	public Xlib.Bool	graphics_exposures__;
+	public XBool		graphics_exposures__;
 	public Xlib.Xint	clip_x_origin__;
 	public Xlib.Xint	clip_y_origin__;
-	public Xlib.Pixmap	clip_mask;
+	public XPixmap    	clip_mask;
 	public Xlib.Xint	dash_offset__;
 	public sbyte		dashes;
 
@@ -89,9 +90,9 @@ internal struct XGCValues
 			{ get { return (SubwindowMode)(int)subwindow_mode__; }
 			  set { subwindow_mode__ = (Xlib.Xint)(int)value; } }
 	public bool graphics_exposures
-			{ get { return (graphics_exposures__ != Xlib.Bool.False); }
-			  set { graphics_exposures__ = (value ? Xlib.Bool.True
-			  									  : Xlib.Bool.False); } }
+			{ get { return (graphics_exposures__ != XBool.False); }
+			  set { graphics_exposures__ = (value ? XBool.True
+			  									  : XBool.False); } }
 	public int clip_x_origin
 			{ get { return (int)clip_x_origin__; }
 			  set { clip_x_origin__ = (Xlib.Xint)value; } }

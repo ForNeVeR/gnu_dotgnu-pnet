@@ -24,6 +24,7 @@ namespace Xsharp
 using System;
 using Xsharp.Types;
 using DotGNU.Images;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Cursor"/> type encapsulates a
@@ -37,7 +38,7 @@ public class Cursor
 	private Bitmap mask;
 	private int hotspotX;
 	private int hotspotY;
-	private Xlib.Cursor cursor;
+	private XCursor cursor;
 	private bool reverse;
 
 	/// <summary>
@@ -52,7 +53,7 @@ public class Cursor
 				this.type = type;
 				this.source = null;
 				this.mask = null;
-				this.cursor = Xlib.Cursor.Zero;
+				this.cursor = XCursor.Zero;
 			}
 
 	/// <summary>
@@ -93,7 +94,7 @@ public class Cursor
 				this.type = CursorType.XC_inherit_parent;
 				this.source = source;
 				this.mask = mask;
-				this.cursor = Xlib.Cursor.Zero;
+				this.cursor = XCursor.Zero;
 			}
 
 	/// <summary>
@@ -137,12 +138,12 @@ public class Cursor
 					this.type = CursorType.XC_left_ptr;
 					this.source = null;
 					this.mask = null;
-					this.cursor = Xlib.Cursor.Zero;
+					this.cursor = XCursor.Zero;
 				}
 				else
 				{
 					this.type = CursorType.XC_inherit_parent;
-					this.cursor = Xlib.Cursor.Zero;
+					this.cursor = XCursor.Zero;
 					try
 					{
 						dpy.Lock();
@@ -177,10 +178,10 @@ public class Cursor
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Window window = widget.GetWidgetHandle();
+					XWindow window = widget.GetWidgetHandle();
 					if(source != null)
 					{
-						if(cursor == Xlib.Cursor.Zero)
+						if(cursor == XCursor.Zero)
 						{
 							XColor foreground = new XColor();
 							foreground.red = (ushort)0;

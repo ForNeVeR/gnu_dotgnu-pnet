@@ -30,6 +30,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Xsharp.Types;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.EmbeddedApplication"/> class manages
@@ -64,9 +65,9 @@ public class EmbeddedApplication : InputOutputWidget
 	private Process process;
 	private String redirectDisplay;
 	private String authorityFile;
-	private Xlib.XAppGroup group;
+	private XAppGroup group;
 	private AppGroupWidget groupWrapper;
-	private Xlib.Window child;
+	private XWindow child;
 	private bool closeEventSent;
 	private bool closeNotifySent;
 	private static bool errorReported;
@@ -241,14 +242,14 @@ public class EmbeddedApplication : InputOutputWidget
 	private void ChildDestroyed()
 			{
 				// Clear the child window and destroy the application group.
-				child = Xlib.Window.Zero;
+				child = XWindow.Zero;
 				try
 				{
 					IntPtr d = dpy.Lock();
-					if(group != Xlib.XAppGroup.Zero)
+					if(group != XAppGroup.Zero)
 					{
 						Xlib.XagDestroyApplicationGroup(d, group);
-						group = Xlib.XAppGroup.Zero;
+						group = XAppGroup.Zero;
 					}
 				}
 				finally
@@ -294,16 +295,16 @@ public class EmbeddedApplication : InputOutputWidget
 				try
 				{
 					IntPtr d = dpy.Lock();
-					if(child != Xlib.Window.Zero && !closeEventSent)
+					if(child != XWindow.Zero && !closeEventSent)
 					{
 						closeEventSent = true;
 						Xlib.XSharpSendClose(d, child);
 						Xlib.XFlush(d);
 					}
-					if(group != Xlib.XAppGroup.Zero)
+					if(group != XAppGroup.Zero)
 					{
 						Xlib.XagDestroyApplicationGroup(d, group);
-						group = Xlib.XAppGroup.Zero;
+						group = XAppGroup.Zero;
 					}
 				}
 				finally
@@ -333,7 +334,7 @@ public class EmbeddedApplication : InputOutputWidget
 				try
 				{
 					IntPtr display = dpy.Lock();
-					if(child != Xlib.Window.Zero && !closeEventSent)
+					if(child != XWindow.Zero && !closeEventSent)
 					{
 						closeEventSent = true;
 						Xlib.XSharpSendClose(display, child);
@@ -513,7 +514,7 @@ public class EmbeddedApplication : InputOutputWidget
 
 					// See if the X server supports XC-APPGROUP and SECURITY.
 					if(Xlib.XagQueryVersion(dpy, out major, out minor)
-							== Xlib.Bool.False)
+							== XBool.False)
 					{
 						if(reportErrors && !errorReported)
 						{
@@ -529,7 +530,7 @@ public class EmbeddedApplication : InputOutputWidget
 						return false;
 					}
 					if(Xlib.XSecurityQueryExtension(dpy, out major, out minor)
-							== Xlib.Bool.False)
+							== XBool.False)
 					{
 						if(reportErrors && !errorReported)
 						{
@@ -649,11 +650,11 @@ public class EmbeddedApplication : InputOutputWidget
 
 					// Create the application group identifier.
 					if(Xlib.XagCreateEmbeddedApplicationGroup
-							(display, Xlib.VisualID.Zero,
+							(display, XVisualID.Zero,
 							 Xlib.XDefaultColormapOfScreen(screen.screen),
 							 Xlib.XBlackPixelOfScreen(screen.screen),
 							 Xlib.XWhitePixelOfScreen(screen.screen),
-							 out group) == Xlib.Status.Zero)
+							 out group) == XStatus.Zero)
 					{
 						return;
 					}
@@ -670,7 +671,7 @@ public class EmbeddedApplication : InputOutputWidget
 					xsa = new XSecurityAuthorizationAttributes();
 					xsa.timeout = 300;
 					xsa.trust_level = 0;	// XSecurityClientTrusted
-					xsa.group = (Xlib.XID)group;
+					xsa.group = (XID)group;
 					xsa.event_mask = 0;
 					authReturn = Xlib.XSecurityGenerateAuthorization
 						(display, auth,
@@ -779,7 +780,7 @@ public class EmbeddedApplication : InputOutputWidget
 	/// </param>
 	protected override void OnMoveResize(int x, int y, int width, int height)
 			{
-				if(child != Xlib.Window.Zero)
+				if(child != XWindow.Zero)
 				{
 					// Resize the embedded child window to match the
 					// dimensions of the embedding parent window.
@@ -806,20 +807,20 @@ public class EmbeddedApplication : InputOutputWidget
 		private EmbeddedApplication embedParent;
 
 		// Constructor.
-		public AppGroupWidget(Display dpy, Screen screen, Xlib.XAppGroup group,
+		public AppGroupWidget(Display dpy, Screen screen, XAppGroup group,
 							  EmbeddedApplication parent)
 				: base(dpy, screen, DrawableKind.Widget, null)
 				{
 					embedParent = parent;
-					handle = (Xlib.Drawable)group;
-					dpy.handleMap[(Xlib.Window)handle] = this;
+					handle = (XDrawable)group;
+					dpy.handleMap[(XWindow)handle] = this;
 				}
 
 		// Determine if we want a particular widget in a map request.
-		private bool WantThisWindow(IntPtr dpy, Xlib.Window window)
+		private bool WantThisWindow(IntPtr dpy, XWindow window)
 				{
 					// Bail out if the parent already has an embedded child.
-					if(embedParent.child != Xlib.Window.Zero)
+					if(embedParent.child != XWindow.Zero)
 					{
 						return false;
 					}
@@ -827,9 +828,9 @@ public class EmbeddedApplication : InputOutputWidget
 					// Ignore the window if it is a transient, because
 					// we don't want dialog boxes that are displayed before
 					// the main window to get accidentally reparented.
-					Xlib.Window transientFor;
+					XWindow transientFor;
 					if(Xlib.XGetTransientForHint(dpy, window, out transientFor)
-							!= Xlib.Status.Zero)
+							!= XStatus.Zero)
 					{
 						// KDE apps that act like a top-level dialog
 						// (kcalc, kfind, etc) specific the root window
@@ -850,7 +851,7 @@ public class EmbeddedApplication : InputOutputWidget
 		internal override void DispatchEvent(ref XEvent xevent)
 				{
 					IntPtr display;
-					Xlib.Window child;
+					XWindow child;
 					if(xevent.type == EventType.MapRequest)
 					{
 						// This may be notification of a new window

@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Bitmap"/> class manages off-screen
@@ -61,7 +62,7 @@ public sealed class Bitmap : Drawable
 				{
 					IntPtr display = dpy.Lock();
 					SetPixmapHandle(Xlib.XCreatePixmap
-						(display, (Xlib.Drawable)
+						(display, (XDrawable)
 							Xlib.XRootWindowOfScreen(screen.screen),
 						 (uint)width, (uint)height, (uint)1));
 					this.width = width;
@@ -112,7 +113,7 @@ public sealed class Bitmap : Drawable
 				{
 					IntPtr display = dpy.Lock();
 					SetPixmapHandle(Xlib.XCreatePixmap
-						(display, (Xlib.Drawable)
+						(display, (XDrawable)
 							Xlib.XRootWindowOfScreen(screen.screen),
 						 (uint)width, (uint)height, (uint)1));
 					this.width = width;
@@ -175,7 +176,7 @@ public sealed class Bitmap : Drawable
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Drawable drawable = (Xlib.Drawable)
+					XDrawable drawable = (XDrawable)
 							Xlib.XRootWindowOfScreen(screen.screen);
 					SetPixmapHandle(Xlib.XCreateBitmapFromData
 						(display, drawable, bits, (uint)width, (uint)height));
@@ -240,7 +241,7 @@ public sealed class Bitmap : Drawable
 				try
 				{
 					IntPtr display = dpy.Lock();
-					Xlib.Drawable drawable = (Xlib.Drawable)
+					XDrawable drawable = (XDrawable)
 							Xlib.XRootWindowOfScreen(screen.screen);
 					SetPixmapHandle(Xlib.XCreateBitmapFromData
 						(display, drawable, bits, (uint)width, (uint)height));
@@ -254,7 +255,7 @@ public sealed class Bitmap : Drawable
 			}
 
 	// Internal constructor that wraps a bitmap XID.
-	internal Bitmap(Display dpy, Screen screen, Xlib.Pixmap pixmap)
+	internal Bitmap(Display dpy, Screen screen, XPixmap pixmap)
 			: base(dpy, screen, DrawableKind.Bitmap)
 			{
 				SetPixmapHandle(pixmap);
@@ -262,7 +263,7 @@ public sealed class Bitmap : Drawable
 				{
 					// Get the geometry of the pixmap from the X server.
 					IntPtr display = dpy.Lock();
-					Xlib.Window root_return;
+					XWindow root_return;
 					Xlib.Xint x_return, y_return;
 					Xlib.Xuint width_return, height_return;
 					Xlib.Xuint border_width_return, depth_return;
@@ -298,10 +299,10 @@ public sealed class Bitmap : Drawable
 				try
 				{
 					IntPtr d = dpy.Lock();
-					if(handle != Xlib.Drawable.Zero)
+					if(handle != XDrawable.Zero)
 					{
-						Xlib.XFreePixmap(d, (Xlib.Pixmap)handle);
-						handle = Xlib.Drawable.Zero;
+						Xlib.XFreePixmap(d, (XPixmap)handle);
+						handle = XDrawable.Zero;
 					}
 				}
 				finally
@@ -324,12 +325,12 @@ public sealed class Bitmap : Drawable
 			{
 				// Just clear the handle: the X server will clean
 				// up the pixmap object for us at shutdown.
-				handle = Xlib.Drawable.Zero;
+				handle = XDrawable.Zero;
 			}
 
 	// Convert a color into a pixel value, relative to this drawable.
 	// Should be called with the display lock.
-	internal override Xlib.Pixel ToPixel(Color color)
+	internal override XPixel ToPixel(Color color)
 			{
 				// Expand standard colors before conversion.
 				if(color.Index != StandardColor.RGB)
@@ -342,11 +343,11 @@ public sealed class Bitmap : Drawable
 				if(((color.Red * 54 + color.Green * 183 +
 				     color.Blue * 19) / 256) < 128)
 				{
-					return (Xlib.Pixel)1;
+					return (XPixel)1;
 				}
 				else
 				{
-					return (Xlib.Pixel)0;
+					return (XPixel)0;
 				}
 			}
 

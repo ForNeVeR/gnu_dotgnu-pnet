@@ -22,6 +22,7 @@ namespace Xsharp.Ice
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.Ice.IceClient"/> class manages the client
@@ -128,7 +129,7 @@ public abstract unsafe class IceClient
 				// Open the ICE connection to the server.
 				byte[] errorBuffer = new byte [1024];
 				iceConn = ICE.IceOpenConnection
-					(serverAddress, IntPtr.Zero, Xlib.Bool.False,
+					(serverAddress, IntPtr.Zero, XBool.False,
 					 (Xlib.Xint)majorOpcode, (Xlib.Xint)1024, errorBuffer);
 				if(iceConn == null)
 				{
@@ -136,7 +137,7 @@ public abstract unsafe class IceClient
 				}
 
 				// We don't want shutdown negotiation.
-				ICE.IceSetShutdownNegotiation(iceConn, Xlib.Bool.False);
+				ICE.IceSetShutdownNegotiation(iceConn, XBool.False);
 
 				// Perform protocol setup on the connection.
 				IceProtocolSetupStatus status;
@@ -144,7 +145,7 @@ public abstract unsafe class IceClient
 				IntPtr vendorRet, releaseRet;
 				status = (IceProtocolSetupStatus)ICE.IceProtocolSetup
 					(iceConn, (Xlib.Xint)majorOpcode, IntPtr.Zero,
-					 Xlib.Bool.False, out majorRet, out minorRet,
+					 XBool.False, out majorRet, out minorRet,
 					 out vendorRet, out releaseRet,
 					 (Xlib.Xint)1024, errorBuffer);
 				if(status != IceProtocolSetupStatus.IceProtocolSetupSuccess)
@@ -261,8 +262,8 @@ public abstract unsafe class IceClient
 	// Callback from "libICE" to process a message.
 	private void ProcessMessage
 				(IntPtr iceConn, IntPtr clientData, Xlib.Xint opcode,
-				 Xlib.Xulong length, Xlib.Bool swap,
-				 ref IceReplyWaitInfo replyWait, ref Xlib.Bool replyReadySet)
+				 Xlib.Xulong length, XBool swap,
+				 ref IceReplyWaitInfo replyWait, ref XBool replyReadySet)
 			{
 				int key, len;
 
@@ -300,7 +301,7 @@ public abstract unsafe class IceClient
 			{
 				if(iceConn != null)
 				{
-					Xlib.Bool replyReady;
+					XBool replyReady;
 					if(ICE.IceProcessMessages
 							(iceConn, IntPtr.Zero, out replyReady)
 						 != (Xlib.Xint)(IceProcessMessagesStatus.

@@ -23,6 +23,7 @@ namespace Xsharp
 
 using System;
 using DotGNU.Images;
+using OpenSystem.Platform.X11;
 
 internal sealed class ConvertImage
 {
@@ -30,7 +31,7 @@ internal sealed class ConvertImage
 	public static IntPtr FrameToXImage(Screen screen, Frame frame)
 			{
 				int[] fpalette;
-				Xlib.Pixel[] palette;
+				XPixel[] palette;
 				int index, color;
 				Colormap colormap = screen.DefaultColormap;
 
@@ -39,7 +40,7 @@ internal sealed class ConvertImage
 				if(fpalette != null)
 				{
 					// Convert the palette within the image frame itself.
-					palette = new Xlib.Pixel [256];
+					palette = new XPixel [256];
 					for(index = 0; index < 256 && index < fpalette.Length;
 						++index)
 					{

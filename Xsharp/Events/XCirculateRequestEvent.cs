@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Circulate request event.
 [StructLayout(LayoutKind.Sequential)]
@@ -30,7 +32,7 @@ internal struct XCirculateRequestEvent
 {
 	// Structure fields.
 	XAnyEvent			common__;
-	public Xlib.Window	window;
+	public XWindow    	window;
 	public Xlib.Xint	place__;
 
 	// Access parent class fields.
@@ -38,7 +40,7 @@ internal struct XCirculateRequestEvent
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window parent { get { return common__.window; } }
+	public XWindow     parent { get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public int place          { get { return (int)place__; } }

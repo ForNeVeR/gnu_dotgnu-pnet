@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Union that combines all of the events into one structure.
 [StructLayout(LayoutKind.Explicit)]
@@ -65,7 +67,7 @@ internal struct XEvent
 	public uint serial        { get { return xany.serial; } }
 	public bool send_event    { get { return xany.send_event; } }
 	public IntPtr display     { get { return xany.display; } }
-	public Xlib.Window window { get { return xany.window; } }
+	public XWindow     window { get { return xany.window; } }
 
 	// Convert this object into a string.
 	public override String ToString()

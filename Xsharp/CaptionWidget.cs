@@ -25,6 +25,7 @@ using System;
 using System.Reflection;
 using Xsharp.Events;
 using DotGNU.Images;
+using OpenSystem.Platform.X11;
 
 internal class CaptionWidget : InputOutputWidget
 {
@@ -201,7 +202,7 @@ internal class CaptionWidget : InputOutputWidget
 	private static int DrawCaptionButton
 					(Graphics graphics, Rectangle rect,
 					 int subtract, bool pressed, bool draw,
-					 Xlib.Pixmap buttonPixmap)
+					 XPixmap buttonPixmap)
 			{
 				int buttonSize = rect.height - 4;
 				int x = rect.x + rect.width - subtract - buttonSize;
@@ -1158,7 +1159,7 @@ internal class CaptionWidget : InputOutputWidget
 	internal override void DispatchEvent(ref XEvent xevent)
 			{
 				ButtonName button;
-				Xlib.Time time;
+				XTime time;
 	
 				switch((EventType)(xevent.xany.type__))
 				{
@@ -1187,7 +1188,7 @@ internal class CaptionWidget : InputOutputWidget
 						button = xevent.xbutton.button;
 						time = xevent.xbutton.time;
 						if(lastClickButton == button &&
-						   lastClickTime != Xlib.Time.CurrentTime &&
+						   lastClickTime != XTime.CurrentTime &&
 						   (time - lastClickTime) < 500)
 						{
 							OnButtonDoubleClick(xevent.xbutton.x,
@@ -1195,7 +1196,7 @@ internal class CaptionWidget : InputOutputWidget
 												xevent.xbutton.x_root,
 												xevent.xbutton.y_root,
 												button, xevent.xbutton.state);
-							time = Xlib.Time.CurrentTime;
+							time = XTime.CurrentTime;
 						}
 						else
 						{
@@ -1474,10 +1475,10 @@ internal class CaptionWidget : InputOutputWidget
 						Xlib.XGrabButton
 							(display, 0 /* AnyButton */,
 							 (1 << 15) /* AnyModifier */,
-							 GetWidgetHandle(), Xlib.Bool.False,
+							 GetWidgetHandle(), XBool.False,
 							 (uint)(EventMask.ButtonPressMask),
 							 0 /* GrabModeSync */, 1 /* GrabModeAsync */,
-							 Xlib.Window.Zero, Xlib.Cursor.Zero);
+							 XWindow.Zero, XCursor.Zero);
 					}
 					finally
 					{

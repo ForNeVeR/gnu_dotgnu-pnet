@@ -22,9 +22,11 @@ namespace Xsharp.Ice
 {
 
 using System;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 internal delegate void IceWatchProc
-		(IntPtr iceConn, IntPtr clientData, Xlib.Bool opening,
+		(IntPtr iceConn, IntPtr clientData, XBool opening,
 		 ref IntPtr watchData);
 
 } // namespace Xsharp.Ice

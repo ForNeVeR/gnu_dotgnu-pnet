@@ -22,9 +22,11 @@ namespace Xsharp.Ice
 {
 
 using System;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 internal delegate void IcePaProcessMsgProc
 		(IntPtr iceConn, IntPtr clientData, Xlib.Xint opcode,
-		 Xlib.Xulong length, Xlib.Bool swap);
+		 Xlib.Xulong length, XBool swap);
 
 } // namespace Xsharp.Ice

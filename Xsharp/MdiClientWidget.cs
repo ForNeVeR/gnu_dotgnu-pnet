@@ -22,6 +22,7 @@ namespace Xsharp
 {
 
 using System;
+using OpenSystem.Platform.X11;
 
 /// <summary>
 /// <para>The <see cref="T:Xsharp.MdiClientWidget"/> class manages child
@@ -566,7 +567,7 @@ public class MdiClientWidget : InputOutputWidget
 		// Paint this widget in response to an "Expose" event.
 		protected override void OnPaint(Graphics graphics)
 				{
-					Xlib.Pixmap pixmap;
+					XPixmap pixmap;
 					if((flags & CaptionWidget.CaptionFlags.HasClose) != 0)
 					{
 						pixmap = graphics.dpy.bitmaps.Close;

@@ -23,6 +23,8 @@ namespace Xsharp.Events
 
 using System;
 using System.Runtime.InteropServices;
+using OpenSystem.Platform;
+using OpenSystem.Platform.X11;
 
 // Keymap event.
 [StructLayout(LayoutKind.Sequential)]
@@ -68,7 +70,7 @@ internal struct XKeymapEvent
 	public uint serial        { get { return common__.serial; } }
 	public bool send_event    { get { return common__.send_event; } }
 	public IntPtr display     { get { return common__.display; } }
-	public Xlib.Window window { get { return common__.window; } }
+	public XWindow     window { get { return common__.window; } }
 
 	// Convert odd fields into types that are useful.
 	public sbyte key_vector(int n)

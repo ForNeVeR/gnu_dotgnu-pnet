@@ -24,6 +24,7 @@ namespace Xsharp.Types
 using System;
 using System.Runtime.InteropServices;
 using Xsharp.Events;
+using OpenSystem.Platform.X11;
 
 // Set window attributes structure.
 [StructLayout(LayoutKind.Sequential)]
@@ -31,21 +32,21 @@ internal struct XSetWindowAttributes
 {
 
 	// Structure fields.
-	public Xlib.Pixmap		background_pixmap;
-	public Xlib.Pixel		background_pixel;
-	public Xlib.Pixmap		border_pixmap;
-	public Xlib.Pixel		border_pixel;
+	public XPixmap    		background_pixmap;
+	public XPixel    		background_pixel;
+	public XPixmap    		border_pixmap;
+	public XPixel    		border_pixel;
 	public Xlib.Xint		bit_gravity__;
 	public Xlib.Xint		win_gravity__;
 	public Xlib.Xint		backing_store__;
-	public Xlib.Pixel		backing_planes;
-	public Xlib.Pixel		backing_pixel;
-	public Xlib.Bool		save_under__;
+	public XPixel    		backing_planes;
+	public XPixel    		backing_pixel;
+	public XBool			save_under__;
 	public Xlib.Xlong		event_mask__;
 	public Xlib.Xlong		do_not_propagate_mask__;
-	public Xlib.Bool		override_redirect__;
-	public Xlib.Colormap	colormap;
-	public Xlib.Cursor		cursor;
+	public XBool			override_redirect__;
+	public XColormap    	colormap;
+	public XCursor			cursor;
 
 	// Convert odd fields into types that are useful.
 	public int bit_gravity
@@ -58,9 +59,9 @@ internal struct XSetWindowAttributes
 			{ get { return (int)backing_store__; }
 			  set { backing_store__ = (Xlib.Xint)value; } }
 	public bool save_under
-			{ get { return (save_under__ != Xlib.Bool.False); }
-			  set { save_under__ = (value ? Xlib.Bool.True
-			  							  : Xlib.Bool.False); } }
+			{ get { return (save_under__ != XBool.False); }
+			  set { save_under__ = (value ? XBool.True
+			  							  : XBool.False); } }
 	public EventMask event_mask
 			{ get { return (EventMask)(int)event_mask__; }
 			  set { event_mask__ = (Xlib.Xlong)(int)value; } }
@@ -68,9 +69,9 @@ internal struct XSetWindowAttributes
 			{ get { return (EventMask)(int)do_not_propagate_mask__; }
 			  set { do_not_propagate_mask__ = (Xlib.Xlong)(int)value; } }
 	public bool override_redirect
-			{ get { return (override_redirect__ != Xlib.Bool.False); }
-			  set { override_redirect__ = (value ? Xlib.Bool.True
-			  							  		 : Xlib.Bool.False); } }
+			{ get { return (override_redirect__ != XBool.False); }
+			  set { override_redirect__ = (value ? XBool.True
+			  							  		 : XBool.False); } }
 
 } // struct XSetWindowAttributes
 

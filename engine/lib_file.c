@@ -196,6 +196,24 @@ ILBool _IL_FileMethods_SetLength(ILExecThread *thread, ILNativeInt handle,
 }
 
 /*
+ * public static bool Lock(IntPtr handle, long position, long length);
+ */
+ILBool _IL_FileMethods_Lock(ILExecThread *_thread, ILNativeInt handle,
+							ILInt64 position, ILInt64 length)
+{
+	return (ILBool)(ILSysIOLock((ILSysIOHandle)handle, position, length));
+}
+
+/*
+ * public static bool Unlock(IntPtr handle, long position, long length);
+ */
+ILBool _IL_FileMethods_Unlock(ILExecThread *_thread, ILNativeInt handle,
+							  ILInt64 position, ILInt64 length)
+{
+	return (ILBool)(ILSysIOUnlock((ILSysIOHandle)handle, position, length));
+}
+
+/*
  * public static Errno GetErrno();
  */
 ILInt32 _IL_FileMethods_GetErrno(ILExecThread *thread)

@@ -147,6 +147,16 @@ int ILSysIOFlushWrite(ILSysIOHandle handle);
 int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn);
 
 /*
+ * Lock a region of a file.
+ */
+int ILSysIOLock(ILSysIOHandle handle, ILInt64 position, ILInt64 length);
+
+/*
+ * Unlock a region of a file.
+ */
+int ILSysIOUnlock(ILSysIOHandle handle, ILInt64 position, ILInt64 length);
+
+/*
  * Determine if it is possible to perform asynchronous I/O operations.
  */
 int ILSysIOHasAsync(void);

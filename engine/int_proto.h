@@ -465,13 +465,13 @@ extern ILInt32 _IL_StackFrame_InternalGetTotalFrames(ILExecThread * _thread);
 extern ILInt32 _IL_DirMethods_CreateDirectory(ILExecThread * _thread, ILString * _p1);
 extern ILString * _IL_DirMethods_GetSystemDirectory(ILExecThread * _thread);
 extern System_Array * _IL_DirMethods_GetLogicalDrives(ILExecThread * _thread);
-extern ILString * _IL_DirMethods_GetCurrentDirectory(ILExecThread * _thread);
 extern void _IL_DirMethods_GetPathInfo(ILExecThread * _thread, void * _result);
 extern ILInt32 _IL_DirMethods_Delete(ILExecThread * _thread, ILString * _p1);
 extern ILInt32 _IL_DirMethods_GetCreationTime(ILExecThread * _thread, ILString * _p1, ILInt64 * create_time);
 extern ILInt32 _IL_DirMethods_GetLastAccess(ILExecThread * _thread, ILString * _p1, ILInt64 * lastac);
 extern ILInt32 _IL_DirMethods_GetLastModification(ILExecThread * _thread, ILString * _p1, ILInt64 * last_mod);
 extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread, ILString * _p1, System_Array * * files);
+extern ILString * _IL_DirMethods_GetCurrentDirectory(ILExecThread * _thread);
 extern ILInt32 _IL_DirMethods_ChangeDirectory(ILExecThread * _thread, ILString * _p1);
 extern ILInt32 _IL_DirMethods_Rename(ILExecThread * _thread, ILString * _p1, ILString * _p2);
 
@@ -518,6 +518,8 @@ extern ILBool _IL_FileMethods_Write(ILExecThread * _thread, ILNativeInt _p1, Sys
 extern ILBool _IL_FileMethods_FlushWrite(ILExecThread * _thread, ILNativeInt _p1);
 extern ILInt32 _IL_FileMethods_Read(ILExecThread * _thread, ILNativeInt _p1, System_Array * _p2, ILInt32 _p3, ILInt32 _p4);
 extern ILBool _IL_FileMethods_SetLength(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2);
+extern ILBool _IL_FileMethods_Lock(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2, ILInt64 _p3);
+extern ILBool _IL_FileMethods_Unlock(ILExecThread * _thread, ILNativeInt _p1, ILInt64 _p2, ILInt64 _p3);
 extern ILNativeInt _IL_FileMethods_GetInvalidHandle(ILExecThread * _thread);
 extern ILInt32 _IL_FileMethods_GetFileType(ILExecThread * _thread, ILString * _p1);
 extern ILInt32 _IL_FileMethods_SetCreationTime(ILExecThread * _thread, ILString * _p1, ILInt64 _p2);

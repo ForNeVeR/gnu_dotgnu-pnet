@@ -2223,13 +2223,13 @@ IL_METHOD_BEGIN(DirMethods_Methods)
 	IL_METHOD("CreateDirectory", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_CreateDirectory, marshal_ipp)
 	IL_METHOD("GetSystemDirectory", "()oSystem.String;", _IL_DirMethods_GetSystemDirectory, marshal_pp)
 	IL_METHOD("GetLogicalDrives", "()[oSystem.String;", _IL_DirMethods_GetLogicalDrives, marshal_pp)
-	IL_METHOD("GetCurrentDirectory", "()oSystem.String;", _IL_DirMethods_GetCurrentDirectory, marshal_pp)
 	IL_METHOD("GetPathInfo", "()vPlatform.PathInfo;", _IL_DirMethods_GetPathInfo, marshal_vpp)
 	IL_METHOD("Delete", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Delete, marshal_ipp)
 	IL_METHOD("GetCreationTime", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetCreationTime, marshal_ippp)
 	IL_METHOD("GetLastAccess", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetLastAccess, marshal_ippp)
 	IL_METHOD("GetLastModification", "(oSystem.String;&l)vPlatform.Errno;", _IL_DirMethods_GetLastModification, marshal_ippp)
 	IL_METHOD("GetFilesInDirectory", "(oSystem.String;&[vPlatform.InternalFileInfo;)vPlatform.Errno;", _IL_DirMethods_GetFilesInDirectory, marshal_ippp)
+	IL_METHOD("GetCurrentDirectory", "()oSystem.String;", _IL_DirMethods_GetCurrentDirectory, marshal_pp)
 	IL_METHOD("ChangeDirectory", "(oSystem.String;)vPlatform.Errno;", _IL_DirMethods_ChangeDirectory, marshal_ipp)
 	IL_METHOD("Rename", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_DirMethods_Rename, marshal_ippp)
 IL_METHOD_END
@@ -2410,6 +2410,15 @@ static void marshal_bpjl(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_bpjll(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt, ILInt64, ILInt64))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt64 *)(avalue[2])), *((ILInt64 *)(avalue[3])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_jp(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeUInt *)rvalue) = (*(ILNativeUInt (*)(void *))fn)(*((void * *)(avalue[0])));
@@ -2441,6 +2450,8 @@ IL_METHOD_BEGIN(FileMethods_Methods)
 	IL_METHOD("FlushWrite", "(j)Z", _IL_FileMethods_FlushWrite, marshal_bpj)
 	IL_METHOD("Read", "(j[Bii)i", _IL_FileMethods_Read, marshal_ipjpii)
 	IL_METHOD("SetLength", "(jl)Z", _IL_FileMethods_SetLength, marshal_bpjl)
+	IL_METHOD("Lock", "(jll)Z", _IL_FileMethods_Lock, marshal_bpjll)
+	IL_METHOD("Unlock", "(jll)Z", _IL_FileMethods_Unlock, marshal_bpjll)
 	IL_METHOD("GetInvalidHandle", "()j", _IL_FileMethods_GetInvalidHandle, marshal_jp)
 	IL_METHOD("GetFileType", "(oSystem.String;)vPlatform.FileType;", _IL_FileMethods_GetFileType, marshal_ipp)
 	IL_METHOD("SetCreationTime", "(oSystem.String;l)vPlatform.Errno;", _IL_FileMethods_SetCreationTime, marshal_ippl)

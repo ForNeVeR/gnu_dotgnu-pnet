@@ -1,4 +1,10 @@
 
+2003-08-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_file.c,
+	include/il_sysio.h, support/file.c: stub out the internalcalls
+	for "FileMethods.Lock" and "FileMethods.Unlock".
+
 2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/pecoff_loader.c (MemoryRead): reversed test, causing segv

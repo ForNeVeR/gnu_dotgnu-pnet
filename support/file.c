@@ -405,6 +405,18 @@ int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)
 #endif
 }
 
+int ILSysIOLock(ILSysIOHandle handle, ILInt64 position, ILInt64 length)
+{
+	/* Locking is not yet supported - TODO */
+	return 1;
+}
+
+int ILSysIOUnlock(ILSysIOHandle handle, ILInt64 position, ILInt64 length)
+{
+	/* Locking is not yet supported - TODO */
+	return 1;
+}
+
 int ILSysIOHasAsync(void)
 {
 	/* TODO: asynchronous I/O is not yet supported */

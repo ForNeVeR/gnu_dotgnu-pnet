@@ -5,6 +5,10 @@
 scripts to detect the thread model that will be used by "libgc" so that
 other parts of the system can adapt to the same thread model.
 
+* engine/engine.h, engine/lib_type.c, engine/process.c: implement
+"_ILClrToObject" and "_ILClrFromObject" to handle reflecting image
+program items to and from CLR objects.
+
 2001-12-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_valil.c: validate custom attributes.

@@ -56,6 +56,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->outOfMemoryObject = 0;
 	ILGetCurrTime(&(process->startTime));
 	process->internHash = 0;
+	process->reflectionHash = 0;
 	process->loadedModules = 0;
 	process->entryImage = 0;
 
@@ -108,6 +109,10 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Destroy the main part of the intern'ed hash table.
 	   The rest will be cleaned up by the garbage collector */
 	ILGCFreePersistent(process->internHash);
+
+	/* Destroy the main part of the reflection hash table.
+	   The rest will be cleaned up by the garbage collector */
+	ILGCFreePersistent(process->reflectionHash);
 
 	/* Destroy the loaded module list */
 	loaded = process->loadedModules;

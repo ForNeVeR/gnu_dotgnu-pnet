@@ -224,16 +224,102 @@ ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type)
 	}
 }
 
+/*
+ * Hash table entry information for a reflection mapping.
+ */
+#define	IL_REFLECTION_HASH_SIZE		512
+typedef struct _tagILClrHash ILClrHash;
+struct _tagILClrHash
+{
+	ILObject   *object;
+	ILClrHash  *next;
+
+};
+
 ILObject *_ILClrToObject(ILExecThread *thread, void *item, const char *name)
 {
-	/* TODO */
-	return 0;
+	ILUInt32 hash;
+	ILClrHash *entry;
+	ILClrHash *newEntry;
+	ILClass *classInfo;
+	ILObject *object;
+
+	/* Create the reflection hash table */
+	if(!(thread->process->reflectionHash))
+	{
+		thread->process->reflectionHash =
+			ILGCAllocPersistent(sizeof(ILClrHash) * IL_REFLECTION_HASH_SIZE);
+		if(!(thread->process->reflectionHash))
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+	}
+
+	/* Compute the hash value for the item */
+	hash = ILProgramItem_Token((ILProgramItem *)item);
+	hash = ((hash + (hash >> 20)) & (IL_REFLECTION_HASH_SIZE - 1));
+
+	/* Look for an object that is already mapped to the item */
+	entry = &(((ILClrHash *)(thread->process->reflectionHash))[hash]);
+	while(entry != 0)
+	{
+		if(entry->object != 0 &&
+		   ((System_Reflection *)(entry->object))->privateData == item)
+		{
+			return entry->object;
+		}
+		entry = entry->next;
+	}
+
+	/* Construct a new object of the class "name" to hold the item */
+	classInfo = ILExecThreadLookupClass(thread, name);
+	if(!classInfo)
+	{
+		return 0;
+	}
+	object = _ILEngineAllocObject(thread, classInfo);
+	if(!object)
+	{
+		return 0;
+	}
+	((System_Reflection *)object)->privateData = item;
+
+	/* Add the object to the reflection hash */
+	entry = &(((ILClrHash *)(thread->process->reflectionHash))[hash]);
+	if(entry->object == 0)
+	{
+		/* The main table slot is free, so put the object there */
+		entry->object = object;
+	}
+	else
+	{
+		/* We need an overflow entry for the item */
+		newEntry = (ILClrHash *)ILGCAlloc(sizeof(ILClrHash));
+		if(!newEntry)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		newEntry->object = object;
+		newEntry->next = entry->next;
+		entry->next = newEntry;
+	}
+
+	/* Return the reflected object to the caller */
+	return object;
 }
 
 void *_ILClrFromObject(ILExecThread *thread, ILObject *object)
 {
-	/* TODO */
-	return 0;
+	if(object)
+	{
+		return ((System_Reflection *)object)->privateData;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 ILObject *_ILGetTypeFromImage(ILExecThread *thread,

@@ -103,6 +103,9 @@ struct _tagILExecProcess
 	/* Hash table that contains all intern'ed strings within the system */
 	void		   *internHash;
 
+	/* Hash table that maps program items to reflection objects */
+	void		   *reflectionHash;
+
 	/* List of loaded modules for PInvoke methods */
 	ILLoadedModule *loadedModules;
 

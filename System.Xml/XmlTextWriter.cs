@@ -484,6 +484,7 @@ public class XmlTextWriter : XmlWriter
 					writer.Write(quoteChar);
 					WriteQuotedString(scope.xmlns);
 					writer.Write(quoteChar);
+					needPrefixDecl = false;
 				}
 
 				// Terminate the element.

@@ -4,6 +4,12 @@
 	* I18N/Common/ByteEncoding.cs: missing "++" when converting strings
 	(Gonzalo Paniagua Javier <gonzalo@ximian.com>).
 
+	* runtime/System/Reflection/ClrConstructor.cs,
+	runtime/System/Reflection/ClrField.cs,
+	runtime/System/Reflection/ClrMethod.cs,
+	runtime/System/Reflection/ClrProperty.cs: implement "ToString()"
+	for the method, field, constructor, and property reflection types.
+
 2002-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/DateTime.cs: change to "DateToTicks" to correct

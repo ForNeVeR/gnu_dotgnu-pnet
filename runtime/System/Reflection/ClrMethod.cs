@@ -24,6 +24,7 @@ namespace System.Reflection
 
 using System;
 using System.Globalization;
+using System.Text;
 using System.Runtime.CompilerServices;
 
 internal sealed class ClrMethod : MethodInfo, IClrProgramItem
@@ -170,6 +171,31 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 			}
 
 #endif // !ECMA_COMPAT
+
+	// Convert the method name into a string.
+	public override String ToString()
+			{
+				StringBuilder builder = new StringBuilder();
+				int numParams = ClrHelpers.GetNumParameters(privateData);
+				int param;
+				ParameterInfo paramInfo;
+				builder.Append(ReturnType.FullName);
+				builder.Append(' ');
+				builder.Append(Name);
+				builder.Append('(');
+				for(param = 0; param < numParams; ++param)
+				{
+					if(param > 0)
+					{
+						builder.Append(", ");
+					}
+					paramInfo = ClrHelpers.GetParameterInfo
+						(this, this, param + 1);
+					builder.Append(paramInfo.ParameterType.Name);
+				}
+				builder.Append(')');
+				return builder.ToString();
+			}
 
 }; // class ClrMethod
 

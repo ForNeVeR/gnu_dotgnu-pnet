@@ -23,6 +23,7 @@ namespace System.Reflection
 {
 
 using System;
+using System.Text;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -132,6 +133,17 @@ internal sealed class ClrField : FieldInfo, IClrProgramItem
 			(TypedReference obj, Object value);
 
 #endif // !ECMA_COMPAT
+
+	// Convert the field name into a string.
+	public override String ToString()
+			{
+				StringBuilder builder = new StringBuilder();
+				ParameterInfo paramInfo;
+				builder.Append(FieldType.ToString());
+				builder.Append(' ');
+				builder.Append(Name);
+				return builder.ToString();
+			}
 
 }; // class ClrField
 

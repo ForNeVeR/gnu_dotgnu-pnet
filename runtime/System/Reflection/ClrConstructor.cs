@@ -23,6 +23,7 @@ namespace System.Reflection
 {
 
 using System;
+using System.Text;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -159,6 +160,30 @@ internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 			}
 
 #endif // !ECMA_COMPAT
+
+	// Convert the constructor name into a string.
+	public override String ToString()
+			{
+				StringBuilder builder = new StringBuilder();
+				int numParams = ClrHelpers.GetNumParameters(privateData);
+				int param;
+				ParameterInfo paramInfo;
+				builder.Append("Void ");
+				builder.Append(Name);
+				builder.Append('(');
+				for(param = 0; param < numParams; ++param)
+				{
+					if(param > 0)
+					{
+						builder.Append(", ");
+					}
+					paramInfo = ClrHelpers.GetParameterInfo
+						(this, this, param + 1);
+					builder.Append(paramInfo.ParameterType.Name);
+				}
+				builder.Append(')');
+				return builder.ToString();
+			}
 
 }; // class ClrConstructor
 

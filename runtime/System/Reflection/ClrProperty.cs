@@ -23,6 +23,7 @@ namespace System.Reflection
 {
 
 using System;
+using System.Text;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -279,6 +280,17 @@ internal sealed class ClrProperty : PropertyInfo, IClrProgramItem
 	// Get the type associated with this property item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static Type GetPropertyType(IntPtr item);
+
+	// Convert the property name into a string.
+	public override String ToString()
+			{
+				StringBuilder builder = new StringBuilder();
+				ParameterInfo paramInfo;
+				builder.Append(PropertyType.ToString());
+				builder.Append(' ');
+				builder.Append(Name);
+				return builder.ToString();
+			}
 
 }; // class RuntimePropertyInfo
 

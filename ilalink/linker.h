@@ -27,6 +27,7 @@
 #include "il_program.h"
 #include "il_system.h"
 #include "il_utils.h"
+#include "il_dumpasm.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -145,10 +146,22 @@ ILClass *_ILLinkerMakeTypeRef(ILLibraryFind *find, ILImage *image);
 ILClass *_ILLinkerConvertClassRef(ILLinker *linker, ILClass *classInfo);
 
 /*
+ * Convert a member reference in a foreign image into a
+ * reference in the output image.
+ */
+ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member);
+
+/*
  * Convert a type in a foreign image into a type in
  * the output image.
  */
 ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type);
+
+/*
+ * Convert a synthetic type reference in a foreign image into
+ * a type specification in the output image.
+ */
+ILTypeSpec *_ILLinkerConvertTypeSpec(ILLinker *linker, ILType *type);
 
 /*
  * Convert custom attributes from an old item in a link
@@ -158,11 +171,51 @@ int _ILLinkerConvertAttrs(ILLinker *linker, ILProgramItem *oldItem,
 						  ILProgramItem *newItem);
 
 /*
+ * Convert security declarations from an old item in a link
+ * image, and attach them to a new item in the final image.
+ */
+int _ILLinkerConvertSecurity(ILLinker *linker, ILProgramItem *oldItem,
+						     ILProgramItem *newItem);
+
+/*
+ * Convert all classes from a link image.
+ */
+int _ILLinkerConvertClasses(ILLinker *linker, ILImage *image);
+
+/*
  * Convert a method from a link image into a method underneath
  * a specified new class in the final image.
  */
 int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 						   ILClass *newClass);
+
+/*
+ * Convert a field from a link image into a field underneath
+ * a specified new class in the final image.
+ */
+int _ILLinkerConvertField(ILLinker *linker, ILField *field,
+						  ILClass *newClass);
+
+/*
+ * Convert field marshal and constant data from an old item in a link
+ * image, and attach them to a new item in the final image.
+ */
+int _ILLinkerConvertMarshal(ILLinker *linker, ILProgramItem *oldItem,
+						    ILProgramItem *newItem, int isParam);
+
+/*
+ * Convert a property from a link image into a property underneath
+ * a specified new class in the final image.
+ */
+int _ILLinkerConvertProperty(ILLinker *linker, ILProperty *property,
+						     ILClass *newClass);
+
+/*
+ * Convert an event from a link image into an event underneath
+ * a specified new class in the final image.
+ */
+int _ILLinkerConvertEvent(ILLinker *linker, ILEvent *event,
+						  ILClass *newClass);
 
 #ifdef	__cplusplus
 };

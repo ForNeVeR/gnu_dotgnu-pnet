@@ -1,0 +1,27 @@
+When libgc is compiled under cygwin, GC_CreateThread doesn't
+register the new thread with the GC and instead redirects the
+call directly to the windows CreateThread function.  This
+does not occur if libgc is compiled using ming (e.g. with the
+--no-cygwin compiler flag).  Threads that aren't registered
+with the GC *will* eventaully segfault.  When compiled under
+cygwin, libgc expects you to use pthreads and not windows
+threads.
+
+Portable.Net uses windows threads (and never pthreads) under
+cygwin so the following changes needed to be made to libgc:
+
+configure.in:
+
+	Added AC_DEFINE(GC_DISABLE_CYGWIN_PTHREADS) when
+	a cygwin compile is detected.
+	
+win32_threads.c:
+
+	All checks for CYGWIN32 are changed to checks for
+	CYGWIN32 && !defined(GC_DISABLE_CYGWIN_PTHREADS).
+	
+include/gc.h:
+
+	GC_PTHREADS is defined if GC_WIN32_THREADS and 
+	__CYGWIN32__ are defined but only if
+	GC_DISABLE_CYGWIN_PTHREADS is not defined.

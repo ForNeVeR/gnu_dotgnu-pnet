@@ -1,4 +1,10 @@
 
+2002-12-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/mkint.sh: look in the pnetlib sources for the assemblies
+	to convert, instead of in pnet/samples, since the pre-compiled
+	assemblies in pnet/samples will be going away soon.
+
 2002-12-08  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h,cscc/common/cc_main.c: add noStdlibFlag and 

@@ -4,7 +4,25 @@
 # from the compiled pnetlib assemblies.
 #
 
-DLLS="../samples/mscorlib.dll ../samples/System.dll ../samples/I18N.CJK.dll"
+# Try to locate the pnetlib sources.
+if test -n "$1" ; then
+	if test ! -f "$1/runtime/mscorlib.dll" ; then
+		echo "$0: could not find mscorlib.dll in $1/runtime" 1>&2
+		exit 1
+	fi
+	PNETLIB="$1"
+else
+	if test -f "../../pnetlib/runtime/mscorlib.dll" ; then
+		PNETLIB="../../pnetlib"
+	else
+		echo "Usage: $0 DIR" 1>&2
+		echo "where DIR is the pnetlib source directory" 1>&2
+		exit 1
+	fi
+fi
+
+# Convert the assemblies into the necessary internalcall tables.
+DLLS="$PNETLIB/runtime/mscorlib.dll $PNETLIB/System/System.dll $PNETLIB/I18N/I18N.CJK.dll"
 ../ilnative/ilinternal -p $DLLS >int_proto.h
 ../ilnative/ilinternal -t $DLLS >int_table.c
 exit 0

@@ -43,6 +43,8 @@ methods for "System.Math", "System.Single", and "System.Double".
 
 * include/il_config.h.in: new defines for math-related functions.
 
+* configure.in: detect math-related functions during configuration.
+
 2001-10-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_engine.h, engine/engine.h: remove the thread argument

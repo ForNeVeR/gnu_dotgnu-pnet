@@ -182,6 +182,12 @@ void ILGenOutOfMemory(ILGenInfo *info)
 
 ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 {
+	return ILFindNonSystemType(info, name, "System");
+}
+
+ILType *ILFindNonSystemType(ILGenInfo *info, const char *name,
+							const char *namespace)
+{
 	ILClass *classInfo;
 	ILProgramItem *scope;
 	int sysValueType;
@@ -190,7 +196,7 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 	scope = ILClassGlobalScope(info->image);
 	if(scope)
 	{
-		classInfo = ILClassLookup(scope, name, "System");
+		classInfo = ILClassLookup(scope, name, namespace);
 		if(classInfo)
 		{
 			if(ILClass_IsValueType(classInfo) ||
@@ -209,7 +215,7 @@ ILType *ILFindSystemType(ILGenInfo *info, const char *name)
 	scope = ILClassGlobalScope(info->libImage);
 	if(scope)
 	{
-		classInfo = ILClassLookup(scope, name, "System");
+		classInfo = ILClassLookup(scope, name, namespace);
 		if(classInfo)
 		{
 			sysValueType = (ILClass_IsValueType(classInfo) ||

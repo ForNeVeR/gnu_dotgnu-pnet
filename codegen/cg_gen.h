@@ -168,6 +168,12 @@ void ILGenOutOfMemory(ILGenInfo *info);
 ILType *ILFindSystemType(ILGenInfo *info, const char *name);
 
 /*
+ * Find a type descriptor for something in a non-"System" namespace.
+ */
+ILType *ILFindNonSystemType(ILGenInfo *info, const char *name,
+							const char *namespace);
+
+/*
  * Convert a class reference into a C# type descriptor.
  * This recognises built-in primitive and value types.
  */

@@ -1,1 +1,1 @@
-SUBDIRS = runtime System
+SUBDIRS = runtime System System.Xml

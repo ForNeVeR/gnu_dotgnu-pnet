@@ -202,7 +202,6 @@ public class CryptoTestCase : TestCase
 					Fail("incorrect hash value produced");
 				}
 
-#if false // TODO
 				// Get the hash value over the input via a stream.
 				MemoryStream stream = new MemoryStream(input, false);
 				hash = alg.ComputeHash(stream);
@@ -215,7 +214,6 @@ public class CryptoTestCase : TestCase
 				{
 					Fail("incorrect hash value produced");
 				}
-#endif
 			}
 	protected void RunHash(String name, String value, byte[] expected)
 			{

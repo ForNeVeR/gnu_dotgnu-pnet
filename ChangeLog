@@ -17,11 +17,12 @@
 	repository, as it is causing problems with different versions
 	of automake/autoconf.
 
-	* runtime/System/Array.cs,
-	tests/runtime/System/Security/Cryptography/CryptoTestCase.cs:
-	fix the range-checking code in "Array.Copy" so that zero-length
-	copies at the end of an array actually work the way they are
-	supposed to.
+	* runtime/System/Array.cs: fix the range-checking code in "Array.Copy"
+	so that zero-length copies at the end of an array actually work the
+	way they are supposed to.
+
+	* tests/runtime/System/Security/Cryptography/CryptoTestCase.cs:
+	test "HashAlgorithm.ComputeHash" on streams.
 
 2002-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

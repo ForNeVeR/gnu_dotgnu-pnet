@@ -22,6 +22,12 @@
 	* configure.in: remove "ILRUN_FLAGS" as there is no need to
 	access "pnet/samples/mscorlib.dll" any more.
 
+	* Makefile.am, configure.in, csupport/.cvsignore, csupport/Complex.cs,
+	csupport/Crt0.cs, csupport/FileTable.cs, csupport/LongDouble.cs,
+	csupport/LongJmp.cs, csupport/Makefile.am, csupport/Markers.cs,
+	csupport/README, csupport/csupport.build: move the "csupport"
+	directory from "pnet" to "pnetlib".
+
 2002-12-07  Nguyen, Thong  <tum@veridicus.com>
 
 	* runtime/System/Threading/WaitHandle.cs: Added WaitTimeout const.

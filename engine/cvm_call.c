@@ -44,6 +44,17 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 				} \
 			} while (0)
 
+/*
+ * Restore state information from the thread, except the pc.
+ */
+#define	RESTORE_STATE_FROM_THREAD()	\
+			do { \
+				stacktop = thread->stackTop; \
+				frame = thread->stackBase + thread->frame; \
+				stackbottom = thread->stackBase; \
+				stackmax = thread->stackLimit; \
+			} while (0)
+
 #elif defined(IL_CVM_LOCALS)
 
 ILMethod *methodToCall;
@@ -80,92 +91,113 @@ case COP_CALL_EXTERN:
 	/* Copy the state back into the thread object */
 	COPY_STATE_TO_THREAD();
 
-#if 0
-	ALLOC_CALL_FRAME();
-	callFrame->method = method;
-	callFrame->pc = (ILUInt32)(pc - pcstart + 9);
-	callFrame->frame = (ILUInt32)(frame - stackbottom);
-	method = ILMethod_FromToken(ILProgramItem_Image(method),
-								IL_READ_UINT32(pc + 5));
-	if(!(method->callInfo->pcstart))
+	/* Convert the method */
+	pcstart = _ILConvertMethod(thread, methodToCall);
+	if(!pcstart)
 	{
-		/* Convert the method into CVM code */
+		MISSING_METHOD_EXCEPTION();
 	}
-	pcstart = method->callInfo->pcstart;
 
-	/* Replace this instruction with COP_CALL so that the
-	   direct call can be used the next time we get here */
-	pc[0] = COP_CALL;
-	IL_WRITE_INT32(pc + 1, (ILInt32)(pcstart - pc));
+	/* Patch the instruction stream to call directly next time */
+	if(methodToCall->userData2 == method->userData2)
+	{
+		pc[0] = COP_CALL;
+		tempNum = (ILUInt32)(pcstart - pc);
+		pc[1] = (unsigned char)(tempNum);
+		pc[2] = (unsigned char)(tempNum >> 8);
+		pc[3] = (unsigned char)(tempNum >> 16);
+		pc[4] = (unsigned char)(tempNum >> 24);
+	}
+
+	/* Allocate a new call frame */
+	ALLOC_CALL_FRAME();
+
+	/* Fill in the call frame details */
+	callFrame->method = method;
+	callFrame->pc = thread->pc + 5 + sizeof(void *);
+	callFrame->frame = thread->frame;
+	callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
+
+	/* Restore the state information and jump to the new method */
+	RESTORE_STATE_FROM_THREAD();
 	pc = pcstart;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
+	method = methodToCall;
+}
+break;
+
+case COP_CALL_CTOR:
+{
+	/* Call a constructor that we don't know if it has been converted */
+	methodToCall = (ILMethod *)(ReadPointer(pc + 5));
+
+	/* Copy the state back into the thread object */
+	COPY_STATE_TO_THREAD();
+
+	/* Convert the method */
+	pcstart = _ILConvertMethod(thread, methodToCall);
+	if(!pcstart)
+	{
+		MISSING_METHOD_EXCEPTION();
+	}
+	pcstart -= ILCoderCtorOffset(thread->process->coder);
+
+	/* Patch the instruction stream to call directly next time */
+	if(methodToCall->userData2 == method->userData2)
+	{
+		pc[0] = COP_CALL;
+		tempNum = (ILUInt32)(pcstart - pc);
+		pc[1] = (unsigned char)(tempNum);
+		pc[2] = (unsigned char)(tempNum >> 8);
+		pc[3] = (unsigned char)(tempNum >> 16);
+		pc[4] = (unsigned char)(tempNum >> 24);
+	}
+
+	/* Allocate a new call frame */
+	ALLOC_CALL_FRAME();
+
+	/* Fill in the call frame details */
+	callFrame->method = method;
+	callFrame->pc = thread->pc + 5 + sizeof(void *);
+	callFrame->frame = thread->frame;
+	callFrame->except = IL_MAX_UINT32;	/* Not an exception frame */
+
+	/* Restore the state information and jump to the new method */
+	RESTORE_STATE_FROM_THREAD();
+	pc = pcstart;
+	method = methodToCall;
 }
 break;
 
 case COP_CALL_NATIVE:
 {
 	/* Call a native method */
-#if 0
-	/* Push the call frame */
-	ALLOC_CALL_FRAME();
-	callFrame->method = method;
-	callFrame->pc = (ILUInt32)(pc - pcstart + 5);
-	callFrame->frame = (ILUInt32)(frame - stackbottom);
-
-	/* Determine which native method to call */
-	method = ILMethod_FromToken(ILProgramItem_Image(method),
-								IL_READ_UINT32(pc + 1));
-
-	/* Save the state to the thread object */
-	SAVE_STATE();
-
-	/* Call the native method.  We assume that native
-	   methods can never throw exceptions */
-	CVMCallNative(thread, method);
-
-	/* Restore the state from the thread object */
-	RESTORE_STATE();
-
-	/* Pop the call frame */
-	goto popFrame;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
+	tempNum = pc[1];
+	ffi_call((ffi_cif *)(ReadPointer(pc + 2 + sizeof(void *))),
+	         (void (*)())(ReadPointer(pc + 2)),
+			 (stacktop - tempNum - 1)->ptrValue,
+			 (void **)(stacktop - tempNum));
+	MODIFY_PC_AND_STACK(2 + sizeof(void *) * 2, -(ILInt32)(tempNum + 1));
 }
 break;
 
 case COP_CALL_NATIVE_VOID:
 {
 	/* Call a native method that has no return value */
-#if 0
-	/* Push the call frame */
-	ALLOC_CALL_FRAME();
-	callFrame->method = method;
-	callFrame->pc = (ILUInt32)(pc - pcstart + 5);
-	callFrame->frame = (ILUInt32)(frame - stackbottom);
-
-	/* Determine which native method to call */
-	method = ILMethod_FromToken(ILProgramItem_Image(method),
-								IL_READ_UINT32(pc + 1));
-
-	/* Save the state to the thread object */
-	SAVE_STATE();
-
-	/* Call the native method.  We assume that native
-	   methods can never throw exceptions */
-	CVMCallNative(thread, method);
-
-	/* Restore the state from the thread object */
-	RESTORE_STATE();
-
-	/* Pop the call frame */
-	goto popFrame;
-#endif
-	MODIFY_PC_AND_STACK(1, 0);
+	tempNum = pc[1];
+	ffi_call((ffi_cif *)(ReadPointer(pc + 2 + sizeof(void *))),
+	         (void (*)())(ReadPointer(pc + 2)), 0,
+			 (void **)(stacktop - tempNum));
+	MODIFY_PC_AND_STACK(2 + sizeof(void *) * 2, -(ILInt32)tempNum);
 }
 break;
 
 case COP_CALL_VIRTUAL:
+{
+	MODIFY_PC_AND_STACK(1, 0);
+}
+break;
+
+case COP_CALL_INTERFACE:
 {
 	MODIFY_PC_AND_STACK(1, 0);
 }
@@ -266,6 +298,44 @@ case COP_PUSHDOWN:
 	{
 		STACK_OVERFLOW_EXCEPTION();
 	}
+}
+break;
+
+#elif defined(IL_CVM_WIDE)
+
+case COP_CALL_NATIVE:
+{
+	/* Wide version of "call_native" */
+	tempNum = IL_READ_UINT32(pc + 2);
+	ffi_call((ffi_cif *)(ReadPointer(pc + 6 + sizeof(void *))),
+	         (void (*)())(ReadPointer(pc + 6)),
+			 (stacktop - tempNum - 1)->ptrValue,
+			 (void **)(stacktop - tempNum));
+	MODIFY_PC_AND_STACK(6 + sizeof(void *) * 2, -(ILInt32)(tempNum + 1));
+}
+
+case COP_CALL_NATIVE_VOID:
+{
+	/* Wide version of "call_native_void" */
+	tempNum = IL_READ_UINT32(pc + 2);
+	ffi_call((ffi_cif *)(ReadPointer(pc + 6 + sizeof(void *))),
+	         (void (*)())(ReadPointer(pc + 6)), 0,
+			 (void **)(stacktop - tempNum));
+	MODIFY_PC_AND_STACK(6 + sizeof(void *) * 2, -(ILInt32)tempNum);
+}
+break;
+
+case COP_CALL_VIRTUAL:
+{
+	/* Wide version of "call_virtual" */
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
+case COP_CALL_INTERFACE:
+{
+	/* Wide version of "call_interface" */
+	MODIFY_PC_AND_STACK(2, 0);
 }
 break;
 

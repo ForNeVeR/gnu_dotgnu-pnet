@@ -271,6 +271,8 @@ static ILImage *ResolveAssembly(ILExecThread *thread,
 	ILInt32 posn;
 	ILString *str;
 	char *utf8;
+	ILImage *image ;
+	ILInt32 error;
 
 	/* Extract the assembly name, ignoring version and key information
 	   which are unlikely to ever be the same between different CLI's */
@@ -299,7 +301,22 @@ static ILImage *ResolveAssembly(ILExecThread *thread,
 	}
 
 	/* Look for an image with a matching assembly name */
-	return ILContextGetAssembly(thread->process->context, utf8);
+	image = ILContextGetAssembly(thread->process->context, utf8);
+
+	if(image != NULL)
+	{
+		return image;
+	}
+
+	error = ILImageLoadAssembly(utf8, thread->process->context, 
+									_ILClrCallerImage(thread),
+									&image);
+	if(error == 0)
+	{
+		return image;
+	}
+
+	return NULL;
 }
 
 ILObject *_ILGetTypeFromImage(ILExecThread *thread,

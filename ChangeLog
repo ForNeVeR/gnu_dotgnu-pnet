@@ -7,6 +7,9 @@
 	* engine/lib_type.c: Roll back last patch as it was the opposite
 	order as per specification .
 
+	* engine/lib_type.c: Load the referenced assembly if it is not
+	already loaded in the context.
+
 2004-04-28  Ilyak Kasnacheev  <ilyak@office.uw.ru>
 
 	* image/link.c : Remap a few more gtk# related dll references.

@@ -3,6 +3,8 @@
 
 	* samples/mscorlib.dll: latest version with cryptography classes.
 
+	* cscc/csharp/cs_grammar.y: fix nesting level detection for delegates.
+
 2002-07-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_crypt.c,

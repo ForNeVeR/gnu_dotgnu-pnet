@@ -3522,7 +3522,7 @@ DelegateDeclaration
 				ILUInt32 attrs;
 
 				/* Validate the modifiers */
-				attrs = CSModifiersToDelegateAttrs($5, $2, (NestingLevel > 1));
+				attrs = CSModifiersToDelegateAttrs($5, $2, (NestingLevel > 0));
 
 				/* Make sure that we have "MulticastDelegate"
 				   in the base list */

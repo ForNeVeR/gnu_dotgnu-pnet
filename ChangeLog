@@ -59,6 +59,9 @@ new coder API called "SetupExternCtor".
 
 * engine/convert.c: add conversion support for allocation constructors.
 
+* engine/cvm.h: add the "call_ctor", "call_interface", and "new_value"
+instructions.
+
 2001-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/hashtab.c, support/Makefile.am:

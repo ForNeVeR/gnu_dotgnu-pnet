@@ -292,25 +292,28 @@ extern	"C" {
  */
 #define	COP_CALL					0xCB
 #define	COP_CALL_EXTERN				0xCC
-#define	COP_CALL_NATIVE				0xCD
-#define	COP_CALL_NATIVE_VOID		0xCE
-#define	COP_CALL_VIRTUAL			0xCF
-#define	COP_RETURN					0xD0
-#define	COP_RETURN_1				0xD1
-#define	COP_RETURN_2				0xD2
-#define	COP_RETURN_N				0xD3
-#define	COP_JSR						0xD4
-#define	COP_RET_JSR					0xD5
-#define	COP_PUSH_THREAD				0xD6
-#define	COP_PUSHDOWN				0xD7
+#define	COP_CALL_CTOR				0xCD
+#define	COP_CALL_NATIVE				0xCE
+#define	COP_CALL_NATIVE_VOID		0xCF
+#define	COP_CALL_VIRTUAL			0xD0
+#define	COP_CALL_INTERFACE			0xD1
+#define	COP_RETURN					0xD2
+#define	COP_RETURN_1				0xD3
+#define	COP_RETURN_2				0xD4
+#define	COP_RETURN_N				0xD5
+#define	COP_JSR						0xD6
+#define	COP_RET_JSR					0xD7
+#define	COP_PUSH_THREAD				0xD8
+#define	COP_PUSHDOWN				0xD9
 
 /*
  * Class-related opcodes.
  */
-#define	COP_CASTCLASS				0xD8
-#define	COP_ISINST					0xD9
-#define	COP_GET_STATIC				0xDA
-#define	COP_NEW						0xDB
+#define	COP_CASTCLASS				0xE0
+#define	COP_ISINST					0xE1
+#define	COP_GET_STATIC				0xE2
+#define	COP_NEW						0xE3
+#define	COP_NEW_VALUE				0xE4
 
 /*
  * Make the next instruction wider.

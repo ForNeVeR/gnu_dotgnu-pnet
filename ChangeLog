@@ -1,4 +1,8 @@
 
+2003-06-17  James Michael DuPont  <mdupont777@yahoo.com>
+
+	* doc/cvm.dtd: DTD file for the CVM opcode definitions.
+
 2003-06-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,

@@ -22,7 +22,7 @@
 
 namespace System.Drawing.Drawing2D
 {
-	public class PathGradientBrush
+	public class PathGradientBrush : Brush
 	{
 		[TODO]
 		public PathGradientBrush(GraphicsPath path)
@@ -168,7 +168,7 @@ namespace System.Drawing.Drawing2D
 		}
 
 		[TODO]
-		public override object Clone()
+		public override Object Clone()
 		{
 			throw new NotImplementedException("Clone");
 		}

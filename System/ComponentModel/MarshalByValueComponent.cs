@@ -32,7 +32,6 @@ namespace System.ComponentModel
 		[TODO]
 		public MarshalByValueComponent()
 		{
-			throw new NotImplementedException(".ctor");
 		}
 
 		[TODO]

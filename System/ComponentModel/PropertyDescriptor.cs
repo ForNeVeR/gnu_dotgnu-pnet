@@ -30,10 +30,15 @@ using System.Runtime.InteropServices;
 
 [TODO]
 [ComVisible(true)]
-public class PropertyDescriptor : MemberDescriptor
+public abstract class PropertyDescriptor : MemberDescriptor
 {
 	// TODO
 	public PropertyDescriptor(String name) : base(name) {}
+	
+	public PropertyDescriptor(String name, Attribute[] attrs) : base(name) {}
+
+	protected PropertyDescriptor(MemberDescriptor desc, Attribute[] attrs) 
+				: base(desc) {}
 
 }; // class PropertyDescriptor
 

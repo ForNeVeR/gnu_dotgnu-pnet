@@ -1,4 +1,12 @@
 
+2003-05-27  Gopal.V  <gopalv82@symonds.net>
+	
+	* System/ComponentModel/PropertyDescriptor.cs: Stub out a bit more
+	for compatibility.
+
+	* System/ComponentModel/MarshalByValueComponent.cs: Remove the exception
+	in constructor.
+
 2003-05-26  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/WebClient.cs: Implement MIME based file uploads using

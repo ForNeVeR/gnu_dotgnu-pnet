@@ -401,6 +401,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 							(_("Reflection_InvokeAttr"));
 					}
 					types = MemberTypes.Constructor;
+					invokeAttr |= BindingFlags.DeclaredOnly;
 					name = ".ctor";
 					if(target != null)
 					{

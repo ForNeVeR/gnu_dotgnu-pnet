@@ -18,6 +18,10 @@
 	* runtime/System/Text/UnicodeEncoding.cs: bug fix - the preamble
 	for "UnicodeEncoding" should be zero if byte order marks are disabled.
 
+	* runtime/System/Reflection/ClrType.cs (InvokeMember): add the
+	"DeclaredOnly" flag to constructor lookups to prevent it finding
+	constructors in parent classes.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/.cvsignore, runtime/System/Text/ByteEncoding.cs,

@@ -12,6 +12,7 @@ AC_SUBST(CSHARP_PLUGIN)
 AC_SUBST(CSCC_FLAGS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
+AC_SUBST(RESGEN_LATIN1)
 AC_SUBST(ILRUN)
 AC_SUBST(ILFIND)
 AC_SUBST(ASSEMBLY_LINKER)
@@ -197,10 +198,12 @@ fi
 dnl Determine which version of RESGEN we are using (Portable.NET or Microsoft).
 RESGEN_ERROR=`"$RESGEN" -v.txt 2>&1`
 case "$RESGEN_ERROR" in
-  RESGEN*) RESGEN_FLAGS="-tR" ;;
-        *) RESGEN_FLAGS="" ;;
+  RESGEN*) RESGEN_FLAGS="-tR"
+  		   RESGEN_LATIN1="-l" ;;
+        *) RESGEN_FLAGS="/compile"
+		   RESGEN_LATIN1="" ;;
 esac
-AM_CONDITIONAL(PNET_RESGEN, test "$RESGEN_FLAGS" != "")
+AM_CONDITIONAL(PNET_RESGEN, test "$RESGEN_LATIN1" != "")
 
 dnl Find the Portable.NET runtime engine.
 AC_PATH_PROG(ILRUN, ilrun,, $PNET_PATH/engine:${prefix}/bin:$PATH)
@@ -375,10 +378,16 @@ resources/en_US/System.Drawing/Makefile
 resources/en_US/System.Windows.Forms/Makefile
 resources/en_US/Basic/Makefile
 resources/de_DE/Makefile
-resources/de_DE/runtime/Makefile
+resources/de_DE/Basic/Makefile 
 resources/de_DE/I18N/Makefile
 resources/de_DE/System/Makefile
+resources/de_DE/System.Configuration.Install/Makefile
+resources/de_DE/System.Drawing/Makefile
+resources/de_DE/System.Windows.Forms/Makefile
 resources/de_DE/System.Xml/Makefile
+resources/de_DE/System.Net.IrDA/Makefile
+resources/de_DE/Xsharp/Makefile
+resources/de_DE/runtime/Makefile
 resources/ca_ES/Makefile
 resources/ca_ES/Basic/Makefile 
 resources/ca_ES/I18N/Makefile

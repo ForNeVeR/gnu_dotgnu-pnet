@@ -1,7 +1,7 @@
 SUFFIXES = .txt .resources
 
 RESOURCEBASE     = System.Windows.Forms
-RESOURCELANGUAGE = ca
+RESOURCELANGUAGE = de
 RESOURCEPARENT   = System.Windows.Forms
 
 RESOURCENAME = $(RESOURCEBASE).$(RESOURCELANGUAGE).resources

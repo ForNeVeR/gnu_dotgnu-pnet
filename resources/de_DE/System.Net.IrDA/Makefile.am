@@ -1,13 +1,13 @@
 SUFFIXES = .txt .resources
 
-RESOURCEBASE     = System.Windows.Forms
-RESOURCELANGUAGE = ca
-RESOURCEPARENT   = System.Windows.Forms
+RESOURCEBASE     = System.Net.IrDA
+RESOURCELANGUAGE = de
+RESOURCEPARENT   = System.Net.IrDA
 
 RESOURCENAME = $(RESOURCEBASE).$(RESOURCELANGUAGE).resources
 RESOURCEDLL  = $(RESOURCEPARENT).resources.dll
 
-RESOURCEFILES = System.Windows.Forms.txt
+RESOURCEFILES = IrDA.txt
 
 resassembliesdir = $(libdir)/cscc/lib/$(RESOURCELANGUAGE)
 resassemblies_DATA = $(RESOURCEDLL)

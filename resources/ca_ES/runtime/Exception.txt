@@ -42,7 +42,8 @@ Exception_FileLoad=No s'ha pogut carregar el arxiu especificat
 Exception_DirNotFound=No s'ha pogut trobar el directori especificat
 Exception_BadImage=El formar del executable o la llibreria son incorrectes
 Exception_Filename=Nom del fitxer: {0}
-Exception_CannotUnloadAD=El intent de descarregar la AppDomain ha Exception_DivZero=S'ha intentat de dividir per 0
+Exception_CannotUnloadAD=El intent de descarregar la AppDomain ha
+Exception_DivZero=S'ha intentat de dividir per 0
 Exception_DuplicateWait=Hi han objectes duplicats en el argument
 Exception_EntryPoint=El punt de entrada no s'ha trobat
 Exception_Engine=Hi ha hagut un error intern

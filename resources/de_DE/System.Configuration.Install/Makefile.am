@@ -1,13 +1,13 @@
 SUFFIXES = .txt .resources
 
-RESOURCEBASE     = System.Windows.Forms
-RESOURCELANGUAGE = ca
-RESOURCEPARENT   = System.Windows.Forms
+RESOURCEBASE     = System.Configuration.Install
+RESOURCELANGUAGE = de
+RESOURCEPARENT   = System.Configuration.Install
 
 RESOURCENAME = $(RESOURCEBASE).$(RESOURCELANGUAGE).resources
 RESOURCEDLL  = $(RESOURCEPARENT).resources.dll
 
-RESOURCEFILES = System.Windows.Forms.txt
+RESOURCEFILES = Installer.txt
 
 resassembliesdir = $(libdir)/cscc/lib/$(RESOURCELANGUAGE)
 resassemblies_DATA = $(RESOURCEDLL)

@@ -1,7 +1,7 @@
 #
-# Cast.txt - Resources for cast errors.
+# IrDA.txt - Resources for IrDA-related errors and exceptions.
 #
-# Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2003  Southern Storm Software, Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-InvalidCast_FromTo=Kann keine Typumwandlung von {0} nach {1} durchfuehren
-InvalidCast_IConvertible=Kann nicht nach IConvertible konvertieren
-InvalidCast_Empty=Kann nicht leere Werte konvertieren
-InvalidCast_DBNull=kann keine DBNull Werte konvertieren
+IrDA_NoDeviceAvailable=Es ist kein IrDA Geraet fuer die Verbindung verfuegbar
+IrDA_NoMatchingDevice=Konnte kein poassendes IrDA Geraet fuer die Verbindung finden
+IrDA_InvalidDeviceID=Ungueltige IrDA Geraet Identifikation
+IrDA_InvalidServiceName=Ungueltiger IrDA Service Name
+IrDA_ListenerNotStarted=Der IrDA listener wurde noch nicht gestarted

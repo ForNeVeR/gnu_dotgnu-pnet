@@ -1,13 +1,13 @@
 SUFFIXES = .txt .resources
 
-RESOURCEBASE     = System.Windows.Forms
-RESOURCELANGUAGE = ca
-RESOURCEPARENT   = System.Windows.Forms
+RESOURCEBASE     = Xsharp
+RESOURCELANGUAGE = de
+RESOURCEPARENT   = Xsharp
 
 RESOURCENAME = $(RESOURCEBASE).$(RESOURCELANGUAGE).resources
 RESOURCEDLL  = $(RESOURCEPARENT).resources.dll
 
-RESOURCEFILES = System.Windows.Forms.txt
+RESOURCEFILES = Xsharp.txt
 
 resassembliesdir = $(libdir)/cscc/lib/$(RESOURCELANGUAGE)
 resassemblies_DATA = $(RESOURCEDLL)

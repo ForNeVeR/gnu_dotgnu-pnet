@@ -25,5 +25,5 @@ Arg_InsufficientSpace=Nicht genug Platz im Array fuer die angegebene Operation
 ArgRange_NonNegative=Wert darf nicht negativ sein
 ArgRange_Array=Array Position oder Laenge ist ausserhalb des gueltigen Bereiches
 ArgRange_StringIndex=String index ist ausserhalb des gueltigen Bereiches
-ArgRange_StringRange=String range ist ausserhalb des gueltigen Bereiches
-NotSupp_MissingCodeTable=Interne code table `{0}' fehlt
+ArgRange_StringRange=String Bereich ist ausserhalb des gueltigen Bereiches
+NotSupp_MissingCodeTable=Interne Code Tabelle `{0}' fehlt

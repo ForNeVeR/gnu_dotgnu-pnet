@@ -1,32 +1,25 @@
 SUFFIXES = .txt .resources
 
-RESOURCENAME = System.resources
+RESOURCEBASE     = System
+RESOURCELANGUAGE = ca
+RESOURCEPARENT   = System
+
+RESOURCENAME = $(RESOURCEBASE).$(RESOURCELANGUAGE).resources
+RESOURCEDLL  = $(RESOURCEPARENT).resources.dll
 
 RESOURCEFILES = Arg.txt \
 				Exception.txt \
 				Invalid.txt \
-				IO.txt \
-				NotSupp.txt
+				IO.txt
 
-noinst_DATA = $(RESOURCENAME)
+resassembliesdir = $(libdir)/cscc/lib/$(RESOURCELANGUAGE)
+resassemblies_DATA = $(RESOURCEDLL)
 
-CLEANFILES = $(RESOURCENAME) tempres.txt
+$(RESOURCEDLL): $(RESOURCENAME)
+	$(SHELL) "$(top_srcdir)/tools/link_res.sh" $(RESOURCEDLL) $(RESOURCENAME) $(RESOURCELANGUAGE)
 
-if PNET_RESGEN
-
-# Portable.NET's resgen can convert multiple input files.
-
-$(RESOURCENAME): $(RESOURCEFILES)
-	"$(RESGEN)" $(RESGEN_FLAGS) $(RESOURCEFILES) $(RESOURCENAME)
-
-else
-
-# Microsoft's resgen can only convert a single input file at a time,
-# so we combine everything into one file and then convert.
+CLEANFILES = $(RESOURCENAME) $(RESOURCEBASE).resources $(RESOURCEDLL) tempres.txt
 
 $(RESOURCENAME): $(RESOURCEFILES)
-	cat $(RESOURCEFILES) >tempres.txt
-	"$(RESGEN)" $(RESGEN_FLAGS) tempres.txt $(RESOURCENAME)
-	rm -f tempres.txt
-
-endif
+	"$(RESGEN)" $(RESGEN_FLAGS) $(RESGEN_LATIN1) \
+			$(RESOURCEFILES) $(RESOURCENAME)

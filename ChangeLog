@@ -8,6 +8,10 @@
 	JScript/Makefile.am: use "INSTALL_SCRIPT" instead of "INSTALL_PROGRAM"
 	in several places (pancake <sergipop@mx3.redestb.es>).
 
+	* configure.in, resources/ca_ES/*, resources/de_DE/*: update the
+	Catalan and German resources; use the "-l" option to resgen when
+	building Latin-1 resources.
+
 2003-10-18  Adam Ballai  <adam@thefrontnetworks.net>
 
 	* resources/ca_ES/Xsharp/Makefile.am,

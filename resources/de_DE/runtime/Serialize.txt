@@ -20,3 +20,16 @@
 Serialize_NoObjectID=Kein Objektbezeichner wurd zugeteilt
 Serialize_BadType=Unzulaessiger Typ fuer SerializationInfo.AddValue angegeben
 Serialize_AlreadyPresent=Der angegebene Name ist bereits vorhanden
+Serialize_NotField=Member Descriptor ist kein FieldInfo Object
+Serialize_NotClrType=Angegebner Typ ist kein Typ der Laufzeitumgebung
+Serialize_MemberDataMismatch=Member und Daten Arrays haben unterschiedliche Laenge
+Serialize_BadObjectID=Ingueltiger Objekt identifier
+Serialize_AlreadyRegistered=Der angegebene Objekt identifier wurd bereits mit einem anderen Objekt registriert
+Serialize_MissingFixup=Fehlender fixup waehrend des deseralisierungs Prozesses
+Serialize_BadFixup=Der Fixup konnte nicht angewendet werden
+Serialize_StateMissing=Einige der benoetigten serialisierungs Stati fehlen
+Serialize_KeyValueMismatch=Das Schluessel- und das Wert Array fuer die Hash Tabellen haben unterschiedliche Groesse
+Serialize_UnknownAssembly=Unbekannte Assembly angegeben
+Serialize_DelegateTargetMismatch=Das Delegate Ziel entspricht nicht dem erwarteten Typ
+Serialize_DelegateNotPublic=Die Delegaten Methode ist nicht public
+Serialize_CannotSerialize=Kann {0} nicht serialisieren

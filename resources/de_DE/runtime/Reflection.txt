@@ -37,3 +37,4 @@ Reflection_GetField=Ungueltige Argumente fuer GetField Anfrage
 Reflection_SetField=Ungueltige Argumente fuer SetField Anfrage
 Reflection_InvalidArgs=Ungueltige Argumente an die member invocation
 Reflection_ParamName=Ungueltiger Parameter Name in Argumenten an die member invocation
+Reflection_UnknownField=Der angegebene Feld Namen ist unbekannt

@@ -20,3 +20,9 @@
 Exception_Web=Waehrend einer Internet-bezogenen Operation trat ein Fehler auf
 Exception_Protocol=Protokollfehler aufgetreten
 Exception_Disposed=Diese Instanz wurde abgeschafft
+Exception_InvalidEnum=Ungueltiger Aufzaehlungswert fuer den Parameter
+Exception_Checkout=Ein Felher ist beim Versuch eine Datei auszuchecken aufgetreten
+Exception_CheckoutCanceled=Eine Auscheak Operation wurde abgebrochen
+Exception_BufferOverflow=Es ist ein interner Puffer Ueberlauf aufgetreten
+Exception_License=Es wurden ungueltige Lizenzinformationen angegeben
+Exception_Cookie=Das angegebene Cookie konnte dem Container nicht hinzugefuegt werden

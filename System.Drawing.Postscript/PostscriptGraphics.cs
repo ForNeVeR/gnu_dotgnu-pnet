@@ -205,6 +205,11 @@ internal class PostscriptGraphics : ToolkitGraphicsBase
 				// TODO
 			}
 
+	protected override void Dispose(bool disposing)
+			{
+				// Nothing to do.
+			}
+
 }; // class PostscriptGraphics
 
 }; // namespace System.Drawing.Toolkit

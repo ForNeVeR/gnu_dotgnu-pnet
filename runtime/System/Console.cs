@@ -609,7 +609,6 @@ public sealed class Console
 			}
 
 	// Enable the "special" character-at-a-time input mode on the console.
-	[TODO]
 	private static void SpecialMode()
 			{
 				lock(typeof(Console))
@@ -625,7 +624,8 @@ public sealed class Console
 						{
 							Stdio.SetConsoleMode(Stdio.MODE_CBREAK);
 						}
-						// TODO: fetch the default attribute values.
+						defaultAttrs = Stdio.GetTextAttributes();
+						currentAttrs = defaultAttrs;
 					}
 				}
 			}
@@ -635,14 +635,22 @@ public sealed class Console
 			{
 				Beep(800, 200);
 			}
-	[TODO]
 	public static void Beep(int frequency, int duration)
 			{
-				// TODO: pass the frequency and duration to the engine.
+				if(frequency < 37 || frequency > 32767)
+				{
+					throw new ArgumentOutOfRangeException
+						("frequency", _("ArgRange_BeepFrequency"));
+				}
+				if(duration <= 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("duration", _("ArgRange_PositiveNonZero"));
+				}
 				lock(typeof(Console))
 				{
 					SpecialMode();
-					Stdio.Beep();
+					Stdio.Beep(frequency, duration);
 				}
 			}
 
@@ -666,6 +674,8 @@ public sealed class Console
 						{
 							Stdio.SetConsoleMode(Stdio.MODE_CBREAK_ALT);
 						}
+						defaultAttrs = Stdio.GetTextAttributes();
+						currentAttrs = defaultAttrs;
 					}
 					Stdio.Clear();
 				}
@@ -681,7 +691,6 @@ public sealed class Console
 							   targetLeft, targetTop, ' ',
 							   ForegroundColor, BackgroundColor);
 			}
-	[TODO]
 	public static void MoveBufferArea(int sourceLeft, int sourceTop,
 									  int sourceWidth, int sourceHeight,
 									  int targetLeft, int targetTop,
@@ -689,7 +698,58 @@ public sealed class Console
 									  ConsoleColor sourceForeColor,
 									  ConsoleColor sourceBackColor)
 			{
-				// TODO
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					int width, height;
+					Stdio.GetBufferSize(out width, out height);
+					if(sourceLeft < 0 || sourceLeft >= width)
+					{
+						throw new ArgumentOutOfRangeException
+							("sourceLeft", _("ArgRange_XCoordinate"));
+					}
+					if(sourceTop < 0 || sourceTop >= height)
+					{
+						throw new ArgumentOutOfRangeException
+							("sourceTop", _("ArgRange_YCoordinate"));
+					}
+					if(sourceWidth < 0 || (sourceLeft + sourceWidth) > width)
+					{
+						throw new ArgumentOutOfRangeException
+							("sourceWidth", _("ArgRange_Width"));
+					}
+					if(sourceHeight < 0 || (sourceTop + sourceHeight) > height)
+					{
+						throw new ArgumentOutOfRangeException
+							("sourceHeight", _("ArgRange_Height"));
+					}
+					if(targetLeft < 0 || targetLeft >= width)
+					{
+						throw new ArgumentOutOfRangeException
+							("targetLeft", _("ArgRange_XCoordinate"));
+					}
+					if(targetTop < 0 || targetTop >= height)
+					{
+						throw new ArgumentOutOfRangeException
+							("targetTop", _("ArgRange_YCoordinate"));
+					}
+					if((((int)sourceForeColor) & ~0x0F) != 0)
+					{
+						throw new ArgumentException
+							(_("Arg_InvalidColor"), "sourceForeColor");
+					}
+					if((((int)sourceBackColor) & ~0x0F) != 0)
+					{
+						throw new ArgumentException
+							(_("Arg_InvalidColor"), "sourceBackColor");
+					}
+					Stdio.MoveBufferArea(sourceLeft, sourceTop,
+										 sourceWidth, sourceHeight,
+										 targetLeft, targetTop,
+										 sourceChar,
+										 ((int)(sourceForeColor)) |
+										 (((int)(sourceBackColor)) << 4));
+				}
 			}
 
 	// Read a key from the console.  If "intercept" is "false",
@@ -743,38 +803,102 @@ public sealed class Console
 			}
 
 	// Set the buffer size.
-	[TODO]
 	public static void SetBufferSize(int width, int height)
-			{
-				// TODO
-			}
-
-	// Set the cursor position.
-	public static void SetCursorPosition(int x, int y)
 			{
 				lock(typeof(Console))
 				{
 					SpecialMode();
-					Stdio.SetCursorPosition(x, y);
+					int wleft, wtop, wwidth, wheight;
+					Stdio.GetWindowSize
+						(out wleft, out wtop, out wwidth, out wheight);
+					if(width <= 0 || width > 32767 || width < (wleft + wwidth))
+					{
+						throw new ArgumentOutOfRangeException
+							("width", _("ArgRange_Width"));
+					}
+					if(height <= 0 || height > 32767 ||
+					   height < (wtop + wheight))
+					{
+						throw new ArgumentOutOfRangeException
+							("height", _("ArgRange_Height"));
+					}
+					Stdio.SetBufferSize(width, height);
+				}
+			}
+
+	// Set the cursor position.
+	public static void SetCursorPosition(int left, int top)
+			{
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					int width, height;
+					Stdio.GetBufferSize(out width, out height);
+					if(left < 0 || left >= width)
+					{
+						throw new ArgumentOutOfRangeException
+							("left", _("ArgRange_XCoordinate"));
+					}
+					if(top < 0 || top >= height)
+					{
+						throw new ArgumentOutOfRangeException
+							("top", _("ArgRange_YCoordinate"));
+					}
+					Stdio.SetCursorPosition(left, top);
 				}
 			}
 
 	// Set the window position.
-	[TODO]
 	public static void SetWindowPosition(int left, int top)
 			{
-				// TODO
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					int width, height;
+					Stdio.GetBufferSize(out width, out height);
+					int wleft, wtop, wwidth, wheight;
+					Stdio.GetWindowSize
+						(out wleft, out wtop, out wwidth, out wheight);
+					if(left < 0 || (left + wwidth) > width)
+					{
+						throw new ArgumentOutOfRangeException
+							("left", _("ArgRange_XCoordinate"));
+					}
+					if(top < 0 || (left + wheight) > height)
+					{
+						throw new ArgumentOutOfRangeException
+							("left", _("ArgRange_YCoordinate"));
+					}
+					Stdio.SetWindowSize(left, top, wwidth, wheight);
+				}
 			}
 
 	// Set the window size.
-	[TODO]
 	public static void SetWindowSize(int width, int height)
 			{
-				// TODO
+				lock(typeof(Console))
+				{
+					SpecialMode();
+					int bwidth, bheight;
+					Stdio.GetBufferSize(out bwidth, out bheight);
+					int wleft, wtop, wwidth, wheight;
+					Stdio.GetWindowSize
+						(out wleft, out wtop, out wwidth, out wheight);
+					if(width <= 0 || (wleft + width) > bwidth)
+					{
+						throw new ArgumentOutOfRangeException
+							("width", _("ArgRange_Width"));
+					}
+					if(height <= 0 || (wtop + height) > bheight)
+					{
+						throw new ArgumentOutOfRangeException
+							("height", _("ArgRange_Height"));
+					}
+					Stdio.SetWindowSize(wleft, wtop, width, height);
+				}
 			}
 
 	// Console properties.
-	[TODO]
 	public static ConsoleColor BackgroundColor
 			{
 				get
@@ -787,6 +911,11 @@ public sealed class Console
 				}
 				set
 				{
+					if((((int)value) & ~0x0F) != 0)
+					{
+						throw new ArgumentException
+							(_("Arg_InvalidColor"), "value");
+					}
 					lock(typeof(Console))
 					{
 						SpecialMode();
@@ -822,13 +951,15 @@ public sealed class Console
 					}
 				}
 			}
-	[TODO]
 	public static bool CapsLock
 			{
 				get
 				{
-					// TODO
-					return false;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						return ((Stdio.GetLockState() & Stdio.CapsLock) != 0);
+					}
 				}
 			}
 	public static int CursorLeft
@@ -848,17 +979,28 @@ public sealed class Console
 					SetCursorPosition(value, CursorTop);
 				}
 			}
-	[TODO]
 	public static int CursorSize
 			{
 				get
 				{
-					// TODO
-					return 1;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						return Stdio.GetCursorSize();
+					}
 				}
 				set
 				{
-					// TODO
+					if(value < 1 || value > 100)
+					{
+						throw new ArgumentOutOfRangeException
+							("value", _("ArgRange_CursorSize"));
+					}
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						Stdio.SetCursorSize(value);
+					}
 				}
 			}
 	public static int CursorTop
@@ -878,17 +1020,23 @@ public sealed class Console
 					SetCursorPosition(CursorLeft, value);
 				}
 			}
-	[TODO]
 	public static bool CursorVisible
 			{
 				get
 				{
-					// TODO
-					return true;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						return Stdio.GetCursorVisible();
+					}
 				}
 				set
 				{
-					// TODO
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						Stdio.SetCursorVisible(value);
+					}
 				}
 			}
 	public static ConsoleColor ForegroundColor
@@ -903,6 +1051,11 @@ public sealed class Console
 				}
 				set
 				{
+					if((((int)value) & ~0x0F) != 0)
+					{
+						throw new ArgumentException
+							(_("Arg_InvalidColor"), "value");
+					}
 					lock(typeof(Console))
 					{
 						SpecialMode();
@@ -925,31 +1078,41 @@ public sealed class Console
 					}
 				}
 			}
-	[TODO]
 	public static int LargestWindowHeight
 			{
 				get
 				{
-					// TODO
-					return WindowWidth;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int width, height;
+						Stdio.GetLargestWindowSize(out width, out height);
+						return width;
+					}
 				}
 			}
-	[TODO]
 	public static int LargestWindowWidth
 			{
 				get
 				{
-					// TODO
-					return WindowHeight;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						int width, height;
+						Stdio.GetLargestWindowSize(out width, out height);
+						return height;
+					}
 				}
 			}
-	[TODO]
 	public static bool NumberLock
 			{
 				get
 				{
-					// TODO
-					return false;
+					lock(typeof(Console))
+					{
+						SpecialMode();
+						return ((Stdio.GetLockState() & Stdio.NumLock) != 0);
+					}
 				}
 			}
 	public static String Title

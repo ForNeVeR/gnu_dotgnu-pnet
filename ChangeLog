@@ -1,4 +1,10 @@
 
+2004-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt, runtime/Platform/Stdio.cs,
+	runtime/System/Console.cs, samples/simple/snake.cs: implement a
+	new internalcall interface for the extended console.
+
 2004-07-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/IO/Compression/Adler32.cs,

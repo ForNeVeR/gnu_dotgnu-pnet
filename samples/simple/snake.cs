@@ -92,6 +92,9 @@ public class Snake
 				// "alternative" screen mode under Unix.
 				Console.Clear();
 
+				// Turn off the cursor, if possible.
+				Console.CursorVisible = false;
+
 				// Set the terminal window's title.
 				Console.Title = "DotGNU Snake!";
 
@@ -119,6 +122,7 @@ public class Snake
 				snake.ShutdownTimers();
 
 				// Clear the screen to the default attributes before exiting.
+				Console.CursorVisible = true;
 				SetTextAttribute(ConsoleColor.Gray, ConsoleColor.Black);
 				Console.Clear();
 			}

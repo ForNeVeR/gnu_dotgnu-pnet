@@ -530,7 +530,7 @@ ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type);
 ILClass *_ILTypeToSyntheticInstantiation
 		(ILImage *image, ILType *type, ILType *classParams);
 
-#if IL_USE_WRITER
+#ifdef IL_USE_WRITER
 
 /*
  * Compact all type and member references in an image to

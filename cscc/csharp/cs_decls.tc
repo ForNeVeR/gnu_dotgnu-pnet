@@ -634,7 +634,6 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 {
 	CSSemValue value;
 	ILEvalValue evalValue;
-	int flag;
 
 	/* Determine if we have already visited this node */
 	if(node->visited == ILVisitMode_Processing)
@@ -702,13 +701,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 		}
 
 		/* Check that the literal value is actually constant */
-		flag = ILNode_EvalConst(node->initializer, info, &evalValue);
-		if(!strcmp(ILField_Name(node->fieldInfo), "TicksPerDay"))
-		{
-			printf("XXX - %d - %Ld\n", (int)(evalValue.valueType),
-			       evalValue.un.i8Value);
-		}
-		if(!flag ||
+		if(!ILNode_EvalConst(node->initializer, info, &evalValue) ||
 		   !ILGenCastConst(info, &evalValue, evalValue.valueType,
                    ILTypeToMachineType(ILField_Type(node->fieldInfo))))
 		{

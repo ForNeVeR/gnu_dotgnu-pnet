@@ -1,4 +1,10 @@
 
+2003-05-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/il_system.h, support/clflush.c: implement the "ILCacheFlush"
+	function for ARM-based GNU/Linux machines, which have a special
+	system call for performing cache flushes.
+
 2003-04-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/rc2.c: use 32-bit arithmetic for RC2 under ARM because

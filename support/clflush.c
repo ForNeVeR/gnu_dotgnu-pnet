@@ -72,6 +72,21 @@ void ILCacheFlush(void *buf, long length)
 	}
 	__asm__ __volatile__ ("nop; nop; nop; nop; nop");
 
+#elif (defined(__arm__) || defined(__arm)) && defined(linux)
+
+	/* ARM Linux has a "cacheflush" system call */
+	/* R0 = start of range, R1 = end of range, R3 = flags */
+	/* flags = 0 indicates data cache, flags = 1 indicates both caches */
+	__asm __volatile ("mov r0, %0\n"
+	                  "mov r1, %1\n"
+					  "mov r2, %2\n"
+					  "swi 0x9f0002       @ sys_cacheflush"
+					  : /* no outputs */
+					  : "r" (buf),
+					    "r" (((int)buf) + (int)length),
+						"r" (0)
+					  : "r0", "r1", "r3" );
+
 #endif
 #endif /* IL_HAVE_CACHE_FLUSH */
 }

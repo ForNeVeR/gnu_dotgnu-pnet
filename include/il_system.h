@@ -168,7 +168,8 @@ char *ILExpandFilename(const char *filename, char *searchPath);
 
 /* Determine if the underlying CPU has cache flush functionality */
 #if defined(__i386) || defined(__i386__) || \
-		defined(PPC) || defined(__sparc)
+		defined(PPC) || defined(__sparc) || \
+		defined(__arm) || defined(__arm__)
 	#if defined(__GNUC__)
 		#define	IL_HAVE_CACHE_FLUSH	1
 	#endif

@@ -1,4 +1,9 @@
 
+2004-11-20  Erich Kitzmuller  <ammoq@ammoq.com>
+
+	* System/Net/HttpWebResponse.cs: Add HTTP Chunked support to 
+	WebResponse. (bug #10848, Gopal)
+
 2004-11-19  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/PictureBox.cs: Fix Bug #11016: Allow transparent

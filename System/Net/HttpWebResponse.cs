@@ -141,7 +141,14 @@ public class HttpWebResponse : WebResponse
 
 	public override Stream GetResponseStream()
 	{
-		return stream;  
+		if(String.Compare(headers["Transfer-Encoding"],"chunked", true) == 0)
+		{
+			return new ChunkedDecoderStream(stream);
+		}
+		else
+		{
+			return stream;  
+		}
 	}
 
 	public string CharacterSet 
@@ -276,6 +283,173 @@ public class HttpWebResponse : WebResponse
 			return desc;
 		}
 	}
+
+	private class ChunkedDecoderStream : Stream
+	{
+		private Stream inputStream;
+		private int chunkSize;
+
+		public ChunkedDecoderStream ( Stream inputStream )
+		{
+			this.inputStream = inputStream;
+			ReadChunkSize(false);
+		}
+
+		public override bool CanRead
+		{
+			get 
+			{
+				return true;
+			}
+		}
+
+		public override bool CanSeek
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public override bool CanWrite
+		{
+			get 
+			{
+				return false;
+			}
+		}
+
+		public override long Length
+		{
+			get
+			{
+				throw new NotSupportedException("get_Length");
+			}
+		}
+
+		public override long Position
+		{
+			get 
+			{
+				throw new NotSupportedException("get_Position");
+			}
+			set 
+			{
+				throw new NotSupportedException("set_Position");
+			}
+		}
+
+		public override void Flush()
+		{
+		}
+
+		public override void Close()
+		{
+			inputStream.Close();
+		}
+	
+		public override int Read( byte[] buffer, int offset, int count )
+		{
+			/* Note: this reads only what is available in the next
+			   chunk . This is consistent with most network streams
+			   so as long as return of Read() is > 0 , keep reading */
+			lock(this) // Lock needed to ensure that the chunkSize
+			{
+				if(chunkSize == 0)
+				{
+					return 0;
+				}
+
+				int toRead = Math.Min(count, chunkSize);
+				int bytesRead = inputStream.Read ( buffer, offset, toRead );
+
+				chunkSize = chunkSize - toRead;
+				
+				if(chunkSize == 0)
+				{
+					ReadChunkSize(true);
+				}
+				return bytesRead;
+			}
+		}
+
+		public override long Seek ( long offset, SeekOrigin origin )
+		{
+			throw new NotSupportedException("Seek");
+		}
+
+		public override void SetLength ( long value )
+		{
+			throw new NotSupportedException("SetLength");
+		}
+		
+		public override void Write ( byte[] buffer, int offset, int count )
+		{
+			throw new NotSupportedException("Write");
+		}
+
+		private void ReadChunkSize( bool readCRLFfirst )
+		{
+			int b;
+			if (readCRLFfirst)
+			{
+				b = inputStream.ReadByte();
+				if (b != 13)
+				{
+					throw new IOException("CR expected");
+				}
+				b = inputStream.ReadByte();
+				if (b != 10)
+				{
+					throw new IOException("LF expected");
+				}
+			}
+
+			bool append = true;
+			chunkSize = 0;	
+
+
+			/* TODO: rewrite this bit to be a lot clearer 
+			         someday . Right now it stands as it is */
+			
+			while(true)
+			{
+				b = inputStream.ReadByte();
+				if (b == 13)
+				{
+					b = inputStream.ReadByte();
+					if (b != 10)
+					{
+						throw new IOException("LF expected");
+					}
+					break;
+				}
+				if (b == -1)
+				{
+					throw new IOException("unexpected end of stream");
+				}
+				if(b == 59) // chunk extension, we don't care
+				{
+					append = false;
+				}
+				if(append)
+				{
+					int digit;
+
+					if (b>=48 && b<=57)  // 0..9
+						digit = b-48;
+					else if (b>=65 && b<=70) // A..F
+						digit = b-65+10;
+					else if (b>=97 && b<=102) // a..f
+						digit = b-97+10;
+					else
+						throw new IOException("hex digit expected");
+
+					chunkSize = (chunkSize*16)+digit;
+				}
+			}
+		}
+	} // class ChunkedDecoderStream
 }; // class HttpWebResponse
 
 }; //namespace System.Net

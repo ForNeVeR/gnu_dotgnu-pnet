@@ -556,8 +556,9 @@ extern	"C" {
 				if(ILCacheCheckForN(&(((ILCVMCoder *)coder)->codePosn), \
 									sizeof(void *))) \
 				{ \
-					*(((void **)(((ILCVMCoder *)coder)->codePosn.ptr))++) = \
+					*((void **)(((ILCVMCoder *)coder)->codePosn.ptr)) = \
 						(void *)(value); \
+					((ILCVMCoder *)coder)->codePosn.ptr += sizeof(void *); \
 				} \
 				else \
 				{ \

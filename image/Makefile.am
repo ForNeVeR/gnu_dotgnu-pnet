@@ -38,6 +38,7 @@ libILImage_a_SOURCES = assembly.c \
 					   sig_writer.c \
 					   synthetic.c \
 					   uncompress.c \
+					   winres_reader.c \
 					   writer.c
 
 libILTestMacros_a_SOURCES = test_macros.c

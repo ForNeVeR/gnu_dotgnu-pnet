@@ -78,6 +78,7 @@ extern	"C" {
 #define	IL_SECTION_DEBUG		6	/* Debug section */
 #define	IL_SECTION_DATA			7	/* Data section */
 #define	IL_SECTION_TLS			8	/* TLS data section */
+#define	IL_SECTION_WINRES		9	/* Windows resource section */
 
 /*
  * Opaque data structure for a program context, that contains
@@ -450,6 +451,35 @@ char *ILImageSearchPath(const char *name, const ILUInt16 *version,
 						const char **beforePaths, unsigned long numBeforePaths,
 						const char **afterPaths, unsigned long numAfterPaths,
 						int suppressStandardPaths, int *sameDir);
+
+/*
+ * Information about the resource section.
+ */
+typedef struct _tagILResourceSection ILResourceSection;
+
+/*
+ * Create a resource section handler for an image.
+ * Returns NULL if out of memory.
+ */
+ILResourceSection *ILResourceSectionCreate(ILImage *image);
+
+/*
+ * Destroy a resource section handler.
+ */
+void ILResourceSectionDestroy(ILResourceSection *section);
+
+/*
+ * Get a named entry from a resource section.  Returns NULL if not found.
+ */
+void *ILResourceSectionGetEntry(ILResourceSection *section, const char *name,
+								unsigned long *length);
+
+/*
+ * Get the first leaf entry under a specific resource directory in a
+ * resource section.  Returns NULL if not found.
+ */
+void *ILResourceSectionGetFirstEntry(ILResourceSection *section,
+									 const char *name, unsigned long *length);
 
 #ifdef	__cplusplus
 };

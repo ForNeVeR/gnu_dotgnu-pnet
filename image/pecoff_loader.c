@@ -190,6 +190,8 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	unsigned long dataSize;
 	unsigned long tlsRVA;
 	unsigned long tlsSize;
+	unsigned long rsrcRVA;
+	unsigned long rsrcSize;
 	ILSectionMap *map;
 	ILSectionMap *newMap;
 	char *data;
@@ -345,6 +347,8 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	dataSize = 0;
 	tlsRVA = 0;
 	tlsSize = 0;
+	rsrcRVA = 0;
+	rsrcSize = 0;
 	while(numSections > 0)
 	{
 		if((*(ctx->readFunc))(ctx, buffer, 40) != 40)
@@ -413,6 +417,11 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 		{
 			tlsRVA = newMap->virtAddr;
 			tlsSize = newMap->virtSize;
+		}
+		else if(!ILMemCmp(buffer, ".rsrc\0\0\0", 8))
+		{
+			rsrcRVA = newMap->virtAddr;
+			rsrcSize = newMap->virtSize;
 		}
 		if(newMap->realSize > 0)
 		{
@@ -628,6 +637,8 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	(*image)->dataSize = dataSize;
 	(*image)->tlsRVA = tlsRVA;
 	(*image)->tlsSize = tlsSize;
+	(*image)->rsrcRVA = rsrcRVA;
+	(*image)->rsrcSize = rsrcSize;
 
 	/* Load the meta information from the image */
 	if((flags & IL_LOADFLAG_NO_METADATA) == 0)
@@ -1069,6 +1080,14 @@ int _ILImageGetSection(ILImage *image, int section,
 			/* TLS data section */
 			*address = image->tlsRVA;
 			*size = image->tlsSize;
+		}
+		break;
+
+		case IL_SECTION_WINRES:
+		{
+			/* Windows resource section */
+			*address = image->rsrcRVA;
+			*size = image->rsrcSize;
 		}
 		break;
 

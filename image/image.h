@@ -178,6 +178,8 @@ struct _tagILImage
 	unsigned long	dataSize;		/* Size of ".sdata" */
 	unsigned long	tlsRVA;			/* RVA for the start of ".tls" */
 	unsigned long	tlsSize;		/* Size of ".tls" */
+	unsigned long	rsrcRVA;		/* RVA for the start of ".rsrc" */
+	unsigned long	rsrcSize;		/* Size of ".rsrc" */
 
 	/* Memory stack that is used to allocate program objects */
 	ILMemStack		memStack;

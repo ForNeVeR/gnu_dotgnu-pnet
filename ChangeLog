@@ -1,4 +1,10 @@
 
+2003-07-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/Makefile.am, image/image.h, image/pecoff_loader.c,
+	image/winres_reader.c, include/il_image.h: add code to "image"
+	to read the contents of the ".rsrc" section in an IL binary.
+
 2003-07-07  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_gather.c: Fully generate class members before

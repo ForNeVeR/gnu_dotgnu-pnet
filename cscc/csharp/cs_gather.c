@@ -1171,6 +1171,17 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	   (strncmp(ILMethod_Name(methodInfo), "get_", 4) != 0 &&
 	    strncmp(ILMethod_Name(methodInfo), "set_", 4) != 0))
 	{
+		/* If "override" is supplied, then look for its "virtual" */
+		if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+		{
+			if(!ILMemberGetBase((ILMember *)methodInfo))
+			{
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+							  "`override' used on a method with no "
+							  "corresponding `virtual'");
+			}
+		}
+
 		/* Look for duplicates and report on them */
 		member = FindMemberBySignature(classInfo, name, signature,
 									   (ILMember *)methodInfo, classInfo,
@@ -1407,10 +1418,6 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		CCOutOfMemory();
 	}
-	if((property->modifiers & IL_META_METHODDEF_STATIC) == 0)
-	{
-		ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
-	}
 
 	/* Create the parameters for the property */
 	paramNum = 1;
@@ -1480,6 +1487,17 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	/* Add the property to the current scope */
 	AddMemberToScope(info->currentScope, IL_SCOPE_PROPERTY,
 					 name, (ILMember *)propertyInfo, property->name);
+
+	/* If "override" is supplied, then look for its "virtual" */
+	if((property->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+	{
+		if(!ILMemberGetBase((ILMember *)propertyInfo))
+		{
+			CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+						  "`override' used on a property with no "
+						  "corresponding `virtual'");
+		}
+	}
 
 	/* Look for duplicates and report on them */
 	member = FindMemberBySignature(classInfo, name, signature,
@@ -1632,6 +1650,17 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	/* Add the event to the current scope */
 	AddMemberToScope(info->currentScope, IL_SCOPE_EVENT,
 					 name, (ILMember *)eventInfo, eventName);
+
+	/* If "override" is supplied, then look for its "virtual" */
+	if((event->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+	{
+		if(!ILMemberGetBase((ILMember *)eventInfo))
+		{
+			CCErrorOnLine(yygetfilename(event), yygetlinenum(event),
+						  "`override' used on an event with no "
+						  "corresponding `virtual'");
+		}
+	}
 
 	/* Report on the duplicates */
 	if(member)

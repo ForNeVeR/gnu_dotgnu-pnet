@@ -1,4 +1,12 @@
 
+2003-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_gather.c, image/member.c, include/il_program.h:
+	search for the "virtual" method corresponding to an "override"
+	and report a bug if one isn't present (Bug #4196); property
+	signatures should never use the "hasthis" flag, as it is stored
+	on the underlying accessor methods instead.
+
 2003-07-04  Gopal.V  <gopalv82@symonds.net>
 	
 	* include/il_sysio.h, support/socket.c: Partially implelement the 

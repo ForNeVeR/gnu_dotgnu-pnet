@@ -977,6 +977,11 @@ int ILMemberAccessible(ILMember *member, ILClass *scope);
 ILMember *ILMemberImport(ILImage *image, ILMember *member);
 
 /*
+ * Get the base "virtual" definition for an "override" member.
+ */
+ILMember *ILMemberGetBase(ILMember *member);
+
+/*
  * Helper macros for querying information about members.
  */
 #define	ILMember_FromToken(image,token)	\

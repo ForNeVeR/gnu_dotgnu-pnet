@@ -351,6 +351,78 @@ void _ILMemberSetSignatureIndex(ILMember *member, ILUInt32 index)
 	member->signatureBlob = index;
 }
 
+static ILMethod *MemberToMethod(ILMember *member)
+{
+	ILMethod *accessor;
+	member = ILMemberResolve(member);
+	if(ILMember_IsMethod(member))
+	{
+		return (ILMethod *)member;
+	}
+	else if(ILMember_IsProperty(member))
+	{
+		accessor = ILProperty_Getter((ILProperty *)member);
+		if(!accessor)
+		{
+			accessor = ILProperty_Setter((ILProperty *)member);
+		}
+		return accessor;
+	}
+	else if(ILMember_IsEvent(member))
+	{
+		accessor = ILEvent_AddOn((ILEvent *)member);
+		if(!accessor)
+		{
+			accessor = ILEvent_RemoveOn((ILEvent *)member);
+		}
+		return accessor;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+ILMember *ILMemberGetBase(ILMember *member)
+{
+	ILClass *classInfo = ILClassResolve(ILMember_Owner(member));
+	ILClass *origClass = classInfo;
+	ILMember *testMember;
+	ILMethod *underlying;
+	if(classInfo)
+	{
+		classInfo = ILClass_Parent(classInfo);
+	}
+	while(classInfo != 0)
+	{
+		testMember = 0;
+		while((testMember = ILClassNextMemberByKind
+					(classInfo, testMember, ILMemberGetKind(member))) != 0)
+		{
+			if(!strcmp(ILMember_Name(testMember), ILMember_Name(member)) &&
+			   ILTypeIdentical(ILMember_Signature(testMember),
+			   				   ILMember_Signature(member)))
+			{
+				/* The member must be accessible from the original
+				   class to be considered a candidate.  This allows
+				   us to skip "private" members in parent classes
+				   that might otherwise indicate a match */
+				if(ILMemberAccessible(testMember, origClass))
+				{
+					underlying = MemberToMethod(testMember);
+					if(underlying && ILMethod_IsVirtual(underlying) &&
+					   ILMethod_IsNewSlot(underlying))
+					{
+						return testMember;
+					}
+				}
+			}
+		}
+		classInfo = ILClass_Parent(classInfo);
+	}
+	return 0;
+}
+
 ILMethod *ILMethodCreate(ILClass *info, ILToken token,
 						 const char *name, ILUInt32 attributes)
 {

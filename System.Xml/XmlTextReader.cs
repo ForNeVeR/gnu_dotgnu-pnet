@@ -939,6 +939,7 @@ public class XmlTextReader : XmlReader
 	public override bool Read()
 			{
 				int ch;
+				string tempName;
 				builder = new StringBuilder();
 
 				// Validate the current state of the stream.
@@ -990,6 +991,7 @@ public class XmlTextReader : XmlReader
 						if ((char)ch == '<')
 						{
 							AnalyzeChar(ch, true);
+							tempName = name;
 							while(readAttribute == true)
 							{
 								ch = ReadChar();
@@ -997,11 +999,14 @@ public class XmlTextReader : XmlReader
 								// set back to Element node type
 								// for proper implementation behavior
 								nodeType = XmlNodeType.Element;
+								name = tempName;
+								value = String.Empty;
 							}
 						}
 						else 
 						{
 							AnalyzeChar(ch, false);
+							tempName = name;
 							while(readAttribute == true)
 							{
 								ch = ReadChar();
@@ -1009,7 +1014,8 @@ public class XmlTextReader : XmlReader
 								// set back to Element node type
 								// for proper implementation behavior
 								nodeType = XmlNodeType.Element;
-
+								name = tempName;
+								value = String.Empty;
 							}
 						}
 						return true;

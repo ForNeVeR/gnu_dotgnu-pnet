@@ -182,34 +182,54 @@ namespace System.IO
 			return true;
 		}
 		
-		
+		[TODO]
 		public static DateTime GetCreationTime(string path)
 		{
+			// platform-enforced security is the only security here right now
+			// afaik, some System.Security stuff needs to be added here - Rich
+
+			Exception e = GetTimeValidatePath(path);
+			if (e != null) { throw e; }
+
 			long time;
-			DirMethods.GetCreationTime(path, out time);
-			DateTime datetime = new DateTime(time);
-			return DateTime.Parse(String.Concat(datetime.ToShortDateString(), " ", datetime.ToShortTimeString()));  
-		}	
-			
-		
-		public static DateTime GetLastAccessTime(string path) 
-		{
-			long time;
-			DirMethods.GetLastAccess(path, out time);
-			DateTime datetime = new DateTime(time);
-			return DateTime.Parse(String.Concat(datetime.ToShortDateString(), " ", datetime.ToShortDateString()));
-		}	
+			e = GetTimeExceptionHandler(DirMethods.GetCreationTime(path, out time));
+			if (e != null) { throw e; }
+
+			return new DateTime(time);
+		}
 
 		[TODO]
-		public static DateTime GetLastWriteTime(string path) 
+		public static DateTime GetLastAccessTime(string path)
 		{
-			long time;
-			DirMethods.GetCreationTime(path, out time);
-			DateTime datetime = new DateTime(time);
-			return DateTime.Parse(String.Concat(datetime.ToLongDateString(), " ", datetime.ToLongTimeString() ) ); 
-		}	
+			// platform-enforced security is the only security here right now
+			// afaik, some System.Security stuff needs to be added here - Rich
 
-	
+			Exception e = GetTimeValidatePath(path);
+			if (e != null) { throw e; }
+
+			long time;
+			e = GetTimeExceptionHandler(DirMethods.GetLastAccess(path, out time));
+			if (e != null) { throw e; }
+
+			return new DateTime(time);
+		}
+
+		[TODO]
+		public static DateTime GetLastWriteTime(string path)
+		{
+			// platform-enforced security is the only security here right now
+			// afaik, some System.Security stuff needs to be added here - Rich
+
+			Exception e = GetTimeValidatePath(path);
+			if (e != null) { throw e; }
+
+			long time;
+			e = GetTimeExceptionHandler(DirMethods.GetLastModification(path, out time));
+			if (e != null) { throw e; }
+
+			return new DateTime(time);
+		}
+
 		public static void Move(string src, string dest)
 		{
 			DirMethods.Rename(src, dest);
@@ -262,29 +282,45 @@ namespace System.IO
 		public static void SetLastWriteTime(string path, DateTime time)
 		{
 		}
+
+		private static Exception GetTimeExceptionHandler(Errno err)
+		{
+			if (err == Errno.Success)
+			{
+				return null;
+			}
+			else if (err == Errno.ENOENT)
+			{
+				return new IOException(_("IO_PathNotFound"));
+			}
+			else if (err == Errno.ENAMETOOLONG)
+			{
+				return new PathTooLongException(_("Exception_PathTooLong"));
+			}
+			else if (err == Errno.EACCES)
+			{
+				return new SecurityException(_("IO_PathnameSecurity"));
+			}
+			else if (err == Errno.ENOMEM)
+			{
+				return new OutOfMemoryException();
+			}
+			else
+			{
+				return new IOException(_("Exception_IO"));
+			}
+		}
+		private static Exception GetTimeValidatePath(string path)
+		{
+			if (path == null)
+			{
+				return new ArgumentNullException(_("Arg_NotNull"));
+			}
+			if ((path.Trim() == "") || !(FileMethods.ValidatePathname(path)))
+			{
+				return new ArgumentException(_("IO_InvalidPathname"));
+			}
+			return null;
+		}
 	}
-		
-}			
-		
-		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}

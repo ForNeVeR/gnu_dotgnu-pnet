@@ -1,4 +1,9 @@
 
+2002-10-26  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* resources/en_US/runtime/IO.txt, runtime/System/IO/File.cs: implemented
+	the file/dir get*time methods.
+
 2002-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Platform/FileInfo.cs,

@@ -92,7 +92,7 @@ public struct DateTime : IComparable, IFormattable
 					{
 						unchecked
 						{
-							result = YearToTicks(year);
+							result = (YearToTicks(year) / ticksPerDay);
 							result += (long)(daysBeforeMonth[month - 1]);
 							if(month > 2 && isLeap)
 							{

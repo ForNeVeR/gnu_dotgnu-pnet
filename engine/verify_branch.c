@@ -119,8 +119,8 @@ static BranchLabel *FindLabel(BranchLabel *labelList, ILUInt32 address)
  * Validate the current contents of the stack against
  * information that was previously recorded.
  */
-static int ValidateStack(BranchLabel *label, ILEngineStackItem *stack,
-						 ILUInt32 stackSize)
+static int ValidateStack(ILImage *image, BranchLabel *label,
+						 ILEngineStackItem *stack, ILUInt32 stackSize)
 {
 	ILUInt32 posn;
 	ILEngineStackItem *labelStack;
@@ -147,22 +147,26 @@ static int ValidateStack(BranchLabel *label, ILEngineStackItem *stack,
 		}
 		else if(stack[posn].engineType == ILEngineType_O)
 		{
-			/* The current stack must be a sub-class of the label stack */
-			if(stack[posn].typeInfo == 0)
+			/* Check the sub-class relationships */
+			if(ILTypeAssignCompatible(image, stack[posn].typeInfo,
+									  labelStack[posn].typeInfo))
 			{
-				/* The current stack is "null", so use the label type */
+				/* The current stack is a subclass of the label stack, so
+				   use the type from the label stack as the common type */
 				stack[posn].typeInfo = labelStack[posn].typeInfo;
+				return 1;
 			}
-			else if(labelStack[posn].typeInfo != 0 &&
-			        ILType_IsClass(labelStack[posn].typeInfo) &&
-					IsSubClass(stack[posn].typeInfo,
-							   ILType_ToClass(labelStack[posn].typeInfo)))
+			else if(ILTypeAssignCompatible(image, labelStack[posn].typeInfo,
+									  	   stack[posn].typeInfo))
 			{
-				/* TODO: may need a better sub-class test above */
-				stack[posn].typeInfo = labelStack[posn].typeInfo;
+				/* The label stack is a subclass of the current stack, so
+				   update the label stack to reflect the new common type */
+				labelStack[posn].typeInfo = stack[posn].typeInfo;
+				return 1;
 			}
 			else
 			{
+				/* Incompatible types */
 				return 0;
 			}
 		}
@@ -255,7 +259,8 @@ static ILUInt32 ReloadStack(BranchLabel *label, ILEngineStackItem *stack)
 				currLabel = FindLabel(labelList, (dest)); \
 				if(currLabel) \
 				{ \
-					if(!ValidateStack(currLabel, stack, stackSize)) \
+					if(!ValidateStack(ILProgramItem_Image(method), \
+									  currLabel, stack, stackSize)) \
 					{ \
 						VERIFY_STACK_ERROR(); \
 					} \
@@ -286,7 +291,8 @@ static ILUInt32 ReloadStack(BranchLabel *label, ILEngineStackItem *stack)
 						/* Reload the stack contents from the label */ \
 						stackSize = ReloadStack(currLabel, stack); \
 					} \
-					else if(!ValidateStack(currLabel, stack, stackSize)) \
+					else if(!ValidateStack(ILProgramItem_Image(method), \
+									       currLabel, stack, stackSize)) \
 					{ \
 						VERIFY_STACK_ERROR(); \
 					} \

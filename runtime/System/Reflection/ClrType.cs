@@ -358,7 +358,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 				ArrayList list=new ArrayList(members.Length/2);
 				int best;
 
-				for(int i=0;i<members.Length-1;i++)
+				for(int i=0;i<members.Length;i++)
 				{
 					best=i;
 					if(members[best]==null)
@@ -388,6 +388,7 @@ internal class ClrType : Type, ICloneable, IClrProgramItem
 						}
 					}
 					list.Add(members[best]);
+					members[best]=null;
 				}
 				return list.ToArray(type);
 			}

@@ -24,7 +24,6 @@
 extern	"C" {
 #endif
 
-int gen_32bit_only;
 CSemValue CSemValueDefault = {C_SEMKIND_VOID, ILType_Void, 0};
 CSemValue CSemValueBool = {C_SEMKIND_RVALUE | C_SEMKIND_BOOLEAN,
 						   ILType_Int32, 0};
@@ -91,19 +90,25 @@ void CGenBeginCode(ILGenInfo *info)
 	   that this is a C module requiring special treatment */
 	if(info->asmOutput)
 	{
-		if(gen_32bit_only)
+		if(CTypeAlignModifiers != 0)
 		{
-			fputs(".custom instance void "
+			fprintf(info->asmOutput, ".custom instance void "
 					"OpenSystem.C.MemoryModelAttribute"
-					"::.ctor(int32) = (01 00 20 00 00 00 00 00)\n",
-				  info->asmOutput);
+					"::.ctor(int32, int32) = "
+					"(01 00 %02X 00 00 00 %02X %02X %02X %02X 00 00)\n",
+					(int)(CTypePtrSize * 8),
+					(int)(CTypeAlignModifiers & 0xFF),
+					(int)((CTypeAlignModifiers >> 8) & 0xFF),
+					(int)((CTypeAlignModifiers >> 16) & 0xFF),
+					(int)((CTypeAlignModifiers >> 24) & 0xFF));
 		}
 		else
 		{
-			fputs(".custom instance void "
+			fprintf(info->asmOutput, ".custom instance void "
 					"OpenSystem.C.MemoryModelAttribute"
-					"::.ctor(int32) = (01 00 40 00 00 00 00 00)\n",
-				  info->asmOutput);
+					"::.ctor(int32) = "
+					"(01 00 %02X 00 00 00 00 00)\n",
+					(int)(CTypePtrSize * 8));
 		}
 	}
 

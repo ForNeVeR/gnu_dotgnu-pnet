@@ -43,16 +43,11 @@ int const CCPluginGenModulesEarly = 1;
 
 int CCPluginInit(void)
 {
-	/* Read the state of the "-m32bit-only" flag, which affects the
-	   layout and definition of various types */
-	if(CCStringListContains(machine_flags, num_machine_flags,
-							"32bit-only"))
-	{
-		gen_32bit_only = 1;
-	}
+	/* Detect the default type sizes, based on the command-line options */
+	CTypeSizeDetect();
 
 	/* Initialize the C pre-processor with the standard macro definitions */
-	if(gen_32bit_only)
+	if(CTypePtrSize == 4)
 	{
 		CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 						"__WORDSIZE=32");

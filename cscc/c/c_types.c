@@ -1232,26 +1232,6 @@ int CTypeIsIdentical(ILType *type1, ILType *type2)
 	return ILTypeIdentical(type1, type2);
 }
 
-/*
- * Size and alignment values for the primitive types.
- */
-#define	SIZE_INT8				1
-#define	ALIGN_INT8				1
-#define	SIZE_INT16				2
-#define	ALIGN_INT16				2
-#define	SIZE_INT32				4
-#define	ALIGN_INT32				4
-#define	SIZE_INT64				8
-#define	ALIGN_INT64				8
-#define	SIZE_FLOAT32			4
-#define	ALIGN_FLOAT32			4
-#define	SIZE_FLOAT64			8
-#define	ALIGN_FLOAT64			8
-#define	SIZE_PTR32				4
-#define	ALIGN_PTR32				4
-#define	SIZE_PTR64				8
-#define	ALIGN_PTR64				8
-
 ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 {
 	ILType *type = ILTypeStripPrefixes(_type);
@@ -1274,8 +1254,8 @@ ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 			case IL_META_ELEMTYPE_I1:
 			case IL_META_ELEMTYPE_U1:
 			{
-				*align = ALIGN_INT8;
-				return SIZE_INT8;
+				*align = 1;
+				return 1;
 			}
 			/* Not reached */
 
@@ -1283,58 +1263,58 @@ ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 			case IL_META_ELEMTYPE_U2:
 			case IL_META_ELEMTYPE_CHAR:
 			{
-				*align = ALIGN_INT16;
-				return SIZE_INT16;
+				*align = CTypeShortAlign;
+				return CTypeShortSize;
 			}
 			/* Not reached */
 
 			case IL_META_ELEMTYPE_I4:
 			case IL_META_ELEMTYPE_U4:
 			{
-				*align = ALIGN_INT32;
-				return SIZE_INT32;
+				*align = CTypeIntAlign;
+				return CTypeIntSize;
 			}
 			/* Not reached */
 
 			case IL_META_ELEMTYPE_I8:
 			case IL_META_ELEMTYPE_U8:
 			{
-				*align = ALIGN_INT64;
-				return SIZE_INT64;
+				*align = CTypeLongLongAlign;
+				return CTypeLongLongSize;
 			}
 			/* Not reached */
 
 			case IL_META_ELEMTYPE_I:
 			case IL_META_ELEMTYPE_U:
 			{
-				*align = ALIGN_INT64;
-				return CTYPE_DYNAMIC;
+				*align = CTypeNativeIntAlign;
+				return CTypeNativeIntSize;
 			}
 			/* Not reached */
 
 			case IL_META_ELEMTYPE_R4:
 			{
-				*align = ALIGN_FLOAT32;
-				return SIZE_FLOAT32;
+				*align = CTypeFloatAlign;
+				return CTypeFloatSize;
 			}
 			/* Not reached */
 
 			case IL_META_ELEMTYPE_R8:
 			{
-				*align = ALIGN_FLOAT64;
-				return SIZE_FLOAT64;
+				*align = CTypeDoubleAlign;
+				return CTypeDoubleSize;
 			}
 			/* Not reached */
 
 			case IL_META_ELEMTYPE_R:
 			{
-				*align = ALIGN_FLOAT64;
-				return CTYPE_DYNAMIC;
+				*align = CTypeLongDoubleAlign;
+				return CTypeLongDoubleSize;
 			}
 			/* Not reached */
 		}
-		*align = ALIGN_INT32;
-		return SIZE_INT32;
+		*align = CTypeIntAlign;
+		return CTypeIntSize;
 	}
 	else if(ILType_IsValueType(type))
 	{
@@ -1382,21 +1362,13 @@ ILUInt32 CTypeSizeAndAlign(ILType *_type, ILUInt32 *align)
 		if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR ||
 		   (ILType_Kind(type) & IL_TYPE_COMPLEX_METHOD) != 0)
 		{
-			if(gen_32bit_only)
-			{
-				*align = ALIGN_PTR32;
-				return SIZE_PTR32;
-			}
-			else
-			{
-				*align = ALIGN_PTR64;
-				return SIZE_PTR64;
-			}
+			*align = CTypePtrAlign;
+			return CTypePtrSize;
 		}
 	}
 
 	/* Assume that everything else is dynamic */
-	*align = ALIGN_PTR64;
+	*align = CTypePtrAlign;
 	return CTYPE_DYNAMIC;
 }
 
@@ -1472,7 +1444,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 
 			case IL_META_ELEMTYPE_I8:
 			{
-				if(gen_32bit_only)
+				if(CTypeLongLongSize == 4)
 					cname = "long long";
 				else
 					cname = "long";
@@ -1481,7 +1453,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 
 			case IL_META_ELEMTYPE_U8:
 			{
-				if(gen_32bit_only)
+				if(CTypeLongLongSize == 4)
 					cname = "unsigned long long";
 				else
 					cname = "unsigned long";

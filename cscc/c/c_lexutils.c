@@ -130,7 +130,7 @@ static void InferIntType(const char *text, CLexIntConst *value)
 		else if(value->type == ILMachineType_Int64)
 			value->type = ILMachineType_UInt64;
 	}
-	if(numl >= 2 || (!gen_32bit_only && numl > 0))
+	if(numl >= 2 || (CTypeLongSize == 8 && numl > 0))
 	{
 		/* Convert the type into its "long long" version */
 		if(value->type == ILMachineType_Int8 ||

@@ -394,7 +394,7 @@ static CSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 				CGenCloneLine(temp, node->expr2);
 				node->expr2 = temp;
 				*parent = DivPtrSize((ILNode *)node, elemType);
-				if(gen_32bit_only)
+				if(CTypePtrSize == 4)
 				{
 					*parent = ILNode_CastSimple_create
 						(*parent, ILMachineType_Int32);

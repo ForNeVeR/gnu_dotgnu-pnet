@@ -196,7 +196,7 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	fputs(".try { \n", stream);
 
 	/* Determine the "argc", "argv", and "envp" values for the program */
-	ptrSize = (gen_32bit_only ? 4 : 8);
+	ptrSize = CTypePtrSize;
 	fputs("\tldarg.0\n", stream);
 	fprintf(stream, "\tldc.i4.%d\n", ptrSize);
 	fputs("\tldloca\t0\n", stream);

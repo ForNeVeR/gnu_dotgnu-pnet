@@ -251,7 +251,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 						case C_SPEC_LONG:
 						case C_SPEC_SIGNED | C_SPEC_LONG:
 						{
-							if(gen_32bit_only)
+							if(CTypeLongSize == 4)
 							{
 								result.baseType = ILType_Int32;
 							}
@@ -265,7 +265,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 
 						case C_SPEC_UNSIGNED | C_SPEC_LONG:
 						{
-							if(gen_32bit_only)
+							if(CTypeLongSize == 4)
 							{
 								result.baseType = ILType_UInt32;
 							}
@@ -323,7 +323,7 @@ CDeclSpec CDeclSpecCombine(CDeclSpec spec1, CDeclSpec spec2)
 
 						case C_SPEC_LONG:
 						{
-							if(gen_32bit_only)
+							if(CTypeLongSize == 4)
 							{
 								result.baseType = ILType_UInt32;
 							}
@@ -679,7 +679,8 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
 			}
 		}
-		else if((spec.specifiers & C_SPEC_LONG_LONG) != 0 && gen_32bit_only)
+		else if((spec.specifiers & C_SPEC_LONG_LONG) != 0 &&
+				CTypeLongSize == 4)
 		{
 			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
 			{
@@ -694,7 +695,7 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
 				spec.dupSpecifiers |= C_SPEC_INVALID_COMBO;
 			}
 		}
-		else if((spec.specifiers & C_SPEC_LONG) != 0 && gen_32bit_only)
+		else if((spec.specifiers & C_SPEC_LONG) != 0 && CTypeLongSize == 4)
 		{
 			if((spec.specifiers & C_SPEC_UNSIGNED) != 0)
 			{

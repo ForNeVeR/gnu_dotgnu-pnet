@@ -107,6 +107,10 @@ internal class Latin1Encoding : Encoding
 					{
 						bytes[byteIndex++] = (byte)ch;
 					}
+					else if(ch >= '\uFF01' && ch <= '\uFF5E')
+					{
+						bytes[byteIndex++] = (byte)(ch - 0xFEE0);
+					}
 					else
 					{
 						bytes[byteIndex++] = (byte)'?';
@@ -154,6 +158,10 @@ internal class Latin1Encoding : Encoding
 					if(ch < (char)0x0100)
 					{
 						bytes[byteIndex++] = (byte)ch;
+					}
+					else if(ch >= '\uFF01' && ch <= '\uFF5E')
+					{
+						bytes[byteIndex++] = (byte)(ch - 0xFEE0);
 					}
 					else
 					{
@@ -364,6 +372,6 @@ internal class Latin1Encoding : Encoding
 
 #endif // !ECMA_COMPAT
 
-}; // class ASCIIEncoding
+}; // class Latin1Encoding
 
 }; // namespace System.Text

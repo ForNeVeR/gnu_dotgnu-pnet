@@ -79,6 +79,9 @@
 	runtime/System/Text/ibm-920.ucm, runtime/System/Text/ucm2cp.c:
 	continue adding support for 8-bit code pages.
 
+	* runtime/System/Text/Latin1Encoding.cs: convert full-width versions
+	of ASCII as well as the regular Latin-1 characters.
+
 2002-04-14  Stephen Compall  <rushing@sigecom.net>
 
 	* tests/System/TestUri.cs, tests/System/TestSystem.cs: added a

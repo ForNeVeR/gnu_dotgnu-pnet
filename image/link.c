@@ -284,6 +284,16 @@ static char *TestPathForFile(const char *pathname, int pathlen,
 		return path;
 	}
 
+	/* If the suffix is ".dll", then try again with ".DLL" */
+	if(suffix && !strcmp(suffix, ".dll"))
+	{
+		strcpy(path + posn - 3, "DLL");
+		if(ILFileExists(path, 0))
+		{
+			return path;
+		}
+	}
+
 	/* Not found */
 	ILFree(path);
 	return 0;

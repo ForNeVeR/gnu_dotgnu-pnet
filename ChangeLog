@@ -4,6 +4,9 @@
 	* image/lib_attrs.c: begin adding support for converting security
 	attributes into ".capability" blocks.
 
+	* image/link.c: if we cannot find an assembly with the suffix
+	".dll", try again with ".DLL".
+
 2003-07-23  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/int_proto.h, engine/int_table.c: updates for changes to pnetlib

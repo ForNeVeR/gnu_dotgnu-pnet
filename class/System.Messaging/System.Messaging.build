@@ -17,6 +17,7 @@
 			<references>
 				<file name="../System.Configuration.Install/System.Configuration.Install.dll"/>
 				<file name="System.dll"/>
+				<file name="System.Windows.Forms.dll"/>
 			</references>
 
 			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>

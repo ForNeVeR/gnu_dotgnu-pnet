@@ -1,3 +1,8 @@
+2004-06-04  Klaus Treichel  <ktreichel@web.de>
+
+	* class/System.Messaging/System.Messaging.build: add reference to
+	System.Windows.Forms.dll needed for System.Messaging.Design.
+
 2004-06-02  Klaus Treichel  <ktreichel@web.de>
 
 	* Makefile.am: add nunit20 to SUBDIRS

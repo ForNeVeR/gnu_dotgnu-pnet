@@ -20,7 +20,7 @@
 
 #include "il_system.h"
 #include "il_utils.h"
-#ifdef IL_WIN32_PLATFORM
+#ifdef IL_WIN32_NATIVE
 #include <winsock.h>
 #else
 #if HAVE_STDLIB_H

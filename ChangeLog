@@ -11,9 +11,9 @@
 	support/socket.c, support/test_float.c: #include fixes for
 	non-cygwin win32 builds.
 
-	* NEWS, configure.in: update version for the "0.5.8" release.
+	* support/dns.c: #include fix for cygwin win32 builds.
 
-	* configure.in: update working version to "0.5.9".
+	* NEWS, configure.in: update version for the "0.5.8" release.
 
 2003-06-17  James Michael DuPont  <mdupont777@yahoo.com>
 

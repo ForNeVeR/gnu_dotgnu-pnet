@@ -7,6 +7,9 @@
 	coremul/corwinerror.h, coremul/guid.cpp, coremul/shim.c:
 	begin implementation of the mscoree.dll emulation routines.
 
+	* libffi/configure.in, libffi/configure: prevent the display of an
+	error message when gcc doesn't support "-print-multi-os-directory".
+
 2003-02-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/pecoff_writer.c: fall back to the original back-patch

@@ -4,6 +4,7 @@ Makefile.in
 stamp-treecc
 cscc
 cscc-cs
+csdoc
 cs_grammar.c
 cs_grammar.h
 cs_nodes.c

@@ -7,6 +7,9 @@
 	codes for both signed and unsigned results at the same time
 	like x86 and ARM can.
 
+	* engine/cvm.c, engine/cvm_config.h: perform manual register
+	assignment for PPC (doubles the PNetMark).
+
 2003-07-12  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_emit.c: implement the _IL_TypeBuilder_ClrTypeAddInterface,

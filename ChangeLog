@@ -1,4 +1,9 @@
 
+2004-04-21  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Xml/Xsl/XslTransform.cs: This patch is needed to add 
+	System.Web to ml-pnet (patch #2953, Gopal)
+
 2004-04-21  Russell Stuart  <russell@stuart.id.au>
 
 	* runtime/System/Collections/Hashtable.cs: Use a local object instead

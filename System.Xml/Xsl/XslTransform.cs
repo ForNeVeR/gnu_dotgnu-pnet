@@ -25,6 +25,7 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Xml.XPath;
+using System.Security.Policy;
 
 namespace System.Xml.Xsl
 {
@@ -91,6 +92,27 @@ namespace System.Xml.Xsl
 		}
 
 		[TODO]
+		public void Load(IXPathNavigable stylesheet, XmlResolver resolver,
+								Evidence evidence)
+		{
+			throw new NotImplementedException("Load");
+		}
+
+		[TODO]
+		public void Load(XmlReader stylesheet, XmlResolver resolver,
+							Evidence evidence)
+		{
+			throw new NotImplementedException("Load");
+		}
+
+		[TODO]
+		public void Load(XPathNavigator stylesheet, XmlResolver resolver,
+								Evidence evidence)
+		{
+			throw new NotImplementedException("Load");
+		}
+
+		[TODO]
 		public XmlReader Transform(IXPathNavigable input, XsltArgumentList args)
 		{
 			throw new NotImplementedException("Transform");
@@ -98,6 +120,13 @@ namespace System.Xml.Xsl
 
 		[TODO]
 		public void Transform(String inputfile, String outputfile)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public void Transform(String inputfile, String outputfile,
+							XmlResolver resolver)
 		{
 			throw new NotImplementedException("Transform");
 		}
@@ -117,6 +146,13 @@ namespace System.Xml.Xsl
 
 		[TODO]
 		public void Transform(IXPathNavigable input, XsltArgumentList args, 
+					Stream output, XmlResolver resolver)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public void Transform(IXPathNavigable input, XsltArgumentList args, 
 								TextWriter output)
 		{
 			throw new NotImplementedException("Transform");
@@ -124,7 +160,28 @@ namespace System.Xml.Xsl
 
 		[TODO]
 		public void Transform(IXPathNavigable input, XsltArgumentList args, 
+					TextWriter output, XmlResolver resolver)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public XmlReader Transform(IXPathNavigable input, XsltArgumentList args,
+								XmlResolver resolver)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public void Transform(IXPathNavigable input, XsltArgumentList args, 
 								XmlWriter output)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public void Transform(IXPathNavigable input, XsltArgumentList args, 
+					XmlWriter output, XmlResolver resolver)
 		{
 			throw new NotImplementedException("Transform");
 		}
@@ -138,7 +195,28 @@ namespace System.Xml.Xsl
 
 		[TODO]
 		public void Transform(XPathNavigator input, XsltArgumentList args, 
+					Stream output, XmlResolver resolver)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public void Transform(XPathNavigator input, XsltArgumentList args, 
 								TextWriter output)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public void Transform(XPathNavigator input, XsltArgumentList args,
+					TextWriter output, XmlResolver resolver) 
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public XmlReader Transform(XPathNavigator input, XsltArgumentList args, 
+								XmlResolver resolver)
 		{
 			throw new NotImplementedException("Transform");
 		}
@@ -146,6 +224,13 @@ namespace System.Xml.Xsl
 		[TODO]
 		public void Transform(XPathNavigator input, XsltArgumentList args, 
 								XmlWriter output)
+		{
+			throw new NotImplementedException("Transform");
+		}
+
+		[TODO]
+		public void Transform(XPathNavigator input, XsltArgumentList args,
+					XmlWriter output, XmlResolver resolver)
 		{
 			throw new NotImplementedException("Transform");
 		}

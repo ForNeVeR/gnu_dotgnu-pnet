@@ -85,7 +85,7 @@ public interface IToolkit
 	IToolkitFont CreateFont(Font font, float dpi);
 
 	// Creat a toolkit image
-	IToolkitImage CreateImage(Image image);
+	IToolkitImage CreateImage(Image image, int frame);
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
 	IntPtr GetHalftonePalette();

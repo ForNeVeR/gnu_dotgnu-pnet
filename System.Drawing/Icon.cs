@@ -1,7 +1,7 @@
 /*
  * Icon.cs - Implementation of the "System.Drawing.Icon" class.
  *
- * Copyright (C) 2003  Neil Cawse.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,155 +21,294 @@
 namespace System.Drawing
 {
 
-using System;
 using System.IO;
-using System.Drawing.Imaging;
-
-#if CONFIG_SERIALIZATION
+using System.Security;
 using System.Runtime.Serialization;
-#endif
-
-#if CONFIG_COMPONENT_MODEL
+using System.Runtime.InteropServices;
 using System.ComponentModel;
-#endif
+using System.Drawing.Design;
+using System.Drawing.Toolkit;
+using DotGNU.Images;
 
-public sealed class Icon : MarshalByRefObject, ICloneable
+#if !ECMA_COMPAT
+[Serializable]
+[ComVisible(false)]
+#endif
+#if CONFIG_COMPONENT_MODEL
+[TypeConverter(typeof(IconConverter))]
+#endif
+#if CONFIG_COMPONENT_MODEL_DESIGN
+[Editor("System.Drawing.Design.IconEditor, System.Drawing.Design",
+		typeof(UITypeEditor))]
+#endif
+public sealed class Icon : MarshalByRefObject, ICloneable, IDisposable
 #if CONFIG_SERIALIZATION
 	, ISerializable
 #endif
 {
-	private byte[] data;
-	private Size size;
+	// Internal state.
+	private DotGNU.Images.Image image;
+	private DotGNU.Images.Frame frame;
+	private int frameNum;
+	private IToolkitImage toolkitImage;
 
-	public IntPtr Handle
-	{
-		get
-		{
-			// Not used in this implementation
-			return IntPtr.Zero;
-		}
-	}
-
-	public int Height
-	{
-		get
-		{
-			return size.Height;
-		}
-	}
-
-	public Size Size
-	{
-		get
-		{
-			return size;
-		}
-	}
-
-	public int Width
-	{
-		get
-		{
-			return size.Width;
-		}
-	}
-
-	public Icon(string fileName)
-	{
-		using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-		{
-			data = new byte[fileStream.Length];
-			fileStream.Read(data, 0, data.Length);
-		}
-		SetSizeFromData();
-	}
-
-	public Icon(Icon original, Size size) : this(original, size.Width, size.Height)
-	{}
-
+	// Constructors.
+	public Icon(Stream stream)
+			{
+				Load(stream);
+			}
+	public Icon(Stream stream, int width, int height)
+			{
+				Load(stream);
+				SelectFrame(width, height);
+			}
+	public Icon(String filename)
+			{
+				FileStream stream = new FileStream
+					(filename, FileMode.Open, FileAccess.Read);
+				try
+				{
+					Load(stream);
+				}
+				finally
+				{
+					stream.Close();
+				}
+			}
+	public Icon(Icon original, Size size)
+			: this(original, size.Width, size.Height) {}
 	public Icon(Icon original, int width, int height)
-	{
-		data = original.data;
-		if (data == null)
-			size = original.Size;
-		else
-			size = new Size(width, height);
-	}
-
-#if !ECMA_COMPAT
-	public Icon(Type type, string resource)
-	{
-		using(Stream stream = type.Module.Assembly.GetManifestResourceStream(type, resource))
-		{
-			data = new byte[stream.Length];
-			stream.Read(data, 0, data.Length);
-		}
-		SetSizeFromData();
-	}
+			: this(original)
+			{
+				SelectFrame(width, height);
+			}
+	public Icon(Type type, String resource)
+			{
+				Stream stream = type.Module.Assembly.GetManifestResourceStream
+					(resource);
+				if(stream == null)
+				{
+					throw new ArgumentException(S._("Arg_UnknownResource"));
+				}
+				try
+				{
+					Load(stream);
+				}
+				finally
+				{
+					stream.Close();
+				}
+			}
+	private Icon(Icon cloneFrom)
+			{
+				if(cloneFrom == null)
+				{
+					throw new ArgumentNullException("cloneFrom");
+				}
+				image = (DotGNU.Images.Image)(cloneFrom.image.Clone());
+				frameNum = cloneFrom.frameNum;
+				frame = image.GetFrame(frameNum);
+			}
+#if CONFIG_SERIALIZATION
+	internal Icon(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				byte[] data = (byte[])
+					(info.GetValue("IconData", typeof(byte[])));
+				Size size = (Size)(info.GetValue("IconSize", typeof(Size)));
+				Load(new MemoryStream(data));
+				SelectFrame(size.Width, size.Height);
+			}
 #endif
 
-	public Icon(Stream stream)
-	{
-		data = new byte[stream.Length];
-		stream.Read(data, 0, data.Length);
-	}
+	// Destructor.
+	~Icon()
+			{
+				Dispose();
+			}
 
-	public Icon(Stream stream, int width, int height)
-	{
-		data = new byte[stream.Length];
-		stream.Read(data, 0, data.Length);
-		size = new Size(width, height);
-	}
+	// Load the icon contents from a stream, and then set the
+	// current frame to the first one in the icon image.
+	private void Load(Stream stream)
+			{
+				image = new DotGNU.Images.Image();
+				image.Load(stream);
+				frame = image.GetFrame(0);
+				frameNum = 0;
+			}
 
-	[TODO]
-	private void SetSizeFromData()
-	{
-	}
+	// Select a particular frame from this icon.
+	private void SelectFrame(int width, int height)
+			{
+				int index;
+				Frame frame;
+				for(index = 0; index < image.NumFrames; ++index)
+				{
+					frame = image.GetFrame(index);
+					if(frame.Width == width && frame.Height == height)
+					{
+						this.frame = frame;
+						frameNum = index;
+						return;
+					}
+				}
+				frame = image.GetFrame(0);
+				frameNum = 0;
+			}
 
-	object ICloneable.Clone()
-	{
-		return new System.Drawing.Icon(this, Width, Height);
-	}
+	// Get this icon's properties.
+	public IntPtr Handle
+			{
+				get
+				{
+					// Not used in this implementation.
+					return IntPtr.Zero;
+				}
+			}
+	public int Height
+			{
+				get
+				{
+					if(frame != null)
+					{
+						return frame.Height;
+					}
+					else
+					{
+						return 0;
+					}
+				}
+			}
+	public Size Size
+			{
+				get
+				{
+					if(frame != null)
+					{
+						return new Size(frame.Width, frame.Height);
+					}
+					else
+					{
+						return Size.Empty;
+					}
+				}
+			}
+	public int Width
+			{
+				get
+				{
+					if(frame != null)
+					{
+						return frame.Width;
+					}
+					else
+					{
+						return 0;
+					}
+				}
+			}
 
-	public static Icon FromHandle(IntPtr handle)
-	{
-		// Not implemented
-		return null;
-	}
+	// Implement the ICloneable interface.
+	public Object Clone()
+			{
+				return new Icon(this);
+			}
 
-	public void Save(Stream outputStream)
-	{
-		outputStream.Write(data, 0, data.Length);
-	}
-
-	public Bitmap ToBitmap()
-	{
-		Bitmap bitmap = new Bitmap(Size.Width, Size.Height);
-		using(Graphics graphics = Graphics.FromImage(bitmap))
-			graphics.DrawIcon(this, new Rectangle(0, 0, Size.Width, Size.Height));
-		bitmap.MakeTransparent(Color.FromArgb(13, 11, 12));
-		return bitmap;
-	}
-
-	public override string ToString()
-	{
-		return "Icon: " + Width + ", " + Height;
-	}
+	// Implement the IDisposable interface.
+	public void Dispose()
+			{
+				if(toolkitImage != null)
+				{
+					toolkitImage.Dispose();
+					toolkitImage = null;
+				}
+				if(image != null)
+				{
+					image.Dispose();
+					image = null;
+					frame = null;
+					frameNum = 0;
+				}
+			}
 
 #if CONFIG_SERIALIZATION
-	void ISerializable.GetObjectData(SerializationInfo si, StreamingContext context)
-	{
-		if (data != null)
-			si.AddValue("IconData", data, typeof(byte[]));
-		else
-		{
-			MemoryStream memoryStream = new MemoryStream();
-			Save(memoryStream);
-			si.AddValue("IconData", memoryStream.ToArray(), typeof(byte[]));
-		}
-		si.AddValue("IconSize", size, typeof(Size));
-	}
+
+	// Implement the ISerializable interface.
+	void ISerializable.GetObjectData(SerializationInfo info,
+									 StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				if(image != null)
+				{
+					MemoryStream stream = new MemoryStream();
+					Save(stream);
+					info.AddValue("IconData", stream.ToArray(), typeof(byte[]));
+					info.AddValue("IconSize", Size, typeof(Size));
+				}
+			}
+
 #endif
-}
+
+	// Convert a native icon handle into an "Icon" object.
+	public static Icon FromHandle(IntPtr handle)
+			{
+				throw new SecurityException();
+			}
+
+	// Save this icon to a specified stream.
+	public void Save(Stream outputStream)
+			{
+				if(image != null)
+				{
+					image.Save(outputStream, DotGNU.Images.Image.Icon);
+				}
+			}
+
+	// Convert this object into a bitmap.
+	public Bitmap ToBitmap()
+			{
+				if(image != null)
+				{
+					return new Bitmap(image.ImageFromFrame(frameNum));
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return "Icon: " + Width + ", " + Height;
+			}
+
+	// Get the toolkit image underlying this icon.
+	internal IToolkitImage GetToolkitImage(Graphics graphics)
+			{
+				if(toolkitImage != null)
+				{
+					return toolkitImage;
+				}
+				else if(image != null)
+				{
+					toolkitImage =
+						graphics.ToolkitGraphics.Toolkit.CreateImage
+							(image, frameNum);
+					return toolkitImage;
+				}
+				else
+				{
+					return null;
+				}
+			}
+
+}; // class Icon
 
 }; // namespace System.Drawing

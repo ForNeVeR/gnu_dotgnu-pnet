@@ -23,7 +23,7 @@ namespace System.Drawing.Toolkit
 	using System;
 	public class DrawingImage : IToolkitImage
 	{
-		public DrawingImage(DotGNU.Images.Image image)
+		public DrawingImage(DotGNU.Images.Image image, int frame)
 		{
 		}
 

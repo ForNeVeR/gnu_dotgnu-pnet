@@ -778,11 +778,25 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawIcon(Icon icon, Rectangle targetRect)
 			{
 				// TODO
+				DrawIconUnstretched(icon, targetRect);
 			}
 	[TODO]
 	public void DrawIconUnstretched(Icon icon, Rectangle targetRect)
 			{
 				// TODO
+				if(icon == null)
+				{
+					throw new ArgumentNullException("icon");
+				}
+				lock(this)
+				{
+					IToolkitImage toolkitImage = icon.GetToolkitImage(this);
+					if(toolkitImage != null)
+					{
+						ToolkitGraphics.DrawImage
+							(toolkitImage, targetRect.X, targetRect.Y);
+					}
+				}
 			}
 	public void DrawIcon(Icon icon, int x, int y)
 			{
@@ -826,9 +840,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	[TODO]
 	public void DrawImage(Image image, int x, int y)
 			{
-				if (image.toolkitImage == null)
-					image.toolkitImage = ToolkitGraphics.Toolkit.CreateImage(image.dgImage);
-				ToolkitGraphics.DrawImage(image.toolkitImage, x, y);
+				lock(this)
+				{
+					if (image.toolkitImage == null)
+						image.toolkitImage = ToolkitGraphics.Toolkit.CreateImage(image.dgImage, 0);
+					ToolkitGraphics.DrawImage(image.toolkitImage, x, y);
+				}
 			}
 	[TODO]
 	public void DrawImage(Image image, float x, float y)

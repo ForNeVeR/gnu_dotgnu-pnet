@@ -565,9 +565,10 @@ public sealed class DrawingToolkit : IToolkit
 				}
 			}
 
-	public IToolkitImage CreateImage(DotGNU.Images.Image image)
+	public IToolkitImage CreateImage(DotGNU.Images.Image image, int frame)
 			{
-				return new DrawingImage(app.Display.DefaultScreenOfDisplay, image);
+				return new DrawingImage
+					(app.Display.DefaultScreenOfDisplay, image, frame);
 			}
 
 }; // class DrawingToolkit

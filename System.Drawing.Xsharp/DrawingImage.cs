@@ -31,9 +31,9 @@ public class DrawingImage : IToolkitImage
 	private Xsharp.Image image;
 
 	// Constructor.
-	public DrawingImage(Screen screen, DotGNU.Images.Image image)
+	public DrawingImage(Screen screen, DotGNU.Images.Image image, int frame)
 			{
-				this.image = new Xsharp.Image(screen, image.GetFrame(0));
+				this.image = new Xsharp.Image(screen, image.GetFrame(frame));
 			}
 
 	// Dispose of this image.

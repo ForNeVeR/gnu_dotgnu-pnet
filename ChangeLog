@@ -15,6 +15,16 @@
 	System.Drawing.Xsharp/DrawingImage.cs: hook the new image code
 	into "System.Drawing.Image" and "System.Drawing.Xsharp".
 
+	* DotGNU.Images/Image.cs, System.Drawing/Graphics.cs,
+	System.Drawing/Icon.cs, System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing.Win32/DrawingImage.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingImage.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs: rewrite the "Icon" class;
+	hook icon drawing throughout the system; specify the frame when
+	creating a toolkit image, to select the correct icon frame.
+
 2003-09-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/NotSupp.txt,

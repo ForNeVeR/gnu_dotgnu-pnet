@@ -68,20 +68,29 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 				this.palette = null;
 				this.transparentPixel = -1;
 			}
-	private Image(Image image)
+	private Image(Image image, Frame thisFrameOnly)
 			{
 				this.width = image.width;
 				this.height = image.height;
 				this.pixelFormat = image.pixelFormat;
-				this.numFrames = image.numFrames;
-				if(image.frames != null)
+				if(thisFrameOnly != null)
 				{
-					int frame;
-					this.frames = new Frame [this.numFrames];
-					for(frame = 0; frame < this.numFrames; ++frame)
+					this.numFrames = 1;
+					this.frames = new Frame [1];
+					this.frames[0] = thisFrameOnly.CloneFrame(this);
+				}
+				else
+				{
+					this.numFrames = image.numFrames;
+					if(image.frames != null)
 					{
-						this.frames[frame] =
-							image.frames[frame].CloneFrame(this);
+						int frame;
+						this.frames = new Frame [this.numFrames];
+						for(frame = 0; frame < this.numFrames; ++frame)
+						{
+							this.frames[frame] =
+								image.frames[frame].CloneFrame(this);
+						}
 					}
 				}
 				this.format = image.format;
@@ -208,7 +217,7 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 	// Clone this object.
 	public Object Clone()
 			{
-				return new Image(this);
+				return new Image(this, null);
 			}
 
 	// Dispose of this object.
@@ -369,6 +378,12 @@ public class Image : MarshalByRefObject, ICloneable, IDisposable
 			{
 				// TODO: change the size
 				return (Image)(Clone());
+			}
+
+	// Create a new image that contains a copy of one frame from this image.
+	public Image ImageFromFrame(int frame)
+			{
+				return new Image(this, GetFrame(frame));
 			}
 
 }; // class Image

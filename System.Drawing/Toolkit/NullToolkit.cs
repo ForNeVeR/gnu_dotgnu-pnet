@@ -260,7 +260,7 @@ public class NullToolkit : IToolkit
 				return point;
 			}
 
-	public virtual IToolkitImage CreateImage( Image image)
+	public virtual IToolkitImage CreateImage( Image image, int frame )
 			{
 				return null;
 			}

@@ -641,9 +641,9 @@ public class DrawingToolkit : IToolkit
 		return null;
 	}
 
-	public IToolkitImage CreateImage(DotGNU.Images.Image image)
+	public IToolkitImage CreateImage(DotGNU.Images.Image image, int frame)
 	{
-		return new DrawingImage(image);
+		return new DrawingImage(image, frame);
 	}
 
 

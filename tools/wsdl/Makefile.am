@@ -20,7 +20,7 @@ install-exec-local:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	rm -f $(DESTDIR)$(bindir)/wsdl-pnet.exe
 	rm -f $(DESTDIR)$(bindir)/wsdl-pnet
-	$(LN_S) clrwrap $(DESTDIR)$(bindir)/wsdl-pnet
+	$(LN_S) clrwrap$(EXEEXT) $(DESTDIR)$(bindir)/wsdl-pnet$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)

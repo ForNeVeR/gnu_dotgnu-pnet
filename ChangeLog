@@ -5,6 +5,9 @@
 	nunit20/nunit-console/nunit.console.build: rename "nunit-console.exe"
 	to "nunit-console-pnet.exe" to prevent clashes with Mono packages.
 
+	* tools/wsdl/Makefile.am, tools/wsdl/wsdl.build: fix the "wsdl"
+	build system so that it doesn't pick up MonoWSDL2.cs by mistake.
+
 2004-08-04  Gopal.V  <gopalv82@yahoo.com>
 	
 	* Makefile.am, nunit20/nunit-console/Makefile.am,

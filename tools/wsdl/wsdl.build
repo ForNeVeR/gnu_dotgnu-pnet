@@ -10,7 +10,8 @@
 				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/tools/wsdl/">
-				<includes name="**.cs"/>
+				<includes name="*.cs"/>
+				<excludes name="MonoWSDL2.cs"/>
 			</sources>
 
 			<references>

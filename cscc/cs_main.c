@@ -62,7 +62,7 @@ int CCPluginInit(void)
 	}
 	else
 	{
-		CSNoGenerics = 1;
+		CSNoGenerics = 0;
 	}
 	if(CCStringListContains(extension_flags, num_extension_flags,
 							"latin1-charset"))

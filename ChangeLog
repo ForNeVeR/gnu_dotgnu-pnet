@@ -1,4 +1,9 @@
 
+2003-11-07  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cs_main.c: enable the "-fgenerics" option by default because
+	the keyword ambiguities have been dealt with.
+
 2003-11-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/console.c: add extra keycodes to the function/arrow key

@@ -1,8 +1,8 @@
 /*
- * IXmlSerializable.cs - Implementation of the
- *		"System.Xml.IXmlSerializable" class.
+ * XmlSerializationReadCallback.cs - Implementation of the
+ *			"System.Xml.Serialization.XmlSerializationReadCallback" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 namespace System.Xml.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Xml.Schema;
+using System;
 
-public interface IXmlSerializable
-{
-	XmlSchema GetSchema();
-	void ReadXml(XmlReader reader);
-	void WriteXml(XmlWriter writer);
-
-}; // interface IXmlSerializable
+[Serializable]
+public delegate Object XmlSerializationReadCallback();
 
 #endif // !ECMA_COMPAT
 

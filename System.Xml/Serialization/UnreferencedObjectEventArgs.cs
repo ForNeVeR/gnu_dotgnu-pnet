@@ -1,8 +1,8 @@
 /*
- * IXmlSerializable.cs - Implementation of the
- *		"System.Xml.IXmlSerializable" class.
+ * UnreferencedObjectEventArgs.cs - Implementation of the
+ *			"System.Xml.Serialization.UnreferencedObjectEventArgs" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,42 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 namespace System.Xml.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Xml.Schema;
+using System;
+using System.Xml;
 
-public interface IXmlSerializable
+[TODO]
+public class UnreferencedObjectEventArgs : EventArgs
 {
-	XmlSchema GetSchema();
-	void ReadXml(XmlReader reader);
-	void WriteXml(XmlWriter writer);
+	// Internal state.
+	private String unreferencedId;
+	private Object unreferencedObject;
 
-}; // interface IXmlSerializable
+	// Constructor.
+	public UnreferencedObjectEventArgs
+				(Object unreferencedObject, String unreferencedId)
+			: base()
+			{
+				this.unreferencedId = unreferencedId;
+				this.unreferencedObject = unreferencedObject;
+			}
+
+	// Properties.
+	public String UnreferencedId
+			{
+				get { return unreferencedId; }
+			}
+	public Object UnreferencedObject
+			{
+				get { return unreferencedObject; }
+			}
+
+}; // class UnreferencedObjectEventArgs
 
 #endif // !ECMA_COMPAT
 

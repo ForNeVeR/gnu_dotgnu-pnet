@@ -1,8 +1,8 @@
 /*
- * IXmlSerializable.cs - Implementation of the
- *		"System.Xml.IXmlSerializable" class.
+ * SoapIncludeAttribute.cs - Implementation of the
+ *			"System.Xml.Serialization.SoapIncludeAttribute" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,45 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 namespace System.Xml.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Xml.Schema;
+using System;
+using System.Xml;
 
-public interface IXmlSerializable
+[TODO]
+[AttributeUsage(AttributeTargets.Class |
+                AttributeTargets.Struct |
+                AttributeTargets.Method)]
+public class SoapIncludeAttribute : Attribute
 {
-	XmlSchema GetSchema();
-	void ReadXml(XmlReader reader);
-	void WriteXml(XmlWriter writer);
+	[TODO]
+	public SoapIncludeAttribute(Type type)
+			: base()
+			{
+				// TODO
+				throw new NotImplementedException(".ctor");
+			}
 
-}; // interface IXmlSerializable
+	[TODO]
+	public Type Type
+			{
+				get
+				{
+					// TODO
+					throw new NotImplementedException("Type");
+				}
+				set
+				{
+					// TODO
+					throw new NotImplementedException("Type");
+				}
+			}
+
+}; // class SoapIncludeAttribute
 
 #endif // !ECMA_COMPAT
 

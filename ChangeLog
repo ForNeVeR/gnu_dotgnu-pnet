@@ -1,3 +1,8 @@
+2003-08-07  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/Serialization/*.cs: stub out the xml serialization classes.
+
+	* System.Xml/Serialization/IXmlSerializable.cs: fix for ECMA_COMPAT.
 
 2003-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 

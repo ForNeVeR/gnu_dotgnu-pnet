@@ -1,8 +1,8 @@
 /*
- * IXmlSerializable.cs - Implementation of the
- *		"System.Xml.IXmlSerializable" class.
+ * SoapSchemaMember.cs - Implementation of the
+ *			"System.Xml.Serialization.SoapSchemaMember" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,57 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 namespace System.Xml.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Xml.Schema;
+using System;
+using System.Xml;
 
-public interface IXmlSerializable
+[TODO]
+public class SoapSchemaMember
 {
-	XmlSchema GetSchema();
-	void ReadXml(XmlReader reader);
-	void WriteXml(XmlWriter writer);
+	[TODO]
+	public SoapSchemaMember()
+			: base()
+			{
+				// TODO
+				throw new NotImplementedException(".ctor");
+			}
 
-}; // interface IXmlSerializable
+	[TODO]
+	public String MemberName
+			{
+				get
+				{
+					// TODO
+					throw new NotImplementedException("MemberName");
+				}
+				set
+				{
+					// TODO
+					throw new NotImplementedException("MemberName");
+				}
+			}
+
+	[TODO]
+	public XmlQualifiedName MemberType
+			{
+				get
+				{
+					// TODO
+					throw new NotImplementedException("MemberType");
+				}
+				set
+				{
+					// TODO
+					throw new NotImplementedException("MemberType");
+				}
+			}
+
+}; // class SoapSchemaMember
 
 #endif // !ECMA_COMPAT
 

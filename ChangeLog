@@ -1,4 +1,9 @@
 
+2002-12-10  Gopal.V  <gopalv82@symonds.net>
+
+	* cscc/csharp/cs_defs.tc, cscc/csharp/cs_grammar.y, cscc/csharp/cs_stmt.tc:
+	Implement Using(...) {} statement for the IL codegen.
+
 2002-12-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_defs.tc, cscc/c/c_grammar.y, cscc/c/c_oper.tc,

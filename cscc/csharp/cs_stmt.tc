@@ -41,6 +41,22 @@ static int ILTypeImplements(ILGenInfo *info, ILType *type1, ILType *type2)
 		return 0;
 	}
 }
+/*
+ * determine if a type1 inherits type2
+ */
+static int ILTypeInherits(ILGenInfo *info, ILType *type1, ILType *type2)
+{
+	ILClass *classInfo1 = ILTypeToClass(info, type1);
+	ILClass *classInfo2 = ILTypeToClass(info, type2);
+	if(classInfo1 && classInfo2)
+	{
+		return ILClassInheritsFrom(classInfo1, classInfo2);
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 /*
  * Obtain the default scope of the class
@@ -1456,7 +1472,36 @@ ILNode_SemAnalysis(ILNode_Lock)
  */
 ILNode_SemAnalysis(ILNode_Using)
 {
-	/* TODO */
+	CSSemValue value;
+	ILType *type;
+	ILType *disposable;
+	unsigned tempVar;
+	
+	if(yyisa(node->resource,ILNode_Expression))
+	{
+		value=ILNode_SemAnalysis(node->resource,info,&(node->resource));		
+		if(!CSSemGetType(value))
+		{
+			CCErrorOnLine(yygetfilename(node->resource), 
+				yygetlinenum(node->resource), 
+				"invalid expression");
+		}
+		disposable=ILFindSystemType(info,"IDisposable");
+		type=CSSemGetType(value);
+		if(!ILTypeImplements(info,type,disposable) && 
+			!ILTypeImplements(info,type,disposable))
+		{
+			CCErrorOnLine(yygetfilename(node->resource), 
+				yygetlinenum(node->resource), 
+				"'%s' does not implement 'IDisposable'",
+					CSTypeToName(type));
+		}
+	}
+	else if(yyisa(node->resource,ILNode_ResourceDeclaration))
+	{
+		ILNode_SemAnalysis(node->resource,info,&(node->resource));
+	}
+	ILNode_SemAnalysis(node->stmt,info,&(node->stmt));
 	return CSSemValueDefault;
 }
 
@@ -1465,7 +1510,76 @@ ILNode_SemAnalysis(ILNode_Using)
  */
 ILNode_GenDiscard(ILNode_Using)
 {
-	/* TODO */
+	ILNode *vars;
+	ILNode_ListIter iter;
+	ILNode_LocalVar *varNode;
+	unsigned tempVar=0;
+	
+	ILLabel label1 = ILLabel_Undefined;
+	ILLabel label2 = ILLabel_Undefined;
+	if(yyisa(node->resource,ILNode_ResourceDeclaration))
+	{
+		ILNode_GenDiscard(node->resource,info);
+	}
+	else if(yyisa(node->resource,ILNode_Expression))
+	{
+		tempVar=ILGenTempTypedVar(info,ILFindSystemType(info,"IDisposable"));
+		ILNode_GenValue(node->resource,info);
+		ILGenStoreLocal(info,tempVar);	
+		ILGenAdjust(info,-1);
+	}
+	
+	/* Encapsulate the loop in a "try" block so that the "Dispose"
+	   method can be called in finally */
+	if(info->asmOutput)
+	{
+		fputs("\t.try {\n", info->asmOutput);
+	}
+	ILGenPushTry(info);
+	ILNode_GenDiscard(node->stmt,info);
+	ILGenJump(info, IL_OP_LEAVE, &label1);
+	ILGenPopTry(info);
+	if(info->asmOutput)
+	{
+		fputs("\t} finally {\n", info->asmOutput);
+	}
+	if(yyisa(node->resource,ILNode_ResourceDeclaration))
+	{
+		vars=((ILNode_ResourceDeclaration*)(node->resource))->variables;
+		ILNode_ListIter_Init(&iter, vars);
+		while((varNode = (ILNode_LocalVar*)ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILGenLoadLocal(info, varNode->index);
+			ILGenAdjust(info, 1);
+			ILGenJump(info, IL_OP_BRFALSE, &label2);
+			ILGenAdjust(info,-1);
+			ILGenLoadLocal(info, varNode->index);
+			ILGenAdjust(info, 1);
+			ILGenCallVirtual(info, 
+				"void [.library]System.IDisposable::Dispose()");
+			ILGenAdjust(info, -1);
+		}
+	}
+	else if(yyisa(node->resource,ILNode_Expression))
+	{
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 1);
+		ILGenJump(info, IL_OP_BRFALSE, &label2);
+		ILGenAdjust(info,-1);
+		ILGenLoadLocal(info, tempVar);
+		ILGenAdjust(info, 1);
+		ILGenCallVirtual(info, 
+			"void [.library]System.IDisposable::Dispose()");
+		ILGenAdjust(info, -1);
+		ILGenReleaseTempVar(info,tempVar);
+	}
+	ILGenSimple(info, IL_OP_ENDFINALLY);
+	ILGenLabel(info,&label2);
+	if(info->asmOutput)
+	{
+		fputs("\t}\n",info->asmOutput);
+	}
+	ILGenLabel(info,&label1);
 }
 
 /*
@@ -1775,3 +1889,88 @@ ILNode_SemAnalysis(ILNode_EventAddOrRemove)
 	return CSSemValueDefault;
 }
 
+/*
+ * This is ILNode_LocalVarDeclaration's copy ,except for the fact that
+ * all nodes are replaced with ILNode_LocVar after SemAnalysis.
+ */
+ILNode_SemAnalysis(ILNode_ResourceDeclaration)
+{
+	ILType *type;
+	ILNode_ListIter iter;
+	ILNode *nameNode;
+	char *name;
+	ILScopeData *data;
+	ILNode_MethodDeclaration *method;
+	ILNode *errorNode;
+	ILType *disposableType;
+	/* Locate the method that this local is declared within */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* Perform semantic analysis on the local variable type */
+	type = CSSemType(node->type, info, &(node->type));
+
+	disposableType=ILFindSystemType(info,"IDisposable");
+	if(! ILTypeImplements(info,type,disposableType) 
+		&& !ILTypeInherits(info,type,disposableType))
+	{
+		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+			  "`%s' does not implement 'IDisposable' interface ", 
+			  CSTypeToName(type));
+	}
+
+	/* Scan through the variable names and declare them in the current scope */
+	ILNode_ListIter_Init(&iter, node->variables);
+	while((nameNode = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		name = ILQualIdentName(nameNode, 0);
+		data = ILScopeLookup(info->currentScope, name, 0);
+		if(data)
+		{
+			/* The name is already declared in this scope */
+			CCErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
+						  "`%s' is already declared in this scope", name);
+			errorNode = ILScopeDataGetNode(data);
+			if(errorNode)
+			{
+				CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+							  "previous declaration here");
+			}
+		}
+		else
+		{
+			/* Add the type to the local variable signature for this method */
+			if(!(method->localVarSig))
+			{
+				method->localVarSig = ILTypeCreateLocalList(info->context);
+				if(!(method->localVarSig))
+				{
+					CCOutOfMemory();
+				}
+			}
+			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
+			{
+				CCOutOfMemory();
+			}
+
+			/* Create a local variable entry in the current scope */
+			ILScopeDeclareLocal(info->currentScope, name,
+								ILTypeNumLocals(method->localVarSig) - 1,
+								nameNode);
+
+			/* replace the name with the local variable */
+			*(iter.last) = ILNode_LocalVar_create(
+							ILTypeNumLocals(method->localVarSig)-1,
+							ILTypeToMachineType(type));
+		}
+	}
+
+	ILNode_SemAnalysis(node->init,info, &(node->init));
+
+	/* Return the default value to the caller */
+	return CSSemValueDefault;
+}
+
+ILNode_GenDiscard(ILNode_ResourceDeclaration)
+{
+	ILNode_GenDiscard(node->init,info);
+}

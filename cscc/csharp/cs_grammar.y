@@ -2273,8 +2273,12 @@ UsingStatement
 	;
 
 ResourceAcquisition
-	: '(' LocalVariableDeclaration ')'	{ $$ = 0; }
-	| '(' Expression ')'				{ $$ = $2; }
+	: '(' LocalVariableType VariableDeclarators ')'	{ 
+			MakeTernary(ResourceDeclaration,$2,$3.decl,$3.init); 
+		}
+	| '(' Expression ')'				{ 
+			$$ = $2;
+		}
 	| '(' error ')'		{
 				/*
 				 * This production recovers from errors in resource

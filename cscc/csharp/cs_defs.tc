@@ -129,6 +129,12 @@
 	char   *name;
 	ILNode *expr;
 }
+%node ILNode_ResourceDeclaration ILNode_Dummy =
+{
+	ILNode *type;
+	ILNode *variables;
+	ILNode *init;
+}
 %node ILNode_Using ILNode_Statement =
 {
 	ILNode *resource;

@@ -459,10 +459,15 @@ ILAssembly *ILAsmFindAssemblyRef(const char *name)
 		}
 	}
 
+	/* This is #if'ed out because the compiler can sometimes generate
+	   assembly references for transitive inclusions that don't always
+	   make it onto the main assembly reference list */
+#if 0
 	/* Could not find a match if we get here */
 	ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
 					  "assembly `%s' is not declared", name);
 	ILAsmErrors = 1;
+#endif
 
 	/* Create a new AssemblyRef for the name */
 	assem = ILAssemblyCreate(ILAsmImage, 0, name, 1);

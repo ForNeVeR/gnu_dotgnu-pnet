@@ -156,6 +156,18 @@ static int LayoutType(ILType *type, LayoutInfo *layout)
 			}
 			break;
 
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+			#if defined(HAVE_LIBFFI)
+				layout->size = sizeof(ILTypedRef);
+				layout->alignment = ffi_type_pointer.alignment;
+			#else
+				layout->size = sizeof(ILTypedRef);
+				layout->alignment = _IL_ALIGN_FOR_TYPE(void_p);
+			#endif
+			}
+			break;
+
 			default: return 0;
 		}
 		layout->vtableSize = 0;

@@ -289,6 +289,13 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 			break;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+				CVM_DWIDE(COP_MSTORE, offset, CVM_WORDS_PER_TYPED_REF);
+				CVM_ADJUST(-CVM_WORDS_PER_TYPED_REF);
+			}
+			break;
 		}
 	}
 	else if(ILType_IsValueType(type))

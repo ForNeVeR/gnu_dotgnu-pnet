@@ -352,48 +352,6 @@ ILNode_SemAnalysis(ILNode_AccessorDeclaration)
 	return ILNode_SemAnalysis(node->body, info, &(node->body));
 }
 
-ILNode_SemAnalysis(ILNode_IndexerDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_IndexerDeclarator)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_InterfaceDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_InterfaceMethodDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_InterfacePropertyDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_InterfaceEventDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
-ILNode_SemAnalysis(ILNode_InterfaceIndexerDeclaration)
-{
-	/* TODO */
-	return CSSemValueDefault;
-}
-
 ILNode_SemAnalysis(ILNode_EnumDeclaration)
 {
 	/* TODO */

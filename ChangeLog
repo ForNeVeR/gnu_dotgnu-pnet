@@ -11,6 +11,8 @@ analysis routines.
 * codegen/cg_nodes.tc, codegen/cg_decls.tc, codegen/jv_decls.tc: remove
 unnecessary node types.
 
+* cscc/cs_decls.tc: remove semantic analysis for unnecessary node types.
+
 2001-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.c (ILFindSystemType): import system library classes

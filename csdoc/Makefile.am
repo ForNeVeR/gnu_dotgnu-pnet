@@ -1,6 +1,6 @@
 bin_PROGRAMS       = csdoc2texi csdoc2html csdoc2hier cssrc2html
 noinst_PROGRAMS    = csdocvalil csdoc2stub csdoc2test src2xml il2doc
-man_MANS           = csdoc2texi.1 csdoc2html.1 csdoc2hier.1
+man_MANS           = csdoc2texi.1 csdoc2html.1 csdoc2hier.1 cssrc2html.1
 EXTRA_DIST         = $(man_MANS)
 
 CSDOC_COMMON       = doc_destroy.c \

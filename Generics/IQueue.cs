@@ -33,6 +33,8 @@ public interface IQueue<T> : ICollection<T>
 	T Dequeue();
 	T Peek();
 	T[] ToArray();
+	bool IsFixedSize { get; }
+	bool IsReadOnly { get; }
 
 }; // interface IQueue<T>
 

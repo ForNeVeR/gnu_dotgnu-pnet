@@ -43,6 +43,15 @@
 	* Generics/IDeque.cs, Generics/LinkedList.cs: add the IDeque
 	interface, and make LinkedList implement IDeque, IQueue, and IStack.
 
+	* Generics/ArrayQueue.cs, Generics/ArrayStack.cs,
+	Generics/Generics.txt, Generics/IDeque.cs, Generics/IQueue.cs,
+	Generics/IStack.cs, Generics/LinkedList.cs,
+	Generics/ReadOnlyCollection.cs, Generics/ReadOnlyDeque.cs,
+	Generics/ReadOnlyDictIterator.cs, Generics/ReadOnlyDictionary.cs,
+	Generics/ReadOnlyList.cs, Generics/ReadOnlyQueue.cs,
+	Generics/ReadOnlyStack.cs: add read-only wrapper classes,
+	to replace the concrete-specific "ReadOnly" methods.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

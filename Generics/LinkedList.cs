@@ -236,6 +236,20 @@ public class LinkedList<T>
 				CopyTo(array, 0);
 				return array;
 			}
+	bool IDeque<T>.IsFixedSize
+			{
+				get
+				{
+					return IsFixedSize;
+				}
+			}
+	bool IDeque<T>.IsReadOnly
+			{
+				get
+				{
+					return IsReadOnly;
+				}
+			}
 
 	// Implement the IQueue<T> interface privately.
 	void IQueue<T>.Enqueue(T value)
@@ -254,6 +268,20 @@ public class LinkedList<T>
 			{
 				return ToArray();
 			}
+	bool IQueue<T>.IsFixedSize
+			{
+				get
+				{
+					return IsFixedSize;
+				}
+			}
+	bool IQueue<T>.IsReadOnly
+			{
+				get
+				{
+					return IsReadOnly;
+				}
+			}
 
 	// Implement the IStack<T> interface privately.
 	void IStack<T>.Push(T value)
@@ -271,6 +299,20 @@ public class LinkedList<T>
 	T[] IStack<T>.ToArray()
 			{
 				return ToArray();
+			}
+	bool IStack<T>.IsFixedSize
+			{
+				get
+				{
+					return IsFixedSize;
+				}
+			}
+	bool IStack<T>.IsReadOnly
+			{
+				get
+				{
+					return IsReadOnly;
+				}
 			}
 
 	// Implement the ICollection<T> interface.

@@ -36,6 +36,8 @@ public interface IDeque<T> : ICollection<T>
 	T PeekFront();
 	T PeekEnd();
 	T[] ToArray();
+	bool IsFixedSize { get; }
+	bool IsReadOnly { get; }
 
 }; // interface IDeque<T>
 

@@ -35,6 +35,7 @@ Invalid_EmptyQueue=The requested operation is invalid on an empty queue
 Invalid_EmptyStack=The requested operation is invalid on an empty stack
 Invalid_EmptyList=The requested operation is invalid on an empty list
 Invalid_KeyType=Invalid type for dictionary key
+Invalid_NotCloneable=The specified collection is not cloneable
 Invalid_UnderlyingModified=The underlying collection has been modified
 Invalid_ValueType=Invalid type for collection value
 NotSupp_FixedSizeCollection=Operation not supported on fixed sized objects

@@ -123,15 +123,6 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 				return new StackIterator<T>(this);
 			}
 
-	// Determine if this stack is read-only.
-	public virtual bool IsReadOnly
-			{
-				get
-				{
-					return false;
-				}
-			}
-
 	// Clear the contents of this stack.
 	public virtual void Clear()
 			{
@@ -226,6 +217,20 @@ public class ArrayStack<T> : IStack<T>, ICloneable
 					array[index] = items[size - index - 1];
 				}
 				return array;
+			}
+	public virtual bool IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	public virtual bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
 			}
 
 	// Convert this stack into a synchronized stack.

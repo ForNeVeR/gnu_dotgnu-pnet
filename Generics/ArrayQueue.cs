@@ -158,15 +158,6 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 				return new QueueIterator<T>(this);
 			}
 
-	// Determine if this queue is read-only.
-	public virtual bool IsReadOnly
-			{
-				get
-				{
-					return false;
-				}
-			}
-
 	// Clear the contents of this queue.
 	public virtual void Clear()
 			{
@@ -295,6 +286,20 @@ public class ArrayQueue<T> : IQueue<T>, ICloneable
 					}
 				}
 				return array;
+			}
+	public virtual bool IsFixedSize
+			{
+				get
+				{
+					return false;
+				}
+			}
+	public virtual bool IsReadOnly
+			{
+				get
+				{
+					return false;
+				}
 			}
 
 	// Convert this queue into a synchronized queue.

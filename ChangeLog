@@ -10,6 +10,10 @@
 	* System/Net/SocketAddress.cs, runtime/System/Array.cs: the
 	"Array.Count" property is supposed to be private.
 
+	* runtime/System/ParamArrayAttribute.cs: reverse the order of
+	"Inherited" and "AllowMultiple" so that "csdocvalil" doesn't
+	get confused when validating.
+
 2002-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Makefile.am, System.Xml/Makefile.am, runtime/Makefile.am:

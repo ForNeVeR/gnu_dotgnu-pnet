@@ -23,7 +23,7 @@ namespace System
 {
 
 [AttributeUsage(AttributeTargets.Parameter,
-				Inherited=true, AllowMultiple=false)]
+				AllowMultiple=false, Inherited=true)]
 public sealed class ParamArrayAttribute : Attribute
 {
 

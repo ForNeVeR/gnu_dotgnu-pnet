@@ -1131,13 +1131,18 @@ public class XmlTextReader : XmlReader
 				StringBuilder buffer = new StringBuilder();
 				MoveToContent();
 				int ch;
-				if(NodeType == XmlNodeType.Element && AttributeCount > 0)
+				if(NodeType == XmlNodeType.Element)
 				{
 					builder.Append("<"+Name);
-				}
-				else if(NodeType == XmlNodeType.Element && AttributeCount == 0)
-				{
-					builder.Append("<"+Name+">");
+					ch = reader.Peek();
+					if((char)ch == '<')
+					{
+						builder.Append(">");
+					}
+					else
+					{
+						builder.Append(" ");
+					}
 				}
 				else if(NodeType == XmlNodeType.Attribute)
 				{

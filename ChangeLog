@@ -2,6 +2,7 @@
 
 	* System.Xml/XmlTextWriter.cs: Fix ReadOuterXml missing certain
 	characters.
+	* System.Xml/XmlTextWriter.cs: Fixed up second bug.
 
 2003-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 

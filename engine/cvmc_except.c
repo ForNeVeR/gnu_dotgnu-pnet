@@ -48,19 +48,19 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 		}
 		if(extraLocals == 1)
 		{
-			CVM_BYTE(COP_MK_LOCAL_1);
+			CVM_OUT_NONE(COP_MK_LOCAL_1);
 		}
 		else if(extraLocals == 2)
 		{
-			CVM_BYTE(COP_MK_LOCAL_2);
+			CVM_OUT_NONE(COP_MK_LOCAL_2);
 		}
 		else if(extraLocals == 3)
 		{
-			CVM_BYTE(COP_MK_LOCAL_3);
+			CVM_OUT_NONE(COP_MK_LOCAL_3);
 		}
 		else if(extraLocals != 0)
 		{
-			CVM_WIDE(COP_MK_LOCAL_N, extraLocals);
+			CVM_OUT_WIDE(COP_MK_LOCAL_N, extraLocals);
 		}
 		coder->height += extraLocals;
 		coder->minHeight += extraLocals;
@@ -72,8 +72,7 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 
 	/* Set up the method's frame to perform exception handling */
 	coder->needTry = 1;
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_ENTER_TRY);
+	CVMP_OUT_NONE(COP_PREFIX_ENTER_TRY);
 }
 
 /*
@@ -83,13 +82,11 @@ static void CVMCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
 	if(inCurrentMethod)
 	{
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(COP_PREFIX_THROW);
+		CVMP_OUT_NONE(COP_PREFIX_THROW);
 	}
 	else
 	{
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(COP_PREFIX_THROW_CALLER);
+		CVMP_OUT_NONE(COP_PREFIX_THROW_CALLER);
 	}
 	CVM_ADJUST(-1);
 }
@@ -100,12 +97,11 @@ static void CVMCoder_Throw(ILCoder *coder, int inCurrentMethod)
 static void CVMCoder_Rethrow(ILCoder *coder, ILException *exception)
 {
 	/* Push the saved exception object back onto the stack */
-	CVM_WIDE(COP_PLOAD, exception->userData);
+	CVM_OUT_WIDE(COP_PLOAD, exception->userData);
 	CVM_ADJUST(1);
 
 	/* Throw the object to this method's exception handler table */
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_THROW);
+	CVMP_OUT_NONE(COP_PREFIX_THROW);
 	CVM_ADJUST(-1);
 }
 
@@ -122,7 +118,7 @@ static void CVMCoder_Jsr(ILCoder *coder, ILUInt32 dest)
  */
 static void CVMCoder_RetFromJsr(ILCoder *coder)
 {
-	CVM_BYTE(COP_RET_JSR);
+	CVM_OUT_NONE(COP_RET_JSR);
 }
 
 /*
@@ -149,11 +145,11 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 	}
 
 	/* Output the start and end of the code covered by the handler */
+	coder->tryHandler = CVM_POSN();
 	if(start == 0 && end == IL_MAX_UINT32)
 	{
 		/* This handler is the last one in the table */
-		CVM_WORD(start);
-		CVM_WORD(end);
+		CVM_OUT_TRY(start, end);
 	}
 	else
 	{
@@ -165,32 +161,24 @@ static void CVMCoder_TryHandlerStart(ILCoder *_coder,
 		{
 			return;
 		}
-		CVM_WORD(label->offset);
+		start = label->offset;
 		label = GetLabel(coder, end);
 		if(!label)
 		{
 			return;
 		}
-		CVM_WORD(label->offset);
+		end = label->offset;
+		CVM_OUT_TRY(start, end);
 	}
-
-	/* Output a place-holder for the length value */
-	coder->tryHandler = CVM_POSN();
-	CVM_WORD(0);
 }
 
 /*
  * End a "try" handler block for a region of code.
  */
-static void CVMCoder_TryHandlerEnd(ILCoder *_coder)
+static void CVMCoder_TryHandlerEnd(ILCoder *coder)
 {
-	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	unsigned long length = CVM_POSN() - coder->tryHandler + 8;
-	if(!ILCacheIsFull(coder->cache, &(coder->codePosn)))
-	{
-		/* Back-patch the length value for the handler */
-		IL_WRITE_UINT32(coder->tryHandler, length);
-	}
+	/* Back-patch the length value for the handler */
+	CVM_BACKPATCH_TRY(((ILCVMCoder *)coder)->tryHandler);
 }
 
 /*
@@ -203,35 +191,29 @@ static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
 	unsigned char *temp;
 
 	/* Duplicate the exception object */
-	CVM_BYTE(COP_DUP);
+	CVM_OUT_NONE(COP_DUP);
 	CVM_ADJUST(1);
 
 	/* Determine if the object is an instance of the right class */
-	CVM_BYTE(COP_ISINST);
-	CVM_PTR(classInfo);
+	CVM_OUT_PTR(COP_ISINST, classInfo);
 
 	/* Branch to the next test if not an instance */
 	temp = CVM_POSN();
-	CVM_BYTE(COP_BRNULL);
-	CVM_BYTE(0);
-	CVM_WORD(0);
+	CVM_OUT_BRANCH_PLACEHOLDER(COP_BRNULL);
 
 	/* If the method contains "rethrow" instructions, then save
 	   the object into a temporary local for this "catch" clause */
 	if(hasRethrow)
 	{
-		CVM_BYTE(COP_DUP);
-		CVM_WIDE(COP_PSTORE, exception->userData);
+		CVM_OUT_NONE(COP_DUP);
+		CVM_OUT_WIDE(COP_PSTORE, exception->userData);
 	}
 
 	/* Branch to the start of the "catch" clause */
 	OutputBranch(_coder, COP_BR, exception->handlerOffset);
 
 	/* Back-patch the "brnull" instruction */
-	if(CVM_VALID(temp, 2))
-	{
-		temp[1] = (unsigned char)(CVM_POSN() - temp);
-	}
+	CVM_BACKPATCH_BRANCH(temp, (ILInt32)(CVM_POSN() - temp));
 
 	/* Adjust the stack back to its original height */
 	CVM_ADJUST(-1);

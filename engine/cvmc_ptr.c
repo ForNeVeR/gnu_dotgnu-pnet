@@ -32,35 +32,33 @@ static void LoadArrayElem(ILCoder *coder, int opcode1, int opcode2,
 	{
 		if(opcode1 < COP_PREFIX)
 		{
-			CVM_BYTE(opcode1);
+			CVM_OUT_NONE(opcode1);
 		}
 		else
 		{
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(opcode1 - COP_PREFIX);
+			CVMP_OUT_NONE(opcode1 - COP_PREFIX);
 		}
 		CVM_ADJUST(-2 + stackSize);
 	}
 #ifdef IL_NATIVE_INT64
 	else
 	{
-		CVM_BYTE(COP_CKARRAY_LOAD_I8);
+		CVM_OUT_NONE(COP_CKARRAY_LOAD_I8);
 		if(shift != 0)
 		{
-			CVM_BYTE(COP_LDC_I4_0 + shift);
+			CVM_OUT_NONE(COP_LDC_I4_0 + shift);
 			CVM_ADJUST(1);
-			CVM_BYTE(COP_LSHL);
+			CVM_OUT_NONE(COP_LSHL);
 			CVM_ADJUST(-1);
 		}
-		CVM_BYTE(COP_PADD_I8);
+		CVM_OUT_NONE(COP_PADD_I8);
 		if(opcode2 != COP_MREAD)
 		{
-			CVM_BYTE(opcode2);
+			CVM_OUT_NONE(opcode2);
 		}
 		else
 		{
-			CVM_BYTE(opcode2);
-			CVM_BYTE(1 << shift);
+			CVM_OUT_WIDE(opcode2, (1 << shift));
 		}
 		CVM_ADJUST(-(1 + CVM_WORDS_PER_LONG) + stackSize);
 	}
@@ -79,29 +77,25 @@ static void StoreArrayElem(ILCoder *coder, int opcode1, int opcode2,
 	{
 		if(opcode1 < COP_PREFIX)
 		{
-			CVM_BYTE(opcode1);
+			CVM_OUT_NONE(opcode1);
 		}
 		else
 		{
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(opcode1 - COP_PREFIX);
+			CVMP_OUT_NONE(opcode1 - COP_PREFIX);
 		}
 		CVM_ADJUST(-(2 + stackSize));
 	}
 #ifdef IL_NATIVE_INT64
 	else
 	{
-		CVM_BYTE(COP_CKARRAY_STORE_I8);
-		CVM_BYTE(stackSize);
-		CVM_BYTE(1 << shift);
+		CVM_OUT_BYTE2(COP_CKARRAY_STORE_I8, stackSize, (1 << shift));
 		if(opcode2 != COP_MWRITE)
 		{
-			CVM_BYTE(opcode2);
+			CVM_OUT_NONE(opcode2);
 		}
 		else
 		{
-			CVM_BYTE(opcode2);
-			CVM_BYTE(1 << shift);
+			CVM_OUT_WIDE(opcode2, (1 << shift));
 		}
 		CVM_ADJUST(-(1 + CVM_WORDS_PER_LONG + stackSize));
 	}
@@ -126,104 +120,94 @@ static void CVMCoder_ArrayAccess(ILCoder *coder, int opcode,
 			if(indexType == ILEngineType_I4)
 		#endif
 			{
-				CVM_BYTE(COP_CKARRAY_LOAD_I4);
+				CVM_OUT_NONE(COP_CKARRAY_LOAD_I4);
 				if(size == 2)
 				{
-					CVM_BYTE(COP_LDC_I4_1);
+					CVM_OUT_NONE(COP_LDC_I4_1);
 					CVM_ADJUST(1);
-					CVM_BYTE(COP_ISHL);
+					CVM_OUT_NONE(COP_ISHL);
 					CVM_ADJUST(-1);
 				}
 				else if(size == 4)
 				{
-					CVM_BYTE(COP_LDC_I4_2);
+					CVM_OUT_NONE(COP_LDC_I4_2);
 					CVM_ADJUST(1);
-					CVM_BYTE(COP_ISHL);
+					CVM_OUT_NONE(COP_ISHL);
 					CVM_ADJUST(-1);
 				}
 				else if(size == 8)
 				{
-					CVM_BYTE(COP_LDC_I4_3);
+					CVM_OUT_NONE(COP_LDC_I4_3);
 					CVM_ADJUST(1);
-					CVM_BYTE(COP_ISHL);
+					CVM_OUT_NONE(COP_ISHL);
 					CVM_ADJUST(-1);
 				}
 				else if(size != 1)
 				{
 					if(size < 8)
 					{
-						CVM_BYTE(COP_LDC_I4_0 + size);
+						CVM_OUT_NONE(COP_LDC_I4_0 + size);
 					}
 					else if(size < 128)
 					{
-						CVM_BYTE(COP_LDC_I4_S);
-						CVM_BYTE(size);
+						CVM_OUT_BYTE(COP_LDC_I4_S, size);
 					}
 					else
 					{
-						CVM_BYTE(COP_LDC_I4);
-						CVM_BYTE(size);
-						CVM_BYTE(size >> 8);
-						CVM_BYTE(size >> 16);
-						CVM_BYTE(size >> 24);
+						CVM_OUT_WORD(COP_LDC_I4, size);
 					}
 					CVM_ADJUST(1);
-					CVM_BYTE(COP_IMUL);
+					CVM_OUT_NONE(COP_IMUL);
 					CVM_ADJUST(-1);
 				}
-				CVM_BYTE(COP_PADD_I4);
+				CVM_OUT_NONE(COP_PADD_I4);
 				CVM_ADJUST(-1);
 			}
 		#ifdef IL_NATIVE_INT64
 			else
 			{
-				CVM_BYTE(COP_CKARRAY_LOAD_I8);
+				CVM_OUT_NONE(COP_CKARRAY_LOAD_I8);
 				if(size == 2)
 				{
-					CVM_BYTE(COP_LDC_I4_1);
+					CVM_OUT_NONE(COP_LDC_I4_1);
 					CVM_ADJUST(1);
-					CVM_BYTE(COP_LSHL);
+					CVM_OUT_NONE(COP_LSHL);
 					CVM_ADJUST(-1);
 				}
 				else if(size == 4)
 				{
-					CVM_BYTE(COP_LDC_I4_2);
+					CVM_OUT_NONE(COP_LDC_I4_2);
 					CVM_ADJUST(1);
-					CVM_BYTE(COP_LSHL);
+					CVM_OUT_NONE(COP_LSHL);
 					CVM_ADJUST(-1);
 				}
 				else if(size == 8)
 				{
-					CVM_BYTE(COP_LDC_I4_3);
+					CVM_OUT_NONE(COP_LDC_I4_3);
 					CVM_ADJUST(1);
-					CVM_BYTE(COP_LSHL);
+					CVM_OUT_NONE(COP_LSHL);
 					CVM_ADJUST(-1);
 				}
 				else if(size != 1)
 				{
 					if(size < 8)
 					{
-						CVM_BYTE(COP_LDC_I4_0 + size);
+						CVM_OUT_NONE(COP_LDC_I4_0 + size);
 					}
 					else if(size < 128)
 					{
-						CVM_BYTE(COP_LDC_I4_S);
-						CVM_BYTE(size);
+						CVM_OUT_BYTE(COP_LDC_I4_S, size);
 					}
 					else
 					{
-						CVM_BYTE(COP_LDC_I4);
-						CVM_BYTE(size);
-						CVM_BYTE(size >> 8);
-						CVM_BYTE(size >> 16);
-						CVM_BYTE(size >> 24);
+						CVM_OUT_WORD(COP_LDC_I4, size);
 					}
-					CVM_BYTE(COP_IU2L);
+					CVM_OUT_NONE(COP_IU2L);
 					CVM_ADJUST(CVM_WORDS_PER_LONG);
-					CVM_BYTE(COP_LMUL);
+					CVM_OUT_NONE(COP_LMUL);
 					CVM_ADJUST(-CVM_WORDS_PER_LONG);
 				}
-				CVM_BYTE(CVM_PADD_I8);
+				CVM_OUT_NONE(CVM_PADD_I8);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		#endif
@@ -401,32 +385,32 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_I1:
 		{
 			/* Load a signed byte from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_BREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_BREAD);
 		}
 		break;
 
 		case IL_OP_LDIND_U1:
 		{
 			/* Load an unsigned byte from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_UBREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_UBREAD);
 		}
 		break;
 
 		case IL_OP_LDIND_I2:
 		{
 			/* Load a signed short from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_SREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_SREAD);
 		}
 		break;
 
 		case IL_OP_LDIND_U2:
 		{
 			/* Load an unsigned short from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_USREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_USREAD);
 		}
 		break;
 
@@ -437,8 +421,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Load an integer from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_IREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_IREAD);
 		}
 		break;
 
@@ -448,9 +432,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Load a long from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_MREAD);
-			CVM_BYTE(8);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_WIDE(COP_MREAD, 8);
 			CVM_ADJUST(CVM_WORDS_PER_LONG - 1);
 		}
 		break;
@@ -458,8 +441,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_R4:
 		{
 			/* Load a 32-bit float from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_FREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_FREAD);
 			CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 		}
 		break;
@@ -467,8 +450,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_R8:
 		{
 			/* Load a 64-bit float from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_DREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_DREAD);
 			CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 		}
 		break;
@@ -476,17 +459,16 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_LDIND_REF:
 		{
 			/* Load a pointer from a pointer */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_PREAD);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_PREAD);
 		}
 		break;
 
 		case IL_OP_STIND_REF:
 		{
 			/* Store a pointer to a pointer */
-			CVM_BYTE(COP_CKNULL_N);
-			CVM_BYTE(1);
-			CVM_BYTE(COP_PWRITE);
+			CVM_OUT_WIDE(COP_CKNULL_N, 1);
+			CVM_OUT_NONE(COP_PWRITE);
 			CVM_ADJUST(-2);
 		}
 		break;
@@ -494,9 +476,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_I1:
 		{
 			/* Store a byte to a pointer */
-			CVM_BYTE(COP_CKNULL_N);
-			CVM_BYTE(1);
-			CVM_BYTE(COP_BWRITE);
+			CVM_OUT_WIDE(COP_CKNULL_N, 1);
+			CVM_OUT_NONE(COP_BWRITE);
 			CVM_ADJUST(-2);
 		}
 		break;
@@ -504,9 +485,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_I2:
 		{
 			/* Store a short to a pointer */
-			CVM_BYTE(COP_CKNULL_N);
-			CVM_BYTE(1);
-			CVM_BYTE(COP_SWRITE);
+			CVM_OUT_WIDE(COP_CKNULL_N, 1);
+			CVM_OUT_NONE(COP_SWRITE);
 			CVM_ADJUST(-2);
 		}
 		break;
@@ -517,9 +497,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Store an integer to a pointer */
-			CVM_BYTE(COP_CKNULL_N);
-			CVM_BYTE(1);
-			CVM_BYTE(COP_IWRITE);
+			CVM_OUT_WIDE(COP_CKNULL_N, 1);
+			CVM_OUT_NONE(COP_IWRITE);
 			CVM_ADJUST(-2);
 		}
 		break;
@@ -530,10 +509,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 	#endif
 		{
 			/* Store a long to a pointer */
-			CVM_BYTE(COP_CKNULL_N);
-			CVM_BYTE(CVM_WORDS_PER_LONG);
-			CVM_BYTE(COP_MWRITE);
-			CVM_BYTE(8);
+			CVM_OUT_WIDE(COP_CKNULL_N, CVM_WORDS_PER_LONG);
+			CVM_OUT_WIDE(COP_MWRITE, 8);
 			CVM_ADJUST(-(CVM_WORDS_PER_LONG + 1));
 		}
 		break;
@@ -541,9 +518,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_R4:
 		{
 			/* Store a 32-bit float to a pointer */
-			CVM_BYTE(COP_CKNULL_N);
-			CVM_BYTE(CVM_WORDS_PER_NATIVE_FLOAT);
-			CVM_BYTE(COP_FWRITE);
+			CVM_OUT_WIDE(COP_CKNULL_N, CVM_WORDS_PER_NATIVE_FLOAT);
+			CVM_OUT_NONE(COP_FWRITE);
 			CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 		}
 		break;
@@ -551,9 +527,8 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 		case IL_OP_STIND_R8:
 		{
 			/* Store a 64-bit float to a pointer */
-			CVM_BYTE(COP_CKNULL_N);
-			CVM_BYTE(CVM_WORDS_PER_NATIVE_FLOAT);
-			CVM_BYTE(COP_DWRITE);
+			CVM_OUT_WIDE(COP_CKNULL_N, CVM_WORDS_PER_NATIVE_FLOAT);
+			CVM_OUT_NONE(COP_DWRITE);
 			CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 		}
 		break;
@@ -574,17 +549,17 @@ static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 	if(opcode == IL_OP_LDOBJ)
 	{
 		/* Load from a pointer */
-		CVM_BYTE(COP_CKNULL);
+		CVM_OUT_NONE(COP_CKNULL);
 		if(memorySize != 0)
 		{
-			CVM_WIDE(COP_MREAD, memorySize);
+			CVM_OUT_WIDE(COP_MREAD, memorySize);
 			CVM_ADJUST(stackSize - 1);
 		}
 		else
 		{
 			/* Because the object is empty, there's no point
 			   performing the "mread" instruction */
-			CVM_BYTE(COP_POP);
+			CVM_OUT_NONE(COP_POP);
 			CVM_ADJUST(-1);
 		}
 	}
@@ -593,16 +568,16 @@ static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 		/* Store to a pointer */
 		if(memorySize != 0)
 		{
-			CVM_WIDE(COP_CKNULL_N, stackSize);
-			CVM_WIDE(COP_MWRITE, memorySize);
+			CVM_OUT_WIDE(COP_CKNULL_N, stackSize);
+			CVM_OUT_WIDE(COP_MWRITE, memorySize);
 			CVM_ADJUST(stackSize + 1);
 		}
 		else
 		{
 			/* Because the object is empty, there's no point
 			   performing the "mwrite" instruction */
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_POP);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_POP);
 			CVM_ADJUST(-1);
 		}
 	}
@@ -622,7 +597,7 @@ static void CVMCoder_PtrPrefix(ILCoder *coder, int alignment)
  */
 static void CVMCoder_ArrayLength(ILCoder *coder)
 {
-	CVM_BYTE(COP_ARRAY_LEN);
+	CVM_OUT_NONE(COP_ARRAY_LEN);
 	CVM_ADJUST(CVM_WORDS_PER_NATIVE_INT - 1);
 }
 
@@ -638,7 +613,7 @@ static void CVMCoder_NewArray(ILCoder *coder, ILType *arrayType,
 	/* Convert the length into I4 */
 	if(lengthType == ILEngineType_I)
 	{
-		CVM_BYTE(COP_L2I);
+		CVM_OUT_NONE(COP_L2I);
 	}
 #endif
 
@@ -649,8 +624,7 @@ static void CVMCoder_NewArray(ILCoder *coder, ILType *arrayType,
 					(arrayClass, 0, IL_META_MEMBERKIND_METHOD);
 
 	/* Output code to call the array type's constructor */
-	CVM_BYTE(COP_CALL_CTOR);
-	CVM_PTR(ctor);
+	CVM_OUT_PTR(COP_CALL_CTOR, ctor);
 }
 
 #endif	/* IL_CVMC_CODE */

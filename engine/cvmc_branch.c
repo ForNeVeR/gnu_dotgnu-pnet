@@ -90,25 +90,19 @@ static void CVMCoder_Label(ILCoder *_coder, ILUInt32 offset)
 				if(dest >= (ILInt32)(-128) && dest <= (ILInt32)(127))
 				{
 					/* Short jump */
-					coder->start[ref->offset + 1] = (unsigned char)dest;
+					CVM_BACKPATCH_BRANCH(coder->start + ref->offset, dest);
 				}
 				else
 				{
 					/* Long jump */
-					coder->start[ref->offset]     = COP_BR_LONG;
-					coder->start[ref->offset + 2] = (unsigned char)dest;
-					coder->start[ref->offset + 3] = (unsigned char)(dest >> 8);
-					coder->start[ref->offset + 4] = (unsigned char)(dest >> 16);
-					coder->start[ref->offset + 5] = (unsigned char)(dest >> 24);
+					CVM_BACKPATCH_BRANCH_LONG(coder->start + ref->offset, dest);
 				}
 			}
 			else
 			{
 				/* Switch table entry */
-				coder->start[ref->address]     = (unsigned char)dest;
-				coder->start[ref->address + 1] = (unsigned char)(dest >> 8);
-				coder->start[ref->address + 2] = (unsigned char)(dest >> 16);
-				coder->start[ref->address + 3] = (unsigned char)(dest >> 24);
+				CVM_BACKPATCH_SWENTRY(coder->start + ref->offset, dest,
+									  coder->start + ref->address);
 			}
 		}
 		nextRef = ref->nextRef;
@@ -142,15 +136,11 @@ static void OutputBranch(ILCoder *_coder, int opcode, ILUInt32 dest)
 		relative = (ILInt32)(label->offset - (CVM_POSN() - coder->start));
 		if(relative >= (ILInt32)(-128) && relative <= (ILInt32)(127))
 		{
-			CVM_BYTE(opcode);
-			CVM_BYTE(relative);
-			CVM_WORD(0);
+			CVM_OUT_BRANCH(opcode, relative);
 		}
 		else
 		{
-			CVM_BYTE(COP_BR_LONG);
-			CVM_BYTE(opcode);
-			CVM_WORD(relative);
+			CVM_OUT_BRANCH_LONG(opcode, relative);
 		}
 	}
 	else
@@ -171,9 +161,7 @@ static void OutputBranch(ILCoder *_coder, int opcode, ILUInt32 dest)
 		}
 
 		/* Output a place-holder into the code stream */
-		CVM_BYTE(opcode);		/* May be replaced by COP_BR_LONG later */
-		CVM_BYTE(opcode);		/* May be replaced by a short address later */
-		CVM_WORD(0);
+		CVM_OUT_BRANCH_PLACEHOLDER(opcode);
 	}
 }
 
@@ -190,19 +178,17 @@ static void OutputCondBranch(ILCoder *coder, int iopcode, int lopcode,
 	}
 	else if(type == ILEngineType_I8)
 	{
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(lopcode);
+		CVMP_OUT_NONE(lopcode);
 		CVM_ADJUST(-(CVM_WORDS_PER_LONG * 2) + 1);
-		CVM_BYTE(COP_LDC_I4_0);
+		CVM_OUT_NONE(COP_LDC_I4_0);
 		CVM_ADJUST(1);
 		OutputBranch(coder, cmpopcode, dest);
 	}
 	else if(type == ILEngineType_F)
 	{
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(fopcode);
+		CVMP_OUT_NONE(fopcode);
 		CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
-		CVM_BYTE(COP_LDC_I4_0);
+		CVM_OUT_NONE(COP_LDC_I4_0);
 		CVM_ADJUST(1);
 		OutputBranch(coder, cmpopcode, dest);
 	}
@@ -218,10 +204,9 @@ static void OutputCondBranch(ILCoder *coder, int iopcode, int lopcode,
 		}
 		else
 		{
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_PCMP);
+			CVMP_OUT_NONE(COP_PREFIX_PCMP);
 			CVM_ADJUST(-1);
-			CVM_BYTE(COP_LDC_I4_0);
+			CVM_OUT_NONE(COP_LDC_I4_0);
 			CVM_ADJUST(1);
 			OutputBranch(coder, cmpopcode, dest);
 		}
@@ -267,22 +252,20 @@ static void CVMCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 			else if(type1 == ILEngineType_I8)
 		#endif
 			{
-				CVM_BYTE(COP_LDC_I4_0);
-				CVM_BYTE(COP_I2L);
+				CVM_OUT_NONE(COP_LDC_I4_0);
+				CVM_OUT_NONE(COP_I2L);
 				CVM_ADJUST(CVM_WORDS_PER_LONG);
-				CVM_BYTE(COP_PREFIX);
-				CVM_BYTE(COP_PREFIX_LCMP);
+				CVMP_OUT_NONE(COP_PREFIX_LCMP);
 				CVM_ADJUST(-(CVM_WORDS_PER_LONG * 2) + 1);
 				OutputBranch(coder, COP_BRTRUE, dest);
 				CVM_ADJUST(-1);
 			}
 			else if(type1 == ILEngineType_F)
 			{
-				CVM_BYTE(COP_LDC_I4_0);
-				CVM_BYTE(COP_I2F);
+				CVM_OUT_NONE(COP_LDC_I4_0);
+				CVM_OUT_NONE(COP_I2F);
 				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
-				CVM_BYTE(COP_PREFIX);
-				CVM_BYTE(COP_PREFIX_FCMPG);
+				CVMP_OUT_NONE(COP_PREFIX_FCMPG);
 				CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 				OutputBranch(coder, COP_BRTRUE, dest);
 				CVM_ADJUST(-1);
@@ -314,22 +297,20 @@ static void CVMCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 			else if(type1 == ILEngineType_I8)
 		#endif
 			{
-				CVM_BYTE(COP_LDC_I4_0);
-				CVM_BYTE(COP_I2L);
+				CVM_OUT_NONE(COP_LDC_I4_0);
+				CVM_OUT_NONE(COP_I2L);
 				CVM_ADJUST(CVM_WORDS_PER_LONG);
-				CVM_BYTE(COP_PREFIX);
-				CVM_BYTE(COP_PREFIX_LCMP);
+				CVMP_OUT_NONE(COP_PREFIX_LCMP);
 				CVM_ADJUST(-(CVM_WORDS_PER_LONG * 2) + 1);
 				OutputBranch(coder, COP_BRFALSE, dest);
 				CVM_ADJUST(-1);
 			}
 			else if(type1 == ILEngineType_F)
 			{
-				CVM_BYTE(COP_LDC_I4_0);
-				CVM_BYTE(COP_I2F);
+				CVM_OUT_NONE(COP_LDC_I4_0);
+				CVM_OUT_NONE(COP_I2F);
 				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
-				CVM_BYTE(COP_PREFIX);
-				CVM_BYTE(COP_PREFIX_FCMPG);
+				CVMP_OUT_NONE(COP_PREFIX_FCMPG);
 				CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 				OutputBranch(coder, COP_BRFALSE, dest);
 				CVM_ADJUST(-1);
@@ -456,13 +437,11 @@ static void CVMCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 	((ILCVMCoder *)coder)->switchStart =
 			(ILUInt32)(CVM_POSN() - ((ILCVMCoder *)coder)->start);
 
-	/* Output the head of the switch statement */
-	CVM_BYTE(COP_SWITCH);
-	CVM_WORD(numEntries);
-
-	/* Output the offset of the default case */
+	/* Determine the offset of the default case */
 	defCase = 9 + numEntries * 4;
-	CVM_WORD(defCase);
+
+	/* Output the head of the switch statement */
+	CVM_OUT_SWHEAD(numEntries, defCase);
 
 	/* One less value on the stack */
 	CVM_ADJUST(-1);
@@ -490,7 +469,7 @@ static void CVMCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 	{
 		/* Output the relative address now */
 		relative = (ILInt32)(label->offset - coder->switchStart);
-		CVM_WORD(relative);
+		CVM_OUT_SWENTRY(coder->switchStart, relative);
 	}
 	else
 	{
@@ -510,7 +489,7 @@ static void CVMCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 		}
 
 		/* Output a place-holder to be back-patched when we find the label */
-		CVM_WORD(0);
+		CVM_OUT_SWENTRY_PLACEHOLDER();
 	}
 }
 
@@ -524,43 +503,38 @@ static void OutputCondCompare(ILCoder *coder, int iopcode, int lopcode,
 {
 	if(type == ILEngineType_I4)
 	{
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(iopcode);
+		CVMP_OUT_NONE(iopcode);
 		CVM_ADJUST(-1);
 	}
 	else if(type == ILEngineType_I8)
 	{
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(lopcode);
+		CVMP_OUT_NONE(lopcode);
 		CVM_ADJUST(-(CVM_WORDS_PER_LONG * 2) + 1);
 	}
 	else if(type == ILEngineType_F)
 	{
-		CVM_BYTE(COP_PREFIX);
 		if(invertTest)
 		{
-			CVM_BYTE(finvopcode);
+			CVMP_OUT_NONE(finvopcode);
 		}
 		else
 		{
-			CVM_BYTE(fopcode);
+			CVMP_OUT_NONE(fopcode);
 		}
 		CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT * 2) + 1);
 	}
 	else if(type == ILEngineType_M)
 	{
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(COP_PREFIX_PCMP);
+		CVMP_OUT_NONE(COP_PREFIX_PCMP);
 		CVM_ADJUST(-1);
 	}
-	CVM_BYTE(COP_PREFIX);
 	if(invertTest)
 	{
-		CVM_BYTE(cmpinvopcode);
+		CVMP_OUT_NONE(cmpinvopcode);
 	}
 	else
 	{
-		CVM_BYTE(cmpopcode);
+		CVMP_OUT_NONE(cmpopcode);
 	}
 }
 

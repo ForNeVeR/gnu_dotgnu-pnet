@@ -10,6 +10,14 @@
 	* engine/verify_call.c (MatchSignature): pass the correct
 	index to "ILCoderPackVarArgs" for the first vararg parameter.
 
+	* engine/cvm_call.c, engine/cvmc.c, engine/cvmc_arith.c,
+	engine/cvmc_branch.c, engine/cvmc_call.c, engine/cvmc_const.c,
+	engine/cvmc_conv.c, engine/cvmc_except.c, engine/cvmc_gen.h,
+	engine/cvmc_obj.c, engine/cvmc_ptr.c, engine/cvmc_setup.c,
+	engine/cvmc_stack.c, engine/cvmc_var.c: implement a better
+	abstraction for CVM code generation to make it easier to change
+	the representation format in the future.
+
 2002-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c: "-fsave-asm" saves the assembly output even if

@@ -25,7 +25,7 @@
  */
 static void LoadLocalAddr(ILCoder *coder, ILUInt32 offset)
 {
-	CVM_WIDE(COP_WADDR, offset);
+	CVM_OUT_WIDE(COP_WADDR, offset);
 	CVM_ADJUST(1);
 }
 
@@ -42,7 +42,7 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			case IL_META_ELEMTYPE_I1:
 			{
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_BREAD);
+				CVM_OUT_NONE(COP_BREAD);
 			}
 			break;
 
@@ -51,13 +51,12 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			{
 				if(offset < 256)
 				{
-					CVM_BYTE(COP_BLOAD);
-					CVM_BYTE(offset);
+					CVM_OUT_BYTE(COP_BLOAD, offset);
 				}
 				else
 				{
 					LoadLocalAddr(coder, offset);
-					CVM_BYTE(COP_UBREAD);
+					CVM_OUT_NONE(COP_UBREAD);
 				}
 			}
 			break;
@@ -65,7 +64,7 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			case IL_META_ELEMTYPE_I2:
 			{
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_SREAD);
+				CVM_OUT_NONE(COP_SREAD);
 			}
 			break;
 
@@ -73,7 +72,7 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			case IL_META_ELEMTYPE_CHAR:
 			{
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_USREAD);
+				CVM_OUT_NONE(COP_USREAD);
 			}
 			break;
 
@@ -86,11 +85,11 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			{
 				if(offset < 4)
 				{
-					CVM_BYTE(COP_ILOAD_0 + offset);
+					CVM_OUT_NONE(COP_ILOAD_0 + offset);
 				}
 				else
 				{
-					CVM_WIDE(COP_ILOAD, offset);
+					CVM_OUT_WIDE(COP_ILOAD, offset);
 				}
 				CVM_ADJUST(1);
 			}
@@ -103,7 +102,7 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			case IL_META_ELEMTYPE_U:
 		#endif
 			{
-				CVM_DWIDE(COP_MLOAD, offset, CVM_WORDS_PER_LONG);
+				CVM_OUT_DWIDE(COP_MLOAD, offset, CVM_WORDS_PER_LONG);
 				CVM_ADJUST(CVM_WORDS_PER_LONG);
 			}
 			break;
@@ -111,29 +110,29 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 			case IL_META_ELEMTYPE_R4:
 			{
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_FREAD);
-				CVM_ADJUST(CVM_WORDS_PER_FLOAT - 1);
+				CVM_OUT_NONE(COP_FREAD);
+				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R8:
 			{
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_DREAD);
-				CVM_ADJUST(CVM_WORDS_PER_DOUBLE - 1);
+				CVM_OUT_NONE(COP_DREAD);
+				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R:
 			{
-				CVM_DWIDE(COP_MLOAD, offset, CVM_WORDS_PER_NATIVE_FLOAT);
+				CVM_OUT_DWIDE(COP_MLOAD, offset, CVM_WORDS_PER_NATIVE_FLOAT);
 				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_TYPEDBYREF:
 			{
-				CVM_DWIDE(COP_MLOAD, offset, CVM_WORDS_PER_TYPED_REF);
+				CVM_OUT_DWIDE(COP_MLOAD, offset, CVM_WORDS_PER_TYPED_REF);
 				CVM_ADJUST(CVM_WORDS_PER_TYPED_REF);
 			}
 			break;
@@ -146,7 +145,7 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 		{
 			/* Managed value type */
 			ILUInt32 size = GetTypeSize(type);
-			CVM_DWIDE(COP_MLOAD, offset, size);
+			CVM_OUT_DWIDE(COP_MLOAD, offset, size);
 			CVM_ADJUST(size);
 		}
 		else
@@ -160,11 +159,11 @@ static void LoadLocal(ILCoder *coder, ILUInt32 offset, ILType *type)
 		/* Everything else must be a pointer */
 		if(offset < 4)
 		{
-			CVM_BYTE(COP_PLOAD_0 + offset);
+			CVM_OUT_NONE(COP_PLOAD_0 + offset);
 		}
 		else
 		{
-			CVM_WIDE(COP_PLOAD, offset);
+			CVM_OUT_WIDE(COP_PLOAD, offset);
 		}
 		CVM_ADJUST(1);
 	}
@@ -188,20 +187,19 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 			#ifdef IL_NATIVE_INT64
 				if(engineType == ILEngineType_I)
 				{
-					CVM_BYTE(COP_L2I);
+					CVM_OUT_NONE(COP_L2I);
 					CVM_ADJUST(-(CVM_WORDS_PER_LONG - 1));
 				}
 			#endif
 				if(offset < 256)
 				{
-					CVM_BYTE(COP_BSTORE);
-					CVM_BYTE(offset);
+					CVM_OUT_BYTE(COP_BSTORE, offset);
 					CVM_ADJUST(-1);
 				}
 				else
 				{
 					LoadLocalAddr(coder, offset);
-					CVM_BYTE(COP_BWRITE_R);
+					CVM_OUT_NONE(COP_BWRITE_R);
 					CVM_ADJUST(-2);
 				}
 			}
@@ -214,12 +212,12 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 			#ifdef IL_NATIVE_INT64
 				if(engineType == ILEngineType_I)
 				{
-					CVM_BYTE(COP_L2I);
+					CVM_OUT_NONE(COP_L2I);
 					CVM_ADJUST(-(CVM_WORDS_PER_LONG - 1));
 				}
 			#endif
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_SWRITE_R);
+				CVM_OUT_NONE(COP_SWRITE_R);
 				CVM_ADJUST(-2);
 			}
 			break;
@@ -234,17 +232,17 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 			#ifdef IL_NATIVE_INT64
 				if(engineType == ILEngineType_I)
 				{
-					CVM_BYTE(COP_L2I);
+					CVM_OUT_NONE(COP_L2I);
 					CVM_ADJUST(-(CVM_WORDS_PER_LONG - 1));
 				}
 			#endif
 				if(offset < 4)
 				{
-					CVM_BYTE(COP_ISTORE_0 + offset);
+					CVM_OUT_NONE(COP_ISTORE_0 + offset);
 				}
 				else
 				{
-					CVM_WIDE(COP_ISTORE, offset);
+					CVM_OUT_WIDE(COP_ISTORE, offset);
 				}
 				CVM_ADJUST(-1);
 			}
@@ -259,10 +257,10 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 			{
 				if(engineType == ILEngineType_I4)
 				{
-					CVM_BYTE(COP_I2L);
+					CVM_OUT_NONE(COP_I2L);
 					CVM_ADJUST(CVM_WORDS_PER_LONG - 1);
 				}
-				CVM_DWIDE(COP_MSTORE, offset, CVM_WORDS_PER_LONG);
+				CVM_OUT_DWIDE(COP_MSTORE, offset, CVM_WORDS_PER_LONG);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 			break;
@@ -270,29 +268,29 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 			case IL_META_ELEMTYPE_R4:
 			{
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_FWRITE_R);
-				CVM_ADJUST(-(CVM_WORDS_PER_FLOAT + 1));
+				CVM_OUT_NONE(COP_FWRITE_R);
+				CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R8:
 			{
 				LoadLocalAddr(coder, offset);
-				CVM_BYTE(COP_DWRITE_R);
-				CVM_ADJUST(-(CVM_WORDS_PER_DOUBLE + 1));
+				CVM_OUT_NONE(COP_DWRITE_R);
+				CVM_ADJUST(-(CVM_WORDS_PER_NATIVE_FLOAT + 1));
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R:
 			{
-				CVM_DWIDE(COP_MSTORE, offset, CVM_WORDS_PER_NATIVE_FLOAT);
+				CVM_OUT_DWIDE(COP_MSTORE, offset, CVM_WORDS_PER_NATIVE_FLOAT);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_TYPEDBYREF:
 			{
-				CVM_DWIDE(COP_MSTORE, offset, CVM_WORDS_PER_TYPED_REF);
+				CVM_OUT_DWIDE(COP_MSTORE, offset, CVM_WORDS_PER_TYPED_REF);
 				CVM_ADJUST(-CVM_WORDS_PER_TYPED_REF);
 			}
 			break;
@@ -305,7 +303,7 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 		{
 			/* Managed value type */
 			ILUInt32 size = GetTypeSize(type);
-			CVM_DWIDE(COP_MSTORE, offset, size);
+			CVM_OUT_DWIDE(COP_MSTORE, offset, size);
 			CVM_ADJUST(-((ILInt32)size));
 		}
 		else
@@ -319,11 +317,11 @@ static void StoreLocal(ILCoder *coder, ILUInt32 offset,
 		/* Everything else must be a pointer */
 		if(offset < 4)
 		{
-			CVM_BYTE(COP_PSTORE_0 + offset);
+			CVM_OUT_NONE(COP_PSTORE_0 + offset);
 		}
 		else
 		{
-			CVM_WIDE(COP_PSTORE, offset);
+			CVM_OUT_WIDE(COP_PSTORE, offset);
 		}
 		CVM_ADJUST(-1);
 	}

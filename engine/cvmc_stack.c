@@ -104,15 +104,15 @@ static void DupWords(ILCoder *coder, ILUInt32 numWords)
 {
 	if(numWords == 1)
 	{
-		CVM_BYTE(COP_DUP);
+		CVM_OUT_NONE(COP_DUP);
 	}
 	else if(numWords == 2)
 	{
-		CVM_BYTE(COP_DUP2);
+		CVM_OUT_NONE(COP_DUP2);
 	}
 	else
 	{
-		CVM_WIDE(COP_DUP_N, numWords);
+		CVM_OUT_WIDE(COP_DUP_N, numWords);
 	}
 	CVM_ADJUST(numWords);
 }
@@ -169,15 +169,15 @@ static void PopWords(ILCoder *coder, ILUInt32 numWords)
 {
 	if(numWords == 1)
 	{
-		CVM_BYTE(COP_POP);
+		CVM_OUT_NONE(COP_POP);
 	}
 	else if(numWords == 2)
 	{
-		CVM_BYTE(COP_POP2);
+		CVM_OUT_NONE(COP_POP2);
 	}
 	else
 	{
-		CVM_WIDE(COP_POP_N, numWords);
+		CVM_OUT_WIDE(COP_POP_N, numWords);
 	}
 	CVM_ADJUST(-((ILInt32)(numWords)));
 }

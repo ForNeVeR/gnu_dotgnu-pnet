@@ -25,50 +25,35 @@
  */
 static void CVMCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 {
-	CVM_BYTE(opcode - IL_OP_LDNULL + COP_LDNULL);
-	CVM_ADJUST(1);
-	if(opcode == IL_OP_LDC_I4_S)
+	if(opcode >= IL_OP_LDNULL && opcode <= IL_OP_LDC_I4_8)
 	{
-		CVM_BYTE(arg[0]);
+		CVM_OUT_NONE(opcode - IL_OP_LDNULL + COP_LDNULL);
+		CVM_ADJUST(1);
+	}
+	else if(opcode == IL_OP_LDC_I4_S)
+	{
+		CVM_OUT_BYTE(COP_LDC_I4_S, arg[0]);
+		CVM_ADJUST(1);
 	}
 	else if(opcode == IL_OP_LDC_I4)
 	{
-		CVM_BYTE(arg[0]);
-		CVM_BYTE(arg[1]);
-		CVM_BYTE(arg[2]);
-		CVM_BYTE(arg[3]);
+		CVM_OUT_WORD(COP_LDC_I4, IL_READ_UINT32(arg));
+		CVM_ADJUST(1);
 	}
 	else if(opcode == IL_OP_LDC_R4)
 	{
-		CVM_BYTE(arg[0]);
-		CVM_BYTE(arg[1]);
-		CVM_BYTE(arg[2]);
-		CVM_BYTE(arg[3]);
-		CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
+		CVM_OUT_FLOAT(COP_LDC_R4, arg);
+		CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
 	}
 	else if(opcode == IL_OP_LDC_I8)
 	{
-		CVM_BYTE(arg[0]);
-		CVM_BYTE(arg[1]);
-		CVM_BYTE(arg[2]);
-		CVM_BYTE(arg[3]);
-		CVM_BYTE(arg[4]);
-		CVM_BYTE(arg[5]);
-		CVM_BYTE(arg[6]);
-		CVM_BYTE(arg[7]);
-		CVM_ADJUST(CVM_WORDS_PER_LONG - 1);
+		CVM_OUT_LONG(COP_LDC_I8, arg);
+		CVM_ADJUST(CVM_WORDS_PER_LONG);
 	}
 	else if(opcode == IL_OP_LDC_R8)
 	{
-		CVM_BYTE(arg[0]);
-		CVM_BYTE(arg[1]);
-		CVM_BYTE(arg[2]);
-		CVM_BYTE(arg[3]);
-		CVM_BYTE(arg[4]);
-		CVM_BYTE(arg[5]);
-		CVM_BYTE(arg[6]);
-		CVM_BYTE(arg[7]);
-		CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT - 1);
+		CVM_OUT_DOUBLE(COP_LDC_R8, arg);
+		CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
 	}
 }
 
@@ -77,8 +62,7 @@ static void CVMCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
  */
 static void CVMCoder_StringConstant(ILCoder *coder, ILToken token)
 {
-	CVM_BYTE(COP_LDSTR);
-	CVM_WORD(token);
+	CVM_OUT_WORD(COP_LDSTR, token);
 	CVM_ADJUST(1);
 }
 

@@ -127,8 +127,17 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
  * Determine the number of stack words that are occupied
  * by a specific type.
  */
-#define	StackWordsForType(type)	\
-			((ILSizeOfType((type)) + sizeof(CVMWord) - 1) / sizeof(CVMWord))
+static ILUInt32 StackWordsForType(ILType *type)
+{
+	if(type == ILType_Float32 || type == ILType_Float64)
+	{
+		return CVM_WORDS_PER_NATIVE_FLOAT;
+	}
+	else
+	{
+		return ((ILSizeOfType((type)) + sizeof(CVMWord) - 1) / sizeof(CVMWord));
+	}
+}
 
 /*
  * Pack a set of arguments into a vararg "Object[]" array.

@@ -38,11 +38,8 @@ static void CVMCoder_PackVarArgs(ILCoder *coder, ILType *callSiteSig,
 					             ILUInt32 firstParam, ILEngineStackItem *args,
 						         ILUInt32 numArgs)
 {
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_PACK_VARARGS);
-	CVM_WORD(firstParam);
-	CVM_WORD(numArgs);
-	CVM_PTR(callSiteSig);
+	CVMP_OUT_WORD2_PTR(COP_PREFIX_PACK_VARARGS,
+					   firstParam, numArgs, callSiteSig);
 	CVM_ADJUST(-(ILInt32)(ComputeStackSize(coder, args, numArgs)));
 	CVM_ADJUST(1);
 }
@@ -52,7 +49,7 @@ static void CVMCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 {
 	ILUInt32 posn = ComputeStackSize(coder, args, numArgs);
 	ILUInt32 size = GetTypeSize(ILType_FromValueType(classInfo));
-	CVM_DWIDE(COP_NEW_VALUE, posn, size);
+	CVM_OUT_DWIDE(COP_NEW_VALUE, posn, size);
 	CVM_ADJUST(size + 1);
 }
 
@@ -90,8 +87,7 @@ static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
 			if(cctor != ((ILCVMCoder *)coder)->currentMethod)
 			{
 				/* Output a call to the static constructor */
-				CVM_BYTE(COP_CALL);
-				CVM_PTR(cctor);
+				CVM_OUT_PTR(COP_CALL, cctor);
 			}
 		}
 		else
@@ -123,8 +119,7 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 								ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
-	CVM_BYTE(COP_CALL);
-	CVM_PTR(methodInfo);
+	CVM_OUT_PTR(COP_CALL, methodInfo);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }
 
@@ -132,8 +127,7 @@ static void CVMCoder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
 					   		  ILUInt32 numArgs, ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 1);
-	CVM_BYTE(COP_CALL_CTOR);
-	CVM_PTR(methodInfo);
+	CVM_OUT_PTR(COP_CALL_CTOR, methodInfo);
 	CVM_ADJUST(-(ILInt32)ComputeStackSize(coder, args, numArgs));
 	CVM_ADJUST(1);
 }
@@ -144,7 +138,7 @@ static void CVMCoder_CallVirtual(ILCoder *coder, ILEngineStackItem *args,
 								 ILMethod *methodInfo)
 {
 	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
-	CVM_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
+	CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }
 
@@ -155,8 +149,7 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 {
 	void *ptr = ILMethod_Owner(methodInfo);
 	ILUInt32 argSize = ComputeStackSize(coder, args, numArgs);
-	CVM_DWIDE(COP_CALL_INTERFACE, argSize, methodInfo->index);
-	CVM_PTR(ptr);
+	CVM_OUT_DWIDE_PTR(COP_CALL_INTERFACE, argSize, methodInfo->index, ptr);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }
 
@@ -169,7 +162,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		{
 			/* We don't support threads yet, so just pop the object */
 			/* TODO: support for real threads */
-			CVM_BYTE(COP_POP);
+			CVM_OUT_NONE(COP_POP);
 			CVM_ADJUST(-1);
 			return 1;
 		}
@@ -179,7 +172,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		{
 			/* We don't support threads yet, so just pop the object */
 			/* TODO: support for real threads */
-			CVM_BYTE(COP_POP);
+			CVM_OUT_NONE(COP_POP);
 			CVM_ADJUST(-1);
 			return 1;
 		}
@@ -188,8 +181,8 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_STRING_LENGTH:
 		{
 			/* The string length is at a fixed offset from the pointer */
-			CVM_BYTE(COP_IREAD_FIELD);
-			CVM_BYTE((unsigned)&(((System_String *)0)->length));
+			CVM_OUT_BYTE(COP_IREAD_FIELD,
+						 (unsigned)&(((System_String *)0)->length));
 			return 1;
 		}
 		/* Not reached */
@@ -197,8 +190,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_STRING_CONCAT_2:
 		{
 			/* Concatenate two string objects */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_STRING_CONCAT_2);
+			CVMP_OUT_NONE(COP_PREFIX_STRING_CONCAT_2);
 			CVM_ADJUST(-1);
 			return 1;
 		}
@@ -207,8 +199,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_STRING_CONCAT_3:
 		{
 			/* Concatenate three string objects */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_STRING_CONCAT_3);
+			CVMP_OUT_NONE(COP_PREFIX_STRING_CONCAT_3);
 			CVM_ADJUST(-2);
 			return 1;
 		}
@@ -217,8 +208,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_STRING_CONCAT_4:
 		{
 			/* Concatenate four string objects */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_STRING_CONCAT_4);
+			CVMP_OUT_NONE(COP_PREFIX_STRING_CONCAT_4);
 			CVM_ADJUST(-3);
 			return 1;
 		}
@@ -227,8 +217,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_STRING_EQUALS:
 		{
 			/* Compare two string objects for equality */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_STRING_EQ);
+			CVMP_OUT_NONE(COP_PREFIX_STRING_EQ);
 			CVM_ADJUST(-1);
 			return 1;
 		}
@@ -237,8 +226,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_STRING_NOT_EQUALS:
 		{
 			/* Compare two string objects for inequality */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_STRING_NE);
+			CVMP_OUT_NONE(COP_PREFIX_STRING_NE);
 			CVM_ADJUST(-1);
 			return 1;
 		}
@@ -247,8 +235,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_STRING_GET_CHAR:
 		{
 			/* Compare two string objects for equality */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_STRING_GET_CHAR);
+			CVMP_OUT_NONE(COP_PREFIX_STRING_GET_CHAR);
 			CVM_ADJUST(-1);
 			return 1;
 		}
@@ -257,8 +244,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
 		case IL_INLINEMETHOD_TYPE_FROM_HANDLE:
 		{
 			/* Convert a RuntimeTypeHandle into a Type object */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_TYPE_FROM_HANDLE);
+			CVMP_OUT_NONE(COP_PREFIX_TYPE_FROM_HANDLE);
 			return 1;
 		}
 		/* Not reached */
@@ -280,7 +266,7 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	{
 		case ILEngineType_Invalid:
 		{
-			CVM_BYTE(COP_RETURN);
+			CVM_OUT_NONE(COP_RETURN);
 		}
 		break;
 
@@ -292,7 +278,7 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 		case ILEngineType_I:
 	#endif
 		{
-			CVM_BYTE(COP_RETURN_1);
+			CVM_OUT_NONE(COP_RETURN_1);
 			CVM_ADJUST(-1);
 		}
 		break;
@@ -302,14 +288,14 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 		case ILEngineType_I:
 	#endif
 		{
-			CVM_RETURN(CVM_WORDS_PER_LONG);
+			CVM_OUT_RETURN(CVM_WORDS_PER_LONG);
 			CVM_ADJUST(-CVM_WORDS_PER_LONG);
 		}
 		break;
 
 		case ILEngineType_F:
 		{
-			CVM_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
+			CVM_OUT_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
 			CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 		}
 		break;
@@ -317,14 +303,14 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 		case ILEngineType_MV:
 		{
 			ILUInt32 size = GetTypeSize(returnType);
-			CVM_RETURN(size);
+			CVM_OUT_RETURN(size);
 			CVM_ADJUST(-(ILInt32)size);
 		}
 		break;
 
 		case ILEngineType_TypedRef:
 		{
-			CVM_RETURN(CVM_WORDS_PER_TYPED_REF);
+			CVM_OUT_RETURN(CVM_WORDS_PER_TYPED_REF);
 			CVM_ADJUST(-CVM_WORDS_PER_TYPED_REF);
 		}
 		break;
@@ -333,31 +319,24 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 
 static void CVMCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 {
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_LDFTN);
-	CVM_PTR(methodInfo);
+	CVMP_OUT_PTR(COP_PREFIX_LDFTN, methodInfo);
 	CVM_ADJUST(1);
 }
 
 static void CVMCoder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 {
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_LDVIRTFTN);
-	CVM_WORD(methodInfo->index);
+	CVMP_OUT_WORD(COP_PREFIX_LDVIRTFTN, methodInfo->index);
 }
 
 static void CVMCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_LDINTERFFTN);
-	CVM_WORD(methodInfo->index);
-	CVM_PTR(methodInfo->member.owner);
+	CVMP_OUT_WORD_PTR(COP_PREFIX_LDINTERFFTN, methodInfo->index,
+					  methodInfo->member.owner);
 }
 
 static void CVMCoder_TailCall(ILCoder *coder, ILMethod *methodInfo)
 {
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_TAIL);
+	CVMP_OUT_NONE(COP_PREFIX_TAIL);
 }
 
 #endif	/* IL_CVMC_CODE */

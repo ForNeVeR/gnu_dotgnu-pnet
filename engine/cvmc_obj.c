@@ -28,11 +28,11 @@ static void CVMCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 		/* We are casting to an interface */
 		if(throwException)
 		{
-			CVM_BYTE(COP_CASTINTERFACE);
+			CVM_OUT_PTR(COP_CASTINTERFACE, classInfo);
 		}
 		else
 		{
-			CVM_BYTE(COP_ISINTERFACE);
+			CVM_OUT_PTR(COP_ISINTERFACE, classInfo);
 		}
 	}
 	else
@@ -40,14 +40,13 @@ static void CVMCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 		/* We are casting to a class */
 		if(throwException)
 		{
-			CVM_BYTE(COP_CASTCLASS);
+			CVM_OUT_PTR(COP_CASTCLASS, classInfo);
 		}
 		else
 		{
-			CVM_BYTE(COP_ISINST);
+			CVM_OUT_PTR(COP_ISINST, classInfo);
 		}
 	}
-	CVM_PTR(classInfo);
 }
 
 /*
@@ -62,28 +61,25 @@ static void CVMLoadSimpleField(ILCoder *coder, ILUInt32 offset,
 		/* The pointer may be null, so we must check it first */
 		if(offset < 256 && fieldOpcode != 0)
 		{
-			CVM_BYTE(fieldOpcode);
-			CVM_BYTE(offset);
+			CVM_OUT_BYTE(fieldOpcode, offset);
 		}
 		else if(offset < 256)
 		{
-			CVM_BYTE(COP_CKNULL);
+			CVM_OUT_NONE(COP_CKNULL);
 			if(offset != 0)
 			{
-				CVM_BYTE(COP_PADD_OFFSET);
-				CVM_BYTE(offset);
+				CVM_OUT_BYTE(COP_PADD_OFFSET, offset);
 			}
-			CVM_BYTE(ptrOpcode);
+			CVM_OUT_NONE(ptrOpcode);
 		}
 		else
 		{
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_LDC_I4);
-			CVM_WORD(offset);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_WORD(COP_LDC_I4, offset);
 			CVM_ADJUST(1);
-			CVM_BYTE(COP_PADD_I4);
+			CVM_OUT_NONE(COP_PADD_I4);
 			CVM_ADJUST(-1);
-			CVM_BYTE(ptrOpcode);
+			CVM_OUT_NONE(ptrOpcode);
 		}
 	}
 	else
@@ -93,19 +89,17 @@ static void CVMLoadSimpleField(ILCoder *coder, ILUInt32 offset,
 		{
 			if(offset != 0)
 			{
-				CVM_BYTE(COP_PADD_OFFSET);
-				CVM_BYTE(offset);
+				CVM_OUT_BYTE(COP_PADD_OFFSET, offset);
 			}
 		}
 		else
 		{
-			CVM_BYTE(COP_LDC_I4);
-			CVM_WORD(offset);
+			CVM_OUT_WORD(COP_LDC_I4, offset);
 			CVM_ADJUST(1);
-			CVM_BYTE(COP_PADD_I4);
+			CVM_OUT_NONE(COP_PADD_I4);
 			CVM_ADJUST(-1);
 		}
-		CVM_BYTE(ptrOpcode);
+		CVM_OUT_NONE(ptrOpcode);
 	}
 }
 
@@ -118,25 +112,23 @@ static void CVMLoadValueField(ILCoder *coder, ILUInt32 offset,
 	if(mayBeNull)
 	{
 		/* The pointer may be null, so we must check it first */
-		CVM_BYTE(COP_CKNULL);
+		CVM_OUT_NONE(COP_CKNULL);
 	}
 	if(offset < 256)
 	{
 		if(offset != 0)
 		{
-			CVM_BYTE(COP_PADD_OFFSET);
-			CVM_BYTE(offset);
+			CVM_OUT_BYTE(COP_PADD_OFFSET, offset);
 		}
 	}
 	else
 	{
-		CVM_BYTE(COP_LDC_I4);
-		CVM_WORD(offset);
+		CVM_OUT_WORD(COP_LDC_I4, offset);
 		CVM_ADJUST(1);
-		CVM_BYTE(COP_PADD_I4);
+		CVM_OUT_NONE(COP_PADD_I4);
 		CVM_ADJUST(-1);
 	}
-	CVM_WIDE(COP_MREAD, size);
+	CVM_OUT_WIDE(COP_MREAD, size);
 	CVM_ADJUST(-1);
 	CVM_ADJUST((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
 }
@@ -160,7 +152,7 @@ static void CVMLoadField(ILCoder *coder, ILEngineType ptrType,
 	if(ptrType == ILEngineType_MV)
 	{
 		ptrSize = GetTypeSize(objectType);
-		CVM_WIDE(COP_MADDR, ptrSize);
+		CVM_OUT_WIDE(COP_MADDR, ptrSize);
 	}
 	else
 	{
@@ -272,7 +264,7 @@ static void CVMLoadField(ILCoder *coder, ILEngineType ptrType,
 	if(ptrType == ILEngineType_MV)
 	{
 		fieldSize = GetStackTypeSize(fieldType);
-		CVM_DWIDE(COP_SQUASH, fieldSize, ptrSize);
+		CVM_OUT_DWIDE(COP_SQUASH, fieldSize, ptrSize);
 		CVM_ADJUST(-((ILInt32)ptrSize));
 	}
 }
@@ -285,7 +277,7 @@ static void CVMCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 	/* Convert I4 to I if necessary */
 	if(ptrType == ILEngineType_I4)
 	{
-		CVM_BYTE(COP_IU2L);
+		CVM_OUT_NONE(COP_IU2L);
 	}
 #endif
 	CVMLoadField(coder, ptrType, objectType, field,
@@ -304,8 +296,7 @@ static void CVMCoder_LoadThisField(ILCoder *coder, ILField *field,
 	{
 		if(field->offset < 256)
 		{
-			CVM_BYTE(COP_IREAD_THIS);
-			CVM_BYTE(field->offset);
+			CVM_OUT_BYTE(COP_IREAD_THIS, field->offset);
 			CVM_ADJUST(1);
 			return;
 		}
@@ -314,15 +305,14 @@ static void CVMCoder_LoadThisField(ILCoder *coder, ILField *field,
 	{
 		if(field->offset < 256)
 		{
-			CVM_BYTE(COP_PREAD_THIS);
-			CVM_BYTE(field->offset);
+			CVM_OUT_BYTE(COP_PREAD_THIS, field->offset);
 			CVM_ADJUST(1);
 			return;
 		}
 	}
 
 	/* Fall back to the normal code because we cannot optimise this case */
-	CVM_BYTE(COP_PLOAD_0);
+	CVM_OUT_NONE(COP_PLOAD_0);
 	CVM_ADJUST(1);
 	CVMLoadField(coder, ILEngineType_O, ILType_Invalid, field,
 				 fieldType, field->offset, 1);
@@ -344,8 +334,7 @@ static void CVMCoder_LoadStaticField(ILCoder *coder, ILField *field,
 		CallStaticConstructor(coder, classInfo, 1);
 
 		/* Push a pointer to the class's static data area */
-		CVM_BYTE(COP_GET_STATIC);
-		CVM_PTR(classInfo);
+		CVM_OUT_PTR(COP_GET_STATIC, classInfo);
 		CVM_ADJUST(1);
 
 		/* Load the field relative to the pointer */
@@ -357,8 +346,7 @@ static void CVMCoder_LoadStaticField(ILCoder *coder, ILField *field,
 		/* RVA-based static field */
 		ILFieldRVA *fieldRVA = ILFieldRVAGetFromOwner(field);
 		ILUInt32 rva = ILFieldRVAGetRVA(fieldRVA);
-		CVM_BYTE(COP_LDRVA);
-		CVM_WORD(rva);
+		CVM_OUT_WORD(COP_LDRVA, rva);
 		CVM_ADJUST(1);
 
 		/* Load the field directly from the pointer */
@@ -374,24 +362,22 @@ static void CVMCoder_LoadFieldAddr(ILCoder *coder, ILEngineType ptrType,
 	/* Convert I4 to I if necessary */
 	if(ptrType == ILEngineType_I4)
 	{
-		CVM_BYTE(COP_IU2L);
+		CVM_OUT_NONE(COP_IU2L);
 	}
 #endif
-	CVM_BYTE(COP_CKNULL);
+	CVM_OUT_NONE(COP_CKNULL);
 	if(field->offset < 256)
 	{
 		if(field->offset != 0)
 		{
-			CVM_BYTE(COP_PADD_OFFSET);
-			CVM_BYTE(field->offset);
+			CVM_OUT_BYTE(COP_PADD_OFFSET, field->offset);
 		}
 	}
 	else
 	{
-		CVM_BYTE(COP_LDC_I4);
-		CVM_WORD(field->offset);
+		CVM_OUT_WORD(COP_LDC_I4, field->offset);
 		CVM_ADJUST(1);
-		CVM_BYTE(COP_PADD_I4);
+		CVM_OUT_NONE(COP_PADD_I4);
 		CVM_ADJUST(-1);
 	}
 }
@@ -409,8 +395,7 @@ static void CVMCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
 		/* Push a pointer to the class's static data area */
-		CVM_BYTE(COP_GET_STATIC);
-		CVM_PTR(classInfo);
+		CVM_OUT_PTR(COP_GET_STATIC, classInfo);
 		CVM_ADJUST(1);
 
 		/* Add the offset to the pointer */
@@ -418,16 +403,14 @@ static void CVMCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 		{
 			if(field->offset != 0)
 			{
-				CVM_BYTE(COP_PADD_OFFSET);
-				CVM_BYTE(field->offset);
+				CVM_OUT_BYTE(COP_PADD_OFFSET, field->offset);
 			}
 		}
 		else
 		{
-			CVM_BYTE(COP_LDC_I4);
-			CVM_WORD(field->offset);
+			CVM_OUT_WORD(COP_LDC_I4, field->offset);
 			CVM_ADJUST(1);
-			CVM_BYTE(COP_PADD_I4);
+			CVM_OUT_NONE(COP_PADD_I4);
 			CVM_ADJUST(-1);
 		}
 	}
@@ -436,8 +419,7 @@ static void CVMCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 		/* RVA-based static field */
 		ILFieldRVA *fieldRVA = ILFieldRVAGetFromOwner(field);
 		ILUInt32 rva = ILFieldRVAGetRVA(fieldRVA);
-		CVM_BYTE(COP_LDRVA);
-		CVM_WORD(rva);
+		CVM_OUT_WORD(COP_LDRVA, rva);
 		CVM_ADJUST(1);
 	}
 }
@@ -454,22 +436,20 @@ static void CVMStoreFieldReverse(ILCoder *coder, ILField *field,
 	/* Check for null and adjust the pointer for the offset */
 	if(mayBeNull)
 	{
-		CVM_BYTE(COP_CKNULL);
+		CVM_OUT_NONE(COP_CKNULL);
 	}
 	if(offset < 256)
 	{
 		if(offset != 0)
 		{
-			CVM_BYTE(COP_PADD_OFFSET);
-			CVM_BYTE(offset);
+			CVM_OUT_BYTE(COP_PADD_OFFSET, offset);
 		}
 	}
 	else
 	{
-		CVM_BYTE(COP_LDC_I4);
-		CVM_WORD(offset);
+		CVM_OUT_WORD(COP_LDC_I4, offset);
 		CVM_ADJUST(1);
-		CVM_BYTE(COP_PADD_I4);
+		CVM_OUT_NONE(COP_PADD_I4);
 		CVM_ADJUST(-1);
 	}
 
@@ -486,7 +466,7 @@ static void CVMStoreFieldReverse(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_I1:
 			case IL_META_ELEMTYPE_U1:
 			{
-				CVM_BYTE(COP_BWRITE_R);
+				CVM_OUT_NONE(COP_BWRITE_R);
 			}
 			break;
 
@@ -494,7 +474,7 @@ static void CVMStoreFieldReverse(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_U2:
 			case IL_META_ELEMTYPE_CHAR:
 			{
-				CVM_BYTE(COP_SWRITE_R);
+				CVM_OUT_NONE(COP_SWRITE_R);
 			}
 			break;
 
@@ -505,7 +485,7 @@ static void CVMStoreFieldReverse(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_U:
 		#endif
 			{
-				CVM_BYTE(COP_IWRITE_R);
+				CVM_OUT_NONE(COP_IWRITE_R);
 			}
 			break;
 
@@ -516,31 +496,31 @@ static void CVMStoreFieldReverse(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_U:
 		#endif
 			{
-				CVM_WIDE(COP_MWRITE_R, sizeof(ILInt64));
+				CVM_OUT_WIDE(COP_MWRITE_R, sizeof(ILInt64));
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R4:
 			{
-				CVM_BYTE(COP_FWRITE_R);
+				CVM_OUT_NONE(COP_FWRITE_R);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R8:
 			{
-				CVM_BYTE(COP_DWRITE_R);
+				CVM_OUT_NONE(COP_DWRITE_R);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R:
 			{
-				CVM_WIDE(COP_MWRITE_R, sizeof(ILNativeFloat));
+				CVM_OUT_WIDE(COP_MWRITE_R, sizeof(ILNativeFloat));
 			}
 			break;
 
 			case IL_META_ELEMTYPE_TYPEDBYREF:
 			{
-				CVM_WIDE(COP_MWRITE_R, sizeof(ILTypedRef));
+				CVM_OUT_WIDE(COP_MWRITE_R, sizeof(ILTypedRef));
 			}
 			break;
 		}
@@ -548,11 +528,11 @@ static void CVMStoreFieldReverse(ILCoder *coder, ILField *field,
 	else if(ILType_IsValueType(fieldType))
 	{
 		size = ILSizeOfType(fieldType);
-		CVM_WIDE(COP_MWRITE_R, size);
+		CVM_OUT_WIDE(COP_MWRITE_R, size);
 	}
 	else
 	{
-		CVM_BYTE(COP_PWRITE_R);
+		CVM_OUT_NONE(COP_PWRITE_R);
 	}
 }
 
@@ -579,8 +559,7 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 				case IL_META_ELEMTYPE_I1:
 				case IL_META_ELEMTYPE_U1:
 				{
-					CVM_BYTE(COP_BWRITE_FIELD);
-					CVM_BYTE(offset);
+					CVM_OUT_BYTE(COP_BWRITE_FIELD, offset);
 					return;
 				}
 				/* Not reached */
@@ -589,8 +568,7 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 				case IL_META_ELEMTYPE_U2:
 				case IL_META_ELEMTYPE_CHAR:
 				{
-					CVM_BYTE(COP_SWRITE_FIELD);
-					CVM_BYTE(offset);
+					CVM_OUT_BYTE(COP_SWRITE_FIELD, offset);
 					return;
 				}
 				/* Not reached */
@@ -602,8 +580,7 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 				case IL_META_ELEMTYPE_U:
 			#endif
 				{
-					CVM_BYTE(COP_IWRITE_FIELD);
-					CVM_BYTE(offset);
+					CVM_OUT_BYTE(COP_IWRITE_FIELD, offset);
 					return;
 				}
 				/* Not reached */
@@ -614,19 +591,18 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 		else if(!ILType_IsValueType(fieldType))
 		{
 			/* Store a reference value */
-			CVM_BYTE(COP_PWRITE_FIELD);
-			CVM_BYTE(offset);
+			CVM_OUT_BYTE(COP_PWRITE_FIELD, offset);
 			return;
 		}
 	}
 
 	/* Check the pointer value for null */
-	CVM_WIDE(COP_CKNULL_N, valueSize);
+	CVM_OUT_WIDE(COP_CKNULL_N, valueSize);
 
 	/* Add the offset to the pointer value */
 	if(offset != 0)
 	{
-		CVM_DWIDE(COP_PADD_OFFSET_N, valueSize, offset);
+		CVM_OUT_DWIDE(COP_PADD_OFFSET_N, valueSize, offset);
 	}
 
 	/* Perform the store */
@@ -639,7 +615,7 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_I1:
 			case IL_META_ELEMTYPE_U1:
 			{
-				CVM_BYTE(COP_BWRITE);
+				CVM_OUT_NONE(COP_BWRITE);
 			}
 			break;
 
@@ -647,7 +623,7 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_U2:
 			case IL_META_ELEMTYPE_CHAR:
 			{
-				CVM_BYTE(COP_SWRITE);
+				CVM_OUT_NONE(COP_SWRITE);
 			}
 			break;
 
@@ -658,7 +634,7 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_U:
 		#endif
 			{
-				CVM_BYTE(COP_IWRITE);
+				CVM_OUT_NONE(COP_IWRITE);
 			}
 			break;
 
@@ -669,31 +645,31 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 			case IL_META_ELEMTYPE_U:
 		#endif
 			{
-				CVM_WIDE(COP_MWRITE, sizeof(ILInt64));
+				CVM_OUT_WIDE(COP_MWRITE, sizeof(ILInt64));
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R4:
 			{
-				CVM_BYTE(COP_FWRITE);
+				CVM_OUT_NONE(COP_FWRITE);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R8:
 			{
-				CVM_BYTE(COP_DWRITE);
+				CVM_OUT_NONE(COP_DWRITE);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R:
 			{
-				CVM_WIDE(COP_MWRITE, sizeof(ILNativeFloat));
+				CVM_OUT_WIDE(COP_MWRITE, sizeof(ILNativeFloat));
 			}
 			break;
 
 			case IL_META_ELEMTYPE_TYPEDBYREF:
 			{
-				CVM_WIDE(COP_MWRITE, sizeof(ILTypedRef));
+				CVM_OUT_WIDE(COP_MWRITE, sizeof(ILTypedRef));
 			}
 			break;
 		}
@@ -702,12 +678,12 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 	{
 		/* Store a managed value */
 		size = ILSizeOfType(fieldType);
-		CVM_WIDE(COP_MWRITE, size);
+		CVM_OUT_WIDE(COP_MWRITE, size);
 	}
 	else
 	{
 		/* Store a reference value */
-		CVM_BYTE(COP_PWRITE);
+		CVM_OUT_NONE(COP_PWRITE);
 	}
 }
 
@@ -721,7 +697,7 @@ static void CVMCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
 	/* Convert I4 to I if necessary */
 	if(ptrType == ILEngineType_I4)
 	{
-		CVM_WIDE(COP_I2P_LOWER, valueSize);
+		CVM_OUT_WIDE(COP_I2P_LOWER, valueSize);
 	}
 #endif
 
@@ -746,8 +722,7 @@ static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
 		/* Push a pointer to the class's static data area */
-		CVM_BYTE(COP_GET_STATIC);
-		CVM_PTR(classInfo);
+		CVM_OUT_PTR(COP_GET_STATIC, classInfo);
 		CVM_ADJUST(1);
 
 		/* Store the field relative to the pointer */
@@ -758,8 +733,7 @@ static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
 		/* RVA-based static field */
 		ILFieldRVA *fieldRVA = ILFieldRVAGetFromOwner(field);
 		ILUInt32 rva = ILFieldRVAGetRVA(fieldRVA);
-		CVM_BYTE(COP_LDRVA);
-		CVM_WORD(rva);
+		CVM_OUT_WORD(COP_LDRVA, rva);
 		CVM_ADJUST(1);
 
 		/* Store the field directly to the pointer */
@@ -779,27 +753,27 @@ static void CVMCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 	/* Normalize the pointers */
 	if(destPtrType == ILEngineType_I4)
 	{
-		CVM_WIDE(COP_I2P_LOWER, 1);
+		CVM_OUT_WIDE(COP_I2P_LOWER, 1);
 	}
 	if(srcPtrType == ILEngineType_I4)
 	{
-		CVM_WIDE(COP_I2P_LOWER, 0);
+		CVM_OUT_WIDE(COP_I2P_LOWER, 0);
 	}
 #endif
 
 	/* Check the values for null */
 	if(destPtrType != ILEngineType_M && destPtrType != ILEngineType_T)
 	{
-		CVM_WIDE(COP_CKNULL_N, 1);
+		CVM_OUT_WIDE(COP_CKNULL_N, 1);
 	}
 	if(srcPtrType != ILEngineType_M && srcPtrType != ILEngineType_T)
 	{
-		CVM_BYTE(COP_CKNULL);
+		CVM_OUT_NONE(COP_CKNULL);
 	}
 
 	/* Copy the memory block */
 	size = ILSizeOfType(ILType_FromValueType(classInfo));
-	CVM_WIDE(COP_MEMCPY, size);
+	CVM_OUT_WIDE(COP_MEMCPY, size);
 	CVM_ADJUST(-2);
 }
 
@@ -810,26 +784,26 @@ static void CVMCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
 	/* Normalize the pointers */
 	if(destPtrType == ILEngineType_I4)
 	{
-		CVM_WIDE(COP_I2P_LOWER, 2);
+		CVM_OUT_WIDE(COP_I2P_LOWER, 2);
 	}
 	if(srcPtrType == ILEngineType_I4)
 	{
-		CVM_WIDE(COP_I2P_LOWER, 1);
+		CVM_OUT_WIDE(COP_I2P_LOWER, 1);
 	}
 #endif
 
 	/* Check the values for null */
 	if(destPtrType != ILEngineType_M && destPtrType != ILEngineType_T)
 	{
-		CVM_WIDE(COP_CKNULL_N, 2);
+		CVM_OUT_WIDE(COP_CKNULL_N, 2);
 	}
 	if(srcPtrType != ILEngineType_M && srcPtrType != ILEngineType_T)
 	{
-		CVM_WIDE(COP_CKNULL_N, 1);
+		CVM_OUT_WIDE(COP_CKNULL_N, 1);
 	}
 
 	/* Copy the memory block */
-	CVM_BYTE(COP_MEMMOVE);
+	CVM_OUT_NONE(COP_MEMMOVE);
 	CVM_ADJUST(-3);
 }
 
@@ -842,19 +816,19 @@ static void CVMCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 	/* Normalize the pointer */
 	if(ptrType == ILEngineType_I4)
 	{
-		CVM_WIDE(COP_I2P_LOWER, 0);
+		CVM_OUT_WIDE(COP_I2P_LOWER, 0);
 	}
 #endif
 
 	/* Check the pointer value for null */
 	if(ptrType != ILEngineType_M && ptrType != ILEngineType_T)
 	{
-		CVM_BYTE(COP_CKNULL);
+		CVM_OUT_NONE(COP_CKNULL);
 	}
 
 	/* Initialize the block to all-zeroes */
 	size = ILSizeOfType(ILType_FromValueType(classInfo));
-	CVM_WIDE(COP_MEMZERO, size);
+	CVM_OUT_WIDE(COP_MEMZERO, size);
 	CVM_ADJUST(-1);
 }
 
@@ -864,18 +838,18 @@ static void CVMCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 	/* Normalize the pointer */
 	if(ptrType == ILEngineType_I4)
 	{
-		CVM_WIDE(COP_I2P_LOWER, 2);
+		CVM_OUT_WIDE(COP_I2P_LOWER, 2);
 	}
 #endif
 
 	/* Check the pointer value for null */
 	if(ptrType != ILEngineType_M && ptrType != ILEngineType_T)
 	{
-		CVM_WIDE(COP_CKNULL_N, 2);
+		CVM_OUT_WIDE(COP_CKNULL_N, 2);
 	}
 
 	/* Initialize the block to bytes of the same value */
-	CVM_BYTE(COP_MEMSET);
+	CVM_OUT_NONE(COP_MEMSET);
 	CVM_ADJUST(-3);
 }
 
@@ -888,20 +862,16 @@ static void CVMCoder_Box(ILCoder *coder, ILClass *boxClass,
 	{
 		/* Box a managed value */
 		sizeInWords = (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
-		CVM_WIDE(COP_BOX, size);
-		CVM_PTR(boxClass);
+		CVM_OUT_WIDE_PTR(COP_BOX, size, boxClass);
 		CVM_ADJUST(-((ILInt32)sizeInWords));
 		CVM_ADJUST(1);
 	}
 	else
 	{
 		/* Box a typed reference after we unpack it */
-		CVM_BYTE(COP_PREFIX);
-		CVM_BYTE(COP_PREFIX_REFANYVAL);
-		CVM_PTR(boxClass);
+		CVMP_OUT_PTR(COP_PREFIX_REFANYVAL, boxClass);
 		CVM_ADJUST(-(CVM_WORDS_PER_TYPED_REF - 1));
-		CVM_WIDE(COP_BOX_PTR, size);
-		CVM_PTR(boxClass);
+		CVM_OUT_WIDE_PTR(COP_BOX_PTR, size, boxClass);
 	}
 }
 
@@ -913,24 +883,21 @@ static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	{
 		case IL_META_ELEMTYPE_I1:
 		{
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_I2B_ALIGNED);
+			CVMP_OUT_NONE(COP_PREFIX_I2B_ALIGNED);
 			CVMCoder_Box(coder, boxClass, valueType, 1);
 		}
 		break;
 
 		case IL_META_ELEMTYPE_I2:
 		{
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_I2S_ALIGNED);
+			CVMP_OUT_NONE(COP_PREFIX_I2S_ALIGNED);
 			CVMCoder_Box(coder, boxClass, valueType, 2);
 		}
 		break;
 
 		case IL_META_ELEMTYPE_R4:
 		{
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_F2F_ALIGNED);
+			CVMP_OUT_NONE(COP_PREFIX_F2F_ALIGNED);
 			CVM_ADJUST(CVM_WORDS_PER_FLOAT - CVM_WORDS_PER_NATIVE_FLOAT);
 			CVMCoder_Box(coder, boxClass, valueType, sizeof(ILFloat));
 		}
@@ -938,8 +905,7 @@ static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 
 		case IL_META_ELEMTYPE_R8:
 		{
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_F2D_ALIGNED);
+			CVMP_OUT_NONE(COP_PREFIX_F2D_ALIGNED);
 			CVM_ADJUST(CVM_WORDS_PER_DOUBLE - CVM_WORDS_PER_NATIVE_FLOAT);
 			CVMCoder_Box(coder, boxClass, valueType, sizeof(ILDouble));
 		}
@@ -956,32 +922,26 @@ static void CVMCoder_Unbox(ILCoder *coder, ILClass *boxClass)
 
 static void CVMCoder_MakeTypedRef(ILCoder *coder, ILClass *classInfo)
 {
-	CVM_BYTE(COP_CKNULL);
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_MKREFANY);
-	CVM_PTR(classInfo);
+	CVM_OUT_NONE(COP_CKNULL);
+	CVMP_OUT_PTR(COP_PREFIX_MKREFANY, classInfo);
 	CVM_ADJUST(CVM_WORDS_PER_TYPED_REF - 1);
 }
 
 static void CVMCoder_RefAnyVal(ILCoder *coder, ILClass *classInfo)
 {
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_REFANYVAL);
-	CVM_PTR(classInfo);
+	CVMP_OUT_PTR(COP_PREFIX_REFANYVAL, classInfo);
 	CVM_ADJUST(-(CVM_WORDS_PER_TYPED_REF - 1));
 }
 
 static void CVMCoder_RefAnyType(ILCoder *coder)
 {
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_REFANYTYPE);
+	CVMP_OUT_NONE(COP_PREFIX_REFANYTYPE);
 	CVM_ADJUST(-(CVM_WORDS_PER_TYPED_REF - 1));
 }
 
 static void CVMCoder_PushToken(ILCoder *coder, ILProgramItem *item)
 {
-	CVM_BYTE(COP_LDTOKEN);
-	CVM_PTR(item);
+	CVM_OUT_PTR(COP_LDTOKEN, item);
 	CVM_ADJUST(1);
 }
 
@@ -990,17 +950,15 @@ static void CVMCoder_SizeOf(ILCoder *coder, ILType *type)
 	ILUInt32 size = ILSizeOfType(type);
 	if(size <= 8)
 	{
-		CVM_BYTE(COP_LDC_I4_0 + size);
+		CVM_OUT_NONE(COP_LDC_I4_0 + size);
 	}
 	else if(size < 128)
 	{
-		CVM_BYTE(COP_LDC_I4_S);
-		CVM_BYTE(size);
+		CVM_OUT_BYTE(COP_LDC_I4_S, size);
 	}
 	else
 	{
-		CVM_BYTE(COP_LDC_I4);
-		CVM_WORD(size);
+		CVM_OUT_WORD(COP_LDC_I4, size);
 	}
 	CVM_ADJUST(1);
 }
@@ -1012,18 +970,11 @@ static void CVMCoder_ArgList(ILCoder *coder)
 	ILUInt32 num = ((ILCVMCoder *)coder)->varargIndex;
 	if(num < 4)
 	{
-		CVM_BYTE(COP_PLOAD_0 + num);
-	}
-	else if(num < 256)
-	{
-		CVM_BYTE(COP_PLOAD);
-		CVM_BYTE(num);
+		CVM_OUT_NONE(COP_PLOAD_0 + num);
 	}
 	else
 	{
-		CVM_BYTE(COP_WIDE);
-		CVM_BYTE(COP_PLOAD);
-		CVM_WORD(num);
+		CVM_OUT_WIDE(COP_PLOAD, num);
 	}
 }
 

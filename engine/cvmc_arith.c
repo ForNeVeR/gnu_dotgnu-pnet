@@ -34,11 +34,11 @@ static void AdjustMixedBinary(ILCoder *coder, int isUnsigned,
 	{
 		if(isUnsigned)
 		{
-			CVM_BYTE(COP_IU2L);
+			CVM_OUT_NONE(COP_IU2L);
 		}
 		else
 		{
-			CVM_BYTE(COP_I2L);
+			CVM_OUT_NONE(COP_I2L);
 		}
 		CVM_ADJUST(CVM_WORDS_PER_NATIVE_INT - 1);
 	}
@@ -46,11 +46,11 @@ static void AdjustMixedBinary(ILCoder *coder, int isUnsigned,
 	{
 		if(isUnsigned)
 		{
-			CVM_BYTE(COP_FIX_I4_U);
+			CVM_OUT_NONE(COP_FIX_I4_U);
 		}
 		else
 		{
-			CVM_BYTE(COP_FIX_I4_I);
+			CVM_OUT_NONE(COP_FIX_I4_I);
 		}
 		CVM_ADJUST(CVM_WORDS_PER_NATIVE_INT - 1);
 	}
@@ -105,17 +105,17 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IADD);
+				CVM_OUT_NONE(COP_IADD);
 				CVM_ADJUST(-1);
 			}
 			else if(type1 == ILEngineType_I8)
 			{
-				CVM_BYTE(COP_LADD);
+				CVM_OUT_NONE(COP_LADD);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 			else
 			{
-				CVM_BYTE(COP_FADD);
+				CVM_OUT_NONE(COP_FADD);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 		}
@@ -125,12 +125,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IADD_OVF);
+				CVM_OUT_NONE(COP_IADD_OVF);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LADD_OVF);
+				CVM_OUT_NONE(COP_LADD_OVF);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -140,12 +140,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IADD_OVF_UN);
+				CVM_OUT_NONE(COP_IADD_OVF_UN);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LADD_OVF_UN);
+				CVM_OUT_NONE(COP_LADD_OVF_UN);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -155,17 +155,17 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_ISUB);
+				CVM_OUT_NONE(COP_ISUB);
 				CVM_ADJUST(-1);
 			}
 			else if(type1 == ILEngineType_I8)
 			{
-				CVM_BYTE(COP_LSUB);
+				CVM_OUT_NONE(COP_LSUB);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 			else
 			{
-				CVM_BYTE(COP_FSUB);
+				CVM_OUT_NONE(COP_FSUB);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 		}
@@ -175,12 +175,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_ISUB_OVF);
+				CVM_OUT_NONE(COP_ISUB_OVF);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LSUB_OVF);
+				CVM_OUT_NONE(COP_LSUB_OVF);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -190,12 +190,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_ISUB_OVF_UN);
+				CVM_OUT_NONE(COP_ISUB_OVF_UN);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LSUB_OVF_UN);
+				CVM_OUT_NONE(COP_LSUB_OVF_UN);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -205,17 +205,17 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IMUL);
+				CVM_OUT_NONE(COP_IMUL);
 				CVM_ADJUST(-1);
 			}
 			else if(type1 == ILEngineType_I8)
 			{
-				CVM_BYTE(COP_LMUL);
+				CVM_OUT_NONE(COP_LMUL);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 			else
 			{
-				CVM_BYTE(COP_FMUL);
+				CVM_OUT_NONE(COP_FMUL);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 		}
@@ -225,12 +225,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IMUL_OVF);
+				CVM_OUT_NONE(COP_IMUL_OVF);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LMUL_OVF);
+				CVM_OUT_NONE(COP_LMUL_OVF);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -240,12 +240,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IMUL_OVF_UN);
+				CVM_OUT_NONE(COP_IMUL_OVF_UN);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LMUL_OVF_UN);
+				CVM_OUT_NONE(COP_LMUL_OVF_UN);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -255,17 +255,17 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IDIV);
+				CVM_OUT_NONE(COP_IDIV);
 				CVM_ADJUST(-1);
 			}
 			else if(type1 == ILEngineType_I8)
 			{
-				CVM_BYTE(COP_LDIV);
+				CVM_OUT_NONE(COP_LDIV);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 			else
 			{
-				CVM_BYTE(COP_FDIV);
+				CVM_OUT_NONE(COP_FDIV);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 		}
@@ -275,12 +275,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IDIV_UN);
+				CVM_OUT_NONE(COP_IDIV_UN);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LDIV_UN);
+				CVM_OUT_NONE(COP_LDIV_UN);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -290,17 +290,17 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IREM);
+				CVM_OUT_NONE(COP_IREM);
 				CVM_ADJUST(-1);
 			}
 			else if(type1 == ILEngineType_I8)
 			{
-				CVM_BYTE(COP_LREM);
+				CVM_OUT_NONE(COP_LREM);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 			else
 			{
-				CVM_BYTE(COP_FREM);
+				CVM_OUT_NONE(COP_FREM);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 		}
@@ -310,12 +310,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IREM_UN);
+				CVM_OUT_NONE(COP_IREM_UN);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LREM_UN);
+				CVM_OUT_NONE(COP_LREM_UN);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -325,12 +325,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IAND);
+				CVM_OUT_NONE(COP_IAND);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LAND);
+				CVM_OUT_NONE(COP_LAND);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -340,12 +340,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IOR);
+				CVM_OUT_NONE(COP_IOR);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LOR);
+				CVM_OUT_NONE(COP_LOR);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -355,12 +355,12 @@ static void CVMCoder_Binary(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_IXOR);
+				CVM_OUT_NONE(COP_IXOR);
 				CVM_ADJUST(-1);
 			}
 			else
 			{
-				CVM_BYTE(COP_LXOR);
+				CVM_OUT_NONE(COP_LXOR);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			}
 		}
@@ -385,16 +385,16 @@ static void CVMCoder_BinaryPtr(ILCoder *coder, int opcode,
 			#ifdef IL_NATIVE_INT64
 				if(type2 == ILEngineType_I4)
 				{
-					CVM_BYTE(COP_PADD_I4);
+					CVM_OUT_NONE(COP_PADD_I4);
 					CVM_ADJUST(-1);
 				}
 				else
 				{
-					CVM_BYTE(COP_PADD_I8);
+					CVM_OUT_NONE(COP_PADD_I8);
 					CVM_ADJUST(-CVM_WORDS_PER_LONG);
 				}
 			#else
-				CVM_BYTE(COP_PADD_I4);
+				CVM_OUT_NONE(COP_PADD_I4);
 				CVM_ADJUST(-1);
 			#endif
 			}
@@ -404,16 +404,16 @@ static void CVMCoder_BinaryPtr(ILCoder *coder, int opcode,
 			#ifdef IL_NATIVE_INT64
 				if(type1 == ILEngineType_I4)
 				{
-					CVM_BYTE(COP_PADD_I4_R);
+					CVM_OUT_NONE(COP_PADD_I4_R);
 					CVM_ADJUST(-1);
 				}
 				else
 				{
-					CVM_BYTE(COP_PADD_I8_R);
+					CVM_OUT_NONE(COP_PADD_I8_R);
 					CVM_ADJUST(-CVM_WORDS_PER_LONG);
 				}
 			#else
-				CVM_BYTE(COP_PADD_I4_R);
+				CVM_OUT_NONE(COP_PADD_I4_R);
 				CVM_ADJUST(-1);
 			#endif
 			}
@@ -426,7 +426,7 @@ static void CVMCoder_BinaryPtr(ILCoder *coder, int opcode,
 			if(type2 == ILEngineType_M || type2 == ILEngineType_T)
 			{
 				/* Subtract two pointers */
-				CVM_BYTE(COP_PSUB);
+				CVM_OUT_NONE(COP_PSUB);
 				CVM_ADJUST(-1);
 			}
 			else
@@ -435,16 +435,16 @@ static void CVMCoder_BinaryPtr(ILCoder *coder, int opcode,
 			#ifdef IL_NATIVE_INT64
 				if(type2 == ILEngineType_I4)
 				{
-					CVM_BYTE(COP_PSUB_I4);
+					CVM_OUT_NONE(COP_PSUB_I4);
 					CVM_ADJUST(-1);
 				}
 				else
 				{
-					CVM_BYTE(COP_PSUB_I8);
+					CVM_OUT_NONE(COP_PSUB_I8);
 					CVM_ADJUST(-CVM_WORDS_PER_LONG);
 				}
 			#else
-				CVM_BYTE(COP_PSUB_I4);
+				CVM_OUT_NONE(COP_PSUB_I4);
 				CVM_ADJUST(-1);
 			#endif
 			}
@@ -463,7 +463,7 @@ static void CVMCoder_Shift(ILCoder *coder, int opcode,
 	/* Convert the shift count down to 32 bits if necessary */
 	if(type2 == ILEngineType_I)
 	{
-		CVM_BYTE(COP_L2I);
+		CVM_OUT_NONE(COP_L2I);
 		CVM_ADJUST(-(CVM_WORDS_PER_LONG - 1));
 	}
 #endif
@@ -485,11 +485,11 @@ static void CVMCoder_Shift(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_ISHL);
+				CVM_OUT_NONE(COP_ISHL);
 			}
 			else
 			{
-				CVM_BYTE(COP_LSHL);
+				CVM_OUT_NONE(COP_LSHL);
 			}
 		}
 		break;
@@ -498,11 +498,11 @@ static void CVMCoder_Shift(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_ISHR);
+				CVM_OUT_NONE(COP_ISHR);
 			}
 			else
 			{
-				CVM_BYTE(COP_LSHR);
+				CVM_OUT_NONE(COP_LSHR);
 			}
 		}
 		break;
@@ -511,11 +511,11 @@ static void CVMCoder_Shift(ILCoder *coder, int opcode,
 		{
 			if(type1 == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_ISHR_UN);
+				CVM_OUT_NONE(COP_ISHR_UN);
 			}
 			else
 			{
-				CVM_BYTE(COP_LSHR_UN);
+				CVM_OUT_NONE(COP_LSHR_UN);
 			}
 		}
 		break;
@@ -535,23 +535,23 @@ static void CVMCoder_Unary(ILCoder *coder, int opcode, ILEngineType type)
 			/* Negate the top-most stack item */
 			if(type == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_INEG);
+				CVM_OUT_NONE(COP_INEG);
 			}
 			else if(type == ILEngineType_I8)
 			{
-				CVM_BYTE(COP_LNEG);
+				CVM_OUT_NONE(COP_LNEG);
 			}
 			else if(type == ILEngineType_I)
 			{
 			#ifdef IL_NATIVE_INT32
-				CVM_BYTE(COP_INEG);
+				CVM_OUT_NONE(COP_INEG);
 			#else
-				CVM_BYTE(COP_LNEG);
+				CVM_OUT_NONE(COP_LNEG);
 			#endif
 			}
 			else if(type == ILEngineType_F)
 			{
-				CVM_BYTE(COP_FNEG);
+				CVM_OUT_NONE(COP_FNEG);
 			}
 		}
 		break;
@@ -561,18 +561,18 @@ static void CVMCoder_Unary(ILCoder *coder, int opcode, ILEngineType type)
 			/* Perform a bitwise NOT on the top-most stack item */
 			if(type == ILEngineType_I4)
 			{
-				CVM_BYTE(COP_INOT);
+				CVM_OUT_NONE(COP_INOT);
 			}
 			else if(type == ILEngineType_I8)
 			{
-				CVM_BYTE(COP_LNOT);
+				CVM_OUT_NONE(COP_LNOT);
 			}
 			else if(type == ILEngineType_I)
 			{
 			#ifdef IL_NATIVE_INT32
-				CVM_BYTE(COP_INOT);
+				CVM_OUT_NONE(COP_INOT);
 			#else
-				CVM_BYTE(COP_LNOT);
+				CVM_OUT_NONE(COP_LNOT);
 			#endif
 			}
 		}
@@ -581,8 +581,7 @@ static void CVMCoder_Unary(ILCoder *coder, int opcode, ILEngineType type)
 		case IL_OP_CKFINITE:
 		{
 			/* Check the top-most F value to see if it is finite */
-			CVM_BYTE(COP_PREFIX);
-			CVM_BYTE(COP_PREFIX_CKFINITE);
+			CVMP_OUT_NONE(COP_PREFIX_CKFINITE);
 		}
 		break;
 	}

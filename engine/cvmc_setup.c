@@ -107,10 +107,9 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	   some extra entry point code just before the main entry */
 	if(isConstructor)
 	{
-		CVM_BYTE(COP_NEW);
-		CVM_BYTE(COP_PUSHDOWN);
+		CVM_OUT_NONE(COP_NEW);
 		pushDown = CVM_POSN();
-		CVM_WORD(0);
+		CVM_OUT_PUSHDOWN();
 		coder->start = CVM_POSN();
 	}
 	else
@@ -184,14 +183,14 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	}
 
 	/* Set the number of arguments, which initialize's the method's frame */
-	CVM_WIDE(COP_SET_NUM_ARGS, offset);
+	CVM_OUT_WIDE(COP_SET_NUM_ARGS, offset);
 
 	/* Is this a static constructor? */
 	if(ILMethod_IsStaticConstructor(method))
 	{
 		/* Output a "cctor_once" instruction to ensure that this
 		   method's body can only be executed once */
-		CVM_BYTE(COP_CCTOR_ONCE);
+		CVM_OUT_NONE(COP_CCTOR_ONCE);
 	}
 
 	/* If this is a constructor, then back-patch the push down size,
@@ -199,10 +198,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	if(isConstructor)
 	{
 		--offset;
-		if(CVM_VALID(pushDown, 4))
-		{
-			IL_WRITE_UINT32(pushDown, offset);
-		}
+		CVM_BACKPATCH_PUSHDOWN(pushDown, offset);
 		++offset;
 	}
 
@@ -228,7 +224,7 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 			case (unsigned long)ILType_Int8:
 			case (unsigned long)ILType_UInt8:
 			{
-				CVM_WIDE(COP_BFIXUP, offset);
+				CVM_OUT_WIDE(COP_BFIXUP, offset);
 			}
 			break;
 
@@ -236,20 +232,20 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 			case (unsigned long)ILType_UInt16:
 			case (unsigned long)ILType_Char:
 			{
-				CVM_WIDE(COP_SFIXUP, offset);
+				CVM_OUT_WIDE(COP_SFIXUP, offset);
 			}
 			break;
 		#endif
 
 			case (unsigned long)ILType_Float32:
 			{
-				CVM_WIDE(COP_FFIXUP, offset);
+				CVM_OUT_WIDE(COP_FFIXUP, offset);
 			}
 			break;
 
 			case (unsigned long)ILType_Float64:
 			{
-				CVM_WIDE(COP_DFIXUP, offset);
+				CVM_OUT_WIDE(COP_DFIXUP, offset);
 			}
 			break;
 
@@ -302,29 +298,25 @@ static int CVMEntryPoint(ILCVMCoder *coder, unsigned char **start,
 	/* Output the stack height check instruction, which is fixed
 	   up at the end of the method with the maximum height */
 	coder->stackCheck = CVM_POSN();
-	CVM_BYTE(COP_CKHEIGHT_N);
-	CVM_BYTE(0);
-	CVM_BYTE(0);
-	CVM_BYTE(0);
-	CVM_BYTE(0);
+	CVM_OUT_CKHEIGHT();
 
 	/* Output CVM code to allocate space for the local variables */
 	offset -= maxArgOffset;
 	if(offset == 1)
 	{
-		CVM_BYTE(COP_MK_LOCAL_1);
+		CVM_OUT_NONE(COP_MK_LOCAL_1);
 	}
 	else if(offset == 2)
 	{
-		CVM_BYTE(COP_MK_LOCAL_2);
+		CVM_OUT_NONE(COP_MK_LOCAL_2);
 	}
 	else if(offset == 3)
 	{
-		CVM_BYTE(COP_MK_LOCAL_3);
+		CVM_OUT_NONE(COP_MK_LOCAL_3);
 	}
 	else if(offset != 0)
 	{
-		CVM_WIDE(COP_MK_LOCAL_N, offset);
+		CVM_OUT_WIDE(COP_MK_LOCAL_N, offset);
 	}
 
 	/* Set the current stack height */
@@ -457,22 +449,20 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			if(IsStringType(tempType))
 			{
 				/* String value parameter: convert into a "const char *" */
-				CVM_WIDE(COP_PLOAD, coder->argOffsets[extraLocals]);
+				CVM_OUT_WIDE(COP_PLOAD, coder->argOffsets[extraLocals]);
 				CVM_ADJUST(1);
 				switch(pinvAttrs & IL_META_PINVOKE_CHAR_SET_MASK)
 				{
 					case IL_META_PINVOKE_CHAR_SET_NOT_SPEC:
 					{
-						CVM_BYTE(COP_PREFIX);
-						CVM_BYTE(COP_PREFIX_STR2UTF8);
+						CVMP_OUT_NONE(COP_PREFIX_STR2UTF8);
 					}
 					break;
 
 					case IL_META_PINVOKE_CHAR_SET_ANSI:
 					case IL_META_PINVOKE_CHAR_SET_AUTO:
 					{
-						CVM_BYTE(COP_PREFIX);
-						CVM_BYTE(COP_PREFIX_STR2ANSI);
+						CVMP_OUT_NONE(COP_PREFIX_STR2ANSI);
 					}
 					break;
 
@@ -482,7 +472,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 					}
 					break;
 				}
-				CVM_WIDE(COP_PSTORE, coder->argOffsets[extraLocals]);
+				CVM_OUT_WIDE(COP_PSTORE, coder->argOffsets[extraLocals]);
 				CVM_ADJUST(-1);
 			}
 			else if(IsStringRefType(tempType))
@@ -498,7 +488,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	if(isInternal)
 	{
 		/* Push a pointer to the thread value */
-		CVM_BYTE(COP_PUSH_THREAD);
+		CVM_OUT_NONE(COP_PUSH_THREAD);
 		++numArgs;
 	}
 	extraLocals = 0;
@@ -506,11 +496,11 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	if(ILType_IsValueType(returnType))
 	{
 		/* Value type return pointers are pushed just after the thread */
-		CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+		CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
 		CVM_ADJUST(1);
-		CVM_WIDE(COP_PSTORE, coder->localOffsets[1]);
+		CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[1]);
 		CVM_ADJUST(-1);
-		CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs, coder->localOffsets[1]);
+		CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs, coder->localOffsets[1]);
 		extraLocals = 2;
 		++numArgs;
 	}
@@ -526,10 +516,10 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			   "this" argument for null before we push the pointer args.
 			   This takes the burden off the underlying code to check for
 			   null.  Virtual method calls check for null elsewhere */
-			CVM_BYTE(COP_PLOAD_0);
+			CVM_OUT_NONE(COP_PLOAD_0);
 			CVM_ADJUST(1);
-			CVM_BYTE(COP_CKNULL);
-			CVM_BYTE(COP_POP);
+			CVM_OUT_NONE(COP_CKNULL);
+			CVM_OUT_NONE(COP_POP);
 			CVM_ADJUST(-1);
 		}
 		numParams = ILTypeNumParams(signature);
@@ -539,19 +529,19 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			   ILType_IsValueType(ILTypeGetEnumType
 			   		(ILTypeGetParam(signature, param))))
 			{
-				CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
+				CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param]);
 				CVM_ADJUST(1);
-				CVM_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
+				CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
 				CVM_ADJUST(-1);
-				CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						 coder->localOffsets[extraLocals]);
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
+						     coder->localOffsets[extraLocals]);
 				++extraLocals;
 				returnIsTop = 0;
 			}
 			else
 			{
-				CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						 coder->argOffsets[param]);
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
+						     coder->argOffsets[param]);
 			}
 			++numArgs;
 		}
@@ -565,19 +555,19 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			if(ILType_IsValueType(ILTypeGetEnumType
 			   		(ILTypeGetParam(signature, param + 1))))
 			{
-				CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
+				CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param]);
 				CVM_ADJUST(1);
-				CVM_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
+				CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
 				CVM_ADJUST(-1);
-				CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						 coder->localOffsets[extraLocals]);
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
+						     coder->localOffsets[extraLocals]);
 				++extraLocals;
 				returnIsTop = 0;
 			}
 			else
 			{
-				CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-						 coder->argOffsets[param]);
+				CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
+						     coder->argOffsets[param]);
 			}
 			++numArgs;
 		}
@@ -594,21 +584,17 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	if(returnType != ILType_Void && !ILType_IsValueType(returnType))
 	{
 		/* Push a pointer to the local containing the return value */
-		CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+		CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
 		CVM_ADJUST(1);
 
 		/* Call the native method */
-		CVM_BYTE(COP_CALL_NATIVE);
-		CVM_PTR(fn);
-		CVM_PTR(cif);
+		CVM_OUT_PTR2(COP_CALL_NATIVE, fn, cif);
 		CVM_ADJUST(-1);
 	}
 	else
 	{
 		/* Call the native method, with no return value */
-		CVM_BYTE(COP_CALL_NATIVE_VOID);
-		CVM_PTR(fn);
-		CVM_PTR(cif);
+		CVM_OUT_PTR2(COP_CALL_NATIVE_VOID, fn, cif);
 	}
 
 	/* Push the return value onto the stack and exit the method.
@@ -622,30 +608,30 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			case (unsigned long)ILType_Boolean:
 			case (unsigned long)ILType_Int8:
 			{
-				CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
 				CVM_ADJUST(1);
-				CVM_BYTE(COP_BREAD);
-				CVM_BYTE(COP_RETURN_1);
+				CVM_OUT_NONE(COP_BREAD);
+				CVM_OUT_NONE(COP_RETURN_1);
 				CVM_ADJUST(-1);
 			}
 			break;
 
 			case (unsigned long)ILType_UInt8:
 			{
-				CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
 				CVM_ADJUST(1);
-				CVM_BYTE(COP_UBREAD);
-				CVM_BYTE(COP_RETURN_1);
+				CVM_OUT_NONE(COP_UBREAD);
+				CVM_OUT_NONE(COP_RETURN_1);
 				CVM_ADJUST(-1);
 			}
 			break;
 
 			case (unsigned long)ILType_Int16:
 			{
-				CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
 				CVM_ADJUST(1);
-				CVM_BYTE(COP_SREAD);
-				CVM_BYTE(COP_RETURN_1);
+				CVM_OUT_NONE(COP_SREAD);
+				CVM_OUT_NONE(COP_RETURN_1);
 				CVM_ADJUST(-1);
 			}
 			break;
@@ -653,30 +639,30 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 			case (unsigned long)ILType_UInt16:
 			case (unsigned long)ILType_Char:
 			{
-				CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
 				CVM_ADJUST(1);
-				CVM_BYTE(COP_USREAD);
-				CVM_BYTE(COP_RETURN_1);
+				CVM_OUT_NONE(COP_USREAD);
+				CVM_OUT_NONE(COP_RETURN_1);
 				CVM_ADJUST(-1);
 			}
 			break;
 
 			case (unsigned long)ILType_Float32:
 			{
-				CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
-				CVM_BYTE(COP_FREAD);
+				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
+				CVM_OUT_NONE(COP_FREAD);
 				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
-				CVM_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
+				CVM_OUT_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 			break;
 
 			case (unsigned long)ILType_Float64:
 			{
-				CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
-				CVM_BYTE(COP_DREAD);
+				CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
+				CVM_OUT_NONE(COP_DREAD);
 				CVM_ADJUST(CVM_WORDS_PER_NATIVE_FLOAT);
-				CVM_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
+				CVM_OUT_RETURN(CVM_WORDS_PER_NATIVE_FLOAT);
 				CVM_ADJUST(-CVM_WORDS_PER_NATIVE_FLOAT);
 			}
 			break;
@@ -686,14 +672,14 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 				if(returnIsTop)
 				{
 					param = GetTypeSize(returnType);
-					CVM_RETURN(param);
+					CVM_OUT_RETURN(param);
 				}
 				else
 				{
 					param = GetTypeSize(returnType);
-					CVM_DWIDE(COP_MLOAD, coder->localOffsets[0], param);
+					CVM_OUT_DWIDE(COP_MLOAD, coder->localOffsets[0], param);
 					CVM_ADJUST(param);
-					CVM_RETURN(param);
+					CVM_OUT_RETURN(param);
 					CVM_ADJUST(-((ILInt32)param));
 				}
 			}
@@ -702,7 +688,7 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	}
 	else
 	{
-		CVM_BYTE(COP_RETURN);
+		CVM_OUT_NONE(COP_RETURN);
 	}
 
 	/* Done */
@@ -755,13 +741,8 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	}
 
 	/* Back-patch the prefix code to jump to the allocating constructor */
-	dest = (ILInt32)(start2 - (*start - 6));
-	(*start)[-6] = COP_BR_LONG;
-	(*start)[-5] = COP_BR;
-	(*start)[-4] = (unsigned char)(dest);
-	(*start)[-3] = (unsigned char)(dest >> 8);
-	(*start)[-2] = (unsigned char)(dest >> 16);
-	(*start)[-1] = (unsigned char)(dest >> 24);
+	dest = (ILInt32)(start2 - (*start - CVM_CTOR_OFFSET));
+	CVM_OUT_JUMPOVER(*start - CVM_CTOR_OFFSET, dest);
 
 	/* Push the arguments for the call onto the stack */
 	numArgs = -1;
@@ -770,7 +751,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 	if(isInternal)
 	{
 		/* Push a pointer to the thread value */
-		CVM_BYTE(COP_PUSH_THREAD);
+		CVM_OUT_NONE(COP_PUSH_THREAD);
 		++numArgs;
 	}
 	numParams = ILTypeNumParams(signature);
@@ -779,41 +760,39 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
 		if(ILType_IsValueType(ILTypeGetEnumType
 		   		(ILTypeGetParam(signature, param + 1))))
 		{
-			CVM_WIDE(COP_WADDR, coder->argOffsets[param]);
+			CVM_OUT_WIDE(COP_WADDR, coder->argOffsets[param]);
 			CVM_ADJUST(1);
-			CVM_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
+			CVM_OUT_WIDE(COP_PSTORE, coder->localOffsets[extraLocals]);
 			CVM_ADJUST(-1);
-			CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-					 coder->localOffsets[extraLocals]);
+			CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
+					     coder->localOffsets[extraLocals]);
 			++extraLocals;
 			returnIsTop = 0;
 		}
 		else
 		{
-			CVM_WIDE(COP_WADDR_NATIVE_0 + numArgs,
-					 coder->argOffsets[param]);
+			CVM_OUT_WIDE(COP_WADDR_NATIVE_0 + numArgs,
+					     coder->argOffsets[param]);
 		}
 		++numArgs;
 	}
-	CVM_WIDE(COP_WADDR, coder->localOffsets[0]);
+	CVM_OUT_WIDE(COP_WADDR, coder->localOffsets[0]);
 	CVM_ADJUST(1);
 
 	/* Output the call to the external method */
-	CVM_BYTE(COP_CALL_NATIVE);
-	CVM_PTR(ctorfn);
-	CVM_PTR(ctorcif);
+	CVM_OUT_PTR2(COP_CALL_NATIVE, ctorfn, ctorcif);
 	CVM_ADJUST(-1);
 
 	/* Return the contents of the local, which is the allocated object */
 	if(returnIsTop)
 	{
-		CVM_RETURN(1);
+		CVM_OUT_RETURN(1);
 	}
 	else
 	{
-		CVM_WIDE(COP_PLOAD, coder->localOffsets[0]);
+		CVM_OUT_WIDE(COP_PLOAD, coder->localOffsets[0]);
 		CVM_ADJUST(1);
-		CVM_RETURN(1);
+		CVM_OUT_RETURN(1);
 		CVM_ADJUST(-1);
 	}
 
@@ -827,7 +806,7 @@ static int CVMCoder_SetupExternCtor(ILCoder *_coder, unsigned char **start,
  */
 static int CVMCoder_CtorOffset(ILCoder *coder)
 {
-	return 6;
+	return CVM_CTOR_OFFSET;
 }
 
 /*
@@ -851,17 +830,7 @@ static int CVMCoder_Finish(ILCoder *_coder)
 	}
 
 	/* Back-patch the stack height check instruction */
-	if(CVM_VALID(coder->stackCheck, 5))
-	{
-		if(coder->maxHeight <= 8)
-		{
-			*(coder->stackCheck) = COP_CKHEIGHT;
-		}
-		else
-		{
-			IL_WRITE_UINT32(coder->stackCheck + 1, coder->maxHeight);
-		}
-	}
+	CVM_BACKPATCH_CKHEIGHT(coder->stackCheck, coder->maxHeight);
 
 	/* Ready to go */
 	return result;

@@ -73,6 +73,8 @@ struct _tagILCVMCoder
 
 };
 
+#if 0
+
 /*
  * Get the current method position.
  */
@@ -173,6 +175,13 @@ struct _tagILCVMCoder
 					CVM_WORD((size)); \
 				} \
 			} while (0)
+
+#endif
+
+/*
+ * Include the CVM code generation macros.
+ */
+#include "cvmc_gen.h"
 
 /*
  * Adjust the height of the CVM operand stack.

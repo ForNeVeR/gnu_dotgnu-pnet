@@ -261,12 +261,14 @@ public class MessageBox
 				{
 					iconControl = new Control();
 					iconControl.ClientSize = this.icon.Size;
+					iconControl.TabStop = false;
 					hbox.Controls.Add(iconControl);
 				}
 
 				// Create the label containing the message text.
 				textLabel = new Label();
 				textLabel.TextAlign = ContentAlignment.MiddleLeft;
+				textLabel.TabStop = false;
 				if(text != null)
 				{
 					textLabel.Text = text;

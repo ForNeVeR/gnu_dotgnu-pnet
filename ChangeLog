@@ -4,6 +4,12 @@
 	* Xsharp/TopLevelWindow.cs: redirect Alt+F4 to close top-level
 	windows if the window manager doesn't do it for us.
 
+	* System.Windows.Forms/GridLayout.cs,
+	System.Windows.Forms/HBoxLayout.cs,
+	System.Windows.Forms/MessageBox.cs,
+	System.Windows.Forms/VBoxLayout.cs: disable "TabStop" on layout
+	and message box controls that should not be tab stops.
+
 2003-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/XsharpSupport.c: implement a special case for Latin1

@@ -50,6 +50,7 @@ internal class GridLayout : Control, IRecommendedSize
 				this.colSpacing = 4;
 				this.rowSpacing = 4;
 				this.children = new Control [columns * rows];
+				this.TabStop = false;
 			}
 
 	// Get or set the column to be stretched.

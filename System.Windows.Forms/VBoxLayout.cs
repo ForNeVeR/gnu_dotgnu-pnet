@@ -41,6 +41,7 @@ internal class VBoxLayout : Control, IRecommendedSize
 				stretchControl = null;
 				margin = 4;
 				spacing = 4;
+				TabStop = false;
 			}
 
 	// Get or set whether all controls will have a uniform size.

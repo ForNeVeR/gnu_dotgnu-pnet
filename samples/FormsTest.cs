@@ -225,6 +225,11 @@ namespace FormsTest
 		private ListBox listBox1, listBox2;
 
 		private Button formsButton1;
+		private Button formsButton2;
+		private Button formsButton3;
+		private Button formsButton4;
+		private Button formsButton5;
+		private Button formsButton6;
 
 		private VScrollBar vScrollBar;
 		private HScrollBar hScrollBar;
@@ -430,6 +435,7 @@ namespace FormsTest
 			AddMessageBoxTest(tabPage26);
 
 			ResumeLayout(false);
+			MinimumSize = new Size(300, 300);
 		}
 
 		private void AddLabelTest(Control control)
@@ -2791,13 +2797,70 @@ namespace FormsTest
 			formsButton1.Bounds = new Rectangle(20, 20, 120, 20);
 			formsButton1.Text = "New Normal Form";
 			formsButton1.Click+=new EventHandler(FormsTestClick);
-			c.Controls.Add(formsButton1);
+
+			formsButton2 = new Button();
+			formsButton2.Bounds = new Rectangle(20, 50, 120, 20);
+			formsButton2.Text = "Restrict Min Max";
+			formsButton2.Click+=new EventHandler(FormsMinMax);
+			
+			formsButton3 = new Button();
+			formsButton3.Bounds = new Rectangle(20, 80, 120, 20);
+			formsButton3.Text = "Maximize";
+			formsButton3.Click+=new EventHandler(FormsMaximize);
+			
+			formsButton4 = new Button();
+			formsButton4.Bounds = new Rectangle(20, 110, 120, 20);
+			formsButton4.Text = "Minimize";
+			formsButton4.Click+=new EventHandler(FormsMinimize);
+			
+			formsButton5 = new Button();
+			formsButton5.Bounds = new Rectangle(20, 140, 120, 20);
+			formsButton5.Text = "Restore";
+			formsButton5.Click+=new EventHandler(FormsRestore);
+			
+			formsButton6 = new Button();
+			formsButton6.Bounds = new Rectangle(20, 170, 120, 20);
+			formsButton6.Text = "Set Icon";
+			formsButton6.Click+=new EventHandler(FormsSetIcon);
+			
+			c.Controls.AddRange(new Control[] {formsButton1, formsButton2, formsButton3, formsButton4, formsButton5, formsButton6});
 		}
 
 		private void FormsTestClick(object sender, EventArgs e)
 		{
 			Form f = new Form();
 			f.Show();
+		}
+
+		private void FormsMinMax(object sender, EventArgs e)
+		{
+			if (MaximumSize == Size.Empty)
+			{
+				MaximumSize = new Size(400, 600);
+				MinimumSize = new Size(200, 300);
+			}
+			else
+				MinimumSize = MaximumSize = Size.Empty;
+		}
+
+		private void FormsMaximize(object sender, EventArgs e)
+		{
+			WindowState = FormWindowState.Maximized;
+		}
+
+		private void FormsMinimize(object sender, EventArgs e)
+		{
+			WindowState = FormWindowState.Minimized;
+		}
+
+		private void FormsRestore(object sender, EventArgs e)
+		{
+			WindowState = FormWindowState.Normal;
+		}
+
+		private void FormsSetIcon(object sender, EventArgs e)
+		{
+			Icon = new Icon(this.GetType(), "small_folder.ico");
 		}
 
 		private void AddTransformsTest(Control c)

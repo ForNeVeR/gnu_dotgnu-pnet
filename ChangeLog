@@ -23,6 +23,10 @@
 	* image/meta_index.c (ILImageSearchForToken): unwind the token
 	retrieval code a little to speed up token searching.
 
+	* cscc/csharp/cs_scanner.l (ParseIdentifier): short-cut
+	character recognition so that "ILGetUnicodeCategory" is only
+	called for non-ASCII Unicode characters.
+
 2003-02-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_decls.tc: Re-order the static constructors so

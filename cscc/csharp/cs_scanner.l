@@ -738,36 +738,46 @@ static ILIntString ParseIdentifier(char *text)
 		text += ParseWChar(text, &ch);
 
 		/* Validate it */
-		category = ILGetUnicodeCategory((unsigned)ch);
 		if(first)
 		{
-			if(ch != '_' &&
-			   category != ILUnicode_UppercaseLetter &&
-			   category != ILUnicode_LowercaseLetter &&
-			   category != ILUnicode_TitlecaseLetter &&
-			   category != ILUnicode_ModifierLetter &&
-			   category != ILUnicode_OtherLetter &&
-			   category != ILUnicode_LetterNumber)
+			if(!((ch >= 'A' && ch <= 'Z') ||
+			     (ch >= 'a' && ch <= 'z') || ch == '_'))
 			{
-				invalid = 1;
+				category = ILGetUnicodeCategory((unsigned)ch);
+				if(ch != '_' &&
+				   category != ILUnicode_UppercaseLetter &&
+				   category != ILUnicode_LowercaseLetter &&
+				   category != ILUnicode_TitlecaseLetter &&
+				   category != ILUnicode_ModifierLetter &&
+				   category != ILUnicode_OtherLetter &&
+				   category != ILUnicode_LetterNumber)
+				{
+					invalid = 1;
+				}
 			}
 			first = 0;
 		}
 		else
 		{
-			if(category != ILUnicode_UppercaseLetter &&
-			   category != ILUnicode_LowercaseLetter &&
-			   category != ILUnicode_TitlecaseLetter &&
-			   category != ILUnicode_ModifierLetter &&
-			   category != ILUnicode_OtherLetter &&
-			   category != ILUnicode_LetterNumber &&
-			   category != ILUnicode_DecimalDigitNumber &&
-			   category != ILUnicode_NonSpacingMark &&
-			   category != ILUnicode_SpaceCombiningMark &&
-			   category != ILUnicode_ConnectorPunctuation &&
-			   category != ILUnicode_Format)
+			if(!((ch >= 'A' && ch <= 'Z') ||
+			     (ch >= 'a' && ch <= 'z') ||
+			     (ch >= '0' && ch <= '9') || ch == '_'))
 			{
-				invalid = 1;
+				category = ILGetUnicodeCategory((unsigned)ch);
+				if(category != ILUnicode_UppercaseLetter &&
+				   category != ILUnicode_LowercaseLetter &&
+				   category != ILUnicode_TitlecaseLetter &&
+				   category != ILUnicode_ModifierLetter &&
+				   category != ILUnicode_OtherLetter &&
+				   category != ILUnicode_LetterNumber &&
+				   category != ILUnicode_DecimalDigitNumber &&
+				   category != ILUnicode_NonSpacingMark &&
+				   category != ILUnicode_SpaceCombiningMark &&
+				   category != ILUnicode_ConnectorPunctuation &&
+				   category != ILUnicode_Format)
+				{
+					invalid = 1;
+				}
 			}
 		}
 

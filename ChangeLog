@@ -5,6 +5,10 @@
 	engine/cvm_lengths.c, engine/cvmc_setup.c, image/marshal.c,
 	include/il_meta.h: marshal "ref String[]" parameters correctly.
 
+	* engine/Makefile.am, engine/int_proto.h, engine/int_table.c,
+	engine/lib_marshal.c, samples/mscorlib.dll: implement internalcall
+	methods for the "Marshal" class.
+
 2002-06-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.4.0" release.

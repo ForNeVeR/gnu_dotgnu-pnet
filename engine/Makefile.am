@@ -24,6 +24,7 @@ libILEngine_a_SOURCES = cvm.c \
 						lib_file.c \
 						lib_gc.c \
 						lib_helpers.c \
+						lib_marshal.c \
 						lib_math.c \
 						lib_misc.c \
 						lib_object.c \

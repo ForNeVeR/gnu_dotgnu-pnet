@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.6.8 release.
 
+	* configure.in: update working version to "0.6.9".
+
 2004-08-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: fix the constructor taking an

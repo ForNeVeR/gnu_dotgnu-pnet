@@ -11,6 +11,9 @@ members; text nodes are now flagged correctly; attribute parsing bug.
 * csdoc/doc_backend.h: add the input filenames to the signature of
 ILDocConvert.
 
+* csdoc/doc_texi.c: implement texinfo document conversion for the
+signatures of types and members (doc comments are not done yet).
+
 2001-09-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_defs.tc, cscc/cs_oper.tc: ILNode_GlobalNamespace, new semantic

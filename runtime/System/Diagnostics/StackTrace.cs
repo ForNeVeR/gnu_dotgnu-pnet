@@ -207,10 +207,10 @@ public class StackTrace
 						result = result + " in " + filename;
 						line = frames[posn].GetFileLineNumber();
 						col = frames[posn].GetFileColumnNumber();
-						if(line != -1)
+						if(line != 0)
 						{
 							result = result + ":" + line.ToString();
-							if(col != -1)
+							if(col != 0)
 							{
 								result = result + ":" + col.ToString();
 							}

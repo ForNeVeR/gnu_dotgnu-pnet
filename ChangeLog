@@ -1,4 +1,11 @@
 
+2004-05-03  Andre Seidelt <pnet-devel01@foobarquarium.de>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs,
+	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
+	Fix various incompatibilties in binary (de)serialization formats.
+	(committed by Gopal)
+
 2004-05-03  Gopal V  <gopalv82@yahoo.com>
 
 	* System/CodeDom/Compiler/CodeCompiler.cs: Disable ShellExecute

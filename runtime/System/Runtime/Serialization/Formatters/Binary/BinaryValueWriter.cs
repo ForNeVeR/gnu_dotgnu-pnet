@@ -311,6 +311,23 @@ internal abstract class BinaryValueWriter
 				}
 			}
 
+	// if a member-name is used in the current class and in a base class, then the name has to be prefixed by <class>+
+	private static String GetMemberName(MemberInfo[] allMembers, MemberInfo member) {
+		bool prefix = false;
+		foreach(MemberInfo mi in allMembers) {
+			if(mi.Name == member.Name) {
+				prefix = true;
+				break;
+			}
+		}
+
+		if(prefix) {
+			return member.DeclaringType.FullName+"+"+member.Name;
+		} else {
+			return member.Name;
+		}
+	}
+
 	// Write object values.
 	private class ObjectWriter : BinaryValueWriter
 	{
@@ -468,7 +485,7 @@ internal abstract class BinaryValueWriter
 						Type fieldType;
 						for(index = 0; index < members.Length; ++index)
 						{
-							context.writer.Write(members[index].Name);
+							context.writer.Write(GetMemberName(members, members[index]));
 						}
 						for(index = 0; index < members.Length; ++index)
 						{
@@ -690,7 +707,7 @@ internal abstract class BinaryValueWriter
 	{
 		// Internal state.
 		private BinaryPrimitiveTypeCode code;
-		private String fieldName;
+		protected String fieldName;
 
 		// Constructor.
 		public PrimitiveWriter(BinaryPrimitiveTypeCode code)
@@ -990,6 +1007,18 @@ internal abstract class BinaryValueWriter
 						context.writer.Write((int)prevObject);
 					}
 				}
+				// Write the object form of values for a type.
+				public override void WriteObject(BinaryValueContext context,
+												 Object value, Type type)
+				{
+					// NOTE: the stupid swapping of the int's is intentional
+					Decimal dec = (Decimal) value;
+					int[] bits = Decimal.GetBits(dec);
+					context.writer.Write(bits[3]);
+					context.writer.Write(bits[2]);
+					context.writer.Write(bits[0]);
+					context.writer.Write(bits[1]);
+				}
 
 		// Write the inline form of values for a type.
 		public override void WriteInline(BinaryValueContext context,
@@ -1010,13 +1039,47 @@ internal abstract class BinaryValueWriter
 		public DateTimeWriter()
 			: base(BinaryPrimitiveTypeCode.DateTime, "ticks") {}
 
+				// Write the object header information for a type.
+		public override void WriteObjectHeader(BinaryValueContext context,
+												Object value, Type type,
+												long objectID, long prevObject)
+				{
+					if(prevObject == -1)
+					{
+						// Write the full type information.
+						context.writer.Write((byte)(BinaryElementType.RuntimeObject));
+						context.writer.Write((int)objectID);
+						context.writer.Write(type.FullName);
+						context.writer.Write((int)1);
+						context.writer.Write(fieldName);
+						int64Writer.WriteTypeTag(context, null);
+						int64Writer.WriteTypeSpec(context, null);
+					}
+					else
+					{
+						// Write a short header, referring to a previous
+						// object's type information.
+						context.writer.Write((byte)(BinaryElementType.RefTypeObject));
+						context.writer.Write((int)objectID);
+						context.writer.Write((int)prevObject);
+					}
+				}
+
+		// Write the object form of values for a type.
+		public override void WriteObject(BinaryValueContext context,
+										 Object value, Type type)
+		{
+			// this has to be saved as long
+			context.writer.Write((long) ((DateTime)value).Ticks);
+		}
+
 		// Write the inline form of values for a type.
 		public override void WriteInline(BinaryValueContext context,
 										 Object value, Type type,
 										 Type fieldType)
-				{
-					context.writer.Write(((DateTime)value).Ticks);
-				}
+		{
+			context.writer.Write(((DateTime)value).Ticks);
+		}
 
 	}; // class DateTimeWriter
 
@@ -1027,13 +1090,47 @@ internal abstract class BinaryValueWriter
 		public TimeSpanWriter()
 			: base(BinaryPrimitiveTypeCode.TimeSpan, "_ticks") {}
 
+				// Write the object header information for a type.
+		public override void WriteObjectHeader(BinaryValueContext context,
+											   Object value, Type type,
+											   long objectID, long prevObject)
+		{
+			if(prevObject == -1)
+			{
+				// Write the full type information.
+				context.writer.Write((byte)(BinaryElementType.RuntimeObject));
+				context.writer.Write((int)objectID);
+				context.writer.Write(type.FullName);
+				context.writer.Write((int)1);
+				context.writer.Write(fieldName);
+				int64Writer.WriteTypeTag(context, null);
+				int64Writer.WriteTypeSpec(context, null);
+			}
+			else
+			{
+				// Write a short header, referring to a previous
+				// object's type information.
+				context.writer.Write((byte)(BinaryElementType.RefTypeObject));
+				context.writer.Write((int)objectID);
+				context.writer.Write((int)prevObject);
+			}
+		}
+
+		// Write the object form of values for a type.
+		public override void WriteObject(BinaryValueContext context,
+										 Object value, Type type)
+		{
+			// this has to be saved as long
+			context.writer.Write((long) ((TimeSpan)value).Ticks);
+		}
+
 		// Write the inline form of values for a type.
 		public override void WriteInline(BinaryValueContext context,
 										 Object value, Type type,
 										 Type fieldType)
-				{
-					context.writer.Write(((TimeSpan)value).Ticks);
-				}
+		{
+			context.writer.Write(((TimeSpan)value).Ticks);
+		}
 
 	}; // class TimeSpanWriter
 
@@ -1046,49 +1143,47 @@ internal abstract class BinaryValueWriter
 		// Write the type tag for a type.
 		public override void WriteTypeTag
 					(BinaryValueContext context, Type type)
-				{
-					context.writer.Write((byte)(BinaryTypeTag.String));
-				}
+		{
+			context.writer.Write((byte)(BinaryTypeTag.String));
+		}
 
 		// Write the type specification for a type.
 		public override void WriteTypeSpec
 					(BinaryValueContext context, Type type)
-				{
-					// Nothing to do here.
-				}
+		{
+			// Nothing to do here.
+		}
 
 		// Write the inline form of values for a type.
 		public override void WriteInline(BinaryValueContext context,
 										 Object value, Type type,
 										 Type fieldType)
+		{
+			bool firstTime;
+			
+			if(value == null)
+			{
+				// Write a null value.
+				context.writer.Write((byte)(BinaryElementType.NullValue));
+				return;
+			} 
+			else 
+			{
+				long objectID = context.gen.GetId(value, out firstTime);
+				if(firstTime) 
 				{
-					bool firstTime;
-
-					if(value == null)
-					{
-						// Write a null value.
-						context.writer.Write
-							((byte)(BinaryElementType.NullValue));
-						return;
-					} 
-					else 
-					{
-						long objectID = context.gen.GetId(value, out firstTime);
-						if(firstTime) 
-						{
-							context.writer.Write
-								((byte)(BinaryElementType.String));
-							context.writer.Write((int)objectID);
-							context.writer.Write((String)value);
-						} 
-						else 
-						{
-							context.writer.Write
-								((byte)(BinaryElementType.ObjectReference));
-							context.writer.Write((int)objectID);
-						}
-					}
+					context.writer.Write((byte)(BinaryElementType.String));
+					context.writer.Write((int)objectID);
+					context.writer.Write((String)value);
+				} 
+				else 
+				{
+					context.writer.Write
+							((byte)(BinaryElementType.ObjectReference));
+					context.writer.Write((int)objectID);
 				}
+			}
+		}
 
 		// Write the object header information for a type.
 		public override void WriteObjectHeader(BinaryValueContext context,
@@ -1107,7 +1202,7 @@ internal abstract class BinaryValueWriter
 					{
 						// Write a null value.
 						context.writer.Write
-							((byte)(BinaryElementType.NullValue));
+								((byte)(BinaryElementType.NullValue));
 					} 
 					else 
 					{

@@ -30,18 +30,19 @@ using System.Reflection;
 using System.Collections;
 
 /*
-** unsupported features:
-**	- BinaryElementType.MethodCall: not needed by me :-)
-**	- BinaryElementType.MethodResponse: not needed by me :-)
-**  - user defined serialization headers
-**	- classes implementing the ISerializable interface
-**
-** unsupported array types:
-**  - BinaryArrayType.Jagged
-**  - BinaryArrayType.Multidimensional
-**  - BinaryArrayType.SingleWithLowerBounds
-**  - BinaryArrayType.JaggedWithLowerBounds
-**  - BinaryArrayType.MultidimensionalWithLowerBounds
+*  unsupported features:
+* 	- BinaryElementType.MethodCall: not needed by me :-)
+* 	- BinaryElementType.MethodResponse: not needed by me :-)
+*   - user defined serialization headers
+* 	- classes implementing the ISerializable interface
+* 
+*  unsupported array types:
+*   - Arrays of Enums
+*   - BinaryArrayType.Jagged
+*   - BinaryArrayType.Multidimensional
+*   - BinaryArrayType.SingleWithLowerBounds
+*   - BinaryArrayType.JaggedWithLowerBounds
+*   - BinaryArrayType.MultidimensionalWithLowerBounds
 */
 
 /*
@@ -59,7 +60,8 @@ internal class DeserializationContext
 	private Hashtable mAssemblyStore;
 	// the calling BinaryFormatter (not used for now)
 	private BinaryFormatter mFormatter;
-	// info if there are user defined headers (not used for now as headers are not supported for now)
+	// info if there are user defined headers (not used for now as 
+	// headers are not supported for now)
 	private bool mIsHeaderPresent;
 	// major and minor version used for serialization
 	private uint mMajorVersion, mMinorVersion;
@@ -71,7 +73,8 @@ internal class DeserializationContext
 		mReader = reader;
 		mTypeStore = new Hashtable();
 		mAssemblyStore = new Hashtable();
-		mObjManager = new ObjectManager(formatter.SurrogateSelector, formatter.Context);
+		mObjManager = new ObjectManager(formatter.SurrogateSelector, 
+										formatter.Context);
 	}
 
 	public void SetAssembly(uint id, Assembly val) 
@@ -118,7 +121,7 @@ internal class DeserializationContext
 		get { return mReader; }
 	}
 
-	public bool isHeaderPresent
+	public bool IsHeaderPresent
 	{
 		get { return mIsHeaderPresent; }
 		set { mIsHeaderPresent = value; }
@@ -205,7 +208,8 @@ internal class TypeInfo
 	private Type mObjectType;
 	private MemberInfo[] mMembers;
 
-	public TypeInfo(String name, String[] fieldNames, BinaryTypeTag[] tt, TypeSpecification[] ts, Assembly assembly) 
+	public TypeInfo(String name, String[] fieldNames, BinaryTypeTag[] tt, 
+					TypeSpecification[] ts, Assembly assembly) 
 	{
 		mFieldNames = fieldNames;
 		mTypeTag = tt;
@@ -221,35 +225,71 @@ internal class TypeInfo
 			mObjectType = assembly.GetType(name, true);
 		}
 
-		// ms and mono have their values for boxed primitive types called 'm_value', we need a fix for that
-		if(mObjectType.IsPrimitive && (mFieldNames[0] == "m_value")) {
-			mFieldNames[0] = "value_";
-		}
-
 		// lookup all members once
 		mMembers = new MemberInfo[NumMembers];
 		for(int i = 0; i < NumMembers; i++) 
 		{
+					// ms and mono have their values for boxed primitive types called 'm_value', we need a fix for that
+			if(mObjectType.IsPrimitive && (mFieldNames[i] == "m_value")) 
+			{
+				mFieldNames[i] = "value_";
+			}
+			else if (mObjectType == typeof(DateTime) && 
+						(mFieldNames[i] == "ticks")) 
+			{
+				// this is for DateTime
+				mFieldNames[i] = "value_";
+			} 
+			else if (mObjectType == typeof(TimeSpan) && 
+						(mFieldNames[i] == "_ticks")) 
+			{
+				// this is for TimeSpan
+				mFieldNames[i] = "value_";
+			} 
+			else if (mObjectType == typeof(Decimal)) 
+			{
+				switch(mFieldNames[i]) 
+				{
+					case "hi":
+					{
+						mFieldNames[i] = "high";
+					}
+					break;
+					case "lo":
+					{
+						mFieldNames[i] = "low";
+					}
+					break;
+					case "mid":
+					{
+						mFieldNames[i] = "middle";
+					}
+					break;
+				}
+			}
+
 			Type memberType;
 			String memberName;
 			int classSeparator = mFieldNames[i].IndexOf('+');
 			if(classSeparator != -1) 
 			{
 				/*
-				** TODO: check if there are constraints in which assembly the Type may be looked up!
-				** for now just look it up generally
+				*  TODO: check if there are constraints in which assembly 
+				*  the Type may be looked up! for now just look it up 
+				*  generally
 				*/
 				String baseName = mFieldNames[i].Substring(0, classSeparator);
 				memberName = mFieldNames[i].Substring(classSeparator+1, mFieldNames[i].Length-classSeparator-1);
-				memberType = mObjectType.BaseType;
+				memberType = mObjectType;
 
-				// MS does NOT store the FullQualifiedTypename if there is no collision
-				// but only the Typename :-(
+				// MS does NOT store the FullQualifiedTypename if there 
+				// is no collision but only the Typename :-(
 				while(!memberType.FullName.EndsWith(baseName)) 
 				{
 					// check if we reached System.Object
-					if(memberType == memberType.BaseType) 
+					if(memberType == memberType.BaseType || memberType == null) 
 					{
+						// TODO : I18n
 						throw new SerializationException("Can't find member "+mFieldNames[i]);
 					}
 					memberType = memberType.BaseType;
@@ -262,9 +302,16 @@ internal class TypeInfo
 			}
 
 			// get member from object
-			MemberInfo[] members = memberType.GetMember(memberName, MemberTypes.Field | MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			MemberInfo[] members = memberType.GetMember(memberName, 
+											MemberTypes.Field | 
+											MemberTypes.Property, 
+											BindingFlags.Instance | 
+											BindingFlags.Public | 
+											BindingFlags.NonPublic);
+
 			if((members == null) || (members.Length < 1)) 
 			{
+				// TODO: I18n
 				throw new SerializationException("Can't find member "+mFieldNames[i]);
 			} 
 			else 
@@ -320,9 +367,9 @@ internal class DelayedReferenceHolder
 }
 
 /*
-** internal class that is passed arround to indicate that not a
-** 'real' object was read, but a value indicating that an array
-** should be filled with NULL values.
+*  internal class that is passed arround to indicate that not a
+*  'real' object was read, but a value indicating that an array
+*  should be filled with NULL values.
 */
 internal class ArrayNullValueHolder 
 {
@@ -570,11 +617,11 @@ class HeaderReader : BinaryValueReader
 		int hasHeader = context.reader.ReadInt32();
 		if(hasHeader == 2) 
 		{
-			context.isHeaderPresent = true;
+			context.IsHeaderPresent = true;
 		} 
 		else if(hasHeader == -1) 
 		{
-			context.isHeaderPresent = false;
+			context.IsHeaderPresent = false;
 		}
 		else
 		{
@@ -748,12 +795,12 @@ class AssemblyReader : BinaryValueReader
 		context.SetAssembly(id, assembly);
 
 		/*
-		** registering an assembly leads to instanciating at fixup which will not work
-		** context.mObjManager.RegisterObject(assembly, id);
-		**
-		** returning the assembly would break the (much to simple!) alg. in Deserialize()
-		** which chooses the first object
-		** outVal = assembly;
+		*  registering an assembly leads to instanciating at fixup which will not work
+		*  context.mObjManager.RegisterObject(assembly, id);
+		* 
+		*  returning the assembly would break the (much to simple!) alg. in Deserialize()
+		*  which chooses the first object
+		*  outVal = assembly;
 		*/
 		outVal = null;
 		return true;

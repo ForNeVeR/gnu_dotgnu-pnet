@@ -19,6 +19,9 @@
 	engine/cvm_stack.c, engine/cvmc_var.c: add the new CVM instruction
 	"local_alloc" to implement IL's "localloc" instruction.
 
+	* engine/verify.c (AssignCompatible): allow managed pointers to
+	be assigned to any pointer-like destination in "unsafe" mode.
+
 2002-06-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/Makefile.am: add mising .h files to the install.

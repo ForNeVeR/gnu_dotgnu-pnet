@@ -417,9 +417,37 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 		/* The type must be "typedref" */
 		return (type == ILType_TypedRef);
 	}
+	else if(item->engineType == ILEngineType_M ||
+	        item->engineType == ILEngineType_T)
+	{
+		/* Cannot assign managed pointers to variables or fields,
+		   unless we are in "unsafe" mode */
+		if(!unsafeAllowed)
+		{
+			return 0;
+		}
+
+		/* Allow an assignment to any pointer, reference, or native
+		   destination, regardless of type.  This allows C/C++ code
+		   to arbitrarily cast pointers via assignment */
+		if(type != 0 && ILType_IsComplex(type))
+		{
+			if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR ||
+			   ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF ||
+			   (ILType_Kind(type) & IL_TYPE_COMPLEX_METHOD) != 0)
+			{
+				return 1;
+			}
+		}
+		else if(type == ILType_Int || type == ILType_UInt)
+		{
+			return 1;
+		}
+		return 0;
+	}
 	else
 	{
-		/* TODO */
+		/* Invalid type: never assignment-compatible with anything */
 		return 0;
 	}
 }

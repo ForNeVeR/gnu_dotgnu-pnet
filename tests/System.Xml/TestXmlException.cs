@@ -28,8 +28,6 @@ using System.Xml;
 
 public class TestXmlException : TestCase
 {
-	private static ResourceManager xmlR;
-
 	// Constructor.
 	public TestXmlException(String name)
 			: base(name)
@@ -40,9 +38,6 @@ public class TestXmlException : TestCase
 	// Set up for the tests.
 	protected override void Setup()
 			{
-				xmlR = 
-					new ResourceManager("System.Xml",
-							Type.GetType("System.Xml.XmlException").Assembly);
 			}
 
 	// Clean up after the tests.
@@ -51,17 +46,12 @@ public class TestXmlException : TestCase
 				// Nothing to do here.
 			}
 	
-	//Resource access method
-	private String _(String s) {
-		return xmlR.GetString(s,null);
-	}
-
 	//Methods
 	public void TestXmlExceptionEmptyConstructor()
 	{
 		XmlException x = new XmlException();
 
-		AssertEquals(x.Message,_("Xml_Default"));
+		AssertNotNull(x.Message);
 	}
 
 	public void TestXmlExceptionStringConstructor()

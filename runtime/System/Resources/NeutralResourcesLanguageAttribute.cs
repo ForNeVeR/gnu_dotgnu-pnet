@@ -25,7 +25,12 @@ namespace System.Resources
 using System;
 
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class NeutralResourcesLanguageAttribute : Attribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class NeutralResourcesLanguageAttribute : Attribute
 {
 
 	// Internal state.

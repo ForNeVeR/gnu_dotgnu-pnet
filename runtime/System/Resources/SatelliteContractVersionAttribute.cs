@@ -25,7 +25,12 @@ namespace System.Resources
 using System;
 
 [AttributeUsage(AttributeTargets.Assembly)]
-public sealed class SatelliteContractVersionAttribute : Attribute
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class SatelliteContractVersionAttribute : Attribute
 {
 
 	// Internal state.

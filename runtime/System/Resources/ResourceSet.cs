@@ -27,7 +27,12 @@ using System.IO;
 using System.Collections;
 using System.Globalization;
 
-public class ResourceSet : IDisposable
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class ResourceSet : IDisposable
 {
 	// Internal state.
 	protected IResourceReader Reader;

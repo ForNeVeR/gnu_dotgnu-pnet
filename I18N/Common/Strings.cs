@@ -35,7 +35,11 @@ using System.Resources;
 public sealed class Strings
 {
 	// Cached copy of the resources for this assembly.
+#if ECMA_COMPAT
+	private static ECMAResourceManager resources = null;
+#else
 	private static ResourceManager resources = null;
+#endif
 
 	// Helper for obtaining string resources for this assembly.
 	public static String GetString(String tag)
@@ -44,8 +48,13 @@ public sealed class Strings
 				{
 					if(resources == null)
 					{
+					#if ECMA_COMPAT
+						resources = new ECMAResourceManager
+							("I18N", Assembly.GetExecutingAssembly());
+					#else
 						resources = new ResourceManager
 							("I18N", Assembly.GetExecutingAssembly());
+					#endif
 					}
 					return resources.GetString(tag, null);
 				}

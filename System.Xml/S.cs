@@ -31,8 +31,13 @@ using System.Resources;
 internal sealed class S
 {
 	// Cached copy of the resources for this assembly and mscorlib.
+#if ECMA_COMPAT
+	private static ECMAResourceManager xmlResources = null;
+	private static ECMAResourceManager runtimeResources = null;
+#else
 	private static ResourceManager xmlResources = null;
 	private static ResourceManager runtimeResources = null;
+#endif
 
 	// Helper for obtaining string resources for this assembly.
 	public static String _(String tag)
@@ -44,8 +49,13 @@ internal sealed class S
 					// Try the resources in the "System.Xml" assembly first.
 					if(xmlResources == null)
 					{
+					#if ECMA_COMPAT
+						xmlResources = new ECMAResourceManager
+							("System.Xml", (typeof(S)).Assembly);
+					#else
 						xmlResources = new ResourceManager
 							("System.Xml", (typeof(S)).Assembly);
+					#endif
 					}
 					value = xmlResources.GetString(tag, null);
 					if(value != null)
@@ -56,8 +66,13 @@ internal sealed class S
 					// Try the fallbacks in the runtime library.
 					if(runtimeResources == null)
 					{
+					#if ECMA_COMPAT
+						runtimeResources = new ECMAResourceManager
+							("runtime", (typeof(String)).Assembly);
+					#else
 						runtimeResources = new ResourceManager
 							("runtime", (typeof(String)).Assembly);
+					#endif
 					}
 					return runtimeResources.GetString(tag, null);
 				}

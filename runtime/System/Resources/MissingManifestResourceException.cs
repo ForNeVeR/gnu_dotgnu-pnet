@@ -25,7 +25,12 @@ namespace System.Resources
 using System;
 using System.Runtime.Serialization;
 
-public class MissingManifestResourceException : Exception
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class MissingManifestResourceException : Exception
 {
 
 	// Constructors.

@@ -25,7 +25,12 @@ namespace System.Resources
 using System;
 using System.Collections;
 
-public interface IResourceReader : IEnumerable, IDisposable
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+interface IResourceReader : IEnumerable, IDisposable
 {
 
 	void Close();

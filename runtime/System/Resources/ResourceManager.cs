@@ -29,7 +29,12 @@ using System.Globalization;
 using System.Collections;
 using System.Private;
 
-public class ResourceManager
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class ResourceManager
 {
 	// Current version supported by this resource manager implementation.
 	public static readonly int HeaderVersionNumber = 1;

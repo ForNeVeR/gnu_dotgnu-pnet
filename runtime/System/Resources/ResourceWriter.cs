@@ -27,7 +27,12 @@ using System.IO;
 using System.Collections;
 using System.Globalization;
 
-public sealed class ResourceWriter : IDisposable, IResourceWriter
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class ResourceWriter : IDisposable, IResourceWriter
 {
 	// Internal state.
 	private Stream stream;

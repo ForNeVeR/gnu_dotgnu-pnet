@@ -10,6 +10,22 @@
 	mark "System.TypeCode" as non-ECMA and add a shadow copy of
 	"TypeCode" to "JScript" so that it still works in ECMA mode.
 
+	* I18N/Common/Strings.cs, System/S.cs, System.Xml/S.cs,
+	runtime/System/Resources/ECMAResourceManager.cs,
+	runtime/System/Resources/IResourceReader.cs,
+	runtime/System/Resources/IResourceWriter.cs,
+	runtime/System/Resources/MissingManifestResourceException.cs,
+	runtime/System/Resources/NeutralResourcesLanguageAttribute.cs,
+	runtime/System/Resources/README.ECMA,
+	runtime/System/Resources/ResourceManager.cs,
+	runtime/System/Resources/ResourceReader.cs,
+	runtime/System/Resources/ResourceSet.cs,
+	runtime/System/Resources/ResourceWriter.cs,
+	runtime/System/Resources/SatelliteContractVersionAttribute.cs,
+	tests/System.Xml/TestXmlException.cs: mark the contents of
+	"System.Resources" as non-ECMA and introduce a cut-down resource
+	API for use in ECMA_COMPAT mode in the other assemblies.
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ArgIterator.cs: make "ArgIterator.GetHashCode"

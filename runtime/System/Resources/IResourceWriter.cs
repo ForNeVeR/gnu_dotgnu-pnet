@@ -24,7 +24,12 @@ namespace System.Resources
 
 using System;
 
-public interface IResourceWriter : IDisposable
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+interface IResourceWriter : IDisposable
 {
 
 	void AddResource(String name, byte[] value);

@@ -27,7 +27,12 @@ using System.Collections;
 using System.IO;
 using System.Text;
 
-public sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 {
 	// Internal state.
 	private Stream stream;

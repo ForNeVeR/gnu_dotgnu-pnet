@@ -1,3 +1,4 @@
-The "System.Resources" classes are not strictly ECMA-compatible,
-but it is next to impossible to build a useful set of ECMA
-assemblies without some degree of resource support.
+The "System.Resources" classes are not ECMA-compatible, so we cannot
+export them when ECMA_COMPAT is set.  However, we do need to access
+string resources from other library assemblies.  "ECMAResourceManager"
+is defined in ECMA_COMPAT mode to get around this.

@@ -448,18 +448,19 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
  * stack below the constructor arguments.
  */
 static void InsertCtorArgs(ILEngineStackItem *stack, ILUInt32 stackSize,
-						   ILUInt32 insertPosn, ILEngineType engineType,
-						   ILType *typeInfo)
+						   ILUInt32 insertPosn, ILEngineType engineType1,
+						   ILType *typeInfo1, ILEngineType engineType2,
+						   ILType *typeInfo2)
 {
 	while(stackSize > insertPosn)
 	{
 		--stackSize;
 		stack[stackSize + 2] = stack[stackSize];
 	}
-	stack[insertPosn].engineType = engineType;
-	stack[insertPosn].typeInfo = typeInfo;
-	stack[insertPosn + 1].engineType = engineType;
-	stack[insertPosn + 1].typeInfo = typeInfo;
+	stack[insertPosn].engineType = engineType1;
+	stack[insertPosn].typeInfo = typeInfo1;
+	stack[insertPosn + 1].engineType = engineType2;
+	stack[insertPosn + 1].typeInfo = typeInfo2;
 }
 
 #elif defined(IL_VERIFY_LOCALS)
@@ -671,28 +672,53 @@ case IL_OP_NEWOBJ:
 	methodInfo = GetConstructorToken(method, pc);
 	if(methodInfo)
 	{
-		/* Create the memory for the new object, initialized to all-zeroes */
-		classInfo = ILMethod_Owner(methodInfo);
-		ILCoderNewObj(coder, classInfo);
-
-		/* Insert the object into the correct stack position twice.
-		   Once for the final value to be pushed, and again for
-		   the first argument to the constructor.  We assume that
-		   "verify.c" has allocated 2 extra "slop" items so that
-		   we have enough room for the temporary values */
+		/* Validate that we have sufficient parameters for the constructor */
 		methodSignature = ILMethod_Signature(methodInfo);
 		if(((ILUInt32)(methodSignature->num)) > stackSize)
 		{
 			/* Not enough arguments on the stack for the constructor */
 			VERIFY_TYPE_ERROR();
 		}
-		InsertCtorArgs(stack, stackSize,
-					   stackSize - (ILUInt32)(methodSignature->num),
-					   ILEngineType_O, ILType_FromClass(classInfo));
-		stackSize += 2;
-		ILCoderCtorArgs(coder,
-					    stack + stackSize - (ILUInt32)(methodSignature->num),
-						(ILUInt32)(methodSignature->num));
+
+		/* The construction sequence is different for objects and values */
+		classInfo = ILMethod_Owner(methodInfo);
+		if(!ILClassIsValueType(classInfo))
+		{
+			/* Create the memory for the object, initialized to all-zeroes */
+			ILCoderNewObj(coder, classInfo);
+
+			/* Insert the object into the correct stack position twice.
+			   Once for the final value to be pushed, and again for
+			   the first argument to the constructor.  We assume that
+			   "verify.c" has allocated 2 extra "slop" items so that
+			   we have enough room for the temporary values */
+			InsertCtorArgs(stack, stackSize,
+						   stackSize - (ILUInt32)(methodSignature->num),
+						   ILEngineType_O, ILType_FromClass(classInfo),
+						   ILEngineType_O, ILType_FromClass(classInfo));
+			stackSize += 2;
+			ILCoderCtorArgs(coder,
+						    stack + stackSize -
+									(ILUInt32)(methodSignature->num),
+							(ILUInt32)(methodSignature->num));
+		}
+		else
+		{
+			/* Rearrange the stack so that there is a newly initialized
+			   value on the stack, followed by a managed pointer to the
+			   value, and then the constructor arguments.  We assume
+			   that we have 2 "slop" positions, as above. */
+			InsertCtorArgs(stack, stackSize,
+						   stackSize - (ILUInt32)(methodSignature->num),
+						   ILEngineType_MV, ILType_FromValueType(classInfo),
+						   ILEngineType_M, ILType_FromValueType(classInfo));
+			stackSize += 2;
+			ILCoderValueCtorArgs(coder, classInfo,
+						    stack + stackSize -
+									(ILUInt32)(methodSignature->num),
+							(ILUInt32)(methodSignature->num));
+		}
+
 
 		/* Match the constructor signature */
 		numParams = MatchSignature(coder, stack, stackSize,
@@ -714,16 +740,6 @@ case IL_OP_NEWOBJ:
 		if(stackSize > code->maxStack)
 		{
 			VERIFY_STACK_ERROR();
-		}
-
-		/* If the owner is a value type, then we need to
-		   unbox the constructed value onto the stack */
-		if(ILClassIsValueType(classInfo))
-		{
-			ILCoderUnbox(coder, classInfo);
-			ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo);
-			stack[stackSize - 1].engineType = ILEngineType_MV;
-			stack[stackSize - 1].typeInfo = ILType_FromValueType(classInfo);
 		}
 	}
 	else

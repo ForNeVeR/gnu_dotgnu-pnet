@@ -1,4 +1,10 @@
 
+2002-12-20  Jason Lee <jason.lee@mac.com>
+
+	* System/Net/WebRequest.cs: Bring up the WebRequest to spec, Mainly the 
+	RegisterPrefix and Create/Default methods. Also a little additional 
+	exception verbage. (Gopal)
+
 2002-12-17  Aditya P. Bansod <abansod@fullenergy.com>
 	
 	* runtime/System/Directory.cs: Implement Directory.Move() method.

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
+ * With contributions from Jason Lee <jason.lee@mac.com>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -25,19 +27,19 @@ using System;
 using System.IO;
 using System.Collections;
 
-public class WebRequest : MarshalByRefObject
+public abstract class WebRequest : MarshalByRefObject
 {
-	private String              connectionGroupName;
-	private Int64               contentLength;
-	private String              contentType;
-	private ICredentials        credentials;
+	private String				connectionGroupName;
+	private Int64			  	contentLength;
+	private String				contentType;
+	private ICredentials		credentials;
 	private WebHeaderCollection headers;
-	private String              method;
-	private Boolean             preAuthenticate;
-	private IWebProxy           proxy;
-	private Uri                 requestUri;
-	private Int32               timeout;
-	private static Hashtable    prefixes=new Hashtable();
+	private String				method;
+	private Boolean				preAuthenticate;
+	private IWebProxy			proxy;
+	private Uri					requestUri;
+	private Int32				timeout;
+	private static Hashtable	prefixes=new Hashtable();
 
 	protected WebRequest()
 	{
@@ -51,9 +53,15 @@ public class WebRequest : MarshalByRefObject
 		requestUri = null;
 		timeout = 0;
 		prefixes.Clear();
-	}
 
-	// TODO: need proper translatable strings for the exceptions below.
+		// Register the prefix types here
+		RegisterPrefix(Uri.UriSchemeFtp,   new WebRequestCreator());
+		RegisterPrefix(Uri.UriSchemeHttp,  new WebRequestCreator());
+		RegisterPrefix(Uri.UriSchemeHttps, new WebRequestCreator());
+
+		// TODO: More prefixes, such as those contained in Uri should come later
+		
+	}
 
 	public virtual void Abort()
 	{
@@ -70,55 +78,68 @@ public class WebRequest : MarshalByRefObject
 		throw new NotSupportedException("BeginGetResponse");
 	}
 
-	[ TODO ]
-	public static WebRequest Create(string requestUriString)
+	public static WebRequest Create(String requestUriString)
 	{
 		if (requestUriString == null)
 		{
-			throw new ArgumentNullException("requestUriString", S._("Arg_NotNull"));
+			throw new ArgumentNullException("requestUriString",
+											S._("Arg_NotNull"));
 		}
 
 		Uri requestUri = new Uri(requestUriString);		
-
+		
 		return Create(requestUri);
+		
 	}
 
-	[ TODO ]
+	// This method will attempt to create a particular subclass of WebRequest
+	// based on the scheme from the uri passed in. Currently on HttpWebRequest
+	// is supported.
 	public static WebRequest Create(Uri requestUri)
 	{
-		// TODO: Match Uri against complete Uri and scheme and find out
-		// if it is supported, otherwise throw up an error
-		// throw new NotSupportedException("Create");
 
-		// TODO: the URI format is invalid
-		// throw new UriFormatException("requestUriString");
+		IWebRequestCreate theCreator = null;
+		
+		if(CheckUriValidity(requestUri, false))
+		{
+
+			// Check here to see if the Uri scheme exists in the
+			// prefixes table and if so, then return back the
+			// proper WebRequest for it
+			theCreator = (prefixes[requestUri.Scheme] as IWebRequestCreate);
+			
+			if(theCreator!=null)
+			{
+				return theCreator.Create(requestUri);
+			}
 
 		// TODO: this client does not have the permission to connect to the URI or
 		// the URI that the request is redirected to.
 		// throw new SecurityException("requestUriString");
-
+		}
+		   
 		return null;
 	}
 
-	[ TODO ]
+	// This method will attempt to create a 'default' WebRequest. In this case
+	// we're assuming the default is a HttpWebRequest. Non-default requests
+	// will need to be created with the Create method.
 	public static WebRequest CreateDefault(Uri requestUri)
 	{
-		// TODO: Find out if just scheme is supported, otherwise throw up an error
-		// do not check for the complete Uri (in the case of longer Uri's passed).
-		// see spec
-		// throw new NotSupportedException("CreateDefault");
-
-		// TODO: the URI format is invalid
-		// throw new UriFormatException("requestUriString");
-
 		// TODO: this client does not have the permission to connect to the URI or
 		// the URI that the request is redirected to.
 		// throw new SecurityException("requestUriString");
-		if(requestUri.Scheme=="http")
+		if(CheckUriValidity(requestUri, true))
 		{
-			return new HttpWebRequest(requestUri);
+			if(requestUri.Scheme=="http")
+			{
+				return new HttpWebRequest(requestUri);
+			}
+			throw new NotSupportedException("CreateDefault");
 		}
-		throw new NotSupportedException("CreateDefault");
+
+		return null;
+		
 	}
 
 	public virtual Stream EndGetRequestStream(IAsyncResult asyncResult)
@@ -141,8 +162,7 @@ public class WebRequest : MarshalByRefObject
 		throw new NotSupportedException("GetResponse");
 	}
 
-	[ TODO ]
-	public static bool RegisterPrefix(string prefix, IWebRequestCreate creator)
+	public static bool RegisterPrefix(String prefix, IWebRequestCreate creator)
 	{
 		if (prefix== null)
 		{
@@ -154,10 +174,69 @@ public class WebRequest : MarshalByRefObject
 			throw new ArgumentNullException("creator", S._("Arg_NotNull"));
 		}
 
-		// TODO: further implementation...
-
-		return false;
+		if(prefixes.Contains( prefix.ToLower() ))
+		{
+			return false;
+		}
+		else
+		{
+			prefixes.Add(prefix.ToLower(), creator);
+		}
+			
+		return true;
 	}
+
+	private static bool CheckUriValidity(Uri requestUri, bool defaultUri)
+	{
+
+		// defaultUri is provided so we can throw the proper exception
+		// based on whether or not we're referred from the regular Create 
+		// method or if we're actually using the DefaultCreate
+		
+		if (requestUri == null)
+		{
+			throw new ArgumentNullException ("requestUri");
+		}
+
+		if(!Uri.CheckSchemeName(requestUri.Scheme))
+		{
+			if(defaultUri)
+			{
+				throw new NotSupportedException("CreateDefault");
+			}
+			else
+			{
+				throw new NotSupportedException("Create");
+			}
+			
+		}
+
+		// TODO: There's probably additional checking for what constitutes the
+		// query portion of a Uri, but I'm not sure what it is yet. Probably
+		// look into this later.
+		if(requestUri.HostNameType.Equals(UriHostNameType.Unknown))
+		{
+			throw new UriFormatException("requestUri");
+		}
+
+		return true;
+	}
+
+	// Internal classes needed to use with the RegisterPrefix method as per spec
+	// These could have been done as 'helpers' but they're only needed in this class
+	internal class WebRequestCreator : IWebRequestCreate
+	{
+
+	internal WebRequestCreator()
+		{}
+	
+	public WebRequest Create(Uri uri)
+		{
+			return new HttpWebRequest(uri);
+		}
+	}
+
+	// properties
 
 	public virtual string ConnectionGroupName 
 	{ 

@@ -111,6 +111,17 @@ struct _tagILEngineInternalClassInfo
 	ILMethodTableEntry *entry;
 };
 
+/*
+ * Simple linked list for storing multiple blocks of internal calls
+ */
+typedef struct _tagILEngineInternalClassList ILEngineInternalClassList;
+struct _tagILEngineInternalClassList
+{
+	const ILEngineInternalClassInfo *list;
+	int size;
+	struct _tagILEngineInternalClassList* next;
+};
+
 
 /*
  * Helper macros for defining "internalcall" method tables.
@@ -282,8 +293,8 @@ void ILExecProcessWatchAll(ILExecProcess *process, int flag);
 /* 
  * Add a new set of internal calls to the process's lookup table
  */
-int ILExecProcessSetInternalCallTable(ILExecProcess* process, 
-					ILEngineInternalClassInfo* internalClassTable,
+int ILExecProcessAddInternalCallTable(ILExecProcess* process, 
+					const ILEngineInternalClassInfo* internalClassTable,
 					int internalClassCount);
 /*
  * Get the current thread from a PInvoke'd method.  The behaviour

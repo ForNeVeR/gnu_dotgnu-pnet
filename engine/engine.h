@@ -138,8 +138,7 @@ struct _tagILExecProcess
 	ILImage		   *entryImage;
 
 	/* The custom internal call table which is runtime settable */
-	ILEngineInternalClassInfo* internalClassTable;
-	int 			internalClassCount;
+	ILEngineInternalClassList* internalClassTable;
 
 #ifdef IL_CONFIG_DEBUG_LINES
 

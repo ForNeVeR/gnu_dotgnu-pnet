@@ -68,7 +68,6 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->gcHandles = 0;
 	process->entryImage = 0;
 	process->internalClassTable = 0;
-	process->internalClassCount = 0;
 #ifdef IL_CONFIG_DEBUG_LINES
 	process->debugHookFunc = 0;
 	process->debugHookData = 0;
@@ -467,13 +466,29 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 	return mainArgs;
 }
 
-int ILExecProcessSetInternalCallTable(ILExecProcess* process, 
-					ILEngineInternalClassInfo* internalClassTable,
-					int internalClassCount)
+int ILExecProcessAddInternalCallTable(ILExecProcess* process, 
+					const ILEngineInternalClassInfo* internalClassTable,
+					int tableSize)
 {
-	if(internalClassCount<=0)return 0;
-	process->internalClassTable=internalClassTable;
-	process->internalClassCount=internalClassCount;
+	ILEngineInternalClassList* tmp;
+	if((!internalClassTable) || (tableSize<=0))return 0;
+
+	if(!(process->internalClassTable))
+	{
+		process->internalClassTable=(ILEngineInternalClassList*)ILMalloc(
+									sizeof(ILEngineInternalClassList));
+		process->internalClassTable->size=tableSize;
+		process->internalClassTable->list=internalClassTable;
+		process->internalClassTable->next=NULL;
+		return 1;
+	}
+	for(tmp=process->internalClassTable;tmp->next!=NULL;tmp=tmp->next);
+	tmp->next=(ILEngineInternalClassList*)ILMalloc(
+								sizeof(ILEngineInternalClassList));
+	tmp=tmp->next; /* advance */
+	tmp->size=tableSize;
+	tmp->list=internalClassTable;
+	tmp->next=NULL;
 	return 1;
 }
 

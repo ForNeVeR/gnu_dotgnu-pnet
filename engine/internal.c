@@ -93,6 +93,7 @@ int _ILFindInternalCall(ILExecProcess *process,ILMethod *method,
 	const char *namespace;
 	int left, right, middle;
 	const ILMethodTableEntry *entry;
+	ILEngineInternalClassList* internalClassList;
 	ILType *signature;
 	int isCtor;
 	int cmp;
@@ -172,61 +173,65 @@ int _ILFindInternalCall(ILExecProcess *process,ILMethod *method,
 		}
 	}
 	
-	/* Search for the local internalcall table */
-	left = 0;
-	right = process->internalClassCount - 1;
-	while(left <= right)
+	for(internalClassList=process->internalClassTable;internalClassList!=NULL;
+					internalClassList=internalClassList->next)
 	{
-		middle = (left + right) / 2;
-		cmp = strcmp(name, process->internalClassTable[middle].name);
-		if(!cmp)
+		/* Search for the local internalcall table */
+		left = 0;
+		right = internalClassList->size - 1;
+		while(left <= right)
 		{
-			if(!strcmp(namespace, 
-							process->internalClassTable[middle].namespace))
+			middle = (left + right) / 2;
+			cmp = strcmp(name, internalClassList->list[middle].name);
+			if(!cmp)
 			{
-				/* Search for the method within the class's table */
-				entry = process->internalClassTable[middle].entry;
-				name = ILMethod_Name(method);
-				signature = ILMethod_Signature(method);
-				while(entry->methodName != 0)
+				if(!strcmp(namespace, 
+								internalClassList->list[middle].namespace))
 				{
-					if(!strcmp(entry->methodName, name) &&
-					   entry->signature != 0 &&
-					   _ILLookupTypeMatch(signature, entry->signature))
+					/* Search for the method within the class's table */
+					entry = internalClassList->list[middle].entry;
+					name = ILMethod_Name(method);
+					signature = ILMethod_Signature(method);
+					while(entry->methodName != 0)
 					{
-						if(ctorAlloc && entry[1].methodName &&
-						   !(entry[1].signature))
+						if(!strcmp(entry->methodName, name) &&
+						   entry->signature != 0 &&
+						   _ILLookupTypeMatch(signature, entry->signature))
 						{
-							info->func = entry[1].func;
-						#if defined(HAVE_LIBFFI)
-							info->marshal = 0;
-						#else
-							info->marshal = entry[1].marshal;
-						#endif
+							if(ctorAlloc && entry[1].methodName &&
+							   !(entry[1].signature))
+							{
+								info->func = entry[1].func;
+							#if defined(HAVE_LIBFFI)
+								info->marshal = 0;
+							#else
+								info->marshal = entry[1].marshal;
+							#endif
+							}
+							else
+							{
+								info->func = entry->func;
+							#if defined(HAVE_LIBFFI)
+								info->marshal = 0;
+							#else
+								info->marshal = entry->marshal;
+							#endif
+							}
+							return 1;
 						}
-						else
-						{
-							info->func = entry->func;
-						#if defined(HAVE_LIBFFI)
-							info->marshal = 0;
-						#else
-							info->marshal = entry->marshal;
-						#endif
-						}
-						return 1;
+						++entry;
 					}
-					++entry;
 				}
+				return 0;
 			}
-			return 0;
-		}
-		else if(cmp < 0)
-		{
-			right = middle - 1;
-		}
-		else
-		{
-			left = middle + 1;
+			else if(cmp < 0)
+			{
+				right = middle - 1;
+			}
+			else
+			{
+				left = middle + 1;
+			}
 		}
 	}
 

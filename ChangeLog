@@ -1,4 +1,35 @@
 
+2003-04-19  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* resources/en_US/runtime/Arg.txt,
+	resources/en_US/runtime/Exception.txt,
+	resources/en_US/runtime/NotSupp.txt,
+	runtime/Platform/TimeMethods.cs,
+	runtime/System/ContextMarshalException.cs,
+	runtime/System/ContextStaticObject.cs,
+	runtime/System/DateTime.cs, runtime/System/DllNotFoundException.cs,
+	runtime/System/ICustomFormatter.cs, runtime/System/TimeZone.cs,
+	runtime/System/Globalization/DaylightTime.cs,
+	runtime/System/IO/FileStream.cs,
+	runtime/System/IO/IsolatedStorage/INormalizeForIsolatedStorage.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorage.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorageException.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorageFile.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorageFileStream.cs,
+	runtime/System/IO/IsolatedStorage/IsolatedStorageScope.cs,
+	runtime/System/IO/IsolatedStorage/Makefile,
+	runtime/System/Reflection/Assembly.cs,
+	runtime/System/Reflection/AssemblyNameProxy.cs,
+	runtime/System/Reflection/CustomAttributeFormatException.cs,
+	runtime/System/Reflection/MemberFilter.cs
+	runtime/System/Reflection/ModuleResolveEventHandler.cs,
+	runtime/System/Reflection/Pointer.cs,
+	runtime/System/Reflection/ReflectionTypeLoadException.cs,
+	runtime/System/Reflection/TypeDelegator.cs,
+	runtime/System/Reflection/TypeFilter.cs,
+	runtime/System/Reflection/Emit/MethodRental.cs: add various
+	missing classes.
+
 2003-04-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/ThreadStaticAttribute.cs: add the class

@@ -1,7 +1,7 @@
 /*
  * TimeMethods.cs - Implementation of the "Platform.TimeMethods" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,13 +37,27 @@ internal class TimeMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static long GetCurrentUtcTime();
 
-	// Get the number of seconds West of GMT for the local timezone.
+	// Get the number of seconds West of GMT for the local timezone
+	// at a particular time.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static int GetTimeZoneAdjust();
+	extern public static int GetTimeZoneAdjust(long time);
 
 	// Get the number of milliseconds since the system was rebooted.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int GetUpTime();
+
+	// Get the daylight savings name for the local timezone.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetDaylightName();
+
+	// Get the standard name for the local timezone.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetStandardName();
+
+	// Get the daylight savings rules for a particular year.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static bool GetDaylightRules
+			(int year, out long start, out long end, out long delta);
 
 }; // class TimeMethods
 

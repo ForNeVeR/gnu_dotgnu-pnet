@@ -29,7 +29,7 @@ using Platform;
 public class FileStream : Stream
 {
 	// Default buffer size used for files.
-	private const int BUFSIZ = 4096;
+	internal const int BUFSIZ = 4096;
 
 	// Invalid handle value.
 	private static readonly IntPtr invalidHandle =
@@ -225,6 +225,9 @@ public class FileStream : Stream
 					this.position = 0;
 				}
 			}
+
+	// Internal constructor used by IsolatedStorageFileStream.
+	internal FileStream() {}
 #endif
 
 	// Destructor.

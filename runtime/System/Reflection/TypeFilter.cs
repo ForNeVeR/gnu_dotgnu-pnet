@@ -1,10 +1,8 @@
 /*
- * MemberFilter.cs - Implementation of "System.Reflection.MemberFilter" 
+ * TypeFilter.cs - Implementation of "System.Reflection.TypeFilter" 
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  * 
- * Contributed by Gopal.V
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -24,8 +22,10 @@ namespace System.Reflection
 {
 
 #if !ECMA_COMPAT
-	[Serializable]
-	public delegate bool MemberFilter ( MemberInfo m, Object filterCriteria);
-#endif
+
+[Serializable]
+public delegate bool TypeFilter(Type m, Object filterCriteria);
+
+#endif // !ECMA_COMPAT
 	
-}//namespace
+}; // namespace System.Reflection

@@ -1,9 +1,8 @@
 /*
- * MemberFilter.cs - Implementation of "System.Reflection.MemberFilter" 
+ * ModuleResolveEventHandler.cs - Implementation of the
+ *			"System.Reflection.ModuleResolveEventHandler" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * 
- * Contributed by Gopal.V
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +22,11 @@
 namespace System.Reflection
 {
 
-#if !ECMA_COMPAT
-	[Serializable]
-	public delegate bool MemberFilter ( MemberInfo m, Object filterCriteria);
-#endif
-	
-}//namespace
+#if CONFIG_REFLECTION && !ECMA_COMPAT
+
+public delegate Module ModuleResolveEventHandler
+			(Object sender, ResolveEventArgs args);
+
+#endif // CONFIG_REFLECTION && !ECMA_COMPAT
+
+}; // namespace System.Reflection

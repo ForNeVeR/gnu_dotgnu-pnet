@@ -1,9 +1,8 @@
 /*
- * MemberFilter.cs - Implementation of "System.Reflection.MemberFilter" 
+ * INormalizeForIsolatedStorage.cs - Implementation of the
+ *		"System.IO.IsolatedStorage.INormalizeForIsolatedStorage" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * 
- * Contributed by Gopal.V
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +19,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Reflection
+namespace System.IO.IsolatedStorage
 {
 
 #if !ECMA_COMPAT
-	[Serializable]
-	public delegate bool MemberFilter ( MemberInfo m, Object filterCriteria);
-#endif
-	
-}//namespace
+
+public interface INormalizeForIsolatedStorage
+{
+	Object Normalize();
+
+}; // interface INormalizeForIsolatedStorage
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.IO.IsolatedStorage

@@ -932,7 +932,7 @@ public struct DateTime : IComparable, IFormattable
 	public DateTime ToLocalTime()
 			{
 				return new DateTime
-					(value_ - ((long)(TimeMethods.GetTimeZoneAdjust())) *
+					(value_ - ((long)(TimeMethods.GetTimeZoneAdjust(value_))) *
 									TimeSpan.TicksPerSecond);
 			}
 
@@ -940,7 +940,7 @@ public struct DateTime : IComparable, IFormattable
 	public DateTime ToUniversalTime()
 			{
 				return new DateTime
-					(value_ + ((long)(TimeMethods.GetTimeZoneAdjust())) *
+					(value_ + ((long)(TimeMethods.GetTimeZoneAdjust(value_))) *
 									TimeSpan.TicksPerSecond);
 			}
 

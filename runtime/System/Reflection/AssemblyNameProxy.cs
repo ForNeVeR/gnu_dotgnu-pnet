@@ -1,9 +1,8 @@
 /*
- * MemberFilter.cs - Implementation of "System.Reflection.MemberFilter" 
+ * AssemblyNameProxy.cs - Implementation of the
+ *		"System.Reflection.AssemblyNameProxy" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * 
- * Contributed by Gopal.V
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +23,19 @@ namespace System.Reflection
 {
 
 #if !ECMA_COMPAT
-	[Serializable]
-	public delegate bool MemberFilter ( MemberInfo m, Object filterCriteria);
-#endif
-	
-}//namespace
+
+using System;
+
+public class AssemblyNameProxy : MarshalByRefObject
+{
+	// Get the name of an assembly from a filename.
+	public AssemblyName GetAssemblyName(String assemblyFile)
+			{
+				return AssemblyName.GetAssemblyName(assemblyFile);
+			}
+
+}; // class AssemblyNameProxy
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.Reflection

@@ -478,6 +478,13 @@ public class Assembly : IClrProgramItem
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal String GetSatellitePath(String filename);
 
+#if CONFIG_REFLECTION && !ECMA_COMPAT
+
+	// Module resolution event.
+	public event ModuleResolveEventHandler ModuleResolve;
+
+#endif // CONFIG_REFLECTION && !ECMA_COMPAT
+
 }; // class Assembly
 
 #endif // CONFIG_RUNTIME_INFRA

@@ -48,11 +48,56 @@ static void sleepFor(int steps)
 static int volatile globalFlag;
 
 /*
+ * Thread start function that checks that its argument is set correctly.
+ */
+static void checkValue(void *arg)
+{
+	globalFlag = (arg == (void *)0xBADBEEF);
+}
+
+/*
  * Thread start function that sets a global flag.
  */
 static void setFlag(void *arg)
 {
 	globalFlag = 1;
+}
+
+/*
+ * Test that when a thread is created, it has the correct argument.
+ */
+static void thread_create_arg(void *arg)
+{
+	ILThread *thread;
+
+	/* Set the global flag to "not modified" */
+	globalFlag = -1;
+
+	/* Create the thread */
+	thread = ILThreadCreate(checkValue, (void *)0xBADBEEF);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Start the thread running */
+	ILThreadStart(thread);
+
+	/* Wait for the thread to exit */
+	sleepFor(1);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Determine if the test was successful or not */
+	if(globalFlag == -1)
+	{
+		ILUnitFailed("thread start function was never called");
+	}
+	else if(!globalFlag)
+	{
+		ILUnitFailed("wrong value passed to thread start function");
+	}
 }
 
 /*
@@ -163,6 +208,27 @@ static void thread_create_state(void *arg)
 }
 
 /*
+ * Test that we can destroy a newly created thread that isn't started yet.
+ */
+static void thread_create_destroy(void *arg)
+{
+	ILThread *thread;
+
+	/* Create the thread */
+	thread = ILThreadCreate(sleepThread, (void *)4);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Wait 1 time step to let the system settle */
+	sleepFor(1);
+
+	/* Destroy the thread */
+	ILThreadDestroy(thread);
+}
+
+/*
  * Test that we can suspend a running thread.
  */
 static void thread_suspend(void *arg)
@@ -220,6 +286,254 @@ static void thread_suspend(void *arg)
 }
 
 /*
+ * A thread that suspends itself.
+ */
+static void suspendThread(void *arg)
+{
+	ILThreadSuspend(ILThreadSelf());
+	sleepFor(2);
+}
+
+/*
+ * Test that we can resume a thread that has suspended itself.
+ */
+static void thread_suspend_self(void *arg)
+{
+	ILThread *thread;
+	int state1;
+	int state2;
+	int state3;
+
+	/* Create the thread */
+	thread = ILThreadCreate(suspendThread, 0);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Start the thread, which should immediately suspend */
+	ILThreadStart(thread);
+
+	/* Wait 4 time steps - if the suspend is ignored, the
+	   thread will run to completion */
+	sleepFor(4);
+
+	/* Get the thread's current state (which should be "suspended") */
+	state1 = ILThreadGetState(thread);
+
+	/* Resume the thread to allow it to exit normally */
+	ILThreadResume(thread);
+
+	/* Wait another time step to allow the thread to resume */
+	sleepFor(1);
+
+	/* Get the current state (which should be "running") */
+	state2 = ILThreadGetState(thread);
+
+	/* Wait two more time steps to allow the thread to terminate */
+	sleepFor(2);
+
+	/* Get the current state (which should be "stopped") */
+	state3 = ILThreadGetState(thread);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(state1 != IL_TS_SUSPENDED)
+	{
+		ILUnitFailed("thread did not suspend itself");
+	}
+	if(state2 != IL_TS_RUNNING)
+	{
+		ILUnitFailed("thread did not resume when requested");
+	}
+	if(state3 != IL_TS_STOPPED)
+	{
+		ILUnitFailed("thread did not end in the `stopped' state");
+	}
+}
+
+/*
+ * Test that we can destroy a suspended thread.
+ */
+static void thread_suspend_destroy(void *arg)
+{
+	ILThread *thread;
+
+	/* Create the thread */
+	thread = ILThreadCreate(suspendThread, 0);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Start the thread, which should immediately suspend */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step to let the system settle */
+	sleepFor(1);
+
+	/* Destroy the thread */
+	ILThreadDestroy(thread);
+}
+
+/*
+ * Test that the descriptor for the main thread is not NULL.
+ */
+static void thread_main_nonnull(void *arg)
+{
+	if(!ILThreadSelf())
+	{
+		ILUnitFailed("main thread is null");
+	}
+}
+
+/*
+ * Test setting and getting the object on the main thread.
+ */
+static void thread_main_object(void *arg)
+{
+	ILThread *thread = ILThreadSelf();
+
+	/* The value should be NULL initially */
+	if(ILThreadGetObject(thread))
+	{
+		ILUnitFailed("object for main thread not initially NULL");
+	}
+
+	/* Change the value to something else and then check it */
+	ILThreadSetObject(thread, (void *)0xBADBEEF);
+	if(ILThreadGetObject(thread) != (void *)0xBADBEEF)
+	{
+		ILUnitFailed("object for main thread could not be changed");
+	}
+}
+
+/*
+ * Test that the "main" thread is initially in the running state.
+ */
+static void thread_main_running(void *arg)
+{
+	if(ILThreadGetState(ILThreadSelf()) != IL_TS_RUNNING)
+	{
+		ILUnitFailed("main thread is not running");
+	}
+}
+
+/*
+ * Flags that are used by "checkGetSetValue".
+ */
+static int volatile correctFlag1;
+static int volatile correctFlag2;
+static int volatile correctFlag3;
+
+/*
+ * Thread start function that checks that its argument is set correctly,
+ * and then changes the object to something else.
+ */
+static void checkGetSetValue(void *arg)
+{
+	ILThread *thread = ILThreadSelf();
+
+	/* Check that the argument and thread object are 0xBADBEEF3 */
+	correctFlag1 = (arg == (void *)0xBADBEEF3);
+	correctFlag2 = (ILThreadGetObject(thread) == arg);
+
+	/* Change the object to 0xBADBEEF4 and re-test */
+	ILThreadSetObject(thread, (void *)0xBADBEEF4);
+	correctFlag3 = (ILThreadGetObject(thread) == (void *)0xBADBEEF4);
+}
+
+/*
+ * Test setting and getting the object on some other thread.
+ */
+static void thread_other_object(void *arg)
+{
+	ILThread *thread;
+	int correct1;
+	int correct2;
+	int correct3;
+
+	/* Create the thread */
+	thread = ILThreadCreate(checkGetSetValue, (void *)0xBADBEEF1);
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Get the current object, which should be 0xBADBEEF1 */
+	correct1 = (ILThreadGetObject(thread) == (void *)0xBADBEEF1);
+
+	/* Change the object to 0xBADBEEF2 and check */
+	ILThreadSetObject(thread, (void *)0xBADBEEF2);
+	correct2 = (ILThreadGetObject(thread) == (void *)0xBADBEEF2);
+
+	/* Change the object to 0xBADBEEF3 */
+	ILThreadSetObject(thread, (void *)0xBADBEEF3);
+
+	/* Start the thread, which checks to see if its argument is 0xBADBEEF3 */
+	ILThreadStart(thread);
+
+	/* Wait 1 time step for the thread to exit */
+	sleepFor(1);
+
+	/* Check that the final object value is 0xBADBEEF4 */
+	correct3 = (ILThreadGetObject(thread) == (void *)0xBADBEEF4);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	/* Check for errors */
+	if(!correct1)
+	{
+		ILUnitFailed("initial object not set correctly");
+	}
+	if(!correct2)
+	{
+		ILUnitFailed("object could not be changed by main thread");
+	}
+	if(!correctFlag1)
+	{
+		ILUnitFailed("thread start function got wrong argument");
+	}
+	if(!correctFlag2)
+	{
+		ILUnitFailed("thread object not the same as thread argument");
+	}
+	if(!correctFlag3)
+	{
+		ILUnitFailed("could not change object in thread start function");
+	}
+	if(!correct3)
+	{
+		ILUnitFailed("final object value incorrect");
+	}
+}
+
+/*
+ * Make sure that the thread counts have returned to the correct values.
+ * This indirectly validates that the "thread_create_destroy" and
+ * "thread_suspend_destroy" tests updated the thread counts correctly.
+ * It also validates that normal thread exits update the thread counts
+ * correctly.
+ */
+static void thread_counts(void *arg)
+{
+	unsigned long numForeground;
+	unsigned long numBackground;
+	ILThreadGetCounts(&numForeground, &numBackground);
+	if(numForeground != 1)
+	{
+		ILUnitFailed("foreground thread count has not returned to 1");
+	}
+	if(numBackground != 0)
+	{
+		ILUnitFailed("background thread count has not returned to 0");
+	}
+}
+
+/*
  * Simple test registration macro.
  */
 #define	RegisterSimple(name)	(ILUnitRegister(#name, name, 0))
@@ -247,14 +561,33 @@ void ILUnitRegisterTests(void)
 	 * Test thread creation behaviours.
 	 */
 	ILUnitRegisterSuite("Thread Creation");
+	RegisterSimple(thread_create_arg);
 	RegisterSimple(thread_create_suspended);
 	RegisterSimple(thread_create_state);
+	RegisterSimple(thread_create_destroy);
 
 	/*
 	 * Test thread suspend and resume behaviours.
 	 */
 	ILUnitRegisterSuite("Thread Suspend/Resume");
 	RegisterSimple(thread_suspend);
+	RegisterSimple(thread_suspend_self);
+	RegisterSimple(thread_suspend_destroy);
+
+	/*
+	 * Test the properties of the "main" thread.
+	 */
+	ILUnitRegisterSuite("Main Thread Properties");
+	RegisterSimple(thread_main_nonnull);
+	RegisterSimple(thread_main_object);
+	RegisterSimple(thread_main_running);
+
+	/*
+	 * Test miscellaneous thread behaviours.
+	 */
+	ILUnitRegisterSuite("Misc Thread Tests");
+	RegisterSimple(thread_other_object);
+	RegisterSimple(thread_counts);
 }
 
 #ifdef	__cplusplus

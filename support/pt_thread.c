@@ -227,6 +227,7 @@ static void *ThreadStart(void *arg)
 {
 	ILThread *thread = (ILThread *)arg;
 	sigset_t set;
+	int isbg;
 
 	/* Store the thread identifier into the object */
 	thread->threadId = pthread_self();
@@ -271,7 +272,17 @@ static void *ThreadStart(void *arg)
 	/* Mark the thread as stopped */
 	pthread_mutex_lock(&(thread->lock));
 	thread->state |= IL_TS_STOPPED;
+	isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
 	pthread_mutex_unlock(&(thread->lock));
+
+	/* Update the thread counts */
+	pthread_mutex_lock(&threadLockAll);
+	--numThreads;
+	if(isbg)
+	{
+		numBackgroundThreads -= 1;
+	}
+	pthread_mutex_unlock(&threadLockAll);
 
 	/* The thread has exited back through its start function */
 	return 0;
@@ -352,6 +363,9 @@ int ILThreadStart(ILThread *thread)
 
 void ILThreadDestroy(ILThread *thread)
 {
+	int iscounted;
+	int isbg;
+
 	/* Bail out if this is the current thread */
 	if(thread == ILThreadSelf())
 	{
@@ -362,15 +376,31 @@ void ILThreadDestroy(ILThread *thread)
 	pthread_mutex_lock(&(thread->lock));
 
 	/* Nothing to do if the thread is already stopped or aborted */
+	iscounted = 0;
+	isbg = 0;
 	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
 	{
 		thread->state |= IL_TS_ABORTED;
 		pthread_cancel(thread->threadId);
+		iscounted = 1;
+		isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
 	}
 
-	/* Unlock the thread object, free it, and return */
+	/* Unlock the thread object and free it */
 	pthread_mutex_unlock(&(thread->lock));
 	ILFree(thread);
+
+	/* Adjust the thread counts */
+	pthread_mutex_lock(&threadLockAll);
+	if(iscounted)
+	{
+		--numThreads;
+	}
+	if(isbg)
+	{
+		--numBackgroundThreads;
+	}
+	pthread_mutex_unlock(&threadLockAll);
 }
 
 ILThread *ILThreadSelf(void)
@@ -599,6 +629,15 @@ void ILThreadMemoryBarrier(void)
 	   for us as part of the mutex code */
 	pthread_mutex_lock(&atomicLock);
 	pthread_mutex_unlock(&atomicLock);
+}
+
+void ILThreadGetCounts(unsigned long *numForeground,
+					   unsigned long *numBackground)
+{
+	pthread_mutex_lock(&threadLockAll);
+	*numForeground = (unsigned long)(numThreads - numBackgroundThreads);
+	*numBackground = (unsigned long)(numBackgroundThreads);
+	pthread_mutex_unlock(&threadLockAll);
 }
 
 #ifdef	__cplusplus

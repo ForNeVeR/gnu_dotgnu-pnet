@@ -145,6 +145,13 @@ void ILThreadMemoryBarrier(void)
 	/* Nothing to do here */
 }
 
+void ILThreadGetCounts(unsigned long *numForeground,
+					   unsigned long *numBackground)
+{
+	*numForeground = (globalThread->isBackground ? 0 : 1);
+	*numBackground = (globalThread->isBackground ? 1 : 0);
+}
+
 ILMutex *ILMutexCreate(void)
 {
 	/* We don't have mutexes, but we need to fool the caller

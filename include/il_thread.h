@@ -156,6 +156,13 @@ void ILThreadAtomicEnd(void);
 void ILThreadMemoryBarrier(void);
 
 /*
+ * Get the number of foreground and background threads
+ * that currently exist in the system.
+ */
+void ILThreadGetCounts(unsigned long *numForeground,
+					   unsigned long *numBackground);
+
+/*
  * Create a mutex.  Note: this type of mutex will not
  * necessarily update the thread's "wait/sleep/join"
  * state, so it isn't directly suitable for emulating

@@ -437,6 +437,15 @@ void ILThreadMemoryBarrier(void)
 	LeaveCriticalSection(&atomicLock);
 }
 
+void ILThreadGetCounts(unsigned long *numForeground,
+					   unsigned long *numBackground)
+{
+	EnterCriticalSection(&threadLockAll);
+	*numForeground = (unsigned long)(numThreads - numBackgroundThreads);
+	*numBackground = (unsigned long)(numBackgroundThreads);
+	LeaveCriticalSection(&threadLockAll);
+}
+
 #ifdef	__cplusplus
 };
 #endif

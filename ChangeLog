@@ -14,6 +14,11 @@
 	Xsharp/Widget.cs: speed up Xsharp event dispatching by using a
 	more efficient handle to widget mapping table.
 
+	* Xsharp/Bitmap.cs, Xsharp/Drawable.cs, Xsharp/Pixmap.cs,
+	Xsharp/Widget.cs: just clear the pixmap/window handle during
+	finalization, rather than sending a full X destroy request,
+	to avoid deadlocks between the main thread and the finalizer thread.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

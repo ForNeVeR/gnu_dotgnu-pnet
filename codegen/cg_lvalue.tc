@@ -690,6 +690,74 @@ ILNode_Store(ILNode_MemberProperty)
 }
 
 /*
+ * Generate reference code for local variable nodes.
+ */
+ILNode_GenRef(ILNode_LocalVar)
+{
+	ILGenLoadLocalAddr(info, node->index);
+	ILGenAdjust(info, 1);
+}
+
+/*
+ * Generate reference code for argument nodes.
+ */
+ILNode_GenRef(ILNode_ArgumentVar)
+{
+	ILGenLoadArgAddr(info, node->index);
+	ILGenAdjust(info, 1);
+}
+
+/*
+ * Generate reference code for static fields.
+ */
+ILNode_GenRef(ILNode_StaticField)
+{
+	ILGenFieldRef(info, IL_OP_LDSFLDA, node->field);
+	ILGenAdjust(info, 1);
+}
+
+/*
+ * Generate reference code for member fields.
+ */
+ILNode_GenRef(ILNode_MemberField)
+{
+	ILGenFieldRef(info, IL_OP_LDFLDA, node->field);
+	ILGenAdjust(info, 1);
+}
+
+/*
+ * Generate reference code for a member access destination.
+ */
+ILNode_GenRef(ILNode_MemberAccess)
+{
+	/* TODO */
+}
+
+/*
+ * Generate reference code for a base access destination.
+ */
+ILNode_GenRef(ILNode_BaseAccess)
+{
+	/* TODO */
+}
+
+/*
+ * Generate reference code for a base element destination.
+ */
+ILNode_GenRef(ILNode_BaseElement)
+{
+	/* TODO */
+}
+
+/*
+ * Generate reference code for a field dereference destination.
+ */
+ILNode_GenRef(ILNode_DerefField)
+{
+	/* TODO */
+}
+
+/*
  * Declare operations that can be used to manage identifiers.
  */
 %decls %end %{

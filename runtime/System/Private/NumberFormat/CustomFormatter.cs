@@ -103,7 +103,7 @@ internal class CustomFormatter : Formatter
 	{
 		int ret, pos;
 
-		pos = format.IndexOfAny(engineeringFormat, pos);
+		pos = format.IndexOfAny(engineeringFormat, 0);
 
 		while (pos != -1)
 		{

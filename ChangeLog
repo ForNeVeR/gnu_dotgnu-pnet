@@ -10,6 +10,15 @@
 	tests/runtime/System/Security/Cryptography/TestTripleDES.cs:
 	test cases and bug fixes for the cipher modes.
 
+	* runtime/System/Private/DateTimeFormatter.cs,
+	runtime/System/Private/NumberFormat/CustomFormatter.cs,
+	runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/GeneralFormatter.cs,
+	runtime/System/Private/NumberFormat/HexadecimalFormatter.cs,
+	runtime/System/Private/NumberFormat/NumberFormatter.cs,
+	runtime/System/Private/NumberFormat/PercentFormatter.cs:
+	fix errors and warnings shown up by csc.
+
 2002-11-28  Michael Moore  <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormatter.cs: implement

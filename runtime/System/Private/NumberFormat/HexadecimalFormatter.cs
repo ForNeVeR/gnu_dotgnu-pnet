@@ -49,7 +49,6 @@ internal class HexadecimalFormatter : Formatter
 			break;
 		default:
 			throw new FormatException(_("Format_StringException"));
-			break;
 		}
 	}
 
@@ -64,7 +63,7 @@ internal class HexadecimalFormatter : Formatter
 
 		for (uvalue = unchecked((ulong)value);	
 			uvalue < System.UInt64.MaxValue;
-			uvalue = unchecked((ulong) ((long)uvalue) >> 4));  // Signed shift
+			uvalue = unchecked((ulong) ((long)uvalue) >> 4))  // Signed shift
 		{
 			buf.Insert(0, digits[uvalue % 16]);
 		}
@@ -88,7 +87,6 @@ internal class HexadecimalFormatter : Formatter
 
 	public override string Format(Object o, IFormatProvider provider)
 	{
-		bool isNegative = false;
 		long value;
 
 		//  Type validation

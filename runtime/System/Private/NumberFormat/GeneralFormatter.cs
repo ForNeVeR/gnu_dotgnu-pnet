@@ -45,7 +45,6 @@ internal class GeneralFormatter : Formatter
 				break;
 			default:
 				throw new FormatException(_("Format_StringException"));
-				break;
 		}
 	}
 
@@ -67,6 +66,10 @@ internal class GeneralFormatter : Formatter
 		if (this.precision == -1)
 		{
 			precision = PrecisionOf(o);
+		}
+		else
+		{
+			precision = this.precision;
 		}
 
 		exponent = (int) Math.Floor(Math.Log10(OToDouble(o)));

@@ -292,7 +292,7 @@ internal abstract class Formatter
 			int i;
 			decimal r;
 
-			for (int i=0, r=5; i<= precision; i++) 
+			for (i=0, r=5; i<= precision; i++) 
 			{
 				r /= 10;
 			}
@@ -440,7 +440,7 @@ internal abstract class Formatter
 		}
 
 		//  Search for cached formats
-		if (formats[format] != 0)
+		if (formats[format] != null)
 		{
 			return (Formatter) formats[format];
 		}

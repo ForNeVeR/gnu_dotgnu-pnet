@@ -42,23 +42,26 @@ internal class DateTimeFormatter
 				{
 					return d.Day.ToString();
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
 					if(d.Day<10) return "0"+d.Day.ToString();
 					else return d.Day.ToString();
 				}
-				break;
+				// Not reached
+
 				case 3:
 				{
 					return info.GetAbbreviatedDayName((DayOfWeek)d.DayOfWeek);
 				}
-				break;
+				// Not reached
+
 				case 4:
 				{
 					return info.GetDayName((DayOfWeek)(d.DayOfWeek));
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -75,23 +78,26 @@ internal class DateTimeFormatter
 				{
 					return d.Month.ToString();
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
 					 if(d.Month<10) return "0"+d.Month.ToString();
 					else return d.Month.ToString();
 				}
-				break;
+				// Not reached
+
 				case 3:
 				{
 					return info.GetAbbreviatedMonthName(d.Month);
 				}
-				break;
+				// Not reached
+
 				case 4:
 				{
 					return info.GetMonthName(d.Month);
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -107,7 +113,7 @@ internal class DateTimeFormatter
 			{
 				case 1:
 				{
-					int century;
+					int century=0;
 					for(int i = 0; 0 < d.Year - i; i=i+1000)
 					{
 						century=i;
@@ -116,10 +122,11 @@ internal class DateTimeFormatter
 					// return current year - century
 					return (d.Year-century).ToString();
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
-					int century;
+					int century=0;
 					for(int i = 0; 0 < d.Year - i; i=i+1000)
 					{
 						century=i;
@@ -127,13 +134,14 @@ internal class DateTimeFormatter
 					if((d.Year-century)<10) return "0"+(d.Year-century).ToString();
 					return (d.Year-century).ToString();
 				}
-				break;
+				// Not reached
+
 				case 4:
 				{
 					if(d.Year<10) return "00"+d.Year.ToString();
 					return (d.Year.ToString()).Substring(d.Year.ToString().Length-4);
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -150,13 +158,14 @@ internal class DateTimeFormatter
 				{
 					return (d.Second).ToString();
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
 					if( d.Second<10) return "0"+d.Minute.ToString();
 					return d.Second.ToString();
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -173,13 +182,14 @@ internal class DateTimeFormatter
 				{
 					return (d.Minute).ToString();
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
 					if( d.Minute<10) return "0"+d.Minute.ToString();
 					return d.Minute.ToString();
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -196,14 +206,15 @@ internal class DateTimeFormatter
 				{
 					return (d.Hour % 12).ToString();
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
 					int hr =  (d.Hour % 12);
 					if( hr<10) return "0"+hr.ToString();
 					return hr.ToString();
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -220,14 +231,15 @@ internal class DateTimeFormatter
 				{
 					return (d.Hour).ToString();
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
 					int hr =  (d.Hour);
 					if( hr<10) return "0"+d.Hour.ToString();
 					return d.Hour.ToString();
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -246,13 +258,14 @@ internal class DateTimeFormatter
 					return info.PMDesignator.Substring(0,1);
 
 				}
-				break;
+				// Not reached
+
 				case 2:
 				{
 					if( d.Hour < 12) return info.AMDesignator;
 					return info.PMDesignator;
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -296,7 +309,7 @@ internal class DateTimeFormatter
 				{
 					return info.GetEraName(d.Year);
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -313,7 +326,7 @@ internal class DateTimeFormatter
 				{
 					return info.DateSeparator;
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -330,7 +343,7 @@ internal class DateTimeFormatter
 				{
 					return info.TimeSeparator;
 				}
-				break;
+				// Not reached
 			}
 			throw new FormatException("Invalid format string");
 		}
@@ -360,74 +373,86 @@ internal class DateTimeFormatter
 			{
 				return "MM/dd/yyyy\n";
 			}
-			break;
+			// Not reached
+
 			case 'D':
 			{
 				return "dddd, MMMM dd, yyyy\n";
 			}
-			break;
+			// Not reached
+
 			case 'f':
 			{
 				return "dddd, MMMM dd, yyyy HH:mm\n";
 			}
-			break;
+			// Not reached
+
 			case 'F':
 			{
 				return "dddd, MMMM dd, yyyy HH:mm:ss\n";
 			}
-			break;
+			// Not reached
+
 			case 'g':
 			{
 				return "MM/dd/yyyy HH:mm\n";
 			}
-			break;
+			// Not reached
+
 			case 'G':
 			{
 				return "MM/dd/yyyy HH:mm:ss\n";
 			}
-			break;
+			// Not reached
+
 			case 'm':
 			{
 				return "MMMM dd\n";
 			}
-			break;
+			// Not reached
+
 			case 'M':
 			{
 				return "MMMM dd\n";
 			}
-			break;
+			// Not reached
+
 			case 't':
 			{
 				return "HH:mm\n";
 			}
-			break;
+			// Not reached
+
 			case 'T':
 			{
 				return "HH:mm:ss\n";
 			}
-			break;
+			// Not reached
+
 			case 'U':
 			{
 				return "dddd, MMMM dd, yyyy HH:mm:ss\n";
 			}
-			break;
+			// Not reached
+
 			case 'y':
 			{
 				return "yyyy MMMM\n";
 			}
-			break;		
+			// Not reached
+
 			case 'Y':
 			{
 				return "yyyy MMMM\n";
 			}
-			break;		
+			// Not reached
+
 			default:
 			{
 				return "\n";
 			}
-			break;
+			// Not reached
 		}
-		return format;
 	}
 	public static String Format(DateTime date,
 							String format, DateTimeFormatInfo info)

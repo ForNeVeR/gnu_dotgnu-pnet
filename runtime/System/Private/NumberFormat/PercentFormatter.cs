@@ -45,6 +45,7 @@ internal class PercentFormatter : Formatter
 					break;
 
 				case 1:
+				default:
 					ret = nfi.NegativeSign + value + nfi.PercentSymbol;
 					break;
 
@@ -62,6 +63,7 @@ internal class PercentFormatter : Formatter
 					break;
 
 				case 1:
+				default:
 					ret = value + nfi.PercentSymbol;
 					break;
 

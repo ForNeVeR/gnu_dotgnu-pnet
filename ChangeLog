@@ -1,3 +1,20 @@
+2003-11-22  Neil Cawse  <neilcawse@geotab.com>
+
+	* DotGNU.Images/BmpReformatter.cs, DotGNU.Images/Frame.cs,
+	DotGNU.Images/IconReader.cs, DotGNU.Images/IconWriter.cs,
+	DotGNU.Images/Image.cs: small bug in 1bpp to 24bpp conversion. Fix
+	IconReader to support multiple formats. Writer still to be done.
+	Make transparent implemented. Reformat exposed.
+
+	* System.Drawing/Bitmap.cs, System.Drawing/Color.cs,
+	System.Drawing/Image.cs: bitmap defaults to 24bpp for now. Fixed Hue,
+	Saturation and Brightness calculations. Exposed reformat.
+
+	* System.Windows.Forms/CheckBox.cs,
+	System.Windows.Forms/ControlPaint.cs, System.Windows.Forms/TreeNode.cs
+	System.Windows.Forms/TreeView.cs: Fixed ControlPaint Lighten and
+	Darken functions. Start implementation of images in the TreeView.
+
 2003-11-21  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/CheckBox.cs: small csc compile fix.

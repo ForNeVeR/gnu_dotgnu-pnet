@@ -121,6 +121,7 @@ struct _tagILEvalValue
 %node ILNode_Expression ILNode %abstract
 %node ILNode_Constant ILNode_Expression %abstract
 %node ILNode_LValue ILNode_Expression %abstract
+%node ILNode_LValueNoRef ILNode_LValue %abstract
 %node ILNode_UnaryExpression ILNode_Expression %abstract =
 {
 	ILNode *expr;
@@ -130,6 +131,7 @@ struct _tagILEvalValue
 {
 	ILNode *expr;
 }
+%node ILNode_LValueNoRefUnaryExpr ILNode_LValueUnaryExpr %abstract
 %node ILNode_LValueBinaryExpr ILNode_LValue %abstract =
 {
 	ILNode *expr1;
@@ -295,11 +297,11 @@ struct _tagILEvalValue
  * Miscellaneous operators.
  */
 %node ILNode_Comma ILNode_BinaryExpression
-%node ILNode_AsIs ILNode_LValueUnaryExpr
-%node ILNode_Overflow ILNode_LValueUnaryExpr
-%node ILNode_NoOverflow ILNode_LValueUnaryExpr
-%node ILNode_Pedantic ILNode_LValueUnaryExpr
-%node ILNode_NoPedantic ILNode_LValueUnaryExpr
+%node ILNode_AsIs ILNode_LValueNoRefUnaryExpr
+%node ILNode_Overflow ILNode_LValueNoRefUnaryExpr
+%node ILNode_NoOverflow ILNode_LValueNoRefUnaryExpr
+%node ILNode_Pedantic ILNode_LValueNoRefUnaryExpr
+%node ILNode_NoPedantic ILNode_LValueNoRefUnaryExpr
 %node ILNode_Cast ILNode_UnaryExpression =
 {
 	ILMachineType machineType;
@@ -310,7 +312,7 @@ struct _tagILEvalValue
 	ILMethod *method;
 }
 %node ILNode_Conditional ILNode_TernaryExpression
-%node ILNode_Deref ILNode_LValue =
+%node ILNode_Deref ILNode_LValueNoRef =
 {
 	ILNode *expr;
 }
@@ -423,11 +425,11 @@ struct _tagILEvalValue
 	ILField *field;
 	%nocreate ILUInt32 tempVar = {0};
 }
-%node ILNode_StaticProperty ILNode_LValue =
+%node ILNode_StaticProperty ILNode_LValueNoRef =
 {
 	ILProperty *property;
 }
-%node ILNode_MemberProperty ILNode_LValue =
+%node ILNode_MemberProperty ILNode_LValueNoRef =
 {
 	ILNode  *expr;
 	ILProperty *property;
@@ -719,6 +721,8 @@ struct _tagILEvalValue
 %operation %virtual void ILNode_Store
 				(ILNode_LValue *node, ILGenInfo *info, int leave,
 				 void *data1, void *data2)
+%operation %virtual void ILNode_GenRef
+				(ILNode_LValue *node, ILGenInfo *info);
 
 /*
  * Statements only need "ILNode_GenDiscard".
@@ -983,4 +987,14 @@ ILNode_GenValue(ILNode_DummyUnaryExpr),
 ILNode_GenValue(ILNode_DummyBinaryExpr)
 {
 	return ILMachineType_Void;
+}
+
+/*
+ * Default implementation of "ILNode_GenRef" for l-value
+ * nodes that don't need it.
+ */
+ILNode_GenRef(ILNode_LValueNoRef),
+ILNode_GenRef(ILNode_LValueNoRefUnaryExpr)
+{
+	/* Nothing to do here */
 }

@@ -3,10 +3,10 @@
 <!-- Profile that roughly corresponds to the MS Compact .NET Framework -->
 
 <!-- Main framework version -->
-<define name="FRAMEWORK_VERSION" value="1.2.3400.0"/>
+<define name="FRAMEWORK_VERSION" value="1.0.5000.0"/>
 
 <!-- Secondary framework version -->
-<define name="SECONDARY_VERSION" value="8.0.1000.0"/>
+<define name="SECONDARY_VERSION" value="7.0.5000.0"/>
 
 <!-- Provides non-ECMA features -->
 <define name="NON_ECMA" value="true"/>
@@ -15,7 +15,7 @@
 <define name="ECMA_COMPAT" value="false"/>
 
 <!-- Include .NET Framework 1.2 features -->
-<define name="CONFIG_FRAMEWORK_1_2" value="true"/>
+<define name="CONFIG_FRAMEWORK_1_2" value="false"/>
 
 <!-- Use reflection facilities -->
 <define name="CONFIG_REFLECTION" value="true"/>

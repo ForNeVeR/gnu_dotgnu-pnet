@@ -46,6 +46,9 @@
 	samples/FormsTest.cs, samples/XClockEmbed.cs:
 	fix some profile-related build issues.
 
+	* profiles/mscompact: fix the version details for the "mscompat"
+	profile and remove unneeded 1.2 features from it.
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

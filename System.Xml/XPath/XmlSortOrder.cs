@@ -24,7 +24,7 @@ using System;
 
 namespace System.Xml.XPath
 {
-#if !ECMA_COMPAT
+#if ECMA_COMPAT
 internal
 #else
 public 

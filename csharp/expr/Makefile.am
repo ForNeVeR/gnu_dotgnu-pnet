@@ -25,6 +25,7 @@ TESTS = arglist1.cs \
 		delegate3.cs \
 		enum1.cs \
 		enum2.cs \
+		enum3.cs \
 		incdec1.cs \
 		incdec2.cs \
 		indexer1.cs \

@@ -1,4 +1,10 @@
 
+2002-09-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/Makefile.am, csharp/expr/enum3.cs, csharp/expr/enum3.il,
+	csharp/expr/enum3.jl: test implicit coercion of zero to enum types
+	during binary operators.
+
 2002-09-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/locals2.il, csharp/stmt/locals2.jl:

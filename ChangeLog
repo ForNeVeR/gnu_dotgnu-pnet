@@ -1,3 +1,37 @@
+2003-12-27  Adam Ballai <adam@thefrontnetworks.net>
+
+	*  Makefile.am, configure.in,
+	System.Design/Design.build,
+	System.Design/Makefile.am,
+	System.Design/System.ComponentModel.Design/ArrayEditor.cs,
+	System.Design/System.ComponentModel.Design/ByteViewer.cs,
+	System.Design/System.ComponentModel.Design/CollectionEditor.cs,
+	System.Design/System.ComponentModel.Design/ComponentDesigner.cs,
+	System.Design/System.ComponentModel.Design/DisplayMode.cs,
+	System.Design/System.ComponentModel.Design/InheritanceService.cs,
+	System.Design/System.ComponentModel.Design/LocalizationExtenderProvider.cs,
+	 System.Design/System.ComponentModel.Design/Serialization/CodeDomSerializer.cs,
+	 System.Design/System.ComponentModel.Design/Serialization/CodeDomSerializerException.cs,
+	 System.Design/System.ComponentModel.Design/Serialization/ICodeDomDesignerReload.cs,
+	 System.Design/System.Windows.Forms.Design/AnchorEditor.cs,
+	 System.Design/System.Windows.Forms.Design/AxImporter.cs,
+	 System.Design/System.Windows.Forms.Design/ComponentDocumentDesigner.cs,
+	 System.Design/System.Windows.Forms.Design/ComponentTray.cs,
+	 System.Design/System.Windows.Forms.Design/ControlDesigner.cs,
+	 System.Design/System.Windows.Forms.Design/DocumentDesigner.cs,
+	 System.Design/System.Windows.Forms.Design/FileNameEditor.cs,
+	 System.Design/System.Windows.Forms.Design/IMenuEditorService.cs,
+	 System.Design/System.Windows.Forms.Design/MenusCommands.cs,
+	 System.Design/System.Windows.Forms.Design/ParentControlDesigner.cs,
+	 System.Design/System.Windows.Forms.Design/ScrollableControlDesigner.cs,
+	 System.Design/System.Windows.Forms.Design/SelectionRules.cs,
+	 System.Drawing/Design/IToolboxUser.cs,
+	 System.Drawing/Design/ToolboxComponentsCreatedEventArgs.cs,
+	 System.Drawing/Design/ToolboxComponentsCreatedEventHandler.cs,
+	 System.Drawing/Design/ToolboxComponentsCreatingEventArgs.cs,
+	 System.Drawing/Design/ToolboxComponentsCreatingEventHandler.cs,
+	 System.Drawing/Design/ToolboxItem.cs: Stubs for System.Design assembly and required dependencies of System.Drawing.Design.
+
 2003-12-26  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* DotGNU.Images/Frame.cs: fix a bug in mask sizing, and add support for

@@ -4,6 +4,9 @@
 	* csunit/TestMain.cs: derive the type name from the name of the
 	test assembly; write usage messages to stdout instead of stderr.
 
+	* csunit/README: update the CSUnit README file to contain more
+	information on writing test cases.
+
 2002-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_thread.c: implement the "Thread.InternalSleep"

@@ -46,6 +46,7 @@ IO_FileLoad=Could not load file "{0}"
 IO_CopyFileExists=The file "{0}" already exists 
 IO_Error=IO Error
 IO_IsNotDir= "{0}" is not a directory
+IO_ExistsButNotDir="{0}" exists but is not a directory
 IO_RegistryKeyClosed=Registry key has already been closed
 IO_RegistryReadOnly=Registry key is read-only
 IO_RegistryKeyNotExist=Registry key does not exist

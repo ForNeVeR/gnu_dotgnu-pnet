@@ -41,13 +41,33 @@ namespace System.IO
 		}
 
 #if !ECMA_COMPAT	
+		
+		public static Exception InternalCreateDirectory(String path)
+		{
+			if(!File.Exists(Path.GetDirectoryName(path)))
+			{
+				InternalCreateDirectory(Path.GetDirectoryName(path));
+			}
+		
+			Errno err = DirMethods.CreateDirectory(path);
+
+			/* TODO: protect against stuff like 
+			CreateDirectory("a.out.exe/mydir"); which currently throw
+			a SecurityException without any clue of the error */
+
+			if(err != Errno.Success)
+			{
+				return GetErrnoExceptions(err,path);
+			}
+			return null;
+		}
+
 		public static DirectoryInfo CreateDirectory(String path)
 		{
 			Exception e=ValidatePath(path, "path");
 			if(e != null) throw e;
-		
-			Errno err = DirMethods.CreateDirectory(path);
-			e=GetErrnoExceptions(err,path);
+			
+			e = InternalCreateDirectory(path);
 			if(e != null) throw e;
 
 			return new DirectoryInfo(path);
@@ -160,6 +180,8 @@ namespace System.IO
 					return new SecurityException(_("IO_PathnameSecurity"));
 				case Errno.ENAMETOOLONG:
 					return new PathTooLongException();
+				case Errno.EPERM:
+					return new SecurityException(_("IO_PathnameSecurity"));
 			}
 			return null;
 		}

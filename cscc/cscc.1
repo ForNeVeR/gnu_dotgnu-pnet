@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH cscc 1 "5 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH cscc 1 "6 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 cscc \- the C-Sharp code compiler
 .SH SYNOPSIS
@@ -90,6 +90,7 @@ curve for new users.
 \-fno\-short\-insns
 \-filasm\-path=\fIpathname\fR
 \-mjvm
+\-fstdlib\-name=\fIname\fR
 .TP
 .B Directory Options
 \-I\fIdir\fR
@@ -105,6 +106,8 @@ curve for new users.
 \-static
 \-m32bit\-only
 \-fresources=\fIresfile\fR
+\-mcui\-subsystem
+\-mgui\-subsystem
 .TP
 .B Other Options
 \-dumpversion
@@ -339,6 +342,10 @@ Specifies the full pathname of the \fBilasm\fR(1) assembler.  By default,
 .TP
 .B \-mjvm
 Compile to JVM bytecode instead of IL bytecode.
+.TP
+.B \-fstdlib\-name=\fIname\fR
+Change the name of the standard library to \fIname\fR.  The default
+value is "mscorlib".
 .SH "DIRECTORY OPTIONS"
 .TP
 .B \-I\fIdir\fR
@@ -405,6 +412,14 @@ the resultant program less portable.
 Specify the name of a resource file to be linked with the final
 library or executable.  Multiple `\fB\-fresources\fR' options
 may be used to specify multiple resource files.
+.TP
+.B \-mcui\-subsystem
+Tag the output file so that it can run within the command-line subsystem
+under Windows.  This is the default.
+.TP
+.B \-mgui\-subsystem
+Tag the output file so that it can run within the GUI subsystem
+under Windows.
 .SH "OTHER OPTIONS"
 .TP
 .B \-dumpversion

@@ -143,6 +143,7 @@ Otherwise the exit status is 0.
 @ref{Assembler Options}
 @example
 -fno-short-insns -filasm-path=PATHNAME -mjvm
+-fstdlib-name=NAME
 @end example
 
 @item Directory Options
@@ -156,6 +157,7 @@ Otherwise the exit status is 0.
 @example
 -e ENTRYPOINT -LDIR -nostdlib -lLIBRARY
 -shared -static -m32bit-only -fresources=RESFILE
+-mcui-subsystem -mgui-subsystem
 @end example
 
 @item Other Options
@@ -487,6 +489,11 @@ cscc searches for ilasm along the PATH.
 @cindex -mjvm option (cscc)
 @item -mjvm
 Compile to JVM bytecode instead of IL bytecode.
+
+@cindex -fstdlib-name option (cscc)
+@item -fstdlib-name=NAME
+Change the name of the standard library to NAME.  The default
+value is "mscorlib".
 @end table
 
 @c -----------------------------------------------------------------------
@@ -578,6 +585,16 @@ the resultant program less portable.
 Specify the name of a resource file to be linked with the final
 library or executable.  Multiple @code{-fresources} options
 may be used to specify multiple resource files.
+
+@cindex -mcui-subsystem option (cscc)
+@item -mcui-subsystem
+Tag the output file so that it can run within the command-line subsystem
+under Windows.  This is the default.
+
+@cindex -mgui-subsystem option (cscc)
+@item -mgui-subsystem
+Tag the output file so that it can run within the GUI subsystem
+under Windows.
 @end table
 
 @c -----------------------------------------------------------------------
@@ -897,7 +914,7 @@ cscc-sc -f no-short-insns -O2 -g -I ../include \
 This is followed by a call to ilasm:
 
 @example
-ilasm --debug --no-short-insns \
+ilasm --debug -f no-short-insns \
     --format obj -o hello.obj hello.il
 @end example
 
@@ -1140,9 +1157,9 @@ Disable the generation of debug symbol information to the output file.
 This is the default value.
 
 @cindex -s option (ilasm)
-@cindex --short-insns option (ilasm)
+@cindex -fshort-insns option (ilasm)
 @item -s
-@itemx --short-insns
+@itemx -fshort-insns
 Always use the shortest version of an instruction when creating the
 output.  Some instructions have multiple versions.  e.g. @code{br}
 and @code{br.s} for long and short versions of the branch instruction.
@@ -1157,9 +1174,9 @@ be converted into longer versions if required.  Compiler code generators
 can therefore be much simpler.
 
 @cindex -l option (ilasm)
-@cindex --no-short-insns option (ilasm)
+@cindex -fno-short-insns option (ilasm)
 @item -l
-@itemx --no-short-insns
+@itemx -fno-short-insns
 Always use the stated version of an instruction when creating the output.
 For example, @code{br} will always generate a 5-byte branch instruction,
 and @code{br.s} will always generate a 2-byte branch instruction.  If the
@@ -1170,32 +1187,38 @@ that is output by the ildasm disassembler is the same as the
 form of instruction that was input to ilasm.  This may be helpful
 when attempting to diagnose compiler problems.
 
+@cindex -L option (ilasm)
+@cindex -fstdlib-name option (ilasm)
+@item -L NAME
+@itemx -fstdlib-name=NAME
+Change the name of the standard library to NAME.  The default
+value is "mscorlib".
+
+@cindex -J option (ilasm)
+@cindex -mjvm option (ilasm)
+@item -J
+@itemx -mjvm
+Assemble to JVM bytecode instead of IL.
+
 @cindex -3 option (ilasm)
-@cindex --32bit-only option (ilasm)
+@cindex -m32bit-only option (ilasm)
 @item -3
-@itemx --32bit-only
+@itemx -m32bit-only
 Tag the output file so that it can only be executed on 32-bit platforms.
 
 @cindex -c option (ilasm)
-@cindex --cui-subsystem option (ilasm)
+@cindex -mcui-subsystem option (ilasm)
 @item -c
-@itemx --cui-subsystem
+@itemx -mcui-subsystem
 Tag the output file so that it can run within the command-line subsystem
 under Windows.  This is the default.
 
 @cindex -G option (ilasm)
-@cindex --gui-subsystem option (ilasm)
+@cindex -mgui-subsystem option (ilasm)
 @item -G
-@itemx --gui-subsystem
+@itemx -mgui-subsystem
 Tag the output file so that it can run within the GUI subsystem
 under Windows.
-
-@cindex -L option (ilasm)
-@cindex --stdlib-name option (ilasm)
-@item -L NAME
-@itemx --stdlib-name NAME
-Change the name of the standard library to NAME.  The default
-value is "mscorlib".
 
 @cindex --help option (ilasm)
 @item --help

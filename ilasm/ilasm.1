@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH ilasm 1 "4 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH ilasm 1 "6 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 ilasm \- the Intermediate Language (IL) assembler
 .SH SYNOPSIS
@@ -76,7 +76,7 @@ Enable the generation of debug symbol information to the output file.
 Disable the generation of debug symbol information to the output file.
 This is the default value.
 .TP
-.B \-s, \-\-short\-insns
+.B \-s, \-fshort\-insns
 Always use the shortest version of an instruction when creating the
 output.  Some instructions have multiple versions.  e.g. "br" and "br.s"
 for long and short versions of the branch instruction.  The assembler
@@ -90,7 +90,7 @@ into shorter versions whenever possible, and short instructions will
 be converted into longer versions if required.  Compiler code generators
 can therefore be much simpler.
 .TP
-.B \-l, \-\-no\-short\-insns
+.B \-l, \-fno\-short\-insns
 Always use the stated version of an instruction when creating the output.
 For example, "br" will always generate a 5-byte branch instruction,
 and "br.s" will always generate a 2-byte branch instruction.  If the
@@ -101,20 +101,23 @@ that is output by the \fBildasm\fR(1) disassembler is the same as the
 form of instruction that was input to \fBilasm\fR.  This may be helpful
 when attempting to diagnose compiler problems.
 .TP
-.B \-3, \-\-32bit\-only
+.B \-L NAME, \-fstdlib\-name=NAME
+Change the name of the standard library to NAME.  The default
+value is "mscorlib".
+.TP
+.B \-J, \-mjvm
+Assemble to JVM bytecode instead of IL.
+.TP
+.B \-3, \-m32bit\-only
 Tag the output file so that it can only be executed on 32-bit platforms.
 .TP
-.B \-c, \-\-cui\-subsystem
+.B \-c, \-mcui\-subsystem
 Tag the output file so that it can run within the command-line subsystem
 under Windows.  This is the default.
 .TP
-.B \-G, \-\-gui\-subsystem
+.B \-G, \-mgui\-subsystem
 Tag the output file so that it can run within the GUI subsystem
 under Windows.
-.TP
-.B \-L NAME, \-\-stdlib\-name NAME
-Change the name of the standard library to NAME.  The default
-value is "mscorlib".
 .TP
 .B \-\-help
 Print a usage message for the \fBilasm\fR program.

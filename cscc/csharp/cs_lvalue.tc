@@ -952,10 +952,15 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 {
 	CSSemValue value;
 	CSSemValue value2;
+	CSSemValue nsvalue;
 	char *name;
 	ILEvalValue evalue;
+	ILNode *save1;
 
-	ILNode *save1 = node->expr1;
+	/*  PART I  - Try it in the usual fashion  */
+
+	/*  Stow the original node contents for later  */
+	save1 = node->expr1;
 
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -966,8 +971,7 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 		if(ILNode_EvalConst(node->expr1,info,&evalue))
 		{
 			/* Set the RValue to the type .. to handle Boxing later on*/
-			CSSemSetRValue(value,ILValueTypeToType(info,
-											evalue.valueType));
+			CSSemSetRValue(value,ILValueTypeToType(info, evalue.valueType));
 		}
 	}
 
@@ -975,25 +979,46 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 	name = ILQualIdentName(node->expr2, 0);
 	value2 = CSResolveMemberNameQuiet(info, (ILNode *)node, value, name, 0);
 
-	if (CSSemGetKind(value2) == CS_SEMKIND_VOID)
+	if (CSSemGetKind(value2) != CS_SEMKIND_VOID)
 	{
-		/*  We couldn't find a method in a resolved variable, so we'll
-		 *  try a type instead  */
-		ILNode *save2 = node->expr1;
-		node->expr1 = save1;
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, value2,
+					    name, node->expr1, &value);
+	}
 
-		/* Get the semantic value for the left part of the identifier */
-		value = ILNode_SemAnalysisType(node->expr1, info, &(node->expr1));
+	/*  PART II - Try again, this time limiting parsing to types  */
+	node->expr1 = save1;
 
-		/* Resolve the member */
-		name = ILQualIdentName(node->expr2, 0);
-		value2 = CSResolveMemberNameQuiet(info, (ILNode *)node, value, name, 1);
+	value = ILNode_SemAnalysisType(node->expr1, info, &(node->expr1));
 
-		if (CSSemGetKind(value2) == CS_SEMKIND_VOID)
-		{
-			node->expr1 = save2;
-			CSResolveMemberName(info, (ILNode *)node, value, name, 1);
-		}
+	value2 = CSResolveMemberNameQuiet(info, (ILNode *)node, value, name, 0);
+
+	if (CSSemGetKind(value2) != CS_SEMKIND_VOID)
+	{
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, value2,
+					    name, node->expr1, &value);
+	}
+
+	/*  PART III - Assume the left side of the '.' is a namespace and try
+	 *  to locate a corresponding type.  */
+
+	/*  Manufacture a Semantic value for the "namespace"  */
+	CSSemSetKind(nsvalue, 
+					CS_SEMKIND_NAMESPACE, ILMemberAccessName(node->expr1));
+
+	value2 = CSResolveNamespaceMemberName(info, (ILNode *)node, nsvalue, name);
+
+	if (CSSemGetKind(value2) != CS_SEMKIND_VOID) {
+		return SemToLRValue((ILNode *)node, info, parent, value2,
+						name, node->expr1, &value);
+	}
+
+	/*  PART IV - Punt.  */
+	if (!yyisa(*parent,ILNode_MemberAccess))
+	{
+		/*  Do it once more, but not so quiet about the errors :-)  */
+		CSResolveMemberName(info, (ILNode *)node, nsvalue, name, 0);
 	}
 
 	/* Convert the result into an l-value or r-value and return it */
@@ -1328,22 +1353,3 @@ ILNode_SemAnalysis(ILNode_IndexerAccess)
 	return CSSemValueDefault;
 }
 
-
-ILNode_SemAnalysisType(ILNode_This),
-ILNode_SemAnalysisType(ILNode_NewScope),
-ILNode_SemAnalysisType(ILNode_LocalVar),
-ILNode_SemAnalysisType(ILNode_ArgumentVar),
-ILNode_SemAnalysisType(ILNode_RefArgumentVar),
-ILNode_SemAnalysisType(ILNode_MemberAccess),
-ILNode_SemAnalysisType(ILNode_BaseAccess),
-ILNode_SemAnalysisType(ILNode_BaseElement),
-ILNode_SemAnalysisType(ILNode_DerefField),
-ILNode_SemAnalysisType(ILNode_ArrayAccess),
-ILNode_SemAnalysisType(ILNode_StaticField),
-ILNode_SemAnalysisType(ILNode_MemberField),
-ILNode_SemAnalysisType(ILNode_StaticProperty),
-ILNode_SemAnalysisType(ILNode_MemberProperty),
-ILNode_SemAnalysisType(ILNode_IndexerAccess)
-{
-	return ILNode_SemAnalysis((ILNode *)node, info, parent);
-}

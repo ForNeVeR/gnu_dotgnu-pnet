@@ -321,27 +321,3 @@ ILNode *CSBuiltinConstant(char *name)
 
 %}
 
-
-ILNode_SemAnalysisType(ILNode_Null) ,
-ILNode_SemAnalysisType(ILNode_NullPtr) ,
-ILNode_SemAnalysisType(ILNode_True) ,
-ILNode_SemAnalysisType(ILNode_False) ,
-ILNode_SemAnalysisType(ILNode_Int8) ,
-ILNode_SemAnalysisType(ILNode_UInt8) ,
-ILNode_SemAnalysisType(ILNode_Int16) ,
-ILNode_SemAnalysisType(ILNode_UInt16) ,
-ILNode_SemAnalysisType(ILNode_Char) ,
-ILNode_SemAnalysisType(ILNode_Int32) ,
-ILNode_SemAnalysisType(ILNode_UInt32) ,
-ILNode_SemAnalysisType(ILNode_Int) ,
-ILNode_SemAnalysisType(ILNode_UInt) ,
-ILNode_SemAnalysisType(ILNode_Int64) ,
-ILNode_SemAnalysisType(ILNode_UInt64) ,
-ILNode_SemAnalysisType(ILNode_Float32) ,
-ILNode_SemAnalysisType(ILNode_Float64) ,
-ILNode_SemAnalysisType(ILNode_Float) ,
-ILNode_SemAnalysisType(ILNode_Decimal) ,
-ILNode_SemAnalysisType(ILNode_String) 
-{
-	return ILNode_SemAnalysis((ILNode *)node, info, parent);
-}

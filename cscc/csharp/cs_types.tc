@@ -323,15 +323,3 @@ ILNode_SemAnalysis(ILNode_TypeSuffix)
 	return CSSemValueDefault;
 }
 
-
-ILNode_SemAnalysisType(ILNode_ArrayType) ,
-ILNode_SemAnalysisType(ILNode_PtrType) ,
-ILNode_SemAnalysisType(ILNode_PrimitiveType) ,
-ILNode_SemAnalysisType(ILNode_ObjectType) ,
-ILNode_SemAnalysisType(ILNode_StringType) ,
-ILNode_SemAnalysisType(ILNode_DecimalType) ,
-ILNode_SemAnalysisType(ILNode_LocalVariableType) ,
-ILNode_SemAnalysisType(ILNode_TypeSuffix) 
-{
-	return ILNode_SemAnalysis((ILNode *)node, info, parent);
-}

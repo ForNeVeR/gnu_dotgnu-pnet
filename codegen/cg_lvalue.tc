@@ -1494,6 +1494,15 @@ ILNode *ILQualIdentTwo(const char *name1, const char *name2);
 char *ILQualIdentName(ILNode *node, int asmForm);
 
 /*
+ *  Very similar to ILQualIdentName, but only recognizes
+ *  MemberAccess and Identifier nodes.  Plus it doesn't care
+ *  about assembly code.
+ *
+ *  Not sensible, but documented.  -JPS
+ */
+char *ILMemberAccessName(ILNode *node);
+
+/*
  * Append two qualified identifier strings, with '.' between them.
  */
 char *ILQualIdentAppend(char *name1, char *name2);
@@ -1552,6 +1561,27 @@ char *ILQualIdentName(ILNode *node, int asmForm)
 		ILNode_QualIdent *qident = (ILNode_QualIdent *)node;
 		return ILQualIdentAppend(ILQualIdentName(qident->left, asmForm),
 								 ILQualIdentName(qident->right, asmForm));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+char *ILMemberAccessName(ILNode *node)
+{
+	if (!node) return 0;
+
+	if(yykind(node) == yykindof(ILNode_Identifier))
+	{
+		return ((ILNode_Identifier *)node)->name;
+	}
+	else if(yykind(node) == yykindof(ILNode_MemberAccess))
+	{
+		/*  Member Access  */
+		ILNode_MemberAccess *ma = (ILNode_MemberAccess *)node;
+		return ILQualIdentAppend(ILMemberAccessName(ma->expr1),
+								 ILMemberAccessName(ma->expr2));
 	}
 	else
 	{

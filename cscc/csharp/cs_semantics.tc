@@ -47,9 +47,9 @@ ILNode_SemAnalysis(ILNode_DummySem)
 	return CSSemValueDefault;
 }
 
-ILNode_SemAnalysisType(ILNode_DummySem)
+ILNode_SemAnalysisType(ILNode)
 {
-	return CSSemValueDefault;
+	return ILNode_SemAnalysis(node, info, parent);
 }
 
 %decls %end %{

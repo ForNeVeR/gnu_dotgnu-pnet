@@ -1792,19 +1792,3 @@ const char *CSItemToName(ILProgramItem *item)
 
 %}
 
-
-ILNode_SemAnalysisType(ILNode_ArgList) ,
-ILNode_SemAnalysisType(ILNode_VarArgList) ,
-ILNode_SemAnalysisType(ILNode_VarArgExpand) ,
-ILNode_SemAnalysisType(ILNode_Argument) ,
-ILNode_SemAnalysisType(ILNode_InvocationExpression) ,
-ILNode_SemAnalysisType(ILNode_ObjectCreationExpression) ,
-ILNode_SemAnalysisType(ILNode_DelegateCreationExpression) ,
-ILNode_SemAnalysisType(ILNode_DefaultConstructor) ,
-ILNode_SemAnalysisType(ILNode_BaseInit) ,
-ILNode_SemAnalysisType(ILNode_ThisInit) ,
-ILNode_SemAnalysisType(ILNode_NonStaticInit) ,
-ILNode_SemAnalysisType(ILNode_ArgArray) 
-{
-	return ILNode_SemAnalysis((ILNode *)node, info, parent);
-}

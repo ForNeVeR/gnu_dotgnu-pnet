@@ -151,6 +151,12 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 							   const char *name, int literalType);
 
 /*
+ * Resolve a namespace member name
+ */
+CSSemValue CSResolveNamespaceMemberName(ILGenInfo *genInfo,
+		        ILNode *node, CSSemValue value, const char *name);
+
+/*
  * Resolve a member name to a semantic value. 
  */
 CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,

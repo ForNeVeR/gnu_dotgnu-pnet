@@ -1267,7 +1267,7 @@ static int FilterNonStatic(CSMemberLookupInfo *results, int kind)
  * Look for a type or sub-namespace with a given name within the 
  * namespace.
  */
-static CSSemValue CSResolveNamespaceMemberName(ILGenInfo *genInfo,
+CSSemValue CSResolveNamespaceMemberName(ILGenInfo *genInfo,
 		ILNode *node, CSSemValue value, const char *name)
 {
 	CSMemberLookupInfo results;

@@ -99,7 +99,8 @@ static ILMethod *GetConstructorToken(ILMethod *method, unsigned char *pc)
  */
 static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 						      ILUInt32 stackSize, ILType *signature,
-						      ILMethod *method, int unsafeAllowed)
+						      ILMethod *method, int unsafeAllowed,
+							  int suppressThis)
 {
 	ILClass *owner = (method ? ILMethod_Owner(method) : 0);
 	ILUInt32 numParams = signature->num;
@@ -110,7 +111,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	int isValueThis;
 
 	/* Determine if the signature needs an extra "this" parameter */
-	hasThis = ILType_HasThis(signature);
+	hasThis = (ILType_HasThis(signature) && !suppressThis);
 	if(hasThis)
 	{
 		++numParams;
@@ -508,20 +509,30 @@ case IL_OP_CALL:
 			methodSignature = ILMethod_Signature(methodInfo);
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed);
+									   unsafeAllowed, 0);
 			if(numParams >= 0)
 			{
+				if(methodSignature->un.method.retType != ILType_Void)
+				{
+					stack[stackSize].engineType = TypeToEngineType
+							(methodSignature->un.method.retType);
+					stack[stackSize].typeInfo =
+							methodSignature->un.method.retType;
+				}
+				else
+				{
+					stack[stackSize].engineType = ILEngineType_Invalid;
+				}
 				ILCoderCallMethod(coder, stack + stackSize - numParams,
-								  (ILUInt32)numParams, methodInfo);
+								  (ILUInt32)numParams, &(stack[stackSize]),
+								  methodInfo);
 				stackSize -= (ILUInt32)numParams;
 				if(methodSignature->un.method.retType != ILType_Void)
 				{
 					if(stackSize < code->maxStack)
 					{
-						stack[stackSize].engineType = TypeToEngineType
-								(methodSignature->un.method.retType);
-						stack[stackSize].typeInfo =
-								methodSignature->un.method.retType;
+						stack[stackSize] =
+							stack[stackSize + (ILUInt32)numParams];
 						++stackSize;
 					}
 					else
@@ -599,36 +610,48 @@ case IL_OP_CALLVIRT:
 			methodSignature = ILMethod_Signature(methodInfo);
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
-									   unsafeAllowed);
+									   unsafeAllowed, 0);
 			if(numParams >= 0)
 			{
+				if(methodSignature->un.method.retType != ILType_Void)
+				{
+					stack[stackSize].engineType = TypeToEngineType
+							(methodSignature->un.method.retType);
+					stack[stackSize].typeInfo =
+							methodSignature->un.method.retType;
+				}
+				else
+				{
+					stack[stackSize].engineType = ILEngineType_Invalid;
+				}
 				if(!ILMethod_IsVirtual(methodInfo))
 				{
 					/* It is possible to use "callvirt" to call a
 					   non-virtual instance method, even though
 					   "call" is probably a better way to do it */
 					ILCoderCallMethod(coder, stack + stackSize - numParams,
-									  (ILUInt32)numParams, methodInfo);
+									  (ILUInt32)numParams,
+									  &(stack[stackSize]), methodInfo);
 				}
 				else if(ILClass_IsInterface(classInfo))
 				{
 					ILCoderCallInterface(coder, stack + stackSize - numParams,
-									     (ILUInt32)numParams, methodInfo);
+									     (ILUInt32)numParams,
+										 &(stack[stackSize]), methodInfo);
 				}
 				else
 				{
 					ILCoderCallVirtual(coder, stack + stackSize - numParams,
-									   (ILUInt32)numParams, methodInfo);
+									   (ILUInt32)numParams,
+									   &(stack[stackSize]), methodInfo);
 				}
 				stackSize -= (ILUInt32)numParams;
 				if(methodSignature->un.method.retType != ILType_Void)
 				{
 					if(stackSize < code->maxStack)
 					{
-						stack[stackSize].engineType = TypeToEngineType
-								(methodSignature->un.method.retType);
-						stack[stackSize].typeInfo =
-								methodSignature->un.method.retType;
+						stack[stackSize] =
+							stack[stackSize + (ILUInt32)numParams];
 						++stackSize;
 					}
 					else
@@ -660,35 +683,34 @@ case IL_OP_NEWOBJ:
 	methodInfo = GetConstructorToken(method, pc);
 	if(methodInfo)
 	{
-		/* Validate that we have sufficient parameters for the constructor */
-		methodSignature = ILMethod_Signature(methodInfo);
-		if(((ILUInt32)(methodSignature->num)) > stackSize)
-		{
-			/* Not enough arguments on the stack for the constructor */
-			VERIFY_TYPE_ERROR();
-		}
-
 		/* The construction sequence is different for objects and values */
 		classInfo = ILMethod_Owner(methodInfo);
+		methodSignature = ILMethod_Signature(methodInfo);
 		if(!ILClassIsValueType(classInfo))
 		{
-			/* Create the memory for the object, initialized to all-zeroes */
-			ILCoderNewObj(coder, classInfo);
+			/* Match the signature for the allocation constructor */
+			numParams = MatchSignature(coder, stack, stackSize,
+									   methodSignature, methodInfo,
+									   unsafeAllowed, 1);
+			if(numParams < 0)
+			{
+				VERIFY_TYPE_ERROR();
+			}
 
-			/* Insert the object into the correct stack position twice.
-			   Once for the final value to be pushed, and again for
-			   the first argument to the constructor.  We assume that
-			   "verify.c" has allocated 2 extra "slop" items so that
-			   we have enough room for the temporary values */
-			InsertCtorArgs(stack, stackSize,
-						   stackSize - (ILUInt32)(methodSignature->num),
-						   ILEngineType_O, ILType_FromClass(classInfo),
-						   ILEngineType_O, ILType_FromClass(classInfo));
-			stackSize += 2;
-			ILCoderCtorArgs(coder,
-						    stack + stackSize -
-									(ILUInt32)(methodSignature->num),
-							(ILUInt32)(methodSignature->num));
+			/* Call the allocation constructor for the class */
+			ILCoderCallCtor(coder, stack + stackSize - numParams,
+						    (ILUInt32)numParams, methodInfo);
+			stackSize -= (ILUInt32)numParams;
+			if(stackSize < code->maxStack)
+			{
+				stack[stackSize].engineType = ILEngineType_O;
+				stack[stackSize].typeInfo = ILType_FromClass(classInfo);
+				++stackSize;
+			}
+			else
+			{
+				VERIFY_STACK_ERROR();
+			}
 		}
 		else
 		{
@@ -705,29 +727,28 @@ case IL_OP_NEWOBJ:
 						    stack + stackSize -
 									(ILUInt32)(methodSignature->num),
 							(ILUInt32)(methodSignature->num));
-		}
 
+			/* Match the constructor signature */
+			numParams = MatchSignature(coder, stack, stackSize,
+									   methodSignature, methodInfo,
+									   unsafeAllowed, 0);
+			if(numParams < 0)
+			{
+				VERIFY_TYPE_ERROR();
+			}
 
-		/* Match the constructor signature */
-		numParams = MatchSignature(coder, stack, stackSize,
-								   methodSignature, methodInfo,
-								   unsafeAllowed);
-		if(numParams < 0)
-		{
-			VERIFY_TYPE_ERROR();
-		}
+			/* Call the constructor and pop all of its arguments */
+			ILCoderCallMethod(coder, stack + stackSize - numParams,
+							  (ILUInt32)numParams, 0, methodInfo);
+			stackSize -= (ILUInt32)numParams;
 
-		/* Call the constructor and pop all of its arguments */
-		ILCoderCallMethod(coder, stack + stackSize - numParams,
-						  (ILUInt32)numParams, methodInfo);
-		stackSize -= (ILUInt32)numParams;
-
-		/* Make sure that we had at least 1 real stack slot
-		   available for the final object value (not counting
-		   the 2 "slop" items) */
-		if(stackSize > code->maxStack)
-		{
-			VERIFY_STACK_ERROR();
+			/* Make sure that we had at least 1 real stack slot
+			   available for the final object value (not counting
+			   the 2 "slop" items) */
+			if(stackSize > code->maxStack)
+			{
+				VERIFY_STACK_ERROR();
+			}
 		}
 	}
 	else

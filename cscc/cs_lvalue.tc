@@ -115,6 +115,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	/* Determine what kind of item we have */
 	switch(ILScopeDataGetKind(data))
 	{
+#if 0
 		case IL_SCOPE_SUBSCOPE:
 		case IL_SCOPE_LINKED_SCOPE:
 		{
@@ -123,6 +124,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			value.type = (ILType *)(ILScopeDataGetSubScope(data));
 		}
 		break;
+#endif
 
 		case IL_SCOPE_IMPORTED_TYPE:
 		case IL_SCOPE_DECLARED_TYPE:
@@ -185,6 +187,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		}
 		break;
 
+#if 0
 		case IL_SCOPE_METHOD:
 		case IL_SCOPE_PROPERTY:
 		case IL_SCOPE_EVENT:
@@ -197,6 +200,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			value.type = (ILType *)(ILScopeDataGetMember(data));
 		}
 		break;
+#endif
 
 		case IL_SCOPE_LOCAL:
 		{
@@ -271,11 +275,13 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 		}
 		break;
 
+#if 0
 		case CS_SEMKIND_SCOPE:
 		{
 			/* Look in the scope for the name */
 		}
 		break;
+#endif
 
 		default:
 		{

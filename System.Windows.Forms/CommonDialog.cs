@@ -64,6 +64,12 @@ public abstract class CommonDialog
 				}
 			}
 
+	// Emit a help request.
+	internal void EmitHelpRequest(EventArgs e)
+			{
+				OnHelpRequest(e);
+			}
+
 	// Event that is emitted when the help button is pressed in the dialog.
 	public event EventHandler HelpRequest;
 

@@ -7,6 +7,12 @@
 	* System.Windows.Forms/FileDialog.cs: add key navigation support
 	to the file dialog (incomplete).
 
+	* System.Windows.Forms/CommonDialog.cs,
+	System.Windows.Forms/FileDialog.cs,
+	System.Windows.Forms/OpenFileDialog.cs,
+	System.Windows.Forms/SaveFileDialog.cs: make the file dialogs
+	react to dynamic changes in the "FileDialog" properties.
+
 2003-12-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Remoting.txt,

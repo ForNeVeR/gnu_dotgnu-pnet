@@ -43,7 +43,7 @@ public abstract class FileDialog : CommonDialog
 	private bool showHelp;
 	private bool validateNames;
 	private String title;
-	private FileDialogForm form;
+	internal FileDialogForm form;
 
 	// Event identifier for the "FileOk" event.
 	protected static readonly object EventFileOk = new Object();
@@ -108,7 +108,14 @@ public abstract class FileDialog : CommonDialog
 				}
 				set
 				{
-					dereferenceLinks = value;
+					if(dereferenceLinks != value)
+					{
+						dereferenceLinks = value;
+						if(form != null)
+						{
+							form.Reload();
+						}
+					}
 				}
 			}
 	[TODO]
@@ -221,7 +228,14 @@ public abstract class FileDialog : CommonDialog
 				}
 				set
 				{
-					showHelp = value;
+					if(showHelp != value)
+					{
+						showHelp = value;
+						if(form != null)
+						{
+							form.HelpButton = value;
+						}
+					}
 				}
 			}
 	public String Title
@@ -236,16 +250,19 @@ public abstract class FileDialog : CommonDialog
 				}
 				set
 				{
-					title = value;
-					if(form != null)
+					if(title != value)
 					{
-						if(value == null)
+						title = value;
+						if(form != null)
 						{
-							form.Text = String.Empty;
-						}
-						else
-						{
-							form.Text = value;
+							if(value == null || value == String.Empty)
+							{
+								form.Text = DefaultTitle;
+							}
+							else
+							{
+								form.Text = value;
+							}
 						}
 					}
 				}
@@ -293,9 +310,8 @@ public abstract class FileDialog : CommonDialog
 				}
 			}
 
-	// Reset the dialog box controls to their default values.
-	[TODO]
-	public override void Reset()
+	// Internal version of "Reset".
+	internal virtual void ResetInternal()
 			{
 				addExtension = true;
 				checkFileExists = false;
@@ -311,7 +327,16 @@ public abstract class FileDialog : CommonDialog
 				showHelp = false;
 				validateNames = true;
 				title = String.Empty;
-				// TODO: update an active dialog box form to match.
+			}
+
+	// Reset the dialog box controls to their default values.
+	public override void Reset()
+			{
+				ResetInternal();
+				if(form != null)
+				{
+					form.RefreshAll();
+				}
 			}
 
 	// Run the dialog box.
@@ -328,6 +353,9 @@ public abstract class FileDialog : CommonDialog
 					return DialogResult.Cancel;
 				}
 
+				// Save the current directory in case we need to restore it.
+				String currentDirectory = Directory.GetCurrentDirectory();
+
 				// Construct the file dialog form.
 				form = new FileDialogForm(this);
 
@@ -342,6 +370,22 @@ public abstract class FileDialog : CommonDialog
 					form.DisposeDialog();
 					form = null;
 				}
+
+				// Restore the current directory if necessary.
+				if(RestoreDirectory)
+				{
+					try
+					{
+						Directory.SetCurrentDirectory(currentDirectory);
+					}
+					catch(Exception)
+					{
+						// Ignore errors, in case the original directory
+						// no longer exists.
+					}
+				}
+
+				// Return the final dialog result to the caller.
 				return result;
 			}
 
@@ -945,11 +989,21 @@ public abstract class FileDialog : CommonDialog
 					}
 					if(selected != entry)
 					{
+						// Redraw the selected entry.
 						int oldSelected = selected;
 						selected = entry;
 						DrawEntry(oldSelected);
 						DrawEntry(entry);
 						// TODO: scroll the entry into view if necessary.
+
+						// Update the text box to contain the filename.
+						if(entry != -1)
+						{
+							if(!(entries[entry].isDirectory))
+							{
+								dialog.UpdateName(entries[entry].name);
+							}
+						}
 					}
 				}
 
@@ -1174,7 +1228,7 @@ public abstract class FileDialog : CommonDialog
 	}; // class FileIconListBox
 
 	// Form that defines the UI of a file dialog.
-	private sealed class FileDialogForm : Form
+	internal sealed class FileDialogForm : Form
 	{
 		// Internal state.
 		private FileDialog fileDialogParent;
@@ -1193,15 +1247,14 @@ public abstract class FileDialog : CommonDialog
 		private Button okButton;
 		private Button cancelButton;
 		private String currentDirectory;
+		private CheckBox readOnly;
+		private bool manualUserTextChange;
 
 		// Constructor.
 		public FileDialogForm(FileDialog fileDialogParent)
 				{
 					// Record the parent for later access.
 					this.fileDialogParent = fileDialogParent;
-
-					// Set the caption to that specified in the parent.
-					Text = fileDialogParent.Title;
 
 					// Construct the layout boxes for the file dialog.
 					vbox = new VBoxLayout();
@@ -1254,6 +1307,20 @@ public abstract class FileDialog : CommonDialog
 					grid.SetControl(1, 1, type);
 					grid.SetControl(2, 1, cancelButton);
 
+					// Add the fifth line (read-only checkbox).
+					if(fileDialogParent is OpenFileDialog)
+					{
+						readOnly = new CheckBox();
+						readOnly.Text = "Open as read-only"; // TODO: translate.
+						readOnly.Checked =
+							((OpenFileDialog)fileDialogParent).ReadOnlyChecked;
+						readOnly.Visible =
+							((OpenFileDialog)fileDialogParent).ShowReadOnly;
+						readOnly.CheckStateChanged +=
+							new EventHandler(ReadOnlyStateChanged);
+						vbox.Controls.Add(readOnly);
+					}
+
 					// Add the top-level vbox to the dialog and set the size.
 					Controls.Add(vbox);
 					Size size = vbox.RecommendedSize;
@@ -1273,12 +1340,20 @@ public abstract class FileDialog : CommonDialog
 					homeButton.Click += new EventHandler(Home);
 					directory.SelectedIndexChanged +=
 						new EventHandler(DirectorySelectionChanged);
+					name.TextChanged += new EventHandler(NameTextChanged);
+
+					// Match the requested settings from the dialog parent.
+					RefreshAll();
 
 					// Scan the initial directory.
 					String dir = fileDialogParent.InitialDirectory;
 					if(dir == null || dir.Length == 0)
 					{
 						dir = Directory.GetCurrentDirectory();
+					}
+					else
+					{
+						dir = Path.GetFullPath(dir);
 					}
 					ChangeDirectory(dir);
 				}
@@ -1390,6 +1465,54 @@ public abstract class FileDialog : CommonDialog
 					{
 						ChangeDirectory(d);
 					}
+				}
+
+		// Process a help request on the form.
+		protected override void OnHelpRequested(HelpEventArgs e)
+				{
+					base.OnHelpRequested(e);
+					fileDialogParent.EmitHelpRequest(e);
+				}
+
+		// Process a change of state on the read-only checkbox.
+		private void ReadOnlyStateChanged(Object sender, EventArgs e)
+				{
+					((OpenFileDialog)fileDialogParent).readOnlyChecked =
+						readOnly.Checked;
+				}
+
+		// Refresh all fields to match those in the dialog parent.
+		public void RefreshAll()
+				{
+					Text = fileDialogParent.Title;
+					HelpButton = fileDialogParent.ShowHelp;
+					UpdateReadOnly();
+				}
+
+		// Update the read-only checkbox state information.
+		public void UpdateReadOnly()
+				{
+					if(fileDialogParent is OpenFileDialog)
+					{
+						readOnly.Checked =
+							((OpenFileDialog)fileDialogParent).ReadOnlyChecked;
+						readOnly.Visible =
+							((OpenFileDialog)fileDialogParent).ShowReadOnly;
+					}
+				}
+
+		// Update the name in the text box.
+		public void UpdateName(String filename)
+				{
+					name.Text = filename;
+					manualUserTextChange = false;
+				}
+
+		// Notice a change to the text in the text box, for distinguishing
+		// between changes made by selecting files and manual user entry.
+		private void NameTextChanged(Object sender, EventArgs e)
+				{
+					manualUserTextChange = true;
 				}
 
 	}; // class FileDialogForm

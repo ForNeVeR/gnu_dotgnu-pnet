@@ -84,11 +84,15 @@ public sealed class SaveFileDialog : FileDialog
 			}
 
 	// Reset the contents of the dialog box.
+	internal override void ResetInternal()
+			{
+				base.ResetInternal();
+				createPrompt = false;
+				overwritePrompt = true;
+			}
 	public override void Reset()
 			{
 				base.Reset();
-				createPrompt = false;
-				overwritePrompt = true;
 			}
 
 }; // class SaveFileDialog

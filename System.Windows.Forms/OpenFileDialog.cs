@@ -28,7 +28,7 @@ public sealed class OpenFileDialog : FileDialog
 {
 	// Internal state.
 	private bool multiselect;
-	private bool readOnlyChecked;
+	internal bool readOnlyChecked;
 	private bool showReadOnly;
 
 	// Constructor
@@ -57,7 +57,6 @@ public sealed class OpenFileDialog : FileDialog
 					multiselect = value;
 				}
 			}
-	[TODO]
 	public bool ReadOnlyChecked
 			{
 				get
@@ -66,8 +65,14 @@ public sealed class OpenFileDialog : FileDialog
 				}
 				set
 				{
-					// TODO: update the dialog box to match.
-					readOnlyChecked = value;
+					if(readOnlyChecked != value)
+					{
+						readOnlyChecked = value;
+						if(form != null)
+						{
+							form.UpdateReadOnly();
+						}
+					}
 				}
 			}
 	public bool ShowReadOnly
@@ -78,7 +83,14 @@ public sealed class OpenFileDialog : FileDialog
 				}
 				set
 				{
-					showReadOnly = value;
+					if(showReadOnly != value)
+					{
+						showReadOnly = value;
+						if(form != null)
+						{
+							form.UpdateReadOnly();
+						}
+					}
 				}
 			}
 	internal override String DefaultTitle
@@ -102,13 +114,17 @@ public sealed class OpenFileDialog : FileDialog
 			}
 
 	// Reset the contents of the dialog box.
-	public override void Reset()
+	internal override void ResetInternal()
 			{
-				base.Reset();
+				base.ResetInternal();
 				checkFileExists = true;
 				multiselect = false;
 				readOnlyChecked = false;
 				showReadOnly = false;
+			}
+	public override void Reset()
+			{
+				base.Reset();
 			}
 
 }; // class OpenFileDialog

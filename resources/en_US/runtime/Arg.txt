@@ -80,6 +80,7 @@ Arg_MakeTypedRefFields=The fields for a typed reference must be runtime fields
 Arg_InvalidDimension=Invalid array dimension
 Arg_ElementTypeMismatch=Array element type mismatch
 Arg_InvalidEra=Invalid era value for calendar method
+Arg_NoEraYear=No era year exists for the supplied parameters
 Arg_ExistingEntry=There is already an existing entry with the specified key
 Arg_BitArrayLengths=The lengths of the two bit arrays are not identical
 Arg_NotFound=The specified value was not found

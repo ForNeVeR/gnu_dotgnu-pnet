@@ -5,6 +5,16 @@
 	runtime/System/IO/IsolatedStorage/IsolatedStorageFileStream.cs:
 	add the "Name" property to "System.IO.FileStream".
 
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Globalization/GregorianVariantCalendar.cs,
+	runtime/System/Globalization/HijriCalendar.cs,
+	runtime/System/Globalization/JapaneseCalendar.cs,
+	runtime/System/Globalization/KoreanCalendar.cs,
+	runtime/System/Globalization/TaiwanCalendar.cs,
+	runtime/System/Globalization/ThaiBuddhistCalendar.cs:
+	implement Gregorian variant calendars such as Japanese, Korean, etc;
+	stub out the Hijri calendar implementation.
+
 2003-04-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Globalization/Calendar.cs,

@@ -1,3 +1,14 @@
+2004-06-29  Adam Ballai <minddog@cox.net>
+	
+	* System.Windows.Forms/Binding.cs, 
+	System.Windows.Forms/Control.cs,
+	System.Windows.Forms/ControlBindingsCollection.cs,
+        System.Windows.Forms/BindingsCollection.cs,
+        System.Windows.Forms/BindingMemberInfo.cs,
+	System.Windows.Forms/BindingManagerBase.cs,
+	System.Windows.Forms/TextBox.cs: Start of Data Binding
+	implementation into winform components.
+	
 2004-06-28  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Xml/XmlElement.cs: fix yet another mistake of mine in

@@ -28,6 +28,7 @@ public struct BindingMemberInfo
 {
 	// Internal state.
 	private String field;
+	private Type fieldType;
 	private String path;
 
 	// Constructor.
@@ -56,6 +57,17 @@ public struct BindingMemberInfo
 				get
 				{
 					return field;
+				}
+			}
+	internal Type BindingFieldType
+			{
+				get
+				{
+					return fieldType;
+				}
+				set
+				{
+					fieldType = value;
 				}
 			}
 	public String BindingMember

@@ -115,7 +115,7 @@ public class BindingsCollection : BaseCollection
 			{
 				List.Remove(binding);
 			}
-	protected internal void RemoteAt(int index)
+	protected internal void RemoveAt(int index)
 			{
 				Remove(this[index]);
 			}

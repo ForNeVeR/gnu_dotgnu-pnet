@@ -25,6 +25,11 @@ namespace System.Windows.Forms
 using System.Drawing;
 using System.Text;
 
+#if CONFIG_COMPONENT_MODEL
+using System.ComponentModel;
+using System.Reflection;
+#endif
+
 public class TextBox : TextBoxBase
 {
 	private bool acceptsReturn;
@@ -65,6 +70,10 @@ public class TextBox : TextBoxBase
 	// Height chosen, if not multiline could be different from actual
 	private int chosenHeight;
 
+
+	// Binding PropertyInfo for DataBinding of Text.
+	private PropertyInfo bindInfo = null;
+	
 	public TextBox()
 	{
 		// Trap interesting events.  We do it this way rather
@@ -78,7 +87,11 @@ public class TextBox : TextBoxBase
 		Paint += new PaintEventHandler(HandlePaint);
 		MultilineChanged +=new EventHandler(HandleMultilineChanged);
 		WordWrapChanged +=new EventHandler(HandleWordWrapChanged);
-
+		
+#if CONFIG_COMPONENT_MODEL
+		this.DataBindings.CollectionChanged +=new CollectionChangeEventHandler(HandleDataBindingCollectionChanged);
+#endif
+		
 		textAlign = HorizontalAlignment.Left;
 
 		BackColor = SystemColors.Window;
@@ -693,6 +706,27 @@ public class TextBox : TextBoxBase
 		Height = chosenHeight;
 	}
 
+#if CONFIG_COMPONENT_MODEL	
+	private void HandleDataBindingCollectionChanged(object sender, CollectionChangeEventArgs E)
+	{
+		Binding binding = (Binding)E.Element;
+		
+		switch(E.Action)
+		{
+			case CollectionChangeAction.Add:
+				binding.PullData();
+				binding.PushData();
+				break;
+			case CollectionChangeAction.Refresh:
+				/* TODO: What do we do here? */
+				break;
+			case CollectionChangeAction.Remove:
+				/* TODO: Not sure here either? */
+				break;
+		}	
+	}
+#endif	
+	
 	private void LayoutFromText(String newText)
 	{
 		using (Graphics g = CreateGraphics())
@@ -970,6 +1004,7 @@ public class TextBox : TextBoxBase
 
 	protected override void SetTextInternal(string text)
 	{
+
 		SetTextActual(text);
 		InvalidateDirty();
 	}
@@ -1867,6 +1902,13 @@ public class TextBox : TextBoxBase
 	{
 		inTextChangedEvent = true;
 		base.OnTextChanged (e);
+		/* Set Current Text to Binded DataSource */
+		if( DataBindings["Text"] != null )
+		{
+			PropertyInfo setInfo;
+			Binding b = DataBindings["Text"];
+			b.UpdateSource(Text);
+		}
 		inTextChangedEvent = false;
 	}
 

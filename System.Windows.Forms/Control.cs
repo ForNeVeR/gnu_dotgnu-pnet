@@ -102,7 +102,8 @@ public class Control : IWin32Window, IDisposable
 	private bool notifyDoubleClick = false;
 	private bool validationCancelled = false;
 	private IToolkitWindowBuffer buffer;
-
+	private ControlBindingsCollection controlBindingsCollection;
+	
 	//
 	// Implentation of classes and variables for Invoke/BeginInvoke/EndInvoke
 	//
@@ -220,6 +221,8 @@ public class Control : IWin32Window, IDisposable
 				Size initialSize = DefaultSize;
 				width = initialSize.Width;
 				height = initialSize.Height;
+
+				controlBindingsCollection = new ControlBindingsCollection(this);
 			}
 	public Control(String text) : this()
 			{
@@ -916,8 +919,7 @@ public class Control : IWin32Window, IDisposable
 			{
 				get
 				{
-					// TODO
-					return null;
+					return controlBindingsCollection;
 				}
 			}
 	public static Color DefaultBackColor

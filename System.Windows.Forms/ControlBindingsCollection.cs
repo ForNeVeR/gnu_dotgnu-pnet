@@ -22,85 +22,102 @@
 namespace System.Windows.Forms
 {
 
+using System.Collections;
+using System.ComponentModel;
+	
 public class ControlBindingsCollection: BindingsCollection
 {
-		[TODO]
-	protected internal ControlBindingsCollection()
-	{
-		//throw new NotImplementedException(".ctor");
-	}
+	private Control control;
+	
+	protected internal ControlBindingsCollection(Control control)
+			{
+				this.control = control;
+			}
 
-	[TODO]
 	new public void Add(Binding binding)
-	{
-		//throw new NotImplementedException("Add");
-	}
+			{
+				binding.AssociateControl(control);
+				base.AddCore(binding);
+			}
 
-	[TODO]
 	public Binding Add(String propertyName, Object dataSource, String dataMember)
-	{
-			return null;
-		//throw new NotImplementedException("Add");
-	}
+			{
+				Binding binding = new Binding(propertyName, dataSource, dataMember);
+				binding.AssociateControl(control);
+				base.AddCore(binding);
+			#if CONFIG_COMPONENT_MODEL			
+				OnCollectionChanged(new CollectionChangeEventArgs
+						(CollectionChangeAction.Add, binding));
+		#endif	
+				return binding;
+			}
 
-	[TODO]
+	private void OnFormat(object sender, ConvertEventArgs e)
+			{
+				
+			}
+
+	private void OnParse(object sender, ConvertEventArgs e)
+			{
+				
+			}
+	
 	protected override void AddCore(Binding dataBinding)
-	{
-		//throw new NotImplementedException("AddCore");
-	}
+			{
+				dataBinding.AssociateControl(control);
+				base.AddCore(dataBinding);
+			}
 
-	[TODO]
 	new public void Clear()
-	{
-		//throw new NotImplementedException("Clear");
-	}
+			{
+				ClearCore();
+			}
 
-	[TODO]
+	
 	protected override void ClearCore()
-	{
-		//throw new NotImplementedException("ClearCore");
-	}
+			{
+				base.ClearCore();
+			}
 
-	[TODO]
 	new public void Remove(Binding binding)
-	{
-		//throw new NotImplementedException("Remove");
-	}
+			{
+				base.Remove(binding);
+			}		
 
-	[TODO]
-	public void RemoveAt(int index)
-	{
-		//throw new NotImplementedException("RemoveAt");
-	}
+	new public void RemoveAt(int index)
+			{
+				base.Remove(base[index]);
+			}
 
-	[TODO]
 	protected override void RemoveCore(Binding dataBinding)
-	{
-		//throw new NotImplementedException("RemoveCore");
-	}
+			{
+				base.RemoveCore(dataBinding);
+			}
 
-	[TODO]
 	public Control Control 
-	{
-		get
-		{
-			return null;
-			//throw new NotImplementedException("Control");
-		}
+			{
+				get
+				{
+					return control;
+				}
 
- 	}
+ 			}
 
-	[TODO]
 	public Binding this[String propertyName] 
-	{
-		get
-		{
-			return null;
-			//throw new NotImplementedException("Item");
-		}
+			{
+				get
+				{
+					foreach(Binding b in List)
+					{
+						if( b.PropertyName == propertyName )
+							return b;
+					}
+					return null;
+				}
 
- 	}
+ 			}
 
+	
 }; // class ControlBindingsCollection
 
 }; // namespace System.Windows.Forms

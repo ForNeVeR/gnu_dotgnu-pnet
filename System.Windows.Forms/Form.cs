@@ -517,6 +517,16 @@ public class Form : ContainerControl
 				}
 			}
 
+	// Handle the text changed event from "Control".
+	protected override void OnTextChanged(EventArgs e)
+			{
+				if(toolkitWindow != null)
+				{
+					toolkitWindow.SetTitle(Text);
+				}
+				base.OnTextChanged(e);
+			}
+
 	// Get the current state of a window decoration flag.
 	private bool GetWindowFlag(ToolkitWindowFlags flag)
 			{

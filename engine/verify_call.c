@@ -556,8 +556,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 					}
 				}
 				else if(paramType != 0 && ILType_IsComplex(paramType) &&
-				        ILType_Kind(paramType) == IL_TYPE_COMPLEX_PTR &&
-				        ILTypeIdentical(ILType_Ref(paramType), item->typeInfo))
+				        ILType_Kind(paramType) == IL_TYPE_COMPLEX_PTR)
 				{
 					/* Converting from a managed to an unmanaged pointer */
 					if(!unsafeAllowed)

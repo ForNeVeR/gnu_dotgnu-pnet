@@ -6,6 +6,10 @@
 	include/il_coder.h: inline calls to "Char.IsWhiteSpace", because
 	it is used heavily in text processing code.
 
+	* image/class.c (_ILClassRemoveAllFromHash): remove the
+	namespace entries from "context->namespaceHash" when destroying
+	an ILImage.  Fixes a crash bug in "ilfind".
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvmc.c (_ILDumpMethodProfile): dump the entire method

@@ -481,6 +481,8 @@ void _ILClassRemoveAllFromHash(ILImage *image)
 {
 	ILHashRemoveSubset(image->context->classHash,
 					   (ILHashMatchFunc)ClassRemove_Match, image, 0);
+	ILHashRemoveSubset(image->context->namespaceHash,
+					   (ILHashMatchFunc)ClassRemove_Match, image, 0);
 }
 
 int ILClassIsValid(ILClass *info)

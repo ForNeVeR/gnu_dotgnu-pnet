@@ -102,9 +102,13 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	ILNode_ClassDefn *defn;
 	ILNode *savedNamespace;
 	ILNode *savedClass;
+	ILNode *savedTypeFormals;
 	ILProgramItem *nestedScope;
 	ILNode *node;
 	ILNode_ListIter iter;
+	ILUInt32 formalNum;
+	ILGenericPar *genPar;
+	ILClass *underlying;
 
 	/* Get the name and namespace for the type, for error reporting */
 	defn = (ILNode_ClassDefn *)type;
@@ -162,6 +166,8 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	info->currentNamespace = defn->namespaceNode;
 	savedClass = info->currentClass;
 	info->currentClass = (ILNode *)(defn->nestedParent);
+	savedTypeFormals = info->currentTypeFormals;
+	info->currentTypeFormals = defn->typeFormals;
 
 	/* Create all of the base classes */
 	numBases = CountBaseClasses(defn->baseClass);
@@ -302,12 +308,25 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		}
 	}
 
-	/* Restore the namespace and class */
+	/* Restore the namespace, class, and type formals */
 	info->currentNamespace = savedNamespace;
 	info->currentClass = savedClass;
+	info->currentTypeFormals = savedTypeFormals;
 
 	/* Output an error if attempting to inherit from a sealed class */
-	if(parent && ILClass_IsSealed(parent))
+	if(parent)
+	{
+		underlying = ILClassGetUnderlying(parent);
+		if(!underlying)
+		{
+			CCOutOfMemory();
+		}
+	}
+	else
+	{
+		underlying = 0;
+	}
+	if(underlying && ILClass_IsSealed(underlying))
 	{
 		CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
 					  "inheriting from a sealed parent class");
@@ -340,6 +359,24 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 				CCOutOfMemory();
 			}
 		}
+	}
+
+	/* Add the type formals to the class definition */
+	ILNode_ListIter_Init(&iter, defn->typeFormals);
+	formalNum = 0;
+	while((node = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		genPar = ILGenericParCreate
+			(info->image, 0, ILToProgramItem(classInfo), formalNum);
+		if(!genPar)
+		{
+			CCOutOfMemory();
+		}
+		if(!ILGenericParSetName(genPar, ILQualIdentName(node, 0)))
+		{
+			CCOutOfMemory();
+		}
+		++formalNum;
 	}
 
 	/* Clean up */

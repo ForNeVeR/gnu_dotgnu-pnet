@@ -724,6 +724,20 @@ ILClass *ILClassInstantiate(ILImage *image, ILType *classType,
 	return classInfo;
 }
 
+ILClass *ILClassGetUnderlying(ILClass *info)
+{
+	ILType *synType = info->synthetic;
+	if(ILType_IsWith(synType))
+	{
+		synType = ILTypeGetWithMain(synType);
+		return ILClassFromType(info->programItem.image, 0, synType, 0);
+	}
+	else
+	{
+		return info;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -310,13 +310,94 @@ ILNode_SemAnalysis(ILNode_TypeActuals)
 	return CSSemValueDefault;
 }
 
+%{
+
+/*
+ * Perform semantic analysis on a set of type actuals
+ * and add them to a "with" type.
+ */
+static void SemWithType(ILGenInfo *info, ILType *withType,
+					    ILNode *actuals, ILNode **parent)
+{
+	CSSemValue value;
+	if(yyisa(actuals, ILNode_TypeActuals))
+	{
+		SemWithType(info, withType, ((ILNode_TypeActuals *)actuals)->left,
+					&(((ILNode_TypeActuals *)actuals)->left));
+		SemWithType(info, withType, ((ILNode_TypeActuals *)actuals)->right,
+					&(((ILNode_TypeActuals *)actuals)->right));
+	}
+	else
+	{
+		value = ILNode_SemAnalysisType(actuals, info, parent);
+		if(!CSSemIsType(value))
+		{
+			CCErrorOnLine(yygetfilename(actuals), yygetlinenum(actuals),
+					      "type name expected in generic type parameter");
+			CSSemSetType(value, ILType_Int32);
+		}
+		if(!ILTypeAddWithParam(info->context, withType, CSSemGetType(value)))
+		{
+			CCOutOfMemory();
+		}
+	}
+}
+
+%}
+
 /*
  * Perform semantic analysis for a generic type or method reference.
  */
 ILNode_SemAnalysis(ILNode_GenericReference)
 {
-	/* TODO */
-	return ILNode_SemAnalysis(node->type, info, &(node->type));
+	CSSemValue value;
+	ILClass *classInfo;
+	ILUInt32 numFormals;
+	ILUInt32 numActuals;
+	ILNode *actuals;
+	ILType *withType;
+
+	/* Perform semantic analysis on the main part of the type */
+	value = ILNode_SemAnalysisType(node->type, info, &(node->type));
+	if(!CSSemIsType(value))
+	{
+		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+					  "type name expected in generic type reference");
+		return value;
+	}
+
+	/* Find the number of generic parameters that we expect */
+	classInfo = ILClassResolve(ILTypeToClass(info, CSSemGetType(value)));
+	numFormals = ILGenericParGetNumParams(ILToProgramItem(classInfo));
+
+	/* Count the number of actual parameters that we were given */
+	numActuals = 1;
+	actuals = node->actuals;
+	while(yyisa(actuals, ILNode_TypeActuals))
+	{
+		++numActuals;
+		actuals = ((ILNode_TypeActuals *)actuals)->left;
+	}
+
+	/* Check the counts for consistency */
+	if(numFormals != numActuals)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "incorrect number of generic parameters supplied to "
+					  "`%s'; was %d but should be %d",
+					  CSTypeToName(CSSemGetType(value)),
+					  (int)numActuals, (int)numFormals);
+	}
+
+	/* Build the "with" type and return it */
+	withType = ILTypeCreateWith(info->context, CSSemGetType(value));
+	if(!withType)
+	{
+		CCOutOfMemory();
+	}
+	SemWithType(info, withType, node->actuals, &(node->actuals));
+	CSSemSetType(value, withType);
+	return value;
 }
 
 %end %{

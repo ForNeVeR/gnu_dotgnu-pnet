@@ -135,6 +135,8 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->currentNamespace = 0;
 	info->arrayInit = 0;
 	info->itemHash = 0;
+	info->currentTypeFormals = 0;
+	info->currentMethodFormals = 0;
 	if(useBuiltinLibrary)
 	{
 		ILGenMakeLibrary(info);

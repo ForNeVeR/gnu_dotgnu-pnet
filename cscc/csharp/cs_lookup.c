@@ -960,8 +960,12 @@ ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule)
 	}
 }
 
-CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
-										const char *name, int literalType)
+/*
+ * Inner version of CSResolveSimpleName and CSResolveSimpleNameQuiet.
+ */
+static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
+							   		const char *name, int literalType,
+									int reportErrors)
 {
 	ILClass *startType;
 	ILClass *accessedFrom;
@@ -971,6 +975,10 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	int result;
 	ILNode_ClassDefn *nestedParent;
 	ILNode *child;
+	ILNode_ListIter iter;
+	int formalNum;
+	ILType *formalType;
+	CSSemValue value;
 
 	/* If we are within type gathering, then search the nesting
 	   parents for a nested type that matches our requirements */
@@ -982,12 +990,30 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 			child = FindNestedClass(0, nestedParent, name);
 			if(child)
 			{
-				CSSemValue value;
 				CSSemSetTypeNode(value, child);
 				return value;
 			}
 			nestedParent = nestedParent->nestedParent;
 		}
+	}
+
+	/* Scan the method formals for a match */
+	ILNode_ListIter_Init(&iter, genInfo->currentMethodFormals);
+	formalNum = 0;
+	while((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(!strcmp(ILQualIdentName(child, 0), name))
+		{
+			formalType = ILTypeCreateVarNum
+				(genInfo->context, IL_TYPE_COMPLEX_MVAR, formalNum);
+			if(!formalType)
+			{
+				CCOutOfMemory();
+			}
+			CSSemSetType(value, formalType);
+			return value;
+		}
+		++formalNum;
 	}
 
 	/* Find the type to start looking at and the scope to use for accesses */
@@ -1014,6 +1040,25 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 
 	/* Clear the results buffer */
 	InitMembers(&results);
+
+	/* Scan the type formals for a match */
+	ILNode_ListIter_Init(&iter, genInfo->currentTypeFormals);
+	formalNum = 0;
+	while((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(!strcmp(ILQualIdentName(child, 0), name))
+		{
+			formalType = ILTypeCreateVarNum
+				(genInfo->context, IL_TYPE_COMPLEX_VAR, formalNum);
+			if(!formalType)
+			{
+				CCOutOfMemory();
+			}
+			CSSemSetType(value, formalType);
+			return value;
+		}
+		++formalNum;
+	}
 
 	/* Scan all namespaces that enclose the current context */
 	namespace = (ILNode_Namespace *)(genInfo->currentNamespace);
@@ -1065,134 +1110,34 @@ CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	FreeMembers(&results);
 
 	/* Could not resolve the name */
-	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-				  "`%s' is not declared in the current scope", name);
-
+	if(reportErrors)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "`%s' is not declared in the current scope", name);
+	}
 	if (literalType)
 	{
 		/* Resolve it cleanly if a type was not found */
-		return CSResolveSimpleName(genInfo, node, name, 0);
+		return ResolveSimpleName(genInfo, node, name, 0, reportErrors);
 	}
 	else
 	{
 		return CSSemValueDefault;
 	}
+}
+
+CSSemValue CSResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
+							   const char *name, int literalType)
+{
+	return ResolveSimpleName(genInfo, node, name, literalType, 1);
 }
 
 CSSemValue CSResolveSimpleNameQuiet(ILGenInfo *genInfo, ILNode *node,
-										const char *name, int literalType)
+									const char *name, int literalType)
 {
-	ILClass *startType;
-	ILClass *accessedFrom;
-	CSMemberLookupInfo results;
-	ILNode_Namespace *namespace;
-	ILNode_UsingNamespace *using;
-	int result;
-	ILNode_ClassDefn *nestedParent;
-	ILNode *child;
-
-	/* If we are within type gathering, then search the nesting
-	   parents for a nested type that matches our requirements */
-	if(genInfo->typeGather)
-	{
-		nestedParent = (ILNode_ClassDefn *)(genInfo->currentClass);
-		while(nestedParent != 0)
-		{
-			child = FindNestedClass(0, nestedParent, name);
-			if(child)
-			{
-				CSSemValue value;
-				CSSemSetTypeNode(value, child);
-				return value;
-			}
-			nestedParent = nestedParent->nestedParent;
-		}
-	}
-
-	/* Find the type to start looking at and the scope to use for accesses */
-	startType = CSGetAccessScope(genInfo, 0);
-	accessedFrom = ILClassResolve(CSGetAccessScope(genInfo, 1));
-
-	/* Scan the start type and its nested parents */
-	while(startType != 0)
-	{
-		/* Resolve cross-image references */
-		startType = ILClassResolve(startType);
-
-		/* Look for members */
-		result = MemberLookup(genInfo, startType, name,
-							  accessedFrom, &results, 1, 0, literalType);
-		if(result != CS_SEMKIND_VOID)
-		{
-			return LookupToSem(node, name, &results, result);
-		}
-
-		/* Move up to the nested parent */
-		startType = ILClass_NestedParent(startType);
-	}
-
-	/* Clear the results buffer */
-	InitMembers(&results);
-
-	/* Scan all namespaces that enclose the current context */
-	namespace = (ILNode_Namespace *)(genInfo->currentNamespace);
-	while(namespace != 0 && !(results.num))
-	{
-		/* Look for the type in the current namespace */
-		result = FindTypeInNamespace(genInfo, name, namespace->name,
-									 accessedFrom, &results);
-		if(result != CS_SEMKIND_VOID)
-		{
-			break;
-		}
-	
-		/* Find the types in all using namespaces */
-		using = namespace->using;
-		while(using != 0)
-		{
-			FindTypeInNamespace(genInfo, name, using->name,
-								accessedFrom, &results);
-			using = using->next;
-		}
-
-		/* Move up to the enclosing namespace */
-		namespace = namespace->enclosing;
-	}
-
-	/* We should have 0, 1, or many types at this point */
-	if(results.num > 1)
-	{
-		/* The result is ambiguous */
-		AmbiguousError(node, name, &results);
-	}
-	if(results.num != 0)
-	{
-		/* Return the first type in the results list */
-		if(results.members->kind == CS_MEMBERKIND_TYPE)
-		{
-			return LookupToSem(node, name, &results, CS_SEMKIND_TYPE);
-		}
-		else if(results.members->kind == CS_MEMBERKIND_TYPE_NODE)
-		{
-			return LookupToSem(node, name, &results, CS_SEMKIND_TYPE_NODE);
-		}
-		else
-		{
-			return LookupToSem(node, name, &results, CS_SEMKIND_NAMESPACE);
-		}
-	}
-	FreeMembers(&results);
-
-	if (literalType)
-	{
-		/* Resolve it cleanly if a type was not found */
-		return CSResolveSimpleNameQuiet(genInfo, node, name, 0);
-	}
-	else
-	{
-		return CSSemValueDefault;
-	}
+	return ResolveSimpleName(genInfo, node, name, literalType, 0);
 }
+
 /*
  * Filter a member lookup results list to include only static entries.
  */

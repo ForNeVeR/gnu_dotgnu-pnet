@@ -192,6 +192,8 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 	context->currentScope = info->currentScope;
 	context->currentClass = info->currentClass;
 	context->currentNamespace = info->currentNamespace;
+	context->currentTypeFormals = info->currentTypeFormals;
+	context->currentMethodFormals = info->currentMethodFormals;
 	context->overflowInsns = info->overflowInsns;
 
 	/* Bail out if we don't have a node for the program item */
@@ -235,10 +237,14 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 		{
 			info->currentScope = globalScope;
 		}
+		info->currentTypeFormals = classNode->typeFormals;
+		info->currentMethodFormals = 0;
 	}
 	else
 	{
 		info->currentScope = globalScope;
+		info->currentTypeFormals = 0;
+		info->currentMethodFormals = 0;
 	}
 	info->overflowInsns = info->overflowGlobal;
 
@@ -251,6 +257,8 @@ void ILLeaveProgramItemContext(ILGenInfo *info, ILGenItemContext *context)
 	info->currentScope = context->currentScope;
 	info->currentClass = context->currentClass;
 	info->currentNamespace = context->currentNamespace;
+	info->currentTypeFormals = context->currentTypeFormals;
+	info->currentMethodFormals = context->currentMethodFormals;
 	info->overflowInsns = context->overflowInsns;
 }
 

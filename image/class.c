@@ -1134,6 +1134,7 @@ int ILClassAccessible(ILClass *info, ILClass *scope)
 
 ILMember *ILClassNextMember(ILClass *info, ILMember *last)
 {
+	info = ILClassGetUnderlying(info);
 	if(last)
 	{
 		return last->nextMember;
@@ -1150,6 +1151,7 @@ ILMember *ILClassNextMember(ILClass *info, ILMember *last)
 
 ILMember *ILClassNextMemberByKind(ILClass *info, ILMember *last, int kind)
 {
+	info = ILClassGetUnderlying(info);
 	if(last)
 	{
 		last = last->nextMember;
@@ -1176,6 +1178,7 @@ ILMember *ILClassNextMemberByKind(ILClass *info, ILMember *last, int kind)
 ILMember *ILClassNextMemberMatch(ILClass *info, ILMember *last, int kind,
 								 const char *name, ILType *signature)
 {
+	info = ILClassGetUnderlying(info);
 	if(last)
 	{
 		last = last->nextMember;

@@ -139,6 +139,8 @@ struct _tagILGenInfo
 	ILArrayInit    *arrayInit;			/* Array initialization information */
 	ILHashTable    *itemHash;			/* Hash program items to nodes */
 	ILVarUsageTable *varUsage;			/* Variable usage table */
+	ILNode		   *currentTypeFormals;	/* Current generic type formals */
+	ILNode		   *currentMethodFormals; /* Current generic method formals */
 
 };
 

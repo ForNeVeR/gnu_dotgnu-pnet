@@ -131,6 +131,27 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 		ILDumpIdentifier(info->asmOutput, ILClass_Name(classInfo), 0,
 						 IL_DUMP_QUOTE_NAMES);
 
+		/* Output the generic parameters, if any */
+		if(ILGenericParGetNumParams(ILToProgramItem(classInfo)) > 0)
+		{
+			ILUInt32 number = 0;
+			ILGenericPar *genPar;
+			putc('<', info->asmOutput);
+			while((genPar = ILGenericParGetFromOwner
+					(ILToProgramItem(classInfo), number)) != 0)
+			{
+				if(number > 0)
+				{
+					fputs(", ", info->asmOutput);
+				}
+				/* TODO: generic type constraints */
+				ILDumpIdentifier(info->asmOutput, ILGenericPar_Name(genPar),
+								 0, IL_DUMP_QUOTE_NAMES);
+				++number;
+			}
+			putc('>', info->asmOutput);
+		}
+
 		/* Output the name of the parent class */
 		if(ILClass_ParentRef(classInfo) != 0)
 		{

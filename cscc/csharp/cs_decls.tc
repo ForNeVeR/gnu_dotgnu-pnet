@@ -88,6 +88,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	ILNode *savedNamespace;
 	ILNode *savedMethod;
 	ILNode *staticCtorList=NULL;
+	ILNode *savedTypeFormals;
 	int hadStaticCtorsBefore;
 	int target;
 
@@ -155,9 +156,11 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		savedClass = info->currentClass;
 		savedNamespace = info->currentNamespace;
 		savedMethod = info->currentMethod;
+		savedTypeFormals = info->currentTypeFormals;
 		info->currentClass = (ILNode *)node;
 		info->currentNamespace = node->namespaceNode;
 		info->currentMethod = NULL;
+		info->currentTypeFormals = node->typeFormals;
 		value = ILNode_SemAnalysis(node->body, info, &(node->body));
 		if(node->initCtorsMethod)
 		{
@@ -231,6 +234,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentClass = savedClass;
 		info->currentNamespace = savedNamespace;
 		info->currentMethod = savedMethod;
+		info->currentTypeFormals = savedTypeFormals;
 	}
 	else
 	{

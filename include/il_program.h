@@ -804,6 +804,11 @@ ILClass *ILClassInstantiate(ILImage *image, ILType *classType,
 int ILClassNamespaceIsValid(ILContext *context, const char *nspace);
 
 /*
+ * Get the underlying class from a generic class reference.
+ */
+ILClass *ILClassGetUnderlying(ILClass *info);
+
+/*
  * Helper macros for querying information about a class.
  */
 #define	ILClass_FromToken(image,token)	\

@@ -389,7 +389,9 @@ JavaGenValue(ILNode_ArgList)
  */
 JavaGenValue(ILNode_Argument)
 {
-	/* TODO: ref and out parameters */
+	/* We don't need to do ref and out parameters,
+	   because semantic analysis will disallow such
+	   expressions when compiling to the JVM */
 	return JavaGenValue(node->expression, info);
 }
 

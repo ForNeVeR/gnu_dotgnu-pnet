@@ -59,25 +59,17 @@ public sealed class DictionaryEnumeratorWrapper<KeyT, ValueT>
 			{
 				throw new InvalidOperationException(S._("NotSupp_Remove"));
 			}
-	public ValueT Current
-			{
-				get
-				{
-					// Cannot use "e.Current", because that is the
-					// DictionaryEntry, not the entry's value.
-					return (ValueT)(e.Value);
-				}
-			}
-
-	// Implement the IDictionaryIterator<KeyT, ValueT> interface.
-	public DictionaryEntry<KeyT, ValueT> Entry
+	public DictionaryEntry<KeyT, ValueT> Current
 			{
 				get
 				{
 					System.Collections.DictionaryEntry entry = e.Entry;
-					return new DictionaryEntry<KeyT, ValueT>(e.Key, e.Value);
+					return new DictionaryEntry<KeyT, ValueT>
+						((KeyT)(e.Key), (ValueT)(e.Value));
 				}
 			}
+
+	// Implement the IDictionaryIterator<KeyT, ValueT> interface.
 	public KeyT Key
 			{
 				get

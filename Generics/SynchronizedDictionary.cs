@@ -201,16 +201,6 @@ public class SynchronizedDictionary<KeyT, ValueT>
 				}
 
 		// Implement the IDictionaryIterator<KeyT, ValueT> interface.
-		public DictionaryEntry<KeyT, ValueT> Entry
-				{
-					get
-					{
-						lock(dict.SyncRoot)
-						{
-							return iterator.Entry;
-						}
-					}
-				}
 		public KeyT Key
 				{
 					get

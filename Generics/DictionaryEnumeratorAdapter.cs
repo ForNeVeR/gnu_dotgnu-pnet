@@ -67,7 +67,7 @@ public sealed class DictionaryEnumeratorAdapter<KeyT, ValueT>
 			{
 				get
 				{
-					DictionaryEntry<KeyT, ValueT> entry = e.Entry;
+					DictionaryEntry<KeyT, ValueT> entry = e.Current;
 					return new System.Collections.DictionaryEntry
 						(e.Key, e.Value);
 				}

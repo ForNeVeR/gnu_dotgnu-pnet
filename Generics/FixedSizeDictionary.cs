@@ -156,13 +156,6 @@ public class FixedSizeDictionary<KeyT, ValueT>
 				}
 
 		// Implement the IDictionaryIterator<KeyT, ValueT> interface.
-		public DictionaryEntry<KeyT, ValueT> Entry
-				{
-					get
-					{
-						return iterator.Entry;
-					}
-				}
 		public KeyT Key
 				{
 					get

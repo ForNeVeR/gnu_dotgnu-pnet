@@ -1,4 +1,13 @@
 
+2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Generics/DictionaryEnumeratorAdapter.cs,
+	Generics/DictionaryEnumeratorWrapper.cs,
+	Generics/FixedSizeDictionary.cs, Generics/Hashtable.cs,
+	Generics/IDictionaryIterator.cs, Generics/ReadOnlyDictionary.cs,
+	Generics/SynchronizedDictionary.cs: remove the "Entry" property
+	from "IDictionaryIterator", because it is identical to "Current".
+
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader (ReadIdentifier): append the character

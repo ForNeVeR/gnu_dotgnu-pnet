@@ -901,15 +901,6 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 				{
 					get
 					{
-						return Entry;
-					}
-				}
-
-		// Implement the IDictionaryIterator<KeyT, ValueT> interface.
-		public DictionaryEntry<KeyT, ValueT> Entry
-				{
-					get
-					{
 						if(posn < 0 || posn >= table.capacity ||
 					       !(table.table[posn].hasEntry))
 						{
@@ -921,6 +912,8 @@ public class Hashtable<KeyT, ValueT> : IDictionary<KeyT, ValueT>, ICloneable
 							     table.table[posn].value);
 					}
 				}
+
+		// Implement the IDictionaryIterator<KeyT, ValueT> interface.
 		public KeyT Key
 				{
 					get

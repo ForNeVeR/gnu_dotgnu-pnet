@@ -31,7 +31,6 @@ public interface IDictionaryIterator<KeyT, ValueT>
 	: IIterator< DictionaryEntry<KeyT, ValueT> >
 {
 
-	DictionaryEntry<KeyT, ValueT> Entry { get; }
 	KeyT Key { get; }
 	ValueT Value { get; set; }
 

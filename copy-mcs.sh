@@ -44,7 +44,9 @@ else
 fi
 cp -p "$MCS_SOURCES/class/corlib/System/TODOAttribute.cs" mcs-sources/class/corlib/System/TODOAttribute.cs
 cp -pr "$MCS_SOURCES/tools/SqlSharp" mcs-sources/tools
+cp -pr "$MCS_SOURCES/tools/wsdl" mcs-sources/tools
 cp -pr "$MCS_SOURCES/jay" mcs-sources/
+cp -pr "$MCS_SOURCES/nunit20" mcs-sources/
 
 for dir in Custommarshalers \
 		  System.Configuration.Install \
@@ -52,6 +54,7 @@ for dir in Custommarshalers \
 		  System.Messaging \
 		  System.ServiceProcess \
 		  System.Runtime.Serialization.Formatters.Soap \
+		  System.Runtime.Remoting \
 		  PEAPI \
 		  Mono.Data.Tds \
 		  System.Data \
@@ -72,6 +75,7 @@ for dir in Custommarshalers \
 		  Mono.GetOptions \
 		  Mono.Posix \
 		  Mono.Cairo \
+		  Mono.Http \
 		  Novell.Directory.Ldap \
 		  System.DirectoryServices \
 		  Mono.Security \

@@ -23,6 +23,7 @@
 #include "il_opcodes.h"
 #include "il_utils.h"
 #include "cvm.h"
+#include "lib_defs.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -434,6 +435,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_CallCtor,
 	CVMCoder_CallVirtual,
 	CVMCoder_CallInterface,
+	CVMCoder_CallInlineable,
 	CVMCoder_JumpMethod,
 	CVMCoder_ReturnInsn,
 	CVMCoder_LoadFuncAddr,

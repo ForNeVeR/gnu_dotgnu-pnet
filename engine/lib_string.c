@@ -667,12 +667,13 @@ static System_String *System_String_FastAllocateBuilder
 			if(value->length <= roundLen)
 			{
 				ILMemCpy(StringToBuffer(str), StringToBuffer(value),
-						 value->length);
+						 value->length * sizeof(ILUInt16));
 				str->length = value->length;
 			}
 			else
 			{
-				ILMemCpy(StringToBuffer(str), StringToBuffer(value), roundLen);
+				ILMemCpy(StringToBuffer(str), StringToBuffer(value),
+						 roundLen * sizeof(ILUInt16));
 				str->length = roundLen;
 			}
 		}
@@ -1586,10 +1587,104 @@ ILString *ILStringConcat(ILExecThread *thread, ILString *strA, ILString *strB)
 		result = AllocString(thread, lenA + lenB);
 		if(result)
 		{
-			ILMemCpy(StringToBuffer(result), StringToBuffer(strA), lenA);
-			ILMemCpy(StringToBuffer(result) + lenA, StringToBuffer(strB), lenB);
+			ILMemCpy(StringToBuffer(result), StringToBuffer(strA),
+					 lenA * sizeof(ILUInt16));
+			ILMemCpy(StringToBuffer(result) + lenA, StringToBuffer(strB),
+					 lenB * sizeof(ILUInt16));
 		}
 		return (ILString *)result;
+	}
+}
+
+ILString *ILStringConcat3(ILExecThread *thread, ILString *strA,
+						  ILString *strB, ILString *strC)
+{
+	if(strA && strB && strC)
+	{
+		ILInt32 lenA = ((System_String *)strA)->length;
+		ILInt32 lenB = ((System_String *)strB)->length;
+		ILInt32 lenC = ((System_String *)strC)->length;
+		System_String *result;
+		if((((ILUInt64)lenA) + ((ILUInt64)lenB) + ((ILUInt64)lenC)) >=
+					((ILUInt64)(IL_MAX_INT32 / 2)))
+		{
+			/* The resulting string is too big */
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		result = AllocString(thread, lenA + lenB + lenC);
+		if(result)
+		{
+			ILMemCpy(StringToBuffer(result), StringToBuffer(strA),
+					 lenA * sizeof(ILUInt16));
+			ILMemCpy(StringToBuffer(result) + lenA, StringToBuffer(strB),
+					 lenB * sizeof(ILUInt16));
+			ILMemCpy(StringToBuffer(result) + lenA + lenB,
+					 StringToBuffer(strC), lenC * sizeof(ILUInt16));
+		}
+		return (ILString *)result;
+	}
+	else if(!strA)
+	{
+		return ILStringConcat(thread, strB, strC);
+	}
+	else if(!strB)
+	{
+		return ILStringConcat(thread, strA, strC);
+	}
+	else
+	{
+		return ILStringConcat(thread, strA, strB);
+	}
+}
+
+ILString *ILStringConcat4(ILExecThread *thread, ILString *strA,
+						  ILString *strB, ILString *strC, ILString *strD)
+{
+	if(strA && strB && strC && strD)
+	{
+		ILInt32 lenA = ((System_String *)strA)->length;
+		ILInt32 lenB = ((System_String *)strB)->length;
+		ILInt32 lenC = ((System_String *)strC)->length;
+		ILInt32 lenD = ((System_String *)strD)->length;
+		System_String *result;
+		if((((ILUInt64)lenA) + ((ILUInt64)lenB) +
+		    ((ILUInt64)lenC) + ((ILUInt64)lenD)) >=
+					((ILUInt64)(IL_MAX_INT32 / 2)))
+		{
+			/* The resulting string is too big */
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		result = AllocString(thread, lenA + lenB + lenC + lenD);
+		if(result)
+		{
+			ILMemCpy(StringToBuffer(result), StringToBuffer(strA),
+					 lenA * sizeof(ILUInt16));
+			ILMemCpy(StringToBuffer(result) + lenA, StringToBuffer(strB),
+					 lenB * sizeof(ILUInt16));
+			ILMemCpy(StringToBuffer(result) + lenA + lenB,
+					 StringToBuffer(strC), lenC * sizeof(ILUInt16));
+			ILMemCpy(StringToBuffer(result) + lenA + lenB + lenC,
+					 StringToBuffer(strD), lenD * sizeof(ILUInt16));
+		}
+		return (ILString *)result;
+	}
+	else if(!strA)
+	{
+		return ILStringConcat3(thread, strB, strC, strD);
+	}
+	else if(!strB)
+	{
+		return ILStringConcat3(thread, strA, strC, strD);
+	}
+	else if(!strC)
+	{
+		return ILStringConcat3(thread, strA, strB, strD);
+	}
+	else
+	{
+		return ILStringConcat3(thread, strA, strB, strC);
 	}
 }
 

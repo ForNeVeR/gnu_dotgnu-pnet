@@ -384,6 +384,18 @@ int ILStringEquals(ILExecThread *thread, ILString *strA, ILString *strB);
 ILString *ILStringConcat(ILExecThread *thread, ILString *strA, ILString *strB);
 
 /*
+ * Concatenate three strings.
+ */
+ILString *ILStringConcat3(ILExecThread *thread, ILString *strA,
+						  ILString *strB, ILString *strC);
+
+/*
+ * Concatenate four strings.
+ */
+ILString *ILStringConcat4(ILExecThread *thread, ILString *strA,
+						  ILString *strB, ILString *strC, ILString *strD);
+
+/*
  * Convert an object into a string, using "ToString".
  * NULL is returned if "object" is NULL.
  */

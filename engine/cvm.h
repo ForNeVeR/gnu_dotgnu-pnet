@@ -449,6 +449,16 @@ extern	"C" {
 #define	COP_PREFIX_STR2UTF8			0x3D
 
 /*
+ * Inline method replacements.
+ */
+#define	COP_PREFIX_STRING_CONCAT_2	0x40
+#define	COP_PREFIX_STRING_CONCAT_3	0x41
+#define	COP_PREFIX_STRING_CONCAT_4	0x42
+#define	COP_PREFIX_STRING_EQ		0x43
+#define	COP_PREFIX_STRING_NE		0x44
+#define	COP_PREFIX_STRING_GET_CHAR	0x45
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

@@ -429,6 +429,10 @@ static void Coder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 								ILMethod *methodInfo)
 {
 }
+static int Coder_CallInlineable(ILCoder *coder, int inlineType)
+{
+	return 0;
+}
 static void Coder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
 {
 }
@@ -543,6 +547,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_CallCtor,
 	Coder_CallVirtual,
 	Coder_CallInterface,
+	Coder_CallInlineable,
 	Coder_JumpMethod,
 	Coder_ReturnInsn,
 	Coder_LoadFuncAddr,

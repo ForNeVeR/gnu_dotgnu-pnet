@@ -150,6 +150,105 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILEngineStackItem *args,
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }
 
+static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType)
+{
+	/* Determine what to do for the inlineable method type */
+	switch(inlineType)
+	{
+		case IL_INLINEMETHOD_MONITOR_ENTER:
+		{
+			/* We don't support threads yet, so just pop the object */
+			/* TODO: support for real threads */
+			CVM_BYTE(COP_POP);
+			CVM_ADJUST(-1);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_MONITOR_EXIT:
+		{
+			/* We don't support threads yet, so just pop the object */
+			/* TODO: support for real threads */
+			CVM_BYTE(COP_POP);
+			CVM_ADJUST(-1);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_STRING_LENGTH:
+		{
+			/* The string length is at a fixed offset from the pointer */
+			CVM_BYTE(COP_IREAD_FIELD);
+			CVM_BYTE((unsigned)&(((System_String *)0)->length));
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_STRING_CONCAT_2:
+		{
+			/* Concatenate two string objects */
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_STRING_CONCAT_2);
+			CVM_ADJUST(-1);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_STRING_CONCAT_3:
+		{
+			/* Concatenate three string objects */
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_STRING_CONCAT_3);
+			CVM_ADJUST(-2);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_STRING_CONCAT_4:
+		{
+			/* Concatenate four string objects */
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_STRING_CONCAT_4);
+			CVM_ADJUST(-3);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_STRING_EQUALS:
+		{
+			/* Compare two string objects for equality */
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_STRING_EQ);
+			CVM_ADJUST(-1);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_STRING_NOT_EQUALS:
+		{
+			/* Compare two string objects for inequality */
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_STRING_NE);
+			CVM_ADJUST(-1);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_STRING_GET_CHAR:
+		{
+			/* Compare two string objects for equality */
+			CVM_BYTE(COP_PREFIX);
+			CVM_BYTE(COP_PREFIX_STRING_GET_CHAR);
+			CVM_ADJUST(-1);
+			return 1;
+		}
+		/* Not reached */
+	}
+
+	/* If we get here, then we don't know how to inline the method */
+	return 0;
+}
+
 static void CVMCoder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
 {
 	/* TODO */

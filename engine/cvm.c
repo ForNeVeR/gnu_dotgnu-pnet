@@ -76,6 +76,7 @@ extern	"C" {
 	#define	IL_MEMMOVE(dst,src,len)			LocalMemMove((dst), (src), (len))
 	#define	IL_MEMZERO(dst,len)				LocalMemZero((dst), (len))
 	#define	IL_MEMSET(dst,ch,len)			LocalMemSet((dst), (ch), (len))
+	#define	IL_MEMCMP(dst,src,len)			LocalMemCmp((dst), (src), (len))
 	static void LocalMemCpy(void *dst, const void *src, unsigned len)
 	{
 		ILMemCpy(dst, src, len);
@@ -92,6 +93,10 @@ extern	"C" {
 	{
 		ILMemSet(dst, ch, len);
 	}
+	static int LocalMemCmp(void *dst, const void *src, unsigned len)
+	{
+		return ILMemCmp(dst, src, len);
+	}
 #else
     #define REGISTER_ASM_PC(x)              x
     #define REGISTER_ASM_STACK(x)           x
@@ -100,6 +105,7 @@ extern	"C" {
 	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
 	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
 	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
+	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #endif
 
 /*
@@ -357,6 +363,7 @@ static IL_INLINE void *ReadPointer(unsigned char *pc)
 #include "cvm_call.c"
 #include "cvm_except.c"
 #include "cvm_compare.c"
+#include "cvm_inline.c"
 #undef IL_CVM_GLOBALS
 
 int _ILCVMInterpreter(ILExecThread *thread)
@@ -383,6 +390,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	#include "cvm_call.c"
 	#include "cvm_except.c"
 	#include "cvm_compare.c"
+	#include "cvm_inline.c"
 	#undef IL_CVM_LOCALS
 
 	for(;;)
@@ -411,6 +419,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			#include "cvm_call.c"
 			#include "cvm_except.c"
 			#include "cvm_compare.c"
+			#include "cvm_inline.c"
 			#undef IL_CVM_MAIN
 
 			case COP_WIDE:
@@ -429,6 +438,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					#include "cvm_call.c"
 					#include "cvm_except.c"
 					#include "cvm_compare.c"
+					#include "cvm_inline.c"
 					#undef IL_CVM_WIDE
 
 					default:
@@ -458,6 +468,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 					#include "cvm_call.c"
 					#include "cvm_except.c"
 					#include "cvm_compare.c"
+					#include "cvm_inline.c"
 					#undef IL_CVM_PREFIX
 
 					default:

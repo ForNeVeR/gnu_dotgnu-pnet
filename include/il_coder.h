@@ -82,6 +82,19 @@ struct _tagILCoder
 };
 
 /*
+ * Inlineable method calls.
+ */
+#define	IL_INLINEMETHOD_MONITOR_ENTER		0
+#define	IL_INLINEMETHOD_MONITOR_EXIT		1
+#define	IL_INLINEMETHOD_STRING_LENGTH		2
+#define	IL_INLINEMETHOD_STRING_CONCAT_2		3
+#define	IL_INLINEMETHOD_STRING_CONCAT_3		4
+#define	IL_INLINEMETHOD_STRING_CONCAT_4		5
+#define	IL_INLINEMETHOD_STRING_EQUALS		6
+#define	IL_INLINEMETHOD_STRING_NOT_EQUALS	7
+#define	IL_INLINEMETHOD_STRING_GET_CHAR		8
+
+/*
  * Coder class definition.
  */
 struct _tagILCoderClass
@@ -508,6 +521,12 @@ struct _tagILCoderClass
 						  ILMethod *methodInfo);
 
 	/*
+	 * Call an inlineable method.  Returns zero if the coder
+	 * cannot inline the method.
+	 */
+	int (*callInlineable)(ILCoder *coder, int inlineType);
+
+	/*
 	 * Jump to a method with the same signature as the current method.
 	 */
 	void (*jumpMethod)(ILCoder *coder, ILMethod *methodInfo);
@@ -763,6 +782,8 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->callInterface))((coder), (args), \
 												    (numArgs), (returnItem), \
 													(methodInfo)))
+#define	ILCoderCallInlineable(coder,inlineType) \
+			((*((coder)->classInfo->callInlineable))((coder), (inlineType)))
 #define	ILCoderJumpMethod(coder,methodInfo) \
 			((*((coder)->classInfo->jumpMethod))((coder), (methodInfo)))
 #define	ILCoderReturnInsn(coder,engineType,returnType) \

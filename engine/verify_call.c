@@ -462,10 +462,124 @@ static void InsertCtorArgs(ILEngineStackItem *stack, ILUInt32 stackSize,
 	stack[insertPosn + 1].typeInfo = typeInfo2;
 }
 
+/*
+ * Determine if a method is inlineable, and return its inline type.
+ * Returns -1 if the method is not inlineable.
+ */
+static int GetInlineMethodType(ILMethod *method)
+{
+	ILClass *owner;
+	const char *name;
+	ILImage *image;
+	ILImage *systemImage;
+	ILType *signature;
+
+	owner = ILMethod_Owner(method);
+	name = ILClass_Name(owner);
+	if(!strcmp(name, "String"))
+	{
+		/* Make sure that this is really "System.String" */
+		name = ILClass_Namespace(owner);
+		if(!name || strcmp(name, "System") != 0)
+		{
+			return -1;
+		}
+		image = ILClassToImage(owner);
+		systemImage = ILContextGetSystem(ILImageToContext(image));
+		if(systemImage && systemImage != image)
+		{
+			return -1;
+		}
+
+		/* Check for known inlineable methods */
+		name = ILMethod_Name(method);
+		signature = ILMethod_Signature(method);
+		if(!strcmp(name, "get_Length") &&
+		   _ILLookupTypeMatch(signature, "(T)i"))
+		{
+			return IL_INLINEMETHOD_STRING_LENGTH;
+		}
+		else if(!strcmp(name, "Concat"))
+		{
+			if(_ILLookupTypeMatch(signature,
+				"(oSystem.String;oSystem.String;)oSystem.String;"))
+			{
+				return IL_INLINEMETHOD_STRING_CONCAT_2;
+			}
+			else if(_ILLookupTypeMatch(signature,
+						"(oSystem.String;oSystem.String;"
+						"oSystem.String;)oSystem.String;"))
+			{
+				return IL_INLINEMETHOD_STRING_CONCAT_3;
+			}
+			else if(_ILLookupTypeMatch(signature,
+						"(oSystem.String;oSystem.String;oSystem.String;"
+						"oSystem.String;)oSystem.String;"))
+			{
+				return IL_INLINEMETHOD_STRING_CONCAT_4;
+			}
+		}
+		else if((!strcmp(name, "Equals") || !strcmp(name, "op_Equality")) &&
+				_ILLookupTypeMatch(signature,
+					"(oSystem.String;oSystem.String;)Z"))
+		{
+			return IL_INLINEMETHOD_STRING_EQUALS;
+		}
+		else if(!strcmp(name, "op_Inequality") &&
+				_ILLookupTypeMatch(signature,
+					"(oSystem.String;oSystem.String;)Z"))
+		{
+			return IL_INLINEMETHOD_STRING_NOT_EQUALS;
+		}
+		else if(!strcmp(name, "get_Chars") &&
+				_ILLookupTypeMatch(signature, "(Ti)c"))
+		{
+			return IL_INLINEMETHOD_STRING_GET_CHAR;
+		}
+		return -1;
+	}
+	else if(!strcmp(name, "Monitor"))
+	{
+		/* Make sure that this is really "System.Threading.Monitor" */
+		name = ILClass_Namespace(owner);
+		if(!name || strcmp(name, "System.Threading") != 0)
+		{
+			return -1;
+		}
+		image = ILClassToImage(owner);
+		systemImage = ILContextGetSystem(ILImageToContext(image));
+		if(systemImage && systemImage != image)
+		{
+			return -1;
+		}
+
+		/* Check for known inlineable methods */
+		name = ILMethod_Name(method);
+		signature = ILMethod_Signature(method);
+		if(!strcmp(name, "Enter") &&
+		   _ILLookupTypeMatch(signature, "(oSystem.Object;)V"))
+		{
+			return IL_INLINEMETHOD_MONITOR_ENTER;
+		}
+		else if(!strcmp(name, "Exit") &&
+		        _ILLookupTypeMatch(signature, "(oSystem.Object;)V"))
+		{
+			return IL_INLINEMETHOD_MONITOR_EXIT;
+		}
+		return -1;
+	}
+	else
+	{
+		/* This class does not have inlineable methods */
+		return -1;
+	}
+}
+
 #elif defined(IL_VERIFY_LOCALS)
 
 ILType *methodSignature;
 ILInt32 numParams;
+int inlineType;
 
 #else /* IL_VERIFY_CODE */
 
@@ -533,9 +647,14 @@ case IL_OP_CALL:
 				{
 					stack[stackSize].engineType = ILEngineType_Invalid;
 				}
-				ILCoderCallMethod(coder, stack + stackSize - numParams,
-								  (ILUInt32)numParams, &(stack[stackSize]),
-								  methodInfo);
+				inlineType = GetInlineMethodType(methodInfo);
+				if(inlineType == -1 ||
+				   !ILCoderCallInlineable(coder, inlineType))
+				{
+					ILCoderCallMethod(coder, stack + stackSize - numParams,
+									  (ILUInt32)numParams, &(stack[stackSize]),
+									  methodInfo);
+				}
 				stackSize -= (ILUInt32)numParams;
 				if(methodSignature->un.method.retType != ILType_Void)
 				{
@@ -639,9 +758,14 @@ case IL_OP_CALLVIRT:
 					/* It is possible to use "callvirt" to call a
 					   non-virtual instance method, even though
 					   "call" is probably a better way to do it */
-					ILCoderCallMethod(coder, stack + stackSize - numParams,
-									  (ILUInt32)numParams,
-									  &(stack[stackSize]), methodInfo);
+					inlineType = GetInlineMethodType(methodInfo);
+					if(inlineType == -1 ||
+					   !ILCoderCallInlineable(coder, inlineType))
+					{
+						ILCoderCallMethod(coder, stack + stackSize - numParams,
+										  (ILUInt32)numParams,
+										  &(stack[stackSize]), methodInfo);
+					}
 				}
 				else if(ILClass_IsInterface(ILMethod_Owner(methodInfo)))
 				{

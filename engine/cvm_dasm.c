@@ -415,7 +415,7 @@ static CVMOpcode const opcodes[256] = {
 	 */
 	{"prefix",			CVM_OPER_PREFIX},
 };
-static CVMOpcode const prefixOpcodes[64] = {
+static CVMOpcode const prefixOpcodes[80] = {
 	/*
 	 * Reserved opcodes.
 	 */
@@ -523,6 +523,30 @@ static CVMOpcode const prefixOpcodes[64] = {
 	 */
 	{"preserved_3e",	CVM_OPER_NONE},
 	{"preserved_3f",	CVM_OPER_NONE},
+
+	/*
+	 * Inline method replacements.
+	 */
+	{"string_concat_2",	CVM_OPER_NONE},
+	{"string_concat_3",	CVM_OPER_NONE},
+	{"string_concat_4",	CVM_OPER_NONE},
+	{"string_eq",		CVM_OPER_NONE},
+	{"string_ne",		CVM_OPER_NONE},
+	{"string_get_char",	CVM_OPER_NONE},
+
+	/*
+	 * Reserved opcodes.
+	 */
+	{"preserved_46",	CVM_OPER_NONE},
+	{"preserved_47",	CVM_OPER_NONE},
+	{"preserved_48",	CVM_OPER_NONE},
+	{"preserved_49",	CVM_OPER_NONE},
+	{"preserved_4a",	CVM_OPER_NONE},
+	{"preserved_4b",	CVM_OPER_NONE},
+	{"preserved_4c",	CVM_OPER_NONE},
+	{"preserved_4d",	CVM_OPER_NONE},
+	{"preserved_4e",	CVM_OPER_NONE},
+	{"preserved_4f",	CVM_OPER_NONE},
 };
 
 /*

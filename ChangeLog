@@ -33,6 +33,8 @@
 	* ilalink/link_method.c (ConvertCode): reacquire the RVA after
 	aligning exception blocks.
 
+	* samples/mscorlib.dll: updated version.
+
 2002-03-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_optable.c: implement simple binary coercions

@@ -11,6 +11,10 @@
 	* libc/unistd/unistd-glue.cs: move the "fd operations" classes
 	down into OpenSystem.C.
 
+	* configure.in, samples/ilrun.sh.in: add the paths for
+	System.dll and DotGNU.SSL.dll to the compiler command-lines,
+	so that we can import the C# socket classes.
+
 2004-03-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/inttypes.h, include/limits.h, include/stdint.h,

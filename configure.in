@@ -123,6 +123,12 @@ fi
 if test -f "$PNETLIB_CHECK_PATH/csupport/OpenSystem.C.dll" ; then
 	CFLAGS="$CFLAGS -L$PNETLIB_CHECK_PATH/csupport"
 fi
+if test -f "$PNETLIB_CHECK_PATH/System/first/System.dll" ; then
+	CFLAGS="$CFLAGS -L$PNETLIB_CHECK_PATH/System/first"
+fi
+if test -f "$PNETLIB_CHECK_PATH/DotGNU.SSL/DotGNU.SSL.dll" ; then
+	CFLAGS="$CFLAGS -L$PNETLIB_CHECK_PATH/DotGNU.SSL"
+fi
 if test -f "$PNETLIB_CHECK_PATH/runtime/mscorlib.dll" ; then
 	CFLAGS="$CFLAGS -L$PNETLIB_CHECK_PATH/runtime"
 fi
@@ -197,6 +203,12 @@ if test -x "$PNET_PATH/cscc/cpp/cscc-cpp" ; then
 fi
 if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
 	CFLAGS="$CFLAGS \"-L$PNETLIB_PATH/csupport\""
+fi
+if test -f "$PNETLIB_CHECK_PATH/System/first/System.dll" ; then
+	CFLAGS="$CFLAGS \"-L$PNETLIB_CHECK_PATH/System/first\""
+fi
+if test -f "$PNETLIB_CHECK_PATH/DotGNU.SSL/DotGNU.SSL.dll" ; then
+	CFLAGS="$CFLAGS \"-L$PNETLIB_CHECK_PATH/DotGNU.SSL\""
 fi
 if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
 	CFLAGS="$CFLAGS \"-L$PNETLIB_PATH/runtime\""

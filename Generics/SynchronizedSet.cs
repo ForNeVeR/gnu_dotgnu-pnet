@@ -91,15 +91,18 @@ public class SynchronizedSet<T> : SynchronizedCollection<T>, ISet<T>
 	// Implement the ICloneable interface.
 	public override Object Clone()
 			{
-				if(set is ICloneable)
+				lock(SyncRoot)
 				{
-					return new SynchronizedSet<T>
-						((ISet<T>)(((ICloneable)set).Clone()));
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_NotCloneable"));
+					if(set is ICloneable)
+					{
+						return new SynchronizedSet<T>
+							((ISet<T>)(((ICloneable)set).Clone()));
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_NotCloneable"));
+					}
 				}
 			}
 

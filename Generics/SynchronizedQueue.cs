@@ -105,15 +105,18 @@ public class SynchronizedQueue<T> : SynchronizedCollection<T>, IQueue<T>
 	// Implement the ICloneable interface.
 	public override Object Clone()
 			{
-				if(queue is ICloneable)
+				lock(SyncRoot)
 				{
-					return new SynchronizedQueue<T>
-						((IQueue<T>)(((ICloneable)queue).Clone()));
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_NotCloneable"));
+					if(queue is ICloneable)
+					{
+						return new SynchronizedQueue<T>
+							((IQueue<T>)(((ICloneable)queue).Clone()));
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_NotCloneable"));
+					}
 				}
 			}
 

@@ -105,15 +105,18 @@ public class SynchronizedStack<T> : SynchronizedCollection<T>, IStack<T>
 	// Implement the ICloneable interface.
 	public override Object Clone()
 			{
-				if(stack is ICloneable)
+				lock(SyncRoot)
 				{
-					return new SynchronizedStack<T>
-						((IStack<T>)(((ICloneable)stack).Clone()));
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_NotCloneable"));
+					if(stack is ICloneable)
+					{
+						return new SynchronizedStack<T>
+							((IStack<T>)(((ICloneable)stack).Clone()));
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_NotCloneable"));
+					}
 				}
 			}
 

@@ -112,15 +112,18 @@ public class SynchronizedDeque<T> : SynchronizedCollection<T>, IDeque<T>
 	// Implement the ICloneable interface.
 	public override Object Clone()
 			{
-				if(deque is ICloneable)
+				lock(SyncRoot)
 				{
-					return new SynchronizedDeque<T>
-						((IDeque<T>)(((ICloneable)deque).Clone()));
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_NotCloneable"));
+					if(deque is ICloneable)
+					{
+						return new SynchronizedDeque<T>
+							((IDeque<T>)(((ICloneable)deque).Clone()));
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_NotCloneable"));
+					}
 				}
 			}
 

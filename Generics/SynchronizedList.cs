@@ -147,15 +147,18 @@ public class SynchronizedList<T> : SynchronizedCollection<T>, IList<T>
 	// Implement the ICloneable interface.
 	public override Object Clone()
 			{
-				if(list is ICloneable)
+				lock(SyncRoot)
 				{
-					return new SynchronizedList<T>
-						((IList<T>)(((ICloneable)list).Clone()));
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_NotCloneable"));
+					if(list is ICloneable)
+					{
+						return new SynchronizedList<T>
+							((IList<T>)(((ICloneable)list).Clone()));
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_NotCloneable"));
+					}
 				}
 			}
 

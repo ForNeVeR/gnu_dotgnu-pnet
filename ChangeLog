@@ -20,6 +20,11 @@
 	Generics/ReadOnlySet.cs, Generics/SynchronizedSet.cs: add set
 	collections to the generics library.
 
+	* Generics/SynchronizedCollection.cs, Generics/SynchronizedDeque.cs,
+	Generics/SynchronizedDictionary.cs, Generics/SynchronizedList.cs,
+	Generics/SynchronizedQueue.cs, Generics/SynchronizedSet.cs,
+	Generics/SynchronizedStack.cs: lock the SyncRoot when cloning.
+
 2003-02-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader (ReadIdentifier): append the character

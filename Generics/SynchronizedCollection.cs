@@ -88,15 +88,18 @@ public class SynchronizedCollection<T> : ICollection<T>, ICloneable
 	// Implement the ICloneable interface.
 	public virtual Object Clone()
 			{
-				if(coll is ICloneable)
+				lock(SyncRoot)
 				{
-					return new SynchronizedCollection<T>
-						((ICollection<T>)(((ICloneable)coll).Clone()));
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_NotCloneable"));
+					if(coll is ICloneable)
+					{
+						return new SynchronizedCollection<T>
+							((ICollection<T>)(((ICloneable)coll).Clone()));
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_NotCloneable"));
+					}
 				}
 			}
 

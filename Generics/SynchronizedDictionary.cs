@@ -138,15 +138,18 @@ public class SynchronizedDictionary<KeyT, ValueT>
 	// Implement the ICloneable interface.
 	public override Object Clone()
 			{
-				if(dict is ICloneable)
+				lock(SyncRoot)
 				{
-					return new SynchronizedDictionary<T>
-						((IDictionary<T>)(((ICloneable)dict).Clone()));
-				}
-				else
-				{
-					throw new InvalidOperationException
-						(S._("Invalid_NotCloneable"));
+					if(dict is ICloneable)
+					{
+						return new SynchronizedDictionary<T>
+							((IDictionary<T>)(((ICloneable)dict).Clone()));
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_NotCloneable"));
+					}
 				}
 			}
 

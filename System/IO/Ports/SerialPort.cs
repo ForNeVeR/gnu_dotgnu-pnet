@@ -49,7 +49,7 @@ public class SerialPort
 		 1800, 2400, 4800, 9600, 19200, 38400, 57600,
 		 115200, 230400, 460800, 500000, 576000, 921600,
 		 1000000, 1152000, 1500000, 2000000, 2500000,
-		 3000000, 2500000, 4000000};
+		 3000000, 3500000, 4000000};
 
 	// Timeout value that indicates an infinite timeout.
 	public static readonly int InfiniteTimeout = -1;
@@ -491,9 +491,10 @@ public class SerialPort
 			}
 
 	// Get or set the name of the port.  We only allow port names
-	// of the form "COMn", "COMn:", "IRCOMMn", or "IRCOMMn:" in this
-	// implementation.  "COM" ports are regular serial ports, and
-	// "IRCOMM" ports are infrared ports.
+	// of the form "COMn", "COMn:", "IRCOMMn", "IRCOMMn:", "USBn",
+	// and "USBn:" in this implementation.  "COM" ports are regular
+	// serial ports, "IRCOMM" ports are infrared ports, and "USB"
+	// are ports on the USB bus.  The numbers are 1-based.
 	public String PortName
 			{
 				get
@@ -526,6 +527,14 @@ public class SerialPort
 					{
 						posn = 6;
 						type = PortMethods.SERIAL_INFRARED;
+					}
+					else if(value.Length > 3 &&
+					        (value[0] == 'u' || value[0] == 'U') &&
+					        (value[1] == 's' || value[1] == 'S') &&
+					        (value[2] == 'b' || value[2] == 'B'))
+					{
+						posn = 3;
+						type = PortMethods.SERIAL_USB;
 					}
 					else
 					{

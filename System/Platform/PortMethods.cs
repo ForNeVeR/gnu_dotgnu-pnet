@@ -22,6 +22,7 @@ namespace Platform
 {
 
 using System;
+using System.Threading;
 using System.Runtime.CompilerServices;
 
 internal class PortMethods
@@ -47,6 +48,7 @@ internal class PortMethods
 	// Serial port types.
 	public const int SERIAL_REGULAR		= 0;
 	public const int SERIAL_INFRARED	= 1;
+	public const int SERIAL_USB			= 2;
 
 	// Bits for various serial pins.
 	public const int PIN_BREAK			= (1<<0);
@@ -81,7 +83,7 @@ internal class PortMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int GetBytesToRead(IntPtr handle);
 
-	// Get the number of bytes of space that are available to write to the port.
+	// Get the number of bytes that remain to the written to the port.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static int GetBytesToWrite(IntPtr handle);
 
@@ -120,6 +122,22 @@ internal class PortMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static void Write
 			(IntPtr handle, byte[] buffer, int offset, int count);
+
+	// Wait for a change in pin status.  Returns non-zero when a pin
+	// change occurs, zero if the thread was interrupted, and -1
+	// if pin status changes cannot be monitored.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int WaitForPinChange(IntPtr handle);
+
+	// Wait for input to become available on a port.  Returns non-zero
+	// when input is available, zero if the thread was interrupted,
+	// and -1 if input cannot be monitored.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int WaitForInput(IntPtr handle);
+
+	// Interrupt a thread that is waiting for pin changes or input.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static void Interrupt(Thread thread);
 
 }; // class PortMethods
 

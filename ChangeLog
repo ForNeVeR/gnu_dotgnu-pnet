@@ -10,6 +10,9 @@
 	assembly "DotGNU.Terminal" to the system, which implements a
 	readline-like line input mechanism using the extended console.
 
+	* System/IO/Ports/SerialPort.cs, System/Platform/PortMethods.cs:
+	some small adjustments to the serial port classes.
+
 2003-11-07  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing/Graphics.cs,

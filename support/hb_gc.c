@@ -48,6 +48,20 @@ void *ILGCAllocAtomic(unsigned long size)
 	return block;
 }
 
+void *ILGCAllocPersistent(unsigned long size)
+{
+	/* The Hans-Boehm routines guarantee to zero the block */
+	return GC_MALLOC_UNCOLLECTABLE((size_t)size);
+}
+
+void ILGCFreePersistent(void *block)
+{
+	if(block)
+	{
+		GC_FREE(block);
+	}
+}
+
 void ILGCRegisterFinalizer(void *block, ILGCFinalizer func, void *data)
 {
 	/* We use the Java-style finalization algorithm, which

@@ -48,6 +48,18 @@ void *ILGCAlloc(unsigned long size);
 void *ILGCAllocAtomic(unsigned long size);
 
 /*
+ * Allocate a block of memory that is persistent.  It will
+ * not be collected until explicited free'd, but it will
+ * still be scanned for object pointers.
+ */
+void *ILGCAllocPersistent(unsigned long size);
+
+/*
+ * Free a persistent block of memory.
+ */
+void ILGCFreePersistent(void *block);
+
+/*
  * Finalization callback function.
  */
 typedef void (*ILGCFinalizer)(void *block, void *data);

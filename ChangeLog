@@ -40,6 +40,9 @@ object pointer values.
 of non-trivial finalizers within classes and register a finalizer with
 any object that meets the conditions.
 
+* include/il_gc.h, support/hb_gc.c: implement "persistent" memory allocation
+within the garbage collector.
+
 2001-11-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csant/Makefile.am, csant/csant_fileset.h, csant/csant_fileset.c,

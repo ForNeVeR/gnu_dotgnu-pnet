@@ -1,4 +1,17 @@
 
+2003-02-07  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs: fix
+	the format exception to use the builtin resource string.
+
+2003-02-07  Michael Moore <mtmoore@uga.edu>
+
+	* runtime/System/Private/DateTimeFormat/DateTimeFormatter.cs: Add 
+	ECMA spec compatibility to ToString(format, dtfi) and ToString(format).
+	If format is a single character and not a valid single character formatter
+	a FormatException should be thrown.
+	(Gopal,1080)
+
 2003-02-01  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* runtime/System/Private/NumberParser.cs:

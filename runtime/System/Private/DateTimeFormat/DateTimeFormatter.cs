@@ -34,7 +34,13 @@ namespace System.Private.DateTimeFormat
 							String format, DateTimeFormatInfo info)
 		{
 			if(format.Length==1) 
+			{
 				format=StandardFormatSpecifier(format);
+				if(format==null)
+				{
+					throw new FormatException(_("Format_StringException"));
+				}
+			}
 			
 			StringBuilder builder=new StringBuilder(format.Length);
 			Queue q=new Queue();
@@ -283,12 +289,8 @@ namespace System.Private.DateTimeFormat
 				{
 					return "yyyy MMMM";
 				}
-				default:
-				{
-					return format;
-				}
 			}
-			return format;
+			return null;
 		}
 	}
 }

@@ -1,4 +1,9 @@
 
+2004-04-28  Gopal V <gopalv82@yahoo.com>
+
+	* System.Xml/XmlDocument.cs: Add CreateNavigator protected method to
+	allow ml-pnet to compile properly.
+
 2004-04-28  Jens Kuehner <kuehner75@web.de>
 
 	* System.Drawing/Bitmap.cs: Pick up the left bottom pixel for 

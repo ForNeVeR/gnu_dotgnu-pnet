@@ -25,6 +25,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Xml.Private;
+using System.Xml.XPath;
 
 #if ECMA_COMPAT
 internal
@@ -587,6 +588,12 @@ class XmlDocument : XmlNode
 			{
 				return new XmlDeclaration
 					(placeholder, version, encoding, standalone);
+			}
+	
+	// Because ml-pnet's System.Data needs it
+	protected virtual XPathNavigator CreateNavigator (XmlNode node)
+			{
+				return node.CreateNavigator();
 			}
 
 	// Get an element by identifier.

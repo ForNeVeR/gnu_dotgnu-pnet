@@ -7,37 +7,44 @@ Vendor: DotGNU
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Group: System/Emulators
 BuildRequires: flex, bison, treecc
-Summary: The DotGNU Portable.NET tools
+Summary: The DotGNU Portable .NET tools
 %description
-The goal of this project is to build a suite of Free Software tools
-to build and execute .NET applications, including a C# compiler,
-assembler, disassembler, and runtime engine.  The initial target
-platform is GNU/Linux, with other platforms to follow in the future.
+The goal of this project is to build a suite of Free Software tools to
+build and execute portable executable (.NET, JavaTM, Parrot)
+applications, including compilers, an assembler, a disassembler, and
+runtime engine capable of executing multiple stack-based bytecode
+formats.
 
 %package interpreter
-Summary: The Portable.Net runtime engine
+Summary: The DotGNU Portable .NET runtime engine
 Group: System/Emulators
 %description interpreter
-The runtime engine executes the .NET binaries . It is the Virtual 
-Machine for the .NET bytecode .
+The Converted Virtual Machine supports executing multiple kinds of
+portable executables, including IL (".NET") and JavaTM classes.
 
 %package compiler
-Summary: The Portable.Net compiler collection
+Summary: The Portable .NET compiler collection
 Group: System/Compilers
 %description compiler
-The compilers for C# and C are included in this package . The cscc 
-wraps both to provide a standard interface for compilation.
+The cscc compiler collection allows multiple input languages and
+multiple output bytecodes, much like GCC.  Current languages include
+C\# and C; current output formats include IL assembly (".NET"), JavaTM
+assembly, and imcc (Parrot (Perl6) high-level assembly).
+
+# TODO: where/when include C compiler?
 
 %package tools
-Summary: The Portable.Net tools
+Summary: Miscellaneous tools for DotGNU Portable .NET
 Group: System/Tools
 %description tools
-The general toolkit provided along with the compiler and runtime
-engines.
+The general toolkit provided along with the pnet compiler and runtime
+engines.  This includes csant, a replacement for make, and various
+tools to deal with IL binaries.
 
 %prep
 %setup -q
 %build
+export CFLAGS=$(echo $RPM_OPT_FLAGS|sed -e 's!-O3!-O2!g')
 %configure
 make
 %install
@@ -48,7 +55,7 @@ if test "/" != "${RPM_BUILD_ROOT}"; then rm -rf ${RPM_BUILD_ROOT}; fi
 %files interpreter
 %doc AUTHORS COPYING ChangeLog INSTALL NEWS README
 /usr/bin/ilrun
-/usr/share/man/man1/ilrun.1.gz
+/usr/share/man/man1/ilrun.1*
 
 %files compiler
 %doc AUTHORS COPYING ChangeLog INSTALL NEWS README
@@ -59,9 +66,9 @@ if test "/" != "${RPM_BUILD_ROOT}"; then rm -rf ${RPM_BUILD_ROOT}; fi
 /usr/bin/resgen
 /usr/lib/cscc/plugins/cscc-cs
 /usr/lib/cscc/plugins/cscc-csharp
-/usr/share/man/man1/resgen.1.gz
-/usr/share/man/man1/ilasm.1.gz
-/usr/share/man/man1/cscc.1.gz
+/usr/share/man/man1/resgen.1*
+/usr/share/man/man1/ilasm.1*
+/usr/share/man/man1/cscc.1*
 
 %files tools
 %doc AUTHORS COPYING ChangeLog INSTALL NEWS README
@@ -77,10 +84,20 @@ if test "/" != "${RPM_BUILD_ROOT}"; then rm -rf ${RPM_BUILD_ROOT}; fi
 /usr/bin/csdoc2html
 /usr/bin/csdoc2hier
 /usr/bin/csdoc2texi
-/usr/share/man/man1/ilfind.1.gz
-/usr/share/man/man1/ildd.1.gz
-/usr/share/man/man1/ilsize.1.gz
-/usr/share/man/man1/ilnative.1.gz
-/usr/share/man/man1/ildiff.1.gz
+/usr/share/man/man1/ilfind.1*
+/usr/share/man/man1/ildd.1*
+/usr/share/man/man1/ilsize.1*
+/usr/share/man/man1/ilnative.1*
+/usr/share/man/man1/ildiff.1*
 /usr/share/man/man1/csdoc*
 /usr/share/info/pnettools.info*
+
+%changelog
+* Wed Nov 27 2002 Stephen Compall <rushing@sigecom.net> 0.4.8-2
+- Updated descriptions of packages
+- Changed man files to handle multiple man-install schemes
+- Added fix for gcc failure on -O3 compile
+
+# Local variables:
+# mode: rpm-spec
+# end:

@@ -1,3 +1,11 @@
+2002-12-01  Stephen Compall  <rushing@sigecom.net>
+
+	* pnet.spec.in: Fixed man page filespecs to support multiple
+	compression methods (cross-distro).  Rewrote descriptions from
+	their defaults on the site, and the sub-descriptions that depended
+	on the main, for better advertising.  Changed RPM's default CFLAGS
+	to use -O2 instead of -O3, to allow the main interpreter loop to
+	compile.
 
 2002-12-01  David Dawkins <david.dawkins@brooks-pri.com>
 

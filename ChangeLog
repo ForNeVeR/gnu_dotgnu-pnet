@@ -19,6 +19,9 @@
 	again, because the previous fix worked for 2-dimensional arrays,
 	but not 1-dimensional arrays.
 
+	* cscc/c/c_types.c (CTypeDefineField): convert struct fields
+	with types like "type[]" into "type[0]" (Bug #2774).
+
 2003-04-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_misc.c: rewrite "GetNextArg(RuntimeTypeHandle)"

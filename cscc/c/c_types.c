@@ -734,6 +734,13 @@ ILField *CTypeDefineField(ILGenInfo *info, ILType *structType,
 	int isUnion = (strncmp(ILClass_Name(classInfo), "union ", 6) == 0);
 	ILField *field;
 
+	/* Convert open arrays into zero-length arrays, so that
+	   "type[]" can be used in a struct to mean "type[0]" */
+	if(CTypeIsOpenArray(fieldType))
+	{
+		fieldType = CTypeCreateArray(info, CTypeGetElemType(fieldType), 0);
+	}
+
 	/* Determine the size and alignment of the new field */
 	size = CTypeSizeAndAlign(fieldType, &align);
 	if(layout)

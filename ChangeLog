@@ -1,4 +1,9 @@
 
+2004-12-07  Erik Pfeifle <erik.pfeifle@de.trumpf-laser.com>
+	
+	* System.Drawing/Drawing2D/Matrix.cs: Add a Clone() method to 
+	Matrix class (patch #3537, Gopal)
+
 2004-12-07  Deryk Robosson <deryk@0x0a.com>	
 
 	* System.Windows.Forms/TrackBar.cs,

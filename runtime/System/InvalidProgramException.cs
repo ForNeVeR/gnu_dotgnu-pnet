@@ -33,6 +33,16 @@ public sealed class InvalidProgramException : SystemException
 	public InvalidProgramException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_InvalidProgram");
+				}
+			}
+
 }; // class InvalidProgramException
 
 }; // namespace System

@@ -95,7 +95,7 @@ public class FileLoadException : IOException
 					{
 						return String.Format
 							   		(Environment.GetResourceString
-										("IO_FileName"), fileName);
+										("Exception_Filename"), fileName);
 					}
 					else
 					{

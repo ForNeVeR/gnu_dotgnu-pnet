@@ -24,7 +24,7 @@ namespace System
 
 public class ArgumentOutOfRangeException : ArgumentException
 {
-	// Standard error message for null exceptions.
+	// Standard error message for out of range exceptions.
 	private static String preloadedMessage =
 		Environment.GetResourceString("Arg_OutOfRange");
 
@@ -67,6 +67,15 @@ public class ArgumentOutOfRangeException : ArgumentException
 							   			("Arg_OutOfRangeValue"),
 									 actualValue.ToString());
 					}
+				}
+			}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return preloadedMessage;
 				}
 			}
 

@@ -40,24 +40,23 @@ public class BadImageFormatException : SystemException
 	public BadImageFormatException(String msg, String fileName)
 		: base(msg) { this.fileName = fileName; }
 
-	// Convert this exception object into a string.
+	// Get the message for this exception.  Because of "MessageDefault",
+	// we don't actually need this.  However, we include it because
+	// the ECMA standard expects this to be present.
+	public override String Message
+			{
+				get
+				{
+					return base.Message;
+				}
+			}
+
+	// Convert this exception into a string.  Because of "MessageExtra",
+	// we don't actually need this.  However, we include it because the
+	// ECMA standard expects this to be present.
 	public override String ToString()
 			{
-				String className = GetType().ToString();
-				String result;
-				result = className + ": " + Message;
-				if(fileName != null && fileName.Length > 0)
-				{
-					result = result + Environment.NewLine +
-						String.Format(Environment.GetResourceString
-											("Exception_Filename"),
-									  fileName);
-				}
-				if(InnerException != null)
-				{
-					result = result + " ---> " + InnerException.ToString();
-				}
-				return result;
+				return base.ToString();
 			}
 
 	// Properties.
@@ -68,11 +67,32 @@ public class BadImageFormatException : SystemException
 					return fileName;
 				}
 			}
-	public override String Message
+
+	// Get the extra data to insert into "Exception::ToString()"'s result.
+	protected internal override String MessageExtra
 			{
 				get
 				{
-					return base.Message;
+					if(fileName != null)
+					{
+						return String.Format
+							   		(Environment.GetResourceString
+										("Exception_Filename"), fileName);
+					}
+					else
+					{
+						return null;
+					}
+				}
+			}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_BadImage");
 				}
 			}
 

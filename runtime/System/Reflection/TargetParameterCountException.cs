@@ -35,6 +35,16 @@ public sealed class TargetParameterCountException : ApplicationException
 	public TargetParameterCountException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_TargetParam");
+				}
+			}
+
 }; // class TargetParameterCountException
 
 }; // namespace System.Reflection

@@ -33,6 +33,16 @@ public class MissingMethodException : MissingMemberException
 	public MissingMethodException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_MethodMissing");
+				}
+			}
+
 }; // class MissingMethodException
 
 }; // namespace System

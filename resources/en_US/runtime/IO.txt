@@ -37,6 +37,5 @@ IO_NotSupp_SetLength=The specified stream does not support setting its length
 IO_NotSupp_Read=The specified stream does not support reading
 IO_NotSupp_Write=The specified stream does not support writing
 IO_DirNotFound=The specified directory could not be found
-IO_FileName=File name: {0}
 IO_FileNotFound=Could not find file "{0}"
 IO_FileLoad=Could not load file "{0}"

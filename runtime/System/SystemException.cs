@@ -37,6 +37,16 @@ public class SystemException : Exception
 	internal SystemException(String msg, Exception inner, bool wantTrace)
 		: base(msg, inner, wantTrace) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_System");
+				}
+			}
+
 }; // class SystemException
 
 }; // namespace System

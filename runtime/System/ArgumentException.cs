@@ -48,19 +48,32 @@ public class ArgumentException : SystemException
 					return paramName;
 				}
 			}
-	public override String Message
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
 			{
 				get
 				{
-					String msg = base.Message;
-					if(paramName != null && paramName.Length != 0)
+					return Environment.GetResourceString
+						("Exception_Argument");
+				}
+			}
+
+	// Get the extra data to insert into "Exception::ToString()"'s result.
+	protected internal override String MessageExtra
+			{
+				get
+				{
+					if(paramName != null)
 					{
-						return msg + Environment.NewLine +
-							   "Parameter name: " + paramName;
+						return String.Format
+							   		(Environment.GetResourceString
+										("Exception_ArgParamName"),
+									 paramName);
 					}
 					else
 					{
-						return msg;
+						return null;
 					}
 				}
 			}

@@ -33,6 +33,16 @@ public class DuplicateWaitObjectException : ArgumentException
 	public DuplicateWaitObjectException(String paramName, String msg)
 		: base(msg, paramName) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_DuplicateWait");
+				}
+			}
+
 }; // class DuplicateWaitObjectException
 
 }; // namespace System

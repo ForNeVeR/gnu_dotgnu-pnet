@@ -40,6 +40,16 @@ public class OutOfMemoryException : SystemException
 		: base(Environment.GetResourceString("Exception_NoMemory"),
 			   null, false) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_NoMemory");
+				}
+			}
+
 }; // class OutOfMemoryException
 
 }; // namespace System

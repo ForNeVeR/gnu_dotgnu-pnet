@@ -33,6 +33,16 @@ public class DivideByZeroException : ArithmeticException
 	public DivideByZeroException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_DivZero");
+				}
+			}
+
 }; // class DivideByZeroException
 
 }; // namespace System

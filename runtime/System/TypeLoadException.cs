@@ -25,9 +25,8 @@ namespace System
 public class TypeLoadException : SystemException
 {
 	// Internal state.
-	private String className;
+	private String typeName;
 	private String assemblyName;
-	private int resourceID;
 
 	// Constructors.
 	public TypeLoadException()
@@ -36,13 +35,13 @@ public class TypeLoadException : SystemException
 		: base(msg) {}
 	public TypeLoadException(String msg, Exception inner)
 		: base(msg, inner) {}
-	private TypeLoadException(String className, String assemblyName,
-							  String msg, int resourceID)
-		: base(msg, null)
+
+	// Internal constructor that is used by the runtime engine.
+	private TypeLoadException(String typeName, String assembly)
+		: base(null)
 		{
-			this.className = className;
-			this.assemblyName = assemblyName;
-			this.resourceID = resourceID;
+			typeName = typeName;
+			assemblyName = assembly;
 		}
 
 	// Properties.
@@ -50,7 +49,7 @@ public class TypeLoadException : SystemException
 			{
 				get
 				{
-					return className;
+					return typeName;
 				}
 			}
 	public override String Message
@@ -62,11 +61,21 @@ public class TypeLoadException : SystemException
 					{
 						result = result + "[" + assemblyName + "]";
 					}
-					if(className != null)
+					if(typeName != null)
 					{
-						result = result + className + ":";
+						result = result + typeName + ":";
 					}
 					return result + base.Message;
+				}
+			}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_TypeLoad");
 				}
 			}
 

@@ -35,6 +35,16 @@ public class TargetException : ApplicationException
 	public TargetException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_Target");
+				}
+			}
+
 }; // class TargetException
 
 }; // namespace System.Reflection

@@ -33,6 +33,23 @@ public sealed class StackOverflowException : SystemException
 	public StackOverflowException(String msg, Exception inner)
 		: base(msg, inner) {}
 
+	// Internal constructor used by the runtime engine
+	// to make the primary "StackOverflowException" object,
+	// that has no stack trace associated with it.
+	internal StackOverflowException(int dummy)
+		: base(Environment.GetResourceString("Exception_StackOverflow"),
+			   null, false) {}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_StackOverflow");
+				}
+			}
+
 }; // class StackOverflowException
 
 }; // namespace System

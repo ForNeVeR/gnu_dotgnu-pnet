@@ -38,6 +38,16 @@ public sealed class TargetInvocationException : ApplicationException
 		: base(Environment.GetResourceString("Exception_TargetInvoke"), inner)
 		{}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_TargetInvoke");
+				}
+			}
+
 }; // class TargetInvocationException
 
 }; // namespace System.Reflection

@@ -57,6 +57,16 @@ public class ObjectDisposedException : InvalidOperationException
 				}
 			}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_Disposed");
+				}
+			}
+
 }; // class ObjectDisposedException
 
 }; // namespace System

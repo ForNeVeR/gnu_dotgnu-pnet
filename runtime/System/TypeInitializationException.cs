@@ -32,8 +32,7 @@ public sealed class TypeInitializationException : SystemException
 	private TypeInitializationException(String msg)
 		: base(msg) {}
 	private TypeInitializationException(String typeName, Exception inner)
-		: base(String.Format(Environment.GetResourceString
-					("Exception_TypeInitName"), typeName), inner)
+		: base(null, inner)
 		{ this.typeName = typeName; }
 
 	// Properties.
@@ -51,6 +50,25 @@ public sealed class TypeInitializationException : SystemException
 				}
 			}
 		}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					if(typeName != null)
+					{
+						return String.Format
+							(Environment.GetResourceString
+								("Exception_TypeInitName"), typeName);
+					}
+					else
+					{
+						return Environment.GetResourceString
+							("Exception_TypeInit");
+					}
+				}
+			}
 
 }; // class TypeInitializationException
 

@@ -36,6 +36,15 @@ public class ArgumentNullException : ArgumentException
 	public ArgumentNullException(String paramName, String msg)
 		: base(msg, paramName) {}
 
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return preloadedMessage;
+				}
+			}
+
 }; // class ArgumentNullException
 
 }; // namespace System

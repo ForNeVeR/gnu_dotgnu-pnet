@@ -1,5 +1,6 @@
 /*
- * ArithmeticException.cs - Implementation of the "System.ArithmeticException" class.
+ * ArithmeticException.cs - Implementation of the
+ *		"System.ArithmeticException" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -31,6 +32,16 @@ public class ArithmeticException : SystemException
 		: base(msg) {}
 	public ArithmeticException(String msg, Exception inner)
 		: base(msg, inner) {}
+
+	// Get the default message to use for this exception type.
+	protected internal override String MessageDefault
+			{
+				get
+				{
+					return Environment.GetResourceString
+						("Exception_Arithmetic");
+				}
+			}
 
 }; // class ArithmeticException
 

@@ -4,7 +4,6 @@ noinst_DATA = mscorlib.dll
 DEFRESOURCES = $(top_srcdir)/resources/en_US/runtime/runtime.resources
 
 CSSRC = Activator.cs \
-		AccessException.cs \
 		AppDomain.cs \
 		AppDomainUnloadedException.cs \
 		ApplicationException.cs \

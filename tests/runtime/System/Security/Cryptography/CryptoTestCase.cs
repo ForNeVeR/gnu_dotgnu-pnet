@@ -190,10 +190,7 @@ public class CryptoTestCase : TestCase
 
 				// Get the hash value over the input in a sub-buffer.
 				byte[] input2 = new byte [input.Length + 20];
-				if(input.Length != 0)
-				{
-					Array.Copy(input, 0, input2, 10, input.Length);
-				}
+				Array.Copy(input, 0, input2, 10, input.Length);
 				hash = alg.ComputeHash(input2, 10, input.Length);
 
 				// Compare the hash with the expected value.

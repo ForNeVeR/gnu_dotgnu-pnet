@@ -220,12 +220,13 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		int srcLength = sourceArray.Length;
 		int dstLower = destinationArray.GetLowerBound(0);
 		int dstLength = destinationArray.Length;
-		if(sourceIndex < srcLower)
+		if(sourceIndex < srcLower || (sourceIndex - srcLower) > srcLength)
 		{
 			throw new ArgumentOutOfRangeException
 				("sourceIndex", _("ArgRange_Array"));
 		}
-		if(destinationIndex < dstLower)
+		if(destinationIndex < dstLower ||
+		   (destinationIndex - dstLower) > dstLength)
 		{
 			throw new ArgumentOutOfRangeException
 				("destinationIndex", _("ArgRange_Array"));
@@ -235,8 +236,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length", _("ArgRange_NonNegative"));
 		}
-		if((sourceIndex - srcLower) >= srcLength ||
-		   (destinationIndex - dstLower) >= dstLength)
+		if((srcLength - (sourceIndex - srcLower)) < length ||
+		   (dstLength - (destinationIndex - dstLower)) < length)
 		{
 			throw new ArgumentException(_("Arg_InvalidArrayRange"));
 		}

@@ -1165,12 +1165,20 @@ ILProperty *ILPropertyCreate(ILClass *info, ILToken token,
 
 ILMethod *ILPropertyGetGetter(ILProperty *property)
 {
+	if(property->getter)
+	{
+		return property->getter;
+	}
 	return ILMethodSemGetByType(&(property->member.programItem),
 								IL_META_METHODSEM_GETTER);
 }
 
 ILMethod *ILPropertyGetSetter(ILProperty *property)
 {
+	if(property->setter)
+	{
+		return property->setter;
+	}
 	return ILMethodSemGetByType(&(property->member.programItem),
 								IL_META_METHODSEM_SETTER);
 }
@@ -1462,6 +1470,19 @@ ILMethod *ILMethodSemGetByType(ILProgramItem *item, ILUInt32 type)
 			return sem->method;
 		}
 		sem = sem->next;
+	}
+	if(property != 0)
+	{
+		/* Check the cached getter and setter values, in case
+		   we didn't actually create an ILMethodSem block */
+		if(type == IL_META_METHODSEM_GETTER)
+		{
+			return property->getter;
+		}
+		if(type == IL_META_METHODSEM_SETTER)
+		{
+			return property->setter;
+		}
 	}
 	return 0;
 }

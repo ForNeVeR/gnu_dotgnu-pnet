@@ -1546,6 +1546,7 @@ static int Load_MethodAssociation(ILImage *image, ILUInt32 *values,
 {
 	ILMethod *method;
 	ILProgramItem *owner;
+	ILProperty *property;
 
 	/* Find the method */
 	method = ILMethod_FromToken(image, values[IL_OFFSET_METHODSEM_METHOD]);
@@ -1564,8 +1565,19 @@ static int Load_MethodAssociation(ILImage *image, ILUInt32 *values,
 	}
 
 	/* Create the method semantics block and attach it */
-	if(!ILMethodSemCreate(owner, token,
-						  values[IL_OFFSET_METHODSEM_SEMANTICS], method))
+	property = ILProgramItemToProperty(owner);
+	if(property != 0 &&
+	   values[IL_OFFSET_METHODSEM_SEMANTICS] == IL_META_METHODSEM_GETTER)
+	{
+		property->getter = method;
+	}
+	else if(property != 0 &&
+	        values[IL_OFFSET_METHODSEM_SEMANTICS] == IL_META_METHODSEM_SETTER)
+	{
+		property->setter = method;
+	}
+	else if(!ILMethodSemCreate(owner, token,
+						       values[IL_OFFSET_METHODSEM_SEMANTICS], method))
 	{
 		return IL_LOADERR_MEMORY;
 	}

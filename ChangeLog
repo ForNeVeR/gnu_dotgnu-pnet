@@ -14,6 +14,11 @@
 	* ilsize/ilsize.c: report all of the token table sizes in
 	the "-D" (detailed) mode.
 
+	* image/member.c, image/meta_build.c, image/program.h: cache
+	property getters and setters in the ILProperty record rather
+	than creating an ILMethodSem block, because it reduces the
+	amount of memory needed at load time.
+
 2003-02-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, coremul/.cvsignore, coremul/Makefile.am,

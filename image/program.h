@@ -352,6 +352,8 @@ struct _tagILProperty
 {
 	ILMember		member;				/* Common member fields */
 	ILMethodSem    *semantics;			/* List of semantic methods */
+	ILMethod	   *getter;				/* Cached copy of the getter */
+	ILMethod	   *setter;				/* Cached copy of the setter */
 
 };
 

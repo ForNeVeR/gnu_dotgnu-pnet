@@ -1,3 +1,7 @@
+2003-09-26  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/TextBox.cs: Remember previous height in case
+	needed when multiline changes.
 
 2003-09-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 

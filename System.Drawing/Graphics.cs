@@ -894,10 +894,6 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				if (image.toolkitImage == null)
 					image.toolkitImage = ToolkitGraphics.Toolkit.CreateImage(image.dgImage, 0);
 				BaseOffsetPoints(dest);
-				// width and height must be 1 bigger.
-				dest[1].X += 1;
-				dest[2].Y += 1;
-				
 				ToolkitGraphics.DrawImage(image.toolkitImage,src, dest);
 			}
 

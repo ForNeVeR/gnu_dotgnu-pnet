@@ -322,7 +322,7 @@ public abstract class ToolkitGraphicsBase : IToolkitGraphics
 	// Draw the source parallelogram of an image into the parallelogram
 	// defined by dest. Point[] has 3 Points, Top-Left, Top-Right and Bottom-Left.
 	// The remaining point is inferred.
-	public void DrawImage(IToolkitImage image, Point[] src, Point[] dest)
+	public virtual void DrawImage(IToolkitImage image, Point[] src, Point[] dest)
 			{
 				int originX = dest[0].X;
 				int originY = dest[0].Y;

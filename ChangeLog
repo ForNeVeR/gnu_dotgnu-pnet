@@ -17,6 +17,15 @@
 
 	* System.Drawing/Graphics.cs: fix "DrawIcon" and "DrawIconUnstretched".
 
+	* System.Drawing/Graphics.cs, System.Drawing.Xsharp/DrawingGraphics.cs,
+	System.Drawing/Toolkit/ToolkitGraphicsBase.cs: allow the version
+	of "DrawImage" in "ToolkitGraphicsBase" to be overridden with an
+	Xsharp-specific version that can blit sub-images 1-to-1 without
+	creating a new "DotGNU.Image" first; remove the "+1" hack from
+	"ToolkitDrawImage" because it messes up the width and height
+	values (the real problem is an interaction between BaseOffsetPoints
+	and PictureBox and needs to be solved separately).
+
 2004-01-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListViewItemConverter.cs,

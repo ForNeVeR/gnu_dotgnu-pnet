@@ -302,6 +302,31 @@ internal sealed class DrawingGraphics : ToolkitGraphicsBase
 		return value;
 	}
 
+	// Draw an image.
+	public override void DrawImage
+				(IToolkitImage image, System.Drawing.Point[] src,
+				 System.Drawing.Point[] dest)
+			{
+				if((src[1].X - src[0].X) == (dest[1].X - dest[0].X) &&
+				   (src[2].Y - src[0].Y) == (dest[2].Y - dest[0].Y))
+				{
+					// Draw a sub-image, without stretching the pixels.
+					Xsharp.Image ximage =
+						(image as DrawingImage).GetNativeImage();
+					if(ximage != null)
+					{
+						graphics.DrawImage(dest[0].X, dest[0].Y, ximage,
+										   src[0].X, src[0].Y,
+										   src[1].X - src[0].X,
+										   src[2].Y - src[0].Y);
+					}
+				}
+				else
+				{
+					// Hard case: stretch the image before drawing it.
+					base.DrawImage(image, src, dest);
+				}
+			}
 	public override void DrawImage(IToolkitImage image, int x, int y)
 			{
 				Xsharp.Image ximage = (image as DrawingImage).GetNativeImage();

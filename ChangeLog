@@ -45,6 +45,9 @@
 	resources to "csc" to force it to output the correct identifiers for
 	manifest resources.
 
+	* engine/lib_reflect.c (CreateResourceStream): misspelled
+	"System.Reflection.ClrResourceStream".
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

@@ -604,7 +604,7 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 	}
 
 	/* Create the "ClrResourceStream" object and return it */
-	return ILExecThreadNew(thread, "System.Reflecton.ClrResourceStream",
+	return ILExecThreadNew(thread, "System.Reflection.ClrResourceStream",
 						   "(Tjll)V", (ILNativeInt)image,
 						   (ILInt64)start, (ILInt64)length);
 }

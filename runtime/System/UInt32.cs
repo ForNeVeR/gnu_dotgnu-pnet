@@ -73,8 +73,9 @@ public struct UInt32 : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				return NumberFormatter.FormatUInt
-				(value__, format, NumberFormatInfo.GetInstance(provider));
+				return NumberFormatter.FormatFixedPoint
+							((ulong)value__, 0, 0, false, format,
+							 NumberFormatInfo.GetInstance(provider));
 			}
 
 	// Parsing methods.

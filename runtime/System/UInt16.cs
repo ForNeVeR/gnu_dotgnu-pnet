@@ -71,8 +71,9 @@ public struct UInt16 : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				return NumberFormatter.FormatUShort
-				(value__, format, NumberFormatInfo.GetInstance(provider));
+				return NumberFormatter.FormatFixedPoint
+							((ulong)value__, 0, 0, false, format,
+							 NumberFormatInfo.GetInstance(provider));
 			}
 
 	// Parsing methods.

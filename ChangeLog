@@ -2,6 +2,10 @@
 2002-09-17  Gopal.V  <gopalv82@symonds.net>
 
 	* tests/System/TestString.cs: fix wrong asserts in TestStringCompare 
+	
+	* tests/System/TestIPAddress.cs, tests/System/TestSystem.cs, 
+	tests/System/Makefile.am: Add new regression tests for the
+	System.Net.IPAddress class.
 
 2002-09-16  Gopal.V  <gopalv82@symonds.net>
 

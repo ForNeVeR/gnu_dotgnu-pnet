@@ -4,6 +4,7 @@ noinst_DATA = TestSystem.dll
 CSSRC = TestBoolean.cs \
 		TestUri.cs \
 		TestString.cs \
+		TestIPAddress.cs \
 		TestSystem.cs
 
 CSCC_WARNINGS = -Wno-silly-warnings

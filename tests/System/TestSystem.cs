@@ -30,6 +30,7 @@ public class TestSystem
 				suite.AddTests(typeof(TestBoolean));
 				suite.AddTests(typeof(TestUri));
 				suite.AddTests(typeof(TestString));
+				suite.AddTests(typeof(TestIPAddress));
 				return suite;
 			}
 

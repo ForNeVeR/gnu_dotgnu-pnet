@@ -554,6 +554,7 @@ ${file} so ${result}"
 	esac
 fi
 echo 'creating tools/pinvoke.map'
+test -e tools || mkdir tools
 echo "$mappings" >tools/pinvoke.map
 
 AC_OUTPUT([

@@ -1,4 +1,9 @@
 
+2004-09-23  Miroslaw Dobrzanski-Neumann  <mne@mosaic-ag.com>
+
+	* configure.in, samples/dcop/dcop.build: fix out of tree builds for
+	pnetlib. (patch #3378, Gopal).
+
 2004-09-22  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: Fake version info 

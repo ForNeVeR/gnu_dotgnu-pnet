@@ -65,13 +65,13 @@
 			
 			<resources>
 				<includes if="${CONFIG_RUNTIME_INFRA}"
-					name="Method.bmp"/>
+					name="${csant.src.dir}/Method.bmp"/>
 				<includes if="${CONFIG_RUNTIME_INFRA}"
-					name="Class.bmp"/>
+					name="${csant.src.dir}/Class.bmp"/>
 				<includes if="${CONFIG_RUNTIME_INFRA}"
-					name="Interface.bmp"/>
+					name="${csant.src.dir}/Interface.bmp"/>
 				<includes if="${CONFIG_RUNTIME_INFRA}"
-					name="DcopBrowser.bmp"/>
+					name="${csant.src.dir}/DcopBrowser.bmp"/>
 			</resources>
 
 			<arg compiler="cscc" value="-Wno-empty-input"/>

@@ -7,6 +7,9 @@
 	* cscc/c/c_grammar.y, doc/pnettools.texi: set the default
 	PInvoke calling conventions to "cdecl".
 
+	* cscc/c/c_grammar.y (ArrayInitializerSize): handle string
+	initializations of the form {"foo"}.
+
 2004-03-11  Russell Stuart  <russell@stuart.id.au>
 
 	* pnet.spec.in: improve the RPM spec file.

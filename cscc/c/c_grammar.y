@@ -598,6 +598,33 @@ static ILUInt32 ArrayInitializerSize(ILType *type, ILNode *init)
 		return 1;
 	}
 
+	/* Check for {"foo"}, which sometimes should be just "foo" */
+	if(ILNode_List_Length(((ILNode_CArrayInit *)init)->expr) == 1 &&
+	   CTypeIsOpenArray(type) &&
+	   (ILTypeIdentical(CTypeGetElemType(type), ILType_Int8) ||
+	    ILTypeIdentical(CTypeGetElemType(type), ILType_UInt8)))
+	{
+		ILNode *elem =
+			((ILNode_List *)(((ILNode_CArrayInit *)init)->expr))->item1;
+		if(yyisa(elem, ILNode_CString))
+		{
+			return (ILUInt32)(((ILNode_CString *)elem)->len) + 1;
+		}
+	}
+	else if(ILNode_List_Length(((ILNode_CArrayInit *)init)->expr) == 1 &&
+	        CTypeIsOpenArray(type) &&
+	        ILTypeIdentical(CTypeGetElemType(type), ILType_Char))
+	{
+		ILNode *elem =
+			((ILNode_List *)(((ILNode_CArrayInit *)init)->expr))->item1;
+		if(yyisa(elem, ILNode_CWString))
+		{
+			return CGenWStringLength
+					((((ILNode_CWString *)elem)->str),
+					 (((ILNode_CWString *)elem)->len)) + 1;
+		}
+	}
+
 	/* Calculate the size from the node, using the type as a guide */
 	return CArrayInitializerSize(type, init);
 }

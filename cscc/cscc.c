@@ -1368,7 +1368,11 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 		ILDeleteFile(obj_output);
 		return status;
 	}
-	ILDeleteFile(asm_output);
+	if(!CCStringListContains(extension_flags, num_extension_flags,
+							 "save-asm"))
+	{
+		ILDeleteFile(asm_output);
+	}
 
 	/* Done */
 	return 0;

@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH cscc 1 "6 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH cscc 1 "9 May 2002" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 cscc \- the C-Sharp code compiler
 .SH SYNOPSIS
@@ -92,6 +92,7 @@ curve for new users.
 \-filasm\-path=\fIpathname\fR
 \-mjvm
 \-fstdlib\-name=\fIname\fR
+\-fsave\-asm
 .TP
 .B Directory Options
 \-I\fIdir\fR
@@ -356,6 +357,10 @@ Compile to JVM bytecode instead of IL bytecode.
 .B \-fstdlib\-name=\fIname\fR
 Change the name of the standard library to \fIname\fR.  The default
 value is "mscorlib".
+.TP
+.B \-fsave\-asm
+Do not delete intermediate assembly output files.  This is useful
+for debugging compiler problems.
 .SH "DIRECTORY OPTIONS"
 .TP
 .B \-I\fIdir\fR

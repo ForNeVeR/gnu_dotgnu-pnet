@@ -177,6 +177,7 @@ Otherwise the exit status is 0.
 @example
 -fno-short-insns -filasm-path=PATHNAME -mjvm
 -fstdlib-name=NAME
+-fsave-asm
 @end example
 
 @item Directory Options
@@ -537,6 +538,11 @@ Compile to JVM bytecode instead of IL bytecode.
 @item -fstdlib-name=NAME
 Change the name of the standard library to NAME.  The default
 value is "mscorlib".
+
+@cindex -fsave-asm option (cscc)
+@item -fsave-asm
+Do not delete intermediate assembly output files.  This is useful
+for debugging compiler problems.
 @end table
 
 @c -----------------------------------------------------------------------

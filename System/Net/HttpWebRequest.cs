@@ -716,10 +716,19 @@ public class HttpWebRequest : WebRequest
 
 		private static Socket OpenSocket(HttpWebRequest req)
 		{
-			IPAddress ip=Dns.Resolve(req.Address.Host).AddressList[0];
+			IPAddress ip=null;
+			if(req.Address.HostNameType == UriHostNameType.Dns)
+			{
+				ip=Dns.Resolve(req.Address.Host).AddressList[0];
+			}
+			else if(req.Address.HostNameType == UriHostNameType.IPv4 ||
+					req.Address.HostNameType == UriHostNameType.IPv6)
+			{
+				ip=IPAddress.Parse(req.Address.Host);
+			}
 			IPEndPoint ep = new IPEndPoint(ip,req.Address.Port);
 			Socket server=new 
-					Socket(AddressFamily.InterNetwork,SocketType.Stream,
+					Socket(ip.AddressFamily, SocketType.Stream,
 							ProtocolType.Tcp);
 			server.Connect(ep);
 			return server;

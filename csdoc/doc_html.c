@@ -1258,8 +1258,18 @@ static int PrintDocContents(FILE *stream, ILDocType *type,
 			}
 			else if(!strcmp(contents->text, "see"))
 			{
-				PrintCRef(stream, type->tree,
-						  ILDocTextGetParam(contents, "cref"), type, 1);
+				value = ILDocTextGetParam(contents, "langword");
+				if(value)
+				{
+					fputs("<CODE>", stream);
+					PrintString(stream, value);
+					fputs("</CODE>\n", stream);
+				}
+				else
+				{
+					PrintCRef(stream, type->tree,
+							  ILDocTextGetParam(contents, "cref"), type, 1);
+				}
 				lastWasNL = 0;
 			}
 			else if(!strcmp(contents->text, "paramref"))

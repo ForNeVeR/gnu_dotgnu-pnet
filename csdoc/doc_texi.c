@@ -536,7 +536,17 @@ static int PrintDocContents(FILE *stream, ILDocText *contents, int lastWasNL)
 			}
 			else if(!strcmp(contents->text, "see"))
 			{
-				PrintCRef(stream, ILDocTextGetParam(contents, "cref"));
+				value = ILDocTextGetParam(contents, "langword");
+				if(value)
+				{
+					fputs("@t{", stream);
+					PrintString(stream, value);
+					fputs("}", stream);
+				}
+				else
+				{
+					PrintCRef(stream, ILDocTextGetParam(contents, "cref"));
+				}
 				lastWasNL = 0;
 			}
 			else if(!strcmp(contents->text, "paramref"))

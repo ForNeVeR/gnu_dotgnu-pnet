@@ -24,9 +24,11 @@ namespace System.Net.Sockets
 using System;
 using Platform;
 
+//This class is commented out until the assembly problems with Errno\
+//and SocketMethods are solved
 public class SocketException : SystemException
 {
-	// Internal state.
+/*	// Internal state.
 	private Errno errno;
 
 	// Constructors.
@@ -111,7 +113,7 @@ public class SocketException : SystemException
 			}
 
 				
-			
+*/			
 }; // class SocketException
 
 }; // namespace System.Net.Sockets

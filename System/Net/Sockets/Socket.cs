@@ -2,7 +2,7 @@
  * Socket.cs - Implementation of the "System.Net.Sockets.Socket" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
-*
+ *
  * This program is free software, you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -24,7 +24,9 @@ namespace System.Net.Sockets
 using Platform;
 using System;
 using System.Net;
+using System.Collections;
 
+//TODO: Create EndPoint class
 public class Socket : IDisposable
 {
 	//TODO: The security system should check for caller permissions

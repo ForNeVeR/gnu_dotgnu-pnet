@@ -1,4 +1,9 @@
 
+2001-01-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Makefile.am: add "System.IO.StringWriter" to
+	the build.
+
 2001-01-16  Stephen Compall  <rushing@earthling.net>
 
 	* runtime/System/IO/StringWriter.cs: fixes for compile errors.

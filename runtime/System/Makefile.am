@@ -184,6 +184,7 @@ CSSRC = Activator.cs \
 		IO/Stream.cs \
 		IO/StreamReader.cs \
 		IO/StreamWriter.cs \
+		IO/StringWriter.cs \
 		IO/TextReader.cs \
 		IO/TextWriter.cs \
 		Private/CultureName.cs \

@@ -89,7 +89,7 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
 
 #elif defined(IL_CVM_LOCALS)
 
-/* No locals required */
+ILInt32 position;
 
 #elif defined(IL_CVM_MAIN)
 
@@ -245,6 +245,16 @@ case COP_F2D:
 }
 break;
 
+case COP_I2P_LOWER:
+{
+	/* Convert an I4 value into a pointer value that
+	   is lower down on the stack */
+	position = -(((ILInt32)(pc[1])) + 1);
+	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
 case COP_FIX_I4_I:
 {
 	/* Fix a (I4, I) pair on the stack to be (I, I) */
@@ -272,6 +282,18 @@ case COP_FIX_I4_U:
 #else
 	MODIFY_PC_AND_STACK(1, 0);
 #endif
+}
+break;
+
+#elif defined(IL_CVM_WIDE)
+
+case COP_I2P_LOWER:
+{
+	/* Convert an I4 value into a pointer value that
+	   is lower down on the stack */
+	position = -(IL_READ_INT32(pc + 2) + 1);
+	stacktop[position].ptrValue = (void *)(stacktop[position].uintValue);
+	MODIFY_PC_AND_STACK(6, 0);
 }
 break;
 

@@ -28,6 +28,8 @@ the "StackRefresh" coder API.
 engine/verify_obj.c: modify the "ToPointer" coder API to pass the
 entire stack item as "type2".
 
+* engine/cvm.h, engine/cvm_conv.c: implement the "i2p_lower" instruction.
+
 2001-10-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_branch.c: verification for "switch" instructions; process

@@ -189,27 +189,28 @@ extern	"C" {
 #define	COP_F2LU					0x7E
 #define	COP_F2F						0x7F
 #define	COP_F2D						0x80
+#define	COP_I2P_LOWER				0x81
 
 /*
  * Binary value fixups.
  */
-#define	COP_FIX_I4_I				0x81
-#define	COP_FIX_I4_U				0x82
+#define	COP_FIX_I4_I				0x82
+#define	COP_FIX_I4_U				0x83
 
 /*
  * Pointer arithmetic and manipulation.
  */
-#define	COP_PADD_OFFSET				0x83
-#define	COP_PADD_OFFSET_N			0x84
-#define	COP_PADD_I4					0x85
-#define	COP_PADD_I4_R				0x86
-#define	COP_PADD_I8					0x87
-#define	COP_PADD_I8_R				0x88
-#define	COP_PSUB					0x89
-#define	COP_PSUB_I4					0x8A
-#define	COP_PSUB_I8					0x8B
-#define	COP_CKNULL					0x8C
-#define	COP_CKNULL_N				0x8D
+#define	COP_PADD_OFFSET				0x84
+#define	COP_PADD_OFFSET_N			0x85
+#define	COP_PADD_I4					0x86
+#define	COP_PADD_I4_R				0x87
+#define	COP_PADD_I8					0x88
+#define	COP_PADD_I8_R				0x89
+#define	COP_PSUB					0x8A
+#define	COP_PSUB_I4					0x8B
+#define	COP_PSUB_I8					0x8C
+#define	COP_CKNULL					0x8D
+#define	COP_CKNULL_N				0x8E
 
 /*
  * Constant opcodes.

@@ -665,13 +665,33 @@ static void dumpMethodPrototype(FILE *outfile, const char *prefix,
 }
 
 /*
+ * Dump a class in "lookup" form (recursively handle nesting)
+ */
+static void dumpLookupClass(FILE *outfile, ILClass *classInfo)
+{
+	const char *namespace;
+	ILClass *nestedParent=ILClassGetNestedParent(classInfo);
+	if(nestedParent)
+	{
+		dumpLookupClass(outfile,nestedParent);
+		putc('/', outfile);
+	}
+	namespace = ILClass_Namespace(classInfo);
+	if(namespace)
+	{
+		fputs(namespace, outfile);
+		putc('.', outfile);
+	}
+	fputs(ILClass_Name(classInfo), outfile);
+}
+
+/*
  * Dump a type in "lookup" form.
  */
 static void dumpLookupType(FILE *outfile, ILType *type, int topLevel)
 {
 	unsigned long numParams;
 	unsigned long param;
-	const char *namespace;
 
 	if(ILType_IsPrimitive(type))
 	{
@@ -700,25 +720,13 @@ static void dumpLookupType(FILE *outfile, ILType *type, int topLevel)
 	else if(ILType_IsClass(type))
 	{
 		putc('o', outfile);
-		namespace = ILClass_Namespace(ILType_ToClass(type));
-		if(namespace)
-		{
-			fputs(namespace, outfile);
-			putc('.', outfile);
-		}
-		fputs(ILClass_Name(ILType_ToClass(type)), outfile);
+		dumpLookupClass(outfile,ILType_ToClass(type));
 		putc(';', outfile);
 	}
 	else if(ILType_IsValueType(type))
 	{
 		putc('v', outfile);
-		namespace = ILClass_Namespace(ILType_ToClass(type));
-		if(namespace)
-		{
-			fputs(namespace, outfile);
-			putc('.', outfile);
-		}
-		fputs(ILClass_Name(ILType_ToClass(type)), outfile);
+		dumpLookupClass(outfile,ILType_ToClass(type));
 		putc(';', outfile);
 	}
 	else if(type != 0)

@@ -1,3 +1,11 @@
+
+2003-07-22  Gopal.V  <gopalv82@symonds.net>
+
+	* ilnative/ilinternal.c: Add nested type support for dumpLookupType.
+	
+	* engine/int_table.c: Update internal call table after the ilinternal
+	changes.
+
 2003-07-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/int_proto.h, engine/int_table.c: add and modify some
@@ -17,6 +25,7 @@
 	more verbose output.
 
 	* engine/dumpconfig.cs: Add GPL header.
+
 
 2003-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
 

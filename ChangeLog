@@ -8,6 +8,12 @@
 	the argument address in closures, because the previous one didn't
 	work on all platforms.
 
+	* engine/cvm_conv.c, engine/engine.h, engine/lib_delegate.c,
+	engine/lib_marshal.c, engine/pinvoke.c: add delegate objects
+	to the GC handle table when they are converted into closures
+	so that the object won't disappear out from underneath the
+	closure.
+
 2003-10-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm.h, engine/cvm_conv.c, engine/cvm_dasm.c,

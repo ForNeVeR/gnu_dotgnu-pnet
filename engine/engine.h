@@ -616,7 +616,7 @@ ILUInt32 _ILSizeOfTypeLocked(ILType *type);
  * Get the native closure associated with a delegate.  Returns NULL
  * if the closure could not be created for some reason.
  */
-void *_ILDelegateGetClosure(ILObject *delegate);
+void *_ILDelegateGetClosure(ILExecThread *thread, ILObject *delegate);
 
 /*
  * Get the number of parameter words for a method.

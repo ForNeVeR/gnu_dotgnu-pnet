@@ -650,7 +650,8 @@ void _ILStructToNative(ILExecThread *thread, void *value, ILType *type)
 		/* TODO: convert other kinds of fields, not just delegates */
 		if(marshalType == IL_META_MARSHAL_FNPTR)
 		{
-			*((void **)ptr) = _ILDelegateGetClosure(*((ILObject **)ptr));
+			*((void **)ptr) = _ILDelegateGetClosure
+				(thread, *((ILObject **)ptr));
 		}
 	}
 }

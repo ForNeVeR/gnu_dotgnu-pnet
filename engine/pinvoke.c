@@ -775,7 +775,7 @@ static void UnpackDelegateResult(ILExecThread *thread, ILMethod *method,
 			{
 				/* Convert a delegate into a function closure pointer */
 				*((void **)result) = _ILDelegateGetClosure
-					((ILObject *)(thread->stackTop[-1].ptrValue));
+					(thread, (ILObject *)(thread->stackTop[-1].ptrValue));
 				--(thread->stackTop);
 			}
 			return;

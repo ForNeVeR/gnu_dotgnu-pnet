@@ -25,9 +25,9 @@
 extern	"C" {
 #endif
 
-void *_ILDelegateGetClosure(ILObject *delegate)
+void *_ILDelegateGetClosure(ILExecThread *thread, ILObject *delegate)
 {
-#if defined(HAVE_LIBFFI)
+#if defined(HAVE_LIBFFI) && defined(IL_CONFIG_RUNTIME_INFRA)
 	ILMethod *methodInfo;
 
 	/* See if we have a cached closure from last time */
@@ -46,6 +46,9 @@ void *_ILDelegateGetClosure(ILObject *delegate)
 	{
 		return 0;
 	}
+
+	/* Nail down the delegate object, to protect it from garbage collection */
+	_IL_GCHandle_GCAlloc(thread, delegate, 2 /* Normal */);
 
 	/* Make a native closure and cache it for next time */
 	((System_Delegate *)delegate)->closure =

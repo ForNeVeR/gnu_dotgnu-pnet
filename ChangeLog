@@ -1,4 +1,10 @@
 
+2003-06-13  Gopal.V  <gopalv82@symonds.net>
+	
+	* System.Windows.Forms/ProgressBar.cs , 
+	System.Windows.Forms/ControlPaint.cs,
+	samples/FormsHello.cs : Implement the ProgressBar control.
+
 2003-06-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/ButtonBase.cs, System.Windows.Forms/Control.cs,

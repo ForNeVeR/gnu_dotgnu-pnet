@@ -228,13 +228,98 @@ public sealed class ControlPaint
 							 Border3DSide.Left | Border3DSide.Top |
 							 Border3DSide.Right | Border3DSide.Bottom);
 			}
-	[TODO]
 	public static void DrawBorder3D(Graphics graphics, int x, int y,
 									int width, int height,
 									Border3DStyle style,
 									Border3DSide sides)
 			{
-				// TODO
+				DrawBorder3D(graphics, x, y, width, height, 
+								SystemColors.InactiveBorder,
+								SystemColors.Control,
+								style,sides);
+
+			}
+			
+	public static void DrawBorder3D(Graphics graphics, int x, int y,
+									int width, int height,
+									Color foreColor,
+									Color backColor,
+									Border3DStyle style,
+									Border3DSide sides)
+			{
+				Color light, lightlight, dark, darkdark;
+				Pen pen;
+
+				// Draw the border around the edges of the button.
+				if(style == Border3DStyle.Etched)
+				{
+					lightlight = DarkDark(backColor);
+					darkdark = LightLight(backColor);
+					light = Dark(backColor);
+					dark = Light(backColor);
+				}
+				else
+				{
+					lightlight = LightLight(backColor);
+					darkdark = DarkDark(backColor);
+					light = Light(backColor);
+					dark = Dark(backColor);
+				}
+
+				if(width >= 2 && height >= 2)
+				{
+					pen = new Pen(foreColor, 1.0f);
+					pen.EndCap = LineCap.Square;
+					graphics.DrawRectangle(pen, x, y, width, height);
+					pen.Dispose();
+					++x;
+					++y;
+					width -= 2;
+					height -= 2;
+				}
+				if(width >= 4 && height >= 4)
+				{
+					pen = new Pen(lightlight, 1.0f);
+					pen.EndCap = LineCap.Square;
+					if((sides & Border3DSide.Left )!=0)
+					{
+						graphics.DrawLine(pen, x, y + height - 2, x, y);
+						pen.Color = light;
+						graphics.DrawLine(pen, x + 1, y + height - 3,
+									  x + 1, y + 1);
+					}
+					if((sides & Border3DSide.Right )!=0)
+					{
+						pen.Color = darkdark;
+						graphics.DrawLine(pen, x + width - 1, y,
+									  x + width - 1, y + height - 1);
+						pen.Color = dark;
+						graphics.DrawLine(pen, x + width - 2, y + 1,
+									  x + width - 2, y + height - 2);
+					}
+					if((sides & Border3DSide.Top)!=0)
+					{
+						pen.Color = lightlight;
+						graphics.DrawLine(pen, x + 1, y, x + width - 2, y);
+						pen.Color = light;
+						graphics.DrawLine(pen, x + 2, y + 1,
+									  x + width - 3, y + 1);
+					}
+					if((sides & Border3DSide.Bottom)!=0)
+					{
+						pen.Color = darkdark;
+						graphics.DrawLine(pen, x + width - 2, y + height - 1,
+									  x, y + height - 1);
+						pen.Color = dark;
+						graphics.DrawLine(pen, x + width - 3, y + height - 2,
+									  x + 1, y + height - 2);
+					}
+					pen.Dispose();
+					x += 2;
+					y += 2;
+					width -= 4;
+					height -= 4;
+				}
 			}
 
 	// Draw a button control.
@@ -353,6 +438,24 @@ public sealed class ControlPaint
 				 CaptionButton button, ButtonState state)
 			{
 				// TODO
+			}
+
+	public static void DrawBlock(Graphics graphics, int x, int y,
+									int width, int height,
+									Color color)
+			{
+				Brush brush;
+				Pen pen;
+				brush=new SolidBrush(color);
+				/*pen=new Pen(Light(color),1.0f);				
+				graphics.DrawRectangle(pen, x, y, width, height);
+				pen.Dispose();
+				x+=1;
+				y+=1;
+				width-=2;
+				height-=2;*/
+				graphics.FillRectangle(brush, x, y, width, height);
+				brush.Dispose();
 			}
 
 	// Draw a check box control.

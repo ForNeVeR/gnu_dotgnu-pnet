@@ -26,6 +26,7 @@ using System.Windows.Forms;
 public class FormsHello : Form
 {
 	private Button button;
+	private ProgressBar progress;
 	private int msgNum;
 	
 	private FormsHello()
@@ -38,6 +39,11 @@ public class FormsHello : Form
 		button.Text = "Click Me!";
 		button.Location = new Point(30, 130);
 		Controls.Add(button);
+		
+		// Create a progress bar control
+		progress=new ProgressBar();
+		progress.Location = new Point(30, 200);
+		Controls.Add(progress);
 
 		// Hook up interesting events.
 		Paint += new PaintEventHandler(HandlePaint);
@@ -84,6 +90,7 @@ public class FormsHello : Form
 	{
 		Console.WriteLine(Messages[msgNum]);
 		msgNum = (msgNum + 1) % Messages.Length;
+		progress.PerformStep();
 	}
 
 	public static void Main(String[] args)

@@ -3,6 +3,8 @@
 
 	* NEWS, configure.in: update version for the "0.2.4" release.
 
+	* configure.in: update working version to "0.2.5".
+
 2002-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/XmlTextReader.cs: hack around a reachability bug

@@ -624,6 +624,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 			/* Perform a trial select, which may be interrupted */
 			result = select(highest + 1, readPtr, writePtr,
 							exceptPtr, &difftime);
+
 			if(result >= 0 || errno != EINTR)
 			{
 				break;
@@ -653,7 +654,7 @@ ILInt32 ILSysIOSocketSelect(ILSysIOHandle **readfds, ILInt32 numRead,
 							   (struct timeval *)0)) < 0)
 		{
 			/* Keep looping while we are being interrupted by signals */
-			if(result != EINTR)
+			if(errno != EINTR)
 			{
 				break;
 			}

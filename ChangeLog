@@ -7,6 +7,9 @@ codegen/jv_assign.tc, codegen/jv_relop.tc: change the calling
 conventions for ILCommonType so that it can access the
 ILGenInfo object.
 
+* ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l: add syntax to
+ilasm's parser and lexer to support Java method bodies.
+
 2001-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/jopcodes.c, image/Makefile.am: new file, containing a list of

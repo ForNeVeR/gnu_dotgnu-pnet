@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "il_system.h"
 #include "il_opcodes.h"
+#include "il_jopcodes.h"
 #include "il_program.h"
 #include "il_utils.h"
 #include "ilasm_build.h"
@@ -37,6 +38,7 @@ char *ILAsmFilename = 0;
 long  ILAsmLineNum = 1;
 int   ILAsmErrors = 0;
 int   ILAsmParseHexBytes = 0;
+int   ILAsmParseJava = 0;
 
 /*
  * Parse a floating point value.
@@ -214,6 +216,22 @@ static ILIntString ParseString(char *text, int *len)
 #define	OPCODE_TYPE_P(name) yylval.opcode = 0xFE00 | IL_PREFIX_OP_##name; \
 							return I_TYPE
 
+/*
+ * Helper macros for returning Java opcodes of various types.
+ */
+#define	JOPCODE_NONE(name)		yylval.opcode = JAVA_OP_##name; \
+								return I_NONE
+#define	JOPCODE_VAR(name)		yylval.opcode = JAVA_OP_##name; \
+								return I_VAR
+#define	JOPCODE_BRANCH(name)	yylval.opcode = JAVA_OP_##name; \
+								return I_BRANCH
+#define	JOPCODE_METHOD(name)	yylval.opcode = JAVA_OP_##name; \
+								return I_METHOD
+#define	JOPCODE_FIELD(name)		yylval.opcode = JAVA_OP_##name; \
+								return I_FIELD
+#define	JOPCODE_TYPE(name)		yylval.opcode = JAVA_OP_##name; \
+								return I_TYPE
+
 %}
 
 %option outfile="lex.yy.c"
@@ -229,9 +247,12 @@ WHITE			[ \t\v\r\f\032]
 SIGN			[+-]
 
 %x HEXMODE
+%x JAVAMODE
 %%
 	if(ILAsmParseHexBytes)
 		BEGIN(HEXMODE);
+	else if(ILAsmParseJava)
+		BEGIN(JAVAMODE);
 	else
 		BEGIN(0);
 
@@ -239,255 +260,251 @@ SIGN			[+-]
 						  return HEX_BYTE; }
 <HEXMODE>")"			{ return ')'; }
 
-".addon"				{ return D_ADDON; }			/* Directives */
-".algorithm"			{ return D_ALGORITHM; }
-".assembly"				{ return D_ASSEMBLY; }
-".backing"				{ return D_BACKING; }
-".blob"					{ return D_BLOB; }
-".capability"			{ return D_CAPABILITY; }
-".cctor"				{ return D_CCTOR; }
-".class"				{ return D_CLASS; }
-".comtype"				{ return D_COMTYPE; }
-".config"				{ return D_CONFIG; }
-".corflags"				{ return D_CORFLAGS; }
-".ctor"					{ return D_CTOR; }
-".custom"				{ return D_CUSTOM; }
-".data"					{ return D_DATA; }
-".emitbyte"				{ return D_EMITBYTE; }
-".entrypoint"			{ return D_ENTRYPOINT; }
-".event"				{ return D_EVENT; }
-".exeloc"				{ return D_EXELOC; }
-".export"				{ return D_EXPORT; }
-".field"				{ return D_FIELD; }
-".file"					{ return D_FILE; }
-".fire"					{ return D_FIRE; }
-".get"					{ return D_GET; }
-".hash"					{ return D_HASH; }
-".imagebase"			{ return D_IMAGEBASE; }
-".implicitcom"			{ return D_IMPLICITCOM; }
-".library"				{ return D_LIBRARY; }
-".line"					{ return D_LINE; }
-"#line"					{ return D_LINE; }
-".locale"				{ return D_LOCALE; }
-".locals"				{ return D_LOCALS; }
-".manifestres"			{ return D_MANIFESTRES; }
-".maxstack"				{ return D_MAXSTACK; }
-".method"				{ return D_METHOD; }
-".mime"					{ return D_MIME; }
-".module"				{ return D_MODULE; }
-".mresource"			{ return D_MRESOURCE; }
-".namespace"			{ return D_NAMESPACE; }
-".originator"			{ return D_ORIGINATOR; }
-".os"					{ return D_OS; }
-".other"				{ return D_OTHER; }
-".override"				{ return D_OVERRIDE; }
-".pack"					{ return D_PACK; }
-".param"				{ return D_PARAM; }
-".permission"			{ return D_PERMISSION; }
-".permissionset"		{ return D_PERMISSIONSET; }
-".processor"			{ return D_PROCESSOR; }
-".property"				{ return D_PROPERTY; }
-".publickey"			{ return D_PUBLICKEY; }
-".publickeytoken"		{ return D_PUBLICKEYTOKEN; }
-".removeon"				{ return D_REMOVEON; }
-".set"					{ return D_SET; }
-".size"					{ return D_SIZE; }
-".subsystem"			{ return D_SUBSYSTEM; }
-".title"				{ return D_TITLE; }
-".try"					{ return D_TRY; }
-".ver"					{ return D_VER; }
-".vtable"				{ return D_VTABLE; }
-".vtentry"				{ return D_VTENTRY; }
-".vtfixup"				{ return D_VTFIXUP; }
-".zeroinit"				{ return D_ZEROINIT; }
+<INITIAL,JAVAMODE>".addon"				{ return D_ADDON; }	 /* Directives */
+<INITIAL,JAVAMODE>".algorithm"			{ return D_ALGORITHM; }
+<INITIAL,JAVAMODE>".assembly"			{ return D_ASSEMBLY; }
+<INITIAL,JAVAMODE>".backing"			{ return D_BACKING; }
+<INITIAL,JAVAMODE>".blob"				{ return D_BLOB; }
+<INITIAL,JAVAMODE>".capability"			{ return D_CAPABILITY; }
+<INITIAL,JAVAMODE>".cctor"				{ return D_CCTOR; }
+<INITIAL,JAVAMODE>".class"				{ return D_CLASS; }
+<INITIAL,JAVAMODE>".comtype"			{ return D_COMTYPE; }
+<INITIAL,JAVAMODE>".config"				{ return D_CONFIG; }
+<INITIAL,JAVAMODE>".corflags"			{ return D_CORFLAGS; }
+<INITIAL,JAVAMODE>".ctor"				{ return D_CTOR; }
+<INITIAL,JAVAMODE>".custom"				{ return D_CUSTOM; }
+<INITIAL,JAVAMODE>".data"				{ return D_DATA; }
+<INITIAL,JAVAMODE>".emitbyte"			{ return D_EMITBYTE; }
+<INITIAL,JAVAMODE>".entrypoint"			{ return D_ENTRYPOINT; }
+<INITIAL,JAVAMODE>".event"				{ return D_EVENT; }
+<INITIAL,JAVAMODE>".exeloc"				{ return D_EXELOC; }
+<INITIAL,JAVAMODE>".export"				{ return D_EXPORT; }
+<INITIAL,JAVAMODE>".field"				{ return D_FIELD; }
+<INITIAL,JAVAMODE>".file"				{ return D_FILE; }
+<INITIAL,JAVAMODE>".fire"				{ return D_FIRE; }
+<INITIAL,JAVAMODE>".get"				{ return D_GET; }
+<INITIAL,JAVAMODE>".hash"				{ return D_HASH; }
+<INITIAL,JAVAMODE>".imagebase"			{ return D_IMAGEBASE; }
+<INITIAL,JAVAMODE>".implicitcom"		{ return D_IMPLICITCOM; }
+<INITIAL,JAVAMODE>".library"			{ return D_LIBRARY; }
+<INITIAL,JAVAMODE>".line"				{ return D_LINE; }
+<INITIAL,JAVAMODE>"#line"				{ return D_LINE; }
+<INITIAL,JAVAMODE>".locale"				{ return D_LOCALE; }
+<INITIAL,JAVAMODE>".locals"				{ return D_LOCALS; }
+<INITIAL,JAVAMODE>".manifestres"		{ return D_MANIFESTRES; }
+<INITIAL,JAVAMODE>".maxstack"			{ return D_MAXSTACK; }
+<INITIAL,JAVAMODE>".method"				{ return D_METHOD; }
+<INITIAL,JAVAMODE>".mime"				{ return D_MIME; }
+<INITIAL,JAVAMODE>".module"				{ return D_MODULE; }
+<INITIAL,JAVAMODE>".mresource"			{ return D_MRESOURCE; }
+<INITIAL,JAVAMODE>".namespace"			{ return D_NAMESPACE; }
+<INITIAL,JAVAMODE>".originator"			{ return D_ORIGINATOR; }
+<INITIAL,JAVAMODE>".os"					{ return D_OS; }
+<INITIAL,JAVAMODE>".other"				{ return D_OTHER; }
+<INITIAL,JAVAMODE>".override"			{ return D_OVERRIDE; }
+<INITIAL,JAVAMODE>".pack"				{ return D_PACK; }
+<INITIAL,JAVAMODE>".param"				{ return D_PARAM; }
+<INITIAL,JAVAMODE>".permission"			{ return D_PERMISSION; }
+<INITIAL,JAVAMODE>".permissionset"		{ return D_PERMISSIONSET; }
+<INITIAL,JAVAMODE>".processor"			{ return D_PROCESSOR; }
+<INITIAL,JAVAMODE>".property"			{ return D_PROPERTY; }
+<INITIAL,JAVAMODE>".publickey"			{ return D_PUBLICKEY; }
+<INITIAL,JAVAMODE>".publickeytoken"		{ return D_PUBLICKEYTOKEN; }
+<INITIAL,JAVAMODE>".removeon"			{ return D_REMOVEON; }
+<INITIAL,JAVAMODE>".set"				{ return D_SET; }
+<INITIAL,JAVAMODE>".size"				{ return D_SIZE; }
+<INITIAL,JAVAMODE>".subsystem"			{ return D_SUBSYSTEM; }
+<INITIAL,JAVAMODE>".title"				{ return D_TITLE; }
+<INITIAL,JAVAMODE>".try"				{ return D_TRY; }
+<INITIAL,JAVAMODE>".ver"				{ return D_VER; }
+<INITIAL,JAVAMODE>".vtable"				{ return D_VTABLE; }
+<INITIAL,JAVAMODE>".vtentry"			{ return D_VTENTRY; }
+<INITIAL,JAVAMODE>".vtfixup"			{ return D_VTFIXUP; }
+<INITIAL,JAVAMODE>".zeroinit"			{ return D_ZEROINIT; }
 
-"at"					{ return K_AT; }			/* Keywords */
-"as"					{ return K_AS; }
-"implicitcom"			{ return K_IMPLICITCOM; }
-"implicitres"			{ return K_IMPLICITRES; }
-"noappdomain"			{ return K_NOAPPDOMAIN; }
-"noprocess"				{ return K_NOPROCESS; }
-"nomachine"				{ return K_NOMACHINE; }
-"extern"				{ return K_EXTERN; }
-"instance"				{ return K_INSTANCE; }
-"explicit"				{ return K_EXPLICIT; }
-"default"				{ return K_DEFAULT; }
-"vararg"				{ return K_VARARG; }
-"unmanaged"				{ return K_UNMANAGED; }
-"cdecl"					{ return K_CDECL; }
-"stdcall"				{ return K_STDCALL; }
-"thiscall"				{ return K_THISCALL; }
-"fastcall"				{ return K_FASTCALL; }
-"marshal"				{ return K_MARSHAL; }
-"in"					{ return K_IN; }
-"out"					{ return K_OUT; }
-"opt"					{ return K_OPT; }
-"lcid"					{ return K_LCID; }
-"retval"				{ return K_RETVAL; }
-"static"				{ return K_STATIC; }
-"public"				{ return K_PUBLIC; }
-"private"				{ return K_PRIVATE; }
-"family"				{ return K_FAMILY; }
-"initonly"				{ return K_INITONLY; }
-"rtspecialname"			{ return K_RTSPECIALNAME; }
-"specialname"			{ return K_SPECIALNAME; }
-"assembly"				{ return K_ASSEMBLY; }
-"famandassem"			{ return K_FAMANDASSEM; }
-"famorassem"			{ return K_FAMORASSEM; }
-"privatescope"			{ return K_PRIVATESCOPE; }
-"literal"				{ return K_LITERAL; }
-"notserialized"			{ return K_NOTSERIALIZED; }
-"value"					{ return K_VALUE; }
-"not_in_gc_heap"		{ return K_NOT_IN_GC_HEAP; }
-"interface"				{ return K_INTERFACE; }
-"sealed"				{ return K_SEALED; }
-"abstract"				{ return K_ABSTRACT; }
-"auto"					{ return K_AUTO; }
-"sequential"			{ return K_SEQUENTIAL; }
-"ansi"					{ return K_ANSI; }
-"unicode"				{ return K_UNICODE; }
-"autochar"				{ return K_AUTOCHAR; }
-"import"				{ return K_IMPORT; }
-"serializable"			{ return K_SERIALIZABLE; }
-"nested"				{ return K_NESTED; }
-"lateinit"				{ return K_LATEINIT; }
-"extends"				{ return K_EXTENDS; }
-"implements"			{ return K_IMPLEMENTS; }
-"final"					{ return K_FINAL; }
-"virtual"				{ return K_VIRTUAL; }
-"hidebysig"				{ return K_HIDEBYSIG; }
-"newslot"				{ return K_NEWSLOT; }
-"unmanagedexp"			{ return K_UNMANAGEDEXP; }
-"pinvokeimpl"			{ return K_PINVOKEIMPL; }
-"nomangle"				{ return K_NOMANGLE; }
-"ole"					{ return K_OLE; }
-"lasterr"				{ return K_LASTERR; }
-"winapi"				{ return K_WINAPI; }
-"native"				{ return K_NATIVE; }
-"il"					{ return K_IL; }
-"optil"					{ return K_OPTIL; }
-"managed"				{ return K_MANAGED; }
-"forwardref"			{ return K_FORWARDREF; }
-"runtime"				{ return K_RUNTIME; }
-"internalcall"			{ return K_INTERNALCALL; }
-"synchronized"			{ return K_SYNCHRONIZED; }
-"noinlining"			{ return K_NOINLINING; }
-"custom"				{ return K_CUSTOM; }
-"fixed"					{ return K_FIXED; }
-"sysstring"				{ return K_SYSSTRING; }
-"array"					{ return K_ARRAY; }
-"variant"				{ return K_VARIANT; }
-"currency"				{ return K_CURRENCY; }
-"syschar"				{ return K_SYSCHAR; }
-"void"					{ return K_VOID; }
-"bool"					{ return K_BOOL; }
-"int8"					{ return K_INT8; }
-"int16"					{ return K_INT16; }
-"int32"					{ return K_INT32; }
-"int64"					{ return K_INT64; }
-"float32"				{ return K_FLOAT32; }
-"float64"				{ return K_FLOAT64; }
-"error"					{ return K_ERROR; }
-"unsigned"				{ return K_UNSIGNED; }
-"decimal"				{ return K_DECIMAL; }
-"date"					{ return K_DATE; }
-"bstr"					{ return K_BSTR; }
-"lpstr"					{ return K_LPSTR; }
-"lpwstr"				{ return K_LPWSTR; }
-"lptstr"				{ return K_LPTSTR; }
-"objectref"				{ return K_OBJECTREF; }
-"iunknown"				{ return K_IUNKNOWN; }
-"idispatch"				{ return K_IDISPATCH; }
-"struct"				{ return K_STRUCT; }
-"safearray"				{ return K_SAFEARRAY; }
-"int"					{ return K_INT; }
-"byvalstr"				{ return K_BYVALSTR; }
-"tbstr"					{ return K_TBSTR; }
-"lpvoid"				{ return K_LPVOID; }
-"any"					{ return K_ANY; }
-"float"					{ return K_FLOAT; }
-"lpstruct"				{ return K_LPSTRUCT; }
-"null"					{ return K_NULL; }
-"ptr"					{
-			/* "ptr" used to be a reserved word, but not any more */
-			yylval.strValue = ILInternString(yytext, strlen(yytext));
-			return IDENTIFIER;
-		}
-"vector"				{ return K_VECTOR; }
-"hresult"				{ return K_HRESULT; }
-"carray"				{ return K_CARRAY; }
-"userdefined"			{ return K_USERDEFINED; }
-"record"				{ return K_RECORD; }
-"filetime"				{ return K_FILETIME; }
-"blob"					{ return K_BLOB; }
-"stream"				{ return K_STREAM; }
-"storage"				{ return K_STORAGE; }
-"streamed_object"		{ return K_STREAMED_OBJECT; }
-"stored_object"			{ return K_STORED_OBJECT; }
-"blob_object"			{ return K_BLOB_OBJECT; }
-"cf"					{ return K_CF; }
-"clsid"					{ return K_CLSID; }
-"method"				{ return K_METHOD; }
-"class"					{ return K_CLASS; }
-"pinned"				{ return K_PINNED; }
-"modreq"				{ return K_MODREQ; }
-"modopt"				{ return K_MODOPT; }
-"typedref"				{ return K_TYPEDREF; }
-"wchar"					{ return K_WCHAR; }
-"char"					{ return K_CHAR; }
-"fromunmanaged"			{ return K_FROMUNMANAGED; }
-"callmostderived"		{ return K_CALLMOSTDERIVED; }
-"bytearray"				{ return K_BYTEARRAY; }
-"with"					{ return K_WITH; }
-"init"					{ return K_INIT; }
-"to"					{ return K_TO; }
-"catch"					{ return K_CATCH; }
-"filter"				{ return K_FILTER; }
-"finally"				{ return K_FINALLY; }
-"fault"					{ return K_FAULT; }
-"handler"				{ return K_HANDLER; }
-"tls"					{ return K_TLS; }
-"field"					{ return K_FIELD; }
-"request"				{ return K_REQUEST; }
-"demand"				{ return K_DEMAND; }
-"assert"				{ return K_ASSERT; }
-"deny"					{ return K_DENY; }
-"permitonly"			{ return K_PERMITONLY; }
-"linkcheck"				{ return K_LINKCHECK; }
-"inheritcheck"			{ return K_INHERITCHECK; }
-"reqmin"				{ return K_REQMIN; }
-"reqopt"				{ return K_REQOPT; }
-"reqrefuse"				{ return K_REQREFUSE; }
-"prejitgrant"			{ return K_PREJITGRANT; }
-"prejitdeny"			{ return K_PREJITDENY; }
-"noncasdemand"			{ return K_NONCASDEMAND; }
-"noncaslinkdemand"		{ return K_NONCASLINKDEMAND; }
-"noncasinheritance"		{ return K_NONCASINHERITANCE; }
-"readonly"				{ return K_READONLY; }
-"nometadata"			{ return K_NOMETADATA; }
-"algorithm"				{ return K_ALGORITHM; }
-"fullorigin"			{ return K_FULLORIGIN; }
-"nan"					{ return K_NAN; }
-"inf"					{ return K_INF; }
-"publickey"				{ return K_PUBLICKEY; }
-"enablejittracking"		{ return K_ENABLEJITTRACKING; }
-"disablejitoptimizer"	{ return K_DISABLEJITOPTIMIZER; }
-"preservesig"			{ return K_PRESERVESIG; }
-"beforefieldinit"		{ return K_BEFOREFIELDINIT; }
-"compilercontrolled"	{ return K_COMPILERCONTROLLED; }
-"cil"					{ return K_CIL; }
-"valuetype"				{ return K_VALUETYPE; }
-"boxed"					{ return K_BOXED; }
-"string"				{ return K_STRING; }
-"object"				{ return K_OBJECT; }
-"alignment"				{ return K_ALIGNMENT; }
-"reqsecobj"				{ return K_REQSECOBJ; }
-"true"					{ return K_TRUE; }
-"false"					{ return K_FALSE; }
+<INITIAL,JAVAMODE>"at"					{ return K_AT; }	/* Keywords */
+<INITIAL,JAVAMODE>"as"					{ return K_AS; }
+<INITIAL,JAVAMODE>"implicitcom"			{ return K_IMPLICITCOM; }
+<INITIAL,JAVAMODE>"implicitres"			{ return K_IMPLICITRES; }
+<INITIAL,JAVAMODE>"noappdomain"			{ return K_NOAPPDOMAIN; }
+<INITIAL,JAVAMODE>"noprocess"			{ return K_NOPROCESS; }
+<INITIAL,JAVAMODE>"nomachine"			{ return K_NOMACHINE; }
+<INITIAL,JAVAMODE>"extern"				{ return K_EXTERN; }
+<INITIAL,JAVAMODE>"instance"			{ return K_INSTANCE; }
+<INITIAL,JAVAMODE>"explicit"			{ return K_EXPLICIT; }
+<INITIAL,JAVAMODE>"default"				{ return K_DEFAULT; }
+<INITIAL,JAVAMODE>"vararg"				{ return K_VARARG; }
+<INITIAL,JAVAMODE>"unmanaged"			{ return K_UNMANAGED; }
+<INITIAL,JAVAMODE>"cdecl"				{ return K_CDECL; }
+<INITIAL,JAVAMODE>"stdcall"				{ return K_STDCALL; }
+<INITIAL,JAVAMODE>"thiscall"			{ return K_THISCALL; }
+<INITIAL,JAVAMODE>"fastcall"			{ return K_FASTCALL; }
+<INITIAL,JAVAMODE>"marshal"				{ return K_MARSHAL; }
+<INITIAL,JAVAMODE>"in"					{ return K_IN; }
+<INITIAL,JAVAMODE>"out"					{ return K_OUT; }
+<INITIAL,JAVAMODE>"opt"					{ return K_OPT; }
+<INITIAL,JAVAMODE>"lcid"				{ return K_LCID; }
+<INITIAL,JAVAMODE>"retval"				{ return K_RETVAL; }
+<INITIAL,JAVAMODE>"static"				{ return K_STATIC; }
+<INITIAL,JAVAMODE>"public"				{ return K_PUBLIC; }
+<INITIAL,JAVAMODE>"private"				{ return K_PRIVATE; }
+<INITIAL,JAVAMODE>"family"				{ return K_FAMILY; }
+<INITIAL,JAVAMODE>"initonly"			{ return K_INITONLY; }
+<INITIAL,JAVAMODE>"rtspecialname"		{ return K_RTSPECIALNAME; }
+<INITIAL,JAVAMODE>"specialname"			{ return K_SPECIALNAME; }
+<INITIAL,JAVAMODE>"assembly"			{ return K_ASSEMBLY; }
+<INITIAL,JAVAMODE>"famandassem"			{ return K_FAMANDASSEM; }
+<INITIAL,JAVAMODE>"famorassem"			{ return K_FAMORASSEM; }
+<INITIAL,JAVAMODE>"privatescope"		{ return K_PRIVATESCOPE; }
+<INITIAL,JAVAMODE>"literal"				{ return K_LITERAL; }
+<INITIAL,JAVAMODE>"notserialized"		{ return K_NOTSERIALIZED; }
+<INITIAL,JAVAMODE>"value"				{ return K_VALUE; }
+<INITIAL,JAVAMODE>"not_in_gc_heap"		{ return K_NOT_IN_GC_HEAP; }
+<INITIAL,JAVAMODE>"interface"			{ return K_INTERFACE; }
+<INITIAL,JAVAMODE>"sealed"				{ return K_SEALED; }
+<INITIAL,JAVAMODE>"abstract"			{ return K_ABSTRACT; }
+<INITIAL,JAVAMODE>"auto"				{ return K_AUTO; }
+<INITIAL,JAVAMODE>"sequential"			{ return K_SEQUENTIAL; }
+<INITIAL,JAVAMODE>"ansi"				{ return K_ANSI; }
+<INITIAL,JAVAMODE>"unicode"				{ return K_UNICODE; }
+<INITIAL,JAVAMODE>"autochar"			{ return K_AUTOCHAR; }
+<INITIAL,JAVAMODE>"import"				{ return K_IMPORT; }
+<INITIAL,JAVAMODE>"serializable"		{ return K_SERIALIZABLE; }
+<INITIAL,JAVAMODE>"nested"				{ return K_NESTED; }
+<INITIAL,JAVAMODE>"lateinit"			{ return K_LATEINIT; }
+<INITIAL,JAVAMODE>"extends"				{ return K_EXTENDS; }
+<INITIAL,JAVAMODE>"implements"			{ return K_IMPLEMENTS; }
+<INITIAL,JAVAMODE>"final"				{ return K_FINAL; }
+<INITIAL,JAVAMODE>"virtual"				{ return K_VIRTUAL; }
+<INITIAL,JAVAMODE>"hidebysig"			{ return K_HIDEBYSIG; }
+<INITIAL,JAVAMODE>"newslot"				{ return K_NEWSLOT; }
+<INITIAL,JAVAMODE>"unmanagedexp"		{ return K_UNMANAGEDEXP; }
+<INITIAL,JAVAMODE>"pinvokeimpl"			{ return K_PINVOKEIMPL; }
+<INITIAL,JAVAMODE>"nomangle"			{ return K_NOMANGLE; }
+<INITIAL,JAVAMODE>"ole"					{ return K_OLE; }
+<INITIAL,JAVAMODE>"lasterr"				{ return K_LASTERR; }
+<INITIAL,JAVAMODE>"winapi"				{ return K_WINAPI; }
+<INITIAL,JAVAMODE>"native"				{ return K_NATIVE; }
+<INITIAL,JAVAMODE>"il"					{ return K_IL; }
+<INITIAL,JAVAMODE>"optil"				{ return K_OPTIL; }
+<INITIAL,JAVAMODE>"managed"				{ return K_MANAGED; }
+<INITIAL,JAVAMODE>"forwardref"			{ return K_FORWARDREF; }
+<INITIAL,JAVAMODE>"runtime"				{ return K_RUNTIME; }
+<INITIAL,JAVAMODE>"internalcall"		{ return K_INTERNALCALL; }
+<INITIAL,JAVAMODE>"synchronized"		{ return K_SYNCHRONIZED; }
+<INITIAL,JAVAMODE>"noinlining"			{ return K_NOINLINING; }
+<INITIAL,JAVAMODE>"custom"				{ return K_CUSTOM; }
+<INITIAL,JAVAMODE>"fixed"				{ return K_FIXED; }
+<INITIAL,JAVAMODE>"sysstring"			{ return K_SYSSTRING; }
+<INITIAL,JAVAMODE>"array"				{ return K_ARRAY; }
+<INITIAL,JAVAMODE>"variant"				{ return K_VARIANT; }
+<INITIAL,JAVAMODE>"currency"			{ return K_CURRENCY; }
+<INITIAL,JAVAMODE>"syschar"				{ return K_SYSCHAR; }
+<INITIAL,JAVAMODE>"void"				{ return K_VOID; }
+<INITIAL,JAVAMODE>"bool"				{ return K_BOOL; }
+<INITIAL,JAVAMODE>"int8"				{ return K_INT8; }
+<INITIAL,JAVAMODE>"int16"				{ return K_INT16; }
+<INITIAL,JAVAMODE>"int32"				{ return K_INT32; }
+<INITIAL,JAVAMODE>"int64"				{ return K_INT64; }
+<INITIAL,JAVAMODE>"float32"				{ return K_FLOAT32; }
+<INITIAL,JAVAMODE>"float64"				{ return K_FLOAT64; }
+<INITIAL,JAVAMODE>"error"				{ return K_ERROR; }
+<INITIAL,JAVAMODE>"unsigned"			{ return K_UNSIGNED; }
+<INITIAL,JAVAMODE>"decimal"				{ return K_DECIMAL; }
+<INITIAL,JAVAMODE>"date"				{ return K_DATE; }
+<INITIAL,JAVAMODE>"bstr"				{ return K_BSTR; }
+<INITIAL,JAVAMODE>"lpstr"				{ return K_LPSTR; }
+<INITIAL,JAVAMODE>"lpwstr"				{ return K_LPWSTR; }
+<INITIAL,JAVAMODE>"lptstr"				{ return K_LPTSTR; }
+<INITIAL,JAVAMODE>"objectref"			{ return K_OBJECTREF; }
+<INITIAL,JAVAMODE>"iunknown"			{ return K_IUNKNOWN; }
+<INITIAL,JAVAMODE>"idispatch"			{ return K_IDISPATCH; }
+<INITIAL,JAVAMODE>"struct"				{ return K_STRUCT; }
+<INITIAL,JAVAMODE>"safearray"			{ return K_SAFEARRAY; }
+<INITIAL,JAVAMODE>"int"					{ return K_INT; }
+<INITIAL,JAVAMODE>"byvalstr"			{ return K_BYVALSTR; }
+<INITIAL,JAVAMODE>"tbstr"				{ return K_TBSTR; }
+<INITIAL,JAVAMODE>"lpvoid"				{ return K_LPVOID; }
+<INITIAL,JAVAMODE>"any"					{ return K_ANY; }
+<INITIAL,JAVAMODE>"float"				{ return K_FLOAT; }
+<INITIAL,JAVAMODE>"lpstruct"			{ return K_LPSTRUCT; }
+<INITIAL,JAVAMODE>"null"				{ return K_NULL; }
+<INITIAL,JAVAMODE>"vector"				{ return K_VECTOR; }
+<INITIAL,JAVAMODE>"hresult"				{ return K_HRESULT; }
+<INITIAL,JAVAMODE>"carray"				{ return K_CARRAY; }
+<INITIAL,JAVAMODE>"userdefined"			{ return K_USERDEFINED; }
+<INITIAL,JAVAMODE>"record"				{ return K_RECORD; }
+<INITIAL,JAVAMODE>"filetime"			{ return K_FILETIME; }
+<INITIAL,JAVAMODE>"blob"				{ return K_BLOB; }
+<INITIAL,JAVAMODE>"stream"				{ return K_STREAM; }
+<INITIAL,JAVAMODE>"storage"				{ return K_STORAGE; }
+<INITIAL,JAVAMODE>"streamed_object"		{ return K_STREAMED_OBJECT; }
+<INITIAL,JAVAMODE>"stored_object"		{ return K_STORED_OBJECT; }
+<INITIAL,JAVAMODE>"blob_object"			{ return K_BLOB_OBJECT; }
+<INITIAL,JAVAMODE>"cf"					{ return K_CF; }
+<INITIAL,JAVAMODE>"clsid"				{ return K_CLSID; }
+<INITIAL,JAVAMODE>"method"				{ return K_METHOD; }
+<INITIAL,JAVAMODE>"class"				{ return K_CLASS; }
+<INITIAL,JAVAMODE>"pinned"				{ return K_PINNED; }
+<INITIAL,JAVAMODE>"modreq"				{ return K_MODREQ; }
+<INITIAL,JAVAMODE>"modopt"				{ return K_MODOPT; }
+<INITIAL,JAVAMODE>"typedref"			{ return K_TYPEDREF; }
+<INITIAL,JAVAMODE>"wchar"				{ return K_WCHAR; }
+<INITIAL,JAVAMODE>"char"				{ return K_CHAR; }
+<INITIAL,JAVAMODE>"fromunmanaged"		{ return K_FROMUNMANAGED; }
+<INITIAL,JAVAMODE>"callmostderived"		{ return K_CALLMOSTDERIVED; }
+<INITIAL,JAVAMODE>"bytearray"			{ return K_BYTEARRAY; }
+<INITIAL,JAVAMODE>"with"				{ return K_WITH; }
+<INITIAL,JAVAMODE>"init"				{ return K_INIT; }
+<INITIAL,JAVAMODE>"to"					{ return K_TO; }
+<INITIAL,JAVAMODE>"catch"				{ return K_CATCH; }
+<INITIAL,JAVAMODE>"filter"				{ return K_FILTER; }
+<INITIAL,JAVAMODE>"finally"				{ return K_FINALLY; }
+<INITIAL,JAVAMODE>"fault"				{ return K_FAULT; }
+<INITIAL,JAVAMODE>"handler"				{ return K_HANDLER; }
+<INITIAL,JAVAMODE>"tls"					{ return K_TLS; }
+<INITIAL,JAVAMODE>"field"				{ return K_FIELD; }
+<INITIAL,JAVAMODE>"request"				{ return K_REQUEST; }
+<INITIAL,JAVAMODE>"demand"				{ return K_DEMAND; }
+<INITIAL,JAVAMODE>"assert"				{ return K_ASSERT; }
+<INITIAL,JAVAMODE>"deny"				{ return K_DENY; }
+<INITIAL,JAVAMODE>"permitonly"			{ return K_PERMITONLY; }
+<INITIAL,JAVAMODE>"linkcheck"			{ return K_LINKCHECK; }
+<INITIAL,JAVAMODE>"inheritcheck"		{ return K_INHERITCHECK; }
+<INITIAL,JAVAMODE>"reqmin"				{ return K_REQMIN; }
+<INITIAL,JAVAMODE>"reqopt"				{ return K_REQOPT; }
+<INITIAL,JAVAMODE>"reqrefuse"			{ return K_REQREFUSE; }
+<INITIAL,JAVAMODE>"prejitgrant"			{ return K_PREJITGRANT; }
+<INITIAL,JAVAMODE>"prejitdeny"			{ return K_PREJITDENY; }
+<INITIAL,JAVAMODE>"noncasdemand"		{ return K_NONCASDEMAND; }
+<INITIAL,JAVAMODE>"noncaslinkdemand"	{ return K_NONCASLINKDEMAND; }
+<INITIAL,JAVAMODE>"noncasinheritance"	{ return K_NONCASINHERITANCE; }
+<INITIAL,JAVAMODE>"readonly"			{ return K_READONLY; }
+<INITIAL,JAVAMODE>"nometadata"			{ return K_NOMETADATA; }
+<INITIAL,JAVAMODE>"algorithm"			{ return K_ALGORITHM; }
+<INITIAL,JAVAMODE>"fullorigin"			{ return K_FULLORIGIN; }
+<INITIAL,JAVAMODE>"nan"					{ return K_NAN; }
+<INITIAL,JAVAMODE>"inf"					{ return K_INF; }
+<INITIAL,JAVAMODE>"publickey"			{ return K_PUBLICKEY; }
+<INITIAL,JAVAMODE>"enablejittracking"	{ return K_ENABLEJITTRACKING; }
+<INITIAL,JAVAMODE>"disablejitoptimizer"	{ return K_DISABLEJITOPTIMIZER; }
+<INITIAL,JAVAMODE>"preservesig"			{ return K_PRESERVESIG; }
+<INITIAL,JAVAMODE>"beforefieldinit"		{ return K_BEFOREFIELDINIT; }
+<INITIAL,JAVAMODE>"compilercontrolled"	{ return K_COMPILERCONTROLLED; }
+<INITIAL,JAVAMODE>"cil"					{ return K_CIL; }
+<INITIAL,JAVAMODE>"valuetype"			{ return K_VALUETYPE; }
+<INITIAL,JAVAMODE>"boxed"				{ return K_BOXED; }
+<INITIAL,JAVAMODE>"string"				{ return K_STRING; }
+<INITIAL,JAVAMODE>"object"				{ return K_OBJECT; }
+<INITIAL,JAVAMODE>"alignment"			{ return K_ALIGNMENT; }
+<INITIAL,JAVAMODE>"reqsecobj"			{ return K_REQSECOBJ; }
+<INITIAL,JAVAMODE>"true"				{ return K_TRUE; }
+<INITIAL,JAVAMODE>"false"				{ return K_FALSE; }
+<INITIAL,JAVAMODE>"java"				{ return K_JAVA; }
 
-"::"					{ return COLON_COLON; }
-"..."					{ return DOT_DOT_DOT; }
-".."					{ return DOT_DOT; }
+<INITIAL,JAVAMODE>"::"					{ return COLON_COLON; }
+<INITIAL,JAVAMODE>"..."					{ return DOT_DOT_DOT; }
+<INITIAL,JAVAMODE>".."					{ return DOT_DOT; }
 
 "add"					{ OPCODE_NONE(ADD); }	/* Opcodes with no args */
 "add.ovf"				{ OPCODE_NONE(ADD_OVF); }
@@ -755,46 +772,285 @@ SIGN			[+-]
 "switch"				{ yylval.opcode = IL_OP_SWITCH;	/* Switch opcodes */
 						  return I_SWITCH; }
 
-{IDALPHA}({DIGIT}|{IDALPHA})*	{
+<JAVAMODE>"nop"			{ JOPCODE_NONE(NOP); }	/* Java opcodes with no args */
+<JAVAMODE>"aconst_null"	{ JOPCODE_NONE(ACONST_NULL); }
+<JAVAMODE>"iconst_m1"	{ JOPCODE_NONE(ICONST_M1); }
+<JAVAMODE>"iconst_0"	{ JOPCODE_NONE(ICONST_0); }
+<JAVAMODE>"iconst_1"	{ JOPCODE_NONE(ICONST_1); }
+<JAVAMODE>"iconst_2"	{ JOPCODE_NONE(ICONST_2); }
+<JAVAMODE>"iconst_3"	{ JOPCODE_NONE(ICONST_3); }
+<JAVAMODE>"iconst_4"	{ JOPCODE_NONE(ICONST_4); }
+<JAVAMODE>"iconst_5"	{ JOPCODE_NONE(ICONST_5); }
+<JAVAMODE>"lconst_0"	{ JOPCODE_NONE(LCONST_0); }
+<JAVAMODE>"lconst_1"	{ JOPCODE_NONE(LCONST_1); }
+<JAVAMODE>"fconst_0"	{ JOPCODE_NONE(FCONST_0); }
+<JAVAMODE>"fconst_1"	{ JOPCODE_NONE(FCONST_1); }
+<JAVAMODE>"fconst_2"	{ JOPCODE_NONE(FCONST_2); }
+<JAVAMODE>"dconst_0"	{ JOPCODE_NONE(DCONST_0); }
+<JAVAMODE>"dconst_1"	{ JOPCODE_NONE(DCONST_1); }
+<JAVAMODE>"iload_0"		{ JOPCODE_NONE(ILOAD_0); }
+<JAVAMODE>"iload_1"		{ JOPCODE_NONE(ILOAD_1); }
+<JAVAMODE>"iload_2"		{ JOPCODE_NONE(ILOAD_2); }
+<JAVAMODE>"iload_3"		{ JOPCODE_NONE(ILOAD_3); }
+<JAVAMODE>"lload_0"		{ JOPCODE_NONE(LLOAD_0); }
+<JAVAMODE>"lload_1"		{ JOPCODE_NONE(LLOAD_1); }
+<JAVAMODE>"lload_2"		{ JOPCODE_NONE(LLOAD_2); }
+<JAVAMODE>"lload_3"		{ JOPCODE_NONE(LLOAD_3); }
+<JAVAMODE>"fload_0"		{ JOPCODE_NONE(FLOAD_0); }
+<JAVAMODE>"fload_1"		{ JOPCODE_NONE(FLOAD_1); }
+<JAVAMODE>"fload_2"		{ JOPCODE_NONE(FLOAD_2); }
+<JAVAMODE>"fload_3"		{ JOPCODE_NONE(FLOAD_3); }
+<JAVAMODE>"dload_0"		{ JOPCODE_NONE(DLOAD_0); }
+<JAVAMODE>"dload_1"		{ JOPCODE_NONE(DLOAD_1); }
+<JAVAMODE>"dload_2"		{ JOPCODE_NONE(DLOAD_2); }
+<JAVAMODE>"dload_3"		{ JOPCODE_NONE(DLOAD_3); }
+<JAVAMODE>"aload_0"		{ JOPCODE_NONE(ALOAD_0); }
+<JAVAMODE>"aload_1"		{ JOPCODE_NONE(ALOAD_1); }
+<JAVAMODE>"aload_2"		{ JOPCODE_NONE(ALOAD_2); }
+<JAVAMODE>"aload_3"		{ JOPCODE_NONE(ALOAD_3); }
+<JAVAMODE>"iaload"		{ JOPCODE_NONE(IALOAD); }
+<JAVAMODE>"laload"		{ JOPCODE_NONE(LALOAD); }
+<JAVAMODE>"faload"		{ JOPCODE_NONE(FALOAD); }
+<JAVAMODE>"daload"		{ JOPCODE_NONE(DALOAD); }
+<JAVAMODE>"aaload"		{ JOPCODE_NONE(AALOAD); }
+<JAVAMODE>"baload"		{ JOPCODE_NONE(BALOAD); }
+<JAVAMODE>"caload"		{ JOPCODE_NONE(CALOAD); }
+<JAVAMODE>"saload"		{ JOPCODE_NONE(SALOAD); }
+<JAVAMODE>"istore_0"	{ JOPCODE_NONE(ISTORE_0); }
+<JAVAMODE>"istore_1"	{ JOPCODE_NONE(ISTORE_1); }
+<JAVAMODE>"istore_2"	{ JOPCODE_NONE(ISTORE_2); }
+<JAVAMODE>"istore_3"	{ JOPCODE_NONE(ISTORE_3); }
+<JAVAMODE>"lstore_0"	{ JOPCODE_NONE(LSTORE_0); }
+<JAVAMODE>"lstore_1"	{ JOPCODE_NONE(LSTORE_1); }
+<JAVAMODE>"lstore_2"	{ JOPCODE_NONE(LSTORE_2); }
+<JAVAMODE>"lstore_3"	{ JOPCODE_NONE(LSTORE_3); }
+<JAVAMODE>"fstore_0"	{ JOPCODE_NONE(FSTORE_0); }
+<JAVAMODE>"fstore_1"	{ JOPCODE_NONE(FSTORE_1); }
+<JAVAMODE>"fstore_2"	{ JOPCODE_NONE(FSTORE_2); }
+<JAVAMODE>"fstore_3"	{ JOPCODE_NONE(FSTORE_3); }
+<JAVAMODE>"dstore_0"	{ JOPCODE_NONE(DSTORE_0); }
+<JAVAMODE>"dstore_1"	{ JOPCODE_NONE(DSTORE_1); }
+<JAVAMODE>"dstore_2"	{ JOPCODE_NONE(DSTORE_2); }
+<JAVAMODE>"dstore_3"	{ JOPCODE_NONE(DSTORE_3); }
+<JAVAMODE>"astore_0"	{ JOPCODE_NONE(ASTORE_0); }
+<JAVAMODE>"astore_1"	{ JOPCODE_NONE(ASTORE_1); }
+<JAVAMODE>"astore_2"	{ JOPCODE_NONE(ASTORE_2); }
+<JAVAMODE>"astore_3"	{ JOPCODE_NONE(ASTORE_3); }
+<JAVAMODE>"iastore"		{ JOPCODE_NONE(IASTORE); }
+<JAVAMODE>"lastore"		{ JOPCODE_NONE(LASTORE); }
+<JAVAMODE>"fastore"		{ JOPCODE_NONE(FASTORE); }
+<JAVAMODE>"dastore"		{ JOPCODE_NONE(DASTORE); }
+<JAVAMODE>"aastore"		{ JOPCODE_NONE(AASTORE); }
+<JAVAMODE>"bastore"		{ JOPCODE_NONE(BASTORE); }
+<JAVAMODE>"castore"		{ JOPCODE_NONE(CASTORE); }
+<JAVAMODE>"sastore"		{ JOPCODE_NONE(SASTORE); }
+<JAVAMODE>"pop"			{ JOPCODE_NONE(POP); }
+<JAVAMODE>"pop2"		{ JOPCODE_NONE(POP2); }
+<JAVAMODE>"dup"			{ JOPCODE_NONE(DUP); }
+<JAVAMODE>"dup_x1"		{ JOPCODE_NONE(DUP_X1); }
+<JAVAMODE>"dup_x2"		{ JOPCODE_NONE(DUP_X2); }
+<JAVAMODE>"dup2"		{ JOPCODE_NONE(DUP2); }
+<JAVAMODE>"dup2_x1"		{ JOPCODE_NONE(DUP2_X1); }
+<JAVAMODE>"dup2_x2"		{ JOPCODE_NONE(DUP2_X2); }
+<JAVAMODE>"swap"		{ JOPCODE_NONE(SWAP); }
+<JAVAMODE>"iadd"		{ JOPCODE_NONE(IADD); }
+<JAVAMODE>"ladd"		{ JOPCODE_NONE(LADD); }
+<JAVAMODE>"fadd"		{ JOPCODE_NONE(FADD); }
+<JAVAMODE>"dadd"		{ JOPCODE_NONE(DADD); }
+<JAVAMODE>"isub"		{ JOPCODE_NONE(ISUB); }
+<JAVAMODE>"lsub"		{ JOPCODE_NONE(LSUB); }
+<JAVAMODE>"fsub"		{ JOPCODE_NONE(FSUB); }
+<JAVAMODE>"dsub"		{ JOPCODE_NONE(DSUB); }
+<JAVAMODE>"imul"		{ JOPCODE_NONE(IMUL); }
+<JAVAMODE>"lmul"		{ JOPCODE_NONE(LMUL); }
+<JAVAMODE>"fmul"		{ JOPCODE_NONE(FMUL); }
+<JAVAMODE>"dmul"		{ JOPCODE_NONE(DMUL); }
+<JAVAMODE>"idiv"		{ JOPCODE_NONE(IDIV); }
+<JAVAMODE>"ldiv"		{ JOPCODE_NONE(LDIV); }
+<JAVAMODE>"fdiv"		{ JOPCODE_NONE(FDIV); }
+<JAVAMODE>"ddiv"		{ JOPCODE_NONE(DDIV); }
+<JAVAMODE>"irem"		{ JOPCODE_NONE(IREM); }
+<JAVAMODE>"lrem"		{ JOPCODE_NONE(LREM); }
+<JAVAMODE>"frem"		{ JOPCODE_NONE(FREM); }
+<JAVAMODE>"drem"		{ JOPCODE_NONE(DREM); }
+<JAVAMODE>"ineg"		{ JOPCODE_NONE(INEG); }
+<JAVAMODE>"lneg"		{ JOPCODE_NONE(LNEG); }
+<JAVAMODE>"fneg"		{ JOPCODE_NONE(FNEG); }
+<JAVAMODE>"dneg"		{ JOPCODE_NONE(DNEG); }
+<JAVAMODE>"ishl"		{ JOPCODE_NONE(ISHL); }
+<JAVAMODE>"lshl"		{ JOPCODE_NONE(LSHL); }
+<JAVAMODE>"ishr"		{ JOPCODE_NONE(ISHR); }
+<JAVAMODE>"lshr"		{ JOPCODE_NONE(LSHR); }
+<JAVAMODE>"iushr"		{ JOPCODE_NONE(IUSHR); }
+<JAVAMODE>"lushr"		{ JOPCODE_NONE(LUSHR); }
+<JAVAMODE>"iand"		{ JOPCODE_NONE(IAND); }
+<JAVAMODE>"land"		{ JOPCODE_NONE(LAND); }
+<JAVAMODE>"ior"			{ JOPCODE_NONE(IOR); }
+<JAVAMODE>"lor"			{ JOPCODE_NONE(LOR); }
+<JAVAMODE>"ixor"		{ JOPCODE_NONE(IXOR); }
+<JAVAMODE>"lxor"		{ JOPCODE_NONE(LXOR); }
+<JAVAMODE>"i2l"			{ JOPCODE_NONE(I2L); }
+<JAVAMODE>"i2f"			{ JOPCODE_NONE(I2F); }
+<JAVAMODE>"i2d"			{ JOPCODE_NONE(I2D); }
+<JAVAMODE>"l2i"			{ JOPCODE_NONE(L2I); }
+<JAVAMODE>"l2f"			{ JOPCODE_NONE(L2F); }
+<JAVAMODE>"l2d"			{ JOPCODE_NONE(L2D); }
+<JAVAMODE>"f2i"			{ JOPCODE_NONE(F2I); }
+<JAVAMODE>"f2l"			{ JOPCODE_NONE(F2L); }
+<JAVAMODE>"f2d"			{ JOPCODE_NONE(F2D); }
+<JAVAMODE>"d2i"			{ JOPCODE_NONE(D2I); }
+<JAVAMODE>"d2l"			{ JOPCODE_NONE(D2L); }
+<JAVAMODE>"d2f"			{ JOPCODE_NONE(D2F); }
+<JAVAMODE>"i2b"			{ JOPCODE_NONE(I2B); }
+<JAVAMODE>"i2c"			{ JOPCODE_NONE(I2C); }
+<JAVAMODE>"i2s"			{ JOPCODE_NONE(I2S); }
+<JAVAMODE>"lcmp"		{ JOPCODE_NONE(LCMP); }
+<JAVAMODE>"fcmpl"		{ JOPCODE_NONE(FCMPL); }
+<JAVAMODE>"fcmpg"		{ JOPCODE_NONE(FCMPG); }
+<JAVAMODE>"dcmpl"		{ JOPCODE_NONE(DCMPL); }
+<JAVAMODE>"dcmpg"		{ JOPCODE_NONE(DCMPG); }
+<JAVAMODE>"ireturn"		{ JOPCODE_NONE(IRETURN); }
+<JAVAMODE>"lreturn"		{ JOPCODE_NONE(LRETURN); }
+<JAVAMODE>"freturn"		{ JOPCODE_NONE(FRETURN); }
+<JAVAMODE>"dreturn"		{ JOPCODE_NONE(DRETURN); }
+<JAVAMODE>"areturn"		{ JOPCODE_NONE(ARETURN); }
+<JAVAMODE>"return"		{ JOPCODE_NONE(RETURN); }
+<JAVAMODE>"arraylength"	{ JOPCODE_NONE(ARRAYLENGTH); }
+<JAVAMODE>"athrow"		{ JOPCODE_NONE(ATHROW); }
+<JAVAMODE>"monitorenter" { JOPCODE_NONE(MONITORENTER); }
+<JAVAMODE>"monitorexit"	{ JOPCODE_NONE(MONITOREXIT); }
+<JAVAMODE>"breakpoint"	{ JOPCODE_NONE(BREAKPOINT); }
+
+<JAVAMODE>"bipush"		{ yylval.opcode = JAVA_OP_BIPUSH; /* Int opcodes */
+						  return I_INT; }
+<JAVAMODE>"sipush"		{ yylval.opcode = JAVA_OP_SIPUSH;
+						  return I_INT; }
+
+<JAVAMODE>"ldc"			{ yylval.opcode = JAVA_OP_LDC;	/* Constant opcodes */
+						  return I_CONST; }
+<JAVAMODE>"ldc_w"		{ yylval.opcode = JAVA_OP_LDC_W;
+						  return I_CONST; }
+<JAVAMODE>"ldc2_w"		{ yylval.opcode = JAVA_OP_LDC2_W;
+						  return I_CONST; }
+
+<JAVAMODE>"iload"		{ JOPCODE_VAR(ILOAD); }		/* Variable opcodes */
+<JAVAMODE>"lload"		{ JOPCODE_VAR(LLOAD); }
+<JAVAMODE>"fload"		{ JOPCODE_VAR(FLOAD); }
+<JAVAMODE>"dload"		{ JOPCODE_VAR(DLOAD); }
+<JAVAMODE>"aload"		{ JOPCODE_VAR(ALOAD); }
+<JAVAMODE>"istore"		{ JOPCODE_VAR(ISTORE); }
+<JAVAMODE>"lstore"		{ JOPCODE_VAR(LSTORE); }
+<JAVAMODE>"fstore"		{ JOPCODE_VAR(FSTORE); }
+<JAVAMODE>"dstore"		{ JOPCODE_VAR(DSTORE); }
+<JAVAMODE>"astore"		{ JOPCODE_VAR(ASTORE); }
+<JAVAMODE>"ret"			{ JOPCODE_VAR(RET); }
+
+<JAVAMODE>"iinc"		{ yylval.opcode = JAVA_OP_IINC;	/* Increment opcodes */
+						  return I_IINC; }
+
+<JAVAMODE>"ifeq"		{ JOPCODE_BRANCH(IFEQ); }	/* Branch opcodes */
+<JAVAMODE>"ifne"		{ JOPCODE_BRANCH(IFNE); }
+<JAVAMODE>"iflt"		{ JOPCODE_BRANCH(IFLT); }
+<JAVAMODE>"ifge"		{ JOPCODE_BRANCH(IFGE); }
+<JAVAMODE>"ifgt"		{ JOPCODE_BRANCH(IFGT); }
+<JAVAMODE>"ifle"		{ JOPCODE_BRANCH(IFLE); }
+<JAVAMODE>"if_icmpeq"	{ JOPCODE_BRANCH(IF_ICMPEQ); }
+<JAVAMODE>"if_icmpne"	{ JOPCODE_BRANCH(IF_ICMPNE); }
+<JAVAMODE>"if_icmplt"	{ JOPCODE_BRANCH(IF_ICMPLT); }
+<JAVAMODE>"if_icmpge"	{ JOPCODE_BRANCH(IF_ICMPGE); }
+<JAVAMODE>"if_icmpgt"	{ JOPCODE_BRANCH(IF_ICMPGT); }
+<JAVAMODE>"if_icmple"	{ JOPCODE_BRANCH(IF_ICMPLE); }
+<JAVAMODE>"if_acmpeq"	{ JOPCODE_BRANCH(IF_ACMPEQ); }
+<JAVAMODE>"if_acmpne"	{ JOPCODE_BRANCH(IF_ACMPNE); }
+<JAVAMODE>"goto"		{ JOPCODE_BRANCH(GOTO); }
+<JAVAMODE>"jsr"			{ JOPCODE_BRANCH(JSR); }
+<JAVAMODE>"ifnull"		{ JOPCODE_BRANCH(IFNULL); }
+<JAVAMODE>"ifnonnull"	{ JOPCODE_BRANCH(IFNONNULL); }
+<JAVAMODE>"goto_w"		{ JOPCODE_BRANCH(GOTO_W); }
+<JAVAMODE>"jsr_w"		{ JOPCODE_BRANCH(JSR_W); }
+
+<JAVAMODE>"tableswitch"	{ yylval.opcode = JAVA_OP_TABLESWITCH; /* Switches */
+						  return I_SWITCH; }
+<JAVAMODE>"lookupswitch" { yylval.opcode = JAVA_OP_LOOKUPSWITCH;
+						  return I_LSWITCH; }
+
+<JAVAMODE>"getstatic"	{ JOPCODE_FIELD(GETSTATIC); }	/* Field opcodes */
+<JAVAMODE>"putstatic"	{ JOPCODE_FIELD(PUTSTATIC); }
+<JAVAMODE>"getfield"	{ JOPCODE_FIELD(GETFIELD); }
+<JAVAMODE>"putfield"	{ JOPCODE_FIELD(PUTFIELD); }
+
+<JAVAMODE>"invokevirtual"	{ JOPCODE_METHOD(INVOKEVIRTUAL); } /* Methods */
+<JAVAMODE>"invokespecial"	{ JOPCODE_METHOD(INVOKESPECIAL); }
+<JAVAMODE>"invokestatic"	{ JOPCODE_METHOD(INVOKESTATIC); }
+<JAVAMODE>"invokeinterface"	{ yylval.opcode = JAVA_OP_INVOKEINTERFACE;
+							  return I_IMETHOD; }
+
+<JAVAMODE>"new"			{ JOPCODE_TYPE(NEW); }		/* Type opcodes */
+<JAVAMODE>"anewarray"	{ JOPCODE_TYPE(ANEWARRAY); }
+<JAVAMODE>"checkcast"	{ JOPCODE_TYPE(CHECKCAST); }
+<JAVAMODE>"instanceof"	{ JOPCODE_TYPE(INSTANCEOF); }
+
+<JAVAMODE>"newarray"	{ yylval.opcode = JAVA_OP_ANEWARRAY;	/* Arrays */
+						  return I_NEWARRAY; }
+<JAVAMODE>"multianewarray"	{ yylval.opcode = JAVA_OP_MULTIANEWARRAY;
+						      return I_MULTINEWARRAY; }
+
+<INITIAL,JAVAMODE>{IDALPHA}({DIGIT}|{IDALPHA})*	{
 			yylval.strValue = ILInternString(yytext, strlen(yytext));
 			return IDENTIFIER;
 		}
 
-"."{IDALPHA}({DIGIT}|{IDALPHA})*	{
+<INITIAL,JAVAMODE>"."{IDALPHA}({DIGIT}|{IDALPHA})*	{
 			yylval.strValue = ILInternString(yytext, strlen(yytext));
 			return DOT_IDENTIFIER;
 		}
 
-{SIGN}?{DIGIT}+{EXPONENT}		{ yylval.real = ParseFloat(yytext);
-								  return FLOAT_CONSTANT; }
-{SIGN}?{DIGIT}*"."{DIGIT}+({EXPONENT})?	{
+<INITIAL,JAVAMODE>{SIGN}?{DIGIT}+{EXPONENT}		{
 			yylval.real = ParseFloat(yytext);
 			return FLOAT_CONSTANT;
 		}
-{SIGN}?{DIGIT}+"."{DIGIT}*({EXPONENT})?	{
+<INITIAL,JAVAMODE>{SIGN}?{DIGIT}*"."{DIGIT}+({EXPONENT})?	{
+			yylval.real = ParseFloat(yytext);
+			return FLOAT_CONSTANT;
+		}
+<INITIAL,JAVAMODE>{SIGN}?{DIGIT}+"."{DIGIT}*({EXPONENT})?	{
 			yylval.real = ParseFloat(yytext);
 			return FLOAT_CONSTANT;
 		}
 
-0[xX]{HEX}+				{ yylval.integer = ParseHexInt(yytext);
-						  return INTEGER_CONSTANT; }
--0[xX]{HEX}+			{ yylval.integer = -(ParseHexInt(yytext + 1));
-						  return INTEGER_CONSTANT; }
-0[0-7]*					{ yylval.integer = ParseOctInt(yytext);
-						  return INTEGER_CONSTANT; }
--0[0-7]*				{ yylval.integer = -(ParseOctInt(yytext + 1));
-						  return INTEGER_CONSTANT; }
-{DIGIT}+				{ yylval.integer = ParseDecInt(yytext);
-						  return INTEGER_CONSTANT; }
--{DIGIT}+				{ yylval.integer = -(ParseDecInt(yytext + 1));
-						  return INTEGER_CONSTANT; }
+<INITIAL,JAVAMODE>0[xX]{HEX}+			{
+			yylval.integer = ParseHexInt(yytext);
+			return INTEGER_CONSTANT;
+		}
+<INITIAL,JAVAMODE>-0[xX]{HEX}+			{
+			yylval.integer = -(ParseHexInt(yytext + 1));
+			return INTEGER_CONSTANT;
+		}
+<INITIAL,JAVAMODE>0[0-7]*				{
+			yylval.integer = ParseOctInt(yytext);
+			return INTEGER_CONSTANT;
+		}
+<INITIAL,JAVAMODE>-0[0-7]*				{
+			yylval.integer = -(ParseOctInt(yytext + 1));
+			return INTEGER_CONSTANT;
+		}
+<INITIAL,JAVAMODE>{DIGIT}+				{
+			yylval.integer = ParseDecInt(yytext);
+			return INTEGER_CONSTANT;
+		}
+<INITIAL,JAVAMODE>-{DIGIT}+				{
+			yylval.integer = -(ParseDecInt(yytext + 1));
+			return INTEGER_CONSTANT;
+		}
 
-'(\\.|[^\\'])+'			{ yylval.strValue =
-								ParseString(yytext, &(yylval.strValue.len));
-						  return SQUOTE_STRING; }
-\"(\\.|[^\\"])*\"		{ yylval.strValue =
-								ParseString(yytext, &(yylval.strValue.len));
-						  return DQUOTE_STRING; }
+<INITIAL,JAVAMODE>'(\\.|[^\\'])+'		{
+			yylval.strValue = ParseString(yytext, &(yylval.strValue.len));
+			return SQUOTE_STRING;
+		}
+<INITIAL,JAVAMODE>\"(\\.|[^\\"])*\"		{
+			yylval.strValue = ParseString(yytext, &(yylval.strValue.len));
+			return DQUOTE_STRING;
+		}
 
 <*>"//"				{
 						/* Skip a single-line comment */
@@ -848,8 +1104,8 @@ SIGN			[+-]
 
 <*>\n				{ ++ILAsmLineNum; }
 
-.					{ return (((int)(yytext[0])) & 0xFF); }
+<INITIAL,JAVAMODE>.	{ return (((int)(yytext[0])) & 0xFF); }
 
-<HEXMODE>.			{ /* illegal character which hex bytes */ }
+<HEXMODE>.			{ /* illegal character within hex bytes */ }
 
 %%

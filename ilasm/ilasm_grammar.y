@@ -46,6 +46,7 @@ extern char *ILAsmFilename;
 extern long  ILAsmLineNum;
 extern int   ILAsmErrors;
 extern int   ILAsmParseHexBytes;
+extern int   ILAsmParseJava;
 extern int yylex(void);
 #ifdef YYTEXT_POINTER
 extern char *ilasm_text;
@@ -806,7 +807,6 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %token K_FLOAT				"`float'"
 %token K_LPSTRUCT			"`lpstruct'"
 %token K_NULL				"`null'"
-%token K_PTR				"`ptr'"
 %token K_VECTOR				"`vector'"
 %token K_HRESULT			"`hresult'"
 %token K_CARRAY				"`carray'"
@@ -878,12 +878,14 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %token K_REQSECOBJ			"`reqsecobj'"
 %token K_TRUE				"`true'"
 %token K_FALSE				"`false'"
+%token K_JAVA				"`java'"
 
 /*
  * Instruction types.
  */
 %token I_NONE I_VAR I_INT I_FLOAT I_BRANCH I_METHOD I_FIELD I_TYPE
-%token I_STRING I_SIGNATURE I_RVA I_TOKEN I_SSA I_SWITCH
+%token I_STRING I_SIGNATURE I_RVA I_TOKEN I_SSA I_SWITCH I_CONST
+%token I_IINC I_LSWITCH I_IMETHOD I_NEWARRAY I_MULTINEWARRAY
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -916,7 +918,8 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <methodAttrs>	MethodAttributes MethodAttributeList MethodAttributeName
 %type <opcode>		I_NONE I_VAR I_BRANCH I_METHOD I_FIELD I_TYPE
 %type <opcode>		I_INT I_FLOAT I_STRING I_SIGNATURE I_RVA I_TOKEN
-%type <opcode>		I_SSA I_SWITCH
+%type <opcode>		I_SSA I_SWITCH I_CONST I_IINC I_LSWITCH I_IMETHOD
+%type <opcode>		I_NEWARRAY I_MULTINEWARRAY
 %type <floatValue>	Float64 InstructionFloat
 %type <byteList>	ByteList
 %type <classInfo>	ExtendsClause ClassName CatchClause
@@ -971,6 +974,18 @@ Declaration
 				}
 			}
 		MethodDeclarations '}'
+	| MethodHeading K_JAVA '{'		{
+				if(ILImageNumTokens(ILAsmImage, IL_META_TOKEN_TYPE_DEF) > 1)
+				{
+					ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+					  "global methods must be declared prior to all classes");
+					ILAsmErrors = 1;
+				}
+				ILAsmParseJava = 1;
+			}
+		JavaMethodDeclarations '}'	{
+				ILAsmParseJava = 0;
+			}
 	| FieldDeclaration	{
 				if(ILImageNumTokens(ILAsmImage, IL_META_TOKEN_TYPE_DEF) > 1)
 				{
@@ -1296,6 +1311,12 @@ ClassDeclarationList
 
 ClassDeclaration
 	: MethodHeading '{' MethodDeclarations '}'
+	| MethodHeading K_JAVA '{'	{
+				ILAsmParseJava = 1;
+			}
+	  JavaMethodDeclarations '}'	{
+	  			ILAsmParseJava = 0;
+	  		}
 	| ClassHeading '{' ClassDeclarations '}'	{
 				ILAsmBuildPopClass();
 			}
@@ -2009,6 +2030,33 @@ MethodDeclaration
 			}
 	;
 
+JavaMethodDeclarations
+	: /* empty */			{
+				ILAsmOutFinalizeMethod((ILMethod *)ILAsmCurrScope);
+			  	ILAsmBuildPopScope();
+			}
+	| JavaMethodDeclarationList	{
+				ILAsmOutFinalizeMethod((ILMethod *)ILAsmCurrScope);
+			  	ILAsmBuildPopScope();
+			}
+	;
+
+JavaMethodDeclarationList
+	: JavaMethodDeclaration
+	| JavaMethodDeclarationList JavaMethodDeclaration
+	;
+
+JavaMethodDeclaration
+	: D_MAXSTACK Integer32
+	| D_LOCALS Integer32
+	| JavaInstruction
+	| Identifier ':'				{}
+	| Integer32 ':'					{}
+	| SecurityDeclaration
+	| ExternalSourceSpecification
+	| CustomAttributeDeclaration
+	;
+
 ScopeBlock
 	: '{' 	{
 				/* Record the start of the block */
@@ -2713,7 +2761,6 @@ VariantType
 	| K_UNSIGNED K_INT16	{ $$ = IL_META_VARIANTTYPE_UI2; }
 	| K_UNSIGNED K_INT32	{ $$ = IL_META_VARIANTTYPE_UI4; }
 	| K_UNSIGNED K_INT64	{ $$ = IL_META_VARIANTTYPE_UI8; }
-	| K_PTR					{ $$ = IL_META_VARIANTTYPE_PTR; }
 	| VariantType '[' ']'	{ $$ = IL_META_VARIANTTYPE_ARRAY | $1; }
 	| VariantType K_VECTOR	{ $$ = IL_META_VARIANTTYPE_VECTOR | $1; }
 	| VariantType '&'		{ $$ = IL_META_VARIANTTYPE_BYREF | $1; }
@@ -3592,4 +3639,72 @@ SwitchLabelList
 SwitchLabel
 	: Identifier		{ ILAsmOutSwitchRef($1.string); }
 	| Integer32			{ ILAsmOutSwitchRefInt($1); }
+	;
+
+JavaInstruction
+	: I_NONE				{}
+	| I_VAR Integer32		{}
+	| I_IINC Integer32 Integer32		{}
+	| I_INT Integer64		{}
+	| I_CONST K_INT32 '(' Integer32 ')'		{}
+	| I_CONST K_INT64 '(' Integer64 ')'		{}
+	| I_CONST K_FLOAT32 '(' InstructionFloat ')'		{}
+	| I_CONST K_FLOAT64 '(' InstructionFloat ')'		{}
+	| I_CONST ComposedString	{}
+	| I_BRANCH Integer32	{}
+	| I_BRANCH Identifier	{}
+	| I_METHOD MethodReference		{}
+	| I_METHOD ComposedString ComposedString ComposedString	{}
+	| I_FIELD Type TypeSpecification COLON_COLON Identifier	{}
+	| I_FIELD ComposedString ComposedString ComposedString	{}
+	| I_TYPE TypeSpecification	{}
+	| I_TYPE ComposedString	{}
+	| I_IMETHOD MethodReference Integer32		{}
+	| I_IMETHOD ComposedString ComposedString ComposedString Integer32	{}
+	| I_NEWARRAY JavaArrayType	{}
+	| I_MULTINEWARRAY TypeSpecification Integer32	{}
+	| I_MULTINEWARRAY ComposedString Integer32	{}
+	| I_SWITCH '(' TableSwitchLabels ')'		{}
+	| I_LSWITCH '(' LookupSwitchLabels ')'		{}
+	;
+
+JavaArrayType
+	: K_BOOL
+	| K_CHAR
+	| K_FLOAT32
+	| K_FLOAT64
+	| K_INT8
+	| K_INT16
+	| K_INT32
+	| K_INT64
+	;
+
+TableSwitchLabels
+	: /* empty */
+	| TableSwitchLabelList
+	;
+
+TableSwitchLabelList
+	: TableSwitchLabel
+	| TableSwitchLabelList ',' TableSwitchLabel
+	;
+
+TableSwitchLabel
+	: Identifier		{}
+	| Integer32			{}
+	;
+
+LookupSwitchLabels
+	: /* empty */
+	| LookupSwitchLabelList
+	;
+
+LookupSwitchLabelList
+	: LookupSwitchLabel
+	| LookupSwitchLabelList ',' LookupSwitchLabel
+	;
+
+LookupSwitchLabel
+	: Integer32 ':' Identifier		{}
+	| Integer32 ':' Integer32		{}
 	;

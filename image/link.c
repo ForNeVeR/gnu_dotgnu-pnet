@@ -26,39 +26,12 @@ extern	"C" {
 #endif
 
 /*
- * Determine the pathname separator to use on this platform.
- */
-#if defined(IL_WIN32_NATIVE)
-	#define	PATH_SEP			';'
-	#define	PATH_SEP_STRING		";"
-#else
-	#define	PATH_SEP			':'
-	#define	PATH_SEP_STRING		":"
-#endif
-
-/*
  * Various default path lists.
  */
-#ifdef CSCC_LIB_DIR
 #define	CSCC_LIB_PATH_DEFAULT	\
-			CSCC_LIB_DIR "/cscc/lib" PATH_SEP_STRING \
-			"/usr/local/lib/cscc/lib" PATH_SEP_STRING \
-			"/usr/lib/cscc/lib"
-#define	MONO_PATH_DEFAULT	\
-			CSCC_LIB_DIR
+			"/usr/local/lib/cscc/lib:/usr/lib/cscc/lib"
 #define	LD_LIBRARY_PATH_DEFAULT	\
-			CSCC_LIB_DIR PATH_SEP_STRING \
-			"/usr/local/lib" PATH_SEP_STRING \
-			"/usr/lib"
-#else
-#define	CSCC_LIB_PATH_DEFAULT	\
-			"/usr/local/lib/cscc/lib" PATH_SEP_STRING \
-			"/usr/lib/cscc/lib"
-#define	MONO_PATH_DEFAULT	0
-#define	LD_LIBRARY_PATH_DEFAULT	\
-			"/usr/local/lib" PATH_SEP_STRING \
-			"/usr/lib"
-#endif
+			"/usr/local/lib:/usr/lib"
 
 /*
  * The cached system path, loaded from the environment.
@@ -80,28 +53,96 @@ static const char * const systemAssemblies[] = {
 			(sizeof(systemAssemblies) / sizeof(systemAssemblies[0]))
 
 /*
+ * Add a pathname to "systemPaths".
+ */
+static void AddSystemPath(const char *path, int len)
+{
+	char **newPathList;
+	newPathList = (char **)ILRealloc
+		(systemPath, (systemPathSize + 1) * sizeof(char *));
+	if(!newPathList)
+	{
+		return;
+	}
+	systemPath = newPathList;
+	systemPath[systemPathSize] = ILDupNString(path, len);
+	if(!(systemPath[systemPathSize]))
+	{
+		return;
+	}
+	++systemPathSize;
+}
+
+/*
  * Split a pathname list and add it to the global list of system paths.
  */
-static void SplitPathString(char *list, char *defaultPath)
+static void SplitPathString(char *list, char *stdpath, char *defaultPath)
 {
 	int len;
-	char **newPathList;
+	int separator;
 
 	/* Use the default path if necessary */
 	if(!list || *list == '\0')
 	{
+		/* If we have a standard path, then add that */
+		if(stdpath)
+		{
+			AddSystemPath(stdpath, strlen(stdpath));
+			ILFree(stdpath);
+			stdpath = 0;
+		}
+
+#ifdef IL_WIN32_NATIVE
+		/* Ignore default paths, as they won't make any sense */
+		return;
+#else
 		list = defaultPath;
 		if(!list)
 		{
 			return;
 		}
+#endif
 	}
+
+	/* Garbage-collect the standard path */
+	if(stdpath)
+	{
+		ILFree(stdpath);
+	}
+
+	/* Determine the path separator to use */
+#ifdef IL_WIN32_PLATFORM
+	if(strchr(list, ';') != 0)
+	{
+		/* The path already uses ';', so that is probably the separator */
+		separator = ';';
+	}
+	else
+	{
+		/* Deal with the ambiguity between ':' used as a separator
+		   and ':' used to specify a drive letter */
+		if(((list[0] >= 'A' && list[0] <= 'Z') ||
+		    (list[0] >= 'a' && list[0] <= 'z')) && list[1] == ':')
+		{
+			/* The path is probably one directory, starting
+			   with a drive letter */
+			separator = ';';
+		}
+		else
+		{
+			/* The path is probably Cygwin-like, using ':' to separate */
+			separator = ':';
+		}
+	}
+#else
+	separator = ':';
+#endif
 
 	/* Split the pathname list */
 	while(*list != '\0')
 	{
 		/* Skip separators between directory pathnames */
-		if(*list == PATH_SEP || *list == ' ' || *list == '\t' ||
+		if(*list == separator || *list == ' ' || *list == '\t' ||
 		   *list == '\r' || *list == '\n')
 		{
 			++list;
@@ -110,7 +151,7 @@ static void SplitPathString(char *list, char *defaultPath)
 
 		/* Get the next directory pathname */
 		len = 1;
-		while(list[len] != '\0' && list[len] != PATH_SEP)
+		while(list[len] != '\0' && list[len] != separator)
 		{
 			++len;
 		}
@@ -121,19 +162,7 @@ static void SplitPathString(char *list, char *defaultPath)
 		}
 
 		/* Add the path to the global list */
-		newPathList = (char **)ILRealloc
-			(systemPath, (systemPathSize + 1) * sizeof(char *));
-		if(!newPathList)
-		{
-			return;
-		}
-		systemPath = newPathList;
-		systemPath[systemPathSize] = ILDupNString(list, len);
-		if(!(systemPath[systemPathSize]))
-		{
-			return;
-		}
-		++systemPathSize;
+		AddSystemPath(list, len);
 
 		/* Advance to the next path */
 		list += len;
@@ -147,12 +176,14 @@ static void LoadSystemPath(void)
 {
 	if(!systemPath)
 	{
-		SplitPathString(getenv("CSCC_LIB_PATH"), CSCC_LIB_PATH_DEFAULT);
-		SplitPathString(getenv("MONO_PATH"), MONO_PATH_DEFAULT);
-		SplitPathString(getenv("LD_LIBRARY_PATH"), LD_LIBRARY_PATH_DEFAULT);
+		SplitPathString(getenv("CSCC_LIB_PATH"),
+						ILGetStandardLibraryPath("cscc/lib"),
+						CSCC_LIB_PATH_DEFAULT);
+		SplitPathString(getenv("MONO_PATH"), ILGetStandardLibraryPath(0), 0);
+		SplitPathString(getenv("LD_LIBRARY_PATH"), 0, LD_LIBRARY_PATH_DEFAULT);
 	#ifdef IL_WIN32_PLATFORM
 		/* Win32: try looking in PATH also, since Win32 puts dll's there */
-		SplitPathString(getenv("PATH"), 0);
+		SplitPathString(getenv("PATH"), 0, 0);
 	#endif
 	}
 }

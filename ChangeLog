@@ -8,6 +8,9 @@
 	* engine/lib_dir.c, support/dir.c: shift the system-specific
 	parts of "DirMethods.GetPathInfo" into the "support" directory.
 
+	* image/link.c, image/Makefile.am: modify the assembly search
+	paths to use the routines in "support/path.c".
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

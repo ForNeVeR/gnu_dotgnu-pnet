@@ -5,6 +5,10 @@
 	with "objdump" (thanks to Miroslaw Dobrzanski-Neumann
 	<mne@mosaic-ag.com>).
 
+	* doc/pnettools.texi, resgen/resgen.1, resgen/resgen.c,
+	resgen/resgen.h, resgen/resgen_po.c, resgen/resgen_text.c:
+	add the "-l" option to "resgen", which converts Latin-1 into UTF-8.
+
 2003-10-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y, cscc/csharp/cs_internal.h,

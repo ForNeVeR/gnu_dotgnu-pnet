@@ -1,7 +1,7 @@
 /*
  * resgen_text.c - Text resource loading and writing routines.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,8 @@ static unsigned long ParseHex(const char *inbuf, int inlen,
 /*
  * Convert escape sequences within a buffer into real characters.
  */
-static int ConvertEscapes(const char *inbuf, int inlen, char *outbuf)
+static int ConvertEscapes(const char *inbuf, int inlen,
+						  char *outbuf, int latin1)
 {
 	int outlen = 0;
 	unsigned long ch;
@@ -235,6 +236,15 @@ static int ConvertEscapes(const char *inbuf, int inlen, char *outbuf)
 				break;
 			}
 		}
+		else if(latin1 && (*inbuf & 0x80) != 0)
+		{
+			/* Convert a Latin-1 character into UTF-8 */
+			int tempch = ((*inbuf++) & 0xFF);
+			*outbuf++ = (char)(0xE0 | ((tempch >> 6) & 0x3F));
+			*outbuf++ = (char)(0xC0 | (tempch & 0x3F));
+			outlen += 2;
+			--inlen;
+		}
 		else
 		{
 			*outbuf++ = *inbuf++;
@@ -245,7 +255,7 @@ static int ConvertEscapes(const char *inbuf, int inlen, char *outbuf)
 	return outlen;
 }
 
-int ILResLoadText(const char *filename, FILE *stream)
+int ILResLoadText(const char *filename, FILE *stream, int latin1)
 {
 	char buffer[4096];
 	char buffer2[4096];
@@ -302,7 +312,7 @@ int ILResLoadText(const char *filename, FILE *stream)
 		valueLen = strlen(buffer + posn);
 
 		/* Convert escape sequences in the value into real characters */
-		valueLen = ConvertEscapes(value, valueLen, buffer2);
+		valueLen = ConvertEscapes(value, valueLen, buffer2, latin1);
 		value = buffer2;
 
 		/* Add the resource to the hash table */
@@ -316,7 +326,7 @@ int ILResLoadText(const char *filename, FILE *stream)
 /*
  * Write a single hash entry to an output stream.
  */
-static void writeEntry(FILE *stream, ILResHashEntry *entry)
+static void writeEntry(FILE *stream, ILResHashEntry *entry, int latin1)
 {
 	const char *str;
 	int len, posn;
@@ -362,6 +372,12 @@ static void writeEntry(FILE *stream, ILResHashEntry *entry)
 					}
 					needEscape = 0;
 				}
+				else if(latin1 && ch < 0x0100)
+				{
+					/* Convert a UTF-8 character into Latin-1 */
+					putc((int)ch, stream);
+					needEscape = 0;
+				}
 				else if(ch < (unsigned long)0x10000)
 				{
 					fprintf(stream, "\\u%04lX", ch);
@@ -379,7 +395,7 @@ static void writeEntry(FILE *stream, ILResHashEntry *entry)
 	putc('\n', stream);
 }
 
-void ILResWriteText(FILE *stream)
+void ILResWriteText(FILE *stream, int latin1)
 {
 	int hash;
 	ILResHashEntry *entry;
@@ -388,13 +404,13 @@ void ILResWriteText(FILE *stream)
 		entry = ILResHashTable[hash];
 		while(entry != 0)
 		{
-			writeEntry(stream, entry);
+			writeEntry(stream, entry, latin1);
 			entry = entry->next;
 		}
 	}
 }
 
-void ILResWriteSortedText(FILE *stream)
+void ILResWriteSortedText(FILE *stream, int latin1)
 {
 	ILResHashEntry **table;
 	unsigned long posn;
@@ -405,7 +421,7 @@ void ILResWriteSortedText(FILE *stream)
 	/* Write out the entries */
 	for(posn = 0; posn < ILResNumStrings; ++posn)
 	{
-		writeEntry(stream, table[posn]);
+		writeEntry(stream, table[posn], latin1);
 	}
 
 	/* Free the table */

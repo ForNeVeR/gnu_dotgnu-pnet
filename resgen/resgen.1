@@ -13,7 +13,7 @@
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-.TH resgen 1 "27 September 2001" "Southern Storm Software" "Portable.NET Development Tools"
+.TH resgen 1 "29 October 2003" "Southern Storm Software" "Portable.NET Development Tools"
 .SH NAME
 resgen \- resource generation and conversion utility
 .SH SYNOPSIS
@@ -89,6 +89,9 @@ The output format is set to XML resources.
 .B \-P, \-\-po\-output
 The output format is set to GNU gettext .po resources.
 .TP
+.B \-l, \-\-latin1
+Interpret text and .po files as Latin-1 rather than UTF-8.
+.TP
 .B \-s, \-\-sort\-names
 When writing text resources as output, sort the resources by name.
 This typically makes it easier for humans to read the output.
@@ -123,10 +126,10 @@ Overflow_Byte=Valid Byte values are between 0 and 255, inclusive
 Comments are lines that begin with a `#' character.  Blank lines
 are also considered comments.
 
-Resource string values are assumed to be in the UTF-8 text encoding.
-No other character sets are currently supported.  Values can contain
-one of the following escape sequences, which indicate special
-characters:
+Resource string values are assumed to be in the UTF-8 text encoding
+unless the \fB-l\fR command-line option is supplied.  No other character
+sets are currently supported.  Values can contain one of the following
+escape sequences, which indicate special characters:
 .TP
 \\n
 Newline character, '\\u000A'.

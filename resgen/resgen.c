@@ -1,7 +1,7 @@
 /*
  * resgen.c - Resource file generator and reader.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ static ILCmdLineOption const options[] = {
 	{"-X", 'X', 0, 0, 0},
 	{"-P", 'P', 0, 0, 0},
 	{"-s", 's', 0, 0, 0},
+	{"-l", 'l', 0, 0, 0},
 	{"-v", 'v', 0, 0, 0},
 	{"--text-input", 't', 0,
 		"--text-input  or -t",
@@ -70,6 +71,9 @@ static ILCmdLineOption const options[] = {
 	{"--po-output", 'P', 0,
 		"--po-output   or -P",
 		"Write GNU gettext .po resources to the output file."},
+	{"--latin1", 'l', 0,
+		"--latin1      or -l",
+		"Interpret text and .po files as Latin-1 rather than UTF-8."},
 	{"--sort-names", 's', 0,
 		"--sort-names  or -s",
 		"Sort the resources by name before writing text or .po output."},
@@ -96,13 +100,14 @@ static void usage(const char *progname);
 static void version(void);
 static int guessFormat(const char *filename, int isOutput);
 static int loadResources(const char *filename, FILE *stream,
-						 ILContext *context, int format);
+						 ILContext *context, int format, int latin1);
 
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	int inputFormat = FORMAT_GUESS;
 	int outputFormat = FORMAT_GUESS;
+	int latin1 = 0;
 	int sortNames = 0;
 	char *outputFile = 0;
 	int currFormat;
@@ -174,6 +179,12 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'l':
+			{
+				latin1 = 1;
+			}
+			break;
+
 			case 's':
 			{
 				sortNames = 1;
@@ -227,7 +238,8 @@ int main(int argc, char *argv[])
 			{
 				currFormat = ((inputFormat != FORMAT_GUESS)
 									? inputFormat : FORMAT_TEXT);
-				errors |= loadResources("stdin", stdin, context, currFormat);
+				errors |= loadResources
+					("stdin", stdin, context, currFormat, latin1);
 				sawStdin = 1;
 			}
 		}
@@ -248,7 +260,8 @@ int main(int argc, char *argv[])
 			}
 			currFormat = ((inputFormat != FORMAT_GUESS)
 								? inputFormat : guessFormat(argv[1], 0));
-			errors |= loadResources(argv[1], file, context, currFormat);
+			errors |= loadResources
+				(argv[1], file, context, currFormat, latin1);
 			fclose(file);
 		}
 		++argv;
@@ -285,11 +298,11 @@ int main(int argc, char *argv[])
 				/* Write text resources to stdout */
 				if(sortNames)
 				{
-					ILResWriteSortedText(stdout);
+					ILResWriteSortedText(stdout, latin1);
 				}
 				else
 				{
-					ILResWriteText(stdout);
+					ILResWriteText(stdout, latin1);
 				}
 			}
 			else
@@ -302,11 +315,11 @@ int main(int argc, char *argv[])
 				}
 				if(sortNames)
 				{
-					ILResWriteSortedText(file);
+					ILResWriteSortedText(file, latin1);
 				}
 				else
 				{
-					ILResWriteText(file);
+					ILResWriteText(file, latin1);
 				}
 				fclose(file);
 			}
@@ -366,11 +379,11 @@ int main(int argc, char *argv[])
 				/* Write .po resources to stdout */
 				if(sortNames)
 				{
-					ILResWriteSortedPO(stdout);
+					ILResWriteSortedPO(stdout, latin1);
 				}
 				else
 				{
-					ILResWritePO(stdout);
+					ILResWritePO(stdout, latin1);
 				}
 			}
 			else
@@ -383,11 +396,11 @@ int main(int argc, char *argv[])
 				}
 				if(sortNames)
 				{
-					ILResWriteSortedPO(file);
+					ILResWriteSortedPO(file, latin1);
 				}
 				else
 				{
-					ILResWritePO(file);
+					ILResWritePO(file, latin1);
 				}
 				fclose(file);
 			}
@@ -410,7 +423,7 @@ int main(int argc, char *argv[])
 static void usage(const char *progname)
 {
 	fprintf(stdout, "RESGEN " VERSION " - IL Resource Generation Utility\n");
-	fprintf(stdout, "Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "Copyright (c) 2001, 2003 Southern Storm Software, Pty Ltd.\n");
 	fprintf(stdout, "\n");
 	fprintf(stdout, "Usage: %s [options] input ... output\n", progname);
 	fprintf(stdout, "\n");
@@ -421,7 +434,7 @@ static void version(void)
 {
 
 	printf("RESGEN " VERSION " - IL Resource Generation Utility\n");
-	printf("Copyright (c) 2001 Southern Storm Software, Pty Ltd.\n");
+	printf("Copyright (c) 2001, 2003 Southern Storm Software, Pty Ltd.\n");
 	printf("\n");
 	printf("RESGEN comes with ABSOLUTELY NO WARRANTY.  This is free software,\n");
 	printf("and you are welcome to redistribute it under the terms of the\n");
@@ -582,13 +595,13 @@ int ILResAddResource(const char *filename, long linenum,
  * Load the resources from a file that is in a specific format.
  */
 static int loadResources(const char *filename, FILE *stream,
-						 ILContext *context, int format)
+						 ILContext *context, int format, int latin1)
 {
 	switch(format)
 	{
 		case FORMAT_TEXT:
 		{
-			return ILResLoadText(filename, stream);
+			return ILResLoadText(filename, stream, latin1);
 		}
 		/* Not reached */
 
@@ -642,7 +655,7 @@ static int loadResources(const char *filename, FILE *stream,
 
 		case FORMAT_PO:
 		{
-			return ILResLoadPO(filename, stream);
+			return ILResLoadPO(filename, stream, latin1);
 		}
 		/* Not reached */
 	}

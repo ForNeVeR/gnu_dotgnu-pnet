@@ -1,7 +1,7 @@
 /*
  * resgen_po.c - PO resource loading and writing routines.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -165,7 +165,7 @@ static int parsePOHex(POTokenInfo *tokenInfo, int hexlen)
 /*
  * Get the next token from a .po input stream.
  */
-static void nextPOToken(POTokenInfo *tokenInfo)
+static void nextPOToken(POTokenInfo *tokenInfo, int latin1)
 {
 	int ch;
 	unsigned long octalch;
@@ -299,6 +299,19 @@ static void nextPOToken(POTokenInfo *tokenInfo)
 				PO_ADD_CH(ch);
 				ch = getc(tokenInfo->stream);
 			}
+			else if(latin1)
+			{
+				/* Convert the latin1 character into UTF-8 */
+				if(ch < 0x80)
+				{
+					PO_ADD_CH(ch);
+				}
+				else
+				{
+					PO_ADD_CH(0xE0 | ((ch >> 6) & 0x3F));
+					PO_ADD_CH(0x80 | (ch & 0x3F));
+				}
+			}
 			else
 			{
 				PO_ADD_CH(ch);
@@ -362,7 +375,7 @@ static void nextPOToken(POTokenInfo *tokenInfo)
  * Get a string value from a .po input stream.  This may
  * involve appending multiple strings into a single result.
  */
-static char *getPOString(POTokenInfo *tokenInfo, int *len)
+static char *getPOString(POTokenInfo *tokenInfo, int *len, int latin1)
 {
 	char *result;
 	int resultLen;
@@ -377,7 +390,7 @@ static char *getPOString(POTokenInfo *tokenInfo, int *len)
 	tokenInfo->len = 0;
 
 	/* Collect up any other strings that are appended to the first */
-	nextPOToken(tokenInfo);
+	nextPOToken(tokenInfo, latin1);
 	while(tokenInfo->token == PO_TOKEN_STRING)
 	{
 		if((resultLen + tokenInfo->posn) > resultMax)
@@ -395,7 +408,7 @@ static char *getPOString(POTokenInfo *tokenInfo, int *len)
 			ILMemCpy(result + resultLen, tokenInfo->text, tokenInfo->posn);
 			resultLen += tokenInfo->posn;
 		}
-		nextPOToken(tokenInfo);
+		nextPOToken(tokenInfo, latin1);
 	}
 
 	/* Return the results to the caller */
@@ -403,7 +416,7 @@ static char *getPOString(POTokenInfo *tokenInfo, int *len)
 	return result;
 }
 
-int ILResLoadPO(const char *filename, FILE *stream)
+int ILResLoadPO(const char *filename, FILE *stream, int latin1)
 {
 	POTokenInfo tokenInfo;
 	char *msgid;
@@ -422,14 +435,14 @@ int ILResLoadPO(const char *filename, FILE *stream)
 	tokenInfo.len = 0;
 	tokenInfo.filename = filename;
 	tokenInfo.linenum = 1;
-	nextPOToken(&tokenInfo);
+	nextPOToken(&tokenInfo, latin1);
 
 	/* Parse strings from the input stream */
 	haveAddError = 0;
 	while(tokenInfo.token == PO_TOKEN_MSGID)
 	{
 		/* Get the message identifier */
-		nextPOToken(&tokenInfo);
+		nextPOToken(&tokenInfo, latin1);
 		if(tokenInfo.token != PO_TOKEN_STRING)
 		{
 			if(tokenInfo.token != PO_TOKEN_ERROR)
@@ -440,7 +453,7 @@ int ILResLoadPO(const char *filename, FILE *stream)
 			}
 			break;
 		}
-		msgid = getPOString(&tokenInfo, &msgidLen);
+		msgid = getPOString(&tokenInfo, &msgidLen, latin1);
 
 		/* Check for the "msgstr" keyword */
 		if(tokenInfo.token != PO_TOKEN_MSGSTR)
@@ -456,7 +469,7 @@ int ILResLoadPO(const char *filename, FILE *stream)
 		}
 
 		/* Get the message string */
-		nextPOToken(&tokenInfo);
+		nextPOToken(&tokenInfo, latin1);
 		if(tokenInfo.token != PO_TOKEN_STRING)
 		{
 			if(tokenInfo.token != PO_TOKEN_ERROR)
@@ -469,7 +482,7 @@ int ILResLoadPO(const char *filename, FILE *stream)
 			break;
 		}
 		linenum = tokenInfo.linenum;
-		msgstr = getPOString(&tokenInfo, &msgstrLen);
+		msgstr = getPOString(&tokenInfo, &msgstrLen, latin1);
 
 		/* Add a new resource to the global hash table */
 		if(ILResAddResource(filename, linenum,
@@ -501,7 +514,7 @@ int ILResLoadPO(const char *filename, FILE *stream)
 /*
  * Write a quoted string to a .po file.
  */
-static void writePOString(FILE *stream, const char *str, int len)
+static void writePOString(FILE *stream, const char *str, int len, int latin1)
 {
 	int posn;
 	unsigned long ch;
@@ -614,6 +627,12 @@ static void writePOString(FILE *stream, const char *str, int len)
 					}
 					needEscape = 0;
 				}
+				else if(latin1 && ch < 0x0100)
+				{
+					putc((int)ch, stream);
+					++lineLen;
+					needEscape = 0;
+				}
 				else if(ch < (unsigned long)0x10000)
 				{
 					fprintf(stream, "\\u%04lX", ch);
@@ -643,15 +662,16 @@ static void writePOString(FILE *stream, const char *str, int len)
 /*
  * Write a single hash entry to an output stream as .po data.
  */
-static void writePOEntry(FILE *stream, ILResHashEntry *entry)
+static void writePOEntry(FILE *stream, ILResHashEntry *entry, int latin1)
 {
 	fputs("msgid ", stream);
-	writePOString(stream, entry->data, entry->nameLen);
+	writePOString(stream, entry->data, entry->nameLen, latin1);
 	fputs("msgstr ", stream);
-	writePOString(stream, entry->data + entry->nameLen, entry->valueLen);
+	writePOString(stream, entry->data + entry->nameLen,
+				  entry->valueLen, latin1);
 }
 
-void ILResWritePO(FILE *stream)
+void ILResWritePO(FILE *stream, int latin1)
 {
 	int hash;
 	ILResHashEntry *entry;
@@ -669,13 +689,13 @@ void ILResWritePO(FILE *stream)
 			{
 				putc('\n', stream);
 			}
-			writePOEntry(stream, entry);
+			writePOEntry(stream, entry, latin1);
 			entry = entry->next;
 		}
 	}
 }
 
-void ILResWriteSortedPO(FILE *stream)
+void ILResWriteSortedPO(FILE *stream, int latin1)
 {
 	ILResHashEntry **table;
 	unsigned long posn;
@@ -690,7 +710,7 @@ void ILResWriteSortedPO(FILE *stream)
 		{
 			putc('\n', stream);
 		}
-		writePOEntry(stream, table[posn]);
+		writePOEntry(stream, table[posn], latin1);
 	}
 
 	/* Free the table */

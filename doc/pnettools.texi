@@ -3524,6 +3524,12 @@ This typically makes it easier for humans to read the output.
 
 This option is ignored if the output format is not text.
 
+@cindex -l option (resgen)
+@cindex --latin1 option (resgen)
+@item -l
+@itemx --latin1
+Interpret text and .po files as Latin-1 rather than UTF-8.
+
 @cindex --help option (resgen)
 @item --help
 Print a usage message for the resgen program.
@@ -3564,10 +3570,10 @@ Overflow_Byte=Valid Byte values are between 0 and 255, inclusive
 Comments are lines that begin with a @code{#} character.  Blank lines
 are also considered comments.
 
-Resource string values are assumed to be in the UTF-8 text encoding.
-No other character sets are currently supported.  Values can contain
-one of the following escape sequences, which indicate special
-characters:
+Resource string values are assumed to be in the UTF-8 text encoding
+unless the @code{-l} command-line option is supplied.  No other character
+sets are currently supported.  Values can contain one of the following
+escape sequences, which indicate special characters:
 
 @table @code
 @item \n

@@ -1,7 +1,7 @@
 /*
  * resgen.h - Internal API's used by "resgen".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,8 +61,8 @@ ILResHashEntry **ILResCreateSortedArray(void);
 /*
  * Load the resources in various formats.  Returns non-zero on error.
  */
-int ILResLoadText(const char *filename, FILE *stream);
-int ILResLoadPO(const char *filename, FILE *stream);
+int ILResLoadText(const char *filename, FILE *stream, int latin1);
+int ILResLoadPO(const char *filename, FILE *stream, int latin1);
 int ILResLoadBinary(const char *filename, FILE *stream);
 int ILResLoadBinaryIL(const char *filename, unsigned char *address,
 					  unsigned long size);
@@ -71,10 +71,10 @@ int ILResLoadXML(const char *filename, FILE *stream);
 /*
  * Write the resources in various formats.
  */
-void ILResWriteText(FILE *stream);
-void ILResWriteSortedText(FILE *stream);
-void ILResWritePO(FILE *stream);
-void ILResWriteSortedPO(FILE *stream);
+void ILResWriteText(FILE *stream, int latin1);
+void ILResWriteSortedText(FILE *stream, int latin1);
+void ILResWritePO(FILE *stream, int latin1);
+void ILResWriteSortedPO(FILE *stream, int latin1);
 void ILResWriteBinary(FILE *stream);
 void ILResWriteXML(FILE *stream);
 

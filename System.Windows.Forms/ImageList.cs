@@ -31,14 +31,13 @@ using System.Drawing;
 [TODO]
 public sealed class ImageList : Component
 {
-	// TODO
-
 	// Variables
 	private ColorDepth colorDepth = ColorDepth.Depth8Bit;
 	private ImageCollection images;
 	private Size imageSize = new Size(16,16);
 	private ImageListStreamer imageStream = null;
 	private Color transparentColor = Color.Transparent;
+	private Delegate rhHandler = null;
 
 	// Constructor
 	public ImageList() : base()
@@ -54,10 +53,14 @@ public sealed class ImageList : Component
 	public ColorDepth ColorDepth
 	{
 		get { return colorDepth; }
-		set { colorDepth = value; /* TODO */ }
+		set
+		{
+			colorDepth = value;
+			OnRecreateHandle();
+		}
 	}
 	public IntPtr Handle { get { return IntPtr.Zero; } }
-	public bool HandleCreated { get { return false; } }
+	public bool HandleCreated { get { return true; } }
 #endif
 	public ImageCollection Images { get { return images; } }
 	public Size ImageSize
@@ -71,14 +74,19 @@ public sealed class ImageList : Component
 				throw new ArgumentException(/* TODO */);
 			}
 			imageSize = value;
-			// TODO
+			OnRecreateHandle();
 		}
 	}
 #if !CONFIG_COMPACT_FORMS
+	[TODO]
 	public ImageListStreamer ImageStream
 	{
 		get { return imageStream; }
-		set { imageStream = value; /* TODO */ }
+		set
+		{
+			imageStream = value;
+			OnRecreateHandle();
+		}
 	}
 	public Color TransparentColor
 	{
@@ -103,6 +111,14 @@ public sealed class ImageList : Component
 		g.DrawImage(images[index],x,y,width,height);
 	}
 #endif
+	private void OnRecreateHandle()
+	{
+		EventHandler handler = (rhHandler as EventHandler);
+		if (handler != null)
+		{
+			handler(this,EventArgs.Empty);
+		}
+	}
 	public override string ToString()
 	{
 		// TODO
@@ -111,38 +127,49 @@ public sealed class ImageList : Component
 
 	// Events
 #if !CONFIG_COMPACT_FORMS
-	public event EventHandler RecreateHandle;
+	public
+#else
+	internal
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public class ImageCollection : IList, ICollection, IEnumerable
+	event EventHandler RecreateHandle
 	{
-		// TODO
+		add
+		{
+			rhHandler = Delegate.Combine(rhHandler,value);
+		}
+		remove
+		{
+			rhHandler = Delegate.Remove(rhHandler,value);
+		}
+	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	[TODO]
+	public sealed class ImageCollection : IList, ICollection, IEnumerable
+	{
 		// Variables
 		private ImageList owner;
 		private ArrayList images = new ArrayList();
@@ -151,10 +178,10 @@ public sealed class ImageList : Component
 		internal ImageCollection(ImageList owner) { this.owner = owner; }
 
 		// Properties
-		public virtual int Count { get { return images.Count; } }
-		public virtual bool IsReadOnly { get { return false; } }
+		public int Count { get { return images.Count; } }
+		public bool IsReadOnly { get { return false; } }
 	#if !CONFIG_COMPACT_FORMS
-		public virtual bool Empty { get { return images.Count == 0; } }
+		public bool Empty { get { return images.Count == 0; } }
 		public Image this[int index]
 		{
 			get
@@ -262,7 +289,7 @@ public sealed class ImageList : Component
 	#if !CONFIG_COMPACT_FORMS
 		public bool Contains(Image image)
 		{
-			return images.Contains(image);
+			throw new NotSupportedException(/* TODO */);
 		}
 	#endif
 		public IEnumerator GetEnumerator()
@@ -272,12 +299,12 @@ public sealed class ImageList : Component
 	#if !CONFIG_COMPACT_FORMS
 		public int IndexOf(Image image)
 		{
-			return images.IndexOf(image);
+			throw new NotSupportedException(/* TODO */);
 		}
 
 		public void Remove(Image image)
 		{
-			images.Remove(image);
+			throw new NotSupportedException(/* TODO */);
 		}
 	#endif
 		public void RemoveAt(int index)
@@ -290,8 +317,7 @@ public sealed class ImageList : Component
 		}
 
 		// Properties (Explicit IList Implementation)
-		bool IList.IsReadOnly { get { return images.IsReadOnly; } }
-		bool IList.IsFixedSize { get { return images.IsFixedSize; } }
+		bool IList.IsFixedSize { get { return false; } }
 	#if !CONFIG_COMPACT_FORMS
 		object IList.this[int index]
 		{
@@ -301,28 +327,34 @@ public sealed class ImageList : Component
 	#endif
 
 		// Methods (Explicit IList Implementation)
-		void IList.Clear() { Clear(); }
 		int IList.Add(object o)
 		{
-			if (!(o is Image))
+			if (o == null)
+			{
+				throw new ArgumentNullException(/* TODO */);
+			}
+			if (!(o is Bitmap))
 			{
 				throw new ArgumentException(/* TODO */);
 			}
-			return Add((Image) o,owner.TransparentColor);
+		#if !CONFIG_COMPACT_FORMS
+			((Bitmap) o).MakeTransparent(owner.TransparentColor);
+		#endif
+			return images.Add(o);
 		}
 		bool IList.Contains(object o)
 		{
-			if (!(o is Image)) { return false; }
-			return Contains((Image) o);
+			if (!(o is Bitmap)) { return false; }
+			return images.Contains(o);
 		}
 		int IList.IndexOf(object o)
 		{
-			if (!(o is Image)) { return -1; }
-			return IndexOf((Image) o);
+			if (!(o is Bitmap)) { return -1; }
+			return images.IndexOf(o);
 		}
 		void IList.Insert(int index, object o)
 		{
-			if (!(o is Image))
+			if (!(o is Bitmap))
 			{
 				throw new ArgumentException(/* TODO */);
 			}
@@ -330,21 +362,28 @@ public sealed class ImageList : Component
 		}
 		void IList.Remove(object o)
 		{
-			if (!(o is Image))
+			if (!(o is Bitmap))
 			{
 				throw new ArgumentException(/* TODO */);
 			}
-			Remove((Image) o);
+			images.Remove(o);
 		}
-		void IList.RemoveAt(int index) { RemoveAt(index); }
 
 		// Properties (Explicit ICollection Implementation)
-		int ICollection.Count { get { return images.Count; } }
-		bool ICollection.IsSynchronized { get { return images.IsSynchronized; } }
-		object ICollection.SyncRoot { get { return images.SyncRoot; } }
+		bool ICollection.IsSynchronized
+		{
+			get { return images.IsSynchronized; }
+		}
+		object ICollection.SyncRoot
+		{
+			get { return images.SyncRoot; }
+		}
 
 		// Methods (Explicit ICollection Implementation)
-		void ICollection.CopyTo(Array array, int index) { images.CopyTo(array,index); }
+		void ICollection.CopyTo(Array array, int index)
+		{
+			images.CopyTo(array,index);
+		}
 
 	}; // class ImageList.ImageCollection
 

@@ -120,6 +120,10 @@ internal enum EventId
 	MultilineChanged,
 	ReadOnlyChanged,
 
+	// "ToolBar" events.
+	ButtonClick,
+	ButtonDropDown,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

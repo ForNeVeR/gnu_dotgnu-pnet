@@ -28,6 +28,7 @@ public class FormsHello : Form
 	private Button button;
 	private ProgressBar progress;
 	private int msgNum;
+	private ToolBar toolbar;
 	
 	private FormsHello()
 	{
@@ -63,6 +64,18 @@ public class FormsHello : Form
 		// Hook up interesting events.
 		Paint += new PaintEventHandler(HandlePaint);
 		button.Click += new EventHandler(HandleClick);
+
+		// Create a toolbar control and some toolbar buttons.
+		toolbar = new ToolBar();
+		toolbar.Buttons.Add("Hello");
+		ToolBarButton tbb = new ToolBarButton();
+		tbb.Style = ToolBarButtonStyle.Separator;
+		toolbar.Buttons.Add(tbb);
+		tbb = new ToolBarButton("World!");
+		toolbar.Buttons.Add(tbb);
+		toolbar.Appearance = ToolBarAppearance.Flat;
+		toolbar.BorderStyle = BorderStyle.FixedSingle;
+		Controls.Add(toolbar);
 	}
 
 	private void HandlePaint(Object sender, PaintEventArgs e)

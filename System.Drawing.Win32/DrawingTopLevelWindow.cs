@@ -181,7 +181,7 @@ internal class DrawingTopLevelWindow : DrawingWindow, IToolkitTopLevelWindow
 		WriteUInt16(bitmapInfo, 12, 1);// biPlanes
 		WriteUInt16(bitmapInfo, 14, bitCount);
 		WriteInt32(bitmapInfo, 16, 0);// biCompression
-		WriteInt32(bitmapInfo, 20, 40);// size of BITMAPINFOHEADER
+		WriteInt32(bitmapInfo, 20, 0);// size of image
 		WriteInt32(bitmapInfo, 24, 3780);// biXPelsPerMeter
 		WriteInt32(bitmapInfo, 28, 3780);// biYPelsPerMeter
 		WriteInt32(bitmapInfo, 32, 0);	// biClrUsed

@@ -51,17 +51,11 @@ internal class DrawingTextureBrush : DrawingBrush, IToolkitBrush
 		{
 			// If we have previously selected into a different hdc, then delete and recreate.
 			if (selectedHdc != IntPtr.Zero)
+			{
 				Win32.Api.DeleteObject(hBrush);
+			}
 
-			selectedHdc = (graphics as DrawingGraphics).hdc;
-
-			DotGNU.Images.Frame f = image.imageFrame;
-			byte[] bitmapInfo = DrawingImage.GetBitmapInfo(f.PixelFormat, f.Width, f.Height, f.Palette);
-			IntPtr hBitmap = Win32.Api.CreateCompatibleBitmap(selectedHdc, image.imageFrame.Width, image.imageFrame.Height);
-			Win32.Api.SetDIBits(selectedHdc, hBitmap, 0, (uint)image.imageFrame.Height, ref image.imageFrame.Data[0], bitmapInfo, Win32.Api.DibColorTableType.DIB_RGB_COLORS);
-			hBrush = Win32.Api.CreatePatternBrush(hBitmap);
-			// We dont need the bitmap anymore.
-			Win32.Api.DeleteObject(hBitmap);
+			hBrush = image.BrushFromBitmap((graphics as DrawingGraphics).hdc);
 		}
 		base.Select(graphics);
 	}

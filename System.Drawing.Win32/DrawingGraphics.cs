@@ -300,26 +300,7 @@ public override void FillPie ( System.Drawing.Point[] rect, float startAngle, fl
 	// Write an image at x, y taking into account the mask
 	public override void DrawImage(IToolkitImage image, int x, int y)
 	{
-		DrawingImage di = image as DrawingImage;
-
-		if (di.hMaskRegion != IntPtr.Zero)
-		{
-			// Save the current clipping so we can restore later.
-			Win32.Api.SaveDC(hdc);
-			// Move mask to position
-			Win32.Api.OffsetRgn(di.hMaskRegion, x, y);
-			// Set the mask
-			Win32.Api.ExtSelectClipRgn(hdc, di.hMaskRegion, Win32.Api.RegionCombineMode.RGN_DIFF);
-			// Move mask back to origin
-			Win32.Api.OffsetRgn(di.hMaskRegion, -x, -y);
-		}
-
-		// Draw the image
-		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)di.imageFrame.Width,(uint)di.imageFrame.Height, 0, 0, 0, (uint)di.imageFrame.Height,ref di.imageFrame.Data[0], di.bitmapInfo, Win32.Api.DibColorTableType.DIB_RGB_COLORS);
-
-		// Restore the clipping
-		if (di.hMaskRegion != IntPtr.Zero)
-			Win32.Api.RestoreDC(hdc, -1);
+		(image as DrawingImage).Draw(hdc, x, y);
 	}
 
 	// Draw a bitmap-based glyph to a "Graphics" object.  "bits" must be
@@ -328,60 +309,7 @@ public override void FillPie ( System.Drawing.Point[] rect, float startAngle, fl
 		byte[] xbmBits, int bitsWidth, int bitsHeight,
 		System.Drawing.Color color)
 	{
-		// Convert the xbm data to the bmp format.
-		int[] palette = new int[] {0, color.ToArgb()};
-		byte[] bitmapInfo = DrawingImage.GetBitmapInfo(DotGNU.Images.PixelFormat.Format1bppIndexed, bitsWidth, bitsHeight, palette);
-		int xbmBytesPerRow = (bitsWidth + 7) / 8;
-		int bmpStride = (xbmBytesPerRow + 3) & ~3;
-		// Setup the array to hold the converted data
-		byte[] bits = new byte[bmpStride * bitsHeight];
-
-		int bmpStartStride = 0;
-		int xbmStartStride = 0;
-		for (int y1 = 0; y1 < bitsHeight; y1++)
-		{
-			byte bmpBit = 0x80;
-			byte bmpByte = 0x00;
-			int bmpPos = bmpStartStride;
-		
-			for (int x1 = 0; x1 < bitsWidth; x1++)
-			{
-				// Get the xbm bit.
-				byte xbmByte = xbmBits[xbmStartStride + x1 / 8];
-				bool bit = (xbmByte & (1<< (x1 & 0x07))) > 0;
-				// Set the bmp byte.
-				if (bit)
-					bmpByte |= bmpBit;
-				bmpBit = (byte)(bmpBit >> 1);
-				// Update when we are on a byte boundary.
-				if (bmpBit == 0 || x1 == bitsWidth -1)
-				{
-					bits[bmpPos++] = bmpByte;
-					bmpBit = 0x80;
-					bmpByte = 0x00;
-				}
-			}
-			bmpStartStride += bmpStride;
-			xbmStartStride += xbmBytesPerRow;
-		}
-
-		IntPtr hMaskRegion = DrawingImage.MaskToRegion(bitsWidth, bitsHeight, bmpStride, bits);
-	
-		// Save the current clipping so we can restore later.
-		Win32.Api.SaveDC(hdc);
-		// Move mask to position
-		Win32.Api.OffsetRgn(hMaskRegion, x, y);
-		// Set the mask
-		Win32.Api.ExtSelectClipRgn(hdc, hMaskRegion, Win32.Api.RegionCombineMode.RGN_DIFF);
-		// Move mask back to origin
-		Win32.Api.OffsetRgn(hMaskRegion, -x, -y);
-
-		// Draw the image
-		Win32.Api.SetDIBitsToDevice( hdc, x, y, (uint)bitsWidth,(uint)bitsHeight, 0, 0, 0, (uint)bitsHeight,ref bits[0], bitmapInfo, Win32.Api.DibColorTableType.DIB_RGB_COLORS);
-
-		// Restore the clipping
-		Win32.Api.RestoreDC(hdc, -1);
-		Win32.Api.DeleteObject(hMaskRegion);
+		DrawingImage.DrawGlyph(hdc, x, y, xbmBits, bitsWidth, bitsHeight, color);
 	}
 
 }; // class DrawingGraphics

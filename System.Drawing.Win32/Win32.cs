@@ -394,6 +394,8 @@ internal class Api
 		MA_NOACTIVATEANDEAT = 4
 	}
 
+	public const uint CBM_INIT = 0x04;
+
 	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
 	public struct WNDCLASS 
 	{
@@ -911,7 +913,7 @@ internal class Api
 
 	[DllImport("gdi32")]
 	public static extern IntPtr CreateDIBitmap( IntPtr hdc, byte[] lpbmih, uint fdwInit, byte[] lpbInit, byte[] lpbmi, uint fuUsage);
-
+	
 	[DllImport("user32")]
 	public static extern int SetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex, WindowStyle dwNewLong);
 

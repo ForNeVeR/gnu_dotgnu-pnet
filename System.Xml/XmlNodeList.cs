@@ -49,7 +49,7 @@ abstract class XmlNodeList : IEnumerable
 			}
 
 	// Get a particular item within this node list.
-	public abstract XmlNode Item(int i);
+	public abstract XmlNode Itemx(int i);
 
 	// Implement the "IEnumerable" interface.
 	public abstract IEnumerator GetEnumerator();

@@ -33,10 +33,10 @@
 	#include <unistd.h>
 #endif
 #ifdef HAVE_FCNTL_H
-	    #include <fcntl.h>
+	#include <fcntl.h>
 #endif
 #ifdef HAVE_DIRENT_H
-	    #include <dirent.h>
+	#include <dirent.h>
 #endif
 #ifdef _WIN32
 	#include <windows.h>
@@ -47,32 +47,21 @@
 #ifdef	__cplusplus
 extern	"C" {
 #endif
-
+    
 ILInt32 ILDeleteDir(const char *path)
 {
 	if (path == NULL)
 	  {
 	    return IL_ERRNO_ENOENT;
 	  }
-	/*  This branches to provide for unlink, actually it should
-	    probably be rmdir() in this instance, but remove is
-	    ANSI/ISO, so I don't see the reason for the branch, but
-	    Just in case, I've left it in.  I'm not sure if HAVE_RMDIR
-	    is actually checked in the configure script, so if
-	    you do need to change it, you might need to check there as
-	    well.
-	*/
-	/*
-#ifdef HAVE_RMDIR
-	rmdir(filename);
-#else
+
 #ifdef HAVE_REMOVE
-	remove(filename);
-#endif
-#endif
-	*/
 	remove(path);
 	return ILSysIOConvertErrno(errno);
+#else
+    return IL_ERRNO_ENOSYS;
+#endif
+
 }
 
 /*
@@ -89,28 +78,44 @@ ILDir *ILOpenDir(char *path)
 }
 
 
+/*  This function will return NULL on error  */
 ILDirEnt *ILReadDir(ILDir *directory)
 {
-	ILDirEnt *result;
-	/* Threadsafe version of readdir() 
-	 * FIXME: this causes a mysterious segfault 
-	 * so #if 0'd out.*/
-//#ifdef HAVE_READDIR_R
-#if 0
-	  /*  Fetch a directory entry  */
+	ILDirEnt *result = NULL;
+
+#ifndef HAVE_READDIR_R
+	ILDirEnt *allocatedResult = NULL;
+#endif
+    
+	/* Threadsafe version of readdir() */
+#ifdef HAVE_READDIR_R
+	/*  Fetch a directory entry  */
+	if((result = (ILDirEnt *)ILMalloc(sizeof(ILDirEnt))) == NULL)
+    {
+        return NULL;
+    }
+    
 	if(readdir_r(directory, result, &result) != 0)
 	{
+		ILFree(result);
 		return NULL;
 	}
+
 	return result;
 #else
 #ifdef HAVE_READDIR
 	/*  Not Threadsafe, so maby if systems need it, we should rewrite it.  */
+	
 	if((result = readdir(directory)) == NULL)
 	{
 		return NULL;
 	}
-	return result;
+
+	/*  After we know we HAVE a result, we copy it's contents into our 
+	 * 	own struct  */
+	allocatedResult = (ILDirEnt *)ILMalloc(sizeof(ILDirEnt));
+	ILMemCpy(alocatedResult, result, sizeof(ILDirEnt));
+	return allocatedResult;
 #else
 	return NULL; // fallback mode
 #endif

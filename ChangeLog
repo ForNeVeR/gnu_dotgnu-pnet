@@ -1,4 +1,15 @@
 
+2002-11-02  Charles Schuller  <kyeran@hermes-solutions.biz>
+
+	* support/queue.c, include/il_utils.h, support/Makefile.am: add a 
+	queue implementation using linked lists (commit by Gopal)
+
+	* engine/lib_dir.c, support/dir.c: make the readdir_r syscall
+	work by removing repeated calls by using a queue 
+
+	* include/il_sysio.h: remove the void* catch all typedef to make
+	the errors in porting more visible.
+
 2002-11-01  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_arith.tc: prevent ILNativeFloat from generating

@@ -135,8 +135,7 @@ ILInt32 _IL_DirMethods_Copy(ILExecThread *_thread,
  */
 ILInt32 _IL_DirMethods_Delete(ILExecThread *_thread, ILString *path)
 {
-	/* TODO */
-	return IL_ERRNO_EPERM;
+	return ILDeleteDir(ILStringToAnsi(_thread, path));
 }
 
 /*
@@ -176,53 +175,69 @@ ILString *_IL_DirMethods_GetCurrentDirectory(ILExecThread *_thread)
  */
 extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILString * path, System_Array * * files)
 {
-	ILDir *dirStream; /* follow a single std of naming */
+	ILDir *dirStream = NULL; 
 	ILDirEnt *dirEntry;
 	ILInt32 arraySize = 0;
-	Platform_FileInfo *buffer=NULL; /*coz _ptr is for fools who forget :-) */
+	Platform_FileInfo *buffer=NULL; 
 	ILInt32 i;  /*  How surprising, an index var named 'i' */
+	ILQueueEntry *fileQueue;
 
-#ifdef HAVE_DIRENT_H /* the dirent-> is included only if HAVE_DIRENT_H */
+	errno = 0;
+	fileQueue = ILQueueCreate();
+
+	/*  dirStream and dirEnt are typedeffed based on underlying platform 
+	 *  This could cause a compile time error for people trying to port, 
+	 * 	as dirEnt may not exist . If you are trying to port, I put the 
+	 * 	typedefs in PNETROOT/il_sysio.h, you should edit that file, as 
+	 * 	well as PNETROOT/support/dir.c, as the logic will need to be 
+	 * 	re-vamped a bit*/
+
 	dirStream = ILOpenDir(ILStringToAnsi(_thread, path));
 	if(!dirStream)
 	{
-		goto cleanup;
+ 		return ILSysIOConvertErrno(errno);
 	}
-	while(ILReadDir(dirStream))arraySize++;
+
+	while((dirEntry = ILReadDir(dirStream)) != NULL)
+	{
+		ILQueueAdd(&fileQueue, dirEntry);
+		arraySize++;
+    }
+
 	if(!ILCloseDir(dirStream))
 	{
-		goto cleanup;
+        return ILSysIOConvertErrno(errno);
 	}
+	
+	
 	*files = (System_Array*) ILExecThreadNew(_thread,
 						"[vPlatform.FileInfo;","(Ti)V",(ILVaInt)(arraySize));
 	if(!(*files))
 	{
 		ILExecThreadThrowOutOfMemory(_thread);
-		return IL_ERRNO_EPERM;
+		return IL_ERRNO_ENOMEM;
 	}
-	buffer = (Platform_FileInfo *)(ArrayToBuffer(*files));
-	dirStream = ILOpenDir(ILStringToAnsi(_thread, path));
-	if(!dirStream)
+
+    buffer = (Platform_FileInfo *)(ArrayToBuffer(*files));
+
+	for(i = 0; i < arraySize; i++)
 	{
-		goto cleanup;
-	}
-	for(i=0;i<arraySize;i++)
-	{
-		dirEntry= ILReadDir(dirStream);
-		if(!dirEntry)break;
+		dirEntry = ILQueueRemove(&fileQueue);
+
+		if(!dirEntry)
+		{
+			break;
+		}
+        
 		buffer->fileName = ILStringCreate(_thread, dirEntry->d_name);
-		buffer->fileType = dirEntry -> d_type;
-		++buffer;
+		buffer->fileType = dirEntry->d_type;
+		ILFree(dirEntry);
+		buffer++;
 	}
-	ILCloseDir(dirStream);
+
+    ILQueueDestroy(&fileQueue);
+
  	return ILSysIOConvertErrno(errno);
-cleanup:
-	*files = (System_Array*) ILExecThreadNew(_thread,
-				"[vPlatform.FileInfo;","(Ti)V",(ILVaInt)(0));
-	return IL_ERRNO_EPERM;
-#else
-	return IL_ERRNO_EPERM;
-#endif
 }
 #ifdef	__cplusplus
 };

@@ -467,6 +467,24 @@ void ILInitLocale(void);
 /* Get the code page in use by the underlying system (0 if unknown) */
 unsigned ILGetCodePage(void);
 
+/* an implementation of a linked list queue */
+typedef struct _tagILQueueEntry
+{
+	void *data;
+	struct _tagILQueueEntry *nextNode;
+}ILQueueEntry;
+
+/* Create a queue with 0 elements */
+ILQueueEntry *ILQueueCreate(void);
+
+/* Destroy and cleanup the memory of the queue */
+void ILQueueDestroy(ILQueueEntry **listRoot);
+
+/* Add an entry , returns 1 if addition was possible */
+int ILQueueAdd(ILQueueEntry **listRoot, void *newData);
+
+/* Remove entry and Free entry , but not data . return NULL on fail */
+void *ILQueueRemove(ILQueueEntry **listRoot);
 #ifdef	__cplusplus
 };
 #endif

@@ -269,13 +269,15 @@ int ILSysIOPathGetCreation(const char *path, ILInt64 *time);
 #ifdef HAVE_DIRENT_H
 typedef DIR ILDir;
 #else
-typedef void* ILDir;
+/* If your system doesn't use DIRENT, notably windows, you need to typedef 
+ * it's equivalent here.  I explicitly do NOT want to typedef a catchall 
+ * void*, as this breaks compile time warnings on other systems */ 
 #endif
  
 #ifdef HAVE_DIRENT_H
 typedef struct dirent ILDirEnt;
 #else
-typedef void* ILDirEnt;
+	/*  See above note  */
 #endif
 
 ILInt32 ILDeleteDir(const char *path);

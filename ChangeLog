@@ -6,6 +6,8 @@
 
 	* NEWS, configure.in: update version for the "0.5.0" release.
 
+	* configure.in: update working version to "0.5.1".
+
 2003-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/engine.h, engine/lib_reflect.c, engine/lib_string.c:

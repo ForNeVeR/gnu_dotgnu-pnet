@@ -246,7 +246,6 @@ ILProgramItem *_ILProgramItemLinkedTo(ILProgramItem *item)
 ILProgramItem *_ILProgramItemLinkedBackTo(ILProgramItem *item, ILImage *image)
 {
 	ILProgramItemLink *link;
-	ILProgramItemLink *link2;
 
 	/* Bail out if the item is not currently linked to anything */
 	if(!(item->linked))
@@ -258,10 +257,9 @@ ILProgramItem *_ILProgramItemLinkedBackTo(ILProgramItem *item, ILImage *image)
 	link = ((ILProgramItemLink *)(item->attrsOrLink))->next;
 	while(link != 0)
 	{
-		link2 = ((ILProgramItemLink *)(link->linkedItem->attrsOrLink));
-		if(link2->linkedItem && link2->linkedItem->image == image)
+		if(link->linkedItem && link->linkedItem->image == image)
 		{
-			return link2->linkedItem;
+			return link->linkedItem;
 		}
 		link = link->next;
 	}

@@ -37,6 +37,9 @@ CVS check-out to make the necessary build files.
 * cscc/cs_cast.tc: semantic analysis for casts; implement CSTypeToName to
 support better error messages related to type conversions.
 
+* image/item.c (_ILProgramItemLinkedBackTo): fix a bug that causes the
+function to always miss the back-link on an item.
+
 2001-08-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * ilasm/ilasm_grammar (yyerror): recognise "syntax error" in addition

@@ -1,3 +1,6 @@
+2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
+
+	* System.Windows.Forms/ImageList.cs: Implemented as much as I could.
 
 2003-06-22  Gopal.V  <gopalv82@symonds.net>
 	

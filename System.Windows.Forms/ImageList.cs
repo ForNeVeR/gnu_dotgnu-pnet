@@ -3,6 +3,7 @@
  *			"System.Windows.Forms.ImageList" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +23,320 @@
 namespace System.Windows.Forms
 {
 
+using System.Collections;
+using System.ComponentModel;
+using System.Drawing;
+
+
 [TODO]
-public class ImageList
+public sealed class ImageList : Component
 {
 	// TODO
+
+	// Variables
+	private ColorDepth colorDepth = ColorDepth.Depth8Bit;
+	private ImageCollection images = new ImageCollection(this);
+	private Size imageSize = new Size(16,16);
+	private ImageListStreamer imageStream = null;
+	private Color transparentColor = Color.Transparent;
+
+	// Constructor
+	public ImageList() : base() {}
+#if !CONFIG_COMPACT_FORMS
+	public ImageList(IContainer container) : base() { container.Add(this); }
+#endif
+
+	// Properties
+#if !CONFIG_COMPACT_FORMS
+	public ColorDepth ColorDepth
+	{
+		get { return colorDepth; }
+		set { colorDepth = value; /* TODO */ }
+	}
+	public IntPtr Handle { get { return IntPtr.Zero; } }
+	public bool HandleCreated { get { return false; } }
+#endif
+	public ImageCollection Images { get { return images; } }
+	public Size ImageSize
+	{
+		get { return imageSize; }
+		set
+		{
+			if (value.Height <= 0 || value.Width <= 0 ||
+			    value.Height > 256 || value.Width > 256)
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			imageSize = value;
+			// TODO
+		}
+	}
+#if !CONFIG_COMPACT_FORMS
+	public ImageListStreamer ImageStream
+	{
+		get { return imageStream; }
+		set { imageStream = value; /* TODO */ }
+	}
+	public Color TransparentColor
+	{
+		get { return transparentColor; }
+		set { transparentColor = value; }
+	}
+#endif
+
+	// Methods
+	protected override void Dispose(bool disposing) { /* TODO */ }
+#if !CONFIG_COMPACT_FORMS
+	public void Draw(Graphics g, Point pt, int index)
+	{
+		Draw(g,pt.X,pt.Y,index);
+	}
+	public void Draw(Graphics g, int x, int y, int index) { /* TODO */ }
+	public void Draw(Graphics g, int x, int y, int width, int height, int index)
+	{
+		// TODO
+	}
+#endif
+	public override string ToString()
+	{
+		// TODO
+		return base.ToString();
+	}
+
+	// Events
+#if !CONFIG_COMPACT_FORMS
+	public event EventHandler RecreateHandle;
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	public sealed class ImageCollection : IList, ICollection, IEnumerable
+	{
+		// TODO
+
+		// Variables
+		private ImageList owner;
+		private ArrayList images = new ArrayList();
+
+		// Constructor
+		internal ImageCollection(ImageList owner) { this.owner = owner; }
+
+		// Properties
+		public virtual int Count { get { return images.Count; } }
+		public virtual bool IsReadOnly { get { return false; } }
+	#if !CONFIG_COMPACT_FORMS
+		public virtual bool Empty { get { return images.Count == 0; } }
+		public Image this[int index]
+		{
+			get
+			{
+				if (index < 0 || index >= Count)
+				{
+					throw new ArgumentOutOfRangeException(/* TODO */);
+				}
+				return (Image) images[index];
+			}
+			set
+			{
+				if (index < 0 || index >= Count)
+				{
+					throw new ArgumentOutOfRangeException(/* TODO */);
+				}
+				if (value == null || !(value is Bitmap))
+				{
+					throw new ArgumentNullException(/* TODO */);
+				}
+				images[index] = value;
+			}
+		}
+	#endif
+
+		// Methods
+#if false // Icon is TODO
+		public void Add(Icon icon)
+		{
+			Image image;
+
+			if (icon == null)
+			{
+				throw new ArgumentNullException(/* TODO */);
+			}
+			if ((image = icon.ToBitmap) == null)
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			images.Add(image);
+		}
+#endif
+		public void Add(Image image)
+		{
+			if (image == null)
+			{
+				throw new ArgumentNullException(/* TODO */);
+			}
+			if (!(image is Bitmap))
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			images.Add(image);
+		}
+	#if !CONFIG_COMPACT_FORMS
+		public int Add(Image image, Color transparentColor)
+		{
+			if (image == null)
+			{
+				throw new ArgumentNullException(/* TODO */);
+			}
+			if (!(image is Bitmap))
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			//if (The attempt to add the image failed.)
+			//	throw new Exception("TODO");
+			//	return -1; // lol
+			owner.TransparentColor = transparentColor;
+			return images.Add(image);
+		}
+		public int AddStrip(Image image)
+		{
+			if (image == null)
+			{
+				throw new ArgumentNullException(/* TODO */);
+			}
+			if (!(image is Bitmap))
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			//if (The attempt to add the image failed.
+			//    || The width of the image strip is zero or != to the existing image width.
+			//    || The height of the image strip is != to the existing image height.)
+			//	throw new Exception("TODO");
+			//	return -1; // lol
+			if (image.Width == 0 ||
+			    image.Width%owner.ImageSize.Width != 0 ||
+			    image.Height != owner.ImageSize.Height)
+			{
+				throw new Exception(/* TODO */);
+			}
+			// TODO
+			return -1;
+		}
+	#endif
+		public void Clear()
+		{
+			images.Clear();
+		}
+	#if !CONFIG_COMPACT_FORMS
+		public bool Contains(Image image)
+		{
+			return images.Contains(image);
+		}
+	#endif
+		public IEnumerator GetEnumerator()
+		{
+			return images.GetEnumerator();
+		}
+	#if !CONFIG_COMPACT_FORMS
+		public int IndexOf(Image image)
+		{
+			return images.IndexOf(image);
+		}
+
+		public void Remove(Image image)
+		{
+			images.Remove(image);
+		}
+	#endif
+		public void RemoveAt(int index)
+		{
+			if (index < 0 || index > Count)
+			{
+				throw new ArgumentOutOfRangeException(/* TODO */);
+			}
+			images.RemoveAt(index);
+		}
+
+		// Properties (Explicit IList Implementation)
+		bool IList.IsReadOnly { get { return images.IsReadOnly; } }
+		bool IList.IsFixedSize { get { return images.IsFixedSize; } }
+	#if !CONFIG_COMPACT_FORMS
+		object IList.this[int index]
+		{
+			get { return this[index]; }
+			set { this[index] = (Image) value; }
+		}
+	#endif
+
+		// Methods (Explicit IList Implementation)
+		void IList.Clear() { Clear(); }
+		int IList.Add(object o)
+		{
+			if (!(o is Image))
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			return Add((Image) o,owner.TransparentColor);
+		}
+		bool IList.Contains(object o)
+		{
+			if (!(o is Image)) { return false; }
+			return Contains((Image) o);
+		}
+		int IList.IndexOf(object o)
+		{
+			if (!(o is Image)) { return -1; }
+			return IndexOf((Image) o);
+		}
+		void IList.Insert(int index, object o)
+		{
+			if (!(o is Image))
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			images.Insert(index, o);
+		}
+		void IList.Remove(object o)
+		{
+			if (!(o is Image))
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			Remove((Image) o);
+		}
+		void IList.RemoveAt(int index) { RemoveAt(index); }
+
+		// Properties (Explicit ICollection Implementation)
+		int ICollection.Count { get { return images.Count; } }
+		bool ICollection.IsSynchronized { get { return images.IsSynchronized; } }
+		object ICollection.SyncRoot { get { return images.SyncRoot; } }
+
+		// Methods (Explicit ICollection Implementation)
+		void ICollection.CopyTo(Array array, int index) { images.CopyTo(array,index); }
+
+	}; // class ImageList.ImageCollection
 
 }; // class ImageList
 

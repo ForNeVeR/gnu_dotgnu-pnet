@@ -39,6 +39,8 @@
 
 	* NEWS, configure.in: update version for the "0.5.10" release.
 
+	* configure.in: update working version to "0.5.11".
+
 2003-07-26  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* engine/lib_reflect.c: implement GetAssembly for modules.

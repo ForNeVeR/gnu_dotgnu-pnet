@@ -367,7 +367,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 			else
 			{
 				/* Align the field on an appropriate boundary */
-				if((layout->size & typeLayout.alignment) != 0)
+				if((layout->size % typeLayout.alignment) != 0)
 				{
 					layout->size += typeLayout.alignment -
 						(layout->size % typeLayout.alignment);
@@ -403,7 +403,7 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 				}
 
 				/* Align the field on an appropriate boundary */
-				if((layout->staticSize & typeLayout.alignment) != 0)
+				if((layout->staticSize % typeLayout.alignment) != 0)
 				{
 					layout->staticSize += typeLayout.alignment -
 						(layout->staticSize % typeLayout.alignment);

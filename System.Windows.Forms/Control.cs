@@ -4034,9 +4034,13 @@ protected virtual void Dispose(bool disposing)
 					}
 					else
 					{
+						int xOffset = parent.ClientOrigin.X - parent.ToolkitDrawOrigin.X
+							+ ToolkitDrawOrigin.X;
+						int yOffset = parent.ClientOrigin.Y - parent.ToolkitDrawOrigin.Y
+							+ ToolkitDrawOrigin.Y;
 						toolkitWindow.Reparent
-							(newParent.toolkitWindow, left + ToolkitDrawOrigin.X,
-							top + ToolkitDrawOrigin.Y);
+							(newParent.toolkitWindow, left + xOffset,
+							top + yOffset);
 					}
 					toolkitWindow.Lower();
 				}

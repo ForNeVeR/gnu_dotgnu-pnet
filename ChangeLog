@@ -1,4 +1,9 @@
 
+2003-02-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/process.c (ILExecProcessSetCommandLine): return the
+	full pathname for argv[0] from "Environment.GetCommandLineArgs()".
+
 2003-02-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/common/cc_main.c: allow a library to directly or indirectly

@@ -431,6 +431,7 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 	ILString *argString;
 	int opt;
 	int argc;
+	char *expanded;
 
 	/* Cound the number of arguments in the "args" array */
 	argc = 0;
@@ -457,7 +458,14 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 	}
 
 	/* Populate the argument arrays */
-	argString = ILStringCreate(thread, progName);
+	expanded = ILExpandFilename(progName, (char *)0);
+	if(!expanded)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	argString = ILStringCreate(thread, expanded);
+	ILFree(expanded);
 	if(!argString || ILExecThreadHasException(thread))
 	{
 		return 0;

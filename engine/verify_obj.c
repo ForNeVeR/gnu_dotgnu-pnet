@@ -72,43 +72,6 @@ static ILField *GetFieldToken(ILMethod *method, unsigned char *pc)
 }
 
 /*
- * Determine if a type is a sub-class of a specific class.
- */
-static int IsSubClass(ILType *type, ILClass *classInfo)
-{
-	ILClass *typeClass;
-	if(type == 0)
-	{
-		/* The type is "null", which is always a sub-class */
-		return 1;
-	}
-	else if(ILType_IsClass(type) || ILType_IsValueType(type))
-	{
-		typeClass = ILType_ToClass(type);
-		if(ILClassInheritsFrom(typeClass, classInfo) ||
-		   ILClassImplements(typeClass, classInfo))
-		{
-			return 1;
-		}
-		return 0;
-	}
-	else if((typeClass = ILClassFromType(ILClassToImage(classInfo),
-										 0, type, 0)) != 0)
-	{
-		if(ILClassInheritsFrom(typeClass, classInfo) ||
-		   ILClassImplements(typeClass, classInfo))
-		{
-			return 1;
-		}
-		return 0;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
  * Process a "box" operation on a value.  Returns zero if
  * invalid parameters.
  */

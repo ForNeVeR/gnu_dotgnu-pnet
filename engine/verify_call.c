@@ -627,6 +627,75 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 }
 
 /*
+ * Match a delegate signature against the contents of the stack.
+ * Returns -1 if a type error has been detected, or the number
+ * of parameters to be popped otherwise (normally 2).
+ */
+static ILInt32 MatchDelegateSignature(ILCoder *coder, ILEngineStackItem *stack,
+						              ILUInt32 stackSize, ILType *signature,
+									  ILClass *classInfo)
+{
+	ILMethod *method;
+	ILType *methodSignature;
+
+	/* The constructor must have two parameters: Object and IntPtr */
+	if(ILTypeNumParams(signature) != 2)
+	{
+		return -1;
+	}
+	if(!ILTypeIsObjectClass(ILTypeGetParam(signature, 1)))
+	{
+		return -1;
+	}
+	if(ILTypeGetParam(signature, 2) != ILType_Int)
+	{
+		return -1;
+	}
+
+	/* Check the stack contents for correct engine types */
+	if(stackSize < 2)
+	{
+		return -1;
+	}
+	if(stack[stackSize - 2].engineType != ILEngineType_O)
+	{
+		return -1;
+	}
+	if(stack[stackSize - 1].engineType != ILEngineType_I)
+	{
+		return -1;
+	}
+
+	/* Convert the method reference type into the underlying method */
+	method = MethodRefToMethod(stack[stackSize - 1].typeInfo);
+	if(!method)
+	{
+		return -1;
+	}
+
+	/* Check that the delegate signatures match */
+	if(!_ILDelegateSignatureMatch(classInfo, method))
+	{
+		return -1;
+	}
+
+	/* Validate the "this" parameter value, which we ignore if
+	   the method is "static" */
+	methodSignature = ILMethod_Signature(method);
+	if(ILType_HasThis(methodSignature))
+	{
+		if(!IsSubClass(stack[stackSize - 2].typeInfo,
+					   ILMethod_Owner(method)))
+		{
+			return -1;
+		}
+	}
+
+	/* Done */
+	return 2;
+}
+
+/*
  * Determine if two method signatures are identical for the
  * purposes of indirect method calls.
  */
@@ -1183,7 +1252,25 @@ case IL_OP_NEWOBJ:
 	{
 		/* The construction sequence is different for objects and values */
 		classInfo = ILMethod_Owner(methodInfo);
-		if(!ILClassIsValueType(classInfo))
+		if(ILTypeIsDelegate(ILType_FromClass(classInfo)))
+		{
+			/* Match a delegate constructor's signature */
+			numParams = MatchDelegateSignature(coder, stack, stackSize,
+									           methodSignature, classInfo);
+			if(numParams < 0)
+			{
+				VERIFY_TYPE_ERROR();
+			}
+
+			/* Call the allocation constructor for the delegate */
+			ILCoderCallCtor(coder, stack + stackSize - numParams,
+						    (ILUInt32)numParams, methodInfo);
+			stackSize -= (ILUInt32)numParams;
+			stack[stackSize].engineType = ILEngineType_O;
+			stack[stackSize].typeInfo = ILType_FromClass(classInfo);
+			++stackSize;
+		}
+		else if(!ILClassIsValueType(classInfo))
 		{
 			/* Match the signature for the allocation constructor */
 			numParams = MatchSignature(coder, stack, stackSize,
@@ -1265,7 +1352,12 @@ case IL_OP_PREFIX + IL_PREFIX_OP_LDFTN:
 		{
 			ILCoderLoadFuncAddr(coder, methodInfo);
 			stack[stackSize].engineType = ILEngineType_I;
-			stack[stackSize].typeInfo = ILMethod_Signature(methodInfo);
+			stack[stackSize].typeInfo =
+				MethodToMethodRef(&allocator, methodInfo);
+			if(!(stack[stackSize].typeInfo))
+			{
+				VERIFY_MEMORY_ERROR();
+			}
 			++stackSize;
 		}
 		else
@@ -1313,7 +1405,12 @@ case IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN:
 					ILCoderLoadVirtualAddr(coder, methodInfo);
 				}
 				stack[stackSize - 1].engineType = ILEngineType_I;
-				stack[stackSize - 1].typeInfo = ILMethod_Signature(methodInfo);
+				stack[stackSize - 1].typeInfo =
+					MethodToMethodRef(&allocator, methodInfo);
+				if(!(stack[stackSize - 1].typeInfo))
+				{
+					VERIFY_MEMORY_ERROR();
+				}
 			}
 			else
 			{

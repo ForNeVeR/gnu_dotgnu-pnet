@@ -286,6 +286,42 @@ static IL_INLINE int IsUnsafeType(ILType *type)
 	}
 }
 
+#define	IL_TYPE_COMPLEX_METHOD_REF	15
+
+/*
+ * Convert a method reference type into a method block.
+ * Returns NULL if not a method reference type.
+ */
+static ILMethod *MethodRefToMethod(ILType *type)
+{
+	if(type != 0 && ILType_IsComplex(type) &&
+	   ILType_Kind(type) == IL_TYPE_COMPLEX_METHOD_REF)
+	{
+		return (ILMethod *)(ILType_Ref(type));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Convert a method block into a method reference type.
+ * Returns NULL if out of memory.
+ */
+static ILType *MethodToMethodRef(TempAllocator *allocator, ILMethod *method)
+{
+	ILType *type = (ILType *)TempAllocate(allocator, sizeof(ILType));
+	if(!type)
+	{
+		return 0;
+	}
+	type->kind__ = IL_TYPE_COMPLEX_METHOD_REF;
+	type->num__ = 0;
+	type->un.refType__ = (ILType *)method;
+	return type;
+}
+
 /*
  * Determine if a stack item is assignment-compatible with
  * a particular memory slot (argument, local, field, etc).
@@ -296,11 +332,22 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 	ILImage *image;
 	ILClass *classInfo;
 	ILClass *classInfo2;
+	ILMethod *methodRef;
 
 	/* Check for safe and unsafe pointer assignments */
 	if(item->engineType == ILEngineType_I)
 	{
-		if(item->typeInfo != 0 && ILType_IsComplex(item->typeInfo))
+		methodRef = MethodRefToMethod(item->typeInfo);
+		if(methodRef)
+		{
+			/* Assigning a method reference, obtained via "ldftn"
+			   or "ldvirtftn", to a method pointer destination */
+			if(ILTypeIdentical(ILMethod_Signature(methodRef), type))
+			{
+				return 1;
+			}
+		}
+		else if(item->typeInfo != 0 && ILType_IsComplex(item->typeInfo))
 		{
 			/* May be trying to assign a method pointer to a method type */
 			if(ILType_IsMethod(item->typeInfo))
@@ -448,6 +495,43 @@ static int AssignCompatible(ILMethod *method, ILEngineStackItem *item,
 	else
 	{
 		/* Invalid type: never assignment-compatible with anything */
+		return 0;
+	}
+}
+
+/*
+ * Determine if a type is a sub-class of a specific class.
+ */
+static int IsSubClass(ILType *type, ILClass *classInfo)
+{
+	ILClass *typeClass;
+	if(type == 0)
+	{
+		/* The type is "null", which is always a sub-class */
+		return 1;
+	}
+	else if(ILType_IsClass(type) || ILType_IsValueType(type))
+	{
+		typeClass = ILType_ToClass(type);
+		if(ILClassInheritsFrom(typeClass, classInfo) ||
+		   ILClassImplements(typeClass, classInfo))
+		{
+			return 1;
+		}
+		return 0;
+	}
+	else if((typeClass = ILClassFromType(ILClassToImage(classInfo),
+										 0, type, 0)) != 0)
+	{
+		if(ILClassInheritsFrom(typeClass, classInfo) ||
+		   ILClassImplements(typeClass, classInfo))
+		{
+			return 1;
+		}
+		return 0;
+	}
+	else
+	{
 		return 0;
 	}
 }

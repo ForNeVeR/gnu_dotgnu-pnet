@@ -6,6 +6,9 @@
 	samples/mscorlib.dll: continue implementation of delegates;
 	rearrange the method call support code to improve code sharing.
 
+	* engine/verify.c, engine/verify_call.c, engine/verify_obj.c:
+	verify delegate construction.
+
 2002-06-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/delegate.c, engine/engine.h,

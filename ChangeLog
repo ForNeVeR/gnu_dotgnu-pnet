@@ -8,6 +8,9 @@ contributors at the HACKING file instead of "contrib.txt".
 
 * doc/contrib.txt: remove obsolete file.
 
+* runtime/System/IO/Path.cs: new class contributed by Charlie Carnow
+<carnow@gmx.net>.
+
 2001-12-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/TODOAttribute.cs: add the internal "TODO" attribute class

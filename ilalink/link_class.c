@@ -80,19 +80,10 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		}
 		else
 		{
-			/* Only proceed if this is the "<Module>" class, and
-			   it is the only class in the final image so far */
+			/* Only proceed if this is the "<Module>" class */
 			if(!nestedParent && !strcmp(name, "<Module>") && namespace == 0)
 			{
 				isModule = 1;
-				if(ILImageNumTokens(linker->image, IL_META_TOKEN_TYPE_DEF) > 1)
-				{
-					ILDumpClassName(stderr, ILClassToImage(classInfo),
-									classInfo, 0);
-					fputs(" : mixing global and non-global types\n", stderr);
-					linker->error = 1;
-					return 1;
-				}
 			}
 			else
 			{

@@ -4,6 +4,9 @@
 	* cscc/cscc.c: implement "ProcessWithAssembler" in the compiler
 	front-end.
 
+	* ilalink/link_class.c: don't bail out with an error on the
+	"<Module>" class when linking two or more object files.
+
 2002-08-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_misc.tc: implement array initializers in "new"

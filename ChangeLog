@@ -1,4 +1,8 @@
 
+2004-10-18  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Decimal.cs: Throw correct exception on division by zero.
+ 
 2004-10-16  Deryk Robosson <deryk@0x0a.com>
 
 	* System.Windows.Forms/Control.cs: Rethink layout after Dock property

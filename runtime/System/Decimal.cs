@@ -699,7 +699,7 @@ public struct Decimal : IComparable, IFormattable
 	// This is called by the runtime engine.
 	private static void ThrowDivZero()
 			{
-				throw new OverflowException(_("DivZero_Decimal"));
+				throw new DivideByZeroException(_("DivZero_Decimal"));
 			}
 
 	// Throw a "decimal scale out of range" exception, with the correct

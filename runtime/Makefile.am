@@ -1,4 +1,6 @@
 
+.PHONY: mscorlib.dll
+
 all-local: mscorlib.dll
 
 mscorlib.dll:

@@ -1,4 +1,10 @@
 
+2002-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Makefile.am, System.Xml/Makefile.am, runtime/Makefile.am:
+	add some ".PHONY" directives to the makefiles to force "csant" to
+	be called to do dependency checks.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Array.cs (CopyTo): Minor bug fixed

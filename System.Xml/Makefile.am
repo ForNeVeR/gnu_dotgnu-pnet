@@ -1,4 +1,6 @@
 
+.PHONY: System.Xml.dll
+
 all-local: System.Xml.dll
 
 System.Xml.dll:

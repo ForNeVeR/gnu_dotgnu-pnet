@@ -1,4 +1,6 @@
 
+.PHONY: System.dll
+
 all-local: System.dll
 
 System.dll:

@@ -741,7 +741,6 @@ public class HttpWebRequest : WebRequest
 #if CONFIG_SSL
 				SecureConnection secured=new SecureConnection();
 				Stream retval=secured.OpenStream(sock);
-				secured.Dispose();
 				return retval;
 #else
 				throw new NotSupportedException(S._("NotSupp_SSL"));

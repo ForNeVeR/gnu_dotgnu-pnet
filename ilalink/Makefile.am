@@ -11,5 +11,7 @@ libILLink_a_SOURCES = link_create.c \
 					  link_library.c
 
 if USINGGCC
-INCLUDES = -Wall
+INCLUDES = -Wall -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\"
+else
+INCLUDES = -DCSCC_LIB_PREFIX=\"$(libdir)/cscc\"
 endif

@@ -20,6 +20,9 @@
 	* csant/csant_cscc.c: disable the "--silent" flag to "ilgac"
 	so that it will display what it is doing during a "make install".
 
+	* clrwrap/clrwrap.c: modify "clrwrap" so that it can implicitly
+	get the name of the IL program to run from argv[0].
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (ResolveTypeRefs): if a TypeRef to a foreign

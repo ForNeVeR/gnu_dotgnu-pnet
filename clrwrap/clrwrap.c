@@ -62,6 +62,7 @@ IL application using Microsoft's native CLR.
 #include "il_system.h"
 #include "il_utils.h"
 #include <stdio.h>
+#include <stdlib.h>
 #ifndef _WIN32
 	#ifdef HAVE_SYS_TYPES_H
 		#include <sys/types.h>
@@ -105,6 +106,8 @@ IL application using Microsoft's native CLR.
 static void OutOfMemory(char *progname);
 static char *FindCLR(void);
 static char *RemapName(char *name, char *progname);
+static char *GetBaseName(char *name);
+static char *FindExecutableInGac(char *name);
 
 int main(int argc, char *argv[])
 {
@@ -113,15 +116,34 @@ int main(int argc, char *argv[])
 	int newargc;
 	char *clrOption = 0;
 	int retval;
+	char *basename;
+	int needScript;
 
 	/* Allocate a new command-line buffer */
-	if((newargv = (char **)CLR_MALLOC(sizeof(char *) * (argc + 1))) == 0)
+	if((newargv = (char **)CLR_MALLOC(sizeof(char *) * (argc + 2))) == 0)
 	{
 		OutOfMemory(progname);
 	}
 
+	/* Determine if we have been supplied a redirect script, or if
+	   "clrwrap" has been symlinked, causing it to implicitly be
+	   the name of the executable to redirect to */
+	basename = GetBaseName(progname);
+	needScript = (!ILStrICmp(basename, "clrwrap"));
+
 	/* Copy the arguments to the new buffer, and look for "--clr" */
 	newargc = 1;
+	if(!needScript)
+	{
+		newargv[newargc] = FindExecutableInGac(basename);
+		if(!(newargv[newargc]))
+		{
+			fprintf(stderr, "%s: could not find a corresponding IL binary\n",
+					progname);
+			return 1;
+		}
+		++newargc;
+	}
 	while(argc > 1)
 	{
 		if(!strncmp(argv[1], "--clr=", 6))
@@ -177,10 +199,13 @@ int main(int argc, char *argv[])
 	}
 
 	/* Remap the name if we were supplied a redirect script */
-	newargv[1] = RemapName(newargv[1], progname);
-	if(!(newargv[1]))
+	if(needScript)
 	{
-		return 1;
+		newargv[1] = RemapName(newargv[1], progname);
+		if(!(newargv[1]))
+		{
+			return 1;
+		}
 	}
 
 	/* Execute the CLR in the most efficient manner possible */
@@ -456,4 +481,58 @@ static char *RemapName(char *name, char *progname)
 	strcpy(newname, name);
 	strcat(newname, ".exe");
 	return newname;
+}
+
+/*
+ * Get the base name from an executable name.
+ */
+static char *GetBaseName(char *name)
+{
+	int len = strlen(name);
+	while(len > 0 && name[len - 1] != '/' && name[len - 1] != '\\')
+	{
+		--len;
+	}
+	name += len;
+	len = strlen(name);
+	if(len > 4 && !ILStrICmp(name + len - 4, ".exe"))
+	{
+		return ILDupNString(name, len - 4);
+	}
+	else
+	{
+		return name;
+	}
+}
+
+/*
+ * Find the name of an IL binary in the global assembly cache.
+ */
+static char *FindExecutableInGac(char *name)
+{
+	char *cachePath;
+	char *searchName;
+
+	/* Get the path to look in for the global assembly cache */
+	cachePath = getenv("CSCC_LIB_PATH");
+	if(!cachePath || *cachePath == '\0')
+	{
+		cachePath = ILGetStandardLibraryPath("cscc/lib");
+		if(!cachePath)
+		{
+			return 0;
+		}
+	}
+
+	/* Construct the name to search for */
+	searchName = (char *)ILMalloc(strlen(name) + 5);
+	if(!searchName)
+	{
+		return 0;
+	}
+	strcpy(searchName, name);
+	strcat(searchName, ".exe");
+
+	/* Search the path for the name and return it */
+	return ILSearchPath(cachePath, searchName, 0);
 }

@@ -1,5 +1,5 @@
 
-libincludedir      = $(libdir)/cscc/include/sys
+libincludedir      = $(datadir)/cscc/include/sys
 libinclude_HEADERS = cdefs.h \
 					 errno.h \
 					 stat.h \

@@ -1,7 +1,7 @@
 
 SUBDIRS = . bits gnu sys
 
-libincludedir      = $(libdir)/cscc/include
+libincludedir      = $(datadir)/cscc/include
 libinclude_HEADERS = \
 	alloca.h \
 	assert.h \

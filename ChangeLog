@@ -1,4 +1,11 @@
 
+2003-07-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/Makefile.am, include/bits/Makefile.am,
+	include/gnu/Makefile.am, include/sys/Makefile.am: move the include
+	install directory from ${prefix}/lib to ${prefix}/share, to be
+	consistent with Debian guidelines.
+
 2003-07-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, config.sub: modify the autoconf system so that

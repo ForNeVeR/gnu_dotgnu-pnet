@@ -1,5 +1,5 @@
 
-libincludedir      = $(libdir)/cscc/include/bits
+libincludedir      = $(datadir)/cscc/include/bits
 libinclude_HEADERS = \
 	libc-lock.h \
 	local_lim.h \

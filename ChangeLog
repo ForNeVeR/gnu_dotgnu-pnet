@@ -1,3 +1,13 @@
+<<<<<<< ChangeLog
+2002-03-16  Peter Minten  <silvernerd@users.sf.net>
+	* resources/en_US/System/Exception.txt: Added Exception_Disposed string.
+
+	* resources/en_US/System/Invalid.txt: Added file and
+	Invalid_AsyncAndBlocking string.
+
+	* resources/en_US/System/Arg.txt: Added file and Arg_SocketCreating string.
+
+=======
 2002-03-13  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Added more high-level properties and methods,
@@ -28,6 +38,7 @@
 	* System/UriBuilder.cs: Cleaned up the code a little, more
 	efficient, barely began offsetting the work to Uri.cs.
 
+>>>>>>> 1.171
 2002-03-10  Peter Minten  <silvernerd@users.sf.net>
 	* System/Net/Sockets/NetworkStream.cs,
 	System/Net/Sockets/Socket.cs: Started with some simple methods.

@@ -233,6 +233,7 @@ libc/unistd/Makefile
 libm/Makefile
 libpthread/Makefile
 samples/Makefile
-samples/ilrun.sh])
+samples/ilrun.sh
+pnetc.spec])
 
 chmod +x "${srcdir}/samples/ilrun.sh" 2>/dev/null

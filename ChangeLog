@@ -4,7 +4,7 @@
 	* ilgac/ilgac.c: modify "ilgac" so that it can also install
 	IL executables into the assembly cache.
 
-	* support/file.c (ILCopyFile): fix a Win32-specific file copying bug.
+	* support/file.c (ILCopyFile): rewrite the file copying function.
 
 2003-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

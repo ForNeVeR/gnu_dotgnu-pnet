@@ -360,37 +360,51 @@ int ILSysIOFlushWrite(ILSysIOHandle handle)
 
 ILInt32 ILCopyFile(const char *src, const char *dest)
 {
-	ILSysIOHandle src_result;
-	ILSysIOHandle dest_result;
-	char buf[4000];
-	int bytes_read;
+	FILE *infile;
+	FILE *outfile;
+	char buffer[BUFSIZ];
+	int len;
 
-	/* Reset errno because we're not sure what it'll be */
-	errno = 0;
-	if (src == NULL || dest == NULL)
+	/* Bail out if either of the arguments is invalid */
+	if(!src || !dest)
 	{
 	    return IL_ERRNO_ENOENT;
 	}
 
-	/* Open the source and dest files */
-	src_result = ILSysIOOpenFile(src, ILFileMode_Open, ILFileAccess_Read, ILFileShare_Read);
-	dest_result = ILSysIOOpenFile(dest, ILFileMode_CreateNew, ILFileAccess_Write, ILFileShare_None);
-
-	/* if we had an error, send the errno back */
-	if(src_result == ILSysIOHandle_Invalid || dest_result == ILSysIOHandle_Invalid)
+	/* Open the input file */
+	if((infile = fopen(src, "rb")) == NULL)
 	{
-		return ILSysIOConvertErrno(errno);
+		if((infile = fopen(src, "r")) == NULL)
+		{
+			return ILSysIOConvertErrno(errno);
+		}
 	}
 
-	while ( ( bytes_read = ILSysIORead(src_result, buf, 4000) ) > 0 )
+	/* Open the output file */
+	if((outfile = fopen(dest, "wb")) == NULL)
 	{
-		ILSysIOWrite(dest_result, buf, bytes_read);
+		if((outfile = fopen(dest, "w")) == NULL)
+		{
+			int error = ILSysIOConvertErrno(errno);
+			fclose(infile);
+			return error;
+		}
 	}
 
-	ILSysIOClose(src_result);
-	ILSysIOClose(dest_result);
-	
-	return ILSysIOConvertErrno(errno);
+	/* Copy the file contents */
+	while((len = (int)fread(buffer, 1, sizeof(buffer), infile)) > 0)
+	{
+		fwrite(buffer, 1, len, outfile);
+		if(len < sizeof(buffer))
+		{
+			break;
+		}
+	}
+
+	/* Close the files and exit */
+	fclose(infile);
+	fclose(outfile);
+	return 0;
 }
 
 int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)

@@ -736,8 +736,9 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %type <node>		InterfaceMethodDeclaration InterfacePropertyDeclaration
 %type <node>		InterfaceIndexerDeclaration InterfaceEventDeclaration
 %type <mask>		InterfaceAccessors OptNew InterfaceAccessorBody
-%type <node>		EnumBase EnumDeclaration EnumBody OptEnumMemberDeclarations
+%type <node>		EnumDeclaration EnumBody OptEnumMemberDeclarations
 %type <node>		EnumMemberDeclarations EnumMemberDeclaration
+%type <node>		EnumBase EnumBaseType
 %type <node>		DelegateDeclaration
 %type <node>		ConstructorDeclaration ConstructorInitializer
 %type <node>		DestructorDeclaration
@@ -753,9 +754,9 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 %type <node>		OptArrayInitializer ArrayInitializer
 %type <node>		OptVariableInitializerList VariableInitializerList
 %type <indexer>		IndexerDeclarator
-
 %type <catchinfo>	CatchNameInfo
-%expect 19
+
+%expect 18
 
 %start CompilationUnit
 %%
@@ -873,47 +874,75 @@ QualifiedIdentifier
  * to appear at the global level.  To avoid reduce/reduce conflicts
  * in the grammar, we cannot make the attributes a separate rule
  * at the outer level.  So, we parse assembly attributes as if
- * they were attached to types or namesapces, and detach them
+ * they were attached to types or namespaces, and detach them
  * during semantic analysis.
  */
 NamespaceDeclaration
 	: OptAttributes NAMESPACE NamespaceIdentifier {
-				/* Push a new identifier onto the end of the namespace */
-				if(CurrNamespace.len != 0)
+				int posn, len;
+				posn = 0;
+				while(posn < $3.len)
 				{
-					CurrNamespace = ILInternAppendedString
-						(CurrNamespace,
-						 ILInternAppendedString
-						 	(ILInternString(".", 1), $3));
-				}
-				else
-				{
-					CurrNamespace = $3;
-				}
+					/* Extract the next identifier */
+					if($3.string[posn] == '.')
+					{
+						++posn;
+						continue;
+					}
+					len = 0;
+					while((posn + len) < $3.len &&
+						  $3.string[posn + len] != '.')
+					{
+						++len;
+					}
 
-				/* Create the namespace node */
-				InitGlobalNamespace();
-				CurrNamespaceNode = (ILNode_Namespace *)
-					ILNode_Namespace_create(CurrNamespace.string,
-											CurrNamespaceNode);
+					/* Push a new identifier onto the end of the namespace */
+					if(CurrNamespace.len != 0)
+					{
+						CurrNamespace = ILInternAppendedString
+							(CurrNamespace,
+							 ILInternAppendedString
+							 	(ILInternString(".", 1),
+								 ILInternString($3.string + posn, len)));
+					}
+					else
+					{
+						CurrNamespace = ILInternString($3.string + posn, len);
+					}
 
-				/* Declare the namespace within the global scope */
-				ILScopeDeclareNamespace(GlobalScope(), CurrNamespace.string);
+					/* Create the namespace node */
+					InitGlobalNamespace();
+					CurrNamespaceNode = (ILNode_Namespace *)
+						ILNode_Namespace_create(CurrNamespace.string,
+												CurrNamespaceNode);
+
+					/* Declare the namespace within the global scope */
+					ILScopeDeclareNamespace(GlobalScope(),
+											CurrNamespace.string);
+
+					/* Move on to the next namespace component */
+					posn += len;
+				}
 			}
 			NamespaceBody OptSemiColon	{
 				/* Pop the identifier from the end of the namespace */
 				if(CurrNamespace.len == $3.len)
 				{
 					CurrNamespace = ILInternString("", 0);
+					while(CurrNamespaceNode->enclosing != 0)
+					{
+						CurrNamespaceNode = CurrNamespaceNode->enclosing;
+					}
 				}
 				else
 				{
 					CurrNamespace = ILInternString
 						(CurrNamespace.string, CurrNamespace.len - $3.len - 1);
+					while(CurrNamespaceNode->name != CurrNamespace.string)
+					{
+						CurrNamespaceNode = CurrNamespaceNode->enclosing;
+					}
 				}
-
-				/* Pop to the next outer namespace node */
-				CurrNamespaceNode = CurrNamespaceNode->enclosing;
 			}
 	;
 
@@ -3095,25 +3124,90 @@ InterfaceIndexerDeclaration
  */
 
 EnumDeclaration
-	: OptAttributes OptModifiers ENUM Identifier {
-				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 0));
-				$2 = attrs;
+	: OptAttributes OptModifiers ENUM Identifier EnumBase {
+				/* Enter a new nesting level */
+				++NestingLevel;
+
+				/* Push the identifier onto the class name stack */
+				ClassNamePush($4);
 			}
-			EnumBase EnumBody OptSemiColon	{
+			EnumBody OptSemiColon	{
+				ILNode *baseList;
+				ILNode *bodyList;
+				ILNode *fieldDecl;
+				ILUInt32 attrs;
+
+				/* Validate the modifiers */
+				attrs = CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
+
+				/* Add extra attributes that enums need */
+				attrs |= IL_META_TYPEDEF_SERIALIZABLE |
+						 IL_META_TYPEDEF_SEALED;
+
+				/* Exit the current nesting level */
+				--NestingLevel;
+
+				/* Make sure that we have "Enum" in the base list */
+				baseList = MakeSystemType(Enum);
+
+				/* Add an instance field called "value__" to the body,
+				   which is used to hold the enumerated value */
+				bodyList = $7;
+				if(!bodyList)
+				{
+					bodyList = ILNode_List_create();
+				}
+				fieldDecl = ILNode_List_create();
+				ILNode_List_Add(fieldDecl,
+					ILNode_FieldDeclarator_create
+						(ILQualIdentSimple("value__"), 0));
+				MakeBinary(FieldDeclarator, $1, 0);
+				ILNode_List_Add(bodyList,
+					ILNode_FieldDeclaration_create
+						(0, IL_META_FIELDDEF_PUBLIC |
+							IL_META_FIELDDEF_SPECIAL_NAME |
+							IL_META_FIELDDEF_RT_SPECIAL_NAME, $5, fieldDecl));
+
+				/* Create the class definition */
+				InitGlobalNamespace();
+				$$ = ILNode_ClassDefn_create
+							($1,					/* OptAttributes */
+							 attrs,					/* OptModifiers */
+							 ILQualIdentName($4, 0),/* Identifier */
+							 CurrNamespace.string,	/* Namespace */
+							 (ILNode *)CurrNamespaceNode,
+							 baseList,				/* ClassBase */
+							 bodyList);				/* EnumBody */
+
+				/* Pop the class name stack */
+				ClassNamePop();
+
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
-				$$ = ILNode_EnumDeclaration_create ($1, $2, $4, $6, $7);
 			}
 	;
 
 EnumBase
-	: /* empty */	{ $$ = 0; }
-	| ':' Type		{ $$ = $2; }
+	: /* empty */			{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I4); }
+	| ':' EnumBaseType		{ $$ = $2; }
+	;
+
+EnumBaseType
+	: BYTE					{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U1); }
+	| SBYTE					{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I1); }
+	| SHORT					{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I2); }
+	| USHORT				{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U2); }
+	| INT					{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I4); }
+	| UINT					{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U4); }
+	| LONG					{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_I8); }
+	| ULONG					{ MakeUnary(PrimitiveType, IL_META_ELEMTYPE_U8); }
 	;
 
 EnumBody
-	: '{' OptEnumMemberDeclarations OptComma '}'				{
+	: '{' OptEnumMemberDeclarations '}'				{
+				$$ = $2;
+			}
+	| '{' EnumMemberDeclarations ',' '}'				{
 				$$ = $2;
 			}
 	| '{' error '}'		{

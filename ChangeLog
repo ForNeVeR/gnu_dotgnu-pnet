@@ -24,6 +24,11 @@ supplied to method declarations and the output is JVM.
 * cscc/cs_invoke.tc: fix a bug that caused it to use the wrong
 semantic value for the method.
 
+* cscc/cs_grammar.y: expand "namespace X.Y {}" into "namespace X {
+namespace Y {} }"; convert enumerated types into class definition
+nodes; remove a shift/reduce conflict related to the handling of
+trailing commas in enum declarations.
+
 2001-10-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_gen.h, codegen/cg_gen.c: new functions "ILGenItemHasAttribute",

@@ -16,6 +16,9 @@
 	JScript/Nodes/JExpr.tc, JScript/Parser/JSParser.cs: implement
 	builtin function invocation support; make Call/Construct re-entrant.
 
+	* JScript/Builtins/BuiltinFunction.cs, tests/JScript/TestGlobal.cs:
+	handle builtin functions that have odd numbers of parameters.
+
 2003-03-06  Michael Moore <mtmoore@uga.edu>
 
 	* runtime/System/Private/DateTimeFormat/ParsedDateTime.cs: ECMA update 

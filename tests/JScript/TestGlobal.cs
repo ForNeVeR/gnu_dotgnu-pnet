@@ -266,6 +266,10 @@ public class TestGlobal : TestCase
 							 (double)(Eval.JScriptEvaluate
 							 			("parseInt(\"123\", 0)", engine)),
 							 0.0001);
+				AssertEquals("EvalParseInt (2)", 123.0,
+							 (double)(Eval.JScriptEvaluate
+							 			("parseInt(\"123\")", engine)),
+							 0.0001);
 
 				// Close the engine.
 				engine.Close();

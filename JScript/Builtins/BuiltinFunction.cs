@@ -74,7 +74,8 @@ internal sealed class BuiltinFunction : ScriptFunction
 				if((flags & (JSFunctionAttributeEnum.HasThisObject |
 							 JSFunctionAttributeEnum.HasVarArgs |
 							 JSFunctionAttributeEnum.HasEngine)) ==
-						(JSFunctionAttributeEnum)0)
+						(JSFunctionAttributeEnum)0 &&
+				   requiredParameters == args.Length)
 				{
 					return method.Invoke(null, args);
 				}
@@ -82,21 +83,49 @@ internal sealed class BuiltinFunction : ScriptFunction
 				{
 					Object[] tempArgs = new Object [requiredParameters];
 					int posn = 0;
+					int req = requiredParameters;
+					Object[] rest;
 					if((flags & JSFunctionAttributeEnum.HasThisObject) != 0)
 					{
 						tempArgs[posn++] = thisob;
+						--req;
 					}
 					if((flags & JSFunctionAttributeEnum.HasEngine) != 0)
 					{
 						tempArgs[posn++] = engine;
+						--req;
 					}
 					if((flags & JSFunctionAttributeEnum.HasVarArgs) != 0)
 					{
-						tempArgs[posn] = args;
+						if(req <= 1)
+						{
+							tempArgs[posn] = args;
+						}
+						else
+						{
+							--req;
+							if(args.Length <= req)
+							{
+								Array.Copy(args, 0, tempArgs, posn,
+										   args.Length);
+								rest = new Object [0];
+							}
+							else
+							{
+								Array.Copy(args, 0, tempArgs, posn, req);
+								rest = new Object [args.Length - req];
+								Array.Copy(args, req, rest, 0, rest.Length);
+							}
+							tempArgs[tempArgs.Length - 1] = rest;
+						}
+					}
+					else if(args.Length <= req)
+					{
+						Array.Copy(args, 0, tempArgs, posn, args.Length);
 					}
 					else
 					{
-						Array.Copy(args, 0, tempArgs, posn, args.Length);
+						Array.Copy(args, 0, tempArgs, posn, req);
 					}
 					return method.Invoke(null, tempArgs);
 				}

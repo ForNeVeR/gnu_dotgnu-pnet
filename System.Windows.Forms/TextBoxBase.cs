@@ -67,6 +67,7 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
+
 	public virtual bool AutoSize
 			{
 				get
@@ -82,36 +83,7 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
-	public override Color BackColor
-			{
-				get
-				{
-					Color color = base.backColor;
-					if(color.IsEmpty)
-					{
-						return SystemColors.Window;
-					}
-					else
-					{
-						return color;
-					}
-				}
-				set
-				{
-					base.BackColor = value;
-				}
-			}
-	public override Image BackgroundImage
-			{
-				get
-				{
-					return base.BackgroundImage;
-				}
-				set
-				{
-					base.BackgroundImage = value;
-				}
-			}
+	
 	public BorderStyle BorderStyle
 			{
 				get
@@ -127,20 +99,10 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
-	public bool CanUndo
-			{
-				get
-				{
-					return GetCanUndo();
-				}
-			}
-	protected override CreateParams CreateParams
-			{
-				get
-				{
-					return base.CreateParams;
-				}
-			}
+
+	abstract public bool CanUndo
+			{ get; }
+
 	protected override Size DefaultSize
 			{
 				get
@@ -148,25 +110,7 @@ public abstract class TextBoxBase : Control
 					return new Size(100, PreferredHeight);
 				}
 			}
-	public override Color ForeColor
-			{
-				get
-				{
-					Color color = base.foreColor;
-					if(color.IsEmpty)
-					{
-						return SystemColors.WindowText;
-					}
-					else
-					{
-						return color;
-					}
-				}
-				set
-				{
-					base.ForeColor = value;
-				}
-			}
+	
 	public bool HideSelection
 			{
 				get
@@ -182,17 +126,10 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
-	public String[] Lines
-			{
-				get
-				{
-					return GetLines();
-				}
-				set
-				{
-					SetLines(value);
-				}
-			}
+
+	public abstract String[] Lines
+			{ get; set; }
+
 	public virtual int MaxLength
 			{
 				get
@@ -209,6 +146,7 @@ public abstract class TextBoxBase : Control
 					maxLength = value;
 				}
 			}
+
 	public bool Modified
 			{
 				get
@@ -224,6 +162,7 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
+
 	public virtual bool Multiline
 			{
 				get
@@ -239,6 +178,7 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
+
 	public int PreferredHeight
 			{
 				get
@@ -254,6 +194,7 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
+
 	public bool ReadOnly
 			{
 				get
@@ -269,6 +210,7 @@ public abstract class TextBoxBase : Control
 					}
 				}
 			}
+
 	public virtual String SelectedText
 			{
 				get
@@ -290,6 +232,7 @@ public abstract class TextBoxBase : Control
 					ClearUndo();
 				}
 			}
+
 	public virtual int SelectionLength
 			{
 				get
@@ -306,6 +249,7 @@ public abstract class TextBoxBase : Control
 					SetSelectionLength(value);
 				}
 			}
+
 	public virtual int SelectionStart
 			{
 				get
@@ -322,6 +266,7 @@ public abstract class TextBoxBase : Control
 					SetSelectionStart(value);
 				}
 			}
+
 	public override String Text
 			{
 				get
@@ -460,7 +405,6 @@ public abstract class TextBoxBase : Control
 			}
 
 	// Move the selection.
-	[TODO]
 	public void Select(int start, int length)
 			{
 				if(start < 0)
@@ -473,7 +417,7 @@ public abstract class TextBoxBase : Control
 					throw new ArgumentException
 						(S._("SWF_NonNegative"), "length");
 				}
-				// TODO
+				SelectInternal( start, length);
 			}
 
 	// Select all text in the control.
@@ -522,6 +466,7 @@ public abstract class TextBoxBase : Control
 					RemoveHandler(EventId.AcceptsTabChanged, value);
 				}
 			}
+
 	public event EventHandler AutoSizeChanged
 			{
 				add
@@ -533,6 +478,7 @@ public abstract class TextBoxBase : Control
 					RemoveHandler(EventId.AutoSizeChanged, value);
 				}
 			}
+
 	public new event EventHandler Click
 			{
 				add
@@ -544,6 +490,7 @@ public abstract class TextBoxBase : Control
 					RemoveHandler(EventId.TextBoxClick, value);
 				}
 			}
+
 	public event EventHandler HideSelectionChanged
 			{
 				add
@@ -555,6 +502,7 @@ public abstract class TextBoxBase : Control
 					RemoveHandler(EventId.HideSelectionChanged, value);
 				}
 			}
+
 	public event EventHandler ModifiedChanged
 			{
 				add
@@ -566,6 +514,7 @@ public abstract class TextBoxBase : Control
 					RemoveHandler(EventId.ModifiedChanged, value);
 				}
 			}
+
 	public event EventHandler MultilineChanged
 			{
 				add
@@ -577,6 +526,7 @@ public abstract class TextBoxBase : Control
 					RemoveHandler(EventId.MultilineChanged, value);
 				}
 			}
+
 	public event EventHandler ReadOnlyChanged
 			{
 				add
@@ -600,6 +550,7 @@ public abstract class TextBoxBase : Control
 					handler(this, e);
 				}
 			}
+
 	protected virtual void OnAutoSizeChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -610,6 +561,7 @@ public abstract class TextBoxBase : Control
 					handler(this, e);
 				}
 			}
+
 	protected virtual void OnBorderStyleChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -620,20 +572,24 @@ public abstract class TextBoxBase : Control
 					handler(this, e);
 				}
 			}
+
 	[TODO]
 	protected override void OnFontChanged(EventArgs e)
 			{
 				base.OnFontChanged(e);
 				// TODO: adjust the height of the control to match the font
 			}
+
 	protected override void OnHandleCreated(EventArgs e)
 			{
 				base.OnHandleCreated(e);
 			}
+
 	protected override void OnHandleDestroyed(EventArgs e)
 			{
 				base.OnHandleDestroyed(e);
 			}
+
 	protected virtual void OnHideSelectionChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -644,6 +600,7 @@ public abstract class TextBoxBase : Control
 					handler(this, e);
 				}
 			}
+
 	protected virtual void OnModifiedChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -654,6 +611,7 @@ public abstract class TextBoxBase : Control
 					handler(this, e);
 				}
 			}
+
 	protected virtual void OnMultilineChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -664,6 +622,7 @@ public abstract class TextBoxBase : Control
 					handler(this, e);
 				}
 			}
+
 	protected virtual void OnReadOnlyChanged(EventArgs e)
 			{
 				EventHandler handler;
@@ -673,26 +632,6 @@ public abstract class TextBoxBase : Control
 				{
 					handler(this, e);
 				}
-			}
-
-	// Determine if it is possible to undo the current state.
-	internal virtual bool GetCanUndo()
-			{
-				// Overridden in subclasses.
-				return false;
-			}
-
-	// Get the lines from this text box.
-	internal virtual String[] GetLines()
-			{
-				// Overridden in subclasses.
-				return null;
-			}
-
-	// Set the lines in this text box.
-	internal virtual void SetLines(String[] lines)
-			{
-				// Overridden in subclasses.
 			}
 
 	// Set the selection text to a new value.
@@ -712,35 +651,26 @@ public abstract class TextBoxBase : Control
 					vlength = value.Length;
 					newText = text.Substring(0, start) + value +
 							  text.Substring(start + length);
-					Text = newText;
+					SetTextInternal(newText);
 				}
 			}
 
 	// Get the length of the selection.
-	internal virtual int GetSelectionLength()
-			{
-				// Overridden in subclasses.
-				return 0;
-			}
+	abstract internal int GetSelectionLength();
 
 	// Set the length of the selection.
-	internal virtual void SetSelectionLength(int value)
-			{
-				// Overridden in subclasses.
-			}
+	abstract internal void SetSelectionLength(int value);
 
 	// Get the start of the selection.
-	internal virtual int GetSelectionStart()
-			{
-				// Overridden in subclasses.
-				return 0;
-			}
+	abstract internal int GetSelectionStart();
 
 	// Set the start of the selection.
-	internal virtual void SetSelectionStart(int value)
-			{
-				// Overridden in subclasses.
-			}
+	abstract internal void SetSelectionStart(int value);
+
+	// Change the text selection
+	abstract internal void SelectInternal( int start, int length);
+
+	abstract protected void SetTextInternal( string text);
 
 #if !CONFIG_COMPACT_FORMS
 

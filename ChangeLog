@@ -10,6 +10,10 @@
 
 	* System.Windows.Forms/Shortcut.cs: missing "CtrlN" and "CtrlShiftN".
 
+	* System.Windows.Forms/EventId.cs, System.Windows.Forms/Splitter.cs,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
+	implement the "Splitter" control.
+
 2004-01-02  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: minor fixes, pre-authenticate POST

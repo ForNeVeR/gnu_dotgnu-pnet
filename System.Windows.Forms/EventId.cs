@@ -172,6 +172,10 @@ internal enum EventId
 	DateChanged,
 	DateSelected,
 
+	// Splitter events.
+	SplitterMoved,
+	SplitterMoving,
+
 }; // enum EventId
 
 }; // namespace System.Windows.Forms

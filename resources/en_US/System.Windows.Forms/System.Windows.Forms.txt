@@ -55,3 +55,4 @@ SWF_FileDialog_NewFolderName=Enter new folder name:
 SWF_FileDialog_InvalidChar=Invalid character in folder name
 SWF_FileDialog_Exists={0}\nThis path already exists
 SWF_FileDialog_CannotMkdir={0}\nCould not create new folder
+SWF_DockStyle=Invalid dock style specified

@@ -1038,12 +1038,18 @@ static int processFile(ILLinker *linker, const char *filename,
 				{
 					--temp;
 				}
+				if(temp > 0 && arhdr.ar_name[temp - 1] == '/')
+				{
+					--temp;
+				}
 				arhdr.ar_name[temp] = '\0';
 
 				/* Attempt to load a PE/COFF image from this
 				   position in the "ar" archive file */
 				loadError = ILImageLoad(stream, arhdr.ar_name, context, &image,
-							IL_LOADFLAG_FORCE_32BIT | IL_LOADFLAG_NO_RESOLVE);
+										IL_LOADFLAG_FORCE_32BIT |
+										IL_LOADFLAG_NO_RESOLVE |
+										IL_LOADFLAG_NO_MAP);
 				if(loadError != 0)
 				{
 					fprintf(stderr, "%s: %s\n", arhdr.ar_name,

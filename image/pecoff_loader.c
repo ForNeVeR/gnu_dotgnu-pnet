@@ -394,7 +394,8 @@ int ILImageLoad(FILE *file, const char *filename,
 	   to only map those parts of the file that are relevant to IL, but
 	   there is too much variation in how compilers lay out binaries.
 	   In particular, the IL bytecode can be pretty much anywhere */
-	if(ILMapFileToMemory(fileno(file), minAddress, maxAddress,
+	if((flags & IL_LOADFLAG_NO_MAP) == 0 &&
+	   ILMapFileToMemory(fileno(file), minAddress, maxAddress,
 					     &mapAddress, &mapLength, &data))
 	{
 		isMapped = 1;

@@ -54,6 +54,7 @@ extern	"C" {
 #define	IL_LOADFLAG_PRE_VALIDATE	4	/* Pre-validate the token metadata */
 #define	IL_LOADFLAG_NO_RESOLVE		8	/* Don't resolve external references */
 #define	IL_LOADFLAG_INSECURE		16	/* Loaded from an insecure source */
+#define	IL_LOADFLAG_NO_MAP			32	/* Don't use mmap to load image */
 
 /*
  * Image types.

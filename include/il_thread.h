@@ -124,13 +124,50 @@ void ILThreadResume(ILThread *thread);
 void ILThreadInterrupt(ILThread *thread);
 
 /*
+ * Abort a thread.  Returns non-zero if the current thread is
+ * being aborted and a previous request hasn't been processed.
+ */
+int ILThreadAbort(ILThread *thread);
+
+/*
+ * Determine if the current thread is in the process of
+ * aborting.  If this function returns non-zero, the current
+ * thread should call "ILThreadAbort" on itself at some
+ * future point to determine if we are processing an abort
+ * request, or are in the middle of an abort.  i.e. the
+ * correct way to check for aborts is as follows:
+ *
+ *		if(ILThreadIsAborting())
+ *		{
+ *			if(ILThreadAbort(ILThreadSelf()))
+ *			{
+ *				// Abort request received: do initial processing.
+ *				...
+ *			}
+ *			else
+ *			{
+ *				// We are processing an existing abort.
+ *				...
+ *			}
+ *		}
+ */
+int ILThreadIsAborting(void);
+
+/*
+ * Reset a pending abort on the current thread.  Returns
+ * zero if an abort is not pending.
+ */
+int ILThreadAbortReset(void);
+
+/*
  * Join result codes.
  */
 #define	IL_JOIN_TIMEOUT		0	/* Join timed out */
 #define	IL_JOIN_OK			1	/* Join was successful */
 #define	IL_JOIN_INTERRUPTED	2	/* Join was interrupted */
-#define	IL_JOIN_SELF		3	/* Tried to join with ourselves */
-#define	IL_JOIN_MEMORY		4	/* Out of memory */
+#define	IL_JOIN_ABORTED		3	/* Thread doing the join was aborted */
+#define	IL_JOIN_SELF		4	/* Tried to join with ourselves */
+#define	IL_JOIN_MEMORY		5	/* Out of memory */
 
 /*
  * Join with another thread to wait for exit.
@@ -180,7 +217,8 @@ void ILThreadGetCounts(unsigned long *numForeground,
  * Put a thread to sleep for a given number of milliseconds.
  * Specifying "ms == 0" is the same as yielding the thread.
  * Specifying "ms == IL_MAX_UINT32" will sleep forever.
- * Returns zero if the sleep was interrupted.
+ * Returns zero if the sleep was interrupted, -1 if the
+ * thread was aborted, and 1 if the sleep completed.
  */
 int ILThreadSleep(ILUInt32 ms);
 

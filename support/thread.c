@@ -225,12 +225,12 @@ void ILThreadDestroy(ILThread *thread)
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
-	/* Nothing to do if the thread is already stopped or aborted */
+	/* Nothing to do if the thread is already stopped */
 	iscounted = 0;
 	isbg = 0;
-	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
+	if((thread->state & IL_TS_STOPPED) == 0)
 	{
-		thread->state |= IL_TS_ABORTED;
+		thread->state |= IL_TS_STOPPED;
 		_ILThreadTerminate(thread);
 		iscounted = 1;
 		isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
@@ -297,11 +297,10 @@ int ILThreadSuspend(ILThread *thread)
 		/* Request a suspend, but otherwise ignore the request */
 		thread->state |= IL_TS_SUSPEND_REQUESTED;
 	}
-	else if((state & (IL_TS_ABORT_REQUESTED | IL_TS_ABORTED |
-					  IL_TS_UNSTARTED | IL_TS_STOPPED)) != 0)
+	else if((state & (IL_TS_UNSTARTED | IL_TS_STOPPED)) != 0)
 	{
-		/* We cannot suspend a thread that is being aborted,
-		   was never started in the first place, or is done */
+		/* We cannot suspend a thread that was never started
+		   in the first place, or is stopped */
 		result = 0;
 	}
 	else if(_ILThreadIsSelf(thread))
@@ -397,8 +396,11 @@ void ILThreadInterrupt(ILThread *thread)
 	_ILMutexLock(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
-	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
+	if((thread->state & IL_TS_STOPPED) == 0)
 	{
+		/* Mark the thread as interrupted */
+		thread->state |= IL_TS_INTERRUPTED;
+
 		/* Unlock the thread object: we never hold the thread
 		   lock when updating the thread's wakeup object */
 		_ILMutexUnlock(&(thread->lock));
@@ -412,6 +414,103 @@ void ILThreadInterrupt(ILThread *thread)
 		/* Unlock the thread object */
 		_ILMutexUnlock(&(thread->lock));
 	}
+}
+
+int ILThreadAbort(ILThread *thread)
+{
+	ILThread *self = _ILThreadGetSelf();
+	int result;
+
+	/* Lock down the thread object */
+	_ILMutexLock(&(thread->lock));
+
+	/* Is the given thread the current thread? */
+	if(thread == self)
+	{
+		/* Determine if we've already seen the abort request or not */
+		if((thread->state & IL_TS_ABORTED) != 0)
+		{
+			/* Already aborted */
+			result = 0;
+		}
+		else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
+		{
+			/* Abort was requested */
+			thread->state &= ~IL_TS_ABORT_REQUESTED;
+			thread->state |= IL_TS_ABORTED;
+			result = 1;
+		}
+		else
+		{
+			/* The thread is not aborting: we were called in error */
+			result = 0;
+		}
+	}
+	else if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	{
+		/* The thread is already processing an abort or an abort request */
+		result = 0;
+	}
+	else
+	{
+		/* Mark the thread as needing to be aborted */
+		thread->state |= IL_TS_ABORT_REQUESTED;
+
+		/* If the thread is in the "wait/sleep/join" state, then interrupt it */
+		if((thread->state & IL_TS_WAIT_SLEEP_JOIN) != 0)
+		{
+			_ILMutexUnlock(&(thread->lock));
+			_ILWakeupInterrupt(&(thread->wakeup));
+			return 0;
+		}
+
+		/* No need to abort the current thread */
+		result = 0;
+	}
+
+	/* Unlock the thread object and return */
+	_ILMutexUnlock(&(thread->lock));
+	return result;
+}
+
+int ILThreadIsAborting(void)
+{
+	ILThread *thread = _ILThreadGetSelf();
+	int aborting;
+
+	/* Lock down the thread object */
+	_ILMutexLock(&(thread->lock));
+
+	/* Determine if an abort or an abort request is pending on this thread */
+	aborting = ((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0);
+
+	/* Unlock the thread object and return */
+	_ILMutexUnlock(&(thread->lock));
+	return aborting;
+}
+
+int ILThreadAbortReset(void)
+{
+	ILThread *thread = _ILThreadGetSelf();
+	int result;
+
+	/* Lock down the thread object */
+	_ILMutexLock(&(thread->lock));
+
+	/* Reset the "abort" and "abort requested" flags */
+	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	{
+		thread->state &= ~(IL_TS_ABORTED | IL_TS_ABORT_REQUESTED);
+		result = 1;
+	}
+	else
+	{
+		result = 0;
+	}
+
+	/* Unlock the thread object and return */
+	_ILMutexUnlock(&(thread->lock));
+	return result;
 }
 
 int ILThreadJoin(ILThread *thread, ILUInt32 ms)
@@ -429,9 +528,9 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 	_ILMutexLock(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
-	if((thread->state & (IL_TS_STOPPED | IL_TS_ABORTED)) == 0)
+	if((thread->state & IL_TS_STOPPED) == 0)
 	{
-		/* The thread is already stopped or aborted, so return immediately */
+		/* The thread is already stopped, so return immediately */
 		result = IL_JOIN_OK;
 	}
 	else
@@ -448,6 +547,15 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 
 			/* Put ourselves into the "wait/sleep/join" state */
 			_ILMutexLock(&(self->lock));
+			if((self->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+			{
+				/* The current thread is aborted */
+				_ILMutexUnlock(&(self->lock));
+				_ILMutexLock(&(thread->lock));
+				_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
+				_ILMutexUnlock(&(thread->lock));
+				return IL_JOIN_ABORTED;
+			}
 			self->state |= IL_TS_WAIT_SLEEP_JOIN;
 			_ILMutexUnlock(&(self->lock));
 
@@ -455,7 +563,10 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 			result = _ILWakeupWait(&(self->wakeup), ms, 1, (void **)0);
 			if(result < 0)
 			{
-				result = IL_JOIN_INTERRUPTED;
+				/* The wakeup was interrupted.  It may be either an
+				   "interrupt" or an "abort request".  We assume abort
+				   for now until we can inspect "self->state" below */
+				result = IL_JOIN_ABORTED;
 			}
 			else if(result > 0)
 			{
@@ -466,9 +577,14 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 				result = IL_JOIN_TIMEOUT;
 			}
 
-			/* Remove ourselves from the "wait/sleep/join" state */
+			/* Remove ourselves from the "wait/sleep/join" state,
+			   and check for a pending interrupt */
 			_ILMutexLock(&(self->lock));
-			self->state &= ~IL_TS_WAIT_SLEEP_JOIN;
+			if((self->state & IL_TS_INTERRUPTED) != 0)
+			{
+				result = IL_JOIN_INTERRUPTED;
+			}
+			self->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
 			_ILMutexUnlock(&(self->lock));
 
 			/* Lock down the foreign thread again */
@@ -562,11 +678,9 @@ void ILThreadAtomicEnd(void)
 
 void ILThreadMemoryBarrier(void)
 {
-	/* TODO */
-
 	/* For now, we just acquire and release a mutex, under the
-	   assumption that pthreads will do data synchronisation
-	   for us as part of the mutex code */
+	   assumption that the underlying thread package will do
+	   data synchronisation for us as part of the mutex code */
 	_ILMutexLock(&atomicLock);
 	_ILMutexUnlock(&atomicLock);
 }
@@ -588,6 +702,13 @@ int ILThreadSleep(ILUInt32 ms)
 	/* Lock down the thread */
 	_ILMutexLock(&(thread->lock));
 
+	/* Bail out if the current thread is aborted */
+	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	{
+		_ILMutexUnlock(&(thread->lock));
+		return -1;
+	}
+
 	/* Put the thread into the "wait/sleep/join" state */
 	thread->state |= IL_TS_WAIT_SLEEP_JOIN;
 
@@ -595,14 +716,22 @@ int ILThreadSleep(ILUInt32 ms)
 	_ILMutexUnlock(&(thread->lock));
 
 	/* Wait on the thread's wakeup object, which will never be signalled,
-	   but which may be interrupted by some other thread */
+	   but which may be interrupted or aborted by some other thread */
 	result = (_ILWakeupWait(&(thread->wakeup), ms, 1, (void **)0) >= 0);
 
 	/* Lock down the thread again */
 	_ILMutexLock(&(thread->lock));
 
-	/* Exit from the "wait/sleep/join" state */
-	thread->state &= ~IL_TS_WAIT_SLEEP_JOIN;
+	/* Determine if the interrupt on the wakeup object was a user-level
+	   interrupt or an abort request */
+	if(!result && (thread->state & IL_TS_INTERRUPTED) == 0)
+	{
+		/* It was an abort request */
+		result = -1;
+	}
+
+	/* Exit from the "wait/sleep/join" and "interrupted" states */
+	thread->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
 
 	/* Did someone else ask us to suspend? */
 	if((thread->state & IL_TS_SUSPEND_REQUESTED) != 0)

@@ -109,6 +109,7 @@ struct _tagILThread
  */
 #define	IL_TS_PUBLIC_FLAGS		0x01FF
 #define	IL_TS_SUSPENDED_SELF	0x0200
+#define	IL_TS_INTERRUPTED		0x0400
 
 /*
  * Safe mutex lock and unlock operations that will prevent the

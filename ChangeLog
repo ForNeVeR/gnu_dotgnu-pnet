@@ -11,6 +11,9 @@ knows where to find the "this" parameter for the lookup.
 
 * engine/cvm_call.c: implement "call_virtual" and "call_interface".
 
+* samples/mscorlib.dll: check in a new version of "pnetlib" that uses
+IO streams to implement Console instead of a direct call to "Stdio".
+
 2001-10-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h, engine/cvm_ptr.c: implement the CVM instructions

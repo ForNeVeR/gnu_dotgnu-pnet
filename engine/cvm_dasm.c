@@ -439,12 +439,6 @@ static CVMOpcode const prefixOpcodes[64] = {
 	{"setge",			CVM_OPER_NONE},
 
 	/*
-	 * Reserved opcodes.
-	 */
-	{"preserved_0e",	CVM_OPER_NONE},
-	{"preserved_0f",	CVM_OPER_NONE},
-
-	/*
 	 * Prefixed array opcodes.
 	 */
 	{"lread_elem",		CVM_OPER_NONE},
@@ -463,17 +457,19 @@ static CVMOpcode const prefixOpcodes[64] = {
 	{"ldinterfftn",		CVM_OPER_LD_INTERFACE},
 
 	/*
-	 * Reserved opcodes.
-	 */
-	{"preserved_1a",	CVM_OPER_NONE},
-	{"preserved_1b",	CVM_OPER_NONE},
-
-	/*
 	 * Prefixed exception handling opcodes.
 	 */
 	{"enter_try",		CVM_OPER_ENTER_TRY},
-	{"exit_try",		CVM_OPER_NONE},
 	{"throw",			CVM_OPER_NONE},
+	{"throw_caller",	CVM_OPER_NONE},
+
+	/*
+	 * Reserved opcodes.
+	 */
+	{"preserved_1b",	CVM_OPER_NONE},
+	{"preserved_1c",	CVM_OPER_NONE},
+	{"preserved_1d",	CVM_OPER_NONE},
+	{"preserved_1e",	CVM_OPER_NONE},
 
 	/*
 	 * Prefixed typedref handling opcodes.

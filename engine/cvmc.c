@@ -54,6 +54,8 @@ struct _tagILCVMCoder
 	unsigned long	start;
 	unsigned long	len;
 	unsigned long	stackCheck;
+	unsigned long	enterTry;
+	unsigned long	tryHandler;
 	ILUInt32		generation;
 	long			height;
 	long			minHeight;
@@ -238,6 +240,8 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->start = 0;
 	coder->len = size;
 	coder->stackCheck = 0;
+	coder->enterTry = 0;
+	coder->tryHandler = 0;
 	coder->generation = 1;
 	coder->height = 0;
 	coder->minHeight = 0;
@@ -352,6 +356,7 @@ static int CVMCoder_Restart(ILCoder *_coder)
 #include "cvmc_stack.c"
 #include "cvmc_ptr.c"
 #include "cvmc_branch.c"
+#include "cvmc_except.c"
 #include "cvmc_conv.c"
 #include "cvmc_obj.c"
 #include "cvmc_call.c"
@@ -434,9 +439,14 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_LoadFuncAddr,
 	CVMCoder_LoadVirtualAddr,
 	CVMCoder_LoadInterfaceAddr,
+	CVMCoder_SetupExceptions,
 	CVMCoder_Throw,
+	CVMCoder_Rethrow,
 	CVMCoder_Jsr,
 	CVMCoder_RetFromJsr,
+	CVMCoder_TryHandlerStart,
+	CVMCoder_TryHandlerEnd,
+	CVMCoder_Catch,
 };
 
 #ifdef	__cplusplus

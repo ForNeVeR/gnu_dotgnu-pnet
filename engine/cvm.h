@@ -379,27 +379,27 @@ extern	"C" {
 /*
  * Prefixed array opcodes.
  */
-#define	COP_PREFIX_LREAD_ELEM		0x10
-#define	COP_PREFIX_FREAD_ELEM		0x11
-#define	COP_PREFIX_DREAD_ELEM		0x12
-#define	COP_PREFIX_LWRITE_ELEM		0x13
-#define	COP_PREFIX_FWRITE_ELEM		0x14
-#define	COP_PREFIX_DWRITE_ELEM		0x15
+#define	COP_PREFIX_LREAD_ELEM		0x0E
+#define	COP_PREFIX_FREAD_ELEM		0x0F
+#define	COP_PREFIX_DREAD_ELEM		0x10
+#define	COP_PREFIX_LWRITE_ELEM		0x11
+#define	COP_PREFIX_FWRITE_ELEM		0x12
+#define	COP_PREFIX_DWRITE_ELEM		0x13
 
 /*
  * Prefixed call management opcodes.
  */
-#define	COP_PREFIX_TAIL				0x16
-#define	COP_PREFIX_LDFTN			0x17
-#define	COP_PREFIX_LDVIRTFTN		0x18
-#define	COP_PREFIX_LDINTERFFTN		0x19
+#define	COP_PREFIX_TAIL				0x14
+#define	COP_PREFIX_LDFTN			0x15
+#define	COP_PREFIX_LDVIRTFTN		0x16
+#define	COP_PREFIX_LDINTERFFTN		0x17
 
 /*
  * Prefixed exception handling opcodes.
  */
-#define	COP_PREFIX_ENTER_TRY		0x1C
-#define	COP_PREFIX_EXIT_TRY			0x1D
-#define	COP_PREFIX_THROW			0x1E
+#define	COP_PREFIX_ENTER_TRY		0x18
+#define	COP_PREFIX_THROW			0x19
+#define	COP_PREFIX_THROW_CALLER		0x1A
 
 /*
  * Prefixed typedref handling opcodes.

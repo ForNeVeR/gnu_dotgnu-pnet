@@ -623,30 +623,4 @@ static void CVMCoder_Compare(ILCoder *coder, int opcode,
 	}
 }
 
-/*
- * Output a throw instruction.
- */
-static void CVMCoder_Throw(ILCoder *coder)
-{
-	CVM_BYTE(COP_PREFIX);
-	CVM_BYTE(COP_PREFIX_THROW);
-	CVM_ADJUST(-1);
-}
-
-/*
- * Output a "jump to subroutine" instruction.
- */
-static void CVMCoder_Jsr(ILCoder *coder, ILUInt32 dest)
-{
-	OutputBranch(coder, COP_JSR, dest);
-}
-
-/*
- * Output a "return from subroutine" instruction.
- */
-static void CVMCoder_RetFromJsr(ILCoder *coder)
-{
-	CVM_BYTE(COP_RET_JSR);
-}
-
 #endif	/* IL_CVMC_CODE */

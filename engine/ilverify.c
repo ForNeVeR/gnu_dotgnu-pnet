@@ -445,13 +445,30 @@ static void Coder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 static void Coder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 }
-static void Coder_Throw(ILCoder *coder)
+static void Coder_SetupExceptions(ILCoder *coder, ILException *exceptions,
+								  int hasRethrow)
+{
+}
+static void Coder_Throw(ILCoder *coder, int inCurrentMethod)
+{
+}
+static void Coder_Rethrow(ILCoder *coder, ILException *exception)
 {
 }
 static void Coder_Jsr(ILCoder *coder, ILUInt32 dest)
 {
 }
 static void Coder_RetFromJsr(ILCoder *coder)
+{
+}
+static void Coder_TryHandlerStart(ILCoder *coder, ILUInt32 start, ILUInt32 end)
+{
+}
+static void Coder_TryHandlerEnd(ILCoder *coder)
+{
+}
+static void Coder_Catch(ILCoder *coder, ILException *exception,
+					    ILClass *classInfo, int hasRethrow)
 {
 }
 
@@ -531,9 +548,14 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_LoadFuncAddr,
 	Coder_LoadVirtualAddr,
 	Coder_LoadInterfaceAddr,
+	Coder_SetupExceptions,
 	Coder_Throw,
+	Coder_Rethrow,
 	Coder_Jsr,
 	Coder_RetFromJsr,
+	Coder_TryHandlerStart,
+	Coder_TryHandlerEnd,
+	Coder_Catch,
 };
 static ILCoder DefaultCoder = {&DefaultCoderClass};
 

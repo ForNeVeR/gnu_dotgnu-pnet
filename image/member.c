@@ -603,6 +603,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 				newException->handlerLength =
 					(((ILUInt32)(addr[posn + 7])) & (ILUInt32)0xFF);
 				newException->extraArg = IL_READ_UINT32(addr + posn + 8);
+				newException->userData = 0;
 				newException->next = 0;
 				if(lastException)
 				{
@@ -632,6 +633,7 @@ int ILMethodGetExceptions(ILMethod *method, ILMethodCode *code,
 				newException->handlerOffset = IL_READ_UINT32(addr + posn + 12);
 				newException->handlerLength = IL_READ_UINT32(addr + posn + 16);
 				newException->extraArg = IL_READ_UINT32(addr + posn + 20);
+				newException->userData = 0;
 				newException->next = 0;
 				if(lastException)
 				{

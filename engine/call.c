@@ -271,7 +271,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	frame->method = thread->method;
 	frame->pc = IL_MAX_UINT32;
 	frame->frame = thread->frame;
-	frame->except = IL_MAX_UINT32;
+	frame->except = thread->except;
 
 	/* Call the method */
 	if(isCtor)
@@ -285,6 +285,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 		thread->pcstart = pcstart;
 	}
 	thread->pc = 0;
+	thread->except = IL_MAX_UINT32;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)
@@ -603,7 +604,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	frame->method = thread->method;
 	frame->pc = IL_MAX_UINT32;
 	frame->frame = thread->frame;
-	frame->except = IL_MAX_UINT32;
+	frame->except = thread->except;
 
 	/* Call the method */
 	if(isCtor)
@@ -617,6 +618,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 		thread->pcstart = pcstart;
 	}
 	thread->pc = 0;
+	thread->except = IL_MAX_UINT32;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)

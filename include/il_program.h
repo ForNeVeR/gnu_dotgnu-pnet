@@ -999,6 +999,7 @@ struct _tagILException
 	ILUInt32		handlerOffset;		/* Offset of handler region */
 	ILUInt32		handlerLength;		/* Length of handler region */
 	ILUInt32		extraArg;			/* Extra argument for the block */
+	ILUInt32		userData;			/* Data for users of this structure */
 	ILException    *next;				/* Next exception block */
 
 };

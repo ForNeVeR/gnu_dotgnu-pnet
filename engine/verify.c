@@ -433,6 +433,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	int lastWasJump;
 	ILException *exceptions;
 	ILException *exception;
+	int hasRethrow;
 
 	/* Include local variables that are required by the include files */
 #define IL_VERIFY_LOCALS
@@ -458,6 +459,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 restart:
 	result = 0;
 	labelList = 0;
+	hasRethrow = 0;
 
 	/* Initialize the memory allocator that is used for temporary
 	   allocation during bytecode verification */
@@ -514,6 +516,10 @@ restart:
 				VERIFY_TRUNCATED();
 			}
 			insnType = ILPrefixOpcodeTable[opcode].args;
+			if(opcode == IL_PREFIX_OP_RETHROW)
+			{
+				hasRethrow = 1;
+			}
 			opcode += IL_OP_PREFIX;
 		}
 
@@ -781,6 +787,12 @@ restart:
 		numLocals = 0;
 	}
 
+	/* Set up for exception handling if necessary */
+	if(exceptions)
+	{
+		ILCoderSetupExceptions(coder, exceptions, hasRethrow);
+	}
+
 	/* Verify the code */
 	pc = code->code;
 	len = code->codeLen;
@@ -867,6 +879,12 @@ restart:
 	if(!lastWasJump)
 	{
 		VERIFY_INSN_ERROR();
+	}
+
+	/* Output the exception handler table, if necessary */
+	if(exceptions != 0)
+	{
+		OutputExceptionTable(coder, method, exceptions, hasRethrow);
 	}
 
 	/* Finish processing using the coder */

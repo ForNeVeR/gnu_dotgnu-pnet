@@ -546,6 +546,15 @@ case COP_BR_LONG:
 			}
 		}
 		break;
+
+		case COP_JSR:
+		{
+			/* Long form of the "jsr" opcode */
+			stacktop[0].intValue = (ILInt32)((pc + 6) - pcstart);
+			pc += IL_READ_INT32(pc + 2);
+			stacktop += 1;
+		}
+		break;
 	}
 }
 break;

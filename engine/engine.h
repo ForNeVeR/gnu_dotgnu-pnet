@@ -143,6 +143,7 @@ struct _tagILExecThread
 	/* Current thread state */
 	unsigned char  *pcstart;	/* Start of the CVM code for the method */
 	ILUInt32		pc;			/* Offset to the current position */
+	ILUInt32		except;		/* Offset to the exception handler table */
 	ILUInt32		frame;		/* Base of the local variable frame */
 	CVMWord        *stackTop;	/* Current stack top */
 	ILMethod       *method;		/* Current method being executed */

@@ -35,8 +35,8 @@ case COP_JSR:
 	   other methods, which may cause the CVM cache to be
 	   flushed.  When the subroutine finally returns, this
 	   method may no longer be located where it used to be */
-	stacktop[0].intValue = (ILInt32)((pc + 5) - pcstart);
-	pc += IL_READ_INT32(pc + 1);
+	stacktop[0].intValue = (ILInt32)((pc + 6) - pcstart);
+	pc += (ILInt32)(ILInt8)(pc[1]);
 	stacktop += 1;
 }
 break;
@@ -53,32 +53,32 @@ break;
 
 case COP_PREFIX_ENTER_TRY:
 {
-	/* Enter a try block */
-#if 0
-	CVMFrame *frame = CreateFrame(thread);
-	frame->type = CVM_FRAME_TRY;
-	frame->pc =
-		(ILInt32)((pc + IL_READ_INT32(pc + 2)) - pcstart);
-	frame->method = method;
-#endif
+	/* Enter a try context for this method */
+	thread->except = (ILUInt32)((pc + IL_READ_INT32(pc + 2)) - pcstart);
 	MODIFY_PC_AND_STACK(6, 0);
-}
-break;
-
-case COP_PREFIX_EXIT_TRY:
-{
-	/* Exit a try block */
-#if 0
-	--(thread->frameStackSize);
-#endif
-	MODIFY_PC_AND_STACK(2, 0);
 }
 break;
 
 case COP_PREFIX_THROW:
 {
-	/* Throw an exception */
+	/* Throw an exception within the current method */
+	/* TODO */
 throwException:
+#if 0
+	/* Move the exception object down the stack */
+	stackbase[0].ptrValue = stacktop[-1].ptrValue;
+	stacktop = stackbase + 1;
+
+	/* Find the next higher exception or exit frame */
+#endif
+	MODIFY_PC_AND_STACK(2, 0);
+}
+break;
+
+case COP_PREFIX_THROW_CALLER:
+{
+	/* Throw an exception to the caller of this method */
+	/* TODO */
 #if 0
 	/* Move the exception object down the stack */
 	stackbase[0].ptrValue = stacktop[-1].ptrValue;

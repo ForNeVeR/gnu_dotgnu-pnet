@@ -535,9 +535,23 @@ struct _tagILCoderClass
 	void (*loadInterfaceAddr)(ILCoder *coder, ILMethod *methodInfo);
 
 	/*
-	 * Throw an exception.
+	 * Set up exception handling for the current method.
 	 */
-	void (*throwException)(ILCoder *coder);
+	void (*setupExceptions)(ILCoder *coder, ILException *exceptions,
+							int hasRethrow);
+
+	/*
+	 * Throw an exception.  If "inCurrentMethod" is non-zero,
+	 * then there is a catch block in the current method that
+	 * surrounds the current code position.  If "inCurrentMethod"
+	 * is zero, then the exception should be thrown to the caller.
+	 */
+	void (*throwException)(ILCoder *coder, int inCurrentMethod);
+
+	/*
+	 * Re-throw the current exception for a particular exception region.
+	 */
+	void (*rethrow)(ILCoder *coder, ILException *exception);
 
 	/*
 	 * Jump to a "finally" or "fault" sub-routine.
@@ -548,6 +562,25 @@ struct _tagILCoderClass
 	 * Return from a "finally" or "fault" sub-routine.
 	 */
 	void (*retFromJsr)(ILCoder *coder);
+
+	/*
+	 * Start a "try" handler block for a region of code.
+	 */
+	void (*tryHandlerStart)(ILCoder *coder, ILUInt32 start, ILUInt32 end);
+
+	/*
+	 * End the current "try" handler block.
+	 */
+	void (*tryHandlerEnd)(ILCoder *coder);
+
+	/*
+	 * Output instructions to match a "catch" clause.
+	 * If "hasRethrow" is non-zero, then the method contains
+	 * "rethrow" instructions and the object must be saved in
+	 * a local variable before jumping to the catch clause.
+	 */
+	void (*catchClause)(ILCoder *coder, ILException *exception,
+						ILClass *classInfo, int hasRethrow);
 
 };
 
@@ -741,12 +774,24 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->loadVirtualAddr))((coder), (methodInfo)))
 #define	ILCoderLoadInterfaceAddr(coder,methodInfo) \
 			((*((coder)->classInfo->loadInterfaceAddr))((coder), (methodInfo)))
-#define	ILCoderThrow(coder) \
-			((*((coder)->classInfo->throwException))((coder)))
+#define	ILCoderSetupExceptions(coder,exceptions,hasRethrow) \
+			((*((coder)->classInfo->setupExceptions))((coder), (exceptions), \
+													  (hasRethrow)))
+#define	ILCoderThrow(coder,inCurrent) \
+			((*((coder)->classInfo->throwException))((coder), (inCurrent)))
+#define	ILCoderRethrow(coder,exception) \
+			((*((coder)->classInfo->rethrow))((coder), (exception)))
 #define	ILCoderJsr(coder,dest) \
 			((*((coder)->classInfo->jsr))((coder), (dest)))
 #define	ILCoderRetFromJsr(coder) \
 			((*((coder)->classInfo->retFromJsr))((coder)))
+#define	ILCoderTryHandlerStart(coder,start,end) \
+			((*((coder)->classInfo->tryHandlerStart))((coder), (start), (end)))
+#define	ILCoderTryHandlerEnd(coder) \
+			((*((coder)->classInfo->tryHandlerEnd))((coder)))
+#define	ILCoderCatch(coder,exception,info,hasRethrow) \
+			((*((coder)->classInfo->catchClause))((coder), (exception), \
+												  (info), (hasRethrow)))
 
 #ifdef	__cplusplus
 };

@@ -59,6 +59,7 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	/* Initialize the thread state */
 	thread->pcstart = 0;
 	thread->pc = 0;
+	thread->except = IL_MAX_UINT32;
 	thread->frame = 0;
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;

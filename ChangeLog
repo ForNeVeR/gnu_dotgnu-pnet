@@ -6,6 +6,13 @@
 * include/il_coder.h, engine/cvmc.c, engine/cvmc_branch.c, engine/ilverify.c:
 implement the "Throw", "Jsr", and "RetFromJsr" coder API's.
 
+* engine/call.c, engine/cvm.h, engine/cvm_branch.c, engine/cvm_call.c,
+engine/cvm_dasm.c, engine/cvm_except.c, engine/cvmc.c, engine/cvmc_branch.c,
+engine/cvmc_except.c, engine/engine.h, engine/ilverify.c, engine/thread.c,
+engine/verify.c, engine/verify_except.c, image/member.c, include/il_coder.h,
+include/il_program.h: add most of the verification and code generation
+logic for exceptions.
+
 2001-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/cvm.c, engine/cvm_call.c, engine/cvm_dasm.c: allow the CVM

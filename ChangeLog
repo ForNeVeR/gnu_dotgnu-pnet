@@ -1,4 +1,14 @@
 
+2004-01-04  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/Binding.cs,
+	System.Windows.Forms/BindingContext.cs,
+	System.Windows.Forms/BindingManagerBase.cs,
+	System.Windows.Forms/BindingsCollection.cs,
+	System.Windows.Forms/CurrencyManager.cs,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.txt:
+	rewrite the binding classes in System.Windows.Forms.
+
 2004-01-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/TreeView.cs (ProcessClick): don't call

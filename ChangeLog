@@ -1,4 +1,46 @@
 
+2003-05-16  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, Basic/.cvsignore, Basic/AppWinStyle.cs,
+	Basic/Basic.build, Basic/CallType.cs, Basic/Collection.cs,
+	Basic/ComClassAttribute.cs, Basic/CompareMethod.cs, Basic/Constants.cs,
+	Basic/ControlChars.cs, Basic/Conversion.cs, Basic/DateAndTime.cs,
+	Basic/DateFormat.cs, Basic/DateInterval.cs, Basic/DueDate.cs,
+	Basic/ErrObject.cs, Basic/FileAttribute.cs, Basic/FileSystem.cs,
+	Basic/Financial.cs, Basic/FirstDayOfWeek.cs, Basic/FirstWeekOfYear.cs,
+	Basic/Globals.cs, Basic/Information.cs, Basic/Interaction.cs,
+	Basic/Makefile.am, Basic/MsgBoxResult.cs, Basic/MsgBoxStyle.cs,
+	Basic/OpenAccess.cs, Basic/OpenMode.cs, Basic/OpenShare.cs,
+	Basic/S.cs, Basic/SpcInfo.cs, Basic/Strings.cs, Basic/TODOAttribute.cs,
+	Basic/TabInfo.cs, Basic/TriState.cs, Basic/VBFixedArrayAttribute.cs,
+	Basic/VBFixedStringAttribute.cs, Basic/VBMath.cs, Basic/VariantType.cs,
+	Basic/VbStrConv.cs, Basic/CompilerServices/BooleanType.cs,
+	Basic/CompilerServices/ByteType.cs,
+	Basic/CompilerServices/CharArrayType.cs,
+	Basic/CompilerServices/CharType.cs,
+	Basic/CompilerServices/DateType.cs,
+	Basic/CompilerServices/DecimalType.cs,
+	Basic/CompilerServices/DoubleType.cs,
+	Basic/CompilerServices/ExceptionUtils.cs,
+	Basic/CompilerServices/FlowControl.cs,
+	Basic/CompilerServices/HostServices.cs,
+	Basic/CompilerServices/IVbHost.cs,
+	Basic/CompilerServices/IncompleteInitialization.cs,
+	Basic/CompilerServices/IntegerType.cs,
+	Basic/CompilerServices/LateBinding.cs,
+	Basic/CompilerServices/LongType.cs,
+	Basic/CompilerServices/ObjectType.cs,
+	Basic/CompilerServices/OptionCompareAttribute.cs,
+	Basic/CompilerServices/OptionTextAttribute.cs,
+	Basic/CompilerServices/ProjectData.cs,
+	Basic/CompilerServices/ShortType.cs,
+	Basic/CompilerServices/SingleType.cs,
+	Basic/CompilerServices/StandardModuleAttribute.cs,
+	Basic/CompilerServices/StaticLocalInitFlag.cs,
+	Basic/CompilerServices/StringType.cs,
+	Basic/CompilerServices/Utils.cs, profiles/full: stub out the
+	standard library for VB.Net.
+
 2003-05-16  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Net/Sockets/Socket.cs: Check for waitHandle state before 

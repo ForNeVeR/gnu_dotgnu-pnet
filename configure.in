@@ -197,6 +197,7 @@ csunit/TestVersion.cs
 csupport/Makefile
 compat/Makefile
 JScript/Makefile
+Basic/Makefile
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile

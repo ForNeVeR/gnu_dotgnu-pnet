@@ -2,6 +2,9 @@
 <profile>
 <!-- Full profile, that enables all relevant features -->
 
+<!-- Provides non-ECMA features -->
+<define name="NON_ECMA" value="true"/>
+
 <!-- Only use ECMA-compatible features -->
 <define name="ECMA_COMPAT" value="false"/>
 

@@ -1,6 +1,6 @@
 if HAS_REFLECTION
 SUBDIRS = tools resources runtime I18N System System.Xml . \
-		  csunit csupport compat JScript tests samples
+		  csunit csupport compat JScript Basic tests samples
 else
 SUBDIRS = tools resources runtime System System.Xml .  samples
 endif

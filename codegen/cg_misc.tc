@@ -347,6 +347,32 @@ ILNode_GetType(ILNode_IsNonNull)
 }
 
 /*
+ * Get the type of a "make reference" operator.
+ */
+ILNode_GetType(ILNode_MakeRefAny)
+{
+	/* The result is an instance of "System.TypedReference" */
+	return ILMachineType_ManagedValue;
+}
+
+/*
+ * Get the type of a "get reference type" operator.
+ */
+ILNode_GetType(ILNode_RefType)
+{
+	/* The result is an instance of "System.RuntimeTypeHandle" */
+	return ILMachineType_ManagedValue;
+}
+
+/*
+ * Get the type of a "get reference value" operator.
+ */
+ILNode_GetType(ILNode_RefValue)
+{
+	return ILTypeToMachineType(node->type);
+}
+
+/*
  * Generate discard code for a comma or argument list expression.
  */
 ILNode_GenDiscard(ILNode_Comma),
@@ -1441,6 +1467,62 @@ ILNode_GenValue(ILNode_IsNonNull)
 	ILGenSimple(info, IL_OP_XOR);
 	ILGenAdjust(info, -1);
 	return ILMachineType_Boolean;
+}
+
+/*
+ * Generate value code for a "make reference" operator.
+ */
+ILNode_GenValue(ILNode_MakeRefAny)
+{
+	/* Get the address of the supplied l-value */
+	ILNode_GenRef(node->expr, info);
+
+	/* Convert the address into a typedref */
+	ILGenTypeToken(info, IL_OP_MKREFANY, node->type);
+
+	/* The result is always a typedref */
+	return ILMachineType_ManagedValue;
+}
+
+/*
+ * Generate value code for a "get reference type" operator.
+ */
+ILNode_GenValue(ILNode_RefType)
+{
+	/* Generate the value of the typedref sub-expression */
+	ILNode_GenValue(node->expr, info);
+
+	/* Convert the typedref into a type handle */
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_REFANYTYPE);
+
+	/* Convert the type handle into a type object */
+	ILGenCallByName(info,
+			"class [.library]System.Type "
+				"[.library]System.Type::GetTypeFromHandle"
+				"(valuetype [.library]System.RuntimeTypeHandle)");
+
+	/* The result is an instance of "System.Type" */
+	return ILMachineType_ObjectRef;
+}
+
+/*
+ * Generate value code for a "get reference value" operator.
+ */
+ILNode_GenValue(ILNode_RefValue)
+{
+	ILMachineType machineType = ILTypeToMachineType(node->type);
+
+	/* Generate the value of the typedref sub-expression */
+	ILNode_GenValue(node->expr1, info);
+
+	/* Convert the typedref into a managed pointer of the correct type */
+	ILGenTypeToken(info, IL_OP_REFANYVAL, node->type);
+
+	/* Load the value from the pointer */
+	ILGenLoadManaged(info, machineType, node->type);
+
+	/* Return the value's machine type to the caller */
+	return machineType;
 }
 
 /*

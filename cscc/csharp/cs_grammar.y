@@ -651,6 +651,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token IS					"`is'"
 %token LOCK					"`lock'"
 %token LONG					"`long'"
+%token MAKEREF				"`__makeref'"
 %token NAMESPACE			"`namespace'"
 %token NEW					"`new'"
 %token NULL_TOK				"`null'"
@@ -665,6 +666,8 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token READONLY				"`readonly'"
 %token REMOVE				"`remove'"
 %token REF					"`ref'"
+%token REFTYPE				"`__reftype'"
+%token REFVALUE				"`__refvalue'"
 %token RETURN				"`return'"
 %token SBYTE				"`sbyte'"
 %token SEALED				"`sealed'"
@@ -1243,6 +1246,9 @@ PrimaryExpression
 				 */
 				$$ = CSBuiltinConstant($3.string);
 			}
+	| MAKEREF '(' Expression ')'			{ MakeUnary(MakeRefAny, $3); }
+	| REFTYPE '(' Expression ')'			{ MakeUnary(RefType, $3); }
+	| REFVALUE '(' Expression ',' Type ')'	{ MakeBinary(RefValue, $3, $5); }
 	;
 
 LiteralExpression

@@ -1566,6 +1566,17 @@ JavaGenValue(ILNode_IsNonNull)
 }
 
 /*
+ * Generate value code for typedref operators.
+ */
+JavaGenValue(ILNode_MakeRefAny),
+JavaGenValue(ILNode_RefType),
+JavaGenValue(ILNode_RefValue)
+{
+	/* Not supported for Java output */
+	return ILNode_GetType(node, info);
+}
+
+/*
  * Generate the "then" branch for a comma expression.
  */
 JavaGenThen(ILNode_Comma)

@@ -1019,6 +1019,7 @@ WHITE			[ \t\r\f\v\032]
 "is"					{ RETURNTOK(IS); }
 "lock"					{ RETURNTOK(LOCK); }
 "long"					{ RETURNTOK(LONG); }
+"__makeref"				{ RETURNTOK(MAKEREF); }
 "namespace"				{ RETURNTOK(NAMESPACE); }
 "new"					{ RETURNTOK(NEW); }
 "null"					{ RETURNTOK(NULL_TOK); }
@@ -1032,6 +1033,8 @@ WHITE			[ \t\r\f\v\032]
 "public"				{ RETURNTOK(PUBLIC); }
 "readonly"				{ RETURNTOK(READONLY); }
 "ref"					{ RETURNTOK(REF); }
+"__reftype"				{ RETURNTOK(REFTYPE); }
+"__refvalue"			{ RETURNTOK(REFVALUE); }
 "return"				{ RETURNTOK(RETURN); }
 "sbyte"					{ RETURNTOK(SBYTE); }
 "sealed"				{ RETURNTOK(SEALED); }

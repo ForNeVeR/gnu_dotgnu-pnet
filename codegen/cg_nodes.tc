@@ -404,6 +404,15 @@ struct _tagILSwitchValue
 }
 %node ILNode_IsNull ILNode_UnaryExpression
 %node ILNode_IsNonNull ILNode_UnaryExpression
+%node ILNode_MakeRefAny ILNode_UnaryExpression =
+{
+	%nocreate ILType *type = {0};
+}
+%node ILNode_RefType ILNode_UnaryExpression
+%node ILNode_RefValue ILNode_BinaryExpression =
+{
+	%nocreate ILType *type = {0};
+}
 
 /*
  * Object and array construction expressions.

@@ -215,7 +215,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.Type" class */
 	ABORT_IF(typeClass,
 			 ILClassCreate(scope, 0, "Type", "System", objectClass));
-	ILClassSetAttrs(stringClass, ~0,
+	ILClassSetAttrs(typeClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |

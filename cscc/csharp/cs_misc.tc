@@ -443,3 +443,102 @@ ILNode_SemAnalysis(ILNode_ArrayInit)
 		return CSSemValueDefault;
 	}
 }
+
+/*
+ * Perform semantic analysis on a "make reference" operator.
+ */
+ILNode_SemAnalysis(ILNode_MakeRefAny)
+{
+	CSSemValue value;
+
+	/* Cannot use this operator with Java output */
+	if(info->outputIsJava)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "`__makeref' disallowed when compiling to Java bytecode");
+	}
+
+	/* Perform semantic analysis on the sub-expression
+	   which must be an l-value.  S-values are not allowed
+	   because we have no way of knowing if some future
+	   code may try to read the value via the typedref */
+	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
+	if(value.kind != CS_SEMKIND_LVALUE ||
+	   yyisa(node->expr, ILNode_LValueNoRef))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid lvalue in `__makeref' expression");
+		node->type = ILType_Int32;
+	}
+	else
+	{
+		node->type = value.type;
+	}
+
+	/* The type of "__makeref" expressions is always ILType_TypedRef */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILType_TypedRef;
+	return value;
+}
+
+/*
+ * Perform semantic analysis on a "get reference type" operator.
+ */
+ILNode_SemAnalysis(ILNode_RefType)
+{
+	CSSemValue value;
+
+	/* Cannot use this operator with Java output */
+	if(info->outputIsJava)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "`__reftype' disallowed when compiling to Java bytecode");
+	}
+
+	/* Perform semantic analysis on the sub-expression, which
+	   must be ILType_TypedRef */
+	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value) ||
+	   value.type != ILType_TypedRef)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  	  "invalid argument to `__reftype'");
+	}
+
+	/* The result is "System.Type" */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = ILFindSystemType(info, "Type");
+	return value;
+}
+
+/*
+ * Perform semantic analysis on a "get reference value" operator.
+ */
+ILNode_SemAnalysis(ILNode_RefValue)
+{
+	CSSemValue value;
+
+	/* Cannot use this operator with Java output */
+	if(info->outputIsJava)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "`__refvalue' disallowed when compiling to Java bytecode");
+	}
+
+	/* Perform semantic analysis on the first sub-expression,
+	   which must be ILType_TypedRef */
+	if(!CSSemExpectValue(node->expr1, info, &(node->expr1), &value) ||
+	   value.type != ILType_TypedRef)
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  	  "invalid first argument to `__refvalue'");
+	}
+
+	/* Perform semantic analysis on the second sub-expression,
+	   which must be a type */
+	node->type = CSSemType(node->expr2, info, &(node->expr2));
+
+	/* The result is an r-value of the supplied type */
+	value.kind = CS_SEMKIND_RVALUE;
+	value.type = node->type;
+	return value;
+}

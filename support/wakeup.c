@@ -98,6 +98,8 @@ int _ILWakeupWait(_ILWakeup *wakeup, ILUInt32 ms, void **object)
 	{
 		/* Give up the lock and wait for someone to signal us */
 
+		result = 1;
+		
 		/*
 		 *	Two subtle races to consider:
 		 *

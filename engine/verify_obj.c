@@ -800,7 +800,8 @@ case IL_OP_LDTOKEN:
 	{
 		if((classInfo = ILProgramItemToClass(item)) != 0)
 		{
-			if(ILClassAccessible(classInfo, ILMethod_Owner(method)))
+			classInfo = GetClassToken(method, pc);
+			if(classInfo)
 			{
 				ILCoderPushToken(coder, (ILProgramItem *)classInfo);
 				stack[stackSize].engineType = ILEngineType_MV;
@@ -815,7 +816,9 @@ case IL_OP_LDTOKEN:
 		}
 		else if((methodInfo = ILProgramItemToMethod(item)) != 0)
 		{
-			if(ILMemberAccessible((ILMember *)methodInfo,
+			methodInfo = GetMethodToken(method, pc);
+			if(methodInfo &&
+			   ILMemberAccessible((ILMember *)methodInfo,
 								  ILMethod_Owner(method)))
 			{
 				ILCoderPushToken(coder, (ILProgramItem *)methodInfo);
@@ -831,8 +834,8 @@ case IL_OP_LDTOKEN:
 		}
 		else if((fieldInfo = ILProgramItemToField(item)) != 0)
 		{
-			if(ILMemberAccessible((ILMember *)fieldInfo,
-								  ILMethod_Owner(method)))
+			fieldInfo = GetFieldToken(method, pc);
+			if(fieldInfo)
 			{
 				ILCoderPushToken(coder, (ILProgramItem *)fieldInfo);
 				stack[stackSize].engineType = ILEngineType_MV;

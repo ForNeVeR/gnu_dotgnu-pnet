@@ -8,6 +8,9 @@ engine/cvm.c: implement the "castclass" and "isinst" instructions.
 engine/cvm.c: implement the "cpobj", "cpblk", "initobj", and "initblk"
 instructions.
 
+* engine/verify_obj.c: make sure that class, method, and field tokens
+are fully resolved and access-checked when verifying "ldtoken".
+
 2001-10-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_html.c, csdoc/doc_texi.c: fixed a bug in the handling

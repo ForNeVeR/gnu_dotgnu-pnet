@@ -283,11 +283,11 @@
 	stloc.s	7
 	ldc.r4	float32(0x00000001)
 	stloc.s	7
-	ldc.r8	float64(0x0000000000000000)
+	ldc.r4	float32(0x00000000)
 	stloc.s	7
-	ldc.r8	float64(0x3FF0000000000000)
+	ldc.r4	float32(0x3F800000)
 	stloc.s	7
-	ldc.r8	float64(0xBFF0000000000000)
+	ldc.r4	float32(0xBF800000)
 	stloc.s	7
 	ldc.r8	float64(0x4703034593B73C22)
 	stloc.s	7
@@ -297,11 +297,11 @@
 	stloc.s	7
 	ldc.r8	float64(0x0000000000000001)
 	stloc.s	7
-	ldc.r8	float64(0x0000000000000000)
+	ldc.r4	float32(0x00000000)
 	stloc.s	7
-	ldc.r8	float64(0x3FF0000000000000)
+	ldc.r4	float32(0x3F800000)
 	stloc.s	7
-	ldc.r8	float64(0xBFF0000000000000)
+	ldc.r4	float32(0xBF800000)
 	stloc.s	7
 	ldc.r8	float64(0x4703034593B73C22)
 	stloc.s	7

@@ -29,6 +29,9 @@
 	* csharp/parser/member_access1.err, csharp/parser/member_access1.jerr:
 	add error output files for the "member_access1" test.
 
+	* csharp/expr/const1.il: modified output file for the "expr/const1"
+	test, including the "ldc.r8" -> "ldc.r4" optimization.
+
 2001-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/class/field2.cs, csharp/class.field2.il,

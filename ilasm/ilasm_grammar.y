@@ -578,6 +578,92 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 	}
 }
 
+
+typedef struct _tagFieldDataEntry
+{
+	char    *name;
+	ILField *field;
+	char *filename;
+	long linenum;
+	struct _tagFieldDataEntry * next;  
+} FieldDataEntry;
+
+typedef struct _tagFieldDataList
+{
+	FieldDataEntry * first;
+	FieldDataEntry * last;
+} FieldDataList;
+
+static FieldDataList *unresolvedFieldList = 0;
+
+static void RegisterFieldRvaLabel(char * name, ILField * field)
+{
+	FieldDataEntry *entry;
+	
+	if(!unresolvedFieldList)
+	{
+		unresolvedFieldList = (FieldDataList*) ILMalloc(sizeof(FieldDataList)); 
+		if(!unresolvedFieldList)
+		{
+			ILAsmOutOfMemory();
+		}
+	}
+
+	entry = (FieldDataEntry*) ILMalloc(sizeof(FieldDataEntry));
+
+	if(!entry)
+	{
+		ILAsmOutOfMemory();
+	}
+
+	entry->name = name;
+	entry->field = field;
+	entry->filename = ILAsmFilename;
+	entry->linenum = ILAsmLineNum;
+	entry->next = NULL;
+
+
+	if(!unresolvedFieldList->first)
+	{
+		unresolvedFieldList->first = entry;
+		unresolvedFieldList->last = entry;
+	}
+	else
+	{
+		unresolvedFieldList->last->next = entry;
+		unresolvedFieldList->last = entry;
+	}
+}
+
+static void FinishDataLabels()
+{
+	FieldDataEntry * tmp;
+	if(unresolvedFieldList)
+	{
+		for(tmp = unresolvedFieldList->first ; tmp != NULL ; tmp = tmp->next)
+		{
+			ILInt64 offset = ILAsmDataResolveLabel(tmp->name);
+			if(offset == -1)
+			{
+				ILAsmPrintMessage(tmp->filename, tmp->linenum,
+						  "data label `%s' undefined", tmp->name);
+				ILAsmErrors = 1;
+			}
+			else
+			{
+				/* Set the RVA information for the field */
+				if(!ILFieldRVACreate(ILAsmImage, 0,
+									 tmp->field, (ILUInt32)offset))
+				{
+					ILAsmOutOfMemory();
+				}
+			}
+			ILFree(tmp);
+		}
+		ILFree(unresolvedFieldList);
+		unresolvedFieldList = 0;
+	}
+}
 %}
 
 /*
@@ -638,6 +724,11 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 		char	   *start;
 		char	   *end;
 	}				scope;
+	struct
+	{
+		char       *label;
+		ILInt64     offset;
+	}				datalabel;
 	ILAsmOutException *exception;
 	ILToken			token;
 
@@ -939,7 +1030,8 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 %type <integer>		ComTypeAttributes ComTypeAttributeList
 %type <integer>		ComTypeAttributeName ManifestResAttributes
 %type <integer>		ManifestResAttributeList ManifestResAttributeName
-%type <integer>     LayoutOption AtOption JavaArrayType
+%type <integer>     LayoutOption JavaArrayType
+%type <datalabel>   AtOption
 %type <fieldAttrs>	FieldAttributes FieldAttributeList FieldAttributeName
 %type <methodAttrs>	MethodAttributes MethodAttributeList MethodAttributeName
 %type <opcode>		I_NONE I_VAR I_BRANCH I_METHOD I_FIELD I_TYPE
@@ -978,6 +1070,9 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 
 File
 	: Declarations
+	{
+		FinishDataLabels();
+	}
 	;
 
 Declarations
@@ -1520,13 +1615,20 @@ FieldDeclaration
 						ILAsmOutOfMemory();
 					}
 				}
-				if($6 != (ILInt64)0xFFFFFFFF)
+				if($6.offset != (ILInt64)0xFFFFFFFF)
 				{
-					/* Set the RVA information for the field */
-					if(!ILFieldRVACreate(ILAsmImage, 0,
-										 field, (ILUInt32)($6)))
+					if($6.offset != -1 && $6.label != NULL)
 					{
-						ILAsmOutOfMemory();
+						/* Set the RVA information for the field */
+						if(!ILFieldRVACreate(ILAsmImage, 0,
+											 field, (ILUInt32)($6.offset)))
+						{
+							ILAsmOutOfMemory();
+						}
+					}
+					else
+					{
+						RegisterFieldRvaLabel($6.label,field);
 					}
 				}
 				if($7.type != IL_META_ELEMTYPE_VOID)
@@ -1597,11 +1699,12 @@ LayoutOption
 	;
 
 AtOption
-	: /* empty */			{ $$ = (ILInt64)0xFFFFFFFF; }
+	: /* empty */			{ $$.offset = (ILInt64)0xFFFFFFFF; $$.label = 0; }
 	| K_AT Identifier		{
-				$$ = (ILInt64)ILAsmDataResolveLabel($2.string);
+				$$.label = $2.string;
+				$$.offset = (ILInt64)ILAsmDataResolveLabel($2.string);
 			}
-	| K_AT Integer32		{ $$ = $2; }
+	| K_AT Integer32		{ $$.offset = $2; $$.label = 0; }
 	;
 
 InitOption

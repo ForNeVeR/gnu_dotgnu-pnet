@@ -47,8 +47,9 @@ void ILAsmDataSetLabel(char *name);
 
 /*
  * Resolve a data section label to a data RVA.
+ * Returns '-1' if label is not found
  */
-ILUInt32 ILAsmDataResolveLabel(char *name);
+ILInt64 ILAsmDataResolveLabel(char *name);
 
 /*
  * Pad the data section with a number of zero bytes.

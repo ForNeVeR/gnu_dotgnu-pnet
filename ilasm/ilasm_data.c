@@ -148,16 +148,16 @@ void ILAsmDataSetLabel(char *name)
 	}
 }
 
-ILUInt32 ILAsmDataResolveLabel(char *name)
+ILInt64 ILAsmDataResolveLabel(char *name)
 {
 	DataLabelHashEntry *entry;
 	if(!nameTable ||
 	   (entry = ILHashFindType(nameTable, name, DataLabelHashEntry)) == 0)
 	{
-		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+		/*ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
 						  "data label `%s' undefined", name);
-		ILAsmErrors = 1;
-		return 0;
+		ILAsmErrors = 1;*/
+		return -1;
 	}
 	return entry->value;
 }

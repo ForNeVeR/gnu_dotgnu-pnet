@@ -1,4 +1,9 @@
 
+2004-10-12  Gopal V  <gopalv82@yahoo.com>
+
+	* ilasm/ilasm_grammar.y, ilasm/ilasm_data.c, ilasm/ilasm_data.c: Implement
+	forward references for data labels.
+
 2004-10-11  Gopal V  <gopalv82@yahoo.com>
 	
 	* libffi/src/x86/ffi64.c: All stack params should be 8 aligned for amd64.

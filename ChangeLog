@@ -37,6 +37,8 @@
 
 	* I18N/CJK/CP932.cs: declare "ENCshift_jis" as public.
 
+	* I18N/mklist.sh: pass the "--public-only" option to "ilfind".
+
 2002-04-19  Stephen Compall  <rushing@sigecom.net>
 
 	* System/Uri.cs: Implemented quite complex Unescape(String).

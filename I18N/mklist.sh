@@ -33,8 +33,8 @@ shift
 shift
 
 # Search all region assemblies for interesting classes and
-# write them to the specified
-exec "${ILFIND}" --sub-string I18N $* | \
+# write them to the specified output file.
+exec "${ILFIND}" --public-only --sub-string I18N $* | \
 	grep 'class ' | \
 	sed -e '1,$s/^.*: class //g' - | \
 	sed -e '1,$s/^class //g' - >"${OUTFILE}"

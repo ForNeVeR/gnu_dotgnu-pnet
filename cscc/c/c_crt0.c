@@ -91,8 +91,9 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	ILNode *node;
 	ILType *signature;
 	ILType *type;
-	int flags;
+	int flags, ptrSize;
 	unsigned long numParams;
+	char *libcName;
 
 	/* Find the module class */
 	moduleClass = ILClassLookup(ILClassGlobalScope(info->image), "<Module>", 0);
@@ -183,28 +184,44 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 	}
 
 	/* Generate the ".start" crt0 code for the program */
-	fputs(".method public static void '.start'() cil managed\n", stream);
+	fputs(".method public static void '.start'"
+				"([.library]System.String[]) cil managed\n", stream);
 	fputs("{\n\t.entrypoint\n", stream);
 	fputs("\t.maxstack\t3\n", stream);
-	fputs("\t.locals (int32, int8 * *, int8 * *)\n", stream);
+	fputs("\t.locals (int32, int8 * *, int8 * *, [.library]System.Object)\n",
+		  stream);
+
+	/* Wrap the body of the method in a try block */
+	fputs(".try { \n", stream);
 
 	/* Determine the "argc", "argv", and "envp" values for the program */
+	ptrSize = (gen_32bit_only ? 4 : 8);
+	fputs("\tldarg.0\n", stream);
+	fprintf(stream, "\tldc.i4.%d\n", ptrSize);
 	fputs("\tldloca\t0\n", stream);
 	fputs("\tcall\tnative int 'OpenSystem.Languages.C'.'Crt0'::"
-				"GetArgV(int32 &)\n", stream);
+			"GetArgV([.library]System.String[], int32, int32 &)\n", stream);
 	fputs("\tstloc.1\n", stream);
 	fputs("\tcall\tnative int 'OpenSystem.Languages.C'.'Crt0'::"
 				"GetEnvironment()\n", stream);
 	fputs("\tstloc.2\n", stream);
 
-	/* Set the global "environ" variable to the value from "GetEnvironment" */
-	/* TODO */
+	/* Push the name of the "libc" library assembly onto the stack, so
+	   that the "Crt0" class knows where to look for global definitions */
+	libcName = CCStringListGetValue(extension_flags, num_extension_flags,
+									"libc-name");
+	if(libcName != 0 && *libcName != '\0')
+	{
+		fprintf(stream, "\tldstr \"%s\"\n", libcName);
+	}
+	else
+	{
+		fprintf(stream, "\tldstr \"libc%d\"\n", ptrSize * 8);
+	}
 
-	/* Call the static initializers for the application */
-	/* TODO */
-
-	/* Register the static finalizers for "atexit" processing */
-	/* TODO */
+	/* Perform other system startup tasks */
+	fputs("\tcall\tvoid 'OpenSystem.Languages.C'.'Crt0'::Startup"
+				"([.library]System.String)\n", stream);
 
 	/* Invoke the "main" function with the required arguments */
 	if((flags & C_MAIN_ARGC) != 0)
@@ -230,13 +247,26 @@ void CGenCrt0(ILGenInfo *info, FILE *stream)
 		fputs("\tldc.i4.0\n", stream);
 	}
 
-	/* Call the "exit" function to terminate the application */
-	/* TODO */
-	fputs("\tcall\tvoid [.library]System.Environment::Exit(int32)\n", stream);
+	/* Perform system shutdown tasks, including calling "exit" */
+	fputs("\tcall\tvoid 'OpenSystem.Languages.C'.'Crt0'::"
+				"Shutdown(int32)\n", stream);
+
+	/* Handle exceptions that are caught by the try block */
+	fputs("\tleave\tL1\n", stream);
+	fputs("} catch [.library]System.OutOfMemoryException {\n", stream);
+	fputs("\trethrow\n", stream);
+	fputs("} catch [.library]System.Object {\n", stream);
+	fputs("\tstloc.3\n", stream);
+	fputs("\tldloc.3\n", stream);
+	fputs("\tcall\t[.library]System.Object 'OpenSystem.Languages.C'.'Crt0'::"
+				"ShutdownWithException([.library]System.Object)\n", stream);
+	fputs("\tthrow\n", stream);
+	fputs("}\n", stream);
+	fputs("L1:\n", stream);
 
 	/* Generate the method footer for ".start" */
 	fputs("\tret\n", stream);
-	fputs("}\n", stream);
+	fputs("} // method .start\n", stream);
 }
 
 #ifdef	__cplusplus

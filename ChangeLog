@@ -21,6 +21,8 @@
 	cscc/c/c_scope.h: output "crt0" code if the current module
 	has a "main" function defined.
 
+	* cscc/c/c_crt0.c: improved "crt0" code.
+
 2002-07-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, cscc/Makefile.am, cscc/c_main.c, cscc/c/.cvsignore,

@@ -16,6 +16,8 @@
 	allow zero to be used in C in contexts where a C#-style object
 	reference is expected; add C#-style casts and coercions to C.
 
+	* doc/c_users_guide.html: clean up the C user's guide a little.
+
 2004-02-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

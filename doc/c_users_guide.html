@@ -6,7 +6,7 @@
 <h1>Using Portable.NET's C Compiler</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2004/02/17 04:50:29 $<p>
+Last Modified: $Date: 2004/02/17 05:45:48 $<p>
 
 Copyright &copy; 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute copies of this work under the terms of the
@@ -23,8 +23,7 @@ components, including the compiler and C system library.<p>
 
 <blockquote>
 <b>Note: This is preliminary documentation.  Not all listed features
-may be implemented yet.  In particular, we do not yet have an
-implementation of "libc", so the "printf" examples will not work.</b>
+may be implemented yet.</b>
 </blockquote>
 
 <h2>2. Hello World</h2>
@@ -368,22 +367,6 @@ TODO: deprecate "<code>__module</code>" and replace with
 "<code>System.Runtime.CompilerServices.CompilerGlobalScopeAttribute</code>",
 which is more correct standards-wise.<p>
 
-<h3>3.6. Calling C code</h3>
-
-To call C code from C#, you must declare the the C function in your
-C# application:<p>
-
-<blockquote><pre>__module
-{
-    extern public static void c_func();
-
-}</pre></blockquote><p>
-
-where "<code>c_func</code>" is a function declared in your C code.
-Use "<code>__module.c_func()</code>" to call the function from C#.<p>
-
-<h3>3.7. Other C# constructs</h3>
-
 The value zero (0) can be used in any context where a C# reference
 value is expected to represent the C# "<code>null</code>" value.
 For example, the following sets an object to null:<p>
@@ -446,7 +429,21 @@ The following table lists all of the C operators and the corresponding
 <tr><td>Check False</td><td><code>op_False</code></td></tr>
 </table></blockquote><p>
 
-<h3>3.8. Weak and strong aliases</h3>
+<h3>3.6. Calling C code</h3>
+
+To call C code from C#, you must declare the the C function in your
+C# application:<p>
+
+<blockquote><pre>__module
+{
+    extern public static void c_func();
+
+}</pre></blockquote><p>
+
+where "<code>c_func</code>" is a function declared in your C code.
+Use "<code>__module.c_func()</code>" to call the function from C#.<p>
+
+<h3>3.7. Weak and strong aliases</h3>
 
 TODO
 

@@ -5,9 +5,19 @@ all-local: System.ServiceProcess.dll
 
 System.ServiceProcess.dll:
 	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
-			-f System.ServiceProcess.build all
+			-b "$(srcdir)" -B . -f System.ServiceProcess.build all
 
 CLEANFILES = System.ServiceProcess.dll
 
-pnetassembliesdir = $(libdir)/cscc/lib
-pnetassemblies_DATA = System.ServiceProcess.dll
+install-data-local:
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-Dmono.sources="$(MONO_SOURCE_PATH)" \
+			-f "$(srcdir)/System.ServiceProcess.build" -i all
+
+uninstall-local:
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-Dmono.sources="$(MONO_SOURCE_PATH)" \
+			-f "$(srcdir)/System.ServiceProcess.build" -u all

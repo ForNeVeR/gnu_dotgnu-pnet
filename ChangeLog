@@ -4,6 +4,10 @@
 	* configure.in, class/Makefile.am: temporarily disable
 	Npgsql because it doesn't build due to missing dependencies.
 
+	* configure.in, */*.build, */*.am: modify the build system
+	to use "ilgac" to install assemblies; infer the correct framework
+	version numbers from pnetlib.
+
 2003-10-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.0" release.

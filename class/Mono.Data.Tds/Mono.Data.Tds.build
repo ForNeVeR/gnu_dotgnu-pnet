@@ -5,7 +5,9 @@
 		<compile target="library"
 				 output="Mono.Data.Tds.dll"
 				 debug="${debug.flag}"
-				 unsafe="true">
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/class/Mono.Data.Tds">
 				<includes name="**/*.cs"/> 

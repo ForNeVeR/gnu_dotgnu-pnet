@@ -5,7 +5,9 @@
 		<compile target="library"
 				 output="System.Messaging.dll"
 				 debug="${debug.flag}"
-				 unsafe="true">
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/class/System.Messaging">
 				<includes name="**/*.cs"/> 
@@ -16,6 +18,11 @@
 				<file name="../System.Configuration.Install/System.Configuration.Install.dll"/>
 				<file name="System.dll"/>
 			</references>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=ms"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
 
 		</compile>
 	</target>

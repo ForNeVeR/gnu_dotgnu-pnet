@@ -5,7 +5,9 @@
 		<compile target="library"
 				 output="PEAPI.dll"
 				 debug="${debug.flag}"
-				 unsafe="true">
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/class/PEAPI">
 				<includes name="**/*.cs"/> 

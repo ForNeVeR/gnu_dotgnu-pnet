@@ -13,6 +13,8 @@ AC_SUBST(CSCC_FLAGS)
 AC_SUBST(PNET_PATH)
 AC_SUBST(MONO_SOURCE_PATH)
 AC_SUBST(DEBUG_FLAG)
+AC_SUBST(CYG_ILGAC)
+AC_SUBST(CYG_CACHE)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -38,6 +40,31 @@ AC_ARG_WITH(pnet,
 ],
 [
 	PNET_PATH="`pwd`/../pnet"
+])
+
+dnl The --with-pnetlib option can be used to specify the location of
+dnl the Portable.NET C# library, so that we know where to get the
+dnl mscorlib.dll assembly to use with "ilrun".  The default location
+dnl is assumed to be "../pnetlib".
+AC_SUBST(PNETLIB_PATH)
+AC_ARG_WITH(pnetlib,
+[  --with-pnetlib=DIR      specify the location of pnetlib],
+[
+	if test -n "$withval"; then
+		case "$withval" in
+		  ../*) PNETLIB_PATH="`pwd`/$withval"
+		        PNETLIB_CHECK_PATH="$withval" ;;
+		     *) PNETLIB_PATH="$withval"
+			    PNETLIB_CHECK_PATH="$withval" ;;
+		esac
+	else
+		PNETLIB_PATH="`pwd`/../pnetlib"
+		PNETLIB_CHECK_PATH="../pnetlib"
+	fi
+],
+[
+	PNETLIB_PATH="`pwd`/../pnetlib"
+	PNETLIB_CHECK_PATH="../pnetlib"
 ])
 
 dnl The --with-mono-sources option is used to specify the location
@@ -125,6 +152,74 @@ if test "$CSANT" = "" ; then
 	exit 1
 fi
 
+dnl Find the Portable.NET "ilgac" program.
+AC_PATH_PROG(ILGAC, ilgac,, $PNET_PATH/ilgac:${prefix}/bin:$PATH)
+if test "$ILGAC" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET's ilgac tool is required to build the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
+dnl Find the Portable.NET "ildd" program.
+AC_PATH_PROG(ILDD, ildd,, $PNET_PATH/ildd:${prefix}/bin:$PATH)
+if test "$ILDD" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET's ildd tool is required to build the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
+dnl Get the version numbers to use on the libraries.
+AC_SUBST(FRAMEWORK_VERSION)
+AC_SUBST(SECONDARY_VERSION)
+AC_MSG_CHECKING(for pnetlib assembly versions)
+ASSEMBLY=""
+if test -f "$PNETLIB_PATH/runtime/mscorlib.dll" ; then
+	ASSEMBLY="$PNETLIB_PATH/runtime/mscorlib.dll"
+else
+	if test -f "${prefix}/lib/cscc/lib/mscorlib.dll" ; then
+		ASSEMBLY="${prefix}/lib/cscc/lib/mscorlib.dll"
+	fi
+fi
+if test "xASSEMBLY" = "x" ; then
+	# Use "ilgac" to get the default version number from the cache.
+	FRAMEWORK_VERSION=`"$ILGAC" -ld mscorlib`
+else
+	# Use "ildd" to get the version number from the actual library file.
+	FRAMEWORK_VERSION=`"$ILDD" -f "$ASSEMBLY"`
+fi
+FRAMEWORK_VERSION=`echo "$FRAMEWORK_VERSION" | grep ' (version=' | \
+				   sed -e '1,$s/^.* (version=//g' | \
+				   sed -e '1,$s/).*$//g'`
+if test "x$FRAMEWORK_VERSION" = "x" ; then
+	FRAMEWORK_VERSION="0.0.0.0"
+fi
+ASSEMBLY=""
+if test -f "$PNETLIB_PATH/compat/Microsoft.VisualC.dll" ; then
+	ASSEMBLY="$PNETLIB_PATH/compat/Microsoft.VisualC.dll"
+else
+	if test -f "${prefix}/lib/cscc/lib/Microsoft.VisualC.dll" ; then
+		ASSEMBLY="${prefix}/lib/cscc/lib/Microsoft.VisualC.dll"
+	fi
+fi
+if test "xASSEMBLY" = "x" ; then
+	# Use "ilgac" to get the default version number from the cache.
+	SECONDARY_VERSION=`"$ILGAC" -ld Microsoft.VisualC`
+else
+	# Use "ildd" to get the version number from the actual library file.
+	SECONDARY_VERSION=`"$ILDD" -f "$ASSEMBLY"`
+fi
+SECONDARY_VERSION=`echo "$SECONDARY_VERSION" | grep ' (version=' | \
+				   sed -e '1,$s/^.* (version=//g' | \
+				   sed -e '1,$s/).*$//g'`
+if test "x$SECONDARY_VERSION" = "x" ; then
+	SECONDARY_VERSION="0.0.0.0"
+fi
+AC_MSG_RESULT([$FRAMEWORK_VERSION, $SECONDARY_VERSION])
+
 dnl Find the C# compiler to use.
 AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:${prefix}/bin:$PATH)
 if test "$CSHARP_COMPILER" = "" ; then
@@ -138,14 +233,22 @@ else
 	AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
 	if test "x$CYGPATH" = "x" ; then
 		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+		CYG_ILGAC="$ILGAC"
+		CYG_CACHE="${libdir}/cscc/lib"
 	else
 		# Convert the cscc and cscc-cs paths into their Windows
 		# forms, to ensure that spawns from csant work correctly.
 		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 		CSHARP_COMPILER=`"$CYGPATH" -w "$CSHARP_COMPILER"`
 		CSHARP_PLUGIN=`"$CYGPATH" -w "$CSHARP_PLUGIN"`
+		CYG_ILGAC=`"$CYGPATH" -w "$ILGAC"`
+		if test "x$prefix" = "xNONE" ; then
+			CYG_CACHE=`"$CYGPATH" -w "${ac_default_prefix}/lib/cscc/lib"`
+		else
+			CYG_CACHE=`"$CYGPATH" -w "${prefix}/lib/cscc/lib"`
+		fi
 	fi
-	CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" -Ddebug.flag="$(DEBUG_FLAG)"'
+	CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" -Ddebug.flag="$(DEBUG_FLAG)" -Dilgac="$(CYG_ILGAC)" --assembly-cache "$(DESTDIR)$(CYG_CACHE)" -DFRAMEWORK_VERSION="$(FRAMEWORK_VERSION)" -DSECONDARY_VERSION="$(SECONDARY_VERSION)"'
 fi
 
 AC_OUTPUT([

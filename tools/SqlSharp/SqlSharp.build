@@ -5,7 +5,9 @@
 		<compile target="executable"
 				 output="sqlsharp-pnet.exe"
 				 debug="${debug.flag}"
-				 unsafe="false">
+				 unsafe="false"
+				 install="true"
+				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/tools/SqlSharp/">
 				<includes name="SqlSharpCli.cs"/>
@@ -18,6 +20,10 @@
 				<file name="../../class/Mono.Data.Tds/Mono.Data.Tds.dll"/>
 				<file name="../../class/System.EnterpriseServices/System.EnterpriseServices.dll"/>
 			</references>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
 
 		</compile>
 	</target>

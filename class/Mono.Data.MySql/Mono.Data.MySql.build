@@ -5,7 +5,9 @@
 		<compile target="library"
 				 output="Mono.Data.MySql.dll"
 				 debug="${debug.flag}"
-				 unsafe="false">
+				 unsafe="false"
+				 install="true"
+				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/class/Mono.Data.MySql/">
 				<includes name="**/*.cs"/> 

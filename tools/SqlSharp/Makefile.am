@@ -5,17 +5,25 @@ all-local: sqlsharp-pnet.exe
 
 sqlsharp-pnet.exe:
 	"$(CSANT)" $(CSANT_FLAGS) -Dmono.sources="$(MONO_SOURCE_PATH)" \
-			-f SqlSharp.build all
+			-b "$(srcdir)" -B . -f SqlSharp.build all
 
 CLEANFILES = sqlsharp-pnet.exe
 
 install-exec-local:
 	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/cscc/lib
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-Dmono.sources="$(MONO_SOURCE_PATH)" \
+			-f "$(srcdir)/SqlSharp.build" -i all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	$(INSTALL_PROGRAM) sqlsharp-pnet.exe $(DESTDIR)$(bindir)/sqlsharp-pnet.exe
-	$(INSTALL_PROGRAM) $(srcdir)/sqlsharp-run.sh $(DESTDIR)$(bindir)/sqlsharp-pnet
-	
+	rm -f $(DESTDIR)$(bindir)/sqlsharp-pnet.exe
+	rm -f $(DESTDIR)$(bindir)/sqlsharp-pnet
+	$(LN_S) clrwrap $(DESTDIR)$(bindir)/sqlsharp-pnet
+
 uninstall-local:
-	@$(NORMAL_UNINSTALL)
+	@$(NORMALL_UNINSTALL)
+	"$(CSANT)" $(CSANT_FLAGS) -b "$(srcdir)" -B . \
+			-Dmono.sources="$(MONO_SOURCE_PATH)" \
+			-f "$(srcdir)/SqlSharp.build" -u all
 	rm -f $(DESTDIR)$(bindir)/sqlsharp-pnet.exe
 	rm -f $(DESTDIR)$(bindir)/sqlsharp-pnet

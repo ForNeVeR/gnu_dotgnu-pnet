@@ -5,7 +5,9 @@
 		<compile target="library"
 				 output="System.Data.dll"
 				 debug="${debug.flag}"
-				 unsafe="true">
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/class/System.Data/">
 				<includes name="**/*.cs"/> 
@@ -20,6 +22,11 @@
 				<file name="../Mono.Data.Tds/Mono.Data.Tds.dll"/>
 				<file name="System.EnterpriseServices.dll"/>
 			</references>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=neutral"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
 
 		</compile>
 	</target>

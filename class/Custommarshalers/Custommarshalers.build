@@ -5,7 +5,9 @@
 		<compile target="library"
 				 output="Custommarshalers.dll"
 				 debug="${debug.flag}"
-				 unsafe="true">
+				 unsafe="true"
+				 install="true"
+				 installasdefault="true">
 
 			<sources basedir="${mono.sources}/class/Custommarshalers">
 				<includes name="**/*.cs"/> 
@@ -14,6 +16,11 @@
 				<!-- Missing a declaration of MonoTODOAttribute -->
 				<file name="../corlib/System/TODOAttribute.cs"/>
 			</sources>
+
+			<arg compiler="cscc" value="-fassembly-version=${FRAMEWORK_VERSION}"/>
+			<arg compiler="cscc" value="-fassembly-key=ms"/>
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="cscc" value="-flatin1-charset"/>
 
 		</compile>
 	</target>

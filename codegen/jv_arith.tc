@@ -66,7 +66,8 @@
 JavaGenDiscard(ILNode_BinaryArith),
 JavaGenDiscard(ILNode_BinaryBitwise),
 JavaGenDiscard(ILNode_BinaryShift),
-JavaGenDiscard(ILNode_UserBinaryOp)
+JavaGenDiscard(ILNode_UserBinaryOp),
+JavaGenDiscard(ILNode_Concat)
 {
 	JavaGenDiscard(node->expr1, info);
 	JavaGenDiscard(node->expr2, info);

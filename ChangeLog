@@ -20,6 +20,8 @@
 	* image/writer.c, image/pecoff_writer.c: fix ILWriterSetStream behavior
 	when its given a seekable stream.
 
+	* engine/lib_emit.c: fix switch on PEFileKinds in ClrSave.
+
 2003-07-22  Gopal.V  <gopalv82@symonds.net>
 
 	* configure.in, engine/dumpconfig.c, engine/Makefile.am,

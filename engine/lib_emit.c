@@ -161,7 +161,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 	/* this has to be kept in sync with PEFileKinds */
 	switch (fileKind)
 	{
-		case 0: /* PEFileKinds.Dll */
+		case 1: /* PEFileKinds.Dll */
 		{
 			ILWriterResetTypeAndFlags(writer,
 			                          IL_IMAGETYPE_DLL,
@@ -169,7 +169,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 		}
 		break;
 
-		case 1: /* PEFileKinds.ConsoleApplication */
+		case 2: /* PEFileKinds.ConsoleApplication */
 		{
 			ILWriterResetTypeAndFlags(writer,
 			                          IL_IMAGETYPE_EXE,
@@ -177,7 +177,7 @@ ILBool _IL_AssemblyBuilder_ClrSave(ILExecThread *_thread, ILNativeInt _assembly,
 		}
 		break;
 
-		case 2: /* PEFileKinds.WindowsApplication */
+		case 3: /* PEFileKinds.WindowsApplication */
 		{
 			ILWriterResetTypeAndFlags(writer,
 			                          IL_IMAGETYPE_EXE,

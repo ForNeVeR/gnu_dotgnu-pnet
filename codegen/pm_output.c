@@ -77,7 +77,7 @@ static const char *OpNames[] = {
 	"-",
 	"*",
 	"/",
-	"%",
+	"@cmod",
 	"-",
 	"&",
 	"|",
@@ -481,9 +481,19 @@ void PMGenUnary(ILGenInfo *info, PMOperation oper, PMRegister dest,
 	if(info->asmOutput)
 	{
 		putc('\t', info->asmOutput);
-		PMGenRegister(info, dest);
-		fprintf(info->asmOutput, " = %s ", OpNames[oper]);
-		PMGenRegister(info, src);
+		if(OpNames[oper] == '@')
+		{
+			fprintf(info->asmOutput, "%s ", OpNames[oper] + 1);
+			PMGenRegister(info, dest);
+			fputs(", ", info->asmOutput);
+			PMGenRegister(info, src);
+		}
+		else
+		{
+			PMGenRegister(info, dest);
+			fprintf(info->asmOutput, " = %s ", OpNames[oper]);
+			PMGenRegister(info, src);
+		}
 		putc('\n', info->asmOutput);
 	}
 }
@@ -495,11 +505,23 @@ void PMGenBinary(ILGenInfo *info, PMOperation oper, PMRegister dest,
 	if(info->asmOutput)
 	{
 		putc('\t', info->asmOutput);
-		PMGenRegister(info, dest);
-		fputs(" = ", info->asmOutput);
-		PMGenRegister(info, src1);
-		fprintf(info->asmOutput, " %s ", OpNames[oper]);
-		PMGenRegister(info, src2);
+		if(OpNames[oper] == '@')
+		{
+			fprintf(info->asmOutput, "%s ", OpNames[oper] + 1);
+			PMGenRegister(info, dest);
+			fputs(", ", info->asmOutput);
+			PMGenRegister(info, src1);
+			fputs(", ", info->asmOutput);
+			PMGenRegister(info, src2);
+		}
+		else
+		{
+			PMGenRegister(info, dest);
+			fputs(" = ", info->asmOutput);
+			PMGenRegister(info, src1);
+			fprintf(info->asmOutput, " %s ", OpNames[oper]);
+			PMGenRegister(info, src2);
+		}
 		putc('\n', info->asmOutput);
 	}
 }

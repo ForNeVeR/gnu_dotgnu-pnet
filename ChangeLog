@@ -5,6 +5,9 @@
 	codegen/pm_nodes.tc, codegen/pm_output.c, codegen/pm_output.h:
 	begin to fill out the treecc nodes for Parrot code generation.
 
+	* codegen/pm_output.c: use Parrot's "cmod" instruction for remainder,
+	instead of "mod", to get the correct C-like semantics.
+
 2002-10-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/pm_output.c, codegen/pm_output.h: check in the

@@ -460,9 +460,13 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				get
 				{
 					Widget widget = this;
-					while(widget != null && widget.parent != null &&
-								!(widget.parent is RootWindow))
+					while(widget != null &&	!((widget is TopLevelWindow) &&
+									!(widget.parent is CaptionWidget)))
 					{
+						// The MDI windows will be TopLevelWindows but
+						// will have CaptionWidget as the parent
+						// Other TopLevelWindows are not always having
+						// RootWindow as their parent.
 						widget = widget.parent;
 					}
 					return (TopLevelWindow)widget;

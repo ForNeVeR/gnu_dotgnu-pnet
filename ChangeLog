@@ -1,4 +1,9 @@
 
+2004-05-21  Gopal V  <gopalv82@yahoo.com>
+
+	* Xsharp/Widget.cs: Checks for CaptionWidget are more proper
+	because they are present only when MDI is active.
+
 2004-05-21  David Logan  <djlogan2@comcast.net>
 
 	* Xsharp/Widget.cs: Fix detection of TopLevel window to

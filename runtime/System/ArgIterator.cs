@@ -41,7 +41,8 @@ public struct ArgIterator
 	extern public unsafe ArgIterator(RuntimeArgumentHandle argList, void *ptr);
 
 	// Move the iterator to the end of the argument list.
-	public void End() {}
+	[MethodImpl(MethodImplOptions.InternalCall), CLSCompliant(false)]
+	extern public void End();
 
 	// Inherited methods.
 	public override bool Equals(Object obj)

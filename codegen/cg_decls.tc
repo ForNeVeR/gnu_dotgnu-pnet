@@ -353,6 +353,9 @@ ILNode_GenDiscard(ILNode_EventDeclarator)
 		ILDumpClassName(outstream, info->image,
 					    ILType_ToClass(ILEvent_Type(node->eventInfo)),
 					    IL_DUMP_QUOTE_NAMES);
+		putc(' ', outstream);
+		ILDumpIdentifier(outstream, ILEvent_Name(node->eventInfo),
+					     0, IL_DUMP_QUOTE_NAMES);
 		fputs("\n{\n", outstream);
 		if(info->debugFlag && info->asmOutput)
 		{
@@ -365,7 +368,7 @@ ILNode_GenDiscard(ILNode_EventDeclarator)
 		{
 			methodInfo = ((ILNode_MethodDeclaration *)(node->addAccessor))
 								->methodInfo;
-			fputs("\taddt ", outstream);
+			fputs("\t.add ", outstream);
 			ILDumpMethodType(outstream, info->image,
 						     ILMethod_Signature(methodInfo),
 						     IL_DUMP_QUOTE_NAMES, 0,

@@ -1333,6 +1333,14 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 		interfaceOverride = 1;
 	}
 
+	/* Cannot create an event called "value", because it will
+	   conflict with the name of the add/remove parameter */
+	if(!strcmp(name, "value"))
+	{
+		CCErrorOnLine(yygetfilename(eventName), yygetlinenum(eventName),
+			  		  "cannot declare an event called `value'");
+	}
+
 	/* Create the event information block */
 	eventInfo = ILEventCreate(classInfo, 0, name, 0,
 							  ILTypeToClass(info, eventType));

@@ -22,6 +22,12 @@
 	* System.Drawing.Xsharp/DrawingImage.cs: make "ImageChanged"
 	a little more robust against "null" values.
 
+	* System.Drawing/Toolkit/ToolkitBrushBase.cs,
+	System.Drawing.Win32/DrawingHatchBrush.cs,
+	System.Drawing.Xsharp/DrawingHatchBrush.cs: move the standard
+	hatch brush bitmaps into "ToolkitBrushBase" so that they
+	aren't duplicated between toolkits.
+
 2003-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs, System/Net/HttpWebResponse.cs:

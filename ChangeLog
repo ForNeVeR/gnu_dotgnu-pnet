@@ -1,3 +1,42 @@
+2003-09-11  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Drawing/Region.cs: added in correct copyright notice.
+	* System.Drawing.Win32/DrawingControlWindow.cs,
+	System.Drawing.Win32/DrawingGraphics.cs,
+	System.Drawing.Win32/DrawingPen.cs,
+	System.Drawing.Win32/DrawingPopupWindow.cs,
+	System.Drawing.Win32/DrawingRootTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Win32/DrawingTopLevelWindow.cs,
+	System.Drawing.Win32/DrawingWindow.cs,
+	System.Drawing.Win32/Win32.cs : rewrote client window handling. Should
+	now run on windows CE & Wine once struct marshalling is implemented.
+	Fixes to support multiple forms.
+
+	* System.Windows.Forms/ListBox.cs: apply patch #1884,
+	listBox speed and flicker fixes Brian Luft <brian@electroly.com>
+	
+	* System.Windows.Forms/TextBox.cs, System.Windows.Forms/Control.cs:
+	better support cursor handling when OnTextChanged event modifies the
+	text.
+
+	* System.Windows.Forms/TreeNode.cs
+	System.Windows.Forms/TreeViewEventArgs.cs,
+	System.Windows.Forms/TreeNodeCollection.cs,
+	System.Windows.Forms/TreeView.cs : initial implementation of tree view.
+	
+	* System.Windows.Forms/ScrollBar.cs,
+	System.Windows.Forms/Themes/DefaultThemePainter.cs
+	System.Windows.Forms/Themes/IThemePainter.cs: idle timer to
+	prevent messages backing up, started implementing drawing only areas
+	that need drawing, OnValueChanged event bug fixed, Cache hatch brush,
+	Win32 capturing.
+
+	* System.Windows.Forms/TabControl.cs: small Tab width on right align
+	fix.
+	
+	* samples/FormsTest.cs: added test for scrollbar,
+	System.Drawing.Graphics and tidied it up.
 
 2003-09-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 

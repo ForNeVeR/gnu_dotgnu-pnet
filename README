@@ -18,10 +18,7 @@ relies, must be re-distributed in accordance with the terms of the GPL.
 
 Contributions are welcome.  You must release your code under the terms
 of the GPL, and you must also agree to allow your code to be used with
-the above exception.  You can either claim Copyright ownership on your
-contributions, or re-assign ownership to one of the existing authors.
-If you wish to contribute code, then please read the guidelines in
-"doc/contrib.txt" first.
+the above exception.  For more information, see the file "HACKING".
 
 Building the Library
 --------------------
@@ -64,3 +61,5 @@ The directories contain the following:
     resources  Resource files for translatable strings in the library.
                There are subdirectories for each supported language.
     tools      Repository for random scripts used by the build system.
+    csunit     Implementation of the unit test framework for pnetlib.
+    tests      Individual unit tests for the classes in pnetlib.

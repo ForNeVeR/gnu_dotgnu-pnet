@@ -1359,7 +1359,6 @@ public abstract class FileDialog : CommonDialog
 		private ComboBox directory;
 		private Button upButton;
 		private Button newDirButton;
-		private Button homeButton;
 		private Label nameLabel;
 		private TextBox name;
 		private Label typeLabel;
@@ -1370,6 +1369,8 @@ public abstract class FileDialog : CommonDialog
 		private String pattern;
 		private CheckBox readOnly;
 		private bool manualUserTextChange;
+		private Image upIcon;
+		private Image newIcon;
 
 		// Constructor.
 		public FileDialogForm(FileDialog fileDialogParent)
@@ -1390,21 +1391,21 @@ public abstract class FileDialog : CommonDialog
 					vbox.StretchControl = listBox;
 
 					// Add the top line (directory name and up button).
+					upIcon = new Bitmap(typeof(FileDialog), "small_up.ico");
+					newIcon = new Bitmap(typeof(FileDialog), "small_new.ico");
 					directory = new ComboBox();
 					upButton = new Button();
 					upButton.FlatStyle = FlatStyle.Popup;
-					upButton.Text = "Up";	// TODO: change to an image.
+					upButton.Image = upIcon;
+					upButton.Size = new Size(23, 23);
 					newDirButton = new Button();
 					newDirButton.FlatStyle = FlatStyle.Popup;
-					newDirButton.Text = "New";	// TODO: change to an image.
-					homeButton = new Button();
-					homeButton.FlatStyle = FlatStyle.Popup;
-					homeButton.Text = "Home";	// TODO: change to an image.
+					newDirButton.Image = newIcon;
+					newDirButton.Size = new Size(23, 23);
 					hbox.StretchControl = directory;
 					hbox.Controls.Add(directory);
 					hbox.Controls.Add(upButton);
 					hbox.Controls.Add(newDirButton);
-					hbox.Controls.Add(homeButton);
 
 					// The second line is "listBox", already created above.
 
@@ -1460,7 +1461,6 @@ public abstract class FileDialog : CommonDialog
 
 					// Hook up interesting events.
 					upButton.Click += new EventHandler(UpOneLevel);
-					homeButton.Click += new EventHandler(Home);
 					directory.SelectedIndexChanged +=
 						new EventHandler(DirectorySelectionChanged);
 					name.TextChanged += new EventHandler(NameTextChanged);
@@ -1490,6 +1490,13 @@ public abstract class FileDialog : CommonDialog
 		// Dispose of this dialog.
 		public void DisposeDialog()
 				{
+					if(upIcon != null)
+					{
+						upIcon.Dispose();
+						newIcon.Dispose();
+						upIcon = null;
+						newIcon = null;
+					}
 					Dispose(true);
 				}
 

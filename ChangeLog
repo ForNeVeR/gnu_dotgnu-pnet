@@ -10,6 +10,11 @@
 	* System.Windows.Forms/FileDialog.cs: properly handle the case
 	where a symbolic link is actually a directory.
 
+	* System.Windows.Forms/FileDialog.cs,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.small_new.ico,
+	resources/en_US/System.Windows.Forms/System.Windows.Forms.small_up.ico:
+	add icons for the "up" and "new" buttons in the file dialog.
+
 2004-01-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/FileDialog.cs: draw the contents of the icon

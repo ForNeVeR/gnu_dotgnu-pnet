@@ -103,22 +103,20 @@ ILCallFrame *callFrame;
  *   <operation>Call a method which is internal to the CVM
  *              method cache</operation>
  *
- *   <format>call<fsep/>offset<fsep/>mptr</format>
+ *   <format>call<fsep/>mptr</format>
  *
  *   <form name="call" code="COP_CALL"/>
  *
  *   <description>The <i>call</i> instruction effects a method
- *   call to <i>mptr</i>, whose first instruction is known to
- *   be located at <i>pc + offset</i>.</description>
+ *   call to <i>mptr</i>.</description>
  *
- *   <notes>The <i>offset</i> value is a signed 32-bit value, and
- *   the <i>mptr</i> is a 32-bit or 64-bit method pointer reference.<p/>
+ *   <notes>The <i>mptr</i> value is a 32-bit or 64-bit method
+ *   pointer reference.<p/>
  *
  *   The <i>call</i> instruction is typically used when the CVM
  *   bytecode translation process discovers that the method has
- *   already been translated.  Normally, <i>call_extern</i> is
- *   output for a method call, but <i>call</i> is slightly more
- *   efficient on existing methods.<p/>
+ *   already been translated.  Since it is not necessary to check
+ *   for translation at run time, then engine can take a short cut.<p/>
  *
  *   See the description of the <i>call_extern</i> instruction for
  *   a full account of frame handling, argument handling, etc.</notes>
@@ -127,19 +125,19 @@ ILCallFrame *callFrame;
 case COP_CALL:
 {
 	/* Call a method that has already been converted into CVM code */
-	methodToCall = (ILMethod *)(ReadPointer(pc + 5));
+	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
 
 	/* Allocate a new call frame */
 	ALLOC_CALL_FRAME();
 
 	/* Fill in the call frame details */
 	callFrame->method = method;
-	callFrame->pc = pc + sizeof(void *) + 5;
+	callFrame->pc = pc + sizeof(void *) + 1;
 	callFrame->frame = (ILUInt32)(frame - stackbottom);
 	callFrame->exceptHeight = thread->exceptHeight;
 
 	/* Pass control to the new method */
-	pc += IL_READ_INT32(pc + 1);
+	pc = (unsigned char *)(methodToCall->userData1);
 	thread->exceptHeight = 0;
 	method = methodToCall;
 }
@@ -150,7 +148,7 @@ break;
  *   <operation>Call a method which may be external to the
  *              CVM method cache</operation>
  *
- *   <format>call_extern<fsep/>0<fsep/>0<fsep/>0<fsep/>0<fsep/>mptr</format>
+ *   <format>call_extern<fsep/>mptr</format>
  *
  *   <form name="call_extern" code="COP_CALL_EXTERN"/>
  *
@@ -190,7 +188,7 @@ break;
 case COP_CALL_EXTERN:
 {
 	/* Call a method that we don't know if it has been converted */
-	methodToCall = (ILMethod *)(ReadPointer(pc + 5));
+	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
 
 	/* Copy the state back into the thread object */
 	COPY_STATE_TO_THREAD();
@@ -202,29 +200,12 @@ case COP_CALL_EXTERN:
 		MISSING_METHOD_EXCEPTION();
 	}
 
-#if 0
-	/* TODO: completely remove this and the supporting code in cvmc,
-	   as it isn't thread-safe to modify the method as it is being
-	   executed */
-
-	/* Patch the instruction stream to call directly next time */
-	if(methodToCall->userData2 == method->userData2)
-	{
-		pc[0] = COP_CALL;
-		tempNum = (ILUInt32)(((unsigned char *)tempptr) - pc);
-		pc[1] = (unsigned char)(tempNum);
-		pc[2] = (unsigned char)(tempNum >> 8);
-		pc[3] = (unsigned char)(tempNum >> 16);
-		pc[4] = (unsigned char)(tempNum >> 24);
-	}
-#endif
-
 	/* Allocate a new call frame */
 	ALLOC_CALL_FRAME();
 
 	/* Fill in the call frame details */
 	callFrame->method = method;
-	callFrame->pc = thread->pc + 5 + sizeof(void *);
+	callFrame->pc = thread->pc + 1 + sizeof(void *);
 	callFrame->frame = thread->frame;
 	callFrame->exceptHeight = thread->exceptHeight;
 
@@ -240,7 +221,7 @@ break;
  * <opcode name="call_ctor">
  *   <operation>Call a constructor</operation>
  *
- *   <format>call_ctor<fsep/>0<fsep/>0<fsep/>0<fsep/>0<fsep/>mptr</format>
+ *   <format>call_ctor<fsep/>mptr</format>
  *
  *   <form name="call_ctor" code="COP_CALL_CTOR"/>
  *
@@ -267,10 +248,8 @@ break;
  */
 case COP_CALL_CTOR:
 {
-/* TODO: remove the unnecessary offset value */
-
 	/* Call a constructor that we don't know if it has been converted */
-	methodToCall = (ILMethod *)(ReadPointer(pc + 5));
+	methodToCall = (ILMethod *)(ReadPointer(pc + 1));
 
 	/* Copy the state back into the thread object */
 	COPY_STATE_TO_THREAD();
@@ -287,7 +266,7 @@ case COP_CALL_CTOR:
 
 	/* Fill in the call frame details */
 	callFrame->method = method;
-	callFrame->pc = thread->pc + 5 + sizeof(void *);
+	callFrame->pc = thread->pc + 1 + sizeof(void *);
 	callFrame->frame = thread->frame;
 	callFrame->exceptHeight = thread->exceptHeight;
 

@@ -704,12 +704,12 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 		case CVM_OPER_CALL:
 		case CVM_OPER_CALL_EXTERN:
 		{
-			method = (ILMethod *)CVMReadPointer(pc + 5);
+			method = (ILMethod *)CVMReadPointer(pc + 1);
 			ILDumpMethodType(stream, ILProgramItem_Image(currMethod),
 							 ILMethod_Signature(method), 0,
 							 ILMethod_Owner(method),
 							 ILMethod_Name(method), method);
-			size = 5 + sizeof(void *);
+			size = 1 + sizeof(void *);
 		}
 		break;
 

@@ -650,7 +650,6 @@ static void CVMCoder_NewArray(ILCoder *coder, ILType *arrayType,
 
 	/* Output code to call the array type's constructor */
 	CVM_BYTE(COP_CALL_CTOR);
-	CVM_WORD(0);
 	CVM_PTR(ctor);
 }
 

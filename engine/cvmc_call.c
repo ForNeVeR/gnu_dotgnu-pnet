@@ -78,7 +78,6 @@ static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
 			{
 				/* Output a call to the static constructor */
 				CVM_BYTE(COP_CALL_EXTERN);
-				CVM_WORD(0);
 				CVM_PTR(cctor);
 			}
 		}
@@ -111,8 +110,17 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 								ILMethod *methodInfo)
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
-	CVM_BYTE(COP_CALL_EXTERN);
-	CVM_WORD(0);
+	if(ILMethodGetUserData1(methodInfo) != 0)
+	{
+		/* We already know that the method is translated,
+		   so we can take a shortcut at call time */
+		CVM_BYTE(COP_CALL);
+	}
+	else
+	{
+		/* We may need to translate the method at call time */
+		CVM_BYTE(COP_CALL_EXTERN);
+	}
 	CVM_PTR(methodInfo);
 	AdjustForCall(coder, args, numArgs, returnItem, methodInfo);
 }
@@ -122,7 +130,6 @@ static void CVMCoder_CallCtor(ILCoder *coder, ILEngineStackItem *args,
 {
 	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 1);
 	CVM_BYTE(COP_CALL_CTOR);
-	CVM_WORD(0);
 	CVM_PTR(methodInfo);
 	CVM_ADJUST(-(ILInt32)ComputeStackSize(coder, args, numArgs));
 	CVM_ADJUST(1);

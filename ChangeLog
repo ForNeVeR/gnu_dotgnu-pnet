@@ -1,4 +1,10 @@
 
+2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,
+	engine/cvmc_ptr.c: simplify the "call", "call_extern", and
+	"call_ctor" instructions to remove the unnecessary offset.
+
 2002-04-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_branch.c, engine/cvm_except.c, engine/cvm_inline.c,

@@ -406,9 +406,9 @@ static CVMOpcode const opcodes[256] = {
 	{"wide",			CVM_OPER_WIDE},
 
 	/*
-	 * Reserved opcodes.
+	 * Breakpoint handling.
 	 */
-	{"reserved_fe",		CVM_OPER_NONE},
+	{"break",			CVM_OPER_UINT8},
 
 	/*
 	 * Prefix for two-byte instruction opcodes.

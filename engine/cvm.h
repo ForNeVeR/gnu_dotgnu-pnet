@@ -359,6 +359,11 @@ extern	"C" {
 #define	COP_WIDE					0xFD
 
 /*
+ * Breakpoint handling.
+ */
+#define	COP_BREAK					0xFE
+
+/*
  * Prefix for two-byte instruction opcodes.
  */
 #define	COP_PREFIX					0xFF

@@ -75,6 +75,7 @@ struct _tagILCVMCoder
 	unsigned char  *switchStart;
 	ILMethod	   *currentMethod;
 	int				tailCallFlag;
+	int				debugEnabled;
 
 };
 
@@ -157,6 +158,7 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 	coder->switchStart = 0;
 	coder->currentMethod = 0;
 	coder->tailCallFlag = 0;
+	coder->debugEnabled = 0;
 
 	/* Call the interpreter to export the label tables for
 	   use in code generation for direct threading */
@@ -171,6 +173,14 @@ static ILCoder *CVMCoder_Create(ILUInt32 size)
 
 	/* Ready to go */
 	return &(coder->coder);
+}
+
+/*
+ * Enable debug mode in an CVM coder instance.
+ */
+static void CVMCoder_EnableDebug(ILCoder *coder)
+{
+	((ILCVMCoder *)coder)->debugEnabled = 1;
 }
 
 /*
@@ -232,9 +242,13 @@ static ILUInt32 CVMCoder_GetNativeOffset(ILCoder *_coder, void *start,
 /*
  * Mark the current position with a bytecode offset.
  */
-static void CVMCoder_MarkBytecode(ILCoder *_coder, ILUInt32 offset)
+static void CVMCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 {
-	ILCacheMarkBytecode(&(((ILCVMCoder *)_coder)->codePosn), offset);
+	ILCacheMarkBytecode(&(((ILCVMCoder *)coder)->codePosn), offset);
+	if(((ILCVMCoder *)coder)->debugEnabled)
+	{
+		CVM_OUT_BREAK(IL_BREAK_DEBUG_LINE);
+	}
 }
 
 /*
@@ -354,6 +368,7 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 ILCoderClass const _ILCVMCoderClass =
 {
 	CVMCoder_Create,
+	CVMCoder_EnableDebug,
 	CVMCoder_Alloc,
 	CVMCoder_GetCacheSize,
 	CVMCoder_Setup,

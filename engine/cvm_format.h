@@ -54,6 +54,7 @@ extern	"C" {
 #define	CVM_LEN_DOUBLE					9
 #define	CVM_LEN_BRANCH					6
 #define	CVM_LEN_TRY						12
+#define	CVM_LEN_BREAK					2
 #define	CVMP_LEN_NONE					2
 #define	CVMP_LEN_BYTE					3
 #define	CVMP_LEN_WORD					6
@@ -103,6 +104,7 @@ extern	"C" {
 #define	CVM_ARG_TRY_START				(IL_READ_UINT32(pc))
 #define	CVM_ARG_TRY_END					(IL_READ_UINT32(pc + 4))
 #define	CVM_ARG_TRY_LENGTH				(IL_READ_UINT32(pc + 8))
+#define	CVM_ARG_BREAK_SUBCODE			(pc[1])
 #define	CVMP_ARG_BYTE					((ILUInt32)(ILUInt8)(pc[2]))
 #define	CVMP_ARG_SBYTE					((ILInt32)(ILInt8)(pc[2]))
 #define	CVMP_ARG_WORD					(IL_READ_UINT32(pc + 2))
@@ -143,6 +145,7 @@ extern	"C" {
 #define	CVM_LEN_DOUBLE					_CVM_LEN_FROM_CONST(8)
 #define	CVM_LEN_BRANCH					_CVM_LEN_FROM_WORDS(2)
 #define	CVM_LEN_TRY						_CVM_LEN_FROM_WORDS(3)
+#define	CVM_LEN_BREAK					_CVM_LEN_FROM_WORDS(2)
 #define	CVMP_LEN_NONE					_CVM_LEN_FROM_WORDS(1)
 #define	CVMP_LEN_BYTE					_CVM_LEN_FROM_WORDS(2)
 #define	CVMP_LEN_WORD					_CVM_LEN_FROM_WORDS(2)
@@ -193,6 +196,7 @@ extern	"C" {
 #define	CVM_ARG_TRY_START		((ILUInt32)(ILNativeUInt)(((void **)(pc))[0]))
 #define	CVM_ARG_TRY_END			((ILUInt32)(ILNativeUInt)(((void **)(pc))[1]))
 #define	CVM_ARG_TRY_LENGTH		((ILUInt32)(ILNativeUInt)(((void **)(pc))[2]))
+#define	CVM_ARG_BREAK_SUBCODE	CVM_ARG_WORD
 #define	CVMP_ARG_BYTE			CVM_ARG_BYTE
 #define	CVMP_ARG_SBYTE			CVM_ARG_SBYTE
 #define	CVMP_ARG_WORD			CVM_ARG_WORD

@@ -304,7 +304,7 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	{
 		case ILEngineType_Invalid:
 		{
-			CVM_OUT_NONE(COP_RETURN);
+			CVM_OUT_RETURN(0);
 		}
 		break;
 
@@ -316,7 +316,7 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 		case ILEngineType_I:
 	#endif
 		{
-			CVM_OUT_NONE(COP_RETURN_1);
+			CVM_OUT_RETURN(1);
 			CVM_ADJUST(-1);
 		}
 		break;

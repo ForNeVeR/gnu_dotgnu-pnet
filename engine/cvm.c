@@ -475,6 +475,42 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			#undef IL_CVM_MAIN
 
 			/**
+			 * <opcode name="break" group="Miscellaneous instructions">
+			 *   <operation>Mark the position of a breakpoint</operation>
+			 *
+			 *   <format>break<fsep/>subcode</format>
+			 *
+			 *   <dformat>{break}<fsep/>subcode</dformat>
+			 *
+			 *   <form name="break" code="COP_BREAK"/>
+			 *
+			 *   <description>This instruction marks a position in the
+			 *   CVM bytecode that may be used as a breakpoint in
+			 *   debug versions of the runtime engine.<p/>
+			 *
+			 *   Every potentional position for a breakpoint is marked,
+			 *   even if those positions will never have active breakpoints
+			 *   set on them.  The runtime engine keeps a list of active
+			 *   breakpoints, which is inspected at each potentional
+			 *   breakpoint.</description>
+			 * </opcode>
+			 */
+			VMCASE(COP_BREAK):
+			{
+			#ifdef IL_CONFIG_DEBUG_LINES
+				/* Check the breakpoint against the watch list */
+				if(_ILIsBreak(thread, method))
+				{
+					COPY_STATE_TO_THREAD();
+					_ILBreak(thread, (int)CVM_ARG_BREAK_SUBCODE);
+					RESTORE_STATE_FROM_THREAD();
+				}
+			#endif
+				MODIFY_PC_AND_STACK(CVM_LEN_BREAK, 0);
+			}
+			VMBREAK(COP_BREAK);
+
+			/**
 			 * <opcode name="wide" group="Miscellaneous instructions">
 			 *   <operation>Modify an instruction to its wide form</operation>
 			 *

@@ -86,6 +86,29 @@ typedef union
 } ILExecValue;
 
 /*
+ * Function type that is used by debuggers for hooking breakpoints.
+ */
+typedef int (*ILExecDebugHookFunc)(void *userData,
+								   ILExecThread *thread,
+								   ILMethod *method,
+								   ILInt32 offset, int type);
+
+/*
+ * Breakpoint types.
+ */
+#define	IL_BREAK_ENTER_METHOD		0
+#define	IL_BREAK_EXIT_METHOD		1
+#define	IL_BREAK_DEBUG_LINE			2
+#define	IL_BREAK_EXPLICIT			3
+#define	IL_BREAK_THROW_CALLER		4
+
+/*
+ * Debug hook actions.
+ */
+#define	IL_HOOK_CONTINUE			0
+#define	IL_HOOK_ABORT				1
+
+/*
  * Initialize the engine and set a default maximum heap size.
  * If the size is zero, then use all of memory for the heap.
  * This should be called only once per application.
@@ -176,6 +199,33 @@ long ILExecProcessGetParam(ILExecProcess *process, int type);
  * Set the command-line argument array.
  */
 void ILExecProcessSetCommandLine(ILExecProcess *process, ILObject *cmdline);
+
+/*
+ * Register a debug hook with a process.  This should be called just
+ * after "ILExecProcessCreate" and before loading the application.
+ * Returns zero if the engine does not support debugging.
+ */
+int ILExecProcessDebugHook(ILExecProcess *process,
+						   ILExecDebugHookFunc func,
+						   void *data);
+
+/*
+ * Watch a particular method for breakpoints.  Returns zero
+ * if out of memory.  Multiple watches can be registered for
+ * the same method, and must be individually unregistered
+ * using "ILExecProcessUnwatchMethod".
+ */
+int ILExecProcessWatchMethod(ILExecProcess *process, ILMethod *method);
+
+/*
+ * Remove a method from the breakpoint watch list.
+ */
+void ILExecProcessUnwatchMethod(ILExecProcess *process, ILMethod *method);
+
+/*
+ * Enable or disable the "watch all breakpoints" flag.
+ */
+void ILExecProcessWatchAll(ILExecProcess *process, int flag);
 
 /*
  * Get the current thread from a PInvoke'd method.  The behaviour

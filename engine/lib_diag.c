@@ -26,6 +26,174 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_DEBUG_LINES
+
+int ILExecProcessDebugHook(ILExecProcess *process,
+						   ILExecDebugHookFunc func,
+						   void *data)
+{
+	/* Record the hook details */
+	process->debugHookFunc = func;
+	process->debugHookData = data;
+
+	/* Turn on debug support in the coder */
+	ILCoderEnableDebug(process->coder);
+
+	/* The engine supports debugging */
+	return 1;
+}
+
+int ILExecProcessWatchMethod(ILExecProcess *process, ILMethod *method)
+{
+	ILExecDebugWatch *watch;
+
+	/* Lock down the process */
+	ILMutexLock(process->lock);
+
+	/* Search the watch list for the method */
+	watch = process->debugWatchList;
+	while(watch != 0)
+	{
+		if(watch->method == method)
+		{
+			++(watch->count);
+			ILMutexUnlock(process->lock);
+			return 1;
+		}
+		watch = watch->next;
+	}
+
+	/* Add the method to the watch list */
+	if((watch = (ILExecDebugWatch *)ILMalloc(sizeof(ILExecDebugWatch))) == 0)
+	{
+		ILMutexUnlock(process->lock);
+		return 0;
+	}
+	watch->method = method;
+	watch->count = 1;
+	watch->next = process->debugWatchList;
+	process->debugWatchList = watch;
+
+	/* Unlock the process and return */
+	ILMutexUnlock(process->lock);
+	return 1;
+}
+
+void ILExecProcessUnwatchMethod(ILExecProcess *process, ILMethod *method)
+{
+	ILExecDebugWatch *watch;
+	ILExecDebugWatch *prevWatch;
+
+	/* Lock down the process */
+	ILMutexLock(process->lock);
+
+	/* Search the watch list for the method */
+	watch = process->debugWatchList;
+	prevWatch = 0;
+	while(watch != 0)
+	{
+		if(watch->method == method)
+		{
+			if(--(watch->count) == 0)
+			{
+				if(prevWatch)
+				{
+					prevWatch->next = watch->next;
+				}
+				else
+				{
+					process->debugWatchList = watch->next;
+				}
+				ILFree(watch);
+			}
+			ILMutexUnlock(process->lock);
+			return;
+		}
+		prevWatch = watch;
+		watch = watch->next;
+	}
+
+	/* Unlock the process and return */
+	ILMutexUnlock(process->lock);
+}
+
+void ILExecProcessWatchAll(ILExecProcess *process, int flag)
+{
+	ILMutexLock(process->lock);
+	process->debugWatchAll = flag;
+	ILMutexUnlock(process->lock);
+}
+
+int _ILIsBreak(ILExecThread *thread, ILMethod *method)
+{
+	ILExecProcess *process = thread->process;
+	ILExecDebugWatch *watch;
+
+	/* Lock down the process while we do the test */
+	ILMutexLock(process->lock);
+
+	/* We should break if all methods are being watched */
+	if(process->debugWatchAll)
+	{
+		ILMutexUnlock(process->lock);
+		return 1;
+	}
+
+	/* Search the breakpoint watch list for the method */
+	watch = process->debugWatchList;
+	while(watch != 0)
+	{
+		if(watch->method == method)
+		{
+			ILMutexUnlock(process->lock);
+			return 1;
+		}
+		watch = watch->next;
+	}
+
+	/* There is no breakpoint watch registered for this method */
+	ILMutexUnlock(process->lock);
+	return 0;
+}
+
+void _ILBreak(ILExecThread *thread, int type)
+{
+	unsigned char *start;
+	ILInt32 offset;
+	int action;
+
+	if(thread->process->debugHookFunc)
+	{
+		/* Consult the coder to convert the PC into an IL offset */
+		if(thread->method && thread->pc != IL_INVALID_PC)
+		{
+			start = (unsigned char *)ILMethodGetUserData(thread->method);
+			if(ILMethodIsConstructor(thread->method))
+			{
+				start -= ILCoderCtorOffset(thread->process->coder);
+			}
+			offset = (ILInt32)(ILCoderGetILOffset
+					(thread->process->coder, (void *)start,
+					 (ILUInt32)(thread->pc - start), 0));
+		}
+		else
+		{
+			offset = -1;
+		}
+
+		/* Call the debugger to process the breakpoint */
+		action = (*(thread->process->debugHookFunc))
+			(thread->process->debugHookData,
+			 thread, thread->method, offset, type);
+
+		/* Abort the engine if requested by the debugger */
+		if(action == IL_HOOK_ABORT)
+		{
+			exit(7);
+		}
+	}
+}
+
 /*
  * System.Diagnostics.Debugger class.
  */
@@ -35,8 +203,7 @@ extern	"C" {
  */
 ILBool _IL_Debugger_InternalIsAttached(ILExecThread *thread)
 {
-	/* Debugging is not yet supported */
-	return 0;
+	return (thread->process->debugHookFunc != 0);
 }
 
 /*
@@ -44,7 +211,23 @@ ILBool _IL_Debugger_InternalIsAttached(ILExecThread *thread)
  */
 void _IL_Debugger_Break(ILExecThread *thread)
 {
-	/* Debugging is not yet supported */
+	ILInt32 offset;
+	int action;
+
+	if(thread->process->debugHookFunc)
+	{
+		/* Call out to the debugger with an explicit breakpoint */
+		offset = _IL_StackFrame_InternalGetILOffset(thread, 0);
+		action = (*(thread->process->debugHookFunc))
+			(thread->process->debugHookData,
+			 thread, ILExecThreadStackMethod(thread, 1),
+			 offset, IL_BREAK_EXPLICIT);
+		if(action == IL_HOOK_ABORT)
+		{
+			/* Abort the application that is being debugged */
+			exit(7);
+		}
+	}
 }
 
 /*
@@ -52,7 +235,7 @@ void _IL_Debugger_Break(ILExecThread *thread)
  */
 ILBool _IL_Debugger_IsLogging(ILExecThread *thread)
 {
-	/* Debugging is not yet supported */
+	/* Debug logging is not supported by this implementation */
 	return 0;
 }
 
@@ -61,8 +244,10 @@ ILBool _IL_Debugger_IsLogging(ILExecThread *thread)
  */
 ILBool _IL_Debugger_InternalLaunch(ILExecThread *thread)
 {
-	/* Debugging is not yet supported */
-	return 0;
+	/* In this implementation, the user launches the debugger
+	   prior to running the application.  The application itself
+	   cannot launch the debugger unless it is already present */
+	return (thread->process->debugHookFunc != 0);
 }
 
 /*
@@ -71,7 +256,7 @@ ILBool _IL_Debugger_InternalLaunch(ILExecThread *thread)
 void _IL_Debugger_Log(ILExecThread *thread, ILInt32 level,
 					  ILString *category, ILString *message)
 {
-	/* Debugging is not yet supported */
+	/* Debug logging is not supported by this implementation */
 }
 
 /*
@@ -348,6 +533,34 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 	return 0;
 #endif
 }
+
+#else /* !IL_CONFIG_DEBUG_LINES */
+
+int ILExecProcessDebugHook(ILExecProcess *process,
+						   ILExecDebugHookFunc func,
+						   void *data)
+{
+	/* The engine does not support debugging */
+	return 0;
+}
+
+int ILExecProcessWatchMethod(ILExecProcess *process, ILMethod *method)
+{
+	/* Nothing to do here */
+	return 1;
+}
+
+void ILExecProcessUnwatchMethod(ILExecProcess *process, ILMethod *method)
+{
+	/* Nothing to do here */
+}
+
+void ILExecProcessWatchAll(ILExecProcess *process, int flag)
+{
+	/* Nothing to do here */
+}
+
+#endif /* !IL_CONFIG_DEBUG_LINES */
 
 #ifdef	__cplusplus
 };

@@ -32,6 +32,9 @@ static ILCoder *Coder_Create(ILUInt32 size)
 {
 	return 0;
 }
+static void Coder_EnableDebug(ILCoder *coder)
+{
+}
 static void *Coder_Alloc(ILCoder *coder, ILUInt32 size)
 {
 	return 0;
@@ -368,6 +371,7 @@ static void Coder_MarkEnd(ILCoder *coder)
  */
 ILCoderClass const _ILNullCoderClass = {
 	Coder_Create,
+	Coder_EnableDebug,
 	Coder_Alloc,
 	Coder_GetCacheSize,
 	Coder_Setup,

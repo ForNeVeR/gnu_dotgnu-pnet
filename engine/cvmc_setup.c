@@ -341,7 +341,7 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	CVM_OUT_CKHEIGHT();
 
 	/* Mark this method as perhaps needing to be unrolled later */
-	if(ordinaryMethod && _ILCVMUnrollPossible())
+	if(ordinaryMethod && _ILCVMUnrollPossible() && !(coder->debugEnabled))
 	{
 		CVMP_OUT_NONE(COP_PREFIX_UNROLL_METHOD);
 	}
@@ -369,6 +369,12 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	coder->height = (long)(ctx->numArgWords + numLocals);
 	coder->minHeight = coder->height;
 	coder->maxHeight = coder->height;
+
+	/* Mark the entry point for the method if we are debugging */
+	if(coder->debugEnabled)
+	{
+		CVM_OUT_BREAK(IL_BREAK_ENTER_METHOD);
+	}
 
 	/* Done */
 	return 1;
@@ -844,11 +850,11 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 				}
 				CVM_ADJUST(1);
 			}
-			CVM_OUT_NONE(COP_RETURN_1);
+			CVM_OUT_RETURN(1);
 		}
 		else
 		{
-			CVM_OUT_NONE(COP_RETURN);
+			CVM_OUT_RETURN(0);
 		}
 	}
 	else if(ILType_IsPrimitive(returnType))
@@ -884,12 +890,12 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 					}
 					CVM_ADJUST(1);
 				}
-				CVM_OUT_NONE(COP_RETURN_1);
+				CVM_OUT_RETURN(1);
 			#else
 				CVM_OUT_DWIDE(COP_MLOAD, ctx->returnOffset, CVM_WORDS_PER_LONG);
 				CVM_ADJUST(CVM_WORDS_PER_LONG);
 				CVM_OUT_NONE(CVM_L2I);
-				CVM_OUT_NONE(COP_RETURN_1);
+				CVM_OUT_RETURN(1);
 				CVM_ADJUST(-CVM_WORDS_PER_LONG);
 			#endif
 			}
@@ -1003,7 +1009,7 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 				break;
 			}
 		}
-		CVM_OUT_NONE(COP_RETURN_1);
+		CVM_OUT_RETURN(1);
 	}
 }
 

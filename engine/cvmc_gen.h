@@ -139,7 +139,15 @@ extern	"C" {
  */
 #define	CVM_OUT_RETURN(size)	\
 			do { \
-				if((size) == 1) \
+				if(((ILCVMCoder *)coder)->debugEnabled) \
+				{ \
+					CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
+				} \
+				if((size) == 0) \
+				{ \
+					CVM_OUT_NONE(COP_RETURN); \
+				} \
+				else if((size) == 1) \
 				{ \
 					CVM_OUT_NONE(COP_RETURN_1); \
 				} \
@@ -501,6 +509,15 @@ extern	"C" {
 				} \
 			} while (0)
 
+/*
+ * Output a "break" instruction.
+ */
+#define	CVM_OUT_BREAK(subcode)	\
+			do { \
+				_CVM_BYTE(COP_BREAK); \
+				_CVM_BYTE((subcode)); \
+			} while (0)
+
 #else /* IL_CVM_DIRECT */
 
 /*
@@ -619,7 +636,15 @@ extern	"C" {
  */
 #define	CVM_OUT_RETURN(size)	\
 			do { \
-				if((size) == 1) \
+				if(((ILCVMCoder *)coder)->debugEnabled) \
+				{ \
+					CVM_OUT_BREAK(IL_BREAK_EXIT_METHOD); \
+				} \
+				if((size) == 0) \
+				{ \
+					CVM_OUT_NONE(COP_RETURN); \
+				} \
+				else if((size) == 1) \
 				{ \
 					CVM_OUT_NONE(COP_RETURN_1); \
 				} \
@@ -942,6 +967,14 @@ extern	"C" {
 					((void **)(pc))[1] = (void *) \
 						((pc) + (ILNativeInt)(ILInt32)(relative)); \
 				} \
+			} while (0)
+
+/*
+ * Output a "break" instruction.
+ */
+#define	CVM_OUT_BREAK(subcode)	\
+			do { \
+				CVM_OUT_WORD(COP_BREAK, (subcode)); \
 			} while (0)
 
 #endif /* IL_CVM_DIRECT */

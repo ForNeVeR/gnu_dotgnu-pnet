@@ -367,9 +367,9 @@ unsigned char const _ILCVMLengths[512] = {
 	/* wide */				0,
 
 	/*
-	 * Reserved opcodes.
+	 * Breakpoint handling.
 	 */
-	/* reserved_fe */		CVM_LEN_NONE,
+	/* break */				CVM_LEN_BREAK,
 
 	/*
 	 * Prefix for two-byte instruction opcodes.

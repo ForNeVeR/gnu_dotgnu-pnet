@@ -11,6 +11,13 @@
 	engine/unroll_x86_var.c: fix usage of x86_mov_membase_reg and
 	x86_mov_memindex_reg when byte destinations are involved.
 
+	* engine/cvm.c, engine/cvm.h, engine/cvm_dasm.c, engine/cvm_format.h,
+	engine/cvm_lengths.c, engine/cvmc.c, engine/cvmc_call.c,
+	engine/cvmc_gen.h, engine/cvmc_setup.c, engine/engine.h,
+	engine/lib_diag.c, engine/null_coder.c, engine/process.c,
+	include/il_coder.h, include/il_engine.h: add hooks into the
+	runtime engine to support future debugging operations by ildb.
+
 2002-06-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/Makefile.am, codegen/cg_gen.c, codegen/cg_gen.h,

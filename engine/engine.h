@@ -66,6 +66,18 @@ struct _tagILLoadedModule
 };
 
 /*
+ * Structure of a breakpoint watch registration.
+ */
+typedef struct _tagILExecDebugWatch ILExecDebugWatch;
+struct _tagILExecDebugWatch
+{
+	ILMethod		   *method;
+	ILUInt32			count;
+	ILExecDebugWatch   *next;
+
+};
+
+/*
  * Execution control context for a process.
  */
 struct _tagILExecProcess
@@ -124,6 +136,16 @@ struct _tagILExecProcess
 
 	/* The image that contains the program entry point */
 	ILImage		   *entryImage;
+
+#ifdef IL_CONFIG_DEBUG_LINES
+
+	/* Breakpoint debug information */
+	ILExecDebugHookFunc debugHookFunc;
+	void               *debugHookData;
+	ILExecDebugWatch   *debugWatchList;
+	int					debugWatchAll;
+
+#endif /* IL_CONFIG_DEBUG_LINES */
 
 };
 
@@ -528,6 +550,20 @@ ILUInt32 _ILGetMethodParamCount(ILExecThread *thread, ILMethod *method,
  */
 #define	IL_METADATA_UNLOCK(thread)	\
 			ILRWLockUnlock((thread)->process->metadataLock)
+
+#ifdef IL_CONFIG_DEBUG_LINES
+
+/*
+ * Determine if the current method is on the breakpoint watch list.
+ */
+int _ILIsBreak(ILExecThread *thread, ILMethod *method);
+
+/*
+ * Break out to the debugger for a specific type of breakpoint.
+ */
+void _ILBreak(ILExecThread *thread, int type);
+
+#endif /* IL_CONFIG_DEBUG_LINES */
 
 #ifdef	__cplusplus
 };

@@ -67,6 +67,12 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->loadedModules = 0;
 	process->gcHandles = 0;
 	process->entryImage = 0;
+#ifdef IL_CONFIG_DEBUG_LINES
+	process->debugHookFunc = 0;
+	process->debugHookData = 0;
+	process->debugWatchList = 0;
+	process->debugWatchAll = 0;
+#endif
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
@@ -169,6 +175,20 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		extern void _ILGCHandleTableFree(struct _tagILGCHandleTable *table);
 		_ILGCHandleTableFree(process->gcHandles);
 		process->gcHandles = 0;
+	}
+#endif
+
+#ifdef IL_CONFIG_DEBUG_LINES
+	/* Destroy the breakpoint watch list */
+	{
+		ILExecDebugWatch *watch, *nextWatch;
+		watch = process->debugWatchList;
+		while(watch != 0)
+		{
+			nextWatch = watch->next;
+			ILFree(watch);
+			watch = nextWatch;
+		}
 	}
 #endif
 

@@ -113,6 +113,12 @@ struct _tagILCoderClass
 	ILCoder *(*create)(ILUInt32 size);
 	
 	/*
+	 * Enable debug mode.  The coder will output extra information
+	 * to the code stream to allow breakpoint debugging to proceed.
+	 */
+	void (*enableDebug)(ILCoder *coder);
+
+	/*
 	 * Allocate a block of memory within this coder instance.
 	 * Returns NULL if cache overflow has occurred.
 	 */
@@ -680,6 +686,8 @@ struct _tagILCoderClass
  */
 #define	ILCoderCreate(classInfo,size)	\
 			((*((classInfo)->create))((size)))
+#define	ILCoderEnableDebug(coder)	\
+			((*((coder)->classInfo->enableDebug))((coder)))
 #define	ILCoderAlloc(coder,size)	\
 			((*((coder)->classInfo->alloc))((coder), (size)))
 #define	ILCoderGetCacheSize(coder)	\

@@ -19,6 +19,9 @@ AC_SUBST(ASSEMBLY_LINKER)
 AC_SUBST(PNET_PATH)
 AC_SUBST(X11_LIB)
 AC_SUBST(XFT_LIB)
+AC_SUBST(CYG_RESGEN)
+AC_SUBST(CYG_ILGAC)
+AC_SUBST(CYG_CACHE)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -184,14 +187,20 @@ if test "$MSTOOLS" = "no"; then
 		AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
 		if test "x$CYGPATH" = "x" ; then
 			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+			CYG_RESGEN="$RESGEN"
+			CYG_ILGAC="$ILGAC"
+			CYG_CACHE="$(libdir)/cscc/lib"
 		else
 			# Convert the cscc and cscc-cs paths into their Windows
 			# forms, to ensure that spawns from csant work correctly.
 			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 			CSHARP_COMPILER=`"$CYGPATH" -w "$CSHARP_COMPILER"`
 			CSHARP_PLUGIN=`"$CYGPATH" -w "$CSHARP_PLUGIN"`
+			CYG_RESGEN=`"$CYGPATH" -w "$RESGEN"`
+			CYG_ILGAC=`"$CYGPATH" -w "$ILGAC"`
+			CYG_CACHE=`"$CYGPATH" -w "$(libdir)/cscc/lib"`
 		fi
-		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)" -Dresgen="$(RESGEN)" -Dilgac="$(ILGAC)" --assembly-cache "$(libdir)/cscc/lib"'
+		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)" -Dresgen="$(CYG_RESGEN)" -Dilgac="$(CYG_ILGAC)" --assembly-cache "$(CYG_CACHE)"'
 	fi
 else
 	AC_PATH_PROG(CSHARP_COMPILER, csc)

@@ -312,6 +312,7 @@ ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
 			info->implements = 0;
 
 			/* Set the token code for the class */
+			info->programItem.token = token;
 			if(!_ILImageSetToken(image, &(info->programItem),
 								 token, IL_META_TOKEN_TYPE_DEF))
 			{

@@ -1665,7 +1665,7 @@ VariableDeclarator
 
 LocalConstantDeclaration
 	: CONST Type ConstantDeclarators		{
-				$$ = ILNode_ConstDeclaration_create(0, 0, $2, $3);
+				$$ = ILNode_LocalConstDeclaration_create($2, $3);
 			}
 	;
 
@@ -2290,13 +2290,13 @@ ClassMemberDeclaration
 ConstantDeclaration
 	: OptAttributes OptModifiers CONST Type ConstantDeclarators ';' {
 				ILUInt32 attrs = CSModifiersToConstAttrs($4, $2);
-				$$ = ILNode_ConstDeclaration_create($1, attrs, $4, $5);
+				$$ = ILNode_FieldDeclaration_create($1, attrs, $4, $5);
 			}
 	;
 
 ConstantDeclarators
 	: ConstantDeclarator							{
-				$$ = ILNode_ConstDeclarators_create();
+				$$ = ILNode_List_create();
 				ILNode_List_Add($$, $1);
 			}
 	| ConstantDeclarators ',' ConstantDeclarator    {
@@ -2307,7 +2307,7 @@ ConstantDeclarators
 
 ConstantDeclarator
 	: Identifier '=' ConstantExpression				{
-				MakeBinary(ConstDeclarator, $1, $3);
+				MakeBinary(FieldDeclarator, $1, $3);
 			}
 	;
 

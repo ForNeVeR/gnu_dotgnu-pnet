@@ -15,6 +15,9 @@
 constant-related node types that are being collapsed into fields; dump
 constant values associated with a field; declare ILNode_LocalConstDeclaration.
 
+* cscc/cs_grammar.y: convert constant declarations into fields; construct
+local constants as ILNode_LocalConstDeclaration nodes.
+
 2001-09-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h: field for the kind of a type (class, struct, etc);

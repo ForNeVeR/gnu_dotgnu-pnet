@@ -54,6 +54,32 @@ static void MakeValueType(ILGenInfo *info, ILImage *image,
 				    IL_META_TYPEDEF_SEALED);
 }
 
+/*
+ * Add a default constructor to a class.
+ */
+static int AddDefaultConstructor(ILClass *classInfo)
+{
+	ILMethod *method;
+	ILType *signature;
+	method = ILMethodCreate(classInfo, 0, ".ctor",
+					  	    IL_META_METHODDEF_PUBLIC |
+					  	    IL_META_METHODDEF_HIDE_BY_SIG |
+							IL_META_METHODDEF_SPECIAL_NAME |
+							IL_META_METHODDEF_RT_SPECIAL_NAME);
+	if(!method)
+	{
+		return 0;
+	}
+	signature = ILTypeCreateMethod(ILClassToContext(classInfo), ILType_Void);
+	if(!signature)
+	{
+		return 0;
+	}
+	signature->kind |= (IL_META_CALLCONV_HASTHIS << 8);
+	ILMemberSetSignature((ILMember *)method, signature);
+	return 1;
+}
+
 void ILGenMakeLibrary(ILGenInfo *info)
 {
 	ILImage *image = info->libImage;
@@ -66,6 +92,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *intPtrClass;
 	ILClass *uintPtrClass;
 	ILClass *typedRefClass;
+	int constructorOK;
 
 	/* Create the "System.Object" class */
 	ABORT_IF(objectClass, ILClassCreate(scope, 0, "Object", "System", 0));
@@ -73,6 +100,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 					IL_META_TYPEDEF_SERIALIZABLE);
+	ABORT_IF(constructorOK, AddDefaultConstructor(objectClass));
 
 	/* Create the "System.String" class */
 	ABORT_IF(stringClass,
@@ -91,6 +119,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 				    IL_META_TYPEDEF_SERIALIZABLE |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_ABSTRACT);
+	ABORT_IF(constructorOK, AddDefaultConstructor(typeClass));
 
 	/* Create the "System.ValueType" class */
 	ABORT_IF(valueTypeClass,
@@ -99,6 +128,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_PUBLIC |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
 				    IL_META_TYPEDEF_SERIALIZABLE);
+	ABORT_IF(constructorOK, AddDefaultConstructor(valueTypeClass));
 
 	/* Create the "System.Void" class */
 	ABORT_IF(voidClass,

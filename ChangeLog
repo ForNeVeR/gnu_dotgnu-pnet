@@ -32,6 +32,9 @@ located in cs_invoke.tc.
 * cscc/cs_lvalue.tc: replace method group nodes with the expression
 upon which the method is being executed.
 
+* codegen/cg_library.c: add default constructors to classes within
+the builtin library.
+
 2001-09-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * doc/csdoc.dtd: update the DTD for the XML documentation format.

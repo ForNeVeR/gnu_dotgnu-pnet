@@ -1,4 +1,9 @@
 
+2004-04-19  Gopal V <gopalv82@yahoo.com>
+
+	* cscc/csharp/cs_lvalue.tc: Roll back the changes made yesterday
+	as it broke the build .
+
 2004-04-18  Gopal V <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Call ILNode_SemanalysisType for 

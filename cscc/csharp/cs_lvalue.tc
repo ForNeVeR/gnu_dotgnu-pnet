@@ -1120,7 +1120,7 @@ ILNode_SemAnalysisType(ILNode_QualIdent)
 	info->inSemType = 1;
 
 	/* Get the semantic value for the left part of the identifier */
-	value = ILNode_SemAnalysisType(node->left, info, &(node->left));
+	value = ILNode_SemAnalysis(node->left, info, &(node->left));
 
 	/* Resolve the member */
 	name = ILQualIdentName(node->right, 0);
@@ -1314,7 +1314,7 @@ ILNode_SemAnalysisType(ILNode_MemberAccess)
 	
 	info->inSemType=1;
 	/* Get the semantic value for the left part of the identifier */
-	value = ILNode_SemAnalysisType(node->expr1, info, &(node->expr1));
+	value = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
 	
 	/* Convert the second subexpression into a name */
 	name = ILQualIdentName(node->expr2, 0);

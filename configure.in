@@ -314,6 +314,7 @@ ildasm/Makefile
 ilalink/Makefile
 ilsize/Makefile
 ilnative/Makefile
+ilheader/Makefile
 ilfind/Makefile
 ildiff/Makefile
 ildd/Makefile

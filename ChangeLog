@@ -1,4 +1,10 @@
 
+2002-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Makefile.am, configure.in, ilheader/.cvsignore, ilheader/Makefile.am,
+	ilheader/ilheader.1, ilheader/ilheader.c: add the "ilheader" utility,
+	which generates .h files from C# assemblies.
+
 2002-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ChangeLog, doc/ChangeLog-3: move the contents of "ChangeLog" to

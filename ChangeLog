@@ -5,6 +5,9 @@
 	count of lines for single lines and multiple blank lines. (bug #10772,
 	an improved version of the patch attached)
 
+	* System.Windows.Forms/Form.cs: Do not calculate WindowBorders if 
+	the BorderStyle is None. (bug #10718).
+
 2004-10-20  Deryk Robosson <deryk@0x0a.com>	
 
 	* Xsharp/TopLevelWindow.cs: Add skip pager state to work with

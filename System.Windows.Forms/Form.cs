@@ -1523,10 +1523,17 @@ public class Form : ContainerControl
 				get
 				{
 					int leftAdjust, topAdjust, rightAdjust, bottomAdjust;
-					ToolkitManager.Toolkit.GetWindowAdjust
-						(out leftAdjust, out topAdjust,
-						out rightAdjust, out bottomAdjust, GetFullFlags());
-					return new Point(leftAdjust, topAdjust);
+					if(FormBorderStyle != FormBorderStyle.None)
+					{
+						ToolkitManager.Toolkit.GetWindowAdjust
+							(out leftAdjust, out topAdjust,
+							out rightAdjust, out bottomAdjust, GetFullFlags());
+						return new Point(leftAdjust, topAdjust);
+					}
+					else
+					{
+						return Point.Empty;
+					}
 				}
 			}
 

@@ -1,4 +1,9 @@
 
+2003-03-09  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_oper.tc: Fix a typo in the ternary conditional
+	handling .
+
 2003-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/box.c, engine/lib_reflect.c, include/il_engine.h: handle

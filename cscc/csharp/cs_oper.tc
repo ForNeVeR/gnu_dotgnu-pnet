@@ -1995,18 +1995,18 @@ ILNode_SemAnalysis(ILNode_Conditional)
 	}
 
 	/* Determine which of the types is the result type */
-	if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value1),
+	if(ILCanCoerceNode(info, node->expr2, CSSemGetType(value1),
 					   CSSemGetType(value2),1) &&
-	   !ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
+	   !ILCanCoerceNode(info, node->expr3, CSSemGetType(value2),
 	   					CSSemGetType(value1),1))
 	{
 		ILCoerce(info, node->expr2, &(node->expr2), CSSemGetType(value1),
 				 CSSemGetType(value2),1);
 		CSSemSetRValue(value2, CSSemGetType(value2));
-		EvalOperator(info, *parent, parent, &value1);
+		EvalOperator(info, *parent, parent, &value2);
 		return value2;
 	}
-	else if(ILCanCoerceNode(info, node->expr1, CSSemGetType(value2),
+	else if(ILCanCoerceNode(info, node->expr3, CSSemGetType(value2),
 							CSSemGetType(value1),1) &&
 	        !ILCanCoerceNode(info, node->expr2, CSSemGetType(value1),
 							 CSSemGetType(value2),1))

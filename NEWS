@@ -1,4 +1,50 @@
 
+0.5.6 (3 May 2003)
+
+	* Full signature-compatibility with .NET Framework SDK 1.1.
+	* ECMA-compatibility fixups across the entire code base.
+	* Add "UTF8Encoding.GetBytes" and "UnicodeEncoding.GetBytes".
+	* Era name values and date/time format lists.
+	* Missing classes underneath "System.Security", "System.Threading",
+	  "Microsoft.Win32.Registry", "System.Runtime.InteropServices",
+	  "System.Runtime.Serialization", "System.Diagnostics",
+	  "System.Runtime.Remoting", "System.IO.IsolatedStorage",
+	  "System.Reflection", "System.Globalization",
+	* Continuation of System.Xml implementation (Adam Ballai).
+	* DTD support and partial verification (Adam Ballai).
+	* Re-implement classes in "System.Net.Sockets", "System.Threading",
+	  and "System.IO".
+	* Thread pool implementation, with a single-threaded operation mode.
+	* Asynchronous I/O handling using the thread pool.
+	* Formatting of sbyte values (David Hoke).
+	* Implement type and member filters.
+	* Add HResult values to all exception classes.
+	* Fix "Hashtable.Keys" and "Hashtable.Values", which should return
+	  live collections, not copies.
+	* Error in "StreamReader.ReadChars" - the buffer was not being correctly
+	  moved down when it overflowed.
+	* Change instances of "protected internal" into "internal" because
+	  the former didn't do what we thought it did.
+	* Better regex support under "System.Private".
+	* Serialization support code for all exception classes.
+	* "ArgIterator.GetHashCode" should always hash to the same value,
+	  irrespective of the current position.
+	* Finally implement a working quicksort in "Array" and "ArrayList".
+	* Handle "NaN", "Infinity" and "-Infinity" in the number formatters.
+	* Use "Array.Clear" instead of "Array.Initialize" to clear sensitive
+	  cryptographic values, because "Array.Initialize" doesn't always
+	  give the expected result.
+	* Cut-down resource API for use in ECMA_COMPAT modes.
+	* Mark up the ECMA subsets "Reflection", "RuntimeInfrastructure",
+	  and "ExtendedNumerics" with their own #if symbols.
+	* Update all build profiles.
+	* Don't bind string resources to assemblies if we do not have support
+	  for loading them (i.e. "RuntimeInfrastructure" isn't present).
+	* Implement TODO's in "System.ComponentModel" (Rhys, Gopal V).
+	* Gregorian calendar variants "Japanese", "Korean", "Taiwan", and
+	  "ThaiBuddhist".
+	* Conversion to and from UTC file time values in DateTime.
+
 0.5.4 (29 March 2003)
 
 	* Stub out System.Diagnostics.SymbolStore (Gopal V).

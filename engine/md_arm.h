@@ -551,14 +551,12 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 
 /*
  * Set the condition codes based on comparing two values.
+ * The "cond" value indicates the type of condition that we
+ * want to check for.
  */
-#define	md_cmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
+#define	md_cmp_cc_reg_reg_word_32(inst,cond,reg1,reg2)	\
 			arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2))
-#define	md_ucmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
-			arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2))
-#define	md_cmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
-			arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2))
-#define	md_ucmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
+#define	md_cmp_cc_reg_reg_word_native(inst,cond,reg1,reg2)	\
 			arm_test_reg_reg((inst), ARM_CMP, (reg1), (reg2))
 
 /*
@@ -579,7 +577,7 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
  * Compare a 32-bit register against an immediate value and set
  * the condition codes based on the result.
  */
-#define	md_cmp_reg_imm_word_32(inst,reg,imm)	\
+#define	md_cmp_reg_imm_word_32(inst,cond,reg,imm)	\
 			arm_test_reg_imm((inst), ARM_CMP, (reg), (int)(imm))
 
 /*

@@ -551,15 +551,15 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
 
 /*
  * Set the condition codes based on comparing two values.
+ * The "cond" value indicates the type of condition that we
+ * want to check for.
  */
-#define	md_cmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
-			ppc_cmp_reg_reg((inst), PPC_CMP, (reg1), (reg2))
-#define	md_ucmp_cc_reg_reg_word_32(inst,reg1,reg2)	\
-			ppc_cmp_reg_reg((inst), PPC_CMPL, (reg1), (reg2))
-#define	md_cmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
-			ppc_cmp_reg_reg((inst), PPC_CMP, (reg1), (reg2))
-#define	md_ucmp_cc_reg_reg_word_native(inst,reg1,reg2)	\
-			ppc_cmp_reg_reg((inst), PPC_CMPL, (reg1), (reg2))
+#define	md_cmp_cc_reg_reg_word_32(inst,cond,reg1,reg2)	\
+			ppc_cmp_reg_reg((inst), ((cond) & 16) ? PPC_CMPL : PPC_CMP, \
+							(reg1), (reg2))
+#define	md_cmp_cc_reg_reg_word_native(inst,cond,reg1,reg2)	\
+			ppc_cmp_reg_reg((inst), ((cond) & 16) ? PPC_CMPL : PPC_CMP, \
+							(reg1), (reg2))
 
 /*
  * Test the contents of a register against NULL and set the
@@ -579,8 +579,9 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
  * Compare a 32-bit register against an immediate value and set
  * the condition codes based on the result.
  */
-#define	md_cmp_reg_imm_word_32(inst,reg,imm)	\
-			ppc_cmp_reg_imm((inst), PPC_CMPL, (reg), (int)(imm))
+#define	md_cmp_reg_imm_word_32(inst,cond,reg,imm)	\
+			ppc_cmp_reg_imm((inst), ((cond) & 16) ? PPC_CMPL : PPC_CMP, \
+							(reg), (int)(imm))
 
 /*
  * Output a branch to a location based on a condition.  The actual
@@ -607,7 +608,7 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
 #define	md_branch_ge_un(inst)	\
 			ppc_branch_imm((inst), PPC_CC_GE, 0)
 #define	md_branch_cc(inst,cond)	\
-			ppc_branch_imm((inst), (cond), 0)
+			ppc_branch_imm((inst), (cond) & ~16, 0)
 
 /*
  * Specific condition codes for "md_branch_cc".
@@ -621,10 +622,10 @@ extern md_inst_ptr _md_ppc_setcmp(md_inst_ptr inst, int dreg);
 #define	MD_CC_LE				PPC_CC_LE
 #define	MD_CC_GT				PPC_CC_GT
 #define	MD_CC_GE				PPC_CC_GE
-#define	MD_CC_LT_UN				PPC_CC_LT
-#define	MD_CC_LE_UN				PPC_CC_LE
-#define	MD_CC_GT_UN				PPC_CC_GT
-#define	MD_CC_GE_UN				PPC_CC_GE
+#define	MD_CC_LT_UN				(PPC_CC_LT | 16)
+#define	MD_CC_LE_UN				(PPC_CC_LE | 16)
+#define	MD_CC_GT_UN				(PPC_CC_GT | 16)
+#define	MD_CC_GE_UN				(PPC_CC_GE | 16)
 
 /*
  * Back-patch a branch instruction at "patch" to branch to "inst".

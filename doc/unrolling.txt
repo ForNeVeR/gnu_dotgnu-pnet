@@ -455,12 +455,15 @@ md_ucmp_reg_reg_word_32(inst, reg1, reg2)
     Compare two 32-bit registers and set "reg1" to -1, 0, or 1 depending
     upon the comparison.
 
-md_cmp_cc_reg_reg_word_32(inst, reg1, reg2)
-md_ucmp_cc_reg_reg_word_32(inst, reg1, reg2)
-md_cmp_cc_reg_reg_word_native(inst, reg1, reg2)
-md_ucmp_cc_reg_reg_word_native(inst, reg1, reg2)
+md_cmp_cc_reg_reg_word_32(inst, cond, reg1, reg2)
+md_cmp_cc_reg_reg_word_native(inst, cond, reg1, reg2)
 
     Compare two registers and set the condition codes based on the result.
+	The "cond" argument hints to the code generator as to what kind of
+	condition will be tested for in a subsequent branch instruction.
+
+	This is needed on some CPU's (e.g. PPC and ia64) to modify the manner
+	in which the condition codes are set.
 
 md_reg_is_null(inst, reg)
 md_reg_is_zero(inst, reg)

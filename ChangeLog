@@ -1,4 +1,9 @@
 
+2001-03-06  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cs_scanner.l: remove one of the floating-point recognition
+	rules because it was messing up on expressions like "6.ToString()".
+
 2001-03-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/member.c: decode Java exception blocks from method code.

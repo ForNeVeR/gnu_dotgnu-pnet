@@ -1103,7 +1103,6 @@ WHITE			[ \t\r\f\v\032]
 
 {DIGIT}+{EXPONENT}{FTYPE}?					{ RETURNTOK(ParseFloat(yytext)); }
 {DIGIT}*"."{DIGIT}+({EXPONENT})?{FTYPE}?	{ RETURNTOK(ParseFloat(yytext)); }
-{DIGIT}+"."{DIGIT}*({EXPONENT})?{FTYPE}?	{ RETURNTOK(ParseFloat(yytext)); }
 {DIGIT}+{FTYPE}								{ RETURNTOK(ParseFloat(yytext)); }
 
 0[xX]{HEX}+{ITYPE}?			{ ParseInt(yytext); RETURNTOK(INTEGER_CONSTANT); }

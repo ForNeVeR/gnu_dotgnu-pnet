@@ -153,12 +153,12 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Tell the GC we're history */
 	ILGCDeinit();
 
-	/* Destroy the threads associated with the process */
-	while(process->firstThread != 0)
+	/* Wait for all foreground threads to finish */
+	if (process->firstThread != 0)
 	{
-		ILExecThreadDestroy(process->firstThread);
+		ILThreadWaitForForegroundThreads(-1);
 	}
-
+	
 	/* Destroy the CVM coder instance */
 	ILCoderDestroy(process->coder);
 

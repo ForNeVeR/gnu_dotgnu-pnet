@@ -249,14 +249,25 @@ void ILThreadDestroy(ILThread *thread)
 	if((thread->state & IL_TS_STOPPED) == 0)
 	{
 		thread->state |= IL_TS_STOPPED;
-		_ILThreadTerminate(thread);
+
+		/* Only terminate the system thread if one was created */
+		if ((thread->state & IL_TS_UNSTARTED) == 0)
+		{
+			_ILThreadTerminate(thread);
+		}
+
 		iscounted = 1;
 		isbg = ((thread->state & IL_TS_BACKGROUND) != 0);
 	}
 
 	/* Unlock the thread object and free it */
 	_ILMutexUnlock(&(thread->lock));
-	_ILThreadDestroy(thread);
+
+	/* Only destroy the system thread if one was created */
+	if ((thread->state & IL_TS_UNSTARTED) == 0)
+	{
+		_ILThreadDestroy(thread);
+	}
 	_ILMutexDestroy(&(thread->lock));
 	_ILSemaphoreDestroy(&(thread->suspendAck));
 	_ILSemaphoreDestroy(&(thread->resumeAck));

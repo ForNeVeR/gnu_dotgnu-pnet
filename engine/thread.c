@@ -49,7 +49,7 @@ ILObject *_ILGetCurrentClrThread(ILExecThread *thread)
 
 		classInfo = ILExecThreadLookupClass(thread, "System.Threading.Thread");		
 
-		/* Allocate the CLR thread object */
+		/* Allocate a new CLR thread object */
 
 		clrThread = _ILEngineAllocObject(thread, classInfo);
 
@@ -85,6 +85,18 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 	execThread->supportThread = thread;
 
 	return execThread;
+}
+
+/*
+ *	Unregisters a thread for managed execution.
+ */
+ILExecThread *ILThreadUnregisterForManagedExecution(ILThread *thread)
+{
+	ILExecThread *execThread;
+
+	execThread = ILThreadGetObject(thread);
+
+	_ILExecThreadDestroy(execThread);
 }
 
 ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
@@ -149,7 +161,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 	return thread;
 }
 
-void ILExecThreadDestroy(ILExecThread *thread)
+void _ILExecThreadDestroy(ILExecThread *thread)
 {
 	ILExecMonitor *monitor, *next;
 	ILExecProcess *process = thread->process;

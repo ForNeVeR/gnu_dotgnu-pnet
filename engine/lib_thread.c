@@ -839,7 +839,7 @@ static void __PrivateThreadStart(void *objectArg)
 		ILExecThreadPrintException(thread);
 	}
 	
-	ILExecThreadDestroy(thread);
+	ILThreadUnregisterForManagedExecution(thread->supportThread);
 }
 
 /*
@@ -895,7 +895,9 @@ void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
 	
 	if (supportThread)
 	{
-		ILThreadDestroy(supportThread);
+		((System_Thread *)_this)->privateData = 0;
+
+		ILThreadDestroy(supportThread);		
 	}
 }
 
@@ -1088,8 +1090,8 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 			/* Start unsuccessful.  Destroy the support & engine threads */
 
 			((System_Thread *)_this)->privateData = 0;		
+			ILThreadUnregisterForManagedExecution(supportThread);
 			ILThreadDestroy(supportThread);
-			ILExecThreadDestroy(execThread);
 
 			/* Throw an OutOfMemoryException */
 

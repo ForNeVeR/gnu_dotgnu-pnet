@@ -42,6 +42,7 @@ static volatile int g_Deinit = 0;
 static ILThread *g_FinalizerThread = 0;
 static ILWaitHandle *g_FinalizerSignal = 0;
 static ILWaitHandle *g_FinalizerResponse = 0;
+static ILMutex *g_GcLock = 0;
 
 #ifdef GC_TRACE_ENABLE
 	#define GC_TRACE(a, b)		printf(a, b)
@@ -171,6 +172,7 @@ void ILGCInit(unsigned long maxSize)
 
 	/* Create the finalizer thread */
 	g_Deinit = 0;
+	g_GcLock = ILMutexCreate();
 	g_FinalizerThread = ILThreadCreate(FinalizerThreadFunc, 0);
 	
 	if (g_FinalizerThread)
@@ -187,11 +189,24 @@ void ILGCDeinit()
 {
 	g_Deinit = 1;
 
+	/* Do a final GC */
 	ILGCCollect();
 
-	/* Wait up to 10 seconds for the finalizers to run */
-		
+	/* Wait up to 10 seconds for the finalizers to run */		
 	PrivateGCNotifyFinalize(10000);
+
+	/* Cleanup the finalizer thread */
+	if (g_FinalizerThread)
+	{
+		/* Unregister and destroy the finalizer thread if it's responding */
+		if (ILThreadJoin(g_FinalizerThread, 1000))
+		{
+			ILThreadUnregisterForManagedExecution(g_FinalizerThread);
+			ILThreadDestroy(g_FinalizerThread);			
+		}		
+	}
+
+	ILMutexDestroy(g_GcLock);
 }
 
 void *ILGCAlloc(unsigned long size)

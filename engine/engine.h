@@ -359,6 +359,11 @@ int _ILCVMInterpreter(ILExecThread *thread);
 ILExecThread *_ILExecThreadCreate(ILExecProcess *process);
 
 /*
+ *	Destroy an engine level thread.
+ */
+void _ILExecThreadDestroy(ILExecThread *thread);
+
+/*
  * Lay out a class's fields, virtual methods, and interfaces.
  * Returns zero if there is something wrong with the definition.
  */

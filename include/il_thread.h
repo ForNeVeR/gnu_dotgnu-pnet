@@ -63,6 +63,11 @@ typedef struct _tagILWaitHandle ILWaitHandle;
 ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread);
 
 /*
+ *	Unregisters an ILThread that no longer needs to execute managed code.
+ */
+ILExecThread *ILThreadUnregisterForManagedExecution(ILThread *thread);
+
+/*
  * Determine if the system has thread support.  This can
  * be called either before or after "ILThreadInit".
  */

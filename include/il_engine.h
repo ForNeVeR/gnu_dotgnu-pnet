@@ -318,11 +318,6 @@ int ILExecProcessAddInternalCallTable(ILExecProcess* process,
 ILExecThread *ILExecThreadCurrent(void);
 
 /*
- * Destroy a thread and detach it from its process.
- */
-void ILExecThreadDestroy(ILExecThread *thread);
-
-/*
  * Get the process that corresponds to a thread.
  */
 ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread);

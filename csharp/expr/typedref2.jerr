@@ -1,5 +1,5 @@
 ./typedref2.cs:30: `__refvalue' disallowed when compiling to Java bytecode
-./typedref2.cs:30: invalid type specification
+./typedref2.cs:30: invalid type specification `fld' 
 ./typedref2.cs:39: `__makeref' disallowed when compiling to Java bytecode
 ./typedref2.cs:39: invalid lvalue in `__makeref' expression
 ./typedref2.cs:40: `__makeref' disallowed when compiling to Java bytecode

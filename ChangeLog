@@ -1,4 +1,14 @@
 
+2003-01-19  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/class/member_access2.err, csharp/class/member_access2.jerr,
+	csharp/expr/as2.err, csharp/expr/as2.jerr, csharp/expr/is2.err,
+	csharp/expr/is2.jerr, csharp/expr/new2.err, csharp/expr/new2.jerr,
+	csharp/expr/typedref2.err, csharp/expr/typedref2.jerr, 
+	csharp/stmt/foreach2.err, csharp/stmt/foreach2.jerr, 
+	csharp/stmt/using2.err, csharp/stmt/using2.jerr : Update the error
+	messages to reflect changes in the compiler error reporting.
+	
 2002-12-21  Gopal.V <gopalv82@symonds.net>
 
 	* c/expr/arrayptr1.3il, c/expr/arrayptr1.il, c/expr/assign1.3il

@@ -1,4 +1,4 @@
-./new2.cs:47: invalid type specification
+./new2.cs:47: invalid type specification `Color.Red' 
 ./new2.cs:50: cannot instantiate interface `J' with the `new' operator
 ./new2.cs:51: cannot instantiate abstract class `Test3' with the `new' operator
 ./new2.cs:54: `System.Object[]' is not a class or value type

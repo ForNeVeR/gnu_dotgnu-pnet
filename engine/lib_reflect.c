@@ -1638,8 +1638,32 @@ ILBool _IL_Module_IsResource(ILExecThread *_thread, ILObject *_this)
  */
 ILObject *_IL_Module_GetModuleType(ILExecThread *_thread, ILObject *_this)
 {
-	/* TODO */
-	return 0;
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(_thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	ILClass *classInfo;
+	if(image)
+	{
+		classInfo = ILClassLookup(ILClassGlobalScope(image), "<Module>", 0);
+		if(classInfo)
+		{
+			/* Check that we have permission to reflect the type */
+			if(!_ILClrCheckAccess(_thread, classInfo, 0))
+			{
+				return 0;
+			}
+
+			/* Reflect the type back up to the running application */
+			return _ILGetClrType(_thread, classInfo);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*

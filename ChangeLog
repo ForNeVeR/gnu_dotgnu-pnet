@@ -8,6 +8,8 @@
 	constructors to "Xsharp.Bitmap" which allow bitmaps to be built
 	from xbm data in a "byte[]" buffer.
 
+	* System.Drawing.Xsharp/DrawingHatchBrush.cs: implement hatch brushes.
+
 2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/PlaceholderWindow.cs, Xsharp/RootWindow.cs,

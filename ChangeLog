@@ -5,6 +5,11 @@
 	csharp/parser/unclosed1.err, csharp/parser/unclosed1.jerr:
 	test error handling for unclosed namespace declarations.
 
+	* csharp/stmt/Makefile.am, csharp/stmt/block1.cs,
+	csharp/stmt/block1.il, csharp/stmt/block1.jl,
+	csharp/stmt/block2.cs, csharp/stmt/block2.err,
+	csharp/stmt/block2.jerr: test block scoping of locals.
+
 2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/newarray1.cs,

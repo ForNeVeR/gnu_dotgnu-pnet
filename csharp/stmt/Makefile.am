@@ -1,5 +1,7 @@
 
-TESTS = locals1.cs \
+TESTS = block1.cs \
+		block2.cs \
+		locals1.cs \
 		lock1.cs \
 		lock2.cs \
 		return1.cs \

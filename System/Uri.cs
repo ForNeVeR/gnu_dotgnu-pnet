@@ -340,7 +340,15 @@ public class Uri : MarshalByRefObject
 	/* This method is to be moved into an IPV6Address class */
 	private static bool IsIPV6Name(String name)
 	{
-		/* TODO : */
+		try
+		{
+			IPv6Address.Parse(name);
+			return true;
+		}
+		catch (FormatException)
+		{
+			return false;
+		}
 		return false;
 	}
 	

@@ -4,6 +4,10 @@
 	* image/writer.c (SortClasses): process types in order, even
 	if they are nested.
 
+	* image/meta_writer.c (Format_TypeDef): ignore fields and methods
+	that have MemberRef tokens, as they aren't important to determine
+	the first field and method token in the type.
+
 2002-07-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c, ilalink/link_field.c, ilalink/link_image.c,

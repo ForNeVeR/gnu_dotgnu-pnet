@@ -192,7 +192,9 @@ static void Format_TypeDef(ILWriter *writer, ILImage *image,
 		{
 			member = ILClassNextMemberByKind
 							(info, 0, IL_META_MEMBERKIND_FIELD);
-			if(member)
+			if(member &&
+			   (member->programItem.token & IL_META_TOKEN_MASK)
+			   		== IL_META_TOKEN_FIELD_DEF)
 			{
 				values[IL_OFFSET_TYPEDEF_FIRST_FIELD] =
 						member->programItem.token;
@@ -203,7 +205,9 @@ static void Format_TypeDef(ILWriter *writer, ILImage *image,
 		{
 			member = ILClassNextMemberByKind
 							(info, 0, IL_META_MEMBERKIND_METHOD);
-			if(member)
+			if(member &&
+			   (member->programItem.token & IL_META_TOKEN_MASK)
+			   		== IL_META_TOKEN_METHOD_DEF)
 			{
 				values[IL_OFFSET_TYPEDEF_FIRST_METHOD] =
 						member->programItem.token;

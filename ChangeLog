@@ -1,4 +1,14 @@
 
+2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/RuntimeType.cs,
+runtime/System/Reflection/RuntimeConstructorInfo.cs,
+runtime/System/Reflection/RuntimeEventInfo.cs,
+runtime/System/Reflection/RuntimeFieldInfo.cs,
+runtime/System/Reflection/RuntimeHelpers.cs,
+runtime/System/Reflection/RuntimeMethodInfo.cs,
+runtime/System/Reflection/RuntimePropertyInfo.cs: remove obsolete types.
+
 2001-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/Platform/Errno.cs: list of Unix-style errno codes for interfacing

@@ -1,4 +1,29 @@
 
+2003-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, resources/en_US/Basic/Makefile.am,
+	resources/en_US/Basic/resources.build,
+	resources/en_US/I18N/Makefile.am,
+	resources/en_US/I18N/resources.build,
+	resources/en_US/System/Makefile.am,
+	resources/en_US/System/resources.build,
+	resources/en_US/System.Configuration.Install/Makefile.am,
+	resources/en_US/System.Configuration.Install/resources.build,
+	resources/en_US/System.Drawing/Makefile.am,
+	resources/en_US/System.Drawing/resources.build,
+	resources/en_US/System.Net.IrDA/Makefile.am,
+	resources/en_US/System.Net.IrDA/resources.build,
+	resources/en_US/System.Windows.Forms/Makefile.am,
+	resources/en_US/System.Windows.Forms/resources.build,
+	resources/en_US/System.Xml/Makefile.am,
+	resources/en_US/System.Xml/resources.build,
+	resources/en_US/Xsharp/Makefile.am,
+	resources/en_US/Xsharp/Xsharp.txt,
+	resources/en_US/Xsharp/resources.build,
+	resources/en_US/runtime/Makefile.am,
+	resources/en_US/runtime/resources.build: modify the build system
+	for "resources/en_US" to use the new "csant" resource features.
+
 2003-11-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Basic/Basic.build, ISymWrapper/ISymWrapper.build,

@@ -128,46 +128,6 @@ if test "$CSANT" = "" ; then
 	exit 1
 fi
 
-dnl Find the C# compiler to use.
-if test "$MSTOOLS" = "no"; then
-	AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:${prefix}/bin:$PATH)
-	if test "$CSHARP_COMPILER" = "" ; then
-		AC_PATH_PROG(CSHARP_COMPILER, csc)
-		if test "$CSHARP_COMPILER" = ""; then
-			echo '******************************************************'
-			echo "Portable.NET's cscc or Microsoft's csc.exe is required"
-			echo "to build.  Use the --with-pnet option to specify the"
-			echo "location of the Portable.NET source tree."
-			echo '******************************************************'
-			exit 1
-		fi
-		CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
-		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
-	else
-		AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
-		if test "x$CYGPATH" = "x" ; then
-			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
-		else
-			# Convert the cscc and cscc-cs paths into their Windows
-			# forms, to ensure that spawns from csant work correctly.
-			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
-			CSHARP_COMPILER=`"$CYGPATH" -w "$CSHARP_COMPILER"`
-			CSHARP_PLUGIN=`"$CYGPATH" -w "$CSHARP_PLUGIN"`
-		fi
-		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
-	fi
-else
-	AC_PATH_PROG(CSHARP_COMPILER, csc)
-	if test "$CSHARP_COMPILER" = ""; then
-		echo '***************************************************'
-		echo "Could not locate Microsoft's C# compiler (csc.exe)."
-		echo '***************************************************'
-		exit 1
-	fi
-	CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)"'
-	CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
-fi
-
 dnl Find the .NET resource generator to use.
 if test "$MSTOOLS" = "no"; then
 	AC_PATH_PROG(RESGEN, resgen,, $PNET_PATH/resgen:${prefix}/bin:$PATH)
@@ -193,6 +153,56 @@ if test "$MSTOOLS" = "yes"; then
 	AC_PATH_PROG(ASSEMBLY_LINKER, al)
 else
 	ASSEMBLY_LINKER=pnet
+fi
+
+dnl Find the Portable.NET "ilgac" program.
+AC_PATH_PROG(ILGAC, ilgac,, $PNET_PATH/ilgac:${prefix}/bin:$PATH)
+if test "$ILGAC" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET's ilgac tool is required to build the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
+dnl Find the C# compiler to use.
+if test "$MSTOOLS" = "no"; then
+	AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:${prefix}/bin:$PATH)
+	if test "$CSHARP_COMPILER" = "" ; then
+		AC_PATH_PROG(CSHARP_COMPILER, csc)
+		if test "$CSHARP_COMPILER" = ""; then
+			echo '******************************************************'
+			echo "Portable.NET's cscc or Microsoft's csc.exe is required"
+			echo "to build.  Use the --with-pnet option to specify the"
+			echo "location of the Portable.NET source tree."
+			echo '******************************************************'
+			exit 1
+		fi
+		CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)" -Dresgen="$(RESGEN)" -Dilgac="$(ILGAC)" --assembly-cache "$(libdir)/cscc/lib"'
+		CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+	else
+		AC_PATH_PROG(CSHARP_PLUGIN, cscc-cs,, $PNET_PATH/cscc:${prefix}/lib/cscc/plugins:${prefix}/bin:$PATH)
+		if test "x$CYGPATH" = "x" ; then
+			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+		else
+			# Convert the cscc and cscc-cs paths into their Windows
+			# forms, to ensure that spawns from csant work correctly.
+			CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
+			CSHARP_COMPILER=`"$CYGPATH" -w "$CSHARP_COMPILER"`
+			CSHARP_PLUGIN=`"$CYGPATH" -w "$CSHARP_PLUGIN"`
+		fi
+		CSANT_FLAGS='--compiler cscc -Dcscc="$(CSHARP_COMPILER)" -Dcscc.plugins.cs="$(CSHARP_PLUGIN)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)" -Dresgen="$(RESGEN)" -Dilgac="$(ILGAC)" --assembly-cache "$(libdir)/cscc/lib"'
+	fi
+else
+	AC_PATH_PROG(CSHARP_COMPILER, csc)
+	if test "$CSHARP_COMPILER" = ""; then
+		echo '***************************************************'
+		echo "Could not locate Microsoft's C# compiler (csc.exe)."
+		echo '***************************************************'
+		exit 1
+	fi
+	CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)" --profile "$(top_srcdir)/profiles/$(PROFILE_NAME)" -Dresgen="$(RESGEN)" -Dilgac="$(ILGAC)" --assembly-cache "$(libdir)/cscc/lib"'
+	CSHARP_COMPILER_CYGWIN="$CSHARP_COMPILER"
 fi
 
 dnl Determine which version of RESGEN we are using (Portable.NET or Microsoft).

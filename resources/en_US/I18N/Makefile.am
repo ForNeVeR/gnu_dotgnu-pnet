@@ -1,28 +1,9 @@
-SUFFIXES = .txt .resources
 
-RESOURCENAME = I18N.resources
+.PHONY: I18N.resources
 
-RESOURCEFILES = I18NRes.txt
+all-local: I18N.resources
 
-noinst_DATA = $(RESOURCENAME)
+I18N.resources:
+	"$(CSANT)" $(CSANT_FLAGS) -f resources.build all
 
-CLEANFILES = $(RESOURCENAME) tempres.txt
-
-if PNET_RESGEN
-
-# Portable.NET's resgen can convert multiple input files.
-
-$(RESOURCENAME): $(RESOURCEFILES)
-	"$(RESGEN)" $(RESGEN_FLAGS) $(RESOURCEFILES) $(RESOURCENAME)
-
-else
-
-# Microsoft's resgen can only convert a single input file at a time,
-# so we combine everything into one file and then convert.
-
-$(RESOURCENAME): $(RESOURCEFILES)
-	cat $(RESOURCEFILES) >tempres.txt
-	"$(RESGEN)" $(RESGEN_FLAGS) tempres.txt $(RESOURCENAME)
-	rm -f tempres.txt
-
-endif
+CLEANFILES = I18N.resources

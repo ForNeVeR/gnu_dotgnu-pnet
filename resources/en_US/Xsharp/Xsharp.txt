@@ -39,7 +39,6 @@ X_LineWidth=Invalid line width value: {0}
 X_LineStyle=Invalid line style value: {0}
 X_CapStyle=Invalid line capping style value: {0}
 X_JoinStyle=Invalid line join style value: {0}
-X_FillRule=Invalid fill rule value: {0}
 X_ArcMode=Invalid arc mode value: {0}
 X_GraphicsIsOutputOnly=Graphics objects can only be created for input/output widgets
 X_NonRootParent=The parent cannot be the root window

@@ -131,6 +131,16 @@ ILObject *_ILClrToObject(ILExecThread *thread, void *item, const char *name);
 void *_ILClrFromObject(ILExecThread *thread, ILObject *object);
 
 /*
+ * Look for a type, starting at a particular image.  If "assemblyImage"
+ * is NULL, then use the name to determine the image to start at.
+ */
+ILObject *_ILGetTypeFromImage(ILExecThread *thread,
+							  ILImage *assemblyImage,
+							  ILString *name,
+							  ILBool throwOnError,
+							  ILBool ignoreCase);
+
+/*
  * Internal structure of "System.Threading.Thread".
  */
 typedef struct

@@ -287,6 +287,187 @@ IL_METHOD_BEGIN(_ILReflectionClrHelpersMethods)
 					ClrHelpers_GetName)
 IL_METHOD_END
 
+/*
+ * Convert an image into an assembly object.
+ */
+static ILObject *ImageToAssembly(ILExecThread *thread, ILImage *image)
+{
+	void *item;
+	item = ILImageTokenInfo(image, (IL_META_TOKEN_ASSEMBLY | 1));
+	if(item)
+	{
+		return _ILClrToObject(thread, item, "System.Reflection.Assembly");
+	}
+	/* TODO: if the image does not have an assembly manifest,
+	   then look for the parent assembly */
+	return 0;
+}
+
+/*
+ * public static Assembly GetCallingAssembly();
+ */
+static ILObject *Assembly_GetCallingAssembly(ILExecThread *thread)
+{
+	ILCallFrame *frame = _ILGetCallFrame(thread, 2);
+	if(frame && frame->method)
+	{
+		return ImageToAssembly(thread, ILProgramItem_Image(frame->method));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static Assembly GetEntryAssembly();
+ */
+static ILObject *Assembly_GetEntryAssembly(ILExecThread *thread)
+{
+	ILImage *image = thread->process->entryImage;
+	if(image)
+	{
+		return ImageToAssembly(thread, image);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * public static Assembly GetExecutingAssembly();
+ */
+static ILObject *Assembly_GetExecutingAssembly(ILExecThread *thread)
+{
+	ILCallFrame *frame = _ILGetCallFrame(thread, 1);
+	if(frame && frame->method)
+	{
+		return ImageToAssembly(thread, ILProgramItem_Image(frame->method));
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Load errors.  These must be kept in sync with "pnetlib".
+ */
+#define	LoadError_OK			0
+#define	LoadError_InvalidName	1
+#define	LoadError_FileNotFound	2
+#define	LoadError_BadImage		3
+#define	LoadError_Security		4
+
+/*
+ * private static Assembly LoadFromName(String name, out int error);
+ */
+static ILObject *Assembly_LoadFromName(ILExecThread *thread,
+									   ILString *name,
+									   ILInt32 *error)
+{
+	/* TODO */
+	*error = LoadError_FileNotFound;
+	return 0;
+}
+
+/*
+ * private static Assembly LoadFromFile(String name, out int error);
+ */
+static ILObject *Assembly_LoadFromFile(ILExecThread *thread,
+									   ILString *name,
+									   ILInt32 *error)
+{
+	char *filename;
+	ILImage *image;
+	int loadError;
+
+	/* Convert the name into a NUL-terminated filename string */
+	filename = ILStringToAnsi(thread, name);
+	if(!filename)
+	{
+		*error = LoadError_FileNotFound;
+		return 0;
+	}
+
+	/* TODO: validate the pathname */
+	if(*filename == '\0')
+	{
+		*error = LoadError_InvalidName;
+		return 0;
+	}
+
+	/* TODO: check security permissions */
+
+	/* Attempt to load the file */
+	loadError = ILImageLoadFromFile(filename, thread->process->context,
+									&image, IL_LOADFLAG_FORCE_32BIT, 0);
+	if(loadError == 0)
+	{
+		*error = LoadError_OK;
+		return ImageToAssembly(thread, image);
+	}
+
+	/* Convert the error code into something the C# library knows about */
+	if(loadError == -1)
+	{
+		*error = LoadError_FileNotFound;
+	}
+	else if(loadError == IL_LOADERR_MEMORY)
+	{
+		*error = LoadError_FileNotFound;
+		ILExecThreadThrowOutOfMemory(thread);
+	}
+	else
+	{
+		*error = LoadError_BadImage;
+	}
+	return 0;
+}
+
+/*
+ * private static Type GetType(String typeName, bool throwOnError,
+ *							   bool ignoreCase)
+ */
+static ILObject *Assembly_GetType(ILExecThread *thread, ILObject *_this,
+								  ILString *name, ILBool throwOnError,
+								  ILBool ignoreCase)
+{
+	ILProgramItem *item = (ILProgramItem *)_ILClrFromObject(thread, _this);
+	ILImage *image = ((item != 0) ? ILProgramItem_Image(item) : 0);
+	if(!image)
+	{
+		if(throwOnError)
+		{
+			ILExecThreadThrowSystem(thread, "System.TypeLoadException",
+									(const char *)0);
+		}
+		return 0;
+	}
+	return _ILGetTypeFromImage(thread, image, name, throwOnError, ignoreCase);
+}
+
+/*
+ * Method table for the "System.Reflection.Assembly" class.
+ */
+IL_METHOD_BEGIN(_ILReflectionAssemblyMethods)
+	IL_METHOD("GetCallingAssembly",		"()oSystem.Reflection.Assembly;",
+					Assembly_GetCallingAssembly)
+	IL_METHOD("GetEntryAssembly",		"()oSystem.Reflection.Assembly;",
+					Assembly_GetEntryAssembly)
+	IL_METHOD("GetExecutingAssembly",	"()oSystem.Reflection.Assembly;",
+					Assembly_GetExecutingAssembly)
+	IL_METHOD("LoadFromName",
+					"(oSystem.String;&i)oSystem.Reflection.Assembly;",
+					Assembly_LoadFromName)
+	IL_METHOD("LoadFromFile",
+					"(oSystem.String;&i)oSystem.Reflection.Assembly;",
+					Assembly_LoadFromFile)
+	IL_METHOD("GetType", "(ToSystem.String;ZZ)oSystem.Type;",
+					Assembly_GetType)
+IL_METHOD_END
+
 #ifdef	__cplusplus
 };
 #endif

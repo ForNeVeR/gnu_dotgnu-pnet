@@ -106,6 +106,9 @@ struct _tagILExecProcess
 	/* List of loaded modules for PInvoke methods */
 	ILLoadedModule *loadedModules;
 
+	/* The image that contains the program entry point */
+	ILImage		   *entryImage;
+
 };
 
 /*

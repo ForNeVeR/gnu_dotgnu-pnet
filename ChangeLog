@@ -4,6 +4,10 @@
 * engine/lib_misc.c, engine/lib_array.c, engine/internal.c: implement the
 "internalcall" methods for "System.BitConverter" and "System.Buffer".
 
+* engine/engine.h, engine/internal.c, engine/lib_defs.h, engine/lib_reflect.c,
+engine/lib_type.c, engine/process.c: implement "internalcall" methods for
+assembly and type reflection.
+
 2001-11-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine.h, engine/internal.c, engine/lib_defs.h, engine/lib_object.c,

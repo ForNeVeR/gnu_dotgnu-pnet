@@ -43,6 +43,7 @@ extern ILMethodTableEntry const _ILSystemThreadingInterlockedMethods;
 extern ILMethodTableEntry const _ILSystemThreadingThreadMethods;
 extern ILMethodTableEntry const _ILReflectionClrTypeMethods;
 extern ILMethodTableEntry const _ILReflectionClrHelpersMethods;
+extern ILMethodTableEntry const _ILReflectionAssemblyMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
 extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
 extern ILMethodTableEntry const _ILPlatformPtrSizesMethods;
@@ -64,6 +65,7 @@ typedef struct
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
 	{"Array",		"System",		&_ILSystemArrayMethods},
+	{"Assembly",	"System.Reflection", &_ILReflectionAssemblyMethods},
 	{"BitConverter", "System",		&_ILSystemBitConverterMethods},
 	{"Buffer",		"System",		&_ILSystemBufferMethods},
 	{"ClrHelpers",	"System.Reflection", &_ILReflectionClrHelpersMethods},

@@ -57,6 +57,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	ILGetCurrTime(&(process->startTime));
 	process->internHash = 0;
 	process->loadedModules = 0;
+	process->entryImage = 0;
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
@@ -231,6 +232,7 @@ ILMethod *ILExecProcessGetEntry(ILExecProcess *process)
 		token = ILImageGetEntryPoint(image);
 		if(token && (token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF)
 		{
+			process->entryImage = image;
 			return ILMethod_FromToken(image, token);
 		}
 	}

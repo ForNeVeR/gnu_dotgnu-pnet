@@ -236,13 +236,11 @@ void *_ILClrFromObject(ILExecThread *thread, ILObject *object)
 	return 0;
 }
 
-/*
- * public static Type GetType(String name, bool throwOnError, bool ignoreCase);
- */
-static ILObject *System_Type_GetType(ILExecThread *thread,
-									 ILString *name,
-									 ILBool throwOnError,
-									 ILBool ignoreCase)
+ILObject *_ILGetTypeFromImage(ILExecThread *thread,
+							  ILImage *assemblyImage,
+							  ILString *name,
+							  ILBool throwOnError,
+							  ILBool ignoreCase)
 {
 	ILInt32 length;
 	ILUInt16 *buf;
@@ -252,7 +250,6 @@ static ILObject *System_Type_GetType(ILExecThread *thread,
 	ILInt32 nameEnd;
 	ILInt32 nameSpecial;
 	int brackets;
-	ILImage *assemblyImage = 0;
 	ILProgramItem *scope;
 	ILClass *classInfo;
 
@@ -327,14 +324,28 @@ static ILObject *System_Type_GetType(ILExecThread *thread,
 	if(posn < length)
 	{
 		++posn;
-		assemblyImage = ResolveAssembly(thread, buf + posn, length - posn);
-		if(!assemblyImage)
+		if(assemblyImage)
 		{
+			/* We are trying to look in a specific image,
+			   so it is an error for the caller to supply
+			   an explicit assembly name */
 			if(throwOnError)
 			{
 				ThrowTypeLoad(thread, name);
 			}
 			return 0;
+		}
+		else
+		{
+			assemblyImage = ResolveAssembly(thread, buf + posn, length - posn);
+			if(!assemblyImage)
+			{
+				if(throwOnError)
+				{
+					ThrowTypeLoad(thread, name);
+				}
+				return 0;
+			}
 		}
 	}
 	if(nameStart >= nameSpecial)
@@ -485,6 +496,17 @@ static ILObject *System_Type_GetType(ILExecThread *thread,
 }
 
 /*
+ * public static Type GetType(String name, bool throwOnError, bool ignoreCase);
+ */
+static ILObject *System_Type_GetType(ILExecThread *thread,
+									 ILString *name,
+									 ILBool throwOnError,
+									 ILBool ignoreCase)
+{
+	return _ILGetTypeFromImage(thread, 0, name, throwOnError, ignoreCase);
+}
+
+/*
  * public static RuntimeTypeHandle GetTypeHandleFromObject(Object o);
  */
 static void System_Type_GetTypeHandleFromObject
@@ -516,6 +538,21 @@ static ILObject *System_Type_GetTypeFromHandle
 		return 0;
 	}
 }
+
+/*
+ * Method table for the "System.Type" class.
+ */
+IL_METHOD_BEGIN(_ILSystemTypeMethods)
+	IL_METHOD("GetType",
+					"(oSystem.String;ZZ)oSystem.Type;",
+					System_Type_GetType)
+	IL_METHOD("GetTypeHandleFromObject",
+					"(oSystem.Object;)vSystem.RuntimeTypeHandle;",
+					System_Type_GetTypeHandleFromObject)
+	IL_METHOD("GetTypeFromHandle",
+					"(vSystem.RuntimeTypeHandle;)oSystem.Type;",
+					System_Type_GetTypeFromHandle)
+IL_METHOD_END
 
 /*
  * private int GetClrArrayRank();
@@ -1171,19 +1208,546 @@ static ILString *ClrType_GetClrNamespace(ILExecThread *thread, ILObject *_this)
 }
 
 /*
- * Method table for the "System.Type" class.
+ * Values for "System.Reflection.MemberTypes".
  */
-IL_METHOD_BEGIN(_ILSystemTypeMethods)
-	IL_METHOD("GetType",
-					"(oSystem.String;ZZ)oSystem.Type;",
-					System_Type_GetType)
-	IL_METHOD("GetTypeHandleFromObject",
-					"(oSystem.Object;)vSystem.RuntimeTypeHandle;",
-					System_Type_GetTypeHandleFromObject)
-	IL_METHOD("GetTypeFromHandle",
-					"(vSystem.RuntimeTypeHandle;)oSystem.Type;",
-					System_Type_GetTypeFromHandle)
-IL_METHOD_END
+typedef enum
+{
+    MT_Constructor         = 0x0001,
+    MT_Event               = 0x0002,
+    MT_Field               = 0x0004,
+    MT_Method              = 0x0008,
+    MT_Property            = 0x0010,
+    MT_TypeInfo            = 0x0020,
+    MT_Custom              = 0x0040,
+    MT_NestedType          = 0x0080,
+    MT_All                 = 0x00BF
+
+} MemberTypes;
+
+/*
+ * Values for "System.Reflection.BindingFlags".
+ */
+typedef enum
+{
+    BF_Default              = 0x00000000,
+    BF_IgnoreCase           = 0x00000001,
+    BF_DeclaredOnly         = 0x00000002,
+    BF_Instance             = 0x00000004,
+    BF_Static               = 0x00000008,
+    BF_Public               = 0x00000010,
+    BF_NonPublic            = 0x00000020,
+    BF_FlattenHierarchy     = 0x00000040,
+    BF_InvokeMethod         = 0x00000100,
+    BF_CreateInstance       = 0x00000200,
+    BF_GetField             = 0x00000400,
+    BF_SetField             = 0x00000800,
+    BF_GetProperty          = 0x00001000,
+    BF_SetProperty          = 0x00002000,
+    BF_PutDispProperty      = 0x00004000,
+    BF_PutRefDispProperty   = 0x00008000,
+    BF_ExactBinding         = 0x00010000,
+    BF_SuppressChangeType   = 0x00020000,
+    BF_OptionalParamBinding = 0x00040000,
+    BF_IgnoreReturn         = 0x01000000
+
+} BindingFlags;
+
+/*
+ * Values for "System.Reflection.CallingConventions".
+ */
+typedef enum
+{
+	CC_Standard				= 0x01,
+	CC_VarArgs				= 0x02,
+	CC_Any					= 0x03,
+	CC_Mask					= 0x1F,
+	CC_HasThis				= 0x20,
+	CC_ExplicitThis			= 0x40
+
+} CallingConventions;
+
+/*
+ * Determine if a member kind matches a particular member type set.
+ */
+static int MemberTypeMatch(ILMember *member, ILInt32 memberTypes)
+{
+	switch(member->kind)
+	{
+		case IL_META_MEMBERKIND_METHOD:
+		{
+			if(ILMethod_IsConstructor((ILMethod *)member) ||
+			   ILMethod_IsStaticConstructor((ILMethod *)member))
+			{
+				return ((memberTypes & (ILInt32)MT_Constructor) != 0);
+			}
+			else
+			{
+				return ((memberTypes & (ILInt32)MT_Method) != 0);
+			}
+		}
+		/* Not reached */
+
+		case IL_META_MEMBERKIND_FIELD:
+			return ((memberTypes & (ILInt32)MT_Field) != 0);
+
+		case IL_META_MEMBERKIND_PROPERTY:
+			return ((memberTypes & (ILInt32)MT_Property) != 0);
+
+		case IL_META_MEMBERKIND_EVENT:
+			return ((memberTypes & (ILInt32)MT_Event) != 0);
+
+		default: break;
+	}
+	return 0;
+}
+
+/*
+ * Match binding attributes and calling conventions against a member.
+ */
+static int BindingAttrMatch(ILMember *member, ILInt32 bindingAttrs,
+							ILInt32 callConv)
+{
+	ILMethod *method;
+
+	/* Convert properties and events into their underlying semantic methods */
+	if(member->kind == IL_META_MEMBERKIND_PROPERTY)
+	{
+		method = ILPropertyGetGetter((ILProperty *)member);
+		if(!method)
+		{
+			method = ILPropertyGetSetter((ILProperty *)member);
+			if(!method)
+			{
+				return 0;
+			}
+		}
+		member = &(method->member);
+	}
+	else if(member->kind == IL_META_MEMBERKIND_EVENT)
+	{
+		method = ILEventGetAddOn((ILEvent *)member);
+		if(!method)
+		{
+			method = ILEventGetRemoveOn((ILEvent *)member);
+			if(!method)
+			{
+				method = ILEventGetFire((ILEvent *)member);
+				if(!method)
+				{
+					return 0;
+				}
+			}
+		}
+		member = &(method->member);
+	}
+
+	/* Check the access level against the binding attributes */
+	if((bindingAttrs & (ILInt32)BF_Public) != 0 &&
+	   (bindingAttrs & (ILInt32)BF_NonPublic) == 0)
+	{
+		/* Only look for public members */
+		if((member->attributes & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
+				!= IL_META_METHODDEF_PUBLIC)
+		{
+			return 0;
+		}
+	}
+	else if((bindingAttrs & (ILInt32)BF_Public) == 0 &&
+	        (bindingAttrs & (ILInt32)BF_NonPublic) != 0)
+	{
+		/* Only look for non-public members */
+		if((member->attributes & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
+				== IL_META_METHODDEF_PUBLIC)
+		{
+			return 0;
+		}
+	}
+	else if((bindingAttrs & (ILInt32)BF_Public) == 0 &&
+	        (bindingAttrs & (ILInt32)BF_NonPublic) == 0)
+	{
+		/* Don't look for public or non-public members */
+		return 0;
+	}
+
+	/* Check for instance and static properties */
+	if((bindingAttrs & (ILInt32)BF_Static) != 0 &&
+	   (bindingAttrs & (ILInt32)BF_Instance) == 0)
+	{
+		/* Look for static members only */
+		if((member->attributes & IL_META_METHODDEF_STATIC) == 0)
+		{
+			return 0;
+		}
+	}
+	else if((bindingAttrs & (ILInt32)BF_Static) == 0 &&
+	        (bindingAttrs & (ILInt32)BF_Instance) != 0)
+	{
+		/* Look for instance members only */
+		if((member->attributes & IL_META_METHODDEF_STATIC) != 0)
+		{
+			return 0;
+		}
+	}
+	else if((bindingAttrs & (ILInt32)BF_Static) == 0 &&
+	        (bindingAttrs & (ILInt32)BF_Instance) == 0)
+	{
+		/* Don't look for static or instance members */
+		return 0;
+	}
+
+	/* If we have a method, then match the calling conventions also */
+	if((method = ILProgramItemToMethod(&(member->programItem))) != 0)
+	{
+		int mconv = method->callingConventions;
+		if((callConv & (ILInt32)CC_Mask) == CC_Standard)
+		{
+			if((mconv & IL_META_CALLCONV_MASK) != IL_META_CALLCONV_DEFAULT)
+			{
+				return 0;
+			}
+		}
+		else if((callConv & (ILInt32)CC_Mask) == CC_VarArgs)
+		{
+			if((mconv & IL_META_CALLCONV_MASK) != IL_META_CALLCONV_VARARG)
+			{
+				return 0;
+			}
+		}
+		else if((callConv & (ILInt32)CC_Mask) != CC_Any)
+		{
+			if((mconv & IL_META_CALLCONV_MASK) != IL_META_CALLCONV_DEFAULT &&
+			   (mconv & IL_META_CALLCONV_MASK) != IL_META_CALLCONV_VARARG)
+			{
+				return 0;
+			}
+		}
+		if((callConv & (ILInt32)CC_HasThis) != 0)
+		{
+			if((mconv & IL_META_CALLCONV_HASTHIS) == 0)
+			{
+				return 0;
+			}
+		}
+		if((callConv & (ILInt32)CC_ExplicitThis) != 0)
+		{
+			if((mconv & IL_META_CALLCONV_EXPLICITTHIS) == 0)
+			{
+				return 0;
+			}
+		}
+	}
+
+	/* The member matches the binding attributes */
+	return 1;
+}
+
+/*
+ * Match binding attributes against a class.
+ */
+static int BindingAttrClassMatch(ILClass *classInfo, ILInt32 bindingAttrs)
+{
+	/* Check the access level against the binding attributes */
+	if((bindingAttrs & (ILInt32)BF_Public) != 0 &&
+	   (bindingAttrs & (ILInt32)BF_NonPublic) == 0)
+	{
+		/* Only look for public classes */
+		if((classInfo->attributes & IL_META_TYPEDEF_VISIBILITY_MASK)
+				!= IL_META_TYPEDEF_PUBLIC &&
+		   (classInfo->attributes & IL_META_TYPEDEF_VISIBILITY_MASK)
+				!= IL_META_TYPEDEF_NESTED_PUBLIC)
+		{
+			return 0;
+		}
+	}
+	else if((bindingAttrs & (ILInt32)BF_Public) == 0 &&
+	        (bindingAttrs & (ILInt32)BF_NonPublic) != 0)
+	{
+		/* Only look for non-public classes */
+		if((classInfo->attributes & IL_META_TYPEDEF_VISIBILITY_MASK)
+				== IL_META_TYPEDEF_PUBLIC ||
+		   (classInfo->attributes & IL_META_TYPEDEF_VISIBILITY_MASK)
+				== IL_META_TYPEDEF_NESTED_PUBLIC)
+		{
+			return 0;
+		}
+	}
+	else if((bindingAttrs & (ILInt32)BF_Public) == 0 &&
+	        (bindingAttrs & (ILInt32)BF_NonPublic) == 0)
+	{
+		/* Don't look for public or non-public classes */
+		return 0;
+	}
+
+	/* The class matches the binding attributes */
+	return 1;
+}
+
+/*
+ * Convert a program item into a reflection object of the appropriate type.
+ */
+static ILObject *ItemToClrObject(ILExecThread *thread, ILProgramItem *item)
+{
+	ILMethod *method;
+	ILField *field;
+	ILProperty *property;
+	ILEvent *event;
+	ILClass *classInfo;
+
+	/* Is this a method? */
+	method = ILProgramItemToMethod(item);
+	if(method)
+	{
+		if(ILMethod_IsConstructor(method) ||
+		   ILMethod_IsStaticConstructor(method))
+		{
+			return _ILClrToObject
+				(thread, method, "System.Reflection.ClrConstructor");
+		}
+		else
+		{
+			return _ILClrToObject
+				(thread, method, "System.Reflection.ClrMethod");
+		}
+	}
+
+	/* Is this a field? */
+	field = ILProgramItemToField(item);
+	if(field)
+	{
+		return _ILClrToObject(thread, field, "System.Reflection.ClrField");
+	}
+
+	/* Is this a property? */
+	property = ILProgramItemToProperty(item);
+	if(property)
+	{
+		return _ILClrToObject
+			(thread, property, "System.Reflection.ClrProperty");
+	}
+
+	/* Is this an event? */
+	event = ILProgramItemToEvent(item);
+	if(event)
+	{
+		return _ILClrToObject(thread, event, "System.Reflection.ClrEvent");
+	}
+
+	/* Is this a nested type? */
+	classInfo = ILProgramItemToClass(item);
+	if(classInfo)
+	{
+		return _ILGetClrType(thread, classInfo);
+	}
+
+	/* Don't know what this is */
+	return 0;
+}
+
+/*
+ * private MemberInfo GetMemberImpl(String name, MemberTypes memberTypes,
+ *								    BindingFlags bindingAttrs,
+ *								    Binder binder,
+ *								    CallingConventions callConv,
+ *								    Type[] types,
+ *								    ParameterModifier[] modifiers);
+ */
+static ILObject *ClrType_GetMemberImpl(ILExecThread *thread,
+									   ILObject *_this,
+									   ILString *name,
+									   ILInt32 memberTypes,
+									   ILInt32 bindingAttrs,
+									   ILObject *binder,
+									   ILInt32 callConv,
+									   ILObject *types,
+									   ILObject *modifiers)
+{
+	ILClass *classInfo;
+	char *nameUtf8;
+	ILMember *member;
+	ILProgramItem *foundItem;
+	ILNestedInfo *nested;
+	ILClass *child;
+
+	/* Validate the parameters */
+	if(!name)
+	{
+		ILExecThreadThrowArgNull(thread, "name");
+		return 0;
+	}
+	if(bindingAttrs == 0)
+	{
+		bindingAttrs = (ILInt32)(BF_Public | BF_Instance | BF_Static);
+	}
+
+	/* Convert the name into a UTF-8 string */
+	nameUtf8 = ILStringToUTF8(thread, name);
+	if(!nameUtf8)
+	{
+		return 0;
+	}
+
+	/* If the name is greater than 128 characters in length,
+	   then turn off the "ignore case" flag.  This is an ECMA
+	   requirement, even though we can handle arbitrarily
+	   sized member names just fine */
+	if(strlen(nameUtf8) >= 128)
+	{
+		bindingAttrs &= ~(ILInt32)BF_IgnoreCase;
+	}
+
+	/* Convert the type into an ILClass structure */
+	classInfo = _ILGetClrClass(thread, _this);
+	if(!classInfo)
+	{
+		return 0;
+	}
+
+	/* Scan the class hierarchy looking for a member match */
+	do
+	{
+		member = classInfo->firstMember;
+		foundItem = 0;
+		while(member != 0)
+		{
+			/* Check for a name match first */
+			if((bindingAttrs & (ILInt32)BF_IgnoreCase) == 0)
+			{
+				if(strcmp(member->name, nameUtf8) != 0)
+				{
+					member = member->nextMember;
+					continue;
+				}
+			}
+			else
+			{
+				if(ILStrICmp(member->name, nameUtf8) != 0)
+				{
+					member = member->nextMember;
+					continue;
+				}
+			}
+	
+			/* Filter based on the member type */
+			if(!MemberTypeMatch(member, memberTypes))
+			{
+				member = member->nextMember;
+				continue;
+			}
+	
+			/* Filter based on the binding attributes and calling conventions */
+			if(!BindingAttrMatch(member, bindingAttrs, callConv))
+			{
+				member = member->nextMember;
+				continue;
+			}
+	
+			/* Filter based on the parameter types */
+			if(types != 0)
+			{
+			}
+	
+			/* Check that we have reflection access for this member */
+			if(!_ILClrCheckAccess(thread, (ILClass *)0, member))
+			{
+				member = member->nextMember;
+				continue;
+			}
+	
+			/* This is a candidate member */
+			if(foundItem)
+			{
+				/* The member match is ambiguous */
+			ambiguous:
+				ILExecThreadThrowSystem
+						(thread, "System.Reflection.AmbiguousMatchException",
+						 (const char *)0);
+				return 0;
+			}
+			foundItem = &(member->programItem);
+	
+			/* Advance to the next member */
+			member = member->nextMember;
+		}
+
+		/* Scan the nested types also */
+		if((memberTypes & (ILInt32)MT_NestedType) != 0)
+		{
+			nested = 0;
+			while((nested = ILClassNextNested(classInfo, nested)) != 0)
+			{
+				child = ILNestedInfoGetChild(nested);
+				if(child)
+				{
+					/* Filter the child based on its name */
+					if((bindingAttrs & (ILInt32)BF_IgnoreCase) == 0)
+					{
+						if(strcmp(child->name, nameUtf8) != 0)
+						{
+							continue;
+						}
+					}
+					else
+					{
+						if(ILStrICmp(child->name, nameUtf8) != 0)
+						{
+							continue;
+						}
+					}
+
+					/* Filter the child based on its access level */
+					if(!BindingAttrClassMatch(child, bindingAttrs))
+					{
+						continue;
+					}
+
+					/* Check that we have reflection access for this child */
+					if(!_ILClrCheckAccess(thread, child, (ILMember *)0))
+					{
+						continue;
+					}
+	
+					/* We have a candidate nested type */
+					if(foundItem)
+					{
+						/* The match is ambiguous */
+						goto ambiguous;
+					}
+					foundItem = &(child->programItem);
+				}
+			}
+		}
+
+		/* Move up the class hierarchy */
+		classInfo = ILClass_Parent(classInfo);
+	}
+	while(classInfo != 0 &&
+	      (bindingAttrs & (ILInt32)BF_DeclaredOnly) == 0);
+
+	/* Return the item that was found to the caller */
+	if(foundItem)
+	{
+		return ItemToClrObject(thread, foundItem);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * private Object GetMembersImpl(MemberTypes memberTypes,
+ *								 BindingFlags bindingAttr,
+ *								 Type arrayType);
+ */
+static ILObject *ClrType_GetMembersImpl(ILExecThread *thread,
+									    ILObject *_this,
+										ILInt32 memberTypes,
+										ILInt32 bindingAttr,
+										ILObject *arrayType)
+{
+	/* TODO */
+	return 0;
+}
 
 /*
  * Method table for the "System.Reflection.ClrType" class.
@@ -1231,6 +1795,21 @@ IL_METHOD_BEGIN(_ILReflectionClrTypeMethods)
 	IL_METHOD("GetClrNamespace",
 					"(T)vSystem.String;",
 					ClrType_GetClrNamespace)
+	IL_METHOD("GetMemberImpl",
+					"(ToSystem.String;"
+						"vSystem.Reflection.MemberTypes;"
+						"vSystem.Reflection.BindingFlags;"
+						"oSystem.Reflection.Binder;"
+						"vSystem.Reflection.CallingConventions;"
+						"[oSystem.Type;"
+						"[vSystem.Reflection.ParameterModifiers;)"
+					")oSystem.Reflection.MethodInfo;",
+					ClrType_GetMemberImpl)
+	IL_METHOD("GetMembersImpl",
+					"(TvSystem.Reflection.MemberTypes;"
+						"vSystem.Reflection.BindingFlags;"
+						"oSystem.Type;)oSystem.Object;",
+					ClrType_GetMembersImpl)
 IL_METHOD_END
 
 #ifdef	__cplusplus

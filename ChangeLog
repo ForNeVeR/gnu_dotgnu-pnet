@@ -1,3 +1,12 @@
+
+2004-07-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* profiles/compact, profiles/compact-fp, profiles/ecma,
+	profiles/default1.2, profiles/framework1.2, profiles/full,
+	profiles/kernel, profiles/kernel-fp, profiles/tiny, profiles/tiny-fp:
+	update the version numbers in the profiles to 2.0 and add new
+	profiles to build the older 1.2 system.
+
 2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Resources/ResourceManager.cs: fix ResourceManager

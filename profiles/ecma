@@ -3,10 +3,10 @@
 <!-- ECMA profile, that enables only ECMA-compatbile -->
 
 <!-- Main framework version -->
-<define name="FRAMEWORK_VERSION" value="1.2.3400.0"/>
+<define name="FRAMEWORK_VERSION" value="2.0.3600.0"/>
 
 <!-- Secondary framework version -->
-<define name="SECONDARY_VERSION" value="8.0.1000.0"/>
+<define name="SECONDARY_VERSION" value="8.0.1200.0"/>
 
 <!-- Install as the default version in the assembly cache -->
 <define name="INSTALL_AS_DEFAULT" value="true"/>

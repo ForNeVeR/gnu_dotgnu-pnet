@@ -24,6 +24,9 @@
 	from the program image through to the diagnostic stack
 	trace internalcall's.
 
+	* engine/lib_diag.c: back out a previous change - invalid line/column
+	numbers are zero, not -1.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

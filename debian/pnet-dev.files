@@ -1,0 +1,3 @@
+usr/lib/lib*.a
+usr/lib/lib*.la
+usr/include/pnet/il*

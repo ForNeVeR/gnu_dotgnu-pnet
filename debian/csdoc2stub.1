@@ -1,0 +1,62 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH PNET SECTION "October 21, 2001"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+pnet \- program to do something
+.SH SYNOPSIS
+.B pnet
+.RI [ options ] " files" ...
+.br
+.B bar
+.RI [ options ] " files" ...
+.SH DESCRIPTION
+.B
+Csdoc2html
+reads the supplied XML input files, and converts them into a collection
+of HTML files.  This collection can be viewed using a standard Web browser.
+
+Specifying multiple input files is exactly the same as specifying one input
+file which is the concatenation  of all  of the files.  Only one output 
+collection is created.  Csdoc2html must be invoked multiple times to convert
+multiple input files into multiple output collections.
+
+.PP
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics, 
+.\" respectively.
+\fBpnet\fP is a program that...
+.SH OPTIONS
+These programs follow the usual GNU command line syntax, with long
+options starting with two dashes (`-').
+A summary of options is included below.
+For a complete description, see the Info files.
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.TP
+.B \-v, \-\-version
+Show version of program.
+.SH SEE ALSO
+.BR bar (1),
+.BR baz (1).
+.br
+The programs are documented fully by
+.IR "The Rise and Fall of a Fooish Bar" ,
+available via the Info system.
+.SH AUTHOR
+This manual page was written by Andrew Mitchell <ajmitch@ajmitch.dhis.org>,
+for the Debian GNU/Linux system (but may be used by others).

@@ -1,0 +1,13 @@
+Package: pnet
+Version: 0.3.6-1
+Section: devel
+Priority: optional
+Architecture: i386
+Depends: libc6 (>= 2.2.4-4), libncurses5 (>= 5.2.20020112a-1), libreadline4 (>= 4.2a-4)
+Installed-Size: 5292
+Maintainer: Andrew Mitchell <ajmitch@dunedin.lug.net.nz>
+Description: DotGNU C# compiler, runtime, (dis)assembler
+ The goal of this DotGNU project is to build a suite of free software
+ tools to build and execute .NET applications, including a C# compiler,
+ assembler, disassembler, and runtime engine.  The initial target
+ platform is GNU/Linux, with other platforms to follow in the future.

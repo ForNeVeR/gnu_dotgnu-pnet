@@ -1,4 +1,8 @@
 
+2002-05-24  Andrew Mitchell  <ajmitch@dunedin.lug.net.nz>
+
+	* debian/*: add files related to Debian packaging.
+
 2002-05-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING, engine/cvm.c, engine/cvm_branch.c,

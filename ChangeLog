@@ -12,6 +12,9 @@
 	* cscc/Makefile.am: bug in previous check-in - the wrong binary
 	was installed for "cscc-vb".
 
+	* cscc/vb/vb_grammar.y, cscc/vb/vb_internal.h, cscc/vb/vb_modifiers.c:
+	module members are always "shared" and are "public" by default.
+
 2003-05-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* support/aes.c: make the AES code 16-bit friendly.

@@ -288,13 +288,14 @@ static ILNode *MakeList(ILNode *list, ILNode *node)
  */
 static ILNode **classNameStack = 0;
 static int     *classNameCtorDefined = 0;
+static int     *classNameIsModule = 0;
 static int		classNameStackSize = 0;
 static int		classNameStackMax = 0;
 
 /*
  * Push an item onto the class name stack.
  */
-static void ClassNamePush(ILNode *name)
+static void ClassNamePush(ILNode *name, int isModule)
 {
 	if(classNameStackSize >= classNameStackMax)
 	{
@@ -310,9 +311,16 @@ static void ClassNamePush(ILNode *name)
 		{
 			CCOutOfMemory();
 		}
+		classNameIsModule = (int *)ILRealloc
+			(classNameIsModule, sizeof(int) * (classNameStackMax + 4));
+		if(!classNameIsModule)
+		{
+			CCOutOfMemory();
+		}
 		classNameStackMax += 4;
 	}
 	classNameStack[classNameStackSize] = name;
+	classNameIsModule[classNameStackSize] = isModule;
 	classNameCtorDefined[classNameStackSize++] = 0;
 }
 
@@ -338,6 +346,14 @@ static void ClassNameCtorDefined(void)
 static int ClassNameIsCtorDefined(void)
 {
 	return classNameCtorDefined[classNameStackSize - 1];
+}
+
+/*
+ * Determine if the current class is a module.
+ */
+static int ClassNameIsModule(void)
+{
+	return classNameIsModule[classNameStackSize - 1];
 }
 
 /*
@@ -1096,7 +1112,7 @@ EnumDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($4, 0);
 			}
 		EnumBody K_END K_ENUM END_LINE	{
 				ILNode *baseList;
@@ -1203,7 +1219,7 @@ StructureDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($4, 0);
 			} StructBody K_END K_STRUCTURE END_LINE		{
 				ILNode *baseList;
 				ILUInt32 attrs;
@@ -1297,7 +1313,7 @@ ClassDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($4, 0);
 			}
 			StructBody K_END K_CLASS END_LINE	{
 				ILNode *classBody = ($9).body;
@@ -1338,7 +1354,7 @@ ClassDeclaration
 								 ILNode_InvocationExpression_create
 									(ILNode_BaseInit_create(), 0)));
 					ILNode *ctor = ILNode_MethodDeclaration_create
-						  (0, VBModifiersToConstructorAttrs(cname, ctorMods),
+						  (0, VBModifiersToConstructorAttrs(cname, ctorMods, 0),
 						   0 /* "void" */, cname,
 						   ILNode_Empty_create(), body);
 					if(!classBody)
@@ -1385,7 +1401,7 @@ ModuleDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($4, 1);
 			}
 			StructBody K_END K_MODULE END_LINE	{
 				ILNode *classBody = ($7).body;
@@ -1412,7 +1428,7 @@ ModuleDeclaration
 								 ILNode_InvocationExpression_create
 									(ILNode_BaseInit_create(), 0)));
 					ILNode *ctor = ILNode_MethodDeclaration_create
-						  (0, VBModifiersToConstructorAttrs(cname, ctorMods),
+						  (0, VBModifiersToConstructorAttrs(cname, ctorMods, 0),
 						   0 /* "void" */, cname,
 						   ILNode_Empty_create(), body);
 					if(!classBody)
@@ -1463,7 +1479,7 @@ InterfaceDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($4, 0);
 			}
 			InterfaceBody K_END K_INTERFACE END_LINE	{
 				/* Validate the modifiers */
@@ -1559,7 +1575,9 @@ ExternalMethodDeclaration
 SubDeclaration
 	: OptAttributes OptModifiers K_SUB Identifier FormalParameters
 			HandlesOrImplements END_LINE SubBody	{
-				ILUInt32 attrs = VBModifiersToMethodAttrs($4, $2);
+				ILUInt32 attrs;
+				attrs = VBModifiersToMethodAttrs
+						($4, $2, ClassNameIsModule());
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, ILNode_PrimitiveType_create
 										(IL_META_ELEMTYPE_VOID),
@@ -1578,8 +1596,11 @@ SubBody
 FunctionDeclaration
 	: OptAttributes OptModifiers K_FUNCTION Identifier FormalParameters
 			ReturnType HandlesOrImplements END_LINE FunctionBody {
-				ILUInt32 attrs = VBModifiersToMethodAttrs($4, $2);
-				ILNode *funcattrs = CombineAttributes
+				ILUInt32 attrs;
+				ILNode *funcattrs;
+				attrs = VBModifiersToMethodAttrs
+						($4, $2, ClassNameIsModule());
+				funcattrs = CombineAttributes
 					($1, ILAttrTargetType_Return, $6.attrs);
 				$$ = ILNode_MethodDeclaration_create
 						(funcattrs, attrs, $6.type, $4, $5, $9);
@@ -1597,7 +1618,9 @@ FunctionBody
 ExternalSubDeclaration
 	: OptAttributes OptModifiers K_DECLARE CharsetModifier K_SUB Identifier
 			LibraryClause AliasClause FormalParameters END_LINE {
-				ILUInt32 attrs = VBModifiersToMethodAttrs($6, $2);
+				ILUInt32 attrs;
+				attrs = VBModifiersToMethodAttrs
+						($6, $2, ClassNameIsModule());
 				attrs |= CS_SPECIALATTR_EXTERN;
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, ILNode_PrimitiveType_create
@@ -1612,10 +1635,13 @@ ExternalFunctionDeclaration
 	: OptAttributes OptModifiers K_DECLARE CharsetModifier K_FUNCTION
 			Identifier LibraryClause AliasClause FormalParameters
 			ReturnType END_LINE {
-				ILUInt32 attrs = VBModifiersToMethodAttrs($6, $2);
-				ILNode *funcattrs = CombineAttributes
-					($1, ILAttrTargetType_Return, $10.attrs);
+				ILUInt32 attrs;
+				ILNode *funcattrs;
+				attrs = VBModifiersToMethodAttrs
+						($6, $2, ClassNameIsModule());
 				attrs |= CS_SPECIALATTR_EXTERN;
+				funcattrs = CombineAttributes
+					($1, ILAttrTargetType_Return, $10.attrs);
 				$$ = ILNode_MethodDeclaration_create
 						(funcattrs, attrs, $10.type, $6, $9, 0);
 				CloneLine($$, $6);
@@ -1756,7 +1782,9 @@ AliasClause
 ConstructorMemberDeclaration
 	: OptAttributes OptModifiers K_SUB K_NEW FormalParameters
 			END_LINE SubBody	{
-				ILUInt32 attrs = VBModifiersToConstructorAttrs($5, $2);
+				ILUInt32 attrs =
+					VBModifiersToConstructorAttrs
+						($5, $2, ClassNameIsModule());
 				ILNode *cname;
 				ILNode *body = $7;
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
@@ -1811,7 +1839,8 @@ EventImplements
 ConstantMemberDeclaration
 	: OptAttributes OptModifiers K_CONST Identifier ParameterType
 			'=' ConstantExpression END_LINE		{
-				ILUInt32 attrs = VBModifiersToConstAttrs($4, $2);
+				ILUInt32 attrs = VBModifiersToConstAttrs
+					($4, $2, ClassNameIsModule());
 				ILNode *decl = ILNode_List_create();
 				ILNode_List_Add
 					(decl, ILNode_FieldDeclarator_create($4, $7));

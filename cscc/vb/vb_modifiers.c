@@ -288,8 +288,18 @@ ILUInt32 VBModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 /*
  * Validate access modifiers and return the access level.
  */
-static ILUInt32 VBValidateAccess(ILNode *node, ILUInt32 modifiers)
+static ILUInt32 VBValidateAccess(ILNode *node, ILUInt32 modifiers,
+								 int isModule)
 {
+	int shared = 0;
+	if(isModule)
+	{
+		/* The access defaults to "public" in a module */
+		if((modifiers & VB_MODIFIER_ACCESS) == 0)
+		{
+			modifiers |= VB_MODIFIER_PUBLIC;
+		}
+	}
 	if((modifiers & VB_MODIFIER_PUBLIC) != 0)
 	{
 		if((modifiers & VB_MODIFIER_PRIVATE) != 0)
@@ -307,7 +317,7 @@ static ILUInt32 VBValidateAccess(ILNode *node, ILUInt32 modifiers)
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `Public' and `Friend'");
 		}
-		return IL_META_FIELDDEF_PUBLIC;
+		return IL_META_FIELDDEF_PUBLIC | shared;
 	}
 	else if((modifiers & VB_MODIFIER_PRIVATE) != 0)
 	{
@@ -321,35 +331,36 @@ static ILUInt32 VBValidateAccess(ILNode *node, ILUInt32 modifiers)
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `Private' and `Protected'");
 		}
-		return IL_META_FIELDDEF_PRIVATE;
+		return IL_META_FIELDDEF_PRIVATE | shared;
 	}
 	else if((modifiers & VB_MODIFIER_PROTECTED) != 0)
 	{
 		if((modifiers & VB_MODIFIER_FRIEND) != 0)
 		{
-			return IL_META_FIELDDEF_FAM_OR_ASSEM;
+			return IL_META_FIELDDEF_FAM_OR_ASSEM | shared;
 		}
 		else
 		{
-			return IL_META_FIELDDEF_FAMILY;
+			return IL_META_FIELDDEF_FAMILY | shared;
 		}
 	}
 	else if((modifiers & VB_MODIFIER_FRIEND) != 0)
 	{
-		return IL_META_FIELDDEF_ASSEMBLY;
+		return IL_META_FIELDDEF_ASSEMBLY | shared;
 	}
 	else
 	{
-		return IL_META_FIELDDEF_PRIVATE;
+		return IL_META_FIELDDEF_PRIVATE | shared;
 	}
 }
 
-ILUInt32 VBModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers)
+ILUInt32 VBModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers,
+								 int isModule)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = VBValidateAccess(node, modifiers);
+	attrs = VBValidateAccess(node, modifiers, isModule);
 
 	/* Process the "Shadows" modifier */
 	if((modifiers & VB_MODIFIER_SHADOWS) != 0)
@@ -368,12 +379,12 @@ ILUInt32 VBModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers)
 	return attrs;
 }
 
-ILUInt32 VBModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers)
+ILUInt32 VBModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers, int isModule)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = VBValidateAccess(node, modifiers);
+	attrs = VBValidateAccess(node, modifiers, isModule);
 
 	/* Process the "shared", "readonly", and "shadows" modifiers */
 	if((modifiers & VB_MODIFIER_SHARED) != 0)
@@ -404,12 +415,41 @@ ILUInt32 VBModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers)
  * Validate calling conventions for a method-like construct.
  */
 static ILUInt32 VBValidateCalling(ILNode *node, ILUInt32 modifiers,
-								  ILUInt32 access)
+								  ILUInt32 access, int isModule)
 {
 	ILUInt32 attrs = 0;
 
 	/* Process the calling convention modifiers */
-	if((modifiers & VB_MODIFIER_SHARED) != 0)
+	if(isModule)
+	{
+		attrs |= IL_META_METHODDEF_STATIC;
+		if((modifiers & VB_MODIFIER_OVERRIDABLE) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("cannot use `Overridable' in modules"));
+		}
+		if((modifiers & VB_MODIFIER_MUST_OVERRIDE) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("cannot use `MustOverride' in modules"));
+		}
+		if((modifiers & VB_MODIFIER_OVERRIDES) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("cannot use `Overrides' in modules"));
+		}
+		if((modifiers & VB_MODIFIER_NOT_OVERRIDABLE) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("cannot use `NotOverridable' in modules"));
+		}
+		if((modifiers & VB_MODIFIER_SHARED) != 0)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  _("cannot use `Shared' in modules"));
+		}
+	}
+	else if((modifiers & VB_MODIFIER_SHARED) != 0)
 	{
 		attrs |= IL_META_METHODDEF_STATIC;
 		if((modifiers & VB_MODIFIER_OVERRIDABLE) != 0)
@@ -515,15 +555,16 @@ static ILUInt32 VBValidateCalling(ILNode *node, ILUInt32 modifiers,
 	return attrs;
 }
 
-ILUInt32 VBModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
+ILUInt32 VBModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers,
+								  int isModule)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = VBValidateAccess(node, modifiers);
+	attrs = VBValidateAccess(node, modifiers, isModule);
 
 	/* Process the calling convention attributes */
-	attrs |= VBValidateCalling(node, modifiers, attrs);
+	attrs |= VBValidateCalling(node, modifiers, attrs, isModule);
 
 	/* Process the other method modifiers */
 	if((modifiers & VB_MODIFIER_SHADOWS) != 0)
@@ -545,15 +586,16 @@ ILUInt32 VBModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 	return attrs;
 }
 
-ILUInt32 VBModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
+ILUInt32 VBModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers,
+								 int isModule)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = VBValidateAccess(node, modifiers);
+	attrs = VBValidateAccess(node, modifiers, isModule);
 
 	/* Process the calling convention attributes */
-	attrs |= VBValidateCalling(node, modifiers, attrs);
+	attrs |= VBValidateCalling(node, modifiers, attrs, isModule);
 
 	/* Process the other property modifiers */
 	if((modifiers & VB_MODIFIER_SHADOWS) != 0)
@@ -573,15 +615,16 @@ ILUInt32 VBModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
 	return attrs;
 }
 
-ILUInt32 VBModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
+ILUInt32 VBModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers,
+									int isModule)
 {
 	ILUInt32 attrs;
 
 	/* Process the common attributes */
-	attrs = VBValidateAccess(node, modifiers);
+	attrs = VBValidateAccess(node, modifiers, isModule);
 
 	/* Process the calling convention attributes */
-	attrs |= VBValidateCalling(node, modifiers, attrs);
+	attrs |= VBValidateCalling(node, modifiers, attrs, isModule);
 
 	/* Process the other property modifiers */
 	if((modifiers & VB_MODIFIER_SHADOWS) != 0)
@@ -606,14 +649,15 @@ ILUInt32 VBModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 	return attrs;
 }
 
-ILUInt32 VBModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers)
+ILUInt32 VBModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers,
+									   int isModule)
 {
 	ILUInt32 attrs;
 
 	/* Different flags are used for instance and static constructors */
-	if((modifiers & VB_MODIFIER_SHARED) == 0)
+	if(!isModule && (modifiers & VB_MODIFIER_SHARED) == 0)
 	{
-		attrs = VBValidateAccess(node, modifiers);
+		attrs = VBValidateAccess(node, modifiers, isModule);
 		if((modifiers & VB_MODIFIER_EXTERN) != 0)
 		{
 			attrs |= CS_SPECIALATTR_EXTERN;

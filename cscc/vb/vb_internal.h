@@ -118,12 +118,18 @@ int VBOptionIsSet(ILNode_Namespace *namespaceNode, int option);
 ILUInt32 VBModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested);
 ILUInt32 VBModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 									int isNested);
-ILUInt32 VBModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers);
-ILUInt32 VBModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers);
-ILUInt32 VBModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers);
-ILUInt32 VBModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers);
-ILUInt32 VBModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers);
-ILUInt32 VBModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers);
+ILUInt32 VBModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers,
+								 int isModule);
+ILUInt32 VBModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers,
+								 int isModule);
+ILUInt32 VBModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers,
+								  int isModule);
+ILUInt32 VBModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers,
+								 int isModule);
+ILUInt32 VBModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers,
+								    int isModule);
+ILUInt32 VBModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers,
+								  	   int isModule);
 
 #ifdef	__cplusplus
 };

@@ -184,6 +184,11 @@ CSSRC = Activator.cs \
 		Reflection/TargetInvocationException.cs \
 		Reflection/TargetParameterCountException.cs \
 		Reflection/TypeAttributes.cs \
+		Resources/IResourceReader.cs \
+		Resources/IResourceWriter.cs \
+		Resources/MissingManifestResourceException.cs \
+		Resources/NeutralResourcesLanguageAttribute.cs \
+		Resources/SatelliteContractVersionAttribute.cs \
 		Runtime/CompilerServices/RuntimeHelpers.cs \
 		Runtime/CompilerServices/CSharp/DecimalConstantAttribute.cs \
 		Runtime/CompilerServices/CSharp/IndexerNameAttribute.cs \

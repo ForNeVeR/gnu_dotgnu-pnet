@@ -1,4 +1,12 @@
 
+2001-11-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+* runtime/System/Makefile.am, runtime/System/IResourceReader.cs,
+runtime/System/IResourceWriter.cs,
+runtime/System/MissingManifestResourceException.cs,
+runtime/System/NeutralResourcesLanguageAttribute.cs,
+runtime/System/SatelliteContractVersionAttribute.cs: resource-related classes.
+
 2001-11-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in, NEWS: update version and news for 0.0.6 release.

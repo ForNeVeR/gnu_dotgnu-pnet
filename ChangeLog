@@ -1,4 +1,9 @@
 
+2005-02-21  Klaus Treichel  <ktreichel@web.de>
+
+	* support/socket.c: prevent the sending of SIGPIPE on broken connections in
+	ILSysIOSocketSend and ILSysIOSocketSendTo. (fix bug #11980)
+ 
 2005-02-19  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_ptr.c: fix isinst instruction to behave like a cast.

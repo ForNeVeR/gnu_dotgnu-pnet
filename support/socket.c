@@ -490,7 +490,12 @@ ILInt32 ILSysIOSocketReceive(ILSysIOHandle sockfd, void *buff,
 ILInt32 ILSysIOSocketSend(ILSysIOHandle sockfd, const void *msg,
 					      ILInt32 len, ILInt32 flags)
 {
+#ifdef MSG_NOSIGNAL
+	return (ILInt32)(send((int)(ILNativeInt)sockfd, msg, len,
+							flags | MSG_NOSIGNAL));
+#else
 	return (ILInt32)(send((int)(ILNativeInt)sockfd, msg, len, flags));
+#endif
 }
 
 ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg,
@@ -508,8 +513,13 @@ ILInt32 ILSysIOSocketSendTo(ILSysIOHandle sockfd, const void *msg,
 	}
 
 	/* Perform the sendto operation */
+#ifdef MSG_NOSIGNAL
+	return sendto((int)(ILNativeInt)sockfd, msg, len, flags | MSG_NOSIGNAL,
+				  &sa_addr.addr, sa_len);
+#else
 	return sendto((int)(ILNativeInt)sockfd, msg, len, flags,
 				  &sa_addr.addr, sa_len);
+#endif
 }
 
 ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,

@@ -1,4 +1,8 @@
 
+0.6.12 (16 January 2005)
+
+	* No change - re-released to match version numbers with pnet/pnetlib.
+
 0.6.10 (30 October 2004)
 
 	* Update debian packaging information (Russell Stuart).

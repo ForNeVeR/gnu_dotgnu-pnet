@@ -1199,20 +1199,20 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 						if(format.Alignment == StringAlignment.Center)
 						{
 							rect[0].X +=
-								(rect[1].X - rect[0].X - size.Width) / 2;
+								(rect[1].X - rect[0].X - size.Width - 1) / 2;
 						}
 						else if(format.Alignment == StringAlignment.Far)
 						{
-							rect[0].X = rect[1].X - size.Width;
+							rect[0].X = rect[1].X - size.Width - 1;
 						}
 						if(format.LineAlignment == StringAlignment.Center)
 						{
 							rect[0].Y +=
-								(rect[2].Y - rect[0].Y - size.Height) / 2;
+								(rect[2].Y - rect[0].Y - size.Height - 1) / 2;
 						}
 						else if(format.Alignment == StringAlignment.Far)
 						{
-							rect[0].Y = rect[2].Y - size.Height;
+							rect[0].Y = rect[2].Y - size.Height - 1;
 						}
 					}
 					ToolkitGraphics.DrawString
@@ -1926,7 +1926,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					if (currentPos < text.Length && text[currentPos] == (char)10)
 						currentPos++;
 					lineSizeRemaining -= fontHeight;
-					if (currentPos >= text.Length || lineSizeRemaining < 0)
+					if (currentPos >= text.Length || lineSizeRemaining < 0 || noWrap)
 						break;
 				} while (true);
 				

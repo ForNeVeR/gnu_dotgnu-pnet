@@ -1,4 +1,12 @@
 
+2004-09-05  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/ActivationGesture.cs,
+	System.Windows.Forms/ActivationState.cs,
+	System.Windows.Forms/IDropTarget.cs,
+	System.Windows.Forms/IBindableComponent.cs: Added some of the new 2.0
+	components in the "System.Windows.Forms" namespace.
+
 2004-09-02  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* System/Diagnostics/Trace.cs: Enable trace level reading code.

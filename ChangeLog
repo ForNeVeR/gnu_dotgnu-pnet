@@ -14,6 +14,8 @@
 	I18N/West/mac-10029.ucm, I18N/West/mac-10082.ucm, I18N/tools/cvt.sh,
 	I18N/tools/ucm2cp.c: add some Mac-related code pages to I18N.
 
+	* I18N/Common/UCS4Encoding.cs: add the UCS-4 code pages to I18N.
+
 2003-08-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* I18N/Makefile.am: changes to the I18N Makefile.am file to

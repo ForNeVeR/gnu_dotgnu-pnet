@@ -111,6 +111,10 @@ public class SymDocument : ISymbolDocument
 						if(url != null)
 						{
 							ext = Path.GetExtension(url);
+							if(ext.Length > 0 && ext[0] == '.')
+							{
+								ext = ext.Substring(1);
+							}
 						}
 					}
 					if(ext == null)

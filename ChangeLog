@@ -6,6 +6,10 @@
 
 	* Xsharp/XsharpSupport.c: bug in DIB handling for 4bpp images.
 
+	* ISymWrapper/SymDocument.cs, runtime/System/IO/Path.cs,
+	tests/runtime/System/IO/TestPath.cs: "Path.GetExtension" should
+	return "." at the front of the extension.
+
 2003-10-08  Neil Cawse  <neilcawse@geotab.com>
 
 	* : many small fixes to compile with csc

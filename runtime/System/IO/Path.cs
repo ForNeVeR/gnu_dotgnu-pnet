@@ -409,7 +409,12 @@ public sealed class Path
 					ch = path[--posn];
 					if(ch == '.')
 					{
-						return path.Substring(posn + 1);
+						if((posn + 1) == path.Length)
+						{
+							// Ends in a dot.
+							return String.Empty;
+						}
+						return path.Substring(posn);
 					}
 					else if(IsDirectoryOrVolumeSeparator(ch))
 					{

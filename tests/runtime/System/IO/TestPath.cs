@@ -270,11 +270,11 @@ public class TestPath : TestCase
 							 Path.GetExtension("\\\\foo\\bar"));
 				AssertEquals("GetExtension (10)", "",
 							 Path.GetExtension("a."));
-				AssertEquals("GetExtension (11)", "exe",
+				AssertEquals("GetExtension (11)", ".exe",
 							 Path.GetExtension("a.exe"));
-				AssertEquals("GetExtension (12)", "exe",
+				AssertEquals("GetExtension (12)", ".exe",
 							 Path.GetExtension("/foo/a.exe"));
-				AssertEquals("GetExtension (13)", "c",
+				AssertEquals("GetExtension (13)", ".c",
 							 Path.GetExtension("a.b.c"));
 				AssertEquals("GetExtension (14)", "",
 							 Path.GetExtension("a.b."));

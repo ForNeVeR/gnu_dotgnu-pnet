@@ -167,7 +167,7 @@ public class TextInfo : IDeserializationCallback
 			}
 
 	// Convert a string to title case.
-	public virtual String ToTitleCase(String str)
+	public String ToTitleCase(String str)
 			{
 				if(str == null)
 				{
@@ -193,6 +193,12 @@ public class TextInfo : IDeserializationCallback
 					}
 				}
 				return builder.ToString();
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return "TextInfo - " + culture.ToString();
 			}
 
 	// Implement IDeserializationCallback.

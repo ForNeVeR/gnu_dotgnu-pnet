@@ -136,13 +136,6 @@ public class BinaryWriter : IDisposable
 				return OutStream.Seek(offset, origin);
 			}
 
-	// Extension: this is the version of Seek that should be here,
-	// just in case Microsoft fixes the API in a future version.
-	public virtual long Seek(long offset, SeekOrigin origin)
-			{
-				return OutStream.Seek(offset, origin);
-			}
-
 	// Write a boolean value to the output.
 	public virtual void Write(bool value)
 			{

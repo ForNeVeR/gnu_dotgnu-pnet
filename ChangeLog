@@ -10,6 +10,13 @@
 
 	* runtime/System/DateTime.cs: convert to and from UTC file times.
 
+	* resources/en_US/runtime/NotSupp.txt, runtime/System/Type.cs,
+	runtime/System/Globalization/CompareInfo.cs,
+	runtime/System/Globalization/CultureInfo.cs,
+	runtime/System/Globalization/TextInfo.cs,
+	runtime/System/IO/BinaryWriter.cs,
+	runtime/System/Reflection/IReflect.cs: signature-compatibility fixes.
+
 2003-04-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Runtime/InteropServices/BestFitMappingAttribute.cs,

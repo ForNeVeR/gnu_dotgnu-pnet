@@ -36,3 +36,4 @@ NotSupp_TypeNotCreated=The requested operation is not supported until the type h
 NotSupp_IPermissionUnion=Cannot union the supplied IPermission objects
 NotSupp_SetRemotingValue=Cannot set the specified remoting value
 NotSupp_SerializePointer=Cannot serialize pointer values
+NotSupp_SubClass=Implementation must be provided by subclasses

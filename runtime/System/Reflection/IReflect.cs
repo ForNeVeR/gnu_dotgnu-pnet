@@ -21,14 +21,18 @@
 namespace System.Reflection
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_REFLECTION
 
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
 
+#if !ECMA_COMPAT
 [Guid("AFBF15E5-C37C-11d2-B88E-00A0C9B471B8")]
 public interface IReflect
+#else
+internal interface IReflect
+#endif
 {
 
 	FieldInfo GetField(String name, BindingFlags bindingAttr);
@@ -53,6 +57,6 @@ public interface IReflect
 
 }; // interface IReflect
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_REFLECTION
 
 }; // namespace System.Reflection

@@ -1,7 +1,7 @@
 /*
  * Type.cs - Implementation of the "System.Type" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,16 +27,14 @@ using System.Globalization;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 #if !ECMA_COMPAT
 [ClassInterface(ClassInterfaceType.AutoDual)]
 #endif
 public abstract class Type
 #if CONFIG_REFLECTION
-	: MemberInfo
-#if !ECMA_COMPAT
-	, IReflect
-#endif
+	: MemberInfo, IReflect
 #endif
 {
 
@@ -356,6 +354,42 @@ public abstract class Type
 			}
 
 #if !ECMA_COMPAT
+
+	// Find the interfaces that match a set of filter criteria.
+	public virtual Type[] FindInterfaces(TypeFilter filter,
+										 Object filterCriteria)
+			{
+				if(filter == null)
+				{
+					throw new ArgumentNullException("filter");
+				}
+				Type[] interfaces = GetInterfaces();
+				if(interfaces == null)
+				{
+					return EmptyTypes;
+				}
+				int posn, posn2;
+				posn = 0;
+				posn2 = 0;
+				while(posn < interfaces.Length)
+				{
+					if(filter(interfaces[posn], filterCriteria))
+					{
+						interfaces[posn2++] = interfaces[posn];
+					}
+					++posn;
+				}
+				if(posn2 == interfaces.Length)
+				{
+					return interfaces;
+				}
+				else
+				{
+					Type[] list = new Type [posn2];
+					Array.Copy(interfaces, 0, list, 0, posn2);
+					return list;
+				}
+			}
 
 	/* convenience function wrapping over the other abstract stuff */
 	public virtual MemberInfo[]	FindMembers	(MemberTypes memberType,
@@ -690,8 +724,11 @@ public abstract class Type
 #else
 	public
 #endif
-	abstract MemberInfo[] GetMember(String name, MemberTypes type,
-								    BindingFlags bindingAttr);
+	virtual MemberInfo[] GetMember(String name, MemberTypes type,
+								   BindingFlags bindingAttr)
+			{
+				throw new NotSupportedException(_("NotSupp_SubClass"));
+			}
 
 	// Get all members from this type.
 	public abstract MemberInfo[] GetMembers(BindingFlags bindingAttr);
@@ -703,7 +740,7 @@ public abstract class Type
 			}
 
 	// Get a method from this type.
-	public virtual MethodInfo GetMethod(String name, BindingFlags bindingAttr)
+	public MethodInfo GetMethod(String name, BindingFlags bindingAttr)
 			{
 				if(name == null)
 				{
@@ -712,9 +749,9 @@ public abstract class Type
 				return GetMethodImpl(name, bindingAttr, null,
 								     CallingConventions.Any, null, null);
 			}
-	public virtual MethodInfo GetMethod(String name, BindingFlags bindingAttr,
-										Binder binder, Type[] types,
-										ParameterModifier[] modifiers)
+	public MethodInfo GetMethod(String name, BindingFlags bindingAttr,
+								Binder binder, Type[] types,
+								ParameterModifier[] modifiers)
 			{
 				if(name == null)
 				{
@@ -874,8 +911,7 @@ public abstract class Type
 									   BindingFlags.Static,
 									   null, returnType, types, null);
 			}
-	public virtual PropertyInfo GetProperty(String name,
-											BindingFlags bindingAttr)
+	public PropertyInfo GetProperty(String name, BindingFlags bindingAttr)
 			{
 				if(name == null)
 				{
@@ -903,11 +939,11 @@ public abstract class Type
 									   BindingFlags.Static,
 									   null, returnType, types, modifiers);
 			}
-	public virtual PropertyInfo GetProperty(String name,
-								    		BindingFlags bindingAttr,
-											Binder binder,
-								    		Type returnType, Type[] types,
-											ParameterModifier[] modifiers)
+	public PropertyInfo GetProperty(String name,
+						    		BindingFlags bindingAttr,
+									Binder binder,
+						    		Type returnType, Type[] types,
+									ParameterModifier[] modifiers)
 			{
 				if(name == null)
 				{
@@ -997,6 +1033,10 @@ public abstract class Type
 			{
 				return GetTypeFromCLSID(clsid, server, false);
 			}
+	public static Type GetTypeFromCLSID(Guid clsid)
+			{
+				return GetTypeFromCLSID(clsid, null, false);
+			}
 #endif // !ECMA_COMPAT
 
 	// Get a type from a program identifier.
@@ -1020,6 +1060,10 @@ public abstract class Type
 			{
 				return GetTypeFromProgID(progID, server, false);
 			}
+	public static Type GetTypeFromProgID(String progID)
+			{
+				return GetTypeFromProgID(progID, null, false);
+			}
 
 	// Implementation of the "HasElementType" property.
 	protected abstract bool HasElementTypeImpl();
@@ -1030,12 +1074,20 @@ public abstract class Type
 					     Binder binder, Object target, Object[] args,
 					     ParameterModifier[] modifiers,
 					     CultureInfo culture, String[] namedParameters);
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public Object InvokeMember(String name, BindingFlags invokeAttr,
 					     	   Binder binder, Object target, Object[] args)
 			{
 				return InvokeMember(name, invokeAttr, binder, target, args,
 									null, null, null);
 			}
+#if !ECMA_COMPAT
+	[DebuggerStepThrough]
+	[DebuggerHidden]
+#endif
 	public Object InvokeMember(String name, BindingFlags invokeAttr,
 					     	   Binder binder, Object target, Object[] args,
 							   CultureInfo culture)

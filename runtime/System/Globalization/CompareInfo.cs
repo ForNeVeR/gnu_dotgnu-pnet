@@ -2,7 +2,7 @@
  * CompareInfo.cs - Implementation of the
  *		"System.Globalization.CompareInfo" class.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -172,20 +172,19 @@ public class CompareInfo : IDeserializationCallback
 									  		(string2.Length - offset2) : 0),
 									  options);
 			}
-	public virtual int Compare(String string1, int offset1,
-							   String string2, int offset2,
-							   int length)
+	public virtual int Compare(String string1, int offset1, int length1,
+							   String string2, int offset2, int length2)
 			{
-				return DefaultCompare(string1, offset1, length,
-									  string2, offset2, length,
+				return DefaultCompare(string1, offset1, length1,
+									  string2, offset2, length2,
 									  CompareOptions.None);
 			}
-	public virtual int Compare(String string1, int offset1,
-							   String string2, int offset2,
-							   int length, CompareOptions options)
+	public virtual int Compare(String string1, int offset1, int length1,
+							   String string2, int offset2, int length2,
+							   CompareOptions options)
 			{
-				return DefaultCompare(string1, offset1, length,
-									  string2, offset2, length, options);
+				return DefaultCompare(string1, offset1, length1,
+									  string2, offset2, length2, options);
 			}
 
 	// Default "Compare" implementation that uses I18N to do the work.
@@ -459,8 +458,8 @@ public class CompareInfo : IDeserializationCallback
 				int vlen = value.Length;
 				while(count >= vlen)
 				{
-					if(Compare(source, startIndex, value, 0,
-							   vlen, options) == 0)
+					if(Compare(source, startIndex, vlen,
+							   value, 0, vlen, options) == 0)
 					{
 						return startIndex;
 					}
@@ -492,7 +491,7 @@ public class CompareInfo : IDeserializationCallback
 				}
 				else
 				{
-					return (Compare(source, 0, prefix, 0,
+					return (Compare(source, 0, prefix.Length, prefix, 0,
 								    prefix.Length, options) == 0);
 				}
 			}
@@ -520,7 +519,8 @@ public class CompareInfo : IDeserializationCallback
 				else
 				{
 					return (Compare(source, source.Length - suffix.Length,
-								    suffix, 0, suffix.Length, options) == 0);
+								    suffix.Length, suffix, 0,
+									suffix.Length, options) == 0);
 				}
 			}
 
@@ -653,7 +653,7 @@ public class CompareInfo : IDeserializationCallback
 				}
 				while(count >= vlen)
 				{
-					if(Compare(source, startIndex - vlen + 1,
+					if(Compare(source, startIndex - vlen + 1, vlen,
 					           value, 0, vlen, options) == 0)
 					{
 						return startIndex - vlen + 1;

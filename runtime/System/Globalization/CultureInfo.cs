@@ -1,7 +1,7 @@
 /*
  * CultureInfo.cs - Implementation of "System.Globalization.CultureInfo".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -473,7 +473,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 #endif // !CONFIG_REFLECTION
 
 	// Determine if this culture instance is read-only.
-	public virtual bool IsReadOnly
+	public bool IsReadOnly
 			{
 				get
 				{
@@ -635,7 +635,7 @@ public class CultureInfo : ICloneable, IFormatProvider
 #endif // CONFIG_REFLECTION
 
 	// Determine if this culture is configured for user overrides.
-	public virtual bool UseUserOverride
+	public bool UseUserOverride
 			{
 				get
 				{
@@ -644,13 +644,13 @@ public class CultureInfo : ICloneable, IFormatProvider
 			}
 
 	// Implementation of the ICloneable interface.
-	public Object Clone()
+	public virtual Object Clone()
 			{
 				return MemberwiseClone();
 			}
 
 	// Implementation of the IFormatProvider interface.
-	public Object GetFormat(Type formatType)
+	public virtual Object GetFormat(Type formatType)
 			{
 				if(formatType == typeof(System.Globalization.CultureInfo))
 				{
@@ -660,6 +660,38 @@ public class CultureInfo : ICloneable, IFormatProvider
 				{
 					return null;
 				}
+			}
+
+	// Clear any cached culture data in this object.
+	public void ClearCachedData()
+			{
+				// Nothing to do here.
+			}
+
+	// Determine if two culture objects are equal.
+	public override bool Equals(Object obj)
+			{
+				CultureInfo other = (obj as CultureInfo);
+				if(other != null)
+				{
+					return (other.cultureID == cultureID);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this object.
+	public override int GetHashCode()
+			{
+				return cultureID;
+			}
+
+	// Convert this object into a string.
+	public override String ToString()
+			{
+				return Name;
 			}
 
 #if CONFIG_REFLECTION

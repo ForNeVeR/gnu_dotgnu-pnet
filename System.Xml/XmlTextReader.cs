@@ -235,6 +235,9 @@ public class XmlTextReader : XmlReader
 					xmlLang = context.XmlLang;
 					xmlSpace = context.XmlSpace;
 					contextSupport = true;
+					// TODO: figure out how Encoding works for this thing.
+					StringReader sr = new StringReader(xmlFragment);
+					reader = sr;
 				}
 
 				namespaces = false;	

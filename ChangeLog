@@ -3,6 +3,9 @@
 	
 	* System.Xml/XmlElement.cs: Fix minor bug with setting the InnerText
 
+	* System.Xml/XmlTextReader.cs: Fix another minor bug with parsing 
+	xml fragments.
+
 2003-01-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Diagnostics/Debug.cs: implement the debug assert routines

@@ -51,9 +51,9 @@ ILNativeInt _IL_Marshal_AllocHGlobal(ILExecThread *_thread, ILNativeInt cb)
 {
 	if(UnmanagedOK(_thread))
 	{
-		/* Use the underlying system "malloc", because "ILMalloc"
+		/* Use the underlying system "calloc", because "ILCalloc"
 		   may have been redirected elsewhere */
-		void *ptr = (void *)malloc((unsigned)cb);
+		void *ptr = (void *)calloc((unsigned)cb, 1);
 		if(ptr)
 		{
 			return (ILNativeInt)ptr;

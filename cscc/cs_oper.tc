@@ -319,7 +319,7 @@ ILNode_SemAnalysis(ILNode_Add)
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 		value1.kind = CS_SEMKIND_RVALUE;
-		value2.type = ILFindSystemType(info, "String");
+		value1.type = ILFindSystemType(info, "String");
 		return value1;
 	}
 
@@ -813,11 +813,14 @@ ILNode_SemAnalysis(ILNode_ToConst)
 	{
 		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "constant value required");
-		value.kind = CS_SEMKIND_RVALUE;
-		value.type = ILType_Int32;
+		if(!CSIsSemValue(value.kind))
+		{
+			value.type = ILType_Int32;
+		}
 	}
 
 	/* Return the semantic information to the caller */
+	value.kind = CS_SEMKIND_RVALUE;
 	return value;
 }
 
@@ -1002,15 +1005,83 @@ error:
 	return value1;
 }
 
+%{
+
+/*
+ * Perform semantic analysis for the equality or inequality operators.
+ */
+static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
+							  ILNode **parent, const ILOperator *table,
+							  const char *name, const char *errorName)
+{
+	const ILOperator *oper;
+	ILMethod *method;
+	ILType *returnType;
+	CSSemValue value1;
+	CSSemValue value2;
+
+	/* Perform semantic analysis on the arguments */
+	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* The two arguments must be values */
+	if(!CSIsSemValue(value1.kind) || !CSIsSemValue(value2.kind))
+	{
+		goto error;
+	}
+
+	/* Look for a builtin operator */
+	oper = ILFindBinaryOperator(table, value1.type, value2.type);
+	if(oper)
+	{
+		ILApplyBinaryOperator(info, (ILNode *)node, parent, oper);
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = ILType_Boolean;
+		return value1;
+	}
+
+	/* If both of the arguments are strings, then the
+	   code generator knows how to handle the operation */
+	if(IsString(value1.type) && IsString(value2.type))
+	{
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = ILType_Boolean;
+		return value1;
+	}
+
+	/* Look for a user-specified operator */
+	method = FindUserBinaryOperator(name, value1.type, value2.type);
+	if(method)
+	{
+		returnType = ILMethod_Signature(method)->un.method.retType;
+		*parent = ILNode_UserBinaryOp_create
+						(node->expr1, node->expr2,
+						 ILTypeToValueType(returnType), method);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+		value1.kind = CS_SEMKIND_RVALUE;
+		value1.type = returnType;
+		return value1;
+	}
+
+	/* Could not find a suitable operator */
+error:
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to binary `%s'", errorName);
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Int32;
+	return value1;
+}
+
+%}
+
 /*
  * Perform semantic analysis for the equality operator.
  */
 ILNode_SemAnalysis(ILNode_Eq)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return EqualitySem(info, (ILNode_BinaryExpression *)node, parent,
+					   ILOp_Eq, "op_Equality", "==");
 }
 
 /*
@@ -1018,10 +1089,8 @@ ILNode_SemAnalysis(ILNode_Eq)
  */
 ILNode_SemAnalysis(ILNode_Ne)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return EqualitySem(info, (ILNode_BinaryExpression *)node, parent,
+					   ILOp_Eq, "op_Inequality", "!=");
 }
 
 /*
@@ -1029,10 +1098,8 @@ ILNode_SemAnalysis(ILNode_Ne)
  */
 ILNode_SemAnalysis(ILNode_Lt)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Lt, "op_LessThan", "<");
 }
 
 /*
@@ -1040,10 +1107,8 @@ ILNode_SemAnalysis(ILNode_Lt)
  */
 ILNode_SemAnalysis(ILNode_Le)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Le, "op_LessThanOrEqual", "<=");
 }
 
 /*
@@ -1051,10 +1116,8 @@ ILNode_SemAnalysis(ILNode_Le)
  */
 ILNode_SemAnalysis(ILNode_Gt)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Gt, "op_GreaterThan", ">");
 }
 
 /*
@@ -1062,10 +1125,8 @@ ILNode_SemAnalysis(ILNode_Gt)
  */
 ILNode_SemAnalysis(ILNode_Ge)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	return BinarySem(info, (ILNode_BinaryExpression *)node,
+					 parent, ILOp_Ge, "op_GreaterThanOrEqual", ">=");
 }
 
 /*
@@ -1094,13 +1155,56 @@ ILNode_SemAnalysis(ILNode_AddressOf)
 
 /*
  * Perform semantic analysis for the conditional operator.
+ *
+ * Note: we assume that the condition has been wrapped in
+ * a "ToBool" node to take care of the semantic analysis
+ * for the boolean cast.
  */
 ILNode_SemAnalysis(ILNode_Conditional)
 {
-	CSSemValue value;
-	value.kind = CS_SEMKIND_RVALUE;
-	value.type = ILType_Int32;
-	return value;
+	CSSemValue value1;
+	CSSemValue value2;
+
+	/* Perform semantic analysis on the boolean condition */
+	ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
+
+	/* Perform semantic analysis on the "then" and "else" clauses */
+	if(!CSSemExpectValue(node->expr2, info, &(node->expr2), &value1) ||
+	   !CSSemExpectValue(node->expr3, info, &(node->expr3), &value2))
+	{
+		goto error;
+	}
+
+	/* If the types are the same, then we are done */
+	if(ILTypeIdentical(value1.type, value2.type))
+	{
+		value1.kind = CS_SEMKIND_RVALUE;
+		return value1;
+	}
+
+	/* Determine which of the types is the result type */
+	if(ILCanCoerce(info->context, value1.type, value2.type) &&
+	   !ILCanCoerce(info->context, value2.type, value1.type))
+	{
+		ILCoerce(info, node->expr2, &(node->expr2), value1.type, value2.type);
+		value2.kind = CS_SEMKIND_RVALUE;
+		return value2;
+	}
+	else if(ILCanCoerce(info->context, value2.type, value1.type) &&
+	        !ILCanCoerce(info->context, value1.type, value2.type))
+	{
+		ILCoerce(info, node->expr3, &(node->expr3), value2.type, value1.type);
+		value1.kind = CS_SEMKIND_RVALUE;
+		return value1;
+	}
+
+	/* Report an error with the arguments to "?:" */
+error:
+	CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+				  "invalid operands to ternary `?:'");
+	value1.kind = CS_SEMKIND_RVALUE;
+	value1.type = ILType_Int32;
+	return value1;
 }
 
 /*

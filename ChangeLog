@@ -6,6 +6,9 @@ properly in the ILNode_Eq and ILNode_Ne node types.
 
 * codegen/cg_coerce.h: declare relational operator tables.
 
+* cscc/cs_oper.tc: semantic analysis for relational, conditional, and
+boolean operators.
+
 2001-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_const.tc, codegen/jv_const.tc: bug in GenThen/GenElse for

@@ -6,6 +6,9 @@
 
 	* runtime/System/Collections/SortedList.cs: Do not reduce capacity
 	to below DefaultCapacity when doing TrimToSize.
+	
+	* runtime/System/Collections/SortedList.cs: Fix ContainsElement to
+	search in the "values" array rather than "keys" array.
 
 2004-06-02  Thong Nguyen  <tum@veridicus.com>
 

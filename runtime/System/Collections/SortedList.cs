@@ -388,7 +388,7 @@ public class SortedList : IDictionary, ICollection, IEnumerable, ICloneable
 	// Determine if this sorted list contains a particular value.
 	public virtual bool ContainsValue(Object value)
 			{
-				return (Array.IndexOf(keys, value, 0, count) != -1);
+				return (Array.IndexOf(values, value, 0, count) != -1);
 			}
 
 	// Get a value by index.

@@ -628,6 +628,8 @@ void _ILWriteFinal(ILWriter *writer)
 	unsigned long imageSize;
 	unsigned long offset;
 	ILWSection *section;
+	ILWSection *prevSection;
+	ILWSection *debugSection;
 	int numSections;
 	unsigned long table;
 	unsigned long textLength;
@@ -778,6 +780,44 @@ void _ILWriteFinal(ILWriter *writer)
 		/* Executables and DLL's need 512-byte alignment */
 		WriteBlockPadding(writer, 512);
 		realTextSize = ((textLength + 511) & ~511);
+	}
+
+	/* If we have ".ildebug" data, then move it to the end of the list */
+	section = writer->sections;
+	prevSection = 0;
+	debugSection = 0;
+	while(section != 0)
+	{
+		if(!strcmp(section->name, ".ildebug"))
+		{
+			debugSection = section;
+			if(prevSection)
+			{
+				prevSection->next = section->next;
+			}
+			else
+			{
+				writer->sections = section->next;
+			}
+			section = section->next;
+		}
+		else
+		{
+			prevSection = section;
+			section = section->next;
+		}
+	}
+	if(debugSection)
+	{
+		if(prevSection)
+		{
+			prevSection->next = debugSection;
+		}
+		else
+		{
+			writer->sections = debugSection;
+		}
+		debugSection->next = 0;
 	}
 
 	/* Dump the contents of other sections */

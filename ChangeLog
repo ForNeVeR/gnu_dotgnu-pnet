@@ -19,6 +19,9 @@
 	file from "a.out.exe" to "a.exe" (Win32) or "a.out" (non-Win32),
 	to be consistent with gcc.
 
+	* image/pecoff_writer.c (_ILWriteFinal): move the ".ildebug"
+	section to the end of the image so that it can be easily stripped.
+
 2007-07-03  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: ILGCDeinit now performs a garbage collection

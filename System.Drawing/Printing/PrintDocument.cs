@@ -27,6 +27,8 @@ using System.Drawing.Toolkit;
 
 #if CONFIG_COMPONENT_MODEL
 [DefaultEvent("PrintPage")]
+[DefaultProperty("DocumentName")]
+[ToolboxItemFilter("System.Drawing.Printing")]
 #endif
 public class PrintDocument
 #if CONFIG_COMPONENT_MODEL
@@ -54,6 +56,7 @@ public class PrintDocument
 	// Get or set the document's properties.
 #if CONFIG_COMPONENT_MODEL
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
 #endif
 	public PageSettings DefaultPageSettings
 			{
@@ -80,6 +83,9 @@ public class PrintDocument
 					documentName = value;
 				}
 			}
+#if CONFIG_COMPONENT_MODEL
+	[DefaultValue(false)]
+#endif
 	public bool OriginAtMargins
 			{
 				get
@@ -93,6 +99,7 @@ public class PrintDocument
 			}
 #if CONFIG_COMPONENT_MODEL
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
 #endif
 	public PrintController PrintController
 			{
@@ -112,6 +119,7 @@ public class PrintDocument
 			}
 #if CONFIG_COMPONENT_MODEL
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[Browsable(false)]
 #endif
 	public PrinterSettings PrinterSettings
 			{

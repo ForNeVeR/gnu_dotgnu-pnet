@@ -6,6 +6,11 @@
 	System/Collections/Specialized/StringDictionary.cs:
 	signature-compatibility fixes in "System.Collections.Specialized".
 
+	* System/ComponentModel/ToolboxItemFilterAttribute.cs,
+	System.Drawing/Printing/PrintDocument.cs: signature-compatibility
+	fixes in "System.Drawing.Printing", plus a missing class in
+	"System.ComponentModel".
+
 2003-09-04  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,

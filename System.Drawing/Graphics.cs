@@ -3674,19 +3674,37 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	private Point[] ConvertRectangle3(int x, int y, int width, int height, GraphicsUnit unit)
 			{
 				Point[] points = new Point[3];
-				points[0] = new Point(x, y);
-				points[1] = new Point(x + width, y);
-				points[2] = new Point(x, y + height);
-				return ConvertPoints(points, 3, unit);
+				int pt1x, pt1y, pt2x, pt2y, pt3x, pt3y;
+				pt1x = x;
+				pt1y = y;
+				pt2x = x + width;
+				pt2y = y;
+				pt3x = x;
+				pt3y = y + height;
+				if(transform != null || pageScale != 1.0f ||
+				   (unit != GraphicsUnit.Pixel && unit != GraphicsUnit.World))
+				{
+					ConvertPoint(ref pt1x, ref pt1y, unit);
+					ConvertPoint(ref pt2x, ref pt2y, unit);
+					ConvertPoint(ref pt3x, ref pt3y, unit);
+				}
+				points[0] = new Point(pt1x, pt1y);
+				points[1] = new Point(pt2x, pt2y);
+				points[2] = new Point(pt3x, pt3y);
+				return points;
 			}
 
 	private Point[] ConvertRectangle3(float x, float y, float width, float height, GraphicsUnit unit)
 			{
-				PointF[] points = new PointF[3];
-				points[0] = new PointF(x, y);
-				points[1] = new PointF(x + width, y);
-				points[3] = new PointF(x, y + height);
-				return ConvertPoints(points, 3, unit);
+				Point[] points = new Point[3];
+				int pt1x, pt1y, pt2x, pt2y, pt3x, pt3y;
+				ConvertPoint(x, y, out pt1x, out pt1y, unit);
+				ConvertPoint(x + width, y, out pt2x, out pt2y, unit);
+				ConvertPoint(x, y + height, out pt3x, out pt3y, unit);
+				points[0] = new Point(pt1x, pt1y);
+				points[1] = new Point(pt2x, pt2y);
+				points[2] = new Point(pt3x, pt3y);
+				return points;
 			}
 
 	// Convert a rectangle into a set of 4 device co-ordinates.

@@ -4,7 +4,7 @@
 # from the ".ucm" files.  The list of unsupported code pages
 # is at the end of this file.
 #
-# Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+# Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -313,12 +313,83 @@ ${UCM2CP} --region West --page 10000 --wpage 1252 \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save West/ibm-1275.ucm >West/CP10000.cs
 
+${UCM2CP} --region MidEast --page 10004 --wpage 1256 \
+	--name 'MAC - Arabic' \
+	--webname windows-10004 --bodyname windows-10004 \
+	--headername windows-10004 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save MidEast/mac-10004.ucm >MidEast/CP10004.cs
+
+${UCM2CP} --region MidEast --page 10005 --wpage 1255 \
+	--name 'MAC - Hebrew' \
+	--webname windows-10005 --bodyname windows-10005 \
+	--headername windows-10005 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save MidEast/mac-10005.ucm >MidEast/CP10005.cs
+
+${UCM2CP} --region West --page 10006 --wpage 1253 \
+	--name 'MAC - Greek I' \
+	--webname windows-10006 --bodyname windows-10006 \
+	--headername windows-10006 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save West/mac-10006.ucm >West/CP10006.cs
+
+${UCM2CP} --region Other --page 10007 --wpage 1251 \
+	--name 'MAC - Cyrillic' \
+	--webname windows-10007 --bodyname windows-10007 \
+	--headername windows-10007 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Other/mac-10007.ucm >Other/CP10007.cs
+
+${UCM2CP} --region West --page 10010 --wpage 1250 \
+	--name 'MAC - Romania' \
+	--webname windows-10010 --bodyname windows-10010 \
+	--headername windows-10010 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save West/mac-10010.ucm >West/CP10010.cs
+
+# 10017 has the same mappings as 10007
+${UCM2CP} --region Other --page 10017 --wpage 1251 \
+	--name 'MAC - Ukraine' \
+	--webname windows-10017 --bodyname windows-10017 \
+	--headername windows-10017 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Other/mac-10007.ucm >Other/CP10017.cs
+
+${UCM2CP} --region Other --page 10021 --wpage 874 \
+	--name 'MAC - Thai' \
+	--webname windows-10021 --bodyname windows-10021 \
+	--headername windows-10021 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save Other/mac-10021.ucm >Other/CP10021.cs
+
+${UCM2CP} --region West --page 10029 --wpage 1250 \
+	--name 'MAC - Latin II' \
+	--webname windows-10029 --bodyname windows-10029 \
+	--headername windows-10029 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save West/mac-10029.ucm >West/CP10029.cs
+
 ${UCM2CP} --region West --page 10079 --wpage 1252 \
 	--name 'Icelandic (Mac)' \
 	--webname x-mac-icelandic --bodyname x-mac-icelandic \
 	--headername x-mac-icelandic --no-browser-display \
 	--no-browser-save --no-mailnews-display \
 	--no-mailnews-save West/mac-is.ucm >West/CP10079.cs
+
+${UCM2CP} --region MidEast --page 10081 --wpage 1254 \
+	--name 'MAC - Turkish' \
+	--webname windows-10081 --bodyname windows-10005 \
+	--headername windows-10081 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save MidEast/mac-10081.ucm >MidEast/CP10081.cs
+
+${UCM2CP} --region West --page 10082 --wpage 1252 \
+	--name 'MAC - Croatia' \
+	--webname windows-10082 --bodyname windows-10082 \
+	--headername windows-10082 --no-browser-display \
+	--no-browser-save --no-mailnews-display \
+	--no-mailnews-save West/mac-10082.ucm >West/CP10082.cs
 
 ${UCM2CP} --region Rare --page 20273 --wpage 1252 \
 	--name 'IBM EBCDIC (Germany)' \
@@ -490,17 +561,7 @@ exit 0
 #  10001 MAC - Japanese
 #  10002 MAC - Traditional Chinese (Big5)
 #  10003 MAC - Korean
-#  10004 MAC - Arabic
-#  10005 MAC - Hebrew
-#  10006 MAC - Greek I
-#  10007 MAC - Cyrillic
 #  10008 MAC - Simplified Chinese (GB 2312)
-#  10010 MAC - Romania
-#  10017 MAC - Ukraine
-#  10021 MAC - Thai
-#  10029 MAC - Latin II
-#  10081 MAC - Turkish
-#  10082 MAC - Croatia
 #  12000 Unicode UCS-4 Little-Endian
 #  12001 Unicode UCS-4 Big-Endian
 #  20000 CNS - Taiwan
@@ -524,7 +585,6 @@ exit 0
 #  20932 JIX X 0208-1990 & 0212-1990
 #  20936 Simplified Chinese (GB2312)
 #  21027 Extended Alpha Lowercase
-#  21866 Ukrainian (KOI8-U)
 #  29001 Europa 3
 #  50220 Japanese (JIS)
 #  50221 Japanese (JIS-Allow 1 byte Kana)

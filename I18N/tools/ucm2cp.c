@@ -264,6 +264,8 @@ static void loadCharMaps(FILE *file)
 	int level;
 	char buffer[BUFSIZ];
 	const char *buf;
+	int macStyle;
+	int macStyleInited = 0;
 
 	/* Initialize the mapping tables */
 	for(posn = 0; posn < 256; ++posn)
@@ -279,42 +281,82 @@ static void loadCharMaps(FILE *file)
 	/* Read the contents of the file */
 	while(fgets(buffer, BUFSIZ, file))
 	{
-		/* Lines of interest begin with "<U" */
-		if(buffer[0] != '<' || buffer[1] != 'U')
+		/* Lines of interest begin with "<U" (IBM style) or "0x" (Mac style) */
+		macStyle = 0;
+		if(buffer[0] == '0' && buffer[1] == 'x')
+		{
+			macStyle = 1;
+			if(!macStyleInited)
+			{
+				for(posn = 0; posn < 256; ++posn)
+				{
+					byteToChar[posn] = (unsigned)posn;
+				}
+				macStyleInited = 1;
+			}
+		}
+		else if(buffer[0] != '<' || buffer[1] != 'U')
 		{
 			continue;
 		}
 
 		/* Parse the fields on the line */
-		buf = buffer + 2;
-		buf += parseHex(buf, &posn);
-		if(posn >= 65536)
+		if(!macStyle)
 		{
-			continue;
+			buf = buffer + 2;
+			buf += parseHex(buf, &posn);
+			if(posn >= 65536)
+			{
+				continue;
+			}
+			while(*buf != '\0' && *buf != '\\')
+			{
+				++buf;
+			}
+			if(*buf != '\\' || buf[1] != 'x')
+			{
+				continue;
+			}
+			buf += 2;
+			buf += parseHex(buf, &byteValue);
+			if(byteValue >= 256)
+			{
+				continue;
+			}
+			while(*buf != '\0' && *buf != '|')
+			{
+				++buf;
+			}
+			if(*buf != '|')
+			{
+				continue;
+			}
+			level = (int)(buf[1] - '0');
 		}
-		while(*buf != '\0' && *buf != '\\')
+		else
 		{
-			++buf;
+			buf = buffer + 2;
+			buf += parseHex(buf, &byteValue);
+			if(byteValue >= 0x0100)
+			{
+				continue;
+			}
+			while(*buf != '\0' && *buf != '0')
+			{
+				++buf;
+			}
+			if(*buf != '0' || buf[1] != 'x')
+			{
+				continue;
+			}
+			buf += 2;
+			buf += parseHex(buf, &posn);
+			if(posn >= 65535)
+			{
+				continue;
+			}
+			level = 1;
 		}
-		if(*buf != '\\' || buf[1] != 'x')
-		{
-			continue;
-		}
-		buf += 2;
-		buf += parseHex(buf, &byteValue);
-		if(byteValue >= 256)
-		{
-			continue;
-		}
-		while(*buf != '\0' && *buf != '|')
-		{
-			++buf;
-		}
-		if(*buf != '|')
-		{
-			continue;
-		}
-		level = (int)(buf[1] - '0');
 
 		/* Update the byte->char mapping table */
 		if(level < byteToCharLevel[byteValue])

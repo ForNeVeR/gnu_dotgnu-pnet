@@ -125,6 +125,9 @@ fi
 if test -x "$PNET_CHECK_PATH/cscc/cscc-cs" ; then
 	CFLAGS="$CFLAGS -fplugin-cs-path=$PNET_CHECK_PATH/cscc/cscc-cs"
 fi
+if test -x "$PNET_CHECK_PATH/cscc/cpp/cscc-cpp" ; then
+	CFLAGS="$CFLAGS -fcpp-path=$PNET_CHECK_PATH/cscc/cpp/cscc-cpp"
+fi
 if test -f "$PNETLIB_CHECK_PATH/csupport/OpenSystem.C.dll" ; then
 	CFLAGS="$CFLAGS -L$PNETLIB_CHECK_PATH/csupport"
 fi
@@ -196,6 +199,9 @@ if test -x "$PNET_PATH/cscc/cscc-c-s" ; then
 fi
 if test -x "$PNET_PATH/cscc/cscc-cs" ; then
 	CFLAGS="$CFLAGS \"-fplugin-cs-path=$PNET_PATH/cscc/cscc-cs\""
+fi
+if test -x "$PNET_PATH/cscc/cpp/cscc-cpp" ; then
+	CFLAGS="$CFLAGS \"-fcpp-path=$PNET_PATH/cscc/cpp/cscc-cpp\""
 fi
 if test -f "$PNETLIB_PATH/csupport/OpenSystem.C.dll" ; then
 	CFLAGS="$CFLAGS \"-L$PNETLIB_PATH/csupport\""

@@ -10,6 +10,9 @@
 	libm/redirect.c, libm/test.c: replace references to "__csharp__"
 	with "__using__" clauses, which is more correct.
 
+	* configure.in: add "-fcpp-path" to the compiler command-line,
+	to point at the location of "cscc-cpp".
+
 2004-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/pthread.h, include/semaphore.h, include/wchar.h:

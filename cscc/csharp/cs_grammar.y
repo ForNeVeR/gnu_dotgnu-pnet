@@ -549,6 +549,7 @@ static void CreateEventDeclMethods(ILNode_EventDeclaration *event,
 		method->name = name;
 		method->params = addParams;
 	}
+	method->modifiers |= IL_META_METHODDEF_SPECIAL_NAME;
 
 	/* Create the "remove" method */
 	name = AdjustPropertyName(eventName, "remove_");
@@ -582,6 +583,7 @@ static void CreateEventDeclMethods(ILNode_EventDeclaration *event,
 		method->name = name;
 		method->params = removeParams;
 	}
+	method->modifiers |= IL_META_METHODDEF_SPECIAL_NAME;
 }
 
 /*

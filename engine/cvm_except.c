@@ -185,6 +185,10 @@ case COP_PREFIX_THROW:
 
 	/* Search the exception handler table for an applicable handler */
 searchForHandler:
+#ifdef IL_DUMP_CVM
+	fputs("Throw ", IL_DUMP_CVM_STREAM);
+	DUMP_STACK();
+#endif
 	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData));
 	pc = ILCoderPCToHandler(thread->process->coder, pc, 0);
 	while(tempNum < IL_READ_UINT32(pc) || tempNum >= IL_READ_UINT32(pc + 4))
@@ -222,6 +226,10 @@ case COP_PREFIX_THROW_CALLER:
 {
 	/* Throw an exception to the caller of this method */
 throwCaller:
+#ifdef IL_DUMP_CVM
+	fputs("Throw Caller ", IL_DUMP_CVM_STREAM);
+	DUMP_STACK();
+#endif
 	tempptr = stacktop[-1].ptrValue;
 	if(!tempptr)
 	{
@@ -239,6 +247,15 @@ throwCaller:
 		thread->exceptHeight = callFrame->exceptHeight;
 		frame = stackbottom + callFrame->frame;
 		method = methodToCall;
+
+#ifdef IL_DUMP_CVM
+		if(methodToCall)
+		{
+			fprintf(IL_DUMP_CVM_STREAM, "Throwing Back To %s::%s\n",
+				    methodToCall->member.owner->name,
+				    methodToCall->member.name);
+		}
+#endif
 
 		/* Should we return to an external method? */
 		if(callFrame->pc == IL_INVALID_PC)

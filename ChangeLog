@@ -16,6 +16,9 @@
 	* engine/cvm_call.c (RESTORE_STATE_FROM_THREAD): bug fix - increment
 	the stack pointer when the exception object is pushed.
 
+	* engine/cvm_except.c: add some debug code to assist with the
+	analysis of exception problems in CVM.
+
 2002-04-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_grammar.y: change the definition of the

@@ -103,6 +103,18 @@ void JavaGenLoadLocal(ILGenInfo *info, unsigned varNum,
 					  ILMachineType type);
 
 /*
+ * Store a value to an argument variable.
+ */
+void JavaGenStoreArg(ILGenInfo *info, unsigned varNum,
+					 ILMachineType type);
+
+/*
+ * Load a value from an argument variable.
+ */
+void JavaGenLoadArg(ILGenInfo *info, unsigned varNum,
+				    ILMachineType type);
+
+/*
  * Get the number of stack positions occupied by a machine type.
  */
 int JavaGenTypeSize(ILMachineType type);
@@ -137,17 +149,26 @@ void JavaGenCallVirtIntrinsic(ILGenInfo *info, const char *className,
 void JavaGenCallByMethod(ILGenInfo *info, ILMethod *method);
 
 /*
- * Output a "newobj" instruction and call a constructor.
+ * Output a "new" instruction.
  */
-void JavaGenNewObj(ILGenInfo *info, const char *className,
-				   const char *initName, const char *signature);
+void JavaGenNewObj(ILGenInfo *info, const char *className);
 
 /*
- * Output a "newobj" instruction and call a constructor
- * for an intrinsic class.
+ * Output a "new" instruction for an intrinsic class.
  */
-void JavaGenNewIntrinsic(ILGenInfo *info, const char *className,
-				   		 const char *initName, const char *signature);
+void JavaGenNewIntrinsic(ILGenInfo *info, const char *className);
+
+/*
+ * Output a call to a constructor given its named signature.
+ */
+void JavaGenCallCtor(ILGenInfo *info, const char *className,
+					 const char *methodName, const char *signature);
+
+/*
+ * Output a call to an intrinsic constructor given its named signature.
+ */
+void JavaGenCallCtorIntrinsic(ILGenInfo *info, const char *className,
+					 		  const char *methodName, const char *signature);
 
 /*
  * Generate an instruction that refers to a class.
@@ -155,32 +176,29 @@ void JavaGenNewIntrinsic(ILGenInfo *info, const char *className,
 void JavaGenClassRef(ILGenInfo *info, int opcode, ILClass *classInfo);
 
 /*
- * Begin the creation of a class.
+ * Output the correct form of return instruction based on a machine type.
  */
-void JavaGenCreateClass(ILGenInfo *info, ILClass *classInfo);
+void JavaGenReturnInsn(ILGenInfo *info, ILMachineType type);
 
 /*
- * Create a new field within the current class.
+ * Start the allocation of a method's frame.
  */
-void JavaGenCreateField(ILGenInfo *info, ILField *fieldInfo);
+void JavaGenStartFrame(ILGenInfo *info);
 
 /*
- * Create a new method within the current class with
- * the contents of the current code area.
+ * Mark the end of the method arguments and the start of the locals.
  */
-void JavaGenCreateMethod(ILGenInfo *info, ILMethod *methodInfo);
+void JavaGenStartLocals(ILGenInfo *info);
 
 /*
- * Create a new property get method within the current
- * class with the contents of the current code area.
+ * Add a frame slot of a particular size.
  */
-void JavaGenCreateGetMethod(ILGenInfo *info, ILProperty *propInfo);
+void JavaGenAddFrameSlot(ILGenInfo *info, ILMachineType machineType);
 
 /*
- * Create a new property set method within the current
- * class with the contents of the current code area.
+ * Get the number of local variable slots needed for the current method.
  */
-void JavaGenCreateSetMethod(ILGenInfo *info, ILProperty *propInfo);
+unsigned JavaGenNumLocals(ILGenInfo *info);
 
 /*
  * Flush the peephole optimization queue.

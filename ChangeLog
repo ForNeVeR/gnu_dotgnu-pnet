@@ -4,6 +4,9 @@
 * image/jopcodes.c, image/Makefile.am: new file, containing a list of
 all JVM opcodes.
 
+* codegen/jv_output.h, codegen/jv_output.c: change the JVM output
+routines to output JL assembly code instead of JVM bytecode.
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

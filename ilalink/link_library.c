@@ -32,12 +32,6 @@ extern	"C" {
 #endif
 
 /*
- * Size of the name hash table associated with a library.
- * Must be a power of 2.
- */
-#define	IL_LINK_HASH_SIZE		512
-
-/*
  * Determine if a directory exists.
  */
 static int DirExists(const char *pathname)

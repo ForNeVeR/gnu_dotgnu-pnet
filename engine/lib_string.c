@@ -1041,7 +1041,7 @@ ILInt32 _IL_String_FindInRange(ILExecThread *thread, System_String *_this,
 /*
  * Size of the intern'ed string hash table.
  */
-#define	IL_INTERN_HASH_SIZE		512
+#define	IL_INTERN_HASH_SIZE		509
 
 /*
  * Structure of a intern'ed string hash table entry.

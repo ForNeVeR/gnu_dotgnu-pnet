@@ -43,7 +43,7 @@ typedef struct _tagILDocText		ILDocText;
 /*
  * Information that is stored about an entire documentation tree.
  */
-#define	IL_DOC_HASH_SIZE			512
+#define	IL_DOC_HASH_SIZE			509
 struct _tagILDocTree
 {
 	ILDocLibrary   *libraries;		/* Libraries within the tree */

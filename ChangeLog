@@ -4,6 +4,11 @@
 	* engine/process.c (ILExecProcessDestroy): run a final garbage
 	collection and finalizer pass just before engine shutdown.
 
+	* csdoc/doc_tree.h, engine/lib_string.c, ilalink/link_library.c,
+	image/image.h, support/hashtab.c, support/intern.c: adjust some
+	hash table sizes to be prime numbers rather than powers of two,
+	to help spread items more evenly across the table.
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/cs_main.c , cscc/csharp/cs_scanner.l , cscc/csharp/cs_internal.h:

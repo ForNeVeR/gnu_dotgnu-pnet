@@ -72,7 +72,7 @@ ILHashTable *ILHashCreate(int size, ILHashComputeFunc computeFunc,
 	/* Allocate space for the hash table */
 	if(!size)
 	{
-		size = 512;
+		size = 509;
 	}
 	if((hashtab = (ILHashTable *)ILCalloc(1, sizeof(ILHashTable) +
 											 sizeof(ILHashEntry) * size)) == 0)

@@ -36,7 +36,7 @@ typedef struct _InternEntry
 	char str[1];
 
 } InternEntry;
-#define	INTERN_HASH_SIZE		2048
+#define	INTERN_HASH_SIZE		2039
 static InternEntry *hashTable[INTERN_HASH_SIZE];
 static char emptyString[] = "";
 
@@ -61,7 +61,7 @@ ILIntString ILInternString(char *str, int len)
 	}
 
 	/* Hash the string */
-	hash = (ILHashString(0, str, len) & (INTERN_HASH_SIZE - 1));
+	hash = (ILHashString(0, str, len) % INTERN_HASH_SIZE);
 
 	/* Look in the hash table to see if we already have the string */
 	entry = hashTable[hash];
@@ -119,7 +119,7 @@ ILIntString ILInternAppendedString(ILIntString str1, ILIntString str2)
 	/* Hash the combined string */
 	hash = ILHashString(0, str1.string, str1.len);
 	hash = ILHashString(hash, str2.string, str2.len);
-	hash &= (INTERN_HASH_SIZE - 1);
+	hash %= INTERN_HASH_SIZE;
 
 	/* Look in the hash table to see if we already have the combined string */
 	entry = hashTable[hash];

@@ -62,8 +62,8 @@ extern	"C" {
  * Structure of a context, which holds multiple loaded images,
  * and the information about the classes, methods, etc, in them.
  */
-#define	IL_CONTEXT_HASH_SIZE	512
-#define	IL_CONTEXT_NS_HASH_SIZE	64
+#define	IL_CONTEXT_HASH_SIZE	509
+#define	IL_CONTEXT_NS_HASH_SIZE	67
 struct _tagILContext
 {
 	/* Hash table that maps class names to class information blocks */

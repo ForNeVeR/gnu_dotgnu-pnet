@@ -4,6 +4,9 @@
 	* System.Windows.Forms/Control.cs: fix bug #10392 - stack overflow
 	in "ContainsFocus" when overriding "Control.Focused".
 
+	* System.Drawing/Bitmap.cs: implement "Bitmap.LockBits" (fixes bug
+	#10360).
+
 2004-09-15  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Private/NumberParser.cs: fix not raised overflowexception

@@ -217,12 +217,33 @@ public sealed class Bitmap : System.Drawing.Image
 				return Color.Empty;
 			}
 
-	// Lock a region of this bitmap.
-	public BitmapData LockBits(Rectangle rect, ImageLockMode flags,
-							   System.Drawing.Imaging.PixelFormat format)
+	// Lock a region of this bitmap.  Use of this method is discouraged.
+	// It assumes that managed arrays are fixed in place in memory,
+	// which is true for ilrun, but maybe not other CLR implementations.
+	// We also assume that "format" is the same as the bitmap's real format.
+	public unsafe BitmapData LockBits
+					(Rectangle rect, ImageLockMode flags,
+					 System.Drawing.Imaging.PixelFormat format)
 			{
-				// Don't use this: it isn't portable.
-				return new BitmapData();
+				BitmapData bitmapData = new BitmapData();
+				bitmapData.Width = rect.Width;
+				bitmapData.Height = rect.Height;
+				bitmapData.PixelFormat = format;
+				if(dgImage != null)
+				{
+					Frame frame = dgImage.GetFrame(0);
+					if(frame != null)
+					{
+						bitmapData.Stride = frame.Stride;
+						byte[] data = frame.Data;
+						int offset = rect.X * GetPixelFormatSize(format) / 8;
+						fixed (byte *pixel = &(data[rect.Y * frame.Stride]))
+						{
+							bitmapData.Scan0 = (IntPtr)(void *)(pixel + offset);
+						}
+					}
+				}
+				return bitmapData;
 			}
 
 	// Make a particular color transparent within this bitmap.

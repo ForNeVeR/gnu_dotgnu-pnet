@@ -1,3 +1,6 @@
+2003-04-27  Adam Ballai  <minddog@cannibutter.com>
+	
+	* System.Xml/ElementList.cs: Implement GetEnumerator and Item(int). 
 
 2003-04-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -9,6 +9,9 @@
 	* cscc/csharp/cs_oper.tc (EqualitySem): pointer comparisons
 	against null.
 
+	* cscc/csharp/cs_types.tc (ILNode_LocalVariableType): apply a
+	fix so that "void *" can be used as the type of a local variable.
+
 2003-05-29  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_nodes.tc, codegen/cg_lvalue.tc, cscc/csharp/cs_lvalue.tc,

@@ -223,7 +223,7 @@ ILNode_SemAnalysis(ILNode_LocalVariableType)
 	ILType *type;
 
 	/* Perform semantic analysis on the element type */
-	type = CSSemTypeLiteral(node->type, info, &(node->type));
+	type = CSSemTypeVoid(node->type, info, &(node->type));
 
 	/* If the element type is "void", then the first suffix
 	   must indicate a pointer type */

@@ -174,7 +174,7 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
  * method call will be used instead.
  */
 int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,
-							void *result, ...);
+							void *result, void *_this, ...);
 
 /*
  * Look up a method by name and then call it.  If the
@@ -186,12 +186,12 @@ int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 
 /*
  * Look up a method by name and then call it using a
- * virtual cal.  If the method is not found, an exception
+ * virtual call.  If the method is not found, an exception
  * will be thrown.
  */
 int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 						         const char *methodName, const char *signature,
-						         void *result, ...);
+						         void *result, void *_this, ...);
 
 /*
  * Create a new object instance of a class and call its constructor.

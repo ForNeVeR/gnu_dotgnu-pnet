@@ -13,6 +13,9 @@ for "System.RuntimeType".
 * csdoc/doc_html.c, csdoc/doc_texi.c: dump the attributes for types
 and their members.
 
+* include/il_engine.h, engine/engine.h, engine/call.c: implement
+virtual and interface method calls for the engine's external API.
+
 2001-10-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_utils.h, support/unicode.c: implement the new helper

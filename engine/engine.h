@@ -253,6 +253,13 @@ ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo);
 void *_ILFindInternalCall(ILMethod *method, int ctorAlloc);
 
 /*
+ * Look up an interface method.  Returns NULL if not found.
+ */
+ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
+								   ILClass *interfaceClass,
+								   ILUInt32 index);
+
+/*
  * Match a type against a lookup signature value.
  */
 int _ILLookupTypeMatch(ILType *type, const char *signature);

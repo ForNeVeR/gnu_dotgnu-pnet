@@ -57,6 +57,7 @@ this automatically, but the explicit casts are recommended.
 */
 
 #include "engine_private.h"
+#include "lib_defs.h"
 #ifdef HAVE_STDARG_H
 #include <stdarg.h>
 #define	VA_LIST				va_list
@@ -97,7 +98,8 @@ extern	"C" {
 			} while (0)
 
 static int CallMethod(ILExecThread *thread, ILMethod *method,
-					  void *result, int isCtor, VA_LIST va)
+					  void *result, int isCtor,
+					  void *_this, VA_LIST va)
 {
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
@@ -121,7 +123,16 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	{
 		/* Push the "this" argument */
 		CHECK_SPACE(1);
-		stacktop->ptrValue = (void *)(VA_ARG(va, ILObject *));
+		if(_this)
+		{
+			/* Use the supplied "this" parameter */
+			stacktop->ptrValue = _this;
+		}
+		else
+		{
+			/* Get the "this" parameter from the varargs list */
+			stacktop->ptrValue = (void *)(VA_ARG(va, ILObject *));
+		}
 		++stacktop;
 	}
 	numParams = signature->num;
@@ -412,11 +423,102 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	return threwException;
 }
 
-static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
-					  		 void *result, VA_LIST va)
+ILMethod *_ILLookupInterfaceMethod(ILClass *objectClass,
+								   ILClass *interfaceClass,
+								   ILUInt32 index)
 {
-	/* TODO */
-	return CallMethod(thread, method, result, 0, va);
+	ILImplements *implements;
+
+	/* Locate the interface table within the class hierarchy for the object */
+	while(objectClass != 0)
+	{
+		implements = objectClass->implements;
+		while(implements != 0)
+		{
+			if(implements->interface == interfaceClass)
+			{
+				/* We've found the interface, so look in the interface
+				   table to find the vtable slot, which is then used to
+				   look in the class's vtable for the actual method */
+				if(!(implements->userData))
+				{
+					return 0;
+				}
+				return ((ILClassPrivate *)(objectClass->userData))->vtable
+						[((ILUInt16 *)(implements->userData))[index]];
+			}
+			implements = implements->nextInterface;
+		}
+		objectClass = ILClassGetParent(objectClass);
+	}
+
+	/* The interface implementation was not found */
+	return 0;
+}
+
+/*
+ * Throw a missing method exception.
+ */
+static void ThrowMethodMissing(ILExecThread *thread)
+{
+	ILExecThreadThrowSystem(thread, "System.MissingMethodException",
+							(const char *)0);
+}
+
+static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
+					  		 void *result, void *_this, VA_LIST va)
+{
+	ILClass *classInfo;
+	ILClass *objectClass;
+
+	/* Throw a "NullReferenceException" if "this" is NULL */
+	if(!_this)
+	{
+		ILExecThreadThrowSystem(thread, "System.NullReferenceException",
+								(const char *)0);
+		return 1;
+	}
+
+	/* The calling sequence is handled differently depending
+	   upon whether the method is normal, interface, or virtual */
+	if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0)
+	{
+		/* This is a normal method which has been called incorrectly */
+		return CallMethod(thread, method, result, 0, _this, va);
+	}
+	classInfo = method->member.owner;
+	objectClass = GetObjectClass(_this);
+	if((classInfo->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK)
+			== IL_META_TYPEDEF_INTERFACE)
+	{
+		/* This is an interface method call */
+		if(ILClassImplements(objectClass, classInfo))
+		{
+			method = _ILLookupInterfaceMethod(objectClass, classInfo,
+											  method->index);
+			if(method)
+			{
+				return CallMethod(thread, method, result, 0, _this, va);
+			}
+		}
+	}
+	else
+	{
+		/* This is an ordinary virtual method call */
+		if(ILClassInheritsFrom(objectClass, classInfo))
+		{
+			method = ((ILClassPrivate *)(classInfo->userData))->
+							vtable[method->index];
+			if(method)
+			{
+				return CallMethod(thread, method, result, 0, _this, va);
+			}
+		}
+	}
+
+	/* If we get here, then we could not resolve the virtual */
+	ThrowMethodMissing(thread);
+	return 1;
 }
 
 int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
@@ -424,24 +526,18 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 {
 	int threwException;
 	VA_START(result);
-	threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
+	threwException = CallMethod(thread, method, result, 0, 0, VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
 
 int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,
-							void *result, ...)
+							void *result, void *_this, ...)
 {
 	int threwException;
-	VA_START(result);
-	if(ILMethod_IsVirtual(method))
-	{
-		threwException = CallVirtualMethod(thread, method, result, VA_GET_LIST);
-	}
-	else
-	{
-		threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
-	}
+	VA_START(_this);
+	threwException = CallVirtualMethod
+						(thread, method, result, _this, VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
@@ -461,23 +557,23 @@ int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 		VA_END;
 
 		/* Construct and throw a "MissingMethodException" object */
-		/* TODO */
+		ThrowMethodMissing(thread);
 
 		/* There is a pending exception waiting for the caller */
 		return 1;
 	}
-	threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
+	threwException = CallMethod(thread, method, result, 0, 0, VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
 
 int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 						         const char *methodName, const char *signature,
-						         void *result, ...)
+						         void *result, void *_this, ...)
 {
 	int threwException;
 	ILMethod *method;
-	VA_START(result);
+	VA_START(_this);
 	method = ILExecThreadLookupMethod(thread, typeName,
 									  methodName, signature);
 	if(!method)
@@ -486,19 +582,13 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 		VA_END;
 
 		/* Construct and throw a "MissingMethodException" object */
-		/* TODO */
+		ThrowMethodMissing(thread);
 
 		/* There is a pending exception waiting for the caller */
 		return 1;
 	}
-	if(ILMethod_IsVirtual(method))
-	{
-		threwException = CallVirtualMethod(thread, method, result, VA_GET_LIST);
-	}
-	else
-	{
-		threwException = CallMethod(thread, method, result, 0, VA_GET_LIST);
-	}
+	threwException = CallVirtualMethod
+						(thread, method, result, _this, VA_GET_LIST);
 	VA_END;
 	return threwException;
 }
@@ -511,14 +601,13 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	ILObject *result;
 	VA_START(signature);
 
-	/* TODO: array types */
-
 	/* Find the constructor */
 	ctor = ILExecThreadLookupMethod(thread, typeName, ".ctor", signature);
 	if(!ctor)
 	{
-		/* TODO: Throw a "MissingMethodException" */
+		/* Throw a "MissingMethodException" */
 		VA_END;
+		ThrowMethodMissing(thread);
 		return 0;
 	}
 
@@ -526,19 +615,22 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	classInfo = ILMethod_Owner(ctor);
 	if(!_ILLayoutClass(classInfo))
 	{
-		/* TODO: Throw a "TypeLoadException" */
+		/* Throw a "TypeLoadException" */
 		VA_END;
+		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
+								(const char *)0);
 		return 0;
 	}
 
 	/* Call the constructor */
 	result = 0;
-	if(CallMethod(thread, ctor, &result, 1, VA_GET_LIST))
+	if(CallMethod(thread, ctor, &result, 1, 0, VA_GET_LIST))
 	{
 		/* The constructor threw an exception */
 		VA_END;
 		return 0;
 	}
+	VA_END;
 	return result;
 }
 

@@ -1,4 +1,13 @@
 
+0.2.8 (2 September 2002)
+
+	* System.Runtime.Serialization, System.Xml.
+	* Add "System.dll" to the references for "System.Xml.dll".
+	* Pass the correct type information to "Module.GetMethodImpl".
+	* Fixes to String.Split, System.IO.File, StringBuilder (Gopal V).
+	* Missing Receive method in "Socket" (Peter Minten).
+	* Patches to I18N for Mono integration.
+
 0.2.6 (25 July 2002)
 
 	* System.Xml.XmlReader (Charlie Carnow).

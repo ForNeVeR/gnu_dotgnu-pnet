@@ -9,6 +9,9 @@ the "ildiff" code to the tree.  Contributed by Gopal V <gopalv82@yahoo.com>.
 
 * ildiff/TODO: remove "to do" item for the man page.
 
+* cscc/cs_invoke.tc: better error messages for failed method invocations;
+handle method overloading better; support for "params" argument arrays.
+
 2001-09-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * csdoc/doc_tree.h, csdoc/doc_load.c: add the types to a hash table as

@@ -18,6 +18,52 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+%decls %{
+
+/*
+ * Convert a method into a printable name, suitable for use in error messages.
+ */
+const char *CSMethodToName(ILMethod *method);
+
+/*
+ * Information that is kept about an evaluated argument.
+ */
+typedef struct
+{
+	ILType	   *type;
+	ILNode     *node;
+	ILNode    **parent;
+
+} CSEvalArg;
+
+/*
+ * Evaluate a list of arguments for a method invocation.
+ * Returns the number of arguments, or -1 on error.
+ */
+int CSEvalArguments(ILGenInfo *info, ILNode *argList,
+					ILNode **argListParent, CSEvalArg **args);
+
+/*
+ * Free an evaluated argument list.
+ */
+void CSEvalFreeArguments(CSEvalArg *args);
+
+/*
+ * Determine if a method is a candidate for evaluation.
+ */
+int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
+					    CSEvalArg *args, int numArgs);
+
+/*
+ * Coerce the arguments and set up the final argument list.
+ * Returns the method's return type.
+ */
+ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
+						   CSEvalArg *args, int numArgs,
+						   ILNode **argListParent);
+
+%}
+
 /*
  * Perform semantic analysis for the argument list operator.
  */
@@ -63,53 +109,60 @@ static unsigned CountArgList(ILNode *argList)
 }
 
 /*
- * Get an argument node from an ArgList.
+ * Report an error message for a failed method signature match,
+ * listing the candidates for the call.
  */
-static ILNode *GetArgNode(ILNode *argList, unsigned num, unsigned count)
+static void MethodCandidateError(ILNode *node, char *methodName,
+								 void *group, CSEvalArg *args, int numArgs)
 {
-	if(!argList || num > count)
-	{
-		return 0;
-	}
-	while(num < count)
-	{
-		argList = ((ILNode_ArgList *)argList)->expr1;
-		++num;
-	}
-	if(yyisa(argList, ILNode_ArgList))
-	{
-		return ((ILNode_ArgList *)argList)->expr2;
-	}
-	else
-	{
-		return argList;
-	}
-}
+	unsigned long num;
+	ILMethod *method;
+	ILIntString str;
+	int argNum;
 
-/*
- * Set an argument node within an ArgList.
- */
-static void SetArgNode(ILNode **parent, unsigned num,
-					   unsigned count, ILNode *arg)
-{
-	ILNode *list = *parent;
-	if(!list || num > count)
+	/* Report the method name and argument types */
+	if(methodName)
 	{
-		return;
-	}
-	while(num < count)
-	{
-		parent = &(((ILNode_ArgList *)list)->expr1);
-		list = ((ILNode_ArgList *)list)->expr1;
-		++num;
-	}
-	if(yyisa(list, ILNode_ArgList))
-	{
-		((ILNode_ArgList *)list)->expr2 = arg;
+		/* Construct a list of the argument types for the error */
+		str = ILInternString(methodName, -1);
+		str = ILInternAppendedString(str, ILInternString("(", 1));
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			if(argNum != 0)
+			{
+				str = ILInternAppendedString(str, ILInternString(", ", 2));
+			}
+			str = ILInternAppendedString
+					(str, ILInternString
+							((char *)CSTypeToName(args[argNum].type), -1));
+		}
+		str = ILInternAppendedString(str, ILInternString(")", 1));
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "no matching method for call to `%s'",
+					  str.string);
 	}
 	else
 	{
-		*parent = arg;
+		/* Don't know what the method name is, so use a generic message */
+		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "no matching method for call");
+	}
+
+	/* Report the candidates */
+	num = 0;
+	while((method = CSGetGroupMember(group, num)) != 0)
+	{
+		if(!num)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "candidates are: %s", CSMethodToName(method));
+		}
+		else
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "                %s", CSMethodToName(method));
+		}
+		++num;
 	}
 }
 
@@ -123,12 +176,26 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	CSSemValue value;
 	CSSemValue method;
 	ILMethod *methodInfo;
-	ILType *signature;
-	unsigned numParams, param;
-	unsigned argCount;
-	ILType *paramType;
-	ILNode *currentArg;
-	int argErrors;
+	ILType *retType;
+	CSEvalArg *args;
+	int numArgs;
+	unsigned long methodNum;
+	char *methodName;
+
+	/* Get the method name for later error reporting */
+	if(ILIsQualIdent(node->expr1))
+	{
+		methodName = ILQualIdentName(node->expr1, 0);
+	}
+	else if(yyisa(node->expr1, ILNode_MemberAccess))
+	{
+		methodName = ILQualIdentName
+			(((ILNode_MemberAccess *)(node->expr1))->expr2, 0);
+	}
+	else
+	{
+		methodName = 0;
+	}
 
 	/* TODO: delegate invocation */
 
@@ -157,9 +224,31 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 		return value;
 	}
 
-	/* Get the first method (TODO: handle method overloading) */
-	methodInfo = CSGetGroupMember((void *)(method.type), 0);
-	signature = ILMethod_Signature(methodInfo);
+	/* Evaluate the arguments */
+	numArgs = CSEvalArguments(info, node->expr2, &(node->expr2), &args);
+	if(numArgs < 0)
+	{
+		return CSSemValueDefault;
+	}
+
+	/* Find a candidate method (TODO: handle multiple candidates) */
+	methodNum = 0;
+	while((methodInfo = CSGetGroupMember
+							((void *)(method.type), methodNum)) != 0)
+	{
+		if(CSMethodIsCandidate(info, methodInfo, args, numArgs))
+		{
+			break;
+		}
+		++methodNum;
+	}
+	if(!methodInfo)
+	{
+		MethodCandidateError((ILNode *)node, methodName,
+							 (void *)(method.type), args, numArgs);
+		CSEvalFreeArguments(args);
+		return CSSemValueDefault;
+	}
 	node->methodInfo = methodInfo;
 
 	/* Handle the "this" parameter if necessary */
@@ -168,64 +257,13 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 		node->thisExpr = node->expr1;
 	}
 
-	/* Perform semantic analysis on the arguments */
-	numParams = signature->num;
-	argCount = CountArgList(node->expr2);
-	argErrors = 0;
-	for(param = 1; param <= numParams; ++param)
-	{
-		/* Get the argument value */
-		currentArg = GetArgNode(node->expr2, param, argCount);
-		if(!currentArg)
-		{
-			/* TODO: better error message */
-			CSErrorOnLine(yygetfilename(node->expr1),
-						  yygetlinenum(node->expr1),
-						  "too few arguments to method");
-			argErrors = 1;
-			continue;
-		}
-
-		/* Perform semantic analysis on the argument value */
-		value = ILNode_SemAnalysis(currentArg, info, &currentArg);
-		SetArgNode(&(node->expr2), param, argCount, currentArg);
-		if(!CSIsSemValue(value.kind))
-		{
-			CSErrorOnLine(yygetfilename(currentArg),
-						  yygetlinenum(currentArg),
-						  "invalid value for argument %u", param);
-			argErrors = 1;
-			continue;
-		}
-
-		/* Attempt to coerce to the parameter type */
-		paramType = ILTypeGetParam(signature, param);
-		if(!ILCoerce(info, currentArg, &currentArg, value.type, paramType))
-		{
-			CSErrorOnLine(yygetfilename(currentArg),
-						  yygetlinenum(currentArg),
-						  "no conversion from `%s' to `%s' in argument %u",
-						  value.type, paramType, param);
-			argErrors = 1;
-			continue;
-		}
-		SetArgNode(&(node->expr2), param, argCount, currentArg);
-	}
-	if(numParams < argCount)
-	{
-		/* TODO: better error message */
-		CSErrorOnLine(yygetfilename(node->expr1),
-					  yygetlinenum(node->expr1),
-					  "too many arguments to method");
-		argErrors = 1;
-	}
-	if(argErrors)
-	{
-		return CSSemValueDefault;
-	}
+	/* Coerce the arguments and build the final argument list */
+	retType = CSMethodCoerceArgs(info, methodInfo, args, numArgs,
+								 &(node->expr2));
+	CSEvalFreeArguments(args);
 
 	/* The semantic value is the method's return type as an r-value */
-	if(signature->un.method.retType == ILType_Void)
+	if(retType == ILType_Void)
 	{
 		value.kind = CS_SEMKIND_VOID;
 		value.type = 0;
@@ -233,7 +271,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	else
 	{
 		value.kind = CS_SEMKIND_RVALUE;
-		value.type = signature->un.method.retType;
+		value.type = retType;
 	}
 	return value;
 }
@@ -287,3 +325,417 @@ ILNode_SemAnalysis(ILNode_ThisInit)
 	*parent = ILNode_This_create();
 	return value;
 }
+
+/*
+ * Perform semantic analysis for argument array nodes.
+ */
+ILNode_SemAnalysis(ILNode_ArgArray)
+{
+	/* This will never be called */
+	return CSSemValueDefault;
+}
+
+%{
+
+const char *CSMethodToName(ILMethod *method)
+{
+	ILType *signature = ILMethod_Signature(method);
+	const char *name = ILMethod_Name(method);
+	ILIntString str;
+	ILType *type;
+	unsigned numParams;
+	unsigned param;
+
+	/* Put "static" or "virtual" on the front if necessary */
+	if(ILMethod_IsStatic(method))
+	{
+		str = ILInternString("static ", 7);
+	}
+	else if(ILMethod_IsVirtual(method))
+	{
+		str = ILInternString("virtual ", 8);
+	}
+	else
+	{
+		str = ILInternString("", 0);
+	}
+
+	/* Get the type of the class that contains the method */
+	type = ILType_FromClass(ILMethod_Owner(method));
+
+	/* The formatting is slightly different for constructors */
+	if(!strcmp(name, ".ctor") || !strcmp(name, ".cctor"))
+	{
+		/* Append the class name to the string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName(type), -1));
+	}
+	else
+	{
+		/* Convert the return type into a string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName
+										(signature->un.method.retType), -1));
+
+		/* Append the class name to the string */
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName(type), -1));
+
+		/* Append a dot to the string */
+		str = ILInternAppendedString(str, ILInternString(".", 1));
+
+		/* Append the method name to the string */
+		str = ILInternAppendedString(str, ILInternString((char *)name, -1));
+	}
+
+	/* Add the parameter types to the string */
+	str = ILInternAppendedString(str, ILInternString("(", 1));
+	numParams = signature->num;
+	for(param = 1; param <= numParams; ++param)
+	{
+		type = ILTypeGetParam(signature, param);
+		if(param != 1)
+		{
+			str = ILInternAppendedString(str, ILInternString(", ", 2));
+		}
+		str = ILInternAppendedString
+				(str, ILInternString((char *)CSTypeToName(type), -1));
+	}
+	str = ILInternAppendedString(str, ILInternString(")", 1));
+
+	/* Return the final string to the caller */
+	return str.string;
+}
+
+int CSEvalArguments(ILGenInfo *info, ILNode *argList,
+					ILNode **argListParent, CSEvalArg **args)
+{
+	int argCount;
+	int argNum;
+	CSEvalArg *argArray;
+	ILNode *tempList;
+	ILNode **tempParent;
+	int tempNum;
+	int haveErrors;
+	CSSemValue value;
+
+	/* Get the number of arguments that have been supplied */
+	argCount = CountArgList(argList);
+
+	/* Bail out if there are no arguments */
+	if(!argCount)
+	{
+		*args = 0;
+		return 0;
+	}
+
+	/* Allocate an argument array */
+	argArray = (CSEvalArg *)ILMalloc(sizeof(CSEvalArg) * argCount);
+	if(!argArray)
+	{
+		CSOutOfMemory();
+	}
+
+	/* Perform semantic analysis on the arguments and fill the array */
+	haveErrors = 1;
+	for(argNum = 0; argNum < argCount; ++argNum)
+	{
+		/* Find the argument node and its parent */
+		tempList = argList;
+		tempParent = argListParent;
+		tempNum = argNum + 1;
+		while(tempNum < argCount)
+		{
+			tempParent = &(((ILNode_ArgList *)tempList)->expr1);
+			tempList = ((ILNode_ArgList *)tempList)->expr1;
+			++tempNum;
+		}
+		if(yyisa(tempList, ILNode_ArgList))
+		{
+			tempParent = &(((ILNode_ArgList *)tempList)->expr2);
+			tempList = ((ILNode_ArgList *)tempList)->expr2;
+		}
+
+		/* Populate the argument array element */
+		value = ILNode_SemAnalysis(tempList, info, tempParent);
+		argArray[argNum].node = *tempParent;
+		argArray[argNum].parent = tempParent;
+		if(CSIsSemValue(value.kind))
+		{
+			argArray[argNum].type = value.type;
+		}
+		else
+		{
+			argArray[argNum].type = ILType_Void;
+			CSErrorOnLine(yygetfilename(tempList),
+						  yygetlinenum(tempList),
+						  "invalid value for argument %u", argNum + 1);
+			haveErrors = 1;
+		}
+	}
+
+	/* Report either an error, or the argument count */
+	if(haveErrors)
+	{
+		ILFree(argArray);
+		*args = 0;
+		return -1;
+	}
+	else
+	{
+		*args = argArray;
+		return argCount;
+	}
+}
+
+void CSEvalFreeArguments(CSEvalArg *args)
+{
+	if(args)
+	{
+		ILFree(args);
+	}
+}
+
+/*
+ * Determine if a method parameter is "params".
+ */
+static int ParameterIsArray(ILMethod *method, int num)
+{
+	ILParameter *param = 0;
+	ILAttribute *attr;
+	ILMethod *attrMethod;
+	ILClass *classInfo;
+	const char *namespace;
+
+	while((param = ILMethodNextParam(method, param)) != 0)
+	{
+		if(ILParameter_Num(param) == (ILInt32)num)
+		{
+			/* Look for a custom attribute called
+			   "System.ParamArrayAttribute" */
+			attr = 0;
+			while((attr = ILProgramItemNextAttribute
+							((ILProgramItem *)param, attr)) != 0)
+			{
+				attrMethod = ILProgramItemToMethod
+									(ILAttribute_TypeAsItem(attr));
+				if(attrMethod)
+				{
+					classInfo = ILMethod_Owner(attrMethod);
+					if(!strcmp(ILClass_Name(classInfo), "ParamArrayAttribute"))
+					{
+						namespace = ILClass_Namespace(classInfo);
+						if(namespace && !strcmp(namespace, "System"))
+						{
+							return 1;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int CSMethodIsCandidate(ILGenInfo *info, ILMethod *method,
+						CSEvalArg *args, int numArgs)
+{
+	ILType *signature = ILMethod_Signature(method);
+	int numParams = signature->num;
+	int firstParam;
+	int haveParamArray;
+	int argNum;
+	ILType *paramType;
+
+	/* If we have an "explicit this" method, then we need to
+	   adjust for the first parameter, which is always "this" */
+	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
+	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) != 0 &&
+	   numParams > 0)
+	{
+		firstParam = 2;
+	}
+	else
+	{
+		firstParam = 1;
+	}
+
+	/* Does this method have a "params" array at the end? */
+	haveParamArray = (numParams > 0 && ParameterIsArray(method, numParams));
+
+	/* Perform parameter matching */
+	if(!haveParamArray)
+	{
+		/* We must have exactly "numParams" arguments */
+		if(numArgs != (numParams - firstParam + 1))
+		{
+			return 0;
+		}
+
+		/* Check for implicit coercions on all arguments */
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			if(!ILCanCoerce(info->context, args[argNum].type,
+							ILTypeGetParam(signature, argNum + firstParam)))
+			{
+				return 0;
+			}
+		}
+	}
+	else
+	{
+		/* We must have at least "numParams - 1" arguments */
+		if(numArgs < (numParams - firstParam))
+		{
+			return 0;
+		}
+
+		/* Check for implicit coercions on all fixed arguments */
+		for(argNum = 0; argNum < (numParams - firstParam); ++argNum)
+		{
+			if(!ILCanCoerce(info->context, args[argNum].type,
+							ILTypeGetParam(signature, argNum + firstParam)))
+			{
+				return 0;
+			}
+		}
+
+		/* Get the parameter array element type */
+		paramType = ILTypeGetParam(signature, numParams);
+		if(paramType == 0 ||
+		   !ILType_IsComplex(paramType) ||
+		   paramType->kind != IL_TYPE_COMPLEX_ARRAY)
+		{
+			/* Invalid parameter array type, so no match */
+			return 0;
+		}
+		paramType = paramType->un.array.elemType;
+
+		/* Check that all remaining arguments can be coerced to "paramType" */
+		for(argNum = (numParams - firstParam); argNum < numArgs; ++argNum)
+		{
+			if(!ILCanCoerce(info->context, args[argNum].type, paramType))
+			{
+				return 0;
+			}
+		}
+	}
+
+	/* If we get here, then we have a match */
+	return 1;
+}
+
+ILType *CSMethodCoerceArgs(ILGenInfo *info, ILMethod *method,
+						   CSEvalArg *args, int numArgs,
+						   ILNode **argListParent)
+{
+	ILType *signature = ILMethod_Signature(method);
+	int numParams = signature->num;
+	int firstParam;
+	int haveParamArray;
+	int argNum;
+	ILType *paramType;
+	ILNode *argList;
+	ILNode *argArray;
+
+	/* If we have an "explicit this" method, then we need to
+	   adjust for the first parameter, which is always "this" */
+	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
+	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) != 0 &&
+	   numParams > 0)
+	{
+		firstParam = 2;
+	}
+	else
+	{
+		firstParam = 1;
+	}
+
+	/* Does this method have a "params" array at the end? */
+	haveParamArray = (numParams > 0 && ParameterIsArray(method, numParams));
+
+	/* Perform parameter matching */
+	if(!haveParamArray)
+	{
+		/* Coerce all arguments */
+		for(argNum = 0; argNum < numArgs; ++argNum)
+		{
+			ILCoerce(info, args[argNum].node,
+					 args[argNum].parent, args[argNum].type,
+					 ILTypeGetParam(signature, argNum + firstParam));
+		}
+	}
+	else
+	{
+		/* Coerce the fixed arguments */
+		for(argNum = 0; argNum < (numParams - firstParam); ++argNum)
+		{
+			ILCoerce(info, args[argNum].node,
+					 args[argNum].parent, args[argNum].type,
+					 ILTypeGetParam(signature, argNum + firstParam));
+		}
+
+		/* Get the parameter array element type */
+		paramType = ILTypeGetParam(signature, numParams);
+		paramType = paramType->un.array.elemType;
+
+		/* Coerce the remaining arguments to the element type */
+		for(argNum = (numParams - firstParam); argNum < numArgs; ++argNum)
+		{
+			ILCoerce(info, args[argNum].node,
+					 args[argNum].parent, args[argNum].type,
+					 paramType);
+		}
+
+		/* Build a new argument list for the fixed arguments */
+		argList = 0;
+		for(argNum = 0; argNum < (numParams - firstParam); ++argNum)
+		{
+			if(argList)
+			{
+				argList = ILNode_ArgList_create
+								(argList, *(args[argNum].parent));
+			}
+			else
+			{
+				argList = *(args[argNum].parent);
+			}
+		}
+
+		/* Build an array containing the remaining arguments */
+		argArray = 0;
+		for(argNum = (numParams - firstParam); argNum < numArgs; ++argNum)
+		{
+			if(argArray)
+			{
+				argArray = ILNode_ArgList_create
+								(argArray, *(args[argNum].parent));
+			}
+			else
+			{
+				argArray = *(args[argNum].parent);
+			}
+		}
+		argArray = ILNode_ArgArray_create
+					(paramType, numArgs - (numParams - firstParam), argArray);
+
+		/* Add the argument array to the full argument list */
+		if(argList)
+		{
+			argList = ILNode_ArgList_create(argList, argArray);
+		}
+		else
+		{
+			argList = argArray;
+		}
+
+		/* Set the argument list in the parent node */
+		*argListParent = argList;
+	}
+
+	/* Return the method's return type to the caller */
+	return signature->un.method.retType;
+}
+
+%}

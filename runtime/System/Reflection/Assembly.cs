@@ -208,13 +208,13 @@ public class Assembly : IClrProgramItem
 				}
 				else if(type != null)
 				{
-					return GetManifestResourceStream(type.Namespace + "." +
-													 name);
+					String nspace = type.Namespace;
+					if(nspace != null && nspace != String.Empty)
+					{
+						return GetManifestResourceStream(nspace + "." + name);
+					}
 				}
-				else
-				{
-					return GetManifestResourceStream(name);
-				}
+				return GetManifestResourceStream(name);
 			}
 
 #else // ECMA_COMPAT

@@ -23,6 +23,9 @@
 	requirements of "<namespace>.<filename>.ico"; modify "Bitmap" and
 	"Icon" to use the correct form of "GetManifestResourceStream".
 
+	* runtime/System/Reflection/Assembly.cs: deal with empty namespace
+	names in "GetManifestResourceStream(Type,String)".
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/Configuration/DictionarySectionHandler.cs,

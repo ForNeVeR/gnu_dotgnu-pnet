@@ -942,7 +942,7 @@ WHITE			[ \t\r\f\v\032]
 			}
 		}
 "@"{IDALPHA}({DIGIT}|{IDALPHA})*	{
-			yylval.name = (ParseString(yytext)).string;
+			yylval.name = (ParseString(yytext + 1)).string;
 			RETURNTOK(IDENTIFIER);
 		}
 

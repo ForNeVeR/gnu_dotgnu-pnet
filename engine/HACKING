@@ -50,6 +50,23 @@ to put the native code in.
     The ILFileClose does the actual work of closing the file and returns 
 status. Now to export this function as the internalcall , we add an export
 definition.
+
+	Some special cases for the passing of parameters is an out or
+ref specifier in C#. This just requires you to add an extra layer
+of indirection ie a *() more.
+
+	Another situation is when an array is passed into a native function
+eg a byte[] ==> ILInt8[] in C. But all arrays are passed in as 
+System_Array class , this has to converted to correct C type by using 
+the ArrayToBuffer function as in 
+
+	ILUInt8 *buf = (ILUInt8 *)(ArrayToBuffer(array));
+
+	Also it is better to pass individual fields into an internal call
+except when handling stuff like System_String,System_Thread or 
+System_Array. This saves a lot of work for pulling apart the fields,
+methods and properties.
+
 [-SNIP-FROM-engine/lib_file.c-]
 
  IL_METHOD_BEGIN(_ILPlatformFileMethods)

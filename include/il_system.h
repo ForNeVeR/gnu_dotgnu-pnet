@@ -160,6 +160,18 @@ char *ILGetCwd(void);
 /* Expand a filename to a full absolute pathname.  Free return with "ILFree" */
 char *ILExpandFilename(const char *filename, char *searchPath);
 
+/* Determine if the underlying CPU has cache flush functionality */
+#if defined(__i386) || defined(__i386__) || \
+		defined(PPC) || defined(__sparc)
+	#if defined(__GNUC__)
+		#define	IL_HAVE_CACHE_FLUSH	1
+	#endif
+#endif
+
+/* Perform a CPU cache flush on a block of memory.  This does nothing
+   if the CPU does not have cache flush functionality */
+void ILCacheFlush(void *buf, long length);
+
 #ifdef	__cplusplus
 };
 #endif

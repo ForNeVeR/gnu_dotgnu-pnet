@@ -18,6 +18,10 @@
 	* doc/pinvoke.html: rewrite "pinvoke.html" to document the
 	current PInvoke conventions within the engine.
 
+	* include/il_system.h, support/Makefile.am, support/clflush.c:
+	add the "ILCacheFlush" support function, to enable the flushing
+	of the CPU data/instruction caches.
+
 2002-05-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_gen.c, codegen/cg_nodes.tc, codegen/cg_stmt.tc,

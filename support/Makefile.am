@@ -2,6 +2,7 @@ lib_LIBRARIES = libILSupport.a
 noinst_PROGRAMS = mkcategory mknumber
 
 libILSupport_a_SOURCES = allocate.c \
+						 clflush.c \
 						 cmdline.c \
 						 cvt_float.c \
 						 decimal.c \

@@ -11,6 +11,10 @@
 	* tests/runtime/System/TestArgIterator.cs: test cases for static
 	vararg methods.
 
+	* runtime/System/Array.cs, tests/runtime/System/SuiteSystem.cs,
+	tests/runtime/System/TestArray.cs: test cases and bug fixes for
+	"Array.BinarySearch".
+
 2003-04-12  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/System.build,

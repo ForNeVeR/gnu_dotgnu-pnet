@@ -1,7 +1,7 @@
 /*
  * Array.cs - Implementation of the "System.Array" class.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,9 +45,15 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		IComparable icmp;
 		left = lower;
 		right = upper;
-		while(left <= right)
+		if(right == Int32.MaxValue)
 		{
-			middle = (left + right) / 2;
+			// We cannot report the correct answer when "right" is maxint
+			// and the value is not found in the array.
+			throw new ArgumentException(_("Arg_InvalidArrayRange"));
+		}
+		while((right - left) >= 0)
+		{
+			middle = left + ((right - left) / 2);
 			elem = array.GetValue(middle);
 			if(elem != null && value != null)
 			{
@@ -149,7 +155,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length", _("ArgRange_Array"));
 		}
-		else if(index > array.GetUpperBound(0) ||
+		else if((index - 1) > array.GetUpperBound(0) ||
 		        length > (array.GetUpperBound(0) - index + 1))
 		{
 			throw new ArgumentException(_("Arg_InvalidArrayRange"));

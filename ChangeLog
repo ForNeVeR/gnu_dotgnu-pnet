@@ -1,4 +1,14 @@
 
+2003-06-18  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Windows.Forms/ButtonBase.cs,
+	System.Windows.Forms/ContainerControl.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
+	System.Windows.Forms/HACKING, System.Windows.Forms/Label.cs,
+	System.Windows.Forms/ScrollableControl.cs,
+	System.Windows.Forms/UserControl.cs: "WndProc" should be "protected",
+	not "public".
+
 2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Windows.Forms/Control.cs, samples/FormsHello.cs:

@@ -2361,7 +2361,7 @@ public class Control : IWin32Window
 			}
 
 	// Process a message.
-	public virtual void WndProc(ref Message m)
+	protected virtual void WndProc(ref Message m)
 			{
 				// Window procedures are not used in this implementation.
 			}

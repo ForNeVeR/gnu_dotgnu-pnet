@@ -163,7 +163,7 @@ public class ContainerControl : ScrollableControl, IContainerControl
 #if !CONFIG_COMPACT_FORMS
 
 	// Process a message.
-	public override void WndProc(ref Message m)
+	protected override void WndProc(ref Message m)
 			{
 				base.WndProc(ref m);
 			}

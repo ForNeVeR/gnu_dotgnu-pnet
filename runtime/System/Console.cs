@@ -97,8 +97,14 @@ public sealed class Console
 						}
 						else
 						{
+							Encoding encoding = Encoding.Default;
+							if(encoding is UTF8Encoding)
+							{
+								// Disable the preamble if UTF-8.
+								encoding = new UTF8Encoding();
+							}
 							StreamWriter writer = new StreamWriter
-								(new StdStream(1), Encoding.Default);
+								(new StdStream(1), encoding);
 							writer.AutoFlush = true;
 							stdout = writer;
 							return stdout;
@@ -120,8 +126,14 @@ public sealed class Console
 						}
 						else
 						{
+							Encoding encoding = Encoding.Default;
+							if(encoding is UTF8Encoding)
+							{
+								// Disable the preamble if UTF-8.
+								encoding = new UTF8Encoding();
+							}
 							StreamWriter writer = new StreamWriter
-								(new StdStream(2), Encoding.Default);
+								(new StdStream(2), encoding);
 							writer.AutoFlush = true;
 							stderr = writer;
 							return stderr;

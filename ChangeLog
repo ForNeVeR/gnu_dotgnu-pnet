@@ -4,6 +4,9 @@
 	* runtime/System/Text/Encoding.cs: back out the UTF8 change because
 	the UTF8 property *must* include the preamble.
 
+	* runtime/System/Console.cs: detect UTF8 locales when creating the
+	console output and disable the preamble there.
+
 2003-01-02  Gopal.V  <gopalv82@symonds.net>
 	
 	* runtime/System/Text/Encoding.cs: Disable UTF8 preambles when used

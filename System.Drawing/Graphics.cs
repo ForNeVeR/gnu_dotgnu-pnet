@@ -790,33 +790,92 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				}
 			}
 
-	// Draw an icon.
-	[TODO]
-	public void DrawIcon(Icon icon, Rectangle targetRect)
+	// Draw an unstretched complete icon via the toolkit.
+	private void ToolkitDrawIcon(Icon icon, int x, int y)
 			{
-				// TODO
-				DrawIconUnstretched(icon, targetRect);
-			}
-	[TODO]
-	public void DrawIconUnstretched(Icon icon, Rectangle targetRect)
-			{
-				// TODO
-				if(icon == null)
-				{
-					throw new ArgumentNullException("icon");
-				}
 				lock(this)
 				{
 					IToolkitImage toolkitImage = icon.GetToolkitImage(this);
 					if(toolkitImage != null)
 					{
-						int x = targetRect.X;
-						int y = targetRect.Y;
 						ConvertPoint(ref x, ref y, pageUnit);
-						x += baseWindow.X;
-						y += baseWindow.Y;
 						ToolkitGraphics.DrawImage
-							(toolkitImage, x, y);
+							(toolkitImage, x + baseWindow.X,
+							 y + baseWindow.Y);
+					}
+				}
+			}
+
+	// Draw an icon.
+	public void DrawIcon(Icon icon, Rectangle targetRect)
+			{
+				if(icon == null)
+				{
+					throw new ArgumentNullException("icon");
+				}
+				if(targetRect.Width == icon.Width &&
+				   targetRect.Height == icon.Height)
+				{
+					// This is the easy case.
+					ToolkitDrawIcon(icon, targetRect.X, targetRect.Y);
+				}
+				else
+				{
+					// Stretch and draw the image.
+					Point[] src = ConvertRectangle3
+						(0, 0, icon.Width, icon.Height, GraphicsUnit.Pixel);
+					Point[] dest = ConvertRectangle3
+						(targetRect.X, targetRect.Y,
+						 targetRect.Width, targetRect.Height, pageUnit);
+					BaseOffsetPoints(dest);
+					lock(this)
+					{
+						IToolkitImage toolkitImage = icon.GetToolkitImage(this);
+						if(toolkitImage != null)
+						{
+							ToolkitGraphics.DrawImage
+								(toolkitImage, src, dest);
+						}
+					}
+				}
+			}
+	public void DrawIconUnstretched(Icon icon, Rectangle targetRect)
+			{
+				if(icon == null)
+				{
+					throw new ArgumentNullException("icon");
+				}
+				int width = icon.Width;
+				int height = icon.Height;
+				if(width <= targetRect.Width && height <= targetRect.Height)
+				{
+					// No truncation is necessary, so use the easy case.
+					ToolkitDrawIcon(icon, targetRect.X, targetRect.Y);
+				}
+				else
+				{
+					// Only draw as much as will fit in the target rectangle.
+					if(width > targetRect.Width)
+					{
+						width = targetRect.Width;
+					}
+					if(height > targetRect.Height)
+					{
+						height = targetRect.Height;
+					}
+					Point[] src = ConvertRectangle3
+						(0, 0, width, height, GraphicsUnit.Pixel);
+					Point[] dest = ConvertRectangle3
+						(targetRect.X, targetRect.Y, width, height, pageUnit);
+					BaseOffsetPoints(dest);
+					lock(this)
+					{
+						IToolkitImage toolkitImage = icon.GetToolkitImage(this);
+						if(toolkitImage != null)
+						{
+							ToolkitGraphics.DrawImage
+								(toolkitImage, src, dest);
+						}
 					}
 				}
 			}
@@ -826,8 +885,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					throw new ArgumentNullException("icon");
 				}
-				DrawIconUnstretched
-					(icon, new Rectangle(x, y, icon.Width, icon.Height));
+				ToolkitDrawIcon(icon, x, y);
 			}
 
 	// Used to call the toolkit DrawImage methods

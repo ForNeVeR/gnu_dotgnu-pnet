@@ -10,6 +10,8 @@
 	pixmap-based GC's, to speed up multiple draws of the same image
 	in double buffering situations.
 
+	* System.Drawing/Graphics.cs: fix "DrawIcon" and "DrawIconUnstretched".
+
 2004-01-22  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ListViewItemConverter.cs,

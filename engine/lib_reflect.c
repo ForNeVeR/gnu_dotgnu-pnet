@@ -1296,8 +1296,18 @@ ILObject *_IL_Assembly_LoadFromName(ILExecThread *thread,
 	char *str = ILStringToUTF8(thread, name);
 	if(image && str)
 	{
+		int len;
 		int loadError;
 		ILImage *newImage;
+		len = strlen(str);
+		if(len > 4 && str[len - 4] == '.' &&
+		   (str[len - 3] == 'd' || str[len - 3] == 'D') &&
+		   (str[len - 2] == 'l' || str[len - 2] == 'L') &&
+		   (str[len - 1] == 'l' || str[len - 1] == 'L'))
+		{
+			/* Remove ".dll", to get the assembly name */
+			str[len - 4] = '\0';
+		}
 		loadError = ILImageLoadAssembly(str, thread->process->context,
 										image, &newImage);
 		if(loadError == 0)

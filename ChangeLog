@@ -8,6 +8,9 @@
 	to be used inside non-native struct's and union's, even though
 	it is a native type.
 
+	* engine/lib_reflect.c (_IL_Assembly_LoadFromName): remove
+	".dll" from the end of an assembly name.
+
 2003-08-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_types.c (MD5HashType): bug in the value used for

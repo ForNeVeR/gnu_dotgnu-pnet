@@ -182,7 +182,7 @@ public struct RectangleF
 	public bool Contains(float x, float y)
 			{
 				return (x >= this.x && x < (this.x + this.width) &&
-				        y >= this.y && x < (this.y + this.height));
+				        y >= this.y && y < (this.y + this.height));
 			}
 	public bool Contains(PointF pt)
 			{

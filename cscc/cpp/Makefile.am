@@ -62,9 +62,9 @@ AM_CFLAGS = -I. -I$(srcdir) -I$(top_srcdir)/include \
 install-exec-local:
 	@$(NORMALL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-cpp
-	$(LN_S) cscc-cpp $(DESTDIR)$(bindir)/cli-unknown-cpp
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-cpp$(EXEEXT)
+	$(LN_S) cscc-cpp$(EXEEXT) $(DESTDIR)$(bindir)/cli-unknown-cpp$(EXEEXT)
 
 uninstall-local:
 	@$(NORMALL_UNINSTALL)
-	rm -f $(DESTDIR)$(bindir)/cli-unknown-cpp
+	rm -f $(DESTDIR)$(bindir)/cli-unknown-cpp$(EXEEXT)

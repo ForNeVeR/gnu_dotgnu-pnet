@@ -168,6 +168,16 @@ public class TestXmlTextReader : TestCase
 
 				Clear();
 			}
+
+	public void TestXmlTextReaderReadAttributeValue()
+			{
+				stringReader = new StringReader(xml[0]);
+				xmlReader = new XmlTextReader(stringReader);
+				xmlReader.Read();
+				xmlReader.MoveToFirstAttribute();
+				xmlReader.ReadAttributeValue();
+				AssertEquals("Read (1)", XmlNodeType.Text, xmlReader.NodeType);
+			}	
 	
 	public void TestXmlTextReaderGetRemainder()
 			{

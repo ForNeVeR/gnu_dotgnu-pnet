@@ -8,6 +8,10 @@ branch labels.
 allow "callvirt" to be used to call non-virtual instance methods; handle
 "this" parameters for value type instance methods properly.
 
+* engine/verify_var.c: account for "this" in the argument list; handle
+"BYREF" parameters; change "numArgs" into "numLocals" in the handling
+of "stloc".
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

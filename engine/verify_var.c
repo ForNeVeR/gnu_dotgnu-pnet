@@ -20,7 +20,29 @@
 
 #if defined(IL_VERIFY_GLOBALS)
 
-/* No globals required */
+/*
+ * Get the type of a parameter to the current method.
+ */
+static ILType *GetParamType(ILType *signature, ILMethod *method, ILUInt32 num)
+{
+	if((signature->kind & (IL_META_CALLCONV_HASTHIS << 8)) != 0 &&
+	   (signature->kind & (IL_META_CALLCONV_EXPLICITTHIS << 8)) == 0)
+	{
+		/* This method has a "this" parameter */
+		if(!num)
+		{
+			return ILType_FromClass(ILMethod_Owner(method));
+		}
+		else
+		{
+			return ILTypeGetParam(signature, num);
+		}
+	}
+	else
+	{
+		return ILTypeGetParam(signature, num + 1);
+	}
+}
 
 #elif defined(IL_VERIFY_LOCALS)
 
@@ -56,10 +78,13 @@ checkLDArg:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	stack[stackSize].typeInfo =
-			ILTypeGetParam(signature, argNum + 1);
-	stack[stackSize].engineType =
-			TypeToEngineType(stack[stackSize].typeInfo);
+	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
+	if((stack[stackSize].engineType =
+			TypeToEngineType(stack[stackSize].typeInfo)) == ILEngineType_M)
+	{
+		/* Convert the type of a "BYREF" parameter */
+		stack[stackSize].typeInfo = stack[stackSize].typeInfo->un.refType;
+	}
 	ILCoderLoadArg(coder, argNum, stack[stackSize].typeInfo);
 	++stackSize;
 }
@@ -82,7 +107,7 @@ checkSTArg:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	type = ILTypeGetParam(signature, argNum + 1);
+	type = GetParamType(signature, method, argNum);
 	if(!AssignCompatible(&(stack[stackSize - 1]), type))
 	{
 		VERIFY_TYPE_ERROR();
@@ -154,7 +179,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_STLOC:
 	/* Store the top of the stack into a local variable */
 	argNum = (ILUInt32)(IL_READ_UINT16(pc + 2));
 checkSTLoc:
-	if(argNum >= numArgs)
+	if(argNum >= numLocals)
 	{
 		VERIFY_INSN_ERROR();
 	}
@@ -186,8 +211,7 @@ checkLDArgA:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	stack[stackSize].typeInfo =
-			ILTypeGetParam(signature, argNum + 1);
+	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
 	stack[stackSize].engineType = ILEngineType_T;
 	ILCoderAddrOfArg(coder, argNum);
 	++stackSize;

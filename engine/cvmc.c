@@ -349,6 +349,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_Alloc,
 	CVMCoder_Setup,
 	CVMCoder_SetupExtern,
+	CVMCoder_SetupExternCtor,
 	CVMCoder_Destroy,
 	CVMCoder_Flush,
 	CVMCoder_Finish,

@@ -121,6 +121,14 @@ struct _tagILCoderClass
 					   int isInternal);
 
 	/*
+	 * Set up a coder instance for processing a specific external constructor.
+	 * Returns zero if not possible.
+	 */
+	int (*setupExternCtor)(ILCoder *coder, unsigned char **start,
+					       ILMethod *method, void *fn, void *cif,
+					       void *ctorfn, void *ctorcif, int isInternal);
+
+	/*
 	 * Destroy a coder instance.
 	 */
 	void (*destroy)(ILCoder *coder);
@@ -521,6 +529,11 @@ struct _tagILCoderClass
 #define	ILCoderSetupExtern(coder,start,method,fn,cif,isInternal) \
 			((*((coder)->classInfo->setupExtern))((coder), (start), (method), \
 												  (fn), (cif), (isInternal)))
+#define	ILCoderSetupExternCtor(coder,start,method,fn,cif,ctorfn,ctorcif,isInternal) \
+			((*((coder)->classInfo->setupExternCtor)) \
+						((coder), (start), (method), \
+						 (fn), (cif), (ctorfn), \
+						 (ctorcif), (isInternal)))
 #define	ILCoderDestroy(coder) \
 			((*((coder)->classInfo->destroy))((coder)))
 #define	ILCoderFlush(coder) \

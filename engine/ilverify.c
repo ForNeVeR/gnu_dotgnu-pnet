@@ -194,6 +194,12 @@ static int Coder_SetupExtern(ILCoder *coder, unsigned char **start,
 {
 	return 1;
 }
+static int Coder_SetupExternCtor(ILCoder *coder, unsigned char **start,
+							     ILMethod *method, void *fn, void *cif,
+							     void *ctorfn, void *ctorcif, int isInternal)
+{
+	return 1;
+}
 static void Coder_Destroy(ILCoder *coder)
 {
 }
@@ -430,6 +436,7 @@ static ILCoderClass const DefaultCoderClass = {
 	Coder_Alloc,
 	Coder_Setup,
 	Coder_SetupExtern,
+	Coder_SetupExternCtor,
 	Coder_Destroy,
 	Coder_Flush,
 	Coder_Finish,

@@ -1,4 +1,10 @@
-2005-03-03 Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+2005-03-05  Hermann Weiss  <Hermann.Weiss@de.trumpf-laser.com>
+
+	* System/Diagnostics/Process.cs: Added throwing exceptions, when
+	Processes are not started (patch #3779 applied by drobosson)
+
+2005-03-03  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Collections/Hashtable.cs: Fixes removing objects and
 	optmizes. (patch #3783, fixes bug #12189 applied by drobosson)

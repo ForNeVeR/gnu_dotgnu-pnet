@@ -941,6 +941,13 @@ public class Process
 				{
 					throw new Win32Exception();
 				}
+				
+				// Checking errno for error
+				Errno errno = Process.GetErrno();
+				if( errno != Errno.Success ) {
+					throw new Win32Exception(Process.GetErrnoMessage(errno));
+				}
+				
 
 				// Wrap up the redirected I/O streams.
 				if(stdinHandle != SocketMethods.GetInvalidHandle())
@@ -1140,6 +1147,16 @@ public class Process
 			 out IntPtr processHandle, out int processID,
 			 out IntPtr stdinHandle, out IntPtr stdoutHandle,
 			 out IntPtr stderrHandle);
+			 
+	// Get the last-occurring system error code for the current thread.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno GetErrno();
+	
+	// Get a descriptive message for an error from the underlying platform.
+	// Returns null if the platform doesn't have an appropriate message.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String GetErrnoMessage(Errno errno);
+
 
 }; // class Process
 

@@ -34,6 +34,7 @@ static void OutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 	const void *value;
 	unsigned long valueLen;
 	unsigned long posn;
+	ILDeclSecurity *decl;
 
 	attr = 0;
 	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
@@ -64,6 +65,42 @@ static void OutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 			putc(')', stream);
 		}
 		putc('\n', stream);
+	}
+
+	/* Dump declarative security blobs as well */
+	if(ILProgramItemToAssembly(item) ||
+	   ILProgramItemToClass(item) ||
+	   ILProgramItemToMethod(item))
+	{
+		decl = ILDeclSecurityGetFromOwner(item);
+		if(decl)
+		{
+			static char * const actionNames[] = {
+				"demand /*nil*/", "request", "demand", "assert",
+				"deny", "permitonly", "linkcheck", "inheritcheck",
+				"reqmin", "reqopt", "reqrefuse", "prejitgrant",
+				"prejitdeny", "noncasdemand", "noncaslinkdemand",
+				"nocasinheritance"
+			};
+			fputs(".capability ", stream);
+			fputs(actionNames[ILDeclSecurity_Type(decl) &
+							  IL_META_SECURITY_ACTION_MASK], stream);
+			fputs(" = (", stream);
+			value = ILDeclSecurityGetBlob(decl, &valueLen);
+			if(value && valueLen)
+			{
+				for(posn = 0; posn < valueLen; ++posn)
+				{
+					if(posn != 0)
+					{
+						putc(' ', stream);
+					}
+					fprintf(stream, "%02X",
+							(int)(((const unsigned char *)value)[posn]));
+				}
+			}
+			fputs(")\n", stream);
+		}
 	}
 }
 

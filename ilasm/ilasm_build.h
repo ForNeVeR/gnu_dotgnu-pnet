@@ -209,6 +209,11 @@ void ILAsmAttributeCreateFor(ILToken token, ILProgramItem *type,
 void ILAsmAttributeCreate(ILProgramItem *type, ILIntString *value);
 
 /*
+ * Create a declarative security blob for the current item.
+ */
+void ILAsmSecurityCreate(ILInt64 action, const void *str, int len);
+
+/*
  * Find a numbered parameter for a particular method.
  * Returns NULL if not found.
  */

@@ -1028,6 +1028,33 @@ void ILAsmAttributeCreate(ILProgramItem *type, ILIntString *value)
 	ILAsmAttributeCreateFor(ILAsmLastToken, type, value);
 }
 
+void ILAsmSecurityCreate(ILInt64 action, const void *str, int len)
+{
+	ILProgramItem *owner;
+	ILDeclSecurity *decl;
+
+	/* Get the owner for the security blob */
+	owner = ILProgramItem_FromToken(ILAsmImage, ILAsmLastToken);
+	if(!owner)
+	{
+		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+						  "unknown owner for security declaration");
+		ILAsmErrors = 1;
+		return;
+	}
+
+	/* Create the security blob */
+	decl = ILDeclSecurityCreate(ILAsmImage, 0, owner, (ILUInt32)action);
+	if(!decl)
+	{
+		ILAsmOutOfMemory();
+	}
+	if(!ILDeclSecuritySetBlob(decl, str, len))
+	{
+		ILAsmOutOfMemory();
+	}
+}
+
 ILParameter *ILAsmFindParameter(ILMethod *method, ILUInt32 paramNum)
 {
 	ILParameter *param = 0;

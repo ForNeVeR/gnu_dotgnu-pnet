@@ -3864,17 +3864,25 @@ ManifestResDeclaration
 	;
 
 /*
- * Security declarations.  Currently these are supported only
- * so that the output of "ildasm" can be parsed.  They aren't
- * written to the final object file.
+ * Security declarations.
  */
 
 SecurityDeclaration
 	: D_PERMISSION SecurityAction ClassName '(' NameValuePairs ')'
-	| D_CAPABILITY SecurityAction SQUOTE_STRING
-	| D_CAPABILITY SecurityAction '=' Bytes
-	| D_PERMISSIONSET SecurityAction SQUOTE_STRING
-	| D_PERMISSIONSET SecurityAction '=' Bytes
+	| D_CAPABILITY SecurityAction SQUOTE_STRING	{
+				ILIntString unicode = PackUnicodeString($3);
+				ILAsmSecurityCreate($2, unicode.string, unicode.len);
+			}
+	| D_CAPABILITY SecurityAction '=' Bytes		{
+				ILAsmSecurityCreate($2, $4.string, $4.len);
+			}
+	| D_PERMISSIONSET SecurityAction SQUOTE_STRING	{
+				ILIntString unicode = PackUnicodeString($3);
+				ILAsmSecurityCreate($2, unicode.string, unicode.len);
+			}
+	| D_PERMISSIONSET SecurityAction '=' Bytes	{
+				ILAsmSecurityCreate($2, $4.string, $4.len);
+			}
 	;
 
 SecurityAction

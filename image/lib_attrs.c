@@ -786,6 +786,7 @@ static int IndexerNameAttribute(ILProgramItem *item, ILSerializeReader *reader)
 static char *ConcatStrings(char *str1, const char *str2)
 {
 	char *newStr;
+	int len;
 
 	/* Bail out if we ran out of memory last time */
 	if(!str1)
@@ -794,7 +795,8 @@ static char *ConcatStrings(char *str1, const char *str2)
 	}
 
 	/* Allocate space for the new string */
-	newStr = (char *)ILRealloc(str1, strlen(str1) + strlen(str2) + 1);
+	len = strlen(str1);
+	newStr = (char *)ILRealloc(str1, len + strlen(str2) + 1);
 	if(!newStr)
 	{
 		ILFree(str1);
@@ -802,8 +804,7 @@ static char *ConcatStrings(char *str1, const char *str2)
 	}
 
 	/* Create the new string */
-	strcpy(newStr, str1);
-	strcat(newStr, str2);
+	strcpy(newStr + len, str2);
 	return newStr;
 }
 
@@ -880,11 +881,9 @@ static int SecurityPermissionAttribute(ILProgramItem *item,
 	ILMember *member;
 	char *result;
 	int comma;
-#if 0
 	void *utf16;
 	unsigned long utf16Len;
 	ILDeclSecurity *decl;
-#endif
 
 	/* The item must be a class, method, or assembly */
 	if(!ILProgramItemToClass(item) &&
@@ -1008,8 +1007,8 @@ static int SecurityPermissionAttribute(ILProgramItem *item,
 		 "               version=\"1\">\r\n"
 		 "   <IPermission class=\"System.Security.Permissions."
 		 		"SecurityAttribute, mscorlib\"\r\n"
-		 "                 version=\"1\"\r\n"
-		 "                 Flags=\"");
+		 "                version=\"1\"\r\n"
+		 "                Flags=\"");
 	comma = 0;
 	result = ConcatFlag(flags, 0x0000, result, "NoFlags", &comma);
 	result = ConcatFlag(flags, 0x0001, result, "Assertion", &comma);
@@ -1034,7 +1033,6 @@ static int SecurityPermissionAttribute(ILProgramItem *item,
 		return 0;
 	}
 
-#if 0	/* Commented out for now, until the rest is implemented - TODO */
 	/* Convert the string into UTF-16 */
 	utf16 = StringToUTF16(result, &utf16Len);
 	if(!utf16)
@@ -1060,9 +1058,6 @@ static int SecurityPermissionAttribute(ILProgramItem *item,
 
 	/* The attribute has been converted */
 	return 1;
-#endif
-	ILFree(result);
-	return 0;
 }
 
 /*

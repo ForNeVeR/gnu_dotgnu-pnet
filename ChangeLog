@@ -5,6 +5,11 @@
 	dumping type names in attributes for correct matching against
 	pnetlib which uses version-agnostic type names.
 
+	* codegen/cg_decls.tc, ilasm/ilasm_build.c, ilasm/ilasm_build.h,
+	ilasm/ilasm_grammar.y, image/lib_attrs.c: convert instances of
+	"SecurityPermissionAttribute" into security declarations;
+	update the compiler and assembler to process security declarations.
+
 2003-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: report duplicates for "override"

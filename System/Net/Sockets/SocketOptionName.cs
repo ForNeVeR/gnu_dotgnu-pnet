@@ -48,7 +48,7 @@ public enum SocketOptionName
 
 	// Options for SocketOptionLevel.Udp.
 	NoChecksum				= 0x00000001,
-	ChecksumCoveragei		= 0x00000014,
+	ChecksumCoverage		= 0x00000014,
 
 	// Options for SocketOptionLevel.Socket.
 	Debug					= 0x00000001,

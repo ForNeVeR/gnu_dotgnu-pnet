@@ -18,3 +18,4 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 NotSupp_Conversion=The requested conversion is not supported
+NotSupp_SelectMode=The requested select mode cannot be used for polling

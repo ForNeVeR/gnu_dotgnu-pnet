@@ -368,7 +368,7 @@ public abstract class Stream : MarshalByRefObject, IDisposable
 			{
 				if(buffer == null)
 				{
-					throw new ArgumentNullException("null");
+					throw new ArgumentNullException("buffer");
 				}
 				else if(offset < 0 || offset > buffer.Length)
 				{

@@ -34,4 +34,7 @@ Arg_TransportAlreadySet=Transport value is already set
 Arg_HostAlreadySet=Host value is already set
 Arg_PortAlreadySet=Port value is already set
 Arg_SocketPermission=Incomplete socket permission values
+Arg_SocketOption=Invalid socket option
+Arg_SocketOptionValue=Invalid socket option value
+Arg_NotSocket=The supplied value was not an open socket
 ArgRange_NonNegative=Value must not be negative

@@ -105,6 +105,25 @@ sealed class ThreadPool
 				return true;
 			}
 
+	// Queue a new I/O completion item within the thread pool.
+	// This version is used by the "System" assembly in ECMA_COMPAT
+	// mode when "WaitCallback" is not defined.
+	internal static bool QueueCompletionItem
+				(AsyncCallback callBack, IAsyncResult state)
+			{
+				lock(typeof(ThreadPool))
+				{
+					if(completionWait == null)
+					{
+						completionWait = new Object();
+					}
+				}
+				AddCompletionItem
+					(new WorkItem(ClrSecurity.GetPermissionsFrom(1),
+					 callBack, state));
+				return true;
+			}
+
 	// Queue a new work item within the thread pool after dropping security.
 	// This is "unsafe" in that it may elevate security permissions.
 	// However, in our implementation we never elevate the security,
@@ -418,6 +437,7 @@ sealed class ThreadPool
 		private bool userWorkItem;
 		private WaitCallback callback;
 		private WaitOrTimerCallback callback2;
+		private AsyncCallback callback3;
 		private Object state;
 		private int timeout;
 		private bool once;
@@ -431,6 +451,14 @@ sealed class ThreadPool
 					this.permissions = permissions;
 					this.userWorkItem = true;
 					this.callback = callback;
+					this.state = state;
+				}
+		public WorkItem(ClrPermissions permissions,
+						AsyncCallback callback, Object state)
+				{
+					this.permissions = permissions;
+					this.userWorkItem = true;
+					this.callback3 = callback;
 					this.state = state;
 				}
 		public WorkItem(ClrPermissions permissions, WaitHandle waitObject,
@@ -464,6 +492,10 @@ sealed class ThreadPool
 							if(callback != null)
 							{
 								callback(state);
+							}
+							else if(callback3 != null)
+							{
+								callback3((IAsyncResult)state);
 							}
 						}
 						else

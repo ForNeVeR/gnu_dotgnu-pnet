@@ -1,4 +1,13 @@
 
+2003-04-03  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Net/Sockets/NetworkStream.cs, System/Net/Sockets/Socket.cs,
+	System/Net/Sockets/SocketOptionName.cs,
+	System/Platform/SocketMethods.cs, resources/en_US/System/Arg.txt,
+	resources/en_US/System/IO.txt, resources/en_US/System/NotSupp.txt,
+	runtime/System/IO/Stream.cs, runtime/System/Threading/ThreadPool.cs:
+	re-implement "NetworkStream" and "Socket".
+
 2003-04-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Threading/AutoResetEvent.cs,

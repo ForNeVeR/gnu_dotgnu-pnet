@@ -149,7 +149,7 @@ public class ListBox : ListControl
 			}
   		}
 
- 		Object this[int index]
+ 		public Object this[int index]
   		{
  			get { return List[index]; }
  			set 

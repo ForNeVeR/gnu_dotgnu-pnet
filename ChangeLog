@@ -4,6 +4,8 @@
 	* System.Windows.Forms/Form.cs: IsTopLevel is not true for MDI forms
 	and they have to be added to mdiClient of the parent.
 
+	* System.Windows.Forms/ListBox.cs: The instance indexer should be public.
+
 2004-06-19  Simon Guindon  <simon@nureality.ca>
 
 	* System.Windows.Forms/Themes/IThemePainter.cs,

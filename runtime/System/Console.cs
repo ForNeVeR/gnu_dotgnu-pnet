@@ -29,6 +29,8 @@ using Platform;
 public sealed class Console
 {
 
+#if !CONFIG_SMALL_CONSOLE
+
 	// Cached copies of the stdin, stdout, and stderr streams.
 	private static TextReader stdin  = null;
 	private static TextWriter stdout = null;
@@ -386,6 +388,165 @@ public sealed class Console
 			{
 				Out.WriteLine(value);
 			}
+
+#else // CONFIG_SMALL_CONSOLE
+
+	// This class cannot be instantiated.
+	private Console() {}
+
+	// Read a line from the standard input stream.
+	public static String ReadLine()
+			{
+				StringBuilder builder = new StringBuilder();
+				int ch;
+				while((ch = Stdio.StdRead(0)) != -1 && ch != '\n')
+				{
+					if(ch != '\r')
+					{
+						builder.Append((char)ch);
+					}
+				}
+				if(ch == -1 && builder.Length == 0)
+				{
+					return null;
+				}
+				else
+				{
+					return builder.ToString();
+				}
+			}
+
+	// Write a formatted string to standard output.
+	public static void Write(String format, Object arg0)
+			{
+				Stdio.StdWrite(1, String.Format(format, arg0));
+			}
+	public static void Write(String format, Object arg0, Object arg1)
+			{
+				Stdio.StdWrite(1, String.Format(format, arg0, arg1));
+			}
+	public static void Write(String format, Object arg0, Object arg1,
+							 Object arg2)
+			{
+				Stdio.StdWrite(1, String.Format(format, arg0, arg1, arg2));
+			}
+	public static void Write(String format, params Object[] args)
+			{
+				Stdio.StdWrite(1, String.Format(format, args));
+			}
+
+	// Write primitive values to standard output.
+	public static void Write(char value)
+			{
+				Stdio.StdWrite(1, value);
+			}
+	public static void Write(char[] value)
+			{
+				if(value == null)
+				{
+					throw new ArgumentNullException("null");
+				}
+				foreach(char ch in value)
+				{
+					Stdio.StdWrite(1, ch);
+				}
+			}
+	public static void Write(char[] value, int index, int count)
+			{
+				if(value == null)
+				{
+					throw new ArgumentNullException("null");
+				}
+				if(index < 0 || index > value.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", _("ArgRange_StringIndex"));
+				}
+				if(count < 0 || count > (value.Length - index))
+				{
+					throw new ArgumentOutOfRangeException
+						("count", _("ArgRange_StringRange"));
+				}
+				while(count > 0)
+				{
+					Stdio.StdWrite(1, value[index]);
+					++index;
+					--count;
+				}
+			}
+	public static void Write(int value)
+			{
+				Stdio.StdWrite(1, value.ToString());
+			}
+	public static void Write(Object value)
+			{
+				if(value != null)
+				{
+					Stdio.StdWrite(1, value.ToString());
+				}
+			}
+	public static void Write(String value)
+			{
+				Stdio.StdWrite(1, value);
+			}
+
+	// Write a newline to standard output.
+	public static void WriteLine()
+			{
+				Stdio.StdWrite(1, Environment.NewLine);
+			}
+
+	// Write a formatted string to standard output followed by a newline.
+	public static void WriteLine(String format, Object arg0)
+			{
+				Write(format, arg0);
+				WriteLine();
+			}
+	public static void WriteLine(String format, Object arg0, Object arg1)
+			{
+				Write(format, arg0, arg1);
+				WriteLine();
+			}
+	public static void WriteLine(String format, Object arg0, Object arg1,
+							     Object arg2)
+			{
+				Write(format, arg0, arg1, arg2);
+				WriteLine();
+			}
+	public static void WriteLine(String format, params Object[] args)
+			{
+				Write(format, args);
+				WriteLine();
+			}
+
+	// Write primitive values to standard output followed by a newline.
+	public static void WriteLine(char value)
+			{
+				Stdio.StdWrite(1, value);
+				WriteLine();
+			}
+	public static void WriteLine(char[] value)
+			{
+				Write(value);
+				WriteLine();
+			}
+	public static void WriteLine(int value)
+			{
+				Write(value);
+				WriteLine();
+			}
+	public static void WriteLine(Object value)
+			{
+				Write(value);
+				WriteLine();
+			}
+	public static void WriteLine(String value)
+			{
+				Stdio.StdWrite(1, value);
+				WriteLine();
+			}
+
+#endif // CONFIG_SMALL_CONSOLE
 
 }; // class Console
 

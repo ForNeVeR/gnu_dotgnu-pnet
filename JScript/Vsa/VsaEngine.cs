@@ -187,8 +187,10 @@ public class VsaEngine : BaseVsaEngine, IRedirectOutput
 					if(Globals.contextEngine == this)
 					{
 						Globals.contextEngine = null;
+#if !CONFIG_SMALL_CONSOLE
 						ScriptStream.Out = Console.Out;
 						ScriptStream.Error = Console.Error;
+#endif
 					}
 				}
 
@@ -346,10 +348,12 @@ public class VsaEngine : BaseVsaEngine, IRedirectOutput
 					}
 					else
 					{
+#if !CONFIG_SMALL_CONSOLE
 						// Use the global "ScriptStream" class for the
 						// default engine instance.
 						ScriptStream.Out = writer;
 						ScriptStream.Error = writer;
+#endif
 					}
 				}
 			}

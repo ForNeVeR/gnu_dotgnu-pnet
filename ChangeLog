@@ -8,6 +8,18 @@
 	runtime/System/Private/RegionNameTable.cs: move the region
 	name table into the I18N assembly.
 
+	* JScript/jsrun.cs, JScript/Execute/EngineInstance.cs,
+	JScript/Vsa/ScriptStream.cs, JScript/Vsa/VsaEngine.cs,
+	System/Diagnostics/DefaultTraceListener.cs,
+	csunit/TestMain.cs, csupport/Crt0.cs, profiles/compact,
+	profiles/compact-fp, profiles/ecma, profiles/full,
+	profiles/kernel, profiles/kernel-fp, profiles/mscompact,
+	profiles/tiny, profiles/tiny-fp, runtime/System/Console.cs,
+	runtime/System/Private/StdReader.cs,
+	runtime/System/Private/StdStream.cs,
+	samples/sslfetch.cs: add the CONFIG_SMALL_CONSOLE profile
+	option, which strips System.Console down to a smaller size.
+
 2003-05-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ListChangedEventHandler.cs: correct a

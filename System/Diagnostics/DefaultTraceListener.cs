@@ -124,7 +124,11 @@ public class DefaultTraceListener : TraceListener
 					{
 						WriteIndent();
 					}
+				#if CONFIG_SMALL_CONSOLE
+					Console.Write(message);
+				#else
 					Console.Error.Write(message);
+				#endif
 					WriteLog(message, false);
 				}
 			}
@@ -139,7 +143,11 @@ public class DefaultTraceListener : TraceListener
 					{
 						WriteIndent();
 					}
+				#if CONFIG_SMALL_CONSOLE
+					Console.WriteLine(message);
+				#else
 					Console.Error.WriteLine(message);
+				#endif
 					WriteLog(message, true);
 					NeedIndent = true;
 				}

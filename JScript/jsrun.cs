@@ -42,7 +42,11 @@ public sealed class JSRun
 				// We need at least one argument.
 				if(args.Length == 0)
 				{
+				#if CONFIG_SMALL_CONSOLE
+					Console.WriteLine("Usage: jsrun script [args]");
+				#else
 					Console.Error.WriteLine("Usage: jsrun script [args]");
+				#endif
 					return 1;
 				}
 
@@ -53,8 +57,13 @@ public sealed class JSRun
 				}
 				catch(FileNotFoundException)
 				{
+				#if CONFIG_SMALL_CONSOLE
+					Console.WriteLine
+						("jsrun: {0}: No such file or directory", args[0]);
+				#else
 					Console.Error.WriteLine
-						("jsrun: {0}: No such file or directory");
+						("jsrun: {0}: No such file or directory", args[0]);
+				#endif
 					return 1;
 				}
 				builder = new StringBuilder();
@@ -77,7 +86,11 @@ public sealed class JSRun
 				// Compile and run the script.
 				if(!engine.Compile())
 				{
+				#if CONFIG_SMALL_CONSOLE
+					Console.WriteLine("jsrun: Could not compile script");
+				#else
 					Console.Error.WriteLine("jsrun: Could not compile script");
+				#endif
 					return 1;
 				}
 				engine.Run();

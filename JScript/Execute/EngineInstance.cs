@@ -161,7 +161,11 @@ internal sealed class EngineInstance
 					}
 					else
 					{
+					#if CONFIG_SMALL_CONSOLE
+						return null;
+					#else
 						return ScriptStream.Out;
+					#endif
 					}
 				}
 			}
@@ -175,7 +179,11 @@ internal sealed class EngineInstance
 					}
 					else
 					{
+					#if CONFIG_SMALL_CONSOLE
+						return null;
+					#else
 						return ScriptStream.Error;
+					#endif
 					}
 				}
 			}
@@ -190,6 +198,7 @@ internal sealed class EngineInstance
 	// Detach the output streams from the global state.
 	public void DetachOutputStreams()
 			{
+			#if !CONFIG_SMALL_CONSOLE
 				if(outStream == null)
 				{
 					outStream = Console.Out;
@@ -198,6 +207,7 @@ internal sealed class EngineInstance
 				{
 					errorStream = Console.Error;
 				}
+			#endif
 			}
 
 }; // class EngineInstance

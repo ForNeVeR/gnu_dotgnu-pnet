@@ -23,6 +23,7 @@ namespace OpenSystem.C
 {
 
 using System;
+using System.IO;
 using System.Collections;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -133,10 +134,17 @@ public unsafe sealed class Crt0
 					// then it is unlikely that the application will work.
 					if(ptrSize < sizeof(IntPtr))
 					{
+					#if CONFIG_SMALL_CONSOLE
+						Console.Write(args[0]);
+						Console.WriteLine
+						  (": application is {0}-bit, but platform is {1}-bit",
+						   (Object)(ptrSize * 8), (Object)(sizeof(IntPtr) * 8));
+					#else
 						Console.Error.Write(args[0]);
 						Console.Error.WriteLine
 						  (": application is {0}-bit, but platform is {1}-bit",
 						   (Object)(ptrSize * 8), (Object)(sizeof(IntPtr) * 8));
+					#endif
 						Environment.Exit(1);
 					}
 
@@ -298,9 +306,15 @@ public unsafe sealed class Crt0
 				}
 
 				// Initialize the stdin, stdout, and stderr file descriptors.
+			#if CONFIG_SMALL_CONSOLE
+				FileTable.SetFileDescriptor(0, Stream.Null);
+				FileTable.SetFileDescriptor(1, new ConsoleStream());
+				FileTable.SetFileDescriptor(2, new ConsoleStream());
+			#else
 				FileTable.SetFileDescriptor(0, Console.OpenStandardInput());
 				FileTable.SetFileDescriptor(1, Console.OpenStandardOutput());
 				FileTable.SetFileDescriptor(2, Console.OpenStandardError());
+			#endif
 
 				// Invoke the application's ".init" function, if present.
 				if(mainModule != null)
@@ -371,6 +385,91 @@ public unsafe sealed class Crt0
 					return libcModule;
 				}
 			}
+
+#if CONFIG_SMALL_CONSOLE
+
+	// Helper class for writing to stdout when the System.Console
+	// class does not have "OpenStandardOutput".
+	private sealed class ConsoleStream : Stream
+	{
+		// Constructor.
+		public ConsoleStream() {}
+
+		// Stub out all stream functionality.
+		public override void Flush() {}
+		public override int Read(byte[] buffer, int offset, int count)
+				{
+					throw new NotSupportedException();
+				}
+		public override int ReadByte()
+				{
+					throw new NotSupportedException();
+				}
+		public override long Seek(long offset, SeekOrigin origin)
+				{
+					throw new NotSupportedException();
+				}
+		public override void SetLength(long value)
+				{
+					throw new NotSupportedException();
+				}
+		public override void Write(byte[] buffer, int offset, int count)
+				{
+					// Validate the buffer argument.
+					if(buffer == null)
+					{
+						throw new ArgumentNullException("buffer");
+					}
+					else if(offset < 0 || offset > buffer.Length)
+					{
+						throw new ArgumentOutOfRangeException();
+					}
+					else if(count < 0)
+					{
+						throw new ArgumentOutOfRangeException();
+					}
+					else if((buffer.Length - offset) < count)
+					{
+						throw new ArgumentException();
+					}
+
+					// Write the contents of the buffer.
+					while(count > 0)
+					{
+						Console.Write((char)(buffer[offset]));
+						++offset;
+						--count;
+					}
+				}
+		public override void WriteByte(byte value)
+				{
+					Console.Write((char)value);
+				}
+		public override bool CanRead { get { return false; } }
+		public override bool CanSeek { get { return false; } }
+		public override bool CanWrite { get { return true; } }
+		public override long Length
+				{
+					get
+					{
+						throw new NotSupportedException();
+					}
+				}
+		public override long Position
+				{
+					get
+					{
+						throw new NotSupportedException();
+					}
+					set
+					{
+						throw new NotSupportedException();
+					}
+				}
+
+	}; // class ConsoleStream
+
+#endif // !CONFIG_SMALL_CONSOLE
 
 } // class Crt0
 

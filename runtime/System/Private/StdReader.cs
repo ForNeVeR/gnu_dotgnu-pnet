@@ -21,6 +21,8 @@
 namespace System.Private
 {
 
+#if !CONFIG_SMALL_CONSOLE
+
 using System;
 using System.IO;
 using System.Globalization;
@@ -116,5 +118,7 @@ internal sealed class StdReader : TextReader
 			}
 
 }; // class StdReader
+
+#endif // !CONFIG_SMALL_CONSOLE
 
 }; // namespace System.Private

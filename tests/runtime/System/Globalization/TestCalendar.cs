@@ -53,9 +53,11 @@ public abstract class TestCalendar : TestCase
 	// the various kinds of calendars.
 	protected override void RunTest()
 			{
-				Console.Out.Write(calendar.GetType().Name);
-				Console.Out.Write(" ... ");
+				Console.Write(calendar.GetType().Name);
+				Console.Write(" ... ");
+			#if !CONFIG_SMALL_CONSOLE
 				Console.Out.Flush();
+			#endif
 				base.RunTest();
 			}
 

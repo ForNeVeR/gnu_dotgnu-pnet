@@ -22,6 +22,8 @@ namespace CSUnit
 {
 
 using System;
+using System.IO;
+using System.Text;
 using System.Reflection;
 
 public sealed class TestMain
@@ -150,7 +152,7 @@ public sealed class TestMain
 				}
 				if(type == null)
 				{
-					Console.Error.WriteLine
+					ErrorWriteLine
 						(typeName + ": type does not exist in " + filename);
 					return 1;
 				}
@@ -167,21 +169,21 @@ public sealed class TestMain
 				}
 				if(method == null)
 				{
-					Console.Error.WriteLine
+					ErrorWriteLine
 						(typeName + ".Suite(): method does not exist in " + filename);
 					return 1;
 				}
 				test = (Test)(method.Invoke(null, null));
 				if(test == null)
 				{
-					Console.Error.WriteLine
+					ErrorWriteLine
 						(typeName + ".Suite(): method returned null");
 					return 1;
 				}
 
 				// Construct the TestResult class to collect up the results.
 				result = new TestWriterResult
-					(Console.Out, stopAtFail, showOnlyFailed);
+					(ConsoleOut, stopAtFail, showOnlyFailed);
 
 				// List or run the tests.
 				if(listTests)
@@ -194,7 +196,7 @@ public sealed class TestMain
 							specificTest = test.Find(args[argNum]);
 							if(specificTest == null)
 							{
-								Console.Error.WriteLine
+								ErrorWriteLine
 									(args[argNum] + ": unknown test name");
 							}
 							else
@@ -220,7 +222,7 @@ public sealed class TestMain
 							specificTest = test.Find(args[argNum]);
 							if(specificTest == null)
 							{
-								Console.Error.WriteLine
+								ErrorWriteLine
 									(args[argNum] + ": unknown test name");
 							}
 							else
@@ -313,6 +315,64 @@ public sealed class TestMain
 				Console.WriteLine
 					("        Print this help message.");
 			}
+
+	// Write a string to standard error.
+	private static void ErrorWriteLine(String str)
+			{
+			#if CONFIG_SMALL_CONSOLE
+				Console.WriteLine(str);
+			#else
+				Console.Error.WriteLine(str);
+			#endif
+			}
+
+	// Get a TextWriter stream for Console.Out.
+	private static TextWriter ConsoleOut
+			{
+				get
+				{
+				#if CONFIG_SMALL_CONSOLE
+					return new ConsoleWriter();
+				#else
+					return Console.Out;
+				#endif
+				}
+			}
+
+#if CONFIG_SMALL_CONSOLE
+
+	// Helper class for writing to the console when Console.Out doesn't exist.
+	private sealed class ConsoleWriter : TextWriter
+	{
+		// Constructor.
+		public ConsoleWriter() {}
+
+		// Get the encoding in use by this text writer.
+		public override System.Text.Encoding Encoding
+				{
+					get
+					{
+						return Encoding.Default;
+					}
+				}
+
+		// Write to this text writer.
+		public override void Write(char value)
+				{
+					Console.Write(value);
+				}
+		public override void Write(String value)
+				{
+					Console.Write(value);
+				}
+		public override void WriteLine()
+				{
+					Console.WriteLine();
+				}
+
+	}; // class ConsoleWriter
+
+#endif
 
 }; // class TestMain
 

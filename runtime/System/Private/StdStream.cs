@@ -21,6 +21,8 @@
 namespace System.Private
 {
 
+#if !CONFIG_SMALL_CONSOLE
+
 using System;
 using System.IO;
 using Platform;
@@ -182,5 +184,7 @@ internal sealed class StdStream : Stream
 			}
 
 }; // class StdStream
+
+#endif // !CONFIG_SMALL_CONSOLE
 
 }; // namespace System.Private

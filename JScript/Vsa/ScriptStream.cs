@@ -26,6 +26,9 @@ using System.IO;
 
 public class ScriptStream
 {
+
+#if !CONFIG_SMALL_CONSOLE
+
 	// Global stdout and stderr streams.
 	public static TextWriter Out = Console.Out;
 	public static TextWriter Error = Console.Error;
@@ -59,6 +62,39 @@ public class ScriptStream
 			{
 				Out.WriteLine(str);
 			}
+
+#else // CONFIG_SMALL_CONSOLE
+
+	// Print an exception stack trace.
+	public static void PrintStackTrace(Exception e)
+			{
+				Console.WriteLine(e.StackTrace);
+			}
+	public static void PrintStackTrace()
+			{
+				// Get the stack trace for the current method
+				// by throwing a dummy exception.
+				try
+				{
+					throw new Exception();
+				}
+				catch(Exception e)
+				{
+					PrintStackTrace(e);
+				}
+			}
+
+	// Write a string to stdout.
+	public static void Write(String str)
+			{
+				Console.Write(str);
+			}
+	public static void WriteLine(String str)
+			{
+				Console.WriteLine(str);
+			}
+
+#endif // CONFIG_SMALL_CONSOLE
 
 }; // class ScriptStream
 

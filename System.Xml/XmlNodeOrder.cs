@@ -1,5 +1,6 @@
 /*
- * XmlNameTable.cs - Implementation of the "System.Xml.XmlNameTable" class.
+ * XmlNodeOrder.cs - Implementation of the
+ *		"System.Xml.XmlNodeOrder" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,18 @@
 namespace System.Xml
 {
 
-public abstract class XmlNameTable
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+enum XmlNodeOrder
 {
-	// Constructor.
-	protected XmlNameTable() {}
-	
-	// Add a string to the table if it doesn't already exist.
-	public abstract String Add(String array);
-	
-	// Add a string to the table from an array.
-	public abstract String Add(char[] array, int offset, int length);
-	
-	// Get a string from the table by name.
-	public abstract String Get(String array);
-	
-	// Get a string from the table by array name.
-	public abstract String Get(char[] array, int offset, int length);
+	Before  = 0,
+	After   = 1,
+	Same    = 2,
+	Unknown = 3
 
-}; // class XmlNameTable
+}; // enum XmlNodeOrder
 
 }; // namespace System.Xml

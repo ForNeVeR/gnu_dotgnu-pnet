@@ -1,5 +1,5 @@
 /*
- * XmlNodeType.cs - Implementation of the "System.XmlNodeType" class.
+ * XmlNodeType.cs - Implementation of the "System.Xml.XmlNodeType" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -23,25 +23,25 @@ namespace System.Xml
 
 public enum XmlNodeType
 {
-	Attribute = 2,
-	CDATA = 4,
-	Comment = 8,
-	Document = 9,
-	DocumentFragment = 11,
-	DocumentType = 10,
-	Element = 1,
-	EndElement = 15,
-	EndEntity = 16,
-	Entity = 6,
-	EntityReference = 5,
-	None = 0,
-	Notation = 12,
+	None                  = 0,
+	Element               = 1,
+	Attribute             = 2,
+	Text                  = 3,
+	CDATA                 = 4,
+	EntityReference       = 5,
+	Entity                = 6,
 	ProcessingInstruction = 7,
+	Comment               = 8,
+	Document              = 9,
+	DocumentType          = 10,
+	DocumentFragment      = 11,
+	Notation              = 12,
+	Whitespace            = 13,
 	SignificantWhitespace = 14,
-	Text = 3,
-	Whitespace = 13,
-	XmlDeclaration = 17
+	EndElement            = 15,
+	EndEntity             = 16,
+	XmlDeclaration        = 17
 
-}; //enum XmlNodeType
+}; // enum XmlNodeType
 
-}; //namespace System.Xml
+}; // namespace System.Xml

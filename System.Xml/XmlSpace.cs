@@ -1,5 +1,5 @@
 /*
- * XmlSpace.cs - Implementation of the "System.XmlSpace" class.
+ * XmlSpace.cs - Implementation of the "System.Xml.XmlSpace" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -23,9 +23,10 @@ namespace System.Xml
 
 public enum XmlSpace
 {
-	Default = 1,
-	None = 0,
+	None     = 0,
+	Default  = 1,
 	Preserve = 2
-}; //enum XmlSpace
 
-}; //namespace System.Xml
+}; // enum XmlSpace
+
+}; // namespace System.Xml

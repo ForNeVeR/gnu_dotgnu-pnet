@@ -1,5 +1,6 @@
 /*
- * XmlNameTable.cs - Implementation of the "System.Xml.XmlNameTable" class.
+ * XmlTokenizedType.cs - Implementation of the
+ *		"System.Xml.XmlTokenizedType" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -21,23 +22,27 @@
 namespace System.Xml
 {
 
-public abstract class XmlNameTable
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+enum XmlTokenizedType
 {
-	// Constructor.
-	protected XmlNameTable() {}
-	
-	// Add a string to the table if it doesn't already exist.
-	public abstract String Add(String array);
-	
-	// Add a string to the table from an array.
-	public abstract String Add(char[] array, int offset, int length);
-	
-	// Get a string from the table by name.
-	public abstract String Get(String array);
-	
-	// Get a string from the table by array name.
-	public abstract String Get(char[] array, int offset, int length);
+	CDATA       = 0,
+	ID          = 1,
+	IDREF       = 2,
+	IDREFS      = 3,
+	ENTITY      = 4,
+	ENTITIES    = 5,
+	NMTOKEN     = 6,
+	NMTOKENS    = 7,
+	NOTATION    = 8,
+	ENUMERATION = 9,
+	QName       = 10,
+	NCName      = 11,
+	None        = 12
 
-}; // class XmlNameTable
+}; // enum XmlTokenizedType
 
 }; // namespace System.Xml

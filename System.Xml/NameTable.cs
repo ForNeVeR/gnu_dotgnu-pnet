@@ -1,5 +1,5 @@
 /*
- * NameTable.cs - Implementation of the "System.NameTable" class.
+ * NameTable.cs - Implementation of the "System.Xml.NameTable" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *

@@ -1,5 +1,5 @@
 /*
- * XmlException.cs - Implementation of the "System.XmlException" class.
+ * XmlException.cs - Implementation of the "System.Xml.XmlException" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *

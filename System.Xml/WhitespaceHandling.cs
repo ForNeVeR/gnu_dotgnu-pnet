@@ -1,5 +1,6 @@
 /*
- * WhitespaceHandling.cs - Implementation of the "System.WhitespaceHandling" class.
+ * WhitespaceHandling.cs - Implementation of the
+ *		"System.Xml.WhitespaceHandling" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -23,9 +24,10 @@ namespace System.Xml
 
 public enum WhitespaceHandling
 {
-	All = 0,
-	None = 2,
-	Significant = 1
-}; //enum WhitespaceHandling
+	All         = 0,
+	Significant = 1,
+	None        = 2
 
-}; //namespace System.Xml
+}; // enum WhitespaceHandling
+
+}; // namespace System.Xml

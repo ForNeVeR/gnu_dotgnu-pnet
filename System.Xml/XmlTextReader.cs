@@ -1,5 +1,5 @@
 /*
- * XmlTextReader.cs - Implementation of the "System.XmlTextReader" class.
+ * XmlTextReader.cs - Implementation of the "System.Xml.XmlTextReader" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -911,6 +911,6 @@ public class XmlTextReader : XmlReader
 	 '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u200B',
 	 '\u3000', '\uFEFF'};
 	
-}; //class XmlTextReader
+}; // class XmlTextReader
 
-}; //namespace System.Xml
+}; // namespace System.Xml

@@ -1,5 +1,5 @@
 /*
- * WriteState.cs - Implementation of the "System.WriteState" class.
+ * WriteState.cs - Implementation of the "System.Xml.WriteState" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -23,12 +23,13 @@ namespace System.Xml
 
 public enum WriteState
 {
+	Start     = 0,
+	Prolog    = 1,
+	Element   = 2,
 	Attribute = 3,
-	Closed = 5,
-	Content = 4,
-	Element = 2,
-	Prolog = 1,
-	Start = 0
-}; //enum WriteState
+	Content   = 4,
+	Closed    = 5
 
-}; //namespace System.Xml
+}; // enum WriteState
+
+}; // namespace System.Xml

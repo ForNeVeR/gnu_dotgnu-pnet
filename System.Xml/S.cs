@@ -1,5 +1,5 @@
 /*
- * S.cs - Implementation of string resource handling for "System".
+ * S.cs - Implementation of string resource handling for "System.Xml".
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *

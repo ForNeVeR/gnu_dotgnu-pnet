@@ -1,5 +1,5 @@
 /*
- * TODOAttribute.cs - Implementation of the "System.TODOAttribute" class.
+ * TODOAttribute.cs - Implementation of the "System.Xml.TODOAttribute" class.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *

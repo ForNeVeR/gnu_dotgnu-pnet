@@ -25,7 +25,12 @@ using System;
 using System.Collections;
 
 //Quadruple linked list used for storing an XML tree
-internal class XmlNode
+#if ECMA_COMPAT
+internal
+#else
+public
+#endif
+class XmlNode
 {
 	public XmlNode Parent = null; //Pointer to the parent node, NULL if no parent
 	public XmlNode Prev = null; //Pointer to the previous node, NULL if no previous

@@ -1,5 +1,6 @@
 /*
- * XmlParserContext.cs - Implementation of the "System.XmlParserContext" class.
+ * XmlParserContext.cs - Implementation of the
+ *		"System.Xml.XmlParserContext" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -249,6 +250,6 @@ public class XmlParserContext
 				}
 			}
 
-}; //class XmlParserContext
+}; // class XmlParserContext
 
-}; //namespace System.Xml
+}; // namespace System.Xml

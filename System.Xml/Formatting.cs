@@ -1,5 +1,5 @@
 /*
- * Formatting.cs - Implementation of the "System.Formatting" class.
+ * Formatting.cs - Implementation of the "System.Xml.Formatting" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -23,8 +23,9 @@ namespace System.Xml
 
 public enum Formatting
 {
-	Indented = 1,
-	None = 0
-}; //enum Formatting
+	None     = 0,
+	Indented = 1
 
-}; //namespace System.Xml
+}; // enum Formatting
+
+}; // namespace System.Xml

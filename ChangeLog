@@ -7,6 +7,19 @@
 	resources/en_US/System.Xml/Xml.txt: begin implementing the missing
 	"System.Xml.XmlTextWriter" class.
 
+	* System.Xml/EntityHandling.cs, System.Xml/Formatting.cs,
+	System.Xml/IHasXmlNode.cs, System.Xml/IXmlLineInfo.cs,
+	System.Xml/NameTable.cs, System.Xml/ReadState.cs,
+	System.Xml/S.cs, System.Xml/TODOAttribute.cs,
+	System.Xml/ValidationType.cs, System.Xml/WhitespaceHandling.cs,
+	System.Xml/WriteState.cs, System.Xml/XmlException.cs,
+	System.Xml/XmlNameTable.cs, System.Xml/XmlNamespaceEntry.cs,
+	System.Xml/XmlNode.cs, System.Xml/XmlNodeOrder.cs,
+	System.Xml/XmlNodeType.cs, System.Xml/XmlParserContext.cs,
+	System.Xml/XmlSpace.cs, System.Xml/XmlTextReader.cs,
+	System.Xml/XmlTokenizedType.cs: improve coding standards in the
+	XML library and add some .NET Framework classes.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Exception.txt,

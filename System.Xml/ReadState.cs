@@ -1,5 +1,5 @@
 /*
- * ReadState.cs - Implementation of the "System.ReadState" class.
+ * ReadState.cs - Implementation of the "System.Xml.ReadState" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
  *
@@ -23,11 +23,12 @@ namespace System.Xml
 
 public enum ReadState
 {
-	Closed = 4,
-	EndOfFile = 3,
-	Error = 2,
-	Initial = 0,
-	Interactive = 1
-}; //enum ReadState
+	Initial     = 0,
+	Interactive = 1,
+	Error       = 2,
+	EndOfFile   = 3,
+	Closed      = 4
 
-}; //namespace System.Xml
+}; // enum ReadState
+
+}; // namespace System.Xml

@@ -11,6 +11,8 @@ to the C# rules for "simple-name" and "member-access".
 * cscc/Makefile.am: add "cs_lookup.c" and rearrange the Makefile to
 simplify the definitions.
 
+* cscc/cs_semantics.tc: semantic analysis for ILNode_DummySem.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

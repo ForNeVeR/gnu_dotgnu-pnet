@@ -31,6 +31,14 @@
 %operation CSSemValue ILNode_SemAnalysis([ILNode *node], ILGenInfo *info,
 									     ILNode **parent) = {CSSemValueDefault}
 
+/*
+ * Stub for dummy semantic analysis routines.
+ */
+ILNode_SemAnalysis(ILNode_DummySem)
+{
+	return CSSemValueDefault;
+}
+
 %decls %end %{
 
 /*

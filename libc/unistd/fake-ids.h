@@ -36,6 +36,8 @@
 #define FAKE_GID                100
 #define FAKE_CURRENT_USER       "user"
 #define FAKE_CURRENT_GROUP      "users"
+#define FAKE_CURRENT_REAL       "J. Random User"
+#define FAKE_CURRENT_HOME       "/home/user"
 
 #define FAKE_PPID               1000
 #define FAKE_PID                1001
@@ -45,10 +47,16 @@
 #define FAKE_NOBODY_GID         32766
 #define FAKE_NOBODY_USER        "nobody"
 #define FAKE_NOBODY_GROUP       "nobody"
+#define FAKE_NOBODY_REAL        "Nobody"
+#define FAKE_NOBODY_HOME        "/"
 
 #define FAKE_ROOT_UID           0
 #define FAKE_ROOT_GID           0
 #define FAKE_ROOT_USER          "root"
 #define FAKE_ROOT_GROUP         "root"
+#define FAKE_ROOT_REAL          "root"
+#define FAKE_ROOT_HOME          "/root"
+
+#define FAKE_SHELL              "/bin/sh"
 
 #endif /* _FAKE_IDS_H */

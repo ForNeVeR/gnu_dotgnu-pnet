@@ -14,6 +14,9 @@
 	* ilasm/ilasm_scanner.l: stop at 3 octal digits or 2 hex digits
 	when processing escape sequences inside strings in the assembler.
 
+	* csharp/cscc/cs_lvalue.tc: incorrect negation of int64 constants
+	when converting field constants.
+
 2002-11-27  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_varusage.h , codegen/cg_varusage.c, codegen/cg_gen.h,

@@ -251,7 +251,7 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 						if(baseType == ILType_Int64)
 						{
 							ILInt64 val = IL_READ_INT64(value);
-							if(val >= 0)
+							if(val < 0)
 							{
 								return ILNode_Int64_create
 									((ILUInt64)(-val), 1, 0);

@@ -297,7 +297,7 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
  */
 typedef struct
 {
-	void	   *privateData;
+	ILThread   *privateData;
 	ILObject   *stateInfo;
 	ILObject   *start;
 	ILString   *name;

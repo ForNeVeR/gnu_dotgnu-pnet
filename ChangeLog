@@ -1,4 +1,18 @@
+2003-07-05  Thong Nguyen  <tum@veridicus.com>
 
+	* engine/lib_thread.c: Implemented internal calls Thread.Abort
+	& Reset.  Fix for resource leak that occurs when threads are
+	collected without ever starting.
+	
+	* engine/engine.h, engine/thread.c: Renamed a few fields to be
+	more consistant.
+	
+	* support/thread.c: Changed ILThreads so that the underlying OS
+	thread is not created until start is called.  ILThreadRun now 
+	starts immediately rather than suspending until start is called.
+	
+	* libgc/win32_threads.c:  Changed MAX_THREADS to 1024.
+	
 2003-07-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c, image/member.c, include/il_program.h:

@@ -201,8 +201,8 @@ struct _tagILExecThread
 	ILExecThread   *nextThread;
 	ILExecThread   *prevThread;
 
-	/* Operating system thread object */
-	ILThread       *osThread;
+	/* Support thread object */
+	ILThread       *supportThread;
 
 	/* Extent of the execution stack */
 	CVMWord		   *stackBase;
@@ -222,7 +222,7 @@ struct _tagILExecThread
 	ILObject	   *securityManager;
 
 	/* System.Threading.Thread object */
-	ILObject	*clrThread;
+	ILObject *clrThread;
 
 	/* Free monitors list */
 	ILExecMonitor *freeMonitor;

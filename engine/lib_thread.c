@@ -28,6 +28,14 @@ extern	"C" {
 #endif
 
 /*
+ *	Comments on terminology:
+ *
+ * Support Thread:	Refers to an ILThread instance.
+ * Engine Thread:		Refers to an ILExecThread instance.
+ * CLR Thread:		Refers to a System.Threading.Thread instance. 
+ */
+
+/*
  *	Timeout value the managed WaitHandle uses.
  */
 #define WIN32_WAIT_TIMEOUT (258L)
@@ -823,7 +831,7 @@ static void __PrivateThreadStart(void *objectArg)
 	}
 
 	/* Invoke the ThreadStart delegate */
-	ILExecThreadCall(thread, method, &result, *((ILObject **)thread->clrThread + 2));
+	ILExecThreadCall(thread, method, &result, ((System_Thread *)thread->clrThread)->start);
 
 	/* Print out any uncaught exceptions */
 	if (ILExecThreadHasException(thread))
@@ -839,10 +847,9 @@ static void __PrivateThreadStart(void *objectArg)
 */
 void _IL_Thread_InitializeThread(ILExecThread *thread, ILObject *_this)
 {
-	ILThread *osThread;
-	ILExecThread *newThread;
+	ILThread *supportThread;
 
-	if (*((ILThread **)_this) != NULL)
+	if (((System_Thread *)_this)->privateData != NULL)
 	{
 		/* InitializeThread can't be called more than once */
 
@@ -850,10 +857,8 @@ void _IL_Thread_InitializeThread(ILExecThread *thread, ILObject *_this)
 
 		return;
 	}
-
-	/* Create a new OS-level thread */
-
-	if ((osThread = ILThreadCreate(__PrivateThreadStart, 0)) == 0)
+	
+	if (!ILHasThreads())
 	{
 		/* Threading isn't supported */
 
@@ -863,27 +868,20 @@ void _IL_Thread_InitializeThread(ILExecThread *thread, ILObject *_this)
 		return;
 	}
 
-	/* Register the OS-level thread for managed code execution */
+	/* Create a new support thread */
 
-	if (ILThreadRegisterForManagedExecution(thread->process, osThread, 1) == 0)
+	if ((supportThread = ILThreadCreate(__PrivateThreadStart, 0)) == 0)
 	{
-		/* Runtime isn't fully initialized.  This should never happen */
-
-		ILExecThreadThrowSystem(thread, "System.ExecutionEngineException",
-			"Exception_UnexpectedEngineState");
-
+		/* Threading is supported but creation failed.
+			ThrowOutOfMemoryException */
+			
+		ILExecThreadThrowOutOfMemory(thread);
+		
 		return;
 	}
 
-	/* Get the ILExecThread from the OS-level thread */
-	/* The ILExecThread should already be associated with the OS-level thread */
-	newThread = (ILExecThread *)ILThreadGetObject(osThread);
-	
-	/* Associate the CLR-level thread with the engine-level thread */
-	newThread->clrThread = _this;
-
-	/* Associate the OS-level thread with the CLR-level thread */
-	*((ILThread **)_this) = osThread;
+	/* Associate the support thread with the CLR thread */
+	((System_Thread *)_this)->privateData = supportThread;
 }
 
 /*
@@ -891,18 +889,13 @@ void _IL_Thread_InitializeThread(ILExecThread *thread, ILObject *_this)
  */
 void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
 {
-	/*
-	 * TODO:
-	 *
-	 * Some parts of ILThreadDestroy should probably be performed immediately
-	 * after the thread has finished executing (to free up OS handles early).
-	 */
-
-	/* This will be null if threads aren't supported and someone creates a Thread */
-
-	if (*((ILThread **)_this))
+	ILThread *supportThread;
+	
+	supportThread = ((System_Thread *)_this)->privateData;
+	
+	if (supportThread)
 	{
-		ILThreadDestroy(*((ILThread **)_this));
+		ILThreadDestroy(supportThread);
 	}
 }
 
@@ -911,7 +904,39 @@ void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
  */
 void _IL_Thread_Abort(ILExecThread *thread, ILObject *_this)
 {	
-	ILThreadAbort(*((ILThread **)_this));
+	ILThreadAbort(((System_Thread *)_this)->privateData);
+}
+
+/*
+ * public void Interrupt();
+ */
+void _IL_Thread_Interrupt(ILExecThread *thread, ILObject *_this)
+{	
+	ILThreadInterrupt(((System_Thread *)_this)->privateData);
+}
+
+/*
+ * public void Suspend();
+ */
+void _IL_Thread_Suspend(ILExecThread *thread, ILObject *_this)
+{	
+	if (ILThreadSuspend(((System_Thread *)_this)->privateData) == 0)
+	{
+		ILExecThreadThrowSystem
+			(
+				thread,
+				"System.Threading.ThreadStateException",
+				(const char *)0
+			);
+	}
+}
+
+/*
+ * public void Resume();
+ */
+void _IL_Thread_Resume(ILExecThread *thread, ILObject *_this)
+{	
+	ILThreadResume(((System_Thread *)_this)->privateData);
 }
 
 /*
@@ -920,7 +945,11 @@ void _IL_Thread_Abort(ILExecThread *thread, ILObject *_this)
 ILBool _IL_Thread_InternalJoin(ILExecThread *thread, ILObject *_this,
 							   ILInt32 timeout)
 {	
-	switch (ILThreadJoin((*((ILThread **)_this)), timeout))
+	ILThread *supportThread;
+
+	supportThread = ((System_Thread *)_this)->privateData;
+	
+	switch (ILThreadJoin(supportThread, timeout))
 	{	
 	case IL_JOIN_OK:
 	case IL_JOIN_SELF:		
@@ -978,11 +1007,12 @@ void _IL_Thread_MemoryBarrier(ILExecThread *thread)
  */
 void _IL_Thread_ResetAbort(ILExecThread *thread)
 {
-	if ((ILThreadGetState(thread->osThread) & IL_TS_ABORT_REQUESTED) != 0)
+	if ((ILThreadGetState(thread->supportThread) & IL_TS_ABORT_REQUESTED) != 0)
 	{
 		/* No abort has been requested */
 
-		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", (const char *)0);
+		ILExecThreadThrowSystem(thread,
+			"System.Threading.ThreadStateException", (const char *)0);
 
 		return;
 	}
@@ -1003,17 +1033,71 @@ void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
  */
 void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 {
-	if ((ILThreadGetState(*((ILThread **)_this)) & IL_TS_UNSTARTED) == 0)
+	ILThread *supportThread;
+	ILExecThread *execThread;
+
+	_IL_Monitor_Enter(thread, _this);
+
+	/* Get the support thread stored inside the first field of the 
+	CLR thread by _IL_Thread_InitializeThread */
+
+	supportThread = ((System_Thread *)_this)->privateData;
+	
+	if (supportThread == 0
+		|| (ILThreadGetState(supportThread) & IL_TS_UNSTARTED) == 0)
 	{
 		/* Thread has already been started or has ended. */
 
+		_IL_Monitor_Exit(thread, _this);
+
 		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", 
 			"Exception_ThreadAlreadyStarted");
-
+		
 		return;
 	}
 
-	ILThreadStart(*((ILThread **)_this));
+	/* Register the support thread for managed code execution */
+
+	if ((execThread = ILThreadRegisterForManagedExecution(thread->process, supportThread, 1)) == 0)
+	{
+		/* Runtime isn't fully initialized.  This should never happen */
+
+		_IL_Monitor_Exit(thread, _this);
+
+		ILExecThreadThrowSystem(thread, "System.ExecutionEngineException",
+			"Exception_UnexpectedEngineState");
+		
+		return;
+	}
+	
+	/* Associate the CLR thread with the engine thread */
+
+	execThread->clrThread = _this;
+
+	/* Start the support thread */
+
+	if (ILThreadStart(supportThread) == 0)
+	{
+		/* Start unsuccessul.  Do a GC then try again */
+
+		ILGCCollect();
+		ILGCInvokeFinalizers();
+	
+		if (ILThreadStart(supportThread) == 0)
+		{
+			/* Start unsuccessful.  Destroy the support & engine threads */
+
+			((System_Thread *)_this)->privateData = 0;		
+			ILThreadDestroy(supportThread);
+			ILExecThreadDestroy(execThread);
+
+			/* Throw an OutOfMemoryException */
+
+			ILExecThreadThrowOutOfMemory(thread);
+		}
+	}
+	
+	_IL_Monitor_Exit(thread, _this);
 }
 
 /*
@@ -1030,7 +1114,7 @@ ILObject *_IL_Thread_InternalCurrentThread(ILExecThread *thread)
 void _IL_Thread_InternalSetBackground(ILExecThread *thread,
 									  ILObject *_this, ILBool value)
 {
-	ILThreadSetBackground(*((ILThread **)_this), value);
+	ILThreadSetBackground(((System_Thread *)_this)->privateData, value);
 }
 
 /*
@@ -1038,7 +1122,11 @@ void _IL_Thread_InternalSetBackground(ILExecThread *thread,
  */
 ILInt32 _IL_Thread_InternalGetPriority(ILExecThread *thread, ILObject *_this)
 {
-	if ((ILThreadGetState(*((ILThread **)_this)) 
+	ILThread *supportThread;
+
+	supportThread = ((System_Thread *)_this)->privateData;
+
+	if ((ILThreadGetState(supportThread) 
 			& (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED | IL_TS_STOPPED)) != 0)
 	{
 		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", (const char *)0);
@@ -1057,7 +1145,11 @@ ILInt32 _IL_Thread_InternalGetPriority(ILExecThread *thread, ILObject *_this)
 void _IL_Thread_InternalSetPriority(ILExecThread *thread, ILObject *_this,
 									ILInt32 priority)
 {
-	if ((ILThreadGetState(*((ILThread **)_this))
+	ILThread *supportThread;
+	
+	supportThread = ((System_Thread *)_this)->privateData;
+
+	if ((ILThreadGetState(supportThread)
 			& (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED | IL_TS_STOPPED)) != 0)
 	{
 		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", (const char *)0);
@@ -1071,7 +1163,7 @@ void _IL_Thread_InternalSetPriority(ILExecThread *thread, ILObject *_this,
  */
 ILInt32 _IL_Thread_InternalGetState(ILExecThread *thread, ILObject *_this)
 {
-	return ILThreadGetState(*((ILThread **)_this));
+	return ILThreadGetState(((System_Thread *)_this)->privateData);
 }
 
 /*

@@ -53,7 +53,7 @@ ILObject *_ILGetCurrentClrThread(ILExecThread *thread)
 
 		clrThread = _ILEngineAllocObject(thread, classInfo);
 
-		/* Assocaite the CLR thread object with the OS thread */
+		/* Associate the CLR thread object with the OS thread */
 
 		*((ILThread **)clrThread) = ILThreadSelf();
 
@@ -82,7 +82,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 	ILThreadSetObject(thread, execThread);
 
 	/* Associate the OS-level thread with the new engine-level thread */
-	execThread->osThread = thread;
+	execThread->supportThread = thread;
 
 	return execThread;
 }
@@ -120,7 +120,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int isUserThread)
 	thread->maxFrames = process->frameStackSize;
 
 	/* Initialize the thread state */
-	thread->osThread = 0;
+	thread->supportThread = 0;
 	thread->clrThread = 0;	
 	thread->freeMonitor = 0;
 	thread->isUserThread = isUserThread;

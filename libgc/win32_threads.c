@@ -25,7 +25,7 @@
 #include <windows.h>
 #endif
 
-#define MAX_THREADS 64
+#define MAX_THREADS 1024
 
 struct thread_entry {
   LONG in_use;

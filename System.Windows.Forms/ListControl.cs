@@ -156,8 +156,8 @@ public abstract class ListControl : Control
 	public event EventHandler DataSourceChanged;
 	public event EventHandler DisplayMemberChanged;
 	public event EventHandler SelectedValueChanged;
+	public event EventHandler SelectedIndexChanged;
 	public event EventHandler ValueMemberChanged;
-
 
 	[TODO]
 	protected ListControl()
@@ -179,29 +179,34 @@ public abstract class ListControl : Control
 		return false;
 	}
 
-	[TODO]
 	protected virtual void OnDataSourceChanged( EventArgs ev )
 	{
+		if(this.DataSourceChanged != null)
+			this.DataSourceChanged(this, ev);
 	}
 
-	[TODO]
 	protected virtual void OnDisplayMemberChanged( EventArgs ev )
 	{
+		if(this.DisplayMemberChanged != null)
+			this.DisplayMemberChanged(this, ev);
 	}
 
-	[TODO]
 	protected virtual void OnSelectedIndexChanged( EventArgs ev )
 	{
+		if(this.SelectedIndexChanged != null)
+			this.SelectedIndexChanged(this, ev);
 	}
 
-	[TODO]
 	protected virtual void OnSelectedValueChanged( EventArgs ev )
 	{
+		if(this.SelectedValueChanged != null)
+			this.SelectedValueChanged(this, ev);
 	}
 
-	[TODO]
 	protected virtual void OnValueMemberChanged( EventArgs ev )
 	{
+		if(this.ValueMemberChanged != null)
+			this.ValueMemberChanged(this, ev);
 	}
 	
 	protected abstract void RefreshItem( int index );

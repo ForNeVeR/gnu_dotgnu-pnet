@@ -179,7 +179,13 @@ public abstract class ScrollBar : Control
 			{
 				throw new ArgumentOutOfRangeException(/* TODO */);
 			}
+			
+			if(value == largeChange)
+				return;
+			
 			largeChange = value;
+			
+			Redraw();
 		}
 	}
 
@@ -253,7 +259,7 @@ public abstract class ScrollBar : Control
 				// Remove old
 				Draw(g, false, invalid);
 				// Draw bar
-				Draw(g, false, bar);
+				Draw(g, false, bar); //BRL:Redraw??
 			}
 			OnValueChanged(new EventArgs());
 		}
@@ -394,7 +400,7 @@ public abstract class ScrollBar : Control
 		}
 
 		int tmp = (value+largeChange);
-		int tmp2 = (maximum-largeChange+1);
+		int tmp2 = (maximum-largeChange);
 		tmp = tmp < tmp2 ?
 		      tmp : tmp2;
 		if (value == tmp) { return; }
@@ -445,40 +451,40 @@ public abstract class ScrollBar : Control
 	// Sets up the layout rectangles for a VScrollBar's elements
 	private void LayoutElementsV(Size s)
 	{
-		int x = 0;
-		int y = 0;
-		int width = s.Width;
-		int height = s.Height;
-		int guiMax = (1+maximum-largeChange-minimum);
-		int scrolls = (maximum-minimum)/largeChange;
-		int position = (value-minimum) < guiMax ?
-		               (value-minimum) : guiMax;
-
-		// layout rectangle for decrement button
-		decrement = new Rectangle(x,y,width,width);
-		y += width; // increase by decrement size
-		height -= width;
-
-		// layout rectangle for the track of the scroll bar
-		int trackStart = y;
-		int trackRange = height-width;
-		track = new Rectangle(x,trackStart,width,trackRange);
-		y += trackRange; // increase by track length
-		height = width;
-
-		// layout rectangle for increment button
-		increment = new Rectangle(x,y,width,width);
-
-		// determine the size of the scrollbar, determine the maximum
-		// position of the scroll bar on the track, translate the Value
-		// range to the track's visual range, and layout the scroll bar
-		int scrollSize = trackRange/scrolls;
-		int trackMax = trackRange-scrollSize;
-		int scrollPos = (trackMax*position)/guiMax;
-		scrollPos = trackMax < scrollPos ?
-		            trackMax : scrollPos;
-		scrollPos += trackStart;
-		bar = new Rectangle(x,scrollPos,width,scrollSize);
+		int trackHeight, thumbHeight, thumbPos, zeroMax, zeroVal;
+		double percentage;
+		
+		// Track
+		trackHeight = s.Height - 2 * s.Width;
+		this.track  = new Rectangle(0, s.Width, s.Width, trackHeight);
+		
+		// Decrement and increment buttons
+		// Is there enough room to fit both buttons at their
+		// preferred size?
+		if(s.Height >= s.Width * 2)
+		{
+			this.decrement = new Rectangle(0, 0, s.Width, s.Width);
+			this.increment = new Rectangle(0, s.Width + trackHeight, 
+			                               s.Width, s.Width);
+		}
+		else
+		{
+			// No.  Split what's left.
+			this.decrement = new Rectangle(0, 0, s.Width, s.Height / 2);
+			this.increment = new Rectangle(0, s.Height / 2, 
+			                               s.Width, s.Height / 2);
+		}
+		
+		// Thumb.
+		zeroMax     = this.maximum - this.minimum;
+		zeroVal     = this.value - this.minimum;
+		percentage  = (double) this.largeChange / zeroMax;
+		thumbHeight = (int)( percentage * trackHeight );
+		percentage  = (double) zeroVal / zeroMax;
+		thumbPos    = (int)( percentage * trackHeight );
+		thumbPos    = Math.Min(thumbPos, trackHeight - thumbHeight);
+		this.bar    = new Rectangle(0, s.Width + thumbPos, 
+		                            s.Width, thumbHeight);
 	}
 
 	protected override void OnEnabledChanged(EventArgs e)
@@ -631,11 +637,13 @@ public abstract class ScrollBar : Control
 		{
 			Increment(null,null);
 			IncrementDown = true;
+			Redraw();
 		}
 		else if (decrement.Contains(x,y))
 		{
 			Decrement(null,null);
 			DecrementDown = true;
+			Redraw();
 		}
 		else if (bar.Contains(x,y))
 		{
@@ -830,10 +838,12 @@ public abstract class ScrollBar : Control
 		if (incDown)
 		{
 			IncrementDown = false;
+			Redraw();
 		}
 		else if (decDown)
 		{
 			DecrementDown = false;
+			Redraw();
 		}
 		else if (trackDown)
 		{
@@ -847,7 +857,7 @@ public abstract class ScrollBar : Control
 			{
 				type = ScrollEventType.First;
 			}
-			else if (value == maximum-largeChange+1)
+			else if (value == maximum-largeChange)
 			{
 				type = ScrollEventType.Last;
 			}
@@ -867,9 +877,16 @@ public abstract class ScrollBar : Control
 
 	protected override void OnPaint(PaintEventArgs e)
 	{
-		Draw(e.Graphics,true, ClientRectangle);
+		Draw(e.Graphics,true, e.ClipRectangle);
 		base.OnPaint(e);
 	}
+
+	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
+	{
+		base.SetBoundsCore (x, y, width, height, specified);
+		Redraw(true);
+	}
+
 
 	protected virtual void OnScroll(ScrollEventArgs e)
 	{
@@ -889,6 +906,11 @@ public abstract class ScrollBar : Control
 		{
 			handler(this,e);
 		}
+	}
+
+	private void Redraw()
+	{
+		Redraw(true);
 	}
 
 	// Redraw the scrollbar after a state change. Relayout if necessary
@@ -951,58 +973,39 @@ public abstract class ScrollBar : Control
 
 	private void SetPositionByValue()
 	{
-		int guiMax = (1+maximum-largeChange-minimum);
-		int position = (value-minimum) < guiMax ?
-		               (value-minimum) : guiMax;
-		if (vertical)
-		{
-			int trackMax = track.Height-bar.Height;
-			int trackStart = track.Y;
-			int scrollPos = (trackMax*position)/guiMax;
-			scrollPos = trackMax < scrollPos ?
-			            trackMax : scrollPos;
-			scrollPos += trackStart;
-			bar.Y = scrollPos;
-		}
+		Size cs = this.ClientSize;
+		
+		if(vertical)
+			LayoutElementsV(cs);
 		else
-		{
-			int trackMax = track.Width-bar.Width;
-			int trackStart = track.X;
-			int scrollPos = (trackMax*position)/guiMax;
-			scrollPos = trackMax < scrollPos ?
-			            trackMax : scrollPos;
-			scrollPos += trackStart;
-			bar.X = scrollPos;
-		}
+			LayoutElementsH(cs);
 	}
 
 	private void SetValueByPosition()
 	{
-		int guiMax = (1+maximum-largeChange-minimum);
-		if (vertical)
+		if(vertical)
 		{
-			int trackMax = track.Height-bar.Height;
-			int position = bar.Y-track.Y;
-			int newValue = (guiMax*position)/trackMax;
-			newValue = guiMax < newValue ?
-			           guiMax : newValue;
-			newValue += minimum;
-			value = newValue;
+			int position = bar.Y - track.Y;
+			double percentage = (double) position / track.Height;
+			value = (int)(percentage * (maximum - minimum) + minimum);
 		}
 		else
 		{
-			int trackMax = track.Width-bar.Width;
-			int position = bar.X-track.X;
-			int newValue = (guiMax*position)/trackMax;
-			newValue = guiMax < newValue ?
-			           guiMax : newValue;
-			if (RightToLeft == RightToLeft.Yes)
+			int position = bar.X - track.X;
+			double percentage = (double) position / track.Width;
+			value = (int)(percentage * (maximum - minimum));
+			
+			if(RightToLeft == RightToLeft.Yes)
 			{
-				newValue = guiMax-newValue;
+				int guiMax = (maximum - largeChange - minimum);
+				value = guiMax - value;
 			}
-			newValue += minimum;
-			value = newValue;
+			
+			value += minimum;
 		}
+		
+		value = Math.Max(minimum, value);
+		value = Math.Min(maximum, value);
 	}
 	private static Rectangle SwapRectValues(Rectangle rect)
 	{

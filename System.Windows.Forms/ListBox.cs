@@ -33,16 +33,26 @@ namespace System.Windows.Forms
 [TODO]
 public class ListBox : ListControl
 {
- 	public class ObjectCollection : IList, ICollection, IEnumerable	
+ 	public class ObjectCollection : IList	
  	{
  		private ListBox owner;
  		private ArrayList list;
 		internal int maxWidth = 0;
+		private ObjectCollectionComparer comparer;
 
+		private class ObjectCollectionComparer : IComparer
+		{
+			public int Compare(object a, object b)
+			{
+				return a.ToString().CompareTo(b.ToString());
+			}
+		}
+		
  		public ObjectCollection(ListBox owner)
  		{
  			this.owner = owner;
  			list = new ArrayList();
+			this.comparer = new ObjectCollectionComparer();
  		}
 
  		// Implement the ICollection interface.
@@ -94,12 +104,23 @@ public class ListBox : ListControl
  			get { return List[index]; }
  			set 
 			{ 
-				List[index] = value; 
-				if(this.owner != null)
+				if(this.owner.sorted)
 				{
-					this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
-					this.owner.CalculateScrollbars();
+					this.owner.suppressDraw = true;
+					this.RemoveAt(index);
+					this.AddSorted(value);
+					this.owner.suppressDraw = false;
 				}
+				else
+					List[index] = value;
+					
+				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+				this.owner.CalculateScrollbars();
+				
+				if(this.owner.sorted)
+					this.owner.RedrawList();
+				else
+					this.owner.PaintItem(index);
 			}
   		}
 
@@ -108,12 +129,23 @@ public class ListBox : ListControl
  			get { return List[index]; }
  			set 
 			{ 
-				List[index] = value; 
-				if(this.owner != null)
+				if(this.owner.sorted)
 				{
-					this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
-					this.owner.CalculateScrollbars();
+					this.owner.suppressDraw = true;
+					this.RemoveAt(index);
+					this.AddSorted(value);
+					this.owner.suppressDraw = false;
 				}
+				else
+					List[index] = value;
+
+				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+				this.owner.CalculateScrollbars();
+
+				if(this.owner.sorted)
+					this.owner.RedrawList();
+				else
+					this.owner.PaintItem(index);
 			}
   		}
 
@@ -125,13 +157,20 @@ public class ListBox : ListControl
  		public int Add(Object value)
  		{
  			int result;
- 			result = List.Add(value);
- 			if(this.owner != null)
-			{
+			
+			if(this.owner.sorted)
+				result = this.AddSorted(value);
+			else
+				result = List.Add(value);
+
+			this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+			this.owner.CalculateScrollbars();
+			
+			if(this.owner.Sorted)
+				this.owner.RedrawList();
+			else
 				this.owner.PaintItem(result);
-				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
-				this.owner.CalculateScrollbars();
-			}
+
  			return result;
  		}
 
@@ -139,23 +178,21 @@ public class ListBox : ListControl
  		{
  			List.AddRange(items);
 			
-			if(this.owner != null)
-			{
-				foreach(object value in items)
-					this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
-	 			this.owner.Invalidate();
-				this.owner.CalculateScrollbars();
-			}
+			foreach(object value in items)
+				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));
+
+			if(this.owner.Sorted)
+				this.Sort();
+				
+			this.owner.CalculateScrollbars();
+			this.owner.RedrawList();
  		}
 
  		public virtual void Clear()
  		{
  			List.Clear();
-			if(this.owner != null)
-			{
-	 			this.owner.Invalidate();
-				this.owner.CalculateScrollbars();
-			}
+			this.owner.CalculateScrollbars();
+ 			this.owner.RedrawList();
  		}
 
  		public bool Contains(Object value)
@@ -170,38 +207,58 @@ public class ListBox : ListControl
 
  		public void Insert(int index, Object value)
  		{
- 			List.Insert(index, value);
-			if(this.owner != null)
-			{
-				this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));	
-	 			this.owner.Invalidate();
-				this.owner.CalculateScrollbars();
-			}
+			this.maxWidth = Math.Max(this.maxWidth, TextWidth(value));	
+
+			if(this.owner.Sorted)
+				this.AddSorted(value);
+			else
+				List.Insert(index, value);
+					
+			this.owner.CalculateScrollbars();
+			this.owner.RedrawList();
  		}
 
  		public void Remove(Object value)
  		{
  			List.Remove(value);
-			if(this.owner != null)
-			{
-	 			this.owner.Invalidate();
-				this.owner.CalculateScrollbars();
-			}
+
+			this.owner.CalculateScrollbars();
+ 			this.owner.RedrawList();
  		}
 
  		public void RemoveAt(int index)
  		{
  			List.RemoveAt(index);
-			if(this.owner != null)
-			{
-				this.owner.Invalidate();
-				this.owner.CalculateScrollbars();
-			}
+
+			this.owner.CalculateScrollbars();
+			this.owner.RedrawList();
  		}
 
+ 		public void Sort()
+ 		{
+			List.Sort(this.comparer);
+			this.owner.RedrawList();
+  		}
+
+ 		public int AddSorted(object item)
+		{
+			int index = 0;
+		
+			if(this.owner != null && this.owner.Sorted)
+			{		
+ 				index = List.BinarySearch(item, this.comparer);
+				if(index < 0)
+					index = ~index;
+				List.Insert(index, item);
+			}
+			else
+				index = List.Add(item);
+			
+			return index;
+ 		}
 	}; // class ListBox.ObjectCollection
 
- 	public class SelectedIndexCollection : IList, ICollection, IEnumerable
+ 	public class SelectedIndexCollection : IList
  	{
  		private ListBox owner;
  		private ArrayList list;
@@ -327,11 +384,19 @@ public class ListBox : ListControl
 
  		public virtual void Clear()
  		{
- 			List.Clear();
+			if(this.owner != null)
+			{
+ 				this.owner.DelayPaint();
+				
+				foreach(int index in List)
+					this.owner.PaintItem(index);
+			}
+		
+			List.Clear();
 
 			if(this.owner != null)
 			{
- 				this.owner.RedrawList();
+				this.owner.FlushPaint();
 
 				if(!this.owner.suppressEvents)
 					this.owner.FireSelectedIndexChanged();
@@ -387,7 +452,7 @@ public class ListBox : ListControl
 
 	}; // class ListBox.SelectedIndexCollection
 
-	public class SelectedObjectCollection : IList, ICollection, IEnumerable
+	public class SelectedObjectCollection : IList
 	{
 		private ListBox owner;
 		private SelectedIndexCollection indices;
@@ -509,31 +574,45 @@ public class ListBox : ListControl
 			}
 		}
 
-		//TODO: Microsoft's impl somehow doesn't have these methods -- how?
-		public int Add(object o)
+		// The interface has to be implemented, but hide the members
+		// if the object is not cast to the interface
+		int IList.Add(object o)
 		{
-			throw new ArgumentException(/* TODO */);
+			throw new InvalidOperationException(/* TODO */);
 		}
 
-		public void Clear()
+		private int Add(object o)
+		{
+			return 0;
+		}
+
+		void IList.Clear()
 		{	
-			throw new ArgumentException(/* TODO */);
+			throw new InvalidOperationException(/* TODO */);
 		}
 
-		public void Insert( int index, Object item )
+		private void Clear() {}
+
+		void IList.Insert( int index, Object item )
 		{
-			throw new ArgumentException(/* TODO */);
+			throw new InvalidOperationException(/* TODO */);
 		}
 
-		public void Remove( Object value )
+		private void Insert(int index, Object item) {}
+
+		void IList.Remove( Object value )
 		{
-			throw new ArgumentException(/* TODO */);
+			throw new InvalidOperationException(/* TODO */);
 		}
 
-		public void RemoveAt( int index )
+		private void Remove( Object value ) {}
+
+		void IList.RemoveAt( int index )
 		{
-			throw new ArgumentException(/* TODO */);
+			throw new InvalidOperationException(/* TODO */);
 		}
+
+		private void RemoveAt( int index) {}
 
 		public bool IsFixedSize
 		{
@@ -543,9 +622,6 @@ public class ListBox : ListControl
 			}
 		}
 	} // class SelectedObjectCollection;
-
-	[TODO]
-	public const int DefaultItemHeight = 20; // What value? 20 is random
 
 	public const int NoMatches = -1;
 
@@ -579,15 +655,16 @@ public class ListBox : ListControl
 		}
 	}	
 
-	[TODO]
 	public int ColumnWidth
 	{
 		get
 		{
-			return 0;
+			return this.columnWidth;
 		}
 		set
 		{
+			this.columnWidth = value;
+			this.Redraw();
 		}
 	}
 
@@ -681,9 +758,6 @@ public class ListBox : ListControl
 		get
 		{
 			return 0;
-		}
-		set
-		{
 		}
 	}
 
@@ -804,16 +878,22 @@ public class ListBox : ListControl
 		}
 	}
 
-	[TODO]
 	public bool Sorted
 	{
 		get
 		{
-			return false;
+			return this.sorted;
 		}
 		
 		set
 		{
+			if(value)
+				this.CheckNoDataSource();
+
+			this.sorted = value;
+
+			if(this.sorted)
+				this.internalDataSource.Sort();
 		}
 	}
 
@@ -822,12 +902,10 @@ public class ListBox : ListControl
 	{
 		get
 		{	
-			return base.Text;
+			return "";
 		}
-
 		set
 		{
-			base.Text = value;
 		}
 	}
 
@@ -844,32 +922,33 @@ public class ListBox : ListControl
 		}
 	}
 	
-	[TODO]
 	public bool IntegralHeight
 	{
 		get
 		{
-			return true;
+			return this.integralHeight;
 		}
 		
 		set
 		{
+			this.integralHeight = value;
+			this.Redraw();
 		}
 	}
 
-	[TODO]
 	public void BeginUpdate()
 	{
+		this.DelayPaint();
 	}
 	
-	[TODO]
 	public void ClearSelected()
 	{
+		this.selectedIndices.Clear();
 	}
 
-	[TODO]
 	public void EndUpdate()
 	{
+		this.FlushPaint();
 	}
 
 	[TODO]
@@ -902,16 +981,24 @@ public class ListBox : ListControl
 		return 0;
 	}
 
-	[TODO]
-	public Rectangle GetItemRectangle( int index )
+	public Rectangle GetItemRectangle(int index)
 	{
-		return new Rectangle();
+		IList data = (IList) base.dataSource;
+	
+		if(index < 0 || index >= data.Count)
+			throw new ArgumentOutOfRangeException(/* TODO */);
+		
+		return this.GetItemRect(index);
 	}
 
-	[TODO]
 	public bool GetSelected( int index )
 	{
-		return false;
+		IList data = (IList) base.dataSource;
+	
+		if(index < 0 || index >= data.Count)
+			throw new ArgumentOutOfRangeException(/* TODO */);
+		
+		return this.selectedIndices.Contains(index);
 	}
 
 	public int IndexFromPoint(Point p)
@@ -944,9 +1031,25 @@ public class ListBox : ListControl
 		base.Refresh();
 	}
 
-	[TODO]
 	public void SetSelected( int index, bool value )
 	{
+		IList data = (IList) base.dataSource;
+	
+		if(index < 0 || index >= data.Count)
+			throw new ArgumentOutOfRangeException(/* TODO */);
+		
+		if(value)
+		{
+			// Make it selected.
+			if(!this.selectedIndices.Contains(index))
+				this.selectedIndices.Add(index);
+		}
+		else
+		{
+			// Deselect it.
+			if(this.selectedIndices.Contains(index))
+				this.selectedIndices.Remove(index);
+		}
 	}
 
 	[TODO]
@@ -955,15 +1058,9 @@ public class ListBox : ListControl
 		return base.ToString();
 	}
 
-	[TODO]
 	public event DrawItemEventHandler DrawItem;
-
-	[TODO]
 	public event MeasureItemEventHandler MeasureItem;
 
-	public event EventHandler SelectedIndexChanged;
-
-	[TODO]
 	protected override CreateParams CreateParams
 	{
 		get
@@ -1007,6 +1104,8 @@ public class ListBox : ListControl
 	[TODO]
 	protected virtual void OnDrawItem( DrawItemEventArgs e )
 	{
+		if (DrawItem != null)
+			DrawItem(this, e);
 	}
 
 	[TODO]
@@ -1030,6 +1129,8 @@ public class ListBox : ListControl
 	[TODO]
 	protected virtual void OnMeasureItem( MeasureItemEventArgs e )
 	{
+		if (MeasureItem != null)
+			MeasureItem(this, e);
 	}
 	
 	[TODO]
@@ -1044,25 +1145,11 @@ public class ListBox : ListControl
 		base.OnResize( e );
 	}
 	
-	internal void FireSelectedIndexChanged()
+	private void FireSelectedIndexChanged()
 	{
 		this.OnSelectedIndexChanged(new EventArgs());
 	}
 	
-	protected override void OnSelectedIndexChanged(EventArgs e)
-	{	
-		if(this.SelectedIndexChanged != null)
-			this.SelectedIndexChanged(this, e);
-	
-		base.OnSelectedIndexChanged( e );
-	}
-
-	[TODO]
-	protected override void OnSelectedValueChanged( EventArgs e )
-	{
-		base.OnSelectedValueChanged( e );
-	}
-
 	[TODO]
 	protected override void RefreshItem( int index )
 	{
@@ -1076,9 +1163,9 @@ public class ListBox : ListControl
 		base.SetBoundsCore( x, y, width, height, specified );
 	}
 
-	[TODO]	
 	protected virtual void Sort()
 	{
+		this.internalDataSource.Sort();
 	}
 
 #if !CONFIG_COMPACT_FORMS
@@ -1101,6 +1188,8 @@ public class ListBox : ListControl
 	private Timer vScrollTimer;
 	internal bool suppressEvents = false;
 	private bool suppressDraw = false;
+	private ArrayList pendingDrawItems = new ArrayList();
+	private int paintDelayed = 0;
 	
 	// Used for control-dragging in MultiExtended mode.
 	private SelectedIndexCollection prevSelectedIndices;
@@ -1114,6 +1203,9 @@ public class ListBox : ListControl
 	private SelectedObjectCollection selectedItems;
 	private bool horizontalScrollbar = false;
 	private bool multiColumn = false;
+	private bool sorted = false;
+	private bool integralHeight = true;
+	private int columnWidth = 100;
 
 	// Constructor
 	public ListBox()
@@ -1121,19 +1213,13 @@ public class ListBox : ListControl
 		this.vertScrollbar = new VScrollBar();
 		this.vertScrollbar.Dock = DockStyle.None;
 		this.Controls.Add(this.vertScrollbar);
-		this.vertScrollbar.Anchor = AnchorStyles.Top |
-		                            AnchorStyles.Bottom |
-		                            AnchorStyles.Right;
 		
 		this.horizScrollbar = new HScrollBar();
 		this.horizScrollbar.Dock = DockStyle.None;
 		this.Controls.Add(this.horizScrollbar);
-		this.horizScrollbar.Anchor = AnchorStyles.Bottom |
-		                             AnchorStyles.Left |
-		                             AnchorStyles.Right;
 
 		this.BackColor          = SystemColors.Window;
-		this.nonClientGraphics  = CreateNonClientGraphics();
+		this.nonClientGraphics  = this.CreateNonClientGraphics();
 		this.internalDataSource = this.CreateItemCollection();
 		base.dataSource         = this.internalDataSource;
 
@@ -1151,20 +1237,24 @@ public class ListBox : ListControl
 		this.vScrollTimer.Interval = 1;
 		this.vScrollTimer.Stop();
 
-		this.vertScrollbar.Scroll += new ScrollEventHandler(this.OnVScroll);
-		this.vertScrollbar.ValueChanged += new EventHandler(this.OnVValueChanged);
-		this.horizScrollbar.Scroll += new ScrollEventHandler(this.OnHScroll);
-		this.horizScrollbar.ValueChanged += new EventHandler(this.OnHValueChanged);
+		this.vertScrollbar.Scroll 
+			+= new ScrollEventHandler(this.OnVScroll);
+		this.vertScrollbar.ValueChanged 
+			+= new EventHandler(this.OnVValueChanged);
+		this.horizScrollbar.Scroll 
+			+= new ScrollEventHandler(this.OnHScroll);
+		this.horizScrollbar.ValueChanged 
+			+= new EventHandler(this.OnHValueChanged);
 	}
 	
 	private void PositionControls()
 	{
 		this.vertScrollbar.Top = this.BorderWidth;
 		this.vertScrollbar.Left = this.Width - 
-		                          this.vertScrollbar.Width - 
+		                          this.vertScrollbar.Width -
 								  this.BorderWidth;
 
-		this.horizScrollbar.Top = this.Height - 
+		this.horizScrollbar.Top = this.DrawnHeight - 
 		                          this.horizScrollbar.Height - 
 		                          this.BorderWidth;
 		this.horizScrollbar.Left = this.BorderWidth;
@@ -1186,6 +1276,20 @@ public class ListBox : ListControl
 		}
 	}
 
+	private int NumDataColumns
+	{
+		get
+		{
+			IList data = (IList) base.dataSource;
+			double dColumnsNeeded = (double) data.Count / this.NumItemsPerColumn;
+
+			// Round up.
+			int columnsNeeded = (int)(dColumnsNeeded + 1);
+
+			return columnsNeeded;
+		}
+	}
+
 	//TODO: Still some issues with interactions between the
 	// scrollbars: if the horizontal scrollbar is shown that
 	// takes effect on whether the vertical scrollbar is shown,
@@ -1194,7 +1298,10 @@ public class ListBox : ListControl
 	{
 		get
 		{
-			return this.LongestItemWidth > this.ListArea.Width;
+			if(this.multiColumn)
+				return this.NumDataColumns > this.NumDisplayColumns;
+			else
+				return this.LongestItemWidth > this.ListArea.Width;
 		}
 	}
 	
@@ -1202,8 +1309,13 @@ public class ListBox : ListControl
 	{
 		get
 		{
-			IList data = (IList) base.dataSource;
-			return data.Count > this.NumItemsVisible;
+			if(this.multiColumn)
+				return false;
+			else
+			{
+				IList data = (IList) base.dataSource;
+				return data.Count > this.NumItemsVisible;
+			}
 		}
 	}
 
@@ -1243,21 +1355,17 @@ public class ListBox : ListControl
 				this.horizScrollbar.Visible = false;
 		}
 		
-		if(oldVertVisible != this.vertScrollbar.Visible ||
-		   oldHorizVisible != this.horizScrollbar.Visible)
-		{
-			this.PositionControls();
-			this.SizeScrollbars();
-		}
+		this.PositionControls();
+		this.SizeScrollbars();
 	}
 
 	// Size the scrollbars so they fit perfectly inside the listbox
 	// and with each other.
 	private void SizeScrollbars()
 	{
-		int vertHeight = this.Height - 2 * this.BorderWidth,
-		    horizWidth = this.Width -  2 * this.BorderWidth;
-	
+		int vertHeight = this.DrawnHeight - 2 * this.BorderWidth,
+		    horizWidth = this.Width - 2 * this.BorderWidth;
+			
 		if(this.horizScrollbar.Visible && this.vertScrollbar.Visible)
 		{
 			vertHeight -= this.horizScrollbar.Height;
@@ -1290,16 +1398,25 @@ public class ListBox : ListControl
 	// Redraw the entire ListBox.
 	private void Redraw(Graphics g)
 	{
+		// Sanity check.
+		if(this.Parent == null)
+			return;
+	
 		ThemeManager.MainPainter.DrawListBox(
 			/*     Graphics */ g,
 			/*  BorderStyle */ this.BorderStyle,
 			/*            x */ 0,
 			/*            y */ 0,
 			/*        width */ this.Width,
-			/*       height */ this.Height,
+			/*       height */ this.DrawnHeight,
 			/*       corner */ (this.vertScrollbar.Visible && this.horizScrollbar.Visible),
 			/* cornerHeight */ this.horizScrollbar.Height,
 			/*  cornerWidth */ this.vertScrollbar.Width);
+		
+		// Fill in the area beneath the control so that IntegralHeight
+		// looks good.
+		g.FillRectangle(new SolidBrush(this.Parent.BackColor), 0, this.DrawnHeight,
+			this.Width, this.Height - this.DrawnHeight);
 		
 		this.RedrawList(g);
 	}
@@ -1358,8 +1475,16 @@ public class ListBox : ListControl
 		}
 		
 		// Set up the horizontal scrollbar
-		this.horizScrollbar.Maximum = this.LongestItemWidth;
-		this.horizScrollbar.LargeChange = listArea.Width;
+		if(this.multiColumn)
+		{
+			this.horizScrollbar.Maximum = this.NumDataColumns;
+			this.horizScrollbar.LargeChange = this.NumDisplayColumns;
+		}
+		else
+		{
+			this.horizScrollbar.Maximum = this.LongestItemWidth;
+			this.horizScrollbar.LargeChange = listArea.Width;
+		}
 	}
 	
 	protected override void OnBorderStyleChanged(EventArgs e)
@@ -1394,12 +1519,27 @@ public class ListBox : ListControl
 			return topIndex;
 		}
 	}
+	
+	// How many columns can be displayed.
+	private int NumDisplayColumns
+	{
+		get
+		{
+			int vscrollWidth = 0;
+			if(this.vertScrollbar.Visible)
+				vscrollWidth = this.vertScrollbar.Width;
+			return 1 + (this.Width - 2 * this.BorderWidth - vscrollWidth) / this.columnWidth;
+		}
+	}
 		
 	private int NumItemsVisible
 	{
 		get
 		{
-			return this.ListArea.Height / this.ItemHeight;
+			if(this.multiColumn)
+				return this.NumItemsPerColumn * this.NumDisplayColumns;
+			else
+				return this.NumItemsPerColumn;
 		}
 	}
 	
@@ -1417,7 +1557,7 @@ public class ListBox : ListControl
 				this.BorderWidth,
 				this.BorderWidth,
 				this.Width - 2 * this.BorderWidth,
-				this.Height - 2 * this.BorderWidth);
+				this.DrawnHeight - 2 * this.BorderWidth);
 				
 			if(this.vertScrollbar.Visible)
 				listArea.Width -= this.vertScrollbar.Width;
@@ -1428,6 +1568,14 @@ public class ListBox : ListControl
 		}
 	}
 	
+	private int NumItemsPerColumn
+	{
+		get
+		{
+			return (this.Height - 2 * this.BorderWidth) / this.ItemHeight;
+		}
+	}
+	
 	private Rectangle GetItemRect(int dataIndex)
 	{
 		if(IsItemVisible(dataIndex))
@@ -1435,11 +1583,25 @@ public class ListBox : ListControl
 			int screenIndex = dataIndex - TopIndex;
 			Rectangle listArea = this.ListArea;
 		
-			return new Rectangle(
-				listArea.Left,
-				listArea.Top + screenIndex * this.ItemHeight,
-				listArea.Width,
-				this.ItemHeight);
+			if(this.multiColumn)
+			{
+				int col = screenIndex / this.NumItemsPerColumn;
+				int row = screenIndex - this.NumItemsPerColumn * col;
+				
+				return new Rectangle(
+					listArea.Left + col * this.columnWidth,
+					listArea.Top + row * this.ItemHeight,
+					this.columnWidth,
+					this.ItemHeight);
+			}
+			else
+			{
+				return new Rectangle(
+					listArea.Left,
+					listArea.Top + screenIndex * this.ItemHeight,
+					listArea.Width,
+					this.ItemHeight);
+			}
 		}
 		else
 			return new Rectangle(-1, -1, -1, -1);
@@ -1458,44 +1620,88 @@ public class ListBox : ListControl
 		this.PaintItem(this.nonClientGraphics, ind);
 	}
 	
+	private void DelayPaint()
+	{
+		this.paintDelayed++;
+	}
+	
+	private void FlushPaint()
+	{
+		this.paintDelayed--;
+		
+		if(this.paintDelayed < 0)
+			this.paintDelayed = 0;
+		
+		if(this.paintDelayed == 0)
+		{
+			foreach(int index in this.pendingDrawItems)
+				this.PaintItem(index);
+			
+			this.pendingDrawItems.Clear();
+		}
+	}
+	
 	private void PaintItem(Graphics g, int dataIndex)
 	{
 		if(this.suppressDraw)
 			return;
+		
+		if(this.paintDelayed > 0)
+		{
+			if(!this.pendingDrawItems.Contains(dataIndex))
+				this.pendingDrawItems.Add(dataIndex);
+			return;
+		}
 
 		Rectangle realItemRect = this.GetItemRect(dataIndex);
 		IList data = (IList) base.dataSource;
 
 		Brush textBrush = SystemBrushes.WindowText;
+		Brush itemBackgroundBrush = this.backgroundBrush;
 
 		// Is this item selected?
 		if(this.SelectedIndices.Contains(dataIndex))
 		{
 			// Paint the selected background
-			g.FillRectangle(SystemBrushes.Highlight, realItemRect);
+			itemBackgroundBrush = SystemBrushes.Highlight;
 			textBrush = SystemBrushes.HighlightText;
 		}
 		else
 		{
 			// Paint the normal background
 			if(this.Enabled)
-				g.FillRectangle(this.backgroundBrush, realItemRect);
+				itemBackgroundBrush = this.backgroundBrush;
 			else
-				g.FillRectangle(this.disabledBrush, realItemRect);
+				itemBackgroundBrush = this.disabledBrush;
 		}
+		
+		g.FillRectangle(itemBackgroundBrush, realItemRect);
 		
 		if(dataIndex >= this.topIndex && 
 		   dataIndex < this.topIndex + this.NumItemsVisible &&
 		   dataIndex < data.Count)
 		{
 			Rectangle itemRect = realItemRect;
-			if(this.horizScrollbar.Visible)
+			if(this.horizScrollbar.Visible && !this.multiColumn)
 			{
 				itemRect.X -= this.horizScrollbar.Value;
 				itemRect.Width += this.horizScrollbar.Value;
 			}
 			string s = base.GetItemText(data[dataIndex]);
 							
+			if(this.multiColumn)
+			{
+				// Repaint the entire width in a multi-column listbox.  This
+				// is because multi-column  lists display spreadsheet  style,
+				// where  long cells  overflow  into the cell  next  to them.
+				// Painting  the background  white  prevents  ugly text over-
+				// write.
+				SizeF textArea = g.MeasureString(s, this.Font);
+				g.FillRectangle(itemBackgroundBrush,
+					realItemRect.Left, realItemRect.Top, (int) textArea.Width,
+					realItemRect.Height);
+			}
+			
 			// Paint the text
 			g.DrawString(s, this.Font, textBrush, itemRect, new StringFormat());
 			
@@ -1551,12 +1757,32 @@ public class ListBox : ListControl
 	
 	private void OnHScroll(object sender, ScrollEventArgs e)
 	{
-		RedrawList(this.nonClientGraphics);
+		if(this.multiColumn)
+		{
+			int newTop = this.NumItemsPerColumn * this.horizScrollbar.Value;
+			if(this.topIndex != newTop)
+			{
+				this.topIndex = newTop;
+				RedrawList(this.nonClientGraphics);
+			}
+		}
+		else
+			RedrawList(this.nonClientGraphics);
 	}
 	
 	private void OnHValueChanged(object sender, EventArgs e)
 	{
-		RedrawList(this.nonClientGraphics);
+		if(this.multiColumn)
+		{
+			int newTop = this.NumItemsPerColumn * this.horizScrollbar.Value;
+			if(this.topIndex != newTop)
+			{
+				this.topIndex = newTop;
+				RedrawList(this.nonClientGraphics);
+			}
+		}
+		else
+			RedrawList(this.nonClientGraphics);
 	}
 	
 	private void ToggleSelected(int dataInd)
@@ -1598,8 +1824,7 @@ public class ListBox : ListControl
 		}
 		else
 		{
-			ArrayList invalidated = new ArrayList();
-			this.suppressDraw = true;
+			this.DelayPaint();
 
 			int direction = (dataInd > lastInd ? 1 : -1);
 			
@@ -1608,17 +1833,11 @@ public class ListBox : ListControl
 			if(clear)
 			{
 				// Start off with a clean slate.
-				foreach(int ind in this.selectedIndices)
-					invalidated.Add(ind);
-				
 				this.selectedIndices.Clear();
 			}
 
 			for(int i = lastInd; i != dataInd + direction; i += direction)
 			{
-				if(!invalidated.Contains(i))
-					invalidated.Add(i);
-
 				if(clear && select)
 				{
 					this.selectedIndices.Insert(0, i);
@@ -1636,9 +1855,7 @@ public class ListBox : ListControl
 				}
 			}
 
-			this.suppressDraw = false;
-			foreach(int ind in invalidated)
-				this.PaintItem(ind);
+			this.FlushPaint();
 
 			this.suppressEvents = false;
 			this.FireSelectedIndexChanged();
@@ -1655,7 +1872,10 @@ public class ListBox : ListControl
 			IList data = (IList) base.dataSource;
 			
 			if(dataInd >= data.Count)
+			{
+				base.OnMouseDown(e);
 				return;
+			}
 		
 			// Always move the focus to this item.
 			this.FocusedItem = dataInd;
@@ -1684,6 +1904,9 @@ public class ListBox : ListControl
 					// Microsoft's  ListBox  implementation takes the Shift
 					// if the user has both Control and Shift held down, so
 					// we'll follow that.
+					
+					this.DelayPaint();
+					
 					if((Control.ModifierKeys & Keys.Shift) != 0)
 					{
 						this.ShiftHighlight(dataInd);
@@ -1720,6 +1943,8 @@ public class ListBox : ListControl
 						this.suppressEvents = false;
 						this.FireSelectedIndexChanged();
 					}
+					
+					this.FlushPaint();
 					break;
 			}
 		}
@@ -1761,6 +1986,8 @@ public class ListBox : ListControl
 				
 			if(dataInd == this.focusedItem)
 				return;
+		
+			this.DelayPaint();
 		
 			switch(this.selectionMode)
 			{
@@ -1804,6 +2031,8 @@ public class ListBox : ListControl
 					this.FocusedItem = dataInd;
 					break;
 			}
+			
+			this.FlushPaint();
 		}
 	
 		base.OnMouseMove(e);
@@ -1835,11 +2064,21 @@ public class ListBox : ListControl
 		IList data = (IList) base.dataSource;
 		int maxInd = data.Count - 1;
 
+		this.DelayPaint();
+
 		switch(e.KeyCode)
 		{
 			case Keys.Up:
 			case Keys.Left:
-				if(this.FocusedItem > 0)
+				if(this.multiColumn && e.KeyCode == Keys.Left)
+				{
+					int col = this.FocusedItem / this.NumItemsPerColumn;
+					int row = this.FocusedItem - this.NumItemsPerColumn * col;
+					col--;
+					this.FocusedItem = Math.Max(row,
+						row + col * this.NumItemsPerColumn);
+				}
+				else if(this.FocusedItem > 0)
 					this.FocusedItem--;
 				
 				if(multiEx && shift)
@@ -1850,7 +2089,18 @@ public class ListBox : ListControl
 			
 			case Keys.Down:
 			case Keys.Right:
-				if(this.FocusedItem < maxInd)
+				if(this.multiColumn && e.KeyCode == Keys.Right)
+				{
+					int col = this.FocusedItem / this.NumItemsPerColumn;
+					int row = this.FocusedItem - this.NumItemsPerColumn * col;
+					col++;
+					if(col < this.NumDataColumns)
+					{
+						this.FocusedItem = Math.Min(maxInd,
+							row + col * this.NumItemsPerColumn);
+					}
+				}
+				else if(this.FocusedItem < maxInd)
 					this.FocusedItem++;
 					
 				if(multiEx && shift)
@@ -1927,6 +2177,8 @@ public class ListBox : ListControl
 			}
 		}
 		
+		this.FlushPaint();
+		
 		base.OnKeyDown(e);
 	}
 	
@@ -1940,9 +2192,22 @@ public class ListBox : ListControl
 		if(listArea.Contains(x, y))
 		{
 			y -= listArea.Top;
-			int ind = y / this.ItemHeight;
-			if(ind < this.topIndex + this.NumItemsVisible)
-				return y / this.ItemHeight;
+			int row = y / this.ItemHeight;
+			if(this.multiColumn)
+			{
+				if(row >= this.NumItemsPerColumn || row < 0)
+					return -1;
+					
+				x -= listArea.Left;
+				int col = x / this.columnWidth;
+				int ind = row + col * this.NumItemsPerColumn;
+				return ind;
+			}
+			else
+			{
+				if(row < this.topIndex + this.NumItemsVisible)
+					return row;			
+			}
 		}
 		
 		return -1;
@@ -1952,6 +2217,27 @@ public class ListBox : ListControl
 	{
 		this.CalculateScrollbars();
 		base.OnSizeChanged(e);
+	}
+
+	private void CheckNoDataSource()
+	{
+		if(this.DataSource != null)
+			throw new ArgumentException(/* TODO */);
+	}
+	
+	// height of the control taking IntegralHeight into account.
+	private int DrawnHeight
+	{
+		get
+		{
+			if(this.integralHeight)
+			{
+				return this.NumItemsVisible * this.ItemHeight +
+				       2 * this.BorderWidth;
+			}
+			else
+				return this.Height;
+		}
 	}
 
 }; // class ListBox

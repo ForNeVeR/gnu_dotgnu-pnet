@@ -34,7 +34,6 @@ public class ComboBox : ListControl
  	public event EventHandler DropDown;
  	public event EventHandler DropDownStyleChanged;
  	public event MeasureItemEventHandler MeasureItem;
- 	public event EventHandler SelectedIndexChanged;
  	public event EventHandler SelectionChangeCommitted;
 
  	private DrawMode drawMode;

@@ -1207,37 +1207,50 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	}
 
 	/* Add the output filename to the command-line */
-	AddArgument(&cmdline, &cmdline_size, "-o");
-	if(assemble_flag)
+	if(preprocess_flag)
 	{
 		if(output_filename)
 		{
-			/* Use the supplied assembly code output filename */
+			AddArgument(&cmdline, &cmdline_size, "-o");
 			AddArgument(&cmdline, &cmdline_size, output_filename);
-			asm_output = output_filename;
+		}
+		asm_output = 0;
+	}
+	else
+	{
+		AddArgument(&cmdline, &cmdline_size, "-o");
+		if(assemble_flag)
+		{
+			if(output_filename)
+			{
+				/* Use the supplied assembly code output filename */
+				AddArgument(&cmdline, &cmdline_size, output_filename);
+				asm_output = output_filename;
+			}
+			else if(CCStringListContains
+						(machine_flags, num_machine_flags, "jvm"))
+			{
+				/* Create a JL assembly output name based on the input */
+				asm_output = ChangeExtension((char *)filename, "jl");
+				AddArgument(&cmdline, &cmdline_size, asm_output);
+			}
+			else
+			{
+				/* Create an IL assembly output name based on the input */
+				asm_output = ChangeExtension((char *)filename, "il");
+				AddArgument(&cmdline, &cmdline_size, asm_output);
+			}
 		}
 		else if(CCStringListContains(machine_flags, num_machine_flags, "jvm"))
 		{
-			/* Create a JL assembly output name based on the input */
-			asm_output = ChangeExtension((char *)filename, "jl");
+			asm_output = ChangeExtension((char *)filename, "jltmp");
 			AddArgument(&cmdline, &cmdline_size, asm_output);
 		}
 		else
 		{
-			/* Create an IL assembly output name based on the input */
-			asm_output = ChangeExtension((char *)filename, "il");
+			asm_output = ChangeExtension((char *)filename, "iltmp");
 			AddArgument(&cmdline, &cmdline_size, asm_output);
 		}
-	}
-	else if(CCStringListContains(machine_flags, num_machine_flags, "jvm"))
-	{
-		asm_output = ChangeExtension((char *)filename, "jltmp");
-		AddArgument(&cmdline, &cmdline_size, asm_output);
-	}
-	else
-	{
-		asm_output = ChangeExtension((char *)filename, "iltmp");
-		AddArgument(&cmdline, &cmdline_size, asm_output);
 	}
 
 	/* Output the "--" separator, in case some filenames start with "-" */
@@ -1272,12 +1285,16 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	ILFree(cmdline);
 	if(status != 0)
 	{
-		ILDeleteFile(asm_output);
+		if(asm_output != 0)
+		{
+			ILDeleteFile(asm_output);
+		}
 		return status;
 	}
 
-	/* If we were assembling or syntax-checking the file, then stop now */
-	if(assemble_flag)
+	/* If we were assembling, preprocessing, or syntax-checking
+	   the file, then stop now */
+	if(assemble_flag || preprocess_flag)
 	{
 		return 0;
 	}

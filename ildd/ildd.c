@@ -19,6 +19,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "il_system.h"
 #include "il_image.h"
 #include "il_program.h"
@@ -40,6 +41,10 @@ static ILCmdLineOption const options[] = {
 	{"--pinvoke", 'p', 0,
 		"--pinvoke    or -p",
 		"Print detailed information on PInvoke declarations."},
+	{"-r", 'r', 0, 0, 0},
+	{"--recursive", 'r', 0,
+		"--recursive  or -r",
+		"Recursively print transitive dependencies."},
 	{"-v", 'v', 0, 0, 0},
 	{"--version", 'v', 0,
 		"--version    or -v",
@@ -50,21 +55,34 @@ static ILCmdLineOption const options[] = {
 	{0, 0, 0, 0, 0}
 };
 
+/*
+ * Forward declarations.
+ */
 static void usage(const char *progname);
 static void version(void);
+static void addModule(const char *filename);
 static int printDependencies(const char *filename, ILContext *context,
-							 int multiple, int pinvoke);
+							 int multiple, int pinvoke, int recursive);
+
+/*
+ * List of all modules to be scanned.
+ */
+static char **modules = 0;
+static int numModules = 0;
+static int maxModules = 0;
 
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	int filenames = 0;
 	int pinvoke = 0;
+	int recursive = 0;
 	int sawStdin;
 	int state, opt;
 	char *param;
 	int errors;
 	int multiple;
+	int posn;
 	ILContext *context;
 
 	/* Parse the command-line arguments */
@@ -83,6 +101,12 @@ int main(int argc, char *argv[])
 			case 'p':
 			{
 				pinvoke = 1;
+			}
+			break;
+
+			case 'r':
+			{
+				recursive = 1;
 			}
 			break;
 
@@ -117,28 +141,24 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	/* Load and print information about the input files */
+	/* Add the primary modules to be scanned to the list */
 	sawStdin = 0;
-	errors = 0;
 	multiple = ((argc > 2) || filenames);
 	while(argc > 1)
 	{
-		if(!strcmp(argv[1], "-"))
-		{
-			/* Dump the contents of stdin, but only once */
-			if(!sawStdin)
-			{
-				errors |= printDependencies("-", context, multiple, pinvoke);
-				sawStdin = 1;
-			}
-		}
-		else
-		{
-			/* Dump the contents of a regular file */
-			errors |= printDependencies(argv[1], context, multiple, pinvoke);
-		}
+		addModule(argv[1]);
 		++argv;
 		--argc;
+	}
+
+	/* Print the dependencies for all modules */
+	errors = 0;
+	posn = 0;
+	while(posn < numModules)
+	{
+		errors |= printDependencies
+			(modules[posn], context, multiple, pinvoke, recursive);
+		++posn;
 	}
 
 	/* Destroy the context */
@@ -172,10 +192,44 @@ static void version(void)
 }
 
 /*
+ * Add a module to the global list to be scanned, as long as there
+ * isn't already a module with the specified name on the list.
+ */
+static void addModule(const char *filename)
+{
+	char **newModules;
+	int posn;
+	for(posn = 0; posn < numModules; ++posn)
+	{
+		if(!strcmp(modules[posn], filename))
+		{
+			return;
+		}
+	}
+	if(numModules >= maxModules)
+	{
+		newModules = (char **)ILRealloc
+			(modules, sizeof(char *) * (numModules + 32));
+		if(!newModules)
+		{
+			exit(1);
+		}
+		modules = newModules;
+		maxModules += 32;
+	}
+	modules[numModules] = ILDupString(filename);
+	if(!(modules[numModules]))
+	{
+		exit(1);
+	}
+	++numModules;
+}
+
+/*
  * Load an IL image from an input stream and print its dependency information.
  */
 static int printDependencies(const char *filename, ILContext *context,
-							 int multiple, int pinvoke)
+							 int multiple, int pinvoke, int recursive)
 {
 	ILImage *image;
 	ILAssembly *assem;
@@ -209,7 +263,7 @@ static int printDependencies(const char *filename, ILContext *context,
 	}
 
 	/* Print the file header if we have multiple files */
-	if(multiple)
+	if(multiple || recursive)
 	{
 		if(!strcmp(filename, "-"))
 		{
@@ -243,6 +297,10 @@ static int printDependencies(const char *filename, ILContext *context,
 		if(path)
 		{
 			fputs(path, stdout);
+			if(recursive)
+			{
+				addModule(path);
+			}
 			ILFree(path);
 		}
 		else
@@ -273,6 +331,10 @@ static int printDependencies(const char *filename, ILContext *context,
 			if(path)
 			{
 				fputs(path, stdout);
+				if(recursive)
+				{
+					addModule(path);
+				}
 				ILFree(path);
 			}
 			else

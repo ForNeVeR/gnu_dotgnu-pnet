@@ -186,7 +186,7 @@ typedef struct
 } System_Thread;
 
 /*
- * Internal structure of a delegate.  Must match the "System.Delegate"
+ * Internal structure of a delegate.  Must match the "System.MulticastDelegate"
  * definition in the C# class library.
  */
 typedef struct
@@ -194,6 +194,7 @@ typedef struct
 	ILObject   *target;
 	ILMethod   *methodInfo;
 	void       *closure;
+	ILObject   *prev;
 
 } System_Delegate;
 

@@ -227,6 +227,16 @@ static void Delegate_Invoke(ILExecThread *thread,
 	ILMethod *method;
 	DelegateInvokeParams params;
 
+	/* If this is a multicast delegate, then execute "prev" first */
+	if(((System_Delegate *)_this)->prev)
+	{
+		Delegate_Invoke(thread, result, ((System_Delegate *)_this)->prev);
+		if(ILExecThreadHasException(thread))
+		{
+			return;
+		}
+	}
+
 	/* Extract the fields from the delegate and validate them */
 	target = ((System_Delegate *)_this)->target;
 	method = ((System_Delegate *)_this)->methodInfo;

@@ -16,6 +16,9 @@
 	codegen/cg_output.h, codegen/jv_misc.tc, cscc/csharp/cs_invoke.tc:
 	code generation for delegate creation.
 
+	* engine/lib_defs.h, engine/lib_delegate.c, engine/pinvoke.c:
+	invocation support for multicast delegates.
+
 2002-06-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/delegate.c, engine/engine.h,

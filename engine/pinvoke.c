@@ -722,6 +722,17 @@ static void DelegateInvoke(ffi_cif *cif, void *result,
 	ILType *type;
 	ILUInt32 size;
 
+	/* If this is a multicast delegate, then execute "prev" first */
+	if(((System_Delegate *)delegate)->prev)
+	{
+		DelegateInvoke(cif, result, args,
+					   ((System_Delegate *)delegate)->prev);
+		if(ILExecThreadHasException(thread))
+		{
+			return;
+		}
+	}
+
 	/* Extract the method from the delegate */
 	method = ((System_Delegate *)delegate)->methodInfo;
 	if(!method)

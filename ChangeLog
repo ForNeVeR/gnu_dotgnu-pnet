@@ -1,4 +1,9 @@
 
+2003-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Reflection/IReflect.cs: bug in the signature for
+	"IReflect.GetMember".
+
 2003-01-09  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* runtime/Platform/FileMethods.cs, runtime/System/IO/Directory.cs,

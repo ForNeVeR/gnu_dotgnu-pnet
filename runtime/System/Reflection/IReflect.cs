@@ -29,7 +29,7 @@ public interface IReflect
 
 	FieldInfo GetField(String name, BindingFlags bindingAttr);
 	FieldInfo[] GetFields(BindingFlags bindingAttr);
-	MemberInfo GetMember(String name, BindingFlags bindingAttr);
+	MemberInfo[] GetMember(String name, BindingFlags bindingAttr);
 	MemberInfo[] GetMembers(BindingFlags bindingAttr);
 	MethodInfo GetMethod(String name, BindingFlags bindingAttr);
 	MethodInfo GetMethod(String name, BindingFlags bindingAttr,

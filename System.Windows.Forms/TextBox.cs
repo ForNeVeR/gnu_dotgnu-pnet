@@ -367,8 +367,7 @@ public class TextBox : TextBoxBase
 				Rectangle b = layout.Items[i].bounds;
 				update.Union(new Region(new Rectangle(b.Left,b.Top,b.Width,b.Height + 1)));
 			}
-		Size s = ClientToBounds(Size.Empty);
-		update.Translate(s.Width / 2 - xViewOffset, s.Height / 2 - yViewOffset);
+		update.Translate(ClientOrigin.X - xViewOffset, ClientOrigin.Y - yViewOffset);
 		AddUpdate(update);
 		caretHiding = true;
 		Redraw(ControlGraphics);
@@ -396,8 +395,7 @@ public class TextBox : TextBoxBase
 	// Redraw the whole client area
 	private void UpdateClientArea()
 	{
-		Size s = ClientToBounds(Size.Empty);
-		AddUpdate(new Rectangle(s.Width/2, s.Height/2, ClientSize.Width, ClientSize.Height));
+		AddUpdate(new Rectangle(ClientOrigin.X, ClientOrigin.Y, ClientSize.Width, ClientSize.Height));
 	}
 
 	// Handle "KeyPress" events for the text box.
@@ -465,7 +463,10 @@ public class TextBox : TextBoxBase
 	// In our implementation NO painting happens outside of the paint event. This might change because it might not update fast enough
 	private void HandlePaint(Object sender, PaintEventArgs e)
 	{
-		Redraw(e.Graphics);
+		using (Graphics g = CreateNonClientGraphics())
+		{
+			Redraw(g);
+		}
 	}
 
 	// Redraw a specific portion of the textbox
@@ -486,14 +487,12 @@ public class TextBox : TextBoxBase
 				break;
 		}
 		// Clip to text area
-		Size s = ClientToBounds(Size.Empty);
-		g.SetClip(new Rectangle(s.Width/2, s.Height/2, ClientSize.Width, ClientSize.Height), System.Drawing.Drawing2D.CombineMode.Intersect);
+		g.SetClip(new Rectangle(ClientOrigin, ClientSize), System.Drawing.Drawing2D.CombineMode.Intersect);
 		// Draw the background of the selected text
 		if (focused && selectedRegion != null)
 		{
 			Region r = selectedRegion.Clone();
-			Size si = ClientToBounds(Size.Empty);
-			r.Translate(si.Width/2-xViewOffset, si.Height/2 - yViewOffset);
+			r.Translate(ClientOrigin.X - xViewOffset, ClientOrigin.Y - yViewOffset);
 			g.FillRegion(SelectedBackBrush, r);
 		}
 		DrawText(g, focused);
@@ -518,7 +517,7 @@ public class TextBox : TextBoxBase
 		get
 		{
 			if (graphics == null)
-				graphics = CreateGraphics();
+				graphics = CreateNonClientGraphics();
 			return graphics;
 		}
 	}
@@ -768,8 +767,7 @@ public class TextBox : TextBoxBase
 		{
 			Region redrawRegion = newRegion.Clone();
 			redrawRegion.Xor(selectedRegion);
-			Size s = ClientToBounds(Size.Empty);
-			redrawRegion.Translate(s.Width / 2 - xViewOffset, s.Height / 2 - yViewOffset);
+			redrawRegion.Translate(- xViewOffset + ClientOrigin.X, - yViewOffset + ClientOrigin.Y);
 			AddUpdate(redrawRegion);
 		}
 		else
@@ -805,8 +803,8 @@ public class TextBox : TextBoxBase
 					update.Union( oldLayout.Items[i].bounds);
 				}
 			}
-			Size s = ClientToBounds(Size.Empty);
-			update.Translate(s.Width / 2 - xViewOffset, s.Height / 2 - yViewOffset);
+			// Get the offset of the ClientRectangle
+			update.Translate( - xViewOffset + ClientOrigin.X, - yViewOffset + ClientOrigin.Y);
 			AddUpdate(update);
 		}
 	}
@@ -1024,6 +1022,17 @@ public class TextBox : TextBoxBase
 			return new Size(size.Width + 2 * 2, size.Height + 2 * 2);
 	}
 
+	public override Point ClientOrigin
+	{
+		get
+		{
+			if (BorderStyle == BorderStyle.None)
+				return Point.Empty;
+			else
+				return new Point(2, 2);
+		}
+	}
+
 	protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
 	{
 		// If not Multiline then the control height is the font height
@@ -1044,8 +1053,7 @@ public class TextBox : TextBoxBase
 		{
 			LayoutInfo.Item item = layout.Items[i];
 			Rectangle bounds = item.bounds;
-			Size s = ClientToBounds(Size.Empty);
-			bounds.Offset(-xViewOffset + s.Width/2, -yViewOffset + s.Height/2);
+			bounds.Offset(-xViewOffset + ClientOrigin.X, -yViewOffset + ClientOrigin.Y);
 			if (item.type == LayoutInfo.Item.CharType.VisibleChar && g.Clip.IsVisible(bounds))
 			{
 				Brush fore;
@@ -1074,10 +1082,10 @@ public class TextBox : TextBoxBase
 			{
 				if (e.Button == MouseButtons.Left)
 				{
-					Point pt = new Point(e.X,e.Y);
+					Point pt = new Point(e.X + ClientOrigin.X,e.Y + ClientOrigin.Y);
 					pt.Offset(xViewOffset, yViewOffset);
 					
-					int closest = CaretGetPosition( PointToClient( pt));
+					int closest = CaretGetPosition( pt - new Size(ClientOrigin));
 					if (closest >= 0)
 						UpdateSelectionInternal(closest);
 				}
@@ -1093,9 +1101,9 @@ public class TextBox : TextBoxBase
 				if (e.Button == MouseButtons.Left) 
 				{
 					// We are clicking to move the caret
-					Point pt = new Point(e.X,e.Y);
+					Point pt = new Point(e.X + ClientOrigin.X,e.Y + ClientOrigin.Y);
 					pt.Offset(xViewOffset, yViewOffset);
-					int closest = CaretGetPosition( PointToClient( pt));
+					int closest = CaretGetPosition( pt - new Size(ClientOrigin));
 					if (closest >= 0)
 					{
 						if (e.Clicks == 2)
@@ -1207,8 +1215,7 @@ public class TextBox : TextBoxBase
 		Region region = new Region(newBounds);
 		if (!caretHiding)
 			region.Xor(caretBounds);
-		Size s = ClientToBounds(Size.Empty);
-		region.Translate(s.Width / 2 - xViewOffset, s.Height / 2 - yViewOffset);
+		region.Translate(- xViewOffset + ClientOrigin.X, - yViewOffset + ClientOrigin.Y);
 		AddUpdate(region);
 		caretBounds = newBounds;
 		if (Focused)
@@ -1291,8 +1298,7 @@ public class TextBox : TextBoxBase
 	{
 		get
 		{
-			Size s = ClientToBounds(Size.Empty);
-			return new Rectangle(caretBounds.Left + s.Width / 2 - xViewOffset, caretBounds.Top + s.Width / 2 - yViewOffset, caretBounds.Width, caretBounds.Height);
+			return new Rectangle(caretBounds.Left + ClientOrigin.X - xViewOffset, caretBounds.Top + ClientOrigin.Y - yViewOffset, caretBounds.Width, caretBounds.Height);
 		}
 	}
 

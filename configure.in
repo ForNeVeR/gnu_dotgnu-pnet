@@ -134,6 +134,7 @@ class/Custommarshalers/Makefile
 class/System.EnterpriseServices/Makefile
 class/System.Configuration.Install/Makefile
 class/System.Management/Makefile
+class/System.Messaging/Makefile
 class/System.ServiceProcess/Makefile
 class/System.Runtime.Serialization.Formatters.Soap/Makefile
 class/PEAPI/Makefile

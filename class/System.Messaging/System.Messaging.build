@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<project name="System.Messaging" default="all">
+	<target name="all">
+		<compile target="library"
+				 output="System.Messaging.dll"
+				 debug="${debug.flag}"
+				 unsafe="true">
+
+			<sources basedir="${mono.sources}/class/System.Messaging">
+				<includes name="**/*.cs"/> 
+				<excludes name="Test/**"/>
+			</sources>
+
+			<references>
+				<file name="../System.Configuration.Install/System.Configuration.Install.dll"/>
+				<file name="System.dll"/>
+			</references>
+
+		</compile>
+	</target>
+</project>

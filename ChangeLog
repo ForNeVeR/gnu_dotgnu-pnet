@@ -1,4 +1,11 @@
 
+2003-05-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* configure.in, class/Makefile.am, class/System.Messaging/.cvsignore,
+	class/System.Messaging/Makefile.am,
+	class/System.Messaging/System.Messaging.build: add the
+	"System.Messaging" assembly to "ml-pnet".
+
 2003-05-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, class/Makefile.am,

@@ -3,6 +3,7 @@ SUBDIRS = Custommarshalers \
 		  System.EnterpriseServices \
 		  System.Configuration.Install \
 		  System.Management \
+		  System.Messaging \
 		  System.ServiceProcess \
 		  System.Runtime.Serialization.Formatters.Soap \
 		  PEAPI \

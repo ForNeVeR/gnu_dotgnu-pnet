@@ -4,6 +4,11 @@
 	* ilalink/link_method.c (_ILLinkerConvertMemberRef): convert the
 	signature type prior to comparing against the new image.
 
+	* codegen/cg_decls.tc, codegen/cg_library.c, codegen/cg_nodes.tc,
+	codegen/jv_decls.tc, cscc/cs_decls.tc, cscc/cs_gather.c,
+	cscc/cs_grammar.y, cscc/cs_internal.h, cscc/cs_modifiers.c:
+	rearrange delegate nodes so that delegates are handled as classes.
+
 2001-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_method.c (_ILLinkerConvertMethod): when a method

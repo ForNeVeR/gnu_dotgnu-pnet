@@ -3500,11 +3500,34 @@ EnumMemberDeclaration
 DelegateDeclaration
 	: OptAttributes OptModifiers DELEGATE Type Identifier
 				'(' OptFormalParameterList ')' ';'	{
-				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($4, $2, (NestingLevel > 0));
+				ILNode *baseList;
+				ILNode *bodyList;
+				ILUInt32 attrs;
+
+				/* Validate the modifiers */
+				attrs = CSModifiersToDelegateAttrs($5, $2, (NestingLevel > 1));
+
+				/* Make sure that we have "MulticastDelegate"
+				   in the base list */
+				baseList = MakeSystemType(MulticastDelegate);
+
+				/* Construct the body of the delegate class */
+				bodyList = ILNode_List_create();
+				ILNode_List_Add(bodyList,
+					ILNode_DelegateMemberDeclaration_create($4, $7));
+
+				/* Create the class definition */
+				InitGlobalNamespace();
+				$$ = ILNode_ClassDefn_create
+							($1,					/* OptAttributes */
+							 attrs,					/* OptModifiers */
+							 ILQualIdentName($5, 0),/* Identifier */
+							 CurrNamespace.string,	/* Namespace */
+							 (ILNode *)CurrNamespaceNode,
+							 baseList,				/* ClassBase */
+							 bodyList);				/* Body */
 
 				/* We have declarations at the top-most level of the file */
 				HaveDecls = 1;
-				$$ = ILNode_DelegateDeclaration_create($1, attrs, $4, $5, $7);
 			}
 	;

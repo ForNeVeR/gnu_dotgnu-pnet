@@ -736,6 +736,15 @@ static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
 }
 
 /*
+ * Create a delegate member definition.
+ */
+static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
+								 ILNode_DelegateMemberDeclaration *member)
+{
+	/* TODO */
+}
+
+/*
  * Create the members of a class node.
  */
 static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
@@ -806,8 +815,14 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 			CreateEvent(info, classInfo,
 						(ILNode_EventDeclaration *)member);
 		}
+		else if(yykind(member) == yykindof(ILNode_DelegateMemberDeclaration))
+		{
+			CreateDelegateMember(info, classInfo,
+								 (ILNode_DelegateMemberDeclaration *)member);
+		}
 		else if(yykind(member) != yykindof(ILNode_ClassDefn))
 		{
+			/* TODO: nested classes */
 			CSErrorOnLine(yygetfilename(member), yygetlinenum(member),
 				  "internal error - do not know how to declare this member");
 		}

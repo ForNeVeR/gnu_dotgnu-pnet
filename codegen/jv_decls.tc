@@ -103,7 +103,7 @@ JavaGenDiscard(ILNode_EnumMemberDeclaration)
 	ILNode_GenDiscard(node, info);
 }
 
-JavaGenDiscard(ILNode_DelegateDeclaration)
+JavaGenDiscard(ILNode_DelegateMemberDeclaration)
 {
 	/* TODO */
 }

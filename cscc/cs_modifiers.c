@@ -255,6 +255,155 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 	return attrs;
 }
 
+ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
+									int isNested)
+{
+	ILUInt32 attrs;
+
+	/* Determine the access level of the delegate */
+	if(!isNested)
+	{
+		/* Only "public" and "internal" can be used at the outermost scope */
+		if((modifiers & CS_MODIFIER_PUBLIC) != 0)
+		{
+			attrs = IL_META_TYPEDEF_PUBLIC;
+			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `private'");
+			}
+			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `protected'");
+			}
+			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `internal'");
+			}
+		}
+		else if((modifiers & CS_MODIFIER_INTERNAL) != 0)
+		{
+			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
+			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `internal' and `private'");
+			}
+			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `internal' and `protected'");
+			}
+		}
+		else
+		{
+			attrs = IL_META_TYPEDEF_NOT_PUBLIC;
+			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "`private' modifier is not permitted "
+							  "on non-nested delegates");
+			}
+			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "`protected' modifier is not permitted "
+							  "on non-nested delegates");
+			}
+		}
+
+		/* The "new" modifier is not allowed on top-level delegates */
+		if((modifiers & CS_MODIFIER_NEW) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "`new' modifier is not permitted on non-nested delegates");
+		}
+	}
+	else
+	{
+		/* Nested delegates have a greater range of accessibilities */
+		if((modifiers & CS_MODIFIER_PUBLIC) != 0)
+		{
+			attrs = IL_META_TYPEDEF_NESTED_PUBLIC;
+			if((modifiers & CS_MODIFIER_PRIVATE) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `private'");
+			}
+			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `protected'");
+			}
+			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `public' and `internal'");
+			}
+		}
+		else if((modifiers & CS_MODIFIER_PRIVATE) != 0)
+		{
+			attrs = IL_META_TYPEDEF_NESTED_PRIVATE;
+			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `private' and `internal'");
+			}
+			if((modifiers & CS_MODIFIER_PROTECTED) != 0)
+			{
+				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							  "cannot use both `private' and `protected'");
+			}
+		}
+		else if((modifiers & CS_MODIFIER_PROTECTED) != 0)
+		{
+			if((modifiers & CS_MODIFIER_INTERNAL) != 0)
+			{
+				attrs = IL_META_TYPEDEF_NESTED_FAM_OR_ASSEM;
+			}
+			else
+			{
+				attrs = IL_META_TYPEDEF_NESTED_FAMILY;
+			}
+		}
+		else if((modifiers & CS_MODIFIER_INTERNAL) != 0)
+		{
+			attrs = IL_META_TYPEDEF_NESTED_ASSEMBLY;
+		}
+		else
+		{
+			attrs = IL_META_TYPEDEF_NESTED_PRIVATE;
+		}
+
+		/* Process the "new" modifier */
+		if((modifiers & CS_MODIFIER_NEW) != 0)
+		{
+			attrs |= CS_SPECIALATTR_NEW;
+		}
+	}
+
+	/* Process the "unsafe" modifier */
+	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
+	{
+		attrs |= CS_SPECIALATTR_UNSAFE;
+	}
+
+	/* Report errors for any remaining modifiers */
+	BadModifiers(node,
+				 modifiers & (CS_MODIFIER_STATIC | CS_MODIFIER_READONLY |
+							  CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE |
+							  CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE |
+							  CS_MODIFIER_SEALED | CS_MODIFIER_ABSTRACT));
+
+	/* Delegates are always sealed and serializable */
+	attrs |= IL_META_TYPEDEF_SEALED | IL_META_TYPEDEF_SERIALIZABLE;
+
+	/* We have the attributes we wanted now */
+	return attrs;
+}
+
 /*
  * Validate access modifiers and return the access level.
  */

@@ -745,13 +745,10 @@ struct _tagILSwitchValue
 	%nocreate ILField *fieldInfo = {0};
 }
 	
-%node ILNode_DelegateDeclaration ILNode_Declaration =
+%node ILNode_DelegateMemberDeclaration ILNode_Declaration =
 {
-	ILNode	   *attributes;
-	ILUInt32	modifiers;
 	ILNode	   *returnType;
-	ILNode	   *name;
-	ILNode	   *params; /* list of parameters */
+	ILNode	   *params;
 }
 
 %node ILNode_FormalParameter ILNode_Declaration =

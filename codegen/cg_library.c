@@ -187,6 +187,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ILClass *collectionInterface;
 	ILClass *enumeratorInterface;
 	ILClass *isVolatileClass;
+	ILClass *delegateClass;
+	ILClass *multicastDelegateClass;
 	int constructorOK;
 	ILMethod *method;
 	ILProperty *property;
@@ -396,6 +398,24 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT);
 	ABORT_IF(constructorOK, AddDefaultConstructor(isVolatileClass));
 
+	/* Create the "System.Delegate" class */
+	ABORT_IF(delegateClass,
+			 ILClassCreate(scope, 0, "Delegate", "System", objectClass));
+	ILClassSetAttrs(delegateClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_ABSTRACT);
+
+	/* Create the "System.MulticastDelegate" class */
+	ABORT_IF(multicastDelegateClass,
+			 ILClassCreate(scope, 0, "MulticastDelegate", "System",
+			 			   delegateClass));
+	ILClassSetAttrs(multicastDelegateClass, ~0,
+					IL_META_TYPEDEF_PUBLIC |
+				    IL_META_TYPEDEF_SERIALIZABLE |
+					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
+				    IL_META_TYPEDEF_ABSTRACT);
 }
 
 #ifdef	__cplusplus

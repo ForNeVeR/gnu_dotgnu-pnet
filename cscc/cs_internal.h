@@ -181,6 +181,8 @@ void CSModifiersUsedTwice(char *filename, long linenum, ILUInt32 modifiers);
  * Convert modifiers into attribute flag masks for program elements.
  */
 ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested);
+ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
+									int isNested);
 ILUInt32 CSModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers);
 ILUInt32 CSModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers);
 ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers);

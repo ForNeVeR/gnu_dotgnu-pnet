@@ -668,7 +668,7 @@ ILNode_GenDiscard(ILNode_EnumMemberDeclaration)
 	}
 }
 
-ILNode_GenDiscard(ILNode_DelegateDeclaration)
+ILNode_GenDiscard(ILNode_DelegateMemberDeclaration)
 {
 	/* TODO */
 }

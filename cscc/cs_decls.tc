@@ -776,7 +776,7 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 	return CSSemValueDefault;
 }
 
-ILNode_SemAnalysis(ILNode_DelegateDeclaration)
+ILNode_SemAnalysis(ILNode_DelegateMemberDeclaration)
 {
 	/* TODO */
 	return CSSemValueDefault;

@@ -23,7 +23,10 @@
  */
 JavaGenDiscard(ILNode_ClassDefn)
 {
-	/* TODO */
+	/* We let ILNode_GenDiscard do the hard work because the class
+	   definition shell for IL and JL are identical.  It will call
+	   back into JavaGenDiscard when outputting the class body */
+	ILNode_GenDiscard(node, info);
 }
 
 /*
@@ -61,7 +64,9 @@ JavaGenDiscard(ILNode_ConstDeclarator)
  */
 JavaGenDiscard(ILNode_FieldDeclaration)
 {
-	/* TODO */
+	/* We let ILNode_GenDiscard do the hard work because the field
+	   definition syntax for IL and JL are identical */
+	ILNode_GenDiscard(node, info);
 }
 
 /*
@@ -93,7 +98,10 @@ JavaGenDiscard(ILNode_EventPropertyDeclaration)
  */
 JavaGenDiscard(ILNode_MethodDeclaration)
 {
-	/* TODO */
+	/* We let ILNode_GenDiscard do the hard work because the method
+	   definition shell for IL and JL are identical.  It will call
+	   back into JavaGenDiscard when outputting the method body */
+	ILNode_GenDiscard(node, info);
 }
 
 JavaGenDiscard(ILNode_PropertyDeclaration)

@@ -95,7 +95,14 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	}
 
 	/* Output the class members */
-	ILNode_GenDiscard(node->body, info);
+	if(info->outputIsJava)
+	{
+		JavaGenDiscard(node->body, info);
+	}
+	else
+	{
+		ILNode_GenDiscard(node->body, info);
+	}
 
 	/* Output the class footer */
 	if(info->asmOutput)
@@ -227,6 +234,110 @@ ILNode_GenDiscard(ILNode_EventPropertyDeclaration)
 %{
 
 /*
+ * Dump the local variable block for an IL method.
+ */
+static void DumpILLocals(ILGenInfo *info, FILE *outstream, ILType *localVarSig)
+{
+	/* Dump the local variable signature, and set the
+	   base for temporary local variable allocation */
+	if(localVarSig)
+	{
+		unsigned long num = ILTypeNumLocals(localVarSig);
+		unsigned long index;
+		fputs("\t.locals\t(", outstream);
+		for(index = 0; index < num; ++index)
+		{
+			if(index != 0)
+			{
+				fputs(", ", outstream);
+			}
+			ILDumpType(outstream, info->image,
+					   ILTypeGetLocal(localVarSig, index),
+					   IL_DUMP_QUOTE_NAMES);
+		}
+		fputs(")\n", outstream);
+		info->tempLocalBase = num;
+	}
+	else
+	{
+		info->tempLocalBase = 0;
+	}
+}
+
+/*
+ * Allocate the arguments and locals for a JL method.
+ */
+static void AllocJLVars(ILGenInfo *info, ILType *signature,
+						ILType *localVarSig)
+{
+	ILType *vars;
+	ILType *type;
+	unsigned long num;
+	unsigned long index;
+	ILMachineType machineType;
+	char *name;
+
+	/* Allocate frame positions to the method arguments */
+	JavaGenStartFrame(info);
+	vars = signature;
+	if((vars->kind & (IL_META_CALLCONV_HASTHIS)) != 0 &&
+	   (vars->kind & (IL_META_CALLCONV_EXPLICITTHIS)) == 0)
+	{
+		/* Allocate a slot for the "this" argument */
+		JavaGenAddFrameSlot(info, ILMachineType_ObjectRef);
+	}
+	num = vars->num;
+	for(index = 1; index <= num; ++index)
+	{
+		JavaGenAddFrameSlot
+			(info, ILTypeToMachineType(ILTypeGetParam(vars, index)));
+	}
+
+	/* Allocate frame positions to the locals, and initialize them */
+	JavaGenStartLocals(info);
+	vars = localVarSig;
+	if(vars)
+	{
+		num = ILTypeNumLocals(vars);
+		for(index = 0; index < num; ++index)
+		{
+			type = ILTypeGetLocal(vars, index);
+			machineType = ILTypeToMachineType(type);
+			JavaGenAddFrameSlot(info, machineType);
+			if(machineType == ILMachineType_Decimal && info->useJavaLib)
+			{
+				/* Initialize "decimal" objects using "BigDecimal" */
+				JavaGenSimple(info, JAVA_OP_LCONST_0);
+				JavaGenAdjust(info, 2);
+				JavaGenCallByName(info, "java/math/BigDecimal",
+						  "valueOf", "(J)Ljava/math/BigDecimal;");
+				JavaGenStoreLocal(info, index, ILMachineType_ManagedValue);
+				JavaGenAdjust(info, -2);
+			}
+			else if(machineType == ILMachineType_ManagedValue ||
+					machineType == ILMachineType_Decimal)
+			{
+				/* Regular value type, which we assume has a
+				   zero-argument constructor per the C# rules */
+				name = JavaGetClassName(info, ILType_ToValueType(type));
+				JavaGenNewObj(info, name);
+				JavaGenSimple(info, JAVA_OP_DUP);
+				JavaGenAdjust(info, 2);
+				JavaGenCallCtor(info, name, "<init>", "()V");
+				JavaGenStoreLocal(info, index, ILMachineType_ManagedValue);
+				JavaGenAdjust(info, -2);
+				ILFree(name);
+			}
+		}
+		info->tempLocalBase = num;
+	}
+	else
+	{
+		info->tempLocalBase = 0;
+	}
+}
+
+/*
  * Generate discard code for a method.
  */
 static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
@@ -283,6 +394,12 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	putc(' ', outstream);
 	ILDumpFlags(outstream, ILMethod_ImplAttrs(method),
 				ILMethodImplementationFlags, 0);
+	if(info->outputIsJava && !ILMethod_IsJava(method))
+	{
+		/* Make sure that the assembler is informed
+		   that this is a Java method */
+		fputs("java ", outstream);
+	}
 	fputs("\n{\n", outstream);
 
 	/* Set up the return type so that "return" statements
@@ -290,79 +407,110 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	info->returnType =
 		ILTypeToMachineType(ILMethod_Signature(method)->un.method.retType);
 
-	/* Dump the local variable signature, and set the
-	   base for temporary local variable allocation */
-	if(node->localVarSig)
+	/* The local variable frame is created differently in IL and JL */
+	if(info->outputIsJava)
 	{
-		unsigned long num = ILTypeNumLocals(node->localVarSig);
-		unsigned long index;
-		fputs("\t.locals\t(", outstream);
-		for(index = 0; index < num; ++index)
-		{
-			if(index != 0)
-			{
-				fputs(", ", outstream);
-			}
-			ILDumpType(outstream, info->image,
-					   ILTypeGetLocal(node->localVarSig, index),
-					   IL_DUMP_QUOTE_NAMES);
-		}
-		fputs(")\n", outstream);
-		info->tempLocalBase = num;
+		AllocJLVars(info, ILMethod_Signature(method), node->localVarSig);
 	}
 	else
 	{
-		info->tempLocalBase = 0;
+		DumpILLocals(info, outstream, node->localVarSig);
 	}
 
 	/* Dump the code within the body of the method */
 	if(node->body)
 	{
-		ILNode_GenDiscard(node->body, info);
+		if(info->outputIsJava)
+		{
+			JavaGenDiscard(node->body, info);
+		}
+		else
+		{
+			ILNode_GenDiscard(node->body, info);
+		}
 	}
 
 	/* Don't bother with return logic or stack sizes if abstract or extern */
 	if(!ILMethod_IsAbstract(method) && ILMethod_IsIL(method) && node->body)
 	{
-		/* Add an explicit return instruction if the body didn't */
-		outputLabel = 0;
-		if(!ILNodeEndsInReturn(node->body))
+		if(!(info->outputIsJava))
 		{
-			if(info->returnLabel != ILLabel_Undefined &&
-			   info->returnType == ILMachineType_Void)
+			/* Add an explicit return instruction if the body didn't */
+			outputLabel = 0;
+			if(!ILNodeEndsInReturn(node->body))
 			{
-				/* Use this point in the code for return labels
-				   to prevent outputting two "ret"'s in a row */
-				ILGenLabel(info, &(info->returnLabel));
-				outputLabel = 1;
+				if(info->returnLabel != ILLabel_Undefined &&
+				   info->returnType == ILMachineType_Void)
+				{
+					/* Use this point in the code for return labels
+					   to prevent outputting two "ret"'s in a row */
+					ILGenLabel(info, &(info->returnLabel));
+					outputLabel = 1;
+				}
+				ILGenCast(info, ILMachineType_Void, info->returnType);
+				ILGenSimple(info, IL_OP_RET);
+				if(info->returnType != ILMachineType_Void)
+				{
+					ILGenAdjust(info, -1);
+				}
 			}
-			ILGenCast(info, ILMachineType_Void, info->returnType);
-			ILGenSimple(info, IL_OP_RET);
-			if(info->returnType != ILMachineType_Void)
+
+			/* If we have a return label, we need to output some final
+			   code to return the contents of a temporary local variable.
+			   This is used when returning from inside a "try" block */
+			if(!outputLabel && info->returnLabel != ILLabel_Undefined)
 			{
-				ILGenAdjust(info, -1);
+				ILGenLabel(info, &(info->returnLabel));
+				if(info->returnType != ILMachineType_Void)
+				{
+					ILGenLoadLocal(info, info->returnVar);
+					ILGenExtend(info, 1);
+				}
+				ILGenSimple(info, IL_OP_RET);
 			}
 		}
-
-		/* If we have a return label, we need to output some final
-		   code to return the contents of a temporary local variable.
-		   This is used when returning from inside a "try" block */
-		if(!outputLabel && info->returnLabel != ILLabel_Undefined)
+		else
 		{
-			ILGenLabel(info, &(info->returnLabel));
-			if(info->returnType != ILMachineType_Void)
+			/* Add an explicit return instruction if the body didn't */
+			outputLabel = 0;
+			if(!ILNodeEndsInReturn(node->body))
 			{
-				ILGenLoadLocal(info, info->returnVar);
-				ILGenExtend(info, 1);
+				if(info->returnLabel != ILLabel_Undefined &&
+				   info->returnType == ILMachineType_Void)
+				{
+					/* Use this point in the code for return labels
+					   to prevent outputting two "ret"'s in a row */
+					JavaGenLabel(info, &(info->returnLabel));
+					outputLabel = 1;
+				}
+				JavaGenCast(info, ILMachineType_Void, info->returnType);
+				JavaGenReturnInsn(info, info->returnType);
+				if(info->returnType != ILMachineType_Void)
+				{
+					JavaGenAdjust(info, -JavaGenTypeSize(info->returnType));
+				}
 			}
-			ILGenSimple(info, IL_OP_RET);
+
+			/* If we have a return label, we need to output some final
+			   code to return the contents of a temporary local variable.
+			   This is used when returning from inside a "try" block */
+			if(!outputLabel && info->returnLabel != ILLabel_Undefined)
+			{
+				JavaGenLabel(info, &(info->returnLabel));
+				if(info->returnType != ILMachineType_Void)
+				{
+					JavaGenLoadLocal(info, info->returnVar, info->returnType);
+					JavaGenExtend(info, JavaGenTypeSize(info->returnType));
+				}
+				JavaGenReturnInsn(info, info->returnType);
+			}
+
+			/* Output the number of local variables to the method */
+			fprintf(outstream, "\t.locals %u\n", JavaGenNumLocals(info));
 		}
 
 		/* Output the maximum stack height to the method */
-		if(info->asmOutput)
-		{
-			fprintf(outstream, "\t.maxstack %ld\n", info->maxStackHeight);
-		}
+		fprintf(outstream, "\t.maxstack %ld\n", info->maxStackHeight);
 	}
 
 	/* Dump the method terminator */

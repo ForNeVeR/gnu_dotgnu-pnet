@@ -10,6 +10,9 @@ routines to output JL assembly code instead of JVM bytecode.
 * codegen/jv_cast.tc, codegen/jv_misc.tc, codegen/jv_const.tc: rearrange
 object construction code to conform better with JVM requirements.
 
+* codegen/cg_decls.tc, codegen/jv_decls.tc: add support for compiling
+classes, fields, and methods to JL assembly code.
+
 2001-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * codegen/cg_optable.c, codegen/cg_coerce.h: reimplement numeric promotions

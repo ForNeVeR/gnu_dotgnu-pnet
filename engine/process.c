@@ -45,6 +45,7 @@ ILExecProcess *ILExecProcessCreate(void)
 	process->coder = 0;
 	process->coderGeneration = 0;
 	process->outOfMemoryObject = 0;
+	ILGetCurrTime(&(process->startTime));
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)

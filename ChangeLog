@@ -20,6 +20,9 @@ table lookup into a binary search for greater speed.
 * support/time.c, include/il_system.h: implement time handling
 functions within "support".
 
+* engine/engine.h, engine/process.c: record the engine start time
+to support "Platform.TimeMethods.GetUpTime".
+
 2001-10-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * configure.in: update version to 0.2.1.

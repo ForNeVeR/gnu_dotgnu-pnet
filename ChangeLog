@@ -39,6 +39,8 @@
 	* engine/lib_type.c (ResolveAssembly): resolve explicit assembly
 	names that are used with "Type.GetType".
 
+	* samples/mscorlib.dll: fix to "Activator.CreateInstance".
+
 2002-11-05  Gopal.V  <gopalv82@symonds.net>
 
 	* cscc/csharp/cs_grammar.y: Fix the indexername returned , using

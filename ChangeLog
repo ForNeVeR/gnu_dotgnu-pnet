@@ -20,6 +20,9 @@
 	* ildasm/ildasm_class.c: print pseudo class headers and footers
 	for the "<Module>" type if it is not empty.
 
+	* ilasm/ilasm_grammar.y: change the "<Module>" type to "public" if
+	it contains public fields or methods.
+
 2002-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_stmt.tc, cscc/csharp/cs_attrs.c: begin to put the

@@ -1384,6 +1384,15 @@ FieldDeclaration
 					}
 				}
 				ILAsmBuildPushScope(field);
+
+				/* If we are in the global module class, and the field
+				   is public, then change the module class to public */
+				if(ILAsmClass == ILAsmModuleClass && ILField_IsPublic(field))
+				{
+					ILClassSetAttrs(ILAsmClass,
+									IL_META_TYPEDEF_VISIBILITY_MASK,
+									IL_META_TYPEDEF_PUBLIC);
+				}
 			}
 		FieldBody	{
 				/* Keep the field token, in case the old style of
@@ -1714,6 +1723,15 @@ MethodHeading
 
 				/* The current scope is now the method */
 				ILAsmBuildPushScope(method);
+
+				/* If we are in the global module class, and the method
+				   is public, then change the module class to public */
+				if(ILAsmClass == ILAsmModuleClass && ILMethod_IsPublic(method))
+				{
+					ILClassSetAttrs(ILAsmClass,
+									IL_META_TYPEDEF_VISIBILITY_MASK,
+									IL_META_TYPEDEF_PUBLIC);
+				}
 			}
 	;
 

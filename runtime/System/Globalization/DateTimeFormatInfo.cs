@@ -78,34 +78,35 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 	private static readonly String[] invEraNames = {"A.D."};
 	private static readonly String[] invAbbrevEraNames = {"AD"};
 
-	// Invariant date time pattern list.
+	// Invariant date time pattern list.  Each string begins
+	// with a format character followed by a colon.
 	private static readonly String[] invDateTimePatterns =
-			{"MM/dd/yyyy",
-			 "dddd, dd MMMM yyyy",
-			 "dddd, dd MMMM yyyy HH:mm",
-			 "dddd, dd MMMM yyyy hh:mm tt",
-			 "dddd, dd MMMM yyyy H:mm",
-			 "dddd, dd MMMM yyyy h:mm tt",
-			 "dddd, dd MMMM yyyy HH:mm:ss",
-			 "MM/dd/yyyy HH:mm",
-			 "MM/dd/yyyy hh:mm tt",
-			 "MM/dd/yyyy H:mm",
-			 "MM/dd/yyyy h:mm tt",
-			 "MM/dd/yyyy HH:mm:ss",
-			 "MMMM dd",
-			 "MMMM dd",
-			 "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
-			 "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
-			 "yyyy'-'MM'-'dd'T'HH':'mm':'ss",
-			 "HH:mm",
-			 "hh:mm tt",
-			 "H:mm",
-			 "h:mm tt",
-			 "HH:mm:ss",
-			 "yyyy'-'MM'-'dd HH':'mm':'ss'Z'",
-			 "dddd, dd MMMM yyyy HH:mm:ss",
-			 "yyyy MMMM",
-			 "yyyy MMMM"};
+			{"d:MM/dd/yyyy",
+			 "D:dddd, dd MMMM yyyy",
+			 "f:dddd, dd MMMM yyyy HH:mm",
+			 "f:dddd, dd MMMM yyyy hh:mm tt",
+			 "f:dddd, dd MMMM yyyy H:mm",
+			 "f:dddd, dd MMMM yyyy h:mm tt",
+			 "F:dddd, dd MMMM yyyy HH:mm:ss",
+			 "g:MM/dd/yyyy HH:mm",
+			 "g:MM/dd/yyyy hh:mm tt",
+			 "g:MM/dd/yyyy H:mm",
+			 "g:MM/dd/yyyy h:mm tt",
+			 "G:MM/dd/yyyy HH:mm:ss",
+			 "m:MMMM dd",
+			 "M:MMMM dd",
+			 "r:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
+			 "R:ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
+			 "s:yyyy'-'MM'-'dd'T'HH':'mm':'ss",
+			 "t:HH:mm",
+			 "t:hh:mm tt",
+			 "t:H:mm",
+			 "t:h:mm tt",
+			 "T:HH:mm:ss",
+			 "u:yyyy'-'MM'-'dd HH':'mm':'ss'Z'",
+			 "U:dddd, dd MMMM yyyy HH:mm:ss",
+			 "y:yyyy MMMM",
+			 "Y:yyyy MMMM"};
 
 	// Constructor.
 	public DateTimeFormatInfo()
@@ -366,13 +367,40 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 	// Get all date time patterns.
 	public String[] GetAllDateTimePatterns()
 			{
-				return (String[])(dateTimePatterns.Clone());
+				String[] patterns = new String [dateTimePatterns.Length];
+				int posn;
+				for(posn = 0; posn < dateTimePatterns.Length; ++posn)
+				{
+					patterns[posn] = dateTimePatterns[posn].Substring(2);
+				}
+				return patterns;
 			}
-	[TODO]
 	public String[] GetAllDateTimePatterns(char format)
 			{
-				// TODO
-				return new String [0];
+				String[] patterns;
+				int posn, len;
+				len = 0;
+				for(posn = 0; posn < dateTimePatterns.Length; ++posn)
+				{
+					if(dateTimePatterns[posn][0] == format)
+					{
+						++len;
+					}
+				}
+				if(len == 0)
+				{
+					throw new ArgumentException(_("Arg_DateTimeFormatChar"));
+				}
+				patterns = new String [len];
+				len = 0;
+				for(posn = 0; posn < dateTimePatterns.Length; ++posn)
+				{
+					if(dateTimePatterns[posn][0] == format)
+					{
+						patterns[len++] = dateTimePatterns[posn].Substring(2);
+					}
+				}
+				return patterns;
 			}
 
 #endif // !ECMA_COMPAT
@@ -868,6 +896,22 @@ public sealed class DateTimeFormatInfo : ICloneable, IFormatProvider
 				eraNames = names;
 				abbrevEraNames = abbrevNames;
 			}
+
+#if !ECMA_COMPAT
+
+	// Set the date/time pattern list - this should not be used by
+	// applications.  It exists to support I18N plugins.
+	public void I18NSetDateTimePatterns(String[] patterns)
+			{
+				if(patterns == null)
+				{
+					throw new ArgumentNullException("patterns");
+				}
+				CheckForNulls(patterns);
+				dateTimePatterns = patterns;
+			}
+
+#endif // !ECMA_COMPAT
 
 }; // class DateTimeFormatInfo
 

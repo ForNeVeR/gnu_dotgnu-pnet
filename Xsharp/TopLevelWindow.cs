@@ -726,6 +726,24 @@ public class TopLevelWindow : InputOutputWidget
 			}
 
 	/// <summary>
+	/// <para>Method that is called when the window gains the primary focus,
+	/// just before the actual focus is passed to children.</para>
+	/// </summary>
+	protected virtual void OnPrimaryFocusIn()
+			{
+				// Nothing to do here.
+			}
+
+	/// <summary>
+	/// <para>Method that is called when the window loses the primary focus,
+	/// just after the actual focus is removed from children.</para>
+	/// </summary>
+	protected virtual void OnPrimaryFocusOut()
+			{
+				// Nothing to do here.
+			}
+
+	/// <summary>
 	/// <para>Raise this widget to the top of its layer.</para>
 	/// </summary>
 	public override void Raise()
@@ -779,6 +797,7 @@ public class TopLevelWindow : InputOutputWidget
 				if(!hasPrimaryFocus)
 				{
 					hasPrimaryFocus = true;
+					OnPrimaryFocusIn();
 					if(defaultFocus != null)
 					{
 						focusWidget = defaultFocus;
@@ -862,6 +881,7 @@ public class TopLevelWindow : InputOutputWidget
 							{
 								focusWidget.DispatchFocusOut(null);
 							}
+							OnPrimaryFocusOut();
 						}
 					}
 					break;

@@ -411,6 +411,24 @@ internal sealed class DrawingTopLevelWindow : TopLevelWindow, IToolkitWindow
 				}
 			}
 
+	// Override the primary focus enter event from Xsharp.
+	protected override void OnPrimaryFocusIn()
+			{
+				if(sink != null)
+				{
+					sink.ToolkitPrimaryFocusEnter();
+				}
+			}
+
+	// Override the primary focus leave event from Xsharp.
+	protected override void OnPrimaryFocusOut()
+			{
+				if(sink != null)
+				{
+					sink.ToolkitPrimaryFocusLeave();
+				}
+			}
+
 	// Handle a paint event from Xsharp.
 	protected override void OnPaint(Xsharp.Graphics graphics)
 			{

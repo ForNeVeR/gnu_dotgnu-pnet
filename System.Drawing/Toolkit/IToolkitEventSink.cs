@@ -42,6 +42,14 @@ public interface IToolkitEventSink
 	// Event that is emitted when the focus leaves this window.
 	void ToolkitFocusLeave();
 
+	// Event that is emitted when the primary focus enters this window.
+	// This is only called on top-level windows.
+	void ToolkitPrimaryFocusEnter();
+
+	// Event that is emitted when the primary focus leaves this window.
+	// This is only called on top-level windows.
+	void ToolkitPrimaryFocusLeave();
+
 	// Event that is emitted for a key down event.
 	bool ToolkitKeyDown(ToolkitKeys key);
 

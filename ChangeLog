@@ -15,6 +15,12 @@
 	System.Drawing.Xsharp/DrawingToolkit.cs,
 	System.Windows.Forms/Timer.cs, Xsharp/Timer.cs: implement Forms timers.
 
+	* System.Drawing/Toolkit/IToolkitEventSink.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Windows.Forms/Control.cs, System.Windows.Forms/Form.cs,
+	Xsharp/TopLevelWindow.cs: detect when top-level forms are activated
+	or deactivated and dispatch the appropriate events.
+
 2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: fix a couple of minor mistakes

@@ -647,10 +647,9 @@ public class Form : ContainerControl
 			}
 
 	// Activate the form and give it focus.
-	[TODO]
 	public void Activate()
 			{
-				// TODO
+				BringToFront();
 			}
 
 	// Add an owned form to this form.
@@ -670,7 +669,7 @@ public class Form : ContainerControl
 
 	// Get the auto scale base size for a particular font.
 	[TODO]
-	public static SizeF GetAutoScalSize(Font font)
+	public static SizeF GetAutoScaleSize(Font font)
 			{
 				// TODO
 				return SizeF.Empty;
@@ -924,6 +923,10 @@ public class Form : ContainerControl
 	// Emit the "Activated" event.
 	protected virtual void OnActivated(EventArgs e)
 			{
+				// This form is currently the active one.
+				activeForm = this;
+
+				// Dispatch the event to everyone who is listening.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.Activated));
 				if(handler != null)
@@ -964,6 +967,10 @@ public class Form : ContainerControl
 	// Emit the "Deactivate" event.
 	protected virtual void OnDeactivate(EventArgs e)
 			{
+				// None of the application's forms are currently active.
+				activeForm = null;
+
+				// Dispatch the event to everyone who is listening.
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.Deactivate));
 				if(handler != null)
@@ -1100,6 +1107,18 @@ public class Form : ContainerControl
 	protected override void OnPaint(PaintEventArgs e)
 			{
 				base.OnPaint(e);
+			}
+
+	// Override the "PrimaryEnter" event.
+	internal override void OnPrimaryEnter(EventArgs e)
+			{
+				OnActivated(e);
+			}
+
+	// Override the "PrimaryLeave" event.
+	internal override void OnPrimaryLeave(EventArgs e)
+			{
+				OnDeactivate(e);
 			}
 
 	// Override the "Resize" event.

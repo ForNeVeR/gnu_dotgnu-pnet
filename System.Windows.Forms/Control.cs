@@ -3727,6 +3727,14 @@ public class Control : IWin32Window
 					OnVisibleChanged(e);
 				}
 			}
+	internal virtual void OnPrimaryEnter(EventArgs e)
+			{
+				// Nothing to do here: overridden in "Form".
+			}
+	internal virtual void OnPrimaryLeave(EventArgs e)
+			{
+				// Nothing to do here: overridden in "Form".
+			}
 #if !CONFIG_COMPACT_FORMS
 	protected virtual void OnQueryAccessibilityHelp
 				(QueryAccessibilityHelpEventArgs e)
@@ -4366,6 +4374,20 @@ public class Control : IWin32Window
 	void IToolkitEventSink.ToolkitFocusLeave()
 			{
 				OnLeave(EventArgs.Empty);
+			}
+
+	// Event that is emitted when the primary focus enters this window.
+	// This is only called on top-level windows.
+	void IToolkitEventSink.ToolkitPrimaryFocusEnter()
+			{
+				OnPrimaryEnter(EventArgs.Empty);
+			}
+
+	// Event that is emitted when the primary focus leaves this window.
+	// This is only called on top-level windows.
+	void IToolkitEventSink.ToolkitPrimaryFocusLeave()
+			{
+				OnPrimaryLeave(EventArgs.Empty);
 			}
 
 	// Toolkit event that is emitted for a key down event.

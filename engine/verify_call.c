@@ -618,7 +618,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	/* Convert the vararg parameters into an "Object[]" array */
 	if(isVarArg)
 	{
-		ILCoderPackVarArgs(coder, signature, numParams + 1,
+		ILCoderPackVarArgs(coder, signature,
+						   (hasThis ? numParams + 1 : numParams + 2),
 						   stack + numParams, totalParams - numParams);
 		*numVarArgParams = totalParams - numParams;
 	}

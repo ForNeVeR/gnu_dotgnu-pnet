@@ -14,6 +14,9 @@
 	include/il_coder.h: handle vararg method calls correctly in
 	"ILCoderCheckCallNull".
 
+	* engine/verify_call.c (MatchSignature): modify the previous
+	"firstParam" fix to properly account for the "this" parameter.
+
 2003-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (MatchSignature): pass the correct

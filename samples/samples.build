@@ -136,6 +136,7 @@
 
 			<references>
 				<file name="../System/System.dll"/>
+				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -160,8 +161,8 @@
 			</sources>
 
 			<references>
-				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../System/System.dll"/>
+				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 

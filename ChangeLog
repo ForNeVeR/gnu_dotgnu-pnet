@@ -43,6 +43,13 @@
 	runtime/System/Globalization/_I18NCultureHandler.cs: remove
 	"_I18NCultureHandler" and inherit handlers from "CultureInfo" instead.
 
+	* Basic/Basic.build, JScript/JScript.build, System/System.build,
+	System.Net.IrDA/IrDA.build, System.Xml/Xml.build,
+	compat/compat.build, samples/samples.build,
+	tests/JScript/TestJScript.build, tests/System/TestSystem.build,
+	tests/System.Xml/TestXml.build, tests/runtime/Testruntime.build:
+	fix *.build files to include the correct path for DotGNU.SSL.
+
 2003-05-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ListChangedEventHandler.cs: correct a

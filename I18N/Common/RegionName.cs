@@ -1,5 +1,5 @@
 /*
- * RegionName.cs - Implementation of the "System.Private.RegionName" class.
+ * RegionName.cs - Implementation of the "I18N.Common.RegionName" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *

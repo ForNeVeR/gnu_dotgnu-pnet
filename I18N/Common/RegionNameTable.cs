@@ -1,6 +1,6 @@
 /*
  * RegionNameTable.cs - Implementation of the
- *		"System.Private.RegionNameTable" class.
+ *		"I18N.Common.RegionNameTable" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *

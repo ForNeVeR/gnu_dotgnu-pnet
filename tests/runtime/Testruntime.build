@@ -15,7 +15,6 @@
 
 			<references>
 				<file name="../../csunit/cstest.dll"/>
-				<file name="../../System/System.dll"/>
 				<file name="../../runtime/mscorlib.dll"/>
 			</references>
 

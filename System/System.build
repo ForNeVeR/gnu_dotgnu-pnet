@@ -21,8 +21,8 @@
 			</sources>
 
 			<references>
-				<file name="../runtime/mscorlib.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
+				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
 			<resources>
@@ -64,8 +64,8 @@
 				<!-- temporarily removed until recursion works -->
 				<!-- <file name="../System.Xml/System.Xml.dll"/> -->
 				<!-- <file name="first/System.dll"/> -->
-				<file name="../runtime/mscorlib.dll"/>
 				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
+				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
 			<resources>

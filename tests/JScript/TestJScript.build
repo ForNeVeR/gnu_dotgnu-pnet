@@ -21,6 +21,7 @@
 				<file name="../../JScript/JScript.Test.dll"/>
 				<file name="../../compat/Microsoft.Vsa.dll"/>
 				<file name="../../System/System.dll"/>
+				<file name="../../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../../runtime/mscorlib.dll"/>
 			</references>
 

@@ -24,6 +24,7 @@
 			<references>
 				<file name="../compat/Microsoft.Vsa.dll"/>
 				<file name="../System/System.dll"/>
+				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -61,6 +62,7 @@
 			<references>
 				<file name="../compat/Microsoft.Vsa.dll"/>
 				<file name="../System/System.dll"/>
+				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 
@@ -90,6 +92,7 @@
 				<file name="./Microsoft.JScript.dll"/>
 				<file name="../compat/Microsoft.Vsa.dll"/>
 				<file name="../System/System.dll"/>
+				<file name="../DotGNU.SSL/DotGNU.SSL.dll"/>
 				<file name="../runtime/mscorlib.dll"/>
 			</references>
 

@@ -393,15 +393,20 @@ ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 	{
 		attrs |= IL_META_METHODDEF_STATIC;
 	}
-	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
-	{
-		attrs |= IL_META_METHODDEF_ABSTRACT;
-	}
 	if((modifiers & CS_MODIFIER_SEALED) != 0)
 	{
 		attrs |= IL_META_METHODDEF_FINAL;
 	}
-	if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
+	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
+	{
+		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_ABSTRACT;
+		if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `abstract' and `virtual'");
+		}
+	}
+	else if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
 		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT;
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
@@ -454,15 +459,24 @@ ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
 	{
 		attrs |= IL_META_METHODDEF_STATIC;
 	}
-	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
-	{
-		attrs |= IL_META_METHODDEF_ABSTRACT;
-	}
 	if((modifiers & CS_MODIFIER_SEALED) != 0)
 	{
 		attrs |= IL_META_METHODDEF_FINAL;
 	}
-	if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
+	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
+	{
+		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_ABSTRACT;
+		if((modifiers & CS_MODIFIER_NEW) != 0)
+		{
+			attrs |= IL_META_METHODDEF_NEW_SLOT;
+		}
+		if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `abstract' and `virtual'");
+		}
+	}
+	else if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
 		attrs |= IL_META_METHODDEF_VIRTUAL;
 		if((modifiers & CS_MODIFIER_NEW) != 0)
@@ -512,15 +526,20 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 	{
 		attrs |= IL_META_METHODDEF_STATIC;
 	}
-	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
-	{
-		attrs |= IL_META_METHODDEF_ABSTRACT;
-	}
 	if((modifiers & CS_MODIFIER_SEALED) != 0)
 	{
 		attrs |= IL_META_METHODDEF_FINAL;
 	}
-	if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
+	if((modifiers & CS_MODIFIER_ABSTRACT) != 0)
+	{
+		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_ABSTRACT;
+		if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
+		{
+			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot use both `abstract' and `virtual'");
+		}
+	}
+	else if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 	{
 		attrs |= IL_META_METHODDEF_VIRTUAL | IL_META_METHODDEF_NEW_SLOT;
 		if((modifiers & CS_MODIFIER_OVERRIDE) != 0)

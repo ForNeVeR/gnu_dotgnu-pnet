@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * INameCreationService.cs - Implementation of the
+ *		"System.ComponentModel.Design.Serialization.INameCreationService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,29 +19,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.ComponentModel.Design
+namespace System.ComponentModel.Design.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface INameCreationService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Create a new name that is unique to all components in its container.
+	String CreateName(IContainer container, Type dataType);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Determine if a name is valid.
+	bool IsValidName(String name);
 
-}; // interface IServiceContainer
+	// Validate a name.
+	void ValidateName(String name);
+
+}; // interface INameCreationService
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.ComponentModel.Design
+}; // namespace System.ComponentModel.Design.Serialization

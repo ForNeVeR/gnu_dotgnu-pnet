@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * ResolveNameEventArgs.cs - Implementation of the
+ *		"System.ComponentModel.Design.Serialization.ResolveNameEventArgs" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,29 +19,45 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.ComponentModel.Design
+namespace System.ComponentModel.Design.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public class ResolveNameEventArgs : EventArgs
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Internal state.
+	private String name;
+	private Object value;
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Constructor.
+	public ResolveNameEventArgs(String name)
+			{
+				this.name = name;
+			}
 
-}; // interface IServiceContainer
+	// Get or set this object's properties.
+	public String Name
+			{
+				get
+				{
+					return name;
+				}
+			}
+	public Object Value
+			{
+				get
+				{
+					return value;
+				}
+				set
+				{
+					this.value = value;
+				}
+			}
+
+}; // class ResolveNameEventArgs
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.ComponentModel.Design
+}; // namespace System.ComponentModel.Design.Serialization

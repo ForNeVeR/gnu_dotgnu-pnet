@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IDesignerSerializationProvider.cs - Implementation of
+ *	"System.ComponentModel.Design.Serialization.IDesignerSerializationProvider".
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,29 +19,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.ComponentModel.Design
+namespace System.ComponentModel.Design.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IDesignerSerializationProvider
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get a serializer with the specified attributes.
+	Object GetSerializer(IDesignerSerializationManager manager,
+      					 Object currentSerializer,
+	     				 Type objectType, Type serializerType);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
-
-}; // interface IServiceContainer
+}; // interface IDesignerSerializationProvider
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.ComponentModel.Design
+}; // namespace System.ComponentModel.Design.Serialization

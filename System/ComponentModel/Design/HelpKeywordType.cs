@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * HelpKeywordType.cs - Implementation of the
+ *		"System.ComponentModel.Design.HelpKeywordType" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,13 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public enum HelpKeywordType
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	F1Keyword		= 0,
+	GeneralKeyword	= 1,
+	FilterKeyword	= 2
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
-
-}; // interface IServiceContainer
+}; // enum HelpKeywordType
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * ISelectionService.cs - Implementation of the
+ *		"System.ComponentModel.Design.ISelectionService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,36 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
+using System.Collections;
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface ISelectionService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get the primarily selected object.
+	Object PrimarySelection { get; }
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Get the number of selected objects.
+	int SelectionCount { get; }
 
-}; // interface IServiceContainer
+	// Determine if a component is selected.
+	bool GetComponentSelected(Object component);
+
+	// Get a collection of all selected components.
+	ICollection GetSelectedComponents();
+
+	// Select the components in a collection.
+	void SetSelectedComponents(ICollection components);
+	void SetSelectedComponents
+			(ICollection components, SelectionTypes selectionType);
+
+	// Event that is emitted when the selection changes.
+	event EventHandler SelectionChanged;
+
+	// Event that is emitted when the selection is about to change.
+	event EventHandler SelectionChanging;
+
+}; // interface ISelectionService
 
 #endif // !ECMA_COMPAT
 

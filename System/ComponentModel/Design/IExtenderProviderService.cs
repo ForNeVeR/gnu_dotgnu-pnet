@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IExtenderProviderService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IExtenderProviderService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,15 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IExtenderProviderService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Add the specified extender provider.
+	void AddExtenderProvider(IExtenderProvider provider);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Remove the specified extender provider.
+	void RemoveExtenderProvider(IExtenderProvider provider);
 
-}; // interface IServiceContainer
+}; // interface IExtenderProviderService
 
 #endif // !ECMA_COMPAT
 

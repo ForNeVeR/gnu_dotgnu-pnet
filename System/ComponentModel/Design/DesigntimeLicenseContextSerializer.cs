@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * DesigntimeLicenseContextSerializer.cs - Implementation of the
+ *		"System.ComponentModel.Design.DesigntimeLicenseContextSerializer" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,24 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public class DesigntimeLicenseContextSerializer
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Cannot instantiate this class.
+	private DesigntimeLicenseContextSerializer() {}
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Serialize a license key to a stream.
+	public static void Serialize(Stream o, String cryptoKey,
+		     					 DesigntimeLicenseContext context)
+			{
+				BinaryFormatter formatter = new BinaryFormatter();
+				formatter.Serialize
+					(o, new Object [] {cryptoKey, context.keys});
+			}
 
-}; // interface IServiceContainer
+}; // class DesigntimeLicenseContextSerializer
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * HelpContextType.cs - Implementation of the
+ *		"System.ComponentModel.Design.HelpContextType" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,14 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public enum HelpContextType
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	Ambient				= 0,
+	Window				= 1,
+	Selection			= 2,
+	ToolWindowSelection	= 3
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
-
-}; // interface IServiceContainer
+}; // enum HelpContextType
 
 #endif // !ECMA_COMPAT
 

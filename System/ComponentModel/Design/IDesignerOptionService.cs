@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IDesignerOptionService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IDesignerOptionService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,15 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IDesignerOptionService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get the value of a specified option.
+	Object GetOptionValue(String pageName, String valueName);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Set the value of a specified option.
+	void SetOptionValue(String pageName, String valueName, Object value);
 
-}; // interface IServiceContainer
+}; // interface IDesignerOptionService
 
 #endif // !ECMA_COMPAT
 

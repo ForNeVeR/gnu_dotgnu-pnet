@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * ComponentRenameEventArgs.cs - Implementation of the
+ *		"System.ComponentModel.Design.ComponentRenameEventArgs" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,20 +27,46 @@ namespace System.ComponentModel.Design
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public class ComponentRenameEventArgs : EventArgs
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Internal state.
+	private Object component;
+	private String oldName;
+	private String newName;
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Constructor.
+	public ComponentRenameEventArgs
+				(Object component, String oldName, String newName)
+			{
+				this.component = component;
+				this.oldName = oldName;
+				this.newName = newName;
+			}
 
-}; // interface IServiceContainer
+	// Get this object's properties.
+	public Object Component
+			{
+				get
+				{
+					return component;
+				}
+			}
+	public virtual String NewName
+			{
+				get
+				{
+					return newName;
+				}
+			}
+	public virtual String OldName
+			{
+				get
+				{
+					return oldName;
+				}
+			}
+
+}; // class ComponentRenameEventArgs
 
 #endif // !ECMA_COMPAT
 

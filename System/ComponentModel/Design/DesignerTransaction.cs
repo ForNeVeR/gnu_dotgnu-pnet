@@ -1,9 +1,8 @@
 /*
- * DesignerTransaction.cs - Implementation of 
- *							"System.ComponentModel.Design.DesignerTransaction" 
+ * DesignerTransaction.cs - Implementation of the
+ *		"System.ComponentModel.Design.DesignerTransaction" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2002  Free Software Foundation,Inc.
+ * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,56 +19,99 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
 namespace System.ComponentModel.Design
 {
+
 #if !ECMA_COMPAT
-	public abstract class DesignerTransaction: IDisposable
-	{
-		[TODO]
-		public DesignerTransaction()
-		{
-			throw new NotImplementedException(".ctor");
-		}
 
-		[TODO]
-		public DesignerTransaction(System.String description)
-		{
-			throw new NotImplementedException(".ctor");
-		}
+public abstract class DesignerTransaction : IDisposable
+{
+	// Internal state.
+	private String description;
+	private bool canceled;
+	private bool committed;
 
-		public abstract void Dispose();
-	
-		void IDisposable.Dispose()
-		{
-			this.Dispose();
-		}
-
-		public bool Canceled 
-		{
-			get
+	// Constructors.
+	public DesignerTransaction() {}
+	public DesignerTransaction(String description)
 			{
-				throw new NotImplementedException("Canceled");
+				this.description = description;
 			}
-		}
 
-		public bool Committed 
-		{
-			get
+	// Destructor.
+	~DesignerTransaction()
 			{
-				throw new NotImplementedException("Committed");
+				Dispose(false);
 			}
-		}
 
-		public String Description 
-		{
-			get
+	// Determine if this transaction has been canceled.
+	public bool Canceled
 			{
-				throw new NotImplementedException("Description");
+				get
+				{
+					return canceled;
+				}
 			}
-		}
 
-	}
-#endif
-}//namespace
+	// Determine if this transaction has been committed.
+	public bool Committed
+			{
+				get
+				{
+					return committed;
+				}
+			}
+
+	// Get the description of this transaction.
+	public String Description
+			{
+				get
+				{
+					return description;
+				}
+			}
+
+	// Cancel the transaction.
+	public void Cancel()
+			{
+				if(!canceled && !committed)
+				{
+					canceled = true;
+					GC.SuppressFinalize(this);
+					OnCancel();
+				}
+			}
+
+	// Commit the transaction.
+	public void Commit()
+			{
+				if(!canceled && !committed)
+				{
+					committed = true;
+					GC.SuppressFinalize(this);
+					OnCommit();
+				}
+			}
+
+	// Dispose of this object.
+	void IDisposable.Dispose()
+			{
+				Dispose(true);
+				GC.SuppressFinalize(this);
+			}
+	protected virtual void Dispose(bool disposing)
+			{
+				Cancel();
+			}
+
+	// Raise the cancel event.
+	protected abstract void OnCancel();
+
+	// Raise the commit event.
+	protected abstract void OnCommit();
+
+}; // class DesignerTransaction
+
+#endif // !ECMA_COMPAT
+
+}; // namespace System.ComponentModel.Design

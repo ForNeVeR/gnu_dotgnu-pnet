@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IComponentChangeService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IComponentChangeService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,20 +27,25 @@ namespace System.ComponentModel.Design
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IComponentChangeService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Announce that a component has been changed.
+	void OnComponentChanged(Object component, MemberDescriptor member,
+							Object oldValue, Object newValue);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Announce that a component is being changed.
+	void OnComponentChanging(Object component, MemberDescriptor member);
 
-}; // interface IServiceContainer
+	// Events for the change service.
+	event ComponentEventHandler ComponentAdded;
+	event ComponentEventHandler ComponentAdding;
+	event ComponentChangedEventHandler ComponentChanged;
+	event ComponentChangingEventHandler ComponentChanging;
+	event ComponentEventHandler ComponentRemoved;
+	event ComponentEventHandler ComponentRemoving;
+	event ComponentRenameEventHandler ComponentRename;
+
+}; // interface IComponentChangeService
 
 #endif // !ECMA_COMPAT
 

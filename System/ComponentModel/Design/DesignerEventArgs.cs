@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * DesignerEventArgs.cs - Implementation of the
+ *		"System.ComponentModel.Design.DesignerEventArgs" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,27 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public class DesignerEventArgs : EventArgs
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Internal state.
+	private IDesignerHost host;
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Constructor.
+	public DesignerEventArgs(IDesignerHost host)
+			{
+				this.host = host;
+			}
 
-}; // interface IServiceContainer
+	// Get this object's properties.
+	public IDesignerHost Designer
+			{
+				get
+				{
+					return host;
+				}
+			}
+
+}; // class DesignerEventArgs
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IRootDesigner.cs - Implementation of the
+ *		"System.ComponentModel.Design.IRootDesigner" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,20 +27,15 @@ namespace System.ComponentModel.Design
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IRootDesigner : IDesigner, IDisposable
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get the set of view technologies supported by this designer.
+	ViewTechnology[] SupportedTechnologies { get; }
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Get a specific view object.
+	Object GetView(ViewTechnology technology);
 
-}; // interface IServiceContainer
+}; // interface IRootDesigner
 
 #endif // !ECMA_COMPAT
 

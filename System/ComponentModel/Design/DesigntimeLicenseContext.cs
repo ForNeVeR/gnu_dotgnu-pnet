@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * DesigntimeLicenseContext.cs - Implementation of the
+ *		"System.ComponentModel.Design.DesigntimeLicenseContext" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,43 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
+using System.Reflection;
+using System.Collections;
 
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public class DesigntimeLicenseContext : LicenseContext
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Internal state.
+	internal Hashtable keys;
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Constructor.
+	public DesigntimeLicenseContext()
+			{
+				keys = new Hashtable();
+			}
 
-}; // interface IServiceContainer
+	// Get the license usage mode.
+	public override LicenseUsageMode UsageMode
+			{
+				get
+				{
+					return LicenseUsageMode.Designtime;
+				}
+			}
+
+	// Get the saved form of a license key.
+	public override String GetSavedLicenseKey
+				(Type type, Assembly resourceAssembly)
+			{
+				return (String)(keys[type.AssemblyQualifiedName]);
+			}
+
+	// Set the license key for a specific type.
+	public override void SetSavedLicenseKey(Type type, String key)
+			{
+				keys[type.AssemblyQualifiedName] = key;
+			}
+
+}; // class DesigntimeLicenseContext
 
 #endif // !ECMA_COMPAT
 

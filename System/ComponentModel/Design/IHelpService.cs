@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IHelpService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IHelpService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,31 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IHelpService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Add a context attribute to the document.
+	void AddContextAttribute
+			(String name, String value, HelpKeywordType keywordType);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Clear all context attributes from the document.
+	void ClearContextAttributes();
 
-}; // interface IServiceContainer
+	// Create a local context to manage subcontexts.
+	IHelpService CreateLocalContext(HelpContextType contextType);
+
+	// Remove a context attribute
+	void RemoveContextAttribute(String name, String value);
+
+	// Remove a local context.
+	void RemoveLocalContext(IHelpService localContext);
+
+	// Show the help topic for a specific keyword.
+	void ShowHelpFromKeyword(String helpKeyword);
+
+	// Show the help topic that corresponds to a specified URL.
+	void ShowHelpFromUrl(String helpUrl);
+
+}; // interface IHelpService
 
 #endif // !ECMA_COMPAT
 

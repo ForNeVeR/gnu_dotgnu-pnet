@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * ComponentChangingEventArgs.cs - Implementation of the
+ *		"System.ComponentModel.Design.ComponentChangingEventArgs" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,20 +27,37 @@ namespace System.ComponentModel.Design
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public sealed class ComponentChangingEventArgs : EventArgs
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Internal state.
+	private Object component;
+	private MemberDescriptor member;
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Constructor.
+	public ComponentChangingEventArgs
+				(Object component, MemberDescriptor member)
+			{
+				this.component = component;
+				this.member = member;
+			}
 
-}; // interface IServiceContainer
+	// Get this object's properties.
+	public Object Component
+			{
+				get
+				{
+					return component;
+				}
+			}
+	public MemberDescriptor Member
+			{
+				get
+				{
+					return member;
+				}
+			}
+
+}; // class ComponentChangingEventArgs
 
 #endif // !ECMA_COMPAT
 

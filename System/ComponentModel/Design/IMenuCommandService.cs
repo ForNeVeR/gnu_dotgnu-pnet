@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IMenuCommandService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IMenuCommandService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -27,20 +27,33 @@ namespace System.ComponentModel.Design
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IMenuCommandService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get an array of designer verbs that are currently available.
+	DesignerVerbCollection Verbs { get; }
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Add a command to the menu.
+	void AddCommand(MenuCommand command);
 
-}; // interface IServiceContainer
+	// Add a verb to the set of all designer verbs.
+	void AddVerb(DesignerVerb verb);
+
+	// Find a specific menu command by identifier.
+	MenuCommand FindCommand(CommandID commandID);
+
+	// Invoke a menu or verb command indicated by a specific command ID.
+	bool GlobalInvoke(CommandID commandID);
+
+	// Remove a command from the menu.
+	void RemoveCommand(MenuCommand command);
+
+	// Remove a verb from the set of all designer verbs.
+	void RemoveVerb(DesignerVerb verb);
+
+	// Show the context menu at a specific location.
+	void ShowContextMenu(CommandID menuID, int x, int y);
+
+}; // interface IMenuCommandService
 
 #endif // !ECMA_COMPAT
 

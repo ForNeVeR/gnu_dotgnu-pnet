@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * DesignerTransactionCloseEventHandler.cs - Implementation of
+ *		"System.ComponentModel.Design.DesignerTransactionCloseEventHandler".
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -26,21 +26,10 @@ namespace System.ComponentModel.Design
 
 using System.Runtime.InteropServices;
 
+[Serializable]
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
-{
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
-
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
-
-}; // interface IServiceContainer
+public delegate void DesignerTransactionCloseEventHandler
+			(Object sender, DesignerTransactionCloseEventArgs e);
 
 #endif // !ECMA_COMPAT
 

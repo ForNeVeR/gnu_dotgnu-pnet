@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IReferenceService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IReferenceService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,24 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IReferenceService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get the component for a specific reference.
+	IComponent GetComponent(Object reference);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Get the component name for a specific reference.
+	String GetName(Object reference);
 
-}; // interface IServiceContainer
+	// Get a reference to a named component.
+	Object GetReference(String name);
+
+	// Get references for all project components.
+	Object[] GetReferences();
+
+	// Get references for all project components of a specific type.
+	Object[] GetReferences(Type baseType);
+
+}; // interface IReferenceService
 
 #endif // !ECMA_COMPAT
 

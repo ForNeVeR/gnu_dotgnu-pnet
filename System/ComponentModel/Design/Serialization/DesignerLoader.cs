@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * DesignerLoader.cs - Implementation of the
+ *		"System.ComponentModel.Design.Serialization.DesignerLoader" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -19,29 +19,40 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.ComponentModel.Design
+namespace System.ComponentModel.Design.Serialization
 {
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public abstract class DesignerLoader
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Constructor.
+	protected DesignerLoader() {}
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Determine if we are currently loading.
+	public virtual bool Loading
+			{
+				get
+				{
+					// Nothing to do here in the base class.
+					return false;
+				}
+			}
 
-}; // interface IServiceContainer
+	// Begin loading a designer.
+	public abstract void BeginLoad(IDesignerLoaderHost host);
+
+	// Dispose of the loader.
+	public abstract void Dispose();
+
+	// Flush any changes that were made.
+	public virtual void Flush()
+			{
+				// Nothing to do here in the base class.
+			}
+
+}; // class DesignerLoader
 
 #endif // !ECMA_COMPAT
 
-}; // namespace System.ComponentModel.Design
+}; // namespace System.ComponentModel.Design.Serialization

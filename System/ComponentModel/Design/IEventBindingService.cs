@@ -1,6 +1,6 @@
 /*
- * IDesigner.cs - Implementation of the
- *		"System.ComponentModel.Design.IDesigner" class.
+ * IEventBindingService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IEventBindingService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,24 +24,34 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
+using System.Collections;
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public interface IDesigner : IDisposable
+public interface IEventBindingService
 {
-	// Get the component that this designer is using.
-	IComponent Component { get; }
+	// Create a unique method name.
+	String CreateUniqueMethodName(IComponent component, EventDescriptor e);
 
-	// Get the verbs that were supplied by the designer.
-	DesignerVerbCollection Verbs { get; }
+	// Get the methods that are compatible with a specified event.
+	ICollection GetCompatibleMethods(EventDescriptor e);
 
-	// Perform the designer's default action.
-	void DoDefaultAction();
+	// Get the event that is represented by a specific property.
+	EventDescriptor GetEvent(PropertyDescriptor property);
 
-	// Initialize the designer with a specified component.
-	void Initialize(IComponent component);
+	// Convert a set of event descriptors into corresponding properties.
+	PropertyDescriptorCollection GetEventProperties
+				(EventDescriptorCollection events);
 
-}; // interface IDesigner
+	// Convert an event into a property descriptor.
+	PropertyDescriptor GetEventProperty(EventDescriptor e);
+
+	// Display the user code for the designer.
+	bool ShowCode();
+	bool ShowCode(int lineNumber);
+	bool ShowCode(IComponent component, EventDescriptor e);
+
+}; // interface IEventBindingService
 
 #endif // !ECMA_COMPAT
 

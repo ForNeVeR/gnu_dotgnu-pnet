@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IDictionaryService.cs - Implementation of the
+ *		"System.ComponentModel.Design.IDictionaryService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,18 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
-
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IDictionaryService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get the key that corresponds to a particular value.
+	Object GetKey(Object value);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Get the value that corresponds to a particular key.
+	Object GetValue(Object key);
 
-}; // interface IServiceContainer
+	// Set a key-value pair.
+	void SetValue(Object key, Object value);
+
+}; // interface IDictionaryService
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * IDesignerFilter.cs - Implementation of the
+ *		"System.ComponentModel.Design.IDesignerFilter" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,29 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
+using System.Collections;
 
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface IDesignerFilter
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Filter a set of attributes before they are used.
+	void PreFilterAttributes(IDictionary attributes);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Filter a set of attributes after they are used.
+	void PostFilterAttributes(IDictionary attributes);
 
-}; // interface IServiceContainer
+	// Filter a set of events before they are used.
+	void PreFilterEvents(IDictionary events);
+
+	// Filter a set of events after they are used.
+	void PostFilterEvents(IDictionary events);
+
+	// Filter a set of properties before they are used.
+	void PreFilterProperties(IDictionary properties);
+
+	// Filter a set of properties after they are used.
+	void PostFilterProperties(IDictionary properties);
+
+}; // interface IDesignerFilter
 
 #endif // !ECMA_COMPAT
 

@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * SelectionTypes.cs - Implementation of the
+ *		"System.ComponentModel.Design.SelectionTypes" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -26,21 +26,18 @@ namespace System.ComponentModel.Design
 
 using System.Runtime.InteropServices;
 
+[Flags]
 [ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public enum SelectionTypes
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	Normal		= 0x0001,
+	Replace		= 0x0002,
+	MouseDown	= 0x0004,
+	MouseUp		= 0x0008,
+	Click		= 0x0010,
+	Valid		= 0x001F
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
-
-}; // interface IServiceContainer
+}; // enum SelectionTypes
 
 #endif // !ECMA_COMPAT
 

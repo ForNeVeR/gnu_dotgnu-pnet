@@ -1,6 +1,6 @@
 /*
- * IServiceContainer.cs - Implementation of the
- *		"System.ComponentModel.Design.IServiceContainer" class.
+ * ITypeResolutionService.cs - Implementation of the
+ *		"System.ComponentModel.Design.ITypeResolutionService" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -24,23 +24,26 @@ namespace System.ComponentModel.Design
 
 #if !ECMA_COMPAT
 
-using System.Runtime.InteropServices;
+using System.Reflection;
 
-[ComVisible(true)]
-public interface IServiceContainer : IServiceProvider
+public interface ITypeResolutionService
 {
-	// Add a service to this container.
-	void AddService(Type serviceType, Object serviceInstance);
-	void AddService(Type serviceType, ServiceCreatorCallback callback);
-	void AddService(Type serviceType, Object serviceInstance, bool promote);
-	void AddService
-			(Type serviceType, ServiceCreatorCallback callback, bool promote);
+	// Get an assembly by name.
+	Assembly GetAssembly(AssemblyName name);
+	Assembly GetAssembly(AssemblyName name, bool throwOnError);
 
-	// Remove a service from this container.
-	void RemoveService(Type serviceType);
-	void RemoveService(Type serviceType, bool promote);
+	// Get the path of an assembly.
+	String GetPathOfAssembly(AssemblyName name);
 
-}; // interface IServiceContainer
+	// Get a type with a specific name.
+	Type GetType(String name);
+	Type GetType(String name, bool throwOnError);
+	Type GetType(String name, bool throwOnError, bool ignoreCase);
+
+	// Add a reference to a particular assembly.
+	void ReferenceAssembly(AssemblyName name);
+
+}; // interface ITypeResolutionService
 
 #endif // !ECMA_COMPAT
 

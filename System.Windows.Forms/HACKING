@@ -136,6 +136,24 @@ handlers to force an immediate redraw.
 
     }; // class HypotheticalControl
 
+Stubbing
+--------
+
+If you are in the beginning stages of implementing a standard SWF
+control from the MSDN docs its probably a good idea to begin by stubbing
+all non-inherited methods, events, and properties.
+
+During this process if there are some methods your not sure what to do
+with, just call its matching base class method.
+
+One case we found this to be a problem was the CreateHandle() method
+from some controls, if you stub it but don't call the base class method
+it makes your control not work as expected.
+
+Then later on as you go implementing events and such you may encounter
+the reasons as to why these methods were overriden and you can do what
+you want there.
+
 Theme support
 -------------
 

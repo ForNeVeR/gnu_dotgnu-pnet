@@ -1,3 +1,18 @@
+2004-06-12  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/Makefile.am, tests/Test.build: add building of TestSystem.dll and
+	missing references building testcases to tests/Test.build
+
+	* nunit20/framework/Makefile.am, nunit20/framework,nunit.framework.build,
+	nunit20/core/Makefile.am, nunit20/core/nunit.core.build,
+	nunit20/util/Makefile.am, nunit20/util/nunit.util.build,
+	nunit20/nunit-console/Makefile.am,
+	nunit20/nunit-console/nunit.console.build: build nunit with libraries from
+	pnetlib instead of the installed ones.
+
+	* class/System.Runtime.Remoting/System.Runtime.Remoting.build,
+	class/Mono.Http/Mono.Http.build: add missing references
+
 2004-06-11  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/.cvsignore, tests/Magefile.am, tests/Test.build: add building and

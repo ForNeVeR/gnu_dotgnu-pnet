@@ -4,13 +4,13 @@ all-local:
 			-Dpnet.libdir="$(PNETLIB_PATH)" \
 			-b "$(srcdir)" -B . -f "$(srcdir)/Test.build" all
 
-CLEANFILES = Testcorlib.dll TestSystem.Xml.dll \
+CLEANFILES = Testcorlib.dll TestSystem.dll TestSystem.Xml.dll \
 		TestSystem.Runtime.Serialization.Formatters.Soap.dll \
 		TestSystem.Security.dll TestMono.Security.dll TestSystem.Data.dll \
 		TestSystem.Web.Services.dll TestSystem.Runtime.Remoting.dll \
 		TestMono.Directory.LDAP.dll
 
-TESTS = Testcorlib.dll TestSystem.Xml.dll \
+TESTS = Testcorlib.dll TestSystem.dll TestSystem.Xml.dll \
 		TestSystem.Runtime.Serialization.Formatters.Soap.dll \
 		TestSystem.Security.dll TestMono.Security.dll TestSystem.Data.dll \
 		TestSystem.Web.Services.dll TestSystem.Runtime.Remoting.dll \

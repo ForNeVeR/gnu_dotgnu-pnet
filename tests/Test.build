@@ -26,11 +26,34 @@
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
 				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
 			</references>
+		</compile>
+	</target>
+
+	<target name="TestSystem" depends="Testcorlib">
+		<compile target="library"
+				 output="TestSystem.dll"
+				 debug="${debug.flag}"
+				 unsafe="true"
+				 install="false"
+				 installasdefault="false">
+
+			<sources basedir="${mono.sources}/class/System/Test">
+				<includes name="**/*.cs"/>
+				<excludes name="System.Net/WebRequestTest.cs"/>
+				<!-- exclude Regextests because they do not run -->
+				<excludes name="System.Text.RegularExpressions/**"/>
+			</sources>
+
+			<references>
+				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
+				<file name="${pnet.libdir}/System/System.dll"/>
+				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
+			</references>
 
 		</compile>
 	</target>
 
-	<target name="TestSystem.Xml" depends="Testcorlib">
+	<target name="TestSystem.Xml" depends="TestSystem">
 		<compile target="library"
 				 output="TestSystem.Xml.dll"
 				 debug="${debug.flag}"
@@ -194,6 +217,10 @@
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
 				<file name="${pnet.libdir}/System.EnterpriseServices/System.EnterpriseServices.dll"/>
+				<file name="../class/Mono.Data.Tds/Mono.Data.Tds.dll"/>
+				<file name="../class/Mono.Security/Mono.Security.dll"/>
+				<file name="../class/System.Data/System.Data.dll"/>
+				<file name="../class/System.Web/System.Web.dll"/>
 				<file name="../class/System.Web.Services/System.Web.Services.dll"/>
 				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
 			</references>
@@ -224,6 +251,9 @@
 				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml"/>
+				<file name="../class/Mono.Data.Tds/Mono.Data.Tds.dll"/>
+				<file name="../class/Mono.Security/Mono.Security.dll"/>
+				<file name="../class/System.Data/System.Data.dll"/>
 				<file name="../class/System.Web/System.Web.dll"/>
 				<file name="../class/System.Runtime.Serialization.Formatters.Soap/System.Runtime.Serialization.Formatters.Soap.dll"/>
 				<file name="../class/System.Runtime.Remoting/System.Runtime.Remoting.dll"/>
@@ -252,7 +282,7 @@
 				<file name="${pnet.libdir}/runtime/mscorlib.dll"/>
 				<file name="${pnet.libdir}/System/System.dll"/>
 				<file name="${pnet.libdir}/System.Xml/System.Xml.dll"/>
-				<file name="../class/Mono.Directory.LDAP.dll"/>
+				<file name="../class/Mono.Directory.LDAP/Mono.Directory.LDAP.dll"/>
 				<file name="../nunit20/framework/nunitframework/nunit.framework.dll"/>
 			</references>
 		</compile>

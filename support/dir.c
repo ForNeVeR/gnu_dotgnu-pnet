@@ -317,20 +317,37 @@ struct _tagILDirEnt
 
 ILDir *ILOpenDir(char *path)
 {
+	char *spec;
+	int len;
 	ILDir *dir = (ILDir *)ILMalloc(sizeof(ILDir));
 	if(!dir)
 	{
 		return 0;
 	}
-	dir->handle = _findfirst(path, &(dir->fileinfo));
+	spec = (char *)ILMalloc(strlen(path) + 5);
+	if(!spec)
+	{
+		ILFree(dir);
+		return 0;
+	}
+	strcpy(spec, path);
+	len = strlen(spec);
+	if(len > 0 && spec[len - 1] != '/' && spec[len - 1] != '\\')
+	{
+		spec[len++] = '\\';
+	}
+	strcpy(spec + len, "*.*");
+	dir->handle = _findfirst(spec, &(dir->fileinfo));
 	dir->havefirst = 1;
 	if(dir->handle < 0)
 	{
 		int error = errno;
 		ILFree(dir);
+		ILFree(spec);
 		errno = error;
 		return 0;
 	}
+	ILFree(spec);
 	return dir;
 }
 

@@ -23,6 +23,8 @@
 
 	* support/path.c (TailEquals): reversed test in previous check-in.
 
+	* support/dir.c (ILOpenDir): append "*.*" to directories under Win32.
+
 2002-12-15  Aditya P. Bansod <abansod@fullenergy.com>
 
 	* engine/lib_dir.c: Fill in the invalidChars array in PathInfo

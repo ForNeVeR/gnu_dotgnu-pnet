@@ -405,14 +405,10 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
 
 /*
  * Add a global symbol definition to a library.
- *
- * TODO: we need to find some way to record a symbol's signature
- * without importing foreign "TypeRef"'s until we are absolutely
- * sure that the binary being linked uses the symbol.
  */
 static int AddGlobalSymbol(ILLinker *linker, ILLibrary *library,
 						   char *name, char *aliasFor, int flags,
-						   ILType *signature)
+						   ILMember *member)
 {
 	ILLibrarySymbol *libSymbol;
 	if((libSymbol = ILMemPoolAlloc(&(library->pool), ILLibrarySymbol)) == 0)
@@ -423,11 +419,7 @@ static int AddGlobalSymbol(ILLinker *linker, ILLibrary *library,
 	libSymbol->name = name;
 	libSymbol->aliasFor = aliasFor;
 	libSymbol->flags = flags;
-	libSymbol->data = _ILLinkerConvertType(linker, signature);
-	if(libSymbol->data == ILType_Invalid)
-	{
-		return 0;
-	}
+	libSymbol->member = member;
 	if(!ILHashAdd(library->symbolHash, libSymbol))
 	{
 		_ILLinkerOutOfMemory(linker);
@@ -460,8 +452,7 @@ static int WalkGlobals(ILLinker *linker, ILImage *image,
 					((char *)(ILField_Name(field)), -1)).string;
 				/* TODO: strong aliases */
 				if(!AddGlobalSymbol(linker, library, name,
-									0, IL_LINKSYM_VARIABLE,
-									ILMember_Signature(member)))
+									0, IL_LINKSYM_VARIABLE, member))
 				{
 					return 0;
 				}
@@ -476,8 +467,7 @@ static int WalkGlobals(ILLinker *linker, ILImage *image,
 					((char *)(ILMethod_Name(method)), -1)).string;
 				/* TODO: weak and strong aliases */
 				if(!AddGlobalSymbol(linker, library, name,
-									0, IL_LINKSYM_FUNCTION,
-									ILMember_Signature(member)))
+									0, IL_LINKSYM_FUNCTION, member))
 				{
 					return 0;
 				}
@@ -907,13 +897,14 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 	ILLibraryFind find;
 	ILLibraryClass libClass;
 	ILClass *classInfo;
+	ILType *signature;
 	ILField *field;
 	ILMethod *method;
 
 	/* See if we have a cached "MemberRef" from last time */
 	if((libSymbol->flags & IL_LINKSYM_HAVE_REF) != 0)
 	{
-		return (ILMember *)(libSymbol->data);
+		return libSymbol->member;
 	}
 
 	/* Make a "TypeRef" for the library's "<Module>" type */
@@ -938,8 +929,14 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 			_ILLinkerOutOfMemory(linker);
 			return 0;
 		}
-		ILMemberSetSignature((ILMember *)field, (ILType *)(libSymbol->data));
-		libSymbol->data = field;
+		signature = _ILLinkerConvertType
+			(linker, ILMember_Signature(libSymbol->member));
+		if(!signature)
+		{
+			return 0;
+		}
+		ILMemberSetSignature((ILMember *)field, signature);
+		libSymbol->member = (ILMember *)field;
 		libSymbol->flags |= IL_LINKSYM_HAVE_REF;
 		return (ILMember *)field;
 	}
@@ -952,10 +949,15 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 			_ILLinkerOutOfMemory(linker);
 			return 0;
 		}
-		ILMemberSetSignature((ILMember *)method, (ILType *)(libSymbol->data));
-		ILMethodSetCallConv
-			(method, ILType_CallConv((ILType *)(libSymbol->data)));
-		libSymbol->data = method;
+		signature = _ILLinkerConvertType
+			(linker, ILMember_Signature(libSymbol->member));
+		if(!signature)
+		{
+			return 0;
+		}
+		ILMemberSetSignature((ILMember *)method, signature);
+		ILMethodSetCallConv(method, ILType_CallConv(signature));
+		libSymbol->member = (ILMember *)method;
 		libSymbol->flags |= IL_LINKSYM_HAVE_REF;
 		return (ILMember *)method;
 	}
@@ -985,7 +987,7 @@ int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
 		{
 			*aliasFor = libSymbol->aliasFor;
 			*library = 0;
-			*memberRef = (ILMember *)(libSymbol->data);
+			*memberRef = libSymbol->member;
 			return libSymbol->flags;
 		}
 	}
@@ -1058,9 +1060,6 @@ int _ILLinkerAddSymbol(ILLinker *linker, const char *name,
 		return 0;
 	}
 
-	/* TODO: redirect references to the symbol that previously
-	   went to the library, so that they now point to the image */
-
 	/* Add a new symbol definition to the image */
 	if((libSymbol = ILMemPoolAlloc(&(linker->pool), ILLibrarySymbol)) == 0)
 	{
@@ -1071,7 +1070,7 @@ int _ILLinkerAddSymbol(ILLinker *linker, const char *name,
 	libSymbol->aliasFor =
 		(aliasFor ? (ILInternString((char *)aliasFor, -1)).string : 0);
 	libSymbol->flags = flags | IL_LINKSYM_HAVE_REF;
-	libSymbol->data = member;
+	libSymbol->member = member;
 	if(!ILHashAdd(linker->symbolHash, libSymbol))
 	{
 		_ILLinkerOutOfMemory(linker);

@@ -11,6 +11,10 @@
 	adding libraries to the linker context so that recursively-referenced
 	libraries are automatically loaded.
 
+	* ilalink/link_library.c, ilalink/linker.h: convert member
+	reference signatures at the point of use, not when the library
+	is first loaded.
+
 2002-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_function.c, cscc/c/c_function.h, doc/c_language_abi.html:

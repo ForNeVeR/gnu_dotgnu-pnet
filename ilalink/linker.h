@@ -55,7 +55,7 @@ struct _tagILLibrarySymbol
 	char		   *name;			/* Intern'ed name of the symbol */
 	char           *aliasFor;		/* Intern'ed name of the aliased symbol */
 	int				flags;			/* Flags that define the symbol kind */
-	void           *data;			/* Extra data with the symbol */
+	ILMember       *member;			/* Member reference information */
 };
 
 /*

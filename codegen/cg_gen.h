@@ -174,6 +174,11 @@ ILType *ILClassToType(ILClass *info);
 ILClass *ILTypeToClass(ILGenInfo *info, ILType *type);
 
 /*
+ * Convert a type into a machine type.
+ */
+ILMachineType ILTypeToMachineType(ILType *type);
+
+/*
  * Convert a runtime value type into a language type.
  */
 ILType *ILValueTypeToType(ILGenInfo *info, ILMachineType valueType);

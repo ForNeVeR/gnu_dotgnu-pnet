@@ -410,6 +410,79 @@ ILClass *ILTypeToClass(ILGenInfo *info, ILType *type)
 	return 0;
 }
 
+ILMachineType ILTypeToMachineType(ILType *type)
+{
+	ILClass *classInfo;
+	const char *namespace;
+
+	if(ILType_IsPrimitive(type))
+	{
+		/* Convert a primitive type into a machine type */
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:	return ILMachineType_Boolean;
+			case IL_META_ELEMTYPE_I1:		return ILMachineType_Int8;
+			case IL_META_ELEMTYPE_U1:		return ILMachineType_UInt8;
+			case IL_META_ELEMTYPE_I2:		return ILMachineType_Int16;
+			case IL_META_ELEMTYPE_U2:		return ILMachineType_UInt16;
+			case IL_META_ELEMTYPE_CHAR:		return ILMachineType_Char;
+			case IL_META_ELEMTYPE_I4:		return ILMachineType_Int32;
+			case IL_META_ELEMTYPE_U4:		return ILMachineType_UInt32;
+			case IL_META_ELEMTYPE_I8:		return ILMachineType_Int64;
+			case IL_META_ELEMTYPE_U8:		return ILMachineType_UInt64;
+			case IL_META_ELEMTYPE_I:		return ILMachineType_NativeInt;
+			case IL_META_ELEMTYPE_U:		return ILMachineType_NativeUInt;
+			case IL_META_ELEMTYPE_R4:		return ILMachineType_Float32;
+			case IL_META_ELEMTYPE_R8:		return ILMachineType_Float64;
+			case IL_META_ELEMTYPE_R:		return ILMachineType_NativeFloat;
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+					return ILMachineType_ManagedValue;
+			default: break;
+		}
+		return ILMachineType_Void;
+	}
+	else if(ILType_IsValueType(type))
+	{
+		/* Check for "System.Decimal", which has a special machine type */
+		classInfo = ILType_ToClass(type);
+		namespace = ILClass_Namespace(classInfo);
+		if(namespace && !strcmp(namespace, "System") &&
+		   !strcmp(ILClass_Name(classInfo), "Decimal") &&
+		   ILClass_NestedParent(classInfo) == 0)
+		{
+			return ILMachineType_Decimal;
+		}
+
+		/* Everything else is a managed value */
+		return ILMachineType_ManagedValue;
+	}
+	else if(ILType_IsClass(type))
+	{
+		/* Check for "System.String", which has a special machine type */
+		classInfo = ILType_ToClass(type);
+		namespace = ILClass_Namespace(classInfo);
+		if(namespace && !strcmp(namespace, "System") &&
+		   !strcmp(ILClass_Name(classInfo), "String") &&
+		   ILClass_NestedParent(classInfo) == 0)
+		{
+			return ILMachineType_String;
+		}
+
+		/* Everything else is an object reference */
+		return ILMachineType_ObjectRef;
+	}
+	else if(type == ILType_Invalid)
+	{
+		/* Invalid types are treated as "void" */
+		return ILMachineType_Void;
+	}
+	else
+	{
+		/* Everything else is treated as a managed pointer for now */
+		return ILMachineType_ManagedPtr;
+	}
+}
+
 ILType *ILValueTypeToType(ILGenInfo *info, ILMachineType valueType)
 {
 	switch(valueType)

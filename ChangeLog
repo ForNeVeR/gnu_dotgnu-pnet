@@ -1,3 +1,8 @@
+2003-09-03  Neil Cawse  <neilcawse@geotab.com>
+
+	* System.Windows.Forms/ScrollBar.cs: apply patch #1873,
+	from Brian Luft <brian@electroly.com>, initial implementation of
+	ListBox, small compile fixes.
 
 2003-09-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 

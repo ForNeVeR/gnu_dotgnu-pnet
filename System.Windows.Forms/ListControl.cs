@@ -4,7 +4,8 @@
  *
  * Copyright (C) 2003 Free Software Foundation
  *
- * Contributions from Cecilio Pardo <cpardo@imayhem.com>
+ * Contributions from Cecilio Pardo <cpardo@imayhem.com>,
+ *                    Brian Luft <brian@electroly.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,33 +32,71 @@ namespace System.Windows.Forms
 [TODO]
 public abstract class ListControl : Control
 {
-	Object data_source = null;
-	String display_member = "";
-	String value_member = "";
+	internal object dataSource;
+	internal string displayMember;
+	internal string valueMember;
+	private BorderStyle borderStyle = BorderStyle.Fixed3D;
 
-	[TODO]
-	public Object DataSource
+	public BorderStyle BorderStyle
 	{
 		get
 		{
-			return data_source;
+			return borderStyle;
 		}
 		set
 		{
-			data_source = value;
+			if(borderStyle != value)
+			{
+				borderStyle = value;
+				OnBorderStyleChanged(EventArgs.Empty);
+			}
+		}
+	}
+	
+	protected virtual void OnBorderStyleChanged(EventArgs e)
+	{
+		EventHandler handler;
+		handler = (EventHandler)
+			(GetHandler(EventId.BorderStyleChanged));
+		if(handler != null)
+		{
+			handler(this, e);
 		}
 	}
 
-	[TODO]
-	public String DisplayMember
-	{
+	public virtual Object DataSource 
+	{ 
+		get 
+		{ 
+			return this.dataSource; 
+		}
+		set 
+		{
+			this.dataSource = value;
+		}  
+	}
+	
+	public virtual String DisplayMember 
+	{ 
 		get
 		{
-			return display_member;
+			return this.displayMember;
 		}
 		set
 		{
-			display_member = value;
+			this.displayMember = value;
+		}
+	}
+	
+	public virtual String ValueMember
+	{ 
+		get
+		{
+			return this.valueMember;
+		}
+		set
+		{
+			this.valueMember = value;
 		}
 	}
 
@@ -76,18 +115,6 @@ public abstract class ListControl : Control
 		}
 	}
 
-	[TODO]
-	public String ValueMember
-	{
-		get
-		{
-			return value_member;
-		}
-		set
-		{
-			value_member = value;
-		}
-	}
 
 	public String GetItemText( Object i )
 	{
@@ -96,7 +123,7 @@ public abstract class ListControl : Control
 			return null;
 		}
 		
-		if ( display_member == null || display_member == "" )
+		if ( displayMember == null || displayMember == "" )
 		{
 			return i.ToString();
 		}
@@ -104,7 +131,7 @@ public abstract class ListControl : Control
 		PropertyInfo pi;
 		try 
 		{
-			pi = i.GetType().GetProperty( display_member );
+			pi = i.GetType().GetProperty( displayMember );
 		}
 		catch ( AmbiguousMatchException ) 
 		{

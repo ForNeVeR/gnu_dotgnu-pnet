@@ -27,6 +27,9 @@ using System.Drawing.Drawing2D;
 
 internal interface IThemePainter
 {
+	// Get the width of the specified border type
+	int GetBorderWidth(BorderStyle border);
+
 	// Draw a simple button border.
 	void DrawBorder(Graphics graphics, Rectangle bounds,
 				 	Color color, ButtonBorderStyle style);
@@ -146,6 +149,11 @@ internal interface IThemePainter
 	// Draw a size grip.
 	void DrawSizeGrip(Graphics graphics, Color backColor,
 				 	  int x, int y, int width, int height);
+
+	// Draw a list box.
+	void DrawListBox(Graphics graphics, BorderStyle border,
+		int x, int y, int width, int height, bool corner,
+		int cornerHeight, int cornerWidth);
 
 	// Draw a disabled string.
 	void DrawStringDisabled

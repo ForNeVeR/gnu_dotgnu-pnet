@@ -25,6 +25,7 @@ namespace System.Windows.Forms.Themes
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 // This class implements the default theme functionality for the
 // System.Windows.Forms controls.  Other themes can inherit from
@@ -39,7 +40,21 @@ internal class DefaultThemePainter : IThemePainter
 	protected Size gridSpacing = Size.Empty;
 	protected Brush gridBrush = null;
 
-
+	// Get the width of the specified border type
+	public virtual int GetBorderWidth(BorderStyle border)
+			{
+				switch(border)
+				{
+					case BorderStyle.Fixed3D:
+						return 2;
+					case BorderStyle.FixedSingle:
+						return 1;
+					case BorderStyle.None:
+						return 0;
+					default:
+						return 0;
+				}
+			}
 
 	// Draw a simple button border.
 	public virtual void DrawBorder
@@ -1623,6 +1638,44 @@ internal class DefaultThemePainter : IThemePainter
 			{
 				// TODO
 			}
+
+	// Draw a list box
+	public void DrawListBox(Graphics graphics, BorderStyle border,
+		int x, int y, int width, int height, bool corner,
+		int cornerHeight, int cornerWidth)
+			{
+				// Repaint the border
+				switch(border)
+				{
+					case BorderStyle.Fixed3D:
+						ControlPaint.DrawBorder3D(
+							graphics, 
+							new Rectangle(0, 0, width, height),
+							Border3DStyle.Sunken);
+						break;
+						
+					case BorderStyle.FixedSingle:
+						ControlPaint.DrawBorder(
+							graphics, 
+							new Rectangle(0, 0, width - 1, height - 1), 
+							SystemColors.WindowText, 
+							ButtonBorderStyle.Solid);
+						break;
+				}
+				
+				// If both scroll bars are visible, then paint the region
+				// that is blank where the two meet (lower-right corner)
+				if(corner)
+				{
+					graphics.FillRectangle(
+						new SolidBrush(SystemColors.Control),
+						width - this.GetBorderWidth(border) - cornerWidth,
+						height - this.GetBorderWidth(border) - cornerHeight,
+						cornerWidth,
+						cornerHeight);
+				}
+			}
+
 
 	// Draw a disabled string.
 	public virtual void DrawStringDisabled

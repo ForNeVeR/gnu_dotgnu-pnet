@@ -191,16 +191,11 @@ static ILClass *GetValueTypeToken(ILMethod *method, unsigned char *pc)
 }
 
 /*
- * Get the type form of a TypeDef or TypeRef token.
+ * Convert a class information block into a type, if possible.
  */
-static ILType *GetTypeToken(ILMethod *method, unsigned char *pc)
+static ILType *ClassTokenToType(ILClass *classInfo)
 {
-	ILClass *classInfo = GetClassToken(method, pc);
 	const char *name;
-	if(!classInfo)
-	{
-		return 0;
-	}
 	if(ILClass_IsValueType(classInfo))
 	{
 		/* Check for builtin value types */
@@ -275,6 +270,22 @@ static ILType *GetTypeToken(ILMethod *method, unsigned char *pc)
 	else
 	{
 		return ILType_FromClass(classInfo);
+	}
+}
+
+/*
+ * Get the type form of a TypeDef or TypeRef token.
+ */
+static ILType *GetTypeToken(ILMethod *method, unsigned char *pc)
+{
+	ILClass *classInfo = GetClassToken(method, pc);
+	if(classInfo)
+	{
+		return ClassTokenToType(classInfo);
+	}
+	else
+	{
+		return 0;
 	}
 }
 

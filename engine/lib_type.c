@@ -1631,8 +1631,9 @@ static ILObject *ItemToClrObject(ILExecThread *thread, ILProgramItem *item)
 /*
  * Match the parameters for a method or property.
  */
-static int ParameterTypeMatch(ILExecThread *thread, ILType *signature,
-							  System_Array *types)
+static int ParameterTypeMatch(ILExecThread *thread, ILImage *image,
+							  ILType *signature, System_Array *types,
+							  int needExact)
 {
 	ILObject **items;
 	ILInt32 paramNum;
@@ -1649,15 +1650,34 @@ static int ParameterTypeMatch(ILExecThread *thread, ILType *signature,
 	items = (ILObject **)ArrayToBuffer(types);
 	for(paramNum = 0; paramNum < types->length; ++paramNum)
 	{
-		classInfo = _ILGetClrClass(thread, items[paramNum]);
-		if(!classInfo)
+		if(items[paramNum] == 0 && !needExact)
 		{
-			return 0;
+			typeInfo = ILType_Null;
 		}
-		typeInfo = ILClassToType(classInfo);
-		if(!ILTypeIdentical(typeInfo, ILTypeGetParam(signature, paramNum + 1)))
+		else
 		{
-			return 0;
+			classInfo = _ILGetClrClass(thread, items[paramNum]);
+			if(!classInfo)
+			{
+				return 0;
+			}
+			typeInfo = ILClassToType(classInfo);
+		}
+		if(needExact)
+		{
+			if(!ILTypeIdentical(typeInfo,
+								ILTypeGetParam(signature, paramNum + 1)))
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			if(!ILTypeAssignCompatible(image, typeInfo,
+									   ILTypeGetParam(signature, paramNum + 1)))
+			{
+				return 0;
+			}
 		}
 	}
 
@@ -1769,8 +1789,10 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 				if(member->kind == IL_META_MEMBERKIND_METHOD ||
 				   member->kind == IL_META_MEMBERKIND_PROPERTY)
 				{
-					if(!ParameterTypeMatch(thread, member->signature,
-										   (System_Array *)types))
+					if(!ParameterTypeMatch
+							(thread, member->programItem.image,
+						     member->signature, (System_Array *)types,
+						     (bindingAttrs & BF_ExactBinding) != 0))
 					{
 						member = member->nextMember;
 						continue;

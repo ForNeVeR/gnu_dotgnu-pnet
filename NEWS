@@ -1,4 +1,52 @@
 
+0.2.6 (27 November 2001)
+
+	Runtime engine:
+
+	* Internalcall methods for "System.Diagnostics".
+	* Make asmfix a bit more tolerant of odd assemblers.
+	* Enable the use of asmfix to generate an optimised version of
+	  the CVM interpreter loop on x86 platforms.
+	* Align "ILTypedRef" structures properly on 64-bit platforms.
+	* Push "ffi_call" arguments onto a separate native argument stack
+	  so that they can be handled faster and with the correct alignment.
+	* Implement true PInvoke for calling external libraries.
+	* Rewrite the path searching code for assemblies and external libraries.
+	* Implement the "NativeTypeSizes" and "DllImportMap" attributes to
+	  assist with the ugly business of PInvoke on non-Windows platforms.
+	* Compile the host information from "configure" into "image/link.c"
+	  so that it knows which external library to use when resolving uses
+	  of the PInvoke mechanism.
+	* Fixed a value type bug in "newobj".
+	* Add user-specified search paths to the "ilrun" command-line.
+	* Better support for UTC vs local time.
+	* Exception handling in the verifier, CVM coder, and CVM interpreter.
+	* Bug fixes to "GetTypeName" in "lib_type.c".
+	* Print a message if "Main" throws an uncaught exception.
+	* Internalcall methods needed to support "System.Text.StringBuilder".
+	* Better detection for cygwin in "image/filemap.c".  Fix due to
+	  Volker Hahn <Volker.Hahn@bytesteps.net>.
+	* Inline common methods as CVM instructions.
+	* Fixes to the verifier that were discovered during unit testing.
+
+	C# Compiler:
+
+	* Output a warning message when "-fsyntax-check" is used to remind
+	  people that the compiler isn't finished.
+
+	Assembler:
+
+	* Enable short instruction squashing in the assembler.
+	* Fix a bug that caused the assembler to use "ldarg" instead of
+	  "ldloc" in some situations.
+
+	Other:
+
+	* Implement a large number (>3000) of unit tests for the verifier.
+	* Begin implementing the "csdocvalil" program, to help validate
+	  pnetlib against the ECMA's XML documentation for the C# library.
+	* Update the FAQ.
+
 0.2.4 (17 November 2001)
 
 	Runtime engine:

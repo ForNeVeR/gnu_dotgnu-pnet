@@ -17,6 +17,8 @@ than the raw values, because the synthetic image doesn't have raw values.
 characters to be inserted into pathnames; improve the #ifdef's that detect
 if we are compiling on a Win32 platform.
 
+* configure.in, NEWS: update for "0.2.6" release.
+
 2001-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_image, image/pecoff_loader.c (ILImageLoadFromFile): new function.

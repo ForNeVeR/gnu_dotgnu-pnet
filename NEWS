@@ -1,4 +1,14 @@
 
+0.6.8 (8 August 2004)
+
+	* Add nunit20 and wsdl tools (Klaus Treichel).
+	* Mono.Http, System.Messaging.Design (Klaus Treichel).
+	* System.Runtime.Remoting, System.Data.OracleClient (Klaus Treichel).
+	* Support for running Mono's nunit tests cases (Klaus Treichel).
+	* Exclude Mono.Posix temporarily because of cscc issues (Klaus Treichel).
+	* Rename "nunit-console" to "nunit-console-pnet" to prevent clashes
+	  with Mono installations (Rhys Weatherley).
+
 0.6.6 (29 May 2004)
 
 	* Mono.Security and System.Data libs that depend on it (Klaus Treichel).

@@ -1,4 +1,9 @@
 
+2003-02-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/lexer/literal1.err, csharp/lexer/literal1.jerr:
+	update test output files for a removed warning message.
+
 2003-01-19  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/class/member_access2.err, csharp/class/member_access2.jerr,

@@ -810,13 +810,21 @@ CDeclarator CDeclCreateOpenArray(ILGenInfo *info, CDeclarator elem)
 	if(elem.typeHole != 0)
 	{
 		result.type = elem.type;
+		ILType_ElemType(type) = *(elem.typeHole);
+		if(*(elem.typeHole) == ILType_Invalid)
+		{
+			result.typeHole = &(ILType_ElemType(type));
+		}
+		else
+		{
+			result.typeHole = elem.typeHole;
+		}
 		*(elem.typeHole) = type;
-		result.typeHole = elem.typeHole;
 	}
 	else
 	{
 		result.type = type;
-		result.typeHole = &(ILType_Ref(type));
+		result.typeHole = &(ILType_ElemType(type));
 	}
 	result.isKR = 0;
 	result.params = elem.params;
@@ -851,8 +859,16 @@ CDeclarator CDeclCreateArray(ILGenInfo *info, CDeclarator elem, ILUInt32 size)
 	if(elem.typeHole != 0)
 	{
 		result.type = elem.type;
+		ILType_ElemType(type) = *(elem.typeHole);
+		if(*(elem.typeHole) == ILType_Invalid)
+		{
+			result.typeHole = &(ILType_ElemType(type));
+		}
+		else
+		{
+			result.typeHole = elem.typeHole;
+		}
 		*(elem.typeHole) = type;
-		result.typeHole = elem.typeHole;
 	}
 	else
 	{
@@ -1128,8 +1144,8 @@ CDeclarator CDeclCreatePrototype(ILGenInfo *info, CDeclarator decl,
 	if(decl.typeHole)
 	{
 		signature = ParamsToSignature(info, params, 0, 0, &returnHole);
-		*returnHole = decl.type;
-		decl.type = signature;
+		*(decl.typeHole) = signature;
+		decl.typeHole = returnHole;
 		return decl;
 	}
 
@@ -1184,8 +1200,17 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 		{
 			case IL_TYPE_COMPLEX_PTR:
 			{
-				/* Replace array types in the pointed-to type */
-				ILType_Ref(type) = ReplaceArrayTypes(info, ILType_Ref(type));
+				/* If the pointed-to type is a function, then remove
+				   the pointer reference as it is unnecessary in CIL */
+				if(ILType_IsMethod(ILType_Ref(type)))
+				{
+					type = ReplaceArrayTypes(info, ILType_Ref(type));
+				}
+				else
+				{
+					ILType_Ref(type) =
+						ReplaceArrayTypes(info, ILType_Ref(type));
+				}
 			}
 			break;
 
@@ -1234,6 +1259,17 @@ static ILType *ReplaceArrayTypes(ILGenInfo *info, ILType *type)
 				/* Replace array types in the modifier's argument */
 				type->un.modifier__.type__ =
 					ReplaceArrayTypes(info, type->un.modifier__.type__);
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_METHOD:
+			case IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL:
+			{
+				/* Replace array types in the function's return type,
+				   and then decay the return type */
+				type->un.method__.retType__ =
+					CTypeDecay(info, ReplaceArrayTypes
+						(info, type->un.method__.retType__));
 			}
 			break;
 
@@ -1290,7 +1326,7 @@ ILType *CDeclFinalize(ILGenInfo *info, CDeclSpec spec, CDeclarator decl,
 		}
 		signature = ParamsToSignature(info, decl.params, declaredParams,
 									  method, &returnHole);
-		*returnHole = type;
+		*returnHole = CTypeDecay(info, type);
 		type = signature;
 		ILMemberSetSignature((ILMember *)method, signature);
 		ILMethodSetCallConv(method, ILType_CallConv(signature));
@@ -1299,9 +1335,8 @@ ILType *CDeclFinalize(ILGenInfo *info, CDeclSpec spec, CDeclarator decl,
 	{
 		/* Create a function signature pointer type */
 		signature = ParamsToSignature(info, decl.params, 0, 0, &returnHole);
-		*returnHole = type;
+		*returnHole = CTypeDecay(info, type);
 		type = signature;
-		/* TODO: strip the unnecessary pointer level from the type */
 	}
 
 	/* Return the final type to the caller */

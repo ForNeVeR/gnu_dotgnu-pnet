@@ -102,8 +102,8 @@ void CGenRegisterLibrary(ILGenInfo *info)
 	ILClass *exceptionClass;
 	ILClass *classInfo;
 
-	/* Create the "clang" simulated assembly */
-	image = ILGenCreateBasicImage(info->context, "clang");
+	/* Create the "OpenSystem.C" simulated assembly */
+	image = ILGenCreateBasicImage(info->context, "OpenSystem.C");
 	scope = ILClassGlobalScope(image);
 
 	/* Find the "Object", "Attribute", and "Exception" classes */

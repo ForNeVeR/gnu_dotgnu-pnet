@@ -5,11 +5,14 @@
 	expressions.
 
 	* cscc/c/c_declspec.c: (CDeclSpecFinalize): report some errors
-	later in the future so we can catch errors that result from
+	later in the process so we can catch errors that result from
 	choosing a default "int" type.
 
 	* cscc/c/c_types.c (AppendThree): add one to the size of the
 	string to be allocated, to account for the '\0'.
+
+	* cscc/c/c_declspec.c, cscc/c/c_grammar.y, cscc/c/c_library.c,
+	cscc/c/c_types.c, image/meta_types.c: fix bugs in type declarators.
 
 2002-08-06  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -307,6 +307,15 @@ static void ReportRedeclared(const char *name, ILNode *node, void *data)
 }
 
 /*
+ * Process a local or global function declaration.
+ */
+static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
+							   		   ILNode *init, ILNode **list)
+{
+	/* TODO */
+}
+
+/*
  * Process a local or global declaration.
  */
 static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
@@ -314,6 +323,14 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 {
 	ILType *type;
 	void *data;
+
+	/* If there is a parameter list associated with the declarator, then
+	   we are declaring a forward function reference, not a variable */
+	if(decl.params != 0)
+	{
+		ProcessFunctionDeclaration(spec, decl, init, list);
+		return;
+	}
 
 	/* Finalize the type that is associated with the declaration */
 	type = CDeclFinalize(&CCCodeGen, spec, decl, 0, 0);
@@ -436,6 +453,111 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 						   CGenAllocLocal(&CCCodeGen, type), type);
 		}
 	}
+}
+
+/*
+ * Evaluate a constant expression to an "unsigned int" value.
+ * Used for array and bit field sizes.
+ */
+static ILUInt32 EvaluateSize(ILNode *expr)
+{
+	CSemValue value;
+	ILEvalValue *evalValue;
+	ILUInt32 size;
+
+	/* Perform inline semantic analysis on the expression */
+	value = CSemInlineAnalysis(&CCCodeGen, expr, CCurrentScope);
+	if(!CSemIsConstant(value))
+	{
+		if(!CSemIsError(value))
+		{
+			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+						  _("constant value required"));
+		}
+		return 1;
+	}
+
+	/* Convert the constant value into an "unsigned int" value */
+	evalValue = CSemGetConstant(value);
+	if(!evalValue)
+	{
+		CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+					  _("compile-time constant value required"));
+		return 1;
+	}
+	size = 1;
+	switch(evalValue->valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		case ILMachineType_NativeInt:
+		{
+			if(evalValue->un.i4Value >= 0)
+			{
+				size = (ILUInt32)(evalValue->un.i4Value);
+			}
+			else
+			{
+				CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+							  _("size value is negative"));
+			}
+		}
+		break;
+
+		case ILMachineType_UInt32:
+		case ILMachineType_NativeUInt:
+		{
+			size = (ILUInt32)(evalValue->un.i4Value);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			if(evalValue->un.i8Value > (ILInt64)IL_MAX_UINT32)
+			{
+				CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+							  _("size value is too large"));
+			}
+			else if(evalValue->un.i8Value >= 0)
+			{
+				size = (ILUInt32)(evalValue->un.i8Value);
+			}
+			else
+			{
+				CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+							  _("size value is negative"));
+			}
+		}
+		break;
+
+		case ILMachineType_UInt64:
+		{
+			if(((ILUInt64)(evalValue->un.i8Value)) > (ILUInt64)IL_MAX_UINT32)
+			{
+				CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+							  _("size value is too large"));
+			}
+			else
+			{
+				size = (ILUInt32)(evalValue->un.i8Value);
+			}
+		}
+		break;
+
+		default:
+		{
+			CCErrorOnLine(yygetfilename(expr), yygetlinenum(expr),
+						  _("size value has non-integer type"));
+		}
+		break;
+	}
+
+	/* Return the computed size to the caller */
+	return size;
 }
 
 %}
@@ -1365,15 +1487,13 @@ StructDeclaratorList
 StructDeclarator
 	: Declarator				{ $$ = ILNode_CDeclarator_create($1); }
 	| ':' ConstantExpression	{
-				/* TODO: evaluate the constant expression */
-				ILUInt32 size = 1;
+				ILUInt32 size = EvaluateSize($2);
 				CDeclarator decl;
 				CDeclSetName(decl, 0, 0);
 				$$ = ILNode_CBitFieldDeclarator_create(decl, size);
 			}
 	| Declarator ':' ConstantExpression		{
-				/* TODO: evaluate the constant expression */
-				ILUInt32 size = 1;
+				ILUInt32 size = EvaluateSize($3);
 				$$ = ILNode_CBitFieldDeclarator_create($1, size);
 			}
 	;
@@ -1559,8 +1679,7 @@ Declarator2
 			}
 	| Declarator2 '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
-				/* TODO */
-				ILUInt32 size = 1;
+				ILUInt32 size = EvaluateSize($3);
 
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size);
@@ -1746,8 +1865,7 @@ AbstractDeclarator2
 			}
 	| '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
-				/* TODO */
-				ILUInt32 size = 1;
+				ILUInt32 size = EvaluateSize($2);
 
 				/* Create the array */
 				CDeclSetName($$, 0, 0);
@@ -1758,8 +1876,7 @@ AbstractDeclarator2
 			}
 	| AbstractDeclarator2 '[' ConstantExpression ']'	{
 				/* Evaluate the constant value */
-				/* TODO */
-				ILUInt32 size = 1;
+				ILUInt32 size = EvaluateSize($3);
 
 				/* Create the array */
 				$$ = CDeclCreateArray(&CCCodeGen, $1, size);

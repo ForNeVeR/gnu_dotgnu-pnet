@@ -149,22 +149,69 @@ ILType *CTypeCreateEnum(ILGenInfo *info, const char *name,
 }
 
 /*
+ * Format the name of an array type.
+ */
+static char *FormatArrayName(ILGenInfo *info, ILType *elemType,
+							 ILUInt32 size, int isOpen)
+{
+	char *innerName;
+	char sizeName[64];
+	ILType *type;
+
+	/* Find the innermost element type */
+	type = elemType;
+	while(CTypeIsArray(type))
+	{
+		type = CTypeGetElemType(type);
+	}
+
+	/* Format the innermost element type and the passed-in array size */
+	innerName = CTypeToName(info, type);
+	if(isOpen)
+	{
+		innerName = AppendThree(info, 0, innerName, "[]");
+	}
+	else
+	{
+		sprintf(sizeName, "[%lu]", (unsigned long)size);
+		innerName = AppendThree(info, 0, innerName, sizeName);
+	}
+
+	/* Format the dimension specifiers for the other dimensions */
+	type = elemType;
+	while(CTypeIsArray(type))
+	{
+		if(CTypeIsOpenArray(type))
+		{
+			innerName = AppendThree(info, 0, innerName, "[]");
+		}
+		else
+		{
+			sprintf(sizeName, "[%lu]", (unsigned long)(CTypeGetNumElems(type)));
+			innerName = AppendThree(info, 0, innerName, sizeName);
+		}
+		type = CTypeGetElemType(type);
+	}
+
+	/* Return the formatted name to the caller */
+	return innerName;
+}
+
+/*
  * Create an array type, with either a size or an open-ended definition.
  */
 static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 						   ILUInt32 size, int isOpen)
 {
-	char sizeName[64];
 	char *name;
 	ILUInt32 elemSize, align;
 	ILUInt32 attrs;
 	ILClass *classInfo;
 	ILField *field;
 
-	/* Create the name of the array type */
-	/* TODO: fix the array type name, which has backwards dimensions */
-	sprintf(sizeName, "[%lu]", (unsigned long)size);
-	name = AppendThree(info, "array ", CTypeToName(info, elemType), sizeName);
+	/* Format the name of the array type */
+	name = AppendThree(info, "array ",
+				FormatArrayName(info, elemType, size, isOpen), 0);
 
 	/* See if we already have a type with this name */
 	classInfo = ILClassLookup(ILClassGlobalScope(info->image), name, 0);
@@ -1422,7 +1469,15 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 		}
 		else if(!strncmp(cname, "array ", 6))
 		{
-			/* TODO: C array types */
+			if(CTypeIsOpenArray(type))
+			{
+				return FormatArrayName(info, CTypeGetElemType(type), 0, 1);
+			}
+			else
+			{
+				return FormatArrayName(info, CTypeGetElemType(type),
+									   CTypeGetNumElems(type), 0);
+			}
 		}
 		else if(!strcmp(cname, "ArgIterator"))
 		{

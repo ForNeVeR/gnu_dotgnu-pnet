@@ -959,6 +959,7 @@ int ILTypeHasModifier(ILType *type, ILClass *classInfo)
 			{
 				return 1;
 			}
+			type = type->un.modifier__.type__;
 		}
 		else
 		{

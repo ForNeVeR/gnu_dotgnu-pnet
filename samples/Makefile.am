@@ -1,4 +1,4 @@
-noinst_DATA = evenodd.exe hello.exe fib.exe getenv.exe
+noinst_DATA = evenodd.exe hello.exe fib.exe getenv.exe except.exe
 
 evenodd.exe: evenodd.il
 	../ilasm/ilasm -o evenodd.exe evenodd.il
@@ -15,5 +15,10 @@ getenv.exe: getenv.cs
 	../cscc/cscc -fplugin-cs-path=../cscc/cscc-cs \
 		-filasm-path=../ilasm/ilasm -filalink-path=../ilalink/ilalink \
 		-o getenv.exe getenv.cs
+
+except.exe: except.cs
+	../cscc/cscc -fplugin-cs-path=../cscc/cscc-cs \
+		-filasm-path=../ilasm/ilasm -filalink-path=../ilalink/ilalink \
+		-g -o except.exe except.cs
 
 CLEANFILES = $(noinst_DATA)

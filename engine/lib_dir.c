@@ -46,7 +46,7 @@ typedef struct
 {
   ILString *fileName;
   ILInt32 fileType;
-} Platform_FileInfo;
+} Platform_InternalFileInfo;
 
 /*
  * public static PathInfo GetPathInfo();
@@ -171,14 +171,14 @@ ILString *_IL_DirMethods_GetCurrentDirectory(ILExecThread *_thread)
 
 /*
  * public static Errno GetFilesInDirectory(String path, out 
- * 											Platform.FileInfo[] files);
+ * 											Platform.InternalFileInfo[] files);
  */
 extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILString * path, System_Array * * files)
 {
 	ILDir *dirStream = NULL; 
 	ILDirEnt *dirEntry;
 	ILInt32 arraySize = 0;
-	Platform_FileInfo *buffer=NULL; 
+	Platform_InternalFileInfo *buffer=NULL; 
 	ILInt32 i;  /*  How surprising, an index var named 'i' */
 	ILQueueEntry *fileQueue;
 
@@ -218,7 +218,7 @@ extern ILInt32 _IL_DirMethods_GetFilesInDirectory(ILExecThread * _thread,ILStrin
 		return IL_ERRNO_ENOMEM;
 	}
 
-    buffer = (Platform_FileInfo *)(ArrayToBuffer(*files));
+    buffer = (Platform_InternalFileInfo *)(ArrayToBuffer(*files));
 
 	for(i = 0; i < arraySize; i++)
 	{

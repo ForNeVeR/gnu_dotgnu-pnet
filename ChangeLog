@@ -7,6 +7,8 @@
 	support/cmdline.c, tests/ilunit.c: write "--help" messages for the
 	tools to standard output, to be consistent with GNU coding standards.
 
+	* samples/mscorlib.dll: new version with "System.IO.StringWriter".
+
 2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_coerce.h, include/il_types.h, image/types.c:

@@ -53,6 +53,7 @@ if python "$top_srcdir/doc/cvmdoc.py" "$top_srcdir/doc/cvmdoc" "$top_srcdir/engi
 else
 	touch "$top_srcdir/doc/cvmdoc/index.html"
 	echo "$0: cvmdoc.py failed - dummy CVM documentation generated"
+	echo "$0: this error is not serious and can be safely ignored"
 	exit 0
 fi
 

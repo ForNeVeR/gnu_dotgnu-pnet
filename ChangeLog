@@ -41,6 +41,10 @@
 	* csant/csant_fileset.c (CSAntFileSetLoad): move the free for
 	"baseDir" down to after its last use.
 
+	* doc/mkcvmdoc.sh: provide extra information when dummy CVM
+	documentation is generated to reassure users that the error
+	is not serious.
+
 2002-04-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/cvm_call.c, engine/cvm_dasm.c, engine/cvmc_call.c,

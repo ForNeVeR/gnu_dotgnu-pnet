@@ -5,6 +5,8 @@
 	in the computation of struct hashes; always rename anonymous
 	structures, even if they are within a surrounding struct (Bug #2778).
 
+	* cscc/c/c_grammar.y: allow struct's with no fields (Bug #2773).
+
 2003-03-11  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_attr.c: Fix circularity bug when encountering 

@@ -1774,7 +1774,8 @@ StructOrUnion
 	;
 
 StructDeclarationList
-	: StructDeclarationList2
+	: /* empty */
+	| StructDeclarationList2
 	;
 
 StructDeclarationList2

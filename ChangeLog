@@ -4,6 +4,8 @@
 	* cscc/csharp/cs_grammar.y: add the "specialname" attribute
 	to the "add" and "remove" methods for an event.
 
+	* csdoc/il2doc.c, csdoc/Makefile.am: add the "il2doc" utility program.
+
 2003-05-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_regexp.c: Minor fix to CompileWithSyntaxInternal ,

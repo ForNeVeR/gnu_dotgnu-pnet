@@ -1,3 +1,15 @@
+2003-07-25  Neil Cawse   <neilcawse@geotab.com>
+
+	* System.Drawing/Graphics.cs: implement UpdateClip to support clipping
+	* System.Drawing/Region.cs: implement MakeInfinite
+	* System.Drawing.Win32/Win32.cs, System.Drawing.Win32/DrawingGraphics.cs:
+	implement toolkit SetClipRects
+	* System.Drawing.Xsharp/DrawingGraphics.cs: implement toolkit SetClipRects
+	and SetClipRect
+	* System.Drawing.Xsharp/DrawingWindow.cs: clip the OnPaint Graphic
+	* System.Windows.Forms/TabControl.cs: painting can now clip so the tabs draw
+	properly. Fixed error when selecting an area outside a tab.
+
 2003-07-25  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: modify method body
@@ -40,15 +52,15 @@
 
 2003-07-24  Neil Cawse   <neilcawse@geotab.com>
 
-	* Graphics/Bitmap.cs: small change allowing compiling using MS csc
+	* System.Drawing/Bitmap.cs: small change allowing compiling using MS csc
 
-	* Graphics/Graphics.cs: DrawRectangle & FillRectangle being transformed
+	* System.Drawing/Graphics.cs: DrawRectangle & FillRectangle being transformed
 	twice, Implemented FillRegion, MeasureCharacterRanges
 
-	* Graphics/Region.cs:  implemented Regions. Transforms and Regions from
+	* System.Drawing/Region.cs:  implemented Regions. Transforms and Regions from
 	Graphics Paths not yet done
 
-	* Graphics/StringFormat.cs:  accessibility fix.
+	* System.Drawing/StringFormat.cs:  accessibility fix.
 
 	* System.Drawing.Win32/DrawingControlWindow.cs,
 	System.Drawing.Win32/DrawingFont.cs,

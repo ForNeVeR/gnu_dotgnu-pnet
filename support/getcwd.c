@@ -27,7 +27,7 @@
 	#include <unistd.h>
 #endif
 #if defined(WIN32) || defined(HAVE_DIRECT_H)
-	#include "direct.h"
+	#include <direct.h>
 #endif
 
 #ifdef	__cplusplus

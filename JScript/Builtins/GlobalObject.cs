@@ -53,6 +53,7 @@ public class GlobalObject
 				AddBuiltin(inst, "encodeURIComponent");
 				AddBuiltin(inst, "escape");
 				AddBuiltin(inst, "eval");
+				AddBuiltin(inst, "GetObject");
 				AddBuiltin(inst, "isFinite");
 				AddBuiltin(inst, "isNaN");
 				AddBuiltin(inst, "parseFloat");
@@ -183,7 +184,6 @@ public class GlobalObject
 			{
 				get
 				{
-					// TODO
 					return new MathObject(EngineInstance.Default.GetObjectPrototype());
 				}
 			}
@@ -659,6 +659,13 @@ public class GlobalObject
 				// so this method should never be called.
 				throw new JScriptException(JSError.IllegalEval);
 			}
+			
+	// Gets an object
+	[JSFunction(0, JSBuiltin.Global_GetObject)]
+	public static object GetObject(object moniker, object progId)
+			{
+				throw new JScriptException(JSError.InvalidCall);
+			}
 
 	// Determine if a number is finite.
 	[JSFunction(0, JSBuiltin.Global_isFinite)]
@@ -983,6 +990,7 @@ public sealed class LenientGlobalObject : GlobalObject
 	public new object encodeURIComponent;
 	[NotRecommended("escape")] public new object escape;
 	public new object eval;
+	public new object GetObject;
 	public new object isFinite;
 	public new object isNaN;
 	public new object parseFloat;
@@ -1023,6 +1031,7 @@ public sealed class LenientGlobalObject : GlobalObject
 					globalObject.Get("encodeURIComponent");
 				escape = globalObject.Get("escape");
 				eval = globalObject.Get("eval");
+				GetObject = globalObject.Get("GetObject");
 				isFinite = globalObject.Get("isFinite");
 				isNaN = globalObject.Get("isNaN");
 				parseFloat = globalObject.Get("parseFloat");

@@ -1,4 +1,9 @@
 
+2004-09-21  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* JScript/Builtins/JSBuiltin.cs, JScript/Builtins/GlobalObject.cs: Added
+	missing GetObject method (patch #3369).
+	
 2004-09-20  Gopal V  <gopalv82@yahoo.com>
 
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: Fake external

@@ -1,4 +1,10 @@
 
+2001-01-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csharp/expr/Makefile.am, csharp/expr/relop3.cs,
+	csharp/expr/relop3.il, csharp/expr/relop3.jl: add tests for
+	equality and inequality tests involving strings and objects.
+
 2001-01-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/expr/Makefile.am, csharp/expr/indexer1.cs,

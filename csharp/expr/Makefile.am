@@ -25,6 +25,7 @@ TESTS = array1.cs \
 		new2.cs \
 		relop1.cs \
 		relop2.cs \
+		relop3.cs \
 		shift1.cs \
 		sizeof1.cs \
 		sizeof2.cs \

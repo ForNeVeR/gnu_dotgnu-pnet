@@ -246,9 +246,9 @@ static void ReportUnresolved(ILLinker *linker)
 				ILDumpType(stderr, ILProgramItem_Image(classInfo),
 						   ILFieldGetTypeWithPrefixes((ILField *)member),
 						   flags);
+				putc(' ', stderr);
 				if(!flags)
 				{
-					putc(' ', stderr);
 					ILDumpClassName(stderr, ILProgramItem_Image(classInfo),
 									classInfo, 0);
 					fputs("::", stderr);

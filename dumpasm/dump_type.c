@@ -1,7 +1,7 @@
 /*
  * dump_type.c - Dump types in assembly format.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001-2004  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,30 @@
  */
 
 #include "il_dumpasm.h"
+#include "il_system.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
+
+/*
+ * Determine if a class has a specific name.
+ */
+static int IsSpecialClass(ILClass *classInfo, const char *name,
+						  const char *namespace)
+{
+	const char *nspace;
+	if(strcmp(ILClass_Name(classInfo), name) != 0)
+	{
+		return 0;
+	}
+	nspace = ILClass_Namespace(classInfo);
+	if(!nspace || strcmp(nspace, namespace) != 0)
+	{
+		return 0;
+	}
+	return 1;
+}
 
 void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 {
@@ -354,20 +374,61 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 			case IL_TYPE_COMPLEX_CMOD_REQD:
 			{
 				ILDumpType(stream, image, type->un.modifier__.type__, flags);
-				fputs(" modreq(", stream);
-				ILDumpClassName(stream, image,
-								type->un.modifier__.info__, flags);
-				putc(')', stream);
+				if(IsSpecialClass(type->un.modifier__.info__,
+								  "IsVolatile",
+								  "System.Runtime.CompilerServices") &&
+				   (flags & IL_DUMP_C_TYPES) != 0)
+				{
+					fputs(" volatile", stream);
+				}
+				else
+				{
+					fputs(" modreq(", stream);
+					ILDumpClassName(stream, image,
+									type->un.modifier__.info__, flags);
+					putc(')', stream);
+				}
 			}
 			break;
 
 			case IL_TYPE_COMPLEX_CMOD_OPT:
 			{
-				ILDumpType(stream, image, type->un.modifier__.type__, flags);
-				fputs(" modopt(", stream);
-				ILDumpClassName(stream, image,
-								type->un.modifier__.info__, flags);
-				putc(')', stream);
+				if(IsSpecialClass(type->un.modifier__.info__,
+								  "IsConst", "OpenSystem.C") &&
+				   (flags & IL_DUMP_C_TYPES) != 0)
+				{
+					if(ILType_IsPrimitive(type->un.modifier__.type__))
+					{
+						/* Put the "const" before primitive types because
+						   it is the more natural position for types like
+						   "const char *" */
+						fputs("const ", stream);
+						ILDumpType(stream, image, type->un.modifier__.type__,
+								   flags);
+					}
+					else
+					{
+						ILDumpType(stream, image, type->un.modifier__.type__,
+								   flags);
+						fputs(" const", stream);
+					}
+				}
+				else if(IsSpecialClass(type->un.modifier__.info__,
+								  	   "IsFunctionPointer", "OpenSystem.C") &&
+				        (flags & IL_DUMP_C_TYPES) != 0)
+				{
+					ILDumpType(stream, image, type->un.modifier__.type__,
+							   flags);
+				}
+				else
+				{
+					ILDumpType(stream, image, type->un.modifier__.type__,
+							   flags);
+					fputs(" modopt(", stream);
+					ILDumpClassName(stream, image,
+									type->un.modifier__.info__, flags);
+					putc(')', stream);
+				}
 			}
 			break;
 
@@ -429,7 +490,10 @@ void ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 			{
 				if((type->kind__ & IL_TYPE_COMPLEX_METHOD) != 0)
 				{
-					fputs("method ", stream);
+					if((flags & IL_DUMP_C_TYPES) == 0)
+					{
+						fputs("method ", stream);
+					}
 					ILDumpMethodType(stream, image, type, flags, 0, 0, 0);
 				}
 				else
@@ -625,8 +689,11 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 	flags &= ~IL_DUMP_GENERIC_PARAMS;
 
 	/* Dump the calling conventions for the method */
-	callingConventions = ILType_CallConv(type);
-	ILDumpFlags(stream, callingConventions, ILMethodCallConvFlags, 0);
+	if((flags & IL_DUMP_C_TYPES) == 0)
+	{
+		callingConventions = ILType_CallConv(type);
+		ILDumpFlags(stream, callingConventions, ILMethodCallConvFlags, 0);
+	}
 
 	/* Dump the return type */
 	DumpParamType(stream, image, methodInfo, ILTypeGetReturn(type), 0, flags);
@@ -652,6 +719,10 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 		{
 			ILDumpIdentifier(stream, methodName, 0, flags);
 		}
+	}
+	else if((flags & IL_DUMP_C_TYPES) != 0)
+	{
+		fputs("(*)", stream);
 	}
 	else
 	{

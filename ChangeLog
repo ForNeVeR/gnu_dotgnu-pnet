@@ -8,6 +8,10 @@
 	* cscc/csharp/cs_decls.tc, cscc/csharp/cs_gather.c: enforce
 	the conditions on abstract method overrides.
 
+	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/csharp/cs_lvalue.tc:
+	disallow "using" aliases to refer to other aliases (partial fix
+	for bug #1798).
+
 2003-02-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_gen.c, codegen/cg_gen.h,

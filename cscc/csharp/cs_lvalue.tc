@@ -893,13 +893,20 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		if(alias->visited==ILVisitMode_Processing)
 		{
 			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-			  "circularity detected in 'Using' declaration");
+			  "circularity detected in `using' declaration");
 			CSSemSetLValue(value, ILType_Int32);
 			return value;
 		}
 		alias->visited=ILVisitMode_Processing;
 		*parent = (ILNode*)ILScopeDataGetData1(data);
+		if(info->resolvingAlias)
+		{
+			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
+						  "using aliases may not refer to other aliases");
+		}
+		info->resolvingAlias = 1;
 		value = ILNode_SemAnalysis(*parent,info,parent);
+		info->resolvingAlias = 0;
 		alias->visited=ILVisitMode_Done;
 		return value;
 	}
@@ -933,19 +940,27 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 
 	data = ILScopeLookup(info->currentScope, node->name, 1);
 	
-	if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS)
+	if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS &&
+	   !(info->resolvingAlias))
 	{
 		alias=(ILNode_UsingAlias*)ILScopeDataGetNode(data);
 		if(alias->visited==ILVisitMode_Processing)
 		{
 			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-			  "circularity detected in 'Using' declaration");
+			  "circularity detected in `using' declaration");
 			CSSemSetLValue(value, ILType_Int32);
 			return value;
 		}
 		alias->visited=ILVisitMode_Processing;
 		*parent = (ILNode*)ILScopeDataGetData1(data);
+		if(info->resolvingAlias)
+		{
+			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
+						  "using aliases may not refer to other aliases");
+		}
+		info->resolvingAlias = 1;
 		value = ILNode_SemAnalysis(*parent,info,parent);
+		info->resolvingAlias = 0;
 		alias->visited=ILVisitMode_Done;
 		return value;
 	}

@@ -483,9 +483,13 @@ static void DumpParams(FILE *stream, ILImage *image, ILType *type,
 	}
 }
 
-void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
-					  ILClass *info, const char *methodName,
-					  ILMethod *methodInfo)
+/*
+ * Internal version of "ILDumpMethodType" that can also handle
+ * instantiations of generic method calls.
+ */
+static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
+						   int flags, ILClass *info, const char *methodName,
+					  	   ILMethod *methodInfo, ILType *withTypes)
 {
 	ILUInt32 callingConventions;
 	ILType *synType;
@@ -495,6 +499,8 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 	const char *name;
 	ILProgramItem *constraint;
 	ILTypeSpec *spec;
+	unsigned long numWithParams;
+	unsigned long withParam;
 
 	/* Determine if we need to dump the generic parameters */
 	dumpGenerics = ((flags & IL_DUMP_GENERIC_PARAMS) != 0);
@@ -586,11 +592,55 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 			putc('>', stream);
 		}
 	}
+	else if(withTypes)
+	{
+		/* Dump the instantiation types from a method specification */
+		putc('<', stream);
+		numWithParams = ILTypeNumParams(withTypes);
+		for(withParam = 1; withParam <= numWithParams; ++withParam)
+		{
+			if(withParam != 1)
+			{
+				fputs(", ", stream);
+			}
+			ILDumpType(stream, image,
+					   ILTypeGetParam(withTypes, withParam), flags);
+		}
+		putc('>', stream);
+	}
 
 	/* Dump the parameters */
 	putc('(', stream);
 	DumpParams(stream, image, type, methodInfo, flags);
 	putc(')', stream);
+}
+
+void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
+					  ILClass *info, const char *methodName,
+					  ILMethod *methodInfo)
+{
+	DumpMethodType(stream, image, type, flags, info,
+				   methodName, methodInfo, 0);
+}
+
+void ILDumpMethodSpec(FILE *stream, ILImage *image,
+					  ILMethodSpec *spec, int flags)
+{
+	ILMember *member;
+	ILMethod *method;
+
+	/* Extract the member and make sure it is a method */
+	member = ILMemberResolve(ILMethodSpec_Method(spec));
+	if(!ILMember_IsMethod(member))
+	{
+		return;
+	}
+	method = (ILMethod *)member;
+
+	/* Dump the method information, together with the instantiation types */
+	DumpMethodType(stream, image, ILMethod_Signature(method), flags,
+				   ILMethod_Owner(method), ILMethod_Name(method),
+				   0, ILMethodSpec_Type(spec));
 }
 
 /*

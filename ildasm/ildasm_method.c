@@ -275,15 +275,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 				{
 					fputs("method ", outstream);
 				}
-				fprintf(outstream, "#%lx", token);
-				/* TODO */
-			#if 0
-				ILDumpMethodType(outstream, image,
-								 ILMethod_Signature(method), flags,
-								 ILMethod_Owner(method),
-								 ILMethod_Name(method),
-								 0/*method*/);
-			#endif
+				ILDumpMethodSpec(outstream, image, mspec, flags);
 			}
 			else
 			{

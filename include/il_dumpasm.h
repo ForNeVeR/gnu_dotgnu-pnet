@@ -132,6 +132,12 @@ void ILDumpMethodType(FILE *stream, ILImage *image, ILType *type, int flags,
 					  ILMethod *methodInfo);
 
 /*
+ * Dump a generic method call specification to an output stream.
+ */
+void ILDumpMethodSpec(FILE *stream, ILImage *image,
+					  ILMethodSpec *spec, int flags);
+
+/*
  * Dump a native type to an output stream.
  */
 void ILDumpNativeType(FILE *stream, const void *type, unsigned long len);

@@ -85,5 +85,17 @@ internal class DrawingPopupWindow : DrawingWindow, IToolkitWindow
 			(this as IToolkitWindow).Capture = value;
 		}
 	}
+
+	protected internal override void MouseMove(int msg, int wParam, int lParam)
+	{
+		// Another popup window could grab the capture from this control. When we move back onto this control, we need to make sure that we regain the capture.
+		IToolkitWindow window = (this as IToolkitWindow);
+		if (window.Capture != visible)
+		{
+			window.Capture = base.IsMapped;
+		}
+		base.MouseMove (msg, wParam, lParam);
+	}
+
 }
 }

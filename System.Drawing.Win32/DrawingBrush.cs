@@ -36,7 +36,7 @@ namespace System.Drawing.Toolkit
 		// Select this brush into a graphics object.
 		public override void Select(IToolkitGraphics graphics)
 		{
-			(graphics as DrawingGraphics).Brush = this;
+			(graphics as ToolkitGraphicsBase).Brush = this;
 		}
 
 		// Dispose of this object.

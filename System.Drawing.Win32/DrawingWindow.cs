@@ -384,7 +384,7 @@ internal abstract class DrawingWindow : IToolkitWindow
 	}
 
 	// Post Mouse Move to the window that needs it. Handle Mouse Enter and Leave
-	internal void MouseMove(int msg, int wParam, int lParam) 
+	protected internal virtual void MouseMove(int msg, int wParam, int lParam) 
 	{
 		
 		ToolkitMouseButtons buttons = MapToToolkitMouseButtons(wParam);
@@ -599,22 +599,22 @@ internal abstract class DrawingWindow : IToolkitWindow
 		return FindDeepestChild(lParam, out x, out y, out actual);
 	}
 
-	internal void KeyDown( int wParam, int lParam)
+	internal bool KeyDown( int wParam, int lParam)
 	{
-		sink.ToolkitKeyDown(MapKeyToToolkitKeys( wParam));
 		//Console.WriteLine("DrawingWindow.KeyDown " + sink +", " + (MapKeyToToolkitKeys( wParam)).ToString() + " " + wParam);
+		return sink.ToolkitKeyDown(MapKeyToToolkitKeys( wParam));
 	}
 
-	internal void Char( int wParam, int lParam)
+	internal bool Char( int wParam, int lParam)
 	{
-		sink.ToolkitKeyChar((char)wParam);
 		//Console.WriteLine("DrawingWindow.Char " + sink +", "+ ((char)wParam).ToString());
+		return sink.ToolkitKeyChar((char)wParam);
 	}
 	
-	internal void KeyUp( int wParam, int lParam )
+	internal bool KeyUp( int wParam, int lParam )
 	{
-		sink.ToolkitKeyUp(MapKeyToToolkitKeys( wParam));
 		//Console.WriteLine("DrawingWindow.KeyUp " + sink +", "+ (MapKeyToToolkitKeys( wParam)).ToString());
+		return sink.ToolkitKeyUp(MapKeyToToolkitKeys( wParam));
 	}
 
 	//TODO:
@@ -627,19 +627,25 @@ internal abstract class DrawingWindow : IToolkitWindow
 	internal void Paint()
 	{
 		Win32.Api.PAINTSTRUCT myPS = new System.Drawing.Win32.Api.PAINTSTRUCT();
-		hdc = Win32.Api.BeginPaint( hwnd, ref myPS );
+		hdc = Win32.Api.BeginPaint(hwnd, ref myPS );
 		if( sink != null )
 		{
-			DrawingGraphics g = new DrawingGraphics( toolkit, hdc );
-			System.Drawing.Graphics gr = ToolkitManager.CreateGraphics( g );
-			gr.SetClip(Rectangle.FromLTRB(myPS.rcPaintLeft, myPS.rcPaintTop, myPS.rcPaintRight, myPS.rcPaintBottom));
-			sink.ToolkitExpose( gr );
-			gr.Dispose();
+			DrawingGraphics g = new DrawingGraphics(toolkit, hdc);
+			Region clip = new Region(Rectangle.FromLTRB(myPS.rcPaintLeft, myPS.rcPaintTop, myPS.rcPaintRight, myPS.rcPaintBottom));
+			System.Drawing.Graphics gr = ToolkitManager.CreateGraphics(g, clip);
+			try
+			{
+				sink.ToolkitExpose(gr);
+			}
+			finally
+			{
+				// EndPaint deletes the hdc but that doesnt matter.
+				Win32.Api.EndPaint( hwnd, ref myPS);
+				gr.Dispose();
+			}
 			//Console.WriteLine( "DrawingWindow.Paint "+ sink +","+gr.ClipBounds.ToString());
-
 		}
 
-		Win32.Api.EndPaint( hwnd, ref myPS );
 	}
 
 	//WM_SETFOCUS occurs when either mouse or keyboard sets focus

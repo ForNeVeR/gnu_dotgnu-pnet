@@ -668,16 +668,24 @@ WindowText				= 26,*/
 		
 			case Win32.Api.WindowsMessages.WM_KEYDOWN:
 			case Win32.Api.WindowsMessages.WM_SYSKEYDOWN:
-				DrawingWindow(hwnd).KeyDown( wParam, lParam );
+				if (!DrawingWindow(hwnd).KeyDown( wParam, lParam ))
+				{
+					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+				}
 				break;
 			case Win32.Api.WindowsMessages.WM_CHAR:
-				DrawingWindow(hwnd).Char( wParam, lParam );
+				if (!DrawingWindow(hwnd).Char( wParam, lParam ))
+				{
+					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+				}
 				break;
 			case Win32.Api.WindowsMessages.WM_KEYUP:
 			case Win32.Api.WindowsMessages.WM_SYSKEYUP:
-				DrawingWindow(hwnd).KeyUp( wParam, lParam );
+				if (!DrawingWindow(hwnd).KeyUp( wParam, lParam ))
+				{
+					retval = Win32.Api.DefWindowProcA(hwnd, msg, wParam, lParam);
+				}
 				break;
-
 			case Win32.Api.WindowsMessages.WM_SETTINGCHANGE:
 				DrawingWindow(hwnd).SettingsChange( wParam );
 				break;

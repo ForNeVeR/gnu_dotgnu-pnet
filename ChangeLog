@@ -1,3 +1,9 @@
+
+2003-02-10  Marcus Urban  <mathpup@mylinuxisp.com>
+
+	* System/Collections/Specialized/NameValueCollection.cs:
+	handle null strings when looking up a name (Bug #2498).
+	
 2003-02-08  Marcus Urban  <mathpup@mylinuxisp.com>
 	
 	* runtime/System/IO/StreamWriter.cs: Console.WriteLine fails

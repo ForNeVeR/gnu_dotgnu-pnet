@@ -156,6 +156,10 @@ public class NameValueCollection : NameObjectCollectionBase
 	// Collapse an array list of strings into a comma-separated value.
 	private static String CollapseToString(ArrayList strings)
 			{
+				if(strings == null)
+				{
+					return null;
+				}
 				int count = strings.Count;
 				if(count == 0)
 				{

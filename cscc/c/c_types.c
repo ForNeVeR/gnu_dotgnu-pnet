@@ -1539,54 +1539,6 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 	return name;
 }
 
-void CTypeMarkForOutput(ILGenInfo *info, ILType *type)
-{
-	ILClass *classInfo;
-	const char *name;
-	unsigned long param;
-	unsigned long numParams;
-
-	type = ILTypeStripPrefixes(type);
-	if(ILType_IsValueType(type))
-	{
-		classInfo = ILType_ToValueType(type);
-		name = ILClass_Name(classInfo);
-		if(!strncmp(name, "struct ", 7) ||
-		   !strncmp(name, "union ", 6) ||
-		   !strncmp(name, "enum ", 5) ||
-		   !strncmp(name, "array ", 6))
-		{
-			if(!ILClassIsComplete(classInfo))
-			{
-				/* TODO: register the class to be expanded later */
-			}
-		}
-	}
-	else if(type != 0 && ILType_IsComplex(type))
-	{
-		if(ILType_Kind(type) == IL_TYPE_COMPLEX_PTR)
-		{
-			/* Mark the referenced type */
-			CTypeMarkForOutput(info, ILType_Ref(type));
-		}
-		else if((ILType_Kind(type) & IL_TYPE_COMPLEX_METHOD) != 0)
-		{
-			/* Mark the return and parameter types */
-			CTypeMarkForOutput(info, ILTypeGetReturn(type));
-			numParams = ILTypeNumParams(type);
-			for(param = 1; param <= numParams; ++param)
-			{
-				CTypeMarkForOutput(info, ILTypeGetParam(type, param));
-			}
-		}
-	}
-}
-
-void CTypeOutputPending(ILGenInfo *info, FILE *stream)
-{
-	/* TODO */
-}
-
 #ifdef	__cplusplus
 };
 #endif

@@ -1117,10 +1117,12 @@ ExternalDefinition
 	: FunctionDefinition	{
 				/* Roll the treecc node heap back to the last check point */
 				yynodepop();
+				yynodepush();
 			}
 	| Declaration			{
 				/* Roll the treecc node heap back to the last check point */
 				yynodepop();
+				yynodepush();
 			}
 	;
 

@@ -80,9 +80,6 @@ int CCPluginInit(void)
 	CCStringListAdd(&pre_defined_symbols, &num_pre_defined_symbols,
 					"__cli__");
 
-	/* Initialize the global definition scope */
-	CScopeGlobalInit();
-
 	/* The plugin has been initialized */
 	return 1;
 }
@@ -100,7 +97,18 @@ int CCPluginParse(void)
 
 void CCPluginRestart(FILE *infile)
 {
+	/* Setup up the lexer with the specified input file */
 	c_restart(infile);
+
+	/* Initialize the global definition scope */
+	CScopeGlobalInit();
+
+	/* We don't use CCParseTree, but we need to initialize it
+	   to make sure that "common/cc_main.c" has something */
+	CCParseTree = ILNode_Empty_create();
+
+	/* Mark the current treecc node pool location */
+	yynodepush();
 }
 
 void CCPluginSemAnalysis(void)
@@ -110,6 +118,12 @@ void CCPluginSemAnalysis(void)
 
 void CCPluginPostCodeGen(void)
 {
+	/* Output pending class definitions */
+	if(CCCodeGen.asmOutput != 0)
+	{
+		CTypeOutputPending(&CCCodeGen, CCCodeGen.asmOutput);
+	}
+
 	/* Output the string constant pool */
 	CGenStringPool(&CCCodeGen);
 }

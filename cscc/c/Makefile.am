@@ -20,6 +20,7 @@ libILCLang_a_SOURCES = $(TREECC_SRCOUT) \
 					   c_lexutils.c \
 					   c_scanner.l \
 					   c_scope.c \
+					   c_typeout.c \
 					   c_types.c
 
 YFLAGS = -d

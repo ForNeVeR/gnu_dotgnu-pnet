@@ -90,7 +90,7 @@ namespace System.IO
 					{
 						throw new FileNotFoundException(_("IO_FileNotFound"));		       
 					}
-
+					break;
 					
 				
 				case Errno.EIO:
@@ -99,7 +99,10 @@ namespace System.IO
 				case Errno.EACCES:
 					throw new SecurityException(_("IO_PathnameSecurity"));
 				
-			
+				// TODO: Change to a more appropriate exception
+				// (Suggestions would be welcome)
+				default:
+					throw new ArgumentException();	
 		}
 }
 	
@@ -147,11 +150,14 @@ namespace System.IO
 					{
 						throw new FileNotFoundException(_("IO_FileNotFound"));
 					} 
-
+				break;
 				case Errno.EACCES:
 					throw new SecurityException(_("IO_PathnameSecurity"));
 
-		
+				// TODO: Change to a more appropriate exception
+				// (Suggestions would be welcome)
+				default:
+					throw new ArgumentException();
 				
 	}
 }

@@ -402,11 +402,18 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
-	if (nspace && !(nameSpace = (const char *)ILStringToAnsi(_thread, nspace)))
+	if (nspace)
 	{
-		IL_METADATA_UNLOCK(_thread);
-		ILExecThreadThrowOutOfMemory(_thread);
-		return 0;
+		if (!(nameSpace = (const char *)ILStringToAnsi(_thread, nspace)))
+		{
+			IL_METADATA_UNLOCK(_thread);
+			ILExecThreadThrowOutOfMemory(_thread);
+			return 0;
+		}
+	}
+	else
+	{
+		nameSpace = 0;
 	}
 	if (!(baseClass = ILClass_FromToken(image, token)))
 	{

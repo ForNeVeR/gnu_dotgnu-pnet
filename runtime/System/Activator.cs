@@ -57,7 +57,6 @@ sealed class Activator
 		return CreateInstance(type,
 							  BindingFlags.CreateInstance |
 							  	BindingFlags.Public |
-								BindingFlags.NonPublic |
 								BindingFlags.Instance, null,
 							  null, null, null);
 	}
@@ -68,7 +67,6 @@ sealed class Activator
 		return CreateInstance(type,
 							  BindingFlags.CreateInstance |
 							  	BindingFlags.Public |
-								BindingFlags.NonPublic |
 								BindingFlags.Instance, null,
 							  args, null, null);
 	}
@@ -81,7 +79,6 @@ sealed class Activator
 		return CreateInstance(type,
 							  BindingFlags.CreateInstance |
 							  	BindingFlags.Public |
-								BindingFlags.NonPublic |
 								BindingFlags.Instance, null,
 							  args, null, activationAttributes);
 	}
@@ -119,7 +116,6 @@ sealed class Activator
 		return CreateInstance(assemblyName, typeName, false,
 							  BindingFlags.CreateInstance |
 							  	BindingFlags.Public |
-								BindingFlags.NonPublic |
 								BindingFlags.Instance, null,
 							  null, null, null, null);
 	}
@@ -133,7 +129,6 @@ sealed class Activator
 		return CreateInstance(assemblyName, typeName, false,
 							  BindingFlags.CreateInstance |
 							  	BindingFlags.Public |
-								BindingFlags.NonPublic |
 								BindingFlags.Instance, null,
 							  null, null, activationAttributes, null);
 	}
@@ -178,7 +173,6 @@ sealed class Activator
 		return CreateInstanceFrom(assemblyName, typeName, false,
 							      BindingFlags.CreateInstance |
 							  	    BindingFlags.Public |
-								    BindingFlags.NonPublic |
 								    BindingFlags.Instance, null,
 							      null, null, activationAttributes, null);
 	}

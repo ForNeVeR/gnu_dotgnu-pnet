@@ -1,4 +1,9 @@
 
+2002-12-26  Marcus Urban <mathpup@mylinuxisp.com>
+	
+	* runtime/System/Activator.cs: Remove non public methods from
+	access via Activator.CreateInstance. (Bug #2052,Gopal).
+	
 2002-12-26  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/ComponentModel/BaseNumberConverter.cs,

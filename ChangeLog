@@ -5,6 +5,9 @@
 	cscc/c/c_stubs.tc, cscc/csharp/cs_lvalue.tc, cscc/csharp/cs_oper.tc:
 	replace calls to "Array.get_Length" with "ldlen" on simple arrays.
 
+	* support/spawn.c (ILSpawnProcess): use "execvp" instead of "execv"
+	to ensure that PATH is searched when launching programs from csant.
+
 2002-11-20  Gopal.V  <gopalv82@symonds.net>
 
 	* codegen/cg_gen.h, cscc/common/cc_options.c, cscc/common/cc_main.c,

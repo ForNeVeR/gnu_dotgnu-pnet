@@ -231,7 +231,7 @@ int ILSpawnProcess(char *argv[])
 	else if(pid == 0)
 	{
 		/* We are in the child process */
-		execv(argv[0], argv);
+		execvp(argv[0], argv);
 		perror(argv[0]);
 		exit(1);
 		return -1;		/* Keep the compiler happy */

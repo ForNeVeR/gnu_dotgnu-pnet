@@ -735,7 +735,8 @@ void _IL_String_InsertSpace(ILExecThread *thread,
 						    ILInt32 srcPos, ILInt32 destPos)
 {
 	ILMemMove(StringToBuffer(dest) + destPos,
-			  StringToBuffer(dest) + srcPos, dest->length - srcPos);
+			  StringToBuffer(dest) + srcPos, 
+			  (dest->length - srcPos) * sizeof(ILUInt16));
 	dest->length += (destPos - srcPos);
 }
 

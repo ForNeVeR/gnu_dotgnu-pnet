@@ -1,4 +1,8 @@
 
+2002-11-10  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* engine/lib_string.c:  Fix small bug affecting StringBuilder.Insert().
+
 2002-11-09  Jonathan Springer <jonathan.springer@verizon.net>
 
 	* codegen/cg_lvalue.c, cscc/csharp/cs_internal.h, cscc/csharp/cs_lookup.c,

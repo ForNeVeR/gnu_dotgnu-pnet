@@ -1,4 +1,42 @@
 
+0.2.8 (7 January 2002)
+
+	Runtime engine:
+
+	* Updates to the internalcall methods to match changes to pnetlib.
+	* Implement the reflection API's.
+	* Implement array cloning properly in "Object.MemberwiseClone".
+	* Method invocation via reflection to support unit testing in pnetlib.
+	* Fix the status handling for "Main": it used to think that an
+	  exception was thrown sometimes when it wasn't.
+	* The range for exception blocks was incorrect in the bytecode verifier.
+	* Throw a "missing method" exception when the verifier fails.
+
+	C# Compiler:
+
+	* Fix a shift/reduce conflict in the grammar which caused it to
+	  complain about casts to array types.
+	* Insert the "%split" keyword into the treecc definitions where
+	  large operations may otherwise cause gcc 3.0 to crash.
+
+	Documentation:
+
+	* Parse and format excluded base types in the ECMA specification.
+	* Implement "csdocvalil", to validate pnetlib against the ECMA spec.
+	  Output formats are text and XML.
+
+	Other:
+
+	* Terminology changes in the README to make it FSF-compatible.
+	* Implement the MD5 and SHA1 hash algorithms.
+	* Modify GUID generation to redistribute entropy using SHA1.
+	* Turn off HAVE_CONFIG_H prior to including readline headers,
+	  to prevent confusion.
+	* Configuration updates to detect the thread model similarly to libgc.
+	* Alter the ChangeLog format to make it Emacs-friendly.
+	* Move assignment-compatibility testing into "image".
+	* Some more 32-bit vs 64-bit fixes.
+
 0.2.6 (27 November 2001)
 
 	Runtime engine:

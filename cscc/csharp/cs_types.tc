@@ -86,7 +86,7 @@ ILNode_SemAnalysis(ILNode_ArrayType)
 	}
 
 	/* Perform semantic analysis on the element type */
-	type = CSSemType(elemType, info, elemTypeParent);
+	type = CSSemTypeLiteral(elemType, info, elemTypeParent);
 
 	/* Create the array type from the outermost rank inwards */
 	arrayType = ILTypeCreateArray(info->context, node->numDimensions, type);

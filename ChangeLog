@@ -1,5 +1,10 @@
 
 2002-10-27  Jonathan Springer  <jonathan.springer@verizon.net>
+	* cscc/csharp/cs_oper.tc, cscc/csharp/cs_types.tc:  Add coercion of
+	constants to unsigned for assignment operators (e.g. '+=').  Extend
+	Type Semantics to array creation NewExpressions.
+
+2002-10-27  Jonathan Springer  <jonathan.springer@verizon.net>
 	* codegen/cg_gen.c, codegen/cg_gen.h, cscc/csharp/cs_cast.tc,
 	cscc/csharp/cs_const.tc, cscc/csharp/cs_decls.tc, 
 	cscc/csharp/cs_internal.h, cscc/csharp/cs_invoke.tc

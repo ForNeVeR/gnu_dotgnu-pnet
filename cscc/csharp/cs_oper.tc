@@ -923,6 +923,16 @@ static CSSemValue AssignSem(ILGenInfo *info,
 		}
 	}
 
+	/* Try again, this time coercing value2's type to value1's type */
+	if (ILCanCoerceNode(info, node->expr2, 
+						CSSemGetType(value2), CSSemGetType(value1)))
+	{
+		ILCoerce(info, node->expr2, &(node->expr2),
+						CSSemGetType(value2), CSSemGetType(value1));
+		CSSemSetRValue(value2, CSSemGetType(value1));
+		return value1;
+	}
+
 	/* Could not find a suitable operator */
 error:
 	CCErrorOnLine(yygetfilename(node), yygetlinenum(node),

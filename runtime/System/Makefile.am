@@ -220,8 +220,6 @@ CSSRC = Activator.cs \
 		Runtime/InteropServices/InterfaceTypeAttribute.cs \
 		Runtime/InteropServices/LayoutKind.cs \
 		Runtime/InteropServices/MarshalAsAttribute.cs \
-		Runtime/InteropServices/MethodImplAttribute.cs \
-		Runtime/InteropServices/MethodImplOptions.cs \
 		Runtime/InteropServices/OutAttribute.cs \
 		Runtime/InteropServices/StructLayoutAttribute.cs \
 		Runtime/Remoting/Message.cs \

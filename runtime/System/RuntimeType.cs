@@ -23,7 +23,7 @@ namespace System
 
 using System.Reflection;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 internal class RuntimeType : Type, ICloneable
 {
@@ -83,19 +83,20 @@ internal class RuntimeType : Type, ICloneable
 	// Get the custom attributes for this type.
 	public override Object[] GetCustomAttributes(bool inherit)
 			{
-				return RuntimeHelpers.GetCustomAttributes
+				return System.Reflection.RuntimeHelpers.GetCustomAttributes
 							(privateData, (IntPtr)0, inherit);
 			}
 	public override Object[] GetCustomAttributes(Type type, bool inherit)
 			{
-				return RuntimeHelpers.GetCustomAttributes
+				return System.Reflection.RuntimeHelpers.GetCustomAttributes
 							(privateData, type, inherit);
 			}
 
 	// Determine if custom attributes are defined for this type.
 	public override bool IsDefined(Type type, bool inherit)
 			{
-				return RuntimeHelpers.IsDefined(privateData, type, inherit);
+				return System.Reflection.RuntimeHelpers
+							.IsDefined(privateData, type, inherit);
 			}
 
 	// Get the element type for this type.

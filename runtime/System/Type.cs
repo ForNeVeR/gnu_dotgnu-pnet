@@ -23,7 +23,7 @@ namespace System
 
 using System.Reflection;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public abstract class Type : MemberInfo
 {

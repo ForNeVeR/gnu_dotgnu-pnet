@@ -11,6 +11,26 @@ runtime/System/Runtime/CompilerServices/CSharp/DecimalConstantAttribute.cs,
 runtime/System/Runtime/CompilerServices/CSharp/OutParameter.cs:
 remove obsolete classes.
 
+* runtime/Platform/DirMethods.cs, runtime/Platform/PathInfo.cs,
+runtime/Platform/PtrSizes.cs, runtime/Platform/Stdio.cs,
+runtime/Platform/SysCharInfo.cs, runtime/Platform/TaskMethods.cs,
+runtime/Platform/TimeMethods.cs, runtime/System/ArgIterator.cs,
+runtime/System/Array.cs, runtime/System/Decimal.cs,
+runtime/System/Double.cs, runtime/System/GC.cs,
+runtime/System/IntPtr.cs, runtime/System/Makefile.am,
+runtime/System/Math.cs, runtime/System/Object.cs,
+runtime/System/RuntimeMethodHandle.cs, runtime/System/RuntimeType.cs,
+runtime/System/Single.cs, runtime/System/String.cs,
+runtime/System/Type.cs, runtime/System/UIntPtr.cs,
+runtime/System/Reflection/Assembly.cs,
+runtime/System/Reflection/RuntimeHelpers.cs,
+runtime/System/Threading/Interlocked.cs, runtime/System/Threading/Monitor.cs,
+runtime/System/Threading/Mutex.cs, runtime/System/Threading/Thread.cs,
+runtime/System/Threading/WaitHandle.cs: replace all references to
+"System.Runtime.InteropServices.MethodImplAttribute" with
+"System.Runtime.CompilerServices.MethodImplAttribute", to be
+consistent with the latest ECMA specification.
+
 2001-11-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * runtime/System/String.cs: implement string comparison methods.

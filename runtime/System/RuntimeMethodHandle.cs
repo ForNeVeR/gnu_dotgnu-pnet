@@ -22,7 +22,7 @@
 namespace System
 {
 
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public struct RuntimeMethodHandle
 {

@@ -21,7 +21,7 @@
 namespace System.Threading
 {
 
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public sealed class Thread
 {

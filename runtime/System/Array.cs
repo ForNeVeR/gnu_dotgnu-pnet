@@ -22,7 +22,7 @@ namespace System
 {
 
 using System.Collections;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 {

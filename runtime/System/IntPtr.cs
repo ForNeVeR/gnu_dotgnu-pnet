@@ -22,7 +22,7 @@ namespace System
 {
 
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using Platform;
 
 public struct IntPtr

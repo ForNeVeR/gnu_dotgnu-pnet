@@ -23,7 +23,7 @@ namespace System
 
 using System.Collections;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 public sealed class String : IComparable, ICloneable, IConvertible, IEnumerable

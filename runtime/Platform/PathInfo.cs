@@ -22,7 +22,7 @@ namespace Platform
 {
 
 using System;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 internal struct PathInfo
 {

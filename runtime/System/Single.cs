@@ -23,7 +23,7 @@ namespace System
 
 using System.Private;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public struct Single : IComparable, IFormattable, IConvertible
 {

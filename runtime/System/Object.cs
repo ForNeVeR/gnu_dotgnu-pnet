@@ -23,7 +23,7 @@ namespace System
 
 using System.Reflection;
 using System.Runtime.Remoting;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public class Object
 {

@@ -21,7 +21,7 @@
 namespace System
 {
 
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 public sealed class GC
 {

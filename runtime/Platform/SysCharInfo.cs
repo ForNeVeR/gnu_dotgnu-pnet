@@ -23,7 +23,7 @@ namespace Platform
 
 using System;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 internal class SysCharInfo
 {

@@ -33,7 +33,7 @@ public abstract class LicenseProvider
 
 	// Get the license for a type.
 	public abstract License GetLicense
-			(LicenseContext context, Type type, object instance,
+			(LicenseContext context, Type type, Object instance,
 			 bool allowExceptions);
 
 }; // class LicenseProvider

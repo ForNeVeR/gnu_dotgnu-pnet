@@ -37,3 +37,5 @@ Invalid_PermissionNotPresent=The specified permission is not present
 Invalid_PathMismatch=Mismatch in the length of permission paths
 Invalid_AuthModuleNotRegistered=The specified authentication module is not registered
 Invalid_LicenseContextChange=The license context cannot be changed
+Invalid_LicenseContextLocked=The license context is already locked
+Invalid_LicenseContextNotLocked=The license context is not locked by the specified context user

@@ -4,6 +4,12 @@
 	* System/ComponentModel/TypeConverter.cs: add support for instance
 	descriptors to "ConvertFrom" and "CanConvertFrom".
 
+	* System/ComponentModel/LicFileLicenseProvider.cs,
+	System/ComponentModel/LicenseManager.cs,
+	System/ComponentModel/LicenseProvider.cs,
+	resources/en_US/System/Invalid.txt: finish off the implementation
+	of component license management.
+
 2003-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System/ComponentModel/ArrayConverter.cs,

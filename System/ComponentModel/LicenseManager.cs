@@ -25,11 +25,17 @@ namespace System.ComponentModel
 #if CONFIG_COMPONENT_MODEL
 
 using System;
+using System.Collections;
+using System.Reflection;
 
 public sealed class LicenseManager
 {
 	// Internal state.
 	private static LicenseContext currentContext;
+	private static Object contextLockedBy;
+	private static Object ourLock;
+	private static Hashtable providers;
+	private static DefaultLicenseProvider defaultProvider;
 
 	// Cannot instantiate this class.
 	private LicenseManager() {}
@@ -77,48 +83,164 @@ public sealed class LicenseManager
 			{
 				return CreateWithContext(type, creationContext, new Object [0]);
 			}
-	[TODO]
 	public static Object CreateWithContext
 				(Type type, LicenseContext creationContext, Object[] args)
 			{
-				// TODO
-				return null;
+				lock(typeof(LicenseManager))
+				{
+					// Temporarily switch to the new context during creation.
+					LicenseContext savedContext = currentContext;
+					currentContext = creationContext;
+					try
+					{
+						// Make sure that we are the only context user.
+						if(ourLock == null)
+						{
+							ourLock = new Object();
+						}
+						LockContext(ourLock);
+						try
+						{
+							try
+							{
+								return Activator.CreateInstance(type, args);
+							}
+							catch(TargetInvocationException e)
+							{
+								// Re-throw the inner exception, if present.
+								if(e.InnerException != null)
+								{
+									throw e.InnerException;
+								}
+								else
+								{
+									throw;
+								}
+							}
+						}
+						finally
+						{
+							UnlockContext(ourLock);
+						}
+					}
+					finally
+					{
+						currentContext = savedContext;
+					}
+				}
 			}
 
 	// Determine if a type has a valid license.
-	[TODO]
 	public static bool IsLicensed(Type type)
 			{
-				// TODO
-				return false;
+				return IsValid(type);
+			}
+
+	// Get the license provider for a specific type.
+	private static LicenseProvider GetProvider(Type type)
+			{
+				Type providerType;
+				LicenseProvider provider;
+				Object[] attrs;
+				lock(typeof(LicenseManager))
+				{
+					// Get the cached license provider.
+					if(providers == null)
+					{
+						providers = new Hashtable();
+					}
+					provider = (providers[type] as LicenseProvider);
+					if(provider != null)
+					{
+						return provider;
+					}
+
+					// Check the type's "LicenseProvider" attribute.
+					attrs = type.GetCustomAttributes
+						(typeof(LicenseProviderAttribute), true);
+					if(attrs != null && attrs.Length > 0)
+					{
+						providerType = ((LicenseProviderAttribute)(attrs[0]))
+								.LicenseProvider;
+						if(providerType != null)
+						{
+							provider = (LicenseProvider)
+								(Activator.CreateInstance(providerType));
+							providers[type] = provider;
+							return provider;
+						}
+					}
+
+					// No declared provider, so use the default provider.
+					if(defaultProvider == null)
+					{
+						defaultProvider = new DefaultLicenseProvider();
+					}
+					providers[type] = defaultProvider;
+					return defaultProvider;
+				}
+			}
+
+	// Perform license validation for a type.
+	private static License PerformValidation(Type type, Object instance)
+			{
+				LicenseProvider provider = GetProvider(type);
+				return provider.GetLicense
+					(CurrentContext, type, instance, false);
 			}
 
 	// Determine if a valid license can be granted for a type.
-	[TODO]
 	public static bool IsValid(Type type)
 			{
-				// TODO
-				return false;
+				License license = PerformValidation(type, null);
+				if(license != null)
+				{
+					license.Dispose();
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
-	[TODO]
 	public static bool IsValid(Type type, Object instance, out License license)
 			{
-				// TODO
-				return false;
+				license = PerformValidation(type, instance);
+				return (license != null);
 			}
 
 	// Lock the license context associated with an object.
-	[TODO]
 	public static void LockContext(Object contextUser)
 			{
-				// TODO
+				lock(typeof(LicenseManager))
+				{
+					if(contextLockedBy == null)
+					{
+						contextLockedBy = contextUser;
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_LicenseContextLocked"));
+					}
+				}
 			}
 
 	// Unlock the license context associated with an object.
-	[TODO]
 	public static void UnlockContext(Object contextUser)
 			{
-				// TODO
+				lock(typeof(LicenseManager))
+				{
+					if(contextLockedBy == contextUser)
+					{
+						contextLockedBy = null;
+					}
+					else
+					{
+						throw new InvalidOperationException
+							(S._("Invalid_LicenseContextNotLocked"));
+					}
+				}
 			}
 
 	// Validate a license for a type.
@@ -138,6 +260,48 @@ public sealed class LicenseManager
 				}
 				return license;
 			}
+
+	// Default license provider for types that don't have their own.
+	private sealed class DefaultLicenseProvider : LicenseProvider
+	{
+		// Get the license for a type.
+		public override License GetLicense
+					(LicenseContext context, Type type, Object instance,
+			 		 bool allowExceptions)
+				{
+					return new DefaultLicense(type.FullName);
+				}
+
+	}; // class DefaultLicenseProvider
+
+	// The default license class.
+	private sealed class DefaultLicense : License
+	{
+		// Internal state.
+		private String key;
+
+		// Constructor.
+		public DefaultLicense(String key)
+				{
+					this.key = key;
+				}
+
+		// Get the license key.
+		public override String LicenseKey
+				{
+					get
+					{
+						return key;
+					}
+				}
+
+		// Dispose of this license.
+		public override void Dispose()
+				{
+					// Nothing to do here.
+				}
+
+	}; // class DefaultLicense
 
 }; // class LicenseManager
 

@@ -128,7 +128,7 @@ public sealed class ToolkitManager
 				// Determine the name of the toolkit we wish to use.
 				String name;
 			#if !ECMA_COMPAT
-				if(Environment.OSVersion.Platform != PlatformID.Unix)
+				if(Environment.OSVersion.Platform != (PlatformID)128) /* Unix */
 			#else
 				if(Path.DirectorySeparatorChar == '\\' ||
 				   Path.AltDirectorySeparatorChar == '\\')

@@ -1,3 +1,10 @@
+
+2003-06-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Drawing/Toolkit/ToolkitManager.cs: avoid using the
+	PlatformID.Unix symbol directly in the code so that it will
+	compile under csc.
+
 2003-06-22  Rich Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ImageList.cs: Implemented as much as I could.

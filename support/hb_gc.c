@@ -25,11 +25,25 @@
 extern	"C" {
 #endif
 
+/*
+ * Notify the finalization thread that there is work to do.
+ */
+static void GCNotifyFinalize(void)
+{
+	/* TODO: do finalization in a separate thread */
+	GC_invoke_finalizers();
+}
+
 void ILGCInit(unsigned long maxSize)
 {
 	GC_INIT();		/* For shared library initialization on sparc */
 	GC_init();		/* For Cygwin and Win32 threads */
 	GC_set_max_heap_size((size_t)maxSize);
+
+	/* Set up the finalization system the way we want it */
+	GC_finalize_on_demand = 1;
+	GC_java_finalization = 1;
+	GC_finalizer_notifier = GCNotifyFinalize;
 }
 
 void *ILGCAlloc(unsigned long size)

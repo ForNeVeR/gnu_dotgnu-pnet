@@ -5,6 +5,9 @@
 	which gets the current "ILExecThread *" object from within the
 	context of a PInvoke'd method.
 
+	* engine/heap.c, support/hb_gc.c: enable finalizers in single-threaded
+	environments (multi-threaded finalization is TBD).
+
 2002-06-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* include/il_config_win.h, include/il_values.h: remove the out

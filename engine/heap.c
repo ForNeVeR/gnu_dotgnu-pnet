@@ -58,7 +58,39 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
  */
 static void FinalizeObject(void *block, void *data)
 {
-	/* TODO */
+	ILObject *object;
+	ILClass *classInfo;
+	ILMethod *method;
+	ILType *signature;
+
+	/* Skip the object header within the block */
+	object = (ILObject *)(((unsigned char *)block) + IL_BEST_ALIGNMENT);
+
+	/* Get the object's class and locate the "Finalize" method */
+	classInfo = *((ILClass **)block);
+	while(classInfo != 0)
+	{
+		method = 0;
+		while((method = (ILMethod *)ILClassNextMemberByKind
+			(classInfo, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+		{
+			if(!strcmp(ILMethod_Name(method), "Finalize"))
+			{
+				signature = ILMethod_Signature(method);
+				if(ILTypeGetReturn(signature) == ILType_Void &&
+				   ILTypeNumParams(signature) == 0)
+				{
+					/* Invoke the "Finalize" method on the object */
+					if(ILExecThreadCall(ILExecThreadCurrent(),
+										method, (void *)0, object))
+					{
+						ILExecThreadClearException(ILExecThreadCurrent());
+					}
+				}
+			}
+		}
+		classInfo = ILClassGetParent(classInfo);
+	}
 }
 
 ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,

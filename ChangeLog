@@ -8,6 +8,13 @@
 	tests/System/TestSystem.build, tools/csccwrap.sh.in,
 	tools/run_test.sh.in: add the support code to build the test suite.
 
+	* csunit/Makefile.am, csunit/README, csunit/Test.cs,
+	csunit/TestArray.cs, csunit/TestAssertFailed.cs, csunit/TestCase.cs,
+	csunit/TestException.cs, csunit/TestFailure.cs, csunit/TestMain.cs,
+	csunit/TestResult.cs, csunit/TestStop.cs, csunit/TestSuite.cs,
+	csunit/TestVersion.cs.in, csunit/TestWriterResult.cs: remove
+	the obsolete csunit code - the real one is now in pnet.
+
 2002-09-17  Gopal.V  <gopalv82@symonds.net>
 
 	* tests/System/TestString.cs: fix wrong asserts in TestStringCompare 

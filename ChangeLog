@@ -1,3 +1,9 @@
+
+2004-08-31  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* engine/lib_info.c, configure.in: Obtain user name from UIDs instead 
+	of from getlogin. (Patch #3295, Gopal)
+
 2004-08-25  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/thread.c: Added constructor call to new CLR thread

@@ -28,6 +28,9 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#if HAVE_PWD_H
+#include <pwd.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -110,14 +113,14 @@ ILString *_IL_InfoMethods_GetUserName(ILExecThread *thread)
 	}
 	else
 	{
-		char *env;
-#if HAVE_GETLOGIN
-		char *login = getlogin();
-		if(login && *login != '\0')
+#if HAVE_GETPWUID && HAVE_GETEUID
+		struct passwd *pwd = getpwuid(geteuid());
+		if(pwd != NULL)
 		{
-			return ILStringCreate(thread, login);
+			return ILStringCreate(thread, pwd->pw_name);
 		}
 #endif
+		char *env;
 		env = getenv("USER");
 		if(env && *env != '\0')
 		{

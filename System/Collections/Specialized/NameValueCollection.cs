@@ -69,10 +69,7 @@ public class NameValueCollection : NameObjectCollectionBase
 #if CONFIG_SERIALIZATION
 	protected NameValueCollection(SerializationInfo info,
 								  StreamingContext context)
-			: base(info, context)
-			{
-				// TODO: serialization support.
-			}
+			: base(info, context) {}
 #endif
 
 	// Add a name/value pair to this collection.

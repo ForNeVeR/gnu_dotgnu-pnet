@@ -1,3 +1,10 @@
+
+2003-08-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System/Collections/Specialized/NameObjectCollectionBase.cs,
+	System/Collections/Specialized/NameValueCollection.cs:
+	serialization support for classes in "System.Collections.Specialized".
+
 2003-08-27  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ScrollBar.cs: apply patch #1826,

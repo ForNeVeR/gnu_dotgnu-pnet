@@ -50,6 +50,9 @@ abstract class NameObjectCollectionBase
 	private ArrayList entries;
 	private bool readOnly;
 	private const int HashTableSize = 61;
+#if CONFIG_SERIALIZATION
+	private SerializationInfo info;
+#endif
 
 	// Constructors.
 	protected NameObjectCollectionBase()
@@ -87,7 +90,7 @@ abstract class NameObjectCollectionBase
 									   StreamingContext context)
 			: this(0, null, null)
 			{
-				// TODO: serialization support.
+				this.info = info;
 			}
 #endif
 
@@ -154,13 +157,82 @@ abstract class NameObjectCollectionBase
 	public virtual void GetObjectData(SerializationInfo info,
 									  StreamingContext context)
 			{
-				// TODO: serialization support.
+				// Validate the parameters.
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+
+				// Add general information.
+				info.AddValue("ReadOnly", readOnly);
+				info.AddValue("HashProvider", hcp, typeof(IHashCodeProvider));
+				info.AddValue("Comparer", cmp, typeof(IComparer));
+				info.AddValue("Count", entries.Count);
+
+				// Build arrays for the keys and values and serialize them.
+				String[] keys = new String [entries.Count];
+				Object[] values = new Object [entries.Count];
+				int posn;
+				Entry entry;
+				for(posn = 0; posn < entries.Count; ++posn)
+				{
+					entry = (Entry)(entries[posn]);
+					keys[posn] = entry.key;
+					values[posn] = entry.value;
+				}
+				info.AddValue("Keys", keys, typeof(String[]));
+				info.AddValue("Values", values, typeof(Object[]));
 			}
 
 	// Implement the IDeserializationCallback interface.
 	public virtual void OnDeserialization(Object sender)
 			{
-				// TODO: serialization support.
+				// Bail out if we've already been deserialized.
+				if(hcp != null)
+				{
+					return;
+				}
+
+				// Validate the deserialization state.
+				if(info == null)
+				{
+					throw new SerializationException
+						(S._("Serialize_StateMissing"));
+				}
+
+				// De-serialize the hash provider and comparer.
+				hcp = (IHashCodeProvider)(info.GetValue
+							("HashProvider", typeof(IHashCodeProvider)));
+				cmp = (IComparer)(info.GetValue
+							("Comparer", typeof(IComparer)));
+				if(hcp == null || cmp == null)
+				{
+					throw new SerializationException
+						(S._("Serialize_StateMissing"));
+				}
+
+				// De-serialize the key/value arrays.
+				String[] keys = (String[])(info.GetValue
+						("Keys", typeof(String[])));
+				Object[] values = (String[])(info.GetValue
+						("Values", typeof(Object[])));
+				if(keys == null || values == null)
+				{
+					throw new SerializationException
+						(S._("Serialize_StateMissing"));
+				}
+				int count = info.GetInt32("Count");
+				int posn;
+				for(posn = 0; posn < count; ++posn)
+				{
+					BaseAdd(keys[posn], values[posn]);
+				}
+
+				// De-serialize the read-only flag last.
+				readOnly = info.GetBoolean("ReadOnly");
+
+				// De-serialization is complete.
+				info = null;
 			}
 
 #endif // CONFIG_SERIALIZATION

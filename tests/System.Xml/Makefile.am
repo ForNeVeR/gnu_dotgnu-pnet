@@ -6,4 +6,4 @@ all-local:
 CLEANFILES = TestXml.dll
 
 TESTS = TestXml.dll
-TESTS_ENVIRONMENT = $(SHELL) $(top_builddir)/tools/run_test.sh
+TESTS_ENVIRONMENT = $(SHELL) $(top_builddir)/tools/run_test.sh $(top_builddir)

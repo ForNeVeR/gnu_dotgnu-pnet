@@ -20,8 +20,16 @@
 
 # Get the incoming configuration variables.
 ILRUN="@ILRUN@"
-ILRUN_FLAGS="@ILRUN_FLAGS@"
 CSUNIT="@CSUNIT@"
 
+# Get the top-most build directory, so that we can add the right
+# paths to the "ilrun" command-line.
+TOP_BUILDDIR="$1"
+shift
+
 # Run the test.
-exec "$ILRUN" $ILRUN_FLAGS "$CSUNIT" $*
+exec "$ILRUN" -L"$TOP_BUILDDIR"/runtime \
+	-L"$TOP_BUILDDIR"/I18N \
+	-L"$TOP_BUILDDIR"/System \
+	-L"$TOP_BUILDDIR"/System.Xml \
+	"$CSUNIT" $*

@@ -13,6 +13,11 @@
 	* runtime/System/Activator.cs (CreateInstance): add the flag
 	"BindingFlags.CreateInstance" when calling "Type.InvokeMember".
 
+	* System/pnetlib.here, System.Xml/pnetlib.here,
+	runtime/pnetlib.here, tests/System/Makefile.am,
+	tests/System.Xml/Makefile.am, tests/runtime/Makefile.am:
+	make it possible to run the test suite within the build tree.
+
 2002-11-05  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/DateTime.cs: change to "DateToTicks" to correct

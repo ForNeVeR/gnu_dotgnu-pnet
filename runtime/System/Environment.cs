@@ -330,51 +330,53 @@ public sealed class Environment
 
 	}; // enum SpecialFolder
 
+	// Import the Win32 SHGetFolderPathA function from "shell32.dll"
+	[DllImport("shell32.dll", CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
+	extern private static Int32 SHGetFolderPathA
+				(IntPtr hwndOwner, int nFolder, IntPtr hToken,
+				 uint dwFlags, IntPtr path);
+
 	// Get a path to a specific system folder.
 	public static String GetFolderPath(SpecialFolder folder)
 			{
-				if (Environment.OSVersion.Platform != (PlatformID)128/*PlatformID.Unix*/)
+				// We can use the operating system under Win32.
+				if(InfoMethods.GetPlatformID() != PlatformID.Unix)
 				{
-					// TODO: when auto-selection of ANSI/Unicode version of DLL functions
-					// will be implemented, do not explicitely call the ANSI/Unicode
-					// versions of SHGetFolderPath any more
+					// Allocate a buffer to hold the result path.
+					IntPtr buffer = Marshal.AllocHGlobal(260 /*MAX_PATH*/ + 1);
+
+					// Call "SHGetFolderPath" to retrieve the path.
 					try
 					{
-						// TODO?: should the allocation size be multiplied by 2 because of unicode chars ?
-						IntPtr pathPtr= Marshal.AllocHGlobal(260/*MAX_PATH*/ + 1);
-						SHGetFolderPathW(IntPtr.Zero, (Int32)folder, IntPtr.Zero, 0, pathPtr);
-						String path= Marshal.PtrToStringUni(pathPtr);
-						Marshal.FreeHGlobal(pathPtr);
-						return path;
-					}
-					catch (System.MissingMethodException e)
-					{
-						// SHGetFolderPathW could not be found in the DLL
-						try
+						SHGetFolderPathA(IntPtr.Zero, (int)folder,
+									     IntPtr.Zero, 0, buffer);
+						String value = Marshal.PtrToStringAnsi(buffer);
+						if(value != null && value.Length != 0)
 						{
-							IntPtr pathPtr= Marshal.AllocHGlobal(260/*MAX_PATH*/ + 1);
-							SHGetFolderPathA(IntPtr.Zero, (Int32)folder, IntPtr.Zero, 0, pathPtr);
-							String path= Marshal.PtrToStringAnsi(pathPtr);
-							Marshal.FreeHGlobal(pathPtr);
-							return path;
-						}
-						catch (System.MissingMethodException e)
-						{
-							// SHGetFolderPathA could not be found in the DLL
-							return String.Empty;
+							Marshal.FreeHGlobal(buffer);
+							return value;
 						}
 					}
-					catch (System.DllNotFoundException e)
+					catch(Exception)
 					{
-						// shell32.dll could not be found
-						return String.Empty;
+						// We weren't able to find the function in the DLL.
 					}
+					Marshal.FreeHGlobal(buffer);
 				}
-				else
+
+				// Special handling for the "SpecialFolder.System" case.
+				if(folder == SpecialFolder.System)
 				{
-					// TODO?: try to implement something similar for non-Win32 platforms
-					return String.Empty;
+					String dir = DirMethods.GetSystemDirectory();
+					if(dir != null)
+					{
+						return dir;
+					}
 				}
+
+				// The empty string indicates that the value is not present.
+				return String.Empty;
 			}
 
 	// Get a list of logical drives on the system.
@@ -660,19 +662,6 @@ public sealed class Environment
 				}
 	};
 
-	// Import the Win32 SHGetFolderPathA function from "shell32.dll"
-	[DllImport("shell32.dll",CallingConvention=CallingConvention.Winapi)]
-	[MethodImpl(MethodImplOptions.PreserveSig)]
-	extern private static Int32 SHGetFolderPathA
-		(IntPtr hwndOwner, Int32 nFolder, IntPtr hToken,
-		UInt32 dwFlags, IntPtr path);
-
-	// Import the Win32 SHGetFolderPathW function from "shell32.dll"
-	[DllImport("shell32.dll",CallingConvention=CallingConvention.Winapi)]
-	[MethodImpl(MethodImplOptions.PreserveSig)]
-	extern private static Int32 SHGetFolderPathW
-		(IntPtr hwndOwner, Int32 nFolder, IntPtr hToken,
-		UInt32 dwFlags, IntPtr path);
 }; // class Environment
 
 }; // namespace System

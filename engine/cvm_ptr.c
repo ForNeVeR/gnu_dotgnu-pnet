@@ -95,6 +95,58 @@ static int CanCastClass(ILImage *image, ILClass *fromClass, ILClass *toClass)
 	}
 }
 
+/*
+ * Get a thread-static value from the current thread.
+ */
+static void *GetThreadStatic(ILExecThread *thread,
+							 ILUInt32 slot, ILUInt32 size)
+{
+	void **array;
+	ILUInt32 used;
+	void *ptr;
+
+	/* Determine if we need to allocate space for a new slot */
+	if(slot >= thread->threadStaticSlotsUsed)
+	{
+		used = (slot + 8) & ~7;
+		array = (void **)ILGCAlloc(sizeof(void *) * used);
+		if(!array)
+		{
+			ILExecThreadThrowOutOfMemory(thread);
+			return 0;
+		}
+		if(thread->threadStaticSlotsUsed > 0)
+		{
+			ILMemMove(array, thread->threadStaticSlots,
+					  sizeof(void *) * thread->threadStaticSlotsUsed);
+		}
+		thread->threadStaticSlots = array;
+		thread->threadStaticSlotsUsed = used;
+	}
+
+	/* Fetch the current value in the slot */
+	ptr = thread->threadStaticSlots[slot];
+	if(ptr)
+	{
+		return ptr;
+	}
+
+	/* Allocate a new value and write it to the slot */
+	if(!size)
+	{
+		/* Sanity check, just in case */
+		size = sizeof(unsigned long);
+	}
+	ptr = ILGCAlloc((unsigned long)size);
+	if(!ptr)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+	thread->threadStaticSlots[slot] = ptr;
+	return ptr;
+}
+
 #elif defined(IL_CVM_LOCALS)
 
 void *tempptr;
@@ -3452,5 +3504,34 @@ VMCASE(COP_PREFIX_REFANYTYPE):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -(CVM_WORDS_PER_TYPED_REF - 1));
 }
 VMBREAK(COP_PREFIX_REFANYTYPE);
+
+/**
+ * <opcode name="thread_static" group="Object handling">
+ *   <operation>Get a pointer to the thread-static data area</operation>
+ *
+ *   <format>prefix<fsep/>thread_static<fsep/>slot[4]<fsep/>size[4]</format>
+ *   <dformat>{thread_static}<fsep/>slot<fsep/>size</dformat>
+ *
+ *   <form name="thread_static" code="COP_PREFIX_THREAD_STATIC"/>
+ *
+ *   <before>...</before>
+ *   <after>..., ptr</after>
+ *
+ *   <description>Push a pointer to the current thread's static
+ *   data area onto the stack.  The value <i>slot</i> indicates which
+ *   slot to retrieve the pointer from.  The value <i>size</i> indicates
+ *   the size of the data object if the slot is currently empty.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_THREAD_STATIC):
+{
+	/* Get a pointer to the thread-static data area */
+	COPY_STATE_TO_THREAD();
+	stacktop[0].ptrValue = GetThreadStatic
+		(thread, CVMP_ARG_WORD, CVMP_ARG_WORD2);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD2, 1);
+}
+VMBREAK(COP_PREFIX_THREAD_STATIC);
 
 #endif /* IL_CVM_PREFIX */

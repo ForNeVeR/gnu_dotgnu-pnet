@@ -58,6 +58,7 @@ extern	"C" {
 #define	CVMP_LEN_NONE					2
 #define	CVMP_LEN_BYTE					3
 #define	CVMP_LEN_WORD					6
+#define	CVMP_LEN_WORD2					10
 #define	CVMP_LEN_PTR					(2 + sizeof(void *))
 #define	CVMP_LEN_WORD_PTR				(6 + sizeof(void *))
 #define	CVMP_LEN_WORD2_PTR				(10 + sizeof(void *))
@@ -151,6 +152,7 @@ extern	"C" {
 #define	CVMP_LEN_NONE					_CVM_LEN_FROM_WORDS(1)
 #define	CVMP_LEN_BYTE					_CVM_LEN_FROM_WORDS(2)
 #define	CVMP_LEN_WORD					_CVM_LEN_FROM_WORDS(2)
+#define	CVMP_LEN_WORD2					_CVM_LEN_FROM_WORDS(3)
 #define	CVMP_LEN_PTR					_CVM_LEN_FROM_WORDS(2)
 #define	CVMP_LEN_WORD_PTR				_CVM_LEN_FROM_WORDS(3)
 #define	CVMP_LEN_WORD2_PTR				_CVM_LEN_FROM_WORDS(4)

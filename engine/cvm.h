@@ -508,6 +508,11 @@ extern	"C" {
 #define COP_PREFIX_PROFILE_COUNT	0x57
 
 /*
+ * Thread static handling.
+ */
+#define	COP_PREFIX_THREAD_STATIC	0x58
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

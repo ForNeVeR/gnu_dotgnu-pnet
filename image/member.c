@@ -1090,6 +1090,34 @@ ILType *ILFieldGetTypeWithPrefixes(ILField *field)
 	return ILMember_Signature(field);
 }
 
+int ILFieldIsThreadStatic(ILField *field)
+{
+	ILAttribute *attr;
+	ILMethod *ctor;
+	ILClass *classInfo;
+	if(!field || !ILField_IsStatic(field))
+	{
+		return 0;
+	}
+	attr = 0;
+	while((attr = ILProgramItemNextAttribute
+				(ILToProgramItem(field), attr)) != 0)
+	{
+		ctor = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+		if(ctor)
+		{
+			classInfo = ILMethod_Owner(ctor);
+			if(!strcmp(ILClass_Name(classInfo), "ThreadStaticAttribute") &&
+			   ILClass_Namespace(classInfo) != 0 &&
+			   !strcmp(ILClass_Namespace(classInfo), "System"))
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 ILEvent *ILEventCreate(ILClass *info, ILToken token,
 					   const char *name, ILUInt32 attributes,
 					   ILClass *type)

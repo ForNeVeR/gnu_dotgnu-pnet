@@ -688,6 +688,25 @@ static int LayoutClass(ILClass *info, LayoutInfo *layout)
 					return 0;
 				}
 
+				/* Thread-static variables are allocated slots from the
+				   ILExecProcess record.  We assume that some higher level
+				   function has acquired the metadata lock on the process */
+				if(ILFieldIsThreadStatic(field))
+				{
+					ILExecThread *thread = ILExecThreadCurrent();
+					if(!thread)
+					{
+						/* This shouldn't happen if the engine has
+						   been initialized correctly */
+						continue;
+					}
+					/* Store the slot number in the "offset" field and
+					   the field size in the "nativeOffset" field */
+					field->offset = (thread->process->numThreadStaticSlots)++;
+					field->nativeOffset = typeLayout.size;
+					continue;
+				}
+
 				/* Align the field on an appropriate boundary */
 				if((layout->staticSize % typeLayout.alignment) != 0)
 				{

@@ -56,6 +56,7 @@ extern	"C" {
 #define	CVM_OPER_TAIL_CALL			25
 #define	CVM_OPER_PACK_VARARGS		26
 #define	CVM_OPER_CUSTOM				27
+#define	CVM_OPER_TWO_UINT32			28
 
 /*
  * Table of CVM opcodes.  This must be kept in sync with "cvm.h".
@@ -563,9 +564,13 @@ static CVMOpcode const prefixOpcodes[96] = {
 	{"profile_count",	CVM_OPER_NONE},
 
 	/*
+	 * Thread static handling.
+	 */
+	{"thread_static",	CVM_OPER_TWO_UINT32},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_58",	CVM_OPER_NONE},
 	{"preserved_59",	CVM_OPER_NONE},
 	{"preserved_5A",	CVM_OPER_NONE},
 	{"preserved_5B",	CVM_OPER_NONE},
@@ -967,6 +972,15 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 					fwrite((void *)CVMReadPointer(pc + 6), 1,
 						   (unsigned)(IL_READ_UINT32(pc + 2)), stream);
 					putc('"', stream);
+				}
+				break;
+
+				case CVM_OPER_TWO_UINT32:
+				{
+					fprintf(stream, "%lu, %lu",
+							(unsigned long)(IL_READ_UINT32(pc + 2)),
+							(unsigned long)(IL_READ_UINT32(pc + 6)));
+					pc += 10;
 				}
 				break;
 

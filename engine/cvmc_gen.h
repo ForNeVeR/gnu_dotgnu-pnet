@@ -220,6 +220,13 @@ extern	"C" {
 				_CVM_WORD((value1)); \
 				_CVM_WORD((value2)); \
 			} while (0)
+#define	CVMP_OUT_WORD2(opcode,value1,value2)	\
+			do { \
+				_CVM_BYTE(COP_PREFIX); \
+				_CVM_BYTE((opcode)); \
+				_CVM_WORD((value1)); \
+				_CVM_WORD((value2)); \
+			} while (0)
 
 /*
  * Output an instruction that has a pointer argument.
@@ -721,6 +728,12 @@ extern	"C" {
 #define	CVM_OUT_WORD2(opcode,value1,value2)	\
 			do { \
 				_CVM_OPCODE((opcode)); \
+				_CVM_WORD((value1)); \
+				_CVM_WORD((value2)); \
+			} while (0)
+#define	CVMP_OUT_WORD2(opcode,value1,value2)	\
+			do { \
+				_CVMP_OPCODE((opcode)); \
 				_CVM_WORD((value1)); \
 				_CVM_WORD((value2)); \
 			} while (0)

@@ -1318,6 +1318,11 @@ ILType *ILFieldGetType(ILField *field);
 ILType *ILFieldGetTypeWithPrefixes(ILField *field);
 
 /*
+ * Determine if a field is marked as thread-static.
+ */
+int ILFieldIsThreadStatic(ILField *field);
+
+/*
  * Helper macros for querying information about a field.
  */
 #define	ILField_FromToken(image,token)	\

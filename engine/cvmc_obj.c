@@ -334,13 +334,27 @@ static void CVMCoder_LoadStaticField(ILCoder *coder, ILField *field,
 		classInfo = ILField_Owner(field);
 		CallStaticConstructor(coder, classInfo, 1);
 
-		/* Push a pointer to the class's static data area */
-		CVM_OUT_PTR(COP_GET_STATIC, classInfo);
-		CVM_ADJUST(1);
+		/* Regular or thread-static field? */
+		if(!ILFieldIsThreadStatic(field))
+		{
+			/* Push a pointer to the class's static data area */
+			CVM_OUT_PTR(COP_GET_STATIC, classInfo);
+			CVM_ADJUST(1);
 
-		/* Load the field relative to the pointer */
-		CVMLoadField(coder, ILEngineType_M, 0, field,
-					 fieldType, field->offset, 0);
+			/* Load the field relative to the pointer */
+			CVMLoadField(coder, ILEngineType_M, 0, field,
+						 fieldType, field->offset, 0);
+		}
+		else
+		{
+			/* Extract the pointer from a thread-static data slot */
+			CVMP_OUT_WORD2(COP_PREFIX_THREAD_STATIC,
+						   field->offset, field->nativeOffset);
+			CVM_ADJUST(1);
+
+			/* Load the field relative to the pointer */
+			CVMLoadField(coder, ILEngineType_M, 0, field, fieldType, 0, 0);
+		}
 	}
 	else
 	{
@@ -395,9 +409,21 @@ static void CVMCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 	/* Regular or RVA field? */
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
-		/* Push a pointer to the class's static data area */
-		CVM_OUT_PTR(COP_GET_STATIC, classInfo);
-		CVM_ADJUST(1);
+		/* Regular or thread-static field? */
+		if(!ILFieldIsThreadStatic(field))
+		{
+			/* Push a pointer to the class's static data area */
+			CVM_OUT_PTR(COP_GET_STATIC, classInfo);
+			CVM_ADJUST(1);
+		}
+		else
+		{
+			/* Extract the pointer from a thread-static data slot */
+			CVMP_OUT_WORD2(COP_PREFIX_THREAD_STATIC,
+						   field->offset, field->nativeOffset);
+			CVM_ADJUST(1);
+			return;
+		}
 
 		/* Add the offset to the pointer */
 		if(field->offset < 256)
@@ -722,12 +748,26 @@ static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
 	/* Regular or RVA field? */
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
-		/* Push a pointer to the class's static data area */
-		CVM_OUT_PTR(COP_GET_STATIC, classInfo);
-		CVM_ADJUST(1);
+		/* Regular or thread-static field? */
+		if(!ILFieldIsThreadStatic(field))
+		{
+			/* Push a pointer to the class's static data area */
+			CVM_OUT_PTR(COP_GET_STATIC, classInfo);
+			CVM_ADJUST(1);
 
-		/* Store the field relative to the pointer */
-		CVMStoreFieldReverse(coder, field, fieldType, field->offset, 0);
+			/* Store the field relative to the pointer */
+			CVMStoreFieldReverse(coder, field, fieldType, field->offset, 0);
+		}
+		else
+		{
+			/* Extract the pointer from a thread-static data slot */
+			CVMP_OUT_WORD2(COP_PREFIX_THREAD_STATIC,
+						   field->offset, field->nativeOffset);
+			CVM_ADJUST(1);
+
+			/* Store the field relative to the pointer */
+			CVMStoreFieldReverse(coder, field, fieldType, 0, 0);
+		}
 	}
 	else
 	{

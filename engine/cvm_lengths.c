@@ -519,11 +519,15 @@ unsigned char const _ILCVMLengths[512] = {
 	 * Method profiling.
 	 */
 	/* profile_count */		CVMP_LEN_NONE,
+
+	/*
+	 * Thread static handling.
+	 */
+	/* thread_static */		CVMP_LEN_WORD,
 	
 	/*
 	 * Reserved opcodes.
 	 */
-	/* preserved_58 */		CVMP_LEN_NONE,
 	/* preserved_59 */		CVMP_LEN_NONE,
 	/* preserved_5a */		CVMP_LEN_NONE,
 	/* preserved_5b */		CVMP_LEN_NONE,

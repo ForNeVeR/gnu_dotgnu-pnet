@@ -157,6 +157,9 @@ struct _tagILExecProcess
 	unsigned char		randomPool[20];
 	int					randomCount;
 
+	/* Size of the global thread-static allocation */
+	ILUInt32			numThreadStaticSlots;
+
 };
 
 /*
@@ -212,6 +215,10 @@ struct _tagILExecThread
 	ILCallFrame	   *frameStack;
 	ILUInt32		numFrames;
 	ILUInt32		maxFrames;
+
+	/* Thread-static values for this thread */
+	void		  **threadStaticSlots;
+	ILUInt32		threadStaticSlotsUsed;
 
 };
 

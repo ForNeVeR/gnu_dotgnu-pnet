@@ -77,6 +77,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize)
 	process->randomBytesDelivered = 1024;
 	process->randomLastTime = 0;
 	process->randomCount = 0;
+	process->numThreadStaticSlots = 0;
 
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)

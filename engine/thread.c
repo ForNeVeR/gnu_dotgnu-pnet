@@ -69,6 +69,8 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 	thread->method = 0;
 	thread->thrownException = 0;
 	thread->securityManager = 0;
+	thread->threadStaticSlots = 0;
+	thread->threadStaticSlotsUsed = 0;
 
 	/* Attach the thread to the process */
 	ILMutexLock(process->lock);

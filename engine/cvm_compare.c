@@ -93,6 +93,30 @@ static IL_INLINE ILInt32 FCmp(CVMWord *a, CVMWord *b, ILInt32 nanResult)
 
 #elif defined(IL_CVM_PREFIX)
 
+/**
+ * <opcode name="icmp">
+ *   <operation>Compare <code>int32</code></operation>
+ *
+ *   <format>prefix<fsep/>icmp</format>
+ *
+ *   <form name="icmp" code="COP_PREFIX_ICMP"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int32</code>.  The
+ *   <code>int32</code> <i>result</i> is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &lt; value2</i>, then <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &gt; value2</i>, then <i>result</i> is 1.</li>
+ *     <li>Otherwise, <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_ICMP:
 {
 	/* Compare integer values */
@@ -112,6 +136,30 @@ case COP_PREFIX_ICMP:
 }
 break;
 
+/**
+ * <opcode name="icmp_un">
+ *   <operation>Compare <code>uint32</code></operation>
+ *
+ *   <format>prefix<fsep/>icmp_un</format>
+ *
+ *   <form name="icmp_un" code="COP_PREFIX_ICMP_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint32</code>.  The
+ *   <code>int32</code> <i>result</i> is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &lt; value2</i>, then <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &gt; value2</i>, then <i>result</i> is 1.</li>
+ *     <li>Otherwise, <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_ICMP_UN:
 {
 	/* Compare unsigned integer values */
@@ -131,6 +179,30 @@ case COP_PREFIX_ICMP_UN:
 }
 break;
 
+/**
+ * <opcode name="lcmp">
+ *   <operation>Compare <code>int64</code></operation>
+ *
+ *   <format>prefix<fsep/>lcmp</format>
+ *
+ *   <form name="lcmp" code="COP_PREFIX_LCMP"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>int64</code>.  The
+ *   <code>int32</code> <i>result</i> is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &lt; value2</i>, then <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &gt; value2</i>, then <i>result</i> is 1.</li>
+ *     <li>Otherwise, <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_LCMP:
 {
 	/* Compare long values */
@@ -141,6 +213,30 @@ case COP_PREFIX_LCMP:
 }
 break;
 
+/**
+ * <opcode name="lcmp_un">
+ *   <operation>Compare <code>uint64</code></operation>
+ *
+ *   <format>prefix<fsep/>lcmp_un</format>
+ *
+ *   <form name="lcmp_un" code="COP_PREFIX_LCMP_UN"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>uint64</code>.  The
+ *   <code>int32</code> <i>result</i> is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &lt; value2</i>, then <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &gt; value2</i>, then <i>result</i> is 1.</li>
+ *     <li>Otherwise, <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_LCMP_UN:
 {
 	/* Compare unsigned long values */
@@ -151,6 +247,32 @@ case COP_PREFIX_LCMP_UN:
 }
 break;
 
+/**
+ * <opcode name="fcmpl">
+ *   <operation>Compare <code>native float</code> with lower result</operation>
+ *
+ *   <format>prefix<fsep/>fcmpl</format>
+ *
+ *   <form name="fcmpl" code="COP_PREFIX_FCMPL"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>native float</code>.  The
+ *   <code>int32</code> <i>result</i> is determined as follows:
+ *
+ *   <ul>
+ *     <li>If either <i>value1</i> or <i>value2</i> is NaN, then
+ *         <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &lt; value2</i>, then <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &gt; value2</i>, then <i>result</i> is 1.</li>
+ *     <li>Otherwise, <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_FCMPL:
 {
 	/* Compare float values */
@@ -162,6 +284,33 @@ case COP_PREFIX_FCMPL:
 }
 break;
 
+/**
+ * <opcode name="fcmpg">
+ *   <operation>Compare <code>native float</code> with
+ *              greater result</operation>
+ *
+ *   <format>prefix<fsep/>fcmpg</format>
+ *
+ *   <form name="fcmpg" code="COP_PREFIX_FCMPG"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>native float</code>.  The
+ *   <code>int32</code> <i>result</i> is determined as follows:
+ *
+ *   <ul>
+ *     <li>If either <i>value1</i> or <i>value2</i> is NaN, then
+ *         <i>result</i> is 1.</li>
+ *     <li>If <i>value1 &lt; value2</i>, then <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &gt; value2</i>, then <i>result</i> is 1.</li>
+ *     <li>Otherwise, <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_FCMPG:
 {
 	/* Compare float values */
@@ -173,6 +322,30 @@ case COP_PREFIX_FCMPG:
 }
 break;
 
+/**
+ * <opcode name="pcmp">
+ *   <operation>Compare <code>ptr</code></operation>
+ *
+ *   <format>prefix<fsep/>pcmp</format>
+ *
+ *   <form name="pcmp" code="COP_PREFIX_PCMP"/>
+ *
+ *   <before>..., value1, value2</before>
+ *   <after>..., result</after>
+ *
+ *   <description>Both <i>value1</i> and <i>value2</i>
+ *   are popped from the stack as type <code>ptr</code>.  The
+ *   <code>int32</code> <i>result</i> is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &lt; value2</i>, then <i>result</i> is -1.</li>
+ *     <li>If <i>value1 &gt; value2</i>, then <i>result</i> is 1.</li>
+ *     <li>Otherwise, <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_PCMP:
 {
 	/* Compare pointer values */
@@ -192,6 +365,29 @@ case COP_PREFIX_PCMP:
 }
 break;
 
+/**
+ * <opcode name="seteq">
+ *   <operation>Set if equal to zero</operation>
+ *
+ *   <format>prefix<fsep/>seteq</format>
+ *
+ *   <form name="seteq" code="COP_PREFIX_SETEQ"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 == 0</i>, then <i>result</i> is 1.</li>
+ *     <li>If <i>value1 != 0</i>, then <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_SETEQ:
 {
 	/* Set true if the stack top is zero */
@@ -200,6 +396,29 @@ case COP_PREFIX_SETEQ:
 }
 break;
 
+/**
+ * <opcode name="setne">
+ *   <operation>Set if not equal to zero</operation>
+ *
+ *   <format>prefix<fsep/>setne</format>
+ *
+ *   <form name="setne" code="COP_PREFIX_SETNE"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 != 0</i>, then <i>result</i> is 1.</li>
+ *     <li>If <i>value1 == 0</i>, then <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_SETNE:
 {
 	/* Set true if the stack top is non-zero */
@@ -208,6 +427,29 @@ case COP_PREFIX_SETNE:
 }
 break;
 
+/**
+ * <opcode name="setlt">
+ *   <operation>Set if less than zero</operation>
+ *
+ *   <format>prefix<fsep/>setlt</format>
+ *
+ *   <form name="setlt" code="COP_PREFIX_SETLT"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &lt; 0</i>, then <i>result</i> is 1.</li>
+ *     <li>If <i>value1 &gt;= 0</i>, then <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_SETLT:
 {
 	/* Set true if the stack top is less than zero */
@@ -216,6 +458,29 @@ case COP_PREFIX_SETLT:
 }
 break;
 
+/**
+ * <opcode name="setle">
+ *   <operation>Set if less than or equal to zero</operation>
+ *
+ *   <format>prefix<fsep/>setlt</format>
+ *
+ *   <form name="setle" code="COP_PREFIX_SETLE"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &lt;= 0</i>, then <i>result</i> is 1.</li>
+ *     <li>If <i>value1 &gt; 0</i>, then <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_SETLE:
 {
 	/* Set true if the stack top is less or equal to zero */
@@ -224,6 +489,29 @@ case COP_PREFIX_SETLE:
 }
 break;
 
+/**
+ * <opcode name="setgt">
+ *   <operation>Set if greater than zero</operation>
+ *
+ *   <format>prefix<fsep/>setgt</format>
+ *
+ *   <form name="setgt" code="COP_PREFIX_SETGT"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &gt; 0</i>, then <i>result</i> is 1.</li>
+ *     <li>If <i>value1 &lt;= 0</i>, then <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_SETGT:
 {
 	/* Set true if the stack top is greater than zero */
@@ -232,6 +520,29 @@ case COP_PREFIX_SETGT:
 }
 break;
 
+/**
+ * <opcode name="setge">
+ *   <operation>Set if greater than or equal to zero</operation>
+ *
+ *   <format>prefix<fsep/>setge</format>
+ *
+ *   <form name="setge" code="COP_PREFIX_SETGE"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>int32</code>.  The <code>int32</code> <i>result</i>
+ *   is determined as follows:
+ *
+ *   <ul>
+ *     <li>If <i>value1 &gt;= 0</i>, then <i>result</i> is 1.</li>
+ *     <li>If <i>value1 &lt; 0</i>, then <i>result</i> is 0.</li>
+ *   </ul>
+ *
+ *   The <i>result</i> is then pushed onto the stack.</description>
+ * </opcode>
+ */
 case COP_PREFIX_SETGE:
 {
 	/* Set true if the stack top greater or equal to zero */

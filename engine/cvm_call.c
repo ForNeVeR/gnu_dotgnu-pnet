@@ -726,7 +726,7 @@ case COP_RETURN_N:
  *
  *   <description>Pushes an identifier for the current thread onto
  *   the native argument stack.  This is only used for "InternalCall"
- *   methods.  "PInvoke" methods should use "waddr_native_m1" instead.
+ *   methods.  "PInvoke" methods should use <i>waddr_native_m1</i> instead.
  *   </description>
  * </opcode>
  */
@@ -758,7 +758,7 @@ break;
  *   is allocated, and then pushed down.  The lowest duplicated
  *   <i>value</i> becomes the return value for the constructor method.
  *   The other duplicated <i>value</i> becomes the <code>this</code>
- *   argument for the constructor method.</description>
+ *   argument for the constructor method.</notes>
  * </opcode>
  */
 case COP_PUSHDOWN:
@@ -794,151 +794,37 @@ case COP_WADDR_NATIVE_##name: \
 break
 
 /**
- * <opcode name="waddr_native_m1">
- *   <operation>Set position -1 of the native argument buffer
+ * <opcode name="waddr_native_&lt;n&gt;">
+ *   <operation>Set position <i>n</i> of the native argument buffer
  *              to the address of a local variable</operation>
  *
- *   <format>waddr_native_m1<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_m1<fsep/>N[4]</format>
+ *   <format>waddr_native_&lt;n&gt;<fsep/>V[1]</format>
+ *   <format>wide<fsep/>waddr_native_&lt;n&gt;<fsep/>V[4]</format>
  *
  *   <form name="waddr_native_m1" code="COP_WADDR_NATIVE_M1"/>
+ *   <form name="waddr_native_0" code="COP_WADDR_NATIVE_0"/>
+ *   <form name="waddr_native_1" code="COP_WADDR_NATIVE_1"/>
+ *   <form name="waddr_native_2" code="COP_WADDR_NATIVE_2"/>
+ *   <form name="waddr_native_3" code="COP_WADDR_NATIVE_3"/>
+ *   <form name="waddr_native_4" code="COP_WADDR_NATIVE_4"/>
+ *   <form name="waddr_native_5" code="COP_WADDR_NATIVE_5"/>
+ *   <form name="waddr_native_6" code="COP_WADDR_NATIVE_6"/>
+ *   <form name="waddr_native_7" code="COP_WADDR_NATIVE_7"/>
  *
- *   <description>Set position -1 of the native argument buffer
- *   to the address of local variable <i>N</i>.  This is the
- *   first argument for a "PInvoke" method.  Use <i>push_thread</i>
- *   instead for an "InternalCall" method.</description>
+ *   <description>Set position <i>n</i> of the native argument buffer
+ *   to the address of local variable <i>V</i>.  For an "InternalCall"
+ *   method, 0 is the first argument.  For a "PInvoke" method,
+ *   -1 (<i>m1</i>) is the first argument.</description>
  * </opcode>
  */
 COP_WADDR_NATIVE(M1, -1);
-
-/**
- * <opcode name="waddr_native_0">
- *   <operation>Set position 0 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_0<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_0<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_0" code="COP_WADDR_NATIVE_0"/>
- *
- *   <description>Set position 0 of the native argument buffer
- *   to the address of local variable <i>N</i>.  This is the
- *   first argument for an "InternalCall" method and the second
- *   argument for a "PInvoke" method.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(0, 0);
-
-/**
- * <opcode name="waddr_native_1">
- *   <operation>Set position 1 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_1<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_1<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_1" code="COP_WADDR_NATIVE_1"/>
- *
- *   <description>Set position 1 of the native argument buffer
- *   to the address of local variable <i>N</i>.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(1, 1);
-
-/**
- * <opcode name="waddr_native_2">
- *   <operation>Set position 2 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_2<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_2<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_2" code="COP_WADDR_NATIVE_2"/>
- *
- *   <description>Set position 2 of the native argument buffer
- *   to the address of local variable <i>N</i>.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(2, 2);
-
-/**
- * <opcode name="waddr_native_3">
- *   <operation>Set position 3 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_3<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_3<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_3" code="COP_WADDR_NATIVE_3"/>
- *
- *   <description>Set position 3 of the native argument buffer
- *   to the address of local variable <i>N</i>.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(3, 3);
-
-/**
- * <opcode name="waddr_native_4">
- *   <operation>Set position 4 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_4<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_4<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_4" code="COP_WADDR_NATIVE_4"/>
- *
- *   <description>Set position 4 of the native argument buffer
- *   to the address of local variable <i>N</i>.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(4, 4);
-
-/**
- * <opcode name="waddr_native_5">
- *   <operation>Set position 5 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_5<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_5<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_5" code="COP_WADDR_NATIVE_5"/>
- *
- *   <description>Set position 5 of the native argument buffer
- *   to the address of local variable <i>N</i>.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(5, 5);
-
-/**
- * <opcode name="waddr_native_6">
- *   <operation>Set position 6 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_6<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_6<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_6" code="COP_WADDR_NATIVE_6"/>
- *
- *   <description>Set position 6 of the native argument buffer
- *   to the address of local variable <i>N</i>.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(6, 6);
-
-/**
- * <opcode name="waddr_native_7">
- *   <operation>Set position 7 of the native argument buffer
- *              to the address of a local variable</operation>
- *
- *   <format>waddr_native_7<fsep/>N[1]</format>
- *   <format>wide<fsep/>waddr_native_7<fsep/>N[4]</format>
- *
- *   <form name="waddr_native_7" code="COP_WADDR_NATIVE_7"/>
- *
- *   <description>Set position 7 of the native argument buffer
- *   to the address of local variable <i>N</i>.</description>
- * </opcode>
- */
 COP_WADDR_NATIVE(7, 7);
 
 #elif defined(IL_CVM_WIDE)

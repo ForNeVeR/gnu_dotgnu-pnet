@@ -1291,7 +1291,7 @@ break;
  *   <description>Both <i>value1</i> and <i>value2</i>
  *   are popped from the stack as type <code>int64</code>.  The
  *   <code>int64</code> <i>result</i> is <i>value1 / value2</i>.
- *   The <i>result</i> is pushed onto the stack.</notes>
+ *   The <i>result</i> is pushed onto the stack.</description>
  *
  *   <exceptions>
  *     <exception name="System.DivideByZeroException">Raised if
@@ -1336,7 +1336,7 @@ break;
  *   <description>Both <i>value1</i> and <i>value2</i>
  *   are popped from the stack as type <code>uint64</code>.  The
  *   <code>uint64</code> <i>result</i> is <i>value1 / value2</i>.
- *   The <i>result</i> is pushed onto the stack.</notes>
+ *   The <i>result</i> is pushed onto the stack.</description>
  *
  *   <exceptions>
  *     <exception name="System.DivideByZeroException">Raised if
@@ -1373,7 +1373,7 @@ break;
  *   <description>Both <i>value1</i> and <i>value2</i>
  *   are popped from the stack as type <code>int64</code>.  The
  *   <code>int64</code> <i>result</i> is <i>value1 % value2</i>.
- *   The <i>result</i> is pushed onto the stack.</notes>
+ *   The <i>result</i> is pushed onto the stack.</description>
  *
  *   <exceptions>
  *     <exception name="System.DivideByZeroException">Raised if
@@ -1418,7 +1418,7 @@ break;
  *   <description>Both <i>value1</i> and <i>value2</i>
  *   are popped from the stack as type <code>uint64</code>.  The
  *   <code>uint64</code> <i>result</i> is <i>value1 % value2</i>.
- *   The <i>result</i> is pushed onto the stack.</notes>
+ *   The <i>result</i> is pushed onto the stack.</description>
  *
  *   <exceptions>
  *     <exception name="System.DivideByZeroException">Raised if

@@ -1630,6 +1630,43 @@ static ILObject *ItemToClrObject(ILExecThread *thread, ILProgramItem *item)
 }
 
 /*
+ * Match the parameters for a method or property.
+ */
+static int ParameterTypeMatch(ILExecThread *thread, ILType *signature,
+							  System_Array *types)
+{
+	ILObject **items;
+	ILInt32 paramNum;
+	ILClass *classInfo;
+	ILType *typeInfo;
+
+	/* Check the number of parameters */
+	if(((ILInt32)(signature->num)) != types->length)
+	{
+		return 0;
+	}
+
+	/* Scan the parameters and check for matches */
+	items = (ILObject **)ArrayToBuffer(types);
+	for(paramNum = 0; paramNum < types->length; ++paramNum)
+	{
+		classInfo = _ILGetClrClass(thread, items[paramNum]);
+		if(!classInfo)
+		{
+			return 0;
+		}
+		typeInfo = ILClassToType(classInfo);
+		if(!ILTypeIdentical(typeInfo, ILTypeGetParam(signature, paramNum + 1)))
+		{
+			return 0;
+		}
+	}
+
+	/* We have a parameter match */
+	return 1;
+}
+
+/*
  * private MemberInfo GetMemberImpl(String name, MemberTypes memberTypes,
  *								    BindingFlags bindingAttrs,
  *								    Binder binder,
@@ -1730,6 +1767,16 @@ static ILObject *ClrType_GetMemberImpl(ILExecThread *thread,
 			/* Filter based on the parameter types */
 			if(types != 0)
 			{
+				if(member->kind == IL_META_MEMBERKIND_METHOD ||
+				   member->kind == IL_META_MEMBERKIND_PROPERTY)
+				{
+					if(!ParameterTypeMatch(thread, member->signature,
+										   (System_Array *)types))
+					{
+						member = member->nextMember;
+						continue;
+					}
+				}
 			}
 	
 			/* Check that we have reflection access for this member */

@@ -2331,6 +2331,22 @@ ParameterDeclaration
 					(0, ILParamMod_empty,
 					 ILNode_MarkType_create(0, type), nameNode);
 			}
+	| K_REGISTER TypeSpecifierList Declarator		{
+				ILType *type;
+				ILNode *nameNode;
+				CDeclSpec spec;
+				spec = CDeclSpecFinalize
+					($2, $3.node, $3.name, C_KIND_PARAMETER_NAME);
+				type = CDeclFinalize(&CCCodeGen, spec, $3, 0, 0);
+				nameNode = $3.node;
+				if(!nameNode && $3.name != 0)
+				{
+					nameNode = ILQualIdentSimple($3.name);
+				}
+				$$ = ILNode_FormalParameter_create
+					(0, ILParamMod_empty,
+					 ILNode_MarkType_create(0, type), nameNode);
+			}
 	| TypeName							{
 				$$ = ILNode_FormalParameter_create
 					(0, ILParamMod_empty, ILNode_MarkType_create(0, $1), 0);

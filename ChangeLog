@@ -17,6 +17,9 @@
 	* cscc/c/c_oper.tc (ILNode_CastType): it is always possible to
 	cast to "void" in C.
 
+	* cscc/c/c_grammar.y: permit "register" to be used in a
+	formal parameter list.
+
 2003-06-24  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/java/.cvsignore, cscc/bf/.cvsignore : add generated

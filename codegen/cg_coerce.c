@@ -325,6 +325,34 @@ static int GetBoxingConvertRules(ILGenInfo *info, ILType *fromType,
 }
 
 /*
+ * Get the rules to be used inside of an unsafe block.
+ */
+static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
+		ILType *toType, int explicit, int kinds, ConvertRules *rules)
+{
+	/* TODO : Handle the rest of the cases */
+	/*  Numeric/pointer casts  */
+	if (explicit)
+	{
+		/*  Numeric -> pointer conversion  */
+		if ( 
+				(ILIsBuiltinNumeric(fromType) 
+				 && ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR) 
+				|| (ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR 
+					&& ILIsBuiltinNumeric(toType))
+				|| (ILType_Kind(fromType) == IL_TYPE_COMPLEX_PTR 
+					&& ILType_Kind(toType) == IL_TYPE_COMPLEX_PTR)
+				)
+		{
+			/*  Let the external operator handle the real work  */
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+/*
  * Get the rules to be used to convert from one type to another.
  */
 static int GetConvertRules(ILGenInfo *info, ILType *fromType,
@@ -462,6 +490,14 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 					return 1;
 				}
 			}
+		}
+	}
+
+	if (info->unsafeLevel > 0)
+	{
+		if(GetUnsafeConvertRules(info, fromType, toType, explicit, kinds, rules))
+		{
+			return 1;
 		}
 	}
 

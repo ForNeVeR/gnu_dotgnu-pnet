@@ -1,4 +1,9 @@
 
+2001-10-12  Jonathan Springer <jonathan.springer@verizon.net>
+
+	* codegen/cg_coerce.c: Allow casting among unmanaged pointers
+	and basic integer types when in unsafe code blocks.
+
 2002-10-08  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/lib_string.c (String.Replace): Fix truncation bug in

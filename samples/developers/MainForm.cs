@@ -444,7 +444,7 @@ namespace ThreadsDemo
 			this.labelDescription.Name = "labelDescription";
 			this.labelDescription.Size = new System.Drawing.Size(960, 32);
 			this.labelDescription.TabIndex = 1;
-			this.labelDescription.Text = "System.Threading, System.Monitor and System.Windows.Forms demo (based on the Dini" +
+			this.labelDescription.Text = "System.Threading, System.Threading.Monitor and System.Windows.Forms demo (based on the Dini" +
 				"ng Philosophers problem)";
 			this.labelDescription.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 

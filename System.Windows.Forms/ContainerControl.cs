@@ -419,7 +419,7 @@ public class ContainerControl : ScrollableControl, IContainerControl
 		}
 		Control active = ActiveControl;
 		// Find the bottom most active control or the container if there isn't one.
-		while (!(active is ContainerControl) && active != null)
+		while ((active is ContainerControl) && active != null)
 		{
 			active = (active as ContainerControl).ActiveControl;
 		}

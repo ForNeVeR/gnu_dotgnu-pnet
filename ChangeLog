@@ -3,6 +3,9 @@
 	* runtime/System/IO/StreamReader.cs, System.Xml/XmlStreamReader.cs,
 	System.Xml/XmlDocument.cs: fix some csc compile issues.
 
+	* System.Windows.Forms/ContainerControl.cs: fix a bug in
+	ProcessMnemonic.
+
 2004-01-19  Adam Ballai <adam@thefrontnetworks.net>
 	
 	* System.Xml/XPath/XPathNavigator.cs,

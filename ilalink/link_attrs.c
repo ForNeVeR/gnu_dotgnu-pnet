@@ -45,6 +45,7 @@ int _ILLinkerConvertAttrs(ILLinker *linker, ILProgramItem *oldItem,
 			_ILLinkerOutOfMemory(linker);
 			return 0;
 		}
+		ILProgramItemAddAttribute(newItem, newAttr);
 
 		/* Determine how to convert the attribute's type */
 		item = ILAttributeTypeAsItem(attr);

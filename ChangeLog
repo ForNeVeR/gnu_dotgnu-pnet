@@ -7,6 +7,9 @@
 
 	* ilalink/ilalink.c: add "--no-stdlib" to the option table.
 
+	* ilalink/link_attrs.c (_ILLinkerConvertAttrs): add the new
+	attribute to the new program item.
+
 2001-03-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/lib_file.c, include/Makefile.am,

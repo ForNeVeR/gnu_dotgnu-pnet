@@ -281,6 +281,7 @@ class XmlElement : XmlLinkedNode
 	// Get a list of all descendents that match a particular name.
 	public virtual XmlNodeList GetElementsByTagName(String name)
 			{
+				name = (FindOwnerQuick()).NameTable.Add(name);
 				return new ElementList(this, name);
 			}
 
@@ -288,6 +289,9 @@ class XmlElement : XmlLinkedNode
 	public virtual XmlNodeList GetElementsByTagName
 				(String localName, String namespaceURI)
 			{
+				XmlNameTable nt = FindOwnerQuick().NameTable;
+				localName = nt.Add(localName);
+				namespaceURI = nt.Add(namespaceURI);
 				return new ElementList(this, localName, namespaceURI);
 			}
 

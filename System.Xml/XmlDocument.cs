@@ -605,20 +605,16 @@ class XmlDocument : XmlNode
 			}
 
 	// Get a list of elements by tag name.
-	[TODO]
 	public virtual XmlNodeList GetElementsByTagName(String name)
 			{
-				// TODO
-				return null;
+				return DocumentElement.GetElementsByTagName(name);
 			}
 
 	// Get a list of elements by local name and namespace.
-	[TODO]
 	public virtual XmlNodeList GetElementsByTagName
 				(String name, String namespaceURI)
 			{
-				// TODO
-				return null;
+				return DocumentElement.GetElementsByTagName(name, namespaceURI);
 			}
 
 	// Import a node from another document.

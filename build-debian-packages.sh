@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 #
 # SYPNOSIS
 #   ./build-debian-packages.sh
@@ -32,7 +32,13 @@
 #   you make changes to this file, copy it to all pnet modules
 #   in the CVS repository.
 #
-set -e
+
+pre=no
+[[ ."$1" != ."--pre" ]] || {
+  pre=yes
+  shift
+}
+archive=$1
 
 #
 # Get the version of an installed debian package.
@@ -47,8 +53,14 @@ getVersion() {
   echo ${pkgVersion}
 }
 
-version=$(pwd)
-version=${version##*-}
+if [[ -z "${archive}" ]]
+then
+  version=$(pwd)
+  version=${version##*-}
+else
+  version=${archive##*-}
+  version=${version%.tar.gz}
+fi
 
 pnetDpkgVersion() {
   local dpkgVersion=$(getVersion "$1")
@@ -128,9 +140,22 @@ expandRpmMacros() {
 #
 rm -rf debian/tmp
 builddir="debian/tmp/${PKG_NAME}-${version}"
-mkdir -p "${builddir}"
-tar --create --exclude="./debian/tmp" --exclude="./debian/tmp/*" . |
-  tar --extract --directory "${builddir}" 
+if [[ -z "${archive}" ]]
+then
+  mkdir -p "${builddir}"
+  tar --create --exclude="./debian/tmp" --exclude="./debian/tmp/*" . |
+    tar --extract --directory "${builddir}" 
+else
+  rm -rf tmp
+  mkdir tmp
+  tar --extract --directory tmp --gzip --file "${archive}"
+  dirname=${archive##*/}
+  dirname=${dirname%.tar.gz}
+  [[ ."${dirname}" = "${builddir##*/}" ]] ||
+    mv tmp/"${dirname}" "tmp/${builddir##*/}"
+  cp -a debian "tmp/${builddir##*/}"
+  mv tmp debian
+fi
 
 #
 # Create the .orig.tar.gz file.
@@ -143,13 +168,15 @@ cd "${builddir##*/}"
 # Build the control, *.install and *.docs files.
 #
 control=debian/control
-cat >"${control}" <<.....................
-Source: ${PKG_NAME}
-Priority: optional
-Maintainer: Russell Stuart <russell-debian@stuart.id.au>
-Build-Depends: ${PKG_BUILDDEPENDS}
-Standards-Version: 3.6.1
-.....................
+(
+  echo Source: ${PKG_NAME}
+  section="$(getOverride SOURCE "${PKG_SECTION}")"
+  [[ -z "${section}" ]] || echo Section: ${section}
+  echo Priority: optional
+  echo Maintainer: "Russell Stuart <russell-debian@stuart.id.au>"
+  echo Build-Depends: ${PKG_BUILDDEPENDS}
+  echo Standards-Version: 3.6.1
+) >"${control}"
 
 filepackage=
 linenr=0
@@ -191,6 +218,9 @@ do
       ;;
     %dir)
       ;;
+    %post|%postun|%pre|%preun)
+      filepackage=
+      ;;
     %{_infodir}/*)
       [[ -n "${filepackage}" ]] || continue
       renamed=$(getOverride "${line}" "${PKG_RENAMES}" "${line}")
@@ -211,14 +241,14 @@ do
 	( echo
 	  echo Package: "${descpackage}"
 	  section="$(getOverride "${descpackage}" "${PKG_SECTION}")"
-	  [[ -z "${section}" ]] || echo "Section: ${section}"
+	  [[ -z "${section}" ]] || echo Section: ${section} >>"${control}"
 	  depends="$(getOverride "${descpackage}" "${PKG_DEPENDS}" '${shlibs:Depends}')"
-	  [[ ."${depends}" = ."NONE" ]] || echo "Depends: ${depends}"
+	  [[ ."${depends}" = ."NONE" ]] || echo Depends: ${depends}
 	  recommends="$(getOverride "${descpackage}" "${PKG_RECOMMENDS}")"
-	  [[ -z "${recommends}" ]] || echo "Recommends: ${recommends}"
+	  [[ -z "${recommends}" ]] || echo Recommends: ${recommends}
 	  suggests="$(getOverride "${descpackage}" "${PKG_SUGGESTS}")"
-	  [[ -z "${suggests}" ]] || echo "Suggests: ${suggests}"
-	  echo "Architecture: $(getOverride "${descpackage}" "${PKG_ARCH}" 'any')"
+	  [[ -z "${suggests}" ]] || echo Suggests: ${suggests}
+	  echo Architecture: $(getOverride "${descpackage}" "${PKG_ARCH}" 'any')
 	  echo -n Description: ${summary}
 	  echo -e "$(fixMcsVersion "${description}")"
 	) >>"${control}"
@@ -278,6 +308,8 @@ License can be found in /usr/share/common-licenses/GPL file.
   mv debian/changelog.new debian/changelog
   changelogModified=yes
 }
+
+[[ "${pre}" == no ]] || exit 0
 
 #
 # Invoke the magic Debian build incantation.

@@ -1738,28 +1738,75 @@ ILGenCastConst(ILMachineType_Int8, ILMachineType_Int8)
 	/* Nothing to do here */
 	return 1;
 }
-ILGenCastConst(ILMachineType_UInt8, ILMachineType_Int8),
 ILGenCastConst(ILMachineType_Int16, ILMachineType_Int8),
-ILGenCastConst(ILMachineType_UInt16, ILMachineType_Int8),
-ILGenCastConst(ILMachineType_Char, ILMachineType_Int8),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_Int8),
-ILGenCastConst(ILMachineType_UInt32, ILMachineType_Int8),
-ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Int8),
-ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Int8)
+ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Int8)
 {
+	if(info->overflowInsns)
+	{
+		if(value->un.i4Value < (ILInt32)(-128) ||
+		   value->un.i4Value > (ILInt32)127)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILInt8)(value->un.i4Value);
 	value->valueType = ILMachineType_Int8;
 	return 1;
 }
-ILGenCastConst(ILMachineType_Int64, ILMachineType_Int8),
+ILGenCastConst(ILMachineType_UInt8, ILMachineType_Int8),
+ILGenCastConst(ILMachineType_UInt16, ILMachineType_Int8),
+ILGenCastConst(ILMachineType_Char, ILMachineType_Int8),
+ILGenCastConst(ILMachineType_UInt32, ILMachineType_Int8),
+ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Int8)
+{
+	if(info->overflowInsns)
+	{
+		if(((ILUInt32)(value->un.i4Value)) > (ILUInt32)127)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILInt8)(value->un.i4Value);
+	value->valueType = ILMachineType_Int8;
+	return 1;
+}
+ILGenCastConst(ILMachineType_Int64, ILMachineType_Int8)
+{
+	if(info->overflowInsns)
+	{
+		if(value->un.i8Value < (ILInt64)(-128) ||
+		   value->un.i8Value > (ILInt64)127)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILInt8)(value->un.i8Value);
+	value->valueType = ILMachineType_Int8;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_Int8)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)127)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILInt8)(value->un.i8Value);
 	value->valueType = ILMachineType_Int8;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_Int8)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float32,
+							  ILMachineType_Int32) &&
+			   ILGenCastConst(info, value, ILMachineType_Int32,
+			   				  ILMachineType_Int8);
+	}
 	value->un.i4Value = (ILInt32)(ILInt8)(ILInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_Int8;
 	return 1;
@@ -1767,6 +1814,13 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_Int8)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_Int8),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_Int8)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float64,
+							  ILMachineType_Int32) &&
+			   ILGenCastConst(info, value, ILMachineType_Int32,
+			   				  ILMachineType_Int8);
+	}
 	value->un.i4Value = (ILInt32)(ILInt8)(ILInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_Int8;
 	return 1;
@@ -1801,26 +1855,71 @@ ILGenCastConst(ILMachineType_UInt8, ILMachineType_UInt8)
 }
 ILGenCastConst(ILMachineType_Int8, ILMachineType_UInt8),
 ILGenCastConst(ILMachineType_Int16, ILMachineType_UInt8),
-ILGenCastConst(ILMachineType_UInt16, ILMachineType_UInt8),
-ILGenCastConst(ILMachineType_Char, ILMachineType_UInt8),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_UInt8),
-ILGenCastConst(ILMachineType_UInt32, ILMachineType_UInt8),
-ILGenCastConst(ILMachineType_NativeInt, ILMachineType_UInt8),
-ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_UInt8)
+ILGenCastConst(ILMachineType_NativeInt, ILMachineType_UInt8)
 {
+	if(info->overflowInsns)
+	{
+		if(value->un.i4Value < 0 || value->un.i4Value > (ILInt32)255)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILUInt8)(value->un.i4Value);
 	value->valueType = ILMachineType_UInt8;
 	return 1;
 }
-ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt8),
+ILGenCastConst(ILMachineType_UInt16, ILMachineType_UInt8),
+ILGenCastConst(ILMachineType_Char, ILMachineType_UInt8),
+ILGenCastConst(ILMachineType_UInt32, ILMachineType_UInt8),
+ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_UInt8)
+{
+	if(info->overflowInsns)
+	{
+		if(((ILUInt32)(value->un.i4Value)) > (ILUInt32)255)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILUInt8)(value->un.i4Value);
+	value->valueType = ILMachineType_UInt8;
+	return 1;
+}
+ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt8)
+{
+	if(info->overflowInsns)
+	{
+		if(value->un.i8Value < 0 || value->un.i8Value > (ILInt64)255)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILUInt8)(value->un.i8Value);
+	value->valueType = ILMachineType_UInt8;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_UInt8)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)255)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILUInt8)(value->un.i8Value);
 	value->valueType = ILMachineType_UInt8;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt8)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float32,
+							  ILMachineType_UInt32) &&
+			   ILGenCastConst(info, value, ILMachineType_UInt32,
+			   				  ILMachineType_UInt8);
+	}
 	value->un.i4Value = (ILInt32)(ILUInt8)(ILUInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_UInt8;
 	return 1;
@@ -1828,6 +1927,13 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt8)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_UInt8),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_UInt8)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float64,
+							  ILMachineType_UInt32) &&
+			   ILGenCastConst(info, value, ILMachineType_UInt32,
+			   				  ILMachineType_UInt8);
+	}
 	value->un.i4Value = (ILInt32)(ILUInt8)(ILUInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_UInt8;
 	return 1;
@@ -1861,26 +1967,73 @@ ILGenCastConst(ILMachineType_Int16, ILMachineType_Int16)
 	/* Nothing to do here */
 	return 1;
 }
-ILGenCastConst(ILMachineType_UInt16, ILMachineType_Int16),
-ILGenCastConst(ILMachineType_Char, ILMachineType_Int16),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_Int16),
-ILGenCastConst(ILMachineType_UInt32, ILMachineType_Int16),
-ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Int16),
-ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Int16)
+ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Int16)
 {
+	if(info->overflowInsns)
+	{
+		if(value->un.i4Value < (ILInt32)(-32768) ||
+		   value->un.i4Value > (ILInt32)32767)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILInt16)(value->un.i4Value);
 	value->valueType = ILMachineType_Int16;
 	return 1;
 }
-ILGenCastConst(ILMachineType_Int64, ILMachineType_Int16),
+ILGenCastConst(ILMachineType_UInt16, ILMachineType_Int16),
+ILGenCastConst(ILMachineType_Char, ILMachineType_Int16),
+ILGenCastConst(ILMachineType_UInt32, ILMachineType_Int16),
+ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Int16)
+{
+	if(info->overflowInsns)
+	{
+		if(((ILUInt32)(value->un.i4Value)) > (ILUInt32)32767)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILInt16)(value->un.i4Value);
+	value->valueType = ILMachineType_Int16;
+	return 1;
+}
+ILGenCastConst(ILMachineType_Int64, ILMachineType_Int16)
+{
+	if(info->overflowInsns)
+	{
+		if(value->un.i8Value < (ILInt64)(-32768) ||
+		   value->un.i8Value > (ILInt64)32767)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILInt16)(value->un.i8Value);
+	value->valueType = ILMachineType_Int16;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_Int16)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)32767)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILInt16)(value->un.i8Value);
 	value->valueType = ILMachineType_Int16;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_Int16)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float32,
+							  ILMachineType_Int32) &&
+			   ILGenCastConst(info, value, ILMachineType_Int32,
+			   				  ILMachineType_Int16);
+	}
 	value->un.i4Value = (ILInt32)(ILInt16)(ILInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_Int16;
 	return 1;
@@ -1888,6 +2041,13 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_Int16)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_Int16),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_Int16)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float64,
+							  ILMachineType_Int32) &&
+			   ILGenCastConst(info, value, ILMachineType_Int32,
+			   				  ILMachineType_Int16);
+	}
 	value->un.i4Value = (ILInt32)(ILInt16)(ILInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_Int16;
 	return 1;
@@ -1925,23 +2085,68 @@ ILGenCastConst(ILMachineType_UInt16, ILMachineType_UInt16)
 ILGenCastConst(ILMachineType_Int8, ILMachineType_UInt16),
 ILGenCastConst(ILMachineType_Int16, ILMachineType_UInt16),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_UInt16),
-ILGenCastConst(ILMachineType_UInt32, ILMachineType_UInt16),
-ILGenCastConst(ILMachineType_NativeInt, ILMachineType_UInt16),
-ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_UInt16)
+ILGenCastConst(ILMachineType_NativeInt, ILMachineType_UInt16)
 {
+	if(info->overflowInsns)
+	{
+		if(value->un.i4Value < 0 || value->un.i4Value > (ILInt32)65535)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i4Value);
 	value->valueType = ILMachineType_UInt16;
 	return 1;
 }
-ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt16),
+ILGenCastConst(ILMachineType_UInt32, ILMachineType_UInt16),
+ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_UInt16)
+{
+	if(info->overflowInsns)
+	{
+		if(((ILUInt32)(value->un.i4Value)) > (ILUInt32)65535)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i4Value);
+	value->valueType = ILMachineType_UInt16;
+	return 1;
+}
+ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt16)
+{
+	if(info->overflowInsns)
+	{
+		if(value->un.i8Value < 0 || value->un.i8Value > (ILInt64)65535)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i8Value);
+	value->valueType = ILMachineType_UInt16;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_UInt16)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)65535)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i8Value);
 	value->valueType = ILMachineType_UInt16;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt16)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float32,
+							  ILMachineType_UInt32) &&
+			   ILGenCastConst(info, value, ILMachineType_UInt32,
+			   				  ILMachineType_UInt16);
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(ILUInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_UInt16;
 	return 1;
@@ -1949,6 +2154,13 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt16)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_UInt16),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_UInt16)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float64,
+							  ILMachineType_UInt32) &&
+			   ILGenCastConst(info, value, ILMachineType_UInt32,
+			   				  ILMachineType_UInt16);
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(ILUInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_UInt16;
 	return 1;
@@ -1985,23 +2197,68 @@ ILGenCastConst(ILMachineType_Char, ILMachineType_Char)
 ILGenCastConst(ILMachineType_Int8, ILMachineType_Char),
 ILGenCastConst(ILMachineType_Int16, ILMachineType_Char),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_Char),
-ILGenCastConst(ILMachineType_UInt32, ILMachineType_Char),
-ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Char),
-ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Char)
+ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Char)
 {
+	if(info->overflowInsns)
+	{
+		if(value->un.i4Value < 0 || value->un.i4Value > (ILInt32)65535)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i4Value);
 	value->valueType = ILMachineType_Char;
 	return 1;
 }
-ILGenCastConst(ILMachineType_Int64, ILMachineType_Char),
+ILGenCastConst(ILMachineType_UInt32, ILMachineType_Char),
+ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Char)
+{
+	if(info->overflowInsns)
+	{
+		if(((ILUInt32)(value->un.i4Value)) > (ILUInt32)65535)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i4Value);
+	value->valueType = ILMachineType_Char;
+	return 1;
+}
+ILGenCastConst(ILMachineType_Int64, ILMachineType_Char)
+{
+	if(info->overflowInsns)
+	{
+		if(value->un.i8Value < 0 || value->un.i8Value > (ILInt64)65535)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i8Value);
+	value->valueType = ILMachineType_Char;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_Char)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)65535)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(value->un.i8Value);
 	value->valueType = ILMachineType_Char;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_Char)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float32,
+							  ILMachineType_UInt32) &&
+			   ILGenCastConst(info, value, ILMachineType_UInt32,
+			   				  ILMachineType_Char);
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(ILUInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_Char;
 	return 1;
@@ -2009,6 +2266,13 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_Char)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_Char),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_Char)
 {
+	if(info->overflowInsns)
+	{
+		return ILGenCastConst(info, value, ILMachineType_Float64,
+							  ILMachineType_UInt32) &&
+			   ILGenCastConst(info, value, ILMachineType_UInt32,
+			   				  ILMachineType_Char);
+	}
 	value->un.i4Value = (ILInt32)(ILUInt16)(ILUInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_Char;
 	return 1;
@@ -2036,10 +2300,21 @@ ILGenCastConst(ILMachineType_UInt8, ILMachineType_Int32),
 ILGenCastConst(ILMachineType_Int16, ILMachineType_Int32),
 ILGenCastConst(ILMachineType_UInt16, ILMachineType_Int32),
 ILGenCastConst(ILMachineType_Char, ILMachineType_Int32),
+ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Int32)
+{
+	value->valueType = ILMachineType_Int32;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt32, ILMachineType_Int32),
-ILGenCastConst(ILMachineType_NativeInt, ILMachineType_Int32),
 ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_Int32)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt32)(value->un.i4Value)) > (ILUInt32)0x7FFFFFFF)
+		{
+			return 0;
+		}
+	}
 	value->valueType = ILMachineType_Int32;
 	return 1;
 }
@@ -2048,15 +2323,44 @@ ILGenCastConst(ILMachineType_Int32, ILMachineType_Int32)
 	/* Nothing to do here */
 	return 1;
 }
-ILGenCastConst(ILMachineType_Int64, ILMachineType_Int32),
+ILGenCastConst(ILMachineType_Int64, ILMachineType_Int32)
+{
+	if(info->overflowInsns)
+	{
+		if(value->un.i8Value < (ILInt64)IL_MIN_INT32 ||
+		   value->un.i8Value > (ILInt64)IL_MAX_INT32)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILInt32)(value->un.i8Value);
+	value->valueType = ILMachineType_Int32;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_Int32)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)0x7FFFFFFF)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(value->un.i8Value);
 	value->valueType = ILMachineType_Int32;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_Int32)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r4Value) ||
+		   value->un.r4Value <= (ILNativeFloat)(-2147483649.0) ||
+		   value->un.r4Value >= (ILNativeFloat)2147483648.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_Int32;
 	return 1;
@@ -2064,6 +2368,15 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_Int32)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_Int32),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_Int32)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r8Value) ||
+		   value->un.r8Value <= (ILNativeFloat)(-2147483649.0) ||
+		   value->un.r8Value >= (ILNativeFloat)2147483648.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_Int32;
 	return 1;
@@ -2087,15 +2400,23 @@ ILGenCastConst(ILMachineType, ILMachineType_Int32)
  * Cast constants to "uint32".
  */
 ILGenCastConst(ILMachineType_Boolean, ILMachineType_UInt32),
-ILGenCastConst(ILMachineType_Int8, ILMachineType_UInt32),
 ILGenCastConst(ILMachineType_UInt8, ILMachineType_UInt32),
-ILGenCastConst(ILMachineType_Int16, ILMachineType_UInt32),
 ILGenCastConst(ILMachineType_UInt16, ILMachineType_UInt32),
 ILGenCastConst(ILMachineType_Char, ILMachineType_UInt32),
-ILGenCastConst(ILMachineType_Int32, ILMachineType_UInt32),
-ILGenCastConst(ILMachineType_NativeInt, ILMachineType_UInt32),
 ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_UInt32)
 {
+	value->valueType = ILMachineType_UInt32;
+	return 1;
+}
+ILGenCastConst(ILMachineType_Int8, ILMachineType_UInt32),
+ILGenCastConst(ILMachineType_Int16, ILMachineType_UInt32),
+ILGenCastConst(ILMachineType_Int32, ILMachineType_UInt32),
+ILGenCastConst(ILMachineType_NativeInt, ILMachineType_UInt32)
+{
+	if(info->overflowInsns && value->un.i4Value < 0)
+	{
+		return 0;
+	}
 	value->valueType = ILMachineType_UInt32;
 	return 1;
 }
@@ -2104,15 +2425,44 @@ ILGenCastConst(ILMachineType_UInt32, ILMachineType_UInt32)
 	/* Nothing to do here */
 	return 1;
 }
-ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt32),
+ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt32)
+{
+	if(info->overflowInsns)
+	{
+		if(value->un.i8Value < 0 ||
+		   value->un.i8Value > (ILInt64)IL_MAX_UINT32)
+		{
+			return 0;
+		}
+	}
+	value->un.i4Value = (ILUInt32)(value->un.i8Value);
+	value->valueType = ILMachineType_UInt32;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_UInt32)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)IL_MAX_UINT32)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILUInt32)(value->un.i8Value);
 	value->valueType = ILMachineType_UInt32;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt32)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r4Value) ||
+		   value->un.r4Value < (ILNativeFloat)0.0 ||
+		   value->un.r4Value >= (ILNativeFloat)4294967296.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILUInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_UInt32;
 	return 1;
@@ -2120,6 +2470,15 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt32)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_UInt32),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_UInt32)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r8Value) ||
+		   value->un.r8Value < (ILNativeFloat)0.0 ||
+		   value->un.r8Value >= (ILNativeFloat)4294967296.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILUInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_UInt32;
 	return 1;
@@ -2148,10 +2507,21 @@ ILGenCastConst(ILMachineType_UInt8, ILMachineType_NativeInt),
 ILGenCastConst(ILMachineType_Int16, ILMachineType_NativeInt),
 ILGenCastConst(ILMachineType_UInt16, ILMachineType_NativeInt),
 ILGenCastConst(ILMachineType_Char, ILMachineType_NativeInt),
-ILGenCastConst(ILMachineType_Int32, ILMachineType_NativeInt),
+ILGenCastConst(ILMachineType_Int32, ILMachineType_NativeInt)
+{
+	value->valueType = ILMachineType_NativeInt;
+	return 1;
+}
 ILGenCastConst(ILMachineType_UInt32, ILMachineType_NativeInt),
 ILGenCastConst(ILMachineType_NativeUInt, ILMachineType_NativeInt)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt32)(value->un.i4Value)) > (ILUInt32)0x7FFFFFFF)
+		{
+			return 0;
+		}
+	}
 	value->valueType = ILMachineType_NativeInt;
 	return 1;
 }
@@ -2191,6 +2561,15 @@ ILGenCastConst(ILMachineType_UInt64, ILMachineType_NativeInt)
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_NativeInt)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r4Value) ||
+		   value->un.r4Value <= (ILNativeFloat)(-2147483649.0) ||
+		   value->un.r4Value >= (ILNativeFloat)2147483648.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_NativeInt;
 	return 1;
@@ -2198,6 +2577,15 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_NativeInt)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_NativeInt),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_NativeInt)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r8Value) ||
+		   value->un.r8Value <= (ILNativeFloat)(-2147483649.0) ||
+		   value->un.r8Value >= (ILNativeFloat)2147483648.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_NativeInt;
 	return 1;
@@ -2221,15 +2609,23 @@ ILGenCastConst(ILMachineType, ILMachineType_NativeInt)
  * Cast constants to "native uint".
  */
 ILGenCastConst(ILMachineType_Boolean, ILMachineType_NativeUInt),
-ILGenCastConst(ILMachineType_Int8, ILMachineType_NativeUInt),
 ILGenCastConst(ILMachineType_UInt8, ILMachineType_NativeUInt),
-ILGenCastConst(ILMachineType_Int16, ILMachineType_NativeUInt),
 ILGenCastConst(ILMachineType_UInt16, ILMachineType_NativeUInt),
 ILGenCastConst(ILMachineType_Char, ILMachineType_NativeUInt),
+ILGenCastConst(ILMachineType_UInt32, ILMachineType_NativeUInt)
+{
+	value->valueType = ILMachineType_NativeUInt;
+	return 1;
+}
+ILGenCastConst(ILMachineType_Int8, ILMachineType_NativeUInt),
+ILGenCastConst(ILMachineType_Int16, ILMachineType_NativeUInt),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_NativeUInt),
-ILGenCastConst(ILMachineType_UInt32, ILMachineType_NativeUInt),
 ILGenCastConst(ILMachineType_NativeInt, ILMachineType_NativeUInt)
 {
+	if(info->overflowInsns && value->un.i4Value < 0)
+	{
+		return 0;
+	}
 	value->valueType = ILMachineType_NativeUInt;
 	return 1;
 }
@@ -2269,6 +2665,15 @@ ILGenCastConst(ILMachineType_UInt64, ILMachineType_NativeUInt)
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_NativeUInt)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r4Value) ||
+		   value->un.r4Value < (ILNativeFloat)0.0 ||
+		   value->un.r4Value >= (ILNativeFloat)4294967296.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILUInt32)(value->un.r4Value);
 	value->valueType = ILMachineType_NativeUInt;
 	return 1;
@@ -2276,6 +2681,15 @@ ILGenCastConst(ILMachineType_Float32, ILMachineType_NativeUInt)
 ILGenCastConst(ILMachineType_Float64, ILMachineType_NativeUInt),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_NativeUInt)
 {
+	if(info->overflowInsns)
+	{
+		if(!ILNativeFloatIsFinite(value->un.r8Value) ||
+		   value->un.r8Value < (ILNativeFloat)0.0 ||
+		   value->un.r8Value >= (ILNativeFloat)4294967296.0)
+		{
+			return 0;
+		}
+	}
 	value->un.i4Value = (ILUInt32)(value->un.r8Value);
 	value->valueType = ILMachineType_NativeUInt;
 	return 1;
@@ -2325,21 +2739,44 @@ ILGenCastConst(ILMachineType_Int64, ILMachineType_Int64)
 }
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_Int64)
 {
+	if(info->overflowInsns)
+	{
+		if(((ILUInt64)(value->un.i8Value)) > (ILUInt64)IL_MAX_INT64)
+		{
+			return 0;
+		}
+	}
 	value->valueType = ILMachineType_Int64;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_Int64)
 {
-	value->un.i8Value = (ILInt64)(value->un.r4Value);
-	value->valueType = ILMachineType_Int64;
-	return 1;
+	if(info->overflowInsns)
+	{
+		value->valueType = ILMachineType_Int64;
+		return ILFloatToInt64Ovf(&(value->un.i8Value), value->un.r4Value);
+	}
+	else
+	{
+		value->un.i8Value = (ILInt64)(value->un.r4Value);
+		value->valueType = ILMachineType_Int64;
+		return 1;
+	}
 }
 ILGenCastConst(ILMachineType_Float64, ILMachineType_Int64),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_Int64)
 {
-	value->un.i8Value = (ILInt64)(value->un.r8Value);
-	value->valueType = ILMachineType_Int64;
-	return 1;
+	if(info->overflowInsns)
+	{
+		value->valueType = ILMachineType_Int64;
+		return ILFloatToInt64Ovf(&(value->un.i8Value), value->un.r8Value);
+	}
+	else
+	{
+		value->un.i8Value = (ILInt64)(value->un.r8Value);
+		value->valueType = ILMachineType_Int64;
+		return 1;
+	}
 }
 ILGenCastConst(ILMachineType_Decimal, ILMachineType_Int64)
 {
@@ -2366,6 +2803,10 @@ ILGenCastConst(ILMachineType_Int16, ILMachineType_UInt64),
 ILGenCastConst(ILMachineType_Int32, ILMachineType_UInt64),
 ILGenCastConst(ILMachineType_NativeInt, ILMachineType_UInt64)
 {
+	if(info->overflowInsns && value->un.i4Value < 0)
+	{
+		return 0;
+	}
 	value->un.i8Value = (ILInt64)(value->un.i4Value);
 	value->valueType = ILMachineType_UInt64;
 	return 1;
@@ -2387,21 +2828,43 @@ ILGenCastConst(ILMachineType_UInt64, ILMachineType_UInt64)
 }
 ILGenCastConst(ILMachineType_Int64, ILMachineType_UInt64)
 {
+	if(info->overflowInsns && value->un.i8Value < 0)
+	{
+		return 0;
+	}
 	value->valueType = ILMachineType_UInt64;
 	return 1;
 }
 ILGenCastConst(ILMachineType_Float32, ILMachineType_UInt64)
 {
-	value->un.i8Value = (ILInt64)ILFloatToUInt64(value->un.r4Value);
-	value->valueType = ILMachineType_UInt64;
-	return 1;
+	if(info->overflowInsns)
+	{
+		value->valueType = ILMachineType_UInt64;
+		return ILFloatToUInt64Ovf((ILUInt64 *)&(value->un.i8Value),
+								  value->un.r4Value);
+	}
+	else
+	{
+		value->un.i8Value = (ILInt64)ILFloatToUInt64(value->un.r4Value);
+		value->valueType = ILMachineType_UInt64;
+		return 1;
+	}
 }
 ILGenCastConst(ILMachineType_Float64, ILMachineType_UInt64),
 ILGenCastConst(ILMachineType_NativeFloat, ILMachineType_UInt64)
 {
-	value->un.i8Value = (ILInt64)ILFloatToUInt64(value->un.r8Value);
-	value->valueType = ILMachineType_UInt64;
-	return 1;
+	if(info->overflowInsns)
+	{
+		value->valueType = ILMachineType_UInt64;
+		return ILFloatToUInt64Ovf((ILUInt64 *)&(value->un.i8Value),
+								  value->un.r8Value);
+	}
+	else
+	{
+		value->un.i8Value = (ILInt64)ILFloatToUInt64(value->un.r8Value);
+		value->valueType = ILMachineType_UInt64;
+		return 1;
+	}
 }
 ILGenCastConst(ILMachineType_Decimal, ILMachineType_UInt64)
 {
@@ -2574,7 +3037,8 @@ ILGenCastConst(ILMachineType_Int64, ILMachineType_NativeFloat)
 }
 ILGenCastConst(ILMachineType_UInt64, ILMachineType_NativeFloat)
 {
-	value->un.r8Value = ILUInt64ToFloat((ILUInt64)(value->un.i8Value));
+	value->un.r8Value =
+		(ILDouble)(ILUInt64ToFloat((ILUInt64)(value->un.i8Value)));
 	value->valueType = ILMachineType_NativeFloat;
 	return 1;
 }

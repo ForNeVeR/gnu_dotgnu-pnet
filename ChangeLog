@@ -25,6 +25,9 @@
 	* Xsharp/RootWindow.cs, Xsharp/Xlib.cs.in, Xsharp/XsharpSupport.c:
 	adding some simple support for reading the RESOURCE_MANAGER property.
 
+	* System.Drawing.Xsharp/DrawingToolkit.cs: add some of the
+	infrastructure for RESOURCE_MANAGER - currently disabled.
+
 2003-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs , 

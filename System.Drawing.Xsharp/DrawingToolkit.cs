@@ -34,6 +34,10 @@ public sealed class DrawingToolkit : IToolkit
 	// Internal state.
 	internal Application app;
 	internal Widget placeholder;
+	private int background;
+	private int foreground;
+	private int textBackground;
+	private int textForeground;
 
 	// Constructor.
 	public DrawingToolkit()
@@ -43,6 +47,75 @@ public sealed class DrawingToolkit : IToolkit
 
 				// Get the placeholder widget for the screen.
 				placeholder = app.Display.DefaultScreenOfDisplay.Placeholder;
+
+				// Track changes to RESOURCE_MANAGER on the root window.
+				app.Display.DefaultScreenOfDisplay.RootWindow.ResourcesChanged
+					+= new EventHandler(ResourcesChanged);
+
+				// And then load the initial state.
+				LoadResources();
+			}
+
+	// Parse an X resource color.
+	private static int ParseColor(String name)
+			{
+				if(name == null || name[0] != '#')
+				{
+					return -1;
+				}
+				long value = 0;
+				int posn = 1;
+				char ch;
+				while(posn < name.Length)
+				{
+					ch = name[posn++];
+					if(ch >= '0' && ch <= '9')
+					{
+						value = value * 16 + (long)(ch - '0');
+					}
+					else if(ch >= 'A' && ch <= 'F')
+					{
+						value = value * 16 + (long)(ch - 'A' + 10);
+					}
+					else if(ch >= 'a' && ch <= 'f')
+					{
+						value = value * 16 + (long)(ch - 'a' + 10);
+					}
+				}
+				int red, green, blue;
+				if(name.Length <= 7)
+				{
+					red = ((int)(value >> 16)) & 0xFF;
+					green = ((int)(value >> 8)) & 0xFF;
+					blue = ((int)value) & 0xFF;
+				}
+				else
+				{
+					red = ((int)(value >> 40)) & 0xFF;
+					green = ((int)(value >> 24)) & 0xFF;
+					blue = ((int)(value >> 8)) & 0xFF;
+				}
+				return ((red << 16) | (green << 8) | blue);
+			}
+
+	// Load the resources that are relevant to system colors.
+	private void LoadResources()
+			{
+				RootWindow root;
+				root = app.Display.DefaultScreenOfDisplay.RootWindow;
+				background = ParseColor(root.GetResource("*background"));
+				foreground = ParseColor(root.GetResource("*foreground"));
+				textBackground = ParseColor
+					(root.GetResource("*XmText.background"));
+				textForeground = ParseColor
+					(root.GetResource("*XmText.foreground"));
+			}
+
+	// Track a change in resources on the X display server.
+	private void ResourcesChanged(Object sender, EventArgs e)
+			{
+				LoadResources();
+				// TODO: raise a repaint on all windows
 			}
 
 	// Run the main event processing loop for the toolkit.
@@ -70,10 +143,60 @@ public sealed class DrawingToolkit : IToolkit
 				app.Display.Quit();
 			}
 
+	// Get lighter or darker versions of a color.
+	private static int Light(int color)
+			{
+				// TODO
+				return -1;
+			}
+	private static int LightLight(int color)
+			{
+				// TODO
+				return -1;
+			}
+	private static int Dark(int color)
+			{
+				// TODO
+				return -1;
+			}
+	private static int DarkDark(int color)
+			{
+				// TODO
+				return -1;
+			}
+
 	// Resolve a system color to an RGB value.  Returns -1 if the
 	// system does not support the color and a default should be used.
 	public int ResolveSystemColor(KnownColor color)
 			{
+			#if false
+				switch(color)
+				{
+					case KnownColor.Control:
+						return background;
+
+					case KnownColor.ControlLight:
+						return Light(background);
+
+					case KnownColor.ControlLightLight:
+						return LightLight(background);
+
+					case KnownColor.ControlDark:
+						return Dark(background);
+
+					case KnownColor.ControlDarkDark:
+						return DarkDark(background);
+
+					case KnownColor.ControlText:
+						return foreground;
+
+					case KnownColor.Window:
+						return textBackground;
+
+					case KnownColor.WindowText:
+						return textForeground;
+				}
+			#endif
 				return -1;
 			}
 

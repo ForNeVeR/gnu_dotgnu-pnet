@@ -284,6 +284,7 @@ ILType *_ILLinkerConvertType(ILLinker *linker, ILType *type)
 				newType->num__ = 0;
 				newType->un.method__.retType__ =
 					_ILLinkerConvertType(linker, type->un.method__.retType__);
+				newType->un.method__.next__ = 0;
 				if(!(newType->un.method__.retType__))
 				{
 					return ILType_Invalid;

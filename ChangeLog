@@ -1,4 +1,10 @@
 
+2002-07-25  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilalink/link_type.c (_ILLinkerConvertType): clear the "next__"
+	field in new method signatures before converting the parmaters,
+	to prevent the new signature picking up a pointer to the old type.
+
 2002-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (FieldToConstant): jump to the class

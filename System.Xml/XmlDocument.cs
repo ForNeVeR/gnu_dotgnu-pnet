@@ -600,8 +600,9 @@ class XmlDocument : XmlNode
 					(placeholder, version, encoding, standalone);
 			}
 	
-	// Because ml-pnet's System.Data needs it
-	protected internal virtual XPathNavigator CreateNavigator(XmlNode node)
+	// NOTE: should be protected internal virtual 
+	// but for ml-pnet's System.Data the internal modifier has to be removed
+	protected virtual XPathNavigator CreateNavigator(XmlNode node)
 			{
 				return node.CreateNavigator();
 			}

@@ -1101,22 +1101,37 @@ public class ToolBar : Control
 		ToolBarButtonClickEventHandler handler;
 		handler = ((ToolBarButtonClickEventHandler)
 		           (GetHandler(EventId.ButtonClick)));
-		if(handler != null)
+		if (handler != null)
 		{
 			handler(this, e);
 		}
 	}
-	[TODO]
 	protected virtual void OnButtonDropDown(ToolBarButtonClickEventArgs e)
 	{
 		ToolBarButtonClickEventHandler handler;
 		handler = ((ToolBarButtonClickEventHandler)
 		           (GetHandler(EventId.ButtonDropDown)));
-		if(handler != null)
+		if (handler != null)
 		{
 			handler(this, e);
 		}
-		// TODO - show drop down menu
+		ToolBarButton b = e.Button;
+		ContextMenu menu = (b.DropDownMenu as ContextMenu);
+		if (menu != null)
+		{
+			Rectangle rect;
+			if (dropDownArrows)
+			{
+				rect = b.dropRectangle;
+			}
+			else
+			{
+				rect = b.viewRectangle;
+			}
+			int x = rect.X; // left
+			int y = rect.Y+rect.Height; // bottom
+			menu.Show(this,new Point(x,y));
+		}
 	}
 	protected override void OnFontChanged(EventArgs e)
 	{

@@ -45,6 +45,9 @@
 	I18N/CJK/JISConvert.cs: remove the "__PNET__" symbol from the
 	I18N code, because it is obsolete.
 
+	* I18N/CJK/CP51932.cs, I18N/CJK/CP932.cs: add code page 51932 (euc-jp)
+	to the I18N routines.
+
 2003-08-09  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Makefile.am, configure.in, System.Configuration.Install/.cvsignore,

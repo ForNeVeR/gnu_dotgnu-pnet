@@ -25,28 +25,28 @@ namespace System.Net
 
 using System;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 public class IPAddress
 {
 
-	// note that the address long is backwards; that is, 1.2.3.4 becomes
-	// 0x0000000004030201
-	// at least it is here. However, host-byte-order is what it is supposed to be,
-	// and I don't know if all hosts are little word, little endian ;)
+	// The IP address is stored in the low 4 bytes of "value__"
+	// in network byte order.
 	private long value__;
 
 	public IPAddress(long newAddress)
 			{
-				if ((newAddress < 0) || (newAddress > 0x00000000FFFFFFFF))
-					throw new ArgumentOutOfRangeException("newAddress",S._("Arg_OutOfRange"));
+				if((newAddress < 0) || (newAddress > 0x00000000FFFFFFFF))
+				{
+					throw new ArgumentOutOfRangeException
+						("newAddress", S._("Arg_OutOfRange"));
+				}
 				this.value__ = newAddress;
-
-				// Any, Broadcast, Loopback, and None are static
 			}
 
 	public override bool Equals(Object comparand)
 			{
-				if (comparand is IPAddress)
+				if(comparand is IPAddress)
 				{
 					return (value__ == ((IPAddress)comparand).value__);
 				}
@@ -61,57 +61,48 @@ public class IPAddress
 				return unchecked(((int)(value__ ^ (value__ >> 32)))
 										& (int)0x7FFFFFFF);
 			}
-	// I think the next three will have to be InternalCalls
-	[TODO]
-	public static long HostToNetworkOrder(long host)
-			{
-				return 0;
-			}
-	[TODO]
-	public static int HostToNetworkOrder(int host)
-			{
-				return 0;
-			}
-	[TODO]
-	public static short HostToNetworkOrder(short host)
-			{
-				return 0;
-			}
+
+	// Convert from host to network order.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static long HostToNetworkOrder(long host);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int HostToNetworkOrder(int host);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static short HostToNetworkOrder(short host);
+
+	// Determine if an address corresponds to the loopback interface.
 	public static bool IsLoopback(IPAddress address)
 			{
-				// careful here, after all, 0x80 >= 0x7F, but should return false
-				// only LSByte value matters
-				return ((address.value__ & 0x00000000000000FF) == 0x000000000000007F);
+				long mask = (long)(uint)HostToNetworkOrder(0x7F000000);
+				return ((address.value__ & mask) == mask);
 			}
-	// I think the next three will have to be InternalCalls
-	[TODO]
-	public static long NetworkToHostOrder(long network)
-			{
-				return 0;
-			}
-	[TODO]
-	public static int NetworkToHostOrder(int network)
-			{
-				return 0;
-			}	
-	[TODO]	
-	public static short NetworkToHostOrder(short network)
-			{
-				return 0;
-			}
+
+	// Convert from network to host order.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static long NetworkToHostOrder(long network);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static int NetworkToHostOrder(int network);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static short NetworkToHostOrder(short network);
+
 	public static IPAddress Parse(String ipString)
 			{
-				long parsed;
+				int parsed;
 				String[]  tokenizedString;
-				long quadA;
-				long quadB;
-				long quadC;
-				long quadD;
+				int quadA;
+				int quadB;
+				int quadC;
+				int quadD;
 				bool  numbersign;
 
 				if (ipString == null)
 				{
-					throw new ArgumentNullException("ipString",S._("Arg_NotNull"));
+					throw new ArgumentNullException
+						("ipString", S._("Arg_NotNull"));
 				}
 
 				// this only takes char[]. not String
@@ -134,21 +125,25 @@ public class IPAddress
 					throw new FormatException(S._("Format_IP"));
 				}
 
-				parsed = (quadD + (quadC << 2) + (quadB << 4) + (quadA << 6));
+				parsed = (quadD + (quadC << 8) + (quadB << 16) + (quadA << 24));
 
-				return new IPAddress(parsed);
+				return new IPAddress((long)(uint)HostToNetworkOrder(parsed));
 			}	
 	public override string ToString()
 			{
-				return ((value__ >> 24) & 0xFF).ToString() + "." +
-					   ((value__ >> 16) & 0xFF).ToString() + "." +
-					   ((value__ >> 8) & 0xFF).ToString() + "." +
-					   (value__ & 0xFF).ToString();
+				int host = NetworkToHostOrder((int)value__);
+				return ((host >> 24) & 0xFF).ToString() + "." +
+					   ((host >> 16) & 0xFF).ToString() + "." +
+					   ((host >> 8) & 0xFF).ToString() + "." +
+					   (host & 0xFF).ToString();
 			}
 
 	public static readonly IPAddress Any = new IPAddress(0x0000000000000000);
-	public static readonly IPAddress Broadcast = new IPAddress(0x00000000FFFFFFFF);
-	public static readonly IPAddress Loopback = new IPAddress(0x000000000100007F);
+	public static readonly IPAddress Broadcast =
+			new IPAddress((long)(uint)HostToNetworkOrder
+							(unchecked((int)0xFFFFFFFF)));
+	public static readonly IPAddress Loopback =
+			new IPAddress((long)(uint)HostToNetworkOrder(0x7F000001));
 	public static readonly IPAddress None = Broadcast;
 
 	public long Address
@@ -159,8 +154,11 @@ public class IPAddress
 				}
 				set
 				{
-					if ((value < 0) || (value > 0x00000000FFFFFFFF))
-						throw new ArgumentOutOfRangeException("newAddress",S._("Arg_OutOfRange"));
+					if((value < 0) || (value > 0x00000000FFFFFFFF))
+					{
+						throw new ArgumentOutOfRangeException
+							("newAddress", S._("Arg_OutOfRange"));
+					}
 					value__ = value;
 				}
 			}

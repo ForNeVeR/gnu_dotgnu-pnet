@@ -30,7 +30,7 @@ public abstract class XmlWriter
 	WriteState writestate;
 		
 	//Methods
-	protected XmlWriter();
+	protected XmlWriter() {}
 	
 	public abstract void Close();
 	

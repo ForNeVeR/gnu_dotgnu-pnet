@@ -201,10 +201,10 @@ Changes should be submitted through the Patch Manager on Savannah:
 
     http://savannah.gnu.org/patch/?group_id=353
 
-Bug reports should be submitted through the Tech Support Manager
+Bug reports should be submitted through the Bug Tracking system
 on Savannah:
 
-	http://savannah.gnu.org/support/?group_id=353
+	https://savannah.gnu.org/bugs/?group=dotgnu-pnet
 
 Alternatively, you can e-mail patches and bug reports to Rhys Weatherley
 (rweather@southern-storm.com.au).  The facilities on Savannah make it

@@ -1,4 +1,9 @@
 
+2001-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* ilasm/ilasm_grammar.y: adjustments to the syntax of "switch"
+	statements in the assembler's Java instruction mode.
+
 2001-02-11  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, NEWS: update for "0.3.0" release.

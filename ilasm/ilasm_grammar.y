@@ -3605,8 +3605,8 @@ JavaInstruction
 	| I_NEWARRAY JavaArrayType	{}
 	| I_MULTINEWARRAY TypeSpecification Integer32	{}
 	| I_MULTINEWARRAY ComposedString Integer32	{}
-	| I_SWITCH '(' TableSwitchLabels ')'		{}
-	| I_LSWITCH '(' LookupSwitchLabels ')'		{}
+	| I_SWITCH TableSwitchLabel '(' Integer32 ':' TableSwitchLabels ')'	{}
+	| I_LSWITCH TableSwitchLabel '(' LookupSwitchLabels ')'		{}
 	;
 
 JavaArrayType

@@ -32,23 +32,23 @@ public class FileStream : Stream
 	private const int BUFSIZ = 4096;
 
 	// Invalid handle value.
-	private static readonly IntPtr invalidHandle =
+	internal static readonly IntPtr invalidHandle =
 		FileMethods.GetInvalidHandle();
 
 	// Internal state.
-	private IntPtr handle;
-	private FileAccess access;
-	private bool ownsHandle;
-	private bool isAsync;
+	internal IntPtr handle;
+	internal FileAccess access;
+	internal bool ownsHandle;
+	internal bool isAsync;
 
 	// Buffer information.
-	private int bufferSize;
-	private byte[] buffer;
-	private int bufferPosn;
-	private int bufferLen;
-	private long position;
-	private bool bufferOwnedByWrite;
-	private bool canSeek;
+	internal int bufferSize;
+	internal byte[] buffer;
+	internal int bufferPosn;
+	internal int bufferLen;
+	internal long position;
+	internal bool bufferOwnedByWrite;
+	internal bool canSeek;
 
 	// Constructor.
 	public FileStream(String path, FileMode mode)
@@ -226,6 +226,10 @@ public class FileStream : Stream
 				}
 			}
 #endif
+
+	// Fake internal constructor that is called by
+	// "System.Reflection.ClrResourceStream".
+	internal FileStream() {}
 
 	// Destructor.
 	~FileStream()

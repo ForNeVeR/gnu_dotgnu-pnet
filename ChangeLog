@@ -15,6 +15,10 @@
 	runtime/System/Runtime/Serialization/ObjectManager.cs: implement
 	missing functionality in "System.Runtime.Serialization".
 
+	* runtime/System/Collections/Hashtable.cs: fix bug #3048 - "Keys"
+	and "Values" properties of "Hashtable" should return a live view
+	of the collection, not a copy.
+
 2003-04-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/Microsoft/Win32/IRegistryKeyProvider.cs,

@@ -534,7 +534,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 				else
 				{
 					int posn;
-					for(posn = 0; posn < num; ++posn)
+					for(posn = 0; posn < table.Length; ++posn)
 					{
 						if(table[posn].key != null)
 						{
@@ -747,35 +747,14 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 			{
 				get
 				{
-					Object[] array = new Object [num];
-					int posn, index;
-					Object key;
-					index = 0;
-					for(posn = 0; posn < capacity; ++posn)
-					{
-						if((key = table[posn].key) != null)
-						{
-							array[index++] = key;
-						}
-					}
-					return array;
+					return new HashtableKeyValueCollection(this, true);
 				}
 			}
 	public virtual ICollection Values
 			{
 				get
 				{
-					Object[] array = new Object [num];
-					int posn, index;
-					index = 0;
-					for(posn = 0; posn < capacity; ++posn)
-					{
-						if(table[posn].key != null)
-						{
-							array[index++] = table[posn].value;
-						}
-					}
-					return array;
+					return new HashtableKeyValueCollection(this, false);
 				}
 			}
 
@@ -1268,7 +1247,128 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					}
 				}
 
-	}; // HashtableEnum
+	}; // class HashtableEnum
+
+	// Key/value enumerator class.
+	private sealed class HashtableKeyValueEnumerator : IEnumerator
+	{
+		// Internal state.
+		private IDictionaryEnumerator e;
+		private bool keys;
+
+		// Constructor.
+		public HashtableKeyValueEnumerator(IDictionaryEnumerator e, bool keys)
+				{
+					this.e = e;
+					this.keys = keys;
+				}
+
+		// Implement the IEnumerator interface.
+		public bool MoveNext()
+				{
+					return e.MoveNext();
+				}
+		public void Reset()
+				{
+					e.Reset();
+				}
+		public Object Current
+				{
+					get
+					{
+						if(keys)
+						{
+							return e.Key;
+						}
+						else
+						{
+							return e.Value;
+						}
+					}
+				}
+
+	}; // class HashtableKeyValueEnumerator
+
+	// Collection access to the keys or values in a hash table.
+	private sealed class HashtableKeyValueCollection : ICollection
+	{
+		// Internal state.
+		private Hashtable table;
+		private bool keys;
+
+		// Constructor.
+		public HashtableKeyValueCollection(Hashtable table, bool keys)
+				{
+					this.table = table;
+					this.keys = keys;
+				}
+
+		// Implement the ICollection interface.
+		public void CopyTo(Array array, int index)
+				{
+					if(array == null)
+					{
+						throw new ArgumentNullException("array");
+					}
+					else if(array.Rank != 1)
+					{
+						throw new ArgumentException(_("Arg_RankMustBe1"));
+					}
+					else if(index < array.GetLowerBound(0))
+					{
+						throw new ArgumentOutOfRangeException
+							("index", _("Arg_InvalidArrayIndex"));
+					}
+					else if(index > (array.GetLength(0) - table.Count))
+					{
+						throw new ArgumentException(_("Arg_InvalidArrayRange"));
+					}
+					else
+					{
+						IDictionaryEnumerator e = table.GetEnumerator();
+						while(e.MoveNext())
+						{
+							if(keys)
+							{
+								array.SetValue(e.Key, index++);
+							}
+							else
+							{
+								array.SetValue(e.Value, index++);
+							}
+						}
+					}
+				}
+		public int Count
+				{
+					get
+					{
+						return table.Count;
+					}
+				}
+		public bool IsSynchronized
+				{
+					get
+					{
+						return table.IsSynchronized;
+					}
+				}
+		public Object SyncRoot
+				{
+					get
+					{
+						return table.SyncRoot;
+					}
+				}
+
+		// Implement the IEnumerable interface.
+		public IEnumerator GetEnumerator()
+				{
+					return new HashtableKeyValueEnumerator
+						(table.GetEnumerator(), keys);
+				}
+
+	}; // class HashtableKeyCollection
 
 }; // class Hashtable
 

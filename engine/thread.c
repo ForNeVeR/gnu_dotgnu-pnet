@@ -392,12 +392,12 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 
 	if (execThread == 0)
 	{
-		/* The thread has finished */
+		/* The thread is dead */
 		result = IL_SUSPEND_FAILED;
 	}
 	else
 	{
-		result = ILThreadSuspendRequest(supportThread, execThread->runningManagedCode);
+		result = ILThreadSuspendRequest(supportThread, !execThread->runningManagedCode);
 	}
 
 	if (result == IL_SUSPEND_FAILED)

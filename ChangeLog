@@ -1,4 +1,9 @@
 
+2002-11-28  James McParlane  <james@massive.com.au>
+
+	* configure.in: add the "--disable-optimizations" flag to
+	assist with building on certain platforms.
+
 2002-11-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/I18N.CJK.dll, samples/I18N.MidEast.dll,

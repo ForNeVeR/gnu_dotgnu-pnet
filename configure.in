@@ -67,6 +67,18 @@ AC_ARG_WITH(profile,
 	PROFILE_NAME=full
 ])
 
+#
+# NOTE! This (--disable-optimizations argument) should be able to be removed when the gcc optimizer bug goes away.......
+#
+AC_ARG_ENABLE(optimizations,  
+[  --disable-optimizations disables all CFLAGS that have been passed into ./configure via the environment or 
+                          by the PROG_CC macro. The result is that CFLAGS is replaced by the default '-g'. 
+                          This is useful in bypassing the apparent bugs in gcc's optimizer.], 
+[
+	CFLAGS="-g"
+])
+
+
 dnl This code was borrowed from "libgc" to test for the correct
 dnl thread package to use, and to notify the garbage collector's
 dnl "gc.h" file of the correct features to enable.  See the

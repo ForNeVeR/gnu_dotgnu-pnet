@@ -39,8 +39,7 @@ internal class MemberInfoSerializationHolder : ISerializable, IObjectReference
 	private MemberTypes memberType;
 	private String name;
 	private String signature;
-	private String assemblyName;
-	private String className;
+	private Type containingType;
 
 	// Constructor.
 	public MemberInfoSerializationHolder(SerializationInfo info,
@@ -53,8 +52,22 @@ internal class MemberInfoSerializationHolder : ISerializable, IObjectReference
 				memberType = (MemberTypes)(info.GetInt32("MemberType"));
 				name = info.GetString("Name");
 				signature = info.GetString("Signature");
-				assemblyName = info.GetString("AssemblyName");
-				className = info.GetString("ClassName");
+				String assemblyName = info.GetString("AssemblyName");
+				String className = info.GetString("ClassName");
+				if(assemblyName == null || className == null)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				Assembly assembly = FormatterServices.GetAssemblyByName
+					(assemblyName);
+				if(assembly == null)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				containingType = FormatterServices.GetTypeFromAssembly
+					(assembly, className);
 			}
 
 	// Serialize a unity object.
@@ -79,11 +92,113 @@ internal class MemberInfoSerializationHolder : ISerializable, IObjectReference
 			}
 
 	// Implement the IObjectReference interface.
-	[TODO]
 	public Object GetRealObject(StreamingContext context)
 			{
-				// TODO
-				return null;
+				if(containingType == null || name == null ||
+				   memberType == (MemberTypes)0)
+				{
+					throw new SerializationException
+						(_("Serialize_StateMissing"));
+				}
+				switch(memberType)
+				{
+					case MemberTypes.Constructor:
+					{
+						if(signature == null)
+						{
+							throw new SerializationException
+								(_("Serialize_StateMissing"));
+						}
+						ConstructorInfo[] ctors;
+						ctors = containingType.GetConstructors
+							(BindingFlags.Instance |
+							 BindingFlags.Static |
+							 BindingFlags.Public |
+							 BindingFlags.NonPublic);
+						foreach(ConstructorInfo ctor in ctors)
+						{
+							if(ctor.ToString() == signature)
+							{
+								return ctor;
+							}
+						}
+					}
+					break;
+
+					case MemberTypes.Event:
+					{
+						EventInfo eventInfo = containingType.GetEvent
+							(name, BindingFlags.Instance |
+								   BindingFlags.Static |
+								   BindingFlags.Public |
+								   BindingFlags.NonPublic);
+						if(eventInfo != null)
+						{
+							return eventInfo;
+						}
+					}
+					break;
+
+					case MemberTypes.Field:
+					{
+						FieldInfo field = containingType.GetField
+							(name, BindingFlags.Instance |
+								   BindingFlags.Static |
+								   BindingFlags.Public |
+								   BindingFlags.NonPublic);
+						if(field != null)
+						{
+							return field;
+						}
+					}
+					break;
+
+					case MemberTypes.Method:
+					{
+						if(signature == null)
+						{
+							throw new SerializationException
+								(_("Serialize_StateMissing"));
+						}
+						MethodInfo[] methods;
+						methods = containingType.GetMethods
+							(BindingFlags.Instance |
+							 BindingFlags.Static |
+							 BindingFlags.Public |
+							 BindingFlags.NonPublic);
+						foreach(MethodInfo method in methods)
+						{
+							if(method.ToString() == signature)
+							{
+								return method;
+							}
+						}
+					}
+					break;
+
+					case MemberTypes.Property:
+					{
+						PropertyInfo property = containingType.GetProperty
+							(name, BindingFlags.Instance |
+								   BindingFlags.Static |
+								   BindingFlags.Public |
+								   BindingFlags.NonPublic);
+						if(property != null)
+						{
+							return property;
+						}
+					}
+					break;
+
+					default:
+					{
+						throw new ArgumentException
+							(_("Arg_InvalidMemberObject"));
+					}
+					// Not reached.
+				}
+				throw new SerializationException
+					(_("Arg_InvalidMemberObject"));
 			}
 
 }; // class MemberInfoSerializationHolder

@@ -25,6 +25,10 @@
 	runtime/System/Runtime/Serialization/FormatterServices.cs:
 	serialization support for assemblies and modules.
 
+	* resources/en_US/runtime/Arg.txt,
+	runtime/System/Reflection/MemberInfoSerializationHolder.cs:
+	de-serialization support for member reflection classes.
+
 2003-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

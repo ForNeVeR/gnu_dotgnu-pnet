@@ -1121,7 +1121,8 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			   !ILMethod_IsNewSlot(methodInfo))
 			{
 				/* Check for the correct form of virtual method overrides */
-				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0 &&
+				   (method->modifiers & CS_SPECIALATTR_NEW) == 0)
 				{
 					CCWarningOnLine(yygetfilename(method), yygetlinenum(method),
 			  			"declaration of `%s' overrides an inherited member, "

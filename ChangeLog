@@ -6,6 +6,9 @@
 
 	* csdoc/il2doc.c, csdoc/Makefile.am: add the "il2doc" utility program.
 
+	* cscc/csharp/cs_gather.c: suppress an unnecessary warning if
+	"new" is set but the code thinks that there is an override.
+
 2003-05-23  Gopal.V  <gopalv82@symonds.net>
 	
 	* engine/lib_regexp.c: Minor fix to CompileWithSyntaxInternal ,

@@ -1,4 +1,10 @@
 
+2003-08-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/Remoting/Messaging/ConstructionCall.cs,
+	runtime/System/Runtime/Remoting/Messaging/MethodCall.cs:
+	missing functionality in "System.Runtime.Remoting.Messaging".
+
 2003-08-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

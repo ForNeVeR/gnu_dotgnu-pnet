@@ -36,26 +36,36 @@ public class ConstructionCall : MethodCall, IConstructionCallMessage,
 {
 	// Internal state.
 	private IActivator activator;
+	private Type activationType;
+	private String activationTypeName;
+	private Object[] attributes;
+	private IList contextProperties;
 
 	// Constructors.
 	public ConstructionCall(Header[] h1) : base(h1) {}
 	public ConstructionCall(IMessage msg) : base(msg) {}
+	internal ConstructionCall(SerializationInfo info,
+							  StreamingContext context)
+			: base(info, context) {}
 
 	// Implement the IConstructionCallMessage interface.
+	[TODO]
 	public Type ActivationType
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(activationType == null && activationTypeName != null)
+					{
+						// TODO: resolve the type from its name
+					}
+					return activationType;
 				}
 			}
 	public String ActivationTypeName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return activationTypeName;
 				}
 			}
 	public IActivator Activator
@@ -73,26 +83,37 @@ public class ConstructionCall : MethodCall, IConstructionCallMessage,
 			{
 				get
 				{
-					// TODO
-					return null;
+					return attributes;
 				}
 			}
 	public IList ContextProperties
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(contextProperties == null)
+					{
+						contextProperties = new ArrayList();
+					}
+					return contextProperties;
 				}
 			}
 
 	// Override the parent properties.
+	[TODO]
 	public override IDictionary Properties
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(InternalProperties == null)
+					{
+						InternalProperties = new Hashtable();
+					}
+					if(ExternalProperties == null)
+					{
+						// TODO: use a message dictionary
+						ExternalProperties = new Hashtable();
+					}
+					return ExternalProperties;
 				}
 			}
 

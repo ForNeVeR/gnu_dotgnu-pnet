@@ -36,17 +36,54 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 	// Internal state.
 	protected IDictionary ExternalProperties;
 	protected IDictionary InternalProperties;
+	private Object[] args;
+	private String methodName;
+	private String typeName;
+	private String uri;
+	private bool hasVarArgs;
+	private LogicalCallContext context;
+	private MethodBase method;
+	private ParameterInfo[] parameters;
+	private Object srvID;
+	private Type[] signature;
 
 	// Constructors.
-	[TODO]
 	public MethodCall(Header[] h1)
 			{
-				// TODO
+				Init();
+				if(h1 != null)
+				{
+					foreach(Header h in h1)
+					{
+						ProcessHeader(h.Name, h.Value);
+					}
+				}
+				ResolveMethod();
+				AccessCheck();
 			}
-	[TODO]
 	public MethodCall(IMessage msg)
 			{
-				// TODO
+				if(msg == null)
+				{
+					throw new ArgumentNullException("msg");
+				}
+				Init();
+				IDictionaryEnumerator e = msg.Properties.GetEnumerator();
+				while(e.MoveNext())
+				{
+					ProcessHeader(e.Key.ToString(), e.Value);
+				}
+				ResolveMethod();
+				AccessCheck();
+			}
+	internal MethodCall(SerializationInfo info, StreamingContext context)
+			{
+				if(info == null)
+				{
+					throw new ArgumentNullException("info");
+				}
+				Init();
+				RootSetObjectData(info, context);
 			}
 
 	// Implement the IMethodCallMessage interface.
@@ -55,132 +92,198 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(InternalProperties == null)
+					{
+						InternalProperties = new Hashtable();
+					}
+					if(ExternalProperties == null)
+					{
+						// TODO: use a message dictionary
+						ExternalProperties = new Hashtable();
+					}
+					return ExternalProperties;
 				}
 			}
-	[TODO]
 	public int ArgCount
 			{
 				get
 				{
-					// TODO
-					return 0;
+					if(args != null)
+					{
+						return args.Length;
+					}
+					else
+					{
+						return 0;
+					}
 				}
 			}
-	[TODO]
 	public Object[] Args
 			{
 				get
 				{
-					// TODO
-					return null;
+					return args;
 				}
 			}
-	[TODO]
 	public bool HasVarArgs
 			{
 				get
 				{
-					// TODO
-					return false;
+					return hasVarArgs;
 				}
 			}
-	[TODO]
 	public LogicalCallContext LogicalCallContext
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(context == null)
+					{
+						context = new LogicalCallContext();
+					}
+					return context;
 				}
 			}
-	[TODO]
 	public MethodBase MethodBase
 			{
 				get
 				{
-					// TODO
-					return null;
+					return method;
 				}
 			}
-	[TODO]
 	public String MethodName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return methodName;
 				}
 			}
-	[TODO]
 	public Object MethodSignature
 			{
 				get
 				{
-					// TODO
-					return null;
+					if(signature == null)
+					{
+						FetchParameters();
+						if(parameters != null)
+						{
+							signature = new Type [parameters.Length];
+							int posn;
+							for(posn = 0; posn < signature.Length; ++posn)
+							{
+								signature[posn] =
+									parameters[posn].ParameterType;
+							}
+						}
+					}
+					return signature;
 				}
 			}
-	[TODO]
 	public String TypeName
 			{
 				get
 				{
-					// TODO
-					return null;
+					return typeName;
 				}
 			}
-	[TODO]
 	public String Uri
 			{
 				get
 				{
-					// TODO
-					return null;
+					return uri;
+				}
+				set
+				{
+					uri = value;
 				}
 			}
-	[TODO]
 	public int InArgCount
 			{
 				get
 				{
-					// TODO
-					return 0;
+					FetchParameters();
+					int count = 0;
+					if(parameters != null)
+					{
+						foreach(ParameterInfo p in parameters)
+						{
+							if(!(p.ParameterType.IsByRef))
+							{
+								++count;
+							}
+						}
+					}
+					return count;
 				}
 			}
-	[TODO]
 	public Object[] InArgs
 			{
 				get
 				{
-					// TODO
-					return null;
+					int count = InArgCount;
+					Object[] inArgs = new Object [count];
+					if(parameters != null && args != null)
+					{
+						int posn;
+						count = 0;
+						for(posn = 0; posn < args.Length; ++posn)
+						{
+							if(!(parameters[posn].ParameterType.IsByRef))
+							{
+								inArgs[count++] = args[posn];
+							}
+						}
+					}
+					return inArgs;
 				}
 			}
-	[TODO]
 	public Object GetArg(int argNum)
 			{
-				// TODO
-				return null;
+				return args[argNum];
 			}
-	[TODO]
 	public String GetArgName(int index)
 			{
-				// TODO
-				return null;
+				FetchParameters();
+				return parameters[index].Name;
 			}
-	[TODO]
 	public Object GetInArg(int argNum)
 			{
-				// TODO
-				return null;
+				FetchParameters();
+				if(parameters != null && args != null)
+				{
+					int posn;
+					for(posn = 0; posn < args.Length; ++posn)
+					{
+						if(!(parameters[posn].ParameterType.IsByRef))
+						{
+							if(argNum == 0)
+							{
+								return args[posn];
+							}
+							--argNum;
+						}
+					}
+				}
+				throw new IndexOutOfRangeException(_("Arg_InvalidArrayIndex"));
 			}
-	[TODO]
 	public String GetInArgName(int index)
 			{
-				// TODO
-				return null;
+				FetchParameters();
+				if(parameters != null)
+				{
+					int posn;
+					for(posn = 0; posn < args.Length; ++posn)
+					{
+						if(!(parameters[posn].ParameterType.IsByRef))
+						{
+							if(index == 0)
+							{
+								return parameters[posn].Name;
+							}
+							--index;
+						}
+					}
+				}
+				throw new IndexOutOfRangeException(_("Arg_InvalidArrayIndex"));
 			}
 
 	// Implement the ISerializable interface.
@@ -225,10 +328,32 @@ public class MethodCall : IMethodCallMessage, ISerializable,
 			}
 
 	// Set the server identity within this object.
-	[TODO]
 	internal void SetServerIdentity(Object srvID)
 			{
+				this.srvID = srvID;
+			}
+
+	// Process a header.
+	[TODO]
+	private void ProcessHeader(String name, Object value)
+			{
 				// TODO
+			}
+
+	// Perform an access check on the resolved method.
+	[TODO]
+	private void AccessCheck()
+			{
+				// TODO
+			}
+
+	// Fetch the parameter information from the method block.
+	private void FetchParameters()
+			{
+				if(parameters == null && method != null)
+				{
+					parameters = method.GetParameters();
+				}
 			}
 
 }; // class MethodCall

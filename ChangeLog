@@ -3,6 +3,8 @@
 
 * engine/engine.h: add the IL_INLINE helper macro.
 
+* tools/mkrelease: add a new option to allow builds from non-CVS sources.
+
 2001-08-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/engine_private.h: new file for isolating access to "image".

@@ -19,8 +19,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Validate the command-line argments.
-if [ -z "$1" -o -z "$2" ]; then
-	echo 'Usage: "mkrelease dir version".  e.g. "mkrelease $HOME/release 0.0.3"'
+if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
+	echo 'Usage: "mkrelease dir version src".  e.g. "mkrelease $HOME/release 0.1.4 $HOME/work/dotgnu/clean_copy/pnet"'
 	exit 1
 fi
 if [ ! -d "$1" ]; then
@@ -62,7 +62,8 @@ function error()
 call rm -rf pnet
 
 # Check out the current version of the source.
-call cvs -Q checkout pnet
+#call cvs -Q checkout pnet
+call cp -pr "$3" pnet
 
 # Make sure that the version number matches.
 SRCVERSION=`grep ^AM_INIT_AUTOMAKE pnet/configure.in | sed 's/^[^(]*(pnet, //' | sed 's/)//g'`
@@ -116,7 +117,8 @@ call tar cfz "pnetbin-$VERSION.tar.gz" "pnetbin-$VERSION"
 call rm -rf pnet
 
 # Check out again and run automake/autoconf.
-call cvs -Q checkout pnet
+#call cvs -Q checkout pnet
+call cp -pr "$3" pnet
 echo '$' cd pnet >>$LOGFILE
 echo cd pnet
 cd pnet

@@ -245,7 +245,7 @@ public sealed class Math
 					throw new ArgumentOutOfRangeException
 						("digits", _("ArgRange_RoundDigits"));
 				}
-				return InternalRound(value, digits);
+				return RoundDouble(value, digits);
 			}
 	public static Decimal Round(Decimal value)
 			{
@@ -404,7 +404,7 @@ public sealed class Math
 	extern public static double Round(double a);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static double InternalRound(double value, int digits);
+	extern private static double RoundDouble(double value, int digits);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static double Sin(double a);

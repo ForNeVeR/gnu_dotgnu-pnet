@@ -73,7 +73,6 @@ public sealed class Monitor
 	extern public static void Exit(Object obj);
 
 	// Wait on an object's monitor.
-	[MethodImpl(MethodImplOptions.InternalCall)]
 	public static bool Wait(Object obj)
 			{
 				if(obj == null)

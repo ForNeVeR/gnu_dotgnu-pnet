@@ -45,7 +45,7 @@ public sealed class StringBuilder
 				{
 					capacity = MinCapacity;
 				}
-				buildString = String.FastAllocateBuilder(null, capacity);
+				buildString = String.NewBuilder(null, capacity);
 				maxCapacity = Int32.MaxValue;
 				needsCopy = false;
 			}
@@ -53,7 +53,7 @@ public sealed class StringBuilder
 			{
 				if(value != null)
 				{
-					buildString = String.FastAllocateBuilder(null, MinCapacity);
+					buildString = String.NewBuilder(null, MinCapacity);
 				}
 				else
 				{
@@ -62,7 +62,7 @@ public sealed class StringBuilder
 					{
 						capacity = MinCapacity;
 					}
-					buildString = String.FastAllocateBuilder(value, capacity);
+					buildString = String.NewBuilder(value, capacity);
 				}
 				maxCapacity = Int32.MaxValue;
 				needsCopy = false;
@@ -83,7 +83,7 @@ public sealed class StringBuilder
 				{
 					capacity = MinCapacity;
 				}
-				buildString = String.FastAllocateBuilder(null, capacity);
+				buildString = String.NewBuilder(null, capacity);
 				this.maxCapacity = maxCapacity;
 				needsCopy = false;
 			}
@@ -93,12 +93,11 @@ public sealed class StringBuilder
 				{
 					if(capacity < value.Length)
 					{
-						buildString = String.FastAllocateBuilder(value, -1);
+						buildString = String.NewBuilder(value, -1);
 					}
 					else
 					{
-						buildString = String.FastAllocateBuilder
-							(value, capacity);
+						buildString = String.NewBuilder(value, capacity);
 					}
 				}
 				else
@@ -107,7 +106,7 @@ public sealed class StringBuilder
 					{
 						capacity = MinCapacity;
 					}
-					buildString = String.FastAllocateBuilder(null, capacity);
+					buildString = String.NewBuilder(null, capacity);
 				}
 				maxCapacity = Int32.MaxValue;
 				needsCopy = false;
@@ -154,11 +153,10 @@ public sealed class StringBuilder
 				}
 
 				// Allocate a new string builder and fill it.
-				buildString = String.FastAllocateBuilder(null, capacity);
+				buildString = String.NewBuilder(null, capacity);
 				if(length > 0)
 				{
-					String.FillSubstring(buildString, 0, value,
-										 startIndex, length);
+					String.Copy(buildString, 0, value, startIndex, length);
 				}
 				maxCapacity = Int32.MaxValue;
 				needsCopy = false;
@@ -192,8 +190,7 @@ public sealed class StringBuilder
 					{
 						capacity = maxCapacity;
 					}
-					buildString = String.FastAllocateBuilder
-							(buildString, capacity);
+					buildString = String.NewBuilder(buildString, capacity);
 					needsCopy = false;
 				}
 				else if(newLength > buildString.capacity)
@@ -203,8 +200,7 @@ public sealed class StringBuilder
 					{
 						newLength = maxCapacity;
 					}
-					buildString = String.FastAllocateBuilder
-							(buildString, newLength);
+					buildString = String.NewBuilder(buildString, newLength);
 				}
 
 				// Return the actual length to the caller.
@@ -224,8 +220,8 @@ public sealed class StringBuilder
 					int valueLen = AppendSpace(value.Length);
 
 					// Copy the contents of the value into place.
-					String.FillSubstring(buildString, buildString.length,
-										 value, 0, valueLen);
+					String.Copy(buildString, buildString.length,
+								value, 0, valueLen);
 					buildString.length += valueLen;
 				}
 				return this;
@@ -255,7 +251,7 @@ public sealed class StringBuilder
 	public StringBuilder Append(char value)
 			{
 				int length = AppendSpace(1);
-				String.FillChar(buildString, buildString.length,
+				String.CharFill(buildString, buildString.length,
 								length, value);
 				buildString.length += length;
 				return this;
@@ -274,7 +270,7 @@ public sealed class StringBuilder
 				else
 				{
 					repeatCount = AppendSpace(repeatCount);
-					String.FillChar(buildString, buildString.length,
+					String.CharFill(buildString, buildString.length,
 								    repeatCount, value);
 					buildString.length += repeatCount;
 					return this;
@@ -334,8 +330,8 @@ public sealed class StringBuilder
 							("length", _("ArgRange_Array"));
 					}
 					length = AppendSpace(length);
-					String.FillSubstring(buildString, buildString.length,
-										 value, startIndex, length);
+					String.Copy(buildString, buildString.length,
+							    value, startIndex, length);
 					buildString.length += length;
 					return this;
 				}
@@ -379,8 +375,8 @@ public sealed class StringBuilder
 					throw new ArgumentNullException("value");
 				}
 				length = AppendSpace(length);
-				String.FillWithChars(buildString, buildString.length,
-									 value, startIndex, length);
+				String.CharFill(buildString, buildString.length,
+							    value, startIndex, length);
 				buildString.length += length;
 				return this;
 			}
@@ -426,8 +422,7 @@ public sealed class StringBuilder
 				{
 					capacity = maxCapacity;
 				}
-				buildString = String.FastAllocateBuilder
-						(buildString, capacity);
+				buildString = String.NewBuilder(buildString, capacity);
 				needsCopy = false;
 				return buildString.capacity;
 			}
@@ -480,8 +475,7 @@ public sealed class StringBuilder
 					{
 						capacity = maxCapacity;
 					}
-					buildString = String.FastAllocateBuilder
-							(buildString, capacity);
+					buildString = String.NewBuilder(buildString, capacity);
 					needsCopy = false;
 				}
 				else if(newLength > buildString.capacity)
@@ -491,8 +485,7 @@ public sealed class StringBuilder
 					{
 						newLength = maxCapacity;
 					}
-					buildString = String.FastAllocateBuilder
-							(buildString, newLength);
+					buildString = String.NewBuilder(buildString, newLength);
 				}
 
 				// Move the characters after the index up.
@@ -518,8 +511,7 @@ public sealed class StringBuilder
 					int valueLen = InsertSpace(index, value.Length);
 
 					// Copy the contents of the value into place.
-					String.FillSubstring(buildString, index,
-										 value, 0, valueLen);
+					String.Copy(buildString, index, value, 0, valueLen);
 				}
 				return this;
 			}
@@ -548,7 +540,7 @@ public sealed class StringBuilder
 	public StringBuilder Insert(int index, char value)
 			{
 				int length = InsertSpace(index, 1);
-				String.FillChar(buildString, index, length, value);
+				String.CharFill(buildString, index, length, value);
 				buildString.length += length;
 				return this;
 			}
@@ -623,8 +615,7 @@ public sealed class StringBuilder
 					throw new ArgumentNullException("value");
 				}
 				length = InsertSpace(index, length);
-				String.FillWithChars(buildString, index,
-									 value, startIndex, length);
+				String.CharFill(buildString, index, value, startIndex, length);
 				buildString.length += length;
 				return this;
 			}
@@ -662,7 +653,7 @@ public sealed class StringBuilder
 				}
 				else if(needsCopy)
 				{
-					buildString = String.FastAllocateBuilder
+					buildString = String.NewBuilder
 						(buildString, buildString.capacity);
 					needsCopy = false;
 				}
@@ -709,7 +700,7 @@ public sealed class StringBuilder
 				if(count > 0)
 				{
 					String temp = buildString;
-					buildString = String.FastAllocateBuilder
+					buildString = String.NewBuilder
 						(null, buildString.capacity);
 					needsCopy = false;
 					if(startIndex > 0)
@@ -746,7 +737,7 @@ public sealed class StringBuilder
 				if(count > 0)
 				{
 					String temp = buildString;
-					buildString = String.FastAllocateBuilder
+					buildString = String.NewBuilder
 						(null, buildString.capacity);
 					needsCopy = false;
 					if(startIndex > 0)
@@ -815,11 +806,11 @@ public sealed class StringBuilder
 			{
 				get
 				{
-					return buildString.InternalGetChar(index);
+					return buildString.GetChar(index);
 				}
 				set
 				{
-					buildString.InternalSetChar(index, value);
+					buildString.SetChar(index, value);
 				}
 			}
 

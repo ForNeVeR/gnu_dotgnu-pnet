@@ -33,7 +33,7 @@ public struct GCHandle
 	// Private constructor that is called from "Alloc".
 	private GCHandle(Object value, GCHandleType type)
 			{
-				handle = InternalAlloc(value, type);
+				handle = GCAlloc(value, type);
 				if(type == GCHandleType.Pinned)
 				{
 					handle |= 1;
@@ -52,7 +52,7 @@ public struct GCHandle
 				if((handle & 1) != 0)
 				{
 					// The handle is valid and pinned.
-					return InternalAddrOfPinnedObject(handle & ~1);
+					return GCAddrOfPinnedObject(handle & ~1);
 				}
 				else if(handle != 0)
 				{
@@ -70,7 +70,7 @@ public struct GCHandle
 
 	// Internal version of "AddrOfPinnedObject".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static IntPtr InternalAddrOfPinnedObject(int handle);
+	extern private static IntPtr GCAddrOfPinnedObject(int handle);
 
 	// Allocate a handle for a particular object.
 	public static GCHandle Alloc(Object obj)
@@ -84,14 +84,14 @@ public struct GCHandle
 
 	// Internal version of "Alloc".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static int InternalAlloc(Object value, GCHandleType type);
+	extern private static int GCAlloc(Object value, GCHandleType type);
 
 	// Free this handle.
 	public void Free()
 			{
 				if(handle != 0)
 				{
-					InternalFree(handle & ~1);
+					GCFree(handle & ~1);
 					handle = 0;
 				}
 				else
@@ -103,13 +103,13 @@ public struct GCHandle
 
 	// Internal version of "Free".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void InternalFree(int handle);
+	extern private static void GCFree(int handle);
 
 	// Convert to and from the native integer representation.
 	public static explicit operator GCHandle(IntPtr value)
 			{
 				int handle = value.ToInt32();
-				if(InternalValidate(handle))
+				if(GCValidate(handle))
 				{
 					return new GCHandle(handle);
 				}
@@ -126,7 +126,7 @@ public struct GCHandle
 
 	// Internal method to validate a handle.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static bool InternalValidate(int handle);
+	extern private static bool GCValidate(int handle);
 
 	// Determine if this handle is allocated and valid.
 	public bool IsAllocated
@@ -144,7 +144,7 @@ public struct GCHandle
 				{
 					if(handle != 0)
 					{
-						return InternalGetTarget(handle & ~1);
+						return GCGetTarget(handle & ~1);
 					}
 					else
 					{
@@ -156,8 +156,7 @@ public struct GCHandle
 				{
 					if(handle != 0)
 					{
-						InternalSetTarget(handle & ~1, value,
-										  (handle & 1) != 0);
+						GCSetTarget(handle & ~1, value, (handle & 1) != 0);
 					}
 					else
 					{
@@ -169,11 +168,11 @@ public struct GCHandle
 
 	// Internal implementation of the "Target" property.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Object InternalGetTarget(int handle);
+	extern private static Object GCGetTarget(int handle);
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void InternalSetTarget(int handle, Object value,
-												 bool isPinned);
+	extern private static void GCSetTarget(int handle, Object value,
+										   bool isPinned);
 
 }; // struct GCHandle
 

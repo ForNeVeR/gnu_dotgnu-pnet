@@ -685,6 +685,28 @@ public struct Decimal : IComparable, IFormattable
 				return result;
 			}
 
+	// Throw an overflow exception, with the correct translated message.
+	// This is called by the runtime engine.
+	private static void ThrowOverflow()
+			{
+				throw new OverflowException(_("Overflow_Decimal"));
+			}
+
+	// Throw a division by zero exception, with the correct translated message.
+	// This is called by the runtime engine.
+	private static void ThrowDivZero()
+			{
+				throw new OverflowException(_("DivZero_Decimal"));
+			}
+
+	// Throw a "decimal scale out of range" exception, with the correct
+	// translated message.  This is called by the runtime engine.
+	private static void ThrowDecimals()
+			{
+				throw new ArgumentOutOfRangeException
+					(_("ArgRange_DecimalScale"));
+			}
+
 }; // class Decimal
 
 }; // namespace System

@@ -106,7 +106,7 @@ internal sealed class ClrMethod : MethodInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrHelpers.GetReflectedType(this);
+					return ClrHelpers.GetDeclaringType(this);
 				}
 			}
 	public override String Name

@@ -67,13 +67,6 @@ internal sealed class ClrHelpers
 					(new RuntimeTypeHandle(GetDeclaringType(item.ClrHandle)));
 			}
 
-	// Get the reflected type for a program item.
-	public static Type GetReflectedType(IClrProgramItem item)
-			{
-				return Type.GetTypeFromHandle
-					(new RuntimeTypeHandle(GetReflectedType(item.ClrHandle)));
-			}
-
 	// Get the name that is associated with a program item.
 	public static String GetName(IClrProgramItem item)
 			{
@@ -140,10 +133,6 @@ internal sealed class ClrHelpers
 	// Get the declaring type for a program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static IntPtr GetDeclaringType(IntPtr item);
-
-	// Get the reflected type for a program item.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static IntPtr GetReflectedType(IntPtr item);
 
 	// Get the name that is associated with a program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]

@@ -55,12 +55,12 @@ public sealed class Thread
 	// Destructor.
 	~Thread()
 			{
-				InternalFinalize();
+				FinalizeThread();
 			}
 
 	// Internal finalization for threads.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void InternalFinalize();
+	extern private void FinalizeThread();
 
 	// Abort this thread.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -84,8 +84,10 @@ public sealed class Thread
 			}
 
 	// Join with this thread.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public void Join();
+	public void Join()
+			{
+				InternalJoin(-1);
+			}
 
 	// Join with this thread, stopping after a specified timeout.
 	public bool Join(int millisecondsTimeout)

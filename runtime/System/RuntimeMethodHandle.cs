@@ -36,14 +36,8 @@ public struct RuntimeMethodHandle
 			}
 
 	// Get the function pointer associated with this method.
-	public IntPtr GetFunctionPointer()
-			{
-				return InternalGetFunctionPointer(value__);
-			}
-
-	// Internal version of "GetFunctionPointer".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static IntPtr InternalGetFunctionPointer(IntPtr method);
+	extern public IntPtr GetFunctionPointer();
 
 	// Properties.
 	public IntPtr Value

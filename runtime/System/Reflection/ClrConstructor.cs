@@ -72,7 +72,7 @@ internal sealed class ClrConstructor : ConstructorInfo, IClrProgramItem
 			{
 				get
 				{
-					return ClrHelpers.GetReflectedType(this);
+					return ClrHelpers.GetDeclaringType(this);
 				}
 			}
 	public override String Name

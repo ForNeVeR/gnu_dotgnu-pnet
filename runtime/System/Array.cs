@@ -235,13 +235,13 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 
 	// Internal versions of "CreateInstance".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Array InternalCreate(IntPtr elementType,
-											   int rank, int length1,
-											   int length2, int length3);
+	extern private static Array CreateArray(IntPtr elementType,
+										    int rank, int length1,
+										    int length2, int length3);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Array InternalCreateEx(IntPtr elementType,
-											     int[] lengths,
-												 int[] lowerBounds);
+	extern private static Array CreateArray(IntPtr elementType,
+										    int[] lengths,
+										    int[] lowerBounds);
 
 	// Create a single-dimensional array instance.
 	public static Array CreateInstance(Type elementType, int length)
@@ -253,7 +253,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length", _("ArgRange_NonNegative"));
 		}
-		return InternalCreate(typeHandle, 1, length, 0, 0);
+		return CreateArray(typeHandle, 1, length, 0, 0);
 	}
 
 	// Create a double-dimensional array instance.
@@ -272,7 +272,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length2", _("ArgRange_NonNegative"));
 		}
-		return InternalCreate(typeHandle, 2, length1, length2, 0);
+		return CreateArray(typeHandle, 2, length1, length2, 0);
 	}
 
 	// Create a triple-dimensional array instance.
@@ -296,7 +296,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length3", _("ArgRange_NonNegative"));
 		}
-		return InternalCreate(typeHandle, 3, length1, length2, length3);
+		return CreateArray(typeHandle, 3, length1, length2, length3);
 	}
 
 	// Create an array instance from an array of length values.
@@ -322,7 +322,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 					 _("ArgRange_NonNegative"));
 			}
 		}
-		return InternalCreateEx(typeHandle, lengths, null);
+		return CreateArray(typeHandle, lengths, null);
 	}
 
 	// Create an array instance from an array of length values,
@@ -358,7 +358,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 					 _("ArgRange_NonNegative"));
 			}
 		}
-		return InternalCreateEx(typeHandle, lengths, lowerBounds);
+		return CreateArray(typeHandle, lengths, lowerBounds);
 	}
 
 	// Implement the IEnumerable interface.
@@ -609,9 +609,9 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 
 	// Internal versions of "GetValue".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private Object InternalGetValue(int index1, int index2, int index3);
+	extern private Object Get(int index1, int index2, int index3);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private Object InternalGetValueEx(int[] indices);
+	extern private Object Get(int[] indices);
 
 	// Get the value at a particular index within a multi-dimensional array.
 	public Object GetValue(int[] indices)
@@ -624,7 +624,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
-		return InternalGetValueEx(indices);
+		return Get(indices);
 	}
 
 	// Get the value at a particular index within a single-dimensional array.
@@ -634,7 +634,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_RankMustBe1"));
 		}
-		return InternalGetValue(index, 0, 0);
+		return Get(index, 0, 0);
 	}
 
 	// Get the value at a particular index within a double-dimensional array.
@@ -644,7 +644,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_RankMustBe2"));
 		}
-		return InternalGetValue(index1, index2, 0);
+		return Get(index1, index2, 0);
 	}
 
 	// Get the value at a particular index within a triple-dimensional array.
@@ -654,7 +654,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_RankMustBe3"));
 		}
-		return InternalGetValue(index1, index2, index3);
+		return Get(index1, index2, index3);
 	}
 
 	// Inner version of "IndexOf".
@@ -887,10 +887,9 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 
 	// Internal versions of "SetValue".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void InternalSetValue(Object value, int index1,
-										 int index2, int index3);
+	extern private void Set(Object value, int index1, int index2, int index3);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void InternalSetValueEx(Object value, int[] indices);
+	extern private void Set(Object value, int[] indices);
 
 	// Set the value at a particular index within a multi-dimensional array.
 	public void SetValue(Object value, int[] indices)
@@ -903,7 +902,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_MustBeSameSize"));
 		}
-		InternalSetValueEx(value, indices);
+		Set(value, indices);
 	}
 
 	// Set the value at a particular index within a single-dimensional array.
@@ -913,7 +912,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_RankMustBe1"));
 		}
-		InternalSetValue(value, index, 0, 0);
+		Set(value, index, 0, 0);
 	}
 
 	// Set the value at a particular index within a double-dimensional array.
@@ -923,7 +922,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_RankMustBe2"));
 		}
-		InternalSetValue(value, index1, index2, 0);
+		Set(value, index1, index2, 0);
 	}
 
 	// Set the value at a particular index within a triple-dimensional array.
@@ -933,7 +932,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 		{
 			throw new ArgumentException(_("Arg_RankMustBe3"));
 		}
-		InternalSetValue(value, index1, index2, index3);
+		Set(value, index1, index2, index3);
 	}
 
 	// Inner version of "Sort".  Based on the Quicksort implementation
@@ -1218,16 +1217,16 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 
 	// Internal implementation of the "Length" and "Rank" properties.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private int GetLengthNative();
+	extern private int GetLength();
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private int GetRankNative();
+	extern private int GetRank();
 
 	// Properties.
 	public int Length
 	{
 		get
 		{
-			return GetLengthNative();
+			return GetLength();
 		}
 	}
 	public long LongLength
@@ -1239,7 +1238,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			// exist on 64-bit systems in the future, so we calculate
 			// the value carefully.
 			long len = 1;
-			int ranks = GetRankNative();
+			int ranks = GetRank();
 			while(ranks > 0)
 			{
 				--ranks;
@@ -1252,7 +1251,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 	{
 		get
 		{
-			return GetRankNative();
+			return GetRank();
 		}
 	}
 

@@ -285,17 +285,15 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Methods that are supplied by the runtime to assist with string building.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static String FastAllocateString(int length);
+	extern internal static String NewString(int length);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static String FastAllocateBuilder
-			(String value, int length);
+	extern internal static String NewBuilder(String value, int length);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static void FillString
-			(String dest, int destPos, String src);
+	extern internal static void Copy(String dest, int destPos, String src);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static void FillSubstring(String dest, int destPos,
-									          String src, int srcPos,
-											  int length);
+	extern internal static void Copy(String dest, int destPos,
+									 String src, int srcPos,
+									 int length);
 
 	// Insert or remove space from a string that is being used as a builder.
 	[MethodImpl(MethodImplOptions.InternalCall)]
@@ -309,9 +307,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				int str1Len = str1.Length;
 				int str2Len = str2.Length;
-				String result = FastAllocateString(str1Len + str2Len);
-				FillString(result, 0, str1);
-				FillString(result, str1Len, str2);
+				String result = NewString(str1Len + str2Len);
+				Copy(result, 0, str1);
+				Copy(result, str1Len, str2);
 				return result;
 			}
 	private static String ConcatInternal3(String str1, String str2,
@@ -320,22 +318,22 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				int str1Len = str1.Length;
 				int str2Len = str2.Length;
 				int str3Len = str3.Length;
-				String result = FastAllocateString(str1Len + str2Len + str3Len);
-				FillString(result, 0, str1);
-				FillString(result, str1Len, str2);
-				FillString(result, str1Len + str2Len, str3);
+				String result = NewString(str1Len + str2Len + str3Len);
+				Copy(result, 0, str1);
+				Copy(result, str1Len, str2);
+				Copy(result, str1Len + str2Len, str3);
 				return result;
 			}
 	private static String ConcatArrayInternal(String[] strings, int len)
 			{
-				String result = FastAllocateString(len);
+				String result = NewString(len);
 				int posn, outposn;
 				outposn = 0;
 				for(posn = 0; posn < strings.Length; ++posn)
 				{
 					if(strings[posn] != null)
 					{
-						FillString(result, outposn, strings[posn]);
+						Copy(result, outposn, strings[posn]);
 						outposn += strings[posn].Length;
 					}
 				}
@@ -354,72 +352,13 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					return Empty;
 				}
 			}
-	public static String Concat(String str1, String str2)
-			{
-				if(str1 != null)
-				{
-					if(str2 != null)
-					{
-						return ConcatInternal2(str1, str2);
-					}
-					else
-					{
-						return str1;
-					}
-				}
-				else if(str2 != null)
-				{
-					return str2;
-				}
-				else
-				{
-					return Empty;
-				}
-			}
-	public static String Concat(String str1, String str2, String str3)
-			{
-				if(str1 != null)
-				{
-					if(str2 != null)
-					{
-						if(str3 != null)
-						{
-							return ConcatInternal3(str1, str2, str3);
-						}
-						else
-						{
-							return ConcatInternal2(str1, str2);
-						}
-					}
-					else if(str3 != null)
-					{
-						return ConcatInternal2(str1, str3);
-					}
-					else
-					{
-						return str1;
-					}
-				}
-				else if(str2 != null)
-				{
-					if(str3 != null)
-					{
-						return ConcatInternal2(str2, str3);
-					}
-					else
-					{
-						return str2;
-					}
-				}
-				else if(str3 != null)
-				{
-					return str3;
-				}
-				else
-				{
-					return Empty;
-				}
-			}
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String Concat(String str1, String str2);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static String Concat(String str1, String str2, String str3);
+
 	public static String Concat(String str1, String str2,
 								String str3, String str4)
 			{
@@ -427,23 +366,23 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				int str2Len = (str2 != null ? str2.Length : 0);
 				int str3Len = (str3 != null ? str3.Length : 0);
 				int str4Len = (str4 != null ? str4.Length : 0);
-				String result = FastAllocateString(str1Len + str2Len +
-												   str3Len + str4Len);
+				String result = NewString(str1Len + str2Len +
+										  str3Len + str4Len);
 				if(str1 != null)
 				{
-					FillString(result, 0, str1);
+					Copy(result, 0, str1);
 				}
 				if(str2 != null)
 				{
-					FillString(result, str1Len, str2);
+					Copy(result, str1Len, str2);
 				}
 				if(str3 != null)
 				{
-					FillString(result, str1Len + str2Len, str3);
+					Copy(result, str1Len + str2Len, str3);
 				}
 				if(str4 != null)
 				{
-					FillString(result, str1Len + str2Len + str3Len, str4);
+					Copy(result, str1Len + str2Len + str3Len, str4);
 				}
 				return result;
 			}
@@ -541,8 +480,8 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				if(str != null)
 				{
-					String result = FastAllocateString(str.Length);
-					FillString(result, 0, str);
+					String result = NewString(str.Length);
+					Copy(result, 0, str);
 					return result;
 				}
 				else
@@ -553,8 +492,8 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Internal version of "CopyTo".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void InternalCopyTo(int sourceIndex, char[] destination,
-					   		           int destinationIndex, int count);
+	extern private void CopyToChecked(int sourceIndex, char[] destination,
+					   		          int destinationIndex, int count);
 
 	// Copy the contents of a string to an array.
 	public void CopyTo(int sourceIndex, char[] destination,
@@ -579,8 +518,8 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				else
 				{
-					InternalCopyTo(sourceIndex, destination,
-								   destinationIndex, count);
+					CopyToChecked(sourceIndex, destination,
+								  destinationIndex, count);
 				}
 			}
 
@@ -761,11 +700,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						("startIndex", _("ArgRange_StringIndex"));
 				}
 				valueLen = value.Length;
-				result = FastAllocateString(length + valueLen);
-				FillSubstring(result, 0, this, 0, startIndex);
-				FillSubstring(result, startIndex, value, 0, valueLen);
-				FillSubstring(result, startIndex + valueLen, this,
-							  startIndex, length - startIndex);
+				result = NewString(length + valueLen);
+				Copy(result, 0, this, 0, startIndex);
+				Copy(result, startIndex, value, 0, valueLen);
+				Copy(result, startIndex + valueLen, this,
+					 startIndex, length - startIndex);
 				return result;
 			}
 
@@ -843,18 +782,18 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 
 				// Allocate a new string object and then fill it.
-				result = FastAllocateString(resultLen);
+				result = NewString(resultLen);
 				resultLen = 0;
 				for(posn = 0; posn < count; ++posn)
 				{
 					if(posn != 0 && sepLen != 0)
 					{
-						FillString(result, resultLen, separator);
+						Copy(result, resultLen, separator);
 						resultLen += sepLen;
 					}
 					if((tempStr = value[startIndex + posn]) != null)
 					{
-						FillString(result, resultLen, tempStr);
+						Copy(result, resultLen, tempStr);
 						resultLen += tempStr.Length;
 					}
 				}
@@ -926,12 +865,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Fill the contents of a sub-string with a particular character.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static void FillChar(String str, int start,
+	extern internal static void CharFill(String str, int start,
 										 int count, char ch);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal static void FillWithChars(String str, int start,
-										 	  char[] chars,
-											  int index, int count);
+	extern internal static void CharFill(String str, int start, char[] chars,
+									     int index, int count);
 
 	// Pad a string on the left with spaces to a total width.
 	public String PadLeft(int totalWidth)
@@ -948,16 +886,16 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				else if(totalWidth <= length)
 				{
 					// Create a new string with a copy of the current.
-					result = FastAllocateString(length);
-					FillString(result, 0, this);
+					result = NewString(length);
+					Copy(result, 0, this);
 					return result;
 				}
 				else
 				{
 					// Copy the string and pad it.
-					result = FastAllocateString(totalWidth);
-					FillChar(result, 0, totalWidth - length, paddingChar);
-					FillString(result, totalWidth - length, this);
+					result = NewString(totalWidth);
+					CharFill(result, 0, totalWidth - length, paddingChar);
+					Copy(result, totalWidth - length, this);
 					return result;
 				}
 			}
@@ -977,16 +915,16 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				else if(totalWidth <= length)
 				{
 					// Create a new string with a copy of the current.
-					result = FastAllocateString(length);
-					FillString(result, 0, this);
+					result = NewString(length);
+					Copy(result, 0, this);
 					return result;
 				}
 				else
 				{
 					// Copy the string and pad it.
-					result = FastAllocateString(totalWidth);
-					FillString(result, 0, this);
-					FillChar(result, length, totalWidth - length, paddingChar);
+					result = NewString(totalWidth);
+					Copy(result, 0, this);
+					CharFill(result, length, totalWidth - length, paddingChar);
 					return result;
 				}
 			}
@@ -1005,10 +943,10 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_StringRange"));
 				}
-				result = FastAllocateString(length - count);
-				FillSubstring(result, 0, this, 0, startIndex);
-				FillSubstring(result, startIndex, this, startIndex + count,
-							  length - (startIndex + count));
+				result = NewString(length - count);
+				Copy(result, 0, this, 0, startIndex);
+				Copy(result, startIndex, this, startIndex + count,
+				     length - (startIndex + count));
 				return result;
 			}
 
@@ -1139,8 +1077,8 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				else
 				{
-					result = FastAllocateString(length);
-					FillSubstring(result, 0, this, startIndex, length);
+					result = NewString(length);
+					Copy(result, 0, this, startIndex, length);
 					return result;
 				}
 			}
@@ -1164,7 +1102,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 						("length", _("ArgRange_StringRange"));
 				}
 				result = new char [length];
-				InternalCopyTo(0, result, 0, length);
+				CopyToChecked(0, result, 0, length);
 				return result;
 			}
 
@@ -1209,19 +1147,18 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 		 '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u200B',
 		 '\u3000', '\uFEFF'};
 
-	// Types used by "TrimHelper".
-	private const int TrimHead = 0;
-	private const int TrimTail = 1;
-	private const int TrimBoth = 2;
+	// Flags used by "Trim".
+	private const int TrimFlag_Front = 1;
+	private const int TrimFlag_End   = 2;
 
 	// Internal helper for trimming whitespace.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private String TrimHelper(char[] trimChars, int trimType);
+	extern private String Trim(char[] trimChars, int trimFlags);
 
 	// Trim the whitespace from the front and end of a string.
 	public String Trim()
 			{
-				return TrimHelper(WhitespaceChars, TrimBoth);
+				return Trim(WhitespaceChars, TrimFlag_Front | TrimFlag_End);
 			}
 
 	// Trim specific characters from the front and end of a string.
@@ -1229,11 +1166,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				if(trimChars != null)
 				{
-					return TrimHelper(trimChars, TrimBoth);
+					return Trim(trimChars, TrimFlag_Front | TrimFlag_End);
 				}
 				else
 				{
-					return TrimHelper(WhitespaceChars, TrimBoth);
+					return Trim(WhitespaceChars, TrimFlag_Front | TrimFlag_End);
 				}
 			}
 
@@ -1242,11 +1179,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				if(trimChars != null)
 				{
-					return TrimHelper(trimChars, TrimTail);
+					return Trim(trimChars, TrimFlag_End);
 				}
 				else
 				{
-					return TrimHelper(WhitespaceChars, TrimTail);
+					return Trim(WhitespaceChars, TrimFlag_End);
 				}
 			}
 
@@ -1255,11 +1192,11 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			{
 				if(trimChars != null)
 				{
-					return TrimHelper(trimChars, TrimHead);
+					return Trim(trimChars, TrimFlag_Front);
 				}
 				else
 				{
-					return TrimHelper(WhitespaceChars, TrimHead);
+					return Trim(WhitespaceChars, TrimFlag_Front);
 				}
 			}
 
@@ -1284,16 +1221,16 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Internal version of "this[n]".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal char InternalGetChar(int posn);
+	extern internal char GetChar(int posn);
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern internal void InternalSetChar(int posn, char value);
+	extern internal void SetChar(int posn, char value);
 
 	// Get a specific character from the current string.
 	public char this[int posn]
 			{
 				get
 				{
-					return InternalGetChar(posn);
+					return GetChar(posn);
 				}
 			}
 

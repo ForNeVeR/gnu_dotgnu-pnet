@@ -92,12 +92,22 @@ public struct Single : IComparable, IFormattable
 	// Value testing methods.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool IsNaN(float f);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool IsInfinity(float f);
+	extern private static int TestInfinity(float f);
+
+	public static bool IsInfinity(float f)
+				{
+					return (TestInfinity(f) != 0);
+				}
 	public static bool IsPositiveInfinity(float f)
-				{ return (IsInfinity(f) && f > 0.0); }
+				{
+					return (TestInfinity(f) > 0);
+				}
 	public static bool IsNegativeInfinity(float f)
-				{ return (IsInfinity(f) && f < 0.0); }
+				{
+					return (TestInfinity(f) < 0);
+				}
 
 	// Parsing methods.
 	public static float Parse(String s, NumberStyles style,

@@ -27,6 +27,5 @@ Overflow_Int64=Valid Int64 values are between -9223372036854775808 and 922337203
 Overflow_UInt64=Valid UInt64 values are between 0 and 18446744073709551615, inclusive
 Overflow_Char=Valid Char values are between 0 and 65535, inclusive
 Overflow_Decimal=Valid Decimal values are between -79228162514264337593543950335 and 79228162514264337593543950335, inclusive
-Overflow_Currency=Valid Currency values are between -922337203685477.5808 and 922337203685477.5807, inclusive
 Overflow_NegateTwosCompNum=Attempt to negate the largest negative integer.
 Overflow_Pointer=Pointer value is out of range for the requested operation

@@ -55,6 +55,29 @@ runtime/System/TypedReference.cs: implement "System.TypedReference".
 * runtime/System/Variant.cs, runtime/System/Makefile.am: remove the
 obsolete "System.Variant" type.
 
+* resources/en_US/runtime/NotSupp.txt,
+resources/en_US/runtime/Overflow.txt,
+runtime/System/Array.cs,
+runtime/System/Decimal.cs,
+runtime/System/Double.cs,
+runtime/System/Math.cs,
+runtime/System/RuntimeMethodHandle.cs,
+runtime/System/Single.cs,
+runtime/System/String.cs,
+runtime/System/Reflection/ClrConstructor.cs,
+runtime/System/Reflection/ClrEvent.cs,
+runtime/System/Reflection/ClrField.cs,
+runtime/System/Reflection/ClrHelpers.cs,
+runtime/System/Reflection/ClrMethod.cs,
+runtime/System/Reflection/ClrProperty.cs,
+runtime/System/Runtime/InteropServices/GCHandle.cs,
+runtime/System/Text/ASCIIEncoding.cs,
+runtime/System/Text/StringBuilder.cs,
+runtime/System/Threading/Monitor.cs,
+runtime/System/Threading/Thread.cs,
+runtime/System/Threading/WaitHandle.cs: fine-tune the internalcall interface
+of the library while documenting it.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

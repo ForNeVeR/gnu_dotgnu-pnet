@@ -258,11 +258,11 @@ public class ASCIIEncoding : Encoding
 					throw new ArgumentOutOfRangeException
 						("count", _("ArgRange_Array"));
 				}
-				String s = String.FastAllocateString(count);
+				String s = String.NewString(count);
 				int posn = 0;
 				while(count-- > 0)
 				{
-					s.InternalSetChar(posn++, (char)(bytes[index++]));
+					s.SetChar(posn++, (char)(bytes[index++]));
 				}
 				return s;
 			}
@@ -274,10 +274,10 @@ public class ASCIIEncoding : Encoding
 				}
 				int count = bytes.Length;
 				int posn = 0;
-				String s = String.FastAllocateString(count);
+				String s = String.NewString(count);
 				while(count-- > 0)
 				{
-					s.InternalSetChar(posn, (char)(bytes[posn]));
+					s.SetChar(posn, (char)(bytes[posn]));
 					++posn;
 				}
 				return s;

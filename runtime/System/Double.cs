@@ -72,12 +72,22 @@ public struct Double : IComparable, IFormattable
 	// Value testing methods.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static bool IsNaN(double d);
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool IsInfinity(double d);
+	extern private static int TestInfinity(double d);
+
+	public static bool IsInfinity(double d)
+				{
+					return (TestInfinity(d) != 0);
+				}
 	public static bool IsPositiveInfinity(double d)
-				{ return (IsInfinity(d) && d > 0.0); }
+				{
+					return (TestInfinity(d) > 0);
+				}
 	public static bool IsNegativeInfinity(double d)
-				{ return (IsInfinity(d) && d < 0.0); }
+				{
+					return (TestInfinity(d) < 0);
+				}
 
 	// String conversion.
 	public override String ToString()

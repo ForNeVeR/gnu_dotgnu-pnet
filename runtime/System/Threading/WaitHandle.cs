@@ -33,13 +33,13 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 	// Constructors.
 	public WaitHandle()
 			{
-				privateData = new IntPtr(0);
+				privateData = IntPtr.Zero;
 			}
 
 	// Destructor.
 	~WaitHandle()
 			{
-				if(privateData != new IntPtr(0))
+				if(privateData != IntPtr.Zero)
 				{
 					Dispose(false);
 				}
@@ -53,17 +53,17 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 
 	// Internal version of "Close".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private void InternalClose(IntPtr privateData);
+	extern private static void InternalClose(IntPtr privateData);
 
 	// Dispose this wait handle.
 	protected virtual void Dispose(bool explicitDisposing)
 			{
 				lock(this)
 				{
-					if(privateData != new IntPtr(0))
+					if(privateData != IntPtr.Zero)
 					{
 						InternalClose(privateData);
-						privateData = new IntPtr(0);
+						privateData = IntPtr.Zero;
 					}
 				}
 			}
@@ -104,7 +104,7 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 	public static bool WaitAll(WaitHandle[] waitHandles)
 			{
 				ValidateHandles(waitHandles);
-				return (InternalWait(waitHandles, -1, true, true) != 0);
+				return InternalWaitAll(waitHandles, -1, true);
 			}
 	public static bool WaitAll(WaitHandle[] waitHandles,
 							   int millisecondsTimeout,
@@ -117,23 +117,29 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 						("millisecondsTimeout",
 						 _("ArgRange_NonNegOrNegOne"));
 				}
-				return (InternalWait(waitHandles, millisecondsTimeout,
-								     true, exitContext) != 0);
+				return InternalWaitAll(waitHandles, millisecondsTimeout,
+								       exitContext);
 			}
 	public static bool WaitAll(WaitHandle[] waitHandles,
 							   TimeSpan timeout, bool exitContext)
 			{
 				ValidateHandles(waitHandles);
-				return (InternalWait(waitHandles,
-									 Monitor.TimeSpanToMS(timeout),
-								     true, exitContext) != 0);
+				return InternalWaitAll(waitHandles,
+									   Monitor.TimeSpanToMS(timeout),
+								       exitContext);
 			}
+
+	// Internal version of "WaitAll".  A timeout of -1 indicates infinite,
+	// and zero indicates "test and return immediately".
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool InternalWaitAll
+				(WaitHandle[] waitHandles, int timeout, bool exitContext);
 
 	// Wait for any element in an array to receive a signal.
 	public static int WaitAny(WaitHandle[] waitHandles)
 			{
 				ValidateHandles(waitHandles);
-				return InternalWait(waitHandles, -1, false, true);
+				return InternalWaitAny(waitHandles, -1, true);
 			}
 	public static int WaitAny(WaitHandle[] waitHandles,
 							  int millisecondsTimeout,
@@ -146,23 +152,23 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 						("millisecondsTimeout",
 						 _("ArgRange_NonNegOrNegOne"));
 				}
-				return InternalWait(waitHandles, millisecondsTimeout,
-								    false, exitContext);
+				return InternalWaitAny(waitHandles, millisecondsTimeout,
+								       exitContext);
 			}
 	public static int WaitAny(WaitHandle[] waitHandles,
 							  TimeSpan timeout, bool exitContext)
 			{
 				ValidateHandles(waitHandles);
-				return InternalWait(waitHandles, Monitor.TimeSpanToMS(timeout),
-								    false, exitContext);
+				return InternalWaitAny(waitHandles,
+									   Monitor.TimeSpanToMS(timeout),
+								       exitContext);
 			}
 
-	// Internal version of "WaitAll" or "WaitAny".  A timeout of -1
-	// indicates infinite, and zero indicates "test and return immediately".
+	// Internal version of "WaitAny".  A timeout of -1 indicates
+	// infinite, and zero indicates "test and return immediately".
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static int InternalWait
-					(WaitHandle[] waitHandles, int timeout,
-					 bool waitForAll, bool exitContext);
+	extern private static int InternalWaitAny
+				(WaitHandle[] waitHandles, int timeout, bool exitContext);
 
 	// Wait until this handle receives a signal.
 	public virtual bool WaitOne()
@@ -199,6 +205,11 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 				get
 				{
 					return privateData;
+				}
+				set
+				{
+					throw new NotSupportedException
+						(_("NotSupp_SetWaitHandle"));
 				}
 			}
 

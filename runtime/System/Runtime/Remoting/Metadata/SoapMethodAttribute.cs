@@ -34,6 +34,7 @@ public sealed class SoapMethodAttribute : SoapAttribute
 	private String responseXmlNamespace;
 	private String returnXmlElementName;
 	private String soapAction;
+	internal bool soapActionWasSet;
 
 	// Constructor.
 	public SoapMethodAttribute() {}
@@ -105,6 +106,7 @@ public sealed class SoapMethodAttribute : SoapAttribute
 				set
 				{
 					soapAction = value;
+					soapActionWasSet = true;
 				}
 			}
 	public override bool UseAttribute

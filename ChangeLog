@@ -1,3 +1,11 @@
+
+2003-09-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Runtime/Remoting/SoapServices.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapMethodAttribute.cs,
+	runtime/System/Runtime/Remoting/Metadata/SoapTypeAttribute.cs:
+	implement missing functionality in "SoapServices".
+
 2003-09-08  Neil Cawse  <neilcawse@geotab.com>
 
 	* Xsharp/GrabWindow.cs: wrong version checked in for "popup windows now

@@ -39,6 +39,8 @@ public sealed class SoapTypeAttribute : SoapAttribute
 	private XmlFieldOrderOption xmlFieldOrder;
 	private String xmlTypeName;
 	private String xmlTypeNamespace;
+	internal bool xmlElementWasSet;
+	internal bool xmlTypeWasSet;
 
 	// Constructor.
 	public SoapTypeAttribute() {}
@@ -83,6 +85,7 @@ public sealed class SoapTypeAttribute : SoapAttribute
 				set
 				{
 					xmlElementName = value;
+					xmlElementWasSet = true;
 				}
 			}
 	public XmlFieldOrderOption XmlFieldOrder
@@ -109,6 +112,7 @@ public sealed class SoapTypeAttribute : SoapAttribute
 				set
 				{
 					ProtXmlNamespace = value;
+					xmlElementWasSet = true;
 				}
 			}
 	public String XmlTypeName
@@ -127,6 +131,7 @@ public sealed class SoapTypeAttribute : SoapAttribute
 				set
 				{
 					xmlTypeName = value;
+					xmlTypeWasSet = true;
 				}
 			}
 	public String XmlTypeNamespace
@@ -146,6 +151,7 @@ public sealed class SoapTypeAttribute : SoapAttribute
 				set
 				{
 					xmlTypeNamespace = value;
+					xmlTypeWasSet = true;
 				}
 			}
 

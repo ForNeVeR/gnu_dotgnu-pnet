@@ -31,7 +31,6 @@ internal sealed class Attributes : XmlErrorProcessor
 	private int count;
 	private ArrayList attributes;
 	private Hashtable names;
-	private String defaultNS;
 	private XmlNameTable nt;
 	private XmlNamespaceManager nm;
 
@@ -43,7 +42,6 @@ internal sealed class Attributes : XmlErrorProcessor
 			: base(error)
 			{
 				count = 0;
-				defaultNS = null;
 				nt = null;
 				nm = null;
 				attributes = new ArrayList(8);
@@ -112,7 +110,7 @@ internal sealed class Attributes : XmlErrorProcessor
 					}
 					else
 					{
-						key = new Key(nt.Get(name), defaultNS);
+						key = new Key(nt.Get(name), String.Empty);
 					}
 				}
 
@@ -127,18 +125,15 @@ internal sealed class Attributes : XmlErrorProcessor
 			{
 				count = 0;
 				names.Clear();
-				defaultNS = null;
 				nt = null;
 				nm = null;
 			}
 
-	// Update the search information, returning false on error.
-	public void UpdateInfo
-				(XmlNameTable nt)
+	// Update the search information.
+	public void UpdateInfo(XmlNameTable nt)
 			{
 				this.nt = nt;
 				this.nm = null;
-				this.defaultNS = null;
 				names.Clear();
 
 				for(int i = 0; i < count; ++i)
@@ -161,13 +156,11 @@ internal sealed class Attributes : XmlErrorProcessor
 				}
 			}
 
-	// Update the search and namespace information, returning false on error.
-	public void UpdateInfo
-				(XmlNameTable nt, XmlNamespaceManager nm, String defaultNS)
+	// Update the search and namespace information.
+	public void UpdateInfo(XmlNameTable nt, XmlNamespaceManager nm)
 			{
 				this.nt = nt;
 				this.nm = nm;
-				this.defaultNS = defaultNS;
 				names.Clear();
 
 				for(int i = 0; i < count; ++i)
@@ -179,7 +172,7 @@ internal sealed class Attributes : XmlErrorProcessor
 					// set the defaults
 					String localName = name;
 					String prefix = String.Empty;
-					String namespaceURI = defaultNS;
+					String namespaceURI = String.Empty;
 
 					// find the namespace separator
 					int index = name.LastIndexOf(':');

@@ -1970,7 +1970,7 @@ public class XmlTextReader : XmlReader
 				if(namespaces)
 				{
 					attributes.UpdateInfo
-						(context.NameTable, context.NamespaceManager, namespaceURI);
+						(context.NameTable, context.NamespaceManager);
 				}
 				else
 				{

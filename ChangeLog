@@ -12,6 +12,10 @@
 	* engine/verify.c, image/opdef.c: the IL "break" instruction is
 	verifiable, but is otherwise ignored by the verifier/coder.
 
+	* tests/Makefile.am, tests/test_verify.c, tests/test_verify.h,
+	tests/test_vmisc.c: adjust the verification test for "break" to
+	match the engine; add tests for "arglist", "cpblk", and "initblk".
+
 2002-06-26  Gopal.V  <gopalv82@symonds.net>
 
 	* ilnative/ilcheck.c : repurpose it for checking for PInvoke 

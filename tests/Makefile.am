@@ -7,6 +7,7 @@ test_verify_SOURCES = test_verify.c \
 					  test_vbranch.c \
 					  test_vconst.c \
 					  test_vlocal.c \
+					  test_vmisc.c \
 					  ilunit.c
 test_verify_LDADD   = ../engine/libILEngine.a ../dumpasm/libILDumpAsm.a \
 			  		  ../image/libILImage.a ../support/libILSupport.a \

@@ -1,7 +1,7 @@
 /*
  * test_verify.c - Test the bytecode verifier in the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -214,15 +214,10 @@ static char *nop_3[] = {
 };
 
 /*
- * Test "break".  Note: ECMA says that "break" is verifiable.
- * However, our verifier always rejects breakpoints in loaded
- * code, since we don't want miscreants forcing an exit to
- * the debugger.  Besides, breakpoints are not set in IL code
- * in our engine.  They are set in CVM or native code using
- * other mechanisms.
+ * Test "break".
  */
 static char *break_1[] = {
-	/* FAIL: "break" is an invalid instruction */
+	/* OK: "break" is always verifiable, but ignored */
 	"	break",
 	"	ret",
 	0,
@@ -401,7 +396,7 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(nop_1);
 	RegisterSimple(nop_2);
 	RegisterSimple(nop_3);
-	RegisterSimpleFail(break_1);
+	RegisterSimple(break_1);
 	RegisterSimpleFail(dup_1);
 	RegisterSimple(dup_2);
 	RegisterSimpleFail(dup_3);
@@ -420,6 +415,7 @@ void ILUnitRegisterTests(void)
 	registerBranchTests();
 	registerConstantTests();
 	registerVarTests();
+	registerMiscTests();
 
 	/*
 	 * Illegal instruction tests.

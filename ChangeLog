@@ -4,6 +4,9 @@
 	* engine/lib_reflect.c: Implement Module.GetTypes() for assembly
 	modules (bug #9085).
 
+	* engine/method_cache.c: fix IL offsets to be obtained if the offset
+	provided matches with the native offset provided. (bug #9151)
+
 2004-05-29  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.6.6" release.

@@ -973,16 +973,22 @@ ILUInt32 _ILCacheGetBytecode(ILCache *cache, void *start,
 	InitDebugIter(&iter, cache, start);
 	while(GetNextDebug(&iter, &ofs, &nativeOfs))
 	{
-		if(exact)
+		if (nativeOfs == offset)
 		{
-			if(nativeOfs == offset)
+			return ofs;
+		}
+		else if((!exact) && (nativeOfs > offset))
+		{
+			if(prevOfs == IL_MAX_UINT32)
 			{
+				/* this is the first IL offset */
 				return ofs;
 			}
-		}
-		else if(nativeOfs > offset)
-		{
-			return prevOfs;
+			else
+			{
+				/* previous one matches better */
+				return prevOfs;
+			}
 		}
 		prevOfs = ofs;
 	}

@@ -64,5 +64,6 @@
 #define	__attribute_format_arg__(x)
 #define	__attribute_format_strfmon__(a,b)
 #define	__extension__
+#define	__printf__		"printf"
 
 #endif	/* !_SYS_CDEFS_H */

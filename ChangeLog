@@ -1,4 +1,9 @@
 
+2003-06-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* include/stdio.h, include/sys/cdefs.h: add the <stdio.h> file
+	from glibc to the library.
+
 2003-06-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* NEWS, configure.in: update version for the "0.5.8" release.

@@ -149,6 +149,16 @@ internal class FileMethods
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static Errno GetLength(string path, out long length);
 
+	// Read the contents of a symlink.  Returns "Errno.Success" and
+	// "null" in "contents" if the path exists but is not a symlink.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno ReadLink(String path, out String contents);
+
+	// Create a symbolic link.  Returns "Errno.EPERM" if the filesystem
+	// does not support the creation of symbolic links.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static Errno CreateLink(String oldpath, String newpath);
+
 }; // class FileMethods
 
 }; // namespace Platform

@@ -53,3 +53,4 @@ IO_FixedCapacity=Cannot increase the capacity of this memory stream
 IO_CannotReduceCapacity=Cannot reduce the capacity below the stream's length
 IO_LockFailed=Failed to acquire lock
 IO_UnlockFailed=Failed to release lock
+IO_NotSupp_Symlinks=Symbolic links are not supported on this filesystem

@@ -632,8 +632,14 @@ class XmlDocument : XmlNode
 	[TODO]
 	public virtual XmlNode ImportNode(XmlNode node, bool deep)
 			{
-				// TODO
-				return null;
+				// TODO: this may not be the best way to do this.
+				// xml namespaces, dtds and other interesting things
+				// have to be taken care of
+				XmlNode imported = this.CreateNode(node.NodeType,
+													node.Name,
+													node.NamespaceURI);
+				imported.CloneChildrenFrom(node, deep);
+				return imported;
 			}
 
 	// Load XML into this document.
@@ -657,7 +663,6 @@ class XmlDocument : XmlNode
 	public virtual void Load(XmlReader reader)
 			{
 				RemoveAll();
-				Console.WriteLine(reader.GetType());
 				if(!BuildStructure(reader))
 				{
 					throw new XmlException(S._("XmlException_NoXml"));

@@ -1,5 +1,13 @@
 
+2004-10-12  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XmlNode.cs, System.Xml/Private/SelectNodeList.cs, 
+	System.Xml/Private/XmlDocumentNavigator.cs,
+	System.Xml/XPath/Private/XPathNodeIterators.cs: Implement SelectNodes
+	and SelectSingleNode functionality.
+
 2004-10-12  Deryk Robosson <deryk@0x0a.com>
+
 	* System.Windows.Forms/ButtonBase.cs: Allow for mnemonic rendering for
 	text. (patch #3431, ptha)
 

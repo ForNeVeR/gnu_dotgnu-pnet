@@ -307,7 +307,7 @@ namespace System.Xml.XPath.Private
 			: base(copy)
 		{
 			this.lhs = (XPathBaseIterator) copy.lhs.Clone();
-			this.expr = expr;
+			this.expr = copy.expr;
 		}
 
 		public override XPathNodeIterator Clone()

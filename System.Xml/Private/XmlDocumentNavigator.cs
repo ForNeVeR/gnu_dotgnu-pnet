@@ -444,6 +444,14 @@ internal class XmlDocumentNavigator : XPathNavigator
 	{
 		return String.Format("<XPathNavigator {0} , {1}>", node,document);
 	}
+
+	internal XmlNode CurrentNode
+	{
+		get
+		{
+			return this.node;
+		}
+	}
 }
 
 }

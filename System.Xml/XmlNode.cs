@@ -1007,7 +1007,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public XmlNodeList SelectNodes(String xpath)
 			{
 				// TODO
-				return null;
+				return SelectNodes(xpath, null);
 			}
 
 	// Select a list of nodes matching a particular XPath expression.
@@ -1015,7 +1015,13 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public XmlNodeList SelectNodes(String xpath, XmlNamespaceManager nsmgr)
 			{
 				// TODO
-				return null;
+				XPathNavigator nav = CreateNavigator();
+				XPathExpression expr = nav.Compile(xpath);
+				if(nsmgr != null)
+				{
+					expr.SetContext(nsmgr);
+				}
+				return new SelectNodeList(nav.Select(expr));
 			}
 
 	// Select a single node matching a particular XPath expression.
@@ -1023,7 +1029,7 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public XmlNode SelectSingleNode(String xpath)
 			{
 				// TODO
-				return null;
+				return SelectSingleNode(xpath, null);
 			}
 
 	// Select a single node matching a particular XPath expression.
@@ -1031,7 +1037,14 @@ abstract class XmlNode : ICloneable, IEnumerable, IXPathNavigable
 	public XmlNode SelectSingleNode(String xpath, XmlNamespaceManager nsmgr)
 			{
 				// TODO
-				return null;
+				XPathNavigator nav = CreateNavigator();
+				XPathExpression expr = nav.Compile(xpath);
+				if(nsmgr != null)
+				{
+					expr.SetContext(nsmgr);
+				}
+				SelectNodeList list = new SelectNodeList(nav.Select(expr));
+				return list[0];
 			}
 
 	// Test if this implementation supports a particular DOM feature.

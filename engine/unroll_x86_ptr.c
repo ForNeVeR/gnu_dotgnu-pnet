@@ -77,6 +77,51 @@ static void CheckArrayAccess(X86Unroll *unroll, int reg, int reg2,
 	x86_patch(patch2, unroll->out);
 }
 
+/*
+ * Check a 2D array access operation for exception conditions.
+ */
+static void Check2DArrayAccess(X86Unroll *unroll, int reg, int reg2, int reg3,
+							   unsigned char *pc, unsigned char *label)
+{
+	unsigned char *patch1;
+	unsigned char *patch2;
+	unsigned char *patch3;
+
+	/* Check the array reference against NULL */
+	x86_alu_reg_reg(unroll->out, X86_OR, reg, reg);
+	patch1 = unroll->out;
+	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
+
+	/* Check the array bounds */
+	x86_alu_reg_membase(unroll->out, X86_SUB, reg2, reg, 12);
+	x86_alu_reg_membase(unroll->out, X86_CMP, reg2, reg, 16);
+	patch2 = unroll->out;
+	x86_branch32(unroll->out, X86_CC_LT, 0, 0);
+	x86_alu_reg_membase(unroll->out, X86_ADD, reg2, reg, 12);
+	patch3 = unroll->out;
+	x86_jump8(unroll->out, 0);
+	x86_patch(patch2, unroll->out);
+	x86_alu_reg_membase(unroll->out, X86_SUB, reg3, reg, 24);
+	x86_alu_reg_membase(unroll->out, X86_CMP, reg3, reg, 28);
+	patch2 = unroll->out;
+	x86_branch32(unroll->out, X86_CC_LT, 0, 0);
+	x86_alu_reg_membase(unroll->out, X86_ADD, reg3, reg, 28);
+
+	/* Re-execute the current instruction in the interpreter */
+	x86_patch(patch1, unroll->out);
+	x86_patch(patch3, unroll->out);
+	ReExecute(unroll, pc, label);
+
+	/* Compute the address of the array element */
+	x86_patch(patch2, unroll->out);
+	x86_imul_reg_membase(unroll->out, reg2, reg, 20);
+	x86_imul_reg_membase(unroll->out, reg3, reg, 32);
+	x86_alu_reg_reg(unroll->out, X86_ADD, reg2, reg3);
+	x86_imul_reg_membase(unroll->out, reg2, reg, 4);
+	x86_mov_reg_membase(unroll->out, reg, reg, 8, 4);
+	x86_alu_reg_reg(unroll->out, X86_ADD, reg, reg2);
+}
+
 #elif defined(IL_UNROLL_CASES)
 
 case COP_BREAD:
@@ -568,6 +613,64 @@ case COP_PREAD_THIS:
 	/* Read the contents of the field */
 	x86_mov_reg_membase(unroll.out, reg, reg, (int)temp, 4);
 	MODIFY_UNROLL_PC(CVM_LEN_BYTE);
+}
+break;
+
+case 0x100 + COP_PREFIX_GET2D:
+{
+	/* Get the array object reference and indices into registers */
+	UNROLL_START();
+	GetTopThreeWordRegisters(&unroll, &reg, &reg2, &reg3);
+
+	/* Check the access and compute the element address */
+	Check2DArrayAccess(&unroll, reg, reg2, reg3, pc, (unsigned char *)inst);
+
+	/* Pop unnecessary registers: the address is now in "reg" */
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+
+	/* Skip to the next instruction */
+	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
+}
+break;
+
+case 0x100 + COP_PREFIX_SET2D:
+{
+	unsigned temp = (unsigned)CVMP_ARG_WORD;
+	int offset;
+
+	/* Flush the register stack onto the real stack so that we know
+	   where everything is */
+	UNROLL_START();
+	FlushRegisterStack(&unroll);
+	offset = unroll.stackHeight - ((int)((temp + 3) * 4));
+
+	/* Fetch the array object reference and indices */
+	reg = X86_EAX;
+	reg2 = X86_ECX;
+	reg3 = X86_EDX;
+	x86_mov_reg_membase(unroll.out, reg, REG_STACK, offset, 4);
+	x86_mov_reg_membase(unroll.out, reg2, REG_STACK, offset + 4, 4);
+	x86_mov_reg_membase(unroll.out, reg3, REG_STACK, offset + 8, 4);
+
+	/* Check the access and compute the element address */
+	Check2DArrayAccess(&unroll, reg, reg2, reg3, pc, (unsigned char *)inst);
+
+	/* Shift everything down on the stack to squash out the indices */
+	x86_mov_membase_reg(unroll.out, REG_STACK, offset, reg, 4);
+	while(temp > 0)
+	{
+		offset += 4;
+		x86_mov_reg_membase(unroll.out, reg2, REG_STACK, offset + 8, 4);
+		x86_mov_membase_reg(unroll.out, REG_STACK, offset, reg2, 4);
+		--temp;
+	}
+
+	/* Adjust the top of stack pointer */
+	unroll.stackHeight -= 8;
+
+	/* Skip to the next instruction */
+	MODIFY_UNROLL_PC(CVMP_LEN_WORD);
 }
 break;
 

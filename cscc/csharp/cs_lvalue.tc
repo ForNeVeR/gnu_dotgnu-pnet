@@ -929,9 +929,6 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 		return value;
 	}
 
-	/* This time around dump the errors */
-	value = CSResolveSimpleName(info, (ILNode *)node, node->name, 0);
-
 	return CSSemValueDefault;
 }
 

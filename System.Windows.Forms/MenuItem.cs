@@ -415,7 +415,7 @@ public class MenuItem : Menu
 			}
 
 	// Raise the "DrawItem" event.
-	internal virtual void OnDrawItem(DrawItemEventArgs e)
+	protected internal virtual void OnDrawItem(DrawItemEventArgs e)
 			{
 				if(DrawItem != null)
 				{
@@ -424,7 +424,7 @@ public class MenuItem : Menu
 			}
 
 	// Raise the "MeasureItem" event.
-	internal virtual void OnMeasureItem(MeasureItemEventArgs e)
+	protected internal virtual void OnMeasureItem(MeasureItemEventArgs e)
 			{
 				if(MeasureItem != null)
 				{

@@ -1,4 +1,9 @@
 
+2004-08-01  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/MenuItem.cs: Fix modifiers for OnDrawItem and
+	OnMeasureItem to be protected internal.
+
 2004-08-08  Deryk Robosson <deryk@0x0a.com>
 
 	* System.Windows.Forms/TreeView.cs: Remove remaining conversions to

@@ -118,12 +118,6 @@ public sealed class DrawingToolkit : IToolkit
 				// TODO: raise a repaint on all windows
 			}
 
-	// Run the main event processing loop for the toolkit.
-	public void Run()
-			{
-				app.Run();
-			}
-
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
 	// seen.  If "waitForEvent" is false, then process events in the

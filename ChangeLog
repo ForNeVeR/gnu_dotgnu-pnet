@@ -59,6 +59,11 @@
 	"ProcessPendingEvents()" and "WaitForEvent()" so that it is
 	possible to return back to the application between events.
 
+	* System.Drawing/Toolkit/IToolkit.cs,
+	System.Drawing.Win32/DrawingToolkit.cs,
+	System.Drawing.Xsharp/DrawingToolkit.cs: remove all references to
+	"IToolkit.Run" because it isn't needed any more.
+
 2003-06-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* System.Windows.Forms/ProgressBar.cs, 

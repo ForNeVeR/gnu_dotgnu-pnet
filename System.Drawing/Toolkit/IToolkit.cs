@@ -27,9 +27,6 @@ using System.Drawing.Text;
 
 public interface IToolkit
 {
-	// Run the main event processing loop for the toolkit.
-	void Run();
-
 	// Process events in the event queue.  If "waitForEvent" is true,
 	// then wait for the next event and return "false" if "Quit" was
 	// seen.  If "waitForEvent" is false, then process events in the

@@ -807,6 +807,22 @@ ILNode_SemAnalysis(ILNode_Identifier)
 				CSSemSetLValue(value, type);
 				return value;
 			}
+			else if(paramMod == ILParamMod_params)
+			{
+				/* Use the array form of the parameter inside the method */
+				if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
+				{
+					type = ILTypeGetParam
+						(ILMethod_Signature(method->methodInfo), index);
+				}
+				else
+				{
+					type = ILTypeGetParam
+						(ILMethod_Signature(method->methodInfo), index + 1);
+				}
+				*parent = ILNode_ArgumentVar_create
+					(index, ILMachineType_ObjectRef);
+			}
 			else
 			{
 				*parent = ILNode_ArgumentVar_create

@@ -114,6 +114,9 @@ struct _tagILImage
 	/* Destroy function that can be overridden by subclasses */
 	void		  (*destroy)(ILImage *image);
 
+	/* File that the image was loaded file */
+	char		   *filename;		/* NULL if filename is unknown */
+
 	/* Housekeeping for managing the raw PE/COFF for of an image */
 	int				type : 8;		/* Type of image */
 	int				hadNative : 1;	/* Non-zero if image had native code */

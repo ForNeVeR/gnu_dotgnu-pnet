@@ -702,6 +702,31 @@ ILType *ILTypeGetEnumType(ILType *type)
 	return type;
 }
 
+int ILTypeIsStringClass(ILType *type)
+{
+	ILClass *info;
+	ILImage *systemImage;
+	if(ILType_IsClass(type))
+	{
+		/* Check the name against "System.String" */
+		info = ILType_ToClass(type);
+		if(!strcmp(info->name, "String") &&
+		   info->namespace && !strcmp(info->namespace, "System"))
+		{
+			/* Check that it is within the system image, to prevent
+			   applications from fooling us into believing that their
+			   own class is the system's string class */
+			info = ILClassResolve(info);
+			systemImage = info->programItem.image->context->systemImage;
+			if(!systemImage || systemImage == info->programItem.image)
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

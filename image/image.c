@@ -70,6 +70,12 @@ void ILImageDestroy(ILImage *image)
 		(*(image->destroy))(image);
 	}
 
+	/* Free the filename */
+	if(image->filename)
+	{
+		ILFree(image->filename);
+	}
+
 	/* Remove ourselves from the context's image list */
 	if(image->nextImage)
 	{

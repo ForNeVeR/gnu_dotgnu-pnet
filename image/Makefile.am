@@ -15,6 +15,7 @@ libILImage_a_SOURCES = assembly.c \
 					   java_loader.c \
 					   jopcodes.c \
 					   link.c \
+					   marshal.c \
 					   member.c \
 					   meta_build.c \
 					   meta_header.c \
@@ -36,5 +37,11 @@ libILImage_a_SOURCES = assembly.c \
 libILTestMacros_a_SOURCES = test_macros.c
 
 if USINGGCC
-INCLUDES = -Wall
+INCLUDES = -Wall -DCSCC_LIB_DIR=\"$(libdir)\" \
+		   -DCSCC_HOST_TRIPLET=\"$(host_triplet)\" \
+		   -DCSCC_HOST_ALIAS=\"$(host_alias)\"
+else
+INCLUDES = -DCSCC_LIB_DIR=\"$(libdir)\" \
+		   -DCSCC_HOST_TRIPLET=\"$(host_triplet)\" \
+		   -DCSCC_HOST_ALIAS=\"$(host_alias)\"
 endif

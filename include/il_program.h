@@ -1409,6 +1409,14 @@ ILPInvoke *ILPInvokeFind(ILMethod *method);
 ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, unsigned long param);
 
 /*
+ * Resolve the module information for a PInvoke declaration
+ * to a pathname that can be used to load the external module
+ * using "ILDynLibraryOpen".  Returns an ILMalloc'ed string,
+ * or NULL if the module could not be resolved.
+ */
+char *ILPInvokeResolveModule(ILPInvoke *pinvoke);
+
+/*
  * Helper macros for querying information about a PInvoke.
  */
 #define	ILPInvoke_FromToken(image,token)	\

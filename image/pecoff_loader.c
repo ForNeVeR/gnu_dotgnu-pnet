@@ -476,6 +476,24 @@ int ILImageLoad(FILE *file, const char *filename,
 		_ILFreeSectionMap(map);
 		return IL_LOADERR_MEMORY;
 	}
+	if(filename)
+	{
+		/* Save the filename for later use in dynamic linking */
+		(*image)->filename = ILDupString(filename);
+		if(!((*image)->filename))
+		{
+			if(isMapped)
+			{
+				ILUnmapFileFromMemory(mapAddress, mapLength);
+			}
+			else
+			{
+				ILFree(data);
+			}
+			_ILFreeSectionMap(map);
+			return IL_LOADERR_MEMORY;
+		}
+	}
 	(*image)->type = (isOBJ ? IL_IMAGETYPE_OBJ :
 						(isDLL ? IL_IMAGETYPE_DLL : IL_IMAGETYPE_EXE));
 	(*image)->hadNative = hadNative;

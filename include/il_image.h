@@ -360,6 +360,23 @@ void *ILImageSearchForToken(ILImage *image, ILToken tokenType,
  */
 const char *ILImageLoadError(int error);
 
+/*
+ * Search along the standard library path for an assembly with
+ * a specific name and version.  If "version" is NULL or all-zeroes,
+ * then use any version.  If "numBeforePaths" is non-zero, then
+ * "beforePaths" contains a list of paths to be searched before
+ * the standard paths.  If "numAfterPaths" is non-zero, then
+ * "afterPaths" contains a list of paths to be searched after
+ * the standard paths.  If "suppressStandardPaths" is non-zero,
+ * then the standard paths will be omitted.  Returns NULL if
+ * the assembly could not be resolved, or an ILMalloc'ed string
+ * containing the full pathname otherwise.
+ */
+char *ILImageSearchPath(const char *name, const ILUInt16 *version,
+						const char **beforePaths, unsigned long numBeforePaths,
+						const char **afterPaths, unsigned long numAfterPaths,
+						int suppressStandardPaths);
+
 #ifdef	__cplusplus
 };
 #endif

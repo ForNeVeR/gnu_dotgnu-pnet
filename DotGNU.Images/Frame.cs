@@ -72,7 +72,7 @@ public class Frame : MarshalByRefObject, IDisposable
 				pixelFormat = format;
 				stride =Utils.FormatToStride(pixelFormat, width);
 				maskStride = (((width + 7) / 8) + 3) & ~3;
-				generatedMask = frame.generatedMask;
+				generatedMask = false;
 				if(frame.palette != null)
 				{
 					if(newImage != null && frame.palette == frame.image.Palette)
@@ -98,6 +98,7 @@ public class Frame : MarshalByRefObject, IDisposable
 				if(cloneData & frame.mask != null)
 				{
 					mask = (byte[])(frame.mask.Clone());
+					generatedMask = frame.generatedMask;
 				}
 			}
 
@@ -569,9 +570,21 @@ public class Frame : MarshalByRefObject, IDisposable
 				if (boundsx != 0 || boundsy != 0)
 					throw new ArgumentException();
 
-				Frame f = BmpResizer.Resize(this, originx1, originy1 , originx2 - originx1, originy3 - originy1, destx2 - destx1, desty3 - desty1);
-				// TODO: The shearing and rotating.
-				//f = new Frame(newImage, boundsright - boundsx, boundsbottom - boundsy, pixelFormat);
+				Frame f;
+				// Can we save time by just copying?
+				if (originx2 - originx1 == destx2 - destx1 && originy2 - originy1 == desty2 - desty1)
+				{
+					f = CloneFrameEmpty(destx2 - destx1, desty3 - desty1, pixelFormat);
+					f.data = new byte [f.height * f.stride];
+					
+					Copy(f, 0, 0, f.width, f.height, this, originx1, originy1);
+				}
+				else
+				{
+					f = BmpResizer.Resize(this, originx1, originy1 , originx2 - originx1, originy3 - originy1, destx2 - destx1, desty3 - desty1);
+					// TODO: The shearing and rotating.
+					//f = new Frame(newImage, boundsright - boundsx, boundsbottom - boundsy, pixelFormat);
+				}
 				return f;
 			}
 
@@ -581,12 +594,44 @@ public class Frame : MarshalByRefObject, IDisposable
 				return BmpReformatter.Reformat(this, format);
 			}
 
+	// Copy as much of frame as possible to the x, y position of this frame.
 	public void Copy(Frame frame, int x, int y)
+			{
+				Copy(this, x, y, width, height, frame, 0, 0);
+			}
+
+	public static void Copy(Frame dest, int x, int y, int width, int height, Frame source, int sourceX, int sourceY)
 			{
 				// Developers should be aware of any costly conversions.
 				// So we don't automatically match the depths.
-				if (pixelFormat != frame.pixelFormat)
-					throw new ArgumentException();
+				if (source.pixelFormat != dest.pixelFormat)
+				{
+					throw new InvalidOperationException();
+				}
+
+				if (x < 0 || y < 0 || width <= 0 || height <= 0)
+				{
+					throw new ArgumentOutOfRangeException();
+				}
+
+				if (x + width > dest.width)
+				{
+					width = dest.width - x;
+				}
+
+				if (y + height > dest.height)
+				{
+					height = dest.height - x;
+				}
+
+				if (source.width - sourceX < width)
+				{
+					width = source.width - sourceX;
+				}
+				if (source.height - sourceY < height)
+				{
+					height = source.height - sourceY;
+				}
 
 				//TODO:
 				// If we are copying an index bitmap, we need to find the color
@@ -595,58 +640,97 @@ public class Frame : MarshalByRefObject, IDisposable
 				// if there is space and optionally optimize the palette.
 				// For now we just overwrite the old palette.
 
-				if (frame.palette != null)
-					palette = (int[])frame.palette.Clone();
-				
-				int bits = Utils.FormatToBitCount(pixelFormat);
-				int right = x + frame.width;
-				if (width < right)
-					right = width;
-				int bottom = y + frame.height;
-				if (height < bottom)
-					bottom = height;
-				Copy(bits, x, y, right, bottom, frame.Data, frame.Stride, Data, Stride);
+				if (source.palette != null)
+				{
+					dest.palette = (int[])source.palette.Clone();
+				}
+								
+				int bits = Utils.FormatToBitCount(source.pixelFormat);
+				Copy (bits, dest.data, dest.stride, x, y, width, height, source.Data, source.stride, sourceX, sourceY);
 
 				//TODO:
 				// The mask is not taken into account when copying. We need to
 				// look at adding alpha support.
 				// For now, just copy over the mask.
-				if (frame.Mask != null)
+				if (source.Mask != null)
 				{
-					AddMask();
-					Copy(1, x, y, right, bottom, frame.Mask, frame.MaskStride, Mask, MaskStride);
+					dest.AddMask();
+					Copy(1, dest.mask, dest.maskStride,  x, y, width, height, source.mask, source.maskStride, sourceX, sourceY);
 				}
 
-				
 			}
 
-	private void Copy(int bits, int x, int y, int right, int bottom, byte[] sourceData, int sourceStride, byte[] destData, int destStride)
+	// Take a dest and source image with “bits” bits per pixel. Copy the source starting at (sourceX, sourceY) into a rectangle in the dest x, y, width, height.
+	private static void Copy(int bits, byte[] destData, int destStride, int x, int y, int width, int height, byte[] sourceData, int sourceStride, int sourceX, int sourceY)
 			{
-				int pSourceRow = 0;
-				int pDestinationRow = y * stride;
-				for (; y < bottom ; y++)
+				int sourceXOffset = sourceX * bits/8;
+				int pSourceRow = sourceY * sourceStride + sourceXOffset;
+
+				int destXOffset = x * bits / 8;
+				int pDestinationRow = y * destStride + destXOffset;
+				int lineLength = width /8 * bits;
+				
+				if (bits >= 8)
 				{
-					int pSourcePixel = pSourceRow;
-					int pDestinationPixel = pDestinationRow + x * bits / 8;
-					// Loop through each pixel on this scan line
-					int xEnd = pDestinationRow + right*bits/8;
-					// TODO: Could be done with Marshal.Copy if speed is an issue.
-					while (pDestinationPixel < xEnd)
-						destData[pDestinationPixel++] = sourceData[pSourcePixel++];
-					// Are there any bits left over?
-					if (bits < 8)
+					for (int bottom = y + height; y < bottom ; y++)
 					{
-						int bitsOver = (right*bits) & 0x7;
-						if (bitsOver > 0)
-						{
-							int mask = (1 << (8 - bitsOver)) - 1;
-							byte lastByte = (byte)(destData[pDestinationPixel] & mask | sourceData[pSourcePixel++] & ~mask);
-							destData[pDestinationPixel++] = lastByte;
-						}
+						Array.Copy(sourceData, pSourceRow, destData, pDestinationRow, lineLength);
+						pSourceRow += sourceStride;
+						pDestinationRow += destStride;
 					}
-					
-					pSourceRow += sourceStride;
-					pDestinationRow += destStride;
+				}
+				else
+				{
+					int sourceOffset = (sourceX * bits) & 7;
+					int destOffset = (x * bits) & 7;
+					int sourceOffsetReverse = 8 - sourceOffset;
+					for (int bottom = y + height; y < bottom ; y++)
+					{
+						if (sourceOffset == 0)
+						{
+							if (destOffset == 0)
+							{
+								Array.Copy(sourceData, pSourceRow, destData, pDestinationRow, lineLength);
+							}
+							else
+							{
+								int pSource = pSourceRow;
+								int pDest = pDestinationRow;
+								int prevDest = destData[pDest];
+								for (int pSourceEnd = pSource + lineLength; pSource < pSourceEnd;)
+								{
+									prevDest = ((prevDest << 8) | sourceData[pSource++]);
+									destData[pDest++] = (byte)(prevDest >> destOffset);
+								}
+							}
+						}
+						else if (destOffset == 0)
+						{
+							int pSource = pSourceRow;
+							int pDest = pDestinationRow;
+							int prevSource = sourceData[pSource++];
+							for (int pSourceEnd = pSource + lineLength; pSource < pSourceEnd;)
+							{
+								prevSource = ((prevSource << 8) | sourceData[pSource++]);
+								destData[pDest++] = (byte)(prevSource >> sourceOffsetReverse);
+							}
+						}
+						else
+						{
+							int pSource = pSourceRow;
+							int pDest = pDestinationRow;
+							int prevSource = sourceData[pSource++];
+							int prevDest = destData[pDest];
+							for (int pSourceEnd = pSource + lineLength; pSource < pSourceEnd;)
+							{
+								prevSource = ((prevSource << 8) | sourceData[pSource++]);
+								prevDest = ((prevDest << 8) | (byte)(prevSource >> sourceOffsetReverse));
+								destData[pDest++] = (byte)(prevDest >> destOffset);
+							}
+						}
+						pSourceRow += sourceStride;
+						pDestinationRow += destStride;
+					}
 				}
 			}
 
@@ -788,6 +872,12 @@ public class Frame : MarshalByRefObject, IDisposable
 					return Utils.BytesPerLine(pixelFormat, width);
 				}
 			}
+
+	public override string ToString()
+	{
+		return "Frame [" + width + "," + height +"], " + pixelFormat;
+	}
+
 
 }; // class Frame
 

@@ -610,6 +610,7 @@ internal unsafe sealed class JpegLib
 	private static void skip_input_data
 				(ref jpeg_decompress_struct cinfo, LONG num_bytes)
 			{
+#if __CSCC__
 				jpeg_source_mgr *src = cinfo.src;
 				int num = (int)num_bytes;
 				if(num > 0)
@@ -624,6 +625,7 @@ internal unsafe sealed class JpegLib
 					src->bytes_in_buffer =
 						(size_t)(((int)(src->bytes_in_buffer)) - num);
 				}
+#endif
 			}
 
 	// Terminate an input source.
@@ -673,9 +675,11 @@ internal unsafe sealed class JpegLib
 					new term_source_type(term_source);
 
 				// Convert it into the unmanaged version and store it.
+#if __CSCC__
 				IntPtr umgr = Marshal.AllocHGlobal(sizeof(jpeg_source_mgr));
 				Marshal.StructureToPtr(mgr, umgr, false);
 				cinfo.src = (jpeg_source_mgr *)umgr;
+#endif
 			}
 
 	// Free a source manager.
@@ -746,10 +750,12 @@ internal unsafe sealed class JpegLib
 					new term_destination_type(term_destination);
 
 				// Convert it into the unmanaged version and store it.
+#if __CSCC__
 				IntPtr umgr = Marshal.AllocHGlobal
 					(sizeof(jpeg_destination_mgr));
 				Marshal.StructureToPtr(mgr, umgr, false);
 				cinfo.dest = (jpeg_destination_mgr *)umgr;
+#endif
 			}
 
 	// Free a destination manager.

@@ -66,7 +66,8 @@ namespace DotGNU.Images
 			int bytesPerPixel = Utils.FormatToBitCount(oldFrame.pixelFormat) / 8;
 			int lineStartBit = 0;
 			bool lineStartNibble = false;
-			int lineStartOld = 0;
+			// Offset to the oldY.
+			int lineStartOld = oldY * oldFrame.Stride;
 			if (oldFrame.pixelFormat == PixelFormat.Format1bppIndexed)
 			{
 				lineStartOld = oldX / 8;
@@ -78,7 +79,9 @@ namespace DotGNU.Images
 				lineStartNibble = ((oldX & 0x01) == 0);
 			}
 			else
+			{
 				lineStartOld =bytesPerPixel * oldX;
+			}
 
 			int y = 0;
 			while(y < oldHeight)
@@ -213,6 +216,9 @@ namespace DotGNU.Images
 			}
 			else
 				lineStart =Utils.FormatToBitCount(oldFrame.pixelFormat) / 8 * oldX;
+
+			// Offset to the right place based on oldY.
+			lineStart += oldY * oldFrame.Stride;
 
 			int lineStartOut = 0;
 			int[] rowCoefficients = CreateCoefficients(oldWidth,  newFrame.Width);

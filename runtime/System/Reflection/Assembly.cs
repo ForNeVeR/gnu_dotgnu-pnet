@@ -166,7 +166,7 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public virtual Type[] GetExportedTypes();
 
-	// Get a file stream for a particular public manifest resource.
+	// Get a file stream for a particular public manifest file.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public virtual FileStream GetFile(String name);
 
@@ -178,7 +178,45 @@ public class Assembly : IClrProgramItem, ICustomAttributeProvider
 				return GetFiles(false);
 			}
 
-#endif // !ECMA_COMPAT
+	// Get information about a particular manifest resource.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual ManifestResourceInfo
+			GetManifestResourceInfo(String resourceName);
+
+	// Get the names of all manifest resources in this assembly.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual String[] GetManifestResourceNames();
+
+	// Get a stream for a particular manifest resource.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual Stream GetManifestResourceStream(String name);
+
+	// Get a stream for a particular manifest resource, scoped by a type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	public virtual Stream GetManifestResourceStream(Type type, String name)
+			{
+				if(name == null)
+				{
+					return null;
+				}
+				else if(type == null)
+				{
+					return GetManifestResourceStream(type.Namespace + "." +
+													 name);
+				}
+				else
+				{
+					return GetManifestResourceStream(name);
+				}
+			}
+
+#else // ECMA_COMPAT
+
+	// Get a stream for a particular manifest resource.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal virtual Stream GetManifestResourceStream(String name);
+
+#endif // ECMA_COMPAT
 
 	// Get a particular type from this assembly.
 	public virtual Type GetType(String typeName)

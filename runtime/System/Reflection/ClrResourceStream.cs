@@ -28,15 +28,14 @@ using System.Threading;
 using System.Runtime.CompilerServices;
 
 // This class helps with reading from manifest resources.
-// For various legacy reasons, API's that read manifest
-// resources expect a FileStream, even though strictly
-// speaking this is not really a FileStream internally.
 
-internal sealed class ClrResourceStream : FileStream
+internal sealed class ClrResourceStream : Stream
 {
 	// Internal state.
+	private IntPtr handle;
 	private long start;
 	private long length;
+	private long position;
 
 	// Constructor.
 	public ClrResourceStream(IntPtr handle, long start, long length)
@@ -45,11 +44,7 @@ internal sealed class ClrResourceStream : FileStream
 				this.handle = handle;
 				this.start  = start;
 				this.length = length;
-				position = 0;
-				access = FileAccess.Read;
-				ownsHandle = true;
-				isAsync = false;
-				canSeek = true;
+				this.position = 0;
 			}
 
 	// This class does not support asynchronous file operations.
@@ -77,16 +72,10 @@ internal sealed class ClrResourceStream : FileStream
 	// Set up for a read.
 	private void SetupRead()
 			{
-				if(handle == invalidHandle)
+				if(handle == IntPtr.Zero)
 				{
 					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
-			}
-
-	// Set up for a write.
-	private void SetupWrite()
-			{
-				throw new NotSupportedException(_("IO_NotSupp_Write"));
 			}
 
 #if ECMA_COMPAT
@@ -95,7 +84,7 @@ internal sealed class ClrResourceStream : FileStream
 			{
 				lock(this)
 				{
-					handle = invalidHandle;
+					handle = IntPtr.Zero;
 				}
 			}
 #else	// !ECMA_COMPAT
@@ -118,7 +107,7 @@ internal sealed class ClrResourceStream : FileStream
 			{
 				lock(this)
 				{
-					handle = invalidHandle;
+					handle = IntPtr.Zero;
 				}
 			}
 #endif
@@ -126,7 +115,7 @@ internal sealed class ClrResourceStream : FileStream
 	// Flush the pending contents in this stream.
 	public override void Flush()
 			{
-				if(handle == invalidHandle)
+				if(handle == IntPtr.Zero)
 				{
 					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
@@ -186,7 +175,7 @@ internal sealed class ClrResourceStream : FileStream
 				long newPosn;
 
 				// Bail out if the handle is invalid.
-				if(handle == invalidHandle)
+				if(handle == IntPtr.Zero)
 				{
 					throw new ObjectDisposedException(_("IO_StreamClosed"));
 				}
@@ -235,6 +224,33 @@ internal sealed class ClrResourceStream : FileStream
 	public override void WriteByte(byte value)
 			{
 				throw new NotSupportedException(_("IO_NotSupp_Write"));
+			}
+
+	// Determine if we can read from this stream.
+	public override bool CanRead
+			{
+				get
+				{
+					return true;
+				}
+			}
+
+	// Determine if we can write to this stream.
+	public override bool CanWrite
+			{
+				get
+				{
+					return false;
+				}
+			}
+
+	// Determine if we can seek within this stream.
+	public override bool CanSeek
+			{
+				get
+				{
+					return true;
+				}
 			}
 
 	// Get the length of this stream.

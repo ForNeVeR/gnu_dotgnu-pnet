@@ -41,7 +41,9 @@ public class Testruntime
 				suite.AddTest(SuiteSerialization.Suite());
 				suite.AddTest(SuiteSecurity.Suite());
 				suite.AddTest(SuiteIO.Suite());
+#if CONFIG_REFLECTION_EMIT
 				suite.AddTest(SuiteEmit.Suite());
+#endif // CONFIG_REFLECTION_EMIT
 				suite.AddTest(SuiteReflection.Suite());
 				return suite;
 			}

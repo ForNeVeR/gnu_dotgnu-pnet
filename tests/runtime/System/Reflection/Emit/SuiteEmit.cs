@@ -21,6 +21,7 @@
 using CSUnit;
 using System;
 
+#if CONFIG_REFLECTION_EMIT
 public class SuiteEmit
 {
 
@@ -34,3 +35,5 @@ public class SuiteEmit
 			}
 
 }; // class SuiteEmit
+#endif // CONFIG_REFLECTION_EMIT
+

@@ -1,6 +1,14 @@
 
 2004-10-07  Klaus Treichel  <ktreichel@web.de>
 
+	* samples/developers/MainForm.cs,
+	tests/runtime/System/Reflection/Emit/TestEmit.cs,
+	tests/runtime/System/Reflection/Emit/SuiteEmit.cs,
+	tests/runtime/Testruntime.cs: fix dependency problems building with profile
+	mscompact.
+
+2004-10-07  Klaus Treichel  <ktreichel@web.de>
+
 	* runtime/System/IO/BinaryReader.cs, runtime/System/IO/BinaryWriter.cs:
 	Close stream only on call of Close (revert some of my last changes).
 

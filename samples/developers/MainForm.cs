@@ -88,7 +88,11 @@ namespace ThreadsDemo
 			}
 			catch (FileNotFoundException)
 			{
+#if CONFIG_SMALL_CONSOLE
+				Console.WriteLine("Warning: Couldn't find {0}", filename);
+#else
 				Console.Error.WriteLine("Warning: Couldn't find {0}", filename);
+#endif
 			}
 
 			// Layout the developers.
@@ -119,7 +123,11 @@ namespace ThreadsDemo
 
 						if (i >= args.Length)
 						{
+#if CONFIG_SMALL_CONSOLE
+							Console.Write("Missing value for coding delay.");
+#else
 							Console.Error.Write("Missing value for coding delay.");
+#endif
 						}
 
 						m_CodingDelay = int.Parse(args[i]);
@@ -133,7 +141,11 @@ namespace ThreadsDemo
 
 						if (i >= args.Length)
 						{
+#if CONFIG_SMALL_CONSOLE
+							Console.Write("Missing value for coding delay.");
+#else
 							Console.Error.Write("Missing value for coding delay.");
+#endif
 						}
 
 						m_ThinkingDelay = int.Parse(args[i]);
@@ -372,7 +384,11 @@ namespace ThreadsDemo
 			{
 				string message = "No developer pictures found.";
 
+#if CONFIG_SMALL_CONSOLE
+				Console.WriteLine(message);
+#else
 				Console.Error.WriteLine(message);
+#endif
 				MessageBox.Show(message);
 
 				Application.Exit();

@@ -26,6 +26,7 @@ using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 
+#if CONFIG_REFLECTION_EMIT
 interface ISomeMethods
 {
 	void nop();
@@ -312,3 +313,5 @@ public class TestEmit : TestCase
 		}
 	}
 }
+#endif // CONFIG_REFLECTION_EMIT
+

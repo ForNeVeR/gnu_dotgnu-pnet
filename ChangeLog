@@ -3,6 +3,8 @@
 
 	* configure.in, NEWS: update version and news for the 0.5.2 release.
 
+	* configure.in: update working version to "0.5.3".
+
 2003-02-07  Marcus Urban  <mathpup@mylinuxisp.com>
 
 	* runtime/System/Globalization/CompareInfo.cs: Handle empty string 

@@ -83,8 +83,8 @@ public class GlobalObject
 				AddProperty("EvalError", EvalError);
 #endif
 				AddProperty("Function", Function);
-#if false
 				AddProperty("Math", Math);
+#if false
 				AddProperty("Number", Number);
 #endif
 				AddProperty("Object", Object);
@@ -179,15 +179,15 @@ public class GlobalObject
 					return EngineInstance.Default.GetFunctionConstructor();
 				}
 			}
-#if false
 	public static MathObject Math
 			{
 				get
 				{
 					// TODO
-					return null;
+					return new MathObject(EngineInstance.Default.GetObjectPrototype());
 				}
 			}
+#if false
 	public static NumberConstructor Number
 			{
 				get
@@ -1231,7 +1231,6 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
-#if false
 	private object math;
 	public new object Math
 			{
@@ -1242,7 +1241,10 @@ public sealed class LenientGlobalObject : GlobalObject
 						if(math == null ||
 						   math is Missing)
 						{
-							math = GlobalObject.Math;
+							// should be thread safe to do this ?
+							return new LenientMathObject(
+								EngineInstance.Default.GetObjectPrototype(), 
+								EngineInstance.Default.GetFunctionPrototype());
 						}
 						return math;
 					}
@@ -1255,6 +1257,7 @@ public sealed class LenientGlobalObject : GlobalObject
 					}
 				}
 			}
+#if false
 	private object number;
 	public new object Number
 			{

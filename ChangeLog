@@ -1,5 +1,16 @@
 
 2004-09-17  Gopal V  <gopalv82@yahoo.com>
+
+	* JScript/Builtins/MathObject.cs, JScript/Builtins/GlobalObject.cs: 
+	Implement LenientMathObject and hook up the sqrt function via 
+	GlobalObject.	
+	
+2004-09-17  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* JScript/Builtins/MathObject.cs: Implementation of MathObject
+	concrete class.
+
+2004-09-17  Gopal V  <gopalv82@yahoo.com>
 	
 	* config/machine.default: Add settings needed for System.Web support.
 

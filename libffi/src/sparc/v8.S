@@ -96,12 +96,12 @@ longlong:
 
 #ifdef SPARC64
 #define WS 8
-#define nword	xword
-#define uanword	uaxword
+#define nword	.xword
+#define uanword	.uaxword
 #else
 #define WS 4
-#define nword	long
-#define uanword	uaword
+#define nword	.long
+#define uanword	.uaword
 #endif
 
 	.section	".eh_frame",#alloc,#write
@@ -134,8 +134,8 @@ longlong:
 	.uaword	.LLFE1-.LLFB1	! FDE address range
 #else
 	.align	WS
-	.nword	.LLFB1
-	.uanword .LLFE1-.LLFB1	! FDE address range
+	nword	.LLFB1
+	uanword .LLFE1-.LLFB1	! FDE address range
 #endif
 	.byte	0x0	! uleb128 0x0; Augmentation size
 	.byte	0x4	! DW_CFA_advance_loc4

@@ -4,6 +4,9 @@
 	* engine/int_proto.h, engine/int_table.c, engine/lib_array.c:
 	implement the "Array.InternalCopy" internalcall.
 
+	* image/opcodes.c: adjust the stack behaviour of "newobj" to
+	prevent bytecode verification errors.
+
 2002-04-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* samples/mscorlib.dll: new version with UTF-7 encoding and

@@ -153,7 +153,7 @@ ILOpcodeInfo const ILMainOpcodeTable[256] = {
 	{"ldobj",			1, 1, IL_OPCODE_ARGS_TOKEN, 5},
 	{"ldstr",			0, 1, IL_OPCODE_ARGS_STRING, 5},
 
-	{"newobj",			0, 1, IL_OPCODE_ARGS_NEW, 5},
+	{"newobj",			0, 0, IL_OPCODE_ARGS_NEW, 5},
 	{"castclass",		1, 1, IL_OPCODE_ARGS_TOKEN, 5},
 	{"isinst",			1, 1, IL_OPCODE_ARGS_TOKEN, 5},
 

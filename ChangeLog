@@ -11,6 +11,10 @@
 	* ilalink/link_library.c, ilalink/linker.h: report multiply
 	defined global symbols only once (bug #4703).
 
+	* cscc/c/c_grammar.y (Declaration): display an extra error line
+	if a "two or more types" error might be a redeclaration of a
+	typedef'ed name (bug #4701).
+
 2003-08-10  CH Gowri Kumar  <gkumar@csa.iisc.ernet.in>
 
 	* engine/Makefile.am, engine/cvm.c, engine/cvm_config.h,

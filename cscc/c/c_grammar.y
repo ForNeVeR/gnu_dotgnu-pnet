@@ -1601,6 +1601,13 @@ Declaration
 					spec = CDeclSpecFinalize($1, 0, 0, C_KIND_LOCAL_NAME);
 				}
 
+				/* Check for something that looks like a multiple typedef */
+				if((($1).dupSpecifiers & C_SPEC_MULTIPLE_BASES) != 0 &&
+				   (spec.specifiers & C_SPEC_TYPEDEF) != 0)
+				{
+					CCError(_("(may be a redeclaration of a typedef'ed name)"));
+				}
+
 				/* Check for useless declarations */
 				if((!CTypeIsStruct(spec.baseType) &&
 				    !CTypeIsUnion(spec.baseType) &&

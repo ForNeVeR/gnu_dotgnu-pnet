@@ -123,6 +123,24 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 		/* Array type, passed in by pointer to the first element */
 		return IL_META_MARSHAL_ARRAY;
 	}
+	else if(type != 0 && ILType_IsComplex(type) &&
+			ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
+	{
+		/* Check for "ref String[]", which is used by Gtk# when
+		   calling the "gtk_init" function */
+		if(ILType_IsSimpleArray(ILType_Ref(type)) &&
+		   ILTypeIsStringClass(ILTypeGetElemType(ILType_Ref(type))))
+		{
+			if(StringCharSet(pinvoke, method) == IL_META_MARSHAL_ANSI_STRING)
+			{
+				return IL_META_MARSHAL_REF_ANSI_ARRAY;
+			}
+			else
+			{
+				return IL_META_MARSHAL_REF_UTF8_ARRAY;
+			}
+		}
+	}
 
 	/* Marshal the parameter directly */
 	return IL_META_MARSHAL_DIRECT;

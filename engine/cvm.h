@@ -461,35 +461,37 @@ extern	"C" {
 #define	COP_PREFIX_UTF82STR			0x3F
 #define	COP_PREFIX_DELEGATE2FNPTR	0x40
 #define	COP_PREFIX_ARRAY2PTR		0x41
+#define	COP_PREFIX_REFARRAY2ANSI	0x42
+#define	COP_PREFIX_REFARRAY2UTF8	0x43
 
 /*
  * Inline method replacements.
  */
-#define	COP_PREFIX_STRING_CONCAT_2	0x42
-#define	COP_PREFIX_STRING_CONCAT_3	0x43
-#define	COP_PREFIX_STRING_CONCAT_4	0x44
-#define	COP_PREFIX_STRING_EQ		0x45
-#define	COP_PREFIX_STRING_NE		0x46
-#define	COP_PREFIX_STRING_GET_CHAR	0x47
-#define	COP_PREFIX_TYPE_FROM_HANDLE	0x48
-#define	COP_PREFIX_MONITOR_ENTER	0x49
-#define	COP_PREFIX_MONITOR_EXIT		0x4A
+#define	COP_PREFIX_STRING_CONCAT_2	0x44
+#define	COP_PREFIX_STRING_CONCAT_3	0x45
+#define	COP_PREFIX_STRING_CONCAT_4	0x46
+#define	COP_PREFIX_STRING_EQ		0x47
+#define	COP_PREFIX_STRING_NE		0x48
+#define	COP_PREFIX_STRING_GET_CHAR	0x49
+#define	COP_PREFIX_TYPE_FROM_HANDLE	0x4A
+#define	COP_PREFIX_MONITOR_ENTER	0x4B
+#define	COP_PREFIX_MONITOR_EXIT		0x4C
 
 /*
  * Binary value fixups.
  */
-#define	COP_PREFIX_FIX_I4_I			0x4B
-#define	COP_PREFIX_FIX_I4_U			0x4C
+#define	COP_PREFIX_FIX_I4_I			0x4D
+#define	COP_PREFIX_FIX_I4_U			0x4E
 
 /*
  * Trigger method unrolling.
  */
-#define	COP_PREFIX_UNROLL_METHOD	0x4D
+#define	COP_PREFIX_UNROLL_METHOD	0x4F
 
 /*
  * Allocate local stack space.
  */
-#define	COP_PREFIX_LOCAL_ALLOC		0x4E
+#define	COP_PREFIX_LOCAL_ALLOC		0x50
 
 /*
  * Definition of a CVM stack word which can hold

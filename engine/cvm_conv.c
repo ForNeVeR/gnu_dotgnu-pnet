@@ -190,6 +190,59 @@ static IL_INLINE int F2LUOvf(CVMWord *posn)
 
 #endif /* IL_CONFIG_FP_SUPPORTED */
 
+/*
+ * Convert a reference to a string array into a pointer to a C array.
+ */
+static void *RefArrayToC(ILExecThread *thread, void *ref,
+						 char *(*conv)(ILExecThread *thread, ILString *str))
+{
+	void *result;
+	System_Array *array;
+	void **newArray;
+	ILInt32 index;
+
+	/* Process the NULL pointer case */
+	if(!ref || !(*((void **)ref)))
+	{
+		/* Return a pointer to a NULL pointer for the C array */
+		result = ILGCAlloc(sizeof(void *));
+		if(result)
+		{
+			*((void **)result) = 0;
+		}
+		return result;
+	}
+
+	/* Extract the string array and then create a new C array */
+	array = *((System_Array **)ref);
+	result = ILGCAlloc(sizeof(void *) * (array->length + 2));
+	if(!result)
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
+
+	/* We use the first element to store the reference to the array */
+	((void **)result)[0] = (void *)(&(((void **)result)[1]));
+
+	/* Copy the array elements */
+	newArray = &(((void **)result)[1]);
+	for(index = 0; index < array->length; ++index)
+	{
+		*newArray = (void *)((*conv)
+			(thread, ((ILString **)(ArrayToBuffer(array)))[index]));
+		if(ILExecThreadHasException(thread))
+		{
+			return 0;
+		}
+		++newArray;
+	}
+	*newArray = 0;
+
+	/* Return the new reference to the caller */
+	return result;
+}
+
 #elif defined(IL_CVM_LOCALS)
 
 ILInt32 position;
@@ -1920,6 +1973,82 @@ VMCASE(COP_PREFIX_ARRAY2PTR):
 }
 VMBREAK(COP_PREFIX_ARRAY2PTR);
 
+/**
+ * <opcode name="refarray2ansi" group="Conversion operators">
+ *   <operation>Convert a reference to an array of strings into
+ *              a pointer to an array of <code>ansi char *</code>
+ *				values</operation>
+ *
+ *   <format>prefix<fsep/>refarray2ansi</format>
+ *   <dformat>{refarray2ansi}</dformat>
+ *
+ *   <form name="refarray2ansi" code="COP_PREFIX_REFARRAY2ANSI"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>ptr</code>.  The <code>String[]</code> object at
+ *   the address <i>value</i> is retrieved.  It is converted into
+ *   a NULL-terminated C array of the same size, with all of the
+ *   strings converted into the ANSI character encoding.  Then
+ *   a pointer to this array's reference is pushed as <i>result</i>.
+ *   </description>
+ *
+ *   <notes>This instruction is used to marshal parameters of type
+ *   <code>ref String[]</code> "PInvoke" marshalling operations.
+ *   It is primarily intended for use with Gtk#.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_REFARRAY2ANSI):
+{
+	/* Convert a reference to a string array into an ANSI array */
+	COPY_STATE_TO_THREAD();
+	stacktop[-1].ptrValue = RefArrayToC(thread, stacktop[-1].ptrValue,
+										ILStringToAnsi);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_REFARRAY2ANSI);
+
+/**
+ * <opcode name="refarray2utf8" group="Conversion operators">
+ *   <operation>Convert a reference to an array of strings into
+ *              a pointer to an array of <code>utf8 char *</code>
+ *				values</operation>
+ *
+ *   <format>prefix<fsep/>refarray2utf8</format>
+ *   <dformat>{refarray2utf8}</dformat>
+ *
+ *   <form name="refarray2utf8" code="COP_PREFIX_REFARRAY2UTF8"/>
+ *
+ *   <before>..., value</before>
+ *   <after>..., result</after>
+ *
+ *   <description>The <i>value</i> is popped from the stack as
+ *   type <code>ptr</code>.  The <code>String[]</code> object at
+ *   the address <i>value</i> is retrieved.  It is converted into
+ *   a NULL-terminated C array of the same size, with all of the
+ *   strings converted into the UTF-8 character encoding.  Then
+ *   a pointer to this array's reference is pushed as <i>result</i>.
+ *   </description>
+ *
+ *   <notes>This instruction is used to marshal parameters of type
+ *   <code>ref String[]</code> "PInvoke" marshalling operations.
+ *   It is primarily intended for use with Gtk#.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_REFARRAY2UTF8):
+{
+	/* Convert a reference to a string array into a UTF-8 array */
+	COPY_STATE_TO_THREAD();
+	stacktop[-1].ptrValue = RefArrayToC(thread, stacktop[-1].ptrValue,
+										ILStringToUTF8);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_REFARRAY2UTF8);
+
 #else /* !IL_CONFIG_PINVOKE */
 
 VMCASE(COP_PREFIX_STR2ANSI):
@@ -1928,6 +2057,8 @@ VMCASE(COP_PREFIX_ANSI2STR):
 VMCASE(COP_PREFIX_UTF82STR):
 VMCASE(COP_PREFIX_DELEGATE2FNPTR):
 VMCASE(COP_PREFIX_ARRAY2PTR):
+VMCASE(COP_PREFIX_REFARRAY2ANSI):
+VMCASE(COP_PREFIX_REFARRAY2UTF8):
 {
 	/* Stub out PInvoke-related CVM opcodes */
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);

@@ -608,6 +608,18 @@ static void CVMEntryPushNativeArgs(CVMEntryContext *ctx, ILCVMCoder *coder,
 					CVMP_OUT_NONE(COP_PREFIX_ARRAY2PTR);
 				}
 				break;
+
+				case IL_META_MARSHAL_REF_ANSI_ARRAY:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_REFARRAY2ANSI);
+				}
+				break;
+
+				case IL_META_MARSHAL_REF_UTF8_ARRAY:
+				{
+					CVMP_OUT_NONE(COP_PREFIX_REFARRAY2UTF8);
+				}
+				break;
 			}
 			if(offset < 4)
 			{

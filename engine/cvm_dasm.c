@@ -415,7 +415,7 @@ static CVMOpcode const opcodes[256] = {
 	 */
 	{"prefix",			CVM_OPER_PREFIX},
 };
-static CVMOpcode const prefixOpcodes[80] = {
+static CVMOpcode const prefixOpcodes[96] = {
 	/*
 	 * Reserved opcodes.
 	 */
@@ -521,6 +521,8 @@ static CVMOpcode const prefixOpcodes[80] = {
 	{"utf82str",		CVM_OPER_NONE},
 	{"delegate2fnptr",	CVM_OPER_NONE},
 	{"array2ptr",		CVM_OPER_NONE},
+	{"refarray2ansi",	CVM_OPER_NONE},
+	{"refarray2utf8",	CVM_OPER_NONE},
 
 	/*
 	 * Inline method replacements.
@@ -554,7 +556,21 @@ static CVMOpcode const prefixOpcodes[80] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_4f",	CVM_OPER_NONE},
+	{"preserved_51",	CVM_OPER_NONE},
+	{"preserved_52",	CVM_OPER_NONE},
+	{"preserved_53",	CVM_OPER_NONE},
+	{"preserved_54",	CVM_OPER_NONE},
+	{"preserved_55",	CVM_OPER_NONE},
+	{"preserved_56",	CVM_OPER_NONE},
+	{"preserved_57",	CVM_OPER_NONE},
+	{"preserved_58",	CVM_OPER_NONE},
+	{"preserved_59",	CVM_OPER_NONE},
+	{"preserved_5A",	CVM_OPER_NONE},
+	{"preserved_5B",	CVM_OPER_NONE},
+	{"preserved_5C",	CVM_OPER_NONE},
+	{"preserved_5D",	CVM_OPER_NONE},
+	{"preserved_5E",	CVM_OPER_NONE},
+	{"preserved_5F",	CVM_OPER_NONE},
 };
 
 /*

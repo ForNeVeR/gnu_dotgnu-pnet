@@ -19,7 +19,31 @@
 	for x86 interrupt register contexts.
 	
 	* support/interrupt_win32.c: Added support for x86 interrupt
-	register contexts.	
+	register contexts.
+	
+	* engine/cvm.c: Added support for interrupt based null pointer
+	checks.  Added macros for saving & restoring correct state needed
+	after synchronous interrupts using either interrupt contexts
+	or the thread object.  
+	
+	* engine/cvm_interrupt.c: Implementation of code required to setup
+	interrupt based null pointer handling inside ILCVMInterpreter.
+	
+	* engine/cvm_call.c: Removed prefixThrowException label.
+	
+	* engine/cvm_call.c, engine/cvm_except.c, engine/cvm_inline.c,
+	engine/cvm_ptr.c, engine/cvm_stack.c, engine/unroll_ptr.c:
+	Changed mull checks so they use the  new 
+	BEGIN_NULL_CHECK/END_NULL_CHECK macros which allows the null 
+	checks to be eliminated.  Added calls to backup exception state 
+	at vital points required for interrupt based exception handling.
+	
+	* engine/engine.h: Added IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
+	definition.  Fixed definitions of ILExecThreadAbortThread and
+	ILExecThreadSuspendThread.  Added interruptContext to ILExecThread.
+	
+	* engine/thread.c: Added illegal memory access interrupt handler
+	for NullReferenceExceptions.	
 	
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 

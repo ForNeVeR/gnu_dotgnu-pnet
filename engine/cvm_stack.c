@@ -338,6 +338,9 @@ VMCASE(COP_SET_NUM_ARGS):
 {
 	/* Set the number of argument stack slots */
 	frame = stacktop - CVM_ARG_WIDE_SMALL;
+
+	EXCEPT_BACKUP_FRAME();
+
 	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_SMALL, 0);
 }
 VMBREAK(COP_SET_NUM_ARGS);
@@ -385,6 +388,9 @@ case COP_SET_NUM_ARGS:
 {
 	/* Wide version of "set_num_args" */
 	frame = stacktop - CVM_ARG_WIDE_LARGE;
+
+	EXCEPT_BACKUP_FRAME();
+
 	MODIFY_PC_AND_STACK(CVM_LEN_WIDE_LARGE, 0);
 }
 VMBREAKNOEND;

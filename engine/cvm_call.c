@@ -170,14 +170,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				ILThreadAtomicEnd(); \
 				stacktop[0].ptrValue = thread->thrownException; \
 				stacktop += 1; \
-				if (!ILCoderPCToHandler(thread->process->coder, pc, 0)) \
-				{ \
-					goto throwException; \
-				} \
-				else \
-				{ \
-					goto prefixThrowException; \
-				} \
+				goto throwException; \
 			} \
 		} \
 		else if (thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND) \
@@ -185,7 +178,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 			ILThreadAtomicStart(); \
 			thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND; \
 			ILThreadAtomicEnd(); \
-			_ILExecThreadSuspendThread(thread, thread->clrThread); \
+			_ILExecThreadSuspendThread(thread, thread->supportThread); \
 		} \
 	}
 
@@ -616,6 +609,8 @@ VMCASE(COP_CALL):
 		pc = (unsigned char *)(methodToCall->userData);
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
+
+		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 	else
 	{
@@ -644,6 +639,8 @@ VMCASE(COP_CALL):
 		pc = (unsigned char *)tempptr;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
+
+		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 }
 VMBREAK(COP_CALL);
@@ -700,6 +697,8 @@ VMCASE(COP_CALL_CTOR):
 		pc = ((unsigned char *)(methodToCall->userData)) - CVM_CTOR_OFFSET;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
+
+		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 	else
 	{
@@ -728,6 +727,8 @@ VMCASE(COP_CALL_CTOR):
 		pc = ((unsigned char *)tempptr) - CVM_CTOR_OFFSET;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
+
+		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
 }
 VMBREAK(COP_CALL_CTOR);
@@ -916,7 +917,7 @@ VMCASE(COP_CALL_VIRTUAL):
 {
 	/* Call a virtual method */
 	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_SMALL)].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		/* Locate the method to be called */
 		methodToCall = (GetObjectClassPrivate(tempptr))
@@ -939,6 +940,8 @@ VMCASE(COP_CALL_VIRTUAL):
 			pc = (unsigned char *)(methodToCall->userData);
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
+
+			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 		else
 		{
@@ -967,12 +970,11 @@ VMCASE(COP_CALL_VIRTUAL):
 			pc = (unsigned char *)tempptr;
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
+
+			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_CALL_VIRTUAL);
 
@@ -1012,7 +1014,7 @@ VMCASE(COP_CALL_INTERFACE):
 {
 	/* Call an interface method */
 	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_SMALL)].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		/* Locate the method to be called */
 	#ifdef IL_USE_IMTS
@@ -1056,6 +1058,8 @@ VMCASE(COP_CALL_INTERFACE):
 			pc = (unsigned char *)(methodToCall->userData);
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
+
+			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 		else
 		{
@@ -1084,12 +1088,11 @@ VMCASE(COP_CALL_INTERFACE):
 			pc = (unsigned char *)tempptr;
 			method = methodToCall;
 			CVM_OPTIMIZE_BLOCK();
+
+			EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_CALL_INTERFACE);
 
@@ -1169,9 +1172,14 @@ popFrame:
 	frame = callFrame->frame;
 	method = methodToCall;
 
+	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
+
 	/* Should we return to an external method? */
 	if(pc == IL_INVALID_PC)
 	{
+#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
+		IL_MEMCPY(&thread->exceptionJumpBuffer, &backupJumpBuffer, sizeof(IL_JMP_BUFFER));
+#endif
 		COPY_STATE_TO_THREAD();
 		return 0;
 	}
@@ -1513,7 +1521,7 @@ case COP_CALL_VIRTUAL:
 {
 	/* Wide version of "call_virtual" */
 	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_LARGE)].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		/* Locate the method to be called */
 		methodToCall = (GetObjectClassPrivate(tempptr))
@@ -1545,10 +1553,7 @@ case COP_CALL_VIRTUAL:
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAKNOEND;
 
@@ -1556,7 +1561,7 @@ case COP_CALL_INTERFACE:
 {
 	/* Wide version of "call_interface" */
 	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_LARGE)].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		/* Locate the method to be called */
 	#ifdef IL_USE_IMTS
@@ -1608,11 +1613,10 @@ case COP_CALL_INTERFACE:
 		pc = (unsigned char *)tempptr;
 		method = methodToCall;
 		CVM_OPTIMIZE_BLOCK();
+
+		EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAKNOEND;
 
@@ -1685,6 +1689,8 @@ performTailCall:
 	REPORT_METHOD_CALL();
 	pc = (unsigned char *)tempptr;
 	method = methodToCall;
+
+	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 }
 VMBREAK(COP_PREFIX_TAIL_CALL);
 
@@ -1766,7 +1772,7 @@ VMCASE(COP_PREFIX_TAIL_CALLINTF):
 {
 	/* Call an interface method */
 	tempptr = stacktop[-((ILInt32)CVMP_ARG_WORD)].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		/* Locate the method to be called */
 	#ifdef IL_USE_IMTS
@@ -1793,10 +1799,7 @@ VMCASE(COP_PREFIX_TAIL_CALLINTF):
 	#endif
 		goto performTailCall;
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREFIX_TAIL_CALLINTF);
 
@@ -1850,16 +1853,13 @@ VMCASE(COP_PREFIX_LDVIRTFTN):
 {
 	/* Load the address of a virtual function onto the stack */
 	tempptr = stacktop[-1].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		stacktop[-1].ptrValue =
 			(GetObjectClassPrivate(tempptr))->vtable[CVMP_ARG_WORD];
 		MODIFY_PC_AND_STACK(CVMP_LEN_WORD, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREFIX_LDVIRTFTN);
 
@@ -1890,7 +1890,7 @@ VMCASE(COP_PREFIX_LDINTERFFTN):
 {
 	/* Load the address of an interface function onto the stack */
 	tempptr = stacktop[-1].ptrValue;
-	if(tempptr)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		stacktop[-1].ptrValue =
 			_ILLookupInterfaceMethod(GetObjectClassPrivate(tempptr),
@@ -1898,10 +1898,7 @@ VMCASE(COP_PREFIX_LDINTERFFTN):
 									 CVMP_ARG_WORD);
 		MODIFY_PC_AND_STACK(CVMP_LEN_WORD_PTR, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREFIX_LDINTERFFTN);
 

@@ -1163,14 +1163,11 @@ VMBREAK(COP_PSUB_I8);
 VMCASE(COP_CKNULL):
 {
 	/* Check the stack top for "null" */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_CKNULL);
 
@@ -1223,7 +1220,7 @@ VMBREAK(COP_LDRVA);
 #define	SIMPLE_READ_ELEM(name,type) \
 VMCASE(COP_##name): \
 { \
-	if((tempptr = stacktop[-2].ptrValue) != 0) \
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue)) \
 	{ \
 		if(stacktop[-1].uintValue < \
 				((ILUInt32)(((System_Array *)tempptr)->length))) \
@@ -1238,10 +1235,7 @@ VMCASE(COP_##name): \
 			ARRAY_INDEX_EXCEPTION(); \
 		} \
 	} \
-	else \
-	{ \
-		NULL_POINTER_EXCEPTION(); \
-	} \
+	END_NULL_CHECK() \
 } \
 VMBREAK(COP_##name)
 
@@ -1420,7 +1414,7 @@ SIMPLE_READ_ELEM(IREAD_ELEM,  ILInt32);
 VMCASE(COP_PREAD_ELEM):
 {
 	/* Read a pointer value from an array element */
-	if((tempptr = stacktop[-2].ptrValue) != 0)
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue))
 	{
 		if(stacktop[-1].uintValue <
 				((ILUInt32)(((System_Array *)tempptr)->length)))
@@ -1434,10 +1428,7 @@ VMCASE(COP_PREAD_ELEM):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREAD_ELEM);
 
@@ -1445,7 +1436,7 @@ VMBREAK(COP_PREAD_ELEM);
 #define	SIMPLE_WRITE_ELEM(name,type) \
 VMCASE(COP_##name): \
 { \
-	if((tempptr = stacktop[-3].ptrValue) != 0) \
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-3].ptrValue)) \
 	{ \
 		if(stacktop[-2].uintValue < \
 				((ILUInt32)(((System_Array *)tempptr)->length))) \
@@ -1459,10 +1450,7 @@ VMCASE(COP_##name): \
 			ARRAY_INDEX_EXCEPTION(); \
 		} \
 	} \
-	else \
-	{ \
-		NULL_POINTER_EXCEPTION(); \
-	} \
+	END_NULL_CHECK(); \
 } \
 VMBREAK(COP_##name)
 
@@ -1584,7 +1572,7 @@ SIMPLE_WRITE_ELEM(IWRITE_ELEM, ILInt32);
 VMCASE(COP_PWRITE_ELEM):
 {
 	/* Write a pointer value to an array element */
-	if((tempptr = stacktop[-3].ptrValue) != 0)
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-3].ptrValue))
 	{
 		if(stacktop[-2].uintValue <
 				((ILUInt32)(((System_Array *)tempptr)->length)))
@@ -1598,10 +1586,7 @@ VMCASE(COP_PWRITE_ELEM):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PWRITE_ELEM);
 
@@ -1644,7 +1629,7 @@ VMBREAK(COP_PWRITE_ELEM);
 VMCASE(COP_CKARRAY_LOAD_I4):
 {
 	/* Check an array load that uses an I4 index */
-	if((tempptr = stacktop[-2].ptrValue) != 0)
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue))
 	{
 		if(stacktop[-1].uintValue <
 				((ILUInt32)(((System_Array *)tempptr)->length)))
@@ -1659,10 +1644,7 @@ VMCASE(COP_CKARRAY_LOAD_I4):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_CKARRAY_LOAD_I4);
 
@@ -1705,7 +1687,7 @@ VMBREAK(COP_CKARRAY_LOAD_I4);
 VMCASE(COP_CKARRAY_LOAD_I8):
 {
 	/* Check an array load that uses an I8 index */
-	if((tempptr = stacktop[-(CVM_WORDS_PER_LONG + 1)].ptrValue) != 0)
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-(CVM_WORDS_PER_LONG + 1)].ptrValue))
 	{
 		if(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])) <
 				((ILUInt64)(ILUInt32)(((System_Array *)tempptr)->length)))
@@ -1720,10 +1702,7 @@ VMCASE(COP_CKARRAY_LOAD_I8):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_CKARRAY_LOAD_I8);
 
@@ -1767,7 +1746,7 @@ VMCASE(COP_CKARRAY_STORE_I8):
 {
 	/* Check an array store that uses an I8 index */
 	tempNum = CVM_ARG_BYTE;
-	if((tempptr = (stacktop - tempNum - CVM_WORDS_PER_LONG - 1)->ptrValue) != 0)
+	BEGIN_NULL_CHECK_STMT((tempptr = (stacktop - tempNum - CVM_WORDS_PER_LONG - 1)->ptrValue))
 	{
 		if(CkArrayStoreI8(stacktop - tempNum - CVM_WORDS_PER_LONG,
 						  tempptr, tempNum, CVM_ARG_BYTE2))
@@ -1779,10 +1758,7 @@ VMCASE(COP_CKARRAY_STORE_I8):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_CKARRAY_STORE_I8);
 
@@ -1811,7 +1787,7 @@ VMBREAK(COP_CKARRAY_STORE_I8);
 VMCASE(COP_ARRAY_LEN):
 {
 	/* Get the length of an array */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 	#ifdef IL_NATIVE_INT32
 		stacktop[-1].intValue =
@@ -1822,10 +1798,7 @@ VMCASE(COP_ARRAY_LEN):
 	#endif
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_NATIVE_INT - 1);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_ARRAY_LEN);
 
@@ -1862,15 +1835,12 @@ VMBREAK(COP_ARRAY_LEN);
 VMCASE(COP_BREAD_FIELD):
 {
 	/* Read a byte value from an object field */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 		stacktop[-1].intValue = (ILInt32)(GET_FIELD(ILInt8));
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_BREAD_FIELD);
 
@@ -1902,15 +1872,12 @@ VMBREAK(COP_BREAD_FIELD);
 VMCASE(COP_UBREAD_FIELD):
 {
 	/* Read an unsigned byte value from an object field */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 		stacktop[-1].uintValue = (ILUInt32)(GET_FIELD(ILUInt8));
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_UBREAD_FIELD);
 
@@ -1942,15 +1909,12 @@ VMBREAK(COP_UBREAD_FIELD);
 VMCASE(COP_SREAD_FIELD):
 {
 	/* Read a short value from an object field */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 		stacktop[-1].intValue = (ILInt32)(GET_FIELD(ILInt16));
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_SREAD_FIELD);
 
@@ -1982,15 +1946,12 @@ VMBREAK(COP_SREAD_FIELD);
 VMCASE(COP_USREAD_FIELD):
 {
 	/* Read an unsigned short value from an object field */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 		stacktop[-1].uintValue = (ILUInt32)(GET_FIELD(ILUInt16));
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_USREAD_FIELD);
 
@@ -2022,15 +1983,12 @@ VMBREAK(COP_USREAD_FIELD);
 VMCASE(COP_IREAD_FIELD):
 {
 	/* Read an integer value from an object field */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 		stacktop[-1].intValue = GET_FIELD(ILInt32);
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_IREAD_FIELD);
 
@@ -2067,15 +2025,12 @@ VMBREAK(COP_IREAD_FIELD);
 VMCASE(COP_PREAD_FIELD):
 {
 	/* Read a pointer value from an object field */
-	if(stacktop[-1].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
 	{
 		stacktop[-1].ptrValue = GET_FIELD(void *);
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 0);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREAD_FIELD);
 
@@ -2111,15 +2066,12 @@ VMBREAK(COP_PREAD_FIELD);
 VMCASE(COP_BWRITE_FIELD):
 {
 	/* Write a byte value to an object field */
-	if(stacktop[-2].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-2].ptrValue)
 	{
 		PUT_FIELD(ILInt8) = (ILInt8)(stacktop[-1].intValue);
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, -2);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_BWRITE_FIELD);
 
@@ -2155,15 +2107,12 @@ VMBREAK(COP_BWRITE_FIELD);
 VMCASE(COP_SWRITE_FIELD):
 {
 	/* Write a short value to an object field */
-	if(stacktop[-2].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-2].ptrValue)
 	{
 		PUT_FIELD(ILInt16) = (ILInt16)(stacktop[-1].intValue);
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, -2);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_SWRITE_FIELD);
 
@@ -2198,15 +2147,12 @@ VMBREAK(COP_SWRITE_FIELD);
 VMCASE(COP_IWRITE_FIELD):
 {
 	/* Write an integer value to an object field */
-	if(stacktop[-2].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-2].ptrValue)
 	{
 		PUT_FIELD(ILInt32) = stacktop[-1].intValue;
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, -2);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_IWRITE_FIELD);
 
@@ -2243,15 +2189,12 @@ VMBREAK(COP_IWRITE_FIELD);
 VMCASE(COP_PWRITE_FIELD):
 {
 	/* Write a pointer value to an object field */
-	if(stacktop[-2].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-2].ptrValue)
 	{
 		PUT_FIELD(void *) = stacktop[-1].ptrValue;
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, -2);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PWRITE_FIELD);
 
@@ -2286,16 +2229,13 @@ VMBREAK(COP_PWRITE_FIELD);
 VMCASE(COP_PREAD_THIS):
 {
 	/* Read a pointer value from a field within "this" */
-	if(frame[0].ptrValue != 0)
+	BEGIN_NULL_CHECK(frame[0].ptrValue)
 	{
 		CVM_VAR_LOADED(0); \
 		stacktop[0].ptrValue = GET_THIS_FIELD(void *);
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 1);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREAD_THIS);
 
@@ -2328,16 +2268,13 @@ VMBREAK(COP_PREAD_THIS);
 VMCASE(COP_IREAD_THIS):
 {
 	/* Read an integer value from a field within "this" */
-	if(frame[0].ptrValue != 0)
+	BEGIN_NULL_CHECK(frame[0].ptrValue)
 	{
 		CVM_VAR_LOADED(0); \
 		stacktop[0].intValue = GET_THIS_FIELD(ILInt32);
 		MODIFY_PC_AND_STACK(CVM_LEN_BYTE, 1);
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_IREAD_THIS);
 
@@ -3056,7 +2993,7 @@ VMBREAKNOEND;
 #define	LARGE_READ_ELEM(name,type,size,read,write) \
 VMCASE(COP_##name): \
 { \
-	if((tempptr = stacktop[-2].ptrValue) != 0) \
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue)) \
 	{ \
 		if(stacktop[-1].uintValue < \
 				((ILUInt32)(((System_Array *)tempptr)->length))) \
@@ -3071,10 +3008,7 @@ VMCASE(COP_##name): \
 			ARRAY_INDEX_EXCEPTION(); \
 		} \
 	} \
-	else \
-	{ \
-		NULL_POINTER_EXCEPTION(); \
-	} \
+	END_NULL_CHECK(); \
 } \
 VMBREAK(COP_##name)
 
@@ -3175,7 +3109,7 @@ LARGE_READ_ELEM(PREFIX_DREAD_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 #define	LARGE_WRITE_ELEM(name,type,size,read,write) \
 VMCASE(COP_##name): \
 { \
-	if((tempptr = stacktop[-(size + 2)].ptrValue) != 0) \
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-(size + 2)].ptrValue)) \
 	{ \
 		if(stacktop[-(size + 1)].uintValue < \
 				((ILUInt32)(((System_Array *)tempptr)->length))) \
@@ -3190,10 +3124,7 @@ VMCASE(COP_##name): \
 			ARRAY_INDEX_EXCEPTION(); \
 		} \
 	} \
-	else \
-	{ \
-		NULL_POINTER_EXCEPTION(); \
-	} \
+	END_NULL_CHECK(); \
 } \
 VMBREAK(COP_##name)
 
@@ -3324,7 +3255,7 @@ LARGE_WRITE_ELEM(PREFIX_DWRITE_ELEM, ILDouble, CVM_WORDS_PER_NATIVE_FLOAT,
 VMCASE(COP_PREFIX_GET2D):
 {
 #ifdef IL_CONFIG_NON_VECTOR_ARRAYS
-	if(stacktop[-3].ptrValue)
+	BEGIN_NULL_CHECK(stacktop[-3].ptrValue)
 	{
 		System_MArray *array = (System_MArray *)(stacktop[-3].ptrValue);
 		ILInt32 index1 = stacktop[-2].intValue - array->bounds[0].lower;
@@ -3343,10 +3274,7 @@ VMCASE(COP_PREFIX_GET2D):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 #else
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
 #endif
@@ -3389,7 +3317,7 @@ VMCASE(COP_PREFIX_SET2D):
 {
 #ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	tempNum = CVMP_ARG_WORD;
-	if((stacktop - tempNum - 3)->ptrValue)
+	BEGIN_NULL_CHECK((stacktop - tempNum - 3)->ptrValue)
 	{
 		System_MArray *array =
 			(System_MArray *)((stacktop - tempNum - 3)->ptrValue);
@@ -3413,10 +3341,7 @@ VMCASE(COP_PREFIX_SET2D):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 #else
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -2);
 #endif

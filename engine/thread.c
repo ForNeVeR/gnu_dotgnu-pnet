@@ -117,9 +117,9 @@ static void ILExecThreadCleanup(ILThread *thread)
 	ILThreadUnregisterForManagedExecution(thread);
 }
 
-#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
 
-static void _ILIllegalMemoryAccessHandler(void *address)
+static void _ILIllegalMemoryAccessHandler(ILInterruptContext *context)
 {
 	ILExecThread *execThread;
 
@@ -132,7 +132,8 @@ static void _ILIllegalMemoryAccessHandler(void *address)
 
 	if (execThread->runningManagedCode)
 	{
-		/* TODO */
+		execThread->interruptContext = *context;
+		IL_LONGJMP(execThread->exceptionJumpBuffer, _IL_INTERRUPT_NULL_POINTER);
 	}
 }
 
@@ -162,7 +163,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 		return 0;
 	}
 
-#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
 	ILThreadRegisterIllegalMemoryAccessHandler(thread, _ILIllegalMemoryAccessHandler);
 #endif
 
@@ -194,7 +195,7 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread)
 		return;
 	}
 
-#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
 	/* Unregister the illegal memory access handler */
 	ILThreadUnregisterIllegalMemoryAccessHandler(thread, _ILIllegalMemoryAccessHandler);
 #endif
@@ -257,11 +258,11 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
  * Suspend the given thread.
  */
 void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
-{	
+{
+	int result;
 	ILWaitHandle *monitor;
 	ILExecThread *execThread;
-	int result, runningManagedCode;
-
+	
 	monitor = ILThreadGetMonitor(supportThread);
 
 	/* If the thread being suspended is the current thread then suspend now */

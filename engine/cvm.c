@@ -45,6 +45,9 @@ extern	"C" {
  * best values to put into registers.
  */
 #if defined(CVM_X86) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define REGISTER_ASM_X86 1
+
     #define REGISTER_ASM_PC(x)              register x asm ("esi")
     #define REGISTER_ASM_STACK(x)           register x asm ("edi")
     #define REGISTER_ASM_FRAME(x)           register x asm ("ebx")
@@ -117,6 +120,75 @@ extern	"C" {
 	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
 	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #endif
+
+#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
+
+	/* Don't do explicit null checks and rely on interrupts */
+	#define BEGIN_NULL_CHECK(x)	
+	#define BEGIN_NULL_CHECK_STMT(x) x;
+	#define END_NULL_CHECK()
+
+	#if defined(IL_INTERRUPT_HAVE_X86_CONTEXT) && defined(REGISTER_ASM_X86)
+		/* If the interrupt subsystem can provide us the x86 registers at the
+		   time of interrupt then we don't need to save anything */
+		#define EXCEPT_BACKUP_FRAME()
+		#define EXCEPT_BACKUP_PC_STACKTOP_METHOD()
+
+		/* We can restore locals directly from the register state
+		   at the time of interrupt */
+		#define EXCEPT_RESTORE_FROM_THREAD() \
+			do \
+			{ \
+				volatile int tempreg; \
+				tempreg = thread->interruptContext.Ebx; \
+				__asm__ __volatile__ \
+				( "mov %0, %%ebx;" : : "m"(tempreg) ); \
+				tempreg = thread->interruptContext.Edi; \
+				__asm__ __volatile__ \
+				( "mov %0, %%edi;" : : "m"(tempreg) ); \
+				tempreg = thread->interruptContext.Esi; \
+				__asm__ __volatile__ \
+				( "mov %0, %%esi;" : : "m"(tempreg) ); \
+			} \
+			while (0);
+	#else
+		/* Have to backup register based locals to the thread object */
+		#define EXCEPT_BACKUP_FRAME() \
+			thread->frame = frame;
+
+		#define EXCEPT_BACKUP_PC_STACKTOP_METHOD() \
+			thread->pc = pc; \
+			thread->stackTop = stacktop; \
+			thread->method = method;
+
+		#define EXCEPT_RESTORE_FROM_THREAD() \
+			pc = thread->pc; \
+			stacktop = thread->stackTop; \
+			frame = thread->frame;
+	#endif
+
+#else /* defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS) */
+
+	/* Use traditional manual null checks */
+
+	#define BEGIN_NULL_CHECK(x) \
+		if ((x) != 0) \
+		{
+
+	#define BEGIN_NULL_CHECK_STMT(x) BEGIN_NULL_CHECK(x)
+
+	#define END_NULL_CHECK() \
+		} \
+		else \
+		{ \
+			NULL_POINTER_EXCEPTION(); \
+		}
+
+	#define EXCEPT_BACKUP_FRAME()
+	#define EXCEPT_BACKUP_PC_STACKTOP_METHOD()
+	#define EXCEPT_RESTORE_FROM_THREAD()
+#endif
+
 	
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 /* Global lock for trace outputs */
@@ -433,6 +505,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	#include "cvm_except.c"
 	#include "cvm_compare.c"
 	#include "cvm_inline.c"
+	#include "cvm_interrupt.c"
 	#undef IL_CVM_LOCALS
 
 	/* Include helper definitions and macros for the switch loop
@@ -452,6 +525,11 @@ int _ILCVMInterpreter(ILExecThread *thread)
 	frame = thread->frame;
 	stackmax = thread->stackLimit;
 	method = thread->method;
+	thread->runningManagedCode = 1;
+
+	#define IL_CVM_PRELUDE
+	#include "cvm_interrupt.c"
+	#undef IL_CVM_PRELUDE
 
 	/* Enter the main instruction loop */
 	for(;;)

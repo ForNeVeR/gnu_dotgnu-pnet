@@ -230,7 +230,10 @@ VMBREAK(COP_RET_JSR);
 VMCASE(COP_PREFIX_ENTER_TRY):
 {
 	/* Enter a try context for this method */
-	thread->exceptHeight = stacktop;	
+	thread->exceptHeight = stacktop;
+	
+	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
+
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_ENTER_TRY);
@@ -274,7 +277,6 @@ throwException:
  */
 VMCASE(COP_PREFIX_THROW):
 {
-prefixThrowException:
 	/* Move the exception object down the stack to just above the locals */
 	thread->exceptHeight->ptrValue = stacktop[-1].ptrValue;
 	thread->currentException = stacktop[-1].ptrValue;
@@ -295,6 +297,8 @@ searchForHandler:
 		pc += CVM_ARG_TRY_LENGTH;
 	}
 	pc += CVM_LEN_TRY;
+
+	EXCEPT_BACKUP_PC_STACKTOP_METHOD();
 }
 VMBREAK(COP_PREFIX_THROW);
 
@@ -552,16 +556,7 @@ VMCASE(COP_PREFIX_PROPAGATE_ABORT):
 			/* Move PC on and increment stack by 1 */
 			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1);
 
-			if(!ILCoderPCToHandler(thread->process->coder, pc, 0))
-			{
-				/* No handler that can handle this exception, throw to caller */
-				goto throwCaller;
-			}
-			else
-			{
-				/* Throw to another handler in this method */
-				goto prefixThrowException;
-			}
+			goto throwException;
 		}
 	}
 

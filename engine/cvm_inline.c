@@ -286,7 +286,7 @@ VMCASE(COP_PREFIX_STRING_GET_CHAR):
 {
 	/* Get a character from a string */
 	tempptr = stacktop[-2].ptrValue;
-	if (tempptr != 0)
+	BEGIN_NULL_CHECK(tempptr)
 	{
 		tempNum = stacktop[-1].uintValue;
 		if(tempNum < ((System_String *)tempptr)->length)
@@ -300,10 +300,7 @@ VMCASE(COP_PREFIX_STRING_GET_CHAR):
 			ARRAY_INDEX_EXCEPTION();
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK();
 }
 VMBREAK(COP_PREFIX_STRING_GET_CHAR);
 
@@ -454,7 +451,7 @@ VMBREAK(COP_PREFIX_MONITOR_EXIT);
 VMCASE(COP_PREFIX_APPEND_CHAR):
 {
 	/* Append a character to a string builder */
-	if (stacktop[-2].ptrValue != 0)
+	BEGIN_NULL_CHECK(stacktop[-2].ptrValue)
 	{
 		builder = (System_Text_StringBuilder *)(stacktop[-2].ptrValue);
 		if(!(builder->needsCopy) &&
@@ -480,10 +477,7 @@ VMCASE(COP_PREFIX_APPEND_CHAR):
 			MODIFY_PC_AND_STACK(CVMP_LEN_PTR, -1);
 		}
 	}
-	else
-	{
-		NULL_POINTER_EXCEPTION();
-	}
+	END_NULL_CHECK()
 }
 VMBREAK(COP_PREFIX_APPEND_CHAR);
 

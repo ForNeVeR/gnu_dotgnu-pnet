@@ -27,6 +27,7 @@
 static void CheckForNull(MDUnroll *unroll, int reg, unsigned char *pc,
 						 unsigned char *label, int popReg)
 {
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	md_inst_ptr patch;
 
 	/* Check the register's contents against NULL */
@@ -52,6 +53,7 @@ static void CheckForNull(MDUnroll *unroll, int reg, unsigned char *pc,
 
 	/* Continue with real execution here */
 	md_patch(patch, unroll->out);
+#endif
 }
 
 /*
@@ -60,9 +62,12 @@ static void CheckForNull(MDUnroll *unroll, int reg, unsigned char *pc,
 static void CheckArrayAccess(MDUnroll *unroll, int reg, int reg2,
 							 unsigned char *pc, unsigned char *label)
 {
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	md_inst_ptr patch1;
+#endif
 	md_inst_ptr patch2;
 
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	/* Check the array reference against NULL */
 	md_reg_is_null(unroll->out, reg);
 	patch1 = unroll->out;
@@ -71,14 +76,16 @@ static void CheckArrayAccess(MDUnroll *unroll, int reg, int reg2,
 #else
 	md_branch_eq(unroll->out);
 #endif
-
+#endif
 	/* Check the array bounds */
 	md_bounds_check(unroll->out, reg, reg2);
 	patch2 = unroll->out;
 	md_branch_lt_un(unroll->out);
 
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	/* Re-execute the current instruction in the interpreter */
 	md_patch(patch1, unroll->out);
+#endif
 	ReExecute(unroll, pc, label);
 
 	/* Continue with real execution here */
@@ -100,14 +107,18 @@ static void CheckArrayAccess(MDUnroll *unroll, int reg, int reg2,
 static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 							   unsigned char *pc, unsigned char *label)
 {
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	unsigned char *patch1;
+#endif
 	unsigned char *patch2;
 	unsigned char *patch3;
 
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	/* Check the array reference against NULL */
 	x86_alu_reg_reg(unroll->out, X86_OR, reg, reg);
 	patch1 = unroll->out;
 	x86_branch8(unroll->out, X86_CC_EQ, 0, 0);
+#endif
 
 	/* Check the array bounds */
 	x86_alu_reg_membase(unroll->out, X86_SUB, reg2, reg, 12);
@@ -126,7 +137,9 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 	x86_alu_reg_membase(unroll->out, X86_ADD, reg3, reg, 28);
 
 	/* Re-execute the current instruction in the interpreter */
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	x86_patch(patch1, unroll->out);
+#endif
 	x86_patch(patch3, unroll->out);
 	ReExecute(unroll, pc, label);
 
@@ -152,14 +165,18 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 							   unsigned char *pc, unsigned char *label)
 {
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	md_inst_ptr patch1;
+#endif
 	md_inst_ptr patch2;
 	md_inst_ptr patch3;
 
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	/* Check the array reference against NULL */
 	arm_test_reg_imm8(unroll->out, ARM_CMP, reg, 0);
 	patch1 = unroll->out;
 	arm_branch_imm(unroll->out, ARM_CC_EQ, 0);
+#endif
 
 	/* Check the array bounds.  We assume that we can use the link
 	   register as a work register because "lr" would have been
@@ -185,7 +202,9 @@ static void Check2DArrayAccess(MDUnroll *unroll, int reg, int reg2, int reg3,
 	arm_alu_reg_reg(unroll->out, ARM_ADD, reg2, reg2, ARM_WORK);
 
 	/* Re-execute the current instruction in the interpreter */
+#ifndef IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS
 	arm_patch(patch1, unroll->out);
+#endif
 	arm_patch(patch3, unroll->out);
 	ReExecute(unroll, pc, label);
 

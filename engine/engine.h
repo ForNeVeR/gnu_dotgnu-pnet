@@ -47,6 +47,10 @@ extern	"C" {
 #define _IL_PROCESS_STATE_UNLOADING (1)
 #define _IL_PROCESS_STATE_UNLOADED  (2)
 
+#if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+#define IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS (1)
+#endif
+
 /*
  * Determine if this compiler supports inline functions.
  */
@@ -315,8 +319,11 @@ struct _tagILExecThread
 	ILUInt32		abortHandlerFrame;
 
 #if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)
+	/* Context for the current interrupt */
+	ILInterruptContext	interruptContext;
+
 	/* Stores state information for interrupt based exception handling */
-	IL_JMP_BUFFER	exceptionJumpPoint;
+	IL_JMP_BUFFER	exceptionJumpBuffer;
 #endif
 };
 
@@ -745,12 +752,12 @@ int _ILExecThreadCurrentExceptionThreadIsAbortException(ILExecThread *thread);
 /*
  * Suspend the given thread.
  */
-void _ILExecThreadSuspend(ILExecThread *thread, ILThread *supportThread);
+void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread);
 
 /*
  * Abort the given thread.
  */
-void _ILExecThreadAbort(ILExecThread *thread, ILThread *supportThread);
+void _ILExecThreadAbortThread(ILExecThread *thread, ILThread *supportThread);
 
 /*
  * Called by the current thread when it was to begin its abort sequence.

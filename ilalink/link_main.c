@@ -863,15 +863,6 @@ int ILLinkerMain(int argc, char *argv[])
 				errors = 1;
 			}
 		}
-		else if(format == IL_IMAGETYPE_DLL)
-		{
-			if(ILLinkerHasEntryPoint(linker))
-			{
-				fprintf(stderr, "%s: DLL's cannot have entry points\n",
-						outputFile);
-				errors = 1;
-			}
-		}
 	}
 
 	/* Destroy the linker context */

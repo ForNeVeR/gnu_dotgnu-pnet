@@ -6,6 +6,9 @@
 	* ildasm/ildasm_data.c (DumpData): null pointer check to
 	avoid a segv.
 
+	* ilalink/link_class.c, ilalink/link_library.c, ilalink/link_main.c:
+	handle object files from Visual C++ a little better in the linker.
+
 2003-02-27  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lvalue.tc (ILNode_MemberAccess): do a trial

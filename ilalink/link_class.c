@@ -113,7 +113,8 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 			{
 				isModule = 1;
 			}
-			else if(linker->memoryModel != 0)
+			else if(linker->memoryModel != 0 ||
+			        !strncmp(ILClass_Name(classInfo), "$ArrayType$", 11))
 			{
 				/* Duplicate classes are valid in C objects, as they
 				   are normally definitions of the same struct type */

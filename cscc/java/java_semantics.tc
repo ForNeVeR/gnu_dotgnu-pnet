@@ -22,8 +22,8 @@
 %output "java_semantics.c"
 
 %{
-#include "java_internal.h"
-#include "java_semvalue.h"
+#include <cscc/java/java_internal.h>
+#include <cscc/java/java_semvalue.h>
 
 %}
 

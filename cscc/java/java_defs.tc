@@ -27,16 +27,16 @@
 %header "java_defs.h"
 
 /*
- * Copy includes to the top of the "cs_defs.h" file.
+ * Copy includes to the top of the "java_defs.h" file.
  */
 %decls %{
 
-#include "../codegen/cg_nodes.h"
-#include "../codegen/cg_coerce.h"
-#include "../codegen/cg_resolve.h"
-#include "../codegen/cg_scope.h"
+#include <codegen/cg_nodes.h>
+#include <codegen/cg_coerce.h>
+#include <codegen/cg_resolve.h>
+#include <codegen/cg_scope.h>
 #include "il_utils.h"
-#include "java_semvalue.h"
+#include <cscc/java/java_semvalue.h>
 
 %}
 
@@ -99,7 +99,7 @@
 }
 
 %{
-#include "java_internal.h"
+#include <cscc/java/java_internal.h>
 %}
 
 %include "java_semantics.tc" 

@@ -5,6 +5,10 @@
 	macros because some ARM processor variants cannot do 16-bit
 	word loads in one instruction.
 
+	* cscc/java/java_defs.tc, cscc/java/java_semantics.tc:
+	fully-qualify the #include's in the cscc/java/*.tc files to work
+	around include path issues on some platforms.
+
 2003-05-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cscc.c: add java and bf recognizers to the cscc front-end.

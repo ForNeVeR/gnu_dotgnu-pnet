@@ -1073,13 +1073,17 @@ int CTypeDefineBitField(ILGenInfo *info, ILType *structType,
 		}
 	}
 
-	/* Add a new "BitFieldAttribute" instance to the class */
-	if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+	/* Add a new "BitFieldAttribute" instance to the class.
+	   Don't do this if the field is anonymous */
+	if(fieldName)
 	{
-		posn -= numBits;
+		if((CTypeAlignModifiers & C_ALIGNMOD_BITFLD_BIG) != 0)
+		{
+			posn -= numBits;
+		}
+		BitFieldAdd(info, classInfo, fieldName,
+					ILField_Name(field), posn, numBits);
 	}
-	BitFieldAdd(info, classInfo, fieldName,
-				ILField_Name(field), posn, numBits);
 
 	/* Done */
 	return 1;

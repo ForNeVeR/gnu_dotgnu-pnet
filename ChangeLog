@@ -1,4 +1,9 @@
 
+2002-08-29  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/c/c_types.c: don't add "BitFieldAttribute" to a type if
+	the bit field is anonymous.
+
 2002-08-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_grammar.y, cscc/c/c_oper.tc, cscc/c/c_scope.c:

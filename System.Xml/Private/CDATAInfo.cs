@@ -1,7 +1,7 @@
 /*
- * XmlLinkedNode.cs - Implementation of the "System.Xml.XmlLinkedNode" class.
+ * CDATAInfo.cs - Implementation of the "System.Xml.Private.CDATAInfo" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,45 +18,43 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Xml
+namespace System.Xml.Private
 {
 
 using System;
-using System.Xml.Private;
+using System.Xml;
 
-#if ECMA_COMPAT
-internal
-#else
-public
-#endif
-abstract class XmlLinkedNode : XmlNode
+internal sealed class CDATAInfo : NodeInfo
 {
-	// Constructor.  Only accessible to internal subclasses.
-	internal XmlLinkedNode(XmlNode parent)
-			: base(parent)
+	// Internal state.
+	private String value;
+
+
+	// Constructor.
+	public CDATAInfo()
 			{
-				// Nothing to do here.
+				value = null;
+			}
+
+	// Get the text value.
+	public override String Value
+			{
+				get { return value; }
+			}
+
+	// Get the type of the current node.
+	public override XmlNodeType NodeType
+			{
+				get { return XmlNodeType.CDATA; }
 			}
 
 
-	// Get the next node immediately following this one.
-	public override XmlNode NextSibling
+	// Set the node information.
+	public void SetInfo(String value)
 			{
-				get
-				{
-					return NodeList.GetNextSibling(this);
-				}
+				this.value = value;
 			}
 
-	// Get the previous sibling of this node.
-	public override XmlNode PreviousSibling
-			{
-				get
-				{
-					return NodeList.GetPreviousSibling(this);
-				}
-			}
+}; // class CDATAInfo
 
-}; // class XmlElement
-
-}; // namespace System.Xml
+}; // namespace System.Xml.Private

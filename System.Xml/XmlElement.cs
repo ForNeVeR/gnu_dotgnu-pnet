@@ -22,6 +22,7 @@ namespace System.Xml
 {
 
 using System;
+using System.Xml.Private;
 
 #if ECMA_COMPAT
 internal

@@ -24,6 +24,7 @@ namespace System.Xml
 using System;
 using System.Collections;
 using System.Text;
+using System.Xml.Private;
 using System.Xml.XPath;
 
 #if ECMA_COMPAT

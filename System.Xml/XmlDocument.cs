@@ -24,6 +24,7 @@ namespace System.Xml
 using System;
 using System.IO;
 using System.Text;
+using System.Xml.Private;
 
 #if ECMA_COMPAT
 internal

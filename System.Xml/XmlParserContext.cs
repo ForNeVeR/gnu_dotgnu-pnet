@@ -3,6 +3,7 @@
  *		"System.Xml.XmlParserContext" class.
  *
  * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,262 +29,306 @@ using System.Collections.Specialized;
 
 public class XmlParserContext
 {
-	//Internal variables
-	private String baseuri;
+	// Internal state.
 	private String doctypename;
-	private Encoding encoding;
 	private String internalsubset;
-	private XmlNameTable nametable;
-#if !ECMA_COMPAT
-	private NameValueCollection namecollection;
-#endif
-	private XmlNamespaceManager namespacemanager;
 	private String publicid;
 	private String systemid;
-	private String xmllang;
-	private XmlSpace xmlspace;
-		
-	//Constructors
-	public XmlParserContext(XmlNameTable nt, XmlNamespaceManager nsMgr, 
-		String xmlLang, XmlSpace xmlSpace) 
-		: this(nt, nsMgr, null, null, null, null, 
-			String.Empty, xmlLang, xmlSpace, null )
-			{}
-	
-	public XmlParserContext(XmlNameTable nt, XmlNamespaceManager nsMgr, 
-		String xmlLang, XmlSpace xmlSpace, Encoding enc)
-		: this(nt, nsMgr, null, null, null, null, 
-			System.String.Empty, xmlLang, xmlSpace, enc)
-			{}
-			
-	public XmlParserContext(XmlNameTable nt, XmlNamespaceManager nsMgr, 
-		String docTypeName, String pubId, String sysId, String internalSubset, 
-		String baseURI, String xmlLang, XmlSpace xmlSpace)
-		:this(nt, nsMgr, docTypeName, pubId, sysId, 
-			internalSubset, baseURI, xmlLang, xmlSpace, null)	
-			{}
-			
-	public XmlParserContext(XmlNameTable nt, XmlNamespaceManager nsMgr, 
-		String docTypeName, String pubId, String sysId, String internalSubset, 
-		String baseURI, String xmlLang, XmlSpace xmlSpace, Encoding enc)
+	private Encoding encoding;
+	private XmlNameTable nametable;
+	private XmlNamespaceManager namespacemanager;
+	private StackManager stackmanager;
+
+
+	// Constructors.
+	public XmlParserContext
+				(XmlNameTable nt,
+				 XmlNamespaceManager nsMgr,
+				 String xmlLang,
+				 XmlSpace xmlSpace)
+			: this(nt, nsMgr, null, null, null, null, "", xmlLang, xmlSpace, null)
 			{
-				if (nsMgr != null && nt != null)
+			}
+	public XmlParserContext
+				(XmlNameTable nt,
+				 XmlNamespaceManager nsMgr,
+				 String xmlLang,
+				 XmlSpace xmlSpace,
+				 Encoding enc)
+			: this(nt, nsMgr, null, null, null, null, "", xmlLang, xmlSpace, enc)
+			{
+			}
+	public XmlParserContext
+				(XmlNameTable nt,
+				 XmlNamespaceManager nsMgr,
+				 String docTypeName,
+				 String pubId,
+				 String sysId,
+				 String internalSubset,
+				 String baseURI,
+				 String xmlLang,
+				 XmlSpace xmlSpace)
+			: this(nt, nsMgr, docTypeName, pubId, sysId, internalSubset,
+			       baseURI, xmlLang, xmlSpace, null)
+			{
+			}
+	public XmlParserContext
+				(XmlNameTable nt,
+				 XmlNamespaceManager nsMgr,
+				 String docTypeName,
+				 String pubId,
+				 String sysId,
+				 String internalSubset,
+				 String baseURI,
+				 String xmlLang,
+				 XmlSpace xmlSpace,
+				 Encoding enc)
+			{
+				// set up the name table and namespace manager
+				if(nsMgr != null && nt != null && nsMgr.NameTable != nt)
 				{
-					if (nsMgr.NameTable != nt)
-						throw new XmlException(S._("Xml_WrongNameTable"));
+					throw new XmlException(S._("Xml_WrongNameTable"));
 				}
-					
-				
-				if (nt == null)
+				else if(nt == null)
 				{
 					if(nsMgr == null)
+					{
 						nsMgr = new XmlNamespaceManager(new NameTable());
+					}
 					nametable = nsMgr.NameTable;
 				}
 				else
 				{
 					nametable = nt;
 				}
-				
 				namespacemanager = nsMgr;
-					
-				if (docTypeName == null)
-					doctypename = String.Empty;
-				else	
-					doctypename = docTypeName;
-					
-				if (pubId == null)
-					publicid = String.Empty;
-				else
-					publicid = pubId;
-				
-				if (sysId == null)
-					systemid = String.Empty;
-				else
-					systemid = sysId;
-					
-				if (internalSubset == null)
-					internalsubset = String.Empty;
-				else
-					internalsubset = internalSubset;
-					
-				if (baseURI == null)
-					baseuri = String.Empty;
-				else
-					baseuri = baseURI;
-					
-				if (xmlLang == null)
-					xmllang = String.Empty;
-				else
-					xmllang = xmlLang;			
-				
-				xmlspace = xmlSpace;
-				
-				encoding = enc;	
 
-#if !ECMA_COMPAT
-				namecollection = new NameValueCollection();
+				// set various properties
+				doctypename = (docTypeName == null) ? "" : docTypeName;
+				publicid = (pubId == null) ? "" : pubId;
+				systemid = (sysId == null) ? "" : sysId;
+				internalsubset = (internalSubset == null) ? "" : internalSubset;
+				encoding = enc;
 
-				if (internalSubset != null)
-				{
-					XmlTextReader reader = new XmlTextReader(internalSubset, XmlNodeType.Document, null);
-					/* TODO: Read Declaration */	
-					namecollection = reader.ParserContext.NameCollection;
-				}
-#endif
-			}		
-			
-	//Properties
+				// set up scoped values
+				baseURI = (baseURI == null) ? "" : baseURI;
+				xmlLang = (xmlLang == null) ? "" : xmlLang;
+				stackmanager = new StackManager(baseURI, xmlLang, xmlSpace);
+			}
+
+	// Properties.
 	public String BaseURI
 			{
-				get
-				{
-					return baseuri;
-				}
+				get { return (String)stackmanager[StackInfoType.BaseURI]; }
 				set
 				{
-					if (value == null)
-						baseuri = String.Empty;
-					else
-						baseuri = value;
+					if(value == null) { value = ""; }
+					stackmanager[StackInfoType.BaseURI] = value;
 				}
-			}		
-	
+			}
 	public String DocTypeName
 			{
-				get
-				{
-					return doctypename;
-				}
+				get { return doctypename; }
 				set
 				{
-					if (value == null)
-						doctypename = String.Empty;
-					else
-						doctypename = value;
+					if(value == null) { value = ""; }
+					doctypename = value;
 				}
 			}
-			
 	public Encoding Encoding
 			{
-				get
-				{
-					return encoding;
-				}
-				set
-				{
-					encoding = value;
-				}
+				get { return encoding; }
+				set { encoding = value; }
 			}
-	
 	public String InternalSubset
 			{
-				get
-				{
-					return internalsubset;
-				}
+				get { return internalsubset; }
 				set
 				{
-					if (value == null)
-						internalsubset = String.Empty;
-					else
-						internalsubset = value;
+					if(value == null) { value = ""; }
+					internalsubset = value;
 				}
 			}
-	
 	public XmlNameTable NameTable
 			{
-				get
-				{
-					return nametable;
-				}
-				set
-				{
-					nametable = value;
-				}
+				get { return nametable; }
+				set { nametable = value; }
 			}
-	
 	public XmlNamespaceManager NamespaceManager
 			{
-				get
-				{
-					return namespacemanager;
-				}
-				set
-				{
-					namespacemanager = value;
-				}
+				get { return namespacemanager; }
+				set { namespacemanager = value; }
 			}
-	
 	public String PublicId
 			{
-				get
-				{
-					return publicid;
-				}
+				get { return publicid; }
 				set
 				{
-					if (value == null)
-						publicid = String.Empty;
-					else
-						publicid = value;
+					if(value == null) { value = ""; }
+					publicid = value;
 				}
-			}	
-			
+			}
 	public String SystemId
 			{
-				get
-				{
-					return systemid;
-				}
+				get { return systemid; }
 				set
 				{
-					if (value == null)
-						systemid = String.Empty;
-					else
-						systemid = value;
+					if(value == null) { value = ""; }
+					systemid = value;
 				}
-			}	
-
+			}
 	public String XmlLang
 			{
-				get
-				{
-					return xmllang;
-				}
+				get { return (String)stackmanager[StackInfoType.XmlLang]; }
 				set
 				{
-					if (value == null)
-						xmllang = String.Empty;
-					else
-						xmllang = value;
+					if(value == null) { value = ""; }
+					stackmanager[StackInfoType.XmlLang] = value;
 				}
 			}
-
 	public XmlSpace XmlSpace
 			{
-				get
-				{
-					return xmlspace;
-				}
-				set
-				{
-					xmlspace = value;
-				}
+				get { return (XmlSpace)stackmanager[StackInfoType.XmlSpace]; }
+				set { stackmanager[StackInfoType.XmlSpace] = value; }
 			}
+
 #if !ECMA_COMPAT
-	internal NameValueCollection NameCollection
-			{
-				get
-				{
-					return namecollection;
-				}
-				set
-				{
-					namecollection = value;
-				}
-			}
+//	internal SomeDTDRuleHandlingObjectGoesHere Foo
+//			{
+//				get { return foo; }
+//				set { foo = value; }
+//			}
 #endif
+
+
+	// Pop the current scope.
+	internal void PopScope()
+			{
+				stackmanager.PopScope();
+			}
+
+	// Push a new scope.
+	internal void PushScope()
+			{
+				stackmanager.PushScope();
+			}
+
+
+
+
+
+
+
+	private enum StackInfoType
+	{
+		None     = 0,
+		BaseURI  = 1,
+		XmlLang  = 2,
+		XmlSpace = 3
+
+	}; // enum StackInfoType
+
+	private sealed class StackManager
+	{
+		// Internal state.
+		private StackInfo stack;
+
+		// Constructor.
+		public StackManager(Object baseURI, Object xmlLang, Object xmlSpace)
+				{
+					// Set the top-level scope values.
+					stack = new StackInfo(StackInfoType.BaseURI, baseURI, null);
+					stack = new StackInfo(StackInfoType.XmlLang, xmlLang, stack);
+					stack = new StackInfo(StackInfoType.XmlSpace, xmlSpace, stack);
+				}
+
+		// Get or set the value for a given type.
+		public Object this[StackInfoType type]
+				{
+					get
+					{
+						// search for the given type
+						StackInfo info = stack;
+						while(info != null)
+						{
+							if(info.type == type)
+							{
+								return info.value;
+							}
+							info = info.next;
+						}
+						return null;
+					}
+					set
+					{
+						// check for the given type in the current scope
+						StackInfo info = stack;
+						while(info != null && info.type != StackInfoType.None)
+						{
+							if(info.type == type)
+							{
+								// update the value and return
+								info.value = value;
+								return;
+							}
+							info = info.next;
+						}
+
+						// add a new information block to the current scope
+						stack = new StackInfo(type, value, stack);
+					}
+				}
+
+		// Push the current scope.
+		public void PushScope()
+				{
+					stack = new StackInfo(stack);
+				}
+
+		// Pop the current scope.
+		public bool PopScope()
+				{
+					// exit if there's no stack information to be popped
+					if(stack == null) { return false; }
+
+					// find the bottom of the stack, or the next scope boundary
+					while(stack != null && stack.type != StackInfoType.None)
+					{
+						stack = stack.next;
+					}
+
+					// pop the scope boundary block and return
+					if(stack != null) { stack = stack.next; }
+					return true;
+				}
+
+		// Storage for information about BaseUri, XmlLang, or XmlSpace.
+		private sealed class StackInfo
+		{
+			// Publicly accessible state.
+			public StackInfoType type;
+			public Object value;
+			public StackInfo next;
+
+			// Construct a new stack information block.
+			public StackInfo(StackInfoType type, Object value, StackInfo next)
+					{
+						this.type = type;
+						this.value = value;
+						this.next = next;
+					}
+
+			// Construct a new scope boundary block.
+			public StackInfo(StackInfo next)
+					{
+						this.type = StackInfoType.None;
+						this.value = null;
+						this.next = next;
+					}
+
+		}; // class StackInfo
+
+	}; // class StackManager
 
 }; // class XmlParserContext
 

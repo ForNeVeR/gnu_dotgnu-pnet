@@ -1,7 +1,8 @@
 /*
- * XmlLinkedNode.cs - Implementation of the "System.Xml.XmlLinkedNode" class.
+ * CommentInfo.cs - Implementation of the
+ *		"System.Xml.Private.CommentInfo" class.
  *
- * Copyright (C) 2002 Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,45 +19,44 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Xml
+namespace System.Xml.Private
 {
 
 using System;
-using System.Xml.Private;
+using System.Xml;
 
-#if ECMA_COMPAT
-internal
-#else
-public
-#endif
-abstract class XmlLinkedNode : XmlNode
+internal sealed class CommentInfo : NodeInfo
 {
-	// Constructor.  Only accessible to internal subclasses.
-	internal XmlLinkedNode(XmlNode parent)
-			: base(parent)
+	// Internal state.
+	private String value;
+
+
+	// Constructor.
+	public CommentInfo()
 			{
-				// Nothing to do here.
+				value = null;
 			}
 
 
-	// Get the next node immediately following this one.
-	public override XmlNode NextSibling
+	// Get the text value.
+	public override String Value
 			{
-				get
-				{
-					return NodeList.GetNextSibling(this);
-				}
+				get { return value; }
 			}
 
-	// Get the previous sibling of this node.
-	public override XmlNode PreviousSibling
+	// Get the type of the current node.
+	public override XmlNodeType NodeType
 			{
-				get
-				{
-					return NodeList.GetPreviousSibling(this);
-				}
+				get { return XmlNodeType.Comment; }
 			}
 
-}; // class XmlElement
 
-}; // namespace System.Xml
+	// Set the node information.
+	public void SetInfo(String value)
+			{
+				this.value = value;
+			}
+
+}; // class CommentInfo
+
+}; // namespace System.Xml.Private

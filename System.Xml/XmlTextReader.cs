@@ -2,7 +2,7 @@
  * XmlTextReader.cs - Implementation of the "System.Xml.XmlTextReader" class.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2003  Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections;
+using System.Xml.Private;
 
 public class XmlTextReader : XmlReader
 #if !ECMA_COMPAT
@@ -37,15 +38,22 @@ public class XmlTextReader : XmlReader
 	private bool incDepth;
 	private bool namespaces;
 	private bool normalize;
+	private bool xmlPopScope;
+	private bool xmlnsPopScope;
 	private int depth;
+	private NodeManager nodes;
 	private ReadState readState;
 	private Stack elementNames;
 	private WhitespaceHandling whitespace;
 	private XmlDTDReader dtdReader;
-	private XmlElementInfo info;
-	private XmlParserContext parserContext;
+	private XmlParserContext context;
 	private XmlParserInput input;
-	private XmlResolver xmlResolver;
+	private XmlResolver resolver;
+
+	private readonly Object xmlBaseName;
+	private readonly Object xmlLangName;
+	private readonly Object xmlSpaceName;
+	private readonly Object xmlNSPrefix;
 
 
 	// Constructors.
@@ -66,17 +74,24 @@ public class XmlTextReader : XmlReader
 				depth = 0;
 				readState = ReadState.Initial;
 				whitespace = WhitespaceHandling.All;
-				parserContext = new XmlParserContext
-					(nt, new XmlNamespaceManager(nt), String.Empty, XmlSpace.None);
-				xmlResolver = new XmlUrlResolver();
+
+				xmlBaseName = nt.Add("xml:base");
+				xmlLangName = nt.Add("xml:lang");
+				xmlSpaceName = nt.Add("xml:space");
+				xmlNSPrefix = nt.Add("xmlns");
 
 				contextSupport = false;
+				xmlPopScope = false;
+				xmlnsPopScope = false;
 				incDepth = false;
 				elementNames = new Stack();
-				dtdReader = new XmlDTDReader();
-				info = new XmlElementInfo(parserContext);
+				dtdReader = new XmlDTDReader(context);
+				nodes = new NodeManager(nt);
 				input = new XmlParserInput
 					(null, nt, new EOFHandler(HandleEOF), new ErrorHandler(Error));
+				context = new XmlParserContext
+					(nt, new XmlNamespaceManager(nt), String.Empty, XmlSpace.None);
+				resolver = new XmlUrlResolver();
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -102,15 +117,15 @@ public class XmlTextReader : XmlReader
 				}
 				if(url == null)
 				{
-					parserContext.BaseURI = String.Empty;
+					context.BaseURI = String.Empty;
 				}
 				else
 				{
-					parserContext.BaseURI = nt.Add(url);
+					context.BaseURI = nt.Add(url);
 				}
 				XmlStreamReader sr = new XmlStreamReader(input, true);
 				this.input.Reader = sr;
-				parserContext.Encoding = sr.CurrentEncoding;
+				context.Encoding = sr.CurrentEncoding;
 			}
 	public XmlTextReader(TextReader input)
 			: this(String.Empty, input, new NameTable())
@@ -132,16 +147,16 @@ public class XmlTextReader : XmlReader
 			{
 				if(url == null)
 				{
-					parserContext.BaseURI = String.Empty;
+					context.BaseURI = String.Empty;
 				}
 				else
 				{
-					parserContext.BaseURI = nt.Add(url);
+					context.BaseURI = nt.Add(url);
 				}
 				this.input.Reader = input;
 				if(input as StreamReader != null)
 				{
-					parserContext.Encoding = ((StreamReader)input).CurrentEncoding;
+					context.Encoding = ((StreamReader)input).CurrentEncoding;
 				}
 			}
 	public XmlTextReader(Stream xmlFragment, XmlNodeType fragType,
@@ -163,29 +178,29 @@ public class XmlTextReader : XmlReader
 				{
 					XmlStreamReader sr = new XmlStreamReader(xmlFragment, true);
 					input.Reader = sr;
-					parserContext.Encoding = sr.CurrentEncoding;
+					this.context.Encoding = sr.CurrentEncoding;
 					contextSupport = false;
 				}
 				else
 				{
-					parserContext.BaseURI = context.BaseURI;
-					parserContext.DocTypeName = context.DocTypeName;
-					parserContext.InternalSubset = context.InternalSubset;
-					parserContext.NamespaceManager = context.NamespaceManager;
-					parserContext.PublicId = context.PublicId;
-					parserContext.SystemId = context.SystemId;
-					parserContext.XmlLang = context.XmlLang;
-					parserContext.XmlSpace = context.XmlSpace;
-					parserContext.NameCollection = context.NameCollection;
+					this.context.BaseURI = context.BaseURI;
+					this.context.DocTypeName = context.DocTypeName;
+					this.context.InternalSubset = context.InternalSubset;
+					this.context.NamespaceManager = context.NamespaceManager;
+					this.context.PublicId = context.PublicId;
+					this.context.SystemId = context.SystemId;
+					this.context.XmlLang = context.XmlLang;
+					this.context.XmlSpace = context.XmlSpace;
+					dtdReader.Context = this.context;
 					contextSupport = true;
 					XmlStreamReader sr = new XmlStreamReader(xmlFragment, true);
 					if(context.Encoding == null)
 					{
-						parserContext.Encoding = sr.CurrentEncoding;
+						this.context.Encoding = sr.CurrentEncoding;
 					}
 					else
 					{
-						parserContext.Encoding = context.Encoding;
+						this.context.Encoding = context.Encoding;
 					}
 					input.Reader = sr;
 				}
@@ -208,25 +223,27 @@ public class XmlTextReader : XmlReader
 
 				if(context == null)
 				{
-					parserContext.BaseURI = String.Empty;
+					this.context.BaseURI = String.Empty;
 					XmlStreamReader sr = new XmlStreamReader(new StringReader(xmlFragment));
 					input.Reader = sr.TxtReader;
-					parserContext.Encoding = sr.CurrentEncoding;
+					this.context.Encoding = sr.CurrentEncoding;
+					contextSupport = false;
 				}
 				else
 				{
-					parserContext.BaseURI = context.BaseURI;
-					parserContext.XmlLang = context.XmlLang;
-					parserContext.XmlSpace = context.XmlSpace;
+					this.context.BaseURI = context.BaseURI;
+					this.context.XmlLang = context.XmlLang;
+					this.context.XmlSpace = context.XmlSpace;
+					dtdReader.Context = this.context;
 					contextSupport = true;
 					XmlStreamReader sr = new XmlStreamReader(new StringReader(xmlFragment));
 					if(context.Encoding == null)
 					{
-						parserContext.Encoding = sr.CurrentEncoding;
+						this.context.Encoding = sr.CurrentEncoding;
 					}
 					else
 					{
-						parserContext.Encoding = context.Encoding;
+						this.context.Encoding = context.Encoding;
 					}
 					input.Reader = sr.TxtReader;
 				}
@@ -245,27 +262,27 @@ public class XmlTextReader : XmlReader
 				// TODO - handle non-file streams
 				XmlStreamReader sr = new XmlStreamReader(url, true);
 				input.Reader = sr;
-				parserContext.BaseURI = nt.Add(url);
-				parserContext.Encoding = sr.CurrentEncoding;
-				parserContext.NameTable = nt;
+				context.BaseURI = nt.Add(url);
+				context.Encoding = sr.CurrentEncoding;
+				context.NameTable = nt;
 			}
 
 	// Get the number of attributes on the current node.
 	public override int AttributeCount
 			{
-				get { return info.AttributeCount; }
+				get { return nodes.Current.AttributeCount; }
 			}
 
 	// Get the base URI for the current node.
 	public override String BaseURI
 			{
-				get { return parserContext.BaseURI; }
+				get { return context.BaseURI; }
 			}
 
 	// Get the depth of the current node.
 	public override int Depth
 			{
-				get { return depth + info.DepthOffset; }
+				get { return depth + nodes.Current.DepthOffset; }
 			}
 
 	// Determine if we have reached the end of the input stream.
@@ -281,7 +298,7 @@ public class XmlTextReader : XmlReader
 				{
 					if(readState == ReadState.Interactive)
 					{
-						return parserContext.Encoding;
+						return context.Encoding;
 					}
 					else
 					{
@@ -322,7 +339,7 @@ public class XmlTextReader : XmlReader
 	// Determine if the current node is an empty element.
 	public override bool IsEmptyElement
 			{
-				get { return info.IsEmptyElement; }
+				get { return nodes.Current.IsEmptyElement; }
 			}
 
 	// Retrieve an attribute value with a specified index.
@@ -366,25 +383,25 @@ public class XmlTextReader : XmlReader
 	// Get the local name of the current node.
 	public override String LocalName
 			{
-				get { return info.Current.LocalName; }
+				get { return nodes.Current.LocalName; }
 			}
 
 	// Get the fully-qualified name of the current node.
 	public override String Name
 			{
-				get { return info.Current.Name; }
+				get { return nodes.Current.Name; }
 			}
 
 	// Get the name table that is used to look up and resolve names.
 	public override XmlNameTable NameTable
 			{
-				get { return parserContext.NameTable; }
+				get { return context.NameTable; }
 			}
 
 	// Get the namespace URI associated with the current node.
 	public override String NamespaceURI
 			{
-				get { return info.Current.NamespaceURI; }
+				get { return nodes.Current.NamespaceURI; }
 			}
 
 	// Get or set the "namespace support" flag for this reader.
@@ -420,19 +437,19 @@ public class XmlTextReader : XmlReader
 	// Get the type of the current node.
 	public override XmlNodeType NodeType
 			{
-				get { return info.NodeType; }
+				get { return nodes.Current.NodeType; }
 			}
 
 	// Get the namespace prefix associated with the current node.
 	public override String Prefix
 			{
-				get { return info.Current.Prefix; }
+				get { return nodes.Current.Prefix; }
 			}
 
 	// Get the quote character that was used to enclose an attribute value.
 	public override char QuoteChar
 			{
-				get { return info.Current.QuoteChar; }
+				get { return nodes.Current.QuoteChar; }
 			}
 
 	// Get the current read state of the reader.
@@ -444,7 +461,7 @@ public class XmlTextReader : XmlReader
 	// Get the text value of the current node.
 	public override String Value
 			{
-				get { return info.Current.Value; }
+				get { return nodes.Current.Value; }
 			}
 
 	// Get or set the whitespace handling flag.
@@ -470,32 +487,32 @@ public class XmlTextReader : XmlReader
 	// Get the current xml:lang scope.
 	public override String XmlLang
 			{
-				get { return parserContext.XmlLang; }
+				get { return context.XmlLang; }
 			}
 
 	// Set the resolver to use to resolve DTD references.
 	public XmlResolver XmlResolver
 			{
-				set { xmlResolver = value; }
+				set { resolver = value; }
 			}
 
 	// Get the current xml:space scope.
 	public override XmlSpace XmlSpace
 			{
-				get { return parserContext.XmlSpace; }
+				get { return context.XmlSpace; }
 			}
 
 	internal XmlParserContext ParserContext 
 			{
-				get { return parserContext; }
+				get { return context; }
 			}
 
 	// Clean up the resources that were used by this XML reader.
 	[TODO] // ********************************************************* TODO
 	public override void Close()
 			{
-				parserContext.SystemId = String.Empty;
-				parserContext.PublicId = String.Empty;
+				context.SystemId = String.Empty;
+				context.PublicId = String.Empty;
 				depth = 0;
 				contextSupport = false;
 				input.Close();
@@ -504,7 +521,7 @@ public class XmlTextReader : XmlReader
 	// Returns the value of an attribute with a specific index.
 	public override String GetAttribute(int i)
 			{
-				XmlNodeInfo tmp = info.GetAttribute(i);
+				NodeInfo tmp = nodes.Current.GetAttribute(i);
 				if(tmp == null)
 				{
 					throw new ArgumentOutOfRangeException
@@ -516,7 +533,7 @@ public class XmlTextReader : XmlReader
 	// Returns the value of an attribute with a specific name.
 	public override String GetAttribute(String localName, String namespaceURI)
 			{
-				XmlNodeInfo tmp = info.GetAttribute(localName, namespaceURI);
+				NodeInfo tmp = nodes.Current.GetAttribute(localName, namespaceURI);
 				if(tmp == null) { return null; }
 				return tmp.Value;
 			}
@@ -524,7 +541,7 @@ public class XmlTextReader : XmlReader
 	// Returns the value of an attribute with a specific qualified name.
 	public override String GetAttribute(String name)
 			{
-				XmlNodeInfo tmp = info.GetAttribute(name);
+				NodeInfo tmp = nodes.Current.GetAttribute(name);
 				if(tmp == null) { return null; }
 				return tmp.Value;
 			}
@@ -545,13 +562,13 @@ public class XmlTextReader : XmlReader
 			{
 				if(!namespaces) { return String.Empty; }
 				if(prefix == null) { throw new ArgumentNullException("prefix"); }
-				return parserContext.NamespaceManager.LookupNamespace(prefix);
+				return context.NamespaceManager.LookupNamespace(prefix);
 			}
 
 	// Move the current position to a particular attribute.
 	public override void MoveToAttribute(int i)
 			{
-				if(!info.MoveToAttribute(i))
+				if(!nodes.Current.MoveToAttribute(i))
 				{
 					throw new ArgumentOutOfRangeException
 						("i", S._("Xml_InvalidAttributeIndex"));
@@ -561,31 +578,31 @@ public class XmlTextReader : XmlReader
 	// Move the current position to an attribute with a particular name.
 	public override bool MoveToAttribute(String localName, String namespaceURI)
 			{
-				return info.MoveToAttribute(localName, namespaceURI);
+				return nodes.Current.MoveToAttribute(localName, namespaceURI);
 			}
 
 	// Move the current position to an attribute with a qualified name.
 	public override bool MoveToAttribute(String name)
 			{
-				return info.MoveToAttribute(name);
+				return nodes.Current.MoveToAttribute(name);
 			}
 
 	// Move to the element that owns the current attribute.
 	public override bool MoveToElement()
 			{
-				return info.MoveToElement();
+				return nodes.Current.MoveToElement();
 			}
 
 	// Move to the first attribute owned by the current element.
 	public override bool MoveToFirstAttribute()
 			{
-				return info.MoveToFirstAttribute();
+				return nodes.Current.MoveToFirstAttribute();
 			}
 
 	// Move to the next attribute owned by the current element.
 	public override bool MoveToNextAttribute()
 			{
-				return info.MoveToNextAttribute();
+				return nodes.Current.MoveToNextAttribute();
 			}
 
 	// Read the next node in the input stream.
@@ -614,7 +631,6 @@ public class XmlTextReader : XmlReader
 
 					case ReadState.Initial:
 					{
-						info.ClearElementInfo();
 						readState = ReadState.Interactive;
 					}
 					break;
@@ -631,7 +647,7 @@ public class XmlTextReader : XmlReader
 					throw new XmlException
 						(S._("Xml_WrongReadState"));
 				}
-				return info.ReadAttributeValue();
+				return nodes.Current.ReadAttributeValue();
 			}
 
 	// Read base64 data from the current element.
@@ -774,11 +790,11 @@ public class XmlTextReader : XmlReader
 				{
 					char[] target = Name.ToCharArray();
 					sb.Append("<" + Name);
-					int count = info.AttributeCount;
-					XmlNodeInfo tmp;
+					int count = nodes.Current.AttributeCount;
+					NodeInfo tmp;
 					for (int i = 0; i < count; ++i)
 					{
-						tmp = info.GetAttribute(i);
+						tmp = nodes.Current.GetAttribute(i);
 						String name = tmp.Name;
 						String value = tmp.Value;
 						char quoteChar = tmp.QuoteChar;
@@ -822,7 +838,7 @@ public class XmlTextReader : XmlReader
 				else if(NodeType == XmlNodeType.Attribute)
 				{
 					Read();
-					XmlNodeInfo node = info.Current;
+					NodeInfo node = nodes.Current;
 					String name = node.Name;
 					String value = node.Value;
 					char quoteChar = node.QuoteChar;
@@ -868,9 +884,9 @@ public class XmlTextReader : XmlReader
 	[TODO] // ********************************************************* TODO
 	private void ClearNodeInfo()
 			{
-				parserContext.SystemId = String.Empty;
-				parserContext.PublicId = String.Empty;
-				info.ClearElementInfo();
+				context.SystemId = String.Empty;
+				context.PublicId = String.Empty;
+				nodes.Reset();
 			}
 
 	// Enter the error state, and throw an XmlException.
@@ -886,6 +902,49 @@ public class XmlTextReader : XmlReader
 				throw new XmlException(String.Format(S._(messageTag), args));
 			}
 
+	// Get the namespace information for a given name.
+	private void GetNamespaceInfo
+				(String name, out String localName, out String namespaceURI,
+				 out String prefix)
+			{
+				XmlNameTable nt = context.NameTable;
+
+				// set the defaults
+				localName = name;
+				prefix = String.Empty;
+				namespaceURI = String.Empty;
+
+				if(namespaces)
+				{
+					XmlNamespaceManager nm = context.NamespaceManager;
+
+					// find the namespace separator
+					int index = name.LastIndexOf(':');
+
+					// give an error if there's no name before the separator
+					if(index == 0)
+					{
+						Error(/* TODO */);
+					}
+
+					// set the namespace information
+					if(index > 0)
+					{
+						// add the prefix and local name to the name table
+						prefix = nt.Add(name.Substring(0, index));
+						localName = nt.Add(name.Substring(index + 1));
+
+						// check for a valid prefix
+						if(prefix.IndexOf(':') != -1)
+						{
+							Error(/* TODO */);
+						}
+					}
+					// set the namespace uri based on the prefix
+					namespaceURI = nm.LookupNamespace(prefix);
+				}
+			}
+
 	// Callback for eof in the input handler.
 	[TODO]
 	private void HandleEOF()
@@ -893,20 +952,205 @@ public class XmlTextReader : XmlReader
 				readState = ReadState.EndOfFile;
 			}
 
-#if !ECMA_COMPAT
-	private String ParseEntity(String entityref)
+	// Process 'xml:' and 'xmlns' information for a list of attributes.
+	private void ProcessAttributeInfo(Attributes attributes)
 			{
-				return parserContext.NameCollection.Get(entityref);
+				AttributeInfo info;
+				int count = attributes.Count;
+				for(int i = 0; i < count; ++i)
+				{
+					info = attributes[i];
+					String tmpName = info.Name;
+					String tmpValue = info.Value;
+					if(((Object)tmpName) == xmlBaseName)
+					{
+						context.BaseURI = tmpValue;
+					}
+					else if(((Object)tmpName) == xmlLangName)
+					{
+						context.XmlLang = tmpValue;
+					}
+					else if(((Object)tmpName) == xmlSpaceName)
+					{
+						if(tmpValue == "default")
+						{
+							context.XmlSpace = XmlSpace.Default;
+						}
+						else if(tmpValue == "preserve")
+						{
+							context.XmlSpace = XmlSpace.Preserve;
+						}
+						else
+						{
+							Error(/* TODO */);
+						}
+					}
+					else if(namespaces)
+					{
+						XmlNamespaceManager ns = context.NamespaceManager;
+						if(((Object)tmpName) == xmlNSPrefix)
+						{
+							ns.AddNamespace("", tmpValue);
+						}
+						else if(tmpName.StartsWith("xmlns:"))
+						{
+							String tmpLocalName = tmpName.Substring(6);
+							ns.AddNamespace(tmpLocalName, tmpValue);
+						}
+					}
+				}
 			}
 
-	//internal SomeDTDRuleHandlingObjectGoesHere FooBar
-	//		{
-	//			get { return dtdReader.FooBar; }
-	//			set { dtdReader.FooBar = value; }
-	//		}
-#endif
+	// Read an attribute value.
+	//
+	// Already read: ('"' | "'")
+	private void ReadAttributeValue
+				(StringBuilder log, Segments segments, char quoteChar)
+			{
+				int segLen = 0;
+				int textStart = 0;
+				SegmentInfo seg;
+				XmlNameTable nt = context.NameTable;
 
-	// Read the attributes for an element start tag.
+				// push the log onto the logger's log stack
+				input.Logger.Push(log);
+
+				// read until we consume all the text
+				while(input.PeekChar() && input.peekChar != quoteChar)
+				{
+					// perform error checks and process segments
+					if(input.peekChar == '<')
+					{
+						Error(/* TODO */);
+					}
+					else if(input.peekChar == '&')
+					{
+						// if we have text, add a new text segment to the list
+						if(log.Length > textStart)
+						{
+							int textEnd = (log.Length - textStart);
+							seg = segments[segLen++];
+							seg.SetInfo(true, log.ToString(textStart, textEnd));
+						}
+
+						// move to the '&' character
+						input.NextChar();
+
+						// add a new reference segment to the list
+						seg = segments[segLen++];
+						seg.SetInfo(false, nt.Add(ReadReference()));
+
+						// store the start index of the next segment
+						textStart = log.Length;
+					}
+					else
+					{
+						input.NextChar();
+					}
+				}
+
+				// if we have text, add a new text segment to the list
+				if(log.Length > textStart)
+				{
+					int textEnd = (log.Length - textStart);
+					seg = segments[segLen++];
+					seg.SetInfo(true, log.ToString(textStart, textEnd));
+				}
+
+				// store the number of segments
+				segments.Count = segLen;
+
+				// pop the log from the logger's log stack
+				input.Logger.Pop();
+			}
+
+	// Read and normalize an attribute value.
+	//
+	// Already read: ('"' | "'")
+	private void ReadAttributeValueNormalize
+				(StringBuilder log, Segments segments, char quoteChar)
+			{
+				int segLen = 0;
+				int textStart = 0;
+				SegmentInfo seg;
+				XmlNameTable nt = context.NameTable;
+
+				// push the log onto the logger's log stack
+				input.Logger.Push(log);
+
+				// read until we consume all the text
+				while(input.PeekChar() && input.peekChar != quoteChar)
+				{
+					// perform error checks and process segments
+					if(input.peekChar == '<')
+					{
+						Error(/* TODO */);
+					}
+					else if(input.peekChar == '&')
+					{
+						bool haveText = (log.Length > textStart);
+						int textEnd = (log.Length - textStart);
+						int position = log.Length;
+						String s; char c;
+
+						// move to the '&' character
+						input.NextChar();
+
+						// read the reference
+						if(ReadReferenceNormalize(out s, out c))
+						{
+							log.Length = position;
+							log.Append(c);
+						}
+						else
+						{
+							// if we have text, add a new text segment to the list
+							if(haveText)
+							{
+								seg = segments[segLen++];
+								seg.SetInfo(true, log.ToString(textStart, textEnd));
+							}
+
+							// add a new reference segment to the list
+							seg = segments[segLen++];
+							seg.SetInfo(false, nt.Add(s));
+
+							// store the start index of the next segment
+							textStart = log.Length;
+						}
+					}
+					else if(XmlCharInfo.IsWhitespace(input.peekChar))
+					{
+						// skip whitespace without logging
+						input.Logger.Pop();
+						input.SkipWhitespace();
+						input.Logger.Push(log);
+
+						// set whitespace to single space character
+						log.Append(' ');
+					}
+					else
+					{
+						input.NextChar();
+					}
+				}
+
+				// if we have text, add a new text segment to the list
+				if(log.Length > textStart)
+				{
+					int textEnd = (log.Length - textStart);
+					seg = segments[segLen++];
+					seg.SetInfo(true, log.ToString(textStart, textEnd));
+				}
+
+				// store the number of segments
+				segments.Count = segLen;
+
+				// pop the log from the logger's log stack
+				input.Logger.Pop();
+			}
+
+	// Read the attributes for an element start tag or xml declaration tag.
 	//
 	// Already read: ''
 	[TODO]
@@ -915,8 +1159,9 @@ public class XmlTextReader : XmlReader
 				// create our value log
 				StringBuilder log = new StringBuilder();
 
-				// create our list for reference positions
-				ArrayList refs = new ArrayList();
+				// get our attribute list
+				int attLen = 0;
+				Attributes attributes = nodes.Attributes;
 
 				// read until we consume all of the attributes
 				while(true)
@@ -928,10 +1173,15 @@ public class XmlTextReader : XmlReader
 					if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
 					if(qmark)
 					{
-						if(input.peekChar == '?') { return; }
+						if(input.peekChar == '?')
+						{
+							attributes.Count = attLen;
+							return;
+						}
 					}
 					else if(input.peekChar == '/' || input.peekChar == '>')
 					{
+						attributes.Count = attLen;
 						return;
 					}
 
@@ -954,45 +1204,32 @@ public class XmlTextReader : XmlReader
 						Error(/* TODO */);
 					}
 
-					// push our log onto the logger's log stack
-					input.Logger.Push(log);
+					// get the attribute and segment information nodes
+					AttributeInfo att = attributes[attLen++];
+					Segments segments = att.Segments;
 
-					// read until we hit the quote character
-					while(input.NextChar() && input.currChar != quoteChar)
+					// read the attribute value
+					if(normalize && !qmark)
 					{
-						// perform basic error checks and store ref positions
-						if(input.currChar == '<')
-						{
-							Error(/* TODO */);
-						}
-						else if(input.currChar == '&')
-						{
-							// store the position of the reference
-							refs.Add(log.Length);
-
-							// read the reference
-							ReadReference();
-						}
+						ReadAttributeValueNormalize(log, segments, quoteChar);
+					}
+					else
+					{
+						ReadAttributeValue(log, segments, quoteChar);
 					}
 
-					// we hit eof, otherwise we'd have quoteChar, so give an error
-					if(input.currChar != quoteChar) { Error("Xml_UnexpectedEOF"); }
+					// the attribute value must be properly terminated
+					if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
+					if(input.currChar != quoteChar) { Error(/* TODO */); }
 
-					// erase the closing quote character from the log
-					log.Length -= 1;
-
-					// get the value from the log and pop it from the logger
-					String value = input.Logger.Pop().ToString();
+					// get the value from the log
+					String value = log.ToString();
 
 					// reset the log
 					log.Length = 0;
 
-					// add the attribute to the current node information
-					info.AddAttribute
-						(name, value, quoteChar, (int[])refs.ToArray(typeof(int)));
-
-					// clear our list of reference positions
-					refs.Clear();
+					// set the attribute information
+					att.SetInfo(segments, quoteChar, name, value);
 				}
 			}
 
@@ -1003,9 +1240,6 @@ public class XmlTextReader : XmlReader
 	private void ReadCDATA()
 			{
 				// TODO: state handling
-
-				// clear the current node information
-				ClearNodeInfo();
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -1030,8 +1264,7 @@ public class XmlTextReader : XmlReader
 							String value = input.Logger.Pop().ToString();
 
 							// set the current node information and return
-							info.NodeType = XmlNodeType.CDATA;
-							info.SetElementInfo("", value);
+							nodes.CDATA.SetInfo(value);
 							return;
 						}
 					}
@@ -1048,9 +1281,6 @@ public class XmlTextReader : XmlReader
 	private void ReadComment()
 			{
 				// TODO: state handling
-
-				// clear the current node information
-				ClearNodeInfo();
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -1074,8 +1304,7 @@ public class XmlTextReader : XmlReader
 						input.Expect('>');
 
 						// set the current node information and return
-						info.NodeType = XmlNodeType.Comment;
-						info.SetElementInfo("", value);
+						nodes.Comment.SetInfo(value);
 						return;
 					}
 				}
@@ -1090,6 +1319,16 @@ public class XmlTextReader : XmlReader
 	[TODO]
 	private bool ReadDocument()
 			{
+				// use the iterable node's next node if possible
+				NodeInfo current = nodes.Current;
+				if(current is IterableNodeInfo)
+				{
+					if(((IterableNodeInfo)current).Next())
+					{
+						return true;
+					}
+				}
+
 				// return false if there are no nodes left to read
 				if(!input.PeekChar()) { return false; }
 
@@ -1098,6 +1337,20 @@ public class XmlTextReader : XmlReader
 				{
 					++depth;
 					incDepth = false;
+				}
+
+				// pop the base/lang/space scope if we last read an element end tag
+				if(xmlPopScope)
+				{
+					context.PopScope();
+					xmlPopScope = false;
+				}
+
+				// pop the namespace scope if we last read an element end tag
+				if(xmlnsPopScope)
+				{
+					context.NamespaceManager.PopScope();
+					xmlnsPopScope = false;
 				}
 
 				// handle all the possible node cases
@@ -1180,18 +1433,15 @@ public class XmlTextReader : XmlReader
 			{
 				// TODO: state handling
 
-				// clear the current node information
-				ClearNodeInfo();
-
 				// (re)initialize the dtd reader
-				dtdReader.Init(input, xmlResolver, parserContext.NameTable);
+				dtdReader.Init(input, resolver);
 
 				// read the dtd
 				dtdReader.Read();
 
 				// set the current node information
-				info.NodeType = XmlNodeType.DocumentType;
-				info.SetElementInfo(dtdReader.Name, dtdReader.Value);
+				nodes.DoctypeDeclaration.SetInfo
+					(context.DocTypeName, context.InternalSubset);
 			}
 
 	// Read a '<!' tag.
@@ -1245,9 +1495,6 @@ public class XmlTextReader : XmlReader
 			{
 				// TODO: state handling
 
-				// clear the current node information
-				ClearNodeInfo();
-
 				// read the element name
 				String name = input.ReadName();
 
@@ -1260,12 +1507,28 @@ public class XmlTextReader : XmlReader
 				// decrease the depth
 				--depth;
 
+				// set a flag to pop the base/lang/space scope on the next read
+				xmlPopScope = true;
+
+				// set a flag to pop the namespace scope on the next read
+				xmlnsPopScope = namespaces;
+
 				// this end tag must match the last start tag
 				if(elementNames.Pop() != (Object)name) { Error(/* TODO */); }
 
+				// add the name to the name table
+				XmlNameTable nt = context.NameTable;
+				name = nt.Add(name);
+
+				// get the namespace information
+				String localName;
+				String namespaceURI;
+				String prefix;
+				GetNamespaceInfo
+					(name, out localName, out namespaceURI, out prefix);
+
 				// set the current node information
-				info.NodeType = XmlNodeType.EndElement;
-				info.SetElementInfo(name);
+				nodes.EndElement.SetInfo(localName, name, namespaceURI, prefix);
 			}
 
 	// Read a processing instruction.
@@ -1276,9 +1539,6 @@ public class XmlTextReader : XmlReader
 			{
 				// TODO: state handling
 				// TODO: check target for ('X'|'x')('M'|'m')('L'|'l')
-
-				// clear the current node information
-				ClearNodeInfo();
 
 				// skip potentially optional whitespace
 				bool hasWS = input.SkipWhitespace();
@@ -1291,8 +1551,7 @@ public class XmlTextReader : XmlReader
 					input.NextChar();
 
 					// set the current node information and return
-					info.NodeType = XmlNodeType.ProcessingInstruction;
-					info.SetElementInfo(target, String.Empty);
+					nodes.ProcessingInstruction.SetInfo(target, String.Empty);
 					return;
 				}
 
@@ -1317,8 +1576,7 @@ public class XmlTextReader : XmlReader
 						String value = input.Logger.Pop().ToString();
 
 						// set the current node information and return
-						info.NodeType = XmlNodeType.ProcessingInstruction;
-						info.SetElementInfo(target, value);
+						nodes.ProcessingInstruction.SetInfo(target, value);
 						return;
 					}
 				}
@@ -1350,11 +1608,15 @@ public class XmlTextReader : XmlReader
 	// Read an entity reference.
 	//
 	// Already read: '&'
-	private void ReadReference()
+	private String ReadReference()
 			{
 				// check for an empty reference
-				if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
+				if(!input.PeekChar()) { Error(/* TODO */); }
 				if(input.peekChar == ';') { Error(/* TODO */); }
+
+				// create our log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
 
 				// handle character or general references
 				if(input.peekChar == '#')
@@ -1362,7 +1624,7 @@ public class XmlTextReader : XmlReader
 					input.NextChar();
 
 					// check for an empty character reference
-					if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
+					if(!input.PeekChar()) { Error(/* TODO */); }
 					if(input.peekChar == ';') { Error(/* TODO */); }
 
 					// handle a hex or decimal character reference
@@ -1371,16 +1633,15 @@ public class XmlTextReader : XmlReader
 						input.NextChar();
 
 						// check for an empty hex character reference
-						if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
+						if(!input.PeekChar()) { Error(/* TODO */); }
 						if(input.peekChar == ';') { Error(/* TODO */); }
 
 						// read until we consume all the digits
 						while(input.NextChar() && input.currChar != ';')
 						{
-							// check for invalid characters
-							if((input.currChar <= '0' || input.currChar >= '9') &&
-							   (input.currChar <= 'A' || input.currChar >= 'F') &&
-							   (input.currChar <= 'a' || input.currChar >= 'f'))
+							if((input.currChar < '0' || input.currChar > '9') &&
+							   (input.currChar < 'A' || input.currChar > 'F') &&
+							   (input.currChar < 'a' || input.currChar > 'f'))
 							{
 								Error(/* TODO */);
 							}
@@ -1391,8 +1652,7 @@ public class XmlTextReader : XmlReader
 						// read until we consume all the digits
 						while(input.NextChar() && input.currChar != ';')
 						{
-							// check for invalid characters
-							if(input.currChar <= '0' || input.currChar >= '9')
+							if(input.currChar < '0' || input.currChar > '9')
 							{
 								Error(/* TODO */);
 							}
@@ -1410,6 +1670,145 @@ public class XmlTextReader : XmlReader
 					// the reference must end with ';' at this point
 					input.Expect(';');
 				}
+				// pop the log and return the reference name
+				input.Logger.Pop();
+				return context.NameTable.Add(log.ToString(0, log.Length-1));
+			}
+
+	// Read and normalize an entity reference, returning true if normalized.
+	//
+	// Already read: '&'
+	private bool ReadReferenceNormalize(out String name, out char value)
+			{
+				// check for an empty reference
+				if(!input.PeekChar()) { Error(/* TODO */); }
+				if(input.peekChar == ';') { Error(/* TODO */); }
+
+				// set the defaults
+				name = null;
+				value = (char)0;
+
+				// handle character or general references
+				if(input.peekChar == '#')
+				{
+					input.NextChar();
+
+					// check for an empty character reference
+					if(!input.PeekChar()) { Error(/* TODO */); }
+					if(input.peekChar == ';') { Error(/* TODO */); }
+
+					// handle a hex or decimal character reference
+					if(input.peekChar == 'x')
+					{
+						input.NextChar();
+
+						// check for an empty hex character reference
+						if(!input.PeekChar()) { Error(/* TODO */); }
+						if(input.peekChar == ';') { Error(/* TODO */); }
+
+						// read until we consume all the digits
+						while(input.NextChar() && input.currChar != ';')
+						{
+							value *= 0x10;
+							if(input.currChar >= '0' && input.currChar <= '9')
+							{
+								value += input.currChar - '0';
+							}
+							else if(input.currChar >= 'A' && input.currChar <= 'F')
+							{
+								value += (input.currChar - 'A') + 10;
+							}
+							else if(input.currChar >= 'a' && input.currChar <= 'f')
+							{
+								value += (input.currChar - 'a') + 10;
+							}
+							else
+							{
+								Error(/* TODO */);
+							}
+						}
+					}
+					else
+					{
+						// read until we consume all the digits
+						while(input.NextChar() && input.currChar != ';')
+						{
+							value *= 10;
+							if(input.currChar >= '0' && input.currChar <= '9')
+							{
+								value += input.currChar - '0';
+							}
+							else
+							{
+								Error(/* TODO */);
+							}
+						}
+					}
+
+					// we hit eof, otherwise we'd have ';', so give an error
+					if(input.currChar != ';') { Error("Xml_UnexpectedEOF"); }
+
+					// check the range of the character
+					if(!XmlCharInfo.IsChar(value))
+					{
+						Error(/* TODO */);
+					}
+
+					return true;
+				}
+				else
+				{
+					// read the reference name
+					name = input.ReadName();
+
+					// the reference must end with ';' at this point
+					input.Expect(';');
+
+					// check for builtins
+					switch(name)
+					{
+						case "amp":
+						{
+							value = '&';
+							return true;
+						}
+						// Not reached.
+
+						case "apos":
+						{
+							value = '\'';
+							return true;
+						}
+						// Not reached.
+
+						case "gt":
+						{
+							value = '>';
+							return true;
+						}
+						// Not reached.
+
+						case "lt":
+						{
+							value = '<';
+							return true;
+						}
+						// Not reached.
+
+						case "quot":
+						{
+							value = '"';
+							return true;
+						}
+						// Not reached.
+
+						default:
+						{
+							return false;
+						}
+						// Not reached.
+					}
+				}
 			}
 
 	// Read an element start tag.
@@ -1419,9 +1818,6 @@ public class XmlTextReader : XmlReader
 	private void ReadSTag()
 			{
 				// TODO: state handling
-
-				// clear the current node information
-				ClearNodeInfo();
 
 				// read the element name
 				String name = input.ReadName();
@@ -1434,8 +1830,10 @@ public class XmlTextReader : XmlReader
 				bool empty = false;
 				if(input.currChar == '/')
 				{
-					empty = true;
 					input.Expect('>');
+					empty = true;
+					xmlPopScope = true;
+					xmlnsPopScope = namespaces;
 				}
 				else
 				{
@@ -1443,10 +1841,31 @@ public class XmlTextReader : XmlReader
 					elementNames.Push(name);
 				}
 
+				// process the attribute information
+				Attributes attributes = nodes.Attributes;
+				ProcessAttributeInfo(attributes);
+
+				// get the namespace information
+				String localName;
+				String namespaceURI;
+				String prefix;
+				GetNamespaceInfo
+					(name, out localName, out namespaceURI, out prefix);
+
+				// update search information and check for duplicates
+				if(namespaces)
+				{
+					attributes.UpdateInfo
+						(context.NameTable, context.NamespaceManager, namespaceURI);
+				}
+				else
+				{
+					attributes.UpdateInfo(context.NameTable);
+				}
+
 				// set the current node information
-				info.NodeType = XmlNodeType.Element;
-				info.SetElementInfo(name);
-				info.IsEmptyElement = empty;
+				nodes.Element.SetInfo
+					(empty, attributes, localName, name, namespaceURI, prefix);
 			}
 
 	// Read a text node.
@@ -1455,10 +1874,73 @@ public class XmlTextReader : XmlReader
 	[TODO]
 	private void ReadText()
 			{
-				/* TODO: Add Support for normalization */
-				ClearNodeInfo();
-				info.NodeType = XmlNodeType.Text;
-				info.SetElementInfo("",input.ReadTo('<'));
+				// set things up
+				int segLen = 0;
+				SegmentInfo seg;
+				TextInfo info = nodes.Text;
+				Segments segments = info.Segments;
+				XmlNameTable nt = context.NameTable;
+
+				// create our log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
+
+				// read until we consume all the text
+				while(input.PeekChar() && input.peekChar != '<')
+				{
+					if(input.peekChar == '&')
+					{
+						String s; char c;
+
+						// skip the '&' character
+						input.Logger.Pop();
+						input.NextChar();
+
+						// read the reference
+						if(ReadReferenceNormalize(out s, out c))
+						{
+							log.Append(c);
+						}
+						else
+						{
+							// if we have text, add a new text segment to the list
+							if(log.Length > 0)
+							{
+								seg = segments[segLen++];
+								seg.SetInfo(true, log.ToString());
+								log.Length = 0;
+							}
+
+							// add a new reference segment to the list
+							seg = segments[segLen++];
+							seg.SetInfo(false, nt.Add(s));
+						}
+
+						// push the log back onto the log stack
+						input.Logger.Push(log);
+					}
+					else
+					{
+						input.NextChar();
+					}
+				}
+
+				// if we have text, add a new text segment to the list
+				if(log.Length > 0)
+				{
+					seg = segments[segLen++];
+					seg.SetInfo(true, log.ToString());
+					log.Length = 0;
+				}
+
+				// store the number of segments
+				segments.Count = segLen;
+
+				// pop the log from the logger's log stack
+				input.Logger.Pop();
+
+				// set the current node information
+				info.SetInfo(segments);
 			}
 
 	// Read a whitespace node.
@@ -1468,6 +1950,7 @@ public class XmlTextReader : XmlReader
 	private void ReadWhitespace()
 			{
 				// TODO: state handling
+				// TODO: figure out when whitespace is significant
 
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
@@ -1479,12 +1962,8 @@ public class XmlTextReader : XmlReader
 				// get the whitespace from the log and pop it from the logger
 				String value = input.Logger.Pop().ToString();
 
-				// clear the current node information
-				ClearNodeInfo();
-
 				// set the current node information
-				info.SetElementInfo(String.Empty, value);
-				info.NodeType = XmlNodeType.Whitespace; // ??
+				nodes.Whitespace.SetInfo(false, value);
 			}
 
 	// Read an xml declaration.
@@ -1497,9 +1976,6 @@ public class XmlTextReader : XmlReader
 				// TODO: encoding checks
 				// TODO: ensure attributes are well-formed and in correct order
 
-				// clear the current node information
-				ClearNodeInfo();
-
 				// create our log and push it onto the logger's log stack
 				StringBuilder log = new StringBuilder();
 				input.Logger.Push(log);
@@ -1507,502 +1983,19 @@ public class XmlTextReader : XmlReader
 				// read the xml declaration's attributes
 				ReadAttributes(true);
 
+				// the xml declaration must end with '?>' at this point
+				input.Expect("?>");
+
 				// get attributes from the log and pop it from the logger
 				String value = input.Logger.Pop().ToString();
 
+				// update search information and check for duplicates
+				Attributes attributes = nodes.Attributes;
+				attributes.UpdateInfo(context.NameTable);
+
 				// set the current node information
-				info.NodeType = XmlNodeType.XmlDeclaration;
-				info.SetElementInfo("xml", value);
-
-				// the xml declaration must end with '?>' at this point
-				input.Expect("?>");
+				nodes.XmlDeclaration.SetInfo(attributes, value);
 			}
-
-
-
-	private sealed class XmlNodeInfo
-	{
-		// Internal state.
-		private String localName;
-		private String name;
-		private String namespaceURI;
-		private String prefix;
-		private String value;
-		private char quoteChar;
-		private int[] refs;
-		private XmlParserContext context;
-
-		// Constructors.
-		public XmlNodeInfo(XmlParserContext context, String name)
-				{
-					this.context = context;
-					this.Name = name;
-					this.value = String.Empty;
-					this.quoteChar = '"';
-					refs = null;
-				}
-		public XmlNodeInfo(XmlParserContext context,
-		                   String name,
-		                   String value,
-		                   char quoteChar,
-		                   int[] refs)
-				{
-					this.context = context;
-					this.Name = name;
-					this.value = value;
-					this.quoteChar = quoteChar;
-					this.refs = refs;
-				}
-
-		// Get the local name.
-		public String LocalName
-				{
-					get { return localName; }
-				}
-
-		// Get or set the fully-qualified name.
-		public String Name
-				{
-					get { return name; }
-					set
-					{
-						XmlNameTable nt = context.NameTable;
-
-						// add the new name value to the name table
-						name = nt.Add(value);
-
-						// find the namespace separator
-						int index = name.LastIndexOf(':');
-
-						// set the namespace information
-						if(index >= 0)
-						{
-							XmlNamespaceManager nm = context.NamespaceManager;
-
-							// add the prefix and local name to the name table
-							prefix = nt.Add(name.Substring(0, index));
-							localName = nt.Add(name.Substring(index + 1));
-
-							// set the namespace uri based on the prefix
-							namespaceURI = nm.LookupNamespace(prefix);
-						}
-						else
-						{
-							// no namespace information is available
-							prefix = String.Empty;
-							localName = name;
-							namespaceURI = String.Empty;
-						}
-					}
-				}
-
-		// Get the namespace URI.
-		public String NamespaceURI
-				{
-					get { return namespaceURI; }
-				}
-
-		// Get the namespace prefix.
-		public String Prefix
-				{
-					get { return prefix; }
-				}
-
-		// Get or set the text value.
-		public String Value
-				{
-					get { return value; }
-					set { this.value = value; }
-				}
-
-		// Get or set the quote character.
-		public char QuoteChar
-				{
-					get { return quoteChar; }
-					set { quoteChar = value; }
-				}
-
-		// Get or set the indices for entity references contained in the value.
-		public int[] Refs
-				{
-					get { return refs; }
-					set { refs = value; }
-				}
-
-		// Clear the node information.
-		public void ClearNodeInfo()
-				{
-					localName = String.Empty;
-					name = String.Empty;
-					namespaceURI = String.Empty;
-					prefix = String.Empty;
-					value = String.Empty;
-					quoteChar = '"';
-					refs = null;
-				}
-
-		// Set the node information.
-		public void SetNodeInfo(String name)
-				{
-					ClearNodeInfo();
-					this.Name = name;
-				}
-		public void SetNodeInfo(String name, String value)
-				{
-					ClearNodeInfo();
-					this.Name = name;
-					this.value = value;
-				}
-		public void SetNodeInfo(String name, String value, char quoteChar, int[] refs)
-				{
-					ClearNodeInfo();
-					this.Name = name;
-					this.value = value;
-					this.quoteChar = quoteChar;
-					this.refs = refs;
-				}
-
-	}; // class XmlNodeInfo
-
-	private sealed class XmlElementInfo
-	{
-		// Internal state.
-		private bool empty;
-		private int count;
-		private int index;
-		private int refsPosition;
-		private int valuePosition;
-		private int[] refs;
-		private String value;
-		private XmlNodeInfo element;
-		private XmlNodeInfo other;
-		private XmlNodeInfo[] attribs;
-		private XmlNodeType elementType;
-		private XmlNodeType otherType;
-		private XmlParserContext context;
-
-		private const int INITSIZE = 8;
-
-
-		// Constructor.
-		public XmlElementInfo(XmlParserContext parserContext)
-				{
-					empty = false;
-					count = 0;
-					index = -1;
-					refs = null;
-					value = null;
-					refsPosition = 0;
-					valuePosition = 0;
-					element = new XmlNodeInfo(parserContext, String.Empty);
-					other = new XmlNodeInfo(parserContext, String.Empty);
-					attribs = new XmlNodeInfo[INITSIZE];
-					elementType = XmlNodeType.None;
-					otherType = XmlNodeType.None;
-					context = parserContext;
-				}
-		public XmlElementInfo(XmlParserContext parserContext, XmlNodeInfo attribute)
-				{
-					empty = false;
-					count = 0;
-					index = -1;
-					refs = null;
-					value = null;
-					refsPosition = 0;
-					valuePosition = 0;
-					element = attribute;
-					other = new XmlNodeInfo(parserContext, String.Empty);
-					attribs = null;
-					elementType = XmlNodeType.Attribute;
-					otherType = XmlNodeType.None;
-					context = parserContext;
-				}
-
-		// Get the number of attributes.
-		public int AttributeCount
-				{
-					get { return count; }
-				}
-
-		// Get the current node.
-		public XmlNodeInfo Current
-				{
-					get
-					{
-						switch(otherType)
-						{
-							case XmlNodeType.None: return element;
-							case XmlNodeType.Attribute: return attribs[index];
-							default: return other;
-						}
-					}
-				}
-
-		// Get the amount to add to the depth.
-		public int DepthOffset
-				{
-					get
-					{
-						if(elementType == XmlNodeType.Attribute)
-						{
-							switch(otherType)
-							{
-								case XmlNodeType.None: return 0;
-								default: return 1;
-							}
-						}
-						switch(otherType)
-						{
-							case XmlNodeType.None: return 0;
-							case XmlNodeType.Attribute: return 1;
-							default: return 2;
-						}
-					}
-				}
-
-		// Get or set if the current node is an empty element.
-		public bool IsEmptyElement
-				{
-					get
-					{
-						if(index == -1) { return empty; }
-						else { return false; }
-					}
-					set { empty = value; }
-				}
-
-		// Get or set the type of the current node.
-		public XmlNodeType NodeType
-				{
-					get
-					{
-						if(otherType == XmlNodeType.None) { return elementType; }
-						else { return otherType; }
-					}
-					set { elementType = value; }
-				}
-
-
-		// Add an attribute.
-		public void AddAttribute(String name, String value, char quoteChar, int[] refs)
-				{
-					if(count == attribs.Length)
-					{
-						XmlNodeInfo[] tmp = new XmlNodeInfo[count*2];
-						Array.Copy(attribs, tmp, count);
-						attribs = tmp;
-					}
-					if(attribs[count] == null)
-					{
-						attribs[count++] = new XmlNodeInfo
-							(context, name, value, quoteChar, refs);
-					}
-					else
-					{
-						attribs[count++].SetNodeInfo(name, value, quoteChar, refs);
-					}
-				}
-
-		// Clear attribute set.
-		public void ClearAttributes()
-				{
-					count = 0;
-					index = -1;
-					refs = null;
-					value = null;
-					refsPosition = 0;
-					valuePosition = 0;
-					other.ClearNodeInfo();
-					otherType = XmlNodeType.None;
-				}
-
-		// Clear the element information.
-		public void ClearElementInfo()
-				{
-					ClearAttributes();
-					element.ClearNodeInfo();
-					elementType = XmlNodeType.None;
-					empty = false;
-				}
-
-		// Return an attribute with the given index.
-		public XmlNodeInfo GetAttribute(int i)
-				{
-					if(i < 0 || i >= count) { return null; }
-					return attribs[i];
-				}
-		// Return an attribute with the given name and namespace uri.
-		public XmlNodeInfo GetAttribute(String localName, String namespaceURI)
-				{
-					XmlNodeInfo info;
-					for(int i = 0; i < count; ++i)
-					{
-						info = attribs[i];
-						if(info.LocalName == localName &&
-						   info.NamespaceURI == namespaceURI)
-						{
-							return info;
-						}
-					}
-					return null;
-				}
-		// Return an attribute with the given fully-qualified name.
-		public XmlNodeInfo GetAttribute(String name)
-				{
-					XmlNodeInfo info;
-					for(int i = 0; i < count; ++i)
-					{
-						info = attribs[i];
-						if(info.Name == name)
-						{
-							return info;
-						}
-					}
-					return null;
-				}
-
-		// Move the position to an attribute with the given index.
-		public bool MoveToAttribute(int i)
-				{
-					if(elementType == XmlNodeType.Attribute) { return false; }
-					if(i < 0 || i >= count) { return false; }
-					index = i;
-					refs = null;
-					value = null;
-					refsPosition = 0;
-					valuePosition = 0;
-					otherType = XmlNodeType.Attribute;
-					return true;
-				}
-		// Move the position to an attribute with the given name and namespace uri.
-		public bool MoveToAttribute(String localName, String namespaceURI)
-				{
-					XmlNodeInfo info;
-					for(int i = 0; i < count; ++i)
-					{
-						info = attribs[i];
-						if(info.LocalName == localName &&
-						   info.NamespaceURI == namespaceURI)
-						{
-							return MoveToAttribute(i);
-						}
-					}
-					return false;
-				}
-		// Move the position to an attribute with the given fully-qualified name.
-		public bool MoveToAttribute(String name)
-				{
-					XmlNodeInfo info;
-					for(int i = 0; i < count; ++i)
-					{
-						info = attribs[i];
-						if(info.Name == name)
-						{
-							return MoveToAttribute(i);
-						}
-					}
-					return false;
-				}
-
-		// Move the position to before the first attribute.
-		public bool MoveToElement()
-				{
-					if(elementType == XmlNodeType.Attribute) { return false; }
-					if(index == -1) { return false; }
-					index = -1;
-					refs = null;
-					value = null;
-					refsPosition = 0;
-					valuePosition = 0;
-					otherType = XmlNodeType.None;
-					return true;
-				}
-
-		// Move the position to the first attribute.
-		public bool MoveToFirstAttribute()
-				{
-					return MoveToAttribute(0);
-				}
-
-		// Move the position to the next attribute.
-		public bool MoveToNextAttribute()
-				{
-					return MoveToAttribute(index+1);
-				}
-
-		// Read the next attribute value in the input stream.
-		public bool ReadAttributeValue()
-				{
-					if(elementType != XmlNodeType.Attribute)
-					{
-						if(otherType == XmlNodeType.None)
-						{
-							return false;
-						}
-					}
-					if(value == null)
-					{
-						switch(otherType)
-						{
-							case XmlNodeType.None:
-							{
-								value = element.Value;
-								refs = element.Refs;
-							}
-							break;
-
-							case XmlNodeType.Attribute:
-							{
-								value = attribs[index].Value;
-								refs = attribs[index].Refs;
-							}
-							break;
-
-							default: return false;
-						}
-					}
-					if(valuePosition == value.Length) { return false; }
-					if(refs == null || refsPosition == refs.Length)
-					{
-						other.SetNodeInfo("", value.Substring(valuePosition));
-						valuePosition = value.Length;
-						otherType = XmlNodeType.Text;
-					}
-					else if(valuePosition == refs[refsPosition])
-					{
-						++refsPosition;
-						int start = valuePosition + 1;
-						valuePosition = value.IndexOf(';', start) + 1;
-						int end = valuePosition - 2;
-						other.SetNodeInfo(value.Substring(start, end));
-						otherType = XmlNodeType.EntityReference;
-					}
-					else
-					{
-						int start = valuePosition;
-						valuePosition = refs[refsPosition];
-						int end = valuePosition - 1;
-						other.SetNodeInfo("", value.Substring(start, end));
-						otherType = XmlNodeType.Text;
-					}
-					return true;
-				}
-
-		// Set the element information.
-		public void SetElementInfo(String name)
-				{
-					element.SetNodeInfo(name);
-				}
-		public void SetElementInfo(String name, String value)
-				{
-					element.SetNodeInfo(name, value);
-				}
-		public void SetElementInfo(String name, String value, char quoteChar)
-				{
-					element.SetNodeInfo(name, value, quoteChar, null);
-				}
-
-	}; // class XmlElementInfo
 
 }; // class XmlTextReader
 

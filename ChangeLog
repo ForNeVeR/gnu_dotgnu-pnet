@@ -1,3 +1,15 @@
+2004-02-07  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* System.Xml/*.cs, System.Xml/Private/*.cs: move all the internal
+	support classes to the System.Xml.Private namespace.
+
+	* System.Xml/XmlParserContext.cs, System.Xml/XmlTextReader.cs,
+	System.Xml/Private/*Info.cs, System.Xml/Private/Attributes.cs,
+	System.Xml/Private/Segments.cs, System.Xml/Private/NodeManager.cs:
+	make the internal design of the text reader more maintainable, add
+	full xml:lang/xml:base/xml:space scope support, add full namespace
+	support, fix text handling and attribute value normalization, and
+	improve the speed for by-name lookups of attributes.
 
 2004-02-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 

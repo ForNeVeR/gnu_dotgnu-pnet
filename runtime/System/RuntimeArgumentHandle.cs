@@ -21,11 +21,22 @@
 namespace System
 {
 
+#if !ECMA_COMPAT
+
 public struct RuntimeArgumentHandle
 {
 
-// TODO
+	// Internal state.
+	private IntPtr value__;
+
+	// Internal constructor.
+	internal RuntimeArgumentHandle(IntPtr value)
+			{
+				value__ = value;
+			}
 
 }; // class RuntimeArgumentHandle
+
+#endif // !ECMA_COMPAT
 
 }; // namespace System

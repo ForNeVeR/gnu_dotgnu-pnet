@@ -46,6 +46,9 @@ is only important to the internal workings of the library.
 
 * runtime/System/Exception.cs: implement "Exception.GetPackedStackTrace".
 
+* runtime/System/RuntimeArgumentHandle.cs: implement the
+"System.RuntimeArgumentHandle" struct.
+
 2001-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * resources/en_US/runtime/NotSupp.txt,

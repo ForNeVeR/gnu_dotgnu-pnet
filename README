@@ -56,11 +56,13 @@ The directories contain the following:
 
     codegen    Backend code generation routines for the C# compiler.
     cscc       Front-end for the C# compiler (cscc == "C Sharp Code Compiler").
+	csdoc      Documentation conversion utilities.
     doc        Assorted documentation, FAQ's, and notes.
     dumpasm    Utilities for dumping programs in IL assembly code.
     engine     The interpreter engine core.
     ilasm      The source code for the assembler.
     ildasm     The source code for the disassembler.
+	ildb       Source level debugger for IL programs.
 	ilfind     The source code for the IL name find utility.
     ilnative   The source code for the native method display utilitiy.
     ilsize     The source code for the IL binary size utility.
@@ -70,8 +72,5 @@ The directories contain the following:
     support    Support routines for basic system functionality.
     tools      Some useful scripts used for building releases, etc.
 
-The programs "ildasm", "ilnative", "ilfind", and "ilsize" are more or less
-functional.  Everything else is a work in progress.  The assembler understands
-IL syntax, but doesn't do anything with it.  The "codegen" and "cscc"
-directories are the beginnings of a core for a C# compiler, but they have
-a VERY long way to go.
+See the Web site for details on which programs are complete or partially
+complete.

@@ -7,6 +7,8 @@ be exported in a packed form for later parsing.
 * configure.in, Makefile.am, csdoc/: add the source code for the
 "csdoc2*" shell to the tree.
 
+* README: update the list of directories in the roadmap.
+
 2001-09-16  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * cscc/cs_grammar.y, cscc/cs_defs.tc, cscc/cs_decls.tc: create documentation

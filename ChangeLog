@@ -4,6 +4,9 @@
 	* codegen/cg_coerce.c: Coerce the arguments to the conversion methods
 	while creating UserConversion nodes.
 
+	* cscc/c/c_const.tc: Add ILNode_GetType for CString and CWString so
+	that they return UnmanagedPtr instead of String machine types.
+
 2004-06-07  Gopal V  <gopalv82@yahoo.com>
 
 	* cscc/csharp/cs_lvalue.tc: Fix type bug in constant field accesses 

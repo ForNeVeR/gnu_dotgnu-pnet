@@ -459,6 +459,15 @@ ILNode_EvalConst(ILNode_CWString)
 	return 0;
 }
 
+/*
+ * Get the type of a C string or C wide string constants
+ */
+ILNode_GetType(ILNode_CString),
+ILNode_GetType(ILNode_CWString)
+{
+	return ILMachineType_UnmanagedPtr;
+}
+
 %end %{
 
 /*

@@ -27,7 +27,7 @@ namespace Platform
 // that the C# library has a predictable set of platform
 // error codes to deal with.
 
-internal enum Errno
+public enum Errno
 {
 	Success 		=	 0,	/* Operation succeeded */
 	EPERM			=	 1,	/* Operation not permitted */

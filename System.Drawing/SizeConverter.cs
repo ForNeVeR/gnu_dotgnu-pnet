@@ -137,13 +137,12 @@ public class SizeConverter : TypeConverter
 			}
 
 	// Get the properties for an object.
-	[TODO]
 	public override PropertyDescriptorCollection GetProperties
 				(ITypeDescriptorContext context, Object value,
 				 Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(typeof(Size), attributes);
+				return properties.Sort(new String[2] { "Width", "Height"});
 			}
 
 	// Determine if the "GetProperties" method is supported.

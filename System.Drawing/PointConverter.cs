@@ -28,6 +28,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design.Serialization;
 using System.Globalization;
 using System.Collections;
+using System.Reflection;
 
 public class PointConverter : TypeConverter
 {
@@ -96,7 +97,6 @@ public class PointConverter : TypeConverter
 			}
 
 	// Convert from "Point" to a destination type.
-	[TODO]
 	public override Object ConvertTo
 				(ITypeDescriptorContext context,
 				 CultureInfo culture, Object value,
@@ -110,8 +110,8 @@ public class PointConverter : TypeConverter
 			#if CONFIG_COMPONENT_MODEL_DESIGN
 				else if(destinationType == typeof(InstanceDescriptor))
 				{
-					// TODO
-					return null;
+					ConstructorInfo constructorInfo = typeof(Point).GetConstructor(new Type[2] {typeof(int), typeof(int)});
+					return new InstanceDescriptor(constructorInfo, new Object[2] {point.X, point.Y}); 
 				}
 			#endif
 				else
@@ -137,13 +137,12 @@ public class PointConverter : TypeConverter
 			}
 
 	// Get the properties for an object.
-	[TODO]
 	public override PropertyDescriptorCollection GetProperties
 				(ITypeDescriptorContext context, Object value,
 				 Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(typeof(Point), attributes);
+				return properties.Sort(new String[2] {"X", "Y"});
 			}
 
 	// Determine if the "GetProperties" method is supported.

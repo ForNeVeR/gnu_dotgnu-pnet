@@ -143,13 +143,12 @@ public class RectangleConverter : TypeConverter
 			}
 
 	// Get the properties for an object.
-	[TODO]
 	public override PropertyDescriptorCollection GetProperties
 				(ITypeDescriptorContext context, Object value,
 				 Attribute[] attributes)
 			{
-				// TODO
-				return null;
+				PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(typeof(Rectangle), attributes);
+				return properties.Sort(new String[4] { "X", "Y", "Width", "Height" });
 			}
 
 	// Determine if the "GetProperties" method is supported.

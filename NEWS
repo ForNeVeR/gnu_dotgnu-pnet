@@ -1,4 +1,13 @@
 
+0.2.4 (27 June 2002)
+
+	* Harden various classes against missing functionality in the
+	  runtime engine, when the engine is used a reduced profile.
+	* SocketAddress mostly complete (Charlie Carnow).
+	* String resources now work.
+	* NotImplementedException, AsyncResult, WeakReference, GCHandle, GC.
+	* Updates to Delegate classes to support the runtime engine.
+
 0.2.2 (10 June 2002)
 
 	* Extra internalcalls for DirMethods (Abhaya Agarwal).

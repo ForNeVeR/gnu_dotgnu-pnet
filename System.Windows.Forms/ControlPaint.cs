@@ -795,6 +795,7 @@ public sealed class ControlPaint
 				Color bottom1, bottom2, right1, right2;
 				Pen pen;
 				bool doubleBorder=false;
+				top2 = left2 = bottom2 = right2 = Color.Black;
 
 				dark=Dark(backColor);
 				light=Light(backColor);

@@ -71,7 +71,19 @@ ILScope *CSGlobalScope = 0;
  */
 static unsigned long NestingLevel = 0;
 static ILIntString CurrNamespace = {"", 0};
+static ILNode_Namespace *CurrNamespaceNode = 0;
 static int HaveDecls = 0;
+
+/*
+ * Initialize the global namespace, if necessary.
+ */
+static void InitGlobalNamespace(void)
+{
+	if(!CurrNamespaceNode)
+	{
+		CurrNamespaceNode = (ILNode_Namespace *)ILNode_Namespace_create(0, 0);
+	}
+}
 
 /*
  * Get the global scope.
@@ -96,6 +108,7 @@ static void ResetState(void)
 {
 	NestingLevel = 0;
 	CurrNamespace = ILInternString("", 0);
+	CurrNamespaceNode = 0;
 	HaveDecls = 0;
 	ILScopeClearUsing(GlobalScope());
 }
@@ -876,6 +889,12 @@ NamespaceDeclaration
 				{
 					CurrNamespace = $3;
 				}
+
+				/* Create the namespace node */
+				InitGlobalNamespace();
+				CurrNamespaceNode = (ILNode_Namespace *)
+					ILNode_Namespace_create(CurrNamespace.string,
+											CurrNamespaceNode);
 			}
 			NamespaceBody OptSemiColon	{
 				/* Pop the identifier from the end of the namespace */
@@ -888,6 +907,9 @@ NamespaceDeclaration
 					CurrNamespace = ILInternString
 						(CurrNamespace.string, CurrNamespace.len - $3.len - 1);
 				}
+
+				/* Pop to the next outer namespace node */
+				CurrNamespaceNode = CurrNamespaceNode->enclosing;
 			}
 	;
 
@@ -913,6 +935,7 @@ NamespaceBody
 UsingDirective
 	: USING IDENTIFIER '=' NamespaceIdentifier ';'	{
 				ILScope *globalScope = GlobalScope();
+				ILNode_UsingAlias *alias;
 				if(ILScopeLookup(globalScope, $2, 1))
 				{
 					CSError("`%s' is already declared", $2);
@@ -921,13 +944,24 @@ UsingDirective
 				{
 					CSError("`%s' is not a namespace", $4.string);
 				}
+				alias = (ILNode_UsingAlias *)
+					ILNode_UsingAlias_create($2, $4.string);
+				InitGlobalNamespace();
+				alias->next = CurrNamespaceNode->aliases;
+				CurrNamespaceNode->aliases = alias;
 			}
 	| USING NamespaceIdentifier ';'		{
 				ILScope *globalScope = GlobalScope();
+				ILNode_UsingNamespace *using;
 				if(!ILScopeUsing(globalScope, $2.string, 0))
 				{
 					CSError("`%s' is not a namespace", $2.string);
 				}
+				using = (ILNode_UsingNamespace *)
+					ILNode_UsingNamespace_create($2.string);
+				InitGlobalNamespace();
+				using->next = CurrNamespaceNode->using;
+				CurrNamespaceNode->using = using;
 			}
 	;
 
@@ -2186,11 +2220,13 @@ ClassDeclaration
 				--NestingLevel;
 
 				/* Create the class definition */
+				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
 							 attrs,					/* OptModifiers */
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
+							 (ILNode *)CurrNamespaceNode,
 							 $5,					/* ClassBase */
 							 $7);					/* ClassBody */
 
@@ -2853,11 +2889,13 @@ StructDeclaration
 				}
 
 				/* Create the class definition */
+				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
 							 attrs,					/* OptModifiers */
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
+							 (ILNode *)CurrNamespaceNode,
 							 baseList,				/* ClassBase */
 							 $7);					/* StructBody */
 
@@ -2909,11 +2947,13 @@ InterfaceDeclaration
 				--NestingLevel;
 
 				/* Create the interface definition */
+				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							($1,					/* OptAttributes */
 							 attrs,					/* OptModifiers */
 							 ILQualIdentName($4, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
+							 (ILNode *)CurrNamespaceNode,
 							 $5,					/* ClassBase */
 							 $7);					/* ClassBody */
 

@@ -18,6 +18,8 @@ simplify the definitions.
 * cscc/cs_lvalue.tc: temporarily remove some scope handling code which
 is scheduled to be rewritten.
 
+* cscc/cs_grammar.y: new namespace node creation logic.
+
 2001-09-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * include/il_coder.h, engine/ilverify.c: new coder operations.

@@ -1,3 +1,7 @@
+2004-06-16  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/cvm_ptr.c: Removed null check alimination in COP_CKNULL.
+	
 2004-06-14  Thong Nguyen  <tum@veridicus.com>
 
 	* support/hb_gc.c: Fix ILGCDisableFinalizers not atomically

@@ -1163,11 +1163,14 @@ VMBREAK(COP_PSUB_I8);
 VMCASE(COP_CKNULL):
 {
 	/* Check the stack top for "null" */
-	BEGIN_NULL_CHECK(stacktop[-1].ptrValue)
+	if(stacktop[-1].ptrValue)
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
 	}
-	END_NULL_CHECK();
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 VMBREAK(COP_CKNULL);
 

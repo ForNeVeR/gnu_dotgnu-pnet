@@ -1,4 +1,12 @@
 
+2002-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_misc.tc, cscc/csharp/cs_invoke.tc, engine/cvmc.c,
+	engine/cvmc_call.c, engine/null_coder.c, engine/verify_call.c,
+	include/il_coder.h: use "callvirt" instead of "call" to call
+	non-virtual instance methods, so that runtime null pointer
+	checks happen automatically.
+
 2002-11-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_oper.tc: Do parameter coercion for UserBinary

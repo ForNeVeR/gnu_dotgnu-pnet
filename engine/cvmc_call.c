@@ -115,6 +115,21 @@ static void AdjustForCall(ILCoder *coder, ILEngineStackItem *args,
 	}
 }
 
+static void CVMCoder_CheckCallNull(ILCoder *coder, ILEngineStackItem *args,
+					   		       ILUInt32 numArgs)
+{
+	ILUInt32 size = ComputeStackSize(coder, args, numArgs);
+	if(size == 1)
+	{
+		CVM_OUT_NONE(COP_CKNULL);
+	}
+	else
+	{
+		--size;
+		CVM_OUT_WIDE(COP_CKNULL_N, size);
+	}
+}
+
 static void CVMCoder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 					   		    ILUInt32 numArgs,
 								ILEngineStackItem *returnItem,

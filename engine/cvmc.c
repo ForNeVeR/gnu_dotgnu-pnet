@@ -431,6 +431,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_DownConvertArg,
 	CVMCoder_PackVarArgs,
 	CVMCoder_ValueCtorArgs,
+	CVMCoder_CheckCallNull,
 	CVMCoder_CallMethod,
 	CVMCoder_CallIndirect,
 	CVMCoder_CallCtor,

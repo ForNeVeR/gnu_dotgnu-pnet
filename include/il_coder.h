@@ -513,6 +513,12 @@ struct _tagILCoderClass
 						  ILEngineStackItem *args, ILUInt32 numArgs);
 
 	/*
+	 * Check a method call's first parameter for null.
+	 */
+	void (*checkCallNull)(ILCoder *coder, ILEngineStackItem *args,
+					      ILUInt32 numArgs);
+
+	/*
 	 * Call a method directly.
 	 */
 	void (*callMethod)(ILCoder *coder, ILEngineStackItem *args,
@@ -850,6 +856,9 @@ struct _tagILCoderClass
 #define	ILCoderValueCtorArgs(coder,_classInfo,args,numArgs) \
 			((*((coder)->classInfo->valueCtorArgs))((coder), (_classInfo), \
 												    (args), (numArgs)))
+#define	ILCoderCheckCallNull(coder,args,numArgs) \
+			((*((coder)->classInfo->checkCallNull))((coder), (args), \
+												    (numArgs)))
 #define	ILCoderCallMethod(coder,args,numArgs,returnItem,methodInfo) \
 			((*((coder)->classInfo->callMethod))((coder), (args), \
 												 (numArgs), (returnItem), \

@@ -269,6 +269,10 @@ static void Coder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								ILEngineStackItem *args, ILUInt32 numArgs)
 {
 }
+static void Coder_CheckCallNull(ILCoder *coder, ILEngineStackItem *args,
+					   		    ILUInt32 numArgs)
+{
+}
 static void Coder_CallMethod(ILCoder *coder, ILEngineStackItem *args,
 					   		 ILUInt32 numArgs, ILEngineStackItem *returnItem,
 							 ILMethod *methodInfo)
@@ -434,6 +438,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_DownConvertArg,
 	Coder_PackVarArgs,
 	Coder_ValueCtorArgs,
+	Coder_CheckCallNull,
 	Coder_CallMethod,
 	Coder_CallIndirect,
 	Coder_CallCtor,

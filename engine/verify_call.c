@@ -1194,6 +1194,15 @@ case IL_OP_CALLVIRT:
 					if(inlineType == -1 ||
 					   !ILCoderCallInlineable(coder, inlineType))
 					{
+						if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
+						   (stack + stackSize - numParams)->engineType
+						   		== ILEngineType_O)
+						{
+							/* Check the first parameter against "null" */
+							ILCoderCheckCallNull
+								(coder, stack + stackSize - numParams,
+								 (ILUInt32)numParams);
+						}
 						ILCoderCallMethod(coder, stack + stackSize - numParams,
 										  (ILUInt32)numParams,
 										  &(stack[stackSize]), methodInfo);

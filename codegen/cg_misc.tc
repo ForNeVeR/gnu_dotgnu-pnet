@@ -1263,7 +1263,7 @@ ILNode_GenValue(ILNode_InvocationExpression)
 	/* Invoke the method */
 	if(node->methodInfo)
 	{
-		if(ILMethod_IsVirtual(node->methodInfo) &&
+		if(!ILMethod_IsStatic(node->methodInfo) &&
 		   !ILClassIsValueType(ILMethod_Owner(node->methodInfo)) &&
 		   !(node->baseCall))
 		{

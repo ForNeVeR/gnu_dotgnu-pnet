@@ -847,6 +847,7 @@ ILNode_SemAnalysis(ILNode_BaseInit)
 
 	/* Replace the current expression with "this" */
 	*parent = ILNode_This_create();
+	CSSemSetBase(value);
 	return value;
 }
 
@@ -865,6 +866,7 @@ ILNode_SemAnalysis(ILNode_ThisInit)
 
 	/* Replace the current expression with "this" */
 	*parent = ILNode_This_create();
+	CSSemSetBase(value);
 	return value;
 }
 

@@ -10,6 +10,8 @@
 
 	* System.Drawing.Xsharp/DrawingHatchBrush.cs: implement hatch brushes.
 
+	* auto_gen.sh, libtool.m4: add some m4 support code for libtool.
+
 2003-06-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* Xsharp/PlaceholderWindow.cs, Xsharp/RootWindow.cs,

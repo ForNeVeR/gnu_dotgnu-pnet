@@ -832,16 +832,16 @@ ILClass *ILAsmSystemClass(const char *name)
 {
 	ILProgramItem *scope;
 	ILClass *info;
-	info = ILClassLookup((ILProgramItem *)ILAsmModule, name, "System");
+	scope = (ILProgramItem *)ILAsmFindAssemblyRef(ILAsmLibraryName);
+	if(!scope)
+	{
+		/* We are assembling the system library itself, so create the
+		   class within the current module */
+		scope = (ILProgramItem *)ILAsmModule;
+	}
+	info = ILClassLookup(scope, name, "System");
 	if(!info)
 	{
-		scope = (ILProgramItem *)ILAsmFindAssemblyRef("mscorlib");
-		if(!scope)
-		{
-			/* We are assembling "mscorlib" itself, so create the
-			   class within the current module */
-			scope = (ILProgramItem *)ILAsmModule;
-		}
 		info = ILClassCreateRef(scope, 0, name, "System");
 		if(!info)
 		{

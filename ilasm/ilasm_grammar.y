@@ -165,28 +165,13 @@ static ILIntString PackLength(ILInt64 len)
 static ILIntString PackUnicodeString(ILIntString str)
 {
 	int posn = 0;
-	unsigned long ch;
-	unsigned long tempch;
 	unsigned char buf[256];
 	int outposn = 0;
 	ILIntString result = ILInternString("", 0);
 	while(posn < str.len)
 	{
-		ch = ILUTF8ReadChar(str.string, str.len, &posn);
-		if(ch < (unsigned long)0x10000)
-		{
-			buf[outposn++] = (unsigned char)ch;
-			buf[outposn++] = (unsigned char)(ch >> 8);
-		}
-		else if(ch < (((unsigned long)1) << 20))
-		{
-			tempch = ((ch >> 10) + 0xD800);
-			buf[outposn++] = (unsigned char)tempch;
-			buf[outposn++] = (unsigned char)(tempch >> 8);
-			tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);
-			buf[outposn++] = (unsigned char)tempch;
-			buf[outposn++] = (unsigned char)(tempch >> 8);
-		}
+		outposn += ILUTF16WriteCharAsBytes
+			(buf + outposn, ILUTF8ReadChar(str.string, str.len, &posn));
 		if(outposn >= 240)
 		{
 			if(result.len > 0)

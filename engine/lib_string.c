@@ -20,6 +20,7 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#include "il_utils.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -1871,10 +1872,9 @@ char *ILStringToUTF8(ILExecThread *thread, ILString *str)
 	ILUInt16 *buffer;
 	ILInt32 length;
 	ILInt32 utf8Len;
-	ILUInt16 ch;
-	ILUInt32 fullChar;
 	char *newStr;
 	char *temp;
+	int posn;
 
 	/* Bail out immediately if the string is NULL */
 	if(!str)
@@ -1885,61 +1885,12 @@ char *ILStringToUTF8(ILExecThread *thread, ILString *str)
 	/* Determine the length of the string in UTF-8 characters */
 	buffer = StringToBuffer(str);
 	length = ((System_String *)str)->length;
+	posn = 0;
 	utf8Len = 0;
-	while(length > 0)
+	while(posn < (int)length)
 	{
-		ch = *buffer++;
-		--length;
-		if(!ch)
-		{
-			/* Embedded NUL's are encoded as two non-NUL characters */
-			utf8Len += 2;
-		}
-		else if(ch < (ILUInt16)0x0080)
-		{
-			/* Ordinary ASCII character */
-			++utf8Len;
-		}
-		else if(ch < (((ILUInt16)1) << 11))
-		{
-			/* Encode as two characters */
-			utf8Len += 2;
-		}
-		else if(ch >= (ILUInt16)0xD800 && ch < (ILUInt16)0xDC00 &&
-		        length > 0 &&
-				buffer[0] >= (ILUInt16)0xDC00 && buffer[0] < (ILUInt16)0xE000)
-		{
-			/* This is a surrogate for a 20-bit Unicode character */
-			fullChar = (((ILUInt32)(ch - 0xD800)) << 10);
-			ch = *buffer++;
-			--length;
-			fullChar |= ((ILUInt32)(ch - 0xDC00));
-			if(!fullChar)
-			{
-				utf8Len += 2;
-			}
-			else if(fullChar < (ILUInt32)0x0080)
-			{
-				++utf8Len;
-			}
-			else if(fullChar < (((ILUInt32)1) << 11))
-			{
-				utf8Len += 2;
-			}
-			else if(fullChar < (((ILUInt32)1) << 16))
-			{
-				utf8Len += 3;
-			}
-			else
-			{
-				utf8Len += 4;
-			}
-		}
-		else
-		{
-			/* Encode as three characters */
-			utf8Len += 3;
-		}
+		utf8Len += ILUTF8WriteChar
+			(0, ILUTF16ReadChar(buffer, (int)length, &posn));
 	}
 
 	/* Allocate space within the garbage-collected heap */
@@ -1952,73 +1903,11 @@ char *ILStringToUTF8(ILExecThread *thread, ILString *str)
 
 	/* Copy the characters into the allocated buffer */
 	temp = newStr;
-	buffer = StringToBuffer(str);
-	length = ((System_String *)str)->length;
-	while(length > 0)
+	posn = 0;
+	while(posn < (int)length)
 	{
-		ch = *buffer++;
-		--length;
-		if(!ch)
-		{
-			/* Embedded NUL's are encoded as two non-NUL characters */
-			*temp++ = (char)0xC0;
-			*temp++ = (char)0x80;
-		}
-		else if(ch < (ILUInt16)0x0080)
-		{
-			/* Ordinary ASCII character */
-			*temp++ = (char)ch;
-		}
-		else if(ch < (((ILUInt16)1) << 11))
-		{
-			/* Encode as two characters */
-			*temp++ = (char)(0xC0 | (ch >> 6));
-			*temp++ = (char)(0x80 | (ch & 0x3F));
-		}
-		else if(ch >= (ILUInt16)0xD800 && ch < (ILUInt16)0xDC00 &&
-		        length > 0 &&
-				buffer[0] >= (ILUInt16)0xDC00 && buffer[0] < (ILUInt16)0xE000)
-		{
-			/* This is a surrogate for a 20-bit Unicode character */
-			fullChar = (((ILUInt32)(ch - 0xD800)) << 10);
-			ch = *buffer++;
-			--length;
-			fullChar |= ((ILUInt32)(ch - 0xDC00));
-			if(!fullChar)
-			{
-				*temp++ = (char)0xC0;
-				*temp++ = (char)0x80;
-			}
-			else if(fullChar < (ILUInt32)0x0080)
-			{
-				*temp++ = (char)fullChar;
-			}
-			else if(fullChar < (((ILUInt32)1) << 11))
-			{
-				*temp++ = (char)(0xC0 | (fullChar >> 6));
-				*temp++ = (char)(0x80 | (fullChar & 0x3F));
-			}
-			else if(fullChar < (((ILUInt32)1) << 16))
-			{
-				*temp++ = (char)(0xE0 | (fullChar >> 12));
-				*temp++ = (char)(0x80 | ((fullChar >> 6) & 0x3F));
-				*temp++ = (char)(0x80 | (fullChar & 0x3F));
-			}
-			else
-			{
-				*temp++ = (char)(0xF0 | (fullChar >> 18));
-				*temp++ = (char)(0x80 | ((fullChar >> 12) & 0x3F));
-				*temp++ = (char)(0x80 | ((fullChar >> 6) & 0x3F));
-				*temp++ = (char)(0x80 | (fullChar & 0x3F));
-			}
-		}
-		else
-		{
-			/* Encode as three characters */
-			*temp++ = (char)(0xE0 | (ch >> 12));
-			*temp++ = (char)(0x80 | ((ch >> 6) & 0x3F));
-			*temp++ = (char)(0x80 | (ch & 0x3F));
-		}
+		temp += ILUTF8WriteChar
+			(temp, ILUTF16ReadChar(buffer, (int)length, &posn));
 	}
 	*temp = '\0';
 

@@ -492,8 +492,8 @@ static void writeString(FILE *stream, const char *str, int len)
 static void writeUnicodeString(FILE *stream, const char *str, int len)
 {
 	int posn = 0;
-	unsigned long ch;
-	unsigned long tempch;
+	unsigned char buf[4];
+	int templen;
 
 	/* Write out the length */
 	writeLength(stream, unicodeLength(str, len));
@@ -501,20 +501,10 @@ static void writeUnicodeString(FILE *stream, const char *str, int len)
 	/* Write out the contents of the string */
 	while(posn < len)
 	{
-		ch = ILUTF8ReadChar(str, len, &posn);
-		if(ch < (unsigned long)0x10000)
+		templen = ILUTF16WriteCharAsBytes(buf, ILUTF8ReadChar(str, len, &posn));
+		if(templen != 0)
 		{
-			putc((char)(ch & 0xFF), stream);
-			putc((char)((ch >> 8) & 0xFF), stream);
-		}
-		else if(ch < (((unsigned long)1) << 20))
-		{
-			tempch = ((ch >> 10) + 0xD800);
-			putc((char)(tempch & 0xFF), stream);
-			putc((char)((tempch >> 8) & 0xFF), stream);
-			tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);
-			putc((char)(tempch & 0xFF), stream);
-			putc((char)((tempch >> 8) & 0xFF), stream);
+			fwrite(buf, 1, templen, stream);
 		}
 	}
 }
@@ -535,8 +525,9 @@ static ILInt32 hashUnicodeString(const char *str, int len)
 		{
 			hash = ((hash << 5) + hash) ^ (ILUInt32)ch;
 		}
-		else if(ch < (((unsigned long)1) << 20))
+		else if(ch < ((unsigned long)0x110000))
 		{
+			ch -= 0x10000;
 			tempch = ((ch >> 10) + 0xD800);
 			hash = ((hash << 5) + hash) ^ (ILUInt32)tempch;
 			tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);

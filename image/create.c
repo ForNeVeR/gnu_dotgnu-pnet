@@ -290,8 +290,6 @@ unsigned long ILImageAddUserString(ILImage *image, const char *str, int len)
 {
 	int posn;
 	unsigned long wlen;
-	unsigned long ch;
-	unsigned long tempch;
 	unsigned char *buf;
 	int outposn;
 	ILImageBuilder *builder = (ILImageBuilder *)image;
@@ -317,15 +315,7 @@ unsigned long ILImageAddUserString(ILImage *image, const char *str, int len)
 	wlen = 0;
 	while(posn < len)
 	{
-		ch = ILUTF8ReadChar(str, len, &posn);
-		if(ch < (unsigned long)0x10000)
-		{
-			++wlen;
-		}
-		else if(ch < (((unsigned long)1) << 20))
-		{
-			wlen += 2;
-		}
+		wlen += ILUTF16WriteChar(0, ILUTF8ReadChar(str, len, &posn));
 	}
 
 	/* Convert the string into its 16-bit Unicode form */
@@ -337,21 +327,8 @@ unsigned long ILImageAddUserString(ILImage *image, const char *str, int len)
 	posn = 0;
 	while(posn < len)
 	{
-		ch = ILUTF8ReadChar(str, len, &posn);
-		if(ch < (unsigned long)0x10000)
-		{
-			buf[outposn++] = (unsigned char)ch;
-			buf[outposn++] = (unsigned char)(ch >> 8);
-		}
-		else if(ch < (((unsigned long)1) << 20))
-		{
-			tempch = ((ch >> 10) + 0xD800);
-			buf[outposn++] = (unsigned char)tempch;
-			buf[outposn++] = (unsigned char)(tempch >> 8);
-			tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);
-			buf[outposn++] = (unsigned char)tempch;
-			buf[outposn++] = (unsigned char)(tempch >> 8);
-		}
+		outposn += ILUTF16WriteCharAsBytes
+			(buf + outposn, ILUTF8ReadChar(str, len, &posn));
 	}
 	buf[outposn++] = 0;
 

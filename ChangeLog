@@ -1,4 +1,10 @@
 
+2001-01-09  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/lib_string.c, engine/lib_type.c, ilasm/ilasm_grammar.y,
+	image/create.c, resgen/resgen_binary.c: modify all uses of UTF-8
+	and UTF-16 to use the new API's.
+
 2001-01-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_cast.tc, cscc/cs_lvalue.tc, cscc/cs_oper.tc,

@@ -20,6 +20,7 @@
 
 #include "engine_private.h"
 #include "lib_defs.h"
+#include "il_utils.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -916,7 +917,6 @@ static ILInt32 NameOutputString(ILUInt16 *buf, const char *str, int quoteDot)
 	int slen, sposn;
 	ILInt32 len = 0;
 	unsigned long ch;
-	unsigned long tempch;
 	slen = strlen(str);
 	sposn = 0;
 	while(sposn < slen)
@@ -943,15 +943,12 @@ static ILInt32 NameOutputString(ILUInt16 *buf, const char *str, int quoteDot)
 			}
 			++len;
 		}
-		else if(ch < ((((unsigned long)1)) << 20))
+		else if(ch < ((unsigned long)0x110000))
 		{
 			/* Surrogate-based character */
 			if(buf)
 			{
-				tempch = ((ch >> 10) + 0xD800);
-				buf[0] = (ILUInt16)tempch;
-				tempch = ((ch & ((((ILUInt32)1) << 10) - 1)) + 0xDC00);
-				buf[1] = (ILUInt16)tempch;
+				ILUTF16WriteChar(buf, ch);
 				buf += 2;
 			}
 			len += 2;

@@ -27,6 +27,11 @@
 	* engine/lib_helpers.c: implement the remaining methods in the
 	"RuntimeHelpers" class.
 
+	* engine/internal.c, profiles/compact, profiles/compact-fp,
+	profiles/full, profiles/kernel, profiles/kernel-fp: add profile
+	support to enable or disable filesystem operations in "lib_file.c"
+	and "lib_dir.c".
+
 2002-06-13  Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c, codegen/cg_resolve.h: add "ILResolveProperty"

@@ -83,3 +83,6 @@ IL_CONFIG_FILTERED_EXCEPTIONS=y
 
 # Use debug line information (y/n).
 IL_CONFIG_DEBUG_LINES=y
+
+# Use file and directory internalcalls (y/n).
+IL_CONFIG_FILESYSTEM=y

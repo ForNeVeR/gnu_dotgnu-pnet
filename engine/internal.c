@@ -64,6 +64,10 @@ extern	"C" {
 	#define _IL_Debugger_suppressed
 	#define _IL_StackFrame_suppressed
 #endif
+#if !defined(IL_CONFIG_FILESYSTEM)
+	#define _IL_FileMethods_suppressed
+	#define _IL_DirMethods_suppressed
+#endif
 
 /*
  * Import the method tables of all internal classes.

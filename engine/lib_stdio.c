@@ -243,6 +243,110 @@ ILInt32 _IL_Stdio_StdPeek(ILExecThread *thread, ILInt32 fd)
 	}
 }
 
+/*
+ * public static void SetConsoleMode(int mode);
+ */
+void _IL_Stdio_SetConsoleMode(ILExecThread *_thread, ILInt32 mode)
+{
+	/* TODO */
+}
+
+/*
+ * public static void Beep();
+ */
+void _IL_Stdio_Beep(ILExecThread *_thread)
+{
+}
+
+/*
+ * public static void Clear();
+ */
+void _IL_Stdio_Clear(ILExecThread *_thread)
+{
+}
+
+/*
+ * public static void ReadKey(out char ch, out int key, out int modifiers);
+ */
+void _IL_Stdio_ReadKey(ILExecThread *_thread, ILUInt16 *ch,
+					   ILInt32 *key, ILInt32 *modifiers)
+{
+	/* TODO */
+	*ch = 0;
+	*key = 0;
+	*modifiers = 0;
+}
+
+/*
+ * public static void SetCursorPosition(int x, int y);
+ */
+void _IL_Stdio_SetCursorPosition(ILExecThread *_thread, ILInt32 x, ILInt32 y)
+{
+	/* TODO */
+}
+
+/*
+ * public static void SetTextAttributes(int attrs);
+ */
+void _IL_Stdio_SetTextAttributes(ILExecThread *_thread, ILInt32 attrs)
+{
+	/* TODO */
+}
+
+/*
+ * public static void GetBufferSize(out int width, out int height);
+ */
+void _IL_Stdio_GetBufferSize(ILExecThread *_thread, ILInt32 *width,
+							 ILInt32 *height)
+{
+	/* TODO */
+	*width = 80;
+	*height = 24;
+}
+
+/*
+ * public static void GetCursorPosition(out int x, out int y);
+ */
+void _IL_Stdio_GetCursorPosition(ILExecThread *_thread, ILInt32 *x,
+								 ILInt32 *y)
+{
+	/* TODO */
+	*x = 0;
+	*y = 0;
+}
+
+/*
+ * public static bool KeyAvailable();
+ */
+ILBool _IL_Stdio_KeyAvailable(ILExecThread *_thread)
+{
+	/* TODO */
+	return 0;
+}
+
+/*
+ * public static void SetConsoleTitle(String title);
+ */
+void _IL_Stdio_SetConsoleTitle(ILExecThread *_thread, ILString *title)
+{
+	/* TODO */
+}
+
+/*
+ * public static void GetWindowSize(out int left, out int top,
+ *									out int width, out int height);
+ */
+void _IL_Stdio_GetWindowSize(ILExecThread *_thread,
+							 ILInt32 *left, ILInt32 *top,
+							 ILInt32 *width, ILInt32 *height)
+{
+	/* TODO */
+	*left = 0;
+	*top = 0;
+	*width = 80;
+	*height = 24;
+}
+
 #ifdef	__cplusplus
 };
 #endif

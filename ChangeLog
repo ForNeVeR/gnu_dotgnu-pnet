@@ -1,4 +1,9 @@
 
+2003-11-02  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_stdio.c:
+	stub out new interncalls for the "Platform.Stdio" class.
+
 2003-11-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_task.c: use a slightly longer timeout gap within

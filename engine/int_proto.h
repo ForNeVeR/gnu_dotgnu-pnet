@@ -496,6 +496,17 @@ extern ILString * _IL_DirMethods_GetCurrentDirectory(ILExecThread * _thread);
 extern ILInt32 _IL_DirMethods_ChangeDirectory(ILExecThread * _thread, ILString * name);
 extern ILInt32 _IL_DirMethods_Rename(ILExecThread * _thread, ILString * old_name, ILString * new_name);
 
+extern void _IL_Stdio_SetConsoleMode(ILExecThread * _thread, ILInt32 mode);
+extern void _IL_Stdio_Beep(ILExecThread * _thread);
+extern void _IL_Stdio_Clear(ILExecThread * _thread);
+extern void _IL_Stdio_ReadKey(ILExecThread * _thread, ILUInt16 * ch, ILInt32 * key, ILInt32 * modifiers);
+extern void _IL_Stdio_SetCursorPosition(ILExecThread * _thread, ILInt32 x, ILInt32 y);
+extern void _IL_Stdio_SetTextAttributes(ILExecThread * _thread, ILInt32 attrs);
+extern void _IL_Stdio_GetBufferSize(ILExecThread * _thread, ILInt32 * width, ILInt32 * height);
+extern void _IL_Stdio_GetCursorPosition(ILExecThread * _thread, ILInt32 * x, ILInt32 * y);
+extern ILBool _IL_Stdio_KeyAvailable(ILExecThread * _thread);
+extern void _IL_Stdio_SetConsoleTitle(ILExecThread * _thread, ILString * title);
+extern void _IL_Stdio_GetWindowSize(ILExecThread * _thread, ILInt32 * left, ILInt32 * top, ILInt32 * width, ILInt32 * height);
 extern void _IL_Stdio_StdClose(ILExecThread * _thread, ILInt32 fd);
 extern ILInt32 _IL_Stdio_StdPeek(ILExecThread * _thread, ILInt32 fd);
 extern ILInt32 _IL_Stdio_StdRead_i(ILExecThread * _thread, ILInt32 fd);
@@ -532,7 +543,6 @@ extern ILBool _IL_FileMethods_ValidatePathname(ILExecThread * _thread, ILString 
 extern ILBool _IL_FileMethods_Open(ILExecThread * _thread, ILString * path, ILInt32 mode, ILInt32 access, ILInt32 share, ILNativeInt * handle);
 extern ILInt32 _IL_FileMethods_GetErrno(ILExecThread * _thread);
 extern ILBool _IL_FileMethods_CanSeek(ILExecThread * _thread, ILNativeInt handle);
-extern ILBool _IL_FileMethods_CheckHandleAccess(ILExecThread * _thread, ILNativeInt handle, ILInt32 access);
 extern ILInt64 _IL_FileMethods_Seek(ILExecThread * _thread, ILNativeInt handle, ILInt64 offset, ILInt32 origin);
 extern ILBool _IL_FileMethods_Close(ILExecThread * _thread, ILNativeInt handle);
 extern ILBool _IL_FileMethods_Write(ILExecThread * _thread, ILNativeInt handle, System_Array * buffer, ILInt32 offset, ILInt32 count);
@@ -550,6 +560,7 @@ extern ILInt32 _IL_FileMethods_GetAttributes(ILExecThread * _thread, ILString * 
 extern ILInt32 _IL_FileMethods_SetAttributes(ILExecThread * _thread, ILString * path, ILInt32 attrs);
 extern ILInt32 _IL_FileMethods_GetLength(ILExecThread * _thread, ILString * path, ILInt64 * length);
 extern ILBool _IL_FileMethods_HasAsync(ILExecThread * _thread);
+extern ILBool _IL_FileMethods_CheckHandleAccess(ILExecThread * _thread, ILNativeInt handle, ILInt32 access);
 extern ILInt32 _IL_FileMethods_Copy(ILExecThread * _thread, ILString * src, ILString * dest);
 
 extern ILString * _IL_InfoMethods_GetUserStorageDir(ILExecThread * _thread);

@@ -2301,6 +2301,24 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_vpii(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((ILInt32 *)(avalue[2])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vppppp(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, void *, void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((void * *)(avalue[3])), *((void * *)(avalue[4])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_ipipii(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILInt32, void *, ILInt32, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt32 *)(avalue[3])), *((ILInt32 *)(avalue[4])));
@@ -2329,6 +2347,17 @@ static void marshal_vpiS(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_Stdio_suppressed
 
 IL_METHOD_BEGIN(Stdio_Methods)
+	IL_METHOD("SetConsoleMode", "(i)V", _IL_Stdio_SetConsoleMode, marshal_vpi)
+	IL_METHOD("Beep", "()V", _IL_Stdio_Beep, marshal_vp)
+	IL_METHOD("Clear", "()V", _IL_Stdio_Clear, marshal_vp)
+	IL_METHOD("ReadKey", "(&c&i&i)V", _IL_Stdio_ReadKey, marshal_vpppp)
+	IL_METHOD("SetCursorPosition", "(ii)V", _IL_Stdio_SetCursorPosition, marshal_vpii)
+	IL_METHOD("SetTextAttributes", "(i)V", _IL_Stdio_SetTextAttributes, marshal_vpi)
+	IL_METHOD("GetBufferSize", "(&i&i)V", _IL_Stdio_GetBufferSize, marshal_vppp)
+	IL_METHOD("GetCursorPosition", "(&i&i)V", _IL_Stdio_GetCursorPosition, marshal_vppp)
+	IL_METHOD("KeyAvailable", "()Z", _IL_Stdio_KeyAvailable, marshal_bp)
+	IL_METHOD("SetConsoleTitle", "(oSystem.String;)V", _IL_Stdio_SetConsoleTitle, marshal_vpp)
+	IL_METHOD("GetWindowSize", "(&i&i&i&i)V", _IL_Stdio_GetWindowSize, marshal_vppppp)
 	IL_METHOD("StdClose", "(i)V", _IL_Stdio_StdClose, marshal_vpi)
 	IL_METHOD("StdPeek", "(i)i", _IL_Stdio_StdPeek, marshal_ipi)
 	IL_METHOD("StdRead", "(i)i", _IL_Stdio_StdRead_i, marshal_ipi)
@@ -2506,7 +2535,6 @@ IL_METHOD_BEGIN(FileMethods_Methods)
 	IL_METHOD("Open", "(oSystem.String;vSystem.IO.FileMode;vSystem.IO.FileAccess;vSystem.IO.FileShare;&j)Z", _IL_FileMethods_Open, marshal_bppiiip)
 	IL_METHOD("GetErrno", "()vPlatform.Errno;", _IL_FileMethods_GetErrno, marshal_ip)
 	IL_METHOD("CanSeek", "(j)Z", _IL_FileMethods_CanSeek, marshal_bpj)
-	IL_METHOD("CheckHandleAccess", "(jvSystem.IO.FileAccess;)Z", _IL_FileMethods_CheckHandleAccess, marshal_bpji)
 	IL_METHOD("Seek", "(jlvSystem.IO.SeekOrigin;)l", _IL_FileMethods_Seek, marshal_lpjli)
 	IL_METHOD("Close", "(j)Z", _IL_FileMethods_Close, marshal_bpj)
 	IL_METHOD("Write", "(j[Bii)Z", _IL_FileMethods_Write, marshal_bpjpii)
@@ -2524,6 +2552,7 @@ IL_METHOD_BEGIN(FileMethods_Methods)
 	IL_METHOD("SetAttributes", "(oSystem.String;i)vPlatform.Errno;", _IL_FileMethods_SetAttributes, marshal_ippi)
 	IL_METHOD("GetLength", "(oSystem.String;&l)vPlatform.Errno;", _IL_FileMethods_GetLength, marshal_ippp)
 	IL_METHOD("HasAsync", "()Z", _IL_FileMethods_HasAsync, marshal_bp)
+	IL_METHOD("CheckHandleAccess", "(jvSystem.IO.FileAccess;)Z", _IL_FileMethods_CheckHandleAccess, marshal_bpji)
 	IL_METHOD("Copy", "(oSystem.String;oSystem.String;)vPlatform.Errno;", _IL_FileMethods_Copy, marshal_ippp)
 IL_METHOD_END
 

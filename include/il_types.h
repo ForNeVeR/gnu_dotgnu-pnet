@@ -95,6 +95,12 @@ typedef struct _tagILClass     ILClass;
 #define	ILType_Sentinel		ILType_FromElement(IL_META_ELEMTYPE_SENTINEL)
 
 /*
+ * Special value that can be used to represent the type
+ * of the "null" constant in compilers.
+ */
+#define	ILType_Null			ILType_FromElement(0xFF)
+
+/*
  * Kinds of complex types.
  */
 #define	IL_TYPE_COMPLEX_BYREF					1
@@ -481,6 +487,21 @@ int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest);
  * Determine if a type contains a particular system modifier.
  */
 int ILTypeHasModifier(ILType *type, ILClass *classInfo);
+
+/*
+ * Determine if a type is a reference type.
+ */
+int ILTypeIsReference(ILType *type);
+
+/*
+ * Determine if a type is an enumerated type.
+ */
+int ILTypeIsEnum(ILType *type);
+
+/*
+ * Determine if a type is a value type (including primitive numeric types).
+ */
+int ILTypeIsValue(ILType *type);
 
 #ifdef	__cplusplus
 };

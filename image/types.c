@@ -868,32 +868,6 @@ int ILTypeIsObjectClass(ILType *type)
 	return 0;
 }
 
-/*
- * Determine if a type is represented as an object reference.
- */
-static int IsObjectRef(ILType *type)
-{
-	if(type == 0)
-	{
-		/* This is the "null" type, which is always an object reference */
-		return 1;
-	}
-	else if(ILType_IsClass(type))
-	{
-		return 1;
-	}
-	else if(ILType_IsComplex(type) &&
-	        (type->kind__ == IL_TYPE_COMPLEX_ARRAY ||
-			 type->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
 int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
 {
 	ILClass *classInfo;
@@ -910,20 +884,20 @@ int ILTypeAssignCompatible(ILImage *image, ILType *src, ILType *dest)
 		/* Primitive type assignments must be identical */
 		return (src == dest);
 	}
-	else if(src == 0)
+	else if(src == 0 || src == ILType_Null)
 	{
 		/* A "null" constant is being assigned, which is
 		   compatible with any object reference type */
-		return IsObjectRef(dest);
+		return ILTypeIsReference(dest);
 	}
-	else if(dest == 0)
+	else if(dest == 0 || dest == ILType_Null)
 	{
 		/* Cannot assign to "null" */
 		return 0;
 	}
-	else if(IsObjectRef(src))
+	else if(ILTypeIsReference(src))
 	{
-		if(!IsObjectRef(dest))
+		if(!ILTypeIsReference(dest))
 		{
 			/* Both types must be object references */
 			return 0;
@@ -991,6 +965,50 @@ int ILTypeHasModifier(ILType *type, ILClass *classInfo)
 		}
 	}
 	return 0;
+}
+
+int ILTypeIsReference(ILType *type)
+{
+	if(type == 0 || type == ILType_Null)
+	{
+		/* This is the "null" type, which is always an object reference */
+		return 1;
+	}
+	else if(ILType_IsClass(type))
+	{
+		return 1;
+	}
+	else if(ILType_IsComplex(type) &&
+	        (type->kind__ == IL_TYPE_COMPLEX_ARRAY ||
+			 type->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int ILTypeIsEnum(ILType *type)
+{
+	return (ILTypeGetEnumType(type) != type);
+}
+
+int ILTypeIsValue(ILType *type)
+{
+	if(ILType_IsValueType(type))
+	{
+		return 1;
+	}
+	else if(ILType_IsPrimitive(type) && type != ILType_Null)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 #ifdef	__cplusplus

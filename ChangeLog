@@ -1,4 +1,10 @@
 
+2001-01-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* codegen/cg_coerce.h, include/il_types.h, image/types.c:
+	new functions "ILTypeIsReference", "ILTypeIsEnum", and "ILTypeIsValue";
+	move "ILType_Null" from "cg_coerce.h" to "il_types.h"
+
 2001-01-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_decls.tc, codegen/cg_nodes.tc, codegen/jv_decls.tc,

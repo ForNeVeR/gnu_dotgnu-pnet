@@ -164,6 +164,10 @@ public sealed class Display : IDisposable
 						// threads, which is OK(-ish) because we will
 						// be locking every access to the display anyway.
 					}
+					catch(EntryPointNotFoundException)
+					{
+						// Same as above.
+					}
 					IntPtr dpy = Xlib.XOpenDisplay(displayName);
 					if(dpy != IntPtr.Zero)
 					{
@@ -193,6 +197,16 @@ public sealed class Display : IDisposable
 					// is not on the LD_LIBRARY_PATH.
 					throw new XCannotConnectException
 						(S._("X_LibraryNotPresent"));
+				}
+				catch(DllNotFoundException de)
+				{
+					throw new XCannotConnectException
+						(S._("X_LibraryNotPresent"), de);
+				}
+				catch(EntryPointNotFoundException ee)
+				{
+					throw new XCannotConnectException
+						(S._("X_LibraryNotPresent"), ee);
 				}
 			}
 

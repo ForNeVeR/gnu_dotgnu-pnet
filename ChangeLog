@@ -1,10 +1,17 @@
+
+2003-07-28  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Xsharp/Display.cs, runtime/System/DllNotFoundException.cs:
+	adjustments to pnetlib to use DllNotFoundException and
+	EntryPointNotFoundException instead of MissingMethodException.
+
 2003-07-26  Mohan Embar  <gnustuff@thisiscool.com>
 
-        * System.Windows.Forms/TextBox.cs: corrected issues with right
-        and left arrow keys past lines containing only a linefeed and
-        single-clicking at the end of such lines. Replaced
-        LayoutInfo.Item.visible with an enum and gave linefeed characters
-        valid bounds and a special status within LayoutInfo (Neil)
+	* System.Windows.Forms/TextBox.cs: corrected issues with right
+	and left arrow keys past lines containing only a linefeed and
+	single-clicking at the end of such lines. Replaced
+	LayoutInfo.Item.visible with an enum and gave linefeed characters
+	valid bounds and a special status within LayoutInfo (Neil)
 
 2003-07-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 

@@ -22,7 +22,7 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
+#if CONFIG_RUNTIME_INFRA
 
 using System.Runtime.Serialization;
 
@@ -62,6 +62,6 @@ public class DllNotFoundException : TypeLoadException
 
 }; // class DllNotFoundException
 
-#endif // !ECMA_COMPAT
+#endif // CONFIG_RUNTIME_INFRA
 
 }; // namespace System

@@ -172,6 +172,10 @@ ILNativeInt _IL_GCHandle_GCAddrOfPinnedObject(ILExecThread *_thread,
 			else
 			{
 				object = GetObjectFromGcBase(ptr);
+				if(_ILIsSArray((System_Array *)object))
+				{
+					object = ((void *)(((System_Array *)(object)) + 1));
+				}
 			}
 		}
 	}

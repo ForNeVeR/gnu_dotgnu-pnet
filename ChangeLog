@@ -1,3 +1,8 @@
+2004-07-07  Richard Baumann  <biochem333@nyc.rr.com>
+
+	* engine/lib_gc.c: fix _IL_GCHandle_GCAddrOfPinnedObject behavior
+	for arrays (patch to bug #9542 by leppie).
+
 2004-07-05  Klaus Treichel  <ktreichel@web.de>
 
 	* support/time.c: fix problem with daylight savings.

@@ -1,3 +1,8 @@
+2005-01-04  Jacob Alberty  <quake@vetmanage.com>
+
+	* System.Windows.Forms/Combobox.cs: Do not allow whitespace clicks for
+	non-existant items. (patch #3611, applied by drobosson)
+
 2005-01-01  Deryk Robosson  <deryk@0x0a.com>
 
 	* System.Windows.Forms/ComboBox.cs: Consistantly use Items property

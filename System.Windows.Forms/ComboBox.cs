@@ -968,7 +968,9 @@ namespace System.Windows.Forms
 		{
 			if (e.Y > 0 & e.X < popupDrawWidth)
 			{
-				SelectedIndex = ItemFromY(e.Y);
+				int itemFromY = ItemFromY(e.Y);
+				if (itemFromY < Items.Count)
+					SelectedIndex = itemFromY;
 				DroppedDown = false;
 				if (DropDownStyle == ComboBoxStyle.DropDownList)
 					Invalidate();

@@ -89,9 +89,32 @@ ILNode_SemAnalysis(ILNode_NewScope)
 static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 {
 	ILConstant *constValue;
+	ILNode_ClassDefn *defn;
 
 	/* Make sure that semantic analysis has been performed on the item */
-	CSSemProgramItem(info, ILToProgramItem(field));
+	if(ILTypeIsEnum(ILClassToType(ILField_Owner(field))))
+	{
+		/* This is an enumerated type, so perform semantic analysis
+		   on the type instead of the field, so that we create the
+		   members with default values in the correct order */
+		defn = (ILNode_ClassDefn *)ILProgramItemToNode
+			(info, ILToProgramItem(ILField_Owner(field)));
+		if(defn != 0 && defn->visited == ILVisitMode_NotVisited)
+		{
+			CSSemProgramItem(info, ILToProgramItem(ILField_Owner(field)));
+		}
+		else
+		{
+			/* We may already be inside the enumerated type, so go
+			   directly to the field to avoid circularity problems */
+			CSSemProgramItem(info, ILToProgramItem(field));
+		}
+	}
+	else
+	{
+		/* Perform semantic analysis on the value directly */
+		CSSemProgramItem(info, ILToProgramItem(field));
+	}
 
 	/* Get the constant value, if present */
 	if(ILField_IsLiteral(field))

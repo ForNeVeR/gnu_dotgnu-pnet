@@ -1,4 +1,10 @@
 
+2002-07-24  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/csharp/cs_lvalue.tc (FieldToConstant): jump to the class
+	instead of the field if we are processing an enumerated type,
+	so that default fields are given values in the correct order.
+
 2002-07-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csunit/TestMain.cs: derive the type name from the name of the

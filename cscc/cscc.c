@@ -1126,6 +1126,7 @@ static int ProcessWithAssembler(const char *filename, int jvmMode)
 
 	/* Execute the assembler */
 #ifdef USE_BUILTIN_ILASM
+	ILCmdLineSuppressSlash();
 	status = ILAsmMain(cmdline_size - 1, cmdline);
 #else
 	status = ExecChild(cmdline, 0);
@@ -1453,6 +1454,7 @@ static int ProcessWithPlugin(const char *filename, char *plugin,
 	saveAsm = CCStringListContains(extension_flags, num_extension_flags,
 							       "save-asm");
 #ifdef USE_BUILTIN_ILASM
+	ILCmdLineSuppressSlash();
 	status = ILAsmMain(cmdline_size - 1, cmdline);
 #else
 	status = ExecChild(cmdline, 0);
@@ -1564,6 +1566,7 @@ static int LinkExecutable(void)
 
 	/* Execute the linker */
 	DumpCmdLine(cmdline);
+	ILCmdLineSuppressSlash();
 	status = ILLinkerMain(cmdline_size - 1, cmdline);
 	ILFree(cmdline);
 	if(status != 0)

@@ -1,4 +1,10 @@
 
+2002-12-15  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cscc.c, include/il_utils.h, support/cmdline.c: suppress
+	'/' compatibility options when "ilasm" and "ilalink" are called
+	from "cscc".
+
 2002-12-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ildb/ildb.1, ildb/Makefile.am: add the manpage for ildb.

@@ -27,10 +27,19 @@ extern	"C" {
 #endif
 
 /*
+ * Flag that indicates if '/' parsing is suppressed.
+ */
+static int suppressSlash = 0;
+
+/*
  * Determine if an option list contains '/' compatibility options.
  */
 static int HasSlashOptions(const ILCmdLineOption *options)
 {
+	if(suppressSlash)
+	{
+		return 0;
+	}
 	while(options->name != 0)
 	{
 		if(options->name[0] == '/')
@@ -496,6 +505,11 @@ void __cdecl _setargv(void)
 #endif	/* !__MINGW32__ */
 
 #endif	/* IL_WIN32_NATIVE */
+
+void ILCmdLineSuppressSlash(void)
+{
+	suppressSlash = 1;
+}
 
 #ifdef	__cplusplus
 };

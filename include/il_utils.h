@@ -334,6 +334,11 @@ void ILCmdLineHelp(const ILCmdLineOption *options);
 void ILCmdLineExpand(int *argc, char ***argv);
 
 /*
+ * Suppress '/' option parsing.
+ */
+void ILCmdLineSuppressSlash(void);
+
+/*
  * Spawn a child process and wait for it to exit.
  * Returns the exit status, or -1 on error.
  */

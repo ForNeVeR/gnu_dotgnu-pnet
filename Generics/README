@@ -1,0 +1,20 @@
+
+The classes in this directory implement generic counterparts to the
+non-generic classes in the "System.Collections" namespace, plus some
+extras that are modelled on the C++ Standard Template Library.
+
+Also included are a number of "Adapter" classes, that can be used to
+convert a generic collection into a non-generic collection.  This is
+useful when trying to use generic collections with existing API's
+that expect a non-generic collection.
+
+Finally, there are a number of "Wrapper" classes that can be used to
+convert a non-generic collection into a generic collection.  This is
+useful to get a type-safe interface to an existing non-generic
+collection class.
+
+The license on these classes is the MIT X11 license.  This license
+was chosen to maximize the number of people who can use the generic
+class library.  We only ask that if you fix bugs or add new functionality
+that you consider contributing the changes back to the Portable.NET
+development team, but this isn't mandatory.

@@ -1,4 +1,31 @@
 
+2003-02-22  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* Generics/Algorithm.cs, Generics/ArrayList.cs,
+	Generics/BuiltinComparer.cs, Generics/CollectionAdapter.cs,
+	Generics/CollectionWrapper.cs, Generics/ComparableAdapter.cs,
+	Generics/ComparableWrapper.cs, Generics/Comparer.cs,
+	Generics/ComparerAdapter.cs, Generics/ComparerWrapper.cs,
+	Generics/Complex.cs, Generics/DictionaryAdapter.cs,
+	Generics/DictionaryEntry.cs, Generics/DictionaryEnumeratorAdapter.cs,
+	Generics/DictionaryEnumeratorWrapper.cs, Generics/DictionaryWrapper.cs,
+	Generics/EnumerableAdapter.cs, Generics/EnumerableWrapper.cs,
+	Generics/EnumeratorAdapter.cs, Generics/EnumeratorWrapper.cs,
+	Generics/Generics.txt, Generics/HashCodeProviderAdapter.cs,
+	Generics/HashCodeProviderWrapper.cs, Generics/Hashtable.cs,
+	Generics/ICollection.cs, Generics/IComparable.cs,
+	Generics/IComparer.cs, Generics/IDictionary.cs,
+	Generics/IDictionaryEnumerator.cs, Generics/IEnumerable.cs,
+	Generics/IEnumerator.cs, Generics/IHashCodeProvider.cs,
+	Generics/IIterable.cs, Generics/IIterator.cs,
+	Generics/IList.cs, Generics/List.cs,
+	Generics/ListAdapter.cs, Generics/ListWrapper.cs,
+	Generics/Predicate.cs, Generics/Queue.cs, Generics/README,
+	Generics/ReverseIterator.cs, Generics/S.cs,
+	Generics/Stack.cs, Generics/SynchronizedDictEnumerator.cs,
+	Generics/SynchronizedEnumerator.cs, Generics/SynchronizedIterator.cs:
+	initial check-in of the generic C# collection library.
+
 2003-02-21  Yannis BRES <Yannis.BRES@sophia.inria.fr>
 	
 	* runtime/System/Version.cs: == and != operator overloading for 

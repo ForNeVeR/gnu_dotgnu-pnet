@@ -5,6 +5,8 @@
 	cscc/common/cc_main.c: pass the correct assembly name information
 	to the plugin and linker for "-nostdlib" compiles.
 
+	* ilalink/ilalink.c: add "--no-stdlib" to the option table.
+
 2001-03-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* configure.in, engine/lib_file.c, include/Makefile.am,

@@ -11,6 +11,9 @@
 	automake/autoconf updates which should help make things build
 	more smoothly on automake 1.5 systems.
 
+	* engine/lib_reflect.c (CreateFileStream): strip extra '/' from
+	the assembly pathname so that we don't get two '/'s in the name.
+
 2002-05-21  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csharp/cs_lvalue.tc,codegen/cg_lvalue.tc,codegen/cg_misc.tc

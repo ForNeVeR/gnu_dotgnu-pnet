@@ -555,6 +555,7 @@ static ILObject *CreateFileStream(ILExecThread *thread, const char *assemFile,
 		}
 		return 0;
 	}
+	--len;
 	newPath = (char *)ILMalloc(len + strlen(filename) + 2);
 	if(!newPath)
 	{

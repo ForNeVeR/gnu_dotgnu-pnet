@@ -76,77 +76,17 @@ static void AccessibilityError(ILNode *node, const char *name,
 				  (namespace ? "." : ""), ILClass_Name(classInfo), name);
 }
 
-%}
-
 /*
- * Perform semantic analysis for singleton identifiers.
+ * Convert a semantic value into an l-value or r-value if necessary.
  */
-ILNode_SemAnalysis(ILNode_Identifier)
+static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
+							   CSSemValue value, char *name)
 {
-	CSSemValue value;
-	ILScopeData *data;
-	ILClass *classInfo;
-	unsigned long index;
-	ILNode_MethodDeclaration *method;
 	ILField *field;
 
-	/* Look up the identifier in the current scope */
-	data = ILScopeLookup(info->currentScope, node->name, 1);
-	if(!data)
+	switch(value.kind)
 	{
-		CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-					  "`%s' is not declared in the current scope");
-		return CSSemValueDefault;
-	}
-
-	/* If there are other values with this name, and it isn't
-	   a method, then the reference is ambiguous */
-	if(ILScopeNextItem(data))
-	{
-		if(ILScopeDataGetKind(data) != IL_SCOPE_METHOD)
-		{
-			CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-						  "`%s' is ambiguous in the current scope",
-						  node->name);
-			return CSSemValueDefault;
-		}
-	}
-
-	/* Determine what kind of item we have */
-	switch(ILScopeDataGetKind(data))
-	{
-#if 0
-		case IL_SCOPE_SUBSCOPE:
-		case IL_SCOPE_LINKED_SCOPE:
-		{
-			/* Some kind of namespace scope */
-			value.kind = CS_SEMKIND_SCOPE;
-			value.type = (ILType *)(ILScopeDataGetSubScope(data));
-		}
-		break;
-#endif
-
-		case IL_SCOPE_IMPORTED_TYPE:
-		case IL_SCOPE_DECLARED_TYPE:
-		{
-			/* A type that has been imported from a library,
-			   or that has been declared in this program */
-			classInfo = ILScopeDataGetClass(data);
-			if(classInfo)
-			{
-				value.kind = CS_SEMKIND_TYPE;
-				value.type = ILClassToType(classInfo);
-			}
-			else
-			{
-				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
-							  "type is not fully defined");
-				value = CSSemValueDefault;
-			}
-		}
-		break;
-
-		case IL_SCOPE_FIELD:
+		case CS_SEMKIND_FIELD:
 		{
 			/* Reference to a class field */
 			if(!(info->currentMethod))
@@ -155,19 +95,18 @@ ILNode_SemAnalysis(ILNode_Identifier)
 				   which does not permit fields to be used as types */
 				CSErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`%s' is not declared as a type in the current scope",
-					  node->name);
+					  name);
 				value.kind = CS_SEMKIND_TYPE;
 				value.type = ILType_Int32;
 				return value;
 			}
 
 			/* Find the field descriptor and check its access */
-			field = (ILField *)(ILScopeDataGetMember(data));
+			field = (ILField *)(value.type);
 			if(!ILMemberAccessible((ILMember *)field,
 					((ILNode_ClassDefn *)(info->currentClass))->classInfo))
 			{
-				AccessibilityError((ILNode *)node, node->name,
-								   ILField_Owner(field));
+				AccessibilityError((ILNode *)node, name, ILField_Owner(field));
 			}
 
 			/* Create the final semantic type */
@@ -187,64 +126,70 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		}
 		break;
 
-#if 0
-		case IL_SCOPE_METHOD:
-		case IL_SCOPE_PROPERTY:
-		case IL_SCOPE_EVENT:
+		case CS_SEMKIND_PROPERTY:
 		{
-			/* Reference to a class member.  Note: if the member
-			   is a method, then the first method in the scope with
-			   that name is returned.  Higher layers are responsible
-			   for resolving the specific method */
-			value.kind = CS_SEMKIND_MEMBER;
-			value.type = (ILType *)(ILScopeDataGetMember(data));
-		}
-		break;
-#endif
-
-		case IL_SCOPE_LOCAL:
-		{
-			/* This is a local variable or argument reference */
-			index = ILScopeDataGetIndex(data);
-			method = (ILNode_MethodDeclaration *)(info->currentMethod);
-			if((index & CS_LOCAL_IS_ARG) == 0)
-			{
-				/* Local variable reference */
-				value.type = ILTypeGetLocal(method->localVarSig, index);
-				*parent = ILNode_LocalVar_create
-							(index, ILTypeToMachineType(value.type));
-			}
-			else
-			{
-				/* Argument reference */
-				index &= ~CS_LOCAL_IS_ARG;
-				if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
-				{
-					value.type = ILTypeGetParam
-						(ILMethod_Signature(method->methodInfo), index);
-				}
-				else
-				{
-					value.type = ILTypeGetParam
-						(ILMethod_Signature(method->methodInfo), index + 1);
-				}
-				*parent = ILNode_ArgumentVar_create
-							(index, ILTypeToMachineType(value.type));
-			}
-			value.kind = CS_SEMKIND_LVALUE;
 		}
 		break;
 
-		default:
+		case CS_SEMKIND_EVENT:
 		{
-			/* Don't know what to do with this (shouldn't happen) */
-			value = CSSemValueDefault;
 		}
 		break;
 	}
-
-	/* Return the final value to the caller */
 	return value;
+}
+
+%}
+
+/*
+ * Perform semantic analysis for singleton identifiers.
+ */
+ILNode_SemAnalysis(ILNode_Identifier)
+{
+	CSSemValue value;
+	ILScopeData *data;
+	unsigned long index;
+	ILNode_MethodDeclaration *method;
+
+	/* Look for local variables in the current scope */
+	data = ILScopeLookup(info->currentScope, node->name, 1);
+	if(data && ILScopeDataGetKind(data) == IL_SCOPE_LOCAL)
+	{
+		index = ILScopeDataGetIndex(data);
+		method = (ILNode_MethodDeclaration *)(info->currentMethod);
+		if((index & CS_LOCAL_IS_ARG) == 0)
+		{
+			/* Local variable reference */
+			value.type = ILTypeGetLocal(method->localVarSig, index);
+			*parent = ILNode_LocalVar_create
+						(index, ILTypeToMachineType(value.type));
+		}
+		else
+		{
+			/* Argument reference */
+			index &= ~CS_LOCAL_IS_ARG;
+			if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
+			{
+				value.type = ILTypeGetParam
+					(ILMethod_Signature(method->methodInfo), index);
+			}
+			else
+			{
+				value.type = ILTypeGetParam
+					(ILMethod_Signature(method->methodInfo), index + 1);
+			}
+			*parent = ILNode_ArgumentVar_create
+						(index, ILTypeToMachineType(value.type));
+		}
+		value.kind = CS_SEMKIND_LVALUE;
+		return value;
+	}
+
+	/* Resolve the simple name */
+	value = CSResolveSimpleName(info, (ILNode *)node, node->name);
+
+	/* Convert the result into an l-value or r-value and return it */
+	return SemToLRValue((ILNode *)node, info, parent, value, node->name);
 }
 
 /*
@@ -258,8 +203,15 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysis(node->left, info, &(node->left));
 
-	/* Determine how to resolve the right part of the identifier */
+	/* Resolve the member */
 	name = ILQualIdentName(node->right, 0);
+	value = CSResolveMemberName(info, (ILNode *)node, value, name);
+
+	/* Convert the result into an l-value or r-value and return it */
+	return SemToLRValue((ILNode *)node, info, parent, value, name);
+
+#if 0
+	/* Determine how to resolve the right part of the identifier */
 	switch(value.kind)
 	{
 		case CS_SEMKIND_LVALUE:
@@ -294,6 +246,7 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 
 	/* Done */
 	return value;
+#endif
 }
 
 /*

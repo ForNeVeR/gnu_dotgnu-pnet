@@ -25,14 +25,15 @@ namespace System.IO.IsolatedStorage
 #if CONFIG_ISOLATED_STORAGE
 
 using System.Collections;
+using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Text;
+using Platform;
 
 // Note: see the general comments in "IsolatedStorage.cs".
 
-[TODO]
 public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 {
 	// Internal state.
@@ -272,11 +273,75 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 #endif
 
 	// Get the base directory for an isolated storage scope.
-	[TODO]
 	private static String GetBaseDirectory(IsolatedStorageScope scope)
 			{
-				// TODO
-				throw new SecurityException(_("IO_IsolatedPermissions"));
+				// Find the base directory to start with.
+				String baseDir;
+				if(InfoMethods.GetPlatformID() == PlatformID.Unix)
+				{
+					// Use the home directory under Unix systems.
+					baseDir = Environment.GetEnvironmentVariable("HOME");
+					if(baseDir == null || baseDir.Length == 0)
+					{
+						return null;
+					}
+					baseDir = Path.Combine(baseDir, ".cli");
+				}
+				else if((scope & IsolatedStorageScope.Roaming) != 0)
+				{
+					// Use the roaming application data area under Win32.
+					try
+					{
+						baseDir = Environment.GetFolderPath
+							(Environment.SpecialFolder.ApplicationData);
+					}
+					catch(Exception)
+					{
+						return null;
+					}
+				}
+				else
+				{
+					// Use the non-roaming application data area under Win32.
+					try
+					{
+						baseDir = Environment.GetFolderPath
+							(Environment.SpecialFolder.LocalApplicationData);
+					}
+					catch(Exception)
+					{
+						return null;
+					}
+				}
+				if(baseDir == null || baseDir.Length == 0)
+				{
+					return null;
+				}
+				baseDir = Path.Combine(baseDir, "isolated-storage");
+
+				// Add the assembly sub-directory name.
+				if((scope & IsolatedStorageScope.Assembly) != 0)
+				{
+					String name = Assembly.GetEntryAssembly().FullName;
+					int index = name.IndexOf(',');
+					if(index != -1)
+					{
+						name = name.Substring(0, index);
+					}
+					baseDir = Path.Combine(baseDir, name);
+				}
+				else
+				{
+					baseDir = Path.Combine(baseDir, "default");
+				}
+
+				// Add the domain sub-directory name.
+				if((scope & IsolatedStorageScope.Domain) != 0)
+				{
+					baseDir = Path.Combine
+						(baseDir, AppDomain.CurrentDomain.ToString());
+				}
+				return baseDir;
 			}
 
 	// Get an isolated storage area.  We don't use evidence information
@@ -298,6 +363,11 @@ public sealed class IsolatedStorageFile : IsolatedStorage, IDisposable
 					// Get the base directory for the scope, which will also
 					// check that the caller has sufficient permissions.
 					String baseDirectory = GetBaseDirectory(scope);
+					if(baseDirectory == null)
+					{
+						throw new IsolatedStorageException
+							(_("IO_IsolatedStorage"));
+					}
 
 					// Make sure that the directory exists, because
 					// it may have been removed previously.

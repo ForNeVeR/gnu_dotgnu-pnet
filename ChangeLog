@@ -7,6 +7,9 @@
 	* runtime/Platform/FileMethods.cs, runtime/System/IO/FileStream.cs:
 	add internalcalls to support "FileStream.Lock" and "FileStream.Unlock".
 
+	* runtime/System/IO/IsolatedStorage/IsolatedStorageFile.cs:
+	create the isolated storage area under "$HOME/.cli/isolated-storage".
+
 2003-08-18  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/Directory.cs, runtime/System/IO/Path.cs,

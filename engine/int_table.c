@@ -1184,6 +1184,10 @@ IL_METHOD_BEGIN(Thread_Methods)
 	IL_METHOD("InternalGetPriority", "(T)vSystem.Threading.ThreadPriority;", _IL_Thread_InternalGetPriority, marshal_ipp)
 	IL_METHOD("InternalSetPriority", "(TvSystem.Threading.ThreadPriority;)V", _IL_Thread_InternalSetPriority, marshal_vppi)
 	IL_METHOD("CanStartThreads", "()Z", _IL_Thread_CanStartThreads, marshal_bp)
+	IL_METHOD("Interrupt", "(T)V", _IL_Thread_Interrupt, marshal_vpp)
+	IL_METHOD("Resume", "(T)V", _IL_Thread_Resume, marshal_vpp)
+	IL_METHOD("SpinWait", "(i)V", _IL_Thread_SpinWait, marshal_vpi)
+	IL_METHOD("Suspend", "(T)V", _IL_Thread_Suspend, marshal_vpp)
 IL_METHOD_END
 
 #endif

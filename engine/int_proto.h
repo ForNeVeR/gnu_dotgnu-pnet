@@ -221,6 +221,10 @@ extern void _IL_Thread_InternalSetBackground(ILExecThread * _thread, ILObject * 
 extern ILInt32 _IL_Thread_InternalGetPriority(ILExecThread * _thread, ILObject * _this);
 extern void _IL_Thread_InternalSetPriority(ILExecThread * _thread, ILObject * _this, ILInt32 _p1);
 extern ILBool _IL_Thread_CanStartThreads(ILExecThread * _thread);
+extern void _IL_Thread_Interrupt(ILExecThread * _thread, ILObject * _this);
+extern void _IL_Thread_Resume(ILExecThread * _thread, ILObject * _this);
+extern void _IL_Thread_SpinWait(ILExecThread * _thread, ILInt32 _p1);
+extern void _IL_Thread_Suspend(ILExecThread * _thread, ILObject * _this);
 
 extern ILNativeInt _IL_WaitEvent_InternalCreateEvent(ILExecThread * _thread, ILBool _p1, ILBool _p2);
 extern ILBool _IL_WaitEvent_InternalSetEvent(ILExecThread * _thread, ILNativeInt _p1);

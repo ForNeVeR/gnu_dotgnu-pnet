@@ -1,7 +1,7 @@
 /*
  * lib_thread.c - Internalcall methods for "System.Threading.*".
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
  *
  * Contributions from Thong Nguyen <tum@veridicus.com>
  *
@@ -22,6 +22,12 @@
 
 #include "engine.h"
 #include "lib_defs.h"
+#if HAVE_SYS_TYPES_H
+	#include <sys/types.h>
+#endif
+#if HAVE_UNISTD_H
+	#include <unistd.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -1031,6 +1037,26 @@ void _IL_Thread_Suspend(ILExecThread *thread, ILObject *_this)
 void _IL_Thread_Resume(ILExecThread *thread, ILObject *_this)
 {	
 	ILThreadResume(((System_Thread *)_this)->privateData);
+}
+
+/*
+ * public static void SpinWait(int iterations);
+ */
+void _IL_Thread_SpinWait(ILExecThread *_thread, ILInt32 iterations)
+{
+	/* Convert the spin wait into a sleep request, because dead
+	   loop spinning for a long time is not a very good idea under
+	   multi-tasking operating systems.  We pick an arbitrary
+	   resolution of 1 iteration equal to 1 microsecond, which
+	   will give some consistency across platforms */
+	if(iterations > 0)
+	{
+	#ifdef HAVE_USLEEP
+		usleep((unsigned long)(long)iterations);
+	#else
+		ILThreadSleep((ILUInt32)(ms / 1000));
+	#endif
+	}
 }
 
 /*

@@ -11,6 +11,9 @@
 	* engine/cvm_config.h, engine/ilrun.1, engine/ilrun.c:
 	document the dump and trace options better.
 
+	* engine/cvm_lengths.c: fix the length of "thread_static"
+	(thanks to Gopal V for spotting it).
+
 2004-03-16  Gopal.V  <gopalv82@symonds.net>
 
 	* engine/cvm.h, engine/cvm_call.c, engine/cvm_dasm.c,

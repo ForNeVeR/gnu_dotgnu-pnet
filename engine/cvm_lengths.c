@@ -529,7 +529,7 @@ unsigned char const _ILCVMLengths[512] = {
 	/*
 	 * Thread static handling.
 	 */
-	/* thread_static */		CVMP_LEN_WORD,
+	/* thread_static */		CVMP_LEN_WORD2,
 	
 	/*
 	 * Argument packing for native calls.

@@ -273,10 +273,9 @@ static int ScopeIsModule(ILProgramItem *scope)
  * in "firstMatch".  The number of tokens that match is returned
  * from the function, or zero if there are no matches.
  */
-typedef int (*SearchRawFunc)(ILUInt32 *values, ILToken searchFor);
-static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
-							      ILToken ownedType, ILToken *firstMatch,
-								  ILToken searchFor)
+ILUInt32 _ILSearchForRawToken(ILImage *image, ILSearchRawFunc func,
+							  ILToken ownedType, ILToken *firstMatch,
+							  ILToken searchFor, int valueField)
 {
 	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
 	ILToken minToken, maxToken, current;
@@ -296,7 +295,7 @@ static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
 			{
 				return 0;
 			}
-			cmp = (*func)(values, searchFor);
+			cmp = (*func)(values, searchFor, valueField);
 			if(cmp == 0)
 			{
 				/* We have found a match: search backwards to find the
@@ -309,7 +308,7 @@ static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
 					{
 						return 0;
 					}
-					if((*func)(values, searchFor) != 0)
+					if((*func)(values, searchFor, valueField) != 0)
 					{
 						break;
 					}
@@ -327,7 +326,7 @@ static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
 					{
 						return 0;
 					}
-					if((*func)(values, searchFor) != 0)
+					if((*func)(values, searchFor, valueField) != 0)
 					{
 						break;
 					}
@@ -355,7 +354,7 @@ static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
 			{
 				return 0;
 			}
-			if((*func)(values, searchFor) == 0)
+			if((*func)(values, searchFor, valueField) == 0)
 			{
 				/* This is the first match in the table.  Determine
 				   how large the range of items is */
@@ -368,7 +367,7 @@ static ILUInt32 SearchForRawToken(ILImage *image, SearchRawFunc func,
 					{
 						return 0;
 					}
-					if((*func)(values, searchFor) != 0)
+					if((*func)(values, searchFor, valueField) != 0)
 					{
 						break;
 					}
@@ -1445,7 +1444,7 @@ static int Load_TypeSpec(ILImage *image, ILUInt32 *values,
 /*
  * Search for a PInvoke token in a raw token table.
  */
-static int Search_PInvoke(ILUInt32 *values, ILToken token1)
+static int Search_PInvoke(ILUInt32 *values, ILToken token1, int valueField)
 {
 	ILToken token2 = (ILToken)(values[IL_OFFSET_IMPLMAP_METHOD]);
 	ILToken tokenNum1 = (token1 & ~IL_META_TOKEN_MASK);
@@ -1485,8 +1484,8 @@ static void FetchPInvokeForToken(ILImage *image, ILToken searchFor)
 	ILToken token;
 
 	/* Search the ImplMap table for a matching PInvoke declaration */
-	if(SearchForRawToken(image, Search_PInvoke, IL_META_TOKEN_IMPL_MAP,
-						 &token, searchFor) == 0)
+	if(_ILSearchForRawToken(image, Search_PInvoke, IL_META_TOKEN_IMPL_MAP,
+						    &token, searchFor, 0) == 0)
 	{
 		return;
 	}
@@ -2676,7 +2675,7 @@ static int Load_CustomAttr(ILImage *image, ILUInt32 *values,
 /*
  * Search for a custom attribute declaration in a raw token table.
  */
-static int Search_CustomAttr(ILUInt32 *values, ILToken token1)
+static int Search_CustomAttr(ILUInt32 *values, ILToken token1, int valueField)
 {
 	ILToken token2 = (ILToken)(values[IL_OFFSET_CUSTOMATTR_OWNER]);
 	ILToken tokenNum1 = (token1 & ~IL_META_TOKEN_MASK);
@@ -2766,9 +2765,9 @@ void _ILProgramItemLoadAttributes(ILProgramItem *item)
 	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
 
 	/* Find the custom attribute information for this token */
-	numTokens = SearchForRawToken(item->image, Search_CustomAttr,
-								  IL_META_TOKEN_CUSTOM_ATTRIBUTE,
-								  &token, (ILToken)(item->token));
+	numTokens = _ILSearchForRawToken(item->image, Search_CustomAttr,
+								     IL_META_TOKEN_CUSTOM_ATTRIBUTE,
+								     &token, (ILToken)(item->token), 0);
 
 	/* Load the custom attribute tokens for this item */
 	while(numTokens > 0)

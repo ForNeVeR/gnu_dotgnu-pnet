@@ -1,4 +1,10 @@
 
+2003-10-14  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/image.h, image/meta_build.c, image/misc_token.c:
+	search for owned items in a way that avoids loading an
+	item unless it is actually the one that was sought.
+
 2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/Makefile.am, engine/ilrun.1, engine/ilverify.1:

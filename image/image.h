@@ -500,6 +500,18 @@ void _ILImageFreeTokens(ILImage *image);
 int _ILImageSetToken(ILImage *image, ILProgramItem *item,
 					 unsigned long token, unsigned long tokenKind);
 
+/*
+ * Search the raw values in an owned item table for a token match.
+ * Returns the first token that matches in the "ownedType" table
+ * in "firstMatch".  The number of tokens that match is returned
+ * from the function, or zero if there are no matches.
+ */
+typedef int (*ILSearchRawFunc)(ILUInt32 *values, ILToken searchFor,
+							   int valueField);
+ILUInt32 _ILSearchForRawToken(ILImage *image, ILSearchRawFunc func,
+							  ILToken ownedType, ILToken *firstMatch,
+							  ILToken searchFor, int valueField);
+
 #ifdef IL_USE_WRITER
 
 /*

@@ -236,6 +236,34 @@ const void *ILConstantGetValue(ILConstant *constant, unsigned long *len)
  * uses the encoded token value rather than the raw token
  * values that we are using here.
  */
+static int OwnedItemCompareRaw(ILUInt32 *values, ILToken searchFor,
+							   int valueField)
+{
+	ILToken token1 = searchFor;
+	ILToken token1Stripped = (token1 & ~IL_META_TOKEN_MASK);
+	ILToken token2 = (ILToken)(values[valueField]);
+	ILToken token2Stripped = (token2 & ~IL_META_TOKEN_MASK);
+	if(token1Stripped < token2Stripped)
+	{
+		return -1;
+	}
+	else if(token1Stripped > token2Stripped)
+	{
+		return 1;
+	}
+	else if(token1 < token2)
+	{
+		return -1;
+	}
+	else if(token1 > token2)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
 static int OwnedItemCompare(void *item, void *userData)
 {
 	ILOwnedItem *owned = (ILOwnedItem *)item;
@@ -263,6 +291,31 @@ static int OwnedItemCompare(void *item, void *userData)
 	{
 		return 0;
 	}
+}
+
+/*
+ * Search for an owned item.
+ */
+static void *SearchForOwnedItem(ILImage *image, ILToken tokenType,
+								void *owner, int valueField)
+{
+	ILUInt32 token, num;
+	if(!owner)
+	{
+		return 0;
+	}
+	if(image->type == IL_IMAGETYPE_BUILDING)
+	{
+		return ILImageSearchForToken(image, tokenType, OwnedItemCompare, owner);
+	}
+	num = _ILSearchForRawToken(image, OwnedItemCompareRaw, tokenType, &token,
+							   ((ILProgramItem *)owner)->token,
+							   valueField);
+	if(num != 1)
+	{
+		return 0;
+	}
+	return ILImageTokenInfo(image, token);
 }
 
 ILConstant *ILConstantGetFromOwner(ILProgramItem *owner)
@@ -296,9 +349,9 @@ ILConstant *ILConstantGetFromOwner(ILProgramItem *owner)
 	}
 
 	/* Search for the constant token */
-	return (ILConstant *)ILImageSearchForToken
+	return (ILConstant *)SearchForOwnedItem
 				(owner->image, IL_META_TOKEN_CONSTANT,
-				 OwnedItemCompare, (void *)owner);
+				 (void *)owner, IL_OFFSET_CONSTANT_REFERENCE);
 }
 
 ILFieldRVA *ILFieldRVACreate(ILImage *image, ILToken token,
@@ -355,10 +408,10 @@ ILFieldRVA *ILFieldRVAGetFromOwner(ILField *owner)
 	{
 		return 0;
 	}
-	return (ILFieldRVA *)ILImageSearchForToken
+	return (ILFieldRVA *)SearchForOwnedItem
 				(owner->member.programItem.image,
 				 IL_META_TOKEN_FIELD_RVA,
-				 OwnedItemCompare, (void *)owner);
+				 (void *)owner, IL_OFFSET_FIELDRVA_FIELD);
 }
 
 ILFieldLayout *ILFieldLayoutCreate(ILImage *image, ILToken token,
@@ -414,10 +467,10 @@ ILFieldLayout *ILFieldLayoutGetFromOwner(ILField *owner)
 	}
 
 	/* Search for the layout token */
-	return (ILFieldLayout *)ILImageSearchForToken
+	return (ILFieldLayout *)SearchForOwnedItem
 				(owner->member.programItem.image,
 				 IL_META_TOKEN_FIELD_LAYOUT,
-				 OwnedItemCompare, (void *)owner);
+				 (void *)owner, IL_OFFSET_FIELDLAYOUT_FIELD);
 }
 
 ILFieldMarshal *ILFieldMarshalCreate(ILImage *image, ILToken token,
@@ -517,9 +570,9 @@ ILFieldMarshal *ILFieldMarshalGetFromOwner(ILProgramItem *owner)
 	}
 
 	/* Search for the token */
-	return (ILFieldMarshal *)ILImageSearchForToken
+	return (ILFieldMarshal *)SearchForOwnedItem
 				(owner->image, IL_META_TOKEN_FIELD_MARSHAL,
-				 OwnedItemCompare, (void *)owner);
+				 (void *)owner, IL_OFFSET_FIELDMARSHAL_TOKEN);
 }
 
 ILClassLayout *ILClassLayoutCreate(ILImage *image, ILToken token,
@@ -587,9 +640,9 @@ ILClassLayout *ILClassLayoutGetFromOwner(ILClass *owner)
 	}
 
 	/* Search for the layout token */
-	return (ILClassLayout *)ILImageSearchForToken
+	return (ILClassLayout *)SearchForOwnedItem
 				(owner->programItem.image, IL_META_TOKEN_CLASS_LAYOUT,
-				 OwnedItemCompare, (void *)owner);
+				 (void *)owner, IL_OFFSET_CLASSLAYOUT_TYPE);
 }
 
 ILDeclSecurity *ILDeclSecurityCreate(ILImage *image, ILToken token,
@@ -675,9 +728,9 @@ const void *ILDeclSecurityGetBlob(ILDeclSecurity *security, unsigned long *len)
 
 ILDeclSecurity *ILDeclSecurityGetFromOwner(ILProgramItem *owner)
 {
-	return (ILDeclSecurity *)ILImageSearchForToken
+	return (ILDeclSecurity *)SearchForOwnedItem
 				(owner->image, IL_META_TOKEN_DECL_SECURITY,
-				 OwnedItemCompare, (void *)owner);
+				 (void *)owner, IL_OFFSET_DECLSECURITY_TOKEN);
 }
 
 ILFileDecl *ILFileDeclCreate(ILImage *image, ILToken token,

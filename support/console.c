@@ -805,6 +805,31 @@ static void ContinueProcess(int sig)
 
 #endif
 
+/*
+ * Work around missing symbols on some platforms.
+ */
+#ifndef	IUCLC
+#define	IUCLC	0
+#endif
+#ifndef	OLCUC
+#define	OLCUC	0
+#endif
+#ifndef	OFILL
+#define	OFILL	0
+#endif
+#ifndef	OFDEL
+#define	OFDEL	0
+#endif
+#ifndef	OCRNL
+#define	OCRNL	0
+#endif
+#ifndef	ONOCR
+#define	ONOCR	0
+#endif
+#ifndef	ONLRET
+#define	ONLRET	0
+#endif
+
 void ILConsoleSetMode(ILInt32 mode)
 {
 	char *term;

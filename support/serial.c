@@ -201,6 +201,15 @@ void ILSerialClose(ILSerial *handle)
 #ifndef	OFDEL
 #define	OFDEL	0
 #endif
+#ifndef	OCRNL
+#define	OCRNL	0
+#endif
+#ifndef	ONOCR
+#define	ONOCR	0
+#endif
+#ifndef	ONLRET
+#define	ONLRET	0
+#endif
 
 void ILSerialModify(ILSerial *handle, ILSerialParameters *parameters)
 {

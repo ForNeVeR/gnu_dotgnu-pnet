@@ -322,6 +322,36 @@ public class InputOnlyWidget : Widget
 					}
 				}
 			}
+			
+	/// <summary>
+	/// <para>Method that is called when the mouse wheel is turned.</para>
+	/// </summary>
+	///
+	/// <param name="x">
+	/// <para>The X co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="y">
+	/// <para>The Y co-ordinate of the pointer position.</para>
+	/// </param>
+	///
+	/// <param name="button">
+	/// <para>The button that was pressed.</para>
+	/// </param>
+	///
+	/// <param name="modifiers">
+	/// <para>Other button and shift flags that were active.</para>
+	/// </param>
+	///
+	/// <param name="iDelta">
+	/// <para>Delta indicating how far the wheel was turned.</para>
+	/// </param>
+	protected virtual bool OnButtonWheel(int x, int y, ButtonName button,
+									  	   ModifierMask modifiers, int iDelta)
+			{
+				// Nothing to do in this class.
+				return true;
+			}
 
 	/// <summary>
 	/// <para>Method that is called when any mouse button is pressed
@@ -718,6 +748,21 @@ public class InputOnlyWidget : Widget
 				if(FullSensitive)
 				{
 					return OnKeyRelease(key, modifiers);
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Dispatch a mouse wheel event to this widget from the top-level window.
+	internal bool DispatchWheelEvent(ref XEvent xevent)
+			{
+				if(FullSensitive)
+				{
+					return OnButtonWheel (xevent.xbutton.x, xevent.xbutton.y,
+						xevent.xbutton.button, xevent.xbutton.state,
+						(xevent.xbutton.button == ButtonName.Button4 ? 120 : -120));
 				}
 				else
 				{

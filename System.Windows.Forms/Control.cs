@@ -6168,8 +6168,22 @@ public class Control : IWin32Window, IDisposable
 				x += ToolkitDrawOrigin.X - ClientOrigin.X;
 				y += ToolkitDrawOrigin.Y - ClientOrigin.Y;
 				currentModifiers = (Keys)modifiers;
-				OnMouseWheel(new MouseEventArgs
+				DoOnMouseWheel(new MouseEventArgs
 					((MouseButtons)buttons, clicks, x, y, delta));
+			}
+
+	// Helper to emulate the behaviour of mouse wheel events on MS .NET:
+	// The event is first given to the outer form and then up to the
+	// control with the input focus. Since we send the ToolkitMouseWheel
+	// call to the control with the input focus we must first traverse
+	// the control hierarchy up to the outer form, which is what this
+	// helper does.
+	void DoOnMouseWheel (MouseEventArgs e)
+			{
+				if (parent != null)
+					parent.DoOnMouseWheel (e);
+
+				OnMouseWheel (e);
 			}
 
 	// Toolkit event that is emitted when the window is moved by

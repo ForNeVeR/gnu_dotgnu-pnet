@@ -734,6 +734,19 @@ public sealed class Display : IDisposable
 					case EventType.ButtonRelease:
 					{
 						knownEventTime = xevent.xbutton.time;
+
+						if (((xevent.xbutton.button == ButtonName.Button4) ||
+						     (xevent.xbutton.button == ButtonName.Button5)) &&
+						    ((widget != null) && !(widget.Parent is RootWindow)))
+						{
+							// Mousewheel events must be dispatched
+							// via the top-level window, never via children.
+							while (widget.Parent != null &&
+							    !(widget.Parent is RootWindow))
+							{
+								widget = widget.Parent;
+							}
+						}
 					}
 					break;
 

@@ -478,6 +478,22 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 				}
 				this.button = 0;
 			}
+			
+	// Override the mouse wheel event from Xsharp.
+	protected override bool OnButtonWheel(int x, int y, ButtonName button,
+									  	   ModifierMask modifiers, int iDelta)
+			{
+				if(sink != null)
+				{
+					sink.ToolkitMouseWheel
+						(MapButton(button),
+						MapKey(KeyName.XK_VoidSymbol, modifiers),
+						1, x, y, iDelta);
+				}
+				this.button = 0;
+
+				return true;
+			}			
 
 	// Override the button double click event from Xsharp.
 	protected override void OnButtonDoubleClick

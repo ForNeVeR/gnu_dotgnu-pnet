@@ -2174,6 +2174,36 @@ public class TopLevelWindow : InputOutputWidget
 					}
 					break;
 
+				case Xsharp.Events.EventType.ButtonRelease:
+					{
+						// Handle mouse wheel events.
+
+						// Sanity check
+						if ((xevent.xbutton.button != ButtonName.Button4) &&
+						    (xevent.xbutton.button != ButtonName.Button5))
+							return;
+
+						// Dispatch the event.
+						widget = focusWidget;
+						while(widget != null)
+						{
+							io = (widget as InputOnlyWidget);
+							if (io != null)
+							{
+								if (io.DispatchWheelEvent (ref xevent))
+								{
+									break;
+								}
+							}
+							if (widget == this)
+							{
+								break;
+							}
+							widget = widget.Parent;
+						}
+					}
+					break;
+
 				case Xsharp.Events.EventType.ConfigureNotify:
 					{
 						// The window manager may have caused us to move/resize.

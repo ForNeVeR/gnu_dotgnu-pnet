@@ -1,3 +1,23 @@
+2005-03-22  Marc Haisenko <marc@darkdust.net>
+	
+	* Xsharp/Display.cs: catch scroll wheel button release events and
+	send them to the top level widget instead of the widget the event
+	occured in.
+
+	* Xsharp/InputOnlyWidget.cs: add OnButtonWheel virtual method, add
+	DispatchWheelEvent internal method.
+
+	* Xsharp/TopLevelWidget.cs: handle scroll wheel button release
+	events, send them to the widget with the input focus.
+
+	* System.Drawing.Xsharp/DrawingWindow.cs: added override
+	OnButtonWheel method.
+
+	* System.Windows.Forms/Control.cs: added DoOnMouseWheel helper
+	method to emulate MS .NET's behaviour when handling the OnMouse-
+	Wheel event, changed IToolkit.ToolkitMouseWheel to call the
+	DoOnMouseWheel helper.
+
 2005-03-17  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Globalization/NumberFormatInfo.cs,

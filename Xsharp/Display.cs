@@ -48,7 +48,7 @@ public sealed class Display : IDisposable
 	private InputOutputWidget exposeList;
 	private Xlib.Cursor[] cursors;
 	internal Xlib.Time knownEventTime;
-	internal Hashtable handleMap;
+	internal HandleMap handleMap;
 	private static bool threadsInited;
 	internal Xlib.Atom wmProtocols;
 	internal Xlib.Atom wmDeleteWindow;
@@ -90,7 +90,7 @@ public sealed class Display : IDisposable
 				// Construct the window handle map if not already present.
 				if(handleMap == null)
 				{
-					handleMap = new Hashtable();
+					handleMap = new HandleMap();
 				}
 
 				// Initialize the standard window manager atoms that we use.
@@ -745,7 +745,7 @@ public sealed class Display : IDisposable
 				}
 
 				// Find the widget that should process the event.
-				Widget widget = (Widget)(handleMap[(int)(xevent.window)]);
+				Widget widget = handleMap[xevent.window];
 
 				// Dispatch the event to the widget.
 				if(widget != null)

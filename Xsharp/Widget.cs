@@ -127,7 +127,7 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 			{
 				if(handle != Xlib.Drawable.Zero)
 				{
-					dpy.handleMap.Remove((int)handle);
+					dpy.handleMap.Remove((Xlib.Window)handle);
 				}
 				if(this is InputOutputWidget)
 				{

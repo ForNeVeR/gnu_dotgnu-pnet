@@ -65,7 +65,7 @@ public abstract class Drawable : IDisposable
 				{
 					dpy.Lock();
 					this.handle = (Xlib.Drawable)handle;
-					dpy.handleMap[(int)handle] = this;
+					dpy.handleMap[handle] = (Widget)this;
 				}
 				finally
 				{

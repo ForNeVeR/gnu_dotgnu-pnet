@@ -47,9 +47,9 @@ public sealed class RootWindow : Widget
 				this.handle = (Xlib.Drawable)handle;
 				if(dpy.handleMap == null)
 				{
-					dpy.handleMap = new Hashtable();
+					dpy.handleMap = new HandleMap();
 				}
-				dpy.handleMap[(int)handle] = this;
+				dpy.handleMap[handle] = this;
 
 				// Adjust the root window object to match the screen state.
 				width = (int)(Xlib.XWidthOfScreen(screen.screen));

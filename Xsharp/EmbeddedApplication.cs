@@ -804,7 +804,7 @@ public class EmbeddedApplication : InputOutputWidget
 				{
 					embedParent = parent;
 					handle = (Xlib.Drawable)group;
-					dpy.handleMap[(int)handle] = this;
+					dpy.handleMap[(Xlib.Window)handle] = this;
 				}
 
 		// Determine if we want a particular widget in a map request.

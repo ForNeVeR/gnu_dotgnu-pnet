@@ -668,8 +668,8 @@ public class InputOnlyWidget : Widget
 					case EventType.EnterNotify:
 					{
 						// Dispatch a widget enter event.
-						Widget child = (Widget)(dpy.handleMap
-							[(int)(xevent.xcrossing.subwindow)]);
+						Widget child = dpy.handleMap
+							[xevent.xcrossing.subwindow];
 						OnEnter(child,
 							    xevent.xcrossing.x,
 							    xevent.xcrossing.y,
@@ -682,8 +682,8 @@ public class InputOnlyWidget : Widget
 					case EventType.LeaveNotify:
 					{
 						// Dispatch a widget leave event.
-						Widget child = (Widget)(dpy.handleMap
-							[(int)(xevent.xcrossing.subwindow)]);
+						Widget child = dpy.handleMap
+							[xevent.xcrossing.subwindow];
 						OnLeave(child,
 							    xevent.xcrossing.x,
 							    xevent.xcrossing.y,

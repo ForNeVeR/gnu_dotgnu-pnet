@@ -9,6 +9,11 @@
 	* System.Windows.Forms/Themes/DefaultThemePainter.cs: use
 	glyph-based drawing for scroll buttons and combo box drop down arrows.
 
+	* Xsharp/Display.cs, Xsharp/Drawable.cs, Xsharp/EmbeddedApplication.cs,
+	Xsharp/HandleMap.cs, Xsharp/InputOnlyWidget.cs, Xsharp/RootWindow.cs,
+	Xsharp/Widget.cs: speed up Xsharp event dispatching by using a
+	more efficient handle to widget mapping table.
+
 2003-11-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* System.Xml/NodeList.cs: fix the "MoveNext" method when enumerating

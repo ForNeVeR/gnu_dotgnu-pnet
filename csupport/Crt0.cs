@@ -394,6 +394,7 @@ public unsafe sealed class Crt0
 				{
 					dest[index++] = ch;
 				}
+				dest[index] = '\0';
 			}
 
 #if CONFIG_SMALL_CONSOLE

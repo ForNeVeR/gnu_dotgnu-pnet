@@ -1,4 +1,64 @@
 
+0.5.2 (8 February 2003)
+
+	Runtime engine:
+
+	* Verification of "newobj" when used with single-dimensional arrays.
+	* 64-bit fixes for CVM opcode "ldtoken".
+	* Marshalling for the LPWSTR type.
+	* Support code for custom marshalling (not finished yet).
+	* Return the full pathname for argv[0] from "GetCommandLineArgs()".
+	* Pad the "System_Array" header for 64-bit platforms.
+	* Fix CVM opcode "get2d", which was computing the wrong offset.
+
+	C# Compiler:
+
+	* Structs with no fields should be 1-sized, not 0-sized.
+	* Fixes to implicit handling of "Attribute" suffixes (Gopal V, Rhys).
+	* Ordering issues when resolving "const" fields (Gopal V).
+	* Better error reporting for missing types (Gopal V).
+	* Fixes to "foreach" loops containing "continue" (Gopal V).
+	* Don't warn for decimal constants that start with 0 any more.
+	* Allow libraries to directly or indirectly depend upon themselves.
+
+	Assembler & Disassembler:
+
+	* Force the use of "instance" on instructions that always take
+	  instance methods as arguments (Gopal V, Rhys Weatherley).
+	* Set ".maxstack" to 8 by default instead of 0.
+	* Round-tripping support for public key declarations.
+	* Dump the contents of the ".data" and ".tls" sections in "ildasm".
+
+	Documentation:
+
+	* Fix a sprintf-related segfault in "csdoc2stub" (Gopal V).
+	* Correct XML output for enums in "csdoc" (Gopal V).
+	* Add directory entries to texinfo documentation (Stephen Compall).
+
+	Loader and Metadata:
+
+	* Handle missing shared objects during PInvoke operations (Gopal V).
+	* Recursive parent type dependencies.
+	* Begin adding the infrastructure for on-demand token loading.
+
+	Csant:
+
+	* Add the "mkdir" and "copy" tasks.
+	* Add the "-c" option, which emulates <csc> in terms of <compile>.
+	* Prefer *.csant files over *.build files.
+
+	Platform Support:
+
+	* Work-around problems when compiling rc2.c under alpha.
+	* Update libffi and libgc to the most recent versions.
+	* Change the definition of "ILInt8" to support platforms that
+	  have unsigned "char" types (e.g. s390, arm).
+
+	Other:
+
+	* Add "-fno-inline-functions" to the "engine" build process, to work
+	  around problems with -O3 vs -O2 compiles.
+
 0.5.0 (11 January 2003)
 
 	Runtime engine:

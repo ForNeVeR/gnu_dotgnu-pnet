@@ -17,6 +17,9 @@
 	implement window maximize and restore; track dynamic changes to
 	the minimized and maximized window states.
 
+	* Xsharp/Display.cs, Xsharp/TopLevelWindow.cs: implement the
+	"_NET_WM_PID" and "_NET_WM_PING" protocols.
+
 2003-12-02  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/IO.txt, runtime/Platform/FileMethods.cs,

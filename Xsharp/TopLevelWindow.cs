@@ -23,6 +23,7 @@ namespace Xsharp
 
 using System;
 using System.Text;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Xsharp.Types;
@@ -213,6 +214,22 @@ public class TopLevelWindow : InputOutputWidget
 						}
 					}
 
+				#if CONFIG_EXTENDED_DIAGNOSTICS
+					// Put the process ID on the window.
+					int pid = Process.GetCurrentProcess().Id;
+					if(pid != -1 && pid != 0)
+					{
+						Xlib.XChangeProperty
+							(display, handle,
+							 Xlib.XInternAtom(display, "_NET_WM_PID",
+							 				  Xlib.Bool.False),
+							 Xlib.XInternAtom(display, "CARDINAL",
+							 				  Xlib.Bool.False),
+							 32, 0 /* PropModeReplace */,
+							 new Xlib.Xlong [] {(Xlib.Xlong)(pid)}, 1);
+					}
+				#endif
+
 					// Top-level widgets receive all key and focus events.
 					SelectInput(EventMask.KeyPressMask |
 								EventMask.KeyReleaseMask |
@@ -256,21 +273,16 @@ public class TopLevelWindow : InputOutputWidget
 	// Set the WM protocols for this window.
 	private void SetProtocols(IntPtr display, Xlib.Window handle)
 			{
+				Xlib.Atom[] protocols = new Xlib.Atom [4];
+				int numProtocols = 0;
+				protocols[numProtocols++] = dpy.wmDeleteWindow;
+				protocols[numProtocols++] = dpy.wmTakeFocus;
 				if((otherHints & OtherHints.HelpButton) != 0)
 				{
-					Xlib.Atom[] protocols = new Xlib.Atom [3];
-					protocols[0] = dpy.wmDeleteWindow;
-					protocols[1] = dpy.wmTakeFocus;
-					protocols[2] = dpy.wmContextHelp;
-					Xlib.XSetWMProtocols(display, handle, protocols, 3);
+					protocols[numProtocols++] = dpy.wmContextHelp;
 				}
-				else
-				{
-					Xlib.Atom[] protocols = new Xlib.Atom [2];
-					protocols[0] = dpy.wmDeleteWindow;
-					protocols[1] = dpy.wmTakeFocus;
-					Xlib.XSetWMProtocols(display, handle, protocols, 2);
-				}
+				protocols[numProtocols++] = dpy.wmPing;
+				Xlib.XSetWMProtocols(display, handle, protocols, numProtocols);
 			}
 
 	// Set the window name hints.
@@ -1660,15 +1672,38 @@ public class TopLevelWindow : InputOutputWidget
 								// User wants the window to close.
 								Close();
 							}
-							if(xevent.xclient.l(0) == (int)(dpy.wmTakeFocus))
+							else if(xevent.xclient.l(0) ==
+										(int)(dpy.wmTakeFocus))
 							{
 								// We were given the primary input focus.
 								PrimaryFocusIn();
 							}
-							if(xevent.xclient.l(0) == (int)(dpy.wmContextHelp))
+							else if(xevent.xclient.l(0) ==
+										(int)(dpy.wmContextHelp))
 							{
 								// The user pressed the "help" button.
 								OnHelp();
+							}
+							else if(xevent.xclient.l(0) == (int)(dpy.wmPing))
+							{
+								// The window manager has pinged us to see
+								// if we are still responding or are dead.
+								// We send the message straight back to the WM.
+								try
+								{
+									IntPtr display = dpy.Lock();
+									xevent.xany.window =
+										screen.RootWindow.GetWidgetHandle();
+									Xlib.XSendEvent
+										(display, xevent.xany.window,
+										 Xlib.Bool.False,
+										 (int)(EventMask.NoEventMask),
+										 ref xevent);
+								}
+								finally
+								{
+									dpy.Unlock();
+								}
 							}
 						}
 					}

@@ -56,6 +56,7 @@ public sealed class Display : IDisposable
 	internal Xlib.Atom wmContextHelp;
 	internal Xlib.Atom wmState;
 	internal Xlib.Atom wmNetState;
+	internal Xlib.Atom wmPing;
 	internal ButtonName selectButton;
 	internal ButtonName menuButton;
 	internal Hashtable fonts;
@@ -111,6 +112,8 @@ public sealed class Display : IDisposable
 					(dpy, "WM_STATE", Xlib.Bool.False);
 				wmNetState = Xlib.XInternAtom
 					(dpy, "_NET_WM_STATE", Xlib.Bool.False);
+				wmPing = Xlib.XInternAtom
+					(dpy, "_NET_WM_PING", Xlib.Bool.False);
 
 				// Which buttons should we use for "Select" and "Menu"?
 				byte[] buttons = new byte [5];

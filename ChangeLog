@@ -45,6 +45,9 @@
 	runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueWriter.cs:
 	continue the implementation of binary formatting.
 
+	* runtime/System/Resources/ResourceManager.cs: use the "current"
+	variable when checking for the invariant culture, not "culture".
+
 2003-08-03  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ButtonBase.cs: some improvements for inheritors,

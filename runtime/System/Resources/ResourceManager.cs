@@ -424,7 +424,7 @@ class ResourceManager
 				do
 				{
 					// If this is the invariant culture, then stop.
-					if(culture.Equals(CultureInfo.InvariantCulture))
+					if(current.Equals(CultureInfo.InvariantCulture))
 					{
 						break;
 					}

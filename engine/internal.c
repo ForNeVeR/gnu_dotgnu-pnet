@@ -65,6 +65,7 @@ extern	"C" {
 	#define _IL_MethodBuilder_suppressed
 	#define _IL_SignatureHelper_suppressed
 	#define _IL_ParameterBuilder_suppressed
+	#define _IL_FormatterServices_suppressed
 #endif
 #if !defined(IL_CONFIG_RUNTIME_INFRA) && !defined(IL_CONFIG_REFLECTION)
 	#define	_IL_Type_suppressed

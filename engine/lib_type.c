@@ -2508,6 +2508,75 @@ ILObject *_IL_Type_GetTypeFromHandle(ILExecThread *thread, void *handle)
 	}
 }
 
+#ifdef IL_CONFIG_REFLECTION
+
+/*
+ * private static MemberInfo[] InternalGetSerializableMembers(type);
+ */
+System_Array *_IL_FormatterServices_InternalGetSerializableMembers
+			(ILExecThread *_thread, ILObject *type)
+{
+	ILClass *classInfo;
+	ILClass *info;
+	ILField *field;
+	ILInt32 size;
+	System_Array *array;
+	ILObject **buf;
+
+	/* Convert the type into an ILClass structure */
+	classInfo = _ILGetClrClass(_thread, type);
+
+	/* Count the number of serializable fields in the type */
+	info = classInfo;
+	size = 0;
+	while(info != 0)
+	{
+		field = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+					(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!ILField_IsNotSerialized(field))
+			{
+				++size;
+			}
+		}
+		info = ILClass_Parent(info);
+	}
+
+	/* Allocate an array to hold the serializable fields */
+	array = (System_Array *)ILExecThreadNew
+				(_thread, "[oSystem.Reflection.MemberInfo;",
+				 "(Ti)V", (ILVaInt)size);
+	if(!array)
+	{
+		return 0;
+	}
+	buf = (ILObject **)(ArrayToBuffer(array));
+
+	/* Populate the array */
+	info = classInfo;
+	size = 0;
+	while(info != 0)
+	{
+		field = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+					(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if(!ILField_IsNotSerialized(field))
+			{
+				buf[++size] = ItemToClrObject
+					(_thread, &(field->member.programItem));
+			}
+		}
+		info = ILClass_Parent(info);
+	}
+
+	/* Return the final array to the caller */
+	return array;
+}
+
+#endif /* IL_CONFIG_REFLECTION */
+
 /*
  * protected override bool HasGenericArgumentsImpl();
  */

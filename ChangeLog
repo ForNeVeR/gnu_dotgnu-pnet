@@ -1,4 +1,9 @@
 
+2003-09-01  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* engine/int_proto.h, engine/int_table.c, engine/internal.c,
+	engine/lib_type.c: new internalcall for "FormatterServices".
+
 2003-08-31  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_info.c:

@@ -1268,6 +1268,7 @@ IL_METHOD_END
 #ifndef _IL_FormatterServices_suppressed
 
 IL_METHOD_BEGIN(FormatterServices_Methods)
+	IL_METHOD("InternalGetSerializableMembers", "(oSystem.Type;)[oSystem.Reflection.MemberInfo;", _IL_FormatterServices_InternalGetSerializableMembers, marshal_ppp)
 	IL_METHOD("InternalGetUninitializedObject", "(oSystem.Type;)oSystem.Object;", _IL_FormatterServices_InternalGetUninitializedObject, marshal_ppp)
 IL_METHOD_END
 
@@ -2357,10 +2358,10 @@ IL_METHOD_END
 #ifndef _IL_TaskMethods_suppressed
 
 IL_METHOD_BEGIN(TaskMethods_Methods)
-	IL_METHOD("GetEnvironmentVariable", "(oSystem.String;)oSystem.String;", _IL_TaskMethods_GetEnvironmentVariable, marshal_ppp)
 	IL_METHOD("Exit", "(i)V", _IL_TaskMethods_Exit, marshal_vpi)
 	IL_METHOD("SetExitCode", "(i)V", _IL_TaskMethods_SetExitCode, marshal_vpi)
 	IL_METHOD("GetCommandLineArgs", "()[oSystem.String;", _IL_TaskMethods_GetCommandLineArgs, marshal_pp)
+	IL_METHOD("GetEnvironmentVariable", "(oSystem.String;)oSystem.String;", _IL_TaskMethods_GetEnvironmentVariable, marshal_ppp)
 	IL_METHOD("GetEnvironmentCount", "()i", _IL_TaskMethods_GetEnvironmentCount, marshal_ip)
 	IL_METHOD("GetEnvironmentKey", "(i)oSystem.String;", _IL_TaskMethods_GetEnvironmentKey, marshal_ppi)
 	IL_METHOD("GetEnvironmentValue", "(i)oSystem.String;", _IL_TaskMethods_GetEnvironmentValue, marshal_ppi)
@@ -2515,6 +2516,7 @@ IL_METHOD_END
 #ifndef _IL_InfoMethods_suppressed
 
 IL_METHOD_BEGIN(InfoMethods_Methods)
+	IL_METHOD("GetUserStorageDir", "()oSystem.String;", _IL_InfoMethods_GetUserStorageDir, marshal_pp)
 	IL_METHOD("GetPlatformID", "()vSystem.PlatformID;", _IL_InfoMethods_GetPlatformID, marshal_ip)
 	IL_METHOD("GetRuntimeVersion", "()oSystem.String;", _IL_InfoMethods_GetRuntimeVersion, marshal_pp)
 	IL_METHOD("GetNetBIOSMachineName", "()oSystem.String;", _IL_InfoMethods_GetNetBIOSMachineName, marshal_pp)
@@ -2523,7 +2525,6 @@ IL_METHOD_BEGIN(InfoMethods_Methods)
 	IL_METHOD("GetUserName", "()oSystem.String;", _IL_InfoMethods_GetUserName, marshal_pp)
 	IL_METHOD("GetWorkingSet", "()l", _IL_InfoMethods_GetWorkingSet, marshal_lp)
 	IL_METHOD("GetGlobalConfigDir", "()oSystem.String;", _IL_InfoMethods_GetGlobalConfigDir, marshal_pp)
-	IL_METHOD("GetUserStorageDir", "()oSystem.String;", _IL_InfoMethods_GetUserStorageDir, marshal_pp)
 IL_METHOD_END
 
 #endif

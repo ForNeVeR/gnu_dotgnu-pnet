@@ -245,6 +245,7 @@ extern ILObject * _IL_ClrSecurity_GetPermissionsFrom(ILExecThread * _thread, ILI
 extern void _IL_ClrSecurity_SetPermissions(ILExecThread * _thread, ILObject * _p1, ILInt32 _p2);
 extern ILObject * _IL_ClrSecurity_GetPermissions(ILExecThread * _thread, ILInt32 _p1);
 
+extern System_Array * _IL_FormatterServices_InternalGetSerializableMembers(ILExecThread * _thread, ILObject * _p1);
 extern ILObject * _IL_FormatterServices_InternalGetUninitializedObject(ILExecThread * _thread, ILObject * _p1);
 
 extern void _IL_GCHandle_GCFree(ILExecThread * _thread, ILInt32 _p1);
@@ -506,10 +507,10 @@ extern ILDouble _IL_SysCharInfo_GetNumericValue(ILExecThread * _thread, ILUInt16
 extern ILInt32 _IL_SysCharInfo_GetUnicodeCategory(ILExecThread * _thread, ILUInt16 _p1);
 extern ILString * _IL_SysCharInfo_GetNewLine(ILExecThread * _thread);
 
-extern ILString * _IL_TaskMethods_GetEnvironmentVariable(ILExecThread * _thread, ILString * _p1);
 extern void _IL_TaskMethods_Exit(ILExecThread * _thread, ILInt32 _p1);
 extern void _IL_TaskMethods_SetExitCode(ILExecThread * _thread, ILInt32 _p1);
 extern System_Array * _IL_TaskMethods_GetCommandLineArgs(ILExecThread * _thread);
+extern ILString * _IL_TaskMethods_GetEnvironmentVariable(ILExecThread * _thread, ILString * _p1);
 extern ILInt32 _IL_TaskMethods_GetEnvironmentCount(ILExecThread * _thread);
 extern ILString * _IL_TaskMethods_GetEnvironmentKey(ILExecThread * _thread, ILInt32 _p1);
 extern ILString * _IL_TaskMethods_GetEnvironmentValue(ILExecThread * _thread, ILInt32 _p1);
@@ -547,6 +548,7 @@ extern ILInt32 _IL_FileMethods_GetLength(ILExecThread * _thread, ILString * _p1,
 extern ILBool _IL_FileMethods_HasAsync(ILExecThread * _thread);
 extern ILInt32 _IL_FileMethods_Copy(ILExecThread * _thread, ILString * _p1, ILString * _p2);
 
+extern ILString * _IL_InfoMethods_GetUserStorageDir(ILExecThread * _thread);
 extern ILInt32 _IL_InfoMethods_GetPlatformID(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetRuntimeVersion(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetNetBIOSMachineName(ILExecThread * _thread);
@@ -555,7 +557,6 @@ extern ILBool _IL_InfoMethods_IsUserInteractive(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetUserName(ILExecThread * _thread);
 extern ILInt64 _IL_InfoMethods_GetWorkingSet(ILExecThread * _thread);
 extern ILString * _IL_InfoMethods_GetGlobalConfigDir(ILExecThread * _thread);
-extern ILString * _IL_InfoMethods_GetUserStorageDir(ILExecThread * _thread);
 
 extern ILNativeInt _IL_RegexpMethods_CompileWithSyntaxInternal(ILExecThread * _thread, ILString * _p1, ILInt32 _p2);
 extern void _IL_RegexpMethods_FreeInternal(ILExecThread * _thread, ILNativeInt _p1);

@@ -198,7 +198,8 @@ public class JSParser
 						return (int)value;
 					}
 					else if(value >= (double)(Int64.MinValue) &&
-							value <= (double)(Int64.MaxValue))
+							value <= (double)(Int64.MaxValue) &&
+							Math.Round(value) == value)
 					{
 						return (long)value;
 					}

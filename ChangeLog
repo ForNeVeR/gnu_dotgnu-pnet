@@ -1,4 +1,9 @@
 
+2004-10-07  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
+
+	* JScript/Parser/JSParser.cs: Fixed floating point numeric literal being
+	parsed to long instead of double.
+
 2004-10-06  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/AnchorStyles.cs, System.Windows.Forms/ButtonBase.cs,

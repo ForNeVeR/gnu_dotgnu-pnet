@@ -1,4 +1,8 @@
 
+2002-05-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* libffi/*: remove all libffi source files, prior to upgrade.
+
 2002-05-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* ilalink/link_create.c: don't report "unresolved type reference"

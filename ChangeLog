@@ -1,3 +1,8 @@
+2003-06-16  Thong Nguuyen <tum@veridicus.com>
+
+	* tests/System/Threading/TestWaitHandle.cs: Make TestWaitAll check
+	for the right return value when exitContext isn't true.
+	
 2003-07-15  Richard Baumann  <biochem333@nyc.rr.com>
 
 	* System.Windows.Forms/ScrollBar.cs,

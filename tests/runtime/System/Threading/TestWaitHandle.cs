@@ -103,7 +103,7 @@ public class TestWaitHandle
 		e1.Set();
 		e2.Set();
 
-		x = WaitHandle.WaitAll(new WaitHandle[] {e1,e2},100, false);
+		x = WaitHandle.WaitAll(new WaitHandle[] {e1,e2},100, true);
 
 		AssertEquals("WaitAll(set, set)", x, true);
 	}

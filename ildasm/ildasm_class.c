@@ -166,7 +166,7 @@ static void Dump_FieldDef(ILImage *image, FILE *outstream, int flags,
 	}
 	if((ILField_Attrs(field) & IL_META_FIELDDEF_HAS_DEFAULT) != 0)
 	{
-		ILDAsmDumpConstant(image, outstream, (ILProgramItem *)field, flags);
+		ILDumpConstant(outstream, (ILProgramItem *)field);
 	}
 	putc('\n', outstream);
 	if(ILProgramItem_HasAttrs(field))

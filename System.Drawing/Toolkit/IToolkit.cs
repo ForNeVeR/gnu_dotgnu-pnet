@@ -80,7 +80,7 @@ public interface IToolkit
 	IToolkitPen CreatePen(Pen pen);
 
 	// Create a toolkit font from the properties in the specified object.
-	IToolkitFont CreateFont(Font font);
+	IToolkitFont CreateFont(Font font, float dpi);
 
 	// Get the handle for the halftone palette.  IntPtr.Zero if not supported.
 	IntPtr GetHalftonePalette();

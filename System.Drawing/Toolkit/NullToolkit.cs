@@ -117,7 +117,7 @@ public class NullToolkit : IToolkit
 			}
 
 	// Create a toolkit font from the properties in the specified object.
-	public virtual IToolkitFont CreateFont(Font font)
+	public virtual IToolkitFont CreateFont(Font font, float dpi)
 			{
 				return null;
 			}

@@ -495,7 +495,7 @@ public sealed class Font
 			{
 				if(toolkitFont == null)
 				{
-					GetFont(ToolkitManager.Toolkit);
+					GetFont(ToolkitManager.Toolkit, 72);
 				}
 				return toolkitFont.GetHfont();
 			}
@@ -522,11 +522,11 @@ public sealed class Font
 					{
 						if(g != null)
 						{
-							GetFont(g.Toolkit);
+							GetFont(g.Toolkit, graphics.DpiY);
 						}
 						else
 						{
-							GetFont(ToolkitManager.Toolkit);
+							GetFont(ToolkitManager.Toolkit, 72);
 						}
 					}
 					toolkitFont.ToLogFont(lf, g);
@@ -574,14 +574,14 @@ public sealed class Font
 #endif
 
 	// Get the toolkit version of this font for a specific toolkit.
-	internal IToolkitFont GetFont(IToolkit toolkit)
+	internal IToolkitFont GetFont(IToolkit toolkit, float dpi)
 			{
 				lock(this)
 				{
 					if(this.toolkitFont == null)
 					{
 						// We don't yet have a toolkit font yet.
-						this.toolkitFont = toolkit.CreateFont(this);
+						this.toolkitFont = toolkit.CreateFont(this, dpi);
 						this.toolkit = toolkit;
 						return this.toolkitFont;
 					}
@@ -599,7 +599,7 @@ public sealed class Font
 						// is thrown while creating the toolkit font.
 						this.toolkitFont.Dispose();
 						this.toolkitFont = null;
-						this.toolkitFont = toolkit.CreateFont(this);
+						this.toolkitFont = toolkit.CreateFont(this, dpi);
 						this.toolkit = toolkit;
 						return this.toolkitFont;
 					}

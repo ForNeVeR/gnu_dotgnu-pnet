@@ -117,6 +117,66 @@ public class FixedSizeList<T> : FixedSizeCollection<T>, IList<T>
 				}
 			}
 
+	// Fixed-size list iterator.
+	private sealed class FixedSizeListIterator<T> : IListIterator<T>
+	{
+		// Internal state.
+		protected IListIterator<T> iterator;
+
+		// Constructor.
+		public FixedSizeListIterator(IListIterator<T> iterator)
+				{
+					this.iterator = iterator;
+				}
+
+		// Implement the IIterator<T> interface.
+		public bool MoveNext()
+				{
+					return iterator.MoveNext();
+				}
+		public void Reset()
+				{
+					iterator.Reset();
+				}
+		public void Remove()
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_FixedSizeCollection"));
+				}
+		T IIterator<T>.Current
+				{
+					get
+					{
+						return ((IIterator<T>)iterator).Current;
+					}
+				}
+
+		// Implement the IListIterator<T> interface.
+		public bool MovePrev()
+				{
+					return iterator.MovePrev();
+				}
+		public int Position
+				{
+					get
+					{
+						return iterator.Position;
+					}
+				}
+		public T Current
+				{
+					get
+					{
+						return iterator.Current;
+					}
+					set
+					{
+						iterator.Current = value;
+					}
+				}
+
+	}; // class FixedSizeListIterator<T>
+
 }; // class FixedSizeList<T>
 
 }; // namespace Generics

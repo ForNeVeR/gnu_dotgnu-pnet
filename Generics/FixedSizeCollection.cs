@@ -90,6 +90,42 @@ public class FixedSizeCollection<T> : ICollection<T>, ICloneable
 				}
 			}
 
+	// Fixed-size collection iterator.
+	private sealed class FixedSizeIterator<T> : IIterator<T>
+	{
+		// Internal state.
+		protected IIterator<T> iterator;
+
+		// Constructor.
+		public FixedSizeIterator(IIterator<T> iterator)
+				{
+					this.iterator = iterator;
+				}
+
+		// Implement the IIterator<T> interface.
+		public bool MoveNext()
+				{
+					return iterator.MoveNext();
+				}
+		public void Reset()
+				{
+					iterator.Reset();
+				}
+		public void Remove()
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_FixedSizeCollection"));
+				}
+		public T Current
+				{
+					get
+					{
+						return iterator.Current;
+					}
+				}
+
+	}; // class FixedSizeIterator<T>
+
 }; // class FixedSizeCollection<T>
 
 }; // namespace Generics

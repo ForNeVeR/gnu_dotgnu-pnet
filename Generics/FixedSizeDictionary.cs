@@ -120,6 +120,70 @@ public class FixedSizeDictionary<KeyT, ValueT>
 				}
 			}
 
+	// Fixed-size dictionary iterator.
+	private sealed class FixedSizeDictIterator<KeyT, ValueT>
+		: IDictionaryIterator<KeyT, ValueT>
+	{
+		// Internal state.
+		protected IDictionaryIterator<KeyT, ValueT> iterator;
+
+		// Constructor.
+		public FixedSizeDictIterator(IDictionaryIterator<KeyT, ValueT> iterator)
+				{
+					this.iterator = iterator;
+				}
+
+		// Implement the IIterator<DictionaryEntry<KeyT, ValueT>> interface.
+		public bool MoveNext()
+				{
+					return iterator.MoveNext();
+				}
+		public void Reset()
+				{
+					iterator.Reset();
+				}
+		public void Remove()
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_FixedSizeCollection"));
+				}
+		public DictionaryEntry<KeyT, ValueT> Current
+				{
+					get
+					{
+						return iterator.Current;
+					}
+				}
+
+		// Implement the IDictionaryIterator<KeyT, ValueT> interface.
+		public DictionaryEntry<KeyT, ValueT> Entry
+				{
+					get
+					{
+						return iterator.Entry;
+					}
+				}
+		public KeyT Key
+				{
+					get
+					{
+						return iterator.Key;
+					}
+				}
+		public ValueT Value
+				{
+					get
+					{
+						return iterator.Value;
+					}
+					set
+					{
+						iterator.Value = value;
+					}
+				}
+
+	}; // class FixedSizeDictIterator<KeyT, ValueT>
+
 }; // class FixedSizeDictionary<KeyT, ValueT>
 
 }; // namespace Generics

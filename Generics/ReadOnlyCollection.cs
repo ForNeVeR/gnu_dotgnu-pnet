@@ -90,6 +90,42 @@ public class ReadOnlyCollection<T> : ICollection<T>, ICloneable
 				}
 			}
 
+	// Iterator class for read-only collections.
+	private sealed class ReadOnlyIterator<T> : IIterator<T>
+	{
+		// Internal state.
+		protected IIterator<T> iterator;
+
+		// Constructor.
+		public ReadOnlyIterator(IIterator<T> iterator)
+				{
+					this.iterator = iterator;
+				}
+
+		// Implement the IIterator<T> interface.
+		public bool MoveNext()
+				{
+					return iterator.MoveNext();
+				}
+		public void Reset()
+				{
+					iterator.Reset();
+				}
+		public void Remove()
+				{
+					throw new InvalidOperationException
+						(S._("NotSupp_ReadOnly"));
+				}
+		public T Current
+				{
+					get
+					{
+						return iterator.Current;
+					}
+				}
+
+	}; // class ReadOnlyIterator<T>
+
 }; // class ReadOnlyCollection<T>
 
 }; // namespace Generics

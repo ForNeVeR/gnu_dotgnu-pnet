@@ -67,6 +67,16 @@
 	classes to replace the concrete-specific "FixedSize" methods;
 	fix Copyright messages.
 
+	* Generics/FixedSizeCollection.cs, Generics/FixedSizeDictIterator.cs,
+	Generics/FixedSizeDictionary.cs, Generics/FixedSizeIterator.cs,
+	Generics/FixedSizeList.cs, Generics/FixedSizeListIterator.cs,
+	Generics/ReadOnlyCollection.cs, Generics/ReadOnlyDictIterator.cs,
+	Generics/ReadOnlyDictionary.cs, Generics/ReadOnlyIterator.cs,
+	Generics/ReadOnlyList.cs, Generics/ReadOnlyListIterator.cs:
+	move the fixed-size and read-only iterator wrappers inside
+	their respective collection classes and make them nested,
+	because they are only used from those collection classes.
+
 2003-02-23  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/Text/StringBuilder.cs: reallocate StringBuilder's

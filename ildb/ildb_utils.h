@@ -70,6 +70,19 @@ void ILDbTraceClose(ILDb *db);
 long ILDbParseNumber(ILDb *db, char *value, int len,
 					 const char *name, long defValue);
 
+/*
+ * Print the value in a memory location.  The "ptr" value points to
+ * the memory that contains the value.
+ */
+void ILDbPrintValue(ILExecThread *thread, void *ptr, ILType *type,
+				    int expand, int hexFlag);
+
+/*
+ * Print the static fields within a class.
+ */
+void ILDbPrintStatic(ILExecThread *thread, ILClass *classInfo,
+					 int expand, int hexFlag);
+
 #ifdef	__cplusplus
 };
 #endif

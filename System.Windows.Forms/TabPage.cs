@@ -34,7 +34,7 @@ namespace System.Windows.Forms
 			visible = true;
 		}
 
-		public TabPage(string text) : base()
+		public TabPage(string text) : this()
 		{
 			Text = text;
 		}

@@ -4,6 +4,9 @@
 	* runtime/System/Reflection/Emit/AssemblyBuilder.cs: Fake version info 
 	creation for assemblies.
 
+	* System.Windows.Forms/TabPage.cs: Make sure that both the constructors 
+	set visible to true (bug #10466).
+
 2004-09-21  Carl-Adam Brengesjo  <ca.brengesjo@telia.com>
 
 	* JScript/Builtins/JSBuiltin.cs, JScript/Builtins/GlobalObject.cs: Added

@@ -1,4 +1,9 @@
 
+2004-03-29  Gopal V <gopalv82@symonds.net>
+
+	* System.Windows.Forms/HelpProvider.cs: Commit patch #2830 with minor
+	cosmetic modifications. (from Russel Stuart)
+
 2004-03-27  Gopal V <gopalv82@symonds.net>
 
 	* runtime/System/TimeSpan.cs: Fix minor bug #8291

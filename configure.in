@@ -97,6 +97,7 @@ libc/Makefile
 libc/malloc/Makefile
 libc/misc/Makefile
 libc/stdio/Makefile
+libc/string/Makefile
 libc/unistd/Makefile
 libm/Makefile
 samples/Makefile

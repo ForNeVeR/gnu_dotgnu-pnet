@@ -118,6 +118,15 @@ public class FileLoadException : IOException
 					}
 				}
 			}
+#if !ECMA_COMPAT
+	public String FusionLog
+			{
+				get
+				{
+					throw new NotImplementedException("FusionLog");
+				}
+			}
+#endif
 
 }; // class FileLoadException
 

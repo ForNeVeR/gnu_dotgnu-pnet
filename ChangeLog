@@ -1,4 +1,16 @@
 
+2003-03-09  Gopal.V  <gopalv82@symonds.net>
+
+	* runtime/System/BadImageFormatException.cs,
+	runtime/System/IO/FileLoadException.cs: Add the stubs for non-ECMA 
+	FusionLog property.
+
+	* runtime/System/Type.cs: Add the various builtin member filters and 
+	implement them partially.
+
+	* runtime/System/AppDomain.cs: Add the stubs and redirects for all
+	the DefineDynamicAssembly overriden methods.
+	
 2003-03-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* JScript/Builtins/GlobalObject.cs, JScript/Execute/Convert.cs,

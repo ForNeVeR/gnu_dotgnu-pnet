@@ -93,6 +93,15 @@ public class BadImageFormatException : SystemException
 					return _("Exception_BadImage");
 				}
 			}
+#if !ECMA_COMPAT
+	public String FusionLog
+			{
+				get
+				{
+					throw new NotImplementedException("FusionLog");
+				}
+			}
+#endif
 
 }; // class BadImageFormatException
 

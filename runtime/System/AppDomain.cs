@@ -193,6 +193,108 @@ public sealed class AppDomain : MarshalByRefObject, _AppDomain
 				return null;
 			}
 
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+						AssemblyBuilderAccess access)
+			{
+				return DefineDynamicAssembly (name, access, null, null,
+											  null, null, null, false);
+			}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+											AssemblyBuilderAccess access,
+											Evidence evidence)
+			{
+				return DefineDynamicAssembly (name, access, null, evidence,
+											  null, null, null, false);
+			}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+											AssemblyBuilderAccess access,
+											String dir)
+			{
+				return DefineDynamicAssembly (name, access, dir, null,
+												null, null, null, false);
+			}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+											AssemblyBuilderAccess access,
+											String dir,
+											Evidence evidence)
+			{
+				return DefineDynamicAssembly (name, access, dir, evidence,
+												  null, null, null, false);
+			}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+											 AssemblyBuilderAccess access,
+											 PermissionSet requiredPermissions,
+											 PermissionSet optionalPermissions,
+											 PermissionSet refusedPersmissions)
+			{
+				return DefineDynamicAssembly (name, access, null, null,
+									  requiredPermissions, optionalPermissions,
+									  refusedPersmissions, false);
+			}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+											AssemblyBuilderAccess access,
+											Evidence evidence,
+											PermissionSet requiredPermissions,
+											PermissionSet optionalPermissions,
+											PermissionSet refusedPersmissions)
+			{
+				return DefineDynamicAssembly (name, access, null, evidence,
+									  requiredPermissions, optionalPermissions,
+									  refusedPersmissions, false);
+			}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+											AssemblyBuilderAccess access,
+											String dir,
+											PermissionSet requiredPermissions,
+											PermissionSet optionalPermissions,
+											PermissionSet refusedPersmissions)
+		{
+				return DefineDynamicAssembly (name, access, dir, null,
+								requiredPermissions, optionalPermissions,
+								refusedPersmissions, false);
+		}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+											AssemblyBuilderAccess access,
+											String dir,
+											Evidence evidence,
+											PermissionSet requiredPermissions,
+											PermissionSet optionalPermissions,
+											PermissionSet refusedPersmissions)
+		{
+			return DefineDynamicAssembly (name, access, dir, evidence,
+								requiredPermissions, optionalPermissions,
+								refusedPersmissions, false);
+
+		}
+	
+	[TODO]
+	public AssemblyBuilder DefineDynamicAssembly (AssemblyName name,
+										AssemblyBuilderAccess access,
+										string dir,
+										Evidence evidence,
+										PermissionSet requiredPermissions,
+										PermissionSet optionalPermissions,
+										PermissionSet refusedPersmissions,
+										bool isSynchronized)
+	{
+		throw new NotImplementedException("DefineDynamicAssembly");
+	}
+
 	// Set the cache path.
 	[TODO]
 	public void SetCachePath(String s)

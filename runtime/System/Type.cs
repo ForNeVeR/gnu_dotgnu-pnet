@@ -39,6 +39,18 @@ public abstract class Type : MemberInfo
 	// An empty array of types.
 	public static readonly Type[] EmptyTypes = new Type [0];
 
+#if !ECMA_COMPAT
+	public static readonly MemberFilter FilterName = 
+				new MemberFilter(FilterNameImpl);
+	
+	[TODO]
+	public static readonly MemberFilter FilterAttribute = 
+				new MemberFilter(FilterAttributeImpl);
+	
+	public static readonly MemberFilter FilterNameIgnoreCase = 
+				new MemberFilter(FilterNameIgnoreCaseImpl);
+#endif
+
 	// Cached copies of useful type descriptors.
 	private static readonly Type objectType = typeof(Object);
 	private static readonly Type valueType  = typeof(ValueType);
@@ -233,6 +245,43 @@ public abstract class Type : MemberInfo
 				list.CopyTo(retval);
 				return retval;				
 			}
+	
+	private static bool FilterNameImpl(	MemberInfo m, 
+										Object filterCriteria)
+	{
+		String name= (String)filterCriteria;
+		if(name==null || name.IndexOf('*')==-1)
+		{
+			return String.Equals(name,m.Name);
+		}
+		else
+		{
+			// TODO : bit of regexp magic ?
+		}
+		return false;
+	}
+
+	private static bool FilterNameIgnoreCaseImpl(MemberInfo m, 
+ 												 Object filterCriteria)
+	{
+		String name= (String)filterCriteria;
+		if(name==null || name.IndexOf('*')==-1)
+		{
+			return (String.Compare(name,m.Name,true)==0);
+		}
+		else
+		{
+			// TODO : bit of regexp magic ?
+		}
+		return false;
+	}
+
+	private static bool FilterAttributeImpl(MemberInfo m, 
+											Object filterCriteria)
+	{
+		throw new NotImplementedException("FilterAttributeImpl");
+	}
+
 #endif
 
 	// Get the element type for this type.

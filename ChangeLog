@@ -1,4 +1,4 @@
-2003-05-28  Thong Nguyen  <tum@veridicus.com>
+2004-05-28  Thong Nguyen  <tum@veridicus.com>
 
 	* tests/runtime/System/Threading/TestMonitor.cs: Added sleep
 	at opportune moments to increase chances of failure.  Reduced
@@ -12,7 +12,7 @@
 2004-05-27  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/ListBindingConverter.cs, 
-	System.Windows.Forms/ListBindingConverter.cs: Stub out these classes.
+	System.Windows.Forms/ImageIndexConverter.cs: Stub out these classes.
 
 	* System.Windows.Forms/AnchorStyles.cs,
 	System.Windows.Forms/BaseCollection.cs, System.Windows.Forms/Binding.cs,

@@ -138,6 +138,22 @@ int _ILExecThreadFramePush(ILExecThread *thread, ILMethod *method);
  */
 void _ILExecThreadFramePop(ILExecThread *thread);
 
+/*
+ * Lay out a class's fields, virtual methods, and interfaces.
+ * Returns zero if there is something wrong with the definition.
+ */
+int _ILLayoutClass(ILExecThread *thread, ILClass *info);
+
+/*
+ * Security check types.
+ */
+#define	IL_SECURITY_LAYOUT			1
+
+/*
+ * Perform a security check on a program item.
+ */
+int _ILSecurityCheck(ILExecThread *thread, ILProgramItem *info, int type);
+
 #ifdef	__cplusplus
 };
 #endif

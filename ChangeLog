@@ -24,6 +24,8 @@ include/il_writer.h: remove obsolete code related to Beta 1 support.
 
 * engine/layout.c: new file that implements field and method layout.
 
+* engine/engine.h: declare _ILLayoutClass and _ILSecurityCheck.
+
 2001-08-17  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * image/java_loader.c: add support for .jar files to the loader.

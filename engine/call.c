@@ -94,6 +94,7 @@ extern	"C" {
 				if((stacktop + (nwords)) > stacklimit) \
 				{ \
 					/* TODO: throw a stack overflow exception */ \
+					return 1; \
 				} \
 			} while (0)
 
@@ -258,13 +259,16 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	pcstart = _ILConvertMethod(thread, method);
 	if(!pcstart)
 	{
-		/* TODO: throw a "MissingMethodException" */
+		/* Throw a "MissingMethodException" */
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		return 1;
 	}
 
 	/* Create a call frame for the method */
 	if(thread->numFrames >= thread->maxFrames)
 	{
 		/* TODO: throw a stack overflow exception */
+		return 1;
 	}
 	frame = &(thread->frameStack[(thread->numFrames)++]);
 	savePC = thread->pc;
@@ -591,13 +595,16 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	pcstart = _ILConvertMethod(thread, method);
 	if(!pcstart)
 	{
-		/* TODO: throw a "MissingMethodException" */
+		/* Throw a "MissingMethodException" */
+		ILExecThreadThrowSystem(thread, "System.MissingMethodException", 0);
+		return 1;
 	}
 
 	/* Create a call frame for the method */
 	if(thread->numFrames >= thread->maxFrames)
 	{
 		/* TODO: throw a stack overflow exception */
+		return 1;
 	}
 	frame = &(thread->frameStack[(thread->numFrames)++]);
 	savePC = thread->pc;

@@ -58,6 +58,56 @@ static ILMethod *FindUserBinaryOperator(ILGenInfo *info,
 	return 0;
 }
 
+/* 
+ * process UserBinaryOperator
+ */
+static void ApplyUserBinaryOperator(ILGenInfo *info, ILMethod *method,
+									ILNode_BinaryExpression *node,
+									ILNode **parent,CSSemValue *value1,
+									CSSemValue *value2)
+{
+	ILType *returnType;
+	ILType *sig;
+	ILType *argType1, *argType2;
+	
+	method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
+	if(!method)
+	{
+		CCOutOfMemory();
+		return; /* fall back */
+	}
+	
+	sig= ILMethod_Signature(method);
+	
+	returnType = ILTypeGetReturn(sig);
+	
+	/* NOTE: this is valid even for non-static operators */
+	argType1=ILTypeGetParam(sig,0); 
+	argType2=ILTypeGetParam(sig,1);
+	
+	if(ILCanCoerce(info,CSSemGetType(*value1),argType1))
+	{
+		ILCoerce(info,node->expr1,
+					&(node->expr1),
+					CSSemGetType(*value1),
+					argType1);
+		/* CSSemSetRValue(*value1, argType1); *//* not needed */
+	}
+	if(ILCanCoerce(info,CSSemGetType(*value2),argType2))
+	{
+		ILCoerce(info,node->expr2,
+					&(node->expr2),
+					CSSemGetType(*value2),
+					argType2);
+		CSSemSetRValue(*value2, argType2);
+	}
+	*parent = ILNode_UserBinaryOp_create
+						(((ILNode_BinaryExpression*)(node))->expr1, 
+						((ILNode_BinaryExpression*)(node))->expr2,
+						 ILTypeToMachineType(returnType), method);
+	CSSemSetRValue(*value1, returnType);
+}
+
 /*
  * Perform constant evaluation on an operator node.
  */
@@ -106,7 +156,6 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 {
 	const ILOperator *oper;
 	ILMethod *method;
-	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
 	ILType *resultType;
@@ -162,18 +211,10 @@ static CSSemValue BinarySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 									CSSemGetType(value2));
 	if(method)
 	{
-		method = (ILMethod *)ILMemberImport(info->image, (ILMember *)method);
-		if(!method)
-		{
-			CCOutOfMemory();
-		}
-		returnType = ILTypeGetReturn(ILMethod_Signature(method));
-		*parent = ILNode_UserBinaryOp_create
-						(node->expr1, node->expr2,
-						 ILTypeToMachineType(returnType), method);
+		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
+								parent,&(value1),&(value2));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 	
@@ -320,7 +361,6 @@ ILNode_SemAnalysis(ILNode_Add)
 {
 	const ILOperator *oper;
 	ILMethod *method;
-	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
 	ILType *resultType;
@@ -376,13 +416,10 @@ ILNode_SemAnalysis(ILNode_Add)
 									CSSemGetType(value2));
 	if(method)
 	{
-		returnType = ILTypeGetReturn(ILMethod_Signature(method));
-		*parent = ILNode_UserBinaryOp_create
-						(node->expr1, node->expr2,
-						 ILTypeToMachineType(returnType), method);
+		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
+								parent,&(value1),&(value2));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
@@ -474,7 +511,6 @@ ILNode_SemAnalysis(ILNode_Sub)
 {
 	const ILOperator *oper;
 	ILMethod *method;
-	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
 	ILType *resultType;
@@ -531,13 +567,10 @@ ILNode_SemAnalysis(ILNode_Sub)
 									CSSemGetType(value2));
 	if(method)
 	{
-		returnType = ILTypeGetReturn(ILMethod_Signature(method));
-		*parent = ILNode_UserBinaryOp_create
-						(node->expr1, node->expr2,
-						 ILTypeToMachineType(returnType), method);
+		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
+								parent,&(value1),&(value2));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
@@ -845,7 +878,6 @@ static CSSemValue AssignSem(ILGenInfo *info,
 	ILNode **parent = &(anode->assign);
 	const ILOperator *oper;
 	ILMethod *method;
-	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
 	ILType *resultType;
@@ -930,13 +962,10 @@ static CSSemValue AssignSem(ILGenInfo *info,
 									CSSemGetType(value2));
 	if(method)
 	{
-		returnType = ILTypeGetReturn(ILMethod_Signature(method));
-		*parent = ILNode_UserBinaryOp_create
-						(node->expr1, node->expr2,
-						 ILTypeToMachineType(returnType), method);
+		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
+								parent,&(value1),&(value2));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 
@@ -1584,7 +1613,6 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 {
 	const ILOperator *oper;
 	ILMethod *method;
-	ILType *returnType;
 	CSSemValue value1;
 	CSSemValue value2;
 	ILType *resultType;
@@ -1653,13 +1681,10 @@ static CSSemValue EqualitySem(ILGenInfo *info, ILNode_BinaryExpression *node,
 									CSSemGetType(value2));
 	if(method)
 	{
-		returnType = ILTypeGetReturn(ILMethod_Signature(method));
-		*parent = ILNode_UserBinaryOp_create
-						(node->expr1, node->expr2,
-						 ILTypeToMachineType(returnType), method);
+		ApplyUserBinaryOperator(info,method,(ILNode_BinaryExpression*)node,
+								parent,&(value1),&(value2));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
-		CSSemSetRValue(value1, returnType);
 		return value1;
 	}
 

@@ -1,4 +1,9 @@
 
+2002-11-14  Gopal.V  <gopalv82@symonds.net>
+	
+	* cscc/csharp/cs_oper.tc: Do parameter coercion for UserBinary
+	operators.
+
 2002-11-14  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_encoding.c,

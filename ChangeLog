@@ -6,7 +6,7 @@
 
 2002-05-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
-	* support/spawn.c: report signals from spawned child processes.
+       	* support/spawn.c: report signals from spawned child processes.
 
 	* codegen/cg_optable.c: do not insert primitive type coercions
 	into the result of an operator, as the type is already final.
@@ -18,6 +18,12 @@
 	include/il_sysio.h, support/socket.c: fix bugs in the "select"
 	implementation; make it bullet-proof against signals; pass
 	back more information about which descriptors fired.
+
+2002-05-01 Charlie Carnow  <carnow@gmx.net>
+
+	* support/socket.c, engine/lib_socket.c: Implementation of
+	Select
+	
 
 2002-04-30  Rhys Weatherley  <rweather@southern-storm.com.au>
 

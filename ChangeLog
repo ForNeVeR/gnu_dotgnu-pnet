@@ -1,4 +1,9 @@
 
+2003-03-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* System.Xml/NodeList.cs: fix node iterator, which was skipping
+	the first child (bug #2692).
+
 2003-03-02  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/Collections/Hashtable.cs: add the set method for the

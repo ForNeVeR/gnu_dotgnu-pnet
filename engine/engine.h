@@ -140,6 +140,7 @@ typedef struct _tagILClassPrivate ILClassPrivate;
 struct _tagILClassPrivate
 {
 	ILUInt32		size;				/* Full instance size */
+	ILUInt32		staticSize;			/* Size of static data */
 	ILUInt32		inLayout : 1;		/* Non-zero if in layout algorithm */
 	ILUInt32		alignment : 15;		/* Preferred instance alignment */
 	ILUInt32		vtableSize : 16;	/* Size of the vtable */
@@ -187,7 +188,7 @@ int _ILCVMInterpreter(ILExecThread *thread);
  * Lay out a class's fields, virtual methods, and interfaces.
  * Returns zero if there is something wrong with the definition.
  */
-int _ILLayoutClass(ILExecThread *thread, ILClass *info);
+int _ILLayoutClass(ILClass *info);
 
 /*
  * Security check types.
@@ -197,7 +198,7 @@ int _ILLayoutClass(ILExecThread *thread, ILClass *info);
 /*
  * Perform a security check on a program item.
  */
-int _ILSecurityCheck(ILExecThread *thread, ILProgramItem *info, int type);
+int _ILSecurityCheck(ILProgramItem *info, int type);
 
 /*
  * Verify the contents of a method.

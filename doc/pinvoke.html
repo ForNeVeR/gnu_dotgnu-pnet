@@ -6,9 +6,9 @@
 <h1>PInvoke Conventions for Unix</h1>
 
 Rhys Weatherley, <a href="mailto:rweather@southern-storm.com.au">rweather@southern-storm.com.au</a>.<br>
-Last Modified: $Date: 2001/08/13 05:22:07 $<p>
+Last Modified: $Date: 2002/05/27 04:03:35 $<p>
 
-Copyright &copy; 2001 Southern Storm Software, Pty Ltd.<br>
+Copyright &copy; 2001, 2002 Southern Storm Software, Pty Ltd.<br>
 Permission to distribute unmodified copies of this work is hereby granted.<p>
 
 <h2>1. Introduction</h2>
@@ -18,366 +18,108 @@ a mechanism that can be used to invoke functions that are written in
 native code, as opposed to IL bytecode.  This mechanism is typically
 referred to as "PInvoke" or "It Just Works".<p>
 
-Implementations of the Common Language Runtime (CLR) on Windows provide
-a rich set of tools to converting between the well-defined world of
-CLR conventions, and the ill-defined world of Windows API conventions.
+Implementations of the Common Language Runtime (CLR) on Win32 provide
+a large number of tools for converting between the well-defined world of
+CLR conventions, and the ill-defined world of Win32 API conventions.
 Attributes are added to method declarations that identify the DLL that
 contains the function, and the mechanism to use to convert CLR types
 into parameter types for the function.  These attributes are converted
 into flags and token structures within the metadata of the program.<p>
 
-Implementations of the CLR on Unix will need a similar set of tools.  However,
-the problem is exacerbated by the variations in CPU types that are common
-in the Unix community.  Windows API's typically use types such as
-<code>WORD</code> and <code>DWORD</code>, which are fixed in size for
-all platforms.  Unix API's typically use types such as <code>int</code>
-and <code>long</code> which are variable in size.<p>
+Implementations of the CLR on Unix need a similar set of tools.  However,
+the problem is exacerbated by the variations in CPU types, API type
+definitions, and calling conventions that are common in the Unix
+community.<p>
 
-This document proposes a standard mechanism for "PInvoke" under Unix.
-The goal is to create a system that "just works", even where variations
-in type sizes occur.<p>
+Because of this variation, it is difficult to build a comprehensive
+set of PInvoke tools that "just work".  So, we have instead focused
+on defining a set of basic building blocks for marshalling parameters
+and return values.  The programmer can build more complex marshalling rules
+on top of these building blocks using wrapper methods written in C# or C.<p>
 
-<h2>2. Conventions</h2>
+<h2>2. Importing functions from shared objects</h2>
 
-When referring to systems with different type sizes, we will use the
-following terminology:<p>
-
-<table border="1">
-	<tr><td>32/32 system</td><td><code>int</code> and <code>long</code>
-								 are both 32 bits in size.  (Sometimes
-								 referred to as "ILP32")</td></tr>
-	<tr><td>32/64 system</td><td><code>int</code> is 32 bits in size and
-								 <code>long</code> is 64 bits in size.
-								 (Sometimes referred to as "LP64")</td></tr>
-	<tr><td>64/64 system</td><td><code>int</code> and <code>long</code>
-								 are both 64 bits in size.</td></tr>
-</table><p>
-
-We use the convention "<code>native X</code>" to refer to the native
-C type "<code>X</code>".  e.g. "<code>native unsigned int</code>",
-"<code>native char</code>", etc.<p>
-
-<h2>3. Handling type size variations</h2>
-
-The simplest example of where type sizes can vary is the Posix
-<code>lseek</code> system call.  It is typically declared in C as some
-variant of the following:
-
-<blockquote>
-<code>extern long lseek(int fd, long offset, int whence);</code>
-</blockquote>
-
-On recent systems, the <code>off_t</code> typedef is used in place
-of <code>long</code>, but the underlying definition is the same.<p>
-
-If we used the obvious approach, we might be tempted to declare
-this in C# as:
+Functions are imported from Unix shared objects using the
+"<code>DllImport</code>" attribute:<p>
 
 <blockquote>
 <code>[DllImport("libc")]<br>
-extern long lseek(int fd, long offset, int whence);</code>
+extern int puts(String s);</code>
 </blockquote>
 
-Here, we have reused the <code>DllImport</code> attribute to indicate
-the shared object from which to import the function.  This will ensure
-that a PInvoke record is created in the metadata with the module
-reference set appropriately.<p>
+This ensures that a PInvoke record is created in the metadata with the
+module reference set appropriately.  All such functions are assumed to
+have C calling conventions and a fixed number of arguments (i.e. no
+variable argument lists).<p>
 
-However, the above definition will not work on 32/32 systems (the most
-common at present).  This is because the C# <code>long</code> type is
-64 bits in length, not the 32 that the 32/32 C API expects.  It also will not
-work on 64/64 systems because the C# <code>int</code> type is 32 bits
-in length, not the 64 that the 64/64 C API expects.<p>
-
-There are actually three "correct" definitions for <code>lseek</code>:
-
-<blockquote>
-32/32 systems:
-<blockquote>
-<code>[DllImport("libc")]<br>
-extern int lseek(int fd, int offset, int whence);</code>
-</blockquote>
-32/64 systems:
-<blockquote>
-<code>[DllImport("libc")]<br>
-extern long lseek(int fd, long offset, int whence);</code>
-</blockquote>
-64/64 systems:
-<blockquote>
-<code>[DllImport("libc")]<br>
-extern long lseek(long fd, long offset, long whence);</code>
-</blockquote>
-</blockquote>
-
-Which definition we use is dependent upon the underlying operating
-system and CPU type.  Any application that uses this declaration
-will need to be compiled in three different variants.  This situation
-is untenable, especially if we intend to wrap large API's such as GTK+.<p>
-
-CLI allows attributes to be added to parameters to modify their
-marshaling characteristics.  This is typically used to convert
-C# types into the foreign type systems used by the Win32 SDK and COM.
-One of the "unmanaged types" that can be specified is <code>SysInt</code>,
-which indicates an integer value of the correct native size for the
-underlying platform.  We can thus modify the definition
-of <code>lseek</code> as follows:
+However, things are not quite that simple.  Different versions of Unix
+may have the function in a different shared object.  For example,
+"<code>socket</code>" appears in "<code>libsocket.so</code>"
+on Solaris 2.x, "<code>libc.so.6</code>" on GNU/Linux, and
+"<code>libc.so</code>" on most other systems.  The
+"<code>DllImportMap</code>" attribute can be used to specify
+platform-specific mappings:<p>
 
 <blockquote>
-<code>[DllImport("libc")]<br>
-extern long lseek([MarshalAs(UnmanagedType.SysInt)] int fd,
-long offset, [MarshalAs(UnmanagedType.SysInt)] int whence);</code>
-</blockquote>
-
-Alternatively, the built-in value type <code>IntPtr</code> can
-be used (suggested by Jay Freeman):
-
-<blockquote>
-<code>[DllImport("libc")]<br>
-extern long lseek(IntPtr fd, long offset, IntPtr whence);</code>
-</blockquote>
-
-This takes care of the <code>int</code> parameters for the method.
-ECMA specifies <code>UnmanagedType.SysInt</code> and
-<code>UnmanagedType.SysUInt</code>, but there are no equivalents for
-the native <code>long</code> type.  Also, it may not always work.<p>
-
-The native integer types used by the CLR are specified to be
-the most efficient integer sizes for the CPU in question.  On
-a 64-bit CPU, this will normally be 64-bits, even though
-most 64-bit C compilers for Unix will define <code>int</code>
-to be 32-bit.  Hence, it may not be possible to rely upon
-<code>UnmanagedType.SysInt</code> or <code>IntPtr</code> to
-provide the correct behaviour on all platforms.<p>
-
-Three different proposals seem to offer a solution to this problem.
-They are described in the following subsections.
-
-<h3>3.1 NativeTypeSizes</h3>
-
-A new attribute called <code>NativeTypeSizes</code> is introduced
-which can be associated with a method (the namespace for this type
-is yet to be determined).  We would modify our <code>lseek</code>
-example as follows:
-
-<blockquote>
-<code>[DllImport("libc"), NativeTypeSizes(true)]<br>
-extern long lseek(int fd, long offset, int whence);</code>
-</blockquote>
-
-The presence of this attribute with a value of <code>true</code> indicates
-to a compliant CLR that types should be marshaled to their obvious
-native counterparts.  We now have one definition that works for all
-Unix platforms without requiring multiple library and application builds.<p>
-
-If a method contains a mixture of fixed-size and variable-size parameters,
-then explicit marshaling can be applied to the fixed-size parameters.
-Consider the following C declaration (assuming an appropriate typedef
-for <code>int32</code>):
-
-<blockquote>
-<code>extern int foo(long x, int32 y);</code>
-</blockquote>
-
-In this case, we would declare the C# counterpart as follows:
-
-<blockquote>
-<code>[DllImport("libfoo"), NativeTypeSizes(true)]<br>
-extern int foo(long x, [MarshalAs(UnmangedType.I4)] int y);</code>
-</blockquote>
-
-The explicit marshaling attribute on <code>y</code> will override
-the default behaviour of marshaling to <code>SysInt</code>.<p>
-
-Bob Salita suggested hijacking the existing calling convention
-specifications.  Windows allows methods to be labelled as "cdecl",
-"stdcall", or "winapi".  We could hijack one of these values to
-indicate native type size handling.  However, this could be confusing
-to programmers and may cause problems should we ever discover a
-legitimate need for the original meanings.<p>
-
-<h2>3.2. PosixProto</h2>
-
-Another possibility, suggested by Miguel de Icaza, is to have a
-<code>PosixProto</code> attribute that specifies the full alternative
-prototype for the method, using Posix types.  Miguel's version of
-the example was:
-
-<blockquote>
-<code>[DllImport("libc"), PosixProto(int, off_t, int)]<br>
-extern long lseek(int fd, long offset, int whence);</code>
-</blockquote>
-
-Here, <code>PosixProto</code> is an attribute with a variable number of
-parameters that takes type names as arguments.  If we add the type for
-the return value (missing from Miguel's example), and make it strictly
-conforming to C# syntax, we would get something like the following:
-
-<blockquote>
-<code>[DllImport("libc"), PosixProto(typeof(off_t), typeof(int), typeof(off_t), typeof(int))]<br>
-extern long lseek(int fd, long offset, int whence);</code>
-</blockquote>
-
-where <code>PosixProto</code> and <code>off_t</code> are defined as follows:
-
-<blockquote>
-<code>public class PosixProto : Attribute<br>
+<code>[DllImportMap("*-solaris2*", "cygwin1.dll", "libsocket.so")]<br>
+[DllImportMap("*-linux-*", "cygwin1.dll", "libc.so.6")]<br>
+[DllImportMap("std-shared-object", "cygwin1.dll", "libc.so")]<br>
+internal sealed class Native<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public PosixProto(Type returnType, params Type[] paramTypes);<br>
-};<p>
-public struct off_t {}</code>
-</blockquote>
+&nbsp;&nbsp;&nbsp;&nbsp;[DllImport("cygwin1.dll")]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;extern public static int socket(int domain, int type, int protocol);<br>
+}</code></blockquote>
 
-Using this information, the runtime engine can convert between the
-engine type (e.g. <code>long</code>) and the underlying Posix type
-(e.g. <code>off_t</code>).  The runtime engine is configured at
-compile time to know how to marshal between engine types and
-the standard Posix types.<p>
+Here, we have placed the Win32 name of the library (<code>cygwin1.dll</code>)
+into the "<code>DllImport</code>" attribute.  At runtime, the CLR will
+use this value to look through the "<code>DllImportMap</code>" specifications
+for a platform-specific override.<p>
 
-The beauty of this system is that it can be extended to other ANSI C and
-Posix types, including the "nasty" ones such as <code>struct stat</code>.
-A drawback of this system is that the runtime engine must be pre-configured
-with all types of interest.<p>
+The "<code>DllImportMap</code>" attribute has three parameters: platform
+key, original name, and new name.  The engine searches for a platform key and
+original name match, and uses the new name if a match is found.  If no
+match is found, it will fall back to whatever "<code>DllImport</code>"
+specifies.  The attributes are searched in order of declaration.<p>
 
-<h2>3.3. PosixType</h2>
+The platform keys use the same host naming conventions as GNU autotools.
+Asterisk wildcards can be used to match any sequence of characters.
+Two special platform keys exist: "<code>std-shared-object</code>" and
+"<code>std-win32-dll</code>".  These provide fallbacks for Unix and Win32
+respectiviely.<p>
 
-A third possibility (due to Rhys Weatherley) is to allow the Posix types
-to be defined as real C# value types, and to annotate them with attributes
-that indicate special marshaling behaviour.<p>
+As a matter of coding style, the Win32 name should be specified in
+"<code>DllImport</code>" if it is available.  This improves interoperability
+with pre-existing CLR's.<p>
 
-<blockquote>
-<code>[PosixType]<br>
-public struct off_t<br>
-{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private long value;<br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;public off_t(long x) { value = x; }<br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;public static operator implicit off_t(long x)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ return new off_t(x); }<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public static operator implicit long(off_t x)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ return x.value; }<br>
-};<p>
-[PosixType]<br>
-public struct int_t<br>
-{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private int value;<br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;public int_t(int x) { value = x; }<br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;public static operator implicit int_t(int x)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ return new int_t(x); }<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public static operator implicit int(int_t x)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ return x.value; }<br>
-};<p>
-[DllImport("libc")]<br>
-extern off_t lseek(int_t fd, off_t offset, int_t whence);</code>
-</blockquote>
-
-The presense of the <code>PosixType</code> attribute on the value type
-definition indicates that special marshaling behaviour is required for
-PInvoke methods.  The implicit conversions ensure that the resulting
-types act like the regular numeric types in ordinary usage.<p>
-
-This scheme can also be used to modify how larger structures are laid out.
-Consider the <code>struct timeval</code> type:
+Because the "<code>DllImportMap</code>" attribute is not currently part
+of the ECMA standard, the programmer must declare it themselves in their
+application:
 
 <blockquote>
-<code>struct timeval<br>
+<code>[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;AllowMultiple=true, Inherited=false)]<br>
+internal sealed class DllImportMapAttribute : Attribute<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;long tv_sec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;long tv_usec;<br>
-};</code>
-</blockquote>
+&nbsp;&nbsp;&nbsp;&nbsp;public DllImportMapAttribute<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(String platform, String origName, String newName) {}<br>
+}</code></blockquote>
 
-Because the size of <code>long</code> varies between systems, we
-will have problems with Posix functions such as <code>gettimeofday</code>.
-The CLR layout of the structure will not match the underlying C library.
-Using an appropriate definition of <code>long_t</code>, we can write
-this in C# as follows:
+The class can be declared in any namespace: the CLR ignores the namespace
+when looking for the attribute.<p>
 
-<blockquote>
-<code>public struct timeval<br>
-{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public long_t tv_sec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public long_t tv_usec;<br>
-};</code>
-</blockquote>
+<h2>3. Marshalling rules for types</h2>
 
-Because <code>long_t</code> has the <code>PosixType</code> attribute,
-compliant CLR's know to lay out the field as a <code>native long</code>,
-rather than a full CLR <code>long</code>.  The <code>gettimeofday</code>
-function can then be declared as follows:
+The following table defines all of the C# type categories and their
+C counterparts when used as parameters or return values:<p>
 
-<blockquote>
-<code>[DllImport("libc")]<br>
-extern unsafe int_t gettimeofday(timeval *tv, timezone *tz);</code>
-</blockquote>
-
-There is one drawback of using types such as <code>int_t</code> and
-<code>off_t</code>.  Values must be converted to and from normal CLR types
-using the implicit conversion operators.  This involves some additional
-overhead in the bytecode that the interpreter must handle.  However,
-JIT's should be able to optimize this overhead away by looking for
-references to Posix-enabled conversion operators.<p>
-
-<h3>3.4 PosixType and Posix struct's</h3>
-
-Some Posix types are defined as struct's that vary widely between
-systems.  One of the worst such offenders is the <code>struct stat</code>
-type.  It isn't possible to define a C# struct using types such as
-<code>int_t</code> and <code>long_t</code> because some systems have
-entire fields missing, or different orders for the fields.<p>
-
-<blockquote>
-<code>[PosixStructType]<br>
-public struct stat<br>
-{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public dev_t st_dev;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public ino_t st_ino;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public mode_t st_mode;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public nlink_t st_nlink;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public uid_t st_uid;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public gid_t st_gid;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public dev_t st_rdev;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public dev_t st_rdev;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public off_t st_size;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public blksize_t st_blksize;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public time_t st_atime;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public time_t st_ctime;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public time_t st_mtime;<br>
-};</code>
-</blockquote>
-
-This definition does not match any known Unix flavour, including
-Linux: there are normally extra padding and unused fields.  We've
-omitted these extra fields on purpose to help demonstrate how they
-are handled.<p>
-
-The presence of the <code>PosixStructType</code> attribute indicates that
-the runtime engine is responsible for laying out this structure.
-It adjusts the offsets and types of each field so that they correctly
-match those of the underlying <code>struct stat</code> type.
-Any extra fields are not accessible by the C# application.<p>
-
-The layout algorithm is based on field name.  We have purposely reversed
-the usual order of the <code>st_mtime</code> and <code>st_ctime</code>
-fields above.  The runtime engine will remap the field offsets so that
-they match the underlying type correctly.<p>
-
-Note: we did not place the <code>PosixStructType</code> attribute on
-the <code>timeval</code> definition in the previous section.
-If the default layout algorithm will give the correct
-result on all systems, there is no need to label the type.<p>
-
-<h2>4. Marshaling list for all types</h2>
-
-The following list defines all of the primitive C# types and their
-counterparts for default marshaling, and marshaling when
-"<code>NativeTypeSizes(true)</code>" is specified.<p>
-
+<center>
 <table border="1">
 <tr><td>C# Type</td>
-    <td>Default</td>
-	<td>Native</td></tr>
+    <td>Parameter</td>
+    <td>Return</td></tr>
 <tr><td><code>bool</code></td>
     <td><code>int8</code></td>
-    <td><code>native int</code></td></tr>
+    <td><code>int8</code></td></tr>
 <tr><td><code>sbyte</code></td>
     <td><code>int8</code></td>
     <td><code>int8</code></td></tr>
@@ -386,260 +128,105 @@ counterparts for default marshaling, and marshaling when
     <td><code>uint8</code></td></tr>
 <tr><td><code>short</code></td>
     <td><code>int16</code></td>
-    <td><code>native short</code></td></tr>
+    <td><code>int16</code></td></tr>
 <tr><td><code>ushort</code></td>
     <td><code>uint16</code></td>
-    <td><code>native unsigned short</code></td></tr>
+    <td><code>uint16</code></td></tr>
 <tr><td><code>char</code></td>
     <td><code>uint16</code></td>
-    <td><code>native wchar_t</code></td></tr>
+    <td><code>uint16</code></td></tr>
 <tr><td><code>int</code></td>
     <td><code>int32</code></td>
-    <td><code>native int</code></td></tr>
+    <td><code>int32</code></td></tr>
 <tr><td><code>uint</code></td>
     <td><code>uint32</code></td>
-    <td><code>native unsigned int</code></td></tr>
+    <td><code>uint32</code></td></tr>
 <tr><td><code>long</code></td>
     <td><code>int64</code></td>
-    <td><code>native long</code></td></tr>
+    <td><code>int64</code></td></tr>
 <tr><td><code>ulong</code></td>
     <td><code>uint64</code></td>
-    <td><code>native unsigned long</code></td></tr>
+    <td><code>uint64</code></td></tr>
 <tr><td><code>float</code></td>
     <td><code>float32</code></td>
-    <td><code>native float</code></td></tr>
+    <td><code>float32</code></td></tr>
 <tr><td><code>double</code></td>
     <td><code>float64</code></td>
-    <td><code>native double</code></td></tr>
+    <td><code>float64</code></td></tr>
+<tr><td><code>System.IntPtr</code></td>
+    <td><code>int32/int64</code> <sup>1</sup></td>
+    <td><code>int32/int64</code> <sup>1</sup></td></tr>
+<tr><td><code>System.UIntPtr</code></td>
+    <td><code>uint32/uint64</code> <sup>1</sup></td>
+    <td><code>uint32/uint64</code> <sup>1</sup></td></tr>
 <tr><td><code>System.Object</code></td>
     <td>Object handle</td>
     <td>Object handle</td></tr>
 <tr><td><code>System.String</code></td>
-    <td>See below</td>
-    <td>See below</td></tr>
+    <td>const char * <sup>2</sup></td>
+    <td>const char * <sup>3</sup></td></tr>
 <tr><td><code>System.Enum</code></td>
-    <td>Underlying type</td>
-    <td>Underlying type</td></tr>
+    <td>Underlying type <sup>4</sup></td>
+    <td>Underlying type <sup>4</sup></td></tr>
 <tr><td><code>System.ValueType</code></td>
     <td>Struct passed by value</td>
-    <td>Struct passed by value</td></tr>
+    <td>Struct returned by value</td></tr>
+<tr><td><code>type *</code></td>
+    <td><code>type *</code></td>
+    <td><code>type *</code></td></tr>
+<tr><td><code>type[]</code></td>
+    <td><code>type *</code> <sup>5</code></td>
+    <td>Object handle</td></tr>
+<tr><td><code>delegate</code></td>
+    <td>Function pointer <sup>6</code></td>
+    <td>Object handle</td></tr>
 </table><p>
+</center>
 
-Objects of type <code>System.String</code> are handled differently depending
-upon the kind of parameter or return value:<p>
+Notes:
 
-<ul>
-	<li>Input parameters: copy the value into a <code>native char</code> array
-		and pass a pointer to it as <code>const native char *</code>.
-		If the string value is <code>null</code>, then the native value
-		<code>NULL</code> will be passed to the function.</li>
-	<li>Output parameters: create a zeroed <code>native char</code> array and
-		pass a pointer to it as a <code>native char *</code>.  Upon return,
-		create a new string with the contents of the array.</li>
-	<li>Reference parameters: copy the value into a <code>native char</code>
-		array and pass a pointer to it as <code>native char *</code>.
-		If the string value is <code>null</code>, then an empty string
-		is passed in.  Upon return, create a new string with the final
-		contents of the array.</li>
-	<li>Return value: interpret the return as a
-		<code>const native char *</code>, and create a new string with
-		the contents of the return value.  If the return value was
-		the native value <code>NULL</code>, then it is converted into
-		the string value <code>null</code>.</li>
-</ul>
+<ol>
+	<li><code>System.IntPtr</code> and <code>System.UIntPtr</code> are
+		passed as either 32-bit or 64-bit integers, depending upon the
+		underlying platform.  These types are guaranteed to be the
+		same size as a C pointer value.</li>
+	<li>String parameters are converted into a character
+	    buffer and passed as "<code>const char *</code>".  The engine
+		uses either the current locale's character set or UTF-8,
+		depending upon the PInvoke character set settings.
+		If the string is <code>null</code>, then <code>NULL</code>
+		will be passed to the underlying function.</li>
+	<li>Character buffers that are returned from the underlying function
+		are converted back into C# string objects.  The character set
+		is dependent upon the PInvoke settings.  If the
+		function returns <code>NULL</code>, then the <code>null</code>
+		string will be returned.</li>
+	<li>Enumerated values are converted into the underlying integer
+		type and then passed using the same conventions as the integer
+		type.</li>
+	<li>When passed as parameters, arrays are converted into a pointer
+		to their first element.</li>
+	<li>When passed as parameters, delegates are wrapped in a native
+		closure to turn them into a function pointer suitable for
+		calling from C code.  If the delegate is <code>null</code>,
+		then the function pointer will be <code>NULL</code>.</li>
+</ol>
 
-Return values may have a <code>MallocStringReturn</code> attribute if the
-string was <code>malloc</code>'ed by the function and the value should
-be free'd automatically once it has been converted into
-<code>System.String</code>.  For example:
-
-<blockquote>
-<code>[DllImport("libc"), return:MallocStringReturn(true)]<br>
-extern string get_current_dir_name();</code>
-</blockquote>
-
-When an explicit <code>MarshalAs</code> attribute is supplied, the values are
-marshaled as follows:<p>
-
-<table border="1">
-<tr><td>UnmanagedType</td>
-    <td>NativeType</td></tr>
-<tr><td><code>Bool</code></td>
-    <td><code>native int</code></td></tr>
-<tr><td><code>VariantBool</code></td>
-    <td><code>native char</code></td></tr>
-<tr><td><code>I1</code></td>
-    <td><code>int8</code></td></tr>
-<tr><td><code>U1</code></td>
-    <td><code>uint8</code></td></tr>
-<tr><td><code>I2</code></td>
-    <td><code>int16</code></td></tr>
-<tr><td><code>U2</code></td>
-    <td><code>uint16</code></td></tr>
-<tr><td><code>I4</code></td>
-    <td><code>int32</code></td></tr>
-<tr><td><code>U4</code></td>
-    <td><code>uint32</code></td></tr>
-<tr><td><code>I8</code></td>
-    <td><code>int64</code></td></tr>
-<tr><td><code>U8</code></td>
-    <td><code>uint64</code></td></tr>
-<tr><td><code>SysInt</code></td>
-    <td><code>native int</code></td></tr>
-<tr><td><code>SysUInt</code></td>
-    <td><code>native unsigned int</code></td></tr>
-<tr><td><code>R4</code></td>
-    <td><code>float32</code></td></tr>
-<tr><td><code>R8</code></td>
-    <td><code>float64</code></td></tr>
-<tr><td><code>RPrecise</code></td>
-    <td><code>native long double</code></td></tr>
-<tr><td><code>LPStr</code></td>
-    <td><code>const native char *</code></td></tr>
-<tr><td><code>LPWStr</code></td>
-    <td><code>const uint16 *</code></td></tr>
-<tr><td><code>LPTStr</code></td>
-    <td><code>const native wchar_t *</code></td></tr>
-<tr><td><code>Interface</code></td>
-    <td>Runtime Object Handle</td></tr>
-<tr><td><code>Struct</code></td>
-    <td>Structure ValueType passed by value</td></tr>
-<tr><td><code>LPStruct</code></td>
-    <td>Structure ValueType passed by reference</td></tr>
-<tr><td><code>LPVoid</code></td>
-    <td><code>native void *</code></td></tr>
-</table><p>
-
-Note: we are using <code>LPTStr</code> slightly differently than
-in Windows.  Windows uses it to select between either Ansi or Unicode
-variants of a function.  We are using it to convert strings into
-arrays of <code>native wchar_t</code> elements, where the size of
-<code>native wchar_t</code> is system-specific.<p>
-
-String conversions use the currently prevailing locale to convert
-the Unicode <code>System.String</code> values into <code>native char</code>
-arrays.<p>
-
-Because most Unix API's take <code>native char *</code> strings as parameters,
-we always marshal strings in that manner unless explicitly overridden
-using <code>LPWStr</code> or <code>LPTStr</code>.  For example:
+The conversions that are performed on strings, arrays, and delegates
+can be disabled by specifying an explicit marshalling type:
 
 <blockquote>
-<code>[DllImport("libc"), NativeTypeSizes(true)]<br>
-extern uint wcslen([MarshalAs(LPTStr)] string str);</code>
+<code>[DllImport("libput")]<br>
+extern int PutString([MarshalAs(UnmanagedType.Interface)] String s);</code>
 </blockquote>
 
-This converts into a call to the following C function:
+The unmanaged type code "<code>Interface</code>" is always recognised
+on parameters and return values to disable special marshalling behaviours.<p>
 
-<blockquote>
-<code>extern unsigned int wcslen(const wchar_t *str);</code>
-</blockquote>
+<hr>
 
-If a <code>System.String</code> object is marshaled as <code>Interface</code>,
-then the object handle is passed directly.  This should only be used with
-functions that are aware of the runtime engine's mechanism for representing
-strings.<p>
-
-We also handle <code>Bool</code> and <code>VariantBool</code> slightly
-differently than in Windows.  The most common boolean types in Unix
-API's are <code>native int</code> and <code>native char</code>, with
-the former more common.  Windows use 0 and -1 as boolean values with
-<code>VariantBool</code>.  This usage is extremely rare in Unix, and can
-be handled using the integer types if necessary.<p>
-
-<h2>5. ANSI C Types</h2>
-
-ANSI C defines a number of standard types such as <code>size_t</code>,
-and <code>time_t</code>.  While there are common definitions for these
-types (e.g. <code>unsigned int</code> and <code>long</code>), it is
-possible that they may have unusual sizes on some systems.<p>
-
-There really isn't any good way to handle unusual type sizes cleanly.
-Two possibilities come to mind: one using custom marshalers and the
-other using attributes.  For example:
-
-<blockquote>
-<code>[DllImport("libc"), NativeTypeSizes(true),<br>
-return:MarshalAs(UnmanagedType.CustomMarshaler, MarshalType="size_t")]<br>
-extern uint getpagesize();</code><p>
-<code>[DllImport("libc"), NativeTypeSizes(true), return:AnsiCType("size_t")]<br>
-extern uint getpagesize();</code>
-</blockquote>
-
-The second is probably a little better: if the runtime engine does not
-understand the attribute, it will fall back to the default handling.
-In the example above, the default will "just work" on the majority
-of platforms.<p>
-
-Both methods require the runtime engine to have a list of standard ANSI
-C types.  If this is extended to include other standard Unix types, the list
-could become quite large.  A large list increases the chance that different
-engines will have different lists, and hence will not interoperate
-successfully.<p>
-
-More investigation is required.<p>
-
-<h2>6. InternalCall methods</h2>
-
-The core runtime libraries (especially <code>mscorlib</code>) contain a
-large number of InternalCall methods.  These are similar to PInvoke
-methods, except that the destination of the call is implicitly supplied
-by the runtime engine.<p>
-
-InternalCall methods typically operate closer to the runtime engine than
-PInvoke methods, and so their marshaling characteristics are a little
-different.<p>
-
-Objects of type <code>System.String</code> are passed as object handles to
-InternalCall methods unless explicitly overridden by a <code>MarshalAs</code>
-attribute.  i.e. they are not automatically converted into
-<code>native char</code> arrays.<p>
-
-All InternalCall methods have an extra parameter inserted at the front
-of their parameter list to hold a handle to the currently executing
-thread.  For example, consider the following method within
-<code>System.Environment</code>:
-
-<blockquote>
-<code>[MethodImpl(MethodImplOptions.InternalCall)]<br>
-extern private Object nativeCaptureStackTrace(int skip);</code>
-</blockquote>
-
-This obtains an object that represents a stack trace within the currently
-executing thread.  The C counterpart to this would be declared as follows:
-
-<blockquote>
-<code>ObjHandle nativeCaptureStackTrace(ThreadHandle thread, int32 skip);</code>
-</blockquote>
-
-where <code>ObjHandle</code> represents the type used by the runtime engine
-to represent an object handle (probably a pointer of some kind), and
-<code>ThreadHandle</code> represents the type used by the runtime engine
-to represent a thread handle (probably also a pointer).<p>
-
-The underlying implementation can use <code>thread</code> to look up the
-internal runtime data structures to obtain the requested information.<p>
-
-The approach of adding an extra parameter to InternalCall methods avoids
-the use of global variables to obtain a link back to the runtime engine.
-PInvoke methods do not have this extra parameter because they typically
-refer to functions outside of the runtime engine itself.<p>
-
-We do not define the specifics of object handles and thread handles
-further in this document.  Some future document may define a standard
-"Dotnet Native Interface" for use by InternalCall methods to interact
-with the runtime engine.<p>
-
-<h2>7. Revision History</h2>
-
-18 July 2001: Original version<br>
-27 July 2001:
-<ul>
-<li>Explain why <code>IntPtr</code> may not always work.</li>
-<li>Split section 3 into sub-sections for each of the main proposals.</li>
-<li>Add information on using calling conventions instead of attributes.</li>
-<li>Descriptions of PosixProto, PosixType, and PosixStructType.</li>
-</ul>
+Copyright &copy; 2001, 2002 Southern Storm Software, Pty Ltd.<br>
+Permission to distribute unmodified copies of this work is hereby granted.
 
 </body>
 </html>

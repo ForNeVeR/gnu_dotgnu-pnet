@@ -27,7 +27,7 @@
 	.locals 4
 	.maxstack 0
 } // method set_Item
-.property instance int32 'Item'(int32, class ['.library']'System'.'Object'[])
+.property int32 'Item'(int32, class ['.library']'System'.'Object'[])
 {
 	.get instance int32 'TestIndexer'::'get_Item'(int32, class ['.library']'System'.'Object'[])
 	.set instance void 'TestIndexer'::'set_Item'(int32, class ['.library']'System'.'Object'[], int32)

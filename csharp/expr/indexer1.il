@@ -21,7 +21,7 @@
 	ret
 	.maxstack 0
 } // method set_Item
-.property instance class ['.library']'System'.'Object' 'Item'(class ['.library']'System'.'Object')
+.property class ['.library']'System'.'Object' 'Item'(class ['.library']'System'.'Object')
 {
 	.get instance class ['.library']'System'.'Object' 'Dictionary'::'get_Item'(class ['.library']'System'.'Object')
 	.set instance void 'Dictionary'::'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
@@ -57,7 +57,7 @@
 	ret
 	.maxstack 3
 } // method set_Item
-.property instance int32 'Item'(int32)
+.property int32 'Item'(int32)
 {
 	.get instance int32 'Counters'::'get_Item'(int32)
 	.set instance void 'Counters'::'set_Item'(int32, int32)

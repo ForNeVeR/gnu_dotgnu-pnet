@@ -43,7 +43,7 @@
 	.locals 1
 	.maxstack 1
 } // method get_XProp
-.property instance int32 'XProp'()
+.property int32 'XProp'()
 {
 	.get instance int32 'X'::'get_XProp'()
 } // property XProp
@@ -55,7 +55,7 @@
 	.locals 1
 	.maxstack 1
 } // method get_XProp2
-.property instance int32 'XProp2'()
+.property int32 'XProp2'()
 {
 	.get instance int32 'X'::'get_XProp2'()
 } // property XProp2

@@ -26,7 +26,7 @@
 	ret
 	.maxstack 1
 } // method get_i32
-.property instance int32 'i32'()
+.property int32 'i32'()
 {
 	.get instance int32 'Foo'/'Child'::'get_i32'()
 } // property i32

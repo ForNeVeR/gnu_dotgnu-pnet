@@ -1,4 +1,27 @@
 
+2003-07-07  Gopal.V  <gopalv82@symonds.net>
+
+	* csharp/class/enum6.il,	csharp/class/enum6.jl,
+	csharp/class/indexer1.il,	csharp/class/indexer1.jl,
+	csharp/class/interface1.il, csharp/class/interface1.jl,
+	csharp/class/interface3.il, csharp/class/interface3.jl,
+	csharp/class/interface4.il, csharp/class/interface4.jl,
+	csharp/class/interface5.il,	csharp/class/interface5.jl,
+	csharp/class/interface6.il,	csharp/class/interface6.jl,
+	csharp/class/property1.il,	csharp/class/property1.jl,
+	csharp/class/property2.il,	csharp/class/property2.jl,
+	csharp/class/property4.il,	csharp/class/property4.jl,
+	csharp/class/property6.il,	csharp/class/property6.jl,
+	csharp/expr/indexer1.il,	csharp/expr/indexer1.jl,
+	csharp/expr/invoke1.il,		csharp/expr/invoke1.jl,
+	csharp/stmt/foreach4.il,	csharp/stmt/foreach4.jl,
+	csharp/stmt/foreach5.il,	csharp/stmt/foreach5.jl,
+	csharp/stmt/using1.il,		csharp/stmt/using1.jl: Modify
+	output files to reflect changes in the compiler.
+	
+	* csharp/class/member_access2.err,csharp/class/member_access2.jerr:
+	update with improved error messages.
+
 2003-06-22  Gopal.V <gopalv82@symonds.net>
 	
 	* csharp/expr/cast1.il: Modify output to reflect changes in the compiler

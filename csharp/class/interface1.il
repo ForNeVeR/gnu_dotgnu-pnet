@@ -18,7 +18,7 @@
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Current'() cil managed 
 {
 } // method get_Current
-.property instance class ['.library']'System'.'Object' 'Current'()
+.property class ['.library']'System'.'Object' 'Current'()
 {
 	.get instance class ['.library']'System'.'Object' 'IEnumerator'::'get_Current'()
 } // property Current
@@ -53,7 +53,7 @@
 	ret
 	.maxstack 2
 } // method set_Key
-.property instance class ['.library']'System'.'Object' 'Key'()
+.property class ['.library']'System'.'Object' 'Key'()
 {
 	.get instance class ['.library']'System'.'Object' 'DictionaryEntry'::'get_Key'()
 	.set instance void 'DictionaryEntry'::'set_Key'(class ['.library']'System'.'Object')
@@ -73,7 +73,7 @@
 	ret
 	.maxstack 2
 } // method set_Value
-.property instance class ['.library']'System'.'Object' 'Value'()
+.property class ['.library']'System'.'Object' 'Value'()
 {
 	.get instance class ['.library']'System'.'Object' 'DictionaryEntry'::'get_Value'()
 	.set instance void 'DictionaryEntry'::'set_Value'(class ['.library']'System'.'Object')
@@ -84,21 +84,21 @@
 .method public virtual hidebysig newslot abstract specialname instance valuetype 'DictionaryEntry' 'get_Entry'() cil managed 
 {
 } // method get_Entry
-.property instance valuetype 'DictionaryEntry' 'Entry'()
+.property valuetype 'DictionaryEntry' 'Entry'()
 {
 	.get instance valuetype 'DictionaryEntry' 'IDictionaryEnumerator'::'get_Entry'()
 } // property Entry
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Key'() cil managed 
 {
 } // method get_Key
-.property instance class ['.library']'System'.'Object' 'Key'()
+.property class ['.library']'System'.'Object' 'Key'()
 {
 	.get instance class ['.library']'System'.'Object' 'IDictionaryEnumerator'::'get_Key'()
 } // property Key
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Value'() cil managed 
 {
 } // method get_Value
-.property instance class ['.library']'System'.'Object' 'Value'()
+.property class ['.library']'System'.'Object' 'Value'()
 {
 	.get instance class ['.library']'System'.'Object' 'IDictionaryEnumerator'::'get_Value'()
 } // property Value
@@ -114,21 +114,21 @@
 .method public virtual hidebysig newslot abstract specialname instance int32 'get_Count'() cil managed 
 {
 } // method get_Count
-.property instance int32 'Count'()
+.property int32 'Count'()
 {
 	.get instance int32 'ICollection'::'get_Count'()
 } // property Count
 .method public virtual hidebysig newslot abstract specialname instance bool 'get_IsSynchronized'() cil managed 
 {
 } // method get_IsSynchronized
-.property instance bool 'IsSynchronized'()
+.property bool 'IsSynchronized'()
 {
 	.get instance bool 'ICollection'::'get_IsSynchronized'()
 } // property IsSynchronized
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_SyncRoot'() cil managed 
 {
 } // method get_SyncRoot
-.property instance class ['.library']'System'.'Object' 'SyncRoot'()
+.property class ['.library']'System'.'Object' 'SyncRoot'()
 {
 	.get instance class ['.library']'System'.'Object' 'ICollection'::'get_SyncRoot'()
 } // property SyncRoot
@@ -154,14 +154,14 @@
 .method public virtual hidebysig newslot abstract specialname instance bool 'get_IsFixedSize'() cil managed 
 {
 } // method get_IsFixedSize
-.property instance bool 'IsFixedSize'()
+.property bool 'IsFixedSize'()
 {
 	.get instance bool 'IDictionary'::'get_IsFixedSize'()
 } // property IsFixedSize
 .method public virtual hidebysig newslot abstract specialname instance bool 'get_IsReadOnly'() cil managed 
 {
 } // method get_IsReadOnly
-.property instance bool 'IsReadOnly'()
+.property bool 'IsReadOnly'()
 {
 	.get instance bool 'IDictionary'::'get_IsReadOnly'()
 } // property IsReadOnly
@@ -171,7 +171,7 @@
 .method public virtual hidebysig newslot abstract specialname instance void 'set_Item'(class ['.library']'System'.'Object' 'key', class ['.library']'System'.'Object' 'value') cil managed 
 {
 } // method set_Item
-.property instance class ['.library']'System'.'Object' 'Item'(class ['.library']'System'.'Object')
+.property class ['.library']'System'.'Object' 'Item'(class ['.library']'System'.'Object')
 {
 	.get instance class ['.library']'System'.'Object' 'IDictionary'::'get_Item'(class ['.library']'System'.'Object')
 	.set instance void 'IDictionary'::'set_Item'(class ['.library']'System'.'Object', class ['.library']'System'.'Object')
@@ -179,14 +179,14 @@
 .method public virtual hidebysig newslot abstract specialname instance class 'ICollection' 'get_Keys'() cil managed 
 {
 } // method get_Keys
-.property instance class 'ICollection' 'Keys'()
+.property class 'ICollection' 'Keys'()
 {
 	.get instance class 'ICollection' 'IDictionary'::'get_Keys'()
 } // property Keys
 .method public virtual hidebysig newslot abstract specialname instance class 'ICollection' 'get_Values'() cil managed 
 {
 } // method get_Values
-.property instance class 'ICollection' 'Values'()
+.property class 'ICollection' 'Values'()
 {
 	.get instance class 'ICollection' 'IDictionary'::'get_Values'()
 } // property Values

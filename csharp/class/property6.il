@@ -15,7 +15,7 @@
 .method public hidebysig specialname instance void 'set_MyValue'(class ['.library']'System'.'String' 'value') cil managed 
 {
 } // method set_MyValue
-.property instance class ['.library']'System'.'String' 'MyValue'()
+.property class ['.library']'System'.'String' 'MyValue'()
 {
 	.get instance class ['.library']'System'.'String' 'ExternPropertyTest'::'get_MyValue'()
 	.set instance void 'ExternPropertyTest'::'set_MyValue'(class ['.library']'System'.'String')

@@ -12,7 +12,7 @@
 .method public virtual hidebysig newslot abstract specialname instance int32 'get_t1'() cil managed java 
 {
 } // method get_t1
-.property instance int32 't1'()
+.property int32 't1'()
 {
 	.get instance int32 'A'::'get_t1'()
 } // property t1

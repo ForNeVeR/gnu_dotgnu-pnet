@@ -22,7 +22,7 @@
 	.locals 2
 	.maxstack 0
 } // method set_x
-.property instance int32 'x'()
+.property int32 'x'()
 {
 	.get instance int32 'Test'::'get_x'()
 	.set instance void 'Test'::'set_x'(int32)
@@ -51,7 +51,7 @@
 	.locals 2
 	.maxstack 0
 } // method set_x
-.property instance int32 'x'()
+.property int32 'x'()
 {
 	.get instance int32 'Test2'::'get_x'()
 	.set instance void 'Test2'::'set_x'(int32)

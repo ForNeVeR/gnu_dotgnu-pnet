@@ -42,7 +42,7 @@
 	.locals 1
 	.maxstack 1
 } // method get_Foo
-.property instance valuetype 'ns1'.'Foo' 'Foo'()
+.property valuetype 'ns1'.'Foo' 'Foo'()
 {
 	.get instance valuetype 'ns1'.'Foo' 'ns1'.'FooBar'::'get_Foo'()
 } // property Foo

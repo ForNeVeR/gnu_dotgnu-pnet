@@ -18,7 +18,7 @@
 .method public virtual hidebysig newslot abstract specialname instance class ['.library']'System'.'Object' 'get_Current'() cil managed 
 {
 } // method get_Current
-.property instance class ['.library']'System'.'Object' 'Current'()
+.property class ['.library']'System'.'Object' 'Current'()
 {
 	.get instance class ['.library']'System'.'Object' 'IEnumerator'::'get_Current'()
 } // property Current
@@ -42,7 +42,7 @@
 	ret
 	.maxstack 1
 } // method get_Current
-.property instance class ['.library']'System'.'Object' 'Current'()
+.property class ['.library']'System'.'Object' 'Current'()
 {
 	.get instance class ['.library']'System'.'Object' 'Test'::'get_Current'()
 } // property Current
@@ -76,7 +76,7 @@
 	ret
 	.maxstack 1
 } // method IEnumerator.get_Current
-.property instance class ['.library']'System'.'Object' 'IEnumerator.Current'()
+.property class ['.library']'System'.'Object' 'IEnumerator.Current'()
 {
 	.get instance class ['.library']'System'.'Object' 'Test2'::'IEnumerator.get_Current'()
 } // property IEnumerator.Current

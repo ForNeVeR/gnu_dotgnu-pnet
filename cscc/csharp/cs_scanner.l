@@ -1020,6 +1020,7 @@ WHITE			[ \t\r\f\v\032]
 "lock"					{ RETURNTOK(LOCK); }
 "long"					{ RETURNTOK(LONG); }
 "__makeref"				{ RETURNTOK(MAKEREF); }
+"__module"				{ RETURNTOK(MODULE); }
 "namespace"				{ RETURNTOK(NAMESPACE); }
 "new"					{ RETURNTOK(NEW); }
 "null"					{ RETURNTOK(NULL_TOK); }

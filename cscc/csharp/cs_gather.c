@@ -290,12 +290,20 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	}
 
 	/* Create the class information block */
-	classInfo = ILClassCreate(nestedScope, 0, name, namespace, parent);
-	if(!classInfo)
+	if(strcmp(name, "<Module>") != 0)
 	{
-		CCOutOfMemory();
+		classInfo = ILClassCreate(nestedScope, 0, name, namespace, parent);
+		if(!classInfo)
+		{
+			CCOutOfMemory();
+		}
+		ILClassSetAttrs(classInfo, ~0, defn->modifiers);
 	}
-	ILClassSetAttrs(classInfo, ~0, defn->modifiers);
+	else
+	{
+		/* Retrieve the "<Module>" type, which was already created */
+		classInfo = ILClassLookup(ILClassGlobalScope(info->image), name, 0);
+	}
 	defn->classInfo = classInfo;
 
 	/* Add the interfaces to the class */

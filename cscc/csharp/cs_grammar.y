@@ -666,6 +666,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token LOCK					"`lock'"
 %token LONG					"`long'"
 %token MAKEREF				"`__makeref'"
+%token MODULE               "`__module'"
 %token NAMESPACE			"`namespace'"
 %token NEW					"`new'"
 %token NULL_TOK				"`null'"
@@ -754,7 +755,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <member>		ClassBody OptClassMemberDeclarations
 %type <member>		ClassMemberDeclarations ClassMemberDeclaration
 %type <member>		StructBody
-%type <node> 		StructDeclaration StructInterfaces
+%type <node> 		StructDeclaration StructInterfaces ModuleDeclaration
 
 %type <node>		PrimaryExpression UnaryExpression Expression
 %type <node>		MultiplicativeExpression AdditiveExpression
@@ -1095,6 +1096,7 @@ NamespaceMemberDeclaration
 
 TypeDeclaration
 	: ClassDeclaration			{ $$ = $1; }
+	| ModuleDeclaration			{ $$ = $1; }
 	| StructDeclaration			{ $$ = $1; }
 	| InterfaceDeclaration		{ $$ = $1; }
 	| EnumDeclaration			{ $$ = $1; }
@@ -2426,6 +2428,45 @@ ClassDeclaration
 							 classBody,
 							 ($7).staticCtors);
 				CloneLine($$, $4);
+
+				/* Pop the class name stack */
+				ClassNamePop();
+
+				/* We have declarations at the top-most level of the file */
+				HaveDecls = 1;
+			}
+	;
+
+ModuleDeclaration
+	: MODULE {
+				/* Enter a new nesting level */
+				++NestingLevel;
+
+				/* Push the identifier onto the class name stack */
+				$<node>$ = ILQualIdentSimple("<Module>");
+				ClassNamePush($<node>$);
+			}
+			ClassBody OptSemiColon	{
+				ILNode *classBody = ($3).body;
+
+				/* Get the default modifiers */
+				ILUInt32 attrs = IL_META_TYPEDEF_PUBLIC;
+
+				/* Exit the current nesting level */
+				--NestingLevel;
+
+				/* Create the class definition */
+				InitGlobalNamespace();
+				$$ = ILNode_ClassDefn_create
+							(0,						/* OptAttributes */
+							 attrs,					/* OptModifiers */
+							 ILInternString("<Module>", -1).string,
+							 CurrNamespace.string,	/* Namespace */
+							 (ILNode *)CurrNamespaceNode,
+							 0,						/* ClassBase */
+							 classBody,
+							 ($3).staticCtors);
+				CloneLine($$, $<node>2);
 
 				/* Pop the class name stack */
 				ClassNamePop();

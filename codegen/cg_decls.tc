@@ -79,6 +79,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	ILClass *interface;
 	int first;
 	ILNode *prevClass;
+	int isModule = (!strcmp(node->name, "<Module>"));
 
 	/* Get the class information structure */
 	classInfo = node->classInfo;
@@ -92,7 +93,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	info->currentClass = (ILNode *)node;
 
 	/* Output the class heading */
-	if(info->asmOutput)
+	if(info->asmOutput && !isModule)
 	{
 		/* Output the namespace information */
 		if(ILClass_Namespace(classInfo) && ILClass_NestedParent(classInfo) == 0)
@@ -172,7 +173,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	}
 
 	/* Output the class footer */
-	if(info->asmOutput)
+	if(info->asmOutput && !isModule)
 	{
 		fprintf(info->asmOutput, "} // class %s\n", ILClass_Name(classInfo));
 		if(ILClass_Namespace(classInfo) && ILClass_NestedParent(classInfo) == 0)

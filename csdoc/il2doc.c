@@ -914,6 +914,28 @@ static char *AppendAttrUsage(char *name, ILInt32 targets)
 }
 
 /*
+ * Strip down a string to remove assembly version qualifications.
+ */
+static int StripString(const char *strValue, int strLen)
+{
+	int posn;
+	posn = 0;
+	while(posn < (strLen - 11) &&
+		  ILMemCmp(strValue + posn, ", Version=1", 11) != 0)
+	{
+		++posn;
+	}
+	if(posn >= (strLen - 11))
+	{
+		return strLen;
+	}
+	else
+	{
+		return posn;
+	}
+}
+
+/*
  * Append an attribute value to a name.  Returns NULL
  * if the value is invalid.
  */
@@ -1012,6 +1034,7 @@ static char *AppendAttrValue(char *name, ILSerializeReader *reader,
 				ILFree(name);
 				return 0;
 			}
+			strLen = StripString(strValue, strLen);
 			len = strlen(name);
 			name = (char *)ILRealloc(name, len + strLen + 3);
 			if(!name)
@@ -1034,6 +1057,7 @@ static char *AppendAttrValue(char *name, ILSerializeReader *reader,
 				ILFree(name);
 				return 0;
 			}
+			strLen = StripString(strValue, strLen);
 			len = strlen(name);
 			name = (char *)ILRealloc(name, len + strLen + 9);
 			if(!name)

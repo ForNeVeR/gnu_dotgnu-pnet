@@ -1,4 +1,10 @@
 
+2003-09-05  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* csdoc/il2doc.c: remove assembly version qualifications when
+	dumping type names in attributes for correct matching against
+	pnetlib which uses version-agnostic type names.
+
 2003-09-04  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: report duplicates for "override"

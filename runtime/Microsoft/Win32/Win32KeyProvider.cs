@@ -28,6 +28,7 @@ using System;
 using System.Text;
 using System.Collections;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 // This class implements registry functionality for Win32 systems.
 
@@ -757,42 +758,42 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 	// Import the Win32 registry functions from "advapi32.dll".
 
 	[DllImport("advapi32.dll",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegCloseKey(IntPtr hKey);
 
 	[DllImport("advapi32.dll", EntryPoint="RegConnectRegistryW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern public static int RegConnectRegistry
 				([MarshalAs(UnmanagedType.LPWStr)] String lpMachineName,
 				 IntPtr hKey, out IntPtr phkResult);
 
 	[DllImport("advapi32.dll", EntryPoint="RegCreateKeyW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegCreateKey
 				(IntPtr hkey,
 				 [MarshalAs(UnmanagedType.LPWStr)] String lpSubKey,
 				 out IntPtr phkResult);
 
 	[DllImport("advapi32.dll", EntryPoint="RegDeleteKeyW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegDeleteKey
 				(IntPtr hkey,
 				 [MarshalAs(UnmanagedType.LPWStr)] String lpSubKey);
 
 	[DllImport("advapi32.dll", EntryPoint="RegDeleteValueW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegDeleteValue
 				(IntPtr hkey,
 				 [MarshalAs(UnmanagedType.LPWStr)] String lpValueName);
 
 	[DllImport("advapi32.dll", EntryPoint="RegEnumKeyExW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegEnumKeyEx
 				(IntPtr hkey, uint index,
 				 char[] lpName, ref uint lpcbName,
@@ -800,8 +801,8 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 				 out long lpftLastWriteTime);
 
 	[DllImport("advapi32.dll", EntryPoint="RegEnumValueW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegEnumValue
 				(IntPtr hkey, uint index,
 				 char[] lpValueName, ref uint lpcbValueName,
@@ -809,21 +810,21 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 				 IntPtr lpData, IntPtr lpcbData);
 
 	[DllImport("advapi32.dll",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegFlushKey(IntPtr hKey);
 
 	[DllImport("advapi32.dll", EntryPoint="RegOpenKeyExW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegOpenKeyEx
 				(IntPtr hkey,
 				 [MarshalAs(UnmanagedType.LPWStr)] String lpSubKey,
 				 uint ulOptions, uint samDesired, out IntPtr phkResult);
 
 	[DllImport("advapi32.dll", EntryPoint="RegQueryInfoKeyW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegQueryInfoKey
 				(IntPtr hkey,
 				 byte[] lpClass, IntPtr lpcbClass, IntPtr lpReserved,
@@ -833,8 +834,8 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 				 IntPtr lpcbSecurityDescriptor, IntPtr lpftLastWriteTime);
 
 	[DllImport("advapi32.dll", EntryPoint="RegQueryValueExW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegQueryValueEx
 				(IntPtr hkey,
 				 [MarshalAs(UnmanagedType.LPWStr)] String lpValueName,
@@ -842,8 +843,8 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 				 byte[] lpData, ref uint lpcbData);
 
 	[DllImport("advapi32.dll", EntryPoint="RegQueryValueExW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegQueryValueEx
 				(IntPtr hkey,
 				 [MarshalAs(UnmanagedType.LPWStr)] String lpValueName,
@@ -851,8 +852,8 @@ internal sealed class Win32KeyProvider : IRegistryKeyProvider
 				 IntPtr lpData, ref uint lpcbData);
 
 	[DllImport("advapi32.dll", EntryPoint="RegSetValueExW",
-			   CallingConvention=CallingConvention.Winapi,
-			   PreserveSig=true)]
+			   CallingConvention=CallingConvention.Winapi)]
+	[MethodImpl(MethodImplOptions.PreserveSig)]
 	extern private static int RegSetValueEx
 				(IntPtr hkey,
 				 [MarshalAs(UnmanagedType.LPWStr)] String lpValueName,

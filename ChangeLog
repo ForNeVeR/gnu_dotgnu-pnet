@@ -8,6 +8,9 @@
 	runtime/Microsoft/Win32/Win32KeyProvider.cs: implement the Win32
 	version of the registry routines.
 
+	* runtime/Microsoft/Win32/Win32KeyProvider.cs: use the correct
+	form of the "preservesig" attributes.
+
 2003-04-03  Gopal.V  <gopalv82@symonds.net>
 
 	* runtime/System/IO/Directory.cs, resources/en_US/runtime/IO.txt:

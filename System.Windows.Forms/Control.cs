@@ -2598,8 +2598,8 @@ public class Control : IWin32Window, IDisposable
 				top = rect.Top;
 				bottom = rect.Bottom;
 
-				// Lay out the docked controls, from last to first.
-				for(posn = numChildren - 1; posn >= 0; posn--)
+				// Lay out the docked controls, from first to last 
+				for(posn = 0 ; posn < numChildren ; posn++)
 				{
 					child = children[posn];
 					switch(child.Dock)

@@ -1,4 +1,8 @@
 
+2004-06-16  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Windows.Forms/Control.cs: The docking order is reverted back.
+
 2004-06-16  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Windows.Forms/Control.cs: fix the docking order. Create the 

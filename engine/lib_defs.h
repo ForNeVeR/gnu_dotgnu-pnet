@@ -22,22 +22,121 @@
 #define	_ENGINE_LIB_DEFS_H
 
 #include "il_decimal.h"
+#include "engine.h"
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
 /*
- * Get the ILClassPrivate information that is associated with
- * a non-null object.
+ * Comment from Thong Nguyen (tum@veridicus.com)
+ *
+ * New object layout is like this:
+ *
+ * [Object Header][Managed Object Data]
+ * ^                   ^
+ * |                    |
+ * |                    |____ILObject 
+ * |
+ * |_____GcBase & Start of ObjectHeader
+ *
+ *
+ * Use GetMemPtr or GetObjectHeader to get the GcBase/ObjectHeader
+ * from an (ILObject *).
+ *
+ * Use GetObjectFromGcBase from get an (ILObject *) from a (void *).
  */
-#define	GetObjectClassPrivate(obj)	\
-	(*((ILClassPrivate **)(((unsigned char *)(obj)) - IL_BEST_ALIGNMENT)))
 
 /*
- * Get the class that is associated with a non-null object.
+ *	The size of the object header in bytes.
  */
+#define IL_OBJECT_HEADER_SIZE \
+	((sizeof(ILObjectHeader) + IL_BEST_ALIGNMENT - 1) & ~(IL_BEST_ALIGNMENT - 1))
+
+/*
+ *	Gets a pointer to the object header from an object pointer.
+ */
+#define GetObjectHeader(obj) \
+	(((ILObjectHeader *)(((unsigned char *)(obj)) - IL_OBJECT_HEADER_SIZE)))
+
+/*
+ *	Gets a pointer to the start of an object's memory.
+ * (Same as GetObjectHeader since the header is the first thing in memory)
+ */
+#define GetObjectGcBase(obj) \
+	((void *)GetObjectHeader(obj))
+
+/*
+ *	Gets an object pointer from a pointer to the object's first byte of memory.
+ */
+#define GetObjectFromGcBase(ptr) \
+	((ILObject *)(((unsigned char *)ptr) + IL_OBJECT_HEADER_SIZE))
+
+/*
+ * Gets a pointer to the ILClassPrivate information that is associated with
+ * a non-null object.
+ */
+#define	GetObjectClassPrivate(obj) 	\
+	(GetObjectHeader(obj)->classPrivate)
+
+#define	SetObjectClassPrivate(obj, value) 	\
+	(GetObjectHeader(obj)->classPrivate) = value;
+
+/*
+* Get the class that is associated with a non-null object.
+*/
 #define	GetObjectClass(obj)	((GetObjectClassPrivate((obj)))->classInfo)
+
+/* The GC guarantees that blocks are allocated on 4 byteboundaries
+    These MARK macros can be used to attach & query flags on each
+	monitor pointer. */
+
+#define IL_LW_MARKED(raw)	\
+	(((unsigned int)raw & 1) == 1)
+
+#define IL_LW_MARK(raw)	\
+	((ILLockWord)(((int)raw | 1)))
+
+#define IL_LW_UNMARK(raw)	\
+	((ILLockWord)(((int)raw & ~1)))
+
+#define GetObjectMonitor(thread, obj) \
+	((ILExecMonitor *)(IL_LW_UNMARK(GetObjectLockWord(thread, obj))))
+
+#ifdef USE_HASHING_MONITORS
+	
+	/*
+	 *	Gets a pointer to the WaitHandle object used by the object.
+	 */
+	ILLockWord CompareAndExchangeObjectLockWord
+		(ILExecThread *thread, ILObject *obj, ILLockWord value, ILLockWord comparand);
+
+	/*
+	 *	Gets the LockWord for the object.
+	 */
+	ILLockWord GetObjectLockWord(ILExecThread *thread, ILObject *obj);
+
+#else
+	/*
+	 *	Classic monitor tags are stored in the object header.
+	 */
+
+	#define GetObjectLockWord(thread, obj) \
+		(GetObjectHeader(obj)->lockWord)
+
+	#define SetObjectLockWord(thread, ob, value) \
+		GetObjectHeader(obj)->lockWord = value;
+
+	#define GetObjectLockWordPtr(thread, obj) \
+		(&(GetObjectLockWord(thread, obj)))
+
+	#define CompareAndExchangeObjectLockWord(thread, obj, value, comparand) \
+		(ILLockWord)((_IL_Interlocked_CompareExchange_RObjectObjectObject \
+			(thread, (ILObject **)GetObjectLockWordPtr(thread, obj), (ILObject *)value, (ILObject *)comparand)))
+
+#endif
+
+ILObject *_ILGetCurrentClrThread(ILExecThread *thread);
 
 /*
  * Internal structure of a string object header.

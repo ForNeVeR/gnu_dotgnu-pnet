@@ -432,6 +432,9 @@ int main(int argc, char *argv[])
 		ILExecThreadPrintException(thread);
 	}
 
+	/* Wait for all other threads to finish */
+	ILExecProcessWaitForUserThreads(process);
+
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	/* Print profile information if requested */
 	if(dumpInsnProfile)

@@ -34,6 +34,11 @@ extern	"C" {
 void ILGCInit(unsigned long maxSize);
 
 /*
+ *	Deinitialize the GC.
+ */
+void ILGCDeinit();
+
+/*
  * Allocate a block of memory from the garbage collector.
  * The block may contain pointers to other blocks.  The
  * block is guaranteed to be zero'ed.
@@ -108,6 +113,11 @@ void ILGCRegisterWeak(void *ptr);
  * Unregister a pointer to a weak reference.
  */
 void ILGCUnregisterWeak(void *ptr);
+
+/*
+ * Register a pointer to a general weak reference.
+ */
+void ILGCRegisterGeneralWeak(void *ptr, void *obj);
 
 #ifdef	__cplusplus
 };

@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
+ * Contributions by Thong Nguyen <tum@veridicus.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,6 +21,9 @@
  */
 
 #include "il_gc.h"
+#include "il_thread.h"
+#include "thr_defs.h"
+#include "stdio.h"
 
 #ifdef HAVE_LIBGC
 
@@ -33,16 +38,106 @@ extern	"C" {
  */
 static int volatile FinalizersDisabled = 0;
 
+static volatile int g_Deinit = 0;
+static ILThread *g_FinalizerThread;
+static ILWaitHandle *g_FinalizerSignal;
+static ILWaitHandle *g_FinalizerResponse;
+
+#ifdef GC_TRACE_ENABLE
+	#define GC_TRACE(a, b)		printf(a, b)
+#else
+	#define GC_TRACE(a, b)
+#endif
+
+/*
+ *	Main entry point for the finalizer thread.
+ */
+static void FinalizerThreadFunc(void *data)
+{
+	GC_TRACE("GC:FinalizerThread: Finalizer thread started [thread:%d]\n", (int)ILThreadSelf());
+
+	for (;;)
+	{
+		ILWaitOne(g_FinalizerSignal, -1);
+
+		GC_TRACE("GC:FinalizerThread: Signal [thread:%d]\n", (int)ILThreadSelf());
+
+		if (GC_should_invoke_finalizers())
+		{
+			GC_TRACE("GC:FinalizerThread: Finalizers running [thread:%d]\n", (int)ILThreadSelf());
+
+			GC_invoke_finalizers();
+
+			GC_TRACE("GC:FinalizerThread: Finalizers finished [thread:%d]\n", (int)ILThreadSelf());
+		}
+		
+		if (g_Deinit)
+		{
+			/* Exit finalizer thread after having invoked finalizers one last time */
+
+			GC_TRACE("GC:FinalizerThread: Finalizer thread finished [thread:%d]\n", (int)ILThreadSelf());
+
+			ILWaitEventReset(g_FinalizerSignal);
+			ILWaitEventSet(g_FinalizerResponse);
+			
+			return;
+		}
+
+		GC_TRACE("GC:FinalizerThread: Response [thread:%d]\n", (int)ILThreadSelf());
+
+		ILWaitEventReset(g_FinalizerSignal);
+		ILWaitEventSet(g_FinalizerResponse);
+	}
+}
+
 /*
  * Notify the finalization thread that there is work to do.
  */
-static void GCNotifyFinalize(void)
+static int PrivateGCNotifyFinalize(void)
 {
+	ILExecThread *thread;
+
+	if (!ILHasThreads())
+	{
+		GC_invoke_finalizers();
+
+		return;
+	}
+
 	if(!FinalizersDisabled)
 	{
-		/* TODO: do finalization in a separate thread */
-		GC_invoke_finalizers();
+		/* Register the finalizer thread for managed code execution */
+
+		ILThreadAtomicStart();
+
+		if (ILThreadGetObject(g_FinalizerThread) == 0)
+		{			
+			/* Make sure the the finalizer thread is registered for managed execution. */
+
+			/* This can't be done in ILGCInit cause the runtime isn't fully initialized in that function */
+
+			thread = (ILExecThread *)ILThreadGetObject(ILThreadSelf());
+
+			ILThreadRegisterForManagedExecution(ILExecThreadGetProcess(thread), g_FinalizerThread, 0);
+		}
+
+		ILThreadAtomicEnd();
+
+		/* Signal the finalizer thread */
+
+		ILWaitEventSet(g_FinalizerSignal);
+
+		return 1;
 	}
+	else
+	{
+		return 0;
+	}
+}
+
+static void GCNotifyFinalize(void)
+{
+	PrivateGCNotifyFinalize();
 }
 
 void ILGCInit(unsigned long maxSize)
@@ -50,12 +145,38 @@ void ILGCInit(unsigned long maxSize)
 	GC_INIT();		/* For shared library initialization on sparc */
 	GC_init();		/* For Cygwin and Win32 threads */
 	GC_set_max_heap_size((size_t)maxSize);
-
+	
 	/* Set up the finalization system the way we want it */
 	GC_finalize_on_demand = 1;
 	GC_java_finalization = 1;
 	GC_finalizer_notifier = GCNotifyFinalize;
 	FinalizersDisabled = 0;
+
+	/* Create the finalizer thread */
+	g_Deinit = 0;
+	g_FinalizerThread = ILThreadCreate(FinalizerThreadFunc, 0);
+	
+	if (g_FinalizerThread)
+	{
+		g_FinalizerSignal = ILWaitEventCreate(1, 0);
+		g_FinalizerResponse = ILWaitEventCreate(1, 0);
+
+		ILThreadStart(g_FinalizerThread);
+	}
+}
+
+void ILGCDeinit()
+{
+	g_Deinit = 1;
+
+	if (g_FinalizerThread)
+	{
+		/* Notify the finalizer thread */
+		ILWaitEventSet(g_FinalizerSignal);
+
+		/* Wait 10(!?) seconds for the finalizers to finish */
+		ILWaitOne(g_FinalizerResponse, 10000);
+	}
 }
 
 void *ILGCAlloc(unsigned long size)
@@ -93,7 +214,7 @@ void ILGCRegisterFinalizer(void *block, ILGCFinalizer func, void *data)
 {
 	/* We use the Java-style finalization algorithm, which
 	   ignores cycles in the object structure */
-	GC_REGISTER_FINALIZER_NO_ORDER(block, func, data, 0, 0);
+	GC_REGISTER_FINALIZER_NO_ORDER(block, func, data, 0, 0);	
 }
 
 void ILGCMarkNoPointers(void *start, unsigned long size)
@@ -108,8 +229,26 @@ void ILGCCollect(void)
 
 void ILGCInvokeFinalizers(void)
 {
-	GCNotifyFinalize();
-	/* TODO: wait for the finalizer thread to complete its work */
+	if (!ILHasThreads())
+	{
+		PrivateGCNotifyFinalize();
+
+		return;
+	}
+
+	if(!FinalizersDisabled)
+	{
+		/* Signal the finalizers to run (returns 1 if successful) */
+		if (PrivateGCNotifyFinalize())
+		{
+			GC_TRACE("ILGCInvokeFinalizers: Invoked finalizers and waiting [thread: %d]\n", (int)ILThreadSelf());
+			
+			/* Wait until finalizers have finished */
+			ILWaitOne(g_FinalizerResponse, -1);
+
+			GC_TRACE("ILGCInvokeFinalizers: Finalizers finished[thread: %d]\n", (int)ILThreadSelf());
+		}
+	}
 }
 
 void ILGCDisableFinalizers(void)
@@ -135,6 +274,11 @@ void ILGCRegisterWeak(void *ptr)
 void ILGCUnregisterWeak(void *ptr)
 {
 	GC_unregister_disappearing_link(ptr);
+}
+
+void ILGCRegisterGeneralWeak(void *ptr, void *obj)
+{
+	GC_general_register_disappearing_link(ptr, obj);
 }
 
 #ifdef	__cplusplus

@@ -20,7 +20,6 @@
 
 #ifndef	_ENGINE_ENGINE_H
 #define	_ENGINE_ENGINE_H
-
 #include "il_thread.h"
 #include "il_engine.h"
 #include "il_system.h"
@@ -125,6 +124,17 @@ struct _tagILExecProcess
 	/* Hash table that contains all intern'ed strings within the system */
 	void		   *internHash;
 
+#ifdef USE_HASHING_MONITORS
+	/* Hash table that contains all monitors */
+	void			*monitorHash;
+	ILMutex		*monitorSystemLock;
+#endif
+
+	int userThreadCount;
+
+	/* WaitEvent that gets set when the last non-main thread is destroyed */
+	ILWaitHandle *noMoreUserThreads;
+
 	/* Hash table that maps program items to reflection objects */
 	void		   *reflectionHash;
 
@@ -204,17 +214,27 @@ struct _tagILExecThread
 	CVMWord		   *frame;			/* Base of the local variable frame */
 	CVMWord        *stackTop;		/* Current stack top */
 	ILMethod       *method;			/* Current method being executed */
-
+	
 	/* Last exception that was thrown */
 	ILObject       *thrownException;
 
 	/* Security manager in use by this thread */
 	ILObject	   *securityManager;
 
+	/* System.Threading.Thread object */
+	ILObject	*clrThread;
+
+	/* Free monitors list */
+	ILExecMonitor *freeMonitor;
+
 	/* Stack of call frames in use */
 	ILCallFrame	   *frameStack;
 	ILUInt32		numFrames;
 	ILUInt32		maxFrames;
+
+	/* 1 if the thread is a user (non runtime) thread.  User threads keep the
+		process from exiting until they finish */
+	ILUInt32		isUserThread;
 
 	/* Thread-static values for this thread */
 	void		  **threadStaticSlots;
@@ -254,6 +274,30 @@ struct _tagILClassPrivate
 	ILObject       *staticData;			/* Static data area object */
 	ILImplPrivate  *implements;			/* Interface implementation records */
 
+};
+
+typedef void * ILLockWord;
+
+struct _tagILExecMonitor
+{
+	ILWaitHandle *supportMonitor;
+	volatile ILInt32 waiters;
+	ILExecMonitor *next;
+};
+
+/*
+*	Header of an object.
+*/
+typedef struct _tagObjectHeader ILObjectHeader;
+
+struct _tagObjectHeader
+{
+	ILClassPrivate *classPrivate;
+#ifdef USE_HASHING_MONITORS
+	/* NOTHING */
+#else
+	ILLockWord lockWord;
+#endif
 };
 
 /*
@@ -319,7 +363,7 @@ int _ILCVMInterpreter(ILExecThread *thread);
  * Inner version of "ILExecThreadCreate".  The caller is
  * responsible for creating the OS-level thread.
  */
-ILExecThread *_ILExecThreadCreate(ILExecProcess *process);
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int userThread);
 
 /*
  * Lay out a class's fields, virtual methods, and interfaces.
@@ -569,6 +613,21 @@ void *_ILObjectToCustom(ILExecThread *thread, ILObject *obj,
 ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
 							const char *customName, int customNameLen,
 							const char *customCookie, int customCookieLen);
+
+/*
+ *	Gets the current managed thread object from an engine thread.
+ */
+ILObject *_ILGetCurrentClrThread(ILExecThread *thread);
+
+/*
+ *	Creates a monitor used by the execution engine.
+ */
+ILExecMonitor *ILExecMonitorCreate();
+
+/*
+ *	Destroys a monitor used by the execution engine.
+ */
+void ILExecMonitorDestory(ILExecMonitor *monitor);
 
 #ifdef	__cplusplus
 };

@@ -111,6 +111,10 @@ void ILGCInit(unsigned long maxSize)
 	_ILMutexUnlock(&gcLock);
 }
 
+void ILGCDeinit()
+{
+}
+
 void *ILGCAlloc(unsigned long size)
 {
 	void *ptr;
@@ -198,6 +202,11 @@ void ILGCRegisterWeak(void *ptr)
 }
 
 void ILGCUnregisterWeak(void *ptr)
+{
+	/* Nothing to do here because we don't do finalization */
+}
+
+void ILGCRegisterGeneralWeak(void *ptr, void *obj)
 {
 	/* Nothing to do here because we don't do finalization */
 }

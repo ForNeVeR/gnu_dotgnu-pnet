@@ -19,6 +19,7 @@
  */
 
 #include "engine_private.h"
+#include "lib_defs.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -66,12 +67,26 @@ void _ILFinalizeObject(void *block, void *data)
 	ILClass *classInfo;
 	ILMethod *method;
 	ILType *signature;
-
+	
 	/* Skip the object header within the block */
-	object = (ILObject *)(((unsigned char *)block) + IL_BEST_ALIGNMENT);
+	object = GetObjectFromGcBase(block);
 
 	/* Get the object's class and locate the "Finalize" method */
-	classInfo = (*((ILClassPrivate **)block))->classInfo;
+	classInfo = GetObjectClass(object);
+	
+	if (ILExecThreadCurrent() == 0)
+	{
+		/* The thread the finalizer is running on can't execute managed code */
+
+		fprintf
+			(
+				stderr, "GC: Finalizer thread [0x%x] can't execute managed code.\n",
+				(int)ILThreadSelf()
+			);
+
+		return;
+	}
+	
 	while(classInfo != 0)
 	{
 		method = 0;
@@ -101,6 +116,7 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 						 ILUInt32 size)
 {
 	void *ptr;
+	ILObject *obj;
 
 	/* Make sure the class has been initialized before we start */
 	if(classInfo != 0 && !InitializeClass(thread, classInfo))
@@ -109,7 +125,7 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 	}
 
 	/* Allocate memory from the heap */
-	ptr = ILGCAlloc(size + IL_BEST_ALIGNMENT);
+	ptr = ILGCAlloc(size + IL_OBJECT_HEADER_SIZE);
 	if(!ptr)
 	{
 		/* Throw an "OutOfMemoryException" */
@@ -117,14 +133,16 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 		return 0;
 	}
 
+	obj = GetObjectFromGcBase(ptr);
+
 	/* Set the class into the block */
 	if(classInfo)
 	{
-		*((ILClassPrivate **)ptr) = (ILClassPrivate *)(classInfo->userData);
+		SetObjectClassPrivate(obj, (ILClassPrivate *)(classInfo->userData));
 	}
 	else
 	{
-		*((ILClassPrivate **)ptr) = 0;
+		SetObjectClassPrivate(obj, 0);
 	}
 
 	/* Attach a finalizer to the object if the class has
@@ -135,14 +153,15 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, 0);
 	}
 
-	/* Return a pointer to the data just after the class information */
-	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
+	/* Return a pointer to the object */
+	return obj;
 }
 
 ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 							   ILUInt32 size)
 {
 	void *ptr;
+	ILObject *obj;
 
 	/* Make sure the class has been initialized before we start */
 	if(classInfo != 0 && !InitializeClass(thread, classInfo))
@@ -151,26 +170,28 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 	}
 
 	/* Allocate memory from the heap */
-	ptr = ILGCAllocAtomic(size + IL_BEST_ALIGNMENT);
+	ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE);	
 	if(!ptr)
 	{
 		/* Throw an "OutOfMemoryException" */
 		thread->thrownException = thread->process->outOfMemoryObject;
 		return 0;
 	}
+	
+	obj = GetObjectFromGcBase(ptr);
 
 	/* Set the class into the block */
 	if(classInfo)
 	{
-		*((ILClassPrivate **)ptr) = (ILClassPrivate *)(classInfo->userData);
+		SetObjectClassPrivate(obj, (ILClassPrivate *)(classInfo->userData));
 	}
 	else
 	{
-		*((ILClassPrivate **)ptr) = 0;
+		SetObjectClassPrivate(obj, 0);
 	}
 
-	/* Return a pointer to the data just after the class information */
-	return (void *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
+	/* Return a pointer to the object */
+	return obj;
 }
 
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)

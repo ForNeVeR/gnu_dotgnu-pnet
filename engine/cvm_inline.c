@@ -349,7 +349,10 @@ VMBREAK(COP_PREFIX_TYPE_FROM_HANDLE);
 VMCASE(COP_PREFIX_MONITOR_ENTER):
 {
 	/* Enter a monitor on an object */
-	/* TODO: waiting for thread support to be completed */
+	/* TODO: Actually make it fully inline :) */
+	
+	_IL_Monitor_Enter(thread, (ILObject *)stacktop[-1].ptrValue);
+	
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_MONITOR_ENTER);
@@ -378,7 +381,10 @@ VMBREAK(COP_PREFIX_MONITOR_ENTER);
 VMCASE(COP_PREFIX_MONITOR_EXIT):
 {
 	/* Exit a monitor on an object */
-	/* TODO: waiting for thread support to be completed */
+	/* TODO: Actually make it fully inline :) */
+	
+	_IL_Monitor_Exit(thread, (ILObject *)stacktop[-1].ptrValue);
+
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
 }
 VMBREAK(COP_PREFIX_MONITOR_EXIT);

@@ -1,4 +1,63 @@
 
+2003-06-26  Thong Nguyen  <tum@veridicus.com>
+
+	* engine/lib_thread.c:  New monitor implementation.  Uses 
+	thread local free monitor lists instead of GC.  This allows 
+	monitors to be used with objects using GC "atomic" memory 
+	regions (type of memory used by arrays and strings).
+
+	* engine/ilrun.c, engine/process.c, engine/thread.c: New code to 
+	prevent the process from exiting until all user threads have 
+	finished executing.
+
+	* engine/Makefile.am: Added monitor.c
+
+	* engine/cvm_inline.c:	Added support for inlining Monitor.Enter
+	and Monitor.Exit.
+
+	* engine.h:  Added support for engine level monitors and 
+	preliminary hashing monitors support.
+
+	* engine/heap.c:  Add support fo abstracted object headers.
+	Add support code to allow finalizers to run from finalizer 
+	thread.
+
+	* engine/int_proto.h, engine/int_table.h:  New internal method 
+	imports for threading support.
+
+	* engine/lib_defs.h:  Support macros for abstracting object 
+	headers.  Support code for header and hash based monitors.
+
+	* engine/lib_gc.c:  Changed code to support abstracted object 
+	headers.
+
+	* engine/lib_thread.c:  Implemented threading internal methods
+	(Thread.Start etc). Implemented monitor support.  Added new 
+	internal method InitializeThread.
+
+	* engine/process.c:  Call to the new ILGCDeinit function.
+
+	* engine/thread.c:  Implemented a couple more threading related 
+	methods. GetCurrentClrThread and ILThreadRegisterForManagedExcution.
+	
+	* engine/monitor.c:  Implemention of memory saving hashing 
+	monitors.
+
+	* include/il_engine.h:  Added typedef for ILExecMonitor.
+
+	* include/il_gc.h:  Added ILGCDeinit and and
+	ILGCRegisterGeneralWeak.
+	
+	* include/il_thread.h:  IThreadRegisterForManaged  declaraction.
+
+	* support/def_gc.h:  Added null implementations of new GC 
+	methods.
+
+	* support/hb_gc.c:  Moved GC finalizer into a seperate thread.
+	Added waiting for pending finalizer support.  Implemented
+	various new threading related methods (GCDeinit etc).
+	(Patch #1657, Gopal)  
+
 2003-06-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/c/c_lvalue.tc (ILNode_CDeref): decay array types in the

@@ -341,7 +341,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	return &(mutex->parent.parent);
 }
 
-int ILWaitMutexRelease(ILWaitHandle *handle)
+int PrivateILWaitMutexRelease(ILWaitHandle *handle, int mode)
 {
 	ILWaitMutex *mutex = (ILWaitMutex *)handle;
 	int result;
@@ -360,16 +360,37 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 		/* This thread doesn't currently own the mutex */
 		result = 0;
 	}
-	else if(--(mutex->count) == 0)
+	else if (mutex->count == 0 && mode == 2)
 	{
-		/* The count has returned to zero, so find something
-		   else to give the ownership of the mutex to */
 		mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
 		if(mutex->owner != 0)
 		{
 			mutex->count = 1;
 		}
 		result = 1;
+	}
+	else if(--(mutex->count) == 0)
+	{
+		/* The count has returned to zero, so find something
+		   else to give the ownership of the mutex to */
+
+		if (mode == 0)
+		{
+			mutex->owner = _ILWakeupQueueWake(&(mutex->queue));
+			if(mutex->owner != 0)
+			{
+				mutex->count = 1;
+			}
+			result = 1;
+		}
+		else if (mode == 1)
+		{
+			result = 1;
+		}
+		else
+		{
+			result = 0;
+		}
 	}
 	else
 	{
@@ -380,6 +401,11 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 	/* Unlock the mutex and return */
 	_ILMutexUnlock(&(mutex->parent.lock));
 	return result;
+}
+
+int ILWaitMutexRelease(ILWaitHandle *handle)
+{
+	return PrivateILWaitMutexRelease(handle, 0);
 }
 
 /*
@@ -569,6 +595,37 @@ int ILWaitMonitorPulseAll(ILWaitHandle *handle)
 	/* Unlock the monitor and return */
 	_ILMutexUnlock(&(monitor->parent.parent.lock));
 	return result;
+}
+
+int ILWaitMonitorCanClose(ILWaitHandle *handle)
+{
+	ILMonitor *monitor = (ILMonitor *)handle;
+
+	_ILMutexLock(&(monitor->parent.parent.lock));
+
+	if(monitor->parent.count == 0 &&
+		_ILWakeupQueueIsEmpty(&(monitor->parent.queue)))
+	{
+		_ILMutexUnlock(&(monitor->parent.parent.lock));
+
+		return 1;
+	}
+	else
+	{
+		_ILMutexUnlock(&(monitor->parent.parent.lock));
+
+		return 0;	
+	}
+}
+
+int ILWaitMonitorSpeculativeLeave(ILWaitHandle *handle)
+{
+	return PrivateILWaitMutexRelease(handle, 1);
+}
+
+int ILWaitMonitorCompleteLeave(ILWaitHandle *handle)
+{
+	return PrivateILWaitMutexRelease(handle, 2);
 }
 
 #ifdef	__cplusplus

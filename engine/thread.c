@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
+ * Contributions from Thong Nguyen <tum@veridicus.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -29,7 +31,63 @@ ILExecThread *ILExecThreadCurrent(void)
 	return (ILExecThread *)(ILThreadGetObject(ILThreadSelf()));
 }
 
-ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
+/*
+ *	Gets the current CLR thread.
+ */
+ILObject *_ILGetCurrentClrThread(ILExecThread *thread)
+{
+	ILClass *classInfo;
+	ILObject *clrThread;
+
+	if (thread->clrThread == NULL)
+	{
+		/*
+		* Main thread or another thread created from inside the engine.
+		*/
+
+		/* Get the CLR thread class */
+
+		classInfo = ILExecThreadLookupClass(thread, "System.Threading.Thread");		
+
+		/* Allocate the CLR thread object */
+
+		clrThread = _ILEngineAllocObject(thread, classInfo);
+
+		/* Assocaite the CLR thread object with the OS thread */
+
+		*((ILThread **)clrThread) = ILThreadSelf();
+
+		/* Associate the executing thread with the CLR thread */
+		thread->clrThread = clrThread;
+
+		return clrThread;
+	}
+	else
+	{
+		return thread->clrThread;
+	}
+}
+
+/*
+ *	Registers a thread for managed execution
+ */
+ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread, int isUserThread)
+{	
+	ILExecThread *execThread;
+
+	/* Create a new engine-level thread */	
+	execThread = _ILExecThreadCreate(process, isUserThread);
+
+	/* Associate the new engine-level thread with the OS-level thread */
+	ILThreadSetObject(thread, execThread);
+
+	/* Associate the OS-level thread with the new engine-level thread */
+	execThread->osThread = thread;
+
+	return execThread;
+}
+
+ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int isUserThread)
 {
 	ILExecThread *thread;
 
@@ -63,6 +121,9 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 
 	/* Initialize the thread state */
 	thread->osThread = 0;
+	thread->clrThread = 0;	
+	thread->freeMonitor = 0;
+	thread->isUserThread = isUserThread;
 	thread->pc = 0;
 	thread->frame = thread->stackBase;
 	thread->stackTop = thread->stackBase;
@@ -82,21 +143,27 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process)
 		process->firstThread->prevThread = thread;
 	}
 	process->firstThread = thread;
+
+	if (isUserThread)
+	{
+		process->userThreadCount++;
+	}
+
+	if (process->userThreadCount > 0)
+	{
+		/* Prevent the process from exiting */
+		ILWaitEventReset(process->noMoreUserThreads);
+	}
+
 	ILMutexUnlock(process->lock);
 	
 	/* Return the thread block to the caller */
 	return thread;
 }
 
-ILExecThread *ILExecThreadCreate(ILExecProcess *process)
-{
-	ILExecThread *thread = _ILExecThreadCreate(process);
-	/* TODO: initialize underlying the OS thread */
-	return thread;
-}
-
 void ILExecThreadDestroy(ILExecThread *thread)
 {
+	ILExecMonitor *monitor, *next;
 	ILExecProcess *process = thread->process;
 
 	/* Lock down the process */
@@ -106,6 +173,29 @@ void ILExecThreadDestroy(ILExecThread *thread)
 	if(process->mainThread == thread)
 	{
 		process->mainThread = 0;
+	}
+
+	/* Decrement the use thread count */
+	if (thread->isUserThread)
+	{
+		process->userThreadCount--;	
+	}
+
+	/* Let the main process exit */
+	if (process->userThreadCount == 0)
+	{
+		ILWaitEventSet(process->noMoreUserThreads);
+	}
+
+	/* Delete the free monitors list */
+
+	monitor = thread->freeMonitor;
+
+	while (monitor)
+	{
+		next = monitor->next;
+		ILExecMonitorDestroy(monitor);
+		monitor = next;
 	}
 
 	/* Detach the thread from its process */

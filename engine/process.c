@@ -26,11 +26,19 @@ extern	"C" {
 
 void ILExecInit(unsigned long maxSize)
 {
-	/* Initialize the global garbage collector */
-	ILGCInit(maxSize);
+	/* Tum changed init order because the GC needs threading support */
 
-	/* Initialize the thread routines */
+	/* Initialize the thread routines */	
 	ILThreadInit();
+
+	/* Initialize the global garbage collector */	
+	ILGCInit(maxSize);	
+}
+
+void ILExecProcessWaitForUserThreads(ILExecProcess *process)
+{
+	/* Wait for all user threads to finish */
+	ILWaitOne(process->noMoreUserThreads, -1);
 }
 
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
@@ -43,11 +51,14 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	{
 		return 0;
 	}
-
 	/* Initialize the fields */
 	process->lock = 0;
 	process->firstThread = 0;
 	process->mainThread = 0;
+	process->userThreadCount = 0;		
+#ifdef USE_HASHING_MONITORS
+	process->monitorHash = 0;
+#endif
 	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
 							? IL_CONFIG_STACK_SIZE : stackSize);
 	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
@@ -79,6 +90,14 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->randomCount = 0;
 	process->numThreadStaticSlots = 0;
 
+	/* Create a new event that indicates when there are more no user threads */
+	/* The event is initially set */
+	if ((process->noMoreUserThreads = ILWaitEventCreate(1, 1)) == 0)
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
+
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
 	{
@@ -102,6 +121,16 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 		return 0;
 	}
 
+#ifdef USE_HASHING_MONITORS
+	/* Initialize the monitor system lock */
+	process->monitorSystemLock = ILMutexCreate();
+	if(!(process->monitorSystemLock))
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
+#endif
+
 	/* Initialize the metadata lock */
 	process->metadataLock = ILRWLockCreate();
 	if(!(process->metadataLock))
@@ -110,16 +139,15 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 		return 0;
 	}
 
-	/* Create the "main" thread */
-	process->mainThread = _ILExecThreadCreate(process);
+	/* Register the main thread for managed execution */
+	process->mainThread = ILThreadRegisterForManagedExecution(process, ILThreadSelf(), 0);
+	
 	if(!(process->mainThread))
 	{
 		ILExecProcessDestroy(process);
 		return 0;
 	}
-	process->mainThread->osThread = ILThreadSelf();
-	ILThreadSetObject(process->mainThread->osThread, process->mainThread);
-
+	
 	/* Initialize the random seed pool lock */
 	process->randomLock = ILMutexCreate();
 	if(!(process->randomLock))
@@ -138,6 +166,9 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	ILGCCollect();
 	ILGCInvokeFinalizers();
 
+	/* Tell the GC we're history */
+	ILGCDeinit();
+
 	/* Destroy the threads associated with the process */
 	while(process->firstThread != 0)
 	{
@@ -146,6 +177,9 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Destroy the CVM coder instance */
 	ILCoderDestroy(process->coder);
+
+	/* Destroy the NoMoreUserThreads wait event */
+	ILWaitHandleClose(process->noMoreUserThreads);
 
 	/* Destroy the metadata lock */
 	if(process->metadataLock)
@@ -212,6 +246,11 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Destroy the random seed pool */
 	ILMutexDestroy(process->randomLock);
 	ILMemZero(process->randomPool, sizeof(process->randomPool));
+
+#ifdef USE_HASHING_MONITORS
+	/* Destroy the monitor system lock */
+	ILMutexDestroy(process->monitorSystemLock);
+#endif
 
 	/* Destroy the object lock */
 	ILMutexDestroy(process->lock);

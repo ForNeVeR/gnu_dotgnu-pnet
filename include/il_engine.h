@@ -28,6 +28,11 @@ extern	"C" {
 #endif
 
 /*
+ *	Structure used by the EE for storing monitors.
+ */
+typedef struct _tagILExecMonitor ILExecMonitor;
+
+/*
  * Execution control context for a process.
  */
 typedef struct _tagILExecProcess ILExecProcess;
@@ -182,6 +187,11 @@ void ILExecInit(unsigned long maxSize);
 ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize, unsigned long cachePageSize);
 
 /*
+ *	Wait for all user threads in a process to finish.
+ */
+void ILExecProcessWaitForUserThreads(ILExecProcess *process);
+
+/*
  * Destroy a process and all threads associated with it.
  */
 void ILExecProcessDestroy(ILExecProcess *process);
@@ -311,12 +321,6 @@ int ILExecProcessAddInternalCallTable(ILExecProcess* process,
  * is undefined if used anywhere else.
  */
 ILExecThread *ILExecThreadCurrent(void);
-
-/*
- * Create a new thread and attach it to a process.
- * Returns NULL if out of memory.
- */
-ILExecThread *ILExecThreadCreate(ILExecProcess *process);
 
 /*
  * Destroy a thread and detach it from its process.

@@ -48,7 +48,7 @@ void _IL_GC_ReRegisterForFinalize(ILExecThread *_thread, ILObject *obj)
 				->hasFinalizer)
 		{
 			ILGCRegisterFinalizer
-				((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
+				(GetObjectGcBase(obj),
 				 _ILFinalizeObject, (void *)0);
 		}
 	}
@@ -66,8 +66,7 @@ void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
 	if(obj)
 	{
 		ILGCRegisterFinalizer
-			((void *)(((unsigned char *)obj) - IL_BEST_ALIGNMENT),
-			 (ILGCFinalizer)0, (void *)0);
+			(GetObjectGcBase(obj), (ILGCFinalizer)0, (void *)0);
 	}
 	else
 	{
@@ -79,7 +78,7 @@ void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
  * public static void WaitForPendingFinalizers();
  */
 void _IL_GC_WaitForPendingFinalizers(ILExecThread *_thread)
-{
+{	
 	ILGCInvokeFinalizers();
 }
 
@@ -172,8 +171,7 @@ ILNativeInt _IL_GCHandle_GCAddrOfPinnedObject(ILExecThread *_thread,
 			}
 			else
 			{
-				object = (ILObject *)(((unsigned char *)ptr) +
-									  IL_BEST_ALIGNMENT);
+				object = GetObjectFromGcBase(ptr);
 			}
 		}
 	}
@@ -198,7 +196,7 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 	/* Convert the object into a pointer to the object's GC base */
 	if(value)
 	{
-		ptr = (void *)(((unsigned char *)value) - IL_BEST_ALIGNMENT);
+		ptr = GetObjectGcBase(value);
 	}
 	else
 	{
@@ -397,7 +395,7 @@ ILObject *_IL_GCHandle_GCGetTarget(ILExecThread *_thread, ILInt32 handle)
 		}
 		else
 		{
-			object = (ILObject *)(((unsigned char *)ptr) + IL_BEST_ALIGNMENT);
+			object = GetObjectFromGcBase(ptr);
 		}
 	}
 
@@ -416,7 +414,7 @@ void _IL_GCHandle_GCSetTarget(ILExecThread *_thread, ILInt32 handle,
 	/* Convert the object into a pointer to the object's GC base */
 	if(value)
 	{
-		ptr = (void *)(((unsigned char *)value) - IL_BEST_ALIGNMENT);
+		ptr = GetObjectGcBase(value);
 	}
 	else
 	{

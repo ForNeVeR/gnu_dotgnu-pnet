@@ -22,6 +22,7 @@
 #define	_IL_THREAD_H
 
 #include "il_system.h"
+#include "il_engine.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -54,6 +55,12 @@ typedef struct _tagILThread     ILThread;
 typedef struct _tagILMutex      ILMutex;
 typedef struct _tagILRWLock     ILRWLock;
 typedef struct _tagILWaitHandle ILWaitHandle;
+
+
+/*
+ *	Registers an ILThread and allow it to execute managed code. 
+ */
+ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread, int isUserThread);
 
 /*
  * Determine if the system has thread support.  This can
@@ -353,6 +360,21 @@ int ILWaitMonitorPulse(ILWaitHandle *handle);
  * Pulse all waiting threads on a monitor.
  */
 int ILWaitMonitorPulseAll(ILWaitHandle *handle);
+
+/*
+ *	Checks if the monitor has no owner and no waiters.
+ */
+int ILWaitMonitorCanClose(ILWaitHandle *handle);
+
+/*
+ *	Similar to ILWaitMonitorLeave except that waiting moniters aren't signalled.
+ */
+int ILWaitMonitorSpeculativeLeave(ILWaitHandle *handle);
+
+/*
+ *	Signals waiting moniters when call after ILWaitMonitorSpeculativeLeave.
+ */
+int ILWaitMonitorCompleteLeave(ILWaitHandle *handle);
 
 /*
  * Syntactic sugar.

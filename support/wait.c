@@ -118,6 +118,7 @@ int ILWaitOne(ILWaitHandle *handle, ILUInt32 timeout)
 
 	/* Register this thread with the handle */
 	result = (*(handle->registerFunc))(handle, wakeup);
+
 	if(result == IL_WAITREG_ACQUIRED)
 	{
 		/* We were able to acquire the wait handle immediately */
@@ -130,6 +131,7 @@ int ILWaitOne(ILWaitHandle *handle, ILUInt32 timeout)
 		_ILWakeupAdjustLimit(wakeup, 0);
 		return LeaveWait(thread, IL_WAIT_FAILED);
 	}
+
 
 	/* Wait until we are signalled, timed out, or interrupted */
 	result = _ILWakeupWait(wakeup, timeout, 0);

@@ -59,12 +59,8 @@ static void *SystemException(ILExecThread *thread, const char *className)
 
 case COP_JSR:
 {
-	/* Jump to a subroutine within this method.  The address
-	   is saved as an offset because the subroutine may call
-	   other methods, which may cause the CVM cache to be
-	   flushed.  When the subroutine finally returns, this
-	   method may no longer be located where it used to be */
-	stacktop[0].intValue = (ILInt32)((pc + 6) - pcstart);
+	/* Jump to a subroutine within this method */
+	stacktop[0].ptrValue = (void *)(pc + 6);
 	pc += (ILInt32)(ILInt8)(pc[1]);
 	stacktop += 1;
 }
@@ -73,7 +69,7 @@ break;
 case COP_RET_JSR:
 {
 	/* Return from a subroutine within this method */
-	pc = pcstart + stacktop[-1].intValue;
+	pc = (unsigned char *)(stacktop[-1].ptrValue);
 	stacktop -= 1;
 }
 break;
@@ -83,7 +79,7 @@ break;
 case COP_PREFIX_ENTER_TRY:
 {
 	/* Enter a try context for this method */
-	thread->except = (ILUInt32)((pc + IL_READ_INT32(pc + 2)) - pcstart);
+	thread->except = pc + IL_READ_INT32(pc + 2);
 	thread->exceptHeight = (ILUInt32)(stacktop - frame);
 	MODIFY_PC_AND_STACK(6, 0);
 }
@@ -92,7 +88,7 @@ break;
 /* Label that we jump to when the engine throws an internal exception */
 throwException:
 {
-	if(thread->except == IL_MAX_UINT32)
+	if(thread->except == IL_INVALID_EXCEPT)
 	{
 		goto throwCaller;
 	}
@@ -107,8 +103,8 @@ case COP_PREFIX_THROW:
 
 	/* Search the exception handler table for an applicable handler */
 searchForHandler:
-	tempNum = (ILUInt32)(pc - pcstart);
-	pc = pcstart + thread->except;
+	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData1));
+	pc = thread->except;
 	while(tempNum < IL_READ_UINT32(pc) || tempNum >= IL_READ_UINT32(pc + 4))
 	{
 		pc += IL_READ_UINT32(pc + 8);
@@ -134,37 +130,21 @@ throwCaller:
 		stacktop = frame;
 		callFrame = &(thread->frameStack[--(thread->numFrames)]);
 		methodToCall = callFrame->method;
-		if(methodToCall)
-		{
-			/* Returning to within the context of a CVM method */
-			if(methodToCall->userData1 == 0 ||
-			   method->userData2 != methodToCall->userData2)
-			{
-				/* We need to re-convert the method because it was flushed */
-				/* TODO */
-			}
-			pcstart = (unsigned char *)(methodToCall->userData1);
-		}
-		else
-		{
-			/* Returning to the top-most level of the thread */
-			pcstart = 0;
-		}
-		pc = pcstart + callFrame->pc;
+		pc = callFrame->pc;
 		thread->except = callFrame->except;
 		thread->exceptHeight = callFrame->exceptHeight;
 		frame = stackbottom + callFrame->frame;
 		method = methodToCall;
 
 		/* Should we return to an external method? */
-		if(callFrame->pc == IL_MAX_UINT32)
+		if(callFrame->pc == IL_INVALID_PC)
 		{
 			thread->thrownException = tempptr;
 			COPY_STATE_TO_THREAD();
 			return 1;
 		}
 	}
-	while(thread->except == IL_MAX_UINT32);
+	while(thread->except == IL_INVALID_EXCEPT);
 
 	/* Copy the exception object into place */
 	stacktop = frame + thread->exceptHeight;

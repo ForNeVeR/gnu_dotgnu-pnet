@@ -344,8 +344,7 @@ static IL_INLINE void *ReadPointer(unsigned char *pc)
  */
 #define	COPY_STATE_TO_THREAD()	\
 			do { \
-				thread->pcstart = pcstart; \
-				thread->pc = (ILUInt32)(pc - pcstart); \
+				thread->pc = pc; \
 				thread->frame = (ILUInt32)(frame - stackbottom); \
 				thread->stackTop = stacktop; \
 				thread->method = method; \
@@ -368,11 +367,10 @@ static IL_INLINE void *ReadPointer(unsigned char *pc)
 
 int _ILCVMInterpreter(ILExecThread *thread)
 {
-	REGISTER_ASM_PC(unsigned char *pc) = thread->pcstart + thread->pc;
+	REGISTER_ASM_PC(unsigned char *pc) = thread->pc;
 	REGISTER_ASM_STACK(CVMWord *stacktop) = thread->stackTop;
 	REGISTER_ASM_FRAME(CVMWord *frame) = thread->stackBase + thread->frame;
 	int divResult;
-	unsigned char *pcstart = thread->pcstart;
 	CVMWord *stackmax = thread->stackLimit;
 	CVMWord *stackbottom = thread->stackBase;
 	ILMethod *method = thread->method;

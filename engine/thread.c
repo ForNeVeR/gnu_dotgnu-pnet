@@ -57,9 +57,8 @@ ILExecThread *ILExecThreadCreate(ILExecProcess *process)
 	thread->maxFrames = process->frameStackSize;
 
 	/* Initialize the thread state */
-	thread->pcstart = 0;
 	thread->pc = 0;
-	thread->except = IL_MAX_UINT32;
+	thread->except = IL_INVALID_EXCEPT;
 	thread->frame = 0;
 	thread->stackTop = thread->stackBase;
 	thread->method = 0;
@@ -130,7 +129,7 @@ ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n)
 	{
 		--posn;
 		frame = &(thread->frameStack[posn]);
-		if(frame->except == IL_MAX_UINT32)
+		if(frame->except == IL_INVALID_EXCEPT)
 		{
 			if(!n)
 			{
@@ -150,7 +149,7 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
 	{
 		--posn;
 		frame = &(thread->frameStack[posn]);
-		if(frame->except == IL_MAX_UINT32)
+		if(frame->except == IL_INVALID_EXCEPT)
 		{
 			return frame;
 		}

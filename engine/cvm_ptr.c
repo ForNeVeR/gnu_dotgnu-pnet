@@ -924,8 +924,7 @@ case COP_LDSTR:
 	stacktop[0].ptrValue = _ILStringInternFromImage
 			(thread, ILProgramItem_Image(method), IL_READ_UINT32(pc + 1));
 	RESTORE_STATE_FROM_THREAD();
-	pcstart = thread->pcstart;
-	pc = pcstart + thread->pc;
+	pc = thread->pc;
 	MODIFY_PC_AND_STACK(5, 1);
 }
 break;

@@ -124,12 +124,14 @@ struct _tagILExecProcess
 typedef struct _tagILCallFrame
 {
 	ILMethod       *method;			/* Method being executed in the frame */
-	ILUInt32		pc;				/* PC to return to in the parent method */
+	unsigned char  *pc;				/* PC to return to in the parent method */
 	ILUInt32	   	frame;			/* Base of the local variable frame */
-	ILUInt32		except;			/* PC to jump to on an exception */
+	unsigned char  *except;			/* PC to jump to on an exception */
 	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
 
 } ILCallFrame;
+#define	IL_INVALID_PC		((unsigned char *)(ILNativeInt)(-1))
+#define	IL_INVALID_EXCEPT	((unsigned char *)(ILNativeInt)(-1))
 
 /*
  * Execution control context for a single thread.
@@ -148,9 +150,8 @@ struct _tagILExecThread
 	CVMWord		   *stackLimit;
 
 	/* Current thread state */
-	unsigned char  *pcstart;		/* Start of the CVM code for the method */
-	ILUInt32		pc;				/* Offset to the current position */
-	ILUInt32		except;			/* Offset to the exception handler table */
+	unsigned char  *pc;				/* Current program position */
+	unsigned char  *except;			/* Position of exception handler table */
 	ILUInt32		exceptHeight;	/* Height of the frame for exceptions */
 	ILUInt32		frame;			/* Base of the local variable frame */
 	CVMWord        *stackTop;		/* Current stack top */

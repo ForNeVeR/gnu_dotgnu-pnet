@@ -84,8 +84,7 @@ static ILCallFrame *AllocCallFrame(ILExecThread *thread)
 				if(thread->thrownException != 0) \
 				{ \
 					/* An exception occurred, which we now must handle */ \
-					pcstart = thread->pcstart; \
-					pc = pcstart + thread->pc; \
+					pc = thread->pc; \
 					stacktop[0].ptrValue = thread->thrownException; \
 					thread->thrownException = 0; \
 					goto throwException; \
@@ -109,15 +108,14 @@ case COP_CALL:
 
 	/* Fill in the call frame details */
 	callFrame->method = method;
-	callFrame->pc = (ILUInt32)(pc - pcstart + sizeof(void *) + 5);
+	callFrame->pc = pc + sizeof(void *) + 5;
 	callFrame->frame = (ILUInt32)(frame - stackbottom);
 	callFrame->except = thread->except;
 	callFrame->exceptHeight = thread->exceptHeight;
 
 	/* Pass control to the new method */
 	pc += IL_READ_INT32(pc + 1);
-	pcstart = pc;
-	thread->except = IL_MAX_UINT32;
+	thread->except = IL_INVALID_EXCEPT;
 	thread->exceptHeight = 0;
 	method = methodToCall;
 }
@@ -132,8 +130,8 @@ case COP_CALL_EXTERN:
 	COPY_STATE_TO_THREAD();
 
 	/* Convert the method */
-	pcstart = _ILConvertMethod(thread, methodToCall);
-	if(!pcstart)
+	tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+	if(!tempptr)
 	{
 		MISSING_METHOD_EXCEPTION();
 	}
@@ -142,7 +140,7 @@ case COP_CALL_EXTERN:
 	if(methodToCall->userData2 == method->userData2)
 	{
 		pc[0] = COP_CALL;
-		tempNum = (ILUInt32)(pcstart - pc);
+		tempNum = (ILUInt32)(((unsigned char *)tempptr) - pc);
 		pc[1] = (unsigned char)(tempNum);
 		pc[2] = (unsigned char)(tempNum >> 8);
 		pc[3] = (unsigned char)(tempNum >> 16);
@@ -161,8 +159,8 @@ case COP_CALL_EXTERN:
 
 	/* Restore the state information and jump to the new method */
 	RESTORE_STATE_FROM_THREAD();
-	pc = pcstart;
-	thread->except = IL_MAX_UINT32;
+	pc = (unsigned char *)tempptr;
+	thread->except = IL_INVALID_EXCEPT;
 	thread->exceptHeight = 0;
 	method = methodToCall;
 }
@@ -177,8 +175,8 @@ case COP_CALL_CTOR:
 	COPY_STATE_TO_THREAD();
 
 	/* Convert the method */
-	pcstart = _ILConvertMethod(thread, methodToCall);
-	if(!pcstart)
+	tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+	if(!tempptr)
 	{
 		MISSING_METHOD_EXCEPTION();
 	}
@@ -193,13 +191,10 @@ case COP_CALL_CTOR:
 	callFrame->except = thread->except;
 	callFrame->exceptHeight = thread->exceptHeight;
 
-	/* Restore the state information and jump to the new method.
-	   Note: "pcstart" must point to the non-allocation start
-	   of the constructor method so that correct offsets are
-	   calculated when sub-methods return to the constructor */
+	/* Restore the state information and jump to the new method */
 	RESTORE_STATE_FROM_THREAD();
-	pc = pcstart - ILCoderCtorOffset(thread->process->coder);
-	thread->except = IL_MAX_UINT32;
+	pc = ((unsigned char *)tempptr) - ILCoderCtorOffset(thread->process->coder);
+	thread->except = IL_INVALID_EXCEPT;
 	thread->exceptHeight = 0;
 	method = methodToCall;
 }
@@ -213,8 +208,7 @@ case COP_CALL_NATIVE:
 	         (void (*)())(ReadPointer(pc + 1)), stacktop[-1].ptrValue,
 			 nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
-	pcstart = thread->pcstart;
-	pc = pcstart + thread->pc;
+	pc = thread->pc;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, -1);
 }
 break;
@@ -226,8 +220,7 @@ case COP_CALL_NATIVE_VOID:
 	ffi_call((ffi_cif *)(ReadPointer(pc + 1 + sizeof(void *))),
 	         (void (*)())(ReadPointer(pc + 1)), 0, nativeArgs);
 	RESTORE_STATE_FROM_THREAD();
-	pcstart = thread->pcstart;
-	pc = pcstart + thread->pc;
+	pc = thread->pc;
 	MODIFY_PC_AND_STACK(1 + sizeof(void *) * 2, 0);
 }
 break;
@@ -246,8 +239,8 @@ case COP_CALL_VIRTUAL:
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
-		pcstart = _ILConvertMethod(thread, methodToCall);
-		if(!pcstart)
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if(!tempptr)
 		{
 			MISSING_METHOD_EXCEPTION();
 		}
@@ -264,8 +257,8 @@ case COP_CALL_VIRTUAL:
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
-		pc = pcstart;
-		thread->except = IL_MAX_UINT32;
+		pc = (unsigned char *)tempptr;
+		thread->except = IL_INVALID_EXCEPT;
 		thread->exceptHeight = 0;
 		method = methodToCall;
 	}
@@ -295,8 +288,8 @@ case COP_CALL_INTERFACE:
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
-		pcstart = _ILConvertMethod(thread, methodToCall);
-		if(!pcstart)
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if(!tempptr)
 		{
 			MISSING_METHOD_EXCEPTION();
 		}
@@ -313,8 +306,8 @@ case COP_CALL_INTERFACE:
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
-		pc = pcstart;
-		thread->except = IL_MAX_UINT32;
+		pc = (unsigned char *)tempptr;
+		thread->except = IL_INVALID_EXCEPT;
 		thread->exceptHeight = 0;
 		method = methodToCall;
 	}
@@ -345,30 +338,14 @@ case COP_RETURN:
 popFrame:
 	callFrame = &(thread->frameStack[--(thread->numFrames)]);
 	methodToCall = callFrame->method;
-	if(methodToCall)
-	{
-		/* Returning to within the context of a CVM method */
-		if(methodToCall->userData1 == 0 ||
-		   method->userData2 != methodToCall->userData2)
-		{
-			/* We need to re-convert the method because it has been flushed */
-			/* TODO */
-		}
-		pcstart = (unsigned char *)(methodToCall->userData1);
-	}
-	else
-	{
-		/* Returning to the top-most level of the thread */
-		pcstart = 0;
-	}
-	pc = pcstart + callFrame->pc;
+	pc = callFrame->pc;
 	thread->except = callFrame->except;
 	thread->exceptHeight = callFrame->exceptHeight;
 	frame = stackbottom + callFrame->frame;
 	method = methodToCall;
 
 	/* Should we return to an external method? */
-	if(callFrame->pc == IL_MAX_UINT32)
+	if(pc == IL_INVALID_PC)
 	{
 		COPY_STATE_TO_THREAD();
 		return 0;
@@ -479,8 +456,8 @@ case COP_CALL_VIRTUAL:
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
-		pcstart = _ILConvertMethod(thread, methodToCall);
-		if(!pcstart)
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if(!tempptr)
 		{
 			MISSING_METHOD_EXCEPTION();
 		}
@@ -497,8 +474,8 @@ case COP_CALL_VIRTUAL:
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
-		pc = pcstart;
-		thread->except = IL_MAX_UINT32;
+		pc = (unsigned char *)tempptr;
+		thread->except = IL_INVALID_EXCEPT;
 		thread->exceptHeight = 0;
 		method = methodToCall;
 	}
@@ -528,8 +505,8 @@ case COP_CALL_INTERFACE:
 		COPY_STATE_TO_THREAD();
 
 		/* Convert the method */
-		pcstart = _ILConvertMethod(thread, methodToCall);
-		if(!pcstart)
+		tempptr = (void *)(_ILConvertMethod(thread, methodToCall));
+		if(!tempptr)
 		{
 			MISSING_METHOD_EXCEPTION();
 		}
@@ -546,8 +523,8 @@ case COP_CALL_INTERFACE:
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
-		pc = pcstart;
-		thread->except = IL_MAX_UINT32;
+		pc = (unsigned char *)tempptr;
+		thread->except = IL_INVALID_EXCEPT;
 		thread->exceptHeight = 0;
 		method = methodToCall;
 	}

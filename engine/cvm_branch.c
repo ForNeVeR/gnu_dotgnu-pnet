@@ -550,7 +550,7 @@ case COP_BR_LONG:
 		case COP_JSR:
 		{
 			/* Long form of the "jsr" opcode */
-			stacktop[0].intValue = (ILInt32)((pc + 6) - pcstart);
+			stacktop[0].ptrValue = (void *)(pc + 6);
 			pc += IL_READ_INT32(pc + 2);
 			stacktop += 1;
 		}

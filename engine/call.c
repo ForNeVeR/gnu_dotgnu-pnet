@@ -111,7 +111,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	ILInt64 int64Value;
 	ILNativeFloat fValue;
 	ILCallFrame *frame;
-	ILUInt32 savePC;
+	unsigned char *savePC;
 	int threwException;
 	unsigned char *pcstart;
 
@@ -273,7 +273,7 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	frame = &(thread->frameStack[(thread->numFrames)++]);
 	savePC = thread->pc;
 	frame->method = thread->method;
-	frame->pc = IL_MAX_UINT32;
+	frame->pc = IL_INVALID_PC;
 	frame->frame = thread->frame;
 	frame->except = thread->except;
 	frame->exceptHeight = thread->exceptHeight;
@@ -283,14 +283,13 @@ static int CallMethod(ILExecThread *thread, ILMethod *method,
 	{
 		/* We are calling the allocation constructor, which starts
 		   several bytes before the actual method entry point */
-		thread->pcstart = pcstart - ILCoderCtorOffset(thread->process->coder);
+		thread->pc = pcstart - ILCoderCtorOffset(thread->process->coder);
 	}
 	else
 	{
-		thread->pcstart = pcstart;
+		thread->pc = pcstart;
 	}
-	thread->pc = 0;
-	thread->except = IL_MAX_UINT32;
+	thread->except = IL_INVALID_EXCEPT;
 	thread->exceptHeight = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
@@ -440,7 +439,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	void *ptr;
 	ILUInt32 size, sizeInWords;
 	ILCallFrame *frame;
-	ILUInt32 savePC;
+	unsigned char *savePC;
 	int threwException;
 	unsigned char *pcstart;
 
@@ -609,7 +608,7 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	frame = &(thread->frameStack[(thread->numFrames)++]);
 	savePC = thread->pc;
 	frame->method = thread->method;
-	frame->pc = IL_MAX_UINT32;
+	frame->pc = IL_INVALID_PC;
 	frame->frame = thread->frame;
 	frame->except = thread->except;
 	frame->exceptHeight = thread->exceptHeight;
@@ -619,14 +618,13 @@ static int CallMethodV(ILExecThread *thread, ILMethod *method,
 	{
 		/* We are calling the allocation constructor, which starts
 		   several bytes before the actual method entry point */
-		thread->pcstart = pcstart - ILCoderCtorOffset(thread->process->coder);
+		thread->pc = pcstart - ILCoderCtorOffset(thread->process->coder);
 	}
 	else
 	{
-		thread->pcstart = pcstart;
+		thread->pc = pcstart;
 	}
-	thread->pc = 0;
-	thread->except = IL_MAX_UINT32;
+	thread->except = IL_INVALID_EXCEPT;
 	thread->exceptHeight = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);

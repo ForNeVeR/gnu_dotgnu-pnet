@@ -8,6 +8,9 @@
 	* cscc/common/cc_options.c (CCAddPathStrings): bail out if the
 	path specification is NULL.
 
+	* cscc/cscc.c (SearchPath): bug in previous check-in that caused
+	it to reference the wrong path.
+
 2002-12-16 Gopal.V  <gopalv82@symonds.net>
 	
 	* codegen/cg_resolve.c: Prevent infinite lookups in conversion

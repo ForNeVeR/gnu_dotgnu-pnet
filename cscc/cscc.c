@@ -40,6 +40,8 @@ Environment variables:
 extern	"C" {
 #endif
 
+#ifndef IL_WIN32_NATIVE
+
 /*
  * The default system include path.  We look in "lib" first,
  * just in case there is a pre-compiled "dll" for a package.
@@ -70,6 +72,18 @@ extern	"C" {
 #define	PLUGINS_PATH	\
 			"/usr/local/lib/cscc/plugins:" \
 			"/usr/lib/cscc/plugins"
+
+#else
+
+/*
+ * Disable the Unix-like paths under native Win32.
+ */
+#define	INCLUDE_PATH		0
+#define	INCLUDE_CPP_PATH	0
+#define	LIB_PATH			0
+#define	PLUGINS_PATH		0
+
+#endif
 
 /*
  * File processing types.
@@ -602,7 +616,7 @@ static char *SearchPath(char *path, char *name,
 		{
 			CCOutOfMemory();
 		}
-		strncpy(temppath, path, len);
+		strncpy(temppath, list[posn], len);
 	#ifdef IL_WIN32_NATIVE
 		temppath[len] = '\\';
 	#else

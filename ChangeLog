@@ -4,6 +4,8 @@
 	* System.Windows.Forms/TreeView.cs (ProcessClick): don't call
 	"GetImageBounds" if there is no image list.
 
+	* configure.in, NEWS: update version and news for the 0.6.2 release.
+
 2004-01-02  Gopal.V  <gopalv82@symonds.net>
 
 	* System/Net/HttpWebRequest.cs: minor fixes, pre-authenticate POST

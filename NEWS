@@ -1,4 +1,126 @@
 
+0.6.2 (3 January 2004)
+
+	System.Windows.Forms & System.Drawing:
+
+	* Many new tests in FormsText (Neil Cawse).
+	* Image drawing (Neil Cawse).
+	* General improvements to the Win32 toolkit (Neil Cawse).
+	* Improve control border drawing (Neil Cawse).
+	* ListBox (Brain Luft).
+	* PictureBox (Simon Guindon, Neil Cawse).
+	* Fix flicking of TabControl (Neil Cawse).
+	* Support for the ResX resource classes (Neil Cawse).
+	* ComboBox (Neil Cawse).
+	* Implement VisibleClipBounds, TransformPoints (Neil Cawse).
+	* String format alignment (Thomas Fritzsche).
+	* Dialog box support in the Form class (Rhys Weatherley).
+	* MessageBox (Rhys Weatherley).
+	* Flesh out some of the file dialogs - not finished yet (Rhys Weatherley).
+	* Layout helper classes for building system dialogs (Rhys Weatherley).
+	* String drawing and measurement fixes (Neil Cawse).
+	* More accurate ellipse and arc drawing (H. Jones).
+	* Key navigation and focus (Neil Cawse).
+	* Add the correct IDispose pattern to toolkit objects (Neil Cawse).
+	* Color fixes to scrollbar drawing (Rhys Weatherley).
+	* Implement texture brushes (Rhys Weatherley, Neil Cawse).
+	* Glyph drawing, to simplify drawing of radio buttons, check marks,
+	  caption buttons, etc (Rhys Weatherley).
+	* Logic errors in the button classes (Rhys Weatherley).
+	* Reduce button flicker (Rhys Weatherley).
+	* DefaultThemePainter.DrawGrid (Neil Cawse).
+	* Fix ControlPaint.Lighten and ControlPaint.Darken (Neil Cawse).
+	* TreeView (Neil Cawse).
+	* Use the correct form of "GetManifestResourceStream" for icons and
+	  bitmaps, to include the namespace (Rhys Weatherley).
+	* Performance improvements (Neil Cawse).
+	* Text alignment improvements for buttons (Rhys Weatherley).
+	* Window manager hints for the Win32 toolkit (Neil Cawse).
+	* Window manager hints for the Xsharp toolkit (Rhys Weatherley).
+	* MDI support (Rhys Weatherley).
+	* Clipboard, DataFormats (Rhys Weatherley).
+	* Curses (Rhys Weatherley).
+	* XOR brushes (Rhys Weatherley).
+	* ScrollableControl (Gopal V).
+	* System.Drawing.Postscript (Richard Baumann).
+	* Get the file dialog to the point of basic usability (Rhys Weatherley).
+	* MonthCalendar (Gopal V).
+	* Data properties in System.Windows.Forms.Application (Rhys Weatherley).
+
+	Xsharp:
+
+	* Application embedding support using XC-APPGROUP.
+	* Add the correct version information to build libXsharpSupport.dll
+	  under Win32.
+	* Speed up event dispatching by using a faster hash algorithm.
+	* Fix some deadlocks in the finalization of pixmaps and widgets.
+	* Call "OnResize" from an idle timer on top-level windows, to prevent
+	  the event queue from becoming overwhelmed by opaque resizing.
+	* Streamline event member accesses to avoid too many property calls.
+	* Optimize for the 16bpp-LSBFirst and 24bpp-MSBFirst image cases.
+	* "Wakeup" signals in Xsharp.
+	* XFontStruct and direct PCF font rendering.
+	* Add explicit PCF fonts to render the default Winforms appearance.
+	* Complain loudly if the non-X version of "libXsharpSupport.so" is found.
+	* Close top-level windows when Alt+F4 is received.
+	* Re-entering the main loop from an event handler, for dialogs.
+	* Window hints for dialogs, modality, min/max sizes, icons, etc.
+	* Conform to freedesktop.org standards where applicable.
+	* Fix clipping of icons that are drawn somewhere other than (0, 0).
+	* MDI support.
+	* Beginnings of ICE/DCOP support.
+	* Support for Invalidate/Update.
+	* Fixed a bug that caused 1bpp images to only display every second pixel.
+
+	DotGNU.Images:
+
+	* Loading odd BMP formats in DotGNU.Images (Neil Cawse).
+	* Rescaling of images in DotGNU.Images (Neil Cawse).
+	* Fixes to icon and BMP image loading code (Neil Cawse).
+	* Calculation of transparency masks (Gopal V).
+	* Image loading of PNG, JPEG, and GIF files.
+	* Fix the icon writer to match the icon reader.
+	* More pixel formats in "GetPixel" (Richard Baumann).
+
+	Other:
+
+	* Add string resources for German and Catalan.
+	* Increment character count properly in "TextReader" (Stephen Compall).
+	* Extended console and serial port routines from .NET Framework 1.2.
+	* A number of small .NET Framework 1.2 classes in various places.
+	* System.Collections.Generic namespace.
+	* Flesh out Uri.IsPrefix (Joe Boese).
+	* Add the DotGNU.Terminal assembly, which provides readline functionality.
+	* Update profiles for 1.2, add a 1.1-only profile.
+	* Build changes for resources and assemblies to take advantage of
+	  new features in csant.
+	* Updates to calendars to match .NET Framework 1.2, including the
+	  Jalaali and UmAlQura calendars.
+	* Make sure that the class constructor is run before a static field
+	  is accessed via reflection.
+	* HTTP authentication, redirects, and proxies (Gopal V).
+	* Fix some bugs in System.Xml (Adam Ballai).
+	* Bug fixes to the routines in TypeDescriptor.
+	* Fix to "MoveNext" when enumerating an XML NodeList.
+	* Environment.ProcessorCount.
+	* Add the recursive System -> System.Xml dependency.
+	* System.Configuration.
+	* Handle DateTime formats like "yyyyMMdd" properly.
+	* Populate SetupInformation for the current AppDomain.
+	* Add the "AssemblyAttributesGoHere" classes, even though they shouldn't
+	  exist, to fake out programs built with Microsoft's assembler.
+	* Configuration for the diagnostics routines.
+	* Fix out of tree builds.
+	* Cryptography classes for .NET Framework 1.2.
+	* Support for symbolic links and lnk files.
+	* Recursive lock-up in I18N when getting the current culture.
+	* Add GNUTLS support to DotGNU.SSL.
+	* Rearrange the "samples" directory to reduce clutter.
+	* System.Design stubs (Adam Ballai).
+	* Array serialization.
+	* Bugs in ResourceReader and ResourceWriter.
+	* Fill in some missing TODO's in remoting.
+
 0.6.0 (15 October 2003)
 
 	System.Windows.Forms:

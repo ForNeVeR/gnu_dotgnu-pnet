@@ -1,3 +1,10 @@
+2003-03-09  Adam Ballai <minddog@cannibutter.com>
+
+	* System.Xml/XmlTextReader.cs,
+	System.Xml/XmlStreamReader.cs,
+	tests/System.Xml/TestXmlTextReader.cs: Added framework for UCS4
+	support.
+
 2003-03-09  Mike Peters <mpeters@aktifkablo.net>
 
 	* runtime/System/Private/NumberFormat/GeneralFormatter.cs: One liner

@@ -17,6 +17,9 @@
 	* csant/csant_cscc.c: minor bugs in the handling of the <resgen>
 	and <reslink> tags.
 
+	* csant/csant_cscc.c: disable the "--silent" flag to "ilgac"
+	so that it will display what it is doing during a "make install".
+
 2003-11-25  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* image/meta_build.c (ResolveTypeRefs): if a TypeRef to a foreign

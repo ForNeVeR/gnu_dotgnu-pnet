@@ -991,7 +991,7 @@ static char **BuildInstallLine(const char *output, const char *subdir,
 	AddArg(&argv, &argc, FindProgramPath("ilgac", "csant.env.ILGAC"));
 
 	/* Add the command-line options */
-	AddArg(&argv, &argc, "--silent");
+	/*AddArg(&argv, &argc, "--silent");*/
 	AddArg(&argv, &argc, "--install");
 	AddArg(&argv, &argc, "--force");
 	if(installAsDefault)
@@ -1030,7 +1030,7 @@ static char **BuildUninstallLine(const char *output, const char *version,
 	AddArg(&argv, &argc, FindProgramPath("ilgac", "csant.env.ILGAC"));
 
 	/* Add the command-line options */
-	AddArg(&argv, &argc, "--silent");
+	/*AddArg(&argv, &argc, "--silent");*/
 	AddArg(&argv, &argc, "--uninstall");
 	if(subdir)
 	{

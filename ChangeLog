@@ -1,4 +1,9 @@
 
+2003-11-17  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* image/meta_index.c, image/pecoff_loader.c: add some support
+	for IL object files that use a ".cormeta" section.
+
 2003-11-15  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/lib_reflect.c, ilalink/link_res.c, resgen/resgen_binary.c:

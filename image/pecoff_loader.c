@@ -434,6 +434,7 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	unsigned char *runtimeHdr;
 	int isMapped;
 	int isInPlace;
+	int isCorMeta;
 	void *mapAddress;
 	unsigned long mapLength;
 	int error;
@@ -608,6 +609,7 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	tlsSize = 0;
 	rsrcRVA = 0;
 	rsrcSize = 0;
+	isCorMeta = 0;
 	while(numSections > 0)
 	{
 		if((*(ctx->readFunc))(ctx, buffer, 40) != 40)
@@ -634,6 +636,10 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 		{
 			/* Object files may set this field to zero */
 			newMap->virtSize = newMap->realSize;
+			if(!(newMap->virtAddr))
+			{
+				newMap->virtAddr = newMap->realAddr;
+			}
 		}
 		if(((newMap->virtAddr + newMap->virtSize) &
 					(unsigned long)IL_MAX_UINT32) < newMap->virtAddr)
@@ -656,6 +662,13 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 			/* We are processing an object file that has the
 			   IL data embedded within the ".text$il" section */
 			base = newMap->virtAddr;
+		}
+		else if(!runtimeHdrSize && !ILMemCmp(buffer, ".cormeta", 8))
+		{
+			/* We are processing an object file that has the
+			   IL data embedded within the ".cormeta" section */
+			base = newMap->virtAddr;
+			isCorMeta = 1;
 		}
 		else if(!ILMemCmp(buffer, ".ildebug", 8))
 		{
@@ -681,6 +694,17 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 		{
 			rsrcRVA = newMap->virtAddr;
 			rsrcSize = newMap->virtSize;
+		}
+		else if(!ILMemCmp(buffer, ".bss\0\0\0\0", 8))
+		{
+			/* Object files with ".cormeta" sections may have an
+			   empty ".bss" section present.  Ignore it when getting
+			   the minimum and maximum sizes */
+			if(!(newMap->realAddr))
+			{
+				--numSections;
+				continue;
+			}
 		}
 		if(newMap->realSize > 0)
 		{
@@ -769,7 +793,10 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	newMap = map;
 	while(newMap != 0)
 	{
-		newMap->realAddr -= minAddress;
+		if(newMap->realAddr)
+		{
+			newMap->realAddr -= minAddress;
+		}
 		newMap = newMap->next;
 	}
 
@@ -799,6 +826,15 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 			_ILFreeSectionMap(map);
 			return IL_LOADERR_NOT_IL;
 		}
+	}
+	else if(isCorMeta)
+	{
+		/* We are processing an object file that stores the metadata
+		   header at the start of the ".cormeta" section */
+		runtimeHdrSize = 0;
+		hadNative = 0;
+		only32Bit = 0;
+		goto noRuntimeHeader;
 	}
 	else
 	{
@@ -842,6 +878,7 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 		}
 	}
 #endif
+noRuntimeHeader:
 
 	/* Create and populate the ILImage structure */
 	if((*image = _ILImageCreate(context, sizeof(ILImage))) == 0)
@@ -1211,8 +1248,16 @@ int _ILImageGetSection(ILImage *image, int section,
 			ranges.numRanges = 1;
 
 			/* Subtract out the resources section, if present */
-			addrTest = IL_READ_UINT32(runtimeHdr + 24);
-			sizeTest = IL_READ_UINT32(runtimeHdr + 28);
+			if(image->headerSize > 0)
+			{
+				addrTest = IL_READ_UINT32(runtimeHdr + 24);
+				sizeTest = IL_READ_UINT32(runtimeHdr + 28);
+			}
+			else
+			{
+				addrTest = 0;
+				sizeTest = 0;
+			}
 			if(addrTest != 0 && sizeTest != 0 && addrTest < addrHighest)
 			{
 				if((addrTest + 136) <= addrHighest && sizeTest >= 136)
@@ -1241,11 +1286,14 @@ int _ILImageGetSection(ILImage *image, int section,
 			SubtractFromRange(&ranges, addrTest, addrTest + sizeTest);
 
 			/* Subtract out the metadata section, if present */
-			addrTest = IL_READ_UINT32(runtimeHdr + 8);
-			sizeTest = IL_READ_UINT32(runtimeHdr + 12);
-			if(addrTest != 0 && sizeTest != 0)
+			if(image->headerSize > 0)
 			{
-				SubtractFromRange(&ranges, addrTest, addrTest + sizeTest);
+				addrTest = IL_READ_UINT32(runtimeHdr + 8);
+				sizeTest = IL_READ_UINT32(runtimeHdr + 12);
+				if(addrTest != 0 && sizeTest != 0)
+				{
+					SubtractFromRange(&ranges, addrTest, addrTest + sizeTest);
+				}
 			}
 
 			/* Subtract out other sections, starting at the
@@ -1294,14 +1342,32 @@ int _ILImageGetSection(ILImage *image, int section,
 		case IL_SECTION_METADATA:
 		{
 			/* Locate the metadata section */
-			*address = IL_READ_UINT32(runtimeHdr + 8);
-			*size = IL_READ_UINT32(runtimeHdr + 12);
+			if(image->headerSize)
+			{
+				*address = IL_READ_UINT32(runtimeHdr + 8);
+				*size = IL_READ_UINT32(runtimeHdr + 12);
+			}
+			else
+			{
+				*address = image->headerAddr;
+				*size = TopOfVirtualRange(image->map, *address);
+				if(*size > 0)
+				{
+					*size -= *address;
+				}
+			}
 		}
 		break;
 
 		case IL_SECTION_RESOURCES:
 		{
 			/* Locate the resources section */
+			if(!(image->headerSize))
+			{
+				*address = 0;
+				*size = 0;
+				break;
+			}
 			*address = IL_READ_UINT32(runtimeHdr + 24);
 			*size = IL_READ_UINT32(runtimeHdr + 28);
 			if(*size >= 136)
@@ -1326,6 +1392,12 @@ int _ILImageGetSection(ILImage *image, int section,
 		case IL_SECTION_STRONG_NAMES:
 		{
 			/* Locate the strong name signature section */
+			if(!(image->headerSize))
+			{
+				*address = 0;
+				*size = 0;
+				break;
+			}
 			*address = IL_READ_UINT32(runtimeHdr + 32);
 			*size = IL_READ_UINT32(runtimeHdr + 36);
 		}
@@ -1334,6 +1406,12 @@ int _ILImageGetSection(ILImage *image, int section,
 		case IL_SECTION_CODE_MANAGER:
 		{
 			/* Locate the code manager table section */
+			if(!(image->headerSize))
+			{
+				*address = 0;
+				*size = 0;
+				break;
+			}
 			*address = IL_READ_UINT32(runtimeHdr + 40);
 			*size = IL_READ_UINT32(runtimeHdr + 44);
 		}

@@ -957,8 +957,12 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 	index = ILImageGetMetaEntry(image, "#~", &size);
 	if(!index)
 	{
-		META_ERROR("index is missing or an obsolete version");
-		return IL_LOADERR_BAD_META;
+		index = ILImageGetMetaEntry(image, "#-", &size);
+		if(!index)
+		{
+			META_ERROR("index is missing or an obsolete version");
+			return IL_LOADERR_BAD_META;
+		}
 	}
 
 	/* Pull apart the index header */

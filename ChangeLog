@@ -1,4 +1,10 @@
 
+2002-11-18  Gopal.V <gopalv82@symonds.net>
+
+	* csharp/class/nested3.cs, csharp/class/nested3.il, 
+	csharp/class/nested3.jl: Add Roberth's test cases for nested classes
+	accessing protected enclosing class's members.
+	
 2002-11-17  Gopal.V <gopalv82@symonds.net>
 
 	* csharp/stmt/using1.cs, csharp/stmt/using1.il, csharp/stmt/using1.jl,

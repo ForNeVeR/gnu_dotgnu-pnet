@@ -21,29 +21,24 @@ TREECC_SRCOUT = cs_nodes.c cs_semantics.c
 
 TREECC_OUTPUT = $(TREECC_SRCOUT) cs_defs.h
 
-cscc_cs_SOURCES = $(TREECC_SRCOUT) \
+cscc_cs_COMMON  = $(TREECC_SRCOUT) \
 				  cs_errors.c \
 				  cs_gather.c \
 				  cs_grammar.y \
-				  cs_main.c \
+				  cs_lookup.c \
 				  cs_modifiers.c \
 			      cs_options.c \
 				  cs_preproc.c \
 				  cs_scanner.l \
 				  cs_valdoc.c
+
+cscc_cs_SOURCES = $(cscc_cs_COMMON) \
+				  cs_main.c
 cscc_cs_LDADD   = ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				  ../image/libILImage.a ../support/libILSupport.a
 
-csdoc_SOURCES = $(TREECC_SRCOUT) \
-				csdoc.c \
-				cs_errors.c \
-				cs_gather.c \
-				cs_grammar.y \
-				cs_modifiers.c \
-			    cs_options.c \
-				cs_preproc.c \
-				cs_scanner.l \
-				cs_valdoc.c
+csdoc_SOURCES = $(cscc_cs_COMMON) \
+				csdoc.c
 csdoc_LDADD   = ../codegen/libILCodeGen.a ../dumpasm/libILDumpAsm.a \
 				../image/libILImage.a ../support/libILSupport.a
 

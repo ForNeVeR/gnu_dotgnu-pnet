@@ -110,6 +110,10 @@ const char *CSTypeToName(ILType *type)
 			case IL_META_ELEMTYPE_OBJECT:		return "System.Object";
 			case IL_META_ELEMTYPE_TYPEDBYREF:	return "System.TypedReference";
 		}
+		if(type == ILType_Null)
+		{
+			return "null";
+		}
 	}
 	else if(ILType_IsValueType(type) || ILType_IsClass(type))
 	{

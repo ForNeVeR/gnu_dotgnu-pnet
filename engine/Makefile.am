@@ -13,6 +13,7 @@ libILEngine_a_SOURCES = call.c \
 						lib_decimal.c \
 						lib_math.c \
 						lib_object.c \
+						lib_platform.c \
 						lib_stdio.c \
 						lib_string.c \
 						lookup.c \

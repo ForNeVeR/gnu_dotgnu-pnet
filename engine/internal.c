@@ -35,26 +35,33 @@ extern ILMethodTableEntry const _ILSystemMathMethods;
 extern ILMethodTableEntry const _ILSystemSingleMethods;
 extern ILMethodTableEntry const _ILSystemDoubleMethods;
 extern ILMethodTableEntry const _ILPlatformStdioMethods;
+extern ILMethodTableEntry const _ILPlatformSysCharInfoMethods;
+extern ILMethodTableEntry const _ILPlatformPtrSizesMethods;
+extern ILMethodTableEntry const _ILPlatformTimeMethods;
 
 /*
  * Table that contains all classes that have "internalcall" methods.
+ * This table must be sorted on "name".
  */
 typedef struct
 {
-	const char *namespace;
 	const char *name;
+	const char *namespace;
 	const ILMethodTableEntry *entry;
 
 } InternalClassInfo;
 static InternalClassInfo const internalClassTable[] = {
-	{"System",		"Object",		&_ILSystemObjectMethods},
-	{"System",		"String",		&_ILSystemStringMethods},
-	{"System",		"Array",		&_ILSystemArrayMethods},
-	{"System",		"Decimal",		&_ILSystemDecimalMethods},
-	{"System",		"Math",			&_ILSystemMathMethods},
-	{"System",		"Single",		&_ILSystemSingleMethods},
-	{"System",		"Double",		&_ILSystemDoubleMethods},
-	{"Platform",	"Stdio",		&_ILPlatformStdioMethods},
+	{"Array",		"Array",		&_ILSystemArrayMethods},
+	{"Decimal",		"System",		&_ILSystemDecimalMethods},
+	{"Double",		"System",		&_ILSystemDoubleMethods},
+	{"Math",		"System",		&_ILSystemMathMethods},
+	{"Object",		"System",		&_ILSystemObjectMethods},
+	{"PtrSizes",	"Platform",		&_ILPlatformPtrSizesMethods},
+	{"Single",		"System",		&_ILSystemSingleMethods},
+	{"Stdio",		"Platform",		&_ILPlatformStdioMethods},
+	{"String",		"System",		&_ILSystemStringMethods},
+	{"SysCharInfo",	"Platform",		&_ILPlatformSysCharInfoMethods},
+	{"TimeMethods",	"Platform",		&_ILPlatformTimeMethods},
 };
 #define	numInternalClasses	(sizeof(internalClassTable) / \
 							 sizeof(InternalClassInfo))
@@ -69,11 +76,12 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 	ILClass *owner;
 	const char *name;
 	const char *namespace;
-	int index;
+	int left, right, middle;
 	const ILMethodTableEntry *entry;
 	ILType *signature;
 	void *func;
 	int isCtor;
+	int cmp;
 
 	/* If the method is not in the system image, then this is
 	   probably an attempt to circumvent system security, which
@@ -96,34 +104,48 @@ void *_ILFindInternalCall(ILMethod *method, int ctorAlloc)
 	name = ILClass_Name(owner);
 
 	/* Search for the class's internalcall table */
-	for(index = 0; index < numInternalClasses; ++index)
+	left = 0;
+	right = numInternalClasses - 1;
+	while(left <= right)
 	{
-		if(!strcmp(name, internalClassTable[index].name) &&
-		   !strcmp(namespace, internalClassTable[index].namespace))
+		middle = (left + right) / 2;
+		cmp = strcmp(name, internalClassTable[middle].name);
+		if(!cmp)
 		{
-			/* Search for the method within the class's table */
-			entry = internalClassTable[index].entry;
-			name = ILMethod_Name(method);
-			signature = ILMethod_Signature(method);
-			while(entry->methodName != 0)
+			if(!strcmp(namespace, internalClassTable[middle].namespace))
 			{
-				if(!strcmp(entry->methodName, name) &&
-				   entry->signature != 0 &&
-				   _ILLookupTypeMatch(signature, entry->signature))
+				/* Search for the method within the class's table */
+				entry = internalClassTable[middle].entry;
+				name = ILMethod_Name(method);
+				signature = ILMethod_Signature(method);
+				while(entry->methodName != 0)
 				{
-					if(ctorAlloc && entry[1].methodName &&
-					   !(entry[1].signature))
+					if(!strcmp(entry->methodName, name) &&
+					   entry->signature != 0 &&
+					   _ILLookupTypeMatch(signature, entry->signature))
 					{
-						return entry[1].func;
+						if(ctorAlloc && entry[1].methodName &&
+						   !(entry[1].signature))
+						{
+							return entry[1].func;
+						}
+						else
+						{
+							return entry->func;
+						}
 					}
-					else
-					{
-						return entry->func;
-					}
+					++entry;
 				}
-				++entry;
 			}
 			return 0;
+		}
+		else if(cmp < 0)
+		{
+			right = middle - 1;
+		}
+		else
+		{
+			left = middle + 1;
 		}
 	}
 

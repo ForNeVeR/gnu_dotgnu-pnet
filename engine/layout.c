@@ -34,13 +34,14 @@ typedef struct
 	ILUInt32	alignment;
 	ILUInt32	vtableSize;
 	ILMethod  **vtable;
+	ILUInt32	staticSize;
 
 } LayoutInfo;
 
 /*
  * Perform a security check (TODO: replace this with something better).
  */
-int _ILSecurityCheck(ILExecThread *thread, ILProgramItem *info, int type)
+int _ILSecurityCheck(ILProgramItem *info, int type)
 {
 	return 0;
 }
@@ -48,13 +49,13 @@ int _ILSecurityCheck(ILExecThread *thread, ILProgramItem *info, int type)
 /*
  * Forward declaration.
  */
-static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout);
+static int LayoutClass(ILClass *info, LayoutInfo *layout);
 
 /*
  * Get the layout information for a type.  Returns zero
  * if there is something wrong with the type.
  */
-static int LayoutType(ILExecThread *thread, ILType *type, LayoutInfo *layout)
+static int LayoutType(ILType *type, LayoutInfo *layout)
 {
 	if(ILType_IsPrimitive(type))
 	{
@@ -132,13 +133,14 @@ static int LayoutType(ILExecThread *thread, ILType *type, LayoutInfo *layout)
 		}
 		layout->vtableSize = 0;
 		layout->vtable = 0;
+		layout->staticSize = 0;
 		return 1;
 	}
 	else if(ILType_IsValueType(type))
 	{
 		/* Lay out a value type by getting the full size and alignment
 		   of the class that underlies the value type */
-		return LayoutClass(thread, ILType_ToValueType(type), layout);
+		return LayoutClass(ILType_ToValueType(type), layout);
 	}
 	else
 	{
@@ -147,6 +149,7 @@ static int LayoutType(ILExecThread *thread, ILType *type, LayoutInfo *layout)
 		layout->alignment = ffi_type_pointer.alignment;
 		layout->vtableSize = 0;
 		layout->vtable = 0;
+		layout->staticSize = 0;
 		return 1;
 	}
 }
@@ -190,8 +193,8 @@ static ILMethod *FindVirtualAncestor(ILClass *scope, ILClass *info,
 /*
  * Compute the method table for a class's interface.
  */
-static int ComputeInterfaceTable(ILExecThread *thread, ILClass *info,
-								 ILImplements *implements, ILClass *parent)
+static int ComputeInterfaceTable(ILClass *info, ILImplements *implements,
+								 ILClass *parent)
 {
 	return 1;
 }
@@ -200,15 +203,17 @@ static int ComputeInterfaceTable(ILExecThread *thread, ILClass *info,
  * Lay out a particular class.  Returns zero if there
  * is something wrong with the class definition.
  */
-static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
+static int LayoutClass(ILClass *info, LayoutInfo *layout)
 {
 	ILClassLayout *classLayout;
 	ILFieldLayout *fieldLayout;
+	ILFieldRVA *fieldRVA;
 	LayoutInfo typeLayout;
 	ILUInt32 maxAlignment;
 	ILUInt32 packingSize;
 	ILUInt32 explicitSize;
 	int allowFieldLayout;
+	int allowRVALayout;
 	ILClassPrivate *classPrivate;
 	ILField *field;
 	ILMethod *method;
@@ -234,6 +239,7 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 			layout->alignment = classPrivate->alignment;
 			layout->vtableSize = classPrivate->vtableSize;
 			layout->vtable = classPrivate->vtable;
+			layout->staticSize = classPrivate->staticSize;
 			return 1;
 		}
 	}
@@ -256,7 +262,7 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 	{
 		/* Use "ILClassGetParent" to resolve cross-image links */
 		parent = ILClassGetParent(info);
-		if(!LayoutClass(thread, parent, layout))
+		if(!LayoutClass(parent, layout))
 		{
 			info->userData = 0;
 			return 0;
@@ -271,12 +277,14 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 		layout->vtableSize = 0;
 	}
 
+	/* Zero the static size, which must be recomputed for each class */
+	layout->staticSize = 0;
+
 	/* Lay out the interfaces that this class implements */
 	implements = info->implements;
 	while(implements != 0)
 	{
-		if(!LayoutClass(thread, ILClassResolve(implements->interface),
-						&typeLayout))
+		if(!LayoutClass(ILClassResolve(implements->interface), &typeLayout))
 		{
 			info->userData = 0;
 			return 0;
@@ -288,11 +296,13 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 	packingSize = 0;
 	explicitSize = 0;
 	allowFieldLayout = 0;
+	allowRVALayout = _ILSecurityCheck((ILProgramItem *)info,
+									  IL_SECURITY_LAYOUT);
 	if((info->attributes & IL_META_TYPEDEF_LAYOUT_MASK) ==
 			IL_META_TYPEDEF_EXPLICIT_LAYOUT)
 	{
 		/* Check that security permissions allow explicit layout */
-		if(_ILSecurityCheck(thread, (ILProgramItem *)info, IL_SECURITY_LAYOUT))
+		if(allowRVALayout)
 		{
 			/* Look for class layout information to specify the size */
 			classLayout = ILClassLayoutGetFromOwner(info);
@@ -329,7 +339,7 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 		if((field->member.attributes & IL_META_FIELDDEF_STATIC) == 0)
 		{
 			/* Get the layout information for this field's type */
-			if(!LayoutType(thread, field->member.signature, &typeLayout))
+			if(!LayoutType(field->member.signature, &typeLayout))
 			{
 				info->userData = 0;
 				return 0;
@@ -376,8 +386,33 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 		}
 		else if((field->member.attributes & IL_META_FIELDDEF_LITERAL) == 0)
 		{
-			/* This class has static members that will need to
-			   be initialized at some point */
+			/* Lay out a static field */
+			fieldRVA = ILFieldRVAGetFromOwner(field);
+			if(fieldRVA && !allowRVALayout)
+			{
+				/* RVA fields are not permitted, so remove the attribute */
+				field->member.attributes &= ~IL_META_FIELDDEF_HAS_FIELD_RVA;
+			}
+			if(!fieldRVA || !allowRVALayout)
+			{
+				/* Get the layout information for this field's type */
+				if(!LayoutType(field->member.signature, &typeLayout))
+				{
+					info->userData = 0;
+					return 0;
+				}
+
+				/* Align the field on an appropriate boundary */
+				if((layout->staticSize & typeLayout.alignment) != 0)
+				{
+					layout->staticSize += typeLayout.alignment -
+						(layout->staticSize % typeLayout.alignment);
+				}
+
+				/* Record the field's offset and advance past it */
+				field->offset = layout->staticSize;
+				layout->staticSize += typeLayout.size;
+			}
 		}
 	}
 
@@ -477,7 +512,7 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 		if(parent->userData &&
 		   ((ILClassPrivate *)(parent->userData))->vtableSize)
 		{
-			if(!ComputeInterfaceTable(thread, info, implements, parent))
+			if(!ComputeInterfaceTable(info, implements, parent))
 			{
 				info->userData = 0;
 				return 0;
@@ -488,6 +523,7 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 
 	/* Record the layout information for this class */
 	classPrivate->size = layout->size;
+	classPrivate->staticSize = layout->staticSize;
 	classPrivate->alignment = layout->alignment;
 	classPrivate->vtableSize = layout->vtableSize;
 	classPrivate->vtable = vtable;
@@ -498,16 +534,16 @@ static int LayoutClass(ILExecThread *thread, ILClass *info, LayoutInfo *layout)
 	return 1;
 }
 
-int _ILLayoutClass(ILExecThread *thread, ILClass *info)
+int _ILLayoutClass(ILClass *info)
 {
 	LayoutInfo layout;
-	return LayoutClass(thread, info, &layout);
+	return LayoutClass(info, &layout);
 }
 
-ILUInt32 ILSizeOfType(ILExecThread *thread, ILType *type)
+ILUInt32 ILSizeOfType(ILType *type)
 {
 	LayoutInfo layout;
-	if(!LayoutType(thread, type, &layout))
+	if(!LayoutType(type, &layout))
 	{
 		return 0;
 	}

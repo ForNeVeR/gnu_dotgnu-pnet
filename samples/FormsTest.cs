@@ -14,6 +14,7 @@ namespace TextBoxTest
 		private TabPage tabPage4;
 		private TabPage tabPage5;
 		private TabPage tabPage6;
+		private TabPage tabPage7;
 		
 		// Tab1 Labels Test
 		private System.Windows.Forms.Label label;
@@ -179,7 +180,7 @@ namespace TextBoxTest
 		private System.Windows.Forms.Label labelT3;
 		private System.Windows.Forms.Label labelT4;
 
-#endregion
+		#endregion
 
 		public TextBoxTest()
 		{
@@ -209,6 +210,9 @@ namespace TextBoxTest
 			tabPage6 = new TabPage();
 			tabPage6.Text = "TabControls";
 			tabControl1.Controls.Add(this.tabPage6);
+			tabPage7 = new TabPage();
+			tabPage7.Text = "Primitives";
+			tabControl1.Controls.Add(this.tabPage7);
 
 			Controls.Add(tabControl1);
 
@@ -218,6 +222,7 @@ namespace TextBoxTest
 			AddRadioButtonsTest(tabPage4);
 			AddRegionsTest(tabPage5);
 			AddTabControlsTest(tabPage6);
+			AddPrimitivesTest(tabPage7);
 
 			//ResumeLayout(false);
 
@@ -507,31 +512,31 @@ namespace TextBoxTest
 			this.label.Text = "A normal label";
 
 			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																		  this.label25,
-																		  this.label24,
-																		  this.label23,
-																		  this.label22,
-																		  this.label21,
-																		  this.label20,
-																		  this.label19,
-																		  this.label18,
-																		  this.label17,
-																		  this.label16,
-																		  this.label15,
-																		  this.label14,
-																		  this.label13,
-																		  this.label12,
-																		  this.label11,
-																		  this.label10,
-																		  this.label9,
-																		  this.label8,
-																		  this.label7,
-																		  this.label6,
-																		  this.label5,
-																		  this.label4,
-																		  this.label3,
-																		  this.label2,
-																		  this.label});
+																			 this.label25,
+																			 this.label24,
+																			 this.label23,
+																			 this.label22,
+																			 this.label21,
+																			 this.label20,
+																			 this.label19,
+																			 this.label18,
+																			 this.label17,
+																			 this.label16,
+																			 this.label15,
+																			 this.label14,
+																			 this.label13,
+																			 this.label12,
+																			 this.label11,
+																			 this.label10,
+																			 this.label9,
+																			 this.label8,
+																			 this.label7,
+																			 this.label6,
+																			 this.label5,
+																			 this.label4,
+																			 this.label3,
+																			 this.label2,
+																			 this.label});
 		}
 
 		private void AddButtonTest(Control control)
@@ -792,32 +797,31 @@ namespace TextBoxTest
 			this.button23.Text = "A normal button : Anchor=All";
 
 			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																		  this.button23,
-																		  this.button22,
-																		  this.button21,
-																		  this.button20,
-																		  this.button19,
-																		  this.button18,
-																		  this.button17,
-																		  this.button16,
-																		  this.button15,
-																		  this.button14,
-																		  this.button13,
-																		  this.button12,
-																		  this.button11,
-																		  this.button10,
-																		  this.button9,
-																		  this.button8,
-																		  this.button7,
-																		  this.button6,
-																		  this.button5,
-																		  this.button4,
-																		  this.button3,
-																		  this.button2,
-																		  this.button});
+																			 this.button23,
+																			 this.button22,
+																			 this.button21,
+																			 this.button20,
+																			 this.button19,
+																			 this.button18,
+																			 this.button17,
+																			 this.button16,
+																			 this.button15,
+																			 this.button14,
+																			 this.button13,
+																			 this.button12,
+																			 this.button11,
+																			 this.button10,
+																			 this.button9,
+																			 this.button8,
+																			 this.button7,
+																			 this.button6,
+																			 this.button5,
+																			 this.button4,
+																			 this.button3,
+																			 this.button2,
+																			 this.button});
 		}
-
-		
+	
 		private void AddTextBoxTest(Control control)
 		{
 
@@ -947,7 +951,7 @@ namespace TextBoxTest
 			//
 			// textBox10
 			//
-			this.textBox10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Underline);
+			this.textBox10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline);
 			this.textBox10.Location = new System.Drawing.Point(10, 290);
 			this.textBox10.Name = "textBox10";
 			this.textBox10.Size = new System.Drawing.Size(450, 20);
@@ -957,7 +961,7 @@ namespace TextBoxTest
 			//
 			// textBox8
 			//
-			this.textBox8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Italic);
+			this.textBox8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic);
 			this.textBox8.Location = new System.Drawing.Point(10, 240);
 			this.textBox8.Name = "textBox8";
 			this.textBox8.Size = new System.Drawing.Size(450, 20);
@@ -967,7 +971,7 @@ namespace TextBoxTest
 			//
 			// textBox9
 			//
-			this.textBox9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Strikeout);
+			this.textBox9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Strikeout);
 			this.textBox9.Location = new System.Drawing.Point(10, 265);
 			this.textBox9.Name = "textBox9";
 			this.textBox9.Size = new System.Drawing.Size(450, 20);
@@ -977,7 +981,7 @@ namespace TextBoxTest
 			//
 			// textBox13
 			//
-			this.textBox13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+			this.textBox13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
 			this.textBox13.Location = new System.Drawing.Point(10, 365);
 			this.textBox13.Name = "textBox13";
 			this.textBox13.ReadOnly = true;
@@ -988,7 +992,7 @@ namespace TextBoxTest
 			//
 			// textBox12
 			//
-			this.textBox12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+			this.textBox12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
 			this.textBox12.Location = new System.Drawing.Point(10, 340);
 			this.textBox12.Name = "textBox12";
 			this.textBox12.PasswordChar = '*';
@@ -999,7 +1003,7 @@ namespace TextBoxTest
 			//
 			// textBox11
 			//
-			this.textBox11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+			this.textBox11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
 			this.textBox11.ForeColor = System.Drawing.Color.Red;
 			this.textBox11.Location = new System.Drawing.Point(10, 315);
 			this.textBox11.Name = "textBox11";
@@ -1051,36 +1055,35 @@ namespace TextBoxTest
 			//
 			// textBox14
 			//
-			this.textBox14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F);
+			this.textBox14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
 			this.textBox14.Location = new System.Drawing.Point(10, 415);
 			this.textBox14.MaxLength = 50;
 			this.textBox14.Name = "textBox14";
 			this.textBox14.Size = new System.Drawing.Size(450, 20);
 			this.textBox14.TabIndex = 14;
 			this.textBox14.Text = "A normal textbox - MS Sans Serif : MaxLength=50";
-
 			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																		  this.textBox19,
-																		  this.textBox20,
-																		  this.textBox18,
-																		  this.textBox17,
-																		  this.textBox16,
-																		  this.textBox15,
-																		  this.textBox14,
-																		  this.textBox13,
-																		  this.textBox12,
-																		  this.textBox11,
-																		  this.textBox10,
-																		  this.textBox9,
-																		  this.textBox8,
-																		  this.textBox7,
-																		  this.textBox6,
-																		  this.textBox5,
-																		  this.textBox4,
-																		  this.textBox3,
-																		  this.textBox2,
-																		  this.textBox,
-																		  this.textBox1});
+																			this.textBox19,
+																			this.textBox20,
+																			this.textBox18,
+																			this.textBox17,
+																			this.textBox16,
+																			this.textBox15,
+																			this.textBox14,
+																			this.textBox13,
+																			this.textBox12,
+																			this.textBox11,
+																			this.textBox10,
+																			this.textBox9,
+																			this.textBox8,
+																			this.textBox7,
+																			this.textBox6,
+																			this.textBox5,
+																			this.textBox4,
+																			this.textBox3,
+																			this.textBox2,
+																			this.textBox,
+																			this.textBox1});
 		}
 
 		private void AddRadioButtonsTest(Control control)
@@ -1452,44 +1455,45 @@ namespace TextBoxTest
 			this.radioButton31.Text = "A normal RadioButton : Font=Verdana; 8,25pt";
 
 			control.Controls.AddRange(new System.Windows.Forms.Control[] {
-																		  this.radioButton33,
-																		  this.radioButton32,
-																		  this.radioButton31,
-																		  this.radioButton30,
-																		  this.radioButton16,
-																		  this.radioButton8,
-																		  this.radioButton12,
-																		  this.radioButton29,
-																		  this.radioButton28,
-																		  this.radioButton27,
-																		  this.radioButton24,
-																		  this.radioButton25,
-																		  this.radioButton26,
-																		  this.radioButton23,
-																		  this.radioButton22,
-																		  this.radioButton20,
-																		  this.radioButton6,
-																		  this.radioButton21,
-																		  this.radioButton19,
-																		  this.radioButton18,
-																		  this.radioButton17,
-																		  this.radioButton15,
-																		  this.radioButton14,
-																		  this.radioButton13,
-																		  this.radioButton11,
-																		  this.radioButton10,
-																		  this.radioButton9,
-																		  this.radioButton7,
-																		  this.radioButton5,
-																		  this.radioButton4,
-																		  this.radioButton3,
-																		  this.radioButton2,
-																		  this.radioButton});
+																			 this.radioButton33,
+																			 this.radioButton32,
+																			 this.radioButton31,
+																			 this.radioButton30,
+																			 this.radioButton16,
+																			 this.radioButton8,
+																			 this.radioButton12,
+																			 this.radioButton29,
+																			 this.radioButton28,
+																			 this.radioButton27,
+																			 this.radioButton24,
+																			 this.radioButton25,
+																			 this.radioButton26,
+																			 this.radioButton23,
+																			 this.radioButton22,
+																			 this.radioButton20,
+																			 this.radioButton6,
+																			 this.radioButton21,
+																			 this.radioButton19,
+																			 this.radioButton18,
+																			 this.radioButton17,
+																			 this.radioButton15,
+																			 this.radioButton14,
+																			 this.radioButton13,
+																			 this.radioButton11,
+																			 this.radioButton10,
+																			 this.radioButton9,
+																			 this.radioButton7,
+																			 this.radioButton5,
+																			 this.radioButton4,
+																			 this.radioButton3,
+																			 this.radioButton2,
+																			 this.radioButton});
 		}
 		private void AddRegionsTest(Control control)
 		{
 			control.Paint+=new PaintEventHandler(Regions_Paint);
 		}
+
 		private void AddTabControlsTest(Control control)
 		{
 			this.Docked = new System.Windows.Forms.TabControl();
@@ -2028,6 +2032,11 @@ namespace TextBoxTest
 			control.Controls.Add(this.Docked);
 
 		}
+
+		private void AddPrimitivesTest(Control control)
+		{
+			control.Paint+=new PaintEventHandler(DrawPrimitives);
+		}
 		public static void Main(String[] args)
 		{
 			TextBoxTest form = new TextBoxTest();
@@ -2111,6 +2120,7 @@ namespace TextBoxTest
 
 			}
 		}
+
 		private void DrawRegions( Graphics g, int offset, string s, Region r1, Region r2, Region r3)
 		{
 			using (Pen p = new Pen(Color.Black))
@@ -2133,6 +2143,104 @@ namespace TextBoxTest
 					g.FillRegion(b1,region3);
 					g.DrawRectangle(p, Rectangle.Truncate(region3.GetBounds(g)));
 				}
+			}
+		}
+
+		private void DrawPrimitives(object sender, PaintEventArgs e)
+		{
+			using( Brush b = new SolidBrush(Color.Red))
+			{
+				using( Pen p = new Pen(Color.Red))
+				{
+					Graphics g= e.Graphics;
+					int x, y;
+					DrawPrimitive(g, 0, "(0,0)-(0,10)", out x, out y);
+					g.DrawLine(p,x, y, x, y+10);
+
+					DrawPrimitive(g, 1, "(0,0)-(0,1)", out x, out y);
+					g.DrawLine(p,x, y, x, y+1);
+
+					DrawPrimitive(g, 2, "(0,0)-(0,0)", out x, out y);
+					g.DrawLine(p,x, y, x, y);
+
+					DrawPrimitive(g, 3, "DrawRect(0,0,0,0)", out x, out y);
+					g.DrawRectangle(p,x, y, 0, 0);
+
+					DrawPrimitive(g, 4, "DrawRect(0,0,0,1)", out x, out y);
+					g.DrawRectangle(p,x, y, 0, 1);
+
+					DrawPrimitive(g, 5, "DrawRect(0,0,1,1)", out x, out y);
+					g.DrawRectangle(p,x, y, 1, 1);
+
+					DrawPrimitive(g, 6, "FillRect(0,0,1,0)", out x, out y);
+					g.FillRectangle(b,x, y, 1, 0);
+
+					DrawPrimitive(g, 7, "FillRect(0,0,1,1)", out x, out y);
+					g.FillRectangle(b,x, y, 1, 1);
+
+					DrawPrimitive(g, 8, "FillRect(0,0,2,2)", out x, out y);
+					g.FillRectangle(b,x, y, 2, 2);
+
+					DrawPrimitive(g, 9, "FillPoly(0,0,0,0)", out x, out y);
+					g.FillPolygon(b, new PointF[4] {new PointF(x,y), new PointF(x,y), new PointF(x,y), new PointF(x,y)});
+
+					DrawPrimitive(g, 10, "FillPoly(0,0,0,1)", out x, out y);
+					g.FillPolygon(b, new PointF[4] {new PointF(x,y), new PointF(x,y), new PointF(x,y+1),new PointF(x,y+1)});
+
+					DrawPrimitive(g, 11, "FillPoly(0,0,1,1)", out x, out y);
+					g.FillPolygon(b, new PointF[4] {new PointF(x,y), new PointF(x+1,y), new PointF(x+1,y+1),new PointF(x,y+1)});
+
+					DrawPrimitive(g, 12, "FillPoly(0,0,2,2)", out x, out y);
+					g.FillPolygon(b, new PointF[4] {new PointF(x,y), new PointF(x+2,y), new PointF(x+2,y+2), new PointF(x,y+2)});
+
+					DrawPrimitive(g, 13, "DrawPoly(0,0,0,0)", out x, out y);
+					g.DrawPolygon(p, new PointF[4] {new PointF(x,y), new PointF(x,y), new PointF(x,y), new PointF(x,y)});
+
+					DrawPrimitive(g, 14, "DrawPoly(0,0,0,1)", out x, out y);
+					g.DrawPolygon(p, new PointF[4] {new PointF(x,y), new PointF(x,y), new PointF(x,y+1),new PointF(x,y+1)});
+
+					DrawPrimitive(g, 15, "DrawPoly(0,0,1,1)", out x, out y);
+					g.DrawPolygon(p, new PointF[4] {new PointF(x,y), new PointF(x+1,y), new PointF(x+1,y+1),new PointF(x,y+1)});
+
+					DrawPrimitive(g, 16, "DrawPoly(0,0,2,2)", out x, out y);
+					g.DrawPolygon(p, new PointF[4] {new PointF(x,y), new PointF(x+2,y), new PointF(x+2,y+2), new PointF(x,y+2)});
+
+					Font f = new Font("Arial", 10);
+					DrawPrimitive(g, 17, "Arial 10", out x, out y);
+					g.DrawString("Height=" + f.Height, f, b, x, y);
+
+					DrawPrimitive(g, 18, "Arial 10", out x, out y);
+					StringFormat sf = new StringFormat();
+					sf.SetMeasurableCharacterRanges(new CharacterRange[] { new CharacterRange(0,1), new CharacterRange(1,1) });
+					RectangleF re = g.MeasureCharacterRanges("jM",f,new Rectangle(0,0,100,100),sf)[0].GetBounds(g);
+					g.DrawString("jM Meas:" + re.Left +"," + re.Top + "," + re.Width + "," + re.Height, f, b, x, y);
+					y+=20;
+					g.DrawString("jM", f, b, x, y, sf);
+					re.Offset(x,y);
+					g.DrawRectangle(p,Rectangle.Truncate(re));
+
+					DrawPrimitive(g, 19, "Arial 10", out x, out y);
+					re = g.MeasureCharacterRanges("jM",f,new Rectangle(0,0,100,100),sf)[1].GetBounds(g);
+					g.DrawString("jM Meas:" + re.Left +"," + re.Top + "," + re.Width + "," + re.Height, f, b, x, y);
+					y+=20;
+					g.DrawString("jM", f, b, x, y, sf);
+					re.Offset(x,y);
+					g.DrawRectangle(p,Rectangle.Truncate(re));
+
+					
+				}
+			}
+
+		}
+
+		private void DrawPrimitive( Graphics g, int offset, string s, out int x, out int y)
+		{
+			x = (offset%4) * 110;
+			y = (int)offset / 4*80;
+			using (Brush bl = new SolidBrush(Color.Blue))
+			{
+				g.DrawString(s,Font, bl, x, y);
+				y+=20;
 			}
 		}
 	}

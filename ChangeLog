@@ -6,6 +6,9 @@
 	"AutoResetEvent" and "ManualResetEvent" classes as sealed
 	and non-ECMA.
 
+	* runtime/System/Threading/Timer.cs: timer threads should
+	be background threads.
+
 2003-04-01  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* resources/en_US/runtime/Arg.txt,

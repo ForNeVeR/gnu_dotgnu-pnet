@@ -78,6 +78,7 @@ public sealed class Timer : MarshalByRefObject, IDisposable
 
 				// Start the timer thread.
 				timerThread = new Thread(new ThreadStart(Run));
+				timerThread.IsBackground = true;
 				timerThread.Start();
 			}
 	public Timer(TimerCallback callback, Object state,

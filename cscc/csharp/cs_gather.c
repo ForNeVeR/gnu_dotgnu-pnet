@@ -856,6 +856,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILMember *member;
 	ILClass *interface;
 	ILMember *interfaceMember;
+	ILClass *class1, *class2;
 	
 	/* Get the name of the method, and the interface member (if any) */
 	interface = 0;
@@ -1099,6 +1100,27 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 					CCWarningOnLine(yygetfilename(method), yygetlinenum(method),
 			  			"declaration of `%s' overrides an inherited member, "
 						"and `override' was not present", name);
+				}
+				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) !=0 
+				 && (method->modifiers & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
+				 !=	(ILMember_Attrs(member) & 
+						 IL_META_METHODDEF_MEMBER_ACCESS_MASK))
+				{
+					class1=ILMember_Owner(member);
+					class2=ILMethod_Owner(methodInfo);
+					CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+						"cannot change the access modifiers while overriding "
+						"virtual method '%s%s%s::%s' with '%s%s%s::%s' ",
+						ILClass_Namespace(class1) ? 
+						ILClass_Namespace(class1) : "" ,
+						ILClass_Namespace(class1) ? "." : "",
+						ILClass_Name(class1),
+						name,
+						ILClass_Namespace(class2) ? 
+						ILClass_Namespace(class2) : "" ,
+						ILClass_Namespace(class2) ? "." : "",
+						ILClass_Name(class2),
+						name);
 				}
 			}
 			else if(ILMember_Owner(member) == classInfo ||

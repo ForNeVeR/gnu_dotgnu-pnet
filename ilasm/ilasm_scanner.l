@@ -211,6 +211,10 @@ static ILIntString ParseString(char *text, int *len)
 							return I_METHOD
 #define	OPCODE_METHOD_P(name) yylval.opcode = 0xFE00 | IL_PREFIX_OP_##name; \
 							return I_METHOD
+#define	OPCODE_IMETHOD(name) yylval.opcode = IL_OP_##name; \
+							return I_IMETHOD
+#define	OPCODE_IMETHOD_P(name) yylval.opcode = 0xFE00 | IL_PREFIX_OP_##name; \
+							return I_IMETHOD
 #define	OPCODE_FIELD(name)	yylval.opcode = IL_OP_##name; \
 							return I_FIELD
 #define	OPCODE_FIELD_P(name) yylval.opcode = 0xFE00 | IL_PREFIX_OP_##name; \
@@ -734,11 +738,12 @@ SIGN			[+-]
 "ann.call"				{ OPCODE_METHOD(ANN_CALL); } /* Method opcodes */
 "ann.hoisted_call"		{ OPCODE_METHOD(ANN_HOISTED_CALL); }
 "call"					{ OPCODE_METHOD(CALL); }
-"callvirt"				{ OPCODE_METHOD(CALLVIRT); }
 "jmp"					{ OPCODE_METHOD(JMP); }
 "ldftn"					{ OPCODE_METHOD_P(LDFTN); }
-"ldvirtftn"				{ OPCODE_METHOD_P(LDVIRTFTN); }
-"newobj"				{ OPCODE_METHOD(NEWOBJ); }
+
+"callvirt"				{ OPCODE_IMETHOD(CALLVIRT); }
+"ldvirtftn"				{ OPCODE_IMETHOD_P(LDVIRTFTN); }
+"newobj"				{ OPCODE_IMETHOD(NEWOBJ); }
 
 "ldfld"					{ OPCODE_FIELD(LDFLD); }	/* Field opcodes */
 "ldflda"				{ OPCODE_FIELD(LDFLDA); }

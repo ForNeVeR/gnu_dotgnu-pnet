@@ -1,9 +1,13 @@
 
-2003-01-13  Gopal.V  <gopalv82@symonds.net>
+2003-01-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_gather.c: remove the "fix" for classes ending
 	in "Attribute" because it breaks attribute classes that do not
 	end in "Attribute".
+
+	* ilasm/ilasm_grammar.y, ilasm/ilasm_scanner.l: force the
+	argument to "callvirt", "newobj", and "ldvirtfn" to use
+	the "hasthis" flag on the method signature.
 
 2003-01-12  Gopal.V  <gopalv82@symonds.net>
 

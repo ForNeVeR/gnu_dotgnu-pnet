@@ -823,7 +823,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 /*
  * Instruction types.
  */
-%token I_NONE I_VAR I_INT I_FLOAT I_BRANCH I_METHOD I_FIELD I_TYPE
+%token I_NONE I_VAR I_INT I_FLOAT I_BRANCH I_METHOD I_IMETHOD I_FIELD I_TYPE
 %token I_STRING I_SIGNATURE I_RVA I_TOKEN I_SSA I_SWITCH I_CONST
 %token I_IINC I_LSWITCH I_IMETHOD I_NEWARRAY I_MULTINEWARRAY
 
@@ -856,7 +856,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <integer>     LayoutOption AtOption JavaArrayType
 %type <fieldAttrs>	FieldAttributes FieldAttributeList FieldAttributeName
 %type <methodAttrs>	MethodAttributes MethodAttributeList MethodAttributeName
-%type <opcode>		I_NONE I_VAR I_BRANCH I_METHOD I_FIELD I_TYPE
+%type <opcode>		I_NONE I_VAR I_BRANCH I_METHOD I_IMETHOD I_FIELD I_TYPE
 %type <opcode>		I_INT I_FLOAT I_STRING I_SIGNATURE I_RVA I_TOKEN
 %type <opcode>		I_SSA I_SWITCH I_CONST I_IINC I_LSWITCH I_IMETHOD
 %type <opcode>		I_NEWARRAY I_MULTINEWARRAY
@@ -873,7 +873,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 %type <scope>		JavaScopeBlock JavaTryBlock JavaHandlerBlock
 %type <exception>	ExceptionClause ExceptionClauses
 %type <exception>	JavaExceptionClause JavaExceptionClauses
-%type <token>		MethodReference
+%type <token>		MethodReference InstanceMethodReference
 %type <integer>		DataItemCount
 
 %expect 8
@@ -2243,11 +2243,6 @@ MethodReference
 	: CallingConventions Type TypeSpecification COLON_COLON
 			MethodName '(' OptSignatureArguments ')'	{
 				ILType *sig;
-				if(!strcmp($5.string,".ctor"))
-				{
-					/* Note: constructors are always instance methods */
-					$1 = $1 | IL_META_CALLCONV_HASTHIS;
-				}
 				sig = CreateMethodSig($1, $2, $7.paramFirst, 1);
 				$$ = ILAsmResolveMember($3.item, $5.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
@@ -2255,6 +2250,25 @@ MethodReference
 	| CallingConventions Type MethodName '(' OptSignatureArguments ')' {
 				/* Reference a method in the global module class */
 				ILType *sig = CreateMethodSig($1, $2, $5.paramFirst, 1);
+				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
+									    $3.string, sig,
+								        IL_META_MEMBERKIND_METHOD);
+			}
+	;
+
+InstanceMethodReference
+	: CallingConventions Type TypeSpecification COLON_COLON
+			MethodName '(' OptSignatureArguments ')'	{
+				ILType *sig;
+				sig = CreateMethodSig($1 | IL_META_CALLCONV_HASTHIS,
+									  $2, $7.paramFirst, 1);
+				$$ = ILAsmResolveMember($3.item, $5.string, sig,
+								        IL_META_MEMBERKIND_METHOD);
+			}
+	| CallingConventions Type MethodName '(' OptSignatureArguments ')' {
+				/* Reference a method in the global module class */
+				ILType *sig = CreateMethodSig($1 | IL_META_CALLCONV_HASTHIS,
+											  $2, $5.paramFirst, 1);
 				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
 									    $3.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
@@ -3536,6 +3550,7 @@ Instruction
 	| I_BRANCH Integer32		{ ILAsmOutBranchInt($1, $2); }
 	| I_BRANCH Identifier		{ ILAsmOutBranch($1, $2.string); }
 	| I_METHOD MethodReference	{ ILAsmOutToken($1, $2); }
+	| I_IMETHOD InstanceMethodReference { ILAsmOutToken($1, $2); }
 	| I_FIELD Type TypeSpecification COLON_COLON Identifier	{
 				/* Refer to a field in some other class */
 				ILToken token = ILAsmResolveMember($3.item, $5.string, $2,

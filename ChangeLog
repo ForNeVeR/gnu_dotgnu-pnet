@@ -10,6 +10,9 @@
 	ildb/ildb_utils.h: add support to the debugger to load and run
 	applications (breakpoints are not yet supported though).
 
+	* ildb/ildb_run.c: modify the output of the "run" command so
+	that xxgdb can properly detect program start and termination.
+
 2002-06-24  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/csharp/cs_lookup.c (CSResolveMemberName): special hack

@@ -171,6 +171,22 @@ static void RunCmd(ILDb *db, char *argv[])
 		return;
 	}
 
+	/* Tell the user that we are attempting to start the program */
+	fputs("Starting program: ", stdout);
+	fputs(db->debugProgram, stdout);
+	if(db->args)
+	{
+		argNum = 0;
+		while(db->args[argNum] != 0)
+		{
+			putc(' ', stdout);
+			fputs(db->args[argNum], stdout);
+			++argNum;
+		}
+	}
+	putc('\n', stdout);
+	fflush(stdout);
+
 	/* Turn off the readline input handling */
 	ILDbInputDisable();
 
@@ -231,11 +247,11 @@ static void RunCmd(ILDb *db, char *argv[])
 	{
 		if(!retval)
 		{
-			ILDbInfo(db, "Program exited normally.");
+			ILDbInfo(db, "\nProgram exited normally.");
 		}
 		else
 		{
-			ILDbInfo(db, "Program exited with code %02ld.", (long)retval);
+			ILDbInfo(db, "\nProgram exited with code %02ld.", (long)retval);
 		}
 	}
 	else
@@ -246,7 +262,8 @@ static void RunCmd(ILDb *db, char *argv[])
 		if(argString != 0 &&
 		   (exString = ILStringToAnsi(thread, argString)) != 0)
 		{
-			ILDbError(db, "Uncaught exception: %s", exString);
+			ILDbError(db, "\nProgram exited with uncaught exception: %s",
+					  exString);
 		}
 		else
 		{

@@ -11,7 +11,15 @@
 	
 	* libffi/src/x86/win32.S: Changed ffi_prep_args to
 	_ffi_prep_args so that it links properly on VC++ as well as gcc.
+
+	* include/il_values: Fixed IL_MIN_INT64 & IL_MAX_IN64 definitions
+	for windows/gcc builds.
 	
+	* support/getcwd.c: Included direct.h for windows builds so
+	that getcwd is properly prototyped.
+	
+	* configure.in: Added check for direct.h
+		
 2004-06-16  Thong Nguyen  <tum@veridicus.com>
 
 	* engine/cvm_ptr.c: Removed null check elimination in COP_CKNULL.

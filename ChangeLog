@@ -1,3 +1,10 @@
+
+2003-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Activator.cs: add the "CreateValueTypeInstance"
+	internalcall, to handle the creation of value types with the
+	zero-argument constructor.
+
 2003-10-07  Neil Cawse  <neilcawse@geotab.com>
 
 	* M System.Drawing.Win32/DrawingGraphics.cs

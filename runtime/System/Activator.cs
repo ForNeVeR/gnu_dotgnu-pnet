@@ -25,6 +25,7 @@ namespace System
 
 using System.Reflection;
 using System.Runtime.Remoting;
+using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Security.Policy;
 using System.Configuration.Assemblies;
@@ -115,15 +116,23 @@ sealed class Activator
 										CultureInfo culture,
 										Object[] activationAttributes)
 	{
-		ConstructorInfo ctor;
 		if(type == null)
 		{
 			throw new ArgumentNullException("type");
+		}
+		if(type.IsValueType && (args == null || args.Length == 0))
+		{
+			// We are instantiating a struct type with no parameters.
+			// There is no explicitly declared constructor, so we
+			// need to do this a slightly different way.
+			return CreateValueTypeInstance(type);
 		}
 		return type.InvokeMember(String.Empty,
 								 BindingFlags.CreateInstance | bindingAttr,
 								 binder, null, args, null, culture, null);
 	}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static Object CreateValueTypeInstance(Type type);
 
 #if !ECMA_COMPAT
 	// Alternative way to create an instance with implicitly-specified

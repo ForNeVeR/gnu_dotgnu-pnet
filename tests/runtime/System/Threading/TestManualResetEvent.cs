@@ -48,19 +48,19 @@ public class TestManualResetEvent
 
 		e1 = new ManualResetEvent(false);
 
-		x = e1.WaitOne(10);
+		x = e1.WaitOne(10,false);
 
 		AssertEquals("WaitOne(unset)", x, false);
 
 		e1.Set();
 
-		x = e1.WaitOne(10);
+		x = e1.WaitOne(10,false);
 
 		AssertEquals("WaitOne(set)", x, true);
 
 		// It should still be set.
 
-		x = e1.WaitOne(10);
+		x = e1.WaitOne(10,false);
 
 		AssertEquals("WaitOne(set)", x, true);
 	}

@@ -1,3 +1,13 @@
+
+2003-02-17  Gopal.V  <gopalv82@symonds.net>
+	
+	* runtime/System/Threading/WaitHandle.cs: Fix WaitOne() overloaded
+	methods to accept an exitContext parameter.
+
+	* tests/runtime/System/Threading/TestAutoResetEvent.cs,
+	tests/runtime/System/Threading/TestManualResetEvent.cs: update
+	test cases to match changes in pnetlib.
+
 2003-02-16  Adam Ballai <minddog@cannibutter.com>
 
 	* System.Xml/XmlQualifiedName.cs : Operator fix for == & !=.

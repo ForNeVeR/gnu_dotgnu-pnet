@@ -48,19 +48,19 @@ public class TestAutoResetEvent
 
 		e1 = new AutoResetEvent(false);
 
-		x = e1.WaitOne(10);
+		x = e1.WaitOne(10,false);
 
 		AssertEquals("WaitOne(unset)", x, false);
 
 		e1.Set();
 
-		x = e1.WaitOne(10);
+		x = e1.WaitOne(10,false);
 
 		AssertEquals("WaitOne(set)", x, true);
 
 		// It should be reset now.
 
-		x = e1.WaitOne(10);
+		x = e1.WaitOne(10,false);
 
 		AssertEquals("WaitOne(set)", x, false);
 	}

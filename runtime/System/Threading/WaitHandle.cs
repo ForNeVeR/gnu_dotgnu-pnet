@@ -181,7 +181,7 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 			{
 				return InternalWaitOne(privateData, -1);
 			}
-	public virtual bool WaitOne(int millisecondsTimeout)
+	public virtual bool WaitOne(int millisecondsTimeout,bool exitContext)
 			{
 				if(millisecondsTimeout < -1)
 				{
@@ -191,7 +191,7 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 				}
 				return InternalWaitOne(privateData, millisecondsTimeout);
 			}
-	public virtual bool WaitOne(TimeSpan timeout)
+	public virtual bool WaitOne(TimeSpan timeout, bool exitContext)
 			{
 				return InternalWaitOne(privateData,
 									   Monitor.TimeSpanToMS(timeout));

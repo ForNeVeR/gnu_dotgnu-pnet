@@ -14,6 +14,15 @@
 	runtime/System/Security/Policy/Evidence.cs: add some non-ECMA classes
 	that are required by SharpDevelop.
 
+	* System/Configuration/ConfigXmlDocument.cs,
+	System/Configuration/ConfigurationException.cs,
+	System/Configuration/ConfigurationSettings.cs,
+	System/Configuration/IConfigXmlNode.cs,
+	System/Configuration/IConfigurationSectionHandler.cs,
+	System/Configuration/IConfigurationSystem.cs,
+	System/Configuration/Makefile: implement some of the
+	System.Configuration classes.
+
 2003-01-28  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* runtime/System/IO/StreamWriter.cs: default UTF8 behaviour

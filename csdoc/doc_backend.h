@@ -61,7 +61,8 @@ int ILDocValidateOutput(char *outputPath, const char *progname);
  * Returns zero if an error occurred, which the backend
  * should report to stderr prior to returning.
  */
-int ILDocConvert(ILDocTree *tree, char *outputPath, const char *progname);
+int ILDocConvert(ILDocTree *tree, int numInputs, char **inputs,
+				 char *outputPath, const char *progname);
 
 /*
  * Report out of memory and abort the program.  This is not

@@ -36,6 +36,7 @@ public class TestCryptography
 				suite.AddTests(typeof(TestSHA256));
 				suite.AddTests(typeof(TestSHA384));
 				suite.AddTests(typeof(TestSHA512));
+				suite.AddTests(typeof(TestRNG));
 				return suite;
 			}
 

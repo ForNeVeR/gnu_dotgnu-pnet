@@ -1,4 +1,13 @@
 
+2002-11-27  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* runtime/System/Security/Cryptography/RijndaelManaged.cs,
+	runtime/System/Security/Cryptography/TripleDESCryptoServiceProvider.cs,
+	tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,
+	tests/runtime/System/Security/Cryptography/TestCryptography.cs,
+	tests/runtime/System/Security/Cryptography/TestRNG.cs: implement
+	cryptography tests and fixes that involve random number generation.
+
 2002-11-26  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* tests/runtime/System/Security/Cryptography/CryptoTestCase.cs,

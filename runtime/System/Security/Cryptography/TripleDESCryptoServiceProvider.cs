@@ -73,10 +73,10 @@ public sealed class TripleDESCryptoServiceProvider : TripleDES
 	// Generate a random key value.
 	public override void GenerateKey()
 			{
-				byte[] key = new byte [KeySizeValue];
+				byte[] key = new byte [KeySizeValue / 8];
 				do
 				{
-					CryptoMethods.GenerateRandom(key, 0, KeySizeValue);
+					CryptoMethods.GenerateRandom(key, 0, KeySizeValue / 8);
 				}
 				while(IsWeakKey(key));
 				if(KeyValue != null)

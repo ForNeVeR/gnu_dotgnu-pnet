@@ -73,8 +73,8 @@ public sealed class RijndaelManaged : Rijndael
 	// Generate a random key value.
 	public override void GenerateKey()
 			{
-				byte[] key = new byte [KeySizeValue];
-				CryptoMethods.GenerateRandom(key, 0, KeySizeValue);
+				byte[] key = new byte [KeySizeValue / 8];
+				CryptoMethods.GenerateRandom(key, 0, KeySizeValue / 8);
 				if(KeyValue != null)
 				{
 					// Clear the previous key value.

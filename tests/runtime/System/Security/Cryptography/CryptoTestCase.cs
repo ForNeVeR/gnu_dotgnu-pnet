@@ -63,6 +63,25 @@ public class CryptoTestCase : TestCase
 				return true;
 			}
 
+	// Determine if the random number generator appears to be working.
+	// We use this before calling "GenerateKey" for "DES" and "TripleDES",
+	// to prevent infinite loops in the test suite.
+	public static bool RandomWorks()
+			{
+				int index;
+				byte[] rand = new byte [16];
+				RandomNumberGenerator rng = RandomNumberGenerator.Create();
+				rng.GetBytes(rand);
+				for(index = 0; index < 16; ++index)
+				{
+					if(rand[index] != 0x00)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+
 	// Run a symmetric algorithm test.
 	protected void RunSymmetric(SymmetricAlgorithm alg, byte[] key,
 								byte[] plaintext, byte[] expected)
@@ -257,15 +276,15 @@ public class CryptoTestCase : TestCase
 			{
 				// Check the initial property values.
 				AssertEquals("initial key size is incorrect",
-							 alg.KeySize, expectedKeySize);
+							 expectedKeySize, alg.KeySize);
 				AssertEquals("initial block size is incorrect",
-							 alg.BlockSize, expectedBlockSize);
+							 expectedBlockSize, alg.BlockSize);
 				AssertEquals("initial feedback block size is incorrect",
-							 alg.FeedbackSize, expectedBlockSize);
+							 expectedBlockSize, alg.FeedbackSize);
 				AssertEquals("initial cipher mode is incorrect",
-							 alg.Mode, CipherMode.CBC);
+							 CipherMode.CBC, alg.Mode);
 				AssertEquals("initial padding mode is incorrect",
-							 alg.Padding, PaddingMode.PKCS7);
+							 PaddingMode.PKCS7, alg.Padding);
 				AssertNotNull("legal key size array is null",
 							  alg.LegalKeySizes);
 				AssertNotNull("legal block size array is null",
@@ -279,7 +298,21 @@ public class CryptoTestCase : TestCase
 
 				// TODO: Try setting the key size to all legal values.
 
-				// TODO: check automatic key and IV generation
+				// Check automatic key and IV generation.  If the random
+				// number generator doesn't work, then skip the test for
+				// DES and TripleDES, to prevent an infinite loop within
+				// those algorithm's weak key checking code.
+				if((!(alg is DES) && !(alg is TripleDES)) || RandomWorks())
+				{
+					byte[] key = alg.Key;
+					AssertNotNull("generated key should not be null", key);
+					AssertEquals("generated key is the wrong size",
+								 alg.KeySize, key.Length * 8);
+					byte[] iv = alg.IV;
+					AssertNotNull("generated IV should not be null", iv);
+					AssertEquals("generated IV is the wrong size",
+								 alg.BlockSize, iv.Length * 8);
+				}
 			}
 
 	// Test the properties on a hash algorithm instance.

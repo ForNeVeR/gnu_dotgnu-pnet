@@ -43,6 +43,11 @@ int const CCPluginSkipCodeGen = 0;
 int CCPluginInit(void)
 {
 	/* Nothing to do here */
+	if(CCStringListContains(extension_flags, num_extension_flags,
+							"metadata-only"))
+	{
+		CSMetadataOnly = 1;
+	}
 	return 1;
 }
 

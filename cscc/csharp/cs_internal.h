@@ -81,6 +81,11 @@ extern	"C" {
 extern int CSGetSetKeywords;
 
 /*
+ * A flag that is set to 1 for metadata-only compiles.
+ */
+extern int CSMetadataOnly;
+
+/*
  * Determine if a type or parameter node contains unsafe types.
  */
 int CSHasUnsafeType(ILNode *node);

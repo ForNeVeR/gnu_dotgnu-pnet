@@ -50,6 +50,8 @@ extern char *cs_text;
 extern char cs_text[];
 #endif
 
+int CSMetadataOnly = 0;
+
 /*
  * Global state used by the parser.
  */

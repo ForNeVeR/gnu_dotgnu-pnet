@@ -445,56 +445,6 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 			continue;
 		}
 
-		/* If the initializer is an array, we need to do something different */
-		if(yyisa(decl->initializer, ILNode_ArrayInit))
-		{
-			/* Must be static and non-const */
-			if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
-			{
-				CCErrorOnLine(yygetfilename(decl->initializer),
-							  yygetlinenum(decl->initializer),
-							  "initializer used on non-static field");
-				continue;
-			}
-			if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
-			{
-				CCErrorOnLine(yygetfilename(decl->initializer),
-							  yygetlinenum(decl->initializer),
-							  "initializer is not constant");
-				continue;
-			}
-
-			/* Add the value to the static constructor, and let the
-			   semantic analysis on it take care of everything */
-			CSAddStaticCtor(info, ILNode_Assign_create
-				(decl->name, decl->initializer));
-			continue;
-		}
-
-		/* Perform semantic analysis on the initializer value */
-		value = ILNode_SemAnalysis(decl->initializer, info,
-								   &(decl->initializer));
-		if(!CSIsSemValue(value.kind))
-		{
-			CCErrorOnLine(yygetfilename(decl->initializer),
-						  yygetlinenum(decl->initializer),
-						  "initializer is not a value");
-			continue;
-		}
-
-		/* Make sure that the value is compatible with the field's type */
-		if(!ILCoerce(info, decl->initializer, &(decl->initializer),
-					 value.type, ILField_Type(decl->fieldInfo)))
-		{
-			CCErrorOnLine(yygetfilename(decl->initializer),
-						  yygetlinenum(decl->initializer),
-			  			  "incompatible types in initialization: "
-			  					"no conversion from `%s' to `%s'",
-			  			  CSTypeToName(value.type),
-						  CSTypeToName(ILField_Type(decl->fieldInfo)));
-			continue;
-		}
-
 		/* The field must be static to have an initial value */
 		if((node->modifiers & IL_META_FIELDDEF_STATIC) == 0)
 		{
@@ -507,6 +457,30 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 		/* If this is a constant, then evaluate the value */
 		if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
 		{
+			/* Perform semantic analysis on the initializer value */
+			value = ILNode_SemAnalysis(decl->initializer, info,
+									   &(decl->initializer));
+			if(!CSIsSemValue(value.kind))
+			{
+				CCErrorOnLine(yygetfilename(decl->initializer),
+							  yygetlinenum(decl->initializer),
+							  "initializer is not a value");
+				continue;
+			}
+
+			/* Make sure that the value is compatible with the field's type */
+			if(!ILCoerce(info, decl->initializer, &(decl->initializer),
+						 value.type, ILField_Type(decl->fieldInfo)))
+			{
+				CCErrorOnLine(yygetfilename(decl->initializer),
+							  yygetlinenum(decl->initializer),
+				  			  "incompatible types in initialization: "
+				  					"no conversion from `%s' to `%s'",
+				  			  CSTypeToName(value.type),
+							  CSTypeToName(ILField_Type(decl->fieldInfo)));
+				continue;
+			}
+
 			/* Check that the literal value is actually constant */
 			if(!ILNode_EvalConst(decl->initializer, info, &evalValue) ||
 			   !ILGenCastConst(info, &evalValue, evalValue.valueType,
@@ -539,10 +513,13 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 				AddConstantValue(info, decl->fieldInfo, &evalValue);
 				continue;
 			}
+
+			/* Guard the initializer from further semantic analysis */
+			decl->initializer =
+				ILNode_SemGuard_create(decl->initializer, value);
 		}
 
 		/* Add a statement to the static constructor to initialize the field */
-		decl->initializer = ILNode_SemGuard_create(decl->initializer, value);
 		CSAddStaticCtor(info, ILNode_Assign_create
 			(decl->name, decl->initializer));
 	}
@@ -698,6 +675,19 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	/* Perform semantic analysis on the method body */
 	if(node->body)
 	{
+		if(CSMetadataOnly)
+		{
+			/* Replace the body with "empty", because we only want metadata */
+			if(yyisa(node->body, ILNode_NewScope))
+			{
+				((ILNode_NewScope *)(node->body))->stmt =
+					ILNode_Empty_create();
+			}
+			else
+			{
+				node->body = ILNode_Empty_create();
+			}
+		}
 		if((node->modifiers & IL_META_METHODDEF_ABSTRACT) != 0)
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -728,7 +718,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		if(!ILMethod_IsAbstract(node->methodInfo) &&
 		   ILMethod_IsIL(node->methodInfo))
 		{
-			if(!ILNodeEndsInReturn(node->body))
+			if(!ILNodeEndsInReturn(node->body) && !CSMetadataOnly)
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 							  "control reaches end of non-void method");

@@ -174,12 +174,6 @@ ILType *ILFindNonSystemType(ILGenInfo *info, const char *name,
 							const char *namespace);
 
 /*
- * Convert a class reference into a C# type descriptor.
- * This recognises built-in primitive and value types.
- */
-ILType *ILClassToType(ILClass *info);
-
-/*
  * Convert a type into its class form.  Returns NULL if
  * there is no class form for the type.
  */

@@ -33,6 +33,11 @@ of the GC heap; mark a class as done when layout is finished.
 which centralises the value type recognition so that there is one place to
 fix if we get it wrong in the future.
 
+* codegen/cg_gen.h, codegen/cg_gen.c: remove "ILClassToType", which is
+now in "image"; re-implement "ILTypeToClass" in terms of "ILClassFromType";
+change "ILFindNonSystemType" to use "ILClassToTypeDirect" to fix up the
+value/class prefixes.
+
 2001-10-08  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 * engine/verify_call: bytecode verification for call-related opcodes.

@@ -697,8 +697,29 @@ ILNativeInt _IL_MethodBuilder_ClrMethodCreate(ILExecThread *_thread,
 											  ILInt32 attributes,
 											  ILNativeInt signature)
 {
-	/* TODO */
-	return 0;
+	ILClass *class;
+	const char *str;
+	ILMethod *method;
+
+	IL_METADATA_WRLOCK(_thread);
+
+	class = (ILClass *)classInfo;
+	if (!(str = (const char *)ILStringToAnsi(_thread, name)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	if (!(method = ILMethodCreate(class, 0, str, (ILUInt32)attributes)))
+	{
+		IL_METADATA_UNLOCK(_thread);
+		ILExecThreadThrowOutOfMemory(_thread);
+		return 0;
+	}
+	ILMemberSetSignature((ILMember *)method, (ILType *)signature);
+
+	IL_METADATA_UNLOCK(_thread);
+	return (ILNativeInt)method;
 }
 
 /*

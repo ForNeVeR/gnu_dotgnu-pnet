@@ -8,6 +8,9 @@
 	* image/call.c, include/il_program.h: add and implement the
 	ILClassSetParent function.
 
+	* engine/lib_emit.c: implement the _IL_MethodBuilder_ClrMethodCreate
+	internal call.
+
 2003-07-12  Thong Nguyen  <tum@veridicus.com>
 
 	* support/wakeup.c:  Fix delayed signal race condition in

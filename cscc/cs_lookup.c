@@ -692,6 +692,7 @@ static int FilterStatic(CSMemberLookupInfo *results, int kind)
 	ILProgramItem *first = results->members->member;
 	ILMethod *method;
 	CSMemberLookupIter iter;
+	CSMemberInfo *member;
 
 	switch(kind)
 	{
@@ -715,9 +716,10 @@ static int FilterStatic(CSMemberLookupInfo *results, int kind)
 		{
 			/* Remove all non-static methods from the group */
 			MemberIterInit(&iter, results);
-			while((method = (ILMethod *)MemberIterNext(&iter)) != 0)
+			while((member = MemberIterNext(&iter)) != 0)
 			{
-				if(!ILMethod_IsStatic(method))
+				if(member->kind == IL_META_MEMBERKIND_METHOD &&
+				   !ILMethod_IsStatic((ILMethod *)(member->member)))
 				{
 					MemberIterRemove(&iter);
 				}
@@ -771,6 +773,7 @@ static int FilterNonStatic(CSMemberLookupInfo *results, int kind)
 	ILProgramItem *first = results->members->member;
 	ILMethod *method;
 	CSMemberLookupIter iter;
+	CSMemberInfo *member;
 
 	switch(kind)
 	{
@@ -795,9 +798,10 @@ static int FilterNonStatic(CSMemberLookupInfo *results, int kind)
 		{
 			/* Remove all static methods from the group */
 			MemberIterInit(&iter, results);
-			while((method = (ILMethod *)MemberIterNext(&iter)) != 0)
+			while((member = MemberIterNext(&iter)) != 0)
 			{
-				if(ILMethod_IsStatic(method))
+				if(member->kind == IL_META_MEMBERKIND_METHOD &&
+				   ILMethod_IsStatic((ILMethod *)(member->member)))
 				{
 					MemberIterRemove(&iter);
 				}

@@ -17,6 +17,9 @@
 	* engine/verify_call.c (MatchSignature): modify the previous
 	"firstParam" fix to properly account for the "this" parameter.
 
+	* codegen/cg_ainit.tc: don't call "InitializeArray" if the
+	array is zero-sized.
+
 2003-04-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/verify_call.c (MatchSignature): pass the correct

@@ -530,6 +530,8 @@ ILNode_GenValue(ILNode_ArrayInit)
 	ILType *elemType;
 	int rank, dimension;
 	ILUInt32 *posn;
+	ILUInt32 length;
+	int sawZero;
 
 	/* Bail out if semantic analysis was not performed correctly */
 	if(!type)
@@ -542,10 +544,16 @@ ILNode_GenValue(ILNode_ArrayInit)
 	/* Create the array */
 	elemType = ILTypeGetElemType(type);
 	rank = ILTypeGetRank(type);
+	sawZero = 0;
 	if(rank == 1)
 	{
 		/* Create a single-dimensional array */
-		ILGenUInt32(info, ILGetArrayInitLength(node->expr, 0));
+		length = ILGetArrayInitLength(node->expr, 0);
+		if(length == 0)
+		{
+			sawZero = 1;
+		}
+		ILGenUInt32(info, length);
 		ILGenAdjust(info, 1);
 		ILGenArrayNew(info, elemType);
 	}
@@ -554,7 +562,12 @@ ILNode_GenValue(ILNode_ArrayInit)
 		/* Create a multi-dimensional array */
 		for(dimension = 0; dimension < rank; ++dimension)
 		{
-			ILGenUInt32(info, ILGetArrayInitLength(node->expr, dimension));
+			length = ILGetArrayInitLength(node->expr, dimension);
+			if(length == 0)
+			{
+				sawZero = 1;
+			}
+			ILGenUInt32(info, length);
 			ILGenAdjust(info, 1);
 		}
 		ILGenArrayCtor(info, type);
@@ -562,7 +575,8 @@ ILNode_GenValue(ILNode_ArrayInit)
 	}
 
 	/* Determine if we can use "InitializeArray" to populate simple arrays */
-	if(IsSimpleElemType(elemType) && ArrayInitIsConst(info, (ILNode *)node))
+	if(IsSimpleElemType(elemType) &&
+	   ArrayInitIsConst(info, (ILNode *)node) && !sawZero)
 	{
 		/* Output a ".data" directive to hold the raw array data,
 		   and then use "InitializeArray" to do the work */

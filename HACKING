@@ -122,8 +122,9 @@ examples of various class types:
     AssemblyLoadEventHandler       Delegates
     CLSCompliantAttribute          Attributes
 
-Your new class should be added to the makefile structure.  Normally this
-will be in "runtime/System/Makefile.am".
+Previously, it was necessary to add new classes to the makefile structure.
+Since the build system was moved to "csant", this is no longer necessary,
+as new *.cs files will be picked up automatically.
 
 Unit testing
 ------------
@@ -269,21 +270,18 @@ patch file using "make_patch.sh".
 Please submit patches for:
 
     - Source files that were added or changed.
-    - Makefile.am files that incorporate new files into the build.
     - Resource files that contain new strings.
     - ChangeLog entries that describe the changes that were made.
 
 To summarise, here are the steps for adding a new class to the library:
 
     - Create and test the new class file.
-    - Modify Makefile.am to incorporate the file into the build.
     - Modify ChangeLog to describe what you have changed.
     - Do a "cvs update -d" to get the latest version of the source.
     - Execute "make_patch.sh" to create a patch file with the changes:
 
             ./make_patch.sh
-        or  ./make_patch.sh ChangeLog runtime/System/Makefile.am \
-                    runtime/System/Foo/Bar.cs
+        or  ./make_patch.sh ChangeLog runtime/System/Foo/Bar.cs
 
     - Submit the patch through the Patch Manager on Savannah.
 

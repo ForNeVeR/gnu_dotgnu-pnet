@@ -3,14 +3,15 @@ AC_INIT(runtime/System/Object.cs)
 AM_INIT_AUTOMAKE(pnetlib, 0.1.5)
 
 dnl Extra substitution variables.
-AC_SUBST(CSCC)
-AC_SUBST(CSCC_SYSTEM_FLAGS)
+AC_SUBST(CSANT)
+AC_SUBST(CSANT_FLAGS)
+AC_SUBST(CSHARP_COMPILER)
 AC_SUBST(CSCC_FLAGS)
-AC_SUBST(CSCC_COMPILE)
 AC_SUBST(CSCC_EXE_LIBS)
 AC_SUBST(RESGEN)
 AC_SUBST(RESGEN_FLAGS)
 AC_SUBST(ILRUN)
+AC_SUBST(PNET_PATH)
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -48,12 +49,22 @@ AC_ARG_WITH(mstools,
 	MSTOOLS=no
 ])
 
+dnl Find the Portable.NET "csant" program.
+AC_PATH_PROG(CSANT, csant,, $PNET_PATH/csant:$PATH)
+if test "$CSANT" = "" ; then
+	echo '**************************************************************'
+	echo "Portable.NET's csant tool is required to build the system."
+	echo "Use the --with-pnet option to specify Portable.NET's location."
+	echo '**************************************************************'
+	exit 1
+fi
+
 dnl Find the C# compiler to use.
 if test "$MSTOOLS" = "no"; then
-	AC_PATH_PROG(CSCC, cscc,, $PNET_PATH/cscc:$PATH)
-	if test "$CSCC" = "" ; then
-		AC_PATH_PROG(CSCC, csc)
-		if test "$CSCC" = ""; then
+	AC_PATH_PROG(CSHARP_COMPILER, cscc,, $PNET_PATH/cscc:$PATH)
+	if test "$CSHARP_COMPILER" = "" ; then
+		AC_PATH_PROG(CSHARP_COMPILER, csc)
+		if test "$CSHARP_COMPILER" = ""; then
 			echo '******************************************************'
 			echo "Portable.NET's cscc or Microsoft's csc.exe is required"
 			echo "to build.  Use the --with-pnet option to specify the"
@@ -61,25 +72,22 @@ if test "$MSTOOLS" = "no"; then
 			echo '******************************************************'
 			exit 1
 		fi
-		CSCC_COMPILE='@sh $(top_srcdir)/tools/mscsc.sh "$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
-		CSCC_SYSTEM_FLAGS="-fsyntax-check"
+		CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)"'
 		CSCC_EXE_LIBS=""
 	else
-		CSCC_SYSTEM_FLAGS=`sh "${srcdir}/tools/csccflags.sh" "$CSCC" "$PNET_PATH"`" -fsyntax-check"
-		CSCC_COMPILE='"$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
+		CSANT_FLAGS='--compiler cscc -Dcscc="${top_srcdir}/tools/csccwrap.sh"'
 		# Note: "-nostdlib" used temporarily until cscc is a real compiler.
 		CSCC_EXE_LIBS='-L$(top_srcdir)/runtime/System -nostdlib'
 	fi
 else
-	AC_PATH_PROG(CSCC, csc)
-	if test "$CSCC" = ""; then
+	AC_PATH_PROG(CSHARP_COMPILER, csc)
+	if test "$CSHARP_COMPILER" = ""; then
 		echo '***************************************************'
 		echo "Could not locate Microsoft's C# compiler (csc.exe)."
 		echo '***************************************************'
 		exit 1
 	fi
-	CSCC_COMPILE='@sh $(top_srcdir)/tools/mscsc.sh "$(CSCC)" $(CSCC_SYSTEM_FLAGS) $(CSCC_FLAGS)'
-	CSCC_SYSTEM_FLAGS="-fsyntax-check"
+	CSANT_FLAGS='--compiler csc -Dcsc="$(CSHARP_COMPILER)"'
 	CSCC_EXE_LIBS=""
 fi
 
@@ -125,13 +133,16 @@ AC_OUTPUT([
 Makefile
 tools/Makefile
 runtime/Makefile
-runtime/System/Makefile
 resources/Makefile
 resources/en_US/Makefile
 resources/en_US/runtime/Makefile
 resources/en_US/System/Makefile
-csunit/Makefile
-tests/Makefile
-tests/System/Makefile
-csunit/TestVersion.cs
-tools/run_test.sh])
+tools/run_test.sh
+tools/csccwrap.sh])
+
+chmod +x "${srcdir}/tools/csccwrap.sh"
+
+dnl csunit/Makefile
+dnl csunit/TestVersion.cs
+dnl tests/Makefile
+dnl tests/System/Makefile

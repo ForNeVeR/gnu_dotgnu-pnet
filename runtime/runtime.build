@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<project name="pnetlib runtime" default="all">
+	<target name="all">
+
+		<!-- Build the primary mscorlib.dll library -->
+		<compile output="mscorlib.dll"
+				 target="library"
+				 unsafe="true"
+				 nostdlib="true"
+				 optimize="true">
+
+			<sources>
+				<includes name="**/*.cs"/>
+			</sources>
+
+			<resources>
+				<includes
+					name="../resources/en_US/runtime/runtime.resources"/>
+			</resources>
+
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="csc" value="/nowarn:626"/>
+			<arg compiler="csc" value="/nowarn:649"/>
+			<arg compiler="csc" value="/nowarn:168"/>
+			<arg compiler="csc" value="/nowarn:67"/>
+			<arg compiler="csc" value="/nowarn:169"/>
+		</compile>
+
+		<!-- Build the strict ECMA mscorlib_ecma.dll library -->
+		<compile output="mscorlib_ecma.dll"
+				 target="library"
+				 unsafe="true"
+				 nostdlib="true"
+				 optimize="true">
+
+			<define name="ECMA_COMPAT" value="true"/>
+
+			<sources>
+				<includes name="**/*.cs"/>
+			</sources>
+
+			<resources>
+				<includes
+					name="../resources/en_US/runtime/runtime.resources"/>
+			</resources>
+
+			<arg compiler="cscc" value="-Wno-empty-input"/>
+			<arg compiler="csc" value="/nowarn:626"/>
+			<arg compiler="csc" value="/nowarn:649"/>
+			<arg compiler="csc" value="/nowarn:168"/>
+			<arg compiler="csc" value="/nowarn:67"/>
+			<arg compiler="csc" value="/nowarn:169"/>
+		</compile>
+
+	</target>
+</project>

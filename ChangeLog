@@ -10,6 +10,10 @@
 	* runtime/System/Globalization/CharacterInfo.cs,
 	runtime/System/IO/File.cs: build problems with MS'es compiler.
 
+	* HACKING, Makefile.am, configure.in, runtime/System/.cvsignore,
+	runtime/System/Makefile, runtime/System/Makefile.am, tools/.cvsignore,
+	tools/csccwrap.sh.in: modify the pnetlib build process to use csant.
+
 2002-03-20 Gerard Toonstra <toonstra@ntlworld.com>
 
 	* System/Net/IPAddress.cs: First class contributed! Mostly

@@ -29,6 +29,7 @@ using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Security;
 using System.Security.Permissions;
 
@@ -42,13 +43,11 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 	internal TypeAttributes attr;
 	private Type parent;
 	private Type[] interfaces;
-	private PackingSize packingSize;
-	private int typeSize;
-	private Type declaringType;
+	private TypeBuilder declaringType;
 	private ClrType type;
-	private TypeToken token;
 	private Type underlyingSystemType;
 	private ArrayList methods;
+	internal bool needsDefaultConstructor;
 
 	// Constants.
 	public const int UnspecifiedTypeSize = 0;
@@ -57,7 +56,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 	internal TypeBuilder(ModuleBuilder module, String name, String nspace,
 						 TypeAttributes attr, Type parent, Type[] interfaces,
 						 PackingSize packingSize, int typeSize,
-						 Type declaringType)
+						 TypeBuilder declaringType)
 			{
 				// Validate the parameters.
 				if(name == null)
@@ -83,14 +82,36 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				this.nspace = nspace;
 				this.attr = attr;
 				this.parent = parent;
-				this.interfaces = interfaces;
-				this.packingSize = packingSize;
-				this.typeSize = typeSize;
+				this.interfaces = null;
 				this.declaringType = declaringType;
 				this.type = null;
 				this.underlyingSystemType = null;
-				this.token = new TypeToken(0);	// TODO
 				this.methods = new ArrayList();
+				this.needsDefaultConstructor = true;
+
+				// Create the type.
+				privateData = ClrTypeCreate
+					(((IClrProgramItem)module).ClrHandle, name,
+					 (nspace == String.Empty ? null : nspace), attr,
+					 (parent == null ? new System.Reflection.Emit.TypeToken(0)
+					 				 : module.GetTypeToken(parent)));
+				if(packingSize != PackingSize.Unspecified)
+				{
+					ClrTypeSetPackingSize(privateData, (int)packingSize);
+				}
+				if(typeSize != UnspecifiedTypeSize)
+				{
+					ClrTypeSetClassSize(privateData, typeSize);
+				}
+
+				// Add the interfaces to the type.
+				if(interfaces != null)
+				{
+					foreach(Type iface in interfaces)
+					{
+						AddInterfaceImplementation(iface);
+					}
+				}
 			}
 
 	// Get the attribute flags for this type.
@@ -197,7 +218,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			{
 				get
 				{
-					return packingSize;
+					return (PackingSize)(ClrTypeGetPackingSize(privateData));
 				}
 			}
 
@@ -215,7 +236,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			{
 				get
 				{
-					return typeSize;
+					return ClrTypeGetClassSize(privateData);
 				}
 			}
 
@@ -233,7 +254,8 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			{
 				get
 				{
-					return token;
+					return new System.Reflection.Emit.TypeToken
+						(AssemblyBuilder.ClrGetItemToken(privateData));
 				}
 			}
 
@@ -298,14 +320,14 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Add declarative security to this type.
-	[TODO]
 	public void AddDeclarativeSecurity(SecurityAction action,
 									   PermissionSet pset)
 			{
 				try
 				{
 					StartSync();
-					// TODO
+					module.assembly.AddDeclarativeSecurity
+						(this, action, pset);
 				}
 				finally
 				{
@@ -354,6 +376,10 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 						}
 					}
 
+					// Convert the interface into a token, which may throw
+					// an exception if it cannot be imported.
+					TypeToken token = module.GetTypeToken(interfaceType);
+
 					// Add the interface to the list.
 					Type[] newInterfaces;
 					if(interfaces != null)
@@ -369,6 +395,9 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 						newInterfaces[0] = interfaceType;
 					}
 					interfaces = newInterfaces;
+
+					// Call the runtime engine to add the interface.
+					ClrTypeAddInterface(privateData, token);
 				}
 				finally
 				{
@@ -377,15 +406,64 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Create this type.
-	[TODO]
 	public Type CreateType()
 			{
-				// TODO
-				return null;
+				try
+				{
+					// Synchronize access and make sure we aren't created.
+					StartSync();
+
+					// If nested, the nesting parent must be created first.
+					if(declaringType != null)
+					{
+						if(declaringType.type == null)
+						{
+							throw new InvalidOperationException
+								(_("Emit_NestingParentNotCreated"));
+						}
+					}
+
+					// Define a default constructor if necessary.
+					if(needsDefaultConstructor && !IsInterface && !IsValueType)
+					{
+						if(IsAbstract)
+						{
+							DefineDefaultConstructor(MethodAttributes.Family);
+						}
+						else
+						{
+							DefineDefaultConstructor(MethodAttributes.Public);
+						}
+					}
+
+					// Finalize the methods and constructors.
+					MethodBuilder mb;
+					foreach(MethodBase method in methods)
+					{
+						mb = (method as MethodBuilder);
+						if(mb != null)
+						{
+							mb.FinalizeMethod();
+						}
+						else
+						{
+							((ConstructorBuilder)method).FinalizeConstructor();
+						}
+					}
+
+					// Wrap "privateData" in a "ClrType" object and return it.
+					ClrType clrType = new ClrType();
+					clrType.privateData = privateData;
+					type = clrType;
+					return type;
+				}
+				finally
+				{
+					EndSync();
+				}
 			}
 
 	// Define a constructor for this class.
-	[TODO]
 	public ConstructorBuilder DefineConstructor
 				(MethodAttributes attributes,
 				 CallingConventions callingConvention,
@@ -394,8 +472,21 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					String name;
+					if((attributes & MethodAttributes.Static) != 0)
+					{
+						name = ".cctor";
+					}
+					else
+					{
+						name = ".ctor";
+					}
+					attributes |= MethodAttributes.SpecialName;
+					ConstructorBuilder con = new ConstructorBuilder
+						(this, name, attributes,
+						 callingConvention, parameterTypes);
+					needsDefaultConstructor = false;
+					return con;
 				}
 				finally
 				{
@@ -511,7 +602,6 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			}
 
 	// Define a method for this class.
-	[TODO]
 	public MethodBuilder DefineMethod
 				(String name, MethodAttributes attributes,
 				 CallingConventions callingConvention,
@@ -520,8 +610,9 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				try
 				{
 					StartSync();
-					// TODO
-					return null;
+					return new MethodBuilder
+						(this, name, attributes, callingConvention,
+						 returnType, parameterTypes);
 				}
 				finally
 				{
@@ -556,7 +647,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 	// Define a nested type within this class.
 	private TypeBuilder DefineNestedType
 				(String name, TypeAttributes attr, Type parent,
-				 Type[] interfaces, int typeSize, PackingSize packSize)
+				 Type[] interfaces, int typeSize, PackingSize packingSize)
 			{
 				try
 				{
@@ -996,6 +1087,7 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 				try
 				{
 					StartSync();
+					ClrTypeSetParent(privateData, module.GetTypeToken(parent));
 					this.parent = parent;
 				}
 				finally
@@ -1024,6 +1116,50 @@ public sealed class TypeBuilder : Type, IClrProgramItem
 			{
 				methods.Add(method);
 			}
+
+	// Create a new type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static IntPtr ClrTypeCreate
+			(IntPtr module, String name, String nspace,
+			 TypeAttributes attr, TypeToken parent);
+
+	// Set the parent of a type to a new value.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrTypeSetParent
+			(IntPtr classInfo, TypeToken parent);
+
+	// Add an interface to a type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrTypeAddInterface
+			(IntPtr classInfo, TypeToken iface);
+
+	// Get the packing size for a type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int ClrTypeGetPackingSize(IntPtr classInfo);
+
+	// Set the packing size for a type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrTypeSetPackingSize
+			(IntPtr classInfo, int packingSize);
+
+	// Get the class size for a type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int ClrTypeGetClassSize(IntPtr classInfo);
+
+	// Set the class size for a type.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClrTypeSetClassSize
+			(IntPtr classInfo, int classSize);
+
+	// Import a class information structure into a module.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int ClrTypeImport
+			(IntPtr module, IntPtr classInfo);
+
+	// Import a member information structure into a module.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static int ClrTypeImportMember
+			(IntPtr module, IntPtr memberInfo);
 
 }; // class TypeBuilder
 

@@ -25,185 +25,471 @@ namespace System.Reflection.Emit
 #if !ECMA_COMPAT
 
 using System;
+using System.Security;
 using System.Reflection;
 using System.Globalization;
+using System.Security.Permissions;
 using System.Runtime.CompilerServices;
 
-[TODO]
-public sealed class MethodBuilder : MethodInfo
+public sealed class MethodBuilder : MethodInfo, IClrProgramItem
 {
+	// Internal state.
+	internal TypeBuilder type;
+	private IntPtr privateData;
+	private bool bodySet;
+	private bool initLocals;
+	private byte[] explicitBody;
+	private ILGenerator ilGenerator;
+	private Type returnType;
+	private ParameterBuilder returnBuilder;
+	internal int numParams;
 
-	// TODO
-	[TODO]
+	// Constructor.
+	internal MethodBuilder(TypeBuilder type, String name,
+						   MethodAttributes attributes,
+						   CallingConventions callingConvention,
+						   Type returnType, Type[] parameterTypes)
+			{
+				// Validate the parameters.
+				if(name == null)
+				{
+					throw new ArgumentNullException("name");
+				}
+				else if(name == String.Empty)
+				{
+					throw new ArgumentException(_("Emit_NameEmpty"));
+				}
+				if(returnType == null)
+				{
+					returnType = typeof(void);
+				}
+				// TODO
+
+				// Set the local state.
+				this.type = type;
+				this.bodySet = false;
+				this.initLocals = true;
+				this.explicitBody = null;
+				this.ilGenerator = null;
+				this.returnType = returnType;
+				this.returnBuilder = null;
+				this.numParams = (parameterTypes != null
+									? parameterTypes.Length : 0);
+
+				// Create the method.
+				this.privateData = ClrMethodCreate
+					(((IClrProgramItem)type).ClrHandle, name,
+					 attributes, callingConvention,
+					 returnType, parameterTypes);
+
+				// Add the method to the type for post-processing.
+				type.AddMethod(this);
+			}
+
+	// Add declarative security to this method.
+	public void AddDeclarativeSecurity(SecurityAction action, 
+										PermissionSet pset)
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.AddDeclarativeSecurity
+						(this, action, pset);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
+
+	// Create the method body from a literal array of IL instructions.
 	public void CreateMethodBody(byte[] il, int count)
-	{
-		throw new NotImplementedException("CreateMethodBody");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					if(bodySet)
+					{
+						throw new InvalidOperationException
+							(_("Emit_BodyAlreadySet"));
+					}
+					if(il == null)
+					{
+						explicitBody = null;
+					}
+					else if(count < 0 || count > il.Length)
+					{
+						throw new ArgumentOutOfRangeException
+							("count", _("ArgRange_Array"));
+					}
+					else
+					{
+						explicitBody = new byte [count];
+						Array.Copy(il, explicitBody, count);
+						bodySet = true;
+					}
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Define a parameter builder for a particular parameter.
 	public ParameterBuilder DefineParameter(int position, 
 											ParameterAttributes attributes, 
 											String strParamName)
-	{
-		throw new NotImplementedException("DefineParameter");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					if(position <= 0 || position > numParams)
+					{
+						throw new ArgumentOutOfRangeException
+							("position", _("Emit_InvalidParamNum"));
+					}
+					return new ParameterBuilder
+						(this, position, attributes, strParamName);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Return the base definition for a method.
 	public override MethodInfo GetBaseDefinition()
-	{
-		throw new NotImplementedException("GetBaseDefinition");
-	}
+			{
+				return this;
+			}
 
-	[TODO]
+	// Get custom attributes for this method.
 	public override Object[] GetCustomAttributes(bool inherit)
-	{
-		throw new NotImplementedException("GetCustomAttributes");
-	}
-
-	[TODO]
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 	public override Object[] GetCustomAttributes(Type attributeType,
-												bool inherit)
-	{
-		throw new NotImplementedException("GetCustomAttributes");
-	}
+												 bool inherit)
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get the IL generator to use for the method body.
 	public ILGenerator GetILGenerator()
-	{
-		throw new NotImplementedException("GetILGenerator");
-	}
-
-	[TODO]
+			{
+				return GetILGenerator(64);
+			}
 	public ILGenerator GetILGenerator(int size)
-	{
-		throw new NotImplementedException("GetILGenerator");
-	}
+			{
+				MethodImplAttributes attrs = GetMethodImplementationFlags();
+				if((attrs & (MethodImplAttributes.PreserveSig |
+							 MethodImplAttributes.Unmanaged)) != 0 ||
+				   (attrs & MethodImplAttributes.CodeTypeMask) !=
+				   		MethodImplAttributes.IL ||
+				   (Attributes & MethodAttributes.PinvokeImpl) != 0)
+				{
+					throw new InvalidOperationException
+						(_("Emit_CannotHaveBody"));
+				}
+				if(ilGenerator == null)
+				{
+					ilGenerator = new ILGenerator(type.module, size);
+				}
+				return ilGenerator;
+			}
 
-	[TODO]
+	// Get the method implementation attributes for this method.
 	public override MethodImplAttributes GetMethodImplementationFlags()
-	{
-		throw new NotImplementedException("GetMethodImplementationFlags");
-	}
+			{
+				return ClrHelpers.GetImplAttrs(privateData);
+			}
 
-	[TODO]
+	// Get the module that owns this method.
+	public Module GetModule()
+			{
+				return type.module;
+			}
+
+	// Get the parameters for this method.
 	public override ParameterInfo[] GetParameters()
-	{
-		throw new NotImplementedException("GetParameters");
-	}
+			{
+				int param;
+				ParameterInfo[] parameters = new ParameterInfo [numParams];
+				for(param = 0; param < numParams; ++param)
+				{
+					parameters[param] =
+						ClrHelpers.GetParameterInfo(this, this, param + 1);
+				}
+				return parameters;
+			}
 
-	[TODO]
+	// Get the token code for this method.
 	public MethodToken GetToken()
-	{
-		throw new NotImplementedException("GetToken");
-	}
+			{
+				return new MethodToken
+					(AssemblyBuilder.ClrGetItemToken(privateData));
+			}
 
-	[TODO]
+	// Invoke this method.
 	public override Object Invoke(Object obj, BindingFlags invokeAttr, 
 								  Binder binder, Object[] parameters, 
 								  CultureInfo culture)
-	{
-		throw new NotImplementedException("Invoke");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Determine if a particular attribute is defined on this method.
 	public override bool IsDefined(Type attribute_type, bool inherit)
-	{
-		throw new NotImplementedException("IsDefined");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Set an attribute on this method.
 	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
-	{
-		throw new NotImplementedException("SetCustomAttribute");
-	}
-
-	[TODO]
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, customBuilder);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
-	{
-		throw new NotImplementedException("SetCustomAttribute");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, con, binaryAttribute);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the implementation flags for this method.
 	public void SetImplementationFlags(MethodImplAttributes attributes)
-	{
-		throw new NotImplementedException("SetImplementationFlags");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					ClrMethodSetImplAttrs(privateData, attributes);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
+	// Set the marshalling information for the return type.
+	public void SetMarshal(UnmanagedMarshal unmanagedMarshal)
+			{
+				try
+				{
+					type.StartSync();
+					if(returnBuilder != null)
+					{
+						returnBuilder = new ParameterBuilder
+							(this, 0, ParameterAttributes.None, null);
+					}
+					returnBuilder.SetMarshal(unmanagedMarshal);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
+
+	// Determine if two method builders are equal.
+	public override bool Equals(Object obj)
+			{
+				MethodBuilder mb = (obj as MethodBuilder);
+				if(mb != null)
+				{
+					if(Name != mb.Name)
+					{
+						return false;
+					}
+					if(Attributes != mb.Attributes)
+					{
+						return false;
+					}
+					if(ReturnType != mb.ReturnType)
+					{
+						return false;
+					}
+					ParameterInfo[] params1 = GetParameters();
+					ParameterInfo[] params2 = mb.GetParameters();
+					if(params1.Length != params2.Length)
+					{
+						return false;
+					}
+					int index;
+					for(index = 0; index < params1.Length; ++index)
+					{
+						if(params1[index].Attributes !=
+						   params2[index].Attributes)
+						{
+							return false;
+						}
+						if(params1[index].ParameterType !=
+						   params2[index].ParameterType)
+						{
+							return false;
+						}
+					}
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+	// Get the hash code for this method.
+	public override int GetHashCode()
+			{
+				return Name.GetHashCode();
+			}
+
+	// Convert this method into a string.
 	[TODO]
+	public override String ToString()
+			{
+				// TODO
+				return String.Empty;
+			}
+
+	// Get the attributes for this method.
 	public override MethodAttributes Attributes 
-	{ 
-		get
-		{
-			throw new NotImplementedException("Attributes");
-		}
-	}
+			{
+				get
+				{
+					return (MethodAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
 
-	[TODO]
+	// Get the calling conventions for this method.
+	public override CallingConventions CallingConvention 
+			{
+				get
+				{
+					return ClrHelpers.GetCallConv(privateData);
+				}
+			}
+
+	// Get the type that declares this method.
 	public override Type DeclaringType 
-	{
-		get
-		{
-			throw new NotImplementedException("DeclaringType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	[TODO]
+	// Get or set the "initialize locals" flag for this method.
 	public bool InitLocals 
-	{
-		get
-		{
-			throw new NotImplementedException("InitLocals");
-		}
-		set
-		{
-			throw new NotImplementedException("InitLocals");
-		}
-	}
+			{
+				get
+				{
+					return initLocals;
+				}
+				set
+				{
+					initLocals = value;
+				}
+			}
 
-	[TODO]
+	// Get the handle for this method.
 	public override RuntimeMethodHandle MethodHandle
-	{
-		get
-		{
-			throw new NotImplementedException("MethodHandle");
-		}
-	}
+			{
+				get
+				{
+					throw new NotSupportedException(_("NotSupp_Builder"));
+				}
+			}
 
-	[TODO]
+	// Get the name of this method.
 	public override String Name 
-	{
-		get
-		{
-			throw new NotImplementedException("Name");
-		}
-	}
+			{
+				get
+				{
+					return ClrHelpers.GetName(this);
+				}
+			}
 
-	[TODO]
+	// Get the reflected type that contains this method.
 	public override Type ReflectedType 
-	{
-		get
-		{
-			throw new NotImplementedException("ReflectedType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	[TODO]
+	// Get the return type for this method.
 	public override Type ReturnType 
-	{
-		get
-		{
-			throw new NotImplementedException("ReturnType");
-		}
-	}
+			{
+				get
+				{
+					return returnType;
+				}
+			}
 
+	// Get the string form of the signature of this method.
 	[TODO]
+	public override String Signature 
+			{
+				get
+				{
+					// TODO
+					return String.Empty;
+				}
+			}
+
+	// Get the custom attribute information for the return type.
 	public override ICustomAttributeProvider ReturnTypeCustomAttributes
-	{
-		get
-		{
-			throw new NotImplementedException("ReturnTypeCustomAttributes");
-		}
-	}
+			{
+				get
+				{
+					// Nothing to do here.
+					return null;
+				}
+			}
+
+	// Get the CLR handle for this method.
+	IntPtr IClrProgramItem.ClrHandle
+			{
+				get
+				{
+					return privateData;
+				}
+			}
+
+	// Finalize this method by writing its code to the output image.
+	internal void FinalizeMethod()
+			{
+				// TODO
+			}
+
+	// Create a new method and attach it to a particular class.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static IntPtr ClrMethodCreate
+			(IntPtr classInfo, String name,
+			 MethodAttributes attributes,
+			 CallingConventions callingConvention,
+			 Type returnType, Type[] parameterTypes);
+
+	// Set the implementation attributes for a method item.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static void ClrMethodSetImplAttrs
+			(IntPtr item, MethodImplAttributes attributes);
 
 }; // class MethodBuilder
 

@@ -32,7 +32,7 @@ using System.Runtime.CompilerServices;
 public sealed class FieldBuilder : FieldInfo, IClrProgramItem
 {
 	// Internal state.
-	private TypeBuilder type;
+	internal TypeBuilder type;
 	private IntPtr privateData;
 
 	// Constructor.

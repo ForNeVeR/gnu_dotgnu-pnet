@@ -60,6 +60,7 @@ public class ModuleBuilder : Module
 											 null, TypeAttributes.NotPublic,
 											 null, null,
 											 PackingSize.Unspecified, 0, null);
+				moduleType.needsDefaultConstructor = false;
 			}
 
 	// Get the fully qualified name of this module.
@@ -380,29 +381,77 @@ public class ModuleBuilder : Module
 
 	// Get the token for a constructor within this module.  Returns
 	// a member reference if the constructor is in another assembly.
-	[TODO]
 	public MethodToken GetConstructorToken(ConstructorInfo con)
 			{
-				// TODO
-				return new MethodToken(0);
+				if(con == null)
+				{
+					throw new ArgumentNullException("con");
+				}
+				else if(con is ConstructorBuilder)
+				{
+					ConstructorBuilder cb = (con as ConstructorBuilder);
+					if(cb.type.module == this)
+					{
+						return cb.GetToken();
+					}
+				}
+				else if(con is ClrConstructor)
+				{
+					return new MethodToken
+						(TypeBuilder.ClrTypeImportMember
+							(privateData, ((ClrConstructor)con).ClrHandle));
+				}
+				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
 
 	// Get the token for a field within this module.  Returns
 	// a member reference if the constructor is in another assembly.
-	[TODO]
 	public FieldToken GetFieldToken(FieldInfo field)
 			{
-				// TODO
-				return new FieldToken(0);
+				if(field == null)
+				{
+					throw new ArgumentNullException("field");
+				}
+				else if(field is FieldBuilder)
+				{
+					FieldBuilder fb = (field as FieldBuilder);
+					if(fb.type.module == this)
+					{
+						return fb.GetToken();
+					}
+				}
+				else if(field is ClrField)
+				{
+					return new FieldToken
+						(TypeBuilder.ClrTypeImportMember
+							(privateData, ((ClrField)field).ClrHandle));
+				}
+				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
 
 	// Get the token for a method within this module.  Returns
 	// a member reference if the constructor is in another assembly.
-	[TODO]
 	public MethodToken GetMethodToken(MethodInfo method)
 			{
-				// TODO
-				return new MethodToken(0);
+				if(method == null)
+				{
+					throw new ArgumentNullException("method");
+				}
+				else if(method is MethodBuilder)
+				{
+					MethodBuilder mb = (method as MethodBuilder);
+					if(mb.type.module == this)
+					{
+						return mb.GetToken();
+					}
+				}
+				else if(method is ClrMethod)
+				{
+					return new MethodToken
+						(TypeBuilder.ClrTypeImportMember
+							(privateData, ((ClrMethod)method).ClrHandle));
+				}
+				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
 
 	// Get a token for a signature within this module.
@@ -420,15 +469,14 @@ public class ModuleBuilder : Module
 			}
 
 	// Get a token for a string constant within this module.
-	[TODO]
 	public StringToken GetStringConstant(String str)
 			{
 				if(str == null)
 				{
 					throw new ArgumentNullException("str");
 				}
-				// TODO
-				return new StringToken(0);
+				return new StringToken
+					(ClrModuleCreateString(privateData, str));
 			}
 
 	// Get the symbol writer associated with this module.
@@ -500,19 +548,46 @@ public class ModuleBuilder : Module
 			}
 
 	// Get a type token by name.
-	[TODO]
 	public TypeToken GetTypeToken(String name)
 			{
-				// TODO
-				return new TypeToken(0);
+				return GetTypeToken(GetType(name, true, false));
 			}
 
 	// Get a type token by type.
-	[TODO]
 	public TypeToken GetTypeToken(Type type)
 			{
-				// TODO
-				return new TypeToken(0);
+				if(type == null)
+				{
+					throw new ArgumentNullException("type");
+				}
+				else if(type is TypeBuilder)
+				{
+					TypeBuilder tb = (type as TypeBuilder);
+					if(tb.module == this)
+					{
+						return tb.TypeToken;
+					}
+				}
+				else if(type is EnumBuilder)
+				{
+					EnumBuilder eb = (type as EnumBuilder);
+					if(eb.builder.module == this)
+					{
+						return eb.builder.TypeToken;
+					}
+				}
+				else if(type is ClrType)
+				{
+					if(type.IsByRef)
+					{
+						throw new ArgumentException
+							(_("Emit_CannotImportRefType"));
+					}
+					return new TypeToken
+						(TypeBuilder.ClrTypeImport
+							(privateData, ((ClrType)type).ClrHandle));
+				}
+				throw new InvalidOperationException(_("Emit_CannotImportItem"));
 			}
 
 	// Determine if this module is transient.
@@ -583,6 +658,10 @@ public class ModuleBuilder : Module
 	// Create a module within an assembly.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrModuleCreate(IntPtr assembly, String name);
+
+	// Create a string token within this module.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int ClrModuleCreateString(IntPtr module, String str);
 
 }; // class ModuleBuilder
 

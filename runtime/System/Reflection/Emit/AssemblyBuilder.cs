@@ -29,6 +29,7 @@ using System.IO;
 using System.Reflection;
 using System.Security;
 using System.Security.Policy;
+using System.Security.Permissions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -356,6 +357,15 @@ public sealed class AssemblyBuilder : Assembly
 		 		throw new NotImplementedException("SetCustomAttribute");
 			}
 
+	// Add declarative security to a program item in this assembly.
+	[TODO]
+	internal void AddDeclarativeSecurity(IClrProgramItem item,
+										 SecurityAction action,
+									     PermissionSet pset)
+			{
+		 		throw new NotImplementedException("AddDeclarativeSecurity");
+			}
+
 	// Create a new assembly.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrAssemblyCreate
@@ -370,6 +380,11 @@ public sealed class AssemblyBuilder : Assembly
 	// Get the token associated with a particular program item.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern internal static int ClrGetItemToken(IntPtr item);
+
+	// Get the program item associated with a particular token.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern internal static IntPtr ClrGetItemFromToken
+			(IntPtr assembly, int token);
 
 }; // class AssemblyBuilder
 

@@ -22,6 +22,8 @@
  */
 
 using System;
+using System.IO;
+using System.Collections;
 using System.Diagnostics.SymbolStore;
 
 #if !ECMA_COMPAT
@@ -39,6 +41,11 @@ public class ILGenerator
 	private int maxHeight;
 	private LabelInfo[] labels;
 	private int numLabels;
+	private ArrayList locals;
+	private ExceptionTry exceptionStack;
+	private ExceptionTry exceptionList;
+	private ExceptionTry exceptionListEnd;
+	private TokenFixup tokenFixups;
 
 	// Information about a label in the current method.
 	private struct LabelInfo
@@ -58,47 +65,265 @@ public class ILGenerator
 
 	}; // class LabelRef
 
+	// Information about a token fixup.
+	private class TokenFixup
+	{
+		public TokenFixup	next;
+		public int			offset;
+		public IntPtr		clrHandle;
+
+	}; // class TokenFixup
+
+	// Information about an exception try block.
+	private class ExceptionTry
+	{
+		public ExceptionTry		next;
+		public int				beginTry;
+		public int				endTry;
+		public int				endCatch;
+		public ExceptionClause	clauses;
+		public Label			endLabel;
+
+	}; // class ExceptionTry
+
+	// Clause types.
+	private const int Except_Catch   = 0;
+	private const int Except_Filter  = 1;
+	private const int Except_Finally = 2;
+	private const int Except_Fault   = 3;
+
+	// Information about an exception clause.
+	private class ExceptionClause
+	{
+		public ExceptionClause	prev;
+		public int				clauseType;
+		public int				beginClause;
+		public int				endClause;
+		public Type				classInfo;
+
+	}; // class ExceptionClause
+
 	// Constructor.
-	internal ILGenerator(ModuleBuilder module)
+	internal ILGenerator(ModuleBuilder module, int size)
 			{
 				this.module = module;
-				code = new byte [32];
+				if(size < 16)
+				{
+					size = 16;
+				}
+				code = new byte [size];
 				offset = 0;
 				height = 0;
 				maxHeight = 0;
 				labels = null;
 				numLabels = 0;
+				locals = null;
+				exceptionStack = null;
+				exceptionList = null;
+				exceptionListEnd = null;
+				tokenFixups = null;
 			}
 
-	[TODO]
-	public virtual void BeginCatchBlock(System.Type exceptionType)
-	{
-		throw new NotImplementedException("BeginCatchBlock");
-	}
+	// Terminate the previous exception clause.
+	private void TerminateClause()
+			{
+				if(exceptionStack == null)
+				{
+					throw new NotSupportedException
+						(_("Emit_NeedExceptionBlock"));
+				}
+				if(exceptionStack.clauses == null)
+				{
+					// No clauses yet, so terminate the "try" part.
+					Emit(OpCodes.Leave, exceptionStack.endLabel);
+					exceptionStack.endTry = offset;
+					exceptionStack.endCatch = offset;
+				}
+				else
+				{
+					exceptionStack.clauses.endClause = offset;
+					switch(exceptionStack.clauses.clauseType)
+					{
+						case Except_Catch:
+						{
+							Emit(OpCodes.Leave, exceptionStack.endLabel);
+							exceptionStack.endCatch = offset;
+						}
+						break;
 
-	[TODO]
+						case Except_Filter:
+						{
+							Emit(OpCodes.Endfilter);
+						}
+						break;
+
+						case Except_Finally:
+						case Except_Fault:
+						{
+							Emit(OpCodes.Endfinally);
+						}
+						break;
+					}
+				}
+				height = 0;
+			}
+
+	// Begin a catch block on the current exception.
+	public virtual void BeginCatchBlock(Type exceptionType)
+			{
+				// Terminate the current clause.
+				TerminateClause();
+
+				// The operation is invalid if current is finally or fault.
+				if(exceptionStack.clauses != null)
+				{
+					if(exceptionStack.clauses.clauseType == Except_Finally ||
+					   exceptionStack.clauses.clauseType == Except_Fault)
+					{
+						throw new InvalidOperationException
+							(_("Emit_CatchAfterFinally"));
+					}
+				}
+
+				// Create a new clause information block.
+				ExceptionClause clause = new ExceptionClause();
+				clause.prev = exceptionStack.clauses;
+				clause.clauseType = Except_Catch;
+				clause.beginClause = offset;
+				clause.endClause = -1;
+				clause.classInfo = exceptionType;
+				exceptionStack.clauses = clause;
+			}
+
+	// Begin a filter block on the current exception.
 	public virtual void BeginExceptFilterBlock()
-	{
-		throw new NotImplementedException("BeginExceptFilterBlock");
-	}
+			{
+				// Terminate the current clause.
+				TerminateClause();
 
-	[TODO]
+				// Create a new clause information block.
+				ExceptionClause clause = new ExceptionClause();
+				clause.prev = exceptionStack.clauses;
+				clause.clauseType = Except_Filter;
+				clause.beginClause = offset;
+				clause.endClause = -1;
+				clause.classInfo = null;
+				exceptionStack.clauses = clause;
+			}
+
+	// Begin the output of an exception block within the current method.
 	public virtual Label BeginExceptionBlock()
-	{
-		throw new NotImplementedException("BeginExceptionBlock");
-	}
+			{
+				ExceptionTry tryBlock = new ExceptionTry();
+				tryBlock.next = exceptionStack;
+				tryBlock.beginTry = offset;
+				tryBlock.endTry = -1;
+				tryBlock.endCatch = -1;
+				tryBlock.clauses = null;
+				tryBlock.endLabel = DefineLabel();
+				exceptionStack = tryBlock;
+				return tryBlock.endLabel;
+			}
 
-	[TODO]
+	// Begin a fault block on the current exception.
 	public virtual void BeginFaultBlock()
-	{
-		throw new NotImplementedException("BeginFaultBlock");
-	}
+			{
+				// Terminate the current clause.
+				TerminateClause();
 
-	[TODO]
+				// The operation is invalid if current is finally or fault.
+				if(exceptionStack.clauses != null)
+				{
+					if(exceptionStack.clauses.clauseType == Except_Finally ||
+					   exceptionStack.clauses.clauseType == Except_Fault)
+					{
+						throw new InvalidOperationException
+							(_("Emit_CatchAfterFinally"));
+					}
+				}
+
+				// Create a new clause information block.
+				ExceptionClause clause = new ExceptionClause();
+				clause.prev = exceptionStack.clauses;
+				clause.clauseType = Except_Fault;
+				clause.beginClause = offset;
+				clause.endClause = -1;
+				clause.classInfo = null;
+				exceptionStack.clauses = clause;
+				height = 1;		// Top of stack is the exception object.
+				if(height > maxHeight)
+				{
+					maxHeight = height;
+				}
+			}
+
+	// Begin a finally block on the current exception.
 	public virtual void BeginFinallyBlock()
-	{
-		throw new NotImplementedException("BeginFinallyBlock");
-	}
+			{
+				// Terminate the current clause.
+				TerminateClause();
+
+				// The operation is invalid if current is finally or fault.
+				if(exceptionStack.clauses != null)
+				{
+					if(exceptionStack.clauses.clauseType == Except_Finally ||
+					   exceptionStack.clauses.clauseType == Except_Fault)
+					{
+						throw new InvalidOperationException
+							(_("Emit_CatchAfterFinally"));
+					}
+				}
+
+				// Create a new clause information block.
+				ExceptionClause clause = new ExceptionClause();
+				clause.prev = exceptionStack.clauses;
+				clause.clauseType = Except_Finally;
+				clause.beginClause = offset;
+				clause.endClause = -1;
+				clause.classInfo = null;
+				exceptionStack.clauses = clause;
+				height = 1;		// Top of stack is the exception object.
+				if(height > maxHeight)
+				{
+					maxHeight = height;
+				}
+			}
+
+	// End the output of an exception block.
+	public virtual void EndExceptionBlock()
+			{
+				// Make sure that the request is legal.
+				ExceptionTry tryBlock = exceptionStack;
+				if(tryBlock == null)
+				{
+					throw new NotSupportedException
+						(_("Emit_NeedExceptionBlock"));
+				}
+				if(tryBlock.clauses == null)
+				{
+					throw new InvalidOperationException
+						(_("Emit_NoExceptionClauses"));
+				}
+
+				// Terminate the last clause in the list.
+				TerminateClause();
+
+				// Mark the label for the end of the exception block.
+				MarkLabel(tryBlock.endLabel);
+
+				// Add the exception to the end of the real block list.
+				exceptionStack = tryBlock.next;
+				tryBlock.next = null;
+				if(exceptionListEnd != null)
+				{
+					exceptionListEnd.next = tryBlock;
+				}
+				else
+				{
+					exceptionList = tryBlock;
+				}
+				exceptionListEnd = tryBlock;
+			}
 
 	// Enter a lexical naming scope for debug information.
 	public virtual void BeginScope()
@@ -109,7 +334,18 @@ public class ILGenerator
 	// Declare a local variable within the current method.
 	public LocalBuilder DeclareLocal(Type localType)
 			{
-				throw new NotImplementedException("DeclareLocal");
+				if(localType == null)
+				{
+					throw new ArgumentNullException("localType");
+				}
+				if(locals == null)
+				{
+					locals = new ArrayList();
+				}
+				LocalBuilder builder = new LocalBuilder
+						(module, localType, locals.Count);
+				locals.Add(builder);
+				return builder;
 			}
 
 	// Declare a label within the current method.
@@ -153,11 +389,30 @@ public class ILGenerator
 	// to have a token fixup at the end of the assembly output process.
 	private void EmitTokenWithFixup(int token)
 			{
-				// TODO: fixups
+				TokenFixup fixup = new TokenFixup();
+				fixup.next = tokenFixups;
+				fixup.offset = offset;
+				fixup.clrHandle = AssemblyBuilder.ClrGetItemFromToken
+						(module.assembly.privateData, token);
+				tokenFixups = fixup;
 				EmitByte(token);
 				EmitByte(token >> 8);
 				EmitByte(token >> 16);
 				EmitByte(token >> 24);
+			}
+
+	// Emit a raw opcode with no stack adjustments.
+	private void EmitRawOpcode(int value)
+			{
+				if(value < 0x0100)
+				{
+					EmitByte(value);
+				}
+				else
+				{
+					EmitByte(value);
+					EmitByte(value & 0xFF);
+				}
 			}
 
 	// Emit an opcode value to the current method's code and then
@@ -240,6 +495,10 @@ public class ILGenerator
 				{
 					maxHeight = height;
 				}
+				else if(height < 0)
+				{
+					height = 0;
+				}
 			}
 
 	// Emit simple opcodes.
@@ -314,18 +573,57 @@ public class ILGenerator
 				EmitToken(token.Token);
 			}
 
-
-	[TODO]
+	// Emit a call on a constructor.
 	public virtual void Emit(OpCode opcode, ConstructorInfo constructor)
-	{
-		throw new NotImplementedException("Emit");
-	}
+			{
+				// Bail out if "constructor" is null.
+				if(constructor == null)
+				{
+					throw new ArgumentNullException("constructor");
+				}
 
-	[TODO]
+				// Adjust the stack to account for the changes.
+				if(opcode.stackPush == (int)(StackBehaviour.Varpush))
+				{
+					++height;
+				}
+				if(opcode.stackPop == (int)(StackBehaviour.Varpop))
+				{
+					if(constructor is ConstructorBuilder)
+					{
+						height -= ((ConstructorBuilder)constructor).numParams;
+					}
+					else
+					{
+						ParameterInfo[] paramList = constructor.GetParameters();
+						if(paramList != null)
+						{
+							height -= paramList.Length;
+						}
+					}
+				}
+				if(height > maxHeight)
+				{
+					maxHeight = height;
+				}
+				else if(height < 0)
+				{
+					height = 0;
+				}
+
+				// Output the instruction.
+				MethodToken token = module.GetConstructorToken(constructor);
+				EmitRawOpcode(opcode.value);
+				EmitTokenWithFixup(token.Token);
+			}
+
+	// Emit a reference to a field
 	public virtual void Emit(OpCode opcode, FieldInfo field)
-	{
-		throw new NotImplementedException("Emit");
-	}
+			{
+				FieldToken token = module.GetFieldToken(field);
+				EmitOpcode(ref opcode);
+				EmitTokenWithFixup(token.Token);
+			}
 
 	// Emit code for a branch instruction.  Note: unlike other implementations,
 	// we always output the branch in such a way that an out of range error
@@ -420,23 +718,179 @@ public class ILGenerator
 				}
 			}
 
-	[TODO]
+	// Emit a switch statement.
 	public virtual void Emit(OpCode opcode, Label[] labels)
-	{
-		throw new NotImplementedException("Emit");
-	}
+			{
+				// Determine where the switch statement ends.
+				int switchEnd = offset + opcode.size + labels.Length * 4;
 
-	[TODO]
+				// Emit the opcode and the table length.
+				EmitOpcode(ref opcode);
+				EmitToken(labels.Length);
+
+				// Output the table of switch labels.
+				int posn;
+				Label label;
+				LabelInfo info;
+				LabelRef newRef;
+				for(posn = 0; posn < labels.Length; ++posn)
+				{
+					// Skip the label if it is invalid (shouldn't happen).
+					label = labels[posn];
+					if(label.index < 0 || label.index >= numLabels)
+					{
+						continue;
+					}
+
+					// Fetch the label information block.
+					info = this.labels[label.index];
+
+					// If it is already defined, output the offset now.
+					// Otherwise add a reference and output a placeholder.
+					if(info.offset != 0)
+					{
+						EmitToken(info.offset - switchEnd);
+					}
+					else
+					{
+						newRef = new LabelRef();
+						newRef.next = this.labels[label.index].refs;
+						newRef.address = offset;
+						newRef.switchEnd = switchEnd;
+						this.labels[label.index].refs = newRef;
+						EmitToken(0);
+					}
+				}
+			}
+
+	// Emit a reference to a local variable.
 	public virtual void Emit(OpCode opcode, LocalBuilder lbuilder)
-	{
-		throw new NotImplementedException("Emit");
-	}
+			{
+				// Validate the parameters.
+				if(lbuilder == null)
+				{
+					throw new ArgumentNullException("lbuilder");
+				}
 
-	[TODO]
+				// Determine if we can squash the instruction a bit more.
+				int index = lbuilder.index;
+				if(opcode.value == 0xFE0C)			// "ldloc"
+				{
+					if(index == 0)
+					{
+						opcode = OpCodes.Ldloc_0;
+					}
+					else if(index == 1)
+					{
+						opcode = OpCodes.Ldloc_1;
+					}
+					else if(index == 2)
+					{
+						opcode = OpCodes.Ldloc_2;
+					}
+					else if(index == 3)
+					{
+						opcode = OpCodes.Ldloc_3;
+					}
+					else if(index < 0x0100)
+					{
+						opcode = OpCodes.Ldloc_S;
+					}
+				}
+				else if(opcode.value == 0xFE0D)		// "ldloca"
+				{
+					if(index < 0x0100)
+					{
+						opcode = OpCodes.Ldloca_S;
+					}
+				}
+				else if(opcode.value == 0xFE0E)		// "stloc"
+				{
+					if(index == 0)
+					{
+						opcode = OpCodes.Stloc_0;
+					}
+					else if(index == 1)
+					{
+						opcode = OpCodes.Stloc_1;
+					}
+					else if(index == 2)
+					{
+						opcode = OpCodes.Stloc_2;
+					}
+					else if(index == 3)
+					{
+						opcode = OpCodes.Stloc_3;
+					}
+					else if(index < 0x0100)
+					{
+						opcode = OpCodes.Stloc_S;
+					}
+				}
+
+				// Output the instruction and its argument.
+				EmitOpcode(ref opcode);
+				if(opcode.operandType == (int)(OperandType.ShortInlineVar))
+				{
+					EmitByte(index);
+				}
+				else if(opcode.operandType == (int)(OperandType.InlineVar))
+				{
+					EmitByte(index);
+					EmitByte(index >> 8);
+				}
+			}
+
+	// Emit an instruction that refers to a method.
 	public virtual void Emit(OpCode opcode, MethodInfo method)
-	{
-		throw new NotImplementedException("Emit");
-	}
+			{
+				// Bail out if "method" is null.
+				if(method == null)
+				{
+					throw new ArgumentNullException("method");
+				}
+
+				// Adjust the stack to account for the changes.
+				if(opcode.stackPush == (int)(StackBehaviour.Varpush))
+				{
+					if(method.ReturnType != typeof(void))
+					{
+						++height;
+					}
+				}
+				if(opcode.stackPop == (int)(StackBehaviour.Varpop))
+				{
+					if(method is MethodBuilder)
+					{
+						height -= ((MethodBuilder)method).numParams;
+					}
+					else
+					{
+						ParameterInfo[] paramList = method.GetParameters();
+						if(paramList != null)
+						{
+							height -= paramList.Length;
+						}
+					}
+					if(!method.IsStatic && opcode.value != 0x73) // "newobj"
+					{
+						--height;
+					}
+				}
+				if(height > maxHeight)
+				{
+					maxHeight = height;
+				}
+				else if(height < 0)
+				{
+					height = 0;
+				}
+
+				// Output the instruction.
+				MethodToken token = module.GetMethodToken(method);
+				EmitRawOpcode(opcode.value);
+				EmitTokenWithFixup(token.Token);
+			}
 
 	[TODO]
 	public virtual void Emit(OpCode opcode, SignatureHelper shelper)
@@ -444,11 +898,13 @@ public class ILGenerator
 		throw new NotImplementedException("Emit");
 	}
 
-	[TODO]
+	// Emit an instruction that refers to a type.
 	public virtual void Emit(OpCode opcode, Type type)
-	{
-		throw new NotImplementedException("Emit");
-	}
+			{
+				TypeToken token = module.GetTypeToken(type);
+				EmitOpcode(ref opcode);
+				EmitTokenWithFixup(token.Token);
+			}
 
 	[TODO]
 	public void EmitCall(OpCode opcode, MethodInfo methodinfo, Type[] optionalParamTypes)
@@ -460,12 +916,6 @@ public class ILGenerator
 	public void EmitCalli(OpCode opcode, CallingConventions call_conv, Type returnType, Type[] paramTypes, Type[] optionalParamTypes)
 	{
 		throw new NotImplementedException("EmitCalli");
-	}
-
-	[TODO]
-	public virtual void EndExceptionBlock()
-	{
-		throw new NotImplementedException("EndExceptionBlock");
 	}
 
 	// Exit a lexical naming scope for debug information.
@@ -532,23 +982,133 @@ public class ILGenerator
 	// Short-cut helper methods.  Not yet implemented or used.
 	public virtual void EmitWriteLine(FieldInfo field)
 			{
-				throw new NotImplementedException("EmitWriteLine");
+				Type fieldType;
+				MethodInfo method;
+				Type[] paramList;
+
+				// Validate the parameter.
+				if(field == null)
+				{
+					throw new ArgumentNullException("field");
+				}
+				fieldType = field.FieldType;
+				if(fieldType is TypeBuilder || fieldType is EnumBuilder)
+				{
+					throw new NotSupportedException(_("NotSupp_Builder"));
+				}
+
+				// Push the "Out" stream reference onto the stack.
+				method = typeof(Console).GetMethod("get_Out");
+				Emit(OpCodes.Call, method);
+
+				// Load the field value onto the stack.
+				if(field.IsStatic)
+				{
+					Emit(OpCodes.Ldsfld, field);
+				}
+				else
+				{
+					Emit(OpCodes.Ldarg_0);
+					Emit(OpCodes.Ldfld, field);
+				}
+
+				// Find and call the "WriteLine" method.
+				paramList = new Type [1];
+				paramList[0] = fieldType;
+				method = typeof(TextWriter).GetMethod("WriteLine", paramList);
+				if(method == null)
+				{
+					throw new ArgumentException(_("Emit_MissingWriteLine"));
+				}
+				Emit(OpCodes.Callvirt, method);
 			}
 	public virtual void EmitWriteLine(LocalBuilder lbuilder)
 			{
-				throw new NotImplementedException("EmitWriteLine");
+				Type localType;
+				MethodInfo method;
+				Type[] paramList;
+
+				// Validate the parameter.
+				if(lbuilder == null)
+				{
+					throw new ArgumentNullException("lbuilder");
+				}
+				localType = lbuilder.LocalType;
+				if(localType is TypeBuilder || localType is EnumBuilder)
+				{
+					throw new NotSupportedException(_("NotSupp_Builder"));
+				}
+
+				// Push the "Out" stream reference onto the stack.
+				method = typeof(Console).GetMethod("get_Out");
+				Emit(OpCodes.Call, method);
+
+				// Load the local variable's value onto the stack.
+				Emit(OpCodes.Ldloc, lbuilder);
+
+				// Find and call the "WriteLine" method.
+				paramList = new Type [1];
+				paramList[0] = localType;
+				method = typeof(TextWriter).GetMethod("WriteLine", paramList);
+				if(method == null)
+				{
+					throw new ArgumentException(_("Emit_MissingWriteLine"));
+				}
+				Emit(OpCodes.Callvirt, method);
 			}
 	public virtual void EmitWriteLine(String val)
 			{
-				throw new NotImplementedException("EmitWriteLine");
+				Type[] paramList;
+				MethodInfo method;
+
+				// Locate the "Console.WriteLine(String)" method.
+				paramList = new Type [0];
+				paramList[0] = typeof(String);
+				method = typeof(Console).GetMethod("WriteLine", paramList);
+
+				// Output the code to call the method.
+				Emit(OpCodes.Ldstr, val);
+				Emit(OpCodes.Call, method);
 			}
 	public virtual void ThrowException(Type exceptionType)
 			{
-				throw new NotImplementedException("ThrowException");
+				// Validate the parameter.
+				if(exceptionType == null)
+				{
+					throw new ArgumentNullException("exceptionType");
+				}
+				else if(!exceptionType.IsSubclassOf(typeof(Exception)) &&
+						exceptionType != typeof(Exception))
+				{
+					throw new ArgumentException
+						(_("Emit_NotAnExceptionType"));
+				}
+
+				// Locate the zero-argument constructor.
+				ConstructorInfo constructor;
+				constructor = exceptionType.GetConstructor(Type.EmptyTypes);
+				if(constructor == null)
+				{
+					throw new ArgumentException
+						(_("Emit_NeedDefaultConstructor"));
+				}
+
+				// Create and throw the exception.
+				Emit(OpCodes.Newobj, constructor);
+				Emit(OpCodes.Throw);
 			}
 	public void UsingNamespace(String usingNamespace)
 			{
-				throw new NotImplementedException("UsingNamespace");
+				// Namespace debug information not currently used,
+				// so simply validate the parameter and exit.
+				if(usingNamespace == null)
+				{
+					throw new ArgumentNullException("usingNamespace");
+				}
+				else if(usingNamespace.Length == 0)
+				{
+					throw new ArgumentException(_("Emit_NameEmpty"));
+				}
 			}
 
 }; // class ILGenerator.cs

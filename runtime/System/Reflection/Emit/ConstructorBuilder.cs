@@ -31,196 +31,299 @@ using System.Globalization;
 using System.Security.Permissions;
 using System.Runtime.CompilerServices;
 
-[TODO]
-public sealed class ConstructorBuilder : ConstructorInfo
+public sealed class ConstructorBuilder : ConstructorInfo, IClrProgramItem
 {
-	[TODO]
+	// Internal state.
+	internal TypeBuilder type;
+	private IntPtr privateData;
+	internal int numParams;
+	private ILGenerator ilGenerator;
+	private bool initLocals;
+
+	// Constructor.
+	internal ConstructorBuilder(TypeBuilder type, String name,
+								MethodAttributes attributes,
+				 				CallingConventions callingConvention,
+				 				Type[] parameterTypes)
+			{
+				// Set the internal state.
+				this.type = type;
+				this.numParams = (parameterTypes != null
+									? parameterTypes.Length : 0);
+				this.ilGenerator = null;
+				this.initLocals = true;
+
+				// Create the constructor method.
+				this.privateData = MethodBuilder.ClrMethodCreate
+					(((IClrProgramItem)type).ClrHandle, name,
+					 attributes, callingConvention,
+					 typeof(void), parameterTypes);
+
+				// Add the constructor to the type for post-processing.
+				type.AddMethod(this);
+			}
+
+	// Add declarative security to this constructor.
 	public void AddDeclarativeSecurity(SecurityAction action, 
 										PermissionSet pset)
-	{
-		throw new NotImplementedException("AddDeclarativeSecurity");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.AddDeclarativeSecurity
+						(this, action, pset);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Define a parameter information block for this constructor.
 	public ParameterBuilder DefineParameter(int iSequence, 
 											ParameterAttributes attributes, 
 											String strParamName)
-	{
-		throw new NotImplementedException("DefineParameter");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					if(iSequence <= 0 || iSequence > numParams)
+					{
+						throw new ArgumentOutOfRangeException
+							("iSequence", _("Emit_InvalidParamNum"));
+					}
+					return new ParameterBuilder
+						(this, iSequence, attributes, strParamName);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Get the custom attributes for this constructor.
 	public override Object[] GetCustomAttributes(bool inherit)
-	{
-		throw new NotImplementedException("GetCustomAttributes");
-	}
-
-	[TODO]
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 	public override Object[] GetCustomAttributes(Type attribute_type, 
 												 bool inherit)
-	{
-		throw new NotImplementedException("GetCustomAttributes");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Get an IL code generator for this constructor.
 	public ILGenerator GetILGenerator()
-	{
-		throw new NotImplementedException("GetILGenerator");
-	}
+			{
+				if(ilGenerator == null)
+				{
+					ilGenerator = new ILGenerator(type.module, 64);
+				}
+				return ilGenerator;
+			}
 
-	[TODO]
+	// Get the implementation attributes for this constructor.
 	public override MethodImplAttributes GetMethodImplementationFlags()
-	{
-		throw new NotImplementedException("GetMethodImplementationFlags");
-	}
+			{
+				return ClrHelpers.GetImplAttrs(privateData);
+			}
 
-	[TODO]
+	// Get the method that contains this constructor.
 	public Module GetModule()
-	{
-		throw new NotImplementedException("GetModule");
-	}
+			{
+				return type.module;
+			}
 
-	[TODO]
+	// Get the parameter information for this constructor.
 	public override ParameterInfo[] GetParameters()
-	{
-		throw new NotImplementedException("GetParameters");
-	}
+			{
+				int param;
+				ParameterInfo[] parameters = new ParameterInfo [numParams];
+				for(param = 0; param < numParams; ++param)
+				{
+					parameters[param] =
+						ClrHelpers.GetParameterInfo(this, this, param + 1);
+				}
+				return parameters;
+			}
 
-	[TODO]
+	// Get the token for this constructor.
 	public MethodToken GetToken()
-	{
-		throw new NotImplementedException("GetToken");
-	}
+			{
+				return new MethodToken
+					(AssemblyBuilder.ClrGetItemToken(privateData));
+			}
 
-	[TODO]
+	// Invoke this constructor.
 	public override Object Invoke(Object obj, BindingFlags invokeAttr, 
 								  Binder binder, Object[] parameters, 
 								  CultureInfo culture)
-	{
-		throw new NotImplementedException("Invoke");
-	}
-
-	[TODO]
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 	public override Object Invoke(BindingFlags invokeAttr, 
 								  Binder binder, Object[] parameters, 
 								  CultureInfo culture)
-	{
-		throw new NotImplementedException("Invoke");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Determine if an attribute is defined on this constructor.
 	public override bool IsDefined(Type attribute_type, bool inherit)
-	{
-		throw new NotImplementedException("IsDefined");
-	}
+			{
+				throw new NotSupportedException(_("NotSupp_Builder"));
+			}
 
-	[TODO]
+	// Set a custom attribute on this constructor.
 	public void SetCustomAttribute(CustomAttributeBuilder customBuilder)
-	{
-		throw new NotImplementedException("SetCustomAttribute");
-	}
-
-	[TODO]
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, customBuilder);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 	public void SetCustomAttribute(ConstructorInfo con, byte[] binaryAttribute)
-	{
-		throw new NotImplementedException("SetCustomAttribute");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					type.module.assembly.SetCustomAttribute
+						(this, con, binaryAttribute);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set the method implementation attributes for this constructor.
 	public void SetImplementationFlags(MethodImplAttributes attributes)
-	{
-		throw new NotImplementedException("SetImplementationFlags");
-	}
+			{
+				try
+				{
+					type.StartSync();
+					MethodBuilder.ClrMethodSetImplAttrs
+						(privateData, attributes);
+				}
+				finally
+				{
+					type.EndSync();
+				}
+			}
 
-	[TODO]
+	// Set symbol attribute information for this constructor.
 	public void SetSymCustomAttribute(String name, byte[] data)
-	{
-		throw new NotImplementedException("SetSymCustomAttribute");
-	}
+			{
+				// We don't support symbols at present - ignored.
+			}
 
+	// Convert this constructor into a string.
 	[TODO]
 	public override String ToString()
-	{
-		throw new NotImplementedException("ToString");
-	}
+			{
+				// TODO
+				return String.Empty;
+			}
 
-	[TODO]
+	// Get the attributes for this constructor.
 	public override MethodAttributes Attributes 
-	{
-		get
-		{
-			throw new NotImplementedException("Attributes");
-		}
-	}
+			{
+				get
+				{
+					return (MethodAttributes)
+						ClrHelpers.GetMemberAttrs(privateData);
+				}
+			}
 
-	[TODO]
+	// Get the type that declares this constructor.
 	public override Type DeclaringType 
-	{
-		get
-		{
-			throw new NotImplementedException("DeclaringType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	[TODO]
+	// Get or set the initalized locals state.
 	public bool InitLocals 
-	{
-		get
-		{
-			throw new NotImplementedException("InitLocals");
-		}
-		set
-		{
-			throw new NotImplementedException("InitLocals");
-		}
-	}
+			{
+				get
+				{
+					return initLocals;
+				}
+				set
+				{
+					initLocals = value;
+				}
+			}
 
-	[TODO]
+	// Get the method handle for this constructor.
 	public override RuntimeMethodHandle MethodHandle 
-	{
-		get
-		{
-			throw new NotImplementedException("MethodHandle");
-		}
-	}
+			{
+				get
+				{
+					throw new NotSupportedException(_("NotSupp_Builder"));
+				}
+			}
 
-	[TODO]
+	// Get the name of this constructor.
 	public override String Name 
-	{
-		get
-		{
-			throw new NotImplementedException("Name");
-		}
-	}
+			{
+				get
+				{
+					return ClrHelpers.GetName(this);
+				}
+			}
 
-	[TODO]
+	// Get the reflected type that owns this constructor.
 	public override Type ReflectedType 
-	{
-		get
-		{
-			throw new NotImplementedException("ReflectedType");
-		}
-	}
+			{
+				get
+				{
+					return type;
+				}
+			}
 
-	[TODO]
+	// Get the return type for this constructor.
 	public Type ReturnType 
-	{
-		get
-		{
-			return typeof(Void);
-		}
-	}
+			{
+				get
+				{
+					return typeof(void);
+				}
+			}
 
+	// Get the signature of this constructor as a string.
 	[TODO]
 	public String Signature 
-	{
-		get
-		{
-			throw new NotImplementedException("Signature");
-		}
-	}
+			{
+				get
+				{
+					// TODO
+					return String.Empty;
+				}
+			}
 
-	// TODO
+	// Get the CLR handle for this constructor.
+	IntPtr IClrProgramItem.ClrHandle
+			{
+				get
+				{
+					return privateData;
+				}
+			}
+
+	// Finalize this constructor by writing its code to the output image.
+	internal void FinalizeConstructor()
+			{
+				// TODO
+			}
 
 }; // class ConstructorBuilder
 

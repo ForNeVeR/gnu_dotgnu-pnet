@@ -34,7 +34,7 @@ public sealed class LocalBuilder
 	private ModuleBuilder module;
 	private String name;
 	private Type type;
-	private int index;
+	internal int index;
 
 	// Constructor.
 	internal LocalBuilder(ModuleBuilder module, Type type, int index)

@@ -32,7 +32,7 @@ using System.Runtime.CompilerServices;
 public sealed class EnumBuilder : Type
 {
 	// Internal state.
-	private TypeBuilder builder;
+	internal TypeBuilder builder;
 	private Type underlyingType;
 	private FieldBuilder underlyingField;
 

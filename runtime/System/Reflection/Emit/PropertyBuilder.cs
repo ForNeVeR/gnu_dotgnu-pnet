@@ -355,7 +355,7 @@ public sealed class PropertyBuilder : PropertyInfo, IClrProgramItem
 				}
 			}
 
-	// Create a new event and attach it to a particular class.
+	// Create a new property and attach it to a particular class.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static IntPtr ClrPropertyCreate
 			(IntPtr classInfo, String name,

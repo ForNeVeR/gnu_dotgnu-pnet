@@ -28,6 +28,15 @@ namespace System.Reflection.Emit
 {
 	public class ParameterBuilder
 	{
+
+		// Constructor.
+		internal ParameterBuilder(MethodBase method, int position,
+								  ParameterAttributes attributes,
+								  String strParamName)
+				{
+					// TODO
+				}
+
 		[TODO]
 		public virtual ParameterToken GetToken()
 		{

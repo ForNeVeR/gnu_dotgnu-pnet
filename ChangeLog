@@ -19,6 +19,9 @@
 	cscc/csharp/cs_grammar.y, cscc/csharp/cs_oper.tc, image/lib_attrs.c:
 	support "MarshalTypeRef" in custom marshalling declarations.
 
+	* cscc/csharp/cs_grammar.y: handle generic type parameters
+	in local variable declarations (e.g. "A<T> x").
+
 2003-02-20  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/call.c, engine/engine.h, engine/pinvoke.c: use the

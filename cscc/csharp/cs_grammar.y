@@ -912,7 +912,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 25
+%expect 26
 
 %start CompilationUnit
 %%
@@ -1274,6 +1274,10 @@ TypeActuals
 LocalVariableType
 	: PrimaryExpression TypeSuffixes	{
 				MakeBinary(LocalVariableType, $1, $2);
+			}
+	| PrimaryExpression '<' TypeActuals '>' TypeSuffixes	{
+				/* TODO: generic type declarations */
+				MakeBinary(LocalVariableType, $1, $5);
 			}
 	| BuiltinType TypeSuffixes			{
 				MakeBinary(LocalVariableType, $1, $2);

@@ -4,6 +4,13 @@
 	System.Windows.Forms/ListViewSubItemConverter.cs: fix some cscc	compile
 	issues.
 
+	* System.Xml/EOFHandler.cs, System.Xml/ErrorHandler.cs,
+	System.Xml/XmlCharInfo.cs, System.Xml/XmlDTDParserInput.cs,
+	System.Xml/XmlDTDReader.cs, System.Xml/XmlErrorProcessor.cs,
+	System.Xml/XmlParserInput.cs, System.Xml/XmlParserInputBase.cs,
+	System.Xml/XmlTextReader.cs: add dtd parsing support, fix several bugs,
+	improve the design, and add lots of comments.
+
 2004-01-22  Neil Cawse  <neilcawse@geotab.com>
 
 	* System.Drawing.Win32/DrawingToolkit.cs,

@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 namespace System.Xml
 {
 
@@ -26,7 +26,6 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections;
-using System.Globalization;
 
 public class XmlTextReader : XmlReader
 #if !ECMA_COMPAT
@@ -42,10 +41,13 @@ public class XmlTextReader : XmlReader
 	private ReadState readState;
 	private Stack elementNames;
 	private WhitespaceHandling whitespace;
+	private XmlDTDReader dtdReader;
 	private XmlElementInfo info;
 	private XmlParserContext parserContext;
 	private XmlParserInput input;
 	private XmlResolver xmlResolver;
+
+
 	// Constructors.
 	protected XmlTextReader()
 			: this(new NameTable())
@@ -71,8 +73,10 @@ public class XmlTextReader : XmlReader
 				contextSupport = false;
 				incDepth = false;
 				elementNames = new Stack();
-				input = new XmlParserInput(new EOFHandler(HandleEOF), null);
+				dtdReader = new XmlDTDReader();
 				info = new XmlElementInfo(parserContext);
+				input = new XmlParserInput
+					(null, nt, new EOFHandler(HandleEOF), new ErrorHandler(Error));
 			}
 	public XmlTextReader(Stream input)
 			: this(String.Empty, input, new NameTable())
@@ -487,10 +491,9 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Clean up the resources that were used by this XML reader.
-	[TODO] 	
+	[TODO] // ********************************************************* TODO
 	public override void Close()
 			{
-				/* TODO: Clean up resrouces used by reader */
 				parserContext.SystemId = String.Empty;
 				parserContext.PublicId = String.Empty;
 				depth = 0;
@@ -527,7 +530,7 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Get the remainder of the current XML stream.
-	[TODO] 
+	[TODO] // ********************************************************* TODO
 	public TextReader GetRemainder()
 			{
 				String tmp = input.Reader.ReadToEnd();
@@ -585,7 +588,7 @@ public class XmlTextReader : XmlReader
 				return info.MoveToNextAttribute();
 			}
 
-	// Read the next node in the input stream. -- This should mimic mono's interpretation of Read()
+	// Read the next node in the input stream.
 	public override bool Read()
 			{
 				// Validate the current state of the stream.
@@ -648,7 +651,7 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read character data from the current element.
-	[TODO] 	
+	[TODO] // ********************************************************* TODO
 	public int ReadChars(char[] buffer, int index, int count)
 			{
 				if(count > buffer.Length - index)
@@ -667,11 +670,9 @@ public class XmlTextReader : XmlReader
 						(S._("ArgumentOutOfRange"));
 				}
 
-				XmlNodeType nodeType = NodeType;
-				if(nodeType != XmlNodeType.Text && nodeType != XmlNodeType.Element)
+				if(NodeType != XmlNodeType.Element)
 				{
-					throw new XmlException
-						(S._("Xml_WrongNodeType"));
+					return 0;
 				}
 
 				/*
@@ -705,7 +706,7 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read the contents of the current node, including all markup.
-	[TODO] 
+	[TODO] // ********************************************************* TODO
 	public override String ReadInnerXml()
 			{
 				XmlNodeType nodeType = NodeType;
@@ -764,7 +765,7 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Read the current node, including all markup.
-	[TODO] 	
+	[TODO] // ********************************************************* TODO
 	public override String ReadOuterXml()
 			{
 				StringBuilder sb = new StringBuilder();
@@ -796,7 +797,6 @@ public class XmlTextReader : XmlReader
 						if(input.currChar == '<' && input.peekChar == '/')
 						{
 							input.NextChar();
-							sb.Append(input.currChar);
 							int i = 0;
 							bool match = true;
 							while(match && i < target.Length && input.NextChar())
@@ -826,7 +826,7 @@ public class XmlTextReader : XmlReader
 					String name = node.Name;
 					String value = node.Value;
 					char quoteChar = node.QuoteChar;
-					
+
 					sb.Append(name);
 					sb.Append("=");
 					sb.Append(quoteChar);
@@ -865,7 +865,7 @@ public class XmlTextReader : XmlReader
 			}
 
 	// Clear the node information.
-	[TODO] 	
+	[TODO] // ********************************************************* TODO
 	private void ClearNodeInfo()
 			{
 				parserContext.SystemId = String.Empty;
@@ -878,122 +878,53 @@ public class XmlTextReader : XmlReader
 			{
 				Error("Xml_ReaderError");
 			}
-	private void Error(String messageTag)
+	private void Error(String messageTag, params Object[] args)
 			{
 				readState = ReadState.Error;
 				ClearNodeInfo();
-				throw new XmlException(S._(messageTag));
-			}
-	// Expect the next character to match `expected'.
-	private void Expect(char expected)
-			{
-				if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-				if(input.currChar != expected) { Error(/* TODO */); }
-			}
-	// Expect the stream characters to match `expected'.
-	private void Expect(String expected)
-			{
-				int len = expected.Length;
-				char[] c = expected.ToCharArray();
-				for(int i = 0; i < len; ++i)
-				{
-					if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-					if(input.currChar != c[i]) { Error(/* TODO */); }
-				}
+				input.Logger.Clear();
+				throw new XmlException(String.Format(S._(messageTag), args));
 			}
 
-	// Get the current character.
-	private char GetCurrentChar()
-			{
-				return input.currChar;
-			}
-
+	// Callback for eof in the input handler.
 	[TODO]
 	private void HandleEOF()
 			{
 				readState = ReadState.EndOfFile;
 			}
 
-	private static bool IsChar(char c)
-			{
-				return c == '\t' ||
-				       c == '\n' ||
-				       c == '\r' ||
-				       (c >= ' ' &&
-				        (Char.GetUnicodeCategory(c) != UnicodeCategory.Surrogate));
-			}
-	private static bool IsNameChar(char c)
-			{
-				if(c == '.' || c == '-' || c == '_' || c == ':')
-				{
-					return true;
-				}
-				switch(Char.GetUnicodeCategory(c))
-				{
-					case UnicodeCategory.UppercaseLetter:
-					case UnicodeCategory.LowercaseLetter:
-					case UnicodeCategory.TitlecaseLetter:
-					case UnicodeCategory.OtherLetter:
-					case UnicodeCategory.LetterNumber:
-					case UnicodeCategory.SpacingCombiningMark:
-					case UnicodeCategory.EnclosingMark:
-					case UnicodeCategory.NonSpacingMark:
-					case UnicodeCategory.ModifierLetter:
-					case UnicodeCategory.DecimalDigitNumber:
-						return true;
-					default:
-						return false;
-				}
-			}
-	private static bool IsNameInit(char c)
-			{
-				if(c == '_' || c == ':')
-				{
-					return true;
-				}
-				switch(Char.GetUnicodeCategory(c))
-				{
-					case UnicodeCategory.UppercaseLetter:
-					case UnicodeCategory.LowercaseLetter:
-					case UnicodeCategory.TitlecaseLetter:
-					case UnicodeCategory.OtherLetter:
-					case UnicodeCategory.LetterNumber:
-						return true;
-					default:
-						return false;
-				}
-			}
-	private static bool IsPublicId(char c)//PubidChar
-			{
-				return (c != '"' && c != '&' && c != '<' && c != '>') &&
-				       (c == '\n' || c == '\r' || c == '_' ||
-				        (c >= ' ' && c <= 'Z') || (c >= 'a' && c <= 'z'));
-			}
-	private static bool IsWhitespace(char c)
-			{
-				return (c == '\t' || c == '\n' || c == '\r' || c == ' ');
-			}
-
-
 #if !ECMA_COMPAT
 	private String ParseEntity(String entityref)
 			{
 				return parserContext.NameCollection.Get(entityref);
 			}
+
+	//internal SomeDTDRuleHandlingObjectGoesHere FooBar
+	//		{
+	//			get { return dtdReader.FooBar; }
+	//			set { dtdReader.FooBar = value; }
+	//		}
 #endif
+
+	// Read the attributes for an element start tag.
+	//
+	// Already read: ''
 	[TODO]
-	private void ReadAttributes(StringBuilder sb, bool qmark)
+	private void ReadAttributes(bool qmark)
 			{
+				// create our value log
+				StringBuilder log = new StringBuilder();
+
+				// create our list for reference positions
 				ArrayList refs = new ArrayList();
+
+				// read until we consume all of the attributes
 				while(true)
 				{
-					bool hasWS = false;
-					while(input.PeekChar() && IsWhitespace(input.peekChar))
-					{
-						input.NextChar();
-						sb.Append(input.currChar);
-						hasWS = true;
-					}
+					// skip potentially optional whitespace
+					bool hasWS = input.SkipWhitespace();
+
+					// check for an end character
 					if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
 					if(qmark)
 					{
@@ -1003,78 +934,185 @@ public class XmlTextReader : XmlReader
 					{
 						return;
 					}
+
+					// the attribute name must be preceded by whitespace
 					if(!hasWS) { Error(/* TODO */); }
-					String name = ReadName(sb);
-					while(input.PeekChar() && IsWhitespace(input.peekChar))
-					{
-						input.NextChar();
-						sb.Append(input.currChar);
-					}
-					Expect('=');
-					sb.Append('=');
-					while(input.PeekChar() && IsWhitespace(input.peekChar))
-					{
-						input.NextChar();
-						sb.Append(input.currChar);
-					}
+
+					// read the attribute name
+					String name = input.ReadName();
+
+					// skip optional whitespace and read the '=' character
+					input.SkipWhitespace();
+					input.Expect('=');
+					input.SkipWhitespace();
+
+					// scan for a valid quote character
 					if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
 					char quoteChar = input.currChar;
-					if(quoteChar != '"' && quoteChar != '\'') { Error(/* TODO */); }
-					sb.Append(quoteChar);
-					int valuePos = sb.Length;
-					int start = 0;
-					refs.Clear();
+					if(quoteChar != '"' && quoteChar != '\'')
+					{
+						Error(/* TODO */);
+					}
+
+					// push our log onto the logger's log stack
+					input.Logger.Push(log);
+
+					// read until we hit the quote character
 					while(input.NextChar() && input.currChar != quoteChar)
 					{
-						++start;
-						switch(input.currChar)
+						// perform basic error checks and store ref positions
+						if(input.currChar == '<')
 						{
-							case '<':
-							{
-								Error(/* TODO */);
-								return; // keep the compiler happy
-							}
-							// Not reached.
+							Error(/* TODO */);
+						}
+						else if(input.currChar == '&')
+						{
+							// store the position of the reference
+							refs.Add(log.Length);
 
-							case '&':
-							{
-								if(ReadReference(sb)) { refs.Add(start); }
-							}
-							break;
-
-							default:
-							{
-								sb.Append(input.currChar);
-							}
-							break;
+							// read the reference
+							ReadReference();
 						}
 					}
-					if(input.currChar != quoteChar)
-					{
-						Error("Xml_UnexpectedEOF");
-					}
-					String value = sb.ToString(valuePos, sb.Length - valuePos);
-					sb.Append(quoteChar);
-					info.AddAttribute(name, value, quoteChar, (int[])refs.ToArray(typeof(int)));
+
+					// we hit eof, otherwise we'd have quoteChar, so give an error
+					if(input.currChar != quoteChar) { Error("Xml_UnexpectedEOF"); }
+
+					// erase the closing quote character from the log
+					log.Length -= 1;
+
+					// get the value from the log and pop it from the logger
+					String value = input.Logger.Pop().ToString();
+
+					// reset the log
+					log.Length = 0;
+
+					// add the attribute to the current node information
+					info.AddAttribute
+						(name, value, quoteChar, (int[])refs.ToArray(typeof(int)));
+
+					// clear our list of reference positions
+					refs.Clear();
 				}
 			}
 
+	// Read a character data section.
+	//
+	// Already read: '<![CDATA['
+	[TODO]
+	private void ReadCDATA()
+			{
+				// TODO: state handling
+
+				// clear the current node information
+				ClearNodeInfo();
+
+				// create our log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
+
+				// read until we've consumed all of the character data content
+				while(input.NextChar() && input.PeekChar())
+				{
+					// check for the ']]' sequence
+					if(input.currChar == ']' && input.peekChar == ']')
+					{
+						input.NextChar();
+
+						// check if we've got the ']]>' sequence
+						if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
+						if(input.currChar == '>')
+						{
+							// erase the ']]>' sequence from the log
+							log.Length -= 3;
+
+							// get the cdata from the log and pop it from the logger
+							String value = input.Logger.Pop().ToString();
+
+							// set the current node information and return
+							info.NodeType = XmlNodeType.CDATA;
+							info.SetElementInfo("", value);
+							return;
+						}
+					}
+				}
+
+				// if we make it here then we hit eof, so give an error
+				Error("Xml_UnexpectedEOF");
+			}
+
+	// Read a comment.
+	//
+	// Already read: '<!--'
+	[TODO]
+	private void ReadComment()
+			{
+				// TODO: state handling
+
+				// clear the current node information
+				ClearNodeInfo();
+
+				// create our log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
+
+				// read until we consume all of the comment content
+				while(input.NextChar() && input.PeekChar())
+				{
+					// check for the '--' sequence
+					if(input.currChar == '-' && input.peekChar == '-')
+					{
+						input.NextChar();
+
+						// erase the '--' sequence from the log
+						log.Length -= 2;
+
+						// get the comment from the log and pop it from the logger
+						String value = input.Logger.Pop().ToString();
+
+						// the comment must end with '>' at this point
+						input.Expect('>');
+
+						// set the current node information and return
+						info.NodeType = XmlNodeType.Comment;
+						info.SetElementInfo("", value);
+						return;
+					}
+				}
+
+				// if we make it here then we hit eof, so give an error
+				Error("Xml_UnexpectedEOF");
+			}
+
+	// Read the xml document.
+	//
+	// Already read: ''
+	[TODO]
 	private bool ReadDocument()
 			{
-				if(!input.PeekChar())
+				// return false if there are no nodes left to read
+				if(!input.PeekChar()) { return false; }
+
+				// increase the depth if we last read an element start tag
+				if(incDepth)
 				{
-					// TODO: EOF Handling?
-					return false;
+					++depth;
+					incDepth = false;
 				}
-				if(incDepth) { ++depth; }
-    				switch(input.peekChar)
+
+				// handle all the possible node cases
+				switch(input.peekChar)
 				{
+					// handle the tag node case
 					case '<':
 					{
 						input.NextChar();
+
+						// handle all the possible tag cases
 						if(!input.PeekChar()) { Error(/* TODO */); }
 						switch(input.peekChar)
 						{
+							// handle the qmark tag case
 							case '?':
 							{
 								input.NextChar();
@@ -1082,6 +1120,7 @@ public class XmlTextReader : XmlReader
 							}
 							break;
 
+							// handle the emark tag case
 							case '!':
 							{
 								input.NextChar();
@@ -1089,6 +1128,7 @@ public class XmlTextReader : XmlReader
 							}
 							break;
 
+							// handle the element end tag case
 							case '/':
 							{
 								input.NextChar();
@@ -1096,6 +1136,7 @@ public class XmlTextReader : XmlReader
 							}
 							break;
 
+							// handle the element start tag case
 							default:
 							{
 								ReadSTag();
@@ -1105,6 +1146,7 @@ public class XmlTextReader : XmlReader
 					}
 					break;
 
+					// handle the whitespace node case
 					case '\r':
 					case '\n':
 					case '\t':
@@ -1119,130 +1161,74 @@ public class XmlTextReader : XmlReader
 					}
 					break;
 
+					// handle the text node case
 					default:
 					{
 						ReadText();
 					}
 					break;
 				}
+
+				// if we made it this far, we must've read a node, so return true
 				return true;
 			}
 
-
-	[TODO]
-	private void ReadCDATA()
-			{
-				ClearNodeInfo();
-				StringBuilder sb = new StringBuilder();
-				int count = 0;
-				while(input.NextChar())
-				{
-					if(input.currChar == ']')
-					{
-						++count;
-					}
-					else if(input.currChar == '>' && count >= 2)
-					{
-						sb.Length -= 2;
-						info.NodeType = XmlNodeType.CDATA;
-						info.SetElementInfo("", sb.ToString());
-						return;
-					}
-					else
-					{
-						count = 0;
-					}
-					sb.Append(input.currChar);
-				}
-				Error("Xml_UnexpectedEOF");
-			}
-
-	[TODO]
-	private void ReadComment()
-			{
-				ClearNodeInfo();
-				StringBuilder sb = new StringBuilder();
-				while(input.NextChar())
-				{
-					if(input.currChar == '-')
-					{
-						if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-						if(input.currChar == '-')
-						{
-							Expect('>');
-							info.NodeType = XmlNodeType.Comment;
-							info.SetElementInfo("", sb.ToString());
-							return;
-						}
-						sb.Append('-');
-					}
-					sb.Append(input.currChar);
-				}
-				Error("Xml_UnexpectedEOF");
-			}
-
-	[TODO]
+	// Read a doctype declaration.
+	//
+	// Already read: '<!DOCTYPE'
 	private void ReadDoctypeDeclaration()
 			{
-				if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-				if(!IsWhitespace(input.currChar)) { Error(/* TODO */); }
-				input.SkipWhitespace();
-				String name = ReadName();
-				
-				readState = ReadState.Error;
+				// TODO: state handling
+
+				// clear the current node information
 				ClearNodeInfo();
-				throw new XmlException("ReadDoctypeDeclaration");
+
+				// (re)initialize the dtd reader
+				dtdReader.Init(input, xmlResolver, parserContext.NameTable);
+
+				// read the dtd
+				dtdReader.Read();
+
+				// set the current node information
+				info.NodeType = XmlNodeType.DocumentType;
+				info.SetElementInfo(dtdReader.Name, dtdReader.Value);
 			}
 
-	[TODO] 
-	private bool ReadElement() // garbage
-			{
-				while(input.NextChar())
-				{
-					switch(input.currChar)
-					{
-						case '<':
-							ReadName();
-							break;
-						case '\t':
-						case '\r':
-						case '\n':
-						case ' ':
-							//ReadAttributes();
-							break;
-						case '>':
-							return true;
-					}
-				}
-				return false;
-			}
+	// Read a '<!' tag.
+	//
+	// Already read: '<!'
 	[TODO]
-	private void ReadEMarkTag() 
+	private void ReadEMarkTag()
 			{
+				// handle all the possible emark tag cases
 				if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
 				switch(input.currChar)
 				{
+					// handle the DOCTYPE case
 					case 'D':
 					{
-						Expect("OCTYPE");
+						input.Expect("OCTYPE");
 						ReadDoctypeDeclaration();
 					}
 					break;
 
+					// handle the comment case
 					case '-':
 					{
-						Expect('-');
+						input.Expect('-');
 						ReadComment();
 					}
 					break;
 
+					// handle the CDATA case
 					case '[':
 					{
-						Expect("CDATA[");
+						input.Expect("CDATA[");
 						ReadCDATA();
 					}
 					break;
 
+					// handle the unknown case
 					default:
 					{
 						Error(/* TODO */);
@@ -1250,103 +1236,151 @@ public class XmlTextReader : XmlReader
 					break;
 				}
 			}
+
+	// Read an element end tag.
+	//
+	// Already read: '</'
 	[TODO]
-	private void ReadETag() 
+	private void ReadETag()
 			{
 				// TODO: state handling
+
+				// clear the current node information
 				ClearNodeInfo();
-				String name = ReadName();
+
+				// read the element name
+				String name = input.ReadName();
+
+				// skip optional whitespace
 				input.SkipWhitespace();
-				Expect('>');
+
+				// the element end tag must end with '>' at this point
+				input.Expect('>');
+
+				// decrease the depth
 				--depth;
-				if(elementNames.Pop() != name) { Error(/* TODO */); }
+
+				// this end tag must match the last start tag
+				if(elementNames.Pop() != (Object)name) { Error(/* TODO */); }
+
+				// set the current node information
 				info.NodeType = XmlNodeType.EndElement;
 				info.SetElementInfo(name);
 			}
-	private String ReadName()
+
+	// Read a processing instruction.
+	//
+	// Already read: '<?' Name
+	[TODO]
+	private void ReadProcessingInstruction(String target)
 			{
-				return ReadName(new StringBuilder());
-			}
-	private String ReadName(StringBuilder sb)
-			{
-				int pos = sb.Length;
+				// TODO: state handling
+				// TODO: check target for ('X'|'x')('M'|'m')('L'|'l')
+
+				// clear the current node information
+				ClearNodeInfo();
+
+				// skip potentially optional whitespace
+				bool hasWS = input.SkipWhitespace();
+
+				// check for the closing characters
 				if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-				if(!IsNameInit(input.currChar)) { Error(/* TODO */); }
-				sb.Append(input.currChar);
-				while(input.PeekChar() && IsNameChar(input.peekChar))
+				if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
+				if(input.currChar == '?' && input.peekChar == '>')
 				{
 					input.NextChar();
-					sb.Append(input.currChar);
-				}
-				int len = sb.Length - pos;
-				return parserContext.NameTable.Add(sb.ToString(pos, len));
-			}
-	[TODO]
-	private void ReadQMarkTag() 
-			{	
-				String target = ReadName();
-				if(target == "xml")
-				{
-					ReadXmlOrTextDeclaration();
+
+					// set the current node information and return
+					info.NodeType = XmlNodeType.ProcessingInstruction;
+					info.SetElementInfo(target, String.Empty);
 					return;
 				}
 
-				// Not XmlDeclaration, so must be ProcessingInstruction
-				// TODO: check for ('X'|'x')('M'|'m')('L'|'l')
-				// TODO: state handling
+				// pi content must be preceded by whitespace
+				if(!hasWS) { Error(/* TODO */); }
 
-				input.SkipWhitespace();
+				// create our log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
 
-				StringBuilder sb = new StringBuilder();
-				while(input.NextChar())
+				// read until we consume all of the pi content
+				while(input.NextChar() && input.PeekChar())
 				{
-					if(input.currChar == '?' &&
-					   input.PeekChar() &&
-					   input.peekChar == '>')
+					if(input.currChar == '?' && input.peekChar == '>')
 					{
 						input.NextChar();
-						ClearNodeInfo();
+
+						// erase the '?>' sequence from the log
+						log.Length -= 2;
+
+						// get the content from the log and pop it from the logger
+						String value = input.Logger.Pop().ToString();
+
+						// set the current node information and return
 						info.NodeType = XmlNodeType.ProcessingInstruction;
-						info.SetElementInfo(target, sb.ToString());
+						info.SetElementInfo(target, value);
 						return;
 					}
-					sb.Append(input.currChar);
+				}
+
+				// if we make it here then we hit eof, so give an error
+				Error("Xml_UnexpectedEOF");
+			}
+
+	// Read a '<?' tag.
+	//
+	// Already read: '<?'
+	[TODO]
+	private void ReadQMarkTag()
+			{
+				// read the pi target name
+				String target = input.ReadName();
+
+				// check if we have a pi or xml declaration
+				if(target == "xml")
+				{
+					ReadXmlDeclaration();
+				}
+				else
+				{
+					ReadProcessingInstruction(target);
 				}
 			}
 
-	// Read an entity reference. Expands built-in and character references.
-	// Returns true if it's an unknown reference, false if expanded.
-	private bool ReadReference(StringBuilder sb)
+	// Read an entity reference.
+	//
+	// Already read: '&'
+	private void ReadReference()
 			{
+				// check for an empty reference
 				if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
 				if(input.peekChar == ';') { Error(/* TODO */); }
+
+				// handle character or general references
 				if(input.peekChar == '#')
 				{
 					input.NextChar();
-					int value = 0;
+
+					// check for an empty character reference
 					if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
 					if(input.peekChar == ';') { Error(/* TODO */); }
+
+					// handle a hex or decimal character reference
 					if(input.peekChar == 'x')
 					{
 						input.NextChar();
+
+						// check for an empty hex character reference
 						if(!input.PeekChar()) { Error("Xml_UnexpectedEOF"); }
 						if(input.peekChar == ';') { Error(/* TODO */); }
+
+						// read until we consume all the digits
 						while(input.NextChar() && input.currChar != ';')
 						{
-							value *= 0x10;
-							if(input.currChar >= '0' && input.currChar <= '9')
-							{
-								value += input.currChar - '0';
-							}
-							else if(input.currChar >= 'A' && input.currChar <= 'F')
-							{
-								value += (input.currChar - 'A') + 10;
-							}
-							else if(input.currChar >= 'a' && input.currChar <= 'f')
-							{
-								value += (input.currChar - 'a') + 10;
-							}
-							else
+							// check for invalid characters
+							if((input.currChar <= '0' || input.currChar >= '9') &&
+							   (input.currChar <= 'A' || input.currChar >= 'F') &&
+							   (input.currChar <= 'a' || input.currChar >= 'f'))
 							{
 								Error(/* TODO */);
 							}
@@ -1354,344 +1388,137 @@ public class XmlTextReader : XmlReader
 					}
 					else
 					{
+						// read until we consume all the digits
 						while(input.NextChar() && input.currChar != ';')
 						{
-							value *= 10;
-							if(input.currChar >= '0' && input.currChar <= '9')
-							{
-								value += input.currChar - '0';
-							}
-							else
+							// check for invalid characters
+							if(input.currChar <= '0' || input.currChar >= '9')
 							{
 								Error(/* TODO */);
 							}
 						}
 					}
+
+					// we hit eof, otherwise we'd have ';', so give an error
 					if(input.currChar != ';') { Error("Xml_UnexpectedEOF"); }
-					sb.Append((char)value);
-					return false;
 				}
-
-				int undo = sb.Length;
-				sb.Append('&');
-
-				switch(ReadName(sb))
+				else
 				{
-					case "amp":
-					{
-						sb.Length = undo+1;
-						return false;
-					}
-					// Not reached.
+					// read the reference name
+					input.ReadName();
 
-					case "apos":
-					{
-						sb.Length = undo;
-						sb.Append('\'');
-						return false;
-					}
-					// Not reached.
-
-					case "gt":
-					{
-						sb.Length = undo;
-						sb.Append('>');
-						return false;
-					}
-					// Not reached.
-
-					case "lt":
-					{
-						sb.Length = undo;
-						sb.Append('<');
-						return false;
-					}
-					// Not reached.
-
-					case "quot":
-					{
-						sb.Length = undo;
-						sb.Append('"');
-						return false;
-					}
-					// Not reached.
-
-					default:
-					{
-						sb.Append(';');
-						return true;
-					}
-					// Not reached.
+					// the reference must end with ';' at this point
+					input.Expect(';');
 				}
 			}
 
+	// Read an element start tag.
+	//
+	// Already read: '<'
 	[TODO]
 	private void ReadSTag()
 			{
 				// TODO: state handling
+
+				// clear the current node information
 				ClearNodeInfo();
-				StringBuilder sb = new StringBuilder();
-				String name = ReadName(sb);
-				ReadAttributes(sb, false);
-				input.NextChar();
+
+				// read the element name
+				String name = input.ReadName();
+
+				// read the element's attributes
+				ReadAttributes(false);
+
+				// check if this is an empty element or not
+				if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
 				bool empty = false;
 				if(input.currChar == '/')
 				{
 					empty = true;
-					Expect('>');
+					input.Expect('>');
 				}
 				else
 				{
 					incDepth = true;
 					elementNames.Push(name);
 				}
+
+				// set the current node information
 				info.NodeType = XmlNodeType.Element;
 				info.SetElementInfo(name);
 				info.IsEmptyElement = empty;
 			}
 
+	// Read a text node.
+	//
+	// Already read: ''
 	[TODO]
 	private void ReadText()
 			{
 				/* TODO: Add Support for normalization */
 				ClearNodeInfo();
 				info.NodeType = XmlNodeType.Text;
-				info.SetElementInfo("",ReadTo('<'));
+				info.SetElementInfo("",input.ReadTo('<'));
 			}
 
-	// Read characters until target, calling Error on EOF.
-	private String ReadTo(char target)
-			{
-				StringBuilder sb = new StringBuilder();
-				if(!input.ReadTo(target, sb, false)) { Error(); }
-				return sb.ToString();
-			}
-	// Read characters until target, calling Error on EOF.
-	private String ReadTo(char target, bool includeTarget)
-			{
-				StringBuilder sb = new StringBuilder();
-				if(!input.ReadTo(target, sb, includeTarget)) { Error(); }
-				return sb.ToString();
-			}
-
+	// Read a whitespace node.
+	//
+	// Already read: ''
 	[TODO]
 	private void ReadWhitespace()
 			{
 				// TODO: state handling
-				if(!input.NextChar()) { Error("Xml_UnexpectedEOF"); }
-				if(!IsWhitespace(input.currChar)) { Error(/* TODO */); }
-				StringBuilder sb = new StringBuilder();
-				sb.Append(input.currChar);
-				while(input.PeekChar() && IsWhitespace(input.peekChar))
-				{
-					input.NextChar();
-					sb.Append(input.currChar);
-				}
+
+				// create our log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
+
+				// skip the required whitespace
+				if(!input.SkipWhitespace()) { Error(/* TODO */); }
+
+				// get the whitespace from the log and pop it from the logger
+				String value = input.Logger.Pop().ToString();
+
+				// clear the current node information
 				ClearNodeInfo();
-				info.SetElementInfo(String.Empty, sb.ToString());
+
+				// set the current node information
+				info.SetElementInfo(String.Empty, value);
 				info.NodeType = XmlNodeType.Whitespace; // ??
 			}
 
+	// Read an xml declaration.
+	//
+	// Already read: '<?xml'
 	[TODO]
-	private void ReadXmlOrTextDeclaration()
+	private void ReadXmlDeclaration()
 			{
 				// TODO: state handling
-				// TODO: handle differences between xml and text declarations
+				// TODO: encoding checks
+				// TODO: ensure attributes are well-formed and in correct order
+
+				// clear the current node information
 				ClearNodeInfo();
-				StringBuilder sb = new StringBuilder();
-				ReadAttributes(sb, true);
+
+				// create our log and push it onto the logger's log stack
+				StringBuilder log = new StringBuilder();
+				input.Logger.Push(log);
+
+				// read the xml declaration's attributes
+				ReadAttributes(true);
+
+				// get attributes from the log and pop it from the logger
+				String value = input.Logger.Pop().ToString();
+
+				// set the current node information
 				info.NodeType = XmlNodeType.XmlDeclaration;
-				info.SetElementInfo("xml", sb.ToString());
-				Expect("?>");
+				info.SetElementInfo("xml", value);
+
+				// the xml declaration must end with '?>' at this point
+				input.Expect("?>");
 			}
 
-	public delegate void EOFHandler();
 
-	private sealed class XmlParserInput
-	{
-		// Internal state.
-		private int lineNumber;
-		private int linePosition;
-		private int bufferPos;
-		private int bufferLen;
-		private char[] buffer;
-		private TextReader reader;
-		private EOFHandler eofHandler;
-
-		private const int BUFSIZE = 1024;
-
-
-		// Fields
-		public char currChar;
-		public char peekChar;
-
-
-		// Constructor.
-		public XmlParserInput(EOFHandler eofHandler, TextReader reader)
-				{
-					lineNumber = 1;
-					linePosition = 1;
-					bufferPos = 0;
-					bufferLen = 0;
-					buffer = new char[BUFSIZE];
-					this.reader = reader;
-					this.eofHandler = eofHandler;
-				}
-
-		// Move to the next character, returning false on EOF.
-		public bool NextChar()
-				{
-					if(bufferPos == bufferLen)
-					{
-						bufferLen = reader.Read(buffer, 0, BUFSIZE);
-						bufferPos = 0;
-						if(bufferLen == 0)
-						{
-							eofHandler();
-							return false;
-						}
-					}
-					currChar = buffer[bufferPos++];
-					if(currChar == '\n')
-					{
-						++lineNumber;
-						linePosition = 1;
-					}
-					else
-					{
-						++linePosition;
-					}
-					return true;
-				}
-
-		// Peek at the next character, returning false on EOF.
-		public bool PeekChar()
-				{
-					if(bufferPos == bufferLen)
-					{
-						bufferLen = reader.Read(buffer, 0, BUFSIZE);
-						bufferPos = 0;
-						if(bufferLen == 0)
-						{
-							eofHandler();
-							return false;
-						}
-					}
-					peekChar = buffer[bufferPos];
-					return true;
-				}
-
-		// Read characters into result until target, returning false on EOF.
-		public bool ReadTo(char target, StringBuilder result, bool includeTarget)
-				{
-					while(true)
-					{
-						while(bufferPos < bufferLen)
-						{
-							currChar = buffer[bufferPos++];
-							if(currChar == '\n')
-							{
-								++lineNumber;
-								linePosition = 1;
-							}
-							else
-							{
-								++linePosition;
-							}
-							if(currChar == target)
-							{
-								if(includeTarget)
-								{
-									result.Append(currChar);
-								}
-								return true;
-							}
-							else
-							{
-								result.Append(currChar);
-							}
-						}
-						bufferLen = reader.Read(buffer, 0, BUFSIZE);
-						bufferPos = 0;
-						if(bufferLen == 0)
-						{
-							eofHandler();
-							return false;
-						}
-					}
-				}
-
-		// Skip whitespace characters, returning false on EOF.
-		public bool SkipWhitespace()
-				{
-					while(true)
-					{
-						while(bufferPos < bufferLen)
-						{
-							currChar = buffer[bufferPos++];
-							switch(currChar)
-							{
-								case '\t':
-								case '\r':
-								case ' ':
-								{
-									++linePosition;
-								}
-								break;
-
-								case '\n':
-								{
-									++lineNumber;
-									linePosition = 1;
-								}
-								break;
-
-								default:
-								{
-									--bufferPos;
-									return true;
-								}
-								// Not reached.
-							}
-						}
-						bufferLen = reader.Read(buffer, 0, BUFSIZE);
-						bufferPos = 0;
-						if(bufferLen == 0)
-						{
-							eofHandler();
-							return false;
-						}
-					}
-				}
-
-		// Get the current line number.
-		public int LineNumber
-				{
-					get { return lineNumber; }
-				}
-
-		// Get the current line position.
-		public int LinePosition
-				{
-					get { return linePosition; }
-				}
-
-		// Get or set the reader.
-		public TextReader Reader
-				{
-					get { return reader; }
-					set { reader = value; }
-				}
-
-		// Close the reader.
-		public void Close()
-				{
-					if(reader == null) { return; }
-					reader.Close();
-					reader = null;
-				}
-
-	}; // class XmlParserInput
 
 	private sealed class XmlNodeInfo
 	{
@@ -1718,7 +1545,7 @@ public class XmlTextReader : XmlReader
 		                   String name,
 		                   String value,
 		                   char quoteChar,
-				   int[] refs)
+		                   int[] refs)
 				{
 					this.context = context;
 					this.Name = name;
@@ -1741,18 +1568,27 @@ public class XmlTextReader : XmlReader
 					{
 						XmlNameTable nt = context.NameTable;
 
+						// add the new name value to the name table
 						name = nt.Add(value);
+
+						// find the namespace separator
 						int index = name.LastIndexOf(':');
+
+						// set the namespace information
 						if(index >= 0)
 						{
 							XmlNamespaceManager nm = context.NamespaceManager;
 
+							// add the prefix and local name to the name table
 							prefix = nt.Add(name.Substring(0, index));
 							localName = nt.Add(name.Substring(index + 1));
+
+							// set the namespace uri based on the prefix
 							namespaceURI = nm.LookupNamespace(prefix);
 						}
 						else
 						{
+							// no namespace information is available
 							prefix = String.Empty;
 							localName = name;
 							namespaceURI = String.Empty;
@@ -2131,9 +1967,8 @@ public class XmlTextReader : XmlReader
 						other.SetNodeInfo("", value.Substring(valuePosition));
 						valuePosition = value.Length;
 						otherType = XmlNodeType.Text;
-						return true;
 					}
-					if(valuePosition == refs[refsPosition])
+					else if(valuePosition == refs[refsPosition])
 					{
 						++refsPosition;
 						int start = valuePosition + 1;
@@ -2141,13 +1976,15 @@ public class XmlTextReader : XmlReader
 						int end = valuePosition - 2;
 						other.SetNodeInfo(value.Substring(start, end));
 						otherType = XmlNodeType.EntityReference;
-						return true;
 					}
-					int start1 = valuePosition;
-					valuePosition = refs[refsPosition];
-					int end1 = valuePosition - 1;
-					other.SetNodeInfo("", value.Substring(start1, end1));
-					otherType = XmlNodeType.Text;
+					else
+					{
+						int start = valuePosition;
+						valuePosition = refs[refsPosition];
+						int end = valuePosition - 1;
+						other.SetNodeInfo("", value.Substring(start, end));
+						otherType = XmlNodeType.Text;
+					}
 					return true;
 				}
 

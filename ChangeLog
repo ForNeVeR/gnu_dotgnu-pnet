@@ -1,4 +1,10 @@
 
+2001-01-11  Rhys Weatherley  <rweather@southern-storm.com.au>
+
+	* cscc/cs_gather.c (CreateMethod, CreateProperty, CreateMembers):
+	add the "specialname" property to the "get" and "set" accessor
+	methods for a property.
+
 2001-01-10  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* cscc/cs_decls.tc (AddConstantValue): decimal attribute values

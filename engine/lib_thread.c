@@ -313,7 +313,7 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
  */
 void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
 {
-	/* TODO */
+	ILThreadSleep((ILUInt32)timeout);
 }
 
 /*

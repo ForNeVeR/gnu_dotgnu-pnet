@@ -7,6 +7,10 @@
 	cscc/csharp/cs_invoke.tc: complete the implementation of the
 	"__arglist" keyword in the compiler.
 
+	* codegen/cg_lvalue.tc (ILNode_MemberField): bug fixes to field
+	accesses within managed values - previously the code was assuming
+	that everything was an object reference.
+
 2002-05-07  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* codegen/cg_library.c, codegen/cg_misc.tc, codegen/cg_nodes.tc,

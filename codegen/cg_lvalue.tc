@@ -263,8 +263,33 @@ ILNode_GenValue(ILNode_StaticField)
  */
 ILNode_GenValue(ILNode_MemberField)
 {
-	ILGenCast(info, ILNode_GenValue(node->expr, info),
-			  ILMachineType_ObjectRef);
+	ILMachineType type = ILNode_GetType(node->expr, info);
+	if(type == ILMachineType_ManagedValue)
+	{
+		/* Can we take the address of the managed value? */
+		if(yyisa(node->expr, ILNode_LValue) &&
+		   !yyisa(node->expr, ILNode_LValueNoRef))
+		{
+			/* Push the address of the value onto the stack */
+			ILNode_GenRef(node->expr, info);
+		}
+		else
+		{
+			/* Push the entire managed value onto the stack */
+			ILNode_GenValue(node->expr, info);
+		}
+	}
+	else if(type == ILMachineType_ManagedPtr)
+	{
+		/* The value is supplied as a managed pointer */
+		ILNode_GenValue(node->expr, info);
+	}
+	else
+	{
+		/* The value is supplied as an object reference */
+		ILGenCast(info, ILNode_GenValue(node->expr, info),
+				  ILMachineType_ObjectRef);
+	}
 	ILGenFieldRef(info, IL_OP_LDFLD, node->field);
 	return ILTypeToMachineType(ILField_Type(node->field));
 }
@@ -438,9 +463,24 @@ ILNode_Prepare(ILNode_StaticField)
  */
 ILNode_Prepare(ILNode_MemberField)
 {
+	ILMachineType type = ILNode_GetType(node->expr, info);
+	if(type == ILMachineType_ManagedValue)
+	{
+		/* Push the address of the managed value onto the stack */
+		ILNode_GenRef(node->expr, info);
+	}
+	else if(type == ILMachineType_ManagedPtr)
+	{
+		/* The supplied expression is already in pointer form */
+		ILNode_GenValue(node->expr, info);
+	}
+	else
+	{
+		/* Treat everything else as an object reference */
+		ILGenCast(info, ILNode_GenValue(node->expr, info),
+				  ILMachineType_ObjectRef);
+	}
 	node->tempVar = IL_MAX_UINT32;
-	ILGenCast(info, ILNode_GenValue(node->expr, info),
-			  ILMachineType_ObjectRef);
 	return ILTypeToMachineType(ILField_Type(node->field));
 }
 
@@ -621,13 +661,31 @@ ILNode_GetAndPrepare(ILNode_StaticField)
  */
 ILNode_GetAndPrepare(ILNode_MemberField)
 {
-	if(leave)
+	ILMachineType type;
+
+	/* Generate the object reference */
+	type = ILNode_GetType(node->expr, info);
+	if(type == ILMachineType_ManagedValue)
 	{
-		/* Generate the object reference */
+		/* Push the address of the managed value onto the stack */
+		ILNode_GenRef(node->expr, info);
+	}
+	else if(type == ILMachineType_ManagedPtr)
+	{
+		/* The supplied expression is already in pointer form */
+		ILNode_GenValue(node->expr, info);
+	}
+	else
+	{
+		/* Treat everything else as an object reference */
 		ILGenCast(info, ILNode_GenValue(node->expr, info),
 				  ILMachineType_ObjectRef);
+	}
 
-		/* Duplicate it and get the current value */
+	/* Do we need to leave the current value on the stack for later? */
+	if(leave)
+	{
+		/* Duplicate the object reference and get the current value */
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
 		ILGenFieldRef(info, IL_OP_LDFLD, node->field);
@@ -640,11 +698,7 @@ ILNode_GetAndPrepare(ILNode_MemberField)
 	}
 	else
 	{
-		/* Generate the object reference */
-		ILGenCast(info, ILNode_GenValue(node->expr, info),
-				  ILMachineType_ObjectRef);
-
-		/* Duplicate it for the later store */
+		/* Duplicate the object reference for the later store */
 		ILGenSimple(info, IL_OP_DUP);
 		ILGenAdjust(info, 1);
 

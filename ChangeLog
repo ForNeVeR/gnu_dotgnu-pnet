@@ -27,6 +27,8 @@
 	byte order in all relevant places; implement conversions between
 	host and network byte order.
 
+	* samples/System.dll, samples/System.Xml.dll: updated assemblies.
+
 2002-05-03  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* engine/HACKING: update the section on "internalcall" methods.

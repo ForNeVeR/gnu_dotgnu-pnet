@@ -239,26 +239,28 @@ AC_CHECK_HEADERS([term.h], [], [],
 dnl Collect up the libraries that we need for termcap access.
 AC_SUBST(TERMCAPLIBS)
 TERMCAPLIBS=""
-TERMINFOLIBS=""
-maybe_termcap=no
-maybe_terminfo=no
-AC_CHECK_LIB(termcap, tgetflag, [TERMCAPLIBS="-ltermcap"
-maybe_termcap=yes])
-AC_CHECK_LIB(curses, tigetflag, [TERMINFOLIBS="-lcurses"
-maybe_terminfo=yes],
-[AC_CHECK_LIB(ncurses, tigetflag, [TERMINFOLIBS="-lncurses"
-maybe_terminfo=yes])])
-if test "x$maybe_termcap" = "xyes" ; then
-	if test "x$ac_cv_header_termcap_h" = "xyes" ; then
-		maybe_terminfo=no
-		AC_DEFINE(IL_USE_TERMCAP, 1, [Define to use the termcap library.])
-	else
-		TERMCAPLIBS=""
+if ! test "x$THREADS" = "xwin32" ; then
+	TERMINFOLIBS=""
+	maybe_termcap=no
+	maybe_terminfo=no
+	AC_CHECK_LIB(termcap, tgetflag, [TERMCAPLIBS="-ltermcap"
+	maybe_termcap=yes])
+	AC_CHECK_LIB(curses, tigetflag, [TERMINFOLIBS="-lcurses"
+	maybe_terminfo=yes],
+	[AC_CHECK_LIB(ncurses, tigetflag, [TERMINFOLIBS="-lncurses"
+	maybe_terminfo=yes])])
+	if test "x$maybe_termcap" = "xyes" ; then
+		if test "x$ac_cv_header_termcap_h" = "xyes" ; then
+			maybe_terminfo=no
+			AC_DEFINE(IL_USE_TERMCAP, 1, [Define to use the termcap library.])
+		else
+			TERMCAPLIBS=""
+		fi
 	fi
-fi
-if test "x$maybe_terminfo" = "xyes" ; then
-	TERMCAPLIBS="$TERMINFOLIBS"
-	AC_DEFINE(IL_USE_TERMINFO, 1, [Define to use the terminfo library.])
+	if test "x$maybe_terminfo" = "xyes" ; then
+		TERMCAPLIBS="$TERMINFOLIBS"
+		AC_DEFINE(IL_USE_TERMINFO, 1, [Define to use the terminfo library.])
+	fi
 fi
 
 dnl Check for "sin6_scope_id".

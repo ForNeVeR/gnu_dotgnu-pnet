@@ -20,7 +20,7 @@
 Arg_SocketCreating=Beim Erschaffen eines neuen sockets trat ein Fehler auf;
 Exception_UriFormat=Die angegebene URI hatte nicht die korrekte Form
 Arg_UriPartial=Das ist kein gueltiger UriPartial Wert
-Arg_HexDigit=Das ist keine gueltige hexadecimal Stelle
+Arg_HexDigit=Das ist keine gueltige hexadezimal Stelle
 Arg_UriScheme=Der Entwurf der mit der URI geliefert wurde war ungueltig
 Arg_UriPort=Der Port der mit der URI angegeben wurde war nicht vorhanden
 Arg_UriPathAbs=Der relative Pfad der mit der URI angegeben wurde konnte nicht in einen absoluten Pfad konvertiert werden

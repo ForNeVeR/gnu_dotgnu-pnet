@@ -1,4 +1,13 @@
 
+2002-01-07  Rainer Groesslinger <rainer.groesslinger@gmx.net>
+
+	* resources/de_DE/I18N/I18NRes.txt, resources/de_DE/System/Arg.txt,
+	resources/de_DE/System/Exception.txt, resources/de_DE/System.Xml/Xml.txt,
+	resources/de_DE/runtime/DivZero.txt, resources/de_DE/runtime/Exception.txt,
+	resources/de_DE/runtime/IO.txt,resources/de_DE/runtime/Overflow.txt :
+	Updates to the German translations for Pnetlib error messages.
+	(Gopal)
+
 2003-01-04  Gopal.V  <gopalv82@symonds.net>
 	
 	* System/Diagnostics/Process.cs, System/Diagnostics/ProcessStartInfo.cs,

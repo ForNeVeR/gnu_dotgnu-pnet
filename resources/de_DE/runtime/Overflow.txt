@@ -26,6 +26,6 @@ Overflow_UInt32=Gueltige UInt32 Werte sind zwischen 0 und 4294967295, inklusive
 Overflow_Int64=Gueltige	Int64 Werte sind zwischen -9223372036854775808 und 9223372036854775807, inklusive
 Overflow_UInt64=Gueltige UInt64 Werte sind zwischen 0 und 18446744073709551615, inklusive
 Overflow_Char=Gueltige Char Werte sind zwischen 0 und 65535, inklusive
-Overflow_Decimal=Gueltige Decimal Werte sind zwischen -79228162514264337593543950335 und 79228162514264337593543950335, inklusive
+Overflow_Decimal=Gueltige Dezimal Werte sind zwischen -79228162514264337593543950335 und 79228162514264337593543950335, inklusive
 Overflow_NegateTwosCompNum=Attempt to negate the largest negative integer.
 Overflow_Pointer=Wert des Pointer ist ausserhalb des gueltigen Bereiches fuer die angegebene Operation

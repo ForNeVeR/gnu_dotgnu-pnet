@@ -21,9 +21,9 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-Arg_InsufficientSpace=Nicht genug Platz im Array fuer die angegebe Operation
+Arg_InsufficientSpace=Nicht genug Platz im Array fuer die angegebene Operation
 ArgRange_NonNegative=Wert darf nicht negativ sein
-ArgRange_Array=Array Position oder Laenge ist ausserhalb des Bereiches
-ArgRange_StringIndex=String index ist ausserhalb des Bereiches
-ArgRange_StringRange=String range ist ausserhalb des Bereiches
+ArgRange_Array=Array Position oder Laenge ist ausserhalb des gueltigen Bereiches
+ArgRange_StringIndex=String index ist ausserhalb des gueltigen Bereiches
+ArgRange_StringRange=String range ist ausserhalb des gueltigen Bereiches
 NotSupp_MissingCodeTable=Interne code table `{0}' fehlt

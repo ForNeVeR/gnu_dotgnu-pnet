@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-Exception_Web=Waehrend einer Internet bezogenen Operation trat ein Fehler auf
-Exception_Protocol=Protocol Fehler aufgetreten
+Exception_Web=Waehrend einer Internet-bezogenen Operation trat ein Fehler auf
+Exception_Protocol=Protokollfehler aufgetreten
 Exception_Socket=Ein Netzwerkfehler ist aufgetreten
 Exception_Disposed=Diese Instanz wurde abgeschafft

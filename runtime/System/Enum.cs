@@ -38,9 +38,13 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 	public int CompareTo(Object target)
 			{
 				Type type;
+				/* Note: this is what the ECMA spec says about CompareTo
+				 * Any positive integer: The value of the current 
+				 * instance is greater than the value of target, 
+				 * or target is null */
 				if(target == null)
 				{
-					throw new ArgumentNullException("target");
+					return 1;
 				}
 				type = GetType();
 				if(type != target.GetType())
@@ -178,10 +182,17 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 				{
 					value = ((Enum)value).GetEnumValue();
 				}
+			#if ECMA_COMPAT
 				else if(type != GetUnderlyingType(enumType))
 				{
 					throw new ArgumentException(_("Arg_InvalidEnumValue"));
 				}
+			#else
+				/* Note: The spec does mention that "underlying type"
+				 * but this seems to be the check for underlying type
+				 * they suggest */
+				value=ToObject(enumType, value);
+			#endif
 				return GetEnumName(enumType, value);
 			}
 
@@ -638,9 +649,9 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			}
 	bool IConvertible.ToBoolean(IFormatProvider provider)
 			{
-				throw new InvalidCastException
-					(String.Format
-						(_("InvalidCast_FromTo"), "Enum", "Boolean"));
+				/* Note: apparently the use of IConvertible is 
+				 * to convert what can't be casted . */
+				return Convert.ToBoolean(GetEnumValue());
 			}
 	byte IConvertible.ToByte(IFormatProvider provider)
 			{
@@ -660,9 +671,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			}
 	char IConvertible.ToChar(IFormatProvider provider)
 			{
-				throw new InvalidCastException
-					(String.Format
-						(_("InvalidCast_FromTo"), "Enum", "Char"));
+				return Convert.ToChar(GetEnumValue());
 			}
 	int IConvertible.ToInt32(IFormatProvider provider)
 			{
@@ -682,21 +691,15 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 			}
 	float IConvertible.ToSingle(IFormatProvider provider)
 			{
-				throw new InvalidCastException
-					(String.Format
-						(_("InvalidCast_FromTo"), "Enum", "Single"));
+				return  Convert.ToSingle(GetEnumValue());
 			}
 	double IConvertible.ToDouble(IFormatProvider provider)
 			{
-				throw new InvalidCastException
-					(String.Format
-						(_("InvalidCast_FromTo"), "Enum", "Double"));
+				return  Convert.ToDouble(GetEnumValue());
 			}
 	Decimal IConvertible.ToDecimal(IFormatProvider provider)
 			{
-				throw new InvalidCastException
-					(String.Format
-						(_("InvalidCast_FromTo"), "Enum", "DateTime"));
+				return  Convert.ToDecimal(GetEnumValue());
 			}
 	DateTime IConvertible.ToDateTime(IFormatProvider provider)
 			{

@@ -7,8 +7,12 @@
 	* runtime/System/Int32.cs, runtime/System/UInt32.cs, 
 	runtime/System/Int64.cs, runtime/System/UInt64.cs: Effectively
 	double the hash space by removing the "& 0x7FFFFFFF". Halve the 
-	collisions so that now all integers below 32 bit to have unique 
+	collisions so that now all integers below 32 bits have unique 
 	hashes and all 64 bit integers have only 1 collision in hash space.
+
+	* runtime/System/Enum.cs: Fix CompareTo to match spec , Allow various
+	IConvertible interfaces to convert even when casting is impossible,
+	make GetName less strict.
 
 2003-07-21  Rhys Weatherley  <rweather@southern-storm.com.au>
 

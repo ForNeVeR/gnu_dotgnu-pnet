@@ -80,10 +80,12 @@ ILIntString ILInternString(char *str, int len)
 	entry = (InternEntry *)ILMalloc(sizeof(InternEntry) + len);
 	if(!entry)
 	{
+	#ifndef REDUCED_STDIO
 		fprintf(stderr, "virtual memory exhausted - cannot intern \"");
 		fwrite(str, 1, len, stderr);
 		fprintf(stderr, "\"\n");
 		exit(1);
+	#endif
 		result.string = emptyString;
 		result.len = 0;
 		return result;
@@ -138,11 +140,13 @@ ILIntString ILInternAppendedString(ILIntString str1, ILIntString str2)
 	entry = (InternEntry *)ILMalloc(sizeof(InternEntry) + str1.len + str2.len);
 	if(!entry)
 	{
+	#ifndef REDUCED_STDIO
 		fprintf(stderr, "virtual memory exhausted - cannot intern \"");
 		fwrite(str1.string, 1, str1.len, stderr);
 		fwrite(str2.string, 1, str2.len, stderr);
 		fprintf(stderr, "\"\n");
 		exit(1);
+	#endif
 		result.string = emptyString;
 		result.len = 0;
 		return result;

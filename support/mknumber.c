@@ -27,6 +27,15 @@
 extern	"C" {
 #endif
 
+#if defined(__palmos__)
+
+int main(int argc, char *argv[])
+{
+	return 0;
+}
+
+#else
+
 /*
  * Full category table.
  */
@@ -223,6 +232,8 @@ int main(int argc, char *argv[])
 	/* Done */
 	return 0;
 }
+
+#endif
 
 #ifdef	__cplusplus
 };

@@ -37,6 +37,8 @@
 extern	"C" {
 #endif
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 int ILNativeFloatIsNaN(ILNativeFloat value)
 {
 #ifdef HAVE_ISNAN
@@ -89,6 +91,8 @@ int ILNativeFloatIsInf(ILNativeFloat value)
 		return 1;
 	}
 }
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 #ifdef	__cplusplus
 };

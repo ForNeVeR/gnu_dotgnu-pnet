@@ -9,6 +9,13 @@
 	* support/gen_errno.sh: look for both EINVAL and ENOSYS in
 	errno.h files because some systems don't have EINVAL.
 
+	* support/cmdline.c, support/dir.c, support/dynlib.c, support/file.c,
+	support/guid.c, support/intern.c, support/locale.c,
+	support/mkcategory.c, support/mknumber.c, support/path.c,
+	support/pt_defs.c, support/regex.c, support/socket.c, support/spawn.c,
+	support/test_float.c, support/time.c: port the rest of the "support"
+	layer to m68k-palmos.
+
 2003-05-14  Gopal.V  <gopalv82@symonds.net>
 	
 	* cscc/csdoc.c: avoid semantic analysis of method bodies with

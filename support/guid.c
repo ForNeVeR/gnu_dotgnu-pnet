@@ -21,7 +21,10 @@
 #include "il_system.h"
 #include "il_utils.h"
 #include "il_crypt.h"
-#if TIME_WITH_SYS_TIME
+#if defined(__palmos__)
+#include <PalmTypes.h>
+#include <TimeMgr.h>
+#elif TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
 #else
@@ -55,6 +58,8 @@ void ILGUIDGenerate(unsigned char *guid)
 #endif
 #ifdef HAVE_GETTIMEOFDAY
 	struct timeval tv;
+#elif defined(__palmos__)
+	UInt32 timestamp;
 #else
 	time_t timestamp;
 #endif
@@ -102,7 +107,11 @@ void ILGUIDGenerate(unsigned char *guid)
 	guid[7] = (unsigned char)(tv.tv_usec);
 	entropySize = 8;
 #else
+#if defined(__palmos__)
+	timestamp = TimGetSeconds();
+#else
 	timestamp = time(0);
+#endif
 	guid[0] = (unsigned char)(timestamp >> 24);
 	guid[1] = (unsigned char)(timestamp >> 16);
 	guid[2] = (unsigned char)(timestamp >> 8);

@@ -19,7 +19,10 @@
  */
 
 #include "il_system.h"
-#if TIME_WITH_SYS_TIME
+#if defined(__palmos__)
+	#include <PalmTypes.h>
+	#include <TimeMgr.h>
+#elif TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
 #else
@@ -60,6 +63,16 @@ extern	"C" {
 #define	WIN32_EPOCH_ADJUST	((ILInt64)50491123200L)
 #endif
 
+/*
+ * Magic number that converts a time which is relative to
+ * Jan 1, 1904 into a value which is relative to Jan 1, 0001.
+ */
+#ifdef 	IL_WIN32_NATIVE
+#define	PALM_EPOCH_ADJUST	((ILInt64)60052752000LL)
+#else
+#define	PALM_EPOCH_ADJUST	((ILInt64)60052752000L)
+#endif
+
 void ILGetCurrTime(ILCurrTime *timeValue)
 {
 #ifdef HAVE_GETTIMEOFDAY
@@ -78,6 +91,10 @@ void ILGetCurrTime(ILCurrTime *timeValue)
 			 ((ILInt64)(filetime.dwLowDateTime));
 	timeValue->secs = (value / (ILInt64)10000000) + WIN32_EPOCH_ADJUST;
 	timeValue->nsecs = (ILUInt32)((value % (ILInt64)10000000) * (ILInt64)100);
+#elif defined(__palmos__)
+	/* Use the PalmOS routine to get the time in seconds */
+	timeValue->secs = ((ILInt64)(TimGetSeconds())) + PALM_EPOCH_ADJUST;
+	timeValue->nsecs = 0;
 #else
 	/* Use the ANSI routine to get the time in seconds */
 	timeValue->secs = (ILInt64)(time(0)) + EPOCH_ADJUST;
@@ -93,6 +110,7 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 
 ILInt32 ILGetTimeZoneAdjust(void)
 {
+#if !defined(__palmos__)
 	static int initialized = 0;
 	static int isdst = 0;
 	if(!initialized)
@@ -104,6 +122,10 @@ ILInt32 ILGetTimeZoneAdjust(void)
 		initialized = 1;
 	}
 	return (ILInt32)(timezone - (isdst ? 3600 : 0));
+#else
+	/* TODO */
+	return 0;
+#endif
 }
 
 ILInt64 ILCLIToUnixTime(ILInt64 timeValue)

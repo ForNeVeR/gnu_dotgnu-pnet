@@ -24,7 +24,7 @@
 #ifdef IL_WIN32_PLATFORM
 	#include <windows.h>
 	#include <process.h>
-#else
+#elif !defined(__palmos__)
 	#ifdef HAVE_SYS_TYPES_H
 		#include <sys/types.h>
 	#endif
@@ -366,7 +366,9 @@ int ILSpawnProcessWaitForExit(int pid, char *argv[])
 
 int ILSpawnProcess(char *argv[])
 {
+#ifndef REDUCED_STDIO
 	fputs("Don't know how to spawn child processes on this system\n", stderr);
+#endif
 	return -1;
 }
 

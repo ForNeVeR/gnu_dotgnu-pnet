@@ -247,6 +247,9 @@ unsigned ILGetCultureID(void)
 
 char *ILGetCultureName(void)
 {
+#if defined(__palmos__)
+	return 0;
+#else
 	char *env;
 	char name[8];
 
@@ -282,6 +285,7 @@ char *ILGetCultureName(void)
 	name[4] = ToUpper(env[4]);
 	name[5] = '\0';
 	return ILDupString(name);
+#endif
 }
 
 #ifdef	__cplusplus

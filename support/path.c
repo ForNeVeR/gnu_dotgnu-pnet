@@ -240,6 +240,9 @@ char *ILGetStandardProgramPath(void)
 
 char *ILSearchPath(const char *path, const char *name, int isExe)
 {
+#if defined(__palmos__)
+	return 0;
+#else
 	int separator;
 	int len, temp;
 	char *fullname;
@@ -346,6 +349,7 @@ char *ILSearchPath(const char *path, const char *name, int isExe)
 
 	/* If we get here, then we could not locate the name */
 	return 0;
+#endif
 }
 
 #ifdef	__cplusplus

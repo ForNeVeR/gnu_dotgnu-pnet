@@ -28,6 +28,8 @@
 extern	"C" {
 #endif
 
+#if !defined(__palmos__)
+
 /*
  * Flag that indicates if '/' parsing is suppressed.
  */
@@ -689,6 +691,32 @@ void ILCmdLineSuppressSlash(void)
 {
 	suppressSlash = 1;
 }
+
+#else /* __palmos__ */
+
+/*
+ * Stub out the command-line handling under PalmOS.
+ */
+
+int ILCmdLineNextOption(int *argc, char ***argv, int *state,
+						const ILCmdLineOption *options, char **param)
+{
+	return -1;
+}
+
+void ILCmdLineHelp(const ILCmdLineOption *options)
+{
+}
+
+void ILCmdLineExpand(int *argc, char ***argv)
+{
+}
+
+void ILCmdLineSuppressSlash(void)
+{
+}
+
+#endif /* __palmos__ */
 
 #ifdef	__cplusplus
 };

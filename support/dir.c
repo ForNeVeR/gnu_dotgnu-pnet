@@ -52,6 +52,12 @@ extern	"C" {
 	#define	USE_WIN32_FIND 1
 #endif
 
+#if defined(__palmos__)
+#define	IL_NO_DIR_ROUTINES
+#endif
+
+#ifndef IL_NO_DIR_ROUTINES
+
 ILInt32 ILDeleteDir(const char *path)
 {
 	int retval;
@@ -513,6 +519,55 @@ void ILGetPathInfo(ILPathInfo *info)
 	info->invalidPathChars = "\r\n";
 #endif
 }
+
+#else /* IL_NO_DIR_ROUTINES */
+
+ILInt32 ILDeleteDir(const char *path)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+ILInt32 ILRenameDir(const char *old_name, const char *new_name)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+ILInt32 ILChangeDir(const char *path)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+ILInt32 ILCreateDir(const char *path)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+int ILGetFileType(const char *path)
+{
+	return ILFileType_REG;
+}
+
+ILDir *ILOpenDir(char *path)
+{
+	return 0;
+}
+
+int ILCloseDir(ILDir *dir)
+{
+	return 0;
+}
+
+const char *ILDirEntName(ILDirEnt *entry)
+{
+	return 0;
+}
+
+int ILDirEntType(ILDirEnt *entry)
+{
+	return ILFileType_Unknown;
+}
+
+#endif /* IL_NO_DIR_ROUTINES */
 
 #ifdef	__cplusplus
 };

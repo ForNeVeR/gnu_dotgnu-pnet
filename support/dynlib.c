@@ -150,7 +150,9 @@ void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 
 void *ILDynLibraryOpen(const char *name)
 {
+#ifndef REDUCED_STDIO
 	fprintf(stderr, "%s: dynamic libraries are not available\n", name);
+#endif
 	return 0;
 }
 

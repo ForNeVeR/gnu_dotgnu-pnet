@@ -53,6 +53,12 @@
 extern	"C" {
 #endif
 
+#if defined(__palmos__)
+#define	IL_NO_FILE_ROUTINES
+#endif
+
+#ifndef IL_NO_FILE_ROUTINES
+
 int ILDeleteFile(const char *filename)
 {
 #ifdef HAVE_UNLINK
@@ -544,6 +550,148 @@ int ILSysIOSetCreationTime(const char *path, ILInt64 time)
 {
 	return IL_ERRNO_ENOSYS;
 }
+
+#else /* IL_NO_FILE_ROUTINES */
+
+int ILDeleteFile(const char *filename)
+{
+	return IL_ERRNO_ENOSYS;
+}
+
+int ILFileExists(const char *filename, char **newExePath)
+{
+	return 0;
+}
+
+int ILSysIOGetErrno(void)
+{
+	return ILSysIOConvertErrno(errno);
+}
+
+void ILSysIOSetErrno(int code)
+{
+	code = ILSysIOConvertFromErrno(code);
+	if(code != -1)
+	{
+		errno = code;
+	}
+	else
+	{
+		errno = ENOSYS;
+	}
+}
+
+const char *ILSysIOGetErrnoMessage(int code)
+{
+#ifdef HAVE_STRERROR
+	code = ILSysIOConvertFromErrno(code);
+	if(code != -1)
+	{
+		return strerror(code);
+	}
+	else
+	{
+		return 0;
+	}
+#else
+	return 0;
+#endif
+}
+
+int ILSysIOValidatePathname(const char *path)
+{
+	return 1;
+}
+
+ILSysIOHandle ILSysIOOpenFile(const char *path, ILUInt32 mode,
+						      ILUInt32 access, ILUInt32 share)
+{
+	errno = ENOENT;
+	return (ILSysIOHandle)(ILNativeInt)(-1);
+}
+
+int ILSysIOCheckHandleAccess(ILSysIOHandle handle, ILUInt32 access)
+{
+	return 0;
+}
+
+int ILSysIOClose(ILSysIOHandle handle)
+{
+	return 1;
+}
+
+ILInt32 ILSysIORead(ILSysIOHandle handle, void *buf, ILInt32 size)
+{
+	return 0;
+}
+
+ILInt32 ILSysIOWrite(ILSysIOHandle handle, const void *buf, ILInt32 size)
+{
+	return size;
+}
+
+ILInt64 ILSysIOSeek(ILSysIOHandle handle, ILInt64 offset, int whence)
+{
+	return offset;
+}
+
+int ILSysIOFlushRead(ILSysIOHandle handle)
+{
+	return 1;
+}
+
+int ILSysIOFlushWrite(ILSysIOHandle handle)
+{
+	return 1;
+}
+
+ILInt32 ILCopyFile(const char *src, const char *dest)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+int ILSysIOTruncate(ILSysIOHandle handle, ILInt64 posn)
+{
+	errno = ENOSYS;
+	return 0;
+}
+
+int ILSysIOHasAsync(void)
+{
+	return 0;
+}
+
+int ILSysIOPathGetLastAccess(const char *path, ILInt64 *time)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+int ILSysIOPathGetLastModification(const char *path, ILInt64 *time)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+int ILSysIOPathGetCreation(const char *path, ILInt64 *time)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+int ILSysIOSetModificationTime(const char *path, ILInt64 time)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+int ILSysIOSetAccessTime(const char *path, ILInt64 time)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+int ILSysIOSetCreationTime(const char *path, ILInt64 time)
+{
+	return IL_ERRNO_ENOENT;
+}
+
+#endif /* IL_NO_FILE_ROUTINES */
 
 #ifdef	__cplusplus
 };

@@ -20,6 +20,9 @@
 
 #include "il_sysio.h"
 #include "il_errno.h"
+
+#ifdef IL_CONFIG_NETWORKING
+
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
@@ -500,3 +503,5 @@ int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 name,
 #ifdef	__cplusplus
 };
 #endif
+
+#endif /* IL_CONFIG_NETWORKING */

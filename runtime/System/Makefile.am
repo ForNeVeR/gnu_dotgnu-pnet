@@ -125,7 +125,9 @@ CSSRC = Activator.cs \
 		Collections/BitArray.cs \
 		Collections/CaseInsensitiveComparer.cs \
 		Collections/CaseInsensitiveHashCodeProvider.cs \
+		Collections/CollectionBase.cs \
 		Collections/Comparer.cs \
+		Collections/DictionaryBase.cs \
 		Collections/DictionaryEntry.cs \
 		Collections/Hashtable.cs \
 		Collections/ICollection.cs \
@@ -137,9 +139,12 @@ CSSRC = Activator.cs \
 		Collections/IHashCodeProvider.cs \
 		Collections/IList.cs \
 		Collections/Queue.cs \
+		Collections/ReadOnlyCollectionBase.cs \
+		Collections/SortedList.cs \
 		Collections/Stack.cs \
 		Collections/SynchronizedDictEnumerator.cs \
 		Collections/SynchronizedEnumerator.cs \
+		Collections/SynchronizedList.cs \
 		Configuration/Assemblies/AssemblyHash.cs \
 		Configuration/Assemblies/AssemblyHashAlgorithm.cs \
 		Configuration/Assemblies/AssemblyVersionCompatibility.cs \

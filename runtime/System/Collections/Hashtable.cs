@@ -547,7 +547,7 @@ public class Hashtable : ICloneable, ICollection, IDictionary, IEnumerable
 					{
 						// There is already an entry with the key.
 						throw new ArgumentException
-							(_("Arg_HashExistingEntry"));
+							(_("Arg_ExistingEntry"));
 					}
 					hash = (hash + 1) % capacity;
 					--count;
